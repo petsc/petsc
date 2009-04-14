@@ -827,9 +827,11 @@ c================================== INIT =============================72
 !
 !=====================================================================72
       subroutine ETOH(nvertices, qvec)
+#include "finclude/petsc.h"
 
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
-      integer flops,ierr
+      integer ierr
+      PetscLogDouble flops
 #if defined(INTERLACING)
       real qvec(5,nvertices) 
 #define qnode(i,j) qvec(i,j)
@@ -837,7 +839,7 @@ c================================== INIT =============================72
       real qvec(nvertices,5) 
 #define qnode(i,j) qvec(j,i)
 #endif
-      flops = 0
+      flops = 0.0
       do 1000 i = 1,nvertices
          rho = qnode(1,i)
          u   = qnode(2,i)/rho
@@ -870,7 +872,8 @@ c
       subroutine HTOE(nvertices, qvec)
 
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
-      integer flops,ierr
+      integer ierr
+      PetscLogDouble flops
 #if defined(INTERLACING)
       real qvec(5,nvertices) 
 #define qnode(i,j) qvec(i,j)
@@ -879,7 +882,7 @@ c
 #define qnode(i,j) qvec(j,i)
 #endif
 
-      flops = 0
+      flops = 0.0
       do 1000 i = 1,nvertices
          rho = qnode(1,i)
          u   = qnode(2,i)
@@ -893,7 +896,7 @@ c
          qnode(4,i) = rho*w
          qnode(5,i) = rho*(H + 0.5*gm1*q2)/gamma
  1000 continue
-      flops = flops + nvertices*13
+      flops = flops + nvertices*13.0
       call PetscLogFlops(flops,ierr)
 c
 ! End of subroutine HTOE
@@ -909,7 +912,8 @@ c
 c
 c=====================================================================72
       subroutine ETOP(nvertices, qvec)
-      integer flops,ierr
+      integer ierr
+      PetscLogDouble flops
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
 #if defined(INTERLACING)
       real qvec(5,nvertices) 
@@ -919,7 +923,7 @@ c=====================================================================72
 #define qnode(i,j) qvec(j,i)
 #endif
 
-      flops = 0
+      flops = 0.0
       do 1000 i = 1,nvertices
          rho = qnode(1,i)
          u   = qnode(2,i)/rho
@@ -934,7 +938,7 @@ c=====================================================================72
          qnode(4,i) = w
          qnode(5,i) = p
  1000 continue
-      flops = flops + nvertices*12
+      flops = flops + nvertices*12.0
       call PetscLogFlops(flops,ierr)
 c
 ! End of subroutine ETOP
@@ -950,7 +954,8 @@ c
 c
 c=====================================================================72
       subroutine PTOE(nvertices, qvec)
-      integer flops,ierr
+      integer ierr
+      PetscLogDouble flops
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
 
 #if defined(INTERLACING)
@@ -960,7 +965,7 @@ c=====================================================================72
       real qvec(nvertices,5) 
 #define qnode(i,j) qvec(j,i)
 #endif
-      flops = 0
+      flops = 0.0
       do 1000 i = 1,nvertices
          rho = qnode(1,i)
          u   = qnode(2,i)
@@ -974,7 +979,7 @@ c=====================================================================72
          qnode(4,i) = rho*w
          qnode(5,i) = P/gm1 + 0.5*rho*q2
  1000 continue
-      flops = flops + nvertices*12
+      flops = flops + nvertices*12.0
       call PetscLogFlops(flops,ierr)
 c
 ! End of subroutine PTOE
@@ -1736,7 +1741,8 @@ c
       common/info/title(20),xmach,alpha,yaw,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
 
-      integer flops,ierr
+      integer ierr
+      PetscLogDouble flops
       real x(1),y(1),z(1),vol(1)
       real xn(1),yn(1),zn(1),rl(1)
       real sxn(1),syn(1),szn(1)
@@ -1765,7 +1771,7 @@ c  This is time step for cfl=1. We will multiply by cfl number later
 c
 c First loop over nodes and zero out cdt
 c
-      flops = 0
+      flops = 0.0
       if (dt.lt.0.0) then
          do 1000 i = 1,nvertices
             cdt(i) = 0.0
@@ -1819,7 +1825,7 @@ c
 c
  1020    continue
 c
-         flops = flops + 51*nedge
+         flops = flops + 51.0*nedge
 c 
 c Now loop over boundaries and close the contours
 c
@@ -1846,7 +1852,7 @@ c
 c
  1030    continue
 c
-         flops = flops + 30*nsnode
+         flops = flops + 30.0*nsnode
 c
 c Now viscous faces
 c
@@ -1874,7 +1880,7 @@ c
 c
  1040    continue
 c
-         flops = flops + 30*nvnode
+         flops = flops + 30.0*nvnode
 c
 c Now far field
 c
@@ -1900,7 +1906,7 @@ c
             cdt(inode) = cdt(inode) + Vn
  1050    continue
 c
-         flops = flops + 30*nfnode
+         flops = flops + 30.0*nfnode
  
 c
 c Now cdt has sum(|u.n| + c*area)
@@ -1968,7 +1974,7 @@ c
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
       common/ivals/p0,rho0,c0,u0,v0,w0,et0,h0,pt0
 
-      integer flops
+      PetscLogDouble flops
       integer isface(1),ivface(1),ifface(1)
       integer isnode(1),ivnode(1),ifnode(1)
       integer f2ntn(nnfacet,4)
@@ -2013,7 +2019,7 @@ c     real phi(nvertices,5)
 
 c Loop over all the faces and calculate a flux 
 c
-       flops = 0
+       flops = 0.0
        second = 1.0
        if(ntt.le.nitfo)second = 0.0
 c      print *, 'Second is' , second
@@ -2063,7 +2069,7 @@ c
           ubar  = xnorm*u + ynorm*v + znorm*w
           fmach = ubar/c 
           ubp2a = -ubar + 2.*c
-	  flops = flops + 61
+	  flops = flops + 61.0
 c
           if(abs(fmach).lt.1.0)then
            fluxp1 = area*0.25*rho*c*(fmach + 1)**2
@@ -2073,14 +2079,14 @@ c
            fluxp5 = fluxp1*((-gm1*ubar*ubar 
      &                  + 2.*gm1*ubar*c + 2.*c*c)/(gamma*gamma - 1)
      &                  + 0.5*q2)
-           flops = flops + 34
+           flops = flops + 34.0
           else if(fmach.ge.1.0)then
            fluxp1 = area*rho*ubar
            fluxp2 = area*(rho*u*ubar + xnorm*press)
            fluxp3 = area*(rho*v*ubar + ynorm*press)
            fluxp4 = area*(rho*w*ubar + znorm*press)
            fluxp5 = area*(enrgy + press)*ubar
-           flops = flops + 20
+           flops = flops + 20.0
           else
            fluxp1 = 0.0
            fluxp2 = 0.0
@@ -2121,7 +2127,7 @@ c
           ubar  = xnorm*u + ynorm*v + znorm*w
           fmach = ubar/c 
           ubm2a = -ubar - 2.*c
-	  flops = flops + 55
+	  flops = flops + 55.0
 c
           if(abs(fmach).lt.1.0)then
            fluxm1 = -area*0.25*rho*c*(fmach - 1)**2
@@ -2131,7 +2137,7 @@ c
            fluxm5 = fluxm1*((-gm1*ubar*ubar 
      &                  - 2.*gm1*ubar*c + 2.*c*c)/(gamma*gamma - 1)
      &                  + 0.5*q2)
-           flops = flops + 35
+           flops = flops + 35.0
 c
           else if(fmach.le.-1.0)then
            fluxm1 = area*rho*ubar
@@ -2139,7 +2145,7 @@ c
            fluxm3 = area*(rho*v*ubar + ynorm*press)
            fluxm4 = area*(rho*w*ubar + znorm*press)
            fluxm5 = area*(enrgy + press)*ubar
-           flops = flops + 20
+           flops = flops + 20.0
           else
            fluxm1 = 0.0
            fluxm2 = 0.0
@@ -2154,7 +2160,7 @@ c
            res(3,node1) = res(3,node1) + (fluxp3 + fluxm3)
            res(4,node1) = res(4,node1) + (fluxp4 + fluxm4)
            res(5,node1) = res(5,node1) + (fluxp5 + fluxm5)
-           flops = flops + 5
+           flops = flops + 5.0
           endif
 c
           if (node2 .le. nnodes) then
@@ -2163,7 +2169,7 @@ c
            res(3,node2) = res(3,node2) - (fluxp3 + fluxm3)
            res(4,node2) = res(4,node2) - (fluxp4 + fluxm4)
            res(5,node2) = res(5,node2) - (fluxp5 + fluxm5)
-           flops = flops + 5
+           flops = flops + 5.0
           endif
         endif
 c
@@ -2216,26 +2222,26 @@ c
                pb = c68*p2 + c18*(p3 + p1)
                pc = c68*p3 + c18*(p1 + p2)
 c
-               flops = flops + 35
+               flops = flops + 35.0
                if (node1 .le. nnodes) then
                 res(2,node1) = res(2,node1) + xnorm*pa
                 res(3,node1) = res(3,node1) + ynorm*pa
                 res(4,node1) = res(4,node1) + znorm*pa
-	        flops = flops + 6
+	        flops = flops + 6.0
                endif
 
                if (node2 .le. nnodes) then
                 res(2,node2) = res(2,node2) + xnorm*pb
                 res(3,node2) = res(3,node2) + ynorm*pb
                 res(4,node2) = res(4,node2) + znorm*pb
-	        flops = flops + 6
+	        flops = flops + 6.0
                endif
 
                if (node3 .le. nnodes) then
                 res(2,node3) = res(2,node3) + xnorm*pc
                 res(3,node3) = res(3,node3) + ynorm*pc
                 res(4,node3) = res(4,node3) + znorm*pc
-	        flops = flops + 6
+	        flops = flops + 6.0
                endif
 
  2020 continue
@@ -2281,13 +2287,13 @@ c
                pb = c68*p2 + c18*(p3 + p1)
                pc = c68*p3 + c18*(p1 + p2)
 c
-	       flops = flops + 35
+	       flops = flops + 35.0
 c
                if (node1 .le. nnodes) then
                 res(2,node1) = res(2,node1) + xnorm*pa
                 res(3,node1) = res(3,node1) + ynorm*pa
                 res(4,node1) = res(4,node1) + znorm*pa
-                flops = flops + 6
+                flops = flops + 6.0
 
                endif
 
@@ -2295,14 +2301,14 @@ c
                 res(2,node2) = res(2,node2) + xnorm*pb
                 res(3,node2) = res(3,node2) + ynorm*pb
                 res(4,node2) = res(4,node2) + znorm*pb
-                flops = flops + 6
+                flops = flops + 6.0
                endif
 
                if (node3 .le. nnodes) then
                 res(2,node3) = res(2,node3) + xnorm*pc
                 res(3,node3) = res(3,node3) + ynorm*pc
                 res(4,node3) = res(4,node3) + znorm*pc
-                flops = flops + 6
+                flops = flops + 6.0
                endif
 
  3020 continue
@@ -2364,7 +2370,7 @@ c
       vout = v0
       wout = w0
       cout = c0
-      flops = flops + 5
+      flops = flops + 5.0
        do 1040 i = 1,nfnode
          inode   = ifnode(i)
 c
@@ -2391,18 +2397,18 @@ c
          ai      = a
          rplus   = unormi + 2.0*a/gm1
          rminus  = unormo - 2.0*cout/gm1
-         flops = flops + 32
+         flops = flops + 32.0
          if (unormi .gt. 1.0) then 
             rminus = unormi - 2.0*a/gm1
-            flops = flops + 3
+            flops = flops + 3.0
          endif
          if (unormi .lt. -1.0) then
             rplus = unormo + 2.0*cout/gm1
-            flops = flops + 3
+            flops = flops + 3.0
          endif
          unorm   = 0.5*(rplus + rminus)
          a       = 0.25*gm1*(rplus - rminus)
-         flops   = flops + 5
+         flops   = flops + 5.0
 c
 c If unorm > 0 this is outflow: take variables from inside
 c If unorm < 0 this is inflow:  take variables from outside
@@ -2412,19 +2418,19 @@ c
           v = qnode(3,inode) + ynorm*(unorm - unormi)
           w = qnode(4,inode) + znorm*(unorm - unormi)
           s = ai*ai/(gamma*rhoi**gm1)
-          flops = flops + 13
+          flops = flops + 13.0
          else
           u = uout + xnorm*(unorm - unormo)
           v = vout + ynorm*(unorm - unormo)
           w = wout + znorm*(unorm - unormo)
           s = s0
-          flops = flops + 9
+          flops = flops + 9.0
          end if
           rho  = (a*a/(gamma*s))**xgm1
           p    = rho*a*a/gamma
           e    = p/gm1 + 0.5*rho*(u*u + v*v + w*w)
           ubar = xnorm*u + ynorm*v + znorm*w
-          flops = flops + 21
+          flops = flops + 21.0
 c
          if (inode .le. nnodes) then
           res(1,inode) = res(1,inode)+area*rho*ubar
@@ -2432,7 +2438,7 @@ c
           res(3,inode) = res(3,inode)+area*(rho*v*ubar+ynorm*p)
           res(4,inode) = res(4,inode)+area*(rho*w*ubar+znorm*p)
           res(5,inode) = res(5,inode)+area*(e + p)*ubar
-          flops = flops + 25
+          flops = flops + 25.0
          endif
 c
  1040  continue
@@ -2472,7 +2478,8 @@ c
      &             nstage,ncyct,iramp,nitfo,ncyc
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
       common/ivals/p0,rho0,c0,u0,v0,w0,et0,h0,pt0
-      integer flops,ierr
+      integer ierr
+      PetscLogDouble flops
       integer isface(1),ivface(1),ifface(1)
       integer isnode(1),ivnode(1),ifnode(1)
       integer f2ntn(nnfacet,4)
@@ -2516,7 +2523,7 @@ c
 c
 c Loop over all the faces and calculate a flux 
 c
-       flops = 0 
+       flops = 0.0
        if (ntt.le.nitfo) then
         second = 0.0
        else
@@ -2537,7 +2544,7 @@ c
           ynorm  = yn(n)
           znorm  = zn(n)
           area   = ra(n)
-          flops = flops + 6
+          flops = flops + 6.0
 c
 c Get variables on "left" side of face
 c
@@ -2565,7 +2572,7 @@ c
             Hr     = (enrgyr + pressr)/rhor
             cr     = sqrt(gamma*pressr/rhor)
             ubarr  = xnorm*ur + ynorm*vr + znorm*wr
-            flops  = flops + 38
+            flops  = flops + 38.0
           else
             rx     = xmean - x(node1)
             ry     = ymean - y(node1)
@@ -2616,7 +2623,7 @@ c
             Hr     = (enrgyr + pressr)/rhor
             cr     = sqrt(gamma*pressr/rhor)
             ubarr  = xnorm*ur + ynorm*vr + znorm*wr
-            flops  = flops + 134
+            flops  = flops + 134.0
           endif
 c
 c Compute rho averages
@@ -2706,14 +2713,14 @@ c
             res3 = 0.5*(fluxp3 + fluxm3 - area*t3)
             res4 = 0.5*(fluxp4 + fluxm4 - area*t4)
             res5 = 0.5*(fluxp5 + fluxm5 - area*t5)
-            flops = flops + 177
+            flops = flops + 177.0
             if (node1 .le. nnodes) then
              res(1,node1) = res(1,node1) + res1
              res(2,node1) = res(2,node1) + res2
              res(3,node1) = res(3,node1) + res3
              res(4,node1) = res(4,node1) + res4
              res(5,node1) = res(5,node1) + res5
-             flops = flops + 5
+             flops = flops + 5.0
             endif
 c
             if (node2 .le. nnodes) then
@@ -2722,7 +2729,7 @@ c
              res(3,node2) = res(3,node2) - res3
              res(4,node2) = res(4,node2) - res4
              res(5,node2) = res(5,node2) - res5
-             flops = flops + 5
+             flops = flops + 5.0
             endif
           endif
 c
@@ -2779,26 +2786,26 @@ c
                pb = c68*p2 + c18*(p1 + p3)
                pc = c68*p3 + c18*(p1 + p2)
 c
-               flops = flops + 35
+               flops = flops + 35.0
                if (node1 .le. nnodes) then
                 res(2,node1) = res(2,node1) + xnorm*pa
                 res(3,node1) = res(3,node1) + ynorm*pa
                 res(4,node1) = res(4,node1) + znorm*pa
-	        flops = flops + 6
+	        flops = flops + 6.0
                endif
 
                if (node2 .le. nnodes) then
                 res(2,node2) = res(2,node2) + xnorm*pb
                 res(3,node2) = res(3,node2) + ynorm*pb
                 res(4,node2) = res(4,node2) + znorm*pb
-	        flops = flops + 6
+	        flops = flops + 6.0
                endif
 
                if (node3 .le. nnodes) then
                 res(2,node3) = res(2,node3) + xnorm*pc
                 res(3,node3) = res(3,node3) + ynorm*pc
                 res(4,node3) = res(4,node3) + znorm*pc
-	        flops = flops + 6
+	        flops = flops + 6.0
                endif
 
  2020 continue
@@ -2845,13 +2852,13 @@ c
                pb = c68*p2 + c18*(p1 + p3)
                pc = c68*p3 + c18*(p1 + p2)
 c
-	       flops = flops + 35
+	       flops = flops + 35.0
 c
                if (node1 .le. nnodes) then
                 res(2,node1) = res(2,node1) + xnorm*pa
                 res(3,node1) = res(3,node1) + ynorm*pa
                 res(4,node1) = res(4,node1) + znorm*pa
-                flops = flops + 6
+                flops = flops + 6.0
 
                endif
 
@@ -2859,14 +2866,14 @@ c
                 res(2,node2) = res(2,node2) + xnorm*pb
                 res(3,node2) = res(3,node2) + ynorm*pb
                 res(4,node2) = res(4,node2) + znorm*pb
-                flops = flops + 6
+                flops = flops + 6.0
                endif
 
                if (node3 .le. nnodes) then
                 res(2,node3) = res(2,node3) + xnorm*pc
                 res(3,node3) = res(3,node3) + ynorm*pc
                 res(4,node3) = res(4,node3) + znorm*pc
-                flops = flops + 6
+                flops = flops + 6.0
                endif
 
  3020 continue
@@ -2928,7 +2935,7 @@ c
       vout = v0
       wout = w0
       cout = c0
-      flops = flops + 5
+      flops = flops + 5.0
       do 1040 i = 1,nfnode
          inode   = ifnode(i)
 c
@@ -2955,18 +2962,18 @@ c
          ai      = a
          rplus   = unormi + 2.0*a/gm1
          rminus  = unormo - 2.0*cout/gm1
-         flops = flops + 32
+         flops = flops + 32.0
          if (unormi .gt. 1.0) then 
             rminus = unormi - 2.0*a/gm1
-            flops = flops + 3
+            flops = flops + 3.0
          endif
          if (unormi .lt. -1.0) then
             rplus = unormo + 2.0*cout/gm1
-            flops = flops + 3
+            flops = flops + 3.0
          endif
          unorm   = 0.5*(rplus + rminus)
          a       = 0.25*gm1*(rplus - rminus)
-         flops   = flops + 5
+         flops   = flops + 5.0
 c
 c If unorm > 0 this is outflow: take variables from inside
 c If unorm < 0 this is inflow:  take variables from outside
@@ -2976,19 +2983,19 @@ c
           v = qnode(3,inode) + ynorm*(unorm - unormi)
           w = qnode(4,inode) + znorm*(unorm - unormi)
           s = ai*ai/(gamma*rhoi**gm1)
-          flops = flops + 13
+          flops = flops + 13.0
          else
           u = uout + xnorm*(unorm - unormo)
           v = vout + ynorm*(unorm - unormo)
           w = wout + znorm*(unorm - unormo)
           s = s0
-          flops = flops + 9
+          flops = flops + 9.0
          end if
          rho  = (a*a/(gamma*s))**xgm1
          p    = rho*a*a/gamma
          e    = p/gm1 + 0.5*rho*(u*u + v*v + w*w)
          ubar = xnorm*u + ynorm*v + znorm*w
-         flops = flops + 21
+         flops = flops + 21.0
 c
          if (inode .le. nnodes) then
           res(1,inode) = res(1,inode)+area*rho*ubar
@@ -2996,7 +3003,7 @@ c
           res(3,inode) = res(3,inode)+area*(rho*v*ubar+ynorm*p)
           res(4,inode) = res(4,inode)+area*(rho*w*ubar+znorm*p)
           res(5,inode) = res(5,inode)+area*(e + p)*ubar
-          flops = flops + 25
+          flops = flops + 25.0
          endif
 c
  1040  continue
@@ -3262,7 +3269,8 @@ c      real grad(3,4,nnodes)
 c      real qnode(4,nvertices)
       real x(nvertices),y(nvertices),z(nvertices)
 c
-      integer flops,ierr
+      integer ierr
+      PetscLogDouble flops
 C     logging variables
       integer grad_event, flag
       integer node1_event, node2_event
@@ -3325,7 +3333,7 @@ c        flag = 1
 c     endif
 c     call PLogEventBegin(grad_event,0,0,0,0,ierr)
 
-      flops = 0
+      flops = 0.0
 c For checking out the code input a linear distribution
 c
 c     write(6,700)nnodes,nedge
@@ -3394,7 +3402,7 @@ c
            dy1 = weight*dy1
            dz1 = weight*dz1
 
-           flops = flops + 6
+           flops = flops + 6.0
 c
 c         call PLogEventBegin(node1_event,0,0,0,0,ierr)
           if (node1 .le. nnodes) then
@@ -3447,7 +3455,7 @@ c
            grady(5,node1) = grady(5,node1) + termy*dq5
            gradz(5,node1) = gradz(5,node1) + termz*dq5
 c
-           flops = flops + 49
+           flops = flops + 49.0
           endif
 c         call PLogEventEnd(node1_event,0,0,0,0,ierr)
 c
@@ -3508,7 +3516,7 @@ c
            grady(5,node2) = grady(5,node2) + termy*dq5
            gradz(5,node2) = gradz(5,node2) + termz*dq5
 c
-           flops = flops + 52
+           flops = flops + 52.0
           endif
 c         call PLogEventEnd(node2_event,0,0,0,0,ierr)
 c       endif

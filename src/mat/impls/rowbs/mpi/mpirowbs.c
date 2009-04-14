@@ -1212,7 +1212,7 @@ PetscErrorCode MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
     ierr = VecRestoreArray(bsif->xwork,&xworka);CHKERRQ(ierr);
     ierr = VecRestoreArray(yy,&yya);CHKERRQ(ierr);
   }
-  ierr = PetscLogFlops(2*bsif->nz - mat->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*bsif->nz - mat->cmap->n);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

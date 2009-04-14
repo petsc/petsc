@@ -557,7 +557,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
           *pc        = multiplier;
           nz         = bi[row+1] - diag_offset[row] - 1;
           for (j=0; j<nz; j++) rtmp[pj[j]] -= multiplier * pv[j];
-          ierr = PetscLogFlops(2*nz);CHKERRQ(ierr);
+          ierr = PetscLogFlops(2.0*nz);CHKERRQ(ierr);
         }
         row = *bjtmp++;
       }
@@ -720,7 +720,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,const MatFa
           *pc        = multiplier;
           nz         = ai[r[row]+1] - diag[r[row]] - 1;
           for (j=0; j<nz; j++) rtmp[pj[j]] -= multiplier * pv[j];
-          ierr = PetscLogFlops(2*nz);CHKERRQ(ierr);
+          ierr = PetscLogFlops(2.0*nz);CHKERRQ(ierr);
         }
         row = *ajtmp++;
       }
@@ -850,7 +850,7 @@ PetscErrorCode MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*a->nz - A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz - A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -912,7 +912,7 @@ PetscErrorCode MatMatSolve_SeqAIJ(Mat A,Mat B,Mat X)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = MatRestoreArray(B,&b);CHKERRQ(ierr); 
   ierr = MatRestoreArray(X,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(B->cmap->n*(2*a->nz - n));CHKERRQ(ierr);
+  ierr = PetscLogFlops(B->cmap->n*(2.0*a->nz - n));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }  
 
@@ -967,7 +967,7 @@ PetscErrorCode MatSolve_SeqAIJ_InplaceWithPerm(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*a->nz - A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz - A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1021,7 +1021,7 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
     x[i]    = sum*aa[adiag_i];
   }
 #endif
-  ierr = PetscLogFlops(2*a->nz - A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz - A->cmap->n);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1076,7 +1076,7 @@ PetscErrorCode MatSolveAdd_SeqAIJ(Mat A,Vec bb,Vec yy,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -1137,7 +1137,7 @@ PetscErrorCode MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
 
-  ierr = PetscLogFlops(2*a->nz-A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz-A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1196,7 +1196,7 @@ PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
 
-  ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------------*/
@@ -2046,7 +2046,7 @@ PetscErrorCode MatILUDTFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *inf
         *pc        = multiplier;
         nz         = bi[row+1] - bdiag[row] - 1;
         for (j=0; j<nz; j++) rtmp[pj[j]] -= multiplier * pv[j];
-        ierr = PetscLogFlops(2*nz);CHKERRQ(ierr);
+        ierr = PetscLogFlops(2.0*nz);CHKERRQ(ierr);
       } 
       row = *bjtmp++;
     }

@@ -196,7 +196,7 @@ PetscErrorCode  FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   ierr = VecRestoreArray(localF,&f);CHKERRQ(ierr);
   /* stick values into global vector */
   ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
-  ierr = PetscLogFlops(11*ym*xm*zm);CHKERRQ(ierr);
+  ierr = PetscLogFlops(11.0*ym*xm*zm);CHKERRQ(ierr);
   return 0; 
 }
  

@@ -433,7 +433,7 @@ PetscErrorCode ComputeFunction(AppCtx *user,Vec X,Vec F)
      Insert values into global vector
   */
   ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
-  ierr = PetscLogFlops(11*ym*xm);CHKERRQ(ierr);
+  ierr = PetscLogFlops(11.0*ym*xm);CHKERRQ(ierr);
   return 0; 
 } 
 /* ------------------------------------------------------------------- */

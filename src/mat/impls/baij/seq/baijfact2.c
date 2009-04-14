@@ -49,7 +49,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
   }
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*(a->nz) - A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*(a->nz) - A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -108,7 +108,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
   }
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*4*(a->nz) - 2*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*4.0*(a->nz) - 2.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -170,7 +170,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
   }
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*9*(a->nz) - 3*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*9.0*(a->nz) - 3.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -235,7 +235,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
   }
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*16*(a->nz) - 4*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*16*(a->nz) - 4.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -303,7 +303,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
   }
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*25*(a->nz) - 5*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*25*(a->nz) - 5.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -377,7 +377,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
   }
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*36*(a->nz) - 6*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*36*(a->nz) - 6.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -454,7 +454,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
   }
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*49*(a->nz) - 7*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*49*(a->nz) - 7.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -518,7 +518,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*(a->nz) - A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*(a->nz) - A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -603,7 +603,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*4*(a->nz) - 2*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*4*(a->nz) - 2.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -693,7 +693,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*9*(a->nz) - 3*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*9*(a->nz) - 3.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -788,7 +788,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*16*(a->nz) - 4*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*16*(a->nz) - 4.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -888,7 +888,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*25*(a->nz) - 5*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*25*(a->nz) - 5.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -996,7 +996,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_6(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*36*(a->nz) - 6*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*36*(a->nz) - 6.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1109,7 +1109,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*49*(a->nz) - 7*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*49*(a->nz) - 7.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1167,7 +1167,7 @@ PetscErrorCode MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*(a->bs2)*(a->nz) - A->rmap->bs*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*(a->bs2)*(a->nz) - A->rmap->bs*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1269,7 +1269,7 @@ PetscErrorCode MatSolve_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*49*(a->nz) - 7*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*49*(a->nz) - 7.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1366,7 +1366,7 @@ PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  ierr = PetscLogFlops(2*36*(a->nz) - 6*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*36*(a->nz) - 6.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1461,7 +1461,7 @@ PetscErrorCode MatSolve_SeqBAIJ_6(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*36*(a->nz) - 6*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*36*(a->nz) - 6.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1542,7 +1542,7 @@ PetscErrorCode MatSolve_SeqBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  ierr = PetscLogFlops(2*36*(a->nz) - 6*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*36*(a->nz) - 6.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1630,7 +1630,7 @@ PetscErrorCode MatSolve_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*25*(a->nz) - 5*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*25*(a->nz) - 5.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1702,7 +1702,7 @@ PetscErrorCode MatSolve_SeqBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  ierr = PetscLogFlops(2*25*(a->nz) - 5*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*25*(a->nz) - 5.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1780,7 +1780,7 @@ PetscErrorCode MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*16*(a->nz) - 4*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*16*(a->nz) - 4.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1877,7 +1877,7 @@ PetscErrorCode MatSolve_SeqBAIJ_4_Demotion(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*16*(a->nz) - 4*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*16*(a->nz) - 4.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2097,7 +2097,7 @@ PetscErrorCode MatSolve_SeqBAIJ_4_SSE_Demotion(Mat A,Vec bb,Vec xx)
     ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
     ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
     ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-    ierr = PetscLogFlops(2*16*(a->nz) - 4*A->cmap->n);CHKERRQ(ierr);
+    ierr = PetscLogFlops(2.0*16*(a->nz) - 4.0*A->cmap->n);CHKERRQ(ierr);
   SSE_SCOPE_END;
   PetscFunctionReturn(0);
 }
@@ -2198,7 +2198,7 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  ierr = PetscLogFlops(2*16*(a->nz) - 4*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*16*(a->nz) - 4.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2288,7 +2288,7 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_Demotion(Mat A,Vec bb,Vec xx)
 
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  ierr = PetscLogFlops(2*16*(a->nz) - 4*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*16*(a->nz) - 4.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2487,7 +2487,7 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion_usj(Mat A,Vec bb,
   } /* End of artificial scope. */
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  ierr = PetscLogFlops(2*16*(a->nz) - 4*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*16*(a->nz) - 4.0*A->cmap->n);CHKERRQ(ierr);
   SSE_SCOPE_END;
   PetscFunctionReturn(0);
 }
@@ -2686,7 +2686,7 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A,Vec bb,Vec 
   } /* End of artificial scope. */
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  ierr = PetscLogFlops(2*16*(a->nz) - 4*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*16*(a->nz) - 4.0*A->cmap->n);CHKERRQ(ierr);
   SSE_SCOPE_END;
   PetscFunctionReturn(0);
 }
@@ -2758,7 +2758,7 @@ PetscErrorCode MatSolve_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  ierr = PetscLogFlops(2*9*(a->nz) - 3*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*9*(a->nz) - 3.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2828,7 +2828,7 @@ PetscErrorCode MatSolve_SeqBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  ierr = PetscLogFlops(2*9*(a->nz) - 3*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*9*(a->nz) - 3.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2895,7 +2895,7 @@ PetscErrorCode MatSolve_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  ierr = PetscLogFlops(2*4*(a->nz) - 2*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*4*(a->nz) - 2.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2960,7 +2960,7 @@ PetscErrorCode MatSolve_SeqBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  ierr = PetscLogFlops(2*4*(a->nz) - 2*A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*4*(a->nz) - 2.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3014,7 +3014,7 @@ PetscErrorCode MatSolve_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*1*(a->nz) - A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*1*(a->nz) - A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*
@@ -3074,7 +3074,7 @@ PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
   }
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  ierr = PetscLogFlops(2*(a->nz) - A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*(a->nz) - A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

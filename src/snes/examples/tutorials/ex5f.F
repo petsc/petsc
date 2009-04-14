@@ -422,7 +422,7 @@
  10      continue
  20   continue
 
-      call PetscLogFlops(11*ym*xm,ierr)
+      call PetscLogFlops(11.0*ym*xm,ierr)
 
       return
       end

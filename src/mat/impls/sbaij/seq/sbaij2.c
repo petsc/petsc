@@ -277,7 +277,7 @@ PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*(a->nz*2 - nonzerorow) - nonzerorow);CHKERRQ(ierr);  /* nz = (nz+m)/2 */
+  ierr = PetscLogFlops(2.0*(a->nz*2.0 - nonzerorow) - nonzerorow);CHKERRQ(ierr);  /* nz = (nz+m)/2 */
   PetscFunctionReturn(0);
 }
 
@@ -326,7 +326,7 @@ PetscErrorCode MatMult_SeqSBAIJ_2(Mat A,Vec xx,Vec zz)
 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  ierr = PetscLogFlops(8*(a->nz*2 - nonzerorow) - nonzerorow);CHKERRQ(ierr);
+  ierr = PetscLogFlops(8.0*(a->nz*2.0 - nonzerorow) - nonzerorow);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -378,7 +378,7 @@ PetscErrorCode MatMult_SeqSBAIJ_3(Mat A,Vec xx,Vec zz)
 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  ierr = PetscLogFlops(18*(a->nz*2 - nonzerorow) - nonzerorow);CHKERRQ(ierr);
+  ierr = PetscLogFlops(18.0*(a->nz*2.0 - nonzerorow) - nonzerorow);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -433,7 +433,7 @@ PetscErrorCode MatMult_SeqSBAIJ_4(Mat A,Vec xx,Vec zz)
 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  ierr = PetscLogFlops(32*(a->nz*2 - nonzerorow) - nonzerorow);CHKERRQ(ierr);
+  ierr = PetscLogFlops(32.0*(a->nz*2.0 - nonzerorow) - nonzerorow);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -491,7 +491,7 @@ PetscErrorCode MatMult_SeqSBAIJ_5(Mat A,Vec xx,Vec zz)
 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  ierr = PetscLogFlops(50*(a->nz*2 - nonzerorow) - nonzerorow);CHKERRQ(ierr);
+  ierr = PetscLogFlops(50.0*(a->nz*2.0 - nonzerorow) - nonzerorow);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -553,7 +553,7 @@ PetscErrorCode MatMult_SeqSBAIJ_6(Mat A,Vec xx,Vec zz)
 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  ierr = PetscLogFlops(72*(a->nz*2 - nonzerorow) - nonzerorow);CHKERRQ(ierr);
+  ierr = PetscLogFlops(72.0*(a->nz*2.0 - nonzerorow) - nonzerorow);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
@@ -615,7 +615,7 @@ PetscErrorCode MatMult_SeqSBAIJ_7(Mat A,Vec xx,Vec zz)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  ierr = PetscLogFlops(98*(a->nz*2 - nonzerorow) - nonzerorow);CHKERRQ(ierr);
+  ierr = PetscLogFlops(98.0*(a->nz*2.0 - nonzerorow) - nonzerorow);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -682,7 +682,7 @@ PetscErrorCode MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
   
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*(a->nz*2 - nonzerorow)*bs2 - nonzerorow);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*(a->nz*2.0 - nonzerorow)*bs2 - nonzerorow);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -725,7 +725,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   
-  ierr = PetscLogFlops(2*(a->nz*2 - nonzerorow));CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*(a->nz*2.0 - nonzerorow));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -774,7 +774,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
 
-  ierr = PetscLogFlops(4*(a->nz*2 - nonzerorow));CHKERRQ(ierr);
+  ierr = PetscLogFlops(4.0*(a->nz*2.0 - nonzerorow));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -827,7 +827,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
 
-  ierr = PetscLogFlops(18*(a->nz*2 - nonzerorow));CHKERRQ(ierr);
+  ierr = PetscLogFlops(18.0*(a->nz*2.0 - nonzerorow));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -883,7 +883,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
 
-  ierr = PetscLogFlops(32*(a->nz*2 - nonzerorow));CHKERRQ(ierr);
+  ierr = PetscLogFlops(32.0*(a->nz*2.0 - nonzerorow));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -942,7 +942,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
 
-  ierr = PetscLogFlops(50*(a->nz*2 - nonzerorow));CHKERRQ(ierr);
+  ierr = PetscLogFlops(50.0*(a->nz*2.0 - nonzerorow));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
@@ -1003,7 +1003,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
 
-  ierr = PetscLogFlops(72*(a->nz*2 - nonzerorow));CHKERRQ(ierr);
+  ierr = PetscLogFlops(72.0*(a->nz*2.0 - nonzerorow));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1068,7 +1068,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
 
-  ierr = PetscLogFlops(98*(a->nz*2 - nonzerorow));CHKERRQ(ierr);
+  ierr = PetscLogFlops(98.0*(a->nz*2.0 - nonzerorow));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1134,7 +1134,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
 
-  ierr = PetscLogFlops(2*(a->nz*2 - nonzerorow));CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*(a->nz*2.0 - nonzerorow));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1365,7 +1365,7 @@ PetscErrorCode MatDiagonalScale_SeqSBAIJ(Mat A,Vec ll,Vec rr)
     }  
   }
   ierr = VecRestoreArray(ll,&l);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

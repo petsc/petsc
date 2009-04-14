@@ -358,7 +358,7 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar *
     }
   }
 
-  ierr = PetscLogFlops(68*(info->ym-1)*(info->xm-1));CHKERRQ(ierr);
+  ierr = PetscLogFlops(68.0*(info->ym-1)*(info->xm-1));CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
 

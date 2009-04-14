@@ -21,7 +21,7 @@ static int MatMult_SeqAIJ_DXML(Mat A,Vec x,Vec y)
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
   dmatvec_genr_(&zero,a->a,a->i,a->j,&a->nz,0,xx,yy,&A->rmap->n);
-  ierr = PetscLogFlops(2*a->nz - A->rmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz - A->rmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

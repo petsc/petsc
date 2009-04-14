@@ -521,7 +521,7 @@ PetscErrorCode FormNewTimeFunctionLocal(DALocalInfo *info, PetscScalar **x, Pets
   }
   ierr = DAVecRestoreArray(da, user->Xold, &fold);CHKERRQ(ierr);
 
-  ierr = PetscLogFlops(13*info->ym*info->xm);CHKERRQ(ierr);
+  ierr = PetscLogFlops(13.0*info->ym*info->xm);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
 
@@ -556,6 +556,6 @@ PetscErrorCode FormOldTimeFunctionLocal(DALocalInfo *info, PetscScalar **x, Pets
     }
   }
 
-  ierr = PetscLogFlops(12*info->ym*info->xm);CHKERRQ(ierr);
+  ierr = PetscLogFlops(12.0*info->ym*info->xm);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 

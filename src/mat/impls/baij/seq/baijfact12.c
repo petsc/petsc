@@ -116,7 +116,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat C,Mat A,const Ma
 
           pv   += 16;
         }
-        ierr = PetscLogFlops(128*nz+112);CHKERRQ(ierr);
+        ierr = PetscLogFlops(128.0*nz+112.0);CHKERRQ(ierr);
       } 
       row = *ajtmp++;
     }
@@ -530,7 +530,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B,Mat A,cons
           SSE_INLINE_END_2;
           pv   += 16;
         }
-        ierr = PetscLogFlops(128*nz+112);CHKERRQ(ierr);
+        ierr = PetscLogFlops(128.0*nz+112.0);CHKERRQ(ierr);
       } 
       row = *bjtmp++;
 /*        row = (*bjtmp++)/4; */
@@ -972,7 +972,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
           SSE_INLINE_END_2;
           pv   += 16;
         }
-        ierr = PetscLogFlops(128*nz+112);CHKERRQ(ierr);
+        ierr = PetscLogFlops(128.0*nz+112.0);CHKERRQ(ierr);
       } 
       row = (unsigned int)(*bjtmp++);
 /*        row = (*bjtmp++)/4; */
@@ -1416,7 +1416,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C,Mat A,
           SSE_INLINE_END_2;
           pv   += 16;
         }
-        ierr = PetscLogFlops(128*nz+112);CHKERRQ(ierr);
+        ierr = PetscLogFlops(128.0*nz+112.0);CHKERRQ(ierr);
       } 
       row = (unsigned int)(*bjtmp++);
 /*        row = (*bjtmp++)/4; */

@@ -912,7 +912,7 @@ PetscErrorCode MatNorm_MPIDense(Mat A,NormType type,PetscReal *nrm)
       }
       ierr = MPI_Allreduce(&sum,nrm,1,MPIU_REAL,MPI_SUM,((PetscObject)A)->comm);CHKERRQ(ierr);
       *nrm = sqrt(*nrm);
-      ierr = PetscLogFlops(2*mdn->A->cmap->n*mdn->A->rmap->n);CHKERRQ(ierr);
+      ierr = PetscLogFlops(2.0*mdn->A->cmap->n*mdn->A->rmap->n);CHKERRQ(ierr);
     } else if (type == NORM_1) { 
       PetscReal *tmp,*tmp2;
       ierr = PetscMalloc(2*A->cmap->N*sizeof(PetscReal),&tmp);CHKERRQ(ierr);

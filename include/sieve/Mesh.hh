@@ -1831,7 +1831,7 @@ namespace ALE {
           }
           detJ = J[0]*J[3] - J[1]*J[2];
         }
-        PetscLogFlopsNoError(8 + 3);
+        PetscLogFlopsNoError(8.0 + 3.0);
       }
       if (invJ) {
         invDet  = 1.0/detJ;
@@ -1839,7 +1839,7 @@ namespace ALE {
         invJ[1] = -invDet*J[1];
         invJ[2] = -invDet*J[2];
         invJ[3] =  invDet*J[0];
-        PetscLogFlopsNoError(5);
+        PetscLogFlopsNoError(5.0);
       }
     };
     void computeTetrahedronGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
@@ -1862,7 +1862,7 @@ namespace ALE {
         detJ = -(J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
                  J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
                  J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
-        PetscLogFlopsNoError(18 + 12);
+        PetscLogFlopsNoError(18.0 + 12.0);
       }
       if (invJ) {
         invDet  = -1.0/detJ;
@@ -1875,7 +1875,7 @@ namespace ALE {
         invJ[2*3+0] = invDet*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
         invJ[2*3+1] = invDet*(J[0*3+1]*J[2*3+0] - J[0*3+0]*J[2*3+1]);
         invJ[2*3+2] = invDet*(J[0*3+0]*J[1*3+1] - J[0*3+1]*J[1*3+0]);
-        PetscLogFlopsNoError(37);
+        PetscLogFlopsNoError(37.0);
       }
     };
     void computeElementGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
@@ -2452,7 +2452,7 @@ namespace ALE {
           }
           detJ = J[0]*J[3] - J[1]*J[2];
         }
-        PetscLogFlopsNoError(8 + 3);
+        PetscLogFlopsNoError(8.0 + 3.0);
       }
       if (invJ) {
         invDet  = 1.0/detJ;
@@ -2460,7 +2460,7 @@ namespace ALE {
         invJ[1] = -invDet*J[1];
         invJ[2] = -invDet*J[2];
         invJ[3] =  invDet*J[0];
-        PetscLogFlopsNoError(5);
+        PetscLogFlopsNoError(5.0);
       }
     };
     void computeQuadrilateralGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double point[], double v0[], double J[], double invJ[], double& detJ) {
@@ -2486,7 +2486,7 @@ namespace ALE {
         J[2] = y_1 + (y_3 - y_1 - y_2)*point[1];
         J[3] = y_1 + (y_3 - y_1 - y_2)*point[0];
         detJ = J[0]*J[3] - J[1]*J[2];
-        PetscLogFlopsNoError(6 + 16 + 3);
+        PetscLogFlopsNoError(6.0 + 16.0 + 3.0);
       }
       if (invJ) {
         invDet  = 1.0/detJ;
@@ -2494,7 +2494,7 @@ namespace ALE {
         invJ[1] = -invDet*J[1];
         invJ[2] = -invDet*J[2];
         invJ[3] =  invDet*J[0];
-        PetscLogFlopsNoError(5);
+        PetscLogFlopsNoError(5.0);
       }
     };
     void computeTetrahedronGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
@@ -2517,7 +2517,7 @@ namespace ALE {
         detJ = -(J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
                  J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
                  J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
-        PetscLogFlopsNoError(18 + 12);
+        PetscLogFlopsNoError(18.0 + 12.0);
       }
       if (invJ) {
         invDet  = -1.0/detJ;
@@ -2530,7 +2530,7 @@ namespace ALE {
         invJ[2*3+0] = invDet*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
         invJ[2*3+1] = invDet*(J[0*3+1]*J[2*3+0] - J[0*3+0]*J[2*3+1]);
         invJ[2*3+2] = invDet*(J[0*3+0]*J[1*3+1] - J[0*3+1]*J[1*3+0]);
-        PetscLogFlopsNoError(37);
+        PetscLogFlopsNoError(37.0);
       }
     };
     void computeHexahedralGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double point[], double v0[], double J[], double invJ[], double& detJ) {
@@ -2581,7 +2581,7 @@ namespace ALE {
         detJ = (J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
                 J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
                 J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
-        PetscLogFlopsNoError(39 + 81 + 12);
+        PetscLogFlopsNoError(39.0 + 81.0 + 12.0);
       }
       if (invJ) {
         invDet  = 1.0/detJ;
@@ -2594,7 +2594,7 @@ namespace ALE {
         invJ[2*3+0] = invDet*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
         invJ[2*3+1] = invDet*(J[0*3+1]*J[2*3+0] - J[0*3+0]*J[2*3+1]);
         invJ[2*3+2] = invDet*(J[0*3+0]*J[1*3+1] - J[0*3+1]*J[1*3+0]);
-        PetscLogFlopsNoError(37);
+        PetscLogFlopsNoError(37.0);
       }
     };
     void computeElementGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {

@@ -576,7 +576,7 @@ static PetscErrorCode MatMult_Inode(Mat A,Vec xx,Vec yy)
   }
   ierr = VecRestoreArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*a->nz - nonzerorow);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz - nonzerorow);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------- */
@@ -769,7 +769,7 @@ static PetscErrorCode MatMultAdd_Inode(Mat A,Vec xx,Vec zz,Vec yy)
   if (zz != yy) {
     ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   }
-  ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1165,7 +1165,7 @@ PetscErrorCode MatSolve_Inode(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*a->nz - A->cmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz - A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1311,7 +1311,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat B,Mat A,const MatFactorInfo *info)
             mul1 = *pc1 * *pv++;
             *pc1 = mul1;
             nz_tmp = bi[prow+1] - bd[prow] - 1;
-            ierr = PetscLogFlops(2*nz_tmp);CHKERRQ(ierr);
+            ierr = PetscLogFlops(2.0*nz_tmp);CHKERRQ(ierr);
             for (j=0; j<nz_tmp; j++) {
               tmp = pv[j];
               idx = pj[j];
@@ -1377,7 +1377,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat B,Mat A,const MatFactorInfo *info)
               rtmp11[idx] -= mul1 * tmp;
               rtmp22[idx] -= mul2 * tmp;
             }
-            ierr = PetscLogFlops(4*nz_tmp);CHKERRQ(ierr);
+            ierr = PetscLogFlops(4.0*nz_tmp);CHKERRQ(ierr);
           }
           prow = *bjtmp++ ;
         }
@@ -1407,7 +1407,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat B,Mat A,const MatFactorInfo *info)
             tmp = rtmp11[idx];
             rtmp22[idx] -= mul2 * tmp;
           }
-          ierr = PetscLogFlops(2*nz_tmp);CHKERRQ(ierr);
+          ierr = PetscLogFlops(2.0*nz_tmp);CHKERRQ(ierr);
         }
  
         pj  = bj + bi[row];
@@ -1480,7 +1480,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat B,Mat A,const MatFactorInfo *info)
               rtmp22[idx] -= mul2 * tmp;
               rtmp33[idx] -= mul3 * tmp;
             }
-            ierr = PetscLogFlops(6*nz_tmp);CHKERRQ(ierr);
+            ierr = PetscLogFlops(6.0*nz_tmp);CHKERRQ(ierr);
           }
           prow = *bjtmp++ ;
         }
@@ -1515,7 +1515,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat B,Mat A,const MatFactorInfo *info)
             rtmp22[idx] -= mul2 * tmp;
             rtmp33[idx] -= mul3 * tmp;
           }
-          ierr = PetscLogFlops(4*nz_tmp);CHKERRQ(ierr);  
+          ierr = PetscLogFlops(4.0*nz_tmp);CHKERRQ(ierr);  
         }
         ++prow;
 
@@ -1542,7 +1542,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat B,Mat A,const MatFactorInfo *info)
             tmp = rtmp22[idx];
             rtmp33[idx] -= mul3 * tmp;
           }
-          ierr = PetscLogFlops(4*nz_tmp);CHKERRQ(ierr);
+          ierr = PetscLogFlops(4.0*nz_tmp);CHKERRQ(ierr);
         }
 
         pj  = bj + bi[row];
