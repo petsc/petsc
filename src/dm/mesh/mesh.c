@@ -2322,16 +2322,20 @@ PetscErrorCode MeshHasSectionReal(Mesh mesh, const char name[], PetscTruth *flag
 PetscErrorCode MeshGetSectionReal(Mesh mesh, const char name[], SectionReal *section)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscErrorCode      ierr;
+  bool                      has;
+  PetscErrorCode            ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealCreate(m->comm(), section);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *section, name);CHKERRQ(ierr);
+  has  = m->hasRealSection(std::string(name));
   ierr = SectionRealSetSection(*section, m->getRealSection(std::string(name)));CHKERRQ(ierr);
   ierr = SectionRealSetBundle(*section, m);CHKERRQ(ierr);
 #ifdef PETSC_OPT_SIEVE
-  m->getRealSection(std::string(name))->setChart(m->getSieve()->getChart());
+  if (!has) {
+    m->getRealSection(std::string(name))->setChart(m->getSieve()->getChart());
+  }
 #endif
   PetscFunctionReturn(0);
 }
@@ -2423,16 +2427,20 @@ PetscErrorCode MeshHasSectionInt(Mesh mesh, const char name[], PetscTruth *flag)
 PetscErrorCode MeshGetSectionInt(Mesh mesh, const char name[], SectionInt *section)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscErrorCode      ierr;
+  bool                      has;
+  PetscErrorCode            ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionIntCreate(m->comm(), section);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *section, name);CHKERRQ(ierr);
+  has  = m->hasIntSection(std::string(name));
   ierr = SectionIntSetSection(*section, m->getIntSection(std::string(name)));CHKERRQ(ierr);
   ierr = SectionIntSetBundle(*section, m);CHKERRQ(ierr);
 #ifdef PETSC_OPT_SIEVE
-  m->getIntSection(std::string(name))->setChart(m->getSieve()->getChart());
+  if (!has) {
+    m->getIntSection(std::string(name))->setChart(m->getSieve()->getChart());
+  }
 #endif
   PetscFunctionReturn(0);
 }
