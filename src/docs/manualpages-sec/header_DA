@@ -4,7 +4,7 @@
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2> DA <A HREF="PETSC_DIRsrc/snes/examples/tutorials/index.html">Examples</A></H2>
+<H2> DA <A HREF="PETSC_DIRsrc/dm/da/examples/tutorials/index.html">Examples</A></H2>
 
 DA objects are used to manage parallel communications for structured mesh problems
 in PDE-based (or other) simulations. 
