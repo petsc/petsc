@@ -101,7 +101,7 @@ def main():
 
 if __name__ == '__main__':
     import sys, os
-    C_SOURCE = os.path.join('src', 'petsc4py_PETSc.c')
+    C_SOURCE = os.path.join('src', 'petsc4py.PETSc.c')
     def cython_help():
         if os.path.exists(C_SOURCE): return
         warn = lambda msg='': sys.stderr.write(msg+'\n')

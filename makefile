@@ -35,9 +35,9 @@ distclean: clean docsclean
 	-${RM} `find . -name '*.py[co]'`
 
 srcclean:
-	-${RM} src/petsc4py_PETSc.c
-	-${RM} src/include/petsc4py/petsc4py_PETSc.h
-	-${RM} src/include/petsc4py/petsc4py_PETSc_api.h
+	-${RM} src/petsc4py.PETSc.c
+	-${RM} src/include/petsc4py/petsc4py.PETSc.h
+	-${RM} src/include/petsc4py/petsc4py.PETSc_api.h
 
 docsclean:
 	-${RM} -r docs/html docs/*.pdf
@@ -51,8 +51,8 @@ uninstall:
 CY_SRC_PXD = $(wildcard src/include/petsc4py/*.pxd)
 CY_SRC_PXI = $(wildcard src/PETSc/*.pxi)
 CY_SRC_PYX = $(wildcard src/PETSc/*.pyx)
-src/PETSc.c: src/petsc4py_PETSc.c
-src/petsc4py_PETSc.c: ${CY_SRC_PXD} ${CY_SRC_PXI} ${CY_SRC_PYX}
+src/PETSc.c: src/petsc4py.PETSc.c
+src/petsc4py.PETSc.c: ${CY_SRC_PXD} ${CY_SRC_PXI} ${CY_SRC_PYX}
 	${PYTHON} ./conf/cythonize.py
 
 cython:

@@ -13,7 +13,7 @@
 #include <petscao.h>
 #include <petscda.h>
 
-#include "petsc4py_PETSc_api.h"
+#include "petsc4py.PETSc_api.h"
 
 static int import_petsc4py(void) {
   if (import_petsc4py__PETSc() < 0) goto bad;
