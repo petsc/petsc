@@ -79,7 +79,7 @@
      &             nstage,ncyct,iramp,nitfo
       integer irow(16), icol(16)
       integer i,j,k,n,ic,ierr,ir,node1,node2,inode
-      integer flops
+      PetscLogDouble flops
       PetscScalar val(32), val1(8,4)
       PetscScalar xnorm,ynorm,znorm,rlen,dot,temp
       PetscScalar X1,Y1,Z1,X2,Y2,Z2,size,area
@@ -118,7 +118,7 @@
 ! Loop over the edges and fill the matrix
 ! First just zero it out
 !
-      flops = 0
+      flops = 0.0
       call MatZeroEntries(A,ierr)
 !       write(6,555)res0,resc,cfl,cfl1,cfl2
 !  555 format(1h ,'In FILLA res0 resc cfl cfl1 cfl2 =',5(e14.7,1x))
@@ -135,7 +135,7 @@
 #endif
        enddo
       enddo
-      flops = flops + 2*nnodes
+      flops = flops + 2.0*nnodes
 #else
       do j = 1,4
        do i = 1,nnodes
@@ -144,7 +144,7 @@
         call MatSetValues(A,1,ir,1,ir,temp,ADD_VALUES,ierr)
       enddo
       enddo
-      flops = flops + 4*2*nnodes
+      flops = flops + 4.0*2*nnodes
 #endif
 
 !     call MatAssemblyBegin(A,MAT_FLUSH_ASSEMBLY,ierr)
@@ -411,7 +411,7 @@
           dfm(4,3) = .5d0*(dfm(4,3) - a43)
           dfm(4,4) = .5d0*(dfm(4,4) - a44)
 
-          flops = flops + 465
+          flops = flops + 465.0
 !
 ! Now take care of contribution to node 1
 !
@@ -532,7 +532,7 @@
          ic = inode - 1
          call MatSetValues(A,3,irow,1,ic,val,ADD_VALUES,ierr)
 #endif
-         flops = flops + 12
+         flops = flops + 12.0
         endif
 
 !
@@ -830,7 +830,7 @@
          call MatSetValues(A,4,irow,4,irow,val,ADD_VALUES,ierr)
 #endif
 
-         flops = flops + 337
+         flops = flops + 337.0
         endif
 !
  1090 continue

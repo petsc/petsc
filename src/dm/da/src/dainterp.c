@@ -132,7 +132,7 @@ PetscErrorCode DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
   ierr = MatDestroy(mat);CHKERRQ(ierr);
-  ierr = PetscLogFlops(5*m_f);CHKERRQ(ierr);
+  ierr = PetscLogFlops(5.0*m_f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -204,7 +204,7 @@ PetscErrorCode DAGetInterpolation_1D_Q0(DA dac,DA daf,Mat *A)
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
   ierr = MatDestroy(mat);CHKERRQ(ierr);
-  ierr = PetscLogFlops(5*m_f);CHKERRQ(ierr);
+  ierr = PetscLogFlops(5.0*m_f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -377,7 +377,7 @@ PetscErrorCode DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
   ierr = MatDestroy(mat);CHKERRQ(ierr);
-  ierr = PetscLogFlops(13*m_f*n_f);CHKERRQ(ierr);
+  ierr = PetscLogFlops(13.0*m_f*n_f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -488,7 +488,7 @@ PetscErrorCode DAGetInterpolation_2D_Q0(DA dac,DA daf,Mat *A)
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
   ierr = MatDestroy(mat);CHKERRQ(ierr);
-  ierr = PetscLogFlops(13*m_f*n_f);CHKERRQ(ierr);
+  ierr = PetscLogFlops(13.0*m_f*n_f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -610,7 +610,7 @@ PetscErrorCode DAGetInterpolation_3D_Q0(DA dac,DA daf,Mat *A)
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
   ierr = MatDestroy(mat);CHKERRQ(ierr);
-  ierr = PetscLogFlops(13*m_f*n_f*p_f);CHKERRQ(ierr);
+  ierr = PetscLogFlops(13.0*m_f*n_f*p_f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -821,7 +821,7 @@ PetscErrorCode DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
 
   ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
   ierr = MatDestroy(mat);CHKERRQ(ierr);
-  ierr = PetscLogFlops(13*m_f*n_f);CHKERRQ(ierr);
+  ierr = PetscLogFlops(13.0*m_f*n_f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

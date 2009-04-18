@@ -607,7 +607,7 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr
   /*
      Flop count (multiply-adds are counted as 2 operations)
   */
-  /*  ierr = PetscLogFlops(84*info->ym*info->xm);CHKERRQ(ierr); FIXME */
+  /*  ierr = PetscLogFlops(84.0*info->ym*info->xm);CHKERRQ(ierr); FIXME */
   PetscFunctionReturn(0);
 } 
 
@@ -983,7 +983,7 @@ PetscErrorCode FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,Pet
   /*
      Flop count (multiply-adds are counted as 2 operations)
   */
-  /*  ierr = PetscLogFlops(84*info->ym*info->xm);CHKERRQ(ierr); FIXME */
+  /*  ierr = PetscLogFlops(84.0*info->ym*info->xm);CHKERRQ(ierr); FIXME */
   PetscFunctionReturn(0);
 } 
 /*
@@ -1105,6 +1105,6 @@ PetscErrorCode FormFunctionLocali4(DALocalInfo *info,MatStencil *st,Field **x,Pe
   /*
      Flop count (multiply-adds are counted as 2 operations)
   */
-  /*  ierr = PetscLogFlops(84*info->ym*info->xm);CHKERRQ(ierr); FIXME */
+  /*  ierr = PetscLogFlops(84.0*info->ym*info->xm);CHKERRQ(ierr); FIXME */
   PetscFunctionReturn(0);
 } 

@@ -1558,7 +1558,7 @@ c
 c
 c something to do with profiling
 c
-      call PetscLogFlops(11*mx,ierr)
+      call PetscLogFlops(11.0*mx,ierr)
 
       return 
       end

@@ -153,7 +153,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5(Mat C,Mat A,const MatFactorInfo *inf
 
           pv   += 25;
         }
-        ierr = PetscLogFlops(250*nz+225);CHKERRQ(ierr);
+        ierr = PetscLogFlops(250.0*nz+225.0);CHKERRQ(ierr);
       } 
       row = *ajtmp++;
     }

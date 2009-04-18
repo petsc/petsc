@@ -60,7 +60,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat C,Mat A,const MatFactorInfo *inf
         for (j=0; j<nz; j++) {
           Kernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j);
         }
-        ierr = PetscLogFlops(bslog*(nz+1)-bs);CHKERRQ(ierr);
+        ierr = PetscLogFlops(bslog*(nz+1.0)-bs);CHKERRQ(ierr);
       } 
         row = *ajtmp++;
     }

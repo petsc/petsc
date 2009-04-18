@@ -42,7 +42,7 @@ static PetscErrorCode PCApply_PBJacobi_2(PC pc,Vec x,Vec y)
   }
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
-  ierr = PetscLogFlops(6*m);CHKERRQ(ierr);
+  ierr = PetscLogFlops(6.0*m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
@@ -66,7 +66,7 @@ static PetscErrorCode PCApply_PBJacobi_3(PC pc,Vec x,Vec y)
   }
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
-  ierr = PetscLogFlops(15*m);CHKERRQ(ierr);
+  ierr = PetscLogFlops(15.0*m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
@@ -91,7 +91,7 @@ static PetscErrorCode PCApply_PBJacobi_4(PC pc,Vec x,Vec y)
   }
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
-  ierr = PetscLogFlops(28*m);CHKERRQ(ierr);
+  ierr = PetscLogFlops(28.0*m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
@@ -117,7 +117,7 @@ static PetscErrorCode PCApply_PBJacobi_5(PC pc,Vec x,Vec y)
   }
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
-  ierr = PetscLogFlops(45*m);CHKERRQ(ierr);
+  ierr = PetscLogFlops(45.0*m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */

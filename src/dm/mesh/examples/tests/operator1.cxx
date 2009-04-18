@@ -219,7 +219,7 @@ PetscErrorCode AssembleMatrix_Full(const Obj<ALE::Mesh>& m, const Obj<ALE::Mesh:
     }
     ierr = updateOperator(A, m, s, order, *c_iter, elemMat, ADD_VALUES);CHKERRQ(ierr);
   }
-  ierr = PetscLogFlops(((dim*dim*2 + dim*2 + 3)*numBasisFuncs + dim*dim*2)*numBasisFuncs*numQuadPoints*cells->size());CHKERRQ(ierr);
+  ierr = PetscLogFlops(((dim*dim*2.0 + dim*2.0 + 3.0)*numBasisFuncs + dim*dim*2.0)*numBasisFuncs*numQuadPoints*cells->size());CHKERRQ(ierr);
   ierr = PetscFree(elemMat);CHKERRQ(ierr);
   ierr = PetscFree5(t_der,b_der,v0,J,invJ);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -321,7 +321,7 @@ PetscErrorCode AssembleMatrix_None(const Obj<ALE::Mesh>& m, const Obj<ALE::Mesh:
     }
     m->updateAdd(t, *c_iter, elemVec);
   }
-  ierr = PetscLogFlops(((dim*dim*2 + dim*2 + 3 + 2)*numBasisFuncs + dim*dim*2)*numBasisFuncs*numQuadPoints*cells->size());CHKERRQ(ierr);
+  ierr = PetscLogFlops(((dim*dim*2.0 + dim*2.0 + 3.0 + 2.0)*numBasisFuncs + dim*dim*2.0)*numBasisFuncs*numQuadPoints*cells->size());CHKERRQ(ierr);
   ierr = PetscFree2(elemVec,elemMat);CHKERRQ(ierr);
   ierr = PetscFree5(t_der,b_der,v0,J,invJ);CHKERRQ(ierr);
   ALE::Distribution<ALE::Mesh>::completeSection(m, t);
@@ -407,7 +407,7 @@ PetscErrorCode AssembleMatrix_Stored(const Obj<ALE::Mesh>& m, const Obj<ALE::Mes
     }
     o->updatePoint(*c_iter, elemMat);
   }
-  ierr = PetscLogFlops(((dim*dim*2 + dim*2 + 3)*numBasisFuncs + dim*dim*2)*numBasisFuncs*numQuadPoints*cells->size());CHKERRQ(ierr);
+  ierr = PetscLogFlops(((dim*dim*2.0 + dim*2.0 + 3.0)*numBasisFuncs + dim*dim*2.0)*numBasisFuncs*numQuadPoints*cells->size());CHKERRQ(ierr);
   ierr = PetscFree(elemMat);CHKERRQ(ierr);
   ierr = PetscFree5(t_der,b_der,v0,J,invJ);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(options->assemblyEvent,0,0,0,0);CHKERRQ(ierr);
@@ -444,7 +444,7 @@ PetscErrorCode ApplyMatrix_Stored(const Obj<ALE::Mesh>& m, const Obj<ALE::Mesh::
     }
     m->updateAdd(t, *c_iter, elemVec);
   }
-  ierr = PetscLogFlops((numBasisFuncs*numBasisFuncs*2)*cells->size());CHKERRQ(ierr);
+  ierr = PetscLogFlops((numBasisFuncs*numBasisFuncs*2.0)*cells->size());CHKERRQ(ierr);
   ierr = PetscFree(elemVec);CHKERRQ(ierr);
   ALE::Distribution<ALE::Mesh>::completeSection(m, t);
   ierr = PetscLogEventEnd(MAT_Mult,0,0,0,0);CHKERRQ(ierr);
@@ -555,7 +555,7 @@ PetscErrorCode AssembleMatrix_Partial(const Obj<ALE::Mesh>& m, const Obj<ALE::Me
     }
   }
   if (m->debug()) {o->view("Operator");}
-  ierr = PetscLogFlops(((dim*dim*2 + dim*2 + 3)*numBasisFuncs + dim*dim*2)*numBasisFuncs*numQuadPoints*cells->size());CHKERRQ(ierr);
+  ierr = PetscLogFlops(((dim*dim*2.0 + dim*2.0 + 3.0)*numBasisFuncs + dim*dim*2.0)*numBasisFuncs*numQuadPoints*cells->size());CHKERRQ(ierr);
   ierr = PetscFree(elemMat);CHKERRQ(ierr);
   ierr = PetscFree5(t_der,b_der,v0,J,invJ);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(options->assemblyEvent,0,0,0,0);CHKERRQ(ierr);
@@ -587,7 +587,7 @@ PetscErrorCode ApplyMatrix_Partial(const Obj<ALE::Mesh>& m, const Obj<matrix_sec
       sum += o->restrictPoint(arrow_type(*v_iter, *n_iter))[0]*s->restrictPoint(*n_iter)[0];
     }
     t->updatePoint(*v_iter, &sum);
-    ierr = PetscLogFlops(adj->size()*2);CHKERRQ(ierr);
+    ierr = PetscLogFlops(adj->size()*2.0);CHKERRQ(ierr);
   }
   ALE::Distribution<ALE::Mesh>::completeSection(m, t);
   ierr = PetscLogEventEnd(MAT_Mult,0,0,0,0);CHKERRQ(ierr);

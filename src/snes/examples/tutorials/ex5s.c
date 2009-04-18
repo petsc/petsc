@@ -422,7 +422,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
 
-  ierr = PetscLogFlops(11*(mx-2)*(my-2))CHKERRQ(ierr);
+  ierr = PetscLogFlops(11.0*(mx-2)*(my-2))CHKERRQ(ierr);
   ierr = PetscBarrier((PetscObject)X);CHKERRQ(ierr);
   return 0; 
 } 
@@ -457,7 +457,7 @@ int FormFunctionFortran(SNES snes,Vec X,Vec F,void *ptr)
     applicationfunctionfortran_(&user->param,&user->mx,&user->my,x,f,&ierr);
     ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
     ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
-    ierr = PetscLogFlops(11*(user->mx-2)*(user->my-2))CHKERRQ(ierr);
+    ierr = PetscLogFlops(11.0*(user->mx-2)*(user->my-2))CHKERRQ(ierr);
   }
   /*
       All the non-busy processors have to wait here for process 0 to finish

@@ -49,7 +49,8 @@ c     real A(nnz,4,4)
       integer isnode(1),ivnode(1),ifnode(1)
 c     integer ia(1),ja(1),iau(1),fhelp(nedge,2)
       integer  irow(25), icol(25)
-      integer i, j, k, in, flops
+      integer i, j, k, in
+      PetscLogDouble flops
 c
 #if defined(INTERLACING)
       real qvec(5,nvertices)
@@ -70,7 +71,7 @@ c
 c Loop over the edges and fill the matrix
 c First just zero it out
 c
-      flops = 0
+      flops = 0.0
       call MatZeroEntries(A,ierr)
 c     do 1000 j = 1,4
 c       do 1000 k = 1,4
@@ -132,7 +133,7 @@ c
       if(ivisc.eq.0)vconst = 0.0
       xmr = xmach/Re
       c512 = 5./12.*xmr*vconst
-      flops = flops + 4
+      flops = flops + 4.0
 c
       do 1030 n = 1, nedge
        node1 = eptr(n,1)
@@ -634,7 +635,7 @@ c
             eig1 = abs(ubar + c)
             eig2 = abs(ubar - c)
             eig3 = abs(ubar)
-            flops = flops + 1521
+            flops = flops + 1521.0
 c
             if(ubar+c.gt.0) then
               eig1rL = ubarrL + crL
@@ -647,7 +648,7 @@ c
               eig1vR = ubarvR + cvR
               eig1wR = ubarwR + cwR
               eig1pR = ubarpR + cpR
-              flops = flops + 10
+              flops = flops + 10.0
             else
               eig1rL = -(ubarrL + crL)
               eig1uL = -(ubaruL + cuL)
@@ -659,7 +660,7 @@ c
               eig1vR = -(ubarvR + cvR)
               eig1wR = -(ubarwR + cwR)
               eig1pR = -(ubarpR + cpR)
-              flops = flops + 20
+              flops = flops + 20.0
             endif
 c
             if(ubar-c.gt.0) then
@@ -673,7 +674,7 @@ c
               eig2vR = ubarvR - cvR
               eig2wR = ubarwR - cwR
               eig2pR = ubarpR - cpR
-              flops = flops + 10
+              flops = flops + 10.0
             else
               eig2rL = -(ubarrL - crL)
               eig2uL = -(ubaruL - cuL)
@@ -685,7 +686,7 @@ c
               eig2vR = -(ubarvR - cvR)
               eig2wR = -(ubarwR - cwR)
               eig2pR = -(ubarpR - cpR)
-              flops = flops + 20
+              flops = flops + 20.0
             endif
 c
             if(ubar.gt.0) then
@@ -710,7 +711,7 @@ c
               eig3vR = -(ubarvR)
               eig3wR = -(ubarwR)
               eig3pR = -(ubarpR)
-              flops = flops + 10
+              flops = flops + 10.0
             endif
 c
             drho   = rhor - rhol
@@ -1920,7 +1921,7 @@ c
 c
         dfm(5,5) = flux5rR*q1Q5R + flux5uR*q2Q5R + flux5vR*q3Q5R
      &             + flux5wR*q4Q5R + flux5pR*q5Q5R
-        flops = flops + 4446
+        flops = flops + 4446.0
 c
 c Now take care of contribution to node 1
 c
@@ -2306,7 +2307,7 @@ c
          icol(5) = inode - 1 + nnodes*4
          call MatSetValues(A,3,irow,5,icol,val,ADD_VALUES,ierr)
 #endif
-         flops = flops + 47
+         flops = flops + 47.0
         endif
 
 c
@@ -2418,7 +2419,7 @@ c
 !
       s0 = c0*c0/(gamma*rho0**gm1)      
       xgm1 = 1./gm1
-      flops = flops + 5
+      flops = flops + 5.0
       do 1070 i = 1,nfnode
         inode  = ifnode(i)
         if (inode .le. nnodes) then
@@ -2491,7 +2492,7 @@ c
         cbn = .25*gm1*(rplusn - rminusn)
         cbo = .25*gm1*(rpluso - rminuso)
         cbe = .25*gm1*(rpluse - rminuse)
-        flops = flops + 121
+        flops = flops + 121.0
 c
         if (unormb .gt. 0.0) then
          ub = ui + xnorm*(unormb - unormi)
@@ -2553,7 +2554,7 @@ c234567890c234567890c234567890c234567890c234567890c234567890c23456789012
      >         + q2b*rhobo)
          ebe = pbe/gm1 + .5*(2.*rhob*(ub*ube + vb*vbe + wb*wbe) 
      >         + q2b*rhobe)
-         flops = flops + 208
+         flops = flops + 208.0
 c
         else 
          ub = u0 + xnorm*(unormb - unormo)
@@ -2620,7 +2621,7 @@ c
      >         + q2b*rhobo)
          ebe = pbe/gm1 + .5*(2.*rhob*(ub*ube + vb*vbe + wb*wbe) 
      >         + q2b*rhobe)
-         flops = flops + 177
+         flops = flops + 177.0
 c
         end if
 c
@@ -2695,7 +2696,7 @@ c
          call MatSetValues(A,5,irow,5,irow,val,ADD_VALUES,ierr)
 #endif
 
-         flops = flops + 220
+         flops = flops + 220.0
         endif
 c
  1070 continue

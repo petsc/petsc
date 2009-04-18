@@ -574,7 +574,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
           apa[k] += (*ada)*pa[nextp++];
         }
       }
-      ierr = PetscLogFlops(2*pnz);CHKERRQ(ierr);
+      ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
       ada++;
     }
     /* off-diagonal portion of A */
@@ -590,7 +590,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
           apa[k] += (*aoa)*pa[nextp++];
         }
       }
-      ierr = PetscLogFlops(2*pnz);CHKERRQ(ierr);
+      ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
       aoa++;
     }
 
@@ -609,7 +609,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       for (k=0; nextap<apnz; k++) {
         if (cj[k]==apJ[nextap]) ca[k] += (*pA)*apa[nextap++]; 
       }
-      ierr = PetscLogFlops(2*apnz);CHKERRQ(ierr);
+      ierr = PetscLogFlops(2.0*apnz);CHKERRQ(ierr);
       pA++;
     }
 
@@ -677,7 +677,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       } 
     }
     ierr = MatSetValues(C,1,&row,bnz,bj_i,ba_i,INSERT_VALUES);CHKERRQ(ierr); 
-    ierr = PetscLogFlops(2*cnz);CHKERRQ(ierr);
+    ierr = PetscLogFlops(2.0*cnz);CHKERRQ(ierr);
   } 
   ierr = MatSetBlockSize(C,1);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

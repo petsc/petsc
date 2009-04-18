@@ -424,7 +424,7 @@ PetscErrorCode MatMult_SeqCSRPERM(Mat A,Vec xx,Vec yy)
     } /* End handling matvec for chunk with nz > 1. */
   } /* End loop over igroup. */
 #endif
-  ierr = PetscLogFlops(2*a->nz - A->rmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz - A->rmap->n);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -587,7 +587,7 @@ PetscErrorCode MatMultAdd_SeqCSRPERM(Mat A,Vec xx,Vec ww,Vec yy)
   } /* End loop over igroup. */
 
 #endif
-  ierr = PetscLogFlops(2*a->nz - A->rmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz - A->rmap->n);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   if (yy != ww) {

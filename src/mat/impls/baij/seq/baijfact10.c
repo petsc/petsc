@@ -146,7 +146,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering(Mat C,Mat A,const Ma
           x[24] -= m5*x21 + m10*x22 + m15*x23 + m20*x24 + m25*x25;
           pv   += 25;
         }
-        ierr = PetscLogFlops(250*nz+225);CHKERRQ(ierr);
+        ierr = PetscLogFlops(250.0*nz+225.0);CHKERRQ(ierr);
       } 
       row = *ajtmp++;
     }
