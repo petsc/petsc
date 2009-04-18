@@ -17,12 +17,29 @@
      This single directory handles both the sequential and parallel codes
 */
 
-#include "../src/mat/impls/maij/maij.h"
+#include "../src/mat/impls/maij/maij.h" /*I "petscmat.h" I*/
 #include "../src/mat/utils/freespace.h"
 #include "private/vecimpl.h"
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMAIJGetAIJ" 
+#define __FUNCT__ "MatMAIJGetAIJ"
+/*@C
+   MatMAIJGetAIJ - Get the AIJ matrix describing the blockwise action of the MAIJ matrix
+
+   Not Collective, but if the MAIJ matrix is parallel, the AIJ matrix is also parallel
+
+   Input Parameter:
+.  A - the MAIJ matrix
+
+   Output Parameter:
+.  B - the AIJ matrix
+
+   Level: advanced
+
+   Notes: The reference count on the AIJ matrix is not increased so you should not destroy it.
+
+.seealso: MatCreateMAIJ()
+@*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMAIJGetAIJ(Mat A,Mat *B)
 {
   PetscErrorCode ierr;
@@ -46,7 +63,23 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMAIJGetAIJ(Mat A,Mat *B)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMAIJRedimension" 
+#define __FUNCT__ "MatMAIJRedimension"
+/*@C
+   MatMAIJRedimension - Get an MAIJ matrix with the same action, but for a different block size
+
+   Collective
+
+   Input Parameter:
++  A - the MAIJ matrix
+-  dof - the block size for the new matrix
+
+   Output Parameter:
+.  B - the new MAIJ matrix
+
+   Level: advanced
+
+.seealso: MatCreateMAIJ()
+@*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMAIJRedimension(Mat A,PetscInt dof,Mat *B)
 {
   PetscErrorCode ierr;
@@ -2859,11 +2892,22 @@ EXTERN_C_END
 
 
 /* ---------------------------------------------------------------------------------- */
-/*MC
-  MatCreateMAIJ - Creates a matrix type providing restriction and interpolation 
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreateMAIJ"
+/*@C
+  MatCreateMAIJ - Creates a matrix type providing restriction and interpolation
   operations for multicomponent problems.  It interpolates each component the same
   way independently.  The matrix type is based on MATSEQAIJ for sequential matrices,
   and MATMPIAIJ for distributed matrices.
+
+  Collective
+
+  Input Parameters:
++ A - the AIJ matrix describing the action on blocks
+- dof - the block size (number of components per node)
+
+  Output Parameter:
+. maij - the new MAIJ matrix
 
   Operations provided:
 + MatMult
@@ -2874,9 +2918,8 @@ EXTERN_C_END
 
   Level: advanced
 
-M*/
-#undef __FUNCT__  
-#define __FUNCT__ "MatCreateMAIJ" 
+.seealso: MatMAIJGetAIJ(), MatMAIJRedimension()
+@*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
 {
   PetscErrorCode ierr;
@@ -3014,15 +3057,3 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
   }
   PetscFunctionReturn(0);
 }
-
-
-
-
-
-
-
-
-
-
-
-
