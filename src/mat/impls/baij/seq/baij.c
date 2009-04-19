@@ -2168,19 +2168,18 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetColumnIndices_SeqBAIJ(Mat mat,PetscInt *indices)
 {
   Mat_SeqBAIJ *baij = (Mat_SeqBAIJ *)mat->data;
-  PetscInt    i,nz,nbs;
+  PetscInt    i,nz,mbs;
 
   PetscFunctionBegin;
   nz  = baij->maxnz/baij->bs2;
-  nbs = baij->nbs;
+  mbs = baij->mbs;
   for (i=0; i<nz; i++) {
     baij->j[i] = indices[i];
   }
   baij->nz = nz;
-  for (i=0; i<nbs; i++) {
+  for (i=0; i<mbs; i++) {
     baij->ilen[i] = baij->imax[i];
   }
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
