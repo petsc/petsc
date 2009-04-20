@@ -129,10 +129,6 @@ cdef class Viewer(Object):
     def createDraw(self, display=None, title=None,
                    position=None, size=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef const_char_p cdisplay = ""
-        if display is not None: cdisplay = str2cp(display)
-        cdef const_char_p ctitle = ""
-        if title is not None: ctitle = str2cp(title)
         cdef int x, y, h, w
         x = y = h = w = PETSC_DECIDE
         if position not in (None, PETSC_DECIDE):
@@ -143,7 +139,9 @@ cdef class Viewer(Object):
             except TypeError:
                 w = h = size
         cdef PetscViewer newvwr = NULL
-        CHKERR( PetscViewerDrawOpen(ccomm, cdisplay, ctitle, x, y, w, h, &newvwr) )
+        CHKERR( PetscViewerDrawOpen(ccomm,
+                                    str2cp(display), str2cp(title),
+                                    x, y, w, h, &newvwr) )
         PetscCLEAR(self.obj); self.vwr = newvwr
         return self
 
@@ -225,10 +223,6 @@ cdef class Viewer(Object):
     # --- methods specific to draw viewers ---
 
     def setInfo(self,  display=None, title=None, position=None, size=None):
-        cdef const_char_p cdisplay = ""
-        if display is not None: cdisplay = str2cp(display)
-        cdef const_char_p ctitle = ""
-        if title is not None: ctitle = str2cp(title)
         cdef int x, y, h, w
         x = y = h = w = PETSC_DECIDE
         if position not in (None, PETSC_DECIDE):
@@ -238,7 +232,9 @@ cdef class Viewer(Object):
                 w, h = size
             except TypeError:
                 w = h = size
-        CHKERR( PetscViewerDrawSetInfo(self.vwr, display, title, x, y, w, h) )
+        CHKERR( PetscViewerDrawSetInfo(self.vwr,
+                                       str2cp(display), str2cp(title),
+                                       x, y, w, h) )
 
     def clear(self):
         CHKERR( PetscViewerDrawClear(self.vwr) )
