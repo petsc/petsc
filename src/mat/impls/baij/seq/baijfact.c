@@ -71,7 +71,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat B,Mat A,const MatFactorInfo *inf
           x[3] -= m2*x3 + m4*x4;
           pv   += 4;
         }
-        ierr = PetscLogFlops(16*nz+12);CHKERRQ(ierr);
+        ierr = PetscLogFlops(16.0*nz+12.0);CHKERRQ(ierr);
       } 
       row = *ajtmp++;
     }
@@ -157,7 +157,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat C,Mat A,const Ma
           x[3] -= m2*x3 + m4*x4;
           pv   += 4;
         }
-        ierr = PetscLogFlops(16*nz+12);CHKERRQ(ierr);
+        ierr = PetscLogFlops(16.0*nz+12.0);CHKERRQ(ierr);
       } 
       row = *ajtmp++;
     }
@@ -228,7 +228,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat C,Mat A,const MatFactorInfo *inf
         *pc        = multiplier;
         nz         = bi[row+1] - diag_offset[row] - 1;
         for (j=0; j<nz; j++) rtmp[pj[j]] -= multiplier * pv[j];
-        ierr = PetscLogFlops(1+2*nz);CHKERRQ(ierr);
+        ierr = PetscLogFlops(1.0+2.0*nz);CHKERRQ(ierr);
       }
       row = *ajtmp++;
     }

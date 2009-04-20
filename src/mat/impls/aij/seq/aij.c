@@ -897,7 +897,7 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
     while (n-->0) {y[*idx++] += alpha * *v++;}
   }
 #endif
-  ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -972,7 +972,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
     }
 #endif
   }
-  ierr = PetscLogFlops(2*a->nz - nonzerorow);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz - nonzerorow);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1035,7 +1035,7 @@ PetscErrorCode MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
     }
   }
 #endif
-  ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {
@@ -1136,7 +1136,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInvertDiagonal_SeqAIJ(Mat A,PetscScalar ome
       mdiag[i] = v[diag[i]];
       idiag[i] = omega/(fshift + v[diag[i]]);
     }
-    ierr = PetscLogFlops(2*m);CHKERRQ(ierr);
+    ierr = PetscLogFlops(2.0*m);CHKERRQ(ierr);
   }
   a->idiagvalid = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -1237,7 +1237,7 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
       x[i] += t[i];
     }
 
-    ierr = PetscLogFlops(6*m-1 + 2*a->nz);CHKERRQ(ierr);
+    ierr = PetscLogFlops(6.0*m-1 + 2.0*a->nz);CHKERRQ(ierr);
     ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
     if (bb != xx) {ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
@@ -3196,7 +3196,7 @@ EXTERN_C_BEGIN
 #if defined(PETSC_HAVE_PASTIX)
 extern PetscErrorCode MatGetFactor_seqaij_pastix(Mat,MatFactorType,Mat*);
 #endif
-#if defined(PETSC_HAVE_ESSL)
+#if defined(PETSC_HAVE_ESSL) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE)
 extern PetscErrorCode MatGetFactor_seqaij_essl(Mat,MatFactorType,Mat *);
 #endif
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCRL(Mat,MatType,MatReuse,Mat*);
@@ -3273,7 +3273,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
 					   "MatGetFactor_seqaij_pastix",
 					   MatGetFactor_seqaij_pastix);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_ESSL)
+#if defined(PETSC_HAVE_ESSL) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_essl_C",
                                      "MatGetFactor_seqaij_essl",
                                      MatGetFactor_seqaij_essl);CHKERRQ(ierr);

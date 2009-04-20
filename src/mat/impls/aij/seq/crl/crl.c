@@ -172,7 +172,7 @@ PetscErrorCode MatMult_CRL(Mat A,Vec xx,Vec yy)
 #endif
 
 #endif
-  ierr = PetscLogFlops(2*crl->nz - m);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*crl->nz - m);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -211,7 +211,7 @@ PetscErrorCode FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 
   /* Insert values into global vector */
   ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
-  ierr = PetscLogFlops(11*ym*xm);CHKERRQ(ierr);
+  ierr = PetscLogFlops(11.0*ym*xm);CHKERRQ(ierr);
   return 0; 
 } /* --------------------  Evaluate Jacobian F'(x) --------------------- */
 #undef __FUNCT__

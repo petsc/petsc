@@ -2090,7 +2090,7 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
         v  = aa + ai[i] + 1; 
         vj = aj + ai[i] + 1;    
         nz = ai[i+1] - ai[i] - 1;       
-        ierr = PetscLogFlops(2*nz-1);CHKERRQ(ierr);
+        ierr = PetscLogFlops(2.0*nz-1);CHKERRQ(ierr);
         x[i] = omega*t[i]/d;
         while (nz--) t[*vj++] -= x[i]*(*v++); /* update rhs */
       }
@@ -2106,7 +2106,7 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
         v  = aa + ai[i] + 1; 
         vj = aj + ai[i] + 1;    
         nz = ai[i+1] - ai[i] - 1;
-        ierr = PetscLogFlops(2*nz-1);CHKERRQ(ierr);
+        ierr = PetscLogFlops(2.0*nz-1);CHKERRQ(ierr);
         sum = t[i];
         while (nz--) sum -= x[*vj++]*(*v++);
         x[i] =   (1-omega)*x[i] + omega*sum/d;        
@@ -2134,7 +2134,7 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
         vj = aj + ai[i] + 1; vj1=vj;   
         nz = ai[i+1] - ai[i] - 1; nz1=nz;
         sum = t[i];
-        ierr = PetscLogFlops(4*nz-2);CHKERRQ(ierr);
+        ierr = PetscLogFlops(4.0*nz-2);CHKERRQ(ierr);
         while (nz1--) sum -= (*v1++)*x[*vj1++]; 
         x[i] = (1-omega)*x[i] + omega*sum/d;
         while (nz--) t[*vj++] -= x[i]*(*v++); 
@@ -2156,7 +2156,7 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
         v  = aa + ai[i] + 1; 
         vj = aj + ai[i] + 1;    
         nz = ai[i+1] - ai[i] - 1;
-        ierr = PetscLogFlops(2*nz-1);CHKERRQ(ierr);
+        ierr = PetscLogFlops(2.0*nz-1);CHKERRQ(ierr);
         while (nz--) t[*vj++] -= x[i]*(*v++);
       }
       for (i=m-1; i>=0; i--){
@@ -2164,7 +2164,7 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
         v  = aa + ai[i] + 1; 
         vj = aj + ai[i] + 1;    
         nz = ai[i+1] - ai[i] - 1;
-        ierr = PetscLogFlops(2*nz-1);CHKERRQ(ierr);
+        ierr = PetscLogFlops(2.0*nz-1);CHKERRQ(ierr);
         sum = t[i];
         while (nz--) sum -= x[*vj++]*(*v++);
         x[i] =   (1-omega)*x[i] + omega*sum/d;        

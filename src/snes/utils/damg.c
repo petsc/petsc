@@ -660,6 +660,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGView(DMMG *dmmg,PetscViewer viewer)
 
     Level: advanced
 
+    Notes: there is no Fortran equivalent of this routine.
+
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetDM(), DMMGSolve(), MatNullSpaceCreate(), KSPSetNullSpace(), DMMGSetUseGalerkin(), DMMGSetMatType()
 
 @*/

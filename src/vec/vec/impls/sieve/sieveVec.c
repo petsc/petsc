@@ -80,7 +80,7 @@ PetscErrorCode VecAXPY_Sieve(Vec y, PetscScalar alpha, Vec x)
     ierr = VecGetArray(x, &xarray);CHKERRQ(ierr);
     BLASaxpy_(&bn, &oalpha, xarray, &one, (PetscScalar *) field->restrict(*field->getPatches()->begin()), &one);
     ierr = VecRestoreArray(x, &xarray);CHKERRQ(ierr);
-    ierr = PetscLogFlops(2*y->map->n);CHKERRQ(ierr);
+    ierr = PetscLogFlops(2.0*y->map->n);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -116,7 +116,7 @@ PetscErrorCode VecAYPX_Sieve(Vec y, PetscScalar alpha, Vec x)
     }
 #endif
     ierr = VecRestoreArray(x, &xx);CHKERRQ(ierr);
-    ierr = PetscLogFlops(2*n);CHKERRQ(ierr);
+    ierr = PetscLogFlops(2.0*n);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -151,7 +151,7 @@ PetscErrorCode VecAXPBY_Sieve(Vec y, PetscScalar alpha, PetscScalar beta, Vec x)
       yy[i] = a*xx[i] + b*yy[i];
     }
     ierr = VecRestoreArray(x, &xx);CHKERRQ(ierr);
-    ierr = PetscLogFlops(3*x->map->n);CHKERRQ(ierr);
+    ierr = PetscLogFlops(3.0*x->map->n);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -171,7 +171,7 @@ PetscErrorCode VecMAXPY_Sieve(Vec x, PetscInt nv, const PetscScalar *alpha, Vec 
 #endif
 
   PetscFunctionBegin;
-  ierr = PetscLogFlops(nv*2*n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(nv*2.0*n);CHKERRQ(ierr);
 
   switch (j_rem=nv&0x3) {
   case 3: 
@@ -257,7 +257,7 @@ PetscErrorCode VecWAXPY_Sieve(Vec w, PetscScalar alpha, Vec x, Vec y)
 #else
     for (i=0; i<n; i++) ww[i] = yy[i] + oalpha * xx[i];
 #endif
-    ierr = PetscLogFlops(2*n);CHKERRQ(ierr);
+    ierr = PetscLogFlops(2.0*n);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(y, &yy);CHKERRQ(ierr);
   ierr = VecRestoreArray(x, &xx);CHKERRQ(ierr);

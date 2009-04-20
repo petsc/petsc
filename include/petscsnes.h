@@ -217,22 +217,24 @@ $      testing with -pc_type lu to eliminate the linear solver as the cause of t
        The string versions of these are in SNESConvergedReason, if you change any value here you must
      also adjust that array.
 
+   Each reason has its own manual page.
+
 .seealso: SNESSolve(), SNESGetConvergedReason(), KSPConvergedReason, SNESSetConvergenceTest()
 E*/
 typedef enum {/* converged */
               SNES_CONVERGED_FNORM_ABS         =  2, /* ||F|| < atol */
               SNES_CONVERGED_FNORM_RELATIVE    =  3, /* ||F|| < rtol*||F_initial|| */
-              SNES_CONVERGED_PNORM_RELATIVE    =  4, /* Newton computed step size small; || delta x || < tol */
+              SNES_CONVERGED_PNORM_RELATIVE    =  4, /* Newton computed step size small; || delta x || < stol */
               SNES_CONVERGED_ITS               =  5, /* maximum iterations reached */
               SNES_CONVERGED_TR_DELTA          =  7,
               /* diverged */
-              SNES_DIVERGED_FUNCTION_DOMAIN    = -1,  
+              SNES_DIVERGED_FUNCTION_DOMAIN    = -1, /* the new x location passed the function is not in the domain of F */
               SNES_DIVERGED_FUNCTION_COUNT     = -2,  
-              SNES_DIVERGED_LINEAR_SOLVE       = -3, 
+              SNES_DIVERGED_LINEAR_SOLVE       = -3, /* the linear solve failed */
               SNES_DIVERGED_FNORM_NAN          = -4, 
               SNES_DIVERGED_MAX_IT             = -5,
-              SNES_DIVERGED_LS_FAILURE         = -6,
-              SNES_DIVERGED_LOCAL_MIN          = -8,  /* || J^T b || is small, implies converged to local minimum of F() */
+              SNES_DIVERGED_LS_FAILURE         = -6, /* the line search failed */ 
+              SNES_DIVERGED_LOCAL_MIN          = -8, /* || J^T b || is small, implies converged to local minimum of F() */
               SNES_CONVERGED_ITERATING         =  0} SNESConvergedReason;
 extern const char **SNESConvergedReasons;
 
@@ -255,8 +257,8 @@ M*/
 M*/
 
 /*MC
-     SNES_CONVERGED_PNORM_RELATIVE - The 2-norm of the last step <= xtol * 2-norm(x) where x is the current
-          solution and xtol is the 4th argument to SNESSetTolerances()
+     SNES_CONVERGED_PNORM_RELATIVE - The 2-norm of the last step <= stol * 2-norm(x) where x is the current
+          solution and stol is the 4th argument to SNESSetTolerances()
 
    Level: beginner
 
@@ -303,7 +305,8 @@ M*/
 M*/
 
 /*MC
-     SNES_DIVERGED_LOCAL_MIN - the algorithm seems to have stagnated at a local minimum that is not zero
+     SNES_DIVERGED_LOCAL_MIN - the algorithm seems to have stagnated at a local minimum that is not zero. 
+        See the manual page for SNESConvergedReason for more details
 
    Level: beginner
 
