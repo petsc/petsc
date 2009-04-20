@@ -512,13 +512,11 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedView(Sliced,PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedCreate(MPI_Comm,Sliced*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedDestroy(Sliced);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedCreateGlobalVector(Sliced,Vec*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedCreateLocalVector(Sliced,Vec*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedGetMatrix(Sliced, const MatType,Mat*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedGetGlobalIndices(Sliced,PetscInt*[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedSetPreallocation(Sliced,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedSetBlockFills(Sliced,const PetscInt*,const PetscInt*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedSetGhosts(Sliced,PetscInt,PetscInt,PetscInt,const PetscInt[]);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedGlobalToLocalBegin(Sliced,Vec,InsertMode,Vec);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedGlobalToLocalEnd(Sliced,Vec,InsertMode,Vec);
 
 
 typedef struct NLF_DAAD* NLF;
