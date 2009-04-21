@@ -361,12 +361,14 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh mesh, SectionReal section
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+  m->setDebug(2);
   try {
     ierr = MeshCreateMatrix(m, s, mtype, J);CHKERRQ(ierr);
   } catch(ALE::Exception e) {
     SETERRQ(PETSC_ERR_LIB, e.message());
   }
   ierr = PetscObjectCompose((PetscObject) *J, "mesh", (PetscObject) mesh);CHKERRQ(ierr);
+  m->setDebug(0);
   PetscFunctionReturn(0);
 }
 
@@ -1309,7 +1311,7 @@ PetscErrorCode assembleMatrix(Mat A, Mesh mesh, SectionReal section, PetscInt e,
 
     ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
     ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-    const ALE::Obj<PETSC_MESH_TYPE::order_type>& globalOrder = m->getFactory()->getGlobalOrder(m, "default", s);
+    const ALE::Obj<PETSC_MESH_TYPE::order_type>& globalOrder = m->getFactory()->getGlobalOrder(m, s->getName(), s);
 
     if (m->debug()) {
       std::cout << "Assembling matrix for element number " << e << " --> point " << e << std::endl;
