@@ -6,7 +6,7 @@ FPPFLAGS        =
 LOCDIR          = src/dm/da/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c\
                   ex11.c ex12.c ex12.m ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex19.c \
-	          ex20.c ex22.c ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex29.c
+	          ex20.c ex22.c ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c
 EXAMPLESF       = ex21f.F
 MANSEC          = DA
 
@@ -127,6 +127,10 @@ ex28: ex28.o   chkopts
 ex29: ex29.o   chkopts
 	-${CLINKER} -o ex29 ex29.o  ${PETSC_DM_LIB}
 	${RM} -f ex29.o
+
+ex30: ex30.o   chkopts
+	-${CLINKER} -o ex30 ex30.o  ${PETSC_DM_LIB}
+	${RM} -f ex30.o
 #-------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 2 ./ex1 -nox > ex1_1.tmp 2>&1;	  \
@@ -240,6 +244,19 @@ runex25:
 	-@${MPIEXEC} -n 6 ./ex25  | grep -v Process > ex25_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
 	   else echo "Possible problem with ex25_1 6 processes, diffs above"; fi; ${RM} -f ex25_1.tmp
+
+runex30_1:
+	-@${MPIEXEC} -n 2 ./ex30 -bs 2 -block 0 -sliced_mat_type baij -alpha 10 -u0 0.1 > ex30_1.tmp; \
+	   ${DIFF} output/ex30_1and2.out ex30_1.tmp || echo "Possible problem with ex30_1, diffs above"; \
+	   ${RM} -f ex30_1.tmp
+runex30_2:
+	-@${MPIEXEC} -n 2 ./ex30 -bs 2 -block 1 -sliced_mat_type aij -alpha 10 -u0 0.1 > ex30_2.tmp; \
+	   ${DIFF} output/ex30_1and2.out ex30_2.tmp || echo "Possible problem with ex30_2, diffs above"; \
+	   ${RM} -f ex30_2.tmp
+runex30_3:
+	-@${MPIEXEC} -n 2 ./ex30 -bs 2 -block 0 -sliced_mat_type aij -alpha 10 -u0 0.1 > ex30_3.tmp; \
+	   ${DIFF} output/ex30_3.out ex30_3.tmp || echo "Possible problem with ex30_3, diffs above"; \
+	   ${RM} -f ex30_3.tmp
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 ex4.rm ex24.PETSc runex24 ex24.rm ex25.PETSc \
                             runex25 ex25.rm
