@@ -11,7 +11,7 @@ using ALE::Obj;
 template<typename Mesh, typename Section>
 PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<Mesh>& mesh, const Obj<Section>& section, const MatType mtype, Mat *J)
 {
-  const ALE::Obj<typename Mesh::order_type>& order = mesh->getFactory()->getGlobalOrder(mesh, "default", section);
+  const ALE::Obj<typename Mesh::order_type>& order = mesh->getFactory()->getGlobalOrder(mesh, section->getName(), section);
   int            localSize  = order->getLocalSize();
   int            globalSize = order->getGlobalSize();
   PetscTruth     isShell, isBlock, isSeqBlock, isMPIBlock;
