@@ -120,24 +120,35 @@ void PETSC_STDCALL  meshview_(Mesh mesh, PetscViewer *vin, PetscErrorCode *ierr)
   PetscPatchDefaultViewers_Fortran(vin,v);
   *ierr = MeshView((Mesh) PetscToPointer(mesh),v);
 }
-void PETSC_STDCALL  meshgetvertexsectionreal_(Mesh mesh, PetscInt *fiberDim, SectionReal *section, int *ierr){
-  *ierr = MeshGetVertexSectionReal((Mesh) PetscToPointer(mesh), *fiberDim, section);
+void PETSC_STDCALL  meshgetvertexsectionreal_(Mesh mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, SectionReal *section, int *ierr PETSC_END_LEN(lenN)){
+  char *pN;
+  FIXCHAR(name,lenN,pN);
+  *ierr = MeshGetVertexSectionReal((Mesh) PetscToPointer(mesh), pN, *fiberDim, section);
+  FREECHAR(name,pN);
 }
-void PETSC_STDCALL  meshgetcellsectionreal_(Mesh mesh, PetscInt *fiberDim, SectionReal *section, int *ierr){
-  *ierr = MeshGetCellSectionReal((Mesh) PetscToPointer(mesh), *fiberDim, section);
+void PETSC_STDCALL  meshgetcellsectionreal_(Mesh mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, SectionReal *section, int *ierr PETSC_END_LEN(lenN)){
+  char *pN;
+  FIXCHAR(name,lenN,pN);
+  *ierr = MeshGetCellSectionReal((Mesh) PetscToPointer(mesh), pN, *fiberDim, section);
+  FREECHAR(name,pN);
 }
-void PETSC_STDCALL  meshgetvertexsectionint_(Mesh mesh, PetscInt *fiberDim, SectionInt *section, int *ierr){
-  *ierr = MeshGetVertexSectionInt((Mesh) PetscToPointer(mesh), *fiberDim, section);
+void PETSC_STDCALL  meshgetvertexsectionint_(Mesh mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, SectionInt *section, int *ierr PETSC_END_LEN(lenN)){
+  char *pN;
+  FIXCHAR(name,lenN,pN);
+  *ierr = MeshGetVertexSectionInt((Mesh) PetscToPointer(mesh), pN, *fiberDim, section);
+  FREECHAR(name,pN);
 }
-void PETSC_STDCALL  meshgetcellsectionint_(Mesh mesh, PetscInt *fiberDim, SectionInt *section, int *ierr){
-  *ierr = MeshGetCellSectionInt((Mesh) PetscToPointer(mesh), *fiberDim, section);
+void PETSC_STDCALL  meshgetcellsectionint_(Mesh mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, SectionInt *section, int *ierr PETSC_END_LEN(lenN)){
+  char *pN;
+  FIXCHAR(name,lenN,pN);
+  *ierr = MeshGetCellSectionInt((Mesh) PetscToPointer(mesh), pN, *fiberDim, section);
+  FREECHAR(name,pN);
 }
 void PETSC_STDCALL  vertexsectionrealcreate_(Mesh mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, int *ierr PETSC_END_LEN(lenN)){
   SectionReal section;
   char *pN;
   FIXCHAR(name,lenN,pN);
-  *ierr = MeshGetVertexSectionReal((Mesh) PetscToPointer(mesh), *fiberDim, &section);
-  *ierr = PetscObjectSetName((PetscObject) section, pN);
+  *ierr = MeshGetVertexSectionReal((Mesh) PetscToPointer(mesh), pN, *fiberDim, &section);
   *ierr = MeshSetSectionReal((Mesh) PetscToPointer(mesh), section);
   *ierr = SectionRealDestroy(section);
   FREECHAR(name,pN);
@@ -146,8 +157,7 @@ void PETSC_STDCALL  vertexsectionintcreate_(Mesh mesh, CHAR name PETSC_MIXED_LEN
   SectionInt section;
   char *pN;
   FIXCHAR(name,lenN,pN);
-  *ierr = MeshGetVertexSectionInt((Mesh) PetscToPointer(mesh), *fiberDim, &section);
-  *ierr = PetscObjectSetName((PetscObject) section, pN);
+  *ierr = MeshGetVertexSectionInt((Mesh) PetscToPointer(mesh), pN, *fiberDim, &section);
   *ierr = MeshSetSectionInt((Mesh) PetscToPointer(mesh), section);
   *ierr = SectionIntDestroy(section);
   FREECHAR(name,pN);
@@ -156,8 +166,7 @@ void PETSC_STDCALL  cellsectionrealcreate_(Mesh mesh, CHAR name PETSC_MIXED_LEN(
   SectionReal section;
   char *pN;
   FIXCHAR(name,lenN,pN);
-  *ierr = MeshGetCellSectionReal((Mesh) PetscToPointer(mesh), *fiberDim, &section);
-  *ierr = PetscObjectSetName((PetscObject) section, pN);
+  *ierr = MeshGetCellSectionReal((Mesh) PetscToPointer(mesh), pN, *fiberDim, &section);
   *ierr = MeshSetSectionReal((Mesh) PetscToPointer(mesh), section);
   *ierr = SectionRealDestroy(section);
   FREECHAR(name,pN);

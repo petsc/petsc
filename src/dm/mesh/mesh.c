@@ -378,7 +378,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexMatrix(Mesh mesh, MatType mtype, M
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetVertexSectionReal(mesh, 1, &section);CHKERRQ(ierr);
+  ierr = MeshGetVertexSectionReal(mesh, "default", 1, &section);CHKERRQ(ierr);
   ierr = MeshCreateMatrix(mesh, section, mtype, J);CHKERRQ(ierr);
   ierr = SectionRealDestroy(section);CHKERRQ(ierr);
   PetscFunctionReturn(0);

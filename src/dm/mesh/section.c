@@ -813,7 +813,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealAXPY(SectionReal section, Mesh mesh,
 .keywords: mesh, section, vertex
 .seealso: MeshCreate(), SectionRealCreate()
 @*/
-PetscErrorCode MeshGetVertexSectionReal(Mesh mesh, PetscInt fiberDim, SectionReal *section)
+PetscErrorCode MeshGetVertexSectionReal(Mesh mesh, const char name[], PetscInt fiberDim, SectionReal *section)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
@@ -822,11 +822,13 @@ PetscErrorCode MeshGetVertexSectionReal(Mesh mesh, PetscInt fiberDim, SectionRea
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealCreate(m->comm(), section);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *section, name);CHKERRQ(ierr);
   ierr = SectionRealSetBundle(*section, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(*section, s);CHKERRQ(ierr);
 #ifdef PETSC_OPT_SIEVE
   s->setChart(m->getSieve()->getChart());
 #endif
+  s->setName(name);
   s->setFiberDimension(m->depthStratum(0), fiberDim);
   m->allocate(s);
   PetscFunctionReturn(0);
@@ -851,7 +853,7 @@ PetscErrorCode MeshGetVertexSectionReal(Mesh mesh, PetscInt fiberDim, SectionRea
 .keywords: mesh, section, cell
 .seealso: MeshCreate(), SectionRealCreate()
 @*/
-PetscErrorCode MeshGetCellSectionReal(Mesh mesh, PetscInt fiberDim, SectionReal *section)
+PetscErrorCode MeshGetCellSectionReal(Mesh mesh, const char name[], PetscInt fiberDim, SectionReal *section)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
@@ -860,11 +862,13 @@ PetscErrorCode MeshGetCellSectionReal(Mesh mesh, PetscInt fiberDim, SectionReal 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealCreate(m->comm(), section);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *section, name);CHKERRQ(ierr);
   ierr = SectionRealSetBundle(*section, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(*section, s);CHKERRQ(ierr);
 #ifdef PETSC_OPT_SIEVE
   s->setChart(m->getSieve()->getChart());
 #endif
+  s->setName(name);
   s->setFiberDimension(m->heightStratum(0), fiberDim);
   m->allocate(s);
   PetscFunctionReturn(0);
@@ -1455,7 +1459,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntClear(SectionInt section)
 .keywords: mesh, section, vertex
 .seealso: MeshCreate(), SectionIntCreate()
 @*/
-PetscErrorCode MeshGetVertexSectionInt(Mesh mesh, PetscInt fiberDim, SectionInt *section)
+PetscErrorCode MeshGetVertexSectionInt(Mesh mesh, const char name[], PetscInt fiberDim, SectionInt *section)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
@@ -1464,11 +1468,13 @@ PetscErrorCode MeshGetVertexSectionInt(Mesh mesh, PetscInt fiberDim, SectionInt 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionIntCreate(m->comm(), section);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *section, name);CHKERRQ(ierr);
   ierr = SectionIntSetBundle(*section, m);CHKERRQ(ierr);
   ierr = SectionIntGetSection(*section, s);CHKERRQ(ierr);
 #ifdef PETSC_OPT_SIEVE
   s->setChart(m->getSieve()->getChart());
 #endif
+  s->setName(name);
   s->setFiberDimension(m->depthStratum(0), fiberDim);
   m->allocate(s);
   PetscFunctionReturn(0);
@@ -1493,7 +1499,7 @@ PetscErrorCode MeshGetVertexSectionInt(Mesh mesh, PetscInt fiberDim, SectionInt 
 .keywords: mesh, section, cell
 .seealso: MeshCreate(), SectionIntCreate()
 @*/
-PetscErrorCode MeshGetCellSectionInt(Mesh mesh, PetscInt fiberDim, SectionInt *section)
+PetscErrorCode MeshGetCellSectionInt(Mesh mesh, const char name[], PetscInt fiberDim, SectionInt *section)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
@@ -1502,11 +1508,13 @@ PetscErrorCode MeshGetCellSectionInt(Mesh mesh, PetscInt fiberDim, SectionInt *s
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionIntCreate(m->comm(), section);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *section, name);CHKERRQ(ierr);
   ierr = SectionIntSetBundle(*section, m);CHKERRQ(ierr);
   ierr = SectionIntGetSection(*section, s);CHKERRQ(ierr);
 #ifdef PETSC_OPT_SIEVE
   s->setChart(m->getSieve()->getChart());
 #endif
+  s->setName(name);
   s->setFiberDimension(m->heightStratum(0), fiberDim);
   m->allocate(s);
   PetscFunctionReturn(0);
