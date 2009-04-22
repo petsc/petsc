@@ -458,7 +458,7 @@
       call VecRestoreArray(X,lx_v,lx_i,ierr)
       call VecRestoreArray(F,lf_v,lf_i,ierr)
 
-      call PetscLogFlops(11.0*mx*my,ierr)
+      call PetscLogFlops(11.0d0*mx*my,ierr)
 
       return 
       end

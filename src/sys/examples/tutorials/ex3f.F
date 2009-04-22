@@ -35,7 +35,7 @@
       PetscErrorCode ierr
       parameter (imax = 10000)
       PetscLogDouble onefp
-      parameter (onefp = 1.0)
+      parameter (onefp = 1.0d0)
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
