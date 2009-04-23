@@ -276,7 +276,7 @@ int MPI_Finalized(int *flag)
 #define mpi_gather_           mpi_gather__
 #define mpi_allgather_        mpi_allgather__
 #define mpi_comm_split_       mpi_comm_split__
-#define mpi_scan              mpi_scan__
+#define mpi_scan_             mpi_scan__
 #define mpi_send_             mpi_send__
 #define mpi_recv_             mpi_recv__
 #define mpi_reduce_scatter_   mpi_reduce_scatter__
@@ -307,7 +307,7 @@ int MPI_Finalized(int *flag)
 #define mpi_request_free_     mpi_request_free__
 #define mpi_ssend_            mpi_ssend__
 #define mpi_wait_             mpi_wait__
-#define mpi_comm_group_       mpi_comm_group
+#define mpi_comm_group_       mpi_comm_group__
 #define mpi_exscan_           mpi_exscan__
 #endif
 
