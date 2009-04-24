@@ -442,8 +442,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(MPI_Comm comm,const char f
     vstring[cnt] = 0;
     ierr = PetscOptionsInsertString(vstring);CHKERRQ(ierr);
   }
-  if (astring) {ierr = PetscFree(astring);CHKERRQ(ierr);}
-  if (vstring) {ierr = PetscFree(vstring);CHKERRQ(ierr);}
+  ierr = PetscFree(astring);CHKERRQ(ierr);
+  ierr = PetscFree(vstring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
