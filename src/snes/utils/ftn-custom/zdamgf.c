@@ -14,6 +14,7 @@
 #define dmmgsetuser_             DMMGSETUSER
 #define dmmggetuser_             DMMGGETUSER
 #define dmmggetdm_               DMMGGETDM
+#define dmmgsetnullspace_        DMMGSETNULLSPACE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmmgarraygetdmmg_        dmmgarraygetdmmg_
 #define dmmgsetksp_              dmmgsetksp
@@ -27,7 +28,36 @@
 #define dmmgsetuser_             dmmgsetuser
 #define dmmggetuser_             dmmggetuser
 #define dmmggetdm_               dmmggetdm
+#define dmmgsetnullspace_        dmmgsetnullspace
 #endif
+
+static PetscErrorCode ournullspace(DMMG dmmg,Vec vec[])
+{
+  PetscErrorCode ierr = 0;
+  (*(void (PETSC_STDCALL *)(DMMG*,Vec*,PetscErrorCode*))(((PetscObject)dmmg->dm)->fortran_func_pointers[3]))(&dmmg,vec,&ierr);
+  return ierr;
+}
+
+EXTERN_C_BEGIN
+
+void PETSC_STDCALL dmmgsetnullspace_(DMMG **dmmg,PetscTruth *has_cnst,PetscInt *n,void (PETSC_STDCALL *nullspace)(DMMG*,Vec*,PetscErrorCode*),PetscErrorCode *ierr)
+{
+  PetscInt i;
+
+  CHKFORTRANNULLFUNCTION(nullspace);
+  if (!nullspace) {
+    *ierr = DMMGSetNullSpace(*dmmg,*has_cnst,*n,PETSC_NULL);
+  } else {
+    *ierr = DMMGSetNullSpace(*dmmg,*has_cnst,*n,ournullspace);if (*ierr) return;
+    /*
+    Save the fortran nullspace function in the DM on each level; ournullspace() pulls it out when needed
+    */
+    for (i=0; i<(**dmmg)->nlevels; i++) {
+      ((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers[3] = (PetscVoidFunction)nullspace;
+    }
+  }
+}
+
 
 EXTERN_C_BEGIN
 static void (PETSC_STDCALL *theirmat)(DMMG*,Mat*,Mat*,PetscErrorCode*);

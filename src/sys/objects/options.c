@@ -275,6 +275,29 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertString(const char in_str[])
   PetscFunctionReturn(0);
 }
 
+static char *Petscgetline(FILE * f)
+{
+  size_t size = 0;
+  size_t len  = 0;
+  size_t last = 0;
+  char * buf  = PETSC_NULL;
+
+  if (feof(f)) return 0;
+  do {
+    size += 1024; /* BUFSIZ is defined as "the optimal read size for this platform" */
+    buf = realloc(buf,size); /* realloc(NULL,n) is the same as malloc(n) */            
+    /* Actually do the read. Note that fgets puts a terminal '\0' on the
+    end of the string, so we make sure we overwrite this */
+    fgets(buf+last,size,f);
+    PetscStrlen(buf,&len);
+    last = len - 1;
+  } while (!feof(f) && buf[last] != '\n' && buf[last] != '\r');
+  if (last) return buf;
+  free(buf); 
+  return 0;
+}
+
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsInsertFile"
 /*@C
@@ -301,7 +324,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertString(const char in_str[])
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(MPI_Comm comm,const char file[],PetscTruth require)
 {
-  char           string[PETSC_MAX_PATH_LEN],fname[PETSC_MAX_PATH_LEN],*first,*second,*third,*vstring,*astring;
+  char           *string,fname[PETSC_MAX_PATH_LEN],*first,*second,*third,*vstring = 0,*astring = 0;
   PetscErrorCode ierr;
   size_t         i,len;
   FILE           *fd;
@@ -311,21 +334,22 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(MPI_Comm comm,const char f
   PetscMPIInt    rank,cnt,acnt;
 
   PetscFunctionBegin;
-  /* Warning: assume a maximum size for all options in a string */
-  ierr = PetscMalloc(64000*sizeof(char),&vstring);CHKERRQ(ierr);
-  vstring[0] = 0;
-  ierr = PetscMalloc(64000*sizeof(char),&astring);CHKERRQ(ierr);
-  astring[0] = 0;
-  cnt     = 0;
-  acnt    = 0;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
+    /* Warning: assume a maximum size for all options in a string */
+    ierr = PetscMalloc(128000*sizeof(char),&vstring);CHKERRQ(ierr);
+    vstring[0] = 0;
+    ierr = PetscMalloc(64000*sizeof(char),&astring);CHKERRQ(ierr);
+    astring[0] = 0;
+    cnt     = 0;
+    acnt    = 0;
+
     ierr = PetscFixFilename(file,fname);CHKERRQ(ierr);
     fd   = fopen(fname,"r"); 
     if (fd) {
       /* the following line will not work when opening initial files (like .petscrc) since info is not yet set */
       ierr = PetscInfo1(0,"Opened options file %s\n",file);CHKERRQ(ierr);
-      while (fgets(string,PETSC_MAX_PATH_LEN,fd)) {
+      while ((string = Petscgetline(fd))) {
 	/* eliminate comments from each line */
 	for (i=0; i<3; i++){
 	  ierr = PetscStrchr(string,cmt[i],&cmatch);
@@ -339,6 +363,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(MPI_Comm comm,const char f
 	  }
 	}
 	ierr = PetscTokenCreate(string,' ',&token);CHKERRQ(ierr);
+        free(string);
 	ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
 	if (!first) {
 	  goto destroy;
@@ -359,7 +384,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(MPI_Comm comm,const char f
             ierr = PetscStrcat(vstring,"\"");CHKERRQ(ierr);
           }
           ierr = PetscStrcat(vstring," ");CHKERRQ(ierr);
-	  /* ierr = PetscOptionsSetValue(first,second);CHKERRQ(ierr); */
 	} else {
 	  PetscTruth match;
 
@@ -371,7 +395,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(MPI_Comm comm,const char f
             ierr = PetscStrcat(astring," ");CHKERRQ(ierr);
             ierr = PetscStrcat(astring,third);CHKERRQ(ierr);
             ierr = PetscStrcat(astring," ");CHKERRQ(ierr);
-	    /* ierr = PetscOptionsSetAlias(second,third);CHKERRQ(ierr);*/
 	  } else {
 	    SETERRQ1(PETSC_ERR_ARG_WRONG,"Unknown statement in options file: (%s)",string);
 	  }
@@ -389,11 +412,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(MPI_Comm comm,const char f
       SETERRQ1(PETSC_ERR_USER,"Unable to open Options File %s",fname);
     }
   }
+
   ierr = MPI_Bcast(&acnt,1,MPIU_INT,0,comm);CHKERRQ(ierr);
   if (acnt) {
     PetscToken token;
     char       *first,*second;
 
+    if (rank) {
+      ierr = PetscMalloc((acnt+1)*sizeof(char),&astring);CHKERRQ(ierr);
+    }
     ierr = MPI_Bcast(astring,acnt,MPI_CHAR,0,comm);CHKERRQ(ierr);
     astring[acnt] = 0;
     ierr = PetscTokenCreate(astring,' ',&token);CHKERRQ(ierr);
@@ -408,8 +435,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(MPI_Comm comm,const char f
 
   ierr = MPI_Bcast(&cnt,1,MPIU_INT,0,comm);CHKERRQ(ierr);
   if (cnt) {
-    if (rank && vstring && cnt>64000 ) {
-      ierr = PetscFree(vstring);CHKERRQ(ierr);
+    if (rank) {
       ierr = PetscMalloc((cnt+1)*sizeof(char),&vstring);CHKERRQ(ierr);
     }
     ierr = MPI_Bcast(vstring,cnt,MPI_CHAR,0,comm);CHKERRQ(ierr);
