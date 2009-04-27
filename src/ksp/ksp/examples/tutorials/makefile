@@ -270,6 +270,11 @@ runex2_6:
 	   if (${DIFF} output/ex2_6.out ex2_6.tmp) then true; \
 	   else echo "Possible problem with ex2_6, diffs above"; fi; \
 	   ${RM} -f ex2_6.tmp
+runex2_7:
+	-@${MPIEXEC} -n 1 ./ex2 -pc_type ilu -pc_factor_use_drop_tolerance 0.01,0.0,2 > ex2_7.tmp 2>&1; \
+	   if (${DIFF} output/ex2_7.out ex2_7.tmp) then true; \
+	   else echo "Possible problem with ex2_7, diffs above"; fi; \
+	   ${RM} -f ex2_7.tmp
 runex2f:
 	-@${MPIEXEC} -n 2 ./ex2f -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex2f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex2f_1.out ex2f_1.tmp) then true; \
