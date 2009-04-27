@@ -285,7 +285,7 @@ static char *Petscgetline(FILE * f)
   if (feof(f)) return 0;
   do {
     size += 1024; /* BUFSIZ is defined as "the optimal read size for this platform" */
-    buf = (char*)realloc(buf,size); /* realloc(NULL,n) is the same as malloc(n) */            
+    buf = (char*)realloc((void *)buf,size); /* realloc(NULL,n) is the same as malloc(n) */            
     /* Actually do the read. Note that fgets puts a terminal '\0' on the
     end of the string, so we make sure we overwrite this */
     fgets(buf+last,size,f);

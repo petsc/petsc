@@ -58,6 +58,9 @@ void PETSC_STDCALL dmmgsetnullspace_(DMMG **dmmg,PetscTruth *has_cnst,PetscInt *
   }
 }
 
+EXTERN_C_END
+
+/* ----------------------------------------------------------------------------------------------------------*/
 
 EXTERN_C_BEGIN
 static void (PETSC_STDCALL *theirmat)(DMMG*,Mat*,Mat*,PetscErrorCode*);
