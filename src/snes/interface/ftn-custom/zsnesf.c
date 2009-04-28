@@ -345,6 +345,7 @@ void PETSC_STDCALL snesmonitorset_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,P
     if (FORTRANNULLFUNCTION(mondestroy)){
       *ierr = SNESMonitorSet(*snes,oursnesmonitor,*snes,PETSC_NULL);
     } else {
+      CHKFORTRANNULLFUNCTION(mondestroy);
       ((PetscObject)*snes)->fortran_func_pointers[5] = (PetscVoidFunction)mondestroy;
       *ierr = SNESMonitorSet(*snes,oursnesmonitor,*snes,ourmondestroy);
     }

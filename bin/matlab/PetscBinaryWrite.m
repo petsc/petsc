@@ -28,12 +28,7 @@ for l=1:nargin-1
   if issparse(A)
     % save sparse matrix in special Matlab format
     [m,n] = size(A);
-    majic = 1.2345678910e-30;
-    for i=1:min(m,n)
-      if A(i,i) == 0
-        A(i,i) = majic;
-      end
-    end
+
     if min(size(A)) == 1     %a one-rank matrix will be compressed to a
                              %scalar instead of a vectory by sum
       n_nz = full(A' ~= 0);
@@ -43,14 +38,9 @@ for l=1:nargin-1
     nz   = sum(n_nz);
     write(fd,[1211216,m,n,nz],'int32');
 
-    write(fd,n_nz,'int32');  %nonzeros per row
-    [i,j,s] = find((A' ~= 0).*(A'));
+    write(fd,n_nz,'int32');   %nonzeros per row
+    [i,j,s] = find(A');
     write(fd,i-1,'int32');
-    for i=1:nz
-      if s(i) == majic
-        s(i) = 0;
-      end
-    end
     write(fd,s,'double');
   else
     [m,n] = size(A);
