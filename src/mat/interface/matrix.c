@@ -1073,7 +1073,8 @@ $    idxm(MatStencil_c,1) = c
 
    For periodic boundary conditions use negative indices for values to the left (below 0; that are to be 
    obtained by wrapping values from right edge). For values to the right of the last entry using that index plus one
-   etc to obtain values that obtained by wrapping the values from the left edge.
+   etc to obtain values that obtained by wrapping the values from the left edge. This does not work for the DA_NONPERIODIC
+   wrap.
 
    For indices that don't mean anything for your case (like the k index when working in 2d) or the c index when you have
    a single value per point) you can skip filling those indices.
