@@ -1058,3 +1058,148 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_HYPRE(PC pc)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+#include "petscpc.h"   /*I "petscpc.h" I*/
+#include "petscda.h"   /*I "petscda.h" I*/
+
+
+typedef struct {
+  DA           da;
+} PC_PFMG;
+
+#undef __FUNCT__
+#define __FUNCT__ "PCSetUp_PFMG"
+PetscErrorCode PCSetUp_PFMG(PC pc)
+{
+  PetscErrorCode ierr;
+  Mat            A;
+  PC_PFMG        *ex = (PC_PFMG*) pc->data;
+  DA             da = ex->da;
+
+  PetscFunctionBegin;
+  ierr = PCGetOperators(pc,PETSC_NULL,&A,PETSC_NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCDestroy_PFMG"
+PetscErrorCode PCDestroy_PFMG(PC pc)
+{
+  PetscErrorCode ierr;
+  PC_PFMG        *ctx = (PC_PFMG*) pc->data;
+
+  PetscFunctionBegin;
+  if (ctx->da) {ierr = DADestroy(ctx->da);CHKERRQ(ierr);}
+  ierr = PetscFree(ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCSetUp_PFMG_Error"
+PetscErrorCode PCSetUp_PFMG_Error(PC pc)
+{
+  PetscFunctionBegin;
+  SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You are using the PFMG preconditioner but never called PCPFMGSetDA()");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCPFMGSetDA"
+/*@
+   PCPFMGSetDA - Sets the DA that is to be used by the PCPFMG preconditioner
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+-  da - the da
+
+   Level: intermediate
+
+
+.seealso: PCPFMG
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT PCPFMGSetDA(PC pc,DA da)
+{
+  PetscErrorCode ierr,(*f)(PC,DA);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCPFMGSetDA_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,da);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCPFMGSetDA_PFMG"
+PetscErrorCode PETSCKSP_DLLEXPORT PCPFMGSetDA_PFMG(PC pc,DA da)
+{
+  PetscErrorCode ierr;
+  PC_PFMG        *ctx = (PC_PFMG*) pc->data;
+
+  PetscFunctionBegin;
+  ctx->da = da;
+  pc->ops->setup = PCSetUp_PFMG;
+  ierr   = PetscObjectReference((PetscObject)da);CHKERRQ(ierr); 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCView_PFMG"
+PetscErrorCode PCView_PFMG(PC pc,PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  PetscTruth     iascii;
+  PC_PFMG        *ctx = (PC_PFMG*) pc->data;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetFromOptions_PFMG"
+PetscErrorCode PCSetFromOptions_PFMG(PC pc)
+{
+  PetscErrorCode ierr;
+  PetscTruth     flg;
+  PC_PFMG        *ctx = (PC_PFMG*) pc->data;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHead("PFMG options");CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+/*MC
+     PCPFMG - the hypre PFMG multigrid solver
+
+   Level: advanced
+
+.seealso:  PCMG, PCPFMGSetDA()
+M*/
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCCreate_PFMG"
+PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_PFMG(PC pc)
+{
+  PetscErrorCode ierr;
+  PC_PFMG        *ex;
+
+  PetscFunctionBegin;
+  ierr = PetscNew(PC_PFMG,&ex);CHKERRQ(ierr);\
+
+  pc->ops->setfromoptions = PCSetFromOptions_PFMG;
+  pc->ops->view           = PCView_PFMG;
+  pc->ops->destroy        = PCDestroy_PFMG;
+  pc->ops->setup          = PCSetUp_PFMG_Error;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCPFMGSetDA_C","PCPFMGSetDA_PFMG",PCPFMGSetDA_PFMG);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
