@@ -894,52 +894,82 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DARefine(DA da,MPI_Comm comm,DA *daref)
 {
-  PetscErrorCode ierr;
-  PetscInt       M,N,P;
-  DA             da2;
+ PetscErrorCode ierr;
+ PetscInt       M,N,P,i,*flx=0,*fly=0,*flz=0;
+ DA             da2;
 
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
-  PetscValidPointer(daref,3);
+ PetscFunctionBegin;
+ PetscValidHeaderSpecific(da,DM_COOKIE,1);
+ PetscValidPointer(daref,3);
 
-  if (DAXPeriodic(da->wrap) || da->interptype == DA_Q0){
-    M = da->refine_x*da->M;
-  } else {
-    M = 1 + da->refine_x*(da->M - 1);
-  }
-  if (DAYPeriodic(da->wrap) || da->interptype == DA_Q0){
-    N = da->refine_y*da->N;
-  } else {
-    N = 1 + da->refine_y*(da->N - 1);
-  }
-  if (DAZPeriodic(da->wrap) || da->interptype == DA_Q0){
-    P = da->refine_z*da->P;
-  } else {
-    P = 1 + da->refine_z*(da->P - 1);
-  }
-  ierr = DACreate(((PetscObject)da)->comm,da->dim,da->wrap,da->stencil_type,M,N,P,da->m,da->n,da->p,da->w,da->s,0,0,0,&da2);CHKERRQ(ierr);
+ PetscMalloc(da->m*sizeof(PetscInt),&flx);
+ for (i=0; i<da->m; i++) {
+   flx[i] = da->lx[i]*da->refine_x;
+ }
+ if (DAXPeriodic(da->wrap) || da->interptype == DA_Q0) {
+   flx[0] = (da->lx[0]-1)*da->refine_x+1;
+ }
+ if (da->dim>1) {
+   PetscMalloc(da->n*sizeof(PetscInt),&fly);
+   for (i=0; i<da->n; i++) {
+     fly[i] = da->ly[i]*da->refine_y;
+   }
+   if (DAYPeriodic(da->wrap) || da->interptype == DA_Q0){
+     fly[0] = (da->ly[0]-1)*da->refine_y+1;
+   }
+ }
+ if (da->dim>2) {
+   PetscMalloc(da->p*sizeof(PetscInt),&flz);
+   for (i=0; i<da->p; i++) {
+     flz[i] = da->lz[i]*da->refine_z;
+   }
+   if (DAZPeriodic(da->wrap) || da->interptype == DA_Q0) {
+     flz[0] = (da->lz[0]-1)*da->refine_z+1;
+   }
+ }
 
-  /* allow overloaded (user replaced) operations to be inherited by refinement clones */
-  da2->ops->getmatrix        = da->ops->getmatrix;
-  da2->ops->getinterpolation = da->ops->getinterpolation;
-  da2->ops->getcoloring      = da->ops->getcoloring;
-  da2->interptype            = da->interptype;
-  
-  /* copy fill information if given */
-  if (da->dfill) {
-    ierr = PetscMalloc((da->dfill[da->w]+da->w+1)*sizeof(PetscInt),&da2->dfill);CHKERRQ(ierr);
-    ierr = PetscMemcpy(da2->dfill,da->dfill,(da->dfill[da->w]+da->w+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  }
-  if (da->ofill) {
-    ierr = PetscMalloc((da->ofill[da->w]+da->w+1)*sizeof(PetscInt),&da2->ofill);CHKERRQ(ierr);
-    ierr = PetscMemcpy(da2->ofill,da->ofill,(da->ofill[da->w]+da->w+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  }
-  /* copy the refine information */
-  da2->refine_x = da->refine_x;
-  da2->refine_y = da->refine_y;
-  da2->refine_z = da->refine_z;
-  *daref = da2;
-  PetscFunctionReturn(0);
+ if (DAXPeriodic(da->wrap) || da->interptype == DA_Q0){
+   M = da->refine_x*da->M;
+ } else {
+   M = 1 + da->refine_x*(da->M - 1);
+ }
+ if (DAYPeriodic(da->wrap) || da->interptype == DA_Q0){
+   N = da->refine_y*da->N;
+ } else {
+   N = 1 + da->refine_y*(da->N - 1);
+ }
+ if (DAZPeriodic(da->wrap) || da->interptype == DA_Q0){
+   P = da->refine_z*da->P;
+ } else {
+   P = 1 + da->refine_z*(da->P - 1);
+ }
+ ierr = DACreate(((PetscObject)da)->comm,da->dim,da->wrap,da->stencil_type,M,N,P,da->m,da->n,da->p,da->w,da->s,flx,fly,flz,&da2);CHKERRQ(ierr);
+
+ PetscFree(flx);
+ if (da->dim>1) PetscFree(fly);
+ if (da->dim>2) PetscFree(flz);
+
+ /* allow overloaded (user replaced) operations to be inherited by refinement clones */
+ da2->ops->getmatrix        = da->ops->getmatrix;
+ da2->ops->getinterpolation = da->ops->getinterpolation;
+ da2->ops->getcoloring      = da->ops->getcoloring;
+ da2->interptype            = da->interptype;
+
+ /* copy fill information if given */
+ if (da->dfill) {
+   ierr = PetscMalloc((da->dfill[da->w]+da->w+1)*sizeof(PetscInt),&da2->dfill);CHKERRQ(ierr);
+   ierr = PetscMemcpy(da2->dfill,da->dfill,(da->dfill[da->w]+da->w+1)*sizeof(PetscInt));CHKERRQ(ierr);
+ }
+ if (da->ofill) {
+   ierr = PetscMalloc((da->ofill[da->w]+da->w+1)*sizeof(PetscInt),&da2->ofill);CHKERRQ(ierr);
+   ierr = PetscMemcpy(da2->ofill,da->ofill,(da->ofill[da->w]+da->w+1)*sizeof(PetscInt));CHKERRQ(ierr);
+ }
+ /* copy the refine information */
+ da2->refine_x = da->refine_x;
+ da2->refine_y = da->refine_y;
+ da2->refine_z = da->refine_z;
+ *daref = da2;
+ PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
