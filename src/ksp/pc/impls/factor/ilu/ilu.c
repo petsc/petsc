@@ -253,6 +253,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
     if (!pc->setupcalled) {
       ierr = MatGetOrdering(pc->pmat,((PC_Factor*)ilu)->ordering,&ilu->row,&ilu->col);CHKERRQ(ierr);
     CHKMEMQ;
+      ierr = MatGetFactor(pc->pmat,MAT_SOLVER_PETSC,MAT_FACTOR_ILUDT,&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
       if (ilu->row) {ierr = PetscLogObjectParent(pc,ilu->row);CHKERRQ(ierr);}
       if (ilu->col) {ierr = PetscLogObjectParent(pc,ilu->col);CHKERRQ(ierr);}
       ierr = MatILUDTFactor(pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info,&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);

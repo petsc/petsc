@@ -26,7 +26,7 @@ EXTERN PetscErrorCode SPARSEKIT2msrcsr(PetscInt*,MatScalar*,PetscInt*,MatScalar*
 #endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatILUDTFactor_SeqAIJ"
+#define __FUNCT__ "MatILUDTFactor_SeqAIJ_saad"
   /* ------------------------------------------------------------
 
           This interface was contribed by Tony Caola
@@ -48,7 +48,7 @@ EXTERN PetscErrorCode SPARSEKIT2msrcsr(PetscInt*,MatScalar*,PetscInt*,MatScalar*
 
      ------------------------------------------------------------
 */
-PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo *info,Mat *fact)
+PetscErrorCode MatILUDTFactor_SeqAIJ_saad(Mat A,IS isrow,IS iscol,const MatFactorInfo *info,Mat *fact)
 {
 #if defined(PETSC_AVOID_GNUCOPYRIGHT_CODE)
   PetscFunctionBegin;
@@ -286,10 +286,10 @@ PetscErrorCode MatGetFactor_seqaij_petsc(Mat A,MatFactorType ftype,Mat *B)
     ierr = MatSetType(*B,MATSEQAIJ);CHKERRQ(ierr);
     if (ftype == MAT_FACTOR_ILU) {
       (*B)->ops->ilufactorsymbolic= MatILUFactorSymbolic_SeqAIJ;
-    } else if(MAT_FACTOR_LU) {
+    } else if(ftype == MAT_FACTOR_LU) {
       (*B)->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ;
     } else {
-      (*B)->ops->iludtfactorsymbolic = MatILUDTFactorSymbolic_SeqAIJ;
+      (*B)->ops->iludtfactor = MatILUDTFactor_SeqAIJ;
     }
   } else if (ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC) {
     ierr = MatSetType(*B,MATSEQSBAIJ);CHKERRQ(ierr);
@@ -1963,30 +1963,35 @@ PetscErrorCode MatILUDTFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const
   (B)->factor                = MAT_FACTOR_ILUDT;
   (B)->info.factor_mallocs   = 0;
   (B)->info.fill_ratio_given = ((PetscReal)nnz)/((PetscReal)ai[n]);
-  B->ops->lufactornumeric = MatILUDTFactorNumeric_SeqAIJ;
   PetscFunctionReturn(0); 
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatILUDTFactorNumeric_SeqAIJ"
-PetscErrorCode MatILUDTFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
+#define __FUNCT__ "MatILUDTFactor_SeqAIJ"
+PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo *info,Mat *fact)
 {
+  Mat                B = *fact;
   Mat_SeqAIJ         *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data;
-  IS                 isrow=b->row,isicol=b->icol;  
+  IS                 isicol;  
   PetscErrorCode     ierr;
   const PetscInt     *r,*ic;
   PetscInt           i,n=A->rmap->n,*ai=a->i,*aj=a->j,*ajtmp,*adiag=a->diag;
-  PetscInt           *bi=b->i,*bj=b->j,*bdiag=b->diag;
+  PetscInt           *bi,*bj,*bdiag;
   PetscInt           row,nzi,nzi_bl,nzi_bu,*im,dtcount,nzi_al,nzi_au;
   PetscInt           nlnk,*lnk;
   PetscBT            lnkbt;
   PetscTruth         row_identity,icol_identity,both_identity;
-  MatScalar          *v,*pv,*batmp,*ba=b->a,*rtmp,*pc,multiplier,*vtmp;
+  MatScalar          *v,*pv,*batmp,*ba,*rtmp,*pc,multiplier,*vtmp;
   const PetscInt     *ics;
   PetscInt           j,nz,*pj,*bjtmp,k,ncut,*jtmp;
   PetscReal          dt=info->dt;
 
   PetscFunctionBegin;
+  ierr = MatILUDTFactorSymbolic_SeqAIJ(B,A,isrow,iscol,info);CHKERRQ(ierr);
+  bi=b->i; bj=b->j; bdiag=b->diag;
+  ba=b->a;
+
+  isicol = b->icol;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   ics  = ic;
