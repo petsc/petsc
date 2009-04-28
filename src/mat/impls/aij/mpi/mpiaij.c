@@ -3570,8 +3570,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscI
    When calling this routine with a single process communicator, a matrix of
    type SEQAIJ is returned.  If a matrix of type MPIAIJ is desired for this
    type of communicator, use the construction mechanism:
-     MatCreate(...,&A); MatSetType(A,MPIAIJ); MatMPIAIJSetPreallocation(A,...);
-
+     MatCreate(...,&A); MatSetType(A,MATMPIAIJ); MatSetSizes(A, m,n,M,N); MatMPIAIJSetPreallocation(A,...);
+ 
    By default, this format uses inodes (identical nodes) when possible.
    We search for consecutive rows with the same nonzero structure, thereby
    reusing matrix information to achieve increased efficiency.

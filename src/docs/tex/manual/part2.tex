@@ -732,13 +732,13 @@ scalar problem in two dimensions one could do
 \begin{tabbing}
    PetscScalar **f,**u;\\
    ...\\
-  DAVecGetArray(DA da,Vec local,(void*)u);\\
-  DAVecGetArray(DA da,Vec global,(void*)f);\\
+  DAVecGetArray(DA da,Vec local,(void*)\&u);\\
+  DAVecGetArray(DA da,Vec global,(void*)\&f);\\
    ...\\
       f[i][j] = u[i][j] - ...\\
    ...\\
-  DAVecRestoreArray(DA da,Vec local,(void*)u);\\
-  DAVecRestoreArray(DA da,Vec global,(void*)f);
+  DAVecRestoreArray(DA da,Vec local,(void*)\&u);\\
+  DAVecRestoreArray(DA da,Vec global,(void*)\&f);
 \end{tabbing}
 See \trl{${PETSC_DIR}/src/snes/examples/tutorials/ex5.c} for a 
 complete example and see \trl{${PETSC_DIR}/src/snes/examples/tutorials/ex19.c} for an
