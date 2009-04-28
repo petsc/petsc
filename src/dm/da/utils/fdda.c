@@ -524,7 +524,7 @@ EXTERN PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA,Mat);
     Input Parameter:
 +   da - the distributed array
 -   mtype - Supported types are MATSEQAIJ, MATMPIAIJ, MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ,
-            or any type which inherits from one of these (such as MATAIJ, MATLUSOL, etc.).
+            or any type which inherits from one of these (such as MATAIJ, MATBAIJ, MATSBAIJ)
 
     Output Parameters:
 .   J  - matrix with the correct nonzero structure
