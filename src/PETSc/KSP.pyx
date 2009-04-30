@@ -201,9 +201,9 @@ cdef class KSP(Object):
         cdef object vecsl = [] if L else None
         CHKERR( KSPGetVecs(self.ksp, nr, &vr, nl, &vr) )
         try:
-            for i in range(nr):
+            for i from 0 <= i < nr:
                 vecsr.append(ref_Vec(vr[i]))
-            for i in range(nl):
+            for i from 0 <= i < nl:
                 vecsl.append(ref_Vec(vl[i]))
         finally:
             if nr and vr: VecDestroyVecs(vr, nr) # XXX errors?

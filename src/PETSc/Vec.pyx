@@ -262,13 +262,13 @@ cdef class Vec(Object):
         return (low, high)
 
     def getOwnershipRanges(self):
-        cdef const_PetscInt *ranges = NULL
-        CHKERR( VecGetOwnershipRanges(self.vec, &ranges) )
+        cdef const_PetscInt *rng = NULL
+        CHKERR( VecGetOwnershipRanges(self.vec, &rng) )
         cdef MPI_Comm comm = MPI_COMM_NULL
         CHKERR( PetscObjectGetComm(<PetscObject>self.vec, &comm) )
         cdef int size = -1
         CHKERR( MPI_Comm_size(comm, &size) )
-        return array_i(size+1, ranges)
+        return array_i(size+1, rng)
 
     def getArray(self, out=None):
         array = asarray(self)
@@ -482,7 +482,7 @@ cdef class Vec(Object):
         n = len(alphas); assert n == len(vecs)
         cdef object tmp1 = allocate(n*sizeof(PetscScalar),<void**>&a)
         cdef object tmp2 = allocate(n*sizeof(PetscVec),<void**>&v)
-        for i in range(n):
+        for i from 0 <= i < n:
             a[i] = asScalar(alphas[i])
             v[i] = (<Vec?>(vecs[i])).vec
         CHKERR( VecMAXPY(self.vec, n, a, v) )

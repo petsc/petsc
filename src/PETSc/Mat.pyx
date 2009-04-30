@@ -382,13 +382,13 @@ cdef class Mat(Object):
         return (rlow, rhigh)
 
     def getOwnershipRanges(self):
-        cdef const_PetscInt *rowranges = NULL
-        CHKERR( MatGetOwnershipRanges(self.mat, &rowranges) )
+        cdef const_PetscInt *rowrng = NULL
+        CHKERR( MatGetOwnershipRanges(self.mat, &rowrng) )
         cdef MPI_Comm comm = MPI_COMM_NULL
         CHKERR( PetscObjectGetComm(<PetscObject>self.mat, &comm) )
         cdef int size = -1
         CHKERR( MPI_Comm_size(comm, &size) )
-        return array_i(size+1, rowranges)
+        return array_i(size+1, rowrng)
 
     def getOwnershipRangeColumn(self):
         cdef PetscInt clow=0, chigh=0
@@ -396,13 +396,13 @@ cdef class Mat(Object):
         return (clow, chigh)
 
     def getOwnershipRangesColumn(self):
-        cdef const_PetscInt *colranges = NULL
-        CHKERR( MatGetOwnershipRangesColumn(self.mat, &colranges) )
+        cdef const_PetscInt *colrng = NULL
+        CHKERR( MatGetOwnershipRangesColumn(self.mat, &colrng) )
         cdef MPI_Comm comm = MPI_COMM_NULL
         CHKERR( PetscObjectGetComm(<PetscObject>self.mat, &comm) )
         cdef int size = -1
         CHKERR( MPI_Comm_size(comm, &size) )
-        return array_i(size+1, colranges)
+        return array_i(size+1, colrng)
 
     def duplicate(self, copy=False):
         cdef PetscMatDuplicateOption flag = MAT_DO_NOT_COPY_VALUES
@@ -982,7 +982,8 @@ cdef class NullSpace(Object):
         if constant: has_const = PETSC_TRUE
         nv = len(vectors)
         cdef object tmp = allocate(nv*sizeof(PetscVec),<void**>&v)
-        for i in range(nv): v[i] = (<Vec?>(vectors[i])).vec
+        for i from 0 <= i < nv:
+            v[i] = (<Vec?>(vectors[i])).vec
         CHKERR( MatNullSpaceCreate(ccomm, has_const, nv, v, &newnsp) )
         PetscCLEAR(self.obj); self.nsp = newnsp
         return self

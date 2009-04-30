@@ -622,12 +622,13 @@ cdef inline int matsetvalues_rcv(PetscMat A,
         "values must have two or more dimensions: " \
         "vals.ndim=%d" % (av.cndim) )
     # check various shapes
-    cdef PetscInt k=0
     cdef PetscInt nm = ai.cshape[0]
     cdef PetscInt si = ai.cshape[1]
     cdef PetscInt sj = aj.cshape[1]
     cdef PetscInt sv = av.cshape[1]
-    for k in range(2, av.cndim): sv *= av.cshape[k]
+    cdef PetscInt k=0, avndim=av.cndim
+    for k from 2 < k <= avndim:
+        sv *= av.cshape[k]
     if ((nm != aj.cshape[0]) or \
         (nm != av.cshape[0]) or \
         (si*bs * sj*bs != sv)): raise ValueError(
@@ -639,7 +640,7 @@ cdef inline int matsetvalues_rcv(PetscMat A,
          matsetvalues_fcn(blocked, local)
     cdef PetscInsertMode addv = insertmode(oaddv)
     # actual calls
-    for k in range(nm):
+    for k from 0 <= k < nm:
         CHKERR( setvalues(A, si, &i[k*si], sj, &j[k*sj], &v[k*sv], addv) )
     return 0
 
@@ -689,13 +690,13 @@ cdef inline int matsetvalues_ijv(PetscMat A,
     cdef PetscInt k=0, l=0
     cdef PetscInt irow=0, ncol=0, *icol=NULL
     cdef PetscScalar *sval=NULL
-    for k in range(nm):
+    for k from 0 <= k < nm:
         irow = m[k] if m!=NULL else rs+k
         ncol = i[k+1] - i[k]
         icol = j + i[k]
         if blocked:
             sval = v + i[k]*bs2
-            for l in range(ncol):
+            for l from 0 <= l < ncol:
                 CHKERR( setvalues(A, 1, &irow, 1, &icol[l], &sval[l*bs2], addv) )
         else:
             sval = v + i[k]
