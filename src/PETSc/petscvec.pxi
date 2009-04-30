@@ -318,17 +318,31 @@ cdef inline int vecsetvalues(PetscVec V,
     CHKERR( setvalues(V, ni, i, v, addv) )
     return 0
 
+cdef object vecgetvalues(PetscVec vec, object oindices, object values):
+    cdef PetscInt ni=0, nv=0
+    cdef PetscInt *i=NULL
+    cdef PetscScalar *v=NULL
+    cdef ndarray indices = iarray_i(oindices, &ni, &i)
+    if values is None:
+        values = empty_s(ni)
+        values.shape = indices.shape
+    values = oarray_s(values, &nv, &v)
+    if (ni != nv): raise ValueError(
+        "incompatible array sizes: ni=%d, nv=%d" % (ni, nv))
+    CHKERR( VecGetValues(vec, ni, i, v) )
+    return values
+
+# --------------------------------------------------------------------
+
 cdef object vec_getitem(Vec self, object i):
     cdef PetscInt N=0
     if i is Ellipsis:
         return asarray(self)
-    if isinstance(i, int):
-        return self.getValue(i)
     if isinstance(i, slice):
         CHKERR( VecGetSize(self.vec, &N) )
         start, stop, stride = i.indices(N)
         i = arange(start, stop, stride)
-    return self.getValues(i)
+    return vecgetvalues(self.vec, i, None)
 
 cdef int vec_setitem(Vec self, object i, object v) except -1:
     cdef PetscInt N=0

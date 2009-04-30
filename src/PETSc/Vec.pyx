@@ -514,18 +514,7 @@ cdef class Vec(Object):
         return toScalar(sval)
 
     def getValues(self, indices, values=None):
-        cdef PetscInt ni = 0, nv = 0
-        cdef PetscInt *i = NULL
-        cdef PetscScalar *v = NULL
-        indices = iarray_i(indices, &ni, &i)
-        if values is None:
-            values = empty_s(ni)
-            values.shape = indices.shape
-        values = oarray_s(values, &nv, &v)
-        if (ni != nv): raise ValueError(
-            "incompatible array sizes: ni=%d, nv=%d" % (ni, nv))
-        CHKERR( VecGetValues(self.vec, ni, i, v) )
-        return values
+        return vecgetvalues(self.vec, indices, values)
 
     def setValue(self, index, value, addv=None):
         cdef PetscInt ival = index
