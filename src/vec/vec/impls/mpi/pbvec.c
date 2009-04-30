@@ -366,6 +366,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGhostRestoreLocalForm(Vec g,Vec *l)
 
   PetscFunctionBegin;
   ierr = PetscObjectDereference((PetscObject)*l);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
