@@ -20,6 +20,9 @@ function [varargout] = PetscBinaryRead(inarg,comp,cnt)
 %  comp = 'cell' means return a Matlab cell array 
 %         if cnt is given then cnt PETSc objects are read otherwise 
 %         all objects are read in
+%
+%  Examples:  A = PetscBinaryRead('myfile','cell');  read all objects in file
+%             A = PetscBinaryRead(1024,'cell',2);  read two objects from socket 
 %   
 if nargin < 2
   comp = 0;
@@ -37,7 +40,7 @@ end
 end
 end
 
-if comp == 'cell'
+if strcmp(comp,'cell')
   if nargin == 3
     narg = cnt;
   else
@@ -51,7 +54,7 @@ end
 for l=1:narg
   header = read(fd,1,'int32');
   if isempty(header)
-    if comp == 'cell'
+    if strcmp(comp,'cell')
       varargout(1) = {result};
       return 
     else 
@@ -71,7 +74,7 @@ for l=1:narg
       error(str);
     end
     j   = read(fd,nz,'int32') + 1;
-    if comp == 'complex'
+    if strcmp(comp,'complex')
       s   = read(fd,2*nz,'double');
     else 
       s   = read(fd,nz,'double');
@@ -83,12 +86,12 @@ for l=1:narg
       i(cnt:next,1) = k*ones(nnz(k),1);
       cnt = next+1;
     end
-    if comp == 'complex'
+    if strcmp(comp,'complex')
       A = sparse(i,j,complex(s(1:2:2*nz),s(2:2:2*nz)),m,n,nz);
     else
       A = sparse(i,j,s,m,n,nz);
     end
-    if comp == 'cell'
+    if strcmp(comp,'cell')
       result{l} = A;
     else 
       varargout(l) = {A};
@@ -96,13 +99,13 @@ for l=1:narg
   
   elseif  header == 1211214 % Petsc Vec Object
     m = read(fd,1,'int32');
-    if comp == 'complex'
+    if strcmp(comp,'complex')
       v = read(fd,2*m,'double');
       v = complex(v(1:2:2*m),v(2:2:2*m));
     else
       v = read(fd,m,'double');
     end
-    if comp == 'cell'
+    if strcmp(comp,'cell')
       result{l} = v;
     else 
       varargout(l) = {v};
@@ -110,7 +113,7 @@ for l=1:narg
 
   elseif header == 1211219 % Petsc Bag Object
     b = PetscBagRead(fd);
-    if comp == 'cell'
+    if strcmp(comp,'cell')
       result{l} = b;
     else 
       varargout(l) = {b};
