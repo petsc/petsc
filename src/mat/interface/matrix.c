@@ -4602,34 +4602,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd(Mat mat,MatAssemblyType type)
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatCompress"
-/*@
-   MatCompress - Tries to store the matrix in as little space as 
-   possible.  May fail if memory is already fully used, since it
-   tries to allocate new space.
-
-   Collective on Mat
-
-   Input Parameters:
-.  mat - the matrix 
-
-   Level: advanced
-
-@*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCompress(Mat mat)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
-  PetscValidType(mat,1);
-  ierr = MatPreallocated(mat);CHKERRQ(ierr);
-  if (mat->ops->compress) {ierr = (*mat->ops->compress)(mat);CHKERRQ(ierr);}
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption"
 /*@
