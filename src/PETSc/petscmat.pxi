@@ -710,6 +710,22 @@ cdef inline int matsetvalues_csr(PetscMat A,
     matsetvalues_ijv(A, oi, oj, ov, oaddv, None, blocked, local)
     return 0
 
+cdef inline matgetvalues(PetscMat mat, object orows, object ocols, object values):
+    cdef PetscInt ni=0, nj=0, nv=0
+    cdef PetscInt *i=NULL, *j=NULL
+    cdef PetscScalar *v=NULL
+    cdef ndarray rows = iarray_i(orows, &ni, &i)
+    cdef ndarray cols = iarray_i(ocols, &nj, &j)
+    if values is None:
+        values = empty_s(ni*nj)
+        values.shape = rows.shape + cols.shape
+    values = oarray_s(values, &nv, &v)
+    if (ni*nj != nv): raise ValueError(
+        "incompatible array sizes: " \
+        "ni=%d, nj=%d, nv=%d" % (ni, nj, nv))
+    CHKERR( MatGetValues(mat, ni, i, nj, j, v) )
+    return values
+
 # --------------------------------------------------------------------
 
 cdef extern from "custom.h":
@@ -726,30 +742,30 @@ cdef int matfactorinfo(PetscTruth incomplete, object options,
 
 cdef object mat_getitem(Mat self, object ij):
     cdef PetscInt M=0, N=0
-    i, j = ij
-    if isinstance(i, slice):
+    rows, cols = ij
+    if isinstance(rows, slice):
         CHKERR( MatGetSize(self.mat, &M, NULL) )
-        start, stop, stride = i.indices(M)
-        i = arange(start, stop, stride)
-    if isinstance(j, slice):
+        start, stop, stride = rows.indices(M)
+        rows = arange(start, stop, stride)
+    if isinstance(cols, slice):
         CHKERR( MatGetSize(self.mat, NULL, &N) )
-        start, stop, stride = j.indices(N)
-        j = arange(start, stop, stride)
-    return self.getValues(i, j)
+        start, stop, stride = cols.indices(N)
+        cols = arange(start, stop, stride)
+    return matgetvalues(self.mat, rows, cols, None)
 
 
 cdef int mat_setitem(Mat self, object ij, object v) except -1:
     cdef PetscInt M=0, N=0
-    i, j = ij
-    if isinstance(i, slice):
+    rows, cols = ij
+    if isinstance(rows, slice):
         CHKERR( MatGetSize(self.mat, &M, NULL) )
-        start, stop, stride = i.indices(M)
-        i = arange(start, stop, stride)
-    if isinstance(j, slice):
+        start, stop, stride = rows.indices(M)
+        rows = arange(start, stop, stride)
+    if isinstance(cols, slice):
         CHKERR( MatGetSize(self.mat, NULL, &N) )
-        start, stop, stride = j.indices(N)
-        j = arange(start, stop, stride)
-    matsetvalues(self.mat, i, j, v, None, 0, 0)
+        start, stop, stride = cols.indices(N)
+        cols = arange(start, stop, stride)
+    matsetvalues(self.mat, rows, cols, v, None, 0, 0)
     return 0
 
 # --------------------------------------------------------------------

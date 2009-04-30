@@ -508,20 +508,7 @@ cdef class Mat(Object):
         return toScalar(sval)
 
     def getValues(self, rows, cols, values=None):
-        cdef PetscInt ni=0, nj=0, nv=0
-        cdef PetscInt *i=NULL, *j=NULL
-        cdef PetscScalar *v=NULL
-        rows = iarray_i(rows, &ni, &i)
-        cols = iarray_i(cols, &nj, &j)
-        if values is None:
-            values = empty_s(ni*nj);
-            values.shape = (ni, nj)
-        values = oarray_s(values, &nv, &v)
-        if (ni*nj != nv): raise ValueError(
-            "incompatible array sizes: " \
-            "ni=%d, nj=%d, nv=%d" % (ni, nj, nv))
-        CHKERR( MatGetValues(self.mat, ni, i, nj, j, v) )
-        return values
+        return matgetvalues(self.mat, rows, cols, values)
 
     def getRow(self, row):
         cdef PetscInt irow = row
