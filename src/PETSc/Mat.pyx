@@ -429,9 +429,6 @@ cdef class Mat(Object):
         CHKERR( MatLoad(viewer.vwr, mtype, &newmat) )
         PetscCLEAR(self.obj); self.mat = newmat
 
-    def compress(self):
-        CHKERR( MatCompress(self.mat) )
-
     def convert(self, mat_type=None, Mat out=None):
         cdef PetscMatType mtype = MATSAME
         cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX

@@ -132,7 +132,6 @@ cdef extern from "petscmat.h" nogil:
     int MatLoad(PetscViewer,PetscMatType,PetscMat*)
     int MatDuplicate(PetscMat,PetscMatDuplicateOption,PetscMat*)
     int MatCopy(PetscMat,PetscMat,PetscMatStructure)
-    int MatCompress(PetscMat)
     int MatTranspose(PetscMat,PetscMatReuse,PetscMat*)
     int MatConvert(PetscMat,PetscMatType,PetscMatReuse,PetscMat*)
 
