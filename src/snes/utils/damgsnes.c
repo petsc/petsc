@@ -1174,11 +1174,17 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUp(DMMG *dmmg)
   PetscInt       i,nDM;
   PetscTruth     fieldsplit,dmcomposite;
   KSP            ksp;
+  SNES           snes;
   PC             pc;
   IS             *fields;
 
   PetscFunctionBegin;
-  ierr = SNESGetKSP(DMMGGetSNES(dmmg),&ksp);CHKERRQ(ierr);
+  snes = DMMGGetSNES(dmmg);
+  if (snes) {
+    ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+  } else {
+    ksp = DMMGGetKSP(dmmg);
+  }
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)pc,PCFIELDSPLIT,&fieldsplit);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)DMMGGetDM(dmmg),"DMComposite",&dmcomposite);CHKERRQ(ierr);
@@ -1192,6 +1198,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUp(DMMG *dmmg)
     }
     ierr = PetscFree(fields);CHKERRQ(ierr);
   }
+  ierr = PCSetDA(pc,(DA)DMMGGetDM(dmmg));CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

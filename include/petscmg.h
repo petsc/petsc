@@ -74,7 +74,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGDefaultResidual(Mat,Vec,Vec,Vec);
 
 #include "petscda.h"
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCDMMGSetDM(PC,DM);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCExoticSetDA(PC,DA);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSetDA(PC,DA);
 
 /*E
     PCExoticType - Face based or wirebasket based coarse grid space

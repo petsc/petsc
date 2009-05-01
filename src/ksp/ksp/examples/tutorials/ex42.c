@@ -46,7 +46,7 @@ int main(int argc,char **argv)
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCExoticSetDA(pc,da);CHKERRQ(ierr);
+  ierr = PCSetDA(pc,da);CHKERRQ(ierr);
  
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
    

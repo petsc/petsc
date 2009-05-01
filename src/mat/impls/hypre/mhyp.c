@@ -297,3 +297,188 @@ PetscErrorCode MatHYPRE_IJMatrixLink(Mat A,HYPRE_IJMatrix *ij)
   ierr = PetscLogEventEnd(MAT_Convert,A,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+
+/*MC
+   MATHYPRESTRUCT - MATHYPRESTRUCT = "hyprestruct" - A matrix type to be used for parallel sparse matrices
+          based on the hypre HYPRE_StructMatrix.
+
+
+.seealso: MatCreateMPIAIJ()
+M*/
+
+#include "petscda.h"   /*I "petscda.h" I*/
+#include "HYPRE_struct_mv.h"
+#include "HYPRE_struct_ls.h"
+
+typedef struct {
+  MPI_Comm            hcomm;
+  DA                  da;
+  HYPRE_StructGrid    hgrid;
+  HYPRE_StructStencil hstencil;
+  HYPRE_StructMatrix  hmat;
+  HYPRE_StructVector  hb,hx;
+} Mat_HYPREStruct;
+
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSetUp_HYPREStruct"
+PetscErrorCode MatSetUp_HYPREStruct(Mat mat)
+{
+  Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
+
+  PetscFunctionBegin;
+  if (!ex->da) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You are using the MATHYPRESTRUCT preconditioner but never called MatSetDA()");
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetDA_HYPREStruct"
+PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA_HYPREStruct(Mat mat,DA da)
+{
+  PetscErrorCode  ierr;
+  Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
+  PetscInt         dim,dof,sw[3];
+  int              ilower[3],iupper[3],ssize,i;
+  DAPeriodicType   p;
+  DAStencilType    st;
+
+  PetscFunctionBegin;
+  ex->da = da;
+  ierr   = PetscObjectReference((PetscObject)da);CHKERRQ(ierr); 
+
+  ierr = DAGetInfo(ex->da,&dim,0,0,0,0,0,0,&dof,&sw[0],&p,&st);CHKERRQ(ierr);
+  ierr = DAGetCorners(ex->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
+  iupper[0] += ilower[0] - 1;    
+  iupper[1] += ilower[1] - 1;    
+  iupper[2] += ilower[2] - 1;    
+
+  /* create the hypre grid object and set its information */
+  if (dof > 1) SETERRQ(PETSC_ERR_SUP,"Currently only support for scalar problems");
+  if (p) SETERRQ(PETSC_ERR_SUP,"Ask us to add periodic support by calling HYPRE_StructGridSetPeriodic()");
+  ierr = HYPRE_StructGridCreate(ex->hcomm,dim,&ex->hgrid);CHKERRQ(ierr);
+
+  ierr = HYPRE_StructGridSetExtents(ex->hgrid,ilower,iupper);CHKERRQ(ierr);
+  ierr = HYPRE_StructGridAssemble(ex->hgrid);CHKERRQ(ierr);
+    
+  sw[1] = sw[0];
+  sw[2] = sw[1];
+  ierr = HYPRE_StructGridSetNumGhost(ex->hgrid,sw);CHKERRQ(ierr);
+
+  /* create the hypre stencil object and set its information */
+  if (sw[0] > 1) SETERRQ(PETSC_ERR_SUP,"Ask us to add support for wider stencils"); 
+  if (st == DA_STENCIL_BOX) SETERRQ(PETSC_ERR_SUP,"Ask us to add support for box stencils"); 
+  if (dim == 1) {
+    int offsets[3][1] = {{-1},{0},{1}};
+    ssize = 3;
+    ierr = HYPRE_StructStencilCreate(dim,ssize,&ex->hstencil);CHKERRQ(ierr);
+    for (i=0; i<ssize; i++) {
+      ierr = HYPRE_StructStencilSetElement(ex->hstencil,i,offsets[i]);CHKERRQ(ierr);
+    }
+  } else if (dim == 2) {
+    int offsets[5][2] = {{0,-1},{-1,0},{0,0},{1,0},{0,1}};
+    ssize = 5;
+    ierr = HYPRE_StructStencilCreate(dim,ssize,&ex->hstencil);CHKERRQ(ierr);
+    for (i=0; i<ssize; i++) {
+      ierr = HYPRE_StructStencilSetElement(ex->hstencil,i,offsets[i]);CHKERRQ(ierr);
+    }
+  } else if (dim == 3) {
+    int offsets[7][3] = {{0,0,-1},{0,-1,0},{-1,0,0},{0,0,0},{1,0,0},{0,1,0},{0,0,1}}; 
+    ssize = 7;
+    ierr = HYPRE_StructStencilCreate(dim,ssize,&ex->hstencil);CHKERRQ(ierr);
+    for (i=0; i<ssize; i++) {
+      ierr = HYPRE_StructStencilSetElement(ex->hstencil,i,offsets[i]);CHKERRQ(ierr);
+    }
+  }
+  
+  /* create the HYPRE vector for rhs and solution */
+  ierr = HYPRE_StructVectorCreate(ex->hcomm,ex->hgrid,&ex->hb);CHKERRQ(ierr);
+  ierr = HYPRE_StructVectorCreate(ex->hcomm,ex->hgrid,&ex->hx);CHKERRQ(ierr);
+  ierr = HYPRE_StructVectorInitialize(ex->hb);CHKERRQ(ierr);
+  ierr = HYPRE_StructVectorInitialize(ex->hx);CHKERRQ(ierr);
+  ierr = HYPRE_StructVectorAssemble(ex->hb);CHKERRQ(ierr);
+  ierr = HYPRE_StructVectorAssemble(ex->hx);CHKERRQ(ierr);
+
+  /* create the hypre matrix object and set its information */
+  ierr = HYPRE_StructMatrixCreate(ex->hcomm,ex->hgrid,ex->hstencil,&ex->hmat);CHKERRQ(ierr);
+  ierr = HYPRE_StructMatrixInitialize(ex->hmat);CHKERRQ(ierr);
+
+  {
+    /* make matrix be identity */
+    int dummy = 3;
+    PetscScalar values[10000],*dd;
+    Vec d; 
+   
+    ierr = MatGetVecs(mat,&d,0);CHKERRQ(ierr);
+    ierr = MatGetDiagonal(mat,d);CHKERRQ(ierr);
+    ierr = VecGetArray(d,&dd);CHKERRQ(ierr);
+    ierr = HYPRE_StructMatrixSetBoxValues(ex->hmat,ilower,iupper,1,&dummy,dd);CHKERRQ(ierr);
+    ierr = VecRestoreArray(d,&dd);CHKERRQ(ierr);
+    ierr = VecDestroy(d);CHKERRQ(ierr);
+    for (i=0; i<10000; i++) values[i] = 0.0;
+    dummy = 0; ierr = HYPRE_StructMatrixSetBoxValues(ex->hmat,ilower,iupper,1,&dummy,values);CHKERRQ(ierr);
+    dummy = 1; ierr = HYPRE_StructMatrixSetBoxValues(ex->hmat,ilower,iupper,1,&dummy,values);CHKERRQ(ierr);
+    dummy = 2; ierr = HYPRE_StructMatrixSetBoxValues(ex->hmat,ilower,iupper,1,&dummy,values);CHKERRQ(ierr);
+    dummy = 4; ierr = HYPRE_StructMatrixSetBoxValues(ex->hmat,ilower,iupper,1,&dummy,values);CHKERRQ(ierr);
+    dummy = 5; ierr = HYPRE_StructMatrixSetBoxValues(ex->hmat,ilower,iupper,1,&dummy,values);CHKERRQ(ierr);
+    dummy = 6; ierr = HYPRE_StructMatrixSetBoxValues(ex->hmat,ilower,iupper,1,&dummy,values);CHKERRQ(ierr);
+  }
+  ierr = HYPRE_StructMatrixAssemble(ex->hmat);CHKERRQ(ierr);
+  ierr = HYPRE_StructMatrixPrint("dummy",ex->hmat,1);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetDA"
+/*@
+   MatSetDA - Sets the DA that is to be used by the HYPRE_StructMatrix PETSc matrix
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+-  da - the da
+
+   Level: intermediate
+
+
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA(Mat mat,DA da)
+{
+  PetscErrorCode ierr,(*f)(Mat,DA);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSetDA_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(mat,da);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreate_HYPREStruct"
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_HYPREStruct(Mat B)
+{
+  Mat_HYPREStruct *ex;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr            = PetscNewLog(B,Mat_HYPREStruct,&ex);CHKERRQ(ierr);
+  B->data         = (void*)ex;
+  B->rmap->bs     = 1;
+  B->assembled    = PETSC_FALSE;
+  B->mapping      = 0;
+
+  B->insertmode   = NOT_SET_VALUES;
+
+  ierr = MPI_Comm_dup(((PetscObject)B)->comm,&(ex->hcomm));CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSetDA_C","MatSetDA_HYPREStruct",MatSetDA_HYPREStruct);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATHYPRESTRUCT);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END

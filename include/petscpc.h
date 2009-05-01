@@ -70,6 +70,7 @@ E*/
 #define PCCP              "cp"
 #define PCBFBT            "bfbt"
 #define PCPYTHON          "python"
+#define PCPFMG            "pfmg"
 
 /* Logging support */
 extern PetscCookie PETSCKSP_DLLEXPORT PC_COOKIE;

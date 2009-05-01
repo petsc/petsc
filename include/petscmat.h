@@ -64,6 +64,7 @@ E*/
 #define MATTRANSPOSEMAT    "transpose"
 #define MATSCHURCOMPLEMENT "schurcomplement"
 #define MATPYTHON          "python"
+#define MATHYPRESTRUCT     "hyprestruct"
 
 /*E
     MatSolverPackage - String with the name of a PETSc matrix solver type. 

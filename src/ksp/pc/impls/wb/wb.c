@@ -115,14 +115,14 @@ PetscErrorCode PCDestroy_Exotic(PC pc)
 PetscErrorCode PCSetUp_Exotic_Error(PC pc)
 {
   PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You are using the Exotic preconditioner but never called PCExoticSetDA()");
+  SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You are using the Exotic preconditioner but never called PCSetDA()");
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCExoticSetDA"
+#define __FUNCT__ "PCSetDA"
 /*@
-   PCExoticSetDA - Sets the DA that is to be used by the PCEXOTIC preconditioner
+   PCSetDA - Sets the DA that is to be used by the PCEXOTIC or certain other preconditioners
 
    Collective on PC
 
@@ -135,14 +135,14 @@ PetscErrorCode PCSetUp_Exotic_Error(PC pc)
 
 .seealso: PCEXOTIC, PCExoticType()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCExoticSetDA(PC pc,DA da)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSetDA(PC pc,DA da)
 {
   PetscErrorCode ierr,(*f)(PC,DA);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   PetscValidHeaderSpecific(da,DM_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCExoticSetDA_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSetDA_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,da);CHKERRQ(ierr);
   } 
@@ -151,8 +151,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCExoticSetDA(PC pc,DA da)
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCExoticSetDA_Exotic"
-PetscErrorCode PETSCKSP_DLLEXPORT PCExoticSetDA_Exotic(PC pc,DA da)
+#define __FUNCT__ "PCSetDA_Exotic"
+PetscErrorCode PETSCKSP_DLLEXPORT PCSetDA_Exotic(PC pc,DA da)
 {
   PetscErrorCode ierr;
   PC_MG          **mg = (PC_MG**)pc->data;
@@ -241,7 +241,7 @@ PetscErrorCode PCSetFromOptions_Exotic(PC pc)
 
    Level: advanced
 
-.seealso:  PCMG, PCExoticSetDA(), PCExoticType, PCExoticSetType()
+.seealso:  PCMG, PCSetDA(), PCExoticType, PCExoticSetType()
 M*/
 
 EXTERN_C_BEGIN
@@ -254,6 +254,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Exotic(PC pc)
   PC_MG          **mg;
 
   PetscFunctionBegin;
+  /* if type was previously mg; must manually destroy it because call to PCSetType(pc,PCMG) will not destroy it */
+  if (pc->ops->destroy) { ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr); pc->data = 0;}
+  ierr = PetscStrfree(((PetscObject)pc)->type_name);CHKERRQ(ierr);
+  ((PetscObject)pc)->type_name = 0;
+
   ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);
   ierr = PCMGSetLevels(pc,2,PETSC_NULL);CHKERRQ(ierr);
   ierr = PCMGSetGalerkin(pc);CHKERRQ(ierr);
@@ -268,7 +273,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Exotic(PC pc)
   pc->ops->destroy        = PCDestroy_Exotic;
   pc->ops->setup          = PCSetUp_Exotic_Error;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCExoticSetType_C","PCExoticSetType_Exotic",PCExoticSetType_Exotic);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCExoticSetDA_C","PCExoticSetDA_Exotic",PCExoticSetDA_Exotic);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSetDA_C","PCSetDA_Exotic",PCSetDA_Exotic);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
