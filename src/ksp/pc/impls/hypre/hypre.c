@@ -1061,130 +1061,31 @@ EXTERN_C_END
 
 /* ---------------------------------------------------------------------------------------------------------------------------------*/
 
-#include "petscpc.h"   /*I "petscpc.h" I*/
-#include "petscda.h"   /*I "petscda.h" I*/
-#include "petscmg.h"   /*I "petscmg.h" I*/
-#include "HYPRE_struct_mv.h"
-#include "HYPRE_struct_ls.h"
+/* we know we are working with a HYPRE_StructMatrix */
+#include "../src/mat/impls/hypre/mhyp.h"
+#include "private/matimpl.h"
+#include "private/pcimpl.h"
 
 typedef struct {
-  MPI_Comm            hcomm;
-  DA                  da;
-  HYPRE_StructGrid    hgrid;
-  HYPRE_StructStencil hstencil;
-  HYPRE_StructMatrix  hmat;
-  HYPRE_StructVector  hb,hx;
+  MPI_Comm            hcomm;       /* does not share comm with HYPRE_StructMatrix because need to create solver before getting matrix */
   HYPRE_StructSolver  hsolver;
 } PC_PFMG;
-
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_PFMG_Error"
-PetscErrorCode PCSetUp_PFMG_Error(PC pc)
-{
-  PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You are using the PFMG preconditioner but never called PCSetDA()");
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUp_PFMG"
 PetscErrorCode PCSetUp_PFMG(PC pc)
 {
-  PetscErrorCode ierr;
-  Mat            A;
-  PC_PFMG        *ex = (PC_PFMG*) pc->data;
-  PetscInt       dim,dof,sw[3];
-  int            ilower[3],iupper[3],ssize,i;
-  DAPeriodicType p;
-  DAStencilType  st;
+  PetscErrorCode  ierr;
+  PC_PFMG         *ex = (PC_PFMG*) pc->data;
+  Mat_HYPREStruct *mx = (Mat_HYPREStruct *)(pc->pmat->data);
+  PetscTruth      flg;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(ex->da,&dim,0,0,0,0,0,0,&dof,&sw[0],&p,&st);CHKERRQ(ierr);
-  ierr = DAGetCorners(ex->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
-  iupper[0] += ilower[0] - 1;    
-  iupper[1] += ilower[1] - 1;    
-  iupper[2] += ilower[2] - 1;    
-
-  if (!pc->setupcalled) {
-    /* create the hypre grid object and set its information */
-    if (dof > 1) SETERRQ(PETSC_ERR_SUP,"Currently only support for scalar problems");
-    if (p) SETERRQ(PETSC_ERR_SUP,"Ask us to add periodic support by calling HYPRE_StructGridSetPeriodic()");
-    ierr = HYPRE_StructGridCreate(ex->hcomm,dim,&ex->hgrid);CHKERRQ(ierr);
-
-    ierr = HYPRE_StructGridSetExtents(ex->hgrid,ilower,iupper);CHKERRQ(ierr);
-    ierr = HYPRE_StructGridAssemble(ex->hgrid);CHKERRQ(ierr);
-    
-    sw[1] = sw[0];
-    sw[2] = sw[1];
-    ierr = HYPRE_StructGridSetNumGhost(ex->hgrid,sw);CHKERRQ(ierr);
-
-    /* create the hypre stencil object and set its information */
-    if (sw[0] > 1) SETERRQ(PETSC_ERR_SUP,"Ask us to add support for wider stencils"); 
-    if (st == DA_STENCIL_BOX) SETERRQ(PETSC_ERR_SUP,"Ask us to add support for box stencils"); 
-    if (dim == 1) {
-      int offsets[3][1] = {{-1},{0},{1}};
-      ssize = 3;
-      ierr = HYPRE_StructStencilCreate(dim,ssize,&ex->hstencil);CHKERRQ(ierr);
-      for (i=0; i<ssize; i++) {
-        ierr = HYPRE_StructStencilSetElement(ex->hstencil,i,offsets[i]);CHKERRQ(ierr);
-      }
-    } else if (dim == 2) {
-      int offsets[5][2] = {{0,-1},{-1,0},{0,0},{1,0},{0,1}};
-      ssize = 5;
-      ierr = HYPRE_StructStencilCreate(dim,ssize,&ex->hstencil);CHKERRQ(ierr);
-      for (i=0; i<ssize; i++) {
-        ierr = HYPRE_StructStencilSetElement(ex->hstencil,i,offsets[i]);CHKERRQ(ierr);
-      }
-    } else if (dim == 3) {
-      int offsets[7][3] = {{0,0,-1},{0,-1,0},{-1,0,0},{0,0,0},{1,0,0},{0,1,0},{0,0,1}}; 
-      ssize = 7;
-      ierr = HYPRE_StructStencilCreate(dim,ssize,&ex->hstencil);CHKERRQ(ierr);
-      for (i=0; i<ssize; i++) {
-        ierr = HYPRE_StructStencilSetElement(ex->hstencil,i,offsets[i]);CHKERRQ(ierr);
-      }
-    }
-
-    /* create the HYPRE vector for rhs and solution */
-    ierr = HYPRE_StructVectorCreate(ex->hcomm,ex->hgrid,&ex->hb);CHKERRQ(ierr);
-    ierr = HYPRE_StructVectorCreate(ex->hcomm,ex->hgrid,&ex->hx);CHKERRQ(ierr);
-    ierr = HYPRE_StructVectorInitialize(ex->hb);CHKERRQ(ierr);
-    ierr = HYPRE_StructVectorInitialize(ex->hx);CHKERRQ(ierr);
-    ierr = HYPRE_StructVectorAssemble(ex->hb);CHKERRQ(ierr);
-    ierr = HYPRE_StructVectorAssemble(ex->hx);CHKERRQ(ierr);
-  }
-
-  /* create the hypre matrix object and set its information */
-  if (ex->hmat) {ierr = HYPRE_StructMatrixDestroy(ex->hmat);CHKERRQ(ierr);}
-  ierr = HYPRE_StructMatrixCreate(ex->hcomm,ex->hgrid,ex->hstencil,&ex->hmat);CHKERRQ(ierr);
-  ierr = HYPRE_StructMatrixInitialize(ex->hmat);CHKERRQ(ierr);
-
-  {
-    /* make matrix be identity */
-    int dummy = 3;
-    PetscScalar values[10000],*dd;
-    Vec d; 
-   
-    ierr = MatGetVecs(pc->pmat,&d,0);CHKERRQ(ierr);
-    ierr = MatGetDiagonal(pc->pmat,d);CHKERRQ(ierr);
-    ierr = VecGetArray(d,&dd);CHKERRQ(ierr);
-    ierr = HYPRE_StructMatrixSetBoxValues(ex->hmat,ilower,iupper,1,&dummy,dd);CHKERRQ(ierr);
-    ierr = VecRestoreArray(d,&dd);CHKERRQ(ierr);
-    ierr = VecDestroy(d);CHKERRQ(ierr);
-    for (i=0; i<10000; i++) values[i] = 0.0;
-    dummy = 0; ierr = HYPRE_StructMatrixSetBoxValues(ex->hmat,ilower,iupper,1,&dummy,values);CHKERRQ(ierr);
-    dummy = 1; ierr = HYPRE_StructMatrixSetBoxValues(ex->hmat,ilower,iupper,1,&dummy,values);CHKERRQ(ierr);
-    dummy = 2; ierr = HYPRE_StructMatrixSetBoxValues(ex->hmat,ilower,iupper,1,&dummy,values);CHKERRQ(ierr);
-    dummy = 4; ierr = HYPRE_StructMatrixSetBoxValues(ex->hmat,ilower,iupper,1,&dummy,values);CHKERRQ(ierr);
-    dummy = 5; ierr = HYPRE_StructMatrixSetBoxValues(ex->hmat,ilower,iupper,1,&dummy,values);CHKERRQ(ierr);
-    dummy = 6; ierr = HYPRE_StructMatrixSetBoxValues(ex->hmat,ilower,iupper,1,&dummy,values);CHKERRQ(ierr);
-  }
-  ierr = HYPRE_StructMatrixAssemble(ex->hmat);CHKERRQ(ierr);
-  ierr = HYPRE_StructMatrixPrint("dummy",ex->hmat,1);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)pc->pmat,MATHYPRESTRUCT,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_ERR_ARG_INCOMP,"Must use MATHYPRESTRUCT with this preconditioner");
 
   /* create the hypre solver object and set its information */
-  if (ex->hsolver) {ierr = HYPRE_StructPFMGDestroy(ex->hsolver);CHKERRQ(ierr);}
-  ierr = HYPRE_StructPFMGCreate(ex->hcomm,&ex->hsolver);CHKERRQ(ierr);
-  ierr = HYPRE_StructPFMGSetup(ex->hsolver,ex->hmat,ex->hb,ex->hx);CHKERRQ(ierr);
+  ierr = HYPRE_StructPFMGSetup(ex->hsolver,mx->hmat,mx->hb,mx->hx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1196,29 +1097,9 @@ PetscErrorCode PCDestroy_PFMG(PC pc)
   PC_PFMG        *ex = (PC_PFMG*) pc->data;
 
   PetscFunctionBegin;
-  if (ex->da) {ierr = DADestroy(ex->da);CHKERRQ(ierr);}
-  if (ex->hgrid) {ierr = HYPRE_StructGridDestroy(ex->hgrid);CHKERRQ(ierr);}
-  if (ex->hstencil) {ierr = HYPRE_StructStencilDestroy(ex->hstencil);CHKERRQ(ierr);}
-  if (ex->hmat) {ierr = HYPRE_StructMatrixDestroy(ex->hmat);CHKERRQ(ierr);}
-  if (ex->hb) {ierr = HYPRE_StructVectorDestroy(ex->hb);CHKERRQ(ierr);}
-  if (ex->hx) {ierr = HYPRE_StructVectorDestroy(ex->hx);CHKERRQ(ierr);}
   if (ex->hsolver) {ierr = HYPRE_StructPFMGDestroy(ex->hsolver);CHKERRQ(ierr);}
   ierr = MPI_Comm_free(&ex->hcomm);CHKERRQ(ierr);
   ierr = PetscFree(ex);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PCSetDA_PFMG"
-PetscErrorCode PETSCKSP_DLLEXPORT PCSetDA_PFMG(PC pc,DA da)
-{
-  PetscErrorCode ierr;
-  PC_PFMG        *ex = (PC_PFMG*) pc->data;
-
-  PetscFunctionBegin;
-  ex->da = da;
-  ierr   = PetscObjectReference((PetscObject)da);CHKERRQ(ierr); 
-  pc->ops->setup = PCSetUp_PFMG;
   PetscFunctionReturn(0);
 }
 
@@ -1245,6 +1126,11 @@ PetscErrorCode PCSetFromOptions_PFMG(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("PFMG options");CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-pc_pfmg_print_statistics","Print statistics","None",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  if (flg) {
+    int level=1;
+    ierr = HYPRE_StructPFMGSetPrintLevel(ex->hsolver,level);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1253,29 +1139,30 @@ PetscErrorCode PCSetFromOptions_PFMG(PC pc)
 #define __FUNCT__ "PCApply_PFMG"
 PetscErrorCode PCApply_PFMG(PC pc,Vec x,Vec y)
 {
-  PetscErrorCode ierr;
-  PC_PFMG        *ex = (PC_PFMG*) pc->data;
-  PetscScalar    *xx,*yy;
-  int            ilower[3],iupper[3];
+  PetscErrorCode  ierr;
+  PC_PFMG         *ex = (PC_PFMG*) pc->data;
+  PetscScalar     *xx,*yy;
+  int             ilower[3],iupper[3];
+  Mat_HYPREStruct *mx = (Mat_HYPREStruct *)(pc->pmat->data);
 
   PetscFunctionBegin;
-  ierr = DAGetCorners(ex->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
+  ierr = DAGetCorners(mx->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
   iupper[0] += ilower[0] - 1;    
   iupper[1] += ilower[1] - 1;    
   iupper[2] += ilower[2] - 1;    
 
   /* copy x values over to hypre */
-  ierr = HYPRE_StructVectorInitialize(ex->hb);CHKERRQ(ierr);
+  ierr = HYPRE_StructVectorInitialize(mx->hb);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
-  ierr = HYPRE_StructVectorSetBoxValues(ex->hb,ilower,iupper,xx);CHKERRQ(ierr);
+  ierr = HYPRE_StructVectorSetBoxValues(mx->hb,ilower,iupper,xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
-  ierr = HYPRE_StructVectorAssemble(ex->hb);CHKERRQ(ierr);
+  ierr = HYPRE_StructVectorAssemble(mx->hb);CHKERRQ(ierr);
 
-  ierr = HYPRE_StructPFMGSolve(ex->hsolver,ex->hmat,ex->hb,ex->hx);CHKERRQ(ierr);
+  ierr = HYPRE_StructPFMGSolve(ex->hsolver,mx->hmat,mx->hb,mx->hx);CHKERRQ(ierr);
 
   /* copy solution values back to PETSc */
   ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
-  ierr = HYPRE_StructVectorGetBoxValues(ex->hb,ilower,iupper,yy);CHKERRQ(ierr);
+  ierr = HYPRE_StructVectorGetBoxValues(mx->hb,ilower,iupper,yy);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
 
   /*   ierr = VecCopy(x,y);CHKERRQ(ierr); */
@@ -1303,15 +1190,15 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_PFMG(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscNew(PC_PFMG,&ex);CHKERRQ(ierr);\
+  pc->data = ex;
 
   pc->ops->setfromoptions = PCSetFromOptions_PFMG;
   pc->ops->view           = PCView_PFMG;
   pc->ops->destroy        = PCDestroy_PFMG;
   pc->ops->apply          = PCApply_PFMG;
-  pc->ops->setup          = PCSetUp_PFMG_Error;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSetDA_C","PCSetDA_PFMG",PCSetDA_PFMG);CHKERRQ(ierr);
+  pc->ops->setup          = PCSetUp_PFMG;
   ierr = MPI_Comm_dup(((PetscObject)pc)->comm,&(ex->hcomm));CHKERRQ(ierr);
-  pc->data = ex;
+  ierr = HYPRE_StructPFMGCreate(ex->hcomm,&ex->hsolver);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

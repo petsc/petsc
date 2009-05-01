@@ -38,6 +38,11 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPICRL(Mat);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Scatter(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BlockMat(Mat);
+
+#if defined(PETSC_HAVE_HYPRE)
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatCreate_HYPREStruct(PC);
+#endif
+
 EXTERN_C_END
   
 /*
@@ -106,6 +111,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char path[])
   ierr = MatRegisterDynamic(MATMPIADJ,         path,"MatCreate_MPIAdj",    MatCreate_MPIAdj);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSCATTER,        path,"MatCreate_Scatter",   MatCreate_Scatter);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATBLOCKMAT,       path,"MatCreate_BlockMat",   MatCreate_BlockMat);CHKERRQ(ierr);
+
+#if defined(PETSC_HAVE_HYPRE)
+  ierr = MatRegisterDynamic(MATHYPRESTRUCT,    path,"MatCreate_HYPREStruct", MatCreate_HYPREStruct);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
