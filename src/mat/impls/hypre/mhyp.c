@@ -322,6 +322,49 @@ PetscErrorCode MatSetUp_HYPREStruct(Mat mat)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetValuesLocal_HYPREStruct_3d"
+PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv) 
+{
+  PetscErrorCode  ierr;
+  PetscInt        i,j,stencil,nx,ny,gnx,gny,rstart,*gindices,index[3],row,entries[7] = {0,1,2,3,4,5,6};
+  PetscScalar     values[7];
+  Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
+
+  PetscFunctionBegin;
+  ierr = MatGetOwnershipRange(mat,&rstart,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(ex->da,PETSC_NULL,&gindices);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(ex->da,0,0,0,&gnx,&gny,0);CHKERRQ(ierr);
+  ierr = DAGetCorners(ex->da,0,0,0,&nx,&ny,0);CHKERRQ(ierr);
+  for (i=0; i<nrow; i++) {
+    ierr = PetscMemzero(values,7*sizeof(PetscScalar));CHKERRQ(ierr);
+    for (j=0; j<ncol; j++) {
+      stencil = icol[j] - irow[i];
+      if (!stencil) {
+        values[3] = *y++;
+      } else if (stencil == -1) {
+        values[2] = *y++;
+      } else if (stencil == 1) {
+        values[4] = *y++;
+      } else if (stencil == -gnx) {
+        values[1] = *y++;
+      } else if (stencil == gnx) {
+        values[5] = *y++;
+      } else if (stencil == -gnx*gny) {
+        values[0] = *y++;
+      } else if (stencil == gnx*gny) {
+        values[6] = *y++;
+      } else SETERRQ3(PETSC_ERR_ARG_WRONG,"Local row %D local column %D have bad stencil %D",irow[i],icol[j],stencil);
+    }
+    row = gindices[irow[i]] - rstart;
+    index[0] = row % nx;
+    index[1] = (row/nx) % ny;
+    index[2] = row/(nx*ny);
+    ierr = HYPRE_StructMatrixSetValues(ex->hmat,index,7,entries,values);CHKERRQ(ierr);
+  }
+
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetDA_HYPREStruct"
@@ -402,6 +445,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA_HYPREStruct(Mat mat,DA da)
   ierr = PetscMapSetUp(mat->rmap);CHKERRQ(ierr);
   ierr = PetscMapSetUp(mat->cmap);CHKERRQ(ierr);
 
+  if (dim == 3) {
+    mat->ops->setvalueslocal = MatSetValuesLocal_HYPREStruct_3d;
+  } else SETERRQ(PETSC_ERR_SUP,"Only support for 3d DA currently");
+
   PetscFunctionReturn(0);
 }
 
@@ -431,18 +478,12 @@ PetscErrorCode MatMult_HYPREStruct(Mat A,Vec x,Vec y)
 
   /* copy solution values back to PETSc */
   ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
-  ierr = HYPRE_StructVectorGetBoxValues(mx->hb,ilower,iupper,yy);CHKERRQ(ierr);
+  ierr = HYPRE_StructVectorGetBoxValues(mx->hx,ilower,iupper,yy);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatSetValuesLocal_HYPREStruct"
-PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPREStruct(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv) 
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_HYPREStruct"
@@ -462,8 +503,8 @@ PetscErrorCode MatAssemblyEnd_HYPREStruct(Mat mat,MatAssemblyType mode)
   iupper[1] += ilower[1] - 1;    
   iupper[2] += ilower[2] - 1;    
 
-  {
-    /* make matrix be identity */
+  /* {
+
     int dummy = 3;
     PetscScalar values[10000];
    
@@ -477,9 +518,9 @@ PetscErrorCode MatAssemblyEnd_HYPREStruct(Mat mat,MatAssemblyType mode)
     dummy = 4; ierr = HYPRE_StructMatrixSetBoxValues(ex->hmat,ilower,iupper,1,&dummy,values);CHKERRQ(ierr);
     dummy = 5; ierr = HYPRE_StructMatrixSetBoxValues(ex->hmat,ilower,iupper,1,&dummy,values);CHKERRQ(ierr);
     dummy = 6; ierr = HYPRE_StructMatrixSetBoxValues(ex->hmat,ilower,iupper,1,&dummy,values);CHKERRQ(ierr);
-  }
+    } */
   ierr = HYPRE_StructMatrixAssemble(ex->hmat);CHKERRQ(ierr);
-  ierr = HYPRE_StructMatrixPrint("dummy",ex->hmat,1);CHKERRQ(ierr);
+  ierr = HYPRE_StructMatrixPrint("dummy",ex->hmat,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -530,7 +571,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_HYPREStruct(Mat B)
   B->insertmode   = NOT_SET_VALUES;
 
   B->ops->assemblyend    = MatAssemblyEnd_HYPREStruct;
-  B->ops->setvalueslocal = MatSetValuesLocal_HYPREStruct;
   B->ops->mult           = MatMult_HYPREStruct;
 
   ierr = MPI_Comm_dup(((PetscObject)B)->comm,&(ex->hcomm));CHKERRQ(ierr);

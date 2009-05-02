@@ -1086,6 +1086,8 @@ PetscErrorCode PCSetUp_PFMG(PC pc)
 
   /* create the hypre solver object and set its information */
   ierr = HYPRE_StructPFMGSetup(ex->hsolver,mx->hmat,mx->hb,mx->hx);CHKERRQ(ierr);
+  ierr = HYPRE_StructPFMGSetZeroGuess(ex->hsolver);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -1123,14 +1125,18 @@ PetscErrorCode PCSetFromOptions_PFMG(PC pc)
   PetscErrorCode ierr;
   PetscTruth     flg;
   PC_PFMG        *ex = (PC_PFMG*) pc->data;
+  PetscInt       its = 1;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("PFMG options");CHKERRQ(ierr);
   ierr = PetscOptionsTruth("-pc_pfmg_print_statistics","Print statistics","None",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
-    int level=1;
+    int level=3;
     ierr = HYPRE_StructPFMGSetPrintLevel(ex->hsolver,level);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsInt("-pc_pfmg_its","Number of iterations of PFMG to use as preconditioner","None",its,&its,PETSC_NULL);CHKERRQ(ierr);
+  ierr = HYPRE_StructPFMGSetMaxIter(ex->hsolver,its);CHKERRQ(ierr);
+  /* ierr = HYPRE_StructPFMGSetTol(ex->hsolver,100);CHKERRQ(ierr); */
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1162,7 +1168,7 @@ PetscErrorCode PCApply_PFMG(PC pc,Vec x,Vec y)
 
   /* copy solution values back to PETSc */
   ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
-  ierr = HYPRE_StructVectorGetBoxValues(mx->hb,ilower,iupper,yy);CHKERRQ(ierr);
+  ierr = HYPRE_StructVectorGetBoxValues(mx->hx,ilower,iupper,yy);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
 
   /*   ierr = VecCopy(x,y);CHKERRQ(ierr); */
