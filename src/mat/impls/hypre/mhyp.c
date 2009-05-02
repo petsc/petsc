@@ -327,7 +327,7 @@ PetscErrorCode MatSetUp_HYPREStruct(Mat mat)
 PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv) 
 {
   PetscErrorCode  ierr;
-  PetscInt        i,j,stencil,nx,ny,gnx,gny,rstart,*gindices,index[3],row,entries[7] = {0,1,2,3,4,5,6};
+  PetscInt        i,j,stencil,nx,ny,xs,ys,zs,gnx,gny,rstart,*gindices,index[3],row,entries[7] = {0,1,2,3,4,5,6};
   PetscScalar     values[7];
   Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
 
@@ -335,7 +335,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPREStruct_3d(Mat mat,Petsc
   ierr = MatGetOwnershipRange(mat,&rstart,PETSC_NULL);CHKERRQ(ierr);
   ierr = DAGetGlobalIndices(ex->da,PETSC_NULL,&gindices);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(ex->da,0,0,0,&gnx,&gny,0);CHKERRQ(ierr);
-  ierr = DAGetCorners(ex->da,0,0,0,&nx,&ny,0);CHKERRQ(ierr);
+  ierr = DAGetCorners(ex->da,&xs,&ys,&zs,&nx,&ny,0);CHKERRQ(ierr);
   for (i=0; i<nrow; i++) {
     ierr = PetscMemzero(values,7*sizeof(PetscScalar));CHKERRQ(ierr);
     for (j=0; j<ncol; j++) {
@@ -357,9 +357,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPREStruct_3d(Mat mat,Petsc
       } else SETERRQ3(PETSC_ERR_ARG_WRONG,"Local row %D local column %D have bad stencil %D",irow[i],icol[j],stencil);
     }
     row = gindices[irow[i]] - rstart;
-    index[0] = row % nx;
-    index[1] = (row/nx) % ny;
-    index[2] = row/(nx*ny);
+    index[0] = xs + (row % nx);
+    index[1] = ys + ((row/nx) % ny);
+    index[2] = zs + (row/(nx*ny));
     ierr = HYPRE_StructMatrixSetValues(ex->hmat,index,7,entries,values);CHKERRQ(ierr);
   }
 
