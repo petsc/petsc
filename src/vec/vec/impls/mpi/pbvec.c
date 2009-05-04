@@ -285,6 +285,35 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateMPIWithArray(MPI_Comm comm,PetscInt n
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "VecGhostStateSync_Private"
+/*
+  This is used in VecGhostGetLocalForm and VecGhostRestoreLocalForm to ensure
+  that the state is updated if either vector has changed since the last time
+  one of these functions was called.  It could apply to any PetscObject, but
+  VecGhost is quite different from other objects in that two separate vectors
+  look at the same memory.
+
+  In principle, we could only propagate state to the local vector on
+  GetLocalForm and to the global vector on RestoreLocalForm, but this version is
+  more conservative (i.e. robust against misuse) and simpler.
+
+  Note that this function is correct and changes nothing if both arguments are the
+  same, which is the case in serial.
+*/
+static PetscErrorCode VecGhostStateSync_Private(Vec g,Vec l)
+{
+  PetscErrorCode ierr;
+  PetscInt       gstate,lstate;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectStateQuery((PetscObject)g,&gstate);CHKERRQ(ierr);
+  ierr = PetscObjectStateQuery((PetscObject)l,&lstate);CHKERRQ(ierr);
+  ierr = PetscObjectSetState((PetscObject)g,PetscMax(gstate,lstate));CHKERRQ(ierr);
+  ierr = PetscObjectSetState((PetscObject)l,PetscMax(gstate,lstate));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "VecGhostGetLocalForm"
 /*@
     VecGhostGetLocalForm - Obtains the local ghosted representation of 
@@ -335,6 +364,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGhostGetLocalForm(Vec g,Vec *l)
   } else {
     SETERRQ1(PETSC_ERR_ARG_WRONG,"Vector type %s does not have local representation",((PetscObject)g)->type_name);
   }
+  ierr = VecGhostStateSync_Private(g,*l);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)*l);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -365,6 +395,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGhostRestoreLocalForm(Vec g,Vec *l)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = VecGhostStateSync_Private(g,*l);CHKERRQ(ierr);
   ierr = PetscObjectDereference((PetscObject)*l);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

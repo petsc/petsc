@@ -42,118 +42,117 @@ struct _MatOps {
   /*20*/
   PetscErrorCode (*assemblybegin)(Mat,MatAssemblyType);
   PetscErrorCode (*assemblyend)(Mat,MatAssemblyType);
-  PetscErrorCode (*compress)(Mat);
   PetscErrorCode (*setoption)(Mat,MatOption,PetscTruth);
   PetscErrorCode (*zeroentries)(Mat);
-  /*25*/
+  /*24*/
   PetscErrorCode (*zerorows)(Mat,PetscInt,const PetscInt[],PetscScalar);
   PetscErrorCode (*lufactorsymbolic)(Mat,Mat,IS,IS,const MatFactorInfo*);
   PetscErrorCode (*lufactornumeric)(Mat,Mat,const MatFactorInfo*);
   PetscErrorCode (*choleskyfactorsymbolic)(Mat,Mat,IS,const MatFactorInfo*);
   PetscErrorCode (*choleskyfactornumeric)(Mat,Mat,const MatFactorInfo*);
-  /*30*/
+  /*29*/
   PetscErrorCode (*setuppreallocation)(Mat);
   PetscErrorCode (*ilufactorsymbolic)(Mat,Mat,IS,IS,const MatFactorInfo*);
   PetscErrorCode (*iccfactorsymbolic)(Mat,Mat,IS,const MatFactorInfo*);
   PetscErrorCode (*getarray)(Mat,PetscScalar**);
   PetscErrorCode (*restorearray)(Mat,PetscScalar**);
-  /*35*/
+  /*34*/
   PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
   PetscErrorCode (*forwardsolve)(Mat,Vec,Vec);
   PetscErrorCode (*backwardsolve)(Mat,Vec,Vec);
   PetscErrorCode (*ilufactor)(Mat,IS,IS,const MatFactorInfo*);
   PetscErrorCode (*iccfactor)(Mat,IS,const MatFactorInfo*);
-  /*40*/
+  /*39*/
   PetscErrorCode (*axpy)(Mat,PetscScalar,Mat,MatStructure);
   PetscErrorCode (*getsubmatrices)(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
   PetscErrorCode (*increaseoverlap)(Mat,PetscInt,IS[],PetscInt);
   PetscErrorCode (*getvalues)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar []);
   PetscErrorCode (*copy)(Mat,Mat,MatStructure);
-  /*45*/
+  /*44*/
   PetscErrorCode (*getrowmax)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*scale)(Mat,PetscScalar);
   PetscErrorCode (*shift)(Mat,PetscScalar);
   PetscErrorCode (*diagonalset)(Mat,Vec,InsertMode);
   PetscErrorCode (*iludtfactor)(Mat,IS,IS,const MatFactorInfo*,Mat *);
-  /*50*/
+  /*49*/
   PetscErrorCode (*setblocksize)(Mat,PetscInt);
   PetscErrorCode (*getrowij)(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
   PetscErrorCode (*restorerowij)(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *);
   PetscErrorCode (*getcolumnij)(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
   PetscErrorCode (*restorecolumnij)(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
-  /*55*/
+  /*54*/
   PetscErrorCode (*fdcoloringcreate)(Mat,ISColoring,MatFDColoring);
   PetscErrorCode (*coloringpatch)(Mat,PetscInt,PetscInt,ISColoringValue[],ISColoring*);
   PetscErrorCode (*setunfactored)(Mat);
   PetscErrorCode (*permute)(Mat,IS,IS,Mat*);
   PetscErrorCode (*setvaluesblocked)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
-  /*60*/
+  /*59*/
   PetscErrorCode (*getsubmatrix)(Mat,IS,IS,PetscInt,MatReuse,Mat*);
   PetscErrorCode (*destroy)(Mat);
   PetscErrorCode (*view)(Mat,PetscViewer);
   PetscErrorCode (*convertfrom)(Mat, const MatType,MatReuse,Mat*);
   PetscErrorCode (*usescaledform)(Mat,PetscTruth);
-  /*65*/
+  /*64*/
   PetscErrorCode (*scalesystem)(Mat,Vec,Vec);
   PetscErrorCode (*unscalesystem)(Mat,Vec,Vec);
   PetscErrorCode (*setlocaltoglobalmapping)(Mat,ISLocalToGlobalMapping);
   PetscErrorCode (*setvalueslocal)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
   PetscErrorCode (*zerorowslocal)(Mat,PetscInt,const PetscInt[],PetscScalar);
-  /*70*/
+  /*69*/
   PetscErrorCode (*getrowmaxabs)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*getrowminabs)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*convert)(Mat, const MatType,MatReuse,Mat*);
   PetscErrorCode (*setcoloring)(Mat,ISColoring);
   PetscErrorCode (*setvaluesadic)(Mat,void*);
-  /*75*/
+  /*74*/
   PetscErrorCode (*setvaluesadifor)(Mat,PetscInt,void*);
   PetscErrorCode (*fdcoloringapply)(Mat,MatFDColoring,Vec,MatStructure*,void*);
   PetscErrorCode (*setfromoptions)(Mat);
   PetscErrorCode (*multconstrained)(Mat,Vec,Vec);
   PetscErrorCode (*multtransposeconstrained)(Mat,Vec,Vec);
-  /*80*/
+  /*79*/
   PetscErrorCode (*permutesparsify)(Mat, PetscInt, double, double, IS, IS, Mat *);
   PetscErrorCode (*mults)(Mat, Vecs, Vecs);
   PetscErrorCode (*solves)(Mat, Vecs, Vecs);
   PetscErrorCode (*getinertia)(Mat,PetscInt*,PetscInt*,PetscInt*);
   PetscErrorCode (*load)(PetscViewer, const MatType,Mat*);
-  /*85*/
+  /*84*/
   PetscErrorCode (*issymmetric)(Mat,PetscReal,PetscTruth*);
   PetscErrorCode (*ishermitian)(Mat,PetscReal,PetscTruth*);
   PetscErrorCode (*isstructurallysymmetric)(Mat,PetscTruth*);
   PetscErrorCode (*pbrelax)(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
   PetscErrorCode (*getvecs)(Mat,Vec*,Vec*);
-  /*90*/
+  /*89*/
   PetscErrorCode (*matmult)(Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*matmultsymbolic)(Mat,Mat,PetscReal,Mat*);
   PetscErrorCode (*matmultnumeric)(Mat,Mat,Mat);
   PetscErrorCode (*ptap)(Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*ptapsymbolic)(Mat,Mat,PetscReal,Mat*); /* double dispatch wrapper routine */
-  /*95*/
+  /*94*/
   PetscErrorCode (*ptapnumeric)(Mat,Mat,Mat);             /* double dispatch wrapper routine */
   PetscErrorCode (*matmulttranspose)(Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*matmulttransposesymbolic)(Mat,Mat,PetscReal,Mat*);
   PetscErrorCode (*matmulttransposenumeric)(Mat,Mat,Mat);
   PetscErrorCode (*ptapsymbolic_seqaij)(Mat,Mat,PetscReal,Mat*); /* actual implememtation, A=seqaij */
-  /*100*/
+  /*99*/
   PetscErrorCode (*ptapnumeric_seqaij)(Mat,Mat,Mat);             /* actual implememtation, A=seqaij */
   PetscErrorCode (*ptapsymbolic_mpiaij)(Mat,Mat,PetscReal,Mat*); /* actual implememtation, A=mpiaij */
   PetscErrorCode (*ptapnumeric_mpiaij)(Mat,Mat,Mat);             /* actual implememtation, A=mpiaij */
   PetscErrorCode (*conjugate)(Mat);                              /* complex conjugate */
   PetscErrorCode (*setsizes)(Mat,PetscInt,PetscInt,PetscInt,PetscInt);
-  /*105*/
+  /*104*/
   PetscErrorCode (*setvaluesrow)(Mat,PetscInt,const PetscScalar[]);
   PetscErrorCode (*realpart)(Mat);
   PetscErrorCode (*imaginarypart)(Mat);
   PetscErrorCode (*getrowuppertriangular)(Mat);
   PetscErrorCode (*restorerowuppertriangular)(Mat);
-  /*110*/
+  /*109*/
   PetscErrorCode (*matsolve)(Mat,Mat,Mat);
   PetscErrorCode (*getredundantmatrix)(Mat,PetscInt,MPI_Comm,PetscInt,MatReuse,Mat*);
   PetscErrorCode (*getrowmin)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*getcolumnvector)(Mat,Vec,PetscInt);
   PetscErrorCode (*missingdiagonal)(Mat,PetscTruth*,PetscInt*);
-  /*115*/
+  /*114*/
   PetscErrorCode (*getseqnonzerostructure)(Mat,Mat *[]);
   PetscErrorCode (*create)(Mat);  
   PetscErrorCode (*getghosts)(Mat,PetscInt*,const PetscInt *[]);

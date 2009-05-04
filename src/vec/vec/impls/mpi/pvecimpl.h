@@ -18,7 +18,6 @@ typedef struct {
   VecScatter  localupdate;              /* scatter to update ghost values */
 } Vec_MPI;
 
-EXTERN PetscErrorCode VecNorm_Seq(Vec,NormType,PetscReal *work);
 EXTERN PetscErrorCode VecMDot_MPI(Vec,PetscInt,const Vec[],PetscScalar *);
 EXTERN PetscErrorCode VecMTDot_MPI(Vec,PetscInt,const Vec[],PetscScalar *);
 EXTERN PetscErrorCode VecNorm_MPI(Vec,NormType,PetscReal *);

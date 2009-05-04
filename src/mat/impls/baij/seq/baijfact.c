@@ -273,10 +273,11 @@ PetscErrorCode MatGetFactor_seqbaij_petsc(Mat A,MatFactorType ftype,Mat *B)
   PetscFunctionBegin;
   ierr = MatCreate(((PetscObject)A)->comm,B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B,n,n,n,n);CHKERRQ(ierr);
-  if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU) {
+  if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU || ftype == MAT_FACTOR_ILUDT) {
     ierr = MatSetType(*B,MATSEQBAIJ);CHKERRQ(ierr);
     (*B)->ops->lufactorsymbolic  = MatLUFactorSymbolic_SeqBAIJ;  
     (*B)->ops->ilufactorsymbolic = MatILUFactorSymbolic_SeqBAIJ;  
+    (*B)->ops->iludtfactor       = MatILUDTFactor_SeqBAIJ;
   } else if (ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC) {
     ierr = MatSetType(*B,MATSEQSBAIJ);CHKERRQ(ierr);
     ierr = MatSeqSBAIJSetPreallocation(*B,1,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
@@ -976,4 +977,12 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
     B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqBAIJ_N;
   }
   PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatILUDTFactor_SeqBAIJ"
+PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo *info,Mat *fact)
+{
+    PetscFunctionBegin;
+    PetscFunctionReturn(0);
 }

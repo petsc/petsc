@@ -2191,6 +2191,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactor(Mat mat,IS row,IS col,const Mat
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->iludtfactor) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  if (mat->rmap->N != mat->cmap->N) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be square");
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(MAT_ILUFactor,mat,row,col,0);CHKERRQ(ierr);
   ierr = (*mat->ops->iludtfactor)(mat,row,col,info,fact);CHKERRQ(ierr);
@@ -4599,34 +4600,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd(Mat mat,MatAssemblyType type)
     }
   }
   inassm--;
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatCompress"
-/*@
-   MatCompress - Tries to store the matrix in as little space as 
-   possible.  May fail if memory is already fully used, since it
-   tries to allocate new space.
-
-   Collective on Mat
-
-   Input Parameters:
-.  mat - the matrix 
-
-   Level: advanced
-
-@*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCompress(Mat mat)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
-  PetscValidType(mat,1);
-  ierr = MatPreallocated(mat);CHKERRQ(ierr);
-  if (mat->ops->compress) {ierr = (*mat->ops->compress)(mat);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
