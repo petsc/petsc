@@ -1029,8 +1029,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHYPREGetType(PC pc,const char *name[])
 	  2007-02-03 Using HYPRE-1.11.1b, the routine HYPRE_BoomerAMGSolveT and the option
 	  -pc_hypre_parasails_reuse were failing with SIGSEGV. Dalcin L.
 
+          See PCPFMG for access to the hypre Struct PFMG solver
+
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           PCHYPRESetType()
+           PCHYPRESetType(), PCPFMG
 
 M*/
 
@@ -1069,6 +1071,13 @@ EXTERN_C_END
 typedef struct {
   MPI_Comm            hcomm;       /* does not share comm with HYPRE_StructMatrix because need to create solver before getting matrix */
   HYPRE_StructSolver  hsolver;
+
+  /* keep copy of PFMG options used so may view them */
+  int                 its;   
+  double              tol;
+  int                 relax_type;
+  int                 rap_type;
+  int                 num_pre_relax,num_post_relax;
 } PC_PFMG;
 
 #undef __FUNCT__
@@ -1105,6 +1114,9 @@ PetscErrorCode PCDestroy_PFMG(PC pc)
   PetscFunctionReturn(0);
 }
 
+static const char *PFMGRelaxType[]   = {"Jacobi","Weighted-Jacobi","symmetric-Red/Black-Gauss-Seidel","Red/Black-Gauss-Seidel"};
+static const char *PFMGRAPType[]   = {"Galerkin","non-Galerkin"};
+
 #undef __FUNCT__  
 #define __FUNCT__ "PCView_PFMG"
 PetscErrorCode PCView_PFMG(PC pc,PetscViewer viewer)
@@ -1115,28 +1127,46 @@ PetscErrorCode PCView_PFMG(PC pc,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE PFMG preconditioning\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE PFMG: max iterations %d\n",ex->its);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE PFMG: tolerance %g\n",ex->tol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE PFMG: relax type %s\n",PFMGRelaxType[ex->relax_type]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE PFMG: RAP type %s\n",PFMGRAPType[ex->rap_type]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE PFMG: number pre-relax %d post-relax %d\n",ex->num_pre_relax,ex->num_post_relax);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_PFMG"
 PetscErrorCode PCSetFromOptions_PFMG(PC pc)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg;
   PC_PFMG        *ex = (PC_PFMG*) pc->data;
-  PetscInt       its = 1;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("PFMG options");CHKERRQ(ierr);
-  ierr = PetscOptionsTruth("-pc_pfmg_print_statistics","Print statistics","None",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-pc_pfmg_print_statistics","Print statistics","HYPRE_StructPFMGSetPrintLevel",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     int level=3;
     ierr = HYPRE_StructPFMGSetPrintLevel(ex->hsolver,level);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsInt("-pc_pfmg_its","Number of iterations of PFMG to use as preconditioner","None",its,&its,PETSC_NULL);CHKERRQ(ierr);
-  ierr = HYPRE_StructPFMGSetMaxIter(ex->hsolver,its);CHKERRQ(ierr);
-  /* ierr = HYPRE_StructPFMGSetTol(ex->hsolver,100);CHKERRQ(ierr); */
+  ierr = PetscOptionsInt("-pc_pfmg_its","Number of iterations of PFMG to use as preconditioner","HYPRE_StructPFMGSetMaxIter",ex->its,&ex->its,PETSC_NULL);CHKERRQ(ierr);
+  ierr = HYPRE_StructPFMGSetMaxIter(ex->hsolver,ex->its);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_pfmg_num_pre_relax","Number of smoothing steps before coarse grid","HYPRE_StructPFMGSetNumPreRelax",ex->num_pre_relax,&ex->num_pre_relax,PETSC_NULL);CHKERRQ(ierr);
+  ierr = HYPRE_StructPFMGSetNumPreRelax(ex->hsolver,ex->num_pre_relax);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_pfmg_num_post_relax","Number of smoothing steps after coarse grid","HYPRE_StructPFMGSetNumPostRelax",ex->num_post_relax,&ex->num_post_relax,PETSC_NULL);CHKERRQ(ierr);
+  ierr = HYPRE_StructPFMGSetNumPostRelax(ex->hsolver,ex->num_post_relax);CHKERRQ(ierr);
+
+  ierr = PetscOptionsReal("-pc_pfmg_tol","Tolerance of PFMG","HYPRE_StructPFMGSetTol",ex->tol,&ex->tol,PETSC_NULL);CHKERRQ(ierr);
+  ierr = HYPRE_StructPFMGSetTol(ex->hsolver,ex->tol);CHKERRQ(ierr); 
+  ierr = PetscOptionsEList("-pc_pfmg_relax_type","Relax type for the up and down cycles","HYPRE_StructPFMGSetRelaxType",PFMGRelaxType,4,PFMGRelaxType[ex->relax_type],&ex->relax_type,PETSC_NULL);CHKERRQ(ierr);
+  ierr = HYPRE_StructPFMGSetRelaxType(ex->hsolver, ex->relax_type);CHKERRQ(ierr); 
+  ierr = PetscOptionsEList("-pc_pfmg_rap_type","RAP type","HYPRE_StructPFMGSetRAPType",PFMGRAPType,2,PFMGRAPType[ex->rap_type],&ex->rap_type,PETSC_NULL);CHKERRQ(ierr);
+  ierr = HYPRE_StructPFMGSetRAPType(ex->hsolver, ex->rap_type);CHKERRQ(ierr); 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1170,10 +1200,31 @@ PetscErrorCode PCApply_PFMG(PC pc,Vec x,Vec y)
   ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
   ierr = HYPRE_StructVectorGetBoxValues(mx->hx,ilower,iupper,yy);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
-
-  /*   ierr = VecCopy(x,y);CHKERRQ(ierr); */
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplyRichardson_PFMG"
+static PetscErrorCode PCApplyRichardson_PFMG(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscInt *outits,PCRichardsonConvergedReason *reason)
+{
+  PC_PFMG        *jac = (PC_PFMG*)pc->data;
+  PetscErrorCode ierr;
+  int            oits;
+
+  PetscFunctionBegin;
+  ierr = HYPRE_StructPFMGSetMaxIter(jac->hsolver,its*jac->its);CHKERRQ(ierr);
+  ierr = HYPRE_StructPFMGSetTol(jac->hsolver,rtol);CHKERRQ(ierr);
+
+  ierr = PCApply_PFMG(pc,b,y);CHKERRQ(ierr);
+  ierr = HYPRE_StructPFMGGetNumIterations(jac->hsolver,&oits);CHKERRQ(ierr);
+  *outits = oits;
+  if (oits == its) *reason = PCRICHARDSON_CONVERGED_ITS;
+  else             *reason = PCRICHARDSON_CONVERGED_RTOL;
+  ierr = HYPRE_StructPFMGSetTol(jac->hsolver,jac->tol);CHKERRQ(ierr);
+  ierr = HYPRE_StructPFMGSetMaxIter(jac->hsolver,jac->its);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 
 /*MC
@@ -1181,9 +1232,21 @@ PetscErrorCode PCApply_PFMG(PC pc,Vec x,Vec y)
 
    Level: advanced
 
-      This is for CELL-centered descretizations
+   Options Database:
++ -pc_pfmg_its <its> number of iterations of PFMG to use as preconditioner
+. -pc_pfmg_num_pre_relax <steps> number of smoothing steps before coarse grid
+. -pc_pfmg_num_post_relax <steps> number of smoothing steps after coarse grid
+. -pc_pfmg_tol <tol> tolerance of PFMG
+. -pc_pfmg_relax_type -relaxation type for the up and down cycles, one of Jacobi,Weighted-Jacobi,symmetric-Red/Black-Gauss-Seidel,Red/Black-Gauss-Seidel
+- -pc_pfmg_rap_type - type of coarse matrix generation, one of Galerkin,non-Galerkin
 
-.seealso:  PCMG, PCSetDA()
+   Notes:  This is for CELL-centered descretizations
+
+           This must be used with the MATHYPRESTRUCT matrix type
+.
+           This is less general than in hypre, it supports only one block per process defined by a PETSc DA.
+
+.seealso:  PCMG, MATHYPRESTRUCT
 M*/
 
 EXTERN_C_BEGIN
@@ -1198,11 +1261,19 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_PFMG(PC pc)
   ierr = PetscNew(PC_PFMG,&ex);CHKERRQ(ierr);\
   pc->data = ex;
 
-  pc->ops->setfromoptions = PCSetFromOptions_PFMG;
-  pc->ops->view           = PCView_PFMG;
-  pc->ops->destroy        = PCDestroy_PFMG;
-  pc->ops->apply          = PCApply_PFMG;
-  pc->ops->setup          = PCSetUp_PFMG;
+  ex->its            = 1;
+  ex->tol            = 1.e-8;
+  ex->relax_type     = 1;
+  ex->rap_type       = 0;
+  ex->num_pre_relax  = 1;
+  ex->num_post_relax = 1;
+
+  pc->ops->setfromoptions  = PCSetFromOptions_PFMG;
+  pc->ops->view            = PCView_PFMG;
+  pc->ops->destroy         = PCDestroy_PFMG;
+  pc->ops->apply           = PCApply_PFMG;
+  pc->ops->applyrichardson = PCApplyRichardson_PFMG;
+  pc->ops->setup           = PCSetUp_PFMG;
   ierr = MPI_Comm_dup(((PetscObject)pc)->comm,&(ex->hcomm));CHKERRQ(ierr);
   ierr = HYPRE_StructPFMGCreate(ex->hcomm,&ex->hsolver);CHKERRQ(ierr);
   PetscFunctionReturn(0);

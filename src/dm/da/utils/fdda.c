@@ -551,8 +551,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, const MatType mtype,Mat *J)
   MPI_Comm       comm;
   const MatType  Atype;
   void           (*aij)(void)=PETSC_NULL,(*baij)(void)=PETSC_NULL,(*sbaij)(void)=PETSC_NULL;
+  MatType        ttype[256];
+  PetscTruth     flg;
 
   PetscFunctionBegin;
+  ierr = PetscStrcpy((char*)ttype,mtype);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject)da)->comm,((PetscObject)da)->prefix,"DA options","Mat");CHKERRQ(ierr); 
+  ierr = PetscOptionsList("-da_mat_type","Matrix type","MatSetType",MatList,mtype,(char*)ttype,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();
+
   /*
                                   m
           ------------------------------------------------------
@@ -580,7 +587,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, const MatType mtype,Mat *J)
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = MatCreate(comm,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,dof*nx*ny*nz,dof*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = MatSetType(A,mtype);CHKERRQ(ierr); 
+  ierr = MatSetType(A,(const MatType)ttype);CHKERRQ(ierr); 
   ierr = MatSetDA(A,da);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatGetType(A,&Atype);CHKERRQ(ierr);

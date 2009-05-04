@@ -298,29 +298,23 @@ PetscErrorCode MatHYPRE_IJMatrixLink(Mat A,HYPRE_IJMatrix *ij)
   PetscFunctionReturn(0);
 }
 
-
+/* -----------------------------------------------------------------------------------------------------------------*/
 
 /*MC
    MATHYPRESTRUCT - MATHYPRESTRUCT = "hyprestruct" - A matrix type to be used for parallel sparse matrices
           based on the hypre HYPRE_StructMatrix.
 
 
-.seealso: MatCreateMPIAIJ()
+   Notes: Unlike the more general support for blocks in hypre this allows only one block per process and requires the block
+          be defined by a DA.
+
+          The matrix needs a DA associated with it by either a call to MatSetDA() or if the matrix is obtained from DAGetMatrix()
+
+.seealso: MatCreate(), PCPFMG, MatSetDA(), DAGetMatrix()
 M*/
 
 #include "petscda.h"   /*I "petscda.h" I*/
 #include "../src/mat/impls/hypre/mhyp.h"
-
-#undef __FUNCT__
-#define __FUNCT__ "MatSetUp_HYPREStruct"
-PetscErrorCode MatSetUp_HYPREStruct(Mat mat)
-{
-  Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
-
-  PetscFunctionBegin;
-  if (!ex->da) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You are using the MATHYPRESTRUCT preconditioner but never called MatSetDA()");
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesLocal_HYPREStruct_3d"
@@ -483,44 +477,16 @@ PetscErrorCode MatMult_HYPREStruct(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_HYPREStruct"
 PetscErrorCode MatAssemblyEnd_HYPREStruct(Mat mat,MatAssemblyType mode)
 {
   Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
-  PetscInt         dim,dof,sw[3];
-  int              ilower[3],iupper[3],i;
-  DAPeriodicType   p;
-  DAStencilType    st;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(ex->da,&dim,0,0,0,0,0,0,&dof,&sw[0],&p,&st);CHKERRQ(ierr);
-  ierr = DAGetCorners(ex->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
-  iupper[0] += ilower[0] - 1;    
-  iupper[1] += ilower[1] - 1;    
-  iupper[2] += ilower[2] - 1;    
-
-  /* {
-
-    int dummy = 3;
-    PetscScalar values[10000];
-   
-    for (i=0; i<10000; i++) values[i] = 1.0;
-    dummy = 3; ierr = HYPRE_StructMatrixSetBoxValues(ex->hmat,ilower,iupper,1,&dummy,values);CHKERRQ(ierr);
-
-    for (i=0; i<10000; i++) values[i] = 0.0;
-    dummy = 0; ierr = HYPRE_StructMatrixSetBoxValues(ex->hmat,ilower,iupper,1,&dummy,values);CHKERRQ(ierr);
-    dummy = 1; ierr = HYPRE_StructMatrixSetBoxValues(ex->hmat,ilower,iupper,1,&dummy,values);CHKERRQ(ierr);
-    dummy = 2; ierr = HYPRE_StructMatrixSetBoxValues(ex->hmat,ilower,iupper,1,&dummy,values);CHKERRQ(ierr);
-    dummy = 4; ierr = HYPRE_StructMatrixSetBoxValues(ex->hmat,ilower,iupper,1,&dummy,values);CHKERRQ(ierr);
-    dummy = 5; ierr = HYPRE_StructMatrixSetBoxValues(ex->hmat,ilower,iupper,1,&dummy,values);CHKERRQ(ierr);
-    dummy = 6; ierr = HYPRE_StructMatrixSetBoxValues(ex->hmat,ilower,iupper,1,&dummy,values);CHKERRQ(ierr);
-    } */
   ierr = HYPRE_StructMatrixAssemble(ex->hmat);CHKERRQ(ierr);
-  ierr = HYPRE_StructMatrixPrint("dummy",ex->hmat,0);CHKERRQ(ierr);
+  /* ierr = HYPRE_StructMatrixPrint("dummy",ex->hmat,0);CHKERRQ(ierr); */
   PetscFunctionReturn(0);
 }
 
@@ -536,7 +502,6 @@ PetscErrorCode MatAssemblyEnd_HYPREStruct(Mat mat,MatAssemblyType mode)
 -  da - the da
 
    Level: intermediate
-
 
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA(Mat mat,DA da)
