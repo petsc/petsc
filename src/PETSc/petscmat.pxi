@@ -290,7 +290,7 @@ cdef inline Mat ref_NullSpace(PetscNullSpace nsp):
     return ob
 
 cdef inline object NullSpace_getFun(PetscNullSpace nsp):
-    return Object_getAttr(<PetscObject>nsp, "__function__")
+    return Object_getAttr(<PetscObject>nsp, '__function__')
 
 cdef int NullSpace_Function(PetscVec v,
                             void*    ctx) except PETSC_ERR_PYTHON with gil:
@@ -300,10 +300,10 @@ cdef int NullSpace_Function(PetscVec v,
     function(vec, *args, **kargs)
     return 0
 
-cdef inline int NullSpace_setFun(PetscNullSpace nsp, object fun) except -1:
-    if fun is None: CHKERR( MatNullSpaceSetFunction(nsp, NULL, NULL) )
+cdef inline int NullSpace_setFun(PetscNullSpace nsp, object function) except -1:
+    if function is None: CHKERR( MatNullSpaceSetFunction(nsp, NULL, NULL) )
     else: CHKERR( MatNullSpaceSetFunction(nsp, NullSpace_Function, nsp) )
-    Object_setAttr(<PetscObject>nsp, "__function__", fun)
+    Object_setAttr(<PetscObject>nsp, '__function__', function)
     return 0
 
 
@@ -552,7 +552,7 @@ cdef inline int Mat_AllocDense_ARRAY(PetscMat A, PetscInt bs,
         raise ValueError("size(array) is %d, expected %dx%d=%d" % \
                          (size, m, n, m*n))
     CHKERR( MatAnyDenseSetPreallocation(A, bs, data) )
-    Object_setAttr(<PetscObject>A, "__array__", array)
+    Object_setAttr(<PetscObject>A, '__array__', array)
     return 0
 
 # --------------------------------------------------------------------

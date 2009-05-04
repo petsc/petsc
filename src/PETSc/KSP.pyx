@@ -121,10 +121,10 @@ cdef class KSP(Object):
     # --- xxx ---
 
     def setAppCtx(self, appctx):
-        Object_setAttr(<PetscObject>self.ksp, "__appctx__", appctx)
+        Object_setAttr(<PetscObject>self.ksp, '__appctx__', appctx)
 
     def getAppCtx(self):
-        return Object_getAttr(<PetscObject>self.ksp, "__appctx__")
+        return Object_getAttr(<PetscObject>self.ksp, '__appctx__')
 
     # --- xxx ---
 
@@ -255,7 +255,7 @@ cdef class KSP(Object):
         if size < 0: size = 10000
         if reset: flag = PETSC_TRUE
         cdef ndarray hist = oarray_r(empty_r(size), NULL, &data)
-        Object_setAttr(<PetscObject>self.ksp, "__history__", hist)
+        Object_setAttr(<PetscObject>self.ksp, '__history__', hist)
         CHKERR( KSPSetResidualHistory(self.ksp, data, size, flag) )
 
     def getConvergenceHistory(self):

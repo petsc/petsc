@@ -92,7 +92,7 @@ cdef inline TS ref_TS(PetscTS ts):
 # --------------------------------------------------------------------
 
 cdef inline object TS_getFun(PetscTS ts):
-    return Object_getAttr(<PetscObject>ts, "__function__")
+    return Object_getAttr(<PetscObject>ts, '__function__')
 
 cdef int TS_Function(PetscTS ts,
                      PetscReal t,
@@ -108,13 +108,13 @@ cdef int TS_Function(PetscTS ts,
 
 cdef inline int TS_setFun(PetscTS ts, PetscVec f, object fun) except -1:
     CHKERR( TSSetRHSFunction(ts, f, TS_Function, NULL) )
-    Object_setAttr(<PetscObject>ts, "__function__", fun)
+    Object_setAttr(<PetscObject>ts, '__function__', fun)
     return 0
 
 # --------------------------------------------------------------------
 
 cdef inline object TS_getJac(PetscTS ts):
-    return Object_getAttr(<PetscObject>ts, "__jacobian__")
+    return Object_getAttr(<PetscObject>ts, '__jacobian__')
 
 cdef int TS_Jacobian(PetscTS ts,
                      PetscReal t,
@@ -139,13 +139,13 @@ cdef inline int TS_setJac(PetscTS ts,
                           PetscMat J, PetscMat P,
                           object jac) except -1:
     CHKERR( TSSetRHSJacobian(ts, J, P, TS_Jacobian, NULL) )
-    Object_setAttr(<PetscObject>ts, "__jacobian__", jac)
+    Object_setAttr(<PetscObject>ts, '__jacobian__', jac)
     return 0
 
 # --------------------------------------------------------------------
 
 cdef inline object TS_getMon(PetscTS ts):
-    return Object_getAttr(<PetscObject>ts, "__monitor__")
+    return Object_getAttr(<PetscObject>ts, '__monitor__')
 
 cdef int TS_Monitor(PetscTS    ts,
                     PetscInt   step,
@@ -166,12 +166,12 @@ cdef inline int TS_setMon(PetscTS ts, object mon) except -1:
     cdef object monitorlist = TS_getMon(ts)
     if monitorlist is None: monitorlist = [mon]
     else: monitorlist.append(mon)
-    Object_setAttr(<PetscObject>ts, "__monitor__", monitorlist)
+    Object_setAttr(<PetscObject>ts, '__monitor__', monitorlist)
     return 0
 
 cdef inline int TS_clsMon(PetscTS ts) except -1:
     CHKERR( TSMonitorCancel(ts) )
-    Object_setAttr(<PetscObject>ts, "__monitor__", None)
+    Object_setAttr(<PetscObject>ts, '__monitor__', None)
     return 0
 
 # --------------------------------------------------------------------

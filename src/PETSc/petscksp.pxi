@@ -155,7 +155,7 @@ cdef inline KSP ref_KSP(PetscKSP ksp):
 # --------------------------------------------------------------------
 
 cdef inline object KSP_getCnv(PetscKSP ksp):
-    return Object_getAttr(<PetscObject>ksp, "__converged__")
+    return Object_getAttr(<PetscObject>ksp, '__converged__')
 
 cdef int KSP_Converged(PetscKSP  ksp,
                        PetscInt  its,
@@ -189,14 +189,14 @@ cdef inline int KSP_setCnvDefault(PetscKSP ksp) except -1:
 cdef inline int KSP_setCnv(PetscKSP ksp, object cnv) except -1:
     if cnv is None: KSP_setCnvDefault(ksp)
     else: CHKERR( KSPSetConvergenceTest(ksp, KSP_Converged, NULL, NULL) )
-    Object_setAttr(<PetscObject>ksp, "__converged__", cnv)
+    Object_setAttr(<PetscObject>ksp, '__converged__', cnv)
     return 0
 
 
 # --------------------------------------------------------------------
 
 cdef inline object KSP_getMon(PetscKSP ksp):
-    return Object_getAttr(<PetscObject>ksp, "__monitor__")
+    return Object_getAttr(<PetscObject>ksp, '__monitor__')
 
 cdef int KSP_Monitor(PetscKSP  ksp,
                      PetscInt   its,
@@ -215,12 +215,12 @@ cdef inline int KSP_setMon(PetscKSP ksp, object mon) except -1:
     cdef object monitorlist = KSP_getMon(ksp)
     if monitorlist is None: monitorlist = [mon]
     else: monitorlist.append(mon)
-    Object_setAttr(<PetscObject>ksp, "__monitor__", monitorlist)
+    Object_setAttr(<PetscObject>ksp, '__monitor__', monitorlist)
     return 0
 
 cdef inline int KSP_delMon(PetscKSP ksp) except -1:
     CHKERR( KSPMonitorCancel(ksp) )
-    Object_setAttr(<PetscObject>ksp, "__monitor__", None)
+    Object_setAttr(<PetscObject>ksp, '__monitor__', None)
     return 0
 
 # --------------------------------------------------------------------

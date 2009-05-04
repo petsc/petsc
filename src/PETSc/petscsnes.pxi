@@ -146,7 +146,7 @@ cdef inline SNES ref_SNES(PetscSNES snes):
 # --------------------------------------------------------------------
 
 cdef inline object SNES_getFun(PetscSNES snes):
-    return Object_getAttr(<PetscObject>snes, "__function__")
+    return Object_getAttr(<PetscObject>snes, '__function__')
 
 cdef int SNES_Function(PetscSNES snes,
                        PetscVec  x,
@@ -161,13 +161,13 @@ cdef int SNES_Function(PetscSNES snes,
 
 cdef inline int SNES_setFun(PetscSNES snes, PetscVec f, object fun) except -1:
     CHKERR( SNESSetFunction(snes, f, SNES_Function, NULL) )
-    Object_setAttr(<PetscObject>snes, "__function__", fun)
+    Object_setAttr(<PetscObject>snes, '__function__', fun)
     return 0
 
 # --------------------------------------------------------------------
 
 cdef inline object SNES_getUpd(PetscSNES snes):
-    return Object_getAttr(<PetscObject>snes, "__update__")
+    return Object_getAttr(<PetscObject>snes, '__update__')
 
 cdef int SNES_Update(PetscSNES snes,
                      PetscInt its) except PETSC_ERR_PYTHON with gil:
@@ -179,13 +179,13 @@ cdef int SNES_Update(PetscSNES snes,
 cdef inline int SNES_setUpd(PetscSNES snes, object upd) except -1:
     if upd is None: CHKERR( SNESSetUpdate(snes, NULL) )
     else: CHKERR( SNESSetUpdate(snes, SNES_Update) )
-    Object_setAttr(<PetscObject>snes, "__update__", upd)
+    Object_setAttr(<PetscObject>snes, '__update__', upd)
     return 0
 
 # --------------------------------------------------------------------
 
 cdef inline object SNES_getJac(PetscSNES snes):
-    return Object_getAttr(<PetscObject>snes, "__jacobian__")
+    return Object_getAttr(<PetscObject>snes, '__jacobian__')
 
 cdef int SNES_Jacobian(PetscSNES snes,
                        PetscVec  x,
@@ -209,13 +209,13 @@ cdef inline int SNES_setJac(PetscSNES snes,
                             PetscMat J, PetscMat P,
                             object jac) except -1:
     CHKERR( SNESSetJacobian(snes, J, P, SNES_Jacobian, NULL) )
-    Object_setAttr(<PetscObject>snes, "__jacobian__", jac)
+    Object_setAttr(<PetscObject>snes, '__jacobian__', jac)
     return 0
 
 # --------------------------------------------------------------------
 
 cdef inline object SNES_getCnv(PetscSNES snes):
-    return Object_getAttr(<PetscObject>snes, "__converged__")
+    return Object_getAttr(<PetscObject>snes, '__converged__')
 
 cdef int SNES_Converged(PetscSNES  snes,
                         PetscInt   iters,
@@ -241,13 +241,13 @@ cdef inline int SNES_setCnv(PetscSNES snes, object cnv) except -1:
     if cnv is None: CHKERR( SNESSetConvergenceTest(
         snes, SNESDefaultConverged, NULL, NULL) )
     else: CHKERR( SNESSetConvergenceTest(snes, SNES_Converged, NULL, NULL) )
-    Object_setAttr(<PetscObject>snes, "__converged__", cnv)
+    Object_setAttr(<PetscObject>snes, '__converged__', cnv)
     return 0
 
 # --------------------------------------------------------------------
 
 cdef inline object SNES_getMon(PetscSNES snes):
-    return Object_getAttr(<PetscObject>snes, "__monitor__")
+    return Object_getAttr(<PetscObject>snes, '__monitor__')
 
 cdef int SNES_Monitor(PetscSNES  snes,
                       PetscInt   iters,
@@ -268,12 +268,12 @@ cdef inline int SNES_setMon(PetscSNES snes, object mon) except -1:
     cdef object monitorlist = SNES_getMon(snes)
     if monitorlist is None: monitorlist = [mon]
     else: monitorlist.append(mon)
-    Object_setAttr(<PetscObject>snes, "__monitor__", monitorlist)
+    Object_setAttr(<PetscObject>snes, '__monitor__', monitorlist)
     return 0
 
 cdef inline int SNES_clsMon(PetscSNES snes) except -1:
     CHKERR( SNESMonitorCancel(snes) )
-    Object_setAttr(<PetscObject>snes, "__monitor__", None)
+    Object_setAttr(<PetscObject>snes, '__monitor__', None)
     return 0
 
 # --------------------------------------------------------------------

@@ -156,7 +156,7 @@ cdef class Vec(Object):
         PetscCLEAR(self.obj); self.vec = newvec
         if bs != PETSC_DECIDE:
             CHKERR( VecSetBlockSize(self.vec, bs) )
-        self.set_attr('__array__', array)
+        Object_setAttr(<PetscObject>self.vec, '__array__', array)
         return self
 
     def createGhost(self, ghosts, size, bsize=None, comm=None):
@@ -194,7 +194,7 @@ cdef class Vec(Object):
         else:
             CHKERR( VecCreateGhostBlockWithArray(ccomm,bs,n,N,ng,ig,sa,&newvec) )
         PetscCLEAR(self.obj); self.vec = newvec
-        self.set_attr('__array__', array)
+        Object_setAttr(<PetscObject>self.vec, '__array__', array)
         return self
 
     def createShared(self, size, bsize=None, comm=None):
@@ -291,13 +291,14 @@ cdef class Vec(Object):
         if (na != nv): raise ValueError(
             "cannot place input array, invalid size")
         CHKERR( VecPlaceArray(self.vec, a) )
-        self.set_attr("__placed_array__", array)
+        Object_setAttr(<PetscObject>self.vec, '__placed_array__', array)
 
     def resetArray(self, force=False):
-        cdef object array = self.get_attr("__placed_array__")
+        cdef object array = None
+        array = Object_getAttr(<PetscObject>self.vec, '__placed_array__')
         if array is None and not force: return None
         CHKERR( VecResetArray(self.vec) )
-        self.set_attr("__placed_array__", None)
+        Object_setAttr(<PetscObject>self.vec, '__placed_array__', None)
         return array
 
     def duplicate(self, copy=False):
