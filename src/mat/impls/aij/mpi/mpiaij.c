@@ -2696,7 +2696,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocation_MPIAIJ(Mat B,PetscIn
   PetscInt       i;
 
   PetscFunctionBegin;
-  B->preallocated = PETSC_TRUE;
   if (d_nz == PETSC_DEFAULT || d_nz == PETSC_DECIDE) d_nz = 5;
   if (o_nz == PETSC_DEFAULT || o_nz == PETSC_DECIDE) o_nz = 2;
   if (d_nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"d_nz cannot be less than 0: value %D",d_nz);
@@ -2718,19 +2717,21 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocation_MPIAIJ(Mat B,PetscIn
   }
   b = (Mat_MPIAIJ*)B->data;
 
-  /* Explicitly create 2 MATSEQAIJ matrices. */
-  ierr = MatCreate(PETSC_COMM_SELF,&b->A);CHKERRQ(ierr);
-  ierr = MatSetSizes(b->A,B->rmap->n,B->cmap->n,B->rmap->n,B->cmap->n);CHKERRQ(ierr);
-  ierr = MatSetType(b->A,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(B,b->A);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_SELF,&b->B);CHKERRQ(ierr);
-  ierr = MatSetSizes(b->B,B->rmap->n,B->cmap->N,B->rmap->n,B->cmap->N);CHKERRQ(ierr);
-  ierr = MatSetType(b->B,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(B,b->B);CHKERRQ(ierr);
+  if (!B->preallocated) {
+    /* Explicitly create 2 MATSEQAIJ matrices. */
+    ierr = MatCreate(PETSC_COMM_SELF,&b->A);CHKERRQ(ierr);
+    ierr = MatSetSizes(b->A,B->rmap->n,B->cmap->n,B->rmap->n,B->cmap->n);CHKERRQ(ierr);
+    ierr = MatSetType(b->A,MATSEQAIJ);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(B,b->A);CHKERRQ(ierr);
+    ierr = MatCreate(PETSC_COMM_SELF,&b->B);CHKERRQ(ierr);
+    ierr = MatSetSizes(b->B,B->rmap->n,B->cmap->N,B->rmap->n,B->cmap->N);CHKERRQ(ierr);
+    ierr = MatSetType(b->B,MATSEQAIJ);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(B,b->B);CHKERRQ(ierr);
+  }
 
   ierr = MatSeqAIJSetPreallocation(b->A,d_nz,d_nnz);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(b->B,o_nz,o_nnz);CHKERRQ(ierr);
-
+  B->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

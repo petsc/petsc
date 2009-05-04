@@ -1541,7 +1541,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,Pet
       if (o_nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"o_nnz cannot be less than -1: local row %D value %D",i,o_nnz[i]);
     }
   }
-  B->preallocated = PETSC_TRUE;
 
   b   = (Mat_MPISBAIJ*)B->data;
   mbs = B->rmap->n/bs;
@@ -1565,22 +1564,23 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,Pet
   
   b->cstartbs = B->cmap->rstart/bs;
   b->cendbs   = B->cmap->rend/bs;
-  
-  ierr = MatCreate(PETSC_COMM_SELF,&b->A);CHKERRQ(ierr);
-  ierr = MatSetSizes(b->A,B->rmap->n,B->cmap->n,B->rmap->n,B->cmap->n);CHKERRQ(ierr);
-  ierr = MatSetType(b->A,MATSEQSBAIJ);CHKERRQ(ierr);
+
+  if (!B->preallocated) {    
+    ierr = MatCreate(PETSC_COMM_SELF,&b->A);CHKERRQ(ierr);
+    ierr = MatSetSizes(b->A,B->rmap->n,B->cmap->n,B->rmap->n,B->cmap->n);CHKERRQ(ierr);
+    ierr = MatSetType(b->A,MATSEQSBAIJ);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(B,b->A);CHKERRQ(ierr);
+    ierr = MatCreate(PETSC_COMM_SELF,&b->B);CHKERRQ(ierr);
+    ierr = MatSetSizes(b->B,B->rmap->n,B->cmap->N,B->rmap->n,B->cmap->N);CHKERRQ(ierr);
+    ierr = MatSetType(b->B,MATSEQBAIJ);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(B,b->B);CHKERRQ(ierr);
+    /* build cache for off array entries formed */
+    ierr = MatStashCreate_Private(((PetscObject)B)->comm,bs,&B->bstash);CHKERRQ(ierr);
+  }
+
   ierr = MatSeqSBAIJSetPreallocation(b->A,bs,d_nz,d_nnz);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(B,b->A);CHKERRQ(ierr);
-
-  ierr = MatCreate(PETSC_COMM_SELF,&b->B);CHKERRQ(ierr);
-  ierr = MatSetSizes(b->B,B->rmap->n,B->cmap->N,B->rmap->n,B->cmap->N);CHKERRQ(ierr);
-  ierr = MatSetType(b->B,MATSEQBAIJ);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(b->B,bs,o_nz,o_nnz);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(B,b->B);CHKERRQ(ierr);
-
-  /* build cache for off array entries formed */
-  ierr = MatStashCreate_Private(((PetscObject)B)->comm,bs,&B->bstash);CHKERRQ(ierr);
-
+  B->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
