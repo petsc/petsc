@@ -346,14 +346,13 @@ cdef class LGMap(Object):
 
     def applyInverse(self, indices, map_type=None):
         cdef PetscGLMapType cmtype = IS_GTOLM_MASK
-        cdef PetscInt n    = 0, *idx    = NULL
-        cdef PetscInt nout = 0, *idxout = NULL
         if map_type is not None: cmtype = map_type
+        cdef PetscInt n = 0, *idx = NULL
         indices = iarray_i(indices, &n, &idx)
+        cdef PetscInt nout = n, *idxout = NULL
         if cmtype != IS_GTOLM_MASK:
             CHKERR( ISGlobalToLocalMappingApply(self.lgm, cmtype, n, idx, &nout, NULL) )
-        else: nout = n
-        result = empty_i(nout); result = oarray_i(result, &nout, &idxout)
+        result = oarray_i(empty_i(nout), &nout, &idxout)
         CHKERR( ISGlobalToLocalMappingApply(self.lgm, cmtype, n, idx, &nout, idxout) )
         return result
 
