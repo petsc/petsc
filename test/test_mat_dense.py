@@ -47,6 +47,17 @@ class BaseTestMatAnyDense(object):
         self.A.assemble()
         self._chk_array(self.A, r, c, v)
 
+    def testGetDiagonalBlock(self):
+        M, N = self.A.getSize()
+        # only for square matrices
+        if M != N: return
+        self._preallocate()
+        self._set_values()
+        self.A.assemble()
+        B = self.A.getDiagonalBlock()
+        self.assertEqual(self.A.getLocalSize(), B.getSize())
+        B.destroy()
+
     def _preallocate(self):
         self.A.setPreallocationDense(None)
 
@@ -88,6 +99,8 @@ class TestMatSeqDense_G23(TestMatSeqDense):
     GRID  = 2, 3
 class TestMatSeqDense_G45(TestMatSeqDense):
     GRID  = 4, 5
+class TestMatSeqDense_G77(TestMatSeqDense):
+    GRID  = 7, 7
 class TestMatSeqDense_G89(TestMatSeqDense):
     GRID  = 8, 9
 
@@ -100,6 +113,8 @@ class TestMatMPIDense_G23(TestMatMPIDense):
     GRID  = 2, 3
 class TestMatMPIDense_G45(TestMatMPIDense):
     GRID  = 4, 5
+class TestMatMPIDense_G77(TestMatMPIDense):
+    GRID  = 7, 7
 class TestMatMPIDense_G89(TestMatMPIDense):
     GRID  = 8, 9
 
@@ -167,12 +182,16 @@ class TestMatMPIDense_B_G23(TestMatMPIDense_B):
     GRID  = 2, 3
 class TestMatMPIDense_B_G45(TestMatMPIDense_B):
     GRID  = 4, 5
+class TestMatMPIDense_B_G77(TestMatMPIDense_B):
+    GRID  = 7, 7
 class TestMatMPIDense_B_G89(TestMatMPIDense_B):
     GRID  = 8, 9
 # bs = 2
 class TestMatMPIDense_B_G23_B2(TestMatMPIDense_B_G23):
     BSIZE = 2
 class TestMatMPIDense_B_G45_B2(TestMatMPIDense_B_G45):
+    BSIZE = 2
+class TestMatMPIDense_B_G77_B2(TestMatMPIDense_B_G77):
     BSIZE = 2
 class TestMatMPIDense_B_G89_B2(TestMatMPIDense_B_G89):
     BSIZE = 2
@@ -181,6 +200,8 @@ class TestMatMPIDense_B_G23_B3(TestMatMPIDense_B_G23):
     BSIZE = 3
 class TestMatMPIDense_B_G45_B3(TestMatMPIDense_B_G45):
     BSIZE = 3
+class TestMatMPIDense_B_G77_B3(TestMatMPIDense_B_G77):
+    BSIZE = 3
 class TestMatMPIDense_B_G89_B3(TestMatMPIDense_B_G89):
     BSIZE = 3
 # bs = 4
@@ -188,12 +209,16 @@ class TestMatMPIDense_B_G23_B4(TestMatMPIDense_B_G23):
     BSIZE = 4
 class TestMatMPIDense_B_G45_B4(TestMatMPIDense_B_G45):
     BSIZE = 4
+class TestMatMPIDense_B_G77_B4(TestMatMPIDense_B_G77):
+    BSIZE = 4
 class TestMatMPIDense_B_G89_B4(TestMatMPIDense_B_G89):
     BSIZE = 4
 # bs = 5
 class TestMatMPIDense_B_G23_B5(TestMatMPIDense_B_G23):
     BSIZE = 5
 class TestMatMPIDense_B_G45_B5(TestMatMPIDense_B_G45):
+    BSIZE = 5
+class TestMatMPIDense_B_G77_B5(TestMatMPIDense_B_G77):
     BSIZE = 5
 class TestMatMPIDense_B_G89_B5(TestMatMPIDense_B_G89):
     BSIZE = 5

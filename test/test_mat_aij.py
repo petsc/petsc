@@ -141,6 +141,14 @@ class BaseTestMatAnyAIJ(object):
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
 
+    def testGetDiagonalBlock(self):
+        self._preallocate()
+        self._set_values_ijv()
+        self.A.assemble()
+        B = self.A.getDiagonalBlock()
+        self.assertEqual(self.A.getLocalSize(), B.getSize())
+        B.destroy()
+
     def _get_aijv(self):
         return (self.rows, self.xadj, self.adjy, self.vals,)
 
