@@ -40,7 +40,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Scatter(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BlockMat(Mat);
 
 #if defined(PETSC_HAVE_HYPRE)
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatCreate_HYPREStruct(PC);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_HYPREStruct(Mat);
 #endif
 
 EXTERN_C_END
