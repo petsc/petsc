@@ -15,7 +15,7 @@ typedef struct {
 PetscErrorCode SNESSolve_Test(SNES snes)
 {
   Mat            A = snes->jacobian,B;
-  Vec            x = snes->vec_sol;
+  Vec            x = snes->vec_sol,f = snes->vec_func;
   PetscErrorCode ierr;
   PetscInt       i;
   MatStructure   flg;
@@ -38,7 +38,10 @@ PetscErrorCode SNESSolve_Test(SNES snes)
   for (i=0; i<3; i++) {
     if (i == 1) {ierr = VecSet(x,-1.0);CHKERRQ(ierr);}
     else if (i == 2) {ierr = VecSet(x,1.0);CHKERRQ(ierr);}
- 
+
+    /* evaluate the function at this point because SNESDefaultComputeJacobianColor() assumes that the function has been evaluated and put into snes->vec_func */
+    ierr = SNESComputeFunction(snes,x,f);CHKERRQ(ierr);
+
     /* compute both versions of Jacobian */
     ierr = SNESComputeJacobian(snes,x,&A,&A,&flg);CHKERRQ(ierr);
     if (!i) {ierr = MatConvert(A,MATSAME,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);}
