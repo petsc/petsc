@@ -513,7 +513,34 @@ EXTERN PetscErrorCode DAGetMatrix3d_MPIBAIJ(DA,Mat);
 EXTERN PetscErrorCode DAGetMatrix2d_MPISBAIJ(DA,Mat);
 EXTERN PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA,Mat);
 
-EXTERN PetscErrorCode MatSetDA(Mat,DA);
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetDA"
+/*@
+   MatSetDA - Sets the DA that is to be used by the HYPRE_StructMatrix PETSc matrix
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+-  da - the da
+
+   Level: intermediate
+
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA(Mat mat,DA da)
+{
+  PetscErrorCode ierr,(*f)(Mat,DA);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSetDA_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(mat,da);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix" 
