@@ -333,6 +333,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetLocalJacobian(DA,DALocalFunction1*
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalJacobian(DA,DALocalFunction1);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalAdicFunction_Private(DA,DALocalFunction1);
 
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA(Mat,DA);
+
 /*MC
        DASetLocalAdicFunction - Caches in a DA a local function computed by ADIC/ADIFOR
 
