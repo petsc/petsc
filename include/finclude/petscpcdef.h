@@ -44,4 +44,5 @@
 #define PCFIELDSPLIT 'fieldsplit'
 #define PCML 'ml'
 #define PCPYTHON 'python'
+#define PCPFMG 'pfmg'
 #endif
