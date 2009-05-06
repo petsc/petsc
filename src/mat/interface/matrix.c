@@ -58,12 +58,19 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonalBlock(Mat A,PetscTruth *iscopy,M
   PetscMPIInt    size;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidType(A,1);
+  PetscValidPointer(iscopy,2);
+  PetscValidPointer(a,3);
+  if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatGetDiagonalBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(A,iscopy,reuse,a);CHKERRQ(ierr);
   } else if (size == 1) {
     *a = A;
+    iscopy = PETSC_FALSE;
   } else {
     SETERRQ(PETSC_ERR_SUP,"Cannot get diagonal part for this matrix");
   }
