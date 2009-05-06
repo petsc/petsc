@@ -11,4 +11,6 @@ typedef struct {
   HYPRE_StructStencil hstencil;
   HYPRE_StructMatrix  hmat;
   HYPRE_StructVector  hb,hx;
+
+  PetscTruth          needsinitialization;
 } Mat_HYPREStruct;
