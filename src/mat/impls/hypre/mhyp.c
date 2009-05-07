@@ -326,6 +326,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPREStruct_3d(Mat mat,Petsc
   Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
 
   PetscFunctionBegin;
+  if (ex->needsinitialization) {
+    ierr = HYPRE_StructMatrixInitialize(ex->hmat);CHKERRQ(ierr);
+    ex->needsinitialization = PETSC_FALSE;
+  }
+
   ierr = MatGetOwnershipRange(mat,&rstart,PETSC_NULL);CHKERRQ(ierr);
   ierr = DAGetGlobalIndices(ex->da,PETSC_NULL,&gindices);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(ex->da,0,0,0,&gnx,&gny,0);CHKERRQ(ierr);
@@ -356,7 +361,37 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPREStruct_3d(Mat mat,Petsc
     index[2] = zs + (row/(nx*ny));
     ierr = HYPRE_StructMatrixSetValues(ex->hmat,index,7,entries,values);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatZeroRowsLocal_HYPREStruct_3d"
+PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscScalar d)
+{
+  PetscErrorCode  ierr;
+  PetscInt        i,nx,ny,xs,ys,zs,gnx,gny,rstart,*gindices,index[3],row,entries[7] = {0,1,2,3,4,5,6};
+  PetscScalar     values[7];
+  Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
+
+  PetscFunctionBegin;
+  if (ex->needsinitialization) {
+    ierr = HYPRE_StructMatrixInitialize(ex->hmat);CHKERRQ(ierr);
+    ex->needsinitialization = PETSC_FALSE;
+  }
+
+  ierr = MatGetOwnershipRange(mat,&rstart,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(ex->da,PETSC_NULL,&gindices);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(ex->da,0,0,0,&gnx,&gny,0);CHKERRQ(ierr);
+  ierr = DAGetCorners(ex->da,&xs,&ys,&zs,&nx,&ny,0);CHKERRQ(ierr);
+  ierr = PetscMemzero(values,7*sizeof(PetscScalar));CHKERRQ(ierr);
+  values[3] = d;
+  for (i=0; i<nrow; i++) {
+    row = gindices[irow[i]] - rstart;
+    index[0] = xs + (row % nx);
+    index[1] = ys + ((row/nx) % ny);
+    index[2] = zs + (row/(nx*ny));
+    ierr = HYPRE_StructMatrixSetValues(ex->hmat,index,7,entries,values);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -429,7 +464,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA_HYPREStruct(Mat mat,DA da)
 
   /* create the hypre matrix object and set its information */
   ierr = HYPRE_StructMatrixCreate(ex->hcomm,ex->hgrid,ex->hstencil,&ex->hmat);CHKERRQ(ierr);
-  ierr = HYPRE_StructMatrixInitialize(ex->hmat);CHKERRQ(ierr);
 
   /* set the global and local sizes of the matrix */
   ierr = DAGetCorners(da,0,0,0,&nx,&ny,&nz);CHKERRQ(ierr);
@@ -441,6 +475,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA_HYPREStruct(Mat mat,DA da)
 
   if (dim == 3) {
     mat->ops->setvalueslocal = MatSetValuesLocal_HYPREStruct_3d;
+    mat->ops->zerorowslocal  = MatZeroRowsLocal_HYPREStruct_3d;
   } else SETERRQ(PETSC_ERR_SUP,"Only support for 3d DA currently");
 
   PetscFunctionReturn(0);
@@ -486,7 +521,17 @@ PetscErrorCode MatAssemblyEnd_HYPREStruct(Mat mat,MatAssemblyType mode)
 
   PetscFunctionBegin;
   ierr = HYPRE_StructMatrixAssemble(ex->hmat);CHKERRQ(ierr);
+  ex->needsinitialization = PETSC_TRUE;
   /* ierr = HYPRE_StructMatrixPrint("dummy",ex->hmat,0);CHKERRQ(ierr); */
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatZeroEntries_HYPREStruct"
+PetscErrorCode MatZeroEntries_HYPREStruct(Mat mat)
+{
+  /* hypre has no such concept, so hope it is never needed */
+  PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
@@ -510,6 +555,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_HYPREStruct(Mat B)
 
   B->ops->assemblyend    = MatAssemblyEnd_HYPREStruct;
   B->ops->mult           = MatMult_HYPREStruct;
+  B->ops->zeroentries    = MatZeroEntries_HYPREStruct;
+
+  ex->needsinitialization = PETSC_TRUE;
 
   ierr = MPI_Comm_dup(((PetscObject)B)->comm,&(ex->hcomm));CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSetDA_C","MatSetDA_HYPREStruct",MatSetDA_HYPREStruct);CHKERRQ(ierr);

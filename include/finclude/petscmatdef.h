@@ -101,6 +101,7 @@
 #define MATTRANSPOSEMAT    'transpose'
 #define MATSCHURCOMPLEMENT 'schurcomplement'
 #define MATPYTHON          'python'
+#define MATHYPRESTRUCT     'hyprestruct'
 !
 ! MatSolverPackages
 !
