@@ -28,11 +28,11 @@ class VTKViewer {
   #define __FUNCT__ "VTKWriteVertices"
   template<typename Mesh>
   static PetscErrorCode writeVertices(const Obj<Mesh>& mesh, PetscViewer viewer) {
-    const Obj<typename Mesh::real_section_type> coordinates;
+    Obj<typename Mesh::real_section_type> coordinates;
 
-    if (mesh->hasSection("coordinates_dimensioned")) {
+    if (mesh->hasRealSection("coordinates_dimensioned")) {
       coordinates = mesh->getRealSection("coordinates_dimensioned");
-    } else if (mesh->hasSection("coordinates")) {
+    } else if (mesh->hasRealSection("coordinates")) {
       coordinates = mesh->getRealSection("coordinates");
     } else {
       throw ALE::Exception("Missing coordinates in mesh");
