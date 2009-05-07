@@ -24,7 +24,7 @@ PetscErrorCode MatGetDiagonalBlock_300(Mat A,PetscTruth *iscopy,MatReuse reuse,M
     ierr = (*f)(A,iscopy,reuse,a);CHKERRQ(ierr);
   } else if (size == 1) {
     *a = A;
-    iscopy = PETSC_FALSE;
+    *iscopy = PETSC_FALSE;
   } else {
     SETERRQ(PETSC_ERR_SUP,"Cannot get diagonal part for this matrix");
   }
