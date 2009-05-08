@@ -1115,6 +1115,8 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatICCFactorSymbolic(Mat,Mat,IS,const M
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatICCFactor(Mat,IS,const MatFactorInfo*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatLUFactorNumeric(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactor(Mat,IS,IS,const MatFactorInfo*,Mat *);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactorSymbolic(Mat,Mat,IS,IS,const MatFactorInfo*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactorNumeric(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetInertia(Mat,PetscInt*,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSolve(Mat,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatForwardSolve(Mat,Vec,Vec);

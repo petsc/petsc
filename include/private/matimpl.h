@@ -156,6 +156,8 @@ struct _MatOps {
   PetscErrorCode (*getseqnonzerostructure)(Mat,Mat *[]);
   PetscErrorCode (*create)(Mat);  
   PetscErrorCode (*getghosts)(Mat,PetscInt*,const PetscInt *[]);
+  PetscErrorCode (*iludtfactorsymbolic)(Mat,Mat,IS,IS,const MatFactorInfo*);
+  PetscErrorCode (*iludtfactornumeric)(Mat,Mat,const MatFactorInfo*);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
