@@ -392,6 +392,12 @@ runex29_2:
 	if (${DIFF} output/ex29_2.out ex29_2.tmp) then true; \
 	   else echo "Possible problem with ex29_2, diffs above"; fi; \
 	   ${RM} -f ex29_2.tmp
+runex30:
+	-@${MPIEXEC} -n 1 ./ex30 -f ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type ilu -pc_factor_use_drop_tolerance 0.0,0.0,4 -pc_factor_mat_ordering_type natural -num_numfac 2 -pc_factor_reuse_fill > ex30.tmp 2>&1; \
+	if (${DIFF} output/ex30.out ex30.tmp) then true; \
+	   else echo "Possible problem with ex30, diffs above"; fi; \
+	   ${RM} -f ex30.tmp
+
 runex31:
 	-@${MPIEXEC} -n 3 ./ex31 -f ${DATAFILESPATH}/matrices/small -partition > ex31.tmp 2>&1; \
 	if (${DIFF} output/ex31.out ex31.tmp) then true; \
