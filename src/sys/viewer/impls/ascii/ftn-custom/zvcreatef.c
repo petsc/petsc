@@ -25,7 +25,7 @@ void PETSC_STDCALL petscviewerasciiopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LE
 
 PetscViewer PETSC_STDCALL petsc_viewer_stdout__(MPI_Comm *comm)
 {
-  return PETSC_VIEWER_STDOUT_(*comm);
+  return PETSC_VIEWER_STDOUT_(MPI_Comm_f2c(*(MPI_Fint *)&*comm));
 }
 
 EXTERN_C_END
