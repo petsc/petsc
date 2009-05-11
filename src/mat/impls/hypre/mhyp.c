@@ -359,7 +359,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPREStruct_3d(Mat mat,Petsc
     index[0] = xs + (row % nx);
     index[1] = ys + ((row/nx) % ny);
     index[2] = zs + (row/(nx*ny));
-    ierr = HYPRE_StructMatrixSetValues(ex->hmat,index,7,entries,values);CHKERRQ(ierr);
+    if (addv == ADD_VALUES) {
+      ierr = HYPRE_StructMatrixAddToValues(ex->hmat,index,7,entries,values);
+      CHKERRQ(ierr);
+    }
+    else SETERRQ(PETSC_ERR_SUP,"Only support for ADD_VALUES with HYPRE_Struct matrices");
+/* HYPRE_StructMatrixSetValues() only works if all 7 entires in a row are set at once. 
+   One cannot set a subset of the entries individually as the call will overwrite
+   all existing values in the row */
+//      ierr = HYPRE_StructMatrixSetValues(ex->hmat,index,7,entries,values);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
