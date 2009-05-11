@@ -1101,11 +1101,18 @@ PetscErrorCode MatMissingDiagonal_SeqBAIJ(Mat A,PetscTruth *missing,PetscInt *d)
   PetscFunctionBegin;
   ierr = MatMarkDiagonal_SeqBAIJ(A);CHKERRQ(ierr);
   *missing = PETSC_FALSE;
-  diag     = a->diag;
-  for (i=0; i<a->mbs; i++) {
-    if (jj[diag[i]] != i) {
-      *missing  = PETSC_TRUE;
-      if (d) *d = i;
+  if (A->rmap->n > 0 && !jj) {
+    *missing  = PETSC_TRUE;
+    if (d) *d = 0;
+    PetscInfo(A,"Matrix has no entries therefor is missing diagonal");
+  } else {
+    diag     = a->diag;
+    for (i=0; i<a->mbs; i++) {
+      if (jj[diag[i]] != i) {
+        *missing  = PETSC_TRUE;
+        if (d) *d = i;
+        PetscInfo1(A,"Matrix is missing block diagonal number %D",i);
+      }
     }
   }
   PetscFunctionReturn(0);
