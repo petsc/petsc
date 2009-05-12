@@ -297,14 +297,18 @@ call PetscLogFlops() it no longer has a return in it.<br>
       <p><u><b>Sieve:</b></u></p>
       <p><u><b>Fortran:</b></u><br>
       </p>
-      <li> If you previously used text like
-
-#define PETSC_AVOID_DECLARATIONS</p>
-#include "finclude/petsc.h"</p>
-#include "finclude/petscvec.h"</p>
-you should replace it with</p>
-#include "finclude/petscdef.h"</p>
-#include "finclude/petscvecdef.h" </li>
+      <li> If you previously used text like the following [perhaps in data section of f90 modules]
+<pre>
+#define PETSC_AVOID_DECLARATIONS
+#include "finclude/petsc.h"
+#include "finclude/petscvec.h"
+#endif
+</pre>
+you should replace it with
+<pre>
+#include "finclude/petscdef.h"
+#include "finclude/petscvecdef.h"
+</pre> </li>
 
       <li>PetscTruth is now logical*4 or logical(kind=4) an unsigned
 int of 4 bytes. To get back PetscTruth as an integer*4 put a #define

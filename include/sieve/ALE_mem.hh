@@ -48,18 +48,47 @@ namespace ALE {
     int  debug() {return _debug;};
     void setDebug(int debug) {_debug = debug;};
   public:
-    void stagePush(const std::string& name) {stageNames.push_front(name);};
-    void stagePop() {stageNames.pop_front();};
-    void logAllocation(const std::string& className, int bytes) {logAllocation(stageNames.front(), className, bytes);};
+    void stagePush(const std::string& name) {
+      for(names::const_iterator s_iter = stageNames.begin(); s_iter != stageNames.end(); ++s_iter) {
+        if (*s_iter == name) throw ALE::Exception("Cannot push duplicate stage name");
+      }
+      stageNames.push_front(name);
+      if (_debug) {
+        std::cout << "Pushing stage " << name << ":" << std::endl;
+        for(names::const_iterator s_iter = stageNames.begin(); s_iter != stageNames.end(); ++s_iter) {
+          std::cout << "  " << *s_iter << ": " << stages[*s_iter].first.num  << " acalls  " << stages[*s_iter].first.total  << " bytes" << std::endl;
+          std::cout << "  " << *s_iter << ": " << stages[*s_iter].second.num << " dcalls  " << stages[*s_iter].second.total << " bytes" << std::endl;
+        }
+      }
+    };
+    void stagePop() {
+      if (_debug) {
+        std::cout << "Popping stage " << stageNames.front() << ":" << std::endl;
+        for(names::const_iterator s_iter = stageNames.begin(); s_iter != stageNames.end(); ++s_iter) {
+          std::cout << "  " << *s_iter << ": " << stages[*s_iter].first.num  << " acalls  " << stages[*s_iter].first.total  << " bytes" << std::endl;
+          std::cout << "  " << *s_iter << ": " << stages[*s_iter].second.num << " dcalls  " << stages[*s_iter].second.total << " bytes" << std::endl;
+        }
+      }
+      stageNames.pop_front();
+    };
+    void logAllocation(const std::string& className, int bytes) {
+      for(names::const_iterator s_iter = stageNames.begin(); s_iter != stageNames.end(); ++s_iter) {
+        logAllocation(*s_iter, className, bytes);
+      }
+    };
     void logAllocation(const std::string& stage, const std::string& className, int bytes) {
-      if (_debug) {std::cout << "["<<rank<<"]Allocating " << bytes << " bytes for class " << className << std::endl;}
+      if (_debug > 1) {std::cout << "["<<rank<<"]Allocating " << bytes << " bytes for class " << className << std::endl;}
       stages[stage].first.num++;
       stages[stage].first.total += bytes;
       stages[stage].first.items[className] += bytes;
     };
-    void logDeallocation(const std::string& className, int bytes) {logDeallocation(stageNames.front(), className, bytes);};
+    void logDeallocation(const std::string& className, int bytes) {
+      for(names::const_iterator s_iter = stageNames.begin(); s_iter != stageNames.end(); ++s_iter) {
+        logDeallocation(*s_iter, className, bytes);
+      }
+    };
     void logDeallocation(const std::string& stage, const std::string& className, int bytes) {
-      if (_debug) {std::cout << "["<<rank<<"]Deallocating " << bytes << " bytes for class " << className << std::endl;}
+      if (_debug > 1) {std::cout << "["<<rank<<"]Deallocating " << bytes << " bytes for class " << className << std::endl;}
       stages[stage].second.num++;
       stages[stage].second.total += bytes;
       stages[stage].second.items[className] += bytes;

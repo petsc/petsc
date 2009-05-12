@@ -601,7 +601,7 @@ PetscErrorCode SPARSEKIT2ilutp(PetscInt *n,PetscScalar *a,PetscInt *ja,PetscInt 
 	if (!tnorm) {
 	    goto L999;
 	}
-	tnorm /= j2 - j_1 + 1;
+	tnorm /= j2 - j_1 + 1; /* tnorm = sum(|a(ii,:)|)/num_nonzeros_in_row_ii */
 
 /*     unpack L-part and U-part of row of A in arrays  w  -- */
 

@@ -1,8 +1,8 @@
 /* ----------------------------------------------------------------------
- * Ethan Coon <ecoon@ldeo.columbia.edu> and Richard Katz <katz@ldeo.columbia.edu>
+ * Ethan Coon <ecoon@ldeo.columbia.edu> and Richard Katz <richard.katz@earth.ox.ac.uk>
  *
  *	This is a library of functions to write .info files with matlab code
- *      for interpreting various PETSc binary files.
+ *      for interpreting PETSc binary files.
  *
  *	Note all "name" and "DAFieldName" variables must be Matlab-Kosher
  *	i.e. no whitespace or illegal characters such as grouping 
@@ -46,8 +46,7 @@ PetscErrorCode PetscViewerBinaryMatlabOpen(MPI_Comm comm, const char fname[], Pe
   ierr = PetscViewerBinaryGetInfoPointer(*viewer,&info);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscViewerBinaryMatlabOpen ---%\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,info,"%%$$ Set.filename = '%s';\n",fname);CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,info,"%%$$ fd = fopen(Set.filename, 'r', 'ieee-be');\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,info,"%%$$ if (fd < 0) error('Cannot open %s, check for existence of file'); end\n",fname);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,info,"%%$$ fd = PetscOpenFile(Set.filename);\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscViewerBinaryMatlabOpen ---%\n\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -77,7 +76,7 @@ PetscErrorCode PetscViewerBinaryMatlabDestroy(PetscViewer viewer)
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetInfoPointer(viewer,&info);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscViewerBinaryMatlabDestroy ---%\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,info,"%%$$ fclose(fd);\n");
+  ierr = PetscFPrintf(comm,info,"%%$$ close(fd);\n");
   ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscViewerBinaryMatlabDestroy ---%\n\n");CHKERRQ(ierr);
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);

@@ -28,7 +28,15 @@ class VTKViewer {
   #define __FUNCT__ "VTKWriteVertices"
   template<typename Mesh>
   static PetscErrorCode writeVertices(const Obj<Mesh>& mesh, PetscViewer viewer) {
-    const Obj<typename Mesh::real_section_type>& coordinates = mesh->getRealSection("coordinates");
+    Obj<typename Mesh::real_section_type> coordinates;
+
+    if (mesh->hasRealSection("coordinates_dimensioned")) {
+      coordinates = mesh->getRealSection("coordinates_dimensioned");
+    } else if (mesh->hasRealSection("coordinates")) {
+      coordinates = mesh->getRealSection("coordinates");
+    } else {
+      throw ALE::Exception("Missing coordinates in mesh");
+    }
     const int                                    embedDim    = coordinates->getFiberDimension(*mesh->depthStratum(0)->begin());
     Obj<typename Mesh::numbering_type>           vNumbering;
     PetscErrorCode ierr;
