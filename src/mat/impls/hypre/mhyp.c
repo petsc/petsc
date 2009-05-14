@@ -317,6 +317,31 @@ M*/
 #include "../src/mat/impls/hypre/mhyp.h"
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatSetValuesLocal_HYPREStruct_geh"
+PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPREStr_3dBuf(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv) 
+{
+  PetscErrorCode  ierr;
+  PetscInt        ilower[3],iupper[3];
+  Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
+
+  PetscFunctionBegin;
+  if (ex->needsinitialization) {
+    ierr = HYPRE_StructMatrixInitialize(ex->hmat);CHKERRQ(ierr);
+    ex->needsinitialization = PETSC_FALSE;
+  }
+
+  ierr = DAGetCorners(ex->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0], 
+                      &iupper[1],&iupper[2]);CHKERRQ(ierr);
+  iupper[0] += ilower[0] - 1;    
+  iupper[1] += ilower[1] - 1;    
+  iupper[2] += ilower[2] - 1;    
+  ierr = HYPRE_StructMatrixSetBoxValues(ex->hmat,ilower,iupper,1,(int*)icol,(double*)y);
+    CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesLocal_HYPREStruct_3d"
 PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv) 
 {
@@ -326,49 +351,49 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPREStruct_3d(Mat mat,Petsc
   Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
 
   PetscFunctionBegin;
-  if (ex->needsinitialization) {
-    ierr = HYPRE_StructMatrixInitialize(ex->hmat);CHKERRQ(ierr);
-    ex->needsinitialization = PETSC_FALSE;
-  }
 
-  ierr = MatGetOwnershipRange(mat,&rstart,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(ex->da,PETSC_NULL,&gindices);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(ex->da,0,0,0,&gnx,&gny,0);CHKERRQ(ierr);
-  ierr = DAGetCorners(ex->da,&xs,&ys,&zs,&nx,&ny,0);CHKERRQ(ierr);
-  for (i=0; i<nrow; i++) {
-    ierr = PetscMemzero(values,7*sizeof(PetscScalar));CHKERRQ(ierr);
-    for (j=0; j<ncol; j++) {
-      stencil = icol[j] - irow[i];
-      if (!stencil) {
-        values[3] = *y++;
-      } else if (stencil == -1) {
-        values[2] = *y++;
-      } else if (stencil == 1) {
-        values[4] = *y++;
-      } else if (stencil == -gnx) {
-        values[1] = *y++;
-      } else if (stencil == gnx) {
-        values[5] = *y++;
-      } else if (stencil == -gnx*gny) {
-        values[0] = *y++;
-      } else if (stencil == gnx*gny) {
-        values[6] = *y++;
-      } else SETERRQ3(PETSC_ERR_ARG_WRONG,"Local row %D local column %D have bad stencil %D",irow[i],icol[j],stencil);
+  if (addv == INSERT_VALUES) {
+    ierr = MatSetValuesLocal_HYPREStr_3dBuf(mat,nrow,irow,ncol,icol,y,addv);
+  } else {
+
+    if (ex->needsinitialization) {
+      ierr = HYPRE_StructMatrixInitialize(ex->hmat);CHKERRQ(ierr);
+      ex->needsinitialization = PETSC_FALSE;
     }
-    row = gindices[irow[i]] - rstart;
-    index[0] = xs + (row % nx);
-    index[1] = ys + ((row/nx) % ny);
-    index[2] = zs + (row/(nx*ny));
-    if (addv == ADD_VALUES) {
+
+    ierr = MatGetOwnershipRange(mat,&rstart,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DAGetGlobalIndices(ex->da,PETSC_NULL,&gindices);CHKERRQ(ierr);
+    ierr = DAGetGhostCorners(ex->da,0,0,0,&gnx,&gny,0);CHKERRQ(ierr);
+    ierr = DAGetCorners(ex->da,&xs,&ys,&zs,&nx,&ny,0);CHKERRQ(ierr);
+    for (i=0; i<nrow; i++) {
+      ierr = PetscMemzero(values,7*sizeof(PetscScalar));CHKERRQ(ierr);
+      for (j=0; j<ncol; j++) {
+        stencil = icol[j] - irow[i];
+        if (!stencil) {
+          values[3] = *y++;
+        } else if (stencil == -1) {
+          values[2] = *y++;
+        } else if (stencil == 1) {
+          values[4] = *y++;
+        } else if (stencil == -gnx) {
+          values[1] = *y++;
+        } else if (stencil == gnx) {
+          values[5] = *y++;
+        } else if (stencil == -gnx*gny) {
+          values[0] = *y++;
+        } else if (stencil == gnx*gny) {
+          values[6] = *y++;
+        } else SETERRQ3(PETSC_ERR_ARG_WRONG,"Local row %D local column %D have bad stencil %D",irow[i],icol[j],stencil);
+      }
+      row = gindices[irow[i]] - rstart;
+      index[0] = xs + (row % nx);
+      index[1] = ys + ((row/nx) % ny);
+      index[2] = zs + (row/(nx*ny));
       ierr = HYPRE_StructMatrixAddToValues(ex->hmat,index,7,entries,values);
       CHKERRQ(ierr);
     }
-    else SETERRQ(PETSC_ERR_SUP,"Only support for ADD_VALUES with HYPRE_Struct matrices");
-/* HYPRE_StructMatrixSetValues() only works if all 7 entires in a row are set at once. 
-   One cannot set a subset of the entries individually as the call will overwrite
-   all existing values in the row */
-//      ierr = HYPRE_StructMatrixSetValues(ex->hmat,index,7,entries,values);CHKERRQ(ierr);
   }
+
   PetscFunctionReturn(0);
 }
 
