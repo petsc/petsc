@@ -317,7 +317,7 @@ M*/
 #include "../src/mat/impls/hypre/mhyp.h"
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetValuesLocal_HYPREStruct_geh"
+#define __FUNCT__ "MatSetValuesLocal_HYPREStruct_3dBuf"
 PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPREStr_3dBuf(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv) 
 {
   PetscErrorCode  ierr;
