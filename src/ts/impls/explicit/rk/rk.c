@@ -316,6 +316,7 @@ static PetscErrorCode TSStep_Rk(TS ts,PetscInt *steps,PetscReal *ptime)
   TS_Rk          *rk = (TS_Rk*)ts->data;
   PetscErrorCode ierr;
   PetscReal      norm=0.0,dt_fac=0.0,fac = 0.0/*,ttmp=0.0*/;
+  PetscInt       i, max_steps = ts->max_steps;
 
   PetscFunctionBegin;
   ierr=VecCopy(ts->vec_sol,rk->y1);CHKERRQ(ierr);
@@ -323,7 +324,7 @@ static PetscErrorCode TSStep_Rk(TS ts,PetscInt *steps,PetscReal *ptime)
   /* trying to save the vector */
   ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
   /* while loop to get from start to stop */
-  while (ts->ptime < ts->max_time){
+  for (i = 0; i < max_steps; i++) {
    /* calling rkqs */
      /*
        -- input
@@ -337,6 +338,8 @@ static PetscErrorCode TSStep_Rk(TS ts,PetscInt *steps,PetscReal *ptime)
        y2        - check solution (runge - kutta second permutation)
      */
      ierr = TSRkqs(ts,ts->ptime,ts->time_step);CHKERRQ(ierr);
+     /* counting steps */
+     ts->steps++;
    /* checking for maxerror */
      /* comparing difference to maxerror */
      ierr = VecNorm(rk->y2,NORM_2,&norm);CHKERRQ(ierr);
@@ -354,6 +357,7 @@ static PetscErrorCode TSStep_Rk(TS ts,PetscInt *steps,PetscReal *ptime)
         /* trying to save the vector */
        /* calling monitor */
        ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);  
+       if (ts->ptime >= ts->max_time) break;
      } else{
         /* if not OK */
         rk->nnok++;
@@ -391,8 +395,6 @@ static PetscErrorCode TSStep_Rk(TS ts,PetscInt *steps,PetscReal *ptime)
      /* ttmp = ts->ptime + ts->time_step;
         ts->time_step = ttmp - ts->ptime; */
      
-     /* counting steps */
-     ts->steps++;
   }
   
   ierr=VecCopy(rk->y1,ts->vec_sol);CHKERRQ(ierr);
