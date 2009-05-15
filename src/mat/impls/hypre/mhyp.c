@@ -321,7 +321,7 @@ M*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv) 
 {
   PetscErrorCode    ierr;
-  PetscInt          i,j,stencil,nx,ny,xs,ys,zs,gnx,gny,rstart,*gindices,index[3],row,entries[7];
+  PetscInt          i,j,stencil,index[3],row,entries[7];
   const PetscScalar *values = y;
   Mat_HYPREStruct   *ex = (Mat_HYPREStruct*) mat->data;
 
@@ -331,10 +331,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPREStruct_3d(Mat mat,Petsc
     ex->needsinitialization = PETSC_FALSE;
   }
 
-  ierr = MatGetOwnershipRange(mat,&rstart,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(ex->da,PETSC_NULL,&gindices);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(ex->da,0,0,0,&gnx,&gny,0);CHKERRQ(ierr);
-  ierr = DAGetCorners(ex->da,&xs,&ys,&zs,&nx,&ny,0);CHKERRQ(ierr);
   for (i=0; i<nrow; i++) {
     for (j=0; j<ncol; j++) {
       stencil = icol[j] - irow[i];
@@ -344,20 +340,20 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPREStruct_3d(Mat mat,Petsc
         entries[j] = 2;
       } else if (stencil == 1) {
         entries[j] = 4;
-      } else if (stencil == -gnx) {
+      } else if (stencil == -ex->gnx) {
         entries[j] = 1;
-      } else if (stencil == gnx) {
+      } else if (stencil == ex->gnx) {
         entries[j] = 5;
-      } else if (stencil == -gnx*gny) {
+      } else if (stencil == -ex->gnxgny) {
         entries[j] = 0;
-      } else if (stencil == gnx*gny) {
+      } else if (stencil == ex->gnxgny) {
         entries[j] = 6;
       } else SETERRQ3(PETSC_ERR_ARG_WRONG,"Local row %D local column %D have bad stencil %D",irow[i],icol[j],stencil);
     }
-    row = gindices[irow[i]] - rstart;
-    index[0] = xs + (row % nx);
-    index[1] = ys + ((row/nx) % ny);
-    index[2] = zs + (row/(nx*ny));
+    row = ex->gindices[irow[i]] - ex->rstart;
+    index[0] = ex->xs + (row % ex->nx);
+    index[1] = ex->ys + ((row/ex->nx) % ex->ny);
+    index[2] = ex->zs + (row/(ex->nxny));
     if (addv == ADD_VALUES) {
       ierr = HYPRE_StructMatrixAddToValues(ex->hmat,index,ncol,entries,(PetscScalar*)values);CHKERRQ(ierr);
     } else {
@@ -373,29 +369,22 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPREStruct_3d(Mat mat,Petsc
 PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscScalar d)
 {
   PetscErrorCode  ierr;
-  PetscInt        i,nx,ny,xs,ys,zs,gnx,gny,rstart,*gindices,index[3],row,entries[7] = {0,1,2,3,4,5,6};
+  PetscInt        i,index[3],row,entries[7] = {0,1,2,3,4,5,6};
   PetscScalar     values[7];
   Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
 
   PetscFunctionBegin;
-  if (ex->needsinitialization) {
-    ierr = HYPRE_StructMatrixInitialize(ex->hmat);CHKERRQ(ierr);
-    ex->needsinitialization = PETSC_FALSE;
-  }
-
-  ierr = MatGetOwnershipRange(mat,&rstart,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(ex->da,PETSC_NULL,&gindices);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(ex->da,0,0,0,&gnx,&gny,0);CHKERRQ(ierr);
-  ierr = DAGetCorners(ex->da,&xs,&ys,&zs,&nx,&ny,0);CHKERRQ(ierr);
+  ierr = HYPRE_StructMatrixInitialize(ex->hmat);CHKERRQ(ierr);
   ierr = PetscMemzero(values,7*sizeof(PetscScalar));CHKERRQ(ierr);
   values[3] = d;
   for (i=0; i<nrow; i++) {
-    row = gindices[irow[i]] - rstart;
-    index[0] = xs + (row % nx);
-    index[1] = ys + ((row/nx) % ny);
-    index[2] = zs + (row/(nx*ny));
+    row = ex->gindices[irow[i]] - ex->rstart;
+    index[0] = ex->xs + (row % ex->nx);
+    index[1] = ex->ys + ((row/ex->nx) % ex->ny);
+    index[2] = ex->zs + (row/(ex->nxny));
     ierr = HYPRE_StructMatrixSetValues(ex->hmat,index,7,entries,values);CHKERRQ(ierr);
   }
+  ierr = HYPRE_StructMatrixAssemble(ex->hmat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -508,6 +497,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA_HYPREStruct(Mat mat,DA da)
     ierr = MatZeroEntries_HYPREStruct_3d(mat);CHKERRQ(ierr);
   } else SETERRQ(PETSC_ERR_SUP,"Only support for 3d DA currently");
 
+  /* get values that will be used repeatedly in MatSetValuesLocal() and MatZeroRowsLocal() repeatedly */
+  ierr = MatGetOwnershipRange(mat,&ex->rstart,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(ex->da,PETSC_NULL,&ex->gindices);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(ex->da,0,0,0,&ex->gnx,&ex->gnxgny,0);CHKERRQ(ierr);
+  ex->gnxgny *= ex->gnx;
+  ierr = DAGetCorners(ex->da,&ex->xs,&ex->ys,&ex->zs,&ex->nx,&ex->ny,0);CHKERRQ(ierr);
+  ex->nxny = ex->nx*ex->ny;
   PetscFunctionReturn(0);
 }
 

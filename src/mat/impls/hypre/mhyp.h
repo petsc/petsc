@@ -15,4 +15,7 @@ typedef struct {
   hypre_Box           hbox;
 
   PetscTruth          needsinitialization;
+
+  /* variables that are stored here so they need not be reloaded for each MatSetValuesLocal() or MatZeroRowsLocal() call */
+  PetscInt            *gindices,rstart,gnx,gnxgny,xs,ys,zs,nx,ny,nxny;
 } Mat_HYPREStruct;
