@@ -317,14 +317,9 @@ M*/
 #include "../src/mat/impls/hypre/mhyp.h"
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetValuesLocal_HYPREStr_3dBuf"
-PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPREStr_3dBuf(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv) 
 #define __FUNCT__ "MatSetValuesLocal_HYPREStruct_3d"
 PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv) 
 {
-  PetscErrorCode  ierr;
-  PetscInt        ilower[3],iupper[3];
-  Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
   PetscErrorCode    ierr;
   PetscInt          i,j,stencil,index[3],row,entries[7];
   const PetscScalar *values = y;
@@ -336,35 +331,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPREStruct_3d(Mat mat,Petsc
     ex->needsinitialization = PETSC_FALSE;
   }
 
-  ierr = DAGetCorners(ex->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0], 
-                      &iupper[1],&iupper[2]);CHKERRQ(ierr);
-  iupper[0] += ilower[0] - 1;    
-  iupper[1] += ilower[1] - 1;    
-  iupper[2] += ilower[2] - 1;    
-  ierr = HYPRE_StructMatrixSetBoxValues(ex->hmat,ilower,iupper,1,(int*)icol,(double*)y);
-    CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatSetValuesLocal_HYPREStruct_3d"
-PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv) 
-{
-  PetscErrorCode  ierr;
-  PetscInt        i,j,stencil,nx,ny,xs,ys,zs,gnx,gny,rstart,*gindices,index[3],row,entries[7] = {0,1,2,3,4,5,6};
-  PetscScalar     values[7];
-  Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
-
-  PetscFunctionBegin;
-
-  if (addv == INSERT_VALUES) {
-    ierr = MatSetValuesLocal_HYPREStr_3dBuf(mat,nrow,irow,ncol,icol,y,addv);
-  } else {
-
-    if (ex->needsinitialization) {
-      ierr = HYPRE_StructMatrixInitialize(ex->hmat);CHKERRQ(ierr);
-      ex->needsinitialization = PETSC_FALSE;
   for (i=0; i<nrow; i++) {
     for (j=0; j<ncol; j++) {
       stencil = icol[j] - irow[i];
@@ -384,37 +350,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPREStruct_3d(Mat mat,Petsc
         entries[j] = 6;
       } else SETERRQ3(PETSC_ERR_ARG_WRONG,"Local row %D local column %D have bad stencil %D",irow[i],icol[j],stencil);
     }
-
-    ierr = MatGetOwnershipRange(mat,&rstart,PETSC_NULL);CHKERRQ(ierr);
-    ierr = DAGetGlobalIndices(ex->da,PETSC_NULL,&gindices);CHKERRQ(ierr);
-    ierr = DAGetGhostCorners(ex->da,0,0,0,&gnx,&gny,0);CHKERRQ(ierr);
-    ierr = DAGetCorners(ex->da,&xs,&ys,&zs,&nx,&ny,0);CHKERRQ(ierr);
-    for (i=0; i<nrow; i++) {
-      ierr = PetscMemzero(values,7*sizeof(PetscScalar));CHKERRQ(ierr);
-      for (j=0; j<ncol; j++) {
-        stencil = icol[j] - irow[i];
-        if (!stencil) {
-          values[3] = *y++;
-        } else if (stencil == -1) {
-          values[2] = *y++;
-        } else if (stencil == 1) {
-          values[4] = *y++;
-        } else if (stencil == -gnx) {
-          values[1] = *y++;
-        } else if (stencil == gnx) {
-          values[5] = *y++;
-        } else if (stencil == -gnx*gny) {
-          values[0] = *y++;
-        } else if (stencil == gnx*gny) {
-          values[6] = *y++;
-        } else SETERRQ3(PETSC_ERR_ARG_WRONG,"Local row %D local column %D have bad stencil %D",irow[i],icol[j],stencil);
-      }
-      row = gindices[irow[i]] - rstart;
-      index[0] = xs + (row % nx);
-      index[1] = ys + ((row/nx) % ny);
-      index[2] = zs + (row/(nx*ny));
-      ierr = HYPRE_StructMatrixAddToValues(ex->hmat,index,7,entries,values);
-      CHKERRQ(ierr);
     row = ex->gindices[irow[i]] - ex->rstart;
     index[0] = ex->xs + (row % ex->nx);
     index[1] = ex->ys + ((row/ex->nx) % ex->ny);
@@ -426,7 +361,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPREStruct_3d(Mat mat,Petsc
     }
     values += ncol;
   }
-
   PetscFunctionReturn(0);
 }
 
