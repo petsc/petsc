@@ -360,14 +360,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPREStruct_3d(Mat mat,Petsc
     index[1] = ys + ((row/nx) % ny);
     index[2] = zs + (row/(nx*ny));
     if (addv == ADD_VALUES) {
-      ierr = HYPRE_StructMatrixAddToValues(ex->hmat,index,7,entries,values);
-      CHKERRQ(ierr);
+      ierr = HYPRE_StructMatrixAddToValues(ex->hmat,index,7,entries,values);CHKERRQ(ierr);
+    } else {
+      ierr = HYPRE_StructMatrixSetValues(ex->hmat,index,7,entries,values);CHKERRQ(ierr);
     }
-    else SETERRQ(PETSC_ERR_SUP,"Only support for ADD_VALUES with HYPRE_Struct matrices");
-/* HYPRE_StructMatrixSetValues() only works if all 7 entires in a row are set at once. 
-   One cannot set a subset of the entries individually as the call will overwrite
-   all existing values in the row */
-//      ierr = HYPRE_StructMatrixSetValues(ex->hmat,index,7,entries,values);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -404,6 +400,20 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal_HYPREStruct_3d(Mat mat,PetscI
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatZeroEntries_HYPREStruct_3d"
+PetscErrorCode MatZeroEntries_HYPREStruct_3d(Mat mat)
+{
+  PetscErrorCode ierr;
+  PetscInt       indices[7] = {0,1,2,3,4,5,6};
+  Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
+
+  PetscFunctionBegin;
+  /* hypre has no public interface to do this */
+  ierr = hypre_StructMatrixClearBoxValues(ex->hmat,&ex->hbox,7,indices,0,1);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatSetDA_HYPREStruct"
 PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA_HYPREStruct(Mat mat,DA da)
 {
@@ -423,6 +433,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA_HYPREStruct(Mat mat,DA da)
   iupper[0] += ilower[0] - 1;    
   iupper[1] += ilower[1] - 1;    
   iupper[2] += ilower[2] - 1;    
+
+  /* the hypre_Box is used to zero out the matrix entries in MatZeroValues() */
+  ex->hbox.imin[0] = ilower[0];
+  ex->hbox.imin[1] = ilower[1];
+  ex->hbox.imin[2] = ilower[2];
+  ex->hbox.imax[0] = iupper[0];
+  ex->hbox.imax[1] = iupper[1];
+  ex->hbox.imax[2] = iupper[2];
 
   /* create the hypre grid object and set its information */
   if (dof > 1) SETERRQ(PETSC_ERR_SUP,"Currently only support for scalar problems");
@@ -484,6 +502,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA_HYPREStruct(Mat mat,DA da)
   if (dim == 3) {
     mat->ops->setvalueslocal = MatSetValuesLocal_HYPREStruct_3d;
     mat->ops->zerorowslocal  = MatZeroRowsLocal_HYPREStruct_3d;
+    mat->ops->zeroentries    = MatZeroEntries_HYPREStruct_3d;
   } else SETERRQ(PETSC_ERR_SUP,"Only support for 3d DA currently");
 
   PetscFunctionReturn(0);
@@ -538,8 +557,8 @@ PetscErrorCode MatAssemblyEnd_HYPREStruct(Mat mat,MatAssemblyType mode)
 #define __FUNCT__ "MatZeroEntries_HYPREStruct"
 PetscErrorCode MatZeroEntries_HYPREStruct(Mat mat)
 {
-  /* hypre has no such concept, so hope it is never needed */
   PetscFunctionBegin;
+  /* before the DA is set to the matrix the zero doesn't need to do anything */
   PetscFunctionReturn(0);
 }
 
