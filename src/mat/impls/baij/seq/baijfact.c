@@ -1103,7 +1103,7 @@ PetscErrorCode MatSolve_SeqBAIJ_iludt(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "BlockAbs_privat"
-PetscErrorCode BlockAbs_private(PetscInt nbs,PetscInt bs2,MatScalar *blockarray,PetscReal *absarray)
+PetscErrorCode BlockAbs_private(PetscInt nbs,PetscInt bs2,PetscScalar *blockarray,PetscScalar *absarray)
 {
   PetscErrorCode     ierr;
   PetscInt           i,j;
