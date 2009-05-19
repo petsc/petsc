@@ -171,6 +171,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSViewFromOptions(TS ts,const char title[])
     ierr = TSView(ts, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   }
+  opt = PETSC_FALSE;
   ierr = PetscOptionsGetTruth(((PetscObject)ts)->prefix, "-ts_view_draw", &opt,PETSC_NULL);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscViewerDrawOpen(((PetscObject)ts)->comm, 0, 0, 0, 0, 300, 300, &viewer);CHKERRQ(ierr);
