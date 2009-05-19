@@ -196,9 +196,6 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
   for (i = 0; i < max_steps; i++) {
     if (ts->ptime >= ts->max_time) break;
     ierr = CVode(mem,tout,cvode->y,&t,CV_ONE_STEP);CHKERRQ(ierr);
-    if (ts->ops->postupdate){
-      ierr = (*ts->ops->postupdate)(ts,ts->ptime,PETSC_NULL);CHKERRQ(ierr);
-    }    
     if (t > ts->max_time && cvode->exact_final_time) { 
       /* interpolate to final requested time */
       ierr = CVodeGetDky(mem,tout,0,cvode->y);CHKERRQ(ierr);
