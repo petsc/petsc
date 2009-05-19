@@ -150,8 +150,9 @@ EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSRegisterDestroy(void);
 
   Then, your ts type can be chosen with the procedural interface via
 .vb
-    TSCreate(MPI_Comm, TS *);
-    TSSetType(vec, "my_ts")
+    TS ts;
+    TSCreate(MPI_Comm, &ts);
+    TSSetType(ts, "my_ts")
 .ve
   or at runtime via the option
 .vb
