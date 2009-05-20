@@ -255,7 +255,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatComputeExplicitOperator(Mat inmat,Mat *mat)
 {
   Vec            in,out;
   PetscErrorCode ierr;
-  PetscInt       i,M,m,*rows,start,end;
+  PetscInt       i,m,n,M,N,*rows,start,end;
   MPI_Comm       comm;
   PetscScalar    *array,zero = 0.0,one = 1.0;
   PetscMPIInt    size;
@@ -267,25 +267,25 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatComputeExplicitOperator(Mat inmat,Mat *mat)
   comm = ((PetscObject)inmat)->comm;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
-  ierr = MatGetLocalSize(inmat,&m,0);CHKERRQ(ierr);
-  ierr = MatGetSize(inmat,&M,0);CHKERRQ(ierr);
-  ierr = VecCreateMPI(comm,m,M,&in);CHKERRQ(ierr);
-  ierr = VecDuplicate(in,&out);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(in,&start,&end);CHKERRQ(ierr);
-  ierr = PetscMalloc((m+1)*sizeof(PetscInt),&rows);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(inmat,&m,&n);CHKERRQ(ierr);
+  ierr = MatGetSize(inmat,&M,&N);CHKERRQ(ierr);
+  ierr = MatGetVecs(inmat,&in,&out);CHKERRQ(ierr);
+  ierr = VecSetOption(in,VEC_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(out,&start,&end);CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscInt),&rows);CHKERRQ(ierr);
   for (i=0; i<m; i++) {rows[i] = start + i;}
 
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
-  ierr = MatSetSizes(*mat,m,m,M,M);CHKERRQ(ierr);
+  ierr = MatSetSizes(*mat,m,n,M,N);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(*mat,MATSEQDENSE);CHKERRQ(ierr);
     ierr = MatSeqDenseSetPreallocation(*mat,PETSC_NULL);CHKERRQ(ierr);
   } else {
     ierr = MatSetType(*mat,MATMPIAIJ);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(*mat,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(*mat,n,PETSC_NULL,N-n,PETSC_NULL);CHKERRQ(ierr);
   }
 
-  for (i=0; i<M; i++) {
+  for (i=0; i<N; i++) {
 
     ierr = VecSet(in,zero);CHKERRQ(ierr);
     ierr = VecSetValues(in,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
@@ -293,9 +293,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatComputeExplicitOperator(Mat inmat,Mat *mat)
     ierr = VecAssemblyEnd(in);CHKERRQ(ierr);
 
     ierr = MatMult(inmat,in,out);CHKERRQ(ierr);
-    
+
     ierr = VecGetArray(out,&array);CHKERRQ(ierr);
-    ierr = MatSetValues(*mat,m,rows,1,&i,array,INSERT_VALUES);CHKERRQ(ierr); 
+    ierr = MatSetValues(*mat,m,rows,1,&i,array,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecRestoreArray(out,&array);CHKERRQ(ierr);
 
   }
