@@ -230,7 +230,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceTest(MatNullSpace sp,Mat mat,Petsc
 {
   PetscScalar    sum;
   PetscReal      nrm;
-  PetscInt       j,n,N,m;
+  PetscInt       j,n,N;
   PetscErrorCode ierr;
   Vec            l,r;
   PetscTruth     flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,consistent = PETSC_TRUE;
@@ -247,8 +247,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceTest(MatNullSpace sp,Mat mat,Petsc
     if (n) {
       ierr = VecDuplicate(sp->vecs[0],&sp->vec);CHKERRQ(ierr);
     } else {
-      ierr = MatGetLocalSize(mat,&m,PETSC_NULL);CHKERRQ(ierr);
-      ierr = VecCreateMPI(((PetscObject)sp)->comm,m,PETSC_DETERMINE,&sp->vec);CHKERRQ(ierr);
+      ierr = MatGetVecs(mat,&sp->vec,PETSC_NULL);CHKERRQ(ierr);
     }
   }
   l    = sp->vec;
