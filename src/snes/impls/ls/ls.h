@@ -13,6 +13,7 @@ typedef struct {
   /* --------------- Parameters used by line search method ----------------- */
   PetscReal      alpha;		                                                   /* used to determine sufficient reduction */
   PetscReal      maxstep;                                                          /* maximum step size */
+  PetscReal      minlambda;                                                        /* determines smallest line search lambda used */
   PetscErrorCode (*precheckstep)(SNES,Vec,Vec,void*,PetscTruth*);                  /* step-checking routine (optional) */
   void           *precheck;                                                        /* user-defined step-checking context (optional) */
   PetscErrorCode (*postcheckstep)(SNES,Vec,Vec,Vec,void*,PetscTruth*,PetscTruth*); /* step-checking routine (optional) */
