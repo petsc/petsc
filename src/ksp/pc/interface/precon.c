@@ -997,7 +997,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCModifySubMatrices(PC pc,PetscInt nsub,const 
 PetscErrorCode PETSCKSP_DLLEXPORT PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 {
   PetscErrorCode ierr;
-  PetscTruth     isbjacobi,isrowbs;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -1005,20 +1004,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStru
   if (Pmat) PetscValidHeaderSpecific(Pmat,MAT_COOKIE,3);
   if (Amat) PetscCheckSameComm(pc,1,Amat,2);
   if (Pmat) PetscCheckSameComm(pc,1,Pmat,3);
-
-  /*
-      BlockSolve95 cannot use default BJacobi preconditioning
-  */
-  if (Amat) {
-    ierr = PetscTypeCompare((PetscObject)Amat,MATMPIROWBS,&isrowbs);CHKERRQ(ierr);
-    if (isrowbs) {
-      ierr = PetscTypeCompare((PetscObject)pc,PCBJACOBI,&isbjacobi);CHKERRQ(ierr);
-      if (isbjacobi) {
-        ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
-        ierr = PetscInfo(pc,"Switching default PC to PCILU since BS95 doesn't support PCBJACOBI\n");CHKERRQ(ierr);
-      }
-    }
-  }
 
   /* reference first in case the matrices are the same */
   if (Amat) {ierr = PetscObjectReference((PetscObject)Amat);CHKERRQ(ierr);}

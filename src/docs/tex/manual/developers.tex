@@ -1012,7 +1012,7 @@ the matrices, one employs blocks of elements.  Since the use of
 implicit methods in PDE-based simulations leads to matrices with a
 naturally blocked structure (with a block size equal to the number of
 degrees of freedom per cell), blocking is extremely advantageous.  The
-PETSc (and BlockSolve95) sparse matrix representations use a variety
+PETSc sparse matrix representations use a variety
 of techniques for blocking, including
 
 \begin{itemize}
@@ -1023,9 +1023,6 @@ of techniques for blocking, including
    (the default for the MATSEQAIJ and MATMPIAIJ formats);
 \item storing the matrices using a fixed (problem dependent) block size
    (via the MATSEQBAIJ and MATMPIBAIJ formats); and
-\item storing the matrices using a variable block size, that can be 
-   different for different parts of the matrix
-   (supported by the BlockSolve95 matrix format MATMPIROWBS).
 \end{itemize}
 
 The advantage of the first approach is that it is a minimal change
@@ -1034,20 +1031,15 @@ improvement one obtains via blocking.  Using a fixed block size gives
 the best performance, since the code can be hardwired with that
 particular size (for example, in some problems the size may be 3, in
 others 5, etc.), so that the compiler will then optimize for that
-size, removing the overhead of small loops entirely. Variable block
-size is, of course, appropriate for problems where the natural matrix
-block size is different in different parts of the domain. It is
-slightly less efficient than the fixed block size code due to overhead
-of checking block sizes.
+size, removing the overhead of small loops entirely.
 
 The following table presents the floating point performance
-for a basic matrix-vector product using these four approaches: a basic
+for a basic matrix-vector product using these three approaches: a basic
 compressed row storage format (using the PETSc runtime options 
 \trl{-mat\_seqaij -mat\_no\_unroll)}; the same compressed row format using
-I-nodes (with the option {-mat\_seqaij}); a fixed block size code,
+I-nodes (with the option {-mat\_seqaij}); and a fixed block size code,
 with a block size of three for these problems (using the option 
-{-mat\_seqbaij}); and the BlockSolve95 variable block size code (using
-PETSc option {-mat\_mpirowbs}). The rates were computed on one
+{-mat\_seqbaij}). The rates were computed on one
 node of an older IBM SP, using two test matrices.  The first matrix
 (ARCO1), courtesy of Rick Dean of Arco, arises in multiphase flow
 simulation; it has 1501 degrees of freedom, 26,131 matrix nonzeros
@@ -1062,17 +1054,17 @@ obtained from an ILU(0) factorization.
 \centerline{
 \begin{tabular}{|c|c|c|c|c|c|}
 \hline
-Problem & Block size & Basic & I-node version & Fixed block size &Variable block size \\
+Problem & Block size & Basic & I-node version & Fixed block size \\
 \hline
-\multicolumn{6}{c}{{\em Matrix-Vector Product (Mflop/sec)}} \\
+\multicolumn{5}{c}{{\em Matrix-Vector Product (Mflop/sec)}} \\
 \hline
-Multiphase & 3 & 27 & 43 & 70 & 22 \\
-Euler & 5 &  28 & 58 & 90 & 39 \\
+Multiphase & 3 & 27 & 43 & 70 \\
+Euler & 5 &  28 & 58 & 90 \\
 \hline
-\multicolumn{6}{c}{{\em Triangular Solves from ILU(0) (Mflop/sec)}}\\
+\multicolumn{5}{c}{{\em Triangular Solves from ILU(0) (Mflop/sec)}}\\
 \hline
-Multiphase & 3 & 22 & 31 & 49 & 15 \\
-Euler & 5 & 22 & 39 & 65 & 24\\
+Multiphase & 3 & 22 & 31 & 49 \\
+Euler      & 5 & 22 & 39 & 65 \\
 \hline
 \end{tabular}
 }
@@ -1179,14 +1171,6 @@ usual Fortran77 style.
 The parallel dense matrices are partitioned by rows across the
 processors, so that each local rectangular submatrix is stored in the
 dense format described above.
-
-\subsection{Parallel BlockSolve Sparse Matrices}
-
-PETSc provides a parallel, sparse, row-based matrix format that is
-intended for use in conjunction with the ILU and ICC preconditioners
-in BlockSolve95.  
-
-
 
 \bibliographystyle{plain}
 \bibliography{../petsc}

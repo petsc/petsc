@@ -34,9 +34,6 @@
 /* Define as the string that has the name of the architecture */
 #undef PETSC_ARCH_NAME
 
-/* Define if the BlockSolve package is available */
-#undef HAVE_BLOCKSOLVE
-
 /* Define if the SUNDIALS package is available */
 #undef HAVE_SUNDIALS
 

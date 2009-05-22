@@ -7,8 +7,6 @@ configure_options = [
   '--with-mpi-lib=[/home/petsc/soft/linux-rh73/mpich-1.2.4/lib/libmpich.a,/home/petsc/soft/linux-rh73/mpich-1.2.4/lib/libpmpich.a]',
   '--with-mpiexec=mpiexec -all-local',
   '--with-cc=gcc',
-  #blocksolve95
-  '--with-blocksolve95-lib=/home/petsc/software/BlockSolve95/lib/libO/linux/libBS95.a',
   #dscpack
   '--with-dscpack-dir=/home/petsc/soft/linux-rh73/DSCPACK1.0',
   #spooles

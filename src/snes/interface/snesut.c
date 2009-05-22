@@ -196,13 +196,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorRange_Private(SNES snes,PetscInt i
    Options Database Key:
 .  -snes_monitor_range - Activates SNESMonitorRange()
 
-
-   Notes:
-   When using either ICC or ILU preconditioners in BlockSolve95 
-   (via MATMPIROWBS matrix format), then use this monitor will
-   print both the residual norm associated with the original
-   (unscaled) matrix.
-
    Level: intermediate
 
 .keywords: SNES, default, monitor, residual

@@ -235,11 +235,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal
    Notes:
    When using right preconditioning, these values are equivalent.
 
-   When using either ICC or ILU preconditioners in BlockSolve95 
-   (via MATMPIROWBS matrix format), then use this monitor will
-   print both the residual norm associated with the original
-   (unscaled) matrix.
-
    Level: intermediate
 
 .keywords: KSP, default, monitor, residual
@@ -336,13 +331,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorRange_Private(KSP ksp,PetscInt it,Pe
 
    Options Database Key:
 .  -ksp_monitor_range - Activates KSPMonitorRange()
-
-
-   Notes:
-   When using either ICC or ILU preconditioners in BlockSolve95 
-   (via MATMPIROWBS matrix format), then use this monitor will
-   print both the residual norm associated with the original
-   (unscaled) matrix.
 
    Level: intermediate
 

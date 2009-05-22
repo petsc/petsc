@@ -1,1 +1,1 @@
-all = ['ADIC', 'BLAS', 'BlockSolve', 'ML', 'LAPACK', 'MPI', 'Mathematica', 'Matlab', 'PLAPACK', 'ParMetis', 'Triangle']
+all = ['ADIC', 'BLAS', 'ML', 'LAPACK', 'MPI', 'Mathematica', 'Matlab', 'PLAPACK', 'ParMetis', 'Triangle']

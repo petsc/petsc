@@ -12,7 +12,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       i,j,ntypes,bs,mbs,m,block,d_nz=6, o_nz=3,col[3],row,displ=0;
   PetscMPIInt    size,rank;
-  /* const MatType  type[9] = {MATMPIAIJ,MATMPIBAIJ,MATMPIROWBS};*/ /* BlockSolve95 is required for MATMPIROWBS */
+  /* const MatType  type[9] = {MATMPIAIJ,MATMPIBAIJ};*/
   const MatType  type[9]; 
   char           file[PETSC_MAX_PATH_LEN];
   PetscViewer    fd;

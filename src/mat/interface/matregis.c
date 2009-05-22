@@ -81,9 +81,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char path[])
   ierr = MatRegisterDynamic(MATIS,             path,"MatCreate_IS",      MatCreate_IS);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSHELL,          path,"MatCreate_Shell",   MatCreate_Shell);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATCOMPOSITE,      path,"MatCreate_Composite",   MatCreate_Composite);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_BLOCKSOLVE95)
-  ierr = MatRegisterDynamic(MATMPIROWBS,       path,"MatCreate_MPIRowbs",MatCreate_MPIRowbs);CHKERRQ(ierr);
-#endif
   ierr = MatRegisterDynamic(MATAIJ,            path,"MatCreate_AIJ",         MatCreate_AIJ);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATMPIAIJ,         path,"MatCreate_MPIAIJ",      MatCreate_MPIAIJ);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSEQAIJ,         path,"MatCreate_SeqAIJ",      MatCreate_SeqAIJ);CHKERRQ(ierr);

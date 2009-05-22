@@ -297,16 +297,6 @@ runex5_2:
 	   else echo "Possible problem with ex5_2, diffs above"; fi; \
 	   ${RM} -f ex5_2.tmp
 
-# Note: We test these BlockSolve95 examples differently from the usual
-# because the coloring heuristic is machine-dependent; convergence rates
-# may differ slightly on various architectures.
-runex5_3:
-	-@${MPIEXEC} -n 2 ./ex5 -pc_type icc -ksp_type cg -mat_type mpirowbs -ksp_rtol .000001;\
-	echo "ex5_3: This program tested the ICC preconditioner in BlockSolve95."
-runex5_4:
-	-@${MPIEXEC} -n 2 ./ex5 -pc_type ilu -mat_nonsym -mat_type mpirowbs -ksp_gmres_cgs_refinement_type refine_always\
-	   -ksp_rtol .000001;\
-	echo "ex5_4: This program tested the ILU preconditioner in BlockSolve95."
 runex5_5:
 	-@${MPIEXEC} -n 2 ./ex5 -ksp_gmres_cgs_refinement_type refine_always > ex5_5.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5.out ex5_5.tmp) then true; \
@@ -847,7 +837,6 @@ TESTEXAMPLES_C_X11_MPIUNI      = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.P
 TESTEXAMPLES_C_COMPLEX	       = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm ex39.PETSc runex39 ex39.rm ex40.PETSc runex40 ex40.rm
 TESTEXAMPLES_DATAFILESPATH     = ex10.PETSc runex10_2 runex10_3 runex10_4 runex10_5 runex10_6 runex10_7 runex10_8 \
                                  runex10_9 runex10_10 runex10_19 runex10_20 runex10_22 runex10_23 runex10_24 runex10_25  runex10_ILU runex10_ILUBAIJ ex10.rm 
-TESTEXAMPLES_BLOCKSOLVE95      = ex5.PETSc runex5_3 runex5_4 ex5.rm
 # even though ex10.c is a C example to run with -mat_type lusol requires a Fortran compiler, hence
 # we list it with the fortran examples
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = 

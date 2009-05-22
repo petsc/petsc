@@ -204,18 +204,6 @@ runex5_2:
 	   else echo "Possible problem with ex5_2, diffs above"; fi; \
 	   ${RM} -f ex5_2.tmp
 
-# Note: We test these BlockSolve95 examples differently from the usual
-# because the coloring heuristic is machine-dependent; convergence rates
-# may differ slightly on various architectures.
-runex5_3:
-	-@${MPIEXEC} -n 2 ex5 -pc_type icc -ksp_type cg -mat_mpirowbs -ksp_rtol .000001;\
-	echo "ex5_3: This program tested the ICC preconditioner in BlockSolve95."
-
-runex5_4:
-	-@${MPIEXEC} -n 2 ex5 -pc_type ilu -mat_nonsym -mat_mpirowbs \
-	   -ksp_rtol .000001;\
-	echo "ex5_4: This program tested the ILU preconditioner in BlockSolve95."
-
 runex5_5:
 	-@${MPIEXEC} -n 2 ex5  -mat_block_size 2 > ex5_5.tmp 2>&1; \
 	   if (diff output/ex5_5.out ex5_5.tmp) then true; \

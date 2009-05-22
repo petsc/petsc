@@ -213,15 +213,6 @@ runex6_3:
 	   else echo "Possible problem with ex6_3, diffs above"; fi; \
 	   ${RM} -f ex6_3.tmp
 
-# Note: We test these BlockSolve95 examples differently from the usual
-# because the coloring heuristic is machine-dependent; convergence rates
-# may differ slightly on various architectures.
-# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
-runex6_6:
-	-@${MPIEXEC} -n 3 ./ex6  -ksp_gmres_cgs_refinement_type refine_always -ksp_gmres_restart 100 \
-	   -f ${DATAFILESPATH}/matrices/arco1_ns \
-	   -mat_type mpirowbs -pc_type ilu -pc_factor_factorpointwise 
-	-@echo "ex6_6: This program tested the ILU preconditioner in BlockSolve95."
 runex6_7:
 	-@${MPIEXEC} -n 1 ./ex6 -ksp_gmres_cgs_refinement_type refine_always -pc_type asm -pc_asm_blocks 6 \
 	   -f ${DATAFILESPATH}/matrices/small \
@@ -246,16 +237,6 @@ runex8_2:
 	   else echo "Possible problem with ex8_2, diffs above"; fi; \
 	   ${RM} -f ex8_2.tmp
 
-# Note: We test these BlockSolve95 examples differently from the usual
-# because the coloring heuristic is machine-dependent; convergence rates
-# may differ slightly on various architectures.
-runex8_3:
-	-@${MPIEXEC} -n 2 ./ex8 -ksp_gmres_cgs_refinement_type refine_always -pc_type icc -mat_type mpirowbs -ksp_rtol .000001;\
-	echo "ex8_3: This program tested the ICC preconditioner in BlockSolve95."
-runex8_4:
-	-@${MPIEXEC} -n 2 ./ex8 -ksp_gmres_cgs_refinement_type refine_always -pc_type ilu -mat_nonsym -mat_type mpirowbs \
-	   -ksp_rtol .000001;\
-	echo "ex8_4: This program tested the ILU preconditioner in BlockSolve95."
 runex10:
 	-@${MPIEXEC} -n 1 ./ex10 -matconvert_type seqaij -ksp_monitor_short >ex10_1.tmp 2>&1; \
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
@@ -420,7 +401,6 @@ TESTEXAMPLES_C_COMPLEX	       = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_C_COMPLEX_MPIUNI  = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_DATAFILESPATH     = ex6.PETSc runex6 runex6_2 runex6_3 ex6.r ex25.PETSc runex25 runex25_2 ex25.rm ex27.PETSc runex27 ex25.rm \
                                  ex30.PETSc runex30 ex30.rm ex31.PETSc runex31 ex31.rm
-TESTEXAMPLES_BLOCKSOLVE95      = ex6.PETSc runex6_6 ex6.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex16f.PETSc runex16f ex16f.rm  ex12f.PETSc runex12f ex12f.rm 
 TESTEXAMPLES_13		       = ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex5f.PETSc ex5f.rm
 TESTEXAMPLES_ML                = ex26.PETSc runex26_ml runex26_ml_2 runex26_ml_3 ex26.rm ex29.PETSc runex29 runex29_2 ex29.rm

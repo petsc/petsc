@@ -2584,81 +2584,9 @@ By alleviating the considerable overhead for dynamic memory allocation,
 such tuning can significantly enhance performance.
 
 % --------------------------------------------------------------------
-\label{sec_blocksolve}
+\label{sec_pcfactor}
 PETSc supports incomplete factorization preconditioners for several matrix
 types for sequential matrix (for example MATSEQAIJ, MATSEQBAIJ, MATSEQSBAIJ).\sindex{ILU, parallel}\sindex{ICC, parallel}
-In addition, for parallel matrices
-we provide an interface to the ILU and ICC preconditioners
-of BlockSolve95 \cite{bs-user-ref}.   PETSc enables users
-to employ the preconditioners within
-BlockSolve95 by using the BlockSolve95 matrix format \trl{MATMPIROWBS}
-and invoking either the \trl{PCILU} or \trl{PCICC} method within the linear
-solvers.  Since PETSc automatically handles matrix assembly,
-preconditioner setup, profiling, etc., users who employ BlockSolve95
-through the PETSc interface need not concern themselves with many
-details provided within the BlockSolve95 users manual. To 
-use BlockSolve you Consult the file
-\trl{docs/installation/index.htm} for details on installing PETSc to allow 
-the use of BlockSolve95. Note that when using parallel preconditioners such as
-block Jacobi and the additive Schwarz method with factorizations on each block
-(which are sequential) the regular PETSc sequential ILU and ICC preconditioners are used.
-
-One can create a matrix that is compatible with BlockSolve95 by using
-MatCreate() with the option \trl{-mat_mpirowbs}, or by directly
-calling \findex{MatCreateMPIRowbs()}
-\begin{tabbing}
-  MatCreateMPIRowbs(MPI\_Comm comm,int m,int M,int nz,int *nnz,Mat *A)
-\end{tabbing}
-\trl{A} is the newly created matrix, while the arguments \trl{m} and
-\trl{M} indicate the number of local and global rows,
-respectively. Either the local or global parameter can be replaced
-with PETSC\_DECIDE, so that PETSc will determine it.  The matrix
-is stored with a fixed number of rows on each process, given by \trl{
-m}, or determined by PETSc if \trl{m} is PETSC\_DECIDE.  The
-arguments \trl{nz} and \trl{nnz} can be used to preallocate storage
-space, as discussed in Section~\ref{sec_matcreate} for increasing
-the efficiency of matrix assembly; one sets \trl{nz=0} and
-\trl{nnz=PETSC_NULL} for PETSc to control all matrix memory
-allocation.  
-%The argument \trl{proci} is an optional BlockSolve95
-%\trl{BSprocinfo} context; most users should set this parameter to 
-%\trl{PETSC_NULL}, so that PETSc will create and initialize this context.
-
-If the matrix is symmetric, one {\em may} call
-\begin{tabbing}
-  MatSetOption(Mat mat,MAT\_SYMMETRIC,PETSC\_TRUE);
-\end{tabbing}
-to improve efficiency, but in this case one cannot use the ILU 
-preconditioner, only ICC.
-
-Internally, PETSc inserts zero elements into matrices of the \trl{
-MATMPIROWBS} format if necessary, so that nonsymmetric matrices are
-considered to be symmetric in terms of their sparsity structure; this
-format is required for use of the parallel communication routines
-within BlockSolve95. In particular, if the matrix element $A[i,j]$
-exists, then PETSc will internally allocate a 0 value for the element
-$ A[j,i] $ during MatAssemblyEnd() if the user has not already set
-a value for the matrix element $ A[j,i] $ .
-
-When manipulating a preconditioning matrix, $ A $, BlockSolve95
-internally works with a scaled and permuted matrix, $ \hat{A} = P
-D^{-1/2} A D^{-1/2},$ where $ D $ is the diagonal of $ A $, and $ P $ is a
-permutation matrix determined by a graph coloring for efficient
-parallel computation.  Thus, when solving a linear system, $ Ax=b $,
-using ILU/ICC preconditioning and the matrix format \trl{MATMPIROWBS}
-for {\em both} the linear system matrix and the preconditioning
-matrix, one actually solves the scaled and permuted system $ \hat{A}
-\hat{x} = \hat{b} $, where $ \hat{x} = P D^{1/2} x $ and $\hat{b} = P
-D^{-1/2} b$ .  PETSc handles the internal scaling and permutation of
-$ x $ and $ b $, so the user does {\em not} deal with these conversions, 
-but instead always works with the original linear system.  In
-this case, by default the scaled residual norm is monitored; one must use the
-option \trl{-ksp_monitor_true_residual} \findex{-ksp_monitor_true_residual} to print both the
-scaled and unscaled residual norms. {\em Note}: If one is using ILU/ICC via
-BlockSolve95 and the \trl{MATMPIROWBS} matrix format for the 
-preconditioner matrix, but using a different format for a different
-linear system matrix, then this scaling and permuting is done only
-internally during the application of the preconditioner.
 
 
 % --------------------------------------------------------------------
