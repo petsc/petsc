@@ -1003,18 +1003,18 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetCtx(Mat,void*);
 .seealso: MatGetOrdering()
 E*/
 #define MatOrderingType char*
-#define MATORDERING_NATURAL   "natural"
-#define MATORDERING_ND        "nd"
-#define MATORDERING_1WD       "1wd"
-#define MATORDERING_RCM       "rcm"
-#define MATORDERING_QMD       "qmd"
-#define MATORDERING_ROWLENGTH "rowlength"
-#define MATORDERING_DSC_ND    "dsc_nd"
-#define MATORDERING_DSC_MMD   "dsc_mmd"
-#define MATORDERING_DSC_MDF   "dsc_mdf"
+#define MATORDERING_NATURAL     "natural"
+#define MATORDERING_ND          "nd"
+#define MATORDERING_1WD         "1wd"
+#define MATORDERING_RCM         "rcm"
+#define MATORDERING_QMD         "qmd"
+#define MATORDERING_ROWLENGTH   "rowlength"
+#define MATORDERING_DSC_ND      "dsc_nd"         /* these three are only for DSCPACK, see its documentation for details */
+#define MATORDERING_DSC_MMD     "dsc_mmd"
+#define MATORDERING_DSC_MDF     "dsc_mdf"
 #define MATORDERING_CONSTRAINED "constrained"
-#define MATORDERING_IDENTITY  "identity"
-#define MATORDERING_REVERSE   "reverse"
+#define MATORDERING_IDENTITY    "identity"
+#define MATORDERING_REVERSE     "reverse"
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat,const MatOrderingType,IS*,IS*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrderingList(PetscFList *list);
