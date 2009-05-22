@@ -109,6 +109,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrallocpy(const char s[],char *t[])
 .seealso: PetscStrncpy(), PetscStrcat(), PetscStrncat()
 
 @*/
+
 PetscErrorCode PETSC_DLLEXPORT PetscStrcpy(char s[],const char t[])
 {
   PetscFunctionBegin;
@@ -647,6 +648,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetPetscDir(const char *dir[])
       Replaces   ${PETSC_ARCH},${PETSC_DIR},${PETSC_LIB_DIR},${DISPLAY},
       ${HOMEDIRECTORY},${WORKINGDIRECTORY},${USERNAME} with appropriate values
       as well as any environmental variables.
+
+      Note: PETSC_LIB_DIR uses the environmental variable if it exists. PETSC_ARCH and PETSC_DIR use what
+      PETSc was built with and do not use environmental variables.
    
    Level: intermediate
 
