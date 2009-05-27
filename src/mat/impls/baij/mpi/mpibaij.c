@@ -1832,9 +1832,17 @@ PetscErrorCode MatGetSubMatrix_MPIBAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,M
 
   PetscFunctionBegin;
   ierr = ISGetLocalSize(iscol,&csize);CHKERRQ(ierr);
-  ierr = ISAllGather(iscol,&iscol_local);CHKERRQ(ierr);
+  if (call == MAT_REUSE_MATRIX) {
+    ierr = PetscObjectQuery((PetscObject)*newmat,"ISAllGather",(PetscObject*)&iscol_local);CHKERRQ(ierr);
+    if (!iscol_local) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
+  } else {
+    ierr = ISAllGather(iscol,&iscol_local);CHKERRQ(ierr);
+  }
   ierr = MatGetSubMatrix_MPIBAIJ_Private(mat,isrow,iscol_local,csize,call,newmat);CHKERRQ(ierr);
-  ierr = ISDestroy(iscol_local);CHKERRQ(ierr);
+  if (call == MAT_INITIAL_MATRIX) {
+    ierr = PetscObjectCompose((PetscObject)*newmat,"ISAllGather",(PetscObject)iscol_local);CHKERRQ(ierr);
+    ierr = ISDestroy(iscol_local);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
