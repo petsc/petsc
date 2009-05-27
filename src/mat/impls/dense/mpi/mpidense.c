@@ -181,21 +181,24 @@ PetscErrorCode MatGetArray_MPIDense(Mat A,PetscScalar *array[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrix_MPIDense"
-static PetscErrorCode MatGetSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,PetscInt cs,MatReuse scall,Mat *B)
+static PetscErrorCode MatGetSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *B)
 {
   Mat_MPIDense   *mat = (Mat_MPIDense*)A->data,*newmatd;
   Mat_SeqDense   *lmat = (Mat_SeqDense*)mat->A->data;
   PetscErrorCode ierr;
-  PetscInt       i,j,rstart,rend,nrows,ncols,nlrows,nlcols;
+  PetscInt       i,j,rstart,rend,nrows,ncols,Ncols,nlrows,nlcols;
   const PetscInt *irow,*icol;
   PetscScalar    *av,*bv,*v = lmat->v;
   Mat            newmat;
+  IS             iscol_local;
 
   PetscFunctionBegin;
+  ierr = ISAllGather(iscol,&iscol_local);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
-  ierr = ISGetIndices(iscol,&icol);CHKERRQ(ierr);
+  ierr = ISGetIndices(iscol_local,&icol);CHKERRQ(ierr);
   ierr = ISGetLocalSize(isrow,&nrows);CHKERRQ(ierr);
   ierr = ISGetLocalSize(iscol,&ncols);CHKERRQ(ierr);
+  ierr = ISGetSize(iscol,&Ncols);CHKERRQ(ierr); /* global number of columns, size of iscol_local */
 
   /* No parallel redistribution currently supported! Should really check each index set
      to comfirm that it is OK.  ... Currently supports only submatrix same partitioning as
@@ -212,7 +215,7 @@ static PetscErrorCode MatGetSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,PetscInt 
   } else {
     /* Create and fill new matrix */
     ierr = MatCreate(((PetscObject)A)->comm,&newmat);CHKERRQ(ierr);
-    ierr = MatSetSizes(newmat,nrows,cs,PETSC_DECIDE,ncols);CHKERRQ(ierr);
+    ierr = MatSetSizes(newmat,nrows,ncols,PETSC_DECIDE,Ncols);CHKERRQ(ierr);
     ierr = MatSetType(newmat,((PetscObject)A)->type_name);CHKERRQ(ierr);
     ierr = MatMPIDenseSetPreallocation(newmat,PETSC_NULL);CHKERRQ(ierr);
   }
@@ -221,7 +224,7 @@ static PetscErrorCode MatGetSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,PetscInt 
   newmatd = (Mat_MPIDense*)newmat->data;
   bv      = ((Mat_SeqDense *)newmatd->A->data)->v;
   
-  for (i=0; i<ncols; i++) {
+  for (i=0; i<Ncols; i++) {
     av = v + ((Mat_SeqDense *)mat->A->data)->lda*icol[i];
     for (j=0; j<nrows; j++) {
       *bv++ = av[irow[j] - rstart];

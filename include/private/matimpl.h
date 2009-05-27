@@ -87,7 +87,7 @@ struct _MatOps {
   PetscErrorCode (*permute)(Mat,IS,IS,Mat*);
   PetscErrorCode (*setvaluesblocked)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
   /*59*/
-  PetscErrorCode (*getsubmatrix)(Mat,IS,IS,PetscInt,MatReuse,Mat*);
+  PetscErrorCode (*getsubmatrix)(Mat,IS,IS,MatReuse,Mat*);
   PetscErrorCode (*destroy)(Mat);
   PetscErrorCode (*view)(Mat,PetscViewer);
   PetscErrorCode (*convertfrom)(Mat, const MatType,MatReuse,Mat*);

@@ -14,8 +14,7 @@ struct _PC_FieldSplitLink {
   PetscInt          nfields;
   PetscInt          *fields;
   VecScatter        sctx;
-  IS                is,cis;
-  PetscInt          csize;
+  IS                is;
   PC_FieldSplitLink next,previous;
 };
 
@@ -271,10 +270,8 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
           ierr = ISCreateStride(((PetscObject)pc)->comm,nslots,rstart+ilink->fields[0],bs,&ilink->is);CHKERRQ(ierr);
         }
       } 
-      ierr = ISGetLocalSize(ilink->is,&ilink->csize);CHKERRQ(ierr);
       ierr = ISSorted(ilink->is,&sorted);CHKERRQ(ierr);
       if (!sorted) SETERRQ(PETSC_ERR_USER,"Fields must be sorted when creating split");
-      ierr = ISAllGather(ilink->is,&ilink->cis);CHKERRQ(ierr);
       ilink = ilink->next;
     }
   }
@@ -283,12 +280,12 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
   if (!jac->pmat) {
     ierr = PetscMalloc(nsplit*sizeof(Mat),&jac->pmat);CHKERRQ(ierr);
     for (i=0; i<nsplit; i++) {
-      ierr = MatGetSubMatrix(pc->pmat,ilink->is,ilink->cis,ilink->csize,MAT_INITIAL_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
+      ierr = MatGetSubMatrix(pc->pmat,ilink->is,ilink->is,MAT_INITIAL_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
       ilink = ilink->next;
     }
   } else {
     for (i=0; i<nsplit; i++) {
-      ierr = MatGetSubMatrix(pc->pmat,ilink->is,ilink->cis,ilink->csize,MAT_REUSE_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
+      ierr = MatGetSubMatrix(pc->pmat,ilink->is,ilink->is,MAT_REUSE_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
       ilink = ilink->next;
     }
   }
@@ -300,12 +297,12 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     if (!jac->Afield) {
       ierr = PetscMalloc(nsplit*sizeof(Mat),&jac->Afield);CHKERRQ(ierr);
       for (i=0; i<nsplit; i++) {
-	ierr = MatGetSubMatrix(pc->mat,ilink->is,PETSC_NULL,PETSC_DECIDE,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+	ierr = MatGetSubMatrix(pc->mat,ilink->is,PETSC_NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
 	ilink = ilink->next;
       }
     } else {
       for (i=0; i<nsplit; i++) {
-	ierr = MatGetSubMatrix(pc->mat,ilink->is,PETSC_NULL,PETSC_DECIDE,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+	ierr = MatGetSubMatrix(pc->mat,ilink->is,PETSC_NULL,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
 	ilink = ilink->next;
       }
     }
@@ -313,25 +310,19 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 
   if (jac->type == PC_COMPOSITE_SCHUR) {
     IS       ccis;
-    PetscInt N,nlocal,nis;
+    PetscInt rstart,rend;
     if (nsplit != 2) SETERRQ(PETSC_ERR_ARG_INCOMP,"To use Schur complement preconditioner you must have exactly 2 fields");
 
     /* need to handle case when one is resetting up the preconditioner */
     if (jac->schur) {
-      ierr  = MatGetSize(pc->mat,PETSC_NULL,&N);CHKERRQ(ierr);
+      ierr  = MatGetOwnershipRangeColumn(pc->mat,&rstart,&rend);CHKERRQ(ierr);
       ilink = jac->head;
-      ierr  = ISComplement(ilink->cis,0,N,&ccis);CHKERRQ(ierr);
-      ierr  = ISGetLocalSize(ilink->is,&nis);CHKERRQ(ierr);
-      ierr  = MatGetLocalSize(pc->mat,PETSC_NULL,&nlocal);CHKERRQ(ierr);
-      nlocal = nlocal - nis;
-      ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,nlocal,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
+      ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
+      ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
       ierr  = ISDestroy(ccis);CHKERRQ(ierr);
       ilink = ilink->next;
-      ierr  = ISComplement(ilink->cis,0,N,&ccis);CHKERRQ(ierr);
-      ierr  = ISGetLocalSize(ilink->is,&nis);CHKERRQ(ierr);
-      ierr  = MatGetLocalSize(pc->mat,PETSC_NULL,&nlocal);CHKERRQ(ierr);
-      nlocal = nlocal - nis;
-      ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,nlocal,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
+      ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
+      ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
       ierr  = ISDestroy(ccis);CHKERRQ(ierr);
       ierr  = MatSchurComplementUpdate(jac->schur,jac->pmat[0],jac->pmat[0],jac->B,jac->C,jac->pmat[1],pc->flag);CHKERRQ(ierr);
       ierr  = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac),pc->flag);CHKERRQ(ierr);
@@ -340,20 +331,13 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       KSP ksp;
 
       /* extract the B and C matrices */
-      ierr  = MatGetSize(pc->mat,PETSC_NULL,&N);CHKERRQ(ierr);
       ilink = jac->head;
-      ierr  = ISComplement(ilink->cis,0,N,&ccis);CHKERRQ(ierr);
-      ierr  = ISGetLocalSize(ilink->is,&nis);CHKERRQ(ierr);
-      ierr  = MatGetLocalSize(pc->mat,PETSC_NULL,&nlocal);CHKERRQ(ierr);
-      nlocal = nlocal - nis;
-      ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,nlocal,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
+      ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
+      ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
       ierr  = ISDestroy(ccis);CHKERRQ(ierr);
       ilink = ilink->next;
-      ierr  = ISComplement(ilink->cis,0,N,&ccis);CHKERRQ(ierr);
-      ierr  = ISGetLocalSize(ilink->is,&nis);CHKERRQ(ierr);
-      ierr  = MatGetLocalSize(pc->mat,PETSC_NULL,&nlocal);CHKERRQ(ierr);
-      nlocal = nlocal - nis;
-      ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,nlocal,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
+      ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
+      ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
       ierr  = ISDestroy(ccis);CHKERRQ(ierr);
       /* Better would be to use 'mat[0]' (diagonal block of the real matrix) preconditioned by pmat[0] */
       ierr  = MatCreateSchurComplement(jac->pmat[0],jac->pmat[0],jac->B,jac->C,jac->pmat[1],&jac->schur);CHKERRQ(ierr);
@@ -642,7 +626,6 @@ static PetscErrorCode PCDestroy_FieldSplit(PC pc)
     if (ilink->y) {ierr = VecDestroy(ilink->y);CHKERRQ(ierr);}
     if (ilink->sctx) {ierr = VecScatterDestroy(ilink->sctx);CHKERRQ(ierr);}
     if (ilink->is) {ierr = ISDestroy(ilink->is);CHKERRQ(ierr);}
-    if (ilink->cis) {ierr = ISDestroy(ilink->cis);CHKERRQ(ierr);}
     next = ilink->next;
     ierr = PetscFree(ilink->fields);CHKERRQ(ierr);
     ierr = PetscFree(ilink);CHKERRQ(ierr);

@@ -1824,12 +1824,28 @@ PetscErrorCode MatImaginaryPart_MPIBAIJ(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrix_MPIBAIJ"
+PetscErrorCode MatGetSubMatrix_MPIBAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,Mat *newmat)
+{
+  PetscErrorCode ierr;
+  IS             iscol_local;
+  PetscInt       csize;
+
+  PetscFunctionBegin;
+  ierr = ISGetLocalSize(iscol,&csize);CHKERRQ(ierr);
+  ierr = ISAllGather(iscol,&iscol_local);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix_MPIBAIJ_Private(mat,isrow,iscol_local,csize,call,newmat);CHKERRQ(ierr);
+  ierr = ISDestroy(iscol_local);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetSubMatrix_MPIBAIJ"
 /*
     Not great since it makes two copies of the submatrix, first an SeqBAIJ 
   in local and then by concatenating the local matrices the end result.
   Writing it directly would be much like MatGetSubMatrices_MPIBAIJ()
 */
-PetscErrorCode MatGetSubMatrix_MPIBAIJ(Mat mat,IS isrow,IS iscol,PetscInt csize,MatReuse call,Mat *newmat)
+PetscErrorCode MatGetSubMatrix_MPIBAIJ_Private(Mat mat,IS isrow,IS iscol,PetscInt csize,MatReuse call,Mat *newmat)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
@@ -2004,13 +2020,13 @@ PetscErrorCode MatPermute_MPIBAIJ(Mat A,IS rowp,IS colp,Mat *B)
   }
   ierr = ISSetPermutation(lcolp);CHKERRQ(ierr);
   ierr = ISInvertPermutation(lcolp,PETSC_DECIDE,&icolp);CHKERRQ(ierr);
-  ierr = ISSetPermutation(lcolp);CHKERRQ(ierr);
+  ierr = ISSetPermutation(icolp);CHKERRQ(ierr);
   if (size>1) {
     ierr = ISRestoreIndices(colp,&rows);CHKERRQ(ierr);
     ierr = ISDestroy(lcolp);CHKERRQ(ierr);
   }
   /* now we just get the submatrix */
-  ierr = MatGetSubMatrix(A,lrowp,icolp,local_size,MAT_INITIAL_MATRIX,B);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix_MPIBAIJ_Private(A,lrowp,icolp,local_size,MAT_INITIAL_MATRIX,B);CHKERRQ(ierr);
   /* clean up */
   ierr = ISDestroy(lrowp);CHKERRQ(ierr);
   ierr = ISDestroy(icolp);CHKERRQ(ierr);

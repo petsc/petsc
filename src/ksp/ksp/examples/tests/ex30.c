@@ -222,7 +222,7 @@ int main(int argc,char **args)
 
     if (partition) {
       MatPartitioning mpart;
-      IS              mis,nis,isn,is;
+      IS              mis,nis,is;
       PetscInt        *count;
       PetscMPIInt     size;
       Mat             BB;
@@ -242,12 +242,10 @@ int main(int argc,char **args)
       ierr = PetscFree(count);CHKERRQ(ierr);
       ierr = ISDestroy(nis);CHKERRQ(ierr);
       ierr = ISSort(is);CHKERRQ(ierr);
-      ierr = ISAllGather(is,&isn);CHKERRQ(ierr);
-      ierr = MatGetSubMatrix(A,is,isn,PETSC_DECIDE,MAT_INITIAL_MATRIX,&BB);CHKERRQ(ierr);
+      ierr = MatGetSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&BB);CHKERRQ(ierr);
 
       /* need to move the vector also */
       ierr = ISDestroy(is);CHKERRQ(ierr);
-      ierr = ISDestroy(isn);CHKERRQ(ierr);
       ierr = MatDestroy(A);CHKERRQ(ierr);
       A    = BB;
     }

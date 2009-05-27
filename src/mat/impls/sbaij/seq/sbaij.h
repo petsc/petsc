@@ -33,7 +33,7 @@ EXTERN PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat,Mat,IS,const MatFactorIn
 EXTERN PetscErrorCode MatDuplicate_SeqSBAIJ(Mat,MatDuplicateOption,Mat*);
 EXTERN PetscErrorCode MatMarkDiagonal_SeqSBAIJ(Mat);
 EXTERN PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat,PetscInt,IS[],PetscInt);
-EXTERN PetscErrorCode MatGetSubMatrix_SeqSBAIJ(Mat,IS,IS,PetscInt,MatReuse,Mat*);
+EXTERN PetscErrorCode MatGetSubMatrix_SeqSBAIJ(Mat,IS,IS,MatReuse,Mat*);
 EXTERN PetscErrorCode MatGetSubMatrices_SeqSBAIJ(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*[]);
 EXTERN PetscErrorCode MatScale_SeqSBAIJ(Mat,PetscScalar);
 EXTERN PetscErrorCode MatNorm_SeqSBAIJ(Mat,NormType,PetscReal *);

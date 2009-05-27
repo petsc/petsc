@@ -87,10 +87,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCISSetUp(PC pc)
     [    A_BI   | A_BB ]
   */
 
-  ierr = MatGetSubMatrix(matis->A,pcis->is_I_local,pcis->is_I_local,PETSC_DECIDE,MAT_INITIAL_MATRIX,&pcis->A_II);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(matis->A,pcis->is_I_local,pcis->is_B_local,PETSC_DECIDE,MAT_INITIAL_MATRIX,&pcis->A_IB);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(matis->A,pcis->is_B_local,pcis->is_I_local,PETSC_DECIDE,MAT_INITIAL_MATRIX,&pcis->A_BI);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(matis->A,pcis->is_B_local,pcis->is_B_local,PETSC_DECIDE,MAT_INITIAL_MATRIX,&pcis->A_BB);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(matis->A,pcis->is_I_local,pcis->is_I_local,MAT_INITIAL_MATRIX,&pcis->A_II);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(matis->A,pcis->is_I_local,pcis->is_B_local,MAT_INITIAL_MATRIX,&pcis->A_IB);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(matis->A,pcis->is_B_local,pcis->is_I_local,MAT_INITIAL_MATRIX,&pcis->A_BI);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(matis->A,pcis->is_B_local,pcis->is_B_local,MAT_INITIAL_MATRIX,&pcis->A_BB);CHKERRQ(ierr);
 
   /*
     Creating work vectors and arrays

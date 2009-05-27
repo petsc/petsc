@@ -53,14 +53,14 @@ int main(int argc,char **args)
    the original matrix
   */
   ierr = MatGetOwnershipRange(C,&rstart,&rend);CHKERRQ(ierr);
-  /* list the rows we want on THIS processor */
+  /* Create parallel IS with the rows we want on THIS processor */
   ierr = ISCreateStride(PETSC_COMM_WORLD,(rend-rstart)/2,rstart,2,&isrow);CHKERRQ(ierr);
-  /* list ALL the columns we want */
-  ierr = ISCreateStride(PETSC_COMM_WORLD,(m*n)/2,0,2,&iscol);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(C,isrow,iscol,PETSC_DECIDE,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
+  /* Create parallel IS with the rows we want on THIS processor (same as rows for now) */
+  ierr = ISCreateStride(PETSC_COMM_WORLD,(rend-rstart)/2,rstart,2,&iscol);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(C,isrow,iscol,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
 
-  ierr = MatGetSubMatrix(C,isrow,iscol,PETSC_DECIDE,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr); 
+  ierr = MatGetSubMatrix(C,isrow,iscol,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr); 
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
 
   ierr = ISDestroy(isrow);CHKERRQ(ierr);
