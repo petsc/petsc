@@ -287,8 +287,8 @@ static struct _ISOps myops = { ISGetSize_Stride,
 
    Input Parameters:
 +  comm - the MPI communicator
-.  n - the length of the index set
-.  first - the first element of the index set
+.  n - the length of the locally owned portion of the index set
+.  first - the first element of the locally owned portion of the index set
 -  step - the change to the next index
 
    Output Parameter:

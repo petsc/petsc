@@ -43,7 +43,7 @@ typedef struct {
    PC you could change this.
 */
 
-/* This helper is so that setting a user-provided preconditioning matrix orthogonal to choosing to use it.  This way the
+/* This helper is so that setting a user-provided preconditioning matrix is orthogonal to choosing to use it.  This way the
 * application-provided FormJacobian can provide this matrix without interfering with the user's (command-line) choices. */
 static Mat FieldSplitSchurPre(PC_FieldSplit *jac)
 {
@@ -290,20 +290,22 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     }
   }
 
-  /* extract the rows of the matrix associated with each field: used for efficient computation of residual inside algorithm */
-  ierr = MatHasOperation(pc->mat,MATOP_GET_SUBMATRIX,&getsub);CHKERRQ(ierr);
-  if (getsub && jac->type != PC_COMPOSITE_ADDITIVE  && jac->type != PC_COMPOSITE_SCHUR) {
-    ilink  = jac->head;
-    if (!jac->Afield) {
-      ierr = PetscMalloc(nsplit*sizeof(Mat),&jac->Afield);CHKERRQ(ierr);
-      for (i=0; i<nsplit; i++) {
-	ierr = MatGetSubMatrix(pc->mat,ilink->is,PETSC_NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
-	ilink = ilink->next;
-      }
-    } else {
-      for (i=0; i<nsplit; i++) {
-	ierr = MatGetSubMatrix(pc->mat,ilink->is,PETSC_NULL,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
-	ilink = ilink->next;
+  if (jac->type != PC_COMPOSITE_SCHUR) {
+    /* extract the rows of the matrix associated with each field: used for efficient computation of residual inside algorithm */
+    ierr = MatHasOperation(pc->mat,MATOP_GET_SUBMATRIX,&getsub);CHKERRQ(ierr);
+    if (getsub && jac->type != PC_COMPOSITE_ADDITIVE  && jac->type != PC_COMPOSITE_SCHUR) {
+      ilink  = jac->head;
+      if (!jac->Afield) {
+        ierr = PetscMalloc(nsplit*sizeof(Mat),&jac->Afield);CHKERRQ(ierr);
+        for (i=0; i<nsplit; i++) {
+          ierr = MatGetSubMatrix(pc->mat,ilink->is,PETSC_NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+          ilink = ilink->next;
+        }
+      } else {
+        for (i=0; i<nsplit; i++) {
+          ierr = MatGetSubMatrix(pc->mat,ilink->is,PETSC_NULL,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+          ilink = ilink->next;
+        }
       }
     }
   }
@@ -313,9 +315,11 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     PetscInt rstart,rend;
     if (nsplit != 2) SETERRQ(PETSC_ERR_ARG_INCOMP,"To use Schur complement preconditioner you must have exactly 2 fields");
 
+    /* When extracting off-diagonal submatrices, we take complements from this range */
+    ierr  = MatGetOwnershipRangeColumn(pc->mat,&rstart,&rend);CHKERRQ(ierr);
+
     /* need to handle case when one is resetting up the preconditioner */
     if (jac->schur) {
-      ierr  = MatGetOwnershipRangeColumn(pc->mat,&rstart,&rend);CHKERRQ(ierr);
       ilink = jac->head;
       ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
@@ -1199,7 +1203,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_FieldSplit(PC pc)
   jac->bs        = -1;
   jac->nsplits   = 0;
   jac->type      = PC_COMPOSITE_MULTIPLICATIVE;
-  jac->schurpre  = PC_FIELDSPLIT_SCHUR_PRE_DIAG;
+  jac->schurpre  = PC_FIELDSPLIT_SCHUR_PRE_USER; /* Try user preconditioner first, fall back on diagonal */
 
   pc->data     = (void*)jac;
 
