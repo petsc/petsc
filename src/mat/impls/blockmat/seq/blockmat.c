@@ -625,7 +625,7 @@ PetscErrorCode MatMarkDiagonal_BlockMat(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrix_BlockMat"
-PetscErrorCode MatGetSubMatrix_BlockMat(Mat A,IS isrow,IS iscol,PetscInt csize,MatReuse scall,Mat *B)
+PetscErrorCode MatGetSubMatrix_BlockMat(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *B)
 {
   Mat_BlockMat   *a = (Mat_BlockMat*)A->data;
   Mat_SeqAIJ     *c;

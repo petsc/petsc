@@ -400,7 +400,7 @@ M*/
    PetscObjectComposedDataGetInt - retrieve integer data attached to an object
 
    Synopsis:
-   PetscErrorCode PetscObjectComposedDataGetInt(PetscObject obj,int id,int *data,PetscTruth *flag)
+   PetscErrorCode PetscObjectComposedDataGetInt(PetscObject obj,int id,int data,PetscTruth flag)
 
    Not collective
 
@@ -448,7 +448,7 @@ M*/
    attached to an object
 
    Synopsis:
-   PetscErrorCode PetscObjectComposedDataGetIntstar(PetscObject obj,int id,int **data,PetscTruth *flag)
+   PetscErrorCode PetscObjectComposedDataGetIntstar(PetscObject obj,int id,int *data,PetscTruth flag)
 
    Not collective
 
@@ -495,7 +495,7 @@ M*/
    PetscObjectComposedDataGetReal - retrieve real data attached to an object
 
    Synopsis:
-   PetscErrorCode PetscObjectComposedDataGetReal(PetscObject obj,int id,PetscReal *data,PetscTruth *flag)
+   PetscErrorCode PetscObjectComposedDataGetReal(PetscObject obj,int id,PetscReal data,PetscTruth flag)
 
    Not collective
 
@@ -543,7 +543,7 @@ M*/
    attached to an object
 
    Synopsis:
-   PetscErrorCode PetscObjectComposedDataGetRealstar(PetscObject obj,int id,PetscReal **data,PetscTruth *flag)
+   PetscErrorCode PetscObjectComposedDataGetRealstar(PetscObject obj,int id,PetscReal *data,PetscTruth flag)
 
    Not collective
 
@@ -594,7 +594,7 @@ M*/
    PetscObjectComposedDataGetScalar - retrieve scalar data attached to an object
 
    Synopsis:
-   PetscErrorCode PetscObjectComposedDataGetScalar(PetscObject obj,int id,PetscScalar *data,PetscTruth *flag)
+   PetscErrorCode PetscObjectComposedDataGetScalar(PetscObject obj,int id,PetscScalar data,PetscTruth flag)
 
    Not collective
 
@@ -651,7 +651,7 @@ M*/
    attached to an object
 
    Synopsis:
-   PetscErrorCode PetscObjectComposedDataGetScalarstar(PetscObject obj,int id,PetscScalar **data,PetscTruth *flag)
+   PetscErrorCode PetscObjectComposedDataGetScalarstar(PetscObject obj,int id,PetscScalar *data,PetscTruth flag)
 
    Not collective
 

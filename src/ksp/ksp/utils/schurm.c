@@ -4,7 +4,7 @@
 #include "petscksp.h"                              /*I "petscksp.h" I*/
 
 typedef struct {
-  Mat A,B,C,D;
+  Mat A,Ap,B,C,D;
   KSP ksp;
   Vec work1,work2;
 } Mat_SchurComplement;
@@ -52,10 +52,11 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-  if (Na->A) {ierr = MatDestroy(Na->A);CHKERRQ(ierr);}
-  if (Na->B) {ierr = MatDestroy(Na->B);CHKERRQ(ierr);}
-  if (Na->C) {ierr = MatDestroy(Na->C);CHKERRQ(ierr);}
-  if (Na->D) {ierr = MatDestroy(Na->D);CHKERRQ(ierr);}
+  if (Na->A)  {ierr = MatDestroy(Na->A);CHKERRQ(ierr);}
+  if (Na->Ap) {ierr = MatDestroy(Na->Ap);CHKERRQ(ierr);}
+  if (Na->B)  {ierr = MatDestroy(Na->B);CHKERRQ(ierr);}
+  if (Na->C)  {ierr = MatDestroy(Na->C);CHKERRQ(ierr);}
+  if (Na->D)  {ierr = MatDestroy(Na->D);CHKERRQ(ierr);}
   if (Na->work1) {ierr = VecDestroy(Na->work1);CHKERRQ(ierr);}
   if (Na->work2) {ierr = VecDestroy(Na->work2);CHKERRQ(ierr);}
   ierr = KSPDestroy(Na->ksp);CHKERRQ(ierr);
@@ -89,23 +90,28 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
 .seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatSchurComplementUpdate(), MatCreateTranspose()
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSchurComplement(Mat A,Mat B,Mat C,Mat D,Mat *N)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSchurComplement(Mat A,Mat Ap,Mat B,Mat C,Mat D,Mat *N)
 {
   PetscErrorCode       ierr;
   PetscInt             m,n;
   Mat_SchurComplement  *Na;  
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,0);
-  PetscValidHeaderSpecific(B,MAT_COOKIE,1);
-  PetscValidHeaderSpecific(C,MAT_COOKIE,2);
-  PetscCheckSameComm(A,0,B,1);
-  PetscCheckSameComm(A,0,C,2);
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(Ap,MAT_COOKIE,2);
+  PetscValidHeaderSpecific(B,MAT_COOKIE,3);
+  PetscValidHeaderSpecific(C,MAT_COOKIE,4);
+  PetscCheckSameComm(A,1,Ap,2);
+  PetscCheckSameComm(A,1,B,3);
+  PetscCheckSameComm(A,1,C,4);
   if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of A %D do not equal local columns %D",A->rmap->n,A->cmap->n);
-  if (A->rmap->n != B->rmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of A %D do not equal local rows B %D",A->rmap->n,B->rmap->n);
+  if (A->rmap->n != Ap->rmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of A %D do not equal local rows of Ap %D",A->rmap->n,Ap->rmap->n);
+  if (Ap->rmap->n != Ap->cmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of Ap %D do not equal local columns %D",Ap->rmap->n,Ap->cmap->n);
+  if (A->cmap->n != B->rmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local columns of A %D do not equal local rows of B %D",A->cmap->n,B->rmap->n);
+  if (C->cmap->n != A->rmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local columns of C %D do not equal local rows of A %D",C->cmap->n,A->rmap->n);
   if (D) {
-    PetscValidHeaderSpecific(D,MAT_COOKIE,4);
-    PetscCheckSameComm(A,0,D,3);
+    PetscValidHeaderSpecific(D,MAT_COOKIE,5);
+    PetscCheckSameComm(A,1,D,5);
     if (D->rmap->n != D->cmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of D %D do not equal local columns %D",D->rmap->n,D->cmap->n);
     if (C->rmap->n != D->rmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of C %D do not equal local rows D %D",C->rmap->n,D->rmap->n);
   }
@@ -119,9 +125,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSchurComplement(Mat A,Mat B,Mat C,Mat
   ierr      = PetscNewLog(*N,Mat_SchurComplement,&Na);CHKERRQ(ierr);
   (*N)->data = (void*) Na;
   ierr      = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+  ierr      = PetscObjectReference((PetscObject)Ap);CHKERRQ(ierr);
   ierr      = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
   ierr      = PetscObjectReference((PetscObject)C);CHKERRQ(ierr);
   Na->A     = A;
+  Na->Ap    = Ap;
   Na->B     = B;
   Na->C     = C;
   Na->D     = D;
@@ -142,7 +150,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSchurComplement(Mat A,Mat B,Mat C,Mat
   ierr = KSPCreate(((PetscObject)A)->comm,&Na->ksp);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(Na->ksp,((PetscObject)A)->prefix);CHKERRQ(ierr);
   ierr = KSPAppendOptionsPrefix(Na->ksp,"fieldsplit_0_");CHKERRQ(ierr);
-  ierr = KSPSetOperators(Na->ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(Na->ksp,A,Ap,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -203,36 +211,43 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementGetKSP(Mat A,KSP *ksp)
 .seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatCreateSchurComplement()
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementUpdate(Mat N,Mat A,Mat B,Mat C,Mat D,MatStructure str)
+PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementUpdate(Mat N,Mat A,Mat Ap,Mat B,Mat C,Mat D,MatStructure str)
 {
   PetscErrorCode       ierr;
   Mat_SchurComplement  *Na = (Mat_SchurComplement*)N->data;  
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,0);
-  PetscValidHeaderSpecific(B,MAT_COOKIE,1);
-  PetscValidHeaderSpecific(C,MAT_COOKIE,2);
-  PetscCheckSameComm(A,0,B,1);
-  PetscCheckSameComm(A,0,C,2);
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(B,MAT_COOKIE,2);
+  PetscValidHeaderSpecific(C,MAT_COOKIE,3);
+  PetscCheckSameComm(A,1,Ap,2);
+  PetscCheckSameComm(A,1,B,3);
+  PetscCheckSameComm(A,1,C,4);
   if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of A %D do not equal local columns %D",A->rmap->n,A->cmap->n);
-  if (A->rmap->n != B->rmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of A %D do not equal local rows B %D",A->rmap->n,B->rmap->n);
+  if (A->rmap->n != Ap->rmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of A %D do not equal local rows of Ap %D",A->rmap->n,Ap->rmap->n);
+  if (Ap->rmap->n != Ap->cmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of Ap %D do not equal local columns %D",Ap->rmap->n,Ap->cmap->n);
+  if (A->cmap->n != B->rmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local columns of A %D do not equal local rows of B %D",A->cmap->n,B->rmap->n);
+  if (C->cmap->n != A->rmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local columns of C %D do not equal local rows of A %D",C->cmap->n,A->rmap->n);
   if (D) {
-    PetscValidHeaderSpecific(D,MAT_COOKIE,4);
-    PetscCheckSameComm(A,0,D,3);
+    PetscValidHeaderSpecific(D,MAT_COOKIE,5);
+    PetscCheckSameComm(A,1,D,5);
     if (D->rmap->n != D->cmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of D %D do not equal local columns %D",D->rmap->n,D->cmap->n);
     if (C->rmap->n != D->rmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of C %D do not equal local rows D %D",C->rmap->n,D->rmap->n);
   }
 
   ierr      = MatDestroy(Na->A);CHKERRQ(ierr);
+  ierr      = MatDestroy(Na->Ap);CHKERRQ(ierr);
   ierr      = MatDestroy(Na->B);CHKERRQ(ierr);
   ierr      = MatDestroy(Na->C);CHKERRQ(ierr);
   if (Na->D) {
     ierr    = MatDestroy(Na->D);CHKERRQ(ierr);
   }
   ierr      = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+  ierr      = PetscObjectReference((PetscObject)Ap);CHKERRQ(ierr);
   ierr      = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
   ierr      = PetscObjectReference((PetscObject)C);CHKERRQ(ierr);
   Na->A     = A;
+  Na->Ap    = Ap;
   Na->B     = B;
   Na->C     = C;
   Na->D     = D;
@@ -240,7 +255,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementUpdate(Mat N,Mat A,Mat B,Mat
     ierr = PetscObjectReference((PetscObject)D);CHKERRQ(ierr);
   }
 
-  ierr = KSPSetOperators(Na->ksp,A,A,str);CHKERRQ(ierr);
+  ierr = KSPSetOperators(Na->ksp,A,Ap,str);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -263,15 +278,16 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementUpdate(Mat N,Mat A,Mat B,Mat
 
 .seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatCreateSchurComplement(), MatSchurComplementUpdate()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementGetSubmatrices(Mat N,Mat *A,Mat *B,Mat *C,Mat *D)
+PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementGetSubmatrices(Mat N,Mat *A,Mat *Ap,Mat *B,Mat *C,Mat *D)
 {
   Mat_SchurComplement *Na = (Mat_SchurComplement *) N->data;  
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(N,MAT_COOKIE,0);
-  if (A) {*A = Na->A;}
-  if (B) {*B = Na->B;}
-  if (C) {*C = Na->C;}
-  if (D) {*D = Na->D;}
+  PetscValidHeaderSpecific(N,MAT_COOKIE,1);
+  if (A)  {*A  = Na->A;}
+  if (Ap) {*Ap = Na->Ap;}
+  if (B)  {*B  = Na->B;}
+  if (C)  {*C  = Na->C;}
+  if (D)  {*D  = Na->D;}
   PetscFunctionReturn(0);
 }

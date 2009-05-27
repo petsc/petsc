@@ -66,7 +66,7 @@ int main(int argc,char **args)
   - - - - - - - - - - - - - - - - - - - - - - - - - */
   if (partition){
     MatPartitioning mpart;
-    IS              mis,nis,isn,is;
+    IS              mis,nis,is;
     PetscInt        *count;
     Mat             BB;
      
@@ -113,8 +113,7 @@ int main(int argc,char **args)
       ierr = ISView(is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
 
-    ierr = ISAllGather(is,&isn);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(A,is,isn,PETSC_DECIDE,MAT_INITIAL_MATRIX,&BB);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&BB);CHKERRQ(ierr);
     if (displayMat){
       if (!rank) printf("After partitioning/reordering, A:\n");CHKERRQ(ierr);
       ierr = MatView(BB,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
@@ -122,7 +121,6 @@ int main(int argc,char **args)
 
     /* need to move the vector also */
     ierr = ISDestroy(is);CHKERRQ(ierr);
-    ierr = ISDestroy(isn);CHKERRQ(ierr);
     ierr = MatDestroy(A);CHKERRQ(ierr);
     A    = BB;
   }

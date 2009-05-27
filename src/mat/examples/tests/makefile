@@ -242,7 +242,7 @@ ex58f: ex58f.o chkopts
 	${RM} ex58f.o
 
 ex59: ex59.o chkopts
-	-${CLINKER} -o ex59 ex59.o ${PETSC_MAT_LIB}
+	-${CLINKER} -o ex59 ex59.o ${PETSC_DM_LIB}
 	${RM} ex59.o
 
 ex60: ex60.o chkopts

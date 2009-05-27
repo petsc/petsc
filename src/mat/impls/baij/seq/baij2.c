@@ -74,7 +74,7 @@ PetscErrorCode MatIncreaseOverlap_SeqBAIJ(Mat A,PetscInt is_max,IS is[],PetscInt
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrix_SeqBAIJ_Private"
-PetscErrorCode MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,PetscInt cs,MatReuse scall,Mat *B)
+PetscErrorCode MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *B)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*c;
   PetscErrorCode ierr;
@@ -162,7 +162,7 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,PetscInt 
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrix_SeqBAIJ"
-PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,PetscInt cs,MatReuse scall,Mat *B)
+PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *B)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   IS             is1,is2;
@@ -201,7 +201,7 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,PetscInt cs,MatRe
   ierr = ISRestoreIndices(iscol,&icol);CHKERRQ(ierr);
   ierr = PetscFree(vary);CHKERRQ(ierr);
 
-  ierr = MatGetSubMatrix_SeqBAIJ_Private(A,is1,is2,cs,scall,B);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix_SeqBAIJ_Private(A,is1,is2,scall,B);CHKERRQ(ierr);
   ISDestroy(is1);
   ISDestroy(is2);
   PetscFunctionReturn(0);
@@ -220,7 +220,7 @@ PetscErrorCode MatGetSubMatrices_SeqBAIJ(Mat A,PetscInt n,const IS irow[],const 
   }
 
   for (i=0; i<n; i++) {
-    ierr = MatGetSubMatrix_SeqBAIJ(A,irow[i],icol[i],PETSC_DECIDE,scall,&(*B)[i]);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix_SeqBAIJ(A,irow[i],icol[i],scall,&(*B)[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

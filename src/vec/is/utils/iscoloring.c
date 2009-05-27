@@ -628,15 +628,15 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISAllGatherColors(MPI_Comm comm,PetscInt n,ISC
 #undef __FUNCT__  
 #define __FUNCT__ "ISComplement"
 /*@
-    ISComplement - Given a sequential index set (IS) generates the complement index set. That is all 
+    ISComplement - Given an index set (IS) generates the complement index set. That is all
        all indices that are NOT in the given set.
 
     Collective on IS
 
     Input Parameter:
 +   is - the index set
-.   nmin - the first index desired in the complement
--   nmax - the largest index desired in the complement (note that all indices in is must be greater or equal to nmin and less than nmax)
+.   nmin - the first index desired in the local part of the complement
+-   nmax - the largest index desired in the local part of the complement (note that all indices in is must be greater or equal to nmin and less than nmax)
 
     Output Parameter:
 .   isout - the complement

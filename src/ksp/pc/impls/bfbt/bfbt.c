@@ -278,7 +278,7 @@ PetscErrorCode PCSetUp_BFBt(PC pc)
     ierr = PCGetOperators(pc, PETSC_NULL, &pmat, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject) pmat, MATSCHURCOMPLEMENT, &isSchur);CHKERRQ(ierr);
     if (isSchur) {
-      ierr = MatSchurComplementGetSubmatrices(pmat, &ctx->K, &ctx->G, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatSchurComplementGetSubmatrices(pmat, &ctx->K, PETSC_NULL, &ctx->G, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
     }
   }
   if (ctx->K == PETSC_NULL) {SETERRQ(PETSC_ERR_SUP, "bfbt: K matrix not set");}

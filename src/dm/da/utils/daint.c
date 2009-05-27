@@ -136,9 +136,9 @@ PetscErrorCode DAGetWireBasketInterpolation(DA da,Mat Aglobal,MatReuse reuse,Mat
   A    = *Aholder;
   ierr = PetscFree(Aholder);CHKERRQ(ierr);
 
-  ierr = MatGetSubMatrix(A,isint,isint,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(A,isint,issurf,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Ais);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(A,issurf,isint,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Asi);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(A,isint,isint,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(A,isint,issurf,MAT_INITIAL_MATRIX,&Ais);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(A,issurf,isint,MAT_INITIAL_MATRIX,&Asi);CHKERRQ(ierr);
 
   /* 
      Solve for the interpolation onto the interior Xint
@@ -387,9 +387,9 @@ PetscErrorCode DAGetFaceInterpolation(DA da,Mat Aglobal,MatReuse reuse,Mat *P)
   A    = *Aholder;
   ierr = PetscFree(Aholder);CHKERRQ(ierr);
 
-  ierr = MatGetSubMatrix(A,isint,isint,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(A,isint,issurf,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Ais);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(A,issurf,isint,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Asi);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(A,isint,isint,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(A,isint,issurf,MAT_INITIAL_MATRIX,&Ais);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(A,issurf,isint,MAT_INITIAL_MATRIX,&Asi);CHKERRQ(ierr);
 
   /* 
      Solve for the interpolation onto the interior Xint

@@ -1309,13 +1309,13 @@ PetscErrorCode MatPermute_MPIAIJ(Mat A,IS rowp,IS colp,Mat *B)
   }
   ierr = ISSetPermutation(lcolp);CHKERRQ(ierr);
   ierr = ISInvertPermutation(lcolp,PETSC_DECIDE,&icolp);CHKERRQ(ierr);
-  ierr = ISSetPermutation(lcolp);CHKERRQ(ierr);
+  ierr = ISSetPermutation(icolp);CHKERRQ(ierr);
   if (size>1) {
     ierr = ISRestoreIndices(colp,&rows);CHKERRQ(ierr);
     ierr = ISDestroy(lcolp);CHKERRQ(ierr);
   }
   /* now we just get the submatrix */
-  ierr = MatGetSubMatrix(A,lrowp,icolp,local_size,MAT_INITIAL_MATRIX,B);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix_MPIAIJ_Private(A,lrowp,icolp,local_size,MAT_INITIAL_MATRIX,B);CHKERRQ(ierr);
   /* clean up */
   ierr = ISDestroy(lrowp);CHKERRQ(ierr);
   ierr = ISDestroy(icolp);CHKERRQ(ierr);
@@ -3008,12 +3008,38 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer, const MatType type,Mat *newmat
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrix_MPIAIJ"
+PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,Mat *newmat)
+{
+  PetscErrorCode ierr;
+  IS             iscol_local;
+  PetscInt       csize;
+
+  PetscFunctionBegin;
+  ierr = ISGetLocalSize(iscol,&csize);CHKERRQ(ierr);
+  if (call == MAT_REUSE_MATRIX) {
+    ierr = PetscObjectQuery((PetscObject)*newmat,"ISAllGather",(PetscObject*)&iscol_local);CHKERRQ(ierr);
+    if (!iscol_local) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
+  } else {
+    ierr = ISAllGather(iscol,&iscol_local);CHKERRQ(ierr);
+  }
+  ierr = MatGetSubMatrix_MPIAIJ_Private(mat,isrow,iscol_local,csize,call,newmat);CHKERRQ(ierr);
+  if (call == MAT_INITIAL_MATRIX) {
+    ierr = PetscObjectCompose((PetscObject)*newmat,"ISAllGather",(PetscObject)iscol_local);CHKERRQ(ierr);
+    ierr = ISDestroy(iscol_local);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetSubMatrix_MPIAIJ_Private"
 /*
     Not great since it makes two copies of the submatrix, first an SeqAIJ 
   in local and then by concatenating the local matrices the end result.
   Writing it directly would be much like MatGetSubMatrices_MPIAIJ()
+
+  Note: This requires a sequential iscol with all indices.
 */
-PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,PetscInt csize,MatReuse call,Mat *newmat)
+PetscErrorCode MatGetSubMatrix_MPIAIJ_Private(Mat mat,IS isrow,IS iscol,PetscInt csize,MatReuse call,Mat *newmat)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;

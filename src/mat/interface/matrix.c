@@ -6267,11 +6267,8 @@ M*/
 
     Input Parameters:
 +   mat - the original matrix
-.   isrow - rows this processor should obtain
-.   iscol - columns for all processors you wish to keep
-.   csize - number of columns "local" to this processor (does nothing for sequential 
-            matrices). This should match the result from VecGetLocalSize(x,...) if you 
-            plan to use the matrix in a A*x; alternatively, you can use PETSC_DECIDE
+.   isrow - parallel IS containing the rows this processor should obtain
+.   iscol - parallel IS containing all columns you wish to keep
 -   cll - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
     Output Parameter:
@@ -6279,9 +6276,10 @@ M*/
 
     Level: advanced
 
-    Notes: the iscol argument MUST be the same on each processor. You might be 
-    able to create the iscol argument with ISAllGather(). The rows is isrow will be
-    sorted into the same order as the original matrix.
+    Notes:
+    The submatrix will be able to be multiplied with vectors using the same layout as iscol.
+
+    The rows is isrow will be sorted into the same order as the original matrix.
 
       The first time this is called you should use a cll of MAT_INITIAL_MATRIX,
    the MatGetSubMatrix() routine will create the newmat for you. Any additional calls
@@ -6292,14 +6290,45 @@ M*/
     The communicator of the newly obtained matrix is ALWAYS the same as the communicator of
     the input matrix.
 
-    If iscol is PETSC_NULL then all columns are obtained (not supported in Fortran), you should
-    use csize = PETSC_DECIDE also in this case.
+    If iscol is PETSC_NULL then all columns are obtained (not supported in Fortran).
+
+   Example usage:
+   Consider the following 8x8 matrix with 34 non-zero values, that is
+   assembled across 3 processors. Lets assume that proc0 owns 3 rows,
+   proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown
+   as follows:
+
+.vb
+            1  2  0  |  0  3  0  |  0  4
+    Proc0   0  5  6  |  7  0  0  |  8  0
+            9  0 10  | 11  0  0  | 12  0
+    -------------------------------------
+           13  0 14  | 15 16 17  |  0  0
+    Proc1   0 18  0  | 19 20 21  |  0  0
+            0  0  0  | 22 23  0  | 24  0
+    -------------------------------------
+    Proc2  25 26 27  |  0  0 28  | 29  0
+           30  0  0  | 31 32 33  |  0 34
+.ve
+
+    Suppose isrow = [0 1 | 4 | 5 6] and iscol = [1 2 | 3 4 5 | 6].  The resulting submatrix is
+
+.vb
+            2  0  |  0  3  0  |  0
+    Proc0   5  6  |  7  0  0  |  8
+    -------------------------------
+    Proc1  18  0  | 19 20 21  |  0
+    -------------------------------
+    Proc2  26 27  |  0  0 28  | 29
+            0  0  | 31 32 33  |  0
+.ve
+
 
     Concepts: matrices^submatrices
 
 .seealso: MatGetSubMatrices(), ISAllGather()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrix(Mat mat,IS isrow,IS iscol,PetscInt csize,MatReuse cll,Mat *newmat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *newmat)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -6318,8 +6347,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrix(Mat mat,IS isrow,IS iscol,Pets
   ierr = MPI_Comm_size(((PetscObject)mat)->comm,&size);CHKERRQ(ierr);
 
   if (!iscol) {
-    if (csize == PETSC_DECIDE) csize = mat->cmap->n;
-    ierr = ISCreateStride(((PetscObject)mat)->comm,mat->cmap->N,0,1,&iscoltmp);CHKERRQ(ierr);
+    ierr = ISCreateStride(((PetscObject)mat)->comm,mat->cmap->n,mat->cmap->rstart,1,&iscoltmp);CHKERRQ(ierr);
   } else {
     iscoltmp = iscol;
   }
@@ -6338,67 +6366,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrix(Mat mat,IS isrow,IS iscol,Pets
   }
 
   if (!mat->ops->getsubmatrix) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
-  ierr = (*mat->ops->getsubmatrix)(mat,isrow,iscoltmp,csize,cll,newmat);CHKERRQ(ierr);
+  ierr = (*mat->ops->getsubmatrix)(mat,isrow,iscoltmp,cll,newmat);CHKERRQ(ierr);
   if (!iscol) {ierr = ISDestroy(iscoltmp);CHKERRQ(ierr);}
   ierr = PetscObjectStateIncrease((PetscObject)*newmat);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetSubMatrixRaw"
-/*@
-    MatGetSubMatrixRaw - Gets a single submatrix on the same number of processors
-                         as the original matrix.
-
-    Collective on Mat
-
-    Input Parameters:
-+   mat - the original matrix
-.   nrows - the number of rows this processor should obtain
-.   rows - rows this processor should obtain
-.   ncols - the number of columns for all processors you wish to keep
-.   cols - columns for all processors you wish to keep
-.   csize - number of columns "local" to this processor (does nothing for sequential 
-            matrices). This should match the result from VecGetLocalSize(x,...) if you 
-            plan to use the matrix in a A*x; alternatively, you can use PETSC_DECIDE
--   cll - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
-
-    Output Parameter:
-.   newmat - the new submatrix, of the same type as the old
-
-    Level: advanced
-
-    Notes: the iscol argument MUST be the same on each processor. You might be 
-    able to create the iscol argument with ISAllGather().
-
-      The first time this is called you should use a cll of MAT_INITIAL_MATRIX,
-   the MatGetSubMatrix() routine will create the newmat for you. Any additional calls
-   to this routine with a mat of the same nonzero structure and with a cll of MAT_REUSE_MATRIX  
-   will reuse the matrix generated the first time.
-
-    Concepts: matrices^submatrices
-
-.seealso: MatGetSubMatrices(), ISAllGather()
-@*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrixRaw(Mat mat,PetscInt nrows,const PetscInt rows[],PetscInt ncols,const PetscInt cols[],PetscInt csize,MatReuse cll,Mat *newmat)
-{
-  IS             isrow, iscol;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
-  PetscValidIntPointer(rows,2);
-  PetscValidIntPointer(cols,3);
-  PetscValidPointer(newmat,6);
-  if (cll == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*newmat,MAT_COOKIE,6);
-  PetscValidType(mat,1);
-  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  ierr = MatPreallocated(mat);CHKERRQ(ierr);
-  ierr = ISCreateGeneralWithArray(PETSC_COMM_SELF, nrows, (PetscInt *) rows, &isrow);CHKERRQ(ierr);
-  ierr = ISCreateGeneralWithArray(PETSC_COMM_SELF, ncols, (PetscInt *) cols, &iscol);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(mat, isrow, iscol, csize, cll, newmat);CHKERRQ(ierr);
-  ierr = ISDestroy(isrow);CHKERRQ(ierr);
-  ierr = ISDestroy(iscol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
