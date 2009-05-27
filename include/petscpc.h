@@ -331,7 +331,18 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields(PC,PetscInt,Petsc
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetType(PC,PCCompositeType);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetBlockSize(PC,PetscInt);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetIS(PC,IS);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSchurPrecondition(PC,PetscTruth);
+
+/*E
+    PCFieldSplitSchurPreType - Determines how to precondition Schur complement
+
+    Level: intermediate
+
+.seealso: PCFieldSplitSchurPrecondition()
+E*/
+typedef enum {PC_FIELDSPLIT_SCHUR_PRE_SELF,PC_FIELDSPLIT_SCHUR_PRE_DIAG,PC_FIELDSPLIT_SCHUR_PRE_USER} PCFieldSplitSchurPreType;
+extern const char *PCFieldSplitSchurPreTypes[];
+
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSchurPrecondition(PC,PCFieldSplitSchurPreType,Mat);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitGetSchurBlocks(PC,Mat*,Mat*,Mat*,Mat*);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinSetRestriction(PC,Mat);

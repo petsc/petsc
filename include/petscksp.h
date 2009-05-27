@@ -569,10 +569,10 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUseFischerGuess(KSP,PetscInt,Pets
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFischerGuess(KSP,KSPFischerGuess);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetFischerGuess(KSP,KSPFischerGuess*);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSchurComplement(Mat,Mat,Mat,Mat,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSchurComplement(Mat,Mat,Mat,Mat,Mat,Mat*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatSchurComplementGetKSP(Mat,KSP*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementUpdate(Mat,Mat,Mat,Mat,Mat,MatStructure);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementGetSubmatrices(Mat,Mat*,Mat*,Mat*,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementUpdate(Mat,Mat,Mat,Mat,Mat,Mat,MatStructure);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementGetSubmatrices(Mat,Mat*,Mat*,Mat*,Mat*,Mat*);
 
 PETSC_EXTERN_CXX_END
 #endif
