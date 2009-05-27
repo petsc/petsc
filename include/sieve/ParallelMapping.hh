@@ -263,7 +263,7 @@ namespace ALE {
 #if defined(PETSC_USE_LOG)
         // PETSc logging
         isend_ct++;
-        TypeSize(isend_len, num, this->_datatype);
+        TypeSize(&isend_len, num, this->_datatype);
 #endif
       }
       for(typename moves_type::const_iterator r_iter = this->_recvs.begin(); r_iter != this->_recvs.end(); ++r_iter) {
@@ -278,7 +278,7 @@ namespace ALE {
 #if defined(PETSC_USE_LOG)
         // PETSc logging
         irecv_ct++;
-        TypeSize(irecv_len, num, this->_datatype);
+        TypeSize(&irecv_len, num, this->_datatype);
 #endif
       }
     };
