@@ -118,8 +118,9 @@ namespace PETSc {
   };
 
   class Log {
-    static std::map<std::string,LogEvent> event_registry;
   public:
+    static std::map<std::string,LogEvent> event_registry;
+
     static LogEvent& Event(const std::string& name, PetscCookie cookie = PETSC_OBJECT_COOKIE) {
       if (event_registry.find(name) == event_registry.end()) {
         PetscLogEvent  id;
