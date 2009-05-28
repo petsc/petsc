@@ -269,6 +269,7 @@ namespace ALE {
       const Obj<partition_type> cellPartition = new partition_type(mesh->comm(), 0, mesh->commSize(), mesh->debug());
       const Obj<partition_type> partition     = new partition_type(mesh->comm(), 0, mesh->commSize(), mesh->debug());
 
+      PETSc::Log::Event("DistributeMesh").begin();
       // Create the cell partition
       Partitioner::createPartitionV(mesh, cellPartition, height);
       if (mesh->debug()) {
@@ -295,6 +296,7 @@ namespace ALE {
       Partitioner::createLocalMeshV(mesh, partition, renumbering, newMesh, height);
       newMesh->getSieve()->symmetrize();
       newMesh->stratify();
+      PETSc::Log::Event("DistributeMesh").end();
       return partition;
     };
     template<typename NewMesh>
@@ -313,6 +315,7 @@ namespace ALE {
         }
       }
       // Distribute the coordinates
+      PETSc::Log::Event("DistributeCoords").begin();
       const Obj<typename Mesh::real_section_type>& coordinates         = mesh->getRealSection("coordinates");
       const Obj<typename Mesh::real_section_type>& parallelCoordinates = newMesh->getRealSection("coordinates");
 
@@ -330,7 +333,9 @@ namespace ALE {
         }
         if (n) {throw ALE::Exception("Need to distribute more real sections");}
       }
+      PETSc::Log::Event("DistributeCoords").end();
       if (mesh->getIntSections()->size() > 0) {
+        PETSc::Log::Event("DistributeIntSec").begin();
         Obj<std::set<std::string> > names = mesh->getIntSections();
 
         for(std::set<std::string>::const_iterator n_iter = names->begin(); n_iter != names->end(); ++n_iter) {
@@ -341,11 +346,13 @@ namespace ALE {
           newSection->setChart(newMesh->getSieve()->getChart());
           distributeSection(section, partition, renumbering, sendMeshOverlap, recvMeshOverlap, newSection);
         }
+        PETSc::Log::Event("DistributeIntSec").end();
       }
       if (mesh->getArrowSections()->size() > 1) {
         throw ALE::Exception("Need to distribute more arrow sections");
       }
       // Distribute labels
+      PETSc::Log::Event("DistributeLabels").begin();
       const typename Mesh::labels_type& labels = mesh->getLabels();
 
       for(typename Mesh::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
@@ -369,7 +376,9 @@ namespace ALE {
         newLabel->add(origLabel, newMesh->getSieve(), renumbering);
 #endif
       }
+      PETSc::Log::Event("DistributeLabels").end();
       // Create the parallel overlap
+      PETSc::Log::Event("CreateOverlap").begin();
       Obj<typename Mesh::send_overlap_type> sendParallelMeshOverlap = newMesh->getSendOverlap();
       Obj<typename Mesh::recv_overlap_type> recvParallelMeshOverlap = newMesh->getRecvOverlap();
       //   Can I figure this out in a nicer way?
@@ -377,6 +386,7 @@ namespace ALE {
 
       ALE::OverlapBuilder<>::constructOverlap(globalPoints, renumbering, sendParallelMeshOverlap, recvParallelMeshOverlap);
       newMesh->setCalculatedOverlap(true);
+      PETSc::Log::Event("CreateOverlap").end();
     };
     template<typename Label, typename Partition, typename Renumbering, typename SendOverlap, typename RecvOverlap, typename NewLabel>
     static void distributeLabel(const Obj<typename Mesh::sieve_type>& sieve, const Obj<Label>& l, const Obj<Partition>& partition, Renumbering& renumbering, const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<NewLabel>& newL) {
