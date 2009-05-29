@@ -693,6 +693,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISComplement(IS is,PetscInt nmin,PetscInt nmax
   }
   if (cnt != nmax-nmin - n) SETERRQ2(PETSC_ERR_PLIB,"Number entries found in complement %D does not match expected %D",cnt,nmax-n);
   ierr = ISCreateGeneral(((PetscObject)is)->comm,nmax-nmin-n,nindices,isout);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
   ierr = PetscFree(nindices);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
