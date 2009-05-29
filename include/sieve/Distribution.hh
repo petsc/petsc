@@ -321,8 +321,10 @@ namespace ALE {
 
       newMesh->setupCoordinates(parallelCoordinates);
       distributeSection(coordinates, partition, renumbering, sendMeshOverlap, recvMeshOverlap, parallelCoordinates);
+      PETSc::Log::Event("DistributeCoords").end();
       // Distribute other sections
       if (mesh->getRealSections()->size() > 1) {
+        PETSc::Log::Event("DistributeRealSec").begin();
         Obj<std::set<std::string> > names = mesh->getRealSections();
         int                         n     = 0;
 
@@ -331,9 +333,9 @@ namespace ALE {
           std::cout << "ERROR: Did not distribute real section " << *n_iter << std::endl;
           ++n;
         }
+        PETSc::Log::Event("DistributeRealSec").end();
         if (n) {throw ALE::Exception("Need to distribute more real sections");}
       }
-      PETSc::Log::Event("DistributeCoords").end();
       if (mesh->getIntSections()->size() > 0) {
         PETSc::Log::Event("DistributeIntSec").begin();
         Obj<std::set<std::string> > names = mesh->getIntSections();
