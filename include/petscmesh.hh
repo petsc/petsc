@@ -9,12 +9,12 @@ using ALE::Obj;
 #undef __FUNCT__  
 #define __FUNCT__ "MeshCreateMatrix" 
 template<typename Mesh, typename Section>
-PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<Mesh>& mesh, const Obj<Section>& section, const MatType mtype, Mat *J)
+PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<Mesh>& mesh, const Obj<Section>& section, const MatType mtype, Mat *J, int bs = -1)
 {
   const ALE::Obj<typename Mesh::order_type>& order = mesh->getFactory()->getGlobalOrder(mesh, section->getName(), section);
   int            localSize  = order->getLocalSize();
   int            globalSize = order->getGlobalSize();
-  PetscTruth     isShell, isBlock, isSeqBlock, isMPIBlock;
+  PetscTruth     isShell, isBlock, isSeqBlock, isMPIBlock, isSymBlock, isSymSeqBlock, isSymMPIBlock;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -26,17 +26,21 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<Mesh>& mesh, const O
   ierr = PetscStrcmp(mtype, MATBAIJ, &isBlock);CHKERRQ(ierr);
   ierr = PetscStrcmp(mtype, MATSEQBAIJ, &isSeqBlock);CHKERRQ(ierr);
   ierr = PetscStrcmp(mtype, MATMPIBAIJ, &isMPIBlock);CHKERRQ(ierr);
+  ierr = PetscStrcmp(mtype, MATSBAIJ, &isSymBlock);CHKERRQ(ierr);
+  ierr = PetscStrcmp(mtype, MATSEQSBAIJ, &isSymSeqBlock);CHKERRQ(ierr);
+  ierr = PetscStrcmp(mtype, MATMPISBAIJ, &isSymMPIBlock);CHKERRQ(ierr);
   if (!isShell) {
     PetscInt *dnz, *onz;
-    int bs = 1;
 
-    if (isBlock || isSeqBlock || isMPIBlock) {
-      const typename Section::chart_type& chart = section->getChart();
+    if (b < 0) {
+      if (isBlock || isSeqBlock || isMPIBlock || isSymBlock || isSymSeqBlock || isSymMPIBlock) {
+        const typename Section::chart_type& chart = section->getChart();
 
-      for(typename Section::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
-        if (section->getFiberDimension(*c_iter)) {
-          bs = section->getFiberDimension(*c_iter);
-          break;
+        for(typename Section::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+          if (section->getFiberDimension(*c_iter)) {
+            bs = section->getFiberDimension(*c_iter);
+            break;
+          }
         }
       }
     }
@@ -814,10 +818,16 @@ PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, 
   const ALE::Obj<ALE::Mesh::sieve_type> adjGraph     = new ALE::Mesh::sieve_type(mesh->comm(), mesh->debug());
   PetscInt                              numLocalRows = globalOrder->getLocalSize();
   PetscInt                              firstRow     = globalOrder->getGlobalOffsets()[mesh->commRank()];
+  PetscTruth                            isSymmetric, isSymBlock, isSymSeqBlock, isSymMPIBlock;
   const PetscInt                        debug        = 0;
   PetscErrorCode                        ierr;
 
   PetscFunctionBegin;
+  // Check for symmetric storage
+  ierr = PetscStrcmp(mtype, MATSBAIJ, &isSymBlock);CHKERRQ(ierr);
+  ierr = PetscStrcmp(mtype, MATSEQSBAIJ, &isSymSeqBlock);CHKERRQ(ierr);
+  ierr = PetscStrcmp(mtype, MATMPISBAIJ, &isSymMPIBlock);CHKERRQ(ierr);
+  isSymmetric = isSymBlock || isSymSeqBlock || isSymMPIBlock;
   // Create local adjacency graph
   if (debug) mesh->view("Input Mesh");
   if (debug) globalOrder->view("Initial Global Order");
@@ -950,10 +960,12 @@ PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, 
       for(typename ALE::Mesh::sieve_type::traits::coneSequence::iterator v_iter = adj->begin(); v_iter != adj->end(); ++v_iter) {
         const typename Mesh::point_type&             neighbor = *v_iter;
         const typename Mesh::order_type::value_type& cIdx     = globalOrder->restrictPoint(neighbor)[0];
+        const int                                    col      = cIdx.prefix;
         const int&                                   cSize    = cIdx.index/bs;
 
         if ((mesh->debug() > 1) && ((bs == 1) || (cIdx.index%bs == 0))) std::cout << "["<<adjGraph->commRank()<<"]:   col "<<cIdx.prefix<<": size " << cIdx.index << " bs "<<bs<<std::endl;
         if (cSize > 0) {
+          if (isSymmetric && (col < row)) continue;
           if (globalOrder->isLocal(neighbor)) {
             for(int r = 0; r < rSize; ++r) {dnz[(row - firstRow)/bs + r] += cSize;}
           } else {
@@ -968,6 +980,8 @@ PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, 
   ierr = MatMPIAIJSetPreallocation(A, 0, dnz, 0, onz);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(A, bs, 0, dnz);CHKERRQ(ierr);
   ierr = MatMPIBAIJSetPreallocation(A, bs, 0, dnz, 0, onz);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(A, bs, 0, dnz);CHKERRQ(ierr);
+  ierr = MatMPISBAIJSetPreallocation(A, bs, 0, dnz, 0, onz);CHKERRQ(ierr);
   ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
