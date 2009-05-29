@@ -14,7 +14,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<Mesh>& mesh, const O
   const ALE::Obj<typename Mesh::order_type>& order = mesh->getFactory()->getGlobalOrder(mesh, section->getName(), section);
   int            localSize  = order->getLocalSize();
   int            globalSize = order->getGlobalSize();
-  PetscTruth     isShell, isBlock, isSeqBlock, isMPIBlock, isSymBlock, isSymSeqBlock, isSymMPIBlock;
+  PetscTruth     isShell, isBlock, isSeqBlock, isMPIBlock, isSymBlock, isSymSeqBlock, isSymMPIBlock, isSymmetric;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -29,6 +29,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<Mesh>& mesh, const O
   ierr = PetscStrcmp(mtype, MATSBAIJ, &isSymBlock);CHKERRQ(ierr);
   ierr = PetscStrcmp(mtype, MATSEQSBAIJ, &isSymSeqBlock);CHKERRQ(ierr);
   ierr = PetscStrcmp(mtype, MATMPISBAIJ, &isSymMPIBlock);CHKERRQ(ierr);
+  // Check for symmetric storage
+  isSymmetric = (PetscTruth) (isSymBlock || isSymSeqBlock || isSymMPIBlock);
   if (!isShell) {
     PetscInt *dnz, *onz;
 
@@ -45,7 +47,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<Mesh>& mesh, const O
       }
     }
     ierr = PetscMalloc2(localSize/bs, PetscInt, &dnz, localSize/bs, PetscInt, &onz);CHKERRQ(ierr);
-    ierr = preallocateOperatorNew(mesh, bs, section->getAtlas(), order, dnz, onz, *J);CHKERRQ(ierr);
+    ierr = preallocateOperatorNew(mesh, bs, section->getAtlas(), order, dnz, onz, isSymmetric, *J);CHKERRQ(ierr);
     ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -809,7 +811,7 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Mesh>& mesh, const int bs
 }
 
 template<typename Mesh, typename Atlas>
-PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, const ALE::Obj<Atlas>& atlas, const ALE::Obj<typename Mesh::order_type>& globalOrder, PetscInt dnz[], PetscInt onz[], Mat A)
+PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, const ALE::Obj<Atlas>& atlas, const ALE::Obj<typename Mesh::order_type>& globalOrder, PetscInt dnz[], PetscInt onz[], PetscTruth isSymmetric, Mat A)
 {
   typedef typename Mesh::sieve_type        sieve_type;
   typedef typename Mesh::point_type        point_type;
@@ -818,16 +820,10 @@ PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, 
   const ALE::Obj<ALE::Mesh::sieve_type> adjGraph     = new ALE::Mesh::sieve_type(mesh->comm(), mesh->debug());
   PetscInt                              numLocalRows = globalOrder->getLocalSize();
   PetscInt                              firstRow     = globalOrder->getGlobalOffsets()[mesh->commRank()];
-  PetscTruth                            isSymmetric, isSymBlock, isSymSeqBlock, isSymMPIBlock;
   const PetscInt                        debug        = 0;
   PetscErrorCode                        ierr;
 
   PetscFunctionBegin;
-  // Check for symmetric storage
-  ierr = PetscStrcmp(mtype, MATSBAIJ, &isSymBlock);CHKERRQ(ierr);
-  ierr = PetscStrcmp(mtype, MATSEQSBAIJ, &isSymSeqBlock);CHKERRQ(ierr);
-  ierr = PetscStrcmp(mtype, MATMPISBAIJ, &isSymMPIBlock);CHKERRQ(ierr);
-  isSymmetric = isSymBlock || isSymSeqBlock || isSymMPIBlock;
   // Create local adjacency graph
   if (debug) mesh->view("Input Mesh");
   if (debug) globalOrder->view("Initial Global Order");

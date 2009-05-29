@@ -2286,36 +2286,6 @@ namespace ALE {
       field->setAtlas(newAtlas);
       return field;
     };
-    template<typename PC>
-    void constructFieldSplit(PC fieldSplit) {
-      const chart_type& chart = this->getChart();
-      PetscInt          space = 0;
-      PetscErrorCode    ierr;
-
-      for(typename std::vector<Obj<atlas_type> >::const_iterator s_iter = this->_spaces->begin(); s_iter != this->_spaces->end(); ++s_iter, ++space) {
-        PetscInt  n = this->size(space);
-        PetscInt  i = -1;
-        PetscInt *idx;
-        IS        is;
-
-        ierr = PetscMalloc(n * sizeof(PetscInt), &idx);CHKERRXX(ierr);
-        for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
-          const int fDim = this->getFiberDimension(*c_iter, space);
-
-          if (fDim) {
-            const int off = s_iter->restrictPoint(*c_iter)[0].index;
-
-            for(int d = 0; d < fDim; ++d) {
-              // TODO: In parallel, we need remap this number to a global order
-              idx[++i] = off+d;
-            }
-          }
-        }
-        if (i != n) {throw PETSc::Exception("Invalid fibration numbering");}
-        ierr = ISCreateGeneralNC(this->comm(), n, idx, &is);CHKERRXX(ierr);
-        ierr = PCFieldSplitSetIS(fieldSplit, is);CHKERRXX(ierr);
-      }
-    };
   public: // Optimization
     void getCustomRestrictAtlas(const int tag, const int *offsets[], const int *indices[]) {
       *offsets = this->_customRestrictAtlas[tag].first.first;
