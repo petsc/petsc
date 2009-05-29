@@ -32,7 +32,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<Mesh>& mesh, const O
   if (!isShell) {
     PetscInt *dnz, *onz;
 
-    if (b < 0) {
+    if (bs < 0) {
       if (isBlock || isSeqBlock || isMPIBlock || isSymBlock || isSymSeqBlock || isSymMPIBlock) {
         const typename Section::chart_type& chart = section->getChart();
 
