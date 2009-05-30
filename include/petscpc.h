@@ -69,6 +69,7 @@ E*/
 #define PCASA             "asa"
 #define PCCP              "cp"
 #define PCBFBT            "bfbt"
+#define PCLSC             "lsc"
 #define PCPYTHON          "python"
 #define PCPFMG            "pfmg"
 

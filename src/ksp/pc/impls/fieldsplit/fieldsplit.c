@@ -21,10 +21,12 @@ struct _PC_FieldSplitLink {
 typedef struct {
   PCCompositeType   type;              
   PetscTruth        defaultsplit; /* Flag for a system with a set of 'k' scalar fields with the same layout (and bs = k) */
+  PetscTruth        realdiagonal; /* Flag to use the diagonal blocks of mat preconditioned by pmat, instead of just pmat */
   PetscInt          bs;           /* Block size for IS and Mat structures */
   PetscInt          nsplits;      /* Number of field divisions defined */
   Vec               *x,*y,w1,w2;
-  Mat               *pmat;        /* The diagonal block for each split */
+  Mat               *mat;         /* The diagonal block for each split */
+  Mat               *pmat;        /* The preconditioning diagonal block for each split */
   Mat               *Afield;      /* The rows of the matrix associated with each split */
   PetscTruth        issetup;
   /* Only used when Schur complement preconditioning is used */
@@ -289,6 +291,23 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ilink = ilink->next;
     }
   }
+  if (jac->realdiagonal) {
+    ilink = jac->head;
+    if (!jac->mat) {
+      ierr = PetscMalloc(nsplit*sizeof(Mat),&jac->mat);CHKERRQ(ierr);
+      for (i=0; i<nsplit; i++) {
+        ierr = MatGetSubMatrix(pc->mat,ilink->is,ilink->is,MAT_INITIAL_MATRIX,&jac->mat[i]);CHKERRQ(ierr);
+        ilink = ilink->next;
+      }
+    } else {
+      for (i=0; i<nsplit; i++) {
+        ierr = MatGetSubMatrix(pc->mat,ilink->is,ilink->is,MAT_REUSE_MATRIX,&jac->mat[i]);CHKERRQ(ierr);
+        ilink = ilink->next;
+      }
+    }
+  } else {
+    jac->mat = jac->pmat;
+  }
 
   if (jac->type != PC_COMPOSITE_SCHUR) {
     /* extract the rows of the matrix associated with each field: used for efficient computation of residual inside algorithm */
@@ -328,7 +347,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
       ierr  = ISDestroy(ccis);CHKERRQ(ierr);
-      ierr  = MatSchurComplementUpdate(jac->schur,jac->pmat[0],jac->pmat[0],jac->B,jac->C,jac->pmat[1],pc->flag);CHKERRQ(ierr);
+      ierr  = MatSchurComplementUpdate(jac->schur,jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->pmat[1],pc->flag);CHKERRQ(ierr);
       ierr  = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac),pc->flag);CHKERRQ(ierr);
 
      } else {
@@ -344,7 +363,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
       ierr  = ISDestroy(ccis);CHKERRQ(ierr);
       /* Better would be to use 'mat[0]' (diagonal block of the real matrix) preconditioned by pmat[0] */
-      ierr  = MatCreateSchurComplement(jac->pmat[0],jac->pmat[0],jac->B,jac->C,jac->pmat[1],&jac->schur);CHKERRQ(ierr);
+      ierr  = MatCreateSchurComplement(jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1],&jac->schur);CHKERRQ(ierr);
       ierr  = MatSchurComplementGetKSP(jac->schur,&ksp);CHKERRQ(ierr);
       ierr  = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,2);CHKERRQ(ierr);
       ierr  = MatSetFromOptions(jac->schur);CHKERRQ(ierr);
@@ -376,7 +395,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     i    = 0;
     ilink = jac->head;
     while (ilink) {
-      ierr = KSPSetOperators(ilink->ksp,jac->pmat[i],jac->pmat[i],flag);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ilink->ksp,jac->mat[i],jac->pmat[i],flag);CHKERRQ(ierr);
       /* really want setfromoptions called in PCSetFromOptions_FieldSplit(), but it is not ready yet */
       ierr = KSPSetFromOptions(ilink->ksp);CHKERRQ(ierr);
       ierr = KSPSetUp(ilink->ksp);CHKERRQ(ierr);
@@ -636,6 +655,7 @@ static PetscErrorCode PCDestroy_FieldSplit(PC pc)
     ilink = next;
   }
   ierr = PetscFree2(jac->x,jac->y);CHKERRQ(ierr);
+  if (jac->mat && jac->mat != jac->pmat) {ierr = MatDestroyMatrices(jac->nsplits,&jac->mat);CHKERRQ(ierr);}
   if (jac->pmat) {ierr = MatDestroyMatrices(jac->nsplits,&jac->pmat);CHKERRQ(ierr);}
   if (jac->Afield) {ierr = MatDestroyMatrices(jac->nsplits,&jac->Afield);CHKERRQ(ierr);}
   if (jac->w1) {ierr = VecDestroy(jac->w1);CHKERRQ(ierr);}
@@ -662,6 +682,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("FieldSplit options");CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-pc_fieldsplit_real_diagonal","Use diagonal blocks of the operator","PCFieldSplitSetRealDiagonal",jac->realdiagonal,&jac->realdiagonal,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_fieldsplit_block_size","Blocksize that defines number of fields","PCFieldSplitSetBlockSize",jac->bs,&bs,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCFieldSplitSetBlockSize(pc,bs);CHKERRQ(ierr);
@@ -751,7 +772,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitGetSubKSP_FieldSplit_Schur(PC pc,P
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(jac->nsplits*sizeof(KSP*),subksp);CHKERRQ(ierr);
+  ierr = PetscMalloc(jac->nsplits*sizeof(KSP),subksp);CHKERRQ(ierr);
   ierr = MatSchurComplementGetKSP(jac->schur,*subksp);CHKERRQ(ierr);
   (*subksp)[1] = jac->kspschur;
   *n = jac->nsplits;

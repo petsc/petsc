@@ -111,6 +111,11 @@ PetscOptionsXXTruth()<br>
       </ul>
       <p><u><b>Mat:</b></u></p>
       <ul>
+	<li>MatGetSubMatrix
+	  <dl>Now takes a parallel IS for the columns, the csize argument has been dropped.  The local part of
+	    this IS corresponds to the local columns of the new submatrix.</dl></li>
+	<li>MatGetSubMatrixRaw
+	  <dl>Removed, use MatGetSubMatrix</dl></li>
       </ul>
       <u><b>PC:</b></u>
       <ul>
