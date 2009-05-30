@@ -31,6 +31,9 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<Mesh>& mesh, const O
   ierr = PetscStrcmp(mtype, MATMPISBAIJ, &isSymMPIBlock);CHKERRQ(ierr);
   // Check for symmetric storage
   isSymmetric = (PetscTruth) (isSymBlock || isSymSeqBlock || isSymMPIBlock);
+  if (isSymmetric) {
+    ierr = MatSetOptions(*J, MAT_IGNORE_LOWER_TRIANGULAR, PETSC_TRUE);CHKERRQ(ierr);
+  }
   if (!isShell) {
     PetscInt *dnz, *onz;
 
