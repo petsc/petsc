@@ -1205,8 +1205,8 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   /* rtmp, vtmp: working arrays for sparse and contiguous row entries of active row */
   ierr = PetscMalloc((2*mbs*bs2+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
   vtmp = rtmp + bs2*mbs;
-  PetscReal *vtmp_abs;
-  ierr = PetscMalloc((mbs+1)*sizeof(PetscReal),&vtmp_abs);CHKERRQ(ierr);
+  PetscScalar *vtmp_abs;
+  ierr = PetscMalloc((mbs+1)*sizeof(PetscScalar),&vtmp_abs);CHKERRQ(ierr);
 
   MatScalar  *v_work;
   PetscInt   *v_pivots;
