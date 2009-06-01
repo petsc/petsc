@@ -9,7 +9,7 @@ SOURCEH  = ALE_options.hh Filter.hh Hierarchy.hh Hierarchy_New.hh Map.hh Meshing
 OBJSC    = ALE.o               
 OBJSF    =
 LIBBASE  = libpetscdm
-MANSEC   = DA
+MANSEC   = Mesh
 LOCDIR   = src/dm/mesh/sieve/
 
 ALE.o:  ALE.hh 
