@@ -16,6 +16,7 @@
 #define PCCompositeType PetscEnum
 #define PCRichardsonConvergedReason PetscEnum 
 #define PCType character*(80)
+#define PCFieldSplitSchurPreType PetscEnum
 !
 !  Various preconditioners
 !
