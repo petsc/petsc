@@ -20,7 +20,8 @@
 #define matzerorowslocalis_              MATZEROROWSLOCALIS
 #define matsetoptionsprefix_             MATSETOPTIONSPREFIX
 #define matgetvecs_                      MATGETVECS
-#define matnullspaceremove_              MATNULLSPACEREMOVE
+#define matnullspaceremove_              MATNULLSPACEREMOV
+#define matgetinfo_                      MATGETINFO
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matdestroymatrices_              matdestroymatrices_
 #define matgetfactor_                    matgetfactor
@@ -41,6 +42,7 @@
 #define matzerorowslocalis_              matzerorowslocalis
 #define matsetoptionsprefix_             matsetoptionsprefix
 #define matnullspaceremove_              matnullspaceremove
+#define matgetinfo_                      matgetinfo
 #endif
 
 EXTERN_C_BEGIN
@@ -244,6 +246,11 @@ void PETSC_STDCALL matnullspaceremove_(MatNullSpace *sp,Vec *vec,Vec *out,PetscE
 {
   CHKFORTRANNULLOBJECT(out);
   *ierr = MatNullSpaceRemove(*sp,*vec,out);
+}
+
+void PETSC_STDCALL   matgetinfo_(Mat *mat,MatInfoType *flag,MatInfo *info, int *__ierr )
+{
+  *__ierr = MatGetInfo(*mat,*flag,info);
 }
 
 EXTERN_C_END

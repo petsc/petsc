@@ -17,21 +17,30 @@
 #endif
 
       Interface 
-        Subroutine MatGetArrayF90(v,array,ierr)
+        Subroutine MatGetArrayF90(mat,array,ierr)
           USE_MAT_HIDE
           PetscScalar, pointer :: array(:,:)
           PetscErrorCode ierr
-          MAT_HIDE     v
+          MAT_HIDE     mat
         End Subroutine
       End Interface
 
 
       Interface 
-        Subroutine MatRestoreArrayF90(v,array,ierr)
+        Subroutine MatRestoreArrayF90(mat,array,ierr)
           USE_MAT_HIDE
           PetscScalar, pointer :: array(:,:)
           PetscErrorCode ierr
-          MAT_HIDE     v
+          MAT_HIDE     mat
         End Subroutine
       End Interface
 
+      Interface
+         Subroutine MatGetInfo(mat, flag, info ,ierr)
+         USE_MAT_HIDE
+         MAT_HIDE  mat
+         MatInfoType flag
+         MatInfo info(:)
+         PetscErrorCode ierr
+       End Subroutine
+      End Interface
