@@ -1,11 +1,8 @@
-
 #if !defined(__PETSCTSDEF_H90)
 #define __PETSCTSDEF_H90
-
 #if defined(PETSC_USE_FORTRAN_DATATYPES)
       type TS
         PetscFortranAddr:: v
       end type TS
 #endif
-
 #endif
