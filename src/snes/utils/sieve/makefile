@@ -11,8 +11,8 @@ SOURCEH  =
 OBJSC    = meshmgsnes.o
 OBJSF    =
 LIBBASE  = libpetscsnes
-MANSEC   = DA
-DIRS     = adutils
+MANSEC   = DMMG
+DIRS     =
 EDIRS    = 
 LOCDIR   = src/snes/utils/sieve/
 
