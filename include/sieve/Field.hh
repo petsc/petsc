@@ -2218,6 +2218,9 @@ namespace ALE {
     void setConstraintDimension(const point_type& p, const int numConstraints, const int space) {
       this->_bcs[space]->setFiberDimension(p, numConstraints);
     }
+    void addConstraintDimension(const point_type& p, const int numConstraints, const int space) {
+      this->_bcs[space]->addFiberDimension(p, numConstraints);
+    }
     int getConstrainedFiberDimension(const point_type& p, const int space) const {
       return this->getFiberDimension(p, space) - this->getConstraintDimension(p, space);
     }
