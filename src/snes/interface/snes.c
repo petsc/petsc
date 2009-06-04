@@ -160,7 +160,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMatrixFreeCreate2(SNES,Vec,
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetUpMatrixFree_Private"
-static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscTruth operator, PetscInt version)
+static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscTruth hasOperator, PetscInt version)
 {
   Mat            J;
   KSP            ksp;
@@ -187,7 +187,7 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscTruth operator
   }
   
   ierr = PetscInfo1(snes,"Setting default matrix-free operator routines (version %D)\n", version);CHKERRQ(ierr);
-  if (operator) {
+  if (hasOperator) {
     /* This version replaces the user provided Jacobian matrix with a
        matrix-free version but still employs the user-provided preconditioner matrix. */
     ierr = SNESSetJacobian(snes,J,0,0,0);CHKERRQ(ierr);
