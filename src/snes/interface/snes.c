@@ -156,6 +156,59 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESAddOptionsChecker(PetscErrorCode (*snesch
   PetscFunctionReturn(0);
 }
 
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMatrixFreeCreate2(SNES,Vec,Mat*);
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetUpMatrixFree_Private"
+static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscTruth operator, PetscInt version)
+{
+  Mat            J;
+  KSP            ksp;
+  PC             pc;
+  PetscTruth     match;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  
+  if (version == 1) {
+    ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
+    /*ierr = MatMFFDSetOptionsPrefix(J,((PetscObject)snes)->prefix);CHKERRQ(ierr);*/
+    ierr = MatMFFDSetFromOptions(J);CHKERRQ(ierr);
+  } else if (version == 2) {
+#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE) && !defined(PETSC_USE_LONG_DOUBLE) && !defined(PETSC_USE_INT)
+    if (!snes->vec_func) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"SNESSetFunction() must be called first");
+    ierr = SNESDefaultMatrixFreeCreate2(snes,snes->vec_func,&J);CHKERRQ(ierr);
+#else
+    SETERRQ(PETSC_ERR_SUP, "matrix-free operator rutines (version 2)");
+#endif
+  } else {
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE, "matrix-free operator rutines, only version 1 and 2");
+  }
+  
+  ierr = PetscInfo1(snes,"Setting default matrix-free operator routines (version %D)\n", version);CHKERRQ(ierr);
+  if (operator) {
+    /* This version replaces the user provided Jacobian matrix with a
+       matrix-free version but still employs the user-provided preconditioner matrix. */
+    ierr = SNESSetJacobian(snes,J,0,0,0);CHKERRQ(ierr);
+  } else {
+    /* This version replaces both the user-provided Jacobian and the user-
+       provided preconditioner matrix with the default matrix free version. */
+    ierr = SNESSetJacobian(snes,J,J,MatMFFDComputeJacobian,snes->funP);CHKERRQ(ierr);
+    /* Force no preconditioner */
+    ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)pc,PCSHELL,&match);CHKERRQ(ierr);
+    if (!match) {
+      ierr = PetscInfo(snes,"Setting default matrix-free preconditioner routines\nThat is no preconditioner is being used\n");CHKERRQ(ierr);
+      ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatDestroy(J);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetFromOptions"
 /*@
@@ -215,8 +268,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESAddOptionsChecker(PetscErrorCode (*snesch
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
 {
-  PetscTruth              flg;
-  PetscInt                i,indx,lag;
+  PetscTruth              flg,mf,mf_operator;
+  PetscInt                i,indx,lag,mf_version;
+  MatStructure            matflag;
   const char              *deft = SNESLS;
   const char              *convtests[] = {"default","skip"};
   SNESKSPEW               *kctx = NULL;
@@ -329,6 +383,16 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
       ierr = PetscInfo(snes,"Setting default finite difference Jacobian matrix\n");CHKERRQ(ierr);
     }
 
+    mf = mf_operator = PETSC_FALSE;
+    flg = PETSC_FALSE;
+    ierr = PetscOptionsTruth("-snes_mf_operator","Use a Matrix-Free Jacobian with user-provided preconditioner matrix","MatCreateSNESMF",PETSC_FALSE,&mf_operator,&flg);CHKERRQ(ierr);
+    if (flg && mf_operator) mf = PETSC_TRUE;
+    flg = PETSC_FALSE;
+    ierr = PetscOptionsTruth("-snes_mf","Use a Matrix-Free Jacobian with no preconditioner matrix","MatCreateSNESMF",PETSC_FALSE,&mf,&flg);CHKERRQ(ierr);
+    if (!flg && mf_operator) mf = PETSC_TRUE;
+    mf_version = 1;
+    ierr = PetscOptionsInt("-snes_mf_version","Matrix-Free routines version 1 or 2","None",mf_version,&mf_version,0);CHKERRQ(ierr);
+
     for(i = 0; i < numberofsetfromoptions; i++) {
       ierr = (*othersetfromoptions[i])(snes);CHKERRQ(ierr);
     }
@@ -338,8 +402,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
     }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
+  if (mf) { ierr = SNESSetUpMatrixFree_Private(snes, mf_operator, mf_version);CHKERRQ(ierr); }
   
   if (!snes->ksp) {ierr = SNESGetKSP(snes,&snes->ksp);CHKERRQ(ierr);}
+  ierr = KSPGetOperators(snes->ksp,PETSC_NULL,PETSC_NULL,&matflag);
+  ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,matflag);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(snes->ksp);CHKERRQ(ierr);
 
   PetscFunctionReturn(0); 
@@ -1238,7 +1305,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetJacobian(SNES snes,Mat *A,Mat *B,Petsc
 }
 
 /* ----- Routines to initialize and destroy a nonlinear solver ---- */
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMatrixFreeCreate2(SNES,Vec,Mat*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetUp"
@@ -1267,7 +1333,6 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMatrixFreeCreate2(SNES,Vec,
 PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
 {
   PetscErrorCode ierr;
-  PetscTruth     mf = PETSC_FALSE, mfOp = PETSC_FALSE, mfOp2 = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -1275,60 +1340,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
 
   if (!((PetscObject)snes)->type_name) {
     ierr = SNESSetType(snes,SNESLS);CHKERRQ(ierr);
-  }
-
-  ierr = PetscOptionsBegin(((PetscObject)snes)->comm,((PetscObject)snes)->prefix,"Nonlinear solver (SNES) auxiliary options","SNES_EX");CHKERRQ(ierr); 
-    ierr = PetscOptionsTruth("-snes_mf","Use a Matrix-Free Jacobian with no preconditioner matrix","MatCreateSNESMF",mf,&mf,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-snes_mf_operator","Use a Matrix-Free Jacobian with user-provided preconditioner matrix","MatCreateSNESMF",mfOp,&mfOp,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-snes_mf_operator2","Use a Matrix-Free (version 2) Jacobian with user-provided preconditioner matrix","MatCreateSNESMF",mfOp2,&mfOp2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-
-  /*
-      This version replaces the user provided Jacobian matrix with a
-      matrix-free version but still employs the user-provided preconditioner matrix
-  */
-  if (mfOp) {
-    Mat J;
-    ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
-    ierr = MatMFFDSetFromOptions(J);CHKERRQ(ierr);
-    ierr = PetscInfo(snes,"Setting default matrix-free operator routines\n");CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,0,0,0);CHKERRQ(ierr);
-    ierr = MatDestroy(J);CHKERRQ(ierr);
-  }
-
-#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE) && !defined(PETSC_USE_LONG_DOUBLE) && !defined(PETSC_USE_INT)
-  if (mfOp2) {
-    Mat J;
-    ierr = SNESDefaultMatrixFreeCreate2(snes,snes->vec_sol,&J);CHKERRQ(ierr);
-    ierr = PetscInfo(snes,"Setting default matrix-free operator routines (version 2)\n");CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,0,0,0);CHKERRQ(ierr);
-    ierr = MatDestroy(J);CHKERRQ(ierr);
-  }
-#endif
-
-  /*
-      This version replaces both the user-provided Jacobian and the user-
-      provided preconditioner matrix with the default matrix free version.
-   */
-  if (mf) {
-    Mat  J;
-    KSP ksp;
-    PC   pc;
-    PetscTruth flg;
-    /* create and set matrix-free operator */
-    ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
-    ierr = MatMFFDSetFromOptions(J);CHKERRQ(ierr);
-    ierr = PetscInfo(snes,"Setting default matrix-free operator routines\n");CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,J,MatMFFDComputeJacobian,snes->funP);CHKERRQ(ierr);
-    ierr = MatDestroy(J);CHKERRQ(ierr);
-    /* force no preconditioner */
-    ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject)pc,PCSHELL,&flg);CHKERRQ(ierr);
-    if (!flg) {
-      ierr = PetscInfo(snes,"Setting default matrix-free preconditioner routines;\nThat is no preconditioner is being used\n");CHKERRQ(ierr);
-      ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
-    }
   }
 
   if (!snes->vec_func && !snes->vec_rhs) {

@@ -103,6 +103,11 @@ int main(int argc,char **argv)
        */
     ierr = PetscOptionsGetTruth(PETSC_NULL,"-snes_mf",&matrix_free,PETSC_NULL);CHKERRQ(ierr);
     if (!matrix_free) {
+      PetscTruth matrix_free_operator = PETSC_FALSE;
+      ierr = PetscOptionsGetTruth(PETSC_NULL,"-snes_mf_operator",&matrix_free_operator,PETSC_NULL);CHKERRQ(ierr);
+      if (matrix_free_operator) matrix_free = PETSC_FALSE;
+    }
+    if (!matrix_free) {
       ierr = MatCreate(PETSC_COMM_WORLD,&J);CHKERRQ(ierr);
       ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
       ierr = MatSetFromOptions(J);CHKERRQ(ierr);

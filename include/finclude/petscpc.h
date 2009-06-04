@@ -48,5 +48,14 @@
       parameter (PCRICHARDSON_CONVERGED_ITS  = 4)
       parameter (PCRICHARDSON_DIVERGED_DTOL = -4)
 !
+! PCFieldSplitSchurPreType
+!
+      PetscEnum PC_FIELDSPLIT_SCHUR_PRE_SELF
+      PetscEnum PC_FIELDSPLIT_SCHUR_PRE_DIAG
+      PetscEnum PC_FIELDSPLIT_SCHUR_PRE_USER
+      parameter (PC_FIELDSPLIT_SCHUR_PRE_SELF=0)
+      parameter (PC_FIELDSPLIT_SCHUR_PRE_DIAG=1)
+      parameter (PC_FIELDSPLIT_SCHUR_PRE_USER=2)
+!
 !  End of Fortran include file for the PC package in PETSc
 

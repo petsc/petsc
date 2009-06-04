@@ -13,7 +13,7 @@ OBJSC    = mesh.o meshpcice.o meshpylith.o meshlagrit.o meshzoltan.o meshdolfin.
 OBJSF    =
 DIRS     = sieve impls
 LIBBASE  = libpetscdm
-MANSEC   = DA
+MANSEC   = Mesh
 LOCDIR   = src/dm/mesh/
 
 include ${PETSC_DIR}/conf/base
