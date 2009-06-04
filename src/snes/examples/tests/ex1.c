@@ -130,6 +130,11 @@ int main(int argc,char **argv)
   */
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-snes_mf",&matrix_free,PETSC_NULL);CHKERRQ(ierr);
   if (!matrix_free) {
+    PetscTruth matrix_free_operator = PETSC_FALSE;
+    ierr = PetscOptionsGetTruth(PETSC_NULL,"-snes_mf_operator",&matrix_free_operator,PETSC_NULL);CHKERRQ(ierr);
+    if (matrix_free_operator) matrix_free = PETSC_FALSE;
+  }
+  if (!matrix_free) {
     ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,&J);CHKERRQ(ierr);
   }
 
@@ -389,7 +394,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;   /* user-defined applicatin context */
-  Mat            jac = *J;                /* Jacobian matrix */
+  Mat            jac = *B;                /* Jacobian matrix */
   PetscInt       i,j,row,mx,my,col[5];
   PetscErrorCode ierr;
   PetscScalar    two = 2.0,one = 1.0,lambda,v[5],sc,*x;
@@ -438,6 +443,11 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   */
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  if (jac != *J) {
+    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
 
   /*
      Set flag to indicate that the Jacobian matrix retains an identical
