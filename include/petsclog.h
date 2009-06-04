@@ -452,6 +452,9 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogObjectState(PetscObject,const char
 
 #endif   /* PETSC_USE_LOG */
 
+/* Special support for C++ */
+#include "petsclog.hh"
+
 #define PreLoadBegin(flag,name) \
 {\
   PetscTruth     PreLoading = flag;\
