@@ -146,7 +146,10 @@ cdef class Mat(Object):
 
     def __mul__(self, other):
         if isinstance(self, Mat):
-            return mat_mul(self, other)
+            if isinstance(other, Vec):
+                return mat_mul_vec(self, other)
+            else:
+                return mat_mul(self, other)
         else:
             return mat_rmul(other, self)
 
