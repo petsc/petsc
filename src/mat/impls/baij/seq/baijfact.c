@@ -1140,6 +1140,9 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   PetscReal          dt=info->dt; //shift=info->shiftinblocks; 
   PetscInt           nnz_max;
   PetscTruth         missing;
+  PetscScalar        *vtmp_abs;
+  MatScalar          *v_work;
+  PetscInt           *v_pivots;
 
   PetscFunctionBegin;
   /* ------- symbolic factorization, can be reused ---------*/
@@ -1205,11 +1208,8 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   /* rtmp, vtmp: working arrays for sparse and contiguous row entries of active row */
   ierr = PetscMalloc((2*mbs*bs2+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
   vtmp = rtmp + bs2*mbs;
-  PetscScalar *vtmp_abs;
   ierr = PetscMalloc((mbs+1)*sizeof(PetscScalar),&vtmp_abs);CHKERRQ(ierr);
 
-  MatScalar  *v_work;
-  PetscInt   *v_pivots;
   ierr       = PetscMalloc(bs*sizeof(PetscInt) + (bs+bs2)*sizeof(MatScalar),&v_work);CHKERRQ(ierr);
   multiplier = v_work + bs;
   v_pivots   = (PetscInt*)(multiplier + bs2);
