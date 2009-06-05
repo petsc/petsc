@@ -1689,6 +1689,9 @@ namespace ALE {
       for(int i = 0; i < totalSize; ++i) {this->_allocator.construct(this->_array+i, dummy);}
       ///PetscMemzero(this->_array, totalSize * sizeof(value_type));
       this->_bc->allocatePoint();
+      for(typename std::vector<Obj<bc_type> >::const_iterator b_iter = this->_bcs.begin(); b_iter != this->_bcs.end(); ++b_iter) {
+        (*b_iter)->allocatePoint();;
+      }
     };
     void replaceStorage(value_type *newArray, const bool sharedStorage = false, const int sharedStorageSize = 0) {
       if (this->_array && !this->_sharedStorage) {
