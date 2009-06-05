@@ -1368,13 +1368,20 @@ namespace ALE {
     typedef typename alloc_type::template rebind<bc_type>::other    bc_alloc_type;
     typedef typename bc_alloc_type::pointer                         bc_ptr;
   protected:
+    // Describes layout of storage, point --> (# of values, offset into array)
     Obj<atlas_type> _atlas;
+    // Spare atlas to allow dynamic updates
     Obj<atlas_type> _atlasNew;
+    // Storage
     values_type     _array;
     bool            _sharedStorage;
     int             _sharedStorageSize;
+    // A section that maps points to sets of constrained local dofs
     Obj<bc_type>    _bc;
     alloc_type      _allocator;
+    // Fibration structures
+    //   _spaces is a set of atlases which describe the layout of each in the storage of this section
+    //   _bcs is the same as _bc, but for each field
     std::vector<Obj<atlas_type> > _spaces;
     std::vector<Obj<bc_type> >    _bcs;
     // Optimization
@@ -2224,6 +2231,14 @@ namespace ALE {
     int getConstrainedFiberDimension(const point_type& p, const int space) const {
       return this->getFiberDimension(p, space) - this->getConstraintDimension(p, space);
     }
+    // Return the local dofs which are constrained on a point
+    const int *getConstraintDof(const point_type& p, const int space) const {
+      return this->_bcs[space]->restrictPoint(p);
+    }
+    // Set the local dofs which are constrained on a point
+    void setConstraintDof(const point_type& p, const int dofs[], const int space) {
+      this->_bcs[space]->updatePoint(p, dofs);
+    }
     template<typename OtherSection>
     void copyFibration(const Obj<OtherSection>& section) {
       const std::vector<Obj<atlas_type> >& spaces = section->getSpaces();
@@ -2270,7 +2285,7 @@ namespace ALE {
         const int dof[1] = {0};
 
         if (cDim) {
-          field->setConstraintDof(*c_iter, dof);
+          field->setConstraintDof(*c_iter, this->getConstraintDof(*c_iter, space));
         }
       }
       // Copy offsets
