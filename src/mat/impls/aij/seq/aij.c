@@ -787,8 +787,8 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op,PetscTruth flg)
     case MAT_ROW_ORIENTED:
       a->roworiented       = flg;
       break;
-    case MAT_KEEP_ZEROED_ROWS:
-      a->keepzeroedrows    = flg;
+    case MAT_KEEP_NONZERO_PATTERN:
+      a->keepnonzeropattern    = flg;
       break;
     case MAT_NEW_NONZERO_LOCATIONS:
       a->nonew             = (flg ? 0 : 1);
@@ -1349,7 +1349,7 @@ PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
   PetscTruth     missing;
 
   PetscFunctionBegin;
-  if (a->keepzeroedrows) {
+  if (a->keepnonzeropattern) {
     for (i=0; i<N; i++) {
       if (rows[i] < 0 || rows[i] > m) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"row %D out of range", rows[i]);
       ierr = PetscMemzero(&a->a[a->i[rows[i]]],a->ilen[rows[i]]*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -3248,7 +3248,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
   b->omega             = 1.0;
   b->fshift            = 0.0;
   b->idiagvalid        = PETSC_FALSE;
-  b->keepzeroedrows    = PETSC_FALSE;
+  b->keepnonzeropattern    = PETSC_FALSE;
   b->xtoy              = 0;
   b->XtoY              = 0;
   b->compressedrow.use     = PETSC_FALSE;
@@ -3421,7 +3421,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat C,Mat A,MatDuplicateOption cpvalu
   c->saved_values          = 0;
   c->idiag                 = 0;
   c->ssor_work             = 0;
-  c->keepzeroedrows        = a->keepzeroedrows;
+  c->keepnonzeropattern    = a->keepnonzeropattern;
   c->free_a                = PETSC_TRUE;
   c->free_ij               = PETSC_TRUE;
   c->xtoy                  = 0;

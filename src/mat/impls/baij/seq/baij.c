@@ -1294,8 +1294,8 @@ PetscErrorCode MatSetOption_SeqBAIJ(Mat A,MatOption op,PetscTruth flg)
   case MAT_ROW_ORIENTED:
     a->roworiented    = flg;
     break;
-  case MAT_KEEP_ZEROED_ROWS:
-    a->keepzeroedrows = flg;
+  case MAT_KEEP_NONZERO_PATTERN:
+    a->keepnonzeropattern = flg;
     break;
   case MAT_NEW_NONZERO_LOCATIONS:
     a->nonew          = (flg ? 0 : 1);
@@ -1998,7 +1998,7 @@ PetscErrorCode MatZeroRows_SeqBAIJ(Mat A,PetscInt is_n,const PetscInt is_idx[],P
   /* copy IS values to rows, and sort them */
   for (i=0; i<is_n; i++) { rows[i] = is_idx[i]; }
   ierr = PetscSortInt(is_n,rows);CHKERRQ(ierr);
-  if (baij->keepzeroedrows) {
+  if (baij->keepnonzeropattern) {
     for (i=0; i<is_n; i++) { sizes[i] = 1; }
     bs_max = is_n;
     A->same_nonzero = PETSC_TRUE;
@@ -2012,7 +2012,7 @@ PetscErrorCode MatZeroRows_SeqBAIJ(Mat A,PetscInt is_n,const PetscInt is_idx[],P
     if (row < 0 || row > A->rmap->N) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"row %D out of range",row);
     count = (baij->i[row/bs +1] - baij->i[row/bs])*bs;
     aa    = ((MatScalar*)(baij->a)) + baij->i[row/bs]*bs2 + (row%bs);
-    if (sizes[i] == bs && !baij->keepzeroedrows) {
+    if (sizes[i] == bs && !baij->keepnonzeropattern) {
       if (diag != 0.0) {
         if (baij->ilen[row/bs] > 0) {
           baij->ilen[row/bs]       = 1;
@@ -2792,23 +2792,23 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqBAIJ(Mat B)
   ierr    = PetscNewLog(B,Mat_SeqBAIJ,&b);CHKERRQ(ierr);
   B->data = (void*)b;
   ierr    = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  B->mapping          = 0;
-  b->row              = 0;
-  b->col              = 0;
-  b->icol             = 0;
-  b->reallocs         = 0;
-  b->saved_values     = 0;
+  B->mapping               = 0;
+  b->row                   = 0;
+  b->col                   = 0;
+  b->icol                  = 0;
+  b->reallocs              = 0;
+  b->saved_values          = 0;
 
-  b->roworiented      = PETSC_TRUE;
-  b->nonew            = 0;
-  b->diag             = 0;
-  b->solve_work       = 0;
-  b->mult_work        = 0;
-  B->spptr            = 0;
-  B->info.nz_unneeded = (PetscReal)b->maxnz;
-  b->keepzeroedrows   = PETSC_FALSE;
-  b->xtoy              = 0;
-  b->XtoY              = 0;
+  b->roworiented           = PETSC_TRUE;
+  b->nonew                 = 0;
+  b->diag                  = 0;
+  b->solve_work            = 0;
+  b->mult_work             = 0;
+  B->spptr                 = 0;
+  B->info.nz_unneeded      = (PetscReal)b->maxnz;
+  b->keepnonzeropattern    = PETSC_FALSE;
+  b->xtoy                  = 0;
+  b->XtoY                  = 0;
   b->compressedrow.use     = PETSC_FALSE;
   b->compressedrow.nrows   = 0;
   b->compressedrow.i       = PETSC_NULL;

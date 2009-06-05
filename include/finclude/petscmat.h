@@ -41,7 +41,7 @@
       PetscEnum MAT_NEW_NONZERO_LOCATION_ERR
       PetscEnum MAT_NEW_NONZERO_ALLOCATION_ERR
       PetscEnum MAT_USE_HASH_TABLE
-      PetscEnum MAT_KEEP_ZEROED_ROWS
+      PetscEnum MAT_KEEP_NONZERO_PATTERN
       PetscEnum MAT_IGNORE_ZERO_ENTRIES
       PetscEnum MAT_USE_INODES
       PetscEnum MAT_HERMITIAN
@@ -61,7 +61,7 @@
       parameter (MAT_NEW_NONZERO_LOCATION_ERR=6)
       parameter (MAT_NEW_NONZERO_ALLOCATION_ERR=7)
       parameter (MAT_USE_HASH_TABLE=8)
-      parameter (MAT_KEEP_ZEROED_ROWS=9)
+      parameter (MAT_KEEP_NONZERO_PATTERN=9)
       parameter (MAT_IGNORE_ZERO_ENTRIES=10)
       parameter (MAT_USE_INODES=11)
       parameter (MAT_HERMITIAN=12)

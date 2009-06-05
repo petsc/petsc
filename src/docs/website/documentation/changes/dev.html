@@ -111,11 +111,20 @@ PetscOptionsXXTruth()<br>
       </ul>
       <p><u><b>Mat:</b></u></p>
       <ul>
-	<li>MatGetSubMatrix
-	  <dl>Now takes a parallel IS for the columns, the csize argument has been dropped.  The local part of
-	    this IS corresponds to the local columns of the new submatrix.</dl></li>
-	<li>MatGetSubMatrixRaw
-	  <dl>Removed, use MatGetSubMatrix</dl></li>
+        <li>MatGetSubMatrix
+          <dl>
+Now takes a parallel IS for the columns, the csize argument has been
+dropped. The local part of this IS corresponds to the local columns of
+the new submatrix.
+          </dl>
+        </li>
+        <li>MatGetSubMatrixRaw
+          <dl>
+Removed, use MatGetSubMatrix
+          </dl>
+        </li>
+        <li>Changed name of option MAT_KEEP_NONZERO_ROWS to
+MAT_KEEP_NONZERO_PATTERN to more clearly indicate what it does.</li>
       </ul>
       <u><b>PC:</b></u>
       <ul>

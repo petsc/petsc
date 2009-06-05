@@ -595,12 +595,12 @@ runex11_2:
 	   else echo "Possible problem with ex11_2, diffs above"; fi; \
 	   ${RM} -f ex11_2.tmp
 runex11_3:
-	-@${MPIEXEC} -n 1  ./ex11 -keep_zeroed_rows > ex11_3.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1  ./ex11 -keep_nonzero_pattern > ex11_3.tmp 2>&1;   \
 	   if (${DIFF} output/ex11_3.out ex11_3.tmp) then true; \
 	   else echo "Possible problem with ex11_3, diffs above"; fi; \
 	   ${RM} -f ex11_3.tmp
 runex11_4:
-	-@${MPIEXEC} -n 1  ./ex11 -keep_zeroed_rows -mat_type seqbaij -mat_block_size 5 > ex11_4.tmp 2>&1; \
+	-@${MPIEXEC} -n 1  ./ex11 -keep_nonzero_pattern -mat_type seqbaij -mat_block_size 5 > ex11_4.tmp 2>&1; \
 	   if (${DIFF} output/ex11_4.out ex11_4.tmp) then true; \
 	   else echo "Possible problem with ex11_4, diffs above"; fi; \
 	   ${RM} -f ex11_4.tmp
@@ -616,12 +616,12 @@ runex12_2:
 	   else echo "Possible problem with ex12_2, diffs above"; fi; \
 	   ${RM} -f ex12_2.tmp
 runex12_3:
-	-@${MPIEXEC}  -n 3 ./ex12 -mat_type mpiaij -keep_zeroed_rows > ex12_3.tmp 2>&1;   \
+	-@${MPIEXEC}  -n 3 ./ex12 -mat_type mpiaij -keep_nonzero_pattern > ex12_3.tmp 2>&1;   \
 	   if (${DIFF} output/ex12_3.out ex12_3.tmp) then true; \
 	   else echo "Possible problem with ex12_3, diffs above"; fi; \
 	   ${RM} -f ex12_3.tmp
 runex12_4:
-	-@${MPIEXEC} -n 3 ./ex12 -keep_zeroed_rows -mat_type mpibaij -mat_block_size 3 > ex12_4.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex12 -keep_nonzero_pattern -mat_type mpibaij -mat_block_size 3 > ex12_4.tmp 2>&1; \
 	   if (${DIFF} output/ex12_4.out ex12_4.tmp) then true; \
 	   else echo "Possible problem with ex12_4, diffs above"; fi; \
 	   ${RM} -f ex12_4.tmp

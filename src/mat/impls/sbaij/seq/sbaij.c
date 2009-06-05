@@ -158,8 +158,8 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op,PetscTruth flg)
   case MAT_ROW_ORIENTED:
     a->roworiented = flg;
     break;
-  case MAT_KEEP_ZEROED_ROWS:
-    a->keepzeroedrows = flg;
+  case MAT_KEEP_NONZERO_PATTERN:
+    a->keepnonzeropattern = flg;
     break;
   case MAT_NEW_NONZERO_LOCATIONS:
     a->nonew = (flg ? 0 : 1);
@@ -1645,7 +1645,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
   b->solve_work       = 0;
   b->mult_work        = 0;
   B->spptr            = 0;
-  b->keepzeroedrows   = PETSC_FALSE;
+  b->keepnonzeropattern   = PETSC_FALSE;
   b->xtoy             = 0;
   b->XtoY             = 0;
   
@@ -1840,13 +1840,13 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   ierr = PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   c    = (Mat_SeqSBAIJ*)C->data;
 
-  C->preallocated   = PETSC_TRUE;
-  C->factor         = A->factor;
-  c->row            = 0;
-  c->icol           = 0;
-  c->saved_values   = 0;
-  c->keepzeroedrows = a->keepzeroedrows;
-  C->assembled      = PETSC_TRUE;
+  C->preallocated       = PETSC_TRUE;
+  C->factor             = A->factor;
+  c->row                = 0;
+  c->icol               = 0;
+  c->saved_values       = 0;
+  c->keepnonzeropattern = a->keepnonzeropattern;
+  C->assembled          = PETSC_TRUE;
 
   ierr = PetscMapCopy(((PetscObject)A)->comm,A->rmap,C->rmap);CHKERRQ(ierr);  
   ierr = PetscMapCopy(((PetscObject)A)->comm,A->cmap,C->cmap);CHKERRQ(ierr);  

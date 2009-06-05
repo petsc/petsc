@@ -17,7 +17,7 @@
   PetscInt          reallocs;         /* number of mallocs done during MatSetValues() \
                                         as more values are set than were prealloced */\
   PetscInt          rmax;             /* max nonzeros in any row */\
-  PetscTruth        keepzeroedrows;   /* keeps matrix structure same in calls to MatZeroRows()*/\
+  PetscTruth        keepnonzeropattern;   /* keeps matrix structure same in calls to MatZeroRows()*/\
   PetscTruth        ignorezeroentries; \
   PetscInt          *xtoy,*xtoyB;     /* map nonzero pattern of X into Y's, used by MatAXPY() */\
   Mat               XtoY;             /* used by MatAXPY() */\

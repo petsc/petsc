@@ -86,14 +86,14 @@ PetscErrorCode TestMatZeroRows_Basic(Mat A,IS is,PetscScalar diag)
 {
   Mat            B;
   PetscErrorCode ierr;
-  PetscTruth     keepzeroedrows;
+  PetscTruth     keepnonzeropattern;
 
   /* Now copy A into B, and test it with MatZeroRows() */
   ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-keep_zeroed_rows",&keepzeroedrows);CHKERRQ(ierr);
-  if (keepzeroedrows) {
-    ierr = MatSetOption(B,MAT_KEEP_ZEROED_ROWS,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-keep_nonzero_pattern",&keepnonzeropattern);CHKERRQ(ierr);
+  if (keepnonzeropattern) {
+    ierr = MatSetOption(B,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
   }
 
   ierr = MatZeroRowsIS(B,is,diag);CHKERRQ(ierr);

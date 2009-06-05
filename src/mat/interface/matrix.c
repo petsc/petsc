@@ -4723,7 +4723,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd(Mat mat,MatAssemblyType type)
    should be used with MAT_USE_HASH_TABLE flag. This option is currently
    supported by MATMPIBAIJ format only.
 
-   MAT_KEEP_ZEROED_ROWS indicates when MatZeroRows() is called the zeroed entries
+   MAT_KEEP_NONZERO_PATTERN indicates when MatZeroRows() is called the zeroed entries
    are kept in the nonzero structure
 
    MAT_IGNORE_ZERO_ENTRIES - for AIJ/IS matrices this will stop zero values from creating
@@ -4830,7 +4830,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroEntries(Mat mat)
    but does not release memory.  For the dense and block diagonal
    formats this does not alter the nonzero structure.
 
-   If the option MatSetOption(mat,MAT_KEEP_ZEROED_ROWS,PETSC_TRUE) the nonzero structure
+   If the option MatSetOption(mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE) the nonzero structure
    of the matrix is not changed (even for AIJ and BAIJ matrices) the values are
    merely zeroed.
 
@@ -4889,7 +4889,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRows(Mat mat,PetscInt numRows,const Pet
    but does not release memory.  For the dense and block diagonal
    formats this does not alter the nonzero structure.
 
-   If the option MatSetOption(mat,MAT_KEEP_ZEROED_ROWS,PETSC_TRUE) the nonzero structure
+   If the option MatSetOption(mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE) the nonzero structure
    of the matrix is not changed (even for AIJ and BAIJ matrices) the values are
    merely zeroed.
 
@@ -4949,7 +4949,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsIS(Mat mat,IS is,PetscScalar diag)
    but does not release memory.  For the dense and block diagonal
    formats this does not alter the nonzero structure.
 
-   If the option MatSetOption(mat,MAT_KEEP_ZEROED_ROWS,PETSC_TRUE) the nonzero structure
+   If the option MatSetOption(mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE) the nonzero structure
    of the matrix is not changed (even for AIJ and BAIJ matrices) the values are
    merely zeroed.
 
@@ -5015,7 +5015,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal(Mat mat,PetscInt numRows,cons
    but does not release memory.  For the dense and block diagonal
    formats this does not alter the nonzero structure.
 
-   If the option MatSetOption(mat,MAT_KEEP_ZEROED_ROWS,PETSC_TRUE) the nonzero structure
+   If the option MatSetOption(mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE) the nonzero structure
    of the matrix is not changed (even for AIJ and BAIJ matrices) the values are
    merely zeroed.
 

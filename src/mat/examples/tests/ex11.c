@@ -12,7 +12,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscScalar    v,five = 5.0;
   IS             isrow;
-  PetscTruth     keepzeroedrows;
+  PetscTruth     keepnonzeropattern;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -35,9 +35,9 @@ int main(int argc,char **args)
 
   ierr = ISCreateStride(PETSC_COMM_SELF,(m*n)/2,0,2,&isrow);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-keep_zeroed_rows",&keepzeroedrows);CHKERRQ(ierr);
-  if (keepzeroedrows) {
-    ierr = MatSetOption(C,MAT_KEEP_ZEROED_ROWS,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-keep_nonzero_pattern",&keepnonzeropattern);CHKERRQ(ierr);
+  if (keepnonzeropattern) {
+    ierr = MatSetOption(C,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
   }
 
   ierr = MatZeroRowsIS(C,isrow,five);CHKERRQ(ierr);
