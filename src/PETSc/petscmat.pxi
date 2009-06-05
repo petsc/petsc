@@ -189,7 +189,7 @@ cdef extern from "petscmat.h" nogil:
     int MatPermuteSparsify(PetscMat,PetscInt,PetscReal,PetscReal,PetscIS,PetscIS,PetscMat*)
 
     int MatMerge(MPI_Comm,PetscMat,PetscInt,PetscMatReuse,PetscMat*)
-    int MatGetSubMatrix(PetscMat,PetscIS,PetscIS,PetscInt,PetscMatReuse,PetscMat*)
+    int MatGetSubMatrix(PetscMat,PetscIS,PetscIS,PetscMatReuse,PetscMat*)
     int MatGetSubMatrices(PetscMat,PetscInt,PetscIS[],PetscIS[],PetscMatReuse,PetscMat*[])
     int MatIncreaseOverlap(PetscMat,PetscInt,PetscIS[],PetscInt)
     int MatGetDiagonalBlock(PetscMat,PetscTruth*,PetscMatReuse,PetscMat*)

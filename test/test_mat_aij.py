@@ -149,6 +149,30 @@ class BaseTestMatAnyAIJ(object):
         self.assertEqual(self.A.getLocalSize(), B.getSize())
         B.destroy()
 
+    def testGetSubMatrix(self):
+        if 'baij' in self.A.getType(): return # XXX
+        self._preallocate()
+        self._set_values_ijv()
+        self.A.assemble()
+        #
+        rank = self.A.getComm().getRank()
+        rs, re = self.A.getOwnershipRange()
+        cs, ce = self.A.getOwnershipRangeColumn()
+        rows = N.arange(rs, re, dtype=PETSc.IntType)
+        cols = N.arange(cs, ce, dtype=PETSc.IntType)
+        rows = PETSc.IS().createGeneral(rows, comm=self.A.getComm())
+        cols = PETSc.IS().createGeneral(cols, comm=self.A.getComm())
+        #
+        S = self.A.getSubMatrix(rows, None)
+        S.zeroEntries()
+        self.A.getSubMatrix(rows, None, S)
+        S.destroy()
+        #
+        S = self.A.getSubMatrix(rows, cols)
+        S.zeroEntries()
+        self.A.getSubMatrix(rows, cols, S)
+        S.destroy()
+
     def _get_aijv(self):
         return (self.rows, self.xadj, self.adjy, self.vals,)
 

@@ -739,15 +739,14 @@ cdef class Mat(Object):
         if iscopy == PETSC_FALSE: PetscIncref(<PetscObject>mat.mat)
         return mat
 
-    def getSubMatrix(self, IS isrow not None, IS iscol not None,
-                     Mat submat=None, csize=None):
+    def getSubMatrix(self, IS isrow not None, IS iscol=None, Mat submat=None):
         cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
-        cdef PetscInt lcsize = PETSC_DECIDE
+        cdef PetscIS ciscol = NULL
+        if iscol is not None: ciscol = iscol.iset
         if submat is None: submat = Mat()
         if submat.mat != NULL: reuse = MAT_REUSE_MATRIX
-        if csize is not None: lcsize = csize
-        CHKERR( MatGetSubMatrix(self.mat, isrow.iset, iscol.iset,
-                                lcsize, reuse, &submat.mat) )
+        CHKERR( MatGetSubMatrix(self.mat, isrow.iset, ciscol,
+                                reuse, &submat.mat) )
         return submat
 
     def increaseOverlap(self, IS iset not None, overlap=1):
