@@ -1554,8 +1554,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
       ierr = PetscFPrintf(comm, fd, "\n--- Event Stage %d: %s\n\n", stage, stageInfo[stage].name);CHKERRQ(ierr);
       for(oclass = 0; oclass < stageLog->stageInfo[stage].classLog->numClasses; oclass++) {
         if ((classInfo[oclass].creations > 0) || (classInfo[oclass].destructions > 0)) {
-          ierr = PetscFPrintf(comm, fd, "%20s %5d          %5d  %9d     %g\n", stageLog->classLog->classInfo[oclass].name,
-                              classInfo[oclass].creations, classInfo[oclass].destructions, (int) classInfo[oclass].mem,
+          ierr = PetscFPrintf(comm, fd, "%20s %5d          %5d  %9f     %g\n", stageLog->classLog->classInfo[oclass].name,
+                              classInfo[oclass].creations, classInfo[oclass].destructions, classInfo[oclass].mem,
                               classInfo[oclass].descMem);CHKERRQ(ierr);
         }
       }
