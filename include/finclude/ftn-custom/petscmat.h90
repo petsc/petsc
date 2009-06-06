@@ -1,6 +1,7 @@
 #if !defined(PETSC_USE_FORTRAN_MODULES) 
 #include "finclude/ftn-custom/petscmatdef.h90"
 #endif
+#include "finclude/ftn-custom/petscishide.h90"
 #include "finclude/ftn-custom/petscmathide.h90"
 
       Interface 
