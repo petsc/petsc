@@ -1,15 +1,7 @@
 #if !defined(PETSC_USE_FORTRAN_MODULES) 
 #include "finclude/ftn-custom/petscviewerdef.h90"
 #endif
-
-#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(PETSCVIEWER_HIDE)
-#define USE_PETSC_HIDE use petscdef
-#define PETSCVIEWER_HIDE type(PetscViewer)
-#elif !defined(USE_PETSC_HIDE)
-#define USE_PETSC_HIDE
-#define PETSCVIEWER_HIDE PetscViewer
-#endif
-
+#include "finclude/ftn-custom/petscviewerhide.h90"
 
       Interface PetscViewerBinaryWrite
         Subroutine PetscViewerBinaryWriteInt(v,a,cnt,tmp,ierr)

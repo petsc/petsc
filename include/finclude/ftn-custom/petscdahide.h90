@@ -1,0 +1,9 @@
+#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(DM_HIDE)
+#define DM_HIDE type(DM)
+#define DA_HIDE type(DA)
+#define USE_DA_HIDE use petscdadef
+#elif !defined(DM_HIDE)
+#define DM_HIDE DM
+#define DA_HIDE DA
+#define USE_DA_HIDE
+#endif

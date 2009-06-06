@@ -1,11 +1,4 @@
-
 #if !defined(PETSC_USE_FORTRAN_MODULES) 
 #include "finclude/ftn-custom/petscsnesdef.h90"
 #endif
-
-#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(SNES_HIDE)
-#define SNES_HIDE type(SNES)
-#elif !defined(SNES_HIDE)
-#define SNES_HIDE SNES
-#endif
-
+#include "finclude/ftn-custom/petscsneshide.h90"

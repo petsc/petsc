@@ -1,22 +1,8 @@
-
 #if !defined(PETSC_USE_FORTRAN_MODULES) 
 #include "finclude/ftn-custom/petscmatdef.h90"
 #endif
-
-
-#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(MAT_HIDE)
-#define MAT_HIDE type(Mat)
-#define MATFDCOLORING_HIDE type(MatFDColoring)
-#define MATNULLSPACE_HIDE type(MatNullSpace)
-#define IS_HIDE type(IS)
-#define USE_MAT_HIDE use petscmatdef
-#elif !defined(MAT_HIDE)
-#define MAT_HIDE Mat
-#define MATFDCOLORING_HIDE MatFDColoring
-#define MATNULLSPACE_HIDE MatNullSpace
-#define USE_MAT_HIDE
-#define IS_HIDE IS
-#endif
+#include "finclude/ftn-custom/petscishide.h90"
+#include "finclude/ftn-custom/petscmathide.h90"
 
       Interface 
         Subroutine MatGetArrayF90(v,array,ierr)
