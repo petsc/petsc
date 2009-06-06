@@ -1,0 +1,9 @@
+#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(IS_HIDE)
+#define IS_HIDE type(IS)
+#define ISCOLORING_HIDE type(ISColoring)
+#define USE_IS_HIDE use petscisdef
+#elif !defined(IS_HIDE)
+#define IS_HIDE IS
+#define ISCOLORING_HIDE ISColoring
+#define USE_IS_HIDE
+#endif

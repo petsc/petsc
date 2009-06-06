@@ -1,0 +1,5 @@
+#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(KSP_HIDE)
+#define KSP_HIDE type(KSP)
+#elif !defined(KSP_HIDE)
+#define KSP_HIDE KSP
+#endif
