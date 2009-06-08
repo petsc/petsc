@@ -3,11 +3,11 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = aij.c aijfact.c ij.c fdaij.c unary.c ilut.c \
+SOURCEC  = aij.c aijfact.c ij.c fdaij.c \
 	   matmatmult.c symtranspose.c matptap.c matpapt.c inode.c inode2.c
 SOURCEF  = 
 SOURCEH  = aij.h
-OBJSC    = aij.o aijfact.o ij.o fdaij.o unary.o ilut.o \
+OBJSC    = aij.o aijfact.o ij.o fdaij.o \
 	   matmatmult.o symtranspose.o matptap.o matpapt.o inode.o inode2.o
 OBJSF    = 
 LIBBASE  = libpetscmat

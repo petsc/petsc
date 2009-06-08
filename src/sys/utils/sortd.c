@@ -82,7 +82,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscSortReal(PetscInt n,PetscReal v[])
 #define __FUNCT__ "PetscSortSplit"
 /*@
    PetscSortSplit - Quick-sort split of an array in place.
-                    Modified from SPARSEKIT2qsplit()
 
    Not Collective
 
