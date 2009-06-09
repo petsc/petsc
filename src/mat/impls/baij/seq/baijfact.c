@@ -1005,19 +1005,19 @@ PetscErrorCode MatSolve_SeqBAIJ_NaturalOrdering_iludt(Mat A,Vec bb,Vec xx)
   PetscScalar    *x,*b,*s,*t,*ls;
 
   PetscFunctionBegin;
-  //printf("MatSolve_SeqBAIJ_NaturalOrdering_iludt ...\n");
+  /* printf("MatSolve_SeqBAIJ_NaturalOrdering_iludt ...\n"); */
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   t  = a->solve_work;
 
   /* forward solve the lower triangular */
-  ierr = PetscMemcpy(t,b,bs*sizeof(PetscScalar));CHKERRQ(ierr); // copy 1st block of b to t 
+  ierr = PetscMemcpy(t,b,bs*sizeof(PetscScalar));CHKERRQ(ierr); /* copy 1st block of b to t */
   for (i=1; i<n; i++) {
     v   = aa + bs2*ai[i];
     vi  = aj + ai[i];
     nz = ai[i+1] - ai[i];
     s = t + bs*i;
-    ierr = PetscMemcpy(s,b+bs*i,bs*sizeof(PetscScalar));CHKERRQ(ierr); //copy i_th block of b to t
+    ierr = PetscMemcpy(s,b+bs*i,bs*sizeof(PetscScalar));CHKERRQ(ierr); /* copy i_th block of b to t */
     while (nz--) {
       Kernel_v_gets_v_minus_A_times_w(bs,s,v,t+bs*(*vi++));
       v += bs2;
@@ -1137,7 +1137,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   const PetscInt     *ics;
   PetscInt           j,nz,*pj,*bjtmp,k,ncut,*jtmp;
   
-  PetscReal          dt=info->dt; //shift=info->shiftinblocks; 
+  PetscReal          dt=info->dt; /* shift=info->shiftinblocks; */
   PetscInt           nnz_max;
   PetscTruth         missing;
   PetscScalar        *vtmp_abs;
@@ -1162,7 +1162,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   dtcount = (PetscInt)info->dtcount;
   if (dtcount > mbs/2) dtcount = mbs/2;
   nnz_max  = (ai[mbs]+2*mbs*dtcount +2)*bs2;
-  //printf("MatILUDTFactor_SeqBAIJ, bs %d, ai[mbs] %d, nnz_max  %d, dtcount %d\n",bs,ai[mbs],nnz_max,dtcount);
+  /* printf("MatILUDTFactor_SeqBAIJ, bs %d, ai[mbs] %d, nnz_max  %d, dtcount %d\n",bs,ai[mbs],nnz_max,dtcount); */
   ierr = PetscMalloc(nnz_max*sizeof(PetscInt),&bj);CHKERRQ(ierr);
   ierr = PetscMalloc(nnz_max*sizeof(MatScalar),&ba);CHKERRQ(ierr);
 
@@ -1223,7 +1223,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
     if (!nzi) SETERRQ2(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
     nzi_al = adiag[r[i]] - ai[r[i]];
     nzi_au = ai[r[i]+1] - adiag[r[i]] -1;
-    //printf("row %d, nzi_al/au %d %d\n",i,nzi_al,nzi_au); 
+    /* printf("row %d, nzi_al/au %d %d\n",i,nzi_al,nzi_au); */
    
     /* load in initial unfactored row */
     ajtmp = aj + ai[r[i]]; 
@@ -1252,7 +1252,6 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
     row   = *bjtmp++; /* 1st pivot row */
 
     while  (row < i) {
-      //printf("  prow %d\n",row);
       pc = rtmp + bs2*row;
       pv = ba + bs2*bdiag[row]; /* inv(diag) of the pivot row */
       Kernel_A_gets_A_times_B(bs,pc,pv,multiplier); /* pc= multiplier = pc*inv(diag[row]) */
@@ -1264,27 +1263,22 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
         for (j=0; j<nz; j++){
           Kernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j); 
         }
-        //ierr = PetscLogFlops(bslog*(nz+1.0)-bs);CHKERRQ(ierr);
+        /* ierr = PetscLogFlops(bslog*(nz+1.0)-bs);CHKERRQ(ierr); */
       }
       row = *bjtmp++;
     }
 
     /* copy sparse rtmp into contiguous vtmp; separate L and U part */
-    //printf("row %d:\n",i); 
     nzi_bl = 0; j = 0;
     while (jtmp[j] < i){ /* L-part. Note: jtmp is sorted */
       ierr = PetscMemcpy(vtmp+bs2*j,rtmp+bs2*jtmp[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
-      //printf("col %d",jtmp[j]);
-      //for (j1 =0; j1<bs2; j1++) printf(" %g",*(vtmp+bs2*j);
-      //print("\n");
       nzi_bl++; j++;
     }
     nzi_bu = nzi - nzi_bl -1;
-    //printf("nzi %d, nzi_bl %d, nzi_bu %d\n",nzi,nzi_bl,nzi_bu);
+    /* printf("nzi %d, nzi_bl %d, nzi_bu %d\n",nzi,nzi_bl,nzi_bu); */
 
     while (j < nzi){ /* U-part */
       ierr = PetscMemcpy(vtmp+bs2*j,rtmp+bs2*jtmp[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
-      //vtmp[j] = rtmp[jtmp[j]];
       /*
       printf(" col %d: ",jtmp[j]);
       for (j1=0; j1<bs2; j1++) printf(" %g",*(vtmp+bs2*j+j1));
@@ -1304,7 +1298,6 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
     /* apply level dropping rule to L part */
     ncut = nzi_al + dtcount; 
     if (ncut < nzi_bl){ 
-      //printf(" apply level dropping rule to L part ...\n");
       ierr = PetscSortSplit(ncut,nzi_bl,vtmp_abs,jtmp);CHKERRQ(ierr);
       ierr = PetscSortIntWithScalarArray(ncut,jtmp,vtmp);CHKERRQ(ierr);
     } else {
@@ -1325,7 +1318,6 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
     /* apply level dropping rule to U part */
     ncut = nzi_au + dtcount; 
     if (ncut < nzi_bu){
-      //printf(" apply level dropping rule to U part ...\n");
       ierr = PetscSortSplit(ncut,nzi_bu,vtmp_abs+nzi_bl+1,jtmp+nzi_bl+1);CHKERRQ(ierr);
       ierr = PetscSortIntWithScalarArray(ncut,jtmp+nzi_bl+1,vtmp+nzi_bl+1);CHKERRQ(ierr);
     } else {
@@ -1339,7 +1331,6 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
     batmp = ba + bs2*bdiag[i];
     ierr = PetscMemcpy(batmp,rtmp+bs2*i,bs2*sizeof(MatScalar));CHKERRQ(ierr);
     *bjtmp = i; 
-    //*batmp = rtmp[i]; 
     /*
     printf(" diag %d: ",*bjtmp);
     for (j=0; j<bs2; j++){
@@ -1365,13 +1356,9 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
     /* invert diagonal block for simplier triangular solves - add shift??? */
     batmp = ba + bs2*bdiag[i];
     ierr = Kernel_A_gets_inverse_A(bs,batmp,v_pivots,v_work);CHKERRQ(ierr);
-
-    //printf("row %d: bi %d, bdiag %d\n",i,bi[i],bdiag[i]);
-    //printf(" ----------------------------\n");
-    
   } /* for (i=0; i<mbs; i++) */
 
-  //printf("end of L %d, beginning of U %d\n",bi[mbs],bdiag[mbs]); 
+  /* printf("end of L %d, beginning of U %d\n",bi[mbs],bdiag[mbs]); */
   if (bi[mbs] >= bdiag[mbs]) SETERRQ2(PETSC_ERR_ARG_SIZ,"end of L array %d cannot >= the beginning of U array %d",bi[mbs],bdiag[mbs]);
 
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);

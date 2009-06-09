@@ -485,7 +485,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
   PetscInt       i,j,n=A->rmap->n,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
   PetscInt       *ajtmp,*bjtmp,nz,row,*diag_offset = b->diag,diag,*pj;
   MatScalar      *rtmp,*pc,multiplier,*v,*pv,d,*aa=a->a;
-  PetscReal      rs = 0.0;
+  PetscReal      rs=0.0;
   LUShift_Ctx    sctx;
   PetscInt       newshift,*ddiag;
 
@@ -2022,7 +2022,6 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   PetscTruth         missing;
 
   PetscFunctionBegin;
-  //printf("MatILUDTFactor_SeqAIJ is called...\n");
   /* ------- symbolic factorization, can be reused ---------*/
   ierr = MatMissingDiagonal(A,&missing,&i);CHKERRQ(ierr);
   if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",i);
@@ -2090,7 +2089,6 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   bi[0]    = 0;
   bdiag[0] = nnz_max-1; /* location of diagonal in factor B */
   for (i=0; i<n; i++) {
-    //printf("row %d ...\n",i); 
     /* copy initial fill into linked list */
     nzi = 0; /* nonzeros for active row i */
     nzi = ai[r[i]+1] - ai[r[i]];
@@ -2121,11 +2119,9 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
     ierr = PetscLLClean(n,n,nzi,lnk,jtmp,lnkbt);CHKERRQ(ierr);
 
     /* numerical factorization */
-    //printf("row %d:\n",i); 
     bjtmp = jtmp;
     row   = *bjtmp++; /* 1st pivot row */
     while  (row < i) {
-      //printf("  prow %d\n",row);
       pc         = rtmp + row;
       pv         = ba + bdiag[row]; /* 1./(diag of the pivot row) */
       multiplier = (*pc) * (*pv); 
@@ -2166,7 +2162,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
     for (j=0; j<ncut; j++){
       bjtmp[j] = jtmp[j];
       batmp[j] = vtmp[j];
-      //printf(" (%d,%g),",bjtmp[j],batmp[j]); 
+      /* printf(" (%d,%g),",bjtmp[j],batmp[j]); */
     }
     bi[i+1] = bi[i] + ncut;
     nzi = ncut + 1;
@@ -2189,16 +2185,16 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
     *batmp = rtmp[i]; 
     if (*batmp == 0.0) *batmp = dt+shift;
     *batmp = 1.0/(*batmp); /* invert diagonal entries for simplier triangular solves */
-    //printf(" (%d,%g),",*bjtmp,*batmp); 
+    /* printf(" (%d,%g),",*bjtmp,*batmp); */
     
     bjtmp = bj + bdiag[i+1]+1;
     batmp = ba + bdiag[i+1]+1;
     for (k=0; k<ncut; k++){
       bjtmp[k] = jtmp[nzi_bl+1+k];
       batmp[k] = vtmp[nzi_bl+1+k];
-      //printf(" (%d,%g),",bjtmp[k],batmp[k]); 
+      /* printf(" (%d,%g),",bjtmp[k],batmp[k]); */
     }
-    //printf("\n");
+    /* printf("\n"); */
       
     im[i]   = nzi; /* used by PetscLLAddSortedLU() */
     /*
@@ -2247,7 +2243,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactorSymbolic_SeqAIJ(Mat fact,Mat A,I
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  //printf("MatILUDTFactorSymbolic_SeqAIJ is called...\n");
+  /* printf("MatILUDTFactorSymbolic_SeqAIJ is called...\n"); */
   ierr = MatILUDTFactor_SeqAIJ(A,row,col,info,&fact);CHKERRQ(ierr);
 
   fact->ops->lufactornumeric = MatILUDTFactorNumeric_SeqAIJ;
@@ -2274,7 +2270,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactorNumeric_SeqAIJ(Mat fact,Mat A,co
   PetscTruth     row_identity, col_identity;
 
   PetscFunctionBegin;
-  //printf("MatILUDTFactorNumeric_SeqAIJ is called...\n");
+  /* printf("MatILUDTFactorNumeric_SeqAIJ is called...\n"); */
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = PetscMalloc((n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
@@ -2291,24 +2287,23 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactorNumeric_SeqAIJ(Mat fact,Mat A,co
     for  (j=0; j<nzu; j++) rtmp[*bjtmp++] = 0.0;     
 
     /* load in initial unfactored row of A */
-    //printf("row %d\n",i);
+    /* printf("row %d\n",i); */
     nz    = ai[r[i]+1] - ai[r[i]];
     ajtmp = aj + ai[r[i]];
     v     = aa + ai[r[i]];
     for (j=0; j<nz; j++) {
       rtmp[ics[*ajtmp++]] = v[j];
-      //printf(" (%d,%g),",ics[ajtmp[j]],rtmp[ics[ajtmp[j]]]);
+      /* printf(" (%d,%g),",ics[ajtmp[j]],rtmp[ics[ajtmp[j]]]); */
     }
-      //printf("\n");
+    /* printf("\n"); */
 
     /* numerical factorization */
     bjtmp = bj + bi[i]; /* point to 1st entry of L(i,:) */
-    nzl   = bi[i+1] - bi[i]; /* num of entries in L(i,:) */
-    //printf("%d-: nzl %d\n",i,nzl);     
+    nzl   = bi[i+1] - bi[i]; /* num of entries in L(i,:) */   
     k = 0;
     while (k < nzl){
       row   = *bjtmp++;
-      //printf("  prow %d\n",row);
+      /* printf("  prow %d\n",row); */
       pc         = rtmp + row;
       pv         = b->a + bdiag[row]; /* 1./(diag of the pivot row) */
       multiplier = (*pc) * (*pv); 
@@ -2318,7 +2313,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactorNumeric_SeqAIJ(Mat fact,Mat A,co
         pv         = b->a + bdiag[row+1] + 1;
         nz         = bdiag[row] - bdiag[row+1] - 1; /* num of entries in U(row,:), excluding diagonal */
         for (j=0; j<nz; j++) rtmp[*pj++] -= multiplier * (*pv++);
-        //ierr = PetscLogFlops(2.0*nz);CHKERRQ(ierr);
+        /* ierr = PetscLogFlops(2.0*nz);CHKERRQ(ierr); */
       } 
       k++;
     }
@@ -2330,13 +2325,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactorNumeric_SeqAIJ(Mat fact,Mat A,co
     nzl = bi[i+1] - bi[i];
     for (j=0; j<nzl; j++) {
       pv[j] = rtmp[pj[j]];
-      //printf(" (%d,%g),",pj[j],pv[j]);
+      /* printf(" (%d,%g),",pj[j],pv[j]); */
     }
 
     /* diagonal: invert diagonal entries for simplier triangular solves */
     if (rtmp[i] == 0.0) rtmp[i] = dt+shift;
     b->a[bdiag[i]] = 1.0/rtmp[i];
-    //printf(" (%d,%g),",i,b->a[bdiag[i]]); 
+    /* printf(" (%d,%g),",i,b->a[bdiag[i]]); */
 
     /* U-part */
     pv = b->a + bdiag[i+1] + 1;
@@ -2344,9 +2339,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactorNumeric_SeqAIJ(Mat fact,Mat A,co
     nzu = bdiag[i] - bdiag[i+1] - 1;
     for (j=0; j<nzu; j++) {
       pv[j] = rtmp[pj[j]];
-        //printf(" (%d,%g),",pj[j],pv[j]);
+      /* printf(" (%d,%g),",pj[j],pv[j]); */
     }
-      //printf("\n");
+    /* printf("\n"); */
   } 
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
