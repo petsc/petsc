@@ -2178,11 +2178,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetInfo(Mat mat,MatInfoType flag,MatInfo *i
    instead of working directly with matrix algebra routines such as this.
    See, e.g., KSPCreate().
 
-   This is currently only supported for the SeqAIJ matrix format using code
-   from Yousef Saad's SPARSEKIT2  package (translated to C with f2c) and/or
-   Matlab. SPARSEKIT2 is copyrighted by Yousef Saad with the GNU copyright
-   and thus can be distributed with PETSc.
-
     Concepts: matrices^ILUDT factorization
 
 .seealso: MatLUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor(), MatFactorInfo
