@@ -84,10 +84,10 @@ PetscErrorCode CreateSquareMesh(Obj<ALE::Mesh>& mesh, const Options *options)
   int    edges[2] = {2, 2};
 
   PetscFunctionBegin;
-  const ALE::Obj<ALE::Mesh> mB = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
-  mesh = ALE::Generator::generateMesh(mB, options->interpolate);
+  const ALE::Obj<ALE::Mesh> mB = ALE::MeshBuilder<ALE::Mesh>::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
+  mesh = ALE::Generator<ALE::Mesh>::generateMesh(mB, options->interpolate);
   if (options->refine > 0.0) {
-    mesh = ALE::Generator::refineMesh(mesh, options->refine, options->interpolate);
+    mesh = ALE::Generator<ALE::Mesh>::refineMesh(mesh, options->refine, options->interpolate);
   }
   PetscFunctionReturn(0);
 }
