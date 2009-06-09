@@ -18,248 +18,6 @@ PetscErrorCode MatOrdering_Flow_SeqAIJ(Mat mat,const MatOrderingType type,IS *ir
 #endif
 }
 
-
-#if !defined(PETSC_AVOID_GNUCOPYRIGHT_CODE)
-EXTERN PetscErrorCode SPARSEKIT2dperm(PetscInt*,MatScalar*,PetscInt*,PetscInt*,MatScalar*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
-EXTERN PetscErrorCode SPARSEKIT2ilutp(PetscInt*,MatScalar*,PetscInt*,PetscInt*,PetscInt*,PetscReal,PetscReal*,PetscInt*,MatScalar*,PetscInt*,PetscInt*,PetscInt*,MatScalar*,PetscInt*,PetscInt*,PetscErrorCode*);
-EXTERN PetscErrorCode SPARSEKIT2msrcsr(PetscInt*,MatScalar*,PetscInt*,MatScalar*,PetscInt*,PetscInt*,MatScalar*,PetscInt*);
-#endif
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatILUDTFactor_SeqAIJ_saad"
-  /* ------------------------------------------------------------
-
-          This interface was contribed by Tony Caola
-
-     This routine is an interface to the pivoting drop-tolerance 
-     ILU routine written by Yousef Saad (saad@cs.umn.edu) as part of 
-     SPARSEKIT2.
-
-     The SPARSEKIT2 routines used here are covered by the GNU 
-     copyright; see the file gnu in this directory.
-
-     Thanks to Prof. Saad, Dr. Hysom, and Dr. Smith for their
-     help in getting this routine ironed out.
-
-     The major drawback to this routine is that if info->fill is 
-     not large enough it fails rather than allocating more space;
-     this can be fixed by hacking/improving the f2c version of 
-     Yousef Saad's code.
-
-     ------------------------------------------------------------
-*/
-PetscErrorCode MatILUDTFactor_SeqAIJ_saad(Mat A,IS isrow,IS iscol,const MatFactorInfo *info,Mat *fact)
-{
-#if defined(PETSC_AVOID_GNUCOPYRIGHT_CODE)
-  PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP_SYS,"This distribution does not include GNU Copyright code\n\
-  You can obtain the drop tolerance routines by installing PETSc from\n\
-  www.mcs.anl.gov/petsc\n");
-#else
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data,*b;
-  IS             iscolf,isicol,isirow;
-  PetscTruth     reorder;
-  PetscErrorCode ierr,sierr;
-  const PetscInt *c,*r,*ic;
-  PetscInt       i,n = A->rmap->n,*cc,*cr;
-  PetscInt       *old_i = a->i,*old_j = a->j,*new_i,*old_i2 = 0,*old_j2 = 0,*new_j;
-  PetscInt       *ordcol,*iwk,*iperm,*jw;
-  PetscInt       jmax,lfill,job,*o_i,*o_j;
-  MatScalar      *old_a = a->a,*w,*new_a,*old_a2 = 0,*wk,*o_a;
-  PetscReal      af,dt,dtcount,dtcol,fill;
-
-  PetscFunctionBegin;
-
-  if (info->dt == PETSC_DEFAULT)      dt      = .005; else dt = info->dt;
-  if (info->dtcount == PETSC_DEFAULT) dtcount = (PetscInt)(1.5*a->rmax);  else dtcount = info->dtcount;
-  if (info->dtcol == PETSC_DEFAULT)   dtcol   = .01; else dtcol = info->dtcol;
-  if (info->fill == PETSC_DEFAULT)    fill    = ((double)(n*(dtcount+1)))/a->nz; else fill = info->fill;
-  lfill   = (PetscInt)(dtcount/2.0);
-  jmax    = (PetscInt)(fill*a->nz);
-
-
-  /* ------------------------------------------------------------
-     If reorder=.TRUE., then the original matrix has to be 
-     reordered to reflect the user selected ordering scheme, and
-     then de-reordered so it is in it's original format.  
-     Because Saad's dperm() is NOT in place, we have to copy 
-     the original matrix and allocate more storage. . . 
-     ------------------------------------------------------------
-  */
-
-  /* set reorder to true if either isrow or iscol is not identity */
-  ierr = ISIdentity(isrow,&reorder);CHKERRQ(ierr);
-  if (reorder) {ierr = ISIdentity(iscol,&reorder);CHKERRQ(ierr);}
-  reorder = PetscNot(reorder);
-
-  
-  /* storage for ilu factor */
-  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&new_i);CHKERRQ(ierr);
-  ierr = PetscMalloc(jmax*sizeof(PetscInt),&new_j);CHKERRQ(ierr);
-  ierr = PetscMalloc(jmax*sizeof(MatScalar),&new_a);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscInt),&ordcol);CHKERRQ(ierr);
-
-  /* ------------------------------------------------------------
-     Make sure that everything is Fortran formatted (1-Based)
-     ------------------------------------------------------------
-  */ 
-  for (i=old_i[0];i<old_i[n];i++) {
-    old_j[i]++;
-  }
-  for(i=0;i<n+1;i++) {
-    old_i[i]++;
-  };
- 
-
-  if (reorder) {
-    ierr = ISGetIndices(iscol,&c);CHKERRQ(ierr);
-    ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
-    ierr = PetscMalloc2(n,PetscInt,&cc,n,PetscInt,&cr);CHKERRQ(ierr);
-    for(i=0;i<n;i++) {
-      cr[i]  = r[i]+1;
-      cc[i]  = c[i]+1;
-    }
-    ierr = ISRestoreIndices(iscol,&c);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
-    ierr = PetscMalloc((n+1)*sizeof(PetscInt),&old_i2);CHKERRQ(ierr);
-    ierr = PetscMalloc((old_i[n]-old_i[0]+1)*sizeof(PetscInt),&old_j2);CHKERRQ(ierr);
-    ierr = PetscMalloc((old_i[n]-old_i[0]+1)*sizeof(MatScalar),&old_a2);CHKERRQ(ierr);
-    job  = 3; SPARSEKIT2dperm(&n,old_a,old_j,old_i,old_a2,old_j2,old_i2,cr,cc,&job);
-    ierr = PetscFree2(cc,cr);CHKERRQ(ierr);
-    o_a = old_a2;
-    o_j = old_j2;
-    o_i = old_i2;
-  } else {
-    o_a = old_a;
-    o_j = old_j;
-    o_i = old_i;
-  }
-
-  /* ------------------------------------------------------------
-     Call Saad's ilutp() routine to generate the factorization
-     ------------------------------------------------------------
-  */
-
-  ierr = PetscMalloc(2*n*sizeof(PetscInt),&iperm);CHKERRQ(ierr);
-  ierr = PetscMalloc(2*n*sizeof(PetscInt),&jw);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscScalar),&w);CHKERRQ(ierr);
-
-  SPARSEKIT2ilutp(&n,o_a,o_j,o_i,&lfill,(PetscReal)dt,&dtcol,&n,new_a,new_j,new_i,&jmax,w,jw,iperm,&sierr); 
-  if (sierr) {
-    switch (sierr) {
-      case -3: SETERRQ2(PETSC_ERR_LIB,"ilutp(), matrix U overflows, need larger fill current fill %G space allocated %D",fill,jmax);
-      case -2: SETERRQ2(PETSC_ERR_LIB,"ilutp(), matrix L overflows, need larger fill current fill %G space allocated %D",fill,jmax);
-      case -5: SETERRQ(PETSC_ERR_LIB,"ilutp(), zero row encountered");
-      case -1: SETERRQ(PETSC_ERR_LIB,"ilutp(), input matrix may be wrong");
-      case -4: SETERRQ1(PETSC_ERR_LIB,"ilutp(), illegal fill value %D",jmax);
-      default: SETERRQ1(PETSC_ERR_LIB,"ilutp(), zero pivot detected on row %D",sierr);
-    }
-  }
-
-  ierr = PetscFree(w);CHKERRQ(ierr);
-  ierr = PetscFree(jw);CHKERRQ(ierr);
-
-  /* ------------------------------------------------------------
-     Saad's routine gives the result in Modified Sparse Row (msr)
-     Convert to Compressed Sparse Row format (csr) 
-     ------------------------------------------------------------
-  */
-
-  ierr = PetscMalloc(n*sizeof(PetscScalar),&wk);CHKERRQ(ierr);   
-  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&iwk);CHKERRQ(ierr);
-
-  SPARSEKIT2msrcsr(&n,new_a,new_j,new_a,new_j,new_i,wk,iwk);
-
-  ierr = PetscFree(iwk);CHKERRQ(ierr);
-  ierr = PetscFree(wk);CHKERRQ(ierr);
-
-  if (reorder) {
-    ierr = PetscFree(old_a2);CHKERRQ(ierr);
-    ierr = PetscFree(old_j2);CHKERRQ(ierr);
-    ierr = PetscFree(old_i2);CHKERRQ(ierr);
-  } else {
-    /* fix permutation of old_j that the factorization introduced */
-    for (i=old_i[0]; i<old_i[n]; i++) {
-      old_j[i-1] = iperm[old_j[i-1]-1]; 
-    }
-  }
-
-  /* get rid of the shift to indices starting at 1 */
-  for (i=0; i<n+1; i++) {
-    old_i[i]--;
-  }
-  for (i=old_i[0];i<old_i[n];i++) {
-    old_j[i]--;
-  }
- 
-  /* Make the factored matrix 0-based */ 
-  for (i=0; i<n+1; i++) {
-    new_i[i]--;
-  }
-  for (i=new_i[0];i<new_i[n];i++) {
-    new_j[i]--;
-  } 
-
-  /*-- due to the pivoting, we need to reorder iscol to correctly --*/
-  /*-- permute the right-hand-side and solution vectors           --*/
-  ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
-  ierr = ISInvertPermutation(isrow,PETSC_DECIDE,&isirow);CHKERRQ(ierr);
-  ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
-  for(i=0; i<n; i++) {
-    ordcol[i] = ic[iperm[i]-1];  
-  };       
-  ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
-  ierr = ISDestroy(isicol);CHKERRQ(ierr);
-
-  ierr = PetscFree(iperm);CHKERRQ(ierr);
-
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ordcol,&iscolf);CHKERRQ(ierr); 
-  ierr = PetscFree(ordcol);CHKERRQ(ierr);
-
-  /*----- put together the new matrix -----*/
-
-  ierr = MatCreate(((PetscObject)A)->comm,fact);CHKERRQ(ierr);
-  ierr = MatSetSizes(*fact,n,n,n,n);CHKERRQ(ierr);
-  ierr = MatSetType(*fact,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation_SeqAIJ(*fact,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
-  (*fact)->factor    = MAT_FACTOR_LU;
-  (*fact)->assembled = PETSC_TRUE;
-
-  b = (Mat_SeqAIJ*)(*fact)->data;
-  b->free_a        = PETSC_TRUE;
-  b->free_ij       = PETSC_TRUE;
-  b->singlemalloc  = PETSC_FALSE;
-  b->a             = new_a;
-  b->j             = new_j;
-  b->i             = new_i;
-  b->ilen          = 0;
-  b->imax          = 0;
-  /*  I am not sure why these are the inverses of the row and column permutations; but the other way is NO GOOD */
-  b->row           = isirow;
-  b->col           = iscolf;
-  ierr = PetscMalloc((n+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
-  b->maxnz = b->nz = new_i[n];
-  ierr = MatMarkDiagonal_SeqAIJ(*fact);CHKERRQ(ierr);
-  (*fact)->info.factor_mallocs = 0;
-
-  af = ((double)b->nz)/((double)a->nz) + .001;
-  ierr = PetscInfo2(A,"Fill ratio:given %G needed %G\n",fill,af);CHKERRQ(ierr);
-  ierr = PetscInfo1(A,"Run with -pc_factor_fill %G or use \n",af);CHKERRQ(ierr);
-  ierr = PetscInfo1(A,"PCFactorSetFill(pc,%G);\n",af);CHKERRQ(ierr);
-  ierr = PetscInfo(A,"for best performance.\n");CHKERRQ(ierr);
-
-  if (reorder) (*fact)->ops->solve = MatSolve_SeqAIJ;
-  else         (*fact)->ops->solve = MatSolve_SeqAIJ_NaturalOrdering;
-  (*fact)->ops->solveadd           = MatSolveAdd_SeqAIJ;
-  (*fact)->ops->solvetranspose     = MatSolveTranspose_SeqAIJ;
-  (*fact)->ops->solvetransposeadd  = MatSolveTransposeAdd_SeqAIJ;
-  
-  ierr = MatILUDTFactor_Inode(A,isrow,iscol,info,fact);CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-#endif
-}
-
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetFactorAvailable_seqaij_petsc"
@@ -485,7 +243,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
   PetscInt       i,j,n=A->rmap->n,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
   PetscInt       *ajtmp,*bjtmp,nz,row,*diag_offset = b->diag,diag,*pj;
   MatScalar      *rtmp,*pc,multiplier,*v,*pv,d,*aa=a->a;
-  PetscReal      rs = 0.0;
+  PetscReal      rs=0.0;
   LUShift_Ctx    sctx;
   PetscInt       newshift,*ddiag;
 
@@ -2022,7 +1780,6 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   PetscTruth         missing;
 
   PetscFunctionBegin;
-  //printf("MatILUDTFactor_SeqAIJ is called...\n");
   /* ------- symbolic factorization, can be reused ---------*/
   ierr = MatMissingDiagonal(A,&missing,&i);CHKERRQ(ierr);
   if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",i);
@@ -2090,7 +1847,6 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   bi[0]    = 0;
   bdiag[0] = nnz_max-1; /* location of diagonal in factor B */
   for (i=0; i<n; i++) {
-    //printf("row %d ...\n",i); 
     /* copy initial fill into linked list */
     nzi = 0; /* nonzeros for active row i */
     nzi = ai[r[i]+1] - ai[r[i]];
@@ -2121,11 +1877,9 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
     ierr = PetscLLClean(n,n,nzi,lnk,jtmp,lnkbt);CHKERRQ(ierr);
 
     /* numerical factorization */
-    //printf("row %d:\n",i); 
     bjtmp = jtmp;
     row   = *bjtmp++; /* 1st pivot row */
     while  (row < i) {
-      //printf("  prow %d\n",row);
       pc         = rtmp + row;
       pv         = ba + bdiag[row]; /* 1./(diag of the pivot row) */
       multiplier = (*pc) * (*pv); 
@@ -2166,7 +1920,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
     for (j=0; j<ncut; j++){
       bjtmp[j] = jtmp[j];
       batmp[j] = vtmp[j];
-      //printf(" (%d,%g),",bjtmp[j],batmp[j]); 
+      /* printf(" (%d,%g),",bjtmp[j],batmp[j]); */
     }
     bi[i+1] = bi[i] + ncut;
     nzi = ncut + 1;
@@ -2189,16 +1943,16 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
     *batmp = rtmp[i]; 
     if (*batmp == 0.0) *batmp = dt+shift;
     *batmp = 1.0/(*batmp); /* invert diagonal entries for simplier triangular solves */
-    //printf(" (%d,%g),",*bjtmp,*batmp); 
+    /* printf(" (%d,%g),",*bjtmp,*batmp); */
     
     bjtmp = bj + bdiag[i+1]+1;
     batmp = ba + bdiag[i+1]+1;
     for (k=0; k<ncut; k++){
       bjtmp[k] = jtmp[nzi_bl+1+k];
       batmp[k] = vtmp[nzi_bl+1+k];
-      //printf(" (%d,%g),",bjtmp[k],batmp[k]); 
+      /* printf(" (%d,%g),",bjtmp[k],batmp[k]); */
     }
-    //printf("\n");
+    /* printf("\n"); */
       
     im[i]   = nzi; /* used by PetscLLAddSortedLU() */
     /*
@@ -2247,7 +2001,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactorSymbolic_SeqAIJ(Mat fact,Mat A,I
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  //printf("MatILUDTFactorSymbolic_SeqAIJ is called...\n");
+  /* printf("MatILUDTFactorSymbolic_SeqAIJ is called...\n"); */
   ierr = MatILUDTFactor_SeqAIJ(A,row,col,info,&fact);CHKERRQ(ierr);
 
   fact->ops->lufactornumeric = MatILUDTFactorNumeric_SeqAIJ;
@@ -2274,7 +2028,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactorNumeric_SeqAIJ(Mat fact,Mat A,co
   PetscTruth     row_identity, col_identity;
 
   PetscFunctionBegin;
-  //printf("MatILUDTFactorNumeric_SeqAIJ is called...\n");
+  /* printf("MatILUDTFactorNumeric_SeqAIJ is called...\n"); */
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = PetscMalloc((n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
@@ -2291,24 +2045,23 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactorNumeric_SeqAIJ(Mat fact,Mat A,co
     for  (j=0; j<nzu; j++) rtmp[*bjtmp++] = 0.0;     
 
     /* load in initial unfactored row of A */
-    //printf("row %d\n",i);
+    /* printf("row %d\n",i); */
     nz    = ai[r[i]+1] - ai[r[i]];
     ajtmp = aj + ai[r[i]];
     v     = aa + ai[r[i]];
     for (j=0; j<nz; j++) {
       rtmp[ics[*ajtmp++]] = v[j];
-      //printf(" (%d,%g),",ics[ajtmp[j]],rtmp[ics[ajtmp[j]]]);
+      /* printf(" (%d,%g),",ics[ajtmp[j]],rtmp[ics[ajtmp[j]]]); */
     }
-      //printf("\n");
+    /* printf("\n"); */
 
     /* numerical factorization */
     bjtmp = bj + bi[i]; /* point to 1st entry of L(i,:) */
-    nzl   = bi[i+1] - bi[i]; /* num of entries in L(i,:) */
-    //printf("%d-: nzl %d\n",i,nzl);     
+    nzl   = bi[i+1] - bi[i]; /* num of entries in L(i,:) */   
     k = 0;
     while (k < nzl){
       row   = *bjtmp++;
-      //printf("  prow %d\n",row);
+      /* printf("  prow %d\n",row); */
       pc         = rtmp + row;
       pv         = b->a + bdiag[row]; /* 1./(diag of the pivot row) */
       multiplier = (*pc) * (*pv); 
@@ -2318,7 +2071,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactorNumeric_SeqAIJ(Mat fact,Mat A,co
         pv         = b->a + bdiag[row+1] + 1;
         nz         = bdiag[row] - bdiag[row+1] - 1; /* num of entries in U(row,:), excluding diagonal */
         for (j=0; j<nz; j++) rtmp[*pj++] -= multiplier * (*pv++);
-        //ierr = PetscLogFlops(2.0*nz);CHKERRQ(ierr);
+        /* ierr = PetscLogFlops(2.0*nz);CHKERRQ(ierr); */
       } 
       k++;
     }
@@ -2330,13 +2083,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactorNumeric_SeqAIJ(Mat fact,Mat A,co
     nzl = bi[i+1] - bi[i];
     for (j=0; j<nzl; j++) {
       pv[j] = rtmp[pj[j]];
-      //printf(" (%d,%g),",pj[j],pv[j]);
+      /* printf(" (%d,%g),",pj[j],pv[j]); */
     }
 
     /* diagonal: invert diagonal entries for simplier triangular solves */
     if (rtmp[i] == 0.0) rtmp[i] = dt+shift;
     b->a[bdiag[i]] = 1.0/rtmp[i];
-    //printf(" (%d,%g),",i,b->a[bdiag[i]]); 
+    /* printf(" (%d,%g),",i,b->a[bdiag[i]]); */
 
     /* U-part */
     pv = b->a + bdiag[i+1] + 1;
@@ -2344,9 +2097,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactorNumeric_SeqAIJ(Mat fact,Mat A,co
     nzu = bdiag[i] - bdiag[i+1] - 1;
     for (j=0; j<nzu; j++) {
       pv[j] = rtmp[pj[j]];
-        //printf(" (%d,%g),",pj[j],pv[j]);
+      /* printf(" (%d,%g),",pj[j],pv[j]); */
     }
-      //printf("\n");
+    /* printf("\n"); */
   } 
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);

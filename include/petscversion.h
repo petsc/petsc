@@ -5,7 +5,7 @@
 #define PETSC_VERSION_MAJOR      3
 #define PETSC_VERSION_MINOR      0
 #define PETSC_VERSION_SUBMINOR   0
-#define PETSC_VERSION_PATCH      5
+#define PETSC_VERSION_PATCH      6
 #define PETSC_VERSION_DATE       "Dec, 19, 2008"
 #define PETSC_VERSION_PATCH_DATE "unknown"
 

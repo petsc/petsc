@@ -383,6 +383,12 @@ runex30_2:
 	if (${DIFF} output/ex30_2.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30_2, diffs above"; fi; \
 	   ${RM} -f ex30.tmp
+runex30_3:
+	-@${MPIEXEC} -n 1 ./ex30 -f ${DATAFILESPATH}/matrices/arco1 -mat_type baij -matload_block_size 3 -ksp_type preonly -pc_type ilu -pc_factor_use_drop_tolerance 1.e-4,0.0,50 -pc_factor_mat_ordering_type natural -num_numfac 2 > ex30.tmp 2>&1; \
+        if (${DIFF} output/ex30_3.out ex30.tmp) then true; \
+           else echo "Possible problem with ex30_3, diffs above"; fi; \
+           ${RM} -f ex30.tmp
+
 runex31:
 	-@${MPIEXEC} -n 3 ./ex31 -f ${DATAFILESPATH}/matrices/small -partition > ex31.tmp 2>&1; \
 	if (${DIFF} output/ex31.out ex31.tmp) then true; \
@@ -400,7 +406,7 @@ TESTEXAMPLES_C_X11_MPIUNI      = ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm
 TESTEXAMPLES_C_COMPLEX	       = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_C_COMPLEX_MPIUNI  = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_DATAFILESPATH     = ex6.PETSc runex6 runex6_2 runex6_3 ex6.r ex25.PETSc runex25 runex25_2 ex25.rm ex27.PETSc runex27 ex25.rm \
-                                 ex30.PETSc runex30 ex30.rm ex31.PETSc runex31 ex31.rm
+                                 ex30.PETSc runex30 runex30_2 runex30_3 ex30.rm ex31.PETSc runex31 ex31.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex16f.PETSc runex16f ex16f.rm  ex12f.PETSc runex12f ex12f.rm 
 TESTEXAMPLES_13		       = ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex5f.PETSc ex5f.rm
 TESTEXAMPLES_ML                = ex26.PETSc runex26_ml runex26_ml_2 runex26_ml_3 ex26.rm ex29.PETSc runex29 runex29_2 ex29.rm

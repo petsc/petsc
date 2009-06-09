@@ -21,7 +21,6 @@ have been written by
   \item Mark Adams - scalability features of MPIBAIJ matrices;
   \item G. Anciaux and J. Roman - the interfaces to the partitioning packages Jostle, Scotch, Chaco, and Party;
   \item Allison Baker - the flexible GMRES code;
-  \item Tony Caola - the SPARSEKIT2 ilutp() interface;
   \item Chad Carroll - Win32 graphics;
   \item Cameron Cooper - portions of the VecScatter routines;
   \item Paulo Goldfeld - balancing Neumann-Neumann preconditioner;
@@ -46,9 +45,6 @@ PETSc uses routines from
   \item MINPACK -    see page \pageref{sec_fdmatrix}, sequential matrix coloring routines for finite difference Jacobian
                      evaluations; converted to C using {\tt f2c};
   \item SPARSPAK -   see page \pageref{sec_factorization}, matrix reordering routines, converted to C using {\tt f2c};
-  \item SPARSEKIT2 - see page \pageref{sec_ilu_icc}, written by Yousef Saad, iludtp(), converted to C using {\tt f2c};
-                     These routines 
-                     are copyrighted by Saad under the GNU copyright, see \trl{${PETSC_DIR}/src/mat/impls/aij/seq/ilut.c}.
   \item libtfs     - the efficient, parallel direct solver developed by Henry Tufo and Paul Fischer for the direct solution of a coarse grid problem (a linear system with very few degrees of freedom per processor).
 \end{itemize}
 
