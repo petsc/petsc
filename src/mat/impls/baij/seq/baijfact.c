@@ -1140,7 +1140,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   PetscReal          dt=info->dt; /* shift=info->shiftinblocks; */
   PetscInt           nnz_max;
   PetscTruth         missing;
-  PetscScalar        *vtmp_abs;
+  PetscReal          *vtmp_abs;
   MatScalar          *v_work;
   PetscInt           *v_pivots;
 
@@ -1208,7 +1208,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   /* rtmp, vtmp: working arrays for sparse and contiguous row entries of active row */
   ierr = PetscMalloc((2*mbs*bs2+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
   vtmp = rtmp + bs2*mbs;
-  ierr = PetscMalloc((mbs+1)*sizeof(PetscScalar),&vtmp_abs);CHKERRQ(ierr);
+  ierr = PetscMalloc((mbs+1)*sizeof(PetscReal),&vtmp_abs);CHKERRQ(ierr);
 
   ierr       = PetscMalloc(bs*sizeof(PetscInt) + (bs+bs2)*sizeof(MatScalar),&v_work);CHKERRQ(ierr);
   multiplier = v_work + bs;
@@ -1298,7 +1298,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
     /* apply level dropping rule to L part */
     ncut = nzi_al + dtcount; 
     if (ncut < nzi_bl){ 
-      ierr = PetscSortSplit(ncut,nzi_bl,vtmp_abs,jtmp);CHKERRQ(ierr);
+      ierr = PetscSortSplitReal(ncut,nzi_bl,vtmp_abs,jtmp);CHKERRQ(ierr);
       ierr = PetscSortIntWithScalarArray(ncut,jtmp,vtmp);CHKERRQ(ierr);
     } else {
       ncut = nzi_bl;
@@ -1318,7 +1318,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
     /* apply level dropping rule to U part */
     ncut = nzi_au + dtcount; 
     if (ncut < nzi_bu){
-      ierr = PetscSortSplit(ncut,nzi_bu,vtmp_abs+nzi_bl+1,jtmp+nzi_bl+1);CHKERRQ(ierr);
+      ierr = PetscSortSplitReal(ncut,nzi_bu,vtmp_abs+nzi_bl+1,jtmp+nzi_bl+1);CHKERRQ(ierr);
       ierr = PetscSortIntWithScalarArray(ncut,jtmp+nzi_bl+1,vtmp+nzi_bl+1);CHKERRQ(ierr);
     } else {
       ncut = nzi_bu;
