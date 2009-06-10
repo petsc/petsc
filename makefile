@@ -76,8 +76,10 @@ info:
          fi
 	-@echo "-----------------------------------------"
 	-@echo "Using C/C++ linker: ${PCC_LINKER}"
+	-@echo "Using C/C++ flags: ${PCC_LINKER_FLAGS}"
 	-@if [ "${FC}" != "" ]; then \
 	   echo "Using Fortran linker: ${FC_LINKER}";\
+	   echo "Using Fortran flags: ${FC_LINKER_FLAGS}";\
          fi
 	-@echo "-----------------------------------------"
 	-@echo "Using libraries: ${PETSC_LIB}"
