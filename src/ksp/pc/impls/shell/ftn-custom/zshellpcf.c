@@ -98,7 +98,7 @@ void PETSC_STDCALL pcshellsetsetup_(PC *pc,void (PETSC_STDCALL *setup)(void*,Pet
 
 void PETSC_STDCALL pcshellsetdestroy_(PC *pc,void (PETSC_STDCALL *setup)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
-  PetscObjectAllocateFortranPointers(*pc,6);
+  PetscObjectAllocateFortranPointers(*pc,5);
   ((PetscObject)*pc)->fortran_func_pointers[4] = (PetscVoidFunction)setup;
   *ierr = PCShellSetDestroy(*pc,ourshelldestroy);
 }
