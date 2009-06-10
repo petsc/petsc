@@ -58,15 +58,19 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "myPCApply"
-PetscErrorCode myPCApply(DMMG dmmg,Vec x,Vec y)
+PetscErrorCode myPCApply(PC pc,Vec x,Vec y)
 {
   Vec            xu,xlambda,yu,ylambda;
   PetscScalar    *xw,*yw;
   PetscErrorCode ierr;
-  DMComposite        packer = (DMComposite)dmmg->dm;
-  AppCtx         *appctx = (AppCtx*)dmmg->user;
+  DMMG           dmmg;
+  DMComposite    packer;
+  AppCtx         *appctx;
 
   PetscFunctionBegin;
+  ierr = PCShellGetContext(pc,(void**)&dmmg);CHKERRQ(ierr);
+  packer = (DMComposite)dmmg->dm;
+  appctx = (AppCtx*)dmmg->user;
   ierr = DMCompositeGetAccess(packer,x,&xw,&xu,&xlambda);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(packer,y,&yw,&yu,&ylambda);CHKERRQ(ierr);
   if (yw && xw) {
@@ -84,12 +88,15 @@ PetscErrorCode myPCApply(DMMG dmmg,Vec x,Vec y)
 
 #undef __FUNCT__
 #define __FUNCT__ "myPCView"
-PetscErrorCode myPCView(DMMG dmmg,PetscViewer v)
+PetscErrorCode myPCView(PC pc,PetscViewer v)
 {
   PetscErrorCode ierr;
-  AppCtx         *appctx = (AppCtx*)dmmg->user;
+  DMMG           dmmg;
+  AppCtx         *appctx;
 
   PetscFunctionBegin;
+  ierr = PCShellGetContext(pc,(void**)&dmmg);CHKERRQ(ierr);
+  appctx = (AppCtx*)dmmg->user;
   ierr = KSPView(appctx->ksp,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -118,8 +125,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsSetValue("-mg_levels_ksp_type","gmres");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-mg_coarse_ksp_max_it","6");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-mg_levels_ksp_max_it","3");CHKERRQ(ierr);
-  ierr = PetscOptionsSetValue("-snes_mf_type","wp");CHKERRQ(ierr);
-  ierr = PetscOptionsSetValue("-snes_mf_compute_normu","no");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-mat_mffd_type","wp");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-mat_mffd_compute_normu","no");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-snes_ls","basic");CHKERRQ(ierr); 
   ierr = PetscOptionsSetValue("-dmmg_jacobian_mf_fd",0);CHKERRQ(ierr); 
   /* ierr = PetscOptionsSetValue("-snes_ls","basicnonorms");CHKERRQ(ierr); */
@@ -174,8 +181,8 @@ int main(int argc,char **argv)
 	ierr = KSPGetPC(ksp,&mpc);CHKERRQ(ierr);
 	ierr = PCSetType(mpc,PCSHELL);CHKERRQ(ierr);
 	ierr = PCShellSetContext(mpc,dmmg[j]);CHKERRQ(ierr);
-	ierr = PCShellSetApply(mpc,(PetscErrorCode (*)(void*,Vec,Vec))myPCApply);CHKERRQ(ierr);
-	ierr = PCShellSetView(mpc,(PetscErrorCode (*)(void*,PetscViewer))myPCView);CHKERRQ(ierr);
+	ierr = PCShellSetApply(mpc,myPCApply);CHKERRQ(ierr);
+	ierr = PCShellSetView(mpc,myPCView);CHKERRQ(ierr);
       }
     }
   }

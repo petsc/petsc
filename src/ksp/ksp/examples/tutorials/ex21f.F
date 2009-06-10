@@ -191,7 +191,8 @@
       call PCShellSetApply(pc,SampleShellPCApply,ierr)
 
 !  (Optional) Do any setup required for the preconditioner
-      call SampleShellPCSetUp(A,x,ierr)
+!     Note: if you use PCShellSetSetUp, this will be done for your
+      call SampleShellPCSetUp(pc,x,ierr)
 
 
 !  Set runtime options, e.g.,
@@ -258,7 +259,7 @@
 !   preconditioner context.  
 !
 !   Input Parameters:
-!   pmat  - preconditioner matrix
+!   pc    - preconditioner object
 !   x     - vector
 !
 !   Output Parameter:
@@ -270,7 +271,7 @@
 !   of the diagonal of the preconditioner matrix; this vector is then
 !   used within the routine SampleShellPCApply().
 !
-      subroutine SampleShellPCSetUp(pmat,x,ierr)
+      subroutine SampleShellPCSetUp(pc,x,ierr)
 
       implicit none
 
@@ -278,6 +279,7 @@
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
 
+      PC      pc
       Vec     x
       Mat     pmat
       PetscErrorCode ierr
@@ -287,6 +289,8 @@
       PC jacobi,sor
       Vec work
 
+      call PCGetOperators(pc,PETSC_NULL_OBJECT,pmat,PETSC_NULL_INTEGER,  &
+     &                     ierr)
       call PCCreate(PETSC_COMM_WORLD,jacobi,ierr)
       call PCSetType(jacobi,PCJACOBI,ierr)
       call PCSetOperators(jacobi,pmat,pmat,DIFFERENT_NONZERO_PATTERN,    &
@@ -310,7 +314,7 @@
 !   user-provided preconditioner.
 !
 !   Input Parameters:
-!   dummy - optional user-defined context, not used here
+!   pc - preconditioner object
 !   x - input vector
 !
 !   Output Parameters:
@@ -324,7 +328,7 @@
 ! YOU CAN GET THE EXACT SAME EFFECT WITH THE PCCOMPOSITE preconditioner using
 ! mpiexec -n 1 ex21f -ksp_monitor -pc_type composite -pc_composite_pcs jacobi,sor -pc_composite_type additive
 !
-      subroutine SampleShellPCApply(dummy,x,y,ierr)
+      subroutine SampleShellPCApply(pc,x,y,ierr)
 
       implicit none
 
@@ -332,8 +336,8 @@
 #include "finclude/petscvec.h"
 #include "finclude/petscpc.h"
 
+      PC      pc
       Vec     x,y
-      integer dummy
       PetscErrorCode ierr
       PetscScalar  one
       

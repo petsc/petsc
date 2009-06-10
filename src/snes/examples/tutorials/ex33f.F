@@ -1884,14 +1884,14 @@ c
 
       return 
       end
-      subroutine PCRadApply(ctx,x,y,ierr)
+      subroutine PCRadApply(pc,x,y,ierr)
 ! ------------------------------------------------------------------- 
 !
 !   PCRadApply - This routine demonstrates the use of a
 !   user-provided preconditioner.
 !
 !   Input Parameters:
-!   dummy - optional user-defined context, not used here
+!   pc - preconditioner object
 !   x - input vector
 !  In this example the shell preconditioner application context
 !  is a Fortran integer array:
@@ -1919,17 +1919,21 @@ c
 c
 c  Input
 c
-      PetscFortranAddr ctx(*)
+      PC               pc
       Vec              x, y
       integer          ierr
 c
 c  Local
 c
+      PetscFortranAddr ctx(*)
       IS               defrom, deto
       Vec              de, rese
       VecScatter       scatter
       PetscScalar      lde_v(0:1),lrese_v(0:1)
       PetscOffset      lde_i,     lrese_i
+
+      call PCShellGetContext(pc,ctx,ierr)
+
 c
 c  Identity preconditioner
 c
@@ -1997,7 +2001,7 @@ c
 
       return
       end
-      subroutine PCRadSetUp(ctx,ierr)
+      subroutine PCRadSetUp(pc,ierr)
 !
 !   PCRadSetUp - This routine sets up a user-defined
 !   preconditioner context. 
@@ -2031,15 +2035,18 @@ c
 c
 c  Input
 c
-      PetscFortranAddr ctx(*)
+      PC               pc
       integer          ierr
 c
 c  Local
 c
+      PetscFortranAddr ctx(*)
       Vec              eold
  
       PetscScalar      le_v(0:1)
       PetscOffset le_i
+
+      call PCShellGetContext(pc,ctx,ierr)
  
 c
 c  create vector
