@@ -59,10 +59,6 @@ static PetscErrorCode ourshelldestroy(PC pc)
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL pcshellsetcontext_(PC *pc,void *ctx,PetscErrorCode *ierr){
-  *ierr = PCShellSetContext(*pc,ctx);
-}
-
 void PETSC_STDCALL pcshellgetcontext_(PC *pc,void **ctx,PetscErrorCode *ierr)
 {
   *ierr = PCShellGetContext(*pc,ctx);

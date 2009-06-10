@@ -63,7 +63,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellGetContext(PC pc,void **ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCShellSetContext"
-/*@C
+/*@
     PCShellSetContext - sets the context for a shell PC
 
    Collective on PC
