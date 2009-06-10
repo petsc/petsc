@@ -267,8 +267,11 @@ $ -ao_view : call AOView() at the conclusion of AOCreateMapping()
 
   Level: beginner
 
+    Notes: the arrays myapp and mypetsc need NOT contain the all the integers 0 to napp-1, that is there CAN be "holes"  in the indices.
+       Use AOCreateBasic() or AOCreateBasicIS() if they do not have holes for better performance.
+
 .keywords: AO, create
-.seealso: AOCreateDebug(), AOCreateBasic(), AOCreateMappingIS(), AODestroy()
+.seealso: AOCreateBasic(), AOCreateBasic(), AOCreateMappingIS(), AODestroy()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp[],const PetscInt mypetsc[],AO *aoout)
 {
@@ -404,6 +407,9 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateMapping(MPI_Comm comm,PetscInt napp,con
 $ -ao_view : call AOView() at the conclusion of AOCreateMappingIS()
 
   Level: beginner
+
+    Notes: the index sets isapp and ispetsc need NOT contain the all the integers 0 to N-1, that is there CAN be "holes"  in the indices.
+       Use AOCreateBasic() or AOCreateBasicIS() if they do not have holes for better performance.
 
 .keywords: AO, create
 .seealso: AOCreateBasic(), AOCreateMapping(), AODestroy()
