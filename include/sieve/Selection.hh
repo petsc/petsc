@@ -739,7 +739,6 @@ namespace ALE {
       }
       delete [] indices;
       submesh->setSieve(subSieve);
-      submesh->view("Submesh before stratify");
       submesh->stratify();
       if (debug) submesh->view("Submesh");
 
