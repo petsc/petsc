@@ -1,7 +1,7 @@
 
 ALL: lib
 SPECIALFASTLIB = yes
-specialfastlib: lib
+specialfastlib: libffast
 
 CFLAGS   =
 FFLAGS   =

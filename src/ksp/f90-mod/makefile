@@ -4,7 +4,7 @@
 #
 ALL: buildmod
 speciallib: buildmod
-specialfastlib: buildmod
+specialfastlib: buildmodfast
 SPECIALLIB     = yes
 SPECIALFASTLIB = yes
 
