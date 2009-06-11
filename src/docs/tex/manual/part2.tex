@@ -2816,12 +2816,20 @@ The shell preconditioner simply uses an application-provided routine to
 implement the preconditioner. To set this routine, one uses the 
 command \findex{PCShellSetApply()}
 \begin{tabbing}
-  PCShellSetApply(PC pc,PetscErrorCode (*apply)(void *ctx,Vec,Vec),void *ctx);
+  PCShellSetApply(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec));
 \end{tabbing}
-The final argument \trl{ctx} is a pointer to the application-provided 
-data structure needed by the preconditioner routine.
-The three routine arguments of \trl{apply()} are this context, the
-input vector, and the output vector, respectively.
+Often a preconditioner needs access to an application-provided data
+structured.  For this, one should use
+\begin{tabbing}
+  PCShellSetContext(PC pc,void *ctx);
+\end{tabbing}
+to set this data structure and
+\begin{tabbing}
+  PCShellGetContext(PC pc,void **ctx);
+\end{tabbing}
+to retrieve it in \trl{apply}.  The three routine arguments of
+\trl{apply()} are the PC, the input vector, and the output vector,
+respectively.
 
 For a preconditioner that requires some sort of ``setup'' before being used,
 that requires a new setup everytime the operator is changed, one can 
@@ -2829,10 +2837,11 @@ provide a ``setup'' routine that is called everytime the operator is
 changed (usually via KSPSetOperators()).
 \findex{PCShellSetSetUp()}
 \begin{tabbing}
-  PCShellSetSetUp(PC pc,PetscErrorCode (*setup)(void *ctx));
+  PCShellSetSetUp(PC pc,PetscErrorCode (*setup)(PC));
 \end{tabbing}
-The argument to the ``setup'' routine is the same application-provided 
-data structure passed in with the PCShellSetApply() routine.
+The argument to the ``setup'' routine is the same \trl{PC} object which
+can be used to obtain the operators with PCGetOperators() and the
+application-provided data structure that was set with PCShellSetContext().
 
 %----------------------------------------------------------------------
 \subsection{Combining Preconditioners} \sindex{combining preconditioners}
@@ -3777,7 +3786,7 @@ that SNES supports.  In particular, different linear system matrices
 and preconditioning matrices are allowed, as well as both matrix-free
 and application-provided preconditioners.  All combinations are
 possible, as demonstrated by the example, 
-\trl{${PETSC_DIR}/src/snes/examples/tutorials/ex5.c},
+\trl{${PETSC_DIR}/src/snes/examples/tutorials/ex6.c},
  in Figure~\ref{fig_snesexample2}.
 
 \begin{center}
