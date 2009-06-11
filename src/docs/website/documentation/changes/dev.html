@@ -128,8 +128,13 @@ MAT_KEEP_NONZERO_PATTERN to more clearly indicate what it does.</li>
       </ul>
       <u><b>PC:</b></u>
       <ul>
-        <ul>
-        </ul>
+        <li>PCShell
+	  <dl>
+All user-provided functions now have PC as first argument instead of the
+application context.  Users should obtain the context with
+PCShellGetContext, similar to MatShell.
+	  </dl>
+        </li>
       </ul>
       <ul>
       </ul>

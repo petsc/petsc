@@ -98,6 +98,12 @@ buildmod:
 	@${OMAKE}  modcopy
 	@${OMAKE}  clean
 
+buildmodfast:
+	-@${OMAKE} clean
+	@${OMAKE}  libffast
+	@${OMAKE}  modcopy
+	@${OMAKE}  clean
+
 # copy modules to the include dir
 modcopy:
 	${CP} -f *.mod ${PETSC_DIR}/${PETSC_ARCH}/include

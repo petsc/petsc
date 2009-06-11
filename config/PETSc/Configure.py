@@ -17,7 +17,8 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc',  '-prefix=<path>',                  nargs.Arg(None, '', 'Specifiy location to install PETSc (eg. /usr/local)'))
-    help.addArgument('Windows','-with-windows-graphics=<bool>',   nargs.ArgBool(None, 1,   'Enable check for Windows Graphics'))
+    help.addArgument('Windows','-with-windows-graphics=<bool>',   nargs.ArgBool(None, 1,'Enable check for Windows Graphics'))
+    help.addArgument('PETSc','-with-single-library=<bool>',       nargs.ArgBool(None, 0,'Put all PETSc code into the single -lpetsc library'))
 
     return
 
@@ -212,6 +213,19 @@ class Configure(config.base.Configure):
     self.addMakeMacro('PACKAGES_INCLUDES',self.headers.toStringNoDupes(includes))
     
     self.addMakeMacro('INSTALL_DIR',self.installdir)
+
+    if self.framework.argDB['with-single-library']:
+      # overrides the values set in conf/variables
+      self.addMakeMacro('LIBNAME','${INSTALL_LIB_DIR}/libpetsc.${AR_LIB_SUFFIX}')
+      self.addMakeMacro('PETSC_SYS_LIB_BASIC','-lpetsc')
+      self.addMakeMacro('PETSC_VEC_LIB_BASIC','-lpetsc')
+      self.addMakeMacro('PETSC_MAT_LIB_BASIC','-lpetsc')
+      self.addMakeMacro('PETSC_DM_LIB_BASIC','-lpetsc')
+      self.addMakeMacro('PETSC_KSP_LIB_BASIC','-lpetsc')
+      self.addMakeMacro('PETSC_SNES_LIB_BASIC','-lpetsc')
+      self.addMakeMacro('PETSC_TS_LIB_BASIC','-lpetsc')
+      self.addMakeMacro('PETSC_LIB_BASIC','-lpetsc')
+      self.addMakeMacro('PETSC_CONTRIB_BASIC','-lpetsc')
 
     if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib')):
       os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib'))

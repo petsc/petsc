@@ -201,7 +201,6 @@
 
 !  (Optional) Do any setup required for the preconditioner
          call PCShellSetSetUp(pc,SampleShellPCSetUp,ierr)
-         call PCShellSetContext(pc,pc,ierr)
 
 !  (Optional) Frees any objects we created for the preconditioner
          call PCShellSetDestroy(pc,SampleShellPCDestroy,ierr)
@@ -267,7 +266,7 @@
 !   preconditioner context.  
 !
 !   Input Parameters:
-!   pc - for this example we use the actual PC as our shell context
+!   pc - preconditioner object
 !
 !   Output Parameter:
 !   ierr  - error code (nonzero if error has been detected)
@@ -311,7 +310,7 @@
 !   user-provided preconditioner.
 !
 !   Input Parameters:
-!   dummy - optional user-defined context, not used here
+!   pc - preconditioner object
 !   x - input vector
 !
 !   Output Parameters:
@@ -323,15 +322,16 @@
 !   example of working with a PCSHELL.  Note that the Jacobi method
 !   is already provided within PETSc.
 !
-      subroutine SampleShellPCApply(dummy,x,y,ierr)
+      subroutine SampleShellPCApply(pc,x,y,ierr)
 
       implicit none
 
 #include "finclude/petsc.h"
 #include "finclude/petscvec.h"
 
+      PC      pc
       Vec     x,y
-      integer dummy,ierr
+      integer ierr
 
 !  Common block to store data for user-provided preconditioner 
       common /myshellpc/ diag

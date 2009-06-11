@@ -7,7 +7,7 @@
 
 ALL: lib
 SPECIALFASTLIB = yes
-specialfastlib: lib
+specialfastlib: libffast
 #requirespackage   'PETSC_USE_FORTRAN_KERNELS'
 
 CFLAGS   =

@@ -36,6 +36,7 @@ $     b-Ax
 
 .seealso:  KSPMonitor()
 @*/
+
 PetscErrorCode PETSCKSP_DLLEXPORT KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vb)
 {
   MatStructure   pflag;

@@ -29,9 +29,9 @@ typedef struct {
 
 /* Declare routines for user-provided preconditioner */
 extern PetscErrorCode SampleShellPCCreate(SampleShellPC**);
-extern PetscErrorCode SampleShellPCSetUp(SampleShellPC*,Mat,Vec);
-extern PetscErrorCode SampleShellPCApply(void*,Vec x,Vec y);
-extern PetscErrorCode SampleShellPCDestroy(SampleShellPC*);
+extern PetscErrorCode SampleShellPCSetUp(PC,Mat,Vec);
+extern PetscErrorCode SampleShellPCApply(PC,Vec x,Vec y);
+extern PetscErrorCode SampleShellPCDestroy(PC);
 
 /* 
    User-defined routines.  Note that immediately before each routine below,
@@ -169,11 +169,15 @@ int main(int argc,char **args)
     ierr = PCShellSetApply(pc,SampleShellPCApply);CHKERRQ(ierr);
     ierr = PCShellSetContext(pc,shell);CHKERRQ(ierr);
 
+    /* (Optional) Set user-defined function to free objects used by custom preconditioner */
+    ierr = PCShellSetDestroy(pc,SampleShellPCDestroy);CHKERRQ(ierr);
+
     /* (Optional) Set a name for the preconditioner, used for PCView() */
     ierr = PCShellSetName(pc,"MyPreconditioner");CHKERRQ(ierr);
 
     /* (Optional) Do any setup required for the preconditioner */
-    ierr = SampleShellPCSetUp(shell,A,x);CHKERRQ(ierr);
+    /* Note: This function could be set with PCShellSetSetUp and it would be called when necessary */
+    ierr = SampleShellPCSetUp(pc,A,x);CHKERRQ(ierr);
 
   } else {
     ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
@@ -214,10 +218,6 @@ int main(int argc,char **args)
   ierr = VecDestroy(u);CHKERRQ(ierr);  ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);  ierr = MatDestroy(A);CHKERRQ(ierr);
 
-  if (user_defined_pc) {
-    ierr = SampleShellPCDestroy(shell);CHKERRQ(ierr);
-  }
-
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 
@@ -254,7 +254,7 @@ PetscErrorCode SampleShellPCCreate(SampleShellPC **shell)
    preconditioner context.  
 
    Input Parameters:
-.  shell - user-defined preconditioner context
+.  pc    - preconditioner object
 .  pmat  - preconditioner matrix
 .  x     - vector
 
@@ -267,11 +267,13 @@ PetscErrorCode SampleShellPCCreate(SampleShellPC **shell)
    of the diagonal of the preconditioner matrix; this vector is then
    used within the routine SampleShellPCApply().
 */
-PetscErrorCode SampleShellPCSetUp(SampleShellPC *shell,Mat pmat,Vec x)
+PetscErrorCode SampleShellPCSetUp(PC pc,Mat pmat,Vec x)
 {
+  SampleShellPC  *shell;
   Vec            diag;
   PetscErrorCode ierr;
 
+  ierr = PCShellGetContext(pc,(void**)&shell);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&diag);CHKERRQ(ierr);
   ierr = MatGetDiagonal(pmat,diag);CHKERRQ(ierr);
   ierr = VecReciprocal(diag);CHKERRQ(ierr);
@@ -287,26 +289,23 @@ PetscErrorCode SampleShellPCSetUp(SampleShellPC *shell,Mat pmat,Vec x)
    user-provided preconditioner.
 
    Input Parameters:
-.  ctx - optional user-defined context, as set by PCShellSetContext()
-.  x - input vector
++  pc - preconditioner object
+-  x - input vector
 
    Output Parameter:
 .  y - preconditioned vector
 
    Notes:
-   Note that the PCSHELL preconditioner passes a void pointer as the
-   first input argument.  This can be cast to be the whatever the user
-   has set (via PCSetShellApply()) the application-defined context to be.
-
    This code implements the Jacobi preconditioner, merely as an
    example of working with a PCSHELL.  Note that the Jacobi method
    is already provided within PETSc.
 */
-PetscErrorCode SampleShellPCApply(void *ctx,Vec x,Vec y)
+PetscErrorCode SampleShellPCApply(PC pc,Vec x,Vec y)
 {
-  SampleShellPC   *shell = (SampleShellPC*)ctx;
+  SampleShellPC   *shell;
   PetscErrorCode  ierr;
 
+  ierr = PCShellGetContext(pc,(void**)&shell);CHKERRQ(ierr);
   ierr = VecPointwiseMult(y,x,shell->diag);CHKERRQ(ierr);
 
   return 0;
@@ -321,10 +320,12 @@ PetscErrorCode SampleShellPCApply(void *ctx,Vec x,Vec y)
    Input Parameter:
 .  shell - user-defined preconditioner context
 */
-PetscErrorCode SampleShellPCDestroy(SampleShellPC *shell)
+PetscErrorCode SampleShellPCDestroy(PC pc)
 {
+  SampleShellPC *shell;
   PetscErrorCode ierr;
 
+  ierr = PCShellGetContext(pc,(void**)&shell);CHKERRQ(ierr);
   ierr = VecDestroy(shell->diag);CHKERRQ(ierr);
   ierr = PetscFree(shell);CHKERRQ(ierr);
 

@@ -26,7 +26,7 @@ T*/
 
 /* User-defined routines */
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
-PetscErrorCode MatrixFreePreconditioner(void*,Vec,Vec);
+PetscErrorCode MatrixFreePreconditioner(PC,Vec,Vec);
 
 int main(int argc,char **argv)
 {
@@ -152,13 +152,13 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *dummy)
    preconditioner, which of course is not recommended for general use.
 
    Input Parameters:
-.  ctx - optional user-defined context, as set by PCShellSetContext()
-.  x - input vector
++  pc - preconditioner
+-  x - input vector
 
    Output Parameter:
 .  y - preconditioned vector
 */
-PetscErrorCode MatrixFreePreconditioner(void *ctx,Vec x,Vec y)
+PetscErrorCode MatrixFreePreconditioner(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   ierr = VecCopy(x,y);CHKERRQ(ierr);  
