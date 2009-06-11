@@ -865,6 +865,10 @@ class Configure(config.base.Configure):
         flag = '-a'
       elif 'tlib' in args:
         flag = '-a -P512'
+    if prog.endswith('ar'):
+      self.framework.addMakeMacro('FAST_AR_FLAGS', 'Scq')
+    else:
+      self.framework.addMakeMacro('FAST_AR_FLAGS', flag)
     return flag
   
   def generateArchiverGuesses(self):
