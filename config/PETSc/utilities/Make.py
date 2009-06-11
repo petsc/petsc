@@ -68,6 +68,7 @@ class Configure(config.base.Configure):
     else:
       self.addMakeRule('libc','${OBJSC}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC}')
     self.addMakeRule('libf','${OBJSF}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}')
+    self.addMakeRule('libffast','${OBJSF}','-${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSF}')
     return
 
   def configure(self):
