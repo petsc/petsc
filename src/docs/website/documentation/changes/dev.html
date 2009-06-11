@@ -86,8 +86,9 @@ in the PETSc Development Version</font></p>
         <li>PetscOptionsHasName() and PetscOptionsName() now return
 PETSC_TRUE if the options are set to any value, include false or 0. You
 may need to change some of your PetscOptionsXXName() to
-PetscOptionsXXTruth()<br>
-        </li>
+PetscOptionsXXTruth()</li>
+        <li>Added configure option --with-single-library that causes
+all PETSc code to be compiled into the single library libpetsc.XXX</li>
       </ul>
       <ul>
       </ul>
@@ -129,11 +130,12 @@ MAT_KEEP_NONZERO_PATTERN to more clearly indicate what it does.</li>
       <u><b>PC:</b></u>
       <ul>
         <li>PCShell
-	  <dl>
-All user-provided functions now have PC as first argument instead of the
-application context.  Users should obtain the context with
+          <dl>
+All user-provided functions now have PC as first argument instead of
+the
+application context. Users should obtain the context with
 PCShellGetContext, similar to MatShell.
-	  </dl>
+          </dl>
         </li>
       </ul>
       <ul>
