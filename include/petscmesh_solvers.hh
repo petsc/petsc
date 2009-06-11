@@ -46,25 +46,25 @@ void constructFieldSplit(const Obj<Section>& section, const Obj<Order>& globalOr
           //   These constraints dofs are for SINGLE FIELDS, not the entire point (confusing)
           const int *cDofs = section->getConstraintDof(*c_iter, space);
 
-          for(int d = 0, k = 0; d < dim; ++d) {
-            if ((k < cDim) && (cDofs[k] == d)) {
-              std::cout << "  Ignored " << (off+d) << " at local pos " << d << " for point " << (*c_iter) << std::endl;
-              ++k;
+          for(int d = 0, c = 0, k = 0; d < dim; ++d) {
+            if ((c < cDim) && (cDofs[c] == d)) {
+              std::cout << "  Ignored " << (off+k) << " at local pos " << d << " for point " << (*c_iter) << std::endl;
+              ++c;
               continue;
             }
-            idx[++i] = off+d;
-            std::cout << "Added " << (off+d) << " at pos " << i << " for point " << (*c_iter) << std::endl;
+            idx[++i] = off+k;
+            std::cout << "Added " << (off+k) << " at pos " << i << " for point " << (*c_iter) << std::endl;
+            ++k;
           }
         } else {
           for(int d = 0; d < dim; ++d) {
-            // TODO: In parallel, we need remap this number to a global order
             idx[++i] = off+d;
             std::cout << "Added " << (off+d) << " at pos " << i << " for point " << (*c_iter) << std::endl;
           }
         }
       }
     }
-    if (i != n) {throw PETSc::Exception("Invalid fibration numbering");}
+    if (i != n-1) {throw PETSc::Exception("Invalid fibration numbering");}
     ierr = ISCreateGeneralNC(section->comm(), n, idx, &is);CHKERRXX(ierr);
     ierr = PCFieldSplitSetIS(fieldSplit, is);CHKERRXX(ierr);
   }
