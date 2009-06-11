@@ -6,7 +6,7 @@
         end module
 
         module petscdadef
-        use petscksp
+        use petscmatdef
 #include "finclude/petscda.h"
 #include "finclude/ftn-custom/petscdadef.h90"
         end module

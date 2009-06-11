@@ -82,9 +82,9 @@ typedef struct {                 /* Fuel unknowns */
 
 extern PetscErrorCode FormInitialGuess(DMMG,Vec);
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
-extern PetscErrorCode MyPCSetUp(void*);
-extern PetscErrorCode MyPCApply(void*,Vec,Vec);
-extern PetscErrorCode MyPCDestroy(void*);
+extern PetscErrorCode MyPCSetUp(PC);
+extern PetscErrorCode MyPCApply(PC,Vec,Vec);
+extern PetscErrorCode MyPCDestroy(PC);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -514,13 +514,14 @@ PetscErrorCode MyFormMatrix(DMMG fdmmg,Mat A,Mat B)
    Setup for the custom preconditioner
 
  */
-PetscErrorCode MyPCSetUp(void* ctx)
+PetscErrorCode MyPCSetUp(PC pc)
 {
-  AppCtx         *app = (AppCtx*)ctx;
+  AppCtx         *app;
   PetscErrorCode ierr;
   DA             da;
 
   PetscFunctionBegin;
+  ierr = PCShellGetContext(pc,(void**)&app);CHKERRQ(ierr);
   /* create the linear solver for the Neutron diffusion */
   ierr = DMMGCreate(app->comm,1,0,&app->fdmmg);CHKERRQ(ierr);
   ierr = DMMGSetOptionsPrefix(app->fdmmg,"phi_");CHKERRQ(ierr);
@@ -545,9 +546,9 @@ PetscErrorCode MyPCSetUp(void* ctx)
     Prefixed a: ax1, aY1 are arrays that access the vector values (either local (ax1) or global aY1)
 
  */
-PetscErrorCode MyPCApply(void* ctx,Vec X,Vec Y)
+PetscErrorCode MyPCApply(PC pc,Vec X,Vec Y)
 {
-  AppCtx         *app = (AppCtx*)ctx;
+  AppCtx         *app;
   PetscErrorCode ierr;
   Vec            X1,X2,X3,x1,x2,Y1,Y2,Y3;
   DALocalInfo    info1,info2,info3;
@@ -557,6 +558,7 @@ PetscErrorCode MyPCApply(void* ctx,Vec X,Vec Y)
   PetscScalar    **ax2,**aY2;
 
   PetscFunctionBegin;
+  ierr = PCShellGetContext(pc,(void**)&app);CHKERRQ(ierr);
   /* obtain information about the three meshes */
   ierr = DMCompositeGetEntries(app->pack,&da1,&da2,&da3);CHKERRQ(ierr);
   ierr = DAGetLocalInfo(da1,&info1);CHKERRQ(ierr);
@@ -625,12 +627,13 @@ PetscErrorCode MyPCApply(void* ctx,Vec X,Vec Y)
 
 #undef __FUNCT__
 #define __FUNCT__ "MyPCDestroy"
-PetscErrorCode MyPCDestroy(void* ctx)
+PetscErrorCode MyPCDestroy(PC pc)
 {
-  AppCtx         *app = (AppCtx*)ctx;
+  AppCtx         *app;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PCShellGetContext(pc,(void**)&app);CHKERRQ(ierr);
   ierr = DMMGDestroy(app->fdmmg);CHKERRQ(ierr);
   ierr = VecDestroy(app->c);CHKERRQ(ierr);
   PetscFunctionReturn(0);

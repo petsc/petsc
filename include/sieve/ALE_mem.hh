@@ -16,6 +16,11 @@
 #endif
 
 namespace ALE {
+  class MemoryLogger;
+}
+extern ALE::MemoryLogger Petsc_MemoryLogger;
+
+namespace ALE {
   class MemoryLogger {
   public:
     struct Log {
@@ -29,24 +34,29 @@ namespace ALE {
     typedef std::deque<std::string>                     names;
   protected:
     int      _debug;
-    MPI_Comm comm;
+    MPI_Comm _comm;
     int      rank;
     names    stageNames;
     stageLog stages;
-  protected:
-    MemoryLogger(): _debug(0), comm(PETSC_COMM_WORLD) {
-      MPI_Comm_rank(comm, &rank);
+  public:
+    MemoryLogger(): _debug(0), _comm(MPI_COMM_NULL), rank(-1) {
       stageNames.push_front("default");
     };
   public:
     ~MemoryLogger() {};
     static MemoryLogger& singleton() {
-      static MemoryLogger singleton;
-
-      return singleton;
+      if (Petsc_MemoryLogger.comm() == MPI_COMM_NULL) {
+        Petsc_MemoryLogger.setComm(PETSC_COMM_WORLD);
+      }
+      return Petsc_MemoryLogger;
     };
     int  debug() {return _debug;};
     void setDebug(int debug) {_debug = debug;};
+    MPI_Comm comm() {return _comm;};
+    void     setComm(MPI_Comm comm) {
+      _comm = comm;
+      MPI_Comm_rank(_comm, &rank);
+    };
   public:
     void stagePush(const std::string& name) {
       for(names::const_iterator s_iter = stageNames.begin(); s_iter != stageNames.end(); ++s_iter) {
@@ -450,8 +460,6 @@ namespace ALE {
   void logged_allocator<T, O>::__alloc_initialize() {
 #if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
     const char *id_name = ALE::getClassName<T>();
-//     PetscErrorCode ierr = PetscObjectCreateGeneric(PETSC_COMM_WORLD, logged_allocator::_cookie, id_name, &this->_petscObj);
-//     CHKERROR(ierr, "Failed in PetscObjectCreate");
     ALE::restoreClassName<T>(id_name);
 #endif
   }// logged_allocator<T,O>::__alloc_initialize
@@ -459,10 +467,6 @@ namespace ALE {
   template <class T, bool O>
   void logged_allocator<T, O>::__alloc_finalize() {
 #if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
-//     if (this->_petscObj) {
-//       PetscErrorCode ierr = PetscObjectDestroy(this->_petscObj); 
-//       CHKERROR(ierr, "Failed in PetscObjectDestroy");
-//     }
 #endif
   }// logged_allocator<T,O>::__alloc_finalize
 

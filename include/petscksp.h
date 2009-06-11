@@ -550,8 +550,8 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGRangeCreate(const char[],co
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGRange(KSP,PetscInt,PetscReal,void*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGRangeDestroy(PetscDrawLG);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPreSolve(PC,PetscErrorCode (*)(void*,KSP,Vec,Vec));
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPostSolve(PC,PetscErrorCode (*)(void*,KSP,Vec,Vec));
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPreSolve(PC,PetscErrorCode (*)(PC,KSP,Vec,Vec));
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPostSolve(PC,PetscErrorCode (*)(PC,KSP,Vec,Vec));
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatMFFDKSPMonitor(KSP,PetscInt,PetscReal,void *);
 

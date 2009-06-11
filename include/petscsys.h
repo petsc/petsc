@@ -22,6 +22,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSortIntWithScalarArray(PetscInt,Petsc
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSortReal(PetscInt,PetscReal[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSortRealWithPermutation(PetscInt,const PetscReal[],PetscInt[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSortSplit(PetscInt,PetscInt,PetscScalar[],PetscInt[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSortSplitReal(PetscInt,PetscInt,PetscReal[],PetscInt[]);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSetDisplay(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetDisplay(char[],size_t);

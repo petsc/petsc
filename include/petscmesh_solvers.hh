@@ -6,13 +6,25 @@
 
 using ALE::Obj;
 
-template<typename Section>
-void constructFieldSplit(const Obj<Section>& section, PC fieldSplit) {
+template<typename Section, typename Order>
+void constructFieldSplit(const Obj<Section>& section, const Obj<Order>& globalOrder, Vec v, PC fieldSplit) {
   const typename Section::chart_type& chart = section->getChart();
   PetscInt                            space = 0;
   PetscErrorCode                      ierr;
 
-  for(typename std::vector<Obj<typename Section::atlas_type> >::const_iterator s_iter = section->getSpaces()->begin(); s_iter != section->getSpaces()->end(); ++s_iter, ++space) {
+  PetscInt total = 0;
+  for(typename std::vector<Obj<typename Section::atlas_type> >::const_iterator s_iter = section->getSpaces().begin(); s_iter != section->getSpaces().end(); ++s_iter, ++space) {
+    PetscInt n = section->size(space);
+
+    std::cout << "Space " << space << ": size " << n << std::endl;
+    total += n;
+  }
+  PetscInt localSize;
+  VecGetLocalSize(v, &localSize);
+  std::cout << "Vector local size " << localSize << std::endl;
+  assert(localSize == total);
+  space = 0;
+  for(typename std::vector<Obj<typename Section::atlas_type> >::const_iterator s_iter = section->getSpaces().begin(); s_iter != section->getSpaces().end(); ++s_iter, ++space) {
     PetscInt  n = section->size(space);
     PetscInt  i = -1;
     PetscInt *idx;
@@ -20,14 +32,35 @@ void constructFieldSplit(const Obj<Section>& section, PC fieldSplit) {
 
     ierr = PetscMalloc(n * sizeof(PetscInt), &idx);CHKERRXX(ierr);
     for(typename Section::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
-      const int fDim = section->getFiberDimension(*c_iter, space);
+      const int dim  = section->getFiberDimension(*c_iter, space);
+      const int cDim = section->getConstraintDimension(*c_iter, space);
 
-      if (fDim) {
-        const int off = s_iter->restrictPoint(*c_iter)[0].index;
+      if (dim > cDim) {
+        int off = globalOrder->getIndex(*c_iter);
 
-        for(int d = 0; d < fDim; ++d) {
-          // TODO: In parallel, we need remap this number to a global order
-          idx[++i] = off+d;
+        for(int s = 0; s < space; ++s) {
+          off += section->getConstrainedFiberDimension(*c_iter, s);
+        }
+        if (cDim) {
+          // This is potentially dangerous
+          //   These constraints dofs are for SINGLE FIELDS, not the entire point (confusing)
+          const int *cDofs = section->getConstraintDof(*c_iter, space);
+
+          for(int d = 0, k = 0; d < dim; ++d) {
+            if ((k < cDim) && (cDofs[k] == d)) {
+              std::cout << "  Ignored " << (off+d) << " at local pos " << d << " for point " << (*c_iter) << std::endl;
+              ++k;
+              continue;
+            }
+            idx[++i] = off+d;
+            std::cout << "Added " << (off+d) << " at pos " << i << " for point " << (*c_iter) << std::endl;
+          }
+        } else {
+          for(int d = 0; d < dim; ++d) {
+            // TODO: In parallel, we need remap this number to a global order
+            idx[++i] = off+d;
+            std::cout << "Added " << (off+d) << " at pos " << i << " for point " << (*c_iter) << std::endl;
+          }
         }
       }
     }

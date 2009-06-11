@@ -2242,6 +2242,16 @@ namespace ALE {
     void setConstraintDof(const point_type& p, const int dofs[], const int space) {
       this->_bcs[space]->updatePoint(p, dofs);
     }
+    // Return the total number of free dofs
+    int size(const int space) const {
+      const chart_type& points = this->getChart();
+      int               size   = 0;
+
+      for(typename chart_type::const_iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+        size += this->getConstrainedFiberDimension(*p_iter, space);
+      }
+      return size;
+    };
     template<typename OtherSection>
     void copyFibration(const Obj<OtherSection>& section) {
       const std::vector<Obj<atlas_type> >& spaces = section->getSpaces();

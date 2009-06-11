@@ -10,6 +10,10 @@ PetscLogEvent  Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assem
 PetscTruth MeshRegisterAllCalled = PETSC_FALSE;
 PetscFList MeshList;
 
+#if PETSC_HAVE_SIEVE
+ALE::MemoryLogger Petsc_MemoryLogger;
+#endif
+
 EXTERN PetscErrorCode MeshView_Mesh(Mesh, PetscViewer);
 EXTERN PetscErrorCode MeshRefine_Mesh(Mesh, MPI_Comm, Mesh *);
 EXTERN PetscErrorCode MeshCoarsenHierarchy_Mesh(Mesh, int, Mesh **);
