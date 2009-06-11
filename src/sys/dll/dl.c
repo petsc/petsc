@@ -117,10 +117,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm comm,const char l
    Level: developer
 
    Notes:
-   [[<http,ftp>://hostname]/directoryname/]filename[.so.1.0]
+   [[<http,ftp>://hostname]/directoryname/]libbasename[.so.1.0]
+
+   If the library has the symbol PetscDLLibraryRegister_basename() in it then that function is automatically run
+   when the library is opened.
 
    ${PETSC_ARCH} occuring in directoryname and filename 
    will be replaced with the appropriate value.
+
+.seealso: PetscLoadDynamicLibrary(), PetscDLLibraryAppend()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryOpen(MPI_Comm comm,const char path[],PetscDLLibrary *entry)
 {
@@ -173,7 +178,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryOpen(MPI_Comm comm,const char path[
   if (match) { 
     basename = basename + 3; 
   } else { 
-    ierr = PetscInfo1(0,"Dynamic library %s do not have lib prefix\n",libname);CHKERRQ(ierr); 
+    ierr = PetscInfo1(0,"Dynamic library %s does not have lib prefix\n",libname);CHKERRQ(ierr); 
   }
   ierr = PetscStrlen(basename,&len);CHKERRQ(ierr);
   ierr = PetscStrcpy(registername,"PetscDLLibraryRegister_");CHKERRQ(ierr);
@@ -183,7 +188,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryOpen(MPI_Comm comm,const char path[
     ierr = PetscInfo1(0,"Loading registered routines from %s\n",libname);CHKERRQ(ierr);
     ierr = (*func)(libname);CHKERRQ(ierr);
   } else {
-    ierr = PetscInfo2(0,"Dynamic library %s do not have symbol %s\n",libname,registername);CHKERRQ(ierr);
+    ierr = PetscInfo2(0,"Dynamic library %s does not have symbol %s\n",libname,registername);CHKERRQ(ierr);
   }
   
   ierr = PetscNew(struct _n_PetscDLLibrary,entry);CHKERRQ(ierr);
@@ -319,6 +324,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibrarySym(MPI_Comm comm,PetscDLLibrary *o
      Level: developer
 
      Notes: if library is already in path will not add it.
+
+  If the library has the symbol PetscDLLibraryRegister_basename() in it then that function is automatically run
+      when the library is opened.
+
+.seealso: PetscDLLibraryOpen()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibrary *outlist,const char path[])
 {

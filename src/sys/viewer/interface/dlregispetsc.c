@@ -57,6 +57,16 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(const char path[])
 }
 
 EXTERN_C_BEGIN
+
+#if defined(PETSC_USE_SINGLE_LIBRARY)
+extern PetscErrorCode PetscDLLibraryRegister_petscvec(const char[]);
+extern PetscErrorCode PetscDLLibraryRegister_petscmat(const char[]);
+extern PetscErrorCode PetscDLLibraryRegister_petscdm(const char[]);
+extern PetscErrorCode PetscDLLibraryRegister_petscksp(const char[]);
+extern PetscErrorCode PetscDLLibraryRegister_petscsnes(const char[]);
+extern PetscErrorCode PetscDLLibraryRegister_petscts(const char[]);
+#endif
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDLLibraryRegister_petsc" 
 /*
@@ -80,6 +90,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRegister_petsc(const char path[])
   ierr = PetscDrawInitializePackage(path);CHKERRQ(ierr);
   ierr = PetscViewerInitializePackage(path);CHKERRQ(ierr);
   ierr = PetscRandomInitializePackage(path);CHKERRQ(ierr);
+
+#if defined(PETSC_USE_SINGLE_LIBRARY)
+  ierr = PetscDLLibraryRegister_petscvec(path);CHKERRQ(ierr);
+  ierr = PetscDLLibraryRegister_petscmat(path);CHKERRQ(ierr);
+  ierr = PetscDLLibraryRegister_petscdm(path);CHKERRQ(ierr);
+  ierr = PetscDLLibraryRegister_petscksp(path);CHKERRQ(ierr);
+  ierr = PetscDLLibraryRegister_petscsnes(path);CHKERRQ(ierr);
+  ierr = PetscDLLibraryRegister_petscts(path);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

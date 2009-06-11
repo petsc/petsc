@@ -95,6 +95,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize_DynamicLibraries(void)
 #else
   ierr = PetscLoadDynamicLibrary("",&found);CHKERRQ(ierr);
   if (!found) SETERRQ(PETSC_ERR_FILE_OPEN,"Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
+#if !defined(PETSC_USE_SINGLE_LIBRARY)
   ierr = PetscLoadDynamicLibrary("vec",&found);CHKERRQ(ierr);
   if (!found) SETERRQ(PETSC_ERR_FILE_OPEN,"Unable to locate PETSc Vec dynamic library \n You cannot move the dynamic libraries!");
   ierr = PetscLoadDynamicLibrary("mat",&found);CHKERRQ(ierr);
@@ -107,6 +108,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize_DynamicLibraries(void)
   if (!found) SETERRQ(PETSC_ERR_FILE_OPEN,"Unable to locate PETSc SNES dynamic library \n You cannot move the dynamic libraries!");
   ierr = PetscLoadDynamicLibrary("ts",&found);CHKERRQ(ierr);
   if (!found) SETERRQ(PETSC_ERR_FILE_OPEN,"Unable to locate PETSc TS dynamic library \n You cannot move the dynamic libraries!");
+#endif
 
   ierr = PetscLoadDynamicLibrary("mesh",&found);CHKERRQ(ierr);
   ierr = PetscLoadDynamicLibrary("contrib",&found);CHKERRQ(ierr);

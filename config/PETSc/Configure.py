@@ -226,7 +226,8 @@ class Configure(config.base.Configure):
       self.addMakeMacro('PETSC_TS_LIB_BASIC','-lpetsc')
       self.addMakeMacro('PETSC_LIB_BASIC','-lpetsc')
       self.addMakeMacro('PETSC_CONTRIB_BASIC','-lpetsc')
-
+      self.addDefine('USE_SINGLE_LIBRARY', '1')
+      
     if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib')):
       os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib'))
 
