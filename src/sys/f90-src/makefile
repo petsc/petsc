@@ -1,11 +1,11 @@
-#requirespackage 'PETSC_USE_F90_SRC_IMPL'
+#requirespackage 'PETSC_USING_F90'
 
 ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = f90_cwrap.c
 SOURCEF  =
-SOURCEH  =
+SOURCEH  = f90impl.h
 OBJSC    = f90_cwrap.o 
 OBJSF	 =
 DIRS     = fsrc

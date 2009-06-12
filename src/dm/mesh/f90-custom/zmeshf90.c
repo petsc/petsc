@@ -1,6 +1,6 @@
 #include "private/fortranimpl.h"
 #include "petscmesh.h"
-#include "../src/sys/f90/f90impl.h"
+#include "../src/sys/f90-src/f90impl.h"
 
 #ifdef PETSC_USE_POINTER_CONVERSION
 #if defined(__cplusplus)

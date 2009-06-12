@@ -17,21 +17,10 @@ PETSC_EXTERN_CXX_BEGIN
 
 #if defined (PETSC_USING_F90)
 
-#if defined (PETSC_HAVE_F90_H)
-#include PETSC_HAVE_F90_H
-/* Check if PETSC_HAVE_F90_C is also specified */
-#if !defined(PETSC_HAVE_F90_C)
-#error "Both PETSC_HAVE_F90_H and PETSC_HAVE_F90_C flags have to be speficied"
-#endif
-
-#else /* PETSC_HAVE_F90_H */
-
 #define F90Array1d void
 #define F90Array2d void
 #define F90Array3d void
 #define F90Array4d void
-
-#endif /* PETSC_HAVE_F90_H */
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array1dCreate(void*,PetscDataType,PetscInt,PetscInt,F90Array1d* PETSC_F90_2PTR_PROTO_NOVAR);
 EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array1dAccess(F90Array1d*,PetscDataType,void** PETSC_F90_2PTR_PROTO_NOVAR);

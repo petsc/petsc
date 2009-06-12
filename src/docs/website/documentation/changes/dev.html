@@ -170,8 +170,18 @@ PCShellGetContext, similar to MatShell.
       <p><u><b>AO:<br>
       </b></u></p>
       <p><u><b>Sieve:</b></u></p>
-      <p><u><b>Fortran:</b></u><br>
-      </p>
+      <p><u><b>Fortran:<br>
+      </b></u></p>
+      <ul>
+        <li>Removed the old compiler dependent implementation of f90
+interface sources in favor of the new compiler independent
+implementation. Consequently the configure option --with-f90-interface
+is removed. And the f90 interface is automatically built - if an f90
+compiler is detected. [this is the default behavior before this change
+aswell]<br>
+        </li>
+      </ul>
+      <p> </p>
       <br>
       <p></p>
       <ul>
