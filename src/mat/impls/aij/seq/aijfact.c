@@ -8,14 +8,86 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatOrdering_Flow_SeqAIJ"
+/*
+      Computes an ordering to get most of the large numerical values in the lower triangular part of the matrix
+*/
 PetscErrorCode MatOrdering_Flow_SeqAIJ(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
 {
-  PetscFunctionBegin;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)mat->data;
+  PetscErrorCode    ierr;
+  PetscInt          i,j,jj,k, kk,n = mat->rmap->n, current, newcurrent,*order;
+  const PetscInt    *ai = a->i, *aj = a->j;
+  const PetscScalar *aa = a->a;
+  PetscTruth        *done;
+  PetscReal         best,past,future;
 
-  SETERRQ(PETSC_ERR_SUP,"Code not written");
-#if !defined(PETSC_USE_DEBUG)
+  PetscFunctionBegin;
+  /* pick initial row */
+  best = -1;
+  for (i=0; i<n; i++) {
+    future = 0;
+    for (j=ai[i]; j<ai[i+1]; j++) {
+      if (aj[j] != i) future  += PetscAbsScalar(aa[j]); else past = PetscAbsScalar(aa[j]);
+    }
+    if (!future) future = 1.e-10; /* if there is zero in the upper diagonal part want to rank this row high */
+    if (past/future > best) {
+      best = past/future;
+      current = i;
+    }
+  }
+
+  ierr = PetscMalloc(n*sizeof(PetscTruth),&done);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&order);CHKERRQ(ierr);
+  ierr = PetscMemzero(done,n*sizeof(PetscTruth));CHKERRQ(ierr);
+  order[0] = current;
+  for (i=0; i<n-1; i++) {
+    done[current] = PETSC_TRUE;
+    best          = -1;
+    /* loop over all neighbors of current pivot */
+    for (j=ai[current]; j<ai[current+1]; j++) {
+      jj = aj[j];
+      if (done[jj]) continue;
+      /* loop over columns of potential next row computing weights for below and above diagonal */
+      past = future = 0.0;
+      for (k=ai[jj]; k<ai[jj+1]; k++) {
+        kk = aj[k];
+        if (done[kk]) past += PetscAbsScalar(aa[k]);
+        else if (kk != jj) future  += PetscAbsScalar(aa[k]);
+      }
+      if (!future) future = 1.e-10; /* if there is zero in the upper diagonal part want to rank this row high */
+      if (past/future > best) {
+        best = past/future;
+        newcurrent = jj;
+      }
+    }
+    if (best == -1) { /* no neighbors to select from so select best of all that remain */
+      best = -1;
+      for (k=0; k<n; k++) {
+        if (done[k]) continue;
+        future = 0;
+        past   = 0;
+        for (j=ai[k]; j<ai[k+1]; j++) {
+          kk = aj[j];
+          if (done[kk]) past += PetscAbsScalar(aa[j]);
+          else if (kk != k) future  += PetscAbsScalar(aa[j]);
+        }
+        if (!future) future = 1.e-10; /* if there is zero in the upper diagonal part want to rank this row high */
+        if (past/future > best) {
+          best = past/future;
+          newcurrent = k;
+        }
+      }
+    }
+    if (current == newcurrent) SETERRQ(PETSC_ERR_PLIB,"newcurrent cannot be current");
+    current = newcurrent;
+    order[i+1] = current;
+  }
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,order,irow);CHKERRQ(ierr);
+  *icol = *irow;
+  ierr = PetscObjectReference((PetscObject)*irow);CHKERRQ(ierr);
+  ierr = PetscFree(done);CHKERRQ(ierr);
+  ierr = PetscFree(order);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-#endif
 }
 
 EXTERN_C_BEGIN

@@ -10,6 +10,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_QMD(Mat,const MatOrderingTy
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_RCM(Mat,const MatOrderingType,IS*,IS*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_RowLength(Mat,const MatOrderingType,IS*,IS*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_DSC(Mat,const MatOrderingType,IS*,IS*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_Flow_SeqAIJ(Mat,const MatOrderingType,IS*,IS*);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -49,6 +50,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatOrderingRegisterAll(const char path[])
   ierr = MatOrderingRegisterDynamic(MATORDERING_RCM,      path,"MatOrdering_RCM"      ,MatOrdering_RCM);CHKERRQ(ierr);
   ierr = MatOrderingRegisterDynamic(MATORDERING_QMD,      path,"MatOrdering_QMD"      ,MatOrdering_QMD);CHKERRQ(ierr);
   ierr = MatOrderingRegisterDynamic(MATORDERING_ROWLENGTH,path,"MatOrdering_RowLength",MatOrdering_RowLength);CHKERRQ(ierr);
+  ierr = MatOrderingRegisterDynamic(MATORDERING_FLOW,     path,"MatOrdering_Flow_SeqAIJ",MatOrdering_Flow_SeqAIJ);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

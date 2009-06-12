@@ -418,7 +418,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneralNC(MPI_Comm comm,PetscInt n,con
 
    Notes:
    Unlike with ISCreateGeneral, the indices are not copied to internally
-   allocated storage. The user array is not freed by ISDestroy.
+   allocated storage. The user array is not freed by ISDestroy().
 
    When the communicator is not MPI_COMM_SELF, the operations on IS are NOT
    conceptually the same as MPI_Group operations. The IS are then
