@@ -1,3 +1,4 @@
+#requirespackage   'PETSC_HAVE_FORTRAN'
 
 ALL: lib
 SPECIALFASTLIB = yes
@@ -12,7 +13,7 @@ OBJSC    =
 OBJSF    = somefort.o
 LIBBASE  = libpetsc
 MANSEC   = Sys
-LOCDIR   = src/fortran/fsrc/
+LOCDIR   = src/sys/fsrc/
 
 include ${PETSC_DIR}/conf/base
 include ${PETSC_DIR}/conf/test
