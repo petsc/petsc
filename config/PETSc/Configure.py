@@ -145,10 +145,9 @@ class Configure(config.base.Configure):
       else:
         self.addMakeMacro('FC_LINKER',fc_linker)
       self.addMakeMacro('FC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
-      # '' for Unix, .exe for Windows
-      #self.addMakeMacro('FC_LINKER_SUFFIX','')
-      #FC_LINKER_LIBS is currently unused
-      #self.addMakeMacro('FC_LINKER_LIBS',self.libraries.toStringNoDupes(self.compilers.flibs+self.compilers.LIBS.split(' ')))
+      # apple requires this shared library linker flag on SOME versions of the os
+      if self.setCompilers.getLinkerFlags().find('-Wl,-commons,use_dylibs') > -1:
+        self.addMakeMacro('DARWIN_COMMONS_USE_DYLIBS',' -Wl,-commons,use_dylibs ')
       self.setCompilers.popLanguage()
     else:
       self.addMakeMacro('FC','')
