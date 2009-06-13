@@ -961,12 +961,15 @@ PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, 
       for(typename ALE::Mesh::sieve_type::traits::coneSequence::iterator v_iter = adj->begin(); v_iter != adj->end(); ++v_iter) {
         const typename Mesh::point_type&             neighbor = *v_iter;
         const typename Mesh::order_type::value_type& cIdx     = globalOrder->restrictPoint(neighbor)[0];
-        const int                                    col      = cIdx.prefix;
+        const int                                    col      = cIdx.prefix>=0 ? cIdx.prefix : -(cIdx.prefix+1);
         const int&                                   cSize    = cIdx.index/bs;
 
-        if ((mesh->debug() > 1) && ((bs == 1) || (cIdx.index%bs == 0))) std::cout << "["<<adjGraph->commRank()<<"]:   col "<<cIdx.prefix<<": size " << cIdx.index << " bs "<<bs<<std::endl;
+        if ((mesh->debug() > 1) && ((bs == 1) || (cIdx.index%bs == 0))) std::cout << "["<<adjGraph->commRank()<<"]:   col "<<col<<": size " << cIdx.index << " bs "<<bs<<std::endl;
         if (cSize > 0) {
-          if (isSymmetric && (col < row)) continue;
+          if (isSymmetric && (col < row)) {
+            if (mesh->debug() > 1) {std::cout << "["<<adjGraph->commRank()<<"]: Rejecting row "<<row<<" col " << col <<std::endl;}
+            continue;
+          }
           if (globalOrder->isLocal(neighbor)) {
             for(int r = 0; r < rSize; ++r) {dnz[(row - firstRow)/bs + r] += cSize;}
           } else {
