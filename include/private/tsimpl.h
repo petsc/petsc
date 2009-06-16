@@ -22,11 +22,7 @@ struct _TSOps {
   PetscErrorCode (*rhsfunction)(TS, PetscReal, Vec, Vec, void *);
   PetscErrorCode (*rhsjacobian)(TS, PetscReal, Vec, Mat *, Mat *, MatStructure *, void *);
   PetscErrorCode (*prestep)(TS);
-  PetscErrorCode (*update)(TS, PetscReal, PetscReal *);
-  PetscErrorCode (*postupdate)(TS, PetscReal, PetscReal *);
   PetscErrorCode (*poststep)(TS);
-  PetscErrorCode (*reform)(TS);
-  PetscErrorCode (*reallocate)(TS);
   PetscErrorCode (*setup)(TS);
   PetscErrorCode (*step)(TS,PetscInt *, PetscReal *);
   PetscErrorCode (*setfromoptions)(TS);
