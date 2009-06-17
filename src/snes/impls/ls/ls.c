@@ -542,7 +542,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchCubic(SNES snes,void *lsctx,Vec
     goto theend1;
   }
   if (*ynorm > neP->maxstep) {	/* Step too big, so scale back */
-    ierr = PetscInfo2(snes,"Scaling step by %G old ynorm %G\n",PetscRealPart(neP->maxstep/(*ynorm)),*ynorm);CHKERRQ(ierr);
+    ierr = PetscInfo2(snes,"Scaling step by %G old ynorm %G\n",neP->maxstep/(*ynorm),*ynorm);CHKERRQ(ierr);
     ierr = VecScale(y,neP->maxstep/(*ynorm));CHKERRQ(ierr);
     *ynorm = neP->maxstep;
   }

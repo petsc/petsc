@@ -1,0 +1,11 @@
+#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(MAT_HIDE)
+#define MAT_HIDE type(Mat)
+#define MATFDCOLORING_HIDE type(MatFDColoring)
+#define MATNULLSPACE_HIDE type(MatNullSpace)
+#define USE_MAT_HIDE use petscmatdef
+#elif !defined(MAT_HIDE)
+#define MAT_HIDE Mat
+#define MATFDCOLORING_HIDE MatFDColoring
+#define MATNULLSPACE_HIDE MatNullSpace
+#define USE_MAT_HIDE
+#endif

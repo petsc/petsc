@@ -1,20 +1,8 @@
-
 #if !defined(PETSC_USE_FORTRAN_MODULES) 
 #include "finclude/ftn-custom/petscmatdef.h90"
 #endif
-
-
-#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(MAT_HIDE)
-#define MAT_HIDE type(Mat)
-#define MATFDCOLORING_HIDE type(MatFDColoring)
-#define MATNULLSPACE_HIDE type(MatNullSpace)
-#define USE_MAT_HIDE use petscmatdef
-#elif !defined(MAT_HIDE)
-#define MAT_HIDE Mat
-#define MATFDCOLORING_HIDE MatFDColoring
-#define MATNULLSPACE_HIDE MatNullSpace
-#define USE_MAT_HIDE
-#endif
+#include "finclude/ftn-custom/petscishide.h90"
+#include "finclude/ftn-custom/petscmathide.h90"
 
       Interface 
         Subroutine MatGetArrayF90(v,array,ierr)
@@ -35,3 +23,127 @@
         End Subroutine
       End Interface
 
+      Interface
+         Subroutine MatGetInfo(v, flag, info ,ierr)
+         USE_MAT_HIDE
+         MAT_HIDE  v
+         MatInfoType flag
+         MatInfo info(:)
+         PetscErrorCode ierr
+       End Subroutine
+      End Interface
+
+      Interface
+         subroutine MatLUFactor(v, row, col, info ,ierr)
+         USE_MAT_HIDE
+         MAT_HIDE  v
+         IS_HIDE row
+         IS_HIDE col
+         MatFactorInfo info(:)
+         PetscErrorCode ierr
+         end subroutine
+      End Interface
+
+      Interface
+         subroutine MatILUFactor(v, row, col, info ,ierr)
+         USE_MAT_HIDE
+         MAT_HIDE  v
+         IS_HIDE row
+         IS_HIDE col
+         MatFactorInfo info(:)
+         PetscErrorCode ierr
+         end subroutine
+      End Interface
+
+      Interface
+         subroutine MatLUFactorSymbolic(fact, v, row, col, info ,ierr)
+         USE_MAT_HIDE
+         MAT_HIDE  fact
+         MAT_HIDE  v
+         IS_HIDE row
+         IS_HIDE col
+         MatFactorInfo info(:)
+         PetscErrorCode ierr
+         end subroutine
+      End Interface
+      
+      Interface
+         subroutine MatLUFactorNumeric(fact, v, info ,ierr)
+         USE_MAT_HIDE
+         MAT_HIDE  fact
+         MAT_HIDE  v
+         MatFactorInfo info(:)
+         PetscErrorCode ierr
+         end subroutine
+      End Interface
+
+      Interface
+         subroutine MatCholeskyFactor(v, perm, info ,ierr)
+         USE_MAT_HIDE
+         MAT_HIDE  v
+         IS_HIDE perm
+         MatFactorInfo info(:)
+         PetscErrorCode ierr
+         end subroutine
+      End Interface
+      
+      Interface
+         subroutine MatCholeskyFactorSymbolic(fact,v,perm,info,ierr)
+         USE_MAT_HIDE
+         MAT_HIDE  fact
+         MAT_HIDE  v
+         IS_HIDE perm
+         MatFactorInfo info(:)
+         PetscErrorCode ierr
+         end subroutine
+      End Interface
+
+      Interface
+         subroutine MatCholeskyFactorNumeric(fact, v, info ,ierr)
+         USE_MAT_HIDE
+         MAT_HIDE  fact
+         MAT_HIDE  v
+         MatFactorInfo info(:)
+         PetscErrorCode ierr
+         end subroutine
+      End Interface
+
+      Interface
+         subroutine MatILUFactorSymbolic(fact,v,row,col,info,ierr)
+         USE_MAT_HIDE
+         MAT_HIDE  fact
+         MAT_HIDE  v
+         IS_HIDE row
+         IS_HIDE col
+         MatFactorInfo info(:)
+         PetscErrorCode ierr
+         end subroutine
+      End Interface
+
+      Interface
+         subroutine MatICCFactorSymbolic(fact, v, perm, info ,ierr)
+         USE_MAT_HIDE
+         MAT_HIDE  fact
+         MAT_HIDE  v
+         IS_HIDE perm
+         MatFactorInfo info(:)
+         PetscErrorCode ierr
+         end subroutine
+      End Interface
+
+      Interface
+         subroutine MatICCFactor(v, row, info ,ierr)
+         USE_MAT_HIDE
+         MAT_HIDE  v
+         IS_HIDE row
+         MatFactorInfo info(:)
+         PetscErrorCode ierr
+         end subroutine
+      End Interface
+
+      Interface
+         subroutine MatFactorInfoInitialize(info ,ierr)
+         MatFactorInfo info(:)
+         PetscErrorCode ierr
+         end subroutine
+      End Interface

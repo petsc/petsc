@@ -1,7 +1,5 @@
-
 #if !defined(__PETSCDADEF_H90)
 #define __PETSCDADEF_H90
-
 #if defined(PETSC_USE_FORTRAN_DATATYPES)
       type DM
         PetscFortranAddr:: v
@@ -16,5 +14,4 @@
         PetscFortranAddr:: v
       end type SDA
 #endif
-
 #endif

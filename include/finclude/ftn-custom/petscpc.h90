@@ -1,10 +1,4 @@
-
 #if !defined(PETSC_USE_FORTRAN_MODULES) 
 #include "finclude/ftn-custom/petscpcdef.h90"
 #endif
-
-#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(PC_HIDE)
-#define PC_HIDE type(PC)
-#elif !defined(PC_HIDE)
-#define PC_HIDE PC
-#endif
+#include "finclude/ftn-custom/petscpchide.h90"
