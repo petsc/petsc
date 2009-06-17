@@ -46,7 +46,6 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate(MPI_Comm comm, TS *ts) {
   ierr = PetscMemzero(t->ops, sizeof(struct _TSOps));CHKERRQ(ierr);
 
   t->ops->prestep       = TSDefaultPreStep;
-  t->ops->update        = TSDefaultUpdate;
   t->ops->poststep      = TSDefaultPostStep;
 
   /* General TS description */

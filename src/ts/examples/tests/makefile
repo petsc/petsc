@@ -206,10 +206,18 @@ runex4_6:
 	   else echo "Possible problem with ex4_6, diffs above"; fi; \
 	   ${RM} -f ex4.tmp
 
+runex4_7:
+	-@${MPIEXEC} -n 1 ./ex4 -ts_fd -ts_type beuler -test_PostStep > ex4.tmp 2>&1;	  \
+	   if (${DIFF} output/ex4_7.out ex4.tmp) then true; \
+	   else echo "Possible problem with ex4_7, diffs above"; fi; \
+	   ${RM} -f ex4.tmp
+
 TESTEXAMPLES_C		  = ex1.PETSc runex1_euler runex1_euler_2 runex1_euler_3 runex1_euler_4 runex1_euler_5 \
                             runex1_beuler runex1_beuler_2 runex1_beuler_3 runex1_beuler_4 runex1_beuler_5 \
                             runex1_cn runex1_cn_2 runex1_cn_3 ex1.rm \
-                            ex4.PETSc runex4 runex4_1 runex4_2 runex4_3 runex4_4 runex4_5 runex4_6 ex4.rm
+                            ex4.PETSc runex4 runex4_1 runex4_2 runex4_3 runex4_4 runex4_5 runex4_6 \
+                            runex4_7 ex4.rm
+
 testexamples_C_NoComplex  = ex3.PETSc runex3 runex3_2 ex3.rm
 TESTEXAMPLES_C_X11	  = 
 TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm
