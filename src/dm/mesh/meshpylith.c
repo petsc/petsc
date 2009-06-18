@@ -87,7 +87,7 @@ namespace ALE {
       PetscViewer    viewer;
       FILE          *f;
       PetscInt       maxVerts = 1024, vertexCount = 0;
-      PetscScalar   *coords;
+      PetscReal     *coords;
       double         scaleFactor = 1.0;
       char           buf[2048];
       PetscInt       c;
@@ -103,7 +103,7 @@ namespace ALE {
         ierr = PetscViewerASCIIGetPointer(viewer, &f);
         /* Ignore comments */
         ignoreComments(buf, 2048, f);
-        ierr = PetscMalloc(maxVerts*dim * sizeof(PetscScalar), &coords);
+        ierr = PetscMalloc(maxVerts*dim * sizeof(PetscReal), &coords);
         /* Read units */
         const char *units = strtok(buf, " ");
         if (strcmp(units, "coord_units")) {
@@ -124,11 +124,11 @@ namespace ALE {
           const char *x = strtok(buf, " ");
 
           if (vertexCount == maxVerts) {
-            PetscScalar *ctmp;
+            PetscReal *ctmp;
 
             ctmp = coords;
-            ierr = PetscMalloc(maxVerts*2*dim * sizeof(PetscScalar), &coords);
-            ierr = PetscMemcpy(coords, ctmp, maxVerts*dim * sizeof(PetscScalar));
+            ierr = PetscMalloc(maxVerts*2*dim * sizeof(PetscReal), &coords);
+            ierr = PetscMemcpy(coords, ctmp, maxVerts*dim * sizeof(PetscReal));
             ierr = PetscFree(ctmp);
             maxVerts *= 2;
           }
@@ -154,7 +154,7 @@ namespace ALE {
       PetscInt       maxSplit = 1024, splitCount = 0;
       PetscInt      *splitId;
       PetscInt      *loadHist;
-      PetscScalar   *splitVal;
+      PetscReal     *splitVal;
       char           buf[2048];
       PetscInt       c;
       PetscInt       commRank;
@@ -178,14 +178,14 @@ namespace ALE {
       ierr = PetscViewerASCIIGetPointer(viewer, &f);
       /* Ignore comments */
       ignoreComments(buf, 2048, f);
-      ierr = PetscMalloc3(maxSplit*2,PetscInt,&splitId,maxSplit,PetscInt,&loadHist,maxSplit*dim,PetscScalar,&splitVal);
+      ierr = PetscMalloc3(maxSplit*2,PetscInt,&splitId,maxSplit,PetscInt,&loadHist,maxSplit*dim,PetscReal,&splitVal);
       do {
         const char *s = strtok(buf, " ");
 
         if (splitCount == maxSplit) {
           PetscInt    *sitmp;
           PetscInt    *lhtmp;
-          PetscScalar *svtmp;
+          PetscReal   *svtmp;
 
           sitmp = splitId;
           lhtmp = loadHist;
@@ -193,7 +193,7 @@ namespace ALE {
           ierr = PetscMalloc3(maxSplit*2*2,PetscInt,&splitId,maxSplit*2,PetscInt,&loadHist,maxSplit*dim*2,PetscScalar,&splitVal);
           ierr = PetscMemcpy(splitId,  sitmp, maxSplit*2   * sizeof(PetscInt));
           ierr = PetscMemcpy(loadHist, lhtmp, maxSplit     * sizeof(PetscInt));
-          ierr = PetscMemcpy(splitVal, svtmp, maxSplit*dim * sizeof(PetscScalar));
+          ierr = PetscMemcpy(splitVal, svtmp, maxSplit*dim * sizeof(PetscReal));
           ierr = PetscFree3(sitmp,lhtmp,svtmp);
           maxSplit *= 2;
         }

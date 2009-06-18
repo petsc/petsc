@@ -101,7 +101,12 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<Mesh>& m
   ierr = ISCreateGeneral(PETSC_COMM_SELF, localSize, globalIndices, &globalIS);CHKERRQ(ierr);
   ierr = PetscFree(localIndices);CHKERRQ(ierr);
   ierr = PetscFree(globalIndices);CHKERRQ(ierr);
+  // Can remove this when I test it with NULL
+#ifdef PETSC_USE_COMPLEX
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, s->getStorageSize(), PETSC_NULL, &localVec);CHKERRQ(ierr);
+#else
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, s->getStorageSize(), s->restrictSpace(), &localVec);CHKERRQ(ierr);
+#endif
   ierr = VecScatterCreate(localVec, localIS, globalVec, globalIS, scatter);CHKERRQ(ierr);
   ierr = ISDestroy(globalIS);CHKERRQ(ierr);
   ierr = ISDestroy(localIS);CHKERRQ(ierr);
@@ -1010,7 +1015,11 @@ PetscErrorCode updateOperator(Mat A, const Sieve& sieve, Visitor& iV, const ALE:
     for(int i = 0; i < numIndices; i++) {
       ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]", sieve.commRank());CHKERRQ(ierr);
       for(int j = 0; j < numIndices; j++) {
+#ifdef PETSC_USE_COMPLEX
+        ierr = PetscPrintf(PETSC_COMM_SELF, " (%g,%g)", PetscRealPart(array[i*numIndices+j]), PetscImaginaryPart(array[i*numIndices+j]));CHKERRQ(ierr);
+#else
         ierr = PetscPrintf(PETSC_COMM_SELF, " %g", array[i*numIndices+j]);CHKERRQ(ierr);
+#endif
       }
       ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
     }

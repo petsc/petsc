@@ -263,7 +263,7 @@ namespace ALE {
       PetscViewer    viewer;
       FILE          *f;
       PetscInt       numVerts, vertexCount = 0;
-      PetscScalar   *coords;
+      PetscReal     *coords;
       char           buf[2048];
       PetscInt       c;
       PetscInt       commRank;
@@ -283,7 +283,7 @@ namespace ALE {
       }
       ierr = PetscViewerASCIIGetPointer(viewer, &f);
       numVerts = atoi(fgets(buf, 2048, f));
-      ierr = PetscMalloc(numVerts*dim * sizeof(PetscScalar), &coords);
+      ierr = PetscMalloc(numVerts*dim * sizeof(PetscReal), &coords);
       while(fgets(buf, 2048, f) != NULL) {
         const char *x = strtok(buf, " ");
       

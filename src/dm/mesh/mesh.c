@@ -682,7 +682,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh, Vec *gvec)
 
   PetscFunctionBegin;
   ierr = MeshHasSectionReal(mesh, "default", &flag);CHKERRQ(ierr);
-  if (!flag) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
+  if (!flag) {SETERRQ1(PETSC_ERR_ARG_WRONGSTATE, "Must set default section for mesh %p", m.objPtr);}
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   const ALE::Obj<PETSC_MESH_TYPE::order_type>& order = m->getFactory()->getGlobalOrder(m, "default", m->getRealSection("default"));
 
@@ -1108,11 +1108,15 @@ PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mod
   //firstElement = elementBundle->getLocalSizes()[bundle->getCommRank()];
   firstElement = 0;
   // Must relate b to field
+#ifdef PETSC_USE_COMPLEX
+  SETERRQ(PETSC_ERR_SUP, "SectionReal does not support complex update");
+#else
   if (mode == INSERT_VALUES) {
     m->update(m->getRealSection(std::string("x")), PETSC_MESH_TYPE::point_type(e + firstElement), v);
   } else {
     m->updateAdd(m->getRealSection(std::string("x")), PETSC_MESH_TYPE::point_type(e + firstElement), v);
   }
+#endif
   ierr = PetscLogEventEnd(Mesh_assembleVector,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2572,7 +2576,11 @@ PetscErrorCode MeshRestrictClosure(Mesh mesh, SectionReal section, PetscInt poin
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+#ifdef PETSC_USE_COMPLEX
+  SETERRQ(PETSC_ERR_SUP, "SectionReal does not support complex restriction");
+#else
   m->restrictClosure(s, point, values, n);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -2606,7 +2614,11 @@ PetscErrorCode MeshUpdateClosure(Mesh mesh, SectionReal section, PetscInt point,
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+#ifdef PETSC_USE_COMPLEX
+  SETERRQ(PETSC_ERR_SUP, "SectionReal does not support complex update");
+#else
   m->update(s, point, values);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -2640,7 +2652,11 @@ PetscErrorCode MeshUpdateAddClosure(Mesh mesh, SectionReal section, PetscInt poi
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+#ifdef PETSC_USE_COMPLEX
+  SETERRQ(PETSC_ERR_SUP, "SectionReal does not support complex update");
+#else
   m->updateAdd(s, point, values);
+#endif
   PetscFunctionReturn(0);
 }
 
