@@ -658,7 +658,7 @@ PetscErrorCode MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
     vi  = aj + ai[i] ;
     nz  = a->diag[i] - ai[i];
     sum = b[*r++];
-    SPARSEDENSEMDOT(sum,tmps,v,vi,nz); 
+    PetscSparseDenseMinusDot(sum,tmps,v,vi,nz); 
     tmp[i] = sum;
   }
 
@@ -668,7 +668,7 @@ PetscErrorCode MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
     vi  = aj + a->diag[i] + 1;
     nz  = ai[i+1] - a->diag[i] - 1;
     sum = tmp[i];
-    SPARSEDENSEMDOT(sum,tmps,v,vi,nz); 
+    PetscSparseDenseMinusDot(sum,tmps,v,vi,nz); 
     x[*c--] = tmp[i] = sum*aa[a->diag[i]];
   }
 
@@ -718,7 +718,7 @@ PetscErrorCode MatMatSolve_SeqAIJ(Mat A,Mat B,Mat X)
       vi  = aj + ai[i] ;
       nz  = a->diag[i] - ai[i];
       sum = b[r[i]];
-      SPARSEDENSEMDOT(sum,tmps,v,vi,nz); 
+      PetscSparseDenseMinusDot(sum,tmps,v,vi,nz); 
       tmp[i] = sum;
     }
     /* backward solve the upper triangular */
@@ -727,7 +727,7 @@ PetscErrorCode MatMatSolve_SeqAIJ(Mat A,Mat B,Mat X)
       vi  = aj + a->diag[i] + 1;
       nz  = ai[i+1] - a->diag[i] - 1;
       sum = tmp[i];
-      SPARSEDENSEMDOT(sum,tmps,v,vi,nz); 
+      PetscSparseDenseMinusDot(sum,tmps,v,vi,nz); 
       x[c[i]] = tmp[i] = sum*aa[a->diag[i]];
     }
 
@@ -774,7 +774,7 @@ PetscErrorCode MatSolve_SeqAIJ_InplaceWithPerm(Mat A,Vec bb,Vec xx)
     vi  = aj + ai[i] ;
     nz  = a->diag[i] - ai[i];
     sum = b[*r++];
-    SPARSEDENSEMDOT(sum,tmps,v,vi,nz); 
+    PetscSparseDenseMinusDot(sum,tmps,v,vi,nz); 
     tmp[row] = sum;
   }
 
@@ -785,7 +785,7 @@ PetscErrorCode MatSolve_SeqAIJ_InplaceWithPerm(Mat A,Vec bb,Vec xx)
     vi  = aj + a->diag[i] + 1;
     nz  = ai[i+1] - a->diag[i] - 1;
     sum = tmp[row];
-    SPARSEDENSEMDOT(sum,tmps,v,vi,nz); 
+    PetscSparseDenseMinusDot(sum,tmps,v,vi,nz); 
     x[*c--] = tmp[row] = sum*aa[a->diag[i]];
   }
 
@@ -832,7 +832,7 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
     vi   = aj + ai_i;
     nz   = adiag[i] - ai_i;
     sum  = b[i];
-    while (nz--) sum -= *v++ * x[*vi++];
+    PetscSparseDenseMinusDot(sum,x,v,vi,nz);    
     x[i] = sum;
   }
 
@@ -843,7 +843,7 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
     vi      = aj + adiag_i + 1;
     nz      = ai[i+1] - adiag_i - 1;
     sum     = x[i];
-    while (nz--) sum -= *v++ * x[*vi++];
+    PetscSparseDenseMinusDot(sum,x,v,vi,nz);
     x[i]    = sum*aa[adiag_i];
   }
 #endif
@@ -1757,7 +1757,7 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_iludt(Mat A,Vec bb,Vec xx)
   for (i=1; i<n; i++) {
     nz  = ai[i+1] - ai[i];
     sum = b[i];
-    SPARSEDENSEMDOT(sum,x,v,vi,nz);
+    PetscSparseDenseMinusDot(sum,x,v,vi,nz);
     /*    while (nz--) sum -= *v++ * x[*vi++];*/
     x[i] = sum;
   }
@@ -1768,7 +1768,7 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_iludt(Mat A,Vec bb,Vec xx)
   for (i=n-1; i>=0; i--){
     nz  = adiag[i] - adiag[i+1] - 1; 
     sum = x[i];
-    SPARSEDENSEMDOT(sum,x,v,vi,nz);
+    PetscSparseDenseMinusDot(sum,x,v,vi,nz);
     /* while (nz--) sum -= *v++ * x[*vi++]; */
     x[i] = sum*aa[adiag[i]];
     v++; vi++;
@@ -1812,7 +1812,7 @@ PetscErrorCode MatSolve_SeqAIJ_iludt(Mat A,Vec bb,Vec xx)
   for (i=1; i<n; i++) {
     nz  = ai[i+1] - ai[i];
     tmp[i] = b[*r++];
-    SPARSEDENSEMDOT(tmp[i],tmps,v,vi,nz); 
+    PetscSparseDenseMinusDot(tmp[i],tmps,v,vi,nz); 
     v += nz; vi += nz;
   }
 
@@ -1821,7 +1821,7 @@ PetscErrorCode MatSolve_SeqAIJ_iludt(Mat A,Vec bb,Vec xx)
   vi  = aj + adiag[n] + 1;
   for (i=n-1; i>=0; i--){
     nz  = adiag[i] - adiag[i+1] - 1; 
-    SPARSEDENSEMDOT(tmp[i],tmps,v,vi,nz); 
+    PetscSparseDenseMinusDot(tmp[i],tmps,v,vi,nz); 
     x[*c--] = tmp[i] = tmp[i]*aa[adiag[i]];
     v += nz+1; vi += nz+1;
   }

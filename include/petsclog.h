@@ -289,6 +289,9 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetEventPerfLog(StageLog, int, Eve
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT EventRegLogGetEvent(EventRegLog, const char [], PetscLogEvent *);
 
+EXTERN PetscErrorCode PetscLogEventGetFlops(PetscLogEvent, PetscLogDouble*);
+EXTERN PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent);
+
 /*
      These are used internally in the PETSc routines to keep a count of MPI messages and 
    their sizes.

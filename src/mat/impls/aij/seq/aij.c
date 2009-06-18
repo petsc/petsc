@@ -917,8 +917,9 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   const PetscScalar *x;
   const MatScalar   *aa;
   PetscErrorCode    ierr;
-  PetscInt          m=A->rmap->n,*aj,*ii;
-  PetscInt          n,i,j,nonzerorow=0,*ridx=PETSC_NULL;
+  PetscInt          m=A->rmap->n;
+  const PetscInt    *aj,*ii,*ridx=PETSC_NULL;
+  PetscInt          n,i,j,nonzerorow=0;
   PetscScalar       sum;
   PetscTruth        usecprow=a->compressedrow.use;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
@@ -945,7 +946,8 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
       aa  = a->a + ii[i];
       sum = 0.0;
       nonzerorow += (n>0);
-      for (j=0; j<n; j++) sum += (*aa++)*x[*aj++]; 
+      PetscSparseDensePlusDot(sum,x,aa,aj,n); 
+      /* for (j=0; j<n; j++) sum += (*aa++)*x[*aj++]; */
       y[*ridx++] = sum;
     }
   } else { /* do not use compressed row format */
@@ -953,13 +955,12 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
     fortranmultaij_(&m,x,ii,aj,aa,y);
 #else
     for (i=0; i<m; i++) {
-      jrow = ii[i];
-      n    = ii[i+1] - jrow;
+      n   = ii[i+1] - ii[i]; 
+      aj  = a->j + ii[i];
+      aa  = a->a + ii[i];
       sum  = 0.0;
       nonzerorow += (n>0);
-      for (j=0; j<n; j++) {
-        sum += aa[jrow]*x[aj[jrow]]; jrow++;
-      }
+      PetscSparseDensePlusDot(sum,x,aa,aj,n); 
       y[i] = sum;
     }
 #endif
@@ -1178,7 +1179,7 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
         idx  = a->j + diag[i] + 1;
         v    = a->a + diag[i] + 1;
         sum  = b[i]*d/omega;
-        SPARSEDENSEDOT(sum,bs,v,idx,n); 
+        PetscSparseDensePlusDot(sum,bs,v,idx,n); 
         x[i] = sum;
     }
     ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
@@ -1207,7 +1208,7 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
       idx  = a->j + diag[i] + 1;
       v    = a->a + diag[i] + 1;
       sum  = b[i];
-      SPARSEDENSEMDOT(sum,xs,v,idx,n); 
+      PetscSparseDenseMinusDot(sum,xs,v,idx,n); 
       x[i] = sum*idiag[i];
     }
 
@@ -1223,7 +1224,7 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
       idx  = a->j + a->i[i];
       v    = a->a + a->i[i];
       sum  = t[i];
-      SPARSEDENSEMDOT(sum,ts,v,idx,n); 
+      PetscSparseDenseMinusDot(sum,ts,v,idx,n); 
       t[i] = sum*idiag[i];
       /*  x = x + t */
       x[i] += t[i];
@@ -1244,7 +1245,7 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
         idx  = a->j + a->i[i];
         v    = a->a + a->i[i];
         sum  = b[i];
-        SPARSEDENSEMDOT(sum,xs,v,idx,n); 
+        PetscSparseDenseMinusDot(sum,xs,v,idx,n); 
         x[i] = sum*idiag[i];
       }
 #endif
@@ -1267,7 +1268,7 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
         idx  = a->j + diag[i] + 1;
         v    = a->a + diag[i] + 1;
         sum  = xb[i];
-        SPARSEDENSEMDOT(sum,xs,v,idx,n); 
+        PetscSparseDenseMinusDot(sum,xs,v,idx,n); 
         x[i] = sum*idiag[i];
       }
 #endif
@@ -1285,7 +1286,7 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
         idx  = a->j + a->i[i];
         v    = a->a + a->i[i];
         sum  = b[i];
-        SPARSEDENSEMDOT(sum,xs,v,idx,n); 
+        PetscSparseDenseMinusDot(sum,xs,v,idx,n); 
         x[i] = (1. - omega)*x[i] + (sum + mdiag[i]*x[i])*idiag[i];
       }
 #endif 
@@ -1300,7 +1301,7 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
         idx  = a->j + a->i[i];
         v    = a->a + a->i[i];
         sum  = b[i];
-        SPARSEDENSEMDOT(sum,xs,v,idx,n); 
+        PetscSparseDenseMinusDot(sum,xs,v,idx,n); 
         x[i] = (1. - omega)*x[i] + (sum + mdiag[i]*x[i])*idiag[i];
       }
 #endif

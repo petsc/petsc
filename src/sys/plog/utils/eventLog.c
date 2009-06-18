@@ -535,6 +535,40 @@ PetscErrorCode EventPerfLogGetVisible(EventPerfLog eventLog, PetscLogEvent event
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogEventGetFlops"
+PetscErrorCode PetscLogEventGetFlops(PetscLogEvent event, PetscLogDouble *flops)
+{
+  StageLog       stageLog;
+  EventPerfLog   eventLog;
+  int            stage;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  ierr = StageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
+  ierr = StageLogGetEventPerfLog(stageLog, stage, &eventLog);CHKERRQ(ierr);
+  *flops = eventLog->eventInfo[event].flops;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogEventZeroFlops"
+PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent event)
+{
+  StageLog       stageLog;
+  EventPerfLog   eventLog;
+  int            stage;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  ierr = StageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
+  ierr = StageLogGetEventPerfLog(stageLog, stage, &eventLog);CHKERRQ(ierr);
+  eventLog->eventInfo[event].flops = 0.0;
+  PetscFunctionReturn(0);
+}
+
 /*------------------------------------------------ Action Functions -------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogEventBeginDefault"

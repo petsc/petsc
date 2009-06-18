@@ -36,69 +36,6 @@ PetscInt __i;\
 for(__i=0;__i<nnz;__i++)r[xi[__i]] -= alpha * xv[__i];}
 #endif
 
-/* Form sum -= r[xi] * xv; */
-#ifdef PETSC_USE_UNROLL_KERNELS
-#define SPARSEDENSEMDOT(sum,r,xv,xi,nnz) {\
-if (nnz > 0) {\
-switch (nnz & 0x3) {\
-case 3: sum -= *xv++ * r[*xi++];\
-case 2: sum -= *xv++ * r[*xi++];\
-case 1: sum -= *xv++ * r[*xi++];\
-nnz -= 4;}\
-while (nnz > 0) {\
-sum = sum - xv[0] * r[xi[0]] - xv[1] * r[xi[1]] -\
-	xv[2] * r[xi[2]] - xv[3] * r[xi[3]];\
-xv  += 4; xi += 4; nnz -= 4; }}}
-
-#elif defined(PETSC_USE_WHILE_KERNELS)
-#define SPARSEDENSEMDOT(sum,r,xv,xi,nnz) {\
-while (nnz--) sum -= *xv++ * r[*xi++];}
-
-#elif defined(PETSC_USE_FOR_KERNELS) && defined(MEMQUEST)
-#define SPARSEDENSEMDOT(sum,r,xv,xi,nnz) {\
-PetscInt __i,__i1,__i2;\
-for(__i=0;__i<nnz-1;__i+=2) {__i1 = xi[__i]; __i2=xi[__i+1];\
-sum -= (xv[__i]*r[__i1] + xv[__i+1]*r[__i2]);}\
-if (nnz & 0x1) sum -= xv[__i] * r[xi[__i]];}
-
-#else
-#define SPARSEDENSEMDOT(sum,r,xv,xi,nnz) {\
-PetscInt __i;\
-for(__i=0;__i<nnz;__i++) sum -= xv[__i] * r[xi[__i]];}
-#endif
-
-
-
-/* Form sum += r[xi] * xv; */
-#ifdef PETSC_USE_UNROLL_KERNELS
-#define SPARSEDENSEDOT(sum,r,xv,xi,nnz) {\
-if (nnz > 0) {\
-switch (nnz & 0x3) {\
-case 3: sum += *xv++ * r[*xi++];\
-case 2: sum += *xv++ * r[*xi++];\
-case 1: sum += *xv++ * r[*xi++];\
-nnz -= 4;}\
-while (nnz > 0) {\
-sum = sum + xv[0] * r[xi[0]] + xv[1] * r[xi[1]] +\
-	xv[2] * r[xi[2]] + xv[3] * r[xi[3]];\
-xv  += 4; xi += 4; nnz -= 4; }}}
-
-#elif defined(PETSC_USE_WHILE_KERNELS)
-#define SPARSEDENSEDOT(sum,r,xv,xi,nnz) {\
-while (nnz--) sum += *xv++ * r[*xi++];}
-
-#elif defined(PETSC_USE_FOR_KERNELS) && defined(MEMQUEST)
-#define SPARSEDENSEDOT(sum,r,xv,xi,nnz) {\
-PetscInt __i,__i1,__i2;\
-for(__i=0;__i<nnz-1;__i+=2) {__i1 = xi[__i]; __i2=xi[__i+1];\
-sum += (xv[__i]*r[__i1] + xv[__i+1]*r[__i2]);}\
-if (nnz & 0x1) sum += xv[__i] * r[xi[__i]];}
-
-#else
-#define SPARSEDENSEDOT(sum,r,xv,xi,nnz) {\
- PetscInt __i;\
-for(__i=0;__i<nnz;__i++) sum += xv[__i] * r[xi[__i]];}
-#endif
 
 /* Form sum += r[map[xi]] * xv; */
 #ifdef PETSC_USE_UNROLL_KERNELS
