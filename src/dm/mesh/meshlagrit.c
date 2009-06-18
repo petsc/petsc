@@ -53,7 +53,7 @@ namespace ALE {
     void Builder::readInpFile(MPI_Comm comm, const std::string& filename, const int dim, const int numCorners, int& numElements, int *vertices[], int& numVertices, double *coordinates[]) {
       PetscViewer    viewer;
       FILE          *f;
-      PetscScalar   *coords;
+      PetscReal     *coords;
       PetscInt      *verts;
       PetscInt       commRank;
       char           buf[2048];
@@ -80,7 +80,7 @@ namespace ALE {
       x = strtok(NULL, " ");
       // ???
       x = strtok(NULL, " ");
-      ierr = PetscMalloc(numVertices*dim * sizeof(PetscScalar), &coords);
+      ierr = PetscMalloc(numVertices*dim * sizeof(PetscReal), &coords);
       for(PetscInt i = 0; i < numVertices; ++i) {
         if (fgets(buf, 2048, f) == NULL) throw ALE::Exception("File ended prematurely");
         x = strtok(buf, " ");

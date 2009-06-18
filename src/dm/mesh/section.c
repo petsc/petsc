@@ -394,7 +394,11 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdate(SectionReal section, PetscInt
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
   PetscValidScalarPointer(values,3);
+#ifdef PETSC_USE_COMPLEX
+  SETERRQ(PETSC_ERR_SUP, "SectionReal does not support complex updates");
+#else
   section->b->update(section->s, point, values);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -419,7 +423,11 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdateAdd(SectionReal section, Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
   PetscValidScalarPointer(values,3);
+#ifdef PETSC_USE_COMPLEX
+  SETERRQ(PETSC_ERR_SUP, "SectionReal does not support complex updates");
+#else
   section->b->updateAdd(section->s, point, values);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -574,8 +582,12 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealCreateLocalVector(SectionReal sectio
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+#ifdef PETSC_USE_COMPLEX
+  SETERRQ(PETSC_ERR_SUP, "SectionReal does not support complex Vec");
+#else
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, s->getStorageSize(), s->restrictSpace(), localVec);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
