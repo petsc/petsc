@@ -197,7 +197,7 @@ EXTERN PetscErrorCode DAGetNatural_Private(DA,PetscInt*,IS*);
 
 .keywords: distributed array, global to local, begin
 
-.seealso: DAGlobalToNaturalEnd(), DALocalToGlobal(), DACreate2d(), 
+.seealso: DAGlobalToNaturalBegin(), DAGlobalToNaturalEnd(), DALocalToGlobal(), DACreate2d(), 
           DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector()
 */
 PetscErrorCode DAGlobalToNatural_Create(DA da)
