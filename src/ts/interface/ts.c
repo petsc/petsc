@@ -171,6 +171,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSViewFromOptions(TS ts,const char title[])
     ierr = TSView(ts, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   }
+  opt = PETSC_FALSE;
   ierr = PetscOptionsGetTruth(((PetscObject)ts)->prefix, "-ts_view_draw", &opt,PETSC_NULL);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscViewerDrawOpen(((PetscObject)ts)->comm, 0, 0, 0, 0, 300, 300, &viewer);CHKERRQ(ierr);
@@ -1125,91 +1126,6 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetPreStep(TS ts, PetscErrorCode (*func)(TS))
 .keywords: TS, timestep
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSDefaultPreStep(TS ts)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "TSSetUpdate"
-/*@C
-  TSSetUpdate - Sets the general-purpose update function called
-  at the beginning of every time step. This function can change
-  the time step.
-
-  Collective on TS
-
-  Input Parameters:
-+ ts   - The TS context obtained from TSCreate()
-- func - The function
-
-  Calling sequence of func:
-. func (TS ts, double t, double *dt);
-
-+ t   - The current time
-- dt  - The current time step
-
-  Level: intermediate
-
-.keywords: TS, update, timestep
-@*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSetUpdate(TS ts, PetscErrorCode (*func)(TS, PetscReal, PetscReal *))
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TS_COOKIE,1);
-  ts->ops->update = func;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "TSSetPostUpdate"
-/*@C
-  TSSetPostUpdate - Sets the general-purpose update function called
-  after every time step. 
-
-  Collective on TS
-
-  Input Parameters:
-+ ts   - The TS context obtained from TSCreate()
-- func - The function
-
-  Calling sequence of func:
-. func (TS ts, double t, double *dt);
-
-+ t   - The current time
-- dt  - The current time step
-
-  Level: intermediate
-
-.keywords: TS, update, timestep
-@*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSetPostUpdate(TS ts, PetscErrorCode (*func)(TS, PetscReal, PetscReal *))
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TS_COOKIE,1);
-  ts->ops->postupdate = func;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "TSDefaultUpdate"
-/*@
-  TSDefaultUpdate - The default update function which does nothing.
-
-  Collective on TS
-
-  Input Parameters:
-+ ts  - The TS context obtained from TSCreate()
-- t   - The current time
-
-  Output Parameters:
-. dt  - The current time step
-
-  Level: developer
-
-.keywords: TS, update, timestep
-@*/
-PetscErrorCode PETSCTS_DLLEXPORT TSDefaultUpdate(TS ts, PetscReal t, PetscReal *dt)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

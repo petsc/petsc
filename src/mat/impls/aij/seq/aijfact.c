@@ -7,6 +7,7 @@
 #include "petscbt.h"
 #include "../src/mat/utils/freespace.h"
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatOrdering_Flow_SeqAIJ"
 /*
@@ -90,6 +91,7 @@ PetscErrorCode MatOrdering_Flow_SeqAIJ(Mat mat,const MatOrderingType type,IS *ir
   ierr = PetscFree(order);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

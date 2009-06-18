@@ -189,6 +189,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealAllocate(SectionReal);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealClear(SectionReal);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexSectionReal(Mesh, const char[], PetscInt, SectionReal *);
+PetscPolymorphicSubroutine(MeshGetVertexSectionReal,(Mesh mesh, PetscInt fiberDim, SectionReal *section),(mesh,"default",fiberDim,section))
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetCellSectionReal(Mesh, const char[], PetscInt, SectionReal *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshHasSectionReal(Mesh, const char [], PetscTruth *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetSectionReal(Mesh, const char [], SectionReal *);
