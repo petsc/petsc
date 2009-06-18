@@ -2,6 +2,7 @@
 
 #include "../src/mat/impls/aij/seq/aij.h"
 #include "../src/inline/dot.h"
+#define PETSC_USE_WHILE_KERNELS
 #include "../src/inline/spops.h"
 #include "petscbt.h"
 #include "../src/mat/utils/freespace.h"
@@ -1754,7 +1755,8 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_iludt(Mat A,Vec bb,Vec xx)
   for (i=1; i<n; i++) {
     nz  = ai[i+1] - ai[i];
     sum = b[i];
-    while (nz--) sum -= *v++ * x[*vi++];
+    SPARSEDENSEMDOT(sum,x,v,vi,nz);
+    /*    while (nz--) sum -= *v++ * x[*vi++];*/
     x[i] = sum;
   }
 
@@ -1764,7 +1766,8 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_iludt(Mat A,Vec bb,Vec xx)
   for (i=n-1; i>=0; i--){
     nz  = adiag[i] - adiag[i+1] - 1; 
     sum = x[i];
-    while (nz--) sum -= *v++ * x[*vi++];
+    SPARSEDENSEMDOT(sum,x,v,vi,nz);
+    /* while (nz--) sum -= *v++ * x[*vi++]; */
     x[i] = sum*aa[adiag[i]];
     v++; vi++;
   }

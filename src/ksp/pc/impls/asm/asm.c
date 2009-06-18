@@ -24,9 +24,6 @@ typedef struct {
   PCASMType  type;                /* use reduced interpolation, restriction or both */
   PetscTruth type_set;            /* if user set this value (so won't change it for symmetric problems) */
   PetscTruth same_local_solves;   /* flag indicating whether all local solvers are same */
-  PetscTruth inplace;             /* indicates that the sub-matrices are deleted after 
-                                     PCSetUpOnBlocks() is done. Similar to inplace 
-                                     factorization in the case of LU and ILU */
 } PC_ASM;
 
 #undef __FUNCT__  
@@ -217,10 +214,8 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     /* 
        Destroy the blocks from the previous iteration
     */
-    if (pc->flag == DIFFERENT_NONZERO_PATTERN || osm->inplace) {
-      if (!osm->inplace) {
-	ierr = MatDestroyMatrices(osm->n_local_true,&osm->pmat);CHKERRQ(ierr);
-      }
+    if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
+      ierr = MatDestroyMatrices(osm->n_local_true,&osm->pmat);CHKERRQ(ierr);
       scall = MAT_INITIAL_MATRIX;
     }
   }
@@ -265,13 +260,6 @@ static PetscErrorCode PCSetUpOnBlocks_ASM(PC pc)
   PetscFunctionBegin;
   for (i=0; i<osm->n_local_true; i++) {
     ierr = KSPSetUp(osm->ksp[i]);CHKERRQ(ierr);
-  }
-  /* 
-     If inplace flag is set, then destroy the matrix after the setup
-     on blocks is done.
-  */   
-  if (osm->inplace && osm->n_local_true > 0) {
-    ierr = MatDestroyMatrices(osm->n_local_true,&osm->pmat);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -386,7 +374,7 @@ static PetscErrorCode PCDestroy_ASM(PC pc)
     }
     ierr = PetscFree(osm->ksp);CHKERRQ(ierr);
   }
-  if (osm->pmat && !osm->inplace) {
+  if (osm->pmat) {
     if (osm->n_local_true > 0) {
       ierr = MatDestroyMatrices(osm->n_local_true,&osm->pmat);CHKERRQ(ierr);
     }
@@ -430,8 +418,6 @@ static PetscErrorCode PCSetFromOptions_ASM(PC pc)
     ierr = PetscOptionsInt("-pc_asm_overlap","Number of grid points overlap","PCASMSetOverlap",osm->overlap,&ovl,&flg);CHKERRQ(ierr);
     if (flg) {ierr = PCASMSetOverlap(pc,ovl);CHKERRQ(ierr); }
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-pc_asm_in_place","Perform matrix factorization inplace","PCASMSetUseInPlace",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {ierr = PCASMSetUseInPlace(pc);CHKERRQ(ierr); }
     ierr = PetscOptionsEnum("-pc_asm_type","Type of restriction/extension","PCASMSetType",PCASMTypes,(PetscEnum)osm->type,(PetscEnum*)&asmtype,&flg);CHKERRQ(ierr);
     if (flg) {ierr = PCASMSetType(pc,asmtype);CHKERRQ(ierr); }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -566,57 +552,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMGetSubKSP_ASM(PC pc,PetscInt *n_local,Pet
 }
 EXTERN_C_END
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PCASMSetUseInPlace_ASM"
-PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetUseInPlace_ASM(PC pc)
-{
-  PC_ASM *osm = (PC_ASM*)pc->data;
-
-  PetscFunctionBegin;
-  osm->inplace = PETSC_TRUE;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-/*----------------------------------------------------------------------------*/
-#undef __FUNCT__  
-#define __FUNCT__ "PCASMSetUseInPlace"
-/*@
-   PCASMSetUseInPlace - Tells the system to destroy the matrix after setup is done.
-
-   Collective on PC
-
-   Input Parameters:
-.  pc - the preconditioner context
-
-   Options Database Key:
-.  -pc_asm_in_place - Activates in-place factorization
-
-   Note:
-   PCASMSetUseInplace() can only be used with the KSP method KSPPREONLY, and
-   when the original matrix is not required during the Solve process.
-   This destroys the matrix, early thus, saving on memory usage.
-
-   Level: intermediate
-
-.keywords: PC, set, factorization, direct, inplace, in-place, ASM
-
-.seealso: PCFactorSetUseInPlace()
-@*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetUseInPlace(PC pc)
-{
-  PetscErrorCode ierr,(*f)(PC);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMSetUseInPlace_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
-/*----------------------------------------------------------------------------*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCASMSetLocalSubdomains"
@@ -862,7 +797,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMGetSubKSP(PC pc,PetscInt *n_local,PetscIn
 
    Options Database Keys:
 +  -pc_asm_truelocal - Activates PCASMSetUseTrueLocal()
-.  -pc_asm_in_place - Activates in-place factorization
 .  -pc_asm_blocks <blks> - Sets total blocks
 .  -pc_asm_overlap <ovl> - Sets overlap
 -  -pc_asm_type [basic,restrict,interpolate,none] - Sets ASM type
@@ -895,8 +829,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMGetSubKSP(PC pc,PetscInt *n_local,PetscIn
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCBJACOBI, PCASMSetUseTrueLocal(), PCASMGetSubKSP(), PCASMSetLocalSubdomains(),
-           PCASMSetTotalSubdomains(), PCSetModifySubmatrices(), PCASMSetOverlap(), PCASMSetType(),
-           PCASMSetUseInPlace()
+           PCASMSetTotalSubdomains(), PCSetModifySubmatrices(), PCASMSetOverlap(), PCASMSetType()
+
 M*/
 
 EXTERN_C_BEGIN
@@ -922,7 +856,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASM(PC pc)
   osm->pmat              = 0;
   osm->type              = PC_ASM_RESTRICT;
   osm->same_local_solves = PETSC_TRUE;
-  osm->inplace           = PETSC_FALSE;
 
   pc->data                   = (void*)osm;
   pc->ops->apply             = PCApply_ASM;
@@ -944,8 +877,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASM(PC pc)
                     PCASMSetType_ASM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMGetSubKSP_C","PCASMGetSubKSP_ASM",
                     PCASMGetSubKSP_ASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMSetUseInPlace_C","PCASMSetUseInPlace_ASM",
-                    PCASMSetUseInPlace_ASM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
