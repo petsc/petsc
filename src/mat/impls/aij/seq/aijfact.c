@@ -1759,6 +1759,8 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_iludt(Mat A,Vec bb,Vec xx)
     sum = b[i];
     PetscSparseDenseMinusDot(sum,x,v,vi,nz);
     /*    while (nz--) sum -= *v++ * x[*vi++];*/
+    v  += nz;
+    vi += nz;
     x[i] = sum;
   }
 
@@ -1770,6 +1772,8 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_iludt(Mat A,Vec bb,Vec xx)
     sum = x[i];
     PetscSparseDenseMinusDot(sum,x,v,vi,nz);
     /* while (nz--) sum -= *v++ * x[*vi++]; */
+    v   += nz;
+    vi  += nz;
     x[i] = sum*aa[adiag[i]];
     v++; vi++;
   }

@@ -216,8 +216,7 @@ EXTERN_C_END
 
   PETSc compile flags:
 +   PETSC_KERNEL_USE_UNROLL_4 -
-.   PETSC_KERNEL_USE_UNROLL_2 -
--   PETSC_KERNEL_USE_WHILE -
+-   PETSC_KERNEL_USE_UNROLL_2 -
 
 .seealso: PetscSparseDensePlusDot()
 
@@ -234,10 +233,6 @@ while (nnz > 0) {\
 sum -=  xv[0] * r[xi[0]] - xv[1] * r[xi[1]] -\
 	xv[2] * r[xi[2]] - xv[3] * r[xi[3]];\
 xv  += 4; xi += 4; nnz -= 4; }}}
-
-#elif defined(PETSC_KERNEL_USE_WHILE)
-#define PetscSparseDenseMinusDot(sum,r,xv,xi,nnz) {\
-while (nnz--) sum -= *xv++ * r[*xi++];}
 
 #elif defined(PETSC_KERNEL_USE_UNROLL_2)
 #define PetscSparseDenseMinusDot(sum,r,xv,xi,nnz) {\
@@ -268,8 +263,7 @@ for(__i=0;__i<nnz;__i++) sum -= xv[__i] * r[xi[__i]];}
 
   PETSc compile flags:
 +   PETSC_KERNEL_USE_UNROLL_4 -
-.   PETSC_KERNEL_USE_UNROLL_2 -
--   PETSC_KERNEL_USE_WHILE -
+-   PETSC_KERNEL_USE_UNROLL_2 -
 
 .seealso: PetscSparseDenseMinusDot()
 
@@ -286,10 +280,6 @@ while (nnz > 0) {\
 sum +=  xv[0] * r[xi[0]] + xv[1] * r[xi[1]] +\
 	xv[2] * r[xi[2]] + xv[3] * r[xi[3]];\
 xv  += 4; xi += 4; nnz -= 4; }}}
-
-#elif defined(PETSC_KERNEL_USE_WHILE)
-#define PetscSparseDensePlusDot(sum,r,xv,xi,nnz) {\
-while (nnz--) sum += *xv++ * r[*xi++];}
 
 #elif defined(PETSC_KERNEL_USE_UNROLL_2)
 #define PetscSparseDensePlusDot(sum,r,xv,xi,nnz) {\
