@@ -1878,8 +1878,9 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
 
   /* allocate bj and ba; max num of nonzero entries is (ai[n]+2*n*dtcount+2) */
   dtcount = (PetscInt)info->dtcount;
-  if (dtcount > n/2) dtcount = n/2;
+  if (dtcount > n-1) dtcount = n-1; /* diagonal is excluded */
   nnz_max  = ai[n]+2*n*dtcount+2;
+  if (nnz_max > n*n) nnz_max = n*n+1;
   ierr = PetscMalloc(nnz_max*sizeof(PetscInt),&bj);CHKERRQ(ierr);
   ierr = PetscMalloc(nnz_max*sizeof(MatScalar),&ba);CHKERRQ(ierr);
 
