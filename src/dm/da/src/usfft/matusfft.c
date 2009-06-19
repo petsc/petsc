@@ -2,7 +2,7 @@
 
 /*
     Provides an implementation of the Unevenly Sampled FFT algorithm as a Mat.
-    Testing examples can be found in ~/src/mat/examples/tests
+    Testing examples can be found in ~/src/mat/examples/tests FIX: should these be moved to dm/da/examples/tests?
 */
 
 #include "private/matimpl.h"          /*I "petscmat.h" I*/
@@ -10,13 +10,13 @@
 #include "fftw3.h"
 
 typedef struct {
-  DA             inda;
-  DA             outda;
-  PetscInt       ndim;
-  PetscInt       *indim;
-  PetscInt       *outdim;
-  PetscInt       m,n,M,N;
+  PetscInt       dim;
+  Vec            sampleCoords;
   PetscInt       dof;
+  DA             freqDA;       /* frequency DA */
+  PetscInt       *freqSizes;   // sizes of the frequency DA, one per each dim
+  DA             resampleDa;   /* the Battle-Lemarie interpolant DA */
+  Vec            resample;     // Vec of samples, one per dof per sample point
   fftw_plan      p_forward,p_backward;
   unsigned       p_flag; /* planner flags, FFTW_ESTIMATE,FFTW_MEASURE, FFTW_PATIENT, FFTW_EXHAUSTIVE */
 } Mat_USFFT;
@@ -27,11 +27,15 @@ typedef struct {
 PetscErrorCode MatApply_USFFT_Private(Mat_USFFT *usfft, fftw_plan *plan, int direction, Vec x,Vec y)
 {
   PetscErrorCode ierr;
-  PetscScalar    *x_array, *y_array;
+  PetscScalar    *r_array, *y_array;
 
   PetscFunctionBegin;
+#if 0
+  // resample x to usfft->resample
+  ierr = MatResample_USFFT_Private(Mat_USFFT *usfft, x); CHKERRQ(ierr);
+
   /* NB: for now we use outdim for both x and y; this will change once a full USFFT is implemented */
-  ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
+  ierr = VecGetArray(usfft->resample,&r_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   if (!*plan){ /* create a plan then execute it*/
     if(usfft->dof == 1) {
@@ -41,10 +45,8 @@ PetscErrorCode MatApply_USFFT_Private(Mat_USFFT *usfft, fftw_plan *plan, int dir
         ierr = PetscPrintf(PETSC_COMM_WORLD, "usfft->outdim[%d] = %d\n", ii, usfft->outdim[ii]);CHKERRQ(ierr);
       }
 #endif 
-#if 0
-      *plan = fftw_plan_dft(usfft->ndim,usfft->outdim,(fftw_complex*)x_array,(fftw_complex*)y_array,direction,usfft->p_flag);
-#endif
-      switch (usfft->ndim){
+
+      switch (usfft->dim){
       case 1:
         *plan = fftw_plan_dft_1d(usfft->outdim[0],(fftw_complex*)x_array,(fftw_complex*)y_array,direction,usfft->p_flag);   
         break;
@@ -74,8 +76,33 @@ PetscErrorCode MatApply_USFFT_Private(Mat_USFFT *usfft, fftw_plan *plan, int dir
   }
   ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
-}/* MatApply_FFTW_Private() */
+}/* MatApply_USFFT_Private() */
+
+#if 0
+#undef __FUNCT__  
+#define __FUNCT__ "Mat_USFFT_BattleLemarie_Private"
+PetscErrorCode Mat_USFFT_ProjectOnBattleLemarie_Private(Vec x,double *r)
+/* Project onto the Battle-Lemarie function centered around r */
+{
+  PetscErrorCode ierr;
+  PetscScalar    *x_array, *y_array;
+
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}/* Mat_USFFT_ProjectOnBattleLemarie_Private() */
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatInterpolate_USFFT_Private"
+PetscErrorCode MatInterpolate_USFFT_Private(Vec x,Vec y)
+{
+  PetscErrorCode ierr;
+  PetscScalar    *x_array, *y_array;
+
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}/* MatInterpolate_USFFT_Private() */
 
 
 #undef __FUNCT__  
@@ -141,7 +168,7 @@ PetscErrorCode MatDestroy_SeqUSFFT(Mat A)
    Level: intermediate
    
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqUSFFT(DA inda, DA outda, Mat* A)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqUSFFT(Vec sampleCoords, DA freqDA, Mat* A)
 {
   PetscErrorCode ierr;
   Mat_USFFT      *usfft;
@@ -149,8 +176,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqUSFFT(DA inda, DA outda, Mat* A)
   const char     *p_flags[]={"FFTW_ESTIMATE","FFTW_MEASURE","FFTW_PATIENT","FFTW_EXHAUSTIVE"};
   PetscTruth     flg;
   PetscInt       p_flag;
-  PetscInt       dof, ndim;
-  PetscInt       dim[3];
+  PetscInt       dof, dim, freqSizes[3];
   MPI_Comm       comm;
   PetscInt       size;
 
@@ -172,8 +198,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqUSFFT(DA inda, DA outda, Mat* A)
   if (dof <= 0) SETERRQ1(PETSC_ERR_USER,"dof %d must be > 0",dof);
   usfft->ndim = ndim;
   usfft->dof = dof;
-  /* Store input dimensions */
-  /* NB: we reverse the DA dimensions, since the DA ordering (natural on x-y-z, with x varying the fastest) 
+  usfft->freqDA     = freqDA;
+  /* NB: we reverse the freq and resample DA sizes, since the DA ordering (natural on x-y-z, with x varying the fastest) 
      is the order opposite of that assumed by FFTW: z varying the fastest */
   ierr = PetscMalloc((usfft->ndim+1)*sizeof(PetscInt),&usfft->indim);CHKERRQ(ierr);
   for(i = usfft->ndim; i > 0; --i) {
@@ -190,6 +216,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqUSFFT(DA inda, DA outda, Mat* A)
   for(i = usfft->ndim; i > 0; --i) {
     usfft->outdim[usfft->ndim-i] = dim[i-1];
   }
+
+  ierr = DACreate(comm,usfft->dim, DA_NONPERIODIC, DA_STENCIL_STAR, usfft->freqSizes[0], usfft->freqSizes[1], usfft->freqSizes[2],
+                  PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, 0, PETSC_NULL, PETSC_NULL, PETSC_NULL,  0, &(usfft->resampleDA)); CHKERRQ(ierr);
+  ierr = DAGetVec(usfft->resampleDA, usfft->resample); CHKERRQ(ierr);
+
+
+  // CONTINUE: Need to build the connectivity "Sieve" attaching sample points to the resample points they are close to
+
+  // CONTINUE: recalculate matrix sizes based on the connectivity "Sieve"
   /* mat sizes */
   m = 1; n = 1;
   for (i=0; i<usfft->ndim; i++){
@@ -220,3 +255,4 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqUSFFT(DA inda, DA outda, Mat* A)
   PetscFunctionReturn(0);
 }/* MatCreateSeqUSFFT() */
 
+#endif
