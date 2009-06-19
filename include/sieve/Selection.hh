@@ -925,10 +925,10 @@ namespace ALE {
       newMesh->stratify();
       return newMesh;
     };
-    template<typename SieveType>
-    static void addClosureV(const Obj<SieveType>& sieveA, const Obj<SieveType>& sieveB, const point_type& p, const int depth = 1) {
-      typedef std::set<typename SieveType::point_type> coneSet;
-      ALE::ISieveVisitor::PointRetriever<SieveType> cV(std::max(1, sieveA->getMaxConeSize()));
+    template<typename SieveTypeA, typename SieveTypeB>
+    static void addClosureV(const Obj<SieveTypeA>& sieveA, const Obj<SieveTypeB>& sieveB, const point_type& p, const int depth = 1) {
+      typedef std::set<typename SieveTypeA::point_type> coneSet;
+      ALE::ISieveVisitor::PointRetriever<SieveTypeA> cV(std::max(1, sieveA->getMaxConeSize()));
       Obj<coneSet> current = new coneSet();
       Obj<coneSet> next    = new coneSet();
       Obj<coneSet> tmp;
@@ -937,9 +937,9 @@ namespace ALE {
       while(current->size()) {
         for(typename coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
           sieveA->cone(*p_iter, cV);
-          const Mesh::point_type *cone = cV.getPoints();
+          const typename SieveTypeA::point_type *cone = cV.getPoints();
 
-          for(int c = 0; c < cV.getSize(); ++c) {
+          for(int c = 0; c < (int) cV.getSize(); ++c) {
             sieveB->addArrow(cone[c], *p_iter);
             next->insert(cone[c]);
           }
@@ -948,12 +948,12 @@ namespace ALE {
         next->clear();
       }
       if (!depth) {
-        ALE::ISieveVisitor::PointRetriever<SieveType> sV(std::max(1, sieveA->getMaxSupportSize()));
+        ALE::ISieveVisitor::PointRetriever<SieveTypeA> sV(std::max(1, sieveA->getMaxSupportSize()));
 
         sieveA->support(p, sV);
-        const typename SieveType::point_type *support = sV.getPoints();
+        const typename SieveTypeA::point_type *support = sV.getPoints();
             
-        for(int s = 0; s < sV.getSize(); ++s) {
+        for(int s = 0; s < (int) sV.getSize(); ++s) {
           sieveB->addArrow(p, support[s]);
         }
       }
@@ -980,9 +980,9 @@ namespace ALE {
       throw ALE::Exception("Cannot handle partially interpolated meshes");
     };
     template<typename MeshTypeQ>
-    static Obj<MeshTypeQ> boundaryV(const Obj<MeshTypeQ>& mesh, const int faceHeight = 1) {
-      Obj<MeshTypeQ>                                      newMesh  = new MeshTypeQ(mesh->comm(), mesh->getDimension()-1, mesh->debug());
-      Obj<typename MeshTypeQ::sieve_type>                 newSieve = new typename MeshTypeQ::sieve_type(mesh->comm(), mesh->debug());
+    static Obj<ALE::Mesh> boundaryV(const Obj<MeshTypeQ>& mesh, const int faceHeight = 1) {
+      Obj<ALE::Mesh>                                      newMesh  = new ALE::Mesh(mesh->comm(), mesh->getDimension()-1, mesh->debug());
+      Obj<typename ALE::Mesh::sieve_type>                 newSieve = new typename ALE::Mesh::sieve_type(mesh->comm(), mesh->debug());
       const Obj<typename MeshTypeQ::sieve_type>&          sieve    = mesh->getSieve();
       const Obj<typename MeshTypeQ::label_sequence>&      faces    = mesh->heightStratum(faceHeight);
       const typename MeshTypeQ::label_sequence::iterator  fBegin   = faces->begin();
