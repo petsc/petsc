@@ -1739,7 +1739,7 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_iludt(Mat A,Vec bb,Vec xx)
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode    ierr;
   PetscInt          n = A->rmap->n;
-  const PetscInt    *ai = a->i,*aj = a->j,*adiag = a->diag,*vi,*adiag_rev=a->diag+n;
+  const PetscInt    *ai = a->i,*aj = a->j,*adiag = a->diag,*vi,*adiag_rev=a->diag+n+1;
   PetscScalar       *x,sum;
   const PetscScalar *b;
   const MatScalar   *aa = a->a,*v;
@@ -1873,8 +1873,8 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
 
   /* bdiag is location of diagonal in factor */
-  ierr = PetscMalloc((2*n+1)*sizeof(PetscInt),&bdiag);CHKERRQ(ierr);
-  bdiag_rev = bdiag + n;
+  ierr = PetscMalloc((2*n+2)*sizeof(PetscInt),&bdiag);CHKERRQ(ierr);
+  bdiag_rev = bdiag + n+1;
 
   /* allocate row pointers bi */
   ierr = PetscMalloc((n+1)*sizeof(PetscInt),&bi);CHKERRQ(ierr);
@@ -1884,6 +1884,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   if (dtcount > n-1) dtcount = n-1; /* diagonal is excluded */
   nnz_max  = ai[n]+2*n*dtcount+2;
   if (nnz_max > n*n) nnz_max = n*n+1;
+  printf("nnz_max %d\n",nnz_max);
   ierr = PetscMalloc(nnz_max*sizeof(PetscInt),&bj);CHKERRQ(ierr);
   ierr = PetscMalloc(nnz_max*sizeof(MatScalar),&ba);CHKERRQ(ierr);
 
