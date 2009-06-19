@@ -919,12 +919,9 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   PetscErrorCode    ierr;
   PetscInt          m=A->rmap->n;
   const PetscInt    *aj,*ii,*ridx=PETSC_NULL;
-  PetscInt          n,i,j,nonzerorow=0;
+  PetscInt          n,i,nonzerorow=0;
   PetscScalar       sum;
   PetscTruth        usecprow=a->compressedrow.use;
-#if !defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
-  PetscInt         jrow;
-#endif
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
 #pragma disjoint(*x,*y,*aa)

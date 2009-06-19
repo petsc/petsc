@@ -1849,7 +1849,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   PetscInt           nlnk,*lnk;
   PetscBT            lnkbt;
   PetscTruth         row_identity,icol_identity,both_identity;
-  MatScalar          *aatmp,*pv,*batmp,*ba,*rtmp,*pc,multiplier,*vtmp;
+  MatScalar          *aatmp,*pv,*batmp,*ba,*rtmp,*pc,multiplier,*vtmp,diag_tmp;
   const PetscInt     *ics;
   PetscInt           j,nz,*pj,*bjtmp,k,ncut,*jtmp;
   PetscReal          dt=info->dt,shift=info->shiftinblocks; 
@@ -1857,6 +1857,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   PetscTruth         missing;
 
   PetscFunctionBegin;
+  /* printf("MatILUDTFactor_SeqAIJ is callled ...\n"); */
   /* ------- symbolic factorization, can be reused ---------*/
   ierr = MatMissingDiagonal(A,&missing,&i);CHKERRQ(ierr);
   if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",i);
@@ -1919,6 +1920,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   jtmp = im + n;
   /* rtmp, vtmp: working arrays for sparse and contiguous row entries of active row */
   ierr = PetscMalloc((2*n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
+  ierr = PetscMemzero(rtmp,(n+1)*sizeof(PetscScalar));CHKERRQ(ierr); 
   vtmp = rtmp + n;
 
   bi[0]    = 0;
@@ -1934,7 +1936,6 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
     ierr = PetscLLAddPerm(nzi,ajtmp,ic,n,nlnk,lnk,lnkbt);CHKERRQ(ierr);
     
     /* load in initial (unfactored row) */
-    ierr = PetscMemzero(rtmp,(n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
     aatmp = a->a + ai[r[i]];
     for (j=0; j<nzi; j++) {
       rtmp[ics[*ajtmp++]] = *aatmp++;
@@ -1973,14 +1974,15 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
     }
 
     /* copy sparse rtmp into contiguous vtmp; separate L and U part */
+    diag_tmp = rtmp[i];  /* save diagonal value - may not needed?? */
     nzi_bl = 0; j = 0;
     while (jtmp[j] < i){ /* Note: jtmp is sorted */
-      vtmp[j] = rtmp[jtmp[j]];
+      vtmp[j] = rtmp[jtmp[j]]; rtmp[jtmp[j]]=0.0;
       nzi_bl++; j++;
     }
     nzi_bu = nzi - nzi_bl -1;
     while (j < nzi){
-      vtmp[j] = rtmp[jtmp[j]];
+      vtmp[j] = rtmp[jtmp[j]]; rtmp[jtmp[j]]=0.0;
       j++;
     }
     
@@ -2017,7 +2019,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
     bjtmp = bj + bdiag[i];
     batmp = ba + bdiag[i];
     *bjtmp = i; 
-    *batmp = rtmp[i]; 
+    *batmp = diag_tmp; /* rtmp[i]; */
     if (*batmp == 0.0) *batmp = dt+shift;
     *batmp = 1.0/(*batmp); /* invert diagonal entries for simplier triangular solves */
     /* printf(" (%d,%g),",*bjtmp,*batmp); */
