@@ -1743,7 +1743,7 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_iludt(Mat A,Vec bb,Vec xx)
   PetscScalar       *x,sum;
   const PetscScalar *b;
   const MatScalar   *aa = a->a,*v;
-  PetscInt          i,nz;
+  PetscInt          i,nz,k;
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
@@ -1768,15 +1768,17 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_iludt(Mat A,Vec bb,Vec xx)
   /* backward solve the upper triangular */
   v   = aa + adiag[n] + 1;
   vi  = aj + adiag[n] + 1;
+  k = 1;  /* i + k = n */
   for (i=n-1; i>=0; i--){
-    nz  = adiag[i] - adiag[i+1] - 1; 
+    /* nz  = adiag[i] - adiag[i+1] - 1; */
+    nz = adiag[n-k] - adiag[n-k+1] - 1;
     sum = x[i];
     PetscSparseDenseMinusDot(sum,x,v,vi,nz);
     /* while (nz--) sum -= *v++ * x[*vi++]; */
     v   += nz;
     vi  += nz;
-    x[i] = sum*aa[adiag[i]];
-    v++; vi++;
+    x[i] = *v++ *sum; /* x[i]=aa[adiag[i]]*sum; v++; */
+    vi++; k++;
   }
 
   ierr = PetscLogFlops(2.0*a->nz - A->cmap->n);CHKERRQ(ierr);
