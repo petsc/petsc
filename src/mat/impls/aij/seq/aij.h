@@ -202,4 +202,96 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCSRPERM(Mat,const 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatReorderForNonzeroDiagonal_SeqAIJ(Mat,PetscReal,IS,IS);
 EXTERN_C_END
 
+/*
+    PetscSparseDenseMinusDot - The inner kernel of triangular solves and Gauss-Siedel smoothing. \sum_i xv[i] * r[xi[i]] for CSR storage
+
+  Input Parameters:
++  nnz - the number of entries
+.  r - the array of vector values
+.  xv - the matrix values for the row
+-  xi - the column indices of the nonzeros in the row
+
+  Output Parameter:
+.  sum - negative the sum of results
+
+  PETSc compile flags:
++   PETSC_KERNEL_USE_UNROLL_4 -
+-   PETSC_KERNEL_USE_UNROLL_2 -
+
+.seealso: PetscSparseDensePlusDot()
+
+*/
+#ifdef PETSC_KERNEL_USE_UNROLL_4
+#define PetscSparseDenseMinusDot(sum,r,xv,xi,nnz) {\
+if (nnz > 0) {\
+switch (nnz & 0x3) {\
+case 3: sum -= *xv++ * r[*xi++];\
+case 2: sum -= *xv++ * r[*xi++];\
+case 1: sum -= *xv++ * r[*xi++];\
+nnz -= 4;}\
+while (nnz > 0) {\
+sum -=  xv[0] * r[xi[0]] - xv[1] * r[xi[1]] -\
+	xv[2] * r[xi[2]] - xv[3] * r[xi[3]];\
+xv  += 4; xi += 4; nnz -= 4; }}}
+
+#elif defined(PETSC_KERNEL_USE_UNROLL_2)
+#define PetscSparseDenseMinusDot(sum,r,xv,xi,nnz) {\
+PetscInt __i,__i1,__i2;\
+for(__i=0;__i<nnz-1;__i+=2) {__i1 = xi[__i]; __i2=xi[__i+1];\
+sum -= (xv[__i]*r[__i1] + xv[__i+1]*r[__i2]);}\
+if (nnz & 0x1) sum -= xv[__i] * r[xi[__i]];}
+
+#else
+#define PetscSparseDenseMinusDot(sum,r,xv,xi,nnz) {\
+PetscInt __i;\
+for(__i=0;__i<nnz;__i++) sum -= xv[__i] * r[xi[__i]];}
+#endif
+
+
+
+/*
+    PetscSparseDensePlusDot - The inner kernel of matrix-vector product \sum_i xv[i] * r[xi[i]] for CSR storage
+
+  Input Parameters:
++  nnz - the number of entries
+.  r - the array of vector values
+.  xv - the matrix values for the row
+-  xi - the column indices of the nonzeros in the row
+
+  Output Parameter:
+.  sum - the sum of results
+
+  PETSc compile flags:
++   PETSC_KERNEL_USE_UNROLL_4 -
+-   PETSC_KERNEL_USE_UNROLL_2 -
+
+.seealso: PetscSparseDenseMinusDot()
+
+*/
+#ifdef PETSC_KERNEL_USE_UNROLL_4
+#define PetscSparseDensePlusDot(sum,r,xv,xi,nnz) {\
+if (nnz > 0) {\
+switch (nnz & 0x3) {\
+case 3: sum += *xv++ * r[*xi++];\
+case 2: sum += *xv++ * r[*xi++];\
+case 1: sum += *xv++ * r[*xi++];\
+nnz -= 4;}\
+while (nnz > 0) {\
+sum +=  xv[0] * r[xi[0]] + xv[1] * r[xi[1]] +\
+	xv[2] * r[xi[2]] + xv[3] * r[xi[3]];\
+xv  += 4; xi += 4; nnz -= 4; }}}
+
+#elif defined(PETSC_KERNEL_USE_UNROLL_2)
+#define PetscSparseDensePlusDot(sum,r,xv,xi,nnz) {\
+PetscInt __i,__i1,__i2;\
+for(__i=0;__i<nnz-1;__i+=2) {__i1 = xi[__i]; __i2=xi[__i+1];\
+sum += (xv[__i]*r[__i1] + xv[__i+1]*r[__i2]);}\
+if (nnz & 0x1) sum += xv[__i] * r[xi[__i]];}
+
+#else
+#define PetscSparseDensePlusDot(sum,r,xv,xi,nnz) {\
+ PetscInt __i;\
+for(__i=0;__i<nnz;__i++) sum += xv[__i] * r[xi[__i]];}
+#endif
+
 #endif
