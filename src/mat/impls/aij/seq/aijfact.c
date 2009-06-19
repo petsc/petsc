@@ -17,11 +17,11 @@ PetscErrorCode MatOrdering_Flow_SeqAIJ(Mat mat,const MatOrderingType type,IS *ir
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)mat->data;
   PetscErrorCode    ierr;
-  PetscInt          i,j,jj,k, kk,n = mat->rmap->n, current, newcurrent,*order;
+  PetscInt          i,j,jj,k, kk,n = mat->rmap->n, current = 0, newcurrent = 0,*order;
   const PetscInt    *ai = a->i, *aj = a->j;
   const PetscScalar *aa = a->a;
   PetscTruth        *done;
-  PetscReal         best,past,future;
+  PetscReal         best,past = 0,future;
 
   PetscFunctionBegin;
   /* pick initial row */
@@ -625,6 +625,7 @@ PetscErrorCode MatLUFactor_SeqAIJ(Mat A,IS row,IS col,const MatFactorInfo *info)
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------- */
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqAIJ"
@@ -1759,6 +1760,8 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_iludt(Mat A,Vec bb,Vec xx)
     sum = b[i];
     PetscSparseDenseMinusDot(sum,x,v,vi,nz);
     /*    while (nz--) sum -= *v++ * x[*vi++];*/
+    v  += nz;
+    vi += nz;
     x[i] = sum;
   }
 
@@ -1770,6 +1773,8 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_iludt(Mat A,Vec bb,Vec xx)
     sum = x[i];
     PetscSparseDenseMinusDot(sum,x,v,vi,nz);
     /* while (nz--) sum -= *v++ * x[*vi++]; */
+    v   += nz;
+    vi  += nz;
     x[i] = sum*aa[adiag[i]];
     v++; vi++;
   }
