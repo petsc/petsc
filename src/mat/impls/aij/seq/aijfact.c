@@ -1739,7 +1739,7 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_iludt(Mat A,Vec bb,Vec xx)
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode    ierr;
   PetscInt          n = A->rmap->n;
-  const PetscInt    *ai = a->i,*aj = a->j,*adiag = a->diag,*vi;
+  const PetscInt    *ai = a->i,*aj = a->j,*adiag = a->diag,*vi,*adiag_rev=a->diag+n;
   PetscScalar       *x,sum;
   const PetscScalar *b;
   const MatScalar   *aa = a->a,*v;
@@ -1766,12 +1766,12 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_iludt(Mat A,Vec bb,Vec xx)
   }
 
   /* backward solve the upper triangular */
-  v   = aa + adiag[n] + 1;
-  vi  = aj + adiag[n] + 1;
-  k = 1;  /* i + k = n */
+  v   = aa + adiag_rev[0] + 1;
+  vi  = aj + adiag_rev[0] + 1;
+  k = 0;  /* i + k = n */
   for (i=n-1; i>=0; i--){
     /* nz  = adiag[i] - adiag[i+1] - 1; */
-    nz = adiag[n-k] - adiag[n-k+1] - 1;
+    nz = adiag_rev[k+1] - adiag_rev[k] - 1;
     sum = x[i];
     PetscSparseDenseMinusDot(sum,x,v,vi,nz);
     /* while (nz--) sum -= *v++ * x[*vi++]; */
@@ -1851,7 +1851,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   PetscErrorCode     ierr;
   const PetscInt     *r,*ic;
   PetscInt           i,n=A->rmap->n,*ai=a->i,*aj=a->j,*ajtmp,*adiag;
-  PetscInt           *bi,*bj,*bdiag;
+  PetscInt           *bi,*bj,*bdiag,*bdiag_rev;
   PetscInt           row,nzi,nzi_bl,nzi_bu,*im,dtcount,nzi_al,nzi_au;
   PetscInt           nlnk,*lnk;
   PetscBT            lnkbt;
@@ -1873,7 +1873,8 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
 
   /* bdiag is location of diagonal in factor */
-  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&bdiag);CHKERRQ(ierr);
+  ierr = PetscMalloc((2*n+1)*sizeof(PetscInt),&bdiag);CHKERRQ(ierr);
+  bdiag_rev = bdiag + n;
 
   /* allocate row pointers bi */
   ierr = PetscMalloc((n+1)*sizeof(PetscInt),&bi);CHKERRQ(ierr);
@@ -1933,6 +1934,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
 
   bi[0]    = 0;
   bdiag[0] = nnz_max-1; /* location of diagonal in factor B */
+  bdiag_rev[n] = bdiag[0];
   for (i=0; i<n; i++) {
     /* copy initial fill into linked list */
     nzi = 0; /* nonzeros for active row i */
@@ -2023,7 +2025,8 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
     nzi += ncut;
 
     /* mark bdiagonal */
-    bdiag[i+1]   = bdiag[i] - (ncut + 1);
+    bdiag[i+1]       = bdiag[i] - (ncut + 1); 
+    bdiag_rev[n-i-1] = bdiag[i+1];
     bjtmp = bj + bdiag[i];
     batmp = ba + bdiag[i];
     *bjtmp = i; 
