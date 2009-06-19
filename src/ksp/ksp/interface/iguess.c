@@ -239,7 +239,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessUpdate_Method2(KSPFischerGuess_
 
     ierr = KSP_MatMult(itg->ksp,itg->mat,itg->xtilde[curl],itg->Ax);CHKERRQ(ierr); /* norm = sqrt(xtilde[curl]'Axtilde[curl]) */
     ierr = VecDot(itg->xtilde[curl],itg->Ax,&norm);CHKERRQ(ierr);
-    if (PetscAbsScalar(norm)) {
+    if (PetscAbsScalar(norm) != 0.0) {
       ierr = VecScale(itg->xtilde[curl],1.0/PetscSqrtScalar(norm));CHKERRQ(ierr);
       itg->curl++;
     } else {
