@@ -1739,7 +1739,7 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_iludt(Mat A,Vec bb,Vec xx)
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode    ierr;
   PetscInt          n = A->rmap->n;
-  const PetscInt    *ai = a->i,*aj = a->j,*adiag = a->diag,*vi,*adiag_rev=a->diag+n+1;
+  const PetscInt    *ai = a->i,*aj = a->j,*vi,*adiag_rev=a->diag+n+1;
   PetscScalar       *x,sum;
   const PetscScalar *b;
   const MatScalar   *aa = a->a,*v;
@@ -1883,8 +1883,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   dtcount = (PetscInt)info->dtcount;
   if (dtcount > n-1) dtcount = n-1; /* diagonal is excluded */
   nnz_max  = ai[n]+2*n*dtcount+2;
-  if (nnz_max > n*n) nnz_max = n*n+1;
-  printf("nnz_max %d\n",nnz_max);
+  /* if (nnz_max > n*n) nnz_max = n*n+1; n*n may cause overflow ?? */
   ierr = PetscMalloc(nnz_max*sizeof(PetscInt),&bj);CHKERRQ(ierr);
   ierr = PetscMalloc(nnz_max*sizeof(MatScalar),&ba);CHKERRQ(ierr);
 
