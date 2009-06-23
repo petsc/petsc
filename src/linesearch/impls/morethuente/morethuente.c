@@ -74,14 +74,16 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
 {
     PetscErrorCode ierr;
     TAOLINESEARCH_MT_CTX *mt;
-#if defined(PETSC_USE_SCALAR)
+#if defined(PETSC_USE_COMPLEX)
     PetscReal cdginit;
 #endif
     
     PetscReal    xtrapf = 4.0;
     PetscReal   finit, width, width1, dginit, fm, fxm, fym, dgm, dgxm, dgym;
-    PetscReal    dgx, dgy, dg, fx, fy, stx, sty, dgtest, ftest1=0.0;
-    PetscInt  i, stage1;
+    PetscReal    dgx, dgy, dg, dg2, fx, fy, stx, sty, dgtest;
+    PetscReal ftest1=0.0, ftest2=0.0;
+    PetscInt  i, stage1,n1,n2,nn1,nn2;
+    PetscReal bstepmin1, bstepmin2, bstepmax;
 
     PetscFunctionBegin;
     PetscValidHeaderSpecific(ls,TAOLINESEARCH_COOKIE,1);
@@ -107,6 +109,27 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
       mt->x = x;
       ierr = PetscObjectReference((PetscObject)x); CHKERRQ(ierr);
     }
+
+
+    if (ls->bounded) {
+	/* Compute step length needed to make all variables equal a bound */
+	/* Compute the smallest steplength that will make one nonbinding variable
+	   equal the bound */
+	ierr = VecGetLocalSize(ls->upper,&n1); CHKERRQ(ierr);
+	ierr = VecGetLocalSize(mt->x, &n2); CHKERRQ(ierr);
+	ierr = VecGetSize(ls->upper,&nn1); CHKERRQ(ierr);
+	ierr = VecGetSize(mt->x,&nn2); CHKERRQ(ierr);
+	if (n1 != n2 || nn1 != nn2) {
+	    SETERRQ(PETSC_ERR_ARG_SIZ,"Variable vector not compatible with bounds vector");
+	}
+	ierr = VecScale(s,-1.0); CHKERRQ(ierr);
+	ierr = VecBoundGradientProjection(s,ls->lower,x,ls->upper,s); CHKERRQ(ierr);
+	ierr = VecScale(s,-1.0); CHKERRQ(ierr);
+	ierr = VecStepBoundInfo(x,ls->lower,ls->upper,s,&bstepmin1,&bstepmin2,&bstepmax);
+	ls->stepmax = PetscMin(bstepmax,1.0e15);
+	CHKERRQ(ierr);
+    }
+
 #if defined(PETSC_USE_COMPLEX)
     ierr = VecDot(g,s,&cdginit); CHKERRQ(ierr); dginit = PetscReal(cdginit);
 #else
@@ -177,21 +200,27 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
       ierr = VecAXPY(x,cstep,s); CHKERRQ(ierr);
 #else
       ierr = VecCopy(mt->work,x); CHKERRQ(ierr);
-      ierr = VecAXPY(x,ls->step,s); CHKERRQ(ierr);
-//    info = X->Waxpby(*step,S,1.0,W);CHKERRQ(info); 	/* X = W + step*S */
+      ierr = VecAXPY(x,ls->step,s); CHKERRQ(ierr);	/* X = W + step*S */
 #endif
+      if (ls->bounded) {
+	  ierr = VecMedian(ls->lower, x, ls->upper, x);
+      }
       ierr = TaoLineSearchComputeObjectiveAndGradient(ls,x,f,g); CHKERRQ(ierr);
       if (0 == i) {
 	ls->f_fullstep=*f;
       }
 
-      ls->nfev++;
 #if defined(PETSC_USE_COMPLEX)
       ierr = VecDot(g,s,&cdg); CHKERRQ(ierr); dg = PetscReal(cdg);
-//    info = G->Dot(S,&cdg);CHKERRQ(info); dg = TaoReal(cdg);
 #else
-      ierr = VecDot(g,s,&dg); CHKERRQ(ierr);
-//    info = G->Dot(S,&dg);CHKERRQ(info);	        /* dg = G^T S */
+      if (ls->bounded) {
+	  ierr = VecDot(g,mt->work,&dg); CHKERRQ(ierr);
+	  ierr = VecDot(g,x,&dg2); CHKERRQ(ierr);
+	  dg = (dg2 - dg)/ls->step;
+      } else {
+	  ierr = VecDot(g,s,&dg); CHKERRQ(ierr);
+      }
+
 #endif
 
       if (PetscIsInfOrNanReal(*f) || PetscIsInfOrNanReal(dg)) {
@@ -203,14 +232,22 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
       }
 
       ftest1 = finit + ls->step * dgtest;
-
+      if (ls->bounded) {
+	  ftest2 = finit + ls->step * dgtest * ls->ftol;
+      }
       /* Convergence testing */
       /* TODO  make parameter for 1.0e-10 */
       if (((*f - ftest1 <= 1.0e-10 * PetscAbsReal(finit)) && 
 	   (PetscAbsReal(dg) + ls->gtol*dginit <= 0.0))) {
-	ierr = PetscInfo(ls, "TaoApply_LineSearch:Line search success: Sufficient decrease and directional deriv conditions hold\n"); CHKERRQ(ierr);
+	ierr = PetscInfo(ls, "Line search success: Sufficient decrease and directional deriv conditions hold\n"); CHKERRQ(ierr);
 	ls->reason = TAOLINESEARCH_SUCCESS;
 	break;
+      }
+
+      /* Check Armijo if beyond the first breakpoint */
+      if ((*f <= ftest2) && (ls->step >= bstepmin2)) {
+	  ierr = PetscInfo(ls,"Line search success: Sufficient decrease.\n"); CHKERRQ(ierr);
+	  break;
       }
 
       /* Checks for bad cases */
@@ -283,7 +320,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     }
   
     /* Finish computations */
-    ierr = PetscInfo2(ls,"%d function evals in line search, step = %10.4f\n",ls->nfev,ls->step); CHKERRQ(ierr);
+    ierr = PetscInfo2(ls,"%d function evals in line search, step = %10.5f\n",ls->nfev,ls->step); CHKERRQ(ierr);
     
       
     PetscFunctionReturn(0);
@@ -376,7 +413,7 @@ EXTERN_C_END
 */
 
 #undef __FUNCT__  
-#define __FUNCT__ "TaoStep_LineSearch"
+#define __FUNCT__ "Tao_mcstep"
 static PetscErrorCode Tao_mcstep(TaoLineSearch ls,
                               double *stx, double *fx, double *dx,
 		              double *sty, double *fy, double *dy,

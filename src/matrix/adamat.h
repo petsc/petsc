@@ -9,27 +9,27 @@ typedef struct{
   Vec W;
   Vec W2;
   Vec ADADiag;
-  int GotDiag;
+  PetscInt GotDiag;
 
 } _p_TaoMatADACtx;
 
 typedef  _p_TaoMatADACtx* TaoMatADACtx;
 
-int MatCreateADA(Mat,Vec,Vec,Mat*);
-int MatMult_ADA(Mat,Vec,Vec);
-int MatMultTranspose_ADA(Mat,Vec,Vec);
-int MatDiagonalShift_ADA(Vec,Mat);
-int MatDestroy_ADA(Mat);
-int MatView_ADA(Mat,PetscViewer);
-int MatShift_ADA(Mat,PetscReal);
-int MatDuplicate_ADA(Mat,MatDuplicateOption,Mat*);
-int MatEqual_ADA(Mat,Mat,PetscTruth*);
-int MatScale_ADA(Mat,PetscReal);
-int MatGetSubMatrix_ADA(Mat,IS,IS,int,MatReuse,Mat *);
-int MatGetSubMatrices_ADA(Mat,int,IS*,IS*,MatReuse,Mat**);
-int MatTranspose_ADA(Mat,Mat*);
-int MatGetDiagonal_ADA(Mat,Vec);
-int MatGetColumnVector_ADA(Mat,Vec, int);
-int MatNorm_ADA(Mat,NormType,PetscReal *);
-int MatADAComputeDiagonal(Mat);
+PetscErrorCode MatCreateADA(Mat,Vec,Vec,Mat*);
+PetscErrorCode MatMult_ADA(Mat,Vec,Vec);
+PetscErrorCode MatMultTranspose_ADA(Mat,Vec,Vec);
+PetscErrorCode MatDiagonalShift_ADA(Vec,Mat);
+PetscErrorCode MatDestroy_ADA(Mat);
+PetscErrorCode MatView_ADA(Mat,PetscViewer);
+PetscErrorCode MatShift_ADA(Mat,PetscReal);
+PetscErrorCode MatDuplicate_ADA(Mat,MatDuplicateOption,Mat*);
+PetscErrorCode MatEqual_ADA(Mat,Mat,PetscTruth*);
+PetscErrorCode MatScale_ADA(Mat,PetscReal);
+PetscErrorCode MatGetSubMatrix_ADA(Mat,IS,IS,PetscInt,MatReuse,Mat *);
+PetscErrorCode MatGetSubMatrices_ADA(Mat,PetscInt,IS*,IS*,MatReuse,Mat**);
+PetscErrorCode MatTranspose_ADA(Mat,Mat*);
+PetscErrorCode MatGetDiagonal_ADA(Mat,Vec);
+PetscErrorCode MatGetColumnVector_ADA(Mat,Vec, PetscInt);
+PetscErrorCode MatNorm_ADA(Mat,NormType,PetscReal *);
+PetscErrorCode MatADAComputeDiagonal(Mat);
 

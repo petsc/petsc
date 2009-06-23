@@ -1,8 +1,9 @@
 
 ALL: lib
 
-DIRS     = unit morethuente
-#armijo boundproj morethuente projectedarmijo unit
+DIRS     = unit morethuente 
+#morethuentebound
+#armijo boundproj projectedarmijo 
 LOCDIR   = src/linesearch/impls/
 LIBRARY = taolinesearch
 include ${TAO_DIR}/conf/tao_base

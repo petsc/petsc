@@ -4,6 +4,7 @@ TESTEXAMPLES_C = test_link1.tao runtest_link1 test_link1.rm clean \
          test_linesearch1.tao runtest_linesearch1 test_linesearch1.rm \
          test_lmvmmat1.tao runtest_lmvmmat1 test_lmvmmat1.rm \
          test_rosenbrock1.tao runtest_rosenbrock1 test_rosenbrock1.rm \
+         test_jbearing2.tao runtest_jbearing2 test_jbearing2.rm \
 	 clean 
 
 
@@ -25,6 +26,18 @@ test_lmvmmat1: test_lmvmmat1.o tao_chkopts
 test_rosenbrock1: test_rosenbrock1.o tao_chkopts
 	-${CLINKER} -o test_rosenbrock1 test_rosenbrock1.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} test_rosenbrock1.o
+
+test_jbearing2: test_jbearing2.o tao_chkopts
+	-${CLINKER} -o test_jbearing2 test_jbearing2.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_jbearing2.o
+
+test_plate2: test_plate2.o tao_chkopts
+	-${CLINKER} -o test_plate2 test_plate2.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_plate2.o
+
+test_bratu2: test_bratu2.o tao_chkopts
+	-${CLINKER} -o test_bratu2 test_bratu2.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_bratu2.o
 
 
 
@@ -52,5 +65,24 @@ runtest_rosenbrock1:
 	if (${DIFF} output/test_rosenbrock1_1.out test_rosenbrock1_1.tmp) then true;\
         else echo "Possible problem with test_rosenbrock1_1, diffs above"; fi; \
 	${RM} -f test_rosenbrock1_1.tmp
+
+
+runtest_jbearing2: 
+	-@${MPIEXEC} -np 2 ./test_jbearing2 > test_jbearing2_1.tmp 2>&1; \
+	if (${DIFF} output/test_jbearing2_1.out test_jbearing2_1.tmp) then true;\
+        else echo "Possible problem with test_jbearing2_1, diffs above"; fi; \
+	${RM} -f test_jbearing2_1.tmp
+
+runtest_plate2: 
+	-@${MPIEXEC} -np 2 ./test_plate2 > test_plate2_1.tmp 2>&1; \
+	if (${DIFF} output/test_plate2_1.out test_plate2_1.tmp) then true;\
+        else echo "Possible problem with test_plate2_1, diffs above"; fi; \
+	${RM} -f test_plate2_1.tmp
+
+runtest_bratu2: 
+	-@${MPIEXEC} -np 2 ./test_bratu2 > test_bratu2_1.tmp 2>&1; \
+	if (${DIFF} output/test_bratu2_1.out test_bratu2_1.tmp) then true;\
+        else echo "Possible problem with test_bratu2_1, diffs above"; fi; \
+	${RM} -f test_bratu2_1.tmp
 
 

@@ -265,15 +265,15 @@ static PetscErrorCode TaoSolverDestroy_LMVM(TaoSolver tao)
 #define __FUNCT__ "TaoSolverSetFromOptions_LMVM"
 static PetscErrorCode TaoSolverSetFromOptions_LMVM(TaoSolver tao)
 {
-    /*
-  int info;
 
-  TaoFunctionBegin;
-  info = TaoOptionsHead("Limited-memory variable-metric method for unconstrained optimization"); CHKERRQ(info);
-  info = TaoLineSearchSetFromOptions(tao); CHKERRQ(info);
-  info = TaoOptionsTail(); CHKERRQ(info);
-  TaoFunctionReturn(0);
-    */
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  //  ierr = TaoOptionsHead("Limited-memory variable-metric method for unconstrained optimization"); CHKERRQ(ierr);
+  ierr = TaoLineSearchSetFromOptions(tao->linesearch); CHKERRQ(ierr);
+  //  ierr = TaoOptionsTail(); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+
     return 0;
 }
 

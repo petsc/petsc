@@ -12,12 +12,12 @@ int main(int argc, char *argv[])
 {
     TaoLineSearch ls;
     TaoLineSearchTerminationReason reason;
-    Vec x,g,s;
+    Vec x,g,s,xl,xu;
+    PetscTruth usebounds,flg;
     PetscReal f,step;
     AppCtx user;
-    int ierr;
+    PetscErrorCode ierr;
     
-	
     ierr = PetscInitialize(&argc, &argv,0,0); CHKERRQ(ierr);
 
     user.n=2; user.alpha = 99.0;
@@ -27,12 +27,13 @@ int main(int argc, char *argv[])
 
     ierr = VecDuplicate(x,&g); CHKERRQ(ierr);
     ierr = VecDuplicate(x,&s); CHKERRQ(ierr);
-
+    
     ierr = VecSet(x,0.0); CHKERRQ(ierr);
     ierr = VecSet(s,0.0); CHKERRQ(ierr);
     f = 1.0;
     ierr = VecSetValue(g,0,-1.0, INSERT_VALUES); CHKERRQ(ierr);
     ierr = VecSetValue(g,1,0.0, INSERT_VALUES);CHKERRQ(ierr);
+    
     ierr = VecAssemblyBegin(g); CHKERRQ(ierr);
     ierr = VecAssemblyEnd(g); CHKERRQ(ierr);
     ierr = VecAXPY(s,-1.0,g); CHKERRQ(ierr);
@@ -42,11 +43,34 @@ int main(int argc, char *argv[])
     ierr = TaoLineSearchSetFromOptions(ls); CHKERRQ(ierr);
     ierr = TaoLineSearchSetObjectiveAndGradient(ls,MyFuncGrad,(void*)&user); 
     CHKERRQ(ierr);
+
+    usebounds = PETSC_FALSE;
+    ierr = PetscOptionsGetTruth(PETSC_NULL,"-bounded",&usebounds,&flg); CHKERRQ(ierr);
+    if (usebounds == PETSC_TRUE) {
+	ierr = VecDuplicate(x,&xl); CHKERRQ(ierr);
+	ierr = VecDuplicate(x,&xu); CHKERRQ(ierr);
+	ierr = VecSet(xl,-1.0); CHKERRQ(ierr);
+	ierr = VecSet(xu,0.14); CHKERRQ(ierr);
+	ierr = TaoLineSearchSetVariableBounds(ls,xl,xu); CHKERRQ(ierr);
+    }
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Orig vector:\n"); CHKERRQ(ierr);
+    ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr); 
+
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Step direction:\n"); CHKERRQ(ierr);
+    ierr = VecView(s,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr); 
+
     ierr = TaoLineSearchApply(ls,x,&f,g,s,&step,&reason); CHKERRQ(ierr);
     ierr = TaoLineSearchView(ls,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
 
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Final vector:\n"); CHKERRQ(ierr);
+    ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr); 
+
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Status: %d\n",reason); CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Step length: %g\n",step); CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Orig vector:\n"); CHKERRQ(ierr);
+    ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr); 
+
+    
     ierr = PetscPrintf(PETSC_COMM_WORLD,"New Obj value: %g\n",f); CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"New gradient:\n"); CHKERRQ(ierr);
     ierr = VecView(g,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);

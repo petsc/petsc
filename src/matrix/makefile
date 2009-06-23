@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = lmvmmat.c 
+SOURCEC  = lmvmmat.c adamat.c
 SOURCEF  = 
-SOURCEH  = lmvmmat.h 
-OBJSC    = lmvmmat.o 
+SOURCEH  = lmvmmat.h adamat.h
+OBJSC    = lmvmmat.o adamat.o
 OBJSF    = 
 LIBBASE  = libtao
 MANSEC   = matrix
