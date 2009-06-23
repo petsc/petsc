@@ -210,7 +210,45 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjectiveRoutine(TaoSolver tao, P
     PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverSetSeparableObjectiveRoutine"
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetSeparableObjectiveRoutine(TaoSolver tao, Vec sepobj, PetscErrorCode (*func)(TaoSolver, Vec, Vec, void*),void *ctx)
+{
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+    PetscValidHeaderSpecific(sepobj, VEC_COOKIE,2);
+    tao->user_sepobjP = ctx;
+    tao->sep_objective = sepobj;
+    tao->ops->computeseparableobjective = func;
+    PetscFunctionReturn(0);
+}
 
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverComputeSeparableObjective"
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeSeparableObjective(TaoSolver tao, Vec X, Vec F) 
+{
+    PetscErrorCode ierr;
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+    PetscValidHeaderSpecific(X,VEC_COOKIE,2);
+    PetscValidHeaderSpecific(F,VEC_COOKIE,3);
+    PetscCheckSameComm(tao,1,X,2);
+    PetscCheckSameComm(tao,1,F,3);
+    if (tao->ops->computeseparableobjective) {
+	ierr = PetscLogEventBegin(TaoSolver_ObjectiveEval,tao,X,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+	PetscStackPush("TaoSolver user separable objective evaluation routine");
+	CHKMEMQ;
+	ierr = (*tao->ops->computeseparableobjective)(tao,X,F,tao->user_sepobjP); CHKERRQ(ierr);
+	CHKMEMQ;
+	PetscStackPop;
+	ierr = PetscLogEventEnd(TaoSolver_ObjectiveEval,tao,X,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+	tao->nfuncs++;
+    } else {
+	SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"TaoSolverSetSeparableObjectiveRoutine() has not been called");
+    }
+    ierr = PetscInfo(tao,"TAO separable function evaluation.\n"); CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverSetGradientRoutine"
@@ -257,3 +295,45 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjectiveAndGradientRoutine(TaoSo
     PetscFunctionReturn(0);
 }
   
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverSetVariableBounds"
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetVariableBounds(TaoSolver tao, Vec XL, Vec XU)
+{
+    PetscErrorCode ierr;
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+    if (XL) {
+	PetscValidHeaderSpecific(XL,VEC_COOKIE,2);
+	PetscObjectReference((PetscObject)XL);
+    }
+    if (XU) {
+	PetscValidHeaderSpecific(XU,VEC_COOKIE,3);
+	PetscObjectReference((PetscObject)XU);
+    }
+    if (tao->XL) {
+	ierr = VecDestroy(tao->XL); CHKERRQ(ierr);
+    }
+    if (tao->XU) {
+	ierr = VecDestroy(tao->XU); CHKERRQ(ierr);
+    }	
+
+    tao->XL = XL;
+    tao->XU = XU;
+	
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverGetVariableBounds"
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetVariableBounds(TaoSolver tao, Vec *XL, Vec *XU)
+{
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+    if (XL) {
+	*XL=tao->XL;
+    }
+    if (XU) {
+	*XU=tao->XU;
+    }
+    PetscFunctionReturn(0);
+}

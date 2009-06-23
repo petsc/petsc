@@ -93,4 +93,65 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeHessian(TaoSolver tao, Vec X,
     PetscFunctionReturn(0);
 }
 
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeJacobian(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, MatStructure *flg)
+{
+    PetscErrorCode ierr;
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+    PetscValidHeaderSpecific(X, VEC_COOKIE,2);
+    PetscValidPointer(flg,5);
+    PetscCheckSameComm(tao,1,X,2);
+    
+    if (!tao->ops->computejacobian) {
+	SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSolverSetJacobian() first");
+    }
+    *flg = DIFFERENT_NONZERO_PATTERN;
+    ++tao->njac;
+    ierr = PetscLogEventBegin(TaoSolver_JacobianEval,tao,X,*J,*Jpre); CHKERRQ(ierr);
+    PetscStackPush("TaoSolver user Jacobian function");
+    CHKMEMQ;
+    ierr = (*tao->ops->computejacobian)(tao,X,J,Jpre,flg,tao->user_jacP); CHKERRQ(ierr);
+    CHKMEMQ;
+    PetscStackPop;
+    ierr = PetscLogEventEnd(TaoSolver_JacobianEval,tao,X,*J,*Jpre); CHKERRQ(ierr);
+    
+    PetscFunctionReturn(0);
+}
 
+
+
+#undef __FUNCT__ 
+#define __FUNCT__ "TaoSolverSetJacobianRoutine"
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetJacobianRoutine(TaoSolver tao, Mat J, Mat Jpre, PetscErrorCode (*func)(TaoSolver, Vec, Mat*, Mat *, MatStructure *, void*), void *ctx)
+{
+    PetscErrorCode ierr;
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+    if (J) {
+	PetscValidHeaderSpecific(J,MAT_COOKIE,2);
+	PetscCheckSameComm(tao,1,J,2);
+    }
+    if (Jpre) {
+	PetscValidHeaderSpecific(Jpre,MAT_COOKIE,3);
+	PetscCheckSameComm(tao,1,Jpre,3);
+    }
+    if (ctx) {
+	tao->user_jacP = ctx;
+    }
+    if (func) {
+	tao->ops->computejacobian = func;
+    }
+
+    
+    if (J) {
+	ierr = PetscObjectReference((PetscObject)J); CHKERRQ(ierr);
+	if (tao->jacobian) {   ierr = MatDestroy(tao->jacobian); CHKERRQ(ierr);}
+	tao->jacobian = J;
+    }
+    if (Jpre) {
+	ierr = PetscObjectReference((PetscObject)Jpre); CHKERRQ(ierr);
+	if (tao->jacobian_pre) { ierr = MatDestroy(tao->jacobian_pre); CHKERRQ(ierr);}
+	tao->jacobian_pre=Jpre;
+    }
+    PetscFunctionReturn(0);
+}

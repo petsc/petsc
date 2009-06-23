@@ -43,8 +43,11 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverCreate(MPI_Comm comm, TaoSolver *new
     tao->ops->computeobjectiveandgradient=0;
     tao->ops->computegradient=0;
     tao->ops->computehessian=0;
+    tao->ops->computeseparableobjective=0;
+    tao->ops->computejacobian=0;
     tao->ops->convergencetest=TaoSolverDefaultConvergenceTest;
     tao->ops->convergencedestroy=0;
+    tao->ops->computedual=0;
     tao->ops->setup=0;
     tao->ops->solve=0;
     tao->ops->view=0;
@@ -77,6 +80,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverCreate(MPI_Comm comm, TaoSolver *new
     tao->conv_hist_heval = PETSC_NULL;
 
     tao->numbermonitors=0;
+    tao->viewsolution=PETSC_FALSE;
     tao->viewhessian=PETSC_FALSE;
     tao->viewgradient=PETSC_FALSE;
     tao->viewjacobian=PETSC_FALSE;
@@ -216,6 +220,12 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDestroy(TaoSolver tao)
   }
   if (tao->gradient) {
     ierr = VecDestroy(tao->gradient); CHKERRQ(ierr);
+  }
+  if (tao->XL) {
+      ierr = VecDestroy(tao->XL); CHKERRQ(ierr);
+  }
+  if (tao->XU) {
+      ierr = VecDestroy(tao->XU); CHKERRQ(ierr);
   }
   ierr = PetscHeaderDestroy(tao); CHKERRQ(ierr);
   PetscFunctionReturn(0);

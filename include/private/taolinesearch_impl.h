@@ -26,6 +26,10 @@ struct _p_TaoLineSearch {
     PetscTruth setupcalled;
     void *data;
 
+    /* bounds used for some line searches */
+    Vec lower;
+    Vec upper;
+    PetscInt bounded;
 
     Vec start_x;
     PetscReal f_fullstep;

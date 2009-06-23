@@ -12,9 +12,13 @@ struct _TaoSolverOps {
     PetscErrorCode (*computeobjectiveandgradient)(TaoSolver, Vec, PetscReal*, Vec, void*);
     PetscErrorCode (*computegradient)(TaoSolver, Vec, Vec, void*);
     PetscErrorCode (*computehessian)(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
+    PetscErrorCode (*computeseparableobjective)(TaoSolver, Vec, Vec, void*);
+    PetscErrorCode (*computejacobian)(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
+
     PetscErrorCode (*convergencetest)(TaoSolver,void*);
     PetscErrorCode (*convergencedestroy)(void*);
 
+    PetscErrorCode (*computedual)(TaoSolver, Vec, Vec);
     PetscErrorCode (*setup)(TaoSolver);
     PetscErrorCode (*solve)(TaoSolver);
     PetscErrorCode (*view)(TaoSolver, PetscViewer);
@@ -30,6 +34,7 @@ struct _p_TaoSolver {
     void *user_objgradP;
     void *user_gradP;
     void *user_hessP;
+    void *user_sepobjP;
     void *user_jacP;
 
     PetscErrorCode (*monitor[MAXTAOMONITORS])(TaoSolver,void*);
@@ -45,8 +50,13 @@ struct _p_TaoSolver {
     Vec solution;
     Vec gradient;
     Vec stepdirection;
+    Vec XL;
+    Vec XU;
     Mat hessian;
     Mat hessian_pre;
+    Vec sep_objective;
+    Mat jacobian;
+    Mat jacobian_pre;
     PetscReal step;
     PetscReal residual;
     PetscReal gnorm0;
@@ -84,6 +94,7 @@ struct _p_TaoSolver {
 
     PetscTruth printreason;
     PetscTruth viewtao;
+    PetscTruth viewsolution;
     PetscTruth viewgradient;
     PetscTruth viewconstraint;
     PetscTruth viewhessian;

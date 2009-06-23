@@ -1,0 +1,10 @@
+LineSearch
+* Clear/reset variable bounds
+
+TaoSolver
+* Check lower bound <= than upper bound
+* Check bounds for bounded methods, give warning for unbounded methods
+* TaoSolverConvergedReason -> TaoSolverTerminationReason
+
+
+Check against PetscScalar=single, complex

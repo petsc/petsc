@@ -22,7 +22,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT PetscDLLibraryRegister_taolinesearch(cons
     PetscFunctionBegin;
     info = TaoLineSearchInitializePackage(path); CHKERRQ(info);
     PetscFunctionReturn(0);
-
+}
 EXTERN_C_END
 #else
 #define TaoLineSearchRegisterDynamic(a,b,c,d) TaoLineSearchRegister(a,b,c,d)
@@ -32,7 +32,7 @@ EXTERN_C_BEGIN
 EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_Unit(TaoLineSearch);
 EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_MT(TaoLineSearch);
 EXTERN_C_END
-
+    
 extern PetscTruth TaoLineSearchRegisterAllCalled;
 
 #undef __FUNCT__

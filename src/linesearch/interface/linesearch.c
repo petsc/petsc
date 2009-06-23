@@ -46,6 +46,9 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchView(TaoLineSearch ls, Petsc
 /*	info = PetscViewerASCIIPrintf(viewer,"  tolerances: relative=%G, absolute=%G, solution=%G\n",
 	ls->rtol,ls->abstol,ls->xtol);CHKERRQ(info); */
 	info = PetscViewerASCIIPrintf(viewer,"  total number of function evaluations=%D\n",ls->nfev);CHKERRQ(info);
+	if (ls->bounded) {
+	    info = PetscViewerASCIIPrintf(viewer,"  using variable bounds\n");CHKERRQ(info);
+	}
     } else if (isstring) {
 	info = TaoLineSearchGetType(ls,&type);CHKERRQ(info);
 	info = PetscViewerStringSPrintf(viewer," %-3.3s",type);CHKERRQ(info);
@@ -86,7 +89,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate(MPI_Comm comm, TaoLin
 			     TAOLINESEARCH_COOKIE, 0, "TaoLineSearch",
 			     comm,TaoLineSearchDestroy, TaoLineSearchView);
     CHKERRQ(info);
-    
+    ls->bounded = 0;
     ls->maxfev=30;
     ls->ftol = 0.0001;
     ls->gtol = 0.9;
@@ -580,7 +583,22 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchGetFullStepObjective(TaoLine
     PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TaoLineSearchSetVariableBounds"
+PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetVariableBounds(TaoLineSearch ls,Vec xl, Vec xu)
+{
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(ls,TAOLINESEARCH_COOKIE,1);
+    PetscValidHeaderSpecific(xl,VEC_COOKIE,2);
+    PetscValidHeaderSpecific(xu,VEC_COOKIE,3);
+    
+    ls->lower = xl;
+    ls->upper = xu;
+    ls->bounded = 1;
 
+    PetscFunctionReturn(0);
+    
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchRegister"
