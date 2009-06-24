@@ -480,6 +480,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const c
   PetscTruth     flag = PETSC_FALSE;
 
   PetscFunctionBegin;
+  if (options == PETSC_NULL) {
+    fprintf(stderr, "Options have not been enabled.\nYou might have forgotten to call PetscInitialize().\n");
+    MPI_Abort(MPI_COMM_WORLD, PETSC_ERR_SUP);
+  }
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   options->argc     = (argc) ? *argc : 0;
