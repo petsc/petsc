@@ -461,7 +461,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   flg3 = PETSC_FALSE;
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-log_all",&flg1,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-log",&flg2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-log_summary",&flg3,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-log_summary",&flg3);CHKERRQ(ierr);
   if (flg1)              {  ierr = PetscLogAllBegin();CHKERRQ(ierr); }
   else if (flg2 || flg3) {  ierr = PetscLogBegin();CHKERRQ(ierr);}
     
