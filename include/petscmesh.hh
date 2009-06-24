@@ -905,7 +905,8 @@ PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, 
   // Update neighbor recv overlap and local adjacency
   const Obj<typename recv_overlap_type::traits::baseSequence>      rPoints = recvOverlap->base();
   const typename recv_overlap_type::traits::baseSequence::iterator rEnd    = rPoints->end();
-  point_type maxPoint = *std::max_element(adjGraph->cap()->begin(), adjGraph->cap()->end())+1;
+  point_type maxPoint = std::max(*std::max_element(adjGraph->cap()->begin(),  adjGraph->cap()->end()),
+                                 *std::max_element(adjGraph->base()->begin(), adjGraph->base()->end())) + 1;
 
   for(typename recv_overlap_type::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
     const point_type&                                        localPoint = *p_iter;
