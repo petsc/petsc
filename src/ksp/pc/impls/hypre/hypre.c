@@ -1094,6 +1094,10 @@ PetscErrorCode PCSetUp_PFMG(PC pc)
   if (!flg) SETERRQ(PETSC_ERR_ARG_INCOMP,"Must use MATHYPRESTRUCT with this preconditioner");
 
   /* create the hypre solver object and set its information */
+  if (ex->hsolver) {
+    ierr = HYPRE_StructPFMGDestroy(ex->hsolver);CHKERRQ(ierr);
+  }
+  ierr = HYPRE_StructPFMGCreate(ex->hcomm,&ex->hsolver);CHKERRQ(ierr);
   ierr = HYPRE_StructPFMGSetup(ex->hsolver,mx->hmat,mx->hb,mx->hx);CHKERRQ(ierr);
   ierr = HYPRE_StructPFMGSetZeroGuess(ex->hsolver);CHKERRQ(ierr);
 
@@ -1188,7 +1192,7 @@ PetscErrorCode PCApply_PFMG(PC pc,Vec x,Vec y)
   iupper[2] += ilower[2] - 1;    
 
   /* copy x values over to hypre */
-  ierr = HYPRE_StructVectorInitialize(mx->hb);CHKERRQ(ierr);
+  ierr = HYPRE_StructVectorSetConstantValues(mx->hb,0.0);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
   ierr = HYPRE_StructVectorSetBoxValues(mx->hb,ilower,iupper,xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);

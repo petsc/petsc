@@ -326,11 +326,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPREStruct_3d(Mat mat,Petsc
   Mat_HYPREStruct   *ex = (Mat_HYPREStruct*) mat->data;
 
   PetscFunctionBegin;
-  if (ex->needsinitialization) {
-    ierr = HYPRE_StructMatrixInitialize(ex->hmat);CHKERRQ(ierr);
-    ex->needsinitialization = PETSC_FALSE;
-  }
-
   for (i=0; i<nrow; i++) {
     for (j=0; j<ncol; j++) {
       stencil = icol[j] - irow[i];
@@ -374,7 +369,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal_HYPREStruct_3d(Mat mat,PetscI
   Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
 
   PetscFunctionBegin;
-  ierr = HYPRE_StructMatrixInitialize(ex->hmat);CHKERRQ(ierr);
   ierr = PetscMemzero(values,7*sizeof(PetscScalar));CHKERRQ(ierr);
   values[3] = d;
   for (i=0; i<nrow; i++) {
@@ -398,7 +392,6 @@ PetscErrorCode MatZeroEntries_HYPREStruct_3d(Mat mat)
 
   PetscFunctionBegin;
   /* hypre has no public interface to do this */
-  ierr = HYPRE_StructMatrixInitialize(ex->hmat);CHKERRQ(ierr);
   ierr = hypre_StructMatrixClearBoxValues(ex->hmat,&ex->hbox,7,indices,0,1);CHKERRQ(ierr);
   ierr = HYPRE_StructMatrixAssemble(ex->hmat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -481,6 +474,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA_HYPREStruct(Mat mat,DA da)
 
   /* create the hypre matrix object and set its information */
   ierr = HYPRE_StructMatrixCreate(ex->hcomm,ex->hgrid,ex->hstencil,&ex->hmat);CHKERRQ(ierr);
+  ierr = HYPRE_StructGridDestroy(ex->hgrid);CHKERRQ(ierr);
+  ierr = HYPRE_StructStencilDestroy(ex->hstencil);CHKERRQ(ierr)
+  if (ex->needsinitialization) {
+    ierr = HYPRE_StructMatrixInitialize(ex->hmat);CHKERRQ(ierr);
+    ex->needsinitialization = PETSC_FALSE;
+  }
 
   /* set the global and local sizes of the matrix */
   ierr = DAGetCorners(da,0,0,0,&nx,&ny,&nz);CHKERRQ(ierr);
@@ -523,7 +522,7 @@ PetscErrorCode MatMult_HYPREStruct(Mat A,Vec x,Vec y)
   iupper[2] += ilower[2] - 1;    
 
   /* copy x values over to hypre */
-  ierr = HYPRE_StructVectorInitialize(mx->hb);CHKERRQ(ierr);
+  ierr = HYPRE_StructVectorSetConstantValues(mx->hb,0.0);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
   ierr = HYPRE_StructVectorSetBoxValues(mx->hb,ilower,iupper,xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
@@ -547,7 +546,6 @@ PetscErrorCode MatAssemblyEnd_HYPREStruct(Mat mat,MatAssemblyType mode)
 
   PetscFunctionBegin;
   ierr = HYPRE_StructMatrixAssemble(ex->hmat);CHKERRQ(ierr);
-  ex->needsinitialization = PETSC_TRUE;
   /* ierr = HYPRE_StructMatrixPrint("dummy",ex->hmat,0);CHKERRQ(ierr); */
   PetscFunctionReturn(0);
 }
@@ -558,6 +556,21 @@ PetscErrorCode MatZeroEntries_HYPREStruct(Mat mat)
 {
   PetscFunctionBegin;
   /* before the DA is set to the matrix the zero doesn't need to do anything */
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "MatDestroy_HYPREStruct"
+PetscErrorCode MatDestroy_HYPREStruct(Mat mat)
+{
+  Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = HYPRE_StructMatrixDestroy(ex->hmat);CHKERRQ(ierr);
+  ierr = HYPRE_StructVectorDestroy(ex->hx);CHKERRQ(ierr);
+  ierr = HYPRE_StructVectorDestroy(ex->hb);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -582,6 +595,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_HYPREStruct(Mat B)
   B->ops->assemblyend    = MatAssemblyEnd_HYPREStruct;
   B->ops->mult           = MatMult_HYPREStruct;
   B->ops->zeroentries    = MatZeroEntries_HYPREStruct;
+  B->ops->destroy        = MatDestroy_HYPREStruct;
 
   ex->needsinitialization = PETSC_TRUE;
 
