@@ -1238,7 +1238,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
   ierr = PetscFPrintf(comm, fd, "Using %s\n", version);CHKERRQ(ierr);
 
   /* Must preserve reduction count before we go on */
-  red  = (allreduce_ct + gather_ct + scatter_ct)/((PetscLogDouble) size);
+  red  = allreduce_ct + gather_ct + scatter_ct;
 
   /* Calculate summary information */
   ierr = PetscFPrintf(comm, fd, "\n                         Max       Max/Min        Avg      Total \n");CHKERRQ(ierr);
@@ -1308,7 +1308,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
   ierr = MPI_Allreduce(&red,          &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
   if (min != 0.0) ratio = max/min; else ratio = 0.0;
   ierr = PetscFPrintf(comm, fd, "MPI Reductions:       %5.3e   %10.5f\n", max, ratio);CHKERRQ(ierr);
-  numReductions = tot;
+  numReductions = red; /* wrong because uses count from process zero */
   ierr = PetscFPrintf(comm, fd, "\nFlop counting convention: 1 flop = 1 real number operation of type (multiply/divide/add/subtract)\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "                            e.g., VecAXPY() for real vectors of length N --> 2N flops\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "                            and VecAXPY() for complex vectors of length N --> 8N flops\n");CHKERRQ(ierr);

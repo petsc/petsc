@@ -106,6 +106,16 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInvertBlockDiagonal_SeqBAIJ(Mat A)
 	mdiag += 25;
       }
       break;
+    case 6:
+      for (i=0; i<mbs; i++) {
+        odiag = v + 36*diag_offset[i];
+        ierr   = PetscMemcpy(diag,odiag,36*sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr   = PetscMemcpy(mdiag,odiag,36*sizeof(PetscScalar));CHKERRQ(ierr);
+	ierr   = Kernel_A_gets_inverse_A_6(diag,shift);CHKERRQ(ierr);
+	diag  += 36;
+	mdiag += 36;
+      }
+      break;
     default: 
       SETERRQ1(PETSC_ERR_SUP,"not supported for block size %D",bs);
   }
