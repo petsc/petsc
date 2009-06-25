@@ -1081,30 +1081,6 @@ typedef struct {
 } PC_PFMG;
 
 #undef __FUNCT__
-#define __FUNCT__ "PCSetUp_PFMG"
-PetscErrorCode PCSetUp_PFMG(PC pc)
-{
-  PetscErrorCode  ierr;
-  PC_PFMG         *ex = (PC_PFMG*) pc->data;
-  Mat_HYPREStruct *mx = (Mat_HYPREStruct *)(pc->pmat->data);
-  PetscTruth      flg;
-
-  PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)pc->pmat,MATHYPRESTRUCT,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_ERR_ARG_INCOMP,"Must use MATHYPRESTRUCT with this preconditioner");
-
-  /* create the hypre solver object and set its information */
-  if (ex->hsolver) {
-    ierr = HYPRE_StructPFMGDestroy(ex->hsolver);CHKERRQ(ierr);
-  }
-  ierr = HYPRE_StructPFMGCreate(ex->hcomm,&ex->hsolver);CHKERRQ(ierr);
-  ierr = HYPRE_StructPFMGSetup(ex->hsolver,mx->hmat,mx->hb,mx->hx);CHKERRQ(ierr);
-  ierr = HYPRE_StructPFMGSetZeroGuess(ex->hsolver);CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PCDestroy_PFMG"
 PetscErrorCode PCDestroy_PFMG(PC pc)
 {
@@ -1229,6 +1205,31 @@ static PetscErrorCode PCApplyRichardson_PFMG(PC pc,Vec b,Vec y,Vec w,PetscReal r
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "PCSetUp_PFMG"
+PetscErrorCode PCSetUp_PFMG(PC pc)
+{
+  PetscErrorCode  ierr;
+  PC_PFMG         *ex = (PC_PFMG*) pc->data;
+  Mat_HYPREStruct *mx = (Mat_HYPREStruct *)(pc->pmat->data);
+  PetscTruth      flg;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)pc->pmat,MATHYPRESTRUCT,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_ERR_ARG_INCOMP,"Must use MATHYPRESTRUCT with this preconditioner");
+
+  /* create the hypre solver object and set its information */
+  if (ex->hsolver) {
+    ierr = HYPRE_StructPFMGDestroy(ex->hsolver);CHKERRQ(ierr);
+  }
+  ierr = HYPRE_StructPFMGCreate(ex->hcomm,&ex->hsolver);CHKERRQ(ierr);
+  ierr = PCSetFromOptions_PFMG(pc);CHKERRQ(ierr);
+  ierr = HYPRE_StructPFMGSetup(ex->hsolver,mx->hmat,mx->hb,mx->hx);CHKERRQ(ierr);
+  ierr = HYPRE_StructPFMGSetZeroGuess(ex->hsolver);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
 
 
 /*MC
