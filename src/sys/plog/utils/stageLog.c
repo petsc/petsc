@@ -160,8 +160,8 @@ PetscErrorCode PETSC_DLLEXPORT StageLogRegister(StageLog stageLog, const char sn
 @*/
 PetscErrorCode PETSC_DLLEXPORT StageLogPush(StageLog stageLog, int stage)
 {
-  int        curStage = 0;
-  PetscTruth empty;
+  int             curStage = 0;
+  PetscTruth      empty;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -232,8 +232,8 @@ PetscErrorCode PETSC_DLLEXPORT StageLogPush(StageLog stageLog, int stage)
 @*/
 PetscErrorCode PETSC_DLLEXPORT StageLogPop(StageLog stageLog)
 {
-  int        curStage;
-  PetscTruth empty;
+  int             curStage;
+  PetscTruth      empty;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -287,7 +287,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogPop(StageLog stageLog)
 @*/
 PetscErrorCode PETSC_DLLEXPORT StageLogGetCurrent(StageLog stageLog, int *stage) 
 {
-  PetscTruth empty;
+  PetscTruth     empty;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -592,7 +592,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogGetStage(StageLog stageLog, const char na
 @*/
 PetscErrorCode PETSC_DLLEXPORT StageLogCreate(StageLog *stageLog) 
 {
-  StageLog l;
+  StageLog       l;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

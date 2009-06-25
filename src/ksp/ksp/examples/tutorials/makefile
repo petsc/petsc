@@ -214,6 +214,10 @@ ex42: ex42.o chkopts
 ex42a: ex42a.o chkopts
 	-${CLINKER} -o ex42a ex42a.o ${PETSC_SNES_LIB}
 	${RM} ex42a.o
+
+ex43: ex43.o chkopts
+	-${CLINKER} -o ex43 ex43.o ${PETSC_SNES_LIB}
+	${RM} ex43.o
 #----------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
