@@ -84,12 +84,20 @@ libfast:  ${SOURCEC} ${SOURCEF}
 	-@if [ "${SPECIALFASTLIB}" = "yes" ] ; then \
 	    ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  specialfastlib;  \
 	else \
-	if [ "${SOURCEC}" != "" ]; then \
+	    ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libfastcompile;  \
+	fi
+
+libfastcompile:
+	-@if [ "${SOURCEC}" != "" ]; then \
                     ${PETSC_COMPILE}; \
 	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS} > tmpf 2>&1 ; ${GREP} -v "has no symbols" tmpf; ${RM} tmpf; \
 		    ${RM} ${OBJSC} ${SOBJS} ${OBJSC:.o=.lo} ${SOBJS:.o=.lo}; \
 	    fi; \
-	fi
+	if [ "${SOURCEF}" != "" ]; then \
+                    ${PETSC_FCOMPILE}; \
+	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSF} > tmpf 2>&1 ; ${GREP} -v "has no symbols" tmpf; ${RM} tmpf; \
+		    ${RM} ${OBJSF}; \
+	    fi
 
 # Build f90 .mod from .F source, and add .o to the corresponding library
 buildmod:
@@ -100,13 +108,13 @@ buildmod:
 
 buildmodfast:
 	-@${OMAKE} clean
-	@${OMAKE}  libffast
+	@${OMAKE}  libfastcompile
 	@${OMAKE}  modcopy
 	@${OMAKE}  clean
 
 # copy modules to the include dir
 modcopy:
-	${CP} -f *.mod ${PETSC_DIR}/${PETSC_ARCH}/include
+	@${CP} -f *.mod ${PETSC_DIR}/${PETSC_ARCH}/include
 
 # Removes garbage files
 clean::

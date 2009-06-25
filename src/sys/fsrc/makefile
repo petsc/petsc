@@ -1,8 +1,6 @@
 #requirespackage   'PETSC_HAVE_FORTRAN'
 
 ALL: lib
-SPECIALFASTLIB = yes
-specialfastlib: libffast
 
 CFLAGS   =
 FFLAGS   =

@@ -319,16 +319,17 @@ namespace ALE {
     //   points in the overlap are only ordered by the owner with the lowest rank
     template<typename Sequence_, typename Section_>
     void constructLocalOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Sequence_& points, const Obj<Section_>& section) {
+      const int debug = sendOverlap->debug();
       int localSize = 0;
 
-      ///std::cout << "["<<order->commRank()<<"] Constructing local ordering" << std::endl;
+      if (debug) {std::cout << "["<<order->commRank()<<"] Constructing local ordering" << std::endl;}
       for(typename Sequence_::const_iterator l_iter = points.begin(); l_iter != points.end(); ++l_iter) {
         order->setFiberDimension(*l_iter, 1);
       }
       for(typename Sequence_::const_iterator l_iter = points.begin(); l_iter != points.end(); ++l_iter) {
         oValue_type val;
 
-        ///std::cout << "["<<order->commRank()<<"]   Checking point " << *l_iter << std::endl;
+        if (debug) {std::cout << "["<<order->commRank()<<"]   Checking point " << *l_iter << std::endl;}
         if (sendOverlap->capContains(*l_iter)) {
           const Obj<typename send_overlap_type::traits::supportSequence>& sendPatches = sendOverlap->support(*l_iter);
           int minRank = sendOverlap->commSize();
@@ -337,23 +338,23 @@ namespace ALE {
             if (*p_iter < minRank) minRank = *p_iter;
           }
           if (minRank < sendOverlap->commRank()) {
-            ///std::cout << "["<<order->commRank()<<"]     remote point, on proc " << minRank << std::endl;
+            if (debug) {std::cout << "["<<order->commRank()<<"]     remote point, on proc " << minRank << std::endl;}
             val = this->_unknownOrder;
           } else {
-            ///std::cout << "["<<order->commRank()<<"]     local point" << std::endl;
+            if (debug) {std::cout << "["<<order->commRank()<<"]     local point" << std::endl;}
             val.prefix = localSize;
             val.index  = section->getConstrainedFiberDimension(*l_iter);
           }
         } else {
-          ///std::cout << "["<<order->commRank()<<"]     local point" << std::endl;
+          if (debug) {std::cout << "["<<order->commRank()<<"]     local point" << std::endl;}
           val.prefix = localSize;
           val.index  = section->getConstrainedFiberDimension(*l_iter);
         }
-        ///std::cout << "["<<order->commRank()<<"]     has offset " << val.prefix << " and size " << val.index << std::endl;
+        if (debug) {std::cout << "["<<order->commRank()<<"]     has offset " << val.prefix << " and size " << val.index << std::endl;}
         localSize += val.index;
         order->updatePoint(*l_iter, &val);
       }
-      ///std::cout << "["<<order->commRank()<<"]   local size" << std::endl;
+      if (debug) {std::cout << "["<<order->commRank()<<"]   local size" << localSize << std::endl;}
       order->setLocalSize(localSize);
     };
     // Calculate process offsets
@@ -468,8 +469,9 @@ namespace ALE {
       typedef typename ALE::New::SectionCompletion<dtopology_type, int, alloc_type> completion;
       const Obj<send_section_type> sendSection = new send_section_type(order->comm(), this->debug());
       const Obj<recv_section_type> recvSection = new recv_section_type(order->comm(), sendSection->getTag(), this->debug());
+      const int debug = sendOverlap->debug();
 
-      ///std::cout << "["<<order->commRank()<<"] Completing ordering" << std::endl;
+      if (debug) {std::cout << "["<<order->commRank()<<"] Completing ordering" << std::endl;}
       completion::completeSection(sendOverlap, recvOverlap, order->getAtlas(), order, sendSection, recvSection);
       Obj<typename recv_overlap_type::traits::baseSequence> recvPoints = recvOverlap->base();
 
@@ -490,7 +492,7 @@ namespace ALE {
           const typename recv_section_type::value_type        *values      = section->restrictPoint(remotePoint);
 
           if (section->getFiberDimension(remotePoint) == 0) continue;
-          ///std::cout << "["<<order->commRank()<<"]     local point " << localPoint << " remote point " << remotePoint<<"("<<rank<<")" << " offset " << values[0].prefix << " and size " << values[0].index << std::endl;
+          if (debug) {std::cout << "["<<order->commRank()<<"]     local point " << localPoint << " remote point " << remotePoint<<"("<<rank<<")" << " offset " << values[0].prefix << " and size " << values[0].index << std::endl;}
           if (values[0].index == 0) continue;
           if (values[0].prefix >= 0) {
             if (order->isLocal(localPoint)) {

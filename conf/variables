@@ -37,6 +37,7 @@ F_SH_LIB_PATH	= ${PETSC_F_SH_LIB_PATH}
 #
 PETSC_COMPILE         = ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}  ${SOURCEC} ${SSOURCE}
 PETSC_COMPILE_SINGLE  = ${PCC} -o $*.o -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} 
+PETSC_FCOMPILE        = ${FC} -c ${FC_FLAGS} ${FFLAGS} ${FCPPFLAGS}  ${SOURCEF}
 #
 # The following additional variables are used by PETSc targets and should not be redefined
 #

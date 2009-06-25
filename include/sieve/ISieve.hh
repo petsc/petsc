@@ -1224,10 +1224,10 @@ namespace ALE {
     }
     // Purely for backwards compatibility
     template<typename Color>
-    void addArrow(const point_type& p, const point_type& q, const Color c) {
-      this->addArrow(p, q);
+    void addArrow(const point_type& p, const point_type& q, const Color c, const bool forceSupport = false) {
+      this->addArrow(p, q, forceSupport);
     }
-    void addArrow(const point_type& p, const point_type& q) {
+    void addArrow(const point_type& p, const point_type& q, const bool forceSupport = false) {
       if (!this->chart.hasPoint(q)) {
         if (!this->newCones[q].size() && this->chart.hasPoint(q)) {
           const index_type start = this->coneOffsets[q];
@@ -1239,7 +1239,7 @@ namespace ALE {
         }
         this->newCones[q].push_back(p);
       }
-      if (!this->chart.hasPoint(p)) {
+      if (!this->chart.hasPoint(p) || forceSupport) {
         if (!this->newSupports[p].size() && this->chart.hasPoint(p)) {
           const index_type start = this->supportOffsets[p];
           const index_type end   = this->supportOffsets[p+1];

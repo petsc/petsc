@@ -6,8 +6,6 @@
 # compare against C versions of the same kernels.
 
 ALL: lib
-SPECIALFASTLIB = yes
-specialfastlib: libffast
 #requirespackage   'PETSC_USE_FORTRAN_KERNELS_BGL'
 
 CFLAGS   =

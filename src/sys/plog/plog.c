@@ -1863,6 +1863,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogGetStageLog(StageLog *stageLog)
 {
   PetscFunctionBegin;
   PetscValidPointer(stageLog,1);
+  if (_stageLog == PETSC_NULL) {
+    fprintf(stderr, "Logging has not been enabled.\nYou might have forgotten to call PetscInitialize().\n");
+    MPI_Abort(MPI_COMM_WORLD, PETSC_ERR_SUP);
+  }
   *stageLog = _stageLog;
   PetscFunctionReturn(0);
 }
