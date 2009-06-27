@@ -264,7 +264,7 @@ def petsc_configure(configure_options):
     if e.code is None or e.code == 0:
       return
     msg ='*********************************************************************************\n'\
-    +'           CONFIGURATION CRASH  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
+    +'           CONFIGURATION FAILURE  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
     +'*********************************************************************************\n'
     se  = str(e)
   except Exception, e:
@@ -278,9 +278,12 @@ def petsc_configure(configure_options):
     framework.logClear()
     if hasattr(framework, 'log'):
       import traceback
-      framework.log.write(msg+se)
-      traceback.print_tb(sys.exc_info()[2], file = framework.log)
-      move_configure_log(framework)
+      try:
+        framework.log.write(msg+se)
+        traceback.print_tb(sys.exc_info()[2], file = framework.log)
+        move_configure_log(framework)
+      except:
+        pass
       sys.exit(1)
   else:
     print se
