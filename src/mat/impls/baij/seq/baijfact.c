@@ -993,8 +993,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
 
 /* --------------------------------------------------------- */
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqBAIJ_NaturalOrdering_iludt"
-PetscErrorCode MatSolve_SeqBAIJ_NaturalOrdering_iludt(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct"
+PetscErrorCode MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ    *a=(Mat_SeqBAIJ *)A->data;
   PetscErrorCode ierr;
@@ -1047,8 +1047,8 @@ PetscErrorCode MatSolve_SeqBAIJ_NaturalOrdering_iludt(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqBAIJ_iludt"
-PetscErrorCode MatSolve_SeqBAIJ_iludt(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqBAIJ_N_newdatastruct"
+PetscErrorCode MatSolve_SeqBAIJ_N_newdatastruct(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ    *a=(Mat_SeqBAIJ *)A->data;
   IS             iscol=a->col,isrow=a->row;
@@ -1382,9 +1382,9 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   ierr = ISIdentity(isicol,&icol_identity);CHKERRQ(ierr);
   both_identity = (PetscTruth) (row_identity && icol_identity);
   if (row_identity && icol_identity) {
-    B->ops->solve = MatSolve_SeqBAIJ_NaturalOrdering_iludt;
+    B->ops->solve = MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct; 
   } else {
-    B->ops->solve = MatSolve_SeqBAIJ_iludt;
+    B->ops->solve = MatSolve_SeqBAIJ_N_newdatastruct; 
   }
   
   B->ops->solveadd          = 0;
