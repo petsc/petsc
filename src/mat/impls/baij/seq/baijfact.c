@@ -1028,11 +1028,6 @@ PetscErrorCode MatSolve_SeqBAIJ_NaturalOrdering_iludt(Mat A,Vec bb,Vec xx)
   /* backward solve the upper triangular */
   ls = a->solve_work + A->cmap->n;
   for (i=n-1; i>=0; i--){
-    /*
-    v  = aa + bs2*(adiag[i+1] + 1);
-    vi = aj + a->diag[i+1] + 1;
-    nz = adiag[i] - adiag[i+1] - 1;
-    */
     v  = aa + bs2*ai[2*n-i];
     vi = aj + ai[2*n-i];
     nz = ai[2*n-i +1] - ai[2*n-i]-1;
