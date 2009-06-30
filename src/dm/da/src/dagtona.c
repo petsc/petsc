@@ -34,10 +34,10 @@
 PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalAllCreate(DA da,VecScatter *scatter)
 {
   PetscErrorCode ierr;
-  PetscInt N;
-  IS  from,to;
-  Vec tmplocal,global;
-  AO  ao;
+  PetscInt       N;
+  IS             from,to;
+  Vec            tmplocal,global;
+  AO             ao;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_COOKIE,1);
@@ -85,10 +85,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalAllCreate(DA da,VecScatter *sc
 PetscErrorCode PETSCDM_DLLEXPORT DANaturalAllToGlobalCreate(DA da,VecScatter *scatter)
 {
   PetscErrorCode ierr;
-  PetscInt M,m = da->Nlocal,start;
-  IS  from,to;
-  Vec tmplocal,global;
-  AO  ao;
+  PetscInt       M,m = da->Nlocal,start;
+  IS             from,to;
+  Vec            tmplocal,global;
+  AO             ao;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_COOKIE,1);
