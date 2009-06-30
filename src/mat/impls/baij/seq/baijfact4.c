@@ -24,7 +24,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat C,Mat A,const MatFactorInfo *inf
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = PetscMalloc(bs2*(n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
-  ierr = PetscMemzero(rtmp,bs2*(n+1)*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr = PetscMemzero(rtmp,(bs2*n+1)*sizeof(MatScalar));CHKERRQ(ierr);
   /* generate work space needed by dense LU factorization */
   ierr       = PetscMalloc(bs*sizeof(PetscInt) + (bs+bs2)*sizeof(MatScalar),&v_work);CHKERRQ(ierr);
   multiplier = v_work + bs;
