@@ -1197,10 +1197,10 @@ PetscErrorCode MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
 {
   Mat_MPIAIJ     *mat = (Mat_MPIAIJ*)matin->data;
   PetscErrorCode ierr; 
-  Vec            bb1;
+  Vec            bb1 = 0;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(bb,&bb1);CHKERRQ(ierr);
+  if (its > 1) {ierr = VecDuplicate(bb,&bb1);CHKERRQ(ierr);}
 
   if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP){
     if (flag & SOR_ZERO_INITIAL_GUESS) {
@@ -1255,7 +1255,7 @@ PetscErrorCode MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
     SETERRQ(PETSC_ERR_SUP,"Parallel SOR not supported");
   }
 
-  ierr = VecDestroy(bb1);CHKERRQ(ierr);
+  if (bb1) {ierr = VecDestroy(bb1);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 } 
 
