@@ -540,6 +540,7 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   a->xtoy = 0; ((Mat_SeqAIJ *)aij->B->data)->xtoy = 0;  /* b->xtoy = 0 */
   a->XtoY = 0; ((Mat_SeqAIJ *)aij->B->data)->XtoY = 0;  /* b->XtoY = 0 */
 
+  if (aij->diag) {ierr = VecDestroy(aij->diag);CHKERRQ(ierr);aij->diag = 0;}
   PetscFunctionReturn(0);
 }
 
@@ -883,6 +884,7 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
   PetscLogObjectState((PetscObject)mat,"Rows=%D, Cols=%D",mat->rmap->N,mat->cmap->N);
 #endif
   ierr = MatStashDestroy_Private(&mat->stash);CHKERRQ(ierr);
+  if (aij->diag) {ierr = VecDestroy(aij->diag);CHKERRQ(ierr);}
   ierr = MatDestroy(aij->A);CHKERRQ(ierr);
   ierr = MatDestroy(aij->B);CHKERRQ(ierr);
 #if defined (PETSC_USE_CTABLE)
@@ -1251,6 +1253,27 @@ PetscErrorCode MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
       /* local sweep */
       ierr = (*mat->A->ops->relax)(mat->A,bb1,omega,SOR_BACKWARD_SWEEP,fshift,lits,1,xx);CHKERRQ(ierr);
     }
+  }  else if (flag & SOR_EISENSTAT) {
+    Vec         xx1;
+
+    ierr = VecDuplicate(bb,&bb1);CHKERRQ(ierr);
+    ierr = VecDuplicate(bb,&xx1);CHKERRQ(ierr);
+    ierr = (*mat->A->ops->relax)(mat->A,bb,omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_BACKWARD_SWEEP),fshift,lits,1,xx);CHKERRQ(ierr);
+
+    ierr = VecScatterBegin(mat->Mvctx,xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(mat->Mvctx,xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    if (!mat->diag) {
+      ierr = MatGetVecs(matin,&mat->diag,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetDiagonal(matin,mat->diag);CHKERRQ(ierr);
+    }
+    ierr = VecPointwiseMult(bb1,mat->diag,xx);CHKERRQ(ierr);
+    ierr = VecWAXPY(bb1,-1.0,bb1,bb);CHKERRQ(ierr);
+    ierr = MatMultAdd(mat->B,mat->lvec,bb1,bb1);CHKERRQ(ierr);
+
+    /* local sweep */
+    ierr = (*mat->A->ops->relax)(mat->A,bb1,omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_FORWARD_SWEEP),fshift,lits,1,xx1);CHKERRQ(ierr);
+    ierr = VecAXPY(xx,1.0,xx1);CHKERRQ(ierr);
+    ierr = VecDestroy(xx1);CHKERRQ(ierr);
   } else {
     SETERRQ(PETSC_ERR_SUP,"Parallel SOR not supported");
   }
