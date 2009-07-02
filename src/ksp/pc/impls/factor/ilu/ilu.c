@@ -107,7 +107,7 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
   PetscInt       dtmax = 3,itmp;
   PetscTruth     flg,set;
   PetscReal      dt[3];
-  char           tname[256];
+  char           tname[256], solvertype[64];
   PC_ILU         *ilu = (PC_ILU*)pc->data;
   PetscFList     ordlist;
   PetscReal      tol;
@@ -154,6 +154,13 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
     if (flg) {
       ierr = PCFactorSetMatOrderingType(pc,tname);CHKERRQ(ierr);
     }
+
+    /* maybe should have MatGetSolverTypes(Mat,&list) like the ordering list */
+    ierr = PetscOptionsString("-pc_factor_mat_solver_package","Specific ILU solver to use","MatGetFactor",((PC_Factor*)ilu)->solvertype,solvertype,64,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCFactorSetMatSolverPackage(pc,solvertype);CHKERRQ(ierr);
+    }
+
     flg = ((PC_Factor*)ilu)->info.pivotinblocks ? PETSC_TRUE : PETSC_FALSE;
     ierr = PetscOptionsTruth("-pc_factor_pivot_in_blocks","Pivot inside matrix blocks for BAIJ and SBAIJ","PCFactorSetPivotInBlocks",flg,&flg,&set);CHKERRQ(ierr);
     if (set) {
@@ -291,7 +298,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,ilu->nonzerosalongdiagonaltol,ilu->row,ilu->col);CHKERRQ(ierr);
       }
     CHKMEMQ;
-      ierr = MatGetFactor(pc->pmat,MAT_SOLVER_PETSC,MAT_FACTOR_ILU,&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
+      ierr = MatGetFactor(pc->pmat,((PC_Factor*)ilu)->solvertype,MAT_FACTOR_ILU,&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
     CHKMEMQ;
       ierr = MatILUFactorSymbolic(((PC_Factor*)ilu)->fact,pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info);CHKERRQ(ierr);
       ierr = MatGetInfo(((PC_Factor*)ilu)->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
@@ -433,6 +440,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC pc)
   ilu->col                     = 0;
   ilu->row                     = 0;
   ilu->inplace                 = PETSC_FALSE;
+  ierr = PetscStrallocpy(MAT_SOLVER_PETSC,&((PC_Factor*)ilu)->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATORDERING_NATURAL,&((PC_Factor*)ilu)->ordering);CHKERRQ(ierr);
   ilu->reuseordering           = PETSC_FALSE;
   ilu->usedt                   = PETSC_FALSE;
@@ -466,6 +474,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC pc)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorGetMatSolverPackage_C","PCFactorGetMatSolverPackage_Factor",
                     PCFactorGetMatSolverPackage_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatSolverPackage_C","PCFactorSetMatSolverPackage_Factor",
+                    PCFactorSetMatSolverPackage_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetUseDropTolerance_C","PCFactorSetUseDropTolerance_ILU",
                     PCFactorSetUseDropTolerance_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetFill_C","PCFactorSetFill_Factor",
