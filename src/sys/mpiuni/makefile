@@ -11,6 +11,7 @@ OBJSC	 = mpi.o
 OBJSF	 =
 SCRIPTS  = ../../../../bin/mpiexec.uni
 LIBBASE	 = libmpiuni
+DIRS     = f90-mod
 LOCDIR   = src/sys/mpiuni/
 
 include ${PETSC_DIR}/conf/base
