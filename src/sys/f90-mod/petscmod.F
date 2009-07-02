@@ -1,6 +1,7 @@
 #define PETSC_USE_FORTRAN_MODULES
 
         module petscdef
+#include "petscconf.h"
 #if defined(PETSC_HAVE_MPI_F90MODULE) || defined(PETSC_HAVE_MPIUNI)
         use mpi
 #define PETSC_AVOID_MPIF_H
