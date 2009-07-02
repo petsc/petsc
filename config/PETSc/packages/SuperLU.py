@@ -8,10 +8,10 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/SuperLU_3.1-Aug_3_2008.tar.gz']
+    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_4.0-June_30_2009.tar.gz']
     self.functions  = ['set_default_options']
     self.includes   = ['slu_ddefs.h']
-    self.liblist    = [['libsuperlu_3.1.a']]
+    self.liblist    = [['libsuperlu_4.0.a']]
     self.complex    = 1
     # SuperLU has NO support for 64 bit integers, use SuperLU_Dist if you need that
     self.excludename = ['SuperLU_DIST']
@@ -28,7 +28,7 @@ class Configure(PETSc.package.Package):
 
     g = open(os.path.join(self.packageDir,'make.inc'),'w')
     g.write('TMGLIB       = tmglib.a\n')
-    g.write('SUPERLULIB   = libsuperlu_3.1.a\n')
+    g.write('SUPERLULIB   = libsuperlu_4.0.a\n')
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     g.write('BLASDEF      = -DUSE_VENDOR_BLAS\n')
     g.write('ARCH         = '+self.setCompilers.AR+'\n')
@@ -43,7 +43,7 @@ class Configure(PETSc.package.Package):
 
     # set blas name mangling
     if self.blasLapack.mangling == 'underscore':
-      g.write('CDEFS   = -DAdd_')
+      g.write('CDEFS        = -DAdd_')
     elif self.blasLapack.mangling == 'caps':
       g.write('CDEFS   = -DUpCase')
     else:
