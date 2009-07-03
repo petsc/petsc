@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 configure_options = [
-  '--with-mpi-dir=/home/balay/soft/linux64/mpich2-1.0.7',
+  '--with-mpi-dir=/home/balay/soft/linux64/mpich2-1.1',
   '--with-shared=1'
   ]
 
