@@ -37,10 +37,17 @@ static PetscErrorCode PCApply_Eisenstat(PC pc,Vec x,Vec y)
 {
   PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data;
   PetscErrorCode ierr;
+  PetscTruth     hasop;
 
   PetscFunctionBegin;
-  if (eis->usediag)  {ierr = VecPointwiseMult(y,x,eis->diag);CHKERRQ(ierr);}
-  else               {ierr = VecCopy(x,y);CHKERRQ(ierr);}
+  if (eis->usediag)  {
+    ierr = MatHasOperation(pc->pmat,MATOP_MULT_DIAGONAL_BLOCK,&hasop);CHKERRQ(ierr);
+    if (hasop) {
+      ierr = MatMultDiagonalBlock(pc->pmat,x,y);CHKERRQ(ierr);
+    } else {
+      ierr = VecPointwiseMult(y,x,eis->diag);CHKERRQ(ierr);
+    }
+  } else {ierr = VecCopy(x,y);CHKERRQ(ierr);}
   PetscFunctionReturn(0); 
 }
 

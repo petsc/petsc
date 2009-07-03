@@ -1768,6 +1768,51 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedLocal(Mat mat,PetscInt nrow
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultDiagonalBlock"
+/*@
+   MatMultDiagonalBlock - Computes the matrix-vector product, y = Dx. Where D is defined by the inode or block structure of the diagonal
+
+   Collective on Mat and Vec
+
+   Input Parameters:
++  mat - the matrix
+-  x   - the vector to be multiplied
+
+   Output Parameters:
+.  y - the result
+
+   Notes:
+   The vectors x and y cannot be the same.  I.e., one cannot
+   call MatMult(A,y,y).
+
+   Level: developer
+
+   Concepts: matrix-vector product
+
+.seealso: MatMultTranspose(), MatMultAdd(), MatMultTransposeAdd()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatMultDiagonalBlock(Mat mat,Vec x,Vec y)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(y,VEC_COOKIE,3); 
+
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (x == y) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"x and y must be different vectors");
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+
+  if (!mat->ops->multdiagonalblock) SETERRQ(PETSC_ERR_SUP,"This matrix type does not have a multiply defined");
+  ierr = (*mat->ops->multdiagonalblock)(mat,x,y);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}   
+
 /* --------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult"

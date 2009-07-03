@@ -52,7 +52,7 @@ else
 end
 
 for l=1:narg
-  header = read(fd,1,'int32');
+  header = double(read(fd,1,'int32'));
   if isempty(header)
     if strcmp(comp,'cell')
       varargout(1) = {result};
@@ -63,17 +63,17 @@ for l=1:narg
     return
   end
   if header == 1211216 % Petsc Mat Object 
-    header = read(fd,3,'int32');
+    header = double(read(fd,3,'int32'));
     m      = header(1);
     n      = header(2);
     nz     = header(3);
-    nnz = read(fd,m,'int32');  %nonzeros per row
+    nnz = double(read(fd,m,'int32'));  %nonzeros per row
     sum_nz = sum(nnz);
     if(sum_nz ~=nz)
       str = sprintf('No-Nonzeros sum-rowlengths do not match %d %d',nz,sum_nz);
       error(str);
     end
-    j   = read(fd,nz,'int32') + 1;
+    j   = double(read(fd,nz,'int32')) + 1;
     if strcmp(comp,'complex')
       s   = read(fd,2*nz,'double');
     else 
@@ -83,7 +83,7 @@ for l=1:narg
     cnt = 1;
     for k=1:m
       next = cnt+nnz(k)-1;
-      i(cnt:next,1) = k*ones(nnz(k),1);
+      i(cnt:next,1) = (double(k))*ones(nnz(k),1);
       cnt = next+1;
     end
     if strcmp(comp,'complex')
@@ -98,7 +98,7 @@ for l=1:narg
     end
   
   elseif  header == 1211214 % Petsc Vec Object
-    m = read(fd,1,'int32');
+    m = double(read(fd,1,'int32'));
     if strcmp(comp,'complex')
       v = read(fd,2*m,'double');
       v = complex(v(1:2:2*m),v(2:2:2*m));

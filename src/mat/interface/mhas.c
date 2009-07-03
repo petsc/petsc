@@ -39,7 +39,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatHasOperation(Mat mat,MatOperation op,PetscT
   else {
     if (op == MATOP_GET_SUBMATRIX) {
       PetscErrorCode ierr;
-      PetscMPIInt size;
+      PetscMPIInt    size;
 
       ierr = MPI_Comm_size(((PetscObject)mat)->comm,&size);CHKERRQ(ierr);
       if (size == 1) {

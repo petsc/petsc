@@ -280,6 +280,8 @@ $    -viewer_matlab_filename <name>
      an error code.  The matlab PetscViewer is usually used in the form
 $       XXXView(XXX object,PETSC_VIEWER_MATLAB_(comm));
 
+     Use PETSC_VIEWER_SOCKET_() or PetscViewerSocketOpen() to communicator with an interactive Matlab session.
+
 .seealso: PETSC_VIEWER_MATLAB_WORLD, PETSC_VIEWER_MATLAB_SELF, PetscViewerMatlabOpen(), PetscViewerCreate(),
           PetscViewerDestroy()
 @*/

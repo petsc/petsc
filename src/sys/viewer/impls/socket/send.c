@@ -439,7 +439,7 @@ static PetscMPIInt Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
      Level: intermediate
 
    Options Database Keys:
-   For use with the default Matlab PetscViewer, PETSC_VIEWER_SOCKET_WORLD or if 
+   For use with the default PETSC_VIEWER_SOCKET_WORLD or if 
     PETSC_NULL is passed for machine or PETSC_DEFAULT is passed for port
 $    -viewer_socket_machine <machine>
 $    -viewer_socket_port <port>
@@ -458,9 +458,11 @@ $       XXXView(XXX object,PETSC_VIEWER_SOCKET_(comm));
 
      Connects to a waiting socket and stays connected until PetscViewerDestroy() is called.
 
+     Use this for communicating with an interactive Matlab session, see PETSC_VIEWER_MATLAB_() for communicating with the Matlab engine. 
+
 .seealso: PETSC_VIEWER_SOCKET_WORLD, PETSC_VIEWER_SOCKET_SELF, PetscViewerSocketOpen(), PetscViewerCreate(),
           PetscViewerSocketSetConnection(), PetscViewerDestroy(), PETSC_VIEWER_SOCKET_(), PetscViewerBinaryWrite(), PetscViewerBinaryRead(),
-          PetscViewerBinaryWriteStringArray(), PetscBinaryViewerGetDescriptor()
+          PetscViewerBinaryWriteStringArray(), PetscBinaryViewerGetDescriptor(), PETSC_VIEWER_MATLAB_()
 @*/
 PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_SOCKET_(MPI_Comm comm)
 {

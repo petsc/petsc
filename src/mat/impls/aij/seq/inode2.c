@@ -58,7 +58,7 @@ PetscErrorCode MatDestroy_Inode(Mat A)
 
   PetscFunctionBegin;
   ierr = PetscFree(a->inode.size);CHKERRQ(ierr);
-  ierr = PetscFree2(a->inode.ibdiag,a->inode.bdiag);CHKERRQ(ierr);
+  ierr = PetscFree3(a->inode.ibdiag,a->inode.bdiag,a->inode.ssor_work);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatInodeAdjustForInodes_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatInodeGetInodeSizes_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
