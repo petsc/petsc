@@ -3224,7 +3224,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRelax(Mat mat,Vec b,PetscReal omega,MatSORT
 
    Collective on Mat and Vec
 
-   See MatRelax() for usage
+   See MatRelax() for usage. This is called by MatRelax() when appropriate so need not be called by users.
 
    For multi-component PDEs where the Jacobian is stored in a point block format
    (with the PETSc BAIJ matrix formats) the relaxation is done one point block at 

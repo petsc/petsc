@@ -1648,9 +1648,9 @@ PetscErrorCode MatColoringPatch_Inode(Mat mat,PetscInt ncolors,PetscInt nin,ISCo
 PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar        *x,*xs,sum1,sum2,sum3,sum4,sum5,tmp0,tmp1,tmp2,tmp3;
+  PetscScalar        sum1,sum2,sum3,sum4,sum5,tmp0,tmp1,tmp2,tmp3;
   MatScalar          *ibdiag,*bdiag;
-  PetscScalar        *b,*xb,tmp4,tmp5,x1,x2,x3,x4,x5;
+  PetscScalar        *x,*xb,tmp4,tmp5,x1,x2,x3,x4,x5;
   const MatScalar    *v = a->a,*v1,*v2,*v3,*v4,*v5;
   PetscReal          zeropivot = 1.0e-15, shift = 0.0;
   PetscErrorCode     ierr;
@@ -1717,16 +1717,16 @@ PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
   ibdiag = a->inode.ibdiag;
   bdiag  = a->inode.bdiag;
 
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  if (xx != bb) {
-    ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
-  } else {
-    b = x;
-  }
 
   /* We count flops by assuming the upper triangular and lower triangular parts have the same number of nonzeros */
-  xs   = x;
   if (flag & SOR_ZERO_INITIAL_GUESS) {
+    PetscScalar *b;
+    ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+    if (xx != bb) {
+      ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+    } else {
+      b = x;
+    }
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
 
       for (i=0, row=0; i<m; i++) {
@@ -2104,8 +2104,13 @@ PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
       ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
     }
     its--;
+    ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+    if (bb != xx) {ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);}
   }
   if (flag & SOR_EISENSTAT) {
+    const PetscScalar *b;
+    ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+    ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
     MatScalar *t = a->inode.ssor_work;
     /*
           Apply  (U + D)^-1  where D is now the block diagonal 
@@ -2135,7 +2140,7 @@ PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
 	    tmp0  = x[*idx];
 	    sum1 -= *v1*tmp0;
 	  }
-	  x[row--] = sum1*(*ibdiag);
+	  x[row] = sum1*(*ibdiag);row--;
 	  break;
 
         case 2:
@@ -2159,8 +2164,9 @@ PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
 	    sum1 -= *v1*tmp0;
 	    sum2 -= *v2*tmp0;
 	  }
-	  x[row--] = sum2*ibdiag[1] + sum1*ibdiag[3];
-	  x[row--] = sum2*ibdiag[0] + sum1*ibdiag[2];
+	  x[row] = sum2*ibdiag[1] + sum1*ibdiag[3];
+	  x[row-1] = sum2*ibdiag[0] + sum1*ibdiag[2];
+          row -= 2;
 	  break;
         case 3:
       
@@ -2186,9 +2192,10 @@ PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
 	    sum2 -= *v2*tmp0;
 	    sum3 -= *v3*tmp0;
 	  }
-	  x[row--] = sum3*ibdiag[2] + sum2*ibdiag[5] + sum1*ibdiag[8];
-	  x[row--] = sum3*ibdiag[1] + sum2*ibdiag[4] + sum1*ibdiag[7];
-	  x[row--] = sum3*ibdiag[0] + sum2*ibdiag[3] + sum1*ibdiag[6];
+	  x[row] = sum3*ibdiag[2] + sum2*ibdiag[5] + sum1*ibdiag[8];
+	  x[row-1] = sum3*ibdiag[1] + sum2*ibdiag[4] + sum1*ibdiag[7];
+	  x[row-2] = sum3*ibdiag[0] + sum2*ibdiag[3] + sum1*ibdiag[6];
+          row -= 3;
 	  break;
         case 4:
       
@@ -2218,10 +2225,11 @@ PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
 	    sum3 -= *v3*tmp0;
 	    sum4 -= *v4*tmp0;
 	  }
-	  x[row--] = sum4*ibdiag[3] + sum3*ibdiag[7] + sum2*ibdiag[11] + sum1*ibdiag[15];
-	  x[row--] = sum4*ibdiag[2] + sum3*ibdiag[6] + sum2*ibdiag[10] + sum1*ibdiag[14];
-	  x[row--] = sum4*ibdiag[1] + sum3*ibdiag[5] + sum2*ibdiag[9] + sum1*ibdiag[13];
-	  x[row--] = sum4*ibdiag[0] + sum3*ibdiag[4] + sum2*ibdiag[8] + sum1*ibdiag[12];
+	  x[row] = sum4*ibdiag[3] + sum3*ibdiag[7] + sum2*ibdiag[11] + sum1*ibdiag[15];
+	  x[row-1] = sum4*ibdiag[2] + sum3*ibdiag[6] + sum2*ibdiag[10] + sum1*ibdiag[14];
+	  x[row-2] = sum4*ibdiag[1] + sum3*ibdiag[5] + sum2*ibdiag[9] + sum1*ibdiag[13];
+	  x[row-3] = sum4*ibdiag[0] + sum3*ibdiag[4] + sum2*ibdiag[8] + sum1*ibdiag[12];
+          row -= 4;
 	  break;
         case 5:
       
@@ -2255,11 +2263,12 @@ PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
 	    sum4 -= *v4*tmp0;
 	    sum5 -= *v5*tmp0;
 	  }
-	  x[row--] = sum5*ibdiag[4] + sum4*ibdiag[9] + sum3*ibdiag[14] + sum2*ibdiag[19] + sum1*ibdiag[24];
-	  x[row--] = sum5*ibdiag[3] + sum4*ibdiag[8] + sum3*ibdiag[13] + sum2*ibdiag[18] + sum1*ibdiag[23];
-	  x[row--] = sum5*ibdiag[2] + sum4*ibdiag[7] + sum3*ibdiag[12] + sum2*ibdiag[17] + sum1*ibdiag[22];
-	  x[row--] = sum5*ibdiag[1] + sum4*ibdiag[6] + sum3*ibdiag[11] + sum2*ibdiag[16] + sum1*ibdiag[21];
-	  x[row--] = sum5*ibdiag[0] + sum4*ibdiag[5] + sum3*ibdiag[10] + sum2*ibdiag[15] + sum1*ibdiag[20];
+	  x[row] = sum5*ibdiag[4] + sum4*ibdiag[9] + sum3*ibdiag[14] + sum2*ibdiag[19] + sum1*ibdiag[24];
+	  x[row-1] = sum5*ibdiag[3] + sum4*ibdiag[8] + sum3*ibdiag[13] + sum2*ibdiag[18] + sum1*ibdiag[23];
+	  x[row-2] = sum5*ibdiag[2] + sum4*ibdiag[7] + sum3*ibdiag[12] + sum2*ibdiag[17] + sum1*ibdiag[22];
+	  x[row-3] = sum5*ibdiag[1] + sum4*ibdiag[6] + sum3*ibdiag[11] + sum2*ibdiag[16] + sum1*ibdiag[21];
+	  x[row-4] = sum5*ibdiag[0] + sum4*ibdiag[5] + sum3*ibdiag[10] + sum2*ibdiag[15] + sum1*ibdiag[20];
+          row -= 5;
 	  break;
         default:
 	  SETERRQ1(PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
@@ -2487,10 +2496,9 @@ PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
       CHKMEMQ;
     }
     ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
+    ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+    ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   }
-
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  if (bb != xx) {ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 } 
 
