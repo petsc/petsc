@@ -241,43 +241,38 @@ PetscErrorCode MatGetSubMatrices_SeqSBAIJ(Mat A,PetscInt n,const IS irow[],const
 #define __FUNCT__ "MatMult_SeqSBAIJ_1"
 PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
 {
-  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
-  PetscScalar    *x,*z,*xb,x1,zero=0.0;
-  MatScalar      *v;
-  PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
-  PetscInt       nonzerorow=0;
+  Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ*)A->data;
+  const PetscScalar *x;
+  PetscScalar       *z,x1,sum;
+  const MatScalar   *v;
+  PetscErrorCode    ierr;
+  PetscInt          mbs=a->mbs,i,j,nz;
+  const PetscInt    *aj=a->j,*ai=a->i,*ib;
 
   PetscFunctionBegin;
-  ierr = VecSet(zz,zero);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecSet(zz,0.0);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
   v  = a->a; 
-  xb = x;
-   
+  ib = aj;   
+
   for (i=0; i<mbs; i++) {
-    n    = ai[1] - ai[0];  /* length of i_th row of A */    
-    x1   = *xb++;
-    ib   = aj + *ai++;
-    jmin = 0;
-    nonzerorow += (n>0);
-    /* if we ALWAYS required a diagonal entry then could remove this if test */
-    /* should we use a tmp to hold the accumulated z[i] */
-    if (*ib == i) {      /* (diag of A)*x */
-      z[i] += *v++ * x[*ib++]; 
-      jmin++;  
+    nz   = ai[i+1] - ai[i];        /* length of i_th row of A */    
+    x1   = x[i];
+    sum  = v[0]*x1;                /* diagonal term */
+    for (j=1; j<nz; j++) {
+      z[ib[j]] += v[j] * x1;       /* (strict lower triangular part of A)*x  */
+      sum      += v[j] * x[ib[j]]; /* (strict upper triangular part of A)*x  */
     }
-    for (j=jmin; j<n; j++) {
-      cval    = *ib; 
-      z[cval] += *v * x1;      /* (strict lower triangular part of A)*x  */
-      z[i]    += *v++ * x[*ib++]; /* (strict upper triangular part of A)*x  */
-    }
+    z[i] += sum;
+    v    += nz;
+    ib   += nz;
   }
 
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2.0*(a->nz*2.0 - nonzerorow) - nonzerorow);CHKERRQ(ierr);  /* nz = (nz+m)/2 */
+  ierr = PetscLogFlops(2.0*(2.0*a->nz - mbs) - mbs);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
