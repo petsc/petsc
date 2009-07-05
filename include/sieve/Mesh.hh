@@ -3747,6 +3747,91 @@ namespace ALE {
       return mesh;
     };
 
+    // Creates a triangular prism boundary
+    static Obj<Mesh> createPrismBoundary(const MPI_Comm comm, const double lower[], const double upper[], const int debug = 0) {
+      Obj<Mesh> mesh        = new Mesh(comm, 2, debug);
+      int       numVertices = 6;
+      int       numFaces    = 5;
+      double   *coords      = new double[numVertices*3];
+      const Obj<typename Mesh::sieve_type> sieve    = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
+      typename Mesh::point_type           *vertices = new typename Mesh::point_type[numVertices];
+      int                         order    = 0;
+
+      mesh->setSieve(sieve);
+      const Obj<typename Mesh::label_type>& markers = mesh->createLabel("marker");
+      if (mesh->commRank() == 0) {
+        /* Create sieve and ordering */
+        for(int v = numFaces; v < numFaces+numVertices; v++) {
+          vertices[v-numFaces] = typename Mesh::point_type(v);
+          mesh->setValue(markers, vertices[v-numFaces], 1);
+        }
+        {
+          // Side 0 (Top)
+          typename Mesh::point_type face(0);
+          sieve->addArrow(vertices[0], face, order++);
+          sieve->addArrow(vertices[1], face, order++);
+          sieve->addArrow(vertices[2], face, order++);
+          mesh->setValue(markers, face, 1);
+        }
+        {
+          // Side 1 (Bottom)
+          typename Mesh::point_type face(1);
+          sieve->addArrow(vertices[3], face, order++);
+          sieve->addArrow(vertices[5], face, order++);
+          sieve->addArrow(vertices[4], face, order++);
+          mesh->setValue(markers, face, 1);
+        }
+        {
+          // Side 2 (Front)
+          typename Mesh::point_type face(2);
+          sieve->addArrow(vertices[0], face, order++);
+          sieve->addArrow(vertices[3], face, order++);
+          sieve->addArrow(vertices[4], face, order++);
+          sieve->addArrow(vertices[1], face, order++);
+          mesh->setValue(markers, face, 1);
+        }
+        {
+          // Side 3 (Left)
+          typename Mesh::point_type face(3);
+          sieve->addArrow(vertices[1], face, order++);
+          sieve->addArrow(vertices[4], face, order++);
+          sieve->addArrow(vertices[5], face, order++);
+          sieve->addArrow(vertices[2], face, order++);
+          mesh->setValue(markers, face, 1);
+        }
+        {
+          // Side 4 (Right)
+          typename Mesh::point_type face(4);
+          sieve->addArrow(vertices[2], face, order++);
+          sieve->addArrow(vertices[5], face, order++);
+          sieve->addArrow(vertices[3], face, order++);
+          sieve->addArrow(vertices[0], face, order++);
+          mesh->setValue(markers, face, 1);
+        }
+      }
+      mesh->stratify();
+      coords[0*3+0] = lower[0];
+      coords[0*3+1] = lower[1];
+      coords[0*3+2] = upper[2];
+      coords[1*3+0] = upper[0];
+      coords[1*3+1] = lower[1];
+      coords[1*3+2] = upper[2];
+      coords[2*3+0] = upper[0];
+      coords[2*3+1] = upper[1];
+      coords[2*3+2] = upper[2];
+      coords[3*3+0] = lower[0];
+      coords[3*3+1] = upper[1];
+      coords[3*3+2] = upper[2];
+      coords[4*3+0] = lower[0];
+      coords[4*3+1] = lower[1];
+      coords[4*3+2] = lower[2];
+      coords[5*3+0] = upper[0];
+      coords[5*3+1] = lower[1];
+      coords[5*3+2] = lower[2];
+      ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, mesh->getDimension()+1, coords);
+      return mesh;
+    };
+
     #undef __FUNCT__
     #define __FUNCT__ "createFicheraCornerBoundary"
     /*    v0
