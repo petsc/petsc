@@ -112,6 +112,7 @@ class Configure(config.package.Package):
           if os.path.isdir(dir):
             yield (dir)
     # Try MPICH install locations under Windows
+    yield(os.path.join('/cygdrive','c','Program Files','Microsoft HPC Pack 2008 SDK'))
     yield(os.path.join('/cygdrive','c','Program Files','Microsoft Compute Cluster Pack'))
     yield(os.path.join('/cygdrive','c','Program Files','MPICH2'))
     yield(os.path.join('/cygdrive','c','Program Files','MPICH'))
