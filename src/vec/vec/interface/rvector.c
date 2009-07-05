@@ -681,6 +681,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecWAXPY(Vec w,PetscScalar alpha,Vec x,Vec y)
   PetscCheckSameTypeAndComm(y,4,w,1);
   PetscCheckSameSizeVec(x,y);
   PetscCheckSameSizeVec(x,w);
+  if (w == y) SETERRQ(PETSC_ERR_SUP,"Result vector w cannot be same as input vector y");
+  if (w == x) SETERRQ(PETSC_ERR_SUP,"Result vector w cannot be same as input vector x");
 
   ierr = PetscLogEventBegin(VEC_WAXPY,x,y,w,0);CHKERRQ(ierr);
   ierr =  (*w->ops->waxpy)(w,alpha,x,y);CHKERRQ(ierr);

@@ -449,6 +449,8 @@ PetscErrorCode MatGetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt idxm[],Pets
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode MatMultDiagonalBlock_MPIAIJ(Mat,Vec,Vec);
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyBegin_MPIAIJ"
 PetscErrorCode MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
@@ -541,6 +543,7 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   a->XtoY = 0; ((Mat_SeqAIJ *)aij->B->data)->XtoY = 0;  /* b->XtoY = 0 */
 
   if (aij->diag) {ierr = VecDestroy(aij->diag);CHKERRQ(ierr);aij->diag = 0;}
+  if (a->inode.size) mat->ops->multdiagonalblock = MatMultDiagonalBlock_MPIAIJ;
   PetscFunctionReturn(0);
 }
 
@@ -726,6 +729,18 @@ PetscErrorCode MatMult_MPIAIJ(Mat A,Vec xx,Vec yy)
   ierr = (*a->A->ops->mult)(a->A,xx,yy);CHKERRQ(ierr);
   ierr = VecScatterEnd(a->Mvctx,xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = (*a->B->ops->multadd)(a->B,a->lvec,yy,yy);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultDiagonalBlock_MPIAIJ"
+PetscErrorCode MatMultDiagonalBlock_MPIAIJ(Mat A,Vec bb,Vec xx)
+{
+  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = MatMultDiagonalBlock(a->A,bb,xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1200,6 +1215,7 @@ PetscErrorCode MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
   Mat_MPIAIJ     *mat = (Mat_MPIAIJ*)matin->data;
   PetscErrorCode ierr; 
   Vec            bb1 = 0;
+  PetscTruth     hasop;
 
   PetscFunctionBegin;
   if (its > 1) {ierr = VecDuplicate(bb,&bb1);CHKERRQ(ierr);}
@@ -1266,7 +1282,12 @@ PetscErrorCode MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
       ierr = MatGetVecs(matin,&mat->diag,PETSC_NULL);CHKERRQ(ierr);
       ierr = MatGetDiagonal(matin,mat->diag);CHKERRQ(ierr);
     }
-    ierr = VecPointwiseMult(bb1,mat->diag,xx);CHKERRQ(ierr);
+    ierr = MatHasOperation(matin,MATOP_MULT_DIAGONAL_BLOCK,&hasop);CHKERRQ(ierr);
+    if (hasop) {
+      ierr = MatMultDiagonalBlock(matin,xx,bb1);CHKERRQ(ierr);
+    } else {
+      ierr = VecPointwiseMult(bb1,mat->diag,xx);CHKERRQ(ierr);
+    }
     ierr = VecWAXPY(bb1,-1.0,bb1,bb);CHKERRQ(ierr);
     ierr = MatMultAdd(mat->B,mat->lvec,bb1,bb1);CHKERRQ(ierr);
 
@@ -2674,7 +2695,13 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatGetRowMin_MPIAIJ,
        0,
        0,
-/*114*/MatGetSeqNonzerostructure_MPIAIJ};
+/*114*/MatGetSeqNonzerostructure_MPIAIJ,
+       0,
+       0,
+       0,
+       0,
+       0
+};
 
 /* ----------------------------------------------------------------------------------------*/
 
