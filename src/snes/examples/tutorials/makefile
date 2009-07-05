@@ -182,6 +182,9 @@ ex44: ex44.o  chkopts
 ex45: ex45.o  chkopts
 	-${CLINKER} -o ex45 ex45.o ${PETSC_SNES_LIB}
 	${RM} ex45.o
+ex46: ex46.o  chkopts
+	-${CLINKER} -o ex46 ex46.o ${PETSC_SNES_LIB}
+	${RM} ex46.o
 
 #--------------------------------------------------------------------------
 runex1:
