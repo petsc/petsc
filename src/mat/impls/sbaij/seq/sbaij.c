@@ -2114,7 +2114,6 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
       }
   
       for (i=m-1; i>=0; i--){
-        d  = *(aa + ai[i]);  
         v  = aa + ai[i] + 1; 
         vj = aj + ai[i] + 1;    
         nz = ai[i+1] - ai[i] - 1;
