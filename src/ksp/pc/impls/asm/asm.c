@@ -101,10 +101,10 @@ static PetscErrorCode PCASMPrintSubdomains(PC pc)
   PetscInt       i,j,nidx;
   const PetscInt *idx;
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(prefix,"-pc_asm_print_subdomains",
-			       fname,PETSC_MAX_PATH_LEN,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(prefix,"-pc_asm_print_subdomains",fname,PETSC_MAX_PATH_LEN,PETSC_NULL);CHKERRQ(ierr);
   if (fname[0] == 0) { ierr = PetscStrcpy(fname,"stdout");CHKERRQ(ierr); };
   ierr = PetscViewerASCIIOpen(((PetscObject)pc)->comm,fname,&viewer);CHKERRQ(ierr);
   for (i=0;i<osm->n_local_true;i++) {

@@ -41,7 +41,7 @@
 
 /* Info about i-nodes (identical nodes) helper class for SeqAIJ */
 typedef struct {
-  MatScalar   *bdiag,*ibdiag;               /* diagonal blocks of matrix used for MatRelax_Inode() */
+  MatScalar   *bdiag,*ibdiag,*ssor_work;      /* diagonal blocks of matrix used for MatRelax_Inode() */
   PetscInt    bdiagsize;                       /* length of bdiag and ibdiag */
   PetscTruth  ibdiagvalid;                     /* do ibdiag[] and bdiag[] contain the most recent values */
 

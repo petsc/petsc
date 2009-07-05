@@ -2,8 +2,8 @@
 
 configure_options = [
   #OpenMPI provides broken compilers and expects users to set LD_LIBRARY_PATH - before invoking them
-  'LIBS=-Wl,-rpath,/home/balay/soft/linux64/openmpi-1.2.6/lib',
-  '--with-mpi-dir=/home/balay/soft/linux64/openmpi-1.2.6',
+  'LIBS=-Wl,-rpath,/home/balay/soft/linux64/openmpi-1.3.2/lib',
+  '--with-mpi-dir=/home/balay/soft/linux64/openmpi-1.3.2',
   '--with-clanguage=cxx',
   '--with-debugging=0',
   '--with-log=0',

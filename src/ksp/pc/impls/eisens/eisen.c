@@ -37,10 +37,17 @@ static PetscErrorCode PCApply_Eisenstat(PC pc,Vec x,Vec y)
 {
   PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data;
   PetscErrorCode ierr;
+  PetscTruth     hasop;
 
   PetscFunctionBegin;
-  if (eis->usediag)  {ierr = VecPointwiseMult(y,x,eis->diag);CHKERRQ(ierr);}
-  else               {ierr = VecCopy(x,y);CHKERRQ(ierr);}
+  if (eis->usediag)  {
+    ierr = MatHasOperation(pc->pmat,MATOP_MULT_DIAGONAL_BLOCK,&hasop);CHKERRQ(ierr);
+    if (hasop) {
+      ierr = MatMultDiagonalBlock(pc->pmat,x,y);CHKERRQ(ierr);
+    } else {
+      ierr = VecPointwiseMult(y,x,eis->diag);CHKERRQ(ierr);
+    }
+  } else {ierr = VecCopy(x,y);CHKERRQ(ierr);}
   PetscFunctionReturn(0); 
 }
 
@@ -74,7 +81,7 @@ static PetscErrorCode PCPreSolve_Eisenstat(PC pc,KSP ksp,Vec b,Vec x)
   }
 
   /* modify b by (L + D)^{-1} */
-  ierr =   MatRelax(eis->A,b,eis->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_FORWARD_SWEEP),0.0,1,1,b);CHKERRQ(ierr);  
+  ierr =   MatRelax(eis->A,b,eis->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_FORWARD_SWEEP),0.0,1,1,b);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 
@@ -86,7 +93,7 @@ static PetscErrorCode PCPostSolve_Eisenstat(PC pc,KSP ksp,Vec b,Vec x)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr =   MatRelax(eis->A,x,eis->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_BACKWARD_SWEEP),0.0,1,1,x);CHKERRQ(ierr);
+  ierr =   MatRelax(eis->A,x,eis->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_BACKWARD_SWEEP),0.0,1,1,x);CHKERRQ(ierr);
   pc->mat = eis->A;
   /* get back true b */
   ierr = VecCopy(eis->b,b);CHKERRQ(ierr);
@@ -163,7 +170,7 @@ static PetscErrorCode PCSetUp_Eisenstat(PC pc)
     ierr = MatGetSize(pc->mat,&M,&N);CHKERRQ(ierr);
     ierr = MatGetLocalSize(pc->mat,&m,&n);CHKERRQ(ierr);
     ierr = MatCreate(((PetscObject)pc)->comm,&eis->shell);CHKERRQ(ierr);
-    ierr = MatSetSizes(eis->shell,m,N,M,N);CHKERRQ(ierr);
+    ierr = MatSetSizes(eis->shell,m,n,M,N);CHKERRQ(ierr);
     ierr = MatSetType(eis->shell,MATSHELL);CHKERRQ(ierr);
     ierr = MatShellSetContext(eis->shell,(void*)pc);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(pc,eis->shell);CHKERRQ(ierr);

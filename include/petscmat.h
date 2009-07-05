@@ -412,6 +412,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetBlockSize(Mat,PetscInt);
 
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMult(Mat,Vec,Vec);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultDiagonalBlock(Mat,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultAdd(Mat,Vec,Vec,Vec);
 PetscPolymorphicSubroutine(MatMultAdd,(Mat A,Vec x,Vec y),(A,x,y,y))
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultTranspose(Mat,Vec,Vec);
@@ -1502,7 +1503,11 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_GET_COLUMN_VEC=112,
                MATOP_MISSING_DIAGONAL=113,
                MATOP_MATGETSEQNONZEROSTRUCTURE=114,
-               MATOP_DESTROY_SOLVER=115
+               MATOP_CREATE=115,
+               MATOP_GET_GHOSTS=116,
+               MATOP_ILUDTFACTORSYMBOLIC=117,
+               MATOP_ILUDTFACTORNUMERIC=118,
+               MATOP_MULT_DIAGONAL_BLOCK=119
              } MatOperation;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatHasOperation(Mat,MatOperation,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetOperation(Mat,MatOperation,void(*)(void));

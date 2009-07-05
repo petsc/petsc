@@ -1768,6 +1768,51 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedLocal(Mat mat,PetscInt nrow
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultDiagonalBlock"
+/*@
+   MatMultDiagonalBlock - Computes the matrix-vector product, y = Dx. Where D is defined by the inode or block structure of the diagonal
+
+   Collective on Mat and Vec
+
+   Input Parameters:
++  mat - the matrix
+-  x   - the vector to be multiplied
+
+   Output Parameters:
+.  y - the result
+
+   Notes:
+   The vectors x and y cannot be the same.  I.e., one cannot
+   call MatMult(A,y,y).
+
+   Level: developer
+
+   Concepts: matrix-vector product
+
+.seealso: MatMultTranspose(), MatMultAdd(), MatMultTransposeAdd()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatMultDiagonalBlock(Mat mat,Vec x,Vec y)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(y,VEC_COOKIE,3); 
+
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (x == y) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"x and y must be different vectors");
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+
+  if (!mat->ops->multdiagonalblock) SETERRQ(PETSC_ERR_SUP,"This matrix type does not have a multiply defined");
+  ierr = (*mat->ops->multdiagonalblock)(mat,x,y);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}   
+
 /* --------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult"
@@ -1918,8 +1963,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   if (mat->cmap->N != v1->map->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec v1: global dim %D %D",mat->cmap->N,v1->map->N);
-  if (mat->rmap->N != v2->map->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec v2: global dim %D %D",mat->rmap->N,v2->map->N);
-  if (mat->rmap->N != v3->map->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec v3: global dim %D %D",mat->rmap->N,v3->map->N);
+  /* if (mat->rmap->N != v2->map->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec v2: global dim %D %D",mat->rmap->N,v2->map->N);
+     if (mat->rmap->N != v3->map->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec v3: global dim %D %D",mat->rmap->N,v3->map->N); */
   if (mat->rmap->n != v3->map->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec v3: local dim %D %D",mat->rmap->n,v3->map->n); 
   if (mat->rmap->n != v2->map->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec v2: local dim %D %D",mat->rmap->n,v2->map->n); 
   if (v1 == v3) SETERRQ(PETSC_ERR_ARG_IDN,"v1 and v3 must be different vectors");
@@ -3179,7 +3224,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRelax(Mat mat,Vec b,PetscReal omega,MatSORT
 
    Collective on Mat and Vec
 
-   See MatRelax() for usage
+   See MatRelax() for usage. This is called by MatRelax() when appropriate so need not be called by users.
 
    For multi-component PDEs where the Jacobian is stored in a point block format
    (with the PETSc BAIJ matrix formats) the relaxation is done one point block at 

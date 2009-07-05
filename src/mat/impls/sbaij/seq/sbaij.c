@@ -124,6 +124,7 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
   if (a->row) {ierr = ISDestroy(a->row);CHKERRQ(ierr);}
   if (a->col){ierr = ISDestroy(a->col);CHKERRQ(ierr);}
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
+  if (a->idiag) {ierr = PetscFree(a->idiag);CHKERRQ(ierr);}
   ierr = PetscFree(a->diag);CHKERRQ(ierr);
   ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);
   ierr = PetscFree(a->solve_work);CHKERRQ(ierr);
@@ -749,6 +750,7 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
   ierr = PetscInfo1(A,"Most nonzeros blocks in any row is %D\n",rmax);CHKERRQ(ierr);
   a->reallocs          = 0;
   A->info.nz_unneeded  = (PetscReal)fshift*bs2;
+  a->idiagvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -2052,12 +2054,14 @@ PetscErrorCode MatLoad_SeqSBAIJ(PetscViewer viewer, const MatType type,Mat *A)
 #define __FUNCT__ "MatRelax_SeqSBAIJ"
 PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
-  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
-  MatScalar      *aa=a->a,*v,*v1;
-  PetscScalar    *x,*b,*t,sum,d;
-  PetscErrorCode ierr;
-  PetscInt       m=a->mbs,bs=A->rmap->bs,*ai=a->i,*aj=a->j;
-  PetscInt       nz,nz1,*vj,*vj1,i;
+  Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ*)A->data;
+  const MatScalar *aa=a->a,*v,*v1;
+  PetscScalar     *x,*b,*t,sum,d;
+  MatScalar       tmp;
+  PetscErrorCode  ierr;
+  PetscInt        m=a->mbs,bs=A->rmap->bs,j;
+  const PetscInt  *ai=a->i,*aj=a->j,*vj,*vj1;
+  PetscInt        nz,nz1,i;
 
   PetscFunctionBegin;
   if (flag & SOR_EISENSTAT) SETERRQ(PETSC_ERR_SUP,"No support yet for Eisenstat");
@@ -2065,8 +2069,7 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
   its = its*lits;
   if (its <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D and local its %D both positive",its,lits);
 
-  if (bs > 1)
-    SETERRQ(PETSC_ERR_SUP,"SSOR for block size > 1 is not yet implemented");
+  if (bs > 1) SETERRQ(PETSC_ERR_SUP,"SSOR for block size > 1 is not yet implemented");
 
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   if (xx != bb) { 
@@ -2075,24 +2078,34 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
     b = x;
   } 
 
+  if (!a->idiagvalid) {
+    if (!a->idiag) {
+      ierr     = PetscMalloc(m*sizeof(PetscScalar),&a->idiag);CHKERRQ(ierr);
+    }
+    for (i=0; i<a->mbs; i++) a->idiag[i] = 1.0/a->a[a->i[i]];  
+    a->idiagvalid = PETSC_TRUE;
+  }
+
   if (!a->relax_work) {
     ierr = PetscMalloc(m*sizeof(PetscScalar),&a->relax_work);CHKERRQ(ierr);
   }
   t = a->relax_work;
+
  
   if (flag & SOR_ZERO_INITIAL_GUESS) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){ 
       ierr = PetscMemcpy(t,b,m*sizeof(PetscScalar));CHKERRQ(ierr);
 
       for (i=0; i<m; i++){
-        d  = *(aa + ai[i]);  /* diag[i] */
         v  = aa + ai[i] + 1; 
         vj = aj + ai[i] + 1;    
         nz = ai[i+1] - ai[i] - 1;       
-        ierr = PetscLogFlops(2.0*nz-1);CHKERRQ(ierr);
-        x[i] = omega*t[i]/d;
-        while (nz--) t[*vj++] -= x[i]*(*v++); /* update rhs */
+        x[i] = tmp = omega*t[i]*a->idiag[i];
+        for (j=0; j<nz; j++) {
+          t[vj[j]] -= tmp*v[j];
+        }
       }
+      ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
     } 
 
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){ 
@@ -2105,12 +2118,12 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
         v  = aa + ai[i] + 1; 
         vj = aj + ai[i] + 1;    
         nz = ai[i+1] - ai[i] - 1;
-        ierr = PetscLogFlops(2.0*nz-1);CHKERRQ(ierr);
         sum = t[i];
-        while (nz--) sum -= x[*vj++]*(*v++);
-        x[i] =   (1-omega)*x[i] + omega*sum/d;        
+        PetscSparseDenseMinusDot(sum,x,v,vj,nz);         
+        x[i] =   (1-omega)*x[i] + omega*sum*a->idiag[i];        
       }
       t = a->relax_work;
+      ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
     }
     its--;
   } 
