@@ -22,6 +22,7 @@ typedef struct {
   PetscTruth       permute;        /* if true, a non-trivial permutation is used for factorization */
   PetscTruth       ignore_ltriangular; /* if true, ignore the lower triangular values inserted by users */
   PetscTruth       getrow_utriangular; /* if true, MatGetRow_SeqSBAIJ() is enabled to get the upper part of the row */
+  Mat_Inode        inode;
 } Mat_SeqSBAIJ;
 
 EXTERN_C_BEGIN
