@@ -309,7 +309,7 @@ class Configure(config.base.Configure):
     if not self.framework.argDB['with-batch']:
       if not self.checkRun():
         self.popLanguage()
-        raise OSError('Cannot run executables created with '+language+'. It is likely that you will need to configure using --with-batch which allows configuration without interactive sessions.')
+        raise OSError('Cannot run executables created with '+language+'. It is possible that you will need to configure using --with-batch which allows configuration without interactive sessions.')
     self.popLanguage()
     return
 
