@@ -1,168 +1,176 @@
+# define HLINE "-------------------------------------------------------------\n"
 
-/* Program usage:  mpiexec ex1 [-help] [all PETSc options] */
+# ifndef MIN
+# define MIN(x,y) ((x)<(y)?(x):(y))
+# endif
+# ifndef MAX
+# define MAX(x,y) ((x)>(y)?(x):(y))
+# endif
 
-static char help[] = "Solves a tridiagonal linear system with KSP.\n\n";
+#define OFFSET 0
+#define NTIMES 10
+#define N 2000000
 
-/*T
-   Concepts: KSP^solving a system of linear equations
-   Processors: 1
-T*/
+#include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <float.h>
 
-/* 
-  Include "petscksp.h" so that we can use KSP solvers.  Note that this file
-  automatically includes:
-     petsc.h       - base PETSc routines   petscvec.h - vectors
-     petscsys.h    - system routines       petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
+static double	a[N+OFFSET],
+		b[N+OFFSET],
+		c[N+OFFSET];
 
-  Note:  The corresponding parallel example is ex23.c
-*/
-#include "petscksp.h"
+static double	rmstime[4] = {0}, maxtime[4] = {0},
+		mintime[4] = {FLT_MAX,FLT_MAX,FLT_MAX,FLT_MAX};
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
-int main(int argc,char **args)
-{
-  Vec            x, b, u;      /* approx solution, RHS, exact solution */
-  Mat            A;            /* linear system matrix */
-  KSP            ksp;         /* linear solver context */
-  PC             pc;           /* preconditioner context */
-  PetscReal      norm;         /* norm of solution error */
-  PetscErrorCode ierr;
-  PetscInt       i,n = 10,col[3],its;
-  PetscMPIInt    size;
-  PetscScalar    neg_one = -1.0,one = 1.0,value[3];
+static char	*label[4] = {"Copy:      ", "Scale:     ",
+   "Add:       ", "Triad:     "};
 
-  PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size != 1) SETERRQ(1,"This is a uniprocessor example only!");
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+static double	bytes[4] = {
+   2 * sizeof(double) * N,
+   2 * sizeof(double) * N,
+   3 * sizeof(double) * N,
+   3 * sizeof(double) * N
+   };
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-         Compute the matrix and right-hand-side vector that define
-         the linear system, Ax = b.
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+extern double second();
 
-  /* 
-     Create vectors.  Note that we form 1 vector from scratch and
-     then duplicate as needed.
-  */
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) x, "Solution");CHKERRQ(ierr);
-  ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&u);CHKERRQ(ierr);
+int
+main()
+   {
+   int			quantum, checktick();
+   int			BytesPerWord;
+   register int	j, k;
+   double		scalar, t, times[4][NTIMES];
 
-  /* 
-     Create matrix.  When using MatCreate(), the matrix format can
-     be specified at runtime.
+   /* --- SETUP --- determine precision and check timing --- */
 
-     Performance tuning note:  For problems of substantial size,
-     preallocation of matrix memory is crucial for attaining good 
-     performance. See the matrix chapter of the users manual for details.
-  */
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+   printf(HLINE);
+   BytesPerWord = sizeof(double);
+   printf("This system uses %d bytes per DOUBLE PRECISION word.\n",
+	BytesPerWord);
 
-  /* 
-     Assemble matrix
-  */
-  value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
-  for (i=1; i<n-1; i++) {
-    col[0] = i-1; col[1] = i; col[2] = i+1;
-    ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
-  }
-  i = n - 1; col[0] = n - 2; col[1] = n - 1;
-  ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
-  i = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
-  ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+   printf(HLINE);
+   printf("Array size = %d, Offset = %d\n" , N, OFFSET);
+   printf("Total memory required = %.1f MB.\n",
+	(3 * N * BytesPerWord) / 1048576.0);
+   printf("Each test is run %d times, but only\n", NTIMES);
+   printf("the *best* time for each is used.\n");
 
-  /* 
-     Set exact solution; then compute right-hand-side vector.
-  */
-  ierr = VecSet(u,one);CHKERRQ(ierr);
-  ierr = MatMult(A,u,b);CHKERRQ(ierr);
+   /* Get initial value for system clock. */
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-                Create the linear solver and set various options
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  /* 
-     Create linear solver context
-  */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+   for (j=0; j<N; j++) {
+	a[j] = 1.0;
+	b[j] = 2.0;
+	c[j] = 0.0;
+	}
 
-  /* 
-     Set operators. Here the matrix that defines the linear system
-     also serves as the preconditioning matrix.
-  */
-  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+   printf(HLINE);
 
-  /* 
-     Set linear solver defaults for this problem (optional).
-     - By extracting the KSP and PC contexts from the KSP context,
-       we can then directly call any KSP and PC routines to set
-       various options.
-     - The following four statements are optional; all of these
-       parameters could alternatively be specified at runtime via
-       KSPSetFromOptions();
-  */
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
-  ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+   if  ( (quantum = checktick()) >= 1) 
+	printf("Your clock granularity/precision appears to be "
+	    "%d microseconds.\n", quantum);
+   else
+	printf("Your clock granularity appears to be "
+	    "less than one microsecond.\n");
 
-  /* 
-    Set runtime options, e.g.,
-        -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
-    These options will override those specified above as long as
-    KSPSetFromOptions() is called _after_ any other customization
-    routines.
-  */
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
- 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-                      Solve the linear system
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  /* 
-     Solve linear system
-  */
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr); 
+   t = second();
+   for (j = 0; j < N; j++)
+	a[j] = 2.0E0 * a[j];
+   t = 1.0E6 * (second() - t);
 
-  /* 
-     View solver info; we could instead use the option -ksp_view to
-     print this info to the screen at the conclusion of KSPSolve().
-  */
-  ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+   printf("Each test below will take on the order"
+	" of %d microseconds.\n", (int) t  );
+   printf("   (= %d clock ticks)\n", (int) (t/quantum) );
+   printf("Increase the size of the arrays if this shows that\n");
+   printf("you are not getting at least 20 clock ticks per test.\n");
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-                      Check solution and clean up
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  /* 
-     Check the error
-  */
-  ierr = VecAXPY(x,neg_one,u);CHKERRQ(ierr);
-  ierr  = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %D\n",
-                     norm,its);CHKERRQ(ierr);
-  /* 
-     Free work space.  All PETSc objects should be destroyed when they
-     are no longer needed.
-  */
-  ierr = VecDestroy(x);CHKERRQ(ierr); ierr = VecDestroy(u);CHKERRQ(ierr);
-  ierr = VecDestroy(b);CHKERRQ(ierr); ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
+   printf(HLINE);
 
-  /*
-     Always call PetscFinalize() before exiting a program.  This routine
-       - finalizes the PETSc libraries as well as MPI
-       - provides summary and diagnostic information if certain runtime
-         options are chosen (e.g., -log_summary).
-  */
-  ierr = PetscFinalize();CHKERRQ(ierr);
-  return 0;
+   printf("WARNING -- The above is only a rough guideline.\n");
+   printf("For best results, please be sure you know the\n");
+   printf("precision of your system timer.\n");
+   printf(HLINE);
+
+   /*	--- MAIN LOOP --- repeat test cases NTIMES times --- */
+
+   scalar = 3.0;
+   for (k=0; k<NTIMES; k++)
+	{
+	times[0][k] = second();
+	for (j=0; j<N; j++)
+	    c[j] = a[j];
+	times[0][k] = second() - times[0][k];
+	
+	times[1][k] = second();
+	for (j=0; j<N; j++)
+	    b[j] = scalar*c[j];
+	times[1][k] = second() - times[1][k];
+	
+	times[2][k] = second();
+	for (j=0; j<N; j++)
+	    c[j] = a[j]+b[j];
+	times[2][k] = second() - times[2][k];
+	
+	times[3][k] = second();
+	for (j=0; j<N; j++)
+	    a[j] = b[j]+scalar*c[j];
+	times[3][k] = second() - times[3][k];
+	}
+
+   /*	--- SUMMARY --- */
+
+       for (k=0; k<NTIMES; k++)
+	{
+	for (j=0; j<4; j++)
+	    {
+	    rmstime[j] = rmstime[j] + (times[j][k] * times[j][k]);
+	    mintime[j] = MIN(mintime[j], times[j][k]);
+	    maxtime[j] = MAX(maxtime[j], times[j][k]);
+	    }
+	}
+
+   printf("Function      Rate (MB/s)   RMS time     Min time     Max time\n");
+   for (j=0; j<4; j++) {
+	rmstime[j] = sqrt(rmstime[j]/(double)NTIMES);
+
+	printf("%s%11.4f  %11.4f  %11.4f  %11.4f\n", label[j],
+	       1.0E-06 * bytes[j]/mintime[j],
+	       rmstime[j],
+	       mintime[j],
+	       maxtime[j]);
+   }
+   return 0;
 }
+
+# define	M	20
+
+int
+checktick()
+   {
+   int		i, minDelta, Delta;
+   double	t1, t2, timesfound[M];
+
+/*  Collect a sequence of M unique time values from the system. */
+
+   for (i = 0; i < M; i++) {
+	t1 = second();
+	while( ((t2=second()) - t1) < 1.0E-6 )
+	    ;
+	timesfound[i] = t1 = t2;
+	}
+
+/*
+* Determine the minimum difference between these M values.
+* This result will be our estimate (in microseconds) for the
+* clock granularity.
+*/
+
+   minDelta = 1000000;
+   for (i = 1; i < M; i++) {
+	Delta = (int)( 1.0E6 * (timesfound[i]-timesfound[i-1]));
+	minDelta = MIN(minDelta, MAX(Delta,0));
+	}
+
+   return(minDelta);
+   }

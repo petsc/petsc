@@ -125,6 +125,7 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
   if (a->col){ierr = ISDestroy(a->col);CHKERRQ(ierr);}
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
   if (a->idiag) {ierr = PetscFree(a->idiag);CHKERRQ(ierr);}
+  if (a->inode.size) {ierr = PetscFree(a->inode.size);CHKERRQ(ierr);}
   ierr = PetscFree(a->diag);CHKERRQ(ierr);
   ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);
   ierr = PetscFree(a->solve_work);CHKERRQ(ierr);
@@ -700,6 +701,85 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[]
 } 
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatAssemblyEnd_SeqSBAIJ_Inode"
+PetscErrorCode MatAssemblyEnd_SeqSBAIJ_Inode(Mat A)
+{
+  Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ*)A->data;
+  PetscErrorCode  ierr;
+  const PetscInt  *ai = a->i, *aj = a->j,*cols;
+  PetscInt        i = 0,j,blk_size,m = A->rmap->n,node_count = 0,nzx,nzy,*ns,row,nz,cnt,cnt2,*counts;
+  PetscTruth      flag;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc(m*sizeof(PetscInt),&ns);CHKERRQ(ierr);
+  while (i < m){
+    nzx = ai[i+1] - ai[i];       /* Number of nonzeros */
+    /* Limits the number of elements in a node to 'a->inode.limit' */
+    for (j=i+1,blk_size=1; j<m && blk_size <a->inode.limit; ++j,++blk_size) {
+      nzy  = ai[j+1] - ai[j];
+      if (nzy != (nzx - j + i)) break;
+      ierr = PetscMemcmp(aj + ai[i] + j - i,aj + ai[j],nzy*sizeof(PetscInt),&flag);CHKERRQ(ierr);
+      if (!flag) break;
+    }
+    ns[node_count++] = blk_size;
+    i = j;
+  }
+  if (!a->inode.size && m && node_count > .9*m) {
+    ierr = PetscFree(ns);CHKERRQ(ierr);
+    ierr = PetscInfo2(A,"Found %D nodes out of %D rows. Not using Inode routines\n",node_count,m);CHKERRQ(ierr);
+  } else {
+    a->inode.node_count = node_count;
+    ierr = PetscMalloc(node_count*sizeof(PetscInt),&a->inode.size);CHKERRQ(ierr);
+    ierr = PetscMemcpy(a->inode.size,ns,node_count*sizeof(PetscInt));
+    ierr = PetscFree(ns);CHKERRQ(ierr);
+    ierr = PetscInfo3(A,"Found %D nodes of %D. Limit used: %D. Using Inode routines\n",node_count,m,a->inode.limit);CHKERRQ(ierr);
+    
+    /* count collections of adjacent columns in each inode */
+    row = 0;
+    cnt = 0;
+    for (i=0; i<node_count; i++) {
+      cols = aj + ai[row] + a->inode.size[i]; 
+      nz   = ai[row+1] - ai[row] - a->inode.size[i]; 
+      for (j=1; j<nz; j++) {
+        if (cols[j] != cols[j-1]+1) {
+          cnt++;
+        } 
+      }
+      cnt++;
+      row += a->inode.size[i];
+    }
+    ierr = PetscMalloc(2*cnt*sizeof(PetscInt),&counts);CHKERRQ(ierr);
+    cnt = 0;
+    row = 0;
+    for (i=0; i<node_count; i++) {
+      cols          = aj + ai[row] + a->inode.size[i]; 
+	  CHKMEMQ;
+      counts[2*cnt] = cols[0];
+	  CHKMEMQ;
+      nz            = ai[row+1] - ai[row] - a->inode.size[i]; 
+      cnt2          = 1;
+      for (j=1; j<nz; j++) {
+        if (cols[j] != cols[j-1]+1) {
+	  CHKMEMQ;
+          counts[2*(cnt++)+1] = cnt2;
+          counts[2*cnt]       = cols[j];
+	  CHKMEMQ;
+          cnt2                = 1;
+        } else cnt2++;
+      }
+	  CHKMEMQ;
+      counts[2*(cnt++)+1] = cnt2;
+	  CHKMEMQ;
+      row += a->inode.size[i];
+    }
+    ierr = PetscIntView(2*cnt,counts,0);
+  }
+
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_SeqSBAIJ"
 PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
 {
@@ -751,6 +831,9 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
   a->reallocs          = 0;
   A->info.nz_unneeded  = (PetscReal)fshift*bs2;
   a->idiagvalid = PETSC_FALSE;
+  if (bs2 == 1) {
+    ierr = MatAssemblyEnd_SeqSBAIJ_Inode(A);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1624,7 +1707,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
   Mat_SeqSBAIJ   *b;
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  
+  PetscTruth     no_unroll = PETSC_FALSE,no_inode = PETSC_FALSE;
+
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)B)->comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,"Comm must be of size 1");
@@ -1639,7 +1723,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
   b->icol             = 0;
   b->reallocs         = 0;
   b->saved_values     = 0;
-  
+  b->inode.limit      = 5;  
+  b->inode.max_limit  = 5;  
   
   b->roworiented      = PETSC_TRUE;
   b->nonew            = 0;
@@ -1708,6 +1793,17 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
   B->symmetric_set              = PETSC_TRUE;
   B->structurally_symmetric_set = PETSC_TRUE;
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQSBAIJ);CHKERRQ(ierr);
+
+  ierr = PetscOptionsBegin(((PetscObject)B)->comm,((PetscObject)B)->prefix,"Options for SEQSBAIJ matrix","Mat");CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_no_unroll","Do not optimize for inodes (slower)",PETSC_NULL,no_unroll,&no_unroll,PETSC_NULL);CHKERRQ(ierr);
+    if (no_unroll) {ierr = PetscInfo(B,"Not using Inode routines due to -mat_no_unroll\n");CHKERRQ(ierr);}
+    ierr = PetscOptionsTruth("-mat_no_inode","Do not optimize for inodes (slower)",PETSC_NULL,no_inode,&no_inode,PETSC_NULL);CHKERRQ(ierr);
+    if (no_inode) {ierr = PetscInfo(B,"Not using Inode routines due to -mat_no_inode\n");CHKERRQ(ierr);}
+    ierr = PetscOptionsInt("-mat_inode_limit","Do not use inodes larger then this value",PETSC_NULL,b->inode.limit,&b->inode.limit,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  b->inode.use = (PetscTruth)(!(no_unroll || no_inode));
+  if (b->inode.limit > b->inode.max_limit) b->inode.limit = b->inode.max_limit;
+
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -2049,6 +2145,8 @@ PetscErrorCode MatLoad_SeqSBAIJ(PetscViewer viewer, const MatType type,Mat *A)
   *A = B;
   PetscFunctionReturn(0);
 }
+
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRelax_SeqSBAIJ"

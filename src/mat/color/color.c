@@ -299,8 +299,14 @@ $    -mat_coloring_view
    For parallel matrices currently converts to sequential matrix and uses the sequential coloring
    on that.
 
-   The sequential colorings SL, LF, and ID are obtained via the Minpack software that was
+   The colorings SL, LF, and ID are obtained via the Minpack software that was
    converted to C using f2c.
+
+   References:
+$     Thomas F. Coleman and Jorge J. More, Estimation of Sparse {J}acobian Matrices and Graph Coloring Problems,
+$         SIAM Journal on Numerical Analysis, 1983, pages 187-209, volume 20
+$     Jorge J. Mor\'{e} and Danny C. Sorenson and  Burton S. Garbow and Kenneth E. Hillstrom, The {MINPACK} Project,
+$         Sources and Development of Mathematical Software, Wayne R. Cowell editor, 1984, pages 88-111
 
 .keywords: matrix, get, coloring
 
