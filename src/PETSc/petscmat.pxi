@@ -614,25 +614,22 @@ cdef inline int matsetvalues_rcv(PetscMat A,
     cdef ndarray aj = iarray_i(oj, &nj, &j)
     cdef ndarray av = iarray_s(ov, &nv, &v)
     # check various dimensions
-    if ai.cndim != 2: raise ValueError(
+    if PyArray_NDIM(ai) != 2: raise ValueError(
         "row indices must have two dimensions: " \
-        "rows.ndim=%d" % (ai.cndim) )
-    if aj.cndim != 2: raise ValueError(
+        "rows.ndim=%d" % (PyArray_NDIM(ai)) )
+    if PyArray_NDIM(aj) != 2: raise ValueError(
         "column indices must have two dimensions: " \
-        "cols.ndim=%d" % (aj.cndim) )
-    if av.cndim < 2: raise ValueError(
+        "cols.ndim=%d" % (PyArray_NDIM(aj)) )
+    if PyArray_NDIM(av) < 2: raise ValueError(
         "values must have two or more dimensions: " \
-        "vals.ndim=%d" % (av.cndim) )
+        "vals.ndim=%d" % (PyArray_NDIM(av)) )
     # check various shapes
-    cdef PetscInt nm = ai.cshape[0]
-    cdef PetscInt si = ai.cshape[1]
-    cdef PetscInt sj = aj.cshape[1]
-    cdef PetscInt sv = av.cshape[1]
-    cdef PetscInt k=0, avndim=av.cndim
-    for k from 2 < k <= avndim:
-        sv *= av.cshape[k]
-    if ((nm != aj.cshape[0]) or \
-        (nm != av.cshape[0]) or \
+    cdef PetscInt nm = PyArray_DIM(ai, 0)
+    cdef PetscInt si = PyArray_DIM(ai, 1)
+    cdef PetscInt sj = PyArray_DIM(aj, 1)
+    cdef PetscInt sv = PyArray_SIZE(av) // PyArray_DIM(av, 0)
+    if ((nm != <PetscInt> PyArray_DIM(aj, 0)) or
+        (nm != <PetscInt> PyArray_DIM(av, 0)) or
         (si*bs * sj*bs != sv)): raise ValueError(
         "input arrays have incompatible shapes: " \
         "rows.shape=%s, cols.shape=%s, vals.shape=%s" % \
@@ -642,6 +639,7 @@ cdef inline int matsetvalues_rcv(PetscMat A,
          matsetvalues_fcn(blocked, local)
     cdef PetscInsertMode addv = insertmode(oaddv)
     # actual calls
+    cdef PetscInt k=0
     for k from 0 <= k < nm:
         CHKERR( setvalues(A, si, &i[k*si], sj, &j[k*sj], &v[k*sv], addv) )
     return 0

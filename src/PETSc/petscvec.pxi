@@ -274,7 +274,7 @@ cdef inline int vecset(PetscVec v, object o) except -1:
     cdef PetscInt na=0, nv=0
     cdef PetscScalar *va=NULL, *vv=NULL
     cdef ndarray a = iarray_s(o, &na, &va)
-    if a.cndim == 0:
+    if PyArray_NDIM(a) == 0:
         CHKERR( VecSet(v, va[0]) )
         return 0
     CHKERR( VecGetLocalSize(v, &nv) )

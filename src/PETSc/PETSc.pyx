@@ -98,12 +98,12 @@ cdef inline PetscScalar asScalar(object value) except*:
 
 include "arraynpy.pxi"
 
-import_numpy()
+import_array()
 
-IntType     = numpy_typeobj(NPY_PETSC_INT)
-RealType    = numpy_typeobj(NPY_PETSC_REAL)
-ScalarType  = numpy_typeobj(NPY_PETSC_SCALAR)
-ComplexType = numpy_typeobj(NPY_PETSC_COMPLEX)
+IntType     = PyArray_TypeObjectFromType(NPY_PETSC_INT)
+RealType    = PyArray_TypeObjectFromType(NPY_PETSC_REAL)
+ScalarType  = PyArray_TypeObjectFromType(NPY_PETSC_SCALAR)
+ComplexType = PyArray_TypeObjectFromType(NPY_PETSC_COMPLEX)
 
 # --------------------------------------------------------------------
 

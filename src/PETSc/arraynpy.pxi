@@ -1,8 +1,8 @@
 # --------------------------------------------------------------------
 
-cdef extern from "arraynpy.h":
+cdef extern from "numpy/arrayobject.h":
 
-    int import_numpy "_import_array" () except -1
+    int import_array "_import_array" () except -1
 
     ctypedef long npy_intp
 
@@ -10,14 +10,15 @@ cdef extern from "arraynpy.h":
         pass
 
     ctypedef extern class numpy.ndarray [object PyArrayObject]:
-        cdef char*     cdata  "data"
-        cdef int       cndim  "nd"
-        cdef npy_intp* cshape "dimensions"
+        cdef char*     c_data  "data"
+        cdef int       c_ndim  "nd"
+        cdef npy_intp* c_shape "dimensions"
 
-    enum: NPY_PETSC_INT
-    enum: NPY_PETSC_REAL
-    enum: NPY_PETSC_COMPLEX
-    enum: NPY_PETSC_SCALAR
+    void*     PyArray_DATA(ndarray)
+    npy_intp  PyArray_SIZE(ndarray)
+    int       PyArray_NDIM(ndarray)
+    npy_intp* PyArray_DIMS(ndarray)
+    npy_intp  PyArray_DIM(ndarray, int)
 
     enum: NPY_IN_ARRAY
     enum: NPY_OUT_ARRAY
@@ -27,21 +28,22 @@ cdef extern from "arraynpy.h":
     enum: NPY_OUT_FARRAY
     enum: NPY_INOUT_FARRAY
 
+    ndarray  PyArray_FROM_O(object)
+    ndarray  PyArray_FROM_OTF(object,int,int)
+
     dtype    PyArray_DescrFromType(int)
     object   PyArray_TypeObjectFromType(int)
 
     ndarray  PyArray_ArangeObj(object,object,object,dtype)
     ndarray  PyArray_EMPTY(int,npy_intp[],int,int)
 
-    ndarray  PyArray_FROM_O(object)
-    ndarray  PyArray_FROM_OTF(object,int,int)
-
-    void*    PyArray_DATA(object)
-    npy_intp PyArray_SIZE(object)
-
 
 cdef extern from "arraynpy.h":
-    object   numpy_typeobj"PyArray_TypeObjectFromType"(int)
+
+    enum: NPY_PETSC_INT
+    enum: NPY_PETSC_REAL
+    enum: NPY_PETSC_SCALAR
+    enum: NPY_PETSC_COMPLEX
 
 
 # --------------------------------------------------------------------
@@ -72,19 +74,22 @@ cdef inline ndarray empty_s(PetscInt size):
 cdef inline ndarray array_i(PetscInt size, const_PetscInt* data):
     cdef npy_intp s = <npy_intp> size
     cdef ndarray ary = PyArray_EMPTY(1, &s, NPY_PETSC_INT, 0)
-    if data != NULL: memcpy(ary.cdata, data, size*sizeof(PetscInt))
+    if data != NULL:
+        memcpy(PyArray_DATA(ary), data, size*sizeof(PetscInt))
     return ary
 
 cdef inline ndarray array_r(PetscInt size, const_PetscReal* data):
     cdef npy_intp s = <npy_intp> size
     cdef ndarray ary = PyArray_EMPTY(1, &s, NPY_PETSC_REAL, 0)
-    if data != NULL: memcpy(ary.cdata, data, size*sizeof(PetscReal))
+    if data != NULL:
+        memcpy(PyArray_DATA(ary), data, size*sizeof(PetscReal))
     return ary
 
 cdef inline ndarray array_s(PetscInt size, const_PetscScalar* data):
     cdef npy_intp s = <npy_intp> size
     cdef ndarray ary = PyArray_EMPTY(1, &s, NPY_PETSC_SCALAR, 0)
-    if data != NULL: memcpy(ary.cdata, data, size*sizeof(PetscScalar))
+    if data != NULL:
+        memcpy(PyArray_DATA(ary), data, size*sizeof(PetscScalar))
     return ary
 
 # --------------------------------------------------------------------
