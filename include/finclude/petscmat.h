@@ -120,6 +120,7 @@
 !
       PetscEnum MAT_INITIAL_MATRIX
       PetscEnum MAT_REUSE_MATRIX
+      PetscEnum MAT_IGNORE_MATRIX
 
       parameter (MAT_INITIAL_MATRIX=0,MAT_REUSE_MATRIX=1)
 

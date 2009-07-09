@@ -281,13 +281,151 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementUpdate(Mat N,Mat A,Mat Ap,Ma
 PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementGetSubmatrices(Mat N,Mat *A,Mat *Ap,Mat *B,Mat *C,Mat *D)
 {
   Mat_SchurComplement *Na = (Mat_SchurComplement *) N->data;  
+  PetscErrorCode       ierr;
+  PetscTruth           flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(N,MAT_COOKIE,1);
-  if (A)  {*A  = Na->A;}
-  if (Ap) {*Ap = Na->Ap;}
-  if (B)  {*B  = Na->B;}
-  if (C)  {*C  = Na->C;}
-  if (D)  {*D  = Na->D;}
+  ierr = PetscTypeCompare((PetscObject)N,MATSCHURCOMPLEMENT,&flg);CHKERRQ(ierr);
+  if (flg) {
+    if (A)  *A  = Na->A;
+    if (Ap) *Ap = Na->Ap;
+    if (B)  *B  = Na->B;
+    if (C)  *C  = Na->C;
+    if (D)  *D  = Na->D;
+  } else {
+    if (A)  *A  = 0;
+    if (Ap) *Ap = 0;
+    if (B)  *B  = 0;
+    if (C)  *C  = 0;
+    if (D)  *D  = 0;
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetSchurComplement"
+/*@
+    MatGetSchurComplement - Obtain the Schur complement from eliminating part of the matrix in another part.
+
+    Collective on Mat
+
+    Input Parameters:
++   mat - Matrix in which the complement is to be taken
+.   isrow0 - rows to eliminate
+.   iscol0 - columns to eliminate, (isrow0,iscol0) should be square and nonsingular
+.   isrow1 - rows in which the Schur complement is formed
+.   iscol1 - columns in which the Schur complement is formed
+.   mreuse - MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX, use MAT_IGNORE_MATRIX to put nothing in newmat
+-   preuse - MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX, use MAT_IGNORE_MATRIX to put nothing in newpmat
+
+    Output Parameters:
++   newmat - exact Schur complement, often of type MATSCHURCOMPLEMENT which is difficult to use for preconditioning
+-   newpmat - approximate Schur complement suitable for preconditioning
+
+    Note:
+    Since the real Schur complement is usually dense, providing a good approximation to newpmat usually requires
+    application-specific information.  The default for assembled matrices is to use the diagonal of the (0,0) block
+    which will rarely produce a scalable algorithm.
+
+    Level: advanced
+
+    Concepts: matrices^submatrices
+
+.seealso: MatGetSubMatrix(), PCFIELDSPLIT
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetSchurComplement(Mat mat,IS isrow0,IS iscol0,IS isrow1,IS iscol1,MatReuse mreuse,Mat *newmat,MatReuse preuse,Mat *newpmat)
+{
+  PetscErrorCode ierr,(*f)(Mat,IS,IS,IS,IS,MatReuse,Mat*,MatReuse,Mat*);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(isrow0,IS_COOKIE,2);
+  PetscValidHeaderSpecific(iscol0,IS_COOKIE,3);
+  PetscValidHeaderSpecific(isrow1,IS_COOKIE,4);
+  PetscValidHeaderSpecific(iscol1,IS_COOKIE,5);
+  if (mreuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*newmat,MAT_COOKIE,7);
+  if (preuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*newpmat,MAT_COOKIE,9);
+  PetscValidType(mat,1);
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatGetSchurComplement_C",(void(**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(mat,isrow0,iscol0,isrow1,iscol1,mreuse,newmat,preuse,newpmat);CHKERRQ(ierr);
+  } else {
+    Mat A=0,Ap=0,B=0,C=0,D=0;
+    if (mreuse != MAT_IGNORE_MATRIX) {
+      /* Use MatSchurComplement */
+      if (mreuse == MAT_REUSE_MATRIX) {
+        ierr = MatSchurComplementGetSubmatrices(*newmat,&A,&Ap,&B,&C,&D);CHKERRQ(ierr);
+        if (!A || !Ap || !B || !C) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Attempting to reuse matrix but Schur complement matrices unset");
+        if (A != Ap) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Preconditioning matrix does not match operator");
+        ierr = MatDestroy(Ap);CHKERRQ(ierr); /* get rid of extra reference */
+      }
+      ierr = MatGetSubMatrix(mat,isrow0,iscol0,mreuse,&A);CHKERRQ(ierr);
+      ierr = MatGetSubMatrix(mat,isrow0,iscol1,mreuse,&B);CHKERRQ(ierr);
+      ierr = MatGetSubMatrix(mat,isrow1,iscol0,mreuse,&C);CHKERRQ(ierr);
+      ierr = MatGetSubMatrix(mat,isrow1,iscol1,mreuse,&D);CHKERRQ(ierr);
+      switch (mreuse) {
+        case MAT_INITIAL_MATRIX:
+          ierr = MatCreateSchurComplement(A,A,B,C,D,newmat);CHKERRQ(ierr);
+          break;
+        case MAT_REUSE_MATRIX:
+          ierr = MatSchurComplementUpdate(*newmat,A,A,B,C,D,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+          break;
+        default:
+          SETERRQ(PETSC_ERR_SUP,"Unrecognized value of mreuse");
+      }
+    }
+    if (preuse != MAT_IGNORE_MATRIX) {
+      /* Use the diagonal part of A to form D - C inv(diag(A)) B */
+      Mat Ad,AdB,S;
+      Vec diag;
+      PetscInt i,m,n,mstart,mend;
+      PetscScalar *x;
+
+      /* We could compose these with newpmat so that the matrices can be reused. */
+      if (!A) {ierr = MatGetSubMatrix(mat,isrow0,iscol0,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);}
+      if (!B) {ierr = MatGetSubMatrix(mat,isrow0,iscol1,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);}
+      if (!C) {ierr = MatGetSubMatrix(mat,isrow1,iscol0,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);}
+      if (!D) {ierr = MatGetSubMatrix(mat,isrow1,iscol1,MAT_INITIAL_MATRIX,&D);CHKERRQ(ierr);}
+
+      ierr = MatGetVecs(A,&diag,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetDiagonal(A,diag);CHKERRQ(ierr);
+      ierr = VecReciprocal(diag);CHKERRQ(ierr);
+      ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+      /* We need to compute S = D - C inv(diag(A)) B.  For row-oriented formats, it is easy to scale the rows of B and
+      * for column-oriented formats the columns of C can be scaled.  Would skip creating a silly diagonal matrix. */
+      ierr = MatCreate(((PetscObject)A)->comm,&Ad);CHKERRQ(ierr);
+      ierr = MatSetSizes(Ad,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+      ierr = MatSetOptionsPrefix(Ad,((PetscObject)mat)->prefix);CHKERRQ(ierr);
+      ierr = MatAppendOptionsPrefix(Ad,"diag_");CHKERRQ(ierr);
+      ierr = MatSetFromOptions(Ad);CHKERRQ(ierr);
+      ierr = MatSeqAIJSetPreallocation(Ad,1,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatMPIAIJSetPreallocation(Ad,1,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetOwnershipRange(Ad,&mstart,&mend);CHKERRQ(ierr);
+      ierr = VecGetArray(diag,&x);CHKERRQ(ierr);
+      for (i=mstart; i<mend; i++) {
+        ierr = MatSetValue(Ad,i,i,x[i-mstart],INSERT_VALUES);CHKERRQ(ierr);
+      }
+      ierr = VecRestoreArray(diag,&x);CHKERRQ(ierr);
+      ierr = MatAssemblyBegin(Ad,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(Ad,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = VecDestroy(diag);CHKERRQ(ierr);
+
+      ierr = MatMatMult(Ad,B,MAT_INITIAL_MATRIX,1,&AdB);CHKERRQ(ierr);
+      S = (preuse == MAT_REUSE_MATRIX) ? *newpmat : 0;
+      ierr = MatMatMult(C,AdB,preuse,PETSC_DEFAULT,&S);CHKERRQ(ierr);
+      ierr = MatAYPX(S,-1,D,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      *newpmat = S;
+      ierr = MatDestroy(Ad);CHKERRQ(ierr);
+      ierr = MatDestroy(AdB);CHKERRQ(ierr);
+    }
+    if (A) {ierr = MatDestroy(A);CHKERRQ(ierr);}
+    if (B) {ierr = MatDestroy(B);CHKERRQ(ierr);}
+    if (C) {ierr = MatDestroy(C);CHKERRQ(ierr);}
+    if (D) {ierr = MatDestroy(D);CHKERRQ(ierr);}
+  }
   PetscFunctionReturn(0);
 }
