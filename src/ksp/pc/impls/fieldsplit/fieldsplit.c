@@ -486,11 +486,10 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
   PC_FieldSplitLink ilink = jac->head;
-  PetscInt          bs,cnt;
+  PetscInt          cnt;
 
   PetscFunctionBegin;
   CHKMEMQ;
-  ierr = VecGetBlockSize(x,&bs);CHKERRQ(ierr);
   ierr = VecSetBlockSize(x,jac->bs);CHKERRQ(ierr);
   ierr = VecSetBlockSize(y,jac->bs);CHKERRQ(ierr);
 
@@ -574,11 +573,9 @@ static PetscErrorCode PCApplyTranspose_FieldSplit(PC pc,Vec x,Vec y)
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
   PC_FieldSplitLink ilink = jac->head;
-  PetscInt          bs;
 
   PetscFunctionBegin;
   CHKMEMQ;
-  ierr = VecGetBlockSize(x,&bs);CHKERRQ(ierr);
   ierr = VecSetBlockSize(x,jac->bs);CHKERRQ(ierr);
   ierr = VecSetBlockSize(y,jac->bs);CHKERRQ(ierr);
 
