@@ -3,6 +3,8 @@
 
 #include "private/matimpl.h"
 
+#define MAT_KEEP_NONZERO_PATTERN MAT_KEEP_ZEROED_ROWS
+
 #undef __FUNCT__
 #define __FUNCT__ "MatGetDiagonalBlock_300"
 static PETSC_UNUSED
