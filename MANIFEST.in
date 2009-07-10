@@ -8,6 +8,9 @@ recursive-include src  *.py *.pyx *.px[di] *.h *.c *.i *.cfg
 recursive-include test *.py
 recursive-include *    [M,m]akefile
 
-recursive-include docs/       *.pdf
-recursive-include docs/html   *
+recursive-include docs        *.html
+recursive-include docs        *.pdf
+recursive-include docs        *.rst
+recursive-include docs/usrman *
+recursive-include docs/apiref *
 recursive-include docs/source *

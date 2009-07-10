@@ -1,15 +1,13 @@
 .PHONY: default \
 	src cython \
 	config build test install \
-	docs sphinx sphinx-html sphinx-pdf epydoc \
+	docs sphinx sphinx-html sphinx-pdf epydoc epydoc-html \
 	sdist \
 	clean distclean srcclean docsclean fullclean uninstall
 
 PYTHON = python
 
 default: build
-
-src: src/PETSc.c
 
 config: 
 	${PYTHON} setup.py config ${CONFIGOPT}
@@ -23,8 +21,6 @@ test:
 install: build
 	${PYTHON} setup.py install ${INSTALLOPT} --home=${HOME}
 
-docs: sphinx epydoc
-
 clean:
 	${PYTHON} setup.py clean --all
 
@@ -34,19 +30,20 @@ distclean: clean docsclean
 	-${RM} `find . -name '*~'`
 	-${RM} `find . -name '*.py[co]'`
 
-srcclean:
-	-${RM} src/petsc4py.PETSc.c
-	-${RM} src/include/petsc4py/petsc4py.PETSc.h
-	-${RM} src/include/petsc4py/petsc4py.PETSc_api.h
-
-docsclean:
-	-${RM} -r docs/html docs/*.pdf
-
 fullclean: distclean srcclean docsclean
 
 uninstall:
 	-${RM} -r ${HOME}/lib/python/petsc4py
 	-${RM} -r ${HOME}/lib/python/petsc4py-*-py*.egg-info
+
+# ----
+
+src: src/PETSc.c
+
+srcclean:
+	-${RM} src/petsc4py.PETSc.c
+	-${RM} src/include/petsc4py/petsc4py.PETSc.h
+	-${RM} src/include/petsc4py/petsc4py.PETSc_api.h
 
 CY_SRC_PXD = $(wildcard src/include/petsc4py/*.pxd)
 CY_SRC_PXI = $(wildcard src/PETSc/*.pxi)
@@ -58,14 +55,29 @@ src/petsc4py.PETSc.c: ${CY_SRC_PXD} ${CY_SRC_PXI} ${CY_SRC_PYX}
 cython:
 	${PYTHON} ./conf/cythonize.py
 
+# ----
+
+docs: rst2html sphinx epydoc
+
+docsclean:
+	-${RM} docs/*.html docs/*.pdf
+	-${RM} -r docs/usrman docs/apiref
+
+RST2HTML = rst2html
+RST2HTMLOPTS = --no-compact-lists --cloak-email-addresses
+rst2html:
+	${RST2HTML} ${RST2HTMLOPTS} docs/index.rst > docs/index.html
+	${RST2HTML} ${RST2HTMLOPTS} LICENSE.txt    > docs/LICENSE.html
+	${RST2HTML} ${RST2HTMLOPTS} HISTORY.txt    > docs/HISTORY.html
+
 SPHINXBUILD = sphinx-build
 SPHINXOPTS  =
 sphinx: sphinx-html sphinx-pdf
 sphinx-html:
 	${PYTHON} -c 'import petsc4py.PETSc'
-	mkdir -p build/doctrees docs/html/man
+	mkdir -p build/doctrees docs/usrman
 	${SPHINXBUILD} -b html -d build/doctrees ${SPHINXOPTS} \
-	docs/source docs/html/man
+	docs/source docs/usrman
 sphinx-pdf:
 	${PYTHON} -c 'import petsc4py.PETSc'
 	mkdir -p build/doctrees build/latex
@@ -76,10 +88,12 @@ sphinx-pdf:
 
 EPYDOCBUILD = ${PYTHON} ./conf/epydocify.py
 EPYDOCOPTS  =
-epydoc:
-	mkdir -p docs/html/api
-	${EPYDOCBUILD} ${EPYDOCOPTS} -o docs/html/api 
+epydoc: epydoc-html
+epydoc-html:
+	mkdir -p docs/apiref
+	${EPYDOCBUILD} ${EPYDOCOPTS} -o docs/apiref
 
+# ----
 
 sdist: src docs
 	${PYTHON} setup.py sdist ${SDISTOPT}
