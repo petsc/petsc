@@ -1,5 +1,5 @@
-package-*/*
 syntax: glob
+package-*/*
 asterix*/*
 linux*/*
 darwin*/*
