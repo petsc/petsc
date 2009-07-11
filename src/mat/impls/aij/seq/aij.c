@@ -1138,8 +1138,8 @@ EXTERN_C_END
 PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar        *x,d,*xs,sum,*t,scale,*idiag=0,*mdiag;
-  const MatScalar    *v = a->a;
+  PetscScalar        *x,d,sum,*t,scale;
+  const MatScalar    *v = a->a,*idiag=0,*mdiag;
   const PetscScalar  *b, *bs,*xb, *ts;
   PetscErrorCode     ierr;
   PetscInt           n = A->cmap->n,m = A->rmap->n,i;
@@ -1166,7 +1166,6 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
   }
   CHKMEMQ;
   /* We count flops by assuming the upper triangular and lower triangular parts have the same number of nonzeros */
-  xs   = x;
   if (flag == SOR_APPLY_UPPER) {
    /* apply (U + D/omega) to the vector */
     bs = b;
@@ -1205,7 +1204,7 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
       idx  = a->j + diag[i] + 1;
       v    = a->a + diag[i] + 1;
       sum  = b[i];
-      PetscSparseDenseMinusDot(sum,xs,v,idx,n); 
+      PetscSparseDenseMinusDot(sum,x,v,idx,n); 
       x[i] = sum*idiag[i];
     }
 
@@ -1242,7 +1241,7 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
         idx  = a->j + a->i[i];
         v    = a->a + a->i[i];
         sum  = b[i];
-        PetscSparseDenseMinusDot(sum,xs,v,idx,n); 
+        PetscSparseDenseMinusDot(sum,x,v,idx,n); 
         x[i] = sum*idiag[i];
       }
 #endif
@@ -1265,7 +1264,7 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
         idx  = a->j + diag[i] + 1;
         v    = a->a + diag[i] + 1;
         sum  = xb[i];
-        PetscSparseDenseMinusDot(sum,xs,v,idx,n); 
+        PetscSparseDenseMinusDot(sum,x,v,idx,n); 
         x[i] = sum*idiag[i];
       }
 #endif
@@ -1283,7 +1282,7 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
         idx  = a->j + a->i[i];
         v    = a->a + a->i[i];
         sum  = b[i];
-        PetscSparseDenseMinusDot(sum,xs,v,idx,n); 
+        PetscSparseDenseMinusDot(sum,x,v,idx,n); 
         x[i] = (1. - omega)*x[i] + (sum + mdiag[i]*x[i])*idiag[i];
       }
 #endif 
@@ -1298,7 +1297,7 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
         idx  = a->j + a->i[i];
         v    = a->a + a->i[i];
         sum  = b[i];
-        PetscSparseDenseMinusDot(sum,xs,v,idx,n); 
+        PetscSparseDenseMinusDot(sum,x,v,idx,n); 
         x[i] = (1. - omega)*x[i] + (sum + mdiag[i]*x[i])*idiag[i];
       }
 #endif
