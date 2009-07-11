@@ -340,6 +340,7 @@ static PetscErrorCode PCDestroy_ILU(PC pc)
 
   PetscFunctionBegin;
   ierr = PCDestroy_ILU_Internal(pc);CHKERRQ(ierr);
+  ierr = PetscStrfree(((PC_Factor*)ilu)->solvertype);CHKERRQ(ierr);
   ierr = PetscStrfree(((PC_Factor*)ilu)->ordering);CHKERRQ(ierr);
   ierr = PetscFree(ilu);CHKERRQ(ierr);
   PetscFunctionReturn(0);

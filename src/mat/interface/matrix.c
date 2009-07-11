@@ -6401,7 +6401,7 @@ M*/
 
     Concepts: matrices^submatrices
 
-.seealso: MatGetSubMatrices(), ISAllGather()
+.seealso: MatGetSubMatrices()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *newmat)
 {

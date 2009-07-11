@@ -124,7 +124,7 @@ extern PetscCookie PETSCMAT_DLLEXPORT MATMFFD_COOKIE;
 
 .seealso: MatGetSubMatrices(), MatGetSubMatrix(), MatDestroyMatrices(), MatConvert()
 E*/
-typedef enum {MAT_INITIAL_MATRIX,MAT_REUSE_MATRIX} MatReuse;
+typedef enum {MAT_INITIAL_MATRIX,MAT_REUSE_MATRIX,MAT_IGNORE_MATRIX} MatReuse;
 
 /*E
     MatGetSubMatrixOption - Indicates if matrices obtained from a call to MatGetSubMatrices()
