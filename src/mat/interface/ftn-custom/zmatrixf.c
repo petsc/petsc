@@ -182,11 +182,11 @@ void PETSC_STDCALL matfactorgetsolverpackage_(Mat *mat,CHAR name PETSC_MIXED_LEN
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 }
 
-void PETSC_STDCALL matgetfactor_(Mat *mat,CHAR outtype PETSC_MIXED_LEN(len),MatFactorType ftype,Mat *M,PetscErrorCode *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL matgetfactor_(Mat *mat,CHAR outtype PETSC_MIXED_LEN(len),MatFactorType *ftype,Mat *M,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(outtype,len,t);
-  *ierr = MatGetFactor(*mat,t,ftype,M);
+  *ierr = MatGetFactor(*mat,t,*ftype,M);
   FREECHAR(outtype,t);
 }
 
