@@ -704,7 +704,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGatherAll(Vec v,Vec s[],InsertMode ad
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   bs   = v->map->bs;
   if (bs < 0) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Input vector does not have a valid blocksize set");
-  if (n != n2*bs) SETERRQ2(PETSC_ERR_ARG_WRONG,"Block vector does not match split vectors: %d != %d", n, n2*bs);
+
   ierr = PetscMalloc2(bs,PetscReal*,&y,bs,PetscInt,&bss);CHKERRQ(ierr);
   nv   = 0;
   nvc  = 0;
@@ -809,7 +809,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScatterAll(Vec s[],Vec v,InsertMode a
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   bs   = v->map->bs;
   if (bs < 0) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Input vector does not have a valid blocksize set");
-  if (n != n2*bs) SETERRQ2(PETSC_ERR_ARG_WRONG,"Block vector does not match split vectors: %d != %d", n, n2*bs);
 
   ierr = PetscMalloc2(bs,PetscScalar**,&y,bs,PetscInt,&bss);CHKERRQ(ierr);
   nv  = 0;
