@@ -483,7 +483,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
         rtmp[ics[ajtmp[j]]] = v[j];
       }
       rtmp[ics[r[i]]] += sctx.shift_amount; /* shift the diagonal of the matrix */
-      if (sctx.shift_amount > 0.0) printf("row %d, shift %g\n",i,sctx.shift_amount);
+      /* if (sctx.shift_amount > 0.0) printf("row %d, shift %g\n",i,sctx.shift_amount); */
 
       row = *bjtmp++;
       while  (row < i) {
@@ -2061,7 +2061,6 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   PetscTruth         missing;
 
   PetscFunctionBegin;
-  printf("MatILUDTFactor_SeqAIJ is callled ...\n"); 
   /* ------- symbolic factorization, can be reused ---------*/
   ierr = MatMissingDiagonal(A,&missing,&i);CHKERRQ(ierr);
   if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",i);
@@ -2232,7 +2231,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
     *batmp = diag_tmp; /* rtmp[i]; */
     if (*batmp == 0.0) {
       *batmp = dt+shift;
-      printf(" row %d add shift %g\n",i,shift);
+      /* printf(" row %d add shift %g\n",i,shift); */
     }
     *batmp = 1.0/(*batmp); /* invert diagonal entries for simplier triangular solves */
     /* printf(" (%d,%g),",*bjtmp,*batmp); */
@@ -2293,7 +2292,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactorSymbolic_SeqAIJ(Mat fact,Mat A,I
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  printf("MatILUDTFactorSymbolic_SeqAIJ is called...\n"); 
   ierr = MatILUDTFactor_SeqAIJ(A,row,col,info,&fact);CHKERRQ(ierr);
 
   fact->ops->lufactornumeric = MatILUDTFactorNumeric_SeqAIJ;
@@ -2320,7 +2318,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactorNumeric_SeqAIJ(Mat fact,Mat A,co
   PetscTruth     row_identity, col_identity;
 
   PetscFunctionBegin;
-  printf("MatILUDTFactorNumeric_SeqAIJ is called...\n"); 
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = PetscMalloc((n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
