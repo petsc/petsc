@@ -3,7 +3,9 @@
 
 /* -------------------------------------------------------------------------- */
 
-#include <petsc.h>
+#include <petsc4py/petsc4py.h>
+
+/* -------------------------------------------------------------------------- */
 
 #if !defined(PETSC_USE_ERRORCHECKING)
 #undef  SETERRQ
@@ -23,8 +25,6 @@
 #undef  CHKERRQ
 #define CHKERRQ(n)                       if(n)return(n)
 #endif
-
-#include <petsc4py/petsc4py.h>
 
 #ifndef PETSC_ERR_PYTHON
 #define PETSC_ERR_PYTHON (-1)
