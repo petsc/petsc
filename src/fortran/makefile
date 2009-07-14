@@ -2,7 +2,7 @@
 
 ALL: lib
 
-DIRS     = f90 kernels
+DIRS     = kernels
 LOCDIR   = src/fortran/
 MANSEC   = Sys
 
