@@ -7,7 +7,6 @@
 
 
 #include "../src/mat/impls/aij/seq/aij.h"          /*I "petscmat.h" I*/
-#include "../src/inline/spops.h"
 #include "../src/inline/dot.h"
 #include "petscbt.h"
 
@@ -3085,7 +3084,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,cons
 EXTERN_C_END
 
 #include "../src/mat/impls/dense/seq/dense.h"
-#include "../src/inline/axpy.h"
+#include "private/petscaxpy.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMultNumeric_SeqDense_SeqAIJ"
@@ -3125,7 +3124,7 @@ PetscErrorCode MatMatMultNumeric_SeqDense_SeqAIJ(Mat A,Mat B,Mat C)
     while (q-->0) {
       c_q = c + m*(*idx);
       a_q = a + m*i;
-      APXY(c_q,*b,a_q,m);
+      PetscAXPY(c_q,*b,a_q,m);
       idx++;
       b++;
     }

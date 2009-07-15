@@ -273,16 +273,6 @@ EXTERN PetscErrorCode Kernel_A_gets_inverse_A_9(MatScalar *,PetscReal);
    code is used.
 */
 
-/* BGL kernels */
-#if defined(PETSC_USE_FORTRAN_KERNELS_BGL)
-#define msgemv  msgemv_bgl
-#define msgemvp msgemvp_bgl
-#define msgemvm msgemvm_bgl
-#define msgemvt msgemvt_bgl
-#define msgemmi msgemmi_bgl
-#define msgemm  msgemm_bgl
-#endif
-
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define msgemv_  MSGEMV
 #define msgemvp_ MSGEMVP

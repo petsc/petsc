@@ -1,0 +1,20 @@
+
+ALL: lib
+#requirespackage   'PETSC_USE_FORTRAN_KERNELS'
+
+CFLAGS   =
+FFLAGS   =
+SOURCEC  = 
+SOURCEF  = fcopy.F
+SOURCEH  = 
+OBJSC    = 
+OBJSF    = fcopy.o
+LIBBASE  = libpetsc
+MANSEC   = Sys
+LOCDIR   = src/sys/utils/ftn-kernels
+DIRS     = bgl
+
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test
+
+

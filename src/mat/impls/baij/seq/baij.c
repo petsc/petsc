@@ -5,7 +5,6 @@
   matrix storage format.
 */
 #include "../src/mat/impls/baij/seq/baij.h"
-#include "../src/inline/spops.h"
 #include "petscsys.h"                     /*I "petscmat.h" I*/
 
 #include "../src/inline/ilu.h"

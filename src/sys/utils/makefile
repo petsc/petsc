@@ -12,7 +12,7 @@ OBJSC	  = ${SOURCEC:.c=.o}
 OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetsc
-DIRS	  =
+DIRS	  = ftn-kernels
 LOCDIR	  = src/sys/utils/
 
 include ${PETSC_DIR}/conf/base

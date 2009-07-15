@@ -4,7 +4,7 @@
 */
 #include <Mesh.hh>
 #include "private/vecimpl.h" /*I  "petscvec.h"  I*/
-#include "../src/inline/axpy.h"
+#include "private/petscaxpy.h"
 #include "../src/inline/setval.h"
 #include "petscblaslapack.h"
 
@@ -182,7 +182,7 @@ PetscErrorCode VecMAXPY_Sieve(Vec x, PetscInt nv, const PetscScalar *alpha, Vec 
     alpha1 = alpha[1]; 
     alpha2 = alpha[2]; 
     alpha += 3;
-    APXY3(xx,alpha0,alpha1,alpha2,yy0,yy1,yy2,n);
+    PetscAXPY3(xx,alpha0,alpha1,alpha2,yy0,yy1,yy2,n);
     ierr = VecRestoreArray(y[0],&yy0);CHKERRQ(ierr);
     ierr = VecRestoreArray(y[1],&yy1);CHKERRQ(ierr);
     ierr = VecRestoreArray(y[2],&yy2);CHKERRQ(ierr);
@@ -194,7 +194,7 @@ PetscErrorCode VecMAXPY_Sieve(Vec x, PetscInt nv, const PetscScalar *alpha, Vec 
     alpha0 = alpha[0]; 
     alpha1 = alpha[1]; 
     alpha +=2;
-    APXY2(xx,alpha0,alpha1,yy0,yy1,n);
+    PetscAXPY2(xx,alpha0,alpha1,yy0,yy1,n);
     ierr = VecRestoreArray(y[0],&yy0);CHKERRQ(ierr);
     ierr = VecRestoreArray(y[1],&yy1);CHKERRQ(ierr);
     y     +=2;
@@ -202,7 +202,7 @@ PetscErrorCode VecMAXPY_Sieve(Vec x, PetscInt nv, const PetscScalar *alpha, Vec 
   case 1: 
     ierr = VecGetArray(y[0],&yy0);CHKERRQ(ierr);
     alpha0 = *alpha++; 
-    APXY(xx,alpha0,yy0,n);
+    PetscAXPY(xx,alpha0,yy0,n);
     ierr = VecRestoreArray(y[0],&yy0);CHKERRQ(ierr);
     y     +=1;
     break;
@@ -218,7 +218,7 @@ PetscErrorCode VecMAXPY_Sieve(Vec x, PetscInt nv, const PetscScalar *alpha, Vec 
     alpha3 = alpha[3];
     alpha  += 4;
 
-    APXY4(xx,alpha0,alpha1,alpha2,alpha3,yy0,yy1,yy2,yy3,n);
+    PetscAXPY4(xx,alpha0,alpha1,alpha2,alpha3,yy0,yy1,yy2,yy3,n);
     ierr = VecRestoreArray(y[0],&yy0);CHKERRQ(ierr);
     ierr = VecRestoreArray(y[1],&yy1);CHKERRQ(ierr);
     ierr = VecRestoreArray(y[2],&yy2);CHKERRQ(ierr);

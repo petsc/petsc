@@ -2,8 +2,6 @@
 
 #include "../src/mat/impls/aij/seq/aij.h"
 #include "../src/inline/dot.h"
-#define PETSC_USE_WHILE_KERNELS
-#include "../src/inline/spops.h"
 #include "petscbt.h"
 #include "../src/mat/utils/freespace.h"
 
