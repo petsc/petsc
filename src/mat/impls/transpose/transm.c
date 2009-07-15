@@ -108,7 +108,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateTranspose(Mat A,Mat *N)
 
   (*N)->ops->destroy          = MatDestroy_Transpose;
   (*N)->ops->mult             = MatMult_Transpose;
-  (*N)->ops->mult             = MatMult_Transpose;
+  (*N)->ops->multadd          = MatMultAdd_Transpose;
   (*N)->ops->multtranspose    = MatMultTranspose_Transpose; 
   (*N)->ops->multtransposeadd = MatMultTransposeAdd_Transpose; 
   (*N)->assembled             = PETSC_TRUE;
