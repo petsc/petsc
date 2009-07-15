@@ -6449,6 +6449,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrix(Mat mat,IS isrow,IS iscol,MatR
         break;
       default: SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid MatReuse, must be either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX");
     }
+    if (!iscol) {ierr = ISDestroy(iscoltmp);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
   }
 
