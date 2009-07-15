@@ -65,6 +65,7 @@ E*/
 #define MATSCHURCOMPLEMENT "schurcomplement"
 #define MATPYTHON          "python"
 #define MATHYPRESTRUCT     "hyprestruct"
+#define MATSUBMATRIX       "submatrix"
 
 /*E
     MatSolverPackage - String with the name of a PETSc matrix solver type. 
@@ -311,6 +312,8 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeSetType(Mat,MatCompositeTyp
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqFFTW(MPI_Comm,PetscInt,const PetscInt[],Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateTranspose(Mat,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSubMatrix(Mat,IS,IS,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSubMatrixUpdate(Mat,Mat,IS,IS);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreatePython(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const char[],Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetType(Mat,const char[]);
