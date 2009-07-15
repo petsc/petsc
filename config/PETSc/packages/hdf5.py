@@ -46,7 +46,7 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; make ; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on HDF5: '+str(e))
-      self.checkInstall(output,'hdf5')
+      self.postInstall(output,'hdf5')
     return self.installDir
 
   def configureLibrary(self):

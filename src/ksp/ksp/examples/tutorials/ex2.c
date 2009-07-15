@@ -193,6 +193,7 @@ int main(int argc,char **args)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  PetscSleep(15);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Check solution and clean up

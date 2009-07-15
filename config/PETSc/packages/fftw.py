@@ -67,7 +67,7 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; make; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on FFTW: '+str(e))
-      self.checkInstall(output,'fftw')
+      self.postInstall(output,'fftw')
     return self.installDir
 
   def configureLibrary(self):

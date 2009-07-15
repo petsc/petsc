@@ -99,7 +99,7 @@ class Configure(PETSc.package.Package):
         self.framework.log.write(output)
       except RuntimeError, e:
         raise RuntimeError('Error running make on ParMetis: '+str(e))
-      self.checkInstall(output,'makefile.petsc')
+      self.postInstall(output,'makefile.petsc')
 
 if __name__ == '__main__':
   import config.framework

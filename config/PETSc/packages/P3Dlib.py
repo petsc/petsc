@@ -36,7 +36,7 @@ class Configure(PETSc.package.Package):
       output  = config.base.Configure.executeShellCommand('mv -f '+os.path.join(self.packageDir,'src','libp3d.a')+' '+os.path.join(self.installDir,'lib'), timeout=5, log = self.framework.log)[0]
       output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir,'src','*.h')+' '+os.path.join(self.installDir,'include'), timeout=5, log = self.framework.log)[0]            
                           
-      self.checkInstall(output,os.path.join('src','makefile.inc'))
+      self.postInstall(output,os.path.join('src','makefile.inc'))
     return self.installDir
 
 if __name__ == '__main__':
