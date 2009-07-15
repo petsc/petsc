@@ -3,6 +3,11 @@ import config.base
 
 import os
 
+try:
+  from hashlib import md5 as new_md5
+except ImportError:
+  from md5 import new as new_md5
+
 class Package(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
@@ -164,12 +169,11 @@ class Package(config.base.Configure):
   def getChecksum(self,source, chunkSize = 1024*1024):  
     '''Return the md5 checksum for a given file, which may also be specified by its filename
        - The chunkSize argument specifies the size of blocks read from the file'''
-    import md5
     if isinstance(source, file):
       f = source
     else:
       f = file(source)
-    m = md5.new()
+    m = new_md5()
     size = chunkSize
     buf  = f.read(size)
     while buf:

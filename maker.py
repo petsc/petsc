@@ -1,6 +1,7 @@
 import script
 
 import os
+import cPickle
 
 class Make(script.Script):
   '''Template for individual project makefiles. All project makes start with a local RDict.'''
@@ -144,8 +145,6 @@ class Make(script.Script):
 
   def configure(self, builder):
     '''Run configure if necessary and return the configuration Framework'''
-    import cPickle
-
     if not self.setupConfigure(self.framework):
       return
     doConfigure = self.shouldConfigure(builder, self.framework)

@@ -3,6 +3,7 @@ import install.urlMapping
 
 import os
 import sys
+import cPickle
 
 class Builder(install.urlMapping.UrlMapping):
   def __init__(self, stamp = None):
@@ -25,7 +26,6 @@ class Builder(install.urlMapping.UrlMapping):
     data         = None
     if os.path.exists(dictFilename):
       try:
-        import cPickle
         dbFile = file(dictFilename)
         data   = cPickle.load(dbFile)
         self.debugPrint('Loaded argument database from '+dictFilename, 2, 'install')
