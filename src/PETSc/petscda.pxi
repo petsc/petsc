@@ -55,15 +55,14 @@ cdef extern from "petscda.h" nogil:
                           PetscInt*,PetscInt*,PetscInt*,
                           PetscInt*,PetscInt*,PetscInt*)
 
-    int DASetUniformCoordinates(PetscDA,
-                                PetscReal,PetscReal,
-                                PetscReal,PetscReal,
-                                PetscReal,PetscReal)
-    int DASetCoordinates(PetscDA,PetscVec)
-    int DAGetCoordinates(PetscDA,PetscVec*)
-    int DAGetGhostedCoordinates(PetscDA,PetscVec*)
-
-    int DAGetCoordinateDA(PetscDA,PetscDA*)
+    #int DASetUniformCoordinates(PetscDA,
+    #                            PetscReal,PetscReal,
+    #                            PetscReal,PetscReal,
+    #                            PetscReal,PetscReal)
+    #int DASetCoordinates(PetscDA,PetscVec)
+    #int DAGetCoordinates(PetscDA,PetscVec*)
+    #int DAGetGhostedCoordinates(PetscDA,PetscVec*)
+    #int DAGetCoordinateDA(PetscDA,PetscDA*)
 
     int DACreateGlobalVector(PetscDA,PetscVec*)
     int DACreateNaturalVector(PetscDA,PetscVec*)
@@ -91,3 +90,10 @@ cdef extern from "petscda.h" nogil:
     #int DASetFieldName(PetscDA,PetscInt,const_char[])
     #int DAGetFieldName(PetscDA,PetscInt,char**)
 
+
+cdef inline int DAGetDim(PetscDA da, PetscInt *dim) nogil:
+     return DAGetInfo(da, dim,
+                      NULL, NULL, NULL,
+                      NULL, NULL, NULL,
+                      NULL, NULL,
+                      NULL, NULL)

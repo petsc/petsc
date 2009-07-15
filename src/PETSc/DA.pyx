@@ -159,17 +159,31 @@ cdef class DA(Object):
                           NULL, NULL,
                           NULL, &stype) )
         return stype
+    #
+
+    def getRanges(self):
+        cdef PetscInt dim=0, x=0, y=0, z=0, m=0, n=0, p=0
+        CHKERR( DAGetDim(self.da, &dim) )
+        CHKERR( DAGetCorners(self.da,
+                             &x, &y, &z,
+                             &m, &n, &p) )
+        return ((x, x+m),
+                (y, y+n),
+                (z, z+p))[:dim]
+
+    def getGhostRanges(self):
+        cdef PetscInt dim=0, x=0, y=0, z=0, m=0, n=0, p=0
+        CHKERR( DAGetDim(self.da, &dim) )
+        CHKERR( DAGetGhostCorners(self.da,
+                                  &x, &y, &z,
+                                  &m, &n, &p) )
+        return ((x, x+m),
+                (y, y+n),
+                (z, z+p))[:dim]
 
     def getCorners(self):
-        cdef PetscInt dim = 0
-        CHKERR( DAGetInfo(self.da,
-                          &dim,
-                          NULL, NULL, NULL,
-                          NULL, NULL, NULL,
-                          NULL, NULL,
-                          NULL, NULL) )
-        cdef PetscInt x, y, z
-        cdef PetscInt m, n, p
+        cdef PetscInt dim=0, x=0, y=0, z=0, m=0, n=0, p=0
+        CHKERR( DAGetDim(self.da, &dim) )
         CHKERR( DAGetCorners(self.da,
                              &x, &y, &z,
                              &m, &n, &p) )
@@ -177,15 +191,8 @@ cdef class DA(Object):
                 (m, n, p)[:dim])
 
     def getGhostCorners(self):
-        cdef PetscInt dim = 0
-        CHKERR( DAGetInfo(self.da,
-                          &dim,
-                          NULL, NULL, NULL,
-                          NULL, NULL, NULL,
-                          NULL, NULL,
-                          NULL, NULL) )
-        cdef PetscInt x, y, z
-        cdef PetscInt m, n, p
+        cdef PetscInt dim=0, x=0, y=0, z=0, m=0, n=0, p=0
+        CHKERR( DAGetDim(self.da, &dim) )
         CHKERR( DAGetGhostCorners(self.da,
                                   &x, &y, &z,
                                   &m, &n, &p) )
@@ -232,6 +239,11 @@ cdef class DA(Object):
         CHKERR( DALocalToGlobalBegin(self.da, vl.vec, vg.vec) )
         CHKERR( DALocalToGlobalEnd  (self.da, vl.vec, vg.vec) )
 
+    def localToLocal(self, Vec vl not None, Vec vlg not None, addv=None):
+        cdef PetscInsertMode im = insertmode(addv)
+        CHKERR( DALocalToLocalBegin(self.da, vl.vec, im, vlg.vec) )
+        CHKERR( DALocalToLocalEnd  (self.da, vl.vec, im, vlg.vec) )
+
     def getMatrix(self, mat_type=None):
         cdef PetscMatType mtype = MATAIJ
         if mat_type is not None: mtype = str2cp(mat_type)
@@ -267,6 +279,8 @@ cdef class DA(Object):
         PetscIncref(<PetscObject>l2l.sct)
         return (l2g, g2l, l2l)
 
+    #
+
     property dim:
         def __get__(self):
             return self.getDim()
@@ -294,6 +308,16 @@ cdef class DA(Object):
     property stencil_type:
         def __get__(self):
             return self.getStencilType()
+
+    #
+
+    property ranges:
+        def __get__(self):
+            return self.getRanges()
+
+    property ghost_ranges:
+        def __get__(self):
+            return self.getGhostRanges()
 
     property corners:
         def __get__(self):

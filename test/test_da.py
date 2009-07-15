@@ -7,13 +7,17 @@ class BaseTestDA(object):
 
     COMM = PETSc.COMM_WORLD
     SIZES = None
-    STENCIL = PETSc.DA.StencilType.STAR
     PERIODIC = PETSc.DA.PeriodicType.NONE
+    STENCIL = PETSc.DA.StencilType.STAR
+    NDOF = 1
+    SWIDTH = 1
 
     def setUp(self):
         self.da = PETSc.DA().create(self.SIZES,
                                     periodic=self.PERIODIC,
                                     stencil=self.STENCIL,
+                                    ndof=self.NDOF,
+                                    width=self.SWIDTH,
                                     comm=self.COMM)
 
     def tearDown(self):
@@ -28,14 +32,36 @@ class BaseTestDA(object):
         periodic_type = self.da.getPeriodicType()
         ndof = self.da.getNDof()
         width = self.da.getWidth()
-        corners = self.da.getCorners()
-        ghostcorners = self.da.getGhostCorners()
         self.assertEqual(dim, len(self.SIZES))
         self.assertEqual(sizes, tuple(self.SIZES))
-        self.assertEqual(stencil_type, self.STENCIL)
         self.assertEqual(periodic_type, self.PERIODIC)
-        self.assertEqual(ndof, 1)
-        self.assertEqual(width, 1)
+        self.assertEqual(stencil_type, self.STENCIL)
+        self.assertEqual(ndof, self.NDOF)
+        self.assertEqual(width, self.SWIDTH)
+
+    def testRangesCorners(self):
+        dim = self.da.getDim()
+        ranges = self.da.getRanges()
+        starts, lsizes  = self.da.getCorners()
+        self.assertEqual(dim, len(ranges))
+        self.assertEqual(dim, len(starts))
+        self.assertEqual(dim, len(lsizes))
+        for i in range(dim):
+            s, e = ranges[i]
+            self.assertEqual(s, starts[i])
+            self.assertEqual(e-s, lsizes[i])
+
+    def testGhostRangesCorners(self):
+        dim = self.da.getDim()
+        ranges = self.da.getGhostRanges()
+        starts, lsizes  = self.da.getGhostCorners()
+        self.assertEqual(dim, len(ranges))
+        self.assertEqual(dim, len(starts))
+        self.assertEqual(dim, len(lsizes))
+        for i in range(dim):
+            s, e = ranges[i]
+            self.assertEqual(s, starts[i])
+            self.assertEqual(e-s, lsizes[i])
 
     def testGetVector(self):
         vn = self.da.createNaturalVector()
@@ -69,12 +95,38 @@ class BaseTestDA_3D(BaseTestDA):
 
 class TestDA_1D(BaseTestDA_1D, unittest.TestCase):
     pass
+class TestDA_1D_W0(TestDA_1D):
+    SWIDTH = 0
+class TestDA_1D_W2(TestDA_1D):
+    SWIDTH = 2
 
 class TestDA_2D(BaseTestDA_2D, unittest.TestCase):
     pass
+class TestDA_2D_W0(TestDA_2D):
+    SWIDTH = 0
+class TestDA_2D_W0_N2(TestDA_2D):
+    SWIDTH = 0
+    NDOF = 2
+class TestDA_2D_W2(TestDA_2D):
+    SWIDTH = 2
+class TestDA_2D_W2_N2(TestDA_2D):
+    SWIDTH = 2
+    NDOF = 2
 
 class TestDA_3D(BaseTestDA_3D, unittest.TestCase):
     pass
+class TestDA_3D_W0(TestDA_3D):
+    SWIDTH = 0
+class TestDA_3D_W0_N2(TestDA_3D):
+    SWIDTH = 0
+    NDOF = 2
+
+# The two below fails in 5 procs ...
+## class TestDA_3D_W2(TestDA_3D):
+##     SWIDTH = 2
+## class TestDA_3D_W2_N2(TestDA_3D):
+##     NDOF = 2
+##     SWIDTH = 2
 
 # --------------------------------------------------------------------
 
