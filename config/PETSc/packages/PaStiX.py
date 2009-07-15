@@ -227,7 +227,7 @@ class Configure(PETSc.package.Package):
         output = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; cp -f install/*.a '+libDir+'/.; cp -f install/*.h '+includeDir+'/.;', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on PaStiX: '+str(e))
-      self.checkInstall(output,os.path.join('src','config.in'))
+      self.postInstall(output,os.path.join('src','config.in'))
     return self.installDir
 
 if __name__ == '__main__':

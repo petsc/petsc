@@ -78,7 +78,7 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+os.path.join(self.packageDir,'SRC','MPI')+';make clean; make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on BLACS: '+str(e))
-      self.checkInstall(output,'Bmake.Inc')
+      self.postInstall(output,'Bmake.Inc')
     return self.installDir
 
   def checkLib(self,lib,func,mangle,otherLibs = []):

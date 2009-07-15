@@ -69,7 +69,7 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Error running make on SUGGAR: '+str(e))
       output  = config.base.Configure.executeShellCommand('mv -f '+os.path.join(self.packageDir,'bin','libsuggar_3d_opt_petsc.a')+' '+os.path.join(self.installDir,'lib'), timeout=5, log = self.framework.log)[0]      
                           
-      self.checkInstall(output,os.path.join('src','FLAGS.local'))
+      self.postInstall(output,os.path.join('src','FLAGS.local'))
     return self.installDir
 
 if __name__ == '__main__':

@@ -258,6 +258,6 @@ tetgen_shared:
       except RuntimeError, e:
         raise RuntimeError('Error running make on TetGen: '+str(e))
       output2  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'tetgen.h')+' '+includeDir, timeout=5, log = self.framework.log)[0]
-      self.checkInstall(output1+output2,'make.inc')
+      self.postInstall(output1+output2,'make.inc')
 
     return self.installDir
