@@ -4,7 +4,10 @@ import config.package
 import os
 import re
 import sys
-import md5
+try:
+  from hashlib import md5 as new_md5
+except ImportError:
+  from md5 import new as new_md5
 
 import nargs
 
@@ -88,7 +91,7 @@ class Package(config.base.Configure):
       f = source
     else:
       f = file(source)
-    m = md5.new()
+    m = new_md5()
     size = chunkSize
     buf  = f.read(size)
     while buf:
