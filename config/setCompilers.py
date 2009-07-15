@@ -309,7 +309,7 @@ class Configure(config.base.Configure):
     if not self.framework.argDB['with-batch']:
       if not self.checkRun():
         self.popLanguage()
-        raise OSError('Cannot run executables created with '+language+'. It is possible that you will need to configure using --with-batch which allows configuration without interactive sessions.')
+        raise OSError('Cannot run executables created with '+language+'. If this machine uses a batch system \nto submit jobs you will need to configure using/configure.py with the additional option  --with-batch.\n Otherwise there is problem with the compilers. Can you compile and run code with your C/C++ (and maybe Fortran) compilers?\n')
     self.popLanguage()
     return
 
@@ -789,7 +789,7 @@ class Configure(config.base.Configure):
     # Lahaye F95
     if output.find('Invalid suboption') >= 0:
       valid = 0
-    if output.find('unrecognized command line option') >= 0 or output.find('unrecognized option') >= 0 or output.find('unrecognised option') >= 0 or output.find('unknown flag') >= 0 or output.find('unknown option') >= 0 or output.find('ignoring option') >= 0 or output.find('not recognized') >= 0 or output.find('not recognised') >= 0 or output.find('ignored') >= 0 or output.find('illegal option') >= 0  or output.find('linker input file unused because linking not done') >= 0 or output.find('Unknown switch') >= 0 or output.find('PETSc Error') >= 0 or output.find('Unbekannte Option') >= 0:
+    if output.find('unrecognized command line option') >= 0 or output.find('unrecognized option') >= 0 or output.find('unrecognised option') >= 0 or output.find('unknown flag') >= 0 or output.find('unknown option') >= 0 or output.find('ignoring option') >= 0 or output.find('not recognized') >= 0 or output.find('not recognised') >= 0 or output.find('ignored') >= 0 or output.find('illegal option') >= 0  or output.find('linker input file unused because linking not done') >= 0 or output.find('Unknown switch') >= 0 or output.find('PETSc Error') >= 0 or output.find('Unbekannte Option') >= 0 or output.find('no se reconoce la opci') >= 0:
       valid = 0
       self.framework.logPrint('Rejecting compiler flag '+flag+' due to \n'+output)
     setattr(self, flagsArg, oldFlags)
@@ -865,6 +865,10 @@ class Configure(config.base.Configure):
         flag = '-a'
       elif 'tlib' in args:
         flag = '-a -P512'
+    if prog.endswith('ar'):
+      self.framework.addMakeMacro('FAST_AR_FLAGS', 'Scq')
+    else:
+      self.framework.addMakeMacro('FAST_AR_FLAGS', flag)
     return flag
   
   def generateArchiverGuesses(self):
@@ -1074,7 +1078,7 @@ class Configure(config.base.Configure):
     if status:
       valid = 0
       self.framework.logPrint('Rejecting linker flag '+flag+' due to nonzero status from link')
-    if output.find('Unrecognised command line option') >= 0 or  output.find('Unrecognized command line option') >= 0 or output.find('unrecognized option') >= 0 or output.find('unrecognised option') >= 0 or output.find('unknown flag') >= 0 or (output.find('bad ') >= 0 and output.find(' option') >= 0) or output.find('linker input file unused because linking not done') >= 0 or output.find('flag is ignored') >= 0 or output.find('Invalid option') >= 0 or output.find('unknown option') >= 0 or output.find('ignoring option') >= 0:
+    if output.find('Unrecognised command line option') >= 0 or  output.find('Unrecognized command line option') >= 0 or output.find('unrecognized option') >= 0 or output.find('unrecognised option') >= 0 or output.find('unknown flag') >= 0 or (output.find('bad ') >= 0 and output.find(' option') >= 0) or output.find('linker input file unused because linking not done') >= 0 or output.find('flag is ignored') >= 0 or output.find('Invalid option') >= 0 or output.find('unknown option') >= 0 or output.find('ignoring option') >= 0 or output.find('non reconnue') >= 0:
       valid = 0
       self.framework.logPrint('Rejecting '+self.language[-1]+' linker flag '+flag+' due to \n'+output)
     else:

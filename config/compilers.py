@@ -36,7 +36,6 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
 
-    help.addArgument('Compilers', '-with-f90-interface=<type>', nargs.Arg(None, 'f90src', 'Specify  compiler type for eg: f90src,nof90src,intel8,solaris,rs6000,IRIX,win32,absoft,t3e,alpha,cray_x1,hpux,lahey'))
     help.addArgument('Compilers', '-with-clib-autodetect',           nargs.ArgBool(None, 1, 'Autodetect C compiler libraries'))
     help.addArgument('Compilers', '-with-fortranlib-autodetect',     nargs.ArgBool(None, 1, 'Autodetect Fortran compiler libraries'))
     help.addArgument('Compilers', '-with-cxxlib-autodetect',         nargs.ArgBool(None, 1, 'Autodetect C++ compiler libraries'))
@@ -662,6 +661,14 @@ class Configure(config.base.Configure):
       self.logPrint('Adding -lpgftnrtl before -lpgf90rtl in library list')
       output = output.replace(' -lpgf90rtl -lpgftnrtl',' -lpgftnrtl -lpgf90rtl -lpgftnrtl')
 
+    # PGI: kill anything enclosed in single quotes
+    if output.find('\'') >= 0:
+      if output.count('\'')%2: raise RuntimeError('Mismatched single quotes in Fortran library string')
+      while output.find('\'') >= 0:
+        start = output.index('\'')
+        end   = output.index('\'', start+1)+1
+        output = output.replace(output[start:end], '')
+
     # The easiest thing to do for xlf output is to replace all the commas
     # with spaces.  Try to only do that if the output is really from xlf,
     # since doing that causes problems on other systems.
@@ -678,7 +685,7 @@ class Configure(config.base.Configure):
         ldRunPath = ['-R '+ldRunPath]
     else:
       ldRunPath = []
-      
+
     # Parse output
     argIter = iter(output.split())
     fincs   = []
@@ -966,91 +973,6 @@ class Configure(config.base.Configure):
     self.popLanguage()
     return
 
-  def stripquotes(self,str):
-    if str[0] =='"': str = str[1:]
-    if str[-1] =='"': str = str[:-1]
-    return str
-
-  def getFortran90SourceGuesses(self):
-    f90Guess = None
-    if config.setCompilers.Configure.isG95(self.setCompilers.FC):
-      f90Guess = 'g95'
-    elif config.setCompilers.Configure.isIntel(self.setCompilers.FC):
-      f90Guess = 'intel8'
-    elif config.setCompilers.Configure.isCompaqF90(self.setCompilers.FC):
-      f90Guess = 'win32'
-    elif config.setCompilers.Configure.isNAG(self.setCompilers.FC):
-      f90Guess = 'nag'
-    elif config.setCompilers.Configure.isNAG(self.setCompilers.FC):
-      f90Guess = 'cray_x1'
-    elif config.setCompilers.Configure.isSun(self.setCompilers.FC):
-      f90Guess = 'solaris'
-    elif self.setCompilers.vendor:
-      if self.setCompilers.vendor == 'absoft':
-        f90Guess = 'absoft'
-      elif self.setCompilers.vendor == 'cray':
-        f90Guess = 't3e'
-        #f90Guess = 'cray_x1'
-      elif self.setCompilers.vendor == 'dec':
-        f90Guess = 'alpha'
-      elif self.setCompilers.vendor == 'hp':
-        f90Guess = 'hpux'
-      elif self.setCompilers.vendor == 'ibm':
-        f90Guess = 'rs6000'
-      elif self.setCompilers.vendor == 'intel':
-        #headerGuess = 'f90_intel.h'
-        f90Guess = 'intel8'
-      elif self.setCompilers.vendor == 'nag':
-        f90Guess = 'nag'
-      elif self.setCompilers.vendor == 'lahaye':
-        f90Guess = 'lahaye'        
-##    This interface is not finished
-##      elif self.setCompilers.vendor == 'portland':
-##        f90Guess = 'pgi'
-      elif self.setCompilers.vendor == 'sgi':
-        f90Guess = 'IRIX'
-      elif self.setCompilers.vendor == 'solaris':
-        f90Guess = 'solaris'
-    return f90Guess
-
-  def checkFortran90Interface(self):
-    '''Check for custom F90 interfaces, such as that provided by PETSc'''
-    if not self.fortranIsF90:
-      self.logPrint('Not a Fortran90 compiler - hence skipping f90-interface test')
-      return
-
-    # if user specified nof90src, then guess the compilerand set the correct c-f90 variant
-    if self.stripquotes(self.framework.argDB['with-f90-interface']) == 'nof90src':
-      self.f90Guess = self.getFortran90SourceGuesses()
-      if not self.f90Guess:
-        raise RuntimeError('Could not autodetect f90interface for this compiler [with option -with-f90-interface=nof90src].\nRecommend using the default option: -with-f90-interface=f90src')
-      self.logPrint('Using f90 interface guess: '+self.f90Guess)
-    elif self.framework.argDB['with-f90-interface'] != 'f90src':
-      self.f90Guess = self.stripquotes(self.framework.argDB['with-f90-interface'])            
-    else:
-      self.addDefine('USE_F90_SRC_IMPL',1)
-      return
-
-    headerPath = os.path.join('src', 'sys','f90', 'f90_'+self.f90Guess+'.h')
-    sourcePath = os.path.join('src', 'sys','f90','f90_'+self.f90Guess+'.c')
-
-    if os.path.isfile(headerPath):
-      self.f90HeaderPath = headerPath
-    else:
-      self.logPrint('Invalid F90 header: '+str(headerPath), 2, 'compilers')
-      
-    if os.path.isfile(sourcePath):
-      self.f90SourcePath = sourcePath
-    else:
-      self.logPrint('Invalid F90 source: '+str(sourcePath), 2, 'compilers')
-      
-    if hasattr(self, 'f90HeaderPath') and hasattr(self, 'f90SourcePath'):
-      self.addDefine('HAVE_F90_H', '"'+os.path.join('..',self.f90HeaderPath)+'"')
-      self.addDefine('HAVE_F90_C', '"'+os.path.join('..',self.f90SourcePath)+'"')
-    else:
-      raise RuntimeError('Perhaps incorrect with-f90-interface specified. Could not confiure f90 interface for : '+self.f90Guess)      
-    return
-
   def checkFortran90Array(self):
     '''Check for F90 array interfaces'''
     if not self.fortranIsF90:
@@ -1169,7 +1091,6 @@ class Configure(config.base.Configure):
       if hasattr(self.setCompilers, 'CXX'):
         self.executeTest(self.checkFortranLinkingCxx)
       self.executeTest(self.checkFortran90)
-      self.executeTest(self.checkFortran90Interface)
       self.executeTest(self.checkFortran90Array)
     self.no_configure()
     return

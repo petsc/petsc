@@ -184,7 +184,7 @@ class Configure(script.Script):
     if isinstance(names, str):
       names = [names]
     if isinstance(path, str):
-      path = path.split(':')
+      path = path.split(os.path.pathsep)
     if not len(path):
       useDefaultPath = 1
 
@@ -213,7 +213,7 @@ class Configure(script.Script):
           break
       if found: break
     if useDefaultPath and not found:
-      for d in os.environ['PATH'].split(':'):
+      for d in os.environ['PATH'].split(os.path.pathsep):
         for name in names:
           name, options, varName = getNames(name, resultName)
           if self.checkExecutable(d, name):

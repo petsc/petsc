@@ -443,7 +443,7 @@ class ArgExecutable(Arg):
         options = ''
       found = self.checkExecutable('', value)
       if not found:
-        for dir in os.environ['PATH'].split(':'):
+        for dir in os.environ['PATH'].split(os.path.pathsep):
           if self.checkExecutable(dir, value):
             found = 1
             break
