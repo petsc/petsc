@@ -4,11 +4,10 @@
   sequential and parallel vectors.
 */
 #include "../src/vec/vec/impls/dvecimpl.h"   
-#include "../src/inline/dot.h"
-#include "../src/inline/setval.h"
 #include "private/petscaxpy.h"
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MDOT)
+#include "../src/vec/vec/impls/seq/ftn-kernels/fmdot.h"
 #undef __FUNCT__  
 #define __FUNCT__ "VecMDot_Seq"
 PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
@@ -561,14 +560,14 @@ PetscErrorCode VecSet_Seq(Vec xin,PetscScalar alpha)
 {
   Vec_Seq        *x = (Vec_Seq *)xin->data;
   PetscErrorCode ierr;
-  PetscInt       n = xin->map->n;
+  PetscInt       i,n = xin->map->n;
   PetscScalar    *xx = x->array;
 
   PetscFunctionBegin;
   if (alpha == 0.0) {
     ierr = PetscMemzero(xx,n*sizeof(PetscScalar));CHKERRQ(ierr);
   } else {
-    SET(xx,n,alpha);
+    for (i=0; i<n; i++) xx[i] = alpha;
   }
   PetscFunctionReturn(0);
 }
@@ -661,6 +660,7 @@ PetscErrorCode VecMAXPY_Seq(Vec xin, PetscInt nv,const PetscScalar *alpha,Vec *y
   PetscFunctionReturn(0);
 } 
 
+#include "../src/vec/vec/impls/seq/ftn-kernels/faypx.h"
 #undef __FUNCT__  
 #define __FUNCT__ "VecAYPX_Seq"
 PetscErrorCode VecAYPX_Seq(Vec yin,PetscScalar alpha,Vec xin)
@@ -697,6 +697,7 @@ PetscErrorCode VecAYPX_Seq(Vec yin,PetscScalar alpha,Vec xin)
   PetscFunctionReturn(0);
 }
 
+#include "../src/vec/vec/impls/seq/ftn-kernels/fwaxpy.h"
 /*
    IBM ESSL contains a routine dzaxpy() that is our WAXPY() but it appears
   to be slower than a regular C loop.  Hence,we do not include it.

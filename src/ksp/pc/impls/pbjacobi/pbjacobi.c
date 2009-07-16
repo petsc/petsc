@@ -20,7 +20,7 @@ typedef struct {
   data structures.
 */
 #include "../src/mat/impls/baij/mpi/mpibaij.h"
-#include "../src/inline/ilu.h"
+#include "../src/mat/blockinvert.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_PBJacobi_2"

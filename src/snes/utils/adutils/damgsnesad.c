@@ -3,7 +3,7 @@
 #include "petscda.h"      /*I      "petscda.h"    I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
 #include "petscdmmg.h"    /*I      "petscdmmg.h"  I*/
-#include "../src/inline/ilu.h"
+#include "../src/mat/blockinvert.h"
 #include "../src/snes/impls/ls/ls.h"
 
 EXTERN_C_BEGIN

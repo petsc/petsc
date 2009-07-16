@@ -12,7 +12,6 @@
        Used by the sparse factorization routines in 
      src/mat/impls/baij/seq
 
-       See also src/inline/ilu.h
 */
 
 #include "petsc.h"

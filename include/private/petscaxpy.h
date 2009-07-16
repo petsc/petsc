@@ -14,47 +14,10 @@
 #ifndef PetscAXPY
 
 #include "petscblaslapack.h"
+#include "../src/vec/vec/impls/seq/ftn-kernels/fmaxpy.h"
 
-#if defined(PETSC_USE_FORTRAN_KERNEL_AYPX)
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define fortranaypx_ FORTRANAYPX
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define fortranaypx_ fortranaypx
-#endif
-EXTERN_C_BEGIN
-extern void fortranaypx_(PetscInt*,const PetscScalar*,const PetscScalar*,PetscScalar*); 
-EXTERN_C_END
-#endif
-
-#if defined(PETSC_USE_FORTRAN_KERNEL_WAXPY)
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define fortranwaxpy_ FORTRANWAXPY
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define fortranwaxpy_ fortranwaxpy
-#endif
-EXTERN_C_BEGIN
-extern void fortranwaxpy_(PetscInt*,const PetscScalar*,const PetscScalar*,const PetscScalar*,PetscScalar*); 
-EXTERN_C_END
-#endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MAXPY)
-
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define fortranmaxpy4_ FORTRANMAXPY4
-#define fortranmaxpy3_ FORTRANMAXPY3
-#define fortranmaxpy2_ FORTRANMAXPY2
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define fortranmaxpy4_ fortranmaxpy4
-#define fortranmaxpy3_ fortranmaxpy3
-#define fortranmaxpy2_ fortranmaxpy2
-#endif
-
-EXTERN_C_BEGIN
-EXTERN void fortranmaxpy4_(void*,void*,void*,void*,void*,void*,void*,void*,void*,PetscInt*);
-EXTERN void fortranmaxpy3_(void*,void*,void*,void*,void*,void*,void*,PetscInt*);
-EXTERN void fortranmaxpy2_(void*,void*,void*,void*,void*,PetscInt*);
-EXTERN_C_END
-
 #define PetscAXPY(U,a1,p1,n)  {PetscBLASInt one=1; PetscBLASInt nn = (PetscBLASInt) n; \
   BLASaxpy_(&nn,&a1,p1,&one,U,&one);}
 #define PetscAXPY2(U,a1,a2,p1,p2,n) { \

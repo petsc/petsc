@@ -2,7 +2,7 @@
 
 #include "../src/mat/impls/baij/seq/baij.h" 
 #include "../src/mat/impls/sbaij/seq/sbaij.h"
-#include "../src/inline/ilu.h"
+#include "../src/mat/blockinvert.h"
 #include "petscis.h"
 
 #if !defined(PETSC_USE_COMPLEX)

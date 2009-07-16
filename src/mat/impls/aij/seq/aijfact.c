@@ -1,7 +1,6 @@
 #define PETSCMAT_DLL
 
 #include "../src/mat/impls/aij/seq/aij.h"
-#include "../src/inline/dot.h"
 #include "petscbt.h"
 #include "../src/mat/utils/freespace.h"
 

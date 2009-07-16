@@ -5,7 +5,6 @@
 #include <Mesh.hh>
 #include "private/vecimpl.h" /*I  "petscvec.h"  I*/
 #include "private/petscaxpy.h"
-#include "../src/inline/setval.h"
 #include "petscblaslapack.h"
 
 #undef __FUNCT__  
@@ -13,7 +12,7 @@
 PetscErrorCode VecSet_Sieve(Vec v, PetscScalar alpha)
 {
   ALE::Mesh::field_type *field = (ALE::Mesh::field_type *) v->data;
-  PetscInt               n     = v->map->n;
+  PetscInt               i,n     = v->map->n;
   PetscScalar           *xx    = (PetscScalar *) field->restrict(*field->getPatches()->begin());
   PetscErrorCode         ierr;
 
@@ -21,7 +20,7 @@ PetscErrorCode VecSet_Sieve(Vec v, PetscScalar alpha)
   if (alpha == 0.0) {
     ierr = PetscMemzero(xx, n*sizeof(PetscScalar));CHKERRQ(ierr);
   } else {
-    SET(xx, n, alpha);
+    for (i=0; i<n; i++) xx[i] = alpha;
   }
   PetscFunctionReturn(0);
 }
@@ -84,7 +83,7 @@ PetscErrorCode VecAXPY_Sieve(Vec y, PetscScalar alpha, Vec x)
   }
   PetscFunctionReturn(0);
 }
-
+#include "../src/vec/vec/impls/seq/ftn-kernels/faypx.h"
 #undef __FUNCT__  
 #define __FUNCT__ "VecAYPX_Sieve"
 PetscErrorCode VecAYPX_Sieve(Vec y, PetscScalar alpha, Vec x)
@@ -228,6 +227,7 @@ PetscErrorCode VecMAXPY_Sieve(Vec x, PetscInt nv, const PetscScalar *alpha, Vec 
   PetscFunctionReturn(0);
 } 
 
+#include "../src/vec/vec/impls/seq/ftn-kernels/fwaxpy.h"
 #undef __FUNCT__  
 #define __FUNCT__ "VecWAXPY_Sieve"
 PetscErrorCode VecWAXPY_Sieve(Vec w, PetscScalar alpha, Vec x, Vec y)

@@ -7,7 +7,7 @@
 #include "../src/mat/impls/baij/seq/baij.h"
 #include "petscsys.h"                     /*I "petscmat.h" I*/
 
-#include "../src/inline/ilu.h"
+#include "../src/mat/blockinvert.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqBAIJInvertBlockDiagonal"

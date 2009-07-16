@@ -1,7 +1,7 @@
 #define PETSCMAT_DLL
 
 #include "../src/mat/impls/baij/seq/baij.h"
-#include "../src/inline/ilu.h"
+#include "../src/mat/blockinvert.h"
 #include "petscbt.h"
 
 #undef __FUNCT__  
