@@ -475,6 +475,12 @@ runex19_12: #test pc_redundant
 	   if (${DIFF} output/ex19_12.out ex19_12.tmp) then true; \
 	   else echo "Possible problem with ex19_12, diffs above"; fi; \
 	   ${RM} -f ex19_12.tmp
+runex19_13: #test pc_fieldsplit with -snes_mf_operator
+	-@${MPIEXEC} -n 3 ./ex19 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_type multiplicative -snes_view  -preload off -snes_mf_operator > ex19_13.tmp 2>&1; \
+	   if (${DIFF} output/ex19_13.out ex19_13.tmp) then true; \
+	   else echo "Possible problem with ex19_13, diffs above"; fi; \
+	   ${RM} -f ex19_13.tmp
+
 
 testex19: ex19.PETSc
 	-@if [ "${PETSC_WITH_BATCH}" != "" ]; then \

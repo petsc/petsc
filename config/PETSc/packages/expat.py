@@ -50,7 +50,7 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on expat libraries: '+str(e))
-      self.checkInstall(output,'expat')
+      self.postInstall(output,'expat')
     return self.installDir
 
 

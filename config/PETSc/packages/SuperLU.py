@@ -69,7 +69,7 @@ class Configure(PETSc.package.Package):
         output = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; SUPERLU_INSTALL_DIR='+self.installDir+'/lib; export SUPERLU_INSTALL_DIR; make clean; make lib LAAUX="" SLASRC="" DLASRC="" CLASRC="" ZLASRC="" SCLAUX="" DZLAUX=""; mv -f SRC/*.a '+os.path.join(self.installDir,'lib')+';  cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU: '+str(e))
-      self.checkInstall(output,'make.inc')
+      self.postInstall(output,'make.inc')
     return self.installDir
 
   def configureLibrary(self):

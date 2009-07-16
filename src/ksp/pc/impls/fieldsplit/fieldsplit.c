@@ -19,7 +19,7 @@ struct _PC_FieldSplitLink {
 };
 
 typedef struct {
-  PCCompositeType   type;              
+  PCCompositeType   type;
   PetscTruth        defaultsplit; /* Flag for a system with a set of 'k' scalar fields with the same layout (and bs = k) */
   PetscTruth        realdiagonal; /* Flag to use the diagonal blocks of mat preconditioned by pmat, instead of just pmat */
   PetscInt          bs;           /* Block size for IS and Mat structures */
@@ -236,7 +236,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
   PC_FieldSplitLink ilink;
   PetscInt          i,nsplit,ccsize;
   MatStructure      flag = pc->flag;
-  PetscTruth        sorted,getsub;
+  PetscTruth        sorted;
 
   PetscFunctionBegin;
   ierr   = PCFieldSplitSetDefaults(pc);CHKERRQ(ierr);
@@ -309,22 +309,19 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     jac->mat = jac->pmat;
   }
 
-  if (jac->type != PC_COMPOSITE_SCHUR) {
+  if (jac->type != PC_COMPOSITE_ADDITIVE  && jac->type != PC_COMPOSITE_SCHUR) {
     /* extract the rows of the matrix associated with each field: used for efficient computation of residual inside algorithm */
-    ierr = MatHasOperation(pc->mat,MATOP_GET_SUBMATRIX,&getsub);CHKERRQ(ierr);
-    if (getsub && jac->type != PC_COMPOSITE_ADDITIVE  && jac->type != PC_COMPOSITE_SCHUR) {
-      ilink  = jac->head;
-      if (!jac->Afield) {
-        ierr = PetscMalloc(nsplit*sizeof(Mat),&jac->Afield);CHKERRQ(ierr);
-        for (i=0; i<nsplit; i++) {
-          ierr = MatGetSubMatrix(pc->mat,ilink->is,PETSC_NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
-          ilink = ilink->next;
-        }
-      } else {
-        for (i=0; i<nsplit; i++) {
-          ierr = MatGetSubMatrix(pc->mat,ilink->is,PETSC_NULL,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
-          ilink = ilink->next;
-        }
+    ilink  = jac->head;
+    if (!jac->Afield) {
+      ierr = PetscMalloc(nsplit*sizeof(Mat),&jac->Afield);CHKERRQ(ierr);
+      for (i=0; i<nsplit; i++) {
+        ierr = MatGetSubMatrix(pc->mat,ilink->is,PETSC_NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+        ilink = ilink->next;
+      }
+    } else {
+      for (i=0; i<nsplit; i++) {
+        ierr = MatGetSubMatrix(pc->mat,ilink->is,PETSC_NULL,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+        ilink = ilink->next;
       }
     }
   }
@@ -518,40 +515,27 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
     cnt = 1;
     while (ilink->next) {
       ilink = ilink->next;
-      if (jac->Afield) {
+      /* compute the residual only over the part of the vector needed */
+      ierr = MatMult(jac->Afield[cnt++],y,ilink->x);CHKERRQ(ierr);
+      ierr = VecScale(ilink->x,-1.0);CHKERRQ(ierr);
+      ierr = VecScatterBegin(ilink->sctx,x,ilink->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(ilink->sctx,x,ilink->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = KSPSolve(ilink->ksp,ilink->x,ilink->y);CHKERRQ(ierr);
+      ierr = VecScatterBegin(ilink->sctx,ilink->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(ilink->sctx,ilink->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    }
+    if (jac->type == PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE) {
+      cnt -= 2;
+      while (ilink->previous) {
+        ilink = ilink->previous;
         /* compute the residual only over the part of the vector needed */
-        ierr = MatMult(jac->Afield[cnt++],y,ilink->x);CHKERRQ(ierr);
+        ierr = MatMult(jac->Afield[cnt--],y,ilink->x);CHKERRQ(ierr);
         ierr = VecScale(ilink->x,-1.0);CHKERRQ(ierr);
         ierr = VecScatterBegin(ilink->sctx,x,ilink->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
         ierr = VecScatterEnd(ilink->sctx,x,ilink->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
         ierr = KSPSolve(ilink->ksp,ilink->x,ilink->y);CHKERRQ(ierr);
         ierr = VecScatterBegin(ilink->sctx,ilink->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
         ierr = VecScatterEnd(ilink->sctx,ilink->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      } else {
-        /* compute the residual over the entire vector */
-	ierr = MatMult(pc->mat,y,jac->w1);CHKERRQ(ierr);
-	ierr = VecWAXPY(jac->w2,-1.0,jac->w1,x);CHKERRQ(ierr);
-	ierr = FieldSplitSplitSolveAdd(ilink,jac->w2,y);CHKERRQ(ierr);
-      }
-    }
-    if (jac->type == PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE) {
-      cnt -= 2;
-      while (ilink->previous) {
-        ilink = ilink->previous;
-        if (jac->Afield) {
-	  /* compute the residual only over the part of the vector needed */
-	  ierr = MatMult(jac->Afield[cnt--],y,ilink->x);CHKERRQ(ierr);
-	  ierr = VecScale(ilink->x,-1.0);CHKERRQ(ierr);
-	  ierr = VecScatterBegin(ilink->sctx,x,ilink->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-	  ierr = VecScatterEnd(ilink->sctx,x,ilink->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-	  ierr = KSPSolve(ilink->ksp,ilink->x,ilink->y);CHKERRQ(ierr);
-	  ierr = VecScatterBegin(ilink->sctx,ilink->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-	  ierr = VecScatterEnd(ilink->sctx,ilink->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-        } else {
-	  ierr  = MatMult(pc->mat,y,jac->w1);CHKERRQ(ierr);
-	  ierr  = VecWAXPY(jac->w2,-1.0,jac->w1,x);CHKERRQ(ierr);
-	  ierr  = FieldSplitSplitSolveAdd(ilink,jac->w2,y);CHKERRQ(ierr);
-        }
       }
     }
   } else SETERRQ1(PETSC_ERR_SUP,"Unsupported or unknown composition",(int) jac->type);

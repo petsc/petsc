@@ -48,7 +48,7 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/libspai.a', timeout=250, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on SPAI libraries: '+str(e))
-      self.checkInstall(output,'Makefile.in')
+      self.postInstall(output,'Makefile.in')
     return self.installDir
 
 

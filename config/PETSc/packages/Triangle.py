@@ -145,7 +145,7 @@ triangle_shared:
       except RuntimeError, e:
         raise RuntimeError('Error running make on Triangle: '+str(e))
       output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'src', 'triangle.h')+' '+includeDir, timeout=5, log = self.framework.log)[0]
-      self.checkInstall(output1,'make.inc')
+      self.postInstall(output1,'make.inc')
     return self.installDir
 
   def configureLibrary(self):
