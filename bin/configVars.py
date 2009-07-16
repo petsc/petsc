@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import os, sys
 
-sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'python'))
-sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'python', 'BuildSystem'))
+sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config'))
+sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config', 'BuildSystem'))
 
 import script
 
@@ -22,6 +22,8 @@ class ConfigReader(script.Script):
     framework = self.loadConfigure()
     mpi = framework.require('config.packages.MPI', None)
     print mpi.include, mpi.lib
+    arch = framework.require('PETSc.utilities.arch', None)
+    print arch.arch
     return
 
 if __name__ == '__main__':
