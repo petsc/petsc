@@ -56,7 +56,7 @@ class Configure(config.package.Package):
     otherLibs = []
     if foundBlas:
       if separateBlas:
-        otherLibs = blasLibrary
+        otherLibs += blasLibrary
     if self.useCompatibilityLibs:
       otherLibs += self.compilers.flibs
     return otherLibs
