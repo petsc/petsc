@@ -7,23 +7,8 @@
 
 */
 #include "petsc.h"        /*I  "petsc.h"   I*/
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define fortrancopy_ FORTRANCOPY
-#define fortranzero_ FORTRANZERO
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define fortrancopy_ fortrancopy
-#define fortranzero_ fortranzero
-#endif
-EXTERN_C_BEGIN
-extern void fortrancopy_(PetscInt*,PetscScalar*,PetscScalar*); 
-extern void fortranzero_(PetscInt*,PetscScalar*);
-EXTERN_C_END
+#include "../src/sys/utils/ftn-kernels/fcopy.h"
 
-
-/*
-    On the IBM Rs6000 using the Gnu G++ compiler you may have to include 
-  <string.h> instead of <memory.h> 
-*/
 #if defined(PETSC_HAVE_MEMORY_H)
 #include <memory.h>
 #endif
