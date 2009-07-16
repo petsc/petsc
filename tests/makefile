@@ -39,6 +39,10 @@ test_bratu2: test_bratu2.o tao_chkopts
 	-${CLINKER} -o test_bratu2 test_bratu2.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} test_bratu2.o
 
+test_chwirut1: test_chwirut1.o tao_chkopts
+	-${CLINKER} -o test_chwirut1 test_chwirut1.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_chwirut1.o
+
 
 
 runtest_link1: 
@@ -84,5 +88,11 @@ runtest_bratu2:
 	if (${DIFF} output/test_bratu2_1.out test_bratu2_1.tmp) then true;\
         else echo "Possible problem with test_bratu2_1, diffs above"; fi; \
 	${RM} -f test_bratu2_1.tmp
+
+runtest_chwirut1: 
+	-@${MPIEXEC} -np 2 ./test_chwirut1 > test_chwirut1_1.tmp 2>&1; \
+	if (${DIFF} output/test_chwirut1_1.out test_chwirut1_1.tmp) then true;\
+        else echo "Possible problem with test_chwirut1_1, diffs above"; fi; \
+	${RM} -f test_chwirut1_1.tmp
 
 
