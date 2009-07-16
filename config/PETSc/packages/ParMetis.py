@@ -63,7 +63,7 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; make clean; make lib; make minstall; make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on ParMetis: '+str(e))
-      self.checkInstall(output,'make.inc')
+      self.postInstall(output,'make.inc')
     return self.installDir
 
     

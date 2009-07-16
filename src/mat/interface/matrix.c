@@ -6401,7 +6401,7 @@ M*/
 
     Concepts: matrices^submatrices
 
-.seealso: MatGetSubMatrices(), ISAllGather()
+.seealso: MatGetSubMatrices()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *newmat)
 {
@@ -6428,14 +6428,27 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrix(Mat mat,IS isrow,IS iscol,MatR
   }
 
   /* if original matrix is on just one processor then use submatrix generated */
-  if (!mat->ops->getsubmatrix && size == 1 && cll == MAT_REUSE_MATRIX) {
+  if (mat->ops->getsubmatrices && !mat->ops->getsubmatrix && size == 1 && cll == MAT_REUSE_MATRIX) {
     ierr = MatGetSubMatrices(mat,1,&isrow,&iscoltmp,MAT_REUSE_MATRIX,&newmat);CHKERRQ(ierr);
     if (!iscol) {ierr = ISDestroy(iscoltmp);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
-  } else if (!mat->ops->getsubmatrix && size == 1) {
+  } else if (mat->ops->getsubmatrices && !mat->ops->getsubmatrix && size == 1) {
     ierr    = MatGetSubMatrices(mat,1,&isrow,&iscoltmp,MAT_INITIAL_MATRIX,&local);CHKERRQ(ierr);
     *newmat = *local;
     ierr    = PetscFree(local);CHKERRQ(ierr);
+    if (!iscol) {ierr = ISDestroy(iscoltmp);CHKERRQ(ierr);}
+    PetscFunctionReturn(0);
+  } else if (!mat->ops->getsubmatrix) {
+    /* Create a new matrix type that implements the operation using the full matrix */
+    switch (cll) {
+      case MAT_INITIAL_MATRIX:
+        ierr = MatCreateSubMatrix(mat,isrow,iscoltmp,newmat);CHKERRQ(ierr);
+        break;
+      case MAT_REUSE_MATRIX:
+        ierr = MatSubMatrixUpdate(*newmat,mat,isrow,iscoltmp);CHKERRQ(ierr);
+        break;
+      default: SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid MatReuse, must be either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX");
+    }
     if (!iscol) {ierr = ISDestroy(iscoltmp);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
   }

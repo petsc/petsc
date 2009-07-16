@@ -471,6 +471,10 @@ $    FILE_MODE_APPEND - open existing file for binary output
    Output Parameter:
 .  binv - PetscViewer for binary input/output to use with the specified file
 
+    Options Database Keys:
++    -viewer_binary_skip_info
+-    -viewer_binary_skip_options
+
    Level: beginner
 
    Note:
@@ -1122,7 +1126,9 @@ static int Petsc_Viewer_Binary_keyval = MPI_KEYVAL_INVALID;
      Level: intermediate
 
    Options Database Keys:
-$    -viewer_binary_filename <name>
++    -viewer_binary_filename <name>
+.    -viewer_binary_skip_info
+-    -viewer_binary_skip_options
 
    Environmental variables:
 -   PETSC_VIEWER_BINARY_FILENAME

@@ -65,7 +65,7 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';make removeall; make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on PLAPACK: '+str(e))
-      self.checkInstall(output,'Make.include')
+      self.postInstall(output,'Make.include')
     return self.installDir
 
   def configureLibrary(self):

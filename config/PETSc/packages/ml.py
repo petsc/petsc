@@ -102,7 +102,7 @@ class Configure(PETSc.package.Package):
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on ML libraries: '+str(e))
 
-      self.checkInstall(output,'ml')
+      self.postInstall(output,'ml')
     return self.installDir
   
   def configureLibrary(self):

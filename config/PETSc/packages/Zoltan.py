@@ -83,7 +83,7 @@ GL_LIBS    = -lGL -lGLU
 
       output  = config.base.Configure.executeShellCommand('mv -f '+os.path.join(self.packageDir, 'Obj_'+self.arch.arch)+'/* '+os.path.join(self.installDir, 'lib'))
       output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'include')+'/* '+os.path.join(self.installDir, 'include'))
-      self.checkInstall(output,'Zoltanconfig')
+      self.postInstall(output,'Zoltanconfig')
     return self.installDir
   
 if __name__ == '__main__':

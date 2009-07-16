@@ -29,6 +29,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DMFinalizePackage(void) {
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_HYPRE)
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_HYPREStruct(Mat);
+#endif
+
 #undef __FUNCT__  
 #define __FUNCT__ "DMInitializePackage"
 /*@C
@@ -48,9 +52,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[])
 {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
-  char             *className;
+  char              *className;
   PetscTruth        opt;
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (initialized) PetscFunctionReturn(0);
@@ -64,6 +68,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[])
   ierr = PetscCookieRegister("SectionReal",&SECTIONREAL_COOKIE);CHKERRQ(ierr);
   ierr = PetscCookieRegister("SectionInt",&SECTIONINT_COOKIE);CHKERRQ(ierr);
 #endif
+
+#if defined(PETSC_HAVE_HYPRE)
+  ierr = MatRegisterDynamic(MATHYPRESTRUCT,    path,"MatCreate_HYPREStruct", MatCreate_HYPREStruct);CHKERRQ(ierr);
+#endif
+
   /* Register Constructors */
 #ifdef PETSC_HAVE_SIEVE
   ierr = MeshRegisterAll(path);CHKERRQ(ierr);

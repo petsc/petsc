@@ -124,7 +124,7 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
     ierr = PetscOptionsTruth("-pc_factor_reuse_fill","Reuse fill ratio from previous factorization","PCFactorSetReuseFill",ilu->reusefill,&ilu->reusefill,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-pc_factor_reuse_ordering","Reuse previous reordering","PCFactorSetReuseOrdering",ilu->reuseordering,&ilu->reuseordering,PETSC_NULL);CHKERRQ(ierr);
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCFactorSetShiftNonzero(pc,(PetscReal)PETSC_DECIDE);CHKERRQ(ierr);
     }
@@ -340,6 +340,7 @@ static PetscErrorCode PCDestroy_ILU(PC pc)
 
   PetscFunctionBegin;
   ierr = PCDestroy_ILU_Internal(pc);CHKERRQ(ierr);
+  ierr = PetscStrfree(((PC_Factor*)ilu)->solvertype);CHKERRQ(ierr);
   ierr = PetscStrfree(((PC_Factor*)ilu)->ordering);CHKERRQ(ierr);
   ierr = PetscFree(ilu);CHKERRQ(ierr);
   PetscFunctionReturn(0);

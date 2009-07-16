@@ -3130,11 +3130,13 @@ PETSc interfaces to several external linear solvers (see Acknowledgments).
 To use these solvers, one needs to:
 
 \begin{enumerate}
-\item Run config/configure.py with the additional options \trl{--download-packagename=1}. 
-For eg: \trl{--download-superlu_dist=1}
+\item Run config/configure.py with the additional options \trl{--download-packagename}. 
+For eg: \trl{--download-superlu_dist} \trl{--download-parmetis} (SuperLU_DIST needs ParMetis) or
+\trl{--download-mumps} \trl{--download-scalapack} \trl{--download-blacs} (MUMPS requires  ScaLAPACK and BLACS).
 \item Build the PETSc libraries.
-\item Use the runtime option: \trl{-mat_type <mattype>} \trl{-ksp_type preonly} \trl{-pc_type <pctype>}. 
-For eg: \trl{-mat_type superlu_dist} \trl{-ksp_type preonly} \trl{-pc_type lu}
+\item Use the runtime option: \trl{-ksp_type preonly} \trl{-pc_type <pctype>}
+\trl{-pc_factor_mat_solver_package <packagename>}.
+For eg: \trl{-ksp_type preonly} \trl{-pc_type lu} \trl{-pc_factor_mat_solver_package superlu_dist}.
 \end{enumerate}
 
 \begin{table}[H]

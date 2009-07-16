@@ -86,7 +86,7 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SCALAPACK: '+str(e))
-      self.checkInstall(output,'SLmake.inc')
+      self.postInstall(output,'SLmake.inc')
     return self.installDir
 
   def checkLib(self,lib,func,mangle,otherLibs = []):

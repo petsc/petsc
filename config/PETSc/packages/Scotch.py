@@ -105,7 +105,7 @@ class Configure(PETSc.package.Package):
       output = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; cp -f lib/*.a '+libDir+'/.; cp -f include/*.h '+includeDir+'/.;', timeout=2500, log = self.framework.log)[0]
 #      except RuntimeError, e:
 #        raise RuntimeError('Error running make on Scotch: '+str(e))
-      self.checkInstall(output,os.path.join('src','Makefile.inc'))
+      self.postInstall(output,os.path.join('src','Makefile.inc'))
     return self.installDir
 
 

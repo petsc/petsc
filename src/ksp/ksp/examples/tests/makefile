@@ -6,7 +6,7 @@ FPPFLAGS  =
 LOCDIR    = src/ksp/ksp/examples/tests/
 NOADIC    = true
 EXAMPLESC       = ex1.c ex3.c ex4.c ex6.c ex7.c ex10.c \
-		  ex14.c ex15.c ex17.c ex18.c ex19.c ex20.c ex24.c ex25.c ex26.c ex27.c
+		  ex14.c ex15.c ex17.c ex18.c ex19.c ex20.c ex21.c ex24.c ex25.c ex26.c ex27.c
 EXAMPLESCH      = 
 EXAMPLESF       = ex5f.F ex12f.F ex16f.F
 
@@ -286,6 +286,25 @@ runex20:
 	   if (${DIFF} output/ex20_1.out ex20_1.tmp) then true; \
 	   else echo "Possible problem with ex20_1, diffs above"; fi; \
 	   ${RM} -f ex20_1.tmp
+
+runex21:
+	-@${MPIEXEC} -n 1 ./ex21 > ex21_1.tmp 2>&1; \
+	   if (${DIFF} output/ex21_1.out ex21_1.tmp) then true; \
+	   else echo "Possible problem with ex21_1, diffs above"; fi; \
+	   ${RM} -f ex21_1.tmp
+
+runex21_2:
+	-@${MPIEXEC} -n 2 ./ex21 > ex21_2.tmp 2>&1; \
+	   if (${DIFF} output/ex21_2.out ex21_2.tmp) then true; \
+	   else echo "Possible problem with ex21_2, diffs above"; fi; \
+	   ${RM} -f ex21_2.tmp
+
+
+runex21_3:
+	-@${MPIEXEC} -n 3 ./ex21 > ex21_3.tmp 2>&1; \
+	   if (${DIFF} output/ex21_3.out ex21_3.tmp) then true; \
+	   else echo "Possible problem with ex21_3, diffs above"; fi; \
+	   ${RM} -f ex21_3.tmp
 
 runex22:
 	-@${MPIEXEC} -n 1 ./ex22 -ksp_gmres_cgs_refinement_type refine_always -mat_type seqaij -mat_view_info_detailed -ksp_monitor_short > ex22_1.tmp 2>&1; \
