@@ -37,7 +37,7 @@ ex3: ex3.o  chkopts
 	-${CLINKER} -o ex3 ex3.o ${PETSC_SNES_LIB}
 	${RM} ex3.o
 ex4: ex4.o  chkopts
-	-${CLINKER} -o ex4 ex4.o -lsimviewers ${PETSC_SNES_LIB}
+	-${CLINKER} -o ex4 ex4.o ${PETSC_SNES_LIB}
 	${RM} ex4.o
 ex4tu: ex4tu.o  chkopts
 	-${CLINKER} -o ex4tu ex4tu.o ${PETSC_SNES_LIB}
