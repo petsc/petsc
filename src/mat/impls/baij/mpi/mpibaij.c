@@ -261,9 +261,9 @@ PetscErrorCode MatSetValues_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[],Petsc
     } else {
       if (!baij->donotstash) {
         if (roworiented) {
-          ierr = MatStashValuesRow_Private(&mat->stash,im[i],n,in,v+i*n);CHKERRQ(ierr);
+          ierr = MatStashValuesRow_Private(&mat->stash,im[i],n,in,v+i*n,PETSC_FALSE);CHKERRQ(ierr);
         } else {
-          ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m);CHKERRQ(ierr);
+          ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m,PETSC_FALSE);CHKERRQ(ierr);
         }
       }
     }
@@ -443,9 +443,9 @@ PetscErrorCode MatSetValues_MPIBAIJ_HT(Mat mat,PetscInt m,const PetscInt im[],Pe
     } else {
       if (!baij->donotstash) {
         if (roworiented) {
-          ierr = MatStashValuesRow_Private(&mat->stash,im[i],n,in,v+i*n);CHKERRQ(ierr);
+          ierr = MatStashValuesRow_Private(&mat->stash,im[i],n,in,v+i*n,PETSC_FALSE);CHKERRQ(ierr);
         } else {
-          ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m);CHKERRQ(ierr);
+          ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m,PETSC_FALSE);CHKERRQ(ierr);
         }
       }
     }

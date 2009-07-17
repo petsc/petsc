@@ -390,9 +390,9 @@ PetscErrorCode MatSetValues_MPIRowbs(Mat mat,int m,const int im[],int n,const in
     } else {
       if (!a->donotstash) {
         if (roworiented) {
-          ierr = MatStashValuesRow_Private(&mat->stash,im[i],n,in,v+i*n);CHKERRQ(ierr);
+          ierr = MatStashValuesRow_Private(&mat->stash,im[i],n,in,v+i*n,PETSC_FALSE);CHKERRQ(ierr);
         } else {
-          ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m);CHKERRQ(ierr);
+          ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m,PETSC_FALSE);CHKERRQ(ierr);
         }
       }
     }
