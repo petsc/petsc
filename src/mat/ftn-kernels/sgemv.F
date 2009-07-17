@@ -16,7 +16,7 @@
       if( kind(bgl_size_0_precision) .eq. 4) then
         if(sizeof(bgl_size_0_precision) .eq. 4 ) then
            call SGEMV('N', bs, ncols, 1, A, bs, x, 1, 0, y, 1)
-	   return
+           return
         else if(sizeof(bgl_size_0_precision) .eq. 8 ) then
            call CGEMV('N', bs, ncols, 1, A, bs, x, 1, 0, y, 1)
            return
@@ -24,7 +24,7 @@
       else if (kind(bgl_size_0_precision) .eq. 8) then
         if(sizeof(bgl_size_0_precision) .eq. 8 ) then
            call DGEMV('N', bs, ncols, 1, A, bs, x, 1, 0, y, 1)
-	   return
+           return
         else if(sizeof(bgl_size_0_precision) .eq. 16 ) then
            call ZGEMV('N', bs, ncols, 1, A, bs, x, 1, 0, y, 1)
            return
@@ -60,7 +60,7 @@
       if( kind(bgl_size_0_precision) .eq. 4) then
         if(sizeof(bgl_size_0_precision) .eq. 4 ) then
            call SGEMV('N', bs, ncols, 1, A, bs, x, 1, 1, y, 1)
-	   return
+           return
         else if(sizeof(bgl_size_0_precision) .eq. 8 ) then
            call CGEMV('N', bs, ncols, 1, A, bs, x, 1, 1, y, 1)
            return
@@ -68,7 +68,7 @@
       else if (kind(bgl_size_0_precision) .eq. 8) then
         if(sizeof(bgl_size_0_precision) .eq. 8 ) then
            call DGEMV('N', bs, ncols, 1, A, bs, x, 1, 1, y, 1)
-	   return
+           return
         else if(sizeof(bgl_size_0_precision) .eq. 16 ) then
            call ZGEMV('N', bs, ncols, 1, A, bs, x, 1, 1, y, 1)
            return
@@ -100,7 +100,7 @@
       if( kind(bgl_size_0_precision) .eq. 4) then
         if(sizeof(bgl_size_0_precision) .eq. 4 ) then
            call SGEMV('N', bs, ncols, 1, A, bs, x, 1, -1, y, 1)
-	   return
+           return
         else if(sizeof(bgl_size_0_precision) .eq. 8 ) then
            call CGEMV('N', bs, ncols, 1, A, bs, x, 1, -1, y, 1)
            return
@@ -108,7 +108,7 @@
       else if (kind(bgl_size_0_precision) .eq. 8) then
         if(sizeof(bgl_size_0_precision) .eq. 8 ) then
            call DGEMV('N', bs, ncols, 1, A, bs, x, 1, -1, y, 1)
-	   return
+           return
         else if(sizeof(bgl_size_0_precision) .eq. 16 ) then
            call ZGEMV('N', bs, ncols, 1, A, bs, x, 1, -1, y, 1)
            return
@@ -140,7 +140,7 @@
       if( kind(bgl_size_0_precision) .eq. 4) then
         if(sizeof(bgl_size_0_precision) .eq. 4 ) then
            call SGEMV('T', bs, ncols, 1, A, bs, x, 1, y, 1)
-	   return
+           return
         else if(sizeof(bgl_size_0_precision) .eq. 8 ) then
            call CGEMV('T', bs, ncols, 1, A, bs, x, 1, y, 1)
            return
@@ -148,7 +148,7 @@
       else if (kind(bgl_size_0_precision) .eq. 8) then
         if(sizeof(bgl_size_0_precision) .eq. 8 ) then
            call DGEMV('T', bs, ncols, 1, A, bs, x, 1, y, 1)
-	   return
+           return
         else if(sizeof(bgl_size_0_precision) .eq. 16 ) then
            call ZGEMV('T', bs, ncols, 1, A, bs, x, 1, y, 1)
            return
@@ -180,7 +180,7 @@
       if( kind(bgl_size_0_precision) .eq. 4) then
         if(sizeof(bgl_size_0_precision) .eq. 4 ) then
            call SGEMM('N', 'N', bs, bs, bs, -1, B, bs, C, bs, 1, A, bs)
-	   return
+           return
         else if(sizeof(bgl_size_0_precision) .eq. 8 ) then
            call CGEMM('N', 'N', bs, bs, bs, -1, B, bs, C, bs, 1, A, bs)
            return
@@ -188,7 +188,7 @@
       else if (kind(bgl_size_0_precision) .eq. 8) then
         if(sizeof(bgl_size_0_precision) .eq. 8 ) then
            call DGEMM('N', 'N', bs, bs, bs, -1, B, bs, C, bs, 1, A, bs)
-	   return
+           return
         else if(sizeof(bgl_size_0_precision) .eq. 16 ) then
            call ZGEMM('N', 'N', bs, bs, bs, -1, B, bs, C, bs, 1, A, bs)
            return
@@ -225,7 +225,7 @@
       if( kind(bgl_size_0_precision) .eq. 4) then
         if(sizeof(bgl_size_0_precision) .eq. 4 ) then
            call SGEMM('N', 'N', bs, bs, bs, 1, B, bs, C, bs, 0, A, bs)
-	   return
+           return
         else if(sizeof(bgl_size_0_precision) .eq. 8 ) then
            call CGEMM('N', 'N', bs, bs, bs, 1, B, bs, C, bs, 0, A, bs)
            return
@@ -233,7 +233,7 @@
       else if (kind(bgl_size_0_precision) .eq. 8) then
         if(sizeof(bgl_size_0_precision) .eq. 8 ) then
            call DGEMM('N', 'N', bs, bs, bs, 1, B, bs, C, bs, 0, A, bs)
-	   return
+           return
         else if(sizeof(bgl_size_0_precision) .eq. 16 ) then
            call ZGEMM('N', 'N', bs, bs, bs, 1, B, bs, C, bs, 0, A, bs)
            return
