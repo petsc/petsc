@@ -12,6 +12,8 @@
 
       PetscInt i
 
+      PETSC_AssertAlignx(16,x(1))
+
       do 10,i=1,n
         sum1 = sum1 + PetscRealPart(x(i)*PetscConj(x(i)))
  10   continue
@@ -27,6 +29,8 @@
       PetscInt n
 
       PetscInt i
+
+      PETSC_AssertAlignx(16,x(1))
 
       do 10,i=1,n,4
         sum1 = sum1 + PetscRealPart(x(i)*PetscConj(x(i)))                                         &

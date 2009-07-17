@@ -23,7 +23,7 @@ configure_options = [
   '-COPTFLAGS=-O3',
   '-FOPTFLAGS=-O3',
   '--with-debugging=0',
-  '--with-fortran-kernels=generic',
+  '--with-fortran-kernels=1',
   '--with-x=0',
   
   '--with-batch=1',

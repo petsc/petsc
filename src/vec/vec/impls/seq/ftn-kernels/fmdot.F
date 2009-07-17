@@ -7,12 +7,16 @@
       subroutine FortranMDot4(x,y1,y2,y3,y4,n,sum1,sum2,sum3,sum4)
       implicit none
       PetscScalar  sum1,sum2,sum3,sum4
-      PetscScalar  x(*),y1(*),y2(*)
-      PetscScalar  y3(*),y4(*)
+      PetscScalar  x(*),y1(*),y2(*),y3(*),y4(*)
       PetscInt n
-
       PetscInt i
 
+      PETSC_AssertAlignx(16,x(1))
+      PETSC_AssertAlignx(16,y1(1))
+      PETSC_AssertAlignx(16,y2(1))
+      PETSC_AssertAlignx(16,y3(1))
+      PETSC_AssertAlignx(16,y4(1))
+      
       do 10,i=1,n
         sum1 = sum1 + x(i)*PetscConj(y1(i))
         sum2 = sum2 + x(i)*PetscConj(y2(i))
@@ -28,9 +32,12 @@
       PetscScalar  sum1,sum2,sum3
       PetscScalar  x(*),y1(*),y2(*),y3(*)
       PetscInt n
-
       PetscInt i
 
+      PETSC_AssertAlignx(16,x(1))
+      PETSC_AssertAlignx(16,y1(1))
+      PETSC_AssertAlignx(16,y2(1))
+      PETSC_AssertAlignx(16,y3(1))
       do 10,i=1,n
         sum1 = sum1 + x(i)*PetscConj(y1(i))
         sum2 = sum2 + x(i)*PetscConj(y2(i))
@@ -44,9 +51,11 @@
       implicit none
       PetscScalar  sum1,sum2,x(*),y1(*),y2(*)
       PetscInt n
-
       PetscInt i
 
+      PETSC_AssertAlignx(16,x(1))
+      PETSC_AssertAlignx(16,y1(1))
+      PETSC_AssertAlignx(16,y2(1))
       do 10,i=1,n
         sum1 = sum1 + x(i)*PetscConj(y1(i))
         sum2 = sum2 + x(i)*PetscConj(y2(i))
@@ -60,9 +69,10 @@
       implicit none
       PetscScalar  sum1,x(*),y1(*)
       PetscInt n
-
       PetscInt i
 
+      PETSC_AssertAlignx(16,x(1))
+      PETSC_AssertAlignx(16,y1(1))
       do 10,i=1,n
         sum1 = sum1 + x(i)*PetscConj(y1(i))
  10   continue

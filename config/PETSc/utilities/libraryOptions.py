@@ -63,10 +63,10 @@ class Configure(config.base.Configure):
       raise RuntimeError('Cannot use fortran kernels without a Fortran compiler')
     if self.useFortranKernels:
       self.addDefine('USE_FORTRAN_KERNELS', 1)
-    if self.isBGL():
-      self.addDefine('PETSC_ASSERT',1)
-    else:
-      self.addDefine('PETSC_ASSERT',0)
+      if self.isBGL():
+        self.addDefine('AssertAlignx(a,b)','call ALIGNX(a,b)')
+      else:
+        self.addDefine('AssertAlignx(a,b)','  ')
       
     if self.framework.argDB['with-64-bit-indices']:
       self.integerSize = 64
