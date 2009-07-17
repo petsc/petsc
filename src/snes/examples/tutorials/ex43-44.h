@@ -49,9 +49,9 @@ PetscErrorCode FormJacobianSub(SNES snes,Vec x,Mat *A, Mat *B, MatStructure *str
   ierr = SNESGetJacobian(ctx->snes,&As,&Bs,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = SNESComputeJacobian(ctx->snes,ctx->xwork,&As,&Bs,str);CHKERRQ(ierr);
   if (*B) {
-    ierr = MatGetSubMatrix(Bs,ctx->is,ctx->is,PETSC_DECIDE,MAT_REUSE_MATRIX,B);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(Bs,ctx->is,ctx->is,MAT_REUSE_MATRIX,B);CHKERRQ(ierr);
   } else {
-    ierr = MatGetSubMatrix(Bs,ctx->is,ctx->is,PETSC_DECIDE,MAT_INITIAL_MATRIX,B);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(Bs,ctx->is,ctx->is,MAT_INITIAL_MATRIX,B);CHKERRQ(ierr);
   }
   if (!*A) {
     *A = *B;
