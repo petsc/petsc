@@ -285,7 +285,7 @@ PetscErrorCode MatStashValuesRow_Private(MatStash *stash,PetscInt row,PetscInt n
 PetscErrorCode MatStashValuesCol_Private(MatStash *stash,PetscInt row,PetscInt n,const PetscInt idxn[],const PetscScalar values[],PetscInt stepval,PetscTruth ignorezeroentries)
 {
   PetscErrorCode     ierr;
-  PetscInt           i,k,cnt; 
+  PetscInt           i,k,cnt = 0; 
   PetscMatStashSpace space=stash->space;
 
   PetscFunctionBegin;
