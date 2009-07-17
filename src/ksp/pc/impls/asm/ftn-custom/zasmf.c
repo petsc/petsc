@@ -55,16 +55,18 @@ void PETSC_STDCALL pcasmgetsubksp_(PC *pc,PetscInt *n_local,PetscInt *first_loca
   }
 }
 
-void PETSC_STDCALL pcasmsetlocalsubdomains_(PC *pc,PetscInt *n,IS *is, PetscErrorCode *ierr)
+void PETSC_STDCALL pcasmsetlocalsubdomains_(PC *pc,PetscInt *n,IS *is,IS *is_local, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(is);
-  *ierr = PCASMSetLocalSubdomains(*pc,*n,is);
+  CHKFORTRANNULLOBJECT(is_local);
+  *ierr = PCASMSetLocalSubdomains(*pc,*n,is,is_local);
 }
 
-void PETSC_STDCALL pcasmsettotalsubdomains_(PC *pc,PetscInt *N,IS *is, PetscErrorCode *ierr)
+void PETSC_STDCALL pcasmsettotalsubdomains_(PC *pc,PetscInt *N,IS *is,IS *is_local, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(is);
-  *ierr = PCASMSetTotalSubdomains(*pc,*N,is);
+  CHKFORTRANNULLOBJECT(is_local);
+  *ierr = PCASMSetTotalSubdomains(*pc,*N,is,is_local);
 }
 
 void PETSC_STDCALL pcasmgetlocalsubmatrices_(PC *pc,PetscInt *n,Mat *mat, PetscErrorCode *ierr)
@@ -81,17 +83,23 @@ void PETSC_STDCALL pcasmgetlocalsubmatrices_(PC *pc,PetscInt *n,Mat *mat, PetscE
     }
   }
 }
-void PETSC_STDCALL pcasmgetlocalsubdomains_(PC *pc,PetscInt *n,IS *is, PetscErrorCode *ierr)
+void PETSC_STDCALL pcasmgetlocalsubdomains_(PC *pc,PetscInt *n,IS *is,IS *is_local, PetscErrorCode *ierr)
 {
   PetscInt nloc,i;
-  IS  *tis;
+  IS  *tis, *tis_local;
   CHKFORTRANNULLOBJECT(is);
+  CHKFORTRANNULLOBJECT(is_local);
   CHKFORTRANNULLINTEGER(n);
-  *ierr = PCASMGetLocalSubdomains(*pc,&nloc,&tis);
+  *ierr = PCASMGetLocalSubdomains(*pc,&nloc,&tis,&tis_local);
   if (n) *n = nloc;
   if (is) {
     for (i=0; i<nloc; i++){
       is[i] = tis[i];
+    }
+  }
+  if (is_local && tis_local) {
+    for (i=0; i<nloc; i++){
+      is[i] = tis_local[i];
     }
   }
 }
