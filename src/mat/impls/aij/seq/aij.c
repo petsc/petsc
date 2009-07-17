@@ -1,5 +1,6 @@
 #define PETSCMAT_DLL
 
+
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -844,6 +845,7 @@ PetscErrorCode MatGetDiagonal_SeqAIJ(Mat A,Vec v)
   PetscFunctionReturn(0);
 }
 
+#include "../src/mat/impls/aij/seq/ftn-kernels/fmult.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultTransposeAdd_SeqAIJ"
 PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)

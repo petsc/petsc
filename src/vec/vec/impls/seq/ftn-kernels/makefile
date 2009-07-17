@@ -11,10 +11,10 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = 
-SOURCEF  = fwaxpy.F faypx.F fnorm.F
+SOURCEF  = fwaxpy.F faypx.F fnorm.F fxtimesy.F fmdot.F fmaxpy.F
 SOURCEH  = 
 OBJSC    = 
-OBJSF    = fwaxpy.o faypx.o fnorm.o
+OBJSF    = fwaxpy.o faypx.o fnorm.o fxtimesy.o fmdot.o fmaxpy.o
 LIBBASE  = libpetscvec
 MANSEC   = Sys
 LOCDIR   = src/vec/vec/impls/seq/ftn-kernels/

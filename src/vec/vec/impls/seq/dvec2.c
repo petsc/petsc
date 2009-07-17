@@ -1,4 +1,5 @@
 #define PETSCVEC_DLL
+
 /* 
    Defines some vector operation functions that are shared by 
   sequential and parallel vectors.
@@ -821,6 +822,7 @@ PetscErrorCode VecPointwiseMaxAbs_Seq(Vec win,Vec xin,Vec yin)
   PetscFunctionReturn(0);
 }
 
+#include "../src/vec/vec/impls/seq/ftn-kernels/fxtimesy.h"
 #undef __FUNCT__  
 #define __FUNCT__ "VecPointwiseMult_Seq"
 PetscErrorCode VecPointwiseMult_Seq(Vec win,Vec xin,Vec yin)

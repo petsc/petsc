@@ -9,7 +9,7 @@ Test MatMatSolve().  Input parameters include\n\
 */
 
 #include "petscksp.h"
-EXTERN PetscErrorCode PCShellSetApply_Matinv(void*,Vec,Vec);
+EXTERN PetscErrorCode PCShellApply_Matinv(PC,Vec,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -115,7 +115,7 @@ int main(int argc,char **args)
   /* Now, set X=inv(A) as a preconditioner */
   ierr = PCSetType(pc,PCSHELL);CHKERRQ(ierr);
   ierr = PCShellSetContext(pc,(void *)X);CHKERRQ(ierr);
-  ierr = PCShellSetApply(pc,PCShellSetApply_Matinv);CHKERRQ(ierr); 
+  ierr = PCShellSetApply(pc,PCShellApply_Matinv);CHKERRQ(ierr); 
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
   /* Sove preconditioned system A*x = b */
@@ -138,11 +138,14 @@ int main(int argc,char **args)
   return 0;
 }
 
-PetscErrorCode PCShellSetApply_Matinv(void *mat,Vec xin,Vec xout)
+PetscErrorCode PCShellApply_Matinv(PC pc,Vec xin,Vec xout)
 {
   PetscErrorCode ierr;
+  Mat            X;
+
   PetscFunctionBegin;
-  ierr = MatMult((Mat)mat,xin,xout);CHKERRQ(ierr); 
+  ierr = PCShellGetContext(pc,(void**)&X);CHKERRQ(ierr);
+  ierr = MatMult(X,xin,xout);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 

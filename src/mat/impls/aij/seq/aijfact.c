@@ -1,5 +1,6 @@
 #define PETSCMAT_DLL
 
+
 #include "../src/mat/impls/aij/seq/aij.h"
 #include "petscbt.h"
 #include "../src/mat/utils/freespace.h"
@@ -917,12 +918,13 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode    ierr;
   PetscInt          n = A->rmap->n;
-  const PetscInt    *ai = a->i,*aj = a->j,*adiag = a->diag,*vi;
+  const PetscInt    *ai = a->i,*aj = a->j,*adiag = a->diag;
   PetscScalar       *x;
   const PetscScalar *b;
   const MatScalar   *aa = a->a;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ)
   PetscInt          adiag_i,i,nz,ai_i;
+  const PetscInt    *vi;
   const MatScalar   *v;
   PetscScalar       sum;
 #endif
