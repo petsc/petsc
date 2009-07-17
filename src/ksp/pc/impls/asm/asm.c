@@ -14,12 +14,13 @@
 #include "private/pcimpl.h"     /*I "petscpc.h" I*/
 
 typedef struct {
-  PetscInt   n,n_local,n_local_true;
+  PetscInt   n, n_local, n_local_true;
   PetscInt   overlap;             /* overlap requested by user */
   KSP        *ksp;                /* linear solvers for each block */
-  VecScatter *scat;               /* mapping to subregion */
+  VecScatter *restriction;        /* mapping from global to subregion */
+  VecScatter *prolongation;       /* mapping from subregion to global */
   Vec        *x,*y;               /* work vectors */
-  IS         *is;                 /* index set that defines each subdomain */
+  IS         *is;                 /* index set that defines each overlapping subdomain, local variables come first */
   Mat        *mat,*pmat;          /* mat is not currently used */
   PCASMType  type;                /* use reduced interpolation, restriction or both */
   PetscTruth type_set;            /* if user set this value (so won't change it for symmetric problems) */
@@ -51,14 +52,14 @@ static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
     ierr = MPI_Comm_rank(((PetscObject)pc)->comm,&rank);CHKERRQ(ierr);
     if (osm->same_local_solves) {
       if (osm->ksp) {
-	ierr = PetscViewerASCIIPrintf(viewer,"  Local solve is same for all blocks, in the following KSP and PC objects:\n");CHKERRQ(ierr);
-	ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
-	if (!rank) {
-	  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-	  ierr = KSPView(osm->ksp[0],sviewer);CHKERRQ(ierr);
-	  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-	}
-	ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  Local solve is same for all blocks, in the following KSP and PC objects:\n");CHKERRQ(ierr);
+        ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+        if (!rank) {
+          ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+          ierr = KSPView(osm->ksp[0],sviewer);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
       }
     } else {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] number of local blocks = %D\n",(int)rank,osm->n_local_true);CHKERRQ(ierr);
@@ -69,7 +70,7 @@ static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
       for (i=0; i<osm->n_local; i++) {
         ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
         if (i < osm->n_local_true) {
-	  ierr = ISGetLocalSize(osm->is[i],&bsz);CHKERRQ(ierr);
+          ierr = ISGetLocalSize(osm->is[i],&bsz);CHKERRQ(ierr);
           ierr = PetscViewerASCIISynchronizedPrintf(sviewer,"[%d] local block number %D, size = %D\n",(int)rank,i,bsz);CHKERRQ(ierr);
           ierr = KSPView(osm->ksp[i],sviewer);CHKERRQ(ierr);
           ierr = PetscViewerASCIISynchronizedPrintf(sviewer,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
