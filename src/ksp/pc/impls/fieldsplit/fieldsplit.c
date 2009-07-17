@@ -370,7 +370,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac),DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELF) {
         PC pc;
-        ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+        ierr = KSPGetPC(jac->kspschur,&pc);CHKERRQ(ierr);
         ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
         /* Note: This is bad if there exist preconditioners for MATSCHURCOMPLEMENT */
       }
