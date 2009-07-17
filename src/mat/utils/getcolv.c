@@ -231,7 +231,7 @@ PetscErrorCode MatGetColumnNorms_MPIDense(Mat A,NormType type,PetscReal *norms)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetColumnNorms"
-/*
+/*@
     MatGetColumnNorms - Gets the 2 norms of each column of a sparse or dense matrix.
 
   Input Parameter:
@@ -241,8 +241,12 @@ PetscErrorCode MatGetColumnNorms_MPIDense(Mat A,NormType type,PetscReal *norms)
   Output Parameter:
 .  norms - an array as large as the TOTAL number of columns in the matrix
 
-   Notes: Each process has ALL the column norms after the call.
-*/
+   Notes: Each process has ALL the column norms after the call. Because of the way this is computed each process gets all the values,
+    if each process wants only some of the values it should extract the ones it wants from the array.
+
+.seealso: MatGetColumns()
+
+@*/
 PetscErrorCode MatGetColumnNorms(Mat A,NormType type,PetscReal *norms)
 {
   PetscErrorCode ierr;
