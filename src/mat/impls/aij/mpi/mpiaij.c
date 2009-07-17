@@ -392,11 +392,9 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
     } else {
       if (!aij->donotstash) {
         if (roworiented) {
-          if (ignorezeroentries && v[i*n] == 0.0) continue;
-          ierr = MatStashValuesRow_Private(&mat->stash,im[i],n,in,v+i*n);CHKERRQ(ierr);
+          ierr = MatStashValuesRow_Private(&mat->stash,im[i],n,in,v+i*n,ignorezeroentries && (addv == ADD_VALUES));CHKERRQ(ierr);
         } else {
-          if (ignorezeroentries && v[i] == 0.0) continue;
-          ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m);CHKERRQ(ierr);
+          ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m,ignorezeroentries && (addv == ADD_VALUES));CHKERRQ(ierr);
         }
       }
     }
@@ -5324,11 +5322,9 @@ void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const PetscInt im[
     } else {
       if (!aij->donotstash) {
         if (roworiented) {
-          if (ignorezeroentries && v[i*n] == 0.0) continue;
-          ierr = MatStashValuesRow_Private(&mat->stash,im[i],n,in,v+i*n);CHKERRQ(ierr);
+          ierr = MatStashValuesRow_Private(&mat->stash,im[i],n,in,v+i*n,ignorezeroentries && (addv == ADD_VALUES));CHKERRQ(ierr);
         } else {
-          if (ignorezeroentries && v[i] == 0.0) continue;
-          ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m);CHKERRQ(ierr);
+          ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m,ignorezeroentries && (addv == ADD_VALUES));CHKERRQ(ierr);
         }
       }
     }
