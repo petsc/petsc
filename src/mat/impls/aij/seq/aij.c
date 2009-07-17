@@ -905,7 +905,7 @@ PetscErrorCode MatMultTranspose_SeqAIJ(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-
+#include "../src/mat/impls/aij/seq/ftn-kernels/fmult.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqAIJ"
 PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
@@ -966,6 +966,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
+#include "../src/mat/impls/aij/seq/ftn-kernels/fmultadd.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultAdd_SeqAIJ"
 PetscErrorCode MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
@@ -1131,6 +1132,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInvertDiagonal_SeqAIJ(Mat A,PetscScalar ome
 }
 EXTERN_C_END
 
+#include "../src/mat/impls/aij/seq/ftn-kernels/frelax.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatRelax_SeqAIJ"
 PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)

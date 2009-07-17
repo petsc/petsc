@@ -909,6 +909,7 @@ PetscErrorCode MatSolve_SeqAIJ_InplaceWithPerm(Mat A,Vec bb,Vec xx)
 }
 
 /* ----------------------------------------------------------- */
+#include "../src/mat/impls/aij/seq/ftn-kernels/fsolve.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqAIJ_NaturalOrdering"
 PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)

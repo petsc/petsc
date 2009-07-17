@@ -8,7 +8,7 @@ SOURCEH  =
 OBJSC    = crl.o
 OBJSF    = 
 LIBBASE  = libpetscmat
-DIRS     = 
+DIRS     = ftn-kernels
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/aij/seq/crl/
 
