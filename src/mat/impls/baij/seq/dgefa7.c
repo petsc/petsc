@@ -6,8 +6,6 @@
        Used by the sparse factorization routines in 
      src/mat/impls/baij/seq
 
-       See also src/inline/ilu.h
-
        This is a combination of the Linpack routines
     dgefa() and dgedi() specialized for a size of 7.
 

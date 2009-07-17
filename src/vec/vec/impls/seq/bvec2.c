@@ -5,7 +5,6 @@
 
 #include "private/vecimpl.h"          /*I "petscvec.h" I*/
 #include "../src/vec/vec/impls/dvecimpl.h" 
-#include "../src/inline/dot.h"
 #include "petscblaslapack.h"
 #if defined(PETSC_HAVE_PNETCDF)
 EXTERN_C_BEGIN
@@ -13,6 +12,7 @@ EXTERN_C_BEGIN
 EXTERN_C_END
 #endif
 
+#include "../src/vec/vec/impls/seq/ftn-kernels/fnorm.h"
 #undef __FUNCT__  
 #define __FUNCT__ "VecNorm_Seq"
 PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)

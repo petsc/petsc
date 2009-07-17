@@ -16,7 +16,7 @@ OBJSC    = baij.o baij2.o baijfact.o baijfact2.o dgefa.o dgedi.o dgefa3.o \
            baijfact11.o baijfact12.o baijfact13.o baijfact14.o
 OBJSF    =
 LIBBASE  = libpetscmat
-DIRS     = 
+DIRS     = ftn-kernels
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/baij/seq/
 

@@ -367,8 +367,6 @@ alladic:
 	-@cd include ; \
            ${ADIC_CC} -s -f 1 ${CCPPFLAGS} petsc.h 
 	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} ACTION=adic  tree 
-	-@cd src/inline ; \
-            ${OMAKE} PETSC_ARCH=${PETSC_ARCH} adic
 
 alladiclib:
 	-@echo "Beginning to compile ADIC libraries in all directories"

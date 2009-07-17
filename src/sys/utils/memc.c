@@ -7,12 +7,8 @@
 
 */
 #include "petsc.h"        /*I  "petsc.h"   I*/
-#include "../src/inline/axpy.h"
+#include "../src/sys/utils/ftn-kernels/fcopy.h"
 
-/*
-    On the IBM Rs6000 using the Gnu G++ compiler you may have to include 
-  <string.h> instead of <memory.h> 
-*/
 #if defined(PETSC_HAVE_MEMORY_H)
 #include <memory.h>
 #endif

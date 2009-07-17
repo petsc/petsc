@@ -429,7 +429,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = KSPGetIterationNumber(ksp,&nits);CHKERRQ(ierr);
     n = nits+2;
 
-    if (!n) {
+    if (!nits) {
       ierr = PetscPrintf(((PetscObject)ksp)->comm,"Zero iterations in solver, cannot approximate any eigenvalues\n");CHKERRQ(ierr);
     } else {
       ierr = PetscMalloc(2*n*sizeof(PetscReal),&r);CHKERRQ(ierr);
@@ -459,6 +459,23 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
       ierr = PetscFree(r);CHKERRQ(ierr);
     }
   }
+
+  flag1 = PETSC_FALSE;
+  ierr  = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_compute_singularvalues",&flag1,PETSC_NULL);CHKERRQ(ierr);
+  if (flag1) {
+    PetscInt   nits;
+
+    ierr = KSPGetIterationNumber(ksp,&nits);CHKERRQ(ierr);
+    if (!nits) {
+      ierr = PetscPrintf(((PetscObject)ksp)->comm,"Zero iterations in solver, cannot approximate any singular values\n");CHKERRQ(ierr);
+    } else {
+      PetscReal emax,emin;
+
+      ierr = KSPComputeExtremeSingularValues(ksp,&emax,&emin);CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)ksp)->comm,"Iteratively computed extreme singular values: max %G min %G max/min %G\n",emax,emin,emax/emin);CHKERRQ(ierr);
+    }
+  }
+
 
   flag1 = PETSC_FALSE;
   flag2 = PETSC_FALSE;

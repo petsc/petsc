@@ -4,7 +4,7 @@
 !
 #include "finclude/petscdef.h"
 !
-      subroutine MSGemv_BGL(bs,ncols,A,x,y)
+      subroutine MSGemv(bs,ncols,A,x,y)
       implicit none
       PetscInt          bs,ncols
       MatScalar        A(bs,ncols)
@@ -16,7 +16,7 @@
       if( kind(bgl_size_0_precision) .eq. 4) then
         if(sizeof(bgl_size_0_precision) .eq. 4 ) then
            call SGEMV('N', bs, ncols, 1, A, bs, x, 1, 0, y, 1)
-	   return
+           return
         else if(sizeof(bgl_size_0_precision) .eq. 8 ) then
            call CGEMV('N', bs, ncols, 1, A, bs, x, 1, 0, y, 1)
            return
@@ -24,7 +24,7 @@
       else if (kind(bgl_size_0_precision) .eq. 8) then
         if(sizeof(bgl_size_0_precision) .eq. 8 ) then
            call DGEMV('N', bs, ncols, 1, A, bs, x, 1, 0, y, 1)
-	   return
+           return
         else if(sizeof(bgl_size_0_precision) .eq. 16 ) then
            call ZGEMV('N', bs, ncols, 1, A, bs, x, 1, 0, y, 1)
            return
@@ -48,7 +48,7 @@
       end
 
       
-      subroutine MSGemvp_BGL(bs,ncols,A,x,y)
+      subroutine MSGemvp(bs,ncols,A,x,y)
       implicit none
       PetscInt          bs,ncols
       MatScalar        A(bs,ncols)
@@ -60,7 +60,7 @@
       if( kind(bgl_size_0_precision) .eq. 4) then
         if(sizeof(bgl_size_0_precision) .eq. 4 ) then
            call SGEMV('N', bs, ncols, 1, A, bs, x, 1, 1, y, 1)
-	   return
+           return
         else if(sizeof(bgl_size_0_precision) .eq. 8 ) then
            call CGEMV('N', bs, ncols, 1, A, bs, x, 1, 1, y, 1)
            return
@@ -68,7 +68,7 @@
       else if (kind(bgl_size_0_precision) .eq. 8) then
         if(sizeof(bgl_size_0_precision) .eq. 8 ) then
            call DGEMV('N', bs, ncols, 1, A, bs, x, 1, 1, y, 1)
-	   return
+           return
         else if(sizeof(bgl_size_0_precision) .eq. 16 ) then
            call ZGEMV('N', bs, ncols, 1, A, bs, x, 1, 1, y, 1)
            return
@@ -88,7 +88,7 @@
       end
 
 
-      subroutine MSGemvm_BGL(bs,ncols,A,x,y)
+      subroutine MSGemvm(bs,ncols,A,x,y)
       implicit none
       PetscInt          bs,ncols
       MatScalar        A(bs,ncols)
@@ -100,7 +100,7 @@
       if( kind(bgl_size_0_precision) .eq. 4) then
         if(sizeof(bgl_size_0_precision) .eq. 4 ) then
            call SGEMV('N', bs, ncols, 1, A, bs, x, 1, -1, y, 1)
-	   return
+           return
         else if(sizeof(bgl_size_0_precision) .eq. 8 ) then
            call CGEMV('N', bs, ncols, 1, A, bs, x, 1, -1, y, 1)
            return
@@ -108,7 +108,7 @@
       else if (kind(bgl_size_0_precision) .eq. 8) then
         if(sizeof(bgl_size_0_precision) .eq. 8 ) then
            call DGEMV('N', bs, ncols, 1, A, bs, x, 1, -1, y, 1)
-	   return
+           return
         else if(sizeof(bgl_size_0_precision) .eq. 16 ) then
            call ZGEMV('N', bs, ncols, 1, A, bs, x, 1, -1, y, 1)
            return
@@ -127,7 +127,7 @@
       end
 
 
-      subroutine MSGemvt_BGL(bs,ncols,A,x,y)
+      subroutine MSGemvt(bs,ncols,A,x,y)
       implicit none
       PetscInt          bs,ncols
       MatScalar        A(bs,ncols)
@@ -140,7 +140,7 @@
       if( kind(bgl_size_0_precision) .eq. 4) then
         if(sizeof(bgl_size_0_precision) .eq. 4 ) then
            call SGEMV('T', bs, ncols, 1, A, bs, x, 1, y, 1)
-	   return
+           return
         else if(sizeof(bgl_size_0_precision) .eq. 8 ) then
            call CGEMV('T', bs, ncols, 1, A, bs, x, 1, y, 1)
            return
@@ -148,7 +148,7 @@
       else if (kind(bgl_size_0_precision) .eq. 8) then
         if(sizeof(bgl_size_0_precision) .eq. 8 ) then
            call DGEMV('T', bs, ncols, 1, A, bs, x, 1, y, 1)
-	   return
+           return
         else if(sizeof(bgl_size_0_precision) .eq. 16 ) then
            call ZGEMV('T', bs, ncols, 1, A, bs, x, 1, y, 1)
            return
@@ -168,7 +168,7 @@
       return 
       end
 
-      subroutine MSGemm_BGL(bs,A,B,C)
+      subroutine MSGemm(bs,A,B,C)
       implicit none
       PetscInt    bs
       MatScalar   A(bs,bs),B(bs,bs),C(bs,bs)
@@ -180,7 +180,7 @@
       if( kind(bgl_size_0_precision) .eq. 4) then
         if(sizeof(bgl_size_0_precision) .eq. 4 ) then
            call SGEMM('N', 'N', bs, bs, bs, -1, B, bs, C, bs, 1, A, bs)
-	   return
+           return
         else if(sizeof(bgl_size_0_precision) .eq. 8 ) then
            call CGEMM('N', 'N', bs, bs, bs, -1, B, bs, C, bs, 1, A, bs)
            return
@@ -188,7 +188,7 @@
       else if (kind(bgl_size_0_precision) .eq. 8) then
         if(sizeof(bgl_size_0_precision) .eq. 8 ) then
            call DGEMM('N', 'N', bs, bs, bs, -1, B, bs, C, bs, 1, A, bs)
-	   return
+           return
         else if(sizeof(bgl_size_0_precision) .eq. 16 ) then
            call ZGEMM('N', 'N', bs, bs, bs, -1, B, bs, C, bs, 1, A, bs)
            return
@@ -212,7 +212,7 @@
       end
 
 
-      subroutine MSGemmi_BGL(bs,A,C,B)
+      subroutine MSGemmi(bs,A,C,B)
       implicit none
       PetscInt    bs
       MatScalar   A(bs,bs),B(bs,bs),C(bs,bs)
@@ -225,7 +225,7 @@
       if( kind(bgl_size_0_precision) .eq. 4) then
         if(sizeof(bgl_size_0_precision) .eq. 4 ) then
            call SGEMM('N', 'N', bs, bs, bs, 1, B, bs, C, bs, 0, A, bs)
-	   return
+           return
         else if(sizeof(bgl_size_0_precision) .eq. 8 ) then
            call CGEMM('N', 'N', bs, bs, bs, 1, B, bs, C, bs, 0, A, bs)
            return
@@ -233,7 +233,7 @@
       else if (kind(bgl_size_0_precision) .eq. 8) then
         if(sizeof(bgl_size_0_precision) .eq. 8 ) then
            call DGEMM('N', 'N', bs, bs, bs, 1, B, bs, C, bs, 0, A, bs)
-	   return
+           return
         else if(sizeof(bgl_size_0_precision) .eq. 16 ) then
            call ZGEMM('N', 'N', bs, bs, bs, 1, B, bs, C, bs, 0, A, bs)
            return

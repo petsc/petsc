@@ -1,5 +1,6 @@
 #define PETSCMAT_DLL
 
+
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -7,8 +8,6 @@
 
 
 #include "../src/mat/impls/aij/seq/aij.h"          /*I "petscmat.h" I*/
-#include "../src/inline/spops.h"
-#include "../src/inline/dot.h"
 #include "petscbt.h"
 
 #undef __FUNCT__  
@@ -846,6 +845,7 @@ PetscErrorCode MatGetDiagonal_SeqAIJ(Mat A,Vec v)
   PetscFunctionReturn(0);
 }
 
+#include "../src/mat/impls/aij/seq/ftn-kernels/fmult.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultTransposeAdd_SeqAIJ"
 PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
@@ -907,7 +907,7 @@ PetscErrorCode MatMultTranspose_SeqAIJ(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-
+#include "../src/mat/impls/aij/seq/ftn-kernels/fmult.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqAIJ"
 PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
@@ -968,6 +968,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
+#include "../src/mat/impls/aij/seq/ftn-kernels/fmultadd.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultAdd_SeqAIJ"
 PetscErrorCode MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
@@ -1133,6 +1134,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInvertDiagonal_SeqAIJ(Mat A,PetscScalar ome
 }
 EXTERN_C_END
 
+#include "../src/mat/impls/aij/seq/ftn-kernels/frelax.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatRelax_SeqAIJ"
 PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
@@ -3085,7 +3087,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,cons
 EXTERN_C_END
 
 #include "../src/mat/impls/dense/seq/dense.h"
-#include "../src/inline/axpy.h"
+#include "private/petscaxpy.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMultNumeric_SeqDense_SeqAIJ"
@@ -3125,7 +3127,7 @@ PetscErrorCode MatMatMultNumeric_SeqDense_SeqAIJ(Mat A,Mat B,Mat C)
     while (q-->0) {
       c_q = c + m*(*idx);
       a_q = a + m*i;
-      APXY(c_q,*b,a_q,m);
+      PetscAXPY(c_q,*b,a_q,m);
       idx++;
       b++;
     }

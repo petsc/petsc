@@ -12,7 +12,7 @@ configure_options = [
   '-COPTFLAGS=-O3',
   '-FOPTFLAGS=-O3',
   
-  '--with-fortran-kernels=generic',
+  '--with-fortran-kernels=1',
   '--with-blas-lapack-lib=sci',
   '--with-f90-interface=cray_x1',
   

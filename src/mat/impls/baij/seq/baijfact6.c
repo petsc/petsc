@@ -4,7 +4,7 @@
     Factorization code for BAIJ format. 
 */
 #include "../src/mat/impls/baij/seq/baij.h"
-#include "../src/inline/ilu.h"
+#include "../src/mat/blockinvert.h"
 
 /*
       Version for when blocks are 7 by 7 Using natural ordering

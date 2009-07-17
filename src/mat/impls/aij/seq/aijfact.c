@@ -1,9 +1,7 @@
 #define PETSCMAT_DLL
 
+
 #include "../src/mat/impls/aij/seq/aij.h"
-#include "../src/inline/dot.h"
-#define PETSC_USE_WHILE_KERNELS
-#include "../src/inline/spops.h"
 #include "petscbt.h"
 #include "../src/mat/utils/freespace.h"
 
@@ -912,6 +910,7 @@ PetscErrorCode MatSolve_SeqAIJ_InplaceWithPerm(Mat A,Vec bb,Vec xx)
 }
 
 /* ----------------------------------------------------------- */
+#include "../src/mat/impls/aij/seq/ftn-kernels/fsolve.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqAIJ_NaturalOrdering"
 PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
@@ -919,12 +918,13 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode    ierr;
   PetscInt          n = A->rmap->n;
-  const PetscInt    *ai = a->i,*aj = a->j,*adiag = a->diag,*vi;
+  const PetscInt    *ai = a->i,*aj = a->j,*adiag = a->diag;
   PetscScalar       *x;
   const PetscScalar *b;
   const MatScalar   *aa = a->a;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ)
   PetscInt          adiag_i,i,nz,ai_i;
+  const PetscInt    *vi;
   const MatScalar   *v;
   PetscScalar       sum;
 #endif

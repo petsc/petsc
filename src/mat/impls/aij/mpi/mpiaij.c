@@ -1,7 +1,6 @@
 #define PETSCMAT_DLL
 
 #include "../src/mat/impls/aij/mpi/mpiaij.h"   /*I "petscmat.h" I*/
-#include "../src/inline/spops.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDistribute_MPIAIJ"
@@ -1218,7 +1217,9 @@ PetscErrorCode MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
   PetscTruth     hasop;
 
   PetscFunctionBegin;
-  if (its > 1) {ierr = VecDuplicate(bb,&bb1);CHKERRQ(ierr);}
+  if (its > 1 || ~flag & SOR_ZERO_INITIAL_GUESS || flag & SOR_EISENSTAT) {
+    ierr = VecDuplicate(bb,&bb1);CHKERRQ(ierr);
+  }
 
   if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP){
     if (flag & SOR_ZERO_INITIAL_GUESS) {
@@ -1272,7 +1273,6 @@ PetscErrorCode MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
   }  else if (flag & SOR_EISENSTAT) {
     Vec         xx1;
 
-    ierr = VecDuplicate(bb,&bb1);CHKERRQ(ierr);
     ierr = VecDuplicate(bb,&xx1);CHKERRQ(ierr);
     ierr = (*mat->A->ops->relax)(mat->A,bb,omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_BACKWARD_SWEEP),fshift,lits,1,xx);CHKERRQ(ierr);
 

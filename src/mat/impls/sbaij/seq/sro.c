@@ -1,7 +1,6 @@
 #define PETSCMAT_DLL
 
 #include "../src/mat/impls/baij/seq/baij.h"
-#include "../src/inline/spops.h"
 #include "../src/mat/impls/sbaij/seq/sbaij.h"   
 #include "petscsys.h"
 

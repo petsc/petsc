@@ -4,13 +4,13 @@
 !
 #include "finclude/petscdef.h"
 !
-      subroutine FortranCopy_BGL(n,x,y)
+      subroutine FortranCopy(n,x,y)
       implicit none
       PetscScalar  x(*),y(*)
       PetscInt n
       PetscInt i
-      call ALIGNX(16,x(1))
-      call ALIGNX(16,y(1))
+      PETSC_AssertAlignx(16,x(1))
+      PETSC_AssertAlignx(16,y(1))
       do 10,i=1,n
         y(i) = x(i)
  10   continue
@@ -18,12 +18,12 @@
       end
 
 
-      subroutine FortranZero_BGL(n,x)
+      subroutine FortranZero(n,x)
       implicit none
       PetscScalar  x(*)
       PetscInt n
       PetscInt i
-      call ALIGNX(16,x(1))
+      PETSC_AssertAlignx(16,x(1))
       do 10,i=1,n
         x(i) = 0.0
  10   continue

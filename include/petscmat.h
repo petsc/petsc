@@ -524,6 +524,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeAddEqual(Mat,Mat,PetscI
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNorm(Mat,NormType,PetscReal *);
 PetscPolymorphicFunction(MatNorm,(Mat A,NormType t),(A,t,&n),PetscReal,n)
+EXTERN PetscErrorCode MatGetColumnNorms(Mat,NormType,PetscReal *);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroEntries(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRows(Mat,PetscInt,const PetscInt [],PetscScalar);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsIS(Mat,IS,PetscScalar);

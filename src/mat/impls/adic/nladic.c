@@ -15,7 +15,7 @@ EXTERN_C_BEGIN
 EXTERN_C_END
 
 #include "../src/dm/da/daimpl.h"
-#include "../src/inline/ilu.h"
+#include "../src/mat/blockinvert.h"
 
 struct NLF_DAAD {
   DA         da;

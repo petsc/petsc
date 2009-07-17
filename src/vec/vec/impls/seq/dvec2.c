@@ -1,14 +1,14 @@
 #define PETSCVEC_DLL
+
 /* 
    Defines some vector operation functions that are shared by 
   sequential and parallel vectors.
 */
 #include "../src/vec/vec/impls/dvecimpl.h"   
-#include "../src/inline/dot.h"
-#include "../src/inline/setval.h"
-#include "../src/inline/axpy.h"
+#include "private/petscaxpy.h"
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MDOT)
+#include "../src/vec/vec/impls/seq/ftn-kernels/fmdot.h"
 #undef __FUNCT__  
 #define __FUNCT__ "VecMDot_Seq"
 PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
@@ -561,14 +561,14 @@ PetscErrorCode VecSet_Seq(Vec xin,PetscScalar alpha)
 {
   Vec_Seq        *x = (Vec_Seq *)xin->data;
   PetscErrorCode ierr;
-  PetscInt       n = xin->map->n;
+  PetscInt       i,n = xin->map->n;
   PetscScalar    *xx = x->array;
 
   PetscFunctionBegin;
   if (alpha == 0.0) {
     ierr = PetscMemzero(xx,n*sizeof(PetscScalar));CHKERRQ(ierr);
   } else {
-    SET(xx,n,alpha);
+    for (i=0; i<n; i++) xx[i] = alpha;
   }
   PetscFunctionReturn(0);
 }
@@ -615,7 +615,7 @@ PetscErrorCode VecMAXPY_Seq(Vec xin, PetscInt nv,const PetscScalar *alpha,Vec *y
     alpha1 = alpha[1]; 
     alpha2 = alpha[2]; 
     alpha += 3;
-    APXY3(xx,alpha0,alpha1,alpha2,yy0,yy1,yy2,n);
+    PetscAXPY3(xx,alpha0,alpha1,alpha2,yy0,yy1,yy2,n);
     ierr = VecRestoreArray(y[0],(PetscScalar**)&yy0);CHKERRQ(ierr);
     ierr = VecRestoreArray(y[1],(PetscScalar**)&yy1);CHKERRQ(ierr);
     ierr = VecRestoreArray(y[2],(PetscScalar**)&yy2);CHKERRQ(ierr);
@@ -627,7 +627,7 @@ PetscErrorCode VecMAXPY_Seq(Vec xin, PetscInt nv,const PetscScalar *alpha,Vec *y
     alpha0 = alpha[0]; 
     alpha1 = alpha[1]; 
     alpha +=2;
-    APXY2(xx,alpha0,alpha1,yy0,yy1,n);
+    PetscAXPY2(xx,alpha0,alpha1,yy0,yy1,n);
     ierr = VecRestoreArray(y[0],(PetscScalar**)&yy0);CHKERRQ(ierr);
     ierr = VecRestoreArray(y[1],(PetscScalar**)&yy1);CHKERRQ(ierr);
     y     +=2;
@@ -635,7 +635,7 @@ PetscErrorCode VecMAXPY_Seq(Vec xin, PetscInt nv,const PetscScalar *alpha,Vec *y
   case 1: 
     ierr = VecGetArray(y[0],(PetscScalar**)&yy0);CHKERRQ(ierr);
     alpha0 = *alpha++; 
-    APXY(xx,alpha0,yy0,n);
+    PetscAXPY(xx,alpha0,yy0,n);
     ierr = VecRestoreArray(y[0],(PetscScalar**)&yy0);CHKERRQ(ierr);
     y     +=1;
     break;
@@ -651,7 +651,7 @@ PetscErrorCode VecMAXPY_Seq(Vec xin, PetscInt nv,const PetscScalar *alpha,Vec *y
     alpha3 = alpha[3];
     alpha  += 4;
 
-    APXY4(xx,alpha0,alpha1,alpha2,alpha3,yy0,yy1,yy2,yy3,n);
+    PetscAXPY4(xx,alpha0,alpha1,alpha2,alpha3,yy0,yy1,yy2,yy3,n);
     ierr = VecRestoreArray(y[0],(PetscScalar**)&yy0);CHKERRQ(ierr);
     ierr = VecRestoreArray(y[1],(PetscScalar**)&yy1);CHKERRQ(ierr);
     ierr = VecRestoreArray(y[2],(PetscScalar**)&yy2);CHKERRQ(ierr);
@@ -661,6 +661,7 @@ PetscErrorCode VecMAXPY_Seq(Vec xin, PetscInt nv,const PetscScalar *alpha,Vec *y
   PetscFunctionReturn(0);
 } 
 
+#include "../src/vec/vec/impls/seq/ftn-kernels/faypx.h"
 #undef __FUNCT__  
 #define __FUNCT__ "VecAYPX_Seq"
 PetscErrorCode VecAYPX_Seq(Vec yin,PetscScalar alpha,Vec xin)
@@ -697,6 +698,7 @@ PetscErrorCode VecAYPX_Seq(Vec yin,PetscScalar alpha,Vec xin)
   PetscFunctionReturn(0);
 }
 
+#include "../src/vec/vec/impls/seq/ftn-kernels/fwaxpy.h"
 /*
    IBM ESSL contains a routine dzaxpy() that is our WAXPY() but it appears
   to be slower than a regular C loop.  Hence,we do not include it.
@@ -820,6 +822,7 @@ PetscErrorCode VecPointwiseMaxAbs_Seq(Vec win,Vec xin,Vec yin)
   PetscFunctionReturn(0);
 }
 
+#include "../src/vec/vec/impls/seq/ftn-kernels/fxtimesy.h"
 #undef __FUNCT__  
 #define __FUNCT__ "VecPointwiseMult_Seq"
 PetscErrorCode VecPointwiseMult_Seq(Vec win,Vec xin,Vec yin)

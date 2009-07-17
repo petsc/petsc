@@ -6,19 +6,19 @@
 # compare against C versions of the same kernels.
 
 ALL: lib
-#requirespackage   'PETSC_USE_FORTRAN_KERNELS_BGL'
+#requirespackage   'PETSC_USE_FORTRAN_KERNELS'
 
 CFLAGS   =
-FFLAGS   = -qmaxmem=-1 -O3 -qhot -qarch=440d -qtune=440
-SOURCEC  = bgl_align.c
-SOURCEF  = fcopy_bgl.F fmdot_bgl.F fsolvebaij_bgl.F sgemv_bgl.F fmaxpy_bgl.F fnorm_bgl.F fwaxpy_bgl.F
-
+FFLAGS   =
+SOURCEC  = 
+SOURCEF  = fmultcrl.F
 SOURCEH  = 
-OBJSC    = ${SOURCEC:.c=.o}
-OBJSF    = ${SOURCEF:.F=.o}
+OBJSC    = 
+OBJSF    = fmultcrl.o
 LIBBASE  = libpetsc
 MANSEC   = Sys
-LOCDIR   = src/fortran/kernels/bgl/
+LOCDIR   = src/fortran/kernels/
+DIRS     = 
 
 include ${PETSC_DIR}/conf/base
 include ${PETSC_DIR}/conf/test

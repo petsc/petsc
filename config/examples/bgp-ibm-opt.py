@@ -18,7 +18,7 @@ configure_options = [
   '--with-debugging=0',
 
   # autodetect on BGP not working?
-  '--with-fortran-kernels=bgl',
+  '--with-fortran-kernels=1',
 
   '--with-batch=1',
   '--with-mpi-shared=0',

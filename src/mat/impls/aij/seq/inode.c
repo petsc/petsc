@@ -1641,7 +1641,7 @@ PetscErrorCode MatColoringPatch_Inode(Mat mat,PetscInt ncolors,PetscInt nin,ISCo
   PetscFunctionReturn(0);
 }
 
-#include "../src/inline/ilu.h"
+#include "../src/mat/blockinvert.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRelax_Inode"

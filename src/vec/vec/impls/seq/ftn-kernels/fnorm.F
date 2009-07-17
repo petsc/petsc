@@ -4,7 +4,7 @@
 !
 #include "finclude/petscdef.h"
 !
-      subroutine FortranNormSqr_BGL(x,n,sum1)
+      subroutine FortranNormSqr(x,n,sum1)
       implicit none
       PetscScalar x(*)
       PetscReal   sum1
@@ -12,7 +12,7 @@
 
       PetscInt i
 
-      call ALIGNX(16,x(1))
+      PETSC_AssertAlignx(16,x(1))
 
       do 10,i=1,n
         sum1 = sum1 + PetscRealPart(x(i)*PetscConj(x(i)))
@@ -22,7 +22,7 @@
       end
 
 
-      subroutine FortranNormSqrUnroll_BGL(x,n,sum1)
+      subroutine FortranNormSqrUnroll(x,n,sum1)
       implicit none
       PetscScalar x(*)
       PetscReal   sum1
@@ -30,7 +30,7 @@
 
       PetscInt i
 
-      call ALIGNX(16,x(1))
+      PETSC_AssertAlignx(16,x(1))
 
       do 10,i=1,n,4
         sum1 = sum1 + PetscRealPart(x(i)*PetscConj(x(i)))                                         &

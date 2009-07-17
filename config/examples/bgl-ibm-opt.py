@@ -25,8 +25,7 @@ configure_options = [
   '-FOPTFLAGS=-O3 -qbgl -qarch=440d -qtune=440 -qmaxmem=-1',
   '--with-debugging=0',
 
-  # the following option gets automatically enabled on BGL/with IBM compilers.
-  # '--with-fortran-kernels=bgl'
+  '--with-fortran-kernels=1'
 
   '--with-batch=1',
   '--with-memcmp-ok',

@@ -4,7 +4,7 @@
 !
 #include "finclude/petscdef.h"
 !
-      subroutine FortranWAXPY_BGL(n,a,x,y,w)
+      subroutine FortranWAXPY(n,a,x,y,w)
       implicit none
       PetscScalar  a
       PetscScalar  x(*),y(*),w(*)
@@ -12,9 +12,9 @@
 
       PetscInt i
 
-      call ALIGNX(16,x(1))
-      call ALIGNX(16,y(1))
-      call ALIGNX(16,w(1))
+      PETSC_AssertAlignx(16,x(1))
+      PETSC_AssertAlignx(16,y(1))
+      PETSC_AssertAlignx(16,w(1))
 
       do 10,i=1,n
         w(i) = a*x(i) + y(i)

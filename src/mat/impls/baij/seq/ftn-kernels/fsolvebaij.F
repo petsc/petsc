@@ -7,7 +7,7 @@
 #include "finclude/petscdef.h"
 !
 
-      subroutine FortranSolveBAIJ4Unroll_BGL(n,x,ai,aj,adiag,a,b)
+      subroutine FortranSolveBAIJ4Unroll(n,x,ai,aj,adiag,a,b)
       implicit none
       MatScalar   a(0:*)
       PetscScalar x(0:*),b(0:*)
@@ -19,12 +19,12 @@
 !    
 !     Forward Solve
 !
-      call ALIGNX(16,a(1))
-      call ALIGNX(16,x(1))
-      call ALIGNX(16,b(1))
-      call ALIGNX(16,ai(1))
-      call ALIGNX(16,aj(1))
-      call ALIGNX(16,adiag(1))
+      PETSC_AssertAlignx(16,a(1))
+      PETSC_AssertAlignx(16,x(1))
+      PETSC_AssertAlignx(16,b(1))
+      PETSC_AssertAlignx(16,ai(1))
+      PETSC_AssertAlignx(16,aj(1))
+      PETSC_AssertAlignx(16,adiag(1))
          
          x(0) = b(0)
          x(1) = b(1)
@@ -96,7 +96,7 @@
 !
 !   version that calls BLAS 2 operation for each row block
 !
-      subroutine FortranSolveBAIJ4BLAS_BGL(n,x,ai,aj,adiag,a,b,w)
+      subroutine FortranSolveBAIJ4BLAS(n,x,ai,aj,adiag,a,b,w)
       implicit none
       MatScalar   a(0:*),w(0:*)
       PetscScalar x(0:*),b(0:*)
@@ -110,13 +110,13 @@
 !
 
 
-      call ALIGNX(16,a(1))
-      call ALIGNX(16,w(1))
-      call ALIGNX(16,x(1))
-      call ALIGNX(16,b(1))
-      call ALIGNX(16,ai(1))
-      call ALIGNX(16,aj(1))
-      call ALIGNX(16,adiag(1))
+      PETSC_AssertAlignx(16,a(1))
+      PETSC_AssertAlignx(16,w(1))
+      PETSC_AssertAlignx(16,x(1))
+      PETSC_AssertAlignx(16,b(1))
+      PETSC_AssertAlignx(16,ai(1))
+      PETSC_AssertAlignx(16,aj(1))
+      PETSC_AssertAlignx(16,adiag(1))
 
       x(0) = b(0)
       x(1) = b(1)
@@ -206,7 +206,7 @@
 !
 !   version that does not call BLAS 2 operation for each row block
 !
-      subroutine FortranSolveBAIJ4_bgl(n,x,ai,aj,adiag,a,b,w)
+      subroutine FortranSolveBAIJ4(n,x,ai,aj,adiag,a,b,w)
       implicit none
       MatScalar   a(0:*)
       PetscScalar x(0:*),b(0:*),w(0:*)
@@ -220,13 +220,13 @@
 !     Forward Solve
 !
 
-      call ALIGNX(16,a(1))
-      call ALIGNX(16,w(1))
-      call ALIGNX(16,x(1))
-      call ALIGNX(16,b(1))
-      call ALIGNX(16,ai(1))
-      call ALIGNX(16,aj(1))
-      call ALIGNX(16,adiag(1))
+      PETSC_AssertAlignx(16,a(1))
+      PETSC_AssertAlignx(16,w(1))
+      PETSC_AssertAlignx(16,x(1))
+      PETSC_AssertAlignx(16,b(1))
+      PETSC_AssertAlignx(16,ai(1))
+      PETSC_AssertAlignx(16,aj(1))
+      PETSC_AssertAlignx(16,adiag(1))
 
       x(0) = b(0)
       x(1) = b(1)
