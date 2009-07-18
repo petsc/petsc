@@ -699,6 +699,9 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[]
    PetscFunctionReturn(0);
 } 
 
+/*
+    This is not yet used 
+*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_SeqSBAIJ_Inode"
 PetscErrorCode MatAssemblyEnd_SeqSBAIJ_Inode(Mat A)
@@ -830,9 +833,9 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
   a->reallocs          = 0;
   A->info.nz_unneeded  = (PetscReal)fshift*bs2;
   a->idiagvalid = PETSC_FALSE;
-  if (bs2 == 1) {
+  /* if (bs2 == 1) {
     ierr = MatAssemblyEnd_SeqSBAIJ_Inode(A);CHKERRQ(ierr);
-  }
+  } */
   PetscFunctionReturn(0);
 }
 
