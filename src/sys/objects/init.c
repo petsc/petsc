@@ -1,4 +1,5 @@
 #define PETSC_DLL
+
 /*
 
    This file defines part of the initialization of PETSc

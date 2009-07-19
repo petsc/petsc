@@ -569,6 +569,10 @@ PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent event)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_CHUD)
+#include <CHUD/CHUD.h>
+#endif
+
 /*------------------------------------------------ Action Functions -------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogEventBeginDefault"
@@ -589,7 +593,11 @@ PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent event, int t, PetscObject
   /* Log performance info */
   eventLog->eventInfo[event].count++;
   PetscTimeSubtract(eventLog->eventInfo[event].time);
+#if defined(PETSC_HAVE_CHUD)
+  eventLog->eventInfo[event].flops         -= chudGetPMCEventCount(chudCPU1Dev,PMC_1);
+#else
   eventLog->eventInfo[event].flops         -= _TotalFlops;
+#endif
   eventLog->eventInfo[event].numMessages   -= irecv_ct  + isend_ct  + recv_ct  + send_ct;
   eventLog->eventInfo[event].messageLength -= irecv_len + isend_len + recv_len + send_len;
   eventLog->eventInfo[event].numReductions -= allreduce_ct;
@@ -618,7 +626,11 @@ PetscErrorCode PetscLogEventEndDefault(PetscLogEvent event, int t, PetscObject o
   }
   /* Log performance info */
   PetscTimeAdd(eventLog->eventInfo[event].time);
+#if defined(PETSC_HAVE_CHUD)
+  eventLog->eventInfo[event].flops         += chudGetPMCEventCount(chudCPU1Dev,PMC_1);
+#else
   eventLog->eventInfo[event].flops         += _TotalFlops;
+#endif
   eventLog->eventInfo[event].numMessages   += irecv_ct  + isend_ct  + recv_ct  + send_ct;
   eventLog->eventInfo[event].messageLength += irecv_len + isend_len + recv_len + send_len;
   eventLog->eventInfo[event].numReductions += allreduce_ct;
