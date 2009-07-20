@@ -1,8 +1,7 @@
 .PHONY: default \
 	src cython \
-	config build test install \
-	docs sphinx sphinx-html sphinx-pdf epydoc epydoc-html \
-	sdist \
+	config build test install sdist \
+	docs rst2html sphinx sphinx-html sphinx-pdf epydoc epydoc-html \
 	clean distclean srcclean docsclean fullclean uninstall
 
 PYTHON = python
@@ -20,6 +19,9 @@ test:
 
 install: build
 	${PYTHON} setup.py install ${INSTALLOPT} --home=${HOME}
+
+sdist: src docs
+	${PYTHON} setup.py sdist ${SDISTOPT}
 
 clean:
 	${PYTHON} setup.py clean --all
@@ -90,10 +92,8 @@ EPYDOCBUILD = ${PYTHON} ./conf/epydocify.py
 EPYDOCOPTS  =
 epydoc: epydoc-html
 epydoc-html:
+	${PYTHON} -c 'import petsc4py.PETSc'
 	mkdir -p docs/apiref
 	${EPYDOCBUILD} ${EPYDOCOPTS} -o docs/apiref
 
 # ----
-
-sdist: src docs
-	${PYTHON} setup.py sdist ${SDISTOPT}
