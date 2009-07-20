@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys, os, glob
 
 def cythonize(source, includes=[],
