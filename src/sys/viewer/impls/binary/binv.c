@@ -1045,7 +1045,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinarySetMPIIO_Binary(PetscViewer view
 
   PetscFunctionBegin;
   if (vbinary->filename) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call before calling PetscViewerFileSetName()");
-  viewer->ops->destroy = PetscViewerDestroy_Binary;
+  viewer->ops->destroy = PetscViewerDestroy_MPIIO;
   vbinary->MPIIO       = PETSC_TRUE;
   /*  vbinary->skipinfo    = PETSC_TRUE; */
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetName_C","PetscViewerFileSetName_MPIIO",PetscViewerFileSetName_MPIIO);CHKERRQ(ierr);
