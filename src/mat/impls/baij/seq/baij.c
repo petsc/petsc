@@ -61,6 +61,16 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInvertBlockDiagonal_SeqBAIJ(Mat A)
   mdiag = a->idiag+bs*bs*mbs; 
   /* factor and invert each block */
   switch (bs){
+    case 1:
+      for (i=0; i<mbs; i++) {
+        odiag = v + 1*diag_offset[i];
+        diag[0]  = odiag[0];
+        mdiag[0] = odiag[0];
+        diag[0]  = 1.0 / (diag[0] + shift);
+        diag    += 1;
+        mdiag   += 1;
+      }
+      break;
     case 2:
       for (i=0; i<mbs; i++) {
         odiag   = v + 4*diag_offset[i];
@@ -207,7 +217,7 @@ PetscErrorCode MatPBRelax_SeqBAIJ_1(Mat A,Vec bb,PetscReal omega,MatSORType flag
           v   += 1;
         }
         x[i2]   = idiag[0]*s1;
-        idiag   -= 2;
+        idiag   -= 1;
         i2      -= 1;
       }
       ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 
-#if !defined(__FNORM_H)
+#if !defined(__FRELAX_H)
 #include "petsc.h"
 #if defined(PETSC_USE_FORTRAN_KERNEL_RELAXAIJ)
 #if defined(PETSC_HAVE_FORTRAN_CAPS)

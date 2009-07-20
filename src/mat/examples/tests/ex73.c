@@ -78,12 +78,8 @@ int main(int argc,char **args)
   ierr = MatPartitioningDestroy(part);CHKERRQ(ierr);
 
   ierr = ISSort(is);CHKERRQ(ierr);
-  ierr = ISAllGather(is,&isn);CHKERRQ(ierr);
-
-
-  ierr = MatGetSubMatrix(A,is,isn,PETSC_DECIDE,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
   ierr = ISDestroy(is);CHKERRQ(ierr);
-  ierr = ISDestroy(isn);CHKERRQ(ierr);
 
   ierr = MatView(B,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
 

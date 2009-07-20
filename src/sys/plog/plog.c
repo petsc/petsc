@@ -136,6 +136,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogSet(PetscErrorCode (*b)(PetscLogEvent, in
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_CHUD_broken)
+#include <CHUD/CHUD.h>
+#endif
+
 /*------------------------------------------- Initialization Functions ----------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogBegin_Private"
@@ -168,6 +172,24 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogBegin_Private(void)
   /* Setup default logging structures */
   ierr = StageLogCreate(&_stageLog);CHKERRQ(ierr);
   ierr = StageLogRegister(_stageLog, "Main Stage", &stage);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CHUD_broken)
+  ierr = chudInitialize();CHKERRQ(ierr);
+  ierr = chudAcquireSamplingFacility(CHUD_BLOCKING);CHKERRQ(ierr);
+  ierr = chudSetSamplingDevice(chudCPU1Dev);CHKERRQ(ierr);
+  ierr = chudSetStartDelay(0,chudNanoSeconds);CHKERRQ(ierr);
+  ierr = chudClearPMCMode(chudCPU1Dev,chudUnused);CHKERRQ(ierr);
+  ierr = chudClearPMCs();CHKERRQ(ierr);
+  /* ierr = chudSetPMCMuxPosition(chudCPU1Dev,0,0);CHKERRQ(ierr); */
+  printf("%s\n",chudGetEventName(chudCPU1Dev,PMC_1,192));
+  printf("%s\n",chudGetEventDescription(chudCPU1Dev,PMC_1,192));
+  printf("%s\n",chudGetEventNotes(chudCPU1Dev,PMC_1,192));
+  ierr = chudSetPMCEvent(chudCPU1Dev,PMC_1,192);CHKERRQ(ierr);
+  //  ierr = chudSetPMCMode(chudCPU1Dev,PMC_1,chudCounter);CHKERRQ(ierr);
+  // ierr = chudSetPrivilegeFilter(chudCPU1Dev,PMC_1,chudCountUserEvents);CHKERRQ(ierr);
+  // ierr = chudSetPMCEventMask(chudCPU1Dev,PMC_1,0x00);CHKERRQ(ierr);
+  if (!chudIsEventValid(chudCPU1Dev,PMC_1,192)) SETERRQ1(PETSC_ERR_SUP,"Event is not valid %d",192);
+  ierr = chudStartPMCs();CHKERRQ(ierr);
+#endif
   /* All processors sync here for more consistent logging */
   ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
   PetscTime(BaseTime);
@@ -1039,7 +1061,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogEventGetId(const char name[], PetscLogEve
 #define __FUNCT__ "PetscLogDump"
 /*@C
   PetscLogDump - Dumps logs of objects to a file. This file is intended to 
-  be read by petsc/bin/petscview.
+  be read by bin/petscview. This program no longer exists.
 
   Collective on PETSC_COMM_WORLD
 

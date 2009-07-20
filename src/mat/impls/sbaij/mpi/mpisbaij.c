@@ -244,7 +244,7 @@ PetscErrorCode MatSetValues_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im[],Pets
           }
           n_loc++;
         }       
-        ierr = MatStashValuesRow_Private(&mat->stash,im[i],n_loc,in_loc,v_loc);CHKERRQ(ierr);        
+        ierr = MatStashValuesRow_Private(&mat->stash,im[i],n_loc,in_loc,v_loc,PETSC_FALSE);CHKERRQ(ierr);        
       }
     }
   }

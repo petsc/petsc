@@ -170,11 +170,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       }
     }
     /* Copy MZa to MZb */
-    for(i = 0; i <= bcgsl->ell; ++i) {
-      for(j = 0; j <= bcgsl->ell; ++j) {
-        MZb[i+ldMZ*j] = MZa[i+ldMZ*j];
-      }
-    }
+    ierr = PetscMemcpy(MZb,MZa,ldMZ*ldMZ*sizeof(PetscScalar));CHKERRQ(ierr);
 
     if (!bcgsl->bConvex || bcgsl->ell==1) {
       PetscBLASInt ione = 1,bell = PetscBLASIntCast(bcgsl->ell);
@@ -248,12 +244,16 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       break;
     }
 
-    for (i=1; i<=bcgsl->ell; i++) {
-      ierr = VecAXPY(VVU[0], -AY0c[i], VVU[i]);CHKERRQ(ierr);
-      ierr = VecAXPY(VX, AY0c[i], VVR[i-1]);CHKERRQ(ierr);
-      ierr = VecAXPY(VVR[0], -AY0c[i], VVR[i]);CHKERRQ(ierr);
-    }
 
+    ierr = VecMAXPY(VX, bcgsl->ell,AY0c+1, VVR);CHKERRQ(ierr);
+    for (i=1; i<=bcgsl->ell; i++) {
+      AY0c[i] *= -1.0;
+    }
+    ierr = VecMAXPY(VVU[0], bcgsl->ell,AY0c+1, VVU+1);CHKERRQ(ierr);
+    ierr = VecMAXPY(VVR[0], bcgsl->ell,AY0c+1, VVR+1);CHKERRQ(ierr);
+    for (i=1; i<=bcgsl->ell; i++) {
+      AY0c[i] *= -1.0;
+    }
     ierr = VecNorm(VVR[0], NORM_2, &zeta);CHKERRQ(ierr);
 
     /* Accurate Update */

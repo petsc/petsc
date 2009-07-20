@@ -239,10 +239,10 @@ static PetscErrorCode MatStashExpand_Private(MatStash *stash,PetscInt incr)
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatStashValuesRow_Private"
-PetscErrorCode MatStashValuesRow_Private(MatStash *stash,PetscInt row,PetscInt n,const PetscInt idxn[],const PetscScalar values[])
+PetscErrorCode MatStashValuesRow_Private(MatStash *stash,PetscInt row,PetscInt n,const PetscInt idxn[],const PetscScalar values[],PetscTruth ignorezeroentries)
 {
   PetscErrorCode     ierr;
-  PetscInt           i,k;
+  PetscInt           i,k,cnt = 0;
   PetscMatStashSpace space=stash->space;
 
   PetscFunctionBegin;
@@ -253,14 +253,16 @@ PetscErrorCode MatStashValuesRow_Private(MatStash *stash,PetscInt row,PetscInt n
   space = stash->space;
   k     = space->local_used;
   for (i=0; i<n; i++) {
+    if (ignorezeroentries && !values[i]) continue;
     space->idx[k] = row;
     space->idy[k] = idxn[i];
     space->val[k] = values[i];
     k++;
+    cnt++;
   }
-  stash->n               += n; 
-  space->local_used      += n;
-  space->local_remaining -= n;
+  stash->n               += cnt; 
+  space->local_used      += cnt;
+  space->local_remaining -= cnt;
   PetscFunctionReturn(0);
 }
 
@@ -280,10 +282,10 @@ PetscErrorCode MatStashValuesRow_Private(MatStash *stash,PetscInt row,PetscInt n
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatStashValuesCol_Private"
-PetscErrorCode MatStashValuesCol_Private(MatStash *stash,PetscInt row,PetscInt n,const PetscInt idxn[],const PetscScalar values[],PetscInt stepval)
+PetscErrorCode MatStashValuesCol_Private(MatStash *stash,PetscInt row,PetscInt n,const PetscInt idxn[],const PetscScalar values[],PetscInt stepval,PetscTruth ignorezeroentries)
 {
   PetscErrorCode     ierr;
-  PetscInt           i,k; 
+  PetscInt           i,k,cnt = 0; 
   PetscMatStashSpace space=stash->space;
 
   PetscFunctionBegin;
@@ -294,14 +296,16 @@ PetscErrorCode MatStashValuesCol_Private(MatStash *stash,PetscInt row,PetscInt n
   space = stash->space;
   k = space->local_used;
   for (i=0; i<n; i++) {
+    if (ignorezeroentries && !values[i*stepval]) continue;
     space->idx[k] = row;
     space->idy[k] = idxn[i]; 
     space->val[k] = values[i*stepval]; 
     k++;
+    cnt++;
   }
-  stash->n               += n; 
-  space->local_used      += n;
-  space->local_remaining -= n;
+  stash->n               += cnt; 
+  space->local_used      += cnt;
+  space->local_remaining -= cnt;
   PetscFunctionReturn(0);
 }
 
