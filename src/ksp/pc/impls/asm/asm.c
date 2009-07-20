@@ -140,7 +140,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
   PC_ASM         *osm  = (PC_ASM*)pc->data;
   PetscErrorCode ierr;
   PetscTruth     symset,flg;
-  PetscInt       i,m,firstRow,lastRow;
+  PetscInt       i,m,m_local,firstRow,lastRow;
   PetscMPIInt    size;
   MatReuse       scall = MAT_REUSE_MATRIX;
   IS             isl;
@@ -191,13 +191,13 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     /* Create the local work vectors and scatter contexts */
     ierr = MatGetVecs(pc->pmat,&vec,0);CHKERRQ(ierr);
     ierr = PetscMalloc(osm->n_local*sizeof(VecScatter *),&osm->restriction);CHKERRQ(ierr);
-    ierr = PetscMalloc(osm->n_local*sizeof(VecScatter *),&osm->localization);CHKERRQ(ierr);
+    if (osm->is_local) {ierr = PetscMalloc(osm->n_local*sizeof(VecScatter *),&osm->localization);CHKERRQ(ierr);}
     ierr = PetscMalloc(osm->n_local*sizeof(VecScatter *),&osm->prolongation);CHKERRQ(ierr);
     ierr = PetscMalloc(osm->n_local*sizeof(Vec *),&osm->x);CHKERRQ(ierr);
     ierr = PetscMalloc(osm->n_local*sizeof(Vec *),&osm->y);CHKERRQ(ierr);
     ierr = PetscMalloc(osm->n_local*sizeof(Vec *),&osm->y_local);CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(vec, &firstRow, &lastRow);CHKERRQ(ierr);
-    for (i=0; i<osm->n_local_true; ++i, firstRow += m) {
+    for (i=0; i<osm->n_local_true; ++i, firstRow += m_local) {
       ierr = ISGetLocalSize(osm->is[i],&m);CHKERRQ(ierr);
       ierr = VecCreateSeq(PETSC_COMM_SELF,m,&osm->x[i]);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,m,0,1,&isl);CHKERRQ(ierr);
@@ -209,27 +209,26 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         const PetscInt *idx_local;
         PetscInt       *idx, j;
 
-        ierr = ISGetLocalSize(osm->is_local[i],&m);CHKERRQ(ierr);
+        ierr = ISGetLocalSize(osm->is_local[i],&m_local);CHKERRQ(ierr);
         ierr = ISGetIndices(osm->is_local[i], &idx_local);CHKERRQ(ierr);
         ierr = PetscMalloc(m*sizeof(PetscInt), &idx);CHKERRQ(ierr);
-        for(j = 0; j < m; ++j) {
+        for(j = 0; j < m_local; ++j) {
           idx[j] = idx_local[j] - firstRow;
         }
         ierr = ISRestoreIndices(osm->is_local[i], &idx_local);CHKERRQ(ierr);
-        ierr = ISCreateGeneral(PETSC_COMM_SELF,m,idx,&isShift);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(PETSC_COMM_SELF,m_local,idx,&isShift);CHKERRQ(ierr);
         ierr = PetscFree(idx);CHKERRQ(ierr);
-        ierr = ISCreateStride(PETSC_COMM_SELF,m,0,1,&isl);CHKERRQ(ierr);
-        ierr = VecCreateSeq(PETSC_COMM_SELF,m,&osm->y_local[i]);CHKERRQ(ierr);
+        ierr = ISCreateStride(PETSC_COMM_SELF,m_local,0,1,&isl);CHKERRQ(ierr);
+        ierr = VecCreateSeq(PETSC_COMM_SELF,m_local,&osm->y_local[i]);CHKERRQ(ierr);
         ierr = VecScatterCreate(osm->y[i],isShift,osm->y_local[i],isl,&osm->localization[i]);CHKERRQ(ierr);
         ierr = ISDestroy(isShift);CHKERRQ(ierr);
 
         ierr = VecScatterCreate(vec,osm->is_local[i],osm->y_local[i],isl,&osm->prolongation[i]);CHKERRQ(ierr);
         ierr = ISDestroy(isl);CHKERRQ(ierr);
       } else {
+        ierr = VecGetLocalSize(vec,&m_local);CHKERRQ(ierr);
         osm->y_local[i] = osm->y[i];
         ierr = PetscObjectReference((PetscObject) osm->y[i]);CHKERRQ(ierr);
-        osm->localization[i] = osm->restriction[i];
-        ierr = PetscObjectReference((PetscObject) osm->restriction[i]);CHKERRQ(ierr);
         osm->prolongation[i] = osm->restriction[i];
         ierr = PetscObjectReference((PetscObject) osm->restriction[i]);CHKERRQ(ierr);
       }
@@ -241,8 +240,6 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       ierr = VecDuplicate(osm->x[i],&osm->y_local[i]);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&isl);CHKERRQ(ierr);
       ierr = VecScatterCreate(vec,isl,osm->x[i],isl,&osm->restriction[i]);CHKERRQ(ierr);
-      osm->localization[i] = osm->restriction[i];
-      ierr = PetscObjectReference((PetscObject) osm->restriction[i]);CHKERRQ(ierr);
       osm->prolongation[i] = osm->restriction[i];
       ierr = PetscObjectReference((PetscObject) osm->restriction[i]);CHKERRQ(ierr);
       ierr = ISDestroy(isl);CHKERRQ(ierr);
@@ -351,8 +348,10 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
   for (i=0; i<n_local_true; i++) {
     ierr = VecScatterEnd(osm->restriction[i],x,osm->x[i],INSERT_VALUES,forward);CHKERRQ(ierr);
     ierr = KSPSolve(osm->ksp[i],osm->x[i],osm->y[i]);CHKERRQ(ierr);
-    ierr = VecScatterBegin(osm->localization[i],osm->y[i],osm->y_local[i],INSERT_VALUES,forward);CHKERRQ(ierr);
-    ierr = VecScatterEnd(osm->localization[i],osm->y[i],osm->y_local[i],INSERT_VALUES,forward);CHKERRQ(ierr);
+    if (osm->localization) {
+      ierr = VecScatterBegin(osm->localization[i],osm->y[i],osm->y_local[i],INSERT_VALUES,forward);CHKERRQ(ierr);
+      ierr = VecScatterEnd(osm->localization[i],osm->y[i],osm->y_local[i],INSERT_VALUES,forward);CHKERRQ(ierr);
+    }
     ierr = VecScatterBegin(osm->prolongation[i],osm->y_local[i],y,ADD_VALUES,reverse);CHKERRQ(ierr);
   }
   /* handle the rest of the scatters that do not have local solves */
@@ -402,8 +401,10 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
   for (i=0; i<n_local_true; i++) {
     ierr = VecScatterEnd(osm->restriction[i],x,osm->x[i],INSERT_VALUES,forward);CHKERRQ(ierr);
     ierr = KSPSolveTranspose(osm->ksp[i],osm->x[i],osm->y[i]);CHKERRQ(ierr); 
-    ierr = VecScatterBegin(osm->localization[i],osm->y[i],osm->y_local[i],INSERT_VALUES,forward);CHKERRQ(ierr);
-    ierr = VecScatterEnd(osm->localization[i],osm->y[i],osm->y_local[i],INSERT_VALUES,forward);CHKERRQ(ierr);
+    if (osm->localization) {
+      ierr = VecScatterBegin(osm->localization[i],osm->y[i],osm->y_local[i],INSERT_VALUES,forward);CHKERRQ(ierr);
+      ierr = VecScatterEnd(osm->localization[i],osm->y[i],osm->y_local[i],INSERT_VALUES,forward);CHKERRQ(ierr);
+    }
     ierr = VecScatterBegin(osm->prolongation[i],osm->y_local[i],y,ADD_VALUES,reverse);CHKERRQ(ierr);
   }
   /* handle the rest of the scatters that do not have local solves */
@@ -440,12 +441,14 @@ static PetscErrorCode PCDestroy_ASM(PC pc)
   if (osm->restriction) {
     for (i=0; i<osm->n_local; i++) {
       ierr = VecScatterDestroy(osm->restriction[i]);CHKERRQ(ierr);
+      if (osm->localization) {ierr = VecScatterDestroy(osm->localization[i]);CHKERRQ(ierr);}
       ierr = VecScatterDestroy(osm->prolongation[i]);CHKERRQ(ierr);
       ierr = VecDestroy(osm->x[i]);CHKERRQ(ierr);
       ierr = VecDestroy(osm->y[i]);CHKERRQ(ierr);
       ierr = VecDestroy(osm->y_local[i]);CHKERRQ(ierr);
     }
     ierr = PetscFree(osm->restriction);CHKERRQ(ierr);
+    if (osm->localization) {ierr = PetscFree(osm->localization);CHKERRQ(ierr);}
     ierr = PetscFree(osm->prolongation);CHKERRQ(ierr);
     ierr = PetscFree(osm->x);CHKERRQ(ierr);
     ierr = PetscFree(osm->y);CHKERRQ(ierr);
@@ -921,6 +924,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASM(PC pc)
   osm->overlap           = 1;
   osm->ksp               = 0;
   osm->restriction       = 0;
+  osm->localization      = 0;
   osm->prolongation      = 0;
   osm->x                 = 0;
   osm->y                 = 0;
