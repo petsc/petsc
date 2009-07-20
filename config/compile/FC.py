@@ -4,10 +4,7 @@ import config.compile.C
 import config.framework
 import config.libraries
 
-try:
-  import sets
-except ImportError:
-  import config.setsBackport as sets
+import config.setsOrdered as sets
 
 class Preprocessor(config.compile.C.Preprocessor):
   '''The Fortran preprocessor, which now is just the C preprocessor'''
