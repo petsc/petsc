@@ -456,6 +456,40 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetCheckh_MFFD(Mat J,FCN3 fun,void*ectx
 }
 EXTERN_C_END
 
+#undef __FUNCT__
+#define __FUNCT__ "MatMFFDSetOptionsPrefix"
+/*@C
+   MatMFFDSetOptionsPrefix - Sets the prefix used for searching for all 
+   MatMFFD options in the database.
+
+   Collective on Mat
+
+   Input Parameter:
++  A - the Mat context
+-  prefix - the prefix to prepend to all option names
+
+   Notes:
+   A hyphen (-) must NOT be given at the beginning of the prefix name.
+   The first character of all runtime options is AUTOMATICALLY the hyphen.
+
+   Level: advanced
+
+.keywords: SNES, matrix-free, parameters
+
+.seealso: MatMFFDSetFromOptions(), MatCreateSNESMF()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetOptionsPrefix(Mat mat,const char prefix[])
+
+{
+  MatMFFD        mfctx = mat ? (MatMFFD)mat->data : PETSC_NULL;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mfctx,MATMFFD_COOKIE,1);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)mfctx,prefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatMFFDSetFromOptions"
 /*@
@@ -481,12 +515,14 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFromOptions(Mat mat)
 {
-  MatMFFD        mfctx = (MatMFFD)mat->data;
+  MatMFFD        mfctx = mat ? (MatMFFD)mat->data : PETSC_NULL;
   PetscErrorCode ierr;
   PetscTruth     flg;
   char           ftype[256];
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mfctx,MATMFFD_COOKIE,1);
   ierr = PetscOptionsBegin(((PetscObject)mfctx)->comm,((PetscObject)mfctx)->prefix,"Set matrix free computation parameters","MatMFFD");CHKERRQ(ierr);
   ierr = PetscOptionsList("-mat_mffd_type","Matrix free type","MatMFFDSetType",MatMFFDPetscFList,((PetscObject)mfctx)->type_name,ftype,256,&flg);CHKERRQ(ierr);
   if (flg) {

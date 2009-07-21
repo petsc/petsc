@@ -4,9 +4,11 @@
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matmffdsetfunction_            MATMFFDSETFUNCTION
 #define matmffdsettype_                MATMFFDSETTYPE
+#define matmffdsetoptionsprefix_       MATMFFDSETOPTIONSPREFIX
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matmffdsetfunction_            matmffdsetfunction
 #define matmffdsettype_                matmffdsettype
+#define matmffdsetoptionsprefix_       matmffdsetoptionsprefix
 #endif
 
 static PetscErrorCode ourmatmffdfunction(void *ctx,Vec x,Vec f)
@@ -33,6 +35,14 @@ void PETSC_STDCALL matmffdsettype_(Mat *mat,CHAR ftype PETSC_MIXED_LEN(len),Pets
   FIXCHAR(ftype,len,t);
   *ierr = MatMFFDSetType(*mat,t);
   FREECHAR(ftype,t);
+}
+
+void PETSC_STDCALL matmffdsetoptionsprefix_(Mat *mat,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *t;
+  FIXCHAR(prefix,len,t);
+  *ierr = MatMFFDSetOptionsPrefix(*mat,t);
+  FREECHAR(prefix,t);
 }
 
 EXTERN_C_END
