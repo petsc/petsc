@@ -200,19 +200,30 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCMAT_DLLEXPORT MatColoring_Natural(Mat mat,MatColoringType color, ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
-  PetscInt        start,end,i;
+  PetscInt        start,end,i,bs = 1,n;
   ISColoringValue *colors;
   MPI_Comm        comm;
+  PetscTruth      flg1,flg2;
 
   PetscFunctionBegin;
-  ierr = MatGetOwnershipRange(mat,&start,&end);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  ierr = PetscMalloc((end-start+1)*sizeof(PetscInt),&colors);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2);CHKERRQ(ierr);
+  if (flg1 || flg2) {
+    ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
+  }
+  ierr  = MatGetSize(mat,PETSC_NULL,&n);CHKERRQ(ierr);
+  ierr  = MatGetOwnershipRange(mat,&start,&end);CHKERRQ(ierr);
+  n     = n/bs;
+  if (n > IS_COLORING_MAX-1) SETERRQ(PETSC_ERR_SUP,"Maximum color size exceeded");
+
+  start = start/bs;
+  end   = start/bs;
+  ierr  = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
+  ierr  = PetscMalloc((end-start+1)*sizeof(PetscInt),&colors);CHKERRQ(ierr);
   for (i=start; i<end; i++) {
     colors[i-start] = i;
   }
-  ierr = ISColoringCreate(comm,mat->cmap->N,end-start,colors,iscoloring);CHKERRQ(ierr);
-
+  ierr = ISColoringCreate(comm,n,end-start,colors,iscoloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -301,6 +312,9 @@ $    -mat_coloring_view
 
    The colorings SL, LF, and ID are obtained via the Minpack software that was
    converted to C using f2c.
+
+   For BAIJ matrices this colors the blocks. The true number of colors would be block size times the number of colors
+   returned here.
 
    References:
 $     Thomas F. Coleman and Jorge J. More, Estimation of Sparse {J}acobian Matrices and Graph Coloring Problems,
