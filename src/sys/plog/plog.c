@@ -23,6 +23,7 @@ PetscLogEvent  PETSC_LARGEST_EVENT  = PETSC_EVENT;
 
 #if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX)
 std::map<std::string,PETSc::LogEvent> PETSc::Log::event_registry;
+std::map<std::string,PETSc::LogStage> PETSc::Log::stage_registry;
 #endif
 
 #if defined(PETSC_USE_LOG)

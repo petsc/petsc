@@ -267,7 +267,8 @@ namespace ALE {
     void setDefault(const value_type v[]) {for(int i = 0; i < fiberDim; ++i) {this->_emptyValue.v[i] = v[i];}}
   public: // Sizes
     void clear() {
-      this->_atlas->clear(); 
+      this->_atlas->clear();
+      this->zero();
     }
     int getFiberDimension(const point_type& p) const {
       return this->_atlas->restrictPoint(p)[0];

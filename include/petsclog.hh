@@ -5,6 +5,22 @@
 #include<map>
 
 namespace PETSc {
+  class LogStage {
+  protected:
+    std::string   name;
+    PetscLogEvent id;
+  public:
+    LogStage() : name(), id() {};
+    LogStage(const std::string& name, PetscLogStage id) : name(name), id(id) {};
+    LogStage(const LogStage& stage) : name(stage.name), id(stage.id) {};
+    void push() {
+      PetscErrorCode ierr = PetscLogStagePush(this->id); CHKERRXX(ierr);
+    };
+    void pop() {
+      PetscErrorCode ierr = PetscLogStagePop(); CHKERRXX(ierr);
+    };
+  };
+
   class LogEvent {
   protected:
     std::string   name;
@@ -32,6 +48,7 @@ namespace PETSc {
   class Log {
   public:
     static std::map<std::string,LogEvent> event_registry;
+    static std::map<std::string,LogStage> stage_registry;
 
     static LogEvent& Event(const std::string& name, PetscCookie cookie = PETSC_OBJECT_COOKIE) {
       if (event_registry.find(name) == event_registry.end()) {
@@ -43,6 +60,18 @@ namespace PETSc {
         event_registry[name] = LogEvent(name, id);
       }
       return event_registry[name];
+    };
+
+    static LogStage& Stage(const std::string& name) {
+      if (stage_registry.find(name) == stage_registry.end()) {
+        PetscLogStage  id;
+        PetscErrorCode ierr;
+
+        // Should check for already registered stages
+        ierr = PetscLogStageRegister(name.c_str(), &id);CHKERRXX(ierr);
+        stage_registry[name] = LogStage(name, id);
+      }
+      return stage_registry[name];
     };
   };
 }
