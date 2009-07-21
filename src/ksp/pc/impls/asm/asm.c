@@ -27,6 +27,7 @@ typedef struct {
   PCASMType  type;                /* use reduced interpolation, restriction or both */
   PetscTruth type_set;            /* if user set this value (so won't change it for symmetric problems) */
   PetscTruth same_local_solves;   /* flag indicating whether all local solvers are same */
+  PetscTruth sort_indices;        /* flag to sort subdomain indices */
 } PC_ASM;
 
 #undef __FUNCT__  
@@ -181,10 +182,12 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
 
     /*  Extend the "overlapping" regions by a number of steps  */
     ierr = MatIncreaseOverlap(pc->pmat,osm->n_local_true,osm->is,osm->overlap);CHKERRQ(ierr);
-    for (i=0; i<osm->n_local_true; i++) {
-      ierr = ISSort(osm->is[i]);CHKERRQ(ierr);
-      if (osm->is_local) {
-        ierr = ISSort(osm->is_local[i]);CHKERRQ(ierr);
+    if (osm->sort_indices) {
+      for (i=0; i<osm->n_local_true; i++) {
+        ierr = ISSort(osm->is[i]);CHKERRQ(ierr);
+        if (osm->is_local) {
+          ierr = ISSort(osm->is_local[i]);CHKERRQ(ierr);
+        }
       }
     }
 
@@ -598,6 +601,19 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
+#define __FUNCT__ "PCASMSetSortIndices_ASM"
+PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetSortIndices_ASM(PC pc,PetscTruth doSort)
+{
+  PC_ASM *osm = (PC_ASM*)pc->data;
+
+  PetscFunctionBegin;
+  osm->sort_indices = doSort;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
 #define __FUNCT__ "PCASMGetSubKSP_ASM"
 PetscErrorCode PETSCKSP_DLLEXPORT PCASMGetSubKSP_ASM(PC pc,PetscInt *n_local,PetscInt *first_local,KSP **ksp)
 {
@@ -821,6 +837,37 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetType(PC pc,PCASMType type)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PCASMSetSortIndices"
+/*@
+    PCASMSetSortIndices - Determines whether subdomain indices are sorted.
+
+    Collective on PC
+
+    Input Parameters:
++   pc  - the preconditioner context
+-   doSort - sort the subdomain indices
+
+    Level: intermediate
+
+.keywords: PC, ASM, set, type
+
+.seealso: PCASMSetLocalSubdomains(), PCASMSetTotalSubdomains(), PCASMGetSubKSP(),
+          PCASMCreateSubdomains2D()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetSortIndices(PC pc,PetscTruth doSort)
+{
+  PetscErrorCode ierr,(*f)(PC,PetscTruth);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMSetSortIndices_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,doSort);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PCASMGetSubKSP"
 /*@C
    PCASMGetSubKSP - Gets the local KSP contexts for all blocks on
@@ -938,6 +985,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASM(PC pc)
   osm->pmat              = 0;
   osm->type              = PC_ASM_RESTRICT;
   osm->same_local_solves = PETSC_TRUE;
+  osm->sort_indices      = PETSC_TRUE;
 
   pc->data                   = (void*)osm;
   pc->ops->apply             = PCApply_ASM;
@@ -957,6 +1005,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASM(PC pc)
                     PCASMSetOverlap_ASM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMSetType_C","PCASMSetType_ASM",
                     PCASMSetType_ASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMSetSortIndices_C","PCASMSetSortIndices_ASM",
+                    PCASMSetSortIndices_ASM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMGetSubKSP_C","PCASMGetSubKSP_ASM",
                     PCASMGetSubKSP_ASM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
