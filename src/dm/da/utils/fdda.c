@@ -147,7 +147,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetBlockFills(DA da,PetscInt *dfill,PetscInt 
 .seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), ISColoringType, ISColoring
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetColoring(DA da,ISColoringType ctype,ISColoring *coloring)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetColoring(DA da,ISColoringType ctype,MatType mtype,ISColoring *coloring)
 {
   PetscErrorCode ierr;
   PetscInt       dim,m,n,p;
