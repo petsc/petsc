@@ -7,25 +7,22 @@
 #include "petsc.h"
 
 typedef struct {
+  PetscInt        ell;		/* Number of search directions. */
+  PetscReal	delta;		/* Threshold for recomputing exact residual norm */
+  PetscTruth	bConvex;	/* Compute Enhanced BiCGstab polynomial when set to PETSC_TRUE */
+  
+  /* Workspace Vectors */
+  Vec	vB;
+  Vec	vRt;
+  Vec	vXr;
+  Vec	vTm;
+  Vec	*vvR;
+  Vec	*vvU;
 
-	PetscInt        ell;		/* Number of search directions. */
-	PetscReal	delta;		/* Threshold for recomputing exact residual norm */
-	PetscTruth	bConvex;	/* Compute Enhanced BiCGstab polynomial when set to PETWSC_TRUE */
-
-	/* Workspace Vectors */
-	Vec	vB;
-	Vec	vRt;
-	Vec	vXr;
-	Vec	vTm;
-	Vec	*vvR;
-	Vec	*vvU;
-
-	/* Workspace Arrays */
-	PetscInt	ldz;	
-	PetscInt	ldzc;
-	PetscScalar	*vY0c, *vYlc, *vYtc;
-	PetscScalar	*mZa, *mZb;
-} KSP_BiCGStabL;
+  /* Workspace Arrays */
+  PetscScalar	*vY0c, *vYlc, *vYtc;
+  PetscScalar	*mZa, *mZb;
+} KSP_BCGSL;
 
 /* predefined shorthands */
 #define	VX	(ksp->vec_sol)

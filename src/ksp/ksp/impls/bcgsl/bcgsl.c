@@ -4,17 +4,19 @@
  * "Enhanced implementation of BiCGStab(L) for solving linear systems
  * of equations". This uses tricky delayed updating ideas to prevent
  * round-off buildup.
+ *
+ * This has not been completely cleaned up into PETSc style.
  */
 #include "petscblaslapack.h"
 #include "private/kspimpl.h"              /*I   "petscksp.h" I*/
-#include "bcgsl.h"
+#include "../src/ksp/ksp/impls/bcgsl/bcgsl.h"
 
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_BCGSL"
 static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 {
-  KSP_BiCGStabL  *bcgsl = (KSP_BiCGStabL *) ksp->data;
+  KSP_BCGSL      *bcgsl = (KSP_BCGSL *) ksp->data;
   PetscScalar    alpha, beta, omega, sigma;
   PetscScalar    rho0, rho1;
   PetscReal      kappa0, kappaA, kappa1;
@@ -44,13 +46,6 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
   bcgsl->vvU   = ksp->work+vi; vi += ell+1;
   bcgsl->vXr   = ksp->work[vi]; vi++;
   ldMZ = PetscBLASIntCast(ell+1);
-  {
-    ierr = PetscMalloc(ldMZ*sizeof(PetscScalar), &AY0c);CHKERRQ(ierr);
-    ierr = PetscMalloc(ldMZ*sizeof(PetscScalar), &AYlc);CHKERRQ(ierr);
-    ierr = PetscMalloc(ldMZ*sizeof(PetscScalar), &AYtc);CHKERRQ(ierr);
-    ierr = PetscMalloc(ldMZ*ldMZ*sizeof(PetscScalar), &MZa);CHKERRQ(ierr);
-    ierr = PetscMalloc(ldMZ*ldMZ*sizeof(PetscScalar), &MZb);CHKERRQ(ierr);
-  }
 
   /* Prime the iterative solver */
   ierr = KSPInitialResidual(ksp, VX, VTM, VB, VVR[0], ksp->vec_rhs);CHKERRQ(ierr);
@@ -64,12 +59,6 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
     ksp->its   = 0;
     ksp->rnorm = zeta0;
     ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
-    ierr = PetscFree(AY0c);CHKERRQ(ierr);
-    ierr = PetscFree(AYlc);CHKERRQ(ierr);
-    ierr = PetscFree(AYtc);CHKERRQ(ierr);
-    ierr = PetscFree(MZa);CHKERRQ(ierr);
-    ierr = PetscFree(MZb);CHKERRQ(ierr);
-
     PetscFunctionReturn(0);
   }
 
@@ -182,7 +171,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
         bBombed = PETSC_TRUE;
         break;
       }
-      BLAScopy_(&bell, &MZb[1], &ione, &AY0c[1], &ione);
+      ierr = PetscMemcpy(&AY0c[1],&MZb[1],bcgsl->ell*sizeof(PetscScalar));CHKERRQ(ierr);
       LAPACKpotrs_("Lower", &bell, &ione, &MZa[1+ldMZ], &ldMZ, &AY0c[1], &ldMZ, &bierr);
     } else {
       PetscBLASInt ione = 1;
@@ -195,12 +184,12 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
         bBombed = PETSC_TRUE;
         break;
       }
-      BLAScopy_(&neqs, &MZb[1], &ione, &AY0c[1], &ione);
+      ierr = PetscMemcpy(&AY0c[1],&MZb[1],(bcgsl->ell-1)*sizeof(PetscScalar));CHKERRQ(ierr);
       LAPACKpotrs_("Lower", &neqs, &ione, &MZa[1+ldMZ], &ldMZ, &AY0c[1], &ldMZ, &bierr);
       AY0c[0] = -1;
       AY0c[bcgsl->ell] = 0;
 
-      BLAScopy_(&neqs, &MZb[1+ldMZ*(bcgsl->ell)], &ione, &AYlc[1], &ione);
+      ierr = PetscMemcpy(&AYlc[1],&MZb[1+ldMZ*(bcgsl->ell)],(bcgsl->ell-1)*sizeof(PetscScalar));CHKERRQ(ierr);
       LAPACKpotrs_("Lower", &neqs, &ione, &MZa[1+ldMZ], &ldMZ, &AYlc[1], &ldMZ, &bierr);
 
       AYlc[0] = 0;
@@ -283,12 +272,6 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 
   ierr = (*ksp->converged)(ksp, k, zeta, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);
   if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
-
-  ierr = PetscFree(AY0c);CHKERRQ(ierr);
-  ierr = PetscFree(AYlc);CHKERRQ(ierr);
-  ierr = PetscFree(AYtc);CHKERRQ(ierr);
-  ierr = PetscFree(MZa);CHKERRQ(ierr);
-  ierr = PetscFree(MZb);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -316,13 +299,14 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
 {
-  KSP_BiCGStabL  *bcgsl = (KSP_BiCGStabL *)ksp->data;
+  KSP_BCGSL      *bcgsl = (KSP_BCGSL *)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (ksp->setupcalled) {
     if ((delta<=0 && bcgsl->delta>0) || (delta>0 && bcgsl->delta<=0)) {
       ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
+      ierr = PetscFree5(AY0c,AYlc,AYtc,MZa,MZb);CHKERRQ(ierr);
       ksp->setupcalled = 0;
     }
   }
@@ -355,7 +339,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetPol(KSP ksp, PetscTruth uMROR)
 {
-  KSP_BiCGStabL  *bcgsl = (KSP_BiCGStabL *)ksp->data;
+  KSP_BCGSL      *bcgsl = (KSP_BCGSL *)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -365,7 +349,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetPol(KSP ksp, PetscTruth uMROR)
     /* free the data structures,
        then create them again
      */
-   ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
+    ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
+    ierr = PetscFree5(AY0c,AYlc,AYtc,MZa,MZb);CHKERRQ(ierr);
     bcgsl->bConvex = uMROR;
     ksp->setupcalled = 0;
   }
@@ -395,7 +380,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetPol(KSP ksp, PetscTruth uMROR)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetEll(KSP ksp, int ell)
 {
-  KSP_BiCGStabL  *bcgsl = (KSP_BiCGStabL *)ksp->data;
+  KSP_BCGSL      *bcgsl = (KSP_BCGSL *)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -406,7 +391,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetEll(KSP ksp, int ell)
   } else if (bcgsl->ell != ell) {
     /* free the data structures, then create them again */
     ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
-
+    ierr = PetscFree5(AY0c,AYlc,AYtc,MZa,MZb);CHKERRQ(ierr);
     bcgsl->ell = ell;
     ksp->setupcalled = 0;
   }
@@ -417,9 +402,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetEll(KSP ksp, int ell)
 #define __FUNCT__ "KSPView_BCGSL"
 PetscErrorCode KSPView_BCGSL(KSP ksp, PetscViewer viewer)
 {
-  KSP_BiCGStabL       *bcgsl = (KSP_BiCGStabL *)ksp->data;
-  PetscErrorCode      ierr;
-  PetscTruth          isascii, isstring;
+  KSP_BCGSL       *bcgsl = (KSP_BCGSL *)ksp->data;
+  PetscErrorCode  ierr;
+  PetscTruth      isascii, isstring;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer, PETSC_VIEWER_ASCII, &isascii);CHKERRQ(ierr);
@@ -438,7 +423,7 @@ PetscErrorCode KSPView_BCGSL(KSP ksp, PetscViewer viewer)
 #define __FUNCT__ "KSPSetFromOptions_BCGSL"
 PetscErrorCode KSPSetFromOptions_BCGSL(KSP ksp)
 {
-  KSP_BiCGStabL  *bcgsl = (KSP_BiCGStabL *)ksp->data;
+  KSP_BCGSL      *bcgsl = (KSP_BCGSL *)ksp->data;
   PetscErrorCode ierr;
   PetscInt       this_ell;
   PetscReal      delta;
@@ -479,8 +464,8 @@ PetscErrorCode KSPSetFromOptions_BCGSL(KSP ksp)
 #define __FUNCT__ "KSPSetUp_BCGSL"
 PetscErrorCode KSPSetUp_BCGSL(KSP ksp)
 {
-  KSP_BiCGStabL  *bcgsl = (KSP_BiCGStabL *)ksp->data;
-  PetscInt        ell = bcgsl->ell;
+  KSP_BCGSL      *bcgsl = (KSP_BCGSL *)ksp->data;
+  PetscInt       ell = bcgsl->ell,ldMZ = ell+1;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -490,6 +475,20 @@ PetscErrorCode KSPSetUp_BCGSL(KSP ksp)
     SETERRQ(PETSC_ERR_SUP, "no right preconditioning for KSPBCGSL");
   }
   ierr = KSPDefaultGetWork(ksp, 6+2*ell);CHKERRQ(ierr);
+  ierr = PetscMalloc5(ldMZ,PetscScalar,&AY0c,ldMZ,PetscScalar,&AYlc,ldMZ,PetscScalar,&AYtc,ldMZ*ldMZ,PetscScalar,&MZa,ldMZ*ldMZ,PetscScalar,&MZb);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPDestroy_BCGSL" 
+PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
+{
+  KSP_BCGSL      *bcgsl = (KSP_BCGSL*)ksp->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree5(AY0c,AYlc,AYtc,MZa,MZb);CHKERRQ(ierr);
+  ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -530,17 +529,17 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_BCGSL(KSP ksp)
 {
   PetscErrorCode ierr;
-  KSP_BiCGStabL  *bcgsl;
+  KSP_BCGSL      *bcgsl;
 
   PetscFunctionBegin;
   /* allocate BiCGStab(L) context */
-  ierr = PetscNewLog(ksp, KSP_BiCGStabL, &bcgsl);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp, KSP_BCGSL, &bcgsl);CHKERRQ(ierr);
   ksp->data = (void*)bcgsl;
 
   ksp->pc_side              = PC_LEFT;
   ksp->ops->setup           = KSPSetUp_BCGSL;
   ksp->ops->solve           = KSPSolve_BCGSL;
-  ksp->ops->destroy         = KSPDefaultDestroy;
+  ksp->ops->destroy         = KSPDestroy_BCGSL;
   ksp->ops->buildsolution   = KSPDefaultBuildSolution;
   ksp->ops->buildresidual   = KSPDefaultBuildResidual;
   ksp->ops->setfromoptions  = KSPSetFromOptions_BCGSL;
