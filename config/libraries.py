@@ -103,9 +103,16 @@ class Configure(config.base.Configure):
       newlibs += self.getLibArgumentList(lib)
     libs = newlibs
     newlibs = []
-    # do not remove duplicate -l, because there is a tiny chance that order may matter
+    removedashl = 0
     for j in libs:
+      # do not remove duplicate -l, because there is a tiny chance that order may matter
       if j in newlibs and not j.startswith('-l'): continue
+      # handle special case of -framework frameworkname
+      if j == '-framework': removedashl = 1
+      elif removedashl:
+        j = j[2:]
+        removedashl = 0
+        
       newlibs.append(j)
     return ' '.join(newlibs)
 
