@@ -132,7 +132,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetBlockFills(DA da,PetscInt *dfill,PetscInt 
 
     Input Parameter:
 +   da - the distributed array
--   ctype - IS_COLORING_GLOBAL or IS_COLORING_GHOSTED
+.   ctype - IS_COLORING_GLOBAL or IS_COLORING_GHOSTED
+-   mtype - either MATAIJ or MATBAIJ
 
     Output Parameters:
 .   coloring - matrix coloring for use in computing Jacobians (or PETSC_NULL if not needed)
@@ -147,7 +148,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetBlockFills(DA da,PetscInt *dfill,PetscInt 
 .seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), ISColoringType, ISColoring
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetColoring(DA da,ISColoringType ctype,MatType mtype,ISColoring *coloring)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetColoring(DA da,ISColoringType ctype,const MatType mtype,ISColoring *coloring)
 {
   PetscErrorCode ierr;
   PetscInt       dim,m,n,p;

@@ -22,7 +22,7 @@ int main(int argc,char **argv)
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_XPERIODIC,DA_STENCIL_BOX,-5,-5,
                     PETSC_DECIDE,PETSC_DECIDE,1,2,0,0,&da);CHKERRQ(ierr);
   ierr = DAGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
-  ierr = DAGetColoring(da,IS_COLORING_GHOSTED,&iscoloring);CHKERRQ(ierr);
+  ierr = DAGetColoring(da,IS_COLORING_GHOSTED,MATAIJ,&iscoloring);CHKERRQ(ierr);
   ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
   ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
 

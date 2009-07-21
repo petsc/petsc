@@ -217,11 +217,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatColoring_Natural(Mat mat,MatColoringType co
   if (n > IS_COLORING_MAX-1) SETERRQ(PETSC_ERR_SUP,"Maximum color size exceeded");
 
   start = start/bs;
-  end   = start/bs;
+  end   = end/bs;
   ierr  = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr  = PetscMalloc((end-start+1)*sizeof(PetscInt),&colors);CHKERRQ(ierr);
   for (i=start; i<end; i++) {
-    colors[i-start] = i;
+    colors[i-start] = (ISColoringValue)i;
   }
   ierr = ISColoringCreate(comm,n,end-start,colors,iscoloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
