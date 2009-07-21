@@ -6,6 +6,8 @@ try:
 except ImportError:
   import config.setsBackport as sets
 
+import cPickle
+
 class CompileError(RuntimeError):
   pass
 
@@ -209,8 +211,6 @@ class Builder(logger.Logger):
 
   def saveConfiguration(self, configurationName):
     '''Save a configuration to RDict'''
-    import cPickle
-
     cache = cPickle.dumps(self.getConfiguration(configurationName))
     self.argDB['#'+configurationName+' cache#'] = cache
     self.logPrint('Wrote configuration '+configurationName+' to cache: size '+str(len(cache))+' in '+self.argDB.saveFilename)
@@ -220,7 +220,6 @@ class Builder(logger.Logger):
     '''Load a configuration from RDict'''
     loadName = '#'+configurationName+' cache#'
     if loadName in self.argDB:
-      import cPickle
 
       try:
         cache = self.argDB[loadName]

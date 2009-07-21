@@ -3,6 +3,11 @@ import config.base
 
 import os
 
+try:
+  from hashlib import md5 as new_md5
+except ImportError:
+  from md5 import new as new_md5
+
 class Package(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
@@ -164,12 +169,11 @@ class Package(config.base.Configure):
   def getChecksum(self,source, chunkSize = 1024*1024):  
     '''Return the md5 checksum for a given file, which may also be specified by its filename
        - The chunkSize argument specifies the size of blocks read from the file'''
-    import md5
     if isinstance(source, file):
       f = source
     else:
       f = file(source)
-    m = md5.new()
+    m = new_md5()
     size = chunkSize
     buf  = f.read(size)
     while buf:
@@ -285,14 +289,11 @@ class Package(config.base.Configure):
       self.framework.log.write('Do not need to rebuild '+self.name)
       return 0
 
-  def checkInstall(self, output, mkfile):
-    '''Did the install process actually create a library?'''
-    if not os.path.isfile(os.path.join(self.installDir, self.libdir, self.liblist[0][0])):
-      self.framework.log.write('Error running make on '+self.name+'   ******(libraries not installed)*******\n')
-      self.framework.log.write('********Output of running make on '+self.name+' follows *******\n')        
-      self.framework.log.write(output)
-      self.framework.log.write('********End of Output of running make on '+self.name+' *******\n')
-      raise RuntimeError('Error running make on '+self.name+', libraries not installed')
+  def postInstall(self, output, mkfile):
+    '''Dump package build log into configure.log - also copy package config to prevent unnecessary rebuild'''
+    self.framework.log.write('********Output of running make on '+self.name+' follows *******\n')        
+    self.framework.log.write(output)
+    self.framework.log.write('********End of Output of running make on '+self.name+' *******\n')
     output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, mkfile)+' '+os.path.join(self.confDir, self.name), timeout=5, log = self.framework.log)[0]            
     self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed '+self.name+' into '+self.installDir)
 

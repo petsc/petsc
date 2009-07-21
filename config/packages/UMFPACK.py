@@ -56,5 +56,5 @@ class Configure(config.package.Package):
         output = config.base.Configure.executeShellCommand('cd '+self.packageDir+'/UMFPACK; UMFPACK_INSTALL_DIR='+self.installDir+'''/lib; export UMFPACK_INSTALL_DIR; make; make clean; mv Lib/*.a '''+self.libDir+'; cp Include/*.h '+self.includeDir+'; cd ..; cp UFconfig/*.h '+self.includeDir+'; cd AMD; mv Lib/*.a '+self.libDir+'; cp Include/*.h '+self.includeDir, timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on UMFPACK: '+str(e))
-      self.checkInstall(output, mkfile)
+      self.postInstall(output, mkfile)
     return self.installDir

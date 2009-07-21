@@ -26,12 +26,18 @@
 '''
 import logger
 
-import cPickle
 import errno
-import md5
 import os
 import re
 import time
+
+import cPickle
+
+try:
+  from hashlib import md5 as new_md5
+except ImportError:
+  from md5 import new as new_md5
+
 
 class SourceDB (dict, logger.Logger):
   '''A SourceDB is a dictionary of file data used during the build process.'''
@@ -144,7 +150,7 @@ class SourceDB (dict, logger.Logger):
       f = source
     else:
       f = file(source)
-    m = md5.new()
+    m = new_md5()
     size = chunkSize
     buf  = f.read(size)
     while buf:

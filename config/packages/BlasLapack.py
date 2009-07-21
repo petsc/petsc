@@ -3,7 +3,6 @@ import user
 import config.base
 import config.package
 from sourceDatabase import SourceDB
-import md5
 import os
 
 class Configure(config.package.Package):

@@ -3,6 +3,13 @@ import build.processor
 
 import os
 
+import cPickle
+
+try:
+  from hashlib import md5 as new_md5
+except ImportError:
+  from md5 import new as new_md5
+
 class SIDLConstants:
   '''This class contains data about the SIDL language'''
   def getLanguages():
@@ -127,15 +134,13 @@ class Compiler(build.processor.Processor):
     if not len(set): return self.output
     import nargs
     import sourceDatabase
-    import cPickle
-    import md5
 
     # Check for cached output
     #   We could of course hash this big key again
     #   These keys could be local, but we can do that if they proliferate too much. It would mean
     #     that each project would have to compile the SIDL once
     flags    = self.getFlags(set)
-    cacheKey = 'cacheKey'+''.join([sourceDatabase.SourceDB.getChecksum(f) for f in set]+[md5.new(''.join(flags)).hexdigest()])
+    cacheKey = 'cacheKey'+''.join([sourceDatabase.SourceDB.getChecksum(f) for f in set]+[new_md5(''.join(flags)).hexdigest()])
     if set.tag.startswith('old') and cacheKey in self.argDB:
       self.debugPrint('Loading '+str(set)+' for a '+self.language+' '+self.action+' from argument database ('+cacheKey+')', 3, 'compile')
       outputFiles = cPickle.loads(self.argDB[cacheKey])

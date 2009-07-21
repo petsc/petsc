@@ -48,6 +48,14 @@ import config.base
 import os
 import re
 
+import cPickle
+
+try:
+  from hashlib import md5 as new_md5
+except ImportError:
+  from md5 import new as new_md5
+
+
 try:
   enumerate([0, 1])
 except NameError:
@@ -343,9 +351,6 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     return framework
 
   def addPackageDependency(self, dependency, depPath = None):
-    import cPickle
-    import md5
-
     if not dependency:
       return
     if isinstance(dependency, str):
@@ -358,7 +363,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
         dependency = depPath
       else:
         dependency = os.path.dirname(dependency.__file__)
-    self.dependencies[dependency] = md5.new(cPickle.dumps(framework)).hexdigest()
+    self.dependencies[dependency] = new_md5(cPickle.dumps(framework)).hexdigest()
     self.logPrint('Added configure dependency from '+dependency+'('+str(self.dependencies[dependency])+')')
     for child in framework.childGraph.vertices:
       child.argDB = self.argDB
@@ -369,11 +374,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     return
 
   def updatePackageDependencies(self):
-    import md5
-
     for dependency, digest in self.dependencies.items():
       framework = self.loadFramework(dependency)
-      if digest == md5.new(cPickle.dumps(framework)).hexdigest():
+      if digest == new_md5(cPickle.dumps(framework)).hexdigest():
         continue
       self.logPrint('Configure dependency from '+dependency+' has changed. Reloading...')
       for child in framework.childGraph.vertices:
