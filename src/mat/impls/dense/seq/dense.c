@@ -416,6 +416,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,IS col,const M
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetFactor_seqdense_petsc"
 PetscErrorCode MatGetFactor_seqdense_petsc(Mat A,MatFactorType ftype,Mat *fact)
@@ -434,6 +435,7 @@ PetscErrorCode MatGetFactor_seqdense_petsc(Mat A,MatFactorType ftype,Mat *fact)
   (*fact)->factor = ftype;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 /* ------------------------------------------------------------------*/
 #undef __FUNCT__  
