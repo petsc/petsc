@@ -153,7 +153,7 @@ int main(int argc,char **args)
   } else { /* advanced version */
     if (size != 1) SETERRQ(1,"PCASMCreateSubdomains() is currently a uniprocessor routine only!");
     ierr = PCASMCreateSubdomains2D(m,n,M,N,1,overlap,&Nsub,&is);CHKERRQ(ierr);
-    ierr = PCASMSetLocalSubdomains(pc,Nsub,is);CHKERRQ(ierr);
+    ierr = PCASMSetLocalSubdomains(pc,Nsub,is,PETSC_NULL);CHKERRQ(ierr);
   }
 
   /* -------------------------------------------------------------------

@@ -256,6 +256,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseDropTolerance(PC,PetscRea
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetLocalSubdomains(PC,PetscInt,IS[],IS[]);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetTotalSubdomains(PC,PetscInt,IS[],IS[]);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetOverlap(PC,PetscInt);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetSortIndices(PC,PetscTruth);
 /*E
     PCASMType - Type of additive Schwarz method to use
 

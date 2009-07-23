@@ -253,7 +253,7 @@ PetscErrorCode MatStashValuesRow_Private(MatStash *stash,PetscInt row,PetscInt n
   space = stash->space;
   k     = space->local_used;
   for (i=0; i<n; i++) {
-    if (ignorezeroentries && !values[i]) continue;
+    if (ignorezeroentries && (values[i] == 0.0)) continue;
     space->idx[k] = row;
     space->idy[k] = idxn[i];
     space->val[k] = values[i];
@@ -296,7 +296,7 @@ PetscErrorCode MatStashValuesCol_Private(MatStash *stash,PetscInt row,PetscInt n
   space = stash->space;
   k = space->local_used;
   for (i=0; i<n; i++) {
-    if (ignorezeroentries && !values[i*stepval]) continue;
+    if (ignorezeroentries && (values[i*stepval] == 0.0)) continue;
     space->idx[k] = row;
     space->idy[k] = idxn[i]; 
     space->val[k] = values[i*stepval]; 

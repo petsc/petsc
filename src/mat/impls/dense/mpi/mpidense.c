@@ -1358,6 +1358,7 @@ PetscErrorCode MatFactorGetSolverPackage_mpidense_plapack(Mat A,const MatSolverP
 }
 EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetFactor_mpidense_plapack"
 PetscErrorCode MatGetFactor_mpidense_plapack(Mat A,MatFactorType ftype,Mat *F)
@@ -1411,6 +1412,7 @@ PetscErrorCode MatGetFactor_mpidense_plapack(Mat A,MatFactorType ftype,Mat *F)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)(*F),"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mpidense_plapack",MatFactorGetSolverPackage_mpidense_plapack);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 #endif
 
 #undef __FUNCT__  

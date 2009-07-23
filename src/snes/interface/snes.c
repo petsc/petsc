@@ -170,14 +170,19 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscTruth hasOpera
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
-  
+
+  if(!snes->vec_func && (snes->jacobian || snes->jacobian_pre)) {
+    Mat A = snes->jacobian, B = snes->jacobian_pre;
+    ierr = MatGetVecs(A ? A : B, PETSC_NULL,&snes->vec_func);CHKERRQ(ierr);
+  }
+
   if (version == 1) {
     ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
-    /*ierr = MatMFFDSetOptionsPrefix(J,((PetscObject)snes)->prefix);CHKERRQ(ierr);*/
+    ierr = MatMFFDSetOptionsPrefix(J,((PetscObject)snes)->prefix);CHKERRQ(ierr);
     ierr = MatMFFDSetFromOptions(J);CHKERRQ(ierr);
   } else if (version == 2) {
-#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE) && !defined(PETSC_USE_LONG_DOUBLE) && !defined(PETSC_USE_INT)
     if (!snes->vec_func) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"SNESSetFunction() must be called first");
+#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE) && !defined(PETSC_USE_LONG_DOUBLE) && !defined(PETSC_USE_INT)
     ierr = SNESDefaultMatrixFreeCreate2(snes,snes->vec_func,&J);CHKERRQ(ierr);
 #else
     SETERRQ(PETSC_ERR_SUP, "matrix-free operator rutines (version 2)");

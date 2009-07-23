@@ -1577,6 +1577,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDResetHHistory(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctionError(Mat,PetscReal);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetPeriod(Mat,PetscInt);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDGetH(Mat,PetscScalar *);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetOptionsPrefix(Mat,const char[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFromOptions(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDCheckPositivity(void*,Vec,Vec,PetscScalar*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetCheckh(Mat,PetscErrorCode (*)(void*,Vec,Vec,PetscScalar*),void*);
