@@ -158,6 +158,7 @@ struct _MatOps {
   PetscErrorCode (*getghosts)(Mat,PetscInt*,const PetscInt *[]);
   PetscErrorCode (*iludtfactorsymbolic)(Mat,Mat,IS,IS,const MatFactorInfo*);
   PetscErrorCode (*iludtfactornumeric)(Mat,Mat,const MatFactorInfo*);
+  /*119*/
   PetscErrorCode (*multdiagonalblock)(Mat,Vec,Vec);
 };
 /*

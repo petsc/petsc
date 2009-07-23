@@ -2054,6 +2054,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetGhosts_MPIBAIJ(Mat mat,PetscInt *nghosts
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat,ISColoring,MatFDColoring);
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {
@@ -2111,7 +2112,7 @@ static struct _MatOps MatOps_Values = {
        0,
        0,
        0,
-/*54*/ 0,
+/*54*/ MatFDColoringCreate_MPIAIJ,
        0,
        MatSetUnfactored_MPIBAIJ,
        MatPermute_MPIBAIJ,

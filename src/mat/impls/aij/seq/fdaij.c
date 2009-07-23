@@ -4,14 +4,19 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringCreate_SeqAIJ"
+/*
+    This routine is shared by AIJ and BAIJ matrices, since it operators only on the nonzero structure of the elements or blocks.
+    This is why it has the ugly code with the MatGetBlockSize()
+*/
 PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   PetscErrorCode ierr;
-  PetscInt       i,n,nrows,N = mat->cmap->N,j,k,m,*rows,*ci,*cj,ncols,col;
+  PetscInt       i,n,nrows,N,j,k,m,*rows,*ci,*cj,ncols,col;
   const PetscInt *is;
-  PetscInt       nis = iscoloring->n,*rowhit,*columnsforrow,l;
+  PetscInt       nis = iscoloring->n,*rowhit,*columnsforrow,l,bs = 1;
   IS             *isa;
   PetscTruth     done,flg = PETSC_FALSE;
+  PetscTruth     flg1,flg2;
 
   PetscFunctionBegin;
   if (!mat->assembled) {
@@ -19,9 +24,17 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   }
 
   ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&isa);CHKERRQ(ierr);
-  c->M       = mat->rmap->N;  /* set total rows, columns and local rows */
-  c->N       = mat->cmap->N;
-  c->m       = mat->rmap->N;
+  /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
+  ierr = PetscTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2);CHKERRQ(ierr);
+  if (flg1 || flg2) {
+    ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
+  }
+
+  N          = mat->cmap->N/bs;
+  c->M       = mat->rmap->N/bs;  /* set total rows, columns and local rows */
+  c->N       = mat->cmap->N/bs;
+  c->m       = mat->rmap->N/bs;
   c->rstart  = 0;
 
   c->ncolors = nis;
@@ -31,11 +44,8 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   ierr       = PetscMalloc(nis*sizeof(PetscInt*),&c->rows);CHKERRQ(ierr);
   ierr       = PetscMalloc(nis*sizeof(PetscInt*),&c->columnsforrow);CHKERRQ(ierr);
 
-  /*
-      Calls the _SeqAIJ() version of these routines to make sure it does not 
-     get the reduced (by inodes) version of I and J
-  */
-  ierr = MatGetColumnIJ_SeqAIJ(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&done);CHKERRQ(ierr);
+  ierr = MatGetColumnIJ(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&done);CHKERRQ(ierr);
+  if (!done) SETERRQ1(PETSC_ERR_SUP,"MatGetColumnIJ() not supported for matrix type %s",((PetscObject)mat)->type_name);
 
   /*
      Temporary option to allow for debugging/testing
@@ -133,7 +143,7 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     } /* ---------------------------------------------------------------------------------------*/
     ierr = ISRestoreIndices(isa[i],&is);CHKERRQ(ierr);  
   }
-  ierr = MatRestoreColumnIJ_SeqAIJ(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&done);CHKERRQ(ierr);
+  ierr = MatRestoreColumnIJ(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&done);CHKERRQ(ierr);
 
   ierr = PetscFree(rowhit);CHKERRQ(ierr);
   ierr = PetscFree(columnsforrow);CHKERRQ(ierr);

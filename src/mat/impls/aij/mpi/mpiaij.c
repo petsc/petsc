@@ -2562,6 +2562,7 @@ PetscErrorCode MatGetSeqNonzerostructure_MPIAIJ(Mat mat,Mat *newmat[])
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply_AIJ(Mat,MatFDColoring,Vec,MatStructure*,void*);
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatGetRow_MPIAIJ,
@@ -2654,7 +2655,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        0,
 #endif
        MatSetValuesAdifor_MPIAIJ,
-/*75*/ 0,
+/*75*/ MatFDColoringApply_AIJ,
        0,
        0,
        0,

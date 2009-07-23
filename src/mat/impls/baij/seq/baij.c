@@ -2408,6 +2408,66 @@ PetscErrorCode MatImaginaryPart_SeqBAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat,ISColoring,MatFDColoring);
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetColumnIJ_SeqBAIJ"
+/*
+    Code almost idential to MatGetColumnIJ_SeqAIJ() should share common code
+*/
+PetscErrorCode MatGetColumnIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscTruth inodecompressed,PetscInt *nn,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
+{
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
+  PetscErrorCode ierr;
+  PetscInt       bs = A->rmap->bs,i,*collengths,*cia,*cja,n = A->cmap->n/bs,m = A->rmap->n/bs;
+  PetscInt       nz = a->i[m],row,*jj,mr,col;
+
+  PetscFunctionBegin;  
+  *nn = n;
+  if (!ia) PetscFunctionReturn(0);
+  if (symmetric) {
+    SETERRQ(PETSC_ERR_SUP,"Not for BAIJ matrices");
+  } else {
+    ierr = PetscMalloc((n+1)*sizeof(PetscInt),&collengths);CHKERRQ(ierr);
+    ierr = PetscMemzero(collengths,n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMalloc((n+1)*sizeof(PetscInt),&cia);CHKERRQ(ierr);
+    ierr = PetscMalloc((nz+1)*sizeof(PetscInt),&cja);CHKERRQ(ierr);
+    jj = a->j;
+    for (i=0; i<nz; i++) {
+      collengths[jj[i]]++;
+    }
+    cia[0] = oshift;
+    for (i=0; i<n; i++) {
+      cia[i+1] = cia[i] + collengths[i];
+    }
+    ierr = PetscMemzero(collengths,n*sizeof(PetscInt));CHKERRQ(ierr);
+    jj   = a->j;
+    for (row=0; row<m; row++) {
+      mr = a->i[row+1] - a->i[row];
+      for (i=0; i<mr; i++) {
+        col = *jj++;
+        cja[cia[col] + collengths[col]++ - oshift] = row + oshift;  
+      }
+    }
+    ierr = PetscFree(collengths);CHKERRQ(ierr);
+    *ia = cia; *ja = cja;
+  }
+  PetscFunctionReturn(0); 
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatRestoreColumnIJ_SeqBAIJ"
+PetscErrorCode MatRestoreColumnIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscTruth inodecompressed,PetscInt *n,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;  
+  if (!ia) PetscFunctionReturn(0);
+  ierr = PetscFree(*ia);CHKERRQ(ierr);
+  ierr = PetscFree(*ja);CHKERRQ(ierr);
+  PetscFunctionReturn(0); 
+}
+
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
@@ -2462,9 +2522,9 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
 /*49*/ 0,
        MatGetRowIJ_SeqBAIJ,
        MatRestoreRowIJ_SeqBAIJ,
-       0,
-       0,
-/*54*/ 0,
+       MatGetColumnIJ_SeqBAIJ,
+       MatRestoreColumnIJ_SeqBAIJ,
+/*54*/ MatFDColoringCreate_SeqAIJ,
        0,
        0,
        0,

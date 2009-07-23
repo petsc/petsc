@@ -505,6 +505,22 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringGetPerturbedColumns(MatFDColoring
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
 {
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;    
+  PetscValidHeaderSpecific(J,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_COOKIE,2);
+  PetscValidHeaderSpecific(x1,VEC_COOKIE,3);
+  if (!coloring->f) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call MatFDColoringSetFunction()");
+  if (!J->ops->fdcoloringapply) SETERRQ1(PETSC_ERR_SUP,"Not supported for this matrix type %s",((PetscObject)J)->type_name);
+  ierr = (*J->ops->fdcoloringapply)(J,coloring,x1,flag,sctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatFDColoringApply_AIJ"
+PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
+{
   PetscErrorCode (*f)(void*,Vec,Vec,void*) = (PetscErrorCode (*)(void*,Vec,Vec,void *))coloring->f;
   PetscErrorCode ierr;
   PetscInt       k,start,end,l,row,col,srow,**vscaleforrow,m1,m2;

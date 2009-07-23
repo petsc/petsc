@@ -5975,9 +5975,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetBlockSize(Mat mat,PetscInt bs)
 .   shift -  0 or 1 indicating we want the indices starting at 0 or 1
 .   symmetric - PETSC_TRUE or PETSC_FALSE indicating the matrix data structure should be
                 symmetrized
--   blockcompressed - PETSC_TRUE or PETSC_FALSE  indicating if the nonzero structure of the
-                 blockcompressed matrix is desired or not [inode, baij have blockcompressed 
-                 nonzero structure which is different than the full nonzero structure]
+-   inodecompressed - PETSC_TRUE or PETSC_FALSE  indicating if the nonzero structure of the
+                 inodes or the nonzero elements is wanted. For BAIJ matrices the compressed version is 
+                 always used.
 
     Output Parameters:
 +   n - number of rows in the (possibly compressed) matrix
@@ -5997,13 +5997,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetBlockSize(Mat mat,PetscInt bs)
            In Fortran use
 $           PetscInt ia(1), ja(1)
 $           PetscOffset iia, jja
-$      call MatGetRowIJ(mat,shift,symmetric,blockcompressed,n,ia,iia,ja,jja,done,ierr)
+$      call MatGetRowIJ(mat,shift,symmetric,inodecompressed,n,ia,iia,ja,jja,done,ierr)
  
        Acess the ith and jth entries via ia(iia + i) and ja(jja + j)
 
 .seealso: MatGetColumnIJ(), MatRestoreRowIJ(), MatGetArray()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowIJ(Mat mat,PetscInt shift,PetscTruth symmetric,PetscTruth blockcompressed,PetscInt *n,PetscInt *ia[],PetscInt* ja[],PetscTruth *done)
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowIJ(Mat mat,PetscInt shift,PetscTruth symmetric,PetscTruth inodecompressed,PetscInt *n,PetscInt *ia[],PetscInt* ja[],PetscTruth *done)
 {
   PetscErrorCode ierr;
 
@@ -6019,7 +6019,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowIJ(Mat mat,PetscInt shift,PetscTruth 
   else {
     *done = PETSC_TRUE;
     ierr = PetscLogEventBegin(MAT_GetRowIJ,mat,0,0,0);CHKERRQ(ierr);
-    ierr  = (*mat->ops->getrowij)(mat,shift,symmetric,blockcompressed,n,ia,ja,done);CHKERRQ(ierr);
+    ierr  = (*mat->ops->getrowij)(mat,shift,symmetric,inodecompressed,n,ia,ja,done);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_GetRowIJ,mat,0,0,0);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -6037,9 +6037,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowIJ(Mat mat,PetscInt shift,PetscTruth 
 .   shift - 1 or zero indicating we want the indices starting at 0 or 1
 .   symmetric - PETSC_TRUE or PETSC_FALSE indicating the matrix data structure should be
                 symmetrized
--   blockcompressed - PETSC_TRUE or PETSC_FALSE  indicating if the nonzero structure of the
-                 blockcompressed matrix is desired or not [inode, baij have blockcompressed 
-                 nonzero structure which is different than the full nonzero structure]
+-   inodecompressed - PETSC_TRUE or PETSC_FALSE indicating if the nonzero structure of the
+                 inodes or the nonzero elements is wanted. For BAIJ matrices the compressed version is 
+                 always used.
 
     Output Parameters:
 +   n - number of columns in the (possibly compressed) matrix
@@ -6051,7 +6051,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowIJ(Mat mat,PetscInt shift,PetscTruth 
 
 .seealso: MatGetRowIJ(), MatRestoreColumnIJ()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetColumnIJ(Mat mat,PetscInt shift,PetscTruth symmetric,PetscTruth blockcompressed,PetscInt *n,PetscInt *ia[],PetscInt* ja[],PetscTruth *done)
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetColumnIJ(Mat mat,PetscInt shift,PetscTruth symmetric,PetscTruth inodecompressed,PetscInt *n,PetscInt *ia[],PetscInt* ja[],PetscTruth *done)
 {
   PetscErrorCode ierr;
 
@@ -6066,7 +6066,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColumnIJ(Mat mat,PetscInt shift,PetscTru
   if (!mat->ops->getcolumnij) *done = PETSC_FALSE;
   else {
     *done = PETSC_TRUE;
-    ierr  = (*mat->ops->getcolumnij)(mat,shift,symmetric,blockcompressed,n,ia,ja,done);CHKERRQ(ierr);
+    ierr  = (*mat->ops->getcolumnij)(mat,shift,symmetric,inodecompressed,n,ia,ja,done);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -6084,9 +6084,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColumnIJ(Mat mat,PetscInt shift,PetscTru
 .   shift - 1 or zero indicating we want the indices starting at 0 or 1
 .   symmetric - PETSC_TRUE or PETSC_FALSE indicating the matrix data structure should be
                 symmetrized
--   blockcompressed - PETSC_TRUE or PETSC_FALSE  indicating if the nonzero structure of the
-                 blockcompressed matrix is desired or not [inode, baij have blockcompressed 
-                 nonzero structure which is different than the full nonzero structure]
+-   inodecompressed -  PETSC_TRUE or PETSC_FALSE indicating if the nonzero structure of the
+                 inodes or the nonzero elements is wanted. For BAIJ matrices the compressed version is 
+                 always used.
 
     Output Parameters:
 +   n - size of (possibly compressed) matrix
@@ -6098,7 +6098,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColumnIJ(Mat mat,PetscInt shift,PetscTru
 
 .seealso: MatGetRowIJ(), MatRestoreColumnIJ()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreRowIJ(Mat mat,PetscInt shift,PetscTruth symmetric,PetscTruth blockcompressed,PetscInt *n,PetscInt *ia[],PetscInt* ja[],PetscTruth *done)
+PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreRowIJ(Mat mat,PetscInt shift,PetscTruth symmetric,PetscTruth inodecompressed,PetscInt *n,PetscInt *ia[],PetscInt* ja[],PetscTruth *done)
 {
   PetscErrorCode ierr;
 
@@ -6113,7 +6113,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreRowIJ(Mat mat,PetscInt shift,PetscTr
   if (!mat->ops->restorerowij) *done = PETSC_FALSE;
   else {
     *done = PETSC_TRUE;
-    ierr  = (*mat->ops->restorerowij)(mat,shift,symmetric,blockcompressed,n,ia,ja,done);CHKERRQ(ierr);
+    ierr  = (*mat->ops->restorerowij)(mat,shift,symmetric,inodecompressed,n,ia,ja,done);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -6131,9 +6131,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreRowIJ(Mat mat,PetscInt shift,PetscTr
 .   shift - 1 or zero indicating we want the indices starting at 0 or 1
 -   symmetric - PETSC_TRUE or PETSC_FALSE indicating the matrix data structure should be
                 symmetrized
--   blockcompressed - PETSC_TRUE or PETSC_FALSE  indicating if the nonzero structure of the
-                 blockcompressed matrix is desired or not [inode, baij have blockcompressed 
-                 nonzero structure which is different than the full nonzero structure]
+-   inodecompressed - PETSC_TRUE or PETSC_FALSE indicating if the nonzero structure of the
+                 inodes or the nonzero elements is wanted. For BAIJ matrices the compressed version is 
+                 always used.
 
     Output Parameters:
 +   n - size of (possibly compressed) matrix
@@ -6145,7 +6145,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreRowIJ(Mat mat,PetscInt shift,PetscTr
 
 .seealso: MatGetColumnIJ(), MatRestoreRowIJ()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreColumnIJ(Mat mat,PetscInt shift,PetscTruth symmetric,PetscTruth blockcompressed,PetscInt *n,PetscInt *ia[],PetscInt* ja[],PetscTruth *done)
+PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreColumnIJ(Mat mat,PetscInt shift,PetscTruth symmetric,PetscTruth inodecompressed,PetscInt *n,PetscInt *ia[],PetscInt* ja[],PetscTruth *done)
 {
   PetscErrorCode ierr;
 
@@ -6160,7 +6160,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreColumnIJ(Mat mat,PetscInt shift,Pets
   if (!mat->ops->restorecolumnij) *done = PETSC_FALSE;
   else {
     *done = PETSC_TRUE;
-    ierr  = (*mat->ops->restorecolumnij)(mat,shift,symmetric,blockcompressed,n,ia,ja,done);CHKERRQ(ierr);
+    ierr  = (*mat->ops->restorecolumnij)(mat,shift,symmetric,inodecompressed,n,ia,ja,done);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

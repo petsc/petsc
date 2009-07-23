@@ -6,12 +6,16 @@ EXTERN PetscErrorCode CreateColmap_MPIAIJ_Private(Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringCreate_MPIAIJ"
+/*
+    This routine is shared by AIJ and BAIJ matrices, since it operators only on the nonzero structure of the elements or blocks.
+    This is why it has the ugly code with the MatGetBlockSize()
+*/
 PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   Mat_MPIAIJ            *aij = (Mat_MPIAIJ*)mat->data;
   PetscErrorCode        ierr;
   PetscMPIInt           size,*ncolsonproc,*disp,nn;
-  PetscInt              i,n,nrows,j,k,m,*rows = 0,*A_ci,*A_cj,ncols,col;
+  PetscInt              bs = 1,i,n,nrows,j,k,m,*rows = 0,*A_ci,*A_cj,ncols,col;
   const PetscInt        *is;
   PetscInt              nis = iscoloring->n,nctot,*cols,*B_ci,*B_cj;
   PetscInt              *rowhit,M = mat->rmap->n,cstart = mat->cmap->rstart,cend = mat->cmap->rend,colb;
@@ -20,6 +24,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   PetscTruth             done,flg;
   ISLocalToGlobalMapping map = mat->mapping;
   PetscInt               *ltog = (map ? map->indices : (PetscInt*) PETSC_NULL) ,ctype=c->ctype;
+  PetscTruth             flg1,flg2;
 
   PetscFunctionBegin;
   if (!mat->assembled) {
@@ -28,10 +33,18 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   if (ctype == IS_COLORING_GHOSTED && !map) SETERRQ(PETSC_ERR_ARG_INCOMP,"When using ghosted differencing matrix must have local to global mapping provided with MatSetLocalToGlobalMapping");
 
   ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&isa);CHKERRQ(ierr);
-  c->M             = mat->rmap->N;  /* set the global rows and columns and local rows */
-  c->N             = mat->cmap->N;
-  c->m             = mat->rmap->n;
-  c->rstart        = mat->rmap->rstart;
+
+  /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
+  ierr = PetscTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2);CHKERRQ(ierr);
+  if (flg1 || flg2) {
+    ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
+  }
+
+  c->M             = mat->rmap->N/bs;  /* set the global rows and columns and local rows */
+  c->N             = mat->cmap->N/bs;
+  c->m             = mat->rmap->n/bs;
+  c->rstart        = mat->rmap->rstart/bs;
 
   c->ncolors       = nis;
   ierr             = PetscMalloc(nis*sizeof(PetscInt),&c->ncolumns);CHKERRQ(ierr);
@@ -45,12 +58,8 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   if (!aij->colmap) {
     ierr = CreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
   }
-  /*
-      Calls the _SeqAIJ() version of these routines to make sure it does not 
-     get the reduced (by inodes) version of I and J
-  */
-  ierr = MatGetColumnIJ_SeqAIJ(aij->A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr); 
-  ierr = MatGetColumnIJ_SeqAIJ(aij->B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
+  ierr = MatGetColumnIJ(aij->A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr); 
+  ierr = MatGetColumnIJ(aij->B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
   
   ierr = PetscMalloc((M+1)*sizeof(PetscInt),&rowhit);CHKERRQ(ierr);
   ierr = PetscMalloc((M+1)*sizeof(PetscInt),&columnsforrow);CHKERRQ(ierr);
@@ -274,8 +283,8 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 
   ierr = PetscFree(rowhit);CHKERRQ(ierr);
   ierr = PetscFree(columnsforrow);CHKERRQ(ierr);
-  ierr = MatRestoreColumnIJ_SeqAIJ(aij->A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr); 
-  ierr = MatRestoreColumnIJ_SeqAIJ(aij->B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
+  ierr = MatRestoreColumnIJ(aij->A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr); 
+  ierr = MatRestoreColumnIJ(aij->B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
