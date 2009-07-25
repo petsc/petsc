@@ -266,9 +266,9 @@ cdef class SNES(Object):
     def setUp(self):
         CHKERR( SNESSetUp(self.snes) )
 
-    def solve(self, b, Vec x not None):
+    def solve(self, Vec b, Vec x not None):
         cdef PetscVec rhs = NULL
-        if b is not None: rhs = (<Vec?>b).vec
+        if b is not None: rhs = (<Vec>b).vec
         CHKERR( SNESSolve(self.snes, rhs, x.vec) )
 
     def setConvergedReason(self, reason):
