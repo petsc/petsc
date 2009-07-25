@@ -287,7 +287,7 @@ cdef class DA(Object):
 
     property sizes:
         def __get__(self):
-            return self.getSizes
+            return self.getSizes()
 
     property proc_sizes:
         def __get__(self):
