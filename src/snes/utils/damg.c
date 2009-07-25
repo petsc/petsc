@@ -622,6 +622,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGView(DMMG *dmmg,PetscViewer viewer)
   } else {
     if (iascii) {
       ierr = PetscViewerASCIIPrintf(viewer,"DMMG Object with %D levels\n",nlevels);CHKERRQ(ierr);
+      if (dmmg[0]->isctype == IS_COLORING_GLOBAL) {
+        ierr = PetscViewerASCIIPrintf(viewer,"Using global (nonghosted) Jacobian coloring computation\n");CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIIPrintf(viewer,"Using ghosted Jacobian coloring computation\n");CHKERRQ(ierr);
+      }
     }
     for (i=0; i<nlevels; i++) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);

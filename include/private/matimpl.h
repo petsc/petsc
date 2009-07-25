@@ -153,7 +153,7 @@ struct _MatOps {
   PetscErrorCode (*getcolumnvector)(Mat,Vec,PetscInt);
   PetscErrorCode (*missingdiagonal)(Mat,PetscTruth*,PetscInt*);
   /*114*/
-  PetscErrorCode (*getseqnonzerostructure)(Mat,Mat *[]);
+  PetscErrorCode (*getseqnonzerostructure)(Mat,Mat *);
   PetscErrorCode (*create)(Mat);  
   PetscErrorCode (*getghosts)(Mat,PetscInt*,const PetscInt *[]);
   PetscErrorCode (*iludtfactorsymbolic)(Mat,Mat,IS,IS,const MatFactorInfo*);

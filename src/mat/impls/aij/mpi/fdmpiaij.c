@@ -6,25 +6,20 @@ EXTERN PetscErrorCode CreateColmap_MPIAIJ_Private(Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringCreate_MPIAIJ"
-/*
-    This routine is shared by AIJ and BAIJ matrices, since it operators only on the nonzero structure of the elements or blocks.
-    This is why it has the ugly code with the MatGetBlockSize()
-*/
 PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   Mat_MPIAIJ            *aij = (Mat_MPIAIJ*)mat->data;
   PetscErrorCode        ierr;
   PetscMPIInt           size,*ncolsonproc,*disp,nn;
-  PetscInt              bs = 1,i,n,nrows,j,k,m,*rows = 0,*A_ci,*A_cj,ncols,col;
+  PetscInt              i,n,nrows,j,k,m,*rows = 0,*A_ci,*A_cj,ncols,col;
   const PetscInt        *is;
   PetscInt              nis = iscoloring->n,nctot,*cols,*B_ci,*B_cj;
-  PetscInt              *rowhit,M = mat->rmap->n,cstart = mat->cmap->rstart,cend = mat->cmap->rend,colb;
+  PetscInt              *rowhit,M,cstart,cend,colb;
   PetscInt              *columnsforrow,l;
   IS                    *isa;
   PetscTruth             done,flg;
   ISLocalToGlobalMapping map = mat->mapping;
   PetscInt               *ltog = (map ? map->indices : (PetscInt*) PETSC_NULL) ,ctype=c->ctype;
-  PetscTruth             flg1,flg2;
 
   PetscFunctionBegin;
   if (!mat->assembled) {
@@ -34,17 +29,13 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 
   ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&isa);CHKERRQ(ierr);
 
-  /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
-  ierr = PetscTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2);CHKERRQ(ierr);
-  if (flg1 || flg2) {
-    ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
-  }
-
-  c->M             = mat->rmap->N/bs;  /* set the global rows and columns and local rows */
-  c->N             = mat->cmap->N/bs;
-  c->m             = mat->rmap->n/bs;
-  c->rstart        = mat->rmap->rstart/bs;
+  M                = mat->rmap->n;
+  cstart           = mat->cmap->rstart;
+  cend             = mat->cmap->rend;
+  c->M             = mat->rmap->N;  /* set the global rows and columns and local rows */
+  c->N             = mat->cmap->N;
+  c->m             = mat->rmap->n;
+  c->rstart        = mat->rmap->rstart;
 
   c->ncolors       = nis;
   ierr             = PetscMalloc(nis*sizeof(PetscInt),&c->ncolumns);CHKERRQ(ierr);

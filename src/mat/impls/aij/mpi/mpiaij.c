@@ -2553,12 +2553,15 @@ PetscErrorCode MatGetRowMax_MPIAIJ(Mat A, Vec v, PetscInt idx[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSeqNonzerostructure_MPIAIJ" 
-PetscErrorCode MatGetSeqNonzerostructure_MPIAIJ(Mat mat,Mat *newmat[])
+PetscErrorCode MatGetSeqNonzerostructure_MPIAIJ(Mat mat,Mat *newmat)
 {
   PetscErrorCode ierr;
+  Mat            *dummy;
 
   PetscFunctionBegin;
-  ierr = MatGetSubMatrix_MPIAIJ_All(mat,MAT_DO_NOT_GET_VALUES,MAT_INITIAL_MATRIX,newmat);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix_MPIAIJ_All(mat,MAT_DO_NOT_GET_VALUES,MAT_INITIAL_MATRIX,&dummy);CHKERRQ(ierr);
+  *newmat = *dummy;
+  ierr = PetscFree(dummy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

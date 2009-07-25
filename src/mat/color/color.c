@@ -335,6 +335,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring(Mat mat,const MatColoringType t
   char           tname[PETSC_MAX_PATH_LEN];
   MPI_Comm       comm;
   PetscMPIInt    size;
+  PetscTruth     flg1,flg2;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -356,19 +357,26 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring(Mat mat,const MatColoringType t
   if (size == 1){
     ierr = (*r)(mat,type,iscoloring);CHKERRQ(ierr);
   } else { /* for parallel matrix */
-    Mat             *mat_seq;
+    Mat             mat_seq;
     ISColoring      iscoloring_seq;
     ISColoringValue *colors_loc;
-    PetscInt        i,rstart,rend,N_loc,nc;
+    PetscInt        i,rstart,rend,N_loc,nc,bs = 1;
       
+    /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
+    ierr = PetscTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2);CHKERRQ(ierr);
+    if (flg1 || flg2) {
+      ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
+    }
+
     /* create a sequential iscoloring on all processors */
     ierr = MatGetSeqNonzeroStructure(mat,&mat_seq);CHKERRQ(ierr);
-    ierr = (*r)(*mat_seq,type,&iscoloring_seq);CHKERRQ(ierr);
+    ierr = (*r)(mat_seq,type,&iscoloring_seq);CHKERRQ(ierr);
     ierr = MatDestroySeqNonzeroStructure(&mat_seq);CHKERRQ(ierr);
 
     /* convert iscoloring_seq to a parallel iscoloring */  
-    rstart = mat->rmap->rstart;
-    rend   = mat->rmap->rend;
+    rstart = mat->rmap->rstart/bs;
+    rend   = mat->rmap->rend/bs;
     N_loc  = rend - rstart; /* number of local nodes */
 
     /* get local colors for each local node */
