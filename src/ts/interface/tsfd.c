@@ -137,7 +137,7 @@ PetscErrorCode TSDefaultComputeJacobian(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,
     ierr = VecNorm(f2,NORM_INFINITY,&amax);CHKERRQ(ierr); amax *= 1.e-14;
     ierr = VecGetArray(f2,&y);CHKERRQ(ierr);
     for (j=start; j<end; j++) {
-      if (PetscAbsScalar(y[j-start]) > amax) {
+      if (PetscAbsScalar(y[j-start]) > amax || j == i) {
         ierr = MatSetValues(*B,1,&j,1,&i,y+j-start,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
