@@ -1169,22 +1169,25 @@ PetscErrorCode MatSolve_Inode(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_Inode"
+/*
+    Not currently used because the basic version is often a good amount faster
+*/
 PetscErrorCode MatLUFactorNumeric_Inode(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat               C = B;
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ*)C->data;
   IS                iscol = b->col,isrow = b->row,isicol = b->icol;
   PetscErrorCode    ierr;
-  const PetscInt    *r,*ic,*c,*ics;
-  PetscInt          n = A->rmap->n,*bi = b->i; 
-  PetscInt          *bj = b->j,*nbj=b->j +1,*ajtmp,*bjtmp,nz,nz_tmp,row,prow;
-  PetscInt          i,j,idx,*ai = a->i,*aj = a->j,*bd = b->diag,node_max,nodesz;
-  PetscInt          *ns,*tmp_vec1,*tmp_vec2,*nsmap,*pj;
+  const PetscInt    *ns,*r,*ic,*c,*ics,*bj = b->j,*nbj=b->j +1,*ajtmp,*bjtmp,*bi = b->i,*ai = a->i,*aj = a->j,*bd = b->diag,*pj;
+  PetscInt          n = A->rmap->n; 
+  PetscInt          nz,nz_tmp,row,prow;
+  PetscInt          i,j,idx,node_max,nodesz;
+  PetscInt          *tmp_vec1,*tmp_vec2,*nsmap;
   PetscScalar       mul1,mul2,mul3,tmp;
-  MatScalar         *pc1,*pc2,*pc3,*ba = b->a,*pv,*rtmp11,*rtmp22,*rtmp33;
-  const MatScalar   *v1,*v2,*v3,*aa = a->a,*rtmp1;
+  const MatScalar   *pv,*v1,*v2,*v3,*aa = a->a,*rtmp1;
+  MatScalar         *rtmp11,*pc1,*pc2,*pc3,*ba = b->a,*rtmp22,*rtmp33;;
   PetscReal         rs=0.0;
   LUShift_Ctx       sctx;
   PetscInt          newshift;
@@ -1227,11 +1230,11 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat B,Mat A,const MatFactorInfo *info)
   ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr  = ISGetIndices(iscol,&c);CHKERRQ(ierr);
   ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
-  ierr  = PetscMalloc((3*n+1)*sizeof(PetscScalar),&rtmp11);CHKERRQ(ierr);
-  ierr  = PetscMemzero(rtmp11,(3*n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr  = PetscMalloc3(n,PetscScalar,&rtmp11,n,PetscScalar,&rtmp22,n,PetscScalar,&rtmp33);CHKERRQ(ierr);
+  ierr  = PetscMemzero(rtmp11,n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr  = PetscMemzero(rtmp22,n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr  = PetscMemzero(rtmp33,n*sizeof(PetscScalar));CHKERRQ(ierr);
   ics   = ic ; 
-  rtmp22 = rtmp11 + n;  
-  rtmp33 = rtmp22 + n;  
   
   node_max = a->inode.node_count; 
   ns       = a->inode.size;
@@ -1241,7 +1244,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat B,Mat A,const MatFactorInfo *info)
 
   /* If max inode size > 3, split it into two inodes.*/
   /* also map the inode sizes according to the ordering */
-  ierr = PetscMalloc((n+1)* sizeof(PetscInt),&tmp_vec1);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n,PetscInt,&tmp_vec1,n,PetscInt,&nsmap);CHKERRQ(ierr);
   for (i=0,j=0; i<node_max; ++i,++j){
     if (ns[i]>3) {
       tmp_vec1[j] = ns[i]/2; /* Assuming ns[i] < =5  */
@@ -1256,8 +1259,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat B,Mat A,const MatFactorInfo *info)
 
   /* Now reorder the inode info based on mat re-ordering info */
   /* First create a row -> inode_size_array_index map */
-  ierr = PetscMalloc(n*sizeof(PetscInt)+1,&nsmap);CHKERRQ(ierr);
-  ierr = PetscMalloc(node_max*sizeof(PetscInt)+1,&tmp_vec2);CHKERRQ(ierr);
+  ierr = PetscMalloc(node_max*sizeof(PetscInt),&tmp_vec2);CHKERRQ(ierr);
   for (i=0,row=0; i<node_max; i++) {
     nodesz = tmp_vec1[i];
     for (j=0; j<nodesz; j++,row++) {
@@ -1270,8 +1272,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat B,Mat A,const MatFactorInfo *info)
     tmp_vec2[i]  = nodesz;
     j           += nodesz;
   }
-  ierr = PetscFree(nsmap);CHKERRQ(ierr);
-  ierr = PetscFree(tmp_vec1);CHKERRQ(ierr);
+  ierr = PetscFree2(tmp_vec1,nsmap);CHKERRQ(ierr);
   /* Now use the correct ns */
   ns = tmp_vec2;
 
@@ -1286,8 +1287,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat B,Mat A,const MatFactorInfo *info)
       switch (nodesz){
       case 1:
         for  (j=0; j<nz; j++){
-          idx        = bjtmp[j];
-          rtmp11[idx] = 0.0;
+          rtmp11[bjtmp[j]] = 0.0;
         }
       
         /* load in initial (unfactored row) */
@@ -1313,9 +1313,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat B,Mat A,const MatFactorInfo *info)
             nz_tmp = bi[prow+1] - bd[prow] - 1;
             ierr = PetscLogFlops(2.0*nz_tmp);CHKERRQ(ierr);
             for (j=0; j<nz_tmp; j++) {
-              tmp = pv[j];
-              idx = pj[j];
-              rtmp11[idx] -= mul1 * tmp;
+              rtmp11[pj[i]] -= mul1 * pv[j];
             }
           }
           prow = *bjtmp++ ;
@@ -1576,7 +1574,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat B,Mat A,const MatFactorInfo *info)
     } 
     endofwhile:;
   } while (sctx.lushift);
-  ierr = PetscFree(rtmp11);CHKERRQ(ierr);
+  ierr = PetscFree3(rtmp11,rtmp22,rtmp33);CHKERRQ(ierr);
   ierr = PetscFree(tmp_vec2);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
