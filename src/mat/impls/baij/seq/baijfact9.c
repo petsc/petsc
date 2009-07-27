@@ -14,34 +14,42 @@
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_5"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5(Mat C,Mat A,const MatFactorInfo *info)
 {
-  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
-  IS             isrow = b->row,isicol = b->icol;
-  PetscErrorCode ierr;
-  const PetscInt *r,*ic,*bi = b->i,*bj = b->j,*ajtmpold,*ajtmp;
-  PetscInt       i,j,n = a->mbs,nz,row,idx;
-  const PetscInt *diag_offset = b->diag,*ai=a->i,*aj=a->j,*pj;
-  MatScalar      *pv,*v,*rtmp,*pc,*w,*x;
-  MatScalar      p1,p2,p3,p4,m1,m2,m3,m4,m5,m6,m7,m8,m9,x1,x2,x3,x4;
-  MatScalar      p5,p6,p7,p8,p9,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16;
-  MatScalar      x17,x18,x19,x20,x21,x22,x23,x24,x25,p10,p11,p12,p13,p14;
-  MatScalar      p15,p16,p17,p18,p19,p20,p21,p22,p23,p24,p25,m10,m11,m12;
-  MatScalar      m13,m14,m15,m16,m17,m18,m19,m20,m21,m22,m23,m24,m25;
-  MatScalar      *ba = b->a,*aa = a->a;
-  PetscReal      shift = info->shiftinblocks;
+  Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
+  IS              isrow = b->row,isicol = b->icol;
+  PetscErrorCode  ierr;
+  const PetscInt  *r,*ic,*bi = b->i,*bj = b->j,*ajtmpold,*ajtmp;
+  PetscInt        i,j,n = a->mbs,nz,row,idx;
+  const PetscInt  *diag_offset = b->diag,*ai=a->i,*aj=a->j,*pj;
+  MatScalar       *w,*pv,*rtmp,*x,*pc;
+  const MatScalar *v,*aa = a->a;
+  MatScalar       p1,p2,p3,p4,m1,m2,m3,m4,m5,m6,m7,m8,m9,x1,x2,x3,x4;
+  MatScalar       p5,p6,p7,p8,p9,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16;
+  MatScalar       x17,x18,x19,x20,x21,x22,x23,x24,x25,p10,p11,p12,p13,p14;
+  MatScalar       p15,p16,p17,p18,p19,p20,p21,p22,p23,p24,p25,m10,m11,m12;
+  MatScalar       m13,m14,m15,m16,m17,m18,m19,m20,m21,m22,m23,m24,m25;
+  MatScalar       *ba = b->a;
+  PetscReal       shift = info->shiftinblocks;
 
   PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = PetscMalloc(25*(n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
 
+#define PETSC_USE_MEMZERO 1
+#define PETSC_USE_MEMCPY 1
+
   for (i=0; i<n; i++) {
     nz    = bi[i+1] - bi[i];
     ajtmp = bj + bi[i];
     for  (j=0; j<nz; j++) {
+#if defined(PETSC_USE_MEMZERO)
+      ierr = PetscMemzero(rtmp+25*ajtmp[j],25*sizeof(PetscScalar));CHKERRQ(ierr);
+#else
       x = rtmp+25*ajtmp[j]; 
       x[0] = x[1] = x[2] = x[3] = x[4] = x[5] = x[6] = x[7] = x[8] = x[9] = 0.0;
       x[10] = x[11] = x[12] = x[13] = x[14] = x[15] = x[16] = x[17] = 0.0;
       x[18] = x[19] = x[20] = x[21] = x[22] = x[23] = x[24] = 0.0;
+#endif
     }
     /* load in initial (unfactored row) */
     idx      = r[i];
@@ -49,6 +57,9 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5(Mat C,Mat A,const MatFactorInfo *inf
     ajtmpold = aj + ai[idx];
     v        = aa + 25*ai[idx];
     for (j=0; j<nz; j++) {
+#if defined(PETSC_USE_MEMCPY)
+      ierr = PetscMemcpy(rtmp+25*ic[ajtmpold[j]],v,25*sizeof(PetscScalar));CHKERRQ(ierr);
+#else
       x    = rtmp+25*ic[ajtmpold[j]];
       x[0] = v[0]; x[1] = v[1]; x[2] = v[2]; x[3] = v[3];
       x[4] = v[4]; x[5] = v[5]; x[6] = v[6]; x[7] = v[7]; x[8] = v[8];
@@ -56,6 +67,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5(Mat C,Mat A,const MatFactorInfo *inf
       x[14] = v[14]; x[15] = v[15]; x[16] = v[16]; x[17] = v[17]; 
       x[18] = v[18]; x[19] = v[19]; x[20] = v[20]; x[21] = v[21];
       x[22] = v[22]; x[23] = v[23]; x[24] = v[24];
+#endif
       v    += 25;
     }
     row = *ajtmp++;
@@ -162,6 +174,9 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5(Mat C,Mat A,const MatFactorInfo *inf
     pj = bj + bi[i];
     nz = bi[i+1] - bi[i];
     for (j=0; j<nz; j++) {
+#if defined(PETSC_USE_MEMCPY)
+      ierr = PetscMemcpy(pv,rtmp+25*pj[j],25*sizeof(PetscScalar));CHKERRQ(ierr);
+#else
       x     = rtmp+25*pj[j];
       pv[0] = x[0]; pv[1] = x[1]; pv[2] = x[2]; pv[3] = x[3];
       pv[4] = x[4]; pv[5] = x[5]; pv[6] = x[6]; pv[7] = x[7]; pv[8] = x[8];
@@ -169,6 +184,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5(Mat C,Mat A,const MatFactorInfo *inf
       pv[13] = x[13]; pv[14] = x[14]; pv[15] = x[15]; pv[16] = x[16];
       pv[17] = x[17]; pv[18] = x[18]; pv[19] = x[19]; pv[20] = x[20];
       pv[21] = x[21]; pv[22] = x[22]; pv[23] = x[23]; pv[24] = x[24];
+#endif
       pv   += 25;
     }
     /* invert diagonal block */

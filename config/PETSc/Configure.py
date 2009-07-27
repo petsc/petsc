@@ -29,7 +29,7 @@ class Configure(config.base.Configure):
     self.petscdir      = framework.require('PETSc.utilities.petscdir', self.setCompilers)
     self.languages     = framework.require('PETSc.utilities.languages',self.setCompilers)
     self.debugging     = framework.require('PETSc.utilities.debugging',self.setCompilers)
-    self.debugging     = framework.require('PETSc.utilities.Make',     self)        
+    self.make          = framework.require('PETSc.utilities.Make',     self)        
     self.compilers     = framework.require('config.compilers',         self)
     self.types         = framework.require('config.types',             self)
     self.headers       = framework.require('config.headers',           self)
