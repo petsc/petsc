@@ -1231,9 +1231,6 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat B,Mat A,const MatFactorInfo *info)
   ierr  = ISGetIndices(iscol,&c);CHKERRQ(ierr);
   ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   ierr  = PetscMalloc3(n,PetscScalar,&rtmp11,n,PetscScalar,&rtmp22,n,PetscScalar,&rtmp33);CHKERRQ(ierr);
-  ierr  = PetscMemzero(rtmp11,n*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr  = PetscMemzero(rtmp22,n*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr  = PetscMemzero(rtmp33,n*sizeof(PetscScalar));CHKERRQ(ierr);
   ics   = ic ; 
   
   node_max = a->inode.node_count; 

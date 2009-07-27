@@ -420,17 +420,19 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const MatFact
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ"
 PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
 {
-  Mat            C=B;
-  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ *)C->data;
-  IS             isrow = b->row,isicol = b->icol;
-  PetscErrorCode ierr;
-  const PetscInt  *r,*ic,*ics;
-  PetscInt       i,j,n=A->rmap->n,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
-  PetscInt       *ajtmp,*bjtmp,nz,row,*diag_offset = b->diag,diag,*pj;
-  MatScalar      *rtmp,*pc,multiplier,*v,*pv,d,*aa=a->a;
-  PetscReal      rs=0.0;
-  LUShift_Ctx    sctx;
-  PetscInt       newshift,*ddiag;
+  Mat             C=B;
+  Mat_SeqAIJ      *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ *)C->data;
+  IS              isrow = b->row,isicol = b->icol;
+  PetscErrorCode  ierr;
+  const PetscInt   *r,*ic,*ics;
+  PetscInt        nz,row,i,j,n=A->rmap->n,diag;
+  const PetscInt  *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
+  const PetscInt  *ajtmp,*bjtmp,*diag_offset = b->diag,*pj;
+  MatScalar       *pv,*rtmp,*pc,multiplier,d;
+  const MatScalar *v,*aa=a->a;
+  PetscReal       rs=0.0;
+  LUShift_Ctx     sctx;
+  PetscInt        newshift,*ddiag;
 
   PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
