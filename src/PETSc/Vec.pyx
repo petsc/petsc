@@ -422,6 +422,12 @@ cdef class Vec(Object):
     def reciprocal(self):
         CHKERR( VecReciprocal(self.vec) )
 
+    def exp(self):
+        CHKERR( VecExp(self.vec) )
+
+    def log(self):
+        CHKERR( VecLog(self.vec) )
+
     def sqrt(self):
         CHKERR( VecSqrt(self.vec) )
 

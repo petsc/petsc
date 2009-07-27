@@ -181,4 +181,63 @@ PetscErrorCode VecGetOwnershipRanges_232(Vec vec,const PetscInt *ranges[])
 #define VecScatterBegin(ctx,x,y,im,sm) VecScatterBegin((x),(y),(im),(sm),(ctx))
 #define VecScatterEnd(ctx,x,y,im,sm) VecScatterEnd((x),(y),(im),(sm),(ctx))
 
+#if defined(PETSC_USE_COMPLEX)
+#  if defined(PETSC_CLANGUAGE_CXX)
+#    define PetscLogScalar_232(a) std::log(a)
+#  else
+#    if   defined(PETSC_USE_SINGLE)
+#      define PetscLogScalar_232(a) clogf(a)
+#    elif defined(PETSC_USE_LONG_DOUBLE)
+#      define PetscLogScalar_232(a) clogl(a)
+#    else
+#      define PetscLogScalar_232(a) clog(a)
+#    endif
+#  endif
+#else
+#  define PetscLogScalar_232(a) log(a)
+#endif
+#define PetscLogScalar PetscLogScalar_232
+
+#undef __FUNCT__
+#define __FUNCT__ "VecLog_232"
+static PETSC_UNUSED
+PetscErrorCode VecLog_232(Vec v)
+{
+  PetscScalar    *x;
+  PetscInt       i, n;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v, VEC_COOKIE,1);
+  ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
+  ierr = VecGetArray(v, &x);CHKERRQ(ierr);
+  for(i = 0; i < n; i++) {
+    x[i] = PetscLogScalar(x[i]);
+  }
+  ierr = VecRestoreArray(v, &x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define VecLog VecLog_232
+
+#undef __FUNCT__
+#define __FUNCT__ "VecExp_232"
+static PETSC_UNUSED
+PetscErrorCode VecExp_232(Vec v)
+{
+  PetscScalar    *x;
+  PetscInt       i, n;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v, VEC_COOKIE,1);
+  ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
+  ierr = VecGetArray(v, &x);CHKERRQ(ierr);
+  for(i = 0; i < n; i++) {
+    x[i] = PetscExpScalar(x[i]);
+  }
+  ierr = VecRestoreArray(v, &x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define VecExp VecExp_232
+
 #endif /* _PETSC_COMPAT_VEC_H */

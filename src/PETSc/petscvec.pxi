@@ -117,6 +117,8 @@ cdef extern from "petscvec.h" nogil:
     int VecShift(PetscVec,PetscScalar)
     int VecReciprocal(PetscVec)
     int VecPermute(PetscVec,PetscIS,PetscTruth)
+    int VecExp(PetscVec)
+    int VecLog(PetscVec)
     int VecSqrt(PetscVec)
     int VecAbs(PetscVec)
 

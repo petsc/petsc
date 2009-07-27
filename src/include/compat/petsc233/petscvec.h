@@ -155,4 +155,63 @@ PetscErrorCode VecGetOwnershipRanges_233(Vec vec,const PetscInt *ranges[])
 }
 #define VecGetOwnershipRanges VecGetOwnershipRanges_233
 
+#if defined(PETSC_USE_COMPLEX)
+#  if defined(PETSC_CLANGUAGE_CXX)
+#    define PetscLogScalar_233(a) std::log(a)
+#  else
+#    if   defined(PETSC_USE_SINGLE)
+#      define PetscLogScalar_233(a) clogf(a)
+#    elif defined(PETSC_USE_LONG_DOUBLE)
+#      define PetscLogScalar_233(a) clogl(a)
+#    else
+#      define PetscLogScalar_233(a) clog(a)
+#    endif
+#  endif
+#else
+#  define PetscLogScalar_233(a) log(a)
+#endif
+#define PetscLogScalar PetscLogScalar_233
+
+#undef __FUNCT__
+#define __FUNCT__ "VecLog_233"
+static PETSC_UNUSED
+PetscErrorCode VecLog_233(Vec v)
+{
+  PetscScalar    *x;
+  PetscInt       i, n;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v, VEC_COOKIE,1);
+  ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
+  ierr = VecGetArray(v, &x);CHKERRQ(ierr);
+  for(i = 0; i < n; i++) {
+    x[i] = PetscLogScalar(x[i]);
+  }
+  ierr = VecRestoreArray(v, &x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define VecLog VecLog_233
+
+#undef __FUNCT__
+#define __FUNCT__ "VecExp_233"
+static PETSC_UNUSED
+PetscErrorCode VecExp_233(Vec v)
+{
+  PetscScalar    *x;
+  PetscInt       i, n;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v, VEC_COOKIE,1);
+  ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
+  ierr = VecGetArray(v, &x);CHKERRQ(ierr);
+  for(i = 0; i < n; i++) {
+    x[i] = PetscExpScalar(x[i]);
+  }
+  ierr = VecRestoreArray(v, &x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define VecExp VecExp_233
+
 #endif /* _PETSC_COMPAT_VEC_H */
