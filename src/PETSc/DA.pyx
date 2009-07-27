@@ -216,6 +216,15 @@ cdef class DA(Object):
         CHKERR( DACreateLocalVector(self.da, &vl.vec) )
         return vl
 
+    def createMatrix(self, mat_type=None):
+        cdef PetscMatType mtype = MATAIJ
+        if mat_type is not None: mtype = str2cp(mat_type)
+        cdef Mat mat = Mat()
+        CHKERR( DAGetMatrix(self.da, mtype, &mat.mat) )
+        return mat
+
+    #
+
     def globalToNatural(self, Vec vg not None, Vec vn not None, addv=None):
         cdef PetscInsertMode im = insertmode(addv)
         CHKERR( DAGlobalToNaturalBegin(self.da, vg.vec, im, vn.vec) )
@@ -231,25 +240,22 @@ cdef class DA(Object):
         CHKERR( DAGlobalToLocalBegin(self.da, vg.vec, im, vl.vec) )
         CHKERR( DAGlobalToLocalEnd  (self.da, vg.vec, im, vl.vec) )
 
-    def localToGlobal(self, Vec vl not None, Vec vg not None, addv=None):
-        cdef PetscInsertMode im = insertmode(addv)
-        CHKERR( DALocalToGlobal(self.da, vl.vec, im, vg.vec) )
-
     def localToGlobalAdd(self, Vec vl not None, Vec vg not None):
         CHKERR( DALocalToGlobalBegin(self.da, vl.vec, vg.vec) )
         CHKERR( DALocalToGlobalEnd  (self.da, vl.vec, vg.vec) )
+
+    def localToGlobal(self, Vec vl not None, Vec vg not None, addv=None):
+        cdef PetscInsertMode im = insertmode(addv)
+        CHKERR( DALocalToGlobal(self.da, vl.vec, im, vg.vec) )
 
     def localToLocal(self, Vec vl not None, Vec vlg not None, addv=None):
         cdef PetscInsertMode im = insertmode(addv)
         CHKERR( DALocalToLocalBegin(self.da, vl.vec, im, vlg.vec) )
         CHKERR( DALocalToLocalEnd  (self.da, vl.vec, im, vlg.vec) )
 
-    def getMatrix(self, mat_type=None):
-        cdef PetscMatType mtype = MATAIJ
-        if mat_type is not None: mtype = str2cp(mat_type)
-        cdef Mat mat = Mat()
-        CHKERR( DAGetMatrix(self.da, mtype, &mat.mat) )
-        return mat
+    #
+
+    getMatrix = createMatrix
 
     def getAO(self):
         cdef AO ao = AO()
