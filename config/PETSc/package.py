@@ -338,7 +338,7 @@ class Package(config.base.Configure):
         if self.framework.argDB['with-'+l.package] == 1:
           raise RuntimeError('Package '+l.PACKAGE+' needed by '+self.name+' failed to configure.\nMail configure.log to petsc-maint@mcs.anl.gov.')
         else:
-          raise RuntimeError('Did not find package '+l.PACKAGE+' needed by '+self.name+'.\nEnable the package using --with-'+l.package)
+          raise RuntimeError('Did not find package '+l.PACKAGE+' needed by '+self.name+'.\nEnable the package using --with-'+l.package+' (and possibly --with-'+l.package+'-dir=directory_of_installed_'+l.package+')\nOr suggest --download-'+l.package)
       if hasattr(l,'dlib'):    libs  += l.dlib
       if hasattr(l,'include'): incls += l.include
     if self.needsMath:
@@ -386,7 +386,7 @@ class Package(config.base.Configure):
       
     if self.framework.argDB['with-'+self.package]:
       if hasattr(self,'mpi') and self.mpi.usingMPIUni:
-        raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
+        raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI\nSuggest rerun using --with-mpi-dir=directory_of_MPI_install or --download-mpich')
       if self.libraryOptions.integerSize == 64 and self.requires32bitint:
         raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')    
       if self.double and not self.scalartypes.precision.lower() == 'double':
