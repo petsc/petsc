@@ -701,7 +701,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetNullSpace(DMMG *dmmg,PetscTruth has_cn
     }
     ierr = MatNullSpaceDestroy(nullsp);CHKERRQ(ierr);
     if (n) {
-      ierr = PetscFree(nulls);CHKERRQ(ierr);
+      ierr = VecDestroyVecs(nulls,n);CHKERRQ(ierr);
     }
   }
   /* make all the coarse grid solvers have LU shift since they are singular */

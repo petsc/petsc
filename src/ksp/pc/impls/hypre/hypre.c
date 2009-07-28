@@ -1078,6 +1078,7 @@ typedef struct {
   int                 relax_type;
   int                 rap_type;
   int                 num_pre_relax,num_post_relax;
+  int                 max_levels;
 } PC_PFMG;
 
 #undef __FUNCT__
@@ -1114,6 +1115,7 @@ PetscErrorCode PCView_PFMG(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE PFMG: relax type %s\n",PFMGRelaxType[ex->relax_type]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE PFMG: RAP type %s\n",PFMGRAPType[ex->rap_type]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE PFMG: number pre-relax %d post-relax %d\n",ex->num_pre_relax,ex->num_post_relax);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE PFMG: max levels %d\n",ex->max_levels);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1140,6 +1142,9 @@ PetscErrorCode PCSetFromOptions_PFMG(PC pc)
   ierr = HYPRE_StructPFMGSetNumPreRelax(ex->hsolver,ex->num_pre_relax);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_pfmg_num_post_relax","Number of smoothing steps after coarse grid","HYPRE_StructPFMGSetNumPostRelax",ex->num_post_relax,&ex->num_post_relax,PETSC_NULL);CHKERRQ(ierr);
   ierr = HYPRE_StructPFMGSetNumPostRelax(ex->hsolver,ex->num_post_relax);CHKERRQ(ierr);
+
+  ierr = PetscOptionsInt("-pc_pfmg_max_levels","Max Levels for MG hierarchy","HYPRE_StructPFMGSetMaxLevels",ex->max_levels,&ex->max_levels,PETSC_NULL);CHKERRQ(ierr);
+  ierr = HYPRE_StructPFMGSetMaxLevels(ex->hsolver,ex->max_levels);CHKERRQ(ierr);
 
   ierr = PetscOptionsReal("-pc_pfmg_tol","Tolerance of PFMG","HYPRE_StructPFMGSetTol",ex->tol,&ex->tol,PETSC_NULL);CHKERRQ(ierr);
   ierr = HYPRE_StructPFMGSetTol(ex->hsolver,ex->tol);CHKERRQ(ierr); 
@@ -1272,6 +1277,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_PFMG(PC pc)
   ex->rap_type       = 0;
   ex->num_pre_relax  = 1;
   ex->num_post_relax = 1;
+  ex->max_levels     = 0;
 
   pc->ops->setfromoptions  = PCSetFromOptions_PFMG;
   pc->ops->view            = PCView_PFMG;

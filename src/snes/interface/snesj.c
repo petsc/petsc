@@ -125,7 +125,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobian(SNES snes,Vec x1,M
     ierr = VecNorm(j2a,NORM_INFINITY,&amax);CHKERRQ(ierr); amax *= 1.e-14;
     ierr = VecGetArray(j2a,&y);CHKERRQ(ierr);
     for (j=start; j<end; j++) {
-      if (PetscAbsScalar(y[j-start]) > amax) {
+      if (PetscAbsScalar(y[j-start]) > amax || j == i) {
         ierr = MatSetValues(*B,1,&j,1,&i,y+j-start,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
