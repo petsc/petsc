@@ -3,11 +3,6 @@ import config.base
 import re
 import os
 
-try:
-  import sets
-except ImportError:
-  import config.setsBackport as sets
-
 class MissingProcessor(RuntimeError):
   pass
 
@@ -44,47 +39,44 @@ class Configure(config.base.Configure):
 
   def getDispatchNames(self):
     '''Return all the attributes which are dispatched from config.setCompilers'''
-    names = sets.Set()
-    errors = {}
-    names.update(['CC', 'CPP', 'CXX', 'CXXCPP', 'FC'])
-    errors['CC'] = 'No C compiler found.'
-    errors['CPP'] = 'No C preprocessor found.'
-    errors['CXX'] = 'No C++ compiler found.'
-    errors['CXXCPP'] = 'No C++ preprocessor found.'
-    errors['FC'] = 'No Fortran compiler found.'
-    names.update(['AR', 'RANLIB', 'LD_SHARED', 'dynamicLinker'])
-    errors['AR'] = 'No archiver found.'
-    errors['RANLIB'] = 'No ranlib found.'
-    errors['LD_SHARED'] = 'No shared linker found.'
-    errors['dynamicLinker'] = 'No dynamic linker found.'
+    names = {}
+    names['CC'] = 'No C compiler found.'
+    names['CPP'] = 'No C preprocessor found.'
+    names['CXX'] = 'No C++ compiler found.'
+    names['CXXCPP'] = 'No C++ preprocessor found.'
+    names['FC'] = 'No Fortran compiler found.'
+    names['AR'] = 'No archiver found.'
+    names['RANLIB'] = 'No ranlib found.'
+    names['LD_SHARED'] = 'No shared linker found.'
+    names['dynamicLinker'] = 'No dynamic linker found.'
     for language in ['C', 'Cxx', 'FC']:
       self.pushLanguage(language)
-      names.update([self.getCompilerFlagsName(language), self.getCompilerFlagsName(language, 1), self.getLinkerFlagsName(language)])
-      errors[self.getCompilerFlagsName(language)] = 'No '+language+' compiler flags found.'
-      errors[self.getLinkerFlagsName(language)] = 'No '+language+' linker flags found.'
+      key = self.getCompilerFlagsName(language)
+      names[key] = 'No '+language+' compiler flags found.'
+      key = self.getCompilerFlagsName(language, 1)
+      names[key] = 'No '+language+' compiler flags found.'
+      key = self.getLinkerFlagsName(language)
+      names[key] = 'No '+language+' linker flags found.'
       self.popLanguage()
-    names.update(['CPPFLAGS'])
-    errors['CPPFLAGS'] = 'No preprocessor flags found.'
-    names.update(['AR_FLAGS', 'AR_LIB_SUFFIX'])
-    errors['AR_FLAGS'] = 'No archiver flags found.'
-    errors['AR_LIB_SUFFIX'] = 'No static library suffix found.'
-    names.update(['LIBS'])
-    errors['LIBS'] = 'No extra libraries found.'
-    return names, errors
+    names['CPPFLAGS'] = 'No preprocessor flags found.'
+    names['AR_FLAGS'] = 'No archiver flags found.'
+    names['AR_LIB_SUFFIX'] = 'No static library suffix found.'
+    names['LIBS'] = 'No extra libraries found.'
+    return names
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
     self.setCompilers = framework.require('config.setCompilers', self)
     self.compilerFlags = framework.require('config.compilerFlags', self)
     self.libraries = framework.require('config.libraries', None)
-    self.dispatchNames, self.dispatchErrors = self.getDispatchNames()
+    self.dispatchNames = self.getDispatchNames()
     return
 
   def __getattr__(self, name):
     if 'dispatchNames' in self.__dict__:
       if name in self.dispatchNames:
         if not hasattr(self.setCompilers, name):
-          raise MissingProcessor(errors[name])
+          raise MissingProcessor(self.dispatchNames[name])
         return getattr(self.setCompilers, name)
       if name in ['CC_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'sharedLibraryFlags', 'dynamicLibraryFlags']:
         return ' '.join(getattr(self.setCompilers, name))

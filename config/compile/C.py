@@ -5,11 +5,6 @@ import config.libraries
 import os
 import sys
 
-
-##try:
-##  import sets
-##except ImportError:
-##  import config.setsBackport as sets
 import config.setsOrdered as sets
 
 class Preprocessor(config.compile.processor.Processor):
