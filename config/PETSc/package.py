@@ -216,7 +216,7 @@ class Package(config.base.Configure):
       dir = self.framework.argDB['with-'+self.package+'-dir']
       for l in self.generateLibList(os.path.join(dir, self.libdir)):
         yield('User specified root directory '+self.PACKAGE, dir,l, os.path.join(dir,self.includedir))
-      raise RuntimeError('--with-'+self.package+'-dir='+self.framework.argDB['with-'+self.package+'-dir']+' did not work')
+      raise RuntimeError('--with-'+self.package+'-dir='+self.framework.argDB['with-'+self.package+'-dir']+' did not work\nYou might also consider using --download-'+self.package+' instead')
 
     if 'with-'+self.package+'-lib' in self.framework.argDB:
       # hope that package root is one level above lib directory
