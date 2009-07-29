@@ -757,6 +757,9 @@ class Configure(config.base.Configure):
               continue
             elif arg == '-lm':
               pass
+            elif arg == '-lgfortranbegin':
+              fmainlibs.append(arg)
+              continue
             elif arg == '-lfrtbegin' and not config.setCompilers.Configure.isCygwin():
               fmainlibs.append(arg)
               continue
