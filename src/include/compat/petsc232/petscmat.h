@@ -592,4 +592,19 @@ PetscErrorCode MatGetSubMatrix_232(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *n
 }
 #define MatGetSubMatrix MatGetSubMatrix_232
 
+#undef __FUNCT__
+#define __FUNCT__ "MatMFFDSetOptionsPrefix"
+static PETSC_UNUSED
+PetscErrorCode MatMFFDSetOptionsPrefix(Mat mat, const char prefix[])
+{
+  MatMFFD        mfctx = mat ? (MatMFFD)mat->data : PETSC_NULL ;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mfctx,MATMFFD_COOKIE,1);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)mfctx,prefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define MatMFFDSetOptionsPrefix MatMFFDSetOptionsPrefix
+
 #endif /* _PETSC_COMPAT_MAT_H */

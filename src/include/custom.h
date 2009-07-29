@@ -643,19 +643,6 @@ SNESSetConvergedReason(SNES snes, SNESConvergedReason reason)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMFFDSetOptionsPrefix"
-PETSC_STATIC_INLINE PetscErrorCode
-MatMFFDSetOptionsPrefix(Mat mat, const char prefix[]) {
-  MatMFFD        mfctx = mat ? (MatMFFD)mat->data : PETSC_NULL ;
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
-  PetscValidHeaderSpecific(mfctx,MATMFFD_COOKIE,1);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)mfctx,prefix);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "MatFDColoringSetOptionsPrefix"
 PETSC_STATIC_INLINE PetscErrorCode
 MatFDColoringSetOptionsPrefix(MatFDColoring fdc, const char prefix[]) {
