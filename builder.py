@@ -2,9 +2,15 @@ import logger
 import script
 
 try:
-  import sets
-except ImportError:
-  import config.setsBackport as sets
+  from types import ModuleType
+  sets = ModuleType('sets')
+  sets.Set = set
+  sets.ImmutableSet = frozenset
+except NameError:
+  try:
+    import sets
+  except ImportError:
+    import config.setsBackport as sets
 
 import cPickle
 
@@ -243,10 +249,10 @@ class Builder(logger.Logger):
       outputFiles.clear()
     for language in newOutputFiles:
       if language in outputFiles:
-        if isinstance(outputFiles[language], sets.Set) and isinstance(outputFiles[language], sets.Set):
-          outputFiles[language].union_update(newOutputFiles[language])
-        elif isinstance(outputFiles[language], dict) and isinstance(outputFiles[language], dict):
-          self.updateOutputFiles(outputFiles[language], outputFiles[language])
+        if isinstance(outputFiles[language], sets.Set) and isinstance(newOutputFiles[language], sets.Set):
+          outputFiles[language].update(newOutputFiles[language])
+        elif isinstance(outputFiles[language], dict) and isinstance(newOutputFiles[language], dict):
+          self.updateOutputFiles(outputFiles[language], newOutputFiles[language])
         else:
           raise RuntimeError('Mismatched output files')
       else:
