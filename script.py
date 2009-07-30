@@ -3,6 +3,22 @@ if not hasattr(sys, 'version_info'):
   print '*** Python version 1 is not supported. Please get the latest version from www.python.org ***'
   sys.exit(4)
 
+import cPickle
+
+try:
+  import subprocess
+  USE_SUBPROCESS = 1
+except ImportError:
+  USE_SUBPROCESS = 0
+
+# Some features related to detecting login failures cannot be easily
+# implemented with the 'subprocess' module. Disable it for now ...
+USE_SUBPROCESS = 0
+# In Python 2.6 and above, the 'popen2' module is deprecated
+if sys.version_info[:2] >= (2, 6) and not USE_SUBPROCESS:
+  import warnings
+  warnings.filterwarnings('ignore', category=DeprecationWarning, module=__name__)
+
 import nargs
 useThreads = nargs.Arg.findArgument('useThreads', sys.argv[1:])
 if useThreads is None:
@@ -96,66 +112,80 @@ class Script(logger.Logger):
     return module
   importModule = staticmethod(importModule)
 
-  def openPipe(command):
-    '''We need to use the asynchronous version here since we want to avoid blocking reads'''
-    import popen2
+  if USE_SUBPROCESS:
 
-    pipe = None
-    if hasattr(popen2, 'Popen3'):
-      pipe   = popen2.Popen3(command, 1)
-      input  = pipe.tochild
-      output = pipe.fromchild
-      err    = pipe.childerr
-    else:
-      import os
+    def runShellCommand(command, log=None):
+      Popen = subprocess.Popen
+      PIPE  = subprocess.PIPE
+      if log: log.write('Executing: '+command+'\n')
+      pipe = Popen(command, stdin=None, stdout=PIPE, stderr=PIPE,
+                   bufsize=-1, shell=True, universal_newlines=True)
+      (out, err) = pipe.communicate()
+      ret = pipe.returncode
+      return (out, err, ret)
 
-      (input, output, err) = os.popen3(command)
-    return (input, output, err, pipe)
-  openPipe = staticmethod(openPipe)
+  else:
 
-  def runShellCommand(command, log = None):
-    import select
+    def openPipe(command):
+      '''We need to use the asynchronous version here since we want to avoid blocking reads'''
+      import popen2
 
-    ret        = None
-    out        = ''
-    err        = ''
-    loginError = 0
-    if log: log.write('Executing: '+command+'\n')
-    (input, output, error, pipe) = Script.openPipe(command)
-    input.close()
-    outputClosed = 0
-    errorClosed  = 0
-    lst = [output, error]
-    while 1:
-      ready = select.select(lst, [], [])
-      if len(ready[0]):
-        if error in ready[0]:
-          msg = error.readline()
-          if msg:
-            err += msg
-          else:
-            errorClosed = 1
-            lst.remove(error)
-        if output in ready[0]:
-          msg = output.readline()
-          if msg:
-            out += msg
-          else:
-            outputClosed = 1
-            lst.remove(output)
-        if out.find('password:') >= 0 or err.find('password:') >= 0:
-          loginError = 1
+      pipe = None
+      if hasattr(popen2, 'Popen3'):
+        pipe   = popen2.Popen3(command, 1)
+        input  = pipe.tochild
+        output = pipe.fromchild
+        err    = pipe.childerr
+      else:
+        import os
+        (input, output, err) = os.popen3(command)
+      return (input, output, err, pipe)
+    openPipe = staticmethod(openPipe)
+
+    def runShellCommand(command, log = None):
+      import select
+
+      ret        = None
+      out        = ''
+      err        = ''
+      loginError = 0
+      if log: log.write('Executing: '+command+'\n')
+      (input, output, error, pipe) = Script.openPipe(command)
+      input.close()
+      outputClosed = 0
+      errorClosed  = 0
+      lst = [output, error]
+      while 1:
+        ready = select.select(lst, [], [])
+        if len(ready[0]):
+          if error in ready[0]:
+            msg = error.readline()
+            if msg:
+              err += msg
+            else:
+              errorClosed = 1
+              lst.remove(error)
+          if output in ready[0]:
+            msg = output.readline()
+            if msg:
+              out += msg
+            else:
+              outputClosed = 1
+              lst.remove(output)
+          if out.find('password:') >= 0 or err.find('password:') >= 0:
+            loginError = 1
+            break
+        if outputClosed and errorClosed:
           break
-      if outputClosed and errorClosed:
-        break
-    output.close()
-    error.close()
-    if pipe:
-      # We would like the NOHANG argument here
-      ret = pipe.wait()
-    if loginError:
-      raise RuntimeError('Could not login to site')
-    return (out, err, ret)
+      output.close()
+      error.close()
+      if pipe:
+        # We would like the NOHANG argument here
+        ret = pipe.wait()
+      if loginError:
+        raise RuntimeError('Could not login to site')
+      return (out, err, ret)
+
   runShellCommand = staticmethod(runShellCommand)
 
   def defaultCheckCommand(command, status, output, error):
@@ -241,8 +271,6 @@ class Script(logger.Logger):
   debugger = property(getDebugger, setDebugger, doc = 'The debugger')
 
   def loadConfigure(self, argDB = None):
-    import cPickle
-
     if argDB is None:
       argDB = self.argDB
     if not 'configureCache' in argDB:
