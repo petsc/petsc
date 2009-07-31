@@ -14,7 +14,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   PetscInt              i,n,nrows,j,k,m,*rows = 0,*A_ci,*A_cj,ncols,col;
   const PetscInt        *is;
   PetscInt              nis = iscoloring->n,nctot,*cols,*B_ci,*B_cj;
-  PetscInt              *rowhit,M = mat->rmap->n,cstart = mat->cmap->rstart,cend = mat->cmap->rend,colb;
+  PetscInt              *rowhit,M,cstart,cend,colb;
   PetscInt              *columnsforrow,l;
   IS                    *isa;
   PetscTruth             done,flg;
@@ -28,6 +28,10 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   if (ctype == IS_COLORING_GHOSTED && !map) SETERRQ(PETSC_ERR_ARG_INCOMP,"When using ghosted differencing matrix must have local to global mapping provided with MatSetLocalToGlobalMapping");
 
   ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&isa);CHKERRQ(ierr);
+
+  M                = mat->rmap->n;
+  cstart           = mat->cmap->rstart;
+  cend             = mat->cmap->rend;
   c->M             = mat->rmap->N;  /* set the global rows and columns and local rows */
   c->N             = mat->cmap->N;
   c->m             = mat->rmap->n;
@@ -45,12 +49,8 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   if (!aij->colmap) {
     ierr = CreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
   }
-  /*
-      Calls the _SeqAIJ() version of these routines to make sure it does not 
-     get the reduced (by inodes) version of I and J
-  */
-  ierr = MatGetColumnIJ_SeqAIJ(aij->A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr); 
-  ierr = MatGetColumnIJ_SeqAIJ(aij->B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
+  ierr = MatGetColumnIJ(aij->A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr); 
+  ierr = MatGetColumnIJ(aij->B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
   
   ierr = PetscMalloc((M+1)*sizeof(PetscInt),&rowhit);CHKERRQ(ierr);
   ierr = PetscMalloc((M+1)*sizeof(PetscInt),&columnsforrow);CHKERRQ(ierr);
@@ -274,8 +274,8 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 
   ierr = PetscFree(rowhit);CHKERRQ(ierr);
   ierr = PetscFree(columnsforrow);CHKERRQ(ierr);
-  ierr = MatRestoreColumnIJ_SeqAIJ(aij->A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr); 
-  ierr = MatRestoreColumnIJ_SeqAIJ(aij->B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
+  ierr = MatRestoreColumnIJ(aij->A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr); 
+  ierr = MatRestoreColumnIJ(aij->B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 

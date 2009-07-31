@@ -13,7 +13,7 @@
   PetscErrorCode (*createglobalvector)(type,Vec*);\
   PetscErrorCode (*createlocalvector)(type,Vec*);\
 \
-  PetscErrorCode (*getcoloring)(type,ISColoringType,ISColoring*);\
+  PetscErrorCode (*getcoloring)(type,ISColoringType,const MatType,ISColoring*);	\
   PetscErrorCode (*getmatrix)(type, const MatType,Mat*);\
   PetscErrorCode (*getinterpolation)(type,type,Mat*,Vec*);\
   PetscErrorCode (*getaggregates)(type,type,Mat*);\

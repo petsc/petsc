@@ -182,7 +182,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInjection(DM dm1,DM dm2,VecScatter *ctx)
 
     Input Parameter:
 +   dm - the DM object
--   ctype - IS_COLORING_GHOSTED or IS_COLORING_GLOBAL
+.   ctype - IS_COLORING_GHOSTED or IS_COLORING_GLOBAL
+-   matype - either MATAIJ or MATBAIJ
 
     Output Parameter:
 .   coloring - the coloring
@@ -192,13 +193,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInjection(DM dm1,DM dm2,VecScatter *ctx)
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetMatrix()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMGetColoring(DM dm,ISColoringType ctype,ISColoring *coloring)
+PetscErrorCode PETSCDM_DLLEXPORT DMGetColoring(DM dm,ISColoringType ctype,const MatType mtype,ISColoring *coloring)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!dm->ops->getcoloring) SETERRQ(PETSC_ERR_SUP,"No coloring for this type of DM yet");
-  ierr = (*dm->ops->getcoloring)(dm,ctype,coloring);CHKERRQ(ierr);
+  ierr = (*dm->ops->getcoloring)(dm,ctype,mtype,coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

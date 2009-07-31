@@ -291,7 +291,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDACreateGlobalVector(ADDA adda, Vec *vec) {
 
 .seealso: DMGetColoring()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDAGetColoring(ADDA adda, ISColoringType ctype,ISColoring *coloring) {
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetColoring(ADDA adda, ISColoringType ctype,const MatType mtype,ISColoring *coloring) {
   PetscFunctionBegin;
   SETERRQ(PETSC_ERR_SUP, "Not implemented yet");
   PetscFunctionReturn(0);

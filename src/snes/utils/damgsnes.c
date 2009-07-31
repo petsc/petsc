@@ -706,7 +706,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
       if (dmmg[0]->getcoloringfrommat) {
         ierr = MatGetColoring(dmmg[i]->B,(MatColoringType)MATCOLORING_SL,&iscoloring);CHKERRQ(ierr);
       } else {
-        ierr = DMGetColoring(dmmg[i]->dm,dmmg[0]->isctype,&iscoloring);CHKERRQ(ierr);
+        ierr = DMGetColoring(dmmg[i]->dm,dmmg[0]->isctype,dmmg[i]->mtype,&iscoloring);CHKERRQ(ierr);
       }
       ierr = MatFDColoringCreate(dmmg[i]->B,iscoloring,&dmmg[i]->fdcoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
@@ -718,7 +718,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
   } else if (jacobian == DMMGComputeJacobianWithAdic) {
     for (i=0; i<nlevels; i++) {
       ISColoring iscoloring;
-      ierr = DMGetColoring(dmmg[i]->dm,IS_COLORING_GHOSTED,&iscoloring);CHKERRQ(ierr);
+      ierr = DMGetColoring(dmmg[i]->dm,IS_COLORING_GHOSTED,dmmg[i]->mtype,&iscoloring);CHKERRQ(ierr);
       ierr = MatSetColoring(dmmg[i]->B,iscoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
     }

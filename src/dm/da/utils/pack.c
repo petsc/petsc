@@ -1797,7 +1797,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetMatrix(DMComposite packer, const 
 
     Input Parameter:
 +   dmcomposite - the DMComposite object
--   ctype - IS_COLORING_GLOBAL or IS_COLORING_GHOSTED
+.   ctype - IS_COLORING_GLOBAL or IS_COLORING_GHOSTED
+-   mtype - MATAIJ or MATBAIJ
 
     Output Parameters:
 .   coloring - matrix coloring for use in computing Jacobians (or PETSC_NULL if not needed)
@@ -1818,7 +1819,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetMatrix(DMComposite packer, const 
 .seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), ISColoringType, ISColoring, DAGetColoring()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetColoring(DMComposite dmcomposite,ISColoringType ctype,ISColoring *coloring)
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetColoring(DMComposite dmcomposite,ISColoringType ctype,const MatType mtype,ISColoring *coloring)
 {
   PetscErrorCode         ierr;
   PetscInt               n,i,cnt;
@@ -1858,7 +1859,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetColoring(DMComposite dmcomposite,
       } else if (next->type == DMCOMPOSITE_DM) {
         ISColoring     lcoloring;
 
-        ierr = DMGetColoring(next->dm,IS_COLORING_GLOBAL,&lcoloring);CHKERRQ(ierr);
+        ierr = DMGetColoring(next->dm,IS_COLORING_GLOBAL,mtype,&lcoloring);CHKERRQ(ierr);
         for (i=0; i<lcoloring->N; i++) {
           colors[cnt++] = maxcol + lcoloring->colors[i];
         }

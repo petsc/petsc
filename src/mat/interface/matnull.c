@@ -51,7 +51,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceSetFunction(MatNullSpace sp, Petsc
 .  n - number of vectors (excluding constant vector) in null space
 -  vecs - the vectors that span the null space (excluding the constant vector);
           these vectors must be orthonormal. These vectors are NOT copied, so do not change them
-          after this call. You should free the array that you pass in.
+          after this call. You should free the array that you pass in and destroy the vectors (this will reduce the reference count 
+          for them by one).
 
    Output Parameter:
 .  SP - the null space context

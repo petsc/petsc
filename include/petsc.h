@@ -1091,10 +1091,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDataTypeGetSize(PetscDataType,size_t*
    around the basic Unix system calls, but a few of them have additional
    functionality and/or error checking.
 */
-EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscMemcpy(void*,const void *,size_t);
 EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscBitMemcpy(void*,PetscInt,const void*,PetscInt,PetscInt,PetscDataType);
 EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscMemmove(void*,void *,size_t);
-EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscMemzero(void*,size_t);
 EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscMemcmp(const void*,const void*,size_t,PetscTruth *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscStrlen(const char[],size_t*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscStrcmp(const char[],const char[],PetscTruth *);
@@ -1113,6 +1111,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscStrrstr(const char[],const char[],c
 EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscStrallocpy(const char[],char *[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscStrreplace(MPI_Comm,const char[],char[],size_t);
 #define      PetscStrfree(a) ((a) ? PetscFree(a) : 0) 
+
 
 /*S
     PetscToken - 'Token' used for managing tokenizing strings
@@ -1552,6 +1551,152 @@ extern PETSC_DLLEXPORT PetscMPIInt PetscGlobalSize;
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscIntView(PetscInt,const PetscInt[],PetscViewer);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRealView(PetscInt,const PetscReal[],PetscViewer);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt,const PetscScalar[],PetscViewer);
+
+#if defined(PETSC_HAVE_MEMORY_H)
+#include <memory.h>
+#endif
+#if defined(PETSC_HAVE_STDLIB_H)
+#include <stdlib.h>
+#endif
+#if defined(PETSC_HAVE_STRINGS_H)
+#include <strings.h>
+#endif
+#if defined(PETSC_HAVE_STRING_H)
+#include <string.h>
+#endif
+#if defined(PETSC_PREFER_DCOPY_FOR_MEMCPY)
+#include "petscblaslapack.h"
+#endif
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMemcpy"
+/*@
+   PetscMemcpy - Copies n bytes, beginning at location b, to the space
+   beginning at location a. The two memory regions CANNOT overlap, use
+   PetscMemmove() in that case.
+
+   Not Collective
+
+   Input Parameters:
++  b - pointer to initial memory space
+-  n - length (in bytes) of space to copy
+
+   Output Parameter:
+.  a - pointer to copy space
+
+   Level: intermediate
+
+   Compile Option:
+    PETSC_PREFER_DCOPY_FOR_MEMCPY will cause the BLAS dcopy() routine to be used 
+                                  for memory copies on double precision values.
+    PETSC_PREFER_COPY_FOR_MEMCPY will cause C code to be used 
+                                  for memory copies on double precision values.
+    PETSC_PREFER_FORTRAN_FORMEMCPY will cause Fortran code to be used 
+                                  for memory copies on double precision values.
+
+   Note:
+   This routine is analogous to memcpy().
+
+  Concepts: memory^copying
+  Concepts: copying^memory
+  
+.seealso: PetscMemmove()
+
+@*/
+PETSC_STATIC_INLINE PetscErrorCode PETSC_DLLEXPORT PetscMemcpy(void *a,const void *b,size_t n)
+{
+#if defined(PETSC_USE_DEBUG)
+  unsigned long al = (unsigned long) a,bl = (unsigned long) b;
+  unsigned long nl = (unsigned long) n;
+  if (n > 0 && !b) SETERRQ(PETSC_ERR_ARG_NULL,"Trying to copy from a null pointer");
+  if (n > 0 && !a) SETERRQ(PETSC_ERR_ARG_NULL,"Trying to copy to a null pointer");
+#endif
+  if (a != b) {
+#if defined(PETSC_USE_DEBUG)
+    if ((al > bl && (al - bl) < nl) || (bl - al) < nl) {
+      SETERRQ3(PETSC_ERR_ARG_INCOMP,"Memory regions overlap: either use PetscMemmov()\n\
+              or make sure your copy regions and lengths are correct. \n\
+              Length (bytes) %ld first address %ld second address %ld",nl,al,bl);
+    }
+#endif
+#if (defined(PETSC_PREFER_DCOPY_FOR_MEMCPY) || defined(PETSC_PREFER_COPY_FOR_MEMCPY) || defined(PETSC_PREFER_FORTRAN_FORMEMCPY))
+   if (!(((long) a) % sizeof(PetscScalar)) && !(n % sizeof(PetscScalar))) {
+      size_t len = n/sizeof(PetscScalar);
+#if defined(PETSC_PREFER_DCOPY_FOR_MEMCPY)
+      PetscBLASInt one = 1,blen = PetscBLASIntCast(len);
+      BLAScopy_(&blen,(PetscScalar *)b,&one,(PetscScalar *)a,&one);
+#elif defined(PETSC_PREFER_FORTRAN_FORMEMCPY)
+      fortrancopy_(&len,(PetscScalar*)b,(PetscScalar*)a); 
+#else
+      size_t      i;
+      PetscScalar *x = (PetscScalar*)b, *y = (PetscScalar*)a;
+      for (i=0; i<len; i++) y[i] = x[i];
+#endif
+    } else {
+      memcpy((char*)(a),(char*)(b),n);
+    }
+#elif defined(PETSC_HAVE__INTEL_FAST_MEMCPY)
+    _intel_fast_memcpy((char*)(a),(char*)(b),n);
+#else
+    memcpy((char*)(a),(char*)(b),n);
+#endif
+  }
+  return 0;
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMemzero"
+/*@C
+   PetscMemzero - Zeros the specified memory.
+
+   Not Collective
+
+   Input Parameters:
++  a - pointer to beginning memory location
+-  n - length (in bytes) of memory to initialize
+
+   Level: intermediate
+
+   Compile Option:
+   PETSC_PREFER_BZERO - on certain machines (the IBM RS6000) the bzero() routine happens
+  to be faster than the memset() routine. This flag causes the bzero() routine to be used.
+
+   Concepts: memory^zeroing
+   Concepts: zeroing^memory
+
+.seealso: PetscMemcpy()
+@*/
+PETSC_STATIC_INLINE PetscErrorCode PETSC_DLLEXPORT PetscMemzero(void *a,size_t n)
+{
+  if (n > 0) {
+#if defined(PETSC_USE_DEBUG)
+    if (!a) SETERRQ(PETSC_ERR_ARG_NULL,"Trying to zero at a null pointer");
+#endif
+#if defined(PETSC_PREFER_ZERO_FOR_MEMZERO)
+    if (!(((long) a) % sizeof(PetscScalar)) && !(n % sizeof(PetscScalar))) {
+      size_t      i,len = n/sizeof(PetscScalar);
+      PetscScalar *x = (PetscScalar*)a;
+      for (i=0; i<len; i++) x[i] = 0.0;
+    } else {
+#elif defined(PETSC_PREFER_FORTRAN_FOR_MEMZERO)
+    if (!(((long) a) % sizeof(PetscScalar)) && !(n % sizeof(PetscScalar))) {
+      PetscInt len = n/sizeof(PetscScalar);
+      fortranzero_(&len,(PetscScalar*)a);
+    } else {
+#endif
+#if defined(PETSC_PREFER_BZERO)
+      bzero((char *)a,n);
+#elif defined (PETSC_HAVE__INTEL_FAST_MEMSET)
+      _intel_fast_memset((char*)a,0,n);
+#else
+      memset((char*)a,0,n);
+#endif
+#if defined(PETSC_PREFER_ZERO_FOR_MEMZERO) || defined(PETSC_PREFER_FORTRAN_FOR_MEMZERO)
+    }
+#endif
+  }
+  return 0;
+}
 
 /*
     Allows accessing Matlab Engine

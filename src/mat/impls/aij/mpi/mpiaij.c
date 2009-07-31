@@ -2553,15 +2553,19 @@ PetscErrorCode MatGetRowMax_MPIAIJ(Mat A, Vec v, PetscInt idx[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSeqNonzerostructure_MPIAIJ" 
-PetscErrorCode MatGetSeqNonzerostructure_MPIAIJ(Mat mat,Mat *newmat[])
+PetscErrorCode MatGetSeqNonzerostructure_MPIAIJ(Mat mat,Mat *newmat)
 {
   PetscErrorCode ierr;
+  Mat            *dummy;
 
   PetscFunctionBegin;
-  ierr = MatGetSubMatrix_MPIAIJ_All(mat,MAT_DO_NOT_GET_VALUES,MAT_INITIAL_MATRIX,newmat);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix_MPIAIJ_All(mat,MAT_DO_NOT_GET_VALUES,MAT_INITIAL_MATRIX,&dummy);CHKERRQ(ierr);
+  *newmat = *dummy;
+  ierr = PetscFree(dummy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply_AIJ(Mat,MatFDColoring,Vec,MatStructure*,void*);
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatGetRow_MPIAIJ,
@@ -2654,7 +2658,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        0,
 #endif
        MatSetValuesAdifor_MPIAIJ,
-/*75*/ 0,
+/*75*/ MatFDColoringApply_AIJ,
        0,
        0,
        0,

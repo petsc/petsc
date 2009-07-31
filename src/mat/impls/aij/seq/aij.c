@@ -46,7 +46,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalSet_SeqAIJ(Mat Y,Vec D,InsertMode i
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRowIJ_SeqAIJ"
-PetscErrorCode MatGetRowIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscTruth blockcompressed,PetscInt *m,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
+PetscErrorCode MatGetRowIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscTruth inodecompressed,PetscInt *m,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
@@ -76,7 +76,7 @@ PetscErrorCode MatGetRowIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,Pet
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRowIJ_SeqAIJ"
-PetscErrorCode MatRestoreRowIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscTruth blockcompressed,PetscInt *n,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
+PetscErrorCode MatRestoreRowIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscTruth inodecompressed,PetscInt *n,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
 {
   PetscErrorCode ierr;
  
@@ -91,13 +91,13 @@ PetscErrorCode MatRestoreRowIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmetric
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetColumnIJ_SeqAIJ"
-PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscTruth blockcompressed,PetscInt *nn,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
+PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscTruth inodecompressed,PetscInt *nn,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       i,*collengths,*cia,*cja,n = A->cmap->n,m = A->rmap->n;
   PetscInt       nz = a->i[m],row,*jj,mr,col;
- 
+
   PetscFunctionBegin;  
   *nn = n;
   if (!ia) PetscFunctionReturn(0);
@@ -133,7 +133,7 @@ PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreColumnIJ_SeqAIJ"
-PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscTruth blockcompressed,PetscInt *n,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
+PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscTruth inodecompressed,PetscInt *n,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
 {
   PetscErrorCode ierr;
 
@@ -2445,7 +2445,7 @@ PetscErrorCode MatGetRowMin_SeqAIJ(Mat A,Vec v,PetscInt idx[])
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply_AIJ(Mat,MatFDColoring,Vec,MatStructure*,void*);
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatGetRow_SeqAIJ,
@@ -2526,7 +2526,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        0,
 #endif
 /*74*/ MatSetValuesAdifor_SeqAIJ,
-       0, 
+       MatFDColoringApply_AIJ, 
        0,
        0,
        0,

@@ -132,7 +132,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetBlockFills(DA da,PetscInt *dfill,PetscInt 
 
     Input Parameter:
 +   da - the distributed array
--   ctype - IS_COLORING_GLOBAL or IS_COLORING_GHOSTED
+.   ctype - IS_COLORING_GLOBAL or IS_COLORING_GHOSTED
+-   mtype - either MATAIJ or MATBAIJ
 
     Output Parameters:
 .   coloring - matrix coloring for use in computing Jacobians (or PETSC_NULL if not needed)
@@ -143,17 +144,20 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetBlockFills(DA da,PetscInt *dfill,PetscInt 
    for efficient (parallel or thread based) triangular solves etc is NOT
    available. 
 
+        For BAIJ matrices this colors the graph for the blocks, not for the individual matrix elements;
+    the same as MatGetColoring().
 
 .seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), ISColoringType, ISColoring
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetColoring(DA da,ISColoringType ctype,ISColoring *coloring)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetColoring(DA da,ISColoringType ctype,const MatType mtype,ISColoring *coloring)
 {
   PetscErrorCode ierr;
-  PetscInt       dim,m,n,p;
+  PetscInt       dim,m,n,p,nc;
   DAPeriodicType wrap;
   MPI_Comm       comm;
   PetscMPIInt    size;
+  PetscTruth     isBAIJ;
 
   PetscFunctionBegin;
   /*
@@ -178,7 +182,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetColoring(DA da,ISColoringType ctype,ISColo
          col - number of colors needed in one direction for single component problem
   
   */  
-  ierr = DAGetInfo(da,&dim,0,0,0,&m,&n,&p,0,0,&wrap,0);CHKERRQ(ierr);
+  ierr = DAGetInfo(da,&dim,0,0,0,&m,&n,&p,&nc,0,&wrap,0);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -192,6 +196,18 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetColoring(DA da,ISColoringType ctype,ISColo
     }
   }
 
+  /* Tell the DA it has 1 degree of freedom per grid point so that the coloring for BAIJ 
+     matrices is for the blocks, not the individual matrix elements  */
+  ierr = PetscStrcmp(mtype,MATBAIJ,&isBAIJ);CHKERRQ(ierr);
+  if (!isBAIJ) {ierr = PetscStrcmp(mtype,MATMPIBAIJ,&isBAIJ);CHKERRQ(ierr);}
+  if (!isBAIJ) {ierr = PetscStrcmp(mtype,MATSEQBAIJ,&isBAIJ);CHKERRQ(ierr);}
+  if (isBAIJ) {
+    da->w = 1;
+    da->xs = da->xs/nc;
+    da->xe = da->xe/nc;
+    da->Xs = da->Xs/nc;
+    da->Xe = da->Xe/nc;
+  }
 
   /*
      We do not provide a getcoloring function in the DA operations because 
@@ -205,7 +221,14 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetColoring(DA da,ISColoringType ctype,ISColo
   } else if (dim == 3) {
     ierr =  DAGetColoring3d_MPIAIJ(da,ctype,coloring);CHKERRQ(ierr);
   } else {
-      SETERRQ1(PETSC_ERR_SUP,"Not done for %D dimension, send us mail petsc-maint@mcs.anl.gov for code",dim);
+    SETERRQ1(PETSC_ERR_SUP,"Not done for %D dimension, send us mail petsc-maint@mcs.anl.gov for code",dim);
+  }
+  if (isBAIJ) {
+    da->w = nc;
+    da->xs = da->xs*nc;
+    da->xe = da->xe*nc;
+    da->Xs = da->Xs*nc;
+    da->Xe = da->Xe*nc;
   }
   PetscFunctionReturn(0);
 }

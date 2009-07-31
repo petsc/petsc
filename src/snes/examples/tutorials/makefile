@@ -510,6 +510,31 @@ testex19: ex19.PETSc
            cat ex19_1.tmp; fi; fi; \
            ${RM} -f ex19_1.tmp; \
            ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex19.rm ; fi
+runex19_14:
+	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -dmmg_mat_type baij -mg_coarse_pc_type bjacobi > ex19_14.tmp 2>&1; \
+	   if (${DIFF} output/ex19_14.out ex19_14.tmp) then true; \
+	   else echo "Possible problem with ex19, diffs above"; fi; \
+	   ${RM} -f ex19_14.tmp
+runex19_15:
+	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -dmmg_mat_type baij -mg_coarse_pc_type bjacobi -dmmg_iscoloring_type global > ex19_15.tmp 2>&1; \
+	   if (${DIFF} output/ex19_15.out ex19_15.tmp) then true; \
+	   else echo "Possible problem with ex19, diffs above"; fi; \
+	   ${RM} -f ex19_15.tmp
+runex19_15a:
+	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -dmmg_mat_type baij -mg_coarse_pc_type bjacobi -dmmg_iscoloring_type global -dmmg_coloring_from_mat > ex19_15a.tmp 2>&1; \
+	   if (${DIFF} output/ex19_15a.out ex19_15a.tmp) then true; \
+	   else echo "Possible problem with ex19, diffs above"; fi; \
+	   ${RM} -f ex19_15a.tmp
+runex19_16:
+	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -dmmg_mat_type aij -mg_coarse_pc_type bjacobi -dmmg_iscoloring_type global > ex19_16.tmp 2>&1; \
+	   if (${DIFF} output/ex19_16.out ex19_16.tmp) then true; \
+	   else echo "Possible problem with ex19, diffs above"; fi; \
+	   ${RM} -f ex19_16.tmp
+runex19_16a:
+	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -dmmg_mat_type aij -mg_coarse_pc_type bjacobi -dmmg_iscoloring_type global -dmmg_coloring_from_mat > ex19_16a.tmp 2>&1; \
+	   if (${DIFF} output/ex19_16a.out ex19_16a.tmp) then true; \
+	   else echo "Possible problem with ex19, diffs above"; fi; \
+	   ${RM} -f ex19_16a.tmp
 runex21:
 	-@${MPIEXEC} -n 4 ./ex21  -snes_mf -snes_monitor_short -nox > ex21_1.tmp 2>&1; \
 	   if (${DIFF} output/ex21_1.out ex21_1.tmp) then true; \
@@ -589,7 +614,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  runex5_5 runex5_6 runex5_7 runex5_9 runex5_13 runex5_14 ex5.rm \
                                  ex6.PETSc runex6 runex6_2 ex6.rm\
                                  ex14.PETSc runex14 runex14_2 ex14.rm ex19.PETSc runex19 runex19_2 runex19_5 runex19_6 runex19_7 runex19_8 runex19_9 \
-                                 runex19_10 ex19.rm \
+                                 runex19_10 runex19_14 runex19_15 runex19_15a runex19_16 runex19_16a ex19.rm \
                                  ex22.PETSc runex22 ex22.rm ex18.PETSc ex18.rm ex19.PETSc ex19.rm ex21.PETSc runex21 ex21.rm \
                                  ex23.PETSc runex23 ex23.rm ex24.PETSc ex24.rm   ex25.PETSc runex25 runex25_2 \
                                  ex25.rm ex29.PETSc ex29.rm ex31.PETSc ex31.rm ex42.PETSc runex42 ex42.rm ex43.PETSc ex43.rm \
