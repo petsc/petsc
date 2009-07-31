@@ -196,6 +196,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetSectionReal(Mesh, const char [], 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetSectionReal(Mesh, SectionReal);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh, SectionReal, MatType, Mat *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateVector(Mesh, SectionReal, Vec *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT assembleVector(Vec, Mesh, SectionReal, PetscInt, PetscScalar [], InsertMode);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT assembleMatrix(Mat, Mesh, SectionReal, PetscInt, PetscScalar [], InsertMode);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshRestrictClosure(Mesh, SectionReal, PetscInt, PetscInt, PetscScalar []);

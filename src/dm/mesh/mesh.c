@@ -1096,25 +1096,38 @@ PetscErrorCode assembleVectorComplete(Vec g, Vec l, InsertMode mode)
 @*/
 PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mode)
 {
-  Mesh                       mesh;
+  Mesh           mesh;
+  SectionReal    section;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject) b, "mesh", (PetscObject *) &mesh);CHKERRQ(ierr);
+  ierr = MeshGetSectionReal(mesh, "x", &section);CHKERRQ(ierr);
+  ierr = assembleVector(b, mesh, section, e, v, mode);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(section);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode assembleVector(Vec b, Mesh mesh, SectionReal section, PetscInt e, PetscScalar v[], InsertMode mode)
+{
   ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscInt                   firstElement;
-  PetscErrorCode             ierr;
+  ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
+  PetscInt                  firstElement;
+  PetscErrorCode            ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(Mesh_assembleVector,0,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) b, "mesh", (PetscObject *) &mesh);CHKERRQ(ierr);
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
   //firstElement = elementBundle->getLocalSizes()[bundle->getCommRank()];
   firstElement = 0;
-  // Must relate b to field
 #ifdef PETSC_USE_COMPLEX
   SETERRQ(PETSC_ERR_SUP, "SectionReal does not support complex update");
 #else
   if (mode == INSERT_VALUES) {
-    m->update(m->getRealSection(std::string("x")), PETSC_MESH_TYPE::point_type(e + firstElement), v);
+    m->update(s, PETSC_MESH_TYPE::point_type(e + firstElement), v);
   } else {
-    m->updateAdd(m->getRealSection(std::string("x")), PETSC_MESH_TYPE::point_type(e + firstElement), v);
+    m->updateAdd(s, PETSC_MESH_TYPE::point_type(e + firstElement), v);
   }
 #endif
   ierr = PetscLogEventEnd(Mesh_assembleVector,0,0,0,0);CHKERRQ(ierr);
@@ -2542,224 +2555,6 @@ PetscErrorCode SectionGetArray(Mesh mesh, const char name[], PetscInt *numElemen
   *numElements = numElem;
   *fiberDim    = fiberDimMin;
   *array       = (PetscScalar *) section->restrictSpace();
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MeshRestrictClosure"
-/*@C
-  MeshRestrictClosure - Returns an array with the values in a given closure
-
-  Not Collective
-
-  Input Parameters:
-+ mesh    - The Mesh object
-. section - The section
-. point   - The sieve point
-. n       - The array size
-- array   - The array to fill up
-
-  Output Parameter:
-. array - The array full of values in the closure
-
-  Level: intermediate
-
-.keywords: mesh, elements
-.seealso: MeshCreate()
-@*/
-PetscErrorCode MeshRestrictClosure(Mesh mesh, SectionReal section, PetscInt point, PetscInt n, PetscScalar values[])
-{
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
-  PetscErrorCode            ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-#ifdef PETSC_USE_COMPLEX
-  SETERRQ(PETSC_ERR_SUP, "SectionReal does not support complex restriction");
-#else
-  m->restrictClosure(s, point, values, n);
-#endif
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MeshUpdateClosure"
-/*@C
-  MeshUpdateClosure - Updates the values in a given closure from the array
-
-  Not Collective
-
-  Input Parameters:
-+ mesh    - The Mesh object
-. section - The section
-. point   - The sieve point
-- array   - The array to fill up
-
-  Output Parameter:
-. array - The array full of values in the closure
-
-  Level: intermediate
-
-.keywords: mesh, elements
-.seealso: MeshCreate()
-@*/
-PetscErrorCode MeshUpdateClosure(Mesh mesh, SectionReal section, PetscInt point, PetscScalar values[])
-{
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
-  PetscErrorCode            ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-#ifdef PETSC_USE_COMPLEX
-  SETERRQ(PETSC_ERR_SUP, "SectionReal does not support complex update");
-#else
-  m->update(s, point, values);
-#endif
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MeshUpdateAddClosure"
-/*@C
-  MeshUpdateAddClosure - Adds to the values in a given closure from the array
-
-  Not Collective
-
-  Input Parameters:
-+ mesh    - The Mesh object
-. section - The section
-. point   - The sieve point
-- array   - The array to fill up
-
-  Output Parameter:
-. array - The array full of values in the closure
-
-  Level: intermediate
-
-.keywords: mesh, elements
-.seealso: MeshCreate()
-@*/
-PetscErrorCode MeshUpdateAddClosure(Mesh mesh, SectionReal section, PetscInt point, PetscScalar values[])
-{
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
-  PetscErrorCode            ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-#ifdef PETSC_USE_COMPLEX
-  SETERRQ(PETSC_ERR_SUP, "SectionReal does not support complex update");
-#else
-  m->updateAdd(s, point, values);
-#endif
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MeshRestrictClosureInt"
-/*@C
-  MeshRestrictClosureInt - Returns an array with the values in a given closure
-
-  Not Collective
-
-  Input Parameters:
-+ mesh    - The Mesh object
-. section - The section
-. point   - The sieve point
-. n       - The array size
-- array   - The array to fill up
-
-  Output Parameter:
-. array - The array full of values in the closure
-
-  Level: intermediate
-
-.keywords: mesh, elements
-.seealso: MeshCreate(), MeshRestrictClosure()
-@*/
-PetscErrorCode MeshRestrictClosureInt(Mesh mesh, SectionInt section, PetscInt point, PetscInt n, PetscInt values[])
-{
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
-  PetscErrorCode            ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  ierr = SectionIntGetSection(section, s);CHKERRQ(ierr);
-  m->restrictClosure(s, point, values, n);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MeshUpdateClosureInt"
-/*@C
-  MeshUpdateClosureInt - Updates the values in a given closure from the array
-
-  Not Collective
-
-  Input Parameters:
-+ mesh    - The Mesh object
-. section - The section
-. point   - The sieve point
-- array   - The array to fill up
-
-  Output Parameter:
-. array - The array full of values in the closure
-
-  Level: intermediate
-
-.keywords: mesh, elements
-.seealso: MeshCreate()
-@*/
-PetscErrorCode MeshUpdateClosureInt(Mesh mesh, SectionInt section, PetscInt point, PetscInt values[])
-{
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
-  PetscErrorCode            ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  ierr = SectionIntGetSection(section, s);CHKERRQ(ierr);
-  m->update(s, point, values);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MeshUpdateAddClosureInt"
-/*@C
-  MeshUpdateAddClosureInt - Adds the values in a given closure from the array
-
-  Not Collective
-
-  Input Parameters:
-+ mesh    - The Mesh object
-. section - The section
-. point   - The sieve point
-- array   - The array to fill up
-
-  Output Parameter:
-. array - The array full of values in the closure
-
-  Level: intermediate
-
-.keywords: mesh, elements
-.seealso: MeshCreate()
-@*/
-PetscErrorCode MeshUpdateAddClosureInt(Mesh mesh, SectionInt section, PetscInt point, PetscInt values[])
-{
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
-  PetscErrorCode            ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  ierr = SectionIntGetSection(section, s);CHKERRQ(ierr);
-  m->updateAdd(s, point, values);
   PetscFunctionReturn(0);
 }
 

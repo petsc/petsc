@@ -383,13 +383,14 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealRestrict(SectionReal section, PetscI
   Input Parameters:
 + section - the section object
 . point - the Sieve point
-- values - The values associated with the submesh
+. values - The values associated with the submesh
+- mode - The insertion mode
 
   Level: advanced
 
 .seealso SectionRealRestrict(), SectionRealCreate(), SectionRealView()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdate(SectionReal section, PetscInt point, const PetscScalar values[])
+PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdate(SectionReal section, PetscInt point, const PetscScalar values[], InsertMode mode)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
@@ -397,36 +398,97 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdate(SectionReal section, PetscInt
 #ifdef PETSC_USE_COMPLEX
   SETERRQ(PETSC_ERR_SUP, "SectionReal does not support complex updates");
 #else
-  section->b->update(section->s, point, values);
+  if (mode == INSERT_VALUES) {
+    section->b->update(section->s, point, values);
+  } else if (mode == ADD_VALUES) {
+    section->b->updateAdd(section->s, point, values);
+  } else {
+    SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid insertion mode: %d", mode);
+  }
 #endif
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "SectionRealUpdateAdd"
+#undef __FUNCT__
+#define __FUNCT__ "SectionRealRestrictClosure"
 /*@C
-  SectionRealUpdateAdd - Updates the array of values associated to a subset of the topology in this Section.
+  SectionRealRestrictClosure - Returns an array with the values in a given closure
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ section - the section object
-. point - the Sieve point
-- values - The values associated with the submesh
++ section - The section
+. mesh    - The Mesh object
+. point   - The sieve point
+. n       - The array size
+- array   - The array to fill up
 
-  Level: advanced
+  Output Parameter:
+. array - The array full of values in the closure
 
-.seealso SectionRealRestrict(), SectionRealCreate(), SectionRealView()
+  Level: intermediate
+
+.keywords: mesh, elements
+.seealso: MeshCreate()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdateAdd(SectionReal section, PetscInt point, const PetscScalar values[])
+PetscErrorCode SectionRealRestrictClosure(SectionReal section, Mesh mesh, PetscInt point, PetscInt n, PetscScalar values[])
 {
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
+  PetscErrorCode            ierr;
+
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
-  PetscValidScalarPointer(values,3);
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
 #ifdef PETSC_USE_COMPLEX
-  SETERRQ(PETSC_ERR_SUP, "SectionReal does not support complex updates");
+  SETERRQ(PETSC_ERR_SUP, "SectionReal does not support complex restriction");
 #else
-  section->b->updateAdd(section->s, point, values);
+  m->restrictClosure(s, point, values, n);
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SectionRealUpdateClosure"
+/*@C
+  SectionRealUpdateClosure - Updates the values in a given closure from the array
+
+  Not Collective
+
+  Input Parameters:
++ section - The section
+. mesh    - The Mesh object
+. point   - The sieve point
+. array   - The array to fill up
+- mode    - The insertion mode
+
+  Output Parameter:
+. array - The array full of values in the closure
+
+  Level: intermediate
+
+.keywords: mesh, elements
+.seealso: MeshCreate()
+@*/
+PetscErrorCode SectionRealUpdateClosure(SectionReal section, Mesh mesh, PetscInt point, PetscScalar values[], InsertMode mode)
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
+  PetscErrorCode            ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+#ifdef PETSC_USE_COMPLEX
+  SETERRQ(PETSC_ERR_SUP, "SectionReal does not support complex update");
+#else
+  if (mode == INSERT_VALUES) {
+    m->update(s, point, values);
+  } else if (mode == ADD_VALUES) {
+    m->updateAdd(s, point, values);
+  } else {
+    SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid insertion mode: %d", mode);
+  }
 #endif
   PetscFunctionReturn(0);
 }
@@ -1263,43 +1325,101 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntRestrict(SectionInt section, PetscInt
   Input Parameters:
 + section - the section object
 . point - the Sieve point
-- values - The values associated with the submesh
+. values - The values associated with the submesh
+- mode - The insertion mode
 
   Level: advanced
 
 .seealso SectionIntRestrict(), SectionIntCreate(), SectionIntView()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionIntUpdate(SectionInt section, PetscInt point, const PetscInt values[])
+PetscErrorCode PETSCDM_DLLEXPORT SectionIntUpdate(SectionInt section, PetscInt point, const PetscInt values[], InsertMode mode)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
   PetscValidIntPointer(values,3);
-  section->b->update(section->s, point, values);
+  if (mode == INSERT_VALUES) {
+    section->b->update(section->s, point, values);
+  } else if (mode == ADD_VALUES) {
+    section->b->updateAdd(section->s, point, values);
+  } else {
+    SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid insertion mode: %d", mode);
+  }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "SectionIntUpdateAdd"
+#undef __FUNCT__
+#define __FUNCT__ "SectionIntRestrictClosure"
 /*@C
-  SectionIntUpdateAdd - Updates the array of values associated to a subset of the topology in this Section.
+  SectionIntRestrictClosure - Returns an array with the values in a given closure
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ section - the section object
-. point - the Sieve point
-- values - The values associated with the submesh
++ section - The section
+. mesh    - The Mesh object
+. point   - The sieve point
+. n       - The array size
+- array   - The array to fill up
 
-  Level: advanced
+  Output Parameter:
+. array - The array full of values in the closure
 
-.seealso SectionIntRestrict(), SectionIntCreate(), SectionIntView()
+  Level: intermediate
+
+.keywords: mesh, elements
+.seealso: MeshCreate()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionIntUpdateAdd(SectionInt section, PetscInt point, const PetscInt values[])
+PetscErrorCode SectionIntRestrictClosure(SectionInt section, Mesh mesh, PetscInt point, PetscInt n, PetscInt values[])
 {
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
+  PetscErrorCode            ierr;
+
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
-  PetscValidScalarPointer(values,3);
-  section->b->updateAdd(section->s, point, values);
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = SectionIntGetSection(section, s);CHKERRQ(ierr);
+  m->restrictClosure(s, point, values, n);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SectionIntUpdateClosure"
+/*@C
+  SectionIntUpdateClosure - Updates the values in a given closure from the array
+
+  Not Collective
+
+  Input Parameters:
++ section - The section
+. mesh    - The Mesh object
+. point   - The sieve point
+. array   - The array to fill up
+- mode    - The insertion mode
+
+  Output Parameter:
+. array - The array full of values in the closure
+
+  Level: intermediate
+
+.keywords: mesh, elements
+.seealso: MeshCreate()
+@*/
+PetscErrorCode SectionIntUpdateClosure(SectionInt section, Mesh mesh, PetscInt point, PetscInt values[], InsertMode mode)
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
+  PetscErrorCode            ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = SectionIntGetSection(section, s);CHKERRQ(ierr);
+  if (mode == INSERT_VALUES) {
+    m->update(s, point, values);
+  } else if (mode == ADD_VALUES) {
+    m->updateAdd(s, point, values);
+  } else {
+    SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid insertion mode: %d", mode);
+  }
   PetscFunctionReturn(0);
 }
 
