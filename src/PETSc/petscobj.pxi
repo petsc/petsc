@@ -82,3 +82,8 @@ cdef inline int Object_setAttr(PetscObject o, char name[], object attr) except -
     return 0
 
 # --------------------------------------------------------------------
+
+cdef inline long Object_toFortran(PetscObject o):
+    return <long> o
+
+# --------------------------------------------------------------------

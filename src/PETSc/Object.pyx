@@ -189,6 +189,13 @@ cdef class Object:
         def __get__(self):
             return self.getRefCount()
 
+    # --- Fortran support  ---
+
+    property fortran:
+        def __get__(self):
+            return Object_toFortran(self.obj[0])
+
+
 # --------------------------------------------------------------------
 
 include "cyclicgc.pxi"
