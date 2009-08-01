@@ -25,18 +25,6 @@ extern void PetscRmPointer(void*);
 #define meshrestorecoordinatesf90_ MESHRESTORECOORDINATESF90
 #define meshgetelementsf90_        MESHGETELEMENTSF90
 #define meshrestoreelementsf90_    MESHRESTOREELEMENTSF90
-#define meshrestrictclosure_       MESHRESTRICTCLOSURE
-#define meshrestrictclosureint_    MESHRESTRICTCLOSUREINT
-#define meshupdateclosure_         MESHUPDATECLOSURE
-#define meshupdateclosureint_      MESHUPDATECLOSUREINT
-#define meshupdateaddclosure_      MESHUPDATEADDCLOSURE
-#define meshupdateaddclosureint_   MESHUPDATEADDCLOSUREINT
-#define sectiongetarrayf90_        SECTIONGETARRAYF90
-#define sectiongetarray1df90_      SECTIONGETARRAY1DF90
-#define bcsectiongetarrayf90_      BCSECTIONGETARRAYF90
-#define bcsectiongetarray1df90_    BCSECTIONGETARRAY1DF90
-#define bcsectionrealgetarrayf90_  BCSECTIONREALGETARRAYF90
-#define bcfuncgetarrayf90_         BCFUNCGETARRAYF90
 #define meshgetlabelids_           MESHGETLABELIDS
 #define meshgetstratum_            MESHGETSTRATUM
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
@@ -44,18 +32,6 @@ extern void PetscRmPointer(void*);
 #define meshrestorecoordinatesf90_ meshrestorecoordinatesf90
 #define meshgetelementsf90_        meshgetelementsf90
 #define meshrestoreelementsf90_    meshrestoreelementsf90
-#define meshrestrictclosure_       meshrestrictclosure
-#define meshrestrictclosureint_    meshrestrictclosureint
-#define meshupdateclosure_         meshupdateclosure
-#define meshupdateclosureint_      meshupdateclosureint
-#define meshupdateaddclosure_      meshupdateaddclosure
-#define meshupdateaddclosureint_   meshupdateaddclosureint
-#define sectiongetarrayf90_        sectiongetarrayf90
-#define sectiongetarray1df90_      sectiongetarray1df90
-#define bcsectiongetarrayf90_      bcsectiongetarrayf90
-#define bcsectiongetarray1df90_    bcsectiongetarray1df90
-#define bcsectionrealgetarrayf90_  bcsectionrealgetarrayf90
-#define bcfuncgetarrayf90_         bcfuncgetarrayf90
 #define meshgetlabelids_           meshgetlabelids
 #define meshgetstratum_            meshgetstratum
 #endif
@@ -91,52 +67,6 @@ void PETSC_STDCALL meshrestoreelementsf90_(Mesh *x,F90Array2d *ptr,int *__ierr P
   *__ierr = PetscFree(v);
 }
 
-void PETSC_STDCALL meshrestrictclosure_(Mesh mesh, SectionReal section, int *point,int *size,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
-{
-  PetscScalar *c;
-
-  // Should be able to get array size
-  *ierr = F90Array1dAccess(ptr, PETSC_SCALAR, (void**) &c PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
-  *ierr = MeshRestrictClosure((Mesh) PetscToPointer(mesh), (SectionReal) PetscToPointer(section),*point,*size,c); if (*ierr) return;
-  // *ierr = F90Array1dCreate(const_cast<PetscScalar *>(c),PETSC_SCALAR,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));
-}
-void PETSC_STDCALL meshrestrictclosureint_(Mesh mesh, SectionInt section, int *point,int *size,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
-{
-  PetscInt *c;
-
-  // Should be able to get array size
-  *ierr = F90Array1dAccess(ptr, PETSC_INT, (void**) &c PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
-  *ierr = MeshRestrictClosureInt((Mesh) PetscToPointer(mesh), (SectionInt) PetscToPointer(section),*point,*size,c); if (*ierr) return;
-  // *ierr = F90Array1dCreate(const_cast<PetscScalar *>(c),PETSC_SCALAR,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));
-}
-void PETSC_STDCALL meshupdateclosure_(Mesh mesh, SectionReal section, int *point,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
-{
-  PetscScalar *c;
-
-  *ierr = F90Array1dAccess(ptr, PETSC_SCALAR, (void**) &c PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
-  *ierr = MeshUpdateClosure((Mesh) PetscToPointer(mesh), (SectionReal) PetscToPointer(section),*point,c); if (*ierr) return;
-}
-void PETSC_STDCALL meshupdateclosureint_(Mesh mesh, SectionInt section, int *point,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
-{
-  PetscInt *c;
-
-  *ierr = F90Array1dAccess(ptr, PETSC_INT, (void**) &c PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
-  *ierr = MeshUpdateClosureInt((Mesh) PetscToPointer(mesh), (SectionInt) PetscToPointer(section),*point,c); if (*ierr) return;
-}
-void PETSC_STDCALL meshupdateaddclosure_(Mesh mesh, SectionReal section, int *point,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
-{
-  PetscScalar *c;
-
-  *ierr = F90Array1dAccess(ptr, PETSC_SCALAR, (void**) &c PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
-  *ierr = MeshUpdateAddClosure((Mesh) PetscToPointer(mesh), (SectionReal) PetscToPointer(section),*point,c); if (*ierr) return;
-}
-void PETSC_STDCALL meshupdateaddclosureint_(Mesh mesh, SectionInt section, int *point,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
-{
-  PetscInt *c;
-
-  *ierr = F90Array1dAccess(ptr, PETSC_INT, (void**) &c PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
-  *ierr = MeshUpdateAddClosureInt((Mesh) PetscToPointer(mesh), (SectionInt) PetscToPointer(section),*point,c); if (*ierr) return;
-}
 #if 0
 void PETSC_STDCALL meshrestoreclosuref90_(Mesh mesh,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
@@ -146,63 +76,6 @@ void PETSC_STDCALL meshrestoreclosuref90_(Mesh mesh,F90Array1d *ptr,int *__ierr 
   *__ierr = PetscFree(c);
 }
 #endif
-void PETSC_STDCALL sectiongetarrayf90_(Mesh *mesh,CHAR name PETSC_MIXED_LEN(len),F90Array2d *ptr,int *ierr PETSC_END_LEN(len) PETSC_F90_2PTR_PROTO(ptrd))
-{
-  PetscScalar *a;
-  PetscInt     n, d;
-  char        *nF;
-  FIXCHAR(name,len,nF);
-  *ierr = SectionGetArray(*mesh,nF,&n,&d,&a); if (*ierr) return;
-  *ierr = F90Array2dCreate(a,PETSC_SCALAR,1,d,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));
-  FREECHAR(name,nF);
-}
-void PETSC_STDCALL sectiongetarray1df90_(Mesh *mesh,CHAR name PETSC_MIXED_LEN(len),F90Array1d *ptr,int *ierr PETSC_END_LEN(len) PETSC_F90_2PTR_PROTO(ptrd))
-{
-  PetscScalar *a;
-  PetscInt     n, d;
-  char        *nF;
-  FIXCHAR(name,len,nF);
-  *ierr = SectionGetArray(*mesh,nF,&n,&d,&a); if (*ierr) return;
-  *ierr = F90Array1dCreate(a,PETSC_SCALAR,1,n*d,ptr PETSC_F90_2PTR_PARAM(ptrd));
-  FREECHAR(name,nF);
-}
-void PETSC_STDCALL bcsectiongetarrayf90_(Mesh *mesh,CHAR name PETSC_MIXED_LEN(len),F90Array2d *ptr,int *ierr PETSC_END_LEN(len) PETSC_F90_2PTR_PROTO(ptrd))
-{
-  PetscInt *a;
-  PetscInt  n, d;
-  char     *nF;
-  FIXCHAR(name,len,nF);
-  *ierr = BCSectionGetArray(*mesh,nF,&n,&d,&a); if (*ierr) return;
-  *ierr = F90Array2dCreate(a,PETSC_INT,1,d,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));
-  FREECHAR(name,nF);
-}
-void PETSC_STDCALL bcsectiongetarray1df90_(Mesh *mesh,CHAR name PETSC_MIXED_LEN(len),F90Array1d *ptr,int *ierr PETSC_END_LEN(len) PETSC_F90_2PTR_PROTO(ptrd))
-{
-  PetscInt *a;
-  PetscInt  n, d;
-  char     *nF;
-  FIXCHAR(name,len,nF);
-  *ierr = BCSectionGetArray(*mesh,nF,&n,&d,&a); if (*ierr) return;
-  *ierr = F90Array1dCreate(a,PETSC_INT,1,n*d,ptr PETSC_F90_2PTR_PARAM(ptrd));
-  FREECHAR(name,nF);
-}
-void PETSC_STDCALL bcsectionrealgetarrayf90_(Mesh *mesh,CHAR name PETSC_MIXED_LEN(len),F90Array2d *ptr,int *ierr PETSC_END_LEN(len) PETSC_F90_2PTR_PROTO(ptrd))
-{
-  PetscReal *a;
-  PetscInt   n, d;
-  char      *nF;
-  FIXCHAR(name,len,nF);
-  *ierr = BCSectionRealGetArray(*mesh,nF,&n,&d,&a); if (*ierr) return;
-  *ierr = F90Array2dCreate(a,PETSC_SCALAR,1,d,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));
-  FREECHAR(name,nF);
-}
-void PETSC_STDCALL bcfuncgetarrayf90_(Mesh *mesh,F90Array2d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
-{
-  PetscScalar *a;
-  PetscInt     n, d;
-  *ierr = BCFUNCGetArray(*mesh,&n,&d,&a); if (*ierr) return;
-  *ierr = F90Array2dCreate(a,PETSC_SCALAR,1,d,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));
-}
 void PETSC_STDCALL meshgetlabelids_(Mesh *mesh, CHAR name PETSC_MIXED_LEN(lenN), F90Array1d *ptr, int *ierr PETSC_END_LEN(lenN) PETSC_F90_2PTR_PROTO(ptrd)){
   char     *pN;
   PetscInt *ids;
