@@ -191,7 +191,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag
 
   Concepts: communicator^duplicate
 
-.seealso: PetscObjectGetNewTag(), PetscCommGetNewTag()
+.seealso: PetscObjectGetNewTag(), PetscCommGetNewTag(), PetscCommDestroy()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPIInt* first_tag)
 {
@@ -285,6 +285,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *com
 
    Concepts: communicator^destroy
 
+.seealso:   PetscCommDuplicate()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscCommDestroy(MPI_Comm *comm)
 {
