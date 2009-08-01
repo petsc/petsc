@@ -621,6 +621,12 @@ namespace ALE {
             }
           }
         }
+        for(typename SendOverlap::traits::baseSequence::iterator r_iter = sRanks->begin(); r_iter != sEnd; ++r_iter) {
+          sendAllocator.deallocate(sendPoints[*r_iter], sendOverlap->cone(*r_iter)->size()*sendOverlap->cone(*r_iter)->size());
+        }
+        for(typename RecvOverlap::traits::capSequence::iterator r_iter = rRanks->begin(); r_iter != rEnd; ++r_iter) {
+          recvAllocator.deallocate(recvPoints[*r_iter], recvOverlap->support(*r_iter)->size()*recvOverlap->support(*r_iter)->size());
+        }
       };
       // Copy the overlap section to the related processes
       //   This version is for IConstant sections, meaning the same, single value over all points
@@ -711,7 +717,12 @@ namespace ALE {
         }
         if (!rRanks->size()) {min = max = 0;}
         recvSection->setChart(typename RecvSection::chart_type(min, max));
-        // TODO: deallocation
+        for(typename SendOverlap::traits::baseSequence::iterator r_iter = sRanks->begin(); r_iter != sEnd; ++r_iter) {
+          sendAllocator.deallocate(sendPoints[*r_iter], 2);
+        }
+        for(typename RecvOverlap::traits::capSequence::iterator r_iter = rRanks->begin(); r_iter != rEnd; ++r_iter) {
+          recvAllocator.deallocate(recvPoints[*r_iter], 2);
+        }
       };
       // Copy the overlap section to the related processes
       //   This version is for different sections, possibly with different data types
@@ -801,6 +812,13 @@ namespace ALE {
         for(typename SendOverlap::traits::baseSequence::iterator r_iter = sRanks->begin(); r_iter != sEnd; ++r_iter) {
           typename SendSection::value_type *v       = sendValues[*r_iter].second;
           const int                         numVals = sendValues[*r_iter].first;
+
+          for(int i = 0; i < numVals; ++i) {sendAllocator.destroy(v+i);}
+          sendAllocator.deallocate(v, numVals);
+        }
+        for(typename RecvOverlap::traits::capSequence::iterator r_iter = rRanks->begin(); r_iter != rEnd; ++r_iter) {
+          typename SendSection::value_type *v       = recvValues[*r_iter].second;
+          const int                         numVals = recvValues[*r_iter].first;
 
           for(int i = 0; i < numVals; ++i) {sendAllocator.destroy(v+i);}
           sendAllocator.deallocate(v, numVals);

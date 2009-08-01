@@ -389,8 +389,8 @@ namespace ALE {
     }
   public: // Sizes
     void clear() {
-      this->_atlas->clear(); 
       this->_array.clear();
+      this->_atlas->clear(); 
     }
     int getFiberDimension(const point_type& p) const {
       return this->_atlas->restrictPoint(p)[0];
@@ -777,8 +777,8 @@ namespace ALE {
     }
   public: // Sizes
     void clear() {
-      this->_atlas->clear(); 
       this->_array.clear();
+      this->_atlas->clear(); 
     };
     int getFiberDimension(const point_type& p) const {
       return fiberDim;
@@ -1034,11 +1034,11 @@ namespace ALE {
     void clear() {
       const int totalSize = this->sizeWithBC();
 
-      this->_atlas->clear(); 
       for(int i = 0; i < totalSize; ++i) {this->_allocator.destroy(this->_array+i);}
       this->_allocator.deallocate(this->_array, totalSize);
       ///delete [] this->_array;
       this->_array = NULL;
+      this->_atlas->clear(); 
     };
     // Return the total number of dofs on the point (free and constrained)
     int getFiberDimension(const point_type& p) const {
@@ -1522,7 +1522,6 @@ namespace ALE {
     };
   public: // Sizes
     void clear() {
-      this->_atlas->clear(); 
       if (!this->_sharedStorage) {
         const int totalSize = this->sizeWithBC();
 
@@ -1531,6 +1530,7 @@ namespace ALE {
         ///delete [] this->_array;
       }
       this->_array = NULL;
+      this->_atlas->clear(); 
       this->_bc->clear(); 
     };
     // Return the total number of dofs on the point (free and constrained)
@@ -2514,7 +2514,6 @@ namespace ALE {
     }
   public: // Sizes
     void clear() {
-      this->_atlas->clear(); 
       if (!this->_sharedStorage) {
         const int totalSize = this->sizeWithBC();
 
@@ -2522,6 +2521,7 @@ namespace ALE {
         this->_allocator.deallocate(this->_array, totalSize);
       }
       this->_array = NULL;
+      this->_atlas->clear(); 
       this->_bc_atlas->clear(); 
       this->_bc->clear(); 
     };

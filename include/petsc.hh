@@ -41,8 +41,13 @@ namespace PETSc {
     template<typename Value2_>
     Point(const Point<dim,Value2_>& p) {for(int d = 0; d < dim; ++d) {x[d] = (Value2_) p.x[d];}}
 
+    int size() const {return dim;};
+
     void operator=(value_type v) {for(int d = 0; d < dim; ++d) {x[d] = v;}}
     void operator=(const Point& p) {for(int d = 0; d < dim; ++d) {x[d] = p.x[d];}}
+    bool operator==(const Point& p) {for(int d = 0; d < dim; ++d) {if (x[d] != p.x[d]) return false;} return true;}
+    void operator+=(const Point& p) {for(int d = 0; d < dim; ++d) {x[d] += p.x[d];}}
+    void operator-=(const Point& p) {for(int d = 0; d < dim; ++d) {x[d] -= p.x[d];}}
     template<int d>
     static bool lessThan(const Point& a, const Point &b) {
       return a.x[d] < b.x[d];

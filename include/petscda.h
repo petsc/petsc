@@ -200,7 +200,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    SDAArrayView(SDA,PetscScalar*,PetscVi
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    MatRegisterDAAD(void);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    MatCreateDAAD(DA,Mat*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT   MatCreateSeqUSFFT(DA, DA,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT   MatCreateSeqUSFFT(Vec, DA,Mat*);
 
 /*S
      DALocalInfo - C struct that contains information about a structured grid and a processors logical
