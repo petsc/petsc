@@ -17,7 +17,7 @@
 
   ------------------------------------------------------------------------- */
 
-#include "Bratu3DApp.h"
+#include "Bratu3D.h"
 
 #undef  __FUNCT__
 #define __FUNCT__ "FormInitGuess"

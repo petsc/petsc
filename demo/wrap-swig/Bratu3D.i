@@ -3,9 +3,9 @@
 %include petsc4py/petsc4py.i
 
 %{
-#include "Bratu3DApp.h"
+#include "Bratu3D.h"
 %}
-%include Bratu3DApp.h
+%include Bratu3D.h
 
 /*
  * Local Variables:

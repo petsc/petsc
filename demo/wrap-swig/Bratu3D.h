@@ -1,5 +1,5 @@
-#ifndef BRATU3DIMPL_H
-#define BRATU3DIMPL_H
+#ifndef BRATU3D_H
+#define BRATU3D_H
 
 #include <petsc.h>
 #include <petscvec.h>
@@ -14,4 +14,4 @@ PetscErrorCode FormInitGuess(DA da, Vec x, Params *p);
 PetscErrorCode FormFunction(DA da, Vec x, Vec F, Params *p);
 PetscErrorCode FormJacobian(DA da, Vec x, Mat J, Params *p);
 
-#endif /* !BRATU3DIMPL_H */
+#endif /* !BRATU3DL_H */
