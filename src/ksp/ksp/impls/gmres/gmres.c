@@ -229,7 +229,7 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp)
   if (ksp->calc_sings && !gmres->Rsvd) {
     SETERRQ(PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
   }
-  if (ksp->normtype != KSP_NORM_PRECONDITIONED) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Currently can use GMRES with only preconditioned residual (right preconditioning not coded)");
+  if (ksp->normtype != KSP_NORM_PRECONDITIONED && ksp->pc_side != PC_RIGHT) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Use right preconditioning -ksp_right_pc if want unpreconditioned norm)");
 
   ierr     = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its = 0;
