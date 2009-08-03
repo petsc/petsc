@@ -42,8 +42,8 @@ extern PETSC_DLLEXPORT PetscInt  _BT_idx;
   PetscViewer __viewer = viewer; \
   if (!__viewer) __viewer = PETSC_VIEWER_STDOUT_SELF;\
   for (__i=0; __i<m; __i++) { \
-    _8_ierr = PetscPrintf(((PetscObject)__viewer)->comm,"%D %d\n",__i,PetscBTLookup(bt,__i));CHKERRQ(_8_ierr);\
-  }}
+    _8_ierr = PetscViewerASCIISynchronizedPrintf(__viewer,"%D %d\n",__i,PetscBTLookup(bt,__i));CHKERRQ(_8_ierr);\
+  }  _8_ierr = PetscViewerFlush(__viewer);CHKERRQ(_8_ierr);}
 
 #define PetscBTCreate(m,array)  \
   (PetscMalloc(((m)/PETSC_BITS_PER_BYTE+1)*sizeof(char),&(array)) || PetscBTMemzero(m,array))
