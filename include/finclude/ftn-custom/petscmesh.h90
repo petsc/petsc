@@ -132,7 +132,7 @@
       End Interface
 
       Interface
-        Subroutine MeshRestrictClosure(m,section,e,n,values,ierr)
+        Subroutine SectionRealRestrictClosure(section,m,e,n,values,ierr)
           USE_MESH_HIDE
           PetscErrorCode ierr
           PetscScalar, pointer :: values(:)
@@ -143,7 +143,7 @@
       End Interface
 
       Interface
-        Subroutine MeshRestrictClosureInt(m,section,e,n,values,ierr)
+        Subroutine SectionIntRestrictClosure(section,m,e,n,values,ierr)
           USE_MESH_HIDE
           PetscErrorCode ierr
           PetscInt, pointer :: values(:)
@@ -154,44 +154,24 @@
       End Interface
 
       Interface
-        Subroutine MeshUpdateClosure(m,section,e,values,ierr)
+        Subroutine SectionRealUpdateClosure(section,m,e,values,mode,ierr)
           USE_MESH_HIDE
           PetscErrorCode ierr
           PetscScalar, pointer :: values(:)
           PetscInt e
+          InsertMode mode
           SECTIONREAL_HIDE section
           MESH_HIDE m
         End Subroutine
       End Interface
 
       Interface
-        Subroutine MeshUpdateClosureInt(m,section,e,values,ierr)
+        Subroutine SectionIntUpdateClosure(section,m,e,values,mode,ierr)
           USE_MESH_HIDE
           PetscErrorCode ierr
           PetscInt, pointer :: values(:)
           PetscInt e
-          SECTIONINT_HIDE section
-          MESH_HIDE m
-        End Subroutine
-      End Interface
-
-      Interface
-        Subroutine MeshUpdateAddClosure(m,section,e,values,ierr)
-          USE_MESH_HIDE
-          PetscErrorCode ierr
-          PetscScalar, pointer :: values(:)
-          PetscInt e
-          SECTIONREAL_HIDE section
-          MESH_HIDE m
-        End Subroutine
-      End Interface
-
-      Interface
-        Subroutine MeshUpdateAddClosureInt(m,section,e,values,ierr)
-          USE_MESH_HIDE
-          PetscErrorCode ierr
-          PetscInt, pointer :: values(:)
-          PetscInt e
+          InsertMode mode
           SECTIONINT_HIDE section
           MESH_HIDE m
         End Subroutine
