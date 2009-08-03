@@ -154,7 +154,8 @@
       End Interface
 
       Interface
-        Subroutine SectionRealUpdateClosure(section,m,e,values,mode,ierr)
+        Subroutine SectionRealUpdateClosure(section,m,e,values,mode,    &
+     &ierr)
           USE_MESH_HIDE
           PetscErrorCode ierr
           PetscScalar, pointer :: values(:)
