@@ -1,18 +1,11 @@
-!
-!    Solves the linear system  J x = f
-!
-      program main
+      program main   !   Solves the linear system  J x = f
 #include "finclude/petscalldef.h"
       use petscksp; use petscda
-      implicit none
-
       Vec x,f; Mat J; DA da; KSP ksp; PetscErrorCode ierr
-
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
       call DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,8,1,1,PETSC_NULL_INTEGER,da,ierr)
-      call DACreateGlobalVector(da,x,ierr)
-      call VecDuplicate(x,f,ierr)
+      call DACreateGlobalVector(da,x,ierr); call VecDuplicate(x,f,ierr)
       call DAGetMatrix(da,MATAIJ,J,ierr)
 
       call ComputeRHS(da,f,ierr)
@@ -27,14 +20,10 @@
       call KSPDestroy(ksp,ierr); call DADestroy(da,ierr)
       call PetscFinalize(ierr)
       end
-
       subroutine  ComputeRHS(da,x,ierr)
 #include "finclude/petscalldef.h"
       use petscda
-      implicit none
-
       DA da; Vec x; PetscErrorCode ierr; PetscInt xs,xm,i,mx; PetscScalar hx; PetscScalar, pointer :: xx(:)
-
       call DAGetInfo(da,PETSC_NULL_INTEGER,mx,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
       call DAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
       hx     = 1.d0/(mx-1)
@@ -45,14 +34,10 @@
       call VecRestoreArrayF90(x,xx,ierr)
       return 
       end
-
       subroutine ComputeMatrix(da,J,ierr)
 #include "finclude/petscalldef.h"
       use petscda
-      implicit none
-
       Mat J; DA da; PetscErrorCode ierr; PetscInt xs,xm,i,mx; PetscScalar hx
-
       call DAGetInfo(da,PETSC_NULL_INTEGER,mx,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
       call DAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
       hx     = 1.d0/(mx-1)
@@ -65,8 +50,6 @@
           call MatSetValue(J,i,i,2*hx,INSERT_VALUES,ierr)
         endif
       enddo
-
-      call MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY,ierr)
-      call MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY,ierr)
+      call MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY,ierr); call MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY,ierr)
       return 
       end
