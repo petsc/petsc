@@ -146,14 +146,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogSet(PetscErrorCode (*b)(PetscLogEvent, in
 #define __FUNCT__ "PetscLogBegin_Private"
 PetscErrorCode PETSC_DLLEXPORT PetscLogBegin_Private(void) 
 {
-  static PetscTruth initialized = PETSC_FALSE;
   int               stage;
   PetscTruth        opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (initialized) PetscFunctionReturn(0);
-  initialized = PETSC_TRUE;
   ierr = PetscOptionsHasName(PETSC_NULL, "-log_exclude_actions", &opt);CHKERRQ(ierr);
   if (opt) {
     logActions = PETSC_FALSE;
