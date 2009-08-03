@@ -173,8 +173,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetBundle(SectionReal,const A
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealDistribute(SectionReal, Mesh, SectionReal *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealRestrict(SectionReal, PetscInt, PetscScalar *[]);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdate(SectionReal, PetscInt, const PetscScalar []);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdateAdd(SectionReal, PetscInt, const PetscScalar []);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdate(SectionReal, PetscInt, const PetscScalar [], InsertMode);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealZero(SectionReal);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealCreateLocalVector(SectionReal, Vec*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealToVec(SectionReal, Mesh, ScatterMode, Vec);
@@ -238,8 +237,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetBundle(SectionInt,const ALE
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntDistribute(SectionInt, Mesh, SectionInt *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntRestrict(SectionInt, PetscInt, PetscInt *[]);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntUpdate(SectionInt, PetscInt, const PetscInt []);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntUpdateAdd(SectionInt, PetscInt, const PetscInt []);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntUpdate(SectionInt, PetscInt, const PetscInt [], InsertMode);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntZero(SectionInt);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntComplete(SectionInt);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetFiberDimension(SectionInt, PetscInt, const PetscInt);

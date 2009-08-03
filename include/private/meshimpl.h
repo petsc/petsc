@@ -30,7 +30,7 @@ typedef struct _SectionRealOps *SectionRealOps;
 struct _SectionRealOps {
   PetscErrorCode (*view)(SectionReal,PetscViewer);
   PetscErrorCode (*restrictClosure)(SectionReal,int,PetscScalar**);
-  PetscErrorCode (*update)(SectionReal,int,const PetscScalar*);
+  PetscErrorCode (*update)(SectionReal,int,const PetscScalar*,InsertMode);
 };
 
 struct _p_SectionReal {
@@ -46,7 +46,7 @@ typedef struct _SectionIntOps *SectionIntOps;
 struct _SectionIntOps {
   PetscErrorCode (*view)(SectionInt,PetscViewer);
   PetscErrorCode (*restrictClosure)(SectionInt,int,PetscInt**);
-  PetscErrorCode (*update)(SectionInt,int,const PetscInt*);
+  PetscErrorCode (*update)(SectionInt,int,const PetscInt*,InsertMode);
 };
 
 struct _p_SectionInt {
