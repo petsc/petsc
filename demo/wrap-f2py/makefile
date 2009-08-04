@@ -37,8 +37,8 @@ CFLAGS  = -I${PYTHON_INCLUDE} -I${NUMPY_INCLUDE}
 SOURCEC = ${MODULE}module.c fortranobject.c
 OBJSC   = ${MODULE}module.o fortranobject.o
 
-FFLAGS  = ${FC_FLAGS} ${FCPPFLAGS} -cpp
-SOURCEF = ${MODULE}.f90
+FFLAGS  = ${FC_FLAGS} ${FCPPFLAGS}
+SOURCEF = ${MODULE}.F90
 OBJSF   = ${MODULE}.o
 
 ${MODULE}.so: ${OBJSC} ${OBJSF}
