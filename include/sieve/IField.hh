@@ -343,7 +343,7 @@ namespace ALE {
   public: // Restriction
     // Zero entries
     void zero() {
-      memset(this->_array, 0, this->sizeWithBC()* sizeof(value_type));
+      memset(this->_array+(this->getChart().min()*fiberDim), 0, this->sizeWithBC()* sizeof(value_type));
     };
     // Return a pointer to the entire contiguous storage array
     const values_type& restrictSpace() const {
