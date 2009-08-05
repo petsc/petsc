@@ -21,8 +21,12 @@ extern void PetscRmPointer(void*);
 #endif
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define sectionrealrestrict_        SECTIONREALRESTRICT
+#define sectionintrestrict_         SECTIONINTRESTRICT
 #define sectionrealrestrictclosure_ SECTIONREALRESTRICTCLOSURE
 #define sectionintrestrictclosure_  SECTIONINTRESTRICTCLOSURE
+#define sectionrealupdate_          SECTIONREALUPDATE
+#define sectionintupdate_           SECTIONINTUPDATE
 #define sectionrealupdateclosure_   SECTIONREALUPDATECLOSURE
 #define sectionintupdateclosure_    SECTIONINTUPDATECLOSURE
 #define sectiongetarrayf90_         SECTIONGETARRAYF90
@@ -32,10 +36,14 @@ extern void PetscRmPointer(void*);
 #define bcsectionrealgetarrayf90_   BCSECTIONREALGETARRAYF90
 #define bcfuncgetarrayf90_          BCFUNCGETARRAYF90
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define sectionrealrestrict_        sectionrealrestrict
+#define sectionintrestrict_         sectionintrestrict
 #define sectionrealrestrictclosure_ sectionrealrestrictclosure
 #define sectionintrestrictclosure_  sectionintrestrictclosure
-#define meshupdateclosure_          sectionrealupdateclosure
-#define meshupdateclosureint_       sectionintupdateclosure
+#define sectionrealupdate_          sectionrealupdate
+#define sectionintupdate_           sectionintupdate
+#define sectionrealupdateclosure_   sectionrealupdateclosure
+#define sectionintupdateclosure_    sectionintupdateclosure
 #define sectiongetarrayf90_         sectiongetarrayf90
 #define sectiongetarray1df90_       sectiongetarray1df90
 #define bcsectiongetarrayf90_       bcsectiongetarrayf90
@@ -46,6 +54,24 @@ extern void PetscRmPointer(void*);
 
 EXTERN_C_BEGIN
 
+void PETSC_STDCALL sectionrealrestrict_(SectionReal section, int *point,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  PetscScalar *c;
+  PetscInt     len;
+
+  *ierr = SectionRealRestrict((SectionReal) PetscToPointer(section), *point,&c); if (*ierr) return;
+  *ierr = SectionRealGetFiberDimension((SectionReal) PetscToPointer(section), *point,&len); if (*ierr) return;
+  *ierr = F90Array1dCreate(c,PETSC_SCALAR,1,len,ptr PETSC_F90_2PTR_PARAM(ptrd));
+}
+void PETSC_STDCALL sectionintrestrict_(SectionInt section, int *point,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  PetscInt *c;
+  PetscInt  len;
+
+  *ierr = SectionIntRestrict((SectionInt) PetscToPointer(section), *point,&c); if (*ierr) return;
+  *ierr = SectionIntGetFiberDimension((SectionInt) PetscToPointer(section), *point,&len); if (*ierr) return;
+  *ierr = F90Array1dCreate(c,PETSC_INT,1,len,ptr PETSC_F90_2PTR_PARAM(ptrd));
+}
 void PETSC_STDCALL sectionrealrestrictclosure_(SectionReal section, Mesh mesh, int *point,int *size,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *c;
@@ -63,6 +89,20 @@ void PETSC_STDCALL sectionintrestrictclosure_(SectionInt section, Mesh mesh, int
   *ierr = F90Array1dAccess(ptr, PETSC_INT, (void**) &c PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
   *ierr = SectionIntRestrictClosure((SectionInt) PetscToPointer(section),(Mesh) PetscToPointer(mesh), *point,*size,c); if (*ierr) return;
   // *ierr = F90Array1dCreate(const_cast<PetscScalar *>(c),PETSC_SCALAR,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));
+}
+void PETSC_STDCALL sectionrealupdate_(SectionReal section, int *point,F90Array1d *ptr,InsertMode *mode,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  PetscScalar *c;
+
+  *ierr = F90Array1dAccess(ptr, PETSC_SCALAR, (void**) &c PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  *ierr = SectionRealUpdate((SectionReal) PetscToPointer(section), *point,c,*mode); if (*ierr) return;
+}
+void PETSC_STDCALL sectionintupdate_(SectionInt section, int *point,F90Array1d *ptr,InsertMode *mode,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  PetscInt *c;
+
+  *ierr = F90Array1dAccess(ptr, PETSC_INT, (void**) &c PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  *ierr = SectionIntUpdate((SectionInt) PetscToPointer(section), *point,c,*mode); if (*ierr) return;
 }
 void PETSC_STDCALL sectionrealupdateclosure_(SectionReal section, Mesh mesh, int *point,F90Array1d *ptr,InsertMode *mode,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {

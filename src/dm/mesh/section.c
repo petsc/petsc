@@ -369,7 +369,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealRestrict(SectionReal section, PetscI
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
   PetscValidScalarPointer(values,3);
-  *values = (PetscScalar *) section->b->restrictClosure(section->s, point);
+  *values = (PetscScalar *) section->s->restrictPoint(point);
   PetscFunctionReturn(0);
 }
 
@@ -542,6 +542,32 @@ PetscErrorCode SectionRealZero(SectionReal section)
   PetscFunctionBegin;
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
   s->zero();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SectionRealGetFiberDimension"
+/*@
+  SectionRealGetFiberDimension - Get the size of the vector space attached to the point
+
+  Not collective
+
+  Input Parameters:
++ section - the section object
+- point - the Sieve point
+
+  Output Parameters:
+. size - The fiber dimension
+
+  Level: advanced
+
+.seealso SectionRealRestrict(), SectionRealCreate(), SectionRealView()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetFiberDimension(SectionReal section, PetscInt point, PetscInt *size)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  *size = section->s->getFiberDimension(point);
   PetscFunctionReturn(0);
 }
 
@@ -1472,6 +1498,32 @@ PetscErrorCode SectionIntZero(SectionInt section)
   PetscFunctionBegin;
   ierr = SectionIntGetSection(section, s);CHKERRQ(ierr);
   s->zero();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SectionIntGetFiberDimension"
+/*@
+  SectionIntGetFiberDimension - Get the size of the vector space attached to the point
+
+  Not collective
+
+  Input Parameters:
++ section - the section object
+- point - the Sieve point
+
+  Output Parameters:
+. size - The fiber dimension
+
+  Level: advanced
+
+.seealso SectionRealRestrict(), SectionRealCreate(), SectionRealView()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetFiberDimension(SectionInt section, PetscInt point, PetscInt *size)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
+  *size = section->s->getFiberDimension(point);
   PetscFunctionReturn(0);
 }
 
