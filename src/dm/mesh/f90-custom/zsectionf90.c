@@ -23,6 +23,8 @@ extern void PetscRmPointer(void*);
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define sectionrealrestrict_        SECTIONREALRESTRICT
 #define sectionintrestrict_         SECTIONINTRESTRICT
+#define sectionrealrestore_         SECTIONREALRESTORE
+#define sectionintrestore_          SECTIONINTRESTORE
 #define sectionrealrestrictclosure_ SECTIONREALRESTRICTCLOSURE
 #define sectionintrestrictclosure_  SECTIONINTRESTRICTCLOSURE
 #define sectionrealupdate_          SECTIONREALUPDATE
@@ -71,6 +73,20 @@ void PETSC_STDCALL sectionintrestrict_(SectionInt section, int *point,F90Array1d
   *ierr = SectionIntRestrict((SectionInt) PetscToPointer(section), *point,&c); if (*ierr) return;
   *ierr = SectionIntGetFiberDimension((SectionInt) PetscToPointer(section), *point,&len); if (*ierr) return;
   *ierr = F90Array1dCreate(c,PETSC_INT,1,len,ptr PETSC_F90_2PTR_PARAM(ptrd));
+}
+void PETSC_STDCALL sectionrealrestore_(SectionReal section, int *point,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  PetscScalar *c;
+
+  *ierr = F90Array1dAccess(ptr,PETSC_SCALAR,(void**)&c PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  *ierr = F90Array1dDestroy(ptr,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+}
+void PETSC_STDCALL sectionintrestore_(SectionInt section, int *point,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  PetscInt *c;
+
+  *ierr = F90Array1dAccess(ptr,PETSC_SCALAR,(void**)&c PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  *ierr = F90Array1dDestroy(ptr,PETSC_INT PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
 }
 void PETSC_STDCALL sectionrealrestrictclosure_(SectionReal section, Mesh mesh, int *point,int *size,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
