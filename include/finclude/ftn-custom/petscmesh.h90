@@ -152,6 +152,26 @@
       End Interface
 
       Interface
+        Subroutine SectionRealRestore(section,e,values,ierr)
+          USE_MESH_HIDE
+          PetscErrorCode ierr
+          PetscScalar, pointer :: values(:)
+          PetscInt e
+          SECTIONREAL_HIDE section
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine SectionIntRestore(section,e,values,ierr)
+          USE_MESH_HIDE
+          PetscErrorCode ierr
+          PetscInt, pointer :: values(:)
+          PetscInt e
+          SECTIONINT_HIDE section
+        End Subroutine
+      End Interface
+
+      Interface
         Subroutine SectionRealRestrictClosure(section,m,e,n,values,ierr)
           USE_MESH_HIDE
           PetscErrorCode ierr
