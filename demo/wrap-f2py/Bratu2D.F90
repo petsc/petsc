@@ -98,6 +98,7 @@ contains
           end if
        end do
     end do
+    ierr = 0
 
   end subroutine InitGuessLocal
 
@@ -135,6 +136,7 @@ contains
           end if
        end do
     end do
+    ierr = 0
 
   end subroutine FunctionLocal
 

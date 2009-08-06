@@ -28,9 +28,6 @@ fortranobject.c: fortranobject.h
 	cp ${F2PY_ROOTDIR}/src/$@ ./$@
 ${MODULE}module.c: ${MODULE}.pyf fortranobject.c
 	${F2PY} ${F2PY_FLAGS}  $<
-	cat ${MODULE}module.h >> $@.tmp
-	cat $@ >> $@.tmp
-	mv $@.tmp $@
 #
 
 CFLAGS  = -I${PYTHON_INCLUDE} -I${NUMPY_INCLUDE}
