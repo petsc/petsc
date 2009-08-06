@@ -51,5 +51,5 @@ test: build
 
 clean::
 	${RM} fortranobject.[ch] ${MODULE}module.c ${OBJSC} ${OBJSF} ${MODULE}.so
-
+	${RM} -r build
 #

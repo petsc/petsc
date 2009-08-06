@@ -21,10 +21,10 @@ PETSC4PY_INCLUDE = ${shell ${PYTHON} -c 'import petsc4py; print(petsc4py.get_inc
 #
 
 CFLAGS  = -I${PYTHON_INCLUDE} -I${PETSC4PY_INCLUDE}
-SOURCEC = ${MODULE}module.c ${MODULE}.c
-OBJSC   = ${MODULE}module.o ${MODULE}.o
+SOURCEC = ${MODULE}_wrap.c ${MODULE}.c
+OBJSC   = ${MODULE}_wrap.o ${MODULE}.o
 
-${MODULE}module.c: ${MODULE}.i ${MODULE}.h
+${MODULE}_wrap.c: ${MODULE}.i ${MODULE}.h
 	${SWIG} -python -I${PETSC4PY_INCLUDE} -o $@ $<
 
 _${MODULE}.so: ${OBJSC} 
@@ -37,6 +37,6 @@ test: build
 	${MPIEXEC} ${NP} ${PYTHON} run_demo.py -snes_monitor -ksp_monitor
 
 clean::
-	${RM} _${MODULE}.so ${MODULE}.py* ${MODULE}module.c ${OBJSC}
-
+	${RM} _${MODULE}.so ${MODULE}.py* ${MODULE}_wrap.c ${OBJSC}
+	${RM} -r build
 #
