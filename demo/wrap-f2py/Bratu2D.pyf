@@ -5,41 +5,29 @@ python module Bratu2D
     interface
 
        subroutine FormInitGuess(da, x, param, ierr)
-         !use petsc
-         !use petscvec
-         !use petscmat
-         !use petscda
-         integer, parameter :: K = 4
-         integer(kind=K) da ! DA  da
-         integer(kind=K) x  ! Vec x
-         real(kind=8)    param
-         integer, intent(out) :: ierr
+         integer, parameter :: HANDLE_KIND=4
+         integer(kind=HANDLE_KIND) da ! DA
+         integer(kind=HANDLE_KIND) x  ! Vec
+         real(kind=8)              param
+         integer, intent(out) ::   ierr
        end subroutine FormInitGuess
 
        subroutine FormFunction(da, x, f, param, ierr)
-         !use petsc
-         !use petscvec
-         !use petscmat
-         !use petscda
-         integer, parameter :: K = 4
-         integer(kind=K) da ! DA  da
-         integer(kind=K) x  ! Vec x
-         integer(kind=K) f  ! Vec f
-         real(kind=8)    param
-         integer, intent(out) :: ierr
+         integer, parameter :: HANDLE_KIND=4
+         integer(kind=HANDLE_KIND) da ! DA
+         integer(kind=HANDLE_KIND) x  ! Vec
+         integer(kind=HANDLE_KIND) f  ! Vec
+         real(kind=8)              param
+         integer, intent(out) ::   ierr
        end subroutine FormFunction
        
        subroutine FormJacobian(da, x, J, param, ierr)
-         !use petsc
-         !use petscvec
-         !use petscmat
-         !use petscda
-         integer, parameter :: K = 4
-         integer(kind=K) da ! DA  da
-         integer(kind=K) x  ! Vec x
-         integer(kind=K) J  ! Vec f
-         real(kind=8)    param
-         integer, intent(out) :: ierr
+         integer, parameter :: HANDLE_KIND=4
+         integer(kind=HANDLE_KIND) da ! DA
+         integer(kind=HANDLE_KIND) x  ! Vec
+         integer(kind=HANDLE_KIND) J  ! Vec
+         real(kind=8)              param
+         integer, intent(out) ::   ierr
        end subroutine FormJacobian
        
     end interface
