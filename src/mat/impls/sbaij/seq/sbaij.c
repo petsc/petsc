@@ -2215,16 +2215,16 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
         t = b;
       }
   
-      v  = aa + ai[m-2] + 1;
-      vj = aj + ai[m-2] + 1;
+      v  = aa + ai[m-1] + 1;
+      vj = aj + ai[m-1] + 1;
+      nz = 0;
       for (i=m-1; i>=0; i--){
-        nz = ai[i+1] - ai[i] - 1;
 	/*        sum = t[i]; */
         sum = 0.0;
-#define PETSC_KERNEL_USE_UNROLL_4 1
         PetscSparseDensePlusDot(sum,x,v,vj,nz);         
         sum = t[i] - sum;
         x[i] =   (1-omega)*x[i] + omega*sum*aidiag[i];        
+        nz  = ai[i] - ai[i-1] - 1;
         v  -= nz + 1;
         vj -= nz + 1;
       }
