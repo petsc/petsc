@@ -1213,7 +1213,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesStencil(Mat mat,PetscInt m,const M
    For setting/accessing vector values via array coordinates you can use the DAVecGetArray() routine
 
    In order to use this routine you must either obtain the matrix with DAGetMatrix()
-   or call MatSetLocalToGlobalMapping() and MatSetStencil() first.
+   or call MatSetBlockSize(), MatSetLocalToGlobalMapping() and MatSetStencil() first.
 
    The columns and rows in the stencil passed in MUST be contained within the 
    ghost region of the given process as set with DACreateXXX() or MatSetStencil(). For example,
@@ -1242,7 +1242,8 @@ $    idxm(MatStencil_k,1) = k
    Concepts: matrices^putting entries in
 
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal()
-          MatSetValues(), MatSetValuesStencil(), MatSetStencil(), DAGetMatrix(), DAVecGetArray(), MatStencil
+          MatSetValues(), MatSetValuesStencil(), MatSetStencil(), DAGetMatrix(), DAVecGetArray(), MatStencil,
+          MatSetBlockSize(), MatSetLocalToGlobalMapping()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedStencil(Mat mat,PetscInt m,const MatStencil idxm[],PetscInt n,const MatStencil idxn[],const PetscScalar v[],InsertMode addv)
 {
@@ -1357,7 +1358,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetStencil(Mat mat,PetscInt dim,const Petsc
    The values in idxm would be 1 2; that is the first index for each block divided by 
    the block size.
 
-   By default the values, v, are row-oriented. So the layout of 
+   Note that you must call MatSetBlockSize() when constructing this matrix (and before
+   preallocating it).
+
+   By default the values, v, are row-oriented and unsorted. So the layout of 
    v is the same as for MatSetValues(). See MatSetOption() for other options.
 
    Calls to MatSetValuesBlocked() with the INSERT_VALUES and ADD_VALUES 
@@ -1397,7 +1401,7 @@ $   v[] = [1,5,9,13,2,6,10,14,3,7,11,15,4,8,12,16]
 
    Concepts: matrices^putting entries in blocked
 
-.seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesBlockedLocal()
+.seealso: MatSetBlockSize(), MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesBlockedLocal()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],const PetscScalar v[],InsertMode addv)
 {
@@ -1688,8 +1692,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal(Mat mat,PetscInt nrow,const 
 
    Notes:
    Before calling MatSetValuesBlockedLocal(), the user must first set the
-   local-to-global mapping by calling MatSetLocalToGlobalMappingBlock(),
-   where the mapping MUST be set for matrix blocks, not for matrix elements.
+   block size using MatSetBlockSize(), and the local-to-global mapping by
+   calling MatSetLocalToGlobalMappingBlock(), where the mapping MUST be
+   set for matrix blocks, not for matrix elements.
 
    Calls to MatSetValuesBlockedLocal() with the INSERT_VALUES and ADD_VALUES 
    options cannot be mixed without intervening calls to the assembly
@@ -1702,7 +1707,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal(Mat mat,PetscInt nrow,const 
 
    Concepts: matrices^putting blocked values in with local numbering
 
-.seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesLocal(), MatSetLocalToGlobalMappingBlock(), MatSetValuesBlocked()
+.seealso:  MatSetBlockSize(), MatSetLocalToGlobalMappingBlock(), MatAssemblyBegin(), MatAssemblyEnd(),
+           MatSetValuesLocal(), MatSetLocalToGlobalMappingBlock(), MatSetValuesBlocked()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv) 
 {
