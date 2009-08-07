@@ -226,8 +226,8 @@
         2 KSP Residual norm 0.00157475 
         3 KSP Residual norm 0.000145827 
         4 KSP Residual norm 2.29424e-05 
-        5 KSP Residual norm 4.88452e-06 
-        6 KSP Residual norm 7.12024e-07 
+        5 KSP Residual norm 4.88453e-06 
+        6 KSP Residual norm 7.12025e-07 
       0 KSP Residual norm 0.0136948 
         0 KSP Residual norm 10.4415 
         1 KSP Residual norm 0.776282 
@@ -240,7 +240,7 @@
         0 KSP Residual norm 19.1038 
         1 KSP Residual norm 0.519157 
         2 KSP Residual norm 0.102087 
-        3 KSP Residual norm 0.0114366 
+        3 KSP Residual norm 0.0114365 
         4 KSP Residual norm 0.000834073 
         5 KSP Residual norm 7.83707e-05 
       2 KSP Residual norm 0.000234861 
@@ -248,7 +248,7 @@
         1 KSP Residual norm 2.42042 
         2 KSP Residual norm 0.271088 
         3 KSP Residual norm 0.0683434 
-        4 KSP Residual norm 0.00681945 
+        4 KSP Residual norm 0.00681946 
         5 KSP Residual norm 0.000267809 
         6 KSP Residual norm 3.87188e-05 
       3 KSP Residual norm 6.05079e-05 
@@ -256,11 +256,11 @@
         1 KSP Residual norm 0.866368 
         2 KSP Residual norm 0.0707331 
         3 KSP Residual norm 0.0160483 
-        4 KSP Residual norm 0.00148415 
+        4 KSP Residual norm 0.00148414 
         5 KSP Residual norm 5.0636e-05 
       4 KSP Residual norm 3.63881e-06 
         0 KSP Residual norm 6.87569 
-        1 KSP Residual norm 0.717337 
+        1 KSP Residual norm 0.717338 
         2 KSP Residual norm 0.0880105 
         3 KSP Residual norm 0.0140316 
         4 KSP Residual norm 0.00129905 
@@ -272,10 +272,10 @@
         2 KSP Residual norm 0.00249966 
         3 KSP Residual norm 0.000229453 
         4 KSP Residual norm 3.76354e-05 
-        5 KSP Residual norm 7.816e-06 
+        5 KSP Residual norm 7.81601e-06 
         6 KSP Residual norm 1.12883e-06 
-    1 KSP Residual norm 8.45118e-08 
-  4 SNES Function norm 4.05792e-07 
+    1 KSP Residual norm 8.45119e-08 
+  4 SNES Function norm 4.05806e-07 
 SNES Object:
   type: ls
     line search variant: SNESLineSearchCubic
@@ -291,6 +291,7 @@ SNES Object:
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
     right preconditioning
+    using UNPRECONDITIONED norm type for convergence test
   PC Object:
     type: fieldsplit
       FieldSplit with Schur preconditioner, blocksize = -1
@@ -305,6 +306,7 @@ SNES Object:
           maximum iterations=10000, initial guess is zero
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
           left preconditioning
+          using PRECONDITIONED norm type for convergence test
         PC Object:(fieldsplit_0_)
           type: ilu
             ILU: 0 levels of fill
@@ -334,6 +336,7 @@ SNES Object:
           maximum iterations=10000, initial guess is zero
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
           right preconditioning
+          using UNPRECONDITIONED norm type for convergence test
         PC Object:(fieldsplit_1_)
           type: ilu
             ILU: 0 levels of fill

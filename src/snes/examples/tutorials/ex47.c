@@ -1,4 +1,4 @@
-static char help[] = "Solves -Laplacian u - lambda*exp(u) = 0,  0 < x < 1\n\n";
+static char help[] = "Solves -Laplacian u - exp(u) = 0,  0 < x < 1\n\n";
 #include "petscda.h"
 #include "petscsnes.h"
 extern PetscErrorCode ComputeFunction(SNES,Vec,Vec,void*), ComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
@@ -24,36 +24,38 @@ int main(int argc,char **argv)
 }
 PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
 {
-  PetscInt i,Mx,xs,xm; PetscScalar *xx,*ff,hx; DA da = (DA) ctx;
+  PetscInt i,Mx,xs,xm; PetscScalar *xx,*ff,hx; DA da = (DA) ctx; Vec xlocal;
   DAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
   hx     = 1.0/(PetscReal)(Mx-1);
-  DAVecGetArray(da,x,&xx); DAVecGetArray(da,f,&ff);
+  DAGetLocalVector(da,&xlocal);DAGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal);  DAGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal);
+  DAVecGetArray(da,xlocal,&xx); DAVecGetArray(da,f,&ff);
   DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);
 
   for (i=xs; i<xs+xm; i++) {
-    if (i == 0 || i == Mx-1) ff[i] = xx[i]; 
-    else  ff[i] =  (2.0*xx[i] - xx[i-1] - xx[i+1])*dhx - sc*PetscExpScalar(xx[i]); 
+    if (i == 0 || i == Mx-1) ff[i] = xx[i]/hx; 
+    else  ff[i] =  (2.0*xx[i] - xx[i-1] - xx[i+1])/hx - hx*PetscExpScalar(xx[i]); 
   }
-  DAVecRestoreArray(da,x,&xx); DAVecRestoreArray(da,f,&ff);
+  DAVecRestoreArray(da,xlocal,&xx); DARestoreLocalVector(da,&xlocal);DAVecRestoreArray(da,f,&ff);
   return 0;
 } 
 PetscErrorCode ComputeJacobian(SNES snes,Vec x,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
-  DA da = (DA) ctx; PetscInt i,Mx,xm,xs; PetscScalar hx,*xx;
+  DA da = (DA) ctx; PetscInt i,Mx,xm,xs; PetscScalar hx,*xx; Vec xlocal;
   DAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
   hx = 1.0/(PetscReal)(Mx-1);
-  DAVecGetArray(da,x,&xx);
+  DAGetLocalVector(da,&xlocal);DAGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal);  DAGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal);
+  DAVecGetArray(da,xlocal,&xx);
   DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);
 
   for (i=xs; i<xs+xm; i++) {
-    if (i == 0 || i == Mx-1) { MatSetValue(*J,i,i,1.0,INSERT_VALUES);}
+    if (i == 0 || i == Mx-1) { MatSetValue(*J,i,i,1.0/hx,INSERT_VALUES);}
     else {
-      MatSetValue(*J,i,i-1,-hydhx,INSERT_VALUES);
-      MatSetValue(*J,i,i,2.0*(hxdhy) - sc*PetscExpScalar(xx[i]),INSERT_VALUES);
-      MatSetValue(*J,i,i+1,-hydhx,INSERT_VALUES);
+      MatSetValue(*J,i,i-1,-1.0/hx,INSERT_VALUES);
+      MatSetValue(*J,i,i,2.0/hx - hx*PetscExpScalar(xx[i]),INSERT_VALUES);
+      MatSetValue(*J,i,i+1,-1.0/hx,INSERT_VALUES);
     }
   }
   MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY); MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);  *flag = SAME_NONZERO_PATTERN;
-  DAVecRestoreArray(da,x,&xx);
+  DAVecRestoreArray(da,xlocal,&xx);DARestoreLocalVector(da,&xlocal);
   return 0;
 }

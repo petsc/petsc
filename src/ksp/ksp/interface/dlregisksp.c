@@ -8,6 +8,27 @@ const char *PCSides[]          = {"LEFT","RIGHT","SYMMETRIC","PCSide","PC_",0};
 const char *PCASMTypes[]       = {"NONE","RESTRICT","INTERPOLATE","BASIC","PCASMType","PC_ASM_",0};
 const char *PCCompositeTypes[] = {"ADDITIVE","MULTIPLICATIVE","SYMMETRIC_MULTIPLICATIVE","SPECIAL","SCHUR","PCCompositeType","PC_COMPOSITE",0};
 
+static PetscTruth PCPackageInitialized = PETSC_FALSE;
+#undef __FUNCT__  
+#define __FUNCT__ "PCFinalizePackage"
+/*@C
+  PCFinalizePackage - This function destroys everything in the Petsc interface to the charactoristics package. It is
+  called from PetscFinalize().
+
+  Level: developer
+
+.keywords: Petsc, destroy, package, mathematica
+.seealso: PetscFinalize()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PCFinalizePackage(void) 
+{
+  PetscFunctionBegin;
+  PCPackageInitialized = PETSC_FALSE;
+  PCRegisterAllCalled  = PETSC_FALSE;
+  PCList               = 0;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PCInitializePackage"
 /*@C
@@ -23,16 +44,16 @@ const char *PCCompositeTypes[] = {"ADDITIVE","MULTIPLICATIVE","SYMMETRIC_MULTIPL
 .keywords: PC, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCInitializePackage(const char path[]) {
-  static PetscTruth initialized = PETSC_FALSE;
+PetscErrorCode PETSCKSP_DLLEXPORT PCInitializePackage(const char path[]) 
+{
   char              logList[256];
   char             *className;
   PetscTruth        opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (initialized) PetscFunctionReturn(0);
-  initialized = PETSC_TRUE;
+  if (PCPackageInitialized) PetscFunctionReturn(0);
+  PCPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscCookieRegister("Preconditioner",&PC_COOKIE);CHKERRQ(ierr);
   /* Register Constructors */
@@ -63,6 +84,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCInitializePackage(const char path[]) {
       ierr = PetscLogEventDeactivateClass(PC_COOKIE);CHKERRQ(ierr);
     }
   }
+  ierr = PetscRegisterFinalize(PCFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -76,6 +98,27 @@ const char *KSPConvergedReasons_Shifted[] = {"DIVERGED_INDEFINITE_MAT","DIVERGED
                                              "CONVERGED_CG_NEG_CURVE","CONVERGED_CG_CONSTRAINED","CONVERGED_STEP_LENGTH",
                                              "CONVERGED_HAPPY_BREAKDOWN","KSPConvergedReason","KSP_",0};
 const char **KSPConvergedReasons = KSPConvergedReasons_Shifted + 10;
+
+static PetscTruth KSPPackageInitialized = PETSC_FALSE;
+#undef __FUNCT__  
+#define __FUNCT__ "KSPFinalizePackage"
+/*@C
+  KSPFinalizePackage - This function destroys everything in the Petsc interface to the charactoristics package. It is
+  called from PetscFinalize().
+
+  Level: developer
+
+.keywords: Petsc, destroy, package, mathematica
+.seealso: PetscFinalize()
+@*/
+PetscErrorCode PETSC_DLLEXPORT KSPFinalizePackage(void) 
+{
+  PetscFunctionBegin;
+  KSPPackageInitialized = PETSC_FALSE;
+  KSPList               = 0;
+  KSPRegisterAllCalled  = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPInitializePackage"
@@ -92,16 +135,16 @@ const char **KSPConvergedReasons = KSPConvergedReasons_Shifted + 10;
 .keywords: KSP, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPInitializePackage(const char path[]) {
-  static PetscTruth initialized = PETSC_FALSE;
+PetscErrorCode PETSCKSP_DLLEXPORT KSPInitializePackage(const char path[]) 
+{
   char              logList[256];
   char              *className;
   PetscTruth        opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (initialized) PetscFunctionReturn(0);
-  initialized = PETSC_TRUE;
+  if (KSPPackageInitialized) PetscFunctionReturn(0);
+  KSPPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscCookieRegister("Krylov Solver",&KSP_COOKIE);CHKERRQ(ierr);
   /* Register Constructors */
@@ -126,6 +169,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPInitializePackage(const char path[]) {
       ierr = PetscLogEventDeactivateClass(KSP_COOKIE);CHKERRQ(ierr);
     }
   }
+  ierr = PetscRegisterFinalize(KSPFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

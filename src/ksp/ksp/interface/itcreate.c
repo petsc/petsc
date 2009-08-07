@@ -10,7 +10,10 @@
 PetscCookie PETSCKSP_DLLEXPORT KSP_COOKIE;
 PetscLogEvent  KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
 
-
+/*
+   Contains the list of registered KSP routines
+*/
+PetscFList KSPList = 0;
 PetscTruth KSPRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__  
@@ -96,10 +99,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPView(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-/*
-   Contains the list of registered KSP routines
-*/
-PetscFList KSPList = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetNormType"

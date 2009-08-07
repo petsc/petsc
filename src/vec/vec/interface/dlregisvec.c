@@ -3,6 +3,25 @@
 #include "petscvec.h"
 #include "petscpf.h"
 
+static PetscTruth ISPackageInitialized = PETSC_FALSE;
+#undef __FUNCT__  
+#define __FUNCT__ "ISFinalizePackage"
+/*@C
+  ISFinalizePackage - This function destroys everything in the Petsc interface to Mathematica. It is
+  called from PetscFinalize().
+
+  Level: developer
+
+.keywords: Petsc, destroy, package, mathematica
+.seealso: PetscFinalize()
+@*/
+PetscErrorCode PETSC_DLLEXPORT ISFinalizePackage(void) 
+{
+  PetscFunctionBegin;
+  ISPackageInitialized = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "ISInitializePackage"
 /*@C
@@ -20,15 +39,14 @@
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT ISInitializePackage(const char path[]) 
 {
-  static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
   char              *className;
   PetscTruth        opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (initialized) PetscFunctionReturn(0);
-  initialized = PETSC_TRUE;
+  if (ISPackageInitialized) PetscFunctionReturn(0);
+  ISPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscCookieRegister("Index Set",&IS_COOKIE);CHKERRQ(ierr);
   ierr = PetscCookieRegister("IS L to G Mapping",&IS_LTOGM_COOKIE);CHKERRQ(ierr);
@@ -51,6 +69,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISInitializePackage(const char path[])
       ierr = PetscLogEventDeactivateClass(IS_LTOGM_COOKIE);CHKERRQ(ierr);
     }
   }
+  ierr = PetscRegisterFinalize(ISFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -66,6 +85,8 @@ EXTERN_C_END
 
 const char *NormTypes[] = {"1","2","FROBENIUS","INFINITY","1_AND_2","NormType","NORM_",0};
 PetscInt   NormIds[7];  /* map from NormType to IDs used to cache Normvalues */
+
+static PetscTruth VecPackageInitialized = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecInitializePackage"
@@ -84,7 +105,6 @@ PetscInt   NormIds[7];  /* map from NormType to IDs used to cache Normvalues */
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char path[]) 
 {
-  static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
   char              *className;
   PetscTruth        opt;
@@ -92,8 +112,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char path[])
   PetscInt          i;
 
   PetscFunctionBegin;
-  if (initialized) PetscFunctionReturn(0);
-  initialized = PETSC_TRUE;
+  if (VecPackageInitialized) PetscFunctionReturn(0);
+  VecPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscCookieRegister("Vec",&VEC_COOKIE);CHKERRQ(ierr);
   ierr = PetscCookieRegister("Vec Scatter",&VEC_SCATTER_COOKIE);CHKERRQ(ierr);
@@ -206,6 +226,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecFinalizePackage(void) {
   ierr = MPI_Op_free(&PetscSplitReduction_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&VecMax_Local_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&VecMin_Local_Op);CHKERRQ(ierr);
+  VecPackageInitialized = PETSC_FALSE;
+  VecList               = PETSC_NULL;
+  VecRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

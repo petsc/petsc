@@ -40,6 +40,7 @@ SNES Object:
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
     right preconditioning
+    using UNPRECONDITIONED norm type for convergence test
   PC Object:
     type: fieldsplit
       FieldSplit with MULTIPLICATIVE composition: total splits = 4, blocksize = 4
@@ -50,6 +51,7 @@ SNES Object:
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
+        using PRECONDITIONED norm type for convergence test
       PC Object:(fieldsplit_0_)
         type: ilu
           ILU: 0 levels of fill
@@ -77,6 +79,7 @@ SNES Object:
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
+        using PRECONDITIONED norm type for convergence test
       PC Object:(fieldsplit_1_)
         type: ilu
           ILU: 0 levels of fill
@@ -104,6 +107,7 @@ SNES Object:
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
+        using PRECONDITIONED norm type for convergence test
       PC Object:(fieldsplit_2_)
         type: ilu
           ILU: 0 levels of fill
@@ -131,6 +135,7 @@ SNES Object:
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
+        using PRECONDITIONED norm type for convergence test
       PC Object:(fieldsplit_3_)
         type: ilu
           ILU: 0 levels of fill

@@ -5,12 +5,13 @@ KSP Object:
   maximum iterations=10000, initial guess is zero
   tolerances:  relative=1e-07, absolute=1e-50, divergence=10000
   left preconditioning
+  using PRECONDITIONED norm type for convergence test
 PC Object:
   type: shell
     Shell: no name
   linear system matrix = precond matrix:
   Matrix Object:
     type=mpiaij, rows=56, cols=56
-    total: nonzeros=250, allocated nonzeros=392
-    not using I-node (on process 0) routines
+    total: nonzeros=250, allocated nonzeros=560
+      not using I-node (on process 0) routines
 Norm of error 5.9071E-08 iterations    15

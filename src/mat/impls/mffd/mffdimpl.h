@@ -52,7 +52,7 @@ struct _p_MatMFFD {    /* context for default matrix-free SNES */
   PetscScalar      vscale,vshift;
 };
 
-EXTERN PetscFList MatMFFDPetscFList;
+EXTERN PetscFList MatMFFDList;
 EXTERN PetscTruth MatMFFDRegisterAllCalled;
 
 #endif

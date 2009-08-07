@@ -67,6 +67,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSolveTranspose(KSP,Vec,Vec);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDestroy(KSP);
 
 extern PetscFList KSPList;
+extern PetscTruth KSPRegisterAllCalled;
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPRegisterAll(const char[]);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPRegisterDestroy(void);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPRegister(const char[],const char[],const char[],PetscErrorCode (*)(KSP));

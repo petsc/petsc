@@ -74,4 +74,7 @@ EXTERN PetscErrorCode CharacteristicSendCoordinatesEnd(Characteristic);
 EXTERN PetscErrorCode CharacteristicGetValuesBegin(Characteristic);
 EXTERN PetscErrorCode CharacteristicGetValuesEnd(Characteristic);
 
+extern PetscTruth  CharacteristicRegisterAllCalled;
+extern PetscFList  CharacteristicList;
+
 #endif /*__CHARACTERISTICIMPL_H*/

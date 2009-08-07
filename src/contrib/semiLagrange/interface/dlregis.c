@@ -1,5 +1,26 @@
 #include "../src/contrib/semiLagrange/characteristicimpl.h"
 
+static PetscTruth CharacteristicPackageInitialized = PETSC_FALSE;
+#undef __FUNCT__  
+#define __FUNCT__ "CharacteristicFinalizePackage"
+/*@C
+  CharacteristicFinalizePackage - This function destroys everything in the Petsc interface to the charactoristics package. It is
+  called from PetscFinalize().
+
+  Level: developer
+
+.keywords: Petsc, destroy, package, mathematica
+.seealso: PetscFinalize()
+@*/
+PetscErrorCode PETSC_DLLEXPORT CharacteristicFinalizePackage(void) 
+{
+  PetscFunctionBegin;
+  CharacteristicPackageInitialized = PETSC_FALSE;
+  CharacteristicRegisterAllCalled = PETSC_FALSE;
+  CharacteristicList              = PETSC_NULL;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "CharacteristicInitializePackage"
 /*@C
@@ -15,16 +36,16 @@
 .keywords: Characteristic, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode CharacteristicInitializePackage(const char path[]) {
-  static PetscTruth initialized = PETSC_FALSE;
+PetscErrorCode CharacteristicInitializePackage(const char path[]) 
+{
   char              logList[256];
   char             *className;
   PetscTruth        opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (initialized) PetscFunctionReturn(0);
-  initialized = PETSC_TRUE;
+  if (CharacteristicPackageInitialized) PetscFunctionReturn(0);
+  CharacteristicPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscCookieRegister("Method of Characteristics",&CHARACTERISTIC_COOKIE);CHKERRQ(ierr);
   /* Register Constructors */
@@ -56,6 +77,7 @@ PetscErrorCode CharacteristicInitializePackage(const char path[]) {
       ierr = PetscLogEventDeactivateClass(CHARACTERISTIC_COOKIE);CHKERRQ(ierr);
     }
   }
+  ierr = PetscRegisterFinalize(CharacteristicFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

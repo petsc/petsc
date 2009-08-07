@@ -73,6 +73,7 @@ int            tracelevel      = 0;
 const char    *traceblanks     = "                                                                                                    ";
 char           tracespace[128] = " ";
 PetscLogDouble tracetime       = 0.0;
+PetscTruth PetscLogBegin_PrivateCalled = PETSC_FALSE;
 
 /*---------------------------------------------- General Functions --------------------------------------------------*/
 #undef __FUNCT__  
@@ -110,6 +111,42 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogDestroy(void)
   numActions          = 0;
   numObjects          = 0;
   numObjectsDestroyed = 0;
+  maxActions          = 100;
+  maxObjects          = 100;
+  actions    = PETSC_NULL;
+  objects    = PETSC_NULL;
+  logActions = PETSC_FALSE;
+  logObjects = PETSC_FALSE;
+  BaseTime        = 0.0;
+  _TotalFlops     = 0.0; 
+  petsc_tmp_flops = 0.0; 
+  send_ct         = 0.0; 
+  recv_ct         = 0.0; 
+  send_len        = 0.0; 
+  recv_len        = 0.0; 
+  isend_ct        = 0.0; 
+  irecv_ct        = 0.0; 
+  isend_len       = 0.0; 
+  irecv_len       = 0.0; 
+  wait_ct         = 0.0; 
+  wait_any_ct     = 0.0; 
+  wait_all_ct     = 0.0; 
+  sum_of_waits_ct = 0.0; 
+  allreduce_ct    = 0.0; 
+  gather_ct       = 0.0; 
+  scatter_ct      = 0.0; 
+  PETSC_LARGEST_EVENT  = PETSC_EVENT;
+  _PetscLogPHC = PETSC_NULL;
+  _PetscLogPHD = PETSC_NULL;
+  tracefile       = PETSC_NULL;
+  tracelevel      = 0;
+  traceblanks     = "                                                                                                    ";
+  tracespace[0] = ' '; tracespace[1] = 0;
+  tracetime       = 0.0;
+  PETSC_LARGEST_COOKIE = PETSC_SMALLEST_COOKIE;
+  PETSC_OBJECT_COOKIE  = 0;
+  _stageLog = 0;
+  PetscLogBegin_PrivateCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -151,6 +188,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogBegin_Private(void)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  if (PetscLogBegin_PrivateCalled) PetscFunctionReturn(0);
+  PetscLogBegin_PrivateCalled = PETSC_TRUE;
+
   ierr = PetscOptionsHasName(PETSC_NULL, "-log_exclude_actions", &opt);CHKERRQ(ierr);
   if (opt) {
     logActions = PETSC_FALSE;

@@ -3,11 +3,32 @@
 #include "private/matimpl.h"
 #include "../src/mat/impls/mffd/mffdimpl.h"   /*I  "petscmat.h"   I*/
 
-PetscFList MatMFFDPetscFList        = 0;
+PetscFList MatMFFDList        = 0;
 PetscTruth MatMFFDRegisterAllCalled = PETSC_FALSE;
 
 PetscCookie PETSCMAT_DLLEXPORT MATMFFD_COOKIE;
 PetscLogEvent  MATMFFD_Mult;
+
+static PetscTruth MatMFFDPackageInitialized = PETSC_FALSE;
+#undef __FUNCT__  
+#define __FUNCT__ "MatMFFDFinalizePackage"
+/*@C
+  MatMFFDFinalizePackage - This function destroys everything in the Petsc interface to the charactoristics package. It is
+  called from PetscFinalize().
+
+  Level: developer
+
+.keywords: Petsc, destroy, package, mathematica
+.seealso: PetscFinalize()
+@*/
+PetscErrorCode PETSC_DLLEXPORT MatMFFDFinalizePackage(void) 
+{
+  PetscFunctionBegin;
+  MatMFFDPackageInitialized = PETSC_FALSE;
+  MatMFFDRegisterAllCalled  = PETSC_FALSE;
+  MatMFFDList               = PETSC_NULL;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMFFDInitializePackage"
@@ -26,15 +47,14 @@ PetscLogEvent  MATMFFD_Mult;
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT MatMFFDInitializePackage(const char path[]) 
 {
-  static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
   char              *className;
   PetscTruth        opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (initialized) PetscFunctionReturn(0);
-  initialized = PETSC_TRUE;
+  if (MatMFFDPackageInitialized) PetscFunctionReturn(0);
+  MatMFFDPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscCookieRegister("MatMFFD",&MATMFFD_COOKIE);CHKERRQ(ierr);
   /* Register Constructors */
@@ -58,6 +78,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT MatMFFDInitializePackage(const char path[])
       ierr = PetscLogEventDeactivateClass(MATMFFD_COOKIE);CHKERRQ(ierr);
     }
   }
+  ierr = PetscRegisterFinalize(MatMFFDFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -103,7 +124,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetType(Mat mat,const MatMFFDType ftype
     ierr = (*ctx->ops->destroy)(ctx);CHKERRQ(ierr);
   }
 
-  ierr =  PetscFListFind(MatMFFDPetscFList,((PetscObject)ctx)->comm,ftype,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(MatMFFDList,((PetscObject)ctx)->comm,ftype,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown MatMFFD type %s given",ftype);
   ierr = (*r)(ctx);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)ctx,ftype);CHKERRQ(ierr);
@@ -148,7 +169,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDRegister(const char sname[],const char 
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&MatMFFDPetscFList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&MatMFFDList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -172,7 +193,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListDestroy(&MatMFFDPetscFList);CHKERRQ(ierr);
+  ierr = PetscFListDestroy(&MatMFFDList);CHKERRQ(ierr);
   MatMFFDRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -524,7 +545,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFromOptions(Mat mat)
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidHeaderSpecific(mfctx,MATMFFD_COOKIE,1);
   ierr = PetscOptionsBegin(((PetscObject)mfctx)->comm,((PetscObject)mfctx)->prefix,"Set matrix free computation parameters","MatMFFD");CHKERRQ(ierr);
-  ierr = PetscOptionsList("-mat_mffd_type","Matrix free type","MatMFFDSetType",MatMFFDPetscFList,((PetscObject)mfctx)->type_name,ftype,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsList("-mat_mffd_type","Matrix free type","MatMFFDSetType",MatMFFDList,((PetscObject)mfctx)->type_name,ftype,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatMFFDSetType(mat,ftype);CHKERRQ(ierr);
   }

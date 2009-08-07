@@ -16,6 +16,32 @@ const char *MatOptions[] = {"ROW_ORIENTED","NEW_NONZERO_LOCATIONS",
               "IGNORE_LOWER_TRIANGULAR","ERROR_LOWER_TRIANGULAR","GETROW_UPPERTRIANGULAR","MatOption","MAT_",0};
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDInitializePackage(const char[]);
+static PetscTruth MatPackageInitialized = PETSC_FALSE;
+#undef __FUNCT__  
+#define __FUNCT__ "MatFinalizePackage"
+/*@C
+  MatFinalizePackage - This function destroys everything in the Petsc interface to the charactoristics package. It is
+  called from PetscFinalize().
+
+  Level: developer
+
+.keywords: Petsc, destroy, package, mathematica
+.seealso: PetscFinalize()
+@*/
+PetscErrorCode PETSC_DLLEXPORT MatFinalizePackage(void) 
+{
+  PetscFunctionBegin;
+  MatPackageInitialized            = PETSC_FALSE;
+  MatRegisterAllCalled             = PETSC_FALSE;
+  MatList                          = PETSC_NULL;
+  MatOrderingRegisterAllCalled     = PETSC_FALSE;
+  MatOrderingList                  = PETSC_NULL;
+  MatColoringList                  = PETSC_NULL;
+  MatColoringRegisterAllCalled     = PETSC_FALSE;
+  MatPartitioningList              = PETSC_NULL;
+  MatPartitioningRegisterAllCalled = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatInitializePackage"
@@ -34,15 +60,14 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDInitializePackage(const char[]);
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(const char path[]) 
 {
-  static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
   char              *className;
   PetscTruth        opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (initialized) PetscFunctionReturn(0);
-  initialized = PETSC_TRUE;
+  if (MatPackageInitialized) PetscFunctionReturn(0);
+  MatPackageInitialized = PETSC_TRUE;
   /* Inialize subpackage */
   ierr = MatMFFDInitializePackage(path);CHKERRQ(ierr);
   /* Register Classes */
@@ -150,6 +175,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(const char path[])
       ierr = PetscLogEventDeactivateClass(MAT_COOKIE);CHKERRQ(ierr);
     }
   }
+  ierr = PetscRegisterFinalize(MatFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

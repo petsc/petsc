@@ -497,6 +497,27 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFSetFromOptions(PF pf)
   PetscFunctionReturn(0);
 }
 
+static PetscTruth PFPackageInitialized = PETSC_FALSE;
+#undef __FUNCT__  
+#define __FUNCT__ "PFFinalizePackage"
+/*@C
+  PFFinalizePackage - This function destroys everything in the Petsc interface to Mathematica. It is
+  called from PetscFinalize().
+
+  Level: developer
+
+.keywords: Petsc, destroy, package, mathematica
+.seealso: PetscFinalize()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PFFinalizePackage(void) 
+{
+  PetscFunctionBegin;
+  PFPackageInitialized = PETSC_FALSE;
+  PFList               = PETSC_NULL;
+  PFRegisterAllCalled  = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PFInitializePackage"
 /*@C
@@ -514,15 +535,14 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFSetFromOptions(PF pf)
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT PFInitializePackage(const char path[]) 
 {
-  static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
   char              *className;
   PetscTruth        opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (initialized) PetscFunctionReturn(0);
-  initialized = PETSC_TRUE;
+  if (PFPackageInitialized) PetscFunctionReturn(0);
+  PFPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscCookieRegister("PointFunction",&PF_COOKIE);CHKERRQ(ierr);
   /* Register Constructors */
@@ -543,6 +563,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFInitializePackage(const char path[])
       ierr = PetscLogEventDeactivateClass(PF_COOKIE);CHKERRQ(ierr);
     }
   }
+  ierr = PetscRegisterFinalize(PFFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

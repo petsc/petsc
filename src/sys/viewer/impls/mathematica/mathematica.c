@@ -17,10 +17,11 @@
 PetscViewer  PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE = PETSC_NULL;
 static void *mathematicaEnv                   = PETSC_NULL;
 
+static PetscTruth PetscViewerMathematicaPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerMathematicaDestroyPackage"
+#define __FUNCT__ "PetscViewerMathematicaFinalizePackage"
 /*@C
-  PetscViewerMathematicaDestroyPackage - This function destroys everything in the Petsc interface to Mathematica. It is
+  PetscViewerMathematicaFinalizePackage - This function destroys everything in the Petsc interface to Mathematica. It is
   called from PetscFinalize().
 
   Level: developer
@@ -32,6 +33,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaFinalizePackage(void)
 {
   PetscFunctionBegin;
   if (mathematicaEnv) MLDeinitialize((MLEnvironment) mathematicaEnv);
+  PetscViewerMathematicaPackageInitialized = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -52,11 +54,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaFinalizePackage(void)
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaInitializePackage(const char path[])
 {
-  static PetscTruth initialized = PETSC_FALSE;
+  PetscError ierr;
 
   PetscFunctionBegin;
-  if (initialized) PetscFunctionReturn(0);
-  initialized = PETSC_TRUE;
+  if (PetscViewerMathematicaPackageInitialized) PetscFunctionReturn(0);
+  PetscViewerMathematicaPackageInitialized = PETSC_TRUE;
   mathematicaEnv = (void*) MLInitialize(0);
   ierr = PetscRegisterFinalize(PetscViewerMathematicaFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);

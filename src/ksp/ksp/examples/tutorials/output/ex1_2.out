@@ -15,6 +15,7 @@ KSP Object:
   maximum iterations=10000, initial guess is zero
   tolerances:  relative=1e-07, absolute=1e-50, divergence=10000
   left preconditioning
+  using PRECONDITIONED norm type for convergence test
 PC Object:
   type: sor
     SOR: type = symmetric, iterations = 1, local iterations = 1, omega = 1

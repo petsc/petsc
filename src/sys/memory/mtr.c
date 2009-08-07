@@ -22,16 +22,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFreeAlign(void*,int,const char[],cons
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTrMallocDefault(size_t,int,const char[],const char[],const char[],void**);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTrFreeDefault(void*,int,const char[],const char[],const char[]);
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscSetUseTrMalloc_Private"
-PetscErrorCode PetscSetUseTrMalloc_Private(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr         = PetscMallocSet(PetscTrMallocDefault,PetscTrFreeDefault);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #if (PETSC_SIZEOF_VOID_P == 8)
 #define TR_ALIGN_BYTES      8
@@ -74,6 +64,7 @@ typedef union {
     double  v[HEADER_DOUBLES];
 } TrSPACE;
 
+
 static size_t     TRallocated  = 0;
 static int        TRfrags      = 0;
 static TRSPACE    *TRhead      = 0;
@@ -86,6 +77,25 @@ static size_t     TRMaxMem     = 0;
 static int        PetscLogMallocMax = 10000,PetscLogMalloc = -1;
 static size_t     *PetscLogMallocLength;
 static const char **PetscLogMallocDirectory,**PetscLogMallocFile,**PetscLogMallocFunction;
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSetUseTrMalloc_Private"
+PetscErrorCode PetscSetUseTrMalloc_Private(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr              = PetscMallocSet(PetscTrMallocDefault,PetscTrFreeDefault);CHKERRQ(ierr);
+  TRallocated       = 0;
+  TRfrags           = 0;
+  TRhead            = 0;
+  TRid              = 0;
+  TRdebugLevel      = PETSC_FALSE;
+  TRMaxMem          = 0;
+  PetscLogMallocMax = 10000;
+  PetscLogMalloc    = -1;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMallocValidate"

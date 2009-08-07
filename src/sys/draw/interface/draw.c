@@ -6,6 +6,26 @@
 
 PetscCookie PETSC_DRAW_COOKIE;
 
+static PetscTruth PetscDrawPackageInitialized = PETSC_FALSE;
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawFinalizePackage"
+/*@C
+  PetscDrawFinalizePackage - This function destroys everything in the Petsc interface to the charactoristics package. It is
+  called from PetscFinalize().
+
+  Level: developer
+
+.keywords: Petsc, destroy, package, mathematica
+.seealso: PetscFinalize()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscDrawFinalizePackage(void) 
+{
+  PetscFunctionBegin;
+  PetscDrawPackageInitialized = PETSC_FALSE;
+  PetscDrawList               = 0;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawInitializePackage" 
 /*@C
@@ -23,15 +43,14 @@ PetscCookie PETSC_DRAW_COOKIE;
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDrawInitializePackage(const char path[])
 {
-  static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
   char              *className;
   PetscTruth        opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (initialized) PetscFunctionReturn(0);
-  initialized = PETSC_TRUE;
+  if (PetscDrawPackageInitialized) PetscFunctionReturn(0);
+  PetscDrawPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscCookieRegister("Draw",&PETSC_DRAW_COOKIE);CHKERRQ(ierr);
   ierr = PetscCookieRegister("Axis",&DRAWAXIS_COOKIE);CHKERRQ(ierr);
@@ -56,6 +75,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawInitializePackage(const char path[])
       ierr = PetscLogEventDeactivateClass(0);CHKERRQ(ierr);
     }
   }
+  ierr = PetscRegisterFinalize(PetscDrawFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

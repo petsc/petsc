@@ -2,6 +2,27 @@
 
 #include "private/snesimpl.h"
 
+static PetscTruth SNESPackageInitialized = PETSC_FALSE;
+#undef __FUNCT__  
+#define __FUNCT__ "SNESFinalizePackage"
+/*@C
+  SNESFinalizePackage - This function destroys everything in the Petsc interface to the charactoristics package. It is
+  called from PetscFinalize().
+
+  Level: developer
+
+.keywords: Petsc, destroy, package, mathematica
+.seealso: PetscFinalize()
+@*/
+PetscErrorCode PETSC_DLLEXPORT SNESFinalizePackage(void) 
+{
+  PetscFunctionBegin;
+  SNESPackageInitialized = PETSC_FALSE;
+  SNESRegisterAllCalled  = PETSC_FALSE;
+  SNESList               = PETSC_NULL;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "SNESInitializePackage"
 /*@C
@@ -19,15 +40,14 @@
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESInitializePackage(const char path[]) 
 {
-  static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
   char              *className;
   PetscTruth        opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (initialized) PetscFunctionReturn(0);
-  initialized = PETSC_TRUE;
+  if (SNESPackageInitialized) PetscFunctionReturn(0);
+  SNESPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscCookieRegister("SNES",&SNES_COOKIE);CHKERRQ(ierr);
   /* Register Constructors */
@@ -53,6 +73,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESInitializePackage(const char path[])
       ierr = PetscLogEventDeactivateClass(SNES_COOKIE);CHKERRQ(ierr);
     }
   }
+  ierr = PetscRegisterFinalize(SNESFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -47,6 +47,7 @@ testexamples_TRIANGLE: ${TESTEXAMPLES_TRIANGLE} clean
 testexamples_SIEVE: ${TESTEXAMPLES_SIEVE} clean
 testexamples_BOOST: ${TESTEXAMPLES_BOOST} clean
 testexamples_TETGEN: ${TESTEXAMPLES_TETGEN} clean
+testexamples_ML: ${TESTEXAMPLES_ML} clean
 testexamples_X11:
 testexamples_MPE:
 testexamples_ESSL:

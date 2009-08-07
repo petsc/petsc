@@ -6,6 +6,25 @@
 
 extern PetscLogEvent PETSC_DLLEXPORT PETSC_Barrier;
 
+static PetscTruth PetscPackageInitialized = PETSC_FALSE;
+#undef __FUNCT__  
+#define __FUNCT__ "PetscFinalizePackage"
+/*@C
+  PetscFinalizePackage - This function destroys everything in the Petsc interface to Mathematica. It is
+  called from PetscFinalize().
+
+  Level: developer
+
+.keywords: Petsc, destroy, package, mathematica
+.seealso: PetscFinalize()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscFinalizePackage(void) 
+{
+  PetscFunctionBegin;
+  PetscPackageInitialized = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscInitializePackage" 
 /*@C
@@ -23,17 +42,17 @@ extern PetscLogEvent PETSC_DLLEXPORT PETSC_Barrier;
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(const char path[])
 {
-  static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
   char              *className;
   PetscTruth        opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (initialized) PetscFunctionReturn(0);
-  initialized = PETSC_TRUE;
+  if (PetscPackageInitialized) PetscFunctionReturn(0);
+  PetscPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscCookieRegister("Object",&PETSC_OBJECT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscCookieRegister("Container",&PETSC_CONTAINER_COOKIE);CHKERRQ(ierr);
 
   /* Register Events */
   ierr = PetscLogEventRegister("PetscBarrier", PETSC_SMALLEST_COOKIE,&PETSC_Barrier);CHKERRQ(ierr);
@@ -53,6 +72,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(const char path[])
       ierr = PetscLogEventDeactivateClass(0);CHKERRQ(ierr);
     }
   }
+  ierr = PetscRegisterFinalize(PetscFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

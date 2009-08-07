@@ -2,6 +2,27 @@
 
 #include "private/tsimpl.h"
 
+static PetscTruth TSPackageInitialized = PETSC_FALSE;
+#undef __FUNCT__  
+#define __FUNCT__ "TSFinalizePackage"
+/*@C
+  TSFinalizePackage - This function destroys everything in the Petsc interface to Mathematica. It is
+  called from PetscFinalize().
+
+  Level: developer
+
+.keywords: Petsc, destroy, package, mathematica
+.seealso: PetscFinalize()
+@*/
+PetscErrorCode PETSC_DLLEXPORT TSFinalizePackage(void) 
+{
+  PetscFunctionBegin;
+  TSPackageInitialized = PETSC_FALSE;
+  TSList               = PETSC_NULL;
+  TSRegisterAllCalled  = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "TSInitializePackage"
 /*@C
@@ -17,16 +38,16 @@
 .keywords: TS, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSInitializePackage(const char path[]) {
-  static PetscTruth initialized = PETSC_FALSE;
+PetscErrorCode PETSCTS_DLLEXPORT TSInitializePackage(const char path[]) 
+{
   char              logList[256];
   char              *className;
   PetscTruth        opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (initialized) PetscFunctionReturn(0);
-  initialized = PETSC_TRUE;
+  if (TSPackageInitialized) PetscFunctionReturn(0);
+  TSPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscCookieRegister("TS",&TS_COOKIE);CHKERRQ(ierr);
   /* Register Constructors */
@@ -52,6 +73,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSInitializePackage(const char path[]) {
       ierr = PetscLogEventDeactivateClass(TS_COOKIE);CHKERRQ(ierr);
     }
   }
+  ierr = PetscRegisterFinalize(TSFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

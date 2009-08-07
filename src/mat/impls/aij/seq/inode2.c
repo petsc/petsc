@@ -170,8 +170,6 @@ PetscErrorCode MatILUDTFactor_Inode(Mat A,IS isrow,IS iscol,const MatFactorInfo 
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatLUFactorNumeric_Inode(Mat,Mat,const MatFactorInfo*);
-
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_Inode"
 PetscErrorCode MatLUFactorSymbolic_Inode(Mat fact,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
@@ -179,14 +177,7 @@ PetscErrorCode MatLUFactorSymbolic_Inode(Mat fact,Mat A,IS isrow,IS iscol,const 
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
-    /* check for identical nodes. If found, use inode functions */
   ierr = Mat_CheckInode(fact,PETSC_FALSE);CHKERRQ(ierr);
-  /*
-     Inode factorization code is slower so never switch to it
-  Mat_SeqAIJ     *f = (Mat_SeqAIJ*)A->data;
-  if (f->inode.use) {
-    (fact)->ops->lufactornumeric = MatLUFactorNumeric_Inode;
-  } */
   PetscFunctionReturn(0);
 }
 
@@ -197,12 +188,7 @@ PetscErrorCode MatILUFactorSymbolic_Inode(Mat fact,Mat A,IS isrow,IS iscol,const
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-    /* check for identical nodes. If found, use inode functions */
-  Mat_SeqAIJ     *f = (Mat_SeqAIJ*)A->data;
   ierr = Mat_CheckInode(fact,PETSC_FALSE);CHKERRQ(ierr);
-  if (f->inode.use) {
-    (fact)->ops->lufactornumeric = MatLUFactorNumeric_Inode;
-  }
   PetscFunctionReturn(0);
 }
 

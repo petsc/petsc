@@ -481,8 +481,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
 
   PetscFunctionBegin;
   if (PetscInitializeCalled) PetscFunctionReturn(0);
-  if (PetscFinalizeCalled)
-    SETERRQ(1,"You can not initialize PETSc a second time")
 
   /* these must be initialized in a routine, not as a constant declaration*/
   PETSC_STDOUT = stdout;
@@ -678,6 +676,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     (*PetscErrorPrintf)("PetscInitialize() must be called before PetscFinalize()\n");
     PetscFunctionReturn(0);
   }
+  ierr = PetscInfo(PETSC_NULL,"PetscFinalize() called\n");
+
   ierr = PetscOpenMPFinalize();CHKERRQ(ierr); 
 
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-python",&flg1,PETSC_NULL);CHKERRQ(ierr);

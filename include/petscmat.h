@@ -202,6 +202,8 @@ M*/
 
 extern PetscTruth MatRegisterAllCalled;
 extern PetscFList MatList;
+extern PetscFList MatColoringList;
+extern PetscFList MatPartitioningList;
 
 /*E
     MatStructure - Indicates if the matrix has the same nonzero structure

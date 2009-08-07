@@ -6,6 +6,7 @@
 #include "private/meshimpl.h"
 #endif
 
+static PetscTruth DMPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
 #define __FUNCT__ "DMFinalizePackage"
 /*@C
@@ -23,6 +24,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMFinalizePackage(void) {
 #endif
 
   PetscFunctionBegin;
+  DMPackageInitialized = PETSC_FALSE;
 #ifdef PETSC_HAVE_SIEVE
   ierr = MeshFinalize();CHKERRQ(ierr);
 #endif
@@ -50,15 +52,14 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_HYPREStruct(Mat);
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[]) 
 {
-  static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
   char              *className;
   PetscTruth        opt;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (initialized) PetscFunctionReturn(0);
-  initialized = PETSC_TRUE;
+  if (DMPackageInitialized) PetscFunctionReturn(0);
+  DMPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscCookieRegister("Application Order",&AO_COOKIE);CHKERRQ(ierr);
   ierr = PetscCookieRegister("Distributed array",&DM_COOKIE);CHKERRQ(ierr);
