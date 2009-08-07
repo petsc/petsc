@@ -3,8 +3,7 @@ static char help[] = "Solves -Laplacian u - exp(u) = 0,  0 < x < 1\n\n";
 #include "petscsnes.h"
 extern PetscErrorCode ComputeFunction(SNES,Vec,Vec,void*), ComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
-int main(int argc,char **argv)
-{
+int main(int argc,char **argv) {
   SNES snes; Vec x,f; Mat J; DA da;
   PetscInitialize(&argc,&argv,(char *)0,help);
 
@@ -20,10 +19,8 @@ int main(int argc,char **argv)
 
   MatDestroy(J); VecDestroy(x); VecDestroy(f); SNESDestroy(snes); DADestroy(da);
   PetscFinalize();
-  return 0;
-}
-PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
-{
+  return 0;}
+PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx) {
   PetscInt i,Mx,xs,xm; PetscScalar *xx,*ff,hx; DA da = (DA) ctx; Vec xlocal;
   DAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
   hx     = 1.0/(PetscReal)(Mx-1);
@@ -36,10 +33,8 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
     else  ff[i] =  (2.0*xx[i] - xx[i-1] - xx[i+1])/hx - hx*PetscExpScalar(xx[i]); 
   }
   DAVecRestoreArray(da,xlocal,&xx); DARestoreLocalVector(da,&xlocal);DAVecRestoreArray(da,f,&ff);
-  return 0;
-} 
-PetscErrorCode ComputeJacobian(SNES snes,Vec x,Mat *J,Mat *B,MatStructure *flag,void *ctx)
-{
+  return 0;}
+PetscErrorCode ComputeJacobian(SNES snes,Vec x,Mat *J,Mat *B,MatStructure *flag,void *ctx){
   DA da = (DA) ctx; PetscInt i,Mx,xm,xs; PetscScalar hx,*xx; Vec xlocal;
   DAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
   hx = 1.0/(PetscReal)(Mx-1);
@@ -57,5 +52,5 @@ PetscErrorCode ComputeJacobian(SNES snes,Vec x,Mat *J,Mat *B,MatStructure *flag,
   }
   MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY); MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);  *flag = SAME_NONZERO_PATTERN;
   DAVecRestoreArray(da,xlocal,&xx);DARestoreLocalVector(da,&xlocal);
-  return 0;
-}
+  return 0;}
+
