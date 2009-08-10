@@ -76,7 +76,7 @@ class Configure(config.base.Configure):
                                             'unistd', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
                                             'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib','memory',
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',
-                                            'WindowsX', 'cxxabi','float.h','ieeefp'])
+                                            'WindowsX', 'cxxabi','float.h','ieeefp','xmmintrin.h'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
                  'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times', 'gethostbyname',
@@ -245,7 +245,9 @@ class Configure(config.base.Configure):
 
   def configurePrefetch(self):
     '''Sees if there are any prefetch functions supported'''
-    if self.checkLink('', 'void *v;__builtin_prefetch(v);\n'):
+    if self.checkLink('#include <xmmintrin.h>', 'void *v = 0;_mm_prefetch(v,0);\n'):
+      self.addDefine('Prefetch(a,b,c)', '_mm_prefetch((void*)(a),c)')
+    elif self.checkLink('', 'void *v = 0;__builtin_prefetch(v,0,0);\n'):
       self.addDefine('Prefetch(a,b,c)', '__builtin_prefetch(a,b,c)')
     else:
       self.addDefine('Prefetch(a,b,c)', '')

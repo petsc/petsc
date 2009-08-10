@@ -2148,8 +2148,6 @@ PetscErrorCode MatLoad_SeqSBAIJ(PetscViewer viewer, const MatType type,Mat *A)
   PetscFunctionReturn(0);
 }
 
-
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatRelax_SeqSBAIJ"
 PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
@@ -2223,7 +2221,7 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
         sum = 0.0;
         nz2 = ai[i] - ai[i-1] - 1;
 	PETSC_Prefetch(v-nz2-1,0,1);
-	PETSC_Prefetch(vj-nz2-1,0,1);
+	PETSC_Prefetch(vj-nz2-1,0,1); 
         PetscSparseDensePlusDot(sum,x,v,vj,nz);         
         sum = t[i] - sum;
         x[i] =   (1-omega)*x[i] + omega*sum*aidiag[i];        
