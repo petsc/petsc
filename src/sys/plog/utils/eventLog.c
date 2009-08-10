@@ -572,6 +572,10 @@ PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent event)
 #if defined(PETSC_HAVE_CHUD_broken)
 #include <CHUD/CHUD.h>
 #endif
+#if defined(PETSC_HAVE_PAPI)
+#include "papi.h"
+extern int PAPIEventSet;
+#endif
 
 /*------------------------------------------------ Action Functions -------------------------------------------------*/
 #undef __FUNCT__  
@@ -595,6 +599,12 @@ PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent event, int t, PetscObject
   PetscTimeSubtract(eventLog->eventInfo[event].time);
 #if defined(PETSC_HAVE_CHUD_broken)
   eventLog->eventInfo[event].flops         -= chudGetPMCEventCount(chudCPU1Dev,PMC_1);
+#elif defined(PETSC_HAVE_PAPI)
+  { long_long values[2];
+    ierr = PAPI_read(PAPIEventSet,values);CHKERRQ(ierr);
+    eventLog->eventInfo[event].flops -= values[0];
+    /*    printf("fma %g flops %g\n",(double)values[1],(double)values[0]); */
+  }
 #else
   eventLog->eventInfo[event].flops         -= _TotalFlops;
 #endif
@@ -628,6 +638,12 @@ PetscErrorCode PetscLogEventEndDefault(PetscLogEvent event, int t, PetscObject o
   PetscTimeAdd(eventLog->eventInfo[event].time);
 #if defined(PETSC_HAVE_CHUD_broken)
   eventLog->eventInfo[event].flops         += chudGetPMCEventCount(chudCPU1Dev,PMC_1);
+#elif defined(PETSC_HAVE_PAPI)
+  { long_long values[2];
+    ierr = PAPI_read(PAPIEventSet,values);CHKERRQ(ierr);
+    eventLog->eventInfo[event].flops += values[0];
+    /* printf("fma %g flops %g\n",(double)values[1],(double)values[0]); */
+  }
 #else
   eventLog->eventInfo[event].flops         += _TotalFlops;
 #endif
