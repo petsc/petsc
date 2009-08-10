@@ -242,6 +242,14 @@ class Configure(config.base.Configure):
     fd.close()
     return
 
+
+  def configurePrefetch(self):
+    '''Sees if there are any prefetch functions supported'''
+    if self.checkLink('', 'void *v;__builtin_prefetch(v);\n'):
+      self.addDefine('Prefetch(a,b,c)', '__builtin_prefetch(a,b,c)')
+    else:
+      self.addDefine('Prefetch(a,b,c)', '')
+      
   def configureInline(self):
     '''Get a generic inline keyword, depending on the language'''
     if self.languages.clanguage == 'C':
@@ -407,6 +415,7 @@ class Configure(config.base.Configure):
     if self.languages.clanguage == 'Cxx' and not hasattr(self.compilers, 'CXX'):
       raise RuntimeError('Cannot set C language to C++ without a functional C++ compiler.')
     self.executeTest(self.configureInline)
+    self.executeTest(self.configurePrefetch)
     self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)
     self.executeTest(self.configureWin32)

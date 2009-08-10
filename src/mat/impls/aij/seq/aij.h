@@ -215,7 +215,7 @@ EXTERN_C_END
 .  sum - negative the sum of results
 
   PETSc compile flags:
-+   PETSC_KERNEL_USE_UNROLL_4 -
++   PETSC_KERNEL_USE_UNROLL_4 -   don't use this; it changes nnz and hence is WRONG
 -   PETSC_KERNEL_USE_UNROLL_2 -
 
 .seealso: PetscSparseDensePlusDot()
@@ -262,7 +262,7 @@ for(__i=0;__i<nnz;__i++) sum -= xv[__i] * r[xi[__i]];}
 .  sum - the sum of results
 
   PETSc compile flags:
-+   PETSC_KERNEL_USE_UNROLL_4 -
++   PETSC_KERNEL_USE_UNROLL_4 -  don't use this; it changes nnz and hence is WRONG
 -   PETSC_KERNEL_USE_UNROLL_2 -
 
 .seealso: PetscSparseDenseMinusDot()

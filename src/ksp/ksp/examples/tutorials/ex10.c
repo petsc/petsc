@@ -44,7 +44,7 @@ int main(int argc,char **args)
   Vec            x,b,u;          /* approx solution, RHS, exact solution */
   PetscViewer    fd;               /* viewer */
   char           file[4][PETSC_MAX_PATH_LEN];     /* input file name */
-  PetscTruth     table,flg,flgB=PETSC_FALSE,trans=PETSC_FALSE,initialguess = PETSC_FALSE;
+  PetscTruth     table=PETSC_FALSE,flg,flgB=PETSC_FALSE,trans=PETSC_FALSE,initialguess = PETSC_FALSE;
   PetscTruth     outputSoln=PETSC_FALSE;
   PetscErrorCode ierr;
   PetscInt       its,num_numfac,m,n,M;
