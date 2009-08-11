@@ -243,8 +243,13 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       ierr = VecDuplicate(osm->x[i],&osm->y_local[i]);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&isl);CHKERRQ(ierr);
       ierr = VecScatterCreate(vec,isl,osm->x[i],isl,&osm->restriction[i]);CHKERRQ(ierr);
-      osm->prolongation[i] = osm->restriction[i];
-      ierr = PetscObjectReference((PetscObject) osm->restriction[i]);CHKERRQ(ierr);
+      if (osm->is_local) {
+        ierr = VecScatterCreate(osm->y[i],isl,osm->y_local[i],isl,&osm->localization[i]);CHKERRQ(ierr);
+        ierr = VecScatterCreate(vec,isl,osm->x[i],isl,&osm->prolongation[i]);CHKERRQ(ierr);
+      } else {
+        osm->prolongation[i] = osm->restriction[i];
+        ierr = PetscObjectReference((PetscObject) osm->restriction[i]);CHKERRQ(ierr);
+      }
       ierr = ISDestroy(isl);CHKERRQ(ierr);
     }
     ierr = VecDestroy(vec);CHKERRQ(ierr);
