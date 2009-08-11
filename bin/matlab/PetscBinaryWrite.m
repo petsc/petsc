@@ -4,6 +4,8 @@ function PetscBinaryWrite(inarg,varargin)
 %  if the array is multidimensional and dense it is saved
 %  as a one dimensional array
 %
+%  Only works for square sparse matrices 
+%
 %   PetscBinaryWrite(inarg,args to write)
 %   inarg may be:
 %      filename 
@@ -41,10 +43,25 @@ for l=1:nargin-1
     write(fd,n_nz,'int32');   %nonzeros per row
     [i,j,s] = find(A');
     write(fd,i-1,'int32');
+    if ~isreal(s)
+      s = conj(s);
+      l = length(s);
+      sr = real(s);
+      si = imag(s);
+      s(1:2:2*l) = sr;
+      s(2:2:2*l) = si;
+    end
     write(fd,s,'double');
   else
     [m,n] = size(A);
     write(fd,[1211214,m*n],'int32');
+    if ~isreal(A)
+      l = length(A);
+      sr = real(A);
+      si = imag(A);
+      A(1:2:2*l) = sr;
+      A(2:2:2*l) = si;
+    end
     write(fd,A,'double');
   end
 end
