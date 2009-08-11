@@ -1567,6 +1567,9 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt,const PetscScalar
 #if defined(PETSC_PREFER_DCOPY_FOR_MEMCPY)
 #include "petscblaslapack.h"
 #endif
+#if defined(PETSC_HAVE_XMMINTRIN_H)
+#include <xmmintrin.h>
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMemcpy"
