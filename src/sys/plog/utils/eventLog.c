@@ -569,7 +569,7 @@ PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent event)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_CHUD_broken)
+#if defined(PETSC_HAVE_CHUD)
 #include <CHUD/CHUD.h>
 #endif
 
@@ -593,7 +593,7 @@ PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent event, int t, PetscObject
   /* Log performance info */
   eventLog->eventInfo[event].count++;
   PetscTimeSubtract(eventLog->eventInfo[event].time);
-#if defined(PETSC_HAVE_CHUD_broken)
+#if defined(PETSC_HAVE_CHUD)
   eventLog->eventInfo[event].flops         -= chudGetPMCEventCount(chudCPU1Dev,PMC_1);
 #else
   eventLog->eventInfo[event].flops         -= _TotalFlops;
@@ -626,7 +626,7 @@ PetscErrorCode PetscLogEventEndDefault(PetscLogEvent event, int t, PetscObject o
   }
   /* Log performance info */
   PetscTimeAdd(eventLog->eventInfo[event].time);
-#if defined(PETSC_HAVE_CHUD_broken)
+#if defined(PETSC_HAVE_CHUD)
   eventLog->eventInfo[event].flops         += chudGetPMCEventCount(chudCPU1Dev,PMC_1);
 #else
   eventLog->eventInfo[event].flops         += _TotalFlops;

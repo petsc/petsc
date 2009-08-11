@@ -29,7 +29,8 @@ class Configure(config.base.Configure):
     self.petscdir      = framework.require('PETSc.utilities.petscdir', self.setCompilers)
     self.languages     = framework.require('PETSc.utilities.languages',self.setCompilers)
     self.debugging     = framework.require('PETSc.utilities.debugging',self.setCompilers)
-    self.make          = framework.require('PETSc.utilities.Make',     self)        
+    self.make          = framework.require('PETSc.utilities.Make',     self)
+    self.CHUD          = framework.require('PETSc.utilities.CHUD',     self)        
     self.compilers     = framework.require('config.compilers',         self)
     self.types         = framework.require('config.types',             self)
     self.headers       = framework.require('config.headers',           self)
@@ -104,7 +105,7 @@ class Configure(config.base.Configure):
     self.setCompilers.popLanguage()
 
     # C preprocessor values
-    self.addMakeMacro('CPP_FLAGS',self.setCompilers.CPPFLAGS)
+    self.addMakeMacro('CPP_FLAGS',self.setCompilers.CPPFLAGS+self.CHUD.CPPFLAGS)
     
     # compiler values
     self.setCompilers.pushLanguage(self.languages.clanguage)
@@ -122,7 +123,7 @@ class Configure(config.base.Configure):
     self.setCompilers.popLanguage()
     # '' for Unix, .exe for Windows
     self.addMakeMacro('CC_LINKER_SUFFIX','')
-    self.addMakeMacro('PCC_LINKER_LIBS',self.libraries.toStringNoDupes(self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' ')))
+    self.addMakeMacro('PCC_LINKER_LIBS',self.libraries.toStringNoDupes(self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS)
 
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')

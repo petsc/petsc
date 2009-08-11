@@ -174,7 +174,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogSet(PetscErrorCode (*b)(PetscLogEvent, in
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_CHUD_broken)
+#if defined(PETSC_HAVE_CHUD)
 #include <CHUD/CHUD.h>
 #endif
 
@@ -210,7 +210,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogBegin_Private(void)
   /* Setup default logging structures */
   ierr = StageLogCreate(&_stageLog);CHKERRQ(ierr);
   ierr = StageLogRegister(_stageLog, "Main Stage", &stage);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CHUD_broken)
+#if defined(PETSC_HAVE_CHUD)
   ierr = chudInitialize();CHKERRQ(ierr);
   ierr = chudAcquireSamplingFacility(CHUD_BLOCKING);CHKERRQ(ierr);
   ierr = chudSetSamplingDevice(chudCPU1Dev);CHKERRQ(ierr);
@@ -218,14 +218,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogBegin_Private(void)
   ierr = chudClearPMCMode(chudCPU1Dev,chudUnused);CHKERRQ(ierr);
   ierr = chudClearPMCs();CHKERRQ(ierr);
   /* ierr = chudSetPMCMuxPosition(chudCPU1Dev,0,0);CHKERRQ(ierr); */
-  printf("%s\n",chudGetEventName(chudCPU1Dev,PMC_1,192));
-  printf("%s\n",chudGetEventDescription(chudCPU1Dev,PMC_1,192));
-  printf("%s\n",chudGetEventNotes(chudCPU1Dev,PMC_1,192));
-  ierr = chudSetPMCEvent(chudCPU1Dev,PMC_1,192);CHKERRQ(ierr);
-  //  ierr = chudSetPMCMode(chudCPU1Dev,PMC_1,chudCounter);CHKERRQ(ierr);
-  // ierr = chudSetPrivilegeFilter(chudCPU1Dev,PMC_1,chudCountUserEvents);CHKERRQ(ierr);
-  // ierr = chudSetPMCEventMask(chudCPU1Dev,PMC_1,0x00);CHKERRQ(ierr);
-  if (!chudIsEventValid(chudCPU1Dev,PMC_1,192)) SETERRQ1(PETSC_ERR_SUP,"Event is not valid %d",192);
+  printf("%s\n",chudGetEventName(chudCPU1Dev,PMC_1,193));
+  printf("%s\n",chudGetEventDescription(chudCPU1Dev,PMC_1,193));
+  printf("%s\n",chudGetEventNotes(chudCPU1Dev,PMC_1,193));
+  ierr = chudSetPMCEvent(chudCPU1Dev,PMC_1,193);CHKERRQ(ierr);
+  ierr = chudSetPMCMode(chudCPU1Dev,PMC_1,chudCounter);CHKERRQ(ierr);
+  ierr = chudSetPrivilegeFilter(chudCPU1Dev,PMC_1,chudCountUserEvents);CHKERRQ(ierr);
+  ierr = chudSetPMCEventMask(chudCPU1Dev,PMC_1,0xFE);CHKERRQ(ierr);
+  if (!chudIsEventValid(chudCPU1Dev,PMC_1,193)) SETERRQ1(PETSC_ERR_SUP,"Event is not valid %d",193);
   ierr = chudStartPMCs();CHKERRQ(ierr);
 #endif
   /* All processors sync here for more consistent logging */
