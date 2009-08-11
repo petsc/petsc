@@ -23,6 +23,7 @@ typedef struct {
   PetscTruth       ignore_ltriangular; /* if true, ignore the lower triangular values inserted by users */
   PetscTruth       getrow_utriangular; /* if true, MatGetRow_SeqSBAIJ() is enabled to get the upper part of the row */
   Mat_Inode        inode;
+  unsigned short   *jshort;
 } Mat_SeqSBAIJ;
 
 EXTERN_C_BEGIN

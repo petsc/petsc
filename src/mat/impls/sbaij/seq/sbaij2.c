@@ -246,7 +246,7 @@ PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
   const MatScalar   *v;
   PetscErrorCode    ierr;
   PetscInt          mbs=a->mbs,i,j,nz;
-  const PetscInt    *aj=a->j,*ai=a->i,*ib;
+  const PetscInt    *ib=a->j,*ai=a->i;
 
   PetscFunctionBegin;
   ierr = VecSet(zz,0.0);CHKERRQ(ierr);
@@ -254,8 +254,6 @@ PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
   v  = a->a; 
-  ib = aj;   
-
   for (i=0; i<mbs; i++) {
     nz   = ai[i+1] - ai[i];        /* length of i_th row of A */    
     x1   = x[i];
