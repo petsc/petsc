@@ -177,6 +177,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogSet(PetscErrorCode (*b)(PetscLogEvent, in
 #if defined(PETSC_HAVE_CHUD)
 #include <CHUD/CHUD.h>
 #endif
+#if defined(PETSC_HAVE_PAPI)
+#include "papi.h"
+int PAPIEventSet = PAPI_NULL;
+#endif
 
 /*------------------------------------------- Initialization Functions ----------------------------------------------*/
 #undef __FUNCT__  
@@ -228,6 +232,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogBegin_Private(void)
   if (!chudIsEventValid(chudCPU1Dev,PMC_1,193)) SETERRQ1(PETSC_ERR_SUP,"Event is not valid %d",193);
   ierr = chudStartPMCs();CHKERRQ(ierr);
 #endif
+#if defined(PETSC_HAVE_PAPI)
+  ierr = PAPI_library_init(PAPI_VER_CURRENT);
+  if (ierr != PAPI_VER_CURRENT) SETERRQ(PETSC_ERR_LIB,"Cannot initialize PAPI");
+  ierr = PAPI_query_event(PAPI_FP_INS);CHKERRQ(ierr);
+  ierr = PAPI_create_eventset(&PAPIEventSet);CHKERRQ(ierr);
+  ierr = PAPI_add_event(PAPIEventSet,PAPI_FP_INS);CHKERRQ(ierr);
+  ierr = PAPI_start(PAPIEventSet);CHKERRQ(ierr);
+#endif
+
   /* All processors sync here for more consistent logging */
   ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
   PetscTime(BaseTime);
