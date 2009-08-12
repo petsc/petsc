@@ -64,19 +64,19 @@ namespace ALE {
       }
       stageNames.push_front(name);
       if (_debug) {
-        std::cout << "Pushing stage " << name << ":" << std::endl;
+        std::cout << "["<<rank<<"]Pushing stage " << name << ":" << std::endl;
         for(names::const_iterator s_iter = stageNames.begin(); s_iter != stageNames.end(); ++s_iter) {
-          std::cout << "  " << *s_iter << ": " << stages[*s_iter].first.num  << " acalls  " << stages[*s_iter].first.total  << " bytes" << std::endl;
-          std::cout << "  " << *s_iter << ": " << stages[*s_iter].second.num << " dcalls  " << stages[*s_iter].second.total << " bytes" << std::endl;
+          std::cout << "["<<rank<<"]  " << *s_iter << ": " << stages[*s_iter].first.num  << " acalls  " << stages[*s_iter].first.total  << " bytes" << std::endl;
+          std::cout << "["<<rank<<"]  " << *s_iter << ": " << stages[*s_iter].second.num << " dcalls  " << stages[*s_iter].second.total << " bytes" << std::endl;
         }
       }
     };
     void stagePop() {
       if (_debug) {
-        std::cout << "Popping stage " << stageNames.front() << ":" << std::endl;
+        std::cout << "["<<rank<<"]Popping stage " << stageNames.front() << ":" << std::endl;
         for(names::const_iterator s_iter = stageNames.begin(); s_iter != stageNames.end(); ++s_iter) {
-          std::cout << "  " << *s_iter << ": " << stages[*s_iter].first.num  << " acalls  " << stages[*s_iter].first.total  << " bytes" << std::endl;
-          std::cout << "  " << *s_iter << ": " << stages[*s_iter].second.num << " dcalls  " << stages[*s_iter].second.total << " bytes" << std::endl;
+          std::cout << "["<<rank<<"]  " << *s_iter << ": " << stages[*s_iter].first.num  << " acalls  " << stages[*s_iter].first.total  << " bytes" << std::endl;
+          std::cout << "["<<rank<<"]  " << *s_iter << ": " << stages[*s_iter].second.num << " dcalls  " << stages[*s_iter].second.total << " bytes" << std::endl;
         }
       }
       stageNames.pop_front();
