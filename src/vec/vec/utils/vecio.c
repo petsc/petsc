@@ -180,6 +180,8 @@ PetscErrorCode VecLoad_Netcdf(PetscViewer viewer,Vec *newvec)
 }
 #endif
 
+#include "petscmat.h" /* so that MAT_FILE_COOKIE is defined */
+
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoad_Binary"
 PetscErrorCode VecLoad_Binary(PetscViewer viewer, const VecType itype,Vec *newvec)
@@ -211,7 +213,11 @@ PetscErrorCode VecLoad_Binary(PetscViewer viewer, const VecType itype,Vec *newve
   rows = tr[1];
   if (type != VEC_FILE_COOKIE) {
       ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
-      SETERRQ(PETSC_ERR_ARG_WRONG,"Not vector next in file");
+      if (type == MAT_FILE_COOKIE) {
+        SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix is next in file, not a vector as you requested");
+      } else {
+        SETERRQ(PETSC_ERR_ARG_WRONG,"Not a vector next in file");
+      }
   }
   ierr = VecCreate(comm,&vec);CHKERRQ(ierr);
   ierr = VecSetSizes(vec,PETSC_DECIDE,rows);CHKERRQ(ierr);

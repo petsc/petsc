@@ -1686,9 +1686,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCopy(Vec x,Vec y)
   PetscValidHeaderSpecific(y,VEC_COOKIE,2);
   PetscValidType(x,1);
   PetscValidType(y,2);
-  PetscCheckSameComm(x,1,y,2);
   if (x == y) PetscFunctionReturn(0);
-  if (x->map->N != y->map->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (x->map->n != y->map->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PetscLogEventBegin(VEC_Copy,x,y,0,0);CHKERRQ(ierr);
