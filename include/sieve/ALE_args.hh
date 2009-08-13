@@ -129,7 +129,7 @@ namespace ALE {
       return *this;
     };
     //
-    ArgValue operator[](const string& str) const {return super::operator[](str);};
+    ArgValue operator[](const string& str) const {return (ArgValue) super::operator[](str);};
     //
     // Aux
     //
