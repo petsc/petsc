@@ -2498,8 +2498,11 @@ PetscErrorCode MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType fla
   } else if ((flag & SOR_LOCAL_BACKWARD_SWEEP) && (its == 1) && (flag & SOR_ZERO_INITIAL_GUESS)){
     ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,lits,1,xx);CHKERRQ(ierr);
   } else if (flag & SOR_EISENSTAT) {
-    Vec        xx1;
-    PetscTruth hasop;
+    Vec               xx1;
+    PetscTruth        hasop;
+    const PetscScalar *diag;
+    PetscScalar       *sl;
+    PetscInt          i,n;
 
     if (!mat->xx1) {
       ierr = VecDuplicate(bb,&mat->xx1);CHKERRQ(ierr); 
@@ -2519,13 +2522,29 @@ PetscErrorCode MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType fla
 
     if (hasop) {
       ierr = MatMultDiagonalBlock(matin,xx,bb1);CHKERRQ(ierr);
+      ierr = VecAYPX(mat->slvec1a,-1.0,bb);CHKERRQ(ierr);
     } else {
+      /*
+          These two lines are replaced by code that may be a bit faster for a good compiler
       ierr = VecPointwiseMult(mat->slvec1a,mat->diag,xx);CHKERRQ(ierr);
+      ierr = VecAYPX(mat->slvec1a,-1.0,bb);CHKERRQ(ierr);
+      */
+      ierr = VecGetArray(mat->slvec1a,&sl);CHKERRQ(ierr);
+      ierr = VecGetArray(mat->diag,(PetscScalar**)&diag);CHKERRQ(ierr);
+      ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+      ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+      ierr = VecGetLocalSize(xx,&n);CHKERRQ(ierr);
+      for (i=0; i<n; i++) {
+        sl[i] = b[i] - diag[i]*x[i];
+      }
+      ierr = PetscLogFlops(2.0*n);CHKERRQ(ierr);
+      ierr = VecRestoreArray(mat->slvec1a,&sl);CHKERRQ(ierr);
+      ierr = VecRestoreArray(mat->diag,(PetscScalar**)&diag);CHKERRQ(ierr);
+      ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+      ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
     }
-    ierr = VecAYPX(mat->slvec1a,-1.0,bb);CHKERRQ(ierr);
 
     /* multiply off-diagonal portion of matrix */
-    //    ierr = VecCopy(bb1,mat->slvec1a);CHKERRQ(ierr);
     ierr = VecSet(mat->slvec1b,0.0);CHKERRQ(ierr); 
     ierr = (*mat->B->ops->multtranspose)(mat->B,xx,mat->slvec0b);CHKERRQ(ierr);
     ierr = VecGetArray(mat->slvec0,&from);CHKERRQ(ierr);

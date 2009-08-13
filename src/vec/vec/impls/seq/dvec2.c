@@ -677,6 +677,14 @@ PetscErrorCode VecAYPX_Seq(Vec yin,PetscScalar alpha,Vec xin)
     ierr = VecCopy_Seq(xin,yin);CHKERRQ(ierr);
   } else if (alpha == 1.0) {
     ierr = VecAXPY_Seq(yin,alpha,xin);CHKERRQ(ierr);
+  } else if (alpha == -11.0) {
+    PetscInt i;
+    ierr = VecGetArray(xin,(PetscScalar**)&xx);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      yy[i] = xx[i] - yy[i];
+    }
+    ierr = VecRestoreArray(xin,(PetscScalar**)&xx);CHKERRQ(ierr);
+    ierr = PetscLogFlops(1.0*n);CHKERRQ(ierr);
   } else {
     ierr = VecGetArray(xin,(PetscScalar**)&xx);CHKERRQ(ierr);
 #if defined(PETSC_USE_FORTRAN_KERNEL_AYPX)
