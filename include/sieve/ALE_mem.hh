@@ -113,6 +113,14 @@ namespace ALE {
     int getDeallocationTotal() {return getDeallocationTotal(stageNames.front());};
     int getDeallocationTotal(const std::string& stage) {return stages[stage].second.total;};
   public:
+    void show() {
+      std::cout << "["<<rank<<"]Memory Stages:" << std::endl;
+      for(stageLog::const_iterator s_iter = stages.begin(); s_iter != stages.end(); ++s_iter) {
+        std::cout << "["<<rank<<"]  " << s_iter->first << ": " << s_iter->second.first.num  << " acalls  " << s_iter->second.first.total  << " bytes" << std::endl;
+        std::cout << "["<<rank<<"]  " << s_iter->first << ": " << s_iter->second.second.num << " dcalls  " << s_iter->second.second.total << " bytes" << std::endl;
+      }
+    };
+  public:
     template<typename T>
     static const char *getClassName() {
       const std::type_info& id      = typeid(T);
