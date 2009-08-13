@@ -239,7 +239,8 @@ PetscErrorCode MatMult_SeqBAIJ_1(Mat A,Vec xx,Vec zz)
   const PetscScalar *x;
   const MatScalar   *v;
   PetscErrorCode    ierr;
-  PetscInt          mbs,i,*idx,*ii,n,*ridx=PETSC_NULL,nonzerorow=0;
+  PetscInt          mbs,i,n,nonzerorow=0;
+  const PetscInt    *idx,*ii,*ridx=PETSC_NULL;
   PetscTruth        usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -261,7 +262,7 @@ PetscErrorCode MatMult_SeqBAIJ_1(Mat A,Vec xx,Vec zz)
     n    = ii[1] - ii[0]; ii++;
     sum  = 0.0;
     nonzerorow += (n>0);
-    while (n--) sum += *v++ * x[*idx++];
+    PetscSparseDensePlusDot(sum,x,v,idx,n);
     if (usecprow){
       z[ridx[i]] = sum;
     } else {
