@@ -773,6 +773,9 @@ PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
   ierr = PetscFree(baij->rowvalues);CHKERRQ(ierr);
   ierr = PetscFree(baij->barray);CHKERRQ(ierr);
   ierr = PetscFree(baij->hd);CHKERRQ(ierr);
+  if (baij->diag) {ierr = VecDestroy(baij->diag);CHKERRQ(ierr);}
+  if (baij->bb1) {ierr = VecDestroy(baij->bb1);CHKERRQ(ierr);}
+  if (baij->xx1) {ierr = VecDestroy(baij->xx1);CHKERRQ(ierr);}
 #if defined(PETSC_USE_MAT_SINGLE)
   ierr = PetscFree(baij->setvaluescopy);CHKERRQ(ierr);
 #endif
@@ -796,7 +799,7 @@ PetscErrorCode MatMult_MPISBAIJ(Mat A,Vec xx,Vec yy)
   Mat_MPISBAIJ   *a = (Mat_MPISBAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       nt,mbs=a->mbs,bs=A->rmap->bs;
-  PetscScalar    *x,*from,zero=0.0;
+  PetscScalar    *x,*from;
  
   PetscFunctionBegin;
   ierr = VecGetLocalSize(xx,&nt);CHKERRQ(ierr);
@@ -806,7 +809,7 @@ PetscErrorCode MatMult_MPISBAIJ(Mat A,Vec xx,Vec yy)
 
   /* diagonal part */
   ierr = (*a->A->ops->mult)(a->A,xx,a->slvec1a);CHKERRQ(ierr); 
-  ierr = VecSet(a->slvec1b,zero);CHKERRQ(ierr); 
+  ierr = VecSet(a->slvec1b,0.0);CHKERRQ(ierr); 
 
   /* subdiagonal part */  
   ierr = (*a->B->ops->multtranspose)(a->B,xx,a->slvec0b);CHKERRQ(ierr);
@@ -2442,7 +2445,7 @@ PetscErrorCode MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType fla
   Mat_MPISBAIJ   *mat = (Mat_MPISBAIJ*)matin->data;
   PetscErrorCode ierr;
   PetscInt       mbs=mat->mbs,bs=matin->rmap->bs;
-  PetscScalar    *x,*b,*ptr,zero=0.0;
+  PetscScalar    *x,*b,*ptr,*from;
   Vec            bb1;
  
   PetscFunctionBegin;
@@ -2476,7 +2479,7 @@ PetscErrorCode MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType fla
       ierr = VecRestoreArray(mat->slvec1,&ptr);CHKERRQ(ierr);  
 
       /* set slvec1b = 0 */
-      ierr = VecSet(mat->slvec1b,zero);CHKERRQ(ierr); 
+      ierr = VecSet(mat->slvec1b,0.0);CHKERRQ(ierr); 
 
       ierr = VecScatterBegin(mat->sMvctx,mat->slvec0,mat->slvec1,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);  
       ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
@@ -2490,6 +2493,72 @@ PetscErrorCode MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType fla
       ierr = (*mat->A->ops->relax)(mat->A,bb1,omega,SOR_SYMMETRIC_SWEEP,fshift,lits,lits,xx);CHKERRQ(ierr); 
     }
     ierr = VecDestroy(bb1);CHKERRQ(ierr);
+  } else if ((flag & SOR_LOCAL_FORWARD_SWEEP) && (its == 1) && (flag & SOR_ZERO_INITIAL_GUESS)){
+    ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,lits,1,xx);CHKERRQ(ierr);
+  } else if ((flag & SOR_LOCAL_BACKWARD_SWEEP) && (its == 1) && (flag & SOR_ZERO_INITIAL_GUESS)){
+    ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,lits,1,xx);CHKERRQ(ierr);
+  } else if (flag & SOR_EISENSTAT) {
+    Vec               xx1;
+    PetscTruth        hasop;
+    const PetscScalar *diag;
+    PetscScalar       *sl;
+    PetscInt          i,n;
+
+    if (!mat->xx1) {
+      ierr = VecDuplicate(bb,&mat->xx1);CHKERRQ(ierr); 
+      ierr = VecDuplicate(bb,&mat->bb1);CHKERRQ(ierr);
+    }
+    xx1 = mat->xx1;
+    bb1 = mat->bb1;
+
+    ierr = (*mat->A->ops->relax)(mat->A,bb,omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_BACKWARD_SWEEP),fshift,lits,1,xx);CHKERRQ(ierr);
+
+    if (!mat->diag) {
+      /* this is wrong for same matrix with new nonzero values */
+      ierr = MatGetVecs(matin,&mat->diag,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetDiagonal(matin,mat->diag);CHKERRQ(ierr);
+    }
+    ierr = MatHasOperation(matin,MATOP_MULT_DIAGONAL_BLOCK,&hasop);CHKERRQ(ierr);
+
+    if (hasop) {
+      ierr = MatMultDiagonalBlock(matin,xx,bb1);CHKERRQ(ierr);
+      ierr = VecAYPX(mat->slvec1a,-1.0,bb);CHKERRQ(ierr);
+    } else {
+      /*
+          These two lines are replaced by code that may be a bit faster for a good compiler
+      ierr = VecPointwiseMult(mat->slvec1a,mat->diag,xx);CHKERRQ(ierr);
+      ierr = VecAYPX(mat->slvec1a,-1.0,bb);CHKERRQ(ierr);
+      */
+      ierr = VecGetArray(mat->slvec1a,&sl);CHKERRQ(ierr);
+      ierr = VecGetArray(mat->diag,(PetscScalar**)&diag);CHKERRQ(ierr);
+      ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+      ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+      ierr = VecGetLocalSize(xx,&n);CHKERRQ(ierr);
+      for (i=0; i<n; i++) {
+        sl[i] = b[i] - diag[i]*x[i];
+      }
+      ierr = PetscLogFlops(2.0*n);CHKERRQ(ierr);
+      ierr = VecRestoreArray(mat->slvec1a,&sl);CHKERRQ(ierr);
+      ierr = VecRestoreArray(mat->diag,(PetscScalar**)&diag);CHKERRQ(ierr);
+      ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+      ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+    }
+
+    /* multiply off-diagonal portion of matrix */
+    ierr = VecSet(mat->slvec1b,0.0);CHKERRQ(ierr); 
+    ierr = (*mat->B->ops->multtranspose)(mat->B,xx,mat->slvec0b);CHKERRQ(ierr);
+    ierr = VecGetArray(mat->slvec0,&from);CHKERRQ(ierr);
+    ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+    ierr = PetscMemcpy(from,x,bs*mbs*sizeof(MatScalar));CHKERRQ(ierr);
+    ierr = VecRestoreArray(mat->slvec0,&from);CHKERRQ(ierr);  
+    ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+    ierr = VecScatterBegin(mat->sMvctx,mat->slvec0,mat->slvec1,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr); 
+    ierr = VecScatterEnd(mat->sMvctx,mat->slvec0,mat->slvec1,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr); 
+    ierr = (*mat->B->ops->multadd)(mat->B,mat->slvec1b,mat->slvec1a,mat->slvec1a);CHKERRQ(ierr); 
+
+    /* local sweep */
+    ierr = (*mat->A->ops->relax)(mat->A,mat->slvec1a,omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_FORWARD_SWEEP),fshift,lits,1,xx1);CHKERRQ(ierr);
+    ierr = VecAXPY(xx,1.0,xx1);CHKERRQ(ierr);
   } else {
     SETERRQ(PETSC_ERR_SUP,"MatSORType is not supported for SBAIJ matrix format");
   }

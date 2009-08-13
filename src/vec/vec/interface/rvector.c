@@ -632,8 +632,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAYPX(Vec y,PetscScalar alpha,Vec x)
   PetscValidHeaderSpecific(y,VEC_COOKIE,1);
   PetscValidType(x,3);
   PetscValidType(y,1);
-  PetscCheckSameTypeAndComm(x,3,y,1);
-  PetscCheckSameSizeVec(x,y);
 
   ierr = PetscLogEventBegin(VEC_AYPX,x,y,0,0);CHKERRQ(ierr);
   ierr =  (*y->ops->aypx)(y,alpha,x);CHKERRQ(ierr);
@@ -681,8 +679,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecWAXPY(Vec w,PetscScalar alpha,Vec x,Vec y)
   PetscCheckSameTypeAndComm(y,4,w,1);
   PetscCheckSameSizeVec(x,y);
   PetscCheckSameSizeVec(x,w);
-  if (w == y) SETERRQ(PETSC_ERR_SUP,"Result vector w cannot be same as input vector y");
-  if (w == x) SETERRQ(PETSC_ERR_SUP,"Result vector w cannot be same as input vector x");
+  if (w == y) SETERRQ(PETSC_ERR_SUP,"Result vector w cannot be same as input vector y, suggest VecAXPY()");
+  if (w == x) SETERRQ(PETSC_ERR_SUP,"Result vector w cannot be same as input vector x, suggest VecAYPX()");
 
   ierr = PetscLogEventBegin(VEC_WAXPY,x,y,w,0);CHKERRQ(ierr);
   ierr =  (*w->ops->waxpy)(w,alpha,x,y);CHKERRQ(ierr);
