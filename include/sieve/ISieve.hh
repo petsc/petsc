@@ -970,7 +970,7 @@ namespace ALE {
         int               _pos;
       public:
         const_iterator(const point_type data[], const int pos) : _data(data), _pos(pos) {};
-        ~const_iterator() {};
+        virtual ~const_iterator() {};
       public:
         virtual bool              operator==(const const_iterator& iter) const {return this->_pos == iter._pos;};
         virtual bool              operator!=(const const_iterator& iter) const {return this->_pos != iter._pos;};
