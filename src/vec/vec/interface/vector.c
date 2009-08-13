@@ -1200,7 +1200,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMult(Vec w, Vec x,Vec y)
   PetscValidType(y,3);
   PetscCheckSameTypeAndComm(x,2,y,3);
   PetscCheckSameTypeAndComm(y,3,w,1);
-  if (x->map->N != y->map->N || x->map->N != w->map->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (x->map->n != y->map->n || x->map->n != w->map->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PetscLogEventBegin(VEC_PointwiseMult,x,y,w,0);CHKERRQ(ierr);

@@ -632,8 +632,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAYPX(Vec y,PetscScalar alpha,Vec x)
   PetscValidHeaderSpecific(y,VEC_COOKIE,1);
   PetscValidType(x,3);
   PetscValidType(y,1);
-  PetscCheckSameTypeAndComm(x,3,y,1);
-  PetscCheckSameSizeVec(x,y);
 
   ierr = PetscLogEventBegin(VEC_AYPX,x,y,0,0);CHKERRQ(ierr);
   ierr =  (*y->ops->aypx)(y,alpha,x);CHKERRQ(ierr);

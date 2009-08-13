@@ -2511,6 +2511,7 @@ PetscErrorCode MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType fla
     ierr = (*mat->A->ops->relax)(mat->A,bb,omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_BACKWARD_SWEEP),fshift,lits,1,xx);CHKERRQ(ierr);
 
     if (!mat->diag) {
+      /* this is wrong for same matrix with new nonzero values */
       ierr = MatGetVecs(matin,&mat->diag,PETSC_NULL);CHKERRQ(ierr);
       ierr = MatGetDiagonal(matin,mat->diag);CHKERRQ(ierr);
     }
@@ -2519,12 +2520,12 @@ PetscErrorCode MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType fla
     if (hasop) {
       ierr = MatMultDiagonalBlock(matin,xx,bb1);CHKERRQ(ierr);
     } else {
-      ierr = VecPointwiseMult(bb1,mat->diag,xx);CHKERRQ(ierr);
+      ierr = VecPointwiseMult(mat->slvec1a,mat->diag,xx);CHKERRQ(ierr);
     }
-    ierr = VecAYPX(bb1,-1.0,bb);CHKERRQ(ierr);
+    ierr = VecAYPX(mat->slvec1a,-1.0,bb);CHKERRQ(ierr);
 
     /* multiply off-diagonal portion of matrix */
-    ierr = VecCopy(bb1,mat->slvec1a);CHKERRQ(ierr);
+    //    ierr = VecCopy(bb1,mat->slvec1a);CHKERRQ(ierr);
     ierr = VecSet(mat->slvec1b,0.0);CHKERRQ(ierr); 
     ierr = (*mat->B->ops->multtranspose)(mat->B,xx,mat->slvec0b);CHKERRQ(ierr);
     ierr = VecGetArray(mat->slvec0,&from);CHKERRQ(ierr);
@@ -2534,10 +2535,10 @@ PetscErrorCode MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType fla
     ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
     ierr = VecScatterBegin(mat->sMvctx,mat->slvec0,mat->slvec1,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr); 
     ierr = VecScatterEnd(mat->sMvctx,mat->slvec0,mat->slvec1,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr); 
-    ierr = (*mat->B->ops->multadd)(mat->B,mat->slvec1b,mat->slvec1a,bb1);CHKERRQ(ierr); 
+    ierr = (*mat->B->ops->multadd)(mat->B,mat->slvec1b,mat->slvec1a,mat->slvec1a);CHKERRQ(ierr); 
 
     /* local sweep */
-    ierr = (*mat->A->ops->relax)(mat->A,bb1,omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_FORWARD_SWEEP),fshift,lits,1,xx1);CHKERRQ(ierr);
+    ierr = (*mat->A->ops->relax)(mat->A,mat->slvec1a,omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_FORWARD_SWEEP),fshift,lits,1,xx1);CHKERRQ(ierr);
     ierr = VecAXPY(xx,1.0,xx1);CHKERRQ(ierr);
   } else {
     SETERRQ(PETSC_ERR_SUP,"MatSORType is not supported for SBAIJ matrix format");
