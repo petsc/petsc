@@ -44,6 +44,7 @@ class Configure(config.base.Configure):
 
   def configureLibraryOptions(self):
     '''Sets PETSC_USE_DEBUG, PETSC_USE_INFO, PETSC_USE_LOG, PETSC_USE_CTABLE and PETSC_USE_FORTRAN_KERNELS'''
+    '''Also sets PETSC_AssertAlignx() in Fortran and PETSC_Alignx() in C for IBM BG/P compiler '''
     self.useLog   = self.framework.argDB['with-log']
     self.addDefine('USE_LOG',   self.useLog)
 
@@ -68,6 +69,11 @@ class Configure(config.base.Configure):
       else:
         self.addDefine('AssertAlignx(a,b)','  ')
       
+    if self.isBGL():
+      self.addDefine('Alignx(a,b)','__alignx(a,b)')
+    else:
+      self.addDefine('Alignx(a,b)','  ')
+
     if self.framework.argDB['with-64-bit-indices']:
       self.integerSize = 64
       self.addDefine('USE_64BIT_INDICES', 1)
