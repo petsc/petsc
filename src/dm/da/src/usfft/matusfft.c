@@ -150,7 +150,7 @@ PetscErrorCode MatDestroy_SeqUSFFT(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateSeqUSFFT"
-/*@
+/*@C
       MatCreateSeqUSFFT - Creates a matrix object that provides sequential USFFT
   via the external package FFTW
 
