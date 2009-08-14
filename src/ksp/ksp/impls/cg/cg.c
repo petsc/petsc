@@ -199,7 +199,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
      }
      betaold = beta;
      ierr = KSP_MatMult(ksp,Amat,P,Z);CHKERRQ(ierr);          /*     z <- Kp         */
-     ierr = VecXDot(P,Z,&dpi);CHKERRQ(ierr);      /*     dpi <- z'p      */
+     ierr = VecXDot(P,Z,&dpi);CHKERRQ(ierr);      /*     dpi <- p'z      */
      if PetscIsInfOrNanScalar(dpi) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
 
      if (PetscRealPart(dpi) <= 0.0) {

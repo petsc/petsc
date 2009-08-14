@@ -5156,6 +5156,9 @@ EXTERN_C_END
  
        See MatCreateMPIAIJ() for the definition of "diagonal" and "off-diagonal" portion of the matrix
 
+       This sets local rows and cannot be used to set off-processor values. 
+
+       You cannot later use MatSetValues() to change values in this matrix.
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 

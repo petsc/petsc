@@ -252,7 +252,7 @@ class Configure(config.base.Configure):
     elif self.checkLink('', 'void *v = 0;__builtin_prefetch(v,0,0);\n'):
       self.addDefine('Prefetch(a,b,c)', '__builtin_prefetch(a,b,c)')
     else:
-      self.addDefine('Prefetch(a,b,c)', '')
+      self.addDefine('Prefetch(a,b,c)', ' ')
       
   def configureInline(self):
     '''Get a generic inline keyword, depending on the language'''
