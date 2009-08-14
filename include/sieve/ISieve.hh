@@ -989,7 +989,7 @@ namespace ALE {
       int               _end;
     public:
       Sequence(const point_type data[], const int begin, const int end) : _data(data), _begin(begin), _end(end) {};
-      ~Sequence() {};
+      virtual ~Sequence() {};
     public:
       virtual iterator begin() const {return iterator(_data, _begin);};
       virtual iterator end()   const {return iterator(_data, _end);};
