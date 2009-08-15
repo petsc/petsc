@@ -247,8 +247,6 @@ PetscErrorCode MatMult_SeqBAIJ_1(Mat A,Vec xx,Vec zz)
   ierr = VecGetArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
-  idx = a->j;
-  v   = a->a;
   if (usecprow){
     mbs  = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
@@ -259,7 +257,10 @@ PetscErrorCode MatMult_SeqBAIJ_1(Mat A,Vec xx,Vec zz)
   }
 
   for (i=0; i<mbs; i++) {
-    n    = ii[1] - ii[0]; ii++;
+    n    = ii[1] - ii[0]; 
+    v    = a->a + ii[0];
+    idx  = a->j + ii[0]; 
+    ii++;
     sum  = 0.0;
     nonzerorow += (n>0);
     PetscSparseDensePlusDot(sum,x,v,idx,n);
