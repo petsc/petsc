@@ -289,7 +289,7 @@ cdef int initialize(object args) except -1:
     # register finalization function
     if Py_AtExit(finalize) < 0:
         PySys_WriteStderr("warning: could not register"
-                          "PetscFinalize() with Py_AtExit()")
+                          "PetscFinalize() with Py_AtExit()", 0)
     return 1 # and we are done, enjoy !!
 
 cdef extern from *:
