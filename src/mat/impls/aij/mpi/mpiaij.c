@@ -2803,7 +2803,7 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer, const MatType type,Mat *newmat
   MPI_Status     status;
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag,mpicnt,mpimaxnz;
-  PetscInt       i,nz,j,rstart,rend,mmax,maxnz;
+  PetscInt       i,nz,j,rstart,rend,mmax,maxnz = 0;
   PetscInt       header[4],*rowlengths = 0,M,N,m,*cols;
   PetscInt       *ourlens = PETSC_NULL,*procsnz = PETSC_NULL,*offlens = PETSC_NULL,jj,*mycols,*smycols;
   PetscInt       cend,cstart,n,*rowners;
