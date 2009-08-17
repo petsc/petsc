@@ -43,6 +43,35 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCGSetType(KSP ksp,KSPCGType type)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "KSPCGUseSingleReduction" 
+/*@
+    KSPCGUseSingleReduction - Merge the two inner products needed in CG into a single 
+     MPI_Allreduce() call.
+
+    Collective on KSP
+
+    Input Parameters:
++   ksp - the iterative context
+-   flg - turn on or off the single reduction
+
+    Level: intermediate
+    
+.keywords: CG, conjugate gradient, Hermitian, symmetric, set, type
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPCGUseSingleReduction(KSP ksp,PetscTruth flg)
+{
+  PetscErrorCode ierr,(*f)(KSP,PetscTruth);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPCGUseSingleReduction_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ksp,flg);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 
 
 

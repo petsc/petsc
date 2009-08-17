@@ -25,6 +25,8 @@ typedef struct {
   PetscScalar emin,emax;           /* eigenvalues */
   PetscScalar *e,*d;
   PetscReal   *ee,*dd;             /* work space for Lanczos algorithm */
+
+  PetscTruth  singlereduction;        /* use variant of CG that combines both inner products */ 
 } KSP_CG;
 
 #endif
