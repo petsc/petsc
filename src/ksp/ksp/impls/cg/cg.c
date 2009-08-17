@@ -208,15 +208,15 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
        ierr = VecAYPX(P,b,Z);CHKERRQ(ierr);    /*     p <- z + b* p   */
      }
      dpiold = dpi;
-     if (!cg->singlereduction) {
+     if (1/*!cg->singlereduction || !i*/) {
        ierr = KSP_MatMult(ksp,Amat,P,Z);CHKERRQ(ierr);          /*     z <- Kp         */
        ierr = VecXDot(P,Z,&dpi);CHKERRQ(ierr);      /*     dpi <- p'z      */
-     } else {
-       ierr = VecAYPX(Z,beta/betaold,S);CHKERRQ(ierr);
-       dpi = delta - beta*beta/(betaold*betaold)*dpiold;
-     }
+     } /* else { 
+	  ierr = VecAYPX(Z,beta/betaold,S);CHKERRQ(ierr); */
+     dpitmp = delta - beta*beta*dpiold/(betaold*betaold);
+       /* }*/
      betaold = beta;
-     printf("dpi-dpitmp %g dpi %g dpitmp %g\n",dpi-dpitmp,dpi,dpitmp);
+     printf("%d dpi-dpitmp %g dpi %g dpitmp %g\n",i,dpi-dpitmp,dpi,dpitmp);
      if PetscIsInfOrNanScalar(dpi) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
 
      if (PetscRealPart(dpi) <= 0.0) {
