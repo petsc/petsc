@@ -72,7 +72,7 @@ PetscErrorCode KSPSetUp_CG(KSP ksp)
   }
 
   /* get work vectors needed by CG */
-  if (cgP->singlereduction) nwork++;
+  if (cgP->singlereduction) nwork += 2;
   ierr = KSPDefaultGetWork(ksp,nwork);CHKERRQ(ierr);
 
   /*
@@ -109,7 +109,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
   PetscInt       i,stored_max_it,eigs;
   PetscScalar    dpi,a = 1.0,beta,betaold = 1.0,b = 0,*e = 0,*d = 0,delta,dpiold,dpitmp;
   PetscReal      dp = 0.0;
-  Vec            X,B,Z,R,P,S;
+  Vec            X,B,Z,R,P,S,W;
   KSP_CG         *cg;
   Mat            Amat,Pmat;
   MatStructure   pflag;
@@ -127,7 +127,12 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
   R             = ksp->work[0];
   Z             = ksp->work[1];
   P             = ksp->work[2];
-  S             = ksp->work[3];    /* used only with singlereduction operation */
+  if (cg->singlereduction) {
+    S           = ksp->work[3]; 
+    W           = ksp->work[4];
+  } else {
+    W           = Z;
+  } 
 
 #if !defined(PETSC_USE_COMPLEX)
 #define VecXDot(x,y,a) VecDot(x,y,a)
@@ -208,13 +213,14 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
        ierr = VecAYPX(P,b,Z);CHKERRQ(ierr);    /*     p <- z + b* p   */
      }
      dpiold = dpi;
-     if (1/*!cg->singlereduction || !i*/) {
-       ierr = KSP_MatMult(ksp,Amat,P,Z);CHKERRQ(ierr);          /*     z <- Kp         */
-       ierr = VecXDot(P,Z,&dpi);CHKERRQ(ierr);      /*     dpi <- p'z      */
-     } /* else { 
-	  ierr = VecAYPX(Z,beta/betaold,S);CHKERRQ(ierr); */
-     dpitmp = delta - beta*beta*dpiold/(betaold*betaold);
-       /* }*/
+     if (!cg->singlereduction || !i) {
+       ierr = KSP_MatMult(ksp,Amat,P,W);CHKERRQ(ierr);          /*     w <- Kp         */
+       ierr = VecXDot(P,W,&dpi);CHKERRQ(ierr);      /*     dpi <- p'w     */
+     } else { 
+	ierr = VecAYPX(W,beta/betaold,S);CHKERRQ(ierr); 
+	/*  ierr = KSP_MatMult(ksp,Amat,P,W);CHKERRQ(ierr);*/          /*     w <- Kp         */
+        dpi = delta - beta*beta*dpiold/(betaold*betaold);
+     }
      betaold = beta;
      printf("%d dpi-dpitmp %g dpi %g dpitmp %g\n",i,dpi-dpitmp,dpi,dpitmp);
      if PetscIsInfOrNanScalar(dpi) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
@@ -224,12 +230,12 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
        ierr = PetscInfo(ksp,"diverging due to indefinite or negative definite matrix\n");CHKERRQ(ierr);
        break;
      }
-     a = beta/dpi;                                 /*     a = beta/p'z    */
+     a = beta/dpi;                                 /*     a = beta/p'w   */
      if (eigs) {
        d[i] = sqrt(PetscAbsScalar(b))*e[i] + 1.0/a;
      }
      ierr = VecAXPY(X,a,P);CHKERRQ(ierr);          /*     x <- x + ap     */
-     ierr = VecAXPY(R,-a,Z);CHKERRQ(ierr);                      /*     r <- r - az     */
+     ierr = VecAXPY(R,-a,W);CHKERRQ(ierr);                      /*     r <- r - aw    */
      if (ksp->normtype == KSP_NORM_PRECONDITIONED && ksp->chknorm < i+2) {
        ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*     z <- Br         */
        if (cg->singlereduction) {
