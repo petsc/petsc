@@ -107,7 +107,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i,stored_max_it,eigs;
-  PetscScalar    dpi,a = 1.0,beta,betaold = 1.0,b = 0,*e = 0,*d = 0,delta,dpiold,dpitmp;
+  PetscScalar    dpi,a = 1.0,beta,betaold = 1.0,b = 0,*e = 0,*d = 0,delta,dpiold;
   PetscReal      dp = 0.0;
   Vec            X,B,Z,R,P,S,W;
   KSP_CG         *cg;
@@ -217,12 +217,10 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
        ierr = KSP_MatMult(ksp,Amat,P,W);CHKERRQ(ierr);          /*     w <- Kp         */
        ierr = VecXDot(P,W,&dpi);CHKERRQ(ierr);      /*     dpi <- p'w     */
      } else { 
-	ierr = VecAYPX(W,beta/betaold,S);CHKERRQ(ierr); 
-	/*  ierr = KSP_MatMult(ksp,Amat,P,W);CHKERRQ(ierr);*/          /*     w <- Kp         */
-        dpi = delta - beta*beta*dpiold/(betaold*betaold);
+	ierr = VecAYPX(W,beta/betaold,S);CHKERRQ(ierr);                  /*     w <- Kp         */
+        dpi = delta - beta*beta*dpiold/(betaold*betaold);              /*     dpi <- p'w     */
      }
      betaold = beta;
-     printf("%d dpi-dpitmp %g dpi %g dpitmp %g\n",i,dpi-dpitmp,dpi,dpitmp);
      if PetscIsInfOrNanScalar(dpi) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
 
      if (PetscRealPart(dpi) <= 0.0) {
@@ -240,7 +238,6 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
        ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*     z <- Br         */
        if (cg->singlereduction) {
          ierr = KSP_MatMult(ksp,Amat,Z,S);CHKERRQ(ierr);  
-         ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);
        }
        ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- z'*z       */
      } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED && ksp->chknorm < i+2) {
@@ -267,10 +264,12 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
        ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);                   /*     z <- Br         */ 
        if (cg->singlereduction) {
          ierr = KSP_MatMult(ksp,Amat,Z,S);CHKERRQ(ierr);  
-         ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);
        }
      }
      if ((ksp->normtype != KSP_NORM_NATURAL) || (ksp->chknorm >= i+2)){
+       if (cg->singlereduction) {
+         ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);
+       }
        ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);        /*  beta <- z'*r       */
        if PetscIsInfOrNanScalar(beta) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
      }
