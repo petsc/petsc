@@ -94,8 +94,9 @@ PetscErrorCode KSPSetUp_CG(KSP ksp)
 }
 
 /*
-       KSPSolve_CG - This routine actually applies the conjugate gradient 
-    method
+       KSPSolve_CG - This routine actually applies the conjugate gradient  method
+
+   This routine is MUCH too messy. I has two many options (norm type and single reduction) embedded making the code confusing and likely to be buggy.
 
    Input Parameter:
 .     ksp - the Krylov space object that was set to use conjugate gradient, by, for 
@@ -215,7 +216,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
      dpiold = dpi;
      if (!cg->singlereduction || !i) {
        ierr = KSP_MatMult(ksp,Amat,P,W);CHKERRQ(ierr);          /*     w <- Kp         */
-       ierr = VecXDot(P,W,&dpi);CHKERRQ(ierr);      /*     dpi <- p'w     */
+       ierr = VecXDot(P,W,&dpi);CHKERRQ(ierr);                  /*     dpi <- p'w     */
      } else { 
 	ierr = VecAYPX(W,beta/betaold,S);CHKERRQ(ierr);                  /*     w <- Kp         */
         dpi = delta - beta*beta*dpiold/(betaold*betaold);              /*     dpi <- p'w     */
@@ -245,10 +246,17 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
      } else if (ksp->normtype == KSP_NORM_NATURAL) {
        ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*     z <- Br         */
        if (cg->singlereduction) {
+         PetscScalar tmp[2];
+         Vec         vecs[2];
+         vecs[0] = S; vecs[1] = R;
          ierr = KSP_MatMult(ksp,Amat,Z,S);CHKERRQ(ierr);  
-         ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);
+         /*ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);
+	   ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr); */    /*  beta <- r'*z       */
+         ierr = VecMDot(Z,2,vecs,tmp);CHKERRQ(ierr);
+         delta = tmp[0]; beta = tmp[1];
+       } else {
+         ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);     /*  beta <- r'*z       */
        }
-       ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);     /*  beta <- r'*z       */
        if PetscIsInfOrNanScalar(beta) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
        dp = sqrt(PetscAbsScalar(beta));
      } else {
@@ -268,9 +276,16 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
      }
      if ((ksp->normtype != KSP_NORM_NATURAL) || (ksp->chknorm >= i+2)){
        if (cg->singlereduction) {
-         ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);
+         PetscScalar tmp[2];
+         Vec         vecs[2];
+         vecs[0] = S; vecs[1] = R;
+	 /* ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);   */     /*  beta <- z'*r       */
+         /* ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);*/
+         ierr = VecMDot(Z,2,vecs,tmp);CHKERRQ(ierr);
+         delta = tmp[0]; beta = tmp[1];
+       } else {
+	 ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);        /*  beta <- z'*r       */
        }
-       ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);        /*  beta <- z'*r       */
        if PetscIsInfOrNanScalar(beta) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
      }
 
@@ -399,7 +414,8 @@ EXTERN_C_END
 
    Options Database Keys:
 +   -ksp_cg_type Hermitian - (for complex matrices only) indicates the matrix is Hermitian
--   -ksp_cg_type symmetric - (for complex matrices only) indicates the matrix is symmetric
+.   -ksp_cg_type symmetric - (for complex matrices only) indicates the matrix is symmetric
+-   -ksp_cg_single_reduction - performs both inner products needed in the algorithm with a single MPI_Allreduce() call, see KSPCGUseSingleReduction()
 
    Level: beginner
 
@@ -412,7 +428,7 @@ EXTERN_C_END
    pp. 409--436.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
-           KSPCGSetType()
+           KSPCGSetType(), KSPCGUseSingleReduction()
 
 M*/
 EXTERN_C_BEGIN

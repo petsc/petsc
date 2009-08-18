@@ -55,7 +55,16 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCGSetType(KSP ksp,KSPCGType type)
 +   ksp - the iterative context
 -   flg - turn on or off the single reduction
 
+    Options Database:
+.   -ksp_cg_single_reduction 
+
     Level: intermediate
+
+     The algorithm used in this case is described as Method 1 in Lapack Working Note 56, "Conjugate Gradient Algorithms with Reduced Synchronization Overhead 
+     Distributed Memory Multiprocessors", by E. F. D'Azevedo, V. L. Eijkhout, and C. H. Romine, December 3, 1999. V. Eijkhout creates the algorithm 
+     initially to Chronopoulos and Gear.
+
+     It requires two extra work vectors than the conventional implementation in PETSc. 
     
 .keywords: CG, conjugate gradient, Hermitian, symmetric, set, type
 @*/
