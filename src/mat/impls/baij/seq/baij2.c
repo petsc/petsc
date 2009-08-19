@@ -251,6 +251,7 @@ PetscErrorCode MatMult_SeqBAIJ_1(Mat A,Vec xx,Vec zz)
     mbs  = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
     ridx = a->compressedrow.rindex;
+    ierr = PetscMemzero(z,mbs*sizeof(PetscScalar));CHKERRQ(ierr);
   } else {
     mbs = a->mbs;
     ii  = a->i;

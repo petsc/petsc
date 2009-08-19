@@ -667,6 +667,16 @@ runex10_ILUBAIJ: # test ilu fill greater than zero
 	   if (${DIFF} output/ex10_ILU.out ex10_20.tmp) then true; \
 	   else echo "Possible problem with ex10_ILU, diffs above"; fi; \
 	   ${RM} -f ex10_20.tmp
+runex10_cg:
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -matload_type mpisbaij -ksp_type cg -pc_type eisenstat -ksp_monitor_short -ksp_converged_reason > ex10_20.tmp 2>&1; \
+	   if (${DIFF} output/ex10_cg_singlereduction.out ex10_20.tmp) then true; \
+	   else echo "Possible problem with ex10_cg, diffs above"; fi; \
+	   ${RM} -f ex10_20.tmp
+runex10_cg_singlereduction:
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -matload_type mpisbaij -ksp_type cg -pc_type eisenstat -ksp_monitor_short -ksp_converged_reason -ksp_cg_single_reduction > ex10_20.tmp 2>&1; \
+	   if (${DIFF} output/ex10_cg_singlereduction.out ex10_20.tmp) then true; \
+	   else echo "Possible problem with ex10_cg_singlereduction, diffs above"; fi; \
+	   ${RM} -f ex10_20.tmp
 runex11:
 	-@${MPIEXEC} -n 1 ./ex11 -n 6 -norandom -pc_type none -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex11_1.tmp 2>&1; \
 	   if (${DIFF} output/ex11_1.out ex11_1.tmp) then true; \
@@ -845,7 +855,8 @@ TESTEXAMPLES_C_X11_MPIUNI      = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.P
                                  ex23.PETSc runex23 ex23.rm
 TESTEXAMPLES_C_COMPLEX	       = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm ex39.PETSc runex39 ex39.rm ex40.PETSc runex40 ex40.rm
 TESTEXAMPLES_DATAFILESPATH     = ex10.PETSc runex10_2 runex10_3 runex10_4 runex10_5 runex10_6 runex10_7 runex10_8 \
-                                 runex10_9 runex10_10 runex10_19 runex10_20 runex10_22 runex10_23 runex10_24 runex10_25  runex10_ILU runex10_ILUBAIJ ex10.rm 
+                                 runex10_9 runex10_10 runex10_19 runex10_20 runex10_22 runex10_23 runex10_24 runex10_25  runex10_ILU runex10_ILUBAIJ runex10_cg \
+                                 runex10_cg_single_reduction ex10.rm 
 # even though ex10.c is a C example to run with -mat_type lusol requires a Fortran compiler, hence
 # we list it with the fortran examples
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = 
