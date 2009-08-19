@@ -3010,8 +3010,6 @@ EXTERN_C_END
 .  j - the column indices for each row (starts with zero) these must be sorted for each row
 -  v - optional values in the matrix
 
-   Contributed by: Lisandro Dalchin
-
    Level: developer
 
    The i,j,v values are COPIED with this routine; to avoid the copy use MatCreateSeqAIJWithArrays()

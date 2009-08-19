@@ -1500,8 +1500,6 @@ PetscErrorCode PETSCTS_DLLEXPORT TSMonitorLGDestroy(PetscDrawLG drawlg)
    Output Parameter:
 .  t  - the current time
 
-   Contributed by: Matthew Knepley
-
    Level: beginner
 
 .seealso: TSSetInitialTimeStep(), TSGetTimeStep()
@@ -1559,8 +1557,6 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetTime(TS ts, PetscReal t)
    The first character of all runtime options is AUTOMATICALLY the
    hyphen.
 
-   Contributed by: Matthew Knepley
-
    Level: advanced
 
 .keywords: TS, set, options, prefix, database
@@ -1608,8 +1604,6 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetOptionsPrefix(TS ts,const char prefix[])
    The first character of all runtime options is AUTOMATICALLY the
    hyphen.
 
-   Contributed by: Matthew Knepley
-
    Level: advanced
 
 .keywords: TS, append, options, prefix, database
@@ -1652,8 +1646,6 @@ PetscErrorCode PETSCTS_DLLEXPORT TSAppendOptionsPrefix(TS ts,const char prefix[]
 
    Output Parameter:
 .  prefix - A pointer to the prefix string used
-
-   Contributed by: Matthew Knepley
 
    Notes: On the fortran side, the user should pass in a string 'prifix' of
    sufficient length to hold the prefix.

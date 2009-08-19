@@ -320,8 +320,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedPrintf(MPI_Comm comm,const char 
     REQUIRES a intervening call to PetscSynchronizedFlush() for the information 
     from all the processors to be printed.
 
-    Contributed by: Matthew Knepley
-
 .seealso: PetscSynchronizedPrintf(), PetscSynchronizedFlush(), PetscFPrintf(),
           PetscFOpen(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIPrintf()
 
