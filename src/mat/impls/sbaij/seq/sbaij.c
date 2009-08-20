@@ -2387,6 +2387,22 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
   t = a->relax_work;
 
   aidiag = a->idiag;
+
+  if (flag == SOR_APPLY_UPPER) {
+    /* apply (U + D/omega) to the vector */
+    PetscScalar d;
+    for (i=0; i<m; i++) {
+      d    = fshift + aa[ai[i]];
+      nz   = ai[i+1] - ai[i] - 1;
+      vj   = aj + ai[i] + 1;
+      v    = aa + ai[i] + 1;
+      sum  = b[i]*d/omega;
+      PetscSparseDensePlusDot(sum,b,v,vj,nz); 
+      x[i] = sum;
+    }
+    ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
+  }
+
   if (flag & SOR_ZERO_INITIAL_GUESS) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){ 
       ierr = PetscMemcpy(t,b,m*sizeof(PetscScalar));CHKERRQ(ierr);

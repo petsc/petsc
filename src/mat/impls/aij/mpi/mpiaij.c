@@ -1218,6 +1218,11 @@ PetscErrorCode MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
     ierr = VecDuplicate(bb,&bb1);CHKERRQ(ierr);
   }
 
+  if (flag == SOR_APPLY_UPPER) {
+    ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,lits,1,xx);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
   if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP){
     if (flag & SOR_ZERO_INITIAL_GUESS) {
       ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,lits,1,xx);CHKERRQ(ierr);
