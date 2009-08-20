@@ -32,7 +32,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DMFinalizePackage(void) {
 }
 
 #if defined(PETSC_HAVE_HYPRE)
+EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_HYPREStruct(Mat);
+EXTERN_C_END
 #endif
 
 #undef __FUNCT__  
