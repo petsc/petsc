@@ -148,7 +148,7 @@ int main(int argc,char **argv)
   ierr = TSSetDuration(ts,time_steps,1);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,global);CHKERRQ(ierr);
   
-  /* Test TSSetPostStep() and TSSetPostUpdate() */
+  /* Test TSSetPostStep() */
   ierr = PetscOptionsHasName(PETSC_NULL,"-test_PostStep",&flg);CHKERRQ(ierr);
   if (flg){
     ierr = TSSetPostStep(ts,PostStep);CHKERRQ(ierr);
@@ -159,6 +159,7 @@ int main(int argc,char **argv)
 #if defined(PETSC_HAVE_SUNDIALS)
   ierr = TSSundialsGetPC(ts,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
+  ierr = TSSundialsSetExactFinalTime(ts,PETSC_TRUE);CHKERRQ(ierr);
 #endif
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
@@ -253,13 +254,17 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
 {
   VecScatter     scatter;
   IS             from,to;
-  PetscInt       i,n,*idx,nsteps;
+  PetscInt       i,n,*idx,nsteps,maxsteps;
   Vec            tmp_vec;
   PetscErrorCode ierr;
   PetscScalar    *tmp;
+  PetscReal      maxtime;
   
   PetscFunctionBegin;
   ierr = TSGetTimeStepNumber(ts,&nsteps);CHKERRQ(ierr);
+  /* display output at selected time steps */
+  ierr = TSGetDuration(ts, &maxsteps, &maxtime);CHKERRQ(ierr);
+  if (nsteps % 10 != 0 && time < maxtime) PetscFunctionReturn(0);
 
   /* Get the size of the vector */
   ierr = VecGetSize(global,&n);CHKERRQ(ierr);
@@ -492,4 +497,3 @@ PetscErrorCode PostStep(TS ts)
   ierr = PetscPrintf(PETSC_COMM_SELF,"  PostStep, t: %g\n",t);
   PetscFunctionReturn(0);
 }
-

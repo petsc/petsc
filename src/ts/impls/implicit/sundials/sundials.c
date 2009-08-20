@@ -4,7 +4,8 @@
     Provides a PETSc interface to SUNDIALS/CVODE solver.
     The interface to PVODE (old version of CVODE) was originally contributed 
     by Liyang Xu. It has been redone by Hong Zhang and Dinesh Kaushik.
-    Reference: sundials-2.3.0/examples/cvode/parallel/cvkryx_p.c
+
+    Reference: sundials-2.4.0/examples/cvode/parallel/cvDiurnal_kry_p.c
 */
 #include "sundials.h"  /*I "petscts.h" I*/
 
@@ -147,24 +148,32 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
   PetscTruth     pcnone;
 
   PetscFunctionBegin;
-  /* Call CVodeCreate to create the solver memory */
+  /* Call CVodeCreate to create the solver memory and the use of a Newton iteration */
   mem = CVodeCreate(cvode->cvode_type, CV_NEWTON); 
-  if (!mem) SETERRQ(1,"CVodeCreate() fails");
-  flag = CVodeSetFdata(mem,ts);
-  if (flag) SETERRQ(1,"CVodeSetFdata() fails");
+  if (!mem) SETERRQ(PETSC_ERR_MEM,"CVodeCreate() fails");
 
-  /* 
-     Call CVodeMalloc to initialize the integrator memory: 
-     mem is the pointer to the integrator memory returned by CVodeCreate
-     f       is the user's right hand side function in y'=f(t,y)
-     T0      is the initial time
-     u       is the initial dependent variable vector
-     CV_SS   specifies scalar relative and absolute tolerances
-     reltol  is the relative tolerance
-     &abstol is a pointer to the scalar absolute tolerance
+  /* Set the pointer to user-defined data */
+  flag = CVodeSetUserData(mem, ts);
+  if (flag) SETERRQ(PETSC_ERR_ARG_BADPTR,"CVodeSetUserData() fails");
+
+  /* Call CVodeInit to initialize the integrator memory and specify the
+   * user's right hand side function in u'=f(t,u), the inital time T0, and
+   * the initial dependent variable vector cvode->y */
+  flag = CVodeInit(mem,TSFunction_Sundials,ts->ptime,cvode->y);
+  if (flag){
+    SETERRQ1(1,"CVodeInit() fails, flag %d",flag);
+  }
+
+  flag = CVodeSStolerances(mem,cvode->reltol,cvode->abstol);
+  if (flag){
+    SETERRQ1(1,"CVodeSStolerances() fails, flag %d",flag);
+  }
+  /* add this call when there is a request
+  flag = CVodeSVtolerances(mem,cvode->reltol,cvode->abstol);
+  if (flag){
+    SETERRQ1(1,"CVodeSVtolerances() fails, flag %d",flag);
+  }
   */
-  flag = CVodeMalloc(mem,TSFunction_Sundials,ts->ptime,cvode->y,CV_SS,cvode->reltol,&cvode->abstol);
-  if (flag) SETERRQ(1,"CVodeMalloc() fails");
 
   /* initialize the number of steps */
   *steps = -ts->steps;
@@ -179,15 +188,15 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
   } else {
     flag  = CVSpgmr(mem,PREC_LEFT,0);
   }
-  if (flag) SETERRQ(1,"CVSpgmr() fails");
+  if (flag) SETERRQ1(1,"CVSpgmr() fails, flag %d",flag);
  
   /* Set preconditioner setup and solve routines Precond and PSolve, 
      and the pointer to the user-defined block data */
-  flag = CVSpilsSetPreconditioner(mem,TSPrecond_Sundials,TSPSolve_Sundials,ts);
-  if (flag) SETERRQ(1,"CVSpgmrSetPreconditioner() fails");
+  flag = CVSpilsSetPreconditioner(mem,TSPrecond_Sundials,TSPSolve_Sundials);
+  if (flag) SETERRQ1(1,"CVSpilsSetPreconditioner() fails, flag %d", flag);
 
   flag = CVSpilsSetGSType(mem, MODIFIED_GS);
-  if (flag) SETERRQ(1,"CVSpgmrSetGSType() fails");
+  if (flag) SETERRQ1(1,"CVSpgmrSetGSType() fails, flag %d",flag);
 
   tout = ts->max_time;
   ierr = VecGetArray(ts->vec_sol,&y_data);CHKERRQ(ierr);
@@ -195,7 +204,8 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
   ierr = VecRestoreArray(ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
   for (i = 0; i < max_steps; i++) {
     if (ts->ptime >= ts->max_time) break;
-    ierr = CVode(mem,tout,cvode->y,&t,CV_ONE_STEP);CHKERRQ(ierr);
+    flag = CVode(mem,tout,cvode->y,&t,CV_ONE_STEP);
+    if (flag)SETERRQ1(1,"CVode() fails, flag %d",flag);
     if (t > ts->max_time && cvode->exact_final_time) { 
       /* interpolate to final requested time */
       ierr = CVodeGetDky(mem,tout,0,cvode->y);CHKERRQ(ierr);
@@ -262,7 +272,7 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
   cvode->y = N_VNew_Parallel(cvode->comm_sundials,locsize,glosize);
   if (!cvode->y) SETERRQ(1,"cvode->y is not allocated");
 
-  /* initialize N_Vec y */
+  /* initialize N_Vec y: copy ts->vec_sol to cvode->y */
   ierr = VecGetArray(ts->vec_sol,&parray);CHKERRQ(ierr);
   y_data = (PetscScalar *) N_VGetArrayPointer(cvode->y);
   for (i = 0; i < locsize; i++) y_data[i] = parray[i];
@@ -274,7 +284,7 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
   ierr = PetscLogObjectParent(ts,cvode->func);CHKERRQ(ierr);
 
   /* 
-      Create work vectors for the TSPSolve_Sundials() routine. Note these are
+    Create work vectors for the TSPSolve_Sundials() routine. Note these are
     allocated with zero space arrays because the actual array space is provided 
     by Sundials and set using VecPlaceArray().
   */
@@ -808,15 +818,14 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Sundials(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ts->ops->destroy         = TSDestroy_Sundials;
-  ts->ops->view            = TSView_Sundials;
-
   if (ts->problem_type != TS_NONLINEAR) {
     SETERRQ(PETSC_ERR_SUP,"Only support for nonlinear problems");
   }
-  ts->ops->setup           = TSSetUp_Sundials_Nonlinear;  
-  ts->ops->step            = TSStep_Sundials_Nonlinear;
-  ts->ops->setfromoptions  = TSSetFromOptions_Sundials_Nonlinear;
+  ts->ops->destroy        = TSDestroy_Sundials;
+  ts->ops->view           = TSView_Sundials;
+  ts->ops->setup          = TSSetUp_Sundials_Nonlinear;  
+  ts->ops->step           = TSStep_Sundials_Nonlinear;
+  ts->ops->setfromoptions = TSSetFromOptions_Sundials_Nonlinear;
 
   ierr = PetscNewLog(ts,TS_Sundials,&cvode);CHKERRQ(ierr);
   ierr = PCCreate(((PetscObject)ts)->comm,&cvode->pc);CHKERRQ(ierr);

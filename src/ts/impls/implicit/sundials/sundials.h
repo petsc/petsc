@@ -19,9 +19,6 @@
 EXTERN_C_BEGIN
 #include "cvode/cvode.h"                  /* prototypes for CVODE fcts. */
 #include "cvode/cvode_spgmr.h"            /* prototypes and constants for CVSPGMR solver */
-#include "sundials/sundials_smalldense.h" /* prototypes for small dense matrix fcts. */
-#include "sundials/sundials_types.h"      /* definitions of realtype, booleantype */
-#include "sundials/sundials_math.h"       /* definition of macros SQR and EXP */
 #include "nvector/nvector_parallel.h"     /* definition N_Vector and macro NV_DATA_P  */
 EXTERN_C_END
 
