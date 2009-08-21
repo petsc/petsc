@@ -2,12 +2,11 @@
 #set -x
 
 #
-# This program is a wrapper which enables using mpich2 mpiexec with
-# valgrind
+# This program is a wrapper which enables using mpiexec with valgrind
 #
 
-if [ $1 !=  "-np" -a $1 !=  "-n" ]; then
-echo "Error in  mpiexec command"
+if [ $1 !=  "-n" ]; then
+echo "Error in  mpiexec command: must start with -n <numberprocessors>"
 exit 1
 fi
 shift
@@ -16,15 +15,5 @@ shift
 progname=$1
 shift
 options=$*
-#
-# modify the following path to point to the correct locations
-#
-mpiexec=/home/petsc/soft/linux-rh73-mpich2/mpich2-0.971-CVS-200408131639/bin/mpiexec
-valgrind=/usr/bin/valgrind
-mpisupp=/home/petsc/soft/linux-rh73-mpich2/valgrind-2.1.2/lib/valgrind/mpich2-0.97.supp
-#
-# Now execute the mpiexec command
-#
-#$mpiexec -n $np $valgrind -q --suppressions=$mpisupp --tool=memcheck --num-callers=20 $progname $options
-$mpiexec -n $np $valgrind -q --tool=memcheck --num-callers=20 $progname $options
+${PETSC_DIR}/bin/petscmpiexec -n $np valgrind -q --tool=memcheck --dsymutil=yes --num-callers=20 $progname $options
 
