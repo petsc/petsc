@@ -215,7 +215,7 @@ class Configure(config.base.Configure):
         m = re.match(r'^-L.*$', arg)
         if m:
           arg = '-L'+os.path.abspath(arg[2:])
-          if arg == '-L/usr/lib': continue
+          if arg in ['-L/usr/lib','-L/lib','-L/usr/lib64','-L/lib64']: continue
           lflags.append(arg)
           self.logPrint('Found library directory: '+arg, 4, 'compilers')
           clibs.append(arg)
@@ -225,7 +225,7 @@ class Configure(config.base.Configure):
           lib = argIter.next()
           if lib.startswith('"') and lib.endswith('"') and lib.find(' ') == -1: lib = lib[1:-1]
           lib = os.path.abspath(lib)
-          if lib == '/usr/lib': continue          
+          if lib in ['/usr/lib','/lib','/usr/lib64','/lib64']: continue          
           if not lib in rpathflags:          
             rpathflags.append(lib)
             self.logPrint('Found '+arg+' library: '+lib, 4, 'compilers')
@@ -396,7 +396,7 @@ class Configure(config.base.Configure):
         m = re.match(r'^-L.*$', arg)
         if m:
           arg = '-L'+os.path.abspath(arg[2:])
-          if arg == '-L/usr/lib': continue                    
+          if arg in ['-L/usr/lib','-L/lib','-L/usr/lib64','-L/lib64']: continue                    
           if not arg in lflags:
             lflags.append(arg)
             self.logPrint('Found library directory: '+arg, 4, 'compilers')
@@ -410,7 +410,7 @@ class Configure(config.base.Configure):
           lib = argIter.next()
           if lib.startswith('"') and lib.endswith('"') and lib.find(' ') == -1: lib = lib[1:-1]
           lib = os.path.abspath(lib)
-          if lib == '/usr/lib': continue
+          if lib in ['/usr/lib','/lib','/usr/lib64','/lib64']: continue
           if not lib in rpathflags:          
             rpathflags.append(lib)
             self.logPrint('Found '+arg+' library: '+lib, 4, 'compilers')
@@ -763,7 +763,7 @@ class Configure(config.base.Configure):
         m = re.match(r'^-L.*$', arg)
         if m:
           arg = '-L'+os.path.abspath(arg[2:])
-          if arg == '-L/usr/lib': continue          
+          if arg in ['-L/usr/lib','-L/lib','-L/usr/lib64','-L/lib64']: continue          
           if not arg in lflags:
             
             #TODO: if arg == '-lkernel32' and host_os.startswith('cygwin'):
@@ -777,7 +777,7 @@ class Configure(config.base.Configure):
           if lib == '\\': lib = argIter.next()
           if lib.startswith('"') and lib.endswith('"') and lib.find(' ') == -1: lib = lib[1:-1]
           lib = os.path.abspath(lib)
-          if lib == '/usr/lib': continue
+          if lib in ['/usr/lib','/lib','/usr/lib64','/lib64']: continue
           if not lib in rpathflags:
             rpathflags.append(lib)
             self.logPrint('Found '+arg+' library: '+lib, 4, 'compilers')
@@ -806,7 +806,7 @@ class Configure(config.base.Configure):
             if lib.startswith('P,'):lib = lib[2:]
             self.logPrint('Handling -Y option: '+lib, 4, 'compilers')
             lib1 = '-L'+os.path.abspath(lib)
-            if lib1 == '-L/usr/lib': continue
+            if lib1 in ['-L/usr/lib','-L/lib','-L/usr/lib64','-L/lib64']: continue
             flibs.append(lib1)
           continue
         # HPUX lists a bunch of library directories seperated by :
@@ -815,7 +815,7 @@ class Configure(config.base.Configure):
           for l in arg.split(':'):
             if os.path.isdir(l):
               lib1 = '-L'+os.path.abspath(l)
-              if lib1 == '-L/usr/lib': continue
+              if lib1 in ['-L/usr/lib','-L/lib','-L/usr/lib64','-L/lib64']: continue
               if not arg in lflags:              
                 flibs.append(lib1)
                 lflags.append(lib1)
