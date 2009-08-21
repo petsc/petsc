@@ -128,12 +128,6 @@ int TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_Sundials_Nonlinear"
-/* 
-    TSStep_Sundials_Nonlinear - 
-  
-   steps - number of time steps
-   time - time that integrater is terminated. 
-*/
 PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
 {
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
@@ -144,60 +138,9 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
   realtype       t,tout;
   PetscScalar    *y_data;
   void           *mem;
-  const PCType   pctype;
-  PetscTruth     pcnone;
-
-  PetscFunctionBegin;
-  /* Call CVodeCreate to create the solver memory and the use of a Newton iteration */
-  mem = CVodeCreate(cvode->cvode_type, CV_NEWTON); 
-  if (!mem) SETERRQ(PETSC_ERR_MEM,"CVodeCreate() fails");
-
-  /* Set the pointer to user-defined data */
-  flag = CVodeSetUserData(mem, ts);
-  if (flag) SETERRQ(PETSC_ERR_ARG_BADPTR,"CVodeSetUserData() fails");
-
-  /* Call CVodeInit to initialize the integrator memory and specify the
-   * user's right hand side function in u'=f(t,u), the inital time T0, and
-   * the initial dependent variable vector cvode->y */
-  flag = CVodeInit(mem,TSFunction_Sundials,ts->ptime,cvode->y);
-  if (flag){
-    SETERRQ1(1,"CVodeInit() fails, flag %d",flag);
-  }
-
-  flag = CVodeSStolerances(mem,cvode->reltol,cvode->abstol);
-  if (flag){
-    SETERRQ1(1,"CVodeSStolerances() fails, flag %d",flag);
-  }
-  /* add this call when there is a request
-  flag = CVodeSVtolerances(mem,cvode->reltol,cvode->abstol);
-  if (flag){
-    SETERRQ1(1,"CVodeSVtolerances() fails, flag %d",flag);
-  }
-  */
-
-  /* initialize the number of steps */
-  *steps = -ts->steps;
-  ierr   = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr); 
-
-  /* call CVSpgmr to use GMRES as the linear solver.        */
-  /* setup the ode integrator with the given preconditioner */
-  ierr = PCGetType(cvode->pc,&pctype);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)cvode->pc,PCNONE,&pcnone);CHKERRQ(ierr);
-  if (pcnone){
-    flag  = CVSpgmr(mem,PREC_NONE,0);
-  } else {
-    flag  = CVSpgmr(mem,PREC_LEFT,0);
-  }
-  if (flag) SETERRQ1(1,"CVSpgmr() fails, flag %d",flag);
  
-  /* Set preconditioner setup and solve routines Precond and PSolve, 
-     and the pointer to the user-defined block data */
-  flag = CVSpilsSetPreconditioner(mem,TSPrecond_Sundials,TSPSolve_Sundials);
-  if (flag) SETERRQ1(1,"CVSpilsSetPreconditioner() fails, flag %d", flag);
-
-  flag = CVSpilsSetGSType(mem, MODIFIED_GS);
-  if (flag) SETERRQ1(1,"CVSpgmrSetGSType() fails, flag %d",flag);
-
+  PetscFunctionBegin;
+  mem  = cvode->mem;
   tout = ts->max_time;
   ierr = VecGetArray(ts->vec_sol,&y_data);CHKERRQ(ierr);
   N_VSetArrayPointer((realtype *)y_data,cvode->y);
@@ -230,9 +173,8 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
     ts->steps++;
     ierr = TSMonitor(ts,ts->steps,t,sol);CHKERRQ(ierr); 
   }
-  cvode->mem = mem;
-  *steps    += ts->steps;
-  *time      = t;
+  *steps += ts->steps;
+  *time   = t;
   PetscFunctionReturn(0);
 }
 
@@ -263,8 +205,12 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
 {
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   PetscErrorCode ierr;
-  int            glosize,locsize,i;
+  PetscInt       glosize,locsize,i,flag;
   PetscScalar    *y_data,*parray;
+  void           *mem;
+  const PCType   pctype;
+  PetscTruth     pcnone;
+  Vec            sol = ts->vec_sol;
 
   PetscFunctionBegin;
   ierr = PCSetFromOptions(cvode->pc);CHKERRQ(ierr);
@@ -296,6 +242,51 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
   ierr = VecCreateMPIWithArray(((PetscObject)ts)->comm,locsize,PETSC_DECIDE,0,&cvode->w2);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(ts,cvode->w1);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(ts,cvode->w2);CHKERRQ(ierr);
+
+  /* Call CVodeCreate to create the solver memory and the use of a Newton iteration */
+  mem = CVodeCreate(cvode->cvode_type, CV_NEWTON); 
+  if (!mem) SETERRQ(PETSC_ERR_MEM,"CVodeCreate() fails");
+  cvode->mem = mem;
+
+  /* Set the pointer to user-defined data */
+  flag = CVodeSetUserData(mem, ts);
+  if (flag) SETERRQ(PETSC_ERR_ARG_BADPTR,"CVodeSetUserData() fails");
+
+  /* Call CVodeInit to initialize the integrator memory and specify the
+   * user's right hand side function in u'=f(t,u), the inital time T0, and
+   * the initial dependent variable vector cvode->y */
+  flag = CVodeInit(mem,TSFunction_Sundials,ts->ptime,cvode->y);
+  if (flag){
+    SETERRQ1(1,"CVodeInit() fails, flag %d",flag);
+  }
+
+  flag = CVodeSStolerances(mem,cvode->reltol,cvode->abstol);
+  if (flag){
+    SETERRQ1(1,"CVodeSStolerances() fails, flag %d",flag);
+  }
+
+  /* initialize the number of steps */
+  ierr   = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr); 
+
+  /* call CVSpgmr to use GMRES as the linear solver.        */
+  /* setup the ode integrator with the given preconditioner */
+  ierr = PCGetType(cvode->pc,&pctype);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)cvode->pc,PCNONE,&pcnone);CHKERRQ(ierr);
+  if (pcnone){
+    flag  = CVSpgmr(mem,PREC_NONE,0);
+    if (flag) SETERRQ1(1,"CVSpgmr() fails, flag %d",flag);
+  } else {
+    flag  = CVSpgmr(mem,PREC_LEFT,0);
+    if (flag) SETERRQ1(1,"CVSpgmr() fails, flag %d",flag);
+
+    /* Set preconditioner and solve routines Precond and PSolve, 
+     and the pointer to the user-defined block data */
+    flag = CVSpilsSetPreconditioner(mem,TSPrecond_Sundials,TSPSolve_Sundials);
+    if (flag) SETERRQ1(1,"CVSpilsSetPreconditioner() fails, flag %d", flag);
+  }
+
+  flag = CVSpilsSetGSType(mem, MODIFIED_GS);
+  if (flag) SETERRQ1(1,"CVSpgmrSetGSType() fails, flag %d",flag);
   PetscFunctionReturn(0);
 }
 
@@ -327,7 +318,7 @@ PetscErrorCode TSSetFromOptions_Sundials_Nonlinear(TS ts)
     ierr = PetscOptionsReal("-ts_sundials_rtol","Relative tolerance for convergence","TSSundialsSetTolerance",cvode->reltol,&cvode->reltol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_sundials_linear_tolerance","Convergence tolerance for linear solve","TSSundialsSetLinearTolerance",cvode->linear_tol,&cvode->linear_tol,&flag);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ts_sundials_gmres_restart","Number of GMRES orthogonalization directions","TSSundialsSetGMRESRestart",cvode->restart,&cvode->restart,&flag);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-ts_sundials_exact_final_time","Allow SUNDIALS to stop near the final time, not exactly on it","TSSundialsSetExactFinalTime",cvode->exact_final_time,&cvode->exact_final_time,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-ts_sundials_exact_final_time","Interpolate output to stop exactly at the final time","TSSundialsSetExactFinalTime",cvode->exact_final_time,&cvode->exact_final_time,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-ts_sundials_monitor_steps","Monitor SUNDIALS internel steps","TSSundialsMonitorInternalSteps",cvode->monitorstep,&cvode->monitorstep,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -843,7 +834,9 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsMonitorInternalSteps(TS ts,PetscTruth
 .    -ts_sundials_rtol <tol> - Relative tolerance for convergence
 .    -ts_sundials_linear_tolerance <tol> 
 .    -ts_sundials_gmres_restart <restart> - Number of GMRES orthogonalization directions
--    -ts_sundials_not_exact_final_time -Allow SUNDIALS to stop near the final time, not exactly on it
+.    -ts_sundials_exact_final_time - Interpolate output to stop exactly at the final time
+-    -ts_sundials_monitor_steps - Monitor SUNDIALS internel steps
+
 
     Notes: This uses its own nonlinear solver and Krylov method so PETSc SNES and KSP options do not apply
            only PETSc PC options
