@@ -250,12 +250,15 @@ problem.<br>
 
 &nbsp; <br>
 
- If -malloc_debug does not help for GNU/Linux and Apple Mac OS X you can try using&nbsp;<a href="http://valgrind.org">http://valgrind.org </a>to look for memory corruption</span></font></p>
+ If -malloc_debug does not help for GNU/Linux and Apple Mac OS X you can try using&nbsp;<a href="http://valgrind.org">http://valgrind.org </a>to look for memory corruption</span></font></p> Make sure valgrind is in your path, then use:
 
+${PETSC_ARCH}/bin/petscmpiexec -valgrind -n <numberofprocessors> petscprogramname programoptions
 
-mpiexec -n <np> valgrind -q --tool=memcheck --num-callers=20 petscprogram petscoptions</p>
+or you can explicitly call mpiexec with valgrind:
 
-On Apple you also need the valgrind option --dsymutil=yes also consider the valgrind option --db-attach=yes (though I could not get that working on my Apple).
+mpiexec -n <np> valgrind -q --tool=memcheck --num-callers=20 petscprogramname petscoptions</p>
+
+On Apple you also need the valgrind option --dsymutil=yes before the petscprogramname
 
 
   </np></li>
