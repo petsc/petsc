@@ -38,7 +38,7 @@ extern PetscErrorCode PostStep(TS);
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscInt       time_steps = 100,steps;
+  PetscInt       time_steps=100,steps,iout,NOUT=1;
   PetscMPIInt    size;
   Vec            global;
   PetscReal      dt,ftime;
@@ -159,12 +159,16 @@ int main(int argc,char **argv)
 #if defined(PETSC_HAVE_SUNDIALS)
   ierr = TSSundialsGetPC(ts,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
-  ierr = TSSundialsSetExactFinalTime(ts,PETSC_TRUE);CHKERRQ(ierr);
 #endif
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-
   ierr = TSSetUp(ts);CHKERRQ(ierr);
-  ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
+
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-NOUT",&NOUT,PETSC_NULL);CHKERRQ(ierr);
+  for (iout=1; iout<=NOUT; iout++){
+    ierr = TSSetDuration(ts,time_steps,iout*1.0/NOUT);CHKERRQ(ierr);
+    ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
+    ierr = TSSetInitialTimeStep(ts,ftime,dt);CHKERRQ(ierr);
+  }
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-matlab_view",&flg);CHKERRQ(ierr);
   if (flg){ /* print solution into a MATLAB file */
