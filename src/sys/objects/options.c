@@ -330,7 +330,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(MPI_Comm comm,const char f
   PetscToken     token;
   int            err;
   char           cmt[3]={'#','!','%'},*cmatch;
-  PetscMPIInt    rank,cnt,acnt;
+  PetscMPIInt    rank,cnt=0,acnt=0;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
