@@ -38,11 +38,12 @@ typedef struct {
   double                    linear_tol;
 
   /* Variables used by Sundials */
-  MPI_Comm comm_sundials;
-  double   reltol;
-  double   abstol;          /* only for using SS flag in SUNDIALS */
-  N_Vector y;               /* current solution */
-  void     *mem;
+  MPI_Comm    comm_sundials;
+  double      reltol;
+  double      abstol;        /* only for using SS flag in SUNDIALS */
+  N_Vector    y;             /* current solution */
+  void        *mem;
+  PetscTruth  monitorstep;   /* flag for monitor internal steps; itask=V_ONE_STEP or itask=CV_NORMAL*/
 } TS_Sundials;
 #endif
 
