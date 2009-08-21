@@ -18,19 +18,19 @@ ${PETSC_DIR}/bin/maint/builddist ${PETSC_DIR}
 #Now copy the generated tarfiles over to the website
 PATCH_VERSION=`grep '^#define PETSC_VERSION_PATCH ' ${PETSC_DIR}/include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
 VERSION=${RELEASE}-p${PATCH_VERSION}
-scp ~/petsc-${VERSION}.tar.gz petsc@harley.mcs.anl.gov:/mcs/ftp/pub/petsc/release-snapshots/
-scp ~/petsc-lite-${VERSION}.tar.gz petsc@harley.mcs.anl.gov:/mcs/ftp/pub/petsc/release-snapshots/
+scp ~/petsc-${VERSION}.tar.gz petsc@login.mcs.anl.gov:/mcs/ftp/pub/petsc/release-snapshots/
+scp ~/petsc-lite-${VERSION}.tar.gz petsc@login.mcs.anl.gov:/mcs/ftp/pub/petsc/release-snapshots/
 
 # petsc.tar.gz/petsc-lite.tar.gz links are done manually
-ssh petsc@harley.mcs.anl.gov " \
+ssh petsc@login.mcs.anl.gov " \
   cd /mcs/ftp/pub/petsc/release-snapshots; \
   /bin/rm -f petsc-${RELEASE}.tar.gz petsc-lite-${RELEASE}.tar.gz ; \
   /bin/ln -s petsc-${VERSION}.tar.gz petsc-${RELEASE}.tar.gz; \
   /bin/ln -s petsc-lite-${VERSION}.tar.gz petsc-lite-${RELEASE}.tar.gz"
 
 # Update download/index.html as well
-ssh petsc@harley.mcs.anl.gov chmod u+w /mcs/web/research/projects/petsc/petsc-as/download/index.html
-scp ${PETSC_DIR}/src/docs/website/download/index.html petsc@harley.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-as/download
+ssh petsc@login.mcs.anl.gov chmod u+w /mcs/web/research/projects/petsc/petsc-as/download/index.html
+scp ${PETSC_DIR}/src/docs/website/download/index.html petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-as/download
 
 #######################################3333
 # M include/petscversion.h
