@@ -260,7 +260,7 @@ class Configure(config.base.Configure):
       self.addDefine('Prefetch(a,b,c)', '__builtin_prefetch(a,b,c)')
     else:
       self.addDefine('Prefetch(a,b,c)', ' ')
-    self.popLanguahgge()
+    self.popLanguage()
       
   def configureInline(self):
     '''Get a generic inline keyword, depending on the language'''
