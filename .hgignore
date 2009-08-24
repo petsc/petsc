@@ -9,7 +9,7 @@ RDict.db
 RDict.log
 TAGS*
 bmake/*/*
-bmake/petscconf
+conf/petscvariables
 configure.log*
 externalpackages/*
 */ftn-auto/*
