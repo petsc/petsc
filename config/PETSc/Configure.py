@@ -18,6 +18,7 @@ class Configure(config.base.Configure):
     import nargs
     help.addArgument('PETSc',  '-prefix=<path>',                  nargs.Arg(None, '', 'Specifiy location to install PETSc (eg. /usr/local)'))
     help.addArgument('Windows','-with-windows-graphics=<bool>',   nargs.ArgBool(None, 1,   'Enable check for Windows Graphics'))
+    help.addArgument('PETSc', '-with-default-arch=<bool>',        nargs.ArgBool(None, 1, 'Allow using the last configured arch without setting PETSC_ARCH'))
 
     return
 
@@ -323,6 +324,22 @@ class Configure(config.base.Configure):
     return
 
 #-----------------------------------------------------------------------------------------------------
+  def configureDefaultArch(self):
+    conffile = os.path.join('conf', 'petscvariables')
+    if self.framework.argDB['with-default-arch']:
+      fd = file(conffile, 'w')
+      fd.write('PETSC_ARCH='+self.arch.arch+'\n')
+      fd.write('include ${PETSC_DIR}/${PETSC_ARCH}/conf/petscvariables\n')
+      fd.close()
+      self.framework.actions.addArgument('PETSc', 'Build', 'Set default architecture to '+self.arch.arch+' in '+conffile)
+    elif os.path.isfile(conffile):
+      try:
+        os.unlink(conffile)
+      except:
+        raise RuntimeError('Unable to remove file '+conffile+'. Did a different user create it?')
+    return
+
+#-----------------------------------------------------------------------------------------------------
   def configureScript(self):
     '''Output a script in the conf directory which will reproduce the configuration'''
     import nargs
@@ -395,6 +412,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)
     self.executeTest(self.configureWin32)
+    self.executeTest(self.configureDefaultArch)
     self.executeTest(self.configureScript)
     self.executeTest(self.configureInstall)
     self.executeTest(self.configureGCOV)
