@@ -38,7 +38,7 @@ extern PetscErrorCode PostStep(TS);
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscInt       time_steps = 100,steps;
+  PetscInt       time_steps=100,steps,iout,NOUT=1;
   PetscMPIInt    size;
   Vec            global;
   PetscReal      dt,ftime;
@@ -148,7 +148,7 @@ int main(int argc,char **argv)
   ierr = TSSetDuration(ts,time_steps,1);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,global);CHKERRQ(ierr);
   
-  /* Test TSSetPostStep() and TSSetPostUpdate() */
+  /* Test TSSetPostStep() */
   ierr = PetscOptionsHasName(PETSC_NULL,"-test_PostStep",&flg);CHKERRQ(ierr);
   if (flg){
     ierr = TSSetPostStep(ts,PostStep);CHKERRQ(ierr);
@@ -161,9 +161,14 @@ int main(int argc,char **argv)
   ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
 #endif
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-
   ierr = TSSetUp(ts);CHKERRQ(ierr);
-  ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
+
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-NOUT",&NOUT,PETSC_NULL);CHKERRQ(ierr);
+  for (iout=1; iout<=NOUT; iout++){
+    ierr = TSSetDuration(ts,time_steps,iout*1.0/NOUT);CHKERRQ(ierr);
+    ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
+    ierr = TSSetInitialTimeStep(ts,ftime,dt);CHKERRQ(ierr);
+  }
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-matlab_view",&flg);CHKERRQ(ierr);
   if (flg){ /* print solution into a MATLAB file */
@@ -253,13 +258,17 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
 {
   VecScatter     scatter;
   IS             from,to;
-  PetscInt       i,n,*idx,nsteps;
+  PetscInt       i,n,*idx,nsteps,maxsteps;
   Vec            tmp_vec;
   PetscErrorCode ierr;
   PetscScalar    *tmp;
+  PetscReal      maxtime;
   
   PetscFunctionBegin;
   ierr = TSGetTimeStepNumber(ts,&nsteps);CHKERRQ(ierr);
+  /* display output at selected time steps */
+  ierr = TSGetDuration(ts, &maxsteps, &maxtime);CHKERRQ(ierr);
+  if (nsteps % 10 != 0 && time < maxtime) PetscFunctionReturn(0);
 
   /* Get the size of the vector */
   ierr = VecGetSize(global,&n);CHKERRQ(ierr);
@@ -492,4 +501,3 @@ PetscErrorCode PostStep(TS ts)
   ierr = PetscPrintf(PETSC_COMM_SELF,"  PostStep, t: %g\n",t);
   PetscFunctionReturn(0);
 }
-

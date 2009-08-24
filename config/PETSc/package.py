@@ -172,21 +172,19 @@ class Package(config.base.Configure):
   def checkDownload(self,preOrPost):
     '''Check if we should download the package'''
     if not self.download : return ''
-    dowork = 0
     if preOrPost == 1 and isinstance(self.framework.argDB['download-'+self.downloadname.lower()], str):
       self.download = ['file://'+os.path.abspath(self.framework.argDB['download-'+self.downloadname.lower()])]
       dowork = 1
     elif self.framework.argDB['download-'+self.downloadname.lower()] == preOrPost:
       dowork = 1
-    if not dowork:
+    else:
       return ''
-    if self.license and not os.path.isfile(os.path.expanduser(os.path.join('~','.'+self.package+'_license'))):
+    if self.license and not os.path.isfile(self.package+'_license'):
       self.framework.logClear()
       self.logPrint("**************************************************************************************************", debugSection='screen')
-      self.logPrint('You must register to use '+self.downloadname+' at '+self.license, debugSection='screen')
-      self.logPrint('    Once you have registered, config/configure.py will continue and download and install '+self.downloadname+' for you', debugSection='screen')
+      self.logPrint('Please register to use '+self.downloadname+' at '+self.license, debugSection='screen')
       self.logPrint("**************************************************************************************************\n", debugSection='screen')
-      fd = open(os.path.expanduser(os.path.join('~','.'+self.package+'_license')),'w')
+      fd = open(self.package+'_license','w')
       fd.close()
     return self.getInstallDir()
 

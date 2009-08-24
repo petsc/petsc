@@ -112,7 +112,7 @@ buildexamples_ESSL:
 TESTMODE = testexamples
 alltests:
 	-@for i in ${TEST_RUNS} ; do \
-	  make ACTION=${TESTMODE}_$$i tree ; \
+	  make ACTION=${TESTMODE}_$$i MPIEXEC="${MPIEXEC}" tree ; \
 	done
 
 tests_DATAFILESPATH:

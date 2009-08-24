@@ -246,13 +246,21 @@ class Configure(config.base.Configure):
 
   def configurePrefetch(self):
     '''Sees if there are any prefetch functions supported'''
+    if hasattr(self.compilers, 'CXX'):
+      self.pushLanguage('C++')
+    else:
+      self.pushLanguage('C')      
     if self.checkLink('#include <xmmintrin.h>', 'void *v = 0;_mm_prefetch(v,(enum _mm_hint)0);\n'):
       self.addDefine('HAVE_XMMINTRIN_H', 1)
       self.addDefine('Prefetch(a,b,c)', '_mm_prefetch((void*)(a),(enum _mm_hint)c)')
+    elif self.checkLink('#include <xmmintrin.h>', 'void *v = 0;_mm_prefetch((const char*)v,(enum _mm_hint)0);\n'):
+      self.addDefine('HAVE_XMMINTRIN_H', 1)
+      self.addDefine('Prefetch(a,b,c)', '_mm_prefetch((const char*)(a),(enum _mm_hint)c)')
     elif self.checkLink('', 'void *v = 0;__builtin_prefetch(v,0,0);\n'):
       self.addDefine('Prefetch(a,b,c)', '__builtin_prefetch(a,b,c)')
     else:
       self.addDefine('Prefetch(a,b,c)', ' ')
+    self.popLanguage()
       
   def configureInline(self):
     '''Get a generic inline keyword, depending on the language'''

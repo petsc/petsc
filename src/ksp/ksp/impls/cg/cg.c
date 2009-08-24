@@ -108,7 +108,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i,stored_max_it,eigs;
-  PetscScalar    dpi,a = 1.0,beta,betaold = 1.0,b = 0,*e = 0,*d = 0,delta,dpiold;
+  PetscScalar    dpi = 0.0,a = 1.0,beta,betaold = 1.0,b = 0,*e = 0,*d = 0,delta,dpiold;
   PetscReal      dp = 0.0;
   Vec            X,B,Z,R,P,S,W;
   KSP_CG         *cg;
