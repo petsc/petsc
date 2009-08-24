@@ -796,9 +796,6 @@ runex33_quiet:
 debugex33:
 	-${MPIEXEC} -n ${NP} ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 -bc_file data/ex33bc.data ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
 
-valex33:
-	-${MPIEXEC} -n ${NP} valgrind --tool=memcheck ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 -bc_file data/ex33bc.data ${EXTRA_ARGS}
-
 runex35:
 	-${MPIEXEC} -n ${NP} ./ex35 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 ${EXTRA_ARGS}
 
@@ -807,9 +804,6 @@ debugex35:
 
 runex36:
 	-${MPIEXEC} -n ${NP} ./ex36 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 -bc_file data/ex36bc.data ${EXTRA_ARGS}
-
-runex37:
-	-${MPIEXEC} -n ${NP} valgrind --tool=memcheck ./ex37 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 -bc_file data/ex37bc.data ${EXTRA_ARGS}
 
 debugex37:
 	-${MPIEXEC} -n ${NP} ./ex37 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 -bc_file data/ex37bc.data -start_in_debugger ${EXTRA_ARGS}

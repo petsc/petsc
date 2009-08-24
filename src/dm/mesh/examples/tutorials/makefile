@@ -201,18 +201,11 @@ runex1:
 debugex1:
 	-@${MPIEXEC} -n ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
 
-valex1:
-	-@${MPIEXEC} -n ${NP} valgrind --tool=memcheck ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}
-
 runex1_pylith:
 	-@${MPIEXEC} -n ${NP} ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/bm1b/bm1b ${EXTRA_ARGS}
 
 debugex1_pylith:
 	-${MPIEXEC} -n ${NP} ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/bm1b/bm1b ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
-
-valex1_pylith:
-	-@${MPIEXEC} -n ${NP} valgrind --tool=memcheck ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/bm1b/bm1b ${EXTRA_ARGS}
-
 runex1_pylith2:
 	-@${MPIEXEC} -n ${NP} ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/bm1m/bm1m ${EXTRA_ARGS}
 
@@ -224,9 +217,6 @@ runex1_pylith_split:
 
 runex1_2:
 	-@${MPIEXEC} -n ${NP} ./ex1 -dim 2 -use_zero_base 1 -base_file data/ex1_2d ${EXTRA_ARGS}
-
-valex1_2:
-	-@${MPIEXEC} -n ${NP} valgrind --tool=memcheck ./ex1 -dim 2 -use_zero_base 1 -base_file data/ex1_2d ${EXTRA_ARGS}
 
 runex1_2_hex:
 	-@${MPIEXEC} -n ${NP} ./ex1 -dim 2 -use_zero_base 1 -base_file data/ex1_2d_hex ${EXTRA_ARGS}
@@ -240,12 +230,6 @@ runex1_3_hex:
 runex2:
 	-@${MPIEXEC} -n ${NP} ./ex2 -dim 2 ${EXTRA_ARGS}
 
-valex2:
-	-@${MPIEXEC} -n ${NP} valgrind --tool=memcheck ./ex2 -dim 2 ${EXTRA_ARGS}
-
-valex2_3:
-	-@valgrind --tool=memcheck ./ex2 -dim 3 -refinement_limit 0.05 ${EXTRA_ARGS}
-
 debugex2:
 	-@${MPIEXEC} -n ${NP} ./ex2 -dim 2 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
 
@@ -254,12 +238,6 @@ runex2_3:
 
 runex3:
 	-@${MPIEXEC} -n ${NP} ./ex3 -dim 2 ${EXTRA_ARGS}
-
-valex3:
-	-@${MPIEXEC} -n ${NP} valgrind --tool=memcheck ./ex3 -dim 2 ${EXTRA_ARGS}
-
-valex3_3:
-	-@valgrind --tool=memcheck ./ex3 -dim 3 -refinement_limit 0.05 ${EXTRA_ARGS}
 
 debugex3:
 	-@${MPIEXEC} -n ${NP} ./ex3 -dim 2 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}

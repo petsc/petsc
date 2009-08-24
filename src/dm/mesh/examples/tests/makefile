@@ -146,9 +146,6 @@ runxsifter1:
 debugxsifter1:
 	-@${MPIEXEC} -n ${NP} ./xsifter1 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
 
-valgrindxsifter1:
-	-@${MPIEXEC} -n ${NP} valgrind ./xsifter1 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
-
 #-----------------------------------------------------------------
 xsifter2: xsifter2.o chkopts
 	-${CLINKER} -o xsifter2 xsifter2.o ${PETSC_DM_LIB} ${BOOST_LIBS}
@@ -158,9 +155,6 @@ runxsifter2:
 	-@${MPIEXEC} -n ${NP} ./xsifter2 ${EXTRA_ARGS}
 debugxsifter2:
 	-@${MPIEXEC} -n ${NP} ./xsifter2 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
-valgrindxsifter2:
-	-@${MPIEXEC} -n ${NP} valgrind ./xsifter2 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
-
 
 #-----------------------------------------------------------------
 xsifter3: xsifter3.o chkopts
@@ -171,8 +165,6 @@ runxsifter3:
 	-@${MPIEXEC} -n ${NP} ./xsifter3 ${EXTRA_ARGS}
 debugxsifter3:
 	-@${MPIEXEC} -n ${NP} ./xsifter3 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
-valgrindxsifter3:
-	-@${MPIEXEC} -n ${NP} valgrind ./xsifter3 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
 
 #-----------------------------------------------------------------
 xsieve0: xsieve0.o chkopts
@@ -183,9 +175,6 @@ runxsieve0:
 	-@${MPIEXEC} -n ${NP} ./xsieve0 ${EXTRA_ARGS}
 debugxsieve0:
 	-@${MPIEXEC} -n ${NP} ./xsieve0 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
-valgrindxsieve0:
-	-@${MPIEXEC} -n ${NP} valgrind ./xsieve0 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
-
 
 #-----------------------------------------------------------------
 xsieve1: xsieve1.o chkopts
@@ -196,8 +185,6 @@ runxsieve1:
 	-@${MPIEXEC} -n ${NP} ./xsieve1 ${EXTRA_ARGS}
 debugxsieve1:
 	-@${MPIEXEC} -n ${NP} ./xsieve1 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
-valgrindxsieve1:
-	-@${MPIEXEC} -n ${NP} valgrind ./xsieve1 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
 
 #-----------------------------------------------------------------
 xsieve2: xsieve2.o chkopts
@@ -208,8 +195,6 @@ runxsieve2:
 	-@${MPIEXEC} -n ${NP} ./xsieve2 ${EXTRA_ARGS}
 debugxsieve2:
 	-@${MPIEXEC} -n ${NP} ./xsieve2 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
-valgrindxsieve2:
-	-@${MPIEXEC} -n ${NP} valgrind ./xsieve2 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
 
 #-----------------------------------------------------------------
 xsieve3: xsieve3.o chkopts
@@ -220,8 +205,6 @@ runxsieve3:
 	-@${MPIEXEC} -n ${NP} ./xsieve3 ${EXTRA_ARGS}
 debugxsieve3:
 	-@${MPIEXEC} -n ${NP} ./xsieve3 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
-valgrindxsieve3:
-	-@${MPIEXEC} -n ${NP} valgrind ./xsieve3 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
 
 #-----------------------------------------------------------------
 xsieve4: xsieve4.o chkopts
@@ -232,9 +215,6 @@ runxsieve4:
 	-@${MPIEXEC} -n ${NP} ./xsieve4 ${EXTRA_ARGS}
 debugxsieve4:
 	-@${MPIEXEC} -n ${NP} ./xsieve4 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
-valgrindxsieve4:
-	-@${MPIEXEC} -n ${NP} valgrind ./xsieve4 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
-
 
 #-----------------------------------------------------------------
 runex00:
@@ -243,18 +223,12 @@ runex00:
 debugex00:
 	-@${MPIEXEC} -n ${NP} ./ex00 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
 
-valex00:
-	-@valgrind --tool=memcheck ./ex00 ${EXTRA_ARGS}
-
 #-----------------------------------------------------------------
 runex01:
 	-@${MPIEXEC} -n ${NP} ./ex01 -log_summary ${EXTRA_ARGS}
 
 debugex01:
 	-@${MPIEXEC} -n ${NP} ./ex01 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
-
-valex01:
-	-@valgrind --tool=memcheck ./ex01 ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex02:
@@ -263,18 +237,12 @@ runex02:
 debugex02:
 	-@${MPIEXEC} -n ${NP} ./ex02 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
 
-valex02:
-	-@valgrind --tool=memcheck ./ex02 ${EXTRA_ARGS}
-
 #-----------------------------------------------------------------
 runex03:
 	-@${MPIEXEC} -n ${NP} ./ex03 ${EXTRA_ARGS}
 
 debugex03:
 	-@${MPIEXEC} -n ${NP} ./ex03 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
-
-valex03:
-	-@valgrind --tool=memcheck ./ex03 ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex04:
@@ -283,18 +251,12 @@ runex04:
 debugex04:
 	-@${MPIEXEC} -n ${NP} ./ex04 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
 
-valex04:
-	-@valgrind --tool=memcheck ./ex04 ${EXTRA_ARGS}
-
 #-----------------------------------------------------------------
 runex05:
 	-@${MPIEXEC} -n ${NP} ./ex05 ${EXTRA_ARGS}
 
 debugex05:
 	-@${MPIEXEC} -n ${NP} ./ex05 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
-
-valex05:
-	-@valgrind --tool=memcheck ./ex05 ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex06:
@@ -303,18 +265,12 @@ runex06:
 debugex06:
 	-@${MPIEXEC} -n ${NP} ./ex06 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
 
-valex06:
-	-@valgrind --tool=memcheck ./ex06 ${EXTRA_ARGS}
-
 #-----------------------------------------------------------------
 runex07:
 	-@${MPIEXEC} -n ${NP} ./ex07 ${EXTRA_ARGS}
 
 debugex07:
 	-@${MPIEXEC} -n ${NP} ./ex07 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
-
-valex07:
-	-@valgrind --tool=memcheck ./ex07 ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex08:
@@ -323,18 +279,12 @@ runex08:
 debugex08:
 	-@${MPIEXEC} -n ${NP} ./ex08 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
 
-valex08:
-	-@valgrind --tool=memcheck ./ex08 ${EXTRA_ARGS}
-
 #-----------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n ${NP} ./ex1 -log_summary ${EXTRA_ARGS}
 
 debugex1:
 	-@${MPIEXEC} -n ${NP} ./ex1 -log_summary ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
-
-valex1:
-	-@valgrind --tool=memcheck ./ex1 ${EXTRA_ARGS}
 
 TESTEXAMPLES_C            = 
 TESTEXAMPLES_C_X11        = 
