@@ -225,6 +225,38 @@ PetscErrorCode createLocalAdjacencyGraph(const ALE::Obj<Mesh>& mesh, const ALE::
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "createLocalAdjacencyGraphI"
+template<typename Mesh, typename Atlas>
+PetscErrorCode createLocalAdjacencyGraphI(const ALE::Obj<Mesh>& mesh, const ALE::Obj<Atlas>& atlas, const ALE::Obj<ALE::Mesh::sieve_type>& adjGraph)
+{
+  typedef typename ALE::ISieveVisitor::TransitiveClosureVisitor<typename Mesh::sieve_type, AdjVisitor<Atlas> > ClosureVisitor;
+  typedef typename ALE::ISieveVisitor::ConeVisitor<typename Mesh::sieve_type, ClosureVisitor>                  ConeVisitor;
+  typedef typename ALE::ISieveVisitor::TransitiveClosureVisitor<typename Mesh::sieve_type, ConeVisitor>        StarVisitor;
+  AdjVisitor<Atlas> adjV(*atlas, *adjGraph);
+  ClosureVisitor    closureV(*mesh->getSieve(), adjV);
+  ConeVisitor       coneV(*mesh->getSieve(), closureV);
+  StarVisitor       starV(*mesh->getSieve(), coneV);
+  /* In general, we need to get FIAT info that attaches dual basis vectors to sieve points */
+  const typename Atlas::chart_type& chart = atlas->getChart();
+
+  PetscFunctionBegin;
+  // Changes for ISieve
+  //   1) Add AdjSizeVisitor to set cone sizes
+  //   2) Add new symmetrizeSizes() to ISieve to calculate support sizes
+  //   3) Allocate adjGraph
+  //   4) Change AdjVisitor to stack up cone rather than calling addPoint()
+  //   5) Get points and call setCone() each time
+  starV.setIsCone(false);
+  for(typename Atlas::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+    adjV.setRoot(*c_iter);
+    mesh->getSieve()->support(*c_iter, starV);
+    closureV.clear();
+    starV.clear();
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "createLocalAdjacencyGraph"
 template<typename Atlas>
 PetscErrorCode createLocalAdjacencyGraph(const ALE::Obj<ALE::Mesh>& mesh, const ALE::Obj<Atlas>& atlas, const ALE::Obj<ALE::Mesh::sieve_type>& adjGraph)
@@ -985,6 +1017,42 @@ PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, 
       }
     }
   }
+  // Set matrix pattern
+  ierr = MatSeqAIJSetPreallocation(A, 0, dnz);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A, 0, dnz, 0, onz);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(A, bs, 0, dnz);CHKERRQ(ierr);
+  ierr = MatMPIBAIJSetPreallocation(A, bs, 0, dnz, 0, onz);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(A, bs, 0, dnz);CHKERRQ(ierr);
+  ierr = MatMPISBAIJSetPreallocation(A, bs, 0, dnz, 0, onz);CHKERRQ(ierr);
+  ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+template<typename Mesh, typename Atlas>
+PetscErrorCode preallocateOperatorI(const ALE::Obj<Mesh>& mesh, const int bs, const ALE::Obj<Atlas>& atlas, const ALE::Obj<typename Mesh::order_type>& globalOrder, PetscInt dnz[], PetscInt onz[], PetscTruth isSymmetric, Mat A)
+{
+  typedef typename Mesh::sieve_type        sieve_type;
+  typedef typename Mesh::point_type        point_type;
+  typedef typename Mesh::send_overlap_type send_overlap_type;
+  typedef typename Mesh::recv_overlap_type recv_overlap_type;
+  const ALE::Obj<typename Mesh::sieve_type> adjGraph     = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
+  PetscInt                                  numLocalRows = globalOrder->getLocalSize();
+  PetscInt                                  firstRow     = globalOrder->getGlobalOffsets()[mesh->commRank()];
+  const PetscInt                            debug        = 0;
+  PetscErrorCode                            ierr;
+
+  PetscFunctionBegin;
+  // Create local adjacency graph
+  if (debug) mesh->view("Input Mesh");
+  if (debug) globalOrder->view("Initial Global Order");
+  adjGraph->setChart(mesh);
+  ierr = createLocalAdjacencyGraphI(mesh, atlas, adjGraph);CHKERRQ(ierr);
+  if (debug) adjGraph->view("Adjacency Graph");
+
+  // Will have to reallocate() adjGraph after adding arrows
+
+  // Rewrite read out from adjGraph to use visitors
+
   // Set matrix pattern
   ierr = MatSeqAIJSetPreallocation(A, 0, dnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(A, 0, dnz, 0, onz);CHKERRQ(ierr);
