@@ -152,7 +152,7 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
     } else {
       flag = CVode(mem,tout,cvode->y,&t,CV_NORMAL);
     }
-    if (flag)SETERRQ1(1,"CVode() fails, flag %d",flag);
+    if (flag)SETERRQ1(PETSC_ERR_LIB,"CVode() fails, flag %d",flag);
     if (t > ts->max_time && cvode->exact_final_time) { 
       /* interpolate to final requested time */
       ierr = CVodeGetDky(mem,tout,0,cvode->y);CHKERRQ(ierr);
@@ -250,19 +250,19 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
 
   /* Set the pointer to user-defined data */
   flag = CVodeSetUserData(mem, ts);
-  if (flag) SETERRQ(PETSC_ERR_ARG_BADPTR,"CVodeSetUserData() fails");
+  if (flag) SETERRQ(PETSC_ERR_LIB,"CVodeSetUserData() fails");
 
   /* Call CVodeInit to initialize the integrator memory and specify the
    * user's right hand side function in u'=f(t,u), the inital time T0, and
    * the initial dependent variable vector cvode->y */
   flag = CVodeInit(mem,TSFunction_Sundials,ts->ptime,cvode->y);
   if (flag){
-    SETERRQ1(1,"CVodeInit() fails, flag %d",flag);
+    SETERRQ1(PETSC_ERR_LIB,"CVodeInit() fails, flag %d",flag);
   }
 
   flag = CVodeSStolerances(mem,cvode->reltol,cvode->abstol);
   if (flag){
-    SETERRQ1(1,"CVodeSStolerances() fails, flag %d",flag);
+    SETERRQ1(PETSC_ERR_LIB,"CVodeSStolerances() fails, flag %d",flag);
   }
 
   /* initialize the number of steps */
@@ -274,19 +274,19 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
   ierr = PetscTypeCompare((PetscObject)cvode->pc,PCNONE,&pcnone);CHKERRQ(ierr);
   if (pcnone){
     flag  = CVSpgmr(mem,PREC_NONE,0);
-    if (flag) SETERRQ1(1,"CVSpgmr() fails, flag %d",flag);
+    if (flag) SETERRQ1(PETSC_ERR_LIB,"CVSpgmr() fails, flag %d",flag);
   } else {
     flag  = CVSpgmr(mem,PREC_LEFT,0);
-    if (flag) SETERRQ1(1,"CVSpgmr() fails, flag %d",flag);
+    if (flag) SETERRQ1(PETSC_ERR_LIB,"CVSpgmr() fails, flag %d",flag);
 
     /* Set preconditioner and solve routines Precond and PSolve, 
      and the pointer to the user-defined block data */
     flag = CVSpilsSetPreconditioner(mem,TSPrecond_Sundials,TSPSolve_Sundials);
-    if (flag) SETERRQ1(1,"CVSpilsSetPreconditioner() fails, flag %d", flag);
+    if (flag) SETERRQ1(PETSC_ERR_LIB,"CVSpilsSetPreconditioner() fails, flag %d", flag);
   }
 
   flag = CVSpilsSetGSType(mem, MODIFIED_GS);
-  if (flag) SETERRQ1(1,"CVSpgmrSetGSType() fails, flag %d",flag);
+  if (flag) SETERRQ1(PETSC_ERR_LIB,"CVSpgmrSetGSType() fails, flag %d",flag);
   PetscFunctionReturn(0);
 }
 
