@@ -13,7 +13,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = mhyp.o
 OBJSF    =
-LIBBASE  = libpetscdm
+LIBBASE  = libpetscmat
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/hypre/
 
