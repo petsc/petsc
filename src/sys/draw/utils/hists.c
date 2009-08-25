@@ -44,8 +44,6 @@ struct _p_DrawHG {
 
    Level: intermediate
 
-   Contributed by: Matthew Knepley
-
    Concepts: histogram^creating
 
 .seealso: PetscDrawHGDestroy()
@@ -104,8 +102,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGCreate(PetscDraw draw, int bins, Petsc
 
    Level: intermediate
 
-  Contributed by: Matthew Knepley
-
    Concepts: histogram^setting number of bins
 
 @*/
@@ -137,8 +133,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGSetNumberBins(PetscDrawHG hist, int bi
 
   Level: intermediate
 
-  Contributed by: Matthew Knepley
-
   Concepts: histogram^resetting
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDrawHGReset(PetscDrawHG hist)
@@ -164,8 +158,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGReset(PetscDrawHG hist)
 . hist - The histogram context
 
   Level: intermediate
-
-  Contributed by: Matthew Knepley
 
 .seealso:  PetscDrawHGCreate()
 @*/
@@ -199,8 +191,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGDestroy(PetscDrawHG hist)
 - value - The value 
 
   Level: intermediate
-
-  Contributed by: Matthew Knepley
 
   Concepts: histogram^adding values
 
@@ -271,7 +261,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGAddValue(PetscDrawHG hist, PetscReal v
 
   Level: intermediate
 
-  Contributed by: Matthew Knepley
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDrawHGDraw(PetscDrawHG hist)
 {
@@ -414,8 +403,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGDraw(PetscDrawHG hist)
 
   Level: beginner
 
-  Contributed by: Matthew Knepley
-
 .keywords:  draw, histogram
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDrawHGPrint(PetscDrawHG hist)
@@ -535,8 +522,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGSetColor(PetscDrawHG hist, int color)
 
   Level: intermediate
 
-  Contributed by: Matthew Knepley
-
   Concepts: histogram^setting axis
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal x_min, PetscReal x_max, int y_min, int y_max) 
@@ -563,8 +548,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal 
 
   Level: intermediate
 
-  Contributed by: Matthew Knepley
-
 .keywords:  draw, histogram, statistics
 
 @*/
@@ -588,8 +571,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGCalcStats(PetscDrawHG hist, PetscTruth
 - ints - Flag for integer width bins
 
   Level: intermediate
-
-  Contributed by: Matthew Knepley
 
 .keywords:  draw, histogram, statistics
 @*/
@@ -619,7 +600,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGIntegerBins(PetscDrawHG hist, PetscTru
 
   Level: intermediate
 
-  Contributed by: Matthew Knepley
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDrawHGGetAxis(PetscDrawHG hist, PetscDrawAxis *axis)
 {
@@ -645,7 +625,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGGetAxis(PetscDrawHG hist, PetscDrawAxi
 
   Level: intermediate
 
-  Contributed by: Matthew Knepley
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDrawHGGetDraw(PetscDrawHG hist, PetscDraw *win)
 {

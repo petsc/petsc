@@ -137,8 +137,13 @@ PCShellGetContext, similar to MatShell.</li>
         <li>Removed -pc_asm_in_place and PCASMSetUseInPlace() since the
 option made no sense</li>
       </ul>
-      <p><u><b>KSP:</b></u><br>
-      </p>
+      <p><u><b>KSP:</b></u></p>
+      <ul>
+        <li>Added KSPCGUseSingleReduction() -ksp_cg_single_reduction ;
+recommended for use with many processors when VecDot() starts to take a
+large amount of time, Requires 2 extra work vectors.<br>
+        </li>
+      </ul>
       <ul>
       </ul>
       <ul>

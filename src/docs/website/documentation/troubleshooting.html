@@ -250,13 +250,16 @@ problem.<br>
 
 &nbsp; <br>
 
- If -malloc_debug does not help for GNU/Linux you can try using&nbsp;<a href="http://valgrind.org">http://valgrind.org </a>to look for memory corruption,
-&nbsp;on the Apple do "man libgmalloc" to see how to detect memory corruption.</span></font></p>
+ If -malloc_debug does not help for GNU/Linux and Apple Mac OS X you can try using&nbsp;<a href="http://valgrind.org">http://valgrind.org </a>to look for memory corruption</span></font></p> Make sure valgrind is in your path, then use:
 
+${PETSC_ARCH}/bin/petscmpiexec -valgrind -n <numberofprocessors> petscprogramname programoptions
 
-mpiexec -n <np> valgrind -q --tool=memcheck --num-callers=20 petscprogram petscoptions</p>
+or you can explicitly call mpiexec with valgrind:
 
-You can also run in the debugger and the argument -start_in_debugger, when it crashes type where and look at the variables to see why it crashed.
+mpiexec -n <np> valgrind -q --tool=memcheck --num-callers=20 petscprogramname petscoptions</p>
+
+On Apple you also need the valgrind option --dsymutil=yes before the petscprogramname
+
 
   </np></li>
 

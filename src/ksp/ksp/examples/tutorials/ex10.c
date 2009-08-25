@@ -312,6 +312,7 @@ int main(int argc,char **args)
         while ( num_rhs-- ) {
 	  if (num_rhs == 1) VecSet(x,0.0);
           ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+	  VecView(x,PETSC_VIEWER_BINARY_WORLD);
           ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
           ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
         }

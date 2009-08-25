@@ -1668,7 +1668,6 @@ PetscErrorCode MatZeroRows_MPIBAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscS
      code so that MatSetValues() is not called for each diagonal allocating
      new memory, thus calling lots of mallocs and slowing things down.
 
-       Contributed by: Matthew Knepley
   */
   /* must zero l->B before l->A because the (diag) case below may put values into l->B*/
   ierr = MatZeroRows_SeqBAIJ(l->B,slen,lrows,0.0);CHKERRQ(ierr); 

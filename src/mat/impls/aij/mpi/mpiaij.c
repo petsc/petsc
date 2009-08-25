@@ -674,7 +674,6 @@ PetscErrorCode MatZeroRows_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
      code so that MatSetValues() is not called for each diagonal allocating
      new memory, thus calling lots of mallocs and slowing things down.
 
-       Contributed by: Matthew Knepley
   */
   /* must zero l->B before l->A because the (diag) case below may put values into l->B*/
   ierr = MatZeroRows(l->B,slen,lrows,0.0);CHKERRQ(ierr); 
@@ -1217,6 +1216,11 @@ PetscErrorCode MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
   PetscFunctionBegin;
   if (its > 1 || ~flag & SOR_ZERO_INITIAL_GUESS || flag & SOR_EISENSTAT) {
     ierr = VecDuplicate(bb,&bb1);CHKERRQ(ierr);
+  }
+
+  if (flag == SOR_APPLY_UPPER) {
+    ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,lits,1,xx);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
   }
 
   if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP){
@@ -5156,6 +5160,9 @@ EXTERN_C_END
  
        See MatCreateMPIAIJ() for the definition of "diagonal" and "off-diagonal" portion of the matrix
 
+       This sets local rows and cannot be used to set off-processor values. 
+
+       You cannot later use MatSetValues() to change values in this matrix.
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 

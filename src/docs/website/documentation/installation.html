@@ -234,9 +234,9 @@ file-system. By changing PETSC_DIR one can switch between the
 versions</p>
       <p><b><font color="#551a8b">PETSC_ARCH</font></b>:
 this
-environment/make variable is used to specify the configuration that
+environment or make variable is used to specify the configuration that
 should currently be used. It corresponds to the configuration files
-in bmake/${PETSC_ARCH}. Multiple variants of PETSc libraries can be
+in ${PETSC_DIR}/${PETSC_ARCH}. Multiple variants of PETSc libraries can be
 installed - each variant corresponding to a different PETSC_ARCH. One
 can switch between using these variants - by changing the value of
 PETSC_ARCH. If PETSC_ARCH is not set, the configuration from the last

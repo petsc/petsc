@@ -504,11 +504,12 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
       pj   = b->j + bi[i] ;
       nz   = bi[i+1] - bi[i];
       diag = diag_offset[i] - bi[i];
-      rs   = -PetscAbsScalar(pv[diag]);
+      rs   = 0.0;
       for (j=0; j<nz; j++) {
         pv[j] = rtmp[pj[j]];
         rs   += PetscAbsScalar(pv[j]);
       }
+      rs   -= PetscAbsScalar(pv[diag]);
 
       /* 9/13/02 Victor Eijkhout suggested scaling zeropivot by rs for matrices with funny scalings */
       sctx.rs  = rs;

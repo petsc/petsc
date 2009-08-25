@@ -2453,6 +2453,11 @@ PetscErrorCode MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType fla
   if (its <= 0 || lits <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D and local its %D both positive",its,lits);
   if (bs > 1) SETERRQ(PETSC_ERR_SUP,"SSOR for block size > 1 is not yet implemented");
 
+  if (flag == SOR_APPLY_UPPER) {
+    ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,lits,1,xx);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
   if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP){
     if ( flag & SOR_ZERO_INITIAL_GUESS ) {
       ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,lits,lits,xx);CHKERRQ(ierr);

@@ -4,6 +4,24 @@
 #    Uses PETSC_ARCH and PETSC_DIR plus the MPIEXEC command in
 #  packages to run mpiexec
 #
+if ($1 == '-h' | $1 == '--help') then
+  echo "Usage: petscmpiexec <-valgrind> -n <numberprocessors> programname <programopions>"
+  exit
+endif
+
+set valgrind=0
+if ( $1 == "-valgrind" ) then
+  set valgrind = 1
+  shift
+endif
+
+if ( $1 !=  "-n" ) then
+  echo "Error in  mpiexec command: must start with -n <numberprocessors> or -valgrind -n <numberprocessors>"
+  exit 1
+endif
+shift
+set np=$1
+shift
 
 set MPI_BUILD_HOME = `grep MPI_BUILD_HOME ${PETSC_DIR}/${PETSC_ARCH}/conf/petscvariables | grep -v mpiexec | grep -v include | grep -v lib | grep -v "#MPI_HOME" | cut -f2 -d=`
 set MPI_HOME = `grep "MPI_HOME " ${PETSC_DIR}/${PETSC_ARCH}/conf/petscvariables | grep -v build | grep -v include | grep -v "#MPI_HOME" | grep -v mpe  | cut -f2 -d=`
@@ -22,6 +40,14 @@ set qrun = `echo ${nrun} | sed -e sz\$PETSC_DIRz${PETSC_DIR}z`
 
 #echo $qrun $*
 
-$qrun $*
+if ( ${valgrind} == "1" ) then
+  if ( `uname` == 'Darwin') then
+    $qrun -n $np valgrind -q --tool=memcheck --dsymutil=yes --num-callers=20  $*
+  else 
+    $qrun -n $np valgrind -q --tool=memcheck --num-callers=20  $*
+  endif
+else
+  $qrun -n $np $*
+endif
 
 

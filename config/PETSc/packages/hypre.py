@@ -12,7 +12,7 @@ class Configure(PETSc.package.Package):
     self.functions = ['HYPRE_IJMatrixCreate']
     self.includes  = ['HYPRE.h']
     self.liblist   = [['libHYPRE.a']]
-    self.license   = 'http://www.llnl.gov/CASC/hypre/download/hyprebeta_cur_agree.html'
+    self.license   = 'https://computation.llnl.gov/casc/linear_solvers/sls_hypre.html'
     return
 
   def setupDependencies(self, framework):
@@ -51,7 +51,6 @@ class Configure(PETSc.package.Package):
       raise RuntimeError('Error: Hypre requires Fortran compiler. None specified (was your MPI built with Fortran support?')
     if self.mpi.include:
       # just use the first dir - and assume the subsequent one isn't necessary [relavant only on AIX?]
-      print 'using: ' + '--with-MPI-include="'+self.mpi.include[0]+'"'
       args.append('--with-MPI-include="'+self.mpi.include[0]+'"')
     libdirs = []
     for l in self.mpi.lib:

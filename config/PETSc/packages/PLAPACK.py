@@ -9,7 +9,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/PLAPACKR32-March_2008.tar.gz']
+    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/PLAPACKR32-Aug-21-2009.tar.gz']
     self.functions  = ['PLA_LU']
     self.includes   = ['PLA.h']
     self.liblist    = [['libPLAPACK.a']]

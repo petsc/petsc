@@ -124,6 +124,7 @@ class Installer(script.Script):
     return
 
   def installConf(self):
+    # rootConfDir can have a duplicate petscvariables - so processing it first removes the appropriate duplicate file.
     self.copies.extend(self.copytree(self.rootConfDir, self.installConfDir, copyFunc = self.copyConf))
     self.copies.extend(self.copytree(self.archConfDir, self.installConfDir))
     # Just copyConf() a couple of files manually [as the rest of the files should not be modified]

@@ -200,6 +200,7 @@ EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsSetGramSchmidtType(TS,TSSundi
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsSetGMRESRestart(TS,PetscInt);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsSetLinearTolerance(TS,PetscReal);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsSetExactFinalTime(TS,PetscTruth);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsMonitorInternalSteps(TS,PetscTruth);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsGetParameters(TS,PetscInt *,long*[],double*[]);
 #endif
 

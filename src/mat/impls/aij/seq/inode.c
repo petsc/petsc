@@ -1680,9 +1680,10 @@ PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
   }
   if (flag & SOR_EISENSTAT) {
     const PetscScalar *b;
+    MatScalar         *t = a->inode.ssor_work;
+
     ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
     ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
-    MatScalar *t = a->inode.ssor_work;
     /*
           Apply  (U + D)^-1  where D is now the block diagonal 
     */

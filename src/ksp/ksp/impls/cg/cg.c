@@ -58,7 +58,7 @@ PetscErrorCode KSPSetUp_CG(KSP ksp)
 {
   KSP_CG         *cgP = (KSP_CG*)ksp->data;
   PetscErrorCode ierr;
-  PetscInt        maxit = ksp->max_it;
+  PetscInt        maxit = ksp->max_it,nwork = 3;
 
   PetscFunctionBegin;
   /* 
@@ -72,7 +72,8 @@ PetscErrorCode KSPSetUp_CG(KSP ksp)
   }
 
   /* get work vectors needed by CG */
-  ierr = KSPDefaultGetWork(ksp,3);CHKERRQ(ierr);
+  if (cgP->singlereduction) nwork += 2;
+  ierr = KSPDefaultGetWork(ksp,nwork);CHKERRQ(ierr);
 
   /*
      If user requested computations of eigenvalues then allocate work
@@ -93,8 +94,9 @@ PetscErrorCode KSPSetUp_CG(KSP ksp)
 }
 
 /*
-       KSPSolve_CG - This routine actually applies the conjugate gradient 
-    method
+       KSPSolve_CG - This routine actually applies the conjugate gradient  method
+
+   This routine is MUCH too messy. I has two many options (norm type and single reduction) embedded making the code confusing and likely to be buggy.
 
    Input Parameter:
 .     ksp - the Krylov space object that was set to use conjugate gradient, by, for 
@@ -106,9 +108,9 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i,stored_max_it,eigs;
-  PetscScalar    dpi,a = 1.0,beta,betaold = 1.0,b = 0,*e = 0,*d = 0;
+  PetscScalar    dpi = 0.0,a = 1.0,beta,betaold = 1.0,b = 0,*e = 0,*d = 0,delta,dpiold;
   PetscReal      dp = 0.0;
-  Vec            X,B,Z,R,P;
+  Vec            X,B,Z,R,P,S,W;
   KSP_CG         *cg;
   Mat            Amat,Pmat;
   MatStructure   pflag;
@@ -126,6 +128,12 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
   R             = ksp->work[0];
   Z             = ksp->work[1];
   P             = ksp->work[2];
+  if (cg->singlereduction) {
+    S           = ksp->work[3]; 
+    W           = ksp->work[4];
+  } else {
+    W           = Z;
+  } 
 
 #if !defined(PETSC_USE_COMPLEX)
 #define VecXDot(x,y,a) VecDot(x,y,a)
@@ -151,6 +159,10 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);                /*    dp <- r'*r = e'*A'*A*e            */
   } else if (ksp->normtype == KSP_NORM_NATURAL) {
     ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);                   /*     z <- Br         */
+    if (cg->singlereduction) {
+      ierr = KSP_MatMult(ksp,Amat,Z,S);CHKERRQ(ierr);  
+      ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);
+    }
     ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);                     /*  beta <- z'*r       */
     if PetscIsInfOrNanScalar(beta) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
     dp = sqrt(PetscAbsScalar(beta));                           /*    dp <- r'*z = r'*B*r = e'*A'*B*A*e */
@@ -166,10 +178,14 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
     ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);                   /*     z <- Br         */
   }
   if (ksp->normtype != KSP_NORM_NATURAL){
+    if (cg->singlereduction) {
+      ierr = KSP_MatMult(ksp,Amat,Z,S);CHKERRQ(ierr);  
+      ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);
+    }
     ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);         /*  beta <- z'*r       */
     if PetscIsInfOrNanScalar(beta) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
   }
-
+  
   i = 0;
   do {
      ksp->its = i+1;
@@ -197,9 +213,15 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
        }
        ierr = VecAYPX(P,b,Z);CHKERRQ(ierr);    /*     p <- z + b* p   */
      }
+     dpiold = dpi;
+     if (!cg->singlereduction || !i) {
+       ierr = KSP_MatMult(ksp,Amat,P,W);CHKERRQ(ierr);          /*     w <- Kp         */
+       ierr = VecXDot(P,W,&dpi);CHKERRQ(ierr);                  /*     dpi <- p'w     */
+     } else { 
+	ierr = VecAYPX(W,beta/betaold,S);CHKERRQ(ierr);                  /*     w <- Kp         */
+        dpi = delta - beta*beta*dpiold/(betaold*betaold);              /*     dpi <- p'w     */
+     }
      betaold = beta;
-     ierr = KSP_MatMult(ksp,Amat,P,Z);CHKERRQ(ierr);          /*     z <- Kp         */
-     ierr = VecXDot(P,Z,&dpi);CHKERRQ(ierr);      /*     dpi <- z'p      */
      if PetscIsInfOrNanScalar(dpi) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
 
      if (PetscRealPart(dpi) <= 0.0) {
@@ -207,20 +229,34 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
        ierr = PetscInfo(ksp,"diverging due to indefinite or negative definite matrix\n");CHKERRQ(ierr);
        break;
      }
-     a = beta/dpi;                                 /*     a = beta/p'z    */
+     a = beta/dpi;                                 /*     a = beta/p'w   */
      if (eigs) {
        d[i] = sqrt(PetscAbsScalar(b))*e[i] + 1.0/a;
      }
      ierr = VecAXPY(X,a,P);CHKERRQ(ierr);          /*     x <- x + ap     */
-     ierr = VecAXPY(R,-a,Z);CHKERRQ(ierr);                      /*     r <- r - az     */
+     ierr = VecAXPY(R,-a,W);CHKERRQ(ierr);                      /*     r <- r - aw    */
      if (ksp->normtype == KSP_NORM_PRECONDITIONED && ksp->chknorm < i+2) {
        ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*     z <- Br         */
+       if (cg->singlereduction) {
+         ierr = KSP_MatMult(ksp,Amat,Z,S);CHKERRQ(ierr);  
+       }
        ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- z'*z       */
      } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED && ksp->chknorm < i+2) {
        ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- r'*r       */
      } else if (ksp->normtype == KSP_NORM_NATURAL) {
        ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*     z <- Br         */
-       ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);     /*  beta <- r'*z       */
+       if (cg->singlereduction) {
+         PetscScalar tmp[2];
+         Vec         vecs[2];
+         vecs[0] = S; vecs[1] = R;
+         ierr = KSP_MatMult(ksp,Amat,Z,S);CHKERRQ(ierr);  
+         /*ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);
+	   ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr); */    /*  beta <- r'*z       */
+         ierr = VecMDot(Z,2,vecs,tmp);CHKERRQ(ierr);
+         delta = tmp[0]; beta = tmp[1];
+       } else {
+         ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);     /*  beta <- r'*z       */
+       }
        if PetscIsInfOrNanScalar(beta) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
        dp = sqrt(PetscAbsScalar(beta));
      } else {
@@ -234,9 +270,22 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
 
      if ((ksp->normtype != KSP_NORM_PRECONDITIONED && (ksp->normtype != KSP_NORM_NATURAL)) || (ksp->chknorm >= i+2)){
        ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);                   /*     z <- Br         */ 
+       if (cg->singlereduction) {
+         ierr = KSP_MatMult(ksp,Amat,Z,S);CHKERRQ(ierr);  
+       }
      }
      if ((ksp->normtype != KSP_NORM_NATURAL) || (ksp->chknorm >= i+2)){
-       ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);        /*  beta <- z'*r       */
+       if (cg->singlereduction) {
+         PetscScalar tmp[2];
+         Vec         vecs[2];
+         vecs[0] = S; vecs[1] = R;
+	 /* ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);   */     /*  beta <- z'*r       */
+         /* ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);*/
+         ierr = VecMDot(Z,2,vecs,tmp);CHKERRQ(ierr);
+         delta = tmp[0]; beta = tmp[1];
+       } else {
+	 ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);        /*  beta <- z'*r       */
+       }
        if PetscIsInfOrNanScalar(beta) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
      }
 
@@ -266,6 +315,7 @@ PetscErrorCode KSPDestroy_CG(KSP ksp)
   }
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPCGSetType_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPCGUseSingleReduction_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -305,18 +355,18 @@ PetscErrorCode KSPView_CG(KSP ksp,PetscViewer viewer)
 #define __FUNCT__ "KSPSetFromOptions_CG"
 PetscErrorCode KSPSetFromOptions_CG(KSP ksp)
 {
-#if defined(PETSC_USE_COMPLEX)
   PetscErrorCode ierr;
   KSP_CG         *cg = (KSP_CG *)ksp->data;
-#endif
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
   ierr = PetscOptionsHead("KSP CG and CGNE options");CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
   ierr = PetscOptionsEnum("-ksp_cg_type","Matrix is Hermitian or complex symmetric","KSPCGSetType",KSPCGTypes,(PetscEnum)cg->type,
                           (PetscEnum*)&cg->type,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
 #endif
+  ierr = PetscOptionsTruth("-ksp_cg_single_reduction","Merge inner products into single MPI_Allreduce()",
+                           "KSPCGUseSingleReduction",cg->singlereduction,&cg->singlereduction,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -332,11 +382,23 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "KSPCGSetType_CG" 
 PetscErrorCode PETSCKSP_DLLEXPORT KSPCGSetType_CG(KSP ksp,KSPCGType type)
 {
-  KSP_CG *cg;
+  KSP_CG *cg = (KSP_CG *)ksp->data;
 
   PetscFunctionBegin;
-  cg = (KSP_CG *)ksp->data;
   cg->type = type;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "KSPCGUseSingleReduction_CG" 
+PetscErrorCode PETSCKSP_DLLEXPORT KSPCGUseSingleReduction_CG(KSP ksp,PetscTruth flg)
+{
+  KSP_CG *cg  = (KSP_CG *)ksp->data;
+
+  PetscFunctionBegin;
+  cg->singlereduction = flg;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -352,7 +414,8 @@ EXTERN_C_END
 
    Options Database Keys:
 +   -ksp_cg_type Hermitian - (for complex matrices only) indicates the matrix is Hermitian
--   -ksp_cg_type symmetric - (for complex matrices only) indicates the matrix is symmetric
+.   -ksp_cg_type symmetric - (for complex matrices only) indicates the matrix is symmetric
+-   -ksp_cg_single_reduction - performs both inner products needed in the algorithm with a single MPI_Allreduce() call, see KSPCGUseSingleReduction()
 
    Level: beginner
 
@@ -365,7 +428,7 @@ EXTERN_C_END
    pp. 409--436.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
-           KSPCGSetType()
+           KSPCGSetType(), KSPCGUseSingleReduction()
 
 M*/
 EXTERN_C_BEGIN
@@ -403,9 +466,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CG(KSP ksp)
       KSPCGSetType() checks for this attached function and calls it if it finds
       it. (Sort of like a dynamic member function that can be added at run time
   */
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPCGSetType_C",
-					   "KSPCGSetType_CG",
-					   KSPCGSetType_CG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPCGSetType_C","KSPCGSetType_CG", KSPCGSetType_CG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPCGUseSingleReduction_C","KSPCGUseSingleReduction_CG", KSPCGUseSingleReduction_CG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

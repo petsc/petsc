@@ -298,10 +298,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
     /* not used here, but called so will go into help messaage */
     ierr = PetscOptionsName("-snes_view","Print detailed information on solver used","SNESView",0);CHKERRQ(ierr);
 
-    ierr = PetscOptionsReal("-snes_stol","Stop if step length less then","SNESSetTolerances",snes->xtol,&snes->xtol,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-snes_atol","Stop if function norm less then","SNESSetTolerances",snes->abstol,&snes->abstol,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_stol","Stop if step length less than","SNESSetTolerances",snes->xtol,&snes->xtol,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_atol","Stop if function norm less than","SNESSetTolerances",snes->abstol,&snes->abstol,0);CHKERRQ(ierr);
 
-    ierr = PetscOptionsReal("-snes_rtol","Stop if decrease in function norm less then","SNESSetTolerances",snes->rtol,&snes->rtol,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_rtol","Stop if decrease in function norm less than","SNESSetTolerances",snes->rtol,&snes->rtol,0);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-snes_max_it","Maximum iterations","SNESSetTolerances",snes->max_its,&snes->max_its,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-snes_max_funcs","Maximum function evaluations","SNESSetTolerances",snes->max_funcs,&snes->max_funcs,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-snes_max_fail","Maximum failures","SNESSetTolerances",snes->maxFailures,&snes->maxFailures,PETSC_NULL);CHKERRQ(ierr);

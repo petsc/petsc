@@ -23,7 +23,6 @@
    We are finding the zero of f() so the one dimensional minimization problem we are
    solving in the line search is minimize .5*f(x_n + lambda*step_direction) . f(x_n + lambda*step_direction)
 
-   Contributed by: Mathew Knepley
 
 .keywords: SNES, nonlinear, set, line search params
 
@@ -65,8 +64,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetParams(SNES snes,PetscReal a
 
    We are finding the zero of f() so the one dimensional minimization problem we are
    solving in the line search is minimize .5*f(x_n + lambda*step_direction) . f(x_n + lambda*step_direction)
-
-   Contributed by: Mathew Knepley
 
 .keywords: SNES, nonlinear, set, line search parameters
 

@@ -19,9 +19,6 @@
 EXTERN_C_BEGIN
 #include "cvode/cvode.h"                  /* prototypes for CVODE fcts. */
 #include "cvode/cvode_spgmr.h"            /* prototypes and constants for CVSPGMR solver */
-#include "sundials/sundials_smalldense.h" /* prototypes for small dense matrix fcts. */
-#include "sundials/sundials_types.h"      /* definitions of realtype, booleantype */
-#include "sundials/sundials_math.h"       /* definition of macros SQR and EXP */
 #include "nvector/nvector_parallel.h"     /* definition N_Vector and macro NV_DATA_P  */
 EXTERN_C_END
 
@@ -41,11 +38,12 @@ typedef struct {
   double                    linear_tol;
 
   /* Variables used by Sundials */
-  MPI_Comm comm_sundials;
-  double   reltol;
-  double   abstol;          /* only for using SS flag in SUNDIALS */
-  N_Vector y;               /* current solution */
-  void     *mem;
+  MPI_Comm    comm_sundials;
+  double      reltol;
+  double      abstol;        /* only for using SS flag in SUNDIALS */
+  N_Vector    y;             /* current solution */
+  void        *mem;
+  PetscTruth  monitorstep;   /* flag for monitor internal steps; itask=V_ONE_STEP or itask=CV_NORMAL*/
 } TS_Sundials;
 #endif
 
