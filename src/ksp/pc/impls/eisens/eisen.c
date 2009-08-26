@@ -80,7 +80,7 @@ static PetscErrorCode PCPreSolve_Eisenstat(PC pc,KSP ksp,Vec b,Vec x)
     ierr = MatRelax(eis->A,x,eis->omega,SOR_APPLY_UPPER,0.0,1,1,x);CHKERRQ(ierr);
   }
 
-  /* modify b by (L + D)^{-1} */
+  /* modify b by (L + D/omega)^{-1} */
   ierr =   MatRelax(eis->A,b,eis->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_FORWARD_SWEEP),0.0,1,1,b);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
@@ -93,6 +93,7 @@ static PetscErrorCode PCPostSolve_Eisenstat(PC pc,KSP ksp,Vec b,Vec x)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  /* modify x by (U + D/omega)^{-1} */
   ierr =   MatRelax(eis->A,x,eis->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_BACKWARD_SWEEP),0.0,1,1,x);CHKERRQ(ierr);
   pc->mat = eis->A;
   /* get back true b */
