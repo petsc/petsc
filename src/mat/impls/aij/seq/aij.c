@@ -1235,50 +1235,37 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
   }
   if (flag & SOR_ZERO_INITIAL_GUESS) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
-#if defined(PETSC_USE_FORTRAN_KERNEL_RELAXAIJ)
-      fortranrelaxaijforwardzero_(&m,&omega,x,a->i,a->j,(PetscInt*)diag,idiag,a->a,(void*)b);
-#else
       for (i=0; i<m; i++) {
         n    = diag[i] - a->i[i];
         idx  = a->j + a->i[i];
         v    = a->a + a->i[i];
         sum  = b[i];
         PetscSparseDenseMinusDot(sum,x,v,idx,n); 
+        t[i] = sum; 
         x[i] = sum*idiag[i];
       }
-#endif
-      xb = x;
+      xb = t;
       ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
     } else xb = b;
-    if ((flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) && 
-        (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP)) {
-      for (i=0; i<m; i++) {
-        x[i] *= mdiag[i];
-      }
-      ierr = PetscLogFlops(m);CHKERRQ(ierr);
-    }
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
-#if defined(PETSC_USE_FORTRAN_KERNEL_RELAXAIJ)
-      fortranrelaxaijbackwardzero_(&m,&omega,x,a->i,a->j,(PetscInt*)diag,idiag,a->a,(void*)xb);
-#else
       for (i=m-1; i>=0; i--) {
         n    = a->i[i+1] - diag[i] - 1;
         idx  = a->j + diag[i] + 1;
         v    = a->a + diag[i] + 1;
         sum  = xb[i];
-        PetscSparseDenseMinusDot(sum,x,v,idx,n); 
-        x[i] = sum*idiag[i];
+        PetscSparseDenseMinusDot(sum,x,v,idx,n);
+        if (xb == b) {
+          x[i] = sum*idiag[i];
+        } else {
+          x[i] = (1-omega)*x[i] + sum*idiag[i];
+        }
       }
-#endif
       ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
     }
     its--;
   }
   while (its--) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
-#if defined(PETSC_USE_FORTRAN_KERNEL_RELAXAIJ)
-      fortranrelaxaijforward_(&m,&omega,x,a->i,a->j,(PetscInt*)diag,a->a,(void*)b);
-#else
       for (i=0; i<m; i++) {
         n    = a->i[i+1] - a->i[i]; 
         idx  = a->j + a->i[i];
@@ -1287,13 +1274,9 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
         PetscSparseDenseMinusDot(sum,x,v,idx,n); 
         x[i] = (1. - omega)*x[i] + (sum + mdiag[i]*x[i])*idiag[i];
       }
-#endif 
       ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
     }
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
-#if defined(PETSC_USE_FORTRAN_KERNEL_RELAXAIJ)
-      fortranrelaxaijbackward_(&m,&omega,x,a->i,a->j,(PetscInt*)diag,a->a,(void*)b);
-#else
       for (i=m-1; i>=0; i--) {
         n    = a->i[i+1] - a->i[i]; 
         idx  = a->j + a->i[i];
@@ -1302,7 +1285,6 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
         PetscSparseDenseMinusDot(sum,x,v,idx,n); 
         x[i] = (1. - omega)*x[i] + (sum + mdiag[i]*x[i])*idiag[i];
       }
-#endif
       ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
     }
   }
