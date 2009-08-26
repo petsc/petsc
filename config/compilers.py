@@ -158,6 +158,14 @@ class Configure(config.base.Configure):
     self.setCompilers.LDFLAGS = oldFlags
     self.popLanguage()
 
+    # PGI: kill anything enclosed in single quotes
+    if output.find('\'') >= 0:
+      if output.count('\'')%2: raise RuntimeError('Mismatched single quotes in C library string')
+      while output.find('\'') >= 0:
+        start = output.index('\'')
+        end   = output.index('\'', start+1)+1
+        output = output.replace(output[start:end], '')
+
     # The easiest thing to do for xlc output is to replace all the commas
     # with spaces.  Try to only do that if the output is really from xlc,
     # since doing that causes problems on other systems.
