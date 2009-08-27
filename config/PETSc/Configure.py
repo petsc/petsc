@@ -78,7 +78,7 @@ class Configure(config.base.Configure):
                                             'unistd', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
                                             'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib','memory',
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',
-                                            'WindowsX', 'cxxabi','float.h','ieeefp','xmmintrin.h'])
+                                            'WindowsX', 'cxxabi','float','ieeefp','xmmintrin'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
                  'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times', 'gethostbyname',
@@ -247,10 +247,7 @@ class Configure(config.base.Configure):
 
   def configurePrefetch(self):
     '''Sees if there are any prefetch functions supported'''
-    if hasattr(self.compilers, 'CXX'):
-      self.pushLanguage('C++')
-    else:
-      self.pushLanguage('C')      
+    self.pushLanguage(self.languages.clanguage)      
     if self.checkLink('#include <xmmintrin.h>', 'void *v = 0;_mm_prefetch(v,(enum _mm_hint)0);\n'):
       self.addDefine('HAVE_XMMINTRIN_H', 1)
       self.addDefine('Prefetch(a,b,c)', '_mm_prefetch((void*)(a),(enum _mm_hint)c)')

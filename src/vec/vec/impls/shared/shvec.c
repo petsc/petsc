@@ -8,6 +8,7 @@
      Could not get the include files to work properly on the SGI with 
   the C++ compiler.
 */
+/* #define PETSC_USE_SHARED_MEMORY */
 #if defined(PETSC_USE_SHARED_MEMORY) && !defined(__cplusplus)
 
 EXTERN PetscErrorCode PetscSharedMalloc(MPI_Comm,PetscInt,PetscInt,void**);
@@ -33,8 +34,8 @@ PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
   (*v)->stash.donotstash   = win->stash.donotstash;
   (*v)->stash.ignorenegidx = win->stash.ignorenegidx;
   
-  ierr = PetscOListDuplicate(((PetscObject)win)->olist,&(*v)((PetscObject))->olist);CHKERRQ(ierr);
-  ierr = PetscFListDuplicate(((PetscObject)win)->qlist,&(*v)((PetscObject))->qlist);CHKERRQ(ierr);
+  ierr = PetscOListDuplicate(((PetscObject)win)->olist,&((PetscObject)*v)->olist);CHKERRQ(ierr);
+  ierr = PetscFListDuplicate(((PetscObject)win)->qlist,&((PetscObject)*v)->qlist);CHKERRQ(ierr);
 
   if (win->mapping) {
     ierr = PetscObjectReference((PetscObject)win->mapping);CHKERRQ(ierr);
@@ -101,10 +102,12 @@ EXTERN_C_END
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
+#include <sys/shm.h>
+#include <sys/mman.h>
+
 #include "petscfix.h"
 
 static PetscMPIInt Petsc_Shared_keyval = MPI_KEYVAL_INVALID;
-static PetscInt Petsc_Shared_size   = 100000000;
 
 #undef __FUNCT__  
 #define __FUNCT__ "Petsc_DeleteShared" 
@@ -124,107 +127,44 @@ static PetscErrorCode Petsc_DeleteShared(MPI_Comm comm,PetscInt keyval,void* att
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscSharedMemorySetSize"
-PetscErrorCode PetscSharedMemorySetSize(PetscInt s)
-{
-  PetscFunctionBegin;
-  Petsc_Shared_size = s;
-  PetscFunctionReturn(0);
-}
-
 #include "petscfix.h"
-
-#include <ulocks.h>
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscSharedInitialize"
-PetscErrorCode PetscSharedInitialize(MPI_Comm comm)
-{
-  PetscErrorCode ierr;
-  PetscMPIInt    rank,flag;
-  char           filename[PETSC_MAX_PATH_LEN];
-  usptr_t        **arena;
-
-  PetscFunctionBegin;
-
-  if (Petsc_Shared_keyval == MPI_KEYVAL_INVALID) {
-    /* 
-       The calling sequence of the 2nd argument to this function changed
-       between MPI Standard 1.0 and the revisions 1.1 Here we match the 
-       new standard, if you are using an MPI implementation that uses 
-       the older version you will get a warning message about the next line;
-       it is only a warning message and should do no harm.
-    */
-    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DeleteShared,&Petsc_Shared_keyval,0);CHKERRQ(ierr);
-  }
-
-  ierr = MPI_Attr_get(comm,Petsc_Shared_keyval,(void**)&arena,&flag);CHKERRQ(ierr);
-
-  if (!flag) {
-    /* This communicator does not yet have a shared memory areana */
-    ierr = PetscMalloc(sizeof(usptr_t*),&arena);CHKERRQ(ierr);
-
-    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-    if (!rank) {
-      ierr = PetscStrcpy(filename,"/tmp/PETScArenaXXXXXX");CHKERRQ(ierr);
-#ifdef PETSC_HAVE_MKSTEMP
-      if (mkstemp(filename) < 0) {
-        SETERRQ1(PETSC_ERR_FILE_OPEN, "Unable to open temporary file %s", filename);
-      }
-#else
-      if (!mktemp(filename)) {
-        SETERRQ1(PETSC_ERR_FILE_OPEN, "Unable to open temporary file %s", filename);
-      }
-#endif
-    } 
-    ierr     = MPI_Bcast(filename,PETSC_MAX_PATH_LEN,MPI_CHAR,0,comm);CHKERRQ(ierr);
-    ierr     = PetscOptionsGetInt(PETSC_NULL,"-shared_size",&Petsc_Shared_size,&flag);CHKERRQ(ierr);
-    usconfig(CONF_INITSIZE,Petsc_Shared_size);
-    *arena   = usinit(filename); 
-    ierr     = MPI_Attr_put(comm,Petsc_Shared_keyval,arena);CHKERRQ(ierr);
-  } 
-
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSharedMalloc"
 PetscErrorCode PetscSharedMalloc(MPI_Comm comm,PetscInt llen,PetscInt len,void **result)
 {
-  char           *value;
   PetscErrorCode ierr;
   PetscInt       shift;
   PetscMPIInt    rank,flag;
-  usptr_t        **arena;
+  int            *arena,id,key = 0;
+  char           *value;
 
   PetscFunctionBegin;
   *result = 0;
-  if (Petsc_Shared_keyval == MPI_KEYVAL_INVALID) {
-    ierr = PetscSharedInitialize(comm);CHKERRQ(ierr);
-  }
-  ierr = MPI_Attr_get(comm,Petsc_Shared_keyval,(void**)&arena,&flag);CHKERRQ(ierr);
-  if (!flag) { 
-    ierr = PetscSharedInitialize(comm);CHKERRQ(ierr);
-    ierr = MPI_Attr_get(comm,Petsc_Shared_keyval,(void**)&arena,&flag);CHKERRQ(ierr);
-    if (!flag) SETERRQ(PETSC_ERR_LIB,"Unable to initialize shared memory");
-  } 
 
   ierr   = MPI_Scan(&llen,&shift,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
   shift -= llen;
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-    value = (char*)usmalloc((size_t) len,*arena);
-    if (!value) {
-      (*PetscErrorPrintf)("Unable to allocate shared memory location\n");
-      (*PetscErrorPrintf)("Run with option -shared_size <size> \n");
-      (*PetscErrorPrintf)("with size > %d \n",(int)(1.2*(Petsc_Shared_size+len)));
+    id = shmget(key,len, 0666 |IPC_CREAT);
+    if (id == -1) {
+      perror("Unable to malloc shared memory");
+      SETERRQ(PETSC_ERR_LIB,"Unable to malloc shared memory");
+    }
+  } else {
+    id = shmget(key,len, 0666);
+    if (id == -1) {
+      perror("Unable to malloc shared memory");
       SETERRQ(PETSC_ERR_LIB,"Unable to malloc shared memory");
     }
   }
-  ierr = MPI_Bcast(&value,8,MPI_BYTE,0,comm);CHKERRQ(ierr);
-  value += shift; 
+  value = shmat(id,(void*)0,0);
+  if (value == (char*)-1) {
+    perror("Unable to access shared memory allocated");
+    SETERRQ(PETSC_ERR_LIB,"Unable to access shared memory allocated");
+  }
+  *result = (void*) (value + shift);
 
   PetscFunctionReturn(0);
 }
