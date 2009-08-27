@@ -349,14 +349,14 @@ PetscErrorCode MatGetSubMatrices_ADA(Mat A,PetscInt n, IS *irow,IS *icol,MatReus
   }
 
   for ( i=0; i<n; i++ ) {
-    info = MatGetSubMatrix_ADA(A,irow[i],icol[i],PETSC_DECIDE,scall,&(*B)[i]);CHKERRQ(info);
+    info = MatGetSubMatrix_ADA(A,irow[i],icol[i],scall,&(*B)[i]);CHKERRQ(info);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrix_ADA"
-PetscErrorCode MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,PetscInt csize,MatReuse cll,
+PetscErrorCode MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse cll,
 			Mat *newmat)
 {
   PetscErrorCode          info;
@@ -376,7 +376,7 @@ PetscErrorCode MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,PetscInt csize,MatR
 
   info = MatGetOwnershipRange(ctx->A,&low,&high);CHKERRQ(info);
   info = ISCreateStride(((PetscObject)mat)->comm,high-low,low,1,&ISrow);CHKERRQ(info);
-  info = MatGetSubMatrix(ctx->A,ISrow,iscol,csize,cll,&Atemp);CHKERRQ(info);
+  info = MatGetSubMatrix(ctx->A,ISrow,iscol,cll,&Atemp);CHKERRQ(info);
   info = ISDestroy(ISrow);CHKERRQ(info);
 
   if (ctx->D1){

@@ -25,7 +25,7 @@ PetscErrorCode MatShift_ADA(Mat,PetscReal);
 PetscErrorCode MatDuplicate_ADA(Mat,MatDuplicateOption,Mat*);
 PetscErrorCode MatEqual_ADA(Mat,Mat,PetscTruth*);
 PetscErrorCode MatScale_ADA(Mat,PetscReal);
-PetscErrorCode MatGetSubMatrix_ADA(Mat,IS,IS,PetscInt,MatReuse,Mat *);
+PetscErrorCode MatGetSubMatrix_ADA(Mat,IS,IS,MatReuse,Mat *);
 PetscErrorCode MatGetSubMatrices_ADA(Mat,PetscInt,IS*,IS*,MatReuse,Mat**);
 PetscErrorCode MatTranspose_ADA(Mat,Mat*);
 PetscErrorCode MatGetDiagonal_ADA(Mat,Vec);
