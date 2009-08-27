@@ -176,7 +176,8 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetUp(TaoSolver tao)
   if (!tao->solution) {
       SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSolverSetInitialVector");
   }
-  if (!tao->ops->computeobjective && !tao->ops->computeobjectiveandgradient) {
+  if (!tao->ops->computeobjective && !tao->ops->computeobjectiveandgradient &&
+      !tao->ops->computeseparableobjective) {
       SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSolverSetObjective or TaoSolverSetObjectiveAndGradient");
   }
   
