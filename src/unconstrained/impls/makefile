@@ -2,7 +2,7 @@
 
 ALL: lib
 
-DIRS     = lmvm nls
+DIRS     = lmvm nls neldermead
 # ntl ntr lmvm cg neldermead
 LOCDIR   = src/unconstrained/impls/
 
