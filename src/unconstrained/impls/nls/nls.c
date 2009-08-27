@@ -55,7 +55,7 @@ static const char *NLS_UPDATE[64] = {
   "step", "reduction", "interpolation"
 };
 
-static PetscErrorCode MatLMVMSolveShell(void *Aptr, Vec b, Vec x) ;
+static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x) ;
 // Routine for BFGS preconditioner
 
 /*
@@ -1200,9 +1200,9 @@ static int TaoSolverView_NLS(TaoSolver tao, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  comm = ((PetscObject)tao)->comm;
   if (NLS_PC_BFGS == nlsP->pc_type && nlsP->M) {
     ierr = MatLMVMGetRejects(nlsP->M,&nrejects); CHKERRQ(ierr);
-    comm = ((PetscObject)tao)->comm;
     ierr = PetscPrintf(comm, "  Rejected matrix updates: %d\n",nrejects); CHKERRQ(ierr);
   }
   ierr = PetscPrintf(comm, "  Newton steps: %d\n", nlsP->newt); CHKERRQ(ierr);
@@ -1331,14 +1331,15 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLMVMSolveShell"
-static PetscErrorCode MatLMVMSolveShell(void *Aptr, Vec b, Vec x) 
+static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x) 
 {
     PetscErrorCode ierr;
-
+    Mat M;
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(Aptr,MAT_COOKIE,1);
+    PetscValidHeaderSpecific(pc,PC_COOKIE,1);
     PetscValidHeaderSpecific(b,VEC_COOKIE,2);
     PetscValidHeaderSpecific(x,VEC_COOKIE,3);
-    ierr = MatLMVMSolve((Mat)Aptr, b, x); CHKERRQ(ierr);
+    ierr = PCShellGetContext(pc,(void**)&M); CHKERRQ(ierr);
+    ierr = MatLMVMSolve(M, b, x); CHKERRQ(ierr);
     PetscFunctionReturn(0);
 }
