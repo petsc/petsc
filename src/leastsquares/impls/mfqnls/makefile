@@ -5,9 +5,9 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = mfqnls.c
-SOURCEF  = 
-SOURCEH  = mfqnls.h
-OBJSC    = mfqnls.o
+SOURCEF  = dgqt.f
+SOURCEH  = mfqnls.h taolapack.h
+OBJSC    = mfqnls.o dgqt.o
 OBJSF    = 
 LIBBASE  = libtaosolver
 MANSEC   = solver
