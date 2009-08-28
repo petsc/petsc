@@ -4,12 +4,7 @@
  */
 #include "../src/vec/vec/impls/mpi/pvecimpl.h"   /*I  "petscvec.h"   I*/
 
-/*
-     Could not get the include files to work properly on the SGI with 
-  the C++ compiler.
-*/
-/* #define PETSC_USE_SHARED_MEMORY */
-#if defined(PETSC_USE_SHARED_MEMORY) && !defined(__cplusplus)
+#if defined(PETSC_USE_SHARED_MEMORY) 
 
 EXTERN PetscErrorCode PetscSharedMalloc(MPI_Comm,PetscInt,PetscInt,void**);
 
@@ -73,9 +68,7 @@ EXTERN_C_END
 
 
 /* ----------------------------------------------------------------------------------------
-     Code to manage shared memory allocation under the SGI with MPI
-
-  We associate with a communicator a shared memory "areana" from which memory may be shmalloced.
+     Code to manage shared memory allocation using standard Unix shared memory
 */
 #include "petscsys.h"
 #include "petscfix.h"
@@ -105,7 +98,6 @@ EXTERN_C_END
 #include <sys/shm.h>
 #include <sys/mman.h>
 
-#include "petscfix.h"
 
 static PetscMPIInt Petsc_Shared_keyval = MPI_KEYVAL_INVALID;
 
@@ -131,6 +123,22 @@ static PetscErrorCode Petsc_DeleteShared(MPI_Comm comm,PetscInt keyval,void* att
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSharedMalloc"
+/*
+
+    This routine is still incomplete and needs work.
+
+    For this to work on the Apple Mac OS X you will likely need to add something line the following to the file /etc/sysctl.conf
+cat /etc/sysctl.conf
+kern.sysv.shmmax=67108864
+kern.sysv.shmmin=1
+kern.sysv.shmmni=32
+kern.sysv.shmseg=512
+kern.sysv.shmall=1024
+
+  This does not currently free the shared memory after the program runs. Use the Unix command ipcs to see the shared memory in use and
+ipcrm to remove the shared memory in use.
+
+*/
 PetscErrorCode PetscSharedMalloc(MPI_Comm comm,PetscInt llen,PetscInt len,void **result)
 {
   PetscErrorCode ierr;
