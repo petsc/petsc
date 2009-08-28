@@ -123,7 +123,7 @@ cdef class Viewer(Object):
         cdef PetscViewer newvwr = NULL
         CHKERR( PetscViewerBinaryOpen(ccomm, cname, cmode, &newvwr) )
         PetscCLEAR(self.obj); self.vwr = newvwr
-        CHKERR( PetscViewerSetFormat(self.vwr, format) )
+        CHKERR( PetscViewerSetFormat(self.vwr, cvfmt) )
         return self
 
     def createDraw(self, display=None, title=None,
