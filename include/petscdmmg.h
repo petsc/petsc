@@ -18,7 +18,7 @@ PETSC_EXTERN_CXX_BEGIN
   Concepts: multigrid, Newton-multigrid
 
 .seealso:  DMCompositeCreate(), DA, DMComposite, DM, DMMGCreate(), DMMGSetKSP(), DMMGSetSNES(), DMMGSetInitialGuess(),
-           DMMGSetNullSpace(), DMMGSetUseGalerkin(), DMMGSetMatType()
+           DMMGSetNullSpace(), DMMGSetMatType()
 S*/
 
 /*S
@@ -31,7 +31,7 @@ S*/
   Concepts: multigrid, Newton-multigrid
 
 .seealso:  DMCompositeCreate(), DA, DMComposite, DM, DMMGCreate(), DMMGSetKSP(), DMMGSetSNES(), DMMGSetInitialGuess(),
-           DMMGSetNullSpace(), DMMGSetUseGalerkin(), DMMGSetMatType()
+           DMMGSetNullSpace(),  DMMGSetMatType()
 S*/
 typedef struct _n_DMMG* DMMG;
 struct _n_DMMG {
@@ -94,7 +94,6 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolve(DMMG*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUseMatrixFree(DMMG*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetDM(DMMG*,DM);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG*,KSP,PetscInt);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUseGalerkinCoarse(DMMG*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetNullSpace(DMMG*,PetscTruth,PetscInt,PetscErrorCode (*)(DMMG,Vec[]));
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetMatType(DMMG*,const MatType);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetISColoringType(DMMG*,ISColoringType);
