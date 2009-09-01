@@ -32,6 +32,7 @@ EXTERN PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat,Mat,PetscReal,Mat
 EXTERN PetscErrorCode MatMatMult_MPIAIJ_MPIDense(Mat,Mat,MatReuse,PetscReal,Mat*);
 EXTERN PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat,Mat,PetscReal,Mat*); 
 EXTERN PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat,Mat,Mat);
+EXTERN PetscErrorCode MatGetFactor_mpidense_petsc(Mat,MatFactorType,Mat *);
 
 #if defined(PETSC_HAVE_PLAPACK)
 EXTERN_C_BEGIN 
