@@ -1,0 +1,113 @@
+\documentclass[11pt,english,pdftex]{article}
+\usepackage{hanging} % added DRE
+\usepackage{times}
+\usepackage{url}
+\usepackage[T1]{fontenc}
+\usepackage[latin1]{inputenc}
+\usepackage{geometry}
+\geometry{verbose,letterpaper,tmargin=1.in,bmargin=1.in,lmargin=1.0in,rmargin=1.0in}
+
+\begin{document}
+Consider the matrix problem $ A x = b$, where $A = L + U + D$. 
+
+\section*{Notes on SOR Implementation}
+
+
+Symmetric successive over-relaxation as a simple iterative solver can be written as the two-step process
+\[
+x_i^{n+1/2} =  x_i^n + \omega A_{ii}^{-1}( b_i - \sum_{j < i} A_{ij} x_j^{n+1/2} - \sum_{j \ge i} A_{ij} x_j^{n}) = (1 - \omega) x_i^n + \omega A_{ii}^{-1}( b_i - \sum_{j < i} A_{ij} x_j^{n+1/2} - \sum_{j > i} A_{ij} x_j^{n})
+\]
+for $ i=1,2,...n$. Followed by 
+\[
+x_i^{n+1} = x_i^{n+1/2} + \omega A_{ii}^{-1}( b_i - \sum_{j \le i} A_{ij} x_j^{n+1/2}  - \sum_{j > i} A_{ij} x_j^{n+1}) = (1 - \omega) x_i^{n+1/2} + \omega A_{ii}^{-1}( b_i - \sum_{j < i} A_{ij} x_j^{n+1/2}  - \sum_{j > i} A_{ij} x_j^{n+1})
+\]
+for $ i=n,n-1,....1$. It is called over-relaxation because generally $ \omega $ is greater then one, though on occasion underrelaxation with $ \omega < 1$  has the fastest convergence.
+
+To use this as a preconditioner, just start with $x^0 = $ to obtain
+\[
+x_i^{1/2} =  \omega A_{ii}^{-1}( b_i - \sum_{j < i} A_{ij} x_j^{1/2})
+\]
+for $ i=1,2,...n$. Followed by 
+\[
+x_i = (1 - \omega) x_i^{1/2} + \omega A_{ii}^{-1}( b_i - \sum_{j < i} A_{ij} x_j^{1/2} - \sum_{j > i} A_{ij} x_j)
+\]
+for $ i=n,n-1,....1$.
+
+Rewriting in matrix form
+\[
+x^{1/2} = \omega (L + D)^{-1} b
+\]
+\[
+x = (1 - \omega) x^{1/2} + \omega (U + D)^{-1}(b - L x^{1/2}) = x^{1/2} + \omega (U+D)^{-1}(b - A x^{1/2}).
+\]
+
+For the SBAIJ matrix format
+\begin{verbatim}
+v  = aa + 1;
+      vj = aj + 1;
+      for (i=0; i<m; i++){
+        nz = ai[i+1] - ai[i] - 1;       
+        tmp = - (x[i] = omega*t[i]*aidiag[i]);
+        for (j=0; j<nz; j++) {
+          t[vj[j]] += tmp*v[j];
+        }
+        v  += nz + 1;
+        vj += nz + 1;
+      }
+\end{verbatim}
+the array $t$ starts with the value of $b $ and is updated a column of the matrix at at time to contain the value of $ (b - L x^{1/2})$ that
+are then needed in the upper triangular solve
+\begin{verbatim}
+      v  = aa + ai[m-1] + 1;
+      vj = aj + ai[m-1] + 1;
+      nz = 0;
+      for (i=m-1; i>=0; i--){
+        sum = 0.0;
+        nz2 = ai[i] - ai[i-1] - 1;
+	PETSC_Prefetch(v-nz2-1,0,1);
+	PETSC_Prefetch(vj-nz2-1,0,1);  
+        PetscSparseDensePlusDot(sum,x,v,vj,nz);         
+        sum = t[i] - sum;
+        x[i] =   (1-omega)*x[i] + omega*sum*aidiag[i];        
+        nz  = nz2;
+        v  -= nz + 1;
+        vj -= nz + 1;
+      }
+\end{verbatim}
+Since the values in $ aa[]$ and $ aj[]$ are visited ``backwards'', the prefetch is used to load the needed previous row of matrix values and column indices into cache before they are needed.
+
+For the AIJ format $t$ is updated a row at a time to contain $ (b - Lx^{1/2}).$
+
+
+\section*{Notes on Sequential Eisenstat Implementation}
+
+
+\[
+  x = \omega (L + D)^{-1}b
+\]
+is the same as 
+\[
+   x_i = \omega D_{ii}^{-1}(b_i - \sum_{j<i} A_{ij} x_j)
+\]
+\[
+   x_i = (D_{ii}/\omega)^{-1}(b_i - \sum_{j<i} A_{ij} x_j)
+\]
+resulting in
+\[
+  x =  (L + D/\omega)^{-1}b
+\]
+
+Rather than applying the left preconditioner obtained by apply the two step process $ (L + D/\omega)^{-1} $ and then $ (U + D/\omega)^{-1} $
+one can apply the two ``halves'' of the preconditioner symmetrically to the system resulting in
+\[
+ (L + D/\omega)^{-1} A (U + D/\omega)^{-1} y = (L + D/\omega)^{-1} b.
+\]
+Then after this system is solved, $ x = (U + D/\omega)^{-1} y$. If an initial guess that is nonzero is supplied then the 
+initial guess for $ y$ must be computed via $ y = (U + D/\omega) x$.
+\begin{eqnarray*}
+ (L + D/\omega)^{-1} A (U + D/\omega)^{-1} & =  & (L + D/\omega)^{-1} (L + D + U) (U + D/\omega)^{-1} \\
+  & = &  (L + D/\omega)^{-1} (L + D/\omega + U + D/\omega + D - 2D/\omega) (U + D/\omega)^{-1} \\
+  & = &  (U + D/\omega)^{-1} + (L+D/\omega)^{-1}(I + \frac{\omega - 2}{\omega}D(U + D/\omega)^{-1}).
+\end{eqnarray*}
+
+\end{document}
