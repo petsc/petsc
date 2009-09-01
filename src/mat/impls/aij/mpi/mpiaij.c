@@ -1290,7 +1290,8 @@ PetscErrorCode MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
     } else {
       ierr = VecPointwiseMult(bb1,mat->diag,xx);CHKERRQ(ierr);
     }
-    ierr = VecAYPX(bb1,-1.0,bb);CHKERRQ(ierr);
+    ierr = VecAYPX(bb1,(omega-2.0)/omega,bb);CHKERRQ(ierr);
+
     ierr = MatMultAdd(mat->B,mat->lvec,bb1,bb1);CHKERRQ(ierr);
 
     /* local sweep */

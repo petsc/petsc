@@ -793,7 +793,7 @@ PetscErrorCode MatRelax_SeqSBAIJ_1_ushort(Mat A,Vec bb,PetscReal omega,MatSORTyp
   PetscInt             m=a->mbs,bs=A->rmap->bs,j;
   const PetscInt       *ai=a->i;
   const unsigned short *aj=a->jshort,*vj,*vj1;
-  PetscInt             nz,nz1,i;
+  PetscInt              nz,nz1,i;
 
   PetscFunctionBegin;
   if (flag & SOR_EISENSTAT) SETERRQ(PETSC_ERR_SUP,"No support yet for Eisenstat");
@@ -824,6 +824,22 @@ PetscErrorCode MatRelax_SeqSBAIJ_1_ushort(Mat A,Vec bb,PetscReal omega,MatSORTyp
   t = a->relax_work;
 
   aidiag = a->idiag;
+
+  if (flag == SOR_APPLY_UPPER) {
+    /* apply (U + D/omega) to the vector */
+    PetscScalar d;
+    for (i=0; i<m; i++) {
+      d    = fshift + aa[ai[i]];
+      nz   = ai[i+1] - ai[i] - 1;
+      vj   = aj + ai[i] + 1;
+      v    = aa + ai[i] + 1;
+      sum  = b[i]*d/omega;
+      PetscSparseDensePlusDot(sum,b,v,vj,nz); 
+      x[i] = sum;
+    }
+    ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
+  }
+
   if (flag & SOR_ZERO_INITIAL_GUESS) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){ 
       ierr = PetscMemcpy(t,b,m*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -858,7 +874,11 @@ PetscErrorCode MatRelax_SeqSBAIJ_1_ushort(Mat A,Vec bb,PetscReal omega,MatSORTyp
 	PETSC_Prefetch(vj-nz2-1,0,1);  
         PetscSparseDensePlusDot(sum,x,v,vj,nz);         
         sum = t[i] - sum;
-        x[i] =   (1-omega)*x[i] + omega*sum*aidiag[i];        
+        if (t == b) {
+	  x[i] = omega*sum*aidiag[i];        
+        } else {
+	  x[i] = (1-omega)*x[i] + omega*sum*aidiag[i];        
+        }
         nz  = nz2;
         v  -= nz + 1;
         vj -= nz + 1;
@@ -2437,7 +2457,11 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
 	PETSC_Prefetch(vj-nz2-1,0,1);  
         PetscSparseDensePlusDot(sum,x,v,vj,nz);         
         sum = t[i] - sum;
-        x[i] =   (1-omega)*x[i] + omega*sum*aidiag[i];        
+        if (t == b) {
+	  x[i] = omega*sum*aidiag[i];        
+        } else {
+	  x[i] = (1-omega)*x[i] + omega*sum*aidiag[i];        
+        }
         nz  = nz2;
         v  -= nz + 1;
         vj -= nz + 1;

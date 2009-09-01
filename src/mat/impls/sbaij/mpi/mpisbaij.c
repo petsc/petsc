@@ -2507,7 +2507,7 @@ PetscErrorCode MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType fla
     Vec               xx1;
     PetscTruth        hasop;
     const PetscScalar *diag;
-    PetscScalar       *sl;
+    PetscScalar       *sl,scale = (omega - 2.0)/omega;
     PetscInt          i,n;
 
     if (!mat->xx1) {
@@ -2528,22 +2528,29 @@ PetscErrorCode MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType fla
 
     if (hasop) {
       ierr = MatMultDiagonalBlock(matin,xx,bb1);CHKERRQ(ierr);
-      ierr = VecAYPX(mat->slvec1a,-1.0,bb);CHKERRQ(ierr);
+      ierr = VecAYPX(mat->slvec1a,scale,bb);CHKERRQ(ierr);
     } else {
       /*
           These two lines are replaced by code that may be a bit faster for a good compiler
       ierr = VecPointwiseMult(mat->slvec1a,mat->diag,xx);CHKERRQ(ierr);
-      ierr = VecAYPX(mat->slvec1a,-1.0,bb);CHKERRQ(ierr);
+      ierr = VecAYPX(mat->slvec1a,scale,bb);CHKERRQ(ierr);
       */
       ierr = VecGetArray(mat->slvec1a,&sl);CHKERRQ(ierr);
       ierr = VecGetArray(mat->diag,(PetscScalar**)&diag);CHKERRQ(ierr);
       ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
       ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
       ierr = VecGetLocalSize(xx,&n);CHKERRQ(ierr);
-      for (i=0; i<n; i++) {
-        sl[i] = b[i] - diag[i]*x[i];
+      if (omega == 1.0) {
+	for (i=0; i<n; i++) {
+	  sl[i] = b[i] - diag[i]*x[i];
+	}
+        ierr = PetscLogFlops(2.0*n);CHKERRQ(ierr);
+      } else {
+	for (i=0; i<n; i++) {
+	  sl[i] = b[i] + scale*diag[i]*x[i];
+	}
+        ierr = PetscLogFlops(3.0*n);CHKERRQ(ierr);
       }
-      ierr = PetscLogFlops(2.0*n);CHKERRQ(ierr);
       ierr = VecRestoreArray(mat->slvec1a,&sl);CHKERRQ(ierr);
       ierr = VecRestoreArray(mat->diag,(PetscScalar**)&diag);CHKERRQ(ierr);
       ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
