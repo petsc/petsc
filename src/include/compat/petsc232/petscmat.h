@@ -592,6 +592,9 @@ PetscErrorCode MatGetSubMatrix_232(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *n
 }
 #define MatGetSubMatrix MatGetSubMatrix_232
 
+typedef struct _p_MatSNESMFCtx* MatMFFD;
+#define MATMFFD_COOKIE MATSNESMFCTX_COOKIE
+
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDSetOptionsPrefix"
 static PETSC_UNUSED
