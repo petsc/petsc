@@ -53,6 +53,64 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatSolve_SeqBAIJ_2_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
+{
+    Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
+    PetscInt          i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt;
+    PetscErrorCode    ierr;
+    PetscInt          jdx;
+    const MatScalar   *aa=a->a,*v;
+    PetscScalar       *x,s1,s2,x1,x2;
+    const PetscScalar *b;
+ 
+    PetscFunctionBegin;
+    ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+    ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+    /* forward solve the lower triangular */
+    idx    = 0;
+    x[0] = b[idx]; x[1] = b[1+idx];
+    for (i=1; i<n; i++) {
+        v   = aa + 4*ai[i];
+       vi   = aj + ai[i];
+       nz   = ai[i+1] - ai[i];
+       idx  = 2*i;
+       s1   = b[idx];s2 = b[1+idx];
+       while (nz--) {
+          jdx   = 2*(*vi++);
+          x1    = x[jdx];x2 = x[1+jdx];
+          s1   -= v[0]*x1 + v[2]*x2;
+          s2   -= v[1]*x1 + v[3]*x2;
+           v   +=  4;
+        }
+       x[idx]   = s1;
+       x[1+idx] = s2;
+    }
+ 
+   /* backward solve the upper triangular */
+  for (i=n-1; i>=0; i--){
+     v   = aa + 4*ai[2*n-i];
+     vi  = aj + ai[2*n-i];
+     nz  = ai[2*n-i +1] - ai[2*n-i]-1;
+     idt = 2*i;
+     s1 = x[idt];  s2 = x[1+idt];
+     while (nz--) {
+      idx   = 2*(*vi++);
+       x1    = x[idx];   x2 = x[1+idx];
+       s1 -= v[0]*x1 + v[2]*x2;
+       s2 -= v[1]*x1 + v[3]*x2;
+         v    += 4;
+    }
+    /* x = inv_diagonal*x */
+   x[idt]   = v[0]*s1 + v[2]*s2;
+   x[1+idt] = v[1]*s1 + v[3]*s2;
+  } 
+
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*4*(a->nz) - 2.0*A->cmap->n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolveTranspose_SeqBAIJ_2_NaturalOrdering"
 PetscErrorCode MatSolveTranspose_SeqBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
@@ -3256,10 +3314,18 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_newdatastruct(Mat B,Mat A,const MatF
   ierr = PetscFree(v_work);CHKERRQ(ierr); 
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
-  if (bs == 5){
+  
+  switch (A->rmap->bs){
+  case 2:
+    C->ops->solve = MatSolve_SeqBAIJ_2_NaturalOrdering_newdatastruct;
+    break;
+      
+  case 5:
     C->ops->solve = MatSolve_SeqBAIJ_5_NaturalOrdering_newdatastruct;
-  } else {
+    break;
+  default:
     C->ops->solve = MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct;
+    break;
   }
   C->assembled = PETSC_TRUE;
   ierr = PetscLogFlops(1.3333*bs*bs2*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
