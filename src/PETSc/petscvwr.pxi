@@ -10,7 +10,7 @@ cdef extern  from "petsc.h":
     PetscViewerType PETSC_VIEWER_MATHEMATICA
     PetscViewerType PETSC_VIEWER_SILO
     PetscViewerType PETSC_VIEWER_NETCDF
-    PetscViewerType PETSC_VIEWER_HDF4
+    PetscViewerType PETSC_VIEWER_HDF5
     PetscViewerType PETSC_VIEWER_MATLAB
 
 

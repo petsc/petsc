@@ -5,12 +5,12 @@ class ViewerType(object):
     BINARY = PETSC_VIEWER_BINARY
     STRING = PETSC_VIEWER_STRING
     DRAW   = PETSC_VIEWER_DRAW
-    SOCKET = PETSC_VIEWER_SOCKET
+    HDF5   = PETSC_VIEWER_HDF5
+    NETCDF = PETSC_VIEWER_NETCDF
+    ## SOCKET      = PETSC_VIEWER_SOCKET
     ## VU          = PETSC_VIEWER_VU
     ## MATHEMATICA = PETSC_VIEWER_MATHEMATICA
     ## SILO        = PETSC_VIEWER_SILO
-    ## NETCDF      = PETSC_VIEWER_NETCDF
-    ## HDF4        = PETSC_VIEWER_HDF4
     ## MATLAB      = PETSC_VIEWER_MATLAB
 
 class ViewerFormat(object):
@@ -143,6 +143,32 @@ cdef class Viewer(Object):
                                     str2cp(display), str2cp(title),
                                     x, y, w, h, &newvwr) )
         PetscCLEAR(self.obj); self.vwr = newvwr
+        return self
+
+    def createHDF5(self, name, mode=None, comm=None):
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef char *cname = str2cp(name)
+        cdef PetscFileMode cmode = PETSC_FILE_MODE_WRITE
+        if mode is not None: cmode = mode
+        cdef PetscViewer newvwr = NULL
+        CHKERR( PetscViewerCreate(ccomm, &newvwr) )
+        PetscCLEAR(self.obj); self.vwr = newvwr
+        CHKERR( PetscViewerSetType(self.vwr, PETSC_VIEWER_HDF5) )
+        CHKERR( PetscViewerFileSetMode(self.vwr, cmode) )
+        CHKERR( PetscViewerFileSetName(self.vwr, cname) )
+        return self
+
+    def createNetCDF(self, name, mode=None, comm=None):
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef char *cname = str2cp(name)
+        cdef PetscFileMode cmode = PETSC_FILE_MODE_WRITE
+        if mode is not None: cmode = mode
+        cdef PetscViewer newvwr = NULL
+        CHKERR( PetscViewerCreate(ccomm, &newvwr) )
+        PetscCLEAR(self.obj); self.vwr = newvwr
+        CHKERR( PetscViewerSetType(self.vwr, PETSC_VIEWER_NETCDF) )
+        CHKERR( PetscViewerFileSetMode(self.vwr, cmode) )
+        CHKERR( PetscViewerFileSetName(self.vwr, cname) )
         return self
 
     def setType(self, vwr_type):
