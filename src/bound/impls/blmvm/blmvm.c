@@ -16,7 +16,7 @@ static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
 
   Vec Xold,Gold;
   PetscReal f, fold, gdx, gnorm;
-  PetscReal step = 1.0,delta;
+  PetscReal stepsize = 1.0,delta;
 
   PetscInt iter = 0;
   
@@ -39,7 +39,7 @@ static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
     SETERRQ(1, "User provided compute function generated Inf pr NaN");
   }
 
-  ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, step, &reason); CHKERRQ(ierr);
+  ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, stepsize, &reason); CHKERRQ(ierr);
   if (reason != TAO_CONTINUE_ITERATING) {
     PetscFunctionReturn(0);
   }
@@ -90,8 +90,8 @@ static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
     ierr = VecCopy(tao->solution, Xold); CHKERRQ(ierr);
     ierr = VecCopy(tao->gradient, Gold); CHKERRQ(ierr);
 
-    step = 1.0;
-    ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &step, &ls_status); CHKERRQ(ierr);
+    stepsize = 1.0;
+    ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &stepsize, &ls_status); CHKERRQ(ierr);
 
     if (ls_status<0) {
       // Linesearch failed
@@ -117,7 +117,7 @@ static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
       // This may be incorrect; linesearch has values fo stepmax and stepmin
       // that should be reset.
       step = 1.0;
-      ierr = TaoLineSearchApply(tao->linesearch,tao->solution,&f, tao->gradient, tao->stepdirection,  &step, &ls_status); CHKERRQ(ierr);
+      ierr = TaoLineSearchApply(tao->linesearch,tao->solution,&f, tao->gradient, tao->stepdirection,  &stepsize, &ls_status); CHKERRQ(ierr);
 
       if ((int) ls_status < 0) {
         // Linesearch failed
@@ -134,7 +134,7 @@ static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
       SETERRQ(1, "User provided compute function generated Not-a-Number");
     }
     iter++;
-    ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, step, &reason); CHKERRQ(ierr);
+    ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, stepsize, &reason); CHKERRQ(ierr);
   }
   ierr = VecDestroy(Xold); CHKERRQ(ierr);
   ierr = VecDestroy(Gold); CHKERRQ(ierr);
@@ -178,14 +178,6 @@ static PetscErrorCode TaoSolverSetup_BLMVM(TaoSolver tao)
   ierr = MatCreateLMVM(((PetscObject)tao)->comm,n,N,&blmP->M); CHKERRQ(ierr);
   ierr = MatLMVMAllocateVectors(blmP->M,tao->solution); CHKERRQ(ierr);
 
-  
-
-  /*
-  info = TaoSetLagrangianGradientVector(tao, blm->GP); CHKERRQ(info);
-  info = TaoSetStepDirectionVector(tao, blm->stepdirection); CHKERRQ(info);
-  info = TaoSetVariableBounds(tao, blm->XL, blm->XU); CHKERRQ(info);
-  */
-
   PetscFunctionReturn(0);
 }
 
@@ -198,12 +190,6 @@ static PetscErrorCode TaoSolverDestroy_BLMVM(TaoSolver tao)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (tao->gradient) {
-      ierr = VecDestroy(tao->gradient); CHKERRQ(ierr);
-  }
-  if (tao->stepdirection) {
-    ierr = VecDestroy(tao->stepdirection); CHKERRQ(ierr);
-  }
   if (blmP->M) {
     ierr = MatDestroy(blmP->M); CHKERRQ(ierr);
   }

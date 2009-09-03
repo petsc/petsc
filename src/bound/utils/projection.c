@@ -1,7 +1,7 @@
 #include "taosolver.h"
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecBoundProjection"
+#define __FUNCT__ "VecBoundGradientProjection"
 PetscErrorCode TAOSOLVER_DLLEXPORT VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP){
 
   PetscErrorCode ierr;
@@ -50,7 +50,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT VecBoundGradientProjection(Vec G, Vec X, Vec 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "VecStepMax2"
+#define __FUNCT__ "VecStepMaxBounded"
 PetscErrorCode TAOSOLVER_DLLEXPORT VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepmax){
 
   PetscErrorCode ierr;
@@ -89,7 +89,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec 
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
-#define __FUNCT__ "VecBoundStepInfo"
+#define __FUNCT__ "VecStepBoundInfo"
 PetscErrorCode TAOSOLVER_DLLEXPORT VecStepBoundInfo(Vec X, Vec XL, Vec XU, Vec DX, PetscReal *boundmin, PetscReal *wolfemin, PetscReal *boundmax){
 
   PetscErrorCode ierr;
@@ -140,4 +140,3 @@ PetscErrorCode TAOSOLVER_DLLEXPORT VecStepBoundInfo(Vec X, Vec XL, Vec XU, Vec D
   ierr = PetscInfo3(X,"Step Bound Info: Closest Bound: %6.4e, Wolfe: %6.4e, Max: %6.4e \n",*boundmin,*wolfemin,*boundmax); CHKERRQ(ierr);
   PetscFunctionReturn(0);  
 }
-

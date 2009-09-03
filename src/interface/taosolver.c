@@ -228,6 +228,13 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDestroy(TaoSolver tao)
   if (tao->XU) {
       ierr = VecDestroy(tao->XU); CHKERRQ(ierr);
   }
+  if (tao->stepdirection) {
+      ierr = VecDestroy(tao->stepdirection); CHKERRQ(ierr);
+  }
+  tao->gradient = PETSC_NULL;
+  tao->XL = PETSC_NULL;
+  tao->XU = PETSC_NULL;
+  tao->stepdirection = PETSC_NULL;
   ierr = PetscHeaderDestroy(tao); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

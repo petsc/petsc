@@ -1069,9 +1069,6 @@ static int TaoSolverSetUp_NLS(TaoSolver tao)
   ierr = KSPSetOptionsPrefix(tao->ksp,"tao_"); CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
 
-  
-  // Check sizes for compatability
-//  ierr = TaoCheckFGH(tao); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

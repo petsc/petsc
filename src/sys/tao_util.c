@@ -3,7 +3,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecPow"
-PetscErrorCode VecPow(Vec Vec1, PetscReal p)
+PetscErrorCode VecPow(Vec Vec1, PetscScalar p)
 {
   PetscErrorCode ierr;
   PetscInt n,i;
@@ -79,9 +79,9 @@ PetscErrorCode VecPow(Vec Vec1, PetscReal p)
 /* ---------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "VecMedian"
-int VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian)
+PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian)
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscInt i,n,low1,low2,low3,low4,high1,high2,high3,high4;
   PetscReal *v1,*v2,*v3,*vmed;
 
@@ -144,3 +144,180 @@ int VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian)
 
   PetscFunctionReturn(0);
 }
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecCompare"
+PetscErrorCode TAOSOLVER_DLLEXPORT VecCompare(Vec V1,Vec V2, PetscTruth *flg){
+  PetscErrorCode ierr;
+  PetscInt n1,n2,N1,N2;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(V1,VEC_COOKIE,1); 
+  PetscValidHeaderSpecific(V2,VEC_COOKIE,2); 
+  ierr = VecGetSize(V1,&N1);CHKERRQ(ierr);
+  ierr = VecGetSize(V2,&N2);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(V1,&n1);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(V2,&n2);CHKERRQ(ierr);
+  if (N1==N2 && n1==n2) 
+    *flg=PETSC_TRUE;
+  else
+    *flg=PETSC_FALSE;
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "Fischer"
+inline static PetscScalar Fischer(PetscScalar a, PetscScalar b)
+{
+   // Method suggested by Bob Vanderbei
+   if (a + b <= 0) {
+     return sqrt(a*a + b*b) - (a + b);
+   }
+   return -2.0*a*b / (sqrt(a*a + b*b) + (a + b));
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecFischer"
+PetscErrorCode TAOSOLVER_DLLEXPORT VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FF)
+{
+  PetscScalar *x, *f, *l, *u, *ff;
+  PetscScalar xval, fval, lval, uval;
+  PetscErrorCode ierr;
+  PetscInt low[5], high[5], n, i;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(X, VEC_COOKIE,1); 
+  PetscValidHeaderSpecific(F, VEC_COOKIE,2); 
+  PetscValidHeaderSpecific(L, VEC_COOKIE,3); 
+  PetscValidHeaderSpecific(U, VEC_COOKIE,4); 
+  PetscValidHeaderSpecific(FF, VEC_COOKIE,4); 
+
+  ierr = VecGetOwnershipRange(X, low, high); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(F, low + 1, high + 1); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(L, low + 2, high + 2); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(U, low + 3, high + 3); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(FF, low + 4, high + 4); CHKERRQ(ierr);
+
+  for (i = 1; i < 4; ++i) {
+    if (low[0] != low[i] || high[0] != high[i])
+      SETERRQ(1,"Vectors must be identically loaded over processors");
+  }
+
+  ierr = VecGetArray(X, &x); CHKERRQ(ierr);
+  ierr = VecGetArray(F, &f); CHKERRQ(ierr);
+  ierr = VecGetArray(L, &l); CHKERRQ(ierr);
+  ierr = VecGetArray(U, &u); CHKERRQ(ierr);
+  ierr = VecGetArray(FF, &ff); CHKERRQ(ierr);
+
+  ierr = VecGetLocalSize(X, &n); CHKERRQ(ierr);
+
+  for (i = 0; i < n; ++i) {
+    xval = x[i]; fval = f[i];
+    lval = l[i]; uval = u[i];
+
+    if ((lval <= -TAO_INFINITY) && (uval >= TAO_INFINITY)) {
+      ff[i] = -fval;
+    } 
+    else if (lval <= -TAO_INFINITY) {
+      ff[i] = -Fischer(uval - xval, -fval);
+    } 
+    else if (uval >=  TAO_INFINITY) {
+      ff[i] =  Fischer(xval - lval,  fval);
+    } 
+    else if (lval == uval) {
+      ff[i] = lval - xval;
+    }
+    else {
+      fval  =  Fischer(uval - xval, -fval);
+      ff[i] =  Fischer(xval - lval,  fval);
+    }
+  }
+  
+  ierr = VecRestoreArray(X, &x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(F, &f); CHKERRQ(ierr);
+  ierr = VecRestoreArray(L, &l); CHKERRQ(ierr);
+  ierr = VecRestoreArray(U, &u); CHKERRQ(ierr);
+  ierr = VecRestoreArray(FF, &ff); CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SFischer"
+inline static PetscScalar SFischer(PetscScalar a, PetscScalar b, PetscScalar c)
+{
+   // Method suggested by Bob Vanderbei
+   if (a + b <= 0) {
+     return sqrt(a*a + b*b + 2.0*c*c) - (a + b);
+   }
+   return 2.0*(c*c - a*b) / (sqrt(a*a + b*b + 2.0*c*c) + (a + b));
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecSFischer"
+PetscErrorCode TAOSOLVER_DLLEXPORT VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscScalar mu, Vec FF)
+{
+  PetscScalar *x, *f, *l, *u, *ff;
+  PetscScalar xval, fval, lval, uval;
+  PetscErrorCode ierr;
+  PetscInt low[5], high[5], n, i;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(X, VEC_COOKIE,1);
+  PetscValidHeaderSpecific(F, VEC_COOKIE,2);
+  PetscValidHeaderSpecific(L, VEC_COOKIE,3);
+  PetscValidHeaderSpecific(U, VEC_COOKIE,4);
+  PetscValidHeaderSpecific(FF, VEC_COOKIE,6);
+
+  ierr = VecGetOwnershipRange(X, low, high); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(F, low + 1, high + 1); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(L, low + 2, high + 2); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(U, low + 3, high + 3); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(FF, low + 4, high + 4); CHKERRQ(ierr);
+
+  for (i = 1; i < 4; ++i) {
+    if (low[0] != low[i] || high[0] != high[i])
+      SETERRQ(1,"Vectors must be identically loaded over processors");
+  }
+
+  ierr = VecGetArray(X, &x); CHKERRQ(ierr);
+  ierr = VecGetArray(F, &f); CHKERRQ(ierr);
+  ierr = VecGetArray(L, &l); CHKERRQ(ierr);
+  ierr = VecGetArray(U, &u); CHKERRQ(ierr);
+  ierr = VecGetArray(FF, &ff); CHKERRQ(ierr);
+
+  ierr = VecGetLocalSize(X, &n); CHKERRQ(ierr);
+
+  for (i = 0; i < n; ++i) {
+    xval = (*x++); fval = (*f++);
+    lval = (*l++); uval = (*u++);
+
+    if ((lval <= -TAO_INFINITY) && (uval >= TAO_INFINITY)) {
+      (*ff++) = -fval - mu*xval;
+    } 
+    else if (lval <= -TAO_INFINITY) {
+      (*ff++) = -SFischer(uval - xval, -fval, mu);
+    } 
+    else if (uval >=  TAO_INFINITY) {
+      (*ff++) =  SFischer(xval - lval,  fval, mu);
+    } 
+    else if (lval == uval) {
+      (*ff++) = lval - xval;
+    } 
+    else {
+      fval    =  SFischer(uval - xval, -fval, mu);
+      (*ff++) =  SFischer(xval - lval,  fval, mu);
+    }
+  }
+  x -= n; f -= n; l -=n; u -= n; ff -= n;
+
+  ierr = VecRestoreArray(X, &x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(F, &f); CHKERRQ(ierr);
+  ierr = VecRestoreArray(L, &l); CHKERRQ(ierr);
+  ierr = VecRestoreArray(U, &u); CHKERRQ(ierr);
+  ierr = VecRestoreArray(FF, &ff); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+

@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = projection.c
+SOURCEC  = projection.c isutil.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = projection.o
+OBJSC    = projection.o isutil.o
 OBJSF    = 
 LIBBASE  = libtaosolver
 MANSEC   = solver
