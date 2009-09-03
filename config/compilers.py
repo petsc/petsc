@@ -206,7 +206,7 @@ class Configure(config.base.Configure):
             clibs.append(arg)
           continue
         # Check for system libraries
-        m = re.match(r'^-l(ang.*|crt0.o|crt1.o|crt2.o|crtbegin.o|c|gcc|cygwin|crt1.10.5.o)$', arg)
+        m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
         if m: continue
         # Check for special library arguments
         m = re.match(r'^-l.*$', arg)
@@ -384,7 +384,7 @@ class Configure(config.base.Configure):
             cxxlibs.append(arg)
           continue
         # Check for system libraries
-        m = re.match(r'^-l(ang.*|crt0.o|crt1.o|crt2.o|crtbegin.o|c|gcc|cygwin|crt1.10.5.o)$', arg)
+        m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
         if m: continue
         # Check for special library arguments
         m = re.match(r'^-l.*$', arg)
@@ -727,7 +727,7 @@ class Configure(config.base.Configure):
             flibs.append(arg)
           continue
         # Check for system libraries
-        m = re.match(r'^-l(ang.*|crt0.o|crt1.o|crt2.o|crtbegin.o|c|gcc|cygwin|crt1.10.5.o)$', arg)
+        m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
         if m: continue
         # Check for canonical library argument
         m = re.match(r'^-[lL]$', arg)
