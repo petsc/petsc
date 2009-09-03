@@ -1074,11 +1074,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesRow(Mat mat,PetscInt row,const Pet
 
    Input Parameters:
 +  mat - the matrix
-.  v - a logically two-dimensional array of values
 .  m - number of rows being entered
 .  idxm - grid coordinates (and component number when dof > 1) for matrix rows being entered
 .  n - number of columns being entered
 .  idxn - grid coordinates (and component number when dof > 1) for matrix columns being entered 
+.  v - a logically two-dimensional array of values
 -  addv - either ADD_VALUES or INSERT_VALUES, where
    ADD_VALUES adds values to any existing entries, and
    INSERT_VALUES replaces existing entries with new values
@@ -1188,11 +1188,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesStencil(Mat mat,PetscInt m,const M
 
    Input Parameters:
 +  mat - the matrix
-.  v - a logically two-dimensional array of values
 .  m - number of rows being entered
 .  idxm - grid coordinates for matrix rows being entered
 .  n - number of columns being entered
 .  idxn - grid coordinates for matrix columns being entered 
+.  v - a logically two-dimensional array of values
 -  addv - either ADD_VALUES or INSERT_VALUES, where
    ADD_VALUES adds values to any existing entries, and
    INSERT_VALUES replaces existing entries with new values
