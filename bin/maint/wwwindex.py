@@ -74,12 +74,12 @@ def printindex(outfilename,headfilename,levels,titles,tables):
                   else:
                         # If no functions in any other category, then print
                         # the header saying no functions in this cagetory.
-                        fd.write('</TR><TD WIDTH=250 COLSPAN="3">')
+                        fd.write('<TR><TD WIDTH=250 COLSPAN="3">')
                         fd.write('<B>' + 'No ' + level +' routines' + '</B>')
                         fd.write('</TD></TR>\n')
                         continue
                   
-            fd.write('</TR><TD WIDTH=250 COLSPAN="3">')
+            fd.write('<TR><TD WIDTH=250 COLSPAN="3">')
             #fd.write('<B>' + upper(title[0])+title[1:] + '</B>')
             fd.write('<B>' + title + '</B>')
             fd.write('</TD></TR>\n')
@@ -129,7 +129,7 @@ def printsingleindex(outfilename,alphabet_dict):
 
             # Now write the table entries
             fd.write('<TABLE>\n')
-            fd.write('</TR><TD WIDTH=250 COLSPAN="3">')
+            fd.write('<TR><TD WIDTH=250 COLSPAN="3">')
             fd.write('</TD></TR>\n')
             function_dict  = alphabet_dict[key]
             function_index = function_dict.keys()
