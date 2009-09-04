@@ -27,7 +27,7 @@ class Configure(PETSc.package.Package):
     # Get the SUPERLU directories
 
     g = open(os.path.join(self.packageDir,'make.inc'),'w')
-    g.write('SuperLUroot  = $(PETSC_DIR)/externalpackages/SuperLU_4.0\n')
+    g.write('SuperLUroot  = '+self.packageDir+'\n')
     g.write('TMGLIB       = tmglib.a\n')
     g.write('SUPERLULIB   = $(SuperLUroot)/lib/libsuperlu_4.0.a\n')
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
