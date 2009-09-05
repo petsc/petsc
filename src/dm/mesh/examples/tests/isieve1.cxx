@@ -15,7 +15,10 @@ class FunctionTestISieve : public CppUnit::TestFixture
 
   CPPUNIT_TEST(testBase);
   CPPUNIT_TEST(testConversion);
-  CPPUNIT_TEST(testSerialization);
+  CPPUNIT_TEST(testSerializationTriangularInterpolated);
+  CPPUNIT_TEST(testSerializationTriangularUninterpolated);
+  CPPUNIT_TEST(testSerializationTetrahedralInterpolated);
+  CPPUNIT_TEST(testSerializationTetrahedralUninterpolated);
   CPPUNIT_TEST(testConstruction);
   CPPUNIT_TEST(testTriangularInterpolatedOrientedClosure);
   CPPUNIT_TEST(testTriangularUninterpolatedOrientedClosure);
@@ -111,7 +114,7 @@ public:
 
     sieveA.base(baseV);
     const typename ISieve::point_type *base = baseV.getPoints();
-    for(int b = 0; b < baseV.getSize(); ++b) {
+    for(int b = 0; b < (int) baseV.getSize(); ++b) {
       ALE::ISieveVisitor::PointRetriever<ISieve>    retrieverA((int) pow((double) sieveA.getMaxConeSize(), 3));
       ALE::ISieveVisitor::PointRetriever<ISieve>    retrieverB((int) pow((double) sieveB.getMaxConeSize(), 3));
 
@@ -121,7 +124,7 @@ public:
       const typename ISieve::point_type *coneB = retrieverB.getPoints();
 
       CPPUNIT_ASSERT_EQUAL(retrieverA.getSize(), retrieverB.getSize());
-      for(int c = 0; c < retrieverA.getSize(); ++c) {
+      for(int c = 0; c < (int) retrieverA.getSize(); ++c) {
         CPPUNIT_ASSERT_EQUAL(coneA[c], coneB[c]);
       }
       CPPUNIT_ASSERT_EQUAL(sieveA.orientedCones(), sieveB.orientedCones());
@@ -134,7 +137,7 @@ public:
         const typename ALE::ISieveVisitor::PointRetriever<ISieve>::oriented_point_type *oConeB = retrieverB.getOrientedPoints();
 
         CPPUNIT_ASSERT_EQUAL(retrieverA.getOrientedSize(), retrieverB.getOrientedSize());
-        for(int c = 0; c < retrieverA.getOrientedSize(); ++c) {
+        for(int c = 0; c < (int) retrieverA.getOrientedSize(); ++c) {
           CPPUNIT_ASSERT_EQUAL(oConeA[c].second, oConeB[c].second);
         }
       }
@@ -143,7 +146,7 @@ public:
 
     sieveA.cap(capV);
     const typename ISieve::point_type *cap = capV.getPoints();
-    for(int c = 0; c < capV.getSize(); ++c) {
+    for(int c = 0; c < (int) capV.getSize(); ++c) {
       ALE::ISieveVisitor::PointRetriever<ISieve> retrieverA((int) pow((double) sieveA.getMaxSupportSize(), 3));
       ALE::ISieveVisitor::PointRetriever<ISieve> retrieverB((int) pow((double) sieveB.getMaxSupportSize(), 3));
 
@@ -153,9 +156,41 @@ public:
       const typename ISieve::point_type *supportB = retrieverB.getPoints();
 
       CPPUNIT_ASSERT_EQUAL(retrieverA.getSize(), retrieverB.getSize());
-      for(int s = 0; s < retrieverA.getSize(); ++s) {
+      for(int s = 0; s < (int) retrieverA.getSize(); ++s) {
         CPPUNIT_ASSERT_EQUAL(supportA[s], supportB[s]);
       }
+    }
+  };
+
+  void createTriangularMesh(bool interpolate, ALE::Obj<ALE::Mesh>& m, std::map<ALE::Mesh::point_type,sieve_type::point_type>& renumbering) {
+    double lower[2] = {0.0, 0.0};
+    double upper[2] = {1.0, 1.0};
+    int    edges[2] = {2, 2};
+
+    const ALE::Obj<ALE::Mesh> mB = ALE::MeshBuilder<ALE::Mesh>::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
+    mB->getFactory()->clear(); // Necessary since we get pointer aliasing
+    m = ALE::Generator<ALE::Mesh>::generateMesh(mB, interpolate);
+    ALE::ISieveConverter::convertSieve(*m->getSieve(), *this->_sieve, renumbering);
+    ALE::ISieveConverter::convertOrientation(*m->getSieve(), *this->_sieve, renumbering, m->getArrowSection("orientation").ptr());
+    if (this->_debug > 1) {
+      m->view("Square Mesh");
+      this->_sieve->view("Square Sieve");
+    }
+  };
+
+  void createTetrahedralMesh(bool interpolate, ALE::Obj<ALE::Mesh>& m, std::map<ALE::Mesh::point_type,sieve_type::point_type>& renumbering) {
+    double lower[3] = {0.0, 0.0, 0.0};
+    double upper[3] = {1.0, 1.0, 1.0};
+    int    faces[3] = {1, 1, 1};
+
+    const ALE::Obj<ALE::Mesh> mB = ALE::MeshBuilder<ALE::Mesh>::createCubeBoundary(PETSC_COMM_WORLD, lower, upper, faces, 0);
+    mB->getFactory()->clear(); // Necessary since we get pointer aliasing
+    m  = ALE::Generator<ALE::Mesh>::generateMesh(mB, interpolate);
+    ALE::ISieveConverter::convertSieve(*m->getSieve(), *this->_sieve, renumbering);
+    ALE::ISieveConverter::convertOrientation(*m->getSieve(), *this->_sieve, renumbering, m->getArrowSection("orientation").ptr());
+    if (this->_debug > 1) {
+      m->view("Cube Mesh");
+      this->_sieve->view("Cube Sieve");
     }
   };
 
@@ -172,12 +207,49 @@ public:
     std::map<ALE::Mesh::point_type,sieve_type::point_type> renumbering;
 
     ALE::ISieveConverter::convertSieve(*m->getSieve(), *this->_sieve, renumbering);
-    //m->getSieve()->view("Square Mesh");
-    //this->_sieve->view("Square Sieve");
     this->checkSieve(*m->getSieve(), *this->_sieve, renumbering, true);
   };
 
-  void testSerialization(void) {
+  void testSerialization() {
+    ALE::Obj<sieve_type> newSieve = new sieve_type(PETSC_COMM_WORLD, 0, this->_size*3+1, this->_debug);
+    const char          *filename = "sieveTest.sav";
+
+    ALE::ISieveSerializer::writeSieve(filename, *this->_sieve);
+    ALE::ISieveSerializer::loadSieve(filename, *newSieve);
+    unlink(filename);
+    checkSieve(*this->_sieve, *newSieve);
+  };
+
+  void testSerializationTriangular(bool interpolate) {
+    ALE::Obj<ALE::Mesh> m;
+    std::map<ALE::Mesh::point_type,sieve_type::point_type> renumbering;
+
+    createTriangularMesh(interpolate, m, renumbering);
+    testSerialization();
+  };
+
+  void testSerializationTriangularInterpolated() {
+    testSerializationTriangular(true);
+  };
+
+  void testSerializationTriangularUninterpolated() {
+    testSerializationTriangular(false);
+  };
+
+  void testSerializationTetrahedral(bool interpolate) {
+    ALE::Obj<ALE::Mesh> m;
+    std::map<ALE::Mesh::point_type,sieve_type::point_type> renumbering;
+
+    createTetrahedralMesh(interpolate, m, renumbering);
+    testSerialization();
+  };
+
+  void testSerializationTetrahedralInterpolated() {
+    testSerializationTetrahedral(true);
+  };
+
+  void testSerializationTetrahedralUninterpolated() {
+    testSerializationTetrahedral(false);
   };
 
   void testConstruction(void) {
@@ -241,35 +313,11 @@ public:
     }
   };
 
-  void createTriangularMesh(bool interpolate, ALE::Obj<ALE::Mesh>& m, std::map<ALE::Mesh::point_type,sieve_type::point_type>& renumbering) {
-    double lower[2] = {0.0, 0.0};
-    double upper[2] = {1.0, 1.0};
-    int    edges[2] = {2, 2};
-
-    const ALE::Obj<ALE::Mesh> mB = ALE::MeshBuilder<ALE::Mesh>::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
-
-    m = ALE::Generator<ALE::Mesh>::generateMesh(mB, interpolate);
-    ALE::ISieveConverter::convertSieve(*m->getSieve(), *this->_sieve, renumbering);
-    ALE::ISieveConverter::convertOrientation(*m->getSieve(), *this->_sieve, renumbering, m->getArrowSection("orientation").ptr());
-  };
-
   void testTriangularOrientedClosure(bool interpolate) {
-    //ALE::Obj<ALE::Mesh> m;
-
-    //createTriangularMesh(interpolate, m, renumbering);
-
-    double lower[2] = {0.0, 0.0};
-    double upper[2] = {1.0, 1.0};
-    int    edges[2] = {2, 2};
-
-    const ALE::Obj<ALE::Mesh> mB = ALE::MeshBuilder<ALE::Mesh>::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
-    const ALE::Obj<ALE::Mesh> m  = ALE::Generator<ALE::Mesh>::generateMesh(mB, interpolate);
+    ALE::Obj<ALE::Mesh> m;
     std::map<ALE::Mesh::point_type,sieve_type::point_type> renumbering;
 
-    ALE::ISieveConverter::convertSieve(*m->getSieve(), *this->_sieve, renumbering);
-    ALE::ISieveConverter::convertOrientation(*m->getSieve(), *this->_sieve, renumbering, m->getArrowSection("orientation").ptr());
-    //m->view("Square Mesh");
-    //this->_sieve->view("Square Sieve");
+    createTriangularMesh(interpolate, m, renumbering);
     testOrientedClosure(m, renumbering);
   };
 
@@ -282,21 +330,10 @@ public:
   };
 
   void testTetrahedralOrientedClosure(bool interpolate) {
-    double lower[3] = {0.0, 0.0, 0.0};
-    double upper[3] = {1.0, 1.0, 1.0};
-    int    faces[3] = {1, 1, 1};
-
-    const ALE::Obj<ALE::Mesh> mB = ALE::MeshBuilder<ALE::Mesh>::createCubeBoundary(PETSC_COMM_WORLD, lower, upper, faces, 0);
-    mB->getFactory()->clear(); // Necessary since we get pointer aliasing
-    const ALE::Obj<ALE::Mesh> m  = ALE::Generator<ALE::Mesh>::generateMesh(mB, interpolate);
+    ALE::Obj<ALE::Mesh> m;
     std::map<ALE::Mesh::point_type,sieve_type::point_type> renumbering;
 
-    ALE::ISieveConverter::convertSieve(*m->getSieve(), *this->_sieve, renumbering);
-    ALE::ISieveConverter::convertOrientation(*m->getSieve(), *this->_sieve, renumbering, m->getArrowSection("orientation").ptr());
-    if (this->_debug > 1) {
-      m->view("Cube Mesh");
-      this->_sieve->view("Cube Sieve");
-    }
+    createTetrahedralMesh(interpolate, m, renumbering);
     testOrientedClosure(m, renumbering);
   };
 
