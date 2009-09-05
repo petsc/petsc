@@ -143,14 +143,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm,DAPeriodicType wrap,Pe
   IS             to,from;
 
   PetscFunctionBegin;
-  PetscValidPointer(inra,7);
-  *inra = 0;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
-#endif
-
-  if (dof < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %D",dof);
-  if (s < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %D",s);
+  ierr = DACreate(comm, inra);CHKERRQ(ierr);
+  da   = *inra;
+  ierr = DASetSizes(da, M, N, P);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(comm,PETSC_NULL,"1d DA Options","DA");CHKERRQ(ierr);
     if (M < 0) {
@@ -160,9 +155,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm,DAPeriodicType wrap,Pe
     ierr = PetscOptionsInt("-da_refine_x","Refinement ratio in x direction","DASetRefinementFactor",refine_x,&refine_x,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   M = tM;
+  da->M = M;
 
-  ierr = PetscHeaderCreate(da,_p_DA,struct _DAOps,DM_COOKIE,0,"DM",comm,DADestroy,DAView);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)da,"DA");CHKERRQ(ierr);
+  if (dof < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %D",dof);
+  if (s < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %D",s);
+
   da->ops->globaltolocalbegin = DAGlobalToLocalBegin;
   da->ops->globaltolocalend   = DAGlobalToLocalEnd;
   da->ops->localtoglobal      = DALocalToGlobal;
