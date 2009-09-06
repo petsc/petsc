@@ -762,6 +762,31 @@ namespace ALE {
     void allocate() {};
     void recalculateLabel() {};
   }; // class LabelSifter
+
+  class LabelSifterSerializer {
+  public:
+    template<typename LabelSifter>
+    static void writeLabel(std::ofstream& fs, LabelSifter& label) {
+      fs << label._arrows.set.size() << std::endl;
+      for(typename LabelSifter::traits::arrow_container_type::set_type::iterator ai = label._arrows.set.begin(); ai != label._arrows.set.end(); ai++) {
+        fs << ai->source << " " << ai->target << std::endl;
+      }
+    };
+    template<typename LabelSifter>
+    static void loadLabel(std::ifstream& fs, LabelSifter& label) {
+      size_t numArrows;
+
+      fs >> numArrows;
+      for(size_t a = 0; a < numArrows; ++a) {
+        typename LabelSifter::traits::arrow_type::source_type source;
+        typename LabelSifter::traits::arrow_type::target_type target;
+
+        fs >> source;
+        fs >> target;
+        label.addArrow(typename LabelSifter::traits::arrow_type(source, target));
+      }
+    };
+  };
 } // namespace ALE
 
 #endif // ifdef included_ALE_LabelSifter_hh

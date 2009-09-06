@@ -1899,13 +1899,19 @@ namespace ALE {
   public:
     template<typename ISieve>
     static void writeSieve(const std::string& filename, ISieve& sieve) {
+      std::ofstream fs;
+
+      fs.open(filename.c_str());
+      writeSieve(fs, sieve);
+      fs.close();
+    };
+    template<typename ISieve>
+    static void writeSieve(std::ofstream& fs, ISieve& sieve) {
       typedef ISieveVisitor::PointRetriever<ISieve> Visitor;
       const Obj<typename ISieve::chart_type>& chart = sieve.getChart();
       typename ISieve::point_type             min   = chart->min();
       typename ISieve::point_type             max   = chart->max();
-      std::ofstream                           fs;
 
-      fs.open(filename.c_str());
       fs << min <<" "<< max << std::endl;
       for(typename ISieve::point_type p = min; p < max; ++p) {
         fs << sieve.getConeSize(p) << " " << sieve.getSupportSize(p) << std::endl;
@@ -1953,14 +1959,19 @@ namespace ALE {
         pV.clear();
       }
       // Output renumbering
-      fs.close();
     };
     template<typename ISieve>
     static void loadSieve(const std::string& filename, ISieve& sieve) {
-      typename ISieve::point_type min, max;
-      std::ifstream               fs;
+      std::ifstream fs;
 
       fs.open(filename.c_str());
+      loadSieve(fs, sieve);
+      fs.close();
+    };
+    template<typename ISieve>
+    static void loadSieve(std::ifstream& fs, ISieve& sieve) {
+      typename ISieve::point_type min, max;
+
       fs >> min;
       fs >> max;
       sieve.setChart(typename ISieve::chart_type(min, max));
@@ -2000,11 +2011,6 @@ namespace ALE {
       }
       delete [] points;
       // Load renumbering
-      fs.close();
-      // Mesh data
-      //   Load stratification
-      //   Load coordinates
-      //   Load overlap
     };
   };
 }

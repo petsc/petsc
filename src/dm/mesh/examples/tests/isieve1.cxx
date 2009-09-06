@@ -109,7 +109,7 @@ public:
   };
 
   template<typename ISieve>
-  void checkSieve(ISieve& sieveA, const ISieve& sieveB) {
+  static void checkSieve(ISieve& sieveA, const ISieve& sieveB) {
     ALE::ISieveVisitor::PointRetriever<ISieve> baseV(sieveA.getBaseSize());
 
     sieveA.base(baseV);
