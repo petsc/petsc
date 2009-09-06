@@ -145,7 +145,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm,DAPeriodicType wrap,Pe
   PetscFunctionBegin;
   ierr = DACreate(comm, inra);CHKERRQ(ierr);
   da   = *inra;
-  ierr = DASetSizes(da, M, N, P);CHKERRQ(ierr);
+  ierr = DASetSizes(da, M, -1, -1);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(comm,PETSC_NULL,"1d DA Options","DA");CHKERRQ(ierr);
     if (M < 0) {

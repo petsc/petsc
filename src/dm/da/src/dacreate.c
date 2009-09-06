@@ -20,10 +20,8 @@
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DASetSizes(DA da, PetscInt M, PetscInt N, PetscInt P)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da, DA_COOKIE, 1);
+  PetscValidHeaderSpecific(da, DM_COOKIE, 1);
   da->M = M;
   da->N = N;
   da->P = P;
