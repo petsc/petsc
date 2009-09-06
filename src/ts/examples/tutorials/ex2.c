@@ -475,7 +475,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
         u_{t}(t,boundary) = g_{t}(t,boundary)
 
      In our case, u(t,0) = t + 1, so that u_{t}(t,0) = 1 
-             and  u(t,1) = 2t+ 1, so that u_{t}(t,1) = 2
+             and  u(t,1) = 2t+ 2, so that u_{t}(t,1) = 2
   */
   ierr = MPI_Comm_rank(appctx->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(appctx->comm,&size);CHKERRQ(ierr);
