@@ -51,16 +51,25 @@ public:
   /// Setup data.
   void setUp(void) {
     this->processOptions();
-    double                    lower[3] = {0.0, 0.0, 0.0};
-    double                    upper[3] = {1.0, 1.0, 1.0};
-    int                       faces[3] = {3, 3, 3};
-    const ALE::Obj<ALE::Mesh> mB       = ALE::MeshBuilder<ALE::Mesh>::createCubeBoundary(PETSC_COMM_WORLD, lower, upper, faces, this->_debug);
-    this->_m    = ALE::Generator<ALE::Mesh>::generateMesh(mB, true);
-    this->_mesh = new mesh_type(PETSC_COMM_WORLD, 3, this->_debug);
-    ALE::Obj<mesh_type::sieve_type> sieve = new mesh_type::sieve_type(PETSC_COMM_WORLD, 0, 119, this->_debug);
+    double                    lower[3]    = {0.0, 0.0, 0.0};
+    double                    upper[3]    = {1.0, 1.0, 1.0};
+    int                       faces[3]    = {3, 3, 3};
+    bool                      interpolate = true;
+    const ALE::Obj<ALE::Mesh> mB          = ALE::MeshBuilder<ALE::Mesh>::createCubeBoundary(PETSC_COMM_WORLD, lower, upper, faces, this->_debug);
+    this->_m    = ALE::Generator<ALE::Mesh>::generateMesh(mB, interpolate);
+    this->_mesh = new mesh_type(mB->comm(), 3, this->_debug);
+    ALE::Obj<mesh_type::sieve_type> sieve = new mesh_type::sieve_type(this->_mesh->comm(), 0, 119, this->_debug);
 
     this->_mesh->setSieve(sieve);
     ALE::ISieveConverter::convertMesh(*this->_m, *this->_mesh, this->_renumbering);
+    if (this->_mesh->commSize() > 1) {
+      ALE::Obj<mesh_type>             newMesh  = new mesh_type(PETSC_COMM_WORLD, this->_mesh->getDimension(), this->_debug);
+      ALE::Obj<mesh_type::sieve_type> newSieve = new mesh_type::sieve_type(newMesh->comm(), this->_debug);
+
+      newMesh->setSieve(newSieve);
+      ALE::DistributionNew<mesh_type>::distributeMeshAndSectionsV(this->_mesh, newMesh);
+      this->_mesh = newMesh;
+    }
   };
 
   /// Tear down data.
