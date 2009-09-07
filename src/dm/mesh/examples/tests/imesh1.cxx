@@ -85,6 +85,40 @@ public:
     // Could also check cones
   };
 
+  template<typename Section>
+  static void checkSection(Section& sectionA, Section& sectionB) {
+    // Check atlas
+    checkSection(*sectionA.getAtlas(), *sectionB.getAtlas());
+    // Check values
+    typedef typename Section::point_type point_type;
+    typedef typename Section::value_type value_type;
+    point_type min = sectionA.getChart().min();
+    point_type max = sectionA.getChart().max();
+
+    CPPUNIT_ASSERT_EQUAL(min, sectionB.getChart().min());
+    CPPUNIT_ASSERT_EQUAL(max, sectionB.getChart().max());
+    for(point_type p = min; p < max; ++p) {
+      const int         dim     = sectionA.getFiberDimension(p);
+      const value_type *valuesA = sectionA.restrictPoint(p);
+      const value_type *valuesB = sectionB.restrictPoint(p);
+
+      CPPUNIT_ASSERT_EQUAL(dim, sectionB.getFiberDimension(p));
+      CPPUNIT_ASSERT(valuesA != NULL);
+      CPPUNIT_ASSERT(valuesB != NULL);
+      for(int d = 0; d < dim; ++d) {
+        CPPUNIT_ASSERT_EQUAL(valuesA[d], valuesB[d]);
+      }
+    }
+  };
+
+  template<typename Point_, typename Value_>
+  static void checkSection(ALE::IConstantSection<Point_, Value_>& sectionA, ALE::IConstantSection<Point_, Value_>& sectionB) {
+    CPPUNIT_ASSERT_EQUAL(sectionA.getChart().min(), sectionB.getChart().min());
+    CPPUNIT_ASSERT_EQUAL(sectionA.getChart().max(), sectionB.getChart().max());
+    CPPUNIT_ASSERT_EQUAL(sectionA.restrictPoint(sectionA.getChart().min())[0], sectionB.restrictPoint(sectionB.getChart().min())[0]);
+    CPPUNIT_ASSERT_EQUAL(sectionA.getDefaultValue(), sectionB.getDefaultValue());
+  };
+
   template<typename Mesh>
   static void checkMesh(Mesh& meshA, Mesh& meshB) {
     //FunctionTestISieve::checkSieve(*meshA.getSieve(), *meshB.getSieve());
@@ -99,6 +133,27 @@ public:
       checkLabel(*l_iterA->second, *l_iterB->second);
     }
     // Check sections
+    Obj<std::set<std::string> >                    realNamesA = meshA.getRealSections();
+    Obj<std::set<std::string> >                    realNamesB = meshB.getRealSections();
+    typename std::set<std::string>::const_iterator r_iterA    = realNamesA->begin();
+    typename std::set<std::string>::const_iterator r_iterB    = realNamesB->begin();
+
+    CPPUNIT_ASSERT_EQUAL(realNamesA->size(), realNamesB->size());
+    for(; r_iterA != realNamesA->end(); ++r_iterA, ++r_iterB) {
+      CPPUNIT_ASSERT_EQUAL(*r_iterA, *r_iterB);
+      checkSection(*meshA.getRealSection(*r_iterA), *meshB.getRealSection(*r_iterB));
+    }
+    Obj<std::set<std::string> >                    intNamesA = meshA.getIntSections();
+    Obj<std::set<std::string> >                    intNamesB = meshB.getIntSections();
+    typename std::set<std::string>::const_iterator i_iterA   = intNamesA->begin();
+    typename std::set<std::string>::const_iterator i_iterB   = intNamesB->begin();
+
+    CPPUNIT_ASSERT_EQUAL(intNamesA->size(), intNamesB->size());
+    for(; i_iterA != intNamesA->end(); ++i_iterA, ++i_iterB) {
+      CPPUNIT_ASSERT_EQUAL(*i_iterA, *i_iterB);
+      checkSection(*meshA.getIntSection(*i_iterA), *meshB.getIntSection(*i_iterB));
+    }
+    // Check overlap
   };
 
   void testSerialization() {
