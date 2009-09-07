@@ -4734,6 +4734,10 @@ namespace ALE {
         SectionSerializer::writeSection(fs, *mesh.getIntSection(*n_iter));
       }
       // Write overlap
+      SifterSerializer::writeSifter(fs, *mesh.getSendOverlap());
+      SifterSerializer::writeSifter(fs, *mesh.getRecvOverlap());
+      // Write distribution overlap
+      // Write renumbering
     };
     template<typename Mesh>
     static void loadMesh(const std::string& filename, Mesh& mesh) {
@@ -4785,6 +4789,10 @@ namespace ALE {
         mesh.setIntSection(name, section);
       }
       // Load overlap
+      SifterSerializer::loadSifter(fs, *mesh.getSendOverlap());
+      SifterSerializer::loadSifter(fs, *mesh.getRecvOverlap());
+      // Load distribution overlap
+      // Load renumbering
     };
   };
 } // namespace ALE
