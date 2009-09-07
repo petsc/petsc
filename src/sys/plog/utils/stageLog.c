@@ -94,6 +94,12 @@ PetscErrorCode PETSC_DLLEXPORT StageLogRegister(StageLog stageLog, const char sn
   PetscFunctionBegin;
   PetscValidCharPointer(sname,2);
   PetscValidIntPointer(stage,3);
+  for(int st = 0; st < stageLog->numStages; ++st) {
+    PetscTruth same;
+
+    ierr = PetscStrcmp(stageLog->stageInfo[st].name, sname, &same);CHKERRQ(ierr);
+    if (same) {SETERRQ1(PETSC_ERR_ARG_WRONG, "Duplicate stage name given: %s", sname);}
+  }
   s = stageLog->numStages++;
   if (stageLog->numStages > stageLog->maxStages) {
     ierr = PetscMalloc(stageLog->maxStages*2 * sizeof(StageInfo), &stageInfo);CHKERRQ(ierr);
