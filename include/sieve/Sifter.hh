@@ -1409,6 +1409,33 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     };
   };// class Sifter
 
+  class SifterSerializer {
+  public:
+    template<typename Sifter>
+    static void writeSifter(std::ofstream& fs, Sifter& sifter) {
+      fs << sifter._arrows.set.size() << std::endl;
+      for(typename Sifter::traits::arrow_container_type::set_type::iterator ai = sifter._arrows.set.begin(); ai != sifter._arrows.set.end(); ai++) {
+        fs << ai->source << " " << ai->target << " " << ai->color << std::endl;
+      }
+    };
+    template<typename Sifter>
+    static void loadSifter(std::ifstream& fs, Sifter& sifter) {
+      typedef typename Sifter::traits::arrow_container_type::set_type::size_type size_type;
+      size_type numArrows;
+
+      fs >> numArrows;
+      for(size_type a = 0; a < numArrows; ++a) {
+        typename Sifter::traits::arrow_type::source_type source;
+        typename Sifter::traits::arrow_type::target_type target;
+        typename Sifter::traits::arrow_type::color_type  color;
+
+        fs >> source;
+        fs >> target;
+        fs >> color;
+        sifter.addArrow(typename Sifter::traits::arrow_type(source, target, color));
+      }
+    };
+  };
 } // namespace ALE
 
 #endif
