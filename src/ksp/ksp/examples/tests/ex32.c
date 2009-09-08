@@ -79,8 +79,14 @@ PetscErrorCode ComputeMatrix(DA da,Mat B)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs,dof,k1,k2,k3;
-  PetscScalar    *v,*v_neighbor,Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
-  MatStencil     row,col; 
+  PetscScalar    *v,*v_neighbor,Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy,r1,r2;
+  MatStencil     row,col;
+  PetscRandom    rand; 
+
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
+  ierr = PetscRandomSetType(rand,PETSCRAND);CHKERRQ(ierr);
+  ierr = PetscRandomSetSeed(rand,1);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
 
   ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);CHKERRQ(ierr); 
   /* For simplicity, this example only works on mx=my=mz */
@@ -91,7 +97,7 @@ PetscErrorCode ComputeMatrix(DA da,Mat B)
 
   ierr = PetscMalloc((2*dof*dof+1)*sizeof(PetscScalar),&v);CHKERRQ(ierr);
   v_neighbor = v + dof*dof;
-  ierr = PetscMemzero(v,(2*dof*dof)*sizeof(PetscScalar));CHKERRQ(ierr);
+  //  ierr = PetscMemzero(v,(2*dof*dof+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   k3 = 0;
   for (k1=0; k1<dof; k1++){
     for (k2=0; k2<dof; k2++){
@@ -99,6 +105,12 @@ PetscErrorCode ComputeMatrix(DA da,Mat B)
         v[k3]          = 2.0*(HxHydHz + HxHzdHy + HyHzdHx);
         v_neighbor[k3] = -HxHydHz;
       }
+      else {
+	ierr = PetscRandomGetValue(rand,&r1);CHKERRQ(ierr);
+	ierr = PetscRandomGetValue(rand,&r2);CHKERRQ(ierr);
+	v[k3] = 0.001*(r1*02-0.1);             /* random number range [-0.1 0.1] */
+	v_neighbor[k3] = 0.001*(r2*0.2-0.1);
+	}	
       k3++;
     }
   }
@@ -109,28 +121,28 @@ PetscErrorCode ComputeMatrix(DA da,Mat B)
       for(i=xs; i<xs+xm; i++){
         row.i = i; row.j = j; row.k = k;
 	if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1){ /* boudary points */	 
-          ierr = MatSetValuesBlockedStencil(B,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
-	} else { /* interior points */
+	  ierr = MatSetValuesBlockedStencil(B,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
+        } else { /* interior points */
           /* center */
           col.i = i; col.j = j; col.k = k;
           ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v,INSERT_VALUES);CHKERRQ(ierr);          
           
           /* x neighbors */
-          col.i = i-1; col.j = j; col.k = k;
+	  col.i = i-1; col.j = j; col.k = k;
           ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
-          col.i = i+1; col.j = j; col.k = k;
-          ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
-
-          /* y neighbors */
-          col.i = i; col.j = j-1; col.k = k;
-          ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
-          col.i = i; col.j = j+1; col.k = k;
-          ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
-
+	  col.i = i+1; col.j = j; col.k = k;
+	  ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
+	 
+	  /* y neighbors */
+	  col.i = i; col.j = j-1; col.k = k;
+	  ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
+	  col.i = i; col.j = j+1; col.k = k;
+	  ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
+	 
           /* z neighbors */
-          col.i = i; col.j = j; col.k = k-1;
-          ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
-          col.i = i; col.j = j; col.k = k+1;
+	  col.i = i; col.j = j; col.k = k-1;
+	  ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
+	  col.i = i; col.j = j; col.k = k+1;
           ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
         }
       }
@@ -139,7 +151,8 @@ PetscErrorCode ComputeMatrix(DA da,Mat B)
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscFree(v);CHKERRQ(ierr);
-  /*  ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+  ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
+  /* ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */ 
   return 0;
 }
 
