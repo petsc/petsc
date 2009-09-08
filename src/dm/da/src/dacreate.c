@@ -2,6 +2,38 @@
 #include "../src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
 #undef __FUNCT__  
+#define __FUNCT__ "DASetOptionsPrefix"
+/*@C
+   DASetOptionsPrefix - Sets the prefix used for searching for all 
+   DA options in the database.
+
+   Collective on DA
+
+   Input Parameter:
++  da - the DA context
+-  prefix - the prefix to prepend to all option names
+
+   Notes:
+   A hyphen (-) must NOT be given at the beginning of the prefix name.
+   The first character of all runtime options is AUTOMATICALLY the hyphen.
+
+   Level: advanced
+
+.keywords: DA, set, options, prefix, database
+
+.seealso: DASetFromOptions()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DASetOptionsPrefix(DA da,const char prefix[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)da,prefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "DASetSizes"
 /*@
   DASetSizes - Sets the global sizes
@@ -32,7 +64,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetSizes(DA da, PetscInt M, PetscInt N, Petsc
 #define __FUNCT__ "DACreate"
 /*@
   DACreate - Creates an empty DA object. The type can then be set with DASetType(),
-  or VecSetFromOptions().
+  or DASetFromOptions().
 
    If you never  call DASetType() or DASetFromOptions() it will generate an 
    error when you try to use the DA.
