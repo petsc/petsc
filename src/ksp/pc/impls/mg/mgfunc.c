@@ -116,9 +116,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetResidual(PC pc,PetscInt l,PetscErrorCod
           One can pass in the interpolation matrix or its transpose; PETSc figures
     out from the matrix size which one it is.
 
-         If you do not set this, the transpose of the Mat set with PCMGSetRestriction()
-    is used.
-
 .keywords:  multigrid, set, interpolate, level
 
 .seealso: PCMGSetRestriction()
