@@ -424,16 +424,18 @@ runex32:
 	   ${RM} -f ex32.tmp
 
 runex32_2:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type natural -mat_type baij > ex32_2.out 2>&1;
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type natural -mat_type baij -ilu_new> ex32.tmp 2>&1; \
-	if (${DIFF} output/ex32_2.out ex32.tmp) then true; \
+	if (${DIFF} ex32_2.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32, diffs above"; fi; \
-	   ${RM} -f ex32.tmp
+	   ${RM} -f ex32.tmp; ${RM} -f ex32_2.out
 
 runex32_3:
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type natural -mat_type baij -ilu_new> ex32.tmp 2>&1; \
-	if (${DIFF} output/ex32_3.out ex32.tmp) then true; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type natural -mat_type baij > ex32_3.out 2>&1; 
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type natural -mat_type baij -ilu_new > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_3.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_3, diffs above"; fi; \
-	   ${RM} -f ex32.tmp
+	   ${RM} -f ex32.tmp; ${RM} -f ex32_3.out
 
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc runex4 runex4_3 \
                                  runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc runex19 runex19_2 ex19.rm \
