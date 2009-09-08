@@ -157,6 +157,20 @@ namespace ALE {
       os << "(" << p.prefix << ", "<< p.index << ")";
       return os;
     };
+    // Reading
+    friend std::istream& operator>>(std::istream& is, Point& p) {
+      // Read "("
+      char tmp = '\0';
+
+      while (tmp != '(') {is.get(tmp);}
+      is >> p.prefix;
+      // Read ","
+      while (tmp != ',') {is.get(tmp);}
+      is >> p.index;
+      // Read ")"
+      while (tmp != ')') {is.get(tmp);}
+      return is;
+    };
   };
   template<typename FirstType, typename SecondType>
   class Pair {

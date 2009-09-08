@@ -5,6 +5,8 @@
 #include <ALE.hh>
 #endif
 
+#include <fstream>
+
 //#define IMESH_NEW_LABELS
 
 namespace ALE {
@@ -1180,6 +1182,7 @@ namespace ALE {
       }
       return false;
     };
+    bool orientedCones() const {return this->orientCones;};
   public: // Construction
     index_type getConeSize(const point_type& p) const {
       if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
@@ -1890,6 +1893,125 @@ namespace ALE {
 #endif
       }
     }
+  };
+
+  class ISieveSerializer {
+  public:
+    template<typename ISieve>
+    static void writeSieve(const std::string& filename, ISieve& sieve) {
+      std::ofstream fs;
+
+      fs.open(filename.c_str());
+      writeSieve(fs, sieve);
+      fs.close();
+    };
+    template<typename ISieve>
+    static void writeSieve(std::ofstream& fs, ISieve& sieve) {
+      typedef ISieveVisitor::PointRetriever<ISieve> Visitor;
+      const Obj<typename ISieve::chart_type>& chart = sieve.getChart();
+      typename ISieve::point_type             min   = chart->min();
+      typename ISieve::point_type             max   = chart->max();
+
+      fs << min <<" "<< max << std::endl;
+      for(typename ISieve::point_type p = min; p < max; ++p) {
+        fs << sieve.getConeSize(p) << " " << sieve.getSupportSize(p) << std::endl;
+      }
+      Visitor pV(std::max(sieve.getMaxConeSize(), sieve.getMaxSupportSize()));
+
+      for(typename ISieve::point_type p = min; p < max; ++p) {
+        sieve.cone(p, pV);
+        const typename Visitor::point_type *cone  = pV.getPoints();
+        const int                           cSize = pV.getSize();
+
+        if (cSize > 0) {
+          for(int c = 0; c < cSize; ++c) {
+            if (c) {fs << " ";}
+            fs << cone[c];
+          }
+          fs << std::endl;
+        }
+        pV.clear();
+
+        sieve.orientedCone(p, pV);
+        const typename Visitor::oriented_point_type *oCone = pV.getOrientedPoints();
+        const int                                    oSize = pV.getOrientedSize();
+
+        if (oSize > 0) {
+          for(int c = 0; c < oSize; ++c) {
+            if (c) {fs << " ";}
+            fs << oCone[c].second;
+          }
+          fs << std::endl;
+        }
+        pV.clear();
+
+        sieve.support(p, pV);
+        const typename Visitor::point_type *support = pV.getPoints();
+        const int                           sSize   = pV.getSize();
+
+        if (sSize > 0) {
+          for(int s = 0; s < sSize; ++s) {
+            if (s) {fs << " ";}
+            fs << support[s];
+          }
+          fs << std::endl;
+        }
+        pV.clear();
+      }
+      // Output renumbering
+    };
+    template<typename ISieve>
+    static void loadSieve(const std::string& filename, ISieve& sieve) {
+      std::ifstream fs;
+
+      fs.open(filename.c_str());
+      loadSieve(fs, sieve);
+      fs.close();
+    };
+    template<typename ISieve>
+    static void loadSieve(std::ifstream& fs, ISieve& sieve) {
+      typename ISieve::point_type min, max;
+
+      fs >> min;
+      fs >> max;
+      sieve.setChart(typename ISieve::chart_type(min, max));
+      for(typename ISieve::point_type p = min; p < max; ++p) {
+        typename ISieve::index_type coneSize, supportSize;
+
+        fs >> coneSize;
+        fs >> supportSize;
+        sieve.setConeSize(p, coneSize);
+        sieve.setSupportSize(p, supportSize);
+      }
+      sieve.allocate();
+      typename ISieve::index_type  maxSize = std::max(sieve.getMaxConeSize(), sieve.getMaxSupportSize());
+      typename ISieve::point_type *points  = new typename ISieve::point_type[maxSize];
+      for(typename ISieve::point_type p = min; p < max; ++p) {
+        typename ISieve::index_type coneSize    = sieve.getConeSize(p);
+        typename ISieve::index_type supportSize = sieve.getSupportSize(p);
+
+        if (coneSize > 0) {
+          for(int c = 0; c < coneSize; ++c) {
+            fs >> points[c];
+          }
+          sieve.setCone(points, p);
+          if (sieve.orientedCones()) {
+            for(int c = 0; c < coneSize; ++c) {
+              fs >> points[c];
+            }
+            sieve.setConeOrientation(points, p);
+          }
+        }
+        if (supportSize > 0) {
+          for(int s = 0; s < supportSize; ++s) {
+            fs >> points[s];
+          }
+          sieve.setSupport(p, points);
+        }
+      }
+      delete [] points;
+      // Load renumbering
+    };
   };
 }
 

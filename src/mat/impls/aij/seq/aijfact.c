@@ -1144,7 +1144,7 @@ PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
 }
 /* ----------------------------------------------------------------*/
 EXTERN PetscErrorCode Mat_CheckInode(Mat,PetscTruth);
-EXTERN PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat,Mat,MatDuplicateOption);
+EXTERN PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat,Mat,MatDuplicateOption,PetscTruth);
 
 /* 
    ilu(0) with natural ordering under new data structure.
@@ -1154,11 +1154,12 @@ EXTERN PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat,Mat,MatDuplicateOption);
    bi=fact->i is an array of size 2n+2, in which 
    bi+
      bi[i]      ->  1st entry of L(i,:),i=0,...,i-1
-     bi[n]      ->  end of L(n-1,:)+1
+     bi[n]      ->  points to L(n-1,:)+1
      bi[n+1]    ->  1st entry of U(n-1,:)
      bi[2n-i]   ->  1st entry of U(i,:)
      bi[2n-i+1] ->  end of U(i,:)+1, the 1st entry of U(i-1,:)
-     bi[2n]     ->  end of U(0,:)+1
+     bi[2n]     ->  1st entry of U(0,:)
+     bi[2n+1]   ->  points to U(0,:)+1
 
    U(i,:) contains diag[i] as its last entry, i.e., 
     U(i,:) = (u[i,i+1],...,u[i,n-1],diag[i])
@@ -1175,18 +1176,16 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0_newdatastruct(Mat fact,Mat A,IS 
 
   PetscFunctionBegin;
   /* printf("MatILUFactorSymbolic_SeqAIJ_ilu0_newdatastruct ...\n"); */
-  ierr = MatDuplicateNoCreate_SeqAIJ(fact,A,MAT_DO_NOT_COPY_VALUES);CHKERRQ(ierr);
+  ierr = MatDuplicateNoCreate_SeqAIJ(fact,A,MAT_DO_NOT_COPY_VALUES,PETSC_FALSE);CHKERRQ(ierr);
   b = (Mat_SeqAIJ*)(fact)->data;
 
-  /* replace matrix arrays with single allocations, then reset values */
-  ierr = PetscFree3(b->a,b->j,b->i);CHKERRQ(ierr);
-  ierr = PetscFree(b->diag);CHKERRQ(ierr);
-  
-  ierr = PetscMalloc((2*n+2)*sizeof(PetscInt),&b->i);CHKERRQ(ierr);
-  ierr = PetscMalloc((ai[n]+1)*sizeof(PetscInt),&b->j);CHKERRQ(ierr);
-  ierr = PetscMalloc((ai[n]+1)*sizeof(PetscScalar),&b->a);CHKERRQ(ierr);
-  b->singlemalloc = PETSC_FALSE;
-  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&b->diag);CHKERRQ(ierr);
+  /* allocate matrix arrays for new data structure */
+  ierr = PetscMalloc3(ai[n]+1,PetscScalar,&b->a,ai[n]+1,PetscInt,&b->j,2*n+2,PetscInt,&b->i);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(fact,ai[n]*(sizeof(PetscScalar)+sizeof(PetscInt))+(2*n+2)*sizeof(PetscInt));CHKERRQ(ierr);
+  b->singlemalloc = PETSC_TRUE;
+  if (!b->diag){
+    ierr = PetscMalloc((n+1)*sizeof(PetscInt),&b->diag);CHKERRQ(ierr);
+  }
   bdiag = b->diag;  
  
   if (n > 0) {
@@ -1255,7 +1254,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
   /* special case that simply copies fill pattern */
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
-  if (!levels && row_identity && col_identity) {
+  if (!levels && row_identity && col_identity) { /* ilu(0) with natural ordering */
 
     PetscTruth newdatastruct=PETSC_FALSE;
     ierr = PetscOptionsGetTruth(PETSC_NULL,"-ilu_new",&newdatastruct,PETSC_NULL);CHKERRQ(ierr);
@@ -1263,7 +1262,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
       ierr = MatILUFactorSymbolic_SeqAIJ_ilu0_newdatastruct(fact,A,isrow,iscol,info);CHKERRQ(ierr);
       (fact)->ops->lufactornumeric =  MatLUFactorNumeric_SeqAIJ_newdatastruct;
     } else {
-      ierr = MatDuplicateNoCreate_SeqAIJ(fact,A,MAT_DO_NOT_COPY_VALUES);CHKERRQ(ierr);
+      ierr = MatDuplicateNoCreate_SeqAIJ(fact,A,MAT_DO_NOT_COPY_VALUES,PETSC_TRUE);CHKERRQ(ierr);
       (fact)->ops->lufactornumeric =  MatLUFactorNumeric_SeqAIJ;
     }
     

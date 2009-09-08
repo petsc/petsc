@@ -10,10 +10,13 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+class FunctionTestISieve;
+
 class FunctionTestIMesh : public CppUnit::TestFixture
 {
   CPPUNIT_TEST_SUITE(FunctionTestIMesh);
 
+  CPPUNIT_TEST(testSerialization);
   CPPUNIT_TEST(testStratify);
   CPPUNIT_TEST(testStratifyLine);
 
@@ -48,20 +51,129 @@ public:
   /// Setup data.
   void setUp(void) {
     this->processOptions();
-    double                    lower[3] = {0.0, 0.0, 0.0};
-    double                    upper[3] = {1.0, 1.0, 1.0};
-    int                       faces[3] = {3, 3, 3};
-    const ALE::Obj<ALE::Mesh> mB       = ALE::MeshBuilder<ALE::Mesh>::createCubeBoundary(PETSC_COMM_WORLD, lower, upper, faces, this->_debug);
-    this->_m    = ALE::Generator<ALE::Mesh>::generateMesh(mB, true);
-    this->_mesh = new mesh_type(PETSC_COMM_WORLD, 1, this->_debug);
-    ALE::Obj<mesh_type::sieve_type> sieve = new mesh_type::sieve_type(PETSC_COMM_WORLD, 0, 119, this->_debug);
+    double                    lower[3]    = {0.0, 0.0, 0.0};
+    double                    upper[3]    = {1.0, 1.0, 1.0};
+    int                       faces[3]    = {3, 3, 3};
+    bool                      interpolate = true;
+    const ALE::Obj<ALE::Mesh> mB          = ALE::MeshBuilder<ALE::Mesh>::createCubeBoundary(PETSC_COMM_WORLD, lower, upper, faces, this->_debug);
+    this->_m    = ALE::Generator<ALE::Mesh>::generateMesh(mB, interpolate);
+    this->_mesh = new mesh_type(mB->comm(), 3, this->_debug);
+    ALE::Obj<mesh_type::sieve_type> sieve = new mesh_type::sieve_type(this->_mesh->comm(), 0, 119, this->_debug);
 
     this->_mesh->setSieve(sieve);
-    ALE::ISieveConverter::convertSieve(*this->_m->getSieve(), *this->_mesh->getSieve(), this->_renumbering);
+    ALE::ISieveConverter::convertMesh(*this->_m, *this->_mesh, this->_renumbering);
+    if (this->_mesh->commSize() > 1) {
+      ALE::Obj<mesh_type>             newMesh  = new mesh_type(PETSC_COMM_WORLD, this->_mesh->getDimension(), this->_debug);
+      ALE::Obj<mesh_type::sieve_type> newSieve = new mesh_type::sieve_type(newMesh->comm(), this->_debug);
+
+      newMesh->setSieve(newSieve);
+      ALE::DistributionNew<mesh_type>::distributeMeshAndSectionsV(this->_mesh, newMesh);
+      this->_mesh = newMesh;
+    }
   };
 
   /// Tear down data.
   void tearDown(void) {};
+
+  template<typename Label>
+  static void checkLabel(Label& labelA, Label& labelB) {
+    typename Label::capSequence cap = labelA.cap();
+
+    CPPUNIT_ASSERT_EQUAL(cap.size(), labelB.cap().size());
+    for(typename Label::capSequence::iterator p_iter = cap.begin(); p_iter != cap.end(); ++p_iter) {
+      const Obj<typename Label::traits::supportSequence>&     supportA = labelA.support(*p_iter);
+      const Obj<typename Label::traits::supportSequence>&     supportB = labelB.support(*p_iter);
+      typename Label::traits::supportSequence::const_iterator s_iterA  = supportA->begin();
+      typename Label::traits::supportSequence::const_iterator s_iterB  = supportB->begin();
+
+      CPPUNIT_ASSERT_EQUAL(supportA->size(), supportB->size());
+      for(; s_iterA != supportA->end(); ++s_iterA, ++s_iterB) {
+        CPPUNIT_ASSERT_EQUAL(*s_iterA, *s_iterB);
+      }
+    }
+    // Could also check cones
+  };
+
+  template<typename Section>
+  static void checkSection(Section& sectionA, Section& sectionB) {
+    // Check atlas
+    checkSection(*sectionA.getAtlas(), *sectionB.getAtlas());
+    // Check values
+    typedef typename Section::point_type point_type;
+    typedef typename Section::value_type value_type;
+    point_type min = sectionA.getChart().min();
+    point_type max = sectionA.getChart().max();
+
+    CPPUNIT_ASSERT_EQUAL(min, sectionB.getChart().min());
+    CPPUNIT_ASSERT_EQUAL(max, sectionB.getChart().max());
+    for(point_type p = min; p < max; ++p) {
+      const int         dim     = sectionA.getFiberDimension(p);
+      const value_type *valuesA = sectionA.restrictPoint(p);
+      const value_type *valuesB = sectionB.restrictPoint(p);
+
+      CPPUNIT_ASSERT_EQUAL(dim, sectionB.getFiberDimension(p));
+      CPPUNIT_ASSERT(valuesA != NULL);
+      CPPUNIT_ASSERT(valuesB != NULL);
+      for(int d = 0; d < dim; ++d) {
+        CPPUNIT_ASSERT_EQUAL(valuesA[d], valuesB[d]);
+      }
+    }
+  };
+
+  template<typename Point_, typename Value_>
+  static void checkSection(ALE::IConstantSection<Point_, Value_>& sectionA, ALE::IConstantSection<Point_, Value_>& sectionB) {
+    CPPUNIT_ASSERT_EQUAL(sectionA.getChart().min(), sectionB.getChart().min());
+    CPPUNIT_ASSERT_EQUAL(sectionA.getChart().max(), sectionB.getChart().max());
+    CPPUNIT_ASSERT_EQUAL(sectionA.restrictPoint(sectionA.getChart().min())[0], sectionB.restrictPoint(sectionB.getChart().min())[0]);
+    CPPUNIT_ASSERT_EQUAL(sectionA.getDefaultValue(), sectionB.getDefaultValue());
+  };
+
+  template<typename Mesh>
+  static void checkMesh(Mesh& meshA, Mesh& meshB) {
+    //FunctionTestISieve::checkSieve(*meshA.getSieve(), *meshB.getSieve());
+    const typename Mesh::labels_type&          labelsA = meshA.getLabels();
+    const typename Mesh::labels_type&          labelsB = meshB.getLabels();
+    typename Mesh::labels_type::const_iterator l_iterA = labelsA.begin();
+    typename Mesh::labels_type::const_iterator l_iterB = labelsB.begin();
+
+    CPPUNIT_ASSERT_EQUAL(labelsA.size(), labelsB.size());
+    for(; l_iterA != labelsA.end(); ++l_iterA, ++l_iterB) {
+      CPPUNIT_ASSERT_EQUAL(l_iterA->first, l_iterB->first);
+      checkLabel(*l_iterA->second, *l_iterB->second);
+    }
+    // Check sections
+    Obj<std::set<std::string> >                    realNamesA = meshA.getRealSections();
+    Obj<std::set<std::string> >                    realNamesB = meshB.getRealSections();
+    typename std::set<std::string>::const_iterator r_iterA    = realNamesA->begin();
+    typename std::set<std::string>::const_iterator r_iterB    = realNamesB->begin();
+
+    CPPUNIT_ASSERT_EQUAL(realNamesA->size(), realNamesB->size());
+    for(; r_iterA != realNamesA->end(); ++r_iterA, ++r_iterB) {
+      CPPUNIT_ASSERT_EQUAL(*r_iterA, *r_iterB);
+      checkSection(*meshA.getRealSection(*r_iterA), *meshB.getRealSection(*r_iterB));
+    }
+    Obj<std::set<std::string> >                    intNamesA = meshA.getIntSections();
+    Obj<std::set<std::string> >                    intNamesB = meshB.getIntSections();
+    typename std::set<std::string>::const_iterator i_iterA   = intNamesA->begin();
+    typename std::set<std::string>::const_iterator i_iterB   = intNamesB->begin();
+
+    CPPUNIT_ASSERT_EQUAL(intNamesA->size(), intNamesB->size());
+    for(; i_iterA != intNamesA->end(); ++i_iterA, ++i_iterB) {
+      CPPUNIT_ASSERT_EQUAL(*i_iterA, *i_iterB);
+      checkSection(*meshA.getIntSection(*i_iterA), *meshB.getIntSection(*i_iterB));
+    }
+    // Check overlap
+  };
+
+  void testSerialization() {
+    ALE::Obj<mesh_type> newMesh = new mesh_type(PETSC_COMM_WORLD, 3, this->_debug);
+    const char         *filename = "meshTest.sav";
+
+    ALE::MeshSerializer::writeMesh(filename, *this->_mesh);
+    ALE::MeshSerializer::loadMesh(filename, *newMesh);
+    unlink(filename);
+    checkMesh(*this->_mesh, *newMesh);
+  };
 
   void testStratify() {
     this->_mesh->stratify();
@@ -136,7 +248,7 @@ public:
     bcSection->updatePoint(2, &one);
     bcSection->updatePoint(4, &one);
     Obj<submesh_type> boundaryMesh = ALE::Selection<mesh_type>::submeshV<submesh_type>(this->_mesh, bcSection);
-    boundaryMesh->view("Boundary Mesh");
+    //boundaryMesh->view("Boundary Mesh");
   };
 };
 

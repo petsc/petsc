@@ -4697,5 +4697,103 @@ namespace ALE {
       }
     };
   };
+  class MeshSerializer {
+  public:
+    template<typename Mesh>
+    static void writeMesh(const std::string& filename, Mesh& mesh) {
+      std::ofstream fs;
+
+      fs.open(filename.c_str());
+      writeMesh(fs, mesh);
+      fs.close();
+    };
+    template<typename Mesh>
+    static void writeMesh(std::ofstream& fs, Mesh& mesh) {
+      ISieveSerializer::writeSieve(fs, *mesh.getSieve());
+      // Write labels
+      const typename Mesh::labels_type& labels = mesh.getLabels();
+
+      fs << labels.size() << std::endl;
+      for(typename Mesh::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
+        fs << l_iter->first << std::endl;
+        LabelSifterSerializer::writeLabel(fs, *l_iter->second);
+      }
+      // Write sections
+      Obj<std::set<std::string> > realNames = mesh.getRealSections();
+
+      fs << realNames->size() << std::endl;
+      for(std::set<std::string>::const_iterator n_iter = realNames->begin(); n_iter != realNames->end(); ++n_iter) {
+        fs << *n_iter << std::endl;
+        SectionSerializer::writeSection(fs, *mesh.getRealSection(*n_iter));
+      }
+      Obj<std::set<std::string> > intNames = mesh.getIntSections();
+
+      fs << intNames->size() << std::endl;
+      for(std::set<std::string>::const_iterator n_iter = intNames->begin(); n_iter != intNames->end(); ++n_iter) {
+        fs << *n_iter << std::endl;
+        SectionSerializer::writeSection(fs, *mesh.getIntSection(*n_iter));
+      }
+      // Write overlap
+      SifterSerializer::writeSifter(fs, *mesh.getSendOverlap());
+      SifterSerializer::writeSifter(fs, *mesh.getRecvOverlap());
+      // Write distribution overlap
+      // Write renumbering
+    };
+    template<typename Mesh>
+    static void loadMesh(const std::string& filename, Mesh& mesh) {
+      std::ifstream fs;
+
+      fs.open(filename.c_str());
+      loadMesh(fs, mesh);
+      fs.close();
+    };
+    template<typename Mesh>
+    static void loadMesh(std::ifstream& fs, Mesh& mesh) {
+      ALE::Obj<typename Mesh::sieve_type> sieve = new typename Mesh::sieve_type(mesh.comm(), mesh.debug());
+
+      ISieveSerializer::loadSieve(fs, *sieve);
+      mesh.setSieve(sieve);
+      // Load labels
+      size_t numLabels;
+
+      fs >> numLabels;
+      for(size_t l = 0; l < numLabels; ++l) {
+        ALE::Obj<typename Mesh::label_type> label = new typename Mesh::label_type(mesh.comm(), mesh.debug());
+        std::string                         name;
+
+        fs >> name;
+        LabelSifterSerializer::loadLabel(fs, *label);
+        mesh.setLabel(name, label);
+      }
+      // Load sections
+      size_t numRealSections;
+
+      fs >> numRealSections;
+      for(size_t s = 0; s < numRealSections; ++s) {
+        ALE::Obj<typename Mesh::real_section_type> section = new typename Mesh::real_section_type(mesh.comm(), mesh.debug());
+        std::string                                name;
+
+        fs >> name;
+        SectionSerializer::loadSection(fs, *section);
+        mesh.setRealSection(name, section);
+      }
+      size_t numIntSections;
+
+      fs >> numIntSections;
+      for(size_t s = 0; s < numIntSections; ++s) {
+        ALE::Obj<typename Mesh::int_section_type> section = new typename Mesh::int_section_type(mesh.comm(), mesh.debug());
+        std::string                               name;
+
+        fs >> name;
+        SectionSerializer::loadSection(fs, *section);
+        mesh.setIntSection(name, section);
+      }
+      // Load overlap
+      SifterSerializer::loadSifter(fs, *mesh.getSendOverlap());
+      SifterSerializer::loadSifter(fs, *mesh.getRecvOverlap());
+      // Load distribution overlap
+      // Load renumbering
+    };
+  };
 } // namespace ALE
 #endif

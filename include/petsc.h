@@ -1573,7 +1573,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt,const PetscScalar
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMemcpy"
-/*@
+/*@C
    PetscMemcpy - Copies n bytes, beginning at location b, to the space
    beginning at location a. The two memory regions CANNOT overlap, use
    PetscMemmove() in that case.
@@ -1614,6 +1614,7 @@ PETSC_STATIC_INLINE PetscErrorCode PETSC_DLLEXPORT PetscMemcpy(void *a,const voi
   if (n > 0 && !b) SETERRQ(PETSC_ERR_ARG_NULL,"Trying to copy from a null pointer");
   if (n > 0 && !a) SETERRQ(PETSC_ERR_ARG_NULL,"Trying to copy to a null pointer");
 #endif
+  PetscFunctionBegin;
   if (a != b) {
 #if defined(PETSC_USE_DEBUG)
     if ((al > bl && (al - bl) < nl) || (bl - al) < nl) {
@@ -1644,7 +1645,7 @@ PETSC_STATIC_INLINE PetscErrorCode PETSC_DLLEXPORT PetscMemcpy(void *a,const voi
     memcpy((char*)(a),(char*)(b),n);
 #endif
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  

@@ -23,6 +23,7 @@ namespace ALE {
     typedef Value_ value_type;
     typedef Alloc_ alloc_type;
     typedef Interval<point_type, alloc_type> chart_type;
+    typedef point_type                       index_type;
   protected:
     chart_type _chart;
     value_type _value[2]; // Value and default value
@@ -263,7 +264,7 @@ namespace ALE {
         this->updatePoint(*c_iter, section->restrictPoint(*c_iter));
       }
     }
-    const value_type *getDefault() const {return this->_emptyValue;}
+    const value_type *getDefault() const {return this->_emptyValue.v;}
     void setDefault(const value_type v[]) {for(int i = 0; i < fiberDim; ++i) {this->_emptyValue.v[i] = v[i];}}
   public: // Sizes
     void clear() {
@@ -640,6 +641,189 @@ namespace ALE {
       field->replaceStorage(this->_array, true, this->getStorageSize());
       field->setAtlas(newAtlas);
       return field;
+    };
+  };
+
+  class SectionSerializer {
+  public:
+    template<typename Point_, typename Value_>
+    static void writeSection(std::ofstream& fs, IConstantSection<Point_, Value_>& section) {
+      fs << section.getChart().min() << " " << section.getChart().max() << std::endl;
+      fs.precision(15);
+      fs << section.restrictPoint(section.getChart().min())[0] << " ";
+      fs << section.getDefaultValue() << std::endl;
+    };
+    template<typename Point_, typename Value_, int fiberDim>
+    static void writeSection(std::ofstream& fs, IUniformSection<Point_, Value_, fiberDim>& section) {
+      // Write atlas
+      writeSection(fs, *section.getAtlas());
+      // Write values
+      typedef typename IUniformSection<Point_, Value_, fiberDim>::index_type index_type;
+      typedef typename IUniformSection<Point_, Value_, fiberDim>::value_type value_type;
+      index_type min = section.getChart().min();
+      index_type max = section.getChart().max();
+
+      fs.precision(15);
+      for(index_type p = min; p < max; ++p) {
+        const value_type *values = section.restrictPoint(p);
+
+        for(int i = 0; i < fiberDim; ++i) {
+          fs << values[i] << std::endl;
+        }
+      }
+      // Write empty value
+      const value_type *defValue = section.getDefault();
+
+      for(int i = 0; i < fiberDim; ++i) {
+        if (i > 0) fs << " ";
+        fs << defValue[i];
+      }
+      fs << std::endl;
+    };
+    template<typename Point_, typename Value_>
+    static void writeSection(std::ofstream& fs, ISection<Point_, Value_>& section) {
+      // Write atlas
+      writeSection(fs, *section.getAtlas());
+      // Write values
+      typedef typename ISection<Point_, Value_>::point_type point_type;
+      typedef typename ISection<Point_, Value_>::value_type value_type;
+      point_type min = section.getChart().min();
+      point_type max = section.getChart().max();
+
+      fs.precision(15);
+      for(point_type p = min; p < max; ++p) {
+        const int         fiberDim = section.getFiberDimension(p);
+        const value_type *values   = section.restrictPoint(p);
+
+        for(int i = 0; i < fiberDim; ++i) {
+          fs << values[i] << std::endl;
+        }
+      }
+    };
+    template<typename Point_, typename Value_>
+    static void writeSection(std::ofstream& fs, IGeneralSection<Point_, Value_>& section) {
+      // Write atlas
+      writeSection(fs, *section.getAtlas());
+      // Write values
+      typedef typename IGeneralSection<Point_, Value_>::point_type point_type;
+      typedef typename IGeneralSection<Point_, Value_>::value_type value_type;
+      point_type min = section.getChart().min();
+      point_type max = section.getChart().max();
+
+      fs.precision(15);
+      for(point_type p = min; p < max; ++p) {
+        const int         fiberDim = section.getFiberDimension(p);
+        const value_type *values   = section.restrictPoint(p);
+
+        for(int i = 0; i < fiberDim; ++i) {
+          fs << values[i] << std::endl;
+        }
+      }
+      // Write BC
+      writeSection(fs, *section.getBC());
+      // Write spaces
+      //   std::vector<Obj<atlas_type> > _spaces;
+      //   std::vector<Obj<bc_type> >    _bcs;
+    };
+    template<typename Point_, typename Value_>
+    static void loadSection(std::ifstream& fs, IConstantSection<Point_, Value_>& section) {
+      typename IConstantSection<Point_, Value_>::index_type min, max;
+      typename IConstantSection<Point_, Value_>::value_type val;
+
+      fs >> min;
+      fs >> max;
+      section.setChart(typename IConstantSection<Point_, Value_>::chart_type(min, max));
+      fs >> val;
+      section.updatePoint(min, &val);
+      fs >> val;
+      section.setDefaultValue(val);
+    };
+    template<typename Point_, typename Value_, int fiberDim>
+    static void loadSection(std::ifstream& fs, IUniformSection<Point_, Value_, fiberDim>& section) {
+      // Load atlas
+      loadSection(fs, *section.getAtlas());
+      section.allocatePoint();
+      // Load values
+      typedef typename IUniformSection<Point_, Value_, fiberDim>::index_type index_type;
+      typedef typename IUniformSection<Point_, Value_, fiberDim>::value_type value_type;
+      index_type min = section.getChart().min()*fiberDim;
+      index_type max = section.getChart().max()*fiberDim;
+
+      for(index_type p = min; p < max; ++p) {
+        value_type values[fiberDim];
+
+        for(int i = 0; i < fiberDim; ++i) {
+          typename IUniformSection<Point_, Value_, fiberDim>::value_type value;
+
+          fs >> value;
+          values[i] = value;
+        }
+        section.updatePoint(p, values);
+      }
+      // Load empty value
+      value_type defValue[fiberDim];
+
+      for(int i = 0; i < fiberDim; ++i) {
+        fs >> defValue[i];
+      }
+      section.setDefault(defValue);
+    };
+    template<typename Point_, typename Value_>
+    static void loadSection(std::ifstream& fs, ISection<Point_, Value_>& section) {
+      // Load atlas
+      loadSection(fs, *section.getAtlas());
+      section.allocatePoint();
+      // Load values
+      typedef typename ISection<Point_, Value_>::point_type point_type;
+      typedef typename ISection<Point_, Value_>::value_type value_type;
+      point_type min    = section.getChart().min();
+      point_type max    = section.getChart().max();
+      int        maxDim = -1;
+
+      for(point_type p = min; p < max; ++p) {
+        maxDim = std::max(maxDim, section.getFiberDimension(p));
+      }
+      value_type *values = new value_type[maxDim];
+      for(point_type p = min; p < max; ++p) {
+        const int fiberDim = section.getFiberDimension(p);
+
+        for(int i = 0; i < fiberDim; ++i) {
+          fs >> values[i];
+        }
+        section.updatePoint(p, values);
+      }
+      delete [] values;
+    };
+    template<typename Point_, typename Value_>
+    static void loadSection(std::ifstream& fs, IGeneralSection<Point_, Value_>& section) {
+      // Load atlas
+      loadSection(fs, *section.getAtlas());
+      section.allocatePoint();
+      // Load values
+      typedef typename IGeneralSection<Point_, Value_>::point_type point_type;
+      typedef typename IGeneralSection<Point_, Value_>::value_type value_type;
+      point_type min    = section.getChart().min();
+      point_type max    = section.getChart().max();
+      int        maxDim = -1;
+
+      for(point_type p = min; p < max; ++p) {
+        maxDim = std::max(maxDim, section.getFiberDimension(p));
+      }
+      value_type *values = new value_type[maxDim];
+      for(point_type p = min; p < max; ++p) {
+        const int fiberDim = section.getFiberDimension(p);
+
+        for(int i = 0; i < fiberDim; ++i) {
+          fs >> values[i];
+        }
+        section.updatePoint(p, values);
+      }
+      delete [] values;
+      // Load BC
+      loadSection(fs, *section.getBC());
+      // Load spaces
+      //   std::vector<Obj<atlas_type> > _spaces;
+      //   std::vector<Obj<bc_type> >    _bcs;
     };
   };
 }
