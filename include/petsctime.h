@@ -17,6 +17,9 @@ EXTERN int gettimeofday(struct timeval *,struct timezone *);
 EXTERN_C_END
 #endif
 
+/* Global counters */
+extern PetscLogDouble PETSC_DLLEXPORT BaseTime;
+
 /*
    PetscTime - Returns the current time of day in seconds.  
 

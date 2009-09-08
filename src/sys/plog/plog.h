@@ -71,9 +71,6 @@ extern int        numActions, maxActions;
 extern int        numObjects, maxObjects;
 extern int        numObjectsDestroyed;
 
-/* Global counters */
-extern PetscLogDouble PETSC_DLLEXPORT BaseTime;
-
 /* A simple stack */
 struct _n_IntStack {
   int  top;   /* The top of the stack */
