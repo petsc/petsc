@@ -418,10 +418,11 @@ runex31:
 	   ${RM} -f ex31.tmp
 
 runex32:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij > ex32.out 2>&1;
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -ilu_new> ex32.tmp 2>&1; \
-	if (${DIFF} output/ex32.out ex32.tmp) then true; \
+	if (${DIFF} ex32.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32, diffs above"; fi; \
-	   ${RM} -f ex32.tmp
+	   ${RM} -f ex32.tmp; ${RM} -f ex32.out
 
 runex32_2:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type natural -mat_type baij > ex32_2.out 2>&1;
