@@ -4,7 +4,7 @@
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include "../src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
+#include "private/daimpl.h"    /*I   "petscda.h"   I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "DALocalToLocalCreate"

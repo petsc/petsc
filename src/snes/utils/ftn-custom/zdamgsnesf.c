@@ -1,5 +1,5 @@
 #include "private/fortranimpl.h"
-#include "../src/dm/da/daimpl.h"
+#include "private/daimpl.h"
 #include "petscsnes.h"
 #include "petscdmmg.h"
 

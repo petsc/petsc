@@ -1,6 +1,6 @@
 #define PETSCDM_DLL
  
-#include "../src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
+#include "private/daimpl.h"    /*I   "petscda.h"   I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetNeighbors"

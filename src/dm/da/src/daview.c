@@ -4,7 +4,7 @@
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include "../src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
+#include "private/daimpl.h"    /*I   "petscda.h"   I*/
 #if defined(PETSC_HAVE_PNETCDF)
 EXTERN_C_BEGIN
 #include "pnetcdf.h"

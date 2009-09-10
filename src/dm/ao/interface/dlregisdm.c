@@ -1,7 +1,7 @@
 #define PETSCDM_DLL
 
 #include "../src/dm/ao/aoimpl.h"
-#include "../src/dm/da/daimpl.h"
+#include "private/daimpl.h"
 #ifdef PETSC_HAVE_SIEVE
 #include "private/meshimpl.h"
 #endif
@@ -77,6 +77,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[])
 #endif
 
   /* Register Constructors */
+  ierr = DARegisterAll(path);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_SIEVE
   ierr = MeshRegisterAll(path);CHKERRQ(ierr);
 #endif

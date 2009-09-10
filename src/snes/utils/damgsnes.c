@@ -1,7 +1,7 @@
 #define PETSCSNES_DLL
  
 #include "petscda.h"      /*I      "petscda.h"    I*/
-#include "../src/dm/da/daimpl.h" 
+#include "private/daimpl.h" 
 /* It appears that preprocessor directives are not respected by bfort */
 #ifdef PETSC_HAVE_SIEVE
 #include "petscmesh.h"

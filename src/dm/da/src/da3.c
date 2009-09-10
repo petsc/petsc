@@ -4,7 +4,7 @@
    File created by Peter Mell  7/14/95
  */
 
-#include "../src/dm/da/daimpl.h"     /*I   "petscda.h"    I*/
+#include "private/daimpl.h"     /*I   "petscda.h"    I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAView_3d"
