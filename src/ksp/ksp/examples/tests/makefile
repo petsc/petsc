@@ -473,11 +473,25 @@ runex32_8:
 	   else echo "Possible problem with ex32_8, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_8.out
 
+runex32_9:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -pc_factor_mat_ordering_type natural -mat_type aij -pc_factor_levels 1 -da_grid_x 50 -da_grid_y 50 -da_grid_z 50 > ex32_9.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -pc_factor_mat_ordering_type natural -mat_type aij -pc_factor_levels 1 -da_grid_x 50 -da_grid_y 50 -da_grid_z 50 -ilu_new > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_9.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_9, diffs above"; fi; \
+	${RM} -f ex32.tmp; ${RM} -f ex32_9.out
+
+runex32_10:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -pc_factor_mat_ordering_type natural -mat_type aij -pc_factor_levels 4 -da_grid_x 50 -da_grid_y 50 -da_grid_z 50 > ex32_10.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -pc_factor_mat_ordering_type natural -mat_type aij -pc_factor_levels 4 -da_grid_x 50 -da_grid_y 50 -da_grid_z 50 -ilu_new > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_10.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_10, diffs above"; fi; \
+	${RM} -f ex32.tmp; ${RM} -f ex32_10.out
+
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc runex4 runex4_3 \
                                  runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc runex19 runex19_2 ex19.rm \
                                  ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm \
                                  ex26.PETSc runex26 runex26_2 ex26.rm ex27.PETSc ex27.rm \
-                                 ex32.PETSc runex32 runex32_2 runex32_3 runex32_4 runex32_5 runex32_6 runex32_7 runex32_8 ex32.rm
+                                 ex32.PETSc runex32 runex32_2 runex32_3 runex32_4 runex32_5 runex32_6 runex32_7 runex32_8 runex32_9 runex32_10 ex32.rm
 TESTEXAMPLES_C_X11	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm 
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex12f.PETSc ex12f.rm
