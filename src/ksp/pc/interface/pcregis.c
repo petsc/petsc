@@ -28,6 +28,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASA(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_CP(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_BFBt(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_LSC(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Redistribute(PC);
 
 #if defined(PETSC_HAVE_BOOST) && defined(PETSC_CLANGUAGE_CXX)
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SupportGraph(PC);
@@ -104,6 +105,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRegisterAll(const char path[])
   ierr = PCRegisterDynamic(PCCP           ,path,"PCCreate_CP",PCCreate_CP);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCBFBT         ,path,"PCCreate_BFBt",PCCreate_BFBt);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCLSC          ,path,"PCCreate_LSC",PCCreate_LSC);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCREDISTRIBUTE ,path,"PCCreate_Redistribute",PCCreate_Redistribute);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_BOOST) && defined(PETSC_CLANGUAGE_CXX)
   ierr = PCRegisterDynamic(PCSUPPORTGRAPH ,path,"PCCreate_SupportGraph",PCCreate_SupportGraph);CHKERRQ(ierr);
 #endif

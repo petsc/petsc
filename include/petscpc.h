@@ -72,6 +72,7 @@ E*/
 #define PCLSC             "lsc"
 #define PCPYTHON          "python"
 #define PCPFMG            "pfmg"
+#define PCREDISTRIBUTE    "redistribute"
 
 /* Logging support */
 extern PetscCookie PETSCKSP_DLLEXPORT PC_COOKIE;

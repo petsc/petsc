@@ -1494,12 +1494,9 @@ M*/
     call VecRestoreArrayF90(x,xx_v,ierr)
 .ve
    
-    Notes:
-    Not yet supported for all F90 compilers
-
     Level: beginner
 
-.seealso:  VecGetArrayF90(), VecGetArray(), VecRestoreArray()
+.seealso:  VecGetArrayF90(), VecGetArray(), VecRestoreArray(), UsingFortran
 
 M*/
 
@@ -1552,12 +1549,9 @@ M*/
     call VecRestoreArrayF90(x,xx_v,ierr)
 .ve
 
-    Notes:
-    Not yet supported for all F90 compilers
-
     Level: beginner
 
-.seealso:  VecRestoreArrayF90(), VecGetArray(), VecRestoreArray()
+.seealso:  VecRestoreArrayF90(), VecGetArray(), VecRestoreArray(), UsingFortran
 
 M*/
 
