@@ -263,6 +263,15 @@ PetscErrorCode DAGetElements_2d_P1(DA da,PetscInt *n,const PetscInt *e[])
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "DACreate_2D"
+PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "DACreate2d"
@@ -917,7 +926,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DARefine(DA da,MPI_Comm comm,DA *daref)
   } else {
     P = 1 + da->refine_z*(da->P - 1);
   }
-  ierr = DACreate(((PetscObject)da)->comm,da->dim,da->wrap,da->stencil_type,M,N,P,da->m,da->n,da->p,da->w,da->s,0,0,0,&da2);CHKERRQ(ierr);
+  if (da->dim == 3) {
+    ierr = DACreate3d(((PetscObject)da)->comm,da->wrap,da->stencil_type,M,N,P,da->m,da->n,da->p,da->w,da->s,0,0,0,&da2);CHKERRQ(ierr);
+  } else if (da->dim == 2) {
+    ierr = DACreate2d(((PetscObject)da)->comm,da->wrap,da->stencil_type,M,N,da->m,da->n,da->w,da->s,0,0,&da2);CHKERRQ(ierr);
+  } else if (da->dim == 1) {
+    ierr = DACreate1d(((PetscObject)da)->comm,da->wrap,M,da->w,da->s,0,&da2);CHKERRQ(ierr);
+  }
 
   /* allow overloaded (user replaced) operations to be inherited by refinement clones */
   da2->ops->getmatrix        = da->ops->getmatrix;
@@ -1010,7 +1025,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DACoarsen(DA da, MPI_Comm comm,DA *daref)
     else
       P = da->P;
   }
-  ierr = DACreate(((PetscObject)da)->comm,da->dim,da->wrap,da->stencil_type,M,N,P,da->m,da->n,da->p,da->w,da->s,0,0,0,&da2);CHKERRQ(ierr);
+  if (da->dim == 3) {
+    ierr = DACreate3d(((PetscObject)da)->comm,da->wrap,da->stencil_type,M,N,P,da->m,da->n,da->p,da->w,da->s,0,0,0,&da2);CHKERRQ(ierr);
+  } else if (da->dim == 2) {
+    ierr = DACreate2d(((PetscObject)da)->comm,da->wrap,da->stencil_type,M,N,da->m,da->n,da->w,da->s,0,0,&da2);CHKERRQ(ierr);
+  } else if (da->dim == 1) {
+    ierr = DACreate1d(((PetscObject)da)->comm,da->wrap,M,da->w,da->s,0,&da2);CHKERRQ(ierr);
+  }
 
   /* allow overloaded (user replaced) operations to be inherited by refinement clones */
   da2->ops->getmatrix        = da->ops->getmatrix;

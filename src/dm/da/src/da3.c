@@ -146,9 +146,15 @@ PetscErrorCode DAView_3d(DA da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#if 0
-EXTERN PetscErrorCode DAPublish_Petsc(PetscObject);
-#endif
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "DACreate_3D"
+PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "DACreate3d"
@@ -1764,38 +1770,5 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
   da->lz = flz;
 
   ierr = DAView_Private(da);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "DACreate"
-/*@C
-   DACreate - Creates an object that will manage the communication of regular array data that is distributed across some processors
-       in 1, 2 or 3 dimensions
-
-   Collective on MPI_Comm
-
-   See the manual pages for the routines for each dimension.
-
-   Level: beginner
-
-   
-.keywords: distributed array, create, three-dimensional
-
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DAGetOwnershipRanges()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm,PetscInt dim,DAPeriodicType wrap,DAStencilType stencil_type,PetscInt M,
-         PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt dof,PetscInt s,const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],DA *inra)
-{
-  PetscErrorCode ierr;
-
-  if (dim == 3) {
-    ierr = DACreate3d(comm,wrap,stencil_type,M,N,P,m,n,p,dof,s,lx,ly,lz,inra);CHKERRQ(ierr);
-  } else if (dim == 2) {
-    ierr = DACreate2d(comm,wrap,stencil_type,M,N,m,n,dof,s,lx,ly,inra);CHKERRQ(ierr);
-  } else if (dim == 1) {
-    ierr = DACreate1d(comm,wrap,M,dof,s,lx,inra);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
