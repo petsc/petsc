@@ -1,65 +1,6 @@
 #define PETSCDM_DLL
 #include "private/daimpl.h"    /*I   "petscda.h"   I*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "DASetOptionsPrefix"
-/*@C
-   DASetOptionsPrefix - Sets the prefix used for searching for all 
-   DA options in the database.
-
-   Collective on DA
-
-   Input Parameter:
-+  da - the DA context
--  prefix - the prefix to prepend to all option names
-
-   Notes:
-   A hyphen (-) must NOT be given at the beginning of the prefix name.
-   The first character of all runtime options is AUTOMATICALLY the hyphen.
-
-   Level: advanced
-
-.keywords: DA, set, options, prefix, database
-
-.seealso: DASetFromOptions()
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetOptionsPrefix(DA da,const char prefix[])
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)da,prefix);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "DASetSizes"
-/*@
-  DASetSizes - Sets the global sizes
-
-  Collective on DA
-
-  Input Parameters:
-+ da - the DA
-- M - the global X size (or PETSC_DECIDE)
-- N - the global Y size (or PETSC_DECIDE)
-- P - the global Z size (or PETSC_DECIDE)
-
-  Level: intermediate
-
-.seealso: DAGetSize(), PetscSplitOwnership()
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetSizes(DA da, PetscInt M, PetscInt N, PetscInt P)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(da, DM_COOKIE, 1);
-  da->M = M;
-  da->N = N;
-  da->P = P;
-  PetscFunctionReturn(0);
-}
-
 #undef  __FUNCT__
 #define __FUNCT__ "DAViewFromOptions"
 /*@
@@ -162,7 +103,17 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetFromOptions(DA da)
       ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DACreate",newM,&newM,PETSC_NULL);CHKERRQ(ierr);
       da->M = newM;
     }
+    if (da->N < 0) {
+      PetscInt newN;
+
+      newN = -da->N; 
+      ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DACreate",newN,&newN,PETSC_NULL);CHKERRQ(ierr);
+      da->N = newN;
+    }
+    ierr = PetscOptionsInt("-da_processors_x","Number of processors in x direction","DACreate2d",da->m,&da->m,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_processors_y","Number of processors in y direction","DACreate2d",da->n,&da->n,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-da_refine_x","Refinement ratio in x direction","DASetRefinementFactor",da->refine_x,&da->refine_x,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_refine_y","Refinement ratio in y direction","DASetRefinementFactor",da->refine_y,&da->refine_y,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = PetscOptionsBegin(((PetscObject)da)->comm, ((PetscObject)da)->prefix, "DA options", "DA");CHKERRQ(ierr);
     /* Handle DA type options */
@@ -203,7 +154,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetFromOptions(DA da)
 PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm, DA *da)
 {
   DA             d;
-  PetscMPIInt    size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -219,6 +169,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm, DA *da)
   d->dim        = -1;
   d->interptype = DA_Q1;
   d->refine_x   = 2;
+  d->refine_y   = 2;
+  d->refine_z   = 2;
   d->fieldname  = PETSC_NULL;
   d->nlocal     = -1;
   d->Nlocal     = -1;
@@ -245,6 +197,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm, DA *da)
   d->interptype   = DA_Q1;
   d->idx          = PETSC_NULL;
   d->Nl           = -1;
+  d->lx           = PETSC_NULL;
+  d->ly           = PETSC_NULL;
+  d->lz           = PETSC_NULL;
 
   d->ops->globaltolocalbegin = DAGlobalToLocalBegin;
   d->ops->globaltolocalend   = DAGlobalToLocalEnd;
@@ -256,13 +211,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm, DA *da)
   d->ops->getmatrix          = DAGetMatrix;
   d->ops->refine             = DARefine;
   d->ops->coarsen            = DACoarsen;
+  d->ops->getinjection       = DAGetInjection;
   d->ops->getaggregates      = DAGetAggregates;
   d->ops->destroy            = DADestroy;
-
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  ierr = PetscMalloc(size*sizeof(PetscInt), &d->lx);CHKERRQ(ierr);
-  ierr = PetscMalloc(size*sizeof(PetscInt), &d->ly);CHKERRQ(ierr);
-  ierr = PetscMalloc(size*sizeof(PetscInt), &d->lz);CHKERRQ(ierr);
 
   *da = d; 
   PetscFunctionReturn(0);

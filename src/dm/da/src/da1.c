@@ -142,7 +142,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_1D(DA da)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
-  m = size;
+  da->m = size;
+  m     = da->m;
 
   if (M < m)     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"More processors than data points! %D %D",m,M);
   if ((M-1) < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Array is too small for stencil! %D %D",M-1,s);
@@ -279,10 +280,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_1D(DA da)
   ierr = VecDestroy(local);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
 
-  da->M  = M;  da->N  = 1;  da->m  = m; da->n = 1;
   da->xs = xs; da->xe = xe; da->ys = 0; da->ye = 1; da->zs = 0; da->ze = 1;
   da->Xs = Xs; da->Xe = Xe; da->Ys = 0; da->Ye = 1; da->Zs = 0; da->Ze = 1;
-  da->P  = 1;  da->p  = 1;
+  da->N = 1; da->n = 1;
+  da->P = 1; da->p = 1;
 
   da->gtol      = gtol;
   da->ltog      = ltog;
@@ -379,10 +380,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm, DAPeriodicType wrap, 
 
   PetscFunctionBegin;
   ierr = DACreate(comm, da);CHKERRQ(ierr);
-  ierr = DASetSizes(*da, M, -1, -1);CHKERRQ(ierr);
+  ierr = DASetSizes(*da, M, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = DASetPeriodicity(*da, wrap);CHKERRQ(ierr);
   ierr = DASetDof(*da, dof);CHKERRQ(ierr);
   ierr = DASetStencilWidth(*da, s);CHKERRQ(ierr);
+  ierr = DASetVertexDivision(*da, lx, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   /* This violates the behavior for other classes, but right now users expect negative dimensions to be handled this way */
   ierr = DASetFromOptions(*da);CHKERRQ(ierr);
   ierr = DASetType(*da, DA1D);CHKERRQ(ierr);
