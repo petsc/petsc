@@ -110,10 +110,19 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetFromOptions(DA da)
       ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DACreate",newN,&newN,PETSC_NULL);CHKERRQ(ierr);
       da->N = newN;
     }
+    if (da->P < 0) {
+      PetscInt newP;
+
+      newP = -da->P; 
+      ierr = PetscOptionsInt("-da_grid_z","Number of grid points in z direction","DACreate",newP,&newP,PETSC_NULL);CHKERRQ(ierr);
+      da->P = newP;
+    }
     ierr = PetscOptionsInt("-da_processors_x","Number of processors in x direction","DACreate2d",da->m,&da->m,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-da_processors_y","Number of processors in y direction","DACreate2d",da->n,&da->n,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_processors_z","Number of processors in z direction","DACreate2d",da->p,&da->p,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-da_refine_x","Refinement ratio in x direction","DASetRefinementFactor",da->refine_x,&da->refine_x,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-da_refine_y","Refinement ratio in y direction","DASetRefinementFactor",da->refine_y,&da->refine_y,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_refine_z","Refinement ratio in z direction","DASetRefinementFactor",da->refine_z,&da->refine_z,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = PetscOptionsBegin(((PetscObject)da)->comm, ((PetscObject)da)->prefix, "DA options", "DA");CHKERRQ(ierr);
     /* Handle DA type options */
