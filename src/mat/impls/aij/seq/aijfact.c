@@ -1175,9 +1175,8 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0_newdatastruct(Mat fact,Mat A,IS 
   PetscInt           i,j,nz,*bi,*bj,*bdiag;
 
   PetscFunctionBegin;
-  /* printf("MatILUFactorSymbolic_SeqAIJ_ilu0_newdatastruct ...\n"); */
   ierr = MatDuplicateNoCreate_SeqAIJ(fact,A,MAT_DO_NOT_COPY_VALUES,PETSC_FALSE);CHKERRQ(ierr);
-  b = (Mat_SeqAIJ*)(fact)->data;
+  b    = (Mat_SeqAIJ*)(fact)->data;
 
   /* allocate matrix arrays for new data structure */
   ierr = PetscMalloc3(ai[n]+1,PetscScalar,&b->a,ai[n]+1,PetscInt,&b->j,2*n+2,PetscInt,&b->i);CHKERRQ(ierr);
@@ -1189,7 +1188,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0_newdatastruct(Mat fact,Mat A,IS 
   bdiag = b->diag;  
  
   if (n > 0) {
-    ierr = PetscMemzero(b->a,(ai[n])*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscMemzero(b->a,(ai[n])*sizeof(MatScalar));CHKERRQ(ierr);
   }
   
   /* set bi and bj with new data structure */

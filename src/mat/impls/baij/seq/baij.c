@@ -3123,7 +3123,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDuplicateNoCreate_SeqBAIJ"
-PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C,Mat A,MatDuplicateOption cpvalues)
+PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C,Mat A,MatDuplicateOption cpvalues,PetscTruth mallocmatspace)
 {
   Mat_SeqBAIJ    *c = (Mat_SeqBAIJ*)C->data,*a = (Mat_SeqBAIJ*)A->data;
   PetscErrorCode ierr;
@@ -3139,17 +3139,21 @@ PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C,Mat A,MatDuplicateOption cpval
   }
 
   /* allocate the matrix space */
-  ierr = PetscMalloc3(bs2*nz,PetscScalar,&c->a,nz,PetscInt,&c->j,mbs+1,PetscInt,&c->i);CHKERRQ(ierr);
-  c->singlemalloc = PETSC_TRUE;
-  ierr = PetscMemcpy(c->i,a->i,(mbs+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  if (mbs > 0) {
-    ierr = PetscMemcpy(c->j,a->j,nz*sizeof(PetscInt));CHKERRQ(ierr);
-    if (cpvalues == MAT_COPY_VALUES) {
-      ierr = PetscMemcpy(c->a,a->a,bs2*nz*sizeof(MatScalar));CHKERRQ(ierr);
-    } else {
-      ierr = PetscMemzero(c->a,bs2*nz*sizeof(MatScalar));CHKERRQ(ierr);
+  if (mallocmatspace){
+    ierr = PetscMalloc3(bs2*nz,PetscScalar,&c->a,nz,PetscInt,&c->j,mbs+1,PetscInt,&c->i);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(C,a->i[mbs]*(bs2*sizeof(PetscScalar)+sizeof(PetscInt))+(mbs+1)*sizeof(PetscInt));CHKERRQ(ierr);
+    c->singlemalloc = PETSC_TRUE;
+    ierr = PetscMemcpy(c->i,a->i,(mbs+1)*sizeof(PetscInt));CHKERRQ(ierr);
+    if (mbs > 0) {
+      ierr = PetscMemcpy(c->j,a->j,nz*sizeof(PetscInt));CHKERRQ(ierr);
+      if (cpvalues == MAT_COPY_VALUES) {
+        ierr = PetscMemcpy(c->a,a->a,bs2*nz*sizeof(MatScalar));CHKERRQ(ierr);
+      } else {
+        ierr = PetscMemzero(c->a,bs2*nz*sizeof(MatScalar));CHKERRQ(ierr);
+      }
     }
   }
+
   c->roworiented = a->roworiented;
   c->nonew       = a->nonew;
   ierr = PetscMapCopy(((PetscObject)A)->comm,A->rmap,C->rmap);CHKERRQ(ierr);  
@@ -3203,7 +3207,7 @@ PetscErrorCode MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   ierr = MatCreate(((PetscObject)A)->comm,B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B,A->rmap->N,A->cmap->n,A->rmap->N,A->cmap->n);CHKERRQ(ierr);
   ierr = MatSetType(*B,MATSEQBAIJ);CHKERRQ(ierr);
-  ierr = MatDuplicateNoCreate_SeqBAIJ(*B,A,cpvalues);
+  ierr = MatDuplicateNoCreate_SeqBAIJ(*B,A,cpvalues,PETSC_TRUE);
   PetscFunctionReturn(0);
 }
 
