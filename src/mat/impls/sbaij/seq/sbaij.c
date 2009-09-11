@@ -2463,7 +2463,7 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
 	  PETSC_Prefetch(v-nz2-1,0,1);
 	  PETSC_Prefetch(vj-nz2-1,0,1);  
 	  PetscSparseDenseMinusDot(sum,x,v,vj,nz);         
-          x[i] = omega*sum*aidiag[i];        
+          nz   = nz2;
 #endif
           x[i] = omega*sum*aidiag[i];        
 	  v  -= nz + 1;
