@@ -46,6 +46,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetType(DA da, const DAType method)
     ierr = (*da->ops->destroy)(da);CHKERRQ(ierr);
   }
   ierr = (*r)(da);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)da,method);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
