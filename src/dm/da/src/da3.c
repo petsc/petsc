@@ -151,6 +151,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "DACreate_3D"
 PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
 {
+  const PetscInt       dim          = da->dim;
   const PetscInt       M            = da->M;
   const PetscInt       N            = da->N;
   const PetscInt       P            = da->P;
@@ -184,6 +185,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
+  if (dim != PETSC_DECIDE && dim != 3) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Dimension should be 3: %D",dim);
   if (dof < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %D",dof);
   if (s < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %D",s);
 
@@ -393,12 +395,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
       }
     }
   }
+
   ierr = ISCreateBlock(comm,dof,count,idx,&from);CHKERRQ(ierr);
   ierr = PetscFree(idx);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(local,from,global,to,&ltog);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(da,to);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(da,from);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,ltog);CHKERRQ(ierr);
   ierr = ISDestroy(from);CHKERRQ(ierr);
   ierr = ISDestroy(to);CHKERRQ(ierr);
@@ -954,10 +955,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
   }
   ierr = VecScatterCreate(global,from,local,to,&gtol);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,gtol);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(da,to);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(da,from);CHKERRQ(ierr);
-  ierr = ISDestroy(to);CHKERRQ(ierr);
   ierr = ISDestroy(from);CHKERRQ(ierr);
+  ierr = ISDestroy(to);CHKERRQ(ierr);
 
   da->m  = m;  da->n  = n;  da->p  = p;
   da->xs = xs; da->xe = xe; da->ys = ys; da->ye = ye; da->zs = zs; da->ze = ze;
@@ -1730,6 +1729,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
 
   PetscFunctionBegin;
   ierr = DACreate(comm, da);CHKERRQ(ierr);
+  ierr = DASetDim(*da, 3);CHKERRQ(ierr);
   ierr = DASetSizes(*da, M, N, P);CHKERRQ(ierr);
   ierr = DASetNumProcs(*da, m, n, p);CHKERRQ(ierr);
   ierr = DASetPeriodicity(*da, wrap);CHKERRQ(ierr);
@@ -1738,7 +1738,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
   ierr = DASetStencilWidth(*da, s);CHKERRQ(ierr);
   ierr = DASetVertexDivision(*da, lx, ly, lz);CHKERRQ(ierr);
   /* This violates the behavior for other classes, but right now users expect negative dimensions to be handled this way */
-  (*da)->dim = 3;
   ierr = DASetFromOptions(*da);CHKERRQ(ierr);
   ierr = DASetType(*da, DA3D);CHKERRQ(ierr);
   PetscFunctionReturn(0);
