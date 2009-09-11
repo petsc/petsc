@@ -303,7 +303,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
   for (i=0; i<(rank % (m*n))/m; i++) { ys += ly[i];}
 
   if (!lz) {
-    ierr = PetscMalloc(n*sizeof(PetscInt), &da->lz);CHKERRQ(ierr);
+    ierr = PetscMalloc(p*sizeof(PetscInt), &da->lz);CHKERRQ(ierr);
     lz = da->lz;
     for (i=0; i<p; i++) {
       lz[i] = P/p + ((P % p) > (i % p));
