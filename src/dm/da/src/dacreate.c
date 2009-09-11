@@ -198,7 +198,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm, DA *da)
   d->ao           = PETSC_NULL;
   d->base         = -1;
   d->wrap         = DA_NONPERIODIC;
-  d->stencil_type = DA_STENCIL_STAR;
+  d->stencil_type = DA_STENCIL_BOX;
   d->interptype   = DA_Q1;
   d->idx          = PETSC_NULL;
   d->Nl           = -1;
