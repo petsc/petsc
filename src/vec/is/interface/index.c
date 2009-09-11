@@ -170,7 +170,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISDestroy(IS is)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
   if (--((PetscObject)is)->refct > 0) PetscFunctionReturn(0);
-  ierr = (*is->ops->destroy)(is);CHKERRQ(ierr);
+  if (is->ops->destroy) {
+    ierr = (*is->ops->destroy)(is);CHKERRQ(ierr);
+  }
+  ierr = PetscHeaderDestroy(is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
