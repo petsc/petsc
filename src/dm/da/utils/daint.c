@@ -1,7 +1,7 @@
 
 #define PETSCDM_DLL
  
-#include "../src/dm/da/daimpl.h" /*I      "petscda.h"     I*/
+#include "private/daimpl.h" /*I      "petscda.h"     I*/
 #include "petscmat.h"         /*I      "petscmat.h"    I*/
 
 

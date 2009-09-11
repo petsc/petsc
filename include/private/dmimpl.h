@@ -10,6 +10,7 @@
 */
 #define DMOPS(type)	\
   PetscErrorCode (*view)(type,PetscViewer); \
+  PetscErrorCode (*setfromoptions)(type); \
   PetscErrorCode (*createglobalvector)(type,Vec*);\
   PetscErrorCode (*createlocalvector)(type,Vec*);\
 \

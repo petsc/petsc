@@ -1,7 +1,6 @@
 
 #include "private/fortranimpl.h"
-#include "petscda.h"
-#include "../src/dm/da/daimpl.h"
+#include "private/daimpl.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dasetlocaljacobian_          DASETLOCALJACOBIAN

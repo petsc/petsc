@@ -217,8 +217,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqUSFFT(Vec sampleCoords, DA freqDA,
     usfft->outdim[usfft->ndim-i] = dim[i-1];
   }
 
-  ierr = DACreate(comm,usfft->dim, DA_NONPERIODIC, DA_STENCIL_STAR, usfft->freqSizes[0], usfft->freqSizes[1], usfft->freqSizes[2],
-                  PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, 0, PETSC_NULL, PETSC_NULL, PETSC_NULL,  0, &(usfft->resampleDA)); CHKERRQ(ierr);
+  // TODO: Use the new form of DACreate()
+  //ierr = DACreate(comm,usfft->dim, DA_NONPERIODIC, DA_STENCIL_STAR, usfft->freqSizes[0], usfft->freqSizes[1], usfft->freqSizes[2],
+  //                PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, 0, PETSC_NULL, PETSC_NULL, PETSC_NULL,  0, &(usfft->resampleDA)); CHKERRQ(ierr);
   ierr = DAGetVec(usfft->resampleDA, usfft->resample); CHKERRQ(ierr);
 
 

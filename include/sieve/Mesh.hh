@@ -4703,13 +4703,33 @@ namespace ALE {
     static void writeMesh(const std::string& filename, Mesh& mesh) {
       std::ofstream fs;
 
-      fs.open(filename.c_str());
+      if (mesh.commRank() == 0) {
+        fs.open(filename.c_str());
+      }
       writeMesh(fs, mesh);
-      fs.close();
+      if (mesh.commRank() == 0) {
+        fs.close();
+      }
+    };
+    template<typename Mesh>
+    static void sendMeshOutput(Mesh& mesh) {
+      // Send labels
+      const typename Mesh::labels_type& labels = mesh.getLabels();
+
+      //fs << labels.size() << std::endl;
+      for(typename Mesh::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
+        //fs << l_iter->first << std::endl;
+        //LabelSifterSerializer::writeLabel(fs, *l_iter->second);
+      }
+      // Send sections
+      // Send overlap
+      // Send distribution overlap
+      // Send renumbering
     };
     template<typename Mesh>
     static void writeMesh(std::ofstream& fs, Mesh& mesh) {
       ISieveSerializer::writeSieve(fs, *mesh.getSieve());
+      sendMeshOutput(mesh);
       // Write labels
       const typename Mesh::labels_type& labels = mesh.getLabels();
 
@@ -4718,6 +4738,7 @@ namespace ALE {
         fs << l_iter->first << std::endl;
         LabelSifterSerializer::writeLabel(fs, *l_iter->second);
       }
+      //recvWriteLabels(fs);
       // Write sections
       Obj<std::set<std::string> > realNames = mesh.getRealSections();
 
@@ -4733,9 +4754,11 @@ namespace ALE {
         fs << *n_iter << std::endl;
         SectionSerializer::writeSection(fs, *mesh.getIntSection(*n_iter));
       }
+      //recvWriteSections(fs);
       // Write overlap
       SifterSerializer::writeSifter(fs, *mesh.getSendOverlap());
       SifterSerializer::writeSifter(fs, *mesh.getRecvOverlap());
+      //recvWriteOverlap(fs);
       // Write distribution overlap
       // Write renumbering
     };

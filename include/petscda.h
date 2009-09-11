@@ -19,6 +19,11 @@ PETSC_EXTERN_CXX_BEGIN
 S*/
 typedef struct _p_DA* DA;
 
+#define DAType char*
+#define DA1D "da1d"
+#define DA2D "da2d"
+#define DA3D "da3d"
+
 /*E
     DAStencilType - Determines if the stencil extends only along the coordinate directions, or also
       to the northeast, northwest etc
@@ -113,6 +118,10 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreate1d(MPI_Comm,DAPeriodicType,Pe
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],DA *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],DA*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreate(MPI_Comm,PetscInt,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],DA*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetOptionsPrefix(DA,const char []);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetSizes(DA, PetscInt, PetscInt, PetscInt);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DAViewFromOptions(DA, const char []);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetFromOptions(DA);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DADestroy(DA);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAView(DA,PetscViewer);
 
@@ -162,6 +171,13 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DASetUniformCoordinates(DA,PetscReal,
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DASetFieldName(DA,PetscInt,const char[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetFieldName(DA,PetscInt,char **);
 
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetPeriodicity(DA, DAPeriodicType);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetDof(DA, int);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetStencilWidth(DA, int);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetVertexDivision(DA, const PetscInt[], const PetscInt[], const PetscInt[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetNumProcs(DA, PetscInt, PetscInt, PetscInt);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetStencilType(DA, DAStencilType);
+
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAVecGetArray(DA,Vec,void *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAVecRestoreArray(DA,Vec,void *);
 
@@ -169,6 +185,63 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAVecGetArrayDOF(DA,Vec,void *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAVecRestoreArrayDOF(DA,Vec,void *);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DASplitComm2d(MPI_Comm,PetscInt,PetscInt,PetscInt,MPI_Comm*);
+
+/* Dynamic creation and loading functions */
+extern PetscFList DAList;
+extern PetscTruth DARegisterAllCalled;
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DASetType(DA, const DAType);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DAGetType(DA, const DAType *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DARegister(const char[],const char[],const char[],PetscErrorCode (*)(DA));
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DARegisterAll(const char []);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DARegisterDestroy(void);
+
+/*MC
+  DARegisterDynamic - Adds a new DA component implementation
+
+  Synopsis:
+  PetscErrorCode DARegisterDynamic(char *name, char *path, char *func_name, PetscErrorCode (*create_func)(DA))
+
+  Not Collective
+
+  Input Parameters:
++ name        - The name of a new user-defined creation routine
+. path        - The path (either absolute or relative) of the library containing this routine
+. func_name   - The name of routine to create method context
+- create_func - The creation routine itself
+
+  Notes:
+  DARegisterDynamic() may be called multiple times to add several user-defined DAs
+
+  If dynamic libraries are used, then the fourth input argument (routine_create) is ignored.
+
+  Sample usage:
+.vb
+    DARegisterDynamic("my_da","/home/username/my_lib/lib/libO/solaris/libmy.a", "MyDACreate", MyDACreate);
+.ve
+
+  Then, your DA type can be chosen with the procedural interface via
+.vb
+    DACreate(MPI_Comm, DA *);
+    DASetType(DA,"my_da_name");
+.ve
+   or at runtime via the option
+.vb
+    -da_type my_da_name
+.ve
+
+  Notes: $PETSC_ARCH occuring in pathname will be replaced with appropriate values.
+         If your function is not being put into a shared library then use DARegister() instead
+        
+  Level: advanced
+
+.keywords: DA, register
+.seealso: DARegisterAll(), DARegisterDestroy(), DARegister()
+M*/
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#define DARegisterDynamic(a,b,c,d) DARegister(a,b,c,0)
+#else
+#define DARegisterDynamic(a,b,c,d) DARegister(a,b,c,d)
+#endif
 
 /*S
      SDA - This provides a simplified interface to the DA distributed
