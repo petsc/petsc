@@ -90,7 +90,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetNumProcs(DA da, PetscInt m, PetscInt n, Pe
 #undef __FUNCT__  
 #define __FUNCT__ "DASetPeriodicity"
 /*@
-  DASetInterpolationType - Sets the type of periodicity
+  DASetPeriodicity - Sets the type of periodicity
 
   Not collective
 
