@@ -53,6 +53,11 @@ static PetscErrorCode DASetTypeFromOptions_Private(DA da)
     defaultType = ((PetscObject)da)->type_name;
   } else {
     defaultType = DA1D;
+    switch (da->dim) {
+      case 1: defaultType = DA1D; break;
+      case 2: defaultType = DA2D; break;
+      case 3: defaultType = DA3D; break;
+    }
   }
 
   if (!DARegisterAllCalled) {ierr = DARegisterAll(PETSC_NULL);CHKERRQ(ierr);}
