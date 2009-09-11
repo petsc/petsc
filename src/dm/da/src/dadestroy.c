@@ -78,7 +78,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DADestroy(DA da)
 
   ierr = DMDestroy_Private((DM)da,&done);CHKERRQ(ierr);
   if (!done) PetscFunctionReturn(0);
-
+  /* destroy the internal part */
+  if (da->ops->destroy) {
+    ierr = (*da->ops->destroy)(da);CHKERRQ(ierr);
+  }
+  /* destroy the external/common part */
   for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
     ierr = PetscFree(da->adstartghostedout[i]);CHKERRQ(ierr);
     ierr = PetscFree(da->adstartghostedin[i]);CHKERRQ(ierr);
@@ -114,17 +118,23 @@ PetscErrorCode PETSCDM_DLLEXPORT DADestroy(DA da)
   if (da->ao) {
     ierr = AODestroy(da->ao);CHKERRQ(ierr);
   }
-  ierr = ISLocalToGlobalMappingDestroy(da->ltogmap);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(da->ltogmapb);CHKERRQ(ierr);
+  if (da->ltogmap) {
+    ierr = ISLocalToGlobalMappingDestroy(da->ltogmap);CHKERRQ(ierr);
+  }
+  if (da->ltogmapb) {
+    ierr = ISLocalToGlobalMappingDestroy(da->ltogmapb);CHKERRQ(ierr);
+  }
 
   ierr = PetscFree(da->lx);CHKERRQ(ierr);
   ierr = PetscFree(da->ly);CHKERRQ(ierr);
   ierr = PetscFree(da->lz);CHKERRQ(ierr);
 
-  for (i=0; i<da->w; i++) {
-    ierr = PetscStrfree(da->fieldname[i]);CHKERRQ(ierr);
+  if (da->fieldname) {
+    for (i=0; i<da->w; i++) {
+      ierr = PetscStrfree(da->fieldname[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(da->fieldname);CHKERRQ(ierr);
   }
-  ierr = PetscFree(da->fieldname);CHKERRQ(ierr);
 
   if (da->localcoloring) {
     ierr = ISColoringDestroy(da->localcoloring);CHKERRQ(ierr);

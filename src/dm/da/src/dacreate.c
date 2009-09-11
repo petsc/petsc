@@ -123,8 +123,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetFromOptions(DA da)
     ierr = PetscOptionsInt("-da_refine_x","Refinement ratio in x direction","DASetRefinementFactor",da->refine_x,&da->refine_x,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-da_refine_y","Refinement ratio in y direction","DASetRefinementFactor",da->refine_y,&da->refine_y,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-da_refine_z","Refinement ratio in z direction","DASetRefinementFactor",da->refine_z,&da->refine_z,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = PetscOptionsBegin(((PetscObject)da)->comm, ((PetscObject)da)->prefix, "DA options", "DA");CHKERRQ(ierr);
     /* Handle DA type options */
     ierr = DASetTypeFromOptions_Private(da);CHKERRQ(ierr);
 
@@ -222,7 +220,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm, DA *da)
   d->ops->coarsen            = DACoarsen;
   d->ops->getinjection       = DAGetInjection;
   d->ops->getaggregates      = DAGetAggregates;
-  d->ops->destroy            = DADestroy;
 
   *da = d; 
   PetscFunctionReturn(0);

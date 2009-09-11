@@ -282,8 +282,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_1D(DA da)
 
   da->xs = xs; da->xe = xe; da->ys = 0; da->ye = 1; da->zs = 0; da->ze = 1;
   da->Xs = Xs; da->Xe = Xe; da->Ys = 0; da->Ye = 1; da->Zs = 0; da->Ze = 1;
-  da->N = 1; da->n = 1;
-  da->P = 1; da->p = 1;
 
   da->gtol      = gtol;
   da->ltog      = ltog;

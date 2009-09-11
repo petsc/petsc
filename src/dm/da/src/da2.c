@@ -1749,7 +1749,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
   da->m  = m;  da->n  = n;
   da->xs = xs; da->xe = xe; da->ys = ys; da->ye = ye; da->zs = 0; da->ze = 1;
   da->Xs = Xs; da->Xe = Xe; da->Ys = Ys; da->Ye = Ye; da->Zs = 0; da->Ze = 1;
-  da->P  = 1;  da->p  = 1;
 
   ierr = VecDestroy(local);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
