@@ -2445,6 +2445,15 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){ 
       int nz2;
       if (!(flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP)){ 
+#define PETSC_USE_BACKWARD_LOOP
+#if defined(PETSC_USE_BACKWARD_LOOP)
+	v  = aa + ai[m] - 1;
+	vj = aj + ai[m] - 1;
+	for (i=m-1; i>=0; i--){
+          sum = b[i];
+	  nz  = ai[i+1] - ai[i] - 1;
+          {PetscInt __i;for(__i=0;__i<nz;__i++) sum -= v[-__i] * x[vj[-__i]];}
+#else
 	v  = aa + ai[m-1] + 1;
 	vj = aj + ai[m-1] + 1;
 	nz = 0;
@@ -2455,7 +2464,8 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
 	  PETSC_Prefetch(vj-nz2-1,0,1);  
 	  PetscSparseDenseMinusDot(sum,x,v,vj,nz);         
           x[i] = omega*sum*aidiag[i];        
-	  nz  = nz2;
+#endif
+          x[i] = omega*sum*aidiag[i];        
 	  v  -= nz + 1;
 	  vj -= nz + 1;
 	}
