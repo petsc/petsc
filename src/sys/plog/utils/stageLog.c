@@ -88,13 +88,13 @@ PetscErrorCode PETSC_DLLEXPORT StageLogRegister(StageLog stageLog, const char sn
 {
   StageInfo *stageInfo;
   char      *str;
-  int        s;
+  int        s, st;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidCharPointer(sname,2);
   PetscValidIntPointer(stage,3);
-  for(int st = 0; st < stageLog->numStages; ++st) {
+  for(st = 0; st < stageLog->numStages; ++st) {
     PetscTruth same;
 
     ierr = PetscStrcmp(stageLog->stageInfo[st].name, sname, &same);CHKERRQ(ierr);
