@@ -88,14 +88,12 @@ static PetscErrorCode DASetTypeFromOptions_Private(DA da)
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DASetFromOptions(DA da)
 {
-  MPI_Comm       comm;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_COOKIE,1);
 
-  ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
-  ierr = PetscOptionsBegin(comm,PETSC_NULL,"DA Options","DA");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject)da)->comm,((PetscObject)da)->prefix,"DA Options","DA");CHKERRQ(ierr);
     if (da->M < 0) {
       PetscInt newM;
 
