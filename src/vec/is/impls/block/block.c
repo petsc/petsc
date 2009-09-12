@@ -23,7 +23,6 @@ PetscErrorCode ISDestroy_Block(IS is)
   PetscFunctionBegin;
   ierr = PetscFree(is_block->idx);CHKERRQ(ierr);
   ierr = PetscFree(is_block);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

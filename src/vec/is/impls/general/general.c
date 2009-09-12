@@ -29,7 +29,6 @@ PetscErrorCode ISDestroy_General(IS is)
     ierr = PetscFree(is_general->idx);CHKERRQ(ierr);
   }
   ierr = PetscFree(is_general);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

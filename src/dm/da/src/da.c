@@ -34,6 +34,29 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetOptionsPrefix(DA da,const char prefix[])
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "DASetDim"
+/*@
+  DASetDim - Sets the dimension
+
+  Collective on DA
+
+  Input Parameters:
++ da - the DA
+- dim - the dimension (or PETSC_DECIDE)
+
+  Level: intermediate
+
+.seealso: DaGetDim(), DASetSizes()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DASetDim(DA da, PetscInt dim)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da, DM_COOKIE, 1);
+  da->dim = dim;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "DASetSizes"
 /*@
   DASetSizes - Sets the global sizes

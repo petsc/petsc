@@ -143,7 +143,6 @@ PetscErrorCode ISDestroy_Stride(IS is)
 
   PetscFunctionBegin;
   ierr = PetscFree(is->data);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

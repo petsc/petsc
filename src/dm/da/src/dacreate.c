@@ -43,23 +43,20 @@ PetscErrorCode PETSCDM_DLLEXPORT DAViewFromOptions(DA da, const char title[])
 */
 static PetscErrorCode DASetTypeFromOptions_Private(DA da)
 {
-  PetscTruth     opt;
-  const VecType  defaultType;
+  const DAType   defaultType = DA1D;
   char           typeName[256];
+  PetscTruth     opt;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  switch (da->dim) {
+    case 1: defaultType = DA1D; break;
+    case 2: defaultType = DA2D; break;
+    case 3: defaultType = DA3D; break;
+  }
   if (((PetscObject)da)->type_name) {
     defaultType = ((PetscObject)da)->type_name;
-  } else {
-    defaultType = DA1D;
-    switch (da->dim) {
-      case 1: defaultType = DA1D; break;
-      case 2: defaultType = DA2D; break;
-      case 3: defaultType = DA3D; break;
-    }
   }
-
   if (!DARegisterAllCalled) {ierr = DARegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsList("-da_type","DA type","DASetType",DAList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
   if (opt) {
@@ -99,36 +96,34 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetFromOptions(DA da)
   PetscValidHeaderSpecific(da,DM_COOKIE,1);
 
   ierr = PetscOptionsBegin(((PetscObject)da)->comm,((PetscObject)da)->prefix,"DA Options","DA");CHKERRQ(ierr);
+    /* Handle DA dimensions */
+    ierr = PetscOptionsInt("-da_dim","Number of dimensions","DASetDim",da->dim,&da->dim,PETSC_NULL);CHKERRQ(ierr);
+    /* Handle DA grid sizes */
     if (da->M < 0) {
-      PetscInt newM;
-
-      newM = -da->M; 
-      ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DACreate",newM,&newM,PETSC_NULL);CHKERRQ(ierr);
+      PetscInt newM = -da->M;
+      ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DASetSizes",newM,&newM,PETSC_NULL);CHKERRQ(ierr);
       da->M = newM;
     }
     if (da->N < 0) {
-      PetscInt newN;
-
-      newN = -da->N; 
-      ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DACreate",newN,&newN,PETSC_NULL);CHKERRQ(ierr);
+      PetscInt newN = -da->N;
+      ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DASetSizes",newN,&newN,PETSC_NULL);CHKERRQ(ierr);
       da->N = newN;
     }
     if (da->P < 0) {
-      PetscInt newP;
-
-      newP = -da->P; 
-      ierr = PetscOptionsInt("-da_grid_z","Number of grid points in z direction","DACreate",newP,&newP,PETSC_NULL);CHKERRQ(ierr);
+      PetscInt newP = -da->P;
+      ierr = PetscOptionsInt("-da_grid_z","Number of grid points in z direction","DASetSizes",newP,&newP,PETSC_NULL);CHKERRQ(ierr);
       da->P = newP;
     }
-    ierr = PetscOptionsInt("-da_processors_x","Number of processors in x direction","DACreate2d",da->m,&da->m,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-da_processors_y","Number of processors in y direction","DACreate2d",da->n,&da->n,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-da_processors_z","Number of processors in z direction","DACreate2d",da->p,&da->p,PETSC_NULL);CHKERRQ(ierr);
+    /* Handle DA parallel distibution */
+    ierr = PetscOptionsInt("-da_processors_x","Number of processors in x direction","DASetNumProcs",da->m,&da->m,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_processors_y","Number of processors in y direction","DASetNumProcs",da->n,&da->n,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_processors_z","Number of processors in z direction","DASetNumProcs",da->p,&da->p,PETSC_NULL);CHKERRQ(ierr);
+    /* Handle DA refinement */
     ierr = PetscOptionsInt("-da_refine_x","Refinement ratio in x direction","DASetRefinementFactor",da->refine_x,&da->refine_x,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-da_refine_y","Refinement ratio in y direction","DASetRefinementFactor",da->refine_y,&da->refine_y,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-da_refine_z","Refinement ratio in z direction","DASetRefinementFactor",da->refine_z,&da->refine_z,PETSC_NULL);CHKERRQ(ierr);
     /* Handle DA type options */
     ierr = DASetTypeFromOptions_Private(da);CHKERRQ(ierr);
-
     /* Handle specific DA options */
     if (da->ops->setfromoptions) {
       ierr = (*da->ops->setfromoptions)(da);CHKERRQ(ierr);
