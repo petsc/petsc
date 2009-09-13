@@ -34,8 +34,17 @@ int main(int argc,char **argv)
   Mat            A;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-
-  ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,-8,-8,-8,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);  
+  ierr = DACreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
+  ierr = DASetDim(da,3);CHKERRQ(ierr);
+  ierr = DASetPeriodicity(da,DA_NONPERIODIC);CHKERRQ(ierr);
+  ierr = DASetStencilType(da,DA_STENCIL_STAR);CHKERRQ(ierr);
+  ierr = DASetSizes(da,8,8,8);CHKERRQ(ierr);
+  ierr = DASetNumProcs(da,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = DASetDof(da,1);CHKERRQ(ierr);
+  ierr = DASetStencilWidth(da,1);CHKERRQ(ierr);
+  ierr = DASetVertexDivision(da,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DASetFromOptions(da);CHKERRQ(ierr);
+    
   ierr = DACreateGlobalVector(da,&x);CHKERRQ(ierr);
   ierr = DACreateGlobalVector(da,&b);CHKERRQ(ierr);
   ierr = ComputeRHS(da,b);CHKERRQ(ierr);
@@ -129,7 +138,6 @@ PetscErrorCode ComputeInterpolation(PC pc,void *ida)
   ierr = DAGetWireBasketInterpolation(da,A,MAT_INITIAL_MATRIX,&P);CHKERRQ(ierr);
   ierr = PCMGSetInterpolation(pc,1,P);CHKERRQ(ierr);
   ierr = MatDestroy(P);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

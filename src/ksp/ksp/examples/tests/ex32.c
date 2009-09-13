@@ -29,12 +29,11 @@ int main(int argc,char **argv)
   Vec            x,b;
   DA             da;
   Mat            A;
-  PetscInt       dof;
+  PetscInt       dof=1;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  dof  = 1;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr);
-  //ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,-8,-8,-8,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,0,&da);CHKERRQ(ierr);  
+
   ierr = DACreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
   ierr = DASetDim(da,3);CHKERRQ(ierr);
   ierr = DASetPeriodicity(da,DA_NONPERIODIC);CHKERRQ(ierr);
