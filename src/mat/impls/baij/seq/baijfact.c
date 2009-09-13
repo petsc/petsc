@@ -1055,7 +1055,7 @@ PetscErrorCode MatSolve_SeqBAIJ_N_newdatastruct(Mat A,Vec bb,Vec xx)
   PetscErrorCode ierr;
   const PetscInt *r,*c,*rout,*cout,*ai=a->i,*aj=a->j,*vi;
   PetscInt       i,n=a->mbs;
-  PetscInt       nz,bs=A->rmap->bs,bs2=a->bs2,*adiag=a->diag;
+  PetscInt       nz,bs=A->rmap->bs,bs2=a->bs2,k;
   MatScalar      *aa=a->a,*v;
   PetscScalar    *x,*b,*s,*t,*ls;
 
@@ -1084,15 +1084,16 @@ PetscErrorCode MatSolve_SeqBAIJ_N_newdatastruct(Mat A,Vec bb,Vec xx)
   /* backward solve the upper triangular */
   ls = a->solve_work + A->cmap->n;
   for (i=n-1; i>=0; i--){
-    v  = aa + bs2*(adiag[i+1] + 1);
-    vi = aj + a->diag[i+1] + 1;
-    nz = adiag[i] - adiag[i+1] - 1;
+    k  = 2*n-i;
+    v  = aa + bs2*ai[k];
+    vi = aj + ai[k];
+    nz = ai[k+1] - ai[k] - 1;
     ierr = PetscMemcpy(ls,t+i*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
     while (nz--) {
       Kernel_v_gets_v_minus_A_times_w(bs,ls,v,t+bs*(*vi++));
       v += bs2;
     }
-    Kernel_w_gets_A_times_v(bs,ls,aa+bs2*adiag[i],t+i*bs); /* *inv(diagonal[i]) */
+    Kernel_w_gets_A_times_v(bs,ls,v,t+i*bs); /* *inv(diagonal[i]) */
     ierr = PetscMemcpy(x + bs*(*c--),t+i*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
   }
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
