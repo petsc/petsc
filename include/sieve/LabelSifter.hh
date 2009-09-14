@@ -767,9 +767,43 @@ namespace ALE {
   public:
     template<typename LabelSifter>
     static void writeLabel(std::ofstream& fs, LabelSifter& label) {
-      fs << label._arrows.set.size() << std::endl;
-      for(typename LabelSifter::traits::arrow_container_type::set_type::iterator ai = label._arrows.set.begin(); ai != label._arrows.set.end(); ai++) {
-        fs << ai->source << " " << ai->target << std::endl;
+      if (label.commRank() == 0) {
+        // Write local
+        fs << label._arrows.set.size() << std::endl;
+        for(typename LabelSifter::traits::arrow_container_type::set_type::iterator ai = label._arrows.set.begin(); ai != label._arrows.set.end(); ai++) {
+          fs << ai->source << " " << ai->target << std::endl;
+        }
+        // Receive and write remote
+        for(int p = 0; p < label.commSize(); ++p) {
+          PetscInt       size;
+          PetscInt      *arrows;
+          MPI_Status     status;
+          PetscErrorCode ierr;
+
+          ierr = MPI_Recv(&size, 1, MPIU_INT, p, 1, label.comm(), &status);CHKERRXX(ierr);
+          ierr = MPI_Recv(&arrows, 1, MPIU_INT, p, 1, label.comm(), &status);CHKERRXX(ierr);
+          ierr = PetscMalloc(size*2 * sizeof(PetscInt), &arrows);CHKERRXX(ierr);
+          for(PetscInt a = 0; a < size; ++a) {
+            fs << arrows[a*2+0] << " " << arrows[a*2+1] << std::endl;
+          }
+          ierr = PetscFree(arrows);CHKERRXX(ierr);
+        }
+      } else {
+        // Send remote
+        PetscInt       size = label._arrows.set.size();
+        PetscInt       a    = 0;
+        PetscInt      *arrows;
+        PetscErrorCode ierr;
+
+        ierr = MPI_Send(&size, 1, MPIU_INT, 0, 1, label.comm());CHKERRXX(ierr);
+        // There is no nice way to make a generic MPI type here. Really sucky
+        ierr = PetscMalloc(size*2 * sizeof(PetscInt), &arrows);CHKERRXX(ierr);
+        for(typename LabelSifter::traits::arrow_container_type::set_type::iterator ai = label._arrows.set.begin(); ai != label._arrows.set.end(); ai++, ++a) {
+          arrows[a*2+0] = ai->source;
+          arrows[a*2+1] = ai->target;
+        }
+        ierr = MPI_Send(arrows, size*2, MPIU_INT, 0, 1, label.comm());CHKERRXX(ierr);
+        ierr = PetscFree(arrows);CHKERRXX(ierr);
       }
     };
     template<typename LabelSifter>

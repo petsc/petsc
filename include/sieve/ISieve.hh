@@ -1901,9 +1901,13 @@ namespace ALE {
     static void writeSieve(const std::string& filename, ISieve& sieve) {
       std::ofstream fs;
 
-      fs.open(filename.c_str());
+      if (sieve.commRank() == 0) {
+        fs.open(filename.c_str());
+      }
       writeSieve(fs, sieve);
-      fs.close();
+      if (sieve.commRank() == 0) {
+        fs.close();
+      }
     };
     template<typename ISieve>
     static void writeSieve(std::ofstream& fs, ISieve& sieve) {
@@ -1911,53 +1915,194 @@ namespace ALE {
       const Obj<typename ISieve::chart_type>& chart = sieve.getChart();
       typename ISieve::point_type             min   = chart->min();
       typename ISieve::point_type             max   = chart->max();
+      PetscInt                               *mins  = new PetscInt[sieve.commSize()];
+      PetscInt                               *maxs  = new PetscInt[sieve.commSize()];
 
-      fs << min <<" "<< max << std::endl;
-      for(typename ISieve::point_type p = min; p < max; ++p) {
-        fs << sieve.getConeSize(p) << " " << sieve.getSupportSize(p) << std::endl;
+      // Write sizes
+      if (sieve.commRank() == 0) {
+        // Write local
+        fs << min <<" "<< max << std::endl;
+        for(typename ISieve::point_type p = min; p < max; ++p) {
+          fs << sieve.getConeSize(p) << " " << sieve.getSupportSize(p) << std::endl;
+        }
+        // Receive and write remote
+        for(int p = 0; p < sieve.commSize(); ++p) {
+          PetscInt       min, max;
+          PetscInt      *sizes;
+          MPI_Status     status;
+          PetscErrorCode ierr;
+
+          ierr = MPI_Recv(&min, 1, MPIU_INT, p, 1, sieve.comm(), &status);CHKERRXX(ierr);
+          ierr = MPI_Recv(&max, 1, MPIU_INT, p, 1, sieve.comm(), &status);CHKERRXX(ierr);
+          ierr = PetscMalloc(2*(max - min) * sizeof(PetscInt), &sizes);CHKERRXX(ierr);
+          ierr = MPI_Recv(sizes, (max - min)*2, MPIU_INT, p, 1, sieve.comm(), &status);CHKERRXX(ierr);
+          for(PetscInt s = 0; s < max - min; ++s) {
+            fs << sizes[s*2+0] << " " << sizes[s*2+1] << std::endl;
+          }
+          ierr = PetscFree(sizes);CHKERRXX(ierr);
+          mins[p] = min;
+          maxs[p] = max;
+        }
+      } else {
+        // Send remote
+        PetscInt       min = chart->min();
+        PetscInt       max = chart->max();
+        PetscInt       s   = 0;
+        PetscInt      *sizes;
+        PetscErrorCode ierr;
+
+        ierr = MPI_Send(&min, 1, MPIU_INT, 0, 1, sieve.comm());CHKERRXX(ierr);
+        ierr = MPI_Send(&max, 1, MPIU_INT, 0, 1, sieve.comm());CHKERRXX(ierr);
+        ierr = PetscMalloc((max - min)*2 * sizeof(PetscInt), &sizes);CHKERRXX(ierr);
+        for(typename ISieve::point_type p = min; p < max; ++p, ++s) {
+          sizes[s*2+0] = sieve.getConeSize(p);
+          sizes[s*2+1] = sieve.getSupportSize(p);
+        }
+        ierr = MPI_Send(sizes, (max - min)*2, MPIU_INT, 0, 1, sieve.comm());CHKERRXX(ierr);
+        ierr = PetscFree(sizes);CHKERRXX(ierr);
       }
-      Visitor pV(std::max(sieve.getMaxConeSize(), sieve.getMaxSupportSize()));
+      // Write covering
+      if (sieve.commRank() == 0) {
+        // Write local
+        Visitor pV(std::max(sieve.getMaxConeSize(), sieve.getMaxSupportSize()));
 
-      for(typename ISieve::point_type p = min; p < max; ++p) {
-        sieve.cone(p, pV);
-        const typename Visitor::point_type *cone  = pV.getPoints();
-        const int                           cSize = pV.getSize();
+        for(typename ISieve::point_type p = min; p < max; ++p) {
+          sieve.cone(p, pV);
+          const typename Visitor::point_type *cone  = pV.getPoints();
+          const int                           cSize = pV.getSize();
 
-        if (cSize > 0) {
+          if (cSize > 0) {
+            for(int c = 0; c < cSize; ++c) {
+              if (c) {fs << " ";}
+              fs << cone[c];
+            }
+            fs << std::endl;
+          }
+          pV.clear();
+
+          sieve.orientedCone(p, pV);
+          const typename Visitor::oriented_point_type *oCone = pV.getOrientedPoints();
+          const int                                    oSize = pV.getOrientedSize();
+
+          if (oSize > 0) {
+            for(int c = 0; c < oSize; ++c) {
+              if (c) {fs << " ";}
+              fs << oCone[c].second;
+            }
+            fs << std::endl;
+          }
+          pV.clear();
+
+          sieve.support(p, pV);
+          const typename Visitor::point_type *support = pV.getPoints();
+          const int                           sSize   = pV.getSize();
+
+          if (sSize > 0) {
+            for(int s = 0; s < sSize; ++s) {
+              if (s) {fs << " ";}
+              fs << support[s];
+            }
+            fs << std::endl;
+          }
+          pV.clear();
+        }
+        // Receive and write remote
+        for(int p = 0; p < sieve.commSize(); ++p) {
+          PetscInt       size;
+          PetscInt      *data;
+          PetscInt       off = 0;
+          MPI_Status     status;
+          PetscErrorCode ierr;
+
+          ierr = MPI_Recv(&size, 1, MPIU_INT, p, 1, sieve.comm(), &status);CHKERRXX(ierr);
+          ierr = PetscMalloc(size*sizeof(PetscInt), &data);CHKERRXX(ierr);
+          ierr = MPI_Recv(data, size, MPIU_INT, p, 1, sieve.comm(), &status);CHKERRXX(ierr);
+          for(typename ISieve::point_type p = mins[p]; p < maxs[p]; ++p) {
+            PetscInt cSize = data[off++];
+
+            if (cSize > 0) {
+              for(int c = 0; c < cSize; ++c) {
+                if (c) {fs << " ";}
+                fs << data[off++];
+              }
+              fs << std::endl;
+            }
+            PetscInt oSize = data[off++];
+
+            if (oSize > 0) {
+              for(int c = 0; c < oSize; ++c) {
+                if (c) {fs << " ";}
+                fs << data[off++];
+              }
+              fs << std::endl;
+            }
+            PetscInt sSize = data[off++];
+
+            if (sSize > 0) {
+              for(int s = 0; s < sSize; ++s) {
+                if (s) {fs << " ";}
+                fs << data[off++];
+              }
+              fs << std::endl;
+            }
+          }
+          assert(off == size);
+          ierr = PetscFree(data);CHKERRXX(ierr);
+        }
+      } else {
+        // Send remote
+        Visitor pV(std::max(sieve.getMaxConeSize(), sieve.getMaxSupportSize()));
+        PetscInt totalConeSize    = 0;
+        PetscInt totalSupportSize = 0;
+
+        for(typename ISieve::point_type p = min; p < max; ++p) {
+          totalConeSize    += sieve.getConeSize(p);
+          totalSupportSize += sieve.getSupportSize(p);
+        }
+        PetscInt       size = (sieve.getChart().size()+totalConeSize)*2 + sieve.getChart().size()+totalSupportSize;
+        PetscInt       off  = 0;
+        PetscInt      *data;
+        PetscErrorCode ierr;
+
+        ierr = MPI_Send(&size, 1, MPIU_INT, 0, 1, sieve.comm());CHKERRXX(ierr);
+        // There is no nice way to make a generic MPI type here. Really sucky
+        ierr = PetscMalloc(size * sizeof(PetscInt), &data);CHKERRXX(ierr);
+        for(typename ISieve::point_type p = min; p < max; ++p) {
+          sieve.cone(p, pV);
+          const typename Visitor::point_type *cone  = pV.getPoints();
+          const int                           cSize = pV.getSize();
+
+          data[off++] = cSize;
           for(int c = 0; c < cSize; ++c) {
-            if (c) {fs << " ";}
-            fs << cone[c];
+            data[off++] = cone[c];
           }
-          fs << std::endl;
-        }
-        pV.clear();
+          pV.clear();
 
-        sieve.orientedCone(p, pV);
-        const typename Visitor::oriented_point_type *oCone = pV.getOrientedPoints();
-        const int                                    oSize = pV.getOrientedSize();
+          sieve.orientedCone(p, pV);
+          const typename Visitor::oriented_point_type *oCone = pV.getOrientedPoints();
+          const int                                    oSize = pV.getOrientedSize();
 
-        if (oSize > 0) {
+          data[off++] = oSize;
           for(int c = 0; c < oSize; ++c) {
-            if (c) {fs << " ";}
-            fs << oCone[c].second;
+            data[off++] = oCone[c].second;
           }
-          fs << std::endl;
-        }
-        pV.clear();
+          pV.clear();
 
-        sieve.support(p, pV);
-        const typename Visitor::point_type *support = pV.getPoints();
-        const int                           sSize   = pV.getSize();
+          sieve.support(p, pV);
+          const typename Visitor::point_type *support = pV.getPoints();
+          const int                           sSize   = pV.getSize();
 
-        if (sSize > 0) {
+          data[off++] = sSize;
           for(int s = 0; s < sSize; ++s) {
-            if (s) {fs << " ";}
-            fs << support[s];
+            data[off++] = support[s];
           }
-          fs << std::endl;
+          pV.clear();
         }
-        pV.clear();
+        ierr = MPI_Send(data, size, MPIU_INT, 0, 1, sieve.comm());CHKERRXX(ierr);
+        ierr = PetscFree(data);CHKERRXX(ierr);
       }
+      delete [] mins;
+      delete [] maxs;
       // Output renumbering
     };
     template<typename ISieve>
@@ -1971,45 +2116,101 @@ namespace ALE {
     template<typename ISieve>
     static void loadSieve(std::ifstream& fs, ISieve& sieve) {
       typename ISieve::point_type min, max;
+      PetscInt                               *mins  = new PetscInt[sieve.commSize()];
+      PetscInt                               *maxs  = new PetscInt[sieve.commSize()];
 
-      fs >> min;
-      fs >> max;
-      sieve.setChart(typename ISieve::chart_type(min, max));
-      for(typename ISieve::point_type p = min; p < max; ++p) {
-        typename ISieve::index_type coneSize, supportSize;
+      // Load sizes
+      if (sieve.commRank() == 0) {
+        // Load local
+        fs >> min;
+        fs >> max;
+        sieve.setChart(typename ISieve::chart_type(min, max));
+        for(typename ISieve::point_type p = min; p < max; ++p) {
+          typename ISieve::index_type coneSize, supportSize;
 
-        fs >> coneSize;
-        fs >> supportSize;
-        sieve.setConeSize(p, coneSize);
-        sieve.setSupportSize(p, supportSize);
+          fs >> coneSize;
+          fs >> supportSize;
+          sieve.setConeSize(p, coneSize);
+          sieve.setSupportSize(p, supportSize);
+        }
+        // Load and send remote
+        for(int p = 0; p < sieve.commSize(); ++p) {
+          PetscInt       min, max;
+          PetscInt      *sizes;
+          PetscErrorCode ierr;
+
+          fs >> min;
+          fs >> max;
+          ierr = MPI_Send(&min, 1, MPIU_INT, 0, p, sieve.comm());CHKERRXX(ierr);
+          ierr = MPI_Send(&max, 1, MPIU_INT, 0, p, sieve.comm());CHKERRXX(ierr);
+          ierr = PetscMalloc((max - min)*2 * sizeof(PetscInt), &sizes);CHKERRXX(ierr);
+          for(PetscInt s = 0; s < max - min; ++s) {
+            fs >> sizes[s*2+0];
+            fs >> sizes[s*2+1];
+          }
+          ierr = MPI_Send(sizes, (max - min)*2, MPIU_INT, p, 1, sieve.comm());CHKERRXX(ierr);
+          ierr = PetscFree(sizes);CHKERRXX(ierr);
+          mins[p] = min;
+          maxs[p] = max;
+        }
+      } else {
+        // Load remote
+        PetscInt       min;
+        PetscInt       max;
+        PetscInt       s   = 0;
+        PetscInt      *sizes;
+        MPI_Status     status;
+        PetscErrorCode ierr;
+
+        ierr = MPI_Recv(&min, 1, MPIU_INT, 0, 1, sieve.comm(), &status);CHKERRXX(ierr);
+        ierr = MPI_Recv(&max, 1, MPIU_INT, 0, 1, sieve.comm(), &status);CHKERRXX(ierr);
+        ierr = PetscMalloc((max - min)*2 * sizeof(PetscInt), &sizes);CHKERRXX(ierr);
+        ierr = MPI_Recv(sizes, (max - min)*2, MPIU_INT, 0, 1, sieve.comm(), &status);CHKERRXX(ierr);
+        for(typename ISieve::point_type p = min; p < max; ++p, ++s) {
+          sieve.setConeSize(p, sizes[s*2+0]);
+          sieve.setSupportSize(p, sizes[s*2+1]);
+        }
+        ierr = PetscFree(sizes);CHKERRXX(ierr);
       }
       sieve.allocate();
-      typename ISieve::index_type  maxSize = std::max(sieve.getMaxConeSize(), sieve.getMaxSupportSize());
-      typename ISieve::point_type *points  = new typename ISieve::point_type[maxSize];
-      for(typename ISieve::point_type p = min; p < max; ++p) {
-        typename ISieve::index_type coneSize    = sieve.getConeSize(p);
-        typename ISieve::index_type supportSize = sieve.getSupportSize(p);
+      // Load covering
+      if (sieve.commRank() == 0) {
+        // Load local
+        typename ISieve::index_type  maxSize = std::max(sieve.getMaxConeSize(), sieve.getMaxSupportSize());
+        typename ISieve::point_type *points  = new typename ISieve::point_type[maxSize];
 
-        if (coneSize > 0) {
-          for(int c = 0; c < coneSize; ++c) {
-            fs >> points[c];
-          }
-          sieve.setCone(points, p);
-          if (sieve.orientedCones()) {
+        for(typename ISieve::point_type p = min; p < max; ++p) {
+          typename ISieve::index_type coneSize    = sieve.getConeSize(p);
+          typename ISieve::index_type supportSize = sieve.getSupportSize(p);
+
+          if (coneSize > 0) {
             for(int c = 0; c < coneSize; ++c) {
               fs >> points[c];
             }
-            sieve.setConeOrientation(points, p);
+            sieve.setCone(points, p);
+            if (sieve.orientedCones()) {
+              for(int c = 0; c < coneSize; ++c) {
+                fs >> points[c];
+              }
+              sieve.setConeOrientation(points, p);
+            }
+          }
+          if (supportSize > 0) {
+            for(int s = 0; s < supportSize; ++s) {
+              fs >> points[s];
+            }
+            sieve.setSupport(p, points);
           }
         }
-        if (supportSize > 0) {
-          for(int s = 0; s < supportSize; ++s) {
-            fs >> points[s];
-          }
-          sieve.setSupport(p, points);
+        delete [] points;
+        delete [] mins;
+        delete [] maxs;
+        // Load and send remote
+        for(int p = 0; p < sieve.commSize(); ++p) {
         }
+      } else {
+        // Load remote
       }
-      delete [] points;
       // Load renumbering
     };
   };
