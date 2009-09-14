@@ -1,9 +1,6 @@
 #ifndef _PETSC_COMPAT_DA_H
 #define _PETSC_COMPAT_DA_H
 
-#define DM_COOKIE DA_COOKIE
-#define DA_XYZGHOSTED ((DAPeriodicType)-1)
-
 #undef __FUNCT__
 #define __FUNCT__ "DASetOptionsPrefix"
 static PETSC_UNUSED

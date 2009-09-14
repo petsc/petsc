@@ -8,12 +8,12 @@ cdef extern from "petscda.h" nogil:
         DA_PERIODIC_NONE  "DA_NONPERIODIC"
         DA_PERIODIC_X     "DA_XPERIODIC"
         DA_PERIODIC_Y     "DA_YPERIODIC"
+        DA_PERIODIC_Z     "DA_ZPERIODIC"
         DA_PERIODIC_XY    "DA_XYPERIODIC"
         DA_PERIODIC_XZ    "DA_XZPERIODIC"
         DA_PERIODIC_YZ    "DA_YZPERIODIC"
         DA_PERIODIC_XYZ   "DA_XYZPERIODIC"
-        DA_PERIODIC_Z     "DA_ZPERIODIC"
-        #DA_PERIODIC_XYZ_G "DA_XYZGHOSTED"
+        DA_GHOSTED_XYZ    "DA_XYZGHOSTED"
 
     ctypedef enum PetscDAInterpolationType "DAInterpolationType":
         DA_INTERPOLATION_Q0 "DA_Q0"
@@ -26,17 +26,18 @@ cdef extern from "petscda.h" nogil:
     int DAView(PetscDA,PetscViewer)
     int DADestroy(PetscDA)
 
-    int DACreate(MPI_Comm, PetscInt,         # comm, ndim
-                 PetscDAPeriodicType,        # wrap
-                 PetscDAStencilType,         # stencil
-                 PetscInt,PetscInt,PetscInt, # M, N, P
-                 PetscInt,PetscInt,PetscInt, # m, n, p
-                 PetscInt,PetscInt,          # dof, s
-                 PetscInt[],
-                 PetscInt[],
-                 PetscInt[],
-                 PetscDA*)
+    int DACreateND(MPI_Comm,
+                   PetscInt,PetscInt,                # dim, dof
+                   PetscInt,PetscInt,PetscInt,       # M, N, P
+                   PetscInt,PetscInt,PetscInt,       # m, n, p
+                   PetscInt[],PetscInt[],PetscInt[], # lx, ly, lz
+                   PetscDAPeriodicType,              # periodicity
+                   PetscDAStencilType,               # stencil type
+                   PetscInt,                         # stencil width
+                   PetscDA*)
 
+    int DASetOptionsPrefix(PetscDA,char[])
+    int DASetFromOptions(PetscDA)
 
     #int DASetElementType(PetscDA,PetscDAElementType)
     #int DASetInterpolationType(PetscDA,PetscDAInterpolationType)

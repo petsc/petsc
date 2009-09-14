@@ -969,3 +969,66 @@ AOGetType(AO ao, AOType *aotype)
 }
 
 /* ---------------------------------------------------------------- */
+
+#if (PETSC_VERSION_(3,0,0) || \
+     PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2) )
+
+#undef __FUNCT__
+#define __FUNCT__ "DACreateND"
+PETSC_STATIC_INLINE PetscErrorCode
+DACreateND(MPI_Comm comm,
+	   PetscInt dim,PetscInt dof,
+	   PetscInt M,PetscInt N,PetscInt P,
+	   PetscInt m,PetscInt n,PetscInt p,
+	   const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],
+	   DAPeriodicType wrap,DAStencilType stencil_type,PetscInt stencil_width,
+	   DA *da)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = DACreate(comm,dim,wrap,stencil_type,
+		  M,N,P,m,n,p,dof,stencil_width,
+		  lx,ly,lz, da);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#else
+
+#undef __FUNCT__
+#define __FUNCT__ "DACreateND"
+PETSC_STATIC_INLINE PetscErrorCode
+DACreateND(MPI_Comm comm,
+	   PetscInt dim,PetscInt dof,
+	   PetscInt M,PetscInt N,PetscInt P,
+	   PetscInt m,PetscInt n,PetscInt p,
+	   const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],
+	   DAPeriodicType wrap,DAStencilType stencil_type,PetscInt stencil_width,
+	   DA *da)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+
+  ierr = DACreate(comm,da);CHKERRQ(ierr);
+  ierr = DASetDim(*da,dim);CHKERRQ(ierr);
+  ierr = DASetDof(*da,dof);CHKERRQ(ierr);
+  ierr = DASetSizes(*da,M,N,P);CHKERRQ(ierr);
+  ierr = DASetNumProcs(*da,m,n,p);CHKERRQ(ierr);
+  ierr = DASetVertexDivision(*da,lx,ly,lz);CHKERRQ(ierr);
+  ierr = DASetPeriodicity(*da,wrap);CHKERRQ(ierr);
+  ierr = DASetStencilType(*da,stencil_type);CHKERRQ(ierr);
+  ierr = DASetStencilWidth(*da,stencil_width);CHKERRQ(ierr);
+
+  /* This violates the behavior for other classes, but right now users
+     expect negative dimensions to be handled this way */
+  /*
+  ierr = DASetOptionsPrefix(*da,prefix);CHKERRQ(ierr);CHKERRQ(ierr);
+  */
+  ierr = DASetFromOptions(*da);CHKERRQ(ierr);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#endif
+
+/* ---------------------------------------------------------------- */

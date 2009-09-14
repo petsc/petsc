@@ -8,16 +8,17 @@ class BaseTestDA(object):
     COMM = PETSc.COMM_WORLD
     SIZES = None
     PERIODIC = PETSc.DA.PeriodicType.NONE
+    DOF = 1
     STENCIL = PETSc.DA.StencilType.STAR
-    NDOF = 1
     SWIDTH = 1
 
     def setUp(self):
-        self.da = PETSc.DA().create(self.SIZES,
-                                    periodic=self.PERIODIC,
-                                    stencil=self.STENCIL,
-                                    ndof=self.NDOF,
-                                    width=self.SWIDTH,
+        self.da = PETSc.DA().create(dim=len(self.SIZES),
+                                    dof=self.DOF,
+                                    sizes=self.SIZES,
+                                    periodic_type=self.PERIODIC,
+                                    stencil_type=self.STENCIL,
+                                    stencil_width=self.SWIDTH,
                                     comm=self.COMM)
 
     def tearDown(self):
@@ -26,18 +27,18 @@ class BaseTestDA(object):
 
     def testGetInfo(self):
         dim = self.da.getDim()
+        dof = self.da.getDof()
         sizes = self.da.getSizes()
         psizes = self.da.getProcSizes()
-        stencil_type = self.da.getStencilType()
         periodic_type = self.da.getPeriodicType()
-        ndof = self.da.getNDof()
-        width = self.da.getWidth()
+        stencil_type = self.da.getStencilType()
+        stencil_width = self.da.getStencilWidth()
         self.assertEqual(dim, len(self.SIZES))
+        self.assertEqual(dof, self.DOF)
         self.assertEqual(sizes, tuple(self.SIZES))
         self.assertEqual(periodic_type, self.PERIODIC)
         self.assertEqual(stencil_type, self.STENCIL)
-        self.assertEqual(ndof, self.NDOF)
-        self.assertEqual(width, self.SWIDTH)
+        self.assertEqual(stencil_width, self.SWIDTH)
 
     def testRangesCorners(self):
         dim = self.da.getDim()
@@ -105,27 +106,27 @@ class TestDA_2D(BaseTestDA_2D, unittest.TestCase):
 class TestDA_2D_W0(TestDA_2D):
     SWIDTH = 0
 class TestDA_2D_W0_N2(TestDA_2D):
+    DOF = 2
     SWIDTH = 0
-    NDOF = 2
 class TestDA_2D_W2(TestDA_2D):
     SWIDTH = 2
 class TestDA_2D_W2_N2(TestDA_2D):
+    DOF = 2
     SWIDTH = 2
-    NDOF = 2
 
 class TestDA_3D(BaseTestDA_3D, unittest.TestCase):
     pass
 class TestDA_3D_W0(TestDA_3D):
     SWIDTH = 0
 class TestDA_3D_W0_N2(TestDA_3D):
+    DOF = 2
     SWIDTH = 0
-    NDOF = 2
 
 # The two below fails in 5 procs ...
 ## class TestDA_3D_W2(TestDA_3D):
 ##     SWIDTH = 2
 ## class TestDA_3D_W2_N2(TestDA_3D):
-##     NDOF = 2
+##     DOF = 2
 ##     SWIDTH = 2
 
 # --------------------------------------------------------------------
