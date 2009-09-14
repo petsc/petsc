@@ -356,10 +356,12 @@ namespace ALE {
         PetscScalar  (*func)(const double *) = options->func;
         const double   lambda                = options->lambda;
         Obj<PETSC_MESH_TYPE> m;
+        Obj<PETSC_MESH_TYPE::real_section_type> s;
         PetscErrorCode ierr;
 
         PetscFunctionBegin;
         ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+        ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
         const Obj<ALE::Discretization>&          disc          = m->getDiscretization("u");
         const int                                numQuadPoints = disc->getQuadratureSize();
         const double                            *quadPoints    = disc->getQuadraturePoints();
@@ -370,11 +372,13 @@ namespace ALE {
         const Obj<PETSC_MESH_TYPE::real_section_type>& coordinates   = m->getRealSection("coordinates");
         const Obj<PETSC_MESH_TYPE::label_sequence>&    cells         = m->heightStratum(0);
         const int                                dim           = m->getDimension();
+        const int                                closureSize   = m->sizeWithBC(s, *cells->begin()); // Should do a max of some sort
         double      *t_der, *b_der, *coords, *v0, *J, *invJ, detJ;
         PetscScalar *elemVec, *elemMat;
+        PetscScalar *x;
 
         ierr = SectionRealZero(section);CHKERRQ(ierr);
-        ierr = PetscMalloc2(numBasisFuncs,PetscScalar,&elemVec,numBasisFuncs*numBasisFuncs,PetscScalar,&elemMat);CHKERRQ(ierr);
+        ierr = PetscMalloc3(numBasisFuncs,PetscScalar,&elemVec,numBasisFuncs*numBasisFuncs,PetscScalar,&elemMat,closureSize,PetscScalar,&x);CHKERRQ(ierr);
         ierr = PetscMalloc6(dim,double,&t_der,dim,double,&b_der,dim,double,&coords,dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
         // Loop over cells
         for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
@@ -382,9 +386,8 @@ namespace ALE {
           ierr = PetscMemzero(elemMat, numBasisFuncs*numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
           m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
           if (detJ <= 0.0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
-          PetscScalar *x;
 
-          ierr = SectionRealRestrict(X, *c_iter, &x);CHKERRQ(ierr);
+          ierr = SectionRealRestrictClosure(X, mesh, *c_iter, closureSize, x);CHKERRQ(ierr);
           // Loop over quadrature points
           for(int q = 0; q < numQuadPoints; ++q) {
             for(int d = 0; d < dim; d++) {
@@ -431,9 +434,9 @@ namespace ALE {
               elemVec[f] += elemMat[f*numBasisFuncs+g]*x[g];
             }
           }
-          ierr = SectionRealUpdateAdd(section, *c_iter, elemVec);CHKERRQ(ierr);
+          ierr = SectionRealUpdateClosure(section, mesh, *c_iter, elemVec, ADD_VALUES);CHKERRQ(ierr);
         }
-        ierr = PetscFree2(elemVec,elemMat);CHKERRQ(ierr);
+        ierr = PetscFree3(elemVec,elemMat,x);CHKERRQ(ierr);
         ierr = PetscFree6(t_der,b_der,coords,v0,J,invJ);CHKERRQ(ierr);
         // Exchange neighbors
         ierr = SectionRealComplete(section);CHKERRQ(ierr);
@@ -445,9 +448,7 @@ namespace ALE {
           ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
           s->axpy(-1.0, constant);
         }
-	Obj<PETSC_MESH_TYPE::real_section_type>        s;
-	ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-	s->view("RHS");
+        s->view("RHS");
         PetscFunctionReturn(0);
       };
       #undef __FUNCT__
@@ -473,18 +474,19 @@ namespace ALE {
         const Obj<PETSC_MESH_TYPE::label_sequence>&    cells         = m->heightStratum(0);
         const Obj<PETSC_MESH_TYPE::order_type>&        order         = m->getFactory()->getGlobalOrder(m, "default", s);
         const int                                dim           = m->getDimension();
+        const int                                closureSize   = m->sizeWithBC(s, *cells->begin()); // Should do a max of some sort
         double      *t_der, *b_der, *v0, *J, *invJ, detJ;
+        PetscScalar *u;
         PetscScalar *elemMat;
 
-        ierr = PetscMalloc(numBasisFuncs*numBasisFuncs * sizeof(PetscScalar), &elemMat);CHKERRQ(ierr);
+        ierr = PetscMalloc2(numBasisFuncs*numBasisFuncs,PetscScalar,&elemMat,closureSize,PetscScalar,&u);CHKERRQ(ierr);
         ierr = PetscMalloc5(dim,double,&t_der,dim,double,&b_der,dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
         // Loop over cells
         for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
           ierr = PetscMemzero(elemMat, numBasisFuncs*numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
           m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
-          PetscScalar *u;
 
-          ierr = SectionRealRestrict(section, *c_iter, &u);CHKERRQ(ierr);
+          ierr = SectionRealRestrictClosure(section, mesh, *c_iter, closureSize, u);CHKERRQ(ierr);
           // Loop over quadrature points
           for(int q = 0; q < numQuadPoints; ++q) {
             PetscScalar fieldVal = 0.0;
@@ -516,7 +518,7 @@ namespace ALE {
           }
           ierr = updateOperator(A, m, s, order, *c_iter, elemMat, ADD_VALUES);CHKERRQ(ierr);
         }
-        ierr = PetscFree(elemMat);CHKERRQ(ierr);
+        ierr = PetscFree2(elemMat,u);CHKERRQ(ierr);
         ierr = PetscFree5(t_der,b_der,v0,J,invJ);CHKERRQ(ierr);
         ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -655,7 +657,7 @@ namespace ALE {
             ierr = ALE::DMBuilder::createBoxMesh(comm(), dim(), structured(), interpolated(), debug(), &this->_dm);CHKERRQ(ierr);
           }
         }
-	ierr = refineMesh();CHKERRQ(ierr);
+        ierr = refineMesh();CHKERRQ(ierr);
 
         if (this->commSize() > 1) {
           ::Mesh parallelMesh;
@@ -689,7 +691,7 @@ namespace ALE {
       #define __FUNCT__ "RefineMesh"
       PetscErrorCode refineMesh() {
         PetscErrorCode ierr;
-	PetscFunctionBegin;
+        PetscFunctionBegin;
         if (_options.refinementLimit > 0.0) {
           ::Mesh refinedMesh;
 
@@ -715,7 +717,7 @@ namespace ALE {
 #endif
           }  
         }
-	PetscFunctionReturn(0);
+        PetscFunctionReturn(0);
       };
       #undef __FUNCT__
       #define __FUNCT__ "DestroyMesh"
@@ -1025,10 +1027,14 @@ namespace ALE {
       #undef __FUNCT__
       #define __FUNCT__ "CalculateError"
       PetscErrorCode calculateError(SectionReal X, double *error) {
+        Obj<PETSC_MESH_TYPE::real_section_type> u;
+        Obj<PETSC_MESH_TYPE::real_section_type> s;
         PetscScalar  (*func)(const double *) = this->_options.exactFunc;
         PetscErrorCode ierr;
 
         PetscFunctionBegin;
+        ierr = SectionRealGetSection(X, u);CHKERRQ(ierr);
+        ierr = SectionRealGetSection(this->_options.error.section, s);CHKERRQ(ierr);
         const Obj<ALE::Discretization>&                disc          = this->_mesh->getDiscretization("u");
         const int                                      numQuadPoints = disc->getQuadratureSize();
         const double                                  *quadPoints    = disc->getQuadraturePoints();
@@ -1038,20 +1044,27 @@ namespace ALE {
         const Obj<PETSC_MESH_TYPE::real_section_type>& coordinates   = this->_mesh->getRealSection("coordinates");
         const Obj<PETSC_MESH_TYPE::label_sequence>&    cells         = this->_mesh->heightStratum(0);
         const int                                      dim           = this->_mesh->getDimension();
-        double *coords, *v0, *J, *invJ, detJ;
-        double  localError = 0.0;
+        const int                                      closureSize   = this->_mesh->sizeWithBC(u, *cells->begin()); // Should do a max of some sort
+        double      *coords, *v0, *J, *invJ, detJ;
+        PetscScalar *x;
+        double       localError = 0.0;
 
+        ierr = PetscMalloc(closureSize * sizeof(PetscScalar), &x);CHKERRQ(ierr);
         ierr = PetscMalloc4(dim,double,&coords,dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
         // Loop over cells
         for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-          PetscScalar *x;
-          double       elemError = 0.0;
+          double elemError = 0.0;
 
           this->_mesh->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
           if (debug()) {
             std::cout << "Element " << *c_iter << " v0: (" << v0[0]<<","<<v0[1]<<")" << "J " << J[0]<<","<<J[1]<<","<<J[2]<<","<<J[3] << " detJ " << detJ << std::endl;
           }
-          ierr = SectionRealRestrict(X, *c_iter, &x);CHKERRQ(ierr);
+          this->_mesh->restrictClosure(u, *c_iter, x, closureSize);
+          if (debug()) {
+            for(int f = 0; f < numBasisFuncs; ++f) {
+              std::cout << "x["<<f<<"] " << x[f] << std::endl;
+            }
+          }
           // Loop over quadrature points
           for(int q = 0; q < numQuadPoints; ++q) {
             for(int d = 0; d < dim; d++) {
@@ -1059,7 +1072,7 @@ namespace ALE {
               for(int e = 0; e < dim; e++) {
                 coords[d] += J[d*dim+e]*(quadPoints[q*dim+e] + 1.0);
               }
-              if (debug()) {std::cout << "q: "<<q<<"  coords["<<d<<"] " << coords[d] << std::endl;}
+              if (debug()) {std::cout << "q: "<<q<<"  refCoord["<<d<<"] " << quadPoints[q*dim+d] << "  coords["<<d<<"] " << coords[d] << std::endl;}
             }
             const PetscScalar funcVal = (*func)(coords);
             if (debug()) {std::cout << "q: "<<q<<"  funcVal " << funcVal << std::endl;}
@@ -1075,10 +1088,11 @@ namespace ALE {
           if (debug()) {
             std::cout << "Element " << *c_iter << " error: " << elemError << std::endl;
           }
-          ierr = SectionRealUpdateAdd(this->_options.error.section, *c_iter, &elemError);CHKERRQ(ierr);
+          this->_mesh->updateAdd(s, *c_iter, &elemError);
           localError += elemError;
         }
         ierr = MPI_Allreduce(&localError, error, 1, MPI_DOUBLE, MPI_SUM, comm());CHKERRQ(ierr);
+        ierr = PetscFree(x);CHKERRQ(ierr);
         ierr = PetscFree4(coords,v0,J,invJ);CHKERRQ(ierr);
         *error = sqrt(*error);
         PetscFunctionReturn(0);
