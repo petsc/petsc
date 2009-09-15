@@ -84,16 +84,16 @@ class BaseTestMatFactorILU(BaseTestMatFactor):
         x.axpy(-1, self.x)
         self.assertTrue(x.norm() < 1e-3)
 
-class BaseTestMatFactorILUDT(BaseTestMatFactor):
-
-    def testFactorILUDT(self):
-        r, c = self.A.getOrdering("natural")
-        self.A = self.A.factorILUDT(r,c)
-        x = self.x.duplicate()
-        self.A.solve(self.b, x)
-        x.axpy(-1, self.x)
-        self.assertTrue(x.norm() < 1e-3)
-
+## class BaseTestMatFactorILUDT(BaseTestMatFactor):
+## 
+##     def testFactorILUDT(self):
+##         r, c = self.A.getOrdering("natural")
+##         self.A = self.A.factorILUDT(r,c)
+##         x = self.x.duplicate()
+##         self.A.solve(self.b, x)
+##         x.axpy(-1, self.x)
+##         self.assertTrue(x.norm() < 1e-3)
+## 
 class BaseTestMatFactorChol(BaseTestMatFactor):
 
     def testFactorChol(self):
@@ -133,14 +133,14 @@ class TestMatFactorA2(BaseTestMatFactorLU,
 
 class TestMatFactorB1(BaseTestMatFactorLU,
                       BaseTestMatFactorILU,
-                      BaseTestMatFactorILUDT,
+                      ## BaseTestMatFactorILUDT,
                       unittest.TestCase):
     MKSYS = staticmethod(mksys_diag)
     MTYPE = PETSc.Mat.Type.SEQAIJ
 
 class TestMatFactorB2(BaseTestMatFactorLU,
                       BaseTestMatFactorILU,
-                      BaseTestMatFactorILUDT,
+                      ## BaseTestMatFactorILUDT,
                       unittest.TestCase):
     MKSYS = staticmethod(mksys_poi2)
     MTYPE = PETSc.Mat.Type.SEQAIJ
