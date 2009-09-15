@@ -3,7 +3,6 @@
 #define __AIJ_H
 
 #include "private/matimpl.h"
-#include "../src/mat/utils/freespace.h"
 
 /*  
     Struct header shared by SeqAIJ, SeqBAIJ and SeqSBAIJ matrix formats
@@ -196,8 +195,6 @@ EXTERN PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscTruth,P
 EXTERN PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *);
 EXTERN PetscErrorCode MatDestroy_SeqAIJ(Mat);
 EXTERN PetscErrorCode MatView_SeqAIJ(Mat,PetscViewer);
-
-EXTERN PetscErrorCode PetscFreeSpaceContiguous_newdatastruct(PetscFreeSpaceList*,PetscInt*,PetscInt,PetscInt*,PetscInt*);
 
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqSBAIJ(Mat,const MatType,MatReuse,Mat*);

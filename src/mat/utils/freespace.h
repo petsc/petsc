@@ -16,6 +16,7 @@ struct _Space {
 
 PetscErrorCode PetscFreeSpaceGet(PetscInt,PetscFreeSpaceList*);
 PetscErrorCode PetscFreeSpaceContiguous(PetscFreeSpaceList*,PetscInt *);
+PetscErrorCode PetscFreeSpaceContiguous_newdatastruct(PetscFreeSpaceList*,PetscInt*,PetscInt,PetscInt*,PetscInt*);
 PetscErrorCode PetscFreeSpaceDestroy(PetscFreeSpaceList);
 
 #endif
