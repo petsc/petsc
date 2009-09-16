@@ -328,6 +328,14 @@ cdef class TS(Object):
         def __set__(self, value):
             self.setMaxSteps(value)
 
+    # --- finite diferences ---
+
+    property use_fd:
+        def __get__(self):
+            return self.getUseFD()
+        def __set__(self, value):
+            self.setUseFD(value)
+
 # --------------------------------------------------------------------
 
 del TSType
