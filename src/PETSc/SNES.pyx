@@ -323,7 +323,7 @@ cdef class SNES(Object):
 
     # --- xxx ---
 
-    def setUseEW(self,  flag, *targs, **kargs):
+    def setUseEW(self, flag=True, *targs, **kargs):
         CHKERR( SNESKSPSetUseEW(self.snes, flag) )
         if targs or kargs: self.setParamsEW(*targs, **kargs)
 
@@ -370,15 +370,19 @@ cdef class SNES(Object):
                 'alpha2'    : toReal(alpha2),
                 'threshold' : toReal(threshold),}
 
-    def setUseMF(self, flag):
-        CHKERR( SNESSetUseMFFD(self.snes, flag) )
+    # --- xxx ---
+
+    def setUseMF(self, flag=True):
+        cdef PetscTruth cflag = flag
+        CHKERR( SNESSetUseMFFD(self.snes, cflag) )
 
     def getUseMF(self):
         cdef PetscTruth flag = PETSC_FALSE
         CHKERR( SNESGetUseMFFD(self.snes, &flag) )
         return <bint> flag
 
-    def setUseFD(self, flag):
+    def setUseFD(self, flag=True):
+        cdef PetscTruth cflag = flag
         CHKERR( SNESSetUseFDColoring(self.snes, flag) )
 
     def getUseFD(self):
