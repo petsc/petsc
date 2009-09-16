@@ -272,7 +272,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTrFreeDefault(void *aa,int line,const char f
   TRSPACE        *head;
   char           *ahead;
   PetscErrorCode ierr;
-  unsigned long  *nend;
+  PetscCookie    *nend;
   
   PetscFunctionBegin; 
   /* Do not try to handle empty blocks */
@@ -294,7 +294,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTrFreeDefault(void *aa,int line,const char f
     (*PetscErrorPrintf)("Block at address %p is corrupted; cannot free;\nmay be block not allocated with PetscMalloc()\n",a);
     SETERRQ(PETSC_ERR_MEMC,"Bad location or corrupted memory");
   }
-  nend = (unsigned long *)(ahead + head->size);
+  nend = (PetscCookie *)(ahead + head->size);
   if (*nend != COOKIE_VALUE) {
     if (*nend == ALREADY_FREED) {
       (*PetscErrorPrintf)("PetscTrFreeDefault() called from %s() line %d in %s%s\n",function,line,dir,file);
