@@ -1,27 +1,30 @@
-#ifndef _PETSC_COMPAT_TS_H
-#define _PETSC_COMPAT_TS_H
+#ifndef _COMPAT_PETSC_TS_H
+#define _COMPAT_PETSC_TS_H
 
 #include "private/tsimpl.h"
 
+#if PETSC_VERSION_(2,3,2)
 #undef __FUNCT__
-#define __FUNCT__ "TSGetType_232"
+#define __FUNCT__ "TSGetType"
 static PETSC_UNUSED
-PetscErrorCode TSGetType_232(TS ts, const TSType *type)
+PetscErrorCode TSGetType_Compat(TS ts, const TSType *type)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = TSGetType(ts,(TSType *)type);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#define TSGetType TSGetType_232
+#define TSGetType TSGetType_Compat
+#endif
 
+#if PETSC_VERSION_(2,3,2)
 #undef __FUNCT__
-#define __FUNCT__ "TSSetMatrices_232"
+#define __FUNCT__ "TSSetMatrices"
 static PETSC_UNUSED
-PetscErrorCode TSSetMatrices_232(TS ts,
-				 Mat Arhs,PetscErrorCode (*frhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),
-				 Mat Alhs,PetscErrorCode (*flhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),
-				 MatStructure flag,void *ctx)
+PetscErrorCode TSSetMatrices(TS ts,
+			     Mat Arhs,PetscErrorCode (*frhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),
+			     Mat Alhs,PetscErrorCode (*flhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),
+			     MatStructure flag,void *ctx)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -38,12 +41,13 @@ PetscErrorCode TSSetMatrices_232(TS ts,
   }
   PetscFunctionReturn(0);
 }
-#define TSSetMatrices TSSetMatrices_232
+#endif
 
+#if PETSC_VERSION_(2,3,2)
 #undef __FUNCT__
-#define __FUNCT__ "TSSolve_232"
+#define __FUNCT__ "TSSolve"
 static PETSC_UNUSED
-PetscErrorCode TSSolve_232(TS ts, Vec u)
+PetscErrorCode TSSolve(TS ts, Vec u)
 {
   PetscInt       steps;
   PetscReal      ptime;
@@ -58,25 +62,27 @@ PetscErrorCode TSSolve_232(TS ts, Vec u)
   ierr = TSStep(ts, &steps, &ptime);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#define TSSolve TSSolve_232
+#endif
 
+#if PETSC_VERSION_(2,3,2)
 #undef __FUNCT__
-#define __FUNCT__ "TSSetTime_232"
+#define __FUNCT__ "TSSetTime"
 static PETSC_UNUSED
-PetscErrorCode TSSetTime_232(TS ts, PetscReal t)
+PetscErrorCode TSSetTime(TS ts, PetscReal t)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   ts->ptime = t;
   PetscFunctionReturn(0);
 }
-#define TSSetTime TSSetTime_232
+#endif
 
+#if PETSC_VERSION_(2,3,2)
 #define TSMonitorSet TSSetMonitor
 #define TSMonitorCancel TSClearMonitor
 #define TSMonitorDefault TSDefaultMonitor
 #define TSMonitorSolution TSVecViewMonitor
 #define TSMonitorLG TSLGMonitor
+#endif
 
-
-#endif /* _PETSC_COMPAT_TS_H */
+#endif /* _COMPAT_PETSC_TS_H */

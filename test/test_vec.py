@@ -160,6 +160,8 @@ class BaseTestVec(object):
     def testSetOption(self):
         opt1 = PETSc.Vec.Option.IGNORE_OFF_PROC_ENTRIES
         opt2 = PETSc.Vec.Option.IGNORE_NEGATIVE_INDICES
+        version = PETSc.Sys.getVersion()
+        if version < (2,3,3): opt2 = opt1
         for opt in [opt1, opt2]*2:
             for flag in [True,False]*2:
                 self.vec.setOption(opt,flag)

@@ -1,45 +1,48 @@
-#ifndef _PETSC_COMPAT_KSP_H
-#define _PETSC_COMPAT_KSP_H
+#ifndef _COMPAT_PETSC_KSP_H
+#define _COMPAT_PETSC_KSP_H
 
 #include "private/kspimpl.h"
 
+#if (PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2))
 #define KSPNASH "nash"
 #define KSPGLTR "gltr"
+#endif
 
-#define PCFactorGetMatrix      PCGetFactoredMatrix
-#define PCApplyTransposeExists PCHasApplyTranspose
-
-
+#if PETSC_VERSION_(2,3,2)
 #define KSP_NORM_NO		  KSP_NO_NORM
 #define KSP_NORM_PRECONDITIONED   KSP_PRECONDITIONED_NORM
 #define KSP_NORM_UNPRECONDITIONED KSP_UNPRECONDITIONED_NORM
 #define KSP_NORM_NATURAL          KSP_NATURAL_NORM
+#endif
 
+#if (PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2))
 #undef __FUNCT__
-#define __FUNCT__ "KSPDefaultConvergedCreate_232"
+#define __FUNCT__ "KSPDefaultConvergedCreate"
 static PETSC_UNUSED
-PetscErrorCode KSPDefaultConvergedCreate_232(void **ctx)
+PetscErrorCode KSPDefaultConvergedCreate_Compat(void **ctx)
 {
   PetscFunctionBegin;
   if (ctx) *ctx = PETSC_NULL;
   PetscFunctionReturn(0);
 }
-#define KSPDefaultConvergedCreate KSPDefaultConvergedCreate_232
+#define KSPDefaultConvergedCreate KSPDefaultConvergedCreate_Compat
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPDefaultConvergedDestroy_232"
+#define __FUNCT__ "KSPDefaultConvergedDestroy"
 static PETSC_UNUSED
-PetscErrorCode KSPDefaultConvergedDestroy_232(void *ctx)
+PetscErrorCode KSPDefaultConvergedDestroy_Compat(void *ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
-#define KSPDefaultConvergedDestroy KSPDefaultConvergedDestroy_232
+#define KSPDefaultConvergedDestroy KSPDefaultConvergedDestroy_Compat
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPSkipConverged_232"
+#define __FUNCT__ "KSPSkipConverged"
 static PETSC_UNUSED
-PetscErrorCode KSPSkipConverged_232(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason, void *dummy)
+PetscErrorCode KSPSkipConverged_Compat(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason, void *dummy)
 {
   PetscInt       maxits;
   PetscErrorCode ierr;
@@ -51,15 +54,15 @@ PetscErrorCode KSPSkipConverged_232(KSP ksp,PetscInt n,PetscReal rnorm,KSPConver
   if (n >= maxits) *reason = KSP_CONVERGED_ITS;
   PetscFunctionReturn(0);
 }
-#define KSPSkipConverged KSPSkipConverged_232
+#define KSPSkipConverged KSPSkipConverged_Compat
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPSetConvergenceTest_232"
+#define __FUNCT__ "KSPSetConvergenceTest"
 static PETSC_UNUSED
-PetscErrorCode KSPSetConvergenceTest_232(KSP ksp,
-					 PetscErrorCode (*converge)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),
-					 void *cctx,
-					 PetscErrorCode (*destroy)(void*))
+PetscErrorCode KSPSetConvergenceTest_Compat(KSP ksp,
+					    PetscErrorCode (*converge)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),
+					    void *cctx,
+					    PetscErrorCode (*destroy)(void*))
 {
   PetscContainer container = PETSC_NULL;
   PetscErrorCode ierr;
@@ -75,12 +78,15 @@ PetscErrorCode KSPSetConvergenceTest_232(KSP ksp,
   ierr = KSPSetConvergenceTest(ksp,converge,cctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#define KSPSetConvergenceTest KSPSetConvergenceTest_232
+#define KSPSetConvergenceTest KSPSetConvergenceTest_Compat
+#endif
 
+#if (PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2))
 #undef __FUNCT__
-#define __FUNCT__ "KSPSetNormType_232"
+#define __FUNCT__ "KSPSetNormType"
 static PETSC_UNUSED
-PetscErrorCode KSPSetNormType_232(KSP ksp, KSPNormType normtype)
+PetscErrorCode KSPSetNormType_Compat(KSP ksp, KSPNormType normtype)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -90,27 +96,33 @@ PetscErrorCode KSPSetNormType_232(KSP ksp, KSPNormType normtype)
   }
   PetscFunctionReturn(0);
 }
-#define KSPSetNormType KSPSetNormType_232
+#define KSPSetNormType KSPSetNormType_Compat
+#endif
 
+#if PETSC_VERSION_(2,3,2)
 #undef __FUNCT__
-#define __FUNCT__ "KSPGetNormType_232"
+#define __FUNCT__ "KSPGetNormType"
 static PETSC_UNUSED
-PetscErrorCode KSPGetNormType_232(KSP ksp, KSPNormType *normtype) {
+PetscErrorCode KSPGetNormType_Compat(KSP ksp, KSPNormType *normtype) {
   if (ksp)  *normtype = ksp->normtype;
   else      *normtype = KSP_PRECONDITIONED_NORM;
   return 0;
 }
-#define KSPGetNormType KSPGetNormType_232
+#define KSPGetNormType KSPGetNormType_Compat
+#endif
 
-
+#if PETSC_VERSION_(2,3,2)
 #define KSP_CONVERGED_CG_NEG_CURVE   KSP_CONVERGED_STCG_NEG_CURVE
 #define KSP_CONVERGED_CG_CONSTRAINED KSP_CONVERGED_STCG_CONSTRAINED
+#endif
 
+#if PETSC_VERSION_(2,3,2)
 #define KSPMonitorSet KSPSetMonitor
 #define KSPMonitorCancel KSPClearMonitor
 #define KSPMonitorDefault KSPDefaultMonitor
 #define KSPMonitorTrueResidualNorm KSPTrueMonitor
 #define KSPMonitorSolution KSPVecViewMonitor
 #define KSPMonitorLG KSPLGMonitor
+#endif
 
-#endif /* _PETSC_COMPAT_KSP_H */
+#endif /* _COMPAT_PETSC_KSP_H */

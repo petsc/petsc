@@ -1,8 +1,9 @@
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscPyObjDestroy"
-static PetscErrorCode
-PetscPyObjDestroy(void* ptr) {
+static
+PetscErrorCode PetscPyObjDestroy(void* ptr)
+{
   PyObject *pyobj = 0;
   PetscFunctionBegin;
   pyobj = (PyObject*) ptr;
@@ -24,13 +25,14 @@ PetscPyObjDestroy(void* ptr) {
      PETSC_VERSION_RELEASE  == 1)
 
 /* Implementation for PETSc-2.3.3 and PETSc-2.3.2 */
-
+#ifdef __GNUC__
 #warning "using former implementation of Python context management"
+#endif
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscObjectGetPyDict"
-PETSC_STATIC_INLINE PetscErrorCode
-PetscObjectGetPyDict(PetscObject obj, PetscTruth create, void **dict)
+PETSC_STATIC_INLINE
+PetscErrorCode PetscObjectGetPyDict(PetscObject obj, PetscTruth create, void **dict)
 {
   PyObject*      pydict = NULL;
   PetscContainer container = PETSC_NULL;
@@ -67,12 +69,12 @@ PetscObjectGetPyDict(PetscObject obj, PetscTruth create, void **dict)
 
 #else
 
-/* Implementation for PETSc-3.0.0 and above */
+/* Implementation for PETSc-3.0.0 and later */
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscObjectGetPyDict"
-PETSC_STATIC_INLINE PetscErrorCode
-PetscObjectGetPyDict(PetscObject obj, PetscTruth create, void **dict)
+PETSC_STATIC_INLINE
+PetscErrorCode PetscObjectGetPyDict(PetscObject obj, PetscTruth create, void **dict)
 {
   PyObject      *pydict = NULL;
   PetscFunctionBegin;
@@ -104,8 +106,8 @@ PetscObjectGetPyDict(PetscObject obj, PetscTruth create, void **dict)
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscObjectSetPyObj"
-PETSC_STATIC_INLINE PetscErrorCode
-PetscObjectSetPyObj(PetscObject obj, const char name[], void *op)
+PETSC_STATIC_INLINE
+PetscErrorCode PetscObjectSetPyObj(PetscObject obj, const char name[], void *op)
 {
   PyObject       *pydct = NULL;
   PyObject       *pykey = NULL;
@@ -142,8 +144,8 @@ PetscObjectSetPyObj(PetscObject obj, const char name[], void *op)
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscObjectGetPyObj"
-PETSC_STATIC_INLINE PetscErrorCode
-PetscObjectGetPyObj(PetscObject obj, const char name[], void **op)
+PETSC_STATIC_INLINE
+PetscErrorCode PetscObjectGetPyObj(PetscObject obj, const char name[], void **op)
 {
   PyObject       *pydct = NULL;
   PyObject       *pykey = NULL;

@@ -1,5 +1,5 @@
-#if !defined(PETSC_COMPAT_H)
-#define PETSC_COMPAT_H
+#if !defined(PETSC4PY_COMPAT_H)
+#define PETSC4PY_COMPAT_H
 
 #ifndef PETSC_UNUSED
 # if defined(__GNUC__)
@@ -23,12 +23,16 @@
    (PETSC_VERSION_RELEASE  == 1))
 #endif
 
-#if   PETSC_VERSION_(2,3,2)
-#include "compat/petsc232.h"
-#elif PETSC_VERSION_(2,3,3)
-#include "compat/petsc233.h"
-#elif PETSC_VERSION_(3,0,0)
-#include "compat/petsc300.h"
-#endif
+#include "compat/petsc.h"
+#include "compat/petscsys.h"
+#include "compat/petscviewer.h"
+#include "compat/petscis.h"
+#include "compat/petscvec.h"
+#include "compat/petscmat.h"
+#include "compat/petscpc.h"
+#include "compat/petscksp.h"
+#include "compat/petscsnes.h"
+#include "compat/petscts.h"
+#include "compat/petscda.h"
 
-#endif /* !PETSC_COMPAT_H */
+#endif /* !PETSC4PY_COMPAT_H */

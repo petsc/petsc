@@ -61,8 +61,9 @@ cdef extern from "petscpc.h" nogil:
     int PCApplyRichardson(PetscPC,PetscVec,PetscVec,PetscVec,PetscReal,PetscReal,PetscReal,PetscInt)
     int PCApplyBAorAB(PetscPC,PetscPCSide,PetscVec,PetscVec,PetscVec)
     int PCApplyBAorABTranspose(PetscPC,PetscPCSide,PetscVec,PetscVec,PetscVec)
-    int PCApplyTransposeExists(PetscPC,PetscTruth*)
-    int PCApplyRichardsonExists(PetscPC,PetscTruth*)
+
+    #int PCApplyTransposeExists(PetscPC,PetscTruth*)
+    #int PCApplyRichardsonExists(PetscPC,PetscTruth*)
 
     int PCSetOperators(PetscPC,PetscMat,PetscMat,PetscMatStructure)
     int PCGetOperators(PetscPC,PetscMat*,PetscMat*,PetscMatStructure*)

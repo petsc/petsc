@@ -1,12 +1,42 @@
-#ifndef _PETSC_COMPAT_SNES_H
-#define _PETSC_COMPAT_SNES_H
+#ifndef _COMPAT_PETSC_SNES_H
+#define _COMPAT_PETSC_SNES_H
 
 #include "private/snesimpl.h"
 
+#if (PETSC_VERSION_(3,0,0) || \
+     PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2))
+/**/
+#if PETSC_VERSION_(2,3,2)
+typedef struct _p_MatSNESMFCtx* MatMFFD;
+#define MATMFFD_COOKIE MATSNESMFCTX_COOKIE
+#define MatCreateSNESMF(snes,J) MatCreateSNESMF((snes),(snes)->vec_func,(J))
+#define MatMFFDSetFromOptions MatSNESMFSetFromOptions
+#define MatMFFDComputeJacobian MatSNESMFComputeJacobian
+#endif
+/**/
 #undef __FUNCT__
-#define __FUNCT__ "SNESSetFunction_232"
+#define __FUNCT__ "MatMFFDSetOptionsPrefix"
 static PETSC_UNUSED
-PetscErrorCode SNESSetFunction_232(SNES snes,Vec r,PetscErrorCode (*func)(SNES,Vec,Vec,void*),void *ctx)
+PetscErrorCode MatMFFDSetOptionsPrefix_Compat(Mat mat, const char prefix[])
+{
+  MatMFFD        mfctx = mat ? (MatMFFD)mat->data : PETSC_NULL ;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mfctx,MATMFFD_COOKIE,1);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)mfctx,prefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define MatMFFDSetOptionsPrefix MatMFFDSetOptionsPrefix_Compat
+#endif
+
+#if (PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2))
+#undef __FUNCT__
+#define __FUNCT__ "SNESSetFunction"
+static PETSC_UNUSED
+PetscErrorCode SNESSetFunction_Compat(SNES snes,Vec r,PetscErrorCode (*func)(SNES,Vec,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -17,12 +47,15 @@ PetscErrorCode SNESSetFunction_232(SNES snes,Vec r,PetscErrorCode (*func)(SNES,V
   ierr = SNESSetFunction(snes,r,func,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#define SNESSetFunction SNESSetFunction_232
+#define SNESSetFunction SNESSetFunction_Compat
+#endif
 
+#if (PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2))
 #undef __FUNCT__
-#define __FUNCT__ "SNESSolve_232"
+#define __FUNCT__ "SNESSolve"
 static PETSC_UNUSED
-PetscErrorCode SNESSolve_232(SNES snes,Vec b,Vec x)
+PetscErrorCode SNESSolve_Compat(SNES snes,Vec b,Vec x)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -35,35 +68,19 @@ PetscErrorCode SNESSolve_232(SNES snes,Vec b,Vec x)
   ierr = SNESSolve(snes,b,x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#define SNESSolve SNESSolve_232
+#define SNESSolve SNESSolve_Compat
+#endif
 
-#define SNES_CONVERGED_ITS ((SNESConvergedReason)1)
-
-#define SNESDefaultConverged   SNESConverged_LS
-
+#if (PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2))
 #undef __FUNCT__
-#define __FUNCT__ "SNESSkipConverged_232"
+#define __FUNCT__ "SNESSetConvergenceTest"
 static PETSC_UNUSED
-PetscErrorCode SNESSkipConverged_232(SNES snes,PetscInt it,
-				     PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,
-				     SNESConvergedReason *reason,void *dummy)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
-  PetscValidPointer(reason,6);
-  *reason = SNES_CONVERGED_ITERATING;
-  PetscFunctionReturn(0);
-}
-#define SNESSkipConverged SNESSkipConverged_232
-
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetConvergenceTest_232"
-static PETSC_UNUSED
-PetscErrorCode SNESSetConvergenceTest_232(SNES snes,
-					  PetscErrorCode (*converge)(SNES,PetscInt,PetscReal,PetscReal,PetscReal,
-								     SNESConvergedReason*,void*),
-					  void *cctx,
-					  PetscErrorCode (*destroy)(void*))
+PetscErrorCode SNESSetConvergenceTest_Compat(SNES snes,
+					     PetscErrorCode (*converge)(SNES,PetscInt,PetscReal,PetscReal,PetscReal,
+									SNESConvergedReason*,void*),
+					     void *cctx,
+					     PetscErrorCode (*destroy)(void*))
 {
   PetscContainer container = PETSC_NULL;
   PetscErrorCode ierr;
@@ -79,12 +96,15 @@ PetscErrorCode SNESSetConvergenceTest_232(SNES snes,
   ierr = SNESSetConvergenceTest(snes,converge,cctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#define SNESSetConvergenceTest SNESSetConvergenceTest_232
+#define SNESSetConvergenceTest SNESSetConvergenceTest_Compat
+#endif
 
+#if (PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2))
 #undef __FUNCT__
-#define __FUNCT__ "SNESSetConvergenceHistory_232"
+#define __FUNCT__ "SNESSetConvergenceHistory"
 PETSC_STATIC_INLINE PetscErrorCode
-SNESSetConvergenceHistory_232(SNES snes, PetscReal a[],PetscInt its[],PetscInt na,PetscTruth reset)
+SNESSetConvergenceHistory_Compat(SNES snes, PetscReal a[],PetscInt its[],PetscInt na,PetscTruth reset)
 {
   PetscFunctionBegin;
   PetscErrorCode ierr;
@@ -93,13 +113,15 @@ SNESSetConvergenceHistory_232(SNES snes, PetscReal a[],PetscInt its[],PetscInt n
   snes->conv_hist_len = 0;
   PetscFunctionReturn(0);
 }
-#define SNESSetConvergenceHistory SNESSetConvergenceHistory_232
+#define SNESSetConvergenceHistory SNESSetConvergenceHistory_Compat
+#endif
 
-
+#if (PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2))
 #undef __FUNCT__
-#define __FUNCT__ "SNESGetNumberFunctionEvals_232"
+#define __FUNCT__ "SNESGetNumberFunctionEvals"
 static PETSC_UNUSED
-PetscErrorCode SNESGetNumberFunctionEvals_232(SNES snes, PetscInt *nfuncs)
+PetscErrorCode SNESGetNumberFunctionEvals(SNES snes, PetscInt *nfuncs)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -107,8 +129,39 @@ PetscErrorCode SNESGetNumberFunctionEvals_232(SNES snes, PetscInt *nfuncs)
   *nfuncs = snes->nfuncs;
   PetscFunctionReturn(0);
 }
-#define SNESGetNumberFunctionEvals SNESGetNumberFunctionEvals_232
+#endif
 
+#if (PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2))
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchSetParams"
+static PETSC_UNUSED
+PetscErrorCode SNESLineSearchSetParams_Compat(SNES snes,PetscReal alpha,PetscReal maxstep)
+{
+  PetscReal steptol;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  ierr = SNESGetTolerances(snes,PETSC_NULL,PETSC_NULL,&steptol,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetParams(snes,alpha,maxstep,steptol);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define SNESLineSearchSetParams SNESLineSearchSetParams_Compat
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchGetParams"
+static PETSC_UNUSED
+PetscErrorCode SNESLineSearchGetParams_Compat(SNES snes,PetscReal *alpha,PetscReal *maxstep)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  ierr = SNESLineSearchGetParams(snes,alpha,maxstep,PETSC_NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define SNESLineSearchGetParams SNESLineSearchGetParams_Compat
+#endif
+
+#if PETSC_VERSION_(2,3,2)
 #undef __FUNCT__
 #define __FUNCT__ "SNESKSPSetUseEW"
 static PETSC_UNUSED
@@ -119,7 +172,6 @@ PetscErrorCode SNESKSPSetUseEW(SNES snes,PetscTruth flag)
   snes->ksp_ewconv = flag;
   PetscFunctionReturn(0);
 }
-
 #undef __FUNCT__
 #define __FUNCT__ "SNESKSPGetUseEW"
 static PETSC_UNUSED
@@ -131,7 +183,6 @@ PetscErrorCode SNESKSPGetUseEW(SNES snes, PetscTruth *flag)
   *flag = snes->ksp_ewconv;
   PetscFunctionReturn(0);
 }
-
 #undef __FUNCT__
 #define __FUNCT__ "SNESKSPGetParametersEW"
 static PETSC_UNUSED
@@ -152,7 +203,6 @@ PetscErrorCode SNESKSPGetParametersEW(SNES snes,PetscInt *version,PetscReal *rto
   if(threshold) *threshold = kctx->threshold;
   PetscFunctionReturn(0);
 }
-
 #undef __FUNCT__
 #define __FUNCT__ "SNESKSPSetParametersEW"
 static PETSC_UNUSED
@@ -166,47 +216,47 @@ PetscErrorCode SNESKSPSetParametersEW(SNES snes,PetscInt version,PetscReal rtol_
   PetscFunctionReturn(0);
 
 }
+#endif
 
+#if PETSC_VERSION_(2,3,2)
+#define SNES_CONVERGED_ITS ((SNESConvergedReason)5)
 #undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetParams_232"
+#define __FUNCT__ "SNESDefaultConverged"
 static PETSC_UNUSED
-PetscErrorCode SNESLineSearchSetParams_232(SNES snes,PetscReal alpha,PetscReal maxstep)
-{
-  PetscReal steptol;
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
-  ierr = SNESGetTolerances(snes,PETSC_NULL,PETSC_NULL,&steptol,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = SNESLineSearchSetParams(snes,alpha,maxstep,steptol);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#define SNESLineSearchSetParams SNESLineSearchSetParams_232
-
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchGetParams_232"
-static PETSC_UNUSED
-PetscErrorCode SNESLineSearchGetParams_232(SNES snes,PetscReal *alpha,PetscReal *maxstep)
+PetscErrorCode SNESDefaultConverged(SNES snes,PetscInt it,
+				    PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,
+				    SNESConvergedReason *reason,void *dummy)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
-  ierr = SNESLineSearchGetParams(snes,alpha,maxstep,PETSC_NULL);CHKERRQ(ierr);
+  PetscValidPointer(reason,6);
+  ierr = SNESConverged_LS(snes,it,xnorm,pnorm,fnorm,reason,dummy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#define SNESLineSearchGetParams SNESLineSearchGetParams_232
+#undef __FUNCT__
+#define __FUNCT__ "SNESSkipConverged"
+static PETSC_UNUSED
+PetscErrorCode SNESSkipConverged(SNES snes,PetscInt it,
+				 PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,
+				 SNESConvergedReason *reason,void *dummy)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidPointer(reason,6);
+  *reason = SNES_CONVERGED_ITERATING;
+  PetscFunctionReturn(0);
+}
+#endif
 
-
+#if PETSC_VERSION_(2,3,2)
 #define SNESGetNonlinearStepFailures SNESGetNumberUnsuccessfulSteps
 #define SNESSetMaxNonlinearStepFailures SNESSetMaximumUnsuccessfulSteps
 #define SNESGetMaxNonlinearStepFailures SNESGetMaximumUnsuccessfulSteps
 #define SNESGetLinearSolveIterations SNESGetNumberLinearIterations
+#endif
 
-#define MatMFFD MatSNESMFCtx
-#define MATMFFD_COOKIE MATSNESMFCTX_COOKIE
-#define MatMFFDSetFromOptions MatSNESMFSetFromOptions
-#define MatMFFDComputeJacobian MatSNESMFComputeJacobian
-#define MatCreateSNESMF(snes,J) MatCreateSNESMF((snes),(snes)->vec_func,(J))
-
+#if PETSC_VERSION_(2,3,2)
 #define SNESMonitorSet SNESSetMonitor
 #define SNESMonitorCancel SNESClearMonitor
 #define SNESMonitorDefault SNESDefaultMonitor
@@ -214,6 +264,6 @@ PetscErrorCode SNESLineSearchGetParams_232(SNES snes,PetscReal *alpha,PetscReal 
 #define SNESMonitorSolution SNESVecViewMonitor
 #define SNESMonitorSolutionUpdate SNESVecViewUpdateMonitor
 #define SNESMonitorLG SNESLGMonitor
+#endif
 
-
-#endif /* _PETSC_COMPAT_SNES_H */
+#endif /* _COMPAT_PETSC_SNES_H */
