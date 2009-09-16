@@ -73,7 +73,6 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetResidual(PC,PetscInt,PetscErrorC
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGDefaultResidual(Mat,Vec,Vec,Vec);
 
 #include "petscda.h"
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCDMMGSetDM(PC,DM);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSetDA(PC,DA);
 
 /*E
