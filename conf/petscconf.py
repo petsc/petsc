@@ -38,7 +38,6 @@ class PetscConfig(BasePetscConfig):
 
         # -------------------------------------
 
-config.Configure    = PetscConfig
-build_ext.Configure = PetscConfig
+config.Configure = PetscConfig
 
 # --------------------------------------------------------------------

@@ -218,20 +218,23 @@ class config(_config):
         self.petsc_dir  = None
         self.petsc_arch = None
 
+    def get_config_arch(self, arch):
+        return config.Configure(self.petsc_dir, arch)
+
     def run(self):
         _config.run(self)
-        petsc_dir  = config.get_petsc_dir(self.petsc_dir)
-        if petsc_dir is None: return
-        petsc_arch = config.get_petsc_arch(petsc_dir, self.petsc_arch)
-        bmake_dir = os.path.join(petsc_dir, 'bmake')
+        self.petsc_dir = config.get_petsc_dir(self.petsc_dir)
+        if self.petsc_dir is None: return
+        petsc_arch = config.get_petsc_arch(self.petsc_dir, self.petsc_arch)
+        bmake_dir = os.path.join(self.petsc_dir, 'bmake')
         have_bmake = os.path.isdir(bmake_dir)
         log.info('-' * 70)
-        log.info('PETSC_DIR:   %s' % petsc_dir)
+        log.info('PETSC_DIR:   %s' % self.petsc_dir)
         arch_list = petsc_arch
         if not have_bmake and not arch_list :
             arch_list = [ None ]
         for arch in arch_list:
-            conf = self.Configure(petsc_dir, arch)
+            conf = self.get_config_arch(arch)
             archname    = conf.PETSC_ARCH or conf['PETSC_ARCH_NAME']
             scalar_type = conf['PETSC_SCALAR']
             precision   = conf['PETSC_PRECISION']
@@ -326,6 +329,8 @@ class build(_build):
 
 class build_ext(_build_ext):
 
+    user_options = _build_ext.user_options + cmd_petsc_opts
+
     def initialize_options(self):
         _build_ext.initialize_options(self)
         self.petsc_dir  = None
@@ -379,6 +384,9 @@ class build_ext(_build_ext):
         self.build_lib  = build_lib
         self.build_temp = build_temp
 
+    def get_config_arch(self, arch):
+        return config.Configure(self.petsc_dir, arch)
+
     def build_extension(self, ext):
         if not isinstance(ext, Extension):
             return _build_ext.build_extension(self, ext)
@@ -388,7 +396,7 @@ class build_ext(_build_ext):
         if not petsc_arch:
             petsc_arch = [ None ]
         for arch in petsc_arch:
-            config = self.Configure(self.petsc_dir, arch)
+            config = self.get_config_arch(arch)
             ARCH = arch or config['PETSC_ARCH_NAME']
             if ARCH not in self.PETSC_ARCH_LIST:
                 self.PETSC_ARCH_LIST.append(ARCH)
