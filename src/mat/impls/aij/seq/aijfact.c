@@ -2245,18 +2245,23 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   const PetscInt     *r,*ic;
   PetscInt           i,n=A->rmap->n,*ai=a->i,*aj=a->j,*ajtmp,*adiag;
   PetscInt           *bi,*bj,*bdiag,*bdiag_rev;
-  PetscInt           row,nzi,nzi_bl,nzi_bu,*im,dtcount,nzi_al,nzi_au;
+  PetscInt           row,nzi,nzi_bl,nzi_bu,*im,nzi_al,nzi_au;
   PetscInt           nlnk,*lnk;
   PetscBT            lnkbt;
   PetscTruth         row_identity,icol_identity,both_identity;
   MatScalar          *aatmp,*pv,*batmp,*ba,*rtmp,*pc,multiplier,*vtmp,diag_tmp;
   const PetscInt     *ics;
   PetscInt           j,nz,*pj,*bjtmp,k,ncut,*jtmp;
-  PetscReal          dt=info->dt,shift=info->shiftinblocks; 
-  PetscInt           nnz_max;
+  PetscReal          dt=info->dt,dtcol=info->dtcol,shift=info->shiftinblocks;
+  PetscInt           dtcount=(PetscInt)info->dtcount,nnz_max;
   PetscTruth         missing;
 
   PetscFunctionBegin;
+
+  if (dt      == PETSC_DEFAULT) dt      = 0.005;
+  if (dtcol   == PETSC_DEFAULT) dtcol   = 0.01; /* XXX unused! */
+  if (dtcount == PETSC_DEFAULT) dtcount = (PetscInt)(1.5*a->rmax);
+
   /* ------- symbolic factorization, can be reused ---------*/
   ierr = MatMissingDiagonal(A,&missing,&i);CHKERRQ(ierr);
   if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",i);
@@ -2272,10 +2277,9 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   ierr = PetscMalloc((2*n+2)*sizeof(PetscInt),&bi);CHKERRQ(ierr);
 
   /* allocate bj and ba; max num of nonzero entries is (ai[n]+2*n*dtcount+2) */
-  dtcount = (PetscInt)info->dtcount;
   if (dtcount > n-1) dtcount = n-1; /* diagonal is excluded */
   nnz_max  = ai[n]+2*n*dtcount+2;
- 
+
   ierr = PetscMalloc((nnz_max+1)*sizeof(PetscInt),&bj);CHKERRQ(ierr);
   ierr = PetscMalloc((nnz_max+1)*sizeof(MatScalar),&ba);CHKERRQ(ierr);
 
