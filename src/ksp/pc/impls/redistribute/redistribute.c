@@ -48,12 +48,11 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
   PetscInt          rstart,rend,i,nz,cnt,*rows,ncnt;
   PetscMap          *map,*nmap;
   PetscMPIInt       size,rank,imdex,tag,n;
-  PetscInt          *source = PETSC_NULL,*owners = PETSC_NULL;
-  PetscInt          *lowner = PETSC_NULL,*start = PETSC_NULL,lengthy,lengthx;
+  PetscInt          *source = PETSC_NULL;
   PetscMPIInt       *nprocs = PETSC_NULL,nrecvs;
   PetscInt          j,nsends;
   PetscInt          *owner = PETSC_NULL,*starts = PETSC_NULL,count,slen;
-  PetscInt          *rvalues,*svalues,base,*values,nprocslocal,recvtotal,*rsvalues;
+  PetscInt          *rvalues,*svalues,recvtotal;
   PetscMPIInt       *onodes1,*olengths1;
   MPI_Request       *send_waits = PETSC_NULL,*recv_waits = PETSC_NULL;
   MPI_Status        recv_status,*send_status;
