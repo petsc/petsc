@@ -448,7 +448,7 @@ namespace ALE {
           ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
           s->axpy(-1.0, constant);
         }
-        s->view("RHS");
+        if (m->debug()) {s->view("RHS");}
         PetscFunctionReturn(0);
       };
       #undef __FUNCT__
@@ -522,11 +522,11 @@ namespace ALE {
         ierr = PetscFree5(t_der,b_der,v0,J,invJ);CHKERRQ(ierr);
         ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-	ierr = MatView(A, PETSC_VIEWER_STDOUT_SELF);
+        //ierr = MatView(A, PETSC_VIEWER_STDOUT_SELF);
         PetscFunctionReturn(0);
       };
     };
-    class Bratu : ALE::ParallelObject {
+    class Bratu : public ALE::ParallelObject {
     public:
     protected:
       BratuOptions         _options;
@@ -538,14 +538,16 @@ namespace ALE {
         PetscErrorCode ierr = this->processOptions(comm, &this->_options);CHKERRXX(ierr);
         this->_dm   = PETSC_NULL;
         this->_dmmg = PETSC_NULL;
+        this->_options.exactSol.vec = PETSC_NULL;
+        this->_options.error.vec    = PETSC_NULL;
       };
       ~Bratu() {
         PetscErrorCode ierr;
 
-        if (this->_dmmg) {ierr = DMMGDestroy(this->_dmmg);CHKERRXX(ierr);}
-        ierr = this->destroyExactSolution(this->_options.exactSol);CHKERRXX(ierr);
-        ierr = this->destroyExactSolution(this->_options.error);CHKERRXX(ierr);
-        ierr = this->destroyMesh();CHKERRXX(ierr);
+        if (this->_dmmg)                 {ierr = DMMGDestroy(this->_dmmg);CHKERRXX(ierr);}
+        if (this->_options.exactSol.vec) {ierr = this->destroyExactSolution(this->_options.exactSol);CHKERRXX(ierr);}
+        if (this->_options.error.vec)    {ierr = this->destroyExactSolution(this->_options.error);CHKERRXX(ierr);}
+        if (this->_dm)                   {ierr = this->destroyMesh();CHKERRXX(ierr);}
       };
     public:
       #undef __FUNCT__
@@ -961,8 +963,10 @@ namespace ALE {
 
         ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
         ierr = SNESGetConvergedReason(snes, &reason);CHKERRQ(ierr);
-        ierr = PetscPrintf(comm(), "Number of nonlinear iterations = %D\n", its);CHKERRQ(ierr);
-        ierr = PetscPrintf(comm(), "Reason for solver termination: %s\n", SNESConvergedReasons[reason]);CHKERRQ(ierr);
+        if (debug()) {
+          ierr = PetscPrintf(comm(), "Number of nonlinear iterations = %D\n", its);CHKERRQ(ierr);
+          ierr = PetscPrintf(comm(), "Reason for solver termination: %s\n", SNESConvergedReasons[reason]);CHKERRQ(ierr);
+        }
         ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
         if (flag) {ierr = VecView(DMMGGetx(this->_dmmg), PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
         ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_draw", &flag);CHKERRQ(ierr);
@@ -980,7 +984,7 @@ namespace ALE {
           ierr = MeshGetSectionReal((::Mesh) this->_dm, "default", &solution);CHKERRQ(ierr);
           ierr = SectionRealToVec(solution, (::Mesh) this->_dm, SCATTER_REVERSE, DMMGGetx(this->_dmmg));CHKERRQ(ierr);
           ierr = this->calculateError(solution, &error);CHKERRQ(ierr);
-          ierr = PetscPrintf(comm(), "Total error: %g\n", error);CHKERRQ(ierr);
+          if (debug()) {ierr = PetscPrintf(comm(), "Total error: %g\n", error);CHKERRQ(ierr);}
           ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_vtk", &flag);CHKERRQ(ierr);
           if (flag) {
             PetscViewer viewer;
