@@ -421,8 +421,6 @@ M*/
 M*/
 #define DMMGGetDMMG(ctx)              (ctx)[(ctx)[0]->nlevels-1]
 
-#define PCDMMG      "pcdmmg"
-EXTERN PetscErrorCode PCDMMGSetDMMG(PC,DMMG*);
 
 PETSC_EXTERN_CXX_END
 #endif

@@ -1225,13 +1225,24 @@ static PetscErrorCode MatGetRowIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscTruth symme
       ierr = PetscFree(tja);CHKERRQ(ierr);
     }
   } else if (oshift == 1) {
-    PetscInt nz = a->i[A->rmap->n/bs]; 
-    /* malloc space and  add 1 to i and j indices */
-    ierr = PetscMalloc((A->rmap->n/bs+1)*sizeof(PetscInt),ia);CHKERRQ(ierr);
-    for (i=0; i<A->rmap->n/bs+1; i++) (*ia)[i] = a->i[i] + 1;
-    if (ja) {
-      ierr = PetscMalloc(nz*sizeof(PetscInt),ja);CHKERRQ(ierr);
-      for (i=0; i<nz; i++) (*ja)[i] = a->j[i] + 1;
+    if (symmetric) {
+      PetscInt nz = tia[A->rmap->n/bs]; 
+      /*  add 1 to i and j indices */
+      for (i=0; i<A->rmap->n/bs+1; i++) tia[i] = tia[i] + 1;
+      *ia = tia;
+      if (ja) {
+	for (i=0; i<nz; i++) tja[i] = tja[i] + 1;
+        *ja = tja;
+      }
+    } else {
+      PetscInt nz = a->i[A->rmap->n/bs]; 
+      /* malloc space and  add 1 to i and j indices */
+      ierr = PetscMalloc((A->rmap->n/bs+1)*sizeof(PetscInt),ia);CHKERRQ(ierr);
+      for (i=0; i<A->rmap->n/bs+1; i++) (*ia)[i] = a->i[i] + 1;
+      if (ja) {
+	ierr = PetscMalloc(nz*sizeof(PetscInt),ja);CHKERRQ(ierr);
+	for (i=0; i<nz; i++) (*ja)[i] = a->j[i] + 1;
+      }
     }
   } else {
     *ia = tia;
@@ -1249,10 +1260,7 @@ static PetscErrorCode MatRestoreRowIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscTruth s
 
   PetscFunctionBegin;
   if (!ia) PetscFunctionReturn(0);
-  if (!blockcompressed && A->rmap->bs > 1) {
-    ierr = PetscFree(*ia);CHKERRQ(ierr);
-    if (ja) {ierr = PetscFree(*ja);CHKERRQ(ierr);}
-  } else if (symmetric || oshift == 1) {
+  if ((!blockcompressed && A->rmap->bs > 1) || (symmetric || oshift == 1)) {
     ierr = PetscFree(*ia);CHKERRQ(ierr);
     if (ja) {ierr = PetscFree(*ja);CHKERRQ(ierr);}
   } 
