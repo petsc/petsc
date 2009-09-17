@@ -203,8 +203,8 @@ cdef class SNES(Object):
         CHKERR( SNESLogConvergenceHistory(self.snes, ival1, rval, ival2) )
 
     def setMonitor(self, monitor, *args, **kargs):
-        if monitor is None: SNES_setMon(self.snes, None)
-        else: SNES_setMon(self.snes, (monitor, args, kargs))
+        if monitor is None: return
+        SNES_setMon(self.snes, (monitor, args, kargs))
 
     def getMonitor(self):
         return SNES_getMon(self.snes)

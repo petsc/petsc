@@ -954,6 +954,18 @@ TSSetTimeStepNumber(TS ts, PetscInt step)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorCall"
+PETSC_STATIC_INLINE PetscErrorCode
+TSMonitorCall(TS ts,PetscInt step,PetscReal ptime,Vec x)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  ierr = TSMonitor(ts,step,ptime,x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* ---------------------------------------------------------------- */
 
 #undef __FUNCT__

@@ -90,6 +90,14 @@ class TestTSNonlinear(unittest.TestCase):
         self.assertTrue('__jacobian__' in dct)
         self.assertTrue('__monitor__' in dct)
 
+        n = ode.monitor_calls
+        ts.callMonitor(ts.step_number, ts.time)
+        self.assertEqual(ode.monitor_calls, n+1)
+        n = ode.monitor_calls
+        ts.cancelMonitor()
+        ts.callMonitor(ts.step_number, ts.time)
+        self.assertEqual(ode.monitor_calls, n)
+
     def testFDColor(self):
         ts = self.ts
         ode = MyODE()

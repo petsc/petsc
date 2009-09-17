@@ -34,9 +34,9 @@ cdef extern from "petscts.h" nogil:
                                 PetscVec,
                                 void*) except PETSC_ERR_PYTHON
 
-    int TSCreate(MPI_Comm comm, PetscTS*)
+    int TSCreate(MPI_Comm comm,PetscTS*)
     int TSDestroy(PetscTS)
-    int TSView(PetscTS,PetscViewer OPTIONAL)
+    int TSView(PetscTS,PetscViewer)
 
     int TSSetProblemType(PetscTS,PetscTSProblemType)
     int TSGetProblemType(PetscTS,PetscTSProblemType*)
@@ -80,6 +80,7 @@ cdef extern from "petscts.h" nogil:
 cdef extern from "custom.h" nogil:
     int TSSetUseFDColoring(PetscTS,PetscTruth)
     int TSGetUseFDColoring(PetscTS,PetscTruth*)
+    int TSMonitorCall(PetscTS,PetscInt,PetscReal,PetscVec)
 
 # --------------------------------------------------------------------
 
@@ -161,7 +162,6 @@ cdef int TS_Monitor(PetscTS    ts,
     return 0
 
 cdef inline int TS_setMon(PetscTS ts, object mon) except -1:
-    if mon is None: return 0
     CHKERR( TSMonitorSet(ts, TS_Monitor, NULL, NULL) )
     cdef object monitorlist = TS_getMon(ts)
     if monitorlist is None: monitorlist = [mon]

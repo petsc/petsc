@@ -226,6 +226,17 @@ cdef class TS(Object):
     def getMonitor(self):
         return TS_getMon(self.ts)
 
+    def callMonitor(self, step, time, Vec u=None):
+        cdef PetscInt  ival = step
+        cdef PetscReal rval = asReal(time)
+        cdef PetscVec  uvec = NULL
+        if u is not None: uvec = u.vec
+        if uvec == NULL: 
+            ## CHKERR( TSGetSolutionUpdate(self.ts, &uvec) )
+            if uvec == NULL: 
+                CHKERR( TSGetSolution(self.ts, &uvec) )
+        CHKERR( TSMonitorCall(self.ts, ival, rval, uvec) )
+
     def cancelMonitor(self):
         TS_clsMon(self.ts)
 

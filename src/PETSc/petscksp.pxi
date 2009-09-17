@@ -210,7 +210,6 @@ cdef int KSP_Monitor(PetscKSP  ksp,
     return 0
 
 cdef inline int KSP_setMon(PetscKSP ksp, object mon) except -1:
-    if mon is None: return 0
     CHKERR( KSPMonitorSet(ksp, KSP_Monitor, NULL, NULL) )
     cdef object monitorlist = KSP_getMon(ksp)
     if monitorlist is None: monitorlist = [mon]

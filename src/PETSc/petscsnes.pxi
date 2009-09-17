@@ -263,7 +263,6 @@ cdef int SNES_Monitor(PetscSNES  snes,
     return 0
 
 cdef inline int SNES_setMon(PetscSNES snes, object mon) except -1:
-    if mon is None: return 0
     CHKERR( SNESMonitorSet(snes, SNES_Monitor, NULL, NULL) )
     cdef object monitorlist = SNES_getMon(snes)
     if monitorlist is None: monitorlist = [mon]
