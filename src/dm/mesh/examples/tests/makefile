@@ -111,6 +111,10 @@ refinementTest: refinementTest.o chkopts
 sieveTests: sieveTests.o chkopts
 	-${CLINKER} -o sieveTests sieveTests.o ${PETSC_DM_LIB}
 	${RM} -f sieveTests.o
+
+rbfPrecon: rbfPrecon.o chkopts
+	-${CLINKER} -o rbfPrecon rbfPrecon.o ${PETSC_SNES_LIB}
+	${RM} -f rbfPrecon.o
 #-----------------------------------------------------------------
 BOOST_LIBS = -Wl,-rpath,${BOOST_DIR}/lib -L${BOOST_DIR}/lib -lboost_program_options-gcc41
 args0: args0.o chkopts
