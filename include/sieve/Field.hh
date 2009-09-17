@@ -1739,6 +1739,9 @@ namespace ALE {
     void zero() {
       this->set(0.0);
     };
+    void zeroWithBC() {
+      memset(this->_array, 0, this->sizeWithBC()* sizeof(value_type));
+    };
     void set(const value_type value) {
       //memset(this->_array, 0, this->sizeWithBC()* sizeof(value_type));
       const chart_type& chart = this->getChart();
