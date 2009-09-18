@@ -3595,7 +3595,7 @@ PetscErrorCode MatSolve_SeqBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
 PetscErrorCode MatSolve_SeqBAIJ_3_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
 {
     Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
-    PetscInt          i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz;
+    PetscInt          i,k,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz;
     PetscErrorCode    ierr;
     PetscInt          idx,jdx,idt;
     PetscInt          bs = A->rmap->bs,bs2 = a->bs2;
@@ -3616,8 +3616,8 @@ PetscErrorCode MatSolve_SeqBAIJ_3_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec
        nz   = ai[i+1] - ai[i];
       idx   = bs*i;
        s1   = b[idx];s2 = b[1+idx];s3 = b[2+idx];
-       while (nz--) {
-          jdx   = bs*(*vi++);
+       for(k=0;k<nz;k++){
+          jdx   = bs*vi[k];
           x1    = x[jdx];x2 = x[1+jdx]; x3 =x[2+jdx];
           s1   -= v[0]*x1 + v[3]*x2 + v[6]*x3;
           s2   -= v[1]*x1 + v[4]*x2 + v[7]*x3;
@@ -3639,8 +3639,8 @@ PetscErrorCode MatSolve_SeqBAIJ_3_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec
      idt = bs*i;
      s1 = x[idt];  s2 = x[1+idt];s3 = x[2+idt];
 	
-    while (nz--) {
-      idx   = bs*(*vi++);
+     for(k=0;k<nz;k++){
+       idx   = bs*vi[k];
        x1    = x[idx];   x2 = x[1+idx]; x3 = x[2+idx];
        s1 -= v[0]*x1 + v[3]*x2 + v[6]*x3;
        s2 -= v[1]*x1 + v[4]*x2 + v[7]*x3;
@@ -3866,7 +3866,7 @@ PetscErrorCode MatSolve_SeqBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
 PetscErrorCode MatSolve_SeqBAIJ_2_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
 {
     Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
-    PetscInt          i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt;
+    PetscInt          i,k,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt;
     PetscErrorCode    ierr;
     PetscInt          jdx;
     const MatScalar   *aa=a->a,*v;
@@ -3885,8 +3885,8 @@ PetscErrorCode MatSolve_SeqBAIJ_2_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec
        nz   = ai[i+1] - ai[i];
        idx  = 2*i;
        s1   = b[idx];s2 = b[1+idx];
-       while (nz--) {
-          jdx   = 2*(*vi++);
+       for(k=0;k<nz;k++){
+          jdx   = 2*vi[k];
           x1    = x[jdx];x2 = x[1+jdx];
           s1   -= v[0]*x1 + v[2]*x2;
           s2   -= v[1]*x1 + v[3]*x2;
@@ -3903,8 +3903,8 @@ PetscErrorCode MatSolve_SeqBAIJ_2_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec
      nz  = ai[2*n-i +1] - ai[2*n-i]-1;
      idt = 2*i;
      s1 = x[idt];  s2 = x[1+idt];
-     while (nz--) {
-      idx   = 2*(*vi++);
+     for(k=0;k<nz;k++){	     
+      idx   = 2*vi[k];
        x1    = x[idx];   x2 = x[1+idx];
        s1 -= v[0]*x1 + v[2]*x2;
        s2 -= v[1]*x1 + v[3]*x2;
