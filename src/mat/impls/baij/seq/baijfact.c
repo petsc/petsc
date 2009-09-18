@@ -999,7 +999,7 @@ PetscErrorCode MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec
   Mat_SeqBAIJ    *a=(Mat_SeqBAIJ *)A->data;
   PetscErrorCode ierr;
   const PetscInt *ai=a->i,*aj=a->j,*vi;
-  PetscInt       i,n=a->mbs;
+  PetscInt       i,k,n=a->mbs;
   PetscInt       nz,bs=A->rmap->bs,bs2=a->bs2,*adiag=a->diag;
   MatScalar      *aa=a->a,*v;
   PetscScalar    *x,*b,*s,*t,*ls;
@@ -1019,8 +1019,8 @@ PetscErrorCode MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec
     nz = ai[i+1] - ai[i];
     s = t + bs*i;
     ierr = PetscMemcpy(s,b+bs*i,bs*sizeof(PetscScalar));CHKERRQ(ierr); /* copy i_th block of b to t */
-    while (nz--) {
-      Kernel_v_gets_v_minus_A_times_w(bs,s,v,t+bs*(*vi++));
+    for(k=0;k<nz;k++){
+      Kernel_v_gets_v_minus_A_times_w(bs,s,v,t+bs*vi[k]);
       v += bs2;
     }
   }
@@ -1032,8 +1032,8 @@ PetscErrorCode MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec
     vi = aj + ai[2*n-i];
     nz = ai[2*n-i +1] - ai[2*n-i]-1;
     ierr = PetscMemcpy(ls,t+i*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
-    while (nz--) {
-      Kernel_v_gets_v_minus_A_times_w(bs,ls,v,t+bs*(*vi++));
+    for(k=0;k<nz;k++){
+      Kernel_v_gets_v_minus_A_times_w(bs,ls,v,t+bs*vi[k]);
       v += bs2;
     }
     Kernel_w_gets_A_times_v(bs,ls,aa+bs2*adiag[i],t+i*bs); /* *inv(diagonal[i]) */
