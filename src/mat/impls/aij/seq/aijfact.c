@@ -336,12 +336,12 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ_newdatastruct(Mat B,Mat A,IS isrow,IS 
 
     /* add pivot rows into linked list */
     row = lnk[n]; 
-    while (row < i) {
-      nzbd    = bdiag[row] - bi[row] + 1; /* num of entries in the row with column index <= row */
-      ajtmp   = bi_ptr[row] + nzbd; /* points to the entry next to the diagonal */   
-      ierr = PetscLLAddSortedLU(ajtmp,row,nlnk,lnk,lnkbt,i,nzbd,im);CHKERRQ(ierr);
-      nzi += nlnk;
-      row  = lnk[row];
+    while (row < i){
+      nzbd  = bdiag[row] + 1; /* num of entries in the row with column index <= row */
+      ajtmp = bi_ptr[row] + nzbd; /* points to the entry next to the diagonal */   
+      ierr  = PetscLLAddSortedLU(ajtmp,row,nlnk,lnk,lnkbt,i,nzbd,im);CHKERRQ(ierr);
+      nzi  += nlnk;
+      row   = lnk[row];
     }
     bi[i+1] = bi[i] + nzi;
     im[i]   = nzi; 
@@ -354,7 +354,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ_newdatastruct(Mat B,Mat A,IS isrow,IS 
       nzbd++;
       k = lnk[k]; 
     }
-    bdiag[i] = bi[i] + nzbd;
+    bdiag[i] = nzbd; /* note: bdiag[i] = nnzL as input for PetscFreeSpaceContiguous_newdatastruct() */
 
     /* if free space is not available, make more free space */
     if (current_space->local_remaining<nzi) {
