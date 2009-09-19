@@ -2021,6 +2021,7 @@ namespace ALE {
           for(typename ISieve::point_type p = mins[pr]; p < maxs[pr]; ++p) {
             PetscInt cSize = data[off++];
 
+            fs << cSize << std::endl;
             if (cSize > 0) {
               for(int c = 0; c < cSize; ++c) {
                 if (c) {fs << " ";}
@@ -2039,6 +2040,7 @@ namespace ALE {
             }
             PetscInt sSize = data[off++];
 
+            fs << sSize << std::endl;
             if (sSize > 0) {
               for(int s = 0; s < sSize; ++s) {
                 if (s) {fs << " ";}
@@ -2173,6 +2175,7 @@ namespace ALE {
 
         ierr = MPI_Recv(&min, 1, MPIU_INT, 0, 1, sieve.comm(), &status);CHKERRXX(ierr);
         ierr = MPI_Recv(&max, 1, MPIU_INT, 0, 1, sieve.comm(), &status);CHKERRXX(ierr);
+        sieve.setChart(typename ISieve::chart_type(min, max));
         ierr = PetscMalloc((max - min)*2 * sizeof(PetscInt), &sizes);CHKERRXX(ierr);
         ierr = MPI_Recv(sizes, (max - min)*2, MPIU_INT, 0, 1, sieve.comm(), &status);CHKERRXX(ierr);
         for(typename ISieve::point_type p = min; p < max; ++p, ++s) {
@@ -2214,7 +2217,7 @@ namespace ALE {
         delete [] points;
         // Load and send remote
         for(int pr = 1; pr < sieve.commSize(); ++pr) {
-          PetscInt       size = ((maxs[pr] - mins[pr])+totalConeSizes[pr])*2 + (maxs[pr] - mins[pr])+totalSupportSizes[pr];
+          PetscInt       size = (maxs[pr] - mins[pr])+totalConeSizes[pr]*2 + (maxs[pr] - mins[pr])+totalSupportSizes[pr];
           PetscInt       off  = 0;
           PetscInt      *data;
           PetscErrorCode ierr;
@@ -2263,7 +2266,9 @@ namespace ALE {
         for(typename ISieve::point_type p = min; p < max; ++p) {
           typename ISieve::index_type coneSize    = sieve.getConeSize(p);
           typename ISieve::index_type supportSize = sieve.getSupportSize(p);
+          PetscInt cs = data[off++];
 
+          assert(cs == coneSize);
           if (coneSize > 0) {
             sieve.setCone(&data[off], p);
             off += coneSize;
@@ -2272,11 +2277,15 @@ namespace ALE {
               off += coneSize;
             }
           }
+          PetscInt ss = data[off++];
+
+          assert(ss == supportSize);
           if (supportSize > 0) {
             sieve.setSupport(p, &data[off]);
             off += supportSize;
           }
         }
+        assert(off == size);
       }
       // Load renumbering
     };

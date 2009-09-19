@@ -1413,26 +1413,111 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
   public:
     template<typename Sifter>
     static void writeSifter(std::ofstream& fs, Sifter& sifter) {
-      fs << sifter._arrows.set.size() << std::endl;
-      for(typename Sifter::traits::arrow_container_type::set_type::iterator ai = sifter._arrows.set.begin(); ai != sifter._arrows.set.end(); ai++) {
-        fs << ai->source << " " << ai->target << " " << ai->color << std::endl;
+      typename Sifter::traits::arrow_container_type::set_type::size_type numArrows;
+
+      if (sifter.commRank() == 0) {
+        // Write local
+        fs << sifter._arrows.set.size() << std::endl;
+        for(typename Sifter::traits::arrow_container_type::set_type::iterator ai = sifter._arrows.set.begin(); ai != sifter._arrows.set.end(); ai++) {
+          fs << ai->source << " " << ai->target << " " << ai->color << std::endl;
+        }
+        // Receive and write remote
+        for(int p = 1; p < sifter.commSize(); ++p) {
+          PetscInt       size;
+          PetscInt      *arrows;
+          MPI_Status     status;
+          PetscErrorCode ierr;
+
+          ierr = MPI_Recv(&size, 1, MPIU_INT, p, 1, sifter.comm(), &status);CHKERRXX(ierr);
+          numArrows = size;
+          fs << numArrows << std::endl;
+          ierr = PetscMalloc(size*3 * sizeof(PetscInt), &arrows);CHKERRXX(ierr);
+          ierr = MPI_Recv(arrows, size*3, MPIU_INT, p, 1, sifter.comm(), &status);CHKERRXX(ierr);
+          for(PetscInt a = 0; a < size; ++a) {
+            typename Sifter::traits::arrow_type::source_type source = arrows[a*3+0];
+            typename Sifter::traits::arrow_type::target_type target = arrows[a*3+1];
+            typename Sifter::traits::arrow_type::color_type  color  = arrows[a*3+2];
+
+            fs << source << " " << target << " " << color << std::endl;
+          }
+          ierr = PetscFree(arrows);CHKERRXX(ierr);
+        }
+      } else {
+        // Send remote
+        PetscInt       size = sifter._arrows.set.size();
+        PetscInt       a    = 0;
+        PetscInt      *arrows;
+        PetscErrorCode ierr;
+
+        ierr = MPI_Send(&size, 1, MPIU_INT, 0, 1, sifter.comm());CHKERRXX(ierr);
+        // There is no nice way to make a generic MPI type here. Really sucky
+        ierr = PetscMalloc(size*3 * sizeof(PetscInt), &arrows);CHKERRXX(ierr);
+        for(typename Sifter::traits::arrow_container_type::set_type::iterator ai = sifter._arrows.set.begin(); ai != sifter._arrows.set.end(); ai++, ++a) {
+          arrows[a*3+0] = ai->source;
+          arrows[a*3+1] = ai->target;
+          arrows[a*3+2] = ai->color;
+        }
+        ierr = MPI_Send(arrows, size*3, MPIU_INT, 0, 1, sifter.comm());CHKERRXX(ierr);
+        ierr = PetscFree(arrows);CHKERRXX(ierr);
       }
     };
     template<typename Sifter>
     static void loadSifter(std::ifstream& fs, Sifter& sifter) {
       typedef typename Sifter::traits::arrow_container_type::set_type::size_type size_type;
-      size_type numArrows;
+      if (sifter.commRank() == 0) {
+        // Load local
+        size_type numArrows;
 
-      fs >> numArrows;
-      for(size_type a = 0; a < numArrows; ++a) {
-        typename Sifter::traits::arrow_type::source_type source;
-        typename Sifter::traits::arrow_type::target_type target;
-        typename Sifter::traits::arrow_type::color_type  color;
+        fs >> numArrows;
+        for(size_type a = 0; a < numArrows; ++a) {
+          typename Sifter::traits::arrow_type::source_type source;
+          typename Sifter::traits::arrow_type::target_type target;
+          typename Sifter::traits::arrow_type::color_type  color;
 
-        fs >> source;
-        fs >> target;
-        fs >> color;
-        sifter.addArrow(typename Sifter::traits::arrow_type(source, target, color));
+          fs >> source;
+          fs >> target;
+          fs >> color;
+          sifter.addArrow(typename Sifter::traits::arrow_type(source, target, color));
+        }
+        // Load and send remote
+        for(int p = 1; p < sifter.commSize(); ++p) {
+          PetscInt       size;
+          PetscInt      *arrows;
+          PetscErrorCode ierr;
+
+          fs >> numArrows;
+          size = numArrows;
+          ierr = MPI_Send(&size, 1, MPIU_INT, p, 1, sifter.comm());CHKERRXX(ierr);
+          ierr = PetscMalloc(size*3 * sizeof(PetscInt), &arrows);CHKERRXX(ierr);
+          for(PetscInt a = 0; a < size; ++a) {
+            typename Sifter::traits::arrow_type::source_type source;
+            typename Sifter::traits::arrow_type::target_type target;
+            typename Sifter::traits::arrow_type::color_type  color;
+
+            fs >> source;
+            fs >> target;
+            fs >> color;
+            arrows[a*3+0] = source;
+            arrows[a*3+1] = target;
+            arrows[a*3+2] = color;
+          }
+          ierr = MPI_Send(arrows, size*3, MPIU_INT, p, 1, sifter.comm());CHKERRXX(ierr);
+          ierr = PetscFree(arrows);CHKERRXX(ierr);
+        }
+      } else {
+        // Load remote
+        PetscInt       size;
+        PetscInt      *arrows;
+        MPI_Status     status;
+        PetscErrorCode ierr;
+
+        ierr = MPI_Recv(&size, 1, MPIU_INT, 0, 1, sifter.comm(), &status);CHKERRXX(ierr);
+        ierr = PetscMalloc(size*3 * sizeof(PetscInt), &arrows);CHKERRXX(ierr);
+        ierr = MPI_Recv(arrows, size*3, MPIU_INT, 0, 1, sifter.comm(), &status);CHKERRXX(ierr);
+        for(PetscInt a = 0; a < size; ++a) {
+          sifter.addArrow(typename Sifter::traits::arrow_type(arrows[a*3+0], arrows[a*3+1], arrows[a*3+2]));
+        }
+        ierr = PetscFree(arrows);CHKERRXX(ierr);
       }
     };
   };

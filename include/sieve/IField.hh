@@ -648,76 +648,220 @@ namespace ALE {
   public:
     template<typename Point_, typename Value_>
     static void writeSection(std::ofstream& fs, IConstantSection<Point_, Value_>& section) {
-      fs << section.getChart().min() << " " << section.getChart().max() << std::endl;
-      fs.precision(15);
-      fs << section.restrictPoint(section.getChart().min())[0] << " ";
-      fs << section.getDefaultValue() << std::endl;
+      if (section.commRank() == 0) {
+        // Write local
+        fs << section.getChart().min() << " " << section.getChart().max() << std::endl;
+        fs.precision(15);
+        fs << section.restrictPoint(section.getChart().min())[0] << " ";
+        fs << section.getDefaultValue() << std::endl;
+        // Receive and write remote
+        for(int p = 1; p < section.commSize(); ++p) {
+          PetscInt       sizes[2];
+          PetscScalar    values[2];
+          MPI_Status     status;
+          PetscErrorCode ierr;
+
+          ierr = MPI_Recv(sizes,  2, MPIU_INT,    p, 1, section.comm(), &status);CHKERRXX(ierr);
+          ierr = MPI_Recv(values, 2, MPIU_SCALAR, p, 1, section.comm(), &status);CHKERRXX(ierr);
+          fs << sizes[0] << " " << sizes[1] << std::endl;
+          fs.precision(15);
+          fs << values[0] << " " << values[1] << std::endl;
+        }
+      } else {
+        // Send remote
+        PetscInt       sizes[2];
+        PetscScalar    values[2];
+        PetscErrorCode ierr;
+
+        sizes[0]  = section.getChart().min();
+        sizes[1]  = section.getChart().max();
+        values[0] = section.restrictPoint(section.getChart().min())[0];
+        values[1] = section.getDefaultValue();
+        ierr = MPI_Send(sizes,  2, MPIU_INT,    0, 1, section.comm());CHKERRXX(ierr);
+        ierr = MPI_Send(values, 2, MPIU_SCALAR, 0, 1, section.comm());CHKERRXX(ierr);
+      }
     };
     template<typename Point_, typename Value_, int fiberDim>
     static void writeSection(std::ofstream& fs, IUniformSection<Point_, Value_, fiberDim>& section) {
-      // Write atlas
-      writeSection(fs, *section.getAtlas());
-      // Write values
       typedef typename IUniformSection<Point_, Value_, fiberDim>::index_type index_type;
       typedef typename IUniformSection<Point_, Value_, fiberDim>::value_type value_type;
       index_type min = section.getChart().min();
       index_type max = section.getChart().max();
 
-      fs.precision(15);
-      for(index_type p = min; p < max; ++p) {
-        const value_type *values = section.restrictPoint(p);
+      // Write atlas
+      writeSection(fs, *section.getAtlas());
+      if (section.commRank() == 0) {
+        // Write local values
+        fs.precision(15);
+        for(index_type p = min; p < max; ++p) {
+          const value_type *values = section.restrictPoint(p);
+
+          for(int i = 0; i < fiberDim; ++i) {
+            fs << values[i] << std::endl;
+          }
+        }
+        // Write empty value
+        const value_type *defValue = section.getDefault();
 
         for(int i = 0; i < fiberDim; ++i) {
-          fs << values[i] << std::endl;
+          if (i > 0) fs << " ";
+          fs << defValue[i];
         }
-      }
-      // Write empty value
-      const value_type *defValue = section.getDefault();
+        fs << std::endl;
+        // Receive and write remote
+        for(int p = 1; p < section.commSize(); ++p) {
+          PetscInt       size;
+          PetscScalar   *values;
+          PetscScalar    emptyValues[fiberDim];
+          MPI_Status     status;
+          PetscErrorCode ierr;
 
-      for(int i = 0; i < fiberDim; ++i) {
-        if (i > 0) fs << " ";
-        fs << defValue[i];
+          ierr = MPI_Recv(&size, 1, MPIU_INT, p, 1, section.comm(), &status);CHKERRXX(ierr);
+          ierr = PetscMalloc(size*fiberDim * sizeof(PetscScalar), &values);CHKERRXX(ierr);
+          ierr = MPI_Recv(values, size*fiberDim, MPIU_SCALAR, p, 1, section.comm(), &status);CHKERRXX(ierr);
+          for(PetscInt v = 0; v < size; ++v) {
+            fs << values[v] << std::endl;
+          }
+          ierr = PetscFree(values);CHKERRXX(ierr);
+          ierr = MPI_Recv(emptyValues, fiberDim, MPIU_SCALAR, p, 1, section.comm(), &status);CHKERRXX(ierr);
+          for(int i = 0; i < fiberDim; ++i) {
+            if (i > 0) fs << " ";
+            fs << emptyValues[i];
+          }
+          fs << std::endl;
+        }
+      } else {
+        // Send remote
+        PetscInt          size = section.getChart().size();
+        PetscInt          v    = 0;
+        const value_type *defValue = section.getDefault();
+        PetscScalar      *values;
+        PetscScalar       emptyValues[fiberDim];
+        PetscErrorCode    ierr;
+
+        assert(sizeof(value_type) <= sizeof(PetscScalar));
+        ierr = MPI_Send(&size, 1, MPIU_INT, 0, 1, section.comm());CHKERRXX(ierr);
+        ierr = PetscMalloc(size*fiberDim * sizeof(PetscScalar), &values);CHKERRXX(ierr);
+        for(index_type p = min; p < max; ++p) {
+          const value_type *val = section.restrictPoint(p);
+
+          for(int i = 0; i < fiberDim; ++i, ++v) {
+            values[v] = ((PetscScalar *) &val[i])[0];
+          }
+        }
+        ierr = MPI_Send(values, size*fiberDim, MPIU_SCALAR, 0, 1, section.comm());CHKERRXX(ierr);
+        for(int i = 0; i < fiberDim; ++i) {emptyValues[i] = ((PetscScalar *) &defValue[i])[0];}
+        ierr = MPI_Send(emptyValues, fiberDim, MPIU_SCALAR, 0, 1, section.comm());CHKERRXX(ierr);
       }
-      fs << std::endl;
     };
     template<typename Point_, typename Value_>
     static void writeSection(std::ofstream& fs, ISection<Point_, Value_>& section) {
-      // Write atlas
-      writeSection(fs, *section.getAtlas());
-      // Write values
       typedef typename ISection<Point_, Value_>::point_type point_type;
       typedef typename ISection<Point_, Value_>::value_type value_type;
       point_type min = section.getChart().min();
       point_type max = section.getChart().max();
 
-      fs.precision(15);
-      for(point_type p = min; p < max; ++p) {
-        const int         fiberDim = section.getFiberDimension(p);
-        const value_type *values   = section.restrictPoint(p);
+      // Write atlas
+      writeSection(fs, *section.getAtlas());
+      if (section.commRank() == 0) {
+      // Write local values
+        fs.precision(15);
+        for(point_type p = min; p < max; ++p) {
+          const int         fiberDim = section.getFiberDimension(p);
+          const value_type *values   = section.restrictPoint(p);
 
-        for(int i = 0; i < fiberDim; ++i) {
-          fs << values[i] << std::endl;
+          for(int i = 0; i < fiberDim; ++i) {
+            fs << values[i] << std::endl;
+          }
         }
+        // Receive and write remote
+        for(int p = 1; p < section.commSize(); ++p) {
+          PetscInt       size;
+          PetscScalar   *values;
+          MPI_Status     status;
+          PetscErrorCode ierr;
+
+          ierr = MPI_Recv(&size, 1, MPIU_INT, p, 1, section.comm(), &status);CHKERRXX(ierr);
+          ierr = PetscMalloc(size * sizeof(PetscScalar), &values);CHKERRXX(ierr);
+          ierr = MPI_Recv(values, size, MPIU_SCALAR, p, 1, section.comm(), &status);CHKERRXX(ierr);
+          for(PetscInt v = 0; v < size; ++v) {
+            fs << values[v] << std::endl;
+          }
+          ierr = PetscFree(values);CHKERRXX(ierr);
+        }
+      } else {
+        // Send remote
+        PetscInt       size = section.size();
+        PetscInt       v    = 0;
+        PetscScalar   *values;
+        PetscErrorCode ierr;
+
+        ierr = MPI_Send(&size, 1, MPIU_INT, 0, 1, section.comm());CHKERRXX(ierr);
+        ierr = PetscMalloc(size * sizeof(PetscScalar), &values);CHKERRXX(ierr);
+        for(point_type p = min; p < max; ++p) {
+          const int         fiberDim = section.getFiberDimension(p);
+          const value_type *val      = section.restrictPoint(p);
+
+          for(int i = 0; i < fiberDim; ++i, ++v) {
+            values[v] = val[i];
+          }
+        }
+        ierr = MPI_Send(values, size, MPIU_SCALAR, 0, 1, section.comm());CHKERRXX(ierr);
       }
     };
     template<typename Point_, typename Value_>
     static void writeSection(std::ofstream& fs, IGeneralSection<Point_, Value_>& section) {
-      // Write atlas
-      writeSection(fs, *section.getAtlas());
-      // Write values
       typedef typename IGeneralSection<Point_, Value_>::point_type point_type;
       typedef typename IGeneralSection<Point_, Value_>::value_type value_type;
       point_type min = section.getChart().min();
       point_type max = section.getChart().max();
 
-      fs.precision(15);
-      for(point_type p = min; p < max; ++p) {
-        const int         fiberDim = section.getFiberDimension(p);
-        const value_type *values   = section.restrictPoint(p);
+      // Write atlas
+      writeSection(fs, *section.getAtlas());
+      if (section.commRank() == 0) {
+        // Write local values
+        fs.precision(15);
+        for(point_type p = min; p < max; ++p) {
+          const int         fiberDim = section.getFiberDimension(p);
+          const value_type *values   = section.restrictPoint(p);
 
-        for(int i = 0; i < fiberDim; ++i) {
-          fs << values[i] << std::endl;
+          for(int i = 0; i < fiberDim; ++i) {
+            fs << values[i] << std::endl;
+          }
         }
+        // Receive and write remote
+        for(int p = 1; p < section.commSize(); ++p) {
+          PetscInt       size;
+          PetscScalar   *values;
+          MPI_Status     status;
+          PetscErrorCode ierr;
+
+          ierr = MPI_Recv(&size, 1, MPIU_INT, p, 1, section.comm(), &status);CHKERRXX(ierr);
+          ierr = PetscMalloc(size * sizeof(PetscScalar), &values);CHKERRXX(ierr);
+          ierr = MPI_Recv(values, size, MPIU_SCALAR, p, 1, section.comm(), &status);CHKERRXX(ierr);
+          for(PetscInt v = 0; v < size; ++v) {
+            fs << values[v] << std::endl;
+          }
+          ierr = PetscFree(values);CHKERRXX(ierr);
+        }
+      } else {
+        // Send remote
+        PetscInt       size = section.sizeWithBC();
+        PetscInt       v    = 0;
+        PetscScalar   *values;
+        PetscErrorCode ierr;
+
+        ierr = MPI_Send(&size, 1, MPIU_INT, 0, 1, section.comm());CHKERRXX(ierr);
+        ierr = PetscMalloc(size * sizeof(PetscScalar), &values);CHKERRXX(ierr);
+        for(point_type p = min; p < max; ++p) {
+          const int         fiberDim = section.getFiberDimension(p);
+          const value_type *val      = section.restrictPoint(p);
+
+          for(int i = 0; i < fiberDim; ++i, ++v) {
+            values[v] = val[i];
+          }
+        }
+        ierr = MPI_Send(values, size, MPIU_SCALAR, 0, 1, section.comm());CHKERRXX(ierr);
       }
       // Write BC
       writeSection(fs, *section.getBC());
@@ -727,98 +871,262 @@ namespace ALE {
     };
     template<typename Point_, typename Value_>
     static void loadSection(std::ifstream& fs, IConstantSection<Point_, Value_>& section) {
-      typename IConstantSection<Point_, Value_>::index_type min, max;
-      typename IConstantSection<Point_, Value_>::value_type val;
+      typedef typename IConstantSection<Point_, Value_>::index_type index_type;
+      typedef typename IConstantSection<Point_, Value_>::value_type value_type;
+      index_type min, max;
+      value_type val;
 
-      fs >> min;
-      fs >> max;
-      section.setChart(typename IConstantSection<Point_, Value_>::chart_type(min, max));
-      fs >> val;
-      section.updatePoint(min, &val);
-      fs >> val;
-      section.setDefaultValue(val);
+      if (section.commRank() == 0) {
+        // Load local
+        fs >> min;
+        fs >> max;
+        section.setChart(typename IConstantSection<Point_, Value_>::chart_type(min, max));
+        fs >> val;
+        section.updatePoint(min, &val);
+        fs >> val;
+        section.setDefaultValue(val);
+        // Load and send remote
+        for(int p = 1; p < section.commSize(); ++p) {
+          PetscInt       sizes[2];
+          PetscScalar    values[2];
+          PetscErrorCode ierr;
+
+          fs >> sizes[0];
+          fs >> sizes[1];
+          fs >> values[0];
+          fs >> values[1];
+          ierr = MPI_Send(sizes,  2, MPIU_INT,    p, 1, section.comm());CHKERRXX(ierr);
+          ierr = MPI_Send(values, 2, MPIU_SCALAR, p, 1, section.comm());CHKERRXX(ierr);
+        }
+      } else {
+        // Load remote
+        PetscInt       sizes[2];
+        PetscScalar    values[2];
+        value_type     value;
+        MPI_Status     status;
+        PetscErrorCode ierr;
+
+        assert(sizeof(value_type) <= sizeof(PetscScalar));
+        ierr = MPI_Recv(sizes,  2, MPIU_INT,    0, 1, section.comm(), &status);CHKERRXX(ierr);
+        section.setChart(typename IConstantSection<Point_, Value_>::chart_type(sizes[0], sizes[1]));
+        ierr = MPI_Recv(values, 2, MPIU_SCALAR, 0, 1, section.comm(), &status);CHKERRXX(ierr);
+        value = values[0];
+        section.updatePoint(min, &value);
+        section.setDefaultValue(values[1]);
+      }
     };
     template<typename Point_, typename Value_, int fiberDim>
     static void loadSection(std::ifstream& fs, IUniformSection<Point_, Value_, fiberDim>& section) {
+      typedef typename IUniformSection<Point_, Value_, fiberDim>::index_type index_type;
+      typedef typename IUniformSection<Point_, Value_, fiberDim>::value_type value_type;
       // Load atlas
       loadSection(fs, *section.getAtlas());
       section.allocatePoint();
-      // Load values
-      typedef typename IUniformSection<Point_, Value_, fiberDim>::index_type index_type;
-      typedef typename IUniformSection<Point_, Value_, fiberDim>::value_type value_type;
-      index_type min = section.getChart().min()*fiberDim;
-      index_type max = section.getChart().max()*fiberDim;
+      index_type min = section.getChart().min();
+      index_type max = section.getChart().max();
 
-      for(index_type p = min; p < max; ++p) {
-        value_type values[fiberDim];
+      if (section.commRank() == 0) {
+        // Load local values
+        for(index_type p = min; p < max; ++p) {
+          value_type values[fiberDim];
+
+          for(int i = 0; i < fiberDim; ++i) {
+            typename IUniformSection<Point_, Value_, fiberDim>::value_type value;
+
+            fs >> value;
+            values[i] = value;
+          }
+          section.updatePoint(p, values);
+        }
+        // Load empty value
+        value_type defValue[fiberDim];
 
         for(int i = 0; i < fiberDim; ++i) {
-          typename IUniformSection<Point_, Value_, fiberDim>::value_type value;
-
-          fs >> value;
-          values[i] = value;
+          fs >> defValue[i];
         }
-        section.updatePoint(p, values);
-      }
-      // Load empty value
-      value_type defValue[fiberDim];
+        section.setDefault(defValue);
+        // Load and send remote
+        for(int pr = 1; pr < section.commSize(); ++pr) {
+          PetscInt          size = section.getChart().size();
+          PetscInt          v    = 0;
+          PetscScalar      *values;
+          PetscScalar       emptyValues[fiberDim];
+          PetscErrorCode    ierr;
 
-      for(int i = 0; i < fiberDim; ++i) {
-        fs >> defValue[i];
+          ierr = MPI_Send(&size, 1, MPIU_INT, pr, 1, section.comm());CHKERRXX(ierr);
+          ierr = PetscMalloc(size*fiberDim * sizeof(PetscScalar), &values);CHKERRXX(ierr);
+          for(index_type p = min; p < max; ++p) {
+            for(int i = 0; i < fiberDim; ++i, ++v) {
+              fs >> values[v];
+            }
+          }
+          ierr = MPI_Send(values, size*fiberDim, MPIU_SCALAR, pr, 1, section.comm());CHKERRXX(ierr);
+          for(int i = 0; i < fiberDim; ++i) {
+            fs >> emptyValues[i];
+          }
+          ierr = MPI_Send(emptyValues, fiberDim, MPIU_SCALAR, pr, 1, section.comm());CHKERRXX(ierr);
+        }
+      } else {
+        // Load remote
+        PetscInt       size;
+        PetscScalar   *values;
+        PetscScalar    emptyValues[fiberDim];
+        value_type     pvalues[fiberDim];
+        MPI_Status     status;
+        PetscInt       v = 0;
+        PetscErrorCode ierr;
+
+        assert(sizeof(value_type) <= sizeof(PetscScalar));
+        ierr = MPI_Recv(&size, 1, MPIU_INT, 0, 1, section.comm(), &status);CHKERRXX(ierr);
+        ierr = PetscMalloc(size*fiberDim * sizeof(PetscScalar), &values);CHKERRXX(ierr);
+        ierr = MPI_Recv(values, size*fiberDim, MPIU_SCALAR, 0, 1, section.comm(), &status);CHKERRXX(ierr);
+        for(index_type p = min; p < max; ++p) {
+          for(int i = 0; i < fiberDim; ++i, ++v) {
+            pvalues[i] = ((value_type *) &values[v])[0];
+          }
+          section.updatePoint(p, pvalues);
+        }
+        ierr = PetscFree(values);CHKERRXX(ierr);
+        ierr = MPI_Recv(emptyValues, fiberDim, MPIU_SCALAR, 0, 1, section.comm(), &status);CHKERRXX(ierr);
+        for(int i = 0; i < fiberDim; ++i) {pvalues[i] = ((value_type *) &emptyValues[i])[0];}
+        section.setDefault(pvalues);
       }
-      section.setDefault(defValue);
     };
     template<typename Point_, typename Value_>
     static void loadSection(std::ifstream& fs, ISection<Point_, Value_>& section) {
+      typedef typename ISection<Point_, Value_>::point_type point_type;
+      typedef typename ISection<Point_, Value_>::value_type value_type;
       // Load atlas
       loadSection(fs, *section.getAtlas());
       section.allocatePoint();
-      // Load values
-      typedef typename ISection<Point_, Value_>::point_type point_type;
-      typedef typename ISection<Point_, Value_>::value_type value_type;
       point_type min    = section.getChart().min();
       point_type max    = section.getChart().max();
       int        maxDim = -1;
 
-      for(point_type p = min; p < max; ++p) {
-        maxDim = std::max(maxDim, section.getFiberDimension(p));
-      }
-      value_type *values = new value_type[maxDim];
-      for(point_type p = min; p < max; ++p) {
-        const int fiberDim = section.getFiberDimension(p);
-
-        for(int i = 0; i < fiberDim; ++i) {
-          fs >> values[i];
+      if (section.commRank() == 0) {
+        // Load local values
+        for(point_type p = min; p < max; ++p) {
+          maxDim = std::max(maxDim, section.getFiberDimension(p));
         }
-        section.updatePoint(p, values);
+        value_type *values = new value_type[maxDim];
+        for(point_type p = min; p < max; ++p) {
+          const int fiberDim = section.getFiberDimension(p);
+
+          for(int i = 0; i < fiberDim; ++i) {
+            fs >> values[i];
+          }
+          section.updatePoint(p, values);
+        }
+        delete [] values;
+        // Load and send remote
+        for(int p = 1; p < section.commSize(); ++p) {
+          PetscInt       size = section.size();
+          PetscScalar   *values;
+          PetscErrorCode ierr;
+
+          ierr = MPI_Send(&size, 1, MPIU_INT, p, 1, section.comm());CHKERRXX(ierr);
+          ierr = PetscMalloc(size * sizeof(PetscScalar), &values);CHKERRXX(ierr);
+          for(PetscInt v = 0; v < size; ++v) {
+            fs >> values[v];
+          }
+          ierr = MPI_Send(values, size, MPIU_SCALAR, p, 1, section.comm());CHKERRXX(ierr);
+        }
+      } else {
+        // Load remote
+        PetscInt       size;
+        PetscScalar   *values;
+        MPI_Status     status;
+        PetscInt       maxDim = 0;
+        PetscInt       off    = 0;
+        PetscErrorCode ierr;
+
+        assert(sizeof(value_type) <= sizeof(PetscScalar));
+        ierr = MPI_Recv(&size, 1, MPIU_INT, 0, 1, section.comm(), &status);CHKERRXX(ierr);
+        ierr = PetscMalloc(size * sizeof(PetscScalar), &values);CHKERRXX(ierr);
+        ierr = MPI_Recv(values, size, MPIU_SCALAR, 0, 1, section.comm(), &status);CHKERRXX(ierr);
+        for(point_type p = min; p < max; ++p) {
+          maxDim = std::max(maxDim, section.getFiberDimension(p));
+        }
+        value_type *pvalues = new value_type[maxDim];
+        for(point_type p = min; p < max; ++p) {
+          const int fiberDim = section.getFiberDimension(p);
+
+          for(int i = 0; i < fiberDim; ++i, ++off) {
+            pvalues[i] = values[off];
+          }
+          section.updatePoint(p, pvalues);
+        }
+        delete [] pvalues;
+        ierr = PetscFree(values);CHKERRXX(ierr);
       }
-      delete [] values;
     };
     template<typename Point_, typename Value_>
     static void loadSection(std::ifstream& fs, IGeneralSection<Point_, Value_>& section) {
+      typedef typename IGeneralSection<Point_, Value_>::point_type point_type;
+      typedef typename IGeneralSection<Point_, Value_>::value_type value_type;
       // Load atlas
       loadSection(fs, *section.getAtlas());
       section.allocatePoint();
-      // Load values
-      typedef typename IGeneralSection<Point_, Value_>::point_type point_type;
-      typedef typename IGeneralSection<Point_, Value_>::value_type value_type;
       point_type min    = section.getChart().min();
       point_type max    = section.getChart().max();
       int        maxDim = -1;
 
-      for(point_type p = min; p < max; ++p) {
-        maxDim = std::max(maxDim, section.getFiberDimension(p));
-      }
-      value_type *values = new value_type[maxDim];
-      for(point_type p = min; p < max; ++p) {
-        const int fiberDim = section.getFiberDimension(p);
-
-        for(int i = 0; i < fiberDim; ++i) {
-          fs >> values[i];
+      if (section.commRank() == 0) {
+        // Load local values
+        for(point_type p = min; p < max; ++p) {
+          maxDim = std::max(maxDim, section.getFiberDimension(p));
         }
-        section.updatePoint(p, values);
+        value_type *values = new value_type[maxDim];
+        for(point_type p = min; p < max; ++p) {
+          const int fiberDim = section.getFiberDimension(p);
+
+          for(int i = 0; i < fiberDim; ++i) {
+            fs >> values[i];
+          }
+          section.updatePoint(p, values);
+        }
+        delete [] values;
+        // Load and send remote
+        for(int p = 1; p < section.commSize(); ++p) {
+          PetscInt       size = section.sizeWithBC();
+          PetscScalar   *values;
+          PetscErrorCode ierr;
+
+          ierr = MPI_Send(&size, 1, MPIU_INT, p, 1, section.comm());CHKERRXX(ierr);
+          ierr = PetscMalloc(size * sizeof(PetscScalar), &values);CHKERRXX(ierr);
+          for(PetscInt v = 0; v < size; ++v) {
+            fs >> values[v];
+          }
+          ierr = MPI_Send(values, size, MPIU_SCALAR, p, 1, section.comm());CHKERRXX(ierr);
+        }
+      } else {
+        // Load remote
+        PetscInt       size;
+        PetscScalar   *values;
+        MPI_Status     status;
+        PetscInt       maxDim = 0;
+        PetscInt       off    = 0;
+        PetscErrorCode ierr;
+
+        assert(sizeof(value_type) <= sizeof(PetscScalar));
+        ierr = MPI_Recv(&size, 1, MPIU_INT, 0, 1, section.comm(), &status);CHKERRXX(ierr);
+        ierr = PetscMalloc(size * sizeof(PetscScalar), &values);CHKERRXX(ierr);
+        ierr = MPI_Recv(values, size, MPIU_SCALAR, 0, 1, section.comm(), &status);CHKERRXX(ierr);
+        for(point_type p = min; p < max; ++p) {
+          maxDim = std::max(maxDim, section.getFiberDimension(p));
+        }
+        value_type *pvalues = new value_type[maxDim];
+        for(point_type p = min; p < max; ++p) {
+          const int fiberDim = section.getFiberDimension(p);
+
+          for(int i = 0; i < fiberDim; ++i, ++off) {
+            pvalues[i] = values[off];
+          }
+          section.updatePoint(p, pvalues);
+        }
+        delete [] pvalues;
+        ierr = PetscFree(values);CHKERRXX(ierr);
       }
-      delete [] values;
       // Load BC
       loadSection(fs, *section.getBC());
       // Load spaces

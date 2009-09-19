@@ -26,20 +26,22 @@ public:
   typedef mesh_type::point_type point_type;
 protected:
   ALE::Obj<mesh_type> _mesh;
-  int                 _debug;       // The debugging level
-  PetscInt            _iters;       // The number of test repetitions
-  PetscInt            _size;        // The interval size
-  PetscTruth          _interpolate; // Flag for mesh interpolation
+  int                 _debug;        // The debugging level
+  PetscInt            _iters;        // The number of test repetitions
+  PetscInt            _size;         // The interval size
+  PetscTruth          _interpolate;  // Flag for mesh interpolation
+  PetscTruth          _onlyParallel; // Shut off serial tests
   ALE::Obj<ALE::Mesh>             _m;
   std::map<point_type,point_type> _renumbering;
 public:
   PetscErrorCode processOptions() {
     PetscErrorCode ierr;
 
-    this->_debug       = 0;
-    this->_iters       = 1;
-    this->_size        = 10;
-    this->_interpolate = PETSC_FALSE;
+    this->_debug        = 0;
+    this->_iters        = 1;
+    this->_size         = 10;
+    this->_interpolate  = PETSC_FALSE;
+    this->_onlyParallel = PETSC_FALSE;
 
     PetscFunctionBegin;
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for interval mesh stress test", "IMesh");CHKERRQ(ierr);
@@ -47,6 +49,7 @@ public:
       ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "imesh.c", this->_iters, &this->_iters, PETSC_NULL);CHKERRQ(ierr);
       ierr = PetscOptionsInt("-size", "The interval size", "imesh.c", this->_size, &this->_size, PETSC_NULL);CHKERRQ(ierr);
       ierr = PetscOptionsTruth("-interpolate", "Flag for mesh interpolation", "imesh.c", this->_interpolate, &this->_interpolate, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsTruth("-only_parallel", "Shut off serial tests", "isieve.c", this->_onlyParallel, &this->_onlyParallel, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     PetscFunctionReturn(0);
   };
@@ -179,6 +182,10 @@ public:
   };
 
   void testStratify() {
+    if (this->_mesh->commSize() > 1) {
+      if (this->_onlyParallel) return;
+      CPPUNIT_FAIL("This test is not yet parallel");
+    }
     this->_mesh->stratify();
     const ALE::Obj<ALE::Mesh::label_type>& h1 = this->_m->getLabel("height");
     const ALE::Obj<mesh_type::label_type>& h2 = this->_mesh->getLabel("height");
@@ -226,6 +233,10 @@ public:
     double     coords[3] = {-1.0, 0.0, 1.0};
     point_type cone[2];
 
+    if (this->_mesh->commSize() > 1) {
+      if (this->_onlyParallel) return;
+      CPPUNIT_FAIL("This test is not yet parallel");
+    }
     this->_mesh->setSieve(sieve);
     sieve->setConeSize(0, 2);
     sieve->setConeSize(1, 2);
