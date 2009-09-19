@@ -1411,6 +1411,23 @@ PetscErrorCode MatGetFactor_mpidense_plapack(Mat A,MatFactorType ftype,Mat *F)
 #endif
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatGetFactor_mpidense_petsc"
+PetscErrorCode MatGetFactor_mpidense_petsc(Mat A,MatFactorType ftype,Mat *F)
+{
+#if defined(PETSC_HAVE_PLAPACK)
+  PetscErrorCode ierr;
+#endif
+
+  PetscFunctionBegin;
+#if defined(PETSC_HAVE_PLAPACK)
+  ierr = MatGetFactor_mpidense_plapack(A,ftype,F);CHKERRQ(ierr);
+#else
+  SETERRQ1(PETSC_ERR_SUP,"Matrix format %s uses PLAPACK direct solver. Install PLAPACK",((PetscObject)A)->type_name);
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_MPIDense"
 PetscErrorCode MatAXPY_MPIDense(Mat Y,PetscScalar alpha,Mat X,MatStructure str)
 {
@@ -1617,6 +1634,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIDense(Mat mat)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatMatMultNumeric_mpiaij_mpidense_C",
                                      "MatMatMultNumeric_MPIAIJ_MPIDense",
                                       MatMatMultNumeric_MPIAIJ_MPIDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatGetFactor_mpidense_petsc_C",
+                                     "MatGetFactor_mpidense_petsc",
+                                      MatGetFactor_mpidense_petsc);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PLAPACK)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatGetFactor_mpidense_plapack_C",
                                      "MatGetFactor_mpidense_plapack",

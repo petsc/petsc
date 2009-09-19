@@ -216,33 +216,48 @@ make </font><font color="#ff0000">PETSC_ARCH=linux-gnu-intel </font><font
  color="#ff0000">test </font></li>
       </ul>
       <hr>
-      <p>Several variables control the configuration and build
-process
-of PETSc. They can either be given as arguments to <font
- color="#ff0000">make</font> or be set as environment
-variables. </p>
+      <p>PETSC_DIR and PETSC_ARCH are a couple of variables control the
+configuration and build
+process of PETSc. These variables can be set as envirnment variables
+or specified on the command line [to both configure and make]</p>
+      <ul>
+        <li>specify enviornment variable for csh/tcsh [can be specified
+in ~/.cshrc]<br>
+          <pre><font color="#ff0000">setenv PETSC_DIR /home/balay/petsc-3.0.0-p0<br>setenv PETSC_ARCH linux-gnu-c-debug</font></pre>
+        </li>
+        <li>specify enviornment variable for bash [can be specified in
+~/.bashrc]<br>
+          <pre><font color="#ff0000">export PETSC_DIR=/home/balay/petsc-3.0.0-p0<br>export PETSC_ARCH=linux-gnu-c-debug</font>        </pre>
+        </li>
+        <li>specify variable on commandline to configure<br>
+          <pre><font color="#ff0000">config/configure.py PETSC_DIR=/home/balay/petsc-3.0.0-p0 PETSC_ARCH=linux-gnu-c-debug [other configure options]</font><br></pre>
+        </li>
+        <li>specify variables on command line to make<br>
+          <pre><font color="#ff0000">make PETSC_DIR=/home/balay/petsc-3.0.0-p0 PETSC_ARCH=linux-gnu-c-debug [other make options]</font></pre>
+        </li>
+      </ul>
       <p><b><a name="PETSC_DIR"><font color="#551a8b">PETSC_DIR</font></a></b>:
-- this
-environment/make variable should point to the location of the PETSc
-installation that is used. You can add <font color="#ff0000">export
-PETSC_DIR=value</font> in your .profile or .sh file or <font
- color="#ff0000">setenv PETSC_DIR value</font> in your
-.cshrc or
-.tcshrc
-file. Multiple PETSc versions can coexist on the same
-file-system. By changing PETSC_DIR one can switch between the
-versions</p>
+this variable should point to the location of the
+PETSc installation that is used. Multiple PETSc versions can coexist
+on the same file-system. By changing PETSC_DIR value, one can switch
+between these installed versions of PETSc.</p>
       <p><b><font color="#551a8b">PETSC_ARCH</font></b>:
-this
-environment/make variable is used to specify the configuration that
-should currently be used. It corresponds to the configuration files
-in bmake/${PETSC_ARCH}. Multiple variants of PETSc libraries can be
-installed - each variant corresponding to a different PETSC_ARCH. One
-can switch between using these variants - by changing the value of
-PETSC_ARCH. If PETSC_ARCH is not set, the configuration from the last
-time you ran <font style="font-weight: bold;" color="#551a8b">./config/configure.py</font>
-will
-be used.</p>
+this variable gives a name to a&nbsp;
+configuration/build. Configure uses this value to stores the generated
+config makefiles in ${PETSC_DIR}/${PETSC_ARCH}/conf. And make uses
+this value to determine this location of these makefiles [which
+intern help in locating the correct include and library files].</p>
+      <p>Thus one can install multiple variants of PETSc libraries - by
+providing different PETSC_ARCH values to each configure build. Then one
+can switch
+between using these variants of libraries [from make] by switching the
+PETSC_ARCH value used.<br>
+      </p>
+      <p>If configure doesn't find a PETSC_ARCH value [either in env
+variable or command line option], it automatically generates a default
+value and uses it. Also - if make doesn't find a PETSC_ARCH env
+variable - it defaults to the value used by last successful invocation
+of previous configure.</p>
       <p><font color="#551a8b"><b><a href="#Docs:%20%20Installation">Return
 to Installation Instructions</a>
 &nbsp;&nbsp;&nbsp;&nbsp;</b></font> </p>
