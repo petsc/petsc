@@ -928,6 +928,7 @@ shared_libtool:
 
 shared_darwin8: shared_darwin7
 shared_darwin9: shared_darwin7
+shared_darwin10: shared_darwin7
 
 shared_darwin7: 
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
