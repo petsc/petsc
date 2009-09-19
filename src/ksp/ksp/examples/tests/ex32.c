@@ -30,6 +30,7 @@ int main(int argc,char **argv)
   DA             da;
   Mat            A;
   PetscInt       dof=1;
+  PetscTruth     flg;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr);
@@ -38,7 +39,7 @@ int main(int argc,char **argv)
   ierr = DASetDim(da,3);CHKERRQ(ierr);
   ierr = DASetPeriodicity(da,DA_NONPERIODIC);CHKERRQ(ierr);
   ierr = DASetStencilType(da,DA_STENCIL_STAR);CHKERRQ(ierr);
-  ierr = DASetSizes(da,8,8,8);CHKERRQ(ierr);
+  ierr = DASetSizes(da,-8,-8,-8);CHKERRQ(ierr);
   ierr = DASetNumProcs(da,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = DASetDof(da,dof);CHKERRQ(ierr);
   ierr = DASetStencilWidth(da,1);CHKERRQ(ierr);
@@ -50,6 +51,14 @@ int main(int argc,char **argv)
   ierr = ComputeRHS(da,b);CHKERRQ(ierr);
   ierr = DAGetMatrix(da,MATBAIJ,&A);CHKERRQ(ierr);
   ierr = ComputeMatrix(da,A);CHKERRQ(ierr);
+
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(PETSC_NULL, "-check_symmetry", &flg,PETSC_NULL);CHKERRQ(ierr);
+  if (flg){
+    PetscTruth isSymmetric;
+    ierr = MatIsSymmetric(A,1.e-14,&isSymmetric);CHKERRQ(ierr);
+    if (!isSymmetric) printf("A is not symmetric\n");
+  }
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
@@ -107,20 +116,19 @@ PetscErrorCode ComputeMatrix(DA da,Mat B)
 
   ierr = PetscMalloc((2*dof*dof+1)*sizeof(PetscScalar),&v);CHKERRQ(ierr);
   v_neighbor = v + dof*dof;
-  //  ierr = PetscMemzero(v,(2*dof*dof+1)*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMemzero(v,(2*dof*dof+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   k3 = 0;
   for (k1=0; k1<dof; k1++){
     for (k2=0; k2<dof; k2++){
       if (k1 == k2){
         v[k3]          = 2.0*(HxHydHz + HxHzdHy + HyHzdHx);
         v_neighbor[k3] = -HxHydHz;
-      }
-      else {
+      } else {
 	ierr = PetscRandomGetValue(rand,&r1);CHKERRQ(ierr);
 	ierr = PetscRandomGetValue(rand,&r2);CHKERRQ(ierr);
 	v[k3] = 0.001*(r1*02-0.1);             /* random number range [-0.1 0.1] */
 	v_neighbor[k3] = 0.001*(r2*0.2-0.1);
-	}	
+      }	
       k3++;
     }
   }
