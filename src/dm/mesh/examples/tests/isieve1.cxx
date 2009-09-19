@@ -35,6 +35,7 @@ protected:
   int                  _debug; // The debugging level
   PetscInt             _iters; // The number of test repetitions
   PetscInt             _size;  // The interval size
+  PetscTruth           _onlyParallel; // Shut off serial tests
 public:
   PetscErrorCode processOptions() {
     PetscErrorCode ierr;
@@ -42,12 +43,14 @@ public:
     this->_debug = 0;
     this->_iters = 1;
     this->_size  = 10;
+    this->_onlyParallel = PETSC_FALSE;
 
     PetscFunctionBegin;
-    ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for interval section stress test", "ISection");CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-debug", "The debugging level", "isection.c", this->_debug, &this->_debug, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isection.c", this->_iters, &this->_iters, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-size", "The interval size", "isection.c", this->_size, &this->_size, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for interval section stress test", "ISieve");CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-debug", "The debugging level", "isieve.c", this->_debug, &this->_debug, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isieve.c", this->_iters, &this->_iters, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-size", "The interval size", "isieve.c", this->_size, &this->_size, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsTruth("-only_parallel", "Shut off serial tests", "isieve.c", this->_onlyParallel, &this->_onlyParallel, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     PetscFunctionReturn(0);
   };
@@ -208,7 +211,10 @@ public:
     const ALE::Obj<ALE::Mesh> m = ALE::MeshBuilder<ALE::Mesh>::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
     std::map<ALE::Mesh::point_type,sieve_type::point_type> renumbering;
 
-    if (m->commSize() > 1) CPPUNIT_FAIL("This test is not yet parallel");
+    if (m->commSize() > 1) {
+      if (this->_onlyParallel) return;
+      CPPUNIT_FAIL("This test is not yet parallel");
+    }
     ALE::ISieveConverter::convertSieve(*m->getSieve(), *this->_sieve, renumbering);
     this->checkSieve(*m->getSieve(), *this->_sieve, renumbering, true);
   };
@@ -267,7 +273,10 @@ public:
       ALE::Obj<ALE::Mesh::sieve_type> s = new ALE::Mesh::sieve_type(PETSC_COMM_WORLD, this->_debug);
       ALE::SieveBuilder<ALE::Mesh>::buildTopology(s, 2, numCells, const_cast<int *>(cones), numVertices, false, numCorners);
 
-      if (s->commSize() > 1) CPPUNIT_FAIL("This test is not yet parallel");
+      if (s->commSize() > 1) {
+        if (this->_onlyParallel) return;
+        CPPUNIT_FAIL("This test is not yet parallel");
+      }
       ALE::Obj<sieve_type> sieve = new sieve_type(PETSC_COMM_WORLD, 0, numPoints, this->_debug);
       for(int c = 0; c < numCells; ++c) {
         sieve->setConeSize(c, numCorners);
@@ -287,7 +296,10 @@ public:
 
   template<typename Mesh, typename Renumbering>
   void testOrientedClosure(const ALE::Obj<Mesh>& flexibleMesh, Renumbering& renumbering) {
-    if (flexibleMesh->commSize() > 1) CPPUNIT_FAIL("This test is not yet parallel");
+    if (flexibleMesh->commSize() > 1) {
+      if (this->_onlyParallel) return;
+      CPPUNIT_FAIL("This test is not yet parallel");
+    }
     typedef typename Mesh::sieve_type                  Sieve;
     typedef ALE::SieveAlg<Mesh>                        sieve_alg_type;
     typedef typename sieve_alg_type::orientedConeArray oConeArray;
@@ -382,9 +394,9 @@ public:
     this->_iters = 1;
 
     PetscFunctionBegin;
-    ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for interval section stress test", "ISection");CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-debug", "The debugging level", "isection.c", this->_debug, &this->_debug, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isection.c", this->_iters, &this->_iters, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for interval section stress test", "ISieve");CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-debug", "The debugging level", "isieve.c", this->_debug, &this->_debug, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isieve.c", this->_iters, &this->_iters, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     PetscFunctionReturn(0);
   };
