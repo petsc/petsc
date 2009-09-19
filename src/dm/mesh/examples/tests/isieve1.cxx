@@ -15,15 +15,17 @@ class FunctionTestISieve : public CppUnit::TestFixture
 
   CPPUNIT_TEST(testBase);
   CPPUNIT_TEST(testConversion);
-  CPPUNIT_TEST(testSerializationTriangularInterpolated);
   CPPUNIT_TEST(testSerializationTriangularUninterpolated);
-  CPPUNIT_TEST(testSerializationTetrahedralInterpolated);
+#if 0
+  CPPUNIT_TEST(testSerializationTriangularInterpolated);
   CPPUNIT_TEST(testSerializationTetrahedralUninterpolated);
+  CPPUNIT_TEST(testSerializationTetrahedralInterpolated);
+#endif
   CPPUNIT_TEST(testConstruction);
-  CPPUNIT_TEST(testTriangularInterpolatedOrientedClosure);
   CPPUNIT_TEST(testTriangularUninterpolatedOrientedClosure);
-  CPPUNIT_TEST(testTetrahedralInterpolatedOrientedClosure);
+  CPPUNIT_TEST(testTriangularInterpolatedOrientedClosure);
   CPPUNIT_TEST(testTetrahedralUninterpolatedOrientedClosure);
+  CPPUNIT_TEST(testTetrahedralInterpolatedOrientedClosure);
 
   CPPUNIT_TEST_SUITE_END();
 public:
@@ -206,6 +208,7 @@ public:
     const ALE::Obj<ALE::Mesh> m = ALE::MeshBuilder<ALE::Mesh>::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
     std::map<ALE::Mesh::point_type,sieve_type::point_type> renumbering;
 
+    if (m->commSize() > 1) CPPUNIT_FAIL("This test is not yet parallel");
     ALE::ISieveConverter::convertSieve(*m->getSieve(), *this->_sieve, renumbering);
     this->checkSieve(*m->getSieve(), *this->_sieve, renumbering, true);
   };
@@ -264,6 +267,7 @@ public:
       ALE::Obj<ALE::Mesh::sieve_type> s = new ALE::Mesh::sieve_type(PETSC_COMM_WORLD, this->_debug);
       ALE::SieveBuilder<ALE::Mesh>::buildTopology(s, 2, numCells, const_cast<int *>(cones), numVertices, false, numCorners);
 
+      if (s->commSize() > 1) CPPUNIT_FAIL("This test is not yet parallel");
       ALE::Obj<sieve_type> sieve = new sieve_type(PETSC_COMM_WORLD, 0, numPoints, this->_debug);
       for(int c = 0; c < numCells; ++c) {
         sieve->setConeSize(c, numCorners);
@@ -283,6 +287,7 @@ public:
 
   template<typename Mesh, typename Renumbering>
   void testOrientedClosure(const ALE::Obj<Mesh>& flexibleMesh, Renumbering& renumbering) {
+    if (flexibleMesh->commSize() > 1) CPPUNIT_FAIL("This test is not yet parallel");
     typedef typename Mesh::sieve_type                  Sieve;
     typedef ALE::SieveAlg<Mesh>                        sieve_alg_type;
     typedef typename sieve_alg_type::orientedConeArray oConeArray;
