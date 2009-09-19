@@ -69,7 +69,7 @@ PetscErrorCode PetscFreeSpaceContiguous_newdatastruct(PetscFreeSpaceList *head,P
       /* copy array entries into bj for row-1 */  
       nnz  = bi[row] - bi[row-1];
       /* set bi[row-1] for new datastruct */
-      if (row -1 <= 1 ){
+      if (row -1 == 0 ){
         bi[row -1] = 0;
       } else {
         bi[row-1] = bi[row-2] + nnzL; /* nnzL of previous row */
@@ -88,7 +88,7 @@ PetscErrorCode PetscFreeSpaceContiguous_newdatastruct(PetscFreeSpaceList *head,P
       nnzU = nnz - nnzL; 
       bi[2*n-(row-1)] = bi[2*n-(row-1)+1] - nnzU;
       nnzU --; /* exclude diagonal */
-      bj  = space + bi[2*n-(row-1)];
+      bj   = space + bi[2*n-(row-1)];
       ierr = PetscMemcpy(bj,array+nnzL+1,nnzU*sizeof(PetscInt));CHKERRQ(ierr);
   
       array += nnz; 

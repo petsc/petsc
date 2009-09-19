@@ -1926,34 +1926,35 @@ namespace ALE {
           fs << sieve.getConeSize(p) << " " << sieve.getSupportSize(p) << std::endl;
         }
         // Receive and write remote
-        for(int p = 0; p < sieve.commSize(); ++p) {
-          PetscInt       min, max;
+        for(int pr = 1; pr < sieve.commSize(); ++pr) {
+          PetscInt       minp, maxp;
           PetscInt      *sizes;
           MPI_Status     status;
           PetscErrorCode ierr;
 
-          ierr = MPI_Recv(&min, 1, MPIU_INT, p, 1, sieve.comm(), &status);CHKERRXX(ierr);
-          ierr = MPI_Recv(&max, 1, MPIU_INT, p, 1, sieve.comm(), &status);CHKERRXX(ierr);
-          ierr = PetscMalloc(2*(max - min) * sizeof(PetscInt), &sizes);CHKERRXX(ierr);
-          ierr = MPI_Recv(sizes, (max - min)*2, MPIU_INT, p, 1, sieve.comm(), &status);CHKERRXX(ierr);
-          for(PetscInt s = 0; s < max - min; ++s) {
+          ierr = MPI_Recv(&minp, 1, MPIU_INT, pr, 1, sieve.comm(), &status);CHKERRXX(ierr);
+          ierr = MPI_Recv(&maxp, 1, MPIU_INT, pr, 1, sieve.comm(), &status);CHKERRXX(ierr);
+          ierr = PetscMalloc(2*(maxp - minp) * sizeof(PetscInt), &sizes);CHKERRXX(ierr);
+          ierr = MPI_Recv(sizes, (maxp - minp)*2, MPIU_INT, pr, 1, sieve.comm(), &status);CHKERRXX(ierr);
+          fs << minp <<" "<< maxp << std::endl;
+          for(PetscInt s = 0; s < maxp - minp; ++s) {
             fs << sizes[s*2+0] << " " << sizes[s*2+1] << std::endl;
           }
           ierr = PetscFree(sizes);CHKERRXX(ierr);
-          mins[p] = min;
-          maxs[p] = max;
+          mins[pr] = minp;
+          maxs[pr] = maxp;
         }
       } else {
         // Send remote
-        PetscInt       min = chart->min();
-        PetscInt       max = chart->max();
+        //PetscInt       min = chart->min();
+        //PetscInt       max = chart->max();
         PetscInt       s   = 0;
         PetscInt      *sizes;
         PetscErrorCode ierr;
 
         ierr = MPI_Send(&min, 1, MPIU_INT, 0, 1, sieve.comm());CHKERRXX(ierr);
         ierr = MPI_Send(&max, 1, MPIU_INT, 0, 1, sieve.comm());CHKERRXX(ierr);
-        ierr = PetscMalloc((max - min)*2 * sizeof(PetscInt), &sizes);CHKERRXX(ierr);
+        ierr = PetscMalloc((max - min)*2 * sizeof(PetscInt) + 1, &sizes);CHKERRXX(ierr);
         for(typename ISieve::point_type p = min; p < max; ++p, ++s) {
           sizes[s*2+0] = sieve.getConeSize(p);
           sizes[s*2+1] = sieve.getSupportSize(p);
@@ -1964,7 +1965,7 @@ namespace ALE {
       // Write covering
       if (sieve.commRank() == 0) {
         // Write local
-        Visitor pV(std::max(sieve.getMaxConeSize(), sieve.getMaxSupportSize()));
+        Visitor pV(std::max(sieve.getMaxConeSize(), sieve.getMaxSupportSize())+1);
 
         for(typename ISieve::point_type p = min; p < max; ++p) {
           sieve.cone(p, pV);
@@ -2007,17 +2008,17 @@ namespace ALE {
           pV.clear();
         }
         // Receive and write remote
-        for(int p = 0; p < sieve.commSize(); ++p) {
+        for(int pr = 1; pr < sieve.commSize(); ++pr) {
           PetscInt       size;
           PetscInt      *data;
           PetscInt       off = 0;
           MPI_Status     status;
           PetscErrorCode ierr;
 
-          ierr = MPI_Recv(&size, 1, MPIU_INT, p, 1, sieve.comm(), &status);CHKERRXX(ierr);
+          ierr = MPI_Recv(&size, 1, MPIU_INT, pr, 1, sieve.comm(), &status);CHKERRXX(ierr);
           ierr = PetscMalloc(size*sizeof(PetscInt), &data);CHKERRXX(ierr);
-          ierr = MPI_Recv(data, size, MPIU_INT, p, 1, sieve.comm(), &status);CHKERRXX(ierr);
-          for(typename ISieve::point_type p = mins[p]; p < maxs[p]; ++p) {
+          ierr = MPI_Recv(data, size, MPIU_INT, pr, 1, sieve.comm(), &status);CHKERRXX(ierr);
+          for(typename ISieve::point_type p = mins[pr]; p < maxs[pr]; ++p) {
             PetscInt cSize = data[off++];
 
             if (cSize > 0) {
@@ -2051,7 +2052,7 @@ namespace ALE {
         }
       } else {
         // Send remote
-        Visitor pV(std::max(sieve.getMaxConeSize(), sieve.getMaxSupportSize()));
+        Visitor pV(std::max(sieve.getMaxConeSize(), sieve.getMaxSupportSize())+1);
         PetscInt totalConeSize    = 0;
         PetscInt totalSupportSize = 0;
 
@@ -2109,15 +2110,21 @@ namespace ALE {
     static void loadSieve(const std::string& filename, ISieve& sieve) {
       std::ifstream fs;
 
-      fs.open(filename.c_str());
+      if (sieve.commRank() == 0) {
+        fs.open(filename.c_str());
+      }
       loadSieve(fs, sieve);
-      fs.close();
+      if (sieve.commRank() == 0) {
+        fs.close();
+      }
     };
     template<typename ISieve>
     static void loadSieve(std::ifstream& fs, ISieve& sieve) {
       typename ISieve::point_type min, max;
-      PetscInt                               *mins  = new PetscInt[sieve.commSize()];
-      PetscInt                               *maxs  = new PetscInt[sieve.commSize()];
+      PetscInt                   *mins = new PetscInt[sieve.commSize()];
+      PetscInt                   *maxs = new PetscInt[sieve.commSize()];
+      PetscInt                   *totalConeSizes    = new PetscInt[sieve.commSize()];
+      PetscInt                   *totalSupportSizes = new PetscInt[sieve.commSize()];
 
       // Load sizes
       if (sieve.commRank() == 0) {
@@ -2134,29 +2141,31 @@ namespace ALE {
           sieve.setSupportSize(p, supportSize);
         }
         // Load and send remote
-        for(int p = 0; p < sieve.commSize(); ++p) {
-          PetscInt       min, max;
+        for(int pr = 1; pr < sieve.commSize(); ++pr) {
+          PetscInt       minp, maxp;
           PetscInt      *sizes;
           PetscErrorCode ierr;
 
-          fs >> min;
-          fs >> max;
-          ierr = MPI_Send(&min, 1, MPIU_INT, 0, p, sieve.comm());CHKERRXX(ierr);
-          ierr = MPI_Send(&max, 1, MPIU_INT, 0, p, sieve.comm());CHKERRXX(ierr);
-          ierr = PetscMalloc((max - min)*2 * sizeof(PetscInt), &sizes);CHKERRXX(ierr);
-          for(PetscInt s = 0; s < max - min; ++s) {
+          fs >> minp;
+          fs >> maxp;
+          ierr = MPI_Send(&minp, 1, MPIU_INT, pr, 1, sieve.comm());CHKERRXX(ierr);
+          ierr = MPI_Send(&maxp, 1, MPIU_INT, pr, 1, sieve.comm());CHKERRXX(ierr);
+          ierr = PetscMalloc((maxp - minp)*2 * sizeof(PetscInt), &sizes);CHKERRXX(ierr);
+          totalConeSizes[pr]    = 0;
+          totalSupportSizes[pr] = 0;
+          for(PetscInt s = 0; s < maxp - minp; ++s) {
             fs >> sizes[s*2+0];
             fs >> sizes[s*2+1];
+            totalConeSizes[pr]    += sizes[s*2+0];
+            totalSupportSizes[pr] += sizes[s*2+1];
           }
-          ierr = MPI_Send(sizes, (max - min)*2, MPIU_INT, p, 1, sieve.comm());CHKERRXX(ierr);
+          ierr = MPI_Send(sizes, (maxp - minp)*2, MPIU_INT, pr, 1, sieve.comm());CHKERRXX(ierr);
           ierr = PetscFree(sizes);CHKERRXX(ierr);
-          mins[p] = min;
-          maxs[p] = max;
+          mins[pr] = minp;
+          maxs[pr] = maxp;
         }
       } else {
         // Load remote
-        PetscInt       min;
-        PetscInt       max;
         PetscInt       s   = 0;
         PetscInt      *sizes;
         MPI_Status     status;
@@ -2203,13 +2212,71 @@ namespace ALE {
           }
         }
         delete [] points;
+        // Load and send remote
+        for(int pr = 1; pr < sieve.commSize(); ++pr) {
+          PetscInt       size = ((maxs[pr] - mins[pr])+totalConeSizes[pr])*2 + (maxs[pr] - mins[pr])+totalSupportSizes[pr];
+          PetscInt       off  = 0;
+          PetscInt      *data;
+          PetscErrorCode ierr;
+
+          ierr = MPI_Send(&size, 1, MPIU_INT, pr, 1, sieve.comm());CHKERRXX(ierr);
+          // There is no nice way to make a generic MPI type here. Really sucky
+          ierr = PetscMalloc(size * sizeof(PetscInt), &data);CHKERRXX(ierr);
+          for(typename ISieve::point_type p = mins[pr]; p < maxs[pr]; ++p) {
+            PetscInt coneSize, supportSize;
+
+            fs >> coneSize;
+            data[off++] = coneSize;
+            if (coneSize > 0) {
+              for(int c = 0; c < coneSize; ++c) {
+                fs >> data[off++];
+              }
+              for(int c = 0; c < coneSize; ++c) {
+                fs >> data[off++];
+              }
+            }
+            fs >> supportSize;
+            data[off++] = supportSize;
+            if (supportSize > 0) {
+              for(int s = 0; s < supportSize; ++s) {
+                fs >> data[off++];
+              }
+            }
+          }
+          assert(off == size);
+          ierr = MPI_Send(data, size, MPIU_INT, pr, 1, sieve.comm());CHKERRXX(ierr);
+          ierr = PetscFree(data);CHKERRXX(ierr);
+        }
         delete [] mins;
         delete [] maxs;
-        // Load and send remote
-        for(int p = 0; p < sieve.commSize(); ++p) {
-        }
       } else {
         // Load remote
+        PetscInt       size;
+        PetscInt      *data;
+        PetscInt       off = 0;
+        MPI_Status     status;
+        PetscErrorCode ierr;
+
+        ierr = MPI_Recv(&size, 1, MPIU_INT, 0, 1, sieve.comm(), &status);CHKERRXX(ierr);
+        ierr = PetscMalloc(size*sizeof(PetscInt), &data);CHKERRXX(ierr);
+        ierr = MPI_Recv(data, size, MPIU_INT, 0, 1, sieve.comm(), &status);CHKERRXX(ierr);
+        for(typename ISieve::point_type p = min; p < max; ++p) {
+          typename ISieve::index_type coneSize    = sieve.getConeSize(p);
+          typename ISieve::index_type supportSize = sieve.getSupportSize(p);
+
+          if (coneSize > 0) {
+            sieve.setCone(&data[off], p);
+            off += coneSize;
+            if (sieve.orientedCones()) {
+              sieve.setConeOrientation(&data[off], p);
+              off += coneSize;
+            }
+          }
+          if (supportSize > 0) {
+            sieve.setSupport(p, &data[off]);
+            off += supportSize;
+          }
+        }
       }
       // Load renumbering
     };

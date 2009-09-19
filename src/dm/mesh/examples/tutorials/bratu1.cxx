@@ -45,17 +45,29 @@ public:
   /// Tear down data.
   void tearDown(void) {};
 
+  void checkSolution(const double exactError, const double tolerance, const char testName[]) {
+    SectionReal    solution;
+    PetscReal      errorNorm;
+    PetscErrorCode ierr;
+
+    ierr = MeshGetSectionReal((::Mesh) this->_problem->getDM(), "default", &solution);CHKERRXX(ierr);
+    ierr = SectionRealToVec(solution, (::Mesh) this->_problem->getDM(), SCATTER_REVERSE, DMMGGetx(this->_problem->getDMMG()));CHKERRXX(ierr);
+    ierr = this->_problem->calculateError(solution, &errorNorm);CHKERRXX(ierr);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(exactError, errorNorm, tolerance);
+  };
+
   void testBratuUnitSquare(double exactError) {
     this->_problem->structured(false);
     this->_problem->createMesh();
     this->_problem->createProblem();
     this->_problem->createExactSolution();
-    PetscScalar errorNorm;
+    PetscReal errorNorm;
+
     this->_problem->calculateError(this->_problem->exactSolution().section, &errorNorm);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(exactError, errorNorm, 1.0e-6);
-    ///this->_problem->createSolver();
-    ///this->_problem->solve();
-    ///this->checkAnswer(answerStruct, "BratuUnitSquare");
+    this->_problem->createSolver();
+    this->_problem->solve();
+    this->checkSolution(exactError, 1.0e-6, "BratuUnitSquare");
   };
 
   void testBratuUnitSquareInterpolated(void) {

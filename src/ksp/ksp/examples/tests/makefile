@@ -487,6 +487,13 @@ runex32_10:
 	   else echo "Possible problem with ex32_10, diffs above"; fi; \
 	${RM} -f ex32.tmp; ${RM} -f ex32_10.out
 
+runex32_11:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -pc_type lu -da_grid_x 20 -da_grid_y 20 -da_grid_z 20 > ex32_11.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -pc_type lu -da_grid_x 20 -da_grid_y 20 -da_grid_z 20 -lu_new > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_11.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_11, diffs above"; fi; \
+	${RM} -f ex32.tmp; ${RM} -f ex32_11.out
+
 runex32_12:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type natural -mat_type baij -pc_factor_levels 3 > ex32_2.out 2>&1;
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type natural -mat_type baij -pc_factor_levels 3 -ilu_new > ex32.tmp 2>&1; \

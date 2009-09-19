@@ -27,7 +27,7 @@ EXTERN PetscErrorCode PetscOptionsHelpDestroyList(void);
 PetscErrorCode __gierr = 0;
 
 /* user may set this BEFORE calling PetscInitialize() */
-MPI_Comm PETSC_COMM_WORLD = 0;
+MPI_Comm PETSC_COMM_WORLD = MPI_COMM_NULL;
 
 /*
      Declare and set all the string names of the PETSc enums
@@ -500,7 +500,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
 
   ierr = MPI_Initialized(&flag);CHKERRQ(ierr);
   if (!flag) {
-    if (PETSC_COMM_WORLD) SETERRQ(PETSC_ERR_SUP,"You cannot set PETSC_COMM_WORLD if you have not initialized MPI first");
+    if (PETSC_COMM_WORLD != MPI_COMM_NULL) SETERRQ(PETSC_ERR_SUP,"You cannot set PETSC_COMM_WORLD if you have not initialized MPI first");
     ierr          = MPI_Init(argc,args);CHKERRQ(ierr);
     PetscBeganMPI = PETSC_TRUE;
   }
@@ -511,7 +511,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   PetscInitializeCalled = PETSC_TRUE;
   PetscFinalizeCalled   = PETSC_FALSE;
 
-  if (!PETSC_COMM_WORLD) {
+  if (PETSC_COMM_WORLD == MPI_COMM_NULL) {
     PETSC_COMM_WORLD = MPI_COMM_WORLD;
   }
 

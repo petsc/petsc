@@ -2,7 +2,6 @@
 ALL: lib
 
 DIRS     = ao da mesh adda f90-mod
-SOURCEH  = dmimpl.h
 LOCDIR   = src/dm/
 MANSEC   = DA
 
