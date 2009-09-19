@@ -31,11 +31,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTrFreeDefault(void*,int,const char[],
 #define TR_ALIGN_MASK       0x3
 #endif
 
-#define COOKIE_VALUE   0xf0e0d0c9
-#define ALREADY_FREED  0x0f0e0d9c
-#define MAX_TR_STACK   20
-#define TR_MALLOC      0x1
-#define TR_FREE        0x2
+#define COOKIE_VALUE   ((PetscCookie) 0xf0e0d0c9)
+#define ALREADY_FREED  ((PetscCookie) 0x0f0e0d9c)
 
 typedef struct _trSPACE {
     size_t          size;
