@@ -1261,7 +1261,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetJacobian(SNES snes,Mat A,Mat B,PetscEr
   if (A) PetscValidHeaderSpecific(A,MAT_COOKIE,2);
   if (B) PetscValidHeaderSpecific(B,MAT_COOKIE,3);
   if (A) PetscCheckSameComm(snes,1,A,2);
-  if (B) PetscCheckSameComm(snes,1,B,2);
+  if (B) PetscCheckSameComm(snes,1,B,3);
   if (func) snes->ops->computejacobian = func;
   if (ctx)  snes->jacP                 = ctx;
   if (A) {
