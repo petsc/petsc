@@ -24,6 +24,7 @@ typedef struct {
   Vec Xold;
   Vec X,Xdot;                   /* Storage for one stage */
   Vec res;                      /* DAE residuals */
+  PetscTruth extrapolate;
   PetscReal Theta;
   PetscReal shift;
   PetscReal stage_time;
@@ -49,7 +50,11 @@ static PetscErrorCode TSStep_Theta(TS ts,PetscInt *steps,PetscReal *ptime)
     ts->ptime += ts->time_step;
 
     ierr = VecCopy(sol,th->Xold);CHKERRQ(ierr); /* Used within function evalutaion */
-    ierr = VecWAXPY(th->X,1./th->shift,th->Xdot,sol);CHKERRQ(ierr);
+    if (th->extrapolate) {
+      ierr = VecWAXPY(th->X,1./th->shift,th->Xdot,sol);CHKERRQ(ierr);
+    } else {
+      ierr = VecCopy(sol,th->X);CHKERRQ(ierr);
+    }
     ierr = SNESSolve(ts->snes,PETSC_NULL,th->X);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
     ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
@@ -154,6 +159,7 @@ static PetscErrorCode TSSetFromOptions_Theta(TS ts)
   ierr = PetscOptionsHead("SUNDIALS ODE solver options");CHKERRQ(ierr);
   {
     ierr = PetscOptionsReal("-ts_theta_theta","Location of stage (0<Theta<=1)","TSThetaSetTheta",th->Theta,&th->Theta,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-ts_theta_extrapolate","Extrapolate stage solution from previous solution (sometimes unstable)","TSThetaSetExtrapolate",th->extrapolate,&th->extrapolate,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -171,6 +177,7 @@ static PetscErrorCode TSView_Theta(TS ts,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Theta=%G\n",th->Theta);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Extrapolation=%s\n",th->extrapolate?"yes":"no");CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for TS_Theta",((PetscObject)viewer)->type_name);
   }
@@ -207,7 +214,8 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Theta(TS ts)
   ierr = PetscNewLog(ts,TS_Theta,&th);CHKERRQ(ierr);
   ts->data = (void*)th;
 
-  th->Theta = 0.5;
+  th->extrapolate = PETSC_TRUE;
+  th->Theta       = 0.5;
 
   PetscFunctionReturn(0);
 }

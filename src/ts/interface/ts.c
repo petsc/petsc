@@ -377,10 +377,7 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec Y)
     }
 
     /* Convert to implicit form */
-    ierr = VecGetLocalSize(Y,&n);CHKERRQ(ierr);
-    ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-    for (i=0; i<n; i++) y[i] = 1.0 - y[i];
-    ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
+    ierr = VecAYPX(Y,-1,Xdot);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(TS_FunctionEval,ts,X,Xdot,Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
