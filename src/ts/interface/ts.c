@@ -419,7 +419,7 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec Y)
 .keywords: TS, compute, Jacobian, matrix
 
 .seealso:  TSSetIJacobian()
-*/
+@*/
 PetscErrorCode PETSCTS_DLLEXPORT TSComputeIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shift,Mat *A,Mat *B,MatStructure *flg)
 {
   PetscErrorCode ierr;
