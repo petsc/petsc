@@ -17,13 +17,15 @@ static char help[] = "Nonlinear DAE.\n";
 
 typedef struct _Problem *Problem;
 struct _Problem {
-  PetscErrorCode (*create)(MPI_Comm,void**);
-  PetscErrorCode (*destroy)(void*);
+  PetscErrorCode (*destroy)(Problem);
   TSIFunction function;
   TSIJacobian jacobian;
   PetscErrorCode (*solution)(PetscReal,Vec,void*);
+
+  MPI_Comm comm;
   PetscReal final_time;
   PetscInt n;
+  void *data;
 };
 
 /*
@@ -98,45 +100,37 @@ static PetscErrorCode RoberSolution(PetscReal t,Vec X,void *ctx)
   PetscFunctionReturn(0);
 }
 
-struct _Problem problem_rober = {0,0,&RoberFunction,&RoberJacobian,&RoberSolution,1e11,3};
+#undef __FUNCT__
+#define __FUNCT__ "RoberCreate"
+static PetscErrorCode RoberCreate(Problem p)
+{
+
+  PetscFunctionBegin;
+  p->destroy    = 0;
+  p->function   = &RoberFunction;
+  p->jacobian   = &RoberJacobian;
+  p->solution   = &RoberSolution;
+  p->final_time = 1e11;
+  p->n          = 3;
+  PetscFunctionReturn(0);
+}
 
 
 typedef struct {
   PetscReal lambda;
 } CECtx;
 
-
 /*
 * Stiff scalar valued problem with an exact solution
 */
 #undef __FUNCT__
-#define __FUNCT__ "CECreate"
-static PetscErrorCode CECreate(MPI_Comm comm,void **ctx)
-{
-  PetscErrorCode ierr;
-  CECtx         *ce;
-
-  PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(CECtx),&ce);CHKERRQ(ierr);
-  *ctx = (void*)ce;
-
-  ce->lambda = 10;
-  ierr = PetscOptionsBegin(comm,PETSC_NULL,"CE options","");CHKERRQ(ierr);
-  {
-    ierr = PetscOptionsReal("-problem_ce_lambda","Parameter controlling stiffness: xdot + lambda*(x - cos(t))","",ce->lambda,&ce->lambda,PETSC_NULL);CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "CEDestroy"
-static PetscErrorCode CEDestroy(void *ctx)
+static PetscErrorCode CEDestroy(Problem p)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(ctx);CHKERRQ(ierr);
+  ierr = PetscFree(p->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -204,7 +198,32 @@ static PetscErrorCode CESolution(PetscReal t,Vec X,void *ctx)
   PetscFunctionReturn(0);
 }
 
-struct _Problem problem_ce = {&CECreate,&CEDestroy,&CEFunction,&CEJacobian,&CESolution,2,1};
+#undef __FUNCT__
+#define __FUNCT__ "CECreate"
+static PetscErrorCode CECreate(Problem p)
+{
+  PetscErrorCode ierr;
+  CECtx         *ce;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc(sizeof(CECtx),&ce);CHKERRQ(ierr);
+  p->data = (void*)ce;
+
+  p->destroy    = &CEDestroy;
+  p->function   = &CEFunction;
+  p->jacobian   = &CEJacobian;
+  p->solution   = &CESolution;
+  p->final_time = 10;
+  p->n          = 1;
+
+  ce->lambda = 10;
+  ierr = PetscOptionsBegin(p->comm,PETSC_NULL,"CE options","");CHKERRQ(ierr);
+  {
+    ierr = PetscOptionsReal("-problem_ce_lambda","Parameter controlling stiffness: xdot + lambda*(x - cos(t))","",ce->lambda,&ce->lambda,PETSC_NULL);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 
 /*
@@ -213,7 +232,6 @@ struct _Problem problem_ce = {&CECreate,&CEDestroy,&CEFunction,&CEJacobian,&CESo
 typedef struct {
   MPI_Comm  comm;
   Problem   problem;
-  void     *user;
   Vec       x;
 } MonitorCtx;
 
@@ -227,7 +245,7 @@ static PetscErrorCode MonitorError(TS ts,PetscInt step,PetscReal t,Vec x,void *c
 
   PetscFunctionBegin;
   if (!mon->problem->solution) PetscFunctionReturn(0);
-  ierr = (*mon->problem->solution)(t,mon->x,mon->user);CHKERRQ(ierr);
+  ierr = (*mon->problem->solution)(t,mon->x,mon->problem->data);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&nrm_x);CHKERRQ(ierr);
   ierr = VecNorm(mon->x,NORM_2,&nrm_exact);CHKERRQ(ierr);
   ierr = VecAYPX(mon->x,-1,x);CHKERRQ(ierr);
@@ -242,13 +260,15 @@ static PetscErrorCode MonitorError(TS ts,PetscInt step,PetscReal t,Vec x,void *c
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
+  PetscFList      plist = PETSC_NULL;
+  char            pname[256];
   TS              ts;           /* nonlinear solver */
   Vec             x,r;          /* solution, residual vectors */
   Mat             A;            /* Jacobian matrix */
   Problem         problem;
+  PetscTruth      use_monitor;
   PetscInt        steps,maxsteps = 100;
   PetscReal       ftime;
-  void           *user;
   MonitorCtx      mon;
   PetscErrorCode  ierr;
 
@@ -257,12 +277,33 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscInitialize(&argc,&argv,(char *)0,help);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    Choose which problem to solve
-    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  problem = &problem_ce;
+  /* Register the available problems */
+  ierr = PetscFListAdd(&plist,"rober","",(void(*)(void))&RoberCreate);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&plist,"ce",   "",(void(*)(void))&CECreate   );CHKERRQ(ierr);
+  ierr = PetscStrcpy(pname,"ce");CHKERRQ(ierr);
 
-  if (problem->create) {ierr = (*problem->create)(MPI_COMM_WORLD,&user);CHKERRQ(ierr);}
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    Set runtime options
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Timestepping benchmark options","");CHKERRQ(ierr);
+  {
+    ierr = PetscOptionsList("-problem_type","Name of problem to run","",plist,pname,pname,sizeof(pname),PETSC_NULL);CHKERRQ(ierr);
+    use_monitor = PETSC_FALSE;
+    ierr = PetscOptionsTruth("-monitor_error","Display errors relative to exact solutions","",use_monitor,&use_monitor,PETSC_NULL);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+  /* Create the new problem */
+  ierr = PetscNew(struct _Problem,&problem);CHKERRQ(ierr);
+  problem->comm = MPI_COMM_WORLD;
+  {
+    PetscErrorCode (*pcreate)(Problem);
+
+    ierr = PetscFListFind(plist,MPI_COMM_WORLD,pname,(void(**)(void))&pcreate);CHKERRQ(ierr);
+    if (!pcreate) SETERRQ1(1,"No problem '%s'\n",pname);
+    ierr = (*pcreate)(problem);CHKERRQ(ierr);
+  }
+
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors, solve same ODE on every process
@@ -276,7 +317,6 @@ int main(int argc,char **argv)
 
   mon.comm = PETSC_COMM_WORLD;
   mon.problem = problem;
-  mon.user = user;
   ierr = VecDuplicate(x,&mon.x);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -284,33 +324,23 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,problem->function,user);CHKERRQ(ierr);
-  ierr = TSSetIJacobian(ts,A,A,problem->jacobian,user);CHKERRQ(ierr);
-
+  ierr = TSSetIFunction(ts,problem->function,problem->data);CHKERRQ(ierr);
+  ierr = TSSetIJacobian(ts,A,A,problem->jacobian,problem->data);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,maxsteps,problem->final_time);CHKERRQ(ierr);
+  if (use_monitor) {
+    ierr = TSMonitorSet(ts,&MonitorError,&mon,PETSC_NULL);CHKERRQ(ierr);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = (*problem->solution)(0,x,user);CHKERRQ(ierr);
+  ierr = (*problem->solution)(0,x,problem->data);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Timestepping benchmark options","");CHKERRQ(ierr);
-  {
-    PetscTruth flg;
-
-    flg = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-monitor_error","Display errors relative to exact solutions","",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      ierr = TSMonitorSet(ts,&MonitorError,&mon,PETSC_NULL);CHKERRQ(ierr);
-    }
-  }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -329,8 +359,10 @@ int main(int argc,char **argv)
   ierr = VecDestroy(mon.x);CHKERRQ(ierr);
   ierr = TSDestroy(ts);CHKERRQ(ierr);
   if (problem->destroy) {
-    ierr = (*problem->destroy)(user);CHKERRQ(ierr);
+    ierr = (*problem->destroy)(problem);CHKERRQ(ierr);
   }
+  ierr = PetscFree(problem);CHKERRQ(ierr);
+  ierr = PetscFListDestroy(&plist);CHKERRQ(ierr);
 
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);

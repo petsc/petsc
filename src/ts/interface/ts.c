@@ -359,9 +359,6 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec Y)
     ierr = (*ts->ops->ifunction)(ts,t,X,Xdot,Y,ts->funP);CHKERRQ(ierr);
     PetscStackPop;
   } else {
-    PetscScalar *y;
-    PetscInt     i,n;
-
     if (ts->ops->rhsfunction) {
       PetscStackPush("TS user right-hand-side function");
       ierr = (*ts->ops->rhsfunction)(ts,t,X,Y,ts->funP);CHKERRQ(ierr);
@@ -776,11 +773,17 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetIJacobian(TS ts,Mat A,Mat B,TSIJacobian f,
     if (ts->A) {ierr = MatDestroy(ts->A);CHKERRQ(ierr);}
     ts->A = A;
   }
+#if 0
+  /* The sane and consistent alternative */
   if (B) {
     ierr = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
     if (ts->B) {ierr = MatDestroy(ts->B);CHKERRQ(ierr);}
     ts->B = B;
   }
+#else
+  /* Don't reference B because TSDestroy() doesn't destroy it.  These ownership semantics are awkward and inconsistent. */
+  if (B) ts->B = B;
+#endif
   PetscFunctionReturn(0);
 }
 
