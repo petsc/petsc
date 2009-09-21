@@ -1,5 +1,5 @@
 /*
-   User interface for the timestepping package. This is package
+   User interface for the timestepping package. This package
    is for use in solving time-dependent PDEs.
 */
 #if !defined(__PETSCTS_H)
@@ -35,6 +35,8 @@ E*/
 #define TS_SUNDIALS        "sundials"
 #define TS_RUNGE_KUTTA     "runge-kutta"
 #define TS_PYTHON          "python"
+#define TS_THETA           "theta"
+#define TS_DI              "di"
 
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve
@@ -89,6 +91,11 @@ EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSGetMatrices(TS,Mat*,Mat*,void**);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSetRHSJacobian(TS,Mat,Mat,PetscErrorCode (*)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),void*);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSGetRHSJacobian(TS,Mat*,Mat*,void**);
 
+typedef PetscErrorCode (*TSIFunction)(TS,PetscReal,Vec,Vec,Vec,void*);
+typedef PetscErrorCode (*TSIJacobian)(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSetIFunction(TS,TSIFunction,void*);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSetIJacobian(TS,Mat,Mat,TSIJacobian,void*);
+
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSDefaultComputeJacobianColor(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSDefaultComputeJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
 
@@ -112,6 +119,8 @@ EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSPythonSetType(TS,const char[]);
 
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSComputeRHSFunction(TS,PetscReal,Vec,Vec);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSComputeRHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSComputeIFunction(TS,PetscReal,Vec,Vec,Vec);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSComputeIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*);
 
 /* Dynamic creation and loading functions */
 extern PetscFList TSList;
