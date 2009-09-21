@@ -774,15 +774,16 @@ namespace ALE {
           fs << ai->source << " " << ai->target << std::endl;
         }
         // Receive and write remote
-        for(int p = 0; p < label.commSize(); ++p) {
+        for(int p = 1; p < label.commSize(); ++p) {
           PetscInt       size;
           PetscInt      *arrows;
           MPI_Status     status;
           PetscErrorCode ierr;
 
           ierr = MPI_Recv(&size, 1, MPIU_INT, p, 1, label.comm(), &status);CHKERRXX(ierr);
-          ierr = MPI_Recv(&arrows, 1, MPIU_INT, p, 1, label.comm(), &status);CHKERRXX(ierr);
+          fs << size << std::endl;
           ierr = PetscMalloc(size*2 * sizeof(PetscInt), &arrows);CHKERRXX(ierr);
+          ierr = MPI_Recv(arrows, size*2, MPIU_INT, p, 1, label.comm(), &status);CHKERRXX(ierr);
           for(PetscInt a = 0; a < size; ++a) {
             fs << arrows[a*2+0] << " " << arrows[a*2+1] << std::endl;
           }
@@ -808,16 +809,49 @@ namespace ALE {
     };
     template<typename LabelSifter>
     static void loadLabel(std::ifstream& fs, LabelSifter& label) {
-      size_t numArrows;
+      if (label.commRank() == 0) {
+        // Load local
+        size_t numArrows;
 
-      fs >> numArrows;
-      for(size_t a = 0; a < numArrows; ++a) {
-        typename LabelSifter::traits::arrow_type::source_type source;
-        typename LabelSifter::traits::arrow_type::target_type target;
+        fs >> numArrows;
+        for(size_t a = 0; a < numArrows; ++a) {
+          typename LabelSifter::traits::arrow_type::source_type source;
+          typename LabelSifter::traits::arrow_type::target_type target;
 
-        fs >> source;
-        fs >> target;
-        label.addArrow(typename LabelSifter::traits::arrow_type(source, target));
+          fs >> source;
+          fs >> target;
+          label.addArrow(typename LabelSifter::traits::arrow_type(source, target));
+        }
+        // Load and send remote
+        for(int p = 1; p < label.commSize(); ++p) {
+          PetscInt       size;
+          PetscInt      *arrows;
+          PetscErrorCode ierr;
+
+          fs >> size;
+          ierr = MPI_Send(&size, 1, MPIU_INT, p, 1, label.comm());CHKERRXX(ierr);
+          ierr = PetscMalloc(size*2 * sizeof(PetscInt), &arrows);CHKERRXX(ierr);
+          for(PetscInt a = 0; a < size; ++a) {
+            fs >> arrows[a*2+0];
+            fs >> arrows[a*2+1];
+          }
+          ierr = MPI_Send(arrows, size*2, MPIU_INT, p, 1, label.comm());CHKERRXX(ierr);
+          ierr = PetscFree(arrows);CHKERRXX(ierr);
+        }
+      } else {
+        // Load remote
+        PetscInt       size;
+        PetscInt      *arrows;
+        MPI_Status     status;
+        PetscErrorCode ierr;
+
+        ierr = MPI_Recv(&size, 1, MPIU_INT, 0, 1, label.comm(), &status);CHKERRXX(ierr);
+        ierr = PetscMalloc(size*2 * sizeof(PetscInt), &arrows);CHKERRXX(ierr);
+        ierr = MPI_Recv(arrows, size*2, MPIU_INT, 0, 1, label.comm(), &status);CHKERRXX(ierr);
+        for(PetscInt a = 0; a < size; ++a) {
+          label.addArrow(typename LabelSifter::traits::arrow_type(arrows[a*2+0], arrows[a*2+1]));
+        }
+        ierr = PetscFree(arrows);CHKERRXX(ierr);
       }
     };
   };

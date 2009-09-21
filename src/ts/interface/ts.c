@@ -129,8 +129,10 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetFromOptions(TS ts)
     if (ts->snes) {
       /* this is a bit of a hack, but it gets the matrix information into SNES earlier
          so that SNES and KSP have more information to pick reasonable defaults
-         before they allow users to set options */
-      ierr = SNESSetJacobian(ts->snes,ts->Arhs,ts->B,0,ts);CHKERRQ(ierr);
+         before they allow users to set options
+       * If ts->A has been set at this point, we are probably using the implicit form
+         and Arhs will never be used. */
+      ierr = SNESSetJacobian(ts->snes,ts->A?ts->A:ts->Arhs,ts->B,0,ts);CHKERRQ(ierr);
       ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
     }
     break;
@@ -199,7 +201,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSViewFromOptions(TS ts,const char title[])
    Collective on TS and Vec
 
    Input Parameters:
-+  ts - the SNES context
++  ts - the TS context
 .  t - current timestep
 -  x - input vector
 
@@ -243,7 +245,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSComputeRHSJacobian(TS ts,PetscReal t,Vec X,Ma
     ierr = PetscLogEventEnd(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
     /* make sure user returned a correct Jacobian and preconditioner */
     PetscValidHeaderSpecific(*A,MAT_COOKIE,4);
-    PetscValidHeaderSpecific(*B,MAT_COOKIE,5);  
+    PetscValidHeaderSpecific(*B,MAT_COOKIE,5);
   } else {
     ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -257,20 +259,40 @@ PetscErrorCode PETSCTS_DLLEXPORT TSComputeRHSJacobian(TS ts,PetscReal t,Vec X,Ma
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSComputeRHSFunction"
-/*
+/*@
    TSComputeRHSFunction - Evaluates the right-hand-side function. 
 
-   Note: If the user did not provide a function but merely a matrix,
+   Collective on TS and Vec
+
+   Input Parameters:
++  ts - the TS context
+.  t - current time
+-  x - state vector
+
+   Output Parameter:
+.  y - right hand side
+
+   Note:
+   Most users should not need to explicitly call this routine, as it
+   is used internally within the nonlinear solvers.
+
+   If the user did not provide a function but merely a matrix,
    this routine applies the matrix.
-*/
+
+   Level: developer
+
+.keywords: TS, compute
+
+.seealso: TSSetRHSFunction(), TSComputeIFunction()
+@*/
 PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec x,Vec y)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
-  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
-  PetscValidHeaderSpecific(y,VEC_COOKIE,3);
+  PetscValidHeaderSpecific(x,VEC_COOKIE,3);
+  PetscValidHeaderSpecific(y,VEC_COOKIE,4);
 
   ierr = PetscLogEventBegin(TS_FunctionEval,ts,x,y,0);CHKERRQ(ierr);
   if (ts->ops->rhsfunction) {
@@ -289,6 +311,154 @@ PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec x,Vec y)
 
   ierr = PetscLogEventEnd(TS_FunctionEval,ts,x,y,0);CHKERRQ(ierr);
 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSComputeIFunction"
+/*@
+   TSComputeIFunction - Evaluates the DAE residual written in implicit form F(t,X,Xdot)=0
+
+   Collective on TS and Vec
+
+   Input Parameters:
++  ts - the TS context
+.  t - current time
+.  X - state vector
+-  Xdot - time derivative of state vector
+
+   Output Parameter:
+.  Y - right hand side
+
+   Note:
+   Most users should not need to explicitly call this routine, as it
+   is used internally within the nonlinear solvers.
+
+   If the user did did not write their equations in implicit form, this
+   function recasts them in implicit form.
+
+   Level: developer
+
+.keywords: TS, compute
+
+.seealso: TSSetIFunction(), TSComputeRHSFunction()
+@*/
+PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec Y)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(X,VEC_COOKIE,3);
+  PetscValidHeaderSpecific(Xdot,VEC_COOKIE,4);
+  PetscValidHeaderSpecific(Y,VEC_COOKIE,5);
+
+  ierr = PetscLogEventBegin(TS_FunctionEval,ts,X,Xdot,Y);CHKERRQ(ierr);
+  if (ts->ops->ifunction) {
+    PetscStackPush("TS user implicit function");
+    ierr = (*ts->ops->ifunction)(ts,t,X,Xdot,Y,ts->funP);CHKERRQ(ierr);
+    PetscStackPop;
+  } else {
+    if (ts->ops->rhsfunction) {
+      PetscStackPush("TS user right-hand-side function");
+      ierr = (*ts->ops->rhsfunction)(ts,t,X,Y,ts->funP);CHKERRQ(ierr);
+      PetscStackPop;
+    } else {
+      if (ts->ops->rhsmatrix) { /* assemble matrix for this timestep */
+        MatStructure flg;
+        PetscStackPush("TS user right-hand-side matrix function");
+        ierr = (*ts->ops->rhsmatrix)(ts,t,&ts->Arhs,&ts->B,&flg,ts->jacP);CHKERRQ(ierr);
+        PetscStackPop;
+      }
+      ierr = MatMult(ts->Arhs,X,Y);CHKERRQ(ierr);
+    }
+
+    /* Convert to implicit form */
+    ierr = VecAYPX(Y,-1,Xdot);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventEnd(TS_FunctionEval,ts,X,Xdot,Y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSComputeIJacobian"
+/*@
+   TSComputeIJacobian - Evaluates the Jacobian of the DAE
+
+   Collective on TS and Vec
+
+   Input
+      Input Parameters:
++  ts - the TS context
+.  t - current timestep
+.  X - state vector
+.  Xdot - time derivative of state vector
+-  shift - shift to apply, see note below
+
+   Output Parameters:
++  A - Jacobian matrix
+.  B - optional preconditioning matrix
+-  flag - flag indicating matrix structure
+
+   Notes:
+   If F(t,X,Xdot)=0 is the DAE, the required Jacobian is
+
+   dF/dX + shift*dF/dXdot
+
+   Most users should not need to explicitly call this routine, as it
+   is used internally within the nonlinear solvers.
+
+   TSComputeIJacobian() is valid only for TS_NONLINEAR
+
+   Level: developer
+
+.keywords: TS, compute, Jacobian, matrix
+
+.seealso:  TSSetIJacobian()
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSComputeIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shift,Mat *A,Mat *B,MatStructure *flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(X,VEC_COOKIE,3);
+  PetscValidHeaderSpecific(Xdot,VEC_COOKIE,4);
+  PetscValidPointer(A,6);
+  PetscValidHeaderSpecific(*A,MAT_COOKIE,6);
+  PetscValidPointer(B,7);
+  PetscValidHeaderSpecific(*B,MAT_COOKIE,7);
+  PetscValidPointer(flg,8);
+
+  ierr = PetscLogEventBegin(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
+  if (ts->ops->ijacobian) {
+    PetscStackPush("TS user implicit Jacobian");
+    ierr = (*ts->ops->ijacobian)(ts,t,X,Xdot,shift,A,B,flg,ts->jacP);CHKERRQ(ierr);
+    PetscStackPop;
+  } else {
+    if (ts->ops->rhsjacobian) {
+      PetscStackPush("TS user right-hand-side Jacobian");
+      ierr = (*ts->ops->rhsjacobian)(ts,t,X,A,B,flg,ts->jacP);CHKERRQ(ierr);
+      PetscStackPop;
+    } else {
+      ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      if (*A != *B) {
+        ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+        ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      }
+    }
+
+    /* Convert to implicit form */
+    /* inefficient because these operations will normally traverse all matrix elements twice */
+    ierr = MatScale(*A,-1);CHKERRQ(ierr);
+    ierr = MatShift(*A,shift);CHKERRQ(ierr);
+    if (*A != *B) {
+      ierr = MatScale(*B,-1);CHKERRQ(ierr);
+      ierr = MatShift(*B,shift);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscLogEventEnd(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -504,6 +674,116 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetRHSJacobian(TS ts,Mat A,Mat B,PetscErrorCo
   ts->jacP             = ctx;
   ts->Arhs             = A;
   ts->B                = B;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetIFunction"
+/*@C
+   TSSetIFunction - Set the function to compute F(t,U,U_t) where F = 0 is the DAE to be solved.
+
+   Collective on TS
+
+   Input Parameters:
++  ts  - the TS context obtained from TSCreate()
+.  f   - the function evaluation routine
+-  ctx - user-defined context for private data for the function evaluation routine (may be PETSC_NULL)
+
+   Calling sequence of f:
+$  f(TS ts,PetscReal t,Vec u,Vec u_t,Vec F,ctx);
+
++  t   - time at step/stage being solved
+.  u   - state vector
+.  u_t - time derivative of state vector
+.  F   - function vector
+-  ctx - [optional] user-defined context for matrix evaluation routine
+
+   Important:
+   The user MUST call either this routine, TSSetRHSFunction(), or TSSetMatrices().  This routine must be used when not solving an ODE.
+
+   Level: beginner
+
+.keywords: TS, timestep, set, DAE, Jacobian
+
+.seealso: TSSetMatrices(), TSSetRHSFunction(), TSSetIJacobian()
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSSetIFunction(TS ts,TSIFunction f,void *ctx)
+{
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  ts->ops->ifunction = f;
+  ts->funP           = ctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetIJacobian"
+/*@C
+   TSSetIJacobian - Set the function to compute the Jacobian of
+   G(U) = F(t,U,U0+a*U) where F(t,U,U_t) = 0 is the DAE to be solved.
+
+   Collective on TS
+
+   Input Parameters:
++  ts  - the TS context obtained from TSCreate()
+.  A   - Jacobian matrix
+.  B   - preconditioning matrix for A (may be same as A)
+.  f   - the Jacobian evaluation routine
+-  ctx - user-defined context for private data for the Jacobian evaluation routine (may be PETSC_NULL)
+
+   Calling sequence of f:
+$  f(TS ts,PetscReal t,Vec u,Vec u_t,PetscReal a,Mat *A,Mat *B,MatStructure *flag,void *ctx);
+
++  t    - time at step/stage being solved
+.  u    - state vector
+.  u_t  - time derivative of state vector
+.  a    - shift
+.  A    - Jacobian of G(U) = F(t,U,U0+a*U), equivalent to dF/dU + a*dF/dU_t
+.  B    - preconditioning matrix for A, may be same as A
+.  flag - flag indicating information about the preconditioner matrix
+          structure (same as flag in KSPSetOperators())
+-  ctx  - [optional] user-defined context for matrix evaluation routine
+
+   Notes:
+   The matrices A and B are exactly the matrices that are used by SNES for the nonlinear solve.
+
+   Level: beginner
+
+.keywords: TS, timestep, DAE, Jacobian
+
+.seealso: TSSetIFunction(), TSSetRHSJacobian()
+
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSSetIJacobian(TS ts,Mat A,Mat B,TSIJacobian f,void *ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  if (A) PetscValidHeaderSpecific(A,MAT_COOKIE,2);
+  if (B) PetscValidHeaderSpecific(B,MAT_COOKIE,3);
+  if (A) PetscCheckSameComm(ts,1,A,2);
+  if (B) PetscCheckSameComm(ts,1,B,3);
+  if (f)   ts->ops->ijacobian = f;
+  if (ctx) ts->jacP             = ctx;
+  if (A) {
+    ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+    if (ts->A) {ierr = MatDestroy(ts->A);CHKERRQ(ierr);}
+    ts->A = A;
+  }
+#if 0
+  /* The sane and consistent alternative */
+  if (B) {
+    ierr = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
+    if (ts->B) {ierr = MatDestroy(ts->B);CHKERRQ(ierr);}
+    ts->B = B;
+  }
+#else
+  /* Don't reference B because TSDestroy() doesn't destroy it.  These ownership semantics are awkward and inconsistent. */
+  if (B) ts->B = B;
+#endif
   PetscFunctionReturn(0);
 }
 

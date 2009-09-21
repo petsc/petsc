@@ -4712,53 +4712,34 @@ namespace ALE {
       }
     };
     template<typename Mesh>
-    static void sendMeshOutput(Mesh& mesh) {
-      // Send labels
-      const typename Mesh::labels_type& labels = mesh.getLabels();
-
-      //fs << labels.size() << std::endl;
-      for(typename Mesh::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
-        //fs << l_iter->first << std::endl;
-        //LabelSifterSerializer::writeLabel(fs, *l_iter->second);
-      }
-      // Send sections
-      // Send overlap
-      // Send distribution overlap
-      // Send renumbering
-    };
-    template<typename Mesh>
     static void writeMesh(std::ofstream& fs, Mesh& mesh) {
       ISieveSerializer::writeSieve(fs, *mesh.getSieve());
-      sendMeshOutput(mesh);
       // Write labels
       const typename Mesh::labels_type& labels = mesh.getLabels();
 
-      fs << labels.size() << std::endl;
+      if (!mesh.commRank()) {fs << labels.size() << std::endl;}
       for(typename Mesh::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
-        fs << l_iter->first << std::endl;
+        if (!mesh.commRank()) {fs << l_iter->first << std::endl;}
         LabelSifterSerializer::writeLabel(fs, *l_iter->second);
       }
-      //recvWriteLabels(fs);
       // Write sections
       Obj<std::set<std::string> > realNames = mesh.getRealSections();
 
-      fs << realNames->size() << std::endl;
+      if (!mesh.commRank()) {fs << realNames->size() << std::endl;}
       for(std::set<std::string>::const_iterator n_iter = realNames->begin(); n_iter != realNames->end(); ++n_iter) {
-        fs << *n_iter << std::endl;
+        if (!mesh.commRank()) {fs << *n_iter << std::endl;}
         SectionSerializer::writeSection(fs, *mesh.getRealSection(*n_iter));
       }
       Obj<std::set<std::string> > intNames = mesh.getIntSections();
 
-      fs << intNames->size() << std::endl;
+      if (!mesh.commRank()) {fs << intNames->size() << std::endl;}
       for(std::set<std::string>::const_iterator n_iter = intNames->begin(); n_iter != intNames->end(); ++n_iter) {
-        fs << *n_iter << std::endl;
+        if (!mesh.commRank()) {fs << *n_iter << std::endl;}
         SectionSerializer::writeSection(fs, *mesh.getIntSection(*n_iter));
       }
-      //recvWriteSections(fs);
       // Write overlap
       SifterSerializer::writeSifter(fs, *mesh.getSendOverlap());
       SifterSerializer::writeSifter(fs, *mesh.getRecvOverlap());
-      //recvWriteOverlap(fs);
       // Write distribution overlap
       // Write renumbering
     };
@@ -4766,48 +4747,92 @@ namespace ALE {
     static void loadMesh(const std::string& filename, Mesh& mesh) {
       std::ifstream fs;
 
-      fs.open(filename.c_str());
+      if (mesh.commRank() == 0) {
+        fs.open(filename.c_str());
+      }
       loadMesh(fs, mesh);
-      fs.close();
+      if (mesh.commRank() == 0) {
+        fs.close();
+      }
     };
     template<typename Mesh>
     static void loadMesh(std::ifstream& fs, Mesh& mesh) {
       ALE::Obj<typename Mesh::sieve_type> sieve = new typename Mesh::sieve_type(mesh.comm(), mesh.debug());
+      PetscErrorCode                      ierr;
 
       ISieveSerializer::loadSieve(fs, *sieve);
       mesh.setSieve(sieve);
       // Load labels
-      size_t numLabels;
+      int numLabels;
 
-      fs >> numLabels;
-      for(size_t l = 0; l < numLabels; ++l) {
+      if (!mesh.commRank()) {fs >> numLabels;}
+      ierr = MPI_Bcast(&numLabels, 1, MPI_INT, 0, mesh.comm());CHKERRXX(ierr);
+      for(int l = 0; l < numLabels; ++l) {
         ALE::Obj<typename Mesh::label_type> label = new typename Mesh::label_type(mesh.comm(), mesh.debug());
         std::string                         name;
+        int                                 len;
 
-        fs >> name;
+        if (!mesh.commRank()) {
+          fs >> name;
+          len = name.size();
+          ierr = MPI_Bcast(&len, 1, MPI_INT, 0, mesh.comm());CHKERRXX(ierr);
+          ierr = MPI_Bcast((void *) name.c_str(), len+1, MPI_CHAR, 0, mesh.comm());CHKERRXX(ierr);
+        } else {
+          ierr = MPI_Bcast(&len, 1, MPI_INT, 0, mesh.comm());CHKERRXX(ierr);
+          char *n = new char[len+1];
+          ierr = MPI_Bcast(n, len+1, MPI_CHAR, 0, mesh.comm());CHKERRXX(ierr);
+          name = n;
+          delete [] n;
+        }
         LabelSifterSerializer::loadLabel(fs, *label);
         mesh.setLabel(name, label);
       }
       // Load sections
-      size_t numRealSections;
+      int numRealSections;
 
-      fs >> numRealSections;
-      for(size_t s = 0; s < numRealSections; ++s) {
+      if (!mesh.commRank()) {fs >> numRealSections;}
+      ierr = MPI_Bcast(&numRealSections, 1, MPI_INT, 0, mesh.comm());CHKERRXX(ierr);
+      for(int s = 0; s < numRealSections; ++s) {
         ALE::Obj<typename Mesh::real_section_type> section = new typename Mesh::real_section_type(mesh.comm(), mesh.debug());
         std::string                                name;
+        int                                        len;
 
-        fs >> name;
+        if (!mesh.commRank()) {
+          fs >> name;
+          len = name.size();
+          ierr = MPI_Bcast(&len, 1, MPI_INT, 0, mesh.comm());CHKERRXX(ierr);
+          ierr = MPI_Bcast((void *) name.c_str(), len+1, MPI_CHAR, 0, mesh.comm());CHKERRXX(ierr);
+        } else {
+          ierr = MPI_Bcast(&len, 1, MPI_INT, 0, mesh.comm());CHKERRXX(ierr);
+          char *n = new char[len+1];
+          ierr = MPI_Bcast(n, len+1, MPI_CHAR, 0, mesh.comm());CHKERRXX(ierr);
+          name = n;
+          delete [] n;
+        }
         SectionSerializer::loadSection(fs, *section);
         mesh.setRealSection(name, section);
       }
-      size_t numIntSections;
+      int numIntSections;
 
-      fs >> numIntSections;
-      for(size_t s = 0; s < numIntSections; ++s) {
+      if (!mesh.commRank()) {fs >> numIntSections;}
+      ierr = MPI_Bcast(&numIntSections, 1, MPI_INT, 0, mesh.comm());CHKERRXX(ierr);
+      for(int s = 0; s < numIntSections; ++s) {
         ALE::Obj<typename Mesh::int_section_type> section = new typename Mesh::int_section_type(mesh.comm(), mesh.debug());
         std::string                               name;
+        int                                       len;
 
-        fs >> name;
+        if (!mesh.commRank()) {
+          fs >> name;
+          len = name.size();
+          ierr = MPI_Bcast(&len, 1, MPI_INT, 0, mesh.comm());CHKERRXX(ierr);
+          ierr = MPI_Bcast((void *) name.c_str(), len+1, MPI_CHAR, 0, mesh.comm());CHKERRXX(ierr);
+        } else {
+          ierr = MPI_Bcast(&len, 1, MPI_INT, 0, mesh.comm());CHKERRXX(ierr);
+          char *n = new char[len+1];
+          ierr = MPI_Bcast(n, len+1, MPI_CHAR, 0, mesh.comm());CHKERRXX(ierr);
+          name = n;
+          delete [] n;
+        }
         SectionSerializer::loadSection(fs, *section);
         mesh.setIntSection(name, section);
       }

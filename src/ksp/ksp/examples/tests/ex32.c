@@ -67,6 +67,21 @@ int main(int argc,char **argv)
   ierr = PCSetDA(pc,da);CHKERRQ(ierr);
  
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+
+  /* check final residual */
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(PETSC_NULL, "-check_final_residual", &flg,PETSC_NULL);CHKERRQ(ierr);
+  if (flg){
+    Vec            b1;
+    PetscReal      norm;
+    ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
+    ierr = VecDuplicate(b,&b1);CHKERRQ(ierr);
+    ierr = MatMult(A,x,b1);CHKERRQ(ierr);
+    ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
+    ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Final residual %g\n",norm);CHKERRQ(ierr);
+    ierr = VecDestroy(b1);CHKERRQ(ierr);
+  }
    
   ierr = KSPDestroy(ksp);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);

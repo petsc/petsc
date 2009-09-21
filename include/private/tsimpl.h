@@ -5,10 +5,11 @@
 #include "petscts.h"
 
 /*
-    Timesteping context. 
-      General case: U_t = F(t,U) <-- the right-hand-side function
-      Linear  case: U_t = A(t) U <-- the right-hand-side matrix
-      Linear (no time) case: U_t = A U <-- the right-hand-side matrix
+    Timesteping context.
+      General DAE: F(t,U,U_t) = 0, required Jacobian is G'(U) where G(U) = F(t,U,U0+a*U)
+      General ODE: U_t = F(t,U) <-- the right-hand-side function
+      Linear  ODE: U_t = A(t) U <-- the right-hand-side matrix
+      Linear (no time) ODE: U_t = A U <-- the right-hand-side matrix
 */
 
 /*
@@ -17,33 +18,31 @@
 #define MAXTSMONITORS 5 
 
 struct _TSOps {
-  PetscErrorCode (*rhsmatrix)(TS, PetscReal, Mat *, Mat *, MatStructure *, void *);
-  PetscErrorCode (*lhsmatrix)(TS, PetscReal, Mat *, Mat *, MatStructure *, void *);
-  PetscErrorCode (*rhsfunction)(TS, PetscReal, Vec, Vec, void *);
-  PetscErrorCode (*rhsjacobian)(TS, PetscReal, Vec, Mat *, Mat *, MatStructure *, void *);
+  PetscErrorCode (*rhsmatrix)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*);
+  PetscErrorCode (*lhsmatrix)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*);
+  PetscErrorCode (*rhsfunction)(TS,PetscReal,Vec,Vec,void*);
+  PetscErrorCode (*rhsjacobian)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+  PetscErrorCode (*ifunction)(TS,PetscReal,Vec,Vec,Vec,void*);
+  PetscErrorCode (*ijacobian)(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
   PetscErrorCode (*prestep)(TS);
   PetscErrorCode (*poststep)(TS);
   PetscErrorCode (*setup)(TS);
-  PetscErrorCode (*step)(TS,PetscInt *, PetscReal *);
+  PetscErrorCode (*step)(TS,PetscInt*,PetscReal*);
   PetscErrorCode (*setfromoptions)(TS);
   PetscErrorCode (*destroy)(TS);
-  PetscErrorCode (*view)(TS, PetscViewer);
+  PetscErrorCode (*view)(TS,PetscViewer);
 };
 
 struct _p_TS {
   PETSCHEADER(struct _TSOps);
   TSProblemType problem_type;
-  Vec           vec_sol, vec_sol_always;
+  Vec           vec_sol,vec_sol_always;
 
   /* ---------------- User (or PETSc) Provided stuff ---------------------*/
   PetscErrorCode (*monitor[MAXTSMONITORS])(TS,PetscInt,PetscReal,Vec,void*); /* returns control to user after */
   PetscErrorCode (*mdestroy[MAXTSMONITORS])(void*);                
   void *monitorcontext[MAXTSMONITORS];                 /* residual calculation, allows user */
   PetscInt  numbermonitors;                                 /* to, for instance, print residual norm, etc. */
-
-  /* Identifies this as a grid TS structure */
-  PetscTruth *isExplicit;                            /* Indicates which fields have explicit time dependence */
-  PetscInt   *Iindex;                                /* The index of the identity for each time dependent field */
 
   /* ---------------------Linear Iteration---------------------------------*/
   KSP ksp;

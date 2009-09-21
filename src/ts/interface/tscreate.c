@@ -53,8 +53,6 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate(MPI_Comm comm, TS *ts) {
   t->vec_sol            = PETSC_NULL;
   t->vec_sol_always     = PETSC_NULL;
   t->numbermonitors     = 0;
-  t->isExplicit         = PETSC_NULL;
-  t->Iindex             = PETSC_NULL;
   t->ksp                = PETSC_NULL;
   t->A                  = PETSC_NULL;
   t->B                  = PETSC_NULL;

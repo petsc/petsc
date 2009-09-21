@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c util2.c ex7.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c util2.c ex7.c ex8.c
 EXAMPLESF       = ex1f.F ex2f.F
 EXAMPLESFH      = ex2f.h
 MANSEC          = TS
@@ -46,6 +46,10 @@ ex6: ex6.o  chkopts
 ex7: ex7.o  chkopts
 	-${CLINKER} -o ex7 ex7.o  ${PETSC_TS_LIB}
 	${RM} ex7.o
+
+ex8: ex8.o  chkopts
+	-${CLINKER} -o ex8 ex8.o  ${PETSC_TS_LIB}
+	${RM} ex8.o
 #---------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always  > ex1_1.tmp 2>&1;	  \
