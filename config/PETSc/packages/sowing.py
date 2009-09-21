@@ -94,11 +94,8 @@ class Configure(PETSc.package.Package):
 
     if self.petscdir.isClone:
       self.framework.logPrint('PETSc clone, checking for Sowing or if it is needed\n')
-#      if self.framework.argDB.has_key('with-sowing') and not self.framework.argDB['with-sowing']:
-#        self.framework.logPrint('--with-sowing is turned off, skipping sowing')
-#        return
-      if not hasattr(self.compilers, 'FC'):
-        self.framework.logPrint('No Fortran compiler, skipping sowing')
+      if self.framework.argDB.has_key('with-sowing') and not self.framework.argDB['with-sowing']:
+        self.framework.logPrint('--with-sowing is turned off, skipping sowing')
         return
 
       self.getExecutable('bfort', getFullPath = 1)
