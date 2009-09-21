@@ -420,18 +420,13 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ_newdatastruct(Mat B,Mat A,IS isrow,IS 
   (B)->info.fill_ratio_given = f;
 
   if (ai[n]) {
-    (B)->info.fill_ratio_needed = ((PetscReal)bi[n])/((PetscReal)ai[n]);
+    (B)->info.fill_ratio_needed = ((PetscReal)bi[2*n+1])/((PetscReal)ai[n]);
   } else {
     (B)->info.fill_ratio_needed = 0.0;
   }
   (B)->ops->lufactornumeric  = MatLUFactorNumeric_SeqAIJ_newdatastruct;
-  (B)->ops->solve            = MatSolve_SeqAIJ;
-  (B)->ops->solvetranspose   = MatSolveTranspose_SeqAIJ;
-  /* switch to inodes if appropriate */
-/*  ierr = MatLUFactorSymbolic_Inode(B,A,isrow,iscol,info);CHKERRQ(ierr); */ 
   PetscFunctionReturn(0); 
 }
-
 
 /*
     Trouble in factorization, should we dump the original matrix?
@@ -460,8 +455,8 @@ PetscErrorCode MatFactorDumpMatrix(Mat A)
 extern PetscErrorCode MatSolve_Inode(Mat,Vec,Vec);
 
 /* ----------------------------------------------------------- */
-extern PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_iludt(Mat,Vec,Vec);
-extern PetscErrorCode MatSolve_SeqAIJ_iludt(Mat,Vec,Vec);
+extern PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct(Mat,Vec,Vec);
+extern PetscErrorCode MatSolve_SeqAIJ_newdatastruct(Mat,Vec,Vec);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_newdatastruct"
@@ -557,9 +552,9 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const MatFact
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(isicol,&col_identity);CHKERRQ(ierr);
   if (row_identity && col_identity) {
-    C->ops->solve = MatSolve_SeqAIJ_NaturalOrdering_iludt;
+    C->ops->solve = MatSolve_SeqAIJ_NaturalOrdering_newdatastruct;
   } else {
-    C->ops->solve = MatSolve_SeqAIJ_iludt; 
+    C->ops->solve = MatSolve_SeqAIJ_newdatastruct; 
   }
   
   C->ops->solveadd           = 0;
@@ -2285,8 +2280,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const Mat
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatSolve_SeqAIJ_NaturalOrdering_iludt"
-PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_iludt(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqAIJ_NaturalOrdering_newdatastruct"
+PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode    ierr;
@@ -2337,16 +2332,15 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_iludt(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqAIJ_iludt"
-PetscErrorCode MatSolve_SeqAIJ_iludt(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqAIJ_newdatastruct"
+PetscErrorCode MatSolve_SeqAIJ_newdatastruct(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   IS                iscol = a->col,isrow = a->row;
   PetscErrorCode    ierr;
-  PetscInt          i,n=A->rmap->n,*vi,*ai = a->i,*aj = a->j,*adiag=a->diag;
-  PetscInt          nz;
+  PetscInt          i,n=A->rmap->n,*vi,*ai=a->i,*aj=a->j,nz,k;
   const PetscInt    *rout,*cout,*r,*c;
-  PetscScalar       *x,*tmp,*tmps;
+  PetscScalar       *x,*tmp,*tmps,sum;
   const PetscScalar *b;
   const MatScalar   *aa = a->a,*v;
 
@@ -2358,7 +2352,7 @@ PetscErrorCode MatSolve_SeqAIJ_iludt(Mat A,Vec bb,Vec xx)
   tmp  = a->solve_work;
 
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
-  ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout + (n-1);
+  ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout; 
 
   /* forward solve the lower triangular */
   tmp[0] = b[*r++];
@@ -2367,18 +2361,22 @@ PetscErrorCode MatSolve_SeqAIJ_iludt(Mat A,Vec bb,Vec xx)
   vi     = aj;
   for (i=1; i<n; i++) {
     nz  = ai[i+1] - ai[i];
-    tmp[i] = b[*r++];
-    PetscSparseDenseMinusDot(tmp[i],tmps,v,vi,nz); 
+    sum = b[*r++];
+    PetscSparseDenseMinusDot(sum,tmps,v,vi,nz); 
+    tmp[i] = sum;
     v += nz; vi += nz;
   }
 
   /* backward solve the upper triangular */
-  v   = aa + adiag[n] + 1;
-  vi  = aj + adiag[n] + 1;
+  k  = n+1; 
+  v  = aa + ai[k]; /* 1st entry of U(n-1,:) */
+  vi = aj + ai[k];
   for (i=n-1; i>=0; i--){
-    nz  = adiag[i] - adiag[i+1] - 1; 
-    PetscSparseDenseMinusDot(tmp[i],tmps,v,vi,nz); 
-    x[*c--] = tmp[i] = tmp[i]*aa[adiag[i]];
+    k  = 2*n-i; 
+    nz = ai[k +1] - ai[k] - 1;
+    sum = tmp[i];
+    PetscSparseDenseMinusDot(sum,tmps,v,vi,nz); 
+    x[c[i]] = tmp[i] = sum*v[nz]; /* v[nz] = aa[adiag[i]] */
     v += nz+1; vi += nz+1;
   }
 
@@ -2624,9 +2622,9 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   ierr = ISIdentity(isicol,&icol_identity);CHKERRQ(ierr);
   both_identity = (PetscTruth) (row_identity && icol_identity);
   if (row_identity && icol_identity) {
-    B->ops->solve = MatSolve_SeqAIJ_NaturalOrdering_iludt;
+    B->ops->solve = MatSolve_SeqAIJ_NaturalOrdering_newdatastruct;
   } else {
-    B->ops->solve = MatSolve_SeqAIJ_iludt;
+    B->ops->solve = MatSolve_SeqAIJ_newdatastruct;
   }
   
   B->ops->lufactorsymbolic  = MatILUDTFactorSymbolic_SeqAIJ;
@@ -2754,9 +2752,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactorNumeric_SeqAIJ(Mat fact,Mat A,co
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(isicol,&col_identity);CHKERRQ(ierr);
   if (row_identity && col_identity) {
-    C->ops->solve   = MatSolve_SeqAIJ_NaturalOrdering_iludt;
+    C->ops->solve   = MatSolve_SeqAIJ_NaturalOrdering_newdatastruct;
   } else {
-    C->ops->solve   = MatSolve_SeqAIJ_iludt;
+    C->ops->solve   = MatSolve_SeqAIJ_newdatastruct;
   }
   C->ops->solveadd           = 0;
   C->ops->solvetranspose     = 0;
