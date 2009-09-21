@@ -129,8 +129,10 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetFromOptions(TS ts)
     if (ts->snes) {
       /* this is a bit of a hack, but it gets the matrix information into SNES earlier
          so that SNES and KSP have more information to pick reasonable defaults
-         before they allow users to set options */
-      ierr = SNESSetJacobian(ts->snes,ts->Arhs,ts->B,0,ts);CHKERRQ(ierr);
+         before they allow users to set options
+       * If ts->A has been set at this point, we are probably using the implicit form
+         and Arhs will never be used. */
+      ierr = SNESSetJacobian(ts->snes,ts->A?ts->A:ts->Arhs,ts->B,0,ts);CHKERRQ(ierr);
       ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
     }
     break;

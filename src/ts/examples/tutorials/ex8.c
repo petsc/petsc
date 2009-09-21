@@ -71,8 +71,12 @@ static PetscErrorCode RoberJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (*A != *B) {
+    ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
   *flag = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
@@ -175,8 +179,12 @@ static PetscErrorCode CEJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Ma
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (*A != *B) {
+    ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
   *flag = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }

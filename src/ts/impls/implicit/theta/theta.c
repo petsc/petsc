@@ -127,7 +127,18 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&th->Xdot);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&th->res);CHKERRQ(ierr);
   ierr = SNESSetFunction(ts->snes,th->res,TSThetaFunction,ts);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(ts->snes,ts->A,ts->B,TSThetaJacobian,ts);CHKERRQ(ierr);
+  /* This is nasty.  SNESSetFromOptions() is usually called in TSSetFromOptions().  With -snes_mf_operator, it will
+  replace A and we don't want to mess with that.  With -snes_mf, A and B will be replaced as well as the function and
+  context.  Note that SNESSetFunction() normally has not been called before SNESSetFromOptions(), so when -snes_mf sets
+  the Jacobian user context to snes->funP, it will actually be NULL.  This is not a problem because both snes->funP and
+  snes->jacP should be the TS. */
+  {
+    Mat A,B;
+    PetscErrorCode (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+    void *ctx;
+    ierr = SNESGetJacobian(ts->snes,&A,&B,&func,&ctx);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(ts->snes,A?A:ts->A,B?B:ts->B,func?func:&TSThetaJacobian,ctx?ctx:ts);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -168,7 +179,7 @@ static PetscErrorCode TSView_Theta(TS ts,PetscViewer viewer)
 
 /* ------------------------------------------------------------ */
 /*MC
-      TS_Theta - DAE solver using the implicit Theta method
+      TS_THETA - DAE solver using the implicit Theta method
 
   Level: beginner
 
