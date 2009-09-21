@@ -918,6 +918,23 @@ year = 2003,
 %
 %  <a name="geosciences"><H3><center>Geosciences</center></H3>
 %
+
+@inproceedings{AagaardKnepleyWilliams05,
+  author = {Charles A. Williams and Brad Aagaard and Matthew G. Knepley},
+  title  = {Development of software for studying earthquakes across multiple spatial and temporal scales by coupling quasi-static and dynamic simulations},
+  booktitle = {Eos Transactions of the AGU},
+  organization = {American Geophysical Union},
+  note   = {Fall Meeting Supplemental, Abstract S53A-1072},
+  year   = {2005}
+}
+@inproceedings{WilliamsGableHagerMeadeAagaardKnepley08,
+  author    = {Charles A. Williams and Carl Gable and Bradford H. Hager and Brendan Meade and Brad Aagaard and Matthew G. Knepley},
+  title     = {Modeling of Multiple Earthquake Cycles in Southern California Using the SCEC Community Fault Model},
+  booktitle = {Proceedings of Geosciences '08},
+  address   = {Wellington, NZ},
+  month     = {November},
+  year      = {2008}
+}
 @Article{katz08b,
  author =     {Richard F. Katz},
  title =      {Magma dynamics with the {E}nthalpy {M}ethod: {B}enchmark solutions and magmatic focusing at mid-ocean ridges},
@@ -2188,6 +2205,19 @@ title =     {Finite-difference lattice Boltzmann model with flux limiters for li
 %
 %  <a name="otherapps"><H3><center>Other Application Areas</center></H3>
 %
+@misc{GordonBell09,
+  author    = {Dinesh Kaushik and Michael Smith and Allan Wollaber and Barry Smith and Andrew Siegel and Won Sik Yang},
+  title     = {Enabling High Fidelit Neutron Transport Simulations on Petascale Architectures},
+  note      = {SC '09 Gordon Bell Prize Submission},
+  year      = {2009}
+}
+
+@article{KnepleyKarpeevDavidovitsEisenbergGillespie09,
+  author  = {Matthew G. Knepley and Dmitry A. Karpeev and Seth Davidovits and Robert~S. Eisenberg and Dirk Gillespie},
+  title   = {Classical Density Functional Theory applied to a Confined Equilibrium Ionic Solution in Three Dimensions},
+  note    = {in preparation},
+  year    = {2009}
+}
 @Article{scx2008,
    author = "SUWITO AND XIAO-CHUAN CAI AND YUNPING XI",
    title = "PARALLEL FINITE ELEMENT METHOD FOR COUPLED CHLORIDE MOISTURE DIFFUSION IN CONCRETE",
@@ -2880,6 +2910,20 @@ pages   = "157--166"
 %
 %  <a name="packages"></a><H3><center>Software Packages that use or interface to PETSc</center></H3>
 %
+@Unpublished{parpre-web-page,
+  title       = "{ParPre} {W}eb {P}age",
+  url        =	"http://www.cs.utk.edu/\~{ }eijkhout/parpre.html",
+  Institution = "University of Tennessee",
+  author      = "Victor Eijkhout",
+  note = "This is no longer supported. A set of preconditioners built on PETSc"
+}
+@inproceedings{CruzKnepleyBarba09,
+  author   = {Felipe A. Cruz and Matthew G. Knepley and Lorena A. Barba},
+  title    = {PetFMM -- A dynamically load-balancing parallel fast multipole library},
+  journal  = {Submitted to Int. J. Num. Meth. Eng.},
+  year     = {2009},
+  url      = {http://arxiv.org/abs/0905.2637}
+}
 @Unpublished{pism,
   title = 	"PISM: a Parallel Ice Sheet Model",
   author = "The PISM Team",
@@ -4086,7 +4130,7 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
   month =        "January"
 }
 %
-%  <a name="other"><H3><center>Other</center></H3>
+%  <a name="other"><H3><center>Books</center></H3>
 %
 @BOOK{pacheco,
       AUTHOR="Peter Pacheco",
@@ -4102,49 +4146,4 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
       YEAR="1996",
       PUBLISHER="Cambridge University Press",
       url="http://www.mcs.anl.gov/\~{ }bsmith/ddbook.html"
-}
-@Unpublished{parpre-web-page,
-  title       = "{ParPre} {W}eb {P}age",
-  url        =	"http://www.cs.utk.edu/\~{ }eijkhout/parpre.html",
-  Institution = "University of Tennessee",
-  author      = "Victor Eijkhout",
-  note = "This is no longer supported. A set of preconditioners built on PETSc"
-}
-
-@inproceedings{AagaardKnepleyWilliams05,
-  author = {Charles A. Williams and Brad Aagaard and Matthew G. Knepley},
-  title  = {Development of software for studying earthquakes across multiple spatial and temporal scales by coupling quasi-static and dynamic simulations},
-  booktitle = {Eos Transactions of the AGU},
-  organization = {American Geophysical Union},
-  note   = {Fall Meeting Supplemental, Abstract S53A-1072},
-  year   = {2005}
-}
-
-@inproceedings{WilliamsGableHagerMeadeAagaardKnepley08,
-  author    = {Charles A. Williams and Carl Gable and Bradford H. Hager and Brendan Meade and Brad Aagaard and Matthew G. Knepley},
-  title     = {Modeling of Multiple Earthquake Cycles in Southern California Using the SCEC Community Fault Model},
-  booktitle = {Proceedings of Geosciences '08},
-  address   = {Wellington, NZ},
-  month     = {November},
-  year      = {2008}
-}
-@misc{GordonBell09,
-  author    = {Dinesh Kaushik and Michael Smith and Allan Wollaber and Barry Smith and Andrew Siegel and Won Sik Yang},
-  title     = {Enabling High Fidelit Neutron Transport Simulations on Petascale Architectures},
-  note      = {SC '09 Gordon Bell Prize Submission},
-  year      = {2009}
-}
-
-@article{KnepleyKarpeevDavidovitsEisenbergGillespie09,
-  author  = {Matthew G. Knepley and Dmitry A. Karpeev and Seth Davidovits and Robert~S. Eisenberg and Dirk Gillespie},
-  title   = {Classical Density Functional Theory applied to a Confined Equilibrium Ionic Solution in Three Dimensions},
-  note    = {in preparation},
-  year    = {2009}
-}
-@inproceedings{CruzKnepleyBarba09,
-  author   = {Felipe A. Cruz and Matthew G. Knepley and Lorena A. Barba},
-  title    = {PetFMM -- A dynamically load-balancing parallel fast multipole library},
-  journal  = {Submitted to Int. J. Num. Meth. Eng.},
-  year     = {2009},
-  url      = {http://arxiv.org/abs/0905.2637}
 }

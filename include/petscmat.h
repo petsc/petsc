@@ -67,6 +67,7 @@ E*/
 #define MATHYPRESTRUCT     "hyprestruct"
 #define MATSUBMATRIX       "submatrix"
 
+
 /*E
     MatSolverPackage - String with the name of a PETSc matrix solver type. 
 
@@ -91,6 +92,7 @@ E*/
 #define MAT_SOLVER_MATLAB       "matlab"
 #define MAT_SOLVER_PETSC        "petsc"
 #define MAT_SOLVER_PLAPACK      "plapack"
+
 
 /*E
     MatFactorType - indicates what type of factorization is requested

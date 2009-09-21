@@ -36,7 +36,7 @@ include ${PETSC_DIR}/conf/base
 include ${PETSC_DIR}/conf/test
 
 sread:  
-	-${MATLAB_MEX}  -g CC=${CC} CFLAGS='${COPTFLAGS} ${CC_FLAGS} ${CCPPFLAGS}' sread.c bread.c -lc
+	-@${MATLAB_MEX}  -g CC=${CC} CFLAGS='${COPTFLAGS} ${CC_FLAGS} ${CCPPFLAGS}' sread.c bread.c -lc
 	-@${RM} -f sread.o bread.o
 	-@if [ ${PETSC_ARCH} = IRIX64 ] ; then mv -f sread.mexsg64 sread.mexsg ; fi 
 	-@${MV} sread.mex* ${PETSC_DIR}/bin/matlab
