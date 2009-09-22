@@ -3656,7 +3656,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactorAvailable(Mat mat, const MatSolver
    Input Parameters:
 +  mat - the matrix
 -  op - either MAT_DO_NOT_COPY_VALUES or MAT_COPY_VALUES, cause it to copy nonzero
-        values as well or not
+        values as well or not or MAT_SHARE_NONZERO_PATTERN
 
    Output Parameter:
 .  M - pointer to place new matrix

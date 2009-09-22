@@ -236,42 +236,6 @@ PetscErrorCode MatGetSubMatrices_SeqSBAIJ(Mat A,PetscInt n,const IS irow[],const
 /* -------------------------------------------------------*/
 #include "petscblaslapack.h"
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatMult_SeqSBAIJ_1"
-PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
-{
-  Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ*)A->data;
-  const PetscScalar *x;
-  PetscScalar       *z,x1,sum;
-  const MatScalar   *v;
-  PetscErrorCode    ierr;
-  PetscInt          mbs=a->mbs,i,j,nz;
-  const PetscInt    *ib=a->j,*ai=a->i;
-
-  PetscFunctionBegin;
-  ierr = VecSet(zz,0.0);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
-  ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
-
-  v  = a->a; 
-  for (i=0; i<mbs; i++) {
-    nz   = ai[i+1] - ai[i];        /* length of i_th row of A */    
-    x1   = x[i];
-    sum  = v[0]*x1;                /* diagonal term */
-    for (j=1; j<nz; j++) {
-      z[ib[j]] += v[j] * x1;       /* (strict lower triangular part of A)*x  */
-      sum      += v[j] * x[ib[j]]; /* (strict upper triangular part of A)*x  */
-    }
-    z[i] += sum;
-    v    += nz;
-    ib   += nz;
-  }
-
-  ierr = VecRestoreArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2.0*(2.0*a->nz - mbs) - mbs);CHKERRQ(ierr); 
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqSBAIJ_2"

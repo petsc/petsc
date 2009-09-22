@@ -78,7 +78,9 @@
 !
       PetscEnum MAT_DO_NOT_COPY_VALUES
       PetscEnum MAT_COPY_VALUES
+      PetscEnum MAT_SHARE_NONZERO_PATTERN
       parameter (MAT_DO_NOT_COPY_VALUES=0,MAT_COPY_VALUES=1)
+      parameter (MAT_SHARE_NONZERO_PATTERN=2)
 !
 !  Flags for PCSetOperators()
 !
