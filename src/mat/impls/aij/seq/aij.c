@@ -1297,7 +1297,7 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
         x[i] = (1. - omega)*x[i] + (sum + mdiag[i]*x[i])*idiag[i];
       }
 #endif 
-      ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
+      ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
     }
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
 #if defined(PETSC_USE_FORTRAN_KERNEL_RELAXAIJ)
@@ -1312,7 +1312,7 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
         x[i] = (1. - omega)*x[i] + (sum + mdiag[i]*x[i])*idiag[i];
       }
 #endif
-      ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
+      ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
     }
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
