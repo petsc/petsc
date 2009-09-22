@@ -7,12 +7,13 @@
 #include "../src/mat/impls/baij/seq/baij.h"         /*I "petscmat.h" I*/
 #include "../src/mat/impls/sbaij/seq/sbaij.h"
 
-#include "../src/mat/impls/sbaij/seq/relax.c"
+#include "../src/mat/impls/sbaij/seq/relax.h"
 #define USESHORT
-#include "../src/mat/impls/sbaij/seq/relax.c"
+#include "../src/mat/impls/sbaij/seq/relax.h"
 
 extern PetscErrorCode MatSeqSBAIJSetNumericFactorization(Mat,PetscTruth);
 #define CHUNKSIZE  10
+
 
 /*
      Checks for missing diagonals

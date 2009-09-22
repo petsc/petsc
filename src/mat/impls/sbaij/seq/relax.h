@@ -2,12 +2,13 @@
 /*
     This is included by sbaij.c to generate unsigned short and regular versions of these two functions
 */
-#if defined(USESHORT)
-#define USHORT ushort
-#else
 #undef  USHORT
+#if defined(USESHORT)
+#define USHORT _ushort
+#else
+#define USHORT
 #endif
-#define PETSCMAP1_a(a,b)  a ## _ ## b
+#define PETSCMAP1_a(a,b)  a ## b
 #define PETSCMAP1_b(a,b)  PETSCMAP1_a(a,b)
 #define PETSCMAP1(a)      PETSCMAP1_b(a,USHORT)
 
@@ -19,13 +20,16 @@ PetscErrorCode PETSCMAP1(MatMult_SeqSBAIJ_1)(Mat A,Vec xx,Vec zz)
   const PetscScalar    *x;
   PetscScalar          *z,x1,sum;
   const MatScalar      *v;
+  MatScalar            vj;
   PetscErrorCode       ierr;
   PetscInt             mbs=a->mbs,i,j,nz;
   const PetscInt       *ai=a->i;
 #if defined(USESHORT)
   const unsigned short *ib=a->jshort;
+  unsigned short       ibt;
 #else
   const PetscInt       *ib=a->j;
+  PetscInt             ibt;
 #endif
 
   PetscFunctionBegin;
@@ -39,8 +43,10 @@ PetscErrorCode PETSCMAP1(MatMult_SeqSBAIJ_1)(Mat A,Vec xx,Vec zz)
     x1   = x[i];
     sum  = v[0]*x1;                /* diagonal term */
     for (j=1; j<nz; j++) {
-      z[ib[j]] += v[j] * x1;       /* (strict lower triangular part of A)*x  */
-      sum      += v[j] * x[ib[j]]; /* (strict upper triangular part of A)*x  */
+      ibt = ib[j];
+      vj  = v[j];
+      z[ibt] += vj * x1;       /* (strict lower triangular part of A)*x  */
+      sum    += vj * x[ibt]; /* (strict upper triangular part of A)*x  */
     }
     z[i] += sum;
     v    += nz;
