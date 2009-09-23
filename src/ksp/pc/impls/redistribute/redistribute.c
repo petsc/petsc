@@ -61,6 +61,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = PetscObjectGetNewTag((PetscObject)pc,&tag);CHKERRQ(ierr);
 
   if (!pc->setupcalled) {
     if (!red->ksp) {
