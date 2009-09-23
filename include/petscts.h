@@ -36,7 +36,7 @@ E*/
 #define TS_RUNGE_KUTTA     "runge-kutta"
 #define TS_PYTHON          "python"
 #define TS_THETA           "theta"
-#define TS_DI              "di"
+#define TS_GENERAL_LINEAR  "gl"
 
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve
@@ -192,6 +192,22 @@ EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSGetApplicationContext(TS,void **);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSMonitorLGCreate(const char[],const char[],int,int,int,int,PetscDrawLG *);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSMonitorLG(TS,PetscInt,PetscReal,Vec,void *);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSMonitorLGDestroy(PetscDrawLG);
+
+/*E
+  TSGLType - family of time integration method within the General Linear class
+
+  Level: beginner
+
+.seealso: TSGLSetType(), TSGLRegister()
+E*/
+#define TSGLType char*
+
+#define TSGL_DI   "di"
+
+typedef struct _p_TSGL *TSGL;
+
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSGLSetType(TS,const TSGLType);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSGLRegister(const char[],const char[],const char[],PetscErrorCode(*)(TSGL*));
 
 /*
        PETSc interface to Sundials

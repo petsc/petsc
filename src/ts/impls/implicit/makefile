@@ -2,7 +2,7 @@
 ALL: lib
 
 LOCDIR   = src/ts/impls/implicit/
-DIRS     = beuler cn sundials theta
+DIRS     = beuler cn sundials theta gl
 MANSEC   = TS
 
 include ${PETSC_DIR}/conf/base
