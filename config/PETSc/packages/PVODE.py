@@ -1,16 +1,6 @@
-import config.base
+import PETSc.package
 
-class Configure(config.base.Configure):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    config.base.Configure.__init__(self, framework)
-    self.headerPrefix = ''
-    self.substPrefix  = ''
-    return
-
-  def configureLibrary(self):
-    '''Find a PVODE installation and check if it can work with PETSc'''
-    return
-
-  def configure(self):
-    self.executeTest(self.configureLibrary)
+    PETSc.package.NewPackage.__init__(self, framework)
     return

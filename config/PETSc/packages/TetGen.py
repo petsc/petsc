@@ -109,9 +109,9 @@ class tetgenio {
 };
 '''
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     self.download  = ['hg://www.mcs.anl.gov/petsc/tetgen-dev','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/TetGen.tar.gz']
     self.functions = ['tetrahedralize']
     self.functionsCxx = [1, structDecl+'void tetrahedralize(char *switches, tetgenio *in, tetgenio *out);', 'tetrahedralize("", NULL, NULL)']
@@ -123,43 +123,11 @@ class Configure(PETSc.package.Package):
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
-    self.petscdir        = framework.require('PETSc.utilities.petscdir', self)
-    self.arch            = framework.require('PETSc.utilities.arch', self)
+    PETSc.package.NewPackage.setupDependencies(self, framework)
     self.sharedLibraries = framework.require('PETSc.utilities.sharedLibraries', self)
     self.make            = framework.require('PETSc.utilities.Make', self)
     self.deps            = []
     return
-
-  def InstallOld(self):
-    import os, sys
-    self.packageDir = self.getDir()
-    self.installDir = os.path.join(self.packageDir, self.arch.arch)
-    if not os.path.isdir(self.installDir):
-      os.mkdir(self.installDir)
-    # We could make a check of the md5 of the current configure framework
-    self.logPrintBox('Configuring and compiling TetGen; this may take several minutes')
-    try:
-      import cPickle
-      import logger
-      # Split Graphs into its own repository
-      oldDir = os.getcwd()
-      os.chdir(self.packageDir)
-      oldLog = logger.Logger.defaultLog
-      logger.Logger.defaultLog = file(os.path.join(self.packageDir, 'build.log'), 'w')
-      mod  = self.getModule(self.packageDir, 'make')
-      make = mod.Make(configureParent = cPickle.loads(cPickle.dumps(self.framework)),module = mod)
-      make.prefix = self.installDir
-      make.framework.argDB['with-petsc'] = 1
-      make.builder.argDB['ignoreCompileOutput'] = 1
-      make.run()
-      del sys.modules['make']
-      logger.Logger.defaultLog = oldLog
-      os.chdir(oldDir)
-    except RuntimeError, e:
-      raise RuntimeError('Error running configure on TetGen: '+str(e))
-    self.framework.actions.addArgument('TetGen', 'Install', 'Installed TetGen into '+self.installDir)
-    return self.packageDir
 
   def Install(self):
     import os, sys

@@ -415,10 +415,11 @@ class NewPackage(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
+    self.arch           = framework.require('PETSc.utilities.arch', self)
     self.languages      = framework.require('PETSc.utilities.languages', self)
     self.scalartypes    = self.framework.require('PETSc.utilities.scalarTypes',self)
     self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
-    self.petscdir      = framework.require('PETSc.utilities.petscdir', self.setCompilers)
+    self.petscdir       = framework.require('PETSc.utilities.petscdir', self.setCompilers)
     return
 
   def consistencyChecks(self):

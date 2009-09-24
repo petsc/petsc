@@ -1,21 +1,15 @@
-#!/usr/bin/env python
-from __future__ import generators
-import user
-import config.base
-import os
 import PETSc.package
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
-    self.download     = ['Not available for download: use --download-Suggar=Suggar.tar.gz']
+    PETSc.package.NewPackage.__init__(self, framework)
+    self.download   = ['Not available for download: use --download-Suggar=Suggar.tar.gz']
     self.functions = ['ctkSortAllDonorsInGrid']
     self.liblist   = [['libsuggar_3d_opt_petsc.a'],['libsuggar_3d_opt_linux.a']]
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
-    self.mpi        = framework.require('config.packages.MPI',self)
+    PETSc.package.NewPackage.setupDependencies(self, framework)
     self.expat      = framework.require('PETSc.packages.expat',self)
     self.cproto     = framework.require('PETSc.packages.cproto',self)
     self.p3dlib     = framework.require('PETSc.packages.P3Dlib',self)
@@ -71,12 +65,3 @@ class Configure(PETSc.package.Package):
                           
       self.postInstall(output,os.path.join('src','FLAGS.local'))
     return self.installDir
-
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setupLogging(framework.clArgs)
-  framework.children.append(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()

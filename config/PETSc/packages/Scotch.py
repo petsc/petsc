@@ -1,13 +1,8 @@
-#!/usr/bin/env python
-from __future__ import generators
-import user
-import config.base
-import os
 import PETSc.package
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     self.download     = ['http://gforge.inria.fr/frs/download.php/10715/scotch_5.1.2.tar.gz']
     self.downloadname = self.name.lower()
     self.liblist      = [['libscotch.a','libscotcherr.a'],
@@ -18,28 +13,9 @@ class Configure(PETSc.package.Package):
     self.needsMath    = 1
     return
 
-  def __str__(self):
-    if self.found:
-      desc = ['Scotch:']	
-      desc.append('  Version: '+self.version)
-      desc.append('  Includes: '+str(self.include))
-      desc.append('  Library: '+str(self.lib))
-      return '\n'.join(desc)+'\n'
-    else:
-      return ''
-
-  def setupHelp(self, help):
-    import nargs
-    help.addArgument('Scotch', '-with-scotch=<bool>',                nargs.ArgBool(None, 0, 'Activate Scotch'))
-    help.addArgument('Scotch', '-with-scotch-dir=<root dir>',        nargs.ArgDir(None, None, 'Specify the root directory of the Scotch installation'))
-    help.addArgument('Scotch', '-download-scotch=<no,yes,ifneeded>', nargs.ArgFuzzyBool(None, 0, 'Automatically install Scotch'))
-    return
-
   def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
-    self.mpi            = framework.require('config.packages.MPI',self)
-    self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
-    self.deps       = [self.mpi]
+    PETSc.package.NewPackage.setupDependencies(self, framework)
+    self.deps = [self.mpi]
     return
 
   def Install(self):
@@ -107,13 +83,3 @@ class Configure(PETSc.package.Package):
 #        raise RuntimeError('Error running make on Scotch: '+str(e))
       self.postInstall(output,os.path.join('src','Makefile.inc'))
     return self.installDir
-
-
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setup()
-  framework.addChild(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()

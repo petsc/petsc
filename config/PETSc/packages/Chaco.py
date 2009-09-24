@@ -1,13 +1,8 @@
-#!/usr/bin/env python
-from __future__ import generators
-import user
-import config.base
-import os
 import PETSc.package
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/Chaco-2.2.tar.gz']
     self.functions    = ['interface']
     self.includes     = [] #Chaco does not have an include file
@@ -18,8 +13,10 @@ class Configure(PETSc.package.Package):
     return
 
   def Install(self):
+    self.framework.log.write('chacoDir = '+self.packageDir+' installDir '+self.installDir+'\n')
 
-    g = open(os.path.join(self.packageDir,'make.inc'),'w')
+    mkfile = 'make.inc'
+    g = open(os.path.join(self.packageDir, mkfile), 'w')
     self.setCompilers.pushLanguage('C')
     g.write('CC = '+self.setCompilers.getCompiler()+'\n')
     g.write('CFLAGS = '+self.setCompilers.getCompilerFlags()+'\n')
@@ -27,21 +24,12 @@ class Configure(PETSc.package.Package):
     self.setCompilers.popLanguage()
     g.close()
     
-    if self.installNeeded('make.inc'):
+    if self.installNeeded(mkfile):
       try:
         self.logPrintBox('Compiling chaco; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';CHACO_INSTALL_DIR='+self.installDir+';export CHACO_INSTALL_DIR; cd code; make clean; make; cd '+self.installDir+'; '+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+' '+self.libdir+'/libchaco.'+self.setCompilers.AR_LIB_SUFFIX+' `find '+self.packageDir+'/code -name "*.o"`; cd '+self.libdir+'; '+self.setCompilers.AR+' d libchaco.'+self.setCompilers.AR_LIB_SUFFIX+' main.o; '+self.setCompilers.RANLIB+' libchaco.'+self.setCompilers.AR_LIB_SUFFIX, timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on CHACO: '+str(e))
-      self.postInstall(output,'make.inc')
+      self.postInstall(output, mkfile)
     return self.installDir
-  
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setupLogging(framework.clArgs)
-  framework.children.append(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()
 

@@ -66,6 +66,10 @@ class Configure(config.base.Configure):
     self.Fiat.archProvider            = self.arch
     self.Fiat.languageProvider        = self.languages
     self.Fiat.installDirProvider      = self.petscdir
+    self.ExodusII      = framework.require('config.packages.ExodusII',   self)
+    self.ExodusII.archProvider        = self.arch
+    self.ExodusII.languageProvider    = self.languages
+    self.ExodusII.installDirProvider  = self.petscdir
 
     self.compilers.headerPrefix = self.headerPrefix
     self.types.headerPrefix     = self.headerPrefix

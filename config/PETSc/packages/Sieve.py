@@ -1,13 +1,9 @@
 import PETSc.package
 
-import os
-
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
-    #self.download        = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sieve.tar.gz']
-    #self.includes        = ['Mesh.hh']
-    #self.includedir      = ['include', os.path.join('docsonly','include'), os.path.join('src', 'dm', 'mesh', 'sieve')]
+    import os
+    PETSc.package.NewPackage.__init__(self, framework)
     self.include         = [os.path.abspath(os.path.join('include', 'sieve'))]
     self.libdir          = ''
     self.archIndependent = 1
@@ -16,8 +12,7 @@ class Configure(PETSc.package.Package):
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
-    self.petscdir = self.framework.require('PETSc.utilities.petscdir',self)
+    PETSc.package.NewPackage.setupDependencies(self, framework)
     self.boost    = self.framework.require('config.packages.Boost',self)
     self.mpi      = self.framework.require('config.packages.MPI',self)
     #self.triangle = self.framework.require('PETSc.packages.Triangle',self)
@@ -29,7 +24,7 @@ class Configure(PETSc.package.Package):
     return [self.petscdir.dir]
     
   def setupHelp(self, help):
-    PETSc.package.Package.setupHelp(self, help)
+    PETSc.package.NewPackage.setupHelp(self, help)
     import nargs
     help.addArgument('Sieve', '-with-opt-sieve=<bool>', nargs.ArgBool(None, 1, 'Use IMesh which are optimized for interval point sets'))
     help.addArgument('Sieve', '-with-sieve-memory-logging=<bool>', nargs.ArgBool(None, 0, 'Turn on memory logging for Sieve objects'))
@@ -41,9 +36,9 @@ class Configure(PETSc.package.Package):
     self.framework.actions.addArgument('Sieve', 'Install', 'Installed Sieve into '+sieveDir)
     return sieveDir
 
-  def configure(self):
-    '''Determines if the package should be configured for, then calls the configure'''
-    if 'with-sieve' in self.framework.argDB and self.framework.argDB['with-sieve'] == 1:
+  def consistencyChecks(self):
+    PETSc.package.NewPackage.consistencyChecks(self)
+    if self.framework.argDB['with-'+self.package]:
       if not self.languages.clanguage == 'Cxx':
         raise RuntimeError('Sieve requires C++. Suggest using --with-clanguage=cxx')
       if not self.boost.found:
@@ -55,4 +50,4 @@ class Configure(PETSc.package.Package):
         self.addDefine('MESH_TYPE', 'ALE::Mesh')
       if 'with-sieve-memory-logging' in self.argDB and self.argDB['with-sieve-memory-logging']:
         self.framework.addDefine('ALE_MEM_LOGGING', 1)
-    return PETSc.package.Package.configure(self)
+    return

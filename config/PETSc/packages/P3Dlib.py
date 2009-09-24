@@ -1,21 +1,12 @@
-#!/usr/bin/env python
-from __future__ import generators
-import user
-import config.base
-import os
 import PETSc.package
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
-    self.download     = ['Not available for download: use --download-P3Dlib=P3Dlib.tar.gz']
+    PETSc.package.NewPackage.__init__(self, framework)
+    self.download  = ['Not available for download: use --download-P3Dlib=P3Dlib.tar.gz']
     self.functions = ['p3d_ReadStructGridFileHeader']
     self.liblist   = [['libp3d.a']]
     self.includes  = ['p3dlib.h']
-    return
-
-  def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
     return
 
   def Install(self):
@@ -38,12 +29,3 @@ class Configure(PETSc.package.Package):
                           
       self.postInstall(output,os.path.join('src','makefile.inc'))
     return self.installDir
-
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setupLogging(framework.clArgs)
-  framework.children.append(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()

@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 import PETSc.package
-import config.base
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     self.download     = ['hg://petsc.cs.iit.edu/petsc/ParMetis-dev','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ParMetis-dev-p3.tar.gz']
     self.functions    = ['ParMETIS_V3_PartKway']
     self.includes     = ['parmetis.h']
@@ -15,8 +14,7 @@ class Configure(PETSc.package.Package):
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
-    self.mpi = framework.require('config.packages.MPI', self)
+    PETSc.package.NewPackage.setupDependencies(self, framework)
     self.deps = [self.mpi]
     return
 
@@ -60,18 +58,8 @@ class Configure(PETSc.package.Package):
       self.framework.outputHeader(parmetisconfigheader,prefix='PARMETIS')
       try:
         self.logPrintBox('Compiling & installing Parmetis; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; make clean; make lib; make minstall; make clean', timeout=2500, log = self.framework.log)[0]
+        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; make clean; make lib; make minstall; make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on ParMetis: '+str(e))
       self.postInstall(output,'make.inc')
     return self.installDir
-
-    
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setup()
-  framework.addChild(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()

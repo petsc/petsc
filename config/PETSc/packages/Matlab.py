@@ -1,19 +1,10 @@
-#!/usr/bin/env python
-from __future__ import generators
-import user
-import config.base
-import os
 import PETSc.package
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     return
 
-  def __str__(self):
-    if self.found: return 'Matlab: Using '+self.matlab+'\n'
-    return ''
-    
   def setupHelp(self, help):
     import nargs
     help.addArgument('Matlab', '-with-matlab=<bool>',         nargs.ArgBool(None, 0, 'Activate Matlab'))
@@ -104,12 +95,3 @@ class Configure(PETSc.package.Package):
           self.framework.log.write('WARNING:Unable to use Matlab because cannot locate Matlab external libraries at '+os.path.join(matlab,'extern','lib')+'\n')
     raise RuntimeError('Could not find a functional Matlab\nRun with --with-matlab-dir=Matlabrootdir if you know where it is\n')
     return
-
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setupLogging()
-  framework.children.append(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()
