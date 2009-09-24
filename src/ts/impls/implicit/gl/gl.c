@@ -67,23 +67,24 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
   scheme->q = q;
   scheme->r = r;
   scheme->s  = s;
+
   ierr = PetscMalloc5(s,PetscReal,&scheme->c,s*s,PetscReal,&scheme->a,r*s,PetscReal,&scheme->b,r*s,PetscReal,&scheme->u,r*r,PetscReal,&scheme->v);CHKERRQ(ierr);
   ierr = PetscMemcpy(scheme->c,c,s*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscMemcpy(scheme->a,a,s*s*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscMemcpy(scheme->b,b,r*s*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscMemcpy(scheme->u,u,s*r*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscMemcpy(scheme->v,v,r*r*sizeof(PetscReal));CHKERRQ(ierr);
-  for (i=0; i<s; i++) {
-    scheme->c[i] = 0;
-    for (j=0; j<s; j++) {
-      scheme->c[i] += a[i*s+j];
-    }
-  }
+
   ierr = PetscMalloc4(r+s,PetscReal,&scheme->error1f,r+s,PetscReal,&scheme->error1b,r+s,PetscReal,&scheme->error2f,r+s,PetscReal,&scheme->error2b);CHKERRQ(ierr);
   ierr = PetscMemcpy(scheme->error1f,error1f,(r+s)*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscMemcpy(scheme->error1b,error1b,(r+s)*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscMemcpy(scheme->error2f,error2f,(r+s)*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscMemcpy(scheme->error2b,error2b,(r+s)*sizeof(PetscReal));CHKERRQ(ierr);
+
+  scheme->stiffly_accurate = PETSC_TRUE;
+  for (j=0; j<s; j++) if (a[(s-1)*s+j] != b[j]) scheme->stiffly_accurate = PETSC_FALSE;
+  for (j=0; j<r; j++) if (u[(s-1)*r+j] != v[j]) scheme->stiffly_accurate = PETSC_FALSE;
+
   *inscheme = scheme;
   PetscFunctionReturn(0);
 }
@@ -119,6 +120,56 @@ static PetscErrorCode TSGLDestroy_Default(TSGL fam)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "TSGLSchemeView"
+static PetscErrorCode TSGLSchemeView(TSGLScheme sc,PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+  PetscTruth     iascii;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscViewerASCIIPrintf(viewer,"GL scheme p,q,r,s = %d,%d,%d,%d\n",sc->p,sc->q,sc->r,sc->s);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Stiffly accurate: %s\n",sc->stiffly_accurate?"yes":"no");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Abscissas c = [");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
+    for (i=0; i<sc->s; i++) {
+      ierr = PetscViewerASCIIPrintf(viewer," %8g",sc->c[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(viewer,"]\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  } else {
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for TS_GL",((PetscObject)viewer)->type_name);
+  }
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__  
+#define __FUNCT__ "TSGLView_Default"
+static PetscErrorCode TSGLView_Default(TSGL fam,PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  PetscTruth     iascii;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscViewerASCIIPrintf(viewer,"Schemes within family (%d):\n",fam->max_order);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    for (i=1; i<=fam->max_order; i++) {
+      ierr = TSGLSchemeView(fam->schemes[i],viewer);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  } else {
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for TS_GL",((PetscObject)viewer)->type_name);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "TSGLCreate_DI"
 static PetscErrorCode TSGLCreate_DI(TSGL *infam)
 {
@@ -129,6 +180,7 @@ static PetscErrorCode TSGLCreate_DI(TSGL *infam)
   *infam = 0;
   ierr = PetscNew(struct _p_TSGL,&fam);CHKERRQ(ierr);
   fam->Destroy = TSGLDestroy_Default;
+  fam->View    = TSGLView_Default;
   fam->max_order = 2;
   ierr = PetscMalloc(fam->max_order*sizeof(TSGLScheme),&fam->schemes);CHKERRQ(ierr);
   fam->schemes--;               /* 1-based array because an order 0 integration method doesn't make sense */
@@ -139,7 +191,10 @@ static PetscErrorCode TSGLCreate_DI(TSGL *infam)
     const PetscReal error1f[2]={0,0},error1b[2]={0,0},error2f[2]={0,0},error2b[2]={0,0};
     ierr = TSGLSchemeCreate(1,1,1,1,c,*a,*b,*u,*v,error1f,error1b,error2f,error2b,&fam->schemes[1]);CHKERRQ(ierr);
   } else {
-    /* p=q=1, r=s=2, A- and L-stable with error estimates of order 2 and 3 */
+    /* p=q=1, r=s=2, A- and L-stable with error estimates of order 2 and 3
+    * Listed in Butcher & Podhaisky 2006. On error estimation in general linear methods for stiff ODE.
+    * irks(0.3,0,[.3,1],[1],1)
+    */
     const PetscReal
       c[2]    = {3./10., 1.},
       a[2][2] = {{3./10., 0}, {7./10., 3./10.}},
@@ -512,6 +567,12 @@ static PetscErrorCode TSView_GL(TS ts,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  min order %D, max order %D, current order %D\n",gl->min_order,gl->max_order,gl->current_order);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Error estimation: %s\n",TSGLErrorDirections[gl->error_direction]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Extrapolation: %s\n",gl->extrapolate?"yes":"no");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  type: %s\n",gl->type_name[0]?gl->type_name:"(not yet set)");CHKERRQ(ierr);
+    if (gl->data && gl->data->View) {
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = (*gl->data->View)(gl->data,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    }
   } else {
     SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for TS_GL",((PetscObject)viewer)->type_name);
   }

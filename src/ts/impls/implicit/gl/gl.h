@@ -17,12 +17,14 @@ struct _TSGLScheme {
   PetscReal *error1b;           /* backward-looking estimation of h^{p+1}x^{(p+1)} */
   PetscReal *error2f;           /* forward-looking  estimation of h^{p+2}x^{(p+2)} */
   PetscReal *error2b;           /* backward-looking estimation of h^{p+2}x^{(p+2)} */
+  PetscTruth stiffly_accurate;  /* Last row of [A U] is equal t first row of [B V]? */
 };
 
 struct _p_TSGL {
   PetscErrorCode (*EstimateError)(TSGLScheme,Vec*,Vec*,PetscReal*,PetscReal*);         /* Provide local error estimates */
   PetscErrorCode (*ChangeScheme)(TSGLScheme,TSGLScheme,PetscReal,PetscReal,Vec*,Vec*); /* Change step size and possibly order of scheme (within family) */
   PetscErrorCode (*Destroy)(TSGL);
+  PetscErrorCode (*View)(TSGL,PetscViewer);
   PetscInt max_order;
   TSGLScheme *schemes;
 };
