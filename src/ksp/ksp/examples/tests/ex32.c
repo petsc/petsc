@@ -29,17 +29,18 @@ int main(int argc,char **argv)
   Vec            x,b;
   DA             da;
   Mat            A;
-  PetscInt       dof=1;
+  PetscInt       dof=1,M=-8;
   PetscTruth     flg;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = DACreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
   ierr = DASetDim(da,3);CHKERRQ(ierr);
   ierr = DASetPeriodicity(da,DA_NONPERIODIC);CHKERRQ(ierr);
   ierr = DASetStencilType(da,DA_STENCIL_STAR);CHKERRQ(ierr);
-  ierr = DASetSizes(da,-8,-8,-8);CHKERRQ(ierr);
+  ierr = DASetSizes(da,M,M,M);CHKERRQ(ierr);
   ierr = DASetNumProcs(da,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = DASetDof(da,dof);CHKERRQ(ierr);
   ierr = DASetStencilWidth(da,1);CHKERRQ(ierr);
@@ -56,8 +57,15 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetTruth(PETSC_NULL, "-check_symmetry", &flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg){
     PetscTruth isSymmetric;
-    ierr = MatIsSymmetric(A,1.e-14,&isSymmetric);CHKERRQ(ierr);
-    if (!isSymmetric) printf("A is not symmetric\n");
+    ierr = MatIsSymmetric(A,0.0,&isSymmetric);CHKERRQ(ierr);
+    if (!isSymmetric){
+      printf("A is not symmetric, make A = 0.5*(A+A^T) symmetric ...\n");
+      Mat Atrans;
+      ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&Atrans);CHKERRQ(ierr);
+      ierr = MatAXPY(A,1.0,Atrans,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatScale(A,0.5);CHKERRQ(ierr);
+      ierr = MatDestroy(Atrans);CHKERRQ(ierr);
+    }
   }
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
