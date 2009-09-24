@@ -1,4 +1,16 @@
 syntax: glob
+*.info
+*.gcov
+*.gcna
+*.gcno
+*.gcda
+*.swp
+*.log
+*.dat
+*.vtk
+unix/*
+unix-opt/*
+unix-gcov/*
 package-*/*
 asterix*/*
 linux*/*

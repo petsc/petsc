@@ -139,9 +139,9 @@ int main(int argc,char **argv)
 
   /* Use SUNDIALS */
 #if defined(PETSC_HAVE_SUNDIALS)
-  ierr = TSSetType(ts,TS_SUNDIALS);CHKERRQ(ierr); 
+  ierr = TSSetType(ts,TSSUNDIALS);CHKERRQ(ierr); 
 #else
-  ierr = TSSetType(ts,TS_EULER);CHKERRQ(ierr); 
+  ierr = TSSetType(ts,TSEULER);CHKERRQ(ierr); 
 #endif
   dt   = 0.1;
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
@@ -183,7 +183,7 @@ int main(int argc,char **argv)
   /* extracts the PC  from ts */ 
   ierr = TSSundialsGetPC(ts,&pc);CHKERRQ(ierr);
   ierr = TSGetType(ts,&tstype);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)ts,TS_SUNDIALS,&sundials);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)ts,TSSUNDIALS,&sundials);CHKERRQ(ierr);
   if (sundials){
     ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,tsinfo,120,&viewer);CHKERRQ(ierr);
     ierr = TSView(ts,viewer);CHKERRQ(ierr);

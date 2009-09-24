@@ -207,7 +207,7 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyRichardson_MG"
-static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscInt *outits,PCRichardsonConvergedReason *reason)
+static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscTruth zeroguess,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
   PC_MG          **mg = (PC_MG**)pc->data;
   PetscErrorCode ierr;
@@ -223,8 +223,12 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rto
   if (rtol) {
     /* compute initial residual norm for relative convergence test */
     PetscReal rnorm;
-    ierr               = (*mg[levels-1]->residual)(mg[levels-1]->A,b,x,w);CHKERRQ(ierr);
-    ierr               = VecNorm(w,NORM_2,&rnorm);CHKERRQ(ierr);
+    if (zeroguess) {
+      ierr               = VecNorm(b,NORM_2,&rnorm);CHKERRQ(ierr);
+    } else {
+      ierr               = (*mg[levels-1]->residual)(mg[levels-1]->A,b,x,w);CHKERRQ(ierr);
+      ierr               = VecNorm(w,NORM_2,&rnorm);CHKERRQ(ierr);
+    }
     mg[levels-1]->ttol = PetscMax(rtol*rnorm,abstol);
   } else if (abstol) {
     mg[levels-1]->ttol = abstol;

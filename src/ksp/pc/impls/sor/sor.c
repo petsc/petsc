@@ -40,14 +40,18 @@ static PetscErrorCode PCApply_SOR(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyRichardson_SOR"
-static PetscErrorCode PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscInt *outits,PCRichardsonConvergedReason *reason)
+static PetscErrorCode PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscTruth guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
   PC_SOR         *jac = (PC_SOR*)pc->data;
   PetscErrorCode ierr;
+  MatSORType     stype = jac->sym;
 
   PetscFunctionBegin;
   ierr = PetscInfo1(pc,"Warning, convergence critera ignored, using %D iterations\n",its);CHKERRQ(ierr);
-  ierr = MatRelax(pc->pmat,b,jac->omega,(MatSORType)jac->sym,jac->fshift,its*jac->its,jac->lits,y);CHKERRQ(ierr);
+  if (guesszero) {
+    stype = (MatSORType) (stype | SOR_ZERO_INITIAL_GUESS); 
+  }
+  ierr = MatRelax(pc->pmat,b,jac->omega,stype,jac->fshift,its*jac->its,jac->lits,y);CHKERRQ(ierr);
   *outits = its;
   *reason = PCRICHARDSON_CONVERGED_ITS;
   PetscFunctionReturn(0);

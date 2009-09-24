@@ -699,17 +699,18 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplyRichardsonExists(PC pc,PetscTruth *exis
 
    Input Parameters:
 +  pc  - the preconditioner context
-.  x   - the initial guess 
+.  b   - the right hand side
 .  w   - one work vector
 .  rtol - relative decrease in residual norm convergence criteria
 .  abstol - absolute residual norm convergence criteria
 .  dtol - divergence residual norm increase criteria
--  its - the number of iterations to apply.
+.  its - the number of iterations to apply.
+-  guesszero - if the input x contains nonzero initial guess
 
    Output Parameter:
 +  outits - number of iterations actually used (for SOR this always equals its)
 .  reason - the reason the apply terminated
--  y - the solution
+-  y - the solution (also contains initial guess if guesszero is PETSC_FALSE
 
    Notes: 
    Most preconditioners do not support this function. Use the command
@@ -724,21 +725,21 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplyRichardsonExists(PC pc,PetscTruth *exis
 
 .seealso: PCApplyRichardsonExists()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscInt *outits,PCRichardsonConvergedReason *reason)
+PetscErrorCode PETSCKSP_DLLEXPORT PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscTruth guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(b,VEC_COOKIE,2);
   PetscValidHeaderSpecific(y,VEC_COOKIE,3);
   PetscValidHeaderSpecific(w,VEC_COOKIE,4);
-  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y must be different vectors");
+  if (b == y) SETERRQ(PETSC_ERR_ARG_IDN,"b and y must be different vectors");
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
   if (!pc->ops->applyrichardson) SETERRQ(PETSC_ERR_SUP,"PC does not have apply richardson");
-  ierr = (*pc->ops->applyrichardson)(pc,x,y,w,rtol,abstol,dtol,its,outits,reason);CHKERRQ(ierr);
+  ierr = (*pc->ops->applyrichardson)(pc,b,y,w,rtol,abstol,dtol,its,guesszero,outits,reason);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

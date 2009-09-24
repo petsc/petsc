@@ -144,7 +144,7 @@
 !     find a steady state solution to the nonlinear problem.
 !
 
-      call TSSetType(ts,TS_PSEUDO,ierr) 
+      call TSSetType(ts,TSPSEUDO,ierr) 
 
 !
 !       Set the initial time to start at (this is arbitrary for 

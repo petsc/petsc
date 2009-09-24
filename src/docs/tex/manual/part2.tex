@@ -3962,12 +3962,12 @@ supported for the AIJ matrix format.
 
 % ---------------------------------------------------------------
 \cleardoublepage
-\chapter{TS: Scalable ODE Solvers}
+\chapter{TS: Scalable ODE and DAE Solvers}
 \label{chapter_ts}
 \sindex{ODE solvers}
 
 \findex{TS} 
-The TS library provides a framework for the scalable solution of ODEs
+The TS library provides a framework for the scalable solution of ODEs and DAEs
 arising from the discretization of time-dependent PDEs, and of
 steady-state problems using pseudo-timestepping.
 
@@ -4057,14 +4057,13 @@ One can set the solution method with the routine
 \begin{tabbing}
  TSSetType(TS ts,TSType type);
 \end{tabbing}
-\findex{TSSetType()} Currently supported types are \trl{TS_EULER},
-\trl{TS_BEULER},  \trl{TS_PSEUDO}, \trl{TS_CRANK_NICHOLSON},
-\trl{TS_SUNDIALS} (only if the Sundials package is installed),
-and \trl{TS_RK}
-\findex{TS_EULER} \findex{TS_BEULER} \findex{TS_PSEUDO}
-\findex{TS_CRANK_NICHOLSON} \findex{TS_SUNDIALS} \findex{TS_RUNGE_KUTTA}
-or the command line option
-\trl{-ts_type euler, beuler, pseudo, crank-nicholson, sundials, runge-kutta}.
+\findex{TSSetType()} Currently supported types are \trl{TSEULER}, \trl{TSRUNGE_KUTTA},
+\trl{TSBEULER}, \trl{TSCRANK_NICHOLSON}, \trl{TSTHETA}, \trl{TSGL}, \trl{TSPSEUDO}, and
+\trl{TSSUNDIALS} (only if the Sundials package is installed),
+\findex{TSEULER} \findex{TSRUNGE_KUTTA} \findex{TSBEULER} \findex{TSCRANK_NICHOLSON}
+\findex{TSTHETA} \findex{TSGL} \findex{TSPSEUDO} \findex{TSSUNDIALS}
+or the command line option \\
+\trl{-ts_type euler,runge-kutta,beuler,crank-nicholson,theta,gl,pseudo,sundials}.
 \findex{-ts_type} \sindex{Euler}
 \sindex{backward Euler}
 
@@ -4174,65 +4173,115 @@ routine TSDefaultComputeJacobianColor() and TSDefaultComputeJacobian() that
 corresponds to SNESDefaultComputeJacobian(). \findex{TSDefaultComputeJacobianColor()}
 \sindex{coloring with TS} \findex{TSDefaultComputeJacobian()}
 
-\subsection{Using PVODE from PETSc}
-\label{sec_pvode}
+\subsection{Solving Differential Algebraic Equations}
+\label{sec_dae}
+The interface for solving time dependent problems given in the implicit
+form
+\[
+        F(t,u,\dot{u}) = 0, \quad u(t_0) = u_0
+\]
+is slightly different.  In general, this is a differential algebraic
+equation (DAE), but if the matrix $F_{\dot{u}}(t) = \partial F
+/ \partial \dot{u}$ is nonsingular then it is an ODE and can be
+transformed to the standard explicit form, although this transformation
+may not lead to efficient algorithms.  For ODE with nontrivial mass
+matrices such as arise in FEM, the implicit/DAE interface significantly
+reduces overhead to prepare the system for algebraic solvers (SNES/KSP)
+by having the user assemble the correctly shifted matrix.  Therefore
+this interface is also useful for ODE systems.
 
-PVODE is a parallel ODE solver developed by Hindmarsh et al. at LLNL.
-The TS library provides an interface to use PVODE directly from PETSc.
-(To install PETSc to use PVODE, see the installation guide, \trl{docs/installation/index.htm}.) 
+To solve a DAE, instead of TSSetRHSFunction and TSSetRHSJacobian, one
+uses:
 
-To use the PVODE integrators, call 
+\begin{itemize}
+\item Function $F(t,u,\dot{u})$
+  \begin{tabbing}
+    TSSetIFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,Vec,void*),void *funP);
+  \end{tabbing}
+  The \findex{TSSetIFunction} arguments to the function \trl{f()} are the
+  timestep contex, current time, input state $u$, input time derivative
+  $\dot{u}$, and the (optional) user-provided context \trl{funP}.
+
+\item Jacobian $F_u + aF_{dot{u}}$ \\
+  Unless one is using matrix-free methods without preconditioning, the
+  user must also provide an (approximate) Jacobian matrix of $G(u) =
+  F(t,u,w+au)$ where $w$ and $a$ are provided by the integrator.  The
+  function that evaluates $G'(u) = F_u + aF_{\dot{u}}$ is set with
+  \begin{tabbing}
+    TSSetIJacobian(\=TS ts,Mat A,Mat B,\\
+    \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*),void *jacP);
+  \end{tabbing}
+  The \findex{TSSetIJacobian} arguments for the function \trl{fjac()}
+  are the timestep contex, current time, input state $u$, input
+  derivative $\dot{u}$, shift $a$, matrix $A$, preconditioning matrix
+  $B$, flag describing structure of preconditioning matrix (see the
+  discussion of KSPSetOperators() in Section~\ref{sec_usingsles} for
+  details), and the (optional) user-provided context \trl{jacP}.
+\end{itemize}
+
+Note: only the general linear \trl{TSGL} and $\theta$ method
+\trl{TSTHETA} have support for solving DAE.
+
+\subsection{Using Sundials from PETSc}
+\label{sec_sundials}
+
+Sundials is a parallel ODE solver developed by Hindmarsh et al. at LLNL.
+The TS library provides an interface to use the CVODE component of
+Sundials directly from PETSc.  (To install PETSc to use Sundials, see
+the installation guide, \trl{docs/installation/index.htm}.)
+
+To use the Sundials integrators, call
 \begin{tabbing}
- TSSetType(TS ts,TSType TS\_PVODE);
+ TSSetType(TS ts,TSType TSSUNDIALS);
 \end{tabbing}
-or use the command line option \trl{-ts_type} \trl{pvode}. \findex{TS_PVODE} 
-\sindex{PVODE} \sindex{Hindmarsh} \sindex{ODE solvers}
+or use the command line option \trl{-ts_type} \trl{sundials}. \findex{TSSUNDIALS}
+\sindex{Sundials} \sindex{Hindmarsh} \sindex{ODE solvers}
 
-PVODE comes with to main integrator families, Adams and BDF (backward 
-differentiation formula). One can select these with 
+Sundials' CVODE solver comes with two main integrator families, Adams
+and BDF (backward differentiation formula). One can select these with
 \begin{tabbing}
- TSPVodeSetType(TS ts,TSPVodeType [PVODE\_ADAMS,PVODE\_BDF]);
+ TSSundialsSetType(TS ts,TSSundialsLmmType [SUNDIALS\_ADAMS,SUNDIALS\_BDF]);
 \end{tabbing}
-or the command line option \trl{-ts_pvode_type <adams,bdf>}. BDF is
-the default. \findex{-ts_pvode_type} \findex{TSPVodeType}
-\findex{TSPVodeSetType()} \sindex{Adams} \sindex{BDF}
+or the command line option \trl{-ts_sundials_type <adams,bdf>}. BDF is
+the default. \findex{-ts_sundials_type} \findex{TSSundialsLmmType}
+\findex{TSSundialsSetType()} \sindex{Adams} \sindex{BDF}
 
-PVODE does not use the SNES library within PETSc for its nonlinear
+Sundials does not use the SNES library within PETSc for its nonlinear
 solvers, so one cannot change the nonlinear solver options via
-SNES. Rather, PVODE uses the preconditioners within the PC package
+SNES. Rather, Sundials uses the preconditioners within the PC package
 of PETSc, which can be accessed via
 \begin{tabbing}
- TSPVodeGetPC(TS ts,PC *pc);
+ TSSundialsGetPC(TS ts,PC *pc);
 \end{tabbing}
 The user can then directly set preconditioner options; 
 alternatively, the usual runtime options can be employed
-via \trl{-pc_xxx}. \findex{TSPVodeGetPC()}
+via \trl{-pc_xxx}. \findex{TSSundialsGetPC()}
 
-Finally, one can set the PVODE tolerances via
+Finally, one can set the Sundials tolerances via
 \begin{tabbing}
- TSPVodeSetTolerance(TS ts,double abs,double rel);
+ TSSundialsSetTolerance(TS ts,double abs,double rel);
 \end{tabbing}
 where \trl{abs} denotes the absolute tolerance and \trl{rel}
-the relative tolerance. \findex{TSPVodeSetTolerance()}
+the relative tolerance. \findex{TSSundialsSetTolerance()}
 
-Other PETSc-PVode options include
+Other PETSc-Sundials options include
 \begin{tabbing}
-  TSPVodeSetGramSchmidtType(TS ts,TSPVodeGramSchmidtType type);
+  TSSundialsSetGramSchmidtType(TS ts,TSSundialsGramSchmidtType type);
 \end{tabbing}
-where \trl{type} is either \trl{PVODE_MODIFIED_GS} or 
-\trl{PVODE_UNMODIFIED_GS}. \findex{TSPVodeSetGramSchmidtType()}
-\findex{TSPVodeGramSchmidtType} \findex{PVODE_MODIFIED_GS}
-\findex{PVODE_UNMODIFIED_GS} This may be set via the options data base
-with \trl{-ts_pvode_gramschmidt_type <modifed,unmodified>}.
-\findex{-ts_pvode_gramschmidt_type}
+where \trl{type} is either \trl{SUNDIALS_MODIFIED_GS} or
+\trl{SUNDIALS_UNMODIFIED_GS}. \findex{TSSundialsSetGramSchmidtType()}
+\findex{TSSundialsGramSchmidtType} \findex{SUNDIALS_MODIFIED_GS}
+\findex{SUNDIALS_UNMODIFIED_GS} This may be set via the options data base
+with \trl{-ts_sundials_gramschmidt_type <modifed,unmodified>}.
+\findex{-ts_sundials_gramschmidt_type}
 
 The routine 
 \begin{tabbing}
-  TSPVodeSetGMRESRestart(TS ts,int restart);
+  TSSundialsSetGMRESRestart(TS ts,int restart);
 \end{tabbing}
 sets the number of vectors in the Krylov subpspace used by GMRES.
-\findex{TSPVodeSetGMRESRestart()} This may be set in the options 
-database with \trl{-ts_pvode_gmres_restart} \trl{restart}. \findex{-ts_pvode_gmres_restart}
+\findex{TSSundialsSetGMRESRestart()} This may be set in the options 
+database with \trl{-ts_sundials_gmres_restart} \trl{restart}. \findex{-ts_sundials_gmres_restart}
 
 
 \subsection{Solving Steady-State Problems with Pseudo-Timestepping}
@@ -7325,7 +7374,7 @@ Additional preconditioner routines are
 \begin{tabbing}
   PCApplyBAorAB(PC pc,PCSide right,Vec x,Vec y,Vec work,int its);\\
   PCApplyBAorABTranspose(PC pc,PCSide right,Vec x,Vec y,Vec work,int its);\\
-  PCApplyRichardson(PC pc,Vec x,Vec y,Vec work,PetscReal rtol,PetscReal atol, PetscReal dtol,PetscInt maxits,PetscInt *its,PCRichardsonConvergedReason*);
+  PCApplyRichardson(PC pc,Vec x,Vec y,Vec work,PetscReal rtol,PetscReal atol, PetscReal dtol,PetscInt maxits,PetscTruth zeroguess,PetscInt *its,PCRichardsonConvergedReason*);
 \end{tabbing}
 The first two routines apply the action of the matrix followed by the
 preconditioner or the preconditioner followed by the matrix depending

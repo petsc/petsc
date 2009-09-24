@@ -234,7 +234,7 @@
 !     
         five = 5
         call PetscStrncpy(etype,type,five,ierr)
-        if (etype .eq. TS_EULER) then
+        if (etype .eq. TSEULER) then
           if (abs(nrm_2/steps - 0.00257244) .gt. 1.e-4) then
             print*,'Error in Euler method: 2-norm ',nrm_2/steps,        &
      &            ' expecting: ',0.00257244

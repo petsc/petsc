@@ -28,15 +28,15 @@ typedef struct _p_TS* TS;
 .seealso: TSSetType(), TS
 E*/
 #define TSType char*
-#define TS_EULER           "euler"
-#define TS_BEULER          "beuler"
-#define TS_PSEUDO          "pseudo"
-#define TS_CRANK_NICHOLSON "crank-nicholson"
-#define TS_SUNDIALS        "sundials"
-#define TS_RUNGE_KUTTA     "runge-kutta"
-#define TS_PYTHON          "python"
-#define TS_THETA           "theta"
-#define TS_GENERAL_LINEAR  "gl"
+#define TSEULER           "euler"
+#define TSBEULER          "beuler"
+#define TSPSEUDO          "pseudo"
+#define TSCRANK_NICHOLSON "crank-nicholson"
+#define TSSUNDIALS        "sundials"
+#define TSRUNGE_KUTTA     "runge-kutta"
+#define TSPYTHON          "python"
+#define TSTHETA           "theta"
+#define TSGL              "gl"
 
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve
@@ -204,10 +204,8 @@ E*/
 
 #define TSGL_DI   "di"
 
-typedef struct _p_TSGL *TSGL;
-
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSGLSetType(TS,const TSGLType);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSGLRegister(const char[],const char[],const char[],PetscErrorCode(*)(TSGL*));
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSGLRegister(const char[],const char[],const char[],PetscErrorCode(*)(TS));
 
 /*
        PETSc interface to Sundials

@@ -137,6 +137,9 @@ application context. Users should obtain the context with
 PCShellGetContext, similar to MatShell.</li>
         <li>Removed -pc_asm_in_place and PCASMSetUseInPlace() since the
 option made no sense</li>
+        <li>PCApplyRichardson() has an additional argument indicating
+if the initial guess being passed in is nonzero. SOR will save some
+work if it is zero.</li>
       </ul>
       <p><u><b>KSP:</b></u></p>
       <ul>
@@ -153,14 +156,17 @@ large amount of time, Requires 2 extra work vectors.<br>
       </ul>
       <p><u><b>SNES:</b></u></p>
       <p><u><b>TS:</b></u></p>
+      <ul>
+	<li>Rename TS_EULER, TS_BEULER, etc like TSEULER for consistency with other packages.</li>
+	<li>Add Theta and General Linear time integrators (TSTHETA,
+	  TSGL).  These can be used for solving differential algebraic
+	  equations (DAE) using the new TSSetIFunction() and
+	  TSSetIJacobian().</li>
+      </ul>
       <p><u><b>DA:</b></u></p>
       <ul>
         <li>DAGetColoring() now takes a MatType as an additional
-argument, should be MATAIJ or MATBAIJ<u><b></b></u></li>
-      </ul>
-      <ul>
-      </ul>
-      <ul>
+	  argument, should be MATAIJ or MATBAIJ<u><b></b></u></li>
       </ul>
       <p><u><b>DMMG:</b></u></p>
       <ul>

@@ -15,11 +15,13 @@
 #define TSSundialsGramSchmidtType PetscEnum
 #define TSSundialsLmmType PetscEnum
 
-#define TS_EULER 'euler'
-#define TS_BEULER 'beuler'
-#define TS_PSEUDO 'pseudo'
-#define TS_SUNDIALS 'sundials'
-#define TS_CRANK_NICHOLSON 'crank-nicholson'
-#define TS_RUNGE_KUTTA 'runge-kutta'
-#define TS_PYTHON 'python'
+#define TSEULER 'euler'
+#define TSBEULER 'beuler'
+#define TSPSEUDO 'pseudo'
+#define TSCRANK_NICHOLSON 'crank-nicholson'
+#define TSSUNDIALS 'sundials'
+#define TSRUNGE_KUTTA 'runge-kutta'
+#define TSPYTHON 'python'
+#define TSTHETA 'theta'
+#define TSGL 'gl'
 #endif

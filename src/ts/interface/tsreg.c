@@ -21,10 +21,10 @@ PetscTruth TSRegisterAllCalled          = PETSC_FALSE;
 
    Notes:
    See "petsc/include/petscts.h" for available methods (for instance)
-+  TS_EULER - Euler
-.  TS_SUNDIALS - SUNDIALS interface
-.  TS_BEULER - Backward Euler
--  TS_PSEUDO - Pseudo-timestepping
++  TSEULER - Euler
+.  TSSUNDIALS - SUNDIALS interface
+.  TSBEULER - Backward Euler
+-  TSPSEUDO - Pseudo-timestepping
 
    Normally, it is best to use the TSSetFromOptions() command and
    then set the TS type from the options database rather than by using

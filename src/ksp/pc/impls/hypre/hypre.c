@@ -600,7 +600,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyRichardson_HYPRE_BoomerAMG"
-static PetscErrorCode PCApplyRichardson_HYPRE_BoomerAMG(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscInt *outits,PCRichardsonConvergedReason *reason)
+static PetscErrorCode PCApplyRichardson_HYPRE_BoomerAMG(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscTruth guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
@@ -1190,7 +1190,7 @@ PetscErrorCode PCApply_PFMG(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyRichardson_PFMG"
-static PetscErrorCode PCApplyRichardson_PFMG(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscInt *outits,PCRichardsonConvergedReason *reason)
+static PetscErrorCode PCApplyRichardson_PFMG(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscTruth guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
   PC_PFMG        *jac = (PC_PFMG*)pc->data;
   PetscErrorCode ierr;

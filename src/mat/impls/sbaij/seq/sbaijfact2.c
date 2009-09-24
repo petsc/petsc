@@ -1782,6 +1782,53 @@ PetscErrorCode MatSolves_SeqSBAIJ_1(Mat A,Vecs bb,Vecs xx)
    ordering. This eliminates the need for the column and row permutation.
 */
 #undef __FUNCT__  
+#define __FUNCT__ "MatSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct"
+PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
+{
+  Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ *)A->data;
+  PetscErrorCode    ierr;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*vj;
+  const MatScalar   *aa=a->a,*v;
+  const PetscScalar *b;
+  PetscScalar       *x,xi;
+  PetscInt          nz,i,k,j;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr); 
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
+  
+  /* solve U^T*D*y = b by forward substitution */
+  ierr = PetscMemcpy(x,b,mbs*sizeof(PetscScalar));CHKERRQ(ierr);
+  for (i=0; i<mbs; i++){
+    v  = aa + ai[i]; 
+    vj = aj + ai[i];    
+    xi = x[i];
+    nz = ai[i+1] - ai[i] - 1; /* exclude diag[i] */
+    for (j=0; j<nz; j++){
+      x[vj[j]] += v[j]* xi;
+    }
+    x[i] = xi*v[nz];  /* v[nz] = aa[diag[i]] = 1/D(i) */
+  }
+
+  /* solve U*x = y by back substitution */ 
+  k = ai[mbs-1]-2; 
+  for (i=mbs-2; i>=0; i--){ 
+    xi = x[i];   
+    nz = ai[i+1] - ai[i] - 1;    
+    for (j=0; j<nz; j++){
+      xi += aa[k]* x[aj[k]]; k--;     
+    }
+    x[i] = xi;    
+    k--; /* skip diagonal[i] */
+  }
+  
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+  ierr = PetscLogFlops(4.0*a->nz);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqSBAIJ_1_NaturalOrdering"
 PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
@@ -1813,7 +1860,9 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
     vj = aj + ai[k] + 1; 
     xk = x[k];   
     nz = ai[k+1] - ai[k] - 1;    
-    while (nz--) xk += (*v++) * x[*vj++];    
+    while (nz--) {
+      xk += (*v++) * x[*vj++];
+    }
     x[k] = xk;      
   }
 

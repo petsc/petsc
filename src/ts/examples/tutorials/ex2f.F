@@ -188,7 +188,7 @@
 !  to override the defaults set by TSSetDuration().
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call TSSetType(ts,TS_BEULER,ierr)
+      call TSSetType(ts,TSBEULER,ierr)
       call TSSetDuration(ts,time_steps_max,time_total_max,ierr)
       call TSSetFromOptions(ts,ierr)
 

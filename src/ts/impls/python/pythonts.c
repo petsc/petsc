@@ -18,7 +18,7 @@
 
 .keywords: TS, Python
 
-.seealso: TSCreate(), TSSetType(), TS_PYTHON, PetscPythonInitialize()
+.seealso: TSCreate(), TSSetType(), TSPYTHON, PetscPythonInitialize()
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetType(TS ts,const char pyname[])
 {

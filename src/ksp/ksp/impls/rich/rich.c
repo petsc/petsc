@@ -59,7 +59,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   ierr = PCApplyRichardsonExists(ksp->pc,&exists);CHKERRQ(ierr);
   if (exists && !ksp->numbermonitors && !ksp->transpose_solve) {
     PCRichardsonConvergedReason reason;
-    ierr = PCApplyRichardson(ksp->pc,b,x,r,ksp->rtol,ksp->abstol,ksp->divtol,maxit,&ksp->its,&reason);CHKERRQ(ierr);
+    ierr = PCApplyRichardson(ksp->pc,b,x,r,ksp->rtol,ksp->abstol,ksp->divtol,maxit,ksp->guess_zero,&ksp->its,&reason);CHKERRQ(ierr);
     ksp->reason = (KSPConvergedReason)reason;
     PetscFunctionReturn(0);
   }

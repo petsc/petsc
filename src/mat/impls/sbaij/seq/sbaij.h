@@ -49,6 +49,7 @@ EXTERN PetscErrorCode MatGetInertia_SeqSBAIJ(Mat,PetscInt*,PetscInt*,PetscInt*);
 
 EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatForwardSolve_SeqSBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatForwardSolve_SeqSBAIJ_1(Mat,Vec,Vec);
