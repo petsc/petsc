@@ -29,7 +29,6 @@ class Package(config.base.Configure):
     self.deps             = []   # other packages whose dlib or include we depend on, usually we also use self.framework.require()
     self.defaultLanguage  = 'C'  # The language in which to run tests
     self.liblist          = [[]] # list of libraries we wish to check for (override with your own generateLibraryList())
-    self.extraLibAppend   = []   # additional libraries needed to link that go in front
     self.extraLib         = []   # additional libraries needed to link
     self.includes         = []   # headers to check for
     self.functions        = []   # functions we wish to check for in the libraries
@@ -189,10 +188,6 @@ class Package(config.base.Configure):
     alllibs = []
     for libSet in self.liblist:
       libs = []
-      # Treat appended libs
-      if len(self.extraLibAppend) > 0:
-        libs.append(os.path.join(directory, self.extraLibAppend[0]))
-      libs.extend(self.extraLibAppend[1:])
       # add full path only to the first library in the list
       if not self.libdir == directory and len(libSet) > 0:
         libs.append(os.path.join(directory, libSet[0]))

@@ -9,12 +9,9 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download   = ['http://downloads.sourceforge.net/exodusii/exodusii-4.75.tar.gz']
-    self.liblist    = [['libexoIIv2c.a','libnetcdf.a']]
+    self.liblist    = [['libexoIIv2for.a', 'libexoIIv2c.a','libnetcdf.a']]
     self.functions  = ['ex_close'] 
     self.includes   = ['exodusII.h']
-    self.includedir = os.path.join('cbind', 'include')
-    self.libdir     = os.path.join('cbind', 'src')
-    self.extraLibAppend = [os.path.join('..', '..', 'forbind', 'src', 'libexoIIv2for.a')]
     return
 
   def setupDependencies(self, framework):
