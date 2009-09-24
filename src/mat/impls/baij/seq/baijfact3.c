@@ -170,7 +170,8 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_newdatastruct(Mat B,Mat A,IS isrow,IS
     /* add pivot rows into linked list */
     row = lnk[n]; 
     while (row < i) {
-      nzbd    = bdiag[row] - bi[row] + 1; /* num of entries in the row with column index <= row */
+//      nzbd    = bdiag[row] - bi[row] + 1; /* num of entries in the row with column index <= row */
+      nzbd    = bdiag[row] + 1; /* num of entries in the row with column index <= row */
       ajtmp   = bi_ptr[row] + nzbd; /* points to the entry next to the diagonal */   
       ierr = PetscLLAddSortedLU(ajtmp,row,nlnk,lnk,lnkbt,i,nzbd,im);CHKERRQ(ierr);
       nzi += nlnk;
@@ -261,7 +262,55 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_newdatastruct(Mat B,Mat A,IS isrow,IS
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
   both_identity = (PetscTruth) (row_identity && col_identity);
-  ierr = MatSeqBAIJSetNumericFactorization(B,both_identity);CHKERRQ(ierr);
+  if(both_identity){
+     switch(bs){
+     case 2:
+        (B)->ops->solve = MatSolve_SeqBAIJ_2_NaturalOrdering_newdatastruct;
+        break;
+     case 3:
+        (B)->ops->solve = MatSolve_SeqBAIJ_3_NaturalOrdering_newdatastruct;
+        break;
+     case 4:
+        (B)->ops->solve = MatSolve_SeqBAIJ_4_NaturalOrdering_newdatastruct;
+        break;
+     case 5:
+        (B)->ops->solve = MatSolve_SeqBAIJ_5_NaturalOrdering_newdatastruct;
+        break;
+     case 6:
+        (B)->ops->solve = MatSolve_SeqBAIJ_6_NaturalOrdering_newdatastruct;
+        break;
+     case 7:
+        (B)->ops->solve = MatSolve_SeqBAIJ_7_NaturalOrdering_newdatastruct;
+        break;
+     default:
+        (B)->ops->solve = MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct;
+      }
+   } 
+   else {
+     switch(bs){
+     case 2:
+        (B)->ops->solve = MatSolve_SeqBAIJ_2_newdatastruct;
+        break;
+     case 3:
+        (B)->ops->solve = MatSolve_SeqBAIJ_3_newdatastruct;
+        break;
+     case 4:
+        (B)->ops->solve = MatSolve_SeqBAIJ_4_newdatastruct;
+        break;
+     case 5:
+        (B)->ops->solve = MatSolve_SeqBAIJ_5_newdatastruct;
+        break;
+     case 6:
+        (B)->ops->solve = MatSolve_SeqBAIJ_6_newdatastruct;
+        break;
+     case 7:
+        (B)->ops->solve = MatSolve_SeqBAIJ_7_newdatastruct;
+        break;
+     default:
+        (B)->ops->solve = MatSolve_SeqBAIJ_N_newdatastruct;
+      }
+   }
+//  ierr = MatSeqBAIJSetNumericFactorization(B,both_identity);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
  }
