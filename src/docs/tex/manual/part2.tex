@@ -7325,7 +7325,7 @@ Additional preconditioner routines are
 \begin{tabbing}
   PCApplyBAorAB(PC pc,PCSide right,Vec x,Vec y,Vec work,int its);\\
   PCApplyBAorABTranspose(PC pc,PCSide right,Vec x,Vec y,Vec work,int its);\\
-  PCApplyRichardson(PC pc,Vec x,Vec y,Vec work,PetscReal rtol,PetscReal atol, PetscReal dtol,PetscInt maxits,PetscInt *its,PCRichardsonConvergedReason*);
+  PCApplyRichardson(PC pc,Vec x,Vec y,Vec work,PetscReal rtol,PetscReal atol, PetscReal dtol,PetscInt maxits,PetscTruth zeroguess,PetscInt *its,PCRichardsonConvergedReason*);
 \end{tabbing}
 The first two routines apply the action of the matrix followed by the
 preconditioner or the preconditioner followed by the matrix depending

@@ -20,7 +20,7 @@ typedef struct {
   PetscErrorCode (*postsolve)(PC,KSP,Vec,Vec);
   PetscErrorCode (*view)(PC,PetscViewer);
   PetscErrorCode (*applytranspose)(PC,Vec,Vec);
-  PetscErrorCode (*applyrich)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscInt*,PCRichardsonConvergedReason*);
+  PetscErrorCode (*applyrich)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscTruth,PetscInt*,PCRichardsonConvergedReason*);
   char           *name;
 } PC_Shell;
 EXTERN_C_END
@@ -206,7 +206,7 @@ static PetscErrorCode PCApplyTranspose_Shell(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyRichardson_Shell"
-static PetscErrorCode PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt it,PetscInt *outits,PCRichardsonConvergedReason *reason)
+static PetscErrorCode PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt it,PetscTruth guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
   PetscErrorCode ierr;
   PC_Shell       *shell;
@@ -216,7 +216,7 @@ static PetscErrorCode PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,PetscReal 
   if (!shell->applyrich) SETERRQ(PETSC_ERR_USER,"No applyrichardson() routine provided to Shell PC");
   PetscStackPush("PCSHELL user function applyrichardson()");
   CHKMEMQ;
-  ierr  = (*shell->applyrich)(pc,x,y,w,rtol,abstol,dtol,it,outits,reason);CHKERRQ(ierr);
+  ierr  = (*shell->applyrich)(pc,x,y,w,rtol,abstol,dtol,it,guesszero,outits,reason);CHKERRQ(ierr);
   CHKMEMQ;
   PetscStackPop;
   PetscFunctionReturn(0);
@@ -386,7 +386,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCShellSetApplyRichardson_Shell"
-PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyRichardson_Shell(PC pc,PetscErrorCode (*applyrich)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscInt*,PCRichardsonConvergedReason*))
+PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyRichardson_Shell(PC pc,PetscErrorCode (*applyrich)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscTruth,PetscInt*,PCRichardsonConvergedReason*))
 {
   PC_Shell *shell;
 
@@ -866,9 +866,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellGetName(PC pc,char *name[])
 
 .seealso: PCShellSetApply(), PCShellSetContext()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyRichardson(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscInt*,PCRichardsonConvergedReason*))
+PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyRichardson(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscTruth,PetscInt*,PCRichardsonConvergedReason*))
 {
-  PetscErrorCode ierr,(*f)(PC,PetscErrorCode (*)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscInt*,PCRichardsonConvergedReason*));
+  PetscErrorCode ierr,(*f)(PC,PetscErrorCode (*)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscTruth,PetscInt*,PCRichardsonConvergedReason*));
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);

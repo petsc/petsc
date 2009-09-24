@@ -155,6 +155,7 @@ M*/
 M*/
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecNorm(Vec,NormType,PetscReal *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecNormAvailable(Vec,NormType,PetscTruth*,PetscReal *);
 PetscPolymorphicSubroutine(VecNorm,(Vec x,PetscReal *r),(x,NORM_2,r))
 PetscPolymorphicFunction(VecNorm,(Vec x,NormType t),(x,t,&r),PetscReal,r)
 PetscPolymorphicFunction(VecNorm,(Vec x),(x,NORM_2,&r),PetscReal,r)

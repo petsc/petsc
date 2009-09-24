@@ -299,7 +299,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  PetscTruth     flag1,flag2,viewed=PETSC_FALSE,flg = PETSC_FALSE,inXisinB=PETSC_FALSE;
+  PetscTruth     flag1,flag2,viewed=PETSC_FALSE,flg = PETSC_FALSE,inXisinB=PETSC_FALSE,guess_zero;
   char           view[10];
   char           filename[PETSC_MAX_PATH_LEN];
   PetscViewer    viewer;
@@ -382,7 +382,20 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
     ierr            = KSP_RemoveNullSpace(ksp,ksp->vec_sol);CHKERRQ(ierr);
     ksp->guess_zero = PETSC_FALSE;
   }
+
+  /* can we mark the initial guess as zero for this solve? */
+  guess_zero = ksp->guess_zero;
+  if (!ksp->guess_zero) {
+    PetscReal norm;
+
+    ierr = VecNormAvailable(ksp->vec_sol,NORM_2,&flg,&norm);CHKERRQ(ierr);
+    if (flg && !norm) {
+      ksp->guess_zero = PETSC_TRUE;
+    }
+  }
   ierr = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
+  ksp->guess_zero = guess_zero;
+
   if (!ksp->reason) {
     SETERRQ(PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
   }

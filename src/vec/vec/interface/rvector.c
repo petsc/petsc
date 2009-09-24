@@ -139,7 +139,7 @@ $     NORM_INFINITY denotes max_i |x_i|
    Concepts: norm
    Concepts: vector^norm
 
-.seealso: VecDot(), VecTDot(), VecNorm(), VecDotBegin(), VecDotEnd(), 
+.seealso: VecDot(), VecTDot(), VecNorm(), VecDotBegin(), VecDotEnd(), VecNormAvailable(),
           VecNormBegin(), VecNormEnd()
 
 @*/
@@ -167,6 +167,64 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecNorm(Vec x,NormType type,PetscReal *val)
 
   if (type!=NORM_1_AND_2) {
     ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[type],*val);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecNormAvailable"
+/*@
+   VecNormAvailable  - Returns the vector norm if it is already known.
+
+   Collective on Vec
+
+   Input Parameters:
++  x - the vector
+-  type - one of NORM_1, NORM_2, NORM_INFINITY.  Also available
+          NORM_1_AND_2, which computes both norms and stores them
+          in a two element array.
+
+   Output Parameter:
++  available - PETSC_TRUE if the val returned is valid
+-  val - the norm 
+
+   Notes:
+$     NORM_1 denotes sum_i |x_i|
+$     NORM_2 denotes sqrt(sum_i (x_i)^2)
+$     NORM_INFINITY denotes max_i |x_i|
+
+   Level: intermediate
+
+   Performance Issues:
++    per-processor memory bandwidth
+.    interprocessor latency
+-    work load inbalance that causes certain processes to arrive much earlier than
+     others
+
+   Compile Option:
+   PETSC_HAVE_SLOW_BLAS_NORM2 will cause a C (loop unrolled) version of the norm to be used, rather
+ than the BLAS. This should probably only be used when one is using the FORTRAN BLAS routines 
+ (as opposed to vendor provided) because the FORTRAN BLAS NRM2() routine is very slow. 
+
+   Concepts: norm
+   Concepts: vector^norm
+
+.seealso: VecDot(), VecTDot(), VecNorm(), VecDotBegin(), VecDotEnd(), VecNorm()
+          VecNormBegin(), VecNormEnd()
+
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT VecNormAvailable(Vec x,NormType type,PetscTruth *available,PetscReal *val)  
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidDoublePointer(val,3);
+  PetscValidType(x,1);
+
+  *available = PETSC_FALSE;
+  if (type!=NORM_1_AND_2) {
+    ierr = PetscObjectComposedDataGetReal((PetscObject)x,NormIds[type],*val,*available);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -1810,7 +1810,7 @@ PetscErrorCode PCApply_ASA(PC pc,Vec x,Vec y)
  */
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyRichardson_ASA"
-PetscErrorCode PCApplyRichardson_ASA(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscInt *outits,PCRichardsonConvergedReason *reason)
+PetscErrorCode PCApplyRichardson_ASA(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscTruth guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
   PC_ASA         *asa = (PC_ASA*)pc->data;
   PC_ASA_level   *asa_lev;
