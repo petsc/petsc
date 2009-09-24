@@ -4,10 +4,10 @@
 #include "../src/mat/color/color.h"
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatColoring_Natural(Mat,MatColoringType,ISColoring*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatColoring_SL_Minpack(Mat,MatColoringType,ISColoring*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatColoring_LF_Minpack(Mat,MatColoringType,ISColoring*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatColoring_ID_Minpack(Mat,MatColoringType,ISColoring*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_Natural(Mat,MatColoringType,ISColoring*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_SL_Minpack(Mat,MatColoringType,ISColoring*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_LF_Minpack(Mat,MatColoringType,ISColoring*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_ID_Minpack(Mat,MatColoringType,ISColoring*);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -40,10 +40,10 @@ PetscErrorCode MatColoringRegisterAll(const char path[])
 
   PetscFunctionBegin;
   MatColoringRegisterAllCalled = PETSC_TRUE;  
-  ierr = MatColoringRegisterDynamic(MATCOLORING_NATURAL,path,"MatColoring_Natural",   MatColoring_Natural);CHKERRQ(ierr);
-  ierr = MatColoringRegisterDynamic(MATCOLORING_SL,     path,"MatColoring_SL_Minpack",MatColoring_SL_Minpack);CHKERRQ(ierr);
-  ierr = MatColoringRegisterDynamic(MATCOLORING_LF,     path,"MatColoring_LF_Minpack",MatColoring_LF_Minpack);CHKERRQ(ierr);
-  ierr = MatColoringRegisterDynamic(MATCOLORING_ID,     path,"MatColoring_ID_Minpack",MatColoring_ID_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegisterDynamic(MATCOLORING_NATURAL,path,"MatGetColoring_Natural",   MatGetColoring_Natural);CHKERRQ(ierr);
+  ierr = MatColoringRegisterDynamic(MATCOLORING_SL,     path,"MatGetColoring_SL_Minpack",MatGetColoring_SL_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegisterDynamic(MATCOLORING_LF,     path,"MatGetColoring_LF_Minpack",MatGetColoring_LF_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegisterDynamic(MATCOLORING_ID,     path,"MatGetColoring_ID_Minpack",MatGetColoring_ID_Minpack);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

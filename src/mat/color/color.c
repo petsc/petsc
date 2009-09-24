@@ -50,11 +50,11 @@ PetscErrorCode MatFDColoringMinimumNumberofColors_Private(PetscInt m,PetscInt *i
 EXTERN_C_BEGIN
 /* ----------------------------------------------------------------------------*/
 /*
-    MatColoring_SL_Minpack - Uses the smallest-last (SL) coloring of minpack
+    MatGetColoring_SL_Minpack - Uses the smallest-last (SL) coloring of minpack
 */
 #undef __FUNCT__  
-#define __FUNCT__ "MatColoring_SL_Minpack" 
-PetscErrorCode PETSCMAT_DLLEXPORT MatColoring_SL_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
+#define __FUNCT__ "MatGetColoring_SL_Minpack" 
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_SL_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
   PetscInt        *list,*work,clique,*ria,*rja,*cia,*cja,*seq,*coloring,n;
@@ -138,11 +138,11 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 /* ----------------------------------------------------------------------------*/
 /*
-    MatColoring_LF_Minpack - 
+    MatGetColoring_LF_Minpack - 
 */
 #undef __FUNCT__  
-#define __FUNCT__ "MatColoring_LF_Minpack" 
-PetscErrorCode PETSCMAT_DLLEXPORT MatColoring_LF_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
+#define __FUNCT__ "MatGetColoring_LF_Minpack" 
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_LF_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
   PetscInt        *list,*work,*ria,*rja,*cia,*cja,*seq,*coloring,n;
@@ -228,11 +228,11 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 /* ----------------------------------------------------------------------------*/
 /*
-    MatColoring_ID_Minpack - 
+    MatGetColoring_ID_Minpack - 
 */
 #undef __FUNCT__  
-#define __FUNCT__ "MatColoring_ID_Minpack" 
-PetscErrorCode PETSCMAT_DLLEXPORT MatColoring_ID_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
+#define __FUNCT__ "MatGetColoring_ID_Minpack" 
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_ID_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
   PetscInt        *list,*work,clique,*ria,*rja,*cia,*cja,*seq,*coloring,n;
@@ -319,8 +319,8 @@ EXTERN_C_BEGIN
    Simplest coloring, each column of the matrix gets its own unique color.
 */
 #undef __FUNCT__  
-#define __FUNCT__ "MatColoring_Natural" 
-PetscErrorCode PETSCMAT_DLLEXPORT MatColoring_Natural(Mat mat,MatColoringType color, ISColoring *iscoloring)
+#define __FUNCT__ "MatGetColoring_Natural" 
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_Natural(Mat mat,MatColoringType color, ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
   PetscInt        start,end,i,bs = 1,n;
