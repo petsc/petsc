@@ -178,7 +178,7 @@ int main(int argc,char **argv)
      to override the defaults set by TSSetDuration().
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSSetType(ts,TS_BEULER);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,time_steps_max,time_total_max);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 

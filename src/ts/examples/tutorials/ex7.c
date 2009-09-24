@@ -92,7 +92,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetType(ts,TS_BEULER);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   ierr = TSGetSNES(ts,&ts_snes);
   ierr = SNESMonitorSet(ts_snes,MySNESMonitor,PETSC_NULL,PETSC_NULL);
  

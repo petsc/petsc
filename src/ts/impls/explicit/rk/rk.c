@@ -465,7 +465,7 @@ static PetscErrorCode TSView_Rk(TS ts,PetscViewer viewer)
 
   Level: beginner
 
-.seealso:  TSCreate(), TS, TSSetType(), TS_EULER, TSRKSetTolerance()
+.seealso:  TSCreate(), TS, TSSetType(), TSEULER, TSRKSetTolerance()
 
 M*/
 

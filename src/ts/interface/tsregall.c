@@ -34,16 +34,16 @@ PetscErrorCode PETSCTS_DLLEXPORT TSRegisterAll(const char path[])
   PetscFunctionBegin;
   TSRegisterAllCalled = PETSC_TRUE;
 
-  ierr = TSRegisterDynamic(TS_EULER,           path, "TSCreate_Euler", TSCreate_Euler);CHKERRQ(ierr);
-  ierr = TSRegisterDynamic(TS_BEULER,          path, "TSCreate_BEuler",TSCreate_BEuler);CHKERRQ(ierr);
-  ierr = TSRegisterDynamic(TS_CRANK_NICHOLSON, path, "TSCreate_CN",    TSCreate_CN);CHKERRQ(ierr);
-  ierr = TSRegisterDynamic(TS_PSEUDO,          path, "TSCreate_Pseudo",TSCreate_Pseudo);CHKERRQ(ierr);
-  ierr = TSRegisterDynamic(TS_GENERAL_LINEAR,  path, "TSCreate_GL",    TSCreate_GL);CHKERRQ(ierr);
-  ierr = TSRegisterDynamic(TS_THETA,           path, "TSCreate_Theta", TSCreate_Theta);CHKERRQ(ierr);
+  ierr = TSRegisterDynamic(TSEULER,           path, "TSCreate_Euler",    TSCreate_Euler);CHKERRQ(ierr);
+  ierr = TSRegisterDynamic(TSBEULER,          path, "TSCreate_BEuler",   TSCreate_BEuler);CHKERRQ(ierr);
+  ierr = TSRegisterDynamic(TSCRANK_NICHOLSON, path, "TSCreate_CN",       TSCreate_CN);CHKERRQ(ierr);
+  ierr = TSRegisterDynamic(TSPSEUDO,          path, "TSCreate_Pseudo",   TSCreate_Pseudo);CHKERRQ(ierr);
+  ierr = TSRegisterDynamic(TSGL,              path, "TSCreate_GL",       TSCreate_GL);CHKERRQ(ierr);
+  ierr = TSRegisterDynamic(TSTHETA,           path, "TSCreate_Theta",    TSCreate_Theta);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SUNDIALS)
-  ierr = TSRegisterDynamic(TS_SUNDIALS,           path, "TSCreate_Sundials", TSCreate_Sundials);CHKERRQ(ierr);
+  ierr = TSRegisterDynamic(TSSUNDIALS,        path, "TSCreate_Sundials", TSCreate_Sundials);CHKERRQ(ierr);
 #endif
-  ierr = TSRegisterDynamic(TS_RUNGE_KUTTA,     path, "TSCreate_Rk", TSCreate_Rk);CHKERRQ(ierr);
+  ierr = TSRegisterDynamic(TSRUNGE_KUTTA,     path, "TSCreate_Rk",       TSCreate_Rk);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -129,7 +129,7 @@ int main(int argc,char **argv)
        This indicates that we are using pseudo timestepping to 
      find a steady state solution to the nonlinear problem.
   */
-  ierr = TSSetType(ts,TS_PSEUDO);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSPSEUDO);CHKERRQ(ierr);
 
   /*
        Set the initial time to start at (this is arbitrary for 

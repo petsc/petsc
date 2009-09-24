@@ -83,11 +83,11 @@ static PetscErrorCode TSView_Euler(TS ts,PetscViewer viewer)
 /* ------------------------------------------------------------ */
 
 /*MC
-      TS_EULER - ODE solver using the explicit forward Euler method
+      TSEULER - ODE solver using the explicit forward Euler method
 
   Level: beginner
 
-.seealso:  TSCreate(), TS, TSSetType(), TS_BEULER
+.seealso:  TSCreate(), TS, TSSetType(), TSBEULER
 
 M*/
 EXTERN_C_BEGIN

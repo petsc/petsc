@@ -21,19 +21,15 @@ struct _TSGLScheme {
   PetscTruth fsal;              /* First Same As Last: X[1] = h*Ydot[s-1] */
 };
 
-struct _p_TSGL {
+typedef struct TS_GL {
+  /* specific to the family of GL method */
   PetscErrorCode (*EstimateError)(TSGLScheme,Vec*,Vec*,PetscReal*,PetscReal*);         /* Provide local error estimates */
   PetscErrorCode (*ChangeScheme)(TSGLScheme,TSGLScheme,PetscReal,PetscReal,Vec*,Vec*); /* Change step size and possibly order of scheme (within family) */
-  PetscErrorCode (*Destroy)(TSGL);
-  PetscErrorCode (*View)(TSGL,PetscViewer);
-  PetscInt max_order;
-  TSGLScheme *schemes;
-};
-
-typedef struct {
+  PetscErrorCode (*Destroy)(struct TS_GL*);
+  PetscErrorCode (*View)(struct TS_GL*,PetscViewer);
   char     type_name[256];
-  TSGL     data;
-  PetscInt current_order;
+  PetscInt nschemes;
+  TSGLScheme *schemes;
 
   Vec *X;                       /* Items to carry between steps */
   Vec *Xold;                    /* Values of these items at the last step */
@@ -47,9 +43,12 @@ typedef struct {
   PetscInt  stage;              /* index of the stage we are currently solving for */
 
   /* Runtime options */
+  PetscInt current_order;
   PetscInt max_order,min_order;
   PetscTruth extrapolate;           /* use extrapolation to produce initial Newton iterate? */
   TSGLErrorDirection error_direction; /* TSGLERROR_FORWARD or TSGLERROR_BACKWARD */
+
+  void *data;
 } TS_GL;
 
 #endif

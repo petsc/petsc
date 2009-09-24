@@ -122,7 +122,7 @@ int main(int argc,char **argv)
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr); 
 
   /* set time-step method */
-  ierr = TSSetType(ts,TS_CRANK_NICHOLSON);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSCRANK_NICHOLSON);CHKERRQ(ierr);
   
   /* Set optional user-defined monitoring routine */
   ierr = TSMonitorSet(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);
@@ -146,9 +146,9 @@ int main(int argc,char **argv)
     const TSType   type;
     PetscTruth     sundialstype=PETSC_FALSE;
     ierr = TSGetType(ts,&type);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject)ts,TS_SUNDIALS,&sundialstype);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)ts,TSSUNDIALS,&sundialstype);CHKERRQ(ierr);
     if (sundialstype && appctx.useAlhs){
-      SETERRQ(PETSC_ERR_SUP,"Cannot use Alhs formulation for TS_SUNDIALS type");
+      SETERRQ(PETSC_ERR_SUP,"Cannot use Alhs formulation for TSSUNDIALS type");
     }
   }
 #endif
