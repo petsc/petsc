@@ -189,7 +189,10 @@ class Configure(config.base.Configure):
         # has a stray " at the end
         if arg.endswith('"') and arg[:-1].find('"') == -1:
           arg = arg[:-1]
-        
+        # Intel 11 has a bogus -long_double option
+        if arg == '-long_double':
+          continue
+                   
         # if options of type -L foobar
         if arg == '-L':
           lib = argIter.next()
@@ -375,6 +378,9 @@ class Configure(config.base.Configure):
         # has a stray " at the end
         if arg.endswith('"') and arg[:-1].find('"') == -1:
           arg = arg[:-1]
+        # Intel 11 has a bogus -long_double option
+        if arg == '-long_double':
+          continue
 
         # if options of type -L foobar
         if arg == '-L':
