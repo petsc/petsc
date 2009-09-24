@@ -49,7 +49,7 @@ static PetscErrorCode PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rt
   PetscFunctionBegin;
   ierr = PetscInfo1(pc,"Warning, convergence critera ignored, using %D iterations\n",its);CHKERRQ(ierr);
   if (guesszero) {
-        stype = stype | SOR_ZERO_INITIAL_GUESS; 
+    stype = (MatSORType) (stype | SOR_ZERO_INITIAL_GUESS); 
   }
   ierr = MatRelax(pc->pmat,b,jac->omega,stype,jac->fshift,its*jac->its,jac->lits,y);CHKERRQ(ierr);
   *outits = its;
