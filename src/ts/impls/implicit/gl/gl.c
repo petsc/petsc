@@ -82,8 +82,19 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
   ierr = PetscMemcpy(scheme->error2b,error2b,(r+s)*sizeof(PetscReal));CHKERRQ(ierr);
 
   scheme->stiffly_accurate = PETSC_TRUE;
-  for (j=0; j<s; j++) if (a[(s-1)*s+j] != b[j]) scheme->stiffly_accurate = PETSC_FALSE;
-  for (j=0; j<r; j++) if (u[(s-1)*r+j] != v[j]) scheme->stiffly_accurate = PETSC_FALSE;
+  scheme->fsal = PETSC_TRUE;
+  if (scheme->c[s-1] != 1.) {
+    scheme->stiffly_accurate = PETSC_FALSE;
+    scheme->fsal = PETSC_FALSE;
+  }
+  for (j=0; j<s; j++) {
+    if (a[(s-1)*s+j] != b[j]) scheme->stiffly_accurate = PETSC_FALSE;
+    if (r>1 && b[1*s+j] != (j<s-1)?0:1) scheme->fsal = PETSC_FALSE;
+  }
+  for (j=0; j<r; j++) {
+    if (u[(s-1)*r+j] != v[j]) scheme->stiffly_accurate = PETSC_FALSE;
+    if (r>1 && v[1*r+j] != 0) scheme->fsal = PETSC_FALSE;
+  }
 
   *inscheme = scheme;
   PetscFunctionReturn(0);
@@ -133,6 +144,7 @@ static PetscErrorCode TSGLSchemeView(TSGLScheme sc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"GL scheme p,q,r,s = %d,%d,%d,%d\n",sc->p,sc->q,sc->r,sc->s);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Stiffly accurate: %s\n",sc->stiffly_accurate?"yes":"no");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"First same as last (FSAL): %s\n",sc->fsal?"yes":"no");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Abscissas c = [");CHKERRQ(ierr);
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
     for (i=0; i<sc->s; i++) {

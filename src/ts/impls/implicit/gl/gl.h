@@ -18,6 +18,7 @@ struct _TSGLScheme {
   PetscReal *error2f;           /* forward-looking  estimation of h^{p+2}x^{(p+2)} */
   PetscReal *error2b;           /* backward-looking estimation of h^{p+2}x^{(p+2)} */
   PetscTruth stiffly_accurate;  /* Last row of [A U] is equal t first row of [B V]? */
+  PetscTruth fsal;              /* First Same As Last: X[1] = h*Ydot[s-1] */
 };
 
 struct _p_TSGL {
