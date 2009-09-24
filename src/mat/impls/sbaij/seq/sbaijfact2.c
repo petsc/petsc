@@ -1782,6 +1782,54 @@ PetscErrorCode MatSolves_SeqSBAIJ_1(Mat A,Vecs bb,Vecs xx)
    ordering. This eliminates the need for the column and row permutation.
 */
 #undef __FUNCT__  
+#define __FUNCT__ "MatSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct"
+PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
+{
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ *)A->data;
+  PetscErrorCode ierr;
+  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,j;
+  MatScalar      *aa=a->a,*v;
+  PetscScalar    *x,*b,xk;
+  PetscInt       nz,*vj,k,k1;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
+  
+  /* solve U^T*D*y = b by forward substitution */
+  ierr = PetscMemcpy(x,b,mbs*sizeof(PetscScalar));CHKERRQ(ierr);
+  for (k=0; k<mbs; k++){
+    v  = aa + ai[k]; 
+    vj = aj + ai[k];    
+    xk = x[k];
+    nz = ai[k+1] - ai[k] - 1;     /* exclude diag[k] */
+    for (j=0; j<nz; j++){
+      x[vj[j]] += v[j]* xk;
+    }
+    x[k] = xk*aa[a->diag[k]];  /* note: aa[diag[k]] = 1/D(k) */
+  }
+
+  /* solve U*x = y by back substitution */ 
+  k1 = ai[mbs-1]-2;        /* nnz in U(0,:) up to U(mbs-1,:) */
+  v  = aa; 
+  vj = aj; 
+  for (k=mbs-2; k>=0; k--){ /* for each row */
+    xk = x[k];   
+    nz = ai[k+1] - ai[k] - 1;    
+    for (j=0; j<nz; j++){
+      xk += v[k1]* x[vj[k1]]; k1--;
+    }
+    x[k] = xk;    
+    k1--; /* skip diagonal[k] */
+  }
+  
+  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+  ierr = PetscLogFlops(4.0*a->nz);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqSBAIJ_1_NaturalOrdering"
 PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
@@ -1791,6 +1839,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
   MatScalar      *aa=a->a,*v;
   PetscScalar    *x,*b,xk;
   PetscInt       nz,*vj,k;
+  PetscTruth     newdatastruct=PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
@@ -1813,7 +1862,9 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
     vj = aj + ai[k] + 1; 
     xk = x[k];   
     nz = ai[k+1] - ai[k] - 1;    
-    while (nz--) xk += (*v++) * x[*vj++];    
+    while (nz--) {
+      xk += (*v++) * x[*vj++];
+    }
     x[k] = xk;      
   }
 
