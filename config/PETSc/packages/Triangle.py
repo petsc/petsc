@@ -1,9 +1,9 @@
 import PETSc.package
 import os
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/Triangle.tar.gz']
     self.functions = ['triangulate']
     self.includes  = ['triangle.h']
@@ -13,43 +13,12 @@ class Configure(PETSc.package.Package):
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
-    self.petscdir        = framework.require('PETSc.utilities.petscdir', self)
-    self.arch            = framework.require('PETSc.utilities.arch', self)
+    PETSc.package.NewPackage.setupDependencies(self, framework)
     self.sharedLibraries = framework.require('PETSc.utilities.sharedLibraries', self)
     self.make            = framework.require('PETSc.utilities.Make', self)
     self.x11             = framework.require('PETSc.packages.X11', self)
     self.deps = []
     return
-
-  def InstallOld(self):
-    import sys
-    triangleDir = self.getDir()
-    self.installDir = os.path.join(triangleDir, self.arch.arch)
-    # We could make a check of the md5 of the current configure framework
-    self.logPrintBox('Configuring and compiling Triangle; this may take several minutes')
-    try:
-      import cPickle
-      import logger
-      # Split Graphs into its own repository
-      oldDir = os.getcwd()
-      os.chdir(triangleDir)
-      oldLog = logger.Logger.defaultLog
-      logger.Logger.defaultLog = file(os.path.join(triangleDir, 'build.log'), 'w')
-      mod  = self.getModule(triangleDir, 'make')
-      #make = mod.Make(configureParent = cPickle.loads(cPickle.dumps(self.framework)), module = mod)
-      make = mod.Make(configureParent = cPickle.loads(cPickle.dumps(self.framework)))
-      make.prefix = self.installDir
-      make.framework.argDB['with-petsc'] = 1
-      make.builder.argDB['ignoreCompileOutput'] = 1
-      make.run()
-      del sys.modules['make']
-      logger.Logger.defaultLog = oldLog
-      os.chdir(oldDir)
-    except RuntimeError, e:
-      raise RuntimeError('Error running configure on Triangle: '+str(e))
-    self.framework.actions.addArgument('Triangle', 'Install', 'Installed Triangle into '+self.installDir)
-    return triangleDir
 
   def Install(self):
     import os, sys
@@ -95,9 +64,9 @@ class Configure(PETSc.package.Package):
 
       g.write('BUILDSHAREDLIB = yes\n')
       if config.setCompilers.Configure.isSolaris() and config.setCompilers.Configure.isGNU(self.framework.getCompiler()):
-        g.write('shared_arch: shared_'+self.arch.hostOsBase+'gnu\n')
+        g.write('shared_arch: shared_'+self.petscarch.hostOsBase+'gnu\n')
       else:
-        g.write('shared_arch: shared_'+self.arch.hostOsBase+'\n')
+        g.write('shared_arch: shared_'+self.petscarch.hostOsBase+'\n')
         g.write('''
 triangle_shared: 
 	-@if [ "${BUILDSHAREDLIB}" = "no" ]; then \\
@@ -149,7 +118,7 @@ triangle_shared:
     return self.installDir
 
   def configureLibrary(self):
-    PETSc.package.Package.configureLibrary(self)
+    PETSc.package.NewPackage.configureLibrary(self)
     if self.found:
       self.framework.addDefine('ANSI_DECLARATORS', 1)
     return

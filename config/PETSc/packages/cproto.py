@@ -1,13 +1,8 @@
-#!/usr/bin/env python
-from __future__ import generators
-import config.base
-import os
-import re
 import PETSc.package
     
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/cproto-4.6.tar.gz']
     self.complex          = 1
     self.double           = 0;
@@ -52,15 +47,5 @@ class Configure(PETSc.package.Package):
         self.framework.logPrint('Found cproto, will not install cproto')
       else:
         self.framework.logPrint('Installing cproto')
-        PETSc.package.Package.configure(self)
+        PETSc.package.NewPackage.configure(self)
     return
-
-
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setupLogging(sys.argv[1:])
-  framework.children.append(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()

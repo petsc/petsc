@@ -1,11 +1,8 @@
 import PETSc.package
-import config.base
-import logger
-import os
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/numpy-1.0.4.tar.gz']
     self.downloadname     = 'numpy'
     self.includes         = ['']
@@ -19,16 +16,16 @@ class Configure(PETSc.package.Package):
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
+    PETSc.package.NewPackage.setupDependencies(self, framework)
     self.petscdir = self.framework.require('PETSc.utilities.petscdir',self)
     return
 
   def Install(self):
-    import sys
+    import os, sys
     numpyDir = self.getDir()
     try:
       self.logPrintBox('Installing numpy; this may take several minutes')
-      output  = config.base.Configure.executeShellCommand('cd '+numpyDir+'; python setup.py install --prefix='+self.installDir, timeout=2500, log = self.framework.log)[0]
+      output  = PETSc.package.NewPackage.executeShellCommand('cd '+numpyDir+'; python setup.py install --prefix='+self.installDir, timeout=2500, log = self.framework.log)[0]
     except RuntimeError, e:
       raise RuntimeError('Error running setup.py on numpy: '+str(e))
     self.framework.actions.addArgument('numpy', 'Install', 'Installed numpy into '+self.installDir)

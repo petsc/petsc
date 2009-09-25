@@ -1,41 +1,26 @@
-#!/usr/bin/env python
-from __future__ import generators
-import user
-import config.autoconf
-import os
 import PETSc.package
+import config.autoconf
 
-class Configure(PETSc.package.Package,config.autoconf.Configure):
+import os
+
+class Configure(PETSc.package.NewPackage,config.autoconf.Configure):
   def __init__(self, framework):
     config.autoconf.Configure.__init__(self, framework)
-    PETSc.package.Package.__init__(self, framework)
-    self.headerPrefix = ''
-    self.substPrefix  = ''
-    self.found        = 0
+    PETSc.package.NewPackage.__init__(self, framework)
     return
 
-  def __str__(self):
-    if self.found:
-      desc = ['X11:']	
-      desc.append('  Includes: '+str(self.include))
-      desc.append('  Library: '+str(self.lib))
-      return '\n'.join(desc)+'\n'
-    return ''
-    
   def setupHelp(self, help):
     import nargs
+    PETSc.package.NewPackage.setupHelp(self, help)
     help.addArgument('X11', '-with-x=<bool>',                nargs.ArgBool(None, 1,   'Activate X11'))
-    help.addArgument('X11', '-with-x11=<bool>',              nargs.ArgBool(None, 1,   'Activate X11'))
     help.addArgument('X11', '-with-x-include=<include dir>', nargs.ArgDir(None, None, 'Specify an include directory for X11'))
     help.addArgument('X11', '-with-x-lib=<libraries: e.g. [/Users/..../libX11.a,...]>',nargs.ArgLibrary(None, None,    'Specify X11 library file'))
     help.addArgument('X11', '-with-xt=<bool>',               nargs.ArgBool(None, 0,   'Activate Xt'))
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
-    self.make           = framework.require('PETSc.utilities.Make', self)
-    self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
-    self.scalarTypes    = framework.require('PETSc.utilities.scalarTypes', self)
+    PETSc.package.NewPackage.setupDependencies(self, framework)
+    self.make = framework.require('PETSc.utilities.Make', self)
     return
 
   def generateGuesses(self):
@@ -233,17 +218,8 @@ acfindx:
       if not self.libraryOptions.integerSize == 32:
         self.logPrintBox('Turning off X11 because integers are not 32 bit', debugSection = None)
         return
-      if not self.scalarTypes.precision == 'double':
+      if not self.scalartypes.precision == 'double':
         self.logPrintBox('Turning off X11 because scalars are not doubles', debugSection = None)
         return
       self.executeTest(self.configureLibrary)
     return
-
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setup()
-  framework.addChild(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()

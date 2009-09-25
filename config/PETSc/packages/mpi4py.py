@@ -1,13 +1,8 @@
-#!/usr/bin/env python
-from __future__ import generators
-import user
-import config.base
-import os
 import PETSc.package
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     self.download          = ['http://mpi4py.googlecode.com/files/mpi4py-1.0.0.tar.gz']
     self.functions         = []
     self.includes          = []
@@ -15,13 +10,11 @@ class Configure(PETSc.package.Package):
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
-    self.numpy      = framework.require('PETSc.packages.Numpy',self)
-    self.petscdir   = framework.require('PETSc.utilities.petscdir',self)
-    self.setCompilers  = framework.require('config.setCompilers',self)
+    PETSc.package.NewPackage.setupDependencies(self, framework)
+    self.numpy           = framework.require('PETSc.packages.Numpy',self)
+    self.setCompilers    = framework.require('config.setCompilers',self)
     self.sharedLibraries = framework.require('PETSc.utilities.sharedLibraries', self)    
-    self.petscconfigure   = framework.require('PETSc.Configure',self)
-    self.arch = framework.require('PETSc.utilities.arch', self)
+    self.petscconfigure  = framework.require('PETSc.Configure',self)
     return
 
   def Install(self):
@@ -36,7 +29,7 @@ class Configure(PETSc.package.Package):
       arch = ''
       self.addMakeRule('mpi4py_noinstall','')
     else:
-      arch = self.arch.arch
+      arch = self.arch
       self.addMakeRule('mpi4py_noinstall','mpi4py')      
     self.addMakeRule('mpi4py','', \
                        ['@MPICC=${PCC}; export MPICC; cd '+self.packageDir+';python setup.py clean --all; python setup.py install --install-lib='+os.path.join(self.petscconfigure.installdir,'lib'),\

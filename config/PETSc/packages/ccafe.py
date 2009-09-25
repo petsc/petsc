@@ -1,15 +1,9 @@
-#!/usr/bin/env python
-from __future__ import generators
-import user
-import config.base
-import os
 import PETSc.package
-import babel
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
-    self.version       = ''
+    PETSc.package.NewPackage.__init__(self, framework)
+    self.version = ''
     return
 
   def miscSetup(self):
@@ -47,10 +41,6 @@ class Configure(PETSc.package.Package):
     if os.path.isdir(dir):
       self.framework.argDB['with-babel-dir'] = dir
     return
-    
-  def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
-    return
 
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by babel'''
@@ -59,7 +49,7 @@ class Configure(PETSc.package.Package):
     self.miscSetup()
     self.babelpackage      = self.framework.require('PETSc.packages.babel', self)
     
-    PETSc.package.Package.configureLibrary(self)
+    PETSc.package.NewPackage.configureLibrary(self)
 
     self.addMakeMacro('CCAFE_HOME',self.framework.argDB['with-ccafe-dir'])
     self.addMakeMacro('CCAFE_CONFIG', self.ccafe_config)
@@ -72,12 +62,3 @@ class Configure(PETSc.package.Package):
     self.addMakeMacro('CCA_REPO','${CCAFE_HOME}/share/' + self.specpkg + '/xml')
     self.addMakeMacro('HAVE_CCA','-DHAVE_CCA')
     return
-
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setupLogging(framework.clArgs)
-  framework.children.append(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()

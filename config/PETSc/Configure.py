@@ -44,6 +44,7 @@ class Configure(config.base.Configure):
           if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
             utilityObj              = self.framework.require('PETSc.'+d+'.'+utilityName, self)
             utilityObj.headerPrefix = self.headerPrefix
+            utilityObj.archProvider = self.arch
             ##utilityObj.languageProvider = self.languages
             setattr(self, utilityName.lower(), utilityObj)
     self.blaslapack    = framework.require('config.packages.BlasLapack', self)
@@ -66,6 +67,10 @@ class Configure(config.base.Configure):
     self.Fiat.archProvider            = self.arch
     self.Fiat.languageProvider        = self.languages
     self.Fiat.installDirProvider      = self.petscdir
+    self.ExodusII      = framework.require('config.packages.ExodusII',   self)
+    self.ExodusII.archProvider        = self.arch
+    self.ExodusII.languageProvider    = self.languages
+    self.ExodusII.installDirProvider  = self.petscdir
 
     self.compilers.headerPrefix = self.headerPrefix
     self.types.headerPrefix     = self.headerPrefix

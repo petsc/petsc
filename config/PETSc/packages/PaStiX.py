@@ -1,13 +1,8 @@
-#!/usr/bin/env python
-from __future__ import generators
-import user
-import config.base
-import os
 import PETSc.package
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     self.download     = ['http://gforge.inria.fr/frs/download.php/10140/pastix_release_1789.tar.bz2']
     self.downloadname = self.name.lower()
     self.liblist      = [['libpastix.a'],
@@ -17,32 +12,20 @@ class Configure(PETSc.package.Package):
     self.complex      = 0
     return
 
-  def __str__(self):
-    if self.found:
-      desc = ['PaStiX:']	
-      desc.append('  Version: '+self.version)
-      desc.append('  Includes: '+str(self.include))
-      desc.append('  Library: '+str(self.lib))
-      return '\n'.join(desc)+'\n'
-    else:
-      return ''
-
   def setupHelp(self, help):
     import nargs
+    PETSc.package.NewPackage.setupHelp(self, help)
     help.addArgument('PaStiX', '-with-pastix=<bool>',                nargs.ArgBool(None, 0, 'Activate PaStiX'))
     help.addArgument('PaStiX', '-with-pastix-dir=<root dir>',        nargs.ArgDir(None, None, 'Specify the root directory of the PaStiX installation'))
     help.addArgument('PaStiX', '-download-pastix=<no,yes,ifneeded>', nargs.ArgFuzzyBool(None, 0, 'Automatically install PaStiX'))
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
-    self.mpi        = framework.require('config.packages.MPI',self)
+    PETSc.package.NewPackage.setupDependencies(self, framework)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.scotch     = framework.require('PETSc.packages.Scotch',self)
-    self.deps       = [self.mpi,self.blasLapack,self.scotch]   
-    self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
-    self.scalarTypes    = framework.require('PETSc.utilities.scalarTypes', self)
-    self.make           = framework.require('PETSc.utilities.Make', self)
+    self.make       = framework.require('PETSc.utilities.Make', self)
+    self.deps       = [self.mpi, self.blasLapack, self.scotch]   
     return
   
   def Install(self):
@@ -229,13 +212,3 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Error running make on PaStiX: '+str(e))
       self.postInstall(output,os.path.join('src','config.in'))
     return self.installDir
-
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setup()
-  framework.addChild(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()
-

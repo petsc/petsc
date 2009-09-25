@@ -1,15 +1,8 @@
-#!/usr/bin/env python
-from __future__ import generators
-import user
-import config.base
 import PETSc.package
 
-import re
-import os
-
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/spai_3.0-mar-06.tar.gz']
     self.functions = ['bspai']
     self.includes  = ['spai.h']
@@ -18,8 +11,7 @@ class Configure(PETSc.package.Package):
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
-    self.mpi        = framework.require('config.packages.MPI',self)
+    PETSc.package.NewPackage.setupDependencies(self, framework)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.deps       = [self.mpi,self.blasLapack]
     return
@@ -51,23 +43,11 @@ class Configure(PETSc.package.Package):
       self.postInstall(output,'Makefile.in')
     return self.installDir
 
-
-  def configureLibrary(self):
-    '''Calls the regular package configureLibrary and then does an additional test needed by SPAI'''
-    '''Normally you do not need to provide this method'''
-
-    # SPAI requires dormqr() LAPACK routine
-    if not self.blasLapack.checkForRoutine('dormqr'): 
-      raise RuntimeError('SPAI requires the LAPACK routine dormqr(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it\nTry using --download-f-blas-lapack=1 option \nIf you are using the IBM ESSL library, it does not contain this function.')
-    self.framework.log.write('Found dormqr() in Lapack library as needed by SPAI\n')
-    PETSc.package.Package.configureLibrary(self)
+  def consistencyChecks(self):
+    PETSc.package.NewPackage.consistencyChecks(self)
+    if self.framework.argDB['with-'+self.package]:
+      # SPAI requires dormqr() LAPACK routine
+      if not self.blasLapack.checkForRoutine('dormqr'): 
+        raise RuntimeError('SPAI requires the LAPACK routine dormqr(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it\nTry using --download-f-blas-lapack=1 option \nIf you are using the IBM ESSL library, it does not contain this function.')
+      self.framework.log.write('Found dormqr() in Lapack library as needed by SPAI\n')
     return
-  
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setup()
-  framework.addChild(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()

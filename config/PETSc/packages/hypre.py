@@ -1,13 +1,8 @@
-#!/usr/bin/env python
-from __future__ import generators
-import user
-import config.base
-import os
 import PETSc.package
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hypre-2.4.0b.tar.gz']
     self.functions = ['HYPRE_IJMatrixCreate']
     self.includes  = ['HYPRE.h']
@@ -16,15 +11,14 @@ class Configure(PETSc.package.Package):
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
-    self.mpi        = framework.require('config.packages.MPI',self)
+    PETSc.package.NewPackage.setupDependencies(self, framework)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.deps       = [self.mpi,self.blasLapack]  
     return
 
   def generateLibList(self,dir):
     '''Normally the one in package.py is used, but hypre requires the extra C++ library'''
-    alllibs = PETSc.package.Package.generateLibList(self,dir)
+    alllibs = PETSc.package.NewPackage.generateLibList(self,dir)
     import config.setCompilers
     if self.languages.clanguage == 'C':
       alllibs[0].extend(self.compilers.cxxlibs)
@@ -100,22 +94,11 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Error running ranlib on HYPRE libraries: '+str(e))
       self.postInstall(output,'hypre')
     return self.installDir
-  
-  def configureLibrary(self):
-    '''Calls the regular package configureLibrary and then does an additional test needed by hypre'''
-    '''Normally you do not need to provide this method'''
-    PETSc.package.Package.configureLibrary(self)
-    # hypre requires LAPACK routine dgels()
-    if not self.blasLapack.checkForRoutine('dgels'):
-      raise RuntimeError('hypre requires the LAPACK routine dgels(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it')
-    self.framework.log.write('Found dgels() in Lapack library as needed by hypre\n')
-    return
 
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setupLogging(framework.clArgs)
-  framework.children.append(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()
+  def consistencyChecks(self):
+    PETSc.package.NewPackage.consistencyChecks(self)
+    if self.framework.argDB['with-'+self.package]:
+      if not self.blasLapack.checkForRoutine('dgels'):
+        raise RuntimeError('hypre requires the LAPACK routine dgels(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it')
+      self.framework.log.write('Found dgels() in Lapack library as needed by hypre\n')
+    return

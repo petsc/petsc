@@ -1,13 +1,8 @@
-#!/usr/bin/env python
-from __future__ import generators
-import config.base
-import os
-import re
 import PETSc.package
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/lgrind-dev.tar.gz']
     #
     #  lgrind is currently not used by PETSc
@@ -58,7 +53,7 @@ class Configure(PETSc.package.Package):
     if self.petscdir.isClone:
       if self.framework.argDB['with-lgrind']:
         self.framework.logPrint('PETSc clone, checking for Lgrind\n')
-        self.installDir  = os.path.join(self.petscdir.dir,self.arch.arch)
+        self.installDir  = os.path.join(self.petscdir.dir,self.arch)
         self.packageDir  = self.getDir()
         self.Install()
       else:
@@ -66,12 +61,3 @@ class Configure(PETSc.package.Package):
     else:
       self.framework.logPrint("Not a clone of PETSc, don't need Lgrind\n")
     return
-
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setupLogging(sys.argv[1:])
-  framework.children.append(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()

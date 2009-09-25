@@ -19,6 +19,7 @@ arch-*/*
 c_test
 RDict.db
 RDict.log
+RDict.log.bkp
 TAGS*
 bmake/*/*
 conf/petscvariables

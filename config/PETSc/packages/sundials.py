@@ -1,13 +1,8 @@
-#!/usr/bin/env python
-from __future__ import generators
-import user
-import config.base
-import os
 import PETSc.package
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sundials-2.4.0.tar.gz']
     self.functions = ['CVSpgmr']
     self.includes  = ['sundials/sundials_nvector.h'] 
@@ -17,8 +12,7 @@ class Configure(PETSc.package.Package):
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
-    self.mpi  = framework.require('config.packages.MPI',self)
+    PETSc.package.NewPackage.setupDependencies(self, framework)
     self.deps = [self.mpi]
     return
           
@@ -95,12 +89,3 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Error running make on SUNDIALS: '+str(e))
       self.postInstall(output,'sundials')
     return self.installDir
-  
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setup()
-  framework.addChild(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()

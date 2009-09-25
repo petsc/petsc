@@ -1,28 +1,16 @@
-#!/usr/bin/env python
-from __future__ import generators
-import user
-import config.base
-import os
 import PETSc.package
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
-    self.functions     = ['impl_sidl_DLL__ctor']
-    self.includes      = ['sidl.h']
-    self.liblist       = [['libsidl.a']]
-    self.version       = '0.10.12'
-
-  def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
-    self.shared     = framework.require('PETSc.utilities.sharedLibraries',self)
-    self.languages  = framework.require('PETSc.utilities.languages',self)
-    return
+    PETSc.package.NewPackage.__init__(self, framework)
+    self.functions = ['impl_sidl_DLL__ctor']
+    self.includes  = ['sidl.h']
+    self.liblist   = [['libsidl.a']]
+    self.version   = '0.10.12'
 
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by babel'''
-    '''Normally you do not need to provide this method'''
-    PETSc.package.Package.configureLibrary(self)
+    PETSc.package.NewPackage.configureLibrary(self)
     # add in include/cxx path
     self.include.append(os.path.join(self.framework.argDB['with-babel-dir'],'include','cxx'))
     babel_bin_path = os.path.join(self.framework.argDB['with-babel-dir'],'bin')
@@ -38,13 +26,3 @@ class Configure(PETSc.package.Package):
     self.version = config.base.Configure.executeShellCommand(self.babel_config + ' --version')[0].rstrip()
     self.addMakeMacro('BABEL_VERSION',self.version)
     return
-
-
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setupLogging(framework.clArgs)
-  framework.children.append(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()

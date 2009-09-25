@@ -1,13 +1,8 @@
-#!/usr/bin/env python
-from __future__ import generators
-import user
-import config.base
-import os
 import PETSc.package
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_4.0-June_30_2009.tar.gz']
     self.functions  = ['set_default_options']
     self.includes   = ['slu_ddefs.h']
@@ -18,7 +13,7 @@ class Configure(PETSc.package.Package):
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
+    PETSc.package.NewPackage.setupDependencies(self, framework)
     self.blasLapack = self.framework.require('config.packages.BlasLapack',self)
     self.deps       = [self.blasLapack]
     return
@@ -68,36 +63,24 @@ class Configure(PETSc.package.Package):
     if self.installNeeded('make.inc'):
       try:
         self.logPrintBox('Compiling superlu; this may take several minutes')
-        output = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; SUPERLU_INSTALL_DIR='+self.installDir+'/lib; export SUPERLU_INSTALL_DIR; make clean; make lib LAAUX="" SLASRC="" DLASRC="" CLASRC="" ZLASRC="" SCLAUX="" DZLAUX=""; cp -f lib/*.a '+os.path.join(self.installDir,'lib')+';  cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
+        output = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; SUPERLU_INSTALL_DIR='+self.installDir+'/lib; export SUPERLU_INSTALL_DIR; make clean; make lib LAAUX="" SLASRC="" DLASRC="" CLASRC="" ZLASRC="" SCLAUX="" DZLAUX=""; cp -f lib/*.a '+os.path.join(self.installDir,'lib')+';  cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU: '+str(e))
       self.postInstall(output,'make.inc')
     return self.installDir
 
-  def configureLibrary(self):
-    '''Calls the regular package configureLibrary and then does an additional test needed by SuperLU'''
-    '''Normally you do not need to provide this method'''
-    PETSc.package.Package.configureLibrary(self) 
-    if not self.blasLapack.checkForRoutine('slamch'): 
-      raise RuntimeError('SuperLU requires the LAPACK routine slamch()')
-    self.framework.log.write('Found slamch() in Lapack library as needed by SuperLU\n')
+  def consistencyChecks(self):
+    PETSc.package.NewPackage.consistencyChecks(self)
+    if self.framework.argDB['with-'+self.package]:
+      if not self.blasLapack.checkForRoutine('slamch'): 
+        raise RuntimeError('SuperLU requires the LAPACK routine slamch()')
+      self.framework.log.write('Found slamch() in Lapack library as needed by SuperLU\n')
 
-    if not self.blasLapack.checkForRoutine('dlamch'): 
-      raise RuntimeError('SuperLU requires the LAPACK routine dlamch()')
-    self.framework.log.write('Found dlamch() in Lapack library as needed by SuperLU\n')
+      if not self.blasLapack.checkForRoutine('dlamch'): 
+        raise RuntimeError('SuperLU requires the LAPACK routine dlamch()')
+      self.framework.log.write('Found dlamch() in Lapack library as needed by SuperLU\n')
 
-    if not self.blasLapack.checkForRoutine('xerbla'): 
-      raise RuntimeError('SuperLU requires the BLAS routine xerbla()')
-    self.framework.log.write('Found xerbla() in BLAS library as needed by SuperLU\n')
-
+      if not self.blasLapack.checkForRoutine('xerbla'): 
+        raise RuntimeError('SuperLU requires the BLAS routine xerbla()')
+      self.framework.log.write('Found xerbla() in BLAS library as needed by SuperLU\n')
     return
-  
-  
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setup()
-  framework.addChild(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()

@@ -1,13 +1,8 @@
-#!/usr/bin/env python
-from __future__ import generators
-import user
-import config.base
-import os
 import PETSc.package
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     self.download          = ['http://www.columbia.edu/~ma2325/Prometheus-1.8.8.tar.gz']
     self.functions         = []
     self.includes          = []
@@ -16,16 +11,15 @@ class Configure(PETSc.package.Package):
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
-    self.mpi        = framework.require('config.packages.MPI',self)
+    PETSc.package.NewPackage.setupDependencies(self, framework)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.parmetis   = framework.require('PETSc.packages.ParMetis',self)
-    self.deps       = [self.parmetis,self.mpi,self.blasLapack]
+    self.deps       = [self.parmetis, self.mpi, self.blasLapack]
     return
 
   def generateLibList(self,dir):
     '''Normally the one in package.py is used, but Prometheus requires the extra C++ library'''
-    alllibs = PETSc.package.Package.generateLibList(self,dir)
+    alllibs = PETSc.package.NewPackage.generateLibList(self,dir)
     import config.setCompilers
     if self.languages.clanguage == 'C':
       alllibs[0].extend(self.compilers.cxxlibs)
@@ -43,7 +37,7 @@ class Configure(PETSc.package.Package):
     args += 'PREFIX         = '+self.installDir+'\n'
     args += 'BUILD_DIR      = '+self.packageDir+'\n'
     args += 'LIB_DIR        = $(BUILD_DIR)/lib/\n'
-    args += 'PETSC_INCLUDE  = -I'+os.path.join(self.petscdir.dir,self.arch.arch,'include')+' -I'+os.path.join(self.petscdir.dir)+' -I'+os.path.join(self.petscdir.dir,'include')+' '+self.headers.toString(self.mpi.include+self.parmetis.include)+'\n'
+    args += 'PETSC_INCLUDE  = -I'+os.path.join(self.petscdir.dir,self.arch,'include')+' -I'+os.path.join(self.petscdir.dir)+' -I'+os.path.join(self.petscdir.dir,'include')+' '+self.headers.toString(self.mpi.include+self.parmetis.include)+'\n'
     args += 'RANLIB         = '+self.setCompilers.RANLIB+'\n'
     args += 'AR             = '+self.setCompilers.AR+'\n'
     args += 'ARFLAGS        = '+self.setCompilers.AR_FLAGS+'\n'
@@ -77,35 +71,25 @@ class Configure(PETSc.package.Package):
       fd = file(os.path.join(self.packageDir,'makefile.in'),'a')
       fd.write('include makefile.petsc\n')
       fd.close()
-      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir,'makefile.petsc')+' '+self.confDir+'/Prometheus', timeout=5, log = self.framework.log)[0]
+      output  = PETSc.package.NewPackage.executeShellCommand('cp -f '+os.path.join(self.packageDir,'makefile.petsc')+' '+self.confDir+'/Prometheus', timeout=5, log = self.framework.log)[0]
       self.compilePrometheus = 1
     return self.installDir
 
-  def configureLibrary(self):
-    '''Calls the regular package configureLibrary and then does an additional test needed by Prometheus'''
-    '''Normally you do not need to provide this method'''
-    PETSc.package.Package.configureLibrary(self)
-    # Prometheus requires LAPACK routine dorgqr()
-    if not self.blasLapack.checkForRoutine('dorgqr'):
-      raise RuntimeError('Prometheus requires the LAPACK routine dorgqr(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it\nIf you are using the IBM ESSL library, it does not contain this function. After installing a complete copy of lapack\n You can run config/configure.py with --with-blas-lib=libessl.a --with-lapack-lib=/usr/local/lib/liblapack.a')
-    self.framework.log.write('Found dorgqr() in Lapack library as needed by Prometheus\n')
+  def consistencyChecks(self):
+    PETSc.package.NewPackage.consistencyChecks(self)
+    if self.framework.argDB['with-'+self.package]:
+      # Prometheus requires LAPACK routine dorgqr()
+      if not self.blasLapack.checkForRoutine('dorgqr'):
+        raise RuntimeError('Prometheus requires the LAPACK routine dorgqr(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it\nIf you are using the IBM ESSL library, it does not contain this function. After installing a complete copy of lapack\n You can run config/configure.py with --with-blas-lib=libessl.a --with-lapack-lib=/usr/local/lib/liblapack.a')
+      self.framework.log.write('Found dorgqr() in Lapack library as needed by Prometheus\n')
     return
 
   def postProcess(self):
     if self.compilePrometheus:
       try:
         self.logPrintBox('Compiling Prometheus; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; make clean cleanlib; make prom minstall',timeout=1000, log = self.framework.log)[0]
+        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; make clean cleanlib; make prom minstall',timeout=1000, log = self.framework.log)[0]
         self.framework.log.write(output)
       except RuntimeError, e:
-        raise RuntimeError('Error running make on ParMetis: '+str(e))
+        raise RuntimeError('Error running make on Prometheus: '+str(e))
       self.postInstall(output,'makefile.petsc')
-
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setupLogging(framework.clArgs)
-  framework.children.append(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()

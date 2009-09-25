@@ -1,13 +1,13 @@
 import PETSc.package
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     self.download = ['http://www.fenics.org/pub/software/ffc/v0.3/ffc-0.3.3.tar.gz']
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
+    PETSc.package.NewPackage.setupDependencies(self, framework)
     self.fiat = self.framework.require('config.packages.Fiat', self)
     self.deps = [self.fiat]
     return

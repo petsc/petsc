@@ -1,14 +1,8 @@
-#!/usr/bin/env python
-from __future__ import generators
-import user
-import config.base
-import os
-import shutil
 import PETSc.package
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/PLAPACKR32-hg.tar.gz']
     self.functions  = ['PLA_LU']
     self.includes   = ['PLA.h']
@@ -17,7 +11,7 @@ class Configure(PETSc.package.Package):
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
+    PETSc.package.NewPackage.setupDependencies(self, framework)
     self.mpi        = framework.require('config.packages.MPI',self)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.deps       = [self.mpi,self.blasLapack]
@@ -61,31 +55,19 @@ class Configure(PETSc.package.Package):
     if self.installNeeded('Make.include'):
       try:
         self.logPrintBox('Compiling PLAPACK; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cp -f '+incDir+'/*.h '+installIncDir, timeout=2500, log = self.framework.log)[0]        
-        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';make removeall; make', timeout=2500, log = self.framework.log)[0]
+        output  = PETSc.package.NewPackage.executeShellCommand('cp -f '+incDir+'/*.h '+installIncDir, timeout=2500, log = self.framework.log)[0]        
+        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';make removeall; make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on PLAPACK: '+str(e))
       self.postInstall(output,'Make.include')
     return self.installDir
 
-  def configureLibrary(self):
-    '''Calls the regular package configureLibrary and then does an additional test needed by PLAPACK'''
-    '''Normally you do not need to provide this method'''
-    if self.blasLapack.f2c:
-      raise RuntimeError('PLAPACK requires a COMPLETE BLAS and LAPACK, it cannot be used with --download-c-blas-lapack=1 \nUse --download-f-blas-lapack option instead.')
-
-    PETSc.package.Package.configureLibrary(self)
-    # PLAPACK requires BLAS complex and single routines()
-    if not self.blasLapack.checkForRoutine('sscal') or not self.blasLapack.checkForRoutine('cscal'):
-      raise RuntimeError('PLAPACK requires the complex and single precision BLAS routines, the current BLAS libraries '+str(self.blasLapack.lib)+' does not have it\nYou need a COMPLETE install of BLAS: --download-f-blas-lapack is NOT a complete BLAS library')
-    self.framework.log.write('Found sscal() and cscal() in BLAS library as needed by PLAPACK\n')
+  def consistencyChecks(self):
+    PETSc.package.NewPackage.consistencyChecks(self)
+    if self.framework.argDB['with-'+self.package]:
+      if self.blasLapack.f2c:
+        raise RuntimeError('PLAPACK requires a COMPLETE BLAS and LAPACK, it cannot be used with --download-c-blas-lapack=1 \nUse --download-f-blas-lapack option instead.')
+      if not self.blasLapack.checkForRoutine('sscal') or not self.blasLapack.checkForRoutine('cscal'):
+        raise RuntimeError('PLAPACK requires the complex and single precision BLAS routines, the current BLAS libraries '+str(self.blasLapack.lib)+' does not have it\nYou need a COMPLETE install of BLAS: --download-f-blas-lapack is NOT a complete BLAS library')
+      self.framework.log.write('Found sscal() and cscal() in BLAS library as needed by PLAPACK\n')
     return
-
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setupLogging(framework.clArgs)
-  framework.children.append(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()

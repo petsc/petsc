@@ -1,13 +1,8 @@
-#!/usr/bin/env python
-from __future__ import generators
-import user
-import config.base
-import os
 import PETSc.package
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     # use the version from PETSc ftp site - it has lapack removed
     self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scalapack.tgz']
     self.includes  = []
@@ -19,11 +14,10 @@ class Configure(PETSc.package.Package):
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
-    self.mpi        = framework.require('config.packages.MPI',self)
+    PETSc.package.NewPackage.setupDependencies(self, framework)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.blacs      = framework.require('PETSc.packages.blacs',self)
-    self.deps       = [self.blacs,self.mpi,self.blasLapack]
+    self.deps       = [self.blacs, self.mpi, self.blasLapack]
     return
 
   def Install(self):
@@ -78,39 +72,29 @@ class Configure(PETSc.package.Package):
 
     if self.installNeeded('SLmake.inc'):
       try:
-        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';make cleanlib', timeout=2500, log = self.framework.log)[0]
+        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';make cleanlib', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         pass
       try:
         self.logPrintBox('Compiling Scalapack; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';make', timeout=2500, log = self.framework.log)[0]
+        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SCALAPACK: '+str(e))
       self.postInstall(output,'SLmake.inc')
     return self.installDir
 
-  def checkLib(self,lib,func,mangle,otherLibs = []):
+  def checkLib(self, lib, func, mangle, otherLibs = []):
     oldLibs = self.compilers.LIBS
     found = self.libraries.check(lib,func, otherLibs = otherLibs+self.mpi.lib+self.blasLapack.lib+self.compilers.flibs,fortranMangle=mangle)
-    self.compilers.LIBS=oldLibs
+    self.compilers.LIBS = oldLibs
     if found:
       self.framework.log.write('Found function '+str(func)+' in '+str(lib)+'\n')
     return found
 
-  def configureLibrary(self):
-    '''Calls the regular package configureLibrary and then does an additional test needed by SCALAPACK'''
-    '''Normally you do not need to provide this method'''
-    # SCALAPACK requires ALL of BLAS/LAPACK
-    if self.blasLapack.f2c:
-      raise RuntimeError('SCALAPACK requires a COMPLETE BLAS and LAPACK, it cannot be used with the --download-c-blas-lapack\nUse --download-f-blas-lapack option instead.')
-    PETSc.package.Package.configureLibrary(self)
+  def consistencyChecks(self):
+    PETSc.package.NewPackage.consistencyChecks(self)
+    if self.framework.argDB['with-'+self.package]:
+      # SCALAPACK requires ALL of BLAS/LAPACK
+      if self.blasLapack.f2c:
+        raise RuntimeError('SCALAPACK requires a COMPLETE BLAS and LAPACK, it cannot be used with the --download-c-blas-lapack\nUse --download-f-blas-lapack option instead.')
     return
-  
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setup()
-  framework.addChild(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()

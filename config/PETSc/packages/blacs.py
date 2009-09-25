@@ -1,13 +1,8 @@
-#!/usr/bin/env python
-from __future__ import generators
-import user
-import config.base
-import os
 import PETSc.package
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/blacs-dev.tar.gz']
     self.liblist   = [['libblacs.a']]
     self.includes  = []
@@ -19,11 +14,9 @@ class Configure(PETSc.package.Package):
     return
 
   def setupDependencies(self, framework):
-
-    PETSc.package.Package.setupDependencies(self, framework)
-    self.mpi        = framework.require('config.packages.MPI',self)
+    PETSc.package.NewPackage.setupDependencies(self, framework)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
-    self.deps       = [self.mpi,self.blasLapack]
+    self.deps       = [self.mpi, self.blasLapack]
     return
 
   def Install(self):
@@ -80,52 +73,3 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Error running make on BLACS: '+str(e))
       self.postInstall(output,'Bmake.Inc')
     return self.installDir
-
-  def checkLib(self,lib,func,mangle,otherLibs = []):
-    oldLibs = self.compilers.LIBS
-    found = self.libraries.check(lib,func, otherLibs = otherLibs+self.mpi.lib+self.blasLapack.lib+self.compilers.flibs,fortranMangle=mangle)
-    self.compilers.LIBS=oldLibs
-    if found:
-      self.framework.log.write('Found function '+str(func)+' in '+str(lib)+'\n')
-    return found
-  
-  def configureLibraryOld(self): #almost same as package.py/configureLibrary()!
-    '''Find an installation ando check if it can work with PETSc'''
-    self.framework.log.write('==================================================================================\n')
-    self.framework.log.write('Checking for a functional '+self.name+'\n')
-    foundLibrary = 0
-    foundHeader  = 0
-
-    # get any libraries and includes we depend on
-    libs         = []
-    incls        = []
-    for l in self.deps:
-      if hasattr(l,'dlib'):    libs  += l.dlib
-      if hasattr(l,self.includedir): incls += l.include
-      
-    for location, lib,incl in self.generateGuesses():
-      if not isinstance(lib, list): lib = [lib]
-      if not isinstance(incl, list): incl = [incl]
-      self.framework.log.write('Checking for library '+location+': '+str(lib)+'\n')
-      #if self.executeTest(self.libraries.check,[lib,self.functions],{'otherLibs' : libs}):
-      if self.executeTest(self.checkLib,[lib,self.functions,1]):     
-        self.lib = lib
-        self.framework.log.write('Checking for headers '+location+': '+str(incl)+'\n')
-        if (not self.includes) or self.executeTest(self.libraries.checkInclude, [incl, self.includes],{'otherIncludes' : incls}):
-          self.include = incl
-          self.found   = 1
-          self.dlib    = self.lib+libs
-          self.framework.packages.append(self)
-          break
-    if not self.found:
-      raise RuntimeError('Could not find a functional '+self.name+'\n')
-
-
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setup()
-  framework.addChild(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()

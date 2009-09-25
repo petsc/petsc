@@ -1,14 +1,8 @@
-
-#!/usr/bin/env python
-from __future__ import generators
-import user
-import config.base
-import os
 import PETSc.package
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/zoltan_distrib.tar.gz']
     self.functions = ['Zoltan_LB_Partition']
     self.includes  = ['zoltan.h'] 
@@ -17,9 +11,8 @@ class Configure(PETSc.package.Package):
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
+    PETSc.package.NewPackage.setupDependencies(self, framework)
     self.x11      = framework.require('PETSc.packages.X11',self)
-    self.mpi      = framework.require('config.packages.MPI',self)
     self.parmetis = framework.require('PETSc.packages.ParMetis',self)
     self.deps = [self.x11, self.mpi, self.parmetis]
     return
@@ -28,7 +21,7 @@ class Configure(PETSc.package.Package):
 
     self.framework.pushLanguage('C')
     ccompiler=self.framework.getCompiler()
-    args = ['ZOLTAN_ARCH="'+self.arch.arch+'"']
+    args = ['ZOLTAN_ARCH="'+self.arch+'"']
     args.append('CC="'+self.framework.getCompiler()+'"')
     args.append('CFLAGS="'+self.framework.getCompilerFlags()+'"')
     self.framework.popLanguage()
@@ -57,7 +50,7 @@ class Configure(PETSc.package.Package):
     fd.close()
 
     if self.installNeeded('Zoltanconfig'):
-      fd = file(os.path.join(self.packageDir, 'Utilities', 'Config', 'Config.'+self.arch.arch), 'w')
+      fd = file(os.path.join(self.packageDir, 'Utilities', 'Config', 'Config.'+self.arch), 'w')
       fd.write('''
 ##############################################################################
 #  Environment variables for compiling the Zoltan and test drivers using PETSc
@@ -81,16 +74,7 @@ GL_LIBS    = -lGL -lGLU
       except RuntimeError, e:
         raise RuntimeError('Error running make on ZOLTAN: '+str(e))
 
-      output  = config.base.Configure.executeShellCommand('mv -f '+os.path.join(self.packageDir, 'Obj_'+self.arch.arch)+'/* '+os.path.join(self.installDir, 'lib'))
+      output  = config.base.Configure.executeShellCommand('mv -f '+os.path.join(self.packageDir, 'Obj_'+self.arch)+'/* '+os.path.join(self.installDir, 'lib'))
       output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'include')+'/* '+os.path.join(self.installDir, 'include'))
       self.postInstall(output,'Zoltanconfig')
     return self.installDir
-  
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setup()
-  framework.addChild(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()
