@@ -24,6 +24,8 @@ typedef struct {
   PetscTruth       getrow_utriangular; /* if true, MatGetRow_SeqSBAIJ() is enabled to get the upper part of the row */
   Mat_Inode        inode;
   unsigned short   *jshort;
+  PetscTruth       free_jshort;
+  Mat              parent;         /* set if this matrix was formed with MatDuplicate(...,MAT_SHARE_NONZERO_PATTERN,....); */
 } Mat_SeqSBAIJ;
 
 EXTERN_C_BEGIN
