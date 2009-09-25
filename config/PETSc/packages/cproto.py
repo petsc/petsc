@@ -9,6 +9,7 @@ class Configure(PETSc.package.NewPackage):
     self.requires32bitint = 0;
     
   def Install(self):
+    import os
     if self.framework.argDB['with-batch']:
        args = ['--prefix='+self.installDir]
     else:

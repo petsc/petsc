@@ -25,6 +25,7 @@ class Configure(PETSc.package.NewPackage):
     return alllibs
         
   def Install(self):
+    import os
 
     self.framework.pushLanguage('C')
     args = ['--prefix='+self.installDir]

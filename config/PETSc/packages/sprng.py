@@ -15,6 +15,7 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def Install(self):    
+    import os
 
     g = open(os.path.join(self.packageDir,'SRC','make.PETSC'),'w')
 

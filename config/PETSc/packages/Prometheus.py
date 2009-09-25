@@ -26,6 +26,7 @@ class Configure(PETSc.package.NewPackage):
     return alllibs
 
   def Install(self):
+    import os
 
     args = ''
     args += 'SHELL          = '+self.programs.SHELL+'\n'

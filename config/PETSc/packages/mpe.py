@@ -16,6 +16,7 @@ class Configure(PETSc.package.NewPackage):
     return
           
   def Install(self):
+    import os
 
     args = ['--prefix='+self.installDir]
     

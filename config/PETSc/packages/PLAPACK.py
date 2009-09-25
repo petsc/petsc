@@ -18,6 +18,7 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def Install(self):
+    import os
     incDir                 = os.path.join(self.packageDir,'INCLUDE')
     installIncDir          = os.path.join(self.installDir,self.includedir)
     plapackMakefile        = os.path.join(self.packageDir,'Make.include')

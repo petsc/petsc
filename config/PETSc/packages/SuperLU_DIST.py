@@ -23,6 +23,7 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def Install(self):
+    import os
 
     g = open(os.path.join(self.packageDir,'make.inc'),'w')
     g.write('DSuperLUroot = '+self.packageDir+'\n')

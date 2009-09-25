@@ -17,7 +17,7 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def Install(self):
-
+    import os
     
     # Configure and Build pARMS
     g = open(os.path.join(self.packageDir,'makefile.in'),'w')

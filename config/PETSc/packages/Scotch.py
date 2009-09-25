@@ -19,6 +19,7 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def Install(self):
+    import os
 
     self.logPrintBox('Creating Scotch '+os.path.join(os.path.join(self.packageDir,'src'),'Makefile.inc')+'\n')
     g = open(os.path.join(os.path.join(self.packageDir,'src'),'Makefile.inc'),'w')

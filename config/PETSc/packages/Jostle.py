@@ -15,6 +15,7 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def downloadJostle(self):
+    import os
     self.framework.logPrint('Downloading Jostle')
     try:
       jostleDir = self.getDir()  

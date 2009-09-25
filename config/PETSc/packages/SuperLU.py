@@ -19,6 +19,7 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def Install(self):
+    import os
     # Get the SUPERLU directories
 
     g = open(os.path.join(self.packageDir,'make.inc'),'w')

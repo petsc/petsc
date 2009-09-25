@@ -10,6 +10,7 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def Install(self):
+    import os
 
     self.framework.pushLanguage('C')
     g = open(os.path.join(self.packageDir,'src','makefile.inc'),'w')

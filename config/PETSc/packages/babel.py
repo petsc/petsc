@@ -10,6 +10,7 @@ class Configure(PETSc.package.NewPackage):
 
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by babel'''
+    import os
     PETSc.package.NewPackage.configureLibrary(self)
     # add in include/cxx path
     self.include.append(os.path.join(self.framework.argDB['with-babel-dir'],'include','cxx'))

@@ -13,6 +13,7 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def Install(self):
+    import os
     self.framework.log.write('chacoDir = '+self.packageDir+' installDir '+self.installDir+'\n')
 
     mkfile = 'make.inc'

@@ -17,6 +17,7 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def Install(self):
+    import os
 
     self.framework.pushLanguage('C')
     if self.blasLapack.mangling == 'underscore':   FTNOPT = ''

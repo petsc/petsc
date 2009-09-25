@@ -11,6 +11,7 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def Install(self):
+    import os
 
     self.framework.pushLanguage('C')
     flags = self.framework.getCompilerFlags()

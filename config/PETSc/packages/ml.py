@@ -18,6 +18,7 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def generateLibList(self,dir):
+    import os
     '''Normally the one in package.py is used, but ML requires the extra C++ library'''
     libs = ['libml']
     alllibs = []
@@ -31,6 +32,7 @@ class Configure(PETSc.package.NewPackage):
     return [alllibs]
         
   def Install(self):
+    import os
 
     args = ['--prefix='+self.installDir]
     args.append('--disable-ml-epetra')
