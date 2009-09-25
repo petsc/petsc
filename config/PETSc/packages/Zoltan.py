@@ -19,7 +19,6 @@ class Configure(PETSc.package.NewPackage):
           
   def Install(self):
     import os
-
     self.framework.pushLanguage('C')
     ccompiler=self.framework.getCompiler()
     args = ['ZOLTAN_ARCH="'+self.arch+'"']
