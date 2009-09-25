@@ -19,7 +19,7 @@ int main(int argc,char **args)
   MatFactorInfo  info;
 
   PetscInitialize(&argc,&args,0,help);
-  nnz[0]=2;nnz[1]=1;nnz[1]=1;
+  nnz[0]=2;nnz[1]=1;nnz[2]=1;
 
   ierr = MatCreateSeqSBAIJ(PETSC_COMM_SELF,2,6,6,0,nnz,&mat);CHKERRQ(ierr);
   ind1[0]=0;ind1[1]=1;
