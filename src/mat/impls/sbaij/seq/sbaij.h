@@ -105,6 +105,7 @@ EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_7(Mat,Mat,const MatFacto
 
 EXTERN PetscErrorCode MatSolve_SeqSBAIJ_N(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqSBAIJ_1(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatSolve_SeqSBAIJ_1_newdatastruct(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqSBAIJ_2(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqSBAIJ_3(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqSBAIJ_4(Mat,Vec,Vec);
