@@ -2,6 +2,7 @@
 
 
 #include "../src/mat/impls/aij/seq/aij.h"
+#include "../src/mat/impls/sbaij/seq/sbaij.h"
 #include "petscbt.h"
 #include "../src/mat/utils/freespace.h"
 
@@ -354,7 +355,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ_newdatastruct(Mat B,Mat A,IS isrow,IS 
       nzbd++;
       k = lnk[k]; 
     }
-    bdiag[i] = nzbd; /* note: bdiag[i] = nnzL as input for PetscFreeSpaceContiguous_newdatastruct() */
+    bdiag[i] = nzbd; /* note: bdiag[i] = nnzL as input for PetscFreeSpaceContiguous_LU() */
 
     /* if free space is not available, make more free space */
     if (current_space->local_remaining<nzi) {
@@ -387,7 +388,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ_newdatastruct(Mat B,Mat A,IS isrow,IS 
 
   /* destroy list of free space and other temporary array(s) */
   ierr = PetscMalloc((bi[n]+1)*sizeof(PetscInt),&bj);CHKERRQ(ierr);
-  ierr = PetscFreeSpaceContiguous_newdatastruct(&free_space,bj,n,bi,bdiag);CHKERRQ(ierr); 
+  ierr = PetscFreeSpaceContiguous_LU(&free_space,bj,n,bi,bdiag);CHKERRQ(ierr); 
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
   ierr = PetscFree2(bi_ptr,im);CHKERRQ(ierr);
 
@@ -1394,7 +1395,6 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS isrow
   PetscTruth         missing;
 
   PetscFunctionBegin;
-  //printf("MatILUFactorSymbolic_SeqAIJ_newdatastruct ...\n");
   if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
   f             = info->fill;
   levels        = (PetscInt)info->levels;
@@ -1519,7 +1519,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS isrow
   ierr = PetscMalloc((bi[n]+1)*sizeof(PetscInt),&bj);CHKERRQ(ierr);
 
   /* copy free_space into bj and free free_space; set bi, bj, bdiag in new datastructure; */
-  ierr = PetscFreeSpaceContiguous_newdatastruct(&free_space,bj,n,bi,bdiag);CHKERRQ(ierr); 
+  ierr = PetscFreeSpaceContiguous_LU(&free_space,bj,n,bi,bdiag);CHKERRQ(ierr); 
   
   ierr = PetscIncompleteLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
   ierr = PetscFreeSpaceDestroy(free_space_lvl);CHKERRQ(ierr); 
@@ -1768,7 +1768,6 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
   PetscFunctionReturn(0); 
 }
 
-#include "../src/mat/impls/sbaij/seq/sbaij.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqAIJ_newdatastruct"
 PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const MatFactorInfo *info)
@@ -1876,7 +1875,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const M
     (B)->ops->forwardsolve    = 0;
     (B)->ops->backwardsolve   = 0;
   } else {
-    (B)->ops->solve           = 0;
+    (B)->ops->solve           = MatSolve_SeqSBAIJ_1_newdatastruct;
     (B)->ops->solvetranspose  = 0;
     (B)->ops->forwardsolve    = 0;
     (B)->ops->backwardsolve   = 0;
@@ -2080,7 +2079,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS perm,
       *cols++ = i; /* diagoanl is located as the last entry of U(i,:) */
     }
   } else { /* case: levels>0 || (levels=0 && !perm_identity) */
-    SETERRQ(1,"Not done yet");
+
     ierr = ISGetIndices(iperm,&riip);CHKERRQ(ierr);
     ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);
 
@@ -2199,7 +2198,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS perm,
 
     /* destroy list of free space and other temporary array(s) */
     ierr = PetscMalloc((ui[am]+1)*sizeof(PetscInt),&uj);CHKERRQ(ierr);
-    ierr = PetscFreeSpaceContiguous(&free_space,uj);CHKERRQ(ierr);
+    ierr = PetscFreeSpaceContiguous_Cholesky(&free_space,uj,am,ui,udiag);CHKERRQ(ierr);
     ierr = PetscIncompleteLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
     ierr = PetscFreeSpaceDestroy(free_space_lvl);CHKERRQ(ierr);
 

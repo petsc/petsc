@@ -24,6 +24,8 @@ typedef struct {
   PetscTruth       getrow_utriangular; /* if true, MatGetRow_SeqSBAIJ() is enabled to get the upper part of the row */
   Mat_Inode        inode;
   unsigned short   *jshort;
+  PetscTruth       free_jshort;
+  Mat              parent;         /* set if this matrix was formed with MatDuplicate(...,MAT_SHARE_NONZERO_PATTERN,....); */
 } Mat_SeqSBAIJ;
 
 EXTERN_C_BEGIN
@@ -103,6 +105,7 @@ EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_7(Mat,Mat,const MatFacto
 
 EXTERN PetscErrorCode MatSolve_SeqSBAIJ_N(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqSBAIJ_1(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatSolve_SeqSBAIJ_1_newdatastruct(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqSBAIJ_2(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqSBAIJ_3(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqSBAIJ_4(Mat,Vec,Vec);

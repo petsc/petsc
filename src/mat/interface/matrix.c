@@ -3655,8 +3655,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactorAvailable(Mat mat, const MatSolver
 
    Input Parameters:
 +  mat - the matrix
--  op - either MAT_DO_NOT_COPY_VALUES or MAT_COPY_VALUES, cause it to copy nonzero
-        values as well or not or MAT_SHARE_NONZERO_PATTERN
+-  op - either MAT_DO_NOT_COPY_VALUES or MAT_COPY_VALUES, cause it to copy the numerical values in the matrix
+        MAT_SHARE_NONZERO_PATTERN to share the nonzero patterns with the previous matrix and not copy them.
 
    Output Parameter:
 .  M - pointer to place new matrix
@@ -3664,6 +3664,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactorAvailable(Mat mat, const MatSolver
    Level: intermediate
 
    Concepts: matrices^duplicating
+
+    Notes: You cannot change the nonzero pattern for the parent or child matrix if you use MAT_SHARE_NONZERO_PATTERN.
 
 .seealso: MatCopy(), MatConvert()
 @*/

@@ -1597,6 +1597,52 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatSolve_SeqSBAIJ_1_newdatastruct"
+PetscErrorCode MatSolve_SeqSBAIJ_1_newdatastruct(Mat A,Vec bb,Vec xx)
+{
+  Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ *)A->data;
+  IS                isrow=a->row;
+  PetscErrorCode    ierr;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*rp,*vj;
+  const MatScalar   *aa=a->a,*v;
+  const PetscScalar *b;
+  PetscScalar       *x,xk,*t;
+  PetscInt          nz,k,j;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr); 
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
+  t    = a->solve_work;
+  ierr = ISGetIndices(isrow,&rp);CHKERRQ(ierr); 
+  
+  /* solve U^T*D^(1/2)*y = perm(b) by forward substitution */
+  for (k=0; k<mbs; k++) t[k] = b[rp[k]];   
+  for (k=0; k<mbs; k++){
+    v  = aa + ai[k]; 
+    vj = aj + ai[k];    
+    xk = t[k];
+    nz = ai[k+1] - ai[k] - 1; 
+    for (j=0; j<nz; j++) t[*vj++] += (*v++) * xk;
+    t[k] = xk*(*v++);  /* *v = 1/D(k) */
+  }
+
+  /* solve U*perm(x) = y by back substitution */   
+  for (k=mbs-1; k>=0; k--){ 
+    v  = aa + ai[k]; 
+    vj = aj + ai[k];  
+    nz = ai[k+1] - ai[k] - 1;    
+    for (j=0; j<nz; j++) t[k] += (*v++) * t[*vj++]; 
+    x[rp[k]] = t[k]; 
+  }
+
+  ierr = ISRestoreIndices(isrow,&rp);CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+  ierr = PetscLogFlops(4.0*a->nz);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqSBAIJ_1"
 PetscErrorCode MatSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
 {

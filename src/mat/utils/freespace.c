@@ -48,24 +48,25 @@ PetscErrorCode PetscFreeSpaceContiguous(PetscFreeSpaceList *head,PetscInt *space
 }
 
 /*
-  Copy a linket list obtained from matrix symbolic ilu or lu factorization into a contiguous array that enables 
-  an efficient matrix solve.
+  PetscFreeSpaceContiguous_LU -
+    Copy a linket list obtained from matrix symbolic ILU or LU factorization into a contiguous array 
+  that enables an efficient matrix triangular solve.
 
    Input Parameters:
-+  head - linked list of column indices obtained from matrix symbolic ilu or lu factorization
-.  space - an allocated int arry with length nnz of factored matrix. 
++  head - linked list of column indices obtained from matrix symbolic ILU or LU factorization
+.  space - an allocated int array with length nnz of factored matrix. 
 .  n - order of the matrix
 .  bi - row pointer of factored matrix with length 2n+2. First n+1 entries are set based on the traditional layout of L and U matrices
-.
 -  bdiag - int array holding the number of nonzeros in each row of L matrix, excluding diagonals.
 
    Output Parameter:
 .  space - column indices are copied into this int array with contiguous layout of L and U
+
    See MatILUFactorSymbolic_SeqAIJ_ilu0_newdatastruct() for detailed description.
 */
 #undef __FUNCT__
-#define __FUNCT__ "PetscFreeSpaceContiguous_newdatastruct"
-PetscErrorCode PetscFreeSpaceContiguous_newdatastruct(PetscFreeSpaceList *head,PetscInt *space,PetscInt n,PetscInt *bi,PetscInt *bdiag) 
+#define __FUNCT__ "PetscFreeSpaceContiguous_LU"
+PetscErrorCode PetscFreeSpaceContiguous_LU(PetscFreeSpaceList *head,PetscInt *space,PetscInt n,PetscInt *bi,PetscInt *bdiag) 
 {
   PetscFreeSpaceList a;
   PetscErrorCode     ierr;
@@ -118,6 +119,58 @@ PetscErrorCode PetscFreeSpaceContiguous_newdatastruct(PetscFreeSpaceList *head,P
   }
   bi[n] = bi[n-1] + nnzL;
   if (bi[n] != bi[n+1]) SETERRQ2(1,"bi[n] %d != bi[n+1] %d",bi[n],bi[n+1]);
+  PetscFunctionReturn(0);
+}
+
+/*
+  PetscFreeSpaceContiguous_Cholesky -
+    Copy a linket list obtained from matrix symbolic ICC or Cholesky factorization into a contiguous array 
+  that enables an efficient matrix triangular solve.
+
+   Input Parameters:
++  head - linked list of column indices obtained from matrix symbolic ICC or Cholesky factorization
+.  space - an allocated int array with length nnz of factored matrix. 
+.  n - order of the matrix
+.  ui - row pointer of factored matrix with length n+1. All entries are set based on the traditional layout U matrix.
+-  udiag - int array of length n.
+
+   Output Parameter:
++  space - column indices are copied into this int array with contiguous layout of U, with diagonal located as the last entry in each row
+-  udiag - indices of diagonal entries
+
+   See MatICCFactorSymbolic_SeqAIJ_newdatastruct() for detailed description.
+*/
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFreeSpaceContiguous_Cholesky"
+PetscErrorCode PetscFreeSpaceContiguous_Cholesky(PetscFreeSpaceList *head,PetscInt *space,PetscInt n,PetscInt *ui,PetscInt *udiag) 
+{
+  PetscFreeSpaceList a;
+  PetscErrorCode     ierr;
+  PetscInt           row,nnz,*uj,*array,total;
+
+  PetscFunctionBegin;
+  row   = 0; 
+  total = 0; 
+  while ((*head)!=NULL) {
+    total += (*head)->local_used;
+    array  = (*head)->array_head;
+  
+    while (ui[row+1] <= total && row < n){
+      udiag[row] = ui[row+1] - 1;     /* points to the last entry of U(row,:) */     
+      nnz  = ui[row+1] - ui[row] - 1; /* exclude diagonal */
+      uj   = space + ui[row];
+      ierr = PetscMemcpy(uj,array+1,nnz*sizeof(PetscInt));CHKERRQ(ierr);
+      uj[nnz] = array[0]; /* diagonal */
+      array += nnz + 1; 
+      row++;
+    }
+
+    a     = (*head)->more_space;
+    ierr  = PetscFree((*head)->array_head);CHKERRQ(ierr);
+    ierr  = PetscFree(*head);CHKERRQ(ierr);
+    *head = a;
+  }
   PetscFunctionReturn(0);
 }
 

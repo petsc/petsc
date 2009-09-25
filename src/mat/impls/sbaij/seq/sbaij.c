@@ -51,6 +51,8 @@ PetscErrorCode MatMarkDiagonal_SeqSBAIJ(Mat A)
   PetscFunctionBegin;
   if (!a->diag) {
     ierr = PetscMalloc(a->mbs*sizeof(PetscInt),&a->diag);CHKERRQ(ierr); 
+    ierr = PetscLogObjectMemory(A,a->mbs*sizeof(PetscInt));CHKERRQ(ierr);
+    a->free_diag = PETSC_TRUE;
   }
   for (i=0; i<a->mbs; i++) a->diag[i] = a->i[i];  
   PetscFunctionReturn(0);
@@ -130,16 +132,17 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
   if (a->idiag) {ierr = PetscFree(a->idiag);CHKERRQ(ierr);}
   if (a->inode.size) {ierr = PetscFree(a->inode.size);CHKERRQ(ierr);}
-  ierr = PetscFree(a->diag);CHKERRQ(ierr);
-  ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);
+  if (a->free_diag) {ierr = PetscFree(a->diag);CHKERRQ(ierr);}
+  if (a->free_imax_ilen) {ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);}
   ierr = PetscFree(a->solve_work);CHKERRQ(ierr);
   ierr = PetscFree(a->relax_work);CHKERRQ(ierr);
   ierr = PetscFree(a->solves_work);CHKERRQ(ierr);
   ierr = PetscFree(a->mult_work);CHKERRQ(ierr);
   ierr = PetscFree(a->saved_values);CHKERRQ(ierr);
   ierr = PetscFree(a->xtoy);CHKERRQ(ierr);
-  ierr = PetscFree(a->jshort);CHKERRQ(ierr);
+  if (a->free_jshort) {ierr = PetscFree(a->jshort);CHKERRQ(ierr);}
   ierr = PetscFree(a->inew);CHKERRQ(ierr);
+  if (a->parent) {ierr = MatDestroy(a->parent);CHKERRQ(ierr);}
   ierr = PetscFree(a);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
@@ -737,6 +740,7 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ_Inode(Mat A)
   } else {
     a->inode.node_count = node_count;
     ierr = PetscMalloc(node_count*sizeof(PetscInt),&a->inode.size);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(A,node_count*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMemcpy(a->inode.size,ns,node_count*sizeof(PetscInt));
     ierr = PetscFree(ns);CHKERRQ(ierr);
     ierr = PetscInfo3(A,"Found %D nodes of %D. Limit used: %D. Using Inode routines\n",node_count,m,a->inode.limit);CHKERRQ(ierr);
@@ -840,9 +844,11 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
   if (A->cmap->n < 65536 && A->cmap->bs == 1) {
     if (!a->jshort) {
       ierr = PetscMalloc(a->i[A->rmap->n]*sizeof(unsigned short),&a->jshort);CHKERRQ(ierr);
+      ierr = PetscLogObjectMemory(A,a->i[A->rmap->n]*sizeof(unsigned short));CHKERRQ(ierr);
       for (i=0; i<a->i[A->rmap->n]; i++) a->jshort[i] = a->j[i];
       A->ops->mult  = MatMult_SeqSBAIJ_1_ushort;
       A->ops->relax = MatRelax_SeqSBAIJ_ushort;
+      a->free_jshort = PETSC_TRUE;
     }
   }
   PetscFunctionReturn(0);
@@ -1519,6 +1525,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,Pet
   if (!skipallocation) {
     if (!b->imax) {
       ierr = PetscMalloc2(mbs,PetscInt,&b->imax,mbs,PetscInt,&b->ilen);CHKERRQ(ierr);
+      b->free_imax_ilen = PETSC_TRUE;
       ierr = PetscLogObjectMemory(B,2*mbs*sizeof(PetscInt));CHKERRQ(ierr);
     }
     if (!nnz) {
@@ -1963,27 +1970,56 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c->mbs  = a->mbs;
   c->nbs  = a->nbs;
 
-  ierr = PetscMalloc2((mbs+1),PetscInt,&c->imax,(mbs+1),PetscInt,&c->ilen);CHKERRQ(ierr);
-  for (i=0; i<mbs; i++) {
-    c->imax[i] = a->imax[i];
-    c->ilen[i] = a->ilen[i]; 
+  if  (cpvalues == MAT_SHARE_NONZERO_PATTERN) {
+    c->imax           = a->imax;
+    c->ilen           = a->ilen;
+    c->free_imax_ilen = PETSC_FALSE;
+  } else {
+    ierr = PetscMalloc2((mbs+1),PetscInt,&c->imax,(mbs+1),PetscInt,&c->ilen);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(C,2*(mbs+1)*sizeof(PetscInt));CHKERRQ(ierr);
+    for (i=0; i<mbs; i++) {
+      c->imax[i] = a->imax[i];
+      c->ilen[i] = a->ilen[i]; 
+    }
+    c->free_imax_ilen = PETSC_TRUE;
   }
 
   /* allocate the matrix space */
-  ierr = PetscMalloc3(bs2*nz,MatScalar,&c->a,nz,PetscInt,&c->j,mbs+1,PetscInt,&c->i);CHKERRQ(ierr);
-  c->singlemalloc = PETSC_TRUE;
-  ierr = PetscMemcpy(c->i,a->i,(mbs+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(C,(mbs+1)*sizeof(PetscInt) + nz*(bs2*sizeof(MatScalar) + sizeof(PetscInt)));CHKERRQ(ierr);
+  if (cpvalues == MAT_SHARE_NONZERO_PATTERN) {
+    ierr = PetscMalloc(bs2*nz*sizeof(MatScalar),&c->a);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(C,nz*bs2*sizeof(MatScalar));CHKERRQ(ierr);
+    c->singlemalloc = PETSC_FALSE;
+    c->free_ij      = PETSC_FALSE;
+    c->parent       = A;
+    ierr            = PetscObjectReference((PetscObject)A);CHKERRQ(ierr); 
+    ierr            = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+    ierr            = MatSetOption(C,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  } else {
+    ierr = PetscMalloc3(bs2*nz,MatScalar,&c->a,nz,PetscInt,&c->j,mbs+1,PetscInt,&c->i);CHKERRQ(ierr);
+    ierr = PetscMemcpy(c->i,a->i,(mbs+1)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(C,(mbs+1)*sizeof(PetscInt) + nz*(bs2*sizeof(MatScalar) + sizeof(PetscInt)));CHKERRQ(ierr);
+    c->singlemalloc = PETSC_TRUE;
+    c->free_ij      = PETSC_TRUE;
+  }
   if (mbs > 0) {
-    ierr = PetscMemcpy(c->j,a->j,nz*sizeof(PetscInt));CHKERRQ(ierr);
+    if (cpvalues != MAT_SHARE_NONZERO_PATTERN) {
+      ierr = PetscMemcpy(c->j,a->j,nz*sizeof(PetscInt));CHKERRQ(ierr);
+    }
     if (cpvalues == MAT_COPY_VALUES) {
       ierr = PetscMemcpy(c->a,a->a,bs2*nz*sizeof(MatScalar));CHKERRQ(ierr);
     } else {
       ierr = PetscMemzero(c->a,bs2*nz*sizeof(MatScalar));CHKERRQ(ierr);
     }
     if (a->jshort) {
-      ierr = PetscMalloc(nz*sizeof(unsigned short),&c->jshort);CHKERRQ(ierr);
-      ierr = PetscMemcpy(c->jshort,a->jshort,nz*sizeof(unsigned short));CHKERRQ(ierr);
+      if (cpvalues == MAT_SHARE_NONZERO_PATTERN) {
+        c->jshort      = a->jshort;
+        c->free_jshort = PETSC_FALSE;
+      } else {
+        ierr = PetscMalloc(nz*sizeof(unsigned short),&c->jshort);CHKERRQ(ierr);
+        ierr = PetscLogObjectMemory(C,nz*sizeof(unsigned short));CHKERRQ(ierr);
+        ierr = PetscMemcpy(c->jshort,a->jshort,nz*sizeof(unsigned short));CHKERRQ(ierr);
+        c->free_jshort = PETSC_TRUE;
+      }
     }
   }
 
@@ -1991,10 +2027,16 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c->nonew       = a->nonew;
 
   if (a->diag) {
-    ierr = PetscMalloc((mbs+1)*sizeof(PetscInt),&c->diag);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(C,(mbs+1)*sizeof(PetscInt));CHKERRQ(ierr);
-    for (i=0; i<mbs; i++) {
-      c->diag[i] = a->diag[i];
+    if (cpvalues == MAT_SHARE_NONZERO_PATTERN) {
+      c->diag      = a->diag;
+      c->free_diag = PETSC_FALSE;
+    } else {
+      ierr = PetscMalloc((mbs+1)*sizeof(PetscInt),&c->diag);CHKERRQ(ierr);
+      ierr = PetscLogObjectMemory(C,(mbs+1)*sizeof(PetscInt));CHKERRQ(ierr);
+      for (i=0; i<mbs; i++) {
+	c->diag[i] = a->diag[i];
+      }
+      c->free_diag = PETSC_TRUE;
     }
   } else c->diag  = 0;
   c->nz           = a->nz;
@@ -2002,7 +2044,6 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c->solve_work   = 0;
   c->mult_work    = 0;
   c->free_a       = PETSC_TRUE;
-  c->free_ij      = PETSC_TRUE;
   *B = C;
   ierr = PetscFListDuplicate(((PetscObject)A)->qlist,&((PetscObject)C)->qlist);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2210,6 +2251,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqSBAIJWithArrays(MPI_Comm comm,Pets
   ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(*mat,bs,MAT_SKIP_ALLOCATION,0);CHKERRQ(ierr);
   sbaij = (Mat_SeqSBAIJ*)(*mat)->data;
   ierr = PetscMalloc2(m,PetscInt,&sbaij->imax,m,PetscInt,&sbaij->ilen);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(*mat,2*m*sizeof(PetscInt));CHKERRQ(ierr);
 
   sbaij->i = i;
   sbaij->j = j;

@@ -15,6 +15,7 @@
   PetscInt          maxnz;            /* allocated nonzeros */\
   PetscInt          *imax;            /* maximum space allocated for each row */\
   PetscInt          *ilen;            /* actual length of each row */\
+  PetscTruth        free_imax_ilen;  \
   PetscInt          reallocs;         /* number of mallocs done during MatSetValues() \
                                         as more values are set than were prealloced */\
   PetscInt          rmax;             /* max nonzeros in any row */\
@@ -29,6 +30,7 @@
   PetscInt          *i;               /* pointer to beginning of each row */               \
   PetscInt          *j;               /* column values: j + i[k] - 1 is start of row k */  \
   PetscInt          *diag;            /* pointers to diagonal elements */                  \
+  PetscTruth        free_diag;         \
   datatype          *a;               /* nonzero elements */                               \
   PetscScalar       *solve_work;      /* work space used in MatSolve */                    \
   IS                row, col, icol    /* index sets, used for reorderings */               
