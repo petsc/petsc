@@ -3,13 +3,13 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_4.0-June_30_2009.tar.gz']
-    self.functions  = ['set_default_options']
-    self.includes   = ['slu_ddefs.h']
-    self.liblist    = [['libsuperlu_4.0.a']]
-    self.complex    = 1
+    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_4.0-June_30_2009.tar.gz']
+    self.functions    = ['set_default_options']
+    self.includes     = ['slu_ddefs.h']
+    self.liblist      = [['libsuperlu_4.0.a']]
+    self.complex      = 1
     # SuperLU has NO support for 64 bit integers, use SuperLU_Dist if you need that
-    self.excludename = ['SuperLU_DIST']
+    self.excludedDirs = ['SuperLU_DIST']
     return
 
   def setupDependencies(self, framework):
