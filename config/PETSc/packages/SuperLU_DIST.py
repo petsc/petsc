@@ -1,13 +1,8 @@
-#!/usr/bin/env python
-from __future__ import generators
-import user
-import config.base
-import os
 import PETSc.package
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/SuperLU_DIST_2.3-hg.tar.gz']
     self.functions  = ['set_default_options_dist']
     self.includes   = ['superlu_ddefs.h']
@@ -21,10 +16,9 @@ class Configure(PETSc.package.Package):
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
-    self.mpi        = framework.require('config.packages.MPI',self)
+    PETSc.package.NewPackage.setupDependencies(self, framework)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)    
-    self.parmetis = framework.require('PETSc.packages.ParMetis',self)
+    self.parmetis   = framework.require('PETSc.packages.ParMetis',self)
     self.deps       = [self.mpi,self.blasLapack,self.parmetis]
     return
 
@@ -70,33 +64,22 @@ class Configure(PETSc.package.Package):
     if self.installNeeded('make.inc'):
       try:
         self.logPrintBox('Compiling superlu_dist; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';SUPERLU_DIST_INSTALL_DIR='+self.installDir+'/lib;export SUPERLU_DIST_INSTALL_DIR; make clean; make lib LAAUX=""; mv -f *.a '+os.path.join(self.installDir,'lib')+'; cp -f SRC/*.h '+os.path.join(self.installDir,'include')+'/.', timeout=2500, log = self.framework.log)[0]
+        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';SUPERLU_DIST_INSTALL_DIR='+self.installDir+'/lib;export SUPERLU_DIST_INSTALL_DIR; make clean; make lib LAAUX=""; mv -f *.a '+os.path.join(self.installDir,'lib')+'; cp -f SRC/*.h '+os.path.join(self.installDir,'include')+'/.', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU_DIST: '+str(e))
       self.postInstall(output,'make.inc')
     return self.installDir
 
-  def configureLibrary(self):
-    '''Calls the regular package configureLibrary and then does an additional test needed by SuperLU_DIST'''
-    '''Normally you do not need to provide this method'''
-    PETSc.package.Package.configureLibrary(self)
-    if not self.blasLapack.checkForRoutine('slamch'): 
-      raise RuntimeError('SuperLU_DIST requires the BLAS routine slamch()')
-    self.framework.log.write('Found slamch() in BLAS library as needed by SuperLU_DIST\n')
-
-    if not self.blasLapack.checkForRoutine('dlamch'): 
-      raise RuntimeError('SuperLU_DIST requires the BLAS routine dlamch()')
-    self.framework.log.write('Found dlamch() in BLAS library as needed by SuperLU_DIST\n')
-    if not self.blasLapack.checkForRoutine('xerbla'): 
-      raise RuntimeError('SuperLU_DIST requires the BLAS routine xerbla()')
-    self.framework.log.write('Found xerbla() in BLAS library as needed by SuperLU_DIST\n')
+  def consistencyChecks(self):
+    PETSc.package.NewPackage.consistencyChecks(self)
+    if self.framework.argDB['with-'+self.package]:
+      if not self.blasLapack.checkForRoutine('slamch'): 
+        raise RuntimeError('SuperLU_DIST requires the BLAS routine slamch()')
+      self.framework.log.write('Found slamch() in BLAS library as needed by SuperLU_DIST\n')
+      if not self.blasLapack.checkForRoutine('dlamch'): 
+        raise RuntimeError('SuperLU_DIST requires the BLAS routine dlamch()')
+      self.framework.log.write('Found dlamch() in BLAS library as needed by SuperLU_DIST\n')
+      if not self.blasLapack.checkForRoutine('xerbla'): 
+        raise RuntimeError('SuperLU_DIST requires the BLAS routine xerbla()')
+      self.framework.log.write('Found xerbla() in BLAS library as needed by SuperLU_DIST\n')
     return
-  
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setupLogging(framework.clArgs)
-  framework.children.append(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()

@@ -23,6 +23,6 @@ class Configure(PETSc.package.NewPackage):
     self.getExecutable('babel-config', path = babel_bin_path, getFullPath = 1, resultName = 'babel_config')
     if not hasattr(self,'babel_config'):
       raise RuntimeError('Located Babel library and include file but could not find babel-config executable')
-    self.version = config.base.Configure.executeShellCommand(self.babel_config + ' --version')[0].rstrip()
+    self.version = PETSc.package.NewPackage.executeShellCommand(self.babel_config + ' --version')[0].rstrip()
     self.addMakeMacro('BABEL_VERSION',self.version)
     return

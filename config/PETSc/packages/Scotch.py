@@ -71,14 +71,14 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded(os.path.join('src','Makefile.inc')):
       try:
         self.logPrintBox('Compiling Scotch; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean scotch', timeout=2500, log = self.framework.log)[0]
+        output  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean scotch', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on Scotch: '+str(e))
 #      try:
-#        output = config.base.Configure.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+'; ls libscotch; make scotch',timeout=2500, log = self.framework.log)[0]
+#        output = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+'; ls libscotch; make scotch',timeout=2500, log = self.framework.log)[0]
       libDir     = os.path.join(self.installDir, self.libdir)
       includeDir = os.path.join(self.installDir, self.includedir)
-      output = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; cp -f lib/*.a '+libDir+'/.; cp -f include/*.h '+includeDir+'/.;', timeout=2500, log = self.framework.log)[0]
+      output = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; cp -f lib/*.a '+libDir+'/.; cp -f include/*.h '+includeDir+'/.;', timeout=2500, log = self.framework.log)[0]
 #      except RuntimeError, e:
 #        raise RuntimeError('Error running make on Scotch: '+str(e))
       self.postInstall(output,os.path.join('src','Makefile.inc'))

@@ -32,8 +32,8 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded('Make.inc'):
       try:
         self.logPrintBox('Compiling spooles; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; make clean; make lib', timeout=2500, log = self.framework.log)[0]
-        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; cp -f *.h '+self.installDir+'/include; HLISTS=`ls *.h|egrep -v \(SPOOLES\|cfiles\|timings\)`; for hlist in $HLISTS MPI.h; do dir=`echo ${hlist} | sed s/"\.h"//`; mkdir -p '+self.installDir+'/include/$dir; cp -f $dir/*.h '+self.installDir+'/include/$dir/.; done; cp -f libspooles.a '+self.installDir+'/lib', timeout=2500, log = self.framework.log)[0]        
+        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; make clean; make lib', timeout=2500, log = self.framework.log)[0]
+        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; cp -f *.h '+self.installDir+'/include; HLISTS=`ls *.h|egrep -v \(SPOOLES\|cfiles\|timings\)`; for hlist in $HLISTS MPI.h; do dir=`echo ${hlist} | sed s/"\.h"//`; mkdir -p '+self.installDir+'/include/$dir; cp -f $dir/*.h '+self.installDir+'/include/$dir/.; done; cp -f libspooles.a '+self.installDir+'/lib', timeout=2500, log = self.framework.log)[0]        
       except RuntimeError, e:
         raise RuntimeError('Error running make on SPOOLES: '+str(e))
       self.postInstall(output,'Make.inc')

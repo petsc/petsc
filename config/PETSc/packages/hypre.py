@@ -79,17 +79,17 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded('hypre'):
       try:
         self.logPrintBox('Configuring hypre; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+';make distclean;./configure '+args, timeout=900, log = self.framework.log)[0]
+        output  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+';make distclean;./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on HYPRE: '+str(e))
       try:
         self.logPrintBox('Compiling hypre; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+';HYPRE_INSTALL_DIR='+self.installDir+';export HYPRE_INSTALL_DIR; make install', timeout=2500, log = self.framework.log)[0]
+        output  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+';HYPRE_INSTALL_DIR='+self.installDir+';export HYPRE_INSTALL_DIR; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on HYPRE: '+str(e))
       #need to run ranlib on the libraries using the full path
       try:
-        output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)[0]
+        output  = PETSc.package.NewPackage.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on HYPRE libraries: '+str(e))
       self.postInstall(output,'hypre')

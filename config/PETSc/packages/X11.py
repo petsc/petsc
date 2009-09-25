@@ -49,9 +49,9 @@ acfindx:
     f.close()
     # Compile makefile
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand('xmkmf', log = self.framework.log)
+      (output, error, status) = PETSc.package.NewPackage.executeShellCommand('xmkmf', log = self.framework.log)
       if not status and os.path.exists('Makefile'):
-        (output, error, status) = config.base.Configure.executeShellCommand(self.make.make+' acfindx', log = self.framework.log)
+        (output, error, status) = PETSc.package.NewPackage.executeShellCommand(self.make.make+' acfindx', log = self.framework.log)
         results                 = self.parseShellOutput(output)
         if not ('X_INCLUDE_ROOT' in results and 'X_USR_LIB_DIR' in results and 'X_LIB_DIR' in results):
           raise RuntimeError('Invalid output: '+str(output))

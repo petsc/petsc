@@ -27,17 +27,17 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded('expat'):
       try:
         self.logPrintBox('Configuring expat; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
+        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on expat: '+str(e))
       try:
         self.logPrintBox('Compiling expat; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; make ; make install', timeout=2500, log = self.framework.log)[0]
+        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; make ; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on expat: '+str(e))
       #need to run ranlib on the libraries using the full path
       try:
-        output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)[0]
+        output  = PETSc.package.NewPackage.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on expat libraries: '+str(e))
       self.postInstall(output,'expat')

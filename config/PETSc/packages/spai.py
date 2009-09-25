@@ -34,10 +34,10 @@ class Configure(PETSc.package.NewPackage):
 
     if self.installNeeded('Makefile.in'):
       self.logPrintBox('Configuring and compiling Spai; this may take several minutes')
-      output  = config.base.Configure.executeShellCommand('cd '+os.path.join(self.packageDir,'lib')+'; make clean; make ; mv -f libspai.a '+os.path.join(self.installDir,'lib','libspai.a'),timeout=250, log = self.framework.log)[0]
-      output  = config.base.Configure.executeShellCommand('cd '+os.path.join(self.packageDir,'lib')+'; cp -f *.h '+os.path.join(self.installDir,'include'),timeout=250, log = self.framework.log)[0]      
+      output  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'lib')+'; make clean; make ; mv -f libspai.a '+os.path.join(self.installDir,'lib','libspai.a'),timeout=250, log = self.framework.log)[0]
+      output  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'lib')+'; cp -f *.h '+os.path.join(self.installDir,'include'),timeout=250, log = self.framework.log)[0]      
       try:
-        output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/libspai.a', timeout=250, log = self.framework.log)[0]
+        output  = PETSc.package.NewPackage.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/libspai.a', timeout=250, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on SPAI libraries: '+str(e))
       self.postInstall(output,'Makefile.in')
