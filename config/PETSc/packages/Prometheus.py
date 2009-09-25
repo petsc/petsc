@@ -37,7 +37,7 @@ class Configure(PETSc.package.NewPackage):
     args += 'PREFIX         = '+self.installDir+'\n'
     args += 'BUILD_DIR      = '+self.packageDir+'\n'
     args += 'LIB_DIR        = $(BUILD_DIR)/lib/\n'
-    args += 'PETSC_INCLUDE  = -I'+os.path.join(self.petscdir.dir,self.arch.arch,'include')+' -I'+os.path.join(self.petscdir.dir)+' -I'+os.path.join(self.petscdir.dir,'include')+' '+self.headers.toString(self.mpi.include+self.parmetis.include)+'\n'
+    args += 'PETSC_INCLUDE  = -I'+os.path.join(self.petscdir.dir,self.arch,'include')+' -I'+os.path.join(self.petscdir.dir)+' -I'+os.path.join(self.petscdir.dir,'include')+' '+self.headers.toString(self.mpi.include+self.parmetis.include)+'\n'
     args += 'RANLIB         = '+self.setCompilers.RANLIB+'\n'
     args += 'AR             = '+self.setCompilers.AR+'\n'
     args += 'ARFLAGS        = '+self.setCompilers.AR_FLAGS+'\n'

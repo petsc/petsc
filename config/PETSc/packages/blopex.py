@@ -1,13 +1,8 @@
-#!/usr/bin/env python
-from __future__ import generators
-import user
-import config.base
-import os
 import PETSc.package
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/blopex_abstract_Aug_2006.tar.gz']
     self.functions  = ['lobpcg_solve']
     self.includes   = ['interpreter.h']
@@ -16,8 +11,7 @@ class Configure(PETSc.package.Package):
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
-    self.mpi        = framework.require('config.packages.MPI',self)
+    PETSc.package.NewPackage.setupDependencies(self, framework)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     if self.framework.argDB.has_key('download-hypre') and not self.framework.argDB['download-hypre'] == 0:
       self.hypre      = framework.require('PETSc.packages.hypre',self)
@@ -48,12 +42,3 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Error running make on BLOPEX: '+str(e))
       self.postInstall(output,'Makefile.inc')
     return self.installDir
-
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setup()
-  framework.addChild(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()

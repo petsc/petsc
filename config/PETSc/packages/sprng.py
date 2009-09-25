@@ -1,13 +1,8 @@
-#!/usr/bin/env python
-from __future__ import generators
-import user
-import config.base
-import os
 import PETSc.package
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sprng-1.0.tar.gz']
     self.functions = ['make_new_seed_mpi'] 
     self.includes  = ['sprng.h'] 
@@ -15,9 +10,8 @@ class Configure(PETSc.package.Package):
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
-    self.mpi        = framework.require('config.packages.MPI',self)
-    self.deps       = [self.mpi]
+    PETSc.package.NewPackage.setupDependencies(self, framework)
+    self.deps = [self.mpi]
     return
 
   def Install(self):    
@@ -60,12 +54,3 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Error running make on SPRNG: '+str(e))
       self.postInstall(output,os.path.join('SRC','make.PETSC'))
     return self.installDir
-
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setupLogging(framework.clArgs)
-  framework.children.append(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()

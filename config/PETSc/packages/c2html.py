@@ -1,20 +1,15 @@
-#!/usr/bin/env python
-from __future__ import generators
-import config.base
-import os
-import re
 import PETSc.package
     
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/c2html.tar.gz']
     self.complex          = 1
     self.double           = 0;
     self.requires32bitint = 0;
     
   def Install(self):
-
+    import os
     if self.framework.argDB['with-batch']:
        args = ['--prefix='+self.installDir]
     else:
@@ -25,14 +20,14 @@ class Configure(PETSc.package.Package):
     fd.close()
     if self.installNeeded('c2html.args'):
       try:
-        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
+        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on c2html: '+str(e))
       try:
-        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';make; make install; make clean', timeout=2500, log = self.framework.log)[0]
+        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';make; make install; make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on c2html: '+str(e))
-      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir,'c2html.args')+' '+self.confDir+'/c2html', timeout=5, log = self.framework.log)[0]      
+      output  = PETSc.package.NewPackage.executeShellCommand('cp -f '+os.path.join(self.packageDir,'c2html.args')+' '+self.confDir+'/c2html', timeout=5, log = self.framework.log)[0]      
       self.framework.actions.addArgument('C2HTML', 'Install', 'Installed c2html into '+self.installDir)
     self.binDir = os.path.join(self.installDir, 'bin')
     self.c2html = os.path.join(self.binDir, 'c2html')
@@ -54,17 +49,7 @@ class Configure(PETSc.package.Package):
       else:
         self.framework.logPrint('Installing c2html')
         if not self.framework.argDB.has_key('download-c2html') or not self.framework.argDB['download-c2html']: self.framework.argDB['download-c2html'] = 1
-        PETSc.package.Package.configure(self)
+        PETSc.package.NewPackage.configure(self)
     else:
       self.framework.logPrint("Not a clone of PETSc, don't need c2html\n")
     return
-
-
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setupLogging(sys.argv[1:])
-  framework.children.append(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()

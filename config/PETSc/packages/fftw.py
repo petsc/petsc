@@ -1,14 +1,8 @@
-
-#!/usr/bin/env python
-from __future__ import generators
-import user
-import config.base
-import os
 import PETSc.package
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/fftw-3.2alpha3.tar.gz']
     self.functions = ['fftw_malloc'] 
     self.includes  = ['fftw3.h']  
@@ -17,10 +11,8 @@ class Configure(PETSc.package.Package):
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
-    self.mpi  = framework.require('config.packages.MPI',self)
+    PETSc.package.NewPackage.setupDependencies(self, framework)
     self.deps = [self.mpi]
-    self.libraries = framework.require('config.libraries',self)
     return
           
   def Install(self):
@@ -70,20 +62,9 @@ class Configure(PETSc.package.Package):
       self.postInstall(output,'fftw')
     return self.installDir
 
-  def configureLibrary(self):
-    '''Calls the regular package configureLibrary and then does an additional test needed by FFTW'''
-    '''Normally you do not need to provide this method'''
-    PETSc.package.Package.configureLibrary(self)
-    # FFTW requires complex precision
-    if not self.scalartypes.scalartype.lower() == 'complex':
-      raise RuntimeError('FFTW requires the complex precision, run config/configure.py --with-scalar-type=complex')
+  def consistencyChecks(self):
+    PETSc.package.NewPackage.consistencyChecks(self)
+    if self.framework.argDB['with-'+self.package]:
+      if not self.scalartypes.scalartype.lower() == 'complex':
+        raise RuntimeError('FFTW requires the complex precision, run config/configure.py --with-scalar-type=complex')
     return
-  
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setup()
-  framework.addChild(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()

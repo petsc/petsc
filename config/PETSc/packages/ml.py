@@ -1,13 +1,8 @@
-#!/usr/bin/env python
-from __future__ import generators
-import user
-import config.base
-import os
 import PETSc.package
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ml-6.2.tar.gz']
     self.functions = ['ML_Set_PrintLevel']
     self.includes  = ['ml_include.h']
@@ -17,8 +12,7 @@ class Configure(PETSc.package.Package):
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
-    self.mpi        = framework.require('config.packages.MPI',self)
+    PETSc.package.NewPackage.setupDependencies(self, framework)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.deps       = [self.mpi,self.blasLapack]  
     return
@@ -104,22 +98,12 @@ class Configure(PETSc.package.Package):
 
       self.postInstall(output,'ml')
     return self.installDir
-  
-  def configureLibrary(self):
-    '''Calls the regular package configureLibrary and then does an additional test needed by ML'''
-    '''Normally you do not need to provide this method'''
-    PETSc.package.Package.configureLibrary(self)
-    # ML requires LAPACK routine dgels() ?
-    if not self.blasLapack.checkForRoutine('dgels'):
-      raise RuntimeError('ML requires the LAPACK routine dgels(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it')
-    self.framework.log.write('Found dgels() in Lapack library as needed by ML\n')
-    return
 
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setupLogging(framework.clArgs)
-  framework.children.append(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()
+  def consistencyChecks(self):
+    PETSc.package.NewPackage.consistencyChecks(self)
+    if self.framework.argDB['with-'+self.package]:
+      # ML requires LAPACK routine dgels() ?
+      if not self.blasLapack.checkForRoutine('dgels'):
+        raise RuntimeError('ML requires the LAPACK routine dgels(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it')
+      self.framework.log.write('Found dgels() in Lapack library as needed by ML\n')
+    return

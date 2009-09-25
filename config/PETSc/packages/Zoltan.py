@@ -21,7 +21,7 @@ class Configure(PETSc.package.NewPackage):
 
     self.framework.pushLanguage('C')
     ccompiler=self.framework.getCompiler()
-    args = ['ZOLTAN_ARCH="'+self.arch.arch+'"']
+    args = ['ZOLTAN_ARCH="'+self.arch+'"']
     args.append('CC="'+self.framework.getCompiler()+'"')
     args.append('CFLAGS="'+self.framework.getCompilerFlags()+'"')
     self.framework.popLanguage()
@@ -50,7 +50,7 @@ class Configure(PETSc.package.NewPackage):
     fd.close()
 
     if self.installNeeded('Zoltanconfig'):
-      fd = file(os.path.join(self.packageDir, 'Utilities', 'Config', 'Config.'+self.arch.arch), 'w')
+      fd = file(os.path.join(self.packageDir, 'Utilities', 'Config', 'Config.'+self.arch), 'w')
       fd.write('''
 ##############################################################################
 #  Environment variables for compiling the Zoltan and test drivers using PETSc
@@ -74,7 +74,7 @@ GL_LIBS    = -lGL -lGLU
       except RuntimeError, e:
         raise RuntimeError('Error running make on ZOLTAN: '+str(e))
 
-      output  = config.base.Configure.executeShellCommand('mv -f '+os.path.join(self.packageDir, 'Obj_'+self.arch.arch)+'/* '+os.path.join(self.installDir, 'lib'))
+      output  = config.base.Configure.executeShellCommand('mv -f '+os.path.join(self.packageDir, 'Obj_'+self.arch)+'/* '+os.path.join(self.installDir, 'lib'))
       output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'include')+'/* '+os.path.join(self.installDir, 'include'))
       self.postInstall(output,'Zoltanconfig')
     return self.installDir

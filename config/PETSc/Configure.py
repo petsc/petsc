@@ -44,6 +44,7 @@ class Configure(config.base.Configure):
           if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
             utilityObj              = self.framework.require('PETSc.'+d+'.'+utilityName, self)
             utilityObj.headerPrefix = self.headerPrefix
+            utilityObj.archProvider = self.arch
             ##utilityObj.languageProvider = self.languages
             setattr(self, utilityName.lower(), utilityObj)
     self.blaslapack    = framework.require('config.packages.BlasLapack', self)

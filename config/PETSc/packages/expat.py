@@ -1,23 +1,13 @@
-#!/usr/bin/env python
-from __future__ import generators
-import user
-import config.base
-import os
 import PETSc.package
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
 #    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/expat-2.0.0.tar.gz']
     self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/expat-1.95.8.tar.gz']
     self.functions = ['XML_ExpatVersion']
     self.liblist   = [['libexpat.a']]
     self.includes  = ['expat.h']
-    return
-
-  def setupDependencies(self, framework):
-    PETSc.package.Package.setupDependencies(self, framework)
-    self.compilers = framework.require('config.compilers', self)
     return
 
   def Install(self):
@@ -52,13 +42,3 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Error running ranlib on expat libraries: '+str(e))
       self.postInstall(output,'expat')
     return self.installDir
-
-
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setupLogging(framework.clArgs)
-  framework.children.append(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()

@@ -1,12 +1,8 @@
-from __future__ import generators
-import config.base
-import os
-import re
 import PETSc.package
 
-class Configure(PETSc.package.Package):
+class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework)
+    PETSc.package.NewPackage.__init__(self, framework)
     self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sowing-1.1.11-a.tar.gz']
     self.complex          = 1
     self.double           = 0;
@@ -14,6 +10,7 @@ class Configure(PETSc.package.Package):
     return
 
   def Install(self):
+    import os
     args = ['--prefix='+self.installDir]
     if not self.framework.argDB['with-batch']:
       self.framework.pushLanguage('C')
@@ -68,7 +65,7 @@ class Configure(PETSc.package.Package):
       else:     
         self.framework.log.write('           Running '+self.bfort+' to generate fortran stubs\n')
         try:
-          import sys
+          import os,sys
           sys.path.insert(0, os.path.abspath(os.path.join('bin','maint')))
           import generatefortranstubs
           del sys.path[0]
@@ -89,7 +86,7 @@ class Configure(PETSc.package.Package):
       self.framework.argDB['download-sowing'] = 0
 
     if self.framework.argDB['download-sowing']:
-      PETSc.package.Package.configure(self)
+      PETSc.package.NewPackage.configure(self)
       return
 
     if self.petscdir.isClone:
@@ -109,7 +106,7 @@ class Configure(PETSc.package.Package):
       else:
         self.framework.logPrint('Installing bfort')
         self.framework.argDB['download-sowing'] = 1
-        PETSc.package.Package.configure(self)
+        PETSc.package.NewPackage.configure(self)
       self.buildFortranStubs()
     else:
       self.framework.logPrint("Not a clone of PETSc, don't need Sowing\n")
