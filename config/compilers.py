@@ -1077,18 +1077,19 @@ class Configure(config.base.Configure):
 
   def checkFortranModuleInclude(self):
     '''Figures out what flag is used to specify the include path for Fortran modules'''
+    self.setCompilers.fortranModuleIncludeFlag = None
     if not self.fortranIsF90:
       self.logPrint('Not a Fortran90 compiler - hence skipping module include test')
       return
     found   = False
-    testdir = 'configtest'
+    testdir = 'confdir'
     modname = 'configtest.mod'
     modobj  = 'configtest.o'
     modcode = '''\
       module configtest
       integer testint
       parameter (testint = 42)
-      endmodule\n'''
+      end module configtest\n'''
     # Compile the Fortran test module
     self.pushLanguage('FC')
     if not self.checkCompile(modcode, None, cleanup = 0):
