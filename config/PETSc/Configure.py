@@ -157,6 +157,10 @@ class Configure(config.base.Configure):
       if self.setCompilers.getLinkerFlags().find('-Wl,-commons,use_dylibs') > -1:
         self.addMakeMacro('DARWIN_COMMONS_USE_DYLIBS',' -Wl,-commons,use_dylibs ')
       self.setCompilers.popLanguage()
+
+      # F90 Modules
+      if self.setCompilers.fortranModuleIncludeFlag:
+        self.addMakeMacro('FC_MODULE_FLAG', self.setCompilers.fortranModuleIncludeFlag)
     else:
       self.addMakeMacro('FC','')
 
