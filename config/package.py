@@ -61,6 +61,7 @@ class Package(config.base.Configure):
     config.base.Configure.setupDependencies(self, framework)
     self.setCompilers  = framework.require('config.setCompilers', self)
     self.compilers     = framework.require('config.compilers', self)
+    self.types         = framework.require('config.types', self)
     self.headers       = framework.require('config.headers', self)
     self.libraries     = framework.require('config.libraries', self)
     self.programs      = framework.require('config.programs', self)

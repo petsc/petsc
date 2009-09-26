@@ -9,16 +9,15 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download   = ['http://downloads.sourceforge.net/exodusii/exodusii-4.75.tar.gz']
-    self.liblist    = [['libexoIIv2for.a', 'libexoIIv2c.a','libnetcdf.a']]
+    self.liblist    = [['libexoIIv2for.a', 'libexoIIv2c.a']]
     self.functions  = ['ex_close'] 
     self.includes   = ['exodusII.h']
     return
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    #self.netcdf = framework.require('config.packages.NetCDF',self)
-    #self.deps   = [self.netcdf]
-    self.deps = []
+    self.netcdf = framework.require('config.packages.NetCDF', self)
+    self.deps   = [self.netcdf]
     return
           
   def Install(self):
