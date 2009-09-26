@@ -841,7 +841,7 @@ PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
   } else if (ismathematica) {
     ierr = PetscViewerMathematicaPutVector(viewer,xin);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_NETCDF)
+#if defined(PETSC_HAVE_PNETCDF)
   } else if (isnetcdf) {
     ierr = VecView_MPI_Netcdf(xin,viewer);CHKERRQ(ierr);
 #endif
