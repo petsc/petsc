@@ -1116,6 +1116,7 @@ class Configure(config.base.Configure):
       if not self.checkLink(None, fcode):
         self.logPrint('Fortran module include flag '+flag+' failed', 3, 'compilers')
       else:
+        self.setCompilers.fortranModuleIncludeFlag = flag
         found = 1
       self.setCompilers.LIBS   = oldLIBS
       self.setCompilers.FFLAGS = oldFLAGS
