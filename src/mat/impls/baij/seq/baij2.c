@@ -263,11 +263,11 @@ PetscErrorCode MatMult_SeqBAIJ_1(Mat A,Vec xx,Vec zz)
     idx  = a->j + ii[0]; 
     ii++;
     sum  = 0.0;
-    nonzerorow += (n>0);
     PetscSparseDensePlusDot(sum,x,v,idx,n);
     if (usecprow){
       z[ridx[i]] = sum;
     } else {
+      nonzerorow += (n>0);
       z[i] = sum;
     }
   }
@@ -657,56 +657,61 @@ extern PetscErrorCode VecCopy_Seq(Vec,Vec);
 #define __FUNCT__ "MatMultAdd_SeqBAIJ_1"
 PetscErrorCode MatMultAdd_SeqBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
 {
-  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *x,*y = 0,*z = 0,sum,*yarray,*zarray;
-  MatScalar      *v;
-  PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,i,*idx,*ii,n,*ridx=PETSC_NULL;
-  PetscTruth     usecprow=a->compressedrow.use;
+  Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data;
+  const PetscScalar  *x;
+  PetscScalar        *y,*z,sum;
+  const MatScalar    *v;
+  PetscErrorCode     ierr;
+  PetscInt           mbs=a->mbs,i,n,*ridx=PETSC_NULL,nonzerorow=0;
+  const PetscInt     *idx,*ii;
+  PetscTruth         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&yarray);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {
-    ierr = VecGetArray(zz,&zarray);CHKERRQ(ierr);
+    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
   } else {
-    zarray = yarray;
+    z = y;
   }
 
   idx = a->j;
   v   = a->a;
   if (usecprow){
     if (zz != yy){
-      ierr = PetscMemcpy(zarray,yarray,mbs*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscMemcpy(z,y,mbs*sizeof(PetscScalar));CHKERRQ(ierr);
     }
     mbs  = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
     ridx = a->compressedrow.rindex;
   } else {
     ii  = a->i;
-    y   = yarray; 
-    z   = zarray;
   }
 
   for (i=0; i<mbs; i++) {
-    n    = ii[1] - ii[0]; ii++;
-    if (usecprow){
-      z = zarray + ridx[i];
-      y = yarray + ridx[i];
-    } 
-    sum = y[0];
-    while (n--) sum += *v++ * x[*idx++];
-    z[0] = sum;
+    n    = ii[1] - ii[0]; 
+    ii++;
     if (!usecprow){
-      z++; y++;
+      nonzerorow += (n>0);
+      sum = y[i];
+    } else {
+      sum = y[ridx[i]];
+    } 
+    PetscSparseDensePlusDot(sum,x,v,idx,n);
+    v += n;
+    idx += n;
+    if (usecprow){
+      z[ridx[i]] = sum;
+    } else {
+      z[i] = sum;
     }
   }
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&yarray);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {
-    ierr = VecRestoreArray(zz,&zarray);CHKERRQ(ierr);
+    ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   }
-  ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz - nonzerorow);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
