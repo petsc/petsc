@@ -1,11 +1,11 @@
 #include<petscmesh_formats.hh>   /*I      "petscmesh.h"   I*/
 
-#ifdef PETSC_HAVE_EXODUS
+#ifdef PETSC_HAVE_EXODUSII
 
 // This is what I needed in my petscvariables:
 //
-// EXODUS_INCLUDE = -I/PETSc3/mesh/exodusii-4.71/cbind/include
-// EXODUS_LIB = -L/PETSc3/mesh/exodusii-4.71/forbind/src -lexoIIv2for -L/PETSc3/mesh/exodusii-4.71/cbind/src -lexoIIv2c -lnetcdf
+// EXODUSII_INCLUDE = -I/PETSc3/mesh/exodusii-4.71/cbind/include
+// EXODUSII_LIB = -L/PETSc3/mesh/exodusii-4.71/forbind/src -lexoIIv2for -L/PETSc3/mesh/exodusii-4.71/cbind/src -lexoIIv2c -lnetcdf
 
 #include<netcdf.h>
 #include<exodusII.h>
@@ -150,7 +150,7 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
   PetscFunctionReturn(0);
 }
 
-#endif // PETSC_HAVE_EXODUS
+#endif // PETSC_HAVE_EXODUSII
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshCreateExodus"
@@ -181,7 +181,7 @@ PetscErrorCode MeshCreateExodus(MPI_Comm comm, const char filename[], Mesh *mesh
   ierr = MeshCreate(comm, mesh);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
   ALE::Obj<PETSC_MESH_TYPE> m = new PETSC_MESH_TYPE(comm, -1, debug);
-#ifdef PETSC_HAVE_EXODUS
+#ifdef PETSC_HAVE_EXODUSII
   ierr = PetscReadExodusII(comm, filename, m);CHKERRQ(ierr);
 #else
   SETERRQ(PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --with-exodus-dir=/path/to/exodus");

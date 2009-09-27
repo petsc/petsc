@@ -21,6 +21,7 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def Install(self):
+    import os
     if not hasattr(self.setCompilers, 'FC'):
       raise RuntimeError('SCALAPACK requires Fortran for automatic installation')
 

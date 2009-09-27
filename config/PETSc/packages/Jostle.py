@@ -15,6 +15,7 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def downloadJostle(self):
+    import os
     self.framework.logPrint('Downloading Jostle')
     try:
       jostleDir = self.getDir()  
@@ -28,11 +29,11 @@ class Configure(PETSc.package.NewPackage):
       except Exception, e:
         raise RuntimeError('Error downloading Jostle: '+str(e))
       try:
-        config.base.Configure.executeShellCommand('cd '+packages+'; gunzip jostle.tar.gz', log = self.framework.log)
+        PETSc.package.NewPackage.executeShellCommand('cd '+packages+'; gunzip jostle.tar.gz', log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error unzipping jostle.tar.gz: '+str(e))
       try:
-        config.base.Configure.executeShellCommand('cd '+packages+'; tar -xf jostle.tar', log = self.framework.log)
+        PETSc.package.NewPackage.executeShellCommand('cd '+packages+'; tar -xf jostle.tar', log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error doing tar -xf jostle.tar: '+str(e))
       os.unlink(os.path.join(packages, 'jostle.tar'))

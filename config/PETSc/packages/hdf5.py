@@ -19,6 +19,7 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def Install(self):
+    import os
 
     args = []
     self.framework.pushLanguage('C')
@@ -34,12 +35,12 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded('hdf5'):
       try:
         self.logPrintBox('Configuring HDF5; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
+        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on HDF5: '+str(e))
       try:
         self.logPrintBox('Compiling HDF5; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; make ; make install', timeout=2500, log = self.framework.log)[0]
+        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; make ; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on HDF5: '+str(e))
       self.postInstall(output,'hdf5')

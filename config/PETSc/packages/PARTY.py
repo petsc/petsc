@@ -11,6 +11,7 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def Install(self):
+    import os
 
     g = open(os.path.join(self.packageDir,'make.inc'),'w')
     self.setCompilers.pushLanguage('C')
@@ -21,7 +22,7 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded('make.inc'):
       try:
         self.logPrintBox('Compiling party; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+'; PARTY_INSTALL_DIR='+self.installDir+';export PARTY_INSTALL_DIR; make clean; make all; cd ..; mv -f *.a '+os.path.join(self.installDir,self.libdir,'/,')+'; cp -f party_lib.h '+os.path.join(self.installDir,self.includedir,'.'), timeout=2500, log = self.framework.log)[0]
+        output  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+'; PARTY_INSTALL_DIR='+self.installDir+';export PARTY_INSTALL_DIR; make clean; make all; cd ..; mv -f *.a '+os.path.join(self.installDir,self.libdir,'/,')+'; cp -f party_lib.h '+os.path.join(self.installDir,self.includedir,'.'), timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on PARTY: '+str(e))
       self.postInstall(output,'make.inc')

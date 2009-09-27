@@ -10,6 +10,7 @@ class Configure(PETSc.package.NewPackage):
 
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by babel'''
+    import os
     PETSc.package.NewPackage.configureLibrary(self)
     # add in include/cxx path
     self.include.append(os.path.join(self.framework.argDB['with-babel-dir'],'include','cxx'))
@@ -23,6 +24,6 @@ class Configure(PETSc.package.NewPackage):
     self.getExecutable('babel-config', path = babel_bin_path, getFullPath = 1, resultName = 'babel_config')
     if not hasattr(self,'babel_config'):
       raise RuntimeError('Located Babel library and include file but could not find babel-config executable')
-    self.version = config.base.Configure.executeShellCommand(self.babel_config + ' --version')[0].rstrip()
+    self.version = PETSc.package.NewPackage.executeShellCommand(self.babel_config + ' --version')[0].rstrip()
     self.addMakeMacro('BABEL_VERSION',self.version)
     return

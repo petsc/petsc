@@ -13,11 +13,13 @@ class Configure(PETSc.package.NewPackage):
 
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
+    self.mpi        = framework.require('config.packages.MPI',self)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.deps       = [self.mpi,self.blasLapack]  
     return
 
   def generateLibList(self,dir):
+    import os
     '''Normally the one in package.py is used, but ML requires the extra C++ library'''
     libs = ['libml']
     alllibs = []
@@ -31,6 +33,7 @@ class Configure(PETSc.package.NewPackage):
     return [alllibs]
         
   def Install(self):
+    import os
 
     args = ['--prefix='+self.installDir]
     args.append('--disable-ml-epetra')
@@ -80,19 +83,19 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded('ml'):
       try:
         self.logPrintBox('Configuring ml; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; ./configure '+args, timeout=900, log = self.framework.log)[0]
+        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; ./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on ML: '+str(e))
       # Build ML
       try:
         self.logPrintBox('Compiling ml; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; ML_INSTALL_DIR='+self.installDir+'; export ML_INSTALL_DIR; make clean; make; make install', timeout=2500, log = self.framework.log)[0]
+        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; ML_INSTALL_DIR='+self.installDir+'; export ML_INSTALL_DIR; make clean; make; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on ML: '+str(e))
 
       #need to run ranlib on the libraries using the full path
       try:
-        output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)[0]
+        output  = PETSc.package.NewPackage.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on ML libraries: '+str(e))
 

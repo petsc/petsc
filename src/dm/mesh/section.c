@@ -516,7 +516,11 @@ PetscErrorCode SectionRealComplete(SectionReal section)
   PetscFunctionBegin;
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
   ierr = SectionRealGetBundle(section, b);CHKERRQ(ierr);
+#if 0
   ALE::Distribution<PETSC_MESH_TYPE>::completeSection(b, s);
+#else
+  ALE::Completion::completeSectionAdd(b->getSendOverlap(), b->getRecvOverlap(), s, s);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1472,7 +1476,11 @@ PetscErrorCode SectionIntComplete(SectionInt section)
   PetscFunctionBegin;
   ierr = SectionIntGetSection(section, s);CHKERRQ(ierr);
   ierr = SectionIntGetBundle(section, b);CHKERRQ(ierr);
+#if 0
   ALE::Distribution<PETSC_MESH_TYPE>::completeSection(b, s);
+#else
+  ALE::Completion::completeSectionAdd(b->getSendOverlap(), b->getRecvOverlap(), s, s);
+#endif
   PetscFunctionReturn(0);
 }
 

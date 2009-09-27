@@ -1,5 +1,7 @@
 import PETSc.package
 
+import os
+
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
@@ -42,7 +44,7 @@ class Configure(PETSc.package.NewPackage):
       interpreter = os.path.join(matlab,'bin','matlab')
       output      = ''
       try:
-        output = config.base.Configure.executeShellCommand(interpreter+' -nojvm -nodisplay -r "[\'Version \' version]; exit"', log = self.framework.log)[0]
+        output = PETSc.package.NewPackage.executeShellCommand(interpreter+' -nojvm -nodisplay -r "[\'Version \' version]; exit"', log = self.framework.log)[0]
       except:
         self.framework.log.write('WARNING: Found Matlab at '+matlab+' but unable to run\n')
         continue

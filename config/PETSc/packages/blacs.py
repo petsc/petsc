@@ -20,6 +20,7 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def Install(self):
+    import os
 
     g = open(os.path.join(self.packageDir,'Bmake.Inc'),'w')
     g.write('SHELL     = /bin/sh\n')
@@ -68,7 +69,7 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded('Bmake.Inc'):
       try:
         self.logPrintBox('Compiling Blacs; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(self.packageDir,'SRC','MPI')+';make clean; make', timeout=2500, log = self.framework.log)[0]
+        output  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'SRC','MPI')+';make clean; make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on BLACS: '+str(e))
       self.postInstall(output,'Bmake.Inc')

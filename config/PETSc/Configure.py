@@ -42,10 +42,11 @@ class Configure(config.base.Configure):
         for utility in os.listdir(os.path.join('config', 'PETSc', d)):
           (utilityName, ext) = os.path.splitext(utility)
           if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
-            utilityObj              = self.framework.require('PETSc.'+d+'.'+utilityName, self)
-            utilityObj.headerPrefix = self.headerPrefix
-            utilityObj.archProvider = self.arch
-            ##utilityObj.languageProvider = self.languages
+            utilityObj                    = self.framework.require('PETSc.'+d+'.'+utilityName, self)
+            utilityObj.headerPrefix       = self.headerPrefix
+            utilityObj.archProvider       = self.arch
+            utilityObj.languageProvider   = self.languages
+            utilityObj.installDirProvider = self.petscdir
             setattr(self, utilityName.lower(), utilityObj)
     self.blaslapack    = framework.require('config.packages.BlasLapack', self)
     self.blaslapack.archProvider      = self.arch
@@ -156,6 +157,10 @@ class Configure(config.base.Configure):
       if self.setCompilers.getLinkerFlags().find('-Wl,-commons,use_dylibs') > -1:
         self.addMakeMacro('DARWIN_COMMONS_USE_DYLIBS',' -Wl,-commons,use_dylibs ')
       self.setCompilers.popLanguage()
+
+      # F90 Modules
+      if self.setCompilers.fortranModuleIncludeFlag:
+        self.addMakeMacro('FC_MODULE_FLAG', self.setCompilers.fortranModuleIncludeFlag)
     else:
       self.addMakeMacro('FC','')
 
