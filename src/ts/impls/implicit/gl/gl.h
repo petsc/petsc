@@ -11,6 +11,7 @@ struct _TSGLScheme {
   PetscInt q;                   /* stage-order of the method */
   PetscInt r;                   /* number of items carried between stages */
   PetscInt s;                   /* number of stages */
+  PetscReal Cp;                 /* Coefficient of h^{p+1}x^{(p+1)} in local truncation error */
   PetscReal *c;                 /* location of the stages */
   PetscReal *a,*b,*u,*v;        /* tableau for the method */
   PetscReal *error1f;           /* forward-looking  estimation of h^{p+1}x^{(p+1)} */
@@ -33,6 +34,8 @@ typedef struct TS_GL {
 
   Vec *X;                       /* Items to carry between steps */
   Vec *Xold;                    /* Values of these items at the last step */
+  Vec W;                        /* = 1/(atol+rtol*|X0|), used for WRMS norm */
+  PetscReal wrms_atol,wrms_rtol;
 
   /* Stages (Y,Ydot) are computed sequentially */
   Vec *Ydot;                    /* Derivatives of stage vectors, must be stored */
@@ -43,8 +46,8 @@ typedef struct TS_GL {
   PetscInt  stage;              /* index of the stage we are currently solving for */
 
   /* Runtime options */
-  PetscInt current_order;
-  PetscInt max_order,min_order;
+  PetscInt current_scheme;
+  PetscInt max_order,min_order,start_order;
   PetscTruth extrapolate;           /* use extrapolation to produce initial Newton iterate? */
   TSGLErrorDirection error_direction; /* TSGLERROR_FORWARD or TSGLERROR_BACKWARD */
 

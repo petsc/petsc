@@ -47,7 +47,7 @@ static PetscFList TSGLList = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLSchemeCreate"
-static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt s,const PetscReal *c,
+static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt s,PetscReal Cp,const PetscReal *c,
                                        const PetscReal *a,const PetscReal *b,const PetscReal *u,const PetscReal *v,
                                        const PetscReal *error1f,const PetscReal *error1b,const PetscReal *error2f,const PetscReal *error2b,
                                        TSGLScheme *inscheme)
@@ -63,10 +63,11 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
   PetscValidPointer(inscheme,4);
   *inscheme = 0;
   ierr = PetscMalloc(sizeof(struct _TSGLScheme),&scheme);CHKERRQ(ierr);
-  scheme->p = p;
-  scheme->q = q;
-  scheme->r = r;
+  scheme->p  = p;
+  scheme->q  = q;
+  scheme->r  = r;
   scheme->s  = s;
+  scheme->Cp = Cp;
 
   ierr = PetscMalloc5(s,PetscReal,&scheme->c,s*s,PetscReal,&scheme->a,r*s,PetscReal,&scheme->b,r*s,PetscReal,&scheme->u,r*r,PetscReal,&scheme->v);CHKERRQ(ierr);
   ierr = PetscMemcpy(scheme->c,c,s*sizeof(PetscReal));CHKERRQ(ierr);
@@ -121,7 +122,6 @@ static PetscErrorCode TSGLDestroy_Default(TS_GL *gl)
   PetscInt i;
 
   PetscFunctionBegin;
-  gl->schemes++;                /* return to 0-indexed array */
   for (i=0; i<gl->nschemes; i++) {
     if (gl->schemes[i]) {ierr = TSGLSchemeDestroy(gl->schemes[i]);CHKERRQ(ierr);}
   }
@@ -170,93 +170,72 @@ static PetscErrorCode TSGLCreate_DI(TS ts)
 
   PetscFunctionBegin;
   gl->Destroy = TSGLDestroy_Default;
-  gl->nschemes = 2;
-  ierr = PetscMalloc(gl->nschemes*sizeof(TSGLScheme),&gl->schemes);CHKERRQ(ierr);
-  gl->schemes--;               /* Index schemes by their order, 1-based */
+  ierr = PetscMalloc(10*sizeof(TSGLScheme),&gl->schemes);CHKERRQ(ierr);
+  gl->nschemes = 0;
 
+  {
+    /* p=1,q=1, r=s=2, A- and L-stable with error estimates of order 2 and 3
+    * Listed in Butcher & Podhaisky 2006. On error estimation in general linear methods for stiff ODE.
+    * irks(0.3,0,[.3,1],[1],1)
+    * Note: can be made second order by replacing 0.3 with 1-sqrt(1/2)
+    */
+    const PetscReal c[2] = {3./10., 1.}
+    ,a[2][2] = {{3./10., 0}, {7./10., 3./10.}}
+    ,b[2][2] = {{7./10., 3./10.}, {0,1}}
+    ,u[2][2] = {{1,0},{1,0}}
+    ,v[2][2] = {{1,0},{0,0}}
+    ,fphi[2] = {0,0}
+    ,fpsi[2] = {0,0}
+    ,bphi[2] = {0,0}
+    ,bpsi[2] = {0,0};
+    ierr = TSGLSchemeCreate(1,1,2,2,0.01,c,*a,*b,*u,*v,fphi,fpsi,bphi,bpsi,&gl->schemes[gl->nschemes++]);CHKERRQ(ierr);
+  }
   if (0) {
     /* Implicit Euler */
     const PetscReal c[1]={1},a[1][1]={{1}},b[1][1]={{1}},u[1][1]={{1}},v[1][1]={{1}};
     const PetscReal error1f[2]={0,0},error1b[2]={0,0},error2f[2]={0,0},error2b[2]={0,0};
-    ierr = TSGLSchemeCreate(1,1,1,1,c,*a,*b,*u,*v,error1f,error1b,error2f,error2b,&gl->schemes[1]);CHKERRQ(ierr);
-  } else {
-    /* p=q=1, r=s=2, A- and L-stable with error estimates of order 2 and 3
-    * Listed in Butcher & Podhaisky 2006. On error estimation in general linear methods for stiff ODE.
-    * irks(0.3,0,[.3,1],[1],1)
-    */
-    const PetscReal
-      c[2]    = {3./10., 1.},
-      a[2][2] = {{3./10., 0}, {7./10., 3./10.}},
-      b[2][2] = {{7./10., 3./10.}, {0,1}},
-      u[2][2] = {{1,0},{1,0}},
-      v[2][2] = {{1,0},{0,0}},
-      fphi[2] = {0,0},
-      fpsi[2] = {0,0},
-      bphi[2] = {0,0},
-      bpsi[2] = {0,0};
-    ierr = TSGLSchemeCreate(1,1,2,2,c,*a,*b,*u,*v,fphi,fpsi,bphi,bpsi,&gl->schemes[1]);CHKERRQ(ierr);
+    ierr = TSGLSchemeCreate(1,1,1,1,0.5,c,*a,*b,*u,*v,error1f,error1b,error2f,error2b,&gl->schemes[gl->nschemes++]);CHKERRQ(ierr);
   }
 
-  if (0) {
-    /* p=q=2, r=s=3 */
-    /* http://www.math.auckland.ac.nz/~hpod/atlas/i2a.html */
-    const PetscReal c[3] = {1./3., 2./3., 1};
-    const PetscReal a[3][3] = {{4./9.    ,0        , 0        },
-                               {1.03752  ,4./9.    , 0        },
-                               {0.767025 ,-0.38114 , 4./9.    }};
-    const PetscReal b[3][3] = {{0.767025 ,-0.38114 , 0.444444 },
-                               {0        ,0        , 1        },
-                               {-1.03752 ,0.310864 , 0.638599 }};
-    const PetscReal u[3][3] = {{1        ,-0.111111,-0.185185 },
-                               {1        ,-0.815284,-0.839819 },
-                               {1        ,0.169671 , 0.107948 }};
-    const PetscReal v[3][3] = {{1        ,0.169671 , 0.107948 },
-                               {0        ,0        , 0        },
-                               {0        ,0.0880614, 0        }};
-    ierr = TSGLSchemeCreate(2,2,3,3,c,*a,*b,*u,*v,0,0,0,0,&gl->schemes[2]);CHKERRQ(ierr);
-  } else {
-    /* p=q=2, r=3, s=2, A- and L-stable
-    * Butcher & Jackiewicz 2003.
-    * A new approach to error estimation for general linear methods.  Example 2.
-    * I have not seen an estimator of h^{p+2} x^{(p+2)} for this method */
-    const PetscReal c[2] = {0,1};
-    const PetscReal a[2][2] = {{ 26./25.   , 0         },
-                               { 69./175.  , 26./25.   }};
-    const PetscReal b[3][2] = {{ 788./675. , 364./675. },
-                               {-503./675. , 728./675. },
-                               {-1178./675., 728./675. }};
-    const PetscReal u[2][3] = {{ 1         ,-26./25.   , 0         },
-                               { 1         ,-76./175.  ,-27./50.   }};
-    const PetscReal v[3][3] = {{ 1         ,-53./75.   ,-53./1350. },
-                               { 0         , 2./3.     ,-53./675.  },
-                               { 0         , 2./3.     ,-53./675.  }};
-    const PetscReal
-      ferror1[5] = {-2,1,0,1,-2},
-      berror1[5] = {1,-278./53.,0,225./53.,1},
-      ferror2[5] = {0,0,0,0,0},
-      berror2[5] = {0,0,0,0,0};
-    ierr = TSGLSchemeCreate(2,2,3,2,c,*a,*b,*u,*v,ferror1,berror1,ferror2,berror2,&gl->schemes[2]);CHKERRQ(ierr);
-  }
-#if 0
   {
-    const PetscReal c[4] = {1./3., 2./3., 1, 1};
-    const PetscReal a[4][4] = {{9./40.   ,0        , 0        , 0     },
-                               {0.37915  ,9./40.   , 0        , 0     },
-                               {0.576331 ,0.157279 , 9./40.   , 0     },
-                               {0.740628 ,0.864647 ,-0.404278 , 9./40.}};
-    const PetscReal b[4][4] = {{0.740628 ,0.864647 ,-0.404278 , 0./40.},
-                               {0        ,0        ,0         , 1     },
-                               {-0.715262,-0.740829,0.350709  ,0.892767},
-                               {-0.570461,-0.893763,0.381671  ,0.404828}};
-    const PetscReal u[4][4] = {{1        ,-0.111111,-0.185185 },
-                               {1        ,-0.815284,-0.839819 },
-                               {1        ,0.169671 , 0.107948 }};
-    const PetscReal v[4][4] = {{1        ,0.169671 , 0.107948 },
-                               {0        ,0        , 0        },
-                               {0        ,0.0880614, 0        }};
-    ierr = TSGLSchemeCreate(3,3,4,4,c,*a,*b,*u,*v,ferror1,berror1,ferror2,berror2,&gl->schemes[3]);CHKERRQ(ierr);
+    /* p=q=2, r=s=3: irks(4/9,0,[1:3]/3,[0.33852],1) */
+    /* http://www.math.auckland.ac.nz/~hpod/atlas/i2a.html */
+    const PetscReal c[3] = {1./3., 2./3., 1}
+    ,a[3][3] = {{4./9.                ,0                      , 0      }
+                ,{1.03750643704090e+00 ,                  4./9.,       0}
+                ,{7.67024779410304e-01 ,  -3.81140216918943e-01,   4./9.}}
+    ,b[3][3] = {{0.767024779410304,  -0.381140216918943,   0.444444444444444},
+                {0.000000000000000,  0.000000000000000,   1.000000000000000},
+                {-2.075048385225385,   0.621728385225383,   1.277197204924873}}
+    ,u[3][3] = {{1.0000000000000000,  -0.1111111111111109,  -0.0925925925925922},
+                {1.0000000000000000,  -0.8152842148186744,  -0.4199095530877056},
+                {1.0000000000000000,   0.1696709930641948,   0.0539741070314165}}
+    ,v[3][3] = {{1.000000000000000,   0.169670993064195,   0.053974107031416},
+                {0.000000000000000,   0.000000000000000,   0.000000000000000},
+                {0.000000000000000,   0.176122795075129,   0.000000000000000}};
+    ierr = TSGLSchemeCreate(2,2,3,3,-0.00480109739368997,c,*a,*b,*u,*v,0,0,0,0,&gl->schemes[gl->nschemes++]);CHKERRQ(ierr);
   }
-#endif
+  {
+    /* p=q=3, r=s=4: irks(9/40,0,[1:4]/4,[0.3312 1.0050],[0.49541 1;1 0]) */
+    const PetscReal c[4] = {0.25,0.5,0.75,1.0}
+    ,a[4][4] = {{2.25000000000000e-01 ,                      0,                      0,                      0},
+                {2.11286958887701e-01 ,   2.24999999999987e-01,                      0,                      0},
+                {9.46338294287584e-01 ,  -3.42942861246094e-01,   2.25000000000012e-01,                      0},
+                {5.21490453970720e-01 ,  -6.62474225622978e-01,   4.90476425459731e-01,   2.25000000000010e-01}}
+    ,b[4][4] = {{0.521490453970721    ,  -0.662474225622980,   0.490476425459734,   0.225000000000000},
+                {0.000000000000000    ,   0.000000000000000,   0.000000000000000,   1.000000000000000},
+                {-0.084677029310348   ,   1.390757514776085,  -1.568157386206001,   2.023192696767826},
+                {0.465383797936408    ,   1.478273530625148,  -1.930836081010182,   1.644872111193354}}
+    ,u[4][4] = {{1.00000000000000000  ,   0.02500000000001035,  -0.02499999999999053,  -0.00442708333332865},
+                {1.00000000000000000  ,   0.06371304111232945,  -0.04032173972189845,  -0.01389438413189452},
+                {1.00000000000000000  ,  -0.07839543304147778,   0.04738685705116663,   0.02032603595928376},
+                {1.00000000000000000  ,   0.42550734619251651,   0.10800718022400080,  -0.01726712647760034}}
+    ,v[4][4] = {{1.000000000000000    ,   0.425507346192525,   0.108007180224009,  -0.017267126477596},
+                {0.000000000000000    ,   0.000000000000000,   0.000000000000000,   0.000000000000000},
+                {0.000000000000000    ,  -1.761115796027561,  -0.521284157173780,   0.258249384305463},
+                {0.000000000000000    ,  -1.657693358744728,  -1.052227765232394,   0.521284157173780}};
+    ierr = TSGLSchemeCreate(3,3,4,4,-0.00054205729166720,c,*a,*b,*u,*v,0,0,0,0,&gl->schemes[gl->nschemes++]);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -274,6 +253,50 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLSetType(TS ts,const TSGLType type)
   if (r) {
     ierr = (*r)(ts,type);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGLUpdateWRMS"
+static PetscErrorCode TSGLUpdateWRMS(TS ts)
+{
+  TS_GL *gl = (TS_GL*)ts->data;
+  PetscErrorCode ierr;
+  PetscScalar *x,*w;
+  PetscInt n,i;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(gl->X[0],&x);CHKERRQ(ierr);
+  ierr = VecGetArray(gl->W,&w);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(gl->W,&n);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    w[i] = 1./(gl->wrms_atol + gl->wrms_rtol*PetscAbs(x[i]));
+  }
+  ierr = VecRestoreArray(gl->X[0],&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(gl->W,&w);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGLVecNormWRMS"
+static PetscErrorCode TSGLVecNormWRMS(TS ts,Vec X,PetscReal *nrm)
+{
+  TS_GL *gl = (TS_GL*)ts->data;
+  PetscErrorCode ierr;
+  PetscScalar *x,*w,sum;
+  PetscInt n,i;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(gl->W,&w);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(gl->W,&n);CHKERRQ(ierr);
+  sum = 0;
+  for (i=0; i<n; i++) {
+    sum += PetscAbs(PetscSqr(x[i]*w[i]));
+  }
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(gl->W,&w);CHKERRQ(ierr);
+  *nrm = PetscAbs(PetscSqrtScalar(sum/n));
   PetscFunctionReturn(0);
 }
 
@@ -306,8 +329,8 @@ static PetscErrorCode TSGLGetMaxSizes(TS ts,PetscInt *max_r,PetscInt *max_s)
   TS_GL *gl = (TS_GL*)ts->data;
 
   PetscFunctionBegin;
-  *max_r = gl->schemes[gl->nschemes]->r;
-  *max_s = gl->schemes[gl->nschemes]->s;
+  *max_r = gl->schemes[gl->nschemes-1]->r;
+  *max_s = gl->schemes[gl->nschemes-1]->s;
   PetscFunctionReturn(0);
 }
 
@@ -335,7 +358,7 @@ static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
     PetscReal h;
     const PetscReal *c,*a,*b,*u,*v;
     Vec *X,*Ydot,Y;
-    TSGLScheme scheme = gl->schemes[gl->current_order];
+    TSGLScheme scheme = gl->schemes[gl->current_scheme];
 
     r = scheme->r; s = scheme->s;
     c = scheme->c;
@@ -511,7 +534,14 @@ static PetscErrorCode TSSetUp_GL(TS ts)
     ierr = SNESSetJacobian(ts->snes,A?A:ts->A,B?B:ts->B,func?func:&TSGLJacobian,ctx?ctx:ts);CHKERRQ(ierr);
   }
 
-  if (!gl->current_order) gl->current_order = gl->min_order;
+  if (!gl->current_scheme) {
+    PetscInt i;
+    for (i=0; ; gl->current_scheme++) {
+      if (gl->schemes[i]->p == gl->start_order) break;
+      if (i+1 == gl->nschemes) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"No schemes available with requested start order %d",i);
+    }
+    gl->current_scheme = i;
+  }
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -536,6 +566,8 @@ static PetscErrorCode TSSetFromOptions_GL(TS ts)
     ierr = PetscOptionsInt("-ts_gl_min_order","Minimum order to try","TSGLSetMinOrder",gl->min_order,&gl->min_order,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnum("-ts_gl_error_direction","Which direction to look when estimating error","TSGLSetErrorDirection",TSGLErrorDirections,(PetscEnum)gl->error_direction,(PetscEnum*)&gl->error_direction,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-ts_gl_extrapolate","Extrapolate stage solution from previous solution (sometimes unstable)","TSGLSetExtrapolate",gl->extrapolate,&gl->extrapolate,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_gl_wrms_atol","Absolute tolerance when computing error norms","TSGLSetWRMSTolerances",gl->wrms_atol,&gl->wrms_atol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_gl_wrms_rtol","Relative tolerance when computing error norms","TSGLSetWRMSTolerances",gl->wrms_rtol,&gl->wrms_rtol,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -553,13 +585,13 @@ static PetscErrorCode TSView_GL(TS ts,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  min order %D, max order %D, current order %D\n",gl->min_order,gl->max_order,gl->current_order);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  min order %D, max order %D, current order %D\n",gl->min_order,gl->max_order,gl->schemes[gl->current_scheme]->p);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Error estimation: %s\n",TSGLErrorDirections[gl->error_direction]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Extrapolation: %s\n",gl->extrapolate?"yes":"no");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  type: %s\n",gl->type_name[0]?gl->type_name:"(not yet set)");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Schemes within family (%d):\n",gl->nschemes);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    for (i=1; i<=gl->nschemes; i++) {
+    for (i=0; i<gl->nschemes; i++) {
       ierr = TSGLSchemeView(gl->schemes[i],viewer);CHKERRQ(ierr);
     }
     if (gl->View) {
@@ -620,7 +652,7 @@ static PetscErrorCode PETSCTS_DLLEXPORT TSGLInitializePackage(const char path[])
 
 /* ------------------------------------------------------------ */
 /*MC
-      TS_GL - DAE solver using implicit General Linear methods
+      TSGL - DAE solver using implicit General Linear methods
 
   These methods contain Runge-Kutta and multistep schemes as special cases.  These special cases have some fundamental
   limitations.  For example, diagonally implicit Runge-Kutta cannot have stage order greater than 1 which limits their
@@ -662,6 +694,9 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_GL(TS ts)
   gl->min_order = 1;
   gl->max_order = 1;
   gl->extrapolate = PETSC_FALSE;
+
+  gl->wrms_atol = 1e-8;
+  gl->wrms_rtol = 1e-5;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSGLSetType_C","TSGLSetType_GL",&TSGLSetType_GL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
