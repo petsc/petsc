@@ -59,6 +59,10 @@ class Configure(config.base.Configure):
     if self.useCtable:
       self.addDefine('USE_CTABLE', '1')
 
+    # used in src/mat/impls/sbaij/seq/relax.h
+    if not self.isBGL():
+      self.addDefine('PETSC_USE_BACKWARD_LOOP','1')
+
     self.useFortranKernels = self.framework.argDB['with-fortran-kernels']
     if not hasattr(self.compilers, 'FC') and self.useFortranKernels:
       raise RuntimeError('Cannot use fortran kernels without a Fortran compiler')
