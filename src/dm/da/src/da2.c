@@ -997,7 +997,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACoarsen(DA da, MPI_Comm comm,DA *daref)
     if(da->refine_y)
       N = 1 + (da->N - 1) / da->refine_y;
     else
-      N = da->M;
+      N = da->N;
   }
   if (DAZPeriodic(da->wrap) || da->interptype == DA_Q0){
     if(da->refine_z)
