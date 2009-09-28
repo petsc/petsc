@@ -56,6 +56,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInvertBlockDiagonal_SeqBAIJ(Mat A)
   diag_offset = a->diag;
   if (!a->idiag) {
     ierr = PetscMalloc(2*bs*bs*mbs*sizeof(PetscScalar),&a->idiag);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(A,2*bs*bs*mbs*sizeof(PetscScalar));CHKERRQ(ierr);
   }
   diag  = a->idiag;
   mdiag = a->idiag+bs*bs*mbs; 
@@ -2806,6 +2807,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatStoreValues_SeqBAIJ(Mat mat)
   /* allocate space for values if not already there */
   if (!aij->saved_values) {
     ierr = PetscMalloc((nz+1)*sizeof(PetscScalar),&aij->saved_values);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(mat,(nz+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
   /* copy values over */
@@ -3607,6 +3609,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqBAIJWithArrays(MPI_Comm comm,Petsc
   ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(*mat,bs,MAT_SKIP_ALLOCATION,0);CHKERRQ(ierr);
   baij = (Mat_SeqBAIJ*)(*mat)->data;
   ierr = PetscMalloc2(m,PetscInt,&baij->imax,m,PetscInt,&baij->ilen);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(*mat,2*m*sizeof(PetscInt));CHKERRQ(ierr);
 
   baij->i = i;
   baij->j = j;
