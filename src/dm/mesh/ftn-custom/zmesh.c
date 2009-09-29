@@ -51,6 +51,9 @@ extern void PetscRmPointer(void*);
 #define meshgetsectionint_      MESHGETSECTIONINT
 #define meshgetmatrix_          MESHGETMATRIX
 #define meshcreatematrix_       MESHCREATEMATRIX
+#define alestagepush_           ALESTAGEPUSH
+#define alestagepop_            ALESTAGEPOP
+#define alestageprintmemory_    ALESTAGEPRINTMEMORY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define meshcreatepflotran_     meshcreatepflotran_
 #define meshcreatepcice_        meshcreatepcice
@@ -76,6 +79,9 @@ extern void PetscRmPointer(void*);
 #define meshgetsectionint_      meshgetsectionint
 #define meshgetmatrix_          meshgetmatrix
 #define meshcreatematrix_       meshcreatematrix
+#define alestagepush_           alestagepush
+#define alestagepop_            alestagepop
+#define alestageprintmemory_    alestageprintmemory
 #endif
 
 /* Definitions of Fortran Wrapper routines */
@@ -236,6 +242,33 @@ void PETSC_STDCALL  meshcreatematrix_(Mesh mesh, SectionReal section, CHAR matty
   FIXCHAR(mattype,lenN,pN);
   *ierr = MeshCreateMatrix((Mesh) PetscToPointer(mesh), (SectionReal) PetscToPointer(section), pN, J);
   FREECHAR(mattype,pN);
+}
+
+void PETSC_STDCALL  alestagepush_(CHAR name PETSC_MIXED_LEN(lenN), PetscInt *debug, int *ierr PETSC_END_LEN(lenN)){
+  ALE::MemoryLogger& logger = ALE::MemoryLogger::singleton();
+  char *pN;
+
+  FIXCHAR(name,lenN,pN);
+  logger.setDebug(*debug);
+  logger.stagePush(pN);
+  FREECHAR(name,pN);
+}
+
+void PETSC_STDCALL  alestagepop_(PetscInt *debug, int *ierr){
+  ALE::MemoryLogger& logger = ALE::MemoryLogger::singleton();
+
+  logger.setDebug(*debug);
+  logger.stagePop();
+}
+
+void PETSC_STDCALL  alestageprintmemory_(CHAR name PETSC_MIXED_LEN(lenN), int *ierr PETSC_END_LEN(lenN)){
+  ALE::MemoryLogger& logger = ALE::MemoryLogger::singleton();
+  char *pN;
+
+  FIXCHAR(name,lenN,pN);
+  *ierr = PetscPrintf(PETSC_COMM_WORLD, "%s %d allocations %d bytes\n", pN, logger.getNumAllocations(pN), logger.getAllocationTotal(pN));
+  *ierr = PetscPrintf(PETSC_COMM_WORLD, "%s %d deallocations %d bytes\n", pN, logger.getNumDeallocations(pN), logger.getDeallocationTotal(pN));
+  FREECHAR(name,pN);
 }
 
 EXTERN_C_END
