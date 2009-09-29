@@ -100,6 +100,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   PC_ML           *pc_ml=PETSC_NULL;
   PetscContainer  container;
   MatReuse        reuse = MAT_INITIAL_MATRIX;
+  PetscTruth      isSeq, isMPI;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)pc,"PC_ML",(PetscObject *)&container);CHKERRQ(ierr);
@@ -138,12 +139,16 @@ PetscErrorCode PCSetUp_ML(PC pc)
   A = pc->pmat;
   ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   pc_ml->size = size;
-  if (size > 1){ 
+  ierr = PetscTypeCompare((PetscObject) A, MATSEQAIJ, &isSeq);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject) A, MATMPIAIJ, &isMPI);CHKERRQ(ierr);
+  if (isMPI){ 
     if (reuse) Aloc = PetscMLdata->Aloc;
     ierr = MatConvert_MPIAIJ_ML(A,PETSC_NULL,reuse,&Aloc);CHKERRQ(ierr);
-  } else {
+  } else if (isSeq) {
     Aloc = A;
-  } 
+  } else {
+    SETERRQ(PETSC_ERR_ARG_WRONG, "Invalid matrix type for ML. ML can only handle AIJ matrices.");
+  }
 
   /* create and initialize struct 'PetscMLdata' */
   if (!reuse){
