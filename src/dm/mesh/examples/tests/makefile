@@ -115,6 +115,10 @@ sieveTests: sieveTests.o chkopts
 rbfPrecon: rbfPrecon.o chkopts
 	-${CLINKER} -o rbfPrecon rbfPrecon.o ${PETSC_SNES_LIB}
 	${RM} -f rbfPrecon.o
+
+TestMeshExodus: TestMeshExodus.o chkopts
+	-${CLINKER} -o TestMeshExodus TestMeshExodus.o ${PETSC_SNES_LIB}
+	${RM} -f TestMeshExodus.o
 #-----------------------------------------------------------------
 BOOST_LIBS = -Wl,-rpath,${BOOST_DIR}/lib -L${BOOST_DIR}/lib -lboost_program_options-gcc41
 args0: args0.o chkopts
