@@ -22,8 +22,10 @@ This file is also used for the f2cblaslapack distribution.
 #  define BLASaxpy_    saxpy_
 #  define BLASasum_    sasum_
 #  define LAPACKpttrf_ spttrf_
-#  define LAPACKpttrs_ spttrs_ 
-#  define LAPACKstein_ sstein_ 
+#  define LAPACKpttrs_ spttrs_
+#  define LAPACKstein_ sstein_
+#  define LAPACKgesv_  sgesv_
+#  define LAPACKgelss_ sgelss_
 /* Real single precision with character string arguments. */
 #  define LAPACKormqr_ sormqr_
 #  define LAPACKtrtrs_ strtrs_
@@ -55,6 +57,8 @@ This file is also used for the f2cblaslapack distribution.
 #  define LAPACKpttrf_ dpttrf_
 #  define LAPACKpttrs_ dpttrs_
 #  define LAPACKstein_ dstein_
+#  define LAPACKgesv_  dgesv_
+#  define LAPACKgelss_ dgelss_
 /* Real double precision with character string arguments. */
 #  define LAPACKormqr_ dormqr_
 #  define LAPACKtrtrs_ dtrtrs_
@@ -86,6 +90,8 @@ This file is also used for the f2cblaslapack distribution.
 # define BLASasum_    dzasum_
 #  define LAPACKpttrf_ zpttrf_
 #  define LAPACKstein_ zstein_
+#  define LAPACKgesv_  zgesv_
+#  define LAPACKgelss_ zgelss_
 /* Complex double precision with character string arguments */
 /* LAPACKormqr_ does not exist for complex. */
 # define LAPACKtrtrs_ ztrtrs_
