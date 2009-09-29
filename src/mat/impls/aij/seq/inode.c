@@ -817,7 +817,6 @@ PetscErrorCode MatSolve_Inode(Mat A,Vec bb,Vec xx)
     switch (nsz){               /* Each loop in 'case' is unrolled */
     case 1 :
       sum1 = b[*r++];
-      /*      while (nz--) sum1 -= *v1++ *tmps[*vi++];*/
       for(j=0; j<nz-1; j+=2){
         i0   = vi[0];
         i1   = vi[1];

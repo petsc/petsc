@@ -1125,19 +1125,20 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatSolveAdd_SeqAIJ"
 PetscErrorCode MatSolveAdd_SeqAIJ(Mat A,Vec bb,Vec yy,Vec xx)
 {
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
-  IS              iscol = a->col,isrow = a->row;
-  PetscErrorCode  ierr;
-  PetscInt        i, n = A->rmap->n,*vi,*ai = a->i,*aj = a->j;
-  PetscInt        nz;
-  const PetscInt  *rout,*cout,*r,*c;
-  PetscScalar     *x,*b,*tmp,sum;
-  const MatScalar *aa = a->a,*v;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  IS                iscol = a->col,isrow = a->row;
+  PetscErrorCode    ierr;
+  PetscInt          i, n = A->rmap->n,j;
+  PetscInt          nz;
+  const PetscInt    *rout,*cout,*r,*c,*vi,*ai = a->i,*aj = a->j;
+  PetscScalar       *x,*tmp,sum;
+  const PetscScalar *b;
+  const MatScalar   *aa = a->a,*v;
 
   PetscFunctionBegin;
   if (yy != xx) {ierr = VecCopy(yy,xx);CHKERRQ(ierr);}
 
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   tmp  = a->solve_work;
 
@@ -1151,7 +1152,7 @@ PetscErrorCode MatSolveAdd_SeqAIJ(Mat A,Vec bb,Vec yy,Vec xx)
     vi  = aj + ai[i] ;
     nz  = a->diag[i] - ai[i];
     sum = b[*r++];
-    while (nz--) sum -= *v++ * tmp[*vi++ ];
+    for (j=0; j<nz; j++) sum -= v[j]*tmp[vi[j]];
     tmp[i] = sum;
   }
 
@@ -1161,35 +1162,36 @@ PetscErrorCode MatSolveAdd_SeqAIJ(Mat A,Vec bb,Vec yy,Vec xx)
     vi  = aj + a->diag[i] + 1;
     nz  = ai[i+1] - a->diag[i] - 1;
     sum = tmp[i];
-    while (nz--) sum -= *v++ * tmp[*vi++ ];
+    for (j=0; j<nz; j++) sum -= v[j]*tmp[vi[j]];
     tmp[i] = sum*aa[a->diag[i]];
     x[*c--] += tmp[i];
   }
 
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------*/
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolveTranspose_SeqAIJ"
 PetscErrorCode MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
-  IS              iscol = a->col,isrow = a->row;
-  PetscErrorCode  ierr;
-  const PetscInt  *rout,*cout,*r,*c;
-  PetscInt        i,n = A->rmap->n,*vi,*ai = a->i,*aj = a->j;
-  PetscInt        nz,*diag = a->diag;
-  PetscScalar     *x,*b,*tmp,s1;
-  const MatScalar *aa = a->a,*v;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  IS                iscol = a->col,isrow = a->row;
+  PetscErrorCode    ierr;
+  const PetscInt    *rout,*cout,*r,*c,*diag = a->diag,*ai = a->i,*aj = a->j,*vi;
+  PetscInt          i,n = A->rmap->n,j;
+  PetscInt          nz;
+  PetscScalar       *x,*tmp,s1;
+  const MatScalar   *aa = a->a,*v;
+  const PetscScalar *b;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   tmp  = a->solve_work;
 
@@ -1206,9 +1208,7 @@ PetscErrorCode MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
     nz  = ai[i+1] - diag[i] - 1;
     s1  = tmp[i];
     s1 *= (*v++);  /* multiply by inverse of diagonal entry */
-    while (nz--) {
-      tmp[*vi++ ] -= (*v++)*s1;
-    }
+    for (j=0; j<nz; j++) tmp[vi[j]] -= s1*v[j];
     tmp[i] = s1;
   }
 
@@ -1218,17 +1218,15 @@ PetscErrorCode MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
     vi  = aj + diag[i] - 1 ;
     nz  = diag[i] - ai[i];
     s1  = tmp[i];
-    while (nz--) {
-      tmp[*vi-- ] -= (*v--)*s1;
-    }
+    for (j=0; j>-nz; j--) tmp[vi[j]] -= s1*v[j];
   }
 
   /* copy tmp into x according to permutation */
-  for (i=0; i<n; i++) x[r[i]] = tmp[i];
+  for (i=0; i<n; i++) x[r[i]] += tmp[i];
 
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
 
   ierr = PetscLogFlops(2.0*a->nz-A->cmap->n);CHKERRQ(ierr);
@@ -1239,21 +1237,21 @@ PetscErrorCode MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatSolveTransposeAdd_SeqAIJ"
 PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
 {
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
-  IS              iscol = a->col,isrow = a->row;
-  PetscErrorCode  ierr;
-  const PetscInt  *r,*c,*rout,*cout;
-  PetscInt        i,n = A->rmap->n,*vi,*ai = a->i,*aj = a->j;
-  PetscInt        nz,*diag = a->diag;
-  PetscScalar     *x,*b,*tmp;
-  const MatScalar *aa = a->a,*v;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  IS                iscol = a->col,isrow = a->row;
+  PetscErrorCode    ierr;
+  const PetscInt    *rout,*cout,*r,*c,*diag = a->diag,*ai = a->i,*aj = a->j,*vi;
+  PetscInt          i,n = A->rmap->n,j;
+  PetscInt          nz;
+  PetscScalar       *x,*tmp,s1;
+  const MatScalar   *aa = a->a,*v;
+  const PetscScalar *b;
 
   PetscFunctionBegin;
   if (zz != xx) {ierr = VecCopy(zz,xx);CHKERRQ(ierr);}
-
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  tmp = a->solve_work;
+  tmp  = a->solve_work;
 
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
   ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout;
@@ -1266,10 +1264,10 @@ PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
     v   = aa + diag[i] ;
     vi  = aj + diag[i] + 1;
     nz  = ai[i+1] - diag[i] - 1;
-    tmp[i] *= *v++;
-    while (nz--) {
-      tmp[*vi++ ] -= (*v++)*tmp[i];
-    }
+    s1  = tmp[i];
+    s1 *= (*v++);  /* multiply by inverse of diagonal entry */
+    for (j=0; j<nz; j++) tmp[vi[j]] -= s1*v[j];
+    tmp[i] = s1;
   }
 
   /* backward solve the L^T */
@@ -1277,22 +1275,22 @@ PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
     v   = aa + diag[i] - 1 ;
     vi  = aj + diag[i] - 1 ;
     nz  = diag[i] - ai[i];
-    while (nz--) {
-      tmp[*vi-- ] -= (*v--)*tmp[i];
-    }
+    s1  = tmp[i];
+    for (j=0; j>-nz; j--) tmp[vi[j]] -= s1*v[j];
   }
 
   /* copy tmp into x according to permutation */
-  for (i=0; i<n; i++) x[r[i]] += tmp[i]; 
+  for (i=0; i<n; i++) x[r[i]] += tmp[i];
 
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
 
-  ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz-A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 /* ----------------------------------------------------------------*/
 EXTERN PetscErrorCode Mat_CheckInode(Mat,PetscTruth);
 EXTERN PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat,Mat,MatDuplicateOption,PetscTruth);
@@ -1973,9 +1971,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *
       jmin = bi[k]+1; 
       nz   = bi[k+1] - jmin; 
       bcol = bj + jmin;
-      while (nz--){
-        rs += PetscAbsScalar(rtmp[*bcol]);
-        bcol++;
+      for (j=0; j<nz; j++) {
+        rs += PetscAbsScalar(rtmp[bcol[j]]);
       }
 
       sctx.rs = rs;
@@ -2635,7 +2632,6 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx
     nz  = ai[i+1] - ai[i];
     sum = b[i];
     PetscSparseDenseMinusDot(sum,x,v,vi,nz);
-    /*    while (nz--) sum -= *v++ * x[*vi++];*/
     v  += nz;
     vi += nz;
     x[i] = sum;
@@ -2648,7 +2644,6 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx
     nz = ai[2*n-i +1] - ai[2*n-i]-1;
     sum = x[i];
     PetscSparseDenseMinusDot(sum,x,v,vi,nz);
-    /* while (nz--) sum -= *v++ * x[*vi++]; */
     v   += nz;
     vi  += nz; vi++; 
     x[i] = *v++ *sum; /* x[i]=aa[adiag[i]]*sum; v++; */

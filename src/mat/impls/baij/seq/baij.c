@@ -143,7 +143,7 @@ PetscErrorCode MatPBRelax_SeqBAIJ_1(Mat A,Vec bb,PetscReal omega,MatSORType flag
   const PetscScalar  *b;
   const MatScalar    *aa = a->a, *idiag,*mdiag,*v;
   PetscErrorCode     ierr;
-  PetscInt           m = a->mbs,i,i2,nz,idx;
+  PetscInt           m = a->mbs,i,i2,nz,j;
   const PetscInt     *diag,*ai = a->i,*aj = a->j,*vi;
 
   PetscFunctionBegin;
@@ -172,11 +172,8 @@ PetscErrorCode MatPBRelax_SeqBAIJ_1(Mat A,Vec bb,PetscReal omega,MatSORType flag
         vi    = aj + ai[i];
         nz    = diag[i] - ai[i];
         s1    = b[i2];
-        while (nz--) {
-          idx  = (*vi++);
-          x1   = x[idx];
-          s1  -= v[0]*x1;
-          v   += 1;
+        for (j=0; j<nz; j++) {
+          s1 -= v[j]*x[vi[j]];
         }
         x[i2]   = idiag[0]*s1;
         idiag   += 1;
@@ -211,11 +208,8 @@ PetscErrorCode MatPBRelax_SeqBAIJ_1(Mat A,Vec bb,PetscReal omega,MatSORType flag
         vi    = aj + diag[i] + 1;
         nz    = ai[i+1] - diag[i] - 1;
         s1    = x[i2];
-        while (nz--) {
-          idx  = (*vi++);
-          x1   = x[idx];
-          s1  -= v[0]*x1;
-          v   += 1;
+        for (j=0; j<nz; j++) {
+          s1 -= v[j]*x[vi[j]];
         }
         x[i2]   = idiag[0]*s1;
         idiag   -= 1;
@@ -240,7 +234,7 @@ PetscErrorCode MatPBRelax_SeqBAIJ_2(Mat A,Vec bb,PetscReal omega,MatSORType flag
   const PetscScalar  *b;
   const MatScalar    *v,*aa = a->a, *idiag,*mdiag;
   PetscErrorCode     ierr;
-  PetscInt           m = a->mbs,i,i2,nz,idx;
+  PetscInt           m = a->mbs,i,i2,nz,idx,j,it;
   const PetscInt     *diag,*ai = a->i,*aj = a->j,*vi;
 
   PetscFunctionBegin;
@@ -270,12 +264,12 @@ PetscErrorCode MatPBRelax_SeqBAIJ_2(Mat A,Vec bb,PetscReal omega,MatSORType flag
 	vi    = aj + ai[i];
 	nz    = diag[i] - ai[i];
 	s1    = b[i2]; s2 = b[i2+1];
-	while (nz--) {
-	  idx  = 2*(*vi++);
+        for (j=0; j<nz; j++) {
+	  idx  = 2*vi[j];
+          it   = 4*j;
 	  x1   = x[idx]; x2 = x[1+idx];
-	  s1  -= v[0]*x1 + v[2]*x2;
-	  s2  -= v[1]*x1 + v[3]*x2;
-	  v   += 4;
+	  s1  -= v[it]*x1 + v[it+2]*x2;
+	  s2  -= v[it+1]*x1 + v[it+3]*x2;
 	}
 	x[i2]   = idiag[0]*s1 + idiag[2]*s2;
 	x[i2+1] = idiag[1]*s1 + idiag[3]*s2;
@@ -313,12 +307,12 @@ PetscErrorCode MatPBRelax_SeqBAIJ_2(Mat A,Vec bb,PetscReal omega,MatSORType flag
 	vi    = aj + diag[i] + 1;
 	nz    = ai[i+1] - diag[i] - 1;
 	s1    = x[i2]; s2 = x[i2+1];
-	while (nz--) {
-	  idx  = 2*(*vi++);
+        for (j=0; j<nz; j++) {
+ 	  idx  = 2*vi[j];
+          it   = 4*j;
 	  x1   = x[idx]; x2 = x[1+idx];
-	  s1  -= v[0]*x1 + v[2]*x2;
-	  s2  -= v[1]*x1 + v[3]*x2;
-	  v   += 4;
+	  s1  -= v[it]*x1 + v[it+2]*x2;
+	  s2  -= v[it+1]*x1 + v[it+3]*x2;
 	}
 	x[i2]   = idiag[0]*s1 + idiag[2]*s2;
 	x[i2+1] = idiag[1]*s1 + idiag[3]*s2;

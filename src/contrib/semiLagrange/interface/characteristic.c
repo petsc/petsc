@@ -15,8 +15,8 @@ PetscErrorCode DAGetNeighborsRank(DA, PetscMPIInt []);
 PetscInt DAGetNeighborRelative(DA, PassiveReal, PassiveReal);
 PetscErrorCode DAMapToPeriodicDomain(DA, PetscScalar [] ); 
 
-PetscErrorCode HeapSort(Characteristic c, Queue queue, PetscInt size);
-void SiftDown(Characteristic c, Queue queue, PetscInt root, PetscInt bottom);
+PetscErrorCode HeapSort(Characteristic, Queue, PetscInt);
+PetscErrorCode SiftDown(Characteristic, Queue, PetscInt, PetscInt);
 
 #undef __FUNCT__  
 #define __FUNCT__ "CharacteristicView"
@@ -321,26 +321,26 @@ PetscErrorCode CharacteristicSetFieldInterpolationLocal(Characteristic c, DA da,
 PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
 {
   CharacteristicPointDA2D Qi;
-  DA             da = c->velocityDA;
-  Vec            velocityLocal, velocityLocalOld;
-  Vec            fieldLocal;
-  DALocalInfo    info;
-  DAPeriodicType periodic_type;
-  PetscScalar  **solArray;
-  void          *velocityArray;
-  void          *velocityArrayOld;
-  void          *fieldArray;
-  PassiveScalar *interpIndices;
-  PassiveScalar *velocityValues, *velocityValuesOld;
-  PassiveScalar *fieldValues;
-  PetscMPIInt    rank;
-  PetscInt       dim;
-  PetscMPIInt    neighbors[9];
-  PetscInt       dof;
-  PetscInt       gx, gy;
-  PetscInt       n, ni, nj, is, ie, js, je, qs, comp;
-  PetscErrorCode ierr;
-  PetscTruth verbose = PETSC_FALSE;
+  DA                      da = c->velocityDA;
+  Vec                     velocityLocal, velocityLocalOld;
+  Vec                     fieldLocal;
+  DALocalInfo             info;
+  DAPeriodicType          periodic_type;
+  PetscScalar             **solArray;
+  void                    *velocityArray;
+  void                    *velocityArrayOld;
+  void                    *fieldArray;
+  PassiveScalar           *interpIndices;
+  PassiveScalar           *velocityValues, *velocityValuesOld;
+  PassiveScalar           *fieldValues;
+  PetscMPIInt             rank;
+  PetscInt                dim;
+  PetscMPIInt             neighbors[9];
+  PetscInt                dof;
+  PetscInt                gx, gy;
+  PetscInt                n, ni, nj, is, ie, js, je, qs, comp;
+  PetscErrorCode          ierr;
+  PetscTruth              verbose = PETSC_FALSE;
 
   PetscFunctionBegin;
   c->queueSize = 0;
@@ -765,19 +765,18 @@ int HeapSort(Characteristic c, Queue queue, PetscInt size)
 /*
   Based on code from http://linux.wku.edu/~lamonml/algor/sort/heap.html
 */
-void SiftDown(Characteristic c, Queue queue, PetscInt root, PetscInt bottom)
+PetscErrorCode SiftDown(Characteristic c, Queue queue, PetscInt root, PetscInt bottom)
 /*---------------------------------------------------------------------*/
 {
-  int   done=0, maxChild;
+  PetscTruth               done = PETSC_FALSE;
+  PetscInt                 maxChild;
   CharacteristicPointDA2D  temp;
 
+  PetscFunctionBegin;
   while ((root*2 <= bottom) && (!done)) {
-    if (root*2 == bottom)
-      maxChild = root * 2;
-    else if (queue[root*2].proc > queue[root*2+1].proc)
-      maxChild = root * 2;
-    else 
-      maxChild = root * 2 + 1;
+    if (root*2 == bottom)  maxChild = root * 2;
+    else if (queue[root*2].proc > queue[root*2+1].proc)  maxChild = root * 2;
+    else  maxChild = root * 2 + 1;
 
     if (queue[root].proc < queue[maxChild].proc) {
       temp = queue[root];
@@ -785,8 +784,9 @@ void SiftDown(Characteristic c, Queue queue, PetscInt root, PetscInt bottom)
       queue[maxChild] = temp;
       root = maxChild;
     } else
-      done = 1;
+      done = PETSC_TRUE;
   }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -798,7 +798,7 @@ PetscErrorCode DAGetNeighborsRank(DA da, PetscMPIInt neighbors[])
   PetscTruth     IPeriodic = PETSC_FALSE, JPeriodic = PETSC_FALSE;
   MPI_Comm       comm;
   PetscMPIInt    rank;
-  PetscInt     **procs,pi,pj,pim,pip,pjm,pjp,PI,PJ;
+  PetscInt       **procs,pi,pj,pim,pip,pjm,pjp,PI,PJ;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
