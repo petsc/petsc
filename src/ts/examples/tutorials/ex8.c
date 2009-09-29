@@ -324,6 +324,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSGL);CHKERRQ(ierr); /* General Linear method, TSTHETA can also solve DAE */
   ierr = TSSetIFunction(ts,problem->function,problem->data);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,A,A,problem->jacobian,problem->data);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,maxsteps,problem->final_time);CHKERRQ(ierr);
