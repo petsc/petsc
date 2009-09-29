@@ -144,7 +144,6 @@ PetscErrorCode PETSCMAP1(MatRelax_SeqSBAIJ)(Mat A,Vec bb,PetscReal omega,MatSORT
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){ 
       int nz2;
       if (!(flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP)){ 
-#define PETSC_USE_BACKWARD_LOOP
 #if defined(PETSC_USE_BACKWARD_LOOP)
 	v  = aa + ai[m] - 1;
 	vj = aj + ai[m] - 1;

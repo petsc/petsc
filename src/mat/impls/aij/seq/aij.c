@@ -857,7 +857,7 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
 #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTTRANSPOSEAIJ)
   MatScalar         *v;
   PetscScalar       alpha;
-  PetscInt          n,i,*idx,*ii,*ridx=PETSC_NULL;
+  PetscInt          n,i,j,*idx,*ii,*ridx=PETSC_NULL;
   Mat_CompressedRow cprow = a->compressedrow;
   PetscTruth        usecprow = cprow.use; 
 #endif
@@ -886,7 +886,7 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
     } else {
       alpha = x[i];
     }
-    while (n-->0) {y[*idx++] += alpha * *v++;}
+    for (j=0; j<n; j++) y[idx[j]] += alpha*v[j];
   }
 #endif
   ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);

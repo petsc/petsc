@@ -25,7 +25,6 @@ typedef struct {
   Mat_Inode        inode;
   unsigned short   *jshort;
   PetscTruth       free_jshort;
-  Mat              parent;         /* set if this matrix was formed with MatDuplicate(...,MAT_SHARE_NONZERO_PATTERN,....); */
 } Mat_SeqSBAIJ;
 
 EXTERN_C_BEGIN
