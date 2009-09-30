@@ -589,13 +589,38 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetFiberDimension(SectionReal sectio
 
   Level: advanced
 
-.seealso SectionRealRestrict(), SectionRealCreate(), SectionRealView()
+.seealso SectionRealSetFiberDimensionField(), SectionRealRestrict(), SectionRealCreate(), SectionRealView()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetFiberDimension(SectionReal section, PetscInt point, const PetscInt size)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
   section->s->setFiberDimension(point, size);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SectionRealSetFiberDimensionField"
+/*@
+  SectionRealSetFiberDimensionField - Set the size of the vector space attached to the point for a given field
+
+  Not collective
+
+  Input Parameters:
++ section - the section object
+. point - the Sieve point
+. size - The fiber dimension
+- field - The field number
+
+  Level: advanced
+
+.seealso SectionRealSetFiberDimension(), SectionRealRestrict(), SectionRealCreate(), SectionRealView()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetFiberDimensionField(SectionReal section, PetscInt point, const PetscInt size, const PetscInt field)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  section->s->setFiberDimension(point, size, field);
   PetscFunctionReturn(0);
 }
 
@@ -680,6 +705,43 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealCreateLocalVector(SectionReal sectio
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, s->getStorageSize(), s->restrictSpace(), localVec);CHKERRQ(ierr);
 #endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SectionRealGetFibration"
+/*@
+  SectionRealGetFibration - Creates a section for only the data associated with the given field
+
+  Collective on Mesh
+
+  Input Parameter:
++ section - the Section
+- field- The field number
+
+  Output Parameter:
+. subsection - the section of the given field
+
+  Level: advanced
+
+.seealso SectionRealCreate()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetFibration(SectionReal section, const PetscInt field, SectionReal *subsection)
+{
+  ALE::Obj<PETSC_MESH_TYPE>                    b;
+  ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
+  ALE::Obj<PETSC_MESH_TYPE::real_section_type> t;
+  MPI_Comm       comm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) section, &comm);CHKERRQ(ierr);
+  ierr = SectionRealGetBundle(section, b);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+  ierr = SectionRealCreate(comm, subsection);CHKERRQ(ierr);
+  ierr = SectionRealSetBundle(*subsection, b);CHKERRQ(ierr);
+  t    = s->getFibration(field);
+  ierr = SectionRealSetSection(*subsection, t);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
