@@ -68,6 +68,7 @@ int            tracelevel      = 0;
 const char    *traceblanks     = "                                                                                                    ";
 char           tracespace[128] = " ";
 PetscLogDouble tracetime       = 0.0;
+PetscTruth PetscLogBegin_PrivateCalled = PETSC_FALSE;
 
 /*---------------------------------------------- General Functions --------------------------------------------------*/
 #undef __FUNCT__  
@@ -142,6 +143,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogBegin_Private(void)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  if (PetscLogBegin_PrivateCalled) PetscFunctionReturn(0);
+  PetscLogBegin_PrivateCalled = PETSC_TRUE;
+
   ierr = PetscOptionsHasName(PETSC_NULL, "-log_exclude_actions", &opt);CHKERRQ(ierr);
   if (opt) {
     logActions = PETSC_FALSE;
