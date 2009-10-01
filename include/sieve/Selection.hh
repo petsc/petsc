@@ -117,7 +117,7 @@ namespace ALE {
       }
       return _numFaceVertices;
     };
-    // We need this method because we do not use interpolates sieves
+    // We need this method because we do not use interpolated sieves
     //   - Without interpolation, we cannot say what vertex collections are
     //     faces, and how they are oriented
     //   - Now we read off the list of face vertices IN THE ORDER IN WHICH
@@ -943,6 +943,7 @@ namespace ALE {
             sieveB->addArrow(cone[c], *p_iter);
             next->insert(cone[c]);
           }
+          cV.clear();
         }
         tmp = current; current = next; next = tmp;
         next->clear();
@@ -956,6 +957,7 @@ namespace ALE {
         for(int s = 0; s < (int) sV.getSize(); ++s) {
           sieveB->addArrow(p, support[s]);
         }
+        sV.clear();
       }
     };
   public:
@@ -980,7 +982,12 @@ namespace ALE {
       throw ALE::Exception("Cannot handle partially interpolated meshes");
     };
     template<typename MeshTypeQ>
-    static Obj<ALE::Mesh> boundaryV(const Obj<MeshTypeQ>& mesh, const int faceHeight = 1) {
+    static Obj<ALE::Mesh> boundaryV_uninterpolated(const Obj<MeshTypeQ>& mesh, const int faceHeight = 1) {
+        throw ALE::Exception("Cannot handle uninterpolated meshes");
+    };
+    // This method takes in an interpolated mesh, and returns the boundary
+    template<typename MeshTypeQ>
+    static Obj<ALE::Mesh> boundaryV_interpolated(const Obj<MeshTypeQ>& mesh, const int faceHeight = 1) {
       Obj<ALE::Mesh>                                      newMesh  = new ALE::Mesh(mesh->comm(), mesh->getDimension()-1, mesh->debug());
       Obj<typename ALE::Mesh::sieve_type>                 newSieve = new typename ALE::Mesh::sieve_type(mesh->comm(), mesh->debug());
       const Obj<typename MeshTypeQ::sieve_type>&          sieve    = mesh->getSieve();
@@ -1001,6 +1008,27 @@ namespace ALE {
       newMesh->setSieve(newSieve);
       newMesh->stratify();
       return newMesh;
+    };
+    template<typename MeshTypeQ>
+    static Obj<ALE::Mesh> boundaryV(const Obj<MeshTypeQ>& mesh, const int faceHeight = 1) {
+      const int dim   = mesh->getDimension();
+      const int depth = mesh->depth();
+
+      if (dim == depth) {
+        return boundaryV_interpolated(mesh);
+      } else if (depth == dim+1) {
+        return boundaryV_interpolated(mesh, 2);
+      } else if (depth == 1) {
+        throw ALE::Exception("Cannot handle uninterpolated meshes");
+      } else if (depth == -1) {
+        Obj<mesh_type>  newMesh  = new mesh_type(mesh->comm(), mesh->getDimension()-1, mesh->debug());
+        Obj<sieve_type> newSieve = new sieve_type(mesh->comm(), mesh->debug());
+
+        newMesh->setSieve(newSieve);
+        newMesh->stratify();
+        return newMesh;
+      }
+      throw ALE::Exception("Cannot handle partially interpolated meshes");
     };
   public:
     static Obj<mesh_type> interpolateMesh(const Obj<mesh_type>& mesh) {
@@ -1062,8 +1090,6 @@ namespace ALE {
       return newMesh;
     };
   };
-
-
 }
 
 #if 0
