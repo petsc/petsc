@@ -1222,7 +1222,7 @@ PetscErrorCode MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
   }
 
   /* copy tmp into x according to permutation */
-  for (i=0; i<n; i++) x[r[i]] += tmp[i];
+  for (i=0; i<n; i++) x[r[i]] = tmp[i];
 
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);

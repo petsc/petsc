@@ -71,6 +71,9 @@ PetscErrorCode MatDestroy_MPIAdj(Mat mat)
     ierr = PetscFree(a->i);CHKERRQ(ierr);
     ierr = PetscFree(a->j);CHKERRQ(ierr);
     ierr = PetscFree(a->values);CHKERRQ(ierr);
+  } else {
+    if (a->i) free(a->i);
+    if (a->j) free(a->j);
   }
   ierr = PetscFree(a);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);

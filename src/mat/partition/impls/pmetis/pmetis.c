@@ -276,3 +276,59 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Parmetis(MatPartitioning
 }
 EXTERN_C_END
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatMeshToVertexGraph"
+/*@
+     MatMeshToVertexGraph -   Uses the ParMETIS package to convert a graph that represents a mesh to a graph that represents its "dual"
+                       (and is suitable for partitioning with the MatPartitioning object)
+
+   Collective on Mat
+
+   Input Parameter:
++     mesh - the graph that represents the mesh
+-     ncommonnodes - mesh elements that share this number of common nodes are considered neighbors, use 2 for triangules and 
+                     quadralaterials, 3 for tetrahedrals and 4 for hexahedrals
+
+   Output Parameter:
+.     dual - the dual graph
+
+   Notes:
+     Currently requires ParMetis to be installed and uses ParMETIS_V3_Mesh2Dual()
+
+     Not tested!
+
+@*/
+PetscErrorCode MatMeshToVertexGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
+{
+  PetscErrorCode           ierr;
+  int                      *vtxdist,*xadj,*adjncy,*newxadj,*newadjncy;
+  int                      numflag=0;
+  Mat_MPIAdj               *adj = (Mat_MPIAdj *)mesh->data,*newadj;
+  PetscTruth               flg;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)mesh,MATMPIADJ,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_ERR_SUP,"Must use MPIAdj matrix type");
+
+  vtxdist = mesh->rmap->range;
+  xadj    = adj->i;
+  adjncy  = adj->j;
+#if defined(PETSC_USE_DEBUG)
+  /* check that matrix has no diagonal entries */
+  {
+    PetscInt rstart,i,j;
+    ierr = MatGetOwnershipRange(mesh,&rstart,PETSC_NULL);CHKERRQ(ierr);
+    for (i=0; i<mesh->rmap->n; i++) {
+      for (j=xadj[i]; j<xadj[i+1]; j++) {
+        if (adjncy[j] == i+rstart) SETERRQ1(PETSC_ERR_ARG_WRONG,"Row %d has diagonal entry; Parmetis forbids diagonal entry",i+rstart);
+      }
+    }
+  }
+#endif
+  /* ParMETIS has no error conditions ??? */
+  ParMETIS_V3_Mesh2Dual(vtxdist,xadj,adjncy,&numflag,&ncommonnodes,&newxadj,&newadjncy,&((PetscObject)mesh)->comm);
+  ierr = MatCreateMPIAdj(((PetscObject)mesh)->comm,mesh->rmap->n,PETSC_DETERMINE,newxadj,newadjncy,PETSC_NULL,dual);CHKERRQ(ierr);
+  newadj = (Mat_MPIAdj *)(*dual)->data;
+  newadj->freeaij = PETSC_FALSE; /* signal the matrix should be freed with system free since space was allocated by ParMETIS */
+  PetscFunctionReturn(0);
+}
