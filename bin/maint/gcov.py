@@ -5,11 +5,12 @@
 # This is done in three stages
 # Stage 1: Process lines files storing gcov information
 # Stage 2: Create marked HTML source code files
-# Stage 3: Create HTML page having statistics and hyperlinks to HTML source code           files (files are sorted by filename and percentage code tested) 
-
+# Stage 3: Create HTML pages having statistics and hyperlinks to HTML source code           files (files are sorted by filename and percentage code tested) 
+#  Stores the main HTML pages in LOC if LOC is defined via command line argument o-wise it uses the default PETSC_DIR
 import os
 import string
 import operator
+import sys
 
 # ----------------- Stage 1 ---------------
 PETSC_DIR = os.environ['PETSC_DIR']
@@ -140,8 +141,16 @@ print "Creating main HTML page ...."
 # Create the main html file                                                                                                                                    
 # ----------------------------- index_gcov1.html has results sorted by file name ----------------------------------
 # ----------------------------- index_gcov2.html has results sorted by % code tested ------------------------------
-outfile_name1 = PETSC_DIR+'/'+'index_gcov1.html'
-outfile_name2 = PETSC_DIR+'/'+'index_gcov2.html'
+# check to see if LOC is given
+if (len(sys.argv) == 2):
+    print "Using %s to save the main HTML file pages" % (sys.argv[1])
+    LOC = sys.argv[1]
+else:
+    print "No Directory specified for saving main HTML file pages, using PETSc root directory"
+    LOC = PETSC_DIR
+
+outfile_name1 = LOC+'/'+'index_gcov1.html'
+outfile_name2 = LOC+'/'+'index_gcov2.html'
 out_fid = open(outfile_name1,'w')                                            
 print >>out_fid, \
 """<html>                                                                                                                                                      
@@ -203,5 +212,5 @@ print >>out_fid,"""</body>
 out_fid.close()
 
 print "Finished creating main HTML page"
-print """See index_gcov1.html in %s""" % (PETSC_DIR)
+print """See index_gcov1.html in %s""" % (LOC)
 
