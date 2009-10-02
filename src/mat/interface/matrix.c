@@ -6007,6 +6007,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetBlockSize(Mat mat,PetscInt bs)
 $           PetscInt ia(1), ja(1)
 $           PetscOffset iia, jja
 $      call MatGetRowIJ(mat,shift,symmetric,inodecompressed,n,ia,iia,ja,jja,done,ierr)
+$
+$          or 
+$
+$           PetscScalar, pointer :: xx_v(:)
+$    call  MatGetRowIJF90(mat,shift,symmetric,inodecompressed,n,ia,ja,done,ierr)
+  
  
        Acess the ith and jth entries via ia(iia + i) and ja(jja + j)
 
