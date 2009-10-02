@@ -709,6 +709,31 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealCreateLocalVector(SectionReal sectio
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "SectionRealAddSpace"
+/*@
+  SectionRealAddSpace - Add another field to this section
+
+  Collective on Mesh
+
+  Input Parameter:
+. section - the Section
+
+  Level: advanced
+
+.seealso SectionRealCreate(), SectionRealGetFibration()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionRealAddSpace(SectionReal section)
+{
+  ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+  s->addSpace();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "SectionRealGetFibration"
 /*@
   SectionRealGetFibration - Creates a section for only the data associated with the given field

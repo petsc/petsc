@@ -176,6 +176,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealRestrict(SectionReal, PetscIn
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdate(SectionReal, PetscInt, const PetscScalar [], InsertMode);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealZero(SectionReal);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealCreateLocalVector(SectionReal, Vec*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealAddSpace(SectionReal);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetFibration(SectionReal, const PetscInt, SectionReal *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealToVec(SectionReal, Mesh, ScatterMode, Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealToVec(SectionReal, VecScatter, ScatterMode, Vec);
