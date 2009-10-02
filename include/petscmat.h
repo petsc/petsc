@@ -1398,6 +1398,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningScotchSetMapping(MatPart
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningScotchSetStrategy(MatPartitioning,char*);
 
 EXTERN PetscErrorCode MatMeshToVertexGraph(Mat,PetscInt,Mat*);
+EXTERN PetscErrorCode MatMeshToCellGraph(Mat,PetscInt,Mat*);
 
 /*
     If you add entries here you must also add them to finclude/petscmat.h

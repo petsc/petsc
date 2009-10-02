@@ -279,8 +279,10 @@ EXTERN_C_END
 #undef __FUNCT__  
 #define __FUNCT__ "MatMeshToVertexGraph"
 /*@
-     MatMeshToVertexGraph -   Uses the ParMETIS package to convert a graph that represents a mesh to a graph that represents its "dual"
-                       (and is suitable for partitioning with the MatPartitioning object)
+ MatMeshToVertexGraph -   This routine does not exist because ParMETIS does not provide the functionality.  Uses the ParMETIS package to
+                       convert a Mat that represents a mesh to a Mat the represents the graph of the coupling 
+                       between vertices of the cells and is suitable for partitioning with the MatPartitioning object. Use this to partition
+                       vertices of a mesh. More likely you should use MatMeshToCellGraph()
 
    Collective on Mat
 
@@ -295,13 +297,55 @@ EXTERN_C_END
    Notes:
      Currently requires ParMetis to be installed and uses ParMETIS_V3_Mesh2Dual()
 
-     Not tested!
+     The columns of each row of the Mat mesh are the global vertex numbers of the vertices of that rows cell. The number of rows in mesh is 
+     number of cells, the number of columns is the number of vertices.
 
+   Level: advanced
+
+.seealso: MatMeshToCellGraph(), MatCreateMPIAdj(), MatPartitioningCreate()
+   
 @*/
 PetscErrorCode MatMeshToVertexGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
 {
+  PetscFunctionBegin;
+  SETERRQ(PETSC_ERR_SUP,"ParMETIS does not provide this functionality");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMeshToCellGraph"
+/*@
+     MatMeshToCellGraph -   Uses the ParMETIS package to convert a Mat that represents a mesh to a Mat the represents the graph of the coupling 
+                       between cells (the "dual" graph) and is suitable for partitioning with the MatPartitioning object. Use this to partition
+                       cells of a mesh.
+
+   Collective on Mat
+
+   Input Parameter:
++     mesh - the graph that represents the mesh
+-     ncommonnodes - mesh elements that share this number of common nodes are considered neighbors, use 2 for triangules and 
+                     quadralaterials, 3 for tetrahedrals and 4 for hexahedrals
+
+   Output Parameter:
+.     dual - the dual graph
+
+   Notes:
+     Currently requires ParMetis to be installed and uses ParMETIS_V3_Mesh2Dual()
+
+     The columns of each row of the Mat mesh are the global vertex numbers of the vertices of that rows cell. The number of rows in mesh is 
+     number of cells, the number of columns is the number of vertices.
+   
+
+   Level: advanced
+
+.seealso: MatMeshToVertexGraph(), MatCreateMPIAdj(), MatPartitioningCreate()
+
+
+@*/
+PetscErrorCode MatMeshToCellGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
+{
   PetscErrorCode           ierr;
-  int                      *vtxdist,*xadj,*adjncy,*newxadj,*newadjncy;
+  int                      *newxadj,*newadjncy;
   int                      numflag=0;
   Mat_MPIAdj               *adj = (Mat_MPIAdj *)mesh->data,*newadj;
   PetscTruth               flg;
@@ -310,25 +354,12 @@ PetscErrorCode MatMeshToVertexGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
   ierr = PetscTypeCompare((PetscObject)mesh,MATMPIADJ,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_ERR_SUP,"Must use MPIAdj matrix type");
 
-  vtxdist = mesh->rmap->range;
-  xadj    = adj->i;
-  adjncy  = adj->j;
-#if defined(PETSC_USE_DEBUG)
-  /* check that matrix has no diagonal entries */
-  {
-    PetscInt rstart,i,j;
-    ierr = MatGetOwnershipRange(mesh,&rstart,PETSC_NULL);CHKERRQ(ierr);
-    for (i=0; i<mesh->rmap->n; i++) {
-      for (j=xadj[i]; j<xadj[i+1]; j++) {
-        if (adjncy[j] == i+rstart) SETERRQ1(PETSC_ERR_ARG_WRONG,"Row %d has diagonal entry; Parmetis forbids diagonal entry",i+rstart);
-      }
-    }
-  }
-#endif
   /* ParMETIS has no error conditions ??? */
-  ParMETIS_V3_Mesh2Dual(vtxdist,xadj,adjncy,&numflag,&ncommonnodes,&newxadj,&newadjncy,&((PetscObject)mesh)->comm);
-  ierr = MatCreateMPIAdj(((PetscObject)mesh)->comm,mesh->rmap->n,PETSC_DETERMINE,newxadj,newadjncy,PETSC_NULL,dual);CHKERRQ(ierr);
+  CHKMEMQ;
+  ParMETIS_V3_Mesh2Dual(mesh->rmap->range,adj->i,adj->j,&numflag,&ncommonnodes,&newxadj,&newadjncy,&((PetscObject)mesh)->comm);
+  CHKMEMQ;
+  ierr = MatCreateMPIAdj(((PetscObject)mesh)->comm,mesh->rmap->n,mesh->rmap->N,newxadj,newadjncy,PETSC_NULL,dual);CHKERRQ(ierr);
   newadj = (Mat_MPIAdj *)(*dual)->data;
-  newadj->freeaij = PETSC_FALSE; /* signal the matrix should be freed with system free since space was allocated by ParMETIS */
+  newadj->freeaijwithfree = PETSC_TRUE; /* signal the matrix should be freed with system free since space was allocated by ParMETIS */
   PetscFunctionReturn(0);
 }
