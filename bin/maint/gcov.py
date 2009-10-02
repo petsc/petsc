@@ -5,7 +5,7 @@
 # This is done in three stages
 # Stage 1: Process lines files storing gcov information
 # Stage 2: Create marked HTML source code files
-# Stage 3: Create HTML page having statistics and hyperlinks to HTML source code files 
+# Stage 3: Create HTML page having statistics and hyperlinks to HTML source code           files (files are sorted by filename and percentage code tested) 
 
 import os
 import string
