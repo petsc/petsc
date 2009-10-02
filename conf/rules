@@ -727,7 +727,7 @@ gcov:
           for i in ${SOURCEC} foo; do if [ -f $$i ]; then \
            gcov  $${i}; \
            name=`echo ${LOCDIR} | sed s?/?_?g`; \
-	   grep "##" $${i}.gcov | cut -f 2 -d ":" > /tmp/gcov/$${name}$${i}.lines ; \
+	   grep "##" $${i}.gcov | cut -f 2 -d ":" > ${PETSC_DIR}/tmp/gcov/$${name}$${i}.lines ; \
           fi; done ; \
         fi
 #
@@ -737,8 +737,8 @@ gcov:
 #
 gcovmerge:
 	for i in *.lines; do  \
-           comm -1 -2 $${i} ${ODIR}/$${i} > tmp; \
-           mv tmp $${i};\
+           comm -1 -2 $${i} ${ODIR}/$${i} > ${PETSC_DIR}/tmp; \
+           mv ${PETSC_DIR}/tmp $${i};\
         done ; \
 
 #----------------------------------------------------------------------------------

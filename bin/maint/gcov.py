@@ -13,7 +13,7 @@ import operator
 
 # ----------------- Stage 1 ---------------
 PETSC_DIR = os.environ['PETSC_DIR']
-gcov_dir = '/tmp/gcov'
+gcov_dir = PETSC_DIR+'/tmp/gcov'
 gcov_filenames = os.listdir(gcov_dir)
 nsrc_files = 0; 
 nsrc_files_not_tested = 0;
