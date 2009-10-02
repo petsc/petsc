@@ -68,12 +68,14 @@ PetscErrorCode MatDestroy_MPIAdj(Mat mat)
 #endif
   ierr = PetscFree(a->diag);CHKERRQ(ierr);
   if (a->freeaij) {
-    ierr = PetscFree(a->i);CHKERRQ(ierr);
-    ierr = PetscFree(a->j);CHKERRQ(ierr);
-    ierr = PetscFree(a->values);CHKERRQ(ierr);
-  } else {
-    if (a->i) free(a->i);
-    if (a->j) free(a->j);
+    if (a->freeaijwithfree) {
+      if (a->i) free(a->i);
+      if (a->j) free(a->j);
+    } else {
+      ierr = PetscFree(a->i);CHKERRQ(ierr);
+      ierr = PetscFree(a->j);CHKERRQ(ierr);
+      ierr = PetscFree(a->values);CHKERRQ(ierr);
+    }
   }
   ierr = PetscFree(a);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);

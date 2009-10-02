@@ -5,6 +5,30 @@
 #include "finclude/ftn-custom/petscmathide.h90"
 
       Interface 
+        Subroutine MatGetRowIJF90(v,shift,sym,blockcompressed,n,ia,     &
+     &                            ja,done,ierr)
+          USE_MAT_HIDE
+          PetscInt, pointer :: ia(:), ja(:)
+          PetscInt  n,shift
+          PetscTruth sym,blockcompressed,done
+          PetscErrorCode ierr
+          MAT_HIDE     v
+        End Subroutine
+      End Interface
+
+      Interface 
+        Subroutine MatRestoreRowIJF90(v,shift,sym,blockcompressed,n,    &
+     &                                ia,ja,done,ierr)
+          USE_MAT_HIDE
+          PetscInt, pointer :: ia(:), ja(:)
+          PetscInt  n,shift
+          PetscTruth sym,blockcompressed,done
+          PetscErrorCode ierr
+          MAT_HIDE     v
+        End Subroutine
+      End Interface
+
+      Interface 
         Subroutine MatGetArrayF90(v,array,ierr)
           USE_MAT_HIDE
           PetscScalar, pointer :: array(:,:)
