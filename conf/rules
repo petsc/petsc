@@ -730,16 +730,6 @@ gcov:
 	   grep "##" $${i}.gcov | cut -f 2 -d ":" > ${PETSC_DIR}/tmp/gcov/$${name}$${i}.lines ; \
           fi; done ; \
         fi
-#
-#  Used to merge the gcov data for multiple runs on different systems together
-#  For example, the nightly builds on many machines
-#  Not needed for runs on a single system
-#
-gcovmerge:
-	for i in *.lines; do  \
-           comm -1 -2 $${i} ${ODIR}/$${i} > ${PETSC_DIR}/tmp; \
-           mv ${PETSC_DIR}/tmp $${i};\
-        done ; \
 
 #----------------------------------------------------------------------------------
 # Rules for finding errors in the source and errors in the coding style
