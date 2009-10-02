@@ -5,7 +5,8 @@
 #include "finclude/ftn-custom/petscmathide.h90"
 
       Interface 
-        Subroutine MatGetRowIJF90(v,shift,sym,blockcompressed,n,ia,ja,done,ierr)
+        Subroutine MatGetRowIJF90(v,shift,sym,blockcompressed,n,ia, &
+     &                            ja,done,ierr)
           USE_MAT_HIDE
           PetscInt, pointer :: ia(:), ja(:)
           PetscInt  n,shift
@@ -16,7 +17,8 @@
       End Interface
 
       Interface 
-        Subroutine MatRestoreRowIJF90(v,shift,sym,blockcompressed,n,ia,ja,done,ierr)
+        Subroutine MatRestoreRowIJF90(v,shift,sym,blockcompressed,n, &
+     &                                ia,ja,done,ierr)
           USE_MAT_HIDE
           PetscInt, pointer :: ia(:), ja(:)
           PetscInt  n,shift
