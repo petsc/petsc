@@ -44,7 +44,7 @@ void PETSC_STDCALL matgetrowijf90_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscT
   PetscInt *IA,*JA;
   *ierr = MatGetRowIJ(*B,*shift,*sym,*blockcompressed,n,&IA,&JA,done);if (*ierr) return; if (!*done) return;
   *ierr = F90Array1dCreate((PetscInt *)IA,PETSC_INT,1,*n+1,ia PETSC_F90_2PTR_PARAM(iad));
-  *ierr = F90Array1dCreate((PetscInt *)JA,PETSC_INT,1,IA[*n],ja PETSC_F90_2PTR_PARAM(ijd));
+  *ierr = F90Array1dCreate((PetscInt *)JA,PETSC_INT,1,IA[*n],ja PETSC_F90_2PTR_PARAM(jad));
 }
 
 void PETSC_STDCALL matrestorerowij90_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscTruth *blockcompressed, PetscInt *n,F90Array1d *ia,
