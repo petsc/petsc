@@ -735,7 +735,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealAddSpace(SectionReal section)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SectionRealGetFibration"
-/*@
+/*@C
   SectionRealGetFibration - Creates a section for only the data associated with the given field
 
   Collective on Mesh

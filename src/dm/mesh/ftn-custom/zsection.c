@@ -24,11 +24,13 @@ extern void PetscRmPointer(void*);
 #define sectionintview_        SECTIONINTVIEW
 #define sectionrealdistribute_ SECTIONREALDISTRIBUTE
 #define sectionintdistribute_  SECTIONINTDISTRIBUTE
+#define sectionrealgetfibration_ SECTIONREALGETFIBRATION
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define sectionrealview_       sectionrealview
 #define sectionintview_        sectionintview
 #define sectionrealdistribute_ sectionrealdistribute
 #define sectionintdistribute_  sectionintdistribute
+#define sectionrealgetfibration_ sectionrealgetfibration
 #endif
 
 EXTERN_C_BEGIN
@@ -53,5 +55,8 @@ void PETSC_STDCALL sectionrealdistribute(SectionReal *serialSection, Mesh parall
 void PETSC_STDCALL sectionintdistribute(SectionInt *serialSection, Mesh parallelMesh, SectionInt *parallelSection, PetscErrorCode *ierr)
 {
   *ierr = SectionIntDistribute(*serialSection, (Mesh) PetscToPointer(parallelMesh), parallelSection);
+}
+void PETSC_STDCALL sectionrealgetfibration_(SectionReal *section, PetscInt *field,SectionReal *subsection, int *__ierr ){
+  *__ierr = SectionRealGetFibration(*section,*field,subsection);
 }
 EXTERN_C_END
