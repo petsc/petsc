@@ -117,6 +117,8 @@ EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat,Mat,const MatFactorInfo*)
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_newdatastruct(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat,Mat,const MatFactorInfo*);
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_newdatastruct(Mat,Mat,const MatFactorInfo*);
+
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat,Mat,const MatFactorInfo*);
@@ -152,5 +154,43 @@ EXTERN PetscErrorCode MatMultAdd_SeqBAIJ_6(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatMultAdd_SeqBAIJ_7(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatMultAdd_SeqBAIJ_N(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatLoad_SeqBAIJ(PetscViewer, const MatType,Mat*);
+
+/*
+  Kernel_A_gets_A_times_B_2: A = A * B with size bs=2
+
+  Input Parameters:
++  A,B - square bs by bs arrays stored in column major order
+-  W   - bs*bs work arrary
+
+  Output Parameter:
+.  A = A * B
+*/
+
+#define Kernel_A_gets_A_times_B_2(A,B,W) 0;\
+{\
+  PetscMemcpy(W,A,4*sizeof(MatScalar));\
+  A[0] = W[0]*B[0] + W[2]*B[1];\
+  A[1] = W[1]*B[0] + W[3]*B[1];\
+  A[2] = W[0]*B[2] + W[2]*B[3];\
+  A[3] = W[1]*B[2] + W[3]*B[3];\
+}
+
+/*
+  Kernel_A_gets_A_minus_B_times_C_2: A = A - B * C with size bs=2
+
+  Input Parameters:
++  A,B,C - square bs by bs arrays stored in column major order
+
+  Output Parameter:
+.  A = A - B*C
+*/
+
+#define Kernel_A_gets_A_minus_B_times_C_2(A,B,C) 0;\
+{\
+  A[0] -= B[0]*C[0] + B[2]*C[1];\
+  A[1] -= B[1]*C[0] + B[3]*C[1];\
+  A[2] -= B[0]*C[2] + B[2]*C[3];\
+  A[3] -= B[1]*C[2] + B[3]*C[3];\
+}
 
 #endif
