@@ -4053,7 +4053,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_newdatastruct(Mat B,Mat A,const MatF
   const PetscInt *r,*ic,*ics;
   PetscInt       i,j,k,n=a->mbs,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
   PetscInt       *ajtmp,*bjtmp,nz,nzL,row,*bdiag=b->diag,*pj;
-  MatScalar      *rtmp,*pc,*multiplier,*v,*pv,*aa=a->a;
+  MatScalar      *rtmp,*pc,*mwork,*v,*pv,*aa=a->a;
   PetscInt       bs=A->rmap->bs,bs2 = a->bs2,*v_pivots,flg;
   MatScalar      *v_work;
 
@@ -4065,9 +4065,9 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_newdatastruct(Mat B,Mat A,const MatF
   ics  = ic;
 
   /* generate work space needed by dense LU factorization */
-  ierr       = PetscMalloc(bs*sizeof(PetscInt) + (bs+bs2)*sizeof(MatScalar),&v_work);CHKERRQ(ierr);
-  multiplier = v_work + bs;
-  v_pivots   = (PetscInt*)(multiplier + bs2);
+  ierr     = PetscMalloc(bs*sizeof(PetscInt) + (bs+bs2)*sizeof(MatScalar),&v_work);CHKERRQ(ierr);
+  mwork    = v_work + bs;
+  v_pivots = (PetscInt*)(mwork + bs2);
 
   for (i=0; i<n; i++){
     /* zero rtmp */
@@ -4103,14 +4103,14 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_newdatastruct(Mat B,Mat A,const MatF
       for (flg=0,j=0; j<bs2; j++) { if (pc[j]!=0.0) { flg = 1; break; }}
       if (flg) {
         pv         = b->a + bs2*bdiag[row];      
-        Kernel_A_gets_A_times_B(bs,pc,pv,multiplier); /* *pc = *pc * (*pv); */
+        Kernel_A_gets_A_times_B(bs,pc,pv,mwork); /* *pc = *pc * (*pv); */
         pj         = b->j + bi[2*n-row]; /* begining of U(row,:) */
         pv         = b->a + bs2*bi[2*n-row]; 
         nz         = bi[2*n-row+1] - bi[2*n-row] - 1; /* num of entries inU(row,:), excluding diag */
         for (j=0; j<nz; j++) {
           Kernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j);
         }
-        ierr = PetscLogFlops(2.0*nz);CHKERRQ(ierr);
+        ierr = PetscLogFlops(2*bs2*bs*(nz+1)-bs2);CHKERRQ(ierr); /* flops = 2*bs^3*nz + 2*bs^3 - bs2) */
       }
       row = *bjtmp++; k++;
     }
@@ -4290,7 +4290,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_newdatastruct(Mat fact,Mat A,IS isro
     ierr             = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
     ierr             = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
     b->pivotinblocks = (info->pivotinblocks) ? PETSC_TRUE : PETSC_FALSE;
-    ierr = PetscMalloc(((fact)->rmap->N+1+(fact)->rmap->bs)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
+    ierr = PetscMalloc((n+1)*bs*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
  
@@ -4537,7 +4537,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,con
     ierr         = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
     b->icol      = isicol;
     b->pivotinblocks = (info->pivotinblocks) ? PETSC_TRUE : PETSC_FALSE;
-    ierr         = PetscMalloc(((fact)->rmap->N+1+(fact)->rmap->bs)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
+    ierr         = PetscMalloc((n+1)*bs*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
     PetscFunctionReturn(0); 
   } 
 

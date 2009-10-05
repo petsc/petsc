@@ -170,7 +170,6 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_newdatastruct(Mat B,Mat A,IS isrow,IS
     /* add pivot rows into linked list */
     row = lnk[n]; 
     while (row < i) {
-//      nzbd    = bdiag[row] - bi[row] + 1; /* num of entries in the row with column index <= row */
       nzbd    = bdiag[row] + 1; /* num of entries in the row with column index <= row */
       ajtmp   = bi_ptr[row] + nzbd; /* points to the entry next to the diagonal */   
       ierr = PetscLLAddSortedLU(ajtmp,row,nlnk,lnk,lnkbt,i,nzbd,im);CHKERRQ(ierr);
@@ -247,7 +246,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_newdatastruct(Mat B,Mat A,IS isrow,IS
   ierr = PetscMalloc((bs*n+bs)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(B,(bi[2*n+1])*(sizeof(PetscInt)+sizeof(PetscScalar)*bs2));CHKERRQ(ierr);
   
-  b->maxnz = b->nz = bi[2*n+1] ;
+  b->maxnz = b->nz = bi[2*n+1]; 
   (B)->factor                =  MAT_FACTOR_LU;
   (B)->info.factor_mallocs   = reallocs;
   (B)->info.fill_ratio_given = f;
@@ -257,8 +256,15 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_newdatastruct(Mat B,Mat A,IS isrow,IS
   } else {
     (B)->info.fill_ratio_needed = 0.0;
   }
-  (B)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N_newdatastruct;
 
+  switch(bs){
+    case 2:
+      (B)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_newdatastruct;
+      break;
+    default:
+      (B)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N_newdatastruct;
+  }
+  
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
   both_identity = (PetscTruth) (row_identity && col_identity);
@@ -310,8 +316,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_newdatastruct(Mat B,Mat A,IS isrow,IS
         (B)->ops->solve = MatSolve_SeqBAIJ_N_newdatastruct;
       }
    }
-//  ierr = MatSeqBAIJSetNumericFactorization(B,both_identity);CHKERRQ(ierr);
-
+  /*  ierr = MatSeqBAIJSetNumericFactorization(B,both_identity);CHKERRQ(ierr); */
   PetscFunctionReturn(0);
  }
 
