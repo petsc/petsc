@@ -195,6 +195,11 @@ class Configure(config.package.Package):
       yield ('User specified MKL Linux lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'mkl', 'guide', 'pthread'], 1)
       for libdir in ['32','64','em64t']:
         yield ('User specified MKL Linux installation root', None, [os.path.join(dir,'lib',libdir,'libmkl_lapack.a'),'mkl', 'guide', 'pthread'], 1)
+      # Some new MLK 11 variations
+      yield ('User specified MKL11 Linux-x86 lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'mkl_intel', 'mkl_intel_thread', 'mkl_core', 'guide', 'pthread'], 1)
+      yield ('User specified MKL11 Linux-x86 installation root', None, [os.path.join(dir,'lib','em64t','libmkl_lapack.a'),'mkl_intel', 'mkl_intel_thread', 'mkl_core', 'guide', 'pthread'], 1)
+      yield ('User specified MKL11 Linux-em64t lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'mkl_intel_lp64', 'mkl_intel_thread', 'mkl_core', 'guide', 'pthread'], 1)
+      yield ('User specified MKL11 Linux-em64t installation root', None, [os.path.join(dir,'lib','em64t','libmkl_lapack.a'),'mkl_intel_lp64', 'mkl_intel_thread', 'mkl_core', 'guide', 'pthread'], 1)
       # Older Linux MKL checks
       yield ('User specified MKL Linux-x86 lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_def.a', 'guide', 'pthread'], 1)
       yield ('User specified MKL Linux-x86 lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_def.a', 'guide', 'vml','pthread'], 1)
