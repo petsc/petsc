@@ -16,21 +16,14 @@
 #include "../src/mat/impls/aij/mpi/mpiaij.h"
 #include "../src/mat/impls/aij/seq/crl/crl.h"
 
+extern PetscErrorCode MatDestroy_MPIAIJ(Mat);
+
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_MPICRL"
 PetscErrorCode MatDestroy_MPICRL(Mat A)
 {
   PetscErrorCode ierr;
   Mat_CRL        *crl = (Mat_CRL *) A->spptr;
-
-  /* We are going to convert A back into a MPIAIJ matrix, since we are 
-   * eventually going to use MatDestroy_MPIAIJ() to destroy everything 
-   * that is not specific to CRL.
-   * In preparation for this, reset the operations pointers in A to 
-   * their MPIAIJ versions. */
-  A->ops->assemblyend = crl->AssemblyEnd;
-  A->ops->destroy     = crl->MatDestroy;
-  A->ops->duplicate   = crl->MatDuplicate;
 
   /* Free everything in the Mat_CRL data structure. */
   ierr = PetscFree2(crl->acols,crl->icols);CHKERRQ(ierr);
@@ -44,12 +37,8 @@ PetscErrorCode MatDestroy_MPICRL(Mat A)
   ierr = PetscFree(crl);CHKERRQ(ierr);
   A->spptr = 0;
 
-  /* Change the type of A back to MPIAIJ and use MatDestroy_MPIAIJ() 
-   * to destroy everything that remains. */
   ierr = PetscObjectChangeTypeName( (PetscObject)A, MATMPIAIJ);CHKERRQ(ierr);
-  /* Note that I don't call MatSetType().  I believe this is because that 
-   * is only to be called when *building* a matrix. */
-  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
+  ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -103,29 +92,21 @@ PetscErrorCode MPICRL_create_crl(Mat A)
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat,MatAssemblyType);
+
 #undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_MPICRL"
 PetscErrorCode MatAssemblyEnd_MPICRL(Mat A, MatAssemblyType mode)
 {
   PetscErrorCode ierr;
-  Mat_CRL        *crl = (Mat_CRL*) A->spptr;
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   Mat_SeqAIJ     *Aij = (Mat_SeqAIJ*)(a->A->data), *Bij = (Mat_SeqAIJ*)(a->A->data);
 
   PetscFunctionBegin;
-  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
-  
-  /* Since a MATMPICRL matrix is really just a MATMPIAIJ with some 
-   * extra information, call the AssemblyEnd routine for a MATMPIAIJ. 
-   * I'm not sure if this is the best way to do this, but it avoids 
-   * a lot of code duplication.
-   * I also note that currently MATMPICRL doesn't know anything about 
-   * the Mat_CompressedRow data structure that MPIAIJ now uses when there 
-   * are many zero rows.  If the MPIAIJ assembly end routine decides to use 
-   * this, this may break things.  (Don't know... haven't looked at it.) */
   Aij->inode.use = PETSC_FALSE;
   Bij->inode.use = PETSC_FALSE;
-  (*crl->AssemblyEnd)(A, mode);
+  ierr = MatAssemblyEnd_MPIAIJ(A,mode);CHKERRQ(ierr);
+  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
 
   /* Now calculate the permutation and grouping information. */
   ierr = MPICRL_create_crl(A);CHKERRQ(ierr);
@@ -155,10 +136,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICRL(Mat A,const MatType t
 
   ierr = PetscNewLog(B,Mat_CRL,&crl);CHKERRQ(ierr);
   B->spptr = (void *) crl;
-
-  crl->AssemblyEnd  = A->ops->assemblyend;
-  crl->MatDestroy   = A->ops->destroy;
-  crl->MatDuplicate = A->ops->duplicate;
 
   /* Set function pointers for methods that we inherit from AIJ but override. */
   B->ops->duplicate   = MatDuplicate_CRL;

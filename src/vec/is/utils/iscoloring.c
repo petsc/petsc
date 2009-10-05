@@ -407,6 +407,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningCount(IS part,PetscInt len,Petsc
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)part,&comm);CHKERRQ(ierr);
+  if (len == PETSC_DEFAULT) {
+    PetscMPIInt size;
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    len  = (PetscInt) size;
+  }
 
   /* count the number of partitions */
   ierr = ISGetLocalSize(part,&n);CHKERRQ(ierr);

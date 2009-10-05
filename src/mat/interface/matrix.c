@@ -3996,7 +3996,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowSum(Mat mat, Vec v)
 
    Concepts: matrices^transposing
 
-.seealso: MatMultTranspose(), MatMultTransposeAdd(), MatIsTranspose()
+.seealso: MatMultTranspose(), MatMultTransposeAdd(), MatIsTranspose(), MatReuse
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatTranspose(Mat mat,MatReuse reuse,Mat *B)
 {
