@@ -1638,11 +1638,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIDense(Mat mat)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatMatMultNumeric_mpiaij_mpidense_C",
                                      "MatMatMultNumeric_MPIAIJ_MPIDense",
                                       MatMatMultNumeric_MPIAIJ_MPIDense);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatGetFactor_mpidense_petsc_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatGetFactor_petsc_C",
                                      "MatGetFactor_mpidense_petsc",
                                       MatGetFactor_mpidense_petsc);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PLAPACK)
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatGetFactor_mpidense_plapack_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatGetFactor_plapack_C",
                                      "MatGetFactor_mpidense_plapack",
                                       MatGetFactor_mpidense_plapack);CHKERRQ(ierr);
   ierr = PetscPLAPACKInitializePackage(((PetscObject)mat)->comm);CHKERRQ(ierr);

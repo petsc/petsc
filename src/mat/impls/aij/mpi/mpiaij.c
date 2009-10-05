@@ -5066,22 +5066,22 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJ(Mat B)
   b->getrowactive = PETSC_FALSE;
 
 #if defined(PETSC_HAVE_SPOOLES)
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mpiaij_spooles_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_spooles_C",
                                      "MatGetFactor_mpiaij_spooles",
                                      MatGetFactor_mpiaij_spooles);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_MUMPS)
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mpiaij_mumps_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mumps_C",
                                      "MatGetFactor_mpiaij_mumps",
                                      MatGetFactor_mpiaij_mumps);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PASTIX)
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mpiaij_pastix_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_pastix_C",
 					   "MatGetFactor_mpiaij_pastix",
 					   MatGetFactor_mpiaij_pastix);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SUPERLU_DIST)
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mpiaij_superlu_dist_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_superlu_dist_C",
                                      "MatGetFactor_mpiaij_superlu_dist",
                                      MatGetFactor_mpiaij_superlu_dist);CHKERRQ(ierr);
 #endif

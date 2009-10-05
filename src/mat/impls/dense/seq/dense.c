@@ -2036,7 +2036,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqDense(Mat B)
   b->Nmax         = B->cmap->n;
 
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqdense_petsc_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_petsc_C",
                                      "MatGetFactor_seqdense_petsc",
                                       MatGetFactor_seqdense_petsc);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqDenseSetPreallocation_C",

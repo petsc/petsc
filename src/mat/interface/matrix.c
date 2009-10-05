@@ -3575,8 +3575,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat mat, const MatSolverPackage t
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
   ierr = PetscStrcpy(convname,"MatGetFactor_");CHKERRQ(ierr);
-  ierr = PetscStrcat(convname,((PetscObject)mat)->type_name);CHKERRQ(ierr);
-  ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
   ierr = PetscStrcat(convname,type);CHKERRQ(ierr);
   ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
   ierr = PetscObjectQueryFunction((PetscObject)mat,convname,(void (**)(void))&conv);CHKERRQ(ierr);
@@ -3632,8 +3630,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactorAvailable(Mat mat, const MatSolver
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
   ierr = PetscStrcpy(convname,"MatGetFactorAvailable_");CHKERRQ(ierr);
-  ierr = PetscStrcat(convname,((PetscObject)mat)->type_name);CHKERRQ(ierr);
-  ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
   ierr = PetscStrcat(convname,type);CHKERRQ(ierr);
   ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
   ierr = PetscObjectQueryFunction((PetscObject)mat,convname,(void (**)(void))&conv);CHKERRQ(ierr);

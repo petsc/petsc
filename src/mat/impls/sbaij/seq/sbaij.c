@@ -1767,24 +1767,24 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
   ierr = PetscOptionsGetTruth(((PetscObject)B)->prefix,"-mat_getrow_uppertriangular",&b->getrow_utriangular,PETSC_NULL);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_PASTIX)
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqsbaij_pastix_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_pastix_C",
 					   "MatGetFactor_seqsbaij_pastix",
 					   MatGetFactor_seqsbaij_pastix);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SPOOLES)
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqsbaij_spooles_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_spooles_C",
                                      "MatGetFactor_seqsbaij_spooles",
                                      MatGetFactor_seqsbaij_spooles);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_MUMPS)
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqsbaij_mumps_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mumps_C",
                                      "MatGetFactor_seqsbaij_mumps",
                                      MatGetFactor_seqsbaij_mumps);CHKERRQ(ierr);
 #endif
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactorAvailable_seqsbaij_petsc_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactorAvailable_petsc_C",
                                      "MatGetFactorAvailable_seqsbaij_petsc",
                                      MatGetFactorAvailable_seqsbaij_petsc);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqsbaij_petsc_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_petsc_C",
                                      "MatGetFactor_seqsbaij_petsc",
                                      MatGetFactor_seqsbaij_petsc);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",

@@ -1689,17 +1689,17 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPISBAIJ(Mat B)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_PASTIX)
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mpisbaij_pastix_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_pastix_C",
 					   "MatGetFactor_mpisbaij_pastix",
 					   MatGetFactor_mpisbaij_pastix);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_MUMPS)
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mpisbaij_mumps_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mumps_C",
                                      "MatGetFactor_mpisbaij_mumps",
                                      MatGetFactor_mpisbaij_mumps);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SPOOLES)
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mpisbaij_spooles_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_spooles_C",
                                      "MatGetFactor_mpisbaij_spooles",
                                      MatGetFactor_mpisbaij_spooles);CHKERRQ(ierr);
 #endif

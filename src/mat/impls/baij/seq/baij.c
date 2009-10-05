@@ -3095,10 +3095,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqBAIJ(Mat B)
   b->compressedrow.checked = PETSC_FALSE;
   B->same_nonzero          = PETSC_FALSE;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactorAvailable_seqbaij_petsc_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactorAvailable_petsc_C",
                                      "MatGetFactorAvailable_seqbaij_petsc",
                                      MatGetFactorAvailable_seqbaij_petsc);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqbaij_petsc_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_petsc_C",
                                      "MatGetFactor_seqbaij_petsc",
                                      MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqBAIJInvertBlockDiagonal_C",

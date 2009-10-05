@@ -3237,49 +3237,49 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PASTIX)
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_pastix_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_pastix_C",
 					   "MatGetFactor_seqaij_pastix",
 					   MatGetFactor_seqaij_pastix);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_ESSL) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE)
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_essl_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_essl_C",
                                      "MatGetFactor_seqaij_essl",
                                      MatGetFactor_seqaij_essl);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SUPERLU)
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_superlu_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_superlu_C",
                                      "MatGetFactor_seqaij_superlu",
                                      MatGetFactor_seqaij_superlu);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SUPERLU_DIST)
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_superlu_dist_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_superlu_dist_C",
                                      "MatGetFactor_seqaij_superlu_dist",
                                      MatGetFactor_seqaij_superlu_dist);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SPOOLES)
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_spooles_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_spooles_C",
                                      "MatGetFactor_seqaij_spooles",
                                      MatGetFactor_seqaij_spooles);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_MUMPS)
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_mumps_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mumps_C",
                                      "MatGetFactor_seqaij_mumps",
                                      MatGetFactor_seqaij_mumps);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_UMFPACK)
-    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_umfpack_C",
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_umfpack_C",
                                      "MatGetFactor_seqaij_umfpack",
                                      MatGetFactor_seqaij_umfpack);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_LUSOL)
-    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_lusol_C",
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_lusol_C",
                                      "MatGetFactor_seqaij_lusol",
                                      MatGetFactor_seqaij_lusol);CHKERRQ(ierr);
 #endif
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_petsc_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_petsc_C",
                                      "MatGetFactor_seqaij_petsc",
                                      MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactorAvailable_seqaij_petsc_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactorAvailable_petsc_C",
                                      "MatGetFactorAvailable_seqaij_petsc",
                                      MatGetFactorAvailable_seqaij_petsc);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqAIJSetColumnIndices_C",
@@ -3345,8 +3345,6 @@ PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat C,Mat A,MatDuplicateOption cpvalu
   PetscInt       i,m = A->rmap->n;
 
   PetscFunctionBegin;
-  ierr = PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
-  
   c = (Mat_SeqAIJ*)C->data;
 
   C->factor           = A->factor;
