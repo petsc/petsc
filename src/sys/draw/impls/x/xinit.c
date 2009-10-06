@@ -154,6 +154,8 @@ PetscErrorCode XiDisplayWindow(PetscDraw_X* XiWin,char *label,int x,int y,int w,
     size_hints.flags        = USPosition | USSize | PMinSize;
  
     XSetWMProperties(XiWin->disp,XiWin->win,&windowname,&iconname,0,0,&size_hints,&wm_hints,&class_hints);
+    XFree((void*)windowname.value);
+    XFree((void*)iconname.value);
   }
   /* make the window visible */
   XSelectInput(XiWin->disp,XiWin->win,ExposureMask | StructureNotifyMask);
