@@ -1,0 +1,47 @@
+Matrix Object:
+  type=seqcrl, rows=36, cols=36
+  total: nonzeros=156, allocated nonzeros=156
+    not using I-node routines
+Matrix Object:
+  type=seqaij, rows=36, cols=36
+  package used to perform factorization: petsc
+  total: nonzeros=156, allocated nonzeros=156
+    not using I-node routines
+  0 KSP Residual norm 127.99 
+  1 KSP Residual norm 31.1461 
+  2 KSP Residual norm 5.10225 
+  3 KSP Residual norm 0.643389 
+  4 KSP Residual norm 0.0963559 
+  5 KSP Residual norm 0.00919234 
+  6 KSP Residual norm 0.000933305 
+KSP Object:
+  type: gmres
+    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    GMRES: happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object:
+  type: ilu
+    ILU: 0 levels of fill
+    ILU: factor fill ratio allocated 1
+    ILU: tolerance for zero pivot 1e-12
+    ILU: using diagonal shift to prevent zero pivot
+    ILU: using diagonal shift on blocks to prevent zero pivot
+         out-of-place factorization
+         matrix ordering: natural
+    ILU: factor fill ratio needed 1
+         Factored matrix follows
+        Matrix Object:
+          type=seqaij, rows=36, cols=36
+          package used to perform factorization: petsc
+          total: nonzeros=156, allocated nonzeros=156
+            not using I-node routines
+  linear system matrix = precond matrix:
+  Matrix Object:
+    type=seqcrl, rows=36, cols=36
+    total: nonzeros=156, allocated nonzeros=156
+      not using I-node routines
+Number of iterations =   6
+Residual norm 0.00328198

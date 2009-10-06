@@ -677,6 +677,21 @@ runex10_cg_singlereduction:
 	   if (${DIFF} output/ex10_cg_singlereduction.out ex10_20.tmp) then true; \
 	   else echo "Possible problem with ex10_cg_singlereduction, diffs above"; fi; \
 	   ${RM} -f ex10_20.tmp
+runex10_seqcrl:
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view -mat_view_info -matload_type seqcrl > ex10_seqcrl.tmp 2>&1; \
+	   if (${DIFF} output/ex10_seqcrl.out ex10_seqcrl.tmp) then true; \
+	   else echo "Possible problem with ex10_seqcrl, diffs above"; fi; \
+	   ${RM} -f ex10_seqcrl.tmp
+runex10_mpicrl:
+	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view -mat_view_info -matload_type mpicrl > ex10_mpicrl.tmp 2>&1; \
+	   if (${DIFF} output/ex10_mpicrl.out ex10_mpicrl.tmp) then true; \
+	   else echo "Possible problem with ex10_mpicrl, diffs above"; fi; \
+	   ${RM} -f ex10_mpicrl.tmp
+runex10_seqcsrperm:
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view -mat_view_info -matload_type seqcsrperm > ex10_seqcsrperm.tmp 2>&1; \
+	   if (${DIFF} output/ex10_seqcsrperm.out ex10_seqcsrperm.tmp) then true; \
+	   else echo "Possible problem with ex10_seqcsrperm, diffs above"; fi; \
+	   ${RM} -f ex10_seqcsrperm.tmp
 runex11:
 	-@${MPIEXEC} -n 1 ./ex11 -n 6 -norandom -pc_type none -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex11_1.tmp 2>&1; \
 	   if (${DIFF} output/ex11_1.out ex11_1.tmp) then true; \
@@ -850,7 +865,7 @@ TESTEXAMPLES_C_X11_MPIUNI      = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.P
 TESTEXAMPLES_C_COMPLEX	       = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm ex39.PETSc runex39 ex39.rm ex40.PETSc runex40 ex40.rm
 TESTEXAMPLES_DATAFILESPATH     = ex10.PETSc runex10_2 runex10_3 runex10_4 runex10_5 runex10_6 runex10_7 runex10_8 \
                                  runex10_9 runex10_10 runex10_19 runex10_20 runex10_22 runex10_23 runex10_24 runex10_25  runex10_ILU runex10_ILUBAIJ runex10_cg \
-                                 runex10_cg_single_reduction ex10.rm 
+                                 runex10_cg_single_reduction runex10_seqcrl runex10_mpicrl runex10_seqcsrperm  ex10.rm 
 # even though ex10.c is a C example to run with -mat_type lusol requires a Fortran compiler, hence
 # we list it with the fortran examples
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = 
