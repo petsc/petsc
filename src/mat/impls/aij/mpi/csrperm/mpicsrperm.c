@@ -110,33 +110,42 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPICSRPERM(MPI_Comm comm,PetscInt m,P
 
 EXTERN_C_BEGIN
 extern PetscErrorCode MatConvert_SeqAIJ_SeqCSRPERM(Mat,const MatType,MatReuse,Mat*);
+extern PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
+EXTERN_C_END
 
-/* MatConvert_MPIAIJ_MPICSRPERM() converts an MPIAIJ matrix into a 
- * SeqCSRPERM matrix.  This routine is called by the MatCreate_MPICSRPERM() 
- * routine, but can also be used to convert an assembled MPIAIJ matrix 
- * into a SeqCSRPERM one. */
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatMPIAIJSetPreallocation_MPICSRPERM"
+PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocation_MPICSRPERM(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
+{
+  Mat_MPIAIJ     *b = (Mat_MPIAIJ*)B->data;
+  PetscErrorCode ierr;
 
+  PetscFunctionBegin;
+  ierr = MatMPIAIJSetPreallocation_MPIAIJ(B,d_nz,d_nnz,o_nz,o_nnz);CHKERRQ(ierr);
+  ierr = MatConvert_SeqAIJ_SeqCSRPERM(b->A, MATSEQCSRPERM, MAT_REUSE_MATRIX, &b->A);CHKERRQ(ierr);
+  ierr = MatConvert_SeqAIJ_SeqCSRPERM(b->B, MATSEQCSRPERM, MAT_REUSE_MATRIX, &b->B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIAIJ_MPICSRPERM"
 PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICSRPERM(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            B = *newmat;
-  Mat_MPIAIJ     *mpimat = (Mat_MPIAIJ *) B->data;
-  Mat            localmat_A, localmat_B;
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  /* Convert from MPIAIJ to MPICSRPERM by simply changing the typename to MPICSRPERM and convert the local 
-   * submatrices from SEQAIJ to SEQCSRPERM. */
   ierr = PetscObjectChangeTypeName( (PetscObject) B, MATMPICSRPERM);CHKERRQ(ierr);
-  localmat_A = mpimat->A;
-  localmat_B = mpimat->B;
-  ierr = MatConvert_SeqAIJ_SeqCSRPERM(localmat_A, MATSEQCSRPERM, MAT_REUSE_MATRIX, &localmat_A);CHKERRQ(ierr);
-  ierr = MatConvert_SeqAIJ_SeqCSRPERM(localmat_B, MATSEQCSRPERM, MAT_REUSE_MATRIX, &localmat_B);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIAIJSetPreallocation_C",
+				     "MatMPIAIJSetPreallocation_MPICSRPERM",
+				     MatMPIAIJSetPreallocation_MPICSRPERM);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
 }
