@@ -11,6 +11,7 @@ typedef struct {
   Vec          x,b;
   Mat          mat;   
   VecScatter   scatter;
+  IS           is;
 } PC_Redistribute;
 
 #undef __FUNCT__  
@@ -43,7 +44,6 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
 {
   PC_Redistribute   *red = (PC_Redistribute*)pc->data;
   PetscErrorCode    ierr;
-  const char        *prefix;
   MPI_Comm          comm;
   PetscInt          rstart,rend,i,nz,cnt,*rows,ncnt;
   PetscMap          *map,*nmap;
@@ -64,26 +64,20 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
   ierr = PetscObjectGetNewTag((PetscObject)pc,&tag);CHKERRQ(ierr);
 
   if (!pc->setupcalled) {
-    if (!red->ksp) {
-      ierr = KSPCreate(comm,&red->ksp);CHKERRQ(ierr);
-      ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(pc,red->ksp);CHKERRQ(ierr);
-      ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
-      ierr = KSPSetOptionsPrefix(red->ksp,prefix);CHKERRQ(ierr); 
-      ierr = KSPAppendOptionsPrefix(red->ksp,"redistribute_");CHKERRQ(ierr); 
-    }
   } else SETERRQ(PETSC_ERR_SUP,"Cannot yet re-setup a redistribute KSP");
 
   ierr = MatGetOwnershipRange(pc->mat,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     ierr = MatGetRow(pc->mat,i,&nz,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     if (nz > 1) cnt++;
+    ierr = MatRestoreRow(pc->mat,i,&nz,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscMalloc(cnt*sizeof(PetscInt),&rows);CHKERRQ(ierr);
   cnt  = 0;  
   for (i=rstart; i<rend; i++) {
     ierr = MatGetRow(pc->mat,i,&nz,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     if (nz > 1) rows[cnt++] = i;
+    ierr = MatRestoreRow(pc->mat,i,&nz,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscMalloc(sizeof(PetscMap),&map);CHKERRQ(ierr);
   ierr = PetscMapInitialize(comm,map);CHKERRQ(ierr);
@@ -122,6 +116,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
   ierr = PetscSortMPIIntWithArray(nrecvs,onodes1,olengths1);CHKERRQ(ierr);
   recvtotal = 0; for (i=0; i<nrecvs; i++) recvtotal += olengths1[i];
 
+  CHKMEMQ;
   /* post receives:  rvalues - rows I will own; count - nu */
   ierr = PetscMalloc3(recvtotal,PetscInt,&rvalues,nrecvs,PetscInt,&source,nrecvs,MPI_Request,&recv_waits);CHKERRQ(ierr);
   count  = 0;
@@ -129,28 +124,31 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     ierr  = MPI_Irecv((rvalues+count),olengths1[i],MPIU_INT,onodes1[i],tag,comm,recv_waits+i);CHKERRQ(ierr);
     count += olengths1[i];
   }
+  CHKMEMQ;
 
   /* do sends:
      1) starts[i] gives the starting index in svalues for stuff going to 
      the ith processor
   */
-  ierr = PetscMalloc3(cnt,PetscInt,&svalues,nsends,MPI_Request,&send_waits,size+1,PetscInt,&starts);CHKERRQ(ierr);
+  CHKMEMQ;
+  ierr = PetscMalloc3(cnt,PetscInt,&svalues,nsends,MPI_Request,&send_waits,size,PetscInt,&starts);CHKERRQ(ierr);
   starts[0]  = 0; 
   for (i=1; i<size; i++) { starts[i] = starts[i-1] + nprocs[i-1];} 
   for (i=0; i<cnt; i++) {
-    if (owner[i] != rank) {
-      svalues[starts[owner[i]]++] = rows[i];
-    }
+  CHKMEMQ;
+    svalues[starts[owner[i]]++] = rows[i];
+  CHKMEMQ;
   }
-
+  CHKMEMQ;
   starts[0] = 0;
-  for (i=1; i<size+1; i++) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  for (i=1; i<size; i++) { starts[i] = starts[i-1] + nprocs[i-1];} 
   count = 0;
   for (i=0; i<size; i++) {
     if (nprocs[i]) {
       ierr = MPI_Isend(svalues+starts[i],nprocs[i],MPIU_INT,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
     }
   }
+  CHKMEMQ;
 
   /*  wait on receives */
   count  = nrecvs; 
@@ -163,6 +161,11 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     count--;
   }
   if (slen != recvtotal) SETERRQ2(PETSC_ERR_PLIB,"Total message lengths %D not expected %D",slen,recvtotal);
+
+  CHKMEMQ;
+  ierr = ISCreateGeneral(comm,slen,rvalues,&red->is);CHKERRQ(ierr);
+  CHKMEMQ;
+ierr = ISView(red->is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = PetscFree(olengths1);CHKERRQ(ierr);
   ierr = PetscFree(onodes1);CHKERRQ(ierr);
@@ -247,6 +250,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Redistribute(PC pc)
 {
   PetscErrorCode  ierr;
   PC_Redistribute *red;
+  const char      *prefix;
   
   PetscFunctionBegin;
   ierr = PetscNewLog(pc,PC_Redistribute,&red);CHKERRQ(ierr);
@@ -258,6 +262,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Redistribute(PC pc)
   pc->ops->destroy         = PCDestroy_Redistribute;
   pc->ops->setfromoptions  = PCSetFromOptions_Redistribute;
   pc->ops->view            = PCView_Redistribute;    
+
+  ierr = KSPCreate(((PetscObject)pc)->comm,&red->ksp);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(pc,red->ksp);CHKERRQ(ierr);
+  ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(red->ksp,prefix);CHKERRQ(ierr); 
+  ierr = KSPAppendOptionsPrefix(red->ksp,"redistribute_");CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
