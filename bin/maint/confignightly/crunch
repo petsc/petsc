@@ -1,7 +1,0 @@
-#! /bin/csh
-
-set MACH=crunch
-set USR=petsc
-set LOC=/sandbox/petsc/petsc-dev
-set TAO_LOC=/sandbox/petsc/tao-devel
-set CONF=linux-gnu

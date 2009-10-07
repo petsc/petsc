@@ -1,6 +1,0 @@
-#! /bin/csh
-
-set MACH=jlogin2.lcrc.anl.gov
-set USR=petsc
-set LOC=/sandbox/petsc/petsc-dev
-set CONF=linux-rhAS3-intel81-opt

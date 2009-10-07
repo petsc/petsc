@@ -1,9 +1,0 @@
-#! /bin/csh
-
-#Machine dead - disabled
-
-set MACH=hux1
-set USR=petsc
-set LOC=/sandbox/petsc/petsc-dev
-set TAO_LOC=/sandbox/petsc/tao-devel
-set CONF=linux_alpha_dec
