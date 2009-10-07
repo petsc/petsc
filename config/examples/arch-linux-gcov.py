@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 configure_options = [
-  '--with-mpi-dir=/home/petsc/soft/linux-Ubuntu_8.04-ia32/mpich2-1.0.7-gcc-pgf90',
-  '--download-f-blas-lapack=1'
+  '--download-mpich=1',
+  '--with-gcov=1'
   ]
 
 if __name__ == '__main__':

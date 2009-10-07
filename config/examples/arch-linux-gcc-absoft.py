@@ -1,5 +1,6 @@
-#!/home/petsc/soft/linux-debian_sarge/python-2.2/bin/python
+#!/usr/bin/env python
 
+#!/home/petsc/soft/linux-debian_sarge/python-2.2/bin/python
 # Test python-2.2 compliance [minimal python version required by PETSc configure]
 
 configure_options = [
@@ -7,7 +8,7 @@ configure_options = [
   '--with-fc=f90',
   '--with-cxx=g++',
   '--with-clanguage=c++',
-  '--with-blas-lapack-dir=/home/petsc/soft/linux-debian_sarge-gcc-absoft/LAPACK',
+  '--download-f-blas-lapack=1',
   '--download-mpich=1',
   '--download-mpich-pm=gforker',
   '--download-prometheus=1',

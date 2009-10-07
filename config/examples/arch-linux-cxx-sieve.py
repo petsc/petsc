@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
 configure_options = [
+  '--with-cc=gcc',
+  '--with-cxx=g++',
   '--download-mpich=1',
-  '--download-mpich-pm=gforker',
-  '--download-f-blas-lapack=1',
-  '--download-prometheus=1',
-  '--download-parmetis=1',
-  '--with-debugging=0'
+  '--with-sieve=1',
+  '--download-boost=1',
+  '--with-clanguage=cxx'
   ]
 
 if __name__ == '__main__':

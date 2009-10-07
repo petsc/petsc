@@ -1,9 +1,0 @@
-#! /bin/csh
-
-# does not work anymore
-
-set MACH=zoolander
-set USR=petsc
-set LOC=/sandbox/petsc/petsc-dev
-set TAO_LOC=/sandbox/petsc/tao-devel
-set CONF=macosx-gnu

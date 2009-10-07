@@ -1,0 +1,6 @@
+#! /bin/csh
+
+set MACH=steamroller
+set USR=petsc
+set LOC=/sandbox/petsc/petsc-dev
+set CONF=arch-linux-pkgs-gcov

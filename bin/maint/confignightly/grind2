@@ -1,0 +1,6 @@
+#! /bin/csh
+
+set MACH=grind
+set USR=petsc
+set LOC=/sandbox/petsc/petsc-dev-2
+set CONF=arch-linux-gcc-pgf90
