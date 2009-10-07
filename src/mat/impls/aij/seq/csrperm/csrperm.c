@@ -48,9 +48,7 @@ typedef struct {
   PetscInt **iperm_list;
 } Mat_SeqCSRPERM;
 
-EXTERN_C_BEGIN
 extern PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
-EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
@@ -90,10 +88,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqCSRPERM_SeqAIJ(Mat A,MatType typ
 }
 EXTERN_C_END
 
-EXTERN_C_BEGIN
-extern PetscErrorCode MatDestroy_SeqAIJ(Mat);
-EXTERN_C_END
-
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SeqCSRPERM"
 PetscErrorCode MatDestroy_SeqCSRPERM(Mat A)
@@ -120,10 +114,6 @@ PetscErrorCode MatDestroy_SeqCSRPERM(Mat A)
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-EXTERN_C_BEGIN
-extern PetscErrorCode MatDuplicate_SeqAIJ(Mat,MatDuplicateOption,Mat*);
-EXTERN_C_END
 
 PetscErrorCode MatDuplicate_SeqCSRPERM(Mat A, MatDuplicateOption op, Mat *M) 
 {
