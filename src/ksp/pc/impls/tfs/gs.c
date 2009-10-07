@@ -1300,7 +1300,8 @@ static PetscErrorCode gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals
     {
       /* Should MPI_ANY_SOURCE be replaced by *list ? In that case do the
          second one *list and do list++ afterwards */
-      ierr = MPI_Irecv(in1, *size *step, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, gs->gs_comm, msg_ids_in++);CHKERRQ(ierr);
+      ierr = MPI_Irecv(in1, *size *step, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list, gs->gs_comm, msg_ids_in);CHKERRQ(ierr);
+      list++;msg_ids_in++;
       in1 += *size++ *step;
     }
   while (*++msg_nodes);
@@ -1324,7 +1325,8 @@ static PetscErrorCode gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals
           dptr2+=step;
           iptr++;
         }
-      ierr = MPI_Isend(dptr3, *msg_size++ *step, MPIU_SCALAR, *msg_list++, MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);CHKERRQ(ierr);
+      ierr = MPI_Isend(dptr3, *msg_size *step, MPIU_SCALAR, *msg_list, MSGTAG1+my_id, gs->gs_comm, msg_ids_out);CHKERRQ(ierr);
+      msg_size++; msg_list++;msg_ids_out++;
     }
 
   /* tree */
@@ -1337,7 +1339,8 @@ static PetscErrorCode gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals
     PetscScalar d1 = 1.0;
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
-      ierr = MPI_Wait(ids_in++, &status);CHKERRQ(ierr);
+      ierr = MPI_Wait(ids_in, &status);CHKERRQ(ierr);
+      ids_in++;
       while (*iptr >= 0) {
 	dstep = PetscBLASIntCast(step);
         BLASaxpy_(&dstep,&d1,in2,&i1,dptr1 + *iptr*step,&i1);
@@ -1359,7 +1362,8 @@ static PetscErrorCode gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals
   while (*msg_nodes++)
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
-    {ierr = MPI_Wait(ids_out++, &status);CHKERRQ(ierr);}
+    {ierr = MPI_Wait(ids_out, &status);CHKERRQ(ierr);ids_out++;}
+    
 
   PetscFunctionReturn(0);
 }
@@ -1506,8 +1510,8 @@ static PetscErrorCode gs_gop_pairwise_plus_hc( gs_id *gs,  PetscScalar *in_vals,
          second one *list and do list++ afterwards */
       if ((my_id|mask)==(*list|mask))
         {
-          ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, gs->gs_comm, msg_ids_in++);CHKERRQ(ierr);
-          in1 += *size++;
+          ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list, gs->gs_comm, msg_ids_in);CHKERRQ(ierr);
+          list++; msg_ids_in++;in1 += *size++;
         }
       else
         {list++; size++;}
@@ -1530,7 +1534,8 @@ static PetscErrorCode gs_gop_pairwise_plus_hc( gs_id *gs,  PetscScalar *in_vals,
             {*dptr2++ = *(dptr1 + *iptr++);}
           /* CHECK PERSISTENT COMMS MODE FOR ALL THIS STUFF */
           /* is msg_ids_out++ correct? */
-          ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *list++, MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);CHKERRQ(ierr);
+          ierr = MPI_Isend(dptr3, *msg_size, MPIU_SCALAR, *list, MSGTAG1+my_id, gs->gs_comm, msg_ids_out);CHKERRQ(ierr);
+          msg_size++;list++;msg_ids_out++;
         }
       else
         {list++; msg_size++;}
@@ -1549,7 +1554,8 @@ static PetscErrorCode gs_gop_pairwise_plus_hc( gs_id *gs,  PetscScalar *in_vals,
         {
           /* Should I check the return value of MPI_Wait() or status? */
           /* Can this loop be replaced by a call to MPI_Waitall()? */
-          ierr = MPI_Wait(ids_in++, &status);CHKERRQ(ierr);
+          ierr = MPI_Wait(ids_in, &status);CHKERRQ(ierr);
+          ids_in++;
           while (*iptr >= 0)
             {*(dptr1 + *iptr++) += *in2++;}
         }
@@ -1568,7 +1574,8 @@ static PetscErrorCode gs_gop_pairwise_plus_hc( gs_id *gs,  PetscScalar *in_vals,
         {
           /* Should I check the return value of MPI_Wait() or status? */
           /* Can this loop be replaced by a call to MPI_Waitall()? */
-          ierr = MPI_Wait(ids_out++, &status);CHKERRQ(ierr);
+          ierr = MPI_Wait(ids_out, &status);CHKERRQ(ierr);
+          ids_out++;
         }
       msg_list++;
     }
