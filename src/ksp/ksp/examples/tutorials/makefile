@@ -693,7 +693,7 @@ runex10_seqcsrperm:
 	   else echo "Possible problem with ex10_seqcsrperm, diffs above"; fi; \
 	   ${RM} -f ex10_seqcsrperm.tmp
 runex10_mpicsrperm:
-	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view -mat_view_info -matload_type mpicsrperm > ex10_mpicsrperm.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view -mat_view_info -matload_type mpicsrperm > ex10_mpicsrperm.tmp 2>&1; \
 	   if (${DIFF} output/ex10_mpicsrperm.out ex10_mpicsrperm.tmp) then true; \
 	   else echo "Possible problem with ex10_mpicsrperm, diffs above"; fi; \
 	   ${RM} -f ex10_mpicsrperm.tmp

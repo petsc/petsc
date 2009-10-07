@@ -46,15 +46,11 @@ typedef struct {
   PetscInt **xgroup_list;
   PetscInt **nzgroup_list;
   PetscInt **iperm_list;
-
-  /* We need to keep a pointer to MatAssemblyEnd_SeqAIJ because we 
-   * actually want to call this function from within the 
-   * MatAssemblyEnd_SeqCSRPERM function.  Similarly, we also need 
-   * MatDestroy_SeqAIJ and MatDuplicate_SeqAIJ. */
-  PetscErrorCode (*AssemblyEnd_SeqAIJ)(Mat,MatAssemblyType);
-  PetscErrorCode (*MatDestroy_SeqAIJ)(Mat);
-  PetscErrorCode (*MatDuplicate_SeqAIJ)(Mat,MatDuplicateOption,Mat*);
 } Mat_SeqCSRPERM;
+
+EXTERN_C_BEGIN
+extern PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
+EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
@@ -73,9 +69,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqCSRPERM_SeqAIJ(Mat A,MatType typ
   }
 
   /* Reset the original function pointers. */
-  B->ops->assemblyend = csrperm->AssemblyEnd_SeqAIJ;
-  B->ops->destroy   = csrperm->MatDestroy_SeqAIJ;
-  B->ops->duplicate = csrperm->MatDuplicate_SeqAIJ;
+  B->ops->assemblyend = MatAssemblyEnd_SeqAIJ;
+  B->ops->destroy     = MatDestroy_SeqAIJ;
+  B->ops->duplicate   = MatDuplicate_SeqAIJ;
 
   /* Free everything in the Mat_SeqCSRPERM data structure. 
    * We don't free the Mat_SeqCSRPERM struct itself, as this will 
@@ -94,6 +90,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqCSRPERM_SeqAIJ(Mat A,MatType typ
 }
 EXTERN_C_END
 
+EXTERN_C_BEGIN
+extern PetscErrorCode MatDestroy_SeqAIJ(Mat);
+EXTERN_C_END
+
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SeqCSRPERM"
 PetscErrorCode MatDestroy_SeqCSRPERM(Mat A)
@@ -101,17 +101,7 @@ PetscErrorCode MatDestroy_SeqCSRPERM(Mat A)
   PetscErrorCode ierr;
   Mat_SeqCSRPERM *csrperm = (Mat_SeqCSRPERM *) A->spptr;
 
-  /* We are going to convert A back into a SEQAIJ matrix, since we are 
-   * eventually going to use MatDestroy_SeqAIJ() to destroy everything 
-   * that is not specific to CSRPERM.
-   * In preparation for this, reset the operations pointers in A to 
-   * their SeqAIJ versions. */
-  A->ops->assemblyend = csrperm->AssemblyEnd_SeqAIJ;
-    /* I suppose I don't actually need to point A->ops->assemblyend back 
-     * to the right thing, but I do it anyway for completeness. */
-  A->ops->destroy   = csrperm->MatDestroy_SeqAIJ;
-  A->ops->duplicate = csrperm->MatDuplicate_SeqAIJ;
-
+  PetscFunctionBegin;
   /* Free everything in the Mat_SeqCSRPERM data structure. 
    * Note that we don't need to free the Mat_SeqCSRPERM struct 
    * itself, as MatDestroy() will do so. */
@@ -127,9 +117,13 @@ PetscErrorCode MatDestroy_SeqCSRPERM(Mat A)
   /* Note that I don't call MatSetType().  I believe this is because that 
    * is only to be called when *building* a matrix.  I could be wrong, but 
    * that is how things work for the SuperLU matrix class. */
-  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
+  ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+EXTERN_C_BEGIN
+extern PetscErrorCode MatDuplicate_SeqAIJ(Mat,MatDuplicateOption,Mat*);
+EXTERN_C_END
 
 PetscErrorCode MatDuplicate_SeqCSRPERM(Mat A, MatDuplicateOption op, Mat *M) 
 {
@@ -138,7 +132,7 @@ PetscErrorCode MatDuplicate_SeqCSRPERM(Mat A, MatDuplicateOption op, Mat *M)
   Mat_SeqCSRPERM *csrperm_dest = (Mat_SeqCSRPERM *) (*M)->spptr;
 
   PetscFunctionBegin;
-  ierr = (*csrperm->MatDuplicate_SeqAIJ)(A,op,M);CHKERRQ(ierr);
+  ierr = MatDuplicate_SeqAIJ(A,op,M);CHKERRQ(ierr);
   ierr = PetscMemcpy((*M)->spptr,csrperm,sizeof(Mat_SeqCSRPERM));CHKERRQ(ierr);
   /* Allocate space for, and copy the grouping and permutation info. 
    * I note that when the groups are initially determined in 
@@ -159,16 +153,16 @@ PetscErrorCode MatDuplicate_SeqCSRPERM(Mat A, MatDuplicateOption op, Mat *M)
 #define __FUNCT__ "SeqCSRPERM_create_perm"
 PetscErrorCode SeqCSRPERM_create_perm(Mat A)
 {
-  PetscInt   m;  /* Number of rows in the matrix. */
-  Mat_SeqAIJ *a = (Mat_SeqAIJ *)(A)->data;
-  PetscInt   *ia;  /* From the CSR representation; points to the beginning  of each row. */
-  PetscInt   maxnz; /* Maximum number of nonzeros in any row. */
-  PetscInt   *rows_in_bucket;
+  PetscInt        m;  /* Number of rows in the matrix. */
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ *)(A)->data;
+  PetscInt        *ia;  /* From the CSR representation; points to the beginning  of each row. */
+  PetscInt        maxnz; /* Maximum number of nonzeros in any row. */
+  PetscInt        *rows_in_bucket;
     /* To construct the permutation, we sort each row into one of maxnz 
      * buckets based on how many nonzeros are in the row. */
-  PetscInt   nz;
-  PetscInt   *nz_in_row;  /* the number of nonzero elements in row k. */
-  PetscInt   *ipnz;
+  PetscInt        nz;
+  PetscInt        *nz_in_row;  /* the number of nonzero elements in row k. */
+  PetscInt        *ipnz;
     /* When constructing the iperm permutation vector, 
      * ipnz[nz] is used to point to the next place in the permutation vector 
      * that a row with nz nonzero elements should be placed.*/
@@ -180,7 +174,7 @@ PetscErrorCode SeqCSRPERM_create_perm(Mat A)
   /* I really ought to put something in here to check if B is of 
    * type MATSEQCSRPERM and return an error code if it is not.
    * Come back and do this! */
-   
+  PetscFunctionBegin;
   m  = A->rmap->n;
   ia = a->i;
    
@@ -269,9 +263,9 @@ PetscErrorCode SeqCSRPERM_create_perm(Mat A)
 PetscErrorCode MatAssemblyEnd_SeqCSRPERM(Mat A, MatAssemblyType mode)
 {
   PetscErrorCode ierr;
-  Mat_SeqCSRPERM *csrperm = (Mat_SeqCSRPERM*) A->spptr;
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
 
+  PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
   
   /* Since a MATSEQCSRPERM matrix is really just a MATSEQAIJ with some 
@@ -283,7 +277,7 @@ PetscErrorCode MatAssemblyEnd_SeqCSRPERM(Mat A, MatAssemblyType mode)
    * are many zero rows.  If the SeqAIJ assembly end routine decides to use 
    * this, this may break things.  (Don't know... haven't looked at it.) */
   a->inode.use = PETSC_FALSE;
-  (*csrperm->AssemblyEnd_SeqAIJ)(A, mode);
+  ierr = MatAssemblyEnd_SeqAIJ(A, mode);
 
   /* Now calculate the permutation and grouping information. */
   ierr = SeqCSRPERM_create_perm(A);CHKERRQ(ierr);
@@ -309,18 +303,18 @@ PetscErrorCode MatMult_SeqCSRPERM(Mat A,Vec xx,Vec yy)
   PetscInt       *xgroup;
     /* Denotes where groups of rows with same number of nonzeros 
      * begin and end in iperm. */
-  PetscInt *nzgroup;
-  PetscInt ngroup;
-  PetscInt igroup;
-  PetscInt jstart,jend;
+  PetscInt       *nzgroup;
+  PetscInt       ngroup;
+  PetscInt       igroup;
+  PetscInt       jstart,jend;
     /* jstart is used in loops to denote the position in iperm where a 
      * group starts; jend denotes the position where it ends.
      * (jend + 1 is where the next group starts.) */
-  PetscInt iold,nz;
-  PetscInt istart,iend,isize;
-  PetscInt ipos;
-  PetscScalar yp[NDIM];
-  PetscInt    ip[NDIM]; /* yp[] and ip[] are treated as vector "registers" for performing the mat-vec. */
+  PetscInt       iold,nz;
+  PetscInt       istart,iend,isize;
+  PetscInt       ipos;
+  PetscScalar    yp[NDIM];
+  PetscInt       ip[NDIM]; /* yp[] and ip[] are treated as vector "registers" for performing the mat-vec. */
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
 #pragma disjoint(*x,*y,*aa)
@@ -451,22 +445,22 @@ PetscErrorCode MatMultAdd_SeqCSRPERM(Mat A,Vec xx,Vec ww,Vec yy)
 
   /* Variables that don't appear in MatMultAdd_SeqAIJ. */
   Mat_SeqCSRPERM *csrperm;
-  PetscInt *iperm;  /* Points to the permutation vector. */
-  PetscInt *xgroup;
+  PetscInt       *iperm;  /* Points to the permutation vector. */
+  PetscInt       *xgroup;
     /* Denotes where groups of rows with same number of nonzeros 
      * begin and end in iperm. */
-  PetscInt *nzgroup;
-  PetscInt ngroup;
-  PetscInt igroup;
-  PetscInt jstart,jend;
+  PetscInt       *nzgroup;
+  PetscInt       ngroup;
+  PetscInt       igroup;
+  PetscInt       jstart,jend;
     /* jstart is used in loops to denote the position in iperm where a 
      * group starts; jend denotes the position where it ends.
      * (jend + 1 is where the next group starts.) */
-  PetscInt iold,nz;
-  PetscInt istart,iend,isize;
-  PetscInt ipos;
-  PetscScalar yp[NDIM];
-  PetscInt ip[NDIM];
+  PetscInt       iold,nz;
+  PetscInt       istart,iend,isize;
+  PetscInt       ipos;
+  PetscScalar    yp[NDIM];
+  PetscInt       ip[NDIM];
     /* yp[] and ip[] are treated as vector "registers" for performing 
      * the mat-vec. */
 
@@ -616,10 +610,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCSRPERM(Mat A,const MatTy
   ierr = PetscNewLog(B,Mat_SeqCSRPERM,&csrperm);CHKERRQ(ierr);
   B->spptr = (void *) csrperm;
 
-  csrperm->AssemblyEnd_SeqAIJ  = A->ops->assemblyend;
-  csrperm->MatDestroy_SeqAIJ   = A->ops->destroy;
-  csrperm->MatDuplicate_SeqAIJ = A->ops->duplicate;
-
   /* Set function pointers for methods that we inherit from AIJ but override. */
   B->ops->duplicate   = MatDuplicate_SeqCSRPERM;
   B->ops->assemblyend = MatAssemblyEnd_SeqCSRPERM;
@@ -688,7 +678,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqCSRPERM(MPI_Comm comm,PetscInt m,P
   ierr = MatSeqAIJSetPreallocation_SeqAIJ(*A,nz,(PetscInt*)nnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
