@@ -1,5 +1,6 @@
-#!/home/petsc/soft/linux-debian_sarge/python-2.2/bin/python
+#!/usr/bin/env python
 
+#!/home/petsc/soft/linux-debian_sarge/python-2.2/bin/python
 # Test python-2.2 compliance [minimal python version required by PETSc configure]
 
 configure_options = [

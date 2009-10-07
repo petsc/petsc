@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 configure_options = [
-  '--with-cc=gcc'
-  '--with-cxx=g++'
+  '--with-cc=gcc',
+  '--with-cxx=g++',
   '--download-mpich=1',
   '--with-sieve=1',
   '--download-boost=1',
