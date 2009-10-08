@@ -3,7 +3,7 @@
 
 ALL: lib
 
-SOURCEH  = characteristicimpl.h characteristic.h
+SOURCEH  = characteristicimpl.h ../../../include/characteristic.h
 DIRS     = interface impls
 LOCDIR   = src/contrib/semiLagrange/
 MANSEC   = SemiLagrange

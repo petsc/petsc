@@ -67,7 +67,6 @@ Warning: Using from command-line: %s, ignoring environment: %s''' % (str(self.fr
     self.addDefine('ARCH', '"'+self.arch+'"')
     # SLEPc configure need this info
     self.addMakeMacro('PETSC_ARCH',self.arch)
-    self.addSubstitution('ARCH', self.arch)
     return
 
   def configure(self):

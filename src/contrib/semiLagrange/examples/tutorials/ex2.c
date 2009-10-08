@@ -11,7 +11,7 @@ static char help[] = "\n";
 #include "petscda.h"
 #include "petscdmmg.h"
 #include "petscbag.h"
-#include "../src/contrib/semiLagrange/characteristic.h"
+#include "characteristic.h"
 
 #define SHEAR_CELL     0
 #define SOLID_BODY     1
