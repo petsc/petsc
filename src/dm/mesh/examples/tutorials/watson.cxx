@@ -90,9 +90,20 @@ PetscErrorCode CreateMesh(SieveType& sieve)
   const bool renumber    = false;
 
   PetscFunctionBegin;
-  ALE::SieveBuilder<ALE::Mesh>::buildTopology(s, meshDim, numCells, (int *) cells, numVertices, interpolate, numCorners);
-  ALE::ISieveConverter::convertSieve(*s, sieve, renumbering, renumber);
-  sieve.view("Mesh");
+  if (sieve.commRank() == 0) {
+    // Can optimize input
+    ALE::SieveBuilder<ALE::Mesh>::buildTopology(s, meshDim, numCells, (int *) cells, numVertices, interpolate, numCorners);
+    ALE::ISieveConverter::convertSieve(*s, sieve, renumbering, renumber);
+  } else {
+    sieve.setChart(typename SieveType::chart_type());
+    sieve.allocate();
+  }
+  sieve.view("Sieve");
+
+  // Can optimize stratification
+  //mesh.stratify();
+  //ALE::SieveBuilder<SieveMesh>::buildCoordinates(mesh, spaceDim, coordinates);
+  //mesh.view("Mesh");
   PetscFunctionReturn(0);
 }
 
