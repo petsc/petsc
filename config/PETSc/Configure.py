@@ -224,6 +224,7 @@ class Configure(config.base.Configure):
     self.addMakeMacro('PACKAGES_INCLUDES',self.headers.toStringNoDupes(includes))
     
     self.addMakeMacro('INSTALL_DIR',self.installdir)
+    self.addDefine('LIB_DIR','"'+os.path.join(self.installdir,'lib')+'"')
 
     if self.framework.argDB['with-single-library']:
       # overrides the values set in conf/variables
