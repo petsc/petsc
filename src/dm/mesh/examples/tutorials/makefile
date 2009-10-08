@@ -179,6 +179,10 @@ problemTests: bratu1.o problemTests.o chkopts
 	-${CLINKER} -o problemTests bratu1.o problemTests.o ${PETSC_SNES_LIB} -lcppunit
 	${RM} -f bratu1.o problemTests.o
 
+watson: watson.o chkopts
+	-${CLINKER} -o watson watson.o ${PETSC_SNES_LIB}
+	${RM} -f watson.o
+
 #-----------------------------------------------------------------
 runmixedpoisson:
 	${MPIEXEC} -n ${NP} ./mixedpoisson ${EXTRA_ARGS}
