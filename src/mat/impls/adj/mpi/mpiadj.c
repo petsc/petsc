@@ -193,14 +193,10 @@ PetscErrorCode MatEqual_MPIAdj(Mat A,Mat B,PetscTruth* flg)
 #define __FUNCT__ "MatGetRowIJ_MPIAdj"
 PetscErrorCode MatGetRowIJ_MPIAdj(Mat A,PetscInt oshift,PetscTruth symmetric,PetscTruth blockcompressed,PetscInt *m,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
 {
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
   PetscInt       i;
   Mat_MPIAdj     *a = (Mat_MPIAdj *)A->data;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
-  if (size > 1) {*done = PETSC_FALSE; PetscFunctionReturn(0);}
   *m    = A->rmap->n;
   *ia   = a->i;
   *ja   = a->j;
