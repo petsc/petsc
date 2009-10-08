@@ -299,13 +299,17 @@ namespace ALE {
     //   (0, numCells) ... (0, numVertices): vertices
     // The other cells are numbered as they are requested
     static void buildTopology(Obj<sieve_type> sieve, int dim, int numCells, int cells[], int numVertices, bool interpolate = true, int corners = -1, int firstVertex = -1, Obj<arrow_section_type> orientation = NULL, int firstCell = 0) {
-      int debug = sieve->debug();
-
       ALE_LOG_EVENT_BEGIN;
       if (sieve->commRank() != 0) {
         ALE_LOG_EVENT_END;
         return;
       }
+      buildTopology_private(sieve, dim, numCells, cells, numVertices, interpolate, corners, firstVertex, orientation, firstCell);
+      ALE_LOG_EVENT_END;
+    };
+    static void buildTopology_private(Obj<sieve_type> sieve, int dim, int numCells, int cells[], int numVertices, bool interpolate = true, int corners = -1, int firstVertex = -1, Obj<arrow_section_type> orientation = NULL, int firstCell = 0) {
+      int debug = sieve->debug();
+
       if (firstVertex < 0) firstVertex = numCells;
       // Create a map from dimension to the current element number for that dimension
       std::map<int,int*>       curElement;
@@ -419,7 +423,6 @@ namespace ALE {
           }
         }
       }
-      ALE_LOG_EVENT_END;
     };
     static void buildCoordinates(const Obj<Bundle_>& bundle, const int embedDim, const double coords[]) {
       const Obj<typename Bundle_::real_section_type>& coordinates = bundle->getRealSection("coordinates");
