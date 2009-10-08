@@ -1,6 +1,6 @@
 ALL: lib 
 
-CFLAGS   = -I../../sieve
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = cartesian.c
 SOURCEF  =

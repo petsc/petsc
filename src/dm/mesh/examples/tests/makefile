@@ -1,5 +1,5 @@
-CPPFLAGS        = ${SIEVE_FLAGS} ${EXTRA_FLAGS}
-CFLAGS	        = -I. -I${PETSC_DIR}/src/dm/mesh/sieve ${BOOST_INCLUDE} ${TRIANGLE_INCLUDE} ${TETGEN_INCLUDE}
+CPPFLAGS        =
+CFLAGS	        =
 FFLAGS	        =
 FPPFLAGS        = 
 LOCDIR          = src/dm/mesh/examples/tutorials/

@@ -1,8 +1,8 @@
 ALL: lib
 
-CFLAGS   = -I. ${BOOST_INCLUDE} ${TRIANGLE_INCLUDE} ${TETGEN_INCLUDE}
+CFLAGS   =
 FFLAGS   =
-CPPFLAGS = ${SIEVE_FLAGS}
+CPPFLAGS =
 SOURCEC  = ALE.cxx
 SOURCEF  =
 SOURCEH  = ALE_options.hh Filter.hh Hierarchy.hh Hierarchy_New.hh Map.hh Meshing.hh MeshSurgery.hh X.hh XSieve.hh XSifter.hh

@@ -3,8 +3,8 @@
 
 ALL: lib
 
-CPPFLAGS = ${SIEVE_FLAGS}
-CFLAGS   = -Isieve ${BOOST_INCLUDE} ${TRIANGLE_INCLUDE} ${TETGEN_INCLUDE} ${ZOLTAN_INCLUDE}
+CPPFLAGS =
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = mesh.c meshpcice.c meshpylith.c meshlagrit.c meshzoltan.c meshdolfin.c meshpflotran.c meshexodus.c section.c
 SOURCEF  = 
