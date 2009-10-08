@@ -1,7 +1,7 @@
 
 ALL: lib
 
-CFLAGS   = ${PBGL_INCLUDE}
+CFLAGS   = 
 FFLAGS   =
 SOURCEC	 = mpiaij.c mmaij.c mpiaijpc.c mpiov.c fdmpiaij.c mpiptap.c mpimatmatmult.c
 SOURCEF	 =

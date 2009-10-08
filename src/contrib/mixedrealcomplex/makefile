@@ -1,4 +1,3 @@
-# $Id: makefile,v 1.1 1999/04/22 21:25:55 bsmith Exp bsmith $ 
 
 ALL: ex1
 

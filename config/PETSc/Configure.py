@@ -174,9 +174,11 @@ class Configure(config.base.Configure):
     # Note: . is not included in this macro, consistent with AR_LIB_SUFFIX
     if self.setCompilers.sharedLibraryExt == self.setCompilers.AR_LIB_SUFFIX:
       self.addMakeMacro('SL_LINKER_SUFFIX', '')
+      self.addDefine('SLSUFFIX','""')
     else:
       self.addMakeMacro('SL_LINKER_SUFFIX', self.setCompilers.sharedLibraryExt)
-    
+      self.addDefine('SLSUFFIX','"'+self.setCompilers.sharedLibraryExt+'"')
+      
     #SL_LINKER_LIBS is currently same as PCC_LINKER_LIBS - so simplify
     self.addMakeMacro('SL_LINKER_LIBS','${PCC_LINKER_LIBS}')
     #self.addMakeMacro('SL_LINKER_LIBS',self.libraries.toStringNoDupes(self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' ')))

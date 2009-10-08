@@ -4,8 +4,8 @@
 
 ALL: lib
 
-# Set EXTRA_FLAGS="-DPETSC_DEBUG_USFFT" to turn on debugging output
-CFLAGS   = ${EXTRA_FLAGS}
+# Set CFLAGS="-DPETSC_DEBUG_USFFT" to turn on debugging output
+CFLAGS   = 
 FFLAGS   =
 SOURCEC  = matusfft.c
 OBJSC    = matusfft.o

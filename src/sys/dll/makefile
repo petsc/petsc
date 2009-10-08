@@ -1,6 +1,6 @@
 
 ALL: lib 
-CFLAGS    =  -DPETSC_SLSUFFIX='"${SL_LINKER_SUFFIX}"'
+CFLAGS    =  
 FFLAGS    =
 CPPFLAGS  = 
 SOURCEC	  = dlimpl.c dl.c   reg.c
