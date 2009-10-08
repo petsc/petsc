@@ -1,7 +1,7 @@
 
 ALL: lib 
 
-CFLAGS    = -DPETSC_LIB_DIR='"${INSTALL_DIR}/lib"' -DPETSC_ARCH='"${PETSC_ARCH}"' -DPETSC_DIR='"${PETSC_DIR}"' 
+CFLAGS    = 
 FFLAGS    =
 SOURCEC	  = arch.c fhost.c fuser.c memc.c mpiu.c psleep.c sortd.c sorti.c \
             str.c sortip.c pbarrier.c pdisplay.c ctable.c psplit.c \

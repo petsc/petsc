@@ -4,15 +4,15 @@
 
 CFLAGS		   =
 FFLAGS		   =
-CPPFLAGS       =
-FPPFLAGS       =
+CPPFLAGS           =
+FPPFLAGS           =
 LOCDIR		   = src/contrib/semiLagrange/examples/tutorials/
-MANSEC         = SemiLagrange
+MANSEC             = SemiLagrange
 EXAMPLESC	   = ex1.c ex2.c ex4.c
 EXAMPLESF	   =
 EXAMPLESCH	   =
-EXAMPLESFH     =
-EXAMPLESMATLAB =
+EXAMPLESFH         =
+EXAMPLESMATLAB     =
 DIRS		   =
 
 include ${PETSC_DIR}/conf/base

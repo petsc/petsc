@@ -1,4 +1,3 @@
-# $Id: makefile,v 1.50 2001/08/22 18:00:26 balay Exp $ 
 #requirespackage  'PETSC_HAVE_DXML'
 #requireslanguage CONLY
 

@@ -64,10 +64,9 @@ Warning: Using from command-line: %s, ignoring environment: %s''' % (str(self.fr
       raise RuntimeError('PETSC_ARCH should not contain path characters, but you have specified: '+str(self.arch))
     self.archBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.arch)
     self.hostOsBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.framework.host_os)
-    self.addDefine('ARCH', self.hostOsBase)
-    self.addDefine('ARCH_NAME', '"'+self.arch+'"')
+    self.addDefine('ARCH', '"'+self.arch+'"')
     # SLEPc configure need this info
-    self.addMakeMacro('PETSC_ARCH_NAME',self.arch)
+    self.addMakeMacro('PETSC_ARCH',self.arch)
     self.addSubstitution('ARCH', self.arch)
     return
 

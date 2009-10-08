@@ -1,6 +1,6 @@
 
 CFLAGS           =
-FFLAGS		 = -I${PETSC_DIR}/include/finclude
+FFLAGS		 = 
 CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR		 = tutorials/multiphysics
