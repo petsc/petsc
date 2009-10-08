@@ -1646,6 +1646,31 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetFiberDimension(SectionInt section,
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "SectionIntSetFiberDimensionField"
+/*@
+  SectionIntSetFiberDimensionField - Set the size of the vector space attached to the point for a given field
+
+  Not collective
+
+  Input Parameters:
++ section - the section object
+. point - the Sieve point
+. size - The fiber dimension
+- field - The field number
+
+  Level: advanced
+
+.seealso SectionIntSetFiberDimension(), SectionIntRestrict(), SectionIntCreate(), SectionIntView()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetFiberDimensionField(SectionInt section, PetscInt point, const PetscInt size, const PetscInt field)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
+  section->s->setFiberDimension(point, size, field);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "SectionIntGetSize"
 /*@
@@ -1716,6 +1741,94 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntClear(SectionInt section)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
   section->s->clear();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SectionIntSet"
+/*@
+  SectionIntSet - Sets all the values to the given value
+
+  Not collective
+
+  Input Parameters:
++ section - the real Section
+- val - the value
+
+  Level: intermediate
+
+.seealso VecNorm(), SectionIntCreate()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionIntSet(SectionInt section, PetscInt val)
+{
+  Obj<PETSC_MESH_TYPE::int_section_type> s;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = SectionIntGetSection(section, s);CHKERRQ(ierr);
+  s->set(val);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SectionIntAddSpace"
+/*@
+  SectionIntAddSpace - Add another field to this section
+
+  Collective on Mesh
+
+  Input Parameter:
+. section - the Section
+
+  Level: advanced
+
+.seealso SectionIntCreate(), SectionIntGetFibration()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionIntAddSpace(SectionInt section)
+{
+  ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = SectionIntGetSection(section, s);CHKERRQ(ierr);
+  s->addSpace();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SectionIntGetFibration"
+/*@C
+  SectionIntGetFibration - Creates a section for only the data associated with the given field
+
+  Collective on Mesh
+
+  Input Parameter:
++ section - the Section
+- field- The field number
+
+  Output Parameter:
+. subsection - the section of the given field
+
+  Level: advanced
+
+.seealso SectionIntCreate(), SectionIntAddSpace()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetFibration(SectionInt section, const PetscInt field, SectionInt *subsection)
+{
+  ALE::Obj<PETSC_MESH_TYPE>                   b;
+  ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
+  ALE::Obj<PETSC_MESH_TYPE::int_section_type> t;
+  MPI_Comm       comm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) section, &comm);CHKERRQ(ierr);
+  ierr = SectionIntGetBundle(section, b);CHKERRQ(ierr);
+  ierr = SectionIntGetSection(section, s);CHKERRQ(ierr);
+  ierr = SectionIntCreate(comm, subsection);CHKERRQ(ierr);
+  ierr = SectionIntSetBundle(*subsection, b);CHKERRQ(ierr);
+  t    = s->getFibration(field);
+  ierr = SectionIntSetSection(*subsection, t);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
