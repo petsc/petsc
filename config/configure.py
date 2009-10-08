@@ -8,7 +8,8 @@ extraLogs = []
 petsc_arch = ''
 
 # Use en_US as language so that BuildSystem parses compiler messages in english
-os.environ['LANG'] = 'en_US'
+if os.environ['LANG'] != 'en_US' or os.environ['LANG'] != 'en_US.UTF-8':
+  os.environ['LANG'] = 'en_US.UTF-8'
 
 if not hasattr(sys, 'version_info') or not sys.version_info[1] >= 2 or not sys.version_info[0] >= 2:
   print '**** You must have Python version 2.2 or higher to run config/configure.py ******'
