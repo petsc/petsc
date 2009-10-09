@@ -2,19 +2,90 @@
 
 # Source code for creating marked HTML files from information processed from
 # running gcov
-# This is done in three stages
-# Stage 1: Process lines files storing gcov information
-# Stage 2: Create marked HTML source code files
-# Stage 3: Create HTML pages having statistics and hyperlinks to HTML source code           files (files are sorted by filename and percentage code tested) 
+# This is done in four stages
+# Stage 1: Extract tar balls,merge files and dump .lines files in $PETSC_DIR/tmp/gcov
+# Stage 2: Process .lines files
+# Stage 3: Create marked HTML source code files
+# Stage 4: Create HTML pages having statistics and hyperlinks to HTML source code           files (files are sorted by filename and percentage code tested) 
 #  Stores the main HTML pages in LOC if LOC is defined via command line argument o-wise it uses the default PETSC_DIR
 import os
 import string
 import operator
 import sys
+import shutil
+import glob
 
-# ----------------- Stage 1 ---------------
 PETSC_DIR = os.environ['PETSC_DIR']
 gcov_dir = PETSC_DIR+'/tmp/gcov'
+cwd = os.getcwd()
+# -------------------------- Stage 1 -------------------------------
+tarballs = glob.glob('*.gz')
+len_tarballs = len(tarballs)
+if len_tarballs == 0:
+    print "No gcov tar balls found in directory %s" %(cwd)
+    sys.exit()
+
+print "%s tarballs found\n%s" %(len_tarballs,tarballs)
+print "Extracting gcov directories from tar balls"
+tmp_dirs = []
+for i in range(0,len_tarballs):
+    tmp = []
+    dir_name = tarballs[i].split('.tar')[0]
+    tmp.append(dir_name)
+    os.system("gunzip -c" +" "+  tarballs[i] + "|tar -xof -")
+    dir = cwd+'/'+dir_name
+    tmp.append(len(os.listdir(dir)))
+    tmp_dirs.append(tmp)
+
+# each list in tmp_dirs contains the directory name and number of files in it           
+# Cases to consider for gcov
+# 1) Gcov runs fine on all machines = Equal number of files in all the tarballs.         
+# 2) Gcov runs fine on atleast one machine = Unequal number of files in the tarballs.The smaller tarballs are subset of the largest tarball(s)   
+# 3) Gcov doesn't run correctly on any of the machines...possibly different files in tarballs  
+
+# Case 2 is implemented for now...sort the directories in reverse order
+tmp_dirs.sort(key=operator.itemgetter(1),reverse=True)
+
+# Remove files from gcov directory if not empty
+os.system("rm -f"+" "+gcov_dir+"/*.*")
+print "Merging files"
+nfiles = tmp_dirs[0][1]
+dir1 = cwd+'/'+tmp_dirs[0][0]
+files_dir1 = os.listdir(dir1)
+for i in range(0,nfiles):
+    out_file = gcov_dir+'/'+files_dir1[i]
+    out_fid  = open(out_file,'w')
+
+    in_file = tmp_dirs[0][0]+'/'+files_dir1[i]
+    in_fid = open(in_file,'r')
+    lines = in_fid.readlines()
+    in_fid.close()
+    for j in range(1,len(tmp_dirs)):
+        in_file = tmp_dirs[j][0]+'/'+files_dir1[i]
+        try:
+            in_fid = open(in_file,'r')
+        except IOError:
+            print "Did not find file %s in directory %s" %(files_dir1[i],tmp_dirs[j][0])
+            continue
+        new_lines = in_fid.readlines()
+        lines = list(set(lines)&set(new_lines)) # Find intersection             
+        in_fid.close()
+
+    if(len(lines) != 0):
+	lines.sort()
+        out_fid.writelines(lines)
+        out_fid.flush()
+    out_fid.close()
+
+# Remove directories created by extracting tar files                                                                                 
+print "Removing temporary directories"
+for j in range(0,len(tmp_dirs)):
+    shutil.rmtree(tmp_dirs[j][0])
+
+# ------------------------- End of Stage 1 ---------------------------------
+
+# ------------------------ Stage 2 -------------------------------------
+print "Processing .lines files in %s" %(gcov_dir)
 gcov_filenames = os.listdir(gcov_dir)
 nsrc_files = 0; 
 nsrc_files_not_tested = 0;
@@ -23,7 +94,7 @@ src_not_tested_filename = [];
 src_not_tested_lines = [];
 src_not_tested_nlines = [];
 ctr = 0;
-print "Processing gcov files ...."
+print "Processing gcov files"
 for file in gcov_filenames:
     gcov_file = file
     gcov_file = PETSC_DIR+'/'+string.replace(gcov_file,'_','/')
@@ -47,11 +118,10 @@ for file in gcov_filenames:
     nsrc_files += 1
     gcov_fid.close()
 
-print "Finished processing gcov files"
-# ------------------------- End of Stage 1 --------------------------
+# ------------------------- End of Stage 2 --------------------------
 
-# ---------------------- Stage 2 -----------------------------------
-print "Creating marked HTML files ...."
+# ---------------------- Stage 3 -----------------------------------
+print "Creating marked HTML files"
 temp_string = '<a name'
 file_len = len(src_not_tested_nlines)
 fileopen_error = [];
@@ -132,12 +202,11 @@ for file_ctr in range(0,file_len):
     output_list.append(temp_list)
 #    print >>out_fid,"<tr><td><a href = %s>%s</a></td><td>%s</td><td>%s</td><td>%3.2f</td></tr>" % (outhtml_file,src_not_tested_filename[file_ctr],nsrc_lines,src_not_tested_nlines[file_ctr],per_code_not_tested)
 #    out_fid.flush()
-print "Finished creating marked HTML files"
-# ------------------------------- End of Stage 2 ----------------------------------------
+# ------------------------------- End of Stage 3 ----------------------------------------
 
-# ------------------------------- Stage 3 ----------------------------------------------
+# ------------------------------- Stage 4 ----------------------------------------------
 # Main HTML page containts statistics and individual file results
-print "Creating main HTML page ...."
+print "Creating main HTML page"
 # Create the main html file                                                                                                                                    
 # ----------------------------- index_gcov1.html has results sorted by file name ----------------------------------
 # ----------------------------- index_gcov2.html has results sorted by % code tested ------------------------------
@@ -211,6 +280,6 @@ print >>out_fid,"""</body>
 </html>"""
 out_fid.close()
 
-print "Finished creating main HTML page"
+print "End of gcov script"
 print """See index_gcov1.html in %s""" % (LOC)
 
