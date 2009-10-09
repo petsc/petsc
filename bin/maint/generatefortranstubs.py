@@ -5,7 +5,7 @@
 #
 import os
 #
-#  Opens all generated files and fixes them; also generates list in makefile.src
+#  Opens all generated files and fixes them
 #
 def FixFile(filename):
   import re

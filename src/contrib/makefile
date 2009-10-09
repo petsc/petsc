@@ -1,5 +1,5 @@
 
-DIRS     = fun3d blopex semiLagrange
+DIRS     = fun3d blopex 
 LOCDIR   = src/contrib/
 
 include ${PETSC_DIR}/conf/base

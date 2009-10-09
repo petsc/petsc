@@ -1,5 +1,5 @@
 
-#include "../src/contrib/semiLagrange/characteristicimpl.h" /*I "characteristic.h" I*/
+#include "../src/semiLagrange/characteristicimpl.h" /*I "characteristic.h" I*/
 
 PetscCookie CHARACTERISTIC_COOKIE;
 PetscLogEvent  CHARACTERISTIC_SetUp, CHARACTERISTIC_Solve, CHARACTERISTIC_QueueSetup, CHARACTERISTIC_DAUpdate;

@@ -2,7 +2,7 @@
 ALL: lib
 
 DIRS     = da
-LOCDIR   = src/contrib/semiLagrange/impls/
+LOCDIR   = src/semiLagrange/impls/
 
 include ${PETSC_DIR}/conf/base
 include ${PETSC_DIR}/conf/test

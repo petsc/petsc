@@ -1,4 +1,4 @@
-#include "../src/contrib/semiLagrange/characteristicimpl.h"
+#include "../src/semiLagrange/characteristicimpl.h"
 
 static PetscTruth CharacteristicPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
