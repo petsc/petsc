@@ -37,11 +37,14 @@ for i in range(0,len_tarballs):
     tmp.append(len(os.listdir(dir)))
     tmp_dirs.append(tmp)
 
-# each list in tmp_dirs contains the directory name and number of files in it                                 
-# Cases to consider                                                                                             
-# 1) Gcov runs fine on all machines = Equal number of files in all the tarballs..GOOD FOR HEALTH                
-# 2) Gcov runs fine on atleast one machine = Unequal number of files in the tarballs.The smaller tarballs are subset of the largest tarball(s)..NOT SO BAD   
-# 3) Gcov doesn't run correctly on any of the machines...possibly different files in tarballs..HMMM!  
+# each list in tmp_dirs contains the directory name and number of files in it           
+# Cases to consider for gcov
+# 1) Gcov runs fine on all machines = Equal number of files in all the tarballs.         
+# 2) Gcov runs fine on atleast one machine = Unequal number of files in the tarballs.The smaller tarballs are subset of the largest tarball(s)   
+# 3) Gcov doesn't run correctly on any of the machines...possibly different files in tarballs  
+
+# Case 2 is implemented for now...sort the directories in reverse order
+tmp_dirs.sort(key=operator.itemgetter(1),reverse=True)
 
 # Remove files from gcov directory if not empty
 os.system("rm -f"+" "+gcov_dir+"/*.*")
