@@ -235,6 +235,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_newdatastruct(Mat B,Mat A,IS isrow,IS
   b->j          = bj; 
   b->i          = bi;
   b->diag       = bdiag;
+  b->free_diag  = PETSC_TRUE;
   b->ilen       = 0;
   b->imax       = 0;
   b->row        = isrow;
@@ -443,6 +444,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
   b->j          = bj; 
   b->i          = bi;
   b->diag       = bdiag;
+  b->free_diag  = PETSC_TRUE;
   b->ilen       = 0;
   b->imax       = 0;
   b->row        = isrow;

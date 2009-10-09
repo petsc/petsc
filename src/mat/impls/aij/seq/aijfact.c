@@ -2209,6 +2209,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS perm,
   b->j    = uj;
   b->i    = ui;
   b->diag = udiag;
+  b->free_diag = PETSC_TRUE;
   b->ilen = 0;
   b->imax = 0;
   b->row  = perm;
@@ -2418,6 +2419,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const MatFacto
   b->j    = uj;
   b->i    = ui;
   b->diag = udiag;
+  b->free_diag = PETSC_TRUE;
   b->ilen = 0;
   b->imax = 0;
   b->row  = perm;
