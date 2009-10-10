@@ -47,7 +47,7 @@ void PETSC_STDCALL matgetrowijf90_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscT
   *ierr = F90Array1dCreate((PetscInt *)JA,PETSC_INT,1,IA[*n],ja PETSC_F90_2PTR_PARAM(jad));
 }
 
-void PETSC_STDCALL matrestorerowij90_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscTruth *blockcompressed, PetscInt *n,F90Array1d *ia,
+void PETSC_STDCALL matrestorerowijf90_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscTruth *blockcompressed, PetscInt *n,F90Array1d *ia,
                                 F90Array1d *ja,PetscTruth *done,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(iad)  PETSC_F90_2PTR_PROTO(jad))
 {
   PetscInt *IA,*JA;
