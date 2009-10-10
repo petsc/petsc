@@ -7,11 +7,13 @@
 #define matrestorearrayf90_        MATRESTOREARRAYF90
 #define matgetghostsf90_           MATGETGHOSTSF90
 #define matgetrowijf90_            MATGETROWIJF90
+#define matrestorerowijf90_        MATRESTOREROWIJF90
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matgetarrayf90_            matgetarrayf90
 #define matrestorearrayf90_        matrestorearrayf90
 #define matgetghostsf90_           matgetghostsf90
 #define matgetrowijf90_            matgetrowijf90
+#define matrestorerowijf90_        matrestorerowijf90
 #endif
 
 EXTERN_C_BEGIN
