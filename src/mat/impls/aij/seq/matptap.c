@@ -164,7 +164,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C) 
 {
   PetscErrorCode ierr;
-  PetscInt       flops=0;
+  PetscLogDouble flops=0.0;
   Mat_SeqAIJ     *a  = (Mat_SeqAIJ *) A->data;
   Mat_SeqAIJ     *p  = (Mat_SeqAIJ *) P->data;
   Mat_SeqAIJ     *c  = (Mat_SeqAIJ *) C->data;
@@ -201,7 +201,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
         }
         apa[pjj[k]] += (*aa)*paj[k];
       }
-      flops += 2*pnzj;
+      flops += 2.0*pnzj;
       aa++;
     }
 
@@ -227,7 +227,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
           caj[k] += (*pA)*apa[apj[nextap++]];
         }
       }
-      flops += 2*apnzj;
+      flops += 2.0*apnzj;
       pA++;
     }
 
