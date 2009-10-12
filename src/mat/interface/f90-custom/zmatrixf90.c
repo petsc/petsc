@@ -7,11 +7,13 @@
 #define matrestorearrayf90_        MATRESTOREARRAYF90
 #define matgetghostsf90_           MATGETGHOSTSF90
 #define matgetrowijf90_            MATGETROWIJF90
+#define matrestorerowijf90_        MATRESTOREROWIJF90
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matgetarrayf90_            matgetarrayf90
 #define matrestorearrayf90_        matrestorearrayf90
 #define matgetghostsf90_           matgetghostsf90
 #define matgetrowijf90_            matgetrowijf90
+#define matrestorerowijf90_        matrestorerowijf90
 #endif
 
 EXTERN_C_BEGIN
@@ -47,7 +49,7 @@ void PETSC_STDCALL matgetrowijf90_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscT
   *ierr = F90Array1dCreate((PetscInt *)JA,PETSC_INT,1,IA[*n],ja PETSC_F90_2PTR_PARAM(jad));
 }
 
-void PETSC_STDCALL matrestorerowij90_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscTruth *blockcompressed, PetscInt *n,F90Array1d *ia,
+void PETSC_STDCALL matrestorerowijf90_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscTruth *blockcompressed, PetscInt *n,F90Array1d *ia,
                                 F90Array1d *ja,PetscTruth *done,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(iad)  PETSC_F90_2PTR_PROTO(jad))
 {
   PetscInt *IA,*JA;

@@ -4,6 +4,10 @@
 #include "finclude/ftn-custom/petscishide.h90"
 #include "finclude/ftn-custom/petscmathide.h90"
 
+! rename MAT_INFO_SIZE and MAT_FACTORINFO_SIZE to enable reuse here
+#define MAT_INFO_SIZE MAT_INFO_SIZE_MOD
+#define MAT_FACTORINFO_SIZE MAT_FACTORINFO_SIZE_MOD
+
       Interface 
         Subroutine MatGetRowIJF90(v,shift,sym,blockcompressed,n,ia,     &
      &                            ja,done,ierr)
@@ -61,7 +65,8 @@
          USE_MAT_HIDE
          MAT_HIDE  v
          MatInfoType flag
-         MatInfo info(:)
+#include "finclude/petscmatinfosize.h"
+         MatInfo info(MAT_INFO_SIZE)
          PetscErrorCode ierr
        End Subroutine
       End Interface
@@ -72,7 +77,8 @@
          MAT_HIDE  v
          IS_HIDE row
          IS_HIDE col
-         MatFactorInfo info(:)
+#include "finclude/petscmatfactorinfosize.h"
+         MatFactorInfo info(MAT_FACTORINFO_SIZE)
          PetscErrorCode ierr
          end subroutine
       End Interface
@@ -83,7 +89,8 @@
          MAT_HIDE  v
          IS_HIDE row
          IS_HIDE col
-         MatFactorInfo info(:)
+#include "finclude/petscmatfactorinfosize.h"
+         MatFactorInfo info(MAT_FACTORINFO_SIZE)
          PetscErrorCode ierr
          end subroutine
       End Interface
@@ -95,7 +102,8 @@
          MAT_HIDE  v
          IS_HIDE row
          IS_HIDE col
-         MatFactorInfo info(:)
+#include "finclude/petscmatfactorinfosize.h"
+         MatFactorInfo info(MAT_FACTORINFO_SIZE)
          PetscErrorCode ierr
          end subroutine
       End Interface
@@ -105,7 +113,8 @@
          USE_MAT_HIDE
          MAT_HIDE  fact
          MAT_HIDE  v
-         MatFactorInfo info(:)
+#include "finclude/petscmatfactorinfosize.h"
+         MatFactorInfo info(MAT_FACTORINFO_SIZE)
          PetscErrorCode ierr
          end subroutine
       End Interface
@@ -115,7 +124,8 @@
          USE_MAT_HIDE
          MAT_HIDE  v
          IS_HIDE perm
-         MatFactorInfo info(:)
+#include "finclude/petscmatfactorinfosize.h"
+         MatFactorInfo info(MAT_FACTORINFO_SIZE)
          PetscErrorCode ierr
          end subroutine
       End Interface
@@ -126,7 +136,8 @@
          MAT_HIDE  fact
          MAT_HIDE  v
          IS_HIDE perm
-         MatFactorInfo info(:)
+#include "finclude/petscmatfactorinfosize.h"
+         MatFactorInfo info(MAT_FACTORINFO_SIZE)
          PetscErrorCode ierr
          end subroutine
       End Interface
@@ -136,7 +147,8 @@
          USE_MAT_HIDE
          MAT_HIDE  fact
          MAT_HIDE  v
-         MatFactorInfo info(:)
+#include "finclude/petscmatfactorinfosize.h"
+         MatFactorInfo info(MAT_FACTORINFO_SIZE)
          PetscErrorCode ierr
          end subroutine
       End Interface
@@ -148,7 +160,8 @@
          MAT_HIDE  v
          IS_HIDE row
          IS_HIDE col
-         MatFactorInfo info(:)
+#include "finclude/petscmatfactorinfosize.h"
+         MatFactorInfo info(MAT_FACTORINFO_SIZE)
          PetscErrorCode ierr
          end subroutine
       End Interface
@@ -159,7 +172,8 @@
          MAT_HIDE  fact
          MAT_HIDE  v
          IS_HIDE perm
-         MatFactorInfo info(:)
+#include "finclude/petscmatfactorinfosize.h"
+         MatFactorInfo info(MAT_FACTORINFO_SIZE)
          PetscErrorCode ierr
          end subroutine
       End Interface
@@ -169,14 +183,21 @@
          USE_MAT_HIDE
          MAT_HIDE  v
          IS_HIDE row
-         MatFactorInfo info(:)
+#include "finclude/petscmatfactorinfosize.h"
+         MatFactorInfo info(MAT_FACTORINFO_SIZE)
          PetscErrorCode ierr
          end subroutine
       End Interface
 
       Interface
          subroutine MatFactorInfoInitialize(info ,ierr)
-         MatFactorInfo info(:)
+#include "finclude/petscmatfactorinfosize.h"
+         MatFactorInfo info(MAT_FACTORINFO_SIZE)
          PetscErrorCode ierr
          end subroutine
       End Interface
+
+! revert MAT_INFO_SIZE and MAT_FACTORINFO_SIZE defines
+#undef MAT_INFO_SIZE
+#undef MAT_FACTORINFO_SIZE
+#

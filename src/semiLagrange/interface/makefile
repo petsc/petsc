@@ -12,7 +12,7 @@ OBJSF    =
 LIBBASE  = libpetsccontrib
 MANSEC   = SemiLagrange
 DIRS     = 
-LOCDIR   = src/contrib/semiLagrange/interface/
+LOCDIR   = src/semiLagrange/interface/
 
 include ${PETSC_DIR}/conf/base
 include ${PETSC_DIR}/conf/test

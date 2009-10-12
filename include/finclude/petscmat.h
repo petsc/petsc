@@ -91,14 +91,9 @@
 
       parameter (SAME_NONZERO_PATTERN = 0,DIFFERENT_NONZERO_PATTERN = 1)
       parameter (SAME_PRECONDITIONER = 2,SUBSET_NONZERO_PATTERN=3)
-
-!
-!  Note: MAT_INFO_SIZE must equal # elements in MatInfo structure
-!  (See petsc/include/petscmat.h)
-!
-      PetscEnum MAT_INFO_SIZE
-
-      parameter (MAT_INFO_SIZE=10)
+#if !(PETSC_USE_FORTRAN_DATATYPES_)
+#include "finclude/petscmatinfosize.h"
+#endif
 
       PetscEnum MAT_INFO_BLOCK_SIZE
       PetscEnum MAT_INFO_NZ_ALLOCATED
@@ -143,15 +138,9 @@
 
       parameter (MAT_COMPOSITE_ADDITIVE = 0)
       parameter (MAT_COMPOSITE_MULTIPLICATIVE = 1)
-!
-!
-!  Note: MAT_FACTORINFO_SIZE must equal # elements in MatFactorInfo structure
-!  (See petsc/include/petscmat.h)
-!
-      PetscEnum MAT_FACTORINFO_SIZE
-
-      parameter (MAT_FACTORINFO_SIZE=11)
-
+#if !(PETSC_USE_FORTRAN_DATATYPES_)
+#include "finclude/petscmatfactorinfosize.h"
+#endif
       PetscEnum MAT_FACTORINFO_LEVELS
       PetscEnum MAT_FACTORINFO_FILL
       PetscEnum MAT_FACTORINFO_DIAGONAL_FILL

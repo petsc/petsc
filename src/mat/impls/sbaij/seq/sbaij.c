@@ -127,6 +127,7 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
   PetscLogObjectState((PetscObject)A,"Rows=%D, NZ=%D",A->rmap->N,a->nz);
 #endif
   ierr = MatSeqXAIJFreeAIJ(A,&a->a,&a->j,&a->i);CHKERRQ(ierr);
+  if (a->free_diag){ierr = PetscFree(a->diag);CHKERRQ(ierr);}
   if (a->row) {ierr = ISDestroy(a->row);CHKERRQ(ierr);}
   if (a->col){ierr = ISDestroy(a->col);CHKERRQ(ierr);}
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}

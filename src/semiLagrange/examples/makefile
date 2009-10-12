@@ -1,7 +1,7 @@
 
 ALL:
 
-LOCDIR	 = src/contrib/semiLagrange/examples/
+LOCDIR	 = src/semiLagrange/examples/
 DIRS	 = tutorials
 
 include ${PETSC_DIR}/conf/base

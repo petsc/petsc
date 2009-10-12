@@ -120,7 +120,9 @@ EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat,Mat,const
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_newdatastruct(Mat,Mat,const MatFactorInfo*);
 
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3(Mat,Mat,const MatFactorInfo*);
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_newdatastruct(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat,Mat,const MatFactorInfo*);
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_newdatastruct(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat,Mat,const MatFactorInfo*);
 #if defined(PETSC_HAVE_SSE)
@@ -191,6 +193,54 @@ EXTERN PetscErrorCode MatLoad_SeqBAIJ(PetscViewer, const MatType,Mat*);
   A[1] -= B[1]*C[0] + B[3]*C[1];\
   A[2] -= B[0]*C[2] + B[2]*C[3];\
   A[3] -= B[1]*C[2] + B[3]*C[3];\
+}
+
+/*
+  Kernel_A_gets_A_times_B_3: A = A * B with size bs=3
+
+  Input Parameters:
++  A,B - square bs by bs arrays stored in column major order
+-  W   - bs*bs work arrary
+
+  Output Parameter:
+.  A = A * B
+*/
+
+#define Kernel_A_gets_A_times_B_3(A,B,W) 0;\
+{\
+  PetscMemcpy(W,A,9*sizeof(MatScalar));\
+  A[0] = W[0]*B[0] + W[3]*B[1] + W[6]*B[2];\
+  A[1] = W[1]*B[0] + W[4]*B[1] + W[7]*B[2];\
+  A[2] = W[2]*B[0] + W[5]*B[1] + W[8]*B[2];\
+  A[3] = W[0]*B[3] + W[3]*B[4] + W[6]*B[5];\
+  A[4] = W[1]*B[3] + W[4]*B[4] + W[7]*B[5];\
+  A[5] = W[2]*B[3] + W[5]*B[4] + W[8]*B[5];\
+  A[6] = W[0]*B[6] + W[3]*B[7] + W[6]*B[8];\
+  A[7] = W[1]*B[6] + W[4]*B[7] + W[7]*B[8];\
+  A[8] = W[2]*B[6] + W[5]*B[7] + W[8]*B[8];\
+}
+
+/*
+  Kernel_A_gets_A_minus_B_times_C_3: A = A - B * C with size bs=3
+
+  Input Parameters:
++  A,B,C - square bs by bs arrays stored in column major order
+
+  Output Parameter:
+.  A = A - B*C
+*/
+
+#define Kernel_A_gets_A_minus_B_times_C_3(A,B,C) 0;\
+{\
+  A[0] -= B[0]*C[0] + B[3]*C[1] + B[6]*C[2];\
+  A[1] -= B[1]*C[0] + B[4]*C[1] + B[7]*C[2];\
+  A[2] -= B[2]*C[0] + B[5]*C[1] + B[8]*C[2];\
+  A[3] -= B[0]*C[3] + B[3]*C[4] + B[6]*C[5];\
+  A[4] -= B[1]*C[3] + B[4]*C[4] + B[7]*C[5];\
+  A[5] -= B[2]*C[3] + B[5]*C[4] + B[8]*C[5];\
+  A[6] -= B[0]*C[6] + B[3]*C[7] + B[6]*C[8];\
+  A[7] -= B[1]*C[6] + B[4]*C[7] + B[7]*C[8];\
+  A[8] -= B[2]*C[6] + B[5]*C[7] + B[8]*C[8];\
 }
 
 #endif
