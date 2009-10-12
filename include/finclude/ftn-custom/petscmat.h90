@@ -200,4 +200,4 @@
 ! revert MAT_INFO_SIZE and MAT_FACTORINFO_SIZE defines
 #undef MAT_INFO_SIZE
 #undef MAT_FACTORINFO_SIZE
-#
+
