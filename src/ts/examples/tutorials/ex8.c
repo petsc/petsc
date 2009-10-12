@@ -300,7 +300,7 @@ int main(int argc,char **argv)
     PetscErrorCode (*pcreate)(Problem);
 
     ierr = PetscFListFind(plist,MPI_COMM_WORLD,pname,(void(**)(void))&pcreate);CHKERRQ(ierr);
-    if (!pcreate) SETERRQ1(1,"No problem '%s'\n",pname);
+    if (!pcreate) SETERRQ1(1,"No problem '%s'",pname);
     ierr = (*pcreate)(problem);CHKERRQ(ierr);
   }
 
