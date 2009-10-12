@@ -270,7 +270,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_newdatastruct(Mat B,Mat A,IS isrow,IS
         B->ops->solve           = MatSolve_SeqBAIJ_2_NaturalOrdering_newdatastruct;
         break;
      case 3:
-	B->ops->solve = MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_newdatastruct;
+	B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_newdatastruct;
         B->ops->solve = MatSolve_SeqBAIJ_3_NaturalOrdering_newdatastruct;
         break;
      case 4:
