@@ -1143,7 +1143,7 @@ PetscErrorCode updateOperator(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& m, const A
   typedef ALE::ISieveVisitor::IndicesVisitor<PETSC_MESH_TYPE::real_section_type,PETSC_MESH_TYPE::order_type,PetscInt> visitor_type;
   visitor_type iV(*section, *globalOrder, (int) pow((double) m->getSieve()->getMaxConeSize(), m->depth())*m->getMaxDof(), m->depth() > 1);
 
-  PetscErrorCode ierr = updateOperator(A, *m->getSieve(), iV, e, array, ADD_VALUES);CHKERRQ(ierr);
+  PetscErrorCode ierr = updateOperator(A, *m->getSieve(), iV, e, array, mode);CHKERRQ(ierr);
 #else
   const PETSC_MESH_TYPE::indices_type indicesBlock = m->getIndices(section, e, globalOrder);
   const PetscInt *indices    = indicesBlock.first;
