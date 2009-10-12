@@ -31,9 +31,6 @@ class Installer(script.Script):
     self.rootDir    = os.path.abspath(self.argDB['rootDir'])
     self.installDir = os.path.abspath(self.argDB['installDir'])
     self.arch       = self.argDB['arch']
-    self.ranlib     = os.path.abspath(self.argDB['ranlib'])
-    self.make       = os.path.abspath(self.argDB['make'])
-    self.libSuffix  = self.argDB['libSuffix']
     self.rootIncludeDir    = os.path.join(self.rootDir, 'include')
     self.archIncludeDir    = os.path.join(self.rootDir, self.arch, 'include')
     self.rootConfDir       = os.path.join(self.rootDir, 'conf')
@@ -45,6 +42,20 @@ class Installer(script.Script):
     self.installConfDir    = os.path.join(self.installDir, 'conf')
     self.installLibDir     = os.path.join(self.installDir, 'lib')
     self.installBinDir     = os.path.join(self.installDir, 'bin')
+    #Check for options db
+    dbpath = os.path.join(self.rootDir, self.arch, 'RDict.db')
+    if not os.path.isfile(dbpath):
+      self.ranlib     = os.path.abspath(self.argDB['ranlib'])
+      self.make       = os.path.abspath(self.argDB['make'])
+      self.libSuffix  = self.argDB['libSuffix']
+    else:
+      import cPickle
+      framework = cPickle.loads(dbpath)
+      m = framework.require('PETSc.utilities.Make', None)
+      self.make = m.make+' '+m.flags
+      m = framework.require('config.compilers', None)
+      self.ranlib    = m.RANLIB
+      self.libSuffix = m.AR_LIB_SUFFIX
     return
 
   def copytree(self, src, dst, symlinks = False, copyFunc = shutil.copy2):
