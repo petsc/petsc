@@ -39,7 +39,7 @@ class PETScMaker(script.Script):
    self.setupModules()
    return
 
- def compileC(self, ):
+ def compileC(self,source,obj ):
    '''PETSC_INCLUDE	        = -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include
                               ${PACKAGES_INCLUDES} ${TAU_DEFS} ${TAU_INCLUDE} ${PETSC_BLASLAPACK_FLAGS}
       PETSC_CC_INCLUDES     = ${PETSC_INCLUDE}
@@ -63,8 +63,8 @@ class PETScMaker(script.Script):
          packageIncludes.append(p.include)
        else:
          packageIncludes.extend(p.include)
-   packageLibs     = self.libraries.toStringNoDupes(packageLibs+self.libraries.math))
-   packageIncludes = self.headers.toStringNoDupes(packageIncludes))
+   packageLibs     = self.libraries.toStringNoDupes(packageLibs+self.libraries.math)
+   packageIncludes = self.headers.toStringNoDupes(packageIncludes)
 
    includes = ['-I'+inc for inc in [os.path.join(self.petscdir.dir, self.arch.arch, 'include'), os.path.join(self.petscdir.dir, 'include')]]
    self.setCompilers.pushLanguage(self.languages.clanguage)
@@ -104,6 +104,7 @@ class PETScMaker(script.Script):
 
    if cnames:
      print 'Compiling C files ',cnames
+     self.compileC('vector.c','vector.o')
 
      print c_compiler.getCommand('hi.c','hi.o')
      print c_linker.getCommand('hi.c','hi')
