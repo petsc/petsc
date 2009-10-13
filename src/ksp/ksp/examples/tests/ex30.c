@@ -13,7 +13,6 @@ It is copied and intended to move dirty codes from ksp/examples/tutorials/ex10.c
         -num_numfac <num_numfac> -num_rhs <num_rhs> \n\
         -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package spooles or superlu or superlu_dist or mumps \n\
         -ksp_type preonly -pc_type cholesky -pc_factor_mat_solver_package spooles or dscpack or mumps \n\
-        -f0 <A> -fB <B> -pc_factor_mat_solver_package mumps -ksp_type preonly -pc_type cholesky -test_inertia -mat_sigma <sigma> \n\
    mpiexec -n <np> ex10 -f0 <datafile> -ksp_type cg -pc_type asm -pc_asm_type basic -sub_pc_type icc -mat_type sbaij
  \n\n";
 */
@@ -278,24 +277,6 @@ int main(int argc,char **args)
       ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
       ierr = PetscGetTime(&tsetup2);CHKERRQ(ierr);
       tsetup = tsetup2 - tsetup1;
-
-      /*
-      Test MatGetInertia()
-      Usage:
-      ex10 -f0 <mat_binaryfile> -ksp_type preonly -pc_type cholesky -mat_type seqsbaij -test_inertia -mat_sigma <sigma>
-      */
-      flg  = PETSC_FALSE;
-      ierr = PetscOptionsGetTruth(PETSC_NULL,"-test_inertia",&flg,PETSC_NULL);CHKERRQ(ierr);
-      if (flg){
-        PC        pc;
-        PetscInt  nneg, nzero, npos;
-        Mat       F;
-      
-        ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-        ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
-        ierr = MatGetInertia(F,&nneg,&nzero,&npos);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_SELF," MatInertia: nneg: %D, nzero: %D, npos: %D\n",nneg,nzero,npos);
-      }
 
       /*
        Tests "diagonal-scaling of preconditioned residual norm" as used 

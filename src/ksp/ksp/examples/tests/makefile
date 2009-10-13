@@ -131,6 +131,9 @@ ex31: ex31.o  chkopts
 ex32: ex32.o  chkopts
 	-${CLINKER} -o ex32 ex32.o  ${PETSC_KSP_LIB}
 	${RM} ex32.o
+ex33: ex33.o  chkopts
+	-${CLINKER} -o ex33 ex33.o  ${PETSC_KSP_LIB}
+	${RM} ex33.o
 #------------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
@@ -697,6 +700,22 @@ runex32_28:
 	   else echo "Possible problem with ex32_28, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_28.out
 
+runex33:
+	-@${MPIEXEC} -n 1 ./ex33 -sigma 2.0 > ex33.tmp 2>&1; \
+	if (${DIFF} output/ex33.out ex33.tmp) then true; \
+	   else echo "Possible problem with ex33, diffs above"; fi; \
+	   ${RM} -f ex33.tmp
+runex33_mumps:
+	-@${MPIEXEC} -n 1 ./ex33 -sigma 2.0 -pc_factor_mat_solver_package mumps -mat_mumps_icntl_13 1 > ex33.tmp 2>&1; \
+	if (${DIFF} output/ex33.out ex33.tmp) then true; \
+	   else echo "Possible problem with ex33_mumps, diffs above"; fi; \
+	   ${RM} -f ex33.tmp
+runex33_mumps_2:
+	-@${MPIEXEC} -n 3 ./ex33 -sigma 2.0 -pc_factor_mat_solver_package mumps -mat_mumps_icntl_13 1 > ex33.tmp 2>&1; \
+	if (${DIFF} output/ex33.out ex33.tmp) then true; \
+	   else echo "Possible problem with ex33_mumps_2, diffs above"; fi; \
+	   ${RM} -f ex33.tmp
+
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc runex4 runex4_3 \
                                  runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc runex19 runex19_2 ex19.rm \
                                  ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm \
@@ -706,7 +725,8 @@ TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.P
 	                         runex32_11 runex32_11_nd runex32_12 runex32_13 runex32_14 runex32_15 runex32_16 runex32_17 runex32_18  \
                                  runex32_20_lu runex32_20_lu_nd  runex32_23_lu runex32_23_lu_nd  runex32_24_lu runex32_24_lu_nd \
                                  runex32_25_lu runex32_25_lu_nd  runex32_26_lu runex32_26_lu_nd  runex32_27_lu runex32_27_lu_nd \
-                                 runex32_22 runex32_23 runex32_24 runex32_25 runex32_26 runex32_27 runex32_28 ex32.rm
+                                 runex32_22 runex32_23 runex32_24 runex32_25 runex32_26 runex32_27 runex32_28 ex32.rm \
+                                 ex33.PETSc runex33 ex33.rm 
 TESTEXAMPLES_C_X11	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm 
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex12f.PETSc ex12f.rm
