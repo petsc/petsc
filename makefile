@@ -215,7 +215,7 @@ chk_petsc_dir:
 #
 #
 install:
-	-@./config/install.py --rootDir=${PETSC_DIR} --installDir=${INSTALL_DIR} --arch=${PETSC_ARCH} --ranlib="${RANLIB}" --make="${OMAKE}" --libSuffix=${AR_LIB_SUFFIX}
+	-@./config/install.py --rootDir=${PETSC_DIR} --installDir=${INSTALL_DIR} --arch=${PETSC_ARCH} 
 
 # ------------------------------------------------------------------
 #
