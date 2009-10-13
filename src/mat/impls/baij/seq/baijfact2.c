@@ -4095,10 +4095,9 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_newdatastruct(Mat B,Mat A,const MatF
 
     /* elimination */
     bjtmp = bj + bi[i];
-    row   = *bjtmp++;
     nzL   = bi[i+1] - bi[i];
-    k   = 0;
-    while  (k < nzL) {
+    for(k=0;k < nzL;k++) {
+      row = bjtmp[k];
       pc = rtmp + bs2*row;
       for (flg=0,j=0; j<bs2; j++) { if (pc[j]!=0.0) { flg = 1; break; }}
       if (flg) {
@@ -4112,7 +4111,6 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_newdatastruct(Mat B,Mat A,const MatF
         }
         ierr = PetscLogFlops(2*bs2*bs*(nz+1)-bs2);CHKERRQ(ierr); /* flops = 2*bs^3*nz + 2*bs^3 - bs2) */
       }
-      row = *bjtmp++; k++;
     }
 
     /* finished row so stick it into b->a */
