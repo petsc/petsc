@@ -730,6 +730,8 @@ gcov:
            name=`echo ${LOCDIR} | sed s?/?_?g`; \
 	   grep "##" $${i}.gcov | cut -f 2 -d ":" > ${PETSC_DIR}/tmp/gcov/$${name}$${i}.lines ; \
           fi; done ; \
+	  tar -czf ${PETSC_DIR}/tmp/gcov.tar.gz ${PETSC_DIR}/tmp/gcov ; \
+	  rm -rf ${PETSC_DIR}/tmp/gcov ; \
         fi
 
 #----------------------------------------------------------------------------------
