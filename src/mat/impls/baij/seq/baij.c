@@ -2149,6 +2149,9 @@ PetscErrorCode MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,const MatFactorInfo *i
   a->col = col;
   
   /* Create the invert permutation so that it can be used in MatLUFactorNumeric() */
+  if (a->icol) {
+    ierr = ISDestroy(a->icol);CHKERRQ(ierr);
+  }
   ierr = ISInvertPermutation(col,PETSC_DECIDE,&a->icol);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(inA,a->icol);CHKERRQ(ierr);
   
