@@ -266,7 +266,35 @@ static PetscErrorCode TSView_SSP(TS ts,PetscViewer viewer)
 /* ------------------------------------------------------------ */
 
 /*MC
-      TSSSP - ODE solver using the explicit SSP method
+      TSSSP - Explicit strong stability preserving ODE solver
+
+  Most hyperbolic conservation laws have exact solutions that are total variation diminishing (TVD) or total variation
+  bounded (TVB) although these solutions often contain discontinuities.  Spatial discretizations such as Godunov's
+  scheme and high-resolution finite volume methods (TVD limiters, ENO/WENO) are designed to preserve these properties,
+  but they are usually formulated using a forward Euler time discretization or by coupling the space and time
+  discretization as in the classical Lax-Wendroff scheme.  When the space and time discretization is coupled, it is very
+  difficult to produce schemes with high temporal accuracy while preserving TVD properties.  An alternative is the
+  semidiscrete formulation where we choose a spatial discretization that is TVD with forward Euler and then choose a
+  time discretization that preserves the TVD property.  Such integrators are called strong stability preserving (SSP).
+
+  Let c_eff be the minimum number of function evaluations required to step as far as one step of forward Euler while
+  still being SSP.  Some theoretical bounds
+
+  1. There are no explicit methods with c_eff > 1.
+  2. There are no explicit methods beyond order 4 (for nonlinear problems) and c_eff > 0.
+  3. There are no implicit methods with order greater than 1 and c_eff > 2.
+
+  This integrator provides Runge-Kutta methods of order 2, 3, and 4 with maximal values of c_eff.  More stages allows
+  for larger values of c_eff which improves efficiency.  These implementations are low-memory and only use 2 or 3 work
+  vectors regardless of the total number of stages, so e.g. 25-stage 3rd order methods may be an excellent choice.
+
+  Methods can be chosen with -ts_ssp_type {rks2,rks3,rk104}
+
+  rks2: Second order methods with any number s>1 of stages.  c_eff = (s-1)/s
+
+  rks3: Third order methods with s=n^2 stages, n>1.  c_eff = (s-n)/s
+
+  rk104: A 10-stage fourth order method.  c_eff = 0.6
 
   Level: beginner
 
