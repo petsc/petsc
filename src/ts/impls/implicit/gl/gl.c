@@ -902,7 +902,6 @@ static PetscErrorCode TSGLCtrlChooseNextScheme_Default(TS ts,PetscInt n,const TS
   PetscErrorCode ierr;
   struct {PetscInt id,p; PetscReal h,eff;} best={-1,0,0},trial,cur;
   PetscInt cur_p,i;
-  PetscReal hnew,eff;
 
   PetscFunctionBegin;
   cur_p = sc[cur_sc]->p;
