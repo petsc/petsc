@@ -186,7 +186,7 @@ static PetscErrorCode TSView_Theta(TS ts,PetscViewer viewer)
 
 /* ------------------------------------------------------------ */
 /*MC
-      TS_THETA - DAE solver using the implicit Theta method
+      TSTHETA - DAE solver using the implicit Theta method
 
   Level: beginner
 

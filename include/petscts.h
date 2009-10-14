@@ -37,6 +37,7 @@ E*/
 #define TSPYTHON          "python"
 #define TSTHETA           "theta"
 #define TSGL              "gl"
+#define TSSSP             "ssp"
 
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve

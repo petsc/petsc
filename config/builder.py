@@ -39,7 +39,7 @@ class PETScMaker(script.Script):
    self.setupModules()
    return
 
- def compileC(self,source,obj ):
+ def compileC(self, source):
    '''PETSC_INCLUDE	        = -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include
                               ${PACKAGES_INCLUDES} ${TAU_DEFS} ${TAU_INCLUDE} ${PETSC_BLASLAPACK_FLAGS}
       PETSC_CC_INCLUDES     = ${PETSC_INCLUDE}
@@ -72,11 +72,28 @@ class PETScMaker(script.Script):
    flags.append(self.setCompilers.getCompilerFlags())             # PCC_FLAGS
    flags.extend([self.setCompilers.CPPFLAGS, self.CHUD.CPPFLAGS]) # CPP_FLAGS
    flags.append('-D__SDIR__=\'"'+os.getcwd()+'"\'')
-   cmd = ' '.join([compiler, '-o', obj, '-c', includes, packageIncludes, flags, source])
+   obj = os.path.splitext(source)[0]+'.o'
+   cmd = ' '.join([compiler, '-o', obj, '-c']+includes+[packageIncludes]+flags+[source])
+   print cmd
    self.setCompilers.popLanguage()
    return
 
-#PETSC_FCOMPILE        = ${FC} -c ${FC_FLAGS} ${FFLAGS} ${FCPPFLAGS}  ${SOURCEF}
+ def compileC(self, source):
+   '''PETSC_INCLUDE	        = -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include
+                              ${PACKAGES_INCLUDES} ${TAU_DEFS} ${TAU_INCLUDE} ${PETSC_BLASLAPACK_FLAGS}
+      PETSC_FC_INCLUDES = ${PETSC_INCLUDE}
+      PETSC_FCPPFLAGS   = ${PETSC_FC_INCLUDES} ${PETSCFLAGS} ${FPP_FLAGS} ${FPPFLAGS}
+      FCPPFLAGS         = ${PETSC_FCPPFLAGS}
+      PETSC_FCOMPILE    = ${FC} -c ${FC_FLAGS} ${FFLAGS} ${FCPPFLAGS}  ${SOURCEF}'''
+   # PETSCFLAGS, PETSC_BLASLAPACK_FLAGS, and FFLAGS are taken from user input (or empty)
+   flags           = []
+   self.setCompilers.pushLanguage('FC')
+   compiler      = self.setCompilers.getCompiler()
+   flags.append(self.setCompilers.getCompilerFlags())             # FC_FLAGS
+   obj = os.path.splitext(source)[0]+'.o'
+   cmd = ' '.join([compiler, '-o', obj, '-c']+includes+[packageIncludes]+flags+[source])
+   self.setCompilers.popLanguage()
+   return
 
  def run(self):
    self.setup()
@@ -89,8 +106,8 @@ class PETScMaker(script.Script):
    c_linker.checkSetup()
    sharedlinker = self.framework.getSharedLinkerObject(self.languages.clanguage)
    sharedlinker.checkSetup()
-   dynamiclinker = self.framework.getDynamicLinkerObject(self.languages.clanguage)
-   dynamiclinker.checkSetup()
+   #dynamiclinker = self.framework.getDynamicLinkerObject(self.languages.clanguage)
+   #dynamiclinker.checkSetup()
 
    cnames = []
    fnames = []
@@ -104,12 +121,12 @@ class PETScMaker(script.Script):
 
    if cnames:
      print 'Compiling C files ',cnames
-     self.compileC('vector.c','vector.o')
+     map(self.compileC, cnames)
 
      print c_compiler.getCommand('hi.c','hi.o')
      print c_linker.getCommand('hi.c','hi')
      print sharedlinker.getCommand('hi.o','libmy')
-     print dynamiclinker.getCommand('hi.o','libmy')
+     #print dynamiclinker.getCommand('hi.o','libmy')
 
    if fnames:
      print 'Compiling Fortran files ',fnames

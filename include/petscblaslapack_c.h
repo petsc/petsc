@@ -23,6 +23,8 @@ This file also deals with unmangled Fortran 77 naming convention.
 #  define LAPACKpttrf_ spttrf /* factorization of a spd tridiagonal matrix */
 #  define LAPACKpttrs_ spttrs /* solve a spd tridiagonal matrix system */
 #  define LAPACKstein_ sstein /* eigenvectors of real symm tridiagonal matrix */
+#  define LAPACKgesv_  sgesv
+#  define LAPACKgelss_ sgelss
 /* Real single precision with character string arguments. */
 #  define LAPACKormqr_ sormqr
 #  define LAPACKtrtrs_ strtrs
@@ -54,6 +56,8 @@ This file also deals with unmangled Fortran 77 naming convention.
 #  define LAPACKpttrf_ dpttrf 
 #  define LAPACKpttrs_ dpttrs 
 #  define LAPACKstein_ dstein
+#  define LAPACKgesv_  dgesv
+#  define LAPACKgelss_ dgelss
 /* Real double precision with character string arguments. */
 #  define LAPACKormqr_ dormqr
 #  define LAPACKtrtrs_ dtrtrs
@@ -86,6 +90,8 @@ This file also deals with unmangled Fortran 77 naming convention.
 # define BLASasum_    dzasum
 #  define LAPACKpttrf_ zpttrf 
 #  define LAPACKstein_ zstein
+# define LAPACKgesv_  zgesv
+# define LAPACKgelss_ zgelss
 /* Complex double precision with character string arguments */
 /* LAPACKormqr_ does not exist for complex. */
 # define LAPACKtrtrs_ ztrtrs

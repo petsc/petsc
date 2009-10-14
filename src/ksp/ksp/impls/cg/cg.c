@@ -132,6 +132,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
     S           = ksp->work[3]; 
     W           = ksp->work[4];
   } else {
+    S           = 0;            /* unused */
     W           = Z;
   } 
 

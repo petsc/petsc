@@ -1,7 +1,7 @@
 
 ALL: lib
 
-SOURCEH  = daimpl.h ../../../include/petscda.h
+SOURCEH  = ../../../include/private/daimpl.h ../../../include/petscda.h
 DIRS     = src  examples utils
 LOCDIR   = src/dm/da/
 MANSEC   = DA

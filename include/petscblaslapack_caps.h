@@ -22,7 +22,9 @@ This file also deals with CAPS Fortran 77 naming convention.
 #  define BLASasum_    SASUM
 #  define LAPACKpttrf_ SPTTRF
 #  define LAPACKpttrs_ SPTTRS
-#  define LAPACKstein_ STEIN
+#  define LAPACKstein_ SSTEIN
+#  define LAPACKgesv_  SGESV
+#  define LAPACKgelss_ SGELSS
 /* Real single precision with character string arguments. */
 #  define LAPACKormqr_ SORMQR
 #  define LAPACKtrtrs_ STRTRS
@@ -54,6 +56,8 @@ This file also deals with CAPS Fortran 77 naming convention.
 #  define LAPACKpttrf_ DPTTRF
 #  define LAPACKpttrs_ DPTTRS 
 #  define LAPACKstein_ DSTEIN
+#  define LAPACKgesv_  DGESV
+#  define LAPACKgelss_ DGELSS
 /* Real double precision with character string arguments. */
 #  define LAPACKormqr_ DORMQR
 #  define LAPACKtrtrs_ DTRTRS
@@ -87,6 +91,8 @@ This file also deals with CAPS Fortran 77 naming convention.
 #  define BLASasum_    SCASUM
 #  define LAPACKpttrf_ CPTTRF
 #  define LAPACKstein_ CSTEIN
+#  define LAPACKgesv_  CGESV
+#  define LAPACKgelss_ CGELSS
 /* Complex single precision with character string arguments */
 /* LAPACKormqr_ does not exist for complex. */
 #  define LAPACKtrtrs_ CTRTRS
@@ -118,6 +124,8 @@ This file also deals with CAPS Fortran 77 naming convention.
 #  define BLASasum_    DZASUM
 #  define LAPACKpttrf_ ZPTTRF
 #  define LAPACKstein_ ZSTEIN
+#  define LAPACKgesv_  ZGESV
+#  define LAPACKgelss_ ZGELSS
 /* Complex double precision with character string arguments */
 /* LAPACKormqr_ does not exist for complex. */
 #  define LAPACKtrtrs_ ZTRTRS

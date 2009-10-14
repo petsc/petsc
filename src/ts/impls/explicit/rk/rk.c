@@ -456,7 +456,7 @@ static PetscErrorCode TSView_Rk(TS ts,PetscViewer viewer)
 
 /* ------------------------------------------------------------ */
 /*MC
-      TS_RK - ODE solver using the explicit Runge-Kutta methods
+      TSRK - ODE solver using the explicit Runge-Kutta methods
 
    Options Database:
 .  -ts_rk_tol <tol> Tolerance for convergence

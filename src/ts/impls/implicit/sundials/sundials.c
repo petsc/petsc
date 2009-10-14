@@ -825,7 +825,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsMonitorInternalSteps(TS ts,PetscTruth
 }
 /* -------------------------------------------------------------------------------------------*/
 /*MC
-      TS_Sundials - ODE solver using the LLNL CVODE/SUNDIALS package (now called SUNDIALS)
+      TSSUNDIALS - ODE solver using the LLNL CVODE/SUNDIALS package (now called SUNDIALS)
 
    Options Database:
 +    -ts_sundials_type <bdf,adams>

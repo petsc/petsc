@@ -452,7 +452,7 @@ static PetscErrorCode TSView_CN(TS ts,PetscViewer viewer)
 
 /* ------------------------------------------------------------ */
 /*MC
-      TS_CN - ODE solver using the implicit Crank-Nicholson method
+      TSCN - ODE solver using the implicit Crank-Nicholson method
 
   Level: beginner
 
