@@ -41,13 +41,13 @@ class PETScMaker(script.Script):
 
  def compileC(self, source):
    '''PETSC_INCLUDE	        = -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include
-                              ${PACKAGES_INCLUDES} ${TAU_DEFS} ${TAU_INCLUDE} ${PETSC_BLASLAPACK_FLAGS}
+                              ${PACKAGES_INCLUDES} ${TAU_DEFS} ${TAU_INCLUDE}
       PETSC_CC_INCLUDES     = ${PETSC_INCLUDE}
       PETSC_CCPPFLAGS	    = ${PETSC_CC_INCLUDES} ${PETSCFLAGS} ${CPP_FLAGS} ${CPPFLAGS}  -D__SDIR__='"${LOCDIR}"'
       CCPPFLAGS	            = ${PETSC_CCPPFLAGS}
       PETSC_COMPILE         = ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}  ${SOURCEC} ${SSOURCE}
       PETSC_COMPILE_SINGLE  = ${PCC} -o $*.o -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}'''
-   # PETSCFLAGS, PETSC_BLASLAPACK_FLAGS, CFLAGS and CPPFLAGS are taken from user input (or empty)
+   # PETSCFLAGS, CFLAGS and CPPFLAGS are taken from user input (or empty)
    flags           = []
    packageIncludes = []
    packageLibs     = []
@@ -75,23 +75,6 @@ class PETScMaker(script.Script):
    obj = os.path.splitext(source)[0]+'.o'
    cmd = ' '.join([compiler, '-o', obj, '-c']+includes+[packageIncludes]+flags+[source])
    print cmd
-   self.setCompilers.popLanguage()
-   return
-
- def compileC(self, source):
-   '''PETSC_INCLUDE	        = -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include
-                              ${PACKAGES_INCLUDES} ${TAU_DEFS} ${TAU_INCLUDE} ${PETSC_BLASLAPACK_FLAGS}
-      PETSC_FC_INCLUDES = ${PETSC_INCLUDE}
-      PETSC_FCPPFLAGS   = ${PETSC_FC_INCLUDES} ${PETSCFLAGS} ${FPP_FLAGS} ${FPPFLAGS}
-      FCPPFLAGS         = ${PETSC_FCPPFLAGS}
-      PETSC_FCOMPILE    = ${FC} -c ${FC_FLAGS} ${FFLAGS} ${FCPPFLAGS}  ${SOURCEF}'''
-   # PETSCFLAGS, PETSC_BLASLAPACK_FLAGS, and FFLAGS are taken from user input (or empty)
-   flags           = []
-   self.setCompilers.pushLanguage('FC')
-   compiler      = self.setCompilers.getCompiler()
-   flags.append(self.setCompilers.getCompilerFlags())             # FC_FLAGS
-   obj = os.path.splitext(source)[0]+'.o'
-   cmd = ' '.join([compiler, '-o', obj, '-c']+includes+[packageIncludes]+flags+[source])
    self.setCompilers.popLanguage()
    return
 
