@@ -273,13 +273,12 @@ class Package(config.base.Configure):
     if downloadPackage:
       if not self.download:
         raise RuntimeError('URL missing for package'+self.package+'.\n')
-      if self.license and not os.path.isfile(os.path.expanduser(os.path.join('~','.'+self.package+'_license'))):
+      if self.license and not os.path.isfile(self.package+'_license'):
         self.framework.logClear()
         self.logPrint("**************************************************************************************************", debugSection='screen')
-        self.logPrint('You must register to use '+self.downloadname+' at '+self.license, debugSection='screen')
-        self.logPrint('    Once you have registered, config/configure.py will continue and download and install '+self.downloadname+' for you', debugSection='screen')
+        self.logPrint('Please register to use '+self.downloadname+' at '+self.license, debugSection='screen')
         self.logPrint("**************************************************************************************************\n", debugSection='screen')
-        fd = open(os.path.expanduser(os.path.join('~','.'+self.package+'_license')),'w')
+        fd = open(self.package+'_license','w')
         fd.close()
       return self.getInstallDir()
     return ''
