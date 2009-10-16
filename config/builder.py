@@ -72,50 +72,75 @@ class PETScMaker(script.Script):
    flags.append(self.setCompilers.getCompilerFlags())             # PCC_FLAGS
    flags.extend([self.setCompilers.CPPFLAGS, self.CHUD.CPPFLAGS]) # CPP_FLAGS
    flags.append('-D__SDIR__=\'"'+os.getcwd()+'"\'')
-   obj = os.path.splitext(source)[0]+'.o'
-   cmd = ' '.join([compiler, '-o', obj, '-c']+includes+[packageIncludes]+flags+[source])
+   cmd = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
    print cmd
    self.setCompilers.popLanguage()
    return
 
- def run(self):
+ def linkAR(self, libname,source):
+   '''
+   '''
+
+   flags           = []
+   self.setCompilers.pushLanguage(self.languages.clanguage)
+   linker = self.setCompilers.AR
+   # should add FAST_AR_FLAGS to setCompilers
+   if linker.endswith('ar'):
+     flags.append('Scq')
+   else:
+     flags.append(self.setCompilers.AR_FLAGS)
+   cmd = ' '.join([linker]+flags+source+[libname+'.'+self.setCompilers.AR_LIB_SUFFIX])
+#   print cmd
+   self.setCompilers.popLanguage()
+   return
+
+ def runbase(self):
+   ''' This is always run in one of the PETSc base package directories: vec, mat, ksp etc'''
    self.setup()
+   
+   libname = 'lib'+os.path.basename(os.getcwd())
+   os.path.walk(os.getcwd(),self.rundir,libname)
+  
+ def rundir(self,libname,dir,fnames):
+   ''' This is run in a PETSc source directory'''
+   basename = os.path.basename(dir)
+   if 'examples' in fnames: fnames.remove('examples')
 
-   # ADD the needed PETSc -I etc flags
+   # if no Fortran compiler
+   rmnames = []
+   for name in fnames:
+     if name.startswith('ftn-'): rmnames.append(name)
+     if name.startswith('f90-'): rmnames.append(name)
+   for name in rmnames:
+     fnames.remove(name)
 
-   c_compiler = self.framework.getCompilerObject(self.languages.clanguage)
-   c_compiler.checkSetup()
-   c_linker = self.framework.getLinkerObject(self.languages.clanguage)
-   c_linker.checkSetup()
-   sharedlinker = self.framework.getSharedLinkerObject(self.languages.clanguage)
-   sharedlinker.checkSetup()
-   #dynamiclinker = self.framework.getDynamicLinkerObject(self.languages.clanguage)
-   #dynamiclinker.checkSetup()
-
+   print dir
    cnames = []
+   onames = []
    fnames = []
-   dir = os.path.abspath('.')
    for f in os.listdir(dir):
      ext = os.path.splitext(f)[1]
      if ext == '.c':
        cnames.append(f)
-     if ext == '.F':
+       onames.append(f.replace('.c','.o'))
+
+     # if fortran compiler
+     if ext == '.F': 
        fnames.append(f)
+       onames.append(f.replace('.F','.o'))                     
+     if ext == '.F90':
+       fnames.append(f)
+       onames.append(f.replace('.F90','.o'))                     
+       
 
    if cnames:
      print 'Compiling C files ',cnames
-     map(self.compileC, cnames)
-
-     print c_compiler.getCommand('hi.c','hi.o')
-     print c_linker.getCommand('hi.c','hi')
-     print sharedlinker.getCommand('hi.o','libmy')
-     #print dynamiclinker.getCommand('hi.o','libmy')
-
+     self.compileC(cnames)
    if fnames:
-     print 'Compiling Fortran files ',fnames
-   return
+     print 'Compiling F files ',fnames
+     #self.compileF(fnames)
+   if onames:
+     self.linkAR(libname,onames)
 
 if __name__ == '__main__':
-  print 'Starting'
-  PETScMaker().run()
-  print 'Ending'
+  PETScMaker().runbase()
