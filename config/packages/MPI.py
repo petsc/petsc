@@ -31,10 +31,12 @@ class Configure(config.package.Package):
                              ['liblammpio.a','libpmpi.a','libmpi.a','liblam.a'],
                              ['liblammpi++.a','libmpi.a','liblam.a'],
                              ['libmpi.a','liblam.a']]
+    liblist_msmpi         = [[os.path.join('amd64','msmpifec.lib'),os.path.join('amd64','msmpi.lib')],
+                             [os.path.join('i386','msmpifec.lib'),os.path.join('i386','msmpi.lib')]]
     liblist_other         = [['libmpich.a','libpthread.a'],['libmpi++.a','libmpi.a']]
     liblist_single        = [['libmpi.a'],['libmpich.a'],['mpi.lib'],['mpich2.lib'],['mpich.lib'],
                              [os.path.join('amd64','msmpi.lib')],[os.path.join('i386','msmpi.lib')]]
-    self.liblist          = [[]] + liblist_mpich + liblist_lam + liblist_other + liblist_single
+    self.liblist          = [[]] + liblist_mpich + liblist_lam + liblist_msmpi + liblist_other + liblist_single
     # defaults to --with-mpi=yes
     self.required         = 1
     self.double           = 0
