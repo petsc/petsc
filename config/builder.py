@@ -15,22 +15,24 @@ class PETScMaker(script.Script):
    argDB.saveFilename = os.path.join(os.environ['PETSC_DIR'], os.environ['PETSC_ARCH'], 'conf', 'RDict.db')
    argDB.load()
    script.Script.__init__(self, argDB = argDB)
+   self.debug = 0
    return
 
  def setupModules(self):
 #    self.mpi           = self.framework.require('config.packages.MPI',      None)
-   self.setCompilers  = self.framework.require('config.setCompilers',      None)
-   self.arch          = self.framework.require('PETSc.utilities.arch',     None)
-   self.petscdir      = self.framework.require('PETSc.utilities.petscdir', None)
-   self.languages     = self.framework.require('PETSc.utilities.languages',None)
-   self.debugging     = self.framework.require('PETSc.utilities.debugging',None)
-   self.make          = self.framework.require('PETSc.utilities.Make',     None)
-   self.CHUD          = self.framework.require('PETSc.utilities.CHUD',     None)
-   self.compilers     = self.framework.require('config.compilers',         None)
-   self.types         = self.framework.require('config.types',             None)
-   self.headers       = self.framework.require('config.headers',           None)
-   self.functions     = self.framework.require('config.functions',         None)
-   self.libraries     = self.framework.require('config.libraries',         None)
+   self.setCompilers  = self.framework.require('config.setCompilers',         None)
+   self.arch          = self.framework.require('PETSc.utilities.arch',        None)
+   self.petscdir      = self.framework.require('PETSc.utilities.petscdir',    None)
+   self.languages     = self.framework.require('PETSc.utilities.languages',   None)
+   self.debugging     = self.framework.require('PETSc.utilities.debugging',   None)
+   self.make          = self.framework.require('PETSc.utilities.Make',        None)
+   self.CHUD          = self.framework.require('PETSc.utilities.CHUD',        None)
+   self.compilers     = self.framework.require('config.compilers',            None)
+   self.types         = self.framework.require('config.types',                None)
+   self.headers       = self.framework.require('config.headers',              None)
+   self.functions     = self.framework.require('config.functions',            None)
+   self.libraries     = self.framework.require('config.libraries',            None)
+   self.scalarType    = self.framework.require('PETSc.utilities.scalarTypes', None)   
    return
 
  def setup(self):
@@ -73,11 +75,11 @@ class PETScMaker(script.Script):
    flags.extend([self.setCompilers.CPPFLAGS, self.CHUD.CPPFLAGS]) # CPP_FLAGS
    flags.append('-D__SDIR__=\'"'+os.getcwd()+'"\'')
    cmd = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
-   print cmd
+   if self.debug: print cmd
    self.setCompilers.popLanguage()
    return
 
- def linkAR(self, libname,source):
+ def linkAR(self, libname,objects):
    '''
    '''
 
@@ -89,8 +91,8 @@ class PETScMaker(script.Script):
      flags.append('Scq')
    else:
      flags.append(self.setCompilers.AR_FLAGS)
-   cmd = ' '.join([linker]+flags+source+[libname+'.'+self.setCompilers.AR_LIB_SUFFIX])
-#   print cmd
+   cmd = ' '.join([linker]+flags+objects+[libname+'.'+self.setCompilers.AR_LIB_SUFFIX])
+   if self.debug:  print cmd
    self.setCompilers.popLanguage()
    return
 
@@ -114,7 +116,9 @@ class PETScMaker(script.Script):
    for name in rmnames:
      fnames.remove(name)
 
-   print dir
+   if not self.checkDir(dir): return
+ 
+   if self.debug: print 'entering '+dir
    cnames = []
    onames = []
    fnames = []
@@ -133,14 +137,52 @@ class PETScMaker(script.Script):
        onames.append(f.replace('.F90','.o'))                     
        
 
+   os.chdir(dir)
    if cnames:
-     print 'Compiling C files ',cnames
+     if self.debug: print 'Compiling C files ',cnames
      self.compileC(cnames)
    if fnames:
-     print 'Compiling F files ',fnames
+     if self.debug:print 'Compiling F files ',fnames
      #self.compileF(fnames)
    if onames:
      self.linkAR(libname,onames)
 
+ def checkDir(self,dir):
+   '''Checks makefile to see if compiler is allowed to visit this directory for this configuration'''
+   import re
+   reg   = re.compile(' [ ]*')
+   fname = os.path.join(dir,'makefile')
+   fd = open(fname)
+   text = fd.readline()
+   while text:
+     if text.startswith('#requires'):
+       text = text[9:-1].strip()
+       text = reg.sub(' ',text)
+       rtype = text.split(' ')[0]
+       rvalue = text.split(' ')[1]
+       if rtype == 'scalar' and not self.scalarType.scalartype == rvalue:
+         if self.debug: print 'rejecting because scalar type '+self.scalarType.scalartype+' is not '+rvalue
+         return 0
+       if rtype == 'language':
+         if rvalue == 'CXXONLY' and self.languages.clanguage == 'C':
+           if self.debug: print 'rejecting because language is '+self.languages.clanguage+' is not C++'
+           return 0
+       if rtype == 'precision' and not rvalue == self.scalarType.precision:
+         if self.debug: print 'rejecting because precision '+self.scalarType.precision+' is not '+rvalue
+         return 0
+       if rtype == 'package':
+         found = 0
+         for i in self.framework.packages:
+           pname = 'PETSC_HAVE_'+i.PACKAGE
+           pname = "'"+pname+"'"
+           if pname == rvalue: found = 1
+         if not found:
+           if self.debug: print 'rejecting because package '+rvalue+' is not installed'
+           return 0
+         
+     text = fd.readline()
+   fd.close()
+   return 1
+   
 if __name__ == '__main__':
   PETScMaker().runbase()
