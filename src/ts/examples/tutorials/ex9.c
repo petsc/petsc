@@ -603,11 +603,11 @@ static PetscErrorCode PhysicsRiemann_Shallow_Exact(void *vctx,PetscInt m,const P
       res = R.u - L.u + fr + fl;
       if (!isfinite(res)) SETERRQ1(1,"non-finite residual=%g",res);
       //PetscPrintf(PETSC_COMM_WORLD,"h=%g, res[%d] = %g\n",h,i,res);
-      if (res0 != 0 && PetscAbsScalar(res) >= PetscAbsScalar(res0)) {        /* Line search */
+      if (i > 0 && PetscAbsScalar(res) >= PetscAbsScalar(res0)) {        /* Line search */
         h = 0.8*h0 + 0.2*h;
         continue;
       }
-      if (PetscAbsScalar(res) < 1e-8 || PetscAbsScalar(h-h0) < 1e-8) {
+      if (PetscAbsScalar(res) < 1e-8 || (i > 0 && PetscAbsScalar(h-h0) < 1e-8)) {
         star.h = h;
         star.u = L.u - fl;
         break;
