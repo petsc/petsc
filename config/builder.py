@@ -15,7 +15,7 @@ class PETScMaker(script.Script):
    argDB.saveFilename = os.path.join(os.environ['PETSC_DIR'], os.environ['PETSC_ARCH'], 'conf', 'RDict.db')
    argDB.load()
    script.Script.__init__(self, argDB = argDB)
-   self.debug = 0
+   self.debug = 1
    return
 
  def setupModules(self):
@@ -32,7 +32,8 @@ class PETScMaker(script.Script):
    self.headers       = self.framework.require('config.headers',              None)
    self.functions     = self.framework.require('config.functions',            None)
    self.libraries     = self.framework.require('config.libraries',            None)
-   self.scalarType    = self.framework.require('PETSc.utilities.scalarTypes', None)   
+   self.scalarType    = self.framework.require('PETSc.utilities.scalarTypes', None)
+   self.libraryOptions= self.framework.require('PETSc.utilities.libraryOptions', None)      
    return
 
  def setup(self):
@@ -76,6 +77,7 @@ class PETScMaker(script.Script):
    flags.append('-D__SDIR__=\'"'+os.getcwd()+'"\'')
    cmd = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
    if self.debug: print cmd
+   self.runShellCommand(cmd)
    self.setCompilers.popLanguage()
    return
 
@@ -93,6 +95,11 @@ class PETScMaker(script.Script):
      flags.append(self.setCompilers.AR_FLAGS)
    cmd = ' '.join([linker]+flags+objects+[libname+'.'+self.setCompilers.AR_LIB_SUFFIX])
    if self.debug:  print cmd
+   for i in objects:
+     try:
+       os.unlink(i)
+     except:
+       print 'File '+i+' was not compiled'
    self.setCompilers.popLanguage()
    return
 
@@ -100,24 +107,35 @@ class PETScMaker(script.Script):
    ''' This is always run in one of the PETSc base package directories: vec, mat, ksp etc'''
    self.setup()
    
-   libname = 'lib'+os.path.basename(os.getcwd())
+   libname = 'libpetsc'+os.path.basename(os.getcwd())
+   if libname.endswith('sys'): libname = 'libpetsc'
+   
    os.path.walk(os.getcwd(),self.rundir,libname)
   
  def rundir(self,libname,dir,fnames):
    ''' This is run in a PETSc source directory'''
    basename = os.path.basename(dir)
+   os.chdir(dir)
+
+   # First, remove all subdirectories we should not enter
    if 'examples' in fnames: fnames.remove('examples')
 
-   # if no Fortran compiler
+   if not hasattr(self.compilers, 'FC'):
+     rmnames = []
+     for name in fnames:
+       if name.startswith('ftn-'): rmnames.append(name)
+       if name.startswith('f90-'): rmnames.append(name)
+     for name in rmnames:
+       fnames.remove(name)
+
    rmnames = []
    for name in fnames:
-     if name.startswith('ftn-'): rmnames.append(name)
-     if name.startswith('f90-'): rmnames.append(name)
+     if os.path.isdir(name):
+       if not self.checkDir(name):rmnames.append(name)
    for name in rmnames:
      fnames.remove(name)
 
-   if not self.checkDir(dir): return
- 
+   # Get list of source files in the directory 
    if self.debug: print 'entering '+dir
    cnames = []
    onames = []
@@ -128,16 +146,15 @@ class PETScMaker(script.Script):
        cnames.append(f)
        onames.append(f.replace('.c','.o'))
 
-     # if fortran compiler
-     if ext == '.F': 
-       fnames.append(f)
-       onames.append(f.replace('.F','.o'))                     
-     if ext == '.F90':
-       fnames.append(f)
-       onames.append(f.replace('.F90','.o'))                     
+     if hasattr(self.compilers, 'FC'):
+       if ext == '.F': 
+         fnames.append(f)
+         onames.append(f.replace('.F','.o'))                     
+       if ext == '.F90':
+         fnames.append(f)
+         onames.append(f.replace('.F90','.o'))                     
        
 
-   os.chdir(dir)
    if cnames:
      if self.debug: print 'Compiling C files ',cnames
      self.compileC(cnames)
@@ -170,15 +187,29 @@ class PETScMaker(script.Script):
        if rtype == 'precision' and not rvalue == self.scalarType.precision:
          if self.debug: print 'rejecting because precision '+self.scalarType.precision+' is not '+rvalue
          return 0
+       # handles both missing packages and other random stuff that is treated as a package, that should be changed
        if rtype == 'package':
-         found = 0
-         for i in self.framework.packages:
-           pname = 'PETSC_HAVE_'+i.PACKAGE
-           pname = "'"+pname+"'"
-           if pname == rvalue: found = 1
-         if not found:
-           if self.debug: print 'rejecting because package '+rvalue+' is not installed'
-           return 0
+         if rvalue == "'"+'PETSC_HAVE_FORTRAN'+"'" or rvalue == "'"+'PETSC_USING_F90'+"'":
+           if not hasattr(self.compilers, 'FC'):
+             if self.debug: print 'rejecting because fortran is not being used'
+             return 0
+         elif rvalue == "'"+'PETSC_USE_LOG'+"'":
+           if not self.libraryOptions.useLog:
+             if self.debug: print 'rejecting because logging is turned off'
+             return 0
+         elif rvalue == "'"+'PETSC_USE_FORTRAN_KERNELS'+"'":
+           if not self.libraryOptions.useFortranKernels:
+             if self.debug: print 'rejecting because fortran kernels are turned off'
+             return 0
+         else:    
+           found = 0
+           for i in self.framework.packages:
+             pname = 'PETSC_HAVE_'+i.PACKAGE
+             pname = "'"+pname+"'"
+             if pname == rvalue: found = 1
+           if not found:
+             if self.debug: print 'rejecting because package '+rvalue+' is not installed'
+             return 0
          
      text = fd.readline()
    fd.close()
