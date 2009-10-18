@@ -45,8 +45,8 @@ class Installer(script.Script):
     #Check for options db
     dbpath = os.path.join(self.rootDir, self.arch, 'RDict.db')
     if not os.path.isfile(dbpath):
-      self.ranlib     = os.path.abspath(self.argDB['ranlib'])
-      self.make       = os.path.abspath(self.argDB['make'])
+      self.ranlib     = self.argDB['ranlib']
+      self.make       = self.argDB['make']
       self.libSuffix  = self.argDB['libSuffix']
     else:
       import cPickle
