@@ -58,7 +58,7 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(ctx);CHKERRQ(ierr); 
  
-  ierr = PetscSleep(2*rank);CHKERRQ(ierr);
+  ierr = PetscSleep(2.0*rank);CHKERRQ(ierr);
   ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   ierr = VecDestroy(x);CHKERRQ(ierr);

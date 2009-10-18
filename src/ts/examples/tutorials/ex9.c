@@ -131,7 +131,6 @@ typedef struct {
   PetscReal cfl;
   PetscInt initial;
   PetscInt exact;
-  PetscInt msleep;
 } FVCtx;
 
 
@@ -592,6 +591,7 @@ static PetscErrorCode PhysicsRiemann_Shallow_Exact(void *vctx,PetscInt m,const P
     /* Solve for star state */
     const PetscInt maxits = 50;
     PetscScalar tmp,res,res0=0,h0,h = 0.5*(L.h + R.h); /* initial guess */
+    h0 = h;
     for (i=0; i<maxits; i++) {
       PetscScalar fr,fl,dfr,dfl;
       fl = (L.h < h)
@@ -800,8 +800,6 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
       }
     }
   }
-  /* Useful to slow an animation down, to be removed when PetscSleep (hence -draw_pause) takes a real value */
-  ierr = usleep(ctx->msleep*1000);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -969,7 +967,6 @@ int main(int argc,char *argv[])
     ierr = PetscOptionsInt("-draw","Draw solution vector at (1=initial,2=final,3=both)","",draw,&draw,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-initial","Initial condition (0=positive sine,1=sine,2=half square,3=narrow square,4=symmetric rarefaction)","",ctx.initial,&ctx.initial,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-exact","Exact solution for comparing errors, (1=sin+advect,2=half square+advect)","",ctx.exact,&ctx.exact,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-msleep","How many milliseconds to sleep in each function evaluation","",ctx.msleep,&ctx.msleep,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-cfl","CFL number to time step at","",ctx.cfl,&ctx.cfl,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);

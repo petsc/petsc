@@ -7,7 +7,7 @@
 
       PetscInt       N
       PetscTruth     draw, flg
-      PetscReal      rnorm
+      PetscReal      rnorm,rtwo
       PetscScalar    one,mone
       Mat            A
       Vec            b,x,r
@@ -18,7 +18,8 @@
       N    = 100
       draw = .FALSE.
       one  =  1.0
-      mone = -1.0 
+      mone = -1.0
+      rtwo = 2.0
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call PetscPythonInitialize(PETSC_NULL_CHARACTER,                  &
@@ -57,7 +58,7 @@
       
       if (draw) then
          call VecView(x,PETSC_VIEWER_DRAW_WORLD,ierr)
-         call PetscSleep(2,ierr)
+         call PetscSleep(rtwo,ierr)
       endif
       
       call VecDestroy(x,ierr)

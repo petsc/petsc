@@ -175,8 +175,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawSetTitle(PetscDraw,const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawAppendTitle(PetscDraw,const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawGetTitle(PetscDraw,char **);
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawSetPause(PetscDraw,int);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawGetPause(PetscDraw,int*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawSetPause(PetscDraw,PetscReal);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawGetPause(PetscDraw,PetscReal*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawPause(PetscDraw);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawSetDoubleBuffer(PetscDraw);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawFlush(PetscDraw);
