@@ -36,6 +36,8 @@
       parameter (imax = 10000)
       PetscLogDouble onefp
       parameter (onefp = 1.0d0)
+      PetscReal onereal,tenreal
+      parameter (onereal = 1.0, tenreal = 10.0)
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
@@ -62,39 +64,39 @@
       call PetscLogEventRegister('Event 9',0,USER_EVENT9,ierr)
       call PetscLogEventBegin(USER_EVENT1,ierr)
       call PetscLogFlops(imax*onefp,ierr)
-      call PetscSleep(1,ierr)
+      call PetscSleep(onereal,ierr)
       call PetscLogEventEnd(USER_EVENT1,ierr)
       call PetscLogEventBegin(USER_EVENT2,ierr)
       call PetscLogFlops(imax*onefp,ierr)
-      call PetscSleep(1,ierr)
+      call PetscSleep(onereal,ierr)
       call PetscLogEventEnd(USER_EVENT2,ierr)
       call PetscLogEventBegin(USER_EVENT3,ierr)
       call PetscLogFlops(imax*onefp,ierr)
-      call PetscSleep(1,ierr)
+      call PetscSleep(onereal,ierr)
       call PetscLogEventEnd(USER_EVENT3,ierr)
       call PetscLogEventBegin(USER_EVENT4,ierr)
       call PetscLogFlops(imax*onefp,ierr)
-      call PetscSleep(1,ierr)
+      call PetscSleep(onereal,ierr)
       call PetscLogEventEnd(USER_EVENT4,ierr)
       call PetscLogEventBegin(USER_EVENT5,ierr)
       call PetscLogFlops(imax*onefp,ierr)
-      call PetscSleep(1,ierr)
+      call PetscSleep(onereal,ierr)
       call PetscLogEventEnd(USER_EVENT5,ierr)
       call PetscLogEventBegin(USER_EVENT6,ierr)
       call PetscLogFlops(imax*onefp,ierr)
-      call PetscSleep(1,ierr)
+      call PetscSleep(onereal,ierr)
       call PetscLogEventEnd(USER_EVENT6,ierr)
       call PetscLogEventBegin(USER_EVENT7,ierr)
       call PetscLogFlops(imax*onefp,ierr)
-      call PetscSleep(1,ierr)
+      call PetscSleep(onereal,ierr)
       call PetscLogEventEnd(USER_EVENT7,ierr)
       call PetscLogEventBegin(USER_EVENT8,ierr)
       call PetscLogFlops(imax*onefp,ierr)
-      call PetscSleep(1,ierr)
+      call PetscSleep(onereal,ierr)
       call PetscLogEventEnd(USER_EVENT8,ierr)
       call PetscLogEventBegin(USER_EVENT9,ierr)
       call PetscLogFlops(imax*onefp,ierr)
-      call PetscSleep(1,ierr)
+      call PetscSleep(onereal,ierr)
       call PetscLogEventEnd(USER_EVENT9,ierr)
 !
 !    We disable the logging of an event.
@@ -103,14 +105,14 @@
 !
       call PetscLogEventDeactivate(USER_EVENT1,ierr)
       call PetscLogEventBegin(USER_EVENT1,ierr)
-      call PetscSleep(1,ierr)
+      call PetscSleep(onereal,ierr)
       call PetscLogEventEnd(USER_EVENT1,ierr)
 !
 !    We next enable the logging of an event
 !
       call PetscLogEventActivate(USER_EVENT1,ierr)
       call PetscLogEventBegin(USER_EVENT1,ierr)
-      call PetscSleep(1,ierr)
+      call PetscSleep(onereal,ierr)
       call PetscLogEventEnd(USER_EVENT1,ierr)
 
       call PetscInfo('PETSc info message\n'//'Another line\n',ierr)

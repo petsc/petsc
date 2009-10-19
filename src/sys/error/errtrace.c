@@ -115,7 +115,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfDefault(const char format[],...)
     {
       PetscMPIInt rank;
       if (PetscGlobalRank > 8) rank = 8; else rank = PetscGlobalRank;
-      PetscSleep(rank);
+      PetscSleep((PetscReal)rank);
     }
 #endif
   }

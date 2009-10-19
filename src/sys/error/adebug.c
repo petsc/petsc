@@ -209,7 +209,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscAttachDebugger(void)
 {
 #if !defined(PETSC_CANNOT_START_DEBUGGER) 
   int            child=0;
-  PetscInt       sleeptime=0;
+  PetscReal      sleeptime=0;
   PetscErrorCode ierr;
   char           program[PETSC_MAX_PATH_LEN],display[256],hostname[64];
 #endif
@@ -389,7 +389,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscAttachDebugger(void)
     }
   } else {   /* I am the child, continue with user code */
     sleeptime = 10; /* default to sleep waiting for debugger */
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-debugger_pause",&sleeptime,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(PETSC_NULL,"-debugger_pause",&sleeptime,PETSC_NULL);CHKERRQ(ierr);
     if (sleeptime < 0) sleeptime = -sleeptime;
 #if defined(PETSC_NEED_DEBUGGER_NO_SLEEP)
     /*
