@@ -78,7 +78,7 @@ class PETScMaker(script.Script):
    flags.append('-D__SDIR__=\'"'+os.getcwd()+'"\'')
    cmd = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
    if self.debug: print cmd
-   self.runShellCommand(cmd,log=self.log)
+   self.executeShellCommand(cmd,log=self.log)
    self.setCompilers.popLanguage()
    return
 
@@ -94,8 +94,9 @@ class PETScMaker(script.Script):
      flags.append('Scq')
    else:
      flags.append(self.setCompilers.AR_FLAGS)
-   cmd = ' '.join([linker]+flags+objects+[libname+'.'+self.setCompilers.AR_LIB_SUFFIX])
-   if self.debug:  print cmd
+   cmd = ' '.join([linker]+flags+[libname+'.'+self.setCompilers.AR_LIB_SUFFIX]+objects)
+   if self.debug: print cmd
+   self.executeShellCommand(cmd,log=self.log)   
    for i in objects:
      try:
        os.unlink(i)
@@ -108,8 +109,12 @@ class PETScMaker(script.Script):
    ''' This is always run in one of the PETSc base package directories: vec, mat, ksp etc'''
    self.setup()
    
-   libname = 'libpetsc'+os.path.basename(os.getcwd())
-   if libname.endswith('sys'): libname = 'libpetsc'
+   libname = os.path.join(self.petscdir.dir,self.arch.arch,'lib','libpetsc'+os.path.basename(os.getcwd()))
+   if libname.endswith('sys'): libname = libname[:-3]
+   try:
+     os.unlink(libname+'.'+self.setCompilers.AR_LIB_SUFFIX)
+   except:
+     pass
    
    os.path.walk(os.getcwd(),self.rundir,libname)
   
