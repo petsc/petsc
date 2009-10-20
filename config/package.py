@@ -401,20 +401,23 @@ class Package(config.base.Configure):
       for loc in self.compilers.fincs:
         if not loc in incl:
           incl.append(loc)
-      self.framework.logPrint('Checking for library in '+location+': '+str(lib))
-      if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : libs, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2]}):
-        self.lib = lib	
-        self.framework.logPrint('Checking for headers '+location+': '+str(incl))
-        if (not self.includes) or self.checkInclude(incl, self.includes, incls, timeout = 1800.0):
-          if self.includes:
-            self.include = incl
-          self.found     = 1
-          self.dlib      = self.lib+libs
-          if not hasattr(self.framework, 'packages'):
-            self.framework.packages = []
-          self.directory = directory
-          self.framework.packages.append(self)
-          return
+      if self.functions:
+        self.framework.logPrint('Checking for library in '+location+': '+str(lib))
+        if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : libs, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2]}):
+          self.lib = lib	
+          self.framework.logPrint('Checking for headers '+location+': '+str(incl))
+          if (not self.includes) or self.checkInclude(incl, self.includes, incls, timeout = 1800.0):
+            if self.includes:
+              self.include = incl
+            self.found     = 1
+            self.dlib      = self.lib+libs
+            if not hasattr(self.framework, 'packages'):
+              self.framework.packages = []
+            self.directory = directory
+            self.framework.packages.append(self)
+            return
+      else:
+        self.framework.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions give to check for')        
     raise RuntimeError('Could not find a functional '+self.name+'\n')
 
   def checkSharedLibrary(self):
