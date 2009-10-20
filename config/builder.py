@@ -16,6 +16,7 @@ class PETScMaker(script.Script):
    argDB.load()
    script.Script.__init__(self, argDB = argDB)
    self.debug = 1
+   self.log = sys.stdout
    return
 
  def setupModules(self):
@@ -77,7 +78,7 @@ class PETScMaker(script.Script):
    flags.append('-D__SDIR__=\'"'+os.getcwd()+'"\'')
    cmd = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
    if self.debug: print cmd
-   self.runShellCommand(cmd)
+   self.runShellCommand(cmd,log=self.log)
    self.setCompilers.popLanguage()
    return
 
