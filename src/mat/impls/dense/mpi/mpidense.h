@@ -34,19 +34,4 @@ EXTERN PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat,Mat,PetscReal,Mat*)
 EXTERN PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat,Mat,Mat);
 EXTERN PetscErrorCode MatGetFactor_mpidense_petsc(Mat,MatFactorType,Mat *);
 
-#if defined(PETSC_HAVE_PLAPACK)
-EXTERN_C_BEGIN 
-#include "PLA.h"
-EXTERN_C_END 
 
-typedef struct {
-  PLA_Obj        A,pivots;
-  PLA_Template   templ;
-  MPI_Datatype   datatype;
-  PetscInt       nb,rstart;
-  VecScatter     ctx;
-  IS             is_pla,is_petsc;
-  PetscTruth     pla_solved;
-  MatStructure   mstruct;
-} Mat_Plapack;
-#endif
