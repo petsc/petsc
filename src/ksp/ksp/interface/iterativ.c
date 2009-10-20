@@ -256,8 +256,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,
   ierr = KSPBuildResidual(ksp,0,work,&resid);CHKERRQ(ierr);
 
   /*
-     Unscale the residual if the matrix is, for example, a BlockSolve matrix
-    but only if both matrices are the same matrix, since only then would 
+     Unscale the residual but only if both matrices are the same matrix, since only then would 
     they be scaled.
   */
   ierr = VecCopy(resid,work);CHKERRQ(ierr);
@@ -291,8 +290,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorRange_Private(KSP ksp,PetscInt it,Pe
   ierr = KSPBuildResidual(ksp,0,work,&resid);CHKERRQ(ierr);
 
   /*
-     Unscale the residual if the matrix is, for example, a BlockSolve matrix
-    but only if both matrices are the same matrix, since only then would 
+     Unscale the residual if the matrix is, but only if both matrices are the same matrix, since only then would 
     they be scaled.
   */
   ierr = VecCopy(resid,work);CHKERRQ(ierr);

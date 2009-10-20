@@ -26,7 +26,6 @@ PKG3=''
 # scotch - binary?
 # jostle - binary?
 # dscpack - download does not work
-# blocksolve - download does not work
 # cblas/fblas ??
 
 GNUCOMP='CC=gcc FC=gfortran CXX=g++'
