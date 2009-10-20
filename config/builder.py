@@ -39,16 +39,7 @@ class PETScMaker(script.Script):
    self.setupModules()
    return
 
- def compileC(self, source):
-   '''PETSC_INCLUDE	        = -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include
-                              ${PACKAGES_INCLUDES} ${TAU_DEFS} ${TAU_INCLUDE} ${PETSC_BLASLAPACK_FLAGS}
-      PETSC_CC_INCLUDES     = ${PETSC_INCLUDE}
-      PETSC_CCPPFLAGS	    = ${PETSC_CC_INCLUDES} ${PETSCFLAGS} ${CPP_FLAGS} ${CPPFLAGS}  -D__SDIR__='"${LOCDIR}"'
-      CCPPFLAGS	            = ${PETSC_CCPPFLAGS}
-      PETSC_COMPILE         = ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}  ${SOURCEC} ${SSOURCE}
-      PETSC_COMPILE_SINGLE  = ${PCC} -o $*.o -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}'''
-   # PETSCFLAGS, PETSC_BLASLAPACK_FLAGS, CFLAGS and CPPFLAGS are taken from user input (or empty)
-   flags           = []
+ def getPackageInfo(self):
    packageIncludes = []
    packageLibs     = []
    for p in self.framework.packages:
@@ -65,7 +56,19 @@ class PETScMaker(script.Script):
          packageIncludes.extend(p.include)
    packageLibs     = self.libraries.toStringNoDupes(packageLibs+self.libraries.math)
    packageIncludes = self.headers.toStringNoDupes(packageIncludes)
+   return packageIncludes, packageLibs
 
+ def compileC(self, source):
+   '''PETSC_INCLUDE	        = -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include
+                              ${PACKAGES_INCLUDES} ${TAU_DEFS} ${TAU_INCLUDE} ${PETSC_BLASLAPACK_FLAGS}
+      PETSC_CC_INCLUDES     = ${PETSC_INCLUDE}
+      PETSC_CCPPFLAGS	    = ${PETSC_CC_INCLUDES} ${PETSCFLAGS} ${CPP_FLAGS} ${CPPFLAGS}  -D__SDIR__='"${LOCDIR}"'
+      CCPPFLAGS	            = ${PETSC_CCPPFLAGS}
+      PETSC_COMPILE         = ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}  ${SOURCEC} ${SSOURCE}
+      PETSC_COMPILE_SINGLE  = ${PCC} -o $*.o -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}'''
+   # PETSCFLAGS, PETSC_BLASLAPACK_FLAGS, CFLAGS and CPPFLAGS are taken from user input (or empty)
+   flags           = []
+   packageIncludes, packageLibs = self.getPackageInfo()
    includes = ['-I'+inc for inc in [os.path.join(self.petscdir.dir, self.arch.arch, 'include'), os.path.join(self.petscdir.dir, 'include')]]
    self.setCompilers.pushLanguage(self.languages.clanguage)
    compiler      = self.setCompilers.getCompiler()
@@ -78,7 +81,7 @@ class PETScMaker(script.Script):
    self.setCompilers.popLanguage()
    return
 
- def compileC(self, source):
+ def compileFortran(self, source):
    '''PETSC_INCLUDE	        = -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include
                               ${PACKAGES_INCLUDES} ${TAU_DEFS} ${TAU_INCLUDE} ${PETSC_BLASLAPACK_FLAGS}
       PETSC_FC_INCLUDES = ${PETSC_INCLUDE}
@@ -87,6 +90,8 @@ class PETScMaker(script.Script):
       PETSC_FCOMPILE    = ${FC} -c ${FC_FLAGS} ${FFLAGS} ${FCPPFLAGS}  ${SOURCEF}'''
    # PETSCFLAGS, PETSC_BLASLAPACK_FLAGS, and FFLAGS are taken from user input (or empty)
    flags           = []
+   packageIncludes, packageLibs = self.getPackageInfo()
+   includes = ['-I'+inc for inc in [os.path.join(self.petscdir.dir, self.arch.arch, 'include'), os.path.join(self.petscdir.dir, 'include')]]
    self.setCompilers.pushLanguage('FC')
    compiler      = self.setCompilers.getCompiler()
    flags.append(self.setCompilers.getCompilerFlags())             # FC_FLAGS
@@ -95,10 +100,15 @@ class PETScMaker(script.Script):
    self.setCompilers.popLanguage()
    return
 
+ def archive(self, source, library):
+   '''${AR} ${AR_FLAGS} ${LIBNAME} $*.o'''
+   obj = os.path.splitext(source)[0]+'.o'
+   lib = os.path.splitext(lib)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX
+   cmd = ' '.join([self.setCompilers.AR, self.setCompilers.AR_FLAGS, lib, obj])
+   return
+
  def run(self):
    self.setup()
-
-   # ADD the needed PETSc -I etc flags
 
    c_compiler = self.framework.getCompilerObject(self.languages.clanguage)
    c_compiler.checkSetup()
