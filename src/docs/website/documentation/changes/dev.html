@@ -164,6 +164,9 @@ consistency with other packages.</li>
         <li>Add Theta and General Linear time integrators (TSTHETA,
 TSGL). These can be used for solving differential algebraic equations
 (DAE) using the new TSSetIFunction() and TSSetIJacobian().</li>
+	<li>Add TSSSP which implements optimal strong stability
+	preserving time integrators of order 2, 3, and 4 using a
+	low-storage explicit Runge-Kutta scheme.</li>
       </ul>
       <p><u><b>DA:</b></u></p>
       <ul>
@@ -180,6 +183,11 @@ argument, should be MATAIJ or MATBAIJ<u><b></b></u></li>
       <ul>
       </ul>
       <p><u><b>SYS:</b></u></p>
+      <ul>
+	<li>PetscSleep(), PetscDrawGetPause(), and PetscDrawSetPause()
+	now take PetscReal instead of int.  Also, -draw_pause takes a
+	real value.</li>
+      </ul>
       <p><u><b>AO:<br>
       </b></u></p>
       <p><u><b>Sieve:</b></u></p>

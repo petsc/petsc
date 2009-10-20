@@ -43,7 +43,7 @@ struct _PetscDrawOps {
 
 struct _p_PetscDraw {
   PETSCHEADER(struct _PetscDrawOps);
-  int             pause;       /* sleep time after a synchronized flush */
+  PetscReal       pause;       /* sleep time after a synchronized flush */
   PetscReal       port_xl,port_yl,port_xr,port_yr;
   PetscReal       coor_xl,coor_yl,coor_xr,coor_yr;
   char            *title;

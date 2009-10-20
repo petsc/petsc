@@ -215,8 +215,16 @@ chk_petsc_dir:
 #
 #
 install:
-	-@./config/install.py --rootDir=${PETSC_DIR} --installDir=${INSTALL_DIR} --arch=${PETSC_ARCH} 
+	-@./config/install.py
 
+newall:
+	-@cd src/sys; ${PETSC_DIR}/config/builder.py
+	-@cd src/vec; ${PETSC_DIR}/config/builder.py
+	-@cd src/mat; ${PETSC_DIR}/config/builder.py
+	-@cd src/dm; ${PETSC_DIR}/config/builder.py
+	-@cd src/ksp; ${PETSC_DIR}/config/builder.py
+	-@cd src/snes; ${PETSC_DIR}/config/builder.py
+	-@cd src/ts; ${PETSC_DIR}/config/builder.py
 # ------------------------------------------------------------------
 #
 # All remaining actions are intended for PETSc developers only.

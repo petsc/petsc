@@ -1196,7 +1196,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMemoryShowUsage(PetscViewer,const cha
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInfoAllow(PetscTruth,const char []);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetTime(PetscLogDouble*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetCPUTime(PetscLogDouble*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSleep(int);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSleep(PetscReal);
 
 /*
     Initialization of PETSc

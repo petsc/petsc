@@ -1,36 +1,39 @@
 #!/usr/bin/env python
 import re, os, sys, shutil
 
-configDir = os.path.abspath('config')
-sys.path.insert(0, configDir)
-bsDir     = os.path.abspath(os.path.join(configDir, 'BuildSystem'))
-sys.path.insert(0, bsDir)
+sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config'))
+sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config', 'BuildSystem'))
 
 import script
 
 class Installer(script.Script):
   def __init__(self, clArgs = None):
     import RDict
-    script.Script.__init__(self, clArgs, RDict.RDict())
+    argDB = RDict.RDict(None, None, 0, 0)
+    argDB.saveFilename = os.path.join(os.environ['PETSC_DIR'], os.environ['PETSC_ARCH'], 'conf', 'RDict.db')
+    argDB.load()
+    script.Script.__init__(self, argDB = argDB)
     self.copies = []
     return
 
-  def setupHelp(self, help):
-    import nargs
-
-    script.Script.setupHelp(self, help)
-    help.addArgument('Installer', '-rootDir=<path>', nargs.Arg(None, None, 'Install Root Directory'))
-    help.addArgument('Installer', '-installDir=<path>', nargs.Arg(None, None, 'Install Target Directory'))
-    help.addArgument('Installer', '-arch=<type>', nargs.Arg(None, None, 'Architecture type'))
-    help.addArgument('Installer', '-ranlib=<prog>', nargs.Arg(None, 'ranlib', 'Ranlib program'))
-    help.addArgument('Installer', '-make=<prog>', nargs.Arg(None, 'make', 'Make program'))
-    help.addArgument('Installer', '-libSuffix=<ext>', nargs.Arg(None, 'make', 'The static library suffix'))
+  def setupModules(self):
+    self.setCompilers  = self.framework.require('config.setCompilers',         None)
+    self.arch          = self.framework.require('PETSc.utilities.arch',        None)
+    self.petscdir      = self.framework.require('PETSc.utilities.petscdir',    None)
+    self.makesys       = self.framework.require('PETSc.utilities.Make',        None)
+    self.compilers     = self.framework.require('config.compilers',            None)
+    return
+  
+  def setup(self):
+    script.Script.setup(self)
+    self.framework = self.loadConfigure()
+    self.setupModules()
     return
 
   def setupDirectories(self):
-    self.rootDir    = os.path.abspath(self.argDB['rootDir'])
-    self.installDir = os.path.abspath(self.argDB['installDir'])
-    self.arch       = self.argDB['arch']
+    self.rootDir    = self.petscdir.dir
+    self.installDir = self.framework.argDB['prefix']
+    self.arch       = self.arch.arch
     self.rootIncludeDir    = os.path.join(self.rootDir, 'include')
     self.archIncludeDir    = os.path.join(self.rootDir, self.arch, 'include')
     self.rootConfDir       = os.path.join(self.rootDir, 'conf')
@@ -42,20 +45,10 @@ class Installer(script.Script):
     self.installConfDir    = os.path.join(self.installDir, 'conf')
     self.installLibDir     = os.path.join(self.installDir, 'lib')
     self.installBinDir     = os.path.join(self.installDir, 'bin')
-    #Check for options db
-    dbpath = os.path.join(self.rootDir, self.arch, 'RDict.db')
-    if not os.path.isfile(dbpath):
-      self.ranlib     = os.path.abspath(self.argDB['ranlib'])
-      self.make       = os.path.abspath(self.argDB['make'])
-      self.libSuffix  = self.argDB['libSuffix']
-    else:
-      import cPickle
-      framework = cPickle.loads(dbpath)
-      m = framework.require('PETSc.utilities.Make', None)
-      self.make = m.make+' '+m.flags
-      m = framework.require('config.compilers', None)
-      self.ranlib    = m.RANLIB
-      self.libSuffix = m.AR_LIB_SUFFIX
+
+    self.make      = self.makesys.make+' '+self.makesys.flags
+    self.ranlib    = self.compilers.RANLIB
+    self.libSuffix = self.compilers.AR_LIB_SUFFIX
     return
 
   def copytree(self, src, dst, symlinks = False, copyFunc = shutil.copy2):
@@ -224,6 +217,8 @@ Run the following to verify the install (remain in current directory for the tes
     self.installLib()
     output = self.executeShellCommand(self.make+' PETSC_ARCH=""'+' PETSC_DIR='+self.installDir+' shared mpi4py petsc4py')[0]
     print output
+    # this file will mess up the make test run since it resets PETSC_ARCH when PETSC_ARCH needs to be null now
+    os.unlink(os.path.join(self.rootDir,'conf','petscvariables'))
     self.createUninstaller()
     self.outputHelp()
     return

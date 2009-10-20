@@ -126,7 +126,7 @@ clean::
 	       ex[0-9].exe ex[0-9][0-9].exe ex[0-9]f.exe ex[0-9][0-9]f.exe \
 	       *.ad.c *.ad.h ad_deriv.h .adic* *.cp_ *.cp__ *.c*.c pageform.txt \
                .adic* *.dep *.proj ctoatmp PETScArena* *.L *.anl main *.mod .mpi* \
-	       *.class *.ouit *.ad.* g_* silly.cmp *.tmp.* *.ilk *.pdb *.inst.c *.rej
+	       *.class *.ouit *.ad.* g_* silly.cmp *.tmp.* *.ilk *.pdb *.inst.c *.rej *.gcda *.gcno
 	@-${RM} -rf ${CLEANDIRS} AD_cache SunWS_cache
 
 
@@ -660,7 +660,7 @@ html:
 	-@${RM} /tmp/$$USER.htmlmap tmp
 
 cleanhtml:
-	-@${RM} makefile.html *.c.html *.F.html *.h.html *.h90.html index.html *.m.html
+	-@${RM} makefile.html *.c.html *.F.html *.h.html *.h90.html index.html *.m.html *.c.gcov.html
 
 # -------------------------------------------------------------------------------
 #

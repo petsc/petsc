@@ -37,7 +37,6 @@ testexamples_PLAPACK: ${TESTEXAMPLES_PLAPACK} clean
 testexamples_SPOOLES: ${TESTEXAMPLES_SPOOLES} clean
 testexamples_UMFPACK: ${TESTEXAMPLES_UMFPACK} clean
 testexamples_SUPERLU_DIST: ${TESTEXAMPLES_SUPERLU_DIST} clean
-testexamples_BLOCKSOLVE95: ${TESTEXAMPLES_BLOCKSOLVE95} clean
 testexamples_HYPRE: ${TESTEXAMPLES_HYPRE} clean
 testexamples_HDF5: ${TESTEXAMPLES_HDF5} clean
 testexamples_BLOPEX: ${TESTEXAMPLES_BLOPEX} clean
@@ -74,8 +73,6 @@ buildexamples_C_Complex:
 	-@${OMAKE} testexamples_C_Complex TESTEXAMPLES_C_COMPLEX=`echo ${TESTEXAMPLES_C_COMPLEX} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_6:
 	-@${OMAKE} testexamples_6 TESTEXAMPLES_6=`echo ${TESTEXAMPLES_6} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
-buildexamples_BLOCKSOLVE:
-	-@${OMAKE} testexamples_BLOCKSOLVE TESTEXAMPLES_BLOCKSOLVE95=`echo ${TESTEXAMPLES_BLOCKSOLVE95} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_Fortran_NoComplex:
 	-@${OMAKE} testexamples_Fortran_NoComplex TESTEXAMPLES_FORTRAN_NOCOMPLEX=`echo ${TESTEXAMPLES_FORTRAN_NOCOMPLEX} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_Fortran_MPIUni:

@@ -27,11 +27,11 @@
 
 .seealso: PetscDrawSetPause(), PetscDrawPause()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawGetPause(PetscDraw draw,int *lpause)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawGetPause(PetscDraw draw,PetscReal *lpause)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
-  PetscValidIntPointer(lpause,2);
+  PetscValidPointer(lpause,2);
   *lpause = draw->pause;
   PetscFunctionReturn(0);
 }

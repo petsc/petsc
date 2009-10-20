@@ -223,7 +223,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   MPI_Comm       comm = PETSC_COMM_WORLD;
   PetscTruth     flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flag,flgz,flgzout;
   PetscErrorCode ierr;
-  PetscInt       si;
+  PetscReal      si;
   int            i;
   PetscMPIInt    rank;
   char           version[256];
@@ -546,7 +546,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
     ierr = (*PetscHelpPrintf)(comm,"-----------------------------------------------\n");CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-petsc_sleep",&si,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-petsc_sleep",&si,&flg1);CHKERRQ(ierr);
   if (flg1) {
     ierr = PetscSleep(si);CHKERRQ(ierr);
   }
