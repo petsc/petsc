@@ -417,7 +417,8 @@ class Package(config.base.Configure):
             self.framework.packages.append(self)
             return
       else:
-        self.framework.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions give to check for')        
+        self.framework.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions give to check for')
+        return
     raise RuntimeError('Could not find a functional '+self.name+'\n')
 
   def checkSharedLibrary(self):
