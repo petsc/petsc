@@ -471,80 +471,136 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const MatFact
   PetscInt       i,j,k,n=A->rmap->n,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
   PetscInt       *ajtmp,*bjtmp,nz,nzL,row,*bdiag=b->diag,*pj;
   MatScalar      *rtmp,*pc,multiplier,*v,*pv,*aa=a->a;
-  PetscReal      shift=info->shiftinblocks;
   PetscTruth     row_identity,col_identity;
 
+  LUShift_Ctx    sctx;
+  PetscInt       *ddiag,newshift;
+  PetscReal      rs;
+  MatScalar      d;
+
   PetscFunctionBegin;
+  /* ZeropivotSetUp(): initialize shift context sctx */
+  sctx.nshift         = 0;
+  sctx.nshift_max     = 0;
+  sctx.shift_top      = 0.0;
+  sctx.shift_lo       = 0.0;
+  sctx.shift_hi       = 0.0;
+  sctx.shift_fraction = 0.0;
+  sctx.shift_amount   = 0.0;
+
+  /* if both shift schemes are chosen by user, only use info->shiftpd */
+  if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
+    ddiag          = a->diag;
+    sctx.shift_top = info->zeropivot;
+    for (i=0; i<n; i++) {
+      /* calculate sum(|aij|)-RealPart(aii), amt of shift needed for this row */
+      d  = (aa)[ddiag[i]];
+      rs = -PetscAbsScalar(d) - PetscRealPart(d);
+      v  = aa+ai[i];
+      nz = ai[i+1] - ai[i];
+      for (j=0; j<nz; j++) 
+	rs += PetscAbsScalar(v[j]);
+      if (rs>sctx.shift_top) sctx.shift_top = rs;
+    }
+    sctx.shift_top   *= 1.1;
+    sctx.nshift_max   = 5;
+    sctx.shift_lo     = 0.;
+    sctx.shift_hi     = 1.;
+  } 
+
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = PetscMalloc((n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
   ics  = ic;
 
-  for (i=0; i<n; i++){
-    /* zero rtmp */
-    /* L part */
-    nz    = bi[i+1] - bi[i];
-    bjtmp = bj + bi[i];
-    for  (j=0; j<nz; j++) rtmp[bjtmp[j]] = 0.0;
+  do {
+    sctx.lushift = PETSC_FALSE;
+    for (i=0; i<n; i++){
+      /* zero rtmp */
+      /* L part */
+      nz    = bi[i+1] - bi[i];
+      bjtmp = bj + bi[i];
+      for  (j=0; j<nz; j++) rtmp[bjtmp[j]] = 0.0;
 
-    /* U part */
-    nz = bi[2*n-i+1] - bi[2*n-i]; 
-    bjtmp = bj + bi[2*n-i]; 
-    for  (j=0; j<nz; j++) rtmp[bjtmp[j]] = 0.0; 
+      /* U part */
+      nz = bi[2*n-i+1] - bi[2*n-i]; 
+      bjtmp = bj + bi[2*n-i]; 
+      for  (j=0; j<nz; j++) rtmp[bjtmp[j]] = 0.0; 
    
-    /* load in initial (unfactored row) */
-    nz    = ai[r[i]+1] - ai[r[i]];
-    ajtmp = aj + ai[r[i]];
-    v     = aa + ai[r[i]];
-    for (j=0; j<nz; j++) {
-      rtmp[ics[ajtmp[j]]] = v[j];
-    }
-    if (rtmp[ics[r[i]]] == 0.0){
-      rtmp[ics[r[i]]] += shift; /* shift the diagonal of the matrix */
-      /* printf("row %d, shift %g\n",i,shift); */
-    }
-
-    /* elimination */
-    bjtmp = bj + bi[i];
-    row   = *bjtmp++;
-    nzL   = bi[i+1] - bi[i];
-    k   = 0;
-    while  (k < nzL) {
-      pc = rtmp + row;
-      if (*pc != 0.0) {
-        pv         = b->a + bdiag[row];
-        multiplier = *pc * (*pv); 
-        *pc        = multiplier;
-        pj         = b->j + bi[2*n-row]; /* begining of U(row,:) */
-        pv         = b->a + bi[2*n-row]; 
-        nz         = bi[2*n-row+1] - bi[2*n-row] - 1; /* num of entries in U(row,:), excluding diag */
-        for (j=0; j<nz; j++) rtmp[pj[j]] -= multiplier * pv[j];
-        ierr = PetscLogFlops(2.0*nz);CHKERRQ(ierr);
+      /* load in initial (unfactored row) */
+      nz    = ai[r[i]+1] - ai[r[i]];
+      ajtmp = aj + ai[r[i]];
+      v     = aa + ai[r[i]];
+      for (j=0; j<nz; j++) {
+        rtmp[ics[ajtmp[j]]] = v[j];
       }
-      row = *bjtmp++; k++;
+      /* ZeropivotApply() */
+      rtmp[ics[r[i]]] += sctx.shift_amount;  /* shift the diagonal of the matrix */
+    
+      /* elimination */
+      bjtmp = bj + bi[i];
+      row   = *bjtmp++;
+      nzL   = bi[i+1] - bi[i];
+      k   = 0;
+      while  (k < nzL) {
+        pc = rtmp + row;
+        if (*pc != 0.0) {
+          pv         = b->a + bdiag[row];
+          multiplier = *pc * (*pv); 
+          *pc        = multiplier;
+          pj         = b->j + bi[2*n-row]; /* begining of U(row,:) */
+          pv         = b->a + bi[2*n-row]; 
+          nz         = bi[2*n-row+1] - bi[2*n-row] - 1; /* num of entries in U(row,:), excluding diag */
+          for (j=0; j<nz; j++) rtmp[pj[j]] -= multiplier * pv[j];
+          ierr = PetscLogFlops(2.0*nz);CHKERRQ(ierr);
+        }
+        row = *bjtmp++; k++;
+      }
+
+      /* finished row so stick it into b->a */
+      rs = 0.0;
+      /* L part */
+      pv   = b->a + bi[i] ;
+      pj   = b->j + bi[i] ;
+      nz   = bi[i+1] - bi[i];
+      for (j=0; j<nz; j++) {
+        pv[j] = rtmp[pj[j]]; rs += PetscAbsScalar(pv[j]);
+      }
+
+      /* U part */
+      pv = b->a + bi[2*n-i];
+      pj = b->j + bi[2*n-i];
+      nz = bi[2*n-i+1] - bi[2*n-i] - 1; 
+      for (j=0; j<nz; j++) {
+        pv[j] = rtmp[pj[j]]; rs += PetscAbsScalar(pv[j]);
+      }
+
+      /* ZeropivotCheck() */
+      sctx.rs  = rs;
+      sctx.pv  = rtmp[i];
+      ierr = MatLUCheckShift_inline(info,sctx,i,newshift);CHKERRQ(ierr);
+      if (newshift == 1) break;
+
+      /* Mark diagonal and invert diagonal for simplier triangular solves */
+      pv  = b->a + bdiag[i];
+      *pv = 1.0/rtmp[i];
+
+    } /* endof for (i=0; i<n; i++){ */
+
+    /* ZeropivotRefine() */
+    if (info->shiftpd && !sctx.lushift && sctx.shift_fraction>0 && sctx.nshift<sctx.nshift_max){
+      /* 
+       * if no shift in this attempt & shifting & started shifting & can refine,
+       * then try lower shift
+       */
+      sctx.shift_hi       = sctx.shift_fraction;
+      sctx.shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;
+      sctx.shift_amount   = sctx.shift_fraction * sctx.shift_top;
+      sctx.lushift        = PETSC_TRUE;
+      sctx.nshift++;
     }
+  } while (sctx.lushift);
 
-    /* finished row so stick it into b->a */
-    /* L part */
-    pv   = b->a + bi[i] ;
-    pj   = b->j + bi[i] ;
-    nz   = bi[i+1] - bi[i];
-    for (j=0; j<nz; j++) {
-      pv[j] = rtmp[pj[j]];
-    }
-
-    /* Mark diagonal and invert diagonal for simplier triangular solves */
-    pv  = b->a + bdiag[i];
-    pj  = b->j + bdiag[i];
-    /* if (*pj != i)SETERRQ2(PETSC_ERR_SUP,"row %d != *pj %d",i,*pj) */
-    *pv = 1.0/rtmp[*pj];
-
-    /* U part */
-    pv = b->a + bi[2*n-i];
-    pj = b->j + bi[2*n-i];
-    nz = bi[2*n-i+1] - bi[2*n-i] - 1; 
-    for (j=0; j<nz; j++) pv[j] = rtmp[pj[j]];
-  } 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
@@ -564,6 +620,15 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const MatFact
   C->assembled    = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(C->cmap->n);CHKERRQ(ierr);
+
+  /* ZeropivotView() */
+  if (sctx.nshift){
+    if (info->shiftpd) {
+      ierr = PetscInfo4(A,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,sctx.shift_fraction,sctx.shift_top);CHKERRQ(ierr);
+    } else if (info->shiftnz) {
+      ierr = PetscInfo2(A,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -591,11 +656,14 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
   ierr = PetscMalloc((n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
   ics  = ic;
 
-  sctx.shift_top      = 0;
+  /* initialize shift context sctx */
+  sctx.nshift         = 0;
   sctx.nshift_max     = 0;
-  sctx.shift_lo       = 0;
-  sctx.shift_hi       = 0;
-  sctx.shift_fraction = 0;
+  sctx.shift_top      = 0.0;
+  sctx.shift_lo       = 0.0;
+  sctx.shift_hi       = 0.0;
+  sctx.shift_fraction = 0.0;
+  sctx.shift_amount   = 0.0;
 
   /* if both shift schemes are chosen by user, only use info->shiftpd */
   if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
@@ -617,8 +685,6 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
     sctx.shift_hi     = 1.;
   }
 
-  sctx.shift_amount = 0.0;
-  sctx.nshift       = 0;
   do {
     sctx.lushift = PETSC_FALSE;
     for (i=0; i<n; i++){
