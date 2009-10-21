@@ -285,10 +285,10 @@ class Package(config.base.Configure):
 
   def installNeeded(self, mkfile):
     if not os.path.isfile(os.path.join(self.confDir, self.name)) or not (self.getChecksum(os.path.join(self.confDir, self.name)) == self.getChecksum(os.path.join(self.packageDir, mkfile))):
-      self.framework.log.write('Have to rebuild '+self.name+', '+mkfile+' != '+os.path.join(self.confDir, self.name))
+      self.framework.log.write('Have to rebuild '+self.name+', '+mkfile+' != '+os.path.join(self.confDir, self.name)+'\n')
       return 1
     else:
-      self.framework.log.write('Do not need to rebuild '+self.name)
+      self.framework.log.write('Do not need to rebuild '+self.name+'\n')
       return 0
 
   def postInstall(self, output, mkfile):
@@ -403,22 +403,21 @@ class Package(config.base.Configure):
           incl.append(loc)
       if self.functions:
         self.framework.logPrint('Checking for library in '+location+': '+str(lib))
-        if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : libs, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2]}):
-          self.lib = lib	
-          self.framework.logPrint('Checking for headers '+location+': '+str(incl))
-          if (not self.includes) or self.checkInclude(incl, self.includes, incls, timeout = 1800.0):
-            if self.includes:
-              self.include = incl
-            self.found     = 1
-            self.dlib      = self.lib+libs
-            if not hasattr(self.framework, 'packages'):
-              self.framework.packages = []
-            self.directory = directory
-            self.framework.packages.append(self)
-            return
       else:
-        self.framework.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions give to check for')
-        return
+        self.framework.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions given to check for')
+      if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : libs, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2]}):
+        self.lib = lib	
+        self.framework.logPrint('Checking for headers '+location+': '+str(incl))
+        if (not self.includes) or self.checkInclude(incl, self.includes, incls, timeout = 1800.0):
+          if self.includes:
+            self.include = incl
+          self.found     = 1
+          self.dlib      = self.lib+libs
+          if not hasattr(self.framework, 'packages'):
+            self.framework.packages = []
+          self.directory = directory
+          self.framework.packages.append(self)
+          return
     raise RuntimeError('Could not find a functional '+self.name+'\n')
 
   def checkSharedLibrary(self):
