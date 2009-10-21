@@ -100,9 +100,9 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
   {
     PetscInt i,j,k,rs=r+s;
     PetscBLASInt m,n,one=1,*ipiv,lwork=4*((s+3)*3+3),info,rank,ldb;
-    PetscScalar *ImV,*H,*work,*sing,rcond;
-    PetscScalar *c=scheme->c,*a=scheme->a,*b=scheme->b,*u=scheme->u,*v=scheme->v;
-    ierr = PetscMalloc5(PetscSqr(r),PetscScalar,&ImV,3*s,PetscScalar,&H,lwork,PetscScalar,&work,r+s,PetscScalar,&sing,r+s,PetscBLASInt,&ipiv);CHKERRQ(ierr);
+    PetscReal rcond,*sing,*workreal;
+    PetscScalar *ImV,*H,*workscalar,*c=scheme->c,*a=scheme->a,*b=scheme->b,*u=scheme->u,*v=scheme->v;
+    ierr = PetscMalloc6(PetscSqr(r),PetscScalar,&ImV,3*s,PetscScalar,&H,lwork,PetscScalar,&workscalar,5*(3+r),PetscReal,&workreal,r+s,PetscReal,&sing,r+s,PetscBLASInt,&ipiv);CHKERRQ(ierr);
 
     /* column-major input */
     for (i=0; i<r-1; i++) {
@@ -148,7 +148,7 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
 
     /* right hand side for gamma (glm.B(2:end,:)*e.xi - e.epsilon*eye(s-1,1)) */
     for (i=1; i<r; i++) {
-      scheme->gamma[i] = -(i==1)*scheme->alpha[0];
+      scheme->gamma[i] = (i==1 ? -1. : 0)*scheme->alpha[0];
       for (j=0; j<s; j++) scheme->gamma[i] += b[i*s+j]*scheme->stage_error[j];
     }
     LAPACKgetrs_("No transpose",&m,&one,ImV,&n,ipiv,scheme->gamma+1,&n,&info);
@@ -199,8 +199,13 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
     n = PetscBLASIntCast(s);
     ldb = PetscBLASIntCast(rs);
     rcond = 1e-12;
+#if defined(PETSC_USE_COMPLEX)
+    /* ZGELSS( M, N, NRHS, A, LDA, B, LDB, S, RCOND, RANK, WORK, LWORK, RWORK, INFO ) */
+    LAPACKgelss_(&m,&n,&m,H,&m,scheme->phi,&ldb,sing,&rcond,&rank,workscalar,&lwork,workreal,&info);
+#else
     /* DGELSS( M, N, NRHS, A, LDA, B, LDB, S, RCOND, RANK, WORK, LWORK, INFO ) */
-    LAPACKgelss_(&m,&n,&m,H,&m,scheme->phi,&ldb,sing,&rcond,&rank,work,&lwork,&info);
+    LAPACKgelss_(&m,&n,&m,H,&m,scheme->phi,&ldb,sing,&rcond,&rank,workscalar,&lwork,&info);
+#endif
     if (info < 0) SETERRQ(PETSC_ERR_LIB,"Bad argument to GELSS");
     if (info > 0) SETERRQ(PETSC_ERR_LIB,"SVD failed to converge");
 
@@ -218,7 +223,7 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
         scheme->phi[2*rs+s+j] -= CPowF(c[k],j-1)*scheme->phi[2*rs+k];
       }
     }
-    ierr = PetscFree5(ImV,H,work,sing,ipiv);CHKERRQ(ierr);
+    ierr = PetscFree6(ImV,H,workscalar,workreal,sing,ipiv);CHKERRQ(ierr);
   }
   /* Check which properties are satisfied */
   scheme->stiffly_accurate = PETSC_TRUE;
@@ -226,9 +231,9 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
   for (j=0; j<s; j++) if (a[(s-1)*s+j] != b[j]) scheme->stiffly_accurate = PETSC_FALSE;
   for (j=0; j<r; j++) if (u[(s-1)*r+j] != v[j]) scheme->stiffly_accurate = PETSC_FALSE;
   scheme->fsal = scheme->stiffly_accurate; /* FSAL is stronger */
-  for (j=0; j<s-1; j++) if (r>1 && b[1*s+j] != 0) scheme->fsal = PETSC_FALSE;
-  if (b[1*s+r-1] != 1) scheme->fsal = PETSC_FALSE;
-  for (j=0; j<r; j++) if (r>1 && v[1*r+j] != 0) scheme->fsal = PETSC_FALSE;
+  for (j=0; j<s-1; j++) if (r>1 && b[1*s+j] != 0.) scheme->fsal = PETSC_FALSE;
+  if (b[1*s+r-1] != 1.) scheme->fsal = PETSC_FALSE;
+  for (j=0; j<r; j++) if (r>1 && v[1*r+j] != 0.) scheme->fsal = PETSC_FALSE;
 
   *inscheme = scheme;
   PetscFunctionReturn(0);
@@ -281,7 +286,7 @@ static PetscErrorCode ViewTable_Private(PetscViewer viewer,PetscInt m,PetscInt n
       if (i) {ierr = PetscViewerASCIIPrintf(viewer,"%30s   [","");CHKERRQ(ierr);}
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
       for (j=0; j<n; j++) {
-        ierr = PetscViewerASCIIPrintf(viewer," %12.8g",a[i*n+j]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer," %12.8g",PetscRealPart(a[i*n+j]));CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer,"]\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
@@ -306,7 +311,8 @@ static PetscErrorCode TSGLSchemeView(TSGLScheme sc,PetscTruth view_details,Petsc
     ierr = PetscViewerASCIIPrintf(viewer,"GL scheme p,q,r,s = %d,%d,%d,%d\n",sc->p,sc->q,sc->r,sc->s);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Stiffly accurate: %s,  FSAL: %s\n",sc->stiffly_accurate?"yes":"no",sc->fsal?"yes":"no");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Leading error constants: %10.3e  %10.3e  %10.3e\n",sc->alpha[0],sc->beta[0],sc->gamma[0]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Leading error constants: %10.3e  %10.3e  %10.3e\n",
+                                  PetscRealPart(sc->alpha[0]),PetscRealPart(sc->beta[0]),PetscRealPart(sc->gamma[0]));CHKERRQ(ierr);
     ierr = ViewTable_Private(viewer,1,sc->s,sc->c,"Abscissas c");CHKERRQ(ierr);
     if (view_details) {
       ierr = ViewTable_Private(viewer,sc->s,sc->s,sc->a,"A");CHKERRQ(ierr);
@@ -475,7 +481,7 @@ static PetscErrorCode TSGLUpdateWRMS(TS ts)
   ierr = VecGetArray(gl->W,&w);CHKERRQ(ierr);
   ierr = VecGetLocalSize(gl->W,&n);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    w[i] = 1./(gl->wrms_atol + gl->wrms_rtol*PetscAbs(x[i]));
+    w[i] = 1./(gl->wrms_atol + gl->wrms_rtol*PetscAbsScalar(x[i]));
   }
   ierr = VecRestoreArray(gl->X[0],&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(gl->W,&w);CHKERRQ(ierr);
@@ -497,11 +503,11 @@ static PetscErrorCode TSGLVecNormWRMS(TS ts,Vec X,PetscReal *nrm)
   ierr = VecGetLocalSize(gl->W,&n);CHKERRQ(ierr);
   sum = 0;
   for (i=0; i<n; i++) {
-    sum += PetscAbs(PetscSqr(x[i]*w[i]));
+    sum += PetscAbsScalar(PetscSqr(x[i]*w[i]));
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(gl->W,&w);CHKERRQ(ierr);
-  *nrm = PetscAbs(PetscSqrtScalar(sum/n));
+  *nrm = PetscAbsScalar(PetscSqrtScalar(sum/(1.*n)));
   PetscFunctionReturn(0);
 }
 
@@ -556,6 +562,7 @@ static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
   for (i=1; i<max_r; i++) {
     ierr = VecZeroEntries(gl->X[i]);CHKERRQ(ierr);
   }
+  ierr = TSGLUpdateWRMS(ts);CHKERRQ(ierr);
 
   if (0) {
     /* Find consistent initial data for DAE */
@@ -594,9 +601,9 @@ static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
     gl->base_time = ts->ptime;  /* save time at the start of this step */
 
     for (i=0; i<s; i++) {
-      PetscScalar shift = gl->shift = 1./(h*a[i*s+i]);
+      PetscScalar shift = gl->shift = 1./PetscRealPart(h*a[i*s+i]);
       gl->stage = i;
-      ts->ptime = gl->base_time + c[i]*h;
+      ts->ptime = gl->base_time + PetscRealPart(c[i])*h;
 
       /*
       * Stage equation: Y = h A Y' + U X
@@ -638,9 +645,9 @@ static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
     for (i=0; i<3; i++) {
       ierr = TSGLVecNormWRMS(ts,gl->himom[i],&hmnorm[i+1]);CHKERRQ(ierr);
     }
-    enorm[0] = scheme->alpha[0]*hmnorm[1];
-    enorm[1] = scheme->beta[0] *hmnorm[2];
-    enorm[2] = scheme->gamma[0]*hmnorm[3];
+    enorm[0] = PetscRealPart(scheme->alpha[0])*hmnorm[1];
+    enorm[1] = PetscRealPart(scheme->beta[0]) *hmnorm[2];
+    enorm[2] = PetscRealPart(scheme->gamma[0])*hmnorm[3];
     tleft = ts->max_time - ts->ptime;
     ierr = (*gl->CtrlAcceptanceTest)(ts,tleft,h,enorm,&accept,gl->ctrlP);CHKERRQ(ierr);
     if (!accept) {ierr = PetscInfo1(ts,"Step %D (t=%g) not accepted, proceeding anyway (FIXME)\n",k);CHKERRQ(ierr);}
@@ -913,7 +920,7 @@ static PetscErrorCode TSGLCtrlChooseNextScheme_Default(TS ts,PetscInt n,const TS
     else if (trial.p == cur_p+1) mom = hmnorm[2]+hmnorm[3];
     else continue;
     trial.id = i;
-    trial.h = h*PetscPowScalar((PetscScalar)(sc[i]->alpha[0]*mom),1./(sc[i]->p+1));
+    trial.h = h*PetscRealPart(PetscPowScalar((PetscScalar)(PetscAbsScalar(sc[i]->alpha[0])*mom),1./(sc[i]->p+1)));
     trial.eff = trial.h/sc[i]->s;
     if (trial.eff > best.eff) {ierr = PetscMemcpy(&best,&trial,sizeof(trial));CHKERRQ(ierr);}
     if (i == cur_sc) {ierr = PetscMemcpy(&cur,&trial,sizeof(trial));CHKERRQ(ierr);}
