@@ -1,15 +1,17 @@
 /*$Id: xinit.c,v 1.69 2000/09/28 21:08:36 bsmith Exp $*/
 
+#if defined(foo)
+
 #include "../src/sys/draw/impls/x/ximpl.h"
 /*
     Gets the image from a window and stores it as a .gif file
 */
-static byte grabmapR[256], grabmapG[256], grabmapB[256];  /* colormap */
+static char grabmapR[256], grabmapG[256], grabmapB[256];  /* colormap */
 static int  gWIDE,gHIGH;
 
-int DrawSave_X(Draw draw,Viewer viewer)
+int PetscDrawSave_X(PetscDraw draw,PetscViewer viewer)
 {
-  Draw_X            *drawx = (Draw_X*)draw;
+  PetscDraw_X            *drawx = (PetscDraw_X*)draw;
   XImage            *image;
   XWindowAttributes xwa;
   XColor            *colors;
@@ -366,4 +368,4 @@ static int lowbitnum(ul)
   return i;
 }
 
-
+#endif
