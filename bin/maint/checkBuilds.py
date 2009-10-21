@@ -26,7 +26,7 @@ class BuildChecker(script.Script):
 
     help = script.Script.setupHelp(self, help)
     help.addArgument('BuildCheck', '-remoteMachine', nargs.Arg(None, 'terra.mcs.anl.gov', 'The machine on which PETSc logs are stored'))
-    help.addArgument('BuildCheck', '-logDirectory',  nargs.Arg(None, os.path.join('/home', 'petsc', 'logs', 'nightly'), 'The directory in which PETSc logs are stored'))
+    help.addArgument('BuildCheck', '-logDirectory',  nargs.Arg(None, os.path.join('/mcs', 'ftp', 'pub', 'petsc','nightlylogs'), 'The directory in which PETSc logs are stored'))
     help.addArgument('BuildCheck', '-archCompilers', nargs.Arg(None, {}, 'A mapping from architecture names to lists of compiler names'))
     return help
 
