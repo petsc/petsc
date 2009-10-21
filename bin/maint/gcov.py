@@ -43,11 +43,11 @@ for i in range(0,len_tarballs):
 # 2) Gcov runs fine on atleast one machine = Unequal number of files in the tarballs.The smaller tarballs are subset of the largest tarball(s)   
 # 3) Gcov doesn't run correctly on any of the machines...possibly different files in tarballs  
 
-# Case 2 is implemented for now...sort the directories in reverse order
+# Case 2 is implemented for now...sort the tmp_dirs list in reverse order according to the number of files in each directory
 tmp_dirs.sort(key=operator.itemgetter(1),reverse=True)
 
-# Remove files from gcov directory if not empty
-os.system("rm -f"+" "+gcov_dir+"/*.*")
+# Create temporary gcov directory to store .lines files
+os.system("mkdir"+" "+gcov_dir)
 print "Merging files"
 nfiles = tmp_dirs[0][1]
 dir1 = cwd+'/'+tmp_dirs[0][0]
@@ -75,6 +75,7 @@ for i in range(0,nfiles):
 	lines.sort()
         out_fid.writelines(lines)
         out_fid.flush()
+
     out_fid.close()
 
 # Remove directories created by extracting tar files                                                                                 
@@ -136,7 +137,7 @@ for file_ctr in range(0,file_len):
     try:
         inhtml_fid = open(inhtml_file,"r")
     except IOError:
-        # One file bit_mask.c has an underscore in its name and hence parsing in stage 1 gives an error
+        # Error check for files not opened correctly or file names not parsed correctly in stage 1
         fileopen_error.append([src_not_tested_path[file_ctr],src_not_tested_filename[file_ctr]])
         nfiles_not_processed += 1
         continue
@@ -200,12 +201,13 @@ for file_ctr in range(0,file_len):
     temp_list.append(per_code_not_tested)
 
     output_list.append(temp_list)
-#    print >>out_fid,"<tr><td><a href = %s>%s</a></td><td>%s</td><td>%s</td><td>%3.2f</td></tr>" % (outhtml_file,src_not_tested_filename[file_ctr],nsrc_lines,src_not_tested_nlines[file_ctr],per_code_not_tested)
-#    out_fid.flush()
+
+# Don't need $PETSC_DIR/tmp/gcov,remove it
+shutil.rmtree(gcov_dir)
 # ------------------------------- End of Stage 3 ----------------------------------------
 
 # ------------------------------- Stage 4 ----------------------------------------------
-# Main HTML page containts statistics and individual file results
+# Create Main HTML page containing statistics and marked HTML file links
 print "Creating main HTML page"
 # Create the main html file                                                                                                                                    
 # ----------------------------- index_gcov1.html has results sorted by file name ----------------------------------
