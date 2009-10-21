@@ -73,7 +73,6 @@ echo "Performing buildtest on " $MACH "with arch " $PETSC_ARCH " at " $nPETSC_DI
   # now configure
   ./config/examples/${CONFIGURE_FILE}.py --with-no-output -PETSC_ARCH=$PETSC_ARCH -PETSC_DIR=$nPETSC_DIR ${CONFIGURE_ARGS} >>& test.log
   echo '****************************************************' >>& $nPETSC_DIR/test.log
-  tar cf buildoutput.tar configure.log bmake/$PETSC_ARCH/*
 
 make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR allfortranstubs >>& $nPETSC_DIR/test.log
 
@@ -95,10 +94,9 @@ echo "Build on $MACH $PETSC_ARCH  `date` " > examples.log
 make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  alltests TESTMODE=$TESTMODE |& grep -v 'up to date' >>& examples.log
 echo '******************************************************' >>& $nPETSC_DIR/examples.log
 
-set GCOV=`grep PETSC_USE_GCOV $nPETSC_DIR/bmake/$PETSC_ARCH/petscconf.h`
+set GCOV=`grep PETSC_USE_GCOV $nPETSC_DIR/$PETSC_ARCH/include/petscconf.h`
 if ( "${GCOV}" != "" ) then
   make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR allgcov  >>& examples.log
-  tar -cfz gcov.tar.gz /tmp/gcov
 endif
 
 echo "Finished Build on $MACH $PETSC_ARCH `date`" >>& $nPETSC_DIR/examples.log
