@@ -356,7 +356,7 @@ allgcov:
 	-@${RM} -rf ${PETSC_DIR}/tmp/gcov
 	-@mkdir ${PETSC_DIR}/tmp/gcov
 	-${OMAKE} ACTION=gcov PETSC_DIR=${PETSC_DIR} tree
-	-cd ${PETSC_DIR}/tmp; tar -czf gcov.tar.gz gcov
+	-cd ${PETSC_DIR}/tmp/gcov; tar -czf gcov.tar.gz *.lines
 #-${RM) -rf ${PETSC_DIR}/tmp/gcov
 
 # usage make allrcslabel NEW_RCS_LABEL=v_2_0_28

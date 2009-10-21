@@ -16,10 +16,10 @@ import shutil
 import glob
 
 PETSC_DIR = os.environ['PETSC_DIR']
-gcov_dir = PETSC_DIR+'/tmp/gcov'
+gcov_dir = os.path.join(PETSC_DIR,'tmp','gcov')
 cwd = os.getcwd()
 # -------------------------- Stage 1 -------------------------------
-tarballs = glob.glob('*.gz')
+tarballs = glob.glob('*.tar.gz')
 len_tarballs = len(tarballs)
 if len_tarballs == 0:
     print "No gcov tar balls found in directory %s" %(cwd)
@@ -27,12 +27,13 @@ if len_tarballs == 0:
 
 print "%s tarballs found\n%s" %(len_tarballs,tarballs)
 print "Extracting gcov directories from tar balls"
+#  Each tar file consists of a bunch of *.line files NOT inside a directory
 tmp_dirs = []
 for i in range(0,len_tarballs):
     tmp = []
-    dir_name = tarballs[i].split('.tar')[0]
+    dir_name = str(i)
     tmp.append(dir_name)
-    os.system("gunzip -c" +" "+  tarballs[i] + "|tar -xof -")
+    os.system("mkdir "+dir_name+"; cd "+dir_name+";gunzip -c" +" ../"+tarballs[i] + "|tar -xof -")
     dir = cwd+'/'+dir_name
     tmp.append(len(os.listdir(dir)))
     tmp_dirs.append(tmp)
