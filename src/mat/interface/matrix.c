@@ -2721,7 +2721,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatSolve(Mat A,Mat B,Mat X)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatForwardSolve"
-/* @
+/*@
    MatForwardSolve - Solves L x = b, given a factored matrix, A = LU, or
                             U^T*D^(1/2) x = b, given a factored symmetric matrix, A = U^T*D*U,
 
@@ -2756,7 +2756,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatSolve(Mat A,Mat B,Mat X)
    Concepts: matrices^forward solves
 
 .seealso: MatSolve(), MatBackwardSolve()
-@ */
+@*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatForwardSolve(Mat mat,Vec b,Vec x)
 {
   PetscErrorCode ierr;
@@ -2784,7 +2784,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatForwardSolve(Mat mat,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatBackwardSolve"
-/* @
+/*@
    MatBackwardSolve - Solves U x = b, given a factored matrix, A = LU.
                              D^(1/2) U x = b, given a factored symmetric matrix, A = U^T*D*U,
 
@@ -2819,7 +2819,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatForwardSolve(Mat mat,Vec b,Vec x)
    Concepts: matrices^backward solves
 
 .seealso: MatSolve(), MatForwardSolve()
-@ */
+@*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatBackwardSolve(Mat mat,Vec b,Vec x)
 {
   PetscErrorCode ierr;
