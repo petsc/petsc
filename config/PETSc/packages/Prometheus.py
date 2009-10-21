@@ -72,7 +72,6 @@ class Configure(PETSc.package.NewPackage):
       fd = file(os.path.join(self.packageDir,'makefile.in'),'a')
       fd.write('include makefile.petsc\n')
       fd.close()
-      output  = PETSc.package.NewPackage.executeShellCommand('cp -f '+os.path.join(self.packageDir,'makefile.petsc')+' '+self.confDir+'/Prometheus', timeout=5, log = self.framework.log)[0]
       self.compilePrometheus = 1
     return self.installDir
 
