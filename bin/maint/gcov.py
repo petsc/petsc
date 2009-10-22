@@ -48,7 +48,7 @@ for i in range(0,len_tarballs):
 tmp_dirs.sort(key=operator.itemgetter(1),reverse=True)
 
 # Create temporary gcov directory to store .lines files
-os.system("mkdir"+" "+gcov_dir)
+os.system("mkdir -p"+" "+gcov_dir)
 print "Merging files"
 nfiles = tmp_dirs[0][1]
 dir1 = cwd+'/'+tmp_dirs[0][0]
@@ -240,7 +240,7 @@ print >>out_fid,"""<center><font size = "4">Total number of source code lines no
 print >>out_fid,"""<center><font size = "4">Percentage of source code lines not tested = %3.2f</font></center>""" % (float(ntotal_lines_not_tested)/float(ntotal_lines)*\
 100.0)
 print >>out_fid,"""<hr>    
-<a href = %s>See statistics sorted by percent code tested</a>""" % (outfile_name2)
+<a href = %s>See statistics sorted by percent code tested</a>""" % ('index_gcov2.html')
 print >>out_fid,"""<br><br>
 <h4><u><center>Statistics sorted by file name</center></u></h4>"""                                                        
 print >>out_fid,"""<table border="1" align = "center">                                                                                                                            
@@ -270,7 +270,7 @@ print >>out_fid,"""<center><font size = "4">Total number of source code lines = 
 print >>out_fid,"""<center><font size = "4">Total number of source code lines not tested = %s</font></center>""" %(ntotal_lines_not_tested)
 print >>out_fid,"""<center><font size = "4">Percentage of source code lines not tested = %3.2f</font></center>""" % (float(ntotal_lines_not_tested)/float(ntotal_lines)*100.0)
 print >>out_fid,"""<hr>
-<a href = %s>See statistics sorted by file name</a>""" % (outfile_name1) 
+<a href = %s>See statistics sorted by file name</a>""" % ('index_gcov1.html') 
 print >>out_fid,"""<br><br>
 <h4><u><center>Statistics sorted by percent code tested</center></u></h4>"""
 print >>out_fid,"""<table border="1" align = "center">                                             

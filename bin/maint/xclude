@@ -1,4 +1,5 @@
 petsc-dist/.hg
+petsc-dist/tmp
 petsc-dist/docs/exampleconcepts
 petsc-dist/docs/manconcepts
 petsc-dist/config/BuildSystem/.hg
