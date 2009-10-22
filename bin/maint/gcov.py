@@ -3,7 +3,7 @@
 # Source code for creating marked HTML files from information processed from
 # running gcov
 # This is done in four stages
-# Stage 1: Extract tar balls,merge files and dump .lines files in $PETSC_DIR/tmp/gcov
+# Stage 1: Extract tar balls,merge files and dump .lines files in /tmp/gcov
 # Stage 2: Process .lines files
 # Stage 3: Create marked HTML source code files
 # Stage 4: Create HTML pages having statistics and hyperlinks to HTML source code           files (files are sorted by filename and percentage code tested) 
@@ -16,7 +16,7 @@ import shutil
 import glob
 
 PETSC_DIR = os.environ['PETSC_DIR']
-gcov_dir = os.path.join(PETSC_DIR,'tmp','gcov')
+gcov_dir = os.path.join('tmp','gcov')
 cwd = os.getcwd()
 # -------------------------- Stage 1 -------------------------------
 tarballs = glob.glob('*.tar.gz')
@@ -203,7 +203,6 @@ for file_ctr in range(0,file_len):
 
     output_list.append(temp_list)
 
-# Don't need $PETSC_DIR/tmp/gcov,remove it
 shutil.rmtree(gcov_dir)
 # ------------------------------- End of Stage 3 ----------------------------------------
 

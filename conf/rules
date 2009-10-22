@@ -724,11 +724,11 @@ cleangcov:
 #  
 gcov:
 	@-if [ "${SOURCEC}" != "" ]; then \
-	  ${MKDIR} ${PETSC_DIR}/tmp/gcov; \
+	  ${MKDIR} /tmp/gcov-${USER}; \
 	  for i in ${SOURCEC} foo; do if [ -f $$i ]; then \
            gcov  $${i}; \
            name=`echo ${LOCDIR} | sed s?/?_?g`; \
-	   grep "##" $${i}.gcov | cut -f 2 -d ":" > ${PETSC_DIR}/tmp/gcov/$${name}$${i}.lines ; \
+	   grep "##" $${i}.gcov | cut -f 2 -d ":" > /tmp/gcov-${USER}/$${name}$${i}.lines ; \
           fi; done ; \
         fi
 

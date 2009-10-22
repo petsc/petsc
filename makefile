@@ -353,11 +353,11 @@ createfastbuild:
 #  makes .lines files for all source code
 # 
 allgcov: 
-	-@${RM} -rf ${PETSC_DIR}/tmp/gcov
-	-@mkdir ${PETSC_DIR}/tmp/gcov
+	-@${RM} -rf /tmp/gcov-${USER}
+	-@mkdir /tmp/gcov-${USER}
 	-${OMAKE} ACTION=gcov PETSC_DIR=${PETSC_DIR} tree
-	-cd ${PETSC_DIR}/tmp/gcov; tar -czf ../../gcov.tar.gz *.lines
-#-${RM) -rf ${PETSC_DIR}/tmp/gcov
+	-cd /tmp/gcov-${USER}; tar -czf ${PETSC_DIR}/gcov.tar.gz *.lines
+	-${RM) -rf /tmp/gcov-${USER}
 
 # usage make allrcslabel NEW_RCS_LABEL=v_2_0_28
 allrcslabel: 
