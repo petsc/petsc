@@ -431,7 +431,7 @@ runex32_v2:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij > ex32.out 2>&1;
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -ilu_new_v2> ex32.tmp 2>&1; \
 	if (${DIFF} ex32.out ex32.tmp) then true; \
-	   else echo "Possible problem with ex32, diffs above"; fi; \
+	   else echo "Possible problem with ex32_v2, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32.out
 
 runex32_icc:
