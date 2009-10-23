@@ -91,6 +91,8 @@
      
          call MatLUFactorSymbolic(fact, A, perm, iperm,
      >         PETSC_NULL, ierr)
+         call ISDestroy(perm,ierr)
+         call ISDestroy(iperm,ierr)
       endif
 
       call MatLUFactorNumeric(fact, A, PETSC_NULL, ierr)
