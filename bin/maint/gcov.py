@@ -3,7 +3,7 @@
 # Source code for creating marked HTML files from information processed from
 # running gcov
 # This is done in four stages
-# Stage 1: Extract tar balls,merge files and dump .lines files in $PETSC_DIR/tmp/gcov
+# Stage 1: Extract tar balls,merge files and dump .lines files in /tmp/gcov
 # Stage 2: Process .lines files
 # Stage 3: Create marked HTML source code files
 # Stage 4: Create HTML pages having statistics and hyperlinks to HTML source code           files (files are sorted by filename and percentage code tested) 
@@ -16,10 +16,10 @@ import shutil
 import glob
 
 PETSC_DIR = os.environ['PETSC_DIR']
-gcov_dir = PETSC_DIR+'/tmp/gcov'
+gcov_dir = os.path.join('tmp','gcov')
 cwd = os.getcwd()
 # -------------------------- Stage 1 -------------------------------
-tarballs = glob.glob('*.gz')
+tarballs = glob.glob('*.tar.gz')
 len_tarballs = len(tarballs)
 if len_tarballs == 0:
     print "No gcov tar balls found in directory %s" %(cwd)
@@ -27,12 +27,13 @@ if len_tarballs == 0:
 
 print "%s tarballs found\n%s" %(len_tarballs,tarballs)
 print "Extracting gcov directories from tar balls"
+#  Each tar file consists of a bunch of *.line files NOT inside a directory
 tmp_dirs = []
 for i in range(0,len_tarballs):
     tmp = []
-    dir_name = tarballs[i].split('.tar')[0]
+    dir_name = str(i)
     tmp.append(dir_name)
-    os.system("gunzip -c" +" "+  tarballs[i] + "|tar -xof -")
+    os.system("mkdir "+dir_name+"; cd "+dir_name+";gunzip -c" +" ../"+tarballs[i] + "|tar -xof -")
     dir = cwd+'/'+dir_name
     tmp.append(len(os.listdir(dir)))
     tmp_dirs.append(tmp)
@@ -43,11 +44,11 @@ for i in range(0,len_tarballs):
 # 2) Gcov runs fine on atleast one machine = Unequal number of files in the tarballs.The smaller tarballs are subset of the largest tarball(s)   
 # 3) Gcov doesn't run correctly on any of the machines...possibly different files in tarballs  
 
-# Case 2 is implemented for now...sort the directories in reverse order
+# Case 2 is implemented for now...sort the tmp_dirs list in reverse order according to the number of files in each directory
 tmp_dirs.sort(key=operator.itemgetter(1),reverse=True)
 
-# Remove files from gcov directory if not empty
-os.system("rm -f"+" "+gcov_dir+"/*.*")
+# Create temporary gcov directory to store .lines files
+os.system("mkdir -p"+" "+gcov_dir)
 print "Merging files"
 nfiles = tmp_dirs[0][1]
 dir1 = cwd+'/'+tmp_dirs[0][0]
@@ -75,6 +76,7 @@ for i in range(0,nfiles):
 	lines.sort()
         out_fid.writelines(lines)
         out_fid.flush()
+
     out_fid.close()
 
 # Remove directories created by extracting tar files                                                                                 
@@ -136,7 +138,7 @@ for file_ctr in range(0,file_len):
     try:
         inhtml_fid = open(inhtml_file,"r")
     except IOError:
-        # One file bit_mask.c has an underscore in its name and hence parsing in stage 1 gives an error
+        # Error check for files not opened correctly or file names not parsed correctly in stage 1
         fileopen_error.append([src_not_tested_path[file_ctr],src_not_tested_filename[file_ctr]])
         nfiles_not_processed += 1
         continue
@@ -200,12 +202,12 @@ for file_ctr in range(0,file_len):
     temp_list.append(per_code_not_tested)
 
     output_list.append(temp_list)
-#    print >>out_fid,"<tr><td><a href = %s>%s</a></td><td>%s</td><td>%s</td><td>%3.2f</td></tr>" % (outhtml_file,src_not_tested_filename[file_ctr],nsrc_lines,src_not_tested_nlines[file_ctr],per_code_not_tested)
-#    out_fid.flush()
+
+shutil.rmtree(gcov_dir)
 # ------------------------------- End of Stage 3 ----------------------------------------
 
 # ------------------------------- Stage 4 ----------------------------------------------
-# Main HTML page containts statistics and individual file results
+# Create Main HTML page containing statistics and marked HTML file links
 print "Creating main HTML page"
 # Create the main html file                                                                                                                                    
 # ----------------------------- index_gcov1.html has results sorted by file name ----------------------------------
@@ -237,7 +239,7 @@ print >>out_fid,"""<center><font size = "4">Total number of source code lines no
 print >>out_fid,"""<center><font size = "4">Percentage of source code lines not tested = %3.2f</font></center>""" % (float(ntotal_lines_not_tested)/float(ntotal_lines)*\
 100.0)
 print >>out_fid,"""<hr>    
-<a href = %s>See statistics sorted by percent code tested</a>""" % (outfile_name2)
+<a href = %s>See statistics sorted by percent code tested</a>""" % ('index_gcov2.html')
 print >>out_fid,"""<br><br>
 <h4><u><center>Statistics sorted by file name</center></u></h4>"""                                                        
 print >>out_fid,"""<table border="1" align = "center">                                                                                                                            
@@ -267,7 +269,7 @@ print >>out_fid,"""<center><font size = "4">Total number of source code lines = 
 print >>out_fid,"""<center><font size = "4">Total number of source code lines not tested = %s</font></center>""" %(ntotal_lines_not_tested)
 print >>out_fid,"""<center><font size = "4">Percentage of source code lines not tested = %3.2f</font></center>""" % (float(ntotal_lines_not_tested)/float(ntotal_lines)*100.0)
 print >>out_fid,"""<hr>
-<a href = %s>See statistics sorted by file name</a>""" % (outfile_name1) 
+<a href = %s>See statistics sorted by file name</a>""" % ('index_gcov1.html') 
 print >>out_fid,"""<br><br>
 <h4><u><center>Statistics sorted by percent code tested</center></u></h4>"""
 print >>out_fid,"""<table border="1" align = "center">                                             

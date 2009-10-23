@@ -65,6 +65,8 @@ PetscErrorCode SNESSolve_Test(SNES snes)
       ierr = PetscObjectGetComm((PetscObject)B,&comm);CHKERRQ(ierr);
       ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
       ierr = MatView(A,viewer);CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)snes)->comm,"Hand-coded minus finite difference Jacobian\n");CHKERRQ(ierr);
+      ierr = MatView(B,viewer);CHKERRQ(ierr);
     }
     if (!gnorm) gnorm = 1; /* just in case */
     ierr = PetscPrintf(((PetscObject)snes)->comm,"Norm of matrix ratio %G difference %G\n",nrm/gnorm,nrm);CHKERRQ(ierr);

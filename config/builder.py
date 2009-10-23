@@ -60,19 +60,7 @@ class PETScMaker(script.Script):
          packageIncludes.extend(p.include)
    packageLibs     = self.libraries.toStringNoDupes(packageLibs+self.libraries.math)
    packageIncludes = self.headers.toStringNoDupes(packageIncludes)
-   return packageIncludes, packageLibs
 
- def compileC(self, source):
-   '''PETSC_INCLUDE	        = -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include
-                              ${PACKAGES_INCLUDES} ${TAU_DEFS} ${TAU_INCLUDE} ${PETSC_BLASLAPACK_FLAGS}
-      PETSC_CC_INCLUDES     = ${PETSC_INCLUDE}
-      PETSC_CCPPFLAGS	    = ${PETSC_CC_INCLUDES} ${PETSCFLAGS} ${CPP_FLAGS} ${CPPFLAGS}  -D__SDIR__='"${LOCDIR}"'
-      CCPPFLAGS	            = ${PETSC_CCPPFLAGS}
-      PETSC_COMPILE         = ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}  ${SOURCEC} ${SSOURCE}
-      PETSC_COMPILE_SINGLE  = ${PCC} -o $*.o -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}'''
-   # PETSCFLAGS, PETSC_BLASLAPACK_FLAGS, CFLAGS and CPPFLAGS are taken from user input (or empty)
-   flags           = []
-   packageIncludes, packageLibs = self.getPackageInfo()
    includes = ['-I'+inc for inc in [os.path.join(self.petscdir.dir, self.arch.arch, 'include'), os.path.join(self.petscdir.dir, 'include')]]
    self.setCompilers.pushLanguage(self.languages.clanguage)
    compiler      = self.setCompilers.getCompiler()
@@ -81,7 +69,68 @@ class PETScMaker(script.Script):
    flags.append('-D__SDIR__=\'"'+os.getcwd()+'"\'')
    cmd = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
    if self.debug: print cmd
-   self.runShellCommand(cmd,log=self.log)
+   self.executeShellCommand(cmd,log=self.log)
+   self.setCompilers.popLanguage()
+   return
+
+ def compileC(self, source):
+   '''PETSC_INCLUDE	        = -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include
+                              ${PACKAGES_INCLUDES} ${TAU_DEFS} ${TAU_INCLUDE}
+      PETSC_CC_INCLUDES     = ${PETSC_INCLUDE}
+      PETSC_CCPPFLAGS	    = ${PETSC_CC_INCLUDES} ${PETSCFLAGS} ${CPP_FLAGS} ${CPPFLAGS}  -D__SDIR__='"${LOCDIR}"'
+      CCPPFLAGS	            = ${PETSC_CCPPFLAGS}
+      PETSC_COMPILE         = ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}  ${SOURCEC} ${SSOURCE}
+      PETSC_COMPILE_SINGLE  = ${PCC} -o $*.o -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}'''
+   # PETSCFLAGS, CFLAGS and CPPFLAGS are taken from user input (or empty)
+   flags           = []
+   packageIncludes = []
+   packageLibs     = []
+   for p in self.framework.packages:
+     # Could put on compile line, self.addDefine('HAVE_'+i.PACKAGE, 1)
+     if hasattr(p, 'lib'):
+       if not isinstance(p.lib, list):
+         packageLibs.append(p.lib)
+       else:
+         packageLibs.extend(p.lib)
+     if hasattr(p, 'include'):
+       if not isinstance(p.include, list):
+         packageIncludes.append(p.include)
+       else:
+         packageIncludes.extend(p.include)
+   packageLibs     = self.libraries.toStringNoDupes(packageLibs+self.libraries.math)
+   packageIncludes = self.headers.toStringNoDupes(packageIncludes)
+
+   includes = ['-I'+inc for inc in [os.path.join(self.petscdir.dir, self.arch.arch, 'include'), os.path.join(self.petscdir.dir, 'include')]]
+   self.setCompilers.pushLanguage(self.languages.clanguage)
+   compiler      = self.setCompilers.getCompiler()
+   flags.append(self.setCompilers.getCompilerFlags())             # PCC_FLAGS
+   flags.extend([self.setCompilers.CPPFLAGS, self.CHUD.CPPFLAGS]) # CPP_FLAGS
+   flags.append('-D__SDIR__=\'"'+os.getcwd()+'"\'')
+   cmd = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
+   if self.debug: print cmd
+   self.executeShellCommand(cmd,log=self.log)
+   self.setCompilers.popLanguage()
+   return
+
+ def compileF(self, source):
+   '''PETSC_INCLUDE	        = -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include
+                              ${PACKAGES_INCLUDES} ${TAU_DEFS} ${TAU_INCLUDE}
+      PETSC_CC_INCLUDES     = ${PETSC_INCLUDE}
+      PETSC_CCPPFLAGS	    = ${PETSC_CC_INCLUDES} ${PETSCFLAGS} ${CPP_FLAGS} ${CPPFLAGS}  -D__SDIR__='"${LOCDIR}"'
+      CCPPFLAGS	            = ${PETSC_CCPPFLAGS}
+      PETSC_COMPILE         = ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}  ${SOURCEC} ${SSOURCE}
+      PETSC_COMPILE_SINGLE  = ${PCC} -o $*.o -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}'''
+   # PETSCFLAGS, CFLAGS and CPPFLAGS are taken from user input (or empty)
+   flags           = []
+
+   includes = ['-I'+inc for inc in [os.path.join(self.petscdir.dir, self.arch.arch, 'include'), os.path.join(self.petscdir.dir, 'include')]]
+   self.setCompilers.pushLanguage('FC')
+   compiler      = self.setCompilers.getCompiler()
+   flags.append(self.setCompilers.getCompilerFlags())             # PCC_FLAGS
+   flags.extend([self.setCompilers.CPPFLAGS, self.CHUD.CPPFLAGS]) # CPP_FLAGS
+   cmd = ' '.join([compiler]+['-c']+includes+flags+source)
+   if self.debug: print cmd
+   self.executeShellCommand(cmd,log=self.log)
    self.setCompilers.popLanguage()
    return
 
@@ -97,8 +146,9 @@ class PETScMaker(script.Script):
      flags.append('Scq')
    else:
      flags.append(self.setCompilers.AR_FLAGS)
-   cmd = ' '.join([linker]+flags+objects+[libname+'.'+self.setCompilers.AR_LIB_SUFFIX])
-   if self.debug:  print cmd
+   cmd = ' '.join([linker]+flags+[libname+'.'+self.setCompilers.AR_LIB_SUFFIX]+objects)
+   if self.debug: print cmd
+   self.executeShellCommand(cmd,log=self.log)   
    for i in objects:
      try:
        os.unlink(i)
@@ -116,7 +166,12 @@ class PETScMaker(script.Script):
 
    self.setup()
    
-   if libname.endswith('sys'): libname = 'libpetsc'
+   libname = os.path.join(self.petscdir.dir,self.arch.arch,'lib','libpetsc'+os.path.basename(os.getcwd()))
+   if libname.endswith('sys'): libname = libname[:-3]
+   try:
+     os.unlink(libname+'.'+self.setCompilers.AR_LIB_SUFFIX)
+   except:
+     pass
    os.path.walk(os.getcwd(),self.rundir,libname)
   
  def rundir(self,libname,dir,fnames):
@@ -167,7 +222,7 @@ class PETScMaker(script.Script):
      self.compileC(cnames)
    if fnames:
      if self.debug:print 'Compiling F files ',fnames
-     #self.compileF(fnames)
+     self.compileF(fnames)
    if onames:
      self.linkAR(libname,onames)
 

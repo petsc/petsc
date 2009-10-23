@@ -7,12 +7,12 @@ typedef enum {TSGLERROR_FORWARD,TSGLERROR_BACKWARD} TSGLErrorDirection;
 
 typedef struct _TSGLScheme *TSGLScheme;
 struct _TSGLScheme {
-  PetscInt p;                   /* order of the method */
-  PetscInt q;                   /* stage-order of the method */
-  PetscInt r;                   /* number of items carried between stages */
-  PetscInt s;                   /* number of stages */
-  PetscReal *c;                 /* location of the stages */
-  PetscReal *a,*b,*u,*v;        /* tableau for the method */
+  PetscInt     p;               /* order of the method */
+  PetscInt     q;               /* stage-order of the method */
+  PetscInt     r;               /* number of items carried between stages */
+  PetscInt     s;               /* number of stages */
+  PetscScalar *c;               /* location of the stages */
+  PetscScalar *a,*b,*u,*v;      /* tableau for the method */
 
   /* For use in rescale & modify */
   PetscScalar *alpha;             /* X_n(t_n) - X_{n-1}(t_n) = - alpha^T h^{p+1} x^{(p+1)}(t_n)        */

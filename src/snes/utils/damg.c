@@ -20,7 +20,7 @@
 
     Input Parameter:
 +   comm - the processors that will share the grids and solution process
-.   nlevels - number of multigrid levels 
+.   nlevels - number of multigrid levels (if this is negative it CANNOT be reset with -dmmg_nlevels
 -   user - an optional user context
 
     Output Parameters:
@@ -55,6 +55,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGCreate(MPI_Comm comm,PetscInt nlevels,voi
   } else {
     ierr = PetscOptionsGetInt(0,"-dmmg_nlevels",&nlevels,PETSC_IGNORE);CHKERRQ(ierr);
   }
+  if (nlevels < 1) SETERRQ(PETSC_ERR_USER,"Cannot set levels less than 1");
 
   ierr = PetscMalloc(nlevels*sizeof(DMMG),&p);CHKERRQ(ierr);
   for (i=0; i<nlevels; i++) {

@@ -471,80 +471,136 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const MatFact
   PetscInt       i,j,k,n=A->rmap->n,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
   PetscInt       *ajtmp,*bjtmp,nz,nzL,row,*bdiag=b->diag,*pj;
   MatScalar      *rtmp,*pc,multiplier,*v,*pv,*aa=a->a;
-  PetscReal      shift=info->shiftinblocks;
   PetscTruth     row_identity,col_identity;
 
+  LUShift_Ctx    sctx;
+  PetscInt       *ddiag,newshift;
+  PetscReal      rs;
+  MatScalar      d;
+
   PetscFunctionBegin;
+  /* ZeropivotSetUp(): initialize shift context sctx */
+  sctx.nshift         = 0;
+  sctx.nshift_max     = 0;
+  sctx.shift_top      = 0.0;
+  sctx.shift_lo       = 0.0;
+  sctx.shift_hi       = 0.0;
+  sctx.shift_fraction = 0.0;
+  sctx.shift_amount   = 0.0;
+
+  /* if both shift schemes are chosen by user, only use info->shiftpd */
+  if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
+    ddiag          = a->diag;
+    sctx.shift_top = info->zeropivot;
+    for (i=0; i<n; i++) {
+      /* calculate sum(|aij|)-RealPart(aii), amt of shift needed for this row */
+      d  = (aa)[ddiag[i]];
+      rs = -PetscAbsScalar(d) - PetscRealPart(d);
+      v  = aa+ai[i];
+      nz = ai[i+1] - ai[i];
+      for (j=0; j<nz; j++) 
+	rs += PetscAbsScalar(v[j]);
+      if (rs>sctx.shift_top) sctx.shift_top = rs;
+    }
+    sctx.shift_top   *= 1.1;
+    sctx.nshift_max   = 5;
+    sctx.shift_lo     = 0.;
+    sctx.shift_hi     = 1.;
+  } 
+
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = PetscMalloc((n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
   ics  = ic;
 
-  for (i=0; i<n; i++){
-    /* zero rtmp */
-    /* L part */
-    nz    = bi[i+1] - bi[i];
-    bjtmp = bj + bi[i];
-    for  (j=0; j<nz; j++) rtmp[bjtmp[j]] = 0.0;
+  do {
+    sctx.lushift = PETSC_FALSE;
+    for (i=0; i<n; i++){
+      /* zero rtmp */
+      /* L part */
+      nz    = bi[i+1] - bi[i];
+      bjtmp = bj + bi[i];
+      for  (j=0; j<nz; j++) rtmp[bjtmp[j]] = 0.0;
 
-    /* U part */
-    nz = bi[2*n-i+1] - bi[2*n-i]; 
-    bjtmp = bj + bi[2*n-i]; 
-    for  (j=0; j<nz; j++) rtmp[bjtmp[j]] = 0.0; 
+      /* U part */
+      nz = bi[2*n-i+1] - bi[2*n-i]; 
+      bjtmp = bj + bi[2*n-i]; 
+      for  (j=0; j<nz; j++) rtmp[bjtmp[j]] = 0.0; 
    
-    /* load in initial (unfactored row) */
-    nz    = ai[r[i]+1] - ai[r[i]];
-    ajtmp = aj + ai[r[i]];
-    v     = aa + ai[r[i]];
-    for (j=0; j<nz; j++) {
-      rtmp[ics[ajtmp[j]]] = v[j];
-    }
-    if (rtmp[ics[r[i]]] == 0.0){
-      rtmp[ics[r[i]]] += shift; /* shift the diagonal of the matrix */
-      /* printf("row %d, shift %g\n",i,shift); */
-    }
-
-    /* elimination */
-    bjtmp = bj + bi[i];
-    row   = *bjtmp++;
-    nzL   = bi[i+1] - bi[i];
-    k   = 0;
-    while  (k < nzL) {
-      pc = rtmp + row;
-      if (*pc != 0.0) {
-        pv         = b->a + bdiag[row];
-        multiplier = *pc * (*pv); 
-        *pc        = multiplier;
-        pj         = b->j + bi[2*n-row]; /* begining of U(row,:) */
-        pv         = b->a + bi[2*n-row]; 
-        nz         = bi[2*n-row+1] - bi[2*n-row] - 1; /* num of entries in U(row,:), excluding diag */
-        for (j=0; j<nz; j++) rtmp[pj[j]] -= multiplier * pv[j];
-        ierr = PetscLogFlops(2.0*nz);CHKERRQ(ierr);
+      /* load in initial (unfactored row) */
+      nz    = ai[r[i]+1] - ai[r[i]];
+      ajtmp = aj + ai[r[i]];
+      v     = aa + ai[r[i]];
+      for (j=0; j<nz; j++) {
+        rtmp[ics[ajtmp[j]]] = v[j];
       }
-      row = *bjtmp++; k++;
+      /* ZeropivotApply() */
+      rtmp[ics[r[i]]] += sctx.shift_amount;  /* shift the diagonal of the matrix */
+    
+      /* elimination */
+      bjtmp = bj + bi[i];
+      row   = *bjtmp++;
+      nzL   = bi[i+1] - bi[i];
+      k   = 0;
+      while  (k < nzL) {
+        pc = rtmp + row;
+        if (*pc != 0.0) {
+          pv         = b->a + bdiag[row];
+          multiplier = *pc * (*pv); 
+          *pc        = multiplier;
+          pj         = b->j + bi[2*n-row]; /* begining of U(row,:) */
+          pv         = b->a + bi[2*n-row]; 
+          nz         = bi[2*n-row+1] - bi[2*n-row] - 1; /* num of entries in U(row,:), excluding diag */
+          for (j=0; j<nz; j++) rtmp[pj[j]] -= multiplier * pv[j];
+          ierr = PetscLogFlops(2.0*nz);CHKERRQ(ierr);
+        }
+        row = *bjtmp++; k++;
+      }
+
+      /* finished row so stick it into b->a */
+      rs = 0.0;
+      /* L part */
+      pv   = b->a + bi[i] ;
+      pj   = b->j + bi[i] ;
+      nz   = bi[i+1] - bi[i];
+      for (j=0; j<nz; j++) {
+        pv[j] = rtmp[pj[j]]; rs += PetscAbsScalar(pv[j]);
+      }
+
+      /* U part */
+      pv = b->a + bi[2*n-i];
+      pj = b->j + bi[2*n-i];
+      nz = bi[2*n-i+1] - bi[2*n-i] - 1; 
+      for (j=0; j<nz; j++) {
+        pv[j] = rtmp[pj[j]]; rs += PetscAbsScalar(pv[j]);
+      }
+
+      /* ZeropivotCheck() */
+      sctx.rs  = rs;
+      sctx.pv  = rtmp[i];
+      ierr = MatLUCheckShift_inline(info,sctx,i,newshift);CHKERRQ(ierr);
+      if (newshift == 1) break;
+
+      /* Mark diagonal and invert diagonal for simplier triangular solves */
+      pv  = b->a + bdiag[i];
+      *pv = 1.0/rtmp[i];
+
+    } /* endof for (i=0; i<n; i++){ */
+
+    /* ZeropivotRefine() */
+    if (info->shiftpd && !sctx.lushift && sctx.shift_fraction>0 && sctx.nshift<sctx.nshift_max){
+      /* 
+       * if no shift in this attempt & shifting & started shifting & can refine,
+       * then try lower shift
+       */
+      sctx.shift_hi       = sctx.shift_fraction;
+      sctx.shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;
+      sctx.shift_amount   = sctx.shift_fraction * sctx.shift_top;
+      sctx.lushift        = PETSC_TRUE;
+      sctx.nshift++;
     }
+  } while (sctx.lushift);
 
-    /* finished row so stick it into b->a */
-    /* L part */
-    pv   = b->a + bi[i] ;
-    pj   = b->j + bi[i] ;
-    nz   = bi[i+1] - bi[i];
-    for (j=0; j<nz; j++) {
-      pv[j] = rtmp[pj[j]];
-    }
-
-    /* Mark diagonal and invert diagonal for simplier triangular solves */
-    pv  = b->a + bdiag[i];
-    pj  = b->j + bdiag[i];
-    /* if (*pj != i)SETERRQ2(PETSC_ERR_SUP,"row %d != *pj %d",i,*pj) */
-    *pv = 1.0/rtmp[*pj];
-
-    /* U part */
-    pv = b->a + bi[2*n-i];
-    pj = b->j + bi[2*n-i];
-    nz = bi[2*n-i+1] - bi[2*n-i] - 1; 
-    for (j=0; j<nz; j++) pv[j] = rtmp[pj[j]];
-  } 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
@@ -564,6 +620,201 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const MatFact
   C->assembled    = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(C->cmap->n);CHKERRQ(ierr);
+
+  /* ZeropivotView() */
+  if (sctx.nshift){
+    if (info->shiftpd) {
+      ierr = PetscInfo4(A,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,sctx.shift_fraction,sctx.shift_top);CHKERRQ(ierr);
+    } else if (info->shiftnz) {
+      ierr = PetscInfo2(A,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/* ----------------------------------------------------------- */
+extern PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct_v2(Mat,Vec,Vec);
+/* extern PetscErrorCode MatSolve_SeqAIJ_newdatastruct(Mat,Vec,Vec); */
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_newdatastruct_v2"
+PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct_v2(Mat B,Mat A,const MatFactorInfo *info)
+{
+  Mat            C=B;
+  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ *)C->data;
+  IS             isrow = b->row,isicol = b->icol;
+  PetscErrorCode ierr;
+  const PetscInt *r,*ic,*ics;
+  PetscInt       i,j,k,n=A->rmap->n,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
+  PetscInt       *ajtmp,*bjtmp,nz,nzL,row,*bdiag=b->diag,*pj;
+  MatScalar      *rtmp,*pc,multiplier,*v,*pv,*aa=a->a;
+  PetscTruth     row_identity,col_identity;
+
+  LUShift_Ctx    sctx;
+  PetscInt       *ddiag,newshift;
+  PetscReal      rs;
+  MatScalar      d;
+
+  PetscFunctionBegin;
+  /* ZeropivotSetUp(): initialize shift context sctx */
+  sctx.nshift         = 0;
+  sctx.nshift_max     = 0;
+  sctx.shift_top      = 0.0;
+  sctx.shift_lo       = 0.0;
+  sctx.shift_hi       = 0.0;
+  sctx.shift_fraction = 0.0;
+  sctx.shift_amount   = 0.0;
+
+  /* if both shift schemes are chosen by user, only use info->shiftpd */
+  if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
+    ddiag          = a->diag;
+    sctx.shift_top = info->zeropivot;
+    for (i=0; i<n; i++) {
+      /* calculate sum(|aij|)-RealPart(aii), amt of shift needed for this row */
+      d  = (aa)[ddiag[i]];
+      rs = -PetscAbsScalar(d) - PetscRealPart(d);
+      v  = aa+ai[i];
+      nz = ai[i+1] - ai[i];
+      for (j=0; j<nz; j++) 
+	rs += PetscAbsScalar(v[j]);
+      if (rs>sctx.shift_top) sctx.shift_top = rs;
+    }
+    sctx.shift_top   *= 1.1;
+    sctx.nshift_max   = 5;
+    sctx.shift_lo     = 0.;
+    sctx.shift_hi     = 1.;
+  } 
+
+  ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
+  ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
+  ierr = PetscMalloc((n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
+  ics  = ic;
+
+  do {
+    sctx.lushift = PETSC_FALSE;
+    for (i=0; i<n; i++){
+      /* zero rtmp */
+      /* L part */
+      nz    = bi[i+1] - bi[i];
+      bjtmp = bj + bi[i];
+      for  (j=0; j<nz; j++) rtmp[bjtmp[j]] = 0.0;
+
+      /* U part */
+      /*   nz = bi[2*n-i+1] - bi[2*n-i]; 
+	   bjtmp = bj + bi[2*n-i];  */
+      nz = bdiag[i]-bdiag[i+1];
+      bjtmp = bj + bdiag[i+1]+1;
+      for  (j=0; j<nz; j++) rtmp[bjtmp[j]] = 0.0; 
+   
+      /* load in initial (unfactored row) */
+      nz    = ai[r[i]+1] - ai[r[i]];
+      ajtmp = aj + ai[r[i]];
+      v     = aa + ai[r[i]];
+      for (j=0; j<nz; j++) {
+        rtmp[ics[ajtmp[j]]] = v[j];
+      }
+      /* ZeropivotApply() */
+      rtmp[ics[r[i]]] += sctx.shift_amount;  /* shift the diagonal of the matrix */
+    
+      /* elimination */
+      bjtmp = bj + bi[i];
+      row   = *bjtmp++;
+      nzL   = bi[i+1] - bi[i];
+      k   = 0;
+      while  (k < nzL) {
+        pc = rtmp + row;
+        if (*pc != 0.0) {
+          pv         = b->a + bdiag[row];
+          multiplier = *pc * (*pv); 
+          *pc        = multiplier;
+	  /*   pj         = b->j + bi[2*n-row]; */ /* begining of U(row,:) */
+	  /* pv         = b->a + bi[2*n-row]; 
+	     nz         = bi[2*n-row+1] - bi[2*n-row] - 1; */ /* num of entries in U(row,:), excluding diag */
+          pj = b->j + bdiag[row+1]+1; /* beginning of U(row,:) */
+	  pv = b->a + bdiag[row+1]+1;
+	  nz = bdiag[row]-bdiag[row+1]-1; /* num of entries in U(row,:) excluding diag */
+          for (j=0; j<nz; j++) rtmp[pj[j]] -= multiplier * pv[j];
+          ierr = PetscLogFlops(2.0*nz);CHKERRQ(ierr);
+        }
+        row = *bjtmp++; k++;
+      }
+
+      /* finished row so stick it into b->a */
+      rs = 0.0;
+      /* L part */
+      pv   = b->a + bi[i] ;
+      pj   = b->j + bi[i] ;
+      nz   = bi[i+1] - bi[i];
+      for (j=0; j<nz; j++) {
+        pv[j] = rtmp[pj[j]]; rs += PetscAbsScalar(pv[j]);
+      }
+
+      /* U part */
+      /*  pv = b->a + bi[2*n-i];
+      pj = b->j + bi[2*n-i];
+      nz = bi[2*n-i+1] - bi[2*n-i] - 1; 
+      */
+      pv = b->a + bdiag[i+1]+1;
+      pj = b->j + bdiag[i+1]+1;
+      nz = bdiag[i] - bdiag[i+1]-1;
+      for (j=0; j<nz; j++) {
+        pv[j] = rtmp[pj[j]]; rs += PetscAbsScalar(pv[j]);
+      }
+
+      /* ZeropivotCheck() */
+      sctx.rs  = rs;
+      sctx.pv  = rtmp[i];
+      ierr = MatLUCheckShift_inline(info,sctx,i,newshift);CHKERRQ(ierr);
+      if (newshift == 1) break;
+
+      /* Mark diagonal and invert diagonal for simplier triangular solves */
+      pv  = b->a + bdiag[i];
+      *pv = 1.0/rtmp[i];
+
+    } /* endof for (i=0; i<n; i++){ */
+
+    /* ZeropivotRefine() */
+    if (info->shiftpd && !sctx.lushift && sctx.shift_fraction>0 && sctx.nshift<sctx.nshift_max){
+      /* 
+       * if no shift in this attempt & shifting & started shifting & can refine,
+       * then try lower shift
+       */
+      sctx.shift_hi       = sctx.shift_fraction;
+      sctx.shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;
+      sctx.shift_amount   = sctx.shift_fraction * sctx.shift_top;
+      sctx.lushift        = PETSC_TRUE;
+      sctx.nshift++;
+    }
+  } while (sctx.lushift);
+
+  ierr = PetscFree(rtmp);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
+  
+  ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
+  ierr = ISIdentity(isicol,&col_identity);CHKERRQ(ierr);
+  if (row_identity && col_identity) {
+    C->ops->solve = MatSolve_SeqAIJ_NaturalOrdering_newdatastruct_v2;
+  } else {
+    C->ops->solve = MatSolve_SeqAIJ_newdatastruct; 
+  }
+  
+  C->ops->solveadd           = 0;
+  C->ops->solvetranspose     = 0;
+  C->ops->solvetransposeadd  = 0;
+  C->ops->matsolve           = 0;
+  C->assembled    = PETSC_TRUE;
+  C->preallocated = PETSC_TRUE;
+  ierr = PetscLogFlops(C->cmap->n);CHKERRQ(ierr);
+
+  /* ZeropivotView() */
+  if (sctx.nshift){
+    if (info->shiftpd) {
+      ierr = PetscInfo4(A,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,sctx.shift_fraction,sctx.shift_top);CHKERRQ(ierr);
+    } else if (info->shiftnz) {
+      ierr = PetscInfo2(A,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -591,11 +842,14 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
   ierr = PetscMalloc((n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
   ics  = ic;
 
-  sctx.shift_top      = 0;
+  /* initialize shift context sctx */
+  sctx.nshift         = 0;
   sctx.nshift_max     = 0;
-  sctx.shift_lo       = 0;
-  sctx.shift_hi       = 0;
-  sctx.shift_fraction = 0;
+  sctx.shift_top      = 0.0;
+  sctx.shift_lo       = 0.0;
+  sctx.shift_hi       = 0.0;
+  sctx.shift_fraction = 0.0;
+  sctx.shift_amount   = 0.0;
 
   /* if both shift schemes are chosen by user, only use info->shiftpd */
   if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
@@ -617,8 +871,6 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
     sctx.shift_hi     = 1.;
   }
 
-  sctx.shift_amount = 0.0;
-  sctx.nshift       = 0;
   do {
     sctx.lushift = PETSC_FALSE;
     for (i=0; i<n; i++){
@@ -1567,6 +1819,283 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS isrow
   PetscFunctionReturn(0); 
 }
 
+
+/* 
+   ilu(0) with natural ordering under revised new data structure.
+   Factored arrays bj and ba are stored as
+     L(0,:), L(1,:), ...,L(n-1,:),  U(n-1,:),...,U(i,:),U(i-1,:),...,U(0,:)
+
+   bi=fact->i is an array of size n+1, in which 
+   bi+
+     bi[i]      ->  1st entry of L(i,:),i=0,...,i-1
+     bi[n]      ->  points to L(n-1,:)+1
+     bi[n+1]    ->  1st entry of U(n-1,:)
+  bdiag=fact->diag is an array of size n+1,in which
+     bdiag[0]   -> points to diagonal of U(n-1,:)
+     bdiag[n-1] -> points to diagonal of U(0,:)
+
+   U(i,:) contains bdiag[i] as its last entry, i.e., 
+    U(i,:) = (u[i,i+1],...,u[i,n-1],diag[i])
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "MatILUFactorSymbolic_SeqAIJ_ilu0_newdatastruct_v2"
+PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0_newdatastruct_v2(Mat fact,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
+{
+  
+  Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data,*b;
+  PetscErrorCode     ierr;
+  PetscInt           n=A->rmap->n,*ai=a->i,*aj,*adiag=a->diag;
+  PetscInt           i,j,nz,*bi,*bj,*bdiag,bi_temp;
+
+  PetscFunctionBegin;
+  ierr = MatDuplicateNoCreate_SeqAIJ(fact,A,MAT_DO_NOT_COPY_VALUES,PETSC_FALSE);CHKERRQ(ierr);
+  b    = (Mat_SeqAIJ*)(fact)->data;
+
+  /* allocate matrix arrays for new data structure */
+  ierr = PetscMalloc3(ai[n]+1,PetscScalar,&b->a,ai[n]+1,PetscInt,&b->j,n+1,PetscInt,&b->i);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(fact,ai[n]*(sizeof(PetscScalar)+sizeof(PetscInt))+(n+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  b->singlemalloc = PETSC_TRUE;
+  if (!b->diag){
+    ierr = PetscMalloc((n+1)*sizeof(PetscInt),&b->diag);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(fact,(n+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  }
+  bdiag = b->diag;  
+ 
+  if (n > 0) {
+    ierr = PetscMemzero(b->a,(ai[n])*sizeof(MatScalar));CHKERRQ(ierr);
+  }
+  
+  /* set bi and bj with new data structure */
+  bi = b->i;
+  bj = b->j;
+
+  /* L part */
+  bi[0] = 0;
+  for (i=0; i<n; i++){
+    nz = adiag[i] - ai[i];
+    bi[i+1] = bi[i] + nz;
+    aj = a->j + ai[i];
+    for (j=0; j<nz; j++){
+      *bj = aj[j]; bj++;
+    }
+  }
+  
+  /* U part */
+  /* bi[n+1] = bi[n]; */
+  bi_temp = bi[n];
+  bdiag[n] = bi[n]-1;
+  for (i=n-1; i>=0; i--){
+    nz = ai[i+1] - adiag[i] - 1;
+    /*  bi[2*n-i+1] = bi[2*n-i] + nz + 1; */
+    bi_temp = bi_temp + nz + 1;
+    aj = a->j + adiag[i] + 1;
+    for (j=0; j<nz; j++){
+      *bj = aj[j]; bj++;
+    }
+    /* diag[i] */
+    *bj = i; bj++;
+    /*   bdiag[i] = bi[2*n-i+1]-1; */
+    bdiag[i] = bi_temp - 1;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatILUFactorSymbolic_SeqAIJ_newdatastruct_v2"
+PetscErrorCode MatILUFactorSymbolic_SeqAIJ_newdatastruct_v2(Mat fact,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
+{
+  Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data,*b;
+  IS                 isicol;
+  PetscErrorCode     ierr;
+  const PetscInt     *r,*ic;
+  PetscInt           n=A->rmap->n,*ai=a->i,*aj=a->j,d;
+  PetscInt           *bi,*cols,nnz,*cols_lvl;
+  PetscInt           *bdiag,prow,fm,nzbd,reallocs=0,dcount=0;
+  PetscInt           i,levels,diagonal_fill;
+  PetscTruth         col_identity,row_identity;
+  PetscReal          f;
+  PetscInt           nlnk,*lnk,*lnk_lvl=PETSC_NULL;
+  PetscBT            lnkbt;
+  PetscInt           nzi,*bj,**bj_ptr,**bjlvl_ptr; 
+  PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL; 
+  PetscFreeSpaceList free_space_lvl=PETSC_NULL,current_space_lvl=PETSC_NULL; 
+  PetscTruth         missing;
+
+  PetscFunctionBegin;
+  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
+  f             = info->fill;
+  levels        = (PetscInt)info->levels;
+  diagonal_fill = (PetscInt)info->diagonal_fill;
+  ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
+
+  ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
+  ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
+
+  if (!levels && row_identity && col_identity) { 
+    /* special case: ilu(0) with natural ordering */
+    ierr = MatILUFactorSymbolic_SeqAIJ_ilu0_newdatastruct_v2(fact,A,isrow,iscol,info);CHKERRQ(ierr);
+    (fact)->ops->lufactornumeric =  MatLUFactorNumeric_SeqAIJ_newdatastruct_v2;
+    
+    fact->factor = MAT_FACTOR_ILU;
+    (fact)->info.factor_mallocs    = 0;
+    (fact)->info.fill_ratio_given  = info->fill;
+    (fact)->info.fill_ratio_needed = 1.0;
+    b               = (Mat_SeqAIJ*)(fact)->data;
+    ierr = MatMissingDiagonal(A,&missing,&d);CHKERRQ(ierr);
+    if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",d);
+    b->row              = isrow;
+    b->col              = iscol;
+    b->icol             = isicol;
+    ierr                = PetscMalloc(((fact)->rmap->n+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
+    ierr                = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
+    ierr                = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
+    /* ierr = MatILUFactorSymbolic_Inode(fact,A,isrow,iscol,info);CHKERRQ(ierr); */
+    PetscFunctionReturn(0);
+  }
+
+  ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
+  ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
+
+  /* get new row pointers */
+  ierr = PetscMalloc((2*n+2)*sizeof(PetscInt),&bi);CHKERRQ(ierr);
+  bi[0] = 0;
+  /* bdiag is location of diagonal in factor */
+  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&bdiag);CHKERRQ(ierr);
+  bdiag[0]  = 0;
+
+  ierr = PetscMalloc((2*n+1)*sizeof(PetscInt**),&bj_ptr);CHKERRQ(ierr); 
+  bjlvl_ptr = (PetscInt**)(bj_ptr + n);
+
+  /* create a linked list for storing column indices of the active row */
+  nlnk = n + 1;
+  ierr = PetscIncompleteLLCreate(n,n,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr);
+
+  /* initial FreeSpace size is f*(ai[n]+1) */
+  ierr = PetscFreeSpaceGet((PetscInt)(f*(ai[n]+1)),&free_space);CHKERRQ(ierr);
+  current_space = free_space;
+  ierr = PetscFreeSpaceGet((PetscInt)(f*(ai[n]+1)),&free_space_lvl);CHKERRQ(ierr);
+  current_space_lvl = free_space_lvl;
+ 
+  for (i=0; i<n; i++) {
+    nzi = 0;
+    /* copy current row into linked list */
+    nnz  = ai[r[i]+1] - ai[r[i]];
+    if (!nnz) SETERRQ2(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
+    cols = aj + ai[r[i]];
+    lnk[i] = -1; /* marker to indicate if diagonal exists */
+    ierr = PetscIncompleteLLInit(nnz,cols,n,ic,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr);
+    nzi += nlnk;
+
+    /* make sure diagonal entry is included */
+    if (diagonal_fill && lnk[i] == -1) {
+      fm = n;
+      while (lnk[fm] < i) fm = lnk[fm];
+      lnk[i]     = lnk[fm]; /* insert diagonal into linked list */
+      lnk[fm]    = i;
+      lnk_lvl[i] = 0;
+      nzi++; dcount++; 
+    }
+
+    /* add pivot rows into the active row */
+    nzbd = 0;
+    prow = lnk[n];
+    while (prow < i) {
+      nnz      = bdiag[prow];
+      cols     = bj_ptr[prow] + nnz + 1;
+      cols_lvl = bjlvl_ptr[prow] + nnz + 1; 
+      nnz      = bi[prow+1] - bi[prow] - nnz - 1;
+      ierr = PetscILULLAddSorted(nnz,cols,levels,cols_lvl,prow,nlnk,lnk,lnk_lvl,lnkbt,prow);CHKERRQ(ierr);
+      nzi += nlnk;
+      prow = lnk[prow];
+      nzbd++;
+    }
+    bdiag[i] = nzbd;
+    bi[i+1]  = bi[i] + nzi;
+
+    /* if free space is not available, make more free space */
+    if (current_space->local_remaining<nzi) {
+      nnz = 2*nzi*(n - i); /* estimated and max additional space needed */
+      ierr = PetscFreeSpaceGet(nnz,&current_space);CHKERRQ(ierr);
+      ierr = PetscFreeSpaceGet(nnz,&current_space_lvl);CHKERRQ(ierr);
+      reallocs++;
+    }
+
+    /* copy data into free_space and free_space_lvl, then initialize lnk */
+    ierr = PetscIncompleteLLClean(n,n,nzi,lnk,lnk_lvl,current_space->array,current_space_lvl->array,lnkbt);CHKERRQ(ierr);
+    bj_ptr[i]    = current_space->array;
+    bjlvl_ptr[i] = current_space_lvl->array;
+
+    /* make sure the active row i has diagonal entry */
+    if (*(bj_ptr[i]+bdiag[i]) != i) {
+      SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Row %D has missing diagonal in factored matrix\n\
+    try running with -pc_factor_nonzeros_along_diagonal or -pc_factor_diagonal_fill",i);
+    }
+
+    current_space->array           += nzi;
+    current_space->local_used      += nzi;
+    current_space->local_remaining -= nzi;
+    current_space_lvl->array           += nzi;
+    current_space_lvl->local_used      += nzi;
+    current_space_lvl->local_remaining -= nzi;
+  } 
+
+  ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
+
+  /* destroy list of free space and other temporary arrays */
+  ierr = PetscMalloc((bi[n]+1)*sizeof(PetscInt),&bj);CHKERRQ(ierr);
+
+  /* copy free_space into bj and free free_space; set bi, bj, bdiag in new datastructure; */
+  ierr = PetscFreeSpaceContiguous_LU(&free_space,bj,n,bi,bdiag);CHKERRQ(ierr); 
+  
+  ierr = PetscIncompleteLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
+  ierr = PetscFreeSpaceDestroy(free_space_lvl);CHKERRQ(ierr); 
+  ierr = PetscFree(bj_ptr);CHKERRQ(ierr);
+
+#if defined(PETSC_USE_INFO)
+  {
+    PetscReal af = ((PetscReal)bi[n])/((PetscReal)ai[n]);
+    ierr = PetscInfo3(A,"Reallocs %D Fill ratio:given %G needed %G\n",reallocs,f,af);CHKERRQ(ierr);
+    ierr = PetscInfo1(A,"Run with -[sub_]pc_factor_fill %G or use \n",af);CHKERRQ(ierr);
+    ierr = PetscInfo1(A,"PCFactorSetFill([sub]pc,%G);\n",af);CHKERRQ(ierr);
+    ierr = PetscInfo(A,"for best performance.\n");CHKERRQ(ierr);
+    if (diagonal_fill) {
+      ierr = PetscInfo1(A,"Detected and replaced %D missing diagonals",dcount);CHKERRQ(ierr);
+    }
+  }
+#endif
+
+  /* put together the new matrix */
+  ierr = MatSeqAIJSetPreallocation_SeqAIJ(fact,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(fact,isicol);CHKERRQ(ierr);
+  b = (Mat_SeqAIJ*)(fact)->data;
+  b->free_a       = PETSC_TRUE;
+  b->free_ij      = PETSC_TRUE;
+  b->singlemalloc = PETSC_FALSE;
+  ierr = PetscMalloc( (bi[2*n+1] )*sizeof(PetscScalar),&b->a);CHKERRQ(ierr);
+  b->j          = bj;
+  b->i          = bi;
+  b->diag       = bdiag;
+  b->ilen       = 0;
+  b->imax       = 0;
+  b->row        = isrow;
+  b->col        = iscol;
+  ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
+  ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
+  b->icol       = isicol;
+  ierr = PetscMalloc((n+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
+  /* In b structure:  Free imax, ilen, old a, old j.  
+     Allocate bdiag, solve_work, new a, new j */
+  ierr = PetscLogObjectMemory(fact,bi[2*n+1] * (sizeof(PetscInt)+sizeof(PetscScalar)));CHKERRQ(ierr);
+  b->maxnz = b->nz = bi[2*n+1] ;
+  (fact)->info.factor_mallocs    = reallocs;
+  (fact)->info.fill_ratio_given  = f;
+  (fact)->info.fill_ratio_needed = ((PetscReal)bi[2*n+1])/((PetscReal)ai[n]);
+  (fact)->ops->lufactornumeric   = MatLUFactorNumeric_SeqAIJ_newdatastruct; 
+  /* ierr = MatILUFactorSymbolic_Inode(fact,A,isrow,iscol,info);CHKERRQ(ierr); */
+  PetscFunctionReturn(0); 
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUFactorSymbolic_SeqAIJ"
 PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
@@ -1587,12 +2116,17 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL; 
   PetscFreeSpaceList free_space_lvl=PETSC_NULL,current_space_lvl=PETSC_NULL; 
   PetscTruth         missing;
-  PetscTruth         newdatastruct=PETSC_FALSE;
-
+  PetscTruth         newdatastruct=PETSC_FALSE,newdatastruct_v2=PETSC_FALSE;
+  
   PetscFunctionBegin;
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-ilu_new",&newdatastruct,PETSC_NULL);CHKERRQ(ierr);
   if (newdatastruct){
     ierr = MatILUFactorSymbolic_SeqAIJ_newdatastruct(fact,A,isrow,iscol,info);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-ilu_new_v2",&newdatastruct_v2,PETSC_NULL);CHKERRQ(ierr);
+  if(newdatastruct_v2){
+    ierr = MatILUFactorSymbolic_SeqAIJ_newdatastruct_v2(fact,A,isrow,iscol,info);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -2651,6 +3185,58 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx
     x[i] = *v++ *sum; /* x[i]=aa[adiag[i]]*sum; v++; */
   }
 
+  ierr = PetscLogFlops(2.0*a->nz - A->cmap->n);CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSolve_SeqAIJ_NaturalOrdering_newdatastruct_v2"
+PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+{
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode    ierr;
+  PetscInt          n = A->rmap->n;
+  const PetscInt    *ai = a->i,*aj = a->j,*adiag = a->diag,*vi;
+  PetscScalar       *x,sum;
+  const PetscScalar *b;
+  const MatScalar   *aa = a->a,*v;
+  PetscInt          i,nz;
+
+  PetscFunctionBegin;
+  if (!n) PetscFunctionReturn(0);
+
+  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+
+  /* forward solve the lower triangular */
+  x[0] = b[0];
+  v    = aa;
+  vi   = aj;
+  for (i=1; i<n; i++) {
+    nz  = ai[i+1] - ai[i];
+    sum = b[i];
+    PetscSparseDenseMinusDot(sum,x,v,vi,nz);
+    v  += nz;
+    vi += nz;
+    x[i] = sum;
+  }
+  
+  /* backward solve the upper triangular */
+  /*  v   = aa + ai[n+1];
+      vi  = aj + ai[n+1]; */
+  v  = aa + adiag[n-1];
+  vi = aj + adiag[n-1];
+  for (i=n-1; i>=0; i--){
+    nz = adiag[i] - adiag[i+1]-1;
+    sum = x[i];
+    PetscSparseDenseMinusDot(sum,x,v,vi,nz);
+    v   += nz;
+    vi  += nz; vi++; 
+    x[i] = *v++ *sum; /* x[i]=aa[adiag[i]]*sum; v++; */
+  }
+   
   ierr = PetscLogFlops(2.0*a->nz - A->cmap->n);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);

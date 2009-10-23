@@ -2805,7 +2805,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatSolve(Mat A,Mat B,Mat X)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatForwardSolve"
-/* @
+/*@
    MatForwardSolve - Solves L x = b, given a factored matrix, A = LU, or
                             U^T*D^(1/2) x = b, given a factored symmetric matrix, A = U^T*D*U,
 
@@ -2840,7 +2840,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatSolve(Mat A,Mat B,Mat X)
    Concepts: matrices^forward solves
 
 .seealso: MatSolve(), MatBackwardSolve()
-@ */
+@*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatForwardSolve(Mat mat,Vec b,Vec x)
 {
   PetscErrorCode ierr;
@@ -2868,7 +2868,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatForwardSolve(Mat mat,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatBackwardSolve"
-/* @
+/*@
    MatBackwardSolve - Solves U x = b, given a factored matrix, A = LU.
                              D^(1/2) U x = b, given a factored symmetric matrix, A = U^T*D*U,
 
@@ -2903,7 +2903,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatForwardSolve(Mat mat,Vec b,Vec x)
    Concepts: matrices^backward solves
 
 .seealso: MatSolve(), MatForwardSolve()
-@ */
+@*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatBackwardSolve(Mat mat,Vec b,Vec x)
 {
   PetscErrorCode ierr;
@@ -7023,20 +7023,34 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIsSymmetric(Mat A,PetscReal tol,PetscTruth 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
   PetscValidPointer(flg,2);
+
   if (!A->symmetric_set) {
     if (!A->ops->issymmetric) {
       const MatType mattype;
       ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
       SETERRQ1(PETSC_ERR_SUP,"Matrix of type <%s> does not support checking for symmetric",mattype);
     }
-    ierr = (*A->ops->issymmetric)(A,tol,&A->symmetric);CHKERRQ(ierr);
-    A->symmetric_set = PETSC_TRUE;
-    if (A->symmetric) {
-      A->structurally_symmetric_set = PETSC_TRUE;
-      A->structurally_symmetric     = PETSC_TRUE;
+    ierr = (*A->ops->issymmetric)(A,tol,flg);CHKERRQ(ierr);
+    if (!tol) {
+      A->symmetric_set = PETSC_TRUE;
+      A->symmetric = *flg;
+      if (A->symmetric) {
+	A->structurally_symmetric_set = PETSC_TRUE;
+	A->structurally_symmetric     = PETSC_TRUE;
+      }
     }
+  } else if (A->symmetric) {
+    *flg = PETSC_TRUE;
+  } else if (!tol) {
+    *flg = PETSC_FALSE;
+  } else {
+    if (!A->ops->issymmetric) {
+      const MatType mattype;
+      ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
+      SETERRQ1(PETSC_ERR_SUP,"Matrix of type <%s> does not support checking for symmetric",mattype);
+    }
+    ierr = (*A->ops->issymmetric)(A,tol,flg);CHKERRQ(ierr);
   }
-  *flg = A->symmetric;
   PetscFunctionReturn(0);
 }
 
@@ -7067,20 +7081,34 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitian(Mat A,PetscReal tol,PetscTruth 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
   PetscValidPointer(flg,2);
+
   if (!A->hermitian_set) {
     if (!A->ops->ishermitian) {
       const MatType mattype;
       ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
-      SETERRQ1(PETSC_ERR_SUP,"Matrix of type <%s> does not support checking for Hermitian",mattype);
+      SETERRQ1(PETSC_ERR_SUP,"Matrix of type <%s> does not support checking for hermitian",mattype);
     }
-    ierr = (*A->ops->ishermitian)(A,tol,&A->hermitian);CHKERRQ(ierr);
-    A->hermitian_set = PETSC_TRUE;
-    if (A->hermitian) {
-      A->structurally_symmetric_set = PETSC_TRUE;
-      A->structurally_symmetric     = PETSC_TRUE;
+    ierr = (*A->ops->ishermitian)(A,tol,flg);CHKERRQ(ierr);
+    if (!tol) {
+      A->hermitian_set = PETSC_TRUE;
+      A->hermitian = *flg;
+      if (A->hermitian) {
+	A->structurally_symmetric_set = PETSC_TRUE;
+	A->structurally_symmetric     = PETSC_TRUE;
+      }
     }
+  } else if (A->hermitian) {
+    *flg = PETSC_TRUE;
+  } else if (!tol) {
+    *flg = PETSC_FALSE;
+  } else {
+    if (!A->ops->ishermitian) {
+      const MatType mattype;
+      ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
+      SETERRQ1(PETSC_ERR_SUP,"Matrix of type <%s> does not support checking for hermitian",mattype);
+    }
+    ierr = (*A->ops->ishermitian)(A,tol,flg);CHKERRQ(ierr);
   }
-  *flg = A->hermitian;
   PetscFunctionReturn(0);
 }
 
@@ -7780,6 +7808,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMultTranspose(Mat A,Mat B,MatReuse scall
   if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   PetscValidPointer(C,3);
   if (B->rmap->N!=A->rmap->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->rmap->N,A->rmap->N);
+  if (fill == PETSC_DEFAULT || fill == PETSC_DECIDE) fill = 2.0;
   if (fill < 1.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"Expected fill=%G must be > 1.0",fill);
   ierr = MatPreallocated(A);CHKERRQ(ierr);
 

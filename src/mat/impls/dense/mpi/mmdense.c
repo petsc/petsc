@@ -433,3 +433,19 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
   PetscFunctionReturn(0);
 }
 
+#include "petscblaslapack.h"
+#undef __FUNCT__  
+#define __FUNCT__ "MatScale_MPIDense"
+PetscErrorCode MatScale_MPIDense(Mat inA,PetscScalar alpha)
+{
+  Mat_MPIDense   *A = (Mat_MPIDense*)inA->data;
+  Mat_SeqDense   *a = (Mat_SeqDense*)A->A->data;
+  PetscScalar    oalpha = alpha;
+  PetscErrorCode ierr;
+  PetscBLASInt   one = 1,nz = PetscBLASIntCast(inA->rmap->n*inA->cmap->N);
+
+  PetscFunctionBegin;
+  BLASscal_(&nz,&oalpha,a->v,&one);
+  ierr = PetscLogFlops(nz);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

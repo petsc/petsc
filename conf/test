@@ -6,47 +6,47 @@
 #   13 - Examples that should only be compiled.
 #   17 - requires PYTHON or wget and Unix (uses urlget) and popen()
 
-testexamples_C: ${TESTEXAMPLES_C} clean
-testexamples_C_X11: ${TESTEXAMPLES_C_X11} clean
-testexamples_Fortran: ${TESTEXAMPLES_FORTRAN} clean
-testexamples_C_X11_MPIUni: ${TESTEXAMPLES_C_X11_MPIUNI} clean
-testexamples_C_Complex: ${TESTEXAMPLES_C_COMPLEX} clean
-testexamples_C_NoComplex: ${TESTEXAMPLES_C_NOCOMPLEX} clean
-testexamples_DATAFILESPATH: ${TESTEXAMPLES_DATAFILESPATH} clean
+testexamples_C: ${TESTEXAMPLES_C}
+testexamples_C_X11: ${TESTEXAMPLES_C_X11}
+testexamples_Fortran: ${TESTEXAMPLES_FORTRAN}
+testexamples_C_X11_MPIUni: ${TESTEXAMPLES_C_X11_MPIUNI}
+testexamples_C_Complex: ${TESTEXAMPLES_C_COMPLEX}
+testexamples_C_NoComplex: ${TESTEXAMPLES_C_NOCOMPLEX}
+testexamples_DATAFILESPATH: ${TESTEXAMPLES_DATAFILESPATH}
 
-testexamples_Fortran_NoComplex: ${TESTEXAMPLES_FORTRAN_NOCOMPLEX} clean
-testexamples_Fortran_MPIUni: ${TESTEXAMPLES_FORTRAN_MPIUNI} clean
-testexamples_Fortran_Complex: ${TESTEXAMPLES_FORTRAN_COMPLEX} clean
-testexamples_C_Complex_MPIUni: ${TESTEXAMPLES_C_CCOMPLEX_MPIUNI} clean
-testexamples_F90: ${TESTEXAMPLES_F90} clean
-testexamples_F90_Complex: ${TESTEXAMPLES_F90_COMPLEX} clean
-testexamples_F90_NoComplex: ${TESTEXAMPLES_F90_NOCOMPLEX} clean
-testexamples_13: ${TESTEXAMPLES_13} clean
-testexamples_17: ${TESTEXAMPLES_17} clean
-testexamples_18: ${TESTEXAMPLES_18} clean
-testexamples_PARMETIS: ${TESTEXAMPLES_PARMETIS} clean
-testexamples_SPAI: ${TESTEXAMPLES_SPAI} clean
-testexamples_ADIFOR: ${TESTEXAMPLES_ADIFOR} clean
-testexamples_ADIC: ${TESTEXAMPLES_ADIC} clean
-testexamples_FFTW: ${TESTEXAMPLES_FFTW} clean
-testexamples_MATLAB: ${TESTEXAMPLES_MATLAB} clean
-testexamples_MUMPS: ${TESTEXAMPLES_MUMPS} clean
-testexamples_SUPERLU: ${TESTEXAMPLES_SUPERLU} clean
-testexamples_SUNDIALS: ${TESTEXAMPLES_SUNDIALS} clean
-testexamples_PLAPACK: ${TESTEXAMPLES_PLAPACK} clean
-testexamples_SPOOLES: ${TESTEXAMPLES_SPOOLES} clean
-testexamples_UMFPACK: ${TESTEXAMPLES_UMFPACK} clean
-testexamples_SUPERLU_DIST: ${TESTEXAMPLES_SUPERLU_DIST} clean
-testexamples_HYPRE: ${TESTEXAMPLES_HYPRE} clean
-testexamples_HDF5: ${TESTEXAMPLES_HDF5} clean
-testexamples_BLOPEX: ${TESTEXAMPLES_BLOPEX} clean
-testexamples_PROMETHEUS: ${TESTEXAMPLES_PROMETHEUS} clean
-testexamples_CHACO: ${TESTEXAMPLES_CHACO} clean
-testexamples_TRIANGLE: ${TESTEXAMPLES_TRIANGLE} clean
-testexamples_SIEVE: ${TESTEXAMPLES_SIEVE} clean
-testexamples_BOOST: ${TESTEXAMPLES_BOOST} clean
-testexamples_TETGEN: ${TESTEXAMPLES_TETGEN} clean
-testexamples_ML: ${TESTEXAMPLES_ML} clean
+testexamples_Fortran_NoComplex: ${TESTEXAMPLES_FORTRAN_NOCOMPLEX}
+testexamples_Fortran_MPIUni: ${TESTEXAMPLES_FORTRAN_MPIUNI}
+testexamples_Fortran_Complex: ${TESTEXAMPLES_FORTRAN_COMPLEX}
+testexamples_C_Complex_MPIUni: ${TESTEXAMPLES_C_CCOMPLEX_MPIUNI}
+testexamples_F90: ${TESTEXAMPLES_F90}
+testexamples_F90_Complex: ${TESTEXAMPLES_F90_COMPLEX}
+testexamples_F90_NoComplex: ${TESTEXAMPLES_F90_NOCOMPLEX}
+testexamples_13: ${TESTEXAMPLES_13}
+testexamples_17: ${TESTEXAMPLES_17}
+testexamples_18: ${TESTEXAMPLES_18}
+testexamples_PARMETIS: ${TESTEXAMPLES_PARMETIS}
+testexamples_SPAI: ${TESTEXAMPLES_SPAI}
+testexamples_ADIFOR: ${TESTEXAMPLES_ADIFOR}
+testexamples_ADIC: ${TESTEXAMPLES_ADIC}
+testexamples_FFTW: ${TESTEXAMPLES_FFTW}
+testexamples_MATLAB: ${TESTEXAMPLES_MATLAB}
+testexamples_MUMPS: ${TESTEXAMPLES_MUMPS}
+testexamples_SUPERLU: ${TESTEXAMPLES_SUPERLU}
+testexamples_SUNDIALS: ${TESTEXAMPLES_SUNDIALS}
+testexamples_PLAPACK: ${TESTEXAMPLES_PLAPACK}
+testexamples_SPOOLES: ${TESTEXAMPLES_SPOOLES}
+testexamples_UMFPACK: ${TESTEXAMPLES_UMFPACK}
+testexamples_SUPERLU_DIST: ${TESTEXAMPLES_SUPERLU_DIST}
+testexamples_HYPRE: ${TESTEXAMPLES_HYPRE}
+testexamples_HDF5: ${TESTEXAMPLES_HDF5}
+testexamples_BLOPEX: ${TESTEXAMPLES_BLOPEX}
+testexamples_PROMETHEUS: ${TESTEXAMPLES_PROMETHEUS}
+testexamples_CHACO: ${TESTEXAMPLES_CHACO}
+testexamples_TRIANGLE: ${TESTEXAMPLES_TRIANGLE}
+testexamples_SIEVE: ${TESTEXAMPLES_SIEVE}
+testexamples_BOOST: ${TESTEXAMPLES_BOOST}
+testexamples_TETGEN: ${TESTEXAMPLES_TETGEN}
+testexamples_ML: ${TESTEXAMPLES_ML}
 testexamples_X11:
 testexamples_MPE:
 testexamples_ESSL:

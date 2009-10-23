@@ -4936,8 +4936,6 @@ extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICRL(Mat,const MatT
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICSRPERM(Mat,const MatType,MatReuse,Mat*);
 EXTERN_C_END
 
-#include "../src/mat/impls/dense/mpi/mpidense.h"
-
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMultNumeric_MPIDense_MPIAIJ"
 /*

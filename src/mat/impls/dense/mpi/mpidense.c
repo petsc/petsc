@@ -9,6 +9,20 @@
 #if defined(PETSC_HAVE_PLAPACK)
 static PetscMPIInt Plapack_nprows,Plapack_npcols,Plapack_ierror,Plapack_nb_alg;
 static MPI_Comm Plapack_comm_2d;
+EXTERN_C_BEGIN 
+#include "PLA.h"
+EXTERN_C_END 
+
+typedef struct {
+  PLA_Obj        A,pivots;
+  PLA_Template   templ;
+  MPI_Datatype   datatype;
+  PetscInt       nb,rstart;
+  VecScatter     ctx;
+  IS             is_pla,is_petsc;
+  PetscTruth     pla_solved;
+  MatStructure   mstruct;
+} Mat_Plapack;
 #endif
 
 #undef __FUNCT__  
@@ -986,24 +1000,9 @@ PetscErrorCode MatTranspose_MPIDense(Mat A,MatReuse reuse,Mat *matout)
   PetscFunctionReturn(0);
 }
 
-#include "petscblaslapack.h"
-#undef __FUNCT__  
-#define __FUNCT__ "MatScale_MPIDense"
-PetscErrorCode MatScale_MPIDense(Mat inA,PetscScalar alpha)
-{
-  Mat_MPIDense   *A = (Mat_MPIDense*)inA->data;
-  Mat_SeqDense   *a = (Mat_SeqDense*)A->A->data;
-  PetscScalar    oalpha = alpha;
-  PetscErrorCode ierr;
-  PetscBLASInt   one = 1,nz = PetscBLASIntCast(inA->rmap->n*inA->cmap->N);
-
-  PetscFunctionBegin;
-  BLASscal_(&nz,&oalpha,a->v,&one);
-  ierr = PetscLogFlops(nz);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 static PetscErrorCode MatDuplicate_MPIDense(Mat,MatDuplicateOption,Mat *);
+extern PetscErrorCode MatScale_MPIDense(Mat,PetscScalar);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUpPreallocation_MPIDense"
