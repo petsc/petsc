@@ -50,7 +50,7 @@ configure_options = [
   '--download-mumps=1',
   '--download-spai=1',
   '--download-prometheus=1',
-  #'--download-chaco=1', [had namespace conflict with petsc : vecscale]
+  '--download-chaco=1',
   ]
 
 if __name__ == '__main__':
