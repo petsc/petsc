@@ -219,6 +219,7 @@ ex43: ex43.o chkopts
 	-${CLINKER} -o ex43 ex43.o ${PETSC_SNES_LIB}
 	${RM} ex43.o
 
+# not tested in nightly builds because requires F90 compiler that handles long lines
 ex44f: ex44f.o  chkopts
 	-${FLINKER} -o ex44f ex44f.o  ${PETSC_KSP_LIB}
 	${RM} ex44f.o
@@ -862,7 +863,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
 TESTEXAMPLES_C_X11	       = ex2.PETSc runex2_5 ex2.rm ex5.PETSc runex5_5 ex5.rm ex8.PETSc ex8.rm  
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex6f.PETSc ex6f.rm \
                                  ex14f.PETSc runex14f ex14f.rm ex15f.PETSc runex15f ex15f.rm ex22f.PETSc runex22f \
-                                 ex22f.rm ex21f.PETSc runex21f ex21f.rm ex44f.PETSc ex44f.rm
+                                 ex22f.rm ex21f.PETSc runex21f ex21f.rm 
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f ex6f.rm
 TESTEXAMPLES_C_X11_MPIUNI      = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_3 ex2.rm \
                                  ex7.PETSc ex7.rm ex5.PETSc ex5.rm  ex9.PETSc runex9 ex9.rm \
