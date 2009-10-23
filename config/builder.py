@@ -43,16 +43,7 @@ class PETScMaker(script.Script):
    self.setupModules()
    return
 
- def compileC(self, source):
-   '''PETSC_INCLUDE	        = -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include
-                              ${PACKAGES_INCLUDES} ${TAU_DEFS} ${TAU_INCLUDE}
-      PETSC_CC_INCLUDES     = ${PETSC_INCLUDE}
-      PETSC_CCPPFLAGS	    = ${PETSC_CC_INCLUDES} ${PETSCFLAGS} ${CPP_FLAGS} ${CPPFLAGS}  -D__SDIR__='"${LOCDIR}"'
-      CCPPFLAGS	            = ${PETSC_CCPPFLAGS}
-      PETSC_COMPILE         = ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}  ${SOURCEC} ${SSOURCE}
-      PETSC_COMPILE_SINGLE  = ${PCC} -o $*.o -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}'''
-   # PETSCFLAGS, CFLAGS and CPPFLAGS are taken from user input (or empty)
-   flags           = []
+ def getPackageInfo(self):
    packageIncludes = []
    packageLibs     = []
    for p in self.framework.packages:
@@ -143,13 +134,13 @@ class PETScMaker(script.Script):
    self.setCompilers.popLanguage()
    return
 
- def linkAR(self, libname,objects):
+ def compileFortran(self, source):
    '''
    '''
 
    flags           = []
-   self.setCompilers.pushLanguage(self.languages.clanguage)
-   linker = self.setCompilers.AR
+   packageIncludes, packageLibs = self.getPackageInfo()
+   includes = ['-I'+inc for inc in [os.path.join(self.petscdir.dir, self.arch.arch, 'include'), os.path.join(self.petscdir.dir, 'include')]]
    # should add FAST_AR_FLAGS to setCompilers
    if linker.endswith('ar'):
      flags.append('Scq')
@@ -166,8 +157,13 @@ class PETScMaker(script.Script):
    self.setCompilers.popLanguage()
    return
 
- def runbase(self):
-   ''' This is always run in one of the PETSc base package directories: vec, mat, ksp etc'''
+ def archive(self, source, library):
+   '''${AR} ${AR_FLAGS} ${LIBNAME} $*.o'''
+   obj = os.path.splitext(source)[0]+'.o'
+   lib = os.path.splitext(lib)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX
+   cmd = ' '.join([self.setCompilers.AR, self.setCompilers.AR_FLAGS, lib, obj])
+   return
+
    self.setup()
    
    libname = os.path.join(self.petscdir.dir,self.arch.arch,'lib','libpetsc'+os.path.basename(os.getcwd()))
@@ -176,7 +172,6 @@ class PETScMaker(script.Script):
      os.unlink(libname+'.'+self.setCompilers.AR_LIB_SUFFIX)
    except:
      pass
-   
    os.path.walk(os.getcwd(),self.rundir,libname)
   
  def rundir(self,libname,dir,fnames):
