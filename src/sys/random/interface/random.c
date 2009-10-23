@@ -504,7 +504,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSeed(PetscRandom r)
 
    Concepts: random numbers^getting
 
-.seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom()
+.seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom(), PetscRandomGetValueReal(), PetscRandomGetValueImaginary()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 {
@@ -523,7 +523,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue(PetscRandom r,PetscScalar *va
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomGetValueReal"
 /*@
-   PetscRandomGetValueReal - Generates a random number.  Call this after first calling
+   PetscRandomGetValueReal - Generates a purely real random number.  Call this after first calling
    PetscRandomCreate().
 
    Not Collective
@@ -550,7 +550,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue(PetscRandom r,PetscScalar *va
 
    Concepts: random numbers^getting
 
-.seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom()
+.seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom(), PetscRandomGetValue(), PetscRandomGetValueImaginary()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueReal(PetscRandom r,PetscReal *val)
 {
@@ -569,7 +569,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueReal(PetscRandom r,PetscReal *
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomGetValueImaginary"
 /*@
-   PetscRandomGetValueImaginary - Generates a random number.  Call this after first calling
+   PetscRandomGetValueImaginary - Generates a purely imaginary random number.  Call this after first calling
    PetscRandomCreate().
 
    Not Collective
@@ -601,7 +601,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueReal(PetscRandom r,PetscReal *
 
    Concepts: random numbers^getting
 
-.seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom()
+.seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom(), PetscRandomGetValueReal(), PetscRandomGetValue()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueImaginary(PetscRandom r,PetscScalar *val)
 {
