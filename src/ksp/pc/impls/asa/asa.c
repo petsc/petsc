@@ -86,6 +86,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASASetDM(PC pc,DM dm)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCASASetDM"
 PetscErrorCode PETSCKSP_DLLEXPORT PCASASetDM_ASA(PC pc, DM dm)
@@ -98,6 +99,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASASetDM_ASA(PC pc, DM dm)
   asa->dm = dm;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCASASetTolerances"
@@ -135,6 +137,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASASetTolerances(PC pc, PetscReal rtol, Pets
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCASASetTolerances_ASA"
 PetscErrorCode PETSCKSP_DLLEXPORT PCASASetTolerances_ASA(PC pc, PetscReal rtol, PetscReal abstol,PetscReal dtol, PetscInt maxits)
@@ -149,6 +152,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASASetTolerances_ASA(PC pc, PetscReal rtol, 
   if (maxits != PETSC_DEFAULT) asa->max_it = maxits;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreateLevel_ASA"
