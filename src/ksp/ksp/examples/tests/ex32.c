@@ -1,7 +1,6 @@
 
 /*
   Laplacian in 3D. Use for testing BAIJ matrix. 
-  Modified from src/ksp/ksp/examples/tutorials/ex42.c
   Modeled by the partial differential equation
 
    - Laplacian u = 1,0 < x,y,z < 1,
