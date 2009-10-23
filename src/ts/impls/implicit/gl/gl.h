@@ -5,7 +5,21 @@
 
 typedef enum {TSGLERROR_FORWARD,TSGLERROR_BACKWARD} TSGLErrorDirection;
 
+#define TSGLAcceptType  char*
+#define TSGL_ACCEPT_ALWAYS "always"
+
+typedef struct _p_TSGLAdapt *TSGLAdapt;
+#define TSGLAdaptType  char*
+#define TSGLADAPT_NONE "none"
+#define TSGLADAPT_SIZE "size"
+#define TSGLADAPT_BOTH "both"
+
 typedef struct _TSGLScheme *TSGLScheme;
+
+extern PetscCookie PETSCTS_DLLEXPORT TSGLADAPT_COOKIE;
+
+typedef PetscErrorCode (*TSGLAcceptFunction)(TS,PetscReal,PetscReal,const PetscReal[],PetscTruth*);
+
 struct _TSGLScheme {
   PetscInt     p;               /* order of the method */
   PetscInt     q;               /* stage-order of the method */
@@ -32,11 +46,13 @@ struct _TSGLScheme {
 };
 
 typedef struct TS_GL {
-  /* Control scheme */
-  PetscErrorCode (*CtrlAcceptanceTest)(TS,PetscReal,PetscReal,const PetscReal[],PetscTruth*,void*);
-  PetscErrorCode (*CtrlChooseNextScheme)(TS,PetscInt,const TSGLScheme[],PetscInt,PetscReal,const PetscReal[],PetscReal,PetscInt*,PetscReal*,void*);
-  PetscErrorCode (*CtrlDestroy)(TS,void*);
-  void *ctrlP;
+  TSGLAcceptFunction Accept;    /* Decides whether to accept a given time step, given estimates of local truncation error */
+  TSGLAdapt adapt;
+
+  /* These names are only stored so that they can be printed in TSView_GL() without making these schemes full-blown
+   objects (the implementations I'm thinking of do not have state and I'm lazy). */
+  char accept_name[256];
+
   /* specific to the family of GL method */
   PetscErrorCode (*EstimateHigherMoments)(TSGLScheme,PetscReal,Vec*,Vec*,Vec*); /* Provide local error estimates */
   PetscErrorCode (*CompleteStep)(TSGLScheme,PetscReal,TSGLScheme,PetscReal,Vec*,Vec*,Vec*);
@@ -66,7 +82,22 @@ typedef struct TS_GL {
   PetscTruth extrapolate;           /* use extrapolation to produce initial Newton iterate? */
   TSGLErrorDirection error_direction; /* TSGLERROR_FORWARD or TSGLERROR_BACKWARD */
 
+  PetscTruth setupcalled;
   void *data;
 } TS_GL;
+
+
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLGetAdapt(TS,TSGLAdapt*);
+
+/* Public interface for TSGLAdapt */
+
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptRegisterAll(const char[]);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptCreate(MPI_Comm,TSGLAdapt*);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptSetType(TSGLAdapt,const TSGLAdaptType);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptSetOptionsPrefix(TSGLAdapt,const char[]);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptChoose(TSGLAdapt,PetscInt,const PetscInt[],const PetscReal[],const PetscReal[],PetscInt,PetscReal,PetscReal,PetscInt*,PetscReal*,PetscTruth*);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptView(TSGLAdapt,PetscViewer);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptSetFromOptions(TSGLAdapt);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptDestroy(TSGLAdapt);
 
 #endif
