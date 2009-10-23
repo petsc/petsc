@@ -31,8 +31,8 @@ class Installer(script.Script):
     self.rootDir    = os.path.abspath(self.argDB['rootDir'])
     self.installDir = os.path.abspath(self.argDB['installDir'])
     self.arch       = self.argDB['arch']
-    self.ranlib     = os.path.abspath(self.argDB['ranlib'])
-    self.make       = os.path.abspath(self.argDB['make'])
+    self.ranlib     = self.argDB['ranlib']
+    self.make       = self.argDB['make']
     self.libSuffix  = self.argDB['libSuffix']
     self.rootIncludeDir    = os.path.join(self.rootDir, 'include')
     self.archIncludeDir    = os.path.join(self.rootDir, self.arch, 'include')
