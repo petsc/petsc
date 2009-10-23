@@ -512,8 +512,8 @@
       PetscErrorCode ierr
 
 !  Local variables:
-      PetscScalar   two,one,hx,hy,hxdhy,hydhx,sc
-      PetscScalar   u,uxx,uyy
+      PetscScalar two,one,hx,hy,hxdhy,hydhx,sc
+      PetscScalar u,uxx,uyy
       PetscInt  i,j
 
       one    = 1.0
@@ -737,10 +737,10 @@
       PetscErrorCode ierr
 
 !  Local variables:
-      PetscInt      row,col(5),i,j
-      PetscInt      ione,ifive
-      PetscScalar   two,one,hx,hy,hxdhy
-      PetscScalar   hydhx,sc,v(5)
+      PetscInt    row,col(5),i,j
+      PetscInt    ione,ifive
+      PetscScalar two,one,hx,hy,hxdhy
+      PetscScalar hydhx,sc,v(5)
 
 !  Set parameters
       ione   = 1
