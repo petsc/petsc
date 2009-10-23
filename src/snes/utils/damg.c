@@ -100,6 +100,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetMatType(DMMG *dmmg,const MatType mtype
 
   PetscFunctionBegin;
   for (i=0; i<dmmg[0]->nlevels; i++) {
+    ierr = PetscFree(dmmg[i]->mtype);CHKERRQ(ierr);
     ierr = PetscStrallocpy(mtype,&dmmg[i]->mtype);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

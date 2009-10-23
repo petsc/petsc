@@ -46,13 +46,13 @@
       Vec              x,y,w
       Vec, pointer :: z(:)
 #endif
-      double precision norm,v,v1,v2
+      PetscReal norm,v,v1,v2
       integer         n,ithree
       integer   ierr
       integer      rank
       logical       flg
-      double precision      one,two,three
-      double precision      dots(3),dot
+      PetscScalar      one,two,three
+      PetscScalar      dots(3),dot
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
