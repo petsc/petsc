@@ -700,8 +700,10 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct_v2(Mat B,Mat A,const MatF
       for  (j=0; j<nz; j++) rtmp[bjtmp[j]] = 0.0;
 
       /* U part */
-      nz = bi[2*n-i+1] - bi[2*n-i]; 
-      bjtmp = bj + bi[2*n-i]; 
+      /*   nz = bi[2*n-i+1] - bi[2*n-i]; 
+	   bjtmp = bj + bi[2*n-i];  */
+      nz = bdiag[i]-bdiag[i+1];
+      bjtmp = bj + bdiag[i+1]+1;
       for  (j=0; j<nz; j++) rtmp[bjtmp[j]] = 0.0; 
    
       /* load in initial (unfactored row) */
@@ -725,9 +727,12 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct_v2(Mat B,Mat A,const MatF
           pv         = b->a + bdiag[row];
           multiplier = *pc * (*pv); 
           *pc        = multiplier;
-          pj         = b->j + bi[2*n-row]; /* begining of U(row,:) */
-          pv         = b->a + bi[2*n-row]; 
-          nz         = bi[2*n-row+1] - bi[2*n-row] - 1; /* num of entries in U(row,:), excluding diag */
+	  /*   pj         = b->j + bi[2*n-row]; */ /* begining of U(row,:) */
+	  /* pv         = b->a + bi[2*n-row]; 
+	     nz         = bi[2*n-row+1] - bi[2*n-row] - 1; */ /* num of entries in U(row,:), excluding diag */
+          pj = b->j + bdiag[row+1]+1; /* beginning of U(row,:) */
+	  pv = b->a + bdiag[row+1]+1;
+	  nz = bdiag[row]-bdiag[row+1]-1; /* num of entries in U(row,:) excluding diag */
           for (j=0; j<nz; j++) rtmp[pj[j]] -= multiplier * pv[j];
           ierr = PetscLogFlops(2.0*nz);CHKERRQ(ierr);
         }
@@ -745,9 +750,13 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct_v2(Mat B,Mat A,const MatF
       }
 
       /* U part */
-      pv = b->a + bi[2*n-i];
+      /*  pv = b->a + bi[2*n-i];
       pj = b->j + bi[2*n-i];
       nz = bi[2*n-i+1] - bi[2*n-i] - 1; 
+      */
+      pv = b->a + bdiag[i+1]+1;
+      pj = b->j + bdiag[i+1]+1;
+      nz = bdiag[i] - bdiag[i+1]-1;
       for (j=0; j<nz; j++) {
         pv[j] = rtmp[pj[j]]; rs += PetscAbsScalar(pv[j]);
       }
@@ -785,7 +794,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct_v2(Mat B,Mat A,const MatF
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(isicol,&col_identity);CHKERRQ(ierr);
   if (row_identity && col_identity) {
-    C->ops->solve = MatSolve_SeqAIJ_NaturalOrdering_newdatastruct;
+    C->ops->solve = MatSolve_SeqAIJ_NaturalOrdering_newdatastruct_v2;
   } else {
     C->ops->solve = MatSolve_SeqAIJ_newdatastruct; 
   }
@@ -1874,6 +1883,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0_newdatastruct_v2(Mat fact,Mat A,
   /* U part */
   /* bi[n+1] = bi[n]; */
   bi_temp = bi[n];
+  bdiag[n] = bi[n]-1;
   for (i=n-1; i>=0; i--){
     nz = ai[i+1] - adiag[i] - 1;
     /*  bi[2*n-i+1] = bi[2*n-i] + nz + 1; */
@@ -3218,9 +3228,7 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct_v2(Mat A,Vec bb,Vec
       vi  = aj + ai[n+1]; */
   v  = aa + adiag[n-1];
   vi = aj + adiag[n-1];
-  x[n-1] = *v++ *x[n-1];
-  vi++;
-  for (i=n-2; i>=0; i--){
+  for (i=n-1; i>=0; i--){
     nz = adiag[i] - adiag[i+1]-1;
     sum = x[i];
     PetscSparseDenseMinusDot(sum,x,v,vi,nz);
