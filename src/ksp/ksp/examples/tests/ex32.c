@@ -128,6 +128,7 @@ PetscErrorCode ComputeMatrix(DA da,Mat B)
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetType(rand,PETSCRAND);CHKERRQ(ierr);
   ierr = PetscRandomSetSeed(rand,1);CHKERRQ(ierr);
+  ierr = PetscRandomSetInterval(rand,-.001,.001);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
 
   ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);CHKERRQ(ierr); 
@@ -149,8 +150,8 @@ PetscErrorCode ComputeMatrix(DA da,Mat B)
       } else {
 	ierr = PetscRandomGetValue(rand,&r1);CHKERRQ(ierr);
 	ierr = PetscRandomGetValue(rand,&r2);CHKERRQ(ierr);
-	v[k3] = 0.001*(r1*02-0.1);             /* random number range [-0.1 0.1] */
-	v_neighbor[k3] = 0.001*(r2*0.2-0.1);
+	v[k3] = r1;
+	v_neighbor[k3] = r2;
       }	
       k3++;
     }
