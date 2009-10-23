@@ -121,7 +121,7 @@
 
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-norandom',        &
      &     flg,ierr)
-      if (flg .eq. 1) then
+      if (flg) then
          use_random = .false.
          sigma2 = 10.0*PETSC_i
       else
