@@ -732,9 +732,9 @@ TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.P
 	                         runex32_11 runex32_11_nd runex32_12 runex32_13 runex32_14 runex32_15 runex32_16 runex32_17 runex32_18  \
                                  runex32_20_lu runex32_20_lu_nd  runex32_23_lu runex32_23_lu_nd  runex32_24_lu runex32_24_lu_nd \
                                  runex32_25_lu runex32_25_lu_nd  runex32_26_lu runex32_26_lu_nd  runex32_27_lu runex32_27_lu_nd \
-                                 runex32_22 runex32_23 runex32_24 runex32_25 runex32_26 runex32_27 runex32_28 ex32.rm \
-                                 ex33.PETSc runex33 ex33.rm 
+                                 runex32_22 runex32_23 runex32_24 runex32_25 runex32_26 runex32_27 runex32_28 ex32.rm  
 TESTEXAMPLES_C_X11	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm 
+TESTEXAMPLES_C_NOCOMPLEX       = ex33.PETSc runex33 ex33.rm 
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex12f.PETSc ex12f.rm
 TESTEXAMPLES_C_X11_MPIUNI      = ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm
