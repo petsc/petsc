@@ -33,8 +33,9 @@ for i in range(0,len_tarballs):
     tmp = []
     dir_name = str(i)
     tmp.append(dir_name)
-    os.system("mkdir "+dir_name+"; cd "+dir_name+";gunzip -c" +" ../"+tarballs[i] + "|tar -xof -")
-    dir = cwd+'/'+dir_name
+    os.mkdir(dir_name)
+    os.system("cd "+dir_name+";gunzip -c" +" ../"+tarballs[i] + "|tar -xof -")
+    dir = os.path.join(cwd,dir_name)
     tmp.append(len(os.listdir(dir)))
     tmp_dirs.append(tmp)
 
@@ -48,21 +49,21 @@ for i in range(0,len_tarballs):
 tmp_dirs.sort(key=operator.itemgetter(1),reverse=True)
 
 # Create temporary gcov directory to store .lines files
-os.system("mkdir -p"+" "+gcov_dir)
+os.makedirs(gcov_dir)
 print "Merging files"
 nfiles = tmp_dirs[0][1]
-dir1 = cwd+'/'+tmp_dirs[0][0]
+dir1 = os.path.join(cwd,tmp_dirs[0][0])
 files_dir1 = os.listdir(dir1)
 for i in range(0,nfiles):
-    out_file = gcov_dir+'/'+files_dir1[i]
+    out_file = os.path.join(gcov_dir,files_dir1[i])
     out_fid  = open(out_file,'w')
 
-    in_file = tmp_dirs[0][0]+'/'+files_dir1[i]
+    in_file = os.path.join(tmp_dirs[0][0],files_dir1[i])
     in_fid = open(in_file,'r')
     lines = in_fid.readlines()
     in_fid.close()
     for j in range(1,len(tmp_dirs)):
-        in_file = tmp_dirs[j][0]+'/'+files_dir1[i]
+        in_file = os.path.join(tmp_dirs[j][0],files_dir1[i])
         try:
             in_fid = open(in_file,'r')
         except IOError:
@@ -98,21 +99,20 @@ src_not_tested_nlines = [];
 ctr = 0;
 print "Processing gcov files"
 for file in gcov_filenames:
-    gcov_file = file
-    gcov_file = PETSC_DIR+'/'+string.replace(gcov_file,'_','/')
-    src_file = string.strip(gcov_file,'.lines')
-    gcov_file = gcov_dir+'/'+file
+    tmp_filename = string.replace(file,'_',os.sep)
+    src_file = string.split(tmp_filename,'.lines')[0]
+    gcov_file = gcov_dir+os.sep+file
     gcov_fid = open(gcov_file,'r')
     nlines_not_tested = 0
     lines_not_tested = []
     for line in gcov_fid:
         nlines_not_tested += 1
-        temp_line1 = line.lstrip()  # Strings are immutable!! cannot perform operation on a string and save it as the same string 
+        temp_line1 = line.lstrip()
         temp_line2 = temp_line1.strip('\n')
         lines_not_tested.append(temp_line2)
     if nlines_not_tested :   
         nsrc_files_not_tested += 1
-        k = string.rfind(src_file,'/')
+        k = string.rfind(src_file,os.sep)
         src_not_tested_filename.append(src_file[k+1:])
         src_not_tested_path.append(src_file[:k])
         src_not_tested_lines.append(lines_not_tested)
@@ -123,6 +123,14 @@ for file in gcov_filenames:
 # ------------------------- End of Stage 2 --------------------------
 
 # ---------------------- Stage 3 -----------------------------------
+# check to see if LOC is given
+if (len(sys.argv) == 2):
+    print "Using %s to save the main HTML file pages" % (sys.argv[1])
+    LOC = sys.argv[1]
+else:
+    print "No Directory specified for saving main HTML file pages, using PETSc root directory"
+    LOC = PETSC_DIR
+
 print "Creating marked HTML files"
 temp_string = '<a name'
 file_len = len(src_not_tested_nlines)
@@ -131,10 +139,11 @@ ntotal_lines = 0
 ntotal_lines_not_tested = 0
 output_list = []
 nfiles_not_processed = 0
+sep = LOC+os.sep
 
 for file_ctr in range(0,file_len):
-    inhtml_file = src_not_tested_path[file_ctr]+'/'+src_not_tested_filename[file_ctr]+'.html'
-    outhtml_file = src_not_tested_path[file_ctr]+'/'+src_not_tested_filename[file_ctr]+'.gcov.html'
+    inhtml_file = PETSC_DIR+os.sep+src_not_tested_path[file_ctr]+os.sep+src_not_tested_filename[file_ctr]+'.html'
+    outhtml_file = LOC+os.sep+src_not_tested_path[file_ctr]+os.sep+src_not_tested_filename[file_ctr]+'.gcov.html'
     try:
         inhtml_fid = open(inhtml_file,"r")
     except IOError:
@@ -145,7 +154,7 @@ for file_ctr in range(0,file_len):
 
     temp_list = []
     temp_list.append(src_not_tested_filename[file_ctr])
-    temp_list.append(outhtml_file)
+    temp_list.append(string.split(outhtml_file,sep)[1]) # Relative path of hyperlink
     temp_list.append(src_not_tested_nlines[file_ctr])
 
     outhtml_fid = open(outhtml_file,"w")
@@ -212,16 +221,9 @@ print "Creating main HTML page"
 # Create the main html file                                                                                                                                    
 # ----------------------------- index_gcov1.html has results sorted by file name ----------------------------------
 # ----------------------------- index_gcov2.html has results sorted by % code tested ------------------------------
-# check to see if LOC is given
-if (len(sys.argv) == 2):
-    print "Using %s to save the main HTML file pages" % (sys.argv[1])
-    LOC = sys.argv[1]
-else:
-    print "No Directory specified for saving main HTML file pages, using PETSc root directory"
-    LOC = PETSC_DIR
 
-outfile_name1 = LOC+'/'+'index_gcov1.html'
-outfile_name2 = LOC+'/'+'index_gcov2.html'
+outfile_name1 = LOC+os.sep+'index_gcov1.html'
+outfile_name2 = LOC+os.sep+'index_gcov2.html'
 out_fid = open(outfile_name1,'w')                                            
 print >>out_fid, \
 """<html>                                                                                                                                                      

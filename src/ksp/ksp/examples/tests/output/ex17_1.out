@@ -14,7 +14,7 @@
  13 KSP Residual norm 1.2866 
  14 KSP Residual norm 1.17894 
  15 KSP Residual norm 0.941023 
- 16 KSP Residual norm 4.19038e-08 
+ 16 KSP Residual norm 1.37095e-07 
 KSP Object:
   type: gmres
     GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement
@@ -22,11 +22,12 @@ KSP Object:
   maximum iterations=10000, initial guess is zero
   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
   left preconditioning
+  using PRECONDITIONED norm type for convergence test
 PC Object:
   type: jacobi
   linear system matrix = precond matrix:
   Matrix Object:
-    type=aij, rows=36, cols=36
+    type=seqaij, rows=36, cols=36
     total: nonzeros=156, allocated nonzeros=180
       not using I-node routines
-Norm of error 9.90874e-10, Iterations 16
+Norm of error 3.24213e-09,Iterations 16

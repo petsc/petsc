@@ -1193,7 +1193,7 @@ runex122:
 runex126f:
 	-@${MPIEXEC} -n 1 ./ex126f  > ex126_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex126_1.out ex126_1.tmp) then true; \
-	   else echo "Possible problem with ex126_1, diffs above"; fi; \
+	   else echo "Possible problem with ex126f_1, diffs above"; fi; \
 	   ${RM} -f ex126_1.tmp 
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc runex5 runex5_2 ex5.rm \

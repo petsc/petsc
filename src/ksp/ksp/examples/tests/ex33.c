@@ -24,6 +24,9 @@ int main(int argc,char **args)
   PetscMPIInt    rank;
 
   PetscInitialize(&argc,&args,(char *)0,help);
+#if defined(PETSC_USE_COMPLEX)
+  SETERRQ(1,"This example does not work with complex numbers");
+#else
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
      Compute the matrices that define the eigensystem, Ax=kBx
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -115,5 +118,6 @@ int main(int argc,char **args)
   ierr = MatDestroy(A);CHKERRQ(ierr);
   ierr = MatDestroy(B);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
+#endif
   return 0;
 }

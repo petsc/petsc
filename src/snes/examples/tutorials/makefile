@@ -516,27 +516,27 @@ testex19: ex19.PETSc
 runex19_14:
 	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -dmmg_mat_type baij -mg_coarse_pc_type bjacobi > ex19_14.tmp 2>&1; \
 	   if (${DIFF} output/ex19_14.out ex19_14.tmp) then true; \
-	   else echo "Possible problem with ex19, diffs above"; fi; \
+	   else echo "Possible problem with ex19_14, diffs above"; fi; \
 	   ${RM} -f ex19_14.tmp
 runex19_15:
 	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -dmmg_mat_type baij -mg_coarse_pc_type bjacobi -dmmg_iscoloring_type global > ex19_15.tmp 2>&1; \
 	   if (${DIFF} output/ex19_15.out ex19_15.tmp) then true; \
-	   else echo "Possible problem with ex19, diffs above"; fi; \
+	   else echo "Possible problem with ex19_15, diffs above"; fi; \
 	   ${RM} -f ex19_15.tmp
 runex19_15a:
 	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -dmmg_mat_type baij -mg_coarse_pc_type bjacobi -dmmg_iscoloring_type global -dmmg_coloring_from_mat > ex19_15a.tmp 2>&1; \
 	   if (${DIFF} output/ex19_15a.out ex19_15a.tmp) then true; \
-	   else echo "Possible problem with ex19, diffs above"; fi; \
+	   else echo "Possible problem with ex19_15a, diffs above"; fi; \
 	   ${RM} -f ex19_15a.tmp
 runex19_16:
 	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -dmmg_mat_type aij -mg_coarse_pc_type bjacobi -dmmg_iscoloring_type global > ex19_16.tmp 2>&1; \
 	   if (${DIFF} output/ex19_16.out ex19_16.tmp) then true; \
-	   else echo "Possible problem with ex19, diffs above"; fi; \
+	   else echo "Possible problem with ex19_16, diffs above"; fi; \
 	   ${RM} -f ex19_16.tmp
 runex19_16a:
 	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -dmmg_mat_type aij -mg_coarse_pc_type bjacobi -dmmg_iscoloring_type global -dmmg_coloring_from_mat > ex19_16a.tmp 2>&1; \
 	   if (${DIFF} output/ex19_16a.out ex19_16a.tmp) then true; \
-	   else echo "Possible problem with ex19, diffs above"; fi; \
+	   else echo "Possible problem with ex19_16a, diffs above"; fi; \
 	   ${RM} -f ex19_16a.tmp
 runex21:
 	-@${MPIEXEC} -n 4 ./ex21  -snes_mf -snes_monitor_short -nox > ex21_1.tmp 2>&1; \
