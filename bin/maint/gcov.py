@@ -139,6 +139,7 @@ ntotal_lines = 0
 ntotal_lines_not_tested = 0
 output_list = []
 nfiles_not_processed = 0
+sep = LOC+os.sep
 
 for file_ctr in range(0,file_len):
     inhtml_file = PETSC_DIR+os.sep+src_not_tested_path[file_ctr]+os.sep+src_not_tested_filename[file_ctr]+'.html'
@@ -153,7 +154,7 @@ for file_ctr in range(0,file_len):
 
     temp_list = []
     temp_list.append(src_not_tested_filename[file_ctr])
-    temp_list.append(outhtml_file)
+    temp_list.append(string.split(outhtml_file,sep)[1]) # Relative path of hyperlink
     temp_list.append(src_not_tested_nlines[file_ctr])
 
     outhtml_fid = open(outhtml_file,"w")
