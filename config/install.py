@@ -6,6 +6,11 @@ sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config', 'BuildSystem'
 
 import script
 
+try:
+  WindowsError
+except NameError:
+  WindowsError = None
+
 class Installer(script.Script):
   def __init__(self, clArgs = None):
     import RDict
@@ -90,11 +95,12 @@ class Installer(script.Script):
         errors.extend(err.args[0])
     try:
       shutil.copystat(src, dst)
-    except WindowsError:
-      # can't copy file access times on Windows
-      pass
-    except OSError, why:
-      errors.extend((src, dst, str(why)))
+    except OSError as why:
+      if WindowsError is not None and isinstance(why, WindowsError):
+        # Copying file access times may fail on Windows
+        pass
+      else:
+        errors.extend((src, dst, str(why)))
     if errors:
       raise shutil.Error, errors
     return copies
