@@ -15,7 +15,7 @@ foreach CONF ($*)
   $SCP $USR@${MACH}:${LOC}/configure.log ${LOGDIR}/configure_${CONF}_${MACH}.log ;/bin/chmod a+r ${LOGDIR}/configure_${CONF}_${MACH}.log &
   $SCP $USR@${MACH}:${LOC}/make.log ${LOGDIR}/make_${CONF}_${MACH}.log ;/bin/chmod a+r ${LOGDIR}/make_${CONF}_${MACH}.log &
   $SCP $USR@${MACH}:${LOC}/examples.log ${LOGDIR}/examples_${CONF}_${MACH}.log ;/bin/chmod a+r ${LOGDIR}/examples_${CONF}_${MACH}.log &
-  $SCP $USR@${MACH}:${LOC}/gcov.tar.gz ${LOGDIR}/gcov_${CONF}_${MACH}.tar.gz ;/bin/chmod a+r ${LOGDIR}/gcov_${CONF}_${MACH}.tar.gz &
+  $SCP $USR@${MACH}:${LOC}/gcov.tar.gz ${LOGDIR}/gcov/gcov_${CONF}_${MACH}.tar.gz ;/bin/chmod a+r ${LOGDIR}/gcov/gcov_${CONF}_${MACH}.tar.gz &
 end
 sleep 60
 /bin/chmod a+r ${LOGDIR}/*
