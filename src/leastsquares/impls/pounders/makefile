@@ -4,14 +4,14 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = mfqnls.c
+SOURCEC  = pounders.c
 SOURCEF  = dgqt.f
-SOURCEH  = mfqnls.h taolapack.h
-OBJSC    = mfqnls.o dgqt.o
+SOURCEH  = pounders.h taolapack.h
+OBJSC    = pounders.o dgqt.o
 OBJSF    = 
 LIBBASE  = libtaosolver
 MANSEC   = solver
-LOCDIR   = src/leastsquares/impls/mfqnls/
+LOCDIR   = src/leastsquares/impls/pounders/
 
 include ${TAO_DIR}/conf/tao_base
 
