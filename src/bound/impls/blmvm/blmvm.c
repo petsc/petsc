@@ -63,7 +63,7 @@ static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
     // Compute direction
     ierr = MatLMVMUpdate(blmP->M, tao->solution, blmP->GP); CHKERRQ(ierr);
     ierr = MatLMVMSolve(blmP->M, tao->gradient, tao->stepdirection); CHKERRQ(ierr);
-    ierr = VecBoundGradientProjection(tao->stepdirection,tao->XL,tao->solution,tao->XU,blmP->GP); CHKERRQ(ierr);
+    ierr = VecBoundGradientProjection(tao->stepdirection,tao->solution,tao->XL,tao->XU,blmP->GP); CHKERRQ(ierr);
 
     // Check for success (descent direction)
     ierr = VecDot(tao->gradient, blmP->GP, &gdx); CHKERRQ(ierr);
@@ -89,8 +89,7 @@ static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
     fold = f;
     ierr = VecCopy(tao->solution, Xold); CHKERRQ(ierr);
     ierr = VecCopy(tao->gradient, Gold); CHKERRQ(ierr);
-
-    stepsize = 1.0;
+    ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &stepsize, &ls_status); CHKERRQ(ierr);
 
     if (ls_status<0) {
@@ -116,7 +115,7 @@ static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
 
       // This may be incorrect; linesearch has values fo stepmax and stepmin
       // that should be reset.
-      step = 1.0;
+      ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);
       ierr = TaoLineSearchApply(tao->linesearch,tao->solution,&f, tao->gradient, tao->stepdirection,  &stepsize, &ls_status); CHKERRQ(ierr);
 
       if ((int) ls_status < 0) {
@@ -178,7 +177,7 @@ static PetscErrorCode TaoSolverSetup_BLMVM(TaoSolver tao)
   ierr = MatCreateLMVM(((PetscObject)tao)->comm,n,N,&blmP->M); CHKERRQ(ierr);
   ierr = MatLMVMAllocateVectors(blmP->M,tao->solution); CHKERRQ(ierr);
 
-  PetscFunctionReturn(0);
+   PetscFunctionReturn(0);
 }
 
 /* ---------------------------------------------------------- */
@@ -199,12 +198,9 @@ static PetscErrorCode TaoSolverDestroy_BLMVM(TaoSolver tao)
   if (tao->linesearch) {
     ierr = TaoLineSearchDestroy(tao->linesearch); CHKERRQ(ierr);
   }
-
-  tao->gradient=PETSC_NULL;
-  tao->stepdirection=PETSC_NULL;
+  
   tao->linesearch = PETSC_NULL;
   tao->data = PETSC_NULL;
-  ierr = TaoSolverSetVariableBounds(tao, 0, 0); CHKERRQ(ierr);
 
 
   PetscFunctionReturn(0);
@@ -278,7 +274,7 @@ static PetscErrorCode TaoSolverComputeDual_BLMVM(TaoSolver tao, Vec DXL, Vec DXU
 /* ---------------------------------------------------------- */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "TaoCreate_BLMVM"
+#define __FUNCT__ "TaoSolverCreate_BLMVM"
 PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverCreate_BLMVM(TaoSolver tao)
 {
   TAO_BLMVM *blmP;

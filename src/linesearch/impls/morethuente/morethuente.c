@@ -70,7 +70,7 @@ static PetscErrorCode TaoLineSearchView_MT(TaoLineSearch ls, PetscViewer pv)
 
 @ */
 
-static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, Vec s) 
+static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, Vec s)
 {
     PetscErrorCode ierr;
     TAOLINESEARCH_MT_CTX *mt;
@@ -94,6 +94,8 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
 
     /* comm,type,size checks are done in interface TaoLineSearchApply */
     mt = (TAOLINESEARCH_MT_CTX*)(ls->data);
+
+    ls->reason = TAOLINESEARCH_CONTINUE_ITERATING;
 
     /* Check work vector */
     if (!mt->work) {
@@ -123,11 +125,11 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
 	    SETERRQ(PETSC_ERR_ARG_SIZ,"Variable vector not compatible with bounds vector");
 	}
 	ierr = VecScale(s,-1.0); CHKERRQ(ierr);
-	ierr = VecBoundGradientProjection(s,ls->lower,x,ls->upper,s); CHKERRQ(ierr);
+	ierr = VecBoundGradientProjection(s,x,ls->lower,ls->upper,s); CHKERRQ(ierr);
 	ierr = VecScale(s,-1.0); CHKERRQ(ierr);
 	ierr = VecStepBoundInfo(x,ls->lower,ls->upper,s,&bstepmin1,&bstepmin2,&bstepmax);
-	ls->stepmax = PetscMin(bstepmax,1.0e15);
 	CHKERRQ(ierr);
+	ls->stepmax = PetscMin(bstepmax,1.0e15);
     }
 
 #if defined(PETSC_USE_COMPLEX)
@@ -203,7 +205,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
       ierr = VecAXPY(x,ls->step,s); CHKERRQ(ierr);	/* X = W + step*S */
 #endif
       if (ls->bounded) {
-	  ierr = VecMedian(ls->lower, x, ls->upper, x);
+	  ierr = VecMedian(ls->lower, x, ls->upper, x); CHKERRQ(ierr);
       }
       ierr = TaoLineSearchComputeObjectiveAndGradient(ls,x,f,g); CHKERRQ(ierr);
       if (0 == i) {
