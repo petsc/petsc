@@ -12,9 +12,9 @@ PetscErrorCode VecSFischer(Vec, Vec, Vec, Vec, PetscScalar, Vec);
 PetscErrorCode VecBoundGradientProjection(Vec, Vec, Vec, Vec, Vec);
 PetscErrorCode VecStepBoundInfo(Vec,Vec,Vec,Vec,PetscReal*, PetscReal*,PetscReal*);
 
-/*typedef struct _p_Subset* TaoSubset;
 
 
+/*
   TaoSubset - Object used to manage subsets of vector and matrices
 
   Level: beginner
@@ -22,7 +22,8 @@ PetscErrorCode VecStepBoundInfo(Vec,Vec,Vec,Vec,PetscReal*, PetscReal*,PetscReal
 .seealso: TaoSubsetCreate()
 */
 
-#define TaoSubsetType char*
+#define TaoSubsetType const char*
+#define TAOSUBSET_SINGLEPROCESSOR "singleprocessor"
 #define TAOSUBSET_NOREDISTRIBUTE "noredistribute"
 #define TAOSUBSET_REDISTRIBUTE   "redistribute"
 #define TAOSUBSET_MASK           "mask"
@@ -34,6 +35,7 @@ PetscErrorCode VecWhichGreaterThan(Vec, Vec, IS * );
 PetscErrorCode VecWhichLessThan(Vec, Vec, IS *);
 PetscErrorCode VecWhichEqual(Vec, Vec, IS *);
 
-
+PetscErrorCode VecGetSubVec(Vec, IS, Vec*);
+PetscErrorCode VecReducedXPY(Vec, Vec, IS); 
 
 #endif /* defined __TAOUTIL_H */

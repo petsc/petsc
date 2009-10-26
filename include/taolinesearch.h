@@ -26,6 +26,7 @@ typedef struct _p_TaoLineSearch* TaoLineSearch;
 #define TaoLineSearchType  char*
 #define TAOLINESEARCH_UNIT "unit"
 #define TAOLINESEARCH_MT "more-thuente"
+#define TAOLINESEARCH_GPCG "gpcg"
 
 extern PetscCookie TAOLINESEARCH_DLLEXPORT TAOLINESEARCH_COOKIE;
 
@@ -35,9 +36,9 @@ EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetUp(TaoLineSearch);
 EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchDestroy(TaoLineSearch);
 EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchView(TaoLineSearch,PetscViewer);
 EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetOptionsPrefix(TaoLineSearch);
-EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchApply(TaoLineSearch,Vec,PetscReal *,Vec,Vec,PetscReal *, TaoLineSearchTerminationReason *);
+EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchApply(TaoLineSearch,Vec,PetscReal *,Vec,Vec, PetscReal *, TaoLineSearchTerminationReason *);
 EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchGetStepLength(TaoLineSearch, PetscReal*);
-EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetStepLength(TaoLineSearch, PetscReal);
+EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetInitialStepLength(TaoLineSearch, PetscReal);
 EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchGetSolution(TaoLineSearch, Vec, PetscReal*, Vec, PetscReal*, TaoLineSearchTerminationReason*);
 EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchGetFullStepObjective(TaoLineSearch, PetscReal*);
 

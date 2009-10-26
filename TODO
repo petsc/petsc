@@ -1,3 +1,6 @@
+GPCG
+
+
 LineSearch
 * Clear/reset variable bounds
 
@@ -6,5 +9,16 @@ TaoSolver
 * Check bounds for bounded methods, give warning for unbounded methods
 * TaoSolverConvergedReason -> TaoSolverTerminationReason
 
+TRON -- use current C++ version for now, but will have to eventually fix
+
+MFQNLS -- get something working!
+
+Dynamic libraries -- need TaoInitialize
+
+Fortran stubs 
+
+documentation
+
+automatic testing
 
 Check against PetscScalar=single, complex

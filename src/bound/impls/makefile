@@ -2,7 +2,7 @@
 
 ALL: lib
 
-DIRS     = blmvm
+DIRS     = blmvm  gpcg
 
 LOCDIR   = src/bound/impls/
 

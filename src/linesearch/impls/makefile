@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = unit morethuente 
+DIRS     = unit morethuente  gpcglinesearch
 #morethuentebound
 #armijo boundproj projectedarmijo 
 LOCDIR   = src/linesearch/impls/

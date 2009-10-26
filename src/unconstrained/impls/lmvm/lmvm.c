@@ -114,7 +114,6 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
     ierr = VecCopy(tao->solution, lmP->Xold); CHKERRQ(ierr);
     ierr = VecCopy(tao->gradient, lmP->Gold); CHKERRQ(ierr);
 
-    step = 1.0;
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, lmP->D, &step,&ls_status); CHKERRQ(ierr);
     
 

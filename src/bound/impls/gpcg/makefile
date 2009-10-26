@@ -1,17 +1,15 @@
-# $Id$ 
-
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = projection.c  isutil.c
+SOURCEC  = gpcg.c
 SOURCEF  = 
-SOURCEH  = 
-OBJSC    = projection.o  isutil.o
+SOURCEH  = gpcg.h
+OBJSC    = gpcg.o
 OBJSF    = 
 LIBBASE  = libtaosolver
 MANSEC   = solver
-LOCDIR   = src/bound/utils
+LOCDIR   = src/bound/impls/gpcg/
 
 include ${TAO_DIR}/conf/tao_base
 

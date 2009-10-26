@@ -1,7 +1,8 @@
 #ifndef __TAO_SOLVER_H
 #define __TAO_SOLVER_H
 
-#include "tao.h"
+#include "mpi.h"
+#include "taosolver.h"
 PETSC_EXTERN_CXX_BEGIN
 
 typedef struct _p_TaoSolver*   TaoSolver;
