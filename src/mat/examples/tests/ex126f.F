@@ -96,7 +96,7 @@
       endif
 
       call MatLUFactorNumeric(fact, A, PETSC_NULL, ierr)
-      call MatSolve(fact, b, x)
+      call MatSolve(fact, b, x,ierr)
       call MatDestroy(fact, ierr)
       
       call MatDestroy(A, ierr)

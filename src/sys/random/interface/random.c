@@ -96,6 +96,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetInterval(PetscRandom r,PetscScalar 
 
    Level: intermediate
 
+   Notes: for complex numbers either the real part or the imaginary part of high must be greater than its low part; or both of them can be greater.
+    If the real or imaginary part of low and high are the same then that value is always returned in the real or imaginary part.
+
    Concepts: random numbers^range
 
 .seealso: PetscRandomCreate(), PetscRandomGetInterval()
@@ -105,8 +108,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSetInterval(PetscRandom r,PetscScalar 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
 #if defined(PETSC_USE_COMPLEX)
-  if (PetscRealPart(low) >= PetscRealPart(high))           SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"only low < high");
-  if (PetscImaginaryPart(low) >= PetscImaginaryPart(high)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"only low < high");
+  if (PetscRealPart(low) > PetscRealPart(high))           SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"only low < high");
+  if (PetscImaginaryPart(low) > PetscImaginaryPart(high)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"only low < high");
 #else
   if (low >= high) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"only low < high: Instead %G %G",low,high);
 #endif

@@ -67,7 +67,6 @@ for i in range(0,nfiles):
         try:
             in_fid = open(in_file,'r')
         except IOError:
-            print "Did not find file %s in directory %s" %(files_dir1[i],tmp_dirs[j][0])
             continue
         new_lines = in_fid.readlines()
         lines = list(set(lines)&set(new_lines)) # Find intersection             
