@@ -692,7 +692,6 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
     ierr = VecCopy(tao->solution, nlsP->Xold); CHKERRQ(ierr);
     ierr = VecCopy(tao->gradient, nlsP->Gold); CHKERRQ(ierr);
 
-    step = 1.0;
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, nlsP->D, &step, &ls_reason); CHKERRQ(ierr);
 
     while (status && stepType != NLS_GRADIENT) {
@@ -804,9 +803,6 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
       }
       ierr = VecScale(nlsP->D, -1.0); CHKERRQ(ierr);
 
-      // This may be incorrect; linesearch has values for stepmax and stepmin
-      // that should be reset.
-      step = 1.0;
       ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, nlsP->D, &step, &ls_reason); CHKERRQ(ierr);
       ierr = TaoLineSearchGetFullStepObjective(tao->linesearch, &f_full); CHKERRQ(ierr);
     }
