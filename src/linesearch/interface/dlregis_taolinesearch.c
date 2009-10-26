@@ -4,6 +4,7 @@
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_Unit(TaoLineSearch);
 EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_MT(TaoLineSearch);
+EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_GPCG(TaoLineSearch);
 EXTERN_C_END
 
 
@@ -31,6 +32,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_Unit(TaoLineSearch);
 EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_MT(TaoLineSearch);
+EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_GPCG(TaoLineSearch);
 EXTERN_C_END
     
 extern PetscTruth TaoLineSearchRegisterAllCalled;
@@ -44,6 +46,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchRegisterAll(const char path[
     TaoLineSearchRegisterAllCalled=PETSC_TRUE;
     info = TaoLineSearchRegisterDynamic("unit",path,"TaoLineSearchCreate_Unit",TaoLineSearchCreate_Unit); CHKERRQ(info);
     info = TaoLineSearchRegisterDynamic("more-thuente",path,"TaoLineSearchCreate_MT",TaoLineSearchCreate_MT); CHKERRQ(info);
+    info = TaoLineSearchRegisterDynamic("gpcg",path,"TaoLineSearchCreate_GPCG",TaoLineSearchCreate_GPCG); CHKERRQ(info);
     PetscFunctionReturn(0);
 }
 
