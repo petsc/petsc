@@ -66,7 +66,7 @@
       Vec              x,b,u
       PetscRandom      rctx
       double precision norm,h2,sigma1
-      PetscScalar  none,sigma2,v,pfive
+      PetscScalar  none,sigma2,v,pfive,czero,cone
       PetscInt dim,its,n,Istart
       PetscInt Iend,i,j,II,JJ,one
       PetscErrorCode ierr
@@ -87,6 +87,8 @@
       none   = -1.0
       n      = 6
       sigma1 = 100.0
+      czero  = 0.0
+      cone   = PETSC_i
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-sigma1',sigma1,      &
      &                       flg,ierr)
@@ -129,6 +131,7 @@
          call PetscRandomCreate(PETSC_COMM_WORLD,                       &
      &        rctx,ierr)
          call PetscRandomSetFromOptions(rctx,ierr)
+         call PetscRandomSetInterval(rctx,czero,cone,ierr)
       endif
       h2 = 1.0/((n+1)*(n+1))
 
@@ -153,7 +156,7 @@
           JJ = II + 1
           call MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr)
         endif
-        if (use_random) call PetscRandomGetValueImaginary(rctx,         &
+        if (use_random) call PetscRandomGetValue(rctx,                          &
      &                        sigma2,ierr)
         v = 4.0 - sigma1*h2 + sigma2*h2
         call  MatSetValues(A,one,II,one,II,v,ADD_VALUES,ierr)

@@ -49,27 +49,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueReal_Rand48(PetscRandom r,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscRandomGetValueImaginary_Rand48"
-PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueImaginary_Rand48(PetscRandom r,PetscScalar *val)
-{
-  PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
-  if (r->iset) *val = (PetscImaginaryPart(r->width)*drand48()+PetscImaginaryPart(r->low))*PETSC_i;
-  else         *val = drand48()*PETSC_i;   
-#else
-  if (r->iset) *val = r->width * drand48() + r->low;
-  else         *val = drand48();
-#endif
-  PetscFunctionReturn(0);
-}
-
 static struct _PetscRandomOps PetscRandomOps_Values = {
   /* 0 */
   PetscRandomSeed_Rand48,
   PetscRandomGetValue_Rand48,
   PetscRandomGetValueReal_Rand48,
-  PetscRandomGetValueImaginary_Rand48,
   0,
   /* 5 */
   0

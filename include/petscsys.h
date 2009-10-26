@@ -126,7 +126,6 @@ M*/
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm,PetscRandom*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue(PetscRandom,PetscScalar*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueReal(PetscRandom,PetscReal*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueImaginary(PetscRandom,PetscScalar*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomGetInterval(PetscRandom,PetscScalar*,PetscScalar*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomSetInterval(PetscRandom,PetscScalar,PetscScalar);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomSetSeed(PetscRandom,unsigned long);
