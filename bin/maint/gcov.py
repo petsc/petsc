@@ -14,6 +14,7 @@ import operator
 import sys
 import shutil
 import glob
+from time import gmtime,strftime
 
 PETSC_DIR = os.environ['PETSC_DIR']
 gcov_dir = os.path.join('tmp','gcov')
@@ -220,7 +221,7 @@ print "Creating main HTML page"
 # Create the main html file                                                                                                                                    
 # ----------------------------- index_gcov1.html has results sorted by file name ----------------------------------
 # ----------------------------- index_gcov2.html has results sorted by % code tested ------------------------------
-
+date_time = strftime("%x %X %Z")
 outfile_name1 = LOC+os.sep+'index_gcov1.html'
 outfile_name2 = LOC+os.sep+'index_gcov2.html'
 out_fid = open(outfile_name1,'w')                                            
@@ -229,10 +230,11 @@ print >>out_fid, \
 <head>                                                                                                                                                         
   <title>PETSc:Code Testing Statistics</title>                                                                                                               
 </head>                                                                                                                                                        
-<body style="background-color: rgb(213, 234, 255);">                                                                                                           
-<h2><center>Gcov statistics </center></h2>"""
+<body style="background-color: rgb(213, 234, 255);">"""                                                          
+print >>out_fid,"""<center>%s</center>"""%(date_time)
+print >>out_fid,"""<h2><center>Gcov statistics </center></h2>"""
 print >>out_fid,"""<center><font size = "4">Number of source code files = %s</font></center>""" %(nsrc_files)
-print >>out_fid,"""<center><font size = "4">Number of source code files not tested fully= %s</font></center>""" %(nsrc_files_not_tested)
+print >>out_fid,"""<center><font size = "4">Number of source code files not tested fully = %s</font></center>""" %(nsrc_files_not_tested)
 print >>out_fid,"""<center><font size = "4">Percentage of source code files not tested fully = %3.2f</font></center><br>""" % (float(nsrc_files_not_tested)/float(nsrc_files)*\
 100.0)
 print >>out_fid,"""<center><font size = "4">Total number of source code lines = %s</font></center>""" %(ntotal_lines)
@@ -261,10 +263,11 @@ print >>out_fid, \
 <head>                                                                                                                                                
   <title>PETSc:Code Testing Statistics</title>                                                             
 </head> 
-<body style="background-color: rgb(213, 234, 255);"> 
-<h2><center>Gcov statistics</center></h2>"""
+<body style="background-color: rgb(213, 234, 255);">"""                                                          
+print >>out_fid,"""<center>%s</center>"""%(date_time)
+print >>out_fid,"""<h2><center>Gcov statistics</center></h2>"""
 print >>out_fid,"""<center><font size = "4">Number of source code files = %s</font></center>""" %(nsrc_files)
-print >>out_fid,"""<center><font size = "4">Number of source code files not tested fully= %s</font></center>""" %(nsrc_files_not_tested)
+print >>out_fid,"""<center><font size = "4">Number of source code files not tested fully = %s</font></center>""" %(nsrc_files_not_tested)
 print >>out_fid,"""<center><font size = "4">Percentage of source code files not tested fully = %3.2f</font></center><br>""" % (float(nsrc_files_not_tested)/float(nsrc_files)*100.0)
 print >>out_fid,"""<center><font size = "4">Total number of source code lines = %s</font></center>""" %(ntotal_lines)
 print >>out_fid,"""<center><font size = "4">Total number of source code lines not tested = %s</font></center>""" %(ntotal_lines_not_tested)
