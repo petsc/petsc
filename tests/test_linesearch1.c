@@ -8,6 +8,8 @@ PetscErrorCode viewme(Vec v);
 
 PetscErrorCode MyFuncGrad(TaoLineSearch ls, Vec X, PetscReal *f, Vec G, void *ctx);
 
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {
     TaoLineSearch ls;
@@ -39,7 +41,7 @@ int main(int argc, char *argv[])
     ierr = VecAXPY(s,-1.0,g); CHKERRQ(ierr);
 
     ierr = TaoLineSearchCreate(PETSC_COMM_WORLD,&ls); CHKERRQ(ierr);
-//    ierr = TaoLineSearchSetType(ls,"unit"); CHKERRQ(ierr);
+
     ierr = TaoLineSearchSetFromOptions(ls); CHKERRQ(ierr);
     ierr = TaoLineSearchSetObjectiveAndGradient(ls,MyFuncGrad,(void*)&user); 
     CHKERRQ(ierr);

@@ -11,8 +11,14 @@ TESTEXAMPLES_C = test_link1.tao runtest_link1 test_link1.rm clean \
 include ${TAO_DIR}/conf/tao_base
 
 test_link1: test_link1.o tao_chkopts
-	-${CLINKER} -o test_link1 test_link1.o ${TAO_LIB} ${PETSC_LIB}
-	${RM} test_link1.o
+
+test_subvec1: test_subvec1.o tao_chkopts
+	-${CLINKER} -o test_subvec1 test_subvec1.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_subvec1.o
+
+test_submat1: test_submat1.o tao_chkopts
+	-${CLINKER} -o test_submat1 test_submat1.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_submat1.o
 
 
 test_linesearch1: test_linesearch1.o tao_chkopts

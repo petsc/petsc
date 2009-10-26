@@ -50,7 +50,6 @@ typedef struct {
   /* Working space */
   DA          da;           /* distributed array data structure */
   Mat         A;            /* Quadratic Objective term */
-    Mat         Ada;        /* ada mat; */
   Vec         B;            /* Linear Objective term */
 } AppCtx;
 
@@ -59,7 +58,6 @@ static PetscReal p(PetscReal xi, PetscReal ecc);
 static PetscErrorCode FormFunctionGradient(TaoSolver, Vec, double *,Vec,void *);
 static PetscErrorCode FormHessian(TaoSolver,Vec,Mat *, Mat *, MatStructure *, void *);
 static PetscErrorCode ComputeB(AppCtx*);
-PetscErrorCode  MatZeroEntries_ADA(Mat mat);
 
 
 #undef __FUNCT__
@@ -81,12 +79,7 @@ int main( int argc, char **argv )
   TaoSolverConvergedReason reason;
   AppCtx     user;               /* user-defined work context */
   PetscReal     zero=0.0;           /* lower bound on all variables */
-  KSP      ksp;
-  Vec        D1, D2;             /* Vectors for MatCreateADA() */
-  Mat        B;
 
-  PetscErrorCode MatCreateADA( Mat mat, Vec D1, Vec D2, Mat *J );
-                           /* TAO function that creates a normal matrix */
 
   
   /* Initialize PETSC and TAO */
@@ -135,14 +128,8 @@ int main( int argc, char **argv )
   info = VecGetLocalSize(x,&m); CHKERRQ(info);
   info = MatCreateMPIAIJ(PETSC_COMM_WORLD,m,m,N,N,5,TAO_NULL,3,TAO_NULL,&user.A); CHKERRQ(info);
 
-  info = VecCreateSeq( PETSC_COMM_WORLD, m, &D1 ); CHKERRQ(info);
-  info = VecCreateSeq( PETSC_COMM_WORLD, m, &D2 ); CHKERRQ(info);
-  info = VecSet( D1, 1.0 ); CHKERRQ(info);
-  info = VecSet( D2, 0.0 ); CHKERRQ(info);
 
 
-  info = MatCreateADA( user.A, D1, D2, &user.Ada ); CHKERRQ(info);
-  
   info = DAGetGlobalIndices(user.da,&nloc,&ltog); CHKERRQ(info);
   info = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nloc,ltog,&isltog); 
   CHKERRQ(info);
@@ -172,7 +159,7 @@ int main( int argc, char **argv )
   info = TaoSolverSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void*) &user); 
   CHKERRQ(info);
   
-  info = TaoSolverSetHessianRoutine(tao,user.Ada,user.Ada,FormHessian,(void*)&user); CHKERRQ(info);
+  info = TaoSolverSetHessianRoutine(tao,user.A,user.A,FormHessian,(void*)&user); CHKERRQ(info);
 
   /* Set a routine that defines the bounds */
   info = VecDuplicate(x,&xl); CHKERRQ(info);
@@ -193,6 +180,8 @@ int main( int argc, char **argv )
 
   /* Solve the bound constrained problem */
   info = TaoSolverSolve(tao); CHKERRQ(info);
+
+  info = TaoSolverView(tao,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(info);
 
   info = TaoSolverGetConvergedReason(tao,&reason); CHKERRQ(info);
   if (reason <= 0)
@@ -367,23 +356,6 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, double *fcn,Vec G,void
 
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroEntries_ADA"
-/* */
-PetscErrorCode  MatZeroEntries_ADA(Mat mat)
-{
-//   if (mat) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-//   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-//   if (mat->insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for matrices where you have set values but not yet assembled");
-//   if (!mat->ops->zeroentries) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
-//   MatPreallocated(mat);
-
-//   PetscLogEventBegin(MAT_ZeroEntries_ADA,mat,0,0,0);
-//   (*mat->ops->zeroentries)(mat);
-//   PetscLogEventEnd(MAT_ZeroEntries_ADA,mat,0,0,0);
-/*   PetscObjectStateIncrease((PetscObject)mat); */
-   return(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "FormHessian"
@@ -403,7 +375,7 @@ PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *H, Mat *Hpre, MatStructure *
   PetscReal xi,v[5];
   PetscReal ecc=user->ecc, trule1,trule2,trule3,trule4,trule5,trule6;
   PetscReal vmiddle, vup, vdown, vleft, vright;
-  Mat hes=user->A;
+  Mat hes=*H;
   PetscTruth assembled;
 
   nx=user->nx;
@@ -484,6 +456,7 @@ PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *H, Mat *Hpre, MatStructure *
   info = MatSetOption(hes,MAT_SYMMETRIC,PETSC_TRUE); CHKERRQ(info);
 
   info = PetscLogFlops(9*xm*ym+49*xm); CHKERRQ(info);
-
+  info = MatNorm(hes,NORM_1,&hx); CHKERRQ(info);
+  printf("hes norm = %g\n",hx); 
   return 0;
 }
