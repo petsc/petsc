@@ -281,7 +281,7 @@ PetscErrorCode FormFunction(TaoSolver tao,Vec X,Vec F,void *ptr)
   AppCtx  *user = (AppCtx *) ptr;
   PetscErrorCode     info;
   PetscInt i, j, row, mx, my, xs, ys, xm, ym, gxs, gys, gxm, gym;
-  double  two = 2.0, lambda,hx, hy, hxdhy, hydhx,sc;
+  PetscReal  two = 2.0, lambda,hx, hy, hxdhy, hydhx,sc;
   PetscScalar  u, uxx, uyy, *x,*f;
   Vec localX=user->localX,localF=user->localF;
 

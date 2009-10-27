@@ -34,7 +34,7 @@ typedef struct {
 } AppCtx;
 
 /* -------------- User-defined routines ---------- */
-PetscErrorCode FormFunctionGradient(TaoSolver,Vec,double*,Vec,void*);
+PetscErrorCode FormFunctionGradient(TaoSolver,Vec,PetscReal*,Vec,void*);
 PetscErrorCode FormHessian(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*);
 
 #undef __FUNCT__
@@ -137,11 +137,11 @@ int main(int argc,char **argv)
     at the same time.  Evaluating both at once may be more efficient that
     evaluating each separately. 
 */
-PetscErrorCode FormFunctionGradient(TaoSolver tao,Vec X,double *f, Vec G,void *ptr)
+PetscErrorCode FormFunctionGradient(TaoSolver tao,Vec X,PetscReal *f, Vec G,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;  
   int    i,info,nn=user->n/2;
-  double ff=0,t1,t2,alpha=user->alpha;
+  PetscReal ff=0,t1,t2,alpha=user->alpha;
   PetscReal *x,*g;
 
   /* Get pointers to vector data */
@@ -186,7 +186,7 @@ PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *HH, Mat *Hpre, MatStructure 
 {
   AppCtx  *user = (AppCtx*)ptr;
   int     i, nn=user->n/2, info, ind[2];
-  double  alpha=user->alpha;
+  PetscReal  alpha=user->alpha;
   PetscReal  v[2][2],*x;
   Mat H=*HH;
   PetscTruth assembled;

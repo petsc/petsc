@@ -197,7 +197,7 @@ PetscErrorCode EvaluateJacobian(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, MatStru
   }
 
   /* Assemble the matrix */
-  ierr = MatSetValues(*J,NOBSERVATIONS,user->idm, NPARAMETERS, user->idn,(double *)user->j,
+  ierr = MatSetValues(*J,NOBSERVATIONS,user->idm, NPARAMETERS, user->idn,(PetscScalar *)user->j,
 		      INSERT_VALUES); CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);

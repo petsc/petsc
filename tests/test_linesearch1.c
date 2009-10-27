@@ -92,7 +92,7 @@ PetscErrorCode MyFuncGrad(TaoLineSearch ls, Vec X, PetscReal *f, Vec G, void *ct
     AppCtx *user = (AppCtx*)ctx;
     PetscErrorCode    ierr;
     PetscInt i,nn=user->n/2;
-    double ff=0,t1,t2,alpha=user->alpha;
+    PetscReal ff=0,t1,t2,alpha=user->alpha;
     PetscReal *x,*g;
 
     /* Get pointers to vector data */
