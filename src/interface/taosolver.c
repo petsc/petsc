@@ -296,9 +296,15 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetFromOptions(TaoSolver tao)
 	ierr = PetscOptionsList("-tao_type","Tao Solver type","TaoSolverSetType",TaoSolverList,default_type,type,256,&flg); CHKERRQ(ierr);
 	if (flg) {
 	    ierr = TaoSolverSetType(tao,type); CHKERRQ(ierr);
-	} else if (!((PetscObject)tao)->type_name) {
+	} else {
+	  ierr = PetscOptionsList("-tao_method","Tao Solver type","TaoSolverSetType",TaoSolverList,default_type,type,256,&flg); CHKERRQ(ierr);
+	  if (flg) {
+  	    ierr = TaoSolverSetType(tao,type); CHKERRQ(ierr);
+	  } else if (!((PetscObject)tao)->type_name) {
 	    ierr = TaoSolverSetType(tao,default_type);
+	  }
 	}
+
 	if (tao->ops->setfromoptions) {
 	    ierr = (*tao->ops->setfromoptions)(tao); CHKERRQ(ierr);
 	}
