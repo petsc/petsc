@@ -40,7 +40,7 @@ T*/
 int main(int argc,char **args)
 {
   KSP            ksp;             /* linear solver context */
-  Mat            A,B;            /* matrix */
+  Mat            A,B = 0;            /* matrix */
   Vec            x,b,u;          /* approx solution, RHS, exact solution */
   PetscViewer    fd;               /* viewer */
   char           file[4][PETSC_MAX_PATH_LEN];     /* input file name */
