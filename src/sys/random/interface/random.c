@@ -83,7 +83,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetInterval(PetscRandom r,PetscScalar 
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomSetInterval"
-/*@C
+/*@
    PetscRandomSetInterval - Sets the interval over which the random numbers
    will be randomly distributed.  By default, this interval is [0,1).
 
