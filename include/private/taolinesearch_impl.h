@@ -42,11 +42,11 @@ struct _p_TaoLineSearch {
     PetscInt nfev;
     TaoLineSearchTerminationReason reason;
 
-    double rtol;	 /* relative tol for acceptable step (rtol>0) */
-    double ftol;	 /* tol for sufficient decr. condition (ftol>0) */
-    double gtol;	 /* tol for curvature condition (gtol>0)*/
-    double stepmin;	 /* lower bound for step */
-    double stepmax;	 /* upper bound for step */
+    PetscReal rtol;	 /* relative tol for acceptable step (rtol>0) */
+    PetscReal ftol;	 /* tol for sufficient decr. condition (ftol>0) */
+    PetscReal gtol;	 /* tol for curvature condition (gtol>0)*/
+    PetscReal stepmin;	 /* lower bound for step */
+    PetscReal stepmax;	 /* upper bound for step */
 
     TaoSolver taosolver;
     

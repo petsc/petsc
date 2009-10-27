@@ -55,7 +55,7 @@ typedef struct {
 
 /* User-defined routines */
 static PetscReal p(PetscReal xi, PetscReal ecc);
-static PetscErrorCode FormFunctionGradient(TaoSolver, Vec, double *,Vec,void *);
+static PetscErrorCode FormFunctionGradient(TaoSolver, Vec, PetscReal *,Vec,void *);
 static PetscErrorCode FormHessian(TaoSolver,Vec,Mat *, Mat *, MatStructure *, void *);
 static PetscErrorCode ComputeB(AppCtx*);
 
@@ -254,7 +254,7 @@ PetscErrorCode ComputeB(AppCtx* user)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionGradient"
-PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, double *fcn,Vec G,void *ptr)
+PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,void *ptr)
 {
   AppCtx* user=(AppCtx*)ptr;
   PetscErrorCode info;

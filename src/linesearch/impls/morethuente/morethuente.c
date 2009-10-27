@@ -4,9 +4,9 @@
 #include "morethuente.h"
 
 static PetscErrorCode Tao_mcstep(TaoLineSearch ls,
-				 double *stx, double *fx, double *dx,
-				 double *sty, double *fy, double *dy,
-				 double *stp, double *fp, double *dp);
+				 PetscReal *stx, PetscReal *fx, PetscReal *dx,
+				 PetscReal *sty, PetscReal *fy, PetscReal *dy,
+				 PetscReal *stp, PetscReal *fp, PetscReal *dp);
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchDestroy_MT"
@@ -417,9 +417,9 @@ EXTERN_C_END
 #undef __FUNCT__  
 #define __FUNCT__ "Tao_mcstep"
 static PetscErrorCode Tao_mcstep(TaoLineSearch ls,
-                              double *stx, double *fx, double *dx,
-		              double *sty, double *fy, double *dy,
-			      double *stp, double *fp, double *dp)
+                              PetscReal *stx, PetscReal *fx, PetscReal *dx,
+		              PetscReal *sty, PetscReal *fy, PetscReal *dy,
+			      PetscReal *stp, PetscReal *fp, PetscReal *dp)
 {
   TAOLINESEARCH_MT_CTX *mtP = (TAOLINESEARCH_MT_CTX *) ls->data;
   PetscReal gamma1, p, q, r, s, sgnd, stpc, stpf, stpq, theta;
