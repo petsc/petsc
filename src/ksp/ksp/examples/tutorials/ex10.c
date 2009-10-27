@@ -258,7 +258,7 @@ int main(int argc,char **args)
     /*
        Conclude profiling last stage; begin profiling next stage.
     */
-    PreLoadStage("KSPSetUp");
+    PreLoadStage("KSPSetUpSolve");
 
     /*
        We also explicitly time this stage via PetscGetTime()
@@ -291,11 +291,6 @@ int main(int argc,char **args)
       /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                            Solve system
         - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-      /*
-       Begin profiling next stage
-      */
-      PreLoadStage("KSPSolve");
 
       /*
        Solve linear system; we also explicitly time this stage.
