@@ -21,6 +21,7 @@
        PetscMapSetSize(PetscMap*,n) or PetscMapSetLocalSize(PetscMap*,N);
        PetscMapSetUp(PetscMap*);
        PetscMapGetSize(PetscMap*,PetscInt *);
+       PetscMapDestroy(PetscMap*);
 
        Unlike regular PETSc objects you work with a pointer to the object instead of 
      the object directly.
@@ -31,7 +32,7 @@
     Fortran Notes: 
       Not available from Fortran
 
-.seealso: PetscMapSetLocalSize(), PetscMapSetSize(), PetscMapGetSize(), PetscMapGetLocalSize(), PetscMap,
+.seealso: PetscMapSetLocalSize(), PetscMapSetSize(), PetscMapGetSize(), PetscMapGetLocalSize(), PetscMap, PetscMapDestroy(),
           PetscMapGetRange(), PetscMapGetRanges(), PetscMapSetBlockSize(), PetscMapGetBlockSize(), PetscMapSetUp()
 
 @*/
@@ -113,7 +114,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapDestroy(PetscMap *map)
     Fortran Notes: 
       Not available from Fortran
 
-.seealso: PetscMapSetLocalSize(), PetscMapSetSize(), PetscMapGetSize(), PetscMapGetLocalSize(), PetscMap,
+.seealso: PetscMapSetLocalSize(), PetscMapSetSize(), PetscMapGetSize(), PetscMapGetLocalSize(), PetscMap, PetscMapDestroy(),
           PetscMapGetRange(), PetscMapGetRanges(), PetscMapSetBlockSize(), PetscMapGetBlockSize(), PetscMapInitialize()
 
 @*/
