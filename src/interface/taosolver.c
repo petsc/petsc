@@ -5,7 +5,7 @@
 PetscTruth TaoSolverRegisterAllCalled = PETSC_FALSE;
 PetscFList TaoSolverList = PETSC_NULL;
 
-PetscCookie TAOSOLVER_DLL TAOSOLVER_COOKIE;
+PetscCookie TAOSOLVER_DLLEXPORT TAOSOLVER_COOKIE;
 PetscLogEvent TaoSolver_Solve, TaoSolver_ObjectiveEval, TaoSolver_GradientEval, TaoSolver_ObjGradientEval, TaoSolver_HessianEval, TaoSolver_JacobianEval;
 
 

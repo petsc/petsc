@@ -31,7 +31,12 @@ typedef enum {/* converged */
               TAO_CONTINUE_ITERATING      =  0} TaoSolverConvergedReason;
 
 extern const char **TaoSolverConvergedReasons;
+EXTERN PetscErrorCode TaoInitialize(int*,char***,const char[], const char[]);
+EXTERN PetscErrorCode TaoFinalize();
 
+
+EXTERN PetscErrorCode TaoInitialize_DynamicLibraries();
+EXTERN PetscErrorCode TaoFinalize_DynamicLibraries();
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverInitializePackage(const char []);
 
 #if defined PETSC_USE_DYNAMIC_LIBRARIES
@@ -39,7 +44,6 @@ EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverInitializePackage(const char 
 #else
 #define TaoSolverRegisterDynamic(a,b,c,d) TaoSolverRegister(a,b,c,d)
 #endif
-
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverCreate(MPI_Comm,TaoSolver*);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetFromOptions(TaoSolver);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetUp(TaoSolver);

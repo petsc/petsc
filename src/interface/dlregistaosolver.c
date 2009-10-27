@@ -2,6 +2,8 @@
 
 #include "include/private/taosolver_impl.h"
 
+static PetscTruth TaoSolverPackageInitialized = PETSC_FALSE;
+
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverInitializePackage"
 /*@C
@@ -19,13 +21,12 @@
 @*/
 PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverInitializePackage(const char path[])
 {
-  static PetscTruth initialized = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
 
-  if (initialized) PetscFunctionReturn(0);
-  initialized = PETSC_TRUE;
+  if (TaoSolverPackageInitialized) PetscFunctionReturn(0);
+  TaoSolverPackageInitialized = PETSC_TRUE;
 
   ierr = PetscCookieRegister("TaoSolver",&TAOSOLVER_COOKIE); CHKERRQ(ierr);
   

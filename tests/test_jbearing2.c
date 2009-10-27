@@ -84,7 +84,7 @@ int main( int argc, char **argv )
   
   /* Initialize PETSC and TAO */
   PetscInitialize( &argc, &argv,(char *)0,help );
-//  TaoInitialize( &argc, &argv,(char *)0,help );
+  TaoInitialize( &argc, &argv,(char *)0,help );
 
   /* Set the default values for the problem parameters */
   user.nx = 50; user.ny = 50; user.ecc = 0.1; user.b = 10.0;
@@ -198,7 +198,7 @@ int main( int argc, char **argv )
   info = VecDestroy(user.B); CHKERRQ(info); 
   info = DADestroy(user.da); CHKERRQ(info);
 
-  //TaoFinalize();
+  TaoFinalize();
   PetscFinalize();
 
   return 0;

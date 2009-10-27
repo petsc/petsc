@@ -15,6 +15,7 @@ int main(int argc, char *argv[])
     Mat lmvm_mat;
 
     PetscInitialize(&argc, &argv, 0, 0);
+    TaoInitialize(&argc, &argv, 0, 0);
     ierr = initializevecs(&v,50,10); CHKERRQ(ierr);
     ierr = VecDuplicate(v[0], &y); CHKERRQ(ierr);
     ierr = VecGetLocalSize(v[0],&localsize); CHKERRQ(ierr);
@@ -30,6 +31,7 @@ int main(int argc, char *argv[])
 
     ierr = VecDestroyVecs(v,50); CHKERRQ(ierr);
 //    ierr = PetcscFree(&v);  CHKERRQ(ierr);
+    TaoFinalize();
     PetscFinalize();
     return 0;
 }

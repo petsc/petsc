@@ -95,6 +95,7 @@ int main( int argc, char **argv )
 
   /* Initialize PETSc and TAO */
   PetscInitialize( &argc, &argv,(char *)0,help );
+  TaoInitialize( &argc, &argv,(char *)0,help );
 
   /* Initialize problem parameters  */
   user.mx = 4; user.my = 4; user.param = 6.0;
@@ -180,6 +181,7 @@ int main( int argc, char **argv )
 
 
   /* Finalize TAO and PETSc */
+  TaoFinalize();
   PetscFinalize();
 
   return 0;

@@ -77,6 +77,7 @@ int main(int argc,char **argv)
 
    /* Initialize TAO and PETSc */
   PetscInitialize(&argc,&argv,(char *)0,help);
+  TaoInitialize(&argc,&argv,(char *)0,help);
 
   /* Allocate vectors */
   ierr = VecCreateSeq(MPI_COMM_SELF,NPARAMETERS,&x); CHKERRQ(ierr);
@@ -133,7 +134,9 @@ int main(int argc,char **argv)
 
 
   /* Finalize TAO */
+  TaoFinalize();
   PetscFinalize();
+  
   return 0;     
 }
 

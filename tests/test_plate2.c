@@ -76,6 +76,7 @@ int main( int argc, char **argv )
 
   /* Initialize PETSc, TAO */
   PetscInitialize( &argc, &argv,(char *)0,help );
+  TaoInitialize( &argc, &argv,(char *)0,help );
 
   /* Specify default dimension of the problem */
   user.mx = 10; user.my = 10; user.bheight=0.1;
@@ -192,6 +193,7 @@ int main( int argc, char **argv )
   info = DADestroy(user.da); CHKERRQ(info);
 
   /* Finalize TAO and PETSc */
+  TaoFinalize();
   PetscFinalize();
   
   return 0;

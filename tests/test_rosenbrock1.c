@@ -53,7 +53,7 @@ int main(int argc,char **argv)
 
   /* Initialize TAO and PETSc */
   PetscInitialize(&argc,&argv,(char *)0,help);
-
+  TaoInitialize(&argc,&argv,(char*)0,help);
   info = MPI_Comm_size(PETSC_COMM_WORLD,&size); CHKERRQ(info);
   info = MPI_Comm_rank(PETSC_COMM_WORLD,&rank); CHKERRQ(info);
 
@@ -111,7 +111,7 @@ int main(int argc,char **argv)
   info = VecDestroy(x); CHKERRQ(info);
   info = MatDestroy(H); CHKERRQ(info);
 
-
+  TaoFinalize();
   PetscFinalize();
 
   return 0;

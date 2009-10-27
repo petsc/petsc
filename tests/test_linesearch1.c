@@ -21,6 +21,7 @@ int main(int argc, char *argv[])
     PetscErrorCode ierr;
     
     ierr = PetscInitialize(&argc, &argv,0,0); CHKERRQ(ierr);
+    ierr = TaoInitialize(&argc, &argv,0,0); CHKERRQ(ierr);
 
     user.n=2; user.alpha = 99.0;
     ierr = VecCreate(PETSC_COMM_WORLD,&x); CHKERRQ(ierr);
@@ -82,6 +83,7 @@ int main(int argc, char *argv[])
     ierr = VecDestroy(x); CHKERRQ(ierr);
     ierr = VecDestroy(s); CHKERRQ(ierr);
     ierr = VecDestroy(g); CHKERRQ(ierr);
+    ierr = TaoFinalize();
     ierr = PetscFinalize();
     return(0);
 }

@@ -114,8 +114,8 @@ tao_deletelibs:
 	-${RM} -f ${PETSC_LIB_DIR}/libtao*.*
 
 
-tao_shared:
-	-@echo "tao_shared not implemented yet..."
+tao_shared: shared
+
 
 tao_alletags:
 	-@maint/generateetags.py
