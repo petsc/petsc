@@ -34,6 +34,7 @@
   datatype          *a;               /* nonzero elements */                               \
   PetscScalar       *solve_work;      /* work space used in MatSolve */                    \
   IS                row, col, icol;   /* index sets, used for reorderings */ \
+  PetscTruth        pivotinblocks;    /* pivot inside factorization of each diagonal block */ \
   Mat               parent             /* set if this matrix was formed with MatDuplicate(...,MAT_SHARE_NONZERO_PATTERN,....); 
                                          means that this shares some data structures with the parent including diag, ilen, imax, i, j */
 
