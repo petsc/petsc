@@ -19,7 +19,6 @@
                                                                                                      \
   Mat              sbaijMat;         /* mat in sbaij format */                                       \
                                                                                                      \
-  PetscTruth       pivotinblocks;    /* pivot inside factorization of each diagonal block */         \
                                                                                                      \
   MatScalar        *idiag;           /* inverse of block diagonal  */                                \
   PetscTruth       idiagvalid       /* if above has correct/current values */

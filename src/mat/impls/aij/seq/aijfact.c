@@ -1826,12 +1826,12 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS isrow
 
    bi=fact->i is an array of size n+1, in which 
    bi+
-     bi[i]      ->  1st entry of L(i,:),i=0,...,i-1
-     bi[n]      ->  points to L(n-1,:)+1
-     bi[n+1]    ->  1st entry of U(n-1,:)
+     bi[i]:  points to 1st entry of L(i,:),i=0,...,n-1
+     bi[n]:  points to L(n-1,n-1)+1
+     
   bdiag=fact->diag is an array of size n+1,in which
-     bdiag[0]   -> points to diagonal of U(n-1,:)
-     bdiag[n-1] -> points to diagonal of U(0,:)
+     bdiag[i]: points to diagonal of U(i,:), i=0,...,n-1
+     bdiag[n]: points to diagonal of U(n-1,0)-1
 
    U(i,:) contains bdiag[i] as its last entry, i.e., 
     U(i,:) = (u[i,i+1],...,u[i,n-1],diag[i])
