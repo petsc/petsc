@@ -28,7 +28,7 @@ PetscCookie PETSCMAT_DLLEXPORT MAT_NULLSPACE_COOKIE;
 
 .seealso: MatNullSpaceDestroy(), MatNullSpaceRemove(), KSPSetNullSpace(), MatNullSpace, MatNullSpaceCreate()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*rem)(Vec,void*),void *ctx)
+PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*rem)(MatNullSpace,Vec,void*),void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp,MAT_NULLSPACE_COOKIE,1);
@@ -201,7 +201,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec
   }
 
   if (sp->remove){
-    ierr = (*sp->remove)(vec,sp->rmctx);
+    ierr = (*sp->remove)(sp,vec,sp->rmctx);
   }
   PetscFunctionReturn(0);
 }

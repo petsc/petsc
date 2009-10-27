@@ -54,27 +54,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueReal_Sprng(PetscRandom r,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscRandomGetValue_Sprng"
-PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueImaginary_Sprng(PetscRandom r,PetscScalar *val)
-{
-  PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
-  if (r->iset) *val = (PetscImaginaryPart(r->width)*sprng()+PetscImaginaryPart(r->low))*PETSC_i;
-  else         *val = sprng()*PETSC_i;   
-#else
-  if (r->iset) *val = r->width * sprng() + r->low;
-  else         *val = sprng();
-#endif
-  PetscFunctionReturn(0);
-}
-
 static struct _PetscRandomOps PetscRandomOps_Values = {
   /* 0 */
   PetscRandomSeed_Sprng,
   PetscRandomGetValue_Sprng,
   PetscRandomGetValueReal_Sprng,
-  PetscRandomGetValueImaginary_Sprng,
   0,
   /* 5 */
   0

@@ -428,11 +428,32 @@ runex32:
 	   ${RM} -f ex32.tmp; ${RM} -f ex32.out
 
 runex32_v2:
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij > ex32.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij > ex32_v2.out 2>&1;
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -ilu_new_v2> ex32.tmp 2>&1; \
-	if (${DIFF} ex32.out ex32.tmp) then true; \
+	if (${DIFF} ex32_v2.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_v2, diffs above"; fi; \
-	   ${RM} -f ex32.tmp; ${RM} -f ex32.out
+	   ${RM} -f ex32.tmp; ${RM} -f ex32_v2.out
+
+runex32_v2_nd:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type nd -mat_type aij > ex32_v2_nd.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type nd -mat_type aij -ilu_new_v2> ex32.tmp 2>&1; \
+	if (${DIFF} ex32_v2_nd.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_v2_nd, diffs above"; fi; \
+	   ${RM} -f ex32.tmp; ${RM} -f ex32_v2_nd.out
+
+runex32_v2_pcfl2:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -pc_factor_levels 2 > ex32_v2_pcfl2.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -pc_factor_levels 2 -ilu_new_v2 > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_v2_pcfl2.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_v2_pcfl2, diffs above"; fi; \
+	   ${RM} -f ex32.tmp; ${RM} -f ex32_v2_pcfl2.out
+
+runex32_v2_pcfl2_nd:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type nd -mat_type aij -pc_factor_levels 2 > ex32_v2_pcfl2_nd.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type nd -mat_type aij -pc_factor_levels 2 -ilu_new_v2 > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_v2_pcfl2_nd.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_v2_pcfl2_nd, diffs above"; fi; \
+	   ${RM} -f ex32.tmp; ${RM} -f ex32_v2_pcfl2_nd.out
 
 runex32_icc:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -check_symmetry -pc_type icc -ksp_type cg > ex32_icc.out 2>&1;
@@ -727,7 +748,7 @@ TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.P
                                  runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc runex19 runex19_2 ex19.rm \
                                  ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm \
                                  ex26.PETSc runex26 runex26_2 ex26.rm ex27.PETSc ex27.rm \
-                                 ex32.PETSc runex32 runex32_v2 runex32_icc runex32_icc_nd \
+                                 ex32.PETSc runex32 runex32_v2 runex32_v2_nd runex32_v2_pcfl2 runex32_v2_pcfl2_nd runex32_icc runex32_icc_nd \
                                  runex32_2 runex32_3 runex32_4 runex32_5 runex32_6 runex32_7 runex32_8 runex32_9 runex32_10 \
 	                         runex32_11 runex32_11_nd runex32_12 runex32_13 runex32_14 runex32_15 runex32_16 runex32_17 runex32_18  \
                                  runex32_20_lu runex32_20_lu_nd  runex32_23_lu runex32_23_lu_nd  runex32_24_lu runex32_24_lu_nd \

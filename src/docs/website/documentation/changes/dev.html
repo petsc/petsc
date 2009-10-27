@@ -129,6 +129,9 @@ MAT_KEEP_NONZERO_PATTERN to more clearly indicate what it does.</li>
         <li>Added MAT_SHARE_NONZERO_PATTERN as option for
 MatDuplicate() this allows several matrices to share the same data
 structures for the nonzeros and thus save memory.</li>
+        <li>The function provided to MatNullSpaceSetFunction() now
+takes a MatNullSpace() as the first argument. Added Fortran interface
+for this function as well.</li>
       </ul>
       <u><b>PC:</b></u>
       <ul>
@@ -164,9 +167,9 @@ consistency with other packages.</li>
         <li>Add Theta and General Linear time integrators (TSTHETA,
 TSGL). These can be used for solving differential algebraic equations
 (DAE) using the new TSSetIFunction() and TSSetIJacobian().</li>
-	<li>Add TSSSP which implements optimal strong stability
-	preserving time integrators of order 2, 3, and 4 using a
-	low-storage explicit Runge-Kutta scheme.</li>
+        <li>Add TSSSP which implements optimal strong stability
+preserving time integrators of order 2, 3, and 4 using a low-storage
+explicit Runge-Kutta scheme.</li>
       </ul>
       <p><u><b>DA:</b></u></p>
       <ul>
@@ -184,9 +187,13 @@ argument, should be MATAIJ or MATBAIJ<u><b></b></u></li>
       </ul>
       <p><u><b>SYS:</b></u></p>
       <ul>
-	<li>PetscSleep(), PetscDrawGetPause(), and PetscDrawSetPause()
-	now take PetscReal instead of int.  Also, -draw_pause takes a
-	real value.</li>
+        <li>PetscSleep(), PetscDrawGetPause(), and PetscDrawSetPause()
+now take PetscReal instead of int. Also, -draw_pause takes a real value.</li>
+        <li>PetscRandomGetValueImaginary() is removed. To get a complex
+number with only a random imaginary part first call
+PetscRandomSetInterval() with the same low and high real part.
+Similarly one can obtain a complex number with only a random real part
+by setting the low and high imaginary part to be the same.</li>
       </ul>
       <p><u><b>AO:<br>
       </b></u></p>

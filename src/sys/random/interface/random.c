@@ -83,7 +83,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetInterval(PetscRandom r,PetscScalar 
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomSetInterval"
-/*@C
+/*@
    PetscRandomSetInterval - Sets the interval over which the random numbers
    will be randomly distributed.  By default, this interval is [0,1).
 
@@ -96,6 +96,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetInterval(PetscRandom r,PetscScalar 
 
    Level: intermediate
 
+   Notes: for complex numbers either the real part or the imaginary part of high must be greater than its low part; or both of them can be greater.
+    If the real or imaginary part of low and high are the same then that value is always returned in the real or imaginary part.
+
    Concepts: random numbers^range
 
 .seealso: PetscRandomCreate(), PetscRandomGetInterval()
@@ -105,8 +108,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSetInterval(PetscRandom r,PetscScalar 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
 #if defined(PETSC_USE_COMPLEX)
-  if (PetscRealPart(low) >= PetscRealPart(high))           SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"only low < high");
-  if (PetscImaginaryPart(low) >= PetscImaginaryPart(high)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"only low < high");
+  if (PetscRealPart(low) > PetscRealPart(high))           SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"only low < high");
+  if (PetscImaginaryPart(low) > PetscImaginaryPart(high)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"only low < high");
 #else
   if (low >= high) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"only low < high: Instead %G %G",low,high);
 #endif
@@ -403,13 +406,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomViewFromOptions(PetscRandom rnd, char 
       PetscRandomSetType(r,PETSCRAND48);
       PetscRandomGetValue(r,&value1);
       PetscRandomGetValueReal(r,&value2);
-      PetscRandomGetValueImaginary(r,&value3);
       PetscRandomDestroy(r);
 .ve
 
    Concepts: random numbers^creating
 
-.seealso: PetscRandomSetType(), PetscRandomGetValue(), PetscRandomGetValueReal(), PetscRandomGetValueImaginary(), PetscRandomSetInterval(), 
+.seealso: PetscRandomSetType(), PetscRandomGetValue(), PetscRandomGetValueReal(), PetscRandomSetInterval(), 
           PetscRandomDestroy(), VecSetRandom(), PetscRandomType
 @*/
 
@@ -493,6 +495,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSeed(PetscRandom r)
    Notes:
    Use VecSetRandom() to set the elements of a vector to random numbers.
 
+   When PETSc is compiled for complex numbers this returns a complex number with random real and complex parts.
+   Use PetscGetValueReal() to get a random real number.
+
+   To get a complex number with only a random real part, first call PetscRandomSetInterval() with a equal 
+   low and high imaginary part. Similarly to get a complex number with only a random imaginary part call 
+   PetscRandomSetInterval() with a equal low and high real part.
+
    Example of Usage:
 .vb
       PetscRandomCreate(PETSC_COMM_WORLD,&r);
@@ -504,7 +513,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSeed(PetscRandom r)
 
    Concepts: random numbers^getting
 
-.seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom(), PetscRandomGetValueReal(), PetscRandomGetValueImaginary()
+.seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom(), PetscRandomGetValueReal()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 {
@@ -550,7 +559,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue(PetscRandom r,PetscScalar *va
 
    Concepts: random numbers^getting
 
-.seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom(), PetscRandomGetValue(), PetscRandomGetValueImaginary()
+.seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom(), PetscRandomGetValue()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueReal(PetscRandom r,PetscReal *val)
 {
@@ -566,53 +575,3 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueReal(PetscRandom r,PetscReal *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscRandomGetValueImaginary"
-/*@
-   PetscRandomGetValueImaginary - Generates a purely imaginary random number.  Call this after first calling
-   PetscRandomCreate().
-
-   Not Collective
-
-   Intput Parameter:
-.  r  - the random number generator context
-
-   Output Parameter:
-.  val - the value
-
-   Options Database Keys:
-+    -random_type rand48
-.    -random_type rand
--    -random_type sprng, uses SPRNG package
-
-   Level: intermediate
-
-   Notes:
-   Use VecSetRandom() to set the elements of a vector to random numbers.
-
-   Example of Usage:
-.vb
-      PetscRandomCreate(PETSC_COMM_WORLD,&r);
-      PetscRandomGetValueImaginary(r,&value1);
-      PetscRandomGetValueImaginary(r,&value2);
-      PetscRandomGetValueImaginary(r,&value3);
-      PetscRandomDestroy(r);
-.ve
-
-   Concepts: random numbers^getting
-
-.seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom(), PetscRandomGetValueReal(), PetscRandomGetValue()
-@*/
-PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueImaginary(PetscRandom r,PetscScalar *val)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
-  PetscValidIntPointer(val,2);
-  PetscValidType(r,1);
-
-  ierr = (*r->ops->getvalueimaginary)(r,val);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)r);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}

@@ -40,7 +40,7 @@ T*/
 int main(int argc,char **args)
 {
   KSP            ksp;             /* linear solver context */
-  Mat            A,B;            /* matrix */
+  Mat            A,B = 0;            /* matrix */
   Vec            x,b,u;          /* approx solution, RHS, exact solution */
   PetscViewer    fd;               /* viewer */
   char           file[4][PETSC_MAX_PATH_LEN];     /* input file name */
@@ -258,7 +258,7 @@ int main(int argc,char **args)
     /*
        Conclude profiling last stage; begin profiling next stage.
     */
-    PreLoadStage("KSPSetUp");
+    PreLoadStage("KSPSetUpSolve");
 
     /*
        We also explicitly time this stage via PetscGetTime()
@@ -291,11 +291,6 @@ int main(int argc,char **args)
       /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                            Solve system
         - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-      /*
-       Begin profiling next stage
-      */
-      PreLoadStage("KSPSolve");
 
       /*
        Solve linear system; we also explicitly time this stage.

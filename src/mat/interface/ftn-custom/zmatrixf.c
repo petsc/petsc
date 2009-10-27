@@ -33,6 +33,7 @@
 #define maticcfactorsymbolic_            MATICCFACTORSYMBOLIC
 #define maticcfactor_                    MATICCFACTOR
 #define matfactorinfoinitialize_         MATFACTORINFOINITIALIZE
+#define matnullspacesetfunction_         MATNULLSPACESETFUNCTION
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matdestroymatrices_              matdestroymatrices_
 #define matgetfactor_                    matgetfactor
@@ -65,9 +66,24 @@
 #define maticcfactorsymbolic_            maticcfactorsymbolic
 #define maticcfactor_                    maticcfactor
 #define matfactorinfoinitialize_         matfactorinfoinitialize
+#define matnullspacesetfunction_         matnullspacesetfunction
 #endif
 
 EXTERN_C_BEGIN
+
+static PetscErrorCode ournullfunction(MatNullSpace sp,Vec x,void *ctx)
+{
+  PetscErrorCode ierr = 0;
+  (*(void (PETSC_STDCALL *)(MatNullSpace*,Vec*,void*,PetscErrorCode*))(((PetscObject)sp)->fortran_func_pointers[0]))(&sp,&x,ctx,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+
+void PETSC_STDCALL  matnullspacesetfunction_(MatNullSpace *sp, PetscErrorCode (*rem)(MatNullSpace,Vec,void*),void *ctx,PetscErrorCode *ierr)
+{
+  PetscObjectAllocateFortranPointers(*sp,1);
+  ((PetscObject)*sp)->fortran_func_pointers[0] = (PetscVoidFunction)rem;
+  *ierr = MatNullSpaceSetFunction(*sp,ournullfunction,ctx);
+}
 
 void PETSC_STDCALL   matgetvecs_(Mat *mat,Vec *right,Vec *left, int *ierr )
 {

@@ -155,6 +155,7 @@ PetscErrorCode FormTestMatrix(Mat A,PetscInt n,TestType type)
     ierr = PetscOptionsGetReal(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
+    ierr = PetscRandomSetInterval(rctx,0.0,PETSC_i);CHKERRQ(ierr);
     h2 = 1.0/((n+1)*(n+1));
     for (Ii=Istart; Ii<Iend; Ii++) { 
       *val = -1.0; i = Ii/n; j = Ii - i*n;  
@@ -166,7 +167,7 @@ PetscErrorCode FormTestMatrix(Mat A,PetscInt n,TestType type)
         J = Ii-1; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
       if (j<n-1) {
         J = Ii+1; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
-      ierr = PetscRandomGetValueImaginary(rctx,&sigma2);CHKERRQ(ierr);
+      ierr = PetscRandomGetValue(rctx,&sigma2);CHKERRQ(ierr);
       *val = 4.0 - sigma1*h2 + sigma2*h2;
       ierr = MatSetValues(A,1,&Ii,1,&Ii,val,ADD_VALUES);CHKERRQ(ierr);
     }
