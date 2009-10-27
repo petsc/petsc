@@ -129,6 +129,9 @@ MAT_KEEP_NONZERO_PATTERN to more clearly indicate what it does.</li>
         <li>Added MAT_SHARE_NONZERO_PATTERN as option for
 MatDuplicate() this allows several matrices to share the same data
 structures for the nonzeros and thus save memory.</li>
+        <li>The function provided to MatNullSpaceSetFunction() now
+takes a MatNullSpace() as the first argument. Added Fortran interface
+for this function as well.</li>
       </ul>
       <u><b>PC:</b></u>
       <ul>

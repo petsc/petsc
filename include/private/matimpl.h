@@ -377,7 +377,7 @@ struct _p_MatNullSpace {
   Vec*           vecs;
   PetscScalar*   alpha;                 /* for projections */
   Vec            vec;                   /* for out of place removals */
-  PetscErrorCode (*remove)(Vec,void*);  /* for user provided removal function */
+  PetscErrorCode (*remove)(MatNullSpace,Vec,void*);  /* for user provided removal function */
   void*          rmctx;                 /* context for remove() function */
 };
 
