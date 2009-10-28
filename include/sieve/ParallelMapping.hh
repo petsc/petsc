@@ -191,7 +191,7 @@ namespace ALE {
     };
     ~MPIMover() {
       if (_createdType) {
-        MPI_Type_free(&this->_datatype);
+        int ierr = MPI_Type_free(&this->_datatype);CHKERRXX(ierr);
       }
     };
   protected:
@@ -206,23 +206,23 @@ namespace ALE {
       } else if (sizeof(value_type) == 8) {
         return MPI_DOUBLE;
       } else if (sizeof(value_type) == 28) {
-        int          blen[2];
+        int          blen[2], ierr;
         MPI_Aint     indices[2];
         MPI_Datatype oldtypes[2], newtype;
         blen[0] = 1; indices[0] = 0;           oldtypes[0] = MPI_INT;
         blen[1] = 3; indices[1] = sizeof(int); oldtypes[1] = MPI_DOUBLE;
-        MPI_Type_struct(2, blen, indices, oldtypes, &newtype);
-        MPI_Type_commit(&newtype);
+        ierr = MPI_Type_struct(2, blen, indices, oldtypes, &newtype);CHKERRXX(ierr);
+        ierr = MPI_Type_commit(&newtype);CHKERRXX(ierr);
         this->_createdType = true;
         return newtype;
       } else if (sizeof(value_type) == 32) {
-        int          blen[2];
+        int          blen[2], ierr;
         MPI_Aint     indices[2];
         MPI_Datatype oldtypes[2], newtype;
         blen[0] = 1; indices[0] = 0;           oldtypes[0] = MPI_DOUBLE;
         blen[1] = 3; indices[1] = sizeof(int); oldtypes[1] = MPI_DOUBLE;
-        MPI_Type_struct(2, blen, indices, oldtypes, &newtype);
-        MPI_Type_commit(&newtype);
+        ierr = MPI_Type_struct(2, blen, indices, oldtypes, &newtype);CHKERRXX(ierr);
+        ierr = MPI_Type_commit(&newtype);CHKERRXX(ierr);
         this->_createdType = true;
         return newtype;
       }
@@ -230,17 +230,17 @@ namespace ALE {
     };
     int getNewTag() const {
       static int tagKeyval = MPI_KEYVAL_INVALID;
-      int *tagvalp = NULL, *maxval, flg;
+      int *tagvalp = NULL, *maxval, flg, ierr;
 
       if (tagKeyval == MPI_KEYVAL_INVALID) {
         tagvalp = (int *) malloc(sizeof(int));
-        MPI_Keyval_create(MPI_NULL_COPY_FN, Mesh_DelTag, &tagKeyval, (void *) NULL);
-        MPI_Attr_put(this->comm(), tagKeyval, tagvalp);
+        ierr = MPI_Keyval_create(MPI_NULL_COPY_FN, Mesh_DelTag, &tagKeyval, (void *) NULL);CHKERRXX(ierr);
+        ierr = MPI_Attr_put(this->comm(), tagKeyval, tagvalp);CHKERRXX(ierr);
         tagvalp[0] = 0;
       }
-      MPI_Attr_get(this->comm(), tagKeyval, (void **) &tagvalp, &flg);
+      ierr = MPI_Attr_get(this->comm(), tagKeyval, (void **) &tagvalp, &flg);CHKERRXX(ierr);
       if (tagvalp[0] < 1) {
-        MPI_Attr_get(MPI_COMM_WORLD, MPI_TAG_UB, (void **) &maxval, &flg);
+        ierr = MPI_Attr_get(MPI_COMM_WORLD, MPI_TAG_UB, (void **) &maxval, &flg);CHKERRXX(ierr);
         tagvalp[0] = *maxval - 128; // hope that any still active tags were issued right at the beginning of the run
       }
       if (this->debug()) {
@@ -256,9 +256,10 @@ namespace ALE {
         const int   num  = s_iter->second.first;
         void       *data = (void *) s_iter->second.second;
         MPI_Request request;
+        int         ierr;
 
         if (this->_debug) {std::cout <<"["<<this->commRank()<<"] Sending data (" << num << ") to " << rank << " tag " << this->_tag << std::endl;}
-        MPI_Send_init(data, num, this->_datatype, rank, this->_tag, this->comm(), &request);
+        ierr = MPI_Send_init(data, num, this->_datatype, rank, this->_tag, this->comm(), &request);CHKERRXX(ierr);
         this->_requests.push_back(request);
 #if defined(PETSC_USE_LOG)
         // PETSc logging
@@ -271,9 +272,10 @@ namespace ALE {
         const int   num  = r_iter->second.first;
         void       *data = (void *) r_iter->second.second;
         MPI_Request request;
+        int         ierr;
 
         if (this->_debug) {std::cout <<"["<<this->commRank()<<"] Receiving data (" << num << ") from " << rank << " tag " << this->_tag << std::endl;}
-        MPI_Recv_init(data, num, this->_datatype, rank, this->_tag, this->comm(), &request);
+        ierr = MPI_Recv_init(data, num, this->_datatype, rank, this->_tag, this->comm(), &request);CHKERRXX(ierr);
         this->_requests.push_back(request);
 #if defined(PETSC_USE_LOG)
         // PETSc logging
@@ -294,7 +296,7 @@ namespace ALE {
       for(typename requests_type::const_iterator r_iter = this->_requests.begin(); r_iter != this->_requests.end(); ++r_iter) {
         MPI_Request request = *r_iter;
 
-        MPI_Start(&request);
+        int ierr = MPI_Start(&request);CHKERRXX(ierr);
       }
     };
     void end() {
@@ -303,7 +305,12 @@ namespace ALE {
       for(typename requests_type::const_iterator r_iter = this->_requests.begin(); r_iter != this->_requests.end(); ++r_iter) {
         MPI_Request request = *r_iter;
 
-        MPI_Wait(&request, &status);
+        int ierr = MPI_Wait(&request, &status);CHKERRXX(ierr);
+      }
+      for(typename requests_type::const_iterator r_iter = this->_requests.begin(); r_iter != this->_requests.end(); ++r_iter) {
+        MPI_Request request = *r_iter;
+
+        int ierr = MPI_Request_free(&request);CHKERRXX(ierr);
       }
     };
   };

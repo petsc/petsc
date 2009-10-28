@@ -57,7 +57,6 @@ int main(int Argc,char **Args)
   }
   ierr = ADDACreate(PETSC_COMM_WORLD, 2, nodes, PETSC_NULL, 2 /* this is the # of dof's */,
 		    periodic, &adda);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject) adda);CHKERRQ(ierr);
   ierr = ADDASetRefinement(adda, refine, 2);CHKERRQ(ierr);
   
   /* Random numbers */
@@ -158,8 +157,6 @@ int main(int Argc,char **Args)
 
   /* construct normal equations */
   ierr = MatMatMult(H, H, MAT_INITIAL_MATRIX, 1., &HtH);CHKERRQ(ierr);
-  /* reference matrix */
-  ierr = PetscObjectReference((PetscObject) HtH);CHKERRQ(ierr);
 
   PetscScalar mineval;
   ierr = computeMinEigVal(HtH, 1000, &mineval);CHKERRQ(ierr);
@@ -202,8 +199,6 @@ int main(int Argc,char **Args)
 /*   ierr = VecSetRandom(b, rctx);CHKERRQ(ierr); */
   ierr = VecDuplicate(b, &Htb);CHKERRQ(ierr);
   ierr = MatMultTranspose(H, b, Htb);CHKERRQ(ierr);
-  /* reference it */
-  ierr = PetscObjectReference((PetscObject) Htb);CHKERRQ(ierr);
 
   /* construct solver */
   ierr = KSPCreate(PETSC_COMM_WORLD,&kspmg);CHKERRQ(ierr);
@@ -218,6 +213,7 @@ int main(int Argc,char **Args)
   ierr = KSPSetOperators(kspmg, HtH, HtH, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
   ierr = PCASASetDM(pcmg, (DM) adda);CHKERRQ(ierr);
+  ierr = ADDADestroy(adda);CHKERRQ(ierr);
 
   ierr = PCASASetTolerances(pcmg, 1.e-6, 1.e-10,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
 
@@ -240,7 +236,6 @@ int main(int Argc,char **Args)
   ierr = MatDestroy(H);CHKERRQ(ierr);
   ierr = MatDestroy(HtH);CHKERRQ(ierr);
 
-  ierr = ADDADestroy(adda);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
