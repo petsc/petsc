@@ -3,7 +3,7 @@
 #include "petsc.h"
 #include "petscsys.h" 
 #include "silo.h"
-#include "../src/sys/viewer/viewerimpl.h"
+#include "private/viewerimpl.h"
 
 typedef struct {
   DBfile *file_pointer; /* The PDB file for Silo */
