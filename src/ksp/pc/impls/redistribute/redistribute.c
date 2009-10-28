@@ -60,144 +60,143 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
   Mat               tmat;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = PetscObjectGetNewTag((PetscObject)pc,&tag);CHKERRQ(ierr);
+  if (pc->setupcalled) {
+    ierr = KSPGetOperators(red->ksp,PETSC_NULL,&tmat,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(pc->pmat,red->is,red->is,MAT_REUSE_MATRIX,&tmat);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    ierr = PetscObjectGetNewTag((PetscObject)pc,&tag);CHKERRQ(ierr);
 
-  if (!pc->setupcalled) {
-  } else SETERRQ(PETSC_ERR_SUP,"Cannot yet re-setup a redistribute KSP");
+    /* count non-diagonal rows on process */
+    ierr = MatGetOwnershipRange(pc->mat,&rstart,&rend);CHKERRQ(ierr);
+    cnt  = 0;  
+    for (i=rstart; i<rend; i++) {
+      ierr = MatGetRow(pc->mat,i,&nz,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      if (nz > 1) cnt++;
+      ierr = MatRestoreRow(pc->mat,i,&nz,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    }
+    ierr = PetscMalloc(cnt*sizeof(PetscInt),&rows);CHKERRQ(ierr);
 
-  /* count non-diagonal rows on process */
-  ierr = MatGetOwnershipRange(pc->mat,&rstart,&rend);CHKERRQ(ierr);
-  cnt  = 0;  
-  for (i=rstart; i<rend; i++) {
-    ierr = MatGetRow(pc->mat,i,&nz,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-    if (nz > 1) cnt++;
-    ierr = MatRestoreRow(pc->mat,i,&nz,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  }
-  ierr = PetscMalloc(cnt*sizeof(PetscInt),&rows);CHKERRQ(ierr);
+    /* list non-diagonal rows on process */
+    cnt  = 0;  
+    for (i=rstart; i<rend; i++) {
+      ierr = MatGetRow(pc->mat,i,&nz,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      if (nz > 1) rows[cnt++] = i;
+      ierr = MatRestoreRow(pc->mat,i,&nz,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    }
 
-  /* list non-diagonal rows on process */
-  cnt  = 0;  
-  for (i=rstart; i<rend; i++) {
-    ierr = MatGetRow(pc->mat,i,&nz,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-    if (nz > 1) rows[cnt++] = i;
-    ierr = MatRestoreRow(pc->mat,i,&nz,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  }
+    /* create PetscMap for non-diagonal rows on each process */
+    ierr = PetscMalloc(sizeof(PetscMap),&map);CHKERRQ(ierr);
+    ierr = PetscMapInitialize(comm,map);CHKERRQ(ierr);
+    ierr = PetscMapSetLocalSize(map,cnt);CHKERRQ(ierr);
+    ierr = PetscMapSetBlockSize(map,1);CHKERRQ(ierr);
+    ierr = PetscMapSetUp(map);CHKERRQ(ierr);
+    rstart = map->rstart;
+    rend   = map->rend;
+    
+    /* create PetscMap for load-balanced non-diagonal rows on each process */
+    ierr = PetscMalloc(sizeof(PetscMap),&nmap);CHKERRQ(ierr);
+    ierr = PetscMapInitialize(comm,nmap);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&cnt,&ncnt,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+    ierr = PetscMapSetSize(nmap,ncnt);CHKERRQ(ierr);
+    ierr = PetscMapSetBlockSize(nmap,1);CHKERRQ(ierr);
+    ierr = PetscMapSetUp(nmap);CHKERRQ(ierr);
 
-  /* create PetscMap for non-diagonal rows on each process */
-  ierr = PetscMalloc(sizeof(PetscMap),&map);CHKERRQ(ierr);
-  ierr = PetscMapInitialize(comm,map);CHKERRQ(ierr);
-  ierr = PetscMapSetLocalSize(map,cnt);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize(map,1);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(map);CHKERRQ(ierr);
-  rstart = map->rstart;
-  rend   = map->rend;
-
-  /* create PetscMap for load-balanced non-diagonal rows on each process */
-  ierr = PetscMalloc(sizeof(PetscMap),&nmap);CHKERRQ(ierr);
-  ierr = PetscMapInitialize(comm,nmap);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&cnt,&ncnt,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
-  ierr = PetscMapSetSize(nmap,ncnt);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize(nmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(nmap);CHKERRQ(ierr);
-
-  /*  
-      this code is taken from VecScatterCreate_PtoS() 
-      Determines what rows need to be moved where to 
-      load balance the non-diagonal rows 
-  */
-  /*  count number of contributors to each processor */
-  ierr = PetscMalloc2(size,PetscMPIInt,&nprocs,cnt,PetscInt,&owner);CHKERRQ(ierr);
-  ierr = PetscMemzero(nprocs,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
-  j      = 0;
-  nsends = 0;
-  for (i=rstart; i<rend; i++) {
-    if (i < nmap->range[j]) j = 0;
-    for (; j<size; j++) {
-      if (i < nmap->range[j+1]) {
-        if (!nprocs[j]++) nsends++;
-        owner[i-rstart] = j; 
-        break;
+    /*  
+	this code is taken from VecScatterCreate_PtoS() 
+	Determines what rows need to be moved where to 
+	load balance the non-diagonal rows 
+    */
+    /*  count number of contributors to each processor */
+    ierr = PetscMalloc2(size,PetscMPIInt,&nprocs,cnt,PetscInt,&owner);CHKERRQ(ierr);
+    ierr = PetscMemzero(nprocs,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
+    j      = 0;
+    nsends = 0;
+    for (i=rstart; i<rend; i++) {
+      if (i < nmap->range[j]) j = 0;
+      for (; j<size; j++) {
+	if (i < nmap->range[j+1]) {
+	  if (!nprocs[j]++) nsends++;
+	  owner[i-rstart] = j; 
+	  break;
+	}
       }
     }
-  }
-  /* inform other processors of number of messages and max length*/
-  ierr = PetscGatherNumberOfMessages(comm,PETSC_NULL,nprocs,&nrecvs);CHKERRQ(ierr);
-  ierr = PetscGatherMessageLengths(comm,nsends,nrecvs,nprocs,&onodes1,&olengths1);CHKERRQ(ierr);
-  ierr = PetscSortMPIIntWithArray(nrecvs,onodes1,olengths1);CHKERRQ(ierr);
-  recvtotal = 0; for (i=0; i<nrecvs; i++) recvtotal += olengths1[i];
-
-  /* post receives:  rvalues - rows I will own; count - nu */
-  ierr = PetscMalloc3(recvtotal,PetscInt,&rvalues,nrecvs,PetscInt,&source,nrecvs,MPI_Request,&recv_waits);CHKERRQ(ierr);
-  count  = 0;
-  for (i=0; i<nrecvs; i++) {
-    ierr  = MPI_Irecv((rvalues+count),olengths1[i],MPIU_INT,onodes1[i],tag,comm,recv_waits+i);CHKERRQ(ierr);
-    count += olengths1[i];
-  }
-
-  /* do sends:
-     1) starts[i] gives the starting index in svalues for stuff going to 
-     the ith processor
-  */
-  ierr = PetscMalloc3(cnt,PetscInt,&svalues,nsends,MPI_Request,&send_waits,size,PetscInt,&starts);CHKERRQ(ierr);
-  starts[0]  = 0; 
-  for (i=1; i<size; i++) { starts[i] = starts[i-1] + nprocs[i-1];} 
-  for (i=0; i<cnt; i++) {
-    svalues[starts[owner[i]]++] = rows[i];
-  }
-  ierr = PetscFree(rows);CHKERRQ(ierr);
-  starts[0] = 0;
-  for (i=1; i<size; i++) { starts[i] = starts[i-1] + nprocs[i-1];} 
-  count = 0;
-  for (i=0; i<size; i++) {
-    if (nprocs[i]) {
-      ierr = MPI_Isend(svalues+starts[i],nprocs[i],MPIU_INT,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
+    /* inform other processors of number of messages and max length*/
+    ierr = PetscGatherNumberOfMessages(comm,PETSC_NULL,nprocs,&nrecvs);CHKERRQ(ierr);
+    ierr = PetscGatherMessageLengths(comm,nsends,nrecvs,nprocs,&onodes1,&olengths1);CHKERRQ(ierr);
+    ierr = PetscSortMPIIntWithArray(nrecvs,onodes1,olengths1);CHKERRQ(ierr);
+    recvtotal = 0; for (i=0; i<nrecvs; i++) recvtotal += olengths1[i];
+    
+    /* post receives:  rvalues - rows I will own; count - nu */
+    ierr = PetscMalloc3(recvtotal,PetscInt,&rvalues,nrecvs,PetscInt,&source,nrecvs,MPI_Request,&recv_waits);CHKERRQ(ierr);
+    count  = 0;
+    for (i=0; i<nrecvs; i++) {
+      ierr  = MPI_Irecv((rvalues+count),olengths1[i],MPIU_INT,onodes1[i],tag,comm,recv_waits+i);CHKERRQ(ierr);
+      count += olengths1[i];
     }
+
+    /* do sends:
+       1) starts[i] gives the starting index in svalues for stuff going to 
+       the ith processor
+    */
+    ierr = PetscMalloc3(cnt,PetscInt,&svalues,nsends,MPI_Request,&send_waits,size,PetscInt,&starts);CHKERRQ(ierr);
+    starts[0]  = 0; 
+    for (i=1; i<size; i++) { starts[i] = starts[i-1] + nprocs[i-1];} 
+    for (i=0; i<cnt; i++) {
+      svalues[starts[owner[i]]++] = rows[i];
+    }
+    ierr = PetscFree(rows);CHKERRQ(ierr);
+    starts[0] = 0;
+    for (i=1; i<size; i++) { starts[i] = starts[i-1] + nprocs[i-1];} 
+    count = 0;
+    for (i=0; i<size; i++) {
+      if (nprocs[i]) {
+	ierr = MPI_Isend(svalues+starts[i],nprocs[i],MPIU_INT,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
+      }
+    }
+    
+    /*  wait on receives */
+    count  = nrecvs; 
+    slen   = 0;
+    while (count) {
+      ierr = MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);CHKERRQ(ierr);
+      /* unpack receives into our local space */
+      ierr = MPI_Get_count(&recv_status,MPIU_INT,&n);CHKERRQ(ierr);
+      slen += n;
+      count--;
+    }
+    if (slen != recvtotal) SETERRQ2(PETSC_ERR_PLIB,"Total message lengths %D not expected %D",slen,recvtotal);
+    
+    ierr = ISCreateGeneral(comm,slen,rvalues,&red->is);CHKERRQ(ierr);
+    
+    /* free up all work space */
+    ierr = PetscFree(olengths1);CHKERRQ(ierr);
+    ierr = PetscFree(onodes1);CHKERRQ(ierr);
+    ierr = PetscFree3(rvalues,source,recv_waits);CHKERRQ(ierr);
+    ierr = PetscFree2(nprocs,owner);CHKERRQ(ierr);
+    if (nsends) {   /* wait on sends */
+      ierr = PetscMalloc(nsends*sizeof(MPI_Status),&send_status);CHKERRQ(ierr);
+      ierr = MPI_Waitall(nsends,send_waits,send_status);CHKERRQ(ierr);
+      ierr = PetscFree(send_status);CHKERRQ(ierr);
+    }
+    ierr = PetscFree3(svalues,send_waits,starts);CHKERRQ(ierr);
+    ierr = PetscFree(map->range);CHKERRQ(ierr);
+    ierr = PetscFree(map);CHKERRQ(ierr);
+    ierr = PetscFree(nmap->range);CHKERRQ(ierr);
+    ierr = PetscFree(nmap);CHKERRQ(ierr);
+
+    ierr = VecCreateMPI(comm,slen,PETSC_DETERMINE,&red->b);CHKERRQ(ierr);
+    ierr = VecDuplicate(red->b,&red->x);CHKERRQ(ierr);
+    ierr = MatGetVecs(pc->pmat,&tvec,PETSC_NULL);CHKERRQ(ierr);
+    ierr = VecScatterCreate(tvec,red->is,red->b,PETSC_NULL,&red->scatter);CHKERRQ(ierr);
+    ierr = VecDestroy(tvec);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(pc->pmat,red->is,red->is,MAT_INITIAL_MATRIX,&tmat);CHKERRQ(ierr);
   }
-
-  /*  wait on receives */
-  count  = nrecvs; 
-  slen   = 0;
-  while (count) {
-    ierr = MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);CHKERRQ(ierr);
-    /* unpack receives into our local space */
-    ierr = MPI_Get_count(&recv_status,MPIU_INT,&n);CHKERRQ(ierr);
-    slen += n;
-    count--;
-  }
-  if (slen != recvtotal) SETERRQ2(PETSC_ERR_PLIB,"Total message lengths %D not expected %D",slen,recvtotal);
-
-  ierr = ISCreateGeneral(comm,slen,rvalues,&red->is);CHKERRQ(ierr);
-   
-  /* free up all work space */
-  ierr = PetscFree(olengths1);CHKERRQ(ierr);
-  ierr = PetscFree(onodes1);CHKERRQ(ierr);
-  ierr = PetscFree3(rvalues,source,recv_waits);CHKERRQ(ierr);
-  ierr = PetscFree2(nprocs,owner);CHKERRQ(ierr);
-  if (nsends) {   /* wait on sends */
-    ierr = PetscMalloc(nsends*sizeof(MPI_Status),&send_status);CHKERRQ(ierr);
-    ierr = MPI_Waitall(nsends,send_waits,send_status);CHKERRQ(ierr);
-    ierr = PetscFree(send_status);CHKERRQ(ierr);
-  }
-  ierr = PetscFree3(svalues,send_waits,starts);CHKERRQ(ierr);
-  ierr = PetscFree(map->range);CHKERRQ(ierr);
-  ierr = PetscFree(map);CHKERRQ(ierr);
-  ierr = PetscFree(nmap->range);CHKERRQ(ierr);
-  ierr = PetscFree(nmap);CHKERRQ(ierr);
-
-ierr = ISView(red->is,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
-
-  ierr = VecCreateMPI(comm,slen,PETSC_DETERMINE,&red->b);CHKERRQ(ierr);
-  ierr = VecDuplicate(red->b,&red->x);CHKERRQ(ierr);
-  ierr = MatGetVecs(pc->pmat,&tvec,PETSC_NULL);CHKERRQ(ierr);
-  ierr = VecScatterCreate(tvec,red->is,red->b,PETSC_NULL,&red->scatter);CHKERRQ(ierr);
-  ierr = VecDestroy(tvec);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(pc->pmat,red->is,red->is,MAT_INITIAL_MATRIX,&tmat);CHKERRQ(ierr);
   ierr = KSPSetOperators(red->ksp,tmat,tmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatDestroy(tmat);CHKERRQ(ierr);
-
   ierr = KSPSetUp(red->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
