@@ -3692,8 +3692,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDuplicate(Mat mat,MatDuplicateOption op,Mat
   if (mat->bmapping) {
     ierr = MatSetLocalToGlobalMappingBlock(B,mat->bmapping);CHKERRQ(ierr);
   }
-  ierr = PetscMapCopy(((PetscObject)mat)->comm,mat->rmap,B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapCopy(((PetscObject)mat)->comm,mat->cmap,B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapCopy(mat->rmap,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapCopy(mat->cmap,&B->cmap);CHKERRQ(ierr);
   
   B->stencil.dim = mat->stencil.dim;
   B->stencil.noc = mat->stencil.noc;

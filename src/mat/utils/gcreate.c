@@ -75,10 +75,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate(MPI_Comm comm,Mat *A)
 #endif
 
   ierr = PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,0,"Mat",comm,MatDestroy,MatView);CHKERRQ(ierr);
-  ierr = PetscNew(PetscMap,&B->rmap);CHKERRQ(ierr);
-  ierr = PetscNew(PetscMap,&B->cmap);CHKERRQ(ierr);
-  ierr = PetscMapInitialize(comm,B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapInitialize(comm,B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapCreate(comm,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapCreate(comm,&B->cmap);CHKERRQ(ierr);
   B->preallocated  = PETSC_FALSE;
   *A               = B;
   PetscFunctionReturn(0);

@@ -3190,8 +3190,8 @@ PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C,Mat A,MatDuplicateOption cpval
 
   c->roworiented = a->roworiented;
   c->nonew       = a->nonew;
-  ierr = PetscMapCopy(((PetscObject)A)->comm,A->rmap,C->rmap);CHKERRQ(ierr);  
-  ierr = PetscMapCopy(((PetscObject)A)->comm,A->cmap,C->cmap);CHKERRQ(ierr);  
+  ierr = PetscMapCopy(A->rmap,&C->rmap);CHKERRQ(ierr);  
+  ierr = PetscMapCopy(A->cmap,&C->cmap);CHKERRQ(ierr);  
   c->bs2         = a->bs2;
   c->mbs         = a->mbs;
   c->nbs         = a->nbs;

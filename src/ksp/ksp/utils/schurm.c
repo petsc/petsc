@@ -143,7 +143,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSchurComplement(Mat A,Mat Ap,Mat B,Ma
   (*N)->assembled           = PETSC_TRUE;
 
   /* treats the new matrix as having block size of 1 which is most likely the case */
-  (*N)->rmap->bs = (*N)->cmap->bs = 1;
+  ierr = PetscMapSetBlockSize((*N)->rmap,1);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize((*N)->cmap,1);CHKERRQ(ierr);
   ierr = PetscMapSetUp((*N)->rmap);CHKERRQ(ierr);
   ierr = PetscMapSetUp((*N)->cmap);CHKERRQ(ierr);
 

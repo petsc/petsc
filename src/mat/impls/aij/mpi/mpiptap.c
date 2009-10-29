@@ -33,7 +33,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_MPIAIJ_MatPtAP(Mat A)
     ierr = PetscFree(merge->coi);CHKERRQ(ierr);
     ierr = PetscFree(merge->coj);CHKERRQ(ierr);
     ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);
-    ierr = PetscFree(merge->rowmap.range);CHKERRQ(ierr);
+    ierr = PetscMapDestroy(merge->rowmap);CHKERRQ(ierr);
     
     ierr = PetscContainerDestroy(container);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)A,"MatMergeSeqsToMPI",0);CHKERRQ(ierr);
@@ -267,12 +267,11 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /*----------------------------------------------*/
   /* determine row ownership */
   ierr = PetscNew(Mat_Merge_SeqsToMPI,&merge);CHKERRQ(ierr);
-  ierr = PetscMapInitialize(comm,&merge->rowmap);CHKERRQ(ierr);
-  merge->rowmap.n = pn;
-  merge->rowmap.N = PETSC_DECIDE;
-  merge->rowmap.bs = 1;
-  ierr = PetscMapSetUp(&merge->rowmap);CHKERRQ(ierr);
-  owners = merge->rowmap.range;
+  ierr = PetscMapCreate(comm,&merge->rowmap);CHKERRQ(ierr);
+  merge->rowmap->n = pn;
+  merge->rowmap->bs = 1;
+  ierr = PetscMapSetUp(merge->rowmap);CHKERRQ(ierr);
+  owners = merge->rowmap->range;
 
   /* determine the number of messages to send, their lengths */
   ierr = PetscMalloc(size*sizeof(PetscMPIInt),&len_si);CHKERRQ(ierr);
@@ -547,7 +546,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   ierr = PetscMemzero(coa,coi[pon]*sizeof(MatScalar));CHKERRQ(ierr);
 
   bi     = merge->bi; bj = merge->bj;
-  owners = merge->rowmap.range;
+  owners = merge->rowmap->range;
   ierr   = PetscMalloc((bi[cm]+1)*sizeof(MatScalar),&ba);CHKERRQ(ierr);
   ierr   = PetscMemzero(ba,bi[cm]*sizeof(MatScalar));CHKERRQ(ierr);
 

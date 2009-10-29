@@ -2823,8 +2823,8 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *ne
   a->rowvalues      = 0;
   a->getrowactive   = PETSC_FALSE;
 
-  ierr = PetscMapCopy(((PetscObject)mat)->comm,matin->rmap,mat->rmap);CHKERRQ(ierr);
-  ierr = PetscMapCopy(((PetscObject)mat)->comm,matin->cmap,mat->cmap);CHKERRQ(ierr);
+  ierr = PetscMapCopy(matin->rmap,&mat->rmap);CHKERRQ(ierr);
+  ierr = PetscMapCopy(matin->cmap,&mat->cmap);CHKERRQ(ierr);
 
   ierr = MatStashCreate_Private(((PetscObject)matin)->comm,1,&mat->stash);CHKERRQ(ierr);
   if (oldmat->colmap) {
@@ -4004,7 +4004,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
     ierr = PetscFree(merge->coi);CHKERRQ(ierr);
     ierr = PetscFree(merge->coj);CHKERRQ(ierr);
     ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);
-    ierr = PetscFree(merge->rowmap.range);CHKERRQ(ierr);
+    ierr = PetscMapDestroy(merge->rowmap);CHKERRQ(ierr);
     
     ierr = PetscContainerDestroy(container);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)A,"MatMergeSeqsToMPI",0);CHKERRQ(ierr);
@@ -4077,7 +4077,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpima
   buf_rj = merge->buf_rj;
 
   ierr   = PetscMalloc(size*sizeof(MPI_Status),&status);CHKERRQ(ierr);
-  owners = merge->rowmap.range;
+  owners = merge->rowmap->range;
   len_s  = merge->len_s;
 
   /* send and recv matrix values */
@@ -4115,7 +4115,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpima
   }
 
   /* set values of ba */
-  m = merge->rowmap.n;
+  m = merge->rowmap->n;
   for (i=0; i<m; i++) {
     arow = owners[rank] + i; 
     bj_i = bj+bi[i];  /* col indices of the i-th row of mpimat */
@@ -4194,17 +4194,17 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
 
   /* determine row ownership */
   /*---------------------------------------------------------*/
-  ierr = PetscMapInitialize(comm,&merge->rowmap);CHKERRQ(ierr); 
-  merge->rowmap.n = m;
-  merge->rowmap.N = M;
-  merge->rowmap.bs = 1;
-  ierr = PetscMapSetUp(&merge->rowmap);CHKERRQ(ierr); 
+  ierr = PetscMapCreate(comm,&merge->rowmap);CHKERRQ(ierr); 
+  ierr = PetscMapSetLocalSize(merge->rowmap,m);CHKERRQ(ierr);
+  ierr = PetscMapSetSize(merge->rowmap,M);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(merge->rowmap,1);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(merge->rowmap);CHKERRQ(ierr); 
   ierr = PetscMalloc(size*sizeof(PetscMPIInt),&len_si);CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(PetscMPIInt),&merge->len_s);CHKERRQ(ierr);
   
-  m      = merge->rowmap.n;
-  M      = merge->rowmap.N;
-  owners = merge->rowmap.range;
+  m      = merge->rowmap->n;
+  M      = merge->rowmap->N;
+  owners = merge->rowmap->range;
 
   /* determine the number of messages to send, their lengths */
   /*---------------------------------------------------------*/

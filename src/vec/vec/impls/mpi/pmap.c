@@ -5,7 +5,7 @@
 
 #include "private/vecimpl.h"   /*I  "petscvec.h"   I*/
 /*@C
-     PetscMapInitialize - Sets the map contents to the default.
+     PetscMapCreate - Allocates PetscMap space and sets the map contents to the default.
 
     Collective on MPI_Comm
 
@@ -16,12 +16,12 @@
    Level: developer
 
     Notes: Typical calling sequence
-       PetscMapInitialize(MPI_Comm,PetscMap *);
-       PetscMapSetBlockSize(PetscMap*,1);
-       PetscMapSetSize(PetscMap*,n) or PetscMapSetLocalSize(PetscMap*,N);
-       PetscMapSetUp(PetscMap*);
-       PetscMapGetSize(PetscMap*,PetscInt *);
-       PetscMapDestroy(PetscMap*);
+       PetscMapCreate(MPI_Comm,PetscMap *);
+       PetscMapSetBlockSize(PetscMap,1);
+       PetscMapSetSize(PetscMap,n) or PetscMapSetLocalSize(PetscMap,N);
+       PetscMapSetUp(PetscMap);
+       PetscMapGetSize(PetscMap,PetscInt *);
+       PetscMapDestroy(PetscMap);
 
        Unlike regular PETSc objects you work with a pointer to the object instead of 
      the object directly.
@@ -38,16 +38,19 @@
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapInitialize"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscMapInitialize(MPI_Comm comm,PetscMap *map)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapCreate(MPI_Comm comm,PetscMap *map)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
-  map->comm   = comm;
-  map->bs     = -1;
-  map->n      = -1;
-  map->N      = -1;
-  map->range  = 0;
-  map->rstart = 0;
-  map->rend   = 0;
+  ierr = PetscNew(struct _p_PetscMap,map);CHKERRQ(ierr);
+  (*map)->comm   = comm;
+  (*map)->bs     = -1;
+  (*map)->n      = -1;
+  (*map)->N      = -1;
+  (*map)->range  = 0;
+  (*map)->rstart = 0;
+  (*map)->rend   = 0;
   PetscFunctionReturn(0);
 }
 
@@ -76,7 +79,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapInitialize(MPI_Comm comm,PetscMap *map
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapDestroy"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscMapDestroy(PetscMap *map)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapDestroy(PetscMap map)
 {
   PetscErrorCode ierr;
 
@@ -101,10 +104,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapDestroy(PetscMap *map)
 
     Notes: Typical calling sequence
        PetscMapInitialize(MPI_Comm,PetscMap *);
-       PetscMapSetBlockSize(PetscMap*,1);
-       PetscMapSetSize(PetscMap*,n) or PetscMapSetLocalSize(PetscMap*,N); or both
-       PetscMapSetUp(PetscMap*);
-       PetscMapGetSize(PetscMap*,PetscInt *);
+       PetscMapSetBlockSize(PetscMap,1);
+       PetscMapSetSize(PetscMap,n) or PetscMapSetLocalSize(PetscMap,N); or both
+       PetscMapSetUp(PetscMap);
+       PetscMapGetSize(PetscMap,PetscInt *);
 
        Unlike regular PETSc objects you work with a pointer to the object instead of 
      the object directly.
@@ -120,7 +123,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapDestroy(PetscMap *map)
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapSetUp"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetUp(PetscMap *map)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetUp(PetscMap map)
 {
   PetscMPIInt    rank,size;
   PetscInt       p;
@@ -154,22 +157,37 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetUp(PetscMap *map)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapCopy"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscMapCopy(MPI_Comm comm,PetscMap *in,PetscMap *out)
+/*@
+
+    PetscMapCopy - creates a new PetscMap with the same information as a given one. If the PetscMap already exists it is destroyed first.
+
+     Collective on PetscMap
+
+    Input Parameter:
+.     in - input PetscMap to be copied
+
+    Output Parameter:
+.     out - the copy
+
+    Notes: PetscMapSetUp() does not need to be called on the resulting PetscMap
+
+.seealso: PetscMapCreate(), PetscMapDestroy(), PetscMapSetUp()
+
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapCopy(PetscMap in,PetscMap *out)
 {
   PetscMPIInt    size;
   PetscErrorCode ierr;
-  PetscInt       *range = out->range; /* keep copy of this since PetscMemcpy() below will cover it */
+  MPI_Comm       comm = in->comm;
 
   PetscFunctionBegin;
+  if (*out) {ierr = PetscMapDestroy(*out);CHKERRQ(ierr);}
+  ierr = PetscMapCreate(comm,out);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = PetscMemcpy(out,in,sizeof(PetscMap));CHKERRQ(ierr);
-  if (!range) {
-    ierr = PetscMalloc((size+1)*sizeof(PetscInt),&out->range);CHKERRQ(ierr);
-  } else {
-    out->range = range;
-  }
-  out->refcnt = 0;
-  ierr = PetscMemcpy(out->range,in->range,(size+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemcpy(*out,in,sizeof(struct _p_PetscMap));CHKERRQ(ierr);
+  ierr = PetscMalloc((size+1)*sizeof(PetscInt),&(*out)->range);CHKERRQ(ierr);
+  ierr = PetscMemcpy((*out)->range,in->range,(size+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  (*out)->refcnt = 0;
   PetscFunctionReturn(0);
 }
 
@@ -199,7 +217,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapCopy(MPI_Comm comm,PetscMap *in,PetscM
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapSetLocalSize"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetLocalSize(PetscMap *map,PetscInt n)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetLocalSize(PetscMap map,PetscInt n)
 {
   PetscFunctionBegin;
   map->n = n;
@@ -234,7 +252,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetLocalSize(PetscMap *map,PetscInt n)
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapGetLocalSize"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalSize(PetscMap *map,PetscInt *n)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalSize(PetscMap map,PetscInt *n)
 {
   PetscFunctionBegin;
   *n = map->n;
@@ -267,7 +285,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalSize(PetscMap *map,PetscInt *n
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapSetSize"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetSize(PetscMap *map,PetscInt n)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetSize(PetscMap map,PetscInt n)
 {
   PetscFunctionBegin;
   map->N = n;
@@ -302,7 +320,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetSize(PetscMap *map,PetscInt n)
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapGetSize"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetSize(PetscMap *map,PetscInt *n)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetSize(PetscMap map,PetscInt *n)
 {
   PetscFunctionBegin;
   *n = map->N;
@@ -335,7 +353,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetSize(PetscMap *map,PetscInt *n)
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapSetBlockSize"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetBlockSize(PetscMap *map,PetscInt bs)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetBlockSize(PetscMap map,PetscInt bs)
 {
   PetscFunctionBegin;
   map->bs = bs;
@@ -370,7 +388,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetBlockSize(PetscMap *map,PetscInt bs
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapGetBlockSize"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetBlockSize(PetscMap *map,PetscInt *bs)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetBlockSize(PetscMap map,PetscInt *bs)
 {
   PetscFunctionBegin;
   *bs = map->bs;
@@ -407,7 +425,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetBlockSize(PetscMap *map,PetscInt *b
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapGetRange"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetRange(PetscMap *map,PetscInt *rstart,PetscInt *rend)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetRange(PetscMap map,PetscInt *rstart,PetscInt *rend)
 {
   PetscFunctionBegin;
   if (rstart) *rstart = map->rstart;
@@ -444,7 +462,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetRange(PetscMap *map,PetscInt *rstar
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapGetRanges"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetRanges(PetscMap *map,const PetscInt *range[])
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetRanges(PetscMap map,const PetscInt *range[])
 {
   PetscFunctionBegin;
   *range = map->range;

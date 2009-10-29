@@ -46,7 +46,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
   PetscErrorCode    ierr;
   MPI_Comm          comm;
   PetscInt          rstart,rend,i,nz,cnt,*rows,ncnt;
-  PetscMap          *map,*nmap;
+  PetscMap          map,nmap;
   PetscMPIInt       size,rank,imdex,tag,n;
   PetscInt          *source = PETSC_NULL;
   PetscMPIInt       *nprocs = PETSC_NULL,nrecvs;
@@ -88,8 +88,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     }
 
     /* create PetscMap for non-diagonal rows on each process */
-    ierr = PetscMalloc(sizeof(PetscMap),&map);CHKERRQ(ierr);
-    ierr = PetscMapInitialize(comm,map);CHKERRQ(ierr);
+    ierr = PetscMapCreate(comm,&map);CHKERRQ(ierr);
     ierr = PetscMapSetLocalSize(map,cnt);CHKERRQ(ierr);
     ierr = PetscMapSetBlockSize(map,1);CHKERRQ(ierr);
     ierr = PetscMapSetUp(map);CHKERRQ(ierr);
@@ -97,8 +96,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     rend   = map->rend;
     
     /* create PetscMap for load-balanced non-diagonal rows on each process */
-    ierr = PetscMalloc(sizeof(PetscMap),&nmap);CHKERRQ(ierr);
-    ierr = PetscMapInitialize(comm,nmap);CHKERRQ(ierr);
+    ierr = PetscMapCreate(comm,&nmap);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&cnt,&ncnt,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
     ierr = PetscMapSetSize(nmap,ncnt);CHKERRQ(ierr);
     ierr = PetscMapSetBlockSize(nmap,1);CHKERRQ(ierr);
@@ -183,10 +181,8 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
       ierr = PetscFree(send_status);CHKERRQ(ierr);
     }
     ierr = PetscFree3(svalues,send_waits,starts);CHKERRQ(ierr);
-    ierr = PetscFree(map->range);CHKERRQ(ierr);
-    ierr = PetscFree(map);CHKERRQ(ierr);
-    ierr = PetscFree(nmap->range);CHKERRQ(ierr);
-    ierr = PetscFree(nmap);CHKERRQ(ierr);
+    ierr = PetscMapDestroy(map);CHKERRQ(ierr);
+    ierr = PetscMapDestroy(nmap);CHKERRQ(ierr);
 
     ierr = VecCreateMPI(comm,slen,PETSC_DETERMINE,&red->b);CHKERRQ(ierr);
     ierr = VecDuplicate(red->b,&red->x);CHKERRQ(ierr);
