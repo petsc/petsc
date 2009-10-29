@@ -65,7 +65,7 @@ cdef class IS(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt csize = size, cfirst = 0, cstep = 1
         cdef PetscIS newiset = NULL
-        if first is not None: cfist = first
+        if first is not None: cfirst = first
         if step  is not None: cstep = step
         CHKERR( ISCreateStride(ccomm, csize, cfirst, cstep, &newiset) )
         PetscCLEAR(self.obj); self.iset = newiset

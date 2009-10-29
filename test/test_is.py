@@ -83,11 +83,14 @@ class TestISStride(BaseTestIS, unittest.TestCase):
     TYPE = PETSc.IS.Type.STRIDE
 
     def setUp(self):
-        self.iset = PETSc.IS().createStride(10)
+        self.info = (10, 7, 3)
+        size, start, step = self.info
+        self.iset = PETSc.IS().createStride(size, start, step)
 
     def testGetIndices(self):
-        self.assertEqual(list(self.iset.getIndices()),
-                         list(range(self.iset.getLocalSize())))
+        size, start, step = self.info
+        indices = [start+i*step for i in range(size)]
+        self.assertEqual(list(self.iset.getIndices()), indices)
 
     def testToGeneral(self):
         self.iset.toGeneral()
