@@ -4716,7 +4716,7 @@ PCESISetPreconditioner(A,::esi::Preconditioner\trl{<}double,int\trl{>} *p);
 To wrap PETSc objects as ESI objects
 \begin{tabbing}
 int VecESIWrap(Vec xin,::esi::Vector\trl{<}double,int\trl{>} **v);\\
-eis  = new esi::petsc::IndexSpace\trl{<}int\trl{>}::IndexSpace(PetscMap map);\\
+eis  = new esi::petsc::IndexSpace\trl{<}int\trl{>}::IndexSpace(PetscLayout map);\\
 evec = new esi::petsc::Vector\trl{<}double,int\trl{>}::Vector(Vec vec);\\
 emat = new esi::petsc::Operator\trl{<}double,int\trl{>}::Operator(Mat mat);\\
 epc  = new esi::petsc::Preconditioner\trl{<}double,int\trl{>}::Preconditioner(PC pc);

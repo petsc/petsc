@@ -39,7 +39,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate(MPI_Comm comm, Vec *vec)
   ierr = PetscHeaderCreate(v, _p_Vec, struct _VecOps, VEC_COOKIE, -1, "Vec", comm, VecDestroy, VecView);CHKERRQ(ierr);
   ierr = PetscMemzero(v->ops, sizeof(struct _VecOps));CHKERRQ(ierr);
 
-  ierr            = PetscMapCreate(comm,&v->map);CHKERRQ(ierr);
+  ierr            = PetscLayoutCreate(comm,&v->map);CHKERRQ(ierr);
   v->mapping      = PETSC_NULL;
   v->bmapping     = PETSC_NULL;
   v->array_gotten = PETSC_FALSE;

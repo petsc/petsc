@@ -1531,8 +1531,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,Pet
   if (o_nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"o_nz cannot be less than 0: value %D",o_nz);
 
   B->rmap->bs = B->cmap->bs = bs;
-  ierr = PetscMapSetUp(B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(B->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
 
   if (d_nnz) {
     for (i=0; i<B->rmap->n/bs; i++) {
@@ -1995,8 +1995,8 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalue
   ierr = MatSetSizes(mat,matin->rmap->n,matin->cmap->n,matin->rmap->N,matin->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(mat,((PetscObject)matin)->type_name);CHKERRQ(ierr);
   ierr = PetscMemcpy(mat->ops,matin->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
-  ierr = PetscMapCopy(matin->rmap,&mat->rmap);CHKERRQ(ierr);  
-  ierr = PetscMapCopy(matin->cmap,&mat->cmap);CHKERRQ(ierr);  
+  ierr = PetscLayoutCopy(matin->rmap,&mat->rmap);CHKERRQ(ierr);  
+  ierr = PetscLayoutCopy(matin->cmap,&mat->cmap);CHKERRQ(ierr);  
   
   mat->factor       = matin->factor; 
   mat->preallocated = PETSC_TRUE;

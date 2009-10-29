@@ -46,7 +46,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
   PetscErrorCode    ierr;
   MPI_Comm          comm;
   PetscInt          rstart,rend,i,nz,cnt,*rows,ncnt;
-  PetscMap          map,nmap;
+  PetscLayout       map,nmap;
   PetscMPIInt       size,rank,imdex,tag,n;
   PetscInt          *source = PETSC_NULL;
   PetscMPIInt       *nprocs = PETSC_NULL,nrecvs;
@@ -87,20 +87,20 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
       ierr = MatRestoreRow(pc->mat,i,&nz,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
 
-    /* create PetscMap for non-diagonal rows on each process */
-    ierr = PetscMapCreate(comm,&map);CHKERRQ(ierr);
-    ierr = PetscMapSetLocalSize(map,cnt);CHKERRQ(ierr);
-    ierr = PetscMapSetBlockSize(map,1);CHKERRQ(ierr);
-    ierr = PetscMapSetUp(map);CHKERRQ(ierr);
+    /* create PetscLayout for non-diagonal rows on each process */
+    ierr = PetscLayoutCreate(comm,&map);CHKERRQ(ierr);
+    ierr = PetscLayoutSetLocalSize(map,cnt);CHKERRQ(ierr);
+    ierr = PetscLayoutSetBlockSize(map,1);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
     rstart = map->rstart;
     rend   = map->rend;
     
-    /* create PetscMap for load-balanced non-diagonal rows on each process */
-    ierr = PetscMapCreate(comm,&nmap);CHKERRQ(ierr);
+    /* create PetscLayout for load-balanced non-diagonal rows on each process */
+    ierr = PetscLayoutCreate(comm,&nmap);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&cnt,&ncnt,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
-    ierr = PetscMapSetSize(nmap,ncnt);CHKERRQ(ierr);
-    ierr = PetscMapSetBlockSize(nmap,1);CHKERRQ(ierr);
-    ierr = PetscMapSetUp(nmap);CHKERRQ(ierr);
+    ierr = PetscLayoutSetSize(nmap,ncnt);CHKERRQ(ierr);
+    ierr = PetscLayoutSetBlockSize(nmap,1);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp(nmap);CHKERRQ(ierr);
 
     /*  
 	this code is taken from VecScatterCreate_PtoS() 
@@ -181,8 +181,8 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
       ierr = PetscFree(send_status);CHKERRQ(ierr);
     }
     ierr = PetscFree3(svalues,send_waits,starts);CHKERRQ(ierr);
-    ierr = PetscMapDestroy(map);CHKERRQ(ierr);
-    ierr = PetscMapDestroy(nmap);CHKERRQ(ierr);
+    ierr = PetscLayoutDestroy(map);CHKERRQ(ierr);
+    ierr = PetscLayoutDestroy(nmap);CHKERRQ(ierr);
 
     ierr = VecCreateMPI(comm,slen,PETSC_DETERMINE,&red->b);CHKERRQ(ierr);
     ierr = VecDuplicate(red->b,&red->x);CHKERRQ(ierr);

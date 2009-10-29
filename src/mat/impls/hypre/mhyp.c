@@ -484,10 +484,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA_HYPREStruct(Mat mat,DA da)
   /* set the global and local sizes of the matrix */
   ierr = DAGetCorners(da,0,0,0,&nx,&ny,&nz);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,dof*nx*ny*nz,dof*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize(mat->rmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize(mat->cmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(mat->rmap);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(mat->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(mat->rmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(mat->cmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(mat->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(mat->cmap);CHKERRQ(ierr);
 
   if (dim == 3) {
     mat->ops->setvalueslocal = MatSetValuesLocal_HYPREStruct_3d;

@@ -991,10 +991,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BlockMat(Mat A)
   A->data = (void*)b;
   ierr = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
 
-  ierr = PetscMapSetBlockSize(A->rmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize(A->cmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(A->rmap);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(A->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(A->rmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(A->cmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
 
   A->assembled     = PETSC_TRUE;
   A->preallocated  = PETSC_FALSE;

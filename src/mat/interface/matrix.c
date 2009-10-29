@@ -857,8 +857,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy(Mat A)
   }
 
   if (A->spptr){ierr = PetscFree(A->spptr);CHKERRQ(ierr);}
-  ierr = PetscMapDestroy(A->rmap);CHKERRQ(ierr);
-  ierr = PetscMapDestroy(A->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(A->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(A->cmap);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3692,8 +3692,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDuplicate(Mat mat,MatDuplicateOption op,Mat
   if (mat->bmapping) {
     ierr = MatSetLocalToGlobalMappingBlock(B,mat->bmapping);CHKERRQ(ierr);
   }
-  ierr = PetscMapCopy(mat->rmap,&B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapCopy(mat->cmap,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutCopy(mat->rmap,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutCopy(mat->cmap,&B->cmap);CHKERRQ(ierr);
   
   B->stencil.dim = mat->stencil.dim;
   B->stencil.noc = mat->stencil.noc;
@@ -5269,7 +5269,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRanges(Mat mat,const PetscInt *
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
-  ierr = PetscMapGetRanges(mat->rmap,ranges);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRanges(mat->rmap,ranges);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5301,7 +5301,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRangesColumn(Mat mat,const Pets
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
-  ierr = PetscMapGetRanges(mat->cmap,ranges);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRanges(mat->cmap,ranges);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5959,8 +5959,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetBlockSize(Mat mat,PetscInt bs)
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   if (mat->ops->setblocksize) {
     /* XXX should check if (bs < 1) ??? */
-    ierr = PetscMapSetBlockSize(mat->rmap,bs);CHKERRQ(ierr);
-    ierr = PetscMapSetBlockSize(mat->cmap,bs);CHKERRQ(ierr);
+    ierr = PetscLayoutSetBlockSize(mat->rmap,bs);CHKERRQ(ierr);
+    ierr = PetscLayoutSetBlockSize(mat->cmap,bs);CHKERRQ(ierr);
     ierr = (*mat->ops->setblocksize)(mat,bs);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_ERR_ARG_INCOMP,"Cannot set the blocksize for matrix type %s",((PetscObject)mat)->type_name);
@@ -7293,7 +7293,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetVecs(Mat mat,Vec *right,Vec *left)
       ierr = VecSetBlockSize(*right,mat->rmap->bs);CHKERRQ(ierr);
       if (size > 1) {
         /* New vectors uses Mat cmap and does not create a new one */
-	ierr = PetscMapDestroy((*right)->map);CHKERRQ(ierr);
+	ierr = PetscLayoutDestroy((*right)->map);CHKERRQ(ierr);
 	(*right)->map = mat->cmap;
 	mat->cmap->refcnt++;
 
@@ -7306,7 +7306,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetVecs(Mat mat,Vec *right,Vec *left)
       ierr = VecSetBlockSize(*left,mat->rmap->bs);CHKERRQ(ierr);
       if (size > 1) {
         /* New vectors uses Mat rmap and does not create a new one */
-	ierr = PetscMapDestroy((*left)->map);CHKERRQ(ierr);
+	ierr = PetscLayoutDestroy((*left)->map);CHKERRQ(ierr);
 	(*left)->map = mat->rmap;
 	mat->rmap->refcnt++;
 

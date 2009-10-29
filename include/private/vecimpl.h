@@ -12,15 +12,15 @@
 PETSC_EXTERN_CXX_BEGIN
 
 /*S
-     PetscMap - defines layout of vectors and matrices across processes (which rows are owned by which processes)
+     PetscLayout - defines layout of vectors and matrices across processes (which rows are owned by which processes)
 
    Level: developer
 
 
-.seealso:  PetscMapCreate(), PetscMapDestroy()
+.seealso:  PetscLayoutCreate(), PetscLayoutDestroy()
 S*/
-typedef struct _p_PetscMap* PetscMap;
-struct _p_PetscMap{
+typedef struct _p_PetscLayout* PetscLayout;
+struct _p_PetscLayout{
   MPI_Comm  comm;
   PetscInt  n,N;         /* local, global vector size */
   PetscInt  rstart,rend; /* local start, local end + 1 */
@@ -29,21 +29,21 @@ struct _p_PetscMap{
   PetscInt  refcnt;      /* MPI Vecs obtained with VecDuplicate() and from MatGetVecs() reuse map of input object */
 };
 
-EXTERN PetscErrorCode PetscMapCreate(MPI_Comm,PetscMap*);
-EXTERN PetscErrorCode PetscMapSetUp(PetscMap);
-EXTERN PetscErrorCode PetscMapDestroy(PetscMap);
-EXTERN PetscErrorCode PetscMapCopy(PetscMap,PetscMap*);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetLocalSize(PetscMap,PetscInt);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalSize(PetscMap,PetscInt *);
-PetscPolymorphicFunction(PetscMapGetLocalSize,(PetscMap m),(m,&s),PetscInt,s)
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetSize(PetscMap,PetscInt);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetSize(PetscMap,PetscInt *);
-PetscPolymorphicFunction(PetscMapGetSize,(PetscMap m),(m,&s),PetscInt,s)
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetBlockSize(PetscMap,PetscInt);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetRange(PetscMap,PetscInt *,PetscInt *);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetRanges(PetscMap,const PetscInt *[]);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetSizeBlockSize(PetscMap,PetscInt);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetSizeBlockSize(PetscMap,PetscInt *);
+EXTERN PetscErrorCode PetscLayoutCreate(MPI_Comm,PetscLayout*);
+EXTERN PetscErrorCode PetscLayoutSetUp(PetscLayout);
+EXTERN PetscErrorCode PetscLayoutDestroy(PetscLayout);
+EXTERN PetscErrorCode PetscLayoutCopy(PetscLayout,PetscLayout*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutSetLocalSize(PetscLayout,PetscInt);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetLocalSize(PetscLayout,PetscInt *);
+PetscPolymorphicFunction(PetscLayoutGetLocalSize,(PetscLayout m),(m,&s),PetscInt,s)
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutSetSize(PetscLayout,PetscInt);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetSize(PetscLayout,PetscInt *);
+PetscPolymorphicFunction(PetscLayoutGetSize,(PetscLayout m),(m,&s),PetscInt,s)
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutSetBlockSize(PetscLayout,PetscInt);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetRange(PetscLayout,PetscInt *,PetscInt *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetRanges(PetscLayout,const PetscInt *[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutSetSizeBlockSize(PetscLayout,PetscInt);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetSizeBlockSize(PetscLayout,PetscInt *);
 
 /* ----------------------------------------------------------------------------*/
 
@@ -148,7 +148,7 @@ typedef struct {
 
 struct _p_Vec {
   PETSCHEADER(struct _VecOps);
-  PetscMap               map;
+  PetscLayout            map;
   void                   *data;     /* implementation-specific data */
   ISLocalToGlobalMapping mapping;   /* mapping used in VecSetValuesLocal() */
   ISLocalToGlobalMapping bmapping;  /* mapping used in VecSetValuesBlockedLocal() */

@@ -402,10 +402,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscIn
 #endif
 
   PetscFunctionBegin;
-  ierr = PetscMapSetBlockSize(B->rmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize(B->cmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(B->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(B->rmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(B->cmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG)
   if (i[0] != 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"First i[] index must be zero, instead it is %D\n",i[0]);

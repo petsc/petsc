@@ -66,7 +66,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   }
   B->nbs      = ec;
   sbaij->B->cmap->n = sbaij->B->cmap->N = ec*mat->rmap->bs;
-  ierr = PetscMapSetUp((sbaij->B->cmap));CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp((sbaij->B->cmap));CHKERRQ(ierr);
   ierr = PetscFree(indices);CHKERRQ(ierr);
 
   /* create local vector that is used to scatter into */
@@ -211,7 +211,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
   }
   B->nbs     = ec;
   baij->B->cmap->n = baij->B->cmap->N = ec*mat->rmap->bs;
-  ierr = PetscMapSetUp((baij->B->cmap));CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp((baij->B->cmap));CHKERRQ(ierr);
   ierr = PetscTableDestroy(gid1_lid1);CHKERRQ(ierr);
   /* Mark Adams */
 #else

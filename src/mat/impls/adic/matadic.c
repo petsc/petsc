@@ -427,10 +427,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_DAAD(Mat B)
   B->data = (void*)b;
   ierr = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   
-  ierr = PetscMapSetBlockSize(B->rmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize(B->cmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(B->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(B->rmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(B->cmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATDAAD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMFFDSetBase_C","MatMFFDSetBase_AD",MatMFFDSetBase_AD);CHKERRQ(ierr);

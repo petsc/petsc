@@ -288,10 +288,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSubMatrix(Mat A,IS isrow,IS iscol,Mat
 
   N->assembled = PETSC_TRUE;
 
-  ierr = PetscMapSetBlockSize(N->rmap,A->rmap->bs);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize(N->cmap,A->cmap->bs);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(N->rmap);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(N->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(N->rmap,A->rmap->bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(N->cmap,A->cmap->bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(N->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(N->cmap);CHKERRQ(ierr);
 
   ierr = MatGetVecs(A,&Na->rwork,&Na->lwork);CHKERRQ(ierr);
   ierr = VecCreate(((PetscObject)isrow)->comm,&left);CHKERRQ(ierr);

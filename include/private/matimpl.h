@@ -254,7 +254,7 @@ EXTERN PetscErrorCode Mat_CheckCompressedRow(Mat,Mat_CompressedRow*,PetscInt*,Pe
 
 struct _p_Mat {
   PETSCHEADER(struct _MatOps);
-  PetscMap               rmap,cmap;
+  PetscLayout            rmap,cmap;
   void                   *data;            /* implementation-specific data */
   MatFactorType          factor;           /* MAT_FACTOR_LU, or MAT_FACTOR_CHOLESKY */
   PetscTruth             assembled;        /* is the matrix assembled? */

@@ -627,10 +627,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MFFD(Mat A)
   A->ops->setfromoptions = MatMFFDSetFromOptions;
   A->assembled = PETSC_TRUE;
 
-  ierr = PetscMapSetBlockSize(A->rmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize(A->cmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(A->rmap);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(A->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(A->rmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(A->cmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMFFDSetBase_C","MatMFFDSetBase_MFFD",MatMFFDSetBase_MFFD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMFFDSetFunctioniBase_C","MatMFFDSetFunctioniBase_MFFD",MatMFFDSetFunctioniBase_MFFD);CHKERRQ(ierr);

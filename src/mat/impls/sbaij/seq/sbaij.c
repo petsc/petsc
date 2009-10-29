@@ -1443,10 +1443,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,Pet
   }
   bs = newbs;
 
-  ierr = PetscMapSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(B->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
 
   mbs  = B->rmap->N/bs;
   bs2  = bs*bs;
@@ -1965,8 +1965,8 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c->keepnonzeropattern = a->keepnonzeropattern;
   C->assembled          = PETSC_TRUE;
 
-  ierr = PetscMapCopy(A->rmap,&C->rmap);CHKERRQ(ierr);  
-  ierr = PetscMapCopy(A->cmap,&C->cmap);CHKERRQ(ierr);  
+  ierr = PetscLayoutCopy(A->rmap,&C->rmap);CHKERRQ(ierr);  
+  ierr = PetscLayoutCopy(A->cmap,&C->cmap);CHKERRQ(ierr);  
   c->bs2  = a->bs2;
   c->mbs  = a->mbs;
   c->nbs  = a->nbs;

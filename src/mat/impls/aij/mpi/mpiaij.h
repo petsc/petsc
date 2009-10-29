@@ -59,7 +59,7 @@ typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ and MatPtAP_MPIAIJ_MPIAIJ f
 } Mat_MatMatMultMPI;
 
 typedef struct { /* used by MatMerge_SeqsToMPI for reusing the merged matrix */
-  PetscMap       rowmap;
+  PetscLayout    rowmap;
   PetscInt       **buf_ri,**buf_rj;
   PetscMPIInt    *len_s,*len_r,*id_r; /* array of length of comm->size, store send/recv matrix values */
   PetscMPIInt    nsend,nrecv;  

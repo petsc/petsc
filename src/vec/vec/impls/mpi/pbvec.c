@@ -179,7 +179,7 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscTruth alloc,PetscInt nghost,cons
   v->petscnative = PETSC_TRUE;
 
   if (v->map->bs == -1) v->map->bs = 1;
-  ierr = PetscMapSetUp(v->map);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(v->map);CHKERRQ(ierr);
   s->array           = (PetscScalar *)array;
   s->array_allocated = 0;
   if (alloc && !array) {
@@ -666,7 +666,7 @@ PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
   ierr = VecCreate(((PetscObject)win)->comm,v);CHKERRQ(ierr);
 
   /* use the map that exists aleady in win */
-  ierr = PetscMapDestroy((*v)->map);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy((*v)->map);CHKERRQ(ierr);
   (*v)->map = win->map;
   win->map->refcnt++;
 

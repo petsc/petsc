@@ -2758,10 +2758,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocation_MPIAIJ(Mat B,PetscIn
   if (d_nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"d_nz cannot be less than 0: value %D",d_nz);
   if (o_nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"o_nz cannot be less than 0: value %D",o_nz);
 
-  ierr = PetscMapSetBlockSize(B->rmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize(B->cmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(B->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(B->rmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(B->cmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
   if (d_nnz) {
     for (i=0; i<B->rmap->n; i++) {
       if (d_nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"d_nnz cannot be less than 0: local row %D value %D",i,d_nnz[i]);
@@ -2823,8 +2823,8 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *ne
   a->rowvalues      = 0;
   a->getrowactive   = PETSC_FALSE;
 
-  ierr = PetscMapCopy(matin->rmap,&mat->rmap);CHKERRQ(ierr);
-  ierr = PetscMapCopy(matin->cmap,&mat->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutCopy(matin->rmap,&mat->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutCopy(matin->cmap,&mat->cmap);CHKERRQ(ierr);
 
   ierr = MatStashCreate_Private(((PetscObject)matin)->comm,1,&mat->stash);CHKERRQ(ierr);
   if (oldmat->colmap) {
@@ -3230,10 +3230,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,cons
   PetscFunctionBegin;
   if (Ii[0]) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Ii[0] must be 0 it is %D",Ii[0]);
 
-  ierr = PetscMapSetBlockSize(B->rmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize(B->cmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(B->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(B->rmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(B->cmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
   m      = B->rmap->n;
   cstart = B->cmap->rstart;
   cend   = B->cmap->rend;
@@ -4004,7 +4004,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
     ierr = PetscFree(merge->coi);CHKERRQ(ierr);
     ierr = PetscFree(merge->coj);CHKERRQ(ierr);
     ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);
-    ierr = PetscMapDestroy(merge->rowmap);CHKERRQ(ierr);
+    ierr = PetscLayoutDestroy(merge->rowmap);CHKERRQ(ierr);
     
     ierr = PetscContainerDestroy(container);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)A,"MatMergeSeqsToMPI",0);CHKERRQ(ierr);
@@ -4194,11 +4194,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
 
   /* determine row ownership */
   /*---------------------------------------------------------*/
-  ierr = PetscMapCreate(comm,&merge->rowmap);CHKERRQ(ierr); 
-  ierr = PetscMapSetLocalSize(merge->rowmap,m);CHKERRQ(ierr);
-  ierr = PetscMapSetSize(merge->rowmap,M);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize(merge->rowmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(merge->rowmap);CHKERRQ(ierr); 
+  ierr = PetscLayoutCreate(comm,&merge->rowmap);CHKERRQ(ierr); 
+  ierr = PetscLayoutSetLocalSize(merge->rowmap,m);CHKERRQ(ierr);
+  ierr = PetscLayoutSetSize(merge->rowmap,M);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(merge->rowmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(merge->rowmap);CHKERRQ(ierr); 
   ierr = PetscMalloc(size*sizeof(PetscMPIInt),&len_si);CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(PetscMPIInt),&merge->len_s);CHKERRQ(ierr);
   
@@ -5189,10 +5189,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIAIJWithSplitArrays(MPI_Comm comm,P
   maij->donotstash     = PETSC_TRUE;
   (*mat)->preallocated = PETSC_TRUE;
 
-  ierr = PetscMapSetBlockSize((*mat)->rmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize((*mat)->cmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetUp((*mat)->rmap);CHKERRQ(ierr);
-  ierr = PetscMapSetUp((*mat)->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize((*mat)->rmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize((*mat)->cmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp((*mat)->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp((*mat)->cmap);CHKERRQ(ierr);
 
   ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,m,n,i,j,a,&maij->A);CHKERRQ(ierr);
   ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,m,(*mat)->cmap->N,oi,oj,oa,&maij->B);CHKERRQ(ierr);

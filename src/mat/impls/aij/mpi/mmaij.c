@@ -63,7 +63,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
     }
   }
   aij->B->cmap->n = aij->B->cmap->N = ec;
-  ierr = PetscMapSetUp((aij->B->cmap));CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp((aij->B->cmap));CHKERRQ(ierr);
   ierr = PetscTableDestroy(gid1_lid1);CHKERRQ(ierr);
   /* Mark Adams */
 #else
@@ -97,7 +97,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
     }
   }
   aij->B->cmap->n = aij->B->cmap->N = ec;
-  ierr = PetscMapSetUp((aij->B->cmap));CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp((aij->B->cmap));CHKERRQ(ierr);
   ierr = PetscFree(indices);CHKERRQ(ierr);
 #endif  
   /* create local vector that is used to scatter into */

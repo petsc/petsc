@@ -2869,10 +2869,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,Petsc
   }
   bs   = newbs;
 
-  ierr = PetscMapSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(B->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
 
   B->preallocated = PETSC_TRUE;
 
@@ -3003,10 +3003,10 @@ PetscErrorCode MatSeqBAIJSetPreallocationCSR_SeqBAIJ(Mat B,PetscInt bs,const Pet
 
   if (bs < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size specified, must be positive but it is %D",bs);
 
-  ierr = PetscMapSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(B->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
   m = B->rmap->n/bs;
 
   if (ii[0] != 0) { SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "ii[0] must be 0 but it is %D",ii[0]); }
@@ -3190,8 +3190,8 @@ PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C,Mat A,MatDuplicateOption cpval
 
   c->roworiented = a->roworiented;
   c->nonew       = a->nonew;
-  ierr = PetscMapCopy(A->rmap,&C->rmap);CHKERRQ(ierr);  
-  ierr = PetscMapCopy(A->cmap,&C->cmap);CHKERRQ(ierr);  
+  ierr = PetscLayoutCopy(A->rmap,&C->rmap);CHKERRQ(ierr);  
+  ierr = PetscLayoutCopy(A->cmap,&C->cmap);CHKERRQ(ierr);  
   c->bs2         = a->bs2;
   c->mbs         = a->mbs;
   c->nbs         = a->nbs;
