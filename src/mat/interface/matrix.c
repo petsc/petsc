@@ -3150,7 +3150,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x
 -  lits - the number of local iterations 
 
    Output Parameters:
-.  x - the solution (can contain an initial guess)
+.  x - the solution (can contain an initial guess, use option SOR_ZERO_INITIAL_GUESS to indicate no guess)
 
    SOR Flags:
 .     SOR_FORWARD_SWEEP - forward SOR
