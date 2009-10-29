@@ -236,6 +236,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellGetName(PC,char*[]);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetZeroPivot(PC,PetscReal);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftNonzero(PC,PetscReal); 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftPd(PC,PetscTruth); 
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftInBlocks(PC,PetscReal);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage(PC,const MatSolverPackage);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatSolverPackage(PC,const MatSolverPackage*);
 
@@ -249,7 +250,6 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseFill(PC,PetscTruth);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseInPlace(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetAllowDiagonalFill(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivotInBlocks(PC,PetscTruth);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftInBlocks(PC,PetscReal);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetLevels(PC,PetscInt);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseDropTolerance(PC,PetscReal,PetscReal,PetscInt);
