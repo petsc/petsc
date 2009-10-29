@@ -247,7 +247,7 @@ PetscErrorCode NLFNewton_DAAD9(NLF A,DALocalInfo *info,MatStencil *stencil,void 
 */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "NLFMatRelax_DAAD"
+#define __FUNCT__ "NLFMatSOR_DAAD"
 PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD(NLF A,MatSORType flag,int its,Vec xx)
 {
   PetscErrorCode ierr;
@@ -337,7 +337,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatRelax_DAAD4"
+#define __FUNCT__ "MatSOR_DAAD4"
 PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD4(NLF A,MatSORType flag,int its,Vec xx)
 {
   PetscErrorCode ierr;
@@ -429,7 +429,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD4(NLF A,MatSORType flag,int its,V
 EXTERN_C_END
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatRelax_DAAD9"
+#define __FUNCT__ "MatSOR_DAAD9"
 PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD9(NLF A,MatSORType flag,int its,Vec xx)
 {
   PetscErrorCode ierr;
@@ -528,7 +528,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD9(NLF A,MatSORType flag,int its,V
 */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "NLFMatRelax_DAADb"
+#define __FUNCT__ "NLFMatSOR_DAADb"
 PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAADb(NLF A,MatSORType flag,int its,Vec xx)
 {
   PetscErrorCode ierr;

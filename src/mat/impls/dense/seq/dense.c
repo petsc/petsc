@@ -439,8 +439,8 @@ EXTERN_C_END
 
 /* ------------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "MatRelax_SeqDense"
-PetscErrorCode MatRelax_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal shift,PetscInt its,PetscInt lits,Vec xx)
+#define __FUNCT__ "MatSOR_SeqDense"
+PetscErrorCode MatSOR_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal shift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
   PetscScalar    *x,*b,*v = mat->v,zero = 0.0,xt;
@@ -1751,7 +1751,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
 /*10*/ 0,
        MatLUFactor_SeqDense,
        MatCholeskyFactor_SeqDense,
-       MatRelax_SeqDense,
+       MatSOR_SeqDense,
        MatTranspose_SeqDense,
 /*15*/ MatGetInfo_SeqDense,
        MatEqual_SeqDense,

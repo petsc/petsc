@@ -2020,7 +2020,7 @@ licensed software. <br>
 
 
 Have Mat keep track of "matrix state", the values in the matrix
-like Vec does, then routines like MatRelax_SeqAIJ can update values
+like Vec does, then routines like MatSOR_SeqAIJ can update values
 (the inverse of the diagonal) when the state has changed. This state
 value can also be used by all the preconditioners (like LU) to know
 when the matrix has changed and the PC must be updated. This would

@@ -17,7 +17,7 @@ typedef struct {
   MatScalar        *anew;        /* nonzero diagonal and superdiagonal elements of reordered matrix */
   PetscScalar      *solves_work; /* work space used in MatSolves */
   PetscInt         solves_work_n;/* size of solves_work */  
-  PetscScalar      *relax_work;  
+  PetscScalar      *sor_work;  
   PetscInt         *a2anew;        /* map used for symm permutation */
   PetscTruth       permute;        /* if true, a non-trivial permutation is used for factorization */
   PetscTruth       ignore_ltriangular; /* if true, ignore the lower triangular values inserted by users */
@@ -141,7 +141,7 @@ EXTERN PetscErrorCode MatMultAdd_SeqSBAIJ_6(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatMultAdd_SeqSBAIJ_7(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat,Vec,Vec,Vec);
 
-EXTERN PetscErrorCode MatRelax_SeqSBAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
+EXTERN PetscErrorCode MatSOR_SeqSBAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
 EXTERN PetscErrorCode MatLoad_SeqSBAIJ(PetscViewer, const MatType,Mat*);
 
 #endif

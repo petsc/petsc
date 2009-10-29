@@ -113,8 +113,8 @@ PetscErrorCode MatGetDiagonal_DAAD(Mat A,Vec dd)
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatRelax_DAAD"
-PetscErrorCode MatRelax_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,int lits,Vec xx)
+#define __FUNCT__ "MatSOR_DAAD"
+PetscErrorCode MatSOR_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,int lits,Vec xx)
 {
   Mat_DAAD      *a = (Mat_DAAD*)A->data;
   PetscErrorCode ierr;
@@ -253,7 +253,7 @@ static struct _MatOps MatOps_Values = {0,
 /*10*/ 0,
        0,
        0,
-       MatRelax_DAAD,
+       MatSOR_DAAD,
        0,
 /*15*/ 0,
        0,

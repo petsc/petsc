@@ -1136,8 +1136,8 @@ EXTERN_C_END
 
 #include "../src/mat/impls/aij/seq/ftn-kernels/frelax.h"
 #undef __FUNCT__  
-#define __FUNCT__ "MatRelax_SeqAIJ"
-PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+#define __FUNCT__ "MatSOR_SeqAIJ"
+PetscErrorCode MatSOR_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
   PetscScalar        *x,d,sum,*t,scale;
@@ -2440,7 +2440,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
 /*10*/ 0,
        MatLUFactor_SeqAIJ,
        0,
-       MatRelax_SeqAIJ,
+       MatSOR_SeqAIJ,
        MatTranspose_SeqAIJ,
 /*15*/ MatGetInfo_SeqAIJ,
        MatEqual_SeqAIJ,

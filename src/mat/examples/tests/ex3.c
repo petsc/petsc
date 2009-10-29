@@ -46,7 +46,7 @@ int main(int argc,char **args)
   ierr = MatMult(C,u,b);CHKERRQ(ierr);
 
   for (i=0; i<n; i++) {
-    ierr = MatRelax(C,b,omega,SOR_FORWARD_SWEEP,0.0,1,1,x);CHKERRQ(ierr);
+    ierr = MatSOR(C,b,omega,SOR_FORWARD_SWEEP,0.0,1,1,x);CHKERRQ(ierr);
     ierr = VecWAXPY(e,-1.0,x,u);CHKERRQ(ierr);
     ierr = VecNorm(e,NORM_2,&norm);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,"2-norm of error %G\n",norm);CHKERRQ(ierr);

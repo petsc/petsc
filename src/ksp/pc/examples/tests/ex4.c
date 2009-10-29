@@ -1,6 +1,6 @@
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR. And tests\n\
-the MatRelax() routines.\n\n";
+the MatSOR() routines.\n\n";
 
 #include "petscpc.h"
 

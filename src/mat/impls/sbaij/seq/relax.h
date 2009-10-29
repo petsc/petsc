@@ -60,8 +60,8 @@ PetscErrorCode PETSCMAP1(MatMult_SeqSBAIJ_1)(Mat A,Vec xx,Vec zz)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatRelax_SeqSBAIJ"
-PetscErrorCode PETSCMAP1(MatRelax_SeqSBAIJ)(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+#define __FUNCT__ "MatSOR_SeqSBAIJ"
+PetscErrorCode PETSCMAP1(MatSOR_SeqSBAIJ)(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqSBAIJ         *a = (Mat_SeqSBAIJ*)A->data;
   const MatScalar      *aa=a->a,*v,*v1,*aidiag;
@@ -101,10 +101,10 @@ PetscErrorCode PETSCMAP1(MatRelax_SeqSBAIJ)(Mat A,Vec bb,PetscReal omega,MatSORT
     a->idiagvalid = PETSC_TRUE;
   }
 
-  if (!a->relax_work) {
-    ierr = PetscMalloc(m*sizeof(PetscScalar),&a->relax_work);CHKERRQ(ierr);
+  if (!a->sor_work) {
+    ierr = PetscMalloc(m*sizeof(PetscScalar),&a->sor_work);CHKERRQ(ierr);
   }
-  t = a->relax_work;
+  t = a->sor_work;
 
   aidiag = a->idiag;
 

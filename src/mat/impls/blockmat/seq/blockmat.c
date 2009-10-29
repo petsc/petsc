@@ -19,8 +19,8 @@ typedef struct {
 } Mat_BlockMat;      
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatRelax_BlockMat_Symmetric"
-PetscErrorCode MatRelax_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+#define __FUNCT__ "MatSOR_BlockMat_Symmetric"
+PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_BlockMat       *a = (Mat_BlockMat*)A->data;
   PetscScalar        *x;
@@ -63,7 +63,7 @@ PetscErrorCode MatRelax_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,MatSORTy
   ierr = VecCopy(bb,a->workb);CHKERRQ(ierr);
   ierr = VecGetArray(a->workb,(PetscScalar**)&b);CHKERRQ(ierr);
 
-  /* need to add code for when initial guess is zero, see MatRelax_SeqAIJ */
+  /* need to add code for when initial guess is zero, see MatSOR_SeqAIJ */
   while (its--) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
 
@@ -85,7 +85,7 @@ PetscErrorCode MatRelax_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,MatSORTy
         ierr = VecPlaceArray(right,x + i*bs);CHKERRQ(ierr);
         ierr = MatSolve(diag[i],left,right);CHKERRQ(ierr);
 
-        /* now adjust right hand side, see MatRelax_SeqSBAIJ */
+        /* now adjust right hand side, see MatSOR_SeqSBAIJ */
         for (j=0; j<n; j++) {
           ierr = MatMultTranspose(v[j],right,left);CHKERRQ(ierr);
           ierr = VecPlaceArray(middle,b + idx[j]*bs);CHKERRQ(ierr);
@@ -126,8 +126,8 @@ PetscErrorCode MatRelax_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,MatSORTy
 } 
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatRelax_BlockMat"
-PetscErrorCode MatRelax_BlockMat(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+#define __FUNCT__ "MatSOR_BlockMat"
+PetscErrorCode MatSOR_BlockMat(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_BlockMat       *a = (Mat_BlockMat*)A->data;
   PetscScalar        *x;
@@ -165,7 +165,7 @@ PetscErrorCode MatRelax_BlockMat(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
 
-  /* need to add code for when initial guess is zero, see MatRelax_SeqAIJ */
+  /* need to add code for when initial guess is zero, see MatSOR_SeqAIJ */
   while (its--) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
 
@@ -753,7 +753,7 @@ PetscErrorCode MatSetOption_BlockMat(Mat A,MatOption opt,PetscTruth flg)
 {
   PetscFunctionBegin;
   if (opt == MAT_SYMMETRIC && flg) {
-    A->ops->relax = MatRelax_BlockMat_Symmetric;
+    A->ops->sor = MatSOR_BlockMat_Symmetric;
     A->ops->mult  = MatMult_BlockMat_Symmetric;
   } else {
     PetscInfo1(A,"Unused matrix option %s\n",MatOptions[opt]);
@@ -775,7 +775,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
 /*10*/ 0,
        0,
        0,
-       MatRelax_BlockMat,
+       MatSOR_BlockMat,
        0,
 /*15*/ 0,
        0,

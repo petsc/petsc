@@ -135,8 +135,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInvertBlockDiagonal_SeqBAIJ(Mat A)
 EXTERN_C_END
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatRelax_SeqBAIJ_1"
-PetscErrorCode MatRelax_SeqBAIJ_1(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+#define __FUNCT__ "MatSOR_SeqBAIJ_1"
+PetscErrorCode MatSOR_SeqBAIJ_1(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar        *x,x1,s1;
@@ -226,8 +226,8 @@ PetscErrorCode MatRelax_SeqBAIJ_1(Mat A,Vec bb,PetscReal omega,MatSORType flag,P
 } 
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatRelax_SeqBAIJ_2"
-PetscErrorCode MatRelax_SeqBAIJ_2(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+#define __FUNCT__ "MatSOR_SeqBAIJ_2"
+PetscErrorCode MatSOR_SeqBAIJ_2(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar        *x,x1,x2,s1,s2;
@@ -330,8 +330,8 @@ PetscErrorCode MatRelax_SeqBAIJ_2(Mat A,Vec bb,PetscReal omega,MatSORType flag,P
 } 
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatRelax_SeqBAIJ_3"
-PetscErrorCode MatRelax_SeqBAIJ_3(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+#define __FUNCT__ "MatSOR_SeqBAIJ_3"
+PetscErrorCode MatSOR_SeqBAIJ_3(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar        *x,x1,x2,x3,s1,s2,s3;
@@ -441,8 +441,8 @@ PetscErrorCode MatRelax_SeqBAIJ_3(Mat A,Vec bb,PetscReal omega,MatSORType flag,P
 } 
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatRelax_SeqBAIJ_4"
-PetscErrorCode MatRelax_SeqBAIJ_4(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+#define __FUNCT__ "MatSOR_SeqBAIJ_4"
+PetscErrorCode MatSOR_SeqBAIJ_4(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar        *x,x1,x2,x3,x4,s1,s2,s3,s4;
@@ -559,8 +559,8 @@ PetscErrorCode MatRelax_SeqBAIJ_4(Mat A,Vec bb,PetscReal omega,MatSORType flag,P
 } 
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatRelax_SeqBAIJ_5"
-PetscErrorCode MatRelax_SeqBAIJ_5(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+#define __FUNCT__ "MatSOR_SeqBAIJ_5"
+PetscErrorCode MatSOR_SeqBAIJ_5(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar        *x,x1,x2,x3,x4,x5,s1,s2,s3,s4,s5;
@@ -684,8 +684,8 @@ PetscErrorCode MatRelax_SeqBAIJ_5(Mat A,Vec bb,PetscReal omega,MatSORType flag,P
 } 
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatRelax_SeqBAIJ_6"
-PetscErrorCode MatRelax_SeqBAIJ_6(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+#define __FUNCT__ "MatSOR_SeqBAIJ_6"
+PetscErrorCode MatSOR_SeqBAIJ_6(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar        *x,x1,x2,x3,x4,x5,x6,s1,s2,s3,s4,s5,s6;
@@ -816,8 +816,8 @@ PetscErrorCode MatRelax_SeqBAIJ_6(Mat A,Vec bb,PetscReal omega,MatSORType flag,P
 } 
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatRelax_SeqBAIJ_7"
-PetscErrorCode MatRelax_SeqBAIJ_7(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+#define __FUNCT__ "MatSOR_SeqBAIJ_7"
+PetscErrorCode MatSOR_SeqBAIJ_7(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar        *x,x1,x2,x3,x4,x5,x6,x7,s1,s2,s3,s4,s5,s6,s7;
@@ -2903,37 +2903,37 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,Petsc
     case 1:
       B->ops->mult            = MatMult_SeqBAIJ_1;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_1;
-      B->ops->relax           = MatRelax_SeqBAIJ_1;
+      B->ops->sor           = MatSOR_SeqBAIJ_1;
       break;
     case 2:
       B->ops->mult            = MatMult_SeqBAIJ_2;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_2;
-      B->ops->relax           = MatRelax_SeqBAIJ_2;
+      B->ops->sor           = MatSOR_SeqBAIJ_2;
       break;
     case 3:
       B->ops->mult            = MatMult_SeqBAIJ_3;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_3;
-      B->ops->relax           = MatRelax_SeqBAIJ_3;
+      B->ops->sor           = MatSOR_SeqBAIJ_3;
       break;
     case 4:
       B->ops->mult            = MatMult_SeqBAIJ_4;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_4;
-      B->ops->relax           = MatRelax_SeqBAIJ_4;
+      B->ops->sor           = MatSOR_SeqBAIJ_4;
       break;
     case 5:
       B->ops->mult            = MatMult_SeqBAIJ_5;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_5;
-      B->ops->relax           = MatRelax_SeqBAIJ_5;
+      B->ops->sor           = MatSOR_SeqBAIJ_5;
       break;
     case 6:
       B->ops->mult            = MatMult_SeqBAIJ_6;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_6;
-      B->ops->relax           = MatRelax_SeqBAIJ_6;
+      B->ops->sor           = MatSOR_SeqBAIJ_6;
       break;
     case 7:
       B->ops->mult            = MatMult_SeqBAIJ_7; 
       B->ops->multadd         = MatMultAdd_SeqBAIJ_7;
-      B->ops->relax           = MatRelax_SeqBAIJ_7;
+      B->ops->sor           = MatSOR_SeqBAIJ_7;
       break;
     default:
       B->ops->mult            = MatMult_SeqBAIJ_N; 

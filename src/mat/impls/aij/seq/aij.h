@@ -47,7 +47,7 @@
 
 /* Info about i-nodes (identical nodes) helper class for SeqAIJ */
 typedef struct {
-  MatScalar   *bdiag,*ibdiag,*ssor_work;      /* diagonal blocks of matrix used for MatRelax_Inode() */
+  MatScalar   *bdiag,*ibdiag,*ssor_work;      /* diagonal blocks of matrix used for MatSOR_Inode() */
   PetscInt    bdiagsize;                       /* length of bdiag and ibdiag */
   PetscTruth  ibdiagvalid;                     /* do ibdiag[] and bdiag[] contain the most recent values */
 
@@ -152,7 +152,7 @@ EXTERN PetscErrorCode MatMult_SeqAIJ(Mat A,Vec,Vec);
 EXTERN PetscErrorCode MatMultAdd_SeqAIJ(Mat A,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatMultTranspose_SeqAIJ(Mat A,Vec,Vec);
 EXTERN PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A,Vec,Vec,Vec);
-EXTERN PetscErrorCode MatRelax_SeqAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
+EXTERN PetscErrorCode MatSOR_SeqAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
 
 EXTERN PetscErrorCode MatSetColoring_SeqAIJ(Mat,ISColoring);
 EXTERN PetscErrorCode MatSetValuesAdic_SeqAIJ(Mat,void*);
