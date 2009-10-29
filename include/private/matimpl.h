@@ -120,7 +120,7 @@ struct _MatOps {
   PetscErrorCode (*issymmetric)(Mat,PetscReal,PetscTruth*);
   PetscErrorCode (*ishermitian)(Mat,PetscReal,PetscTruth*);
   PetscErrorCode (*isstructurallysymmetric)(Mat,PetscTruth*);
-  PetscErrorCode (*pbrelax)(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
+  PetscErrorCode (*dummy)(void);
   PetscErrorCode (*getvecs)(Mat,Vec*,Vec*);
   /*89*/
   PetscErrorCode (*matmult)(Mat,Mat,MatReuse,PetscReal,Mat*);

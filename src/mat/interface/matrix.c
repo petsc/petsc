@@ -3181,8 +3181,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x
    instead of working directly with matrix algebra routines such as this.
    See, e.g., KSPCreate().
 
-   See also, MatPBRelax(). This routine will automatically call the point block
-   version if the point version is not available.
 
    Level: developer
 
@@ -3202,7 +3200,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRelax(Mat mat,Vec b,PetscReal omega,MatSORT
   PetscValidHeaderSpecific(x,VEC_COOKIE,8);
   PetscCheckSameComm(mat,1,b,2);
   PetscCheckSameComm(mat,1,x,8);
-  if (!mat->ops->relax && !mat->ops->pbrelax) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  if (!mat->ops->relax) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (mat->cmap->N != x->map->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec x: global dim %D %D",mat->cmap->N,x->map->N);
@@ -3213,54 +3211,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRelax(Mat mat,Vec b,PetscReal omega,MatSORT
 
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(MAT_Relax,mat,b,x,0);CHKERRQ(ierr);
-  if (mat->ops->relax) {
-    ierr =(*mat->ops->relax)(mat,b,omega,flag,shift,its,lits,x);CHKERRQ(ierr);
-  } else {
-    ierr =(*mat->ops->pbrelax)(mat,b,omega,flag,shift,its,lits,x);CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventEnd(MAT_Relax,mat,b,x,0);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatPBRelax"
-/*@
-   MatPBRelax - Computes relaxation (SOR, Gauss-Seidel) sweeps.
-
-   Collective on Mat and Vec
-
-   See MatRelax() for usage. This is called by MatRelax() when appropriate so need not be called by users.
-
-   For multi-component PDEs where the Jacobian is stored in a point block format
-   (with the PETSc BAIJ matrix formats) the relaxation is done one point block at 
-   a time. That is, the small (for example, 4 by 4) blocks along the diagonal are solved
-   simultaneously (that is a 4 by 4 linear solve is done) to update all the values at a point.
-
-   Level: developer
-
-@*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPBRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,PetscInt its,PetscInt lits,Vec x)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
-  PetscValidType(mat,1);
-  PetscValidHeaderSpecific(b,VEC_COOKIE,2); 
-  PetscValidHeaderSpecific(x,VEC_COOKIE,8);
-  PetscCheckSameComm(mat,1,b,2);
-  PetscCheckSameComm(mat,1,x,8);
-  if (!mat->ops->pbrelax) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
-  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (mat->cmap->N != x->map->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec x: global dim %D %D",mat->cmap->N,x->map->N);
-  if (mat->rmap->N != b->map->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: global dim %D %D",mat->rmap->N,b->map->N);
-  if (mat->rmap->n != b->map->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: local dim %D %D",mat->rmap->n,b->map->n);
-  ierr = MatPreallocated(mat);CHKERRQ(ierr);
-
-  ierr = PetscLogEventBegin(MAT_Relax,mat,b,x,0);CHKERRQ(ierr);
-  ierr =(*mat->ops->pbrelax)(mat,b,omega,flag,shift,its,lits,x);CHKERRQ(ierr);
+  ierr =(*mat->ops->relax)(mat,b,omega,flag,shift,its,lits,x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Relax,mat,b,x,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
