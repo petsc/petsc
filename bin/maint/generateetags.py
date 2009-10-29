@@ -67,7 +67,7 @@ def processDir(tagfile,dirname,names):
   newls = []
   gsfx = ['.py','.c','.F','.F90','.h','.h90','.tex','.cxx','.hh','makefile']
   hsfx = ['.html']
-  bsfx = ['.py.html','.c.html','.F.html','.h.html','.tex.html','.cxx.html','.hh.html','makefile.html']
+  bsfx = ['.py.html','.c.html','.F.html','.h.html','.tex.html','.cxx.html','.hh.html','makefile.html','.gcov.html']
   for l in names:
     if endsWithSuffix(l,gsfx):
       newls.append(l)

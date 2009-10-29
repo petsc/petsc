@@ -503,16 +503,25 @@ testex19: ex19.PETSc
 	   else echo "Possible error running C/C++ src/snes/examples/tutorials/ex19 with 2 MPI processes"; \
            echo "See http://www.mcs.anl.gov/petsc/petsc-as/documentation/troubleshooting.html";\
            cat ex19_1.tmp; fi; fi; \
-        D2=`grep "#define PETSC_HAVE_X11 1" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h`; \
-        if [ "$$?" = 0 ]; then \
-           ${MPIEXEC} -n 1 ./ex19 -dmmg_nlevels 4 -snes_monitor_draw  > ex19_1.tmp 2>&1; \
-	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
-           echo "Graphics example src/snes/examples/tutorials/ex19 run successfully with 1 MPI process"; \
-	   else echo "Possible error running Graphics examples src/snes/examples/tutorials/ex19 1 MPI process"; \
-           echo "See http://www.mcs.anl.gov/petsc/petsc-as/documentation/troubleshooting.html";\
-           cat ex19_1.tmp; fi; fi; \
-           ${RM} -f ex19_1.tmp; \
-           ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex19.rm ; fi
+        ${RM} -f ex19_1.tmp; \
+        ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex19.rm ; fi
+
+testx11ex19: ex19.PETSc
+	-@if [ "${PETSC_WITH_BATCH}" != "" ]; then \
+           echo "Running with batch filesystem; to test run src/snes/examples/tutorials/ex19 with" ; \
+           echo "your systems batch system"; \
+	elif [ -f ex19 ]; then \
+          D2=`grep "#define PETSC_HAVE_X11 1" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h`; \
+          if [ "$$?" = 0 ]; then \
+             ${MPIEXEC} -n 1 ./ex19 -dmmg_nlevels 4 -snes_monitor_draw  > ex19_1.tmp 2>&1; \
+	     if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
+             echo "Graphics example src/snes/examples/tutorials/ex19 run successfully with 1 MPI process"; \
+	     else echo "Possible error running Graphics examples src/snes/examples/tutorials/ex19 1 MPI process"; \
+             echo "See http://www.mcs.anl.gov/petsc/petsc-as/documentation/troubleshooting.html";\
+             cat ex19_1.tmp; fi; \
+	  else echo "PETSc installed without X11. Not running src/snes/examples/tutorials/ex19"; fi; \
+        ${RM} -f ex19_1.tmp; \
+        ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex19.rm ; fi
 runex19_14:
 	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -dmmg_mat_type baij -mg_coarse_pc_type bjacobi > ex19_14.tmp 2>&1; \
 	   if (${DIFF} output/ex19_14.out ex19_14.tmp) then true; \

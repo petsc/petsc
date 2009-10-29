@@ -136,6 +136,8 @@ build:
 #
 test: 
 	-@${OMAKE} test_build 2>&1 | tee ${PETSC_DIR}/${PETSC_ARCH}/conf/test.log
+testx11: 
+	-@${OMAKE} testx11_build 2>&1 | tee ${PETSC_DIR}/${PETSC_ARCH}/conf/testx11.log
 test_build:
 	-@echo "Running test examples to verify correct installation"
 	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
@@ -143,6 +145,12 @@ test_build:
 	@if [ "${FC}" != "" ]; then cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex5f; fi;
 	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
 	-@echo "Completed test examples"
+testx11_build:
+	-@echo "Running graphics test example to verify correct X11 installation"
+	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
+	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testx11ex19
+	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
+	-@echo "Completed graphics test example"
 
 testexamples: info 
 	-@echo "BEGINNING TO COMPILE AND RUN TEST EXAMPLES"
