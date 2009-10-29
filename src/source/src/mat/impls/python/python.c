@@ -192,32 +192,40 @@ static PetscErrorCode MatSetOption_Python_old(Mat mat,MatOption op)
 #endif
 
 #if PETSC_VERSION_(2,3,2)
-#define PetscGetMap(o, m) (&(o)->m)
-#define PetscSetUpMap(o, m) PetscMapInitialize((o)->comm,&(o)->m)
+typedef PetscMap* PetscLayout;
+#define PetscGetLayout(o, m) (&(o)->m)
+#define PetscSetUpLayout(o, m) PetscMapInitialize((o)->comm,&(o)->m)
 #elif PETSC_VERSION_(2,3,3)
-#define PetscGetMap(o, m) (&(o)->m)
-#define PetscSetUpMap(o, m) PetscMapSetUp(&(o)->m)
+typedef PetscMap* PetscLayout;
+#define PetscGetLayout(o, m) (&(o)->m)
+#define PetscSetUpLayout(o, m) PetscMapSetUp(&(o)->m)
+#elif PETSC_VERSION_(3,0,0)
+typedef PetscMap* PetscLayout;
+#define PetscGetLayout(o, m) ((o)->m)
+#define PetscSetUpLayout(o, m) PetscMapSetUp((o)->m)
 #else
-#define PetscGetMap(o, m) ((o)->m)
-#define PetscSetUpMap(o, m) PetscMapSetUp((o)->m)
+#define PetscGetLayout(o, m) ((o)->m)
+#define PetscSetUpLayout(o, m) PetscLayoutSetUp((o)->m)
 #endif
 
 #if PETSC_VERSION_(2,3,2)
-#define PetscMapSetBlockSize(map,bs) ((map)->bs=(bs), 0)
+#define PetscLayoutSetBlockSize(map,bs) ((map)->bs=(bs),0)
+#elif PETSC_VERSION_(2,3,3) || PETSC_VERSION_(3,0,0)
+#define PetscLayoutSetBlockSize(map,bs) PetscMapSetBlockSize(map,bs)
 #endif
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetOption_Python"
 static PetscErrorCode MatSetBlockSize_Python(Mat mat, PetscInt bs)
 {
-  PetscMap       *rmap = PetscGetMap(mat,rmap);
-  PetscMap       *cmap = PetscGetMap(mat,cmap);
+  PetscLayout    rmap = PetscGetLayout(mat,rmap);
+  PetscLayout    cmap = PetscGetLayout(mat,cmap);
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscMapSetBlockSize(rmap,bs);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize(cmap,bs);CHKERRQ(ierr);
-  ierr = PetscSetUpMap(mat,rmap);CHKERRQ(ierr);
-  ierr = PetscSetUpMap(mat,cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(rmap,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(cmap,bs);CHKERRQ(ierr);
+  ierr = PetscSetUpLayout(mat,rmap);CHKERRQ(ierr);
+  ierr = PetscSetUpLayout(mat,cmap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -226,8 +234,8 @@ static PetscErrorCode MatSetBlockSize_Python(Mat mat, PetscInt bs)
 static PetscErrorCode MatSetUpPreallocation_Python(Mat mat)
 {
   Mat_Py         *py = (Mat_Py *) mat->data;
-  PetscMap       *rmap = PetscGetMap(mat,rmap);
-  PetscMap       *cmap = PetscGetMap(mat,cmap);
+  PetscLayout    rmap = PetscGetLayout(mat,rmap);
+  PetscLayout    cmap = PetscGetLayout(mat,cmap);
   PetscErrorCode ierr;
   PetscFunctionBegin;
   /* MatDestroy() calls MatPreallocated() !!! */
@@ -235,8 +243,8 @@ static PetscErrorCode MatSetUpPreallocation_Python(Mat mat)
   /* setup row and columns maps */
   if (rmap->bs == -1) rmap->bs = 1;
   if (cmap->bs == -1) cmap->bs = 1;
-  ierr = PetscSetUpMap(mat,rmap);CHKERRQ(ierr);
-  ierr = PetscSetUpMap(mat,cmap);CHKERRQ(ierr);
+  ierr = PetscSetUpLayout(mat,rmap);CHKERRQ(ierr);
+  ierr = PetscSetUpLayout(mat,cmap);CHKERRQ(ierr);
   /* try to load Python code if not yet done */
   if (py->self == NULL || py->self == Py_None) {
     char       pyname[2*PETSC_MAX_PATH_LEN+3];

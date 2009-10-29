@@ -84,8 +84,8 @@ PETSC_EXTERN_CXX_END
 
 /* ---------------------------------------------------------------- */
 
-#ifndef TS_PYTHON
-#define TS_PYTHON "python"
+#ifndef TSPYTHON
+#define TSPYTHON "python"
 #endif
 
 EXTERN_C_BEGIN
@@ -113,7 +113,7 @@ PETSC_EXTERN_CXX_END
 #define SNESRegisterStatic(a,b,c,d) SNESRegister(a,0,c,d)
 #define TSRegisterStatic(a,b,c,d)   TSRegister(a,0,c,d)
 
-#undef  __FUNCT__  
+#undef  __FUNCT__
 #define __FUNCT__ "PetscPythonRegisterAll"
 static PetscErrorCode PetscPythonRegisterAll(const char path[])
 {
@@ -128,7 +128,7 @@ static PetscErrorCode PetscPythonRegisterAll(const char path[])
   ierr = PCRegisterStatic   ( PCPYTHON,   path, "PCCreate_Python",   PCCreate_Python   ); CHKERRQ(ierr);
   ierr = KSPRegisterStatic  ( KSPPYTHON,  path, "KSPCreate_Python",  KSPCreate_Python  ); CHKERRQ(ierr);
   ierr = SNESRegisterStatic ( SNESPYTHON, path, "SNESCreate_Python", SNESCreate_Python ); CHKERRQ(ierr);
-  ierr = TSRegisterStatic   ( TS_PYTHON,  path, "TSCreate_Python",   TSCreate_Python   ); CHKERRQ(ierr);
+  ierr = TSRegisterStatic   ( TSPYTHON,   path, "TSCreate_Python",   TSCreate_Python   ); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

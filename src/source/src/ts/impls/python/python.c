@@ -28,7 +28,6 @@
 
 /* -------------------------------------------------------------------------- */
 
-#define TS_PYTHON "python"
 #define TSPYTHON  "python"
 
 PETSC_EXTERN_CXX_BEGIN
@@ -590,11 +589,11 @@ static PetscErrorCode TSSolve_Python(TS ts,PetscInt *steps,PetscReal *ptime)
 /* -------------------------------------------------------------------------- */
 
 /*MC
-      TS_PYTHON -
+      TSPYTHON -
 
   Level: beginner
 
-.seealso:  TS, TSCreate(), TSSetType(), TS_BEULER, TS_PSEUDO
+.seealso:  TS, TSCreate(), TSSetType(), TSBEULER, TSPSEUDO
 
 M*/
 EXTERN_C_BEGIN

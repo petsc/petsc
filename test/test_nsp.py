@@ -48,32 +48,32 @@ class TestNullSpace(unittest.TestCase):
         self.assertTrue(v.equal(w))
         del v, w
 
-    ## def testRemoveWithFunction(self):
-    ##     rem = lambda vec: vec.setArray([1,2,3])
-    ##     self.nullsp.setFunction(rem)
-    ##     v, w = self._remove()
-    ##     self.assertTrue(allclose(v, [7,  8, 9]))
-    ##     self.assertTrue(allclose(w, [1,  2, 3]))
-    ##     self.nullsp.remove(v)
-    ##     self.assertTrue(allclose(v, [1,  2, 3]))
-    ##     self.nullsp.setFunction(None)
-    ##     self.testRemove()
+    def testRemoveWithFunction(self):
+        def myremove(nsp, vec):
+            vec.setArray([1,2,3])
+        self.nullsp.setFunction(myremove)
+        v, w = self._remove()
+        self.assertTrue(allclose(v.array, [7,  8, 9]))
+        self.assertTrue(allclose(w.array, [1,  2, 3]))
+        self.nullsp.remove(v)
+        self.assertTrue(allclose(v.array, [1,  2, 3]))
+        self.nullsp.setFunction(None)
+        self.testRemove()
 
-    ## def testGetSetFunction(self):
-    ##     dct = self.nullsp.getDict(create=False)
-    ##     self.assertTrue(dct is None)
-    ##     rem = lambda v: v.set(0)
-    ##     self.nullsp.setFunction(rem)
-    ##     self.assertEqual(getrefcount(rem)-1, 2)
-    ##     dct = self.nullsp.getDict(create=False)
-    ##     self.assertTrue(dct is not None)
-    ##     self.assertEqual(getrefcount(dct)-1, 2)
-    ##     fun = dct['__function__']
-    ##     self.assertTrue(fun is rem)
-    ##     self.nullsp.setFunction(None)
-    ##     fun = dct.get('__function__')
-    ##     self.assertEqual(getrefcount(rem)-1, 1)
-    ##     self.assertTrue(fun is None)
+    def testGetSetFunction(self):
+        def rem(nsp, vec):
+            vec.set(0)
+        self.nullsp.setFunction(rem)
+        self.assertEqual(getrefcount(rem)-1, 2)
+        dct = self.nullsp.getDict()
+        self.assertTrue(dct is not None)
+        self.assertEqual(getrefcount(dct)-1, 2)
+        fun, a, kw = dct['__function__']
+        self.assertTrue(fun is rem)
+        self.nullsp.setFunction(None)
+        fun = dct.get('__function__')
+        self.assertEqual(getrefcount(rem)-1, 1)
+        self.assertTrue(fun is None)
 
 # --------------------------------------------------------------------
 

@@ -213,14 +213,20 @@ VecRestoreArrayC(Vec v, PetscScalar *a[])
 /* ---------------------------------------------------------------- */
 
 #if PETSC_VERSION_(2,3,2)
-#define PetscGetMap(o, m) (&(o)->m)
-#define PetscSetUpMap(o, m) PetscMapInitialize((o)->comm,&(o)->m)
+typedef PetscMap* PetscLayout;
+#define PetscGetLayout(o, m) (&(o)->m)
+#define PetscSetUpLayout(o, m) PetscMapInitialize((o)->comm,&(o)->m)
 #elif PETSC_VERSION_(2,3,3)
-#define PetscGetMap(o, m) (&(o)->m)
-#define PetscSetUpMap(o, m) PetscMapSetUp(&(o)->m)
+typedef PetscMap* PetscLayout;
+#define PetscGetLayout(o, m) (&(o)->m)
+#define PetscSetUpLayout(o, m) PetscMapSetUp(&(o)->m)
+#elif PETSC_VERSION_(3,0,0)
+typedef PetscMap* PetscLayout;
+#define PetscGetLayout(o, m) ((o)->m)
+#define PetscSetUpLayout(o, m) PetscMapSetUp((o)->m)
 #else
-#define PetscGetMap(o, m) ((o)->m)
-#define PetscSetUpMap(o, m) PetscMapSetUp((o)->m)
+#define PetscGetLayout(o, m) ((o)->m)
+#define PetscSetUpLayout(o, m) PetscLayoutSetUp((o)->m)
 #endif
 
 #undef __FUNCT__
@@ -228,12 +234,12 @@ VecRestoreArrayC(Vec v, PetscScalar *a[])
 PETSC_STATIC_INLINE PetscErrorCode
 MatBlockSize_Check(Mat mat,PetscInt bs)
 {
-  PetscMap *rmap;
-  PetscMap *cmap;
+  PetscLayout rmap = 0;
+  PetscLayout cmap = 0;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
-  rmap = PetscGetMap(mat,rmap);
-  cmap = PetscGetMap(mat,cmap);
+  rmap = PetscGetLayout(mat,rmap);
+  cmap = PetscGetLayout(mat,cmap);
   if (bs < 1)
     SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size specified, must be positive but it is %D",bs);
   if (rmap->n != -1 && rmap->n % bs)
@@ -255,10 +261,10 @@ MatBlockSize_SetUp(Mat mat,PetscInt bs)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
-  PetscGetMap(mat,rmap)->bs = bs;
-  PetscGetMap(mat,cmap)->bs = bs;
-  ierr = PetscSetUpMap(mat,rmap);CHKERRQ(ierr);
-  ierr = PetscSetUpMap(mat,cmap);CHKERRQ(ierr);
+  PetscGetLayout(mat,rmap)->bs = bs;
+  PetscGetLayout(mat,cmap)->bs = bs;
+  ierr = PetscSetUpLayout(mat,rmap);CHKERRQ(ierr);
+  ierr = PetscSetUpLayout(mat,cmap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -268,8 +274,8 @@ MatBlockSize_SetUp(Mat mat,PetscInt bs)
 PETSC_STATIC_INLINE PetscErrorCode
 MatSetBlockSize_Patch(Mat mat,PetscInt bs)
 {
-  PetscMap       *rmap = mat ? PetscGetMap(mat,rmap): 0;
-  PetscMap       *cmap = mat ? PetscGetMap(mat,cmap): 0;
+  PetscLayout rmap = mat ? PetscGetLayout(mat,rmap): 0;
+  PetscLayout cmap = mat ? PetscGetLayout(mat,cmap): 0;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -990,18 +996,18 @@ AOGetType(AO ao, AOType *aotype)
 #define __FUNCT__ "DACreateND"
 PETSC_STATIC_INLINE PetscErrorCode
 DACreateND(MPI_Comm comm,
-	   PetscInt dim,PetscInt dof,
-	   PetscInt M,PetscInt N,PetscInt P,
-	   PetscInt m,PetscInt n,PetscInt p,
-	   const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],
-	   DAPeriodicType wrap,DAStencilType stencil_type,PetscInt stencil_width,
-	   DA *da)
+           PetscInt dim,PetscInt dof,
+           PetscInt M,PetscInt N,PetscInt P,
+           PetscInt m,PetscInt n,PetscInt p,
+           const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],
+           DAPeriodicType wrap,DAStencilType stencil_type,PetscInt stencil_width,
+           DA *da)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = DACreate(comm,dim,wrap,stencil_type,
-		  M,N,P,m,n,p,dof,stencil_width,
-		  lx,ly,lz, da);CHKERRQ(ierr);
+                  M,N,P,m,n,p,dof,stencil_width,
+                  lx,ly,lz, da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1011,12 +1017,12 @@ DACreateND(MPI_Comm comm,
 #define __FUNCT__ "DACreateND"
 PETSC_STATIC_INLINE PetscErrorCode
 DACreateND(MPI_Comm comm,
-	   PetscInt dim,PetscInt dof,
-	   PetscInt M,PetscInt N,PetscInt P,
-	   PetscInt m,PetscInt n,PetscInt p,
-	   const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],
-	   DAPeriodicType wrap,DAStencilType stencil_type,PetscInt stencil_width,
-	   DA *da)
+           PetscInt dim,PetscInt dof,
+           PetscInt M,PetscInt N,PetscInt P,
+           PetscInt m,PetscInt n,PetscInt p,
+           const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],
+           DAPeriodicType wrap,DAStencilType stencil_type,PetscInt stencil_width,
+           DA *da)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

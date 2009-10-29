@@ -6,6 +6,14 @@
 #if (PETSC_VERSION_(3,0,0) || \
      PETSC_VERSION_(2,3,3) || \
      PETSC_VERSION_(2,3,2))
+typedef PetscErrorCode MatNullSpaceFunction(Vec,void*);
+#else
+typedef PetscErrorCode MatNullSpaceFunction(MatNullSpace,Vec,void*);
+#endif
+
+#if (PETSC_VERSION_(3,0,0) || \
+     PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2))
 #undef __FUNCT__
 #define __FUNCT__ "MatGetDiagonalBlock"
 static PETSC_UNUSED
@@ -20,7 +28,7 @@ PetscErrorCode MatGetDiagonalBlock_Compat(Mat A,PetscTruth *iscopy,MatReuse reus
   PetscValidPointer(a,3);
   PetscValidType(A,1);
   if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatGetDiagonalBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -149,7 +157,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetUp_Compat(Mat A)
 #undef __FUNCT__
 #define __FUNCT__ "MatSetOption"
 static PETSC_UNUSED
-PetscErrorCode MatSetOption_Compat(Mat mat,MatOption op,PetscTruth flag) 
+PetscErrorCode MatSetOption_Compat(Mat mat,MatOption op,PetscTruth flag)
 {
 #define MAT_OPTION_INVALID ((MatOption)(100))
   PetscErrorCode ierr;
@@ -381,12 +389,12 @@ PetscErrorCode MatSetValuesBlocked_Compat(Mat mat,PetscInt m,const PetscInt idxm
     }
     for (i=0; i<m; i++) {
       for (j=0; j<bs; j++) {
-	iidxm[i*bs+j] = bs*idxm[i] + j;
+        iidxm[i*bs+j] = bs*idxm[i] + j;
       }
     }
     for (i=0; i<n; i++) {
       for (j=0; j<bs; j++) {
-	iidxn[i*bs+j] = bs*idxn[i] + j;
+        iidxn[i*bs+j] = bs*idxn[i] + j;
       }
     }
     ierr = MatSetValues(mat,bs*m,iidxm,bs*n,iidxn,v,addv);CHKERRQ(ierr);
@@ -454,12 +462,12 @@ PetscErrorCode MatSetValuesBlockedLocal_Compat(Mat mat,PetscInt m,const PetscInt
     }
     for (i=0; i<m; i++) {
       for (j=0; j<bs; j++) {
-	iidxm[i*bs+j] = bs*idxm[i] + j;
+        iidxm[i*bs+j] = bs*idxm[i] + j;
       }
     }
     for (i=0; i<n; i++) {
       for (j=0; j<bs; j++) {
-	iidxn[i*bs+j] = bs*idxn[i] + j;
+        iidxn[i*bs+j] = bs*idxn[i] + j;
       }
     }
     ierr = MatSetValues(mat,bs*m,iidxm,bs*n,iidxn,v,addv);CHKERRQ(ierr);
@@ -477,9 +485,9 @@ PetscErrorCode MatSetValuesBlockedLocal_Compat(Mat mat,PetscInt m,const PetscInt
 #define __FUNCT__ "MatSeqBAIJSetPreallocationCSR_SeqBAIJ"
 static PETSC_UNUSED
 PetscErrorCode MatSeqBAIJSetPreallocationCSR_SeqBAIJ(Mat B,PetscInt bs,
-						     const PetscInt Ii[],
-						     const PetscInt Jj[],
-						     const PetscScalar V[])
+                                                     const PetscInt Ii[],
+                                                     const PetscInt Jj[],
+                                                     const PetscScalar V[])
 {
   PetscInt       i,m,nz,nz_max=0,*nnz;
   PetscScalar    *values=0;
@@ -532,14 +540,14 @@ PetscErrorCode MatSeqBAIJSetPreallocationCSR_SeqBAIJ(Mat B,PetscInt bs,
 #define __FUNCT__ "MatSeqBAIJSetPreallocationCSR"
 static PETSC_UNUSED
 PetscErrorCode MatSeqBAIJSetPreallocationCSR_Compat(Mat B,PetscInt bs,
-						    const PetscInt i[],
-						    const PetscInt j[],
-						    const PetscScalar v[])
+                                                    const PetscInt i[],
+                                                    const PetscInt j[],
+                                                    const PetscScalar v[])
 {
   PetscErrorCode ierr,(*f)(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]);
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)B, "MatSeqBAIJSetPreallocation_C",
-				  (void (**)(void))&f);CHKERRQ(ierr);
+                                  (void (**)(void))&f);CHKERRQ(ierr);
   if (f) { f = MatSeqBAIJSetPreallocationCSR_SeqBAIJ; }
   if (f) {
     ierr = (*f)(B,bs,i,j,v);CHKERRQ(ierr);
@@ -556,9 +564,9 @@ PetscErrorCode MatSeqBAIJSetPreallocationCSR_Compat(Mat B,PetscInt bs,
 #define __FUNCT__ "MatMPIBAIJSetPreallocationCSR_MPIBAIJ"
 static PETSC_UNUSED
 PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B, PetscInt bs,
-						     const PetscInt Ii[],
-						     const PetscInt Jj[],
-						     const PetscScalar V[])
+                                                     const PetscInt Ii[],
+                                                     const PetscInt Jj[],
+                                                     const PetscScalar V[])
 {
   PetscInt       m,rstart,cstart,cend;
   PetscInt       i,j,d,nz,nz_max=0,*d_nnz=0,*o_nnz=0;
@@ -628,14 +636,14 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B, PetscInt bs,
 #define __FUNCT__ "MatMPIBAIJSetPreallocationCSR"
 static PETSC_UNUSED
 PetscErrorCode MatMPIBAIJSetPreallocationCSR_Compat(Mat B,PetscInt bs,
-						    const PetscInt i[],
-						    const PetscInt j[],
-						    const PetscScalar v[])
+                                                    const PetscInt i[],
+                                                    const PetscInt j[],
+                                                    const PetscScalar v[])
 {
   PetscErrorCode ierr,(*f)(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]);
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)B, "MatMPIBAIJSetPreallocationCSR_C",
-				  (void (**)(void))&f);CHKERRQ(ierr);
+                                  (void (**)(void))&f);CHKERRQ(ierr);
   if (f) { f = MatMPIBAIJSetPreallocationCSR_MPIBAIJ; }
   if (f) {
     ierr = (*f)(B,bs,i,j,v);CHKERRQ(ierr);
@@ -647,13 +655,13 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_Compat(Mat B,PetscInt bs,
 
 #if PETSC_VERSION_(2,3,2)
 #define MatGetRowIJ(mat,shift,symm,bc,n,ia,ja,done) \
-	MatGetRowIJ(mat,shift,symm,n,ia,ja,done)
+        MatGetRowIJ(mat,shift,symm,n,ia,ja,done)
 #define MatRestoreRowIJ(mat,shift,symm,bc,n,ia,ja,done) \
-	MatRestoreRowIJ(mat,shift,symm,n,ia,ja,done)
+        MatRestoreRowIJ(mat,shift,symm,n,ia,ja,done)
 #define MatGetColumnIJ(mat,shift,symm,bc,n,ia,ja,done) \
-	MatGetColumnIJ(mat,shift,symm,n,ia,ja,done)
+        MatGetColumnIJ(mat,shift,symm,n,ia,ja,done)
 #define MatRestoreColumnIJ(mat,shift,symm,bc,n,ia,ja,done) \
-	MatRestoreColumnIJ(mat,shift,symm,n,ia,ja,done)
+        MatRestoreColumnIJ(mat,shift,symm,n,ia,ja,done)
 #endif
 
 #endif /* _COMPAT_PETSC_MAT_H */

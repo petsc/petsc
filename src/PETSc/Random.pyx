@@ -55,11 +55,6 @@ cdef class Random(Object):
         CHKERR( PetscRandomGetValueReal(self.rnd, &rval) )
         return toReal(rval)
 
-    def getValueImaginary(self):
-        cdef PetscScalar sval = 0
-        CHKERR( PetscRandomGetValueImaginary(self.rnd, &sval) )
-        return toScalar(sval)
-
     def getSeed(self):
         cdef unsigned long seed = 0
         CHKERR( PetscRandomGetSeed(self.rnd, &seed) )

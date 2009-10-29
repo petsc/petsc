@@ -2,19 +2,19 @@
 
 class TSType(object):
     # native
-    EULER           = TS_EULER
-    BEULER          = TS_BEULER
-    CRANK_NICHOLSON = TS_CRANK_NICHOLSON
-    RUNGE_KUTTA     = TS_RUNGE_KUTTA
-    PSEUDO          = TS_PSEUDO
-    SUNDIALS        = TS_SUNDIALS
+    EULER           = TSEULER
+    BEULER          = TSBEULER
+    CRANK_NICHOLSON = TSCRANK_NICHOLSON
+    RUNGE_KUTTA     = TSRUNGE_KUTTA
+    PSEUDO          = TSPSEUDO
+    SUNDIALS        = TSSUNDIALS
     # aliases
     FE = EULER
     BE = BEULER
     CN = CRANK_NICHOLSON
     RK = RUNGE_KUTTA
     #
-    PYTHON = TS_PYTHON
+    PYTHON = TSPYTHON
 
 class TSProblemType(object):
     LINEAR    = TS_LINEAR
@@ -231,9 +231,9 @@ cdef class TS(Object):
         cdef PetscReal rval = asReal(time)
         cdef PetscVec  uvec = NULL
         if u is not None: uvec = u.vec
-        if uvec == NULL: 
+        if uvec == NULL:
             ## CHKERR( TSGetSolutionUpdate(self.ts, &uvec) )
-            if uvec == NULL: 
+            if uvec == NULL:
                 CHKERR( TSGetSolution(self.ts, &uvec) )
         CHKERR( TSMonitorCall(self.ts, ival, rval, uvec) )
 
@@ -263,7 +263,7 @@ cdef class TS(Object):
         cdef PetscTS newts = NULL
         CHKERR( TSCreate(ccomm, &newts) )
         PetscCLEAR(self.obj); self.ts = newts
-        CHKERR( TSSetType(self.ts, TS_PYTHON) )
+        CHKERR( TSSetType(self.ts, TSPYTHON) )
         CHKERR( TSPythonSetContext(self.ts, <void*>context) )
         return self
 

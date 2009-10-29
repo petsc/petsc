@@ -1,12 +1,15 @@
 cdef extern from "petscts.h" nogil:
 
     ctypedef char* PetscTSType "const char*"
-    PetscTSType TS_EULER
-    PetscTSType TS_RUNGE_KUTTA
-    PetscTSType TS_BEULER
-    PetscTSType TS_CRANK_NICHOLSON
-    PetscTSType TS_PSEUDO
-    PetscTSType TS_SUNDIALS
+    PetscTSType TSEULER
+    PetscTSType TSBEULER
+    PetscTSType TSPSEUDO
+    PetscTSType TSCRANK_NICHOLSON
+    PetscTSType TSSUNDIALS
+    PetscTSType TSRUNGE_KUTTA
+    PetscTSType TSTHETA
+    PetscTSType TSGL
+    PetscTSType TSSSP
 
     ctypedef enum PetscTSProblemType "TSProblemType":
         TS_LINEAR
@@ -177,7 +180,7 @@ cdef inline int TS_clsMon(PetscTS ts) except -1:
 # --------------------------------------------------------------------
 
 cdef extern from "libpetsc4py.h":
-    PetscTSType TS_PYTHON
+    PetscTSType TSPYTHON
     int TSPythonSetContext(PetscTS,void*)
     int TSPythonGetContext(PetscTS,void**)
     int TSPythonSetType(PetscTS,char[])
