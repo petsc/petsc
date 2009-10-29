@@ -65,7 +65,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
   }
   B->nbs     = ec;
   baij->B->cmap->n = baij->B->cmap->N = ec*mat->rmap->bs;
-  ierr = PetscMapSetUp((baij->B->cmap));CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp((baij->B->cmap));CHKERRQ(ierr);
   ierr = PetscTableDestroy(gid1_lid1);CHKERRQ(ierr);
   /* Mark Adams */
 #else
@@ -102,7 +102,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
   }
   B->nbs       = ec;
   baij->B->cmap->n =baij->B->cmap->N  = ec*mat->rmap->bs;
-  ierr = PetscMapSetUp((baij->B->cmap));CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp((baij->B->cmap));CHKERRQ(ierr);
   ierr = PetscFree(indices);CHKERRQ(ierr);
 #endif  
 

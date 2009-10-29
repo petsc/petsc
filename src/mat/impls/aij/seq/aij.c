@@ -1136,8 +1136,8 @@ EXTERN_C_END
 
 #include "../src/mat/impls/aij/seq/ftn-kernels/frelax.h"
 #undef __FUNCT__  
-#define __FUNCT__ "MatRelax_SeqAIJ"
-PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+#define __FUNCT__ "MatSOR_SeqAIJ"
+PetscErrorCode MatSOR_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
   PetscScalar        *x,d,sum,*t,scale;
@@ -2440,7 +2440,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
 /*10*/ 0,
        MatLUFactor_SeqAIJ,
        0,
-       MatRelax_SeqAIJ,
+       MatSOR_SeqAIJ,
        MatTranspose_SeqAIJ,
 /*15*/ MatGetInfo_SeqAIJ,
        MatEqual_SeqAIJ,
@@ -2922,10 +2922,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscIn
     nz             = 0;
   }
 
-  ierr = PetscMapSetBlockSize(B->rmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize(B->cmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(B->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(B->rmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(B->cmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
 
   if (nz == PETSC_DEFAULT || nz == PETSC_DECIDE) nz = 5;
   if (nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"nz cannot be less than 0: value %d",nz);
@@ -3356,10 +3356,10 @@ PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat C,Mat A,MatDuplicateOption cpvalu
 
   C->assembled      = PETSC_TRUE;
  
-  ierr = PetscMapSetBlockSize(C->rmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize(C->cmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(C->rmap);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(C->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(C->rmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(C->cmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(C->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(C->cmap);CHKERRQ(ierr);
 
   ierr = PetscMalloc2(m,PetscInt,&c->imax,m,PetscInt,&c->ilen);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(C, 2*m*sizeof(PetscInt));CHKERRQ(ierr);

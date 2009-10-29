@@ -71,7 +71,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerInitializePackage(const char[])
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerRegister(const char*,const char*,const char*,PetscErrorCode (*)(PetscViewer));
 
 /*MC
-   PetscViewerRegisterDynamic - Adds a method to the Krylov subspace solver package.
+   PetscViewerRegisterDynamic - Adds a viewer
 
    Synopsis:
    PetscErrorCode PetscViewerRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(PetscViewer))
@@ -79,15 +79,15 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerRegister(const char*,const char
    Not Collective
 
    Input Parameters:
-+  name_solver - name of a new user-defined solver
-.  path - path (either absolute or relative) the library containing this solver
++  name_solver - name of a new user-defined viewer
+.  path - path (either absolute or relative) the library containing this viewer
 .  name_create - name of routine to create method context
 -  routine_create - routine to create method context
 
    Level: developer
 
    Notes:
-   PetscViewerRegisterDynamic() may be called multiple times to add several user-defined solvers.
+   PetscViewerRegisterDynamic() may be called multiple times to add several user-defined viewers.
 
    If dynamic libraries are used, then the fourth input argument (routine_create)
    is ignored.
@@ -99,7 +99,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerRegister(const char*,const char
 .ve
 
    Then, your solver can be chosen with the procedural interface via
-$     PetscViewerSetType(ksp,"my_viewer_type")
+$     PetscViewerSetType(viewer,"my_viewer_type")
    or at runtime via the option
 $     -viewer_type my_viewer_type
 

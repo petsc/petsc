@@ -439,8 +439,8 @@ EXTERN_C_END
 
 /* ------------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "MatRelax_SeqDense"
-PetscErrorCode MatRelax_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal shift,PetscInt its,PetscInt lits,Vec xx)
+#define __FUNCT__ "MatSOR_SeqDense"
+PetscErrorCode MatSOR_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal shift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
   PetscScalar    *x,*b,*v = mat->v,zero = 0.0,xt;
@@ -1751,7 +1751,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
 /*10*/ 0,
        MatLUFactor_SeqDense,
        MatCholeskyFactor_SeqDense,
-       MatRelax_SeqDense,
+       MatSOR_SeqDense,
        MatTranspose_SeqDense,
 /*15*/ MatGetInfo_SeqDense,
        MatEqual_SeqDense,
@@ -2016,10 +2016,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqDense(Mat B)
   ierr = MPI_Comm_size(((PetscObject)B)->comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,"Comm must be of size 1");
 
-  ierr = PetscMapSetBlockSize(B->rmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize(B->cmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(B->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(B->rmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(B->cmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
 
   ierr            = PetscNewLog(B,Mat_SeqDense,&b);CHKERRQ(ierr);
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);

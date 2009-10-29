@@ -31,7 +31,7 @@ struct _MatOps {
   PetscErrorCode (*solvetransposeadd)(Mat,Vec,Vec,Vec);
   PetscErrorCode (*lufactor)(Mat,IS,IS,const MatFactorInfo*);
   PetscErrorCode (*choleskyfactor)(Mat,IS,const MatFactorInfo*);
-  PetscErrorCode (*relax)(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
+  PetscErrorCode (*sor)(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
   PetscErrorCode (*transpose)(Mat,MatReuse,Mat *);
   /*15*/
   PetscErrorCode (*getinfo)(Mat,MatInfoType,MatInfo*);
@@ -120,7 +120,7 @@ struct _MatOps {
   PetscErrorCode (*issymmetric)(Mat,PetscReal,PetscTruth*);
   PetscErrorCode (*ishermitian)(Mat,PetscReal,PetscTruth*);
   PetscErrorCode (*isstructurallysymmetric)(Mat,PetscTruth*);
-  PetscErrorCode (*pbrelax)(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
+  PetscErrorCode (*dummy)(void);
   PetscErrorCode (*getvecs)(Mat,Vec*,Vec*);
   /*89*/
   PetscErrorCode (*matmult)(Mat,Mat,MatReuse,PetscReal,Mat*);
@@ -254,7 +254,7 @@ EXTERN PetscErrorCode Mat_CheckCompressedRow(Mat,Mat_CompressedRow*,PetscInt*,Pe
 
 struct _p_Mat {
   PETSCHEADER(struct _MatOps);
-  PetscMap               *rmap,*cmap;
+  PetscLayout            rmap,cmap;
   void                   *data;            /* implementation-specific data */
   MatFactorType          factor;           /* MAT_FACTOR_LU, or MAT_FACTOR_CHOLESKY */
   PetscTruth             assembled;        /* is the matrix assembled? */
@@ -445,6 +445,78 @@ EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
   } else if (PetscAbsScalar(sctx.pv) <= _zero){\
     ierr = MatFactorDumpMatrix(A);CHKERRQ(ierr);\
     SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rowsum %G",row,PetscAbsScalar(sctx.pv),_zero,_rs); \
+  } else {\
+    _newshift = 0;\
+  }\
+  newshift = _newshift;\
+}
+
+#define MatPivotCheck_nz(info,sctx,row,newshift) 0;\
+{\
+  PetscInt  _newshift;\
+  PetscReal _rs   = sctx.rs;\
+  PetscReal _zero = info->zeropivot*_rs;\
+  if (info->shiftnz && PetscAbsScalar(sctx.pv) <= _zero){\
+    /* force |diag| > zeropivot*rs */\
+    if (!sctx.nshift){\
+      sctx.shift_amount = info->shiftnz;\
+    } else {\
+      sctx.shift_amount *= 2.0;\
+    }\
+    sctx.lushift = PETSC_TRUE;\
+    (sctx.nshift)++;\
+    _newshift = 1;\
+  } else {\
+    _newshift = 0;\
+  }\
+  newshift = _newshift;\
+}
+
+#define MatPivotCheck_pd(info,sctx,row,newshift) 0;\
+{\
+  PetscInt  _newshift;\
+  PetscReal _rs   = sctx.rs;\
+  PetscReal _zero = info->zeropivot*_rs;\
+  if (info->shiftpd && PetscRealPart(sctx.pv) <= _zero){\
+    /* force matfactor to be diagonally dominant */\
+    if (sctx.nshift > sctx.nshift_max) {\
+      ierr = MatFactorDumpMatrix(A);CHKERRQ(ierr);\
+      SETERRQ1(PETSC_ERR_CONV_FAILED,"Unable to determine shift to enforce positive definite preconditioner after %d tries",sctx.nshift);\
+    } else if (sctx.nshift == sctx.nshift_max) {\
+      sctx.shift_fraction = sctx.shift_hi;\
+      sctx.lushift        = PETSC_TRUE;\
+    } else {\
+      sctx.shift_lo = sctx.shift_fraction;\
+      sctx.shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;\
+      sctx.lushift  = PETSC_TRUE;\
+    }\
+    sctx.shift_amount = sctx.shift_fraction * sctx.shift_top;\
+    sctx.nshift++;\
+    _newshift = 1;\
+  } else {\
+    _newshift = 0;\
+  }\
+  newshift = _newshift;\
+}
+
+#define MatPivotCheck_inblocks(info,sctx,row,newshift) 0;\
+{\
+  PetscReal _zero = info->zeropivot;\
+  if (PetscAbsScalar(sctx.pv) <= _zero){\
+    sctx.pv += info->shiftinblocks;\
+    sctx.shift_amount = 1.e-12;\
+    sctx.nshift++;\
+  }\
+  newshift = 0;\
+}
+
+#define MatPivotCheck_none(info,sctx,row,newshift) 0;\
+{\
+  PetscInt  _newshift;\
+  PetscReal _zero = info->zeropivot;\
+  if (PetscAbsScalar(sctx.pv) <= _zero){\
+    ierr = MatFactorDumpMatrix(A);CHKERRQ(ierr);\
+    SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G",row,PetscAbsScalar(sctx.pv),_zero); \
   } else {\
     _newshift = 0;\
   }\
@@ -978,7 +1050,7 @@ typedef struct {
 
 extern PetscLogEvent  MAT_Mult, MAT_MultMatrixFree, MAT_Mults, MAT_MultConstrained, MAT_MultAdd, MAT_MultTranspose;
 extern PetscLogEvent  MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT_Solves, MAT_SolveAdd, MAT_SolveTranspose;
-extern PetscLogEvent  MAT_SolveTransposeAdd, MAT_Relax, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic;
+extern PetscLogEvent  MAT_SolveTransposeAdd, MAT_SOR, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic;
 extern PetscLogEvent  MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymbolic, MAT_CholeskyFactorNumeric, MAT_ILUFactor;
 extern PetscLogEvent  MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin;
 extern PetscLogEvent  MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetRowIJ, MAT_GetSubMatrices, MAT_GetColoring, MAT_GetOrdering, MAT_GetRedundantMatrix;

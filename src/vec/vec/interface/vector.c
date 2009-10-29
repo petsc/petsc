@@ -526,7 +526,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecDestroy(Vec v)
   if (v->bmapping) {
     ierr = ISLocalToGlobalMappingDestroy(v->bmapping);CHKERRQ(ierr);
   }
-  ierr = PetscMapDestroy(v->map);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(v->map);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -855,7 +855,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetOwnershipRanges(Vec x,const PetscInt *ra
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,1);
   PetscValidType(x,1);
-  ierr = PetscMapGetRanges(x->map,ranges);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRanges(x->map,ranges);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

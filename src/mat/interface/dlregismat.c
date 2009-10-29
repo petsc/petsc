@@ -93,7 +93,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(const char path[])
   ierr = PetscLogEventRegister("MatSolveAdd",      MAT_COOKIE,&MAT_SolveAdd);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatSolveTranspos", MAT_COOKIE,&MAT_SolveTranspose);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatSolveTrAdd",    MAT_COOKIE,&MAT_SolveTransposeAdd);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatRelax",         MAT_COOKIE,&MAT_Relax);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatSOR",           MAT_COOKIE,&MAT_SOR);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatForwardSolve",  MAT_COOKIE,&MAT_ForwardSolve);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatBackwardSolve", MAT_COOKIE,&MAT_BackwardSolve);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatLUFactor",      MAT_COOKIE,&MAT_LUFactor);CHKERRQ(ierr);

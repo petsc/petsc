@@ -244,18 +244,18 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeSetUp(DMComposite packer)
   PetscInt               nprev = 0;
   PetscMPIInt            rank,size;
   struct DMCompositeLink *next = packer->next;
-  PetscMap               map;
+  PetscLayout            map;
 
   PetscFunctionBegin;
   if (packer->setup) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Packer has already been setup");
-  ierr = PetscMapInitialize(((PetscObject)packer)->comm,&map);CHKERRQ(ierr);
-  ierr = PetscMapSetLocalSize(&map,packer->n);CHKERRQ(ierr);
-  ierr = PetscMapSetSize(&map,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize(&map,1);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(&map);CHKERRQ(ierr);
-  ierr = PetscMapGetSize(&map,&packer->N);CHKERRQ(ierr);
-  ierr = PetscMapGetRange(&map,&packer->rstart,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscFree(map.range);CHKERRQ(ierr);
+  ierr = PetscLayoutCreate(((PetscObject)packer)->comm,&map);CHKERRQ(ierr);
+  ierr = PetscLayoutSetLocalSize(map,packer->n);CHKERRQ(ierr);
+  ierr = PetscLayoutSetSize(map,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(map,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
+  ierr = PetscLayoutGetSize(map,&packer->N);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRange(map,&packer->rstart,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(map);CHKERRQ(ierr);
     
   /* now set the rstart for each linked array/vector */
   ierr = MPI_Comm_rank(((PetscObject)packer)->comm,&rank);CHKERRQ(ierr);

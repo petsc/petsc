@@ -13,7 +13,7 @@ PetscCookie PETSCMAT_DLLEXPORT MAT_FDCOLORING_COOKIE;
 
 PetscLogEvent  MAT_Mult, MAT_Mults, MAT_MultConstrained, MAT_MultAdd, MAT_MultTranspose;
 PetscLogEvent  MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT_Solves, MAT_SolveAdd, MAT_SolveTranspose, MAT_MatSolve;
-PetscLogEvent  MAT_SolveTransposeAdd, MAT_Relax, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic;
+PetscLogEvent  MAT_SolveTransposeAdd, MAT_SOR, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic;
 PetscLogEvent  MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymbolic, MAT_CholeskyFactorNumeric, MAT_ILUFactor;
 PetscLogEvent  MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin;
 PetscLogEvent  MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetRowIJ, MAT_GetSubMatrices, MAT_GetColoring, MAT_GetOrdering, MAT_GetRedundantMatrix, MAT_GetSeqNonzeroStructure;
@@ -857,8 +857,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy(Mat A)
   }
 
   if (A->spptr){ierr = PetscFree(A->spptr);CHKERRQ(ierr);}
-  ierr = PetscMapDestroy(A->rmap);CHKERRQ(ierr);
-  ierr = PetscMapDestroy(A->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(A->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(A->cmap);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3134,9 +3134,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x
 /* ----------------------------------------------------------------*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatRelax"
+#define __FUNCT__ "MatSOR"
 /*@
-   MatRelax - Computes relaxation (SOR, Gauss-Seidel) sweeps.
+   MatSOR - Computes relaxation (SOR, Gauss-Seidel) sweeps.
 
    Collective on Mat and Vec
 
@@ -3169,7 +3169,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x
    SOR_LOCAL_SYMMETRIC_SWEEP perform separate independent smoothings
    on each processor. 
 
-   Application programmers will not generally use MatRelax() directly,
+   Application programmers will not generally use MatSOR() directly,
    but instead will employ the KSP/PC interface.
 
    Notes for Advanced Users:
@@ -3181,8 +3181,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x
    instead of working directly with matrix algebra routines such as this.
    See, e.g., KSPCreate().
 
-   See also, MatPBRelax(). This routine will automatically call the point block
-   version if the point version is not available.
 
    Level: developer
 
@@ -3191,7 +3189,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x
    Concepts: matrices^Gauss-Seidel
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,PetscInt its,PetscInt lits,Vec x)
+PetscErrorCode PETSCMAT_DLLEXPORT MatSOR(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,PetscInt its,PetscInt lits,Vec x)
 {
   PetscErrorCode ierr;
 
@@ -3202,7 +3200,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRelax(Mat mat,Vec b,PetscReal omega,MatSORT
   PetscValidHeaderSpecific(x,VEC_COOKIE,8);
   PetscCheckSameComm(mat,1,b,2);
   PetscCheckSameComm(mat,1,x,8);
-  if (!mat->ops->relax && !mat->ops->pbrelax) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  if (!mat->ops->sor) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (mat->cmap->N != x->map->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec x: global dim %D %D",mat->cmap->N,x->map->N);
@@ -3212,56 +3210,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRelax(Mat mat,Vec b,PetscReal omega,MatSORT
   if (lits <= 0) SETERRQ1(PETSC_ERR_ARG_WRONG,"Relaxation requires local its %D positive",lits);
 
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(MAT_Relax,mat,b,x,0);CHKERRQ(ierr);
-  if (mat->ops->relax) {
-    ierr =(*mat->ops->relax)(mat,b,omega,flag,shift,its,lits,x);CHKERRQ(ierr);
-  } else {
-    ierr =(*mat->ops->pbrelax)(mat,b,omega,flag,shift,its,lits,x);CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventEnd(MAT_Relax,mat,b,x,0);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatPBRelax"
-/*@
-   MatPBRelax - Computes relaxation (SOR, Gauss-Seidel) sweeps.
-
-   Collective on Mat and Vec
-
-   See MatRelax() for usage. This is called by MatRelax() when appropriate so need not be called by users.
-
-   For multi-component PDEs where the Jacobian is stored in a point block format
-   (with the PETSc BAIJ matrix formats) the relaxation is done one point block at 
-   a time. That is, the small (for example, 4 by 4) blocks along the diagonal are solved
-   simultaneously (that is a 4 by 4 linear solve is done) to update all the values at a point.
-
-   Level: developer
-
-@*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPBRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,PetscInt its,PetscInt lits,Vec x)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
-  PetscValidType(mat,1);
-  PetscValidHeaderSpecific(b,VEC_COOKIE,2); 
-  PetscValidHeaderSpecific(x,VEC_COOKIE,8);
-  PetscCheckSameComm(mat,1,b,2);
-  PetscCheckSameComm(mat,1,x,8);
-  if (!mat->ops->pbrelax) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
-  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (mat->cmap->N != x->map->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec x: global dim %D %D",mat->cmap->N,x->map->N);
-  if (mat->rmap->N != b->map->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: global dim %D %D",mat->rmap->N,b->map->N);
-  if (mat->rmap->n != b->map->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: local dim %D %D",mat->rmap->n,b->map->n);
-  ierr = MatPreallocated(mat);CHKERRQ(ierr);
-
-  ierr = PetscLogEventBegin(MAT_Relax,mat,b,x,0);CHKERRQ(ierr);
-  ierr =(*mat->ops->pbrelax)(mat,b,omega,flag,shift,its,lits,x);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_Relax,mat,b,x,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_SOR,mat,b,x,0);CHKERRQ(ierr);
+  ierr =(*mat->ops->sor)(mat,b,omega,flag,shift,its,lits,x);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_SOR,mat,b,x,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3692,8 +3643,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDuplicate(Mat mat,MatDuplicateOption op,Mat
   if (mat->bmapping) {
     ierr = MatSetLocalToGlobalMappingBlock(B,mat->bmapping);CHKERRQ(ierr);
   }
-  ierr = PetscMapCopy(((PetscObject)mat)->comm,mat->rmap,B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapCopy(((PetscObject)mat)->comm,mat->cmap,B->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutCopy(mat->rmap,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutCopy(mat->cmap,&B->cmap);CHKERRQ(ierr);
   
   B->stencil.dim = mat->stencil.dim;
   B->stencil.noc = mat->stencil.noc;
@@ -5269,7 +5220,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRanges(Mat mat,const PetscInt *
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
-  ierr = PetscMapGetRanges(mat->rmap,ranges);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRanges(mat->rmap,ranges);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5301,7 +5252,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRangesColumn(Mat mat,const Pets
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
-  ierr = PetscMapGetRanges(mat->cmap,ranges);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRanges(mat->cmap,ranges);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5959,8 +5910,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetBlockSize(Mat mat,PetscInt bs)
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   if (mat->ops->setblocksize) {
     /* XXX should check if (bs < 1) ??? */
-    ierr = PetscMapSetBlockSize(mat->rmap,bs);CHKERRQ(ierr);
-    ierr = PetscMapSetBlockSize(mat->cmap,bs);CHKERRQ(ierr);
+    ierr = PetscLayoutSetBlockSize(mat->rmap,bs);CHKERRQ(ierr);
+    ierr = PetscLayoutSetBlockSize(mat->cmap,bs);CHKERRQ(ierr);
     ierr = (*mat->ops->setblocksize)(mat,bs);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_ERR_ARG_INCOMP,"Cannot set the blocksize for matrix type %s",((PetscObject)mat)->type_name);
@@ -7293,7 +7244,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetVecs(Mat mat,Vec *right,Vec *left)
       ierr = VecSetBlockSize(*right,mat->rmap->bs);CHKERRQ(ierr);
       if (size > 1) {
         /* New vectors uses Mat cmap and does not create a new one */
-	ierr = PetscMapDestroy((*right)->map);CHKERRQ(ierr);
+	ierr = PetscLayoutDestroy((*right)->map);CHKERRQ(ierr);
 	(*right)->map = mat->cmap;
 	mat->cmap->refcnt++;
 
@@ -7306,7 +7257,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetVecs(Mat mat,Vec *right,Vec *left)
       ierr = VecSetBlockSize(*left,mat->rmap->bs);CHKERRQ(ierr);
       if (size > 1) {
         /* New vectors uses Mat rmap and does not create a new one */
-	ierr = PetscMapDestroy((*left)->map);CHKERRQ(ierr);
+	ierr = PetscLayoutDestroy((*left)->map);CHKERRQ(ierr);
 	(*left)->map = mat->rmap;
 	mat->rmap->refcnt++;
 

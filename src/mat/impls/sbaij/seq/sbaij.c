@@ -136,7 +136,7 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
   if (a->free_diag) {ierr = PetscFree(a->diag);CHKERRQ(ierr);}
   if (a->free_imax_ilen) {ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);}
   ierr = PetscFree(a->solve_work);CHKERRQ(ierr);
-  ierr = PetscFree(a->relax_work);CHKERRQ(ierr);
+  ierr = PetscFree(a->sor_work);CHKERRQ(ierr);
   ierr = PetscFree(a->solves_work);CHKERRQ(ierr);
   ierr = PetscFree(a->mult_work);CHKERRQ(ierr);
   ierr = PetscFree(a->saved_values);CHKERRQ(ierr);
@@ -848,7 +848,7 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
       ierr = PetscLogObjectMemory(A,a->i[A->rmap->n]*sizeof(unsigned short));CHKERRQ(ierr);
       for (i=0; i<a->i[A->rmap->n]; i++) a->jshort[i] = a->j[i];
       A->ops->mult  = MatMult_SeqSBAIJ_1_ushort;
-      A->ops->relax = MatRelax_SeqSBAIJ_ushort;
+      A->ops->sor = MatSOR_SeqSBAIJ_ushort;
       a->free_jshort = PETSC_TRUE;
     }
   }
@@ -1265,7 +1265,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
 /*10*/ 0,
        0,
        MatCholeskyFactor_SeqSBAIJ,
-       MatRelax_SeqSBAIJ,
+       MatSOR_SeqSBAIJ,
        MatTranspose_SeqSBAIJ,
 /*15*/ MatGetInfo_SeqSBAIJ,
        MatEqual_SeqSBAIJ,
@@ -1443,10 +1443,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,Pet
   }
   bs = newbs;
 
-  ierr = PetscMapSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(B->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
 
   mbs  = B->rmap->N/bs;
   bs2  = bs*bs;
@@ -1965,8 +1965,8 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c->keepnonzeropattern = a->keepnonzeropattern;
   C->assembled          = PETSC_TRUE;
 
-  ierr = PetscMapCopy(((PetscObject)A)->comm,A->rmap,C->rmap);CHKERRQ(ierr);  
-  ierr = PetscMapCopy(((PetscObject)A)->comm,A->cmap,C->cmap);CHKERRQ(ierr);  
+  ierr = PetscLayoutCopy(A->rmap,&C->rmap);CHKERRQ(ierr);  
+  ierr = PetscLayoutCopy(A->cmap,&C->cmap);CHKERRQ(ierr);  
   c->bs2  = a->bs2;
   c->mbs  = a->mbs;
   c->nbs  = a->nbs;

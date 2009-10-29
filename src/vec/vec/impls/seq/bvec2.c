@@ -720,7 +720,7 @@ static PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
   s->array_allocated = 0;
 
   if (v->map->bs == -1) v->map->bs = 1;
-  ierr = PetscMapSetUp(v->map);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(v->map);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)v,VECSEQ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEnginePut_C","VecMatlabEnginePut_Default",VecMatlabEnginePut_Default);CHKERRQ(ierr);

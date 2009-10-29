@@ -89,6 +89,9 @@ may need to change some of your PetscOptionsXXName() to
 PetscOptionsXXTruth()</li>
         <li>Added configure option --with-single-library that causes
 all PETSc code to be compiled into the single library libpetsc.XXX</li>
+        <li>PetscMap changed to PetscLayout and PetscMapInitialize()
+changed to PetscLayoutInitialize() and it now allocates the space of
+the object.</li>
       </ul>
       <ul>
       </ul>
@@ -132,6 +135,10 @@ structures for the nonzeros and thus save memory.</li>
         <li>The function provided to MatNullSpaceSetFunction() now
 takes a MatNullSpace() as the first argument. Added Fortran interface
 for this function as well.</li>
+        <li>Removed MatPBRelax() merged its functionality into
+MatRelax()</li>
+        <li>Changed MatRelax() to MatSOR() to match MatSORType() and
+PCSOR</li>
       </ul>
       <u><b>PC:</b></u>
       <ul>

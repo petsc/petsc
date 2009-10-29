@@ -636,14 +636,8 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const MatFact
   MatScalar      d;
 
   PetscFunctionBegin;
-  /* ZeropivotSetUp(): initialize shift context sctx */
-  sctx.nshift         = 0;
-  sctx.nshift_max     = 0;
-  sctx.shift_top      = 0.0;
-  sctx.shift_lo       = 0.0;
-  sctx.shift_hi       = 0.0;
-  sctx.shift_fraction = 0.0;
-  sctx.shift_amount   = 0.0;
+  /* MatPivotSetUp(): initialize shift context sctx */
+  ierr = PetscMemzero(&sctx,sizeof(LUShift_Ctx));CHKERRQ(ierr);
 
   /* if both shift schemes are chosen by user, only use info->shiftpd */
   if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
@@ -732,10 +726,20 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const MatFact
         pv[j] = rtmp[pj[j]]; rs += PetscAbsScalar(pv[j]);
       }
 
-      /* ZeropivotCheck() */
+      /* MatPivotCheck() */
       sctx.rs  = rs;
       sctx.pv  = rtmp[i];
-      ierr = MatLUCheckShift_inline(info,sctx,i,newshift);CHKERRQ(ierr);
+      /* ierr = MatLUCheckShift_inline(info,sctx,i,newshift);CHKERRQ(ierr); */
+      if (info->shiftnz){
+        ierr = MatPivotCheck_nz(info,sctx,i,newshift);CHKERRQ(ierr);
+      } else if (info->shiftpd){
+        ierr = MatPivotCheck_pd(info,sctx,i,newshift);CHKERRQ(ierr);
+      } else if (info->shiftinblocks){
+        ierr = MatPivotCheck_inblocks(info,sctx,i,newshift);CHKERRQ(ierr);       
+      } else {
+        ierr = MatPivotCheck_none(info,sctx,i,newshift);CHKERRQ(ierr);   
+      }
+      rtmp[i] = sctx.pv;
       if (newshift == 1) break;
 
       /* Mark diagonal and invert diagonal for simplier triangular solves */
@@ -744,7 +748,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const MatFact
 
     } /* endof for (i=0; i<n; i++){ */
 
-    /* ZeropivotRefine() */
+    /* MatPivotRefine() */
     if (info->shiftpd && !sctx.lushift && sctx.shift_fraction>0 && sctx.nshift<sctx.nshift_max){
       /* 
        * if no shift in this attempt & shifting & started shifting & can refine,
@@ -778,7 +782,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const MatFact
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(C->cmap->n);CHKERRQ(ierr);
 
-  /* ZeropivotView() */
+  /* MatPivotView() */
   if (sctx.nshift){
     if (info->shiftpd) {
       ierr = PetscInfo4(A,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,sctx.shift_fraction,sctx.shift_top);CHKERRQ(ierr);

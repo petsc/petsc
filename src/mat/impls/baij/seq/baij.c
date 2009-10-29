@@ -135,8 +135,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInvertBlockDiagonal_SeqBAIJ(Mat A)
 EXTERN_C_END
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatPBRelax_SeqBAIJ_1"
-PetscErrorCode MatPBRelax_SeqBAIJ_1(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+#define __FUNCT__ "MatSOR_SeqBAIJ_1"
+PetscErrorCode MatSOR_SeqBAIJ_1(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar        *x,x1,s1;
@@ -226,8 +226,8 @@ PetscErrorCode MatPBRelax_SeqBAIJ_1(Mat A,Vec bb,PetscReal omega,MatSORType flag
 } 
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatPBRelax_SeqBAIJ_2"
-PetscErrorCode MatPBRelax_SeqBAIJ_2(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+#define __FUNCT__ "MatSOR_SeqBAIJ_2"
+PetscErrorCode MatSOR_SeqBAIJ_2(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar        *x,x1,x2,s1,s2;
@@ -330,8 +330,8 @@ PetscErrorCode MatPBRelax_SeqBAIJ_2(Mat A,Vec bb,PetscReal omega,MatSORType flag
 } 
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatPBRelax_SeqBAIJ_3"
-PetscErrorCode MatPBRelax_SeqBAIJ_3(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+#define __FUNCT__ "MatSOR_SeqBAIJ_3"
+PetscErrorCode MatSOR_SeqBAIJ_3(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar        *x,x1,x2,x3,s1,s2,s3;
@@ -441,8 +441,8 @@ PetscErrorCode MatPBRelax_SeqBAIJ_3(Mat A,Vec bb,PetscReal omega,MatSORType flag
 } 
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatPBRelax_SeqBAIJ_4"
-PetscErrorCode MatPBRelax_SeqBAIJ_4(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+#define __FUNCT__ "MatSOR_SeqBAIJ_4"
+PetscErrorCode MatSOR_SeqBAIJ_4(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar        *x,x1,x2,x3,x4,s1,s2,s3,s4;
@@ -559,8 +559,8 @@ PetscErrorCode MatPBRelax_SeqBAIJ_4(Mat A,Vec bb,PetscReal omega,MatSORType flag
 } 
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatPBRelax_SeqBAIJ_5"
-PetscErrorCode MatPBRelax_SeqBAIJ_5(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+#define __FUNCT__ "MatSOR_SeqBAIJ_5"
+PetscErrorCode MatSOR_SeqBAIJ_5(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar        *x,x1,x2,x3,x4,x5,s1,s2,s3,s4,s5;
@@ -684,8 +684,8 @@ PetscErrorCode MatPBRelax_SeqBAIJ_5(Mat A,Vec bb,PetscReal omega,MatSORType flag
 } 
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatPBRelax_SeqBAIJ_6"
-PetscErrorCode MatPBRelax_SeqBAIJ_6(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+#define __FUNCT__ "MatSOR_SeqBAIJ_6"
+PetscErrorCode MatSOR_SeqBAIJ_6(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar        *x,x1,x2,x3,x4,x5,x6,s1,s2,s3,s4,s5,s6;
@@ -816,8 +816,8 @@ PetscErrorCode MatPBRelax_SeqBAIJ_6(Mat A,Vec bb,PetscReal omega,MatSORType flag
 } 
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatPBRelax_SeqBAIJ_7"
-PetscErrorCode MatPBRelax_SeqBAIJ_7(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+#define __FUNCT__ "MatSOR_SeqBAIJ_7"
+PetscErrorCode MatSOR_SeqBAIJ_7(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar        *x,x1,x2,x3,x4,x5,x6,x7,s1,s2,s3,s4,s5,s6,s7;
@@ -2869,10 +2869,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,Petsc
   }
   bs   = newbs;
 
-  ierr = PetscMapSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(B->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
 
   B->preallocated = PETSC_TRUE;
 
@@ -2903,37 +2903,37 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,Petsc
     case 1:
       B->ops->mult            = MatMult_SeqBAIJ_1;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_1;
-      B->ops->pbrelax         = MatPBRelax_SeqBAIJ_1;
+      B->ops->sor           = MatSOR_SeqBAIJ_1;
       break;
     case 2:
       B->ops->mult            = MatMult_SeqBAIJ_2;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_2;
-      B->ops->pbrelax         = MatPBRelax_SeqBAIJ_2;
+      B->ops->sor           = MatSOR_SeqBAIJ_2;
       break;
     case 3:
       B->ops->mult            = MatMult_SeqBAIJ_3;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_3;
-      B->ops->pbrelax         = MatPBRelax_SeqBAIJ_3;
+      B->ops->sor           = MatSOR_SeqBAIJ_3;
       break;
     case 4:
       B->ops->mult            = MatMult_SeqBAIJ_4;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_4;
-      B->ops->pbrelax         = MatPBRelax_SeqBAIJ_4;
+      B->ops->sor           = MatSOR_SeqBAIJ_4;
       break;
     case 5:
       B->ops->mult            = MatMult_SeqBAIJ_5;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_5;
-      B->ops->pbrelax         = MatPBRelax_SeqBAIJ_5;
+      B->ops->sor           = MatSOR_SeqBAIJ_5;
       break;
     case 6:
       B->ops->mult            = MatMult_SeqBAIJ_6;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_6;
-      B->ops->pbrelax         = MatPBRelax_SeqBAIJ_6;
+      B->ops->sor           = MatSOR_SeqBAIJ_6;
       break;
     case 7:
       B->ops->mult            = MatMult_SeqBAIJ_7; 
       B->ops->multadd         = MatMultAdd_SeqBAIJ_7;
-      B->ops->pbrelax         = MatPBRelax_SeqBAIJ_7;
+      B->ops->sor           = MatSOR_SeqBAIJ_7;
       break;
     default:
       B->ops->mult            = MatMult_SeqBAIJ_N; 
@@ -3003,10 +3003,10 @@ PetscErrorCode MatSeqBAIJSetPreallocationCSR_SeqBAIJ(Mat B,PetscInt bs,const Pet
 
   if (bs < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size specified, must be positive but it is %D",bs);
 
-  ierr = PetscMapSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(B->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
   m = B->rmap->n/bs;
 
   if (ii[0] != 0) { SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "ii[0] must be 0 but it is %D",ii[0]); }
@@ -3190,8 +3190,8 @@ PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C,Mat A,MatDuplicateOption cpval
 
   c->roworiented = a->roworiented;
   c->nonew       = a->nonew;
-  ierr = PetscMapCopy(((PetscObject)A)->comm,A->rmap,C->rmap);CHKERRQ(ierr);  
-  ierr = PetscMapCopy(((PetscObject)A)->comm,A->cmap,C->cmap);CHKERRQ(ierr);  
+  ierr = PetscLayoutCopy(A->rmap,&C->rmap);CHKERRQ(ierr);  
+  ierr = PetscLayoutCopy(A->cmap,&C->cmap);CHKERRQ(ierr);  
   c->bs2         = a->bs2;
   c->mbs         = a->mbs;
   c->nbs         = a->nbs;

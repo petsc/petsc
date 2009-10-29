@@ -75,10 +75,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate(MPI_Comm comm,Mat *A)
 #endif
 
   ierr = PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,0,"Mat",comm,MatDestroy,MatView);CHKERRQ(ierr);
-  ierr = PetscNew(PetscMap,&B->rmap);CHKERRQ(ierr);
-  ierr = PetscNew(PetscMap,&B->cmap);CHKERRQ(ierr);
-  ierr = PetscMapInitialize(comm,B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapInitialize(comm,B->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutCreate(comm,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutCreate(comm,&B->cmap);CHKERRQ(ierr);
   B->preallocated  = PETSC_FALSE;
   *A               = B;
   PetscFunctionReturn(0);
@@ -273,8 +271,8 @@ PetscErrorCode MatHeaderCopy(Mat A,Mat C)
 
   ierr = PetscFree(C->spptr);CHKERRQ(ierr);
 
-  ierr = PetscMapDestroy(A->rmap);CHKERRQ(ierr);
-  ierr = PetscMapDestroy(A->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(A->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(A->cmap);CHKERRQ(ierr);
   ierr = PetscFListDestroy(&((PetscObject)A)->qlist);CHKERRQ(ierr);
   ierr = PetscOListDestroy(((PetscObject)A)->olist);CHKERRQ(ierr);
 
@@ -314,8 +312,8 @@ PetscErrorCode MatHeaderReplace(Mat A,Mat C)
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy_Private((PetscObject)A);CHKERRQ(ierr);
   ierr = PetscFree(A->ops);CHKERRQ(ierr);
-  ierr = PetscMapDestroy(A->rmap);CHKERRQ(ierr);
-  ierr = PetscMapDestroy(A->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(A->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(A->cmap);CHKERRQ(ierr);
   ierr = PetscFree(A->spptr);CHKERRQ(ierr);
   
   /* copy C over to A */

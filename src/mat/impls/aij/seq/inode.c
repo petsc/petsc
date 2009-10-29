@@ -1214,8 +1214,8 @@ PetscErrorCode MatColoringPatch_Inode(Mat mat,PetscInt ncolors,PetscInt nin,ISCo
 #include "../src/mat/blockinvert.h"
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatRelax_Inode"
-PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+#define __FUNCT__ "MatSOR_Inode"
+PetscErrorCode MatSOR_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
   PetscScalar        sum1,sum2,sum3,sum4,sum5,tmp0,tmp1,tmp2,tmp3;
@@ -1232,7 +1232,7 @@ PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
   if (fshift != 0.0) SETERRQ(PETSC_ERR_SUP,"No support for fshift != 0.0; use -mat_no_inode");
   if (its > 1) {
     /* switch to non-inode version */
-    ierr = MatRelax_SeqAIJ(A,bb,omega,flag,fshift,its,lits,xx);CHKERRQ(ierr);
+    ierr = MatSOR_SeqAIJ(A,bb,omega,flag,fshift,its,lits,xx);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -2198,7 +2198,7 @@ PetscErrorCode Mat_CheckInode(Mat A,PetscTruth samestructure)
     ierr = PetscInfo2(A,"Found %D nodes out of %D rows. Not using Inode routines\n",node_count,m);CHKERRQ(ierr);
   } else {
     A->ops->mult              = MatMult_Inode;
-    A->ops->relax             = MatRelax_Inode;
+    A->ops->sor             = MatSOR_Inode;
     A->ops->multadd           = MatMultAdd_Inode;
     A->ops->getrowij          = MatGetRowIJ_Inode;
     A->ops->restorerowij      = MatRestoreRowIJ_Inode;
