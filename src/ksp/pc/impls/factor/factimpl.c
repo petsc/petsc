@@ -51,7 +51,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftPd_Factor(PC pc,PetscTruth shi
 }
 EXTERN_C_END
 
-
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetUseDropTolerance_Factor"

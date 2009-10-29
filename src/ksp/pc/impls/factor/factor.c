@@ -20,7 +20,7 @@
 
 .keywords: PC, set, factorization, direct, fill
 
-.seealso: PCFactorSetShiftNonzero(), PCFactorSetShiftPd()
+.seealso: PCFactorSetShiftNonzero(), PCFactorSetShiftPd(), PCFactorSetShiftInBlocks()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetZeroPivot(PC pc,PetscReal zero)
 {
@@ -57,7 +57,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetZeroPivot(PC pc,PetscReal zero)
 
 .keywords: PC, set, factorization, direct, fill
 
-.seealso: PCFactorSetZeroPivot(), PCFactorSetShiftPd()
+.seealso: PCFactorSetZeroPivot(), PCFactorSetShiftPd(), PCFactorSetShiftInBlocks()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftNonzero(PC pc,PetscReal shift)
 {
@@ -95,7 +95,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftNonzero(PC pc,PetscReal shift)
 
 .keywords: PC, indefinite, factorization
 
-.seealso: PCFactorSetZeroPivot(), PCFactorSetShiftNonzero()
+.seealso: PCFactorSetZeroPivot(), PCFactorSetShiftNonzero(), PCFactorSetShiftInBlocks()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftPd(PC pc,PetscTruth shift)
 {
@@ -220,7 +220,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetAllowDiagonalFill(PC pc)
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetShiftInBlocks"
 /*@
-    PCFactorSetShiftInBlocks - Shifts the diagonal of any block if LU on that block detects a zero pivot.
+    PCFactorSetShiftInBlocks - Shifts the diagonal of any block if matrix factor on that block detects a zero pivot.
 
     Collective on PC
 
