@@ -1755,7 +1755,7 @@ namespace ALE {
     };
     // Augment the values for the closure of this point
     template<typename Visitor>
-    void updateAdd(const point_type& p, Visitor& v) {
+    void updateClosure(const point_type& p, Visitor& v) {
       if (this->depth() == 1) {
         closure1(*this->getSieve(), p, v);
       } else {
