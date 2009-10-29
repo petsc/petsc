@@ -712,8 +712,8 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[]
     This is not yet used 
 */
 #undef __FUNCT__  
-#define __FUNCT__ "MatAssemblyEnd_SeqSBAIJ_Inode"
-PetscErrorCode MatAssemblyEnd_SeqSBAIJ_Inode(Mat A)
+#define __FUNCT__ "MatAssemblyEnd_SeqSBAIJ_SeqAIJ_Inode"
+PetscErrorCode MatAssemblyEnd_SeqSBAIJ_SeqAIJ_Inode(Mat A)
 {
   Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ*)A->data;
   PetscErrorCode  ierr;

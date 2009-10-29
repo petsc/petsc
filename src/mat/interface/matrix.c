@@ -3172,6 +3172,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x
    Application programmers will not generally use MatSOR() directly,
    but instead will employ the KSP/PC interface.
 
+   Notes: for BAIJ, SBAIJ, and AIJ matrices with Inodes this does a block SOR smoothing, otherwise it does a pointwise smoothing
+
    Notes for Advanced Users:
    The flags are implemented as bitwise inclusive or operations.
    For example, use (SOR_ZERO_INITIAL_GUESS | SOR_SYMMETRIC_SWEEP)

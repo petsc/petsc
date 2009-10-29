@@ -623,7 +623,7 @@ PetscErrorCode MatView_SeqAIJ(Mat A,PetscViewer viewer)
   } else {
     SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by SeqAIJ matrices",((PetscObject)viewer)->type_name);
   }
-  ierr = MatView_Inode(A,viewer);CHKERRQ(ierr);
+  ierr = MatView_SeqAIJ_Inode(A,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -683,7 +683,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   ierr = Mat_CheckCompressedRow(A,&a->compressedrow,a->i,m,ratio);CHKERRQ(ierr); 
   A->same_nonzero = PETSC_TRUE;
 
-  ierr = MatAssemblyEnd_Inode(A,mode);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd_SeqAIJ_Inode(A,mode);CHKERRQ(ierr);
 
   a->idiagvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -756,7 +756,7 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   if (a->XtoY) {ierr = MatDestroy(a->XtoY);CHKERRQ(ierr);}
   if (a->compressedrow.use){ierr = PetscFree(a->compressedrow.i);} 
 
-  ierr = MatDestroy_Inode(A);CHKERRQ(ierr);
+  ierr = MatDestroy_SeqAIJ_Inode(A);CHKERRQ(ierr);
 
   ierr = PetscFree(a);CHKERRQ(ierr);
 
@@ -815,7 +815,7 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op,PetscTruth flg)
     default:
       break;
   }
-  ierr = MatSetOption_Inode(A,op,flg);CHKERRQ(ierr);
+  ierr = MatSetOption_SeqAIJ_Inode(A,op,flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3327,7 +3327,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMatMultNumeric_seqdense_seqaij_C",
                                      "MatMatMultNumeric_SeqDense_SeqAIJ",
                                       MatMatMultNumeric_SeqDense_SeqAIJ);CHKERRQ(ierr);
-  ierr = MatCreate_Inode(B);CHKERRQ(ierr);
+  ierr = MatCreate_SeqAIJ_Inode(B);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3423,7 +3423,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat C,Mat A,MatDuplicateOption cpvalu
     c->compressedrow.rindex = PETSC_NULL;
   }
   C->same_nonzero = A->same_nonzero;
-  ierr = MatDuplicate_Inode(A,cpvalues,&C);CHKERRQ(ierr);
+  ierr = MatDuplicate_SeqAIJ_Inode(A,cpvalues,&C);CHKERRQ(ierr);
 
   ierr = PetscFListDuplicate(((PetscObject)A)->qlist,&((PetscObject)C)->qlist);CHKERRQ(ierr);
   PetscFunctionReturn(0);

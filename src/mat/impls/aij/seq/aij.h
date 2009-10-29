@@ -47,7 +47,7 @@
 
 /* Info about i-nodes (identical nodes) helper class for SeqAIJ */
 typedef struct {
-  MatScalar   *bdiag,*ibdiag,*ssor_work;      /* diagonal blocks of matrix used for MatSOR_Inode() */
+  MatScalar   *bdiag,*ibdiag,*ssor_work;      /* diagonal blocks of matrix used for MatSOR_SeqAIJ_Inode() */
   PetscInt    bdiagsize;                       /* length of bdiag and ibdiag */
   PetscTruth  ibdiagvalid;                     /* do ibdiag[] and bdiag[] contain the most recent values */
 
@@ -57,28 +57,28 @@ typedef struct {
   PetscInt   limit;                         /* inode limit */
   PetscInt   max_limit;                     /* maximum supported inode limit */
   PetscTruth checked;                       /* if inodes have been checked for */
-} Mat_Inode;
+} Mat_SeqAIJ_Inode;
 
-EXTERN PetscErrorCode MatView_Inode(Mat,PetscViewer);
-EXTERN PetscErrorCode MatAssemblyEnd_Inode(Mat,MatAssemblyType);
-EXTERN PetscErrorCode MatDestroy_Inode(Mat);
-EXTERN PetscErrorCode MatCreate_Inode(Mat);
-EXTERN PetscErrorCode MatSetOption_Inode(Mat,MatOption,PetscTruth);
-EXTERN PetscErrorCode MatDuplicate_Inode(Mat,MatDuplicateOption,Mat*);
-EXTERN PetscErrorCode MatILUDTFactor_Inode(Mat,IS,IS,const MatFactorInfo*,Mat*);
-EXTERN PetscErrorCode MatLUFactorSymbolic_Inode(Mat,Mat,IS,IS,const MatFactorInfo*);
-EXTERN PetscErrorCode MatILUFactorSymbolic_Inode(Mat,Mat,IS,IS,const MatFactorInfo*);
+EXTERN PetscErrorCode MatView_SeqAIJ_Inode(Mat,PetscViewer);
+EXTERN PetscErrorCode MatAssemblyEnd_SeqAIJ_Inode(Mat,MatAssemblyType);
+EXTERN PetscErrorCode MatDestroy_SeqAIJ_Inode(Mat);
+EXTERN PetscErrorCode MatCreate_SeqAIJ_Inode(Mat);
+EXTERN PetscErrorCode MatSetOption_SeqAIJ_Inode(Mat,MatOption,PetscTruth);
+EXTERN PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat,MatDuplicateOption,Mat*);
+EXTERN PetscErrorCode MatILUDTFactor_SeqAIJ_Inode(Mat,IS,IS,const MatFactorInfo*,Mat*);
+EXTERN PetscErrorCode MatLUFactorSymbolic_SeqAIJ_Inode(Mat,Mat,IS,IS,const MatFactorInfo*);
+EXTERN PetscErrorCode MatILUFactorSymbolic_SeqAIJ_Inode(Mat,Mat,IS,IS,const MatFactorInfo*);
 
 typedef struct {
   SEQAIJHEADER(MatScalar);
-  Mat_Inode    inode;
-  MatScalar    *saved_values;             /* location for stashing nonzero values of matrix */
+  Mat_SeqAIJ_Inode inode;
+  MatScalar        *saved_values;             /* location for stashing nonzero values of matrix */
 
-  PetscScalar  *idiag,*mdiag,*ssor_work;  /* inverse of diagonal entries, diagonal values and workspace for Eisenstat trick */
-  PetscTruth   idiagvalid;                     /* current idiag[] and mdiag[] are valid */
-  PetscScalar  fshift,omega;                   /* last used omega and fshift */
+  PetscScalar      *idiag,*mdiag,*ssor_work;  /* inverse of diagonal entries, diagonal values and workspace for Eisenstat trick */
+  PetscTruth       idiagvalid;                     /* current idiag[] and mdiag[] are valid */
+  PetscScalar      fshift,omega;                   /* last used omega and fshift */
 
-  ISColoring   coloring;                  /* set with MatADSetColoring() used by MatADSetValues() */
+  ISColoring       coloring;                  /* set with MatADSetColoring() used by MatADSetValues() */
 } Mat_SeqAIJ;
 
 /*

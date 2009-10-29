@@ -3,13 +3,13 @@
 
 EXTERN PetscErrorCode Mat_CheckInode(Mat,PetscTruth);
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatInodeAdjustForInodes_Inode(Mat,IS*,IS*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatInodeGetInodeSizes_Inode(Mat,PetscInt*,PetscInt*[],PetscInt*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatInodeAdjustForInodes_SeqAIJ_Inode(Mat,IS*,IS*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatInodeGetInodeSizes_SeqAIJ_Inode(Mat,PetscInt*,PetscInt*[],PetscInt*);
 EXTERN_C_END
 
 #undef __FUNCT__
-#define __FUNCT__ "MatView_Inode"
-PetscErrorCode MatView_Inode(Mat A,PetscViewer viewer)
+#define __FUNCT__ "MatView_SeqAIJ_Inode"
+PetscErrorCode MatView_SeqAIJ_Inode(Mat A,PetscViewer viewer)
 {
   Mat_SeqAIJ         *a=(Mat_SeqAIJ*)A->data;
   PetscErrorCode    ierr;
@@ -33,8 +33,8 @@ PetscErrorCode MatView_Inode(Mat A,PetscViewer viewer)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_Inode"
-PetscErrorCode MatAssemblyEnd_Inode(Mat A, MatAssemblyType mode)
+#define __FUNCT__ "MatAssemblyEnd_SeqAIJ_Inode"
+PetscErrorCode MatAssemblyEnd_SeqAIJ_Inode(Mat A, MatAssemblyType mode)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
@@ -50,8 +50,8 @@ PetscErrorCode MatAssemblyEnd_Inode(Mat A, MatAssemblyType mode)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatDestroy_Inode"
-PetscErrorCode MatDestroy_Inode(Mat A)
+#define __FUNCT__ "MatDestroy_SeqAIJ_Inode"
+PetscErrorCode MatDestroy_SeqAIJ_Inode(Mat A)
 {
   PetscErrorCode ierr;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data;
@@ -64,14 +64,14 @@ PetscErrorCode MatDestroy_Inode(Mat A)
   PetscFunctionReturn(0);
 }
 
-/* MatCreate_Inode is not DLLEXPORTed because it is not a constructor for a complete type.    */
+/* MatCreate_SeqAIJ_Inode is not DLLEXPORTed because it is not a constructor for a complete type.    */
 /* It is also not registered as a type for use within MatSetType.                             */
 /* It is intended as a helper for the MATSEQAIJ class, so classes which desire Inodes should  */
 /*    inherit off of MATSEQAIJ instead by calling MatSetType(MATSEQAIJ) in their constructor. */
 /* Maybe this is a bad idea. (?) */
 #undef __FUNCT__
-#define __FUNCT__ "MatCreate_Inode"
-PetscErrorCode MatCreate_Inode(Mat B)
+#define __FUNCT__ "MatCreate_SeqAIJ_Inode"
+PetscErrorCode MatCreate_SeqAIJ_Inode(Mat B)
 {
   Mat_SeqAIJ     *b=(Mat_SeqAIJ*)B->data;
   PetscErrorCode ierr;
@@ -99,17 +99,17 @@ PetscErrorCode MatCreate_Inode(Mat B)
   if (b->inode.limit > b->inode.max_limit) b->inode.limit = b->inode.max_limit;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatInodeAdjustForInodes_C",
-                                     "MatInodeAdjustForInodes_Inode",
-                                      MatInodeAdjustForInodes_Inode);CHKERRQ(ierr);
+                                     "MatInodeAdjustForInodes_SeqAIJ_Inode",
+                                      MatInodeAdjustForInodes_SeqAIJ_Inode);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatInodeGetInodeSizes_C",
-                                     "MatInodeGetInodeSizes_Inode",
-                                      MatInodeGetInodeSizes_Inode);CHKERRQ(ierr);
+                                     "MatInodeGetInodeSizes_SeqAIJ_Inode",
+                                      MatInodeGetInodeSizes_SeqAIJ_Inode);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatSetOption_Inode"
-PetscErrorCode MatSetOption_Inode(Mat A,MatOption op,PetscTruth flg)
+#define __FUNCT__ "MatSetOption_SeqAIJ_Inode"
+PetscErrorCode MatSetOption_SeqAIJ_Inode(Mat A,MatOption op,PetscTruth flg)
 {
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data;
 
@@ -125,8 +125,8 @@ PetscErrorCode MatSetOption_Inode(Mat A,MatOption op,PetscTruth flg)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatDuplicate_Inode"
-PetscErrorCode MatDuplicate_Inode(Mat A,MatDuplicateOption cpvalues,Mat *C)
+#define __FUNCT__ "MatDuplicate_SeqAIJ_Inode"
+PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat A,MatDuplicateOption cpvalues,Mat *C)
 {
   Mat            B=*C;
   Mat_SeqAIJ     *c=(Mat_SeqAIJ*)B->data,*a=(Mat_SeqAIJ*)A->data;
@@ -152,11 +152,11 @@ PetscErrorCode MatDuplicate_Inode(Mat A,MatDuplicateOption cpvalues,Mat *C)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatSolve_Inode(Mat,Vec,Vec);
+extern PetscErrorCode MatSolve_SeqAIJ_Inode(Mat,Vec,Vec);
 
 #undef __FUNCT__
-#define __FUNCT__ "MatILUDTFactor_Inode"
-PetscErrorCode MatILUDTFactor_Inode(Mat A,IS isrow,IS iscol,const MatFactorInfo *info,Mat *fact)
+#define __FUNCT__ "MatILUDTFactor_SeqAIJ_Inode"
+PetscErrorCode MatILUDTFactor_SeqAIJ_Inode(Mat A,IS isrow,IS iscol,const MatFactorInfo *info,Mat *fact)
 {
   PetscErrorCode ierr;
   Mat_SeqAIJ     *f = (Mat_SeqAIJ*)(*fact)->data;
@@ -165,14 +165,14 @@ PetscErrorCode MatILUDTFactor_Inode(Mat A,IS isrow,IS iscol,const MatFactorInfo 
     /* check for identical nodes. If found, use inode functions */
   ierr = Mat_CheckInode(*fact,PETSC_FALSE);CHKERRQ(ierr);
   if (f->inode.use) {
-    (*fact)->ops->solve = MatSolve_Inode;
+    (*fact)->ops->solve = MatSolve_SeqAIJ_Inode;
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatLUFactorSymbolic_Inode"
-PetscErrorCode MatLUFactorSymbolic_Inode(Mat fact,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
+#define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_Inode"
+PetscErrorCode MatLUFactorSymbolic_SeqAIJ_Inode(Mat fact,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
   PetscErrorCode ierr;
   
@@ -182,8 +182,8 @@ PetscErrorCode MatLUFactorSymbolic_Inode(Mat fact,Mat A,IS isrow,IS iscol,const 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatILUFactorSymbolic_Inode"
-PetscErrorCode MatILUFactorSymbolic_Inode(Mat fact,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
+#define __FUNCT__ "MatILUFactorSymbolic_SeqAIJ_Inode"
+PetscErrorCode MatILUFactorSymbolic_SeqAIJ_Inode(Mat fact,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 
