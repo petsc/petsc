@@ -2468,6 +2468,81 @@ PetscErrorCode MatGetSeqNonzerostructure_MPIBAIJ(Mat A,Mat *newmat)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatSOR_MPIBAIJ"
+PetscErrorCode MatSOR_MPIBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+{
+  Mat_MPIBAIJ    *mat = (Mat_MPIBAIJ*)matin->data;
+  PetscErrorCode ierr; 
+  Vec            bb1 = 0;
+
+  PetscFunctionBegin;
+  if (its > 1 || ~flag & SOR_ZERO_INITIAL_GUESS) {
+    ierr = VecDuplicate(bb,&bb1);CHKERRQ(ierr);
+  }
+
+  if (flag == SOR_APPLY_UPPER) {
+    ierr = (*mat->A->ops->sor)(mat->A,bb,omega,flag,fshift,lits,1,xx);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+  if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP){
+    if (flag & SOR_ZERO_INITIAL_GUESS) {
+      ierr = (*mat->A->ops->sor)(mat->A,bb,omega,flag,fshift,lits,1,xx);CHKERRQ(ierr);
+      its--; 
+    }
+    
+    while (its--) { 
+      ierr = VecScatterBegin(mat->Mvctx,xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(mat->Mvctx,xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+      /* update rhs: bb1 = bb - B*x */ 
+      ierr = VecScale(mat->lvec,-1.0);CHKERRQ(ierr);
+      ierr = (*mat->B->ops->multadd)(mat->B,mat->lvec,bb,bb1);CHKERRQ(ierr);
+
+      /* local sweep */
+      ierr = (*mat->A->ops->sor)(mat->A,bb1,omega,SOR_SYMMETRIC_SWEEP,fshift,lits,1,xx);CHKERRQ(ierr);
+    }
+  } else if (flag & SOR_LOCAL_FORWARD_SWEEP){
+    if (flag & SOR_ZERO_INITIAL_GUESS) {
+      ierr = (*mat->A->ops->sor)(mat->A,bb,omega,flag,fshift,lits,1,xx);CHKERRQ(ierr);
+      its--;
+    }
+    while (its--) {
+      ierr = VecScatterBegin(mat->Mvctx,xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(mat->Mvctx,xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+      /* update rhs: bb1 = bb - B*x */ 
+      ierr = VecScale(mat->lvec,-1.0);CHKERRQ(ierr);
+      ierr = (*mat->B->ops->multadd)(mat->B,mat->lvec,bb,bb1);CHKERRQ(ierr);
+
+      /* local sweep */
+      ierr = (*mat->A->ops->sor)(mat->A,bb1,omega,SOR_FORWARD_SWEEP,fshift,lits,1,xx);CHKERRQ(ierr);
+    }
+  } else if (flag & SOR_LOCAL_BACKWARD_SWEEP){
+    if (flag & SOR_ZERO_INITIAL_GUESS) {
+      ierr = (*mat->A->ops->sor)(mat->A,bb,omega,flag,fshift,lits,1,xx);CHKERRQ(ierr);
+      its--;
+    }
+    while (its--) {
+      ierr = VecScatterBegin(mat->Mvctx,xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(mat->Mvctx,xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+      /* update rhs: bb1 = bb - B*x */ 
+      ierr = VecScale(mat->lvec,-1.0);CHKERRQ(ierr);
+      ierr = (*mat->B->ops->multadd)(mat->B,mat->lvec,bb,bb1);CHKERRQ(ierr);
+
+      /* local sweep */
+      ierr = (*mat->A->ops->sor)(mat->A,bb1,omega,SOR_BACKWARD_SWEEP,fshift,lits,1,xx);CHKERRQ(ierr);
+    }
+  } else {
+    SETERRQ(PETSC_ERR_SUP,"Parallel version of SOR requested not supported");
+  }
+
+  if (bb1) {ierr = VecDestroy(bb1);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+} 
+
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply_BAIJ(Mat,MatFDColoring,Vec,MatStructure*,void*);
 
 
@@ -2486,7 +2561,7 @@ static struct _MatOps MatOps_Values = {
 /*10*/ 0,
        0,
        0,
-       0,
+       MatSOR_MPIBAIJ,
        MatTranspose_MPIBAIJ,
 /*15*/ MatGetInfo_MPIBAIJ,
        MatEqual_MPIBAIJ,
