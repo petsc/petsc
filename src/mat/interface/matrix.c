@@ -3883,7 +3883,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMaxAbs(Mat mat,Vec v,PetscInt idx[])
 .  mat - the matrix
 
    Output Parameter:
-.  v - the vector for storing the maximums
+.  v - the vector for storing the sum of rows
 
    Level: intermediate
 

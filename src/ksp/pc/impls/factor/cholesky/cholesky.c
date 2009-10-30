@@ -48,57 +48,11 @@ EXTERN_C_END
 #define __FUNCT__ "PCSetFromOptions_Cholesky"
 static PetscErrorCode PCSetFromOptions_Cholesky(PC pc)
 {
-  PC_Cholesky    *lu = (PC_Cholesky*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth     flg = PETSC_FALSE;
-  char           tname[256], solvertype[64];
-  PetscFList     ordlist;
   
   PetscFunctionBegin;
-  if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsHead("Cholesky options");CHKERRQ(ierr);
-  ierr = PetscOptionsTruth("-pc_factor_in_place","Form Cholesky in the same memory as the matrix","PCFactorSetUseInPlace",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCFactorSetUseInPlace(pc);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsReal("-pc_factor_fill","Expected non-zeros in Cholesky/non-zeros in matrix","PCFactorSetFill",((PC_Factor*)lu)->info.fill,&((PC_Factor*)lu)->info.fill,0);CHKERRQ(ierr);
-  
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-pc_factor_reuse_fill","Use fill from previous factorization","PCFactorSetReuseFill",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCFactorSetReuseFill(pc,PETSC_TRUE);CHKERRQ(ierr);
-    }
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-pc_factor_reuse_ordering","Reuse ordering from previous factorization","PCFactorSetReuseOrdering",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCFactorSetReuseOrdering(pc,PETSC_TRUE);CHKERRQ(ierr);
-    }
-  
-    ierr = MatGetOrderingList(&ordlist);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-pc_factor_mat_ordering_type","Reordering to reduce nonzeros in Cholesky","PCFactorSetMatOrderingType",ordlist,((PC_Factor*)lu)->ordering,tname,256,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCFactorSetMatOrderingType(pc,tname);CHKERRQ(ierr);
-    }
-
-    /* maybe should have MatGetSolverTypes(Mat,&list) like the ordering list */
-    ierr = PetscOptionsString("-pc_factor_mat_solver_package","Specific Cholesky solver to use","MatGetFactor",((PC_Factor*)lu)->solvertype,solvertype,64,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCFactorSetMatSolverPackage(pc,solvertype);CHKERRQ(ierr);
-    }
-
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCFactorSetShiftNonzero(pc,(PetscReal) PETSC_DECIDE);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsReal("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",((PC_Factor*)lu)->info.shiftnz,&((PC_Factor*)lu)->info.shiftnz,0);CHKERRQ(ierr);
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-pc_factor_shift_positive_definite","Manteuffel shift applied to diagonal","PCFactorSetShiftPd",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCFactorSetShiftPd(pc,PETSC_TRUE);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsReal("-pc_factor_zeropivot","Pivot is considered zero if less than","PCFactorSetZeroPivot",((PC_Factor*)lu)->info.zeropivot,&((PC_Factor*)lu)->info.zeropivot,0);CHKERRQ(ierr);
-
+    ierr = PCSetFromOptions_Factor(pc);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -353,8 +307,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseOrdering(PC pc,PetscTruth flag
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCILU, PCLU, PCICC, PCFactorSetReuseOrdering(), PCFactorSetReuseFill(), PCFactorGetMatrix(),
-           PCFactorSetFill(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(),
-	   PCFactorSetUseInPlace(), PCFactorSetMatOrderingType(),PCFactorSetShiftNonzero(),PCFactorSetShiftPd()
+           PCFactorSetFill(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(), PCFactorSetShiftInBlocks()
+	   PCFactorSetUseInPlace(), PCFactorSetMatOrderingType()
 
 M*/
 
@@ -403,6 +357,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Cholesky(PC pc)
                     PCFactorSetShiftNonzero_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftPd_C","PCFactorSetShiftPd_Factor",
                     PCFactorSetShiftPd_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftInBlocks_C","PCFactorSetShiftInBlocks_Factor",
+                    PCFactorSetShiftInBlocks_Factor);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetFill_C","PCFactorSetFill_Factor",
                     PCFactorSetFill_Factor);CHKERRQ(ierr);
