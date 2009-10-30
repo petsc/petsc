@@ -548,6 +548,7 @@ class Configure(script.Script):
         self.framework.log.write('ERROR while removing object file: '+str(e)+'\n')
     if cleanup and os.path.isfile(self.linkerObj): 
       try:
+        if os.path.exists('/usr/bin/cygcheck.exe'): time.sleep(1)
         os.remove(self.linkerObj)
       except RuntimeError, e:
         self.framework.log.write('ERROR while removing executable file: '+str(e)+'\n')
