@@ -27,7 +27,8 @@ extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivotInBlocks_Factor(PC,Pets
 extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatrix_Factor(PC,Mat*);
 extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage_Factor(PC,const MatSolverPackage);
 extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatSolverPackage_Factor(PC,const MatSolverPackage*);
-extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivoting_Factor(PC,PetscReal);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetColumnPivot_Factor(PC,PetscReal);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions_Factor(PC);
 EXTERN_C_END
 
 #endif

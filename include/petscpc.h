@@ -241,7 +241,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage(PC,const Ma
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatSolverPackage(PC,const MatSolverPackage*);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetFill(PC,PetscReal);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivoting(PC,PetscReal);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetColumnPivot(PC,PetscReal);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorReorderForNonzeroDiagonal(PC,PetscReal);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType(PC,const MatOrderingType);

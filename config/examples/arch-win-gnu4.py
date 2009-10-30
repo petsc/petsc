@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
 configure_options = [
-  # Autodetect MPICH & Intel MKL
-  # path set to $PETSC_DIR/bin/win32fe
-  '--with-cc=win32fe cl',
-  '--with-cxx=win32fe cl',
-  '--with-fc=win32fe f90',
-  '--with-mpiexec=mpiexec --localonly',
+  # Blas autodetec with cygwin blas at /usr/lib/liblapack,a,libblas.a
+  '--with-cc=gcc-4',
+  '--with-fc=gfortran-4',
+  '--with-cxx=g++-4',
   'DATAFILESPATH=/home/sbalay/datafiles',
+  '--download-mpich=1',
   ]
 
 if __name__ == '__main__':

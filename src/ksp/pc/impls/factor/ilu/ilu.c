@@ -105,35 +105,21 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
 {
   PetscErrorCode ierr;
   PetscInt       dtmax = 3,itmp;
-  PetscTruth     flg,set;
+  PetscTruth     flg;
   PetscReal      dt[3];
-  char           tname[256], solvertype[64];
   PC_ILU         *ilu = (PC_ILU*)pc->data;
-  PetscFList     ordlist;
   PetscReal      tol;
 
   PetscFunctionBegin;
-  if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsHead("ILU Options");CHKERRQ(ierr);
+    ierr = PCSetFromOptions_Factor(pc);CHKERRQ(ierr);
+
     ierr = PetscOptionsInt("-pc_factor_levels","levels of fill","PCFactorSetLevels",(PetscInt)((PC_Factor*)ilu)->info.levels,&itmp,&flg);CHKERRQ(ierr);
     if (flg) ((PC_Factor*)ilu)->info.levels = itmp;
-    ierr = PetscOptionsTruth("-pc_factor_in_place","do factorization in place","PCFactorSetUseInPlace",ilu->inplace,&ilu->inplace,PETSC_NULL);CHKERRQ(ierr);
     flg  = PETSC_FALSE;
     ierr = PetscOptionsTruth("-pc_factor_diagonal_fill","Allow fill into empty diagonal entry","PCFactorSetAllowDiagonalFill",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     ((PC_Factor*)ilu)->info.diagonal_fill = (double) flg;
-    ierr = PetscOptionsTruth("-pc_factor_reuse_fill","Reuse fill ratio from previous factorization","PCFactorSetReuseFill",ilu->reusefill,&ilu->reusefill,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-pc_factor_reuse_ordering","Reuse previous reordering","PCFactorSetReuseOrdering",ilu->reuseordering,&ilu->reuseordering,PETSC_NULL);CHKERRQ(ierr);
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsName("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCFactorSetShiftNonzero(pc,(PetscReal)PETSC_DECIDE);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsReal("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",((PC_Factor*)ilu)->info.shiftnz,&((PC_Factor*)ilu)->info.shiftnz,0);CHKERRQ(ierr);
-    flg = (((PC_Factor*)ilu)->info.shiftpd > 0.0) ? PETSC_TRUE : PETSC_FALSE;
-    ierr = PetscOptionsTruth("-pc_factor_shift_positive_definite","Manteuffel shift applied to diagonal","PCFactorSetShiftPd",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PCFactorSetShiftPd(pc,flg);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-pc_factor_zeropivot","Pivot is considered zero if less than","PCFactorSetZeroPivot",((PC_Factor*)ilu)->info.zeropivot,&((PC_Factor*)ilu)->info.zeropivot,0);CHKERRQ(ierr);
-
+    
     dt[0] = ((PC_Factor*)ilu)->info.dt;
     dt[1] = ((PC_Factor*)ilu)->info.dtcol;
     dt[2] = ((PC_Factor*)ilu)->info.dtcount;
@@ -141,37 +127,13 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
     if (flg) {
       ierr = PCFactorSetUseDropTolerance(pc,dt[0],dt[1],(PetscInt)dt[2]);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsReal("-pc_factor_fill","Expected fill in factorization","PCFactorSetFill",((PC_Factor*)ilu)->info.fill,&((PC_Factor*)ilu)->info.fill,&flg);CHKERRQ(ierr);
+
     ierr = PetscOptionsName("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",&flg);CHKERRQ(ierr);
     if (flg) {
       tol = PETSC_DECIDE;
       ierr = PetscOptionsReal("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",ilu->nonzerosalongdiagonaltol,&tol,0);CHKERRQ(ierr);
       ierr = PCFactorReorderForNonzeroDiagonal(pc,tol);CHKERRQ(ierr);
     }
-
-    ierr = MatGetOrderingList(&ordlist);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-pc_factor_mat_ordering_type","Reorder to reduce nonzeros in ILU","PCFactorSetMatOrderingType",ordlist,((PC_Factor*)ilu)->ordering,tname,256,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCFactorSetMatOrderingType(pc,tname);CHKERRQ(ierr);
-    }
-
-    /* maybe should have MatGetSolverTypes(Mat,&list) like the ordering list */
-    ierr = PetscOptionsString("-pc_factor_mat_solver_package","Specific ILU solver to use","MatGetFactor",((PC_Factor*)ilu)->solvertype,solvertype,64,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCFactorSetMatSolverPackage(pc,solvertype);CHKERRQ(ierr);
-    }
-
-    flg = ((PC_Factor*)ilu)->info.pivotinblocks ? PETSC_TRUE : PETSC_FALSE;
-    ierr = PetscOptionsTruth("-pc_factor_pivot_in_blocks","Pivot inside matrix blocks for BAIJ and SBAIJ","PCFactorSetPivotInBlocks",flg,&flg,&set);CHKERRQ(ierr);
-    if (set) {
-      ierr = PCFactorSetPivotInBlocks(pc,flg);CHKERRQ(ierr);
-    }
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-pc_factor_shift_in_blocks","Shift added to diagonal of block","PCFactorSetShiftInBlocks",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCFactorSetShiftInBlocks(pc,(PetscReal)PETSC_DECIDE);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsReal("-pc_factor_shift_in_blocks","Shift added to diagonal of block","PCFactorSetShiftInBlocks",((PC_Factor*)ilu)->info.shiftinblocks,&((PC_Factor*)ilu)->info.shiftinblocks,0);CHKERRQ(ierr);
 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -416,10 +378,9 @@ static PetscErrorCode PCApplyTranspose_ILU(PC pc,Vec x,Vec y)
 
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,
-           PCFactorSetZeroPivot(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(), PCFactorSetUseDropTolerance(),
-           PCFactorSetFill(), PCFactorSetMatOrderingType(), PCFactorSetReuseOrdering(),
-           PCFactorSetLevels(), PCFactorSetUseInPlace(), PCFactorSetAllowDiagonalFill(), PCFactorSetPivotInBlocks(),
-           PCFactorSetShiftNonzero(),PCFactorSetShiftPd()
+           PCFactorSetZeroPivot(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(), PCFactorSetShiftInBlocks(),
+           PCFactorSetUseDropTolerance(),PCFactorSetFill(), PCFactorSetMatOrderingType(), PCFactorSetReuseOrdering(),
+           PCFactorSetLevels(), PCFactorSetUseInPlace(), PCFactorSetAllowDiagonalFill(), PCFactorSetPivotInBlocks()
 
 M*/
 
@@ -472,6 +433,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC pc)
                     PCFactorSetShiftNonzero_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftPd_C","PCFactorSetShiftPd_Factor",
                     PCFactorSetShiftPd_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftInBlocks_C","PCFactorSetShiftInBlocks_Factor",
+                    PCFactorSetShiftInBlocks_Factor);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorGetMatSolverPackage_C","PCFactorGetMatSolverPackage_Factor",
                     PCFactorGetMatSolverPackage_Factor);CHKERRQ(ierr);
@@ -495,8 +458,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC pc)
                     PCFactorSetAllowDiagonalFill_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetPivotInBlocks_C","PCFactorSetPivotInBlocks_Factor",
                     PCFactorSetPivotInBlocks_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftInBlocks_C","PCFactorSetShiftInBlocks_Factor",
-                    PCFactorSetShiftInBlocks_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorReorderForNonzeroDiagonal_C","PCFactorReorderForNonzeroDiagonal_ILU",
                     PCFactorReorderForNonzeroDiagonal_ILU);CHKERRQ(ierr);
   PetscFunctionReturn(0);

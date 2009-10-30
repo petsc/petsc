@@ -817,14 +817,8 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct_v2(Mat B,Mat A,const MatF
   MatScalar      d;
 
   PetscFunctionBegin;
-  /* ZeropivotSetUp(): initialize shift context sctx */
-  sctx.nshift         = 0;
-  sctx.nshift_max     = 0;
-  sctx.shift_top      = 0.0;
-  sctx.shift_lo       = 0.0;
-  sctx.shift_hi       = 0.0;
-  sctx.shift_fraction = 0.0;
-  sctx.shift_amount   = 0.0;
+  /* MatPivotSetUp(): initialize shift context sctx */
+  ierr = PetscMemzero(&sctx,sizeof(LUShift_Ctx));CHKERRQ(ierr);
 
   /* if both shift schemes are chosen by user, only use info->shiftpd */
   if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
@@ -921,10 +915,20 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct_v2(Mat B,Mat A,const MatF
         pv[j] = rtmp[pj[j]]; rs += PetscAbsScalar(pv[j]);
       }
 
-      /* ZeropivotCheck() */
+      /* MatPivotCheck() */
       sctx.rs  = rs;
       sctx.pv  = rtmp[i];
-      ierr = MatLUCheckShift_inline(info,sctx,i,newshift);CHKERRQ(ierr);
+      /* ierr = MatLUCheckShift_inline(info,sctx,i,newshift);CHKERRQ(ierr); */
+      if (info->shiftnz){
+        ierr = MatPivotCheck_nz(info,sctx,i,newshift);CHKERRQ(ierr);
+      } else if (info->shiftpd){
+        ierr = MatPivotCheck_pd(info,sctx,i,newshift);CHKERRQ(ierr);
+      } else if (info->shiftinblocks){
+        ierr = MatPivotCheck_inblocks(info,sctx,i,newshift);CHKERRQ(ierr);       
+      } else {
+        ierr = MatPivotCheck_none(info,sctx,i,newshift);CHKERRQ(ierr);   
+      }
+      rtmp[i] = sctx.pv;
       if (newshift == 1) break;
 
       /* Mark diagonal and invert diagonal for simplier triangular solves */
@@ -933,7 +937,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct_v2(Mat B,Mat A,const MatF
 
     } /* endof for (i=0; i<n; i++){ */
 
-    /* ZeropivotRefine() */
+    /* MatPivotRefine() */
     if (info->shiftpd && !sctx.lushift && sctx.shift_fraction>0 && sctx.nshift<sctx.nshift_max){
       /* 
        * if no shift in this attempt & shifting & started shifting & can refine,
@@ -967,12 +971,14 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct_v2(Mat B,Mat A,const MatF
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(C->cmap->n);CHKERRQ(ierr);
 
-  /* ZeropivotView() */
+  /* MatPivotView() */
   if (sctx.nshift){
     if (info->shiftpd) {
       ierr = PetscInfo4(A,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,sctx.shift_fraction,sctx.shift_top);CHKERRQ(ierr);
     } else if (info->shiftnz) {
       ierr = PetscInfo2(A,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
+    } else if (info->shiftinblocks){
+      ierr = PetscInfo2(A,"number of shift_inblocks applied %D, each shift_amount %G\n",sctx.nshift,info->shiftinblocks);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -1981,7 +1987,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS isrow
 
 
 /* 
-   ilu(0) with natural ordering under revised new data structure.
+   ilu() under revised new data structure.
    Factored arrays bj and ba are stored as
      L(0,:), L(1,:), ...,L(n-1,:),  U(n-1,:),...,U(i,:),U(i-1,:),...,U(0,:)
 
@@ -2732,6 +2738,23 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *
   PetscFunctionReturn(0); 
 }
 
+/* 
+   icc() under revised new data structure.
+   Factored arrays bj and ba are stored as
+     U(0,:),...,U(i,:),U(n-1,:)
+
+   ui=fact->i is an array of size n+1, in which 
+   ui+
+     ui[i]:  points to 1st entry of U(i,:),i=0,...,n-1
+     ui[n]:  points to U(n-1,n-1)+1
+     
+  udiag=fact->diag is an array of size n,in which
+     udiag[i]: points to diagonal of U(i,:), i=0,...,n-1
+
+   U(i,:) contains udiag[i] as its last entry, i.e., 
+    U(i,:) = (u[i,i+1],...,u[i,n-1],diag[i])
+*/
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatICCFactorSymbolic_SeqAIJ_newdatastruct"
 PetscErrorCode MatICCFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS perm,const MatFactorInfo *info)
@@ -2762,7 +2785,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS perm,
   ierr = PetscMalloc((am+1)*sizeof(PetscInt),&udiag);CHKERRQ(ierr);
   ui[0] = 0;
 
-  /* ICC(0) without matrix ordering: simply copies fill pattern */
+  /* ICC(0) without matrix ordering: simply rearrange column indices */
   if (!levels && perm_identity) { 
 
     for (i=0; i<am; i++) {
@@ -2778,7 +2801,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS perm,
       *cols++ = i; /* diagoanl is located as the last entry of U(i,:) */
     }
   } else { /* case: levels>0 || (levels=0 && !perm_identity) */
-
+    if (levels) SETERRQ(PETSC_ERR_ARG_WRONG,"not done yet");
     ierr = ISGetIndices(iperm,&riip);CHKERRQ(ierr);
     ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);
 

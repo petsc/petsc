@@ -233,7 +233,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetAllowDiagonalFill(PC pc)
 
     Level: intermediate
 
-.seealso: PCILUSetMatOrdering(), PCFactorSetPivoting(), PCFactorSetShiftInBlocks()
+.seealso: PCILUSetMatOrdering(), PCFactorSetColumnPivot(), PCFactorSetShiftInBlocks()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftInBlocks(PC pc,PetscReal shift)
 {
@@ -474,9 +474,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType(PC pc,const MatOrde
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCFactorSetPivoting"
+#define __FUNCT__ "PCFactorSetColumnPivot"
 /*@
-    PCFactorSetPivoting - Determines when pivoting is done during LU. 
+    PCFactorSetColumnPivot - Determines when column pivoting is done during matrix factorization. 
       For PETSc dense matrices column pivoting is always done, for PETSc sparse matrices
       it is never done. For the Matlab and SuperLU factorization this is used.
 
@@ -493,12 +493,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType(PC pc,const MatOrde
 
 .seealso: PCILUSetMatOrdering(), PCFactorSetPivotInBlocks()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivoting(PC pc,PetscReal dtcol)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetColumnPivot(PC pc,PetscReal dtcol)
 {
   PetscErrorCode ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorSetPivoting_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorSetColumnPivot_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,dtcol);CHKERRQ(ierr);
   } 
@@ -522,7 +522,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivoting(PC pc,PetscReal dtcol)
 
     Level: intermediate
 
-.seealso: PCILUSetMatOrdering(), PCFactorSetPivoting()
+.seealso: PCILUSetMatOrdering(), PCFactorSetColumnPivot()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivotInBlocks(PC pc,PetscTruth pivot)
 {

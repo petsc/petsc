@@ -5,6 +5,7 @@ configure_options = [
   # MPICH2 binary install autodtect in c:/Program Files/MPICH2
   '--with-cc=gcc',
   '--with-fc=g77',
+  '--with-cxx=g++',
   'DATAFILESPATH=/home/sbalay/datafiles',
   '--with-mpiexec=mpiexec --localonly',
   ]

@@ -86,32 +86,14 @@ static PetscErrorCode PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
 static PetscErrorCode PCSetFromOptions_ICC(PC pc)
 {
   PC_ICC         *icc = (PC_ICC*)pc->data;
-  char           tname[256];
   PetscTruth     flg;
   PetscErrorCode ierr;
-  PetscFList     ordlist;
 
   PetscFunctionBegin;
-  if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsHead("ICC Options");CHKERRQ(ierr);
+    ierr = PCSetFromOptions_Factor(pc);CHKERRQ(ierr);
+
     ierr = PetscOptionsReal("-pc_factor_levels","levels of fill","PCFactorSetLevels",((PC_Factor*)icc)->info.levels,&((PC_Factor*)icc)->info.levels,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-pc_factor_fill","Expected fill in factorization","PCFactorSetFill",((PC_Factor*)icc)->info.fill,&((PC_Factor*)icc)->info.fill,&flg);CHKERRQ(ierr);
-    ierr = MatGetOrderingList(&ordlist);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-pc_factor_mat_ordering_type","Reorder to reduce nonzeros in ICC","PCFactorSetMatOrderingType",ordlist,((PC_Factor*)icc)->ordering,tname,256,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCFactorSetMatOrderingType(pc,tname);CHKERRQ(ierr);
-    }
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCFactorSetShiftNonzero(pc,(PetscReal)PETSC_DECIDE);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsReal("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",((PC_Factor*)icc)->info.shiftnz,&((PC_Factor*)icc)->info.shiftnz,0);CHKERRQ(ierr);
-    flg = (((PC_Factor*)icc)->info.shiftpd > 0.0) ? PETSC_TRUE : PETSC_FALSE;
-    ierr = PetscOptionsTruth("-pc_factor_shift_positive_definite","Manteuffel shift applied to diagonal","PCFactorSetShiftPd",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PCFactorSetShiftPd(pc,flg);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-pc_factor_zeropivot","Pivot is considered zero if less than","PCFactorSetZeroPivot",((PC_Factor*)icc)->info.zeropivot,&((PC_Factor*)icc)->info.zeropivot,0);CHKERRQ(ierr);
- 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -193,9 +175,9 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
 
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,
-           PCFactorSetZeroPivot(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(), 
+           PCFactorSetZeroPivot(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(),PCFactorSetShiftInBlocks(), 
            PCFactorSetFill(), PCFactorSetMatOrderingType(), PCFactorSetReuseOrdering(), 
-           PCFactorSetLevels(),PCFactorSetShiftNonzero(),PCFactorSetShiftPd(),
+           PCFactorSetLevels()
 
 M*/
 
@@ -240,6 +222,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC pc)
                     PCFactorSetShiftNonzero_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftPd_C","PCFactorSetShiftPd_Factor",
                     PCFactorSetShiftPd_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftInBlocks_C","PCFactorSetShiftInBlocks_Factor",
+                    PCFactorSetShiftInBlocks_Factor);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetLevels_C","PCFactorSetLevels_Factor",
                     PCFactorSetLevels_Factor);CHKERRQ(ierr);
