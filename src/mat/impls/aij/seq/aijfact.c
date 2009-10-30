@@ -1987,7 +1987,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS isrow
 
 
 /* 
-   ilu(0) with natural ordering under revised new data structure.
+   ilu() under revised new data structure.
    Factored arrays bj and ba are stored as
      L(0,:), L(1,:), ...,L(n-1,:),  U(n-1,:),...,U(i,:),U(i-1,:),...,U(0,:)
 
@@ -2738,6 +2738,23 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *
   PetscFunctionReturn(0); 
 }
 
+/* 
+   icc() under revised new data structure.
+   Factored arrays bj and ba are stored as
+     U(0,:),...,U(i,:),U(n-1,:)
+
+   ui=fact->i is an array of size n+1, in which 
+   ui+
+     ui[i]:  points to 1st entry of U(i,:),i=0,...,n-1
+     ui[n]:  points to U(n-1,n-1)+1
+     
+  udiag=fact->diag is an array of size n,in which
+     udiag[i]: points to diagonal of U(i,:), i=0,...,n-1
+
+   U(i,:) contains udiag[i] as its last entry, i.e., 
+    U(i,:) = (u[i,i+1],...,u[i,n-1],diag[i])
+*/
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatICCFactorSymbolic_SeqAIJ_newdatastruct"
 PetscErrorCode MatICCFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS perm,const MatFactorInfo *info)
@@ -2768,7 +2785,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS perm,
   ierr = PetscMalloc((am+1)*sizeof(PetscInt),&udiag);CHKERRQ(ierr);
   ui[0] = 0;
 
-  /* ICC(0) without matrix ordering: simply copies fill pattern */
+  /* ICC(0) without matrix ordering: simply rearrange column indices */
   if (!levels && perm_identity) { 
 
     for (i=0; i<am; i++) {
@@ -2784,7 +2801,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS perm,
       *cols++ = i; /* diagoanl is located as the last entry of U(i,:) */
     }
   } else { /* case: levels>0 || (levels=0 && !perm_identity) */
-
+    if (levels) SETERRQ(PETSC_ERR_ARG_WRONG,"not done yet");
     ierr = ISGetIndices(iperm,&riip);CHKERRQ(ierr);
     ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);
 
