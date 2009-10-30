@@ -23,6 +23,7 @@
    (PETSC_VERSION_RELEASE  == 1))
 #endif
 
+#include "compat/mpi.h"
 #include "compat/petsc.h"
 #include "compat/petscsys.h"
 #include "compat/petscviewer.h"
