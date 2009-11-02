@@ -1024,15 +1024,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesRowLocal(Mat mat,PetscInt row,cons
 -  v - a logically two-dimensional array of values
 
    Notes:
-   By the values, v, are column-oriented (for the block version) and sorted
+   The values, v, are column-oriented for the block version.
 
    All the nonzeros in the row must be provided
 
-   The matrix must have previously had its column indices set
+   THE MATRIX MUSAT HAVE PREVIOUSLY HAD ITS COLUMN INDICES SET. IT IS RARE THAT THIS ROUTINE IS USED, usually MatSetValues() is used.
 
    The row must belong to this process
 
-   Level: intermediate
+   Level: advanced
 
    Concepts: matrices^putting entries in
 

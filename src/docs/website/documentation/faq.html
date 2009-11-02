@@ -139,6 +139,12 @@ unstructured grid finite element computations (FEM) with PETSc?</a></li>
         <li><a href="faq.html#da_mpi_cart">The PETSc DA object
 decomposes the domain differently than the MPI_Cart_create() command.
 How can one use them together?</a></li>
+        <li><a href="faq.html#redistribute">When solving a symmetric
+system with Dirichlet boundary conditions I can use MatZeroRows() to
+eliminate the Dirichlet rows but this results in a non-symmetric
+system. How come there is no MatZeroColumns() to keep the matrix
+symmetric?</a></li>
+        <li></li>
       </ul>
       <h4><a href="faq.html#Execution">Execution</a></h4>
       <menu> <li><a href="faq.html#long-link-time">PETSc
@@ -832,8 +838,18 @@ NewRank = z*y_procs*x_procs + y*x_procs + x;<br>
 MPI_Comm_split(PETSC_COMM_WORLD, 1, NewRank, &amp;NewComm);<br>
             <br>
 // override the default communicator (was MPI_COMM_WORLD as default)<br>
-PETSC_COMM_WORLD = NewComm;<a
- href="www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/src/snes/examples/tutorials/ex10d/ex10.c.html"></a>
+PETSC_COMM_WORLD = NewComm;<br>
+            <br>
+            <span style="color: rgb(255, 0, 0);"><a name="redistribute"></a>The
+When
+solving a symmetric system with Dirichlet boundary conditions I can use
+MatZeroRows() to eliminate the Dirichlet rows but this results in a
+non-symmetric system. How come there is no MatZeroColumns() to keep the
+matrix symmetric?<br>
+            <br>
+            </span>After calling MatZeroRows() you can use the
+PCREDISTRIBUTE preconditioner to solve the reduced system using
+symmetric methods. See its manual page.
             <hr> </td>
           </tr>
         </tbody>
@@ -975,8 +991,7 @@ or BoomerAMG in <a
       <p><font><strong><a name="singleprecision"><font color="#ff0000">When
 using PETSc in single precision mode (--with-precision=single when
 running config/configure.py) are the operations done in single or
-double precision? </font></a></strong></font>
-      </p>
+double precision? </font></a></strong></font> </p>
 PETSc does NOT do any explicit conversion of single precision to double
 before performing computations;
 this it depends on the hardware and compiler what happens. For example,
