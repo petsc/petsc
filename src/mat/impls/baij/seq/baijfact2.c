@@ -2887,7 +2887,80 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolve_SeqBAIJ_4_NaturalOrdering_newdatastruct_v2"
+PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+{
+    Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
+    PetscInt          i,k,n=a->mbs,*vi,*ai=a->i,*aj=a->j,*adiag=a->diag,nz;
+    PetscErrorCode    ierr;
+    PetscInt          idx,jdx,idt;
+    PetscInt          bs = A->rmap->bs,bs2 = a->bs2;
+    const MatScalar   *aa=a->a,*v;
+    PetscScalar       *x;
+    const PetscScalar *b;
+    PetscScalar        s1,s2,s3,s4,x1,x2,x3,x4; 
 
+    PetscFunctionBegin;
+    ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+    ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+    /* forward solve the lower triangular */
+    idx    = 0;
+    x[0] = b[idx]; x[1] = b[1+idx];x[2] = b[2+idx];x[3] = b[3+idx];
+    for (i=1; i<n; i++) {
+       v    = aa + bs2*ai[i];
+       vi   = aj + ai[i];
+       nz   = ai[i+1] - ai[i];
+      idx   = bs*i;
+       s1   = b[idx];s2 = b[1+idx];s3 = b[2+idx];s4 = b[3+idx];
+      for(k=0;k<nz;k++) {
+          jdx   = bs*vi[k];
+          x1    = x[jdx];x2 = x[1+jdx]; x3 =x[2+jdx];x4 =x[3+jdx];
+          s1   -= v[0]*x1 + v[4]*x2 + v[8]*x3 + v[12]*x4;
+          s2   -= v[1]*x1 + v[5]*x2 + v[9]*x3 + v[13]*x4;
+          s3   -= v[2]*x1 + v[6]*x2 + v[10]*x3 + v[14]*x4;
+	  s4   -= v[3]*x1 + v[7]*x2 + v[11]*x3 + v[15]*x4;
+  
+          v   +=  bs2;
+        }
+
+       x[idx]   = s1;
+       x[1+idx] = s2;
+       x[2+idx] = s3;
+       x[3+idx] = s4;	
+    }
+ 
+   /* backward solve the upper triangular */
+  for (i=n-1; i>=0; i--){
+    v   = aa + bs2*(adiag[i+1]+1);
+     vi  = aj + adiag[i+1]+1;
+     nz  = adiag[i] - adiag[i+1]-1;
+     idt = bs*i;
+     s1 = x[idt];  s2 = x[1+idt];s3 = x[2+idt];s4 = x[3+idt];
+	
+    for(k=0;k<nz;k++){
+      idx   = bs*vi[k];
+       x1    = x[idx];   x2 = x[1+idx]; x3 = x[2+idx];x4 = x[3+idx];
+       s1   -= v[0]*x1 + v[4]*x2 + v[8]*x3 + v[12]*x4;
+       s2   -= v[1]*x1 + v[5]*x2 + v[9]*x3 + v[13]*x4;
+       s3   -= v[2]*x1 + v[6]*x2 + v[10]*x3 + v[14]*x4;
+       s4   -= v[3]*x1 + v[7]*x2 + v[11]*x3 + v[15]*x4;
+
+        v   +=  bs2;
+    }
+    /* x = inv_diagonal*x */
+   x[idt]   = v[0]*s1 + v[4]*s2 + v[8]*s3 + v[12]*s4;
+   x[1+idt] = v[1]*s1 + v[5]*s2 + v[9]*s3 + v[13]*s4;;
+   x[2+idt] = v[2]*s1 + v[6]*s2 + v[10]*s3 + v[14]*s4;
+   x[3+idt] = v[3]*s1 + v[7]*s2 + v[11]*s3 + v[15]*s4;
+
+  } 
+
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*bs2*(a->nz) - bs*A->cmap->n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqBAIJ_4_NaturalOrdering_Demotion"
@@ -3662,6 +3735,77 @@ PetscErrorCode MatSolve_SeqBAIJ_3_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatSolve_SeqBAIJ_3_NaturalOrdering_newdatastruct_v2"
+PetscErrorCode MatSolve_SeqBAIJ_3_NaturalOrdering_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+{
+    Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
+    PetscInt          i,k,n=a->mbs,*vi,*ai=a->i,*aj=a->j,*adiag=a->diag,nz;
+    PetscErrorCode    ierr;
+    PetscInt          idx,jdx,idt;
+    PetscInt          bs = A->rmap->bs,bs2 = a->bs2;
+    const MatScalar   *aa=a->a,*v;
+    PetscScalar       *x;
+    const PetscScalar *b;
+    PetscScalar        s1,s2,s3,x1,x2,x3; 
+
+    PetscFunctionBegin;
+    ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+    ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+    /* forward solve the lower triangular */
+    idx    = 0;
+    x[0] = b[idx]; x[1] = b[1+idx];x[2] = b[2+idx];
+    for (i=1; i<n; i++) {
+       v    = aa + bs2*ai[i];
+       vi   = aj + ai[i];
+       nz   = ai[i+1] - ai[i];
+      idx   = bs*i;
+       s1   = b[idx];s2 = b[1+idx];s3 = b[2+idx];
+      for(k=0;k<nz;k++){
+         jdx   = bs*vi[k];
+          x1    = x[jdx];x2 = x[1+jdx]; x3 =x[2+jdx];
+          s1   -= v[0]*x1 + v[3]*x2 + v[6]*x3;
+          s2   -= v[1]*x1 + v[4]*x2 + v[7]*x3;
+          s3   -= v[2]*x1 + v[5]*x2 + v[8]*x3;
+  
+          v   +=  bs2;
+        }
+
+       x[idx]   = s1;
+       x[1+idx] = s2;
+       x[2+idx] = s3;
+    }
+ 
+   /* backward solve the upper triangular */
+  for (i=n-1; i>=0; i--){
+    v   = aa + bs2*(adiag[i+1]+1);
+     vi  = aj + adiag[i+1]+1;
+     nz  = adiag[i] - adiag[i+1]-1;
+     idt = bs*i;
+     s1 = x[idt];  s2 = x[1+idt];s3 = x[2+idt];
+	
+     for(k=0;k<nz;k++){
+       idx   = bs*vi[k];
+       x1    = x[idx];   x2 = x[1+idx]; x3 = x[2+idx];
+       s1 -= v[0]*x1 + v[3]*x2 + v[6]*x3;
+       s2 -= v[1]*x1 + v[4]*x2 + v[7]*x3;
+       s3 -= v[2]*x1 + v[5]*x2 + v[8]*x3;
+
+        v   +=  bs2;
+    }
+    /* x = inv_diagonal*x */
+   x[idt]   = v[0]*s1 + v[3]*s2 + v[6]*s3;
+   x[1+idt] = v[1]*s1 + v[4]*s2 + v[7]*s3;
+   x[2+idt] = v[2]*s1 + v[5]*s2 + v[8]*s3;
+
+  } 
+
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*bs2*(a->nz) - bs*A->cmap->n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqBAIJ_2"
 PetscErrorCode MatSolve_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
 {
@@ -3901,6 +4045,66 @@ PetscErrorCode MatSolve_SeqBAIJ_2_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec
      v   = aa + 4*ai[2*n-i];
      vi  = aj + ai[2*n-i];
      nz  = ai[2*n-i +1] - ai[2*n-i]-1;
+     idt = 2*i;
+     s1 = x[idt];  s2 = x[1+idt];
+     for(k=0;k<nz;k++){	     
+      idx   = 2*vi[k];
+       x1    = x[idx];   x2 = x[1+idx];
+       s1 -= v[0]*x1 + v[2]*x2;
+       s2 -= v[1]*x1 + v[3]*x2;
+         v    += 4;
+    }
+    /* x = inv_diagonal*x */
+   x[idt]   = v[0]*s1 + v[2]*s2;
+   x[1+idt] = v[1]*s1 + v[3]*s2;
+  } 
+
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*4*(a->nz) - 2.0*A->cmap->n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolve_SeqBAIJ_2_NaturalOrdering_newdatastruct_v2"
+PetscErrorCode MatSolve_SeqBAIJ_2_NaturalOrdering_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+{
+    Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
+    PetscInt          i,k,n=a->mbs,*vi,*ai=a->i,*aj=a->j,*adiag=a->diag,nz,idx,idt;
+    PetscErrorCode    ierr;
+    PetscInt          jdx;
+    const MatScalar   *aa=a->a,*v;
+    PetscScalar       *x,s1,s2,x1,x2;
+    const PetscScalar *b;
+ 
+    PetscFunctionBegin;
+    ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+    ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+    /* forward solve the lower triangular */
+    idx    = 0;
+    x[0] = b[idx]; x[1] = b[1+idx];
+    for (i=1; i<n; i++) {
+        v   = aa + 4*ai[i];
+       vi   = aj + ai[i];
+       nz   = ai[i+1] - ai[i];
+       idx  = 2*i;
+       s1   = b[idx];s2 = b[1+idx];
+      for(k=0;k<nz;k++){
+         jdx   = 2*vi[k];
+          x1    = x[jdx];x2 = x[1+jdx];
+          s1   -= v[0]*x1 + v[2]*x2;
+          s2   -= v[1]*x1 + v[3]*x2;
+           v   +=  4;
+        }
+       x[idx]   = s1;
+       x[1+idx] = s2;
+    }
+ 
+   /* backward solve the upper triangular */
+  for (i=n-1; i>=0; i--){
+     v   = aa + 4*(adiag[i+1]+1);
+     vi  = aj + adiag[i+1]+1;
+     nz  = adiag[i] - adiag[i+1]-1;
      idt = 2*i;
      s1 = x[idt];  s2 = x[1+idt];
      for(k=0;k<nz;k++){	     

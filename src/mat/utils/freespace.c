@@ -186,8 +186,6 @@ PetscErrorCode PetscFreeSpaceContiguous_LU_v2(PetscFreeSpaceList *head,PetscInt 
   PetscFunctionReturn(0);
 }
 
-
-
 /*
   PetscFreeSpaceContiguous_Cholesky -
     Copy a linket list obtained from matrix symbolic ICC or Cholesky factorization into a contiguous array 
