@@ -75,7 +75,7 @@ Arg class, which wraps the usual value.'''
   # The server will self-shutdown after this many seconds
   shutdownDelay = 60*60*5
 
-  def __init__(self, parentAddr = None, parentDirectory = None, load = 1, autoShutdown = 1):
+  def __init__(self, parentAddr = None, parentDirectory = None, load = 1, autoShutdown = 1, readonly = False):
     import atexit
     import time
     import xdrlib
@@ -91,6 +91,7 @@ Arg class, which wraps the usual value.'''
     self.addrFilename    = 'RDict.loc'
     self.parentAddr      = parentAddr
     self.isServer        = 0
+    self.readonly        = readonly
     self.parentDirectory = parentDirectory
     self.packer          = xdrlib.Packer()
     self.unpacker        = xdrlib.Unpacker('')
@@ -633,6 +634,7 @@ Arg class, which wraps the usual value.'''
   def save(self, force = 0):
     '''Save the dictionary after 5 seconds, ignoring all subsequent calls until the save
        - Giving force = True will cause an immediate save'''
+    if self.readonly: return
     if force or not useThreads:
       self.saveTimer = None
       # This should be a critical section
