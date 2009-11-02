@@ -3838,6 +3838,75 @@ PetscErrorCode MatSolve_SeqBAIJ_3_newdatastruct(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolve_SeqBAIJ_3_newdatastruct_v2"
+PetscErrorCode MatSolve_SeqBAIJ_3_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+{
+  Mat_SeqBAIJ       *a=(Mat_SeqBAIJ *)A->data;
+  IS                iscol=a->col,isrow=a->row;
+  PetscErrorCode    ierr;
+  PetscInt          i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,*adiag=a->diag,nz,idx,idt,idc,m;
+  const PetscInt    *r,*c,*rout,*cout;
+  const MatScalar   *aa=a->a,*v;
+  PetscScalar       *x,s1,s2,s3,x1,x2,x3,*t;
+  const PetscScalar *b;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  t  = a->solve_work;
+
+  ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
+  ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout;
+
+  /* forward solve the lower triangular */
+  idx    = 3*r[0]; 
+  t[0] = b[idx]; t[1] = b[1+idx]; t[2] = b[2+idx];
+  for (i=1; i<n; i++) {
+    v     = aa + 9*ai[i];
+    vi    = aj + ai[i];
+    nz    = ai[i+1] - ai[i];
+    idx   = 3*r[i]; 
+    s1  = b[idx]; s2 = b[1+idx]; s3 = b[2+idx];
+    for(m=0;m<nz;m++){
+      idx   = 3*vi[m];
+      x1    = t[idx]; x2 = t[1+idx]; x3 = t[2+idx];
+      s1 -= v[0]*x1 + v[3]*x2 + v[6]*x3;
+      s2 -= v[1]*x1 + v[4]*x2 + v[7]*x3;
+      s3 -= v[2]*x1 + v[5]*x2 + v[8]*x3;
+      v += 9;
+    }
+    idx = 3*i;
+    t[idx] = s1; t[1+idx] = s2; t[2+idx] = s3;
+  }
+  /* backward solve the upper triangular */
+  for (i=n-1; i>=0; i--){
+    v    = aa + 9*(adiag[i+1]+1);
+    vi   = aj + adiag[i+1]+1;
+    nz   = adiag[i] - adiag[i+1] - 1;
+    idt  = 3*i;
+    s1 = t[idt]; s2 = t[1+idt]; s3 = t[2+idt];
+    for(m=0;m<nz;m++){
+      idx   = 3*vi[m];
+      x1    = t[idx]; x2 = t[1+idx]; x3 = t[2+idx];
+      s1 -= v[0]*x1 + v[3]*x2 + v[6]*x3;
+      s2 -= v[1]*x1 + v[4]*x2 + v[7]*x3;
+      s3 -= v[2]*x1 + v[5]*x2 + v[8]*x3;
+      v += 9;
+    }
+    idc = 3*c[i];
+    x[idc]   = t[idt]   = v[0]*s1 + v[3]*s2 + v[6]*s3;
+    x[1+idc] = t[1+idt] = v[1]*s1 + v[4]*s2 + v[7]*s3;
+    x[2+idc] = t[2+idt] = v[2]*s1 + v[5]*s2 + v[8]*s3;
+  }
+  ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+  ierr = PetscLogFlops(2.0*9*(a->nz) - 3.0*A->cmap->n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*
       Special case where the matrix was ILU(0) factored in the natural
    ordering. This eliminates the need for the column and row permutation.
@@ -4184,6 +4253,71 @@ PetscErrorCode MatSolve_SeqBAIJ_2_newdatastruct(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolve_SeqBAIJ_2_newdatastruct_v2"
+PetscErrorCode MatSolve_SeqBAIJ_2_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+{
+  Mat_SeqBAIJ       *a=(Mat_SeqBAIJ *)A->data;
+  IS                iscol=a->col,isrow=a->row;
+  PetscErrorCode    ierr;
+  PetscInt          i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,*adiag=a->diag,nz,idx,jdx,idt,idc,m;
+  const PetscInt    *r,*c,*rout,*cout;
+  const MatScalar   *aa=a->a,*v;
+  PetscScalar       *x,s1,s2,x1,x2,*t;
+  const PetscScalar *b;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  t  = a->solve_work;
+
+  ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
+  ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout;
+
+  /* forward solve the lower triangular */
+  idx    = 2*r[0]; 
+  t[0] = b[idx]; t[1] = b[1+idx];
+  for (i=1; i<n; i++) {
+    v     = aa + 4*ai[i];
+    vi    = aj + ai[i];
+    nz    = ai[i+1] - ai[i];
+    idx   = 2*r[i]; 
+    s1  = b[idx]; s2 = b[1+idx];
+    for(m=0;m<nz;m++){
+      jdx   = 2*vi[m];
+      x1    = t[jdx]; x2 = t[1+jdx];
+      s1 -= v[0]*x1 + v[2]*x2;
+      s2 -= v[1]*x1 + v[3]*x2;
+      v += 4;
+    }
+    idx = 2*i;
+    t[idx] = s1; t[1+idx] = s2;
+  }
+  /* backward solve the upper triangular */
+  for (i=n-1; i>=0; i--){
+    v    = aa + 4*(adiag[i+1]+1);
+    vi   = aj + adiag[i+1]+1;
+    nz   = adiag[i] - adiag[i+1] - 1;
+    idt  = 2*i;
+    s1 = t[idt]; s2 = t[1+idt];
+    for(m=0;m<nz;m++){
+      idx   = 2*vi[m];
+      x1    = t[idx]; x2 = t[1+idx];
+      s1 -= v[0]*x1 + v[2]*x2;
+      s2 -= v[1]*x1 + v[3]*x2;
+      v += 4;
+    }
+    idc = 2*c[i];
+    x[idc]   = t[idt]   = v[0]*s1 + v[2]*s2;
+    x[1+idc] = t[1+idt] = v[1]*s1 + v[3]*s2;
+  }
+  ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+  ierr = PetscLogFlops(2.0*4*(a->nz) - 2.0*A->cmap->n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /*
       Special case where the matrix was ILU(0) factored in the natural

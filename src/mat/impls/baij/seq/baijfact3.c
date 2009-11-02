@@ -507,12 +507,12 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_newdatastruct_v2(Mat B,Mat A,IS isrow
    else {
      switch(bs){
      case 2:
-        B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_newdatastruct;
-        B->ops->solve           = MatSolve_SeqBAIJ_2_newdatastruct;
+        B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_newdatastruct_v2;
+        B->ops->solve           = MatSolve_SeqBAIJ_2_newdatastruct_v2;
         break;
      case 3:
-	B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_newdatastruct;
-        B->ops->solve = MatSolve_SeqBAIJ_3_newdatastruct;
+	B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_newdatastruct_v2;
+        B->ops->solve = MatSolve_SeqBAIJ_3_newdatastruct_v2;
         break;
      case 4:
         B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_newdatastruct;
