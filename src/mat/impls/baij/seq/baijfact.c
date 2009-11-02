@@ -1371,6 +1371,59 @@ PetscErrorCode MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct_v2"
+PetscErrorCode MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+{
+  Mat_SeqBAIJ    *a=(Mat_SeqBAIJ *)A->data;
+  PetscErrorCode ierr;
+  const PetscInt *ai=a->i,*aj=a->j,*adiag=a->diag,*vi;
+  PetscInt       i,k,n=a->mbs;
+  PetscInt       nz,bs=A->rmap->bs,bs2=a->bs2;
+  MatScalar      *aa=a->a,*v;
+  PetscScalar    *x,*b,*s,*t,*ls;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  t  = a->solve_work;
+
+  /* forward solve the lower triangular */
+  ierr = PetscMemcpy(t,b,bs*sizeof(PetscScalar));CHKERRQ(ierr); /* copy 1st block of b to t */
+
+  for (i=1; i<n; i++) {
+    v   = aa + bs2*ai[i];
+    vi  = aj + ai[i];
+    nz = ai[i+1] - ai[i];
+    s = t + bs*i;
+    ierr = PetscMemcpy(s,b+bs*i,bs*sizeof(PetscScalar));CHKERRQ(ierr); /* copy i_th block of b to t */
+    for(k=0;k<nz;k++){
+      Kernel_v_gets_v_minus_A_times_w(bs,s,v,t+bs*vi[k]);
+      v += bs2;
+    }
+  }
+  
+  /* backward solve the upper triangular */
+  ls = a->solve_work + A->cmap->n;
+  for (i=n-1; i>=0; i--){
+    v  = aa + bs2*(adiag[i+1]+1);
+    vi = aj + adiag[i+1]+1;
+    nz = adiag[i] - adiag[i+1]-1;
+    ierr = PetscMemcpy(ls,t+i*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
+    for(k=0;k<nz;k++){
+      Kernel_v_gets_v_minus_A_times_w(bs,ls,v,t+bs*vi[k]);
+      v += bs2;
+    }
+    Kernel_w_gets_A_times_v(bs,ls,aa+bs2*adiag[i],t+i*bs); /* *inv(diagonal[i]) */
+    ierr = PetscMemcpy(x+i*bs,t+i*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
+  }
+  
+  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*(a->bs2)*(a->nz) - A->rmap->bs*A->cmap->n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqBAIJ_N_newdatastruct"
 PetscErrorCode MatSolve_SeqBAIJ_N_newdatastruct(Mat A,Vec bb,Vec xx)
 {
