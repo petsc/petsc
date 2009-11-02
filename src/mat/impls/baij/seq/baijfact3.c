@@ -488,16 +488,16 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_newdatastruct_v2(Mat B,Mat A,IS isrow
         B->ops->solve = MatSolve_SeqBAIJ_4_NaturalOrdering_newdatastruct_v2;
         break;
      case 5:
-        B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering_newdatastruct;
-        B->ops->solve = MatSolve_SeqBAIJ_5_NaturalOrdering_newdatastruct;
+        B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering_newdatastruct_v2;
+        B->ops->solve = MatSolve_SeqBAIJ_5_NaturalOrdering_newdatastruct_v2;
         break;
      case 6:
-        B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering_newdatastruct;
-        B->ops->solve = MatSolve_SeqBAIJ_6_NaturalOrdering_newdatastruct;
+        B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering_newdatastruct_v2;
+        B->ops->solve = MatSolve_SeqBAIJ_6_NaturalOrdering_newdatastruct_v2;
         break;
      case 7:
-        B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering_newdatastruct;
-        B->ops->solve = MatSolve_SeqBAIJ_7_NaturalOrdering_newdatastruct;
+        B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering_newdatastruct_v2;
+        B->ops->solve = MatSolve_SeqBAIJ_7_NaturalOrdering_newdatastruct_v2;
         break;
      default:
         B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N_newdatastruct; 
