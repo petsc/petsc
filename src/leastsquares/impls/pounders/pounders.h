@@ -10,7 +10,7 @@ typedef struct {
   PetscInt m,n;
   Vec *Xhist;
   Vec *Fhist;
-    PetscReal *Fres; //(np)
+    PetscReal *Fres; //(nfmax)
     PetscReal *RES; //npxm
     PetscReal *work; //(n)
     PetscReal *work2; //(n)
@@ -31,6 +31,7 @@ typedef struct {
     PetscInt *model_indices; //n
     PetscInt *interp_indices; //n
     PetscInt *iwork; //n
+    PetscInt nHist;
   VecScatter scatterf,scatterx; 
   Vec localf, localx, localfmin, localxmin;
   PetscMPIInt mpisize;
