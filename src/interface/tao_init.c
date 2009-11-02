@@ -40,17 +40,19 @@ PetscErrorCode TaoInitialize_DynamicLibraries(void)
   char path[PETSC_MAX_PATH_LEN];
   PetscFunctionBegin;
 
-#ifdef PETSC_USE_DYNAMIC_LIBRARIES
 
   ierr = PetscStrcpy(path,TAO_LIB_DIR); CHKERRQ(ierr);
   ierr = PetscStrcat(path,"/libtaosolver"); CHKERRQ(ierr);
+#ifdef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,path); CHKERRQ(ierr);
+#endif
 
   ierr = PetscStrcpy(path,TAO_LIB_DIR); CHKERRQ(ierr);
   ierr = PetscStrcat(path,"/libtaolinesearch"); CHKERRQ(ierr);
+#ifdef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,path); CHKERRQ(ierr);
-
 #endif
+
 
   PetscFunctionReturn(0);
   
@@ -60,7 +62,7 @@ PetscErrorCode TaoInitialize_DynamicLibraries(void)
 #define __FUNCT__ "TaoFinalize_DynamicLibraries"
 PetscErrorCode TaoFinalize_DynamicLibraries(void)
 {
-  PetscErrorCode ierr;
-  PetscFunctionReturn(0);
+    PetscFunctionBegin;
+    PetscFunctionReturn(0);
     
 }

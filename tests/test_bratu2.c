@@ -146,7 +146,7 @@ int main( int argc, char **argv )
 
   /* Create the optimization solver, Petsc application   */
   info = TaoSolverCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(info);
-  info = TaoSolverSetType(tao,"tao_mfqnls"); CHKERRQ(info);
+  info = TaoSolverSetType(tao,"tao_pounders"); CHKERRQ(info);
 
   /* Set the initial vector */
   info = FormInitialGuess(&user,x); CHKERRQ(info);

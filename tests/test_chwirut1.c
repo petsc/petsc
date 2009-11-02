@@ -99,7 +99,7 @@ int main(int argc,char **argv)
 
   /* Create TAO solver and set desired solution method */
   ierr = TaoSolverCreate(MPI_COMM_SELF,&tao);CHKERRQ(ierr);
-  ierr = TaoSolverSetType(tao,"tao_mfqnls"); CHKERRQ(ierr);
+  ierr = TaoSolverSetType(tao,"tao_pounders"); CHKERRQ(ierr);
 
   /* Set the function and Jacobian routines. */
   ierr = InitializeData(&user); CHKERRQ(ierr);

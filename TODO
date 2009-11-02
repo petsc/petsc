@@ -1,5 +1,3 @@
-GPCG
-
 
 LineSearch
 * Clear/reset variable bounds
@@ -11,14 +9,20 @@ TaoSolver
 
 TRON -- use current C++ version for now, but will have to eventually fix
 
-MFQNLS -- get something working!
+POUNDER -- get something working!
+ * fix xhist and fhist preallocation
 
-Dynamic libraries -- need TaoInitialize
 
 Fortran stubs 
 
 documentation
 
-automatic testing
+buildscripts
+
+automatic testing, coverage
 
 Check against PetscScalar=single, complex
+
+redistribute, mask, matrixfree subtypes 
+
+Yuchen's code

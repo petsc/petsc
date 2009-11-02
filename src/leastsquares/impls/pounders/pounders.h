@@ -62,7 +62,7 @@ typedef struct {
 
     
        
-} TAO_MFQNLS;
+} TAO_POUNDERS;
 
 
 void dgqt_(int *n, PetscReal *a, int *lda, PetscReal *b, PetscReal *delta, PetscReal *rtol,

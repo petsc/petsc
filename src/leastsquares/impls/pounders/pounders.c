@@ -1,13 +1,13 @@
-#include "mfqnls.h"
+#include "pounders.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "gqt"
-static PetscErrorCode gqt(TAO_MFQNLS *mfqP,PetscReal gnorm, PetscReal *qmin) {
+static PetscErrorCode gqt(TAO_POUNDERS *mfqP,PetscReal gnorm, PetscReal *qmin) {
     PetscReal one=1.0,atol=1.0e-10;
     int info,its;
     PetscFunctionBegin;
 //      subroutine dgqt(n,a,lda,b,delta,rtol,atol,itmax,par,f,x,info,iter,z,wa1,wa2)
-    dgqt_(&mfqP->n,mfqP->Hres,mfqP->n,mfqP->Gres,&one,&mfqP->gqt_rtol,&atol,
+    dgqt_(&mfqP->n,mfqP->Hres,&mfqP->n,mfqP->Gres,&one,&mfqP->gqt_rtol,&atol,
 	  &mfqP->gqt_maxits,&gnorm,qmin,mfqP->Xsubproblem,&info,&its,mfqP->work,mfqP->work2,
 	  mfqP->work3);
     PetscFunctionReturn(0);
@@ -15,24 +15,26 @@ static PetscErrorCode gqt(TAO_MFQNLS *mfqP,PetscReal gnorm, PetscReal *qmin) {
 
 #undef __FUNCT__
 #define __FUNCT__ "phi2eval"
-static PetscErrorCode phi2eval(TAO_MFQNLS *mfqP, PetscReal *x) {
+static PetscErrorCode phi2eval(TAO_POUNDERS *mfqP, PetscReal *x) {
 /* Phi = .5*[x(1)^2  sqrt(2)*x(1)*x(2) ... sqrt(2)*x(1)*x(n) ... x(2)^2 sqrt(2)*x(2)*x(3) .. x(n)^2] */
     int i,j,k;
+    PetscFunctionBegin;
     j=0;
     for (i=0;i<mfqP->n;i++) {
 	mfqP->phi[j] = 0.5 * x[i]*x[i];
 	j++;
-	for (k=i+1;k<n;k++) {
+	for (k=i+1;k<mfqP->n;k++) {
 	    mfqP->phi[j]  = x[i]*x[k]/sqrt(2.0);
 	    j++;
 	}
-
+    
     }
+    PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "getquadmfqnls"
-static PetscErrorCode getquadmfqnls(TAO_MFQNLS *mfqP) {
+#define __FUNCT__ "getquadpounders"
+static PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP) {
 /* Computes the parameters of the quadratic Q(x) = c + g'*x + 0.5*x*G*x'
    that satisfies the interpolation conditions Q(X[:,j]) = f(j)
    for j=1,...,m and with a Hessian matrix of least Frobenius norm */
@@ -43,7 +45,7 @@ static PetscErrorCode getquadmfqnls(TAO_MFQNLS *mfqP) {
 
 #undef __FUNCT__
 #define __FUNCT__ "morepoints"
-static PetscErrorCode morepoints(TAO_MFQNLS *mfqP,PetscInt index, PetscInt *np,
+static PetscErrorCode morepoints(TAO_POUNDERS *mfqP,PetscInt index, PetscInt *np,
 				 PetscInt *indices, PetscReal c) {
     PetscFunctionBegin;
 
@@ -52,7 +54,7 @@ static PetscErrorCode morepoints(TAO_MFQNLS *mfqP,PetscInt index, PetscInt *np,
 
 #undef __FUNCT__
 #define __FUNCT__ "affpoints"
-static PetscErrorCode affpoints(TAO_MFQNLS *mfqP, PetscReal *xmin, PetscInt nf, 
+static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin, PetscInt nf, 
 				PetscReal c, PetscInt *np, PetscInt *indices, 
 				PetscTruth *flag) {
     PetscInt i,j;
@@ -102,10 +104,10 @@ static PetscErrorCode affpoints(TAO_MFQNLS *mfqP, PetscReal *xmin, PetscInt nf,
     PetscFunctionReturn(0);
 }
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverSolve_MFQNLS"
-static PetscErrorCode TaoSolverSolve_MFQNLS(TaoSolver tao)
+#define __FUNCT__ "TaoSolverSolve_POUNDERS"
+static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
 {
-  TAO_MFQNLS *mfqP = (TAO_MFQNLS *)tao->data;
+  TAO_POUNDERS *mfqP = (TAO_POUNDERS *)tao->data;
 
   PetscInt i,ii,j,iter=0;
   PetscReal step=1.0;
@@ -113,7 +115,6 @@ static PetscErrorCode TaoSolverSolve_MFQNLS(TaoSolver tao)
 
   PetscInt low,high,minindex;
   PetscReal minnorm;
-  PetscInt *indices;
   PetscReal *x,*f,*fmin,*xmint;
   PetscReal cres,deltaold;
   PetscReal gnorm,temp;
@@ -137,7 +138,7 @@ static PetscErrorCode TaoSolverSolve_MFQNLS(TaoSolver tao)
   ierr = VecCopy(tao->solution,mfqP->Xhist[0]); CHKERRQ(ierr);
 
   ierr = TaoSolverComputeSeparableObjective(tao,tao->solution,mfqP->Fhist[0]); CHKERRQ(ierr);
-  ierr = VecNorm(mfqP->Fhist[0],NORM_2,&mfqP->Fres[0]); CHKERRQb(ierr);
+  ierr = VecNorm(mfqP->Fhist[0],NORM_2,&mfqP->Fres[0]); CHKERRQ(ierr);
   mfqP->Fres[0]*=mfqP->Fres[0];
   minindex = 0;
   minnorm = mfqP->Fres[0];
@@ -170,7 +171,7 @@ static PetscErrorCode TaoSolverSolve_MFQNLS(TaoSolver tao)
   /* Fdiff[i] = (Fi-Fmin)', i=1,..,minindex-1,minindex+1,..,n */
   /* (Column oriented for blas calls) */
   ii=0;
-
+  CHKMEMQ;
   if (mfqP->mpisize == 1) {
       ierr = VecGetArray(mfqP->Xhist[minindex],&xmint); CHKERRQ(ierr);
       for (i=0;i<mfqP->n;i++) mfqP->xmin[i] = xmint[i]; 
@@ -183,11 +184,11 @@ static PetscErrorCode TaoSolverSolve_MFQNLS(TaoSolver tao)
 	  for (j=0;j<mfqP->n;j++) {
 	      mfqP->Disp[ii+mfqP->n*j] = (x[j] - mfqP->xmin[j])/mfqP->delta;
 	  }
-	  ierr = VecRestoreArray(mfqP->Xhist[i],&f); CHKERRQ(ierr);
+	  ierr = VecRestoreArray(mfqP->Xhist[i],&x); CHKERRQ(ierr);
 
 	  ierr = VecGetArray(mfqP->Fhist[i],&f); CHKERRQ(ierr);
 	  for (j=0;j<mfqP->m;j++) {
-	      mfqP->Fdiff[ii+mfqP->m*j] = f[j] - fmin[j];
+	      mfqP->Fdiff[ii+mfqP->n*j] = f[j] - fmin[j];
 	  }
 	  ierr = VecRestoreArray(mfqP->Fhist[i],&f); CHKERRQ(ierr);
 	  mfqP->model_indices[ii++] = i;
@@ -241,7 +242,7 @@ static PetscErrorCode TaoSolverSolve_MFQNLS(TaoSolver tao)
       }
 	  
       ierr = VecRestoreArray(mfqP->localfmin,&fmin); CHKERRQ(ierr);
-
+  
   }
 
 	  
@@ -268,12 +269,15 @@ static PetscErrorCode TaoSolverSolve_MFQNLS(TaoSolver tao)
   gnorm *= mfqP->delta;
   ierr = TaoSolverMonitor(tao, iter, minnorm, gnorm, 0.0, step, &reason); CHKERRQ(ierr);
   index = mfqP->n;
+  CHKMEMQ;
   while (reason == TAO_CONTINUE_ITERATING) {
 
     iter++;
 
     /* Solve the subproblem min{Q(s): ||s|| <= delta} */
+    CHKMEMQ;
     ierr = gqt(mfqP,gnorm,&mdec); CHKERRQ(ierr);
+    CHKMEMQ;
     
     /* Evaluate the function at the new point */
     for (i=0;i<mfqP->n;i++) {
@@ -281,9 +285,15 @@ static PetscErrorCode TaoSolverSolve_MFQNLS(TaoSolver tao)
 	mfqP->Xsubproblem[i] += mfqP->xmin[i];
     }
     index++;
+    CHKMEMQ;
+    ierr = VecDuplicate(mfqP->Xhist[0],&mfqP->Xhist[index]); CHKERRQ(ierr);
+    CHKMEMQ;
+    ierr = VecDuplicate(mfqP->Fhist[0],&mfqP->Fhist[index]); CHKERRQ(ierr);
+    CHKMEMQ;
     ierr = VecSetValues(mfqP->Xhist[index],mfqP->n,mfqP->indices,mfqP->Xsubproblem,INSERT_VALUES); CHKERRQ(ierr);
     ierr = VecAssemblyBegin(mfqP->Xhist[index]); CHKERRQ(ierr);
     ierr = VecAssemblyEnd(mfqP->Xhist[index]); CHKERRQ(ierr);
+    CHKMEMQ;
     ierr = TaoSolverComputeSeparableObjective(tao,mfqP->Xhist[index],mfqP->Fhist[index]); CHKERRQ(ierr);
     ierr = VecNorm(mfqP->Fhist[index],NORM_2,&mfqP->Fres[index]); CHKERRQ(ierr);
     mfqP->Fres[index]*=mfqP->Fres[index];
@@ -319,9 +329,10 @@ static PetscErrorCode TaoSolverSolve_MFQNLS(TaoSolver tao)
 	ierr = VecGetArray(mfqP->Xhist[minindex],&xmint); CHKERRQ(ierr);
 	for (i=0;i<mfqP->n;i++) {
 	    mfqP->xmin[i] = xmint[i];
+	}
 	ierr = VecRestoreArray(mfqP->Xhist[minindex],&xmint); CHKERRQ(ierr);
-    }
 
+    }
     /* Evaluate at a model-improving point if necessary */
     if (valid == PETSC_FALSE) {
 	mfqP->q_is_I = 1;
@@ -330,7 +341,7 @@ static PetscErrorCode TaoSolverSolve_MFQNLS(TaoSolver tao)
 	    SETERRQ(1,"Model not valid -- model-improving not implemented yet");
 	}
     }
-
+    
     
     
     /* Update the trust region radius */
@@ -366,6 +377,8 @@ static PetscErrorCode TaoSolverSolve_MFQNLS(TaoSolver tao)
 	    for (j=0;j<mfqP->n;j++) {
 		mfqP->Xsubproblem[j] = mfqP->xmin[j] + mfqP->delta*mfqP->Gpoints[i+mfqP->n*j];
 	    }
+	    ierr = VecDuplicate(mfqP->Xhist[0],&mfqP->Xhist[index]); CHKERRQ(ierr);
+	    ierr = VecDuplicate(mfqP->Fhist[0],&mfqP->Fhist[index]); CHKERRQ(ierr);
 	    ierr = VecSetValues(mfqP->Xhist[index],mfqP->n,mfqP->indices,mfqP->Xsubproblem,INSERT_VALUES); CHKERRQ(ierr);
 	    ierr = VecAssemblyBegin(mfqP->Xhist[index]); CHKERRQ(ierr);
 	    ierr = VecAssemblyEnd(mfqP->Xhist[index]); CHKERRQ(ierr);
@@ -398,7 +411,7 @@ static PetscErrorCode TaoSolverSolve_MFQNLS(TaoSolver tao)
     }
 
     /* Update the quadratic model */
-    ierr = getquadmfqnls(mfqP); CHKERRQ(ierr);
+    ierr = getquadpounders(mfqP); CHKERRQ(ierr);
     ierr = VecGetArray(mfqP->Fhist[minindex],&fmin); CHKERRQ(ierr);
     BLAScopy_(&blasm,fmin,&ione,mfqP->C,&ione);
     // G = G*(delta/deltaold) + Gdel
@@ -423,9 +436,9 @@ static PetscErrorCode TaoSolverSolve_MFQNLS(TaoSolver tao)
     for (j=0;j<mfqP->m;j++) { //TODO rewrite as gemv
 	BLASaxpy_(&iblas,&fmin[j],&mfqP->H[j*mfqP->n*mfqP->n],&ione,mfqP->Hres,&ione);
     }
-
+    
     /* Export gradient residual to TAO */
-    ierr = VecSetValues(tao->gradient,mfqP->n,indices,mfqP->Gres,INSERT_VALUES); CHKERRQ(ierr);
+    ierr = VecSetValues(tao->gradient,mfqP->n,mfqP->indices,mfqP->Gres,INSERT_VALUES); CHKERRQ(ierr);
     ierr = VecAssemblyBegin(tao->gradient);
     ierr = VecAssemblyEnd(tao->gradient);
     ierr = VecNorm(tao->gradient,NORM_2,&gnorm); CHKERRQ(ierr);
@@ -439,10 +452,10 @@ static PetscErrorCode TaoSolverSolve_MFQNLS(TaoSolver tao)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSetUp_MFQNLS"
-static PetscErrorCode TaoSolverSetUp_MFQNLS(TaoSolver tao)
+#define __FUNCT__ "TaoSetUp_POUNDERS"
+static PetscErrorCode TaoSolverSetUp_POUNDERS(TaoSolver tao)
 {
-    TAO_MFQNLS *mfqP = (TAO_MFQNLS*)tao->data;
+    TAO_POUNDERS *mfqP = (TAO_POUNDERS*)tao->data;
     int i;
     IS isfloc,isfglob,isxloc,isxglob;
     PetscErrorCode ierr;
@@ -467,9 +480,10 @@ static PetscErrorCode TaoSolverSetUp_MFQNLS(TaoSolver tao)
     ierr = PetscMalloc(mfqP->n*sizeof(PetscReal),&mfqP->work3); CHKERRQ(ierr);
     ierr = PetscMalloc(mfqP->m*sizeof(PetscReal),&mfqP->mwork); CHKERRQ(ierr);
 
-    ierr = PetscMalloc(mfqP->n*mfqP->n*mfqP->m*sizeof(PetscReal),&mfqP->H); CHKERRQ(ierr);
+    ierr = PetscMalloc(mfqP->n*mfqP->m*mfqP->m*sizeof(PetscReal),&mfqP->H); CHKERRQ(ierr);
     ierr = PetscMalloc(mfqP->n*mfqP->n*sizeof(PetscReal),&mfqP->Q); CHKERRQ(ierr);
     ierr = PetscMalloc(mfqP->n*sizeof(PetscReal),&mfqP->tau); CHKERRQ(ierr);
+    ierr = PetscMalloc(mfqP->n*sizeof(PetscReal),&mfqP->xmin); CHKERRQ(ierr);
     ierr = PetscMalloc(mfqP->m*sizeof(PetscReal),&mfqP->C); CHKERRQ(ierr);
     ierr = PetscMalloc(mfqP->m*mfqP->n*sizeof(PetscReal),&mfqP->Fdiff); CHKERRQ(ierr);
     ierr = PetscMalloc(mfqP->n*mfqP->n*sizeof(PetscReal),&mfqP->Disp); CHKERRQ(ierr);
@@ -480,7 +494,7 @@ static PetscErrorCode TaoSolverSetUp_MFQNLS(TaoSolver tao)
     ierr = PetscMalloc(mfqP->npmax*sizeof(PetscInt),&mfqP->interp_indices); CHKERRQ(ierr);
     ierr = PetscMalloc(mfqP->n*sizeof(PetscReal),&mfqP->Xsubproblem); CHKERRQ(ierr);
     ierr = PetscMalloc(mfqP->n*sizeof(PetscReal),&mfqP->Gdel); CHKERRQ(ierr);
-    ierr = PetscMalloc(mfqP->n*mfqP->n*mfqP->m*sizeof(PetscReal), &mfqP->Hdel); CHKERRQ(ierr);
+    ierr = PetscMalloc(mfqP->n*mfqP->m*mfqP->m*sizeof(PetscReal), &mfqP->Hdel); CHKERRQ(ierr);
     ierr = PetscMalloc(mfqP->n*(mfqP->n+1)/2*sizeof(PetscReal), &mfqP->phi); CHKERRQ(ierr);
     ierr = PetscMalloc(mfqP->m*sizeof(PetscInt),&mfqP->indices); CHKERRQ(ierr);
     ierr = PetscMalloc(mfqP->n*sizeof(PetscInt),&mfqP->iwork); CHKERRQ(ierr);
@@ -506,17 +520,17 @@ static PetscErrorCode TaoSolverSetUp_MFQNLS(TaoSolver tao)
       ierr = ISDestroy(isxglob); CHKERRQ(ierr);
       ierr = ISDestroy(isfloc); CHKERRQ(ierr);
       ierr = ISDestroy(isfglob); CHKERRQ(ierr);
-      
+
   }
 
-    PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverDestroy_MFQNLS"
-static PetscErrorCode TaoSolverDestroy_MFQNLS(TaoSolver tao)
+#define __FUNCT__ "TaoSolverDestroy_POUNDERS"
+static PetscErrorCode TaoSolverDestroy_POUNDERS(TaoSolver tao)
 {
-  TAO_MFQNLS *mfqP = (TAO_MFQNLS*)tao->data;
+  TAO_POUNDERS *mfqP = (TAO_POUNDERS*)tao->data;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
@@ -528,6 +542,7 @@ static PetscErrorCode TaoSolverDestroy_MFQNLS(TaoSolver tao)
   ierr = PetscFree(mfqP->mwork); CHKERRQ(ierr);
   ierr = PetscFree(mfqP->Q); CHKERRQ(ierr);
   ierr = PetscFree(mfqP->tau); CHKERRQ(ierr);
+  ierr = PetscFree(mfqP->xmin); CHKERRQ(ierr);
   ierr = PetscFree(mfqP->H); CHKERRQ(ierr);
   ierr = PetscFree(mfqP->C); CHKERRQ(ierr);
   ierr = PetscFree(mfqP->Fdiff); CHKERRQ(ierr);
@@ -560,44 +575,44 @@ static PetscErrorCode TaoSolverDestroy_MFQNLS(TaoSolver tao)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverSetFromOptions_MFQNLS"
-static PetscErrorCode TaoSolverSetFromOptions_MFQNLS(TaoSolver tao)
+#define __FUNCT__ "TaoSolverSetFromOptions_POUNDERS"
+static PetscErrorCode TaoSolverSetFromOptions_POUNDERS(TaoSolver tao)
 {
-  TAO_MFQNLS *mfqP = (TAO_MFQNLS*)tao->data;
+  TAO_POUNDERS *mfqP = (TAO_POUNDERS*)tao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("MFQNLS method for least-squares optimization"); CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_mfqnls_delta","initial delta","",mfqP->delta,&mfqP->delta,0); CHKERRQ(ierr);
+  ierr = PetscOptionsHead("POUNDERS method for least-squares optimization"); CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_pounders_delta","initial delta","",mfqP->delta,&mfqP->delta,0); CHKERRQ(ierr);
   ierr = PetscOptionsTail(); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__ 
-#define __FUNCT__ "TaoSolverView_MFQNLS"
-static PetscErrorCode TaoSolverView_MFQNLS(TaoSolver tao, PetscViewer viewer)
+#define __FUNCT__ "TaoSolverView_POUNDERS"
+static PetscErrorCode TaoSolverView_POUNDERS(TaoSolver tao, PetscViewer viewer)
 {
   return 0;
 }
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "TaoCreate_MFQNLS"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverCreate_MFQNLS(TaoSolver tao)
+#define __FUNCT__ "TaoCreate_POUNDERS"
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverCreate_POUNDERS(TaoSolver tao)
 {
-  TAO_MFQNLS *mfqP = (TAO_MFQNLS*)tao->data;
+  TAO_POUNDERS *mfqP = (TAO_POUNDERS*)tao->data;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
 
-  tao->ops->setup = TaoSolverSetUp_MFQNLS;
-  tao->ops->solve = TaoSolverSolve_MFQNLS;
-  tao->ops->view = TaoSolverView_MFQNLS;
-  tao->ops->setfromoptions = TaoSolverSetFromOptions_MFQNLS;
-  tao->ops->destroy = TaoSolverDestroy_MFQNLS;
+  tao->ops->setup = TaoSolverSetUp_POUNDERS;
+  tao->ops->solve = TaoSolverSolve_POUNDERS;
+  tao->ops->view = TaoSolverView_POUNDERS;
+  tao->ops->setfromoptions = TaoSolverSetFromOptions_POUNDERS;
+  tao->ops->destroy = TaoSolverDestroy_POUNDERS;
 
 
-  ierr = PetscNewLog(tao, TAO_MFQNLS, &mfqP); CHKERRQ(ierr);
+  ierr = PetscNewLog(tao, TAO_POUNDERS, &mfqP); CHKERRQ(ierr);
   tao->data = (void*)mfqP;
   tao->max_its = 2000;
   tao->max_funcs = 4000;
