@@ -1,45 +1,5 @@
 #define PETSCTS_DLL
 
-/*
-  Code for timestepping with diagonally implicit general linear methods
-
-  Notes:
-  This integrator can be applied to DAE.
-
-  DIGL methods are a generalization of DIRKs.
-
-  A  |  U
-  -------
-  B  |  V
-
-  "Diagonally implicit" means that A is lower triangular.
-
-  The method carries a multivector X = {x_1,x_2,...,x_r} between steps, x_1 is the solution.
-
-  We solve the stages (Y,Y') sequentially:
-
-      y_i = h sum_{j=1}^s (a_ij y'_j) + sum_{j=1}^r u_ij x_j,    i=1,...,s
-
-  and then construct the pieces to carry to the next step
-
-      xx_i = h sum_{j=1}^s b_ij y'_j  + sum_{j=1}^r v_ij x_j,    i=1,...,r
-
-  Note that when the equations are cast in implicit form, we are using the stage equation to define y'_i
-  in terms of y_i and known stuff (y_j for j<i and x_j for all j)
-
-
-* Error estimation for step-size adaptivity
-
-  GL methods admit a forward-looking local error estimator (can be evaluated before building X_{n+1})
-
-      h^{p+1} x^{(p+1)}(t_n+h) \approx h \phi^T Y' + [0 \psi^T] X_n + \bigO(h^{p+2})
-
-  and a backward-looking estimator (uses X_{n+1})
-
-      h^{p+1} x^{(p+1)}(t_n+h) \approx h \tilde{\phi}^T Y' + [0 \tilde{\psi}^T] X_{n+1} + \bigO(h^{p+2})
-
-*/
-
 #include "gl.h"                /*I   "petscts.h"   I*/
 #include "petscblaslapack.h"
 
@@ -175,7 +135,7 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
     *    % Determine the error estimators phi
        H = [[cpow(glm.c,p) + C*e.alpha] [cpow(glm.c,p+1) + C*e.beta] ...
                [e.xi - C*(e.gamma + 0*e.epsilon*eye(s-1,1))]]';
-    % Paper has formula above without the 0, but the 0 must be left
+    % Paper has formula above without the 0, but that term must be left
     % out to satisfy the conditions they propose and to make the
     % example schemes work
     e.H = H;
@@ -351,8 +311,8 @@ static PetscErrorCode TSGLEstimateHigherMoments_Default(TSGLScheme sc,PetscReal 
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSGLRescaleAndModify_Default"
-static PetscErrorCode TSGLRescaleAndModify_Default(TSGLScheme sc,PetscReal h,TSGLScheme next_sc,PetscReal next_h,Vec Ydot[],Vec Xold[],Vec E[],Vec X[])
+#define __FUNCT__ "TSGLCompleteStep_Rescale"
+static PetscErrorCode TSGLCompleteStep_Rescale(TSGLScheme sc,PetscReal h,TSGLScheme next_sc,PetscReal next_h,Vec Ydot[],Vec Xold[],Vec X[])
 {
   PetscErrorCode ierr;
   PetscScalar brow[32],vrow[32];
@@ -374,6 +334,42 @@ static PetscErrorCode TSGLRescaleAndModify_Default(TSGLScheme sc,PetscReal h,TSG
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "TSGLCompleteStep_RescaleAndModify"
+static PetscErrorCode TSGLCompleteStep_RescaleAndModify(TSGLScheme sc,PetscReal h,TSGLScheme next_sc,PetscReal next_h,Vec Ydot[],Vec Xold[],Vec X[])
+{
+  PetscErrorCode ierr;
+  PetscScalar brow[32],vrow[32];
+  PetscReal ratio;
+  PetscInt i,j,p,r,s;
+
+  PetscFunctionBegin;
+  /* Build the new solution from (X,Ydot) */
+  p = sc->p;
+  r = sc->r;
+  s = sc->s;
+  ratio = next_h/h;
+  for (i=0; i<r; i++) {
+    ierr = VecZeroEntries(X[i]);CHKERRQ(ierr);
+    for (j=0; j<s; j++) {
+      brow[j] = h*(pow(ratio,i)*sc->b[i*s+j]
+                   + (pow(ratio,i) - pow(ratio,p+1))*(+ sc->alpha[i]*sc->phi[0*(r+s)+j])
+                   + (pow(ratio,i) - pow(ratio,p+2))*(+ sc->beta [i]*sc->phi[1*(r+s)+j]
+                                                      + sc->gamma[i]*sc->phi[2*(r+s)+j]));
+    }
+    ierr = VecMAXPY(X[i],s,brow,Ydot);CHKERRQ(ierr);
+    for (j=0; j<r; j++) {
+      vrow[j] = (pow(ratio,i)*sc->v[i*r+j]
+                 + (pow(ratio,i) - pow(ratio,p+1))*(+ sc->alpha[i]*sc->phi[0*(r+s)+s+j])
+                 + (pow(ratio,i) - pow(ratio,p+2))*(+ sc->beta [i]*sc->phi[1*(r+s)+s+j]
+                                                      + sc->gamma[i]*sc->phi[2*(r+s)+s+j]));
+    }
+    ierr = VecMAXPY(X[i],r,vrow,Xold);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
 #define __FUNCT__ "TSGLCreate_DI"
 static PetscErrorCode TSGLCreate_DI(TS ts)
 {
@@ -383,7 +379,7 @@ static PetscErrorCode TSGLCreate_DI(TS ts)
   PetscFunctionBegin;
   gl->Destroy               = TSGLDestroy_Default;
   gl->EstimateHigherMoments = TSGLEstimateHigherMoments_Default;
-  gl->RescaleAndModify      = TSGLRescaleAndModify_Default;
+  gl->CompleteStep          = TSGLCompleteStep_RescaleAndModify;
   ierr = PetscMalloc(10*sizeof(TSGLScheme),&gl->schemes);CHKERRQ(ierr);
   gl->nschemes = 0;
 
@@ -662,7 +658,7 @@ static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
     X = gl->Xold;
     gl->Xold = gl->X;
     gl->X = X;
-    ierr = (*gl->RescaleAndModify)(scheme,h,gl->schemes[next_scheme],next_h,Ydot,gl->Xold,gl->himom,gl->X);CHKERRQ(ierr);
+    ierr = (*gl->CompleteStep)(scheme,h,gl->schemes[next_scheme],next_h,Ydot,gl->Xold,gl->X);CHKERRQ(ierr);
 
     ierr = TSGLUpdateWRMS(ts);CHKERRQ(ierr);
 
@@ -791,7 +787,7 @@ static PetscErrorCode TSSetUp_GL(TS ts)
 static PetscErrorCode TSSetFromOptions_GL(TS ts)
 {
   TS_GL *gl = (TS_GL*)ts->data;
-  char tname[256] = TSGL_DI;
+  char tname[256] = TSGL_DI,completef[256] = "rescale-and-modify";
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -809,6 +805,15 @@ static PetscErrorCode TSSetFromOptions_GL(TS ts)
     ierr = PetscOptionsTruth("-ts_gl_extrapolate","Extrapolate stage solution from previous solution (sometimes unstable)","TSGLSetExtrapolate",gl->extrapolate,&gl->extrapolate,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_gl_atol","Absolute tolerance","TSGLSetTolerances",gl->wrms_atol,&gl->wrms_atol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_gl_rtol","Relative tolerance","TSGLSetTolerances",gl->wrms_rtol,&gl->wrms_rtol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-ts_gl_complete","Method to use for completing the step","none",completef,completef,sizeof completef,&flg);CHKERRQ(ierr);
+    if (flg) {
+      PetscTruth match1,match2;
+      ierr = PetscStrcmp(completef,"rescale",&match1);CHKERRQ(ierr);
+      ierr = PetscStrcmp(completef,"rescale-and-modify",&match2);CHKERRQ(ierr);
+      if (match1)      gl->CompleteStep = TSGLCompleteStep_Rescale;
+      else if (match2) gl->CompleteStep = TSGLCompleteStep_RescaleAndModify;
+      else SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"%s",completef);
+    }
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -949,7 +954,85 @@ static PetscErrorCode TSGLCtrlChooseNextScheme_Default(TS ts,PetscInt n,const TS
   reliable error estimates for both 1 and 2 orders higher to facilitate adaptive step sizes and adaptive order schemes.
   All this is possible while preserving a singly diagonally implicit structure.
 
+  Options database keys:
++  -ts_gl_type <type> - the class of general linear method (di=DI-IRKS)
+.  -ts_gl_rtol <tol>  - relative error
+.  -ts_gl_atol <tol>  - absolute error
+.  -ts_gl_min_order <p> - minimum order method to consider (default=1)
+.  -ts_gl_max_order <p> - maximum order method to consider (default=3)
+.  -ts_gl_start_order <p> - order of starting method (default=1)
+.  -ts_gl_complete <method> - method to use for completing the step (rescale-and-modify or rescale)
+-  -ts_adapt_type <method> - adaptive controller to use (none step both)
+
+  Notes:
+  This integrator can be applied to DAE.
+
+  Diagonally implicit general linear (DIGL) methods are a generalization of diagonally implicit Runge-Kutta (DIRK).
+  They are represented by the tableau
+
+.vb
+  A  |  U
+  -------
+  B  |  V
+.ve
+
+  combined with a vector c of abscissa.  "Diagonally implicit" means that A is lower triangular.
+  A step of the general method reads
+
+.vb
+  [ Y ] = [A  U] [  Y'   ]
+  [X^k] = [B  V] [X^{k-1}]
+.ve
+
+  where Y is the multivector of stage values, Y' is the multivector of stage derivatives, X^k is the Nordsieck vector of
+  the solution at step k.  The Nordsieck vector consists of the first r moments of the solution, given by
+
+.vb
+  X = [x_0,x_1,...,x_{r-1}] = [x, h x', h^2 x'', ..., h^{r-1} x^{(r-1)} ]
+.ve
+
+  If A is lower triangular, we can solve the stages (Y,Y') sequentially
+
+.vb
+  y_i = h sum_{j=0}^{s-1} (a_ij y'_j) + sum_{j=0}^{r-1} u_ij x_j,    i=0,...,{s-1}
+.ve
+
+  and then construct the pieces to carry to the next step
+
+.vb
+  xx_i = h sum_{j=0}^{s-1} b_ij y'_j  + sum_{j=0}^{r-1} v_ij x_j,    i=0,...,{r-1}
+.ve
+
+  Note that when the equations are cast in implicit form, we are using the stage equation to define y'_i
+  in terms of y_i and known stuff (y_j for j<i and x_j for all j).
+
+
+  Error estimation
+
+  At present, the most attractive GL methods for stiff problems are singly diagonally implicit schemes which posses
+  Inherent Runge-Kutta Stability (IRKS).  These methods have r=s, the number of items passed between steps is equal to
+  the number of stages.  The order and stage-order are one less than the number of stages.  We use the error estimates
+  in the 2007 paper which provide the following estimates
+
+.vb
+  h^{p+1} X^{(p+1)}          = phi_0^T Y' + [0 psi_0^T] Xold
+  h^{p+2} X^{(p+2)}          = phi_1^T Y' + [0 psi_1^T] Xold
+  h^{p+2} (dx'/dx) X^{(p+1)} = phi_2^T Y' + [0 psi_2^T] Xold
+.ve
+
+  These estimates are accurate to O(h^{p+3}).
+
+  Changing the step size
+
+  We use the generalized "rescale and modify" scheme, see equation (4.5) of the 2007 paper.
+
   Level: beginner
+
+  References:
+  John Butcher and Z. Jackieweicz and W. Wright 2007, On error propagation in general linear methods for
+  ordinary differential equations, Journal of Complexity, Vol 23 (4-6).
+
+  John Butcher 2009, Numerical methods for ordinary differential equations, second edition, Wiley.
 
 .seealso:  TSCreate(), TS, TSSetType()
 

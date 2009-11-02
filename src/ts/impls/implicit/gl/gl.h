@@ -39,7 +39,7 @@ typedef struct TS_GL {
   void *ctrlP;
   /* specific to the family of GL method */
   PetscErrorCode (*EstimateHigherMoments)(TSGLScheme,PetscReal,Vec*,Vec*,Vec*); /* Provide local error estimates */
-  PetscErrorCode (*RescaleAndModify)(TSGLScheme,PetscReal,TSGLScheme,PetscReal,Vec*,Vec*,Vec*,Vec*);
+  PetscErrorCode (*CompleteStep)(TSGLScheme,PetscReal,TSGLScheme,PetscReal,Vec*,Vec*,Vec*);
   PetscErrorCode (*Destroy)(struct TS_GL*);
   PetscErrorCode (*View)(struct TS_GL*,PetscViewer);
   char     type_name[256];
