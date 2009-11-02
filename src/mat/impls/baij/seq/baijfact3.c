@@ -523,8 +523,8 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_newdatastruct_v2(Mat B,Mat A,IS isrow
         B->ops->solve = MatSolve_SeqBAIJ_5_newdatastruct_v2;
         break;
      case 6:
-        B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_newdatastruct;
-        B->ops->solve = MatSolve_SeqBAIJ_6_newdatastruct;
+        B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_newdatastruct_v2;
+        B->ops->solve = MatSolve_SeqBAIJ_6_newdatastruct_v2;
         break;
      case 7:
         B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_newdatastruct;
