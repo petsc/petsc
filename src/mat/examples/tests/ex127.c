@@ -1,7 +1,7 @@
 static char help[] = "Test MatMult() for Hermitian matrix.\n\n";
 
 #include "petscmat.h"
-extern PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian_tmp(Mat,Vec,Vec);
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 PetscInt main(PetscInt argc,char **args)
@@ -10,10 +10,9 @@ PetscInt main(PetscInt argc,char **args)
   Vec            x,y,ys;
   PetscTruth     flg,disp_mat=PETSC_FALSE,disp_vec=PETSC_FALSE;  
   PetscErrorCode ierr;
-  PetscScalar    sigma;
   PetscMPIInt    size;
   PetscInt       m,i,j; 
-  PetscScalar    v,none = -1.0,sigma2,pfive = 0.5;
+  PetscScalar    v,sigma2;
   PetscRandom    rctx;
   PetscReal      h2,sigma1=100.0,norm;
   PetscInt       dim,Ii,J,n = 3,use_random;
@@ -134,18 +133,17 @@ PetscInt main(PetscInt argc,char **args)
 
   /* Test MatMult */
   ierr = MatMult(A,x,y);CHKERRQ(ierr);
-  ierr = MatMult(As,x,ys);CHKERRQ(ierr); /* crash with option '-n 1000' ??? */
-  /* ierr = MatMult_SeqSBAIJ_1_Hermitian_tmp(As,x,ys);CHKERRQ(ierr); */
+  ierr = MatMult(As,x,ys);CHKERRQ(ierr); 
   if (disp_mat){
-    printf("y = A*x:\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"y = A*x:\n");
     ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    printf("ys = As*x:\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"ys = As*x:\n");
     ierr = VecView(ys,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   ierr = VecAXPY(y,-1.0,ys);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_INFINITY,&norm);CHKERRQ(ierr);
   if (norm > 1.e-12){
-    printf("|| A*x - As*x || = %G\n",norm);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"|| A*x - As*x || = %G\n",norm);
   }
 
   /* Free spaces */
@@ -158,54 +156,4 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecDestroy(ys);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
-}
-/* -----------------------------------*/
-#include "../src/mat/impls/sbaij/seq/sbaij.h"
-#undef __FUNCT__  
-#define __FUNCT__ "MatMult_SeqSBAIJ_1_Hermitian_tmp"
-PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian_tmp(Mat A,Vec xx,Vec zz)
-{
-  Mat_SeqSBAIJ         *a = (Mat_SeqSBAIJ*)A->data;
-  const PetscScalar    *x;
-  PetscScalar          *z,x1,sum;
-  const MatScalar      *v;
-  MatScalar            vj;
-  PetscErrorCode       ierr;
-  PetscInt             mbs=a->mbs,i,j,nz;
-  const PetscInt       *ai=a->i;
-#if defined(USESHORT)
-  const unsigned short *ib=a->jshort;
-  unsigned short       ibt;
-#else
-  const PetscInt       *ib=a->j;
-  PetscInt             ibt;
-#endif
-
-  PetscFunctionBegin;
-  ierr = VecSet(zz,0.0);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
-  ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
-
-  v  = a->a; 
-  for (i=0; i<mbs; i++) {
-    nz   = ai[i+1] - ai[i];  /* length of i_th row of A */    
-    x1   = x[i];
-    sum  = v[0]*x1;          /* diagonal term */
-    for (j=1; j<nz; j++) {
-      ibt  = ib[j];
-      vj   = v[j];
-      sum += vj * x[ibt];   /* (strict upper triangular part of A)*x  */
-     
-      vj = PetscConj(v[j]);
-      z[ibt] += vj * x1;    /* (strict lower triangular part of A)*x  */
-    }
-    z[i] += sum;
-    v    += nz;
-    ib   += nz;
-  }
-
-  ierr = VecRestoreArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2.0*(2.0*a->nz - mbs) - mbs);CHKERRQ(ierr); 
-  PetscFunctionReturn(0);
 }
