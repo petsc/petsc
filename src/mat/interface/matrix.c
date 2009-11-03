@@ -4012,6 +4012,41 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIsTranspose(Mat A,Mat B,PetscReal tol,Petsc
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatHermitianTranspose"
+/*@ 
+   MatHermitianTranspose - Computes an in-place or out-of-place transpose of a matrix in complex conjugate.
+
+   Collective on Mat
+
+   Input Parameter:
++  mat - the matrix to transpose and complex conjugate
+-  reuse - store the transpose matrix in the provided B
+
+   Output Parameters:
+.  B - the Hermitian
+
+   Notes:
+     If you  pass in &mat for B the Hermitian will be done in place
+
+   Level: intermediate
+
+   Concepts: matrices^transposing, complex conjugatex
+
+.seealso: MatTranspose(), MatMultTranspose(), MatMultTransposeAdd(), MatIsTranspose(), MatReuse
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatHermitianTranspose(Mat mat,MatReuse reuse,Mat *B)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatTranspose(mat,reuse,B);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+  ierr = MatConjugate(*B);CHKERRQ(ierr);
+#endif
+  PetscFunctionReturn(0);  
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatIsHermitianTranspose"
 /*@
@@ -4746,13 +4781,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetOption(Mat mat,MatOption op,PetscTruth f
   switch (op) {
   case MAT_SYMMETRIC:
     mat->symmetric                  = flg;
-    if (flg) mat->structurally_symmetric     = PETSC_TRUE;
+    if (flg) mat->structurally_symmetric = PETSC_TRUE;
     mat->symmetric_set              = PETSC_TRUE;
     mat->structurally_symmetric_set = flg;
     break;
   case MAT_HERMITIAN:
     mat->hermitian                  = flg;
-    if (flg) mat->structurally_symmetric     = PETSC_TRUE;
+    if (flg) mat->structurally_symmetric = PETSC_TRUE;
     mat->hermitian_set              = PETSC_TRUE;
     mat->structurally_symmetric_set = flg;
     break;

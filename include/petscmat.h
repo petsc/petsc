@@ -518,6 +518,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMinAbs(Mat,Vec,PetscInt[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowSum(Mat,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatTranspose(Mat,MatReuse,Mat*);
 PetscPolymorphicFunction(MatTranspose,(Mat A),(A,MAT_INITIAL_MATRIX,&t),Mat,t)
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatHermitianTranspose(Mat,MatReuse,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPermute(Mat,IS,IS,Mat *);
 PetscPolymorphicFunction(MatPermute,(Mat A,IS is1,IS is2),(A,is1,is2,&t),Mat,t)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPermuteSparsify(Mat,PetscInt,PetscReal,PetscReal,IS,IS,Mat *);
@@ -1498,15 +1499,15 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_PTAP_SYMBOLIC=93,
                MATOP_PTAP_NUMERIC=94,
                MATOP_MAT_MULTTRANSPOSE=95,
-               MATOP_MAT_MULTTRANSPOSE_SYMBOLIC=96,
-               MATOP_MAT_MULTTRANSPOSE_NUMERIC=97,
+               MATOP_MAT_MULTTRANSPOSE_SYM=96,
+               MATOP_MAT_MULTTRANSPOSE_NUM=97,
                MATOP_PTAP_SYMBOLIC_SEQAIJ=98,
                MATOP_PTAP_NUMERIC_SEQAIJ=99,
                MATOP_PTAP_SYMBOLIC_MPIAIJ=100,
                MATOP_PTAP_NUMERIC_MPIAIJ=101,
                MATOP_CONJUGATE=102,
                MATOP_SET_SIZES=103,
-               MATOP_SET_VALUES_ROW = 104,
+               MATOP_SET_VALUES_ROW=104,
                MATOP_REAL_PART=105,
                MATOP_IMAG_PART=106,
                MATOP_GET_ROW_UTRIANGULAR=107,
@@ -1521,7 +1522,8 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_GET_GHOSTS=116,
                MATOP_ILUDTFACTORSYMBOLIC=117,
                MATOP_ILUDTFACTORNUMERIC=118,
-               MATOP_MULT_DIAGONAL_BLOCK=119
+               MATOP_MULT_DIAGONAL_BLOCK=119,
+               MATOP_HERMITIANTRANSPOSE=120
              } MatOperation;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatHasOperation(Mat,MatOperation,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetOperation(Mat,MatOperation,void(*)(void));

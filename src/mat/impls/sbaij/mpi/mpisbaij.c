@@ -1189,9 +1189,14 @@ PetscErrorCode MatSetOption_MPISBAIJ(Mat A,MatOption op,PetscTruth flg)
     a->ht_flag = flg;
     break;
   case MAT_HERMITIAN:
-    if (flg) SETERRQ(PETSC_ERR_SUP,"Matrix must be symmetric");
+    ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
+    break;
   case MAT_SYMMETRIC:
+    ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
+    break;
   case MAT_STRUCTURALLY_SYMMETRIC:
+    ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
+    break;
   case MAT_SYMMETRY_ETERNAL:
     if (!flg) SETERRQ(PETSC_ERR_SUP,"Matrix must be symmetric");
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);

@@ -132,6 +132,8 @@ EXTERN PetscErrorCode MatMult_SeqSBAIJ_6(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatMult_SeqSBAIJ_7(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatMult_SeqSBAIJ_N(Mat,Vec,Vec);
 
+EXTERN PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian(Mat,Vec,Vec);
+
 EXTERN PetscErrorCode MatMultAdd_SeqSBAIJ_1(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatMultAdd_SeqSBAIJ_2(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatMultAdd_SeqSBAIJ_3(Mat,Vec,Vec,Vec);

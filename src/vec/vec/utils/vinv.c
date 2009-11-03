@@ -1435,8 +1435,18 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecEqual(Vec vec1,Vec vec2,PetscTruth *flg)
         ierr = PetscObjectStateQuery((PetscObject) vec1,&state1);CHKERRQ(ierr); 
         ierr = PetscObjectStateQuery((PetscObject) vec2,&state2);CHKERRQ(ierr); 
         ierr = VecGetArray(vec1,&v1);CHKERRQ(ierr); 
-        ierr = VecGetArray(vec2,&v2);CHKERRQ(ierr); 
+        ierr = VecGetArray(vec2,&v2);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+        PetscInt k;
+        for (k=0; k<n1; k++){
+          if (PetscRealPart(v1[k]) != PetscRealPart(v2[k]) || PetscImaginaryPart(v1[k]) != PetscImaginaryPart(v2[k])){
+            flg1 = PETSC_FALSE;
+            break;
+          }
+        }
+#else 
         ierr = PetscMemcmp(v1,v2,n1*sizeof(PetscScalar),&flg1);CHKERRQ(ierr); 
+#endif
         ierr = VecRestoreArray(vec1,&v1);CHKERRQ(ierr); 
         ierr = VecRestoreArray(vec2,&v2);CHKERRQ(ierr); 
         ierr = PetscObjectSetState((PetscObject) vec1,state1);CHKERRQ(ierr); 
