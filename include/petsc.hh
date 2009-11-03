@@ -37,7 +37,7 @@ namespace PETSc {
     Point() {for(int d = 0; d < dim; ++d) {x[d] = 0.0;}}
     Point(const value_type p) {for(int d = 0; d < dim; ++d) {x[d] = p;}}
     Point(const value_type p[]) {for(int d = 0; d < dim; ++d) {x[d] = p[d];}}
-    Point(const Point& p) {for(int d = 0; d < dim; ++d) {x[d] = p.x[d];}}
+    // Point(const Point& p) {for(int d = 0; d < dim; ++d) {x[d] = p.x[d];}}
     template<typename Value2_>
     Point(const Point<dim,Value2_>& p) {for(int d = 0; d < dim; ++d) {x[d] = (Value2_) p.x[d];}}
 
