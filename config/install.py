@@ -14,7 +14,7 @@ except NameError:
 class Installer(script.Script):
   def __init__(self, clArgs = None):
     import RDict
-    argDB = RDict.RDict(None, None, 0, 0)
+    argDB = RDict.RDict(None, None, 0, 0, readonly = True)
     argDB.saveFilename = os.path.join(os.environ['PETSC_DIR'], os.environ['PETSC_ARCH'], 'conf', 'RDict.db')
     argDB.load()
     script.Script.__init__(self, argDB = argDB)
