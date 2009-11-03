@@ -190,11 +190,13 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op,PetscTruth flg)
     break;
   case MAT_HERMITIAN:
     if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call MatAssemblyEnd() first");
-#if defined(USESHORT)
-    A->ops->mult = MatMult_SeqSBAIJ_1_Hermitian_ushort;
-#else
-    A->ops->mult = MatMult_SeqSBAIJ_1_Hermitian;
-#endif
+    if (A->ops->mult == MatMult_SeqSBAIJ_1_ushort) {
+      A->ops->mult = MatMult_SeqSBAIJ_1_Hermitian_ushort;
+    } else if  (A->ops->mult == MatMult_SeqSBAIJ_1) {
+      A->ops->mult = MatMult_SeqSBAIJ_1_Hermitian;
+    } else if (A->ops->mult == MatMult_SeqSBAIJ_1_Hermitian || A->ops->mult == MatMult_SeqSBAIJ_1_Hermitian_ushort) {
+      SETERRQ(PETSC_ERR_SUP,"No support for Hermitian with block size greater than 1");
+    }
     break;
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
