@@ -160,6 +160,7 @@ struct _MatOps {
   PetscErrorCode (*iludtfactornumeric)(Mat,Mat,const MatFactorInfo*);
   /*119*/
   PetscErrorCode (*multdiagonalblock)(Mat,Vec,Vec);
+  PetscErrorCode (*hermitiantranspose)(Mat,MatReuse,Mat*);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum

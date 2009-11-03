@@ -1448,7 +1448,11 @@ PetscErrorCode MatSetOption_MPIAIJ(Mat A,MatOption op,PetscTruth flg)
     ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
     break;
   case MAT_STRUCTURALLY_SYMMETRIC:
+    ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
+    break;
   case MAT_HERMITIAN:
+    ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
+    break;
   case MAT_SYMMETRY_ETERNAL:
     ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
     break;
@@ -5039,12 +5043,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJ(Mat B)
   ierr            = PetscNewLog(B,Mat_MPIAIJ,&b);CHKERRQ(ierr);
   B->data         = (void*)b;
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  B->rmap->bs      = 1;
+  B->rmap->bs     = 1;
   B->assembled    = PETSC_FALSE;
   B->mapping      = 0;
 
-  B->insertmode      = NOT_SET_VALUES;
-  b->size            = size;
+  B->insertmode   = NOT_SET_VALUES;
+  b->size         = size;
   ierr = MPI_Comm_rank(((PetscObject)B)->comm,&b->rank);CHKERRQ(ierr);
 
   /* build cache for off array entries formed */

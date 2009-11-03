@@ -189,7 +189,13 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op,PetscTruth flg)
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   case MAT_HERMITIAN:
-    if (flg) SETERRQ(PETSC_ERR_SUP,"Matrix must be symmetric");
+    if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call MatAssemblyEnd() first");
+#if defined(USESHORT)
+    A->ops->mult = MatMult_SeqSBAIJ_1_Hermitian_ushort;
+#else
+    A->ops->mult = MatMult_SeqSBAIJ_1_Hermitian;
+#endif
+    break;
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
   case MAT_SYMMETRY_ETERNAL:

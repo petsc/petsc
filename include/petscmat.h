@@ -518,6 +518,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMinAbs(Mat,Vec,PetscInt[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowSum(Mat,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatTranspose(Mat,MatReuse,Mat*);
 PetscPolymorphicFunction(MatTranspose,(Mat A),(A,MAT_INITIAL_MATRIX,&t),Mat,t)
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatHermitianTranspose(Mat,MatReuse,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPermute(Mat,IS,IS,Mat *);
 PetscPolymorphicFunction(MatPermute,(Mat A,IS is1,IS is2),(A,is1,is2,&t),Mat,t)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPermuteSparsify(Mat,PetscInt,PetscReal,PetscReal,IS,IS,Mat *);
@@ -1521,7 +1522,8 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_GET_GHOSTS=116,
                MATOP_ILUDTFACTORSYMBOLIC=117,
                MATOP_ILUDTFACTORNUMERIC=118,
-               MATOP_MULT_DIAGONAL_BLOCK=119
+               MATOP_MULT_DIAGONAL_BLOCK=119,
+               MATOP_HERMITIANTRANSPOSE=120
              } MatOperation;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatHasOperation(Mat,MatOperation,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetOperation(Mat,MatOperation,void(*)(void));

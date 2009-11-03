@@ -3509,6 +3509,9 @@ PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ *)A->data,*b = (Mat_SeqAIJ *)B->data;
   PetscErrorCode ierr;
+#if defined(PETSC_USE_COMPLEX)
+  PetscInt k;
+#endif
 
   PetscFunctionBegin;
   /* If the  matrix dimensions are not equal,or no of nonzeros */
@@ -3526,10 +3529,17 @@ PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg)
   if (!*flg) PetscFunctionReturn(0);
   
   /* if a->a are the same */
+#if defined(PETSC_USE_COMPLEX)
+  for (k=0; k<a->nz; k++){
+    if (PetscRealPart(a->a[k]) != PetscRealPart(b->a[k]) || PetscImaginaryPart(a->a[k]) != PetscImaginaryPart(b->a[k])){
+      *flg = PETSC_FALSE;
+      PetscFunctionReturn(0); 
+    }
+  }
+#else
   ierr = PetscMemcmp(a->a,b->a,(a->nz)*sizeof(PetscScalar),flg);CHKERRQ(ierr);
-
+#endif
   PetscFunctionReturn(0);
-  
 }
 
 #undef __FUNCT__  
