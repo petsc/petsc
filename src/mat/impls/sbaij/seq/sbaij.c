@@ -1375,7 +1375,15 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        0,
        0,
        0,
-       MatMissingDiagonal_SeqSBAIJ
+       MatMissingDiagonal_SeqSBAIJ,
+/*114*/0,
+       0,
+       0,
+       0,
+       0,
+/*119*/0,
+       0,
+       0
 };
 
 EXTERN_C_BEGIN

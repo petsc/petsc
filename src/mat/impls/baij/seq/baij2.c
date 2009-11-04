@@ -1170,6 +1170,19 @@ PetscErrorCode MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatMultHermitianTranspose_SeqBAIJ"
+PetscErrorCode MatMultHermitianTranspose_SeqBAIJ(Mat A,Vec xx,Vec zz)
+{
+  PetscScalar    zero = 0.0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecSet(zz,zero);CHKERRQ(ierr);
+  ierr = MatMultHermitianTransposeAdd_SeqBAIJ(A,xx,zz,zz);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatMultTranspose_SeqBAIJ"
 PetscErrorCode MatMultTranspose_SeqBAIJ(Mat A,Vec xx,Vec zz)
 {
@@ -1179,6 +1192,155 @@ PetscErrorCode MatMultTranspose_SeqBAIJ(Mat A,Vec xx,Vec zz)
   PetscFunctionBegin;
   ierr = VecSet(zz,zero);CHKERRQ(ierr);
   ierr = MatMultTransposeAdd_SeqBAIJ(A,xx,zz,zz);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultHermitianTransposeAdd_SeqBAIJ"
+PetscErrorCode MatMultHermitianTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
+
+{
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *zb,*x,*z,*xb = 0,x1,x2,x3,x4,x5;
+  MatScalar         *v;
+  PetscErrorCode    ierr;
+  PetscInt          mbs,i,*idx,*ii,rval,bs=A->rmap->bs,j,n,bs2=a->bs2,*ib,*ridx=PETSC_NULL;
+  Mat_CompressedRow cprow = a->compressedrow;
+  PetscTruth        usecprow=cprow.use;
+
+  PetscFunctionBegin;
+  if (yy != zz) { ierr = VecCopy_Seq(yy,zz);CHKERRQ(ierr); }
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
+  ierr = VecGetArray(zz,&z);CHKERRQ(ierr); 
+
+  idx = a->j;
+  v   = a->a;
+  if (usecprow){
+    mbs  = cprow.nrows;
+    ii   = cprow.i;
+    ridx = cprow.rindex;
+  } else {
+    mbs=a->mbs;
+    ii = a->i;
+    xb = x;
+  }
+
+  switch (bs) {
+  case 1:
+    for (i=0; i<mbs; i++) {
+      if (usecprow) xb = x + ridx[i];
+      x1 = xb[0];
+      ib = idx + ii[0];
+      n  = ii[1] - ii[0]; ii++; 
+      for (j=0; j<n; j++) {
+        rval    = ib[j];
+        z[rval] += PetscConj(*v) * x1;
+        v++;
+      }
+      if (!usecprow) xb++;
+    }
+    break;
+  case 2:
+    for (i=0; i<mbs; i++) {
+      if (usecprow) xb = x + 2*ridx[i];
+      x1 = xb[0]; x2 = xb[1];
+      ib = idx + ii[0];
+      n  = ii[1] - ii[0]; ii++;
+      for (j=0; j<n; j++) {
+        rval      = ib[j]*2;
+        z[rval++] += PetscConj(v[0])*x1 + PetscConj(v[1])*x2;
+        z[rval++] += PetscConj(v[2])*x1 + PetscConj(v[3])*x2;
+        v  += 4;
+      }
+      if (!usecprow) xb += 2;
+    }
+    break;
+  case 3:
+    for (i=0; i<mbs; i++) {
+      if (usecprow) xb = x + 3*ridx[i];
+      x1 = xb[0]; x2 = xb[1]; x3 = xb[2];
+      ib = idx + ii[0];
+      n  = ii[1] - ii[0]; ii++; 
+      for (j=0; j<n; j++) {
+        rval      = ib[j]*3;
+        z[rval++] += PetscConj(v[0])*x1 + PetscConj(v[1])*x2 + PetscConj(v[2])*x3;
+        z[rval++] += PetscConj(v[3])*x1 + PetscConj(v[4])*x2 + PetscConj(v[5])*x3;
+        z[rval++] += PetscConj(v[6])*x1 + PetscConj(v[7])*x2 + PetscConj(v[8])*x3;
+        v  += 9;
+      }
+      if (!usecprow) xb += 3;
+    }
+    break;
+  case 4:
+    for (i=0; i<mbs; i++) {
+      if (usecprow) xb = x + 4*ridx[i];
+      x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3];
+      ib = idx + ii[0];
+      n  = ii[1] - ii[0]; ii++; 
+      for (j=0; j<n; j++) {
+        rval      = ib[j]*4;
+        z[rval++] +=  PetscConj(v[0])*x1 + PetscConj(v[1])*x2  + PetscConj(v[2])*x3  + PetscConj(v[3])*x4;
+        z[rval++] +=  PetscConj(v[4])*x1 + PetscConj(v[5])*x2  + PetscConj(v[6])*x3  + PetscConj(v[7])*x4;
+        z[rval++] +=  PetscConj(v[8])*x1 + PetscConj(v[9])*x2  + PetscConj(v[10])*x3 + PetscConj(v[11])*x4;
+        z[rval++] += PetscConj(v[12])*x1 + PetscConj(v[13])*x2 + PetscConj(v[14])*x3 + PetscConj(v[15])*x4;
+        v  += 16;
+      }
+      if (!usecprow) xb += 4;
+    }
+    break;
+  case 5:
+    for (i=0; i<mbs; i++) {
+      if (usecprow) xb = x + 5*ridx[i];
+      x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; 
+      x4 = xb[3]; x5 = xb[4];
+      ib = idx + ii[0];
+      n  = ii[1] - ii[0]; ii++; 
+      for (j=0; j<n; j++) {
+        rval      = ib[j]*5;
+        z[rval++] +=  PetscConj(v[0])*x1 +  PetscConj(v[1])*x2 +  PetscConj(v[2])*x3 +  PetscConj(v[3])*x4 +  PetscConj(v[4])*x5;
+        z[rval++] +=  PetscConj(v[5])*x1 +  PetscConj(v[6])*x2 +  PetscConj(v[7])*x3 +  PetscConj(v[8])*x4 +  PetscConj(v[9])*x5;
+        z[rval++] += PetscConj(v[10])*x1 + PetscConj(v[11])*x2 + PetscConj(v[12])*x3 + PetscConj(v[13])*x4 + PetscConj(v[14])*x5;
+        z[rval++] += PetscConj(v[15])*x1 + PetscConj(v[16])*x2 + PetscConj(v[17])*x3 + PetscConj(v[18])*x4 + PetscConj(v[19])*x5;
+        z[rval++] += PetscConj(v[20])*x1 + PetscConj(v[21])*x2 + PetscConj(v[22])*x3 + PetscConj(v[23])*x4 + PetscConj(v[24])*x5;
+        v  += 25;
+      }
+      if (!usecprow) xb += 5;
+    }
+    break;
+  default: {      /* block sizes larger than 5 by 5 are handled by BLAS */
+      PetscInt     ncols,k; 
+      PetscScalar  *work,*workt,*xtmp;
+
+      SETERRQ(PETSC_ERR_SUP,"block size larger than 5 is not supported yet");
+      if (!a->mult_work) {
+        k = PetscMax(A->rmap->n,A->cmap->n);
+        ierr = PetscMalloc((k+1)*sizeof(PetscScalar),&a->mult_work);CHKERRQ(ierr);
+      }
+      work = a->mult_work;
+      xtmp = x;
+      for (i=0; i<mbs; i++) {
+        n     = ii[1] - ii[0]; ii++;
+        ncols = n*bs;
+        ierr  = PetscMemzero(work,ncols*sizeof(PetscScalar));CHKERRQ(ierr);
+        if (usecprow) {
+          xtmp = x + bs*ridx[i];
+        } 
+        Kernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,xtmp,v,work);
+        /* BLASgemv_("T",&bs,&ncols,&_DOne,v,&bs,xtmp,&_One,&_DOne,work,&_One); */
+        v += n*bs2;
+        if (!usecprow) xtmp += bs;
+        workt = work;
+        for (j=0; j<n; j++) {
+          zb = z + bs*(*idx++);
+          for (k=0; k<bs; k++) zb[k] += workt[k] ;
+          workt += bs;
+        }
+      }
+    }
+  }
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz*a->bs2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

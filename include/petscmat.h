@@ -423,11 +423,13 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultDiagonalBlock(Mat,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultAdd(Mat,Vec,Vec,Vec);
 PetscPolymorphicSubroutine(MatMultAdd,(Mat A,Vec x,Vec y),(A,x,y,y))
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultTranspose(Mat,Vec,Vec);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultHermitianTranspose(Mat,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsTranspose(Mat,Mat,PetscReal,PetscTruth*);
 PetscPolymorphicFunction(MatIsTranspose,(Mat A,Mat B,PetscReal tol),(A,B,tol,&t),PetscTruth,t)
 PetscPolymorphicFunction(MatIsTranspose,(Mat A,Mat B),(A,B,0,&t),PetscTruth,t)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitianTranspose(Mat,Mat,PetscReal,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeAdd(Mat,Vec,Vec,Vec);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultHermitianTransposeAdd(Mat,Vec,Vec);
 PetscPolymorphicSubroutine(MatMultTransposeAdd,(Mat A,Vec x,Vec y),(A,x,y,y))
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultConstrained(Mat,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeConstrained(Mat,Vec,Vec);
@@ -1523,7 +1525,9 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_ILUDTFACTORSYMBOLIC=117,
                MATOP_ILUDTFACTORNUMERIC=118,
                MATOP_MULT_DIAGONAL_BLOCK=119,
-               MATOP_HERMITIANTRANSPOSE=120
+               MATOP_HERMITIANTRANSPOSE=120,
+               MATOP_MULTHERMITIANTRANSPOSE=121,
+               MATOP_MULTHERMITIANTRANSPOSEADD=122
              } MatOperation;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatHasOperation(Mat,MatOperation,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetOperation(Mat,MatOperation,void(*)(void));

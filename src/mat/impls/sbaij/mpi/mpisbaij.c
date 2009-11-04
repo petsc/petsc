@@ -793,6 +793,43 @@ PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatMult_MPISBAIJ_Hermitian"
+PetscErrorCode MatMult_MPISBAIJ_Hermitian(Mat A,Vec xx,Vec yy)
+{
+  Mat_MPISBAIJ   *a = (Mat_MPISBAIJ*)A->data;
+  PetscErrorCode ierr;
+  PetscInt       nt,mbs=a->mbs,bs=A->rmap->bs;
+  PetscScalar    *x,*from;
+ 
+  PetscFunctionBegin;
+  ierr = VecGetLocalSize(xx,&nt);CHKERRQ(ierr);
+  if (nt != A->cmap->n) {
+    SETERRQ(PETSC_ERR_ARG_SIZ,"Incompatible partition of A and xx");
+  }
+
+  /* diagonal part */
+  ierr = (*a->A->ops->mult)(a->A,xx,a->slvec1a);CHKERRQ(ierr); 
+  ierr = VecSet(a->slvec1b,0.0);CHKERRQ(ierr); 
+
+  /* subdiagonal part */  
+  ierr = (*a->B->ops->multhermitiantranspose)(a->B,xx,a->slvec0b);CHKERRQ(ierr);
+
+  /* copy x into the vec slvec0 */
+  ierr = VecGetArray(a->slvec0,&from);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+
+  ierr = PetscMemcpy(from,x,bs*mbs*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr = VecRestoreArray(a->slvec0,&from);CHKERRQ(ierr);  
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+  
+  ierr = VecScatterBegin(a->sMvctx,a->slvec0,a->slvec1,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr); 
+  ierr = VecScatterEnd(a->sMvctx,a->slvec0,a->slvec1,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr); 
+  /* supperdiagonal part */
+  ierr = (*a->B->ops->multadd)(a->B,a->slvec1b,a->slvec1a,yy);CHKERRQ(ierr); 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatMult_MPISBAIJ"
 PetscErrorCode MatMult_MPISBAIJ(Mat A,Vec xx,Vec yy)
 {
@@ -1189,7 +1226,9 @@ PetscErrorCode MatSetOption_MPISBAIJ(Mat A,MatOption op,PetscTruth flg)
     a->ht_flag = flg;
     break;
   case MAT_HERMITIAN:
+    if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call MatAssemblyEnd() first");
     ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
+    A->ops->mult = MatMult_MPISBAIJ_Hermitian;
     break;
   case MAT_SYMMETRIC:
     ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
