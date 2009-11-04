@@ -327,43 +327,43 @@ class Configure(config.package.Package):
     confDir = os.path.join(self.defaultInstallDir,self.arch,'conf')
     args = ['--prefix='+installDir,'--with-rsh=ssh']
     # Configure and Build OPENMPI
-    self.framework.pushLanguage('C')
-    flags = self.framework.getCompilerFlags()
+    self.pushLanguage('C')
+    flags = self.getCompilerFlags()
     if config.setCompilers.Configure.isDarwin():
       # OpenMPI configure crashes on Apple if -g or -g3 flag is passed in here 
       flags = flags.replace('-g3','')
       flags = flags.replace('-g','')
-    args.append('CC="'+self.framework.getCompiler()+'"')
+    args.append('CC="'+self.getCompiler()+'"')
     args.append('CFLAGS="'+flags+'"')
     if self.framework.argDB['with-shared']:
       if self.setCompilers.staticLibraries:
         raise RuntimeError('Configuring with shared libraries - but the system/compilers do not support this')
       args.append('--enable-shared')
-    self.framework.popLanguage()
+    self.popLanguage()
     # c++ can't be disabled with OPENMPI
     if hasattr(self.compilers, 'CXX'):
-      self.framework.pushLanguage('Cxx')
-      flags = self.framework.getCompilerFlags()
+      self.pushLanguage('Cxx')
+      flags = self.getCompilerFlags()
       if config.setCompilers.Configure.isDarwin():
         flags = flags.replace('-g3','')
         flags = flags.replace('-g','')
-      args.append('CXX="'+self.framework.getCompiler()+'"')
+      args.append('CXX="'+self.getCompiler()+'"')
       args.append('CXXFLAGS="'+flags+'"')
-      self.framework.popLanguage()
+      self.popLanguage()
     else:
       raise RuntimeError('Error: OpenMPI requires C++ compiler. None specified')
     # no separate F90 options for OPENMPI
     if hasattr(self.compilers, 'FC'):
-      self.framework.pushLanguage('FC')
-      args.append('F77="'+self.framework.getCompiler()+'"')
-      args.append('FFLAGS="'+self.framework.getCompilerFlags()+'"')
+      self.pushLanguage('FC')
+      args.append('F77="'+self.getCompiler()+'"')
+      args.append('FFLAGS="'+self.getCompilerFlags()+'"')
       if self.compilers.fortranIsF90:
-        args.append('FC="'+self.framework.getCompiler()+'"')
-        args.append('FCFLAGS="'+self.framework.getCompilerFlags()+'"')
+        args.append('FC="'+self.getCompiler()+'"')
+        args.append('FCFLAGS="'+self.getCompilerFlags()+'"')
       else:
         args.append('--disable-mpi-f90')
         args.append('FC=""')
-      self.framework.popLanguage()
+      self.popLanguage()
     else:
       args.append('--disable-mpi-f77')
       args.append('--disable-mpi-f90')
@@ -428,22 +428,22 @@ class Configure(config.package.Package):
       os.mkdir(installDir)
       
     # Configure and Build MPICH
-    self.framework.pushLanguage('C')
+    self.pushLanguage('C')
     args = ['--prefix='+installDir]
-    compiler = self.framework.getCompiler()
-    args.append('CC="'+self.framework.getCompiler()+'"')
-    args.append('CFLAGS="'+self.framework.getCompilerFlags()+'"')
-    self.framework.popLanguage()
+    compiler = self.getCompiler()
+    args.append('CC="'+self.getCompiler()+'"')
+    args.append('CFLAGS="'+self.getCompilerFlags()+'"')
+    self.popLanguage()
     if hasattr(self.compilers, 'CXX'):
-      self.framework.pushLanguage('Cxx')
-      args.append('CXX="'+self.framework.getCompiler()+'"')
-      args.append('CXXFLAGS="'+self.framework.getCompilerFlags()+'"')
-      self.framework.popLanguage()
+      self.pushLanguage('Cxx')
+      args.append('CXX="'+self.getCompiler()+'"')
+      args.append('CXXFLAGS="'+self.getCompilerFlags()+'"')
+      self.popLanguage()
     else:
       args.append('--disable-cxx')
     if hasattr(self.compilers, 'FC'):
-      self.framework.pushLanguage('FC')      
-      fc = self.framework.getCompiler()
+      self.pushLanguage('FC')      
+      fc = self.getCompiler()
       if self.compilers.fortranIsF90:
         try:
           output, error, status = self.executeShellCommand(fc+' -v')
@@ -455,12 +455,12 @@ class Configure(config.package.Package):
           self.framework.log.write('Using IBM f90 compiler, switching to xlf for compiling MPICH\n')
         # now set F90
         args.append('F90="'+fc+'"')
-        args.append('F90FLAGS="'+self.framework.getCompilerFlags().replace('-Mfree','')+'"')
+        args.append('F90FLAGS="'+self.getCompilerFlags().replace('-Mfree','')+'"')
       else:
         args.append('--disable-f90')
       args.append('F77="'+fc+'"')
-      args.append('FFLAGS="'+self.framework.getCompilerFlags().replace('-Mfree','')+'"')
-      self.framework.popLanguage()
+      args.append('FFLAGS="'+self.getCompilerFlags().replace('-Mfree','')+'"')
+      self.popLanguage()
     else:
       args.append('--disable-f77')
       args.append('--disable-f90')
