@@ -66,7 +66,8 @@
       Vec              x,b,u
       PetscRandom      rctx
       double precision norm,h2,sigma1
-      PetscScalar  none,sigma2,v,pfive,czero,cone
+      PetscScalar  none,sigma2,v,pfive,czero
+      PetscScalar  cone
       PetscInt dim,its,n,Istart
       PetscInt Iend,i,j,II,JJ,one
       PetscErrorCode ierr
