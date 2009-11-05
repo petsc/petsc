@@ -175,9 +175,9 @@ fvTest: fvTest.o chkopts
 	-${CLINKER} -o fvTest fvTest.o ${PETSC_SNES_LIB}
 	${RM} -f fvTest.o
 
-problemTests: bratu1.o problemTests.o chkopts
-	-${CLINKER} -o problemTests bratu1.o problemTests.o ${PETSC_SNES_LIB} -lcppunit
-	${RM} -f bratu1.o problemTests.o
+problemTests: bratu1.o laplaceBEM1.o problemTests.o chkopts
+	-${CLINKER} -o problemTests bratu1.o laplaceBEM1.o problemTests.o ${PETSC_SNES_LIB} -lcppunit
+	${RM} -f bratu1.o laplaceBEM1.o problemTests.o
 
 watson: watson.o chkopts
 	-${CLINKER} -o watson watson.o ${PETSC_SNES_LIB}

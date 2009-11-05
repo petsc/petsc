@@ -1887,6 +1887,58 @@ namespace ALE {
         throw ALE::Exception("Unsupported dimension for element geometry computation");
       }
     };
+    void computeBdSegmentGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
+      const double *coords = this->restrictClosure(coordinates, e);
+      const int     dim    = 2;
+      double        invDet;
+
+      if (v0) {
+        for(int d = 0; d < dim; d++) {
+          v0[d] = coords[d];
+        }
+      }
+      if (J) {
+        //r2   = coords[1*dim+0]*coords[1*dim+0] + coords[1*dim+1]*coords[1*dim+1];
+        J[0] =  coords[1*dim+0]*0.5; J[1] = coords[1*dim+1]*0.5;
+        J[2] = -coords[1*dim+1]*0.5; J[3] = coords[1*dim+0]*0.5;
+        detJ = J[0]*J[3] - J[1]*J[2];
+        if (detJ < 0.0) {
+          const double  xLength = this->_periodicity[0];
+
+          if (xLength != 0.0) {
+            double v0x = coords[0*dim+0];
+
+            if (v0x == 0.0) {
+              v0x = v0[0] = xLength;
+            }
+            for(int f = 0; f < dim; f++) {
+              const double px = coords[(f+1)*dim+0] == 0.0 ? xLength : coords[(f+1)*dim+0];
+
+              J[0*dim+f] = 0.5*(px - v0x);
+            }
+          }
+          detJ = J[0]*J[3] - J[1]*J[2];
+        }
+        PetscLogFlopsNoError(8.0 + 3.0);
+      }
+      if (invJ) {
+        invDet  = 1.0/detJ;
+        invJ[0] =  invDet*J[3];
+        invJ[1] = -invDet*J[1];
+        invJ[2] = -invDet*J[2];
+        invJ[3] =  invDet*J[0];
+        PetscLogFlopsNoError(5.0);
+      }
+    };
+    void computeBdElementGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
+      if (this->_dim == 1) {
+        computeBdSegmentGeometry(coordinates, e, v0, J, invJ, detJ);
+        //      } else if (this->_dim == 2) {
+        //        computeBdTriangleGeometry(coordinates, e, v0, J, invJ, detJ);
+      } else {
+        throw ALE::Exception("Unsupported dimension for element geometry computation");
+      }
+    };
     double getMaxVolume() {
       const Obj<real_section_type>& coordinates = this->getRealSection("coordinates");
       const Obj<label_sequence>&    cells       = this->heightStratum(0);

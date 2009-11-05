@@ -15,11 +15,14 @@ extern PetscErrorCode RegisterBratuStressSuite();
 extern PetscErrorCode RegisterBratuFunctionSuite();
 extern PetscErrorCode RegisterBratuConvergenceSuite();
 
+extern PetscErrorCode RegisterLaplaceBEMFunctionSuite();
+
 typedef struct {
   PetscTruth function;      // Run the functionality tests
   PetscTruth stress;        // Run the stress tests
   PetscTruth convergence;   // Run the convergence tests
   PetscTruth bratu;         // Run the Bratu problem tests
+  PetscTruth laplaceBEM;    // Run the Laplace BEM problem tests
 } Options;
 
 #undef __FUNCT__
@@ -33,12 +36,14 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->stress        = PETSC_FALSE;
   options->convergence   = PETSC_FALSE;
   options->bratu         = PETSC_FALSE;
+  options->laplaceBEM    = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Options for the Sieve package tests", "Sieve");CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-function", "Run functionality tests", "unitTests", options->function, &options->function, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-stress", "Run stress tests", "unitTests", options->stress, &options->stress, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-convergence", "Run convergence tests", "unitTests", options->convergence, &options->convergence, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-bratu", "Run Bratu tests", "unitTests", options->bratu, &options->bratu, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-laplace_bem", "Run Bratu tests", "unitTests", options->laplaceBEM, &options->laplaceBEM, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -53,6 +58,9 @@ PetscErrorCode RegisterSuites(Options *options) {
     if (options->function)    {ierr = RegisterBratuFunctionSuite();CHKERRQ(ierr);}
     if (options->stress)      {ierr = RegisterBratuStressSuite();CHKERRQ(ierr);}
     if (options->convergence) {ierr = RegisterBratuConvergenceSuite();CHKERRQ(ierr);}
+  }
+  if (options->laplaceBEM) {
+    if (options->function)    {ierr = RegisterLaplaceBEMFunctionSuite();CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
