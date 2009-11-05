@@ -337,7 +337,7 @@ static PetscErrorCode ((*PetscRegisterFinalize_Functions[MAXREGFIN])(void));
    Level: developer
 
    Notes:
-      This is used by, for example, DMPackageInitialize() to have DMPackageFinalize() called 
+      This is used by, for example, DMInitializePackage() to have DMFinalizePackage() called
 
 .seealso: PetscRegisterFinalizeAll()
 @*/

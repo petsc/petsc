@@ -32,7 +32,7 @@ static PetscErrorCode PCView_Redistribute(PC pc,PetscViewer viewer)
   if (iascii) {
     ierr = MPI_Allreduce(&red->dcnt,&ncnt,1,MPIU_INT,MPI_SUM,((PetscObject)pc)->comm);CHKERRQ(ierr);
     ierr = MatGetSize(pc->pmat,&N,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    Number rows eliminated %D Percentage rows eliminated %g\n",ncnt,100.0*((PetscScalar)ncnt)/((PetscScalar)N));CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    Number rows eliminated %D Percentage rows eliminated %g\n",ncnt,100.0*((PetscReal)ncnt)/((PetscReal)N));CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Redistribute preconditioner: \n");CHKERRQ(ierr);
     ierr = KSPView(red->ksp,viewer);CHKERRQ(ierr);
   } else if (isstring) {
@@ -112,7 +112,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     ierr = PetscLayoutSetBlockSize(nmap,1);CHKERRQ(ierr);
     ierr = PetscLayoutSetUp(nmap);CHKERRQ(ierr);
 
-    ierr = PetscInfo2(pc,"Number of diagonal rows eliminated %d, percentage eliminated %g\n",pc->pmat->rmap->N-ncnt,((PetscScalar)(pc->pmat->rmap->N-ncnt))/((PetscScalar)(pc->pmat->rmap->N)));
+    ierr = PetscInfo2(pc,"Number of diagonal rows eliminated %d, percentage eliminated %g\n",pc->pmat->rmap->N-ncnt,((PetscReal)(pc->pmat->rmap->N-ncnt))/((PetscReal)(pc->pmat->rmap->N)));
     /*  
 	this code is taken from VecScatterCreate_PtoS() 
 	Determines what rows need to be moved where to 

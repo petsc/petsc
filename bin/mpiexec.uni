@@ -9,12 +9,6 @@ echo "Uniprocessor version of MPI can only use one processor"
 exit 1
 fi
 
-# If relative path is used prepend a ./
-tail=`echo $progname | sed 's/\/.*//'` 
-if  [ "$tail" != "" ]; then
-  progname="./$progname"
-fi
-
 # Execute the program
 $progname
 exit 0

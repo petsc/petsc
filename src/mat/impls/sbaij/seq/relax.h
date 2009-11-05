@@ -43,12 +43,10 @@ PetscErrorCode PETSCMAP1(MatMult_SeqSBAIJ_1_Hermitian)(Mat A,Vec xx,Vec zz)
     x1   = x[i];
     sum  = v[0]*x1;          /* diagonal term */
     for (j=1; j<nz; j++) {
-      ibt  = ib[j]; /* crash here running  './ex127 -n 1000' ??? */
+      ibt  = ib[j];
       vj   = v[j];
       sum += vj * x[ibt];   /* (strict upper triangular part of A)*x  */
-     
-      vj = PetscConj(v[j]);
-      z[ibt] += vj * x1;    /* (strict lower triangular part of A)*x  */
+      z[ibt] += PetscConj(v[j]) * x1;    /* (strict lower triangular part of A)*x  */
     }
     z[i] += sum;
     v    += nz;

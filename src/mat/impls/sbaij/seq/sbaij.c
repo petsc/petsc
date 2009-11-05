@@ -190,11 +190,11 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op,PetscTruth flg)
     break;
   case MAT_HERMITIAN:
     if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call MatAssemblyEnd() first");
-#if defined(USESHORT)
-    A->ops->mult = MatMult_SeqSBAIJ_1_Hermitian_ushort;
-#else
-    A->ops->mult = MatMult_SeqSBAIJ_1_Hermitian;
-#endif
+    if (A->cmap->n < 65536 && A->cmap->bs == 1) {
+      A->ops->mult = MatMult_SeqSBAIJ_1_Hermitian_ushort;
+    } else if (A->cmap->bs == 1) {
+      A->ops->mult = MatMult_SeqSBAIJ_1_Hermitian;
+    } else SETERRQ(PETSC_ERR_SUP,"No support for Hermitian with block size greater than 1");
     break;
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
@@ -1375,7 +1375,15 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        0,
        0,
        0,
-       MatMissingDiagonal_SeqSBAIJ
+       MatMissingDiagonal_SeqSBAIJ,
+/*114*/0,
+       0,
+       0,
+       0,
+       0,
+/*119*/0,
+       0,
+       0
 };
 
 EXTERN_C_BEGIN

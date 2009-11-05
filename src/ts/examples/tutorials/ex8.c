@@ -241,7 +241,7 @@ static PetscErrorCode MonitorError(TS ts,PetscInt step,PetscReal t,Vec x,void *c
 {
   PetscErrorCode ierr;
   MonitorCtx *mon = (MonitorCtx*)ctx;
-  PetscReal nrm_x,nrm_exact,nrm_diff;
+  PetscReal h,nrm_x,nrm_exact,nrm_diff;
 
   PetscFunctionBegin;
   if (!mon->problem->solution) PetscFunctionReturn(0);
@@ -250,7 +250,8 @@ static PetscErrorCode MonitorError(TS ts,PetscInt step,PetscReal t,Vec x,void *c
   ierr = VecNorm(mon->x,NORM_2,&nrm_exact);CHKERRQ(ierr);
   ierr = VecAYPX(mon->x,-1,x);CHKERRQ(ierr);
   ierr = VecNorm(mon->x,NORM_2,&nrm_diff);CHKERRQ(ierr);
-  ierr = PetscPrintf(mon->comm,"step %4D t=%12G  |x|=%9.2e  |x_e|=%9.2e  |x-x_e|=%9.2e\n",step,t,nrm_x,nrm_exact,nrm_diff);CHKERRQ(ierr);
+  ierr = TSGetTimeStep(ts,&h);CHKERRQ(ierr);
+  ierr = PetscPrintf(mon->comm,"step %4D t=%12.8e h=% 8.2e  |x|=%9.2e  |x_e|=%9.2e  |x-x_e|=%9.2e\n",step,t,h,nrm_x,nrm_exact,nrm_diff);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

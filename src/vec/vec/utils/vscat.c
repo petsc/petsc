@@ -1715,7 +1715,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterView(VecScatter ctx,PetscViewer view
           data is put and the fromdata is where it is taken from.
           This is backwards from the paralllel case! CRY! CRY! CRY!
 
-C@*/
+@*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecScatterRemap(VecScatter scat,PetscInt *rto,PetscInt *rfrom)
 {
   VecScatter_Seq_General *to,*from;
