@@ -53,18 +53,18 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
 
   ierr = PetscMalloc5(s,PetscScalar,&scheme->c,s*s,PetscScalar,&scheme->a,r*s,PetscScalar,&scheme->b,r*s,PetscScalar,&scheme->u,r*r,PetscScalar,&scheme->v);CHKERRQ(ierr);
   ierr = PetscMemcpy(scheme->c,c,s*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemcpy(scheme->a,a,s*s*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemcpy(scheme->b,b,r*s*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemcpy(scheme->u,u,s*r*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemcpy(scheme->v,v,r*r*sizeof(PetscScalar));CHKERRQ(ierr);
+  for (j=0; j<s*s; j++) scheme->a[j] = (PetscAbs(a[j]) < 1e-12) ? 0 : a[j];
+  for (j=0; j<r*s; j++) scheme->b[j] = (PetscAbs(b[j]) < 1e-12) ? 0 : b[j];
+  for (j=0; j<s*r; j++) scheme->u[j] = (PetscAbs(u[j]) < 1e-12) ? 0 : u[j];
+  for (j=0; j<r*r; j++) scheme->v[j] = (PetscAbs(v[j]) < 1e-12) ? 0 : v[j];
 
-  ierr = PetscMalloc5(r,PetscScalar,&scheme->alpha,r,PetscScalar,&scheme->beta,r,PetscScalar,&scheme->gamma,3*(r+s),PetscScalar,&scheme->phi,r,PetscScalar,&scheme->stage_error);CHKERRQ(ierr);
+  ierr = PetscMalloc6(r,PetscScalar,&scheme->alpha,r,PetscScalar,&scheme->beta,r,PetscScalar,&scheme->gamma,3*s,PetscScalar,&scheme->phi,3*r,PetscScalar,&scheme->psi,r,PetscScalar,&scheme->stage_error);CHKERRQ(ierr);
   {
-    PetscInt i,j,k,rs=r+s;
+    PetscInt i,j,k,ss=s+2;
     PetscBLASInt m,n,one=1,*ipiv,lwork=4*((s+3)*3+3),info,rank,ldb;
     PetscReal rcond,*sing,*workreal;
-    PetscScalar *ImV,*H,*workscalar,*c=scheme->c,*a=scheme->a,*b=scheme->b,*u=scheme->u,*v=scheme->v;
-    ierr = PetscMalloc6(PetscSqr(r),PetscScalar,&ImV,3*s,PetscScalar,&H,lwork,PetscScalar,&workscalar,5*(3+r),PetscReal,&workreal,r+s,PetscReal,&sing,r+s,PetscBLASInt,&ipiv);CHKERRQ(ierr);
+    PetscScalar *ImV,*H,*bmat,*workscalar,*c=scheme->c,*a=scheme->a,*b=scheme->b,*u=scheme->u,*v=scheme->v;
+    ierr = PetscMalloc7(PetscSqr(r),PetscScalar,&ImV,3*s,PetscScalar,&H,3*ss,PetscScalar,&bmat,lwork,PetscScalar,&workscalar,5*(3+r),PetscReal,&workreal,r+s,PetscReal,&sing,r+s,PetscBLASInt,&ipiv);CHKERRQ(ierr);
 
     /* column-major input */
     for (i=0; i<r-1; i++) {
@@ -154,38 +154,44 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
         H[2+j*3] -= CPowF(c[j],k-1)*scheme->gamma[k];
       }
     }
-    scheme->phi[0+0*rs] = 1;  scheme->phi[0+1*rs] = 0;  scheme->phi[0+2*rs] = 0;
-    scheme->phi[1+0*rs] = 1;  scheme->phi[1+1*rs] = 1;  scheme->phi[1+2*rs] = 0;
-    scheme->phi[2+0*rs] = 0;  scheme->phi[2+1*rs] = 0;  scheme->phi[2+2*rs] = -1;
+    bmat[0+0*ss] = 1;  bmat[0+1*ss] = 0;  bmat[0+2*ss] = 0;
+    bmat[1+0*ss] = 1;  bmat[1+1*ss] = 1;  bmat[1+2*ss] = 0;
+    bmat[2+0*ss] = 0;  bmat[2+1*ss] = 0;  bmat[2+2*ss] = -1;
     m = 3;
     n = PetscBLASIntCast(s);
-    ldb = PetscBLASIntCast(rs);
+    ldb = PetscBLASIntCast(ss);
     rcond = 1e-12;
 #if defined(PETSC_USE_COMPLEX)
     /* ZGELSS( M, N, NRHS, A, LDA, B, LDB, S, RCOND, RANK, WORK, LWORK, RWORK, INFO ) */
-    LAPACKgelss_(&m,&n,&m,H,&m,scheme->phi,&ldb,sing,&rcond,&rank,workscalar,&lwork,workreal,&info);
+    LAPACKgelss_(&m,&n,&m,H,&m,bmat,&ldb,sing,&rcond,&rank,workscalar,&lwork,workreal,&info);
 #else
     /* DGELSS( M, N, NRHS, A, LDA, B, LDB, S, RCOND, RANK, WORK, LWORK, INFO ) */
-    LAPACKgelss_(&m,&n,&m,H,&m,scheme->phi,&ldb,sing,&rcond,&rank,workscalar,&lwork,&info);
+    LAPACKgelss_(&m,&n,&m,H,&m,bmat,&ldb,sing,&rcond,&rank,workscalar,&lwork,&info);
 #endif
     if (info < 0) SETERRQ(PETSC_ERR_LIB,"Bad argument to GELSS");
     if (info > 0) SETERRQ(PETSC_ERR_LIB,"SVD failed to converge");
 
-    /* the other part of the error estimator, psi in B,J,W 2007 */
-    scheme->phi[0*rs+s+0] = 0;
-    scheme->phi[1*rs+s+0] = 0;
-    scheme->phi[2*rs+s+0] = 0;
-    for (j=1; j<r; j++) {
-      scheme->phi[0*rs+s+j] = 0;
-      scheme->phi[1*rs+s+j] = 0;
-      scheme->phi[2*rs+s+j] = 0;
+    for (j=0; j<3; j++) {
       for (k=0; k<s; k++) {
-        scheme->phi[0*rs+s+j] -= CPowF(c[k],j-1)*scheme->phi[0*rs+k];
-        scheme->phi[1*rs+s+j] -= CPowF(c[k],j-1)*scheme->phi[1*rs+k];
-        scheme->phi[2*rs+s+j] -= CPowF(c[k],j-1)*scheme->phi[2*rs+k];
+        scheme->phi[k+j*s] = bmat[k+j*ss];
       }
     }
-    ierr = PetscFree6(ImV,H,workscalar,workreal,sing,ipiv);CHKERRQ(ierr);
+
+    /* the other part of the error estimator, psi in B,J,W 2007 */
+    scheme->psi[0*r+0] = 0;
+    scheme->psi[1*r+0] = 0;
+    scheme->psi[2*r+0] = 0;
+    for (j=1; j<r; j++) {
+      scheme->psi[0*r+j] = 0;
+      scheme->psi[1*r+j] = 0;
+      scheme->psi[2*r+j] = 0;
+      for (k=0; k<s; k++) {
+        scheme->psi[0*r+j] -= CPowF(c[k],j-1)*scheme->phi[0*s+k];
+        scheme->psi[1*r+j] -= CPowF(c[k],j-1)*scheme->phi[1*s+k];
+        scheme->psi[2*r+j] -= CPowF(c[k],j-1)*scheme->phi[2*s+k];
+      }
+    }
+    ierr = PetscFree7(ImV,H,bmat,workscalar,workreal,sing,ipiv);CHKERRQ(ierr);
   }
   /* Check which properties are satisfied */
   scheme->stiffly_accurate = PETSC_TRUE;
@@ -209,7 +215,7 @@ static PetscErrorCode TSGLSchemeDestroy(TSGLScheme sc)
 
   PetscFunctionBegin;
   ierr = PetscFree5(sc->c,sc->a,sc->b,sc->u,sc->v);CHKERRQ(ierr);
-  ierr = PetscFree5(sc->alpha,sc->beta,sc->gamma,sc->phi,sc->stage_error);CHKERRQ(ierr);
+  ierr = PetscFree6(sc->alpha,sc->beta,sc->gamma,sc->phi,sc->psi,sc->stage_error);CHKERRQ(ierr);
   ierr = PetscFree(sc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -282,7 +288,8 @@ static PetscErrorCode TSGLSchemeView(TSGLScheme sc,PetscTruth view_details,Petsc
       ierr = ViewTable_Private(viewer,sc->s,sc->r,sc->u,"U");CHKERRQ(ierr);
       ierr = ViewTable_Private(viewer,sc->r,sc->r,sc->v,"V");CHKERRQ(ierr);
 
-      ierr = ViewTable_Private(viewer,3,sc->s+sc->r,sc->phi,"Error estimate [phi 0 psi]");CHKERRQ(ierr);
+      ierr = ViewTable_Private(viewer,3,sc->s,sc->phi,"Error estimate phi");CHKERRQ(ierr);
+      ierr = ViewTable_Private(viewer,3,sc->r,sc->psi,"Error estimate psi");CHKERRQ(ierr);
       ierr = ViewTable_Private(viewer,1,sc->r,sc->alpha,"Modify alpha");CHKERRQ(ierr);
       ierr = ViewTable_Private(viewer,1,sc->r,sc->beta,"Modify beta");CHKERRQ(ierr);
       ierr = ViewTable_Private(viewer,1,sc->r,sc->gamma,"Modify gamma");CHKERRQ(ierr);
@@ -306,13 +313,12 @@ static PetscErrorCode TSGLEstimateHigherMoments_Default(TSGLScheme sc,PetscReal 
   if (sc->r > 64 || sc->s > 64) SETERRQ(PETSC_ERR_PLIB,"Ridiculous number of stages or items passed between stages");
   /* build error vectors*/
   for (i=0; i<3; i++) {
-    PetscScalar phih[64],psi[64];
+    PetscScalar phih[64];
     PetscInt j;
-    for (j=0; j<sc->s; j++) phih[j] = sc->phi[i*(sc->r+sc->s)+j]*h;
-    for (j=0; j<sc->r; j++) psi[j] = sc->phi[i*(sc->r+sc->s)+sc->s+j];
+    for (j=0; j<sc->s; j++) phih[j] = sc->phi[i*sc->s+j]*h;
     ierr = VecZeroEntries(hm[i]);CHKERRQ(ierr);
     ierr = VecMAXPY(hm[i],sc->s,phih,Ydot);CHKERRQ(ierr);
-    ierr = VecMAXPY(hm[i],sc->r,psi,Xold);CHKERRQ(ierr);
+    ierr = VecMAXPY(hm[i],sc->r,&sc->psi[i*sc->r],Xold);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -359,25 +365,25 @@ static PetscErrorCode TSGLCompleteStep_RescaleAndModify(TSGLScheme sc,PetscReal 
     ierr = VecZeroEntries(X[i]);CHKERRQ(ierr);
     for (j=0; j<s; j++) {
       brow[j] = h*(pow(ratio,i)*sc->b[i*s+j]
-                   + (pow(ratio,i) - pow(ratio,p+1))*(+ sc->alpha[i]*sc->phi[0*(r+s)+j])
-                   + (pow(ratio,i) - pow(ratio,p+2))*(+ sc->beta [i]*sc->phi[1*(r+s)+j]
-                                                      + sc->gamma[i]*sc->phi[2*(r+s)+j]));
+                   + (pow(ratio,i) - pow(ratio,p+1))*(+ sc->alpha[i]*sc->phi[0*s+j])
+                   + (pow(ratio,i) - pow(ratio,p+2))*(+ sc->beta [i]*sc->phi[1*s+j]
+                                                      + sc->gamma[i]*sc->phi[2*s+j]));
     }
     ierr = VecMAXPY(X[i],s,brow,Ydot);CHKERRQ(ierr);
     for (j=0; j<r; j++) {
       vrow[j] = (pow(ratio,i)*sc->v[i*r+j]
-                 + (pow(ratio,i) - pow(ratio,p+1))*(+ sc->alpha[i]*sc->phi[0*(r+s)+s+j])
-                 + (pow(ratio,i) - pow(ratio,p+2))*(+ sc->beta [i]*sc->phi[1*(r+s)+s+j]
-                                                    + sc->gamma[i]*sc->phi[2*(r+s)+s+j]));
+                 + (pow(ratio,i) - pow(ratio,p+1))*(+ sc->alpha[i]*sc->psi[0*r+j])
+                 + (pow(ratio,i) - pow(ratio,p+2))*(+ sc->beta [i]*sc->psi[1*r+j]
+                                                    + sc->gamma[i]*sc->psi[2*r+j]));
     }
     ierr = VecMAXPY(X[i],r,vrow,Xold);CHKERRQ(ierr);
   }
   if (r < next_sc->r) {
     if (r+1 != next_sc->r) SETERRQ(PETSC_ERR_PLIB,"Cannot accommodate jump in r greater than 1");
     ierr = VecZeroEntries(X[r]);
-    for (j=0; j<s; j++) brow[j] = h*pow(ratio,p+1)*sc->phi[0*(r+s)+j];
+    for (j=0; j<s; j++) brow[j] = h*pow(ratio,p+1)*sc->phi[0*s+j];
     ierr = VecMAXPY(X[r],s,brow,Ydot);CHKERRQ(ierr);
-    for (j=0; j<r; j++) vrow[j] = pow(ratio,p+1)*sc->phi[0*(r+s)+s+j];
+    for (j=0; j<r; j++) vrow[j] = pow(ratio,p+1)*sc->psi[0*r+j];
     ierr = VecMAXPY(X[r],r,vrow,Xold);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -451,6 +457,72 @@ static PetscErrorCode TSGLCreate_IRKS(TS ts)
                 {0.000000000000000    ,  -1.761115796027561,  -0.521284157173780,   0.258249384305463},
                 {0.000000000000000    ,  -1.657693358744728,  -1.052227765232394,   0.521284157173780}};
     ierr = TSGLSchemeCreate(3,3,4,4,c,*a,*b,*u,*v,&gl->schemes[gl->nschemes++]);CHKERRQ(ierr);
+  }
+  {
+    /* p=q=4, r=s=5:
+          irks(3/11,0,[1:5]/5, [0.1715   -0.1238    0.6617],...
+          [ -0.0812    0.4079    1.0000
+             1.0000         0         0
+             0.8270    1.0000         0])
+    */
+    const PetscScalar c[5] = {0.2,0.4,0.6,0.8,1.0}
+    ,a[5][5] = {{2.72727272727352e-01 ,   0.00000000000000e+00,  0.00000000000000e+00 ,  0.00000000000000e+00  ,  0.00000000000000e+00},
+                {-1.03980153733431e-01,   2.72727272727405e-01,   0.00000000000000e+00,  0.00000000000000e+00  ,  0.00000000000000e+00},
+                {-1.58615400341492e+00,   7.44168951881122e-01,   2.72727272727309e-01,  0.00000000000000e+00  ,  0.00000000000000e+00},
+                {-8.73658042865628e-01,   5.37884671894595e-01,  -1.63298538799523e-01,   2.72727272726996e-01 ,  0.00000000000000e+00},
+                {2.95489397443992e-01 , -1.18481693910097e+00 , -6.68029812659953e-01 ,  1.00716687860943e+00  , 2.72727272727288e-01}}
+    ,b[5][5] = {{2.95489397443992e-01 , -1.18481693910097e+00 , -6.68029812659953e-01 ,  1.00716687860943e+00  , 2.72727272727288e-01},
+                {0.00000000000000e+00 ,  1.11022302462516e-16 , -2.22044604925031e-16 ,  0.00000000000000e+00  , 1.00000000000000e+00},
+                {-4.05882503986005e+00,  -4.00924006567769e+00,  -1.38930610972481e+00,   4.45223930308488e+00 ,  6.32331093108427e-01},
+                {8.35690179937017e+00 , -2.26640927349732e+00 ,  6.86647884973826e+00 , -5.22595158025740e+00  , 4.50893068837431e+00},
+                {1.27656267027479e+01 ,  2.80882153840821e+00 ,  8.91173096522890e+00 , -1.07936444078906e+01  , 4.82534148988854e+00}}
+    ,u[5][5] = {{1.00000000000000e+00 , -7.27272727273551e-02 , -3.45454545454419e-02 , -4.12121212119565e-03  ,-2.96969696964014e-04},
+                {1.00000000000000e+00 ,  2.31252881006154e-01 , -8.29487834416481e-03 , -9.07191207681020e-03  ,-1.70378403743473e-03},
+                {1.00000000000000e+00 ,  1.16925777880663e+00 ,  3.59268562942635e-02 , -4.09013451730615e-02  ,-1.02411119670164e-02},
+                {1.00000000000000e+00 ,  1.02634463704356e+00 ,  1.59375044913405e-01 ,  1.89673015035370e-03  ,-4.89987231897569e-03},
+                {1.00000000000000e+00 ,  1.27746320298021e+00 ,  2.37186008132728e-01 , -8.28694373940065e-02  ,-5.34396510196430e-02}}
+    ,v[5][5] = {{1.00000000000000e+00 ,  1.27746320298021e+00 ,  2.37186008132728e-01 , -8.28694373940065e-02  ,-5.34396510196430e-02},
+                {0.00000000000000e+00 , -1.77635683940025e-15 , -1.99840144432528e-15 , -9.99200722162641e-16  ,-3.33066907387547e-16},
+                {0.00000000000000e+00 ,  4.37280081906924e+00 ,  5.49221645016377e-02 , -8.88913177394943e-02  , 1.12879077989154e-01},
+                {0.00000000000000e+00 , -1.22399504837280e+01 , -5.21287338448645e+00 , -8.03952325565291e-01  , 4.60298678047147e-01},
+                {0.00000000000000e+00 , -1.85178762883829e+01 , -5.21411849862624e+00 , -1.04283436528809e+00  , 7.49030161063651e-01}};
+    ierr = TSGLSchemeCreate(4,4,5,5,c,*a,*b,*u,*v,&gl->schemes[gl->nschemes++]);CHKERRQ(ierr);
+  }
+  {
+    /* p=q=5, r=s=6;
+       irks(1/3,0,[1:6]/6,...
+          [-0.0489    0.4228   -0.8814    0.9021],...
+          [-0.3474   -0.6617    0.6294    0.2129
+            0.0044   -0.4256   -0.1427   -0.8936
+           -0.8267    0.4821    0.1371   -0.2557
+           -0.4426   -0.3855   -0.7514    0.3014])
+    */
+    const PetscScalar c[6] = {1./6, 2./6, 3./6, 4./6, 5./6, 1.}
+    ,a[6][6] = {{  3.33333333333940e-01,  0                   ,  0                   ,  0                   ,  0                   ,  0                   },
+                { -8.64423857333350e-02,  3.33333333332888e-01,  0                   ,  0                   ,  0                   ,  0                   },
+                { -2.16850174258252e+00, -2.23619072028839e+00,  3.33333333335204e-01,  0                   ,  0                   ,  0                   },
+                { -4.73160970138997e+00, -3.89265344629268e+00, -2.76318716520933e-01,  3.33333333335759e-01,  0                   ,  0                   },
+                { -6.75187540297338e+00, -7.90756533769377e+00,  7.90245051802259e-01, -4.48352364517632e-01,  3.33333333328483e-01,  0                   },
+                { -4.26488287921548e+00, -1.19320395589302e+01,  3.38924509887755e+00, -2.23969848002481e+00,  6.62807710124007e-01,  3.33333333335440e-01}}
+    ,b[6][6] = {{ -4.26488287921548e+00, -1.19320395589302e+01,  3.38924509887755e+00, -2.23969848002481e+00,  6.62807710124007e-01,  3.33333333335440e-01},
+                { -8.88178419700125e-16,  4.44089209850063e-16, -1.54737334057131e-15, -8.88178419700125e-16,  0.00000000000000e+00,  1.00000000000001e+00},
+                { -2.87780425770651e+01, -1.13520448264971e+01,  2.62002318943161e+01,  2.56943874812797e+01, -3.06702268304488e+01,  6.68067773510103e+00},
+                {  5.47971245256474e+01,  6.80366875868284e+01, -6.50952588861999e+01, -8.28643975339097e+01,  8.17416943896414e+01, -1.17819043489036e+01},
+                { -2.33332114788869e+02,  6.12942539462634e+01, -4.91850135865944e+01,  1.82716844135480e+02, -1.29788173979395e+02,  3.09968095651099e+01},
+                { -1.72049132343751e+02,  8.60194713593999e+00,  7.98154219170200e-01,  1.50371386053218e+02, -1.18515423962066e+02,  2.50898277784663e+01}}
+    ,u[6][6] = {{  1.00000000000000e+00, -1.66666666666870e-01, -4.16666666664335e-02, -3.85802469124815e-03, -2.25051440302250e-04, -9.64506172339142e-06},
+                {  1.00000000000000e+00,  8.64423857327162e-02, -4.11484912671353e-02, -1.11450903217645e-02, -1.47651050487126e-03, -1.34395070766826e-04},
+                {  1.00000000000000e+00,  4.57135912953434e+00,  1.06514719719137e+00,  1.33517564218007e-01,  1.11365952968659e-02,  6.12382756769504e-04},
+                {  1.00000000000000e+00,  9.23391519753404e+00,  2.22431212392095e+00,  2.91823807741891e-01,  2.52058456411084e-02,  1.22800542949647e-03},
+                {  1.00000000000000e+00,  1.48175480533865e+01,  3.73439117461835e+00,  5.14648336541804e-01,  4.76430038853402e-02,  2.56798515502156e-03},
+                {  1.00000000000000e+00,  1.50512347758335e+01,  4.10099701165164e+00,  5.66039141003603e-01,  3.91213893800891e-02, -2.99136269067853e-03}}
+    ,v[6][6] = {{  1.00000000000000e+00,  1.50512347758335e+01,  4.10099701165164e+00,  5.66039141003603e-01,  3.91213893800891e-02, -2.99136269067853e-03},
+                {  0.00000000000000e+00, -4.88498130835069e-15, -6.43929354282591e-15, -3.55271367880050e-15, -1.22124532708767e-15, -3.12250225675825e-16},
+                {  0.00000000000000e+00,  1.22250171233141e+01, -1.77150760606169e+00,  3.54516769879390e-01,  6.22298845883398e-01,  2.31647447450276e-01},
+                {  0.00000000000000e+00, -4.48339457331040e+01, -3.57363126641880e-01,  5.18750173123425e-01,  6.55727990241799e-02,  1.63175368287079e-01},
+                {  0.00000000000000e+00,  1.37297394708005e+02, -1.60145272991317e+00, -5.05319555199441e+00,  1.55328940390990e-01,  9.16629423682464e-01},
+                {  0.00000000000000e+00,  1.05703241119022e+02, -1.16610260983038e+00, -2.99767252773859e+00, -1.13472315553890e-01,  1.09742849254729e+00}};
+    ierr = TSGLSchemeCreate(5,5,6,6,c,*a,*b,*u,*v,&gl->schemes[gl->nschemes++]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -717,7 +789,7 @@ static PetscErrorCode TSGLChooseNextScheme(TS ts,PetscReal h,const PetscReal hmn
   if (cur < 0 || gl->nschemes <= cur) SETERRQ(PETSC_ERR_PLIB,"Current scheme not found in scheme list");
   ierr = TSGLAdaptChoose(gl->adapt,n,orders,errors,costs,cur,h,tleft,&next_sc,next_h,finish);CHKERRQ(ierr);
   *next_scheme = candidates[next_sc];
-  ierr = PetscInfo7(ts,"Adapt chose scheme %d (%d,%d,%d,%d) with step size %g, finish=%d\n",*next_scheme,gl->schemes[*next_scheme]->p,gl->schemes[*next_scheme]->q,gl->schemes[*next_scheme]->r,gl->schemes[*next_scheme]->s,*next_h,*finish);CHKERRQ(ierr);
+  ierr = PetscInfo7(ts,"Adapt chose scheme %d (%d,%d,%d,%d) with step size %6.2e, finish=%d\n",*next_scheme,gl->schemes[*next_scheme]->p,gl->schemes[*next_scheme]->q,gl->schemes[*next_scheme]->r,gl->schemes[*next_scheme]->s,*next_h,*finish);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

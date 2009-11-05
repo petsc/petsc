@@ -209,7 +209,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptDestroy(TSGLAdapt adapt)
 PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptSetFromOptions(TSGLAdapt adapt)
 {
   PetscErrorCode ierr;
-  char           type[256] = TSGLADAPT_SIZE;
+  char           type[256] = TSGLADAPT_BOTH;
   PetscTruth     flg;
 
   PetscFunctionBegin;
@@ -391,7 +391,7 @@ static PetscErrorCode TSGLAdaptChoose_Both(TSGLAdapt adapt,PetscInt n,const Pets
   }
   /* Only switch orders if the scheme offers significant benefits over the current one.
   When the scheme is not changing, only change step size if it offers significant benefits. */
-  if (best.eff < 1.2*current.eff || both->count_at_order < 3) {
+  if (best.eff < 1.2*current.eff || both->count_at_order < orders[cur]+2) {
     PetscReal last_desired_h;
     *next_sc = current.id;
     last_desired_h = both->desired_h;

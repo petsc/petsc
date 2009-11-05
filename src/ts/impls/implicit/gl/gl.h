@@ -23,7 +23,8 @@ struct _TSGLScheme {
   /* h^{p+1}x^{(p+1)}(t_n)     ~= phi[0]*h*Ydot + psi[0]*X[1:] */
   /* h^{p+2}x^{(p+2)}(t_n)     ~= phi[1]*h*Ydot + psi[1]*X[1:] */
   /* h^{p+2}f' x^{(p+1)}(t_n)  ~= phi[2]*h*Ydot + psi[2]*X[1:] */
-  PetscScalar *phi;             /* dim=[3][r+s], in [[phi] [0] [psi]] in B,J,W 2007 */
+  PetscScalar *phi;             /* dim=[3][s] for estimating higher moments, see B,J,W 2007 */
+  PetscScalar *psi;             /* dim=[3][r-1], [0 psi^T] of B,J,W 2007 */
   PetscScalar *stage_error;
 
   /* Desirable properties which enable extra optimizations */
