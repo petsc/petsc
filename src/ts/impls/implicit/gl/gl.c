@@ -4,10 +4,10 @@
 #include "petscblaslapack.h"
 
 static const char *TSGLErrorDirections[] = {"FORWARD","BACKWARD","TSGLErrorDirection","TSGLERROR_",0};
-static PetscFList TSGLList = 0;
-static PetscFList TSGLAcceptList = 0;
-
-PetscCookie PETSCTS_DLLEXPORT TSGLADAPT_COOKIE;
+static PetscFList TSGLList;
+static PetscFList TSGLAcceptList;
+static PetscTruth TSGLPackageInitialized;
+static PetscTruth TSGLRegisterAllCalled;
 
 /* This function is pure */
 static PetscScalar Factorial(PetscInt n)
@@ -385,8 +385,8 @@ static PetscErrorCode TSGLCompleteStep_RescaleAndModify(TSGLScheme sc,PetscReal 
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSGLCreate_DI"
-static PetscErrorCode TSGLCreate_DI(TS ts)
+#define __FUNCT__ "TSGLCreate_IRKS"
+static PetscErrorCode TSGLCreate_IRKS(TS ts)
 {
   TS_GL *gl = (TS_GL*)ts->data;
   PetscErrorCode ierr;
@@ -459,6 +459,37 @@ static PetscErrorCode TSGLCreate_DI(TS ts)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLSetType"
+/*@C
+   TSGLSetType - sets the class of general linear method to use for time-stepping
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+-  type - a method
+
+   Options Database Key:
+.  -ts_gl_type <type> - sets the method, use -help for a list of available method (e.g. irks)
+
+   Notes:
+   See "petsc/include/petscts.h" for available methods (for instance)
+.    TSGL_IRKS - Diagonally implicit methods with inherent Runge-Kutta stability (for stiff problems)
+
+   Normally, it is best to use the TSSetFromOptions() command and
+   then set the TSGL type from the options database rather than by using
+   this routine.  Using the options database provides the user with
+   maximum flexibility in evaluating the many different solvers.
+   The TSGLSetType() routine is provided for those situations where it
+   is necessary to set the timestepping solver independently of the
+   command line or options database.  This might be the case, for example,
+   when the choice of solver changes during the execution of the
+   program, and the user's application is taking responsibility for
+   choosing the appropriate method.
+
+   Level: intermediate
+
+.keywords: TS, TSGL, set, type
+@*/
 PetscErrorCode PETSCTS_DLLEXPORT TSGLSetType(TS ts,const TSGLType type)
 {
   PetscErrorCode ierr,(*r)(TS,const TSGLType);
@@ -476,6 +507,25 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLSetType(TS ts,const TSGLType type)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLSetAcceptType"
+/*@C
+   TSGLSetAcceptType - sets the acceptance test
+
+   Time integrators that need to control error must have the option to reject a time step based on local error
+   estimates.  This function allows different schemes to be set.
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+-  type - the type
+
+   Options Database Key:
+.  -ts_gl_accept_type <type> - sets the method used to determine whether to accept or reject a step
+
+   Level: intermediate
+
+.seealso: TS, TSGL, TSGLAcceptRegisterDynamic(), TSGLAdapt, set type
+@*/
 PetscErrorCode PETSCTS_DLLEXPORT TSGLSetAcceptType(TS ts,const TSGLAcceptType type)
 {
   PetscErrorCode ierr,(*r)(TS,const TSGLAcceptType);
@@ -493,6 +543,25 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLSetAcceptType(TS ts,const TSGLAcceptType ty
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLGetAdapt"
+/*@C
+   TSGLGetAdapt - gets the TSGLAdapt object from the TS
+
+   Not Collective
+
+   Input Parameter:
+.  ts - the TS context
+
+   Output Parameter:
+.  adapt - the TSGLAdapt context
+
+   Notes:
+   This allows the user set options on the TSGLAdapt object.  Usually it is better to do this using the options
+   database, so this function is rarely needed.
+
+   Level: advanced
+
+.seealso: TSGLAdapt, TSGLAdaptRegisterDynamic()
+@*/
 PetscErrorCode PETSCTS_DLLEXPORT TSGLGetAdapt(TS ts,TSGLAdapt *adapt)
 {
   PetscErrorCode ierr,(*r)(TS,TSGLAdapt*);
@@ -563,7 +632,7 @@ static PetscErrorCode TSGLVecNormWRMS(TS ts,Vec X,PetscReal *nrm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLSetType_GL"
-PetscErrorCode PETSCTS_DLLEXPORT TSGLSetType_GL(TS ts,const TSGLType type)
+static PetscErrorCode TSGLSetType_GL(TS ts,const TSGLType type)
 {
   PetscErrorCode ierr,(*r)(TS);
   PetscTruth same;
@@ -585,7 +654,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLSetType_GL(TS ts,const TSGLType type)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLSetAcceptType_GL"
-PetscErrorCode PETSCTS_DLLEXPORT TSGLSetAcceptType_GL(TS ts,const TSGLAcceptType type)
+static PetscErrorCode TSGLSetAcceptType_GL(TS ts,const TSGLAcceptType type)
 {
   PetscErrorCode ierr;
   TSGLAcceptFunction r;
@@ -904,7 +973,7 @@ static PetscErrorCode TSSetUp_GL(TS ts)
   }
 
   /* Default acceptance tests and adaptivity */
-  if (!gl->Accept) {ierr = TSGLSetAcceptType(ts,TSGL_ACCEPT_ALWAYS);CHKERRQ(ierr);}
+  if (!gl->Accept) {ierr = TSGLSetAcceptType(ts,TSGLACCEPT_ALWAYS);CHKERRQ(ierr);}
   if (!gl->adapt)  {ierr = TSGLGetAdapt(ts,&gl->adapt);CHKERRQ(ierr);}
 
   if (gl->current_scheme < 0) {
@@ -924,7 +993,7 @@ static PetscErrorCode TSSetUp_GL(TS ts)
 static PetscErrorCode TSSetFromOptions_GL(TS ts)
 {
   TS_GL *gl = (TS_GL*)ts->data;
-  char tname[256] = TSGL_DI,completef[256] = "rescale-and-modify";
+  char tname[256] = TSGL_IRKS,completef[256] = "rescale-and-modify";
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -950,6 +1019,13 @@ static PetscErrorCode TSSetFromOptions_GL(TS ts)
       if (match1)      gl->CompleteStep = TSGLCompleteStep_Rescale;
       else if (match2) gl->CompleteStep = TSGLCompleteStep_RescaleAndModify;
       else SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"%s",completef);
+    }
+    {
+      char type[256] = TSGLACCEPT_ALWAYS;
+      ierr = PetscOptionsList("-ts_gl_accept_type","Method to use for determining whether to accept a step","TSGLSetAcceptType",TSGLAcceptList,gl->accept_name[0]?gl->accept_name:type,type,sizeof type,&flg);CHKERRQ(ierr);
+      if (flg || !gl->accept_name[0]) {
+        ierr = TSGLSetAcceptType(ts,type);CHKERRQ(ierr);
+      }
     }
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -993,24 +1069,18 @@ static PetscErrorCode TSView_GL(TS ts,PetscViewer viewer)
     }
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for TS_GL",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for TSGL",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
 
-
-
-
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#  define TSGLRegisterDynamic(a,b,c,d)       TSGLRegister(a,b,c,0)
-#  define TSGLAcceptRegisterDynamic(a,b,c,d) TSGLAcceptRegister(a,b,c,0)
-#else
-#  define TSGLRegisterDynamic(a,b,c,d)       TSGLRegister(a,b,c,d)
-#  define TSGLAcceptRegisterDynamic(a,b,c,d) TSGLAcceptRegister(a,b,c,d)
-#endif
-
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLRegister"
+/*@C
+   TSGLRegister - see TSGLRegisterDynamic()
+
+   Level: advanced
+@*/
 PetscErrorCode PETSCTS_DLLEXPORT TSGLRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(TS))
 {
   PetscErrorCode ierr;
@@ -1024,6 +1094,11 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLRegister(const char sname[],const char path
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLAcceptRegister"
+/*@C
+   TSGLAcceptRegister - see TSGLAcceptRegisterDynamic()
+
+   Level: advanced
+@*/
 PetscErrorCode PETSCTS_DLLEXPORT TSGLAcceptRegister(const char sname[],const char path[],const char name[],TSGLAcceptFunction function)
 {
   PetscErrorCode ierr;
@@ -1037,32 +1112,97 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLAcceptRegister(const char sname[],const cha
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLRegisterAll"
+/*@C
+  TSGLRegisterAll - Registers all of the general linear methods in TSGL
+
+  Not Collective
+
+  Level: advanced
+
+.keywords: TS, TSGL, register, all
+
+.seealso:  TSGLRegisterDestroy()
+@*/
 PetscErrorCode PETSCTS_DLLEXPORT TSGLRegisterAll(const char path[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSGLRegisterDynamic(TSGL_DI,path,"TSGLCreate_DI",TSGLCreate_DI);CHKERRQ(ierr);
+  TSGLRegisterAllCalled = PETSC_TRUE;
 
-  ierr = TSGLAcceptRegisterDynamic(TSGL_ACCEPT_ALWAYS,path,"TSGLAccept_Always",TSGLAccept_Always);CHKERRQ(ierr);
+  ierr = TSGLRegisterDynamic(TSGL_IRKS,path,"TSGLCreate_IRKS",TSGLCreate_IRKS);CHKERRQ(ierr);
+  ierr = TSGLAcceptRegisterDynamic(TSGLACCEPT_ALWAYS,path,"TSGLAccept_Always",TSGLAccept_Always);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
-  ierr = TSGLAdaptRegisterAll(path);CHKERRQ(ierr);
+#undef __FUNCT__  
+#define __FUNCT__ "TSGLRegisterDestroy"
+/*@C
+   TSGLRegisterDestroy - Frees the list of schemes that were registered by TSGLRegister()/TSGLRegisterDynamic().
+
+   Not Collective
+
+   Level: advanced
+
+.keywords: TSGL, register, destroy
+.seealso: TSGLRegister(), TSGLRegisterAll(), TSGLRegisterDynamic()
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSGLRegisterDestroy(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFListDestroy(&TSGLList);CHKERRQ(ierr);
+  TSGLRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLInitializePackage"
-static PetscErrorCode PETSCTS_DLLEXPORT TSGLInitializePackage(const char path[])
+/*@C
+  TSGLInitializePackage - This function initializes everything in the TSGL package. It is called
+  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to TSCreate_GL()
+  when using static libraries.
+
+  Input Parameter:
+  path - The dynamic library path, or PETSC_NULL
+
+  Level: developer
+
+.keywords: TS, TSGL, initialize, package
+.seealso: PetscInitialize()
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSGLInitializePackage(const char path[])
 {
-  static PetscTruth TSGLPackageInitialized = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (TSGLPackageInitialized) PetscFunctionReturn(0);
   TSGLPackageInitialized = PETSC_TRUE;
-  ierr = PetscCookieRegister("TSGLAdapt",&TSGLADAPT_COOKIE);CHKERRQ(ierr);
   ierr = TSGLRegisterAll(PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscRegisterFinalize(TSGLFinalizePackage);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSGLFinalizePackage"
+/*@C
+  TSGLFinalizePackage - This function destroys everything in the TSGL package. It is
+  called from PetscFinalize().
+
+  Level: developer
+
+.keywords: Petsc, destroy, package
+.seealso: PetscFinalize()
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSGLFinalizePackage(void) 
+{
+  PetscFunctionBegin;
+  TSGLPackageInitialized = PETSC_FALSE;
+  TSGLRegisterAllCalled  = PETSC_FALSE;
+  TSGLList               = PETSC_NULL;
+  TSGLAcceptList         = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
@@ -1078,7 +1218,7 @@ static PetscErrorCode PETSCTS_DLLEXPORT TSGLInitializePackage(const char path[])
   All this is possible while preserving a singly diagonally implicit structure.
 
   Options database keys:
-+  -ts_gl_type <type> - the class of general linear method (di=DI-IRKS)
++  -ts_gl_type <type> - the class of general linear method (irks)
 .  -ts_gl_rtol <tol>  - relative error
 .  -ts_gl_atol <tol>  - absolute error
 .  -ts_gl_min_order <p> - minimum order method to consider (default=1)
@@ -1152,10 +1292,10 @@ static PetscErrorCode PETSCTS_DLLEXPORT TSGLInitializePackage(const char path[])
   Level: beginner
 
   References:
-  John Butcher and Z. Jackieweicz and W. Wright 2007, On error propagation in general linear methods for
-  ordinary differential equations, Journal of Complexity, Vol 23 (4-6).
+  John Butcher and Z. Jackieweicz and W. Wright, On error propagation in general linear methods for
+  ordinary differential equations, Journal of Complexity, Vol 23 (4-6), 2009.
 
-  John Butcher 2009, Numerical methods for ordinary differential equations, second edition, Wiley.
+  John Butcher, Numerical methods for ordinary differential equations, second edition, Wiley, 2009.
 
 .seealso:  TSCreate(), TS, TSSetType()
 

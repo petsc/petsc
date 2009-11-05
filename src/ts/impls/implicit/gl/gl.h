@@ -5,21 +5,7 @@
 
 typedef enum {TSGLERROR_FORWARD,TSGLERROR_BACKWARD} TSGLErrorDirection;
 
-#define TSGLAcceptType  char*
-#define TSGL_ACCEPT_ALWAYS "always"
-
-typedef struct _p_TSGLAdapt *TSGLAdapt;
-#define TSGLAdaptType  char*
-#define TSGLADAPT_NONE "none"
-#define TSGLADAPT_SIZE "size"
-#define TSGLADAPT_BOTH "both"
-
 typedef struct _TSGLScheme *TSGLScheme;
-
-extern PetscCookie PETSCTS_DLLEXPORT TSGLADAPT_COOKIE;
-
-typedef PetscErrorCode (*TSGLAcceptFunction)(TS,PetscReal,PetscReal,const PetscReal[],PetscTruth*);
-
 struct _TSGLScheme {
   PetscInt     p;               /* order of the method */
   PetscInt     q;               /* stage-order of the method */
@@ -85,19 +71,5 @@ typedef struct TS_GL {
   PetscTruth setupcalled;
   void *data;
 } TS_GL;
-
-
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLGetAdapt(TS,TSGLAdapt*);
-
-/* Public interface for TSGLAdapt */
-
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptRegisterAll(const char[]);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptCreate(MPI_Comm,TSGLAdapt*);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptSetType(TSGLAdapt,const TSGLAdaptType);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptSetOptionsPrefix(TSGLAdapt,const char[]);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptChoose(TSGLAdapt,PetscInt,const PetscInt[],const PetscReal[],const PetscReal[],PetscInt,PetscReal,PetscReal,PetscInt*,PetscReal*,PetscTruth*);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptView(TSGLAdapt,PetscViewer);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptSetFromOptions(TSGLAdapt);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptDestroy(TSGLAdapt);
 
 #endif

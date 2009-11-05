@@ -194,6 +194,151 @@ EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSMonitorLGCreate(const char[],const ch
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSMonitorLG(TS,PetscInt,PetscReal,Vec,void *);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSMonitorLGDestroy(PetscDrawLG);
 
+/*S
+   TSGLAdapt - Abstract object that manages time-step adaptivity
+
+   Level: beginner
+
+.seealso: TSGL, TSGLAdaptCreate(), TSGLAdaptType
+S*/
+typedef struct _p_TSGLAdapt *TSGLAdapt;
+
+/*E
+    TSGLAdaptType - String with the name of TSGLAdapt scheme or the creation function
+       with an optional dynamic library name, for example
+       http://www.mcs.anl.gov/petsc/lib.a:mytsgladaptcreate()
+
+   Level: beginner
+
+.seealso: TSGLAdaptSetType(), TS
+E*/
+#define TSGLAdaptType  char*
+#define TSGLADAPT_NONE "none"
+#define TSGLADAPT_SIZE "size"
+#define TSGLADAPT_BOTH "both"
+
+/*MC
+   TSGLAdaptRegisterDynamic - adds a TSGLAdapt implementation
+
+   Synopsis:
+   PetscErrorCode TSGLAdaptRegisterDynamic(char *name_scheme,char *path,char *name_create,PetscErrorCode (*routine_create)(TS))
+
+   Not Collective
+
+   Input Parameters:
++  name_scheme - name of user-defined adaptivity scheme
+.  path - path (either absolute or relative) the library containing this scheme
+.  name_create - name of routine to create method context
+-  routine_create - routine to create method context
+
+   Notes:
+   TSGLAdaptRegisterDynamic() may be called multiple times to add several user-defined families.
+
+   If dynamic libraries are used, then the fourth input argument (routine_create)
+   is ignored.
+
+   Sample usage:
+.vb
+   TSGLAdaptRegisterDynamic("my_scheme",/home/username/my_lib/lib/libO/solaris/mylib.a,
+                            "MySchemeCreate",MySchemeCreate);
+.ve
+
+   Then, your scheme can be chosen with the procedural interface via
+$     TSGLAdaptSetType(ts,"my_scheme")
+   or at runtime via the option
+$     -ts_adapt_type my_scheme
+
+   Level: advanced
+
+   Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
+          and others of the form ${any_environmental_variable} occuring in pathname will be 
+          replaced with appropriate values.
+
+.keywords: TSGLAdapt, register
+
+.seealso: TSGLAdaptRegisterAll()
+M*/
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#  define TSGLAdaptRegisterDynamic(a,b,c,d)  TSGLAdaptRegister(a,b,c,0)
+#else
+#  define TSGLAdaptRegisterDynamic(a,b,c,d)  TSGLAdaptRegister(a,b,c,d)
+#endif
+
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptRegister(const char[],const char[],const char[],PetscErrorCode (*)(TSGLAdapt));
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptRegisterAll(const char[]);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptRegisterDestroy(void);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptInitializePackage(const char[]);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptFinalizePackage(void);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptCreate(MPI_Comm,TSGLAdapt*);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptSetType(TSGLAdapt,const TSGLAdaptType);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptSetOptionsPrefix(TSGLAdapt,const char[]);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptChoose(TSGLAdapt,PetscInt,const PetscInt[],const PetscReal[],const PetscReal[],PetscInt,PetscReal,PetscReal,PetscInt*,PetscReal*,PetscTruth*);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptView(TSGLAdapt,PetscViewer);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptSetFromOptions(TSGLAdapt);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptDestroy(TSGLAdapt);
+
+/*E
+    TSGLAcceptType - String with the name of TSGLAccept scheme or the function
+       with an optional dynamic library name, for example
+       http://www.mcs.anl.gov/petsc/lib.a:mytsglaccept()
+
+   Level: beginner
+
+.seealso: TSGLSetAcceptType(), TS
+E*/
+#define TSGLAcceptType  char*
+#define TSGLACCEPT_ALWAYS "always"
+
+typedef PetscErrorCode (*TSGLAcceptFunction)(TS,PetscReal,PetscReal,const PetscReal[],PetscTruth*);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLAcceptRegister(const char[],const char[],const char[],TSGLAcceptFunction);
+
+/*MC
+   TSGLAcceptRegisterDynamic - adds a TSGL acceptance scheme
+
+   Synopsis:
+   PetscErrorCode TSGLAcceptRegisterDynamic(char *name_scheme,char *path,char *name_create,PetscErrorCode (*routine_create)(TS))
+
+   Not Collective
+
+   Input Parameters:
++  name_scheme - name of user-defined acceptance scheme
+.  path - path (either absolute or relative) the library containing this scheme
+.  name_create - name of routine to create method context
+-  routine_create - routine to create method context
+
+   Notes:
+   TSGLAcceptRegisterDynamic() may be called multiple times to add several user-defined families.
+
+   If dynamic libraries are used, then the fourth input argument (routine_create)
+   is ignored.
+
+   Sample usage:
+.vb
+   TSGLAcceptRegisterDynamic("my_scheme",/home/username/my_lib/lib/libO/solaris/mylib.a,
+                             "MySchemeCreate",MySchemeCreate);
+.ve
+
+   Then, your scheme can be chosen with the procedural interface via
+$     TSGLSetAcceptType(ts,"my_scheme")
+   or at runtime via the option
+$     -ts_gl_accept_type my_scheme
+
+   Level: advanced
+
+   Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
+          and others of the form ${any_environmental_variable} occuring in pathname will be 
+          replaced with appropriate values.
+
+.keywords: TSGL, TSGLAcceptType, register
+
+.seealso: TSGLRegisterAll()
+M*/
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#  define TSGLAcceptRegisterDynamic(a,b,c,d) TSGLAcceptRegister(a,b,c,0)
+#else
+#  define TSGLAcceptRegisterDynamic(a,b,c,d) TSGLAcceptRegister(a,b,c,d)
+#endif
+
 /*E
   TSGLType - family of time integration method within the General Linear class
 
@@ -202,11 +347,63 @@ EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSMonitorLGDestroy(PetscDrawLG);
 .seealso: TSGLSetType(), TSGLRegister()
 E*/
 #define TSGLType char*
+#define TSGL_IRKS   "irks"
 
-#define TSGL_DI   "di"
+/*MC
+   TSGLRegisterDynamic - adds a TSGL implementation
 
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSGLSetType(TS,const TSGLType);
+   Synopsis:
+   PetscErrorCode TSGLRegisterDynamic(char *name_scheme,char *path,char *name_create,PetscErrorCode (*routine_create)(TS))
+
+   Not Collective
+
+   Input Parameters:
++  name_scheme - name of user-defined general linear scheme
+.  path - path (either absolute or relative) the library containing this scheme
+.  name_create - name of routine to create method context
+-  routine_create - routine to create method context
+
+   Notes:
+   TSGLRegisterDynamic() may be called multiple times to add several user-defined families.
+
+   If dynamic libraries are used, then the fourth input argument (routine_create)
+   is ignored.
+
+   Sample usage:
+.vb
+   TSGLRegisterDynamic("my_scheme",/home/username/my_lib/lib/libO/solaris/mylib.a,
+                       "MySchemeCreate",MySchemeCreate);
+.ve
+
+   Then, your scheme can be chosen with the procedural interface via
+$     TSGLSetType(ts,"my_scheme")
+   or at runtime via the option
+$     -ts_gl_type my_scheme
+
+   Level: advanced
+
+   Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
+          and others of the form ${any_environmental_variable} occuring in pathname will be 
+          replaced with appropriate values.
+
+.keywords: TSGL, register
+
+.seealso: TSGLRegisterAll()
+M*/
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#  define TSGLRegisterDynamic(a,b,c,d)       TSGLRegister(a,b,c,0)
+#else
+#  define TSGLRegisterDynamic(a,b,c,d)       TSGLRegister(a,b,c,d)
+#endif
+
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSGLRegister(const char[],const char[],const char[],PetscErrorCode(*)(TS));
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLRegisterAll(const char[]);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLRegisterDestroy(void);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLInitializePackage(const char[]);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLFinalizePackage(void);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLSetType(TS,const TSGLType);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLGetAdapt(TS,TSGLAdapt*);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGLSetAcceptType(TS,const TSGLAcceptType);
 
 /*
        PETSc interface to Sundials

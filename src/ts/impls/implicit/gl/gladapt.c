@@ -2,7 +2,10 @@
 
 #include "gl.h" /*I  "petscts.h" I*/
 
-static PetscFList TSGLAdaptList = 0;
+static PetscFList TSGLAdaptList;
+static PetscTruth TSGLAdaptPackageInitialized;
+static PetscTruth TSGLAdaptRegisterAllCalled;
+static PetscCookie TSGLADAPT_COOKIE;
 
 struct _TSGLAdaptOps {
   PetscErrorCode (*choose)(TSGLAdapt,PetscInt,const PetscInt[],const PetscReal[],const PetscReal[],PetscInt,PetscReal,PetscReal,PetscInt*,PetscReal*,PetscTruth*);
@@ -20,14 +23,13 @@ static PetscErrorCode TSGLAdaptCreate_None(TSGLAdapt);
 static PetscErrorCode TSGLAdaptCreate_Size(TSGLAdapt);
 static PetscErrorCode TSGLAdaptCreate_Both(TSGLAdapt);
 
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#  define TSGLAdaptRegisterDynamic(a,b,c,d)  TSGLAdaptRegister(a,b,c,0)
-#else
-#  define TSGLAdaptRegisterDynamic(a,b,c,d)  TSGLAdaptRegister(a,b,c,d)
-#endif
-
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLAdaptRegister"
+/*@C
+   TSGLAdaptRegister - see TSGLAdaptRegisterDynamic()
+
+   Level: advanced
+@*/
 PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(TSGLAdapt))
 {
   PetscErrorCode ierr;
@@ -41,6 +43,17 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptRegister(const char sname[],const char
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLAdaptRegisterAll"
+/*@C
+  TSGLAdaptRegisterAll - Registers all of the adaptivity schemes in TSGLAdapt
+
+  Not Collective
+
+  Level: advanced
+
+.keywords: TSGLAdapt, register, all
+
+.seealso: TSGLAdaptRegisterDestroy()
+@*/
 PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptRegisterAll(const char path[])
 {
   PetscErrorCode ierr;
@@ -51,6 +64,77 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptRegisterAll(const char path[])
   ierr = TSGLAdaptRegisterDynamic(TSGLADAPT_BOTH,path,"TSGLAdaptCreate_Both",TSGLAdaptCreate_Both);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSGLFinalizePackage"
+/*@C
+  TSGLFinalizePackage - This function destroys everything in the TSGL package. It is
+  called from PetscFinalize().
+
+  Level: developer
+
+.keywords: Petsc, destroy, package
+.seealso: PetscFinalize()
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptFinalizePackage(void) 
+{
+  PetscFunctionBegin;
+  TSGLAdaptPackageInitialized = PETSC_FALSE;
+  TSGLAdaptRegisterAllCalled  = PETSC_FALSE;
+  TSGLAdaptList               = PETSC_NULL;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSGLInitializePackage"
+/*@C
+  TSGLAdaptInitializePackage - This function initializes everything in the TSGLAdapt package. It is
+  called from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to
+  TSCreate_GL() when using static libraries.
+
+  Input Parameter:
+  path - The dynamic library path, or PETSC_NULL
+
+  Level: developer
+
+.keywords: TSGLAdapt, initialize, package
+.seealso: PetscInitialize()
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptInitializePackage(const char path[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (TSGLAdaptPackageInitialized) PetscFunctionReturn(0);
+  TSGLAdaptPackageInitialized = PETSC_TRUE;
+  ierr = PetscCookieRegister("TSGLAdapt",&TSGLADAPT_COOKIE);CHKERRQ(ierr);
+  ierr = TSGLAdaptRegisterAll(path);CHKERRQ(ierr);
+  ierr = PetscRegisterFinalize(TSGLAdaptFinalizePackage);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSGLAdaptRegisterDestroy"
+/*@C
+   TSGLAdaptRegisterDestroy - Frees the list of adaptivity schemes that were registered by TSGLAdaptRegister()/TSGLAdaptRegisterDynamic().
+
+   Not Collective
+
+   Level: advanced
+
+.keywords: TSGLAdapt, register, destroy
+.seealso: TSGLAdaptRegister(), TSGLAdaptRegisterAll(), TSGLAdaptRegisterDynamic()
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptRegisterDestroy(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFListDestroy(&TSGLAdaptList);CHKERRQ(ierr);
+  TSGLAdaptRegisterAllCalled = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLAdaptSetType"
