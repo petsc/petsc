@@ -189,7 +189,13 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op,PetscTruth flg)
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   case MAT_HERMITIAN:
-    if (flg) SETERRQ(PETSC_ERR_SUP,"Matrix must be symmetric");
+    if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call MatAssemblyEnd() first");
+    if (A->cmap->n < 65536 && A->cmap->bs == 1) {
+      A->ops->mult = MatMult_SeqSBAIJ_1_Hermitian_ushort;
+    } else if (A->cmap->bs == 1) {
+      A->ops->mult = MatMult_SeqSBAIJ_1_Hermitian;
+    } else SETERRQ(PETSC_ERR_SUP,"No support for Hermitian with block size greater than 1");
+    break;
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
   case MAT_SYMMETRY_ETERNAL:
@@ -1369,7 +1375,15 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        0,
        0,
        0,
-       MatMissingDiagonal_SeqSBAIJ
+       MatMissingDiagonal_SeqSBAIJ,
+/*114*/0,
+       0,
+       0,
+       0,
+       0,
+/*119*/0,
+       0,
+       0
 };
 
 EXTERN_C_BEGIN

@@ -475,6 +475,10 @@ ex126f: ex126f.o chkopts
 	-${FLINKER} -o ex126f ex126f.o ${PETSC_MAT_LIB}
 	${RM} ex126f.o
 
+ex127: ex127.o chkopts
+	-${CLINKER} -o ex127 ex127.o ${PETSC_MAT_LIB}
+	${RM} ex127.o
+
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
@@ -1196,6 +1200,18 @@ runex126f:
 	   else echo "Possible problem with ex126f_1, diffs above"; fi; \
 	   ${RM} -f ex126_1.tmp 
 
+runex127:
+	-@${MPIEXEC} -n 1 ./ex127 -n 1000 > ex127.tmp 2>&1; \
+	   if (${DIFF} output/ex127.out ex127.tmp) then true; \
+	   else echo "Possible problem with ex127, diffs above"; fi; \
+	   ${RM} -f ex127.tmp
+runex127_2:
+	-@${MPIEXEC} -n 3 ./ex127 -mat_ignore_lower_triangular -n 1000 > ex127.tmp 2>&1; \
+	   if (${DIFF} output/ex127.out ex127.tmp) then true; \
+	   else echo "Possible problem with ex127_2, diffs above"; fi; \
+	   ${RM} -f ex127.tmp
+
+
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc \
                                  runex10 ex10.rm ex11.PETSc runex11 runex11_2 runex11_3 runex11_4 ex11.rm ex14.PETSc \
@@ -1236,5 +1252,6 @@ TESTEXAMPLES_PARMETIS	       = ex73.PETSc ex73.rm
 TESTEXAMPLES_PLAPACK 	       = ex103.PETSc runex103_2 ex103.rm ex107.PETSc runex107 runex107_2 ex107.rm \
                                  ex115.PETSc ex115.rm ex123.PETSc ex123.rm
 TESTEXAMPLES_FFTW	       = ex112.PETSc runex112 runex112_2 runex112_3 runex112_4 ex112.rm ex121.PETSc runex121 ex121.rm
+TESTEXAMPLES_C_COMPLEX	       = ex127.PETSc runex127 runex127_2 ex127.rm 
 
 include ${PETSC_DIR}/conf/test

@@ -20,4 +20,5 @@ typedef struct {
 } Mat_MPISBAIJ;
 
 EXTERN PetscErrorCode MatLoad_MPISBAIJ(PetscViewer, const MatType,Mat*);
+EXTERN PetscErrorCode MatMult_MPISBAIJ_Hermitian(Mat,Vec,Vec);
 #endif

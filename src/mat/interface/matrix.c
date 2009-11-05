@@ -22,6 +22,7 @@ PetscLogEvent  MAT_FDColoringApply,MAT_Transpose,MAT_FDColoringFunction;
 PetscLogEvent  MAT_MatMult, MAT_MatMultSymbolic, MAT_MatMultNumeric;
 PetscLogEvent  MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric;
 PetscLogEvent  MAT_MatMultTranspose, MAT_MatMultTransposeSymbolic, MAT_MatMultTransposeNumeric;
+PetscLogEvent  MAT_MultHermitianTranspose,MAT_MultHermitianTransposeAdd;
 PetscLogEvent  MAT_Getsymtranspose, MAT_Getsymtransreduced, MAT_Transpose_SeqAIJ, MAT_GetBrowsOfAcols;
 PetscLogEvent  MAT_GetBrowsOfAocols, MAT_Getlocalmat, MAT_Getlocalmatcondensed, MAT_Seqstompi, MAT_Seqstompinum, MAT_Seqstompisym;
 PetscLogEvent  MAT_Applypapt, MAT_Applypapt_numeric, MAT_Applypapt_symbolic, MAT_GetSequentialNonzeroStructure;
@@ -1024,15 +1025,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesRowLocal(Mat mat,PetscInt row,cons
 -  v - a logically two-dimensional array of values
 
    Notes:
-   By the values, v, are column-oriented (for the block version) and sorted
+   The values, v, are column-oriented for the block version.
 
    All the nonzeros in the row must be provided
 
-   The matrix must have previously had its column indices set
+   THE MATRIX MUSAT HAVE PREVIOUSLY HAD ITS COLUMN INDICES SET. IT IS RARE THAT THIS ROUTINE IS USED, usually MatSetValues() is used.
 
    The row must belong to this process
 
-   Level: intermediate
+   Level: advanced
 
    Concepts: matrices^putting entries in
 
@@ -1929,7 +1930,58 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTranspose(Mat mat,Vec x,Vec y)
   ierr = PetscLogEventEnd(MAT_MultTranspose,mat,x,y,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}   
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultHermitianTranspose"
+/*@
+   MatMultHermitianTranspose - Computes matrix Hermitian transpose times a vector.
+
+   Collective on Mat and Vec
+
+   Input Parameters:
++  mat - the matrix
+-  x   - the vector to be multilplied
+
+   Output Parameters:
+.  y - the result
+
+   Notes:
+   The vectors x and y cannot be the same.  I.e., one cannot
+   call MatMultHermitianTranspose(A,y,y).
+
+   Level: beginner
+
+   Concepts: matrix vector product^transpose
+
+.seealso: MatMult(), MatMultAdd(), MatMultHermitianTransposeAdd(), MatMultTranspose()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatMultHermitianTranspose(Mat mat,Vec x,Vec y)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  PetscValidHeaderSpecific(x,VEC_COOKIE,2); 
+  PetscValidHeaderSpecific(y,VEC_COOKIE,3);
+
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (x == y) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"x and y must be different vectors");
+#ifndef PETSC_HAVE_CONSTRAINTS
+  if (mat->rmap->N != x->map->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec x: global dim %D %D",mat->rmap->N,x->map->N); 
+  if (mat->cmap->N != y->map->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec y: global dim %D %D",mat->cmap->N,y->map->N);
+#endif
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+
+  if (!mat->ops->multtranspose) SETERRQ(PETSC_ERR_SUP,"This matrix type does not have a multiply tranpose defined");
+  ierr = PetscLogEventBegin(MAT_MultHermitianTranspose,mat,x,y,0);CHKERRQ(ierr);
+  ierr = (*mat->ops->multhermitiantranspose)(mat,x,y);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MultHermitianTranspose,mat,x,y,0);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}      
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultAdd"
@@ -2030,6 +2082,57 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeAdd(Mat mat,Vec v1,Vec v2,Vec 
   ierr = PetscLogEventBegin(MAT_MultTransposeAdd,mat,v1,v2,v3);CHKERRQ(ierr);
   ierr = (*mat->ops->multtransposeadd)(mat,v1,v2,v3);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultTransposeAdd,mat,v1,v2,v3);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)v3);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultHermitianTransposeAdd"
+/*@
+   MatMultHermitianTransposeAdd - Computes v3 = v2 + A^H * v1.
+
+   Collective on Mat and Vec
+
+   Input Parameters:
++  mat - the matrix
+-  v1, v2 - the vectors
+
+   Output Parameters:
+.  v3 - the result
+
+   Notes:
+   The vectors v1 and v3 cannot be the same.  I.e., one cannot
+   call MatMultHermitianTransposeAdd(A,v1,v2,v1).
+
+   Level: beginner
+
+   Concepts: matrix vector product^transpose and addition
+
+.seealso: MatMultHermitianTranspose(), MatMultTranspose(), MatMultAdd(), MatMult()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatMultHermitianTransposeAdd(Mat mat,Vec v1,Vec v2,Vec v3)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  PetscValidHeaderSpecific(v1,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(v2,VEC_COOKIE,3);
+  PetscValidHeaderSpecific(v3,VEC_COOKIE,4);
+
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (!mat->ops->multtransposeadd) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  if (v1 == v3) SETERRQ(PETSC_ERR_ARG_IDN,"v1 and v3 must be different vectors");
+  if (mat->rmap->N != v1->map->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec v1: global dim %D %D",mat->rmap->N,v1->map->N);
+  if (mat->cmap->N != v2->map->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec v2: global dim %D %D",mat->cmap->N,v2->map->N);
+  if (mat->cmap->N != v3->map->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec v3: global dim %D %D",mat->cmap->N,v3->map->N);
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+
+  ierr = PetscLogEventBegin(MAT_MultHermitianTransposeAdd,mat,v1,v2,v3);CHKERRQ(ierr);
+  ierr = (*mat->ops->multhermitiantransposeadd)(mat,v1,v2,v3);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MultHermitianTransposeAdd,mat,v1,v2,v3);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)v3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -4012,6 +4115,41 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIsTranspose(Mat A,Mat B,PetscReal tol,Petsc
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatHermitianTranspose"
+/*@ 
+   MatHermitianTranspose - Computes an in-place or out-of-place transpose of a matrix in complex conjugate.
+
+   Collective on Mat
+
+   Input Parameter:
++  mat - the matrix to transpose and complex conjugate
+-  reuse - store the transpose matrix in the provided B
+
+   Output Parameters:
+.  B - the Hermitian
+
+   Notes:
+     If you  pass in &mat for B the Hermitian will be done in place
+
+   Level: intermediate
+
+   Concepts: matrices^transposing, complex conjugatex
+
+.seealso: MatTranspose(), MatMultTranspose(), MatMultTransposeAdd(), MatIsTranspose(), MatReuse
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatHermitianTranspose(Mat mat,MatReuse reuse,Mat *B)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatTranspose(mat,reuse,B);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+  ierr = MatConjugate(*B);CHKERRQ(ierr);
+#endif
+  PetscFunctionReturn(0);  
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatIsHermitianTranspose"
 /*@
@@ -4746,13 +4884,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetOption(Mat mat,MatOption op,PetscTruth f
   switch (op) {
   case MAT_SYMMETRIC:
     mat->symmetric                  = flg;
-    if (flg) mat->structurally_symmetric     = PETSC_TRUE;
+    if (flg) mat->structurally_symmetric = PETSC_TRUE;
     mat->symmetric_set              = PETSC_TRUE;
     mat->structurally_symmetric_set = flg;
     break;
   case MAT_HERMITIAN:
     mat->hermitian                  = flg;
-    if (flg) mat->structurally_symmetric     = PETSC_TRUE;
+    if (flg) mat->structurally_symmetric = PETSC_TRUE;
     mat->hermitian_set              = PETSC_TRUE;
     mat->structurally_symmetric_set = flg;
     break;

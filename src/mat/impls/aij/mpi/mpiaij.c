@@ -918,6 +918,7 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAIJSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAIJSetPreallocationCSR_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDiagonalScaleLocal_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpiaij_mpisbaij_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1448,7 +1449,11 @@ PetscErrorCode MatSetOption_MPIAIJ(Mat A,MatOption op,PetscTruth flg)
     ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
     break;
   case MAT_STRUCTURALLY_SYMMETRIC:
+    ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
+    break;
   case MAT_HERMITIAN:
+    ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
+    break;
   case MAT_SYMMETRY_ETERNAL:
     ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
     break;
@@ -5039,12 +5044,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJ(Mat B)
   ierr            = PetscNewLog(B,Mat_MPIAIJ,&b);CHKERRQ(ierr);
   B->data         = (void*)b;
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  B->rmap->bs      = 1;
+  B->rmap->bs     = 1;
   B->assembled    = PETSC_FALSE;
   B->mapping      = 0;
 
-  B->insertmode      = NOT_SET_VALUES;
-  b->size            = size;
+  B->insertmode   = NOT_SET_VALUES;
+  b->size         = size;
   ierr = MPI_Comm_rank(((PetscObject)B)->comm,&b->rank);CHKERRQ(ierr);
 
   /* build cache for off array entries formed */
@@ -5110,6 +5115,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpiaij_mpicrl_C",
                                      "MatConvert_MPIAIJ_MPICRL",
                                       MatConvert_MPIAIJ_MPICRL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpiaij_mpisbaij_C",
+                                     "MatConvert_MPIAIJ_MPISBAIJ",
+                                      MatConvert_MPIAIJ_MPISBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMatMult_mpidense_mpiaij_C",
                                      "MatMatMult_MPIDense_MPIAIJ",
                                       MatMatMult_MPIDense_MPIAIJ);CHKERRQ(ierr);

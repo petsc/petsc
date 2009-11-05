@@ -125,6 +125,115 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_newdatastruct(Mat B,Mat A,const MatF
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_2_newdatastruct_v2"
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_newdatastruct_v2(Mat B,Mat A,const MatFactorInfo *info)
+{
+  Mat            C=B;
+  Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)A->data,*b=(Mat_SeqBAIJ *)C->data;
+  IS             isrow = b->row,isicol = b->icol;
+  PetscErrorCode ierr;
+  const PetscInt *r,*ic,*ics;
+  PetscInt       i,j,k,n=a->mbs,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
+  PetscInt       *ajtmp,*bjtmp,nz,nzL,row,*bdiag=b->diag,*pj;
+  MatScalar      *rtmp,*pc,*mwork,*v,*pv,*aa=a->a;
+  PetscInt       bs2 = a->bs2,flg;
+  PetscReal      shift = info->shiftinblocks;
+
+  PetscFunctionBegin;
+  ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
+  ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
+
+  /* generate work space needed by the factorization */
+  ierr = PetscMalloc((bs2*n+bs2+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
+  mwork = rtmp + bs2*n;
+  ierr = PetscMemzero(rtmp,bs2*n*sizeof(MatScalar));CHKERRQ(ierr);
+  ics  = ic;
+
+  for (i=0; i<n; i++){
+    /* zero rtmp */
+    /* L part */
+    nz    = bi[i+1] - bi[i];
+    bjtmp = bj + bi[i];
+    for  (j=0; j<nz; j++){
+      ierr = PetscMemzero(rtmp+bs2*bjtmp[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
+    }
+
+    /* U part */
+    nz = bdiag[i] - bdiag[i+1]; 
+    bjtmp = bj + bdiag[i+1]+1; 
+    for  (j=0; j<nz; j++){
+      ierr = PetscMemzero(rtmp+bs2*bjtmp[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
+    }
+ 
+    /* load in initial (unfactored row) */
+    nz    = ai[r[i]+1] - ai[r[i]];
+    ajtmp = aj + ai[r[i]];
+    v     = aa + bs2*ai[r[i]];
+    for (j=0; j<nz; j++) {
+      ierr = PetscMemcpy(rtmp+bs2*ic[ajtmp[j]],v+bs2*j,bs2*sizeof(MatScalar));CHKERRQ(ierr);
+    }
+
+    /* elimination */
+    bjtmp = bj + bi[i];
+    nzL   = bi[i+1] - bi[i];
+    for(k=0;k < nzL;k++) {
+      row = bjtmp[k];
+      pc = rtmp + bs2*row;
+      for (flg=0,j=0; j<bs2; j++) { if (pc[j]!=0.0) { flg = 1; break; }}
+      if (flg) {
+        pv = b->a + bs2*bdiag[row];      
+        /* Kernel_A_gets_A_times_B(bs,pc,pv,mwork); *pc = *pc * (*pv); */
+        ierr = Kernel_A_gets_A_times_B_2(pc,pv,mwork);CHKERRQ(ierr);
+  
+        pj = b->j + bdiag[row+1]+1; /* begining of U(row,:) */
+        pv = b->a + bs2*(bdiag[row+1]+1); 
+        nz = bdiag[row] - bdiag[row+1] - 1; /* num of entries inU(row,:), excluding diag */
+        for (j=0; j<nz; j++) {
+          /* Kernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j); */
+          /* rtmp+bs2*pj[j] = rtmp+bs2*pj[j] - (*pc)*(pv+bs2*j) */
+          v    = rtmp + 4*pj[j];
+          ierr = Kernel_A_gets_A_minus_B_times_C_2(v,pc,pv);CHKERRQ(ierr);
+          pv  += 4;          
+        }
+        ierr = PetscLogFlops(16*nz+12);CHKERRQ(ierr); /* flops = 2*bs^3*nz + 2*bs^3 - bs2) */
+      }
+    }
+
+    /* finished row so stick it into b->a */
+    /* L part */
+    pv   = b->a + bs2*bi[i] ;
+    pj   = b->j + bi[i] ;
+    nz   = bi[i+1] - bi[i];
+    for (j=0; j<nz; j++) {
+      ierr = PetscMemcpy(pv+bs2*j,rtmp+bs2*pj[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
+    }
+
+    /* Mark diagonal and invert diagonal for simplier triangular solves */
+    pv   = b->a + bs2*bdiag[i];
+    pj   = b->j + bdiag[i];
+    ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);   
+    /* ierr = Kernel_A_gets_inverse_A(bs,pv,v_pivots,v_work);CHKERRQ(ierr); */
+    ierr = Kernel_A_gets_inverse_A_2(pv,shift);CHKERRQ(ierr);
+      
+    /* U part */
+    pv = b->a + bs2*(bdiag[i+1]+1);
+    pj = b->j + bdiag[i+1]+1;
+    nz = bdiag[i] - bdiag[i+1] - 1; 
+    for (j=0; j<nz; j++){
+      ierr = PetscMemcpy(pv+bs2*j,rtmp+bs2*pj[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
+    }
+  }
+
+  ierr = PetscFree(rtmp);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
+ 
+  C->assembled = PETSC_TRUE;
+  ierr = PetscLogFlops(1.3333*bs2*n);CHKERRQ(ierr); /* from inverting diagonal blocks */
+  PetscFunctionReturn(0);
+}
+
 /*
   MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_newdatastruct -
     copied from MatLUFactorNumeric_SeqBAIJ_2_newdatastruct(), then remove ordering
@@ -218,6 +327,111 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_newdatastruct(Mat B,
     pv = b->a + bs2*bi[2*n-i];
     pj = b->j + bi[2*n-i];
     nz = bi[2*n-i+1] - bi[2*n-i] - 1; 
+    for (j=0; j<nz; j++){
+      ierr = PetscMemcpy(pv+bs2*j,rtmp+bs2*pj[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
+    }
+  }
+
+  ierr = PetscFree(rtmp);CHKERRQ(ierr);
+  C->assembled = PETSC_TRUE;
+  ierr = PetscLogFlops(1.3333*bs2*n);CHKERRQ(ierr); /* from inverting diagonal blocks */
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_newdatastruct_v2"
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_newdatastruct_v2(Mat B,Mat A,const MatFactorInfo *info)
+{
+  Mat            C=B;
+  Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)A->data,*b=(Mat_SeqBAIJ *)C->data;
+  PetscErrorCode ierr;
+  PetscInt       i,j,k,n=a->mbs,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
+  PetscInt       *ajtmp,*bjtmp,nz,nzL,row,*bdiag=b->diag,*pj;
+  MatScalar      *rtmp,*pc,*mwork,*v,*pv,*aa=a->a;
+  PetscInt       bs2 = a->bs2,flg;
+  PetscReal      shift = info->shiftinblocks;
+
+  PetscFunctionBegin;
+  /* generate work space needed by the factorization */
+  ierr = PetscMalloc((bs2*n+bs2+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
+  mwork = rtmp + bs2*n;
+  ierr = PetscMemzero(rtmp,bs2*n*sizeof(MatScalar));CHKERRQ(ierr);
+
+  for (i=0; i<n; i++){
+    /* zero rtmp */
+    /* L part */
+    nz    = bi[i+1] - bi[i];
+    bjtmp = bj + bi[i];
+    for  (j=0; j<nz; j++){
+      ierr = PetscMemzero(rtmp+bs2*bjtmp[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
+    }
+
+    /* U part */
+    nz = bdiag[i] - bdiag[i+1];
+    bjtmp = bj + bdiag[i+1]+1;
+    for  (j=0; j<nz; j++){
+      ierr = PetscMemzero(rtmp+bs2*bjtmp[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
+    }
+ 
+    /* load in initial (unfactored row) */
+    nz    = ai[i+1] - ai[i];
+    ajtmp = aj + ai[i];
+    v     = aa + bs2*ai[i];
+    for (j=0; j<nz; j++) {
+      ierr = PetscMemcpy(rtmp+bs2*ajtmp[j],v+bs2*j,bs2*sizeof(MatScalar));CHKERRQ(ierr);
+    }
+
+    /* elimination */
+    bjtmp = bj + bi[i];
+    nzL   = bi[i+1] - bi[i];
+    for(k=0;k < nzL;k++) {
+      row = bjtmp[k];
+      pc = rtmp + bs2*row;
+      for (flg=0,j=0; j<bs2; j++) { if (pc[j]!=0.0) { flg = 1; break; }}
+      if (flg) {
+        pv = b->a + bs2*bdiag[row];      
+        /* Kernel_A_gets_A_times_B(bs,pc,pv,mwork); *pc = *pc * (*pv); */
+        ierr = Kernel_A_gets_A_times_B_2(pc,pv,mwork);CHKERRQ(ierr);
+  
+        pj = b->j + bdiag[row+1]+1; /* beginning of U(row,:) */
+	pv = b->a + bs2*(bdiag[row+1]+1);
+	nz = bdiag[row]-bdiag[row+1] - 1; /* num of entries in U(row,:) excluding diag */
+        for (j=0; j<nz; j++) {
+          /* Kernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j); */
+          /* rtmp+bs2*pj[j] = rtmp+bs2*pj[j] - (*pc)*(pv+bs2*j) */
+          v    = rtmp + 4*pj[j];
+          ierr = Kernel_A_gets_A_minus_B_times_C_2(v,pc,pv);CHKERRQ(ierr);
+          pv  += 4;          
+        }
+        ierr = PetscLogFlops(16*nz+12);CHKERRQ(ierr); /* flops = 2*bs^3*nz + 2*bs^3 - bs2) */
+      }
+    }
+
+    /* finished row so stick it into b->a */
+    /* L part */
+    pv   = b->a + bs2*bi[i] ;
+    pj   = b->j + bi[i] ;
+    nz   = bi[i+1] - bi[i];
+    for (j=0; j<nz; j++) {
+      ierr = PetscMemcpy(pv+bs2*j,rtmp+bs2*pj[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
+    }
+
+    /* Mark diagonal and invert diagonal for simplier triangular solves */
+    pv   = b->a + bs2*bdiag[i];
+    pj   = b->j + bdiag[i];
+    ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);   
+    /* ierr = Kernel_A_gets_inverse_A(bs,pv,v_pivots,v_work);CHKERRQ(ierr); */
+    ierr = Kernel_A_gets_inverse_A_2(pv,shift);CHKERRQ(ierr);
+      
+    /* U part */
+    /*
+    pv = b->a + bs2*bi[2*n-i];
+    pj = b->j + bi[2*n-i];
+    nz = bi[2*n-i+1] - bi[2*n-i] - 1;
+    */
+    pv = b->a + bs2*(bdiag[i+1]+1);
+    pj = b->j + bdiag[i+1]+1;
+    nz = bdiag[i] - bdiag[i+1] - 1;
     for (j=0; j<nz; j++){
       ierr = PetscMemcpy(pv+bs2*j,rtmp+bs2*pj[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
     }
@@ -1250,6 +1464,59 @@ PetscErrorCode MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec
     v  = aa + bs2*ai[2*n-i];
     vi = aj + ai[2*n-i];
     nz = ai[2*n-i +1] - ai[2*n-i]-1;
+    ierr = PetscMemcpy(ls,t+i*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
+    for(k=0;k<nz;k++){
+      Kernel_v_gets_v_minus_A_times_w(bs,ls,v,t+bs*vi[k]);
+      v += bs2;
+    }
+    Kernel_w_gets_A_times_v(bs,ls,aa+bs2*adiag[i],t+i*bs); /* *inv(diagonal[i]) */
+    ierr = PetscMemcpy(x+i*bs,t+i*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
+  }
+  
+  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*(a->bs2)*(a->nz) - A->rmap->bs*A->cmap->n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct_v2"
+PetscErrorCode MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+{
+  Mat_SeqBAIJ    *a=(Mat_SeqBAIJ *)A->data;
+  PetscErrorCode ierr;
+  const PetscInt *ai=a->i,*aj=a->j,*adiag=a->diag,*vi;
+  PetscInt       i,k,n=a->mbs;
+  PetscInt       nz,bs=A->rmap->bs,bs2=a->bs2;
+  MatScalar      *aa=a->a,*v;
+  PetscScalar    *x,*b,*s,*t,*ls;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  t  = a->solve_work;
+
+  /* forward solve the lower triangular */
+  ierr = PetscMemcpy(t,b,bs*sizeof(PetscScalar));CHKERRQ(ierr); /* copy 1st block of b to t */
+
+  for (i=1; i<n; i++) {
+    v   = aa + bs2*ai[i];
+    vi  = aj + ai[i];
+    nz = ai[i+1] - ai[i];
+    s = t + bs*i;
+    ierr = PetscMemcpy(s,b+bs*i,bs*sizeof(PetscScalar));CHKERRQ(ierr); /* copy i_th block of b to t */
+    for(k=0;k<nz;k++){
+      Kernel_v_gets_v_minus_A_times_w(bs,s,v,t+bs*vi[k]);
+      v += bs2;
+    }
+  }
+  
+  /* backward solve the upper triangular */
+  ls = a->solve_work + A->cmap->n;
+  for (i=n-1; i>=0; i--){
+    v  = aa + bs2*(adiag[i+1]+1);
+    vi = aj + adiag[i+1]+1;
+    nz = adiag[i] - adiag[i+1]-1;
     ierr = PetscMemcpy(ls,t+i*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
     for(k=0;k<nz;k++){
       Kernel_v_gets_v_minus_A_times_w(bs,ls,v,t+bs*vi[k]);

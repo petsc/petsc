@@ -12,6 +12,9 @@ typedef struct {
   Mat          mat;   
   VecScatter   scatter;
   IS           is;
+  PetscInt     dcnt,*drows;   /* these are the local rows that have only diagonal entry */
+  PetscScalar  *diag;
+  Vec          work;
 } PC_Redistribute;
 
 #undef __FUNCT__  
@@ -21,11 +24,15 @@ static PetscErrorCode PCView_Redistribute(PC pc,PetscViewer viewer)
   PC_Redistribute *red = (PC_Redistribute*)pc->data;
   PetscErrorCode  ierr;
   PetscTruth      iascii,isstring;
+  PetscInt        ncnt,N;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
+    ierr = MPI_Allreduce(&red->dcnt,&ncnt,1,MPIU_INT,MPI_SUM,((PetscObject)pc)->comm);CHKERRQ(ierr);
+    ierr = MatGetSize(pc->pmat,&N,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    Number rows eliminated %D Percentage rows eliminated %g\n",ncnt,100.0*((PetscReal)ncnt)/((PetscReal)N));CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Redistribute preconditioner: \n");CHKERRQ(ierr);
     ierr = KSPView(red->ksp,viewer);CHKERRQ(ierr);
   } else if (isstring) {
@@ -45,7 +52,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
   PC_Redistribute   *red = (PC_Redistribute*)pc->data;
   PetscErrorCode    ierr;
   MPI_Comm          comm;
-  PetscInt          rstart,rend,i,nz,cnt,*rows,ncnt;
+  PetscInt          rstart,rend,i,nz,cnt,*rows,ncnt,dcnt,*drows;
   PetscLayout       map,nmap;
   PetscMPIInt       size,rank,imdex,tag,n;
   PetscInt          *source = PETSC_NULL;
@@ -56,8 +63,9 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
   PetscMPIInt       *onodes1,*olengths1;
   MPI_Request       *send_waits = PETSC_NULL,*recv_waits = PETSC_NULL;
   MPI_Status        recv_status,*send_status;
-  Vec               tvec;
+  Vec               tvec,diag;
   Mat               tmat;
+  const PetscScalar *d;
 
   PetscFunctionBegin;
   if (pc->setupcalled) {
@@ -78,12 +86,14 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
       ierr = MatRestoreRow(pc->mat,i,&nz,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
     ierr = PetscMalloc(cnt*sizeof(PetscInt),&rows);CHKERRQ(ierr);
+    ierr = PetscMalloc((rend - rstart - cnt)*sizeof(PetscInt),&drows);CHKERRQ(ierr);
 
     /* list non-diagonal rows on process */
-    cnt  = 0;  
+    cnt  = 0; dcnt = 0;  
     for (i=rstart; i<rend; i++) {
       ierr = MatGetRow(pc->mat,i,&nz,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
       if (nz > 1) rows[cnt++] = i;
+      else drows[dcnt++] = i - rstart;
       ierr = MatRestoreRow(pc->mat,i,&nz,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
 
@@ -102,6 +112,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     ierr = PetscLayoutSetBlockSize(nmap,1);CHKERRQ(ierr);
     ierr = PetscLayoutSetUp(nmap);CHKERRQ(ierr);
 
+    ierr = PetscInfo2(pc,"Number of diagonal rows eliminated %d, percentage eliminated %g\n",pc->pmat->rmap->N-ncnt,((PetscReal)(pc->pmat->rmap->N-ncnt))/((PetscReal)(pc->pmat->rmap->N)));
     /*  
 	this code is taken from VecScatterCreate_PtoS() 
 	Determines what rows need to be moved where to 
@@ -146,7 +157,11 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     for (i=0; i<cnt; i++) {
       svalues[starts[owner[i]]++] = rows[i];
     }
+    for (i=0; i<cnt; i++) rows[i] = rows[i] - rstart;
+    red->drows = drows;
+    red->dcnt  = dcnt;
     ierr = PetscFree(rows);CHKERRQ(ierr);
+
     starts[0] = 0;
     for (i=1; i<size; i++) { starts[i] = starts[i-1] + nprocs[i-1];} 
     count = 0;
@@ -193,6 +208,18 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
   }
   ierr = KSPSetOperators(red->ksp,tmat,tmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatDestroy(tmat);CHKERRQ(ierr);
+
+  /* get diagonal portion of matrix */
+  ierr = PetscMalloc(red->dcnt*sizeof(PetscScalar),&red->diag);CHKERRQ(ierr);
+  ierr = MatGetVecs(pc->pmat,&diag,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetDiagonal(pc->pmat,diag);CHKERRQ(ierr);
+  ierr = VecGetArray(diag,(PetscScalar**)&d);CHKERRQ(ierr);
+  for (i=0; i<red->dcnt; i++) {
+    red->diag[i] = 1.0/d[red->drows[i]];
+  }
+  ierr = VecRestoreArray(diag,(PetscScalar**)&d);CHKERRQ(ierr);
+  ierr = VecDestroy(diag);CHKERRQ(ierr);
+
   ierr = KSPSetUp(red->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -203,10 +230,31 @@ static PetscErrorCode PCApply_Redistribute(PC pc,Vec b,Vec x)
 {
   PC_Redistribute   *red = (PC_Redistribute*)pc->data;
   PetscErrorCode    ierr;
+  PetscInt          dcnt = red->dcnt,i;
+  const PetscInt    *drows = red->drows;
+  PetscScalar       *xwork;
+  const PetscScalar *bwork,*diag = red->diag;
 
   PetscFunctionBegin;
-  ierr = VecScatterBegin(red->scatter,b,red->b,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(red->scatter,b,red->b,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  if (!red->work) {
+    ierr = VecDuplicate(b,&red->work);CHKERRQ(ierr);
+  }
+  /* compute the rows of solution that have diagonal entries only */
+  ierr = VecSet(x,0.0);CHKERRQ(ierr);         /* x = diag(A)^{-1} b */
+  ierr = VecGetArray(x,&xwork);CHKERRQ(ierr);
+  ierr = VecGetArray(b,(PetscScalar**)&bwork);CHKERRQ(ierr);
+  for (i=0; i<dcnt; i++) {
+    xwork[drows[i]] = diag[i]*bwork[drows[i]];
+  }
+  ierr = PetscLogFlops(dcnt);CHKERRQ(ierr);
+  ierr = VecRestoreArray(red->work,&xwork);CHKERRQ(ierr);
+  ierr = VecRestoreArray(b,(PetscScalar**)&bwork);CHKERRQ(ierr);
+  /* update the right hand side for the reduced system with diagonal rows (and corresponding columns) removed */
+  ierr = MatMult(pc->pmat,x,red->work);CHKERRQ(ierr);
+  ierr = VecAYPX(red->work,-1.0,b);CHKERRQ(ierr);   /* red->work = b - A x */
+
+  ierr = VecScatterBegin(red->scatter,red->work,red->b,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(red->scatter,red->work,red->b,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = KSPSolve(red->ksp,red->b,red->x);CHKERRQ(ierr);
   ierr = VecScatterBegin(red->scatter,red->x,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(red->scatter,red->x,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -227,6 +275,9 @@ static PetscErrorCode PCDestroy_Redistribute(PC pc)
   if (red->x)        {ierr = VecDestroy(red->x);CHKERRQ(ierr);}
   if (red->mat)      {ierr = MatDestroy(red->mat);CHKERRQ(ierr);}
   if (red->ksp)      {ierr = KSPDestroy(red->ksp);CHKERRQ(ierr);}
+  if (red->work)     {ierr = VecDestroy(red->work);CHKERRQ(ierr);}
+  ierr = PetscFree(red->drows);
+  ierr = PetscFree(red->diag);
   ierr = PetscFree(red);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -245,9 +296,14 @@ static PetscErrorCode PCSetFromOptions_Redistribute(PC pc)
 
 /* -------------------------------------------------------------------------------------*/
 /*MC
-     PCREDISTRIBUTE - Redistributes a matrix for load balancing and then applys a KSP to that new matrix
+     PCREDISTRIBUTE - Redistributes a matrix for load balancing, removing the rows that only have a diagonal entry and then applys a KSP to that new matrix
 
      Options for the redistribute preconditioners can be set with -redistribute_ksp_xxx <values> and -redistribute_pc_xxx <values>
+
+     Notes:  Usually run this with -ksp_type preonly
+
+     If you have used MatZeroRows() to eliminate (for example, Dirichlet) boundary conditions for a symmetric problem then you can use, for example, -ksp_type preonly 
+     -pc_type redistribute -redistribute_ksp_type cg -redistribute_pc_type bjacobi -redistribute_sub_pc_type icc to take advantage of the symmetry.
 
    Level: intermediate
 

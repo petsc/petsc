@@ -13,6 +13,53 @@
 #define PETSCMAP1(a)      PETSCMAP1_b(a,USHORT)
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatMult_SeqSBAIJ_1_Hermitian"
+PetscErrorCode PETSCMAP1(MatMult_SeqSBAIJ_1_Hermitian)(Mat A,Vec xx,Vec zz)
+{
+  Mat_SeqSBAIJ         *a = (Mat_SeqSBAIJ*)A->data;
+  const PetscScalar    *x;
+  PetscScalar          *z,x1,sum;
+  const MatScalar      *v;
+  MatScalar            vj;
+  PetscErrorCode       ierr;
+  PetscInt             mbs=a->mbs,i,j,nz;
+  const PetscInt       *ai=a->i;
+#if defined(USESHORT)
+  const unsigned short *ib=a->jshort;
+  unsigned short       ibt;
+#else
+  const PetscInt       *ib=a->j;
+  PetscInt             ibt;
+#endif
+
+  PetscFunctionBegin;
+  ierr = VecSet(zz,0.0);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
+  ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
+
+  v  = a->a; 
+  for (i=0; i<mbs; i++) {
+    nz   = ai[i+1] - ai[i];  /* length of i_th row of A */    
+    x1   = x[i];
+    sum  = v[0]*x1;          /* diagonal term */
+    for (j=1; j<nz; j++) {
+      ibt  = ib[j];
+      vj   = v[j];
+      sum += vj * x[ibt];   /* (strict upper triangular part of A)*x  */
+      z[ibt] += PetscConj(v[j]) * x1;    /* (strict lower triangular part of A)*x  */
+    }
+    z[i] += sum;
+    v    += nz;
+    ib   += nz;
+  }
+
+  ierr = VecRestoreArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*(2.0*a->nz - mbs) - mbs);CHKERRQ(ierr); 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqSBAIJ_1"
 PetscErrorCode PETSCMAP1(MatMult_SeqSBAIJ_1)(Mat A,Vec xx,Vec zz)
 {
