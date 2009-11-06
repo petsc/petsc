@@ -527,12 +527,12 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_newdatastruct_v2(Mat B,Mat A,IS isrow
         B->ops->solve = MatSolve_SeqBAIJ_6_newdatastruct_v2;
         break;
      case 7:
-        B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_newdatastruct;
-        B->ops->solve = MatSolve_SeqBAIJ_7_newdatastruct;
+        B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_newdatastruct_v2;
+        B->ops->solve = MatSolve_SeqBAIJ_7_newdatastruct_v2;
         break;
      default:
-        B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N_newdatastruct;
-        B->ops->solve = MatSolve_SeqBAIJ_N_newdatastruct;
+        B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N_newdatastruct_v2;
+        B->ops->solve = MatSolve_SeqBAIJ_N_newdatastruct_v2;
       }
    }
   /*  ierr = MatSeqBAIJSetNumericFactorization(B,both_identity);CHKERRQ(ierr); */
