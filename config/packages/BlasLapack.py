@@ -20,6 +20,13 @@ class Configure(config.package.Package):
     self.defaultPrecision = 'double'
     return
 
+  def setupDependencies(self, framework):
+    config.package.Package.setupDependencies(self, framework)
+    self.qd   = framework.require('config.packages.qd',self)
+    self.deps = [self.qd]
+    return
+
+  
   def __str__(self):
     return 'BLAS/LAPACK: '+self.libraries.toString(self.lib)+'\n'
 
