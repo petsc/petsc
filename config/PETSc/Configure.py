@@ -48,6 +48,10 @@ class Configure(config.base.Configure):
             utilityObj.languageProvider   = self.languages
             utilityObj.installDirProvider = self.petscdir
             setattr(self, utilityName.lower(), utilityObj)
+    self.qd    = framework.require('config.packages.qd', self)
+    self.qd.archProvider      = self.arch
+    self.qd.precisionProvider = self.scalartypes
+    self.qd.installDirProvider= self.petscdir
     self.blaslapack    = framework.require('config.packages.BlasLapack', self)
     self.blaslapack.archProvider      = self.arch
     self.blaslapack.precisionProvider = self.scalartypes
