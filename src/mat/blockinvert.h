@@ -119,7 +119,7 @@ EXTERN PetscErrorCode Kernel_A_gets_inverse_A_9(MatScalar *,PetscReal);
 
 /* -----------------------------------------------------------------------*/
 
-#if !defined(PETSC_USE_MAT_SINGLE)
+#if !defined(PETSC_USE_SCALAR_MAT_SINGLE)
 /*
         Version that calls the BLAS directly
 */

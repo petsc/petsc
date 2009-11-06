@@ -8,7 +8,7 @@ This file also deals with unmangled Fortran 77 naming convention.
 #define _BLASLAPACK_C_H
 
 #if !defined(PETSC_USE_COMPLEX)
-# if defined(PETSC_USE_SINGLE)
+# if defined(PETSC_USE_SCALAR_SINGLE)
 /* Real single precision with no character string arguments */
 #  define LAPACKgeqrf_ sgeqrf
 #  define LAPACKungqr_ sorgqr

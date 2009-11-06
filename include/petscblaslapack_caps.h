@@ -8,7 +8,7 @@ This file also deals with CAPS Fortran 77 naming convention.
 #define _BLASLAPACK_CAPS_H
 
 #if !defined(PETSC_USE_COMPLEX)
-# if defined(PETSC_USE_SINGLE) || defined(PETSC_USES_FORTRAN_SINGLE)
+# if defined(PETSC_USE_SCALAR_SINGLE) || defined(PETSC_USES_FORTRAN_SINGLE)
 /* Real single precision with no character string arguments */
 #  define LAPACKgeqrf_ SGEQRF
 #  define LAPACKungqr_ SORGQR

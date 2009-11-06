@@ -26,7 +26,7 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat inA,PetscTruth natural)
       inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering;
       break; 
     case 4:
-#if defined(PETSC_USE_MAT_SINGLE)
+#if defined(PETSC_USE_SCALAR_MAT_SINGLE)
       {
         PetscTruth  sse_enabled_local;
         PetscErrorCode ierr;

@@ -1061,21 +1061,21 @@ extern const char *PetscDataTypes[];
 #if defined(PETSC_USE_COMPLEX)
 #define PETSC_SCALAR PETSC_COMPLEX
 #else
-#if defined(PETSC_USE_SINGLE)
+#if defined(PETSC_USE_SCALAR_SINGLE)
 #define PETSC_SCALAR PETSC_FLOAT
-#elif defined(PETSC_USE_LONG_DOUBLE)
+#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
 #define PETSC_SCALAR PETSC_LONG_DOUBLE
-#elif defined(PETSC_USE_INT)
+#elif defined(PETSC_USE_SCALAR_INT)
 #define PETSC_SCALAR PETSC_INT
 #else
 #define PETSC_SCALAR PETSC_DOUBLE
 #endif
 #endif
-#if defined(PETSC_USE_SINGLE)
+#if defined(PETSC_USE_SCALAR_SINGLE)
 #define PETSC_REAL PETSC_FLOAT
-#elif defined(PETSC_USE_LONG_DOUBLE)
+#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
 #define PETSC_REAL PETSC_LONG_DOUBLE
-#elif defined(PETSC_USE_INT)
+#elif defined(PETSC_USE_SCALAR_INT)
 #define PETSC_REAL PETSC_INT
 #else
 #define PETSC_REAL PETSC_DOUBLE

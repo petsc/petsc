@@ -49,20 +49,20 @@ class Configure(config.base.Configure):
     '''Set the default real number precision for PETSc objects'''
     self.precision = self.framework.argDB['with-precision'].lower()
     if self.precision == 'single':
-      self.addDefine('USE_SINGLE', '1')
+      self.addDefine('USE_SCALAR_SINGLE', '1')
     elif self.precision == 'matsingle':
-      self.addDefine('USE_MAT_SINGLE', '1')
+      self.addDefine('USE_SCALAR_MAT_SINGLE', '1')
     elif self.precision == 'longdouble':
       self.compilers.pushLanguage('C')
       if config.setCompilers.Configure.isIntel(self.compilers.getCompiler()):
         # Intel's C long double is 80 bits, so does not match Fortran's real*16, but
         # Intel C has a _Quad that is 128 bits
         self.precision = 'quad'
-        self.addDefine('USE__QUAD', '1')        
+        self.addDefine('USE_SCALAR__QUAD', '1')        
       self.compilers.popLanguage()
-      self.addDefine('USE_LONG_DOUBLE', '1')
+      self.addDefine('USE_SCALAR_LONG_DOUBLE', '1')
     elif self.precision == 'int':
-      self.addDefine('USE_INT', '1')
+      self.addDefine('USE_SCALAR_INT', '1')
     elif not self.precision == 'double':
       raise RuntimeError('--with-precision must be single, double, longdouble, int or matsingle')
     self.framework.logPrint('Precision is '+str(self.precision))

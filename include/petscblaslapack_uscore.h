@@ -9,7 +9,7 @@ This file is also used for the f2cblaslapack distribution.
 #define _BLASLAPACK_USCORE_H
 
 #if !defined(PETSC_USE_COMPLEX)
-# if defined(PETSC_USE_SINGLE)
+# if defined(PETSC_USE_SCALAR_SINGLE)
 /* Real single precision with no character string arguments */
 #  define LAPACKgeqrf_ sgeqrf_
 #  define LAPACKungqr_ sorgqr_

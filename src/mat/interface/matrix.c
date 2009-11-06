@@ -1747,7 +1747,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedLocal(Mat mat,PetscInt nrow
   ierr = ISLocalToGlobalMappingApply(mat->bmapping,nrow,irow,irowm);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(mat->bmapping,ncol,icol,icolm);CHKERRQ(ierr);
   if (mat->ops->setvaluesblocked) {
-  ierr = (*mat->ops->setvaluesblocked)(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
+    ierr = (*mat->ops->setvaluesblocked)(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
   } else {
     PetscInt buf[4096],*ibufm=0,*ibufn=0;
     PetscInt i,j,*iirowm,*iicolm,bs=mat->rmap->bs;

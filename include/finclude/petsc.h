@@ -88,11 +88,11 @@
       PetscEnum PETSC_TRUTH
       PetscEnum PETSC_LONG_DOUBLE
 
-#if defined(PETSC_USE_SINGLE)
+#if defined(PETSC_USE_SCALAR_SINGLE)
 #define PETSC_REAL PETSC_FLOAT
-#elif defined(PETSC_USE_LONG_DOUBLE)
+#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
 #define PETSC_REAL PETSC_LONG_DOUBLE
-#elif defined(PETSC_USE_INT)
+#elif defined(PETSC_USE_SCALAR_INT)
 #define PETSC_REAL PETSC_INT
 #else
 #define PETSC_REAL PETSC_DOUBLE
@@ -129,7 +129,7 @@
       PetscFortranDouble PETSC_SQRT_MACHINE_EPSILON
       PetscFortranDouble PETSC_SMALL
 
-#if defined(PETSC_USE_SINGLE)
+#if defined(PETSC_USE_SCALAR_SINGLE)
       parameter (PETSC_MACHINE_EPSILON = 1.e-7)
       parameter (PETSC_SQRT_MACHINE_EPSILON = 3.e-4)
       parameter (PETSC_SMALL = 1.e-5)
@@ -146,9 +146,9 @@
 #if defined(PETSC_USE_COMPLEX)
       parameter(MPIU_SCALAR = MPI_DOUBLE_COMPLEX)
 #else
-#if defined (PETSC_USE_SINGLE)
+#if defined (PETSC_USE_SCALAR_SINGLE)
       parameter (MPIU_SCALAR = MPI_REAL)
-#elif defined(PETSC_USE_LONG_DOUBLE)
+#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
       parameter(MPIU_SCALAR = MPI_2DOUBLE_PRECISION)
 #else
       parameter(MPIU_SCALAR = MPI_DOUBLE_PRECISION)

@@ -98,9 +98,9 @@
 #if defined(PETSC_USE_COMPLEX)
 #define PETSC_SCALAR PETSC_COMPLEX
 #else
-#if defined(PETSC_USE_SINGLE)
+#if defined(PETSC_USE_SCALAR_SINGLE)
 #define PETSC_SCALAR PETSC_FLOAT
-#elif defined(PETSC_USE_LONG_DOUBLE)
+#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
 #define PETSC_SCALAR PETSC_LONG_DOUBLE
 #else
 #define PETSC_SCALAR PETSC_DOUBLE
@@ -124,9 +124,9 @@
 #define PetscImaginaryPart(a) daimg(a)
 #endif
 #else
-#if defined (PETSC_USE_SINGLE)
+#if defined (PETSC_USE_SCALAR_SINGLE)
 #define PetscScalar PetscFortranFloat
-#elif defined(PETSC_USE_LONG_DOUBLE)
+#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
 #define PetscScalar PetscFortranLongDouble
 #else
 #define PetscScalar PetscFortranDouble
@@ -136,9 +136,9 @@
 #define PetscImaginaryPart(a) a
 #endif
 
-#if defined (PETSC_USE_SINGLE)
+#if defined (PETSC_USE_SCALAR_SINGLE)
 #define PetscReal PetscFortranFloat
-#elif defined(PETSC_USE_LONG_DOUBLE)
+#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
 #define PetscReal PetscFortranLongDouble
 #else
 #define PetscReal PetscFortranDouble
@@ -150,7 +150,7 @@
 !
 #if defined(PETSC_USE_COMPLEX)
 #define MatScalar PetscScalar 
-#elif defined(PETSC_USE_MAT_SINGLE)
+#elif defined(PETSC_USE_SCALAR_MAT_SINGLE)
 #define MatScalar real*4
 #else
 #define MatScalar PetscScalar

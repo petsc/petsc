@@ -44,11 +44,11 @@ extern  MPI_Datatype PETSC_DLLEXPORT MPIU_2INT;
 #define PetscSinScalar(a)     std::sin(a)
 #define PetscCosScalar(a)     std::cos(a)
 
-#if defined(PETSC_USE_SINGLE)
+#if defined(PETSC_USE_SCALAR_SINGLE)
 typedef std::complex<float> PetscScalar;
-#elif defined(PETSC_USE_LONG_DOUBLE)
+#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
 typedef std::complex<long double> PetscScalar;
-#elif defined(PETSC_USE_INT)
+#elif defined(PETSC_USE_SCALAR_INT)
 typedef std::complex<int> PetscScalar;
 #else
 typedef std::complex<double> PetscScalar;
@@ -61,7 +61,7 @@ typedef std::complex<double> PetscScalar;
    C90 compliant compiler to work...
  */
 
-#if defined(PETSC_USE_SINGLE)
+#if defined(PETSC_USE_SCALAR_SINGLE)
 typedef float complex PetscScalar;
 
 #define PetscRealPart(a)      crealf(a)
@@ -74,7 +74,7 @@ typedef float complex PetscScalar;
 #define PetscLogScalar(a)     clogf(a)
 #define PetscSinScalar(a)     csinf(a)
 #define PetscCosScalar(a)     ccosf(a)
-#elif defined(PETSC_USE_LONG_DOUBLE)
+#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
 typedef long double complex PetscScalar;
 
 #define PetscRealPart(a)      creall(a)
@@ -106,7 +106,7 @@ typedef double complex PetscScalar;
 
 extern  MPI_Datatype PETSC_DLLEXPORT MPIU_COMPLEX;
 #define MPIU_SCALAR         MPIU_COMPLEX
-#if defined(PETSC_USE_MAT_SINGLE)
+#if defined(PETSC_USE_SCALAR_MAT_SINGLE)
 #define MPIU_MATSCALAR        ??Notdone
 #else
 #define MPIU_MATSCALAR      MPIU_COMPLEX
@@ -114,20 +114,20 @@ extern  MPI_Datatype PETSC_DLLEXPORT MPIU_COMPLEX;
 
 /* Compiling for real numbers only */
 #else
-#  if defined(PETSC_USE_SINGLE)
+#  if defined(PETSC_USE_SCALAR_SINGLE)
 #    define MPIU_SCALAR           MPI_FLOAT
-#  elif defined(PETSC_USE_LONG_DOUBLE)
+#  elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
 #    define MPIU_SCALAR           MPI_LONG_DOUBLE
 #  elif defined(PETSC_INT)
 #    define MPIU_INT              MPI_INT
 #  else
 #    define MPIU_SCALAR           MPI_DOUBLE
 #  endif
-#  if defined(PETSC_USE_MAT_SINGLE) || defined(PETSC_USE_SINGLE)
+#  if defined(PETSC_USE_SCALAR_MAT_SINGLE) || defined(PETSC_USE_SCALAR_SINGLE)
 #    define MPIU_MATSCALAR        MPI_FLOAT
-#  elif defined(PETSC_USE_LONG_DOUBLE)
+#  elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
 #    define MPIU_MATSCALAR        MPI_LONG_DOUBLE
-#  elif defined(PETSC_USE_INT)
+#  elif defined(PETSC_USE_SCALAR_INT)
 #    define MPIU_MATSCALAR        MPI_INT
 #  else
 #    define MPIU_MATSCALAR        MPI_DOUBLE
@@ -143,22 +143,22 @@ extern  MPI_Datatype PETSC_DLLEXPORT MPIU_COMPLEX;
 #  define PetscSinScalar(a)     sin(a)
 #  define PetscCosScalar(a)     cos(a)
 
-#  if defined(PETSC_USE_SINGLE)
+#  if defined(PETSC_USE_SCALAR_SINGLE)
   typedef float PetscScalar;
-#  elif defined(PETSC_USE_LONG_DOUBLE)
+#  elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
   typedef long double PetscScalar;
-#  elif defined(PETSC_USE_INT)
+#  elif defined(PETSC_USE_SCALAR_INT)
   typedef int PetscScalar;
 #  else
   typedef double PetscScalar;
 #  endif
 #endif
 
-#if defined(PETSC_USE_SINGLE)
+#if defined(PETSC_USE_SCALAR_SINGLE)
 #  define MPIU_REAL   MPI_FLOAT
-#elif defined(PETSC_USE_LONG_DOUBLE)
+#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
 #  define MPIU_REAL   MPI_LONG_DOUBLE
-#elif defined(PETSC_USE_INT)
+#elif defined(PETSC_USE_SCALAR_INT)
 #  define MPIU_REAL   MPI_INT
 #else
 #  define MPIU_REAL   MPI_DOUBLE
@@ -175,17 +175,17 @@ extern  MPI_Datatype PETSC_DLLEXPORT MPIU_COMPLEX;
           EXPERIMENTAL! NOT YET COMPLETELY WORKING
 */
 
-#if defined(PETSC_USE_MAT_SINGLE)
+#if defined(PETSC_USE_SCALAR_MAT_SINGLE)
 typedef float MatScalar;
 #else
 typedef PetscScalar MatScalar;
 #endif
 
-#if defined(PETSC_USE_SINGLE)
+#if defined(PETSC_USE_SCALAR_SINGLE)
   typedef float PetscReal;
-#elif defined(PETSC_USE_LONG_DOUBLE)
+#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
   typedef long double PetscReal;
-#elif defined(PETSC_USE_INT)
+#elif defined(PETSC_USE_SCALAR_INT)
   typedef int PetscReal;
 #else 
   typedef double PetscReal;
@@ -193,7 +193,7 @@ typedef PetscScalar MatScalar;
 
 #if defined(PETSC_USE_COMPLEX)
 typedef PetscReal MatReal;
-#elif defined(PETSC_USE_MAT_SINGLE) || defined(PETSC_USE_SINGLE)
+#elif defined(PETSC_USE_SCALAR_MAT_SINGLE) || defined(PETSC_USE_SCALAR_SINGLE)
 typedef float MatReal;
 #else
 typedef PetscReal MatReal;
@@ -308,16 +308,16 @@ M*/
 */
 #define PETSC_PI                 3.14159265358979323846264
 #define PETSC_DEGREES_TO_RADIANS 0.01745329251994
-#define PETSC_MAX_INT            1000000000
-#define PETSC_MIN_INT            -1000000000
+#define PETSC_MAX_INT            2147483648
+#define PETSC_MIN_INT            -2147483648
 
-#if defined(PETSC_USE_SINGLE)
+#if defined(PETSC_USE_SCALAR_SINGLE)
 #  define PETSC_MAX                     1.e30
 #  define PETSC_MIN                    -1.e30
 #  define PETSC_MACHINE_EPSILON         1.e-7
 #  define PETSC_SQRT_MACHINE_EPSILON    3.e-4
 #  define PETSC_SMALL                   1.e-5
-#elif defined(PETSC_USE_INT)
+#elif defined(PETSC_USE_SCALAR_INT)
 #  define PETSC_MAX                     PETSC_MAX_INT
 #  define PETSC_MIN                     PETSC_MIN_INT
 #  define PETSC_MACHINE_EPSILON         1

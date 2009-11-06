@@ -182,7 +182,7 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscTruth hasOpera
     ierr = MatMFFDSetFromOptions(J);CHKERRQ(ierr);
   } else if (version == 2) {
     if (!snes->vec_func) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"SNESSetFunction() must be called first");
-#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE) && !defined(PETSC_USE_LONG_DOUBLE) && !defined(PETSC_USE_INT)
+#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SCALAR_SINGLE) && !defined(PETSC_USE_SCALAR_MAT_SINGLE) && !defined(PETSC_USE_SCALAR_LONG_DOUBLE) && !defined(PETSC_USE_SCALAR_INT)
     ierr = SNESDefaultMatrixFreeCreate2(snes,snes->vec_func,&J);CHKERRQ(ierr);
 #else
     SETERRQ(PETSC_ERR_SUP, "matrix-free operator rutines (version 2)");
