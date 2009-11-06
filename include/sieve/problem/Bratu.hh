@@ -1,13 +1,12 @@
 #ifndef included_ALE_Problem_Bratu_hh
 #define included_ALE_Problem_Bratu_hh
 
+// TODO: Add a guard that looks for the generated quadrature header
+
 #include <DMBuilder.hh>
 
 #include <petscmesh_viewers.hh>
 #include <petscdmmg.h>
-
-// How do we do this correctly?
-#include "../examples/tutorials/bratu_quadrature.h"
 
 namespace ALE {
   namespace Problem {

@@ -12,6 +12,46 @@ namespace ALE {
   class DMBuilder {
   public:
     #undef __FUNCT__
+    #define __FUNCT__ "CreateBasketMesh"
+    static PetscErrorCode createBasketMesh(MPI_Comm comm, const int dim, const bool structured, const bool interpolate, const int debug, DM *dm) {
+      PetscErrorCode ierr;
+
+      PetscFunctionBegin;
+      if (structured) {
+        SETERRQ(PETSC_ERR_SUP, "Structured grids cannot handle boundary meshes");
+      } else {
+        typedef PETSC_MESH_TYPE::point_type point_type;
+        ::Mesh boundary;
+
+        ierr = MeshCreate(comm, &boundary);CHKERRQ(ierr);
+        Obj<PETSC_MESH_TYPE>             meshBd = new PETSC_MESH_TYPE(comm, dim-1, debug);
+        Obj<PETSC_MESH_TYPE::sieve_type> sieve  = new PETSC_MESH_TYPE::sieve_type(comm, debug);
+        std::map<point_type,point_type>  renumbering;
+        Obj<ALE::Mesh>                   mB;
+
+        meshBd->setSieve(sieve);
+        if (dim == 2) {
+          double lower[2] = {0.0, 0.0};
+          double upper[2] = {1.0, 1.0};
+          int    edges[2] = {2, 2};
+
+          mB = ALE::MeshBuilder<ALE::Mesh>::createSquareBoundary(comm, lower, upper, edges, debug);
+        } else if (dim == 3) {
+          double lower[3] = {0.0, 0.0, 0.0};
+          double upper[3] = {1.0, 1.0, 1.0};
+          int    faces[3] = {3, 3, 3};
+                
+          mB = ALE::MeshBuilder<ALE::Mesh>::createCubeBoundary(comm, lower, upper, faces, debug);
+        } else {
+          SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", dim);
+        }
+        ALE::ISieveConverter::convertMesh(*mB, *meshBd, renumbering, false);
+        ierr = MeshSetMesh(boundary, meshBd);CHKERRQ(ierr);
+        *dm = (DM) boundary;
+      }
+      PetscFunctionReturn(0);
+    };
+    #undef __FUNCT__
     #define __FUNCT__ "CreateBoxMesh"
     static PetscErrorCode createBoxMesh(MPI_Comm comm, const int dim, const bool structured, const bool interpolate, const int debug, DM *dm) {
       PetscErrorCode ierr;

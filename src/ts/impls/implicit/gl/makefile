@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = gl.c
+SOURCEC  = gl.c gladapt.c
 SOURCEF  =
 SOURCEH  = gl.h
-OBJSC    = gl.o
+OBJSC    = $(SOURCEC:.c=.o)
 OBJSF    =
 LIBBASE  = libpetscts
 MANSEC   = TS

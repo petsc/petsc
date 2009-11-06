@@ -1,4 +1,7 @@
 #include <petscsnes.h>
+#include <petscdmmg.h>
+#include <petscmesh.hh>
+#include "bratu_quadrature.h"
 #include <problem/Bratu.hh>
 
 #include <cppunit/extensions/TestFactoryRegistry.h>

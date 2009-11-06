@@ -23,7 +23,8 @@ struct _TSGLScheme {
   /* h^{p+1}x^{(p+1)}(t_n)     ~= phi[0]*h*Ydot + psi[0]*X[1:] */
   /* h^{p+2}x^{(p+2)}(t_n)     ~= phi[1]*h*Ydot + psi[1]*X[1:] */
   /* h^{p+2}f' x^{(p+1)}(t_n)  ~= phi[2]*h*Ydot + psi[2]*X[1:] */
-  PetscScalar *phi;             /* dim=[3][r+s], in [[phi] [0] [psi]] in B,J,W 2007 */
+  PetscScalar *phi;             /* dim=[3][s] for estimating higher moments, see B,J,W 2007 */
+  PetscScalar *psi;             /* dim=[3][r-1], [0 psi^T] of B,J,W 2007 */
   PetscScalar *stage_error;
 
   /* Desirable properties which enable extra optimizations */
@@ -32,14 +33,16 @@ struct _TSGLScheme {
 };
 
 typedef struct TS_GL {
-  /* Control scheme */
-  PetscErrorCode (*CtrlAcceptanceTest)(TS,PetscReal,PetscReal,const PetscReal[],PetscTruth*,void*);
-  PetscErrorCode (*CtrlChooseNextScheme)(TS,PetscInt,const TSGLScheme[],PetscInt,PetscReal,const PetscReal[],PetscReal,PetscInt*,PetscReal*,void*);
-  PetscErrorCode (*CtrlDestroy)(TS,void*);
-  void *ctrlP;
+  TSGLAcceptFunction Accept;    /* Decides whether to accept a given time step, given estimates of local truncation error */
+  TSGLAdapt adapt;
+
+  /* These names are only stored so that they can be printed in TSView_GL() without making these schemes full-blown
+   objects (the implementations I'm thinking of do not have state and I'm lazy). */
+  char accept_name[256];
+
   /* specific to the family of GL method */
   PetscErrorCode (*EstimateHigherMoments)(TSGLScheme,PetscReal,Vec*,Vec*,Vec*); /* Provide local error estimates */
-  PetscErrorCode (*RescaleAndModify)(TSGLScheme,PetscReal,TSGLScheme,PetscReal,Vec*,Vec*,Vec*,Vec*);
+  PetscErrorCode (*CompleteStep)(TSGLScheme,PetscReal,TSGLScheme,PetscReal,Vec*,Vec*,Vec*);
   PetscErrorCode (*Destroy)(struct TS_GL*);
   PetscErrorCode (*View)(struct TS_GL*,PetscViewer);
   char     type_name[256];
@@ -66,6 +69,7 @@ typedef struct TS_GL {
   PetscTruth extrapolate;           /* use extrapolation to produce initial Newton iterate? */
   TSGLErrorDirection error_direction; /* TSGLERROR_FORWARD or TSGLERROR_BACKWARD */
 
+  PetscTruth setupcalled;
   void *data;
 } TS_GL;
 

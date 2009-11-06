@@ -7,12 +7,12 @@ static PetscTruth ISPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
 #define __FUNCT__ "ISFinalizePackage"
 /*@C
-  ISFinalizePackage - This function destroys everything in the Petsc interface to Mathematica. It is
+  ISFinalizePackage - This function destroys everything in the IS package. It is
   called from PetscFinalize().
 
   Level: developer
 
-.keywords: Petsc, destroy, package, mathematica
+.keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
 PetscErrorCode PETSC_DLLEXPORT ISFinalizePackage(void) 
