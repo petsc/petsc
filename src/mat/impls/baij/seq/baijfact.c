@@ -1591,6 +1591,63 @@ PetscErrorCode MatSolve_SeqBAIJ_N_newdatastruct(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatSolve_SeqBAIJ_N_newdatastruct_v2"
+PetscErrorCode MatSolve_SeqBAIJ_N_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+{
+  Mat_SeqBAIJ    *a=(Mat_SeqBAIJ *)A->data;
+  IS             iscol=a->col,isrow=a->row;
+  PetscErrorCode ierr;
+  const PetscInt *r,*c,*rout,*cout,*ai=a->i,*aj=a->j,*adiag=a->diag,*vi;
+  PetscInt       i,m,n=a->mbs;
+  PetscInt       nz,bs=A->rmap->bs,bs2=a->bs2;
+  MatScalar      *aa=a->a,*v;
+  PetscScalar    *x,*b,*s,*t,*ls;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  t  = a->solve_work;
+
+  ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
+  ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout;
+
+  /* forward solve the lower triangular */
+  ierr = PetscMemcpy(t,b+bs*r[0],bs*sizeof(PetscScalar));CHKERRQ(ierr);
+  for (i=1; i<n; i++) {
+    v   = aa + bs2*ai[i];
+    vi  = aj + ai[i];
+    nz = ai[i+1] - ai[i];
+    s = t + bs*i;
+    ierr = PetscMemcpy(s,b+bs*r[i],bs*sizeof(PetscScalar));CHKERRQ(ierr);
+    for(m=0;m<nz;m++){
+      Kernel_v_gets_v_minus_A_times_w(bs,s,v,t+bs*vi[m]);
+      v += bs2;
+    }
+  }
+
+  /* backward solve the upper triangular */
+  ls = a->solve_work + A->cmap->n;
+  for (i=n-1; i>=0; i--){
+    v  = aa + bs2*(adiag[i+1]+1);
+    vi = aj + adiag[i+1]+1;
+    nz = adiag[i] - adiag[i+1] - 1;
+    ierr = PetscMemcpy(ls,t+i*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
+    for(m=0;m<nz;m++){
+      Kernel_v_gets_v_minus_A_times_w(bs,ls,v,t+bs*vi[m]);
+      v += bs2;
+    }
+    Kernel_w_gets_A_times_v(bs,ls,v,t+i*bs); /* *inv(diagonal[i]) */
+    ierr = PetscMemcpy(x + bs*c[i],t+i*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
+  }
+  ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*(a->bs2)*(a->nz) - A->rmap->bs*A->cmap->n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "BlockAbs_privat"
 PetscErrorCode BlockAbs_private(PetscInt nbs,PetscInt bs2,PetscScalar *blockarray,PetscReal *absarray)
 {

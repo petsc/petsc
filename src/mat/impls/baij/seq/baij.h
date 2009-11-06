@@ -101,11 +101,13 @@ EXTERN PetscErrorCode MatSolve_SeqBAIJ_6_NaturalOrdering_newdatastruct(Mat,Vec,V
 EXTERN PetscErrorCode MatSolve_SeqBAIJ_6_NaturalOrdering_newdatastruct_v2(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqBAIJ_7(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqBAIJ_7_newdatastruct(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatSolve_SeqBAIJ_7_newdatastruct_v2(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering_newdatastruct(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering_newdatastruct_v2(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqBAIJ_N(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqBAIJ_N_newdatastruct(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatSolve_SeqBAIJ_N_newdatastruct_v2(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct_v2(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolveTranspose_SeqBAIJ_Update(Mat,Vec,Vec);
@@ -164,10 +166,12 @@ EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering_newdatastruct
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering_newdatastruct_v2(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7_newdatastruct(Mat,Mat,const MatFactorInfo*);
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7_newdatastruct_v2(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering_newdatastruct(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering_newdatastruct_v2(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat,Mat,const MatFactorInfo*);
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_newdatastruct_v2(Mat,Mat,const MatFactorInfo*);
 
 EXTERN PetscErrorCode MatMult_SeqBAIJ_1(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatMult_SeqBAIJ_2(Mat,Vec,Vec);
