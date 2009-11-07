@@ -1359,7 +1359,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetStencil(Mat mat,PetscInt dim,const Petsc
    The values in idxm would be 1 2; that is the first index for each block divided by 
    the block size.
 
-   Note that you must call MatSetBlockSize() when constructing this matrix (and before
+   Note that you must call MatSetBlockSize() when constructing this matrix (after
    preallocating it).
 
    By default the values, v, are row-oriented and unsorted. So the layout of 
@@ -6032,7 +6032,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBlockSize(Mat mat,PetscInt *bs)
 -  bs - block size
 
    Notes:
-     Only works for shell and AIJ matrices
+     For BAIJ matrices, this just checks that the block size agrees with the BAIJ size,
+     it is not possible to change BAIJ block sizes after preallocation.
 
    Level: intermediate
 
@@ -6048,10 +6049,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetBlockSize(Mat mat,PetscInt bs)
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
+  if (bs < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Block size %d, must be positive",bs);
   if (mat->ops->setblocksize) {
-    /* XXX should check if (bs < 1) ??? */
-    ierr = PetscLayoutSetBlockSize(mat->rmap,bs);CHKERRQ(ierr);
-    ierr = PetscLayoutSetBlockSize(mat->cmap,bs);CHKERRQ(ierr);
     ierr = (*mat->ops->setblocksize)(mat,bs);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_ERR_ARG_INCOMP,"Cannot set the blocksize for matrix type %s",((PetscObject)mat)->type_name);
