@@ -419,10 +419,11 @@ static PetscErrorCode PetscDrawSetTitle_X(PetscDraw draw,const char title[])
 
   PetscFunctionBegin;
   XGetWMName(win->disp,win->win,&prop);
+  XFree((void*)prop.value);
   prop.value  = (unsigned char *)title; 
   ierr        = PetscStrlen(title,&len);CHKERRQ(ierr);
   prop.nitems = (long) len;
-  XSetWMName(win->disp,win->win,&prop); 
+  XSetWMName(win->disp,win->win,&prop);
   PetscFunctionReturn(0);
 }
 

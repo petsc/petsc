@@ -64,8 +64,7 @@ PetscErrorCode XiLoadFont(PetscDraw_X *XBWin,XiFont *font)
   FontInfo   = XQueryFont(XBWin->disp,font->fnt);
   font->font_descent   = FontInfo->descent;
 
-  /* Storage leak; should probably just free FontInfo? */
-  /* XFreeFontInfo(FontInfo); */
+  XFreeFontInfo(0,FontInfo,1);
 
   /* Set the current font in the CG */
   values.font = font->fnt ;
