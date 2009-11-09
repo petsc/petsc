@@ -2234,7 +2234,11 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
 #define __FUNCT__ "MatSetBlockSize_SeqAIJ"
 PetscErrorCode MatSetBlockSize_SeqAIJ(Mat A,PetscInt bs)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscLayoutSetBlockSize(A->rmap,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(A->cmap,bs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
