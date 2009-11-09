@@ -17,23 +17,6 @@ class Configure(PETSc.package.Package):
     self.complex      = 0
     return
 
-  def __str__(self):
-    if self.found:
-      desc = ['PaStiX:']	
-      desc.append('  Version: '+self.version)
-      desc.append('  Includes: '+str(self.include))
-      desc.append('  Library: '+str(self.lib))
-      return '\n'.join(desc)+'\n'
-    else:
-      return ''
-
-  def setupHelp(self, help):
-    import nargs
-    help.addArgument('PaStiX', '-with-pastix=<bool>',                nargs.ArgBool(None, 0, 'Activate PaStiX'))
-    help.addArgument('PaStiX', '-with-pastix-dir=<root dir>',        nargs.ArgDir(None, None, 'Specify the root directory of the PaStiX installation'))
-    help.addArgument('PaStiX', '-download-pastix=<no,yes,ifneeded>', nargs.ArgFuzzyBool(None, 0, 'Automatically install PaStiX'))
-    return
-
   def setupDependencies(self, framework):
     PETSc.package.Package.setupDependencies(self, framework)
     self.mpi        = framework.require('config.packages.MPI',self)
@@ -41,7 +24,6 @@ class Configure(PETSc.package.Package):
     self.scotch     = framework.require('PETSc.packages.Scotch',self)
     self.deps       = [self.mpi,self.blasLapack,self.scotch]   
     self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
-    self.scalarTypes    = framework.require('PETSc.utilities.scalarTypes', self)
     self.make           = framework.require('PETSc.utilities.Make', self)
     return
   
@@ -118,7 +100,7 @@ class Configure(PETSc.package.Package):
     ###################################################################
     #                           FLOAT TYPE                            #
     ###################################################################
-    if self.scalarTypes.precision == 'double':
+    if self.scalartypes.precision == 'double':
       g.write('VERSIONPRC  = _double\n')
       g.write('CCTYPES    := $(CCTYPES) -DFORCE_DOUBLE\n')
       g.write('\n')
