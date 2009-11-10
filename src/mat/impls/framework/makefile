@@ -1,0 +1,17 @@
+ALL: lib
+
+CPPFLAGS = 
+CFLAGS   = 
+FFLAGS   =
+SOURCEC  = mframework.c
+SOURCEF  = 
+SOURCEH  = 
+OBJSC    = mframework.o
+OBJSF    =
+DIRS     = 
+LIBBASE  = libpetscmat
+MANSEC   = Mat
+LOCDIR   = src/mat/impls/framework
+
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test
