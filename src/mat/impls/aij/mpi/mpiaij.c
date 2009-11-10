@@ -3254,9 +3254,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,cons
     if (nnz < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local row %D has a negative %D number of columns",i,nnz);
     if (nnz && (JJ[0] < 0)) SETERRRQ1(PETSC_ERR_ARG_WRONGSTATE,"Row %D starts with negative column index",i,j);
     if (nnz && (JJ[nnz-1] >= B->cmap->N) SETERRRQ3(PETSC_ERR_ARG_WRONGSTATE,"Row %D ends with too large a column index %D (max allowed %D)",i,JJ[nnz-1],B->cmap->N);
-    for (j=1; j<nnz; j++) {
-      if (JJ[i] <= JJ[i-1]) SETERRRQ(PETSC_ERR_ARG_WRONGSTATE,"Row %D has unsorted column index at %D location in column indices",i,j);
-    }
   }
 #endif
 
@@ -3264,16 +3261,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,cons
     nnz     = Ii[i+1]- Ii[i];
     JJ      = J + Ii[i];
     nnz_max = PetscMax(nnz_max,nnz);
+    d       = 0;
     for (j=0; j<nnz; j++) {
-      if (*JJ >= cstart) break;
-      JJ++;
+      if (cstart <= JJ[j] && JJ[j] < cend) d++;
     }
-    d = 0;
-    for (; j<nnz; j++) {
-      if (*JJ++ >= cend) break;
-      d++;
-    }
-    d_nnz[i] = d; 
+    d_nnz[i] = d;
     o_nnz[i] = nnz - d;
   }
   ierr = MatMPIAIJSetPreallocation(B,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
@@ -3311,7 +3303,7 @@ EXTERN_C_END
    Input Parameters:
 +  B - the matrix 
 .  i - the indices into j for the start of each local row (starts with zero)
-.  j - the column indices for each local row (starts with zero) these must be sorted for each row
+.  j - the column indices for each local row (starts with zero)
 -  v - optional values in the matrix
 
    Level: developer
@@ -3341,8 +3333,6 @@ EXTERN_C_END
         i =  {0,3}    [size = nrow+1  = 1+1]
         j =  {0,1,2}  [size = nz = 6]
         v =  {4,5,6}  [size = nz = 6]
-
-      The column indices for each row MUST be sorted.
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 
