@@ -93,13 +93,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedGetMatrix(Sliced slice, const MatType mty
     }
   }
 
-  /* For some formats we need to set the block size to use MatSetValuesBlocked.  The value we set will be wiped out if
-  * we set it before preallocation.  We cannot set block sizes this way with BAIJ, MatSetBlockSize will error, so we
-  * check to make sure the operation is supported.  Note that it doesn't make sense to use MatSetValuesBlocked when
-  * partial fills are in use (dfill,ofill) unless the pattern is assembled using scalar assembly and then the option
-  * MAT_NEW_NONZERO_LOCATIONS=FALSE (so that the implicit nonzeros will be dropped). */
-  ierr = MatHasOperation(*J,MATOP_SET_BLOCK_SIZE,&hassetbs);CHKERRQ(ierr);
-  if (hassetbs) {ierr = MatSetBlockSize(*J,bs);CHKERRQ(ierr);}
+  ierr = MatSetBlockSize(*J,bs);CHKERRQ(ierr);
 
   /* Set up the local to global map.  For the scalar map, we have to translate to entry-wise indexing instead of block-wise. */
   ierr = PetscMalloc((slice->n+slice->Nghosts)*bs*sizeof(PetscInt),&globals);CHKERRQ(ierr);

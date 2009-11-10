@@ -12,14 +12,6 @@ class Configure(PETSc.package.NewPackage):
     self.complex      = 0
     return
 
-  def setupHelp(self, help):
-    import nargs
-    PETSc.package.NewPackage.setupHelp(self, help)
-    help.addArgument('PaStiX', '-with-pastix=<bool>',                nargs.ArgBool(None, 0, 'Activate PaStiX'))
-    help.addArgument('PaStiX', '-with-pastix-dir=<root dir>',        nargs.ArgDir(None, None, 'Specify the root directory of the PaStiX installation'))
-    help.addArgument('PaStiX', '-download-pastix=<no,yes,ifneeded>', nargs.ArgFuzzyBool(None, 0, 'Automatically install PaStiX'))
-    return
-
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)

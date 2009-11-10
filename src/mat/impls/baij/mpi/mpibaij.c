@@ -1796,6 +1796,19 @@ PetscErrorCode MatAXPY_MPIBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatSetBlockSize_MPIBAIJ"
+PetscErrorCode MatSetBlockSize_MPIBAIJ(Mat A,PetscInt bs)
+{
+  Mat_MPIBAIJ    *a   = (Mat_MPIBAIJ*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSetBlockSize(a->A,bs);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(a->B,bs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatRealPart_MPIBAIJ"
 PetscErrorCode MatRealPart_MPIBAIJ(Mat A)
 {
@@ -2597,7 +2610,7 @@ static struct _MatOps MatOps_Values = {
        0,
        0,
        0,
-/*49*/ 0,
+/*49*/ MatSetBlockSize_MPIBAIJ,
        0,
        0,
        0,

@@ -203,7 +203,11 @@ EXTERN PetscErrorCode MatConvert_Shell(Mat, const MatType,MatReuse,Mat*);
 #define __FUNCT__ "MatSetBlockSize_Shell"
 PetscErrorCode MatSetBlockSize_Shell(Mat A,PetscInt bs)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscLayoutSetBlockSize(A->rmap,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(A->cmap,bs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

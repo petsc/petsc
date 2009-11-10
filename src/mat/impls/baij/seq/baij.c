@@ -2393,6 +2393,21 @@ PetscErrorCode MatAXPY_SeqBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatSetBlockSize_SeqBAIJ"
+PetscErrorCode MatSetBlockSize_SeqBAIJ(Mat A,PetscInt bs)
+{
+  PetscInt rbs,cbs;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLayoutGetBlockSize(A->rmap,&rbs);CHKERRQ(ierr);
+  ierr = PetscLayoutGetBlockSize(A->cmap,&cbs);CHKERRQ(ierr);
+  if (rbs != bs) SETERRQ2(PETSC_ERR_ARG_SIZ,"Attempt to set block size %d with BAIJ %d",bs,rbs);
+  if (cbs != bs) SETERRQ2(PETSC_ERR_ARG_SIZ,"Attempt to set block size %d with BAIJ %d",bs,cbs);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatRealPart_SeqBAIJ"
 PetscErrorCode MatRealPart_SeqBAIJ(Mat A)
 {
@@ -2719,7 +2734,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
        0,
        0,
        MatILUDTFactor_SeqBAIJ,
-/*49*/ 0,
+/*49*/ MatSetBlockSize_SeqBAIJ,
        MatGetRowIJ_SeqBAIJ,
        MatRestoreRowIJ_SeqBAIJ,
        MatGetColumnIJ_SeqBAIJ,
