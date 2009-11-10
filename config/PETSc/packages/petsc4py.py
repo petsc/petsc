@@ -18,6 +18,7 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def Install(self):
+    import os
     pp = os.path.join(self.installDir,'lib','python*','site-packages')
     if self.setCompilers.isDarwin():
       apple = 'You may need to\n (csh/tcsh) setenv MACOSX_DEPLOYMENT_TARGET 10.X\n (sh/bash) MACOSX_DEPLOYMENT_TARGET=10.X; export MACOSX_DEPLOYMENT_TARGET\nbefore running make on PETSc'
