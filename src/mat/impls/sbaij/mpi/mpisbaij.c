@@ -166,7 +166,7 @@ PetscErrorCode MatSetValues_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im[],Pets
   MatScalar     *v_loc = PETSC_NULL;
 
   PetscFunctionBegin;
-
+  if (v) PetscValidScalarPointer(v,6);
   if (!baij->donotstash){
     if (n > baij->n_loc) {
       ierr = PetscFree(baij->in_loc);CHKERRQ(ierr);

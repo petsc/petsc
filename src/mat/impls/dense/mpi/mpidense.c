@@ -126,6 +126,7 @@ PetscErrorCode MatSetValues_MPIDense(Mat mat,PetscInt m,const PetscInt idxm[],Pe
   PetscTruth     roworiented = A->roworiented;
 
   PetscFunctionBegin;
+  if (v) PetscValidScalarPointer(v,6);
   for (i=0; i<m; i++) {
     if (idxm[i] < 0) continue;
     if (idxm[i] >= mat->rmap->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");

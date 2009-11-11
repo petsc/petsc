@@ -215,6 +215,7 @@ PetscErrorCode MatSetValues_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[],Petsc
   MatScalar      *ap,*bap;
 
   PetscFunctionBegin;
+  if (v) PetscValidScalarPointer(v,6);
   for (i=0; i<m; i++) {
     if (im[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
@@ -396,7 +397,7 @@ PetscErrorCode MatSetValues_MPIBAIJ_HT(Mat mat,PetscInt m,const PetscInt im[],Pe
 #endif
 
   PetscFunctionBegin;
-
+  if (v) PetscValidScalarPointer(v,6);
   for (i=0; i<m; i++) {
 #if defined(PETSC_USE_DEBUG)
     if (im[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative row");

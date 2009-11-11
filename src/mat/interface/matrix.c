@@ -911,8 +911,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatValid(Mat m,PetscTruth *flg)
    INSERT_VALUES replaces existing entries with new values
 
    Notes:
-   By default the values, v, are row-oriented and unsorted.
-   See MatSetOption() for other options.
+   By default the values, v, are row-oriented. See MatSetOption() for other options.
 
    Calls to MatSetValues() with the INSERT_VALUES and ADD_VALUES 
    options cannot be mixed without intervening calls to the assembly
@@ -947,6 +946,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValues(Mat mat,PetscInt m,const PetscInt
   if (!m || !n) PetscFunctionReturn(0); /* no values to insert */
   PetscValidIntPointer(idxm,3);
   PetscValidIntPointer(idxn,5);
+  if (v) PetscValidDoublePointer(v,6);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   if (mat->insertmode == NOT_SET_VALUES) {
     mat->insertmode = addv;
@@ -1362,7 +1362,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetStencil(Mat mat,PetscInt dim,const Petsc
    Note that you must call MatSetBlockSize() when constructing this matrix (after
    preallocating it).
 
-   By default the values, v, are row-oriented and unsorted. So the layout of 
+   By default the values, v, are row-oriented, so the layout of 
    v is the same as for MatSetValues(). See MatSetOption() for other options.
 
    Calls to MatSetValuesBlocked() with the INSERT_VALUES and ADD_VALUES 
