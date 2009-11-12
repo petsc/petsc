@@ -6516,7 +6516,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrix(Mat mat,IS isrow,IS iscol,MatR
   PetscValidHeaderSpecific(isrow,IS_COOKIE,2);
   if (iscol) PetscValidHeaderSpecific(iscol,IS_COOKIE,3);
   PetscValidPointer(newmat,6);
-  if (cll == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*newmat,MAT_COOKIE,6);
+  if (cll == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*newmat,MAT_COOKIE,5);
   PetscValidType(mat,1);
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
