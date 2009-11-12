@@ -223,6 +223,9 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       SETERRQ(PETSC_ERR_SUP,"Must provide at least two sets of fields to PCFieldSplit()");
     }
   }
+  if (jac->nsplits < 2) {
+    SETERRQ(PETSC_ERR_PLIB,"Unhandled case, must have at least two fields");
+  }
   PetscFunctionReturn(0);
 }
 
