@@ -64,7 +64,7 @@
       Mat              A 
       KSP              ksp
       PC               pc
-      double precision norm,tol
+      PetscReal        norm,tol
       PetscErrorCode   ierr
       PetscInt i,n,col(3),its,i1,i2,i3
       PetscTruth flg

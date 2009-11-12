@@ -76,39 +76,73 @@ This file also deals with unmangled Fortran 77 naming convention.
 #  define LAPACKstebz_ dstebz
 # endif
 #else
-/* Complex double precision with no character string arguments */
-# define LAPACKgeqrf_ zgeqrf
-# define LAPACKungqr_ zungqr
-# define LAPACKgetrf_ zgetrf
+# if defined(PETSC_USE_SINGLE)
+/* Complex single precision with no character string arguments */
+#  define LAPACKgeqrf_ cgeqrf
+#  define LAPACKungqr_ cungqr
+#  define LAPACKgetrf_ cgetrf
 
-# define BLASdot_     zdotc
-# define BLASnrm2_    dznrm2
-# define BLASscal_    zscal
-# define BLAScopy_    zcopy
-# define BLASswap_    zswap
-# define BLASaxpy_    zaxpy
-# define BLASasum_    dzasum
+#  define BLASdot_     cdotc
+#  define BLASnrm2_    scnrm2
+#  define BLASscal_    cscal
+#  define BLAScopy_    ccopy
+#  define BLASswap_    cswap
+#  define BLASaxpy_    caxpy
+#  define BLASasum_    scasum
+#  define LAPACKpttrf_ cpttrf 
+#  define LAPACKstein_ cstein
+/* Complex single precision with character string arguments */
+/* LAPACKormqr_ does not exist for complex. */
+#  define LAPACKtrtrs_ ctrtrs
+#  define LAPACKpotrf_ cpotrf
+#  define LAPACKpotrs_ cpotrs
+#  define BLASgemv_    cgemv
+#  define LAPACKgetrs_ cgetrs
+#  define BLAStrmv_    ctrmv
+#  define BLASgemm_    cgemm
+#  define LAPACKgesvd_ cgesvd
+#  define LAPACKgeev_  cgeev
+#  define LAPACKsyev_  cheev 
+#  define LAPACKsyevx_ cheevx 
+#  define LAPACKsygv_  chegv 
+#  define LAPACKsygvx_ chegvx 
+#  define LAPACKpttrs_ cpttrs 
+/* LAPACKstebz_ does not exist for complex. */
+# else
+/* Complex double precision with no character string arguments */
+#  define LAPACKgeqrf_ zgeqrf
+#  define LAPACKungqr_ zungqr
+#  define LAPACKgetrf_ zgetrf
+
+#  define BLASdot_     zdotc
+#  define BLASnrm2_    dznrm2
+#  define BLASscal_    zscal
+#  define BLAScopy_    zcopy
+#  define BLASswap_    zswap
+#  define BLASaxpy_    zaxpy
+#  define BLASasum_    dzasum
 #  define LAPACKpttrf_ zpttrf 
 #  define LAPACKstein_ zstein
 # define LAPACKgesv_  zgesv
 # define LAPACKgelss_ zgelss
 /* Complex double precision with character string arguments */
 /* LAPACKormqr_ does not exist for complex. */
-# define LAPACKtrtrs_ ztrtrs
-# define LAPACKpotrf_ zpotrf
-# define LAPACKpotrs_ zpotrs
-# define BLASgemv_    zgemv
-# define LAPACKgetrs_ zgetrs
-# define BLAStrmv_    ztrmv
-# define BLASgemm_    zgemm
-# define LAPACKgesvd_ zgesvd
-# define LAPACKgeev_  zgeev
-# define LAPACKsyev_  zheev 
-# define LAPACKsyevx_ zheevx 
-# define LAPACKsygv_  zhegv 
-# define LAPACKsygvx_ zhegvx 
-# define LAPACKpttrs_ zpttrs 
+#  define LAPACKtrtrs_ ztrtrs
+#  define LAPACKpotrf_ zpotrf
+#  define LAPACKpotrs_ zpotrs
+#  define BLASgemv_    zgemv
+#  define LAPACKgetrs_ zgetrs
+#  define BLAStrmv_    ztrmv
+#  define BLASgemm_    zgemm
+#  define LAPACKgesvd_ zgesvd
+#  define LAPACKgeev_  zgeev
+#  define LAPACKsyev_  zheev 
+#  define LAPACKsyevx_ zheevx 
+#  define LAPACKsygv_  zhegv 
+#  define LAPACKsygvx_ zhegvx 
+#  define LAPACKpttrs_ zpttrs 
 /* LAPACKstebz_ does not exist for complex. */
+# end
 #endif
 
 #endif
