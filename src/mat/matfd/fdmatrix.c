@@ -475,8 +475,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringGetPerturbedColumns(MatFDColoring
   PetscFunctionReturn(0);
 }
 
-#include "petscda.h"      /*I      "petscda.h"    I*/ 
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringApply"
 /*@
