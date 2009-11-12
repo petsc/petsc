@@ -58,6 +58,7 @@
        integer MPI_DOUBLE_COMPLEX
        integer MPI_INTEGER4
        integer MPI_INTEGER8
+       integer MPI_2DOUBLE_PRECISION
 
        parameter (MPI_INTEGER=0)
        parameter (MPI_LOGICAL=0)
@@ -69,6 +70,7 @@
        parameter (MPI_DOUBLE_COMPLEX=6)
        parameter (MPI_INTEGER4=7)
        parameter (MPI_INTEGER8=8)
+       parameter (MPI_2DOUBLE_PRECISION=9)
 
        integer MPI_MAXLOC
        parameter (MPI_MAXLOC=5)

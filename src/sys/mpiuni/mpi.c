@@ -17,7 +17,7 @@
 #define MPI_SUCCESS 0
 #define MPI_FAILURE 1
 void    *MPIUNI_TMP        = 0;
-int     MPIUNI_DATASIZE[7] = {sizeof(int),sizeof(float),sizeof(double),2*sizeof(double),sizeof(char),2*sizeof(int),4*sizeof(double)};
+int     MPIUNI_DATASIZE[10] = {sizeof(int),sizeof(float),sizeof(double),2*sizeof(double),sizeof(char),2*sizeof(int),4*sizeof(double),4,8,2*sizeof(double)};
 /*
        With MPI Uni there is only one communicator, which is called 1.
 */

@@ -94,7 +94,7 @@ class Configure(PETSc.package.NewPackage):
     ###################################################################
     #                           FLOAT TYPE                            #
     ###################################################################
-    if self.scalarTypes.precision == 'double':
+    if self.scalartypes.precision == 'double':
       g.write('VERSIONPRC  = _double\n')
       g.write('CCTYPES    := $(CCTYPES) -DFORCE_DOUBLE\n')
       g.write('\n')
