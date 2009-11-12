@@ -3,7 +3,7 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download     = ['http://gforge.inria.fr/frs/download.php/10140/pastix_release_1789.tar.bz2']
+    self.download     = ['http://gforge.inria.fr/frs/download.php/21873/pastix_release_2200.tar.bz2']
     self.downloadname = self.name.lower()
     self.liblist      = [['libpastix.a'],
                          ['libpastix.a','libpthread.a','librt.a']]
@@ -23,17 +23,6 @@ class Configure(PETSc.package.NewPackage):
   def Install(self):
     import os
     self.logPrintBox('Creating Pastix '+os.path.join(os.path.join(self.packageDir,'src'),'config.in')+'\n')
-    # Patching csc_utils for memcpy error
-    g = open(os.path.join(os.path.join(self.packageDir,'src'),'patch.memcpy'),'w')
-    g.write("284c284,285\n")
-    g.write("<       memcpy((*newa) , a , l * sizeof(FLOAT)); \n")
-    g.write("---\n")
-    g.write(">       if (a != NULL)\n")
-    g.write(">       memcpy((*newa) , a , l * sizeof(FLOAT)); \n")
-    g.close();
-
-    output  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+';patch sopalin/src/csc_utils.c < patch.memcpy', timeout=2500, log = self.framework.log)[0]
-    
     g = open(os.path.join(os.path.join(self.packageDir,'src'),'config.in'),'w')
 
     g.write('HOSTHARCH   = i686_pc_linux\n')
@@ -96,11 +85,11 @@ class Configure(PETSc.package.NewPackage):
     ###################################################################
     if self.scalartypes.precision == 'double':
       g.write('VERSIONPRC  = _double\n')
-      g.write('CCTYPES    := $(CCTYPES) -DFORCE_DOUBLE\n')
+      g.write('CCTYPES    := $(CCTYPES) -DFORCE_DOUBLE -DPREC_DOUBLE\n')
       g.write('\n')
     g.write('# uncomment the following lines for float=complex support\n')
     g.write('#VERSIONFLT  = _complex\n')
-    g.write('#CCTYPES    := $(CCTYPES) -DFORCE_COMPLEX\n')
+    g.write('#CCTYPES  := $(CCTYPES) -DFORCE_COMPLEX -DTYPE_COMPLEX\n')
     g.write('\n')
     g.write('\n')
     g.write('###################################################################\n')
@@ -159,6 +148,9 @@ class Configure(PETSc.package.NewPackage):
     g.write('#scotch								\n')
     g.write('CCPASTIX   := $(CCPASTIX) '+self.headers.toString(self.scotch.include)+'\n')
     g.write('EXTRALIB   := $(EXTRALIB) '+self.libraries.toString(self.scotch.dlib)+'\n')
+    g.write('#ptscotch				\n')			     
+    g.write('#CCPASTIX   := $(CCPASTIX) -I$(SCOTCH_INC) -DDISTRIBUTED	\n')
+    g.write('#EXTRALIB   := $(EXTRALIB) -L$(SCOTCH_LIB) -lptscotch -lscotcherrexit\n')
     g.write('\n')
     g.write('###################################################################\n')
     g.write('#                             MARCEL                              #\n')
@@ -188,6 +180,17 @@ class Configure(PETSc.package.NewPackage):
     g.write('CCHEAD    := $(CCPROG) $(CCTYPES) $(CCFOPT)\n')
     g.write('CCFOPT    := $(CCFOPT) $(CCTYPES) $(CCPASTIX)\n')
     g.write('CCFDEB    := $(CCFDEB) $(CCTYPES) $(CCPASTIX)\n')
+    ###################################################################
+    #                        MURGE COMPATIBILITY                      #
+    ###################################################################
+
+    g.write('MAKE     = $(MKPROG)\n')
+    g.write('CC       = $(MPCCPROG)\n')
+    g.write('CFLAGS   = $(CCFOPT) $(CCTYPES)\n')
+    g.write('FC       = $(MCFPROG)\n') 
+    g.write('FFLAGS   = $(CCFOPT)\n')
+    g.write('LDFLAGS  = $(EXTRALIB) $(BLASLIB)\n')
+
     g.close();
 
     if self.installNeeded(os.path.join('src','config.in')):
