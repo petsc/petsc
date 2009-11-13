@@ -71,7 +71,6 @@ E*/
 #define MATFRAMEWORK           "framework"
 #endif
 
-
 /*E
     MatSolverPackage - String with the name of a PETSc matrix solver type. 
 
@@ -335,7 +334,6 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFrameworkSetBlock(Mat, PetscInt, Mat
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFrameworkGetBlock(Mat, PetscInt, Mat*);
 #endif
 
-
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqFFTW(MPI_Comm,PetscInt,const PetscInt[],Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateTranspose(Mat,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSubMatrix(Mat,IS,IS,Mat*);
@@ -445,11 +443,13 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultDiagonalBlock(Mat,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultAdd(Mat,Vec,Vec,Vec);
 PetscPolymorphicSubroutine(MatMultAdd,(Mat A,Vec x,Vec y),(A,x,y,y))
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultTranspose(Mat,Vec,Vec);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultHermitianTranspose(Mat,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsTranspose(Mat,Mat,PetscReal,PetscTruth*);
 PetscPolymorphicFunction(MatIsTranspose,(Mat A,Mat B,PetscReal tol),(A,B,tol,&t),PetscTruth,t)
 PetscPolymorphicFunction(MatIsTranspose,(Mat A,Mat B),(A,B,0,&t),PetscTruth,t)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitianTranspose(Mat,Mat,PetscReal,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeAdd(Mat,Vec,Vec,Vec);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultHermitianTransposeAdd(Mat,Vec,Vec,Vec);
 PetscPolymorphicSubroutine(MatMultTransposeAdd,(Mat A,Vec x,Vec y),(A,x,y,y))
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultConstrained(Mat,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeConstrained(Mat,Vec,Vec);
@@ -540,6 +540,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMinAbs(Mat,Vec,PetscInt[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowSum(Mat,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatTranspose(Mat,MatReuse,Mat*);
 PetscPolymorphicFunction(MatTranspose,(Mat A),(A,MAT_INITIAL_MATRIX,&t),Mat,t)
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatHermitianTranspose(Mat,MatReuse,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPermute(Mat,IS,IS,Mat *);
 PetscPolymorphicFunction(MatPermute,(Mat A,IS is1,IS is2),(A,is1,is2,&t),Mat,t)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPermuteSparsify(Mat,PetscInt,PetscReal,PetscReal,IS,IS,Mat *);
@@ -1174,7 +1175,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetUnfactored(Mat);
 
    MatSORType may be bitwise ORd together, so do not change the numbers 
 
-.seealso: MatRelax(), MatPBRelax()
+.seealso: MatSOR()
 E*/
 typedef enum {SOR_FORWARD_SWEEP=1,SOR_BACKWARD_SWEEP=2,SOR_SYMMETRIC_SWEEP=3,
               SOR_LOCAL_FORWARD_SWEEP=4,SOR_LOCAL_BACKWARD_SWEEP=8,
@@ -1418,6 +1419,9 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningScotchSetLocal(MatPartit
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningScotchSetMapping(MatPartitioning);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningScotchSetStrategy(MatPartitioning,char*);
 
+EXTERN PetscErrorCode MatMeshToVertexGraph(Mat,PetscInt,Mat*);
+EXTERN PetscErrorCode MatMeshToCellGraph(Mat,PetscInt,Mat*);
+
 /*
     If you add entries here you must also add them to finclude/petscmat.h
 */
@@ -1508,7 +1512,7 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_IS_SYMMETRIC=84,
                MATOP_IS_HERMITIAN=85,
                MATOP_IS_STRUCTURALLY_SYMMETRIC=86,
-               MATOP_PB_RELAX=87,
+               MATOP_DUMMY=87,
                MATOP_GET_VECS=88,
                MATOP_MAT_MULT=89,
                MATOP_MAT_MULT_SYMBOLIC=90,
@@ -1517,15 +1521,15 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_PTAP_SYMBOLIC=93,
                MATOP_PTAP_NUMERIC=94,
                MATOP_MAT_MULTTRANSPOSE=95,
-               MATOP_MAT_MULTTRANSPOSE_SYMBOLIC=96,
-               MATOP_MAT_MULTTRANSPOSE_NUMERIC=97,
+               MATOP_MAT_MULTTRANSPOSE_SYM=96,
+               MATOP_MAT_MULTTRANSPOSE_NUM=97,
                MATOP_PTAP_SYMBOLIC_SEQAIJ=98,
                MATOP_PTAP_NUMERIC_SEQAIJ=99,
                MATOP_PTAP_SYMBOLIC_MPIAIJ=100,
                MATOP_PTAP_NUMERIC_MPIAIJ=101,
                MATOP_CONJUGATE=102,
                MATOP_SET_SIZES=103,
-               MATOP_SET_VALUES_ROW = 104,
+               MATOP_SET_VALUES_ROW=104,
                MATOP_REAL_PART=105,
                MATOP_IMAG_PART=106,
                MATOP_GET_ROW_UTRIANGULAR=107,
@@ -1540,7 +1544,10 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_GET_GHOSTS=116,
                MATOP_ILUDTFACTORSYMBOLIC=117,
                MATOP_ILUDTFACTORNUMERIC=118,
-               MATOP_MULT_DIAGONAL_BLOCK=119
+               MATOP_MULT_DIAGONAL_BLOCK=119,
+               MATOP_HERMITIANTRANSPOSE=120,
+               MATOP_MULTHERMITIANTRANSPOSE=121,
+               MATOP_MULTHERMITIANTRANSPOSEADD=122
              } MatOperation;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatHasOperation(Mat,MatOperation,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetOperation(Mat,MatOperation,void(*)(void));
@@ -1576,7 +1583,7 @@ S*/
 typedef struct _p_MatNullSpace* MatNullSpace;
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceCreate(MPI_Comm,PetscTruth,PetscInt,const Vec[],MatNullSpace*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceSetFunction(MatNullSpace,PetscErrorCode (*)(Vec,void*),void*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceSetFunction(MatNullSpace,PetscErrorCode (*)(MatNullSpace,Vec,void*),void*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceDestroy(MatNullSpace);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceRemove(MatNullSpace,Vec,Vec*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceAttach(Mat,MatNullSpace);
