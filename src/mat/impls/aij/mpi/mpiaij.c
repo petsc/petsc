@@ -326,6 +326,7 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
   MatScalar      *ap1,*ap2;
 
   PetscFunctionBegin;
+  if (v) PetscValidScalarPointer(v,6);
   for (i=0; i<m; i++) {
     if (im[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
@@ -1750,6 +1751,8 @@ PetscErrorCode MatSetBlockSize_MPIAIJ(Mat A,PetscInt bs)
   PetscFunctionBegin;
   ierr = MatSetBlockSize(a->A,bs);CHKERRQ(ierr);
   ierr = MatSetBlockSize(a->B,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(A->rmap,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(A->cmap,bs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  

@@ -308,8 +308,8 @@ M*/
 */
 #define PETSC_PI                 3.14159265358979323846264
 #define PETSC_DEGREES_TO_RADIANS 0.01745329251994
-#define PETSC_MAX_INT            2147483648
-#define PETSC_MIN_INT            -2147483648
+#define PETSC_MAX_INT            2147483647
+#define PETSC_MIN_INT            -2147483647
 
 #if defined(PETSC_USE_SCALAR_SINGLE)
 #  define PETSC_MAX                     1.e30

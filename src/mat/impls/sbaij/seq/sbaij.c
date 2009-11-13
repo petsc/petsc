@@ -922,6 +922,7 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
   MatScalar      *ap,value,*aa=a->a,*bap;
   
   PetscFunctionBegin;
+  if (v) PetscValidScalarPointer(v,6);
   for (k=0; k<m; k++) { /* loop over added rows */
     row  = im[k];       /* row number */ 
     brow = row/bs;      /* block row number */ 
@@ -1205,6 +1206,21 @@ PetscErrorCode MatAXPY_SeqSBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatSetBlockSize_SeqSBAIJ"
+PetscErrorCode MatSetBlockSize_SeqSBAIJ(Mat A,PetscInt bs)
+{
+  PetscInt rbs,cbs;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLayoutGetBlockSize(A->rmap,&rbs);CHKERRQ(ierr);
+  ierr = PetscLayoutGetBlockSize(A->cmap,&cbs);CHKERRQ(ierr);
+  if (rbs != bs) SETERRQ2(PETSC_ERR_ARG_SIZ,"Attempt to set block size %d with SBAIJ %d",bs,rbs);
+  if (cbs != bs) SETERRQ2(PETSC_ERR_ARG_SIZ,"Attempt to set block size %d with SBAIJ %d",bs,cbs);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatIsSymmetric_SeqSBAIJ"
 PetscErrorCode MatIsSymmetric_SeqSBAIJ(Mat A,PetscReal tol,PetscTruth *flg)
 {
@@ -1307,7 +1323,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        0,
        0,
        0,
-/*49*/ 0,
+/*49*/ MatSetBlockSize_SeqSBAIJ,
        MatGetRowIJ_SeqSBAIJ,
        MatRestoreRowIJ_SeqSBAIJ,
        0,

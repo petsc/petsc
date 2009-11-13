@@ -77,38 +77,71 @@ This file is also used for the f2cblaslapack distribution.
 #  define LAPACKstebz_ dstebz_
 # endif
 #else
+# if defined(PETSC_USE_SINGLE)
+/* Complex single precision with no character string arguments */
+#  define LAPACKgeqrf_ cgeqrf_
+#  define LAPACKungqr_ cungqr_
+#  define LAPACKgetrf_ cgetrf_
+#  define BLASdot_     cdotc_
+#  define BLASnrm2_    scnrm2_
+#  define BLASscal_    cscal_
+#  define BLAScopy_    ccopy_
+#  define BLASswap_    cswap_
+#  define BLASaxpy_    caxpy_
+#  define BLASasum_    scasum_
+#  define LAPACKpttrf_ cpttrf_
+#  define LAPACKstein_ cstein_
+/* Complex single precision with character string arguments */
+/* LAPACKormqr_ does not exist for complex. */
+#  define LAPACKtrtrs_ ctrtrs_
+#  define LAPACKpotrf_ cpotrf_
+#  define LAPACKpotrs_ cpotrs_
+#  define BLASgemv_    cgemv_
+#  define LAPACKgetrs_ cgetrs_
+#  define BLAStrmv_    ctrmv_
+#  define BLASgemm_    cgemm_
+#  define LAPACKgesvd_ cgesvd_
+#  define LAPACKgeev_  cgeev_
+#  define LAPACKsyev_  cheev_
+#  define LAPACKsyevx_ cheevx_
+#  define LAPACKsygv_  chegv_
+#  define LAPACKsygvx_ chegvx_
+#  define LAPACKpttrs_ cpttrs_ 
+/* LAPACKstebz_ does not exist for complex. */
+# else
 /* Complex double precision with no character string arguments */
-# define LAPACKgeqrf_ zgeqrf_
-# define LAPACKungqr_ zungqr_
-# define LAPACKgetrf_ zgetrf_
-# define BLASdot_     zdotc_
-# define BLASnrm2_    dznrm2_
-# define BLASscal_    zscal_
-# define BLAScopy_    zcopy_
-# define BLASswap_    zswap_
-# define BLASaxpy_    zaxpy_
-# define BLASasum_    dzasum_
+#  define LAPACKgeqrf_ zgeqrf_
+#  define LAPACKungqr_ zungqr_
+#  define LAPACKgetrf_ zgetrf_
+#  define BLASdot_     zdotc_
+#  define BLASnrm2_    dznrm2_
+#  define BLASscal_    zscal_
+#  define BLAScopy_    zcopy_
+#  define BLASswap_    zswap_
+#  define BLASaxpy_    zaxpy_
+#  define BLASasum_    dzasum_
 #  define LAPACKpttrf_ zpttrf_
 #  define LAPACKstein_ zstein_
 #  define LAPACKgesv_  zgesv_
 #  define LAPACKgelss_ zgelss_
 /* Complex double precision with character string arguments */
 /* LAPACKormqr_ does not exist for complex. */
-# define LAPACKtrtrs_ ztrtrs_
-# define LAPACKpotrf_ zpotrf_
-# define LAPACKpotrs_ zpotrs_
-# define BLASgemv_    zgemv_
-# define LAPACKgetrs_ zgetrs_
-# define BLAStrmv_    ztrmv_
-# define BLASgemm_    zgemm_
-# define LAPACKgesvd_ zgesvd_
-# define LAPACKgeev_  zgeev_
-# define LAPACKsyev_  zheev_
-# define LAPACKsyevx_ zheevx_
-# define LAPACKsygv_  zhegv_
-# define LAPACKsygvx_ zhegvx_
-# define LAPACKpttrs_ zpttrs_ 
+#  define LAPACKtrtrs_ ztrtrs_
+#  define LAPACKpotrf_ zpotrf_
+#  define LAPACKpotrs_ zpotrs_
+#  define BLASgemv_    zgemv_
+#  define LAPACKgetrs_ zgetrs_
+#  define BLAStrmv_    ztrmv_
+#  define BLASgemm_    zgemm_
+#  define LAPACKgesvd_ zgesvd_
+#  define LAPACKgeev_  zgeev_
+#  define LAPACKsyev_  zheev_
+#  define LAPACKsyevx_ zheevx_
+#  define LAPACKsygv_  zhegv_
+#  define LAPACKsygvx_ zhegvx_
+#  define LAPACKpttrs_ zpttrs_ 
 /* LAPACKstebz_ does not exist for complex. */
+# endif
 #endif
 
 #endif

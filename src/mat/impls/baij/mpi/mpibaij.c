@@ -215,6 +215,7 @@ PetscErrorCode MatSetValues_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[],Petsc
   MatScalar      *ap,*bap;
 
   PetscFunctionBegin;
+  if (v) PetscValidScalarPointer(v,6);
   for (i=0; i<m; i++) {
     if (im[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
@@ -396,7 +397,7 @@ PetscErrorCode MatSetValues_MPIBAIJ_HT(Mat mat,PetscInt m,const PetscInt im[],Pe
 #endif
 
   PetscFunctionBegin;
-
+  if (v) PetscValidScalarPointer(v,6);
   for (i=0; i<m; i++) {
 #if defined(PETSC_USE_DEBUG)
     if (im[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative row");
@@ -1800,11 +1801,16 @@ PetscErrorCode MatAXPY_MPIBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
 PetscErrorCode MatSetBlockSize_MPIBAIJ(Mat A,PetscInt bs)
 {
   Mat_MPIBAIJ    *a   = (Mat_MPIBAIJ*)A->data;
+  PetscInt rbs,cbs;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatSetBlockSize(a->A,bs);CHKERRQ(ierr);
   ierr = MatSetBlockSize(a->B,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutGetBlockSize(A->rmap,&rbs);CHKERRQ(ierr);
+  ierr = PetscLayoutGetBlockSize(A->cmap,&cbs);CHKERRQ(ierr);
+  if (rbs != bs) SETERRQ2(PETSC_ERR_ARG_SIZ,"Attempt to set block size %d with BAIJ %d",bs,rbs);
+  if (cbs != bs) SETERRQ2(PETSC_ERR_ARG_SIZ,"Attempt to set block size %d with BAIJ %d",bs,cbs);
   PetscFunctionReturn(0);
 }
 

@@ -85,13 +85,21 @@
 #define PetscFortranFloat real(kind=selected_real_kind(5))
 #define PetscFortranDouble real(kind=selected_real_kind(10))
 #define PetscFortranLongDouble real(kind=selected_real_kind(16))
+#if defined(PETSC_USE_SINGLE)
+#define PetscFortranComplex complex(kind=selected_real_kind(5))
+#else
 #define PetscFortranComplex complex(kind=selected_real_kind(10))
+#endif
 #define PetscChar(a) character(len = a) ::
 #else
 #define PetscFortranFloat real*4
 #define PetscFortranDouble real*8
 #define PetscFortranLongDouble real*16
+#if defined(PETSC_USE_SINGLE)
+#define PetscFortranComplex complex*8
+#else
 #define PetscFortranComplex complex*16
+#endif
 #define PetscChar(a) character*(a)
 #endif
 

@@ -636,6 +636,7 @@ PetscErrorCode MatSetValues_SeqDense(Mat A,PetscInt m,const PetscInt indexm[],Pe
   PetscInt     i,j,idx=0;
  
   PetscFunctionBegin;
+  if (v) PetscValidScalarPointer(v,6);
   if (!mat->roworiented) {
     if (addv == INSERT_VALUES) {
       for (j=0; j<n; j++) {
