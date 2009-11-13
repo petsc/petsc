@@ -8,6 +8,13 @@
 #include "../src/mat/impls/sbaij/seq/sbaij.h"
 #include "../src/mat/impls/sbaij/mpi/mpisbaij.h"
 
+#if defined(PETSC_HAVE_STDLIB_H)
+#include <stdlib.h>
+#endif
+#if defined(PETSC_HAVE_STRING_H)
+#include <string.h> 
+#endif
+
 EXTERN_C_BEGIN 
 #include "mpi.h"
 #include "pastix.h"
@@ -98,7 +105,6 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscTruth valOnly,PetscInt *n,PetscInt **c
     ierr = PetscMalloc( nnz     *sizeof(PetscScalar),values);CHKERRQ(ierr);
 
     if (isSBAIJ || isSeqSBAIJ || isMpiSBAIJ) {
-	fprintf(stdout, "prout\n");
 	ierr = PetscMemcpy (*colptr, rowptr, ((*n)+1)*sizeof(PetscInt));CHKERRQ(ierr);
 	for (i = 0; i < *n+1; i++)
 	  (*colptr)[i] += base;
@@ -161,6 +167,35 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscTruth valOnly,PetscInt *n,PetscInt **c
       }
     }
   }  
+  {
+    
+    pastix_int_t    * tmpcolptr = malloc((*n+1)*sizeof(PetscInt));
+    pastix_int_t    * tmprows   = malloc(nnz*sizeof(PetscInt));
+    pastix_float_t  * tmpvalues = malloc(nnz*sizeof(PetscScalar));
+    if (sizeof(PetscScalar) != sizeof(pastix_float_t))
+      {
+	SETERRQ2(PETSC_ERR_SUP,"sizeof(PetscScalar) %d != sizeof(pastix_float_t) %d", sizeof(PetscScalar), sizeof(pastix_float_t));
+      }
+
+    memcpy(tmpcolptr, *colptr, (*n+1)*sizeof(PetscInt)); 
+    memcpy(tmprows,   *row,    nnz*sizeof(PetscInt));
+    memcpy(tmpvalues, *values, nnz*sizeof(PetscScalar));
+    ierr = PetscFree(*row);CHKERRQ(ierr);
+    ierr = PetscFree(*values);CHKERRQ(ierr);
+
+    pastix_checkMatrix(MPI_COMM_WORLD, API_VERBOSE_NO, 
+		       ((isSym != 0) ? API_SYM_YES : API_SYM_NO),  API_YES,
+		       *n, &tmpcolptr, &tmprows, &tmpvalues, NULL, 1);
+    
+    memcpy(*colptr, tmpcolptr, (*n+1)*sizeof(PetscInt));
+    free(tmpcolptr);
+    ierr = PetscMalloc( ((*colptr)[*n]-1)  *sizeof(PetscInt)   ,row);CHKERRQ(ierr);
+    memcpy(*row,    tmprows, ((*colptr)[*n]-1)*sizeof(PetscInt));
+    free(tmprows);
+    ierr = PetscMalloc( ((*colptr)[*n]-1)  *sizeof(PetscScalar),values);CHKERRQ(ierr);
+    memcpy(*values, tmpvalues, ((*colptr)[*n]-1)*sizeof(PetscScalar));
+    free(tmpvalues);
+  }
   PetscFunctionReturn(0);
 }
 

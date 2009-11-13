@@ -141,6 +141,9 @@ EXTERN_C_BEGIN
 EXTERN PetscErrorCode MatSeqAIJSetPreallocation_SeqAIJ(Mat,PetscInt,PetscInt*);
 EXTERN_C_END
 EXTERN PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat,Mat,IS,IS,const MatFactorInfo*);
+EXTERN PetscErrorCode MatILUFactorSymbolic_SeqAIJ_newdatastruct(Mat,Mat,IS,IS,const MatFactorInfo*);
+EXTERN PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0_newdatastruct(Mat,Mat,IS,IS,const MatFactorInfo*);
+
 EXTERN PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat,Mat,IS,const MatFactorInfo*);
 EXTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat,Mat,IS,const MatFactorInfo*);
 EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat,Mat,const MatFactorInfo*);
