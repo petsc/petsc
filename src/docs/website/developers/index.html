@@ -169,6 +169,14 @@ To update your copy of petsc-dev
         <li>cd config/BuildSystem</li>
         <li>hg pull -u</li>
       </ul>
+Once updated, you will usually want to rebuild completely
+      <ul style="color: rgb(128, 0, 0);">
+        <li>cd petsc-dev<br>
+        </li>
+        <li>./$PETSC_ARCH/conf/reconfigure-$PETSC_ARCH.py</li>
+        <li>make allfortranstubs</li>
+        <li>make</li>
+      </ul>
 The Mercurial download always has the latest version of petsc-dev.<br>
       <br>
 For additional help use<br>
