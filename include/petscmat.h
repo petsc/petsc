@@ -1180,8 +1180,7 @@ typedef enum {SOR_FORWARD_SWEEP=1,SOR_BACKWARD_SWEEP=2,SOR_SYMMETRIC_SWEEP=3,
               SOR_LOCAL_FORWARD_SWEEP=4,SOR_LOCAL_BACKWARD_SWEEP=8,
               SOR_LOCAL_SYMMETRIC_SWEEP=12,SOR_ZERO_INITIAL_GUESS=16,
               SOR_EISENSTAT=32,SOR_APPLY_UPPER=64,SOR_APPLY_LOWER=128} MatSORType;
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRelax(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPBRelax(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSOR(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
 
 /* 
     These routines are for efficiently computing Jacobians via finite differences.
