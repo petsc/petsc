@@ -81,8 +81,8 @@ GL_LIBS    = -lGL -lGLU
       except RuntimeError, e:
         raise RuntimeError('Error running make on ZOLTAN: '+str(e))
 
-      output  = config.base.Configure.executeShellCommand('mv -f '+os.path.join(self.packageDir, 'Obj_'+self.arch.arch)+'/* '+os.path.join(self.installDir, 'lib'))
-      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'include')+'/* '+os.path.join(self.installDir, 'include'))
+      output  = config.base.Configure.executeShellCommand('mv -f '+os.path.join(self.packageDir, 'Obj_'+self.arch.arch)+'/* '+os.path.join(self.installDir, 'lib'))[0]
+      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'include')+'/* '+os.path.join(self.installDir, 'include'))[0]
       self.postInstall(output,'Zoltanconfig')
     return self.installDir
   
