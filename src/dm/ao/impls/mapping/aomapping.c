@@ -25,7 +25,7 @@ PetscErrorCode AODestroy_Mapping(AO ao)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(aomap->app);CHKERRQ(ierr);
+  ierr = PetscFree4(aomap->app,aomap->appPerm,aomap->petsc,aomap->petscPerm);CHKERRQ(ierr);
   ierr = PetscFree(ao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -301,8 +301,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateMapping(MPI_Comm comm,PetscInt napp,con
   /* transmit all lengths to all processors */
   ierr  = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr  = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr  = PetscMalloc(2*size * sizeof(PetscMPIInt), &lens);CHKERRQ(ierr);
-  disp  = lens + size;
+  ierr  = PetscMalloc2(size,PetscMPIInt, &lens,size,PetscMPIInt,&disp);CHKERRQ(ierr);
   nnapp = napp;
   ierr  = MPI_Allgather(&nnapp, 1, MPIU_INT, lens, 1, MPIU_INT, comm);CHKERRQ(ierr);
   N    = 0;
@@ -326,20 +325,14 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateMapping(MPI_Comm comm,PetscInt napp,con
   }
 
   /* get all indices on all processors */
-  ierr = PetscMalloc(N*4 * sizeof(PetscInt), &allapp);CHKERRQ(ierr);
-  appPerm   = allapp   + N;
-  allpetsc  = appPerm  + N;
-  petscPerm = allpetsc + N;
+  ierr = PetscMalloc4(N,PetscInt, &allapp,N,PetscInt,&appPerm,N,PetscInt,&allpetsc,N,PetscInt,&petscPerm);CHKERRQ(ierr);
   ierr = MPI_Allgatherv((void*)myapp, napp, MPIU_INT, allapp,   lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
   ierr = MPI_Allgatherv((void*)petsc, napp, MPIU_INT, allpetsc, lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
-  ierr = PetscFree(lens);CHKERRQ(ierr);
+  ierr = PetscFree2(lens,disp);CHKERRQ(ierr);
 
   /* generate a list of application and PETSc node numbers */
-  ierr = PetscMalloc(N*4 * sizeof(PetscInt), &aomap->app);CHKERRQ(ierr);
+  ierr = PetscMalloc4(N,PetscInt, &aomap->app,N,PetscInt,&aomap->appPerm,N,PetscInt,aomap->petsc,N,PetscInt,&aomap->petsc);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(ao, 4*N * sizeof(PetscInt));CHKERRQ(ierr);
-  aomap->appPerm   = aomap->app     + N;
-  aomap->petsc     = aomap->appPerm + N;
-  aomap->petscPerm = aomap->petsc   + N;
   for(i = 0; i < N; i++) {
     appPerm[i]   = i;
     petscPerm[i] = i;
@@ -378,7 +371,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateMapping(MPI_Comm comm,PetscInt napp,con
   if (!mypetsc) {
     ierr = PetscFree(petsc);CHKERRQ(ierr);
   }
-  ierr = PetscFree(allapp);CHKERRQ(ierr);
+  ierr = PetscFree4(allapp,appPerm,allpetsc,petscPerm);CHKERRQ(ierr);
 
   opt  = PETSC_FALSE;
   ierr = PetscOptionsGetTruth(PETSC_NULL, "-ao_view", &opt,PETSC_NULL);CHKERRQ(ierr);

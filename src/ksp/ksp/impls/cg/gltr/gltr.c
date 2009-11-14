@@ -963,8 +963,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     }
  
     cg->alloced = PetscMin(cg->alloced, t_size);
-    ierr = PetscMalloc(10*sizeof(PetscReal)*cg->alloced, &cg->rwork);CHKERRQ(ierr);
-    ierr = PetscMalloc(5*sizeof(PetscBLASInt)*cg->alloced, &cg->iwork);CHKERRQ(ierr);
+    ierr = PetscMalloc2(10*cg->alloced,PetscReal, &cg->rwork,5*cg->alloced,PetscBLASInt, &cg->iwork);CHKERRQ(ierr);
   }
 
   /***************************************************************************/
@@ -1411,8 +1410,8 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 #define __FUNCT__ "KSPSetUp_GLTR"
 PetscErrorCode KSPSetUp_GLTR(KSP ksp)
 {
-  KSP_GLTR *cg = (KSP_GLTR *)ksp->data;
-  PetscInt max_its, size;
+  KSP_GLTR       *cg = (KSP_GLTR *)ksp->data;
+  PetscInt       max_its;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1441,15 +1440,13 @@ PetscErrorCode KSPSetUp_GLTR(KSP ksp)
 
   ierr = KSPDefaultGetWork(ksp, 3);CHKERRQ(ierr);
 
-  size = 5*max_its*sizeof(PetscReal);
-  ierr = PetscMalloc(size, &cg->diag);CHKERRQ(ierr);
-  ierr = PetscMemzero(cg->diag, size);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp, size);CHKERRQ(ierr);
-
-  cg->offd   = cg->diag  + max_its;
-  cg->alpha  = cg->offd  + max_its;
-  cg->beta   = cg->alpha + max_its;
-  cg->norm_r = cg->beta  + max_its;
+  ierr = PetscMalloc5(max_its,PetscReal,&cg->diag,max_its,PetscReal,&cg->offd,max_its,PetscReal,&cg->alpha,max_its,PetscReal,&cg->beta,max_its,PetscReal,&cg->norm_r);CHKERRQ(ierr);
+  ierr = PetscMemzero(cg->diag, max_its*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscMemzero(cg->offd, max_its*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscMemzero(cg->alpha, max_its*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscMemzero(cg->beta, max_its*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscMemzero(cg->norm_r, max_its*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(ksp, 5*max_its*sizeof(PetscReal));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1466,10 +1463,9 @@ PetscErrorCode KSPDestroy_GLTR(KSP ksp)
   /* Free memory allocated for the data.                                     */
   /***************************************************************************/
 
-  ierr = PetscFree(cg->diag);CHKERRQ(ierr);
+  ierr = PetscFree5(cg->diag,cg->offd,cg->alpha,cg->beta,cg->norm_r);CHKERRQ(ierr);
   if (cg->alloced) {
-    ierr = PetscFree(cg->rwork);CHKERRQ(ierr);
-    ierr = PetscFree(cg->iwork);CHKERRQ(ierr);
+    ierr = PetscFree2(cg->rwork,cg->iwork);CHKERRQ(ierr);
   }
 
   /***************************************************************************/

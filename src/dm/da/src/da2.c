@@ -134,7 +134,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASplitComm2d(MPI_Comm comm,PetscInt M,PetscInt
     MPI_Group    entire_group,sub_group;
     PetscMPIInt  i,*groupies;
 
-    ierr     = MPI_Comm_group(comm,&entire_group);CHKERRQ(ierr);
+    ierr = MPI_Comm_group(comm,&entire_group);CHKERRQ(ierr);
     ierr = PetscMalloc(csize*sizeof(PetscInt),&groupies);CHKERRQ(ierr);
     for (i=0; i<csize; i++) {
       groupies[i] = (rank/csize)*csize + i;
@@ -1099,8 +1099,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J
     p_u          += Nc;
   }
   ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
-  ierr = PetscMalloc(Nc*info.xm*info.ym*info.zm*info.dof*sizeof(PetscScalar),&g_f);CHKERRQ(ierr);
-  ierr = PetscMalloc(info.xm*info.ym*info.zm*info.dof*sizeof(PetscScalar),&f);CHKERRQ(ierr);
+  ierr = PetscMalloc2(Nc*info.xm*info.ym*info.zm*info.dof,PetscScalar,&g_f,info.xm*info.ym*info.zm*info.dof,PetscScalar,&f);CHKERRQ(ierr);
 
   /* Seed the input array g_u with coloring information */
  
@@ -1114,8 +1113,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J
 
   /* return space for derivative objects.  */
   ierr = PetscFree(g_u);CHKERRQ(ierr);
-  ierr = PetscFree(g_f);CHKERRQ(ierr);
-  ierr = PetscFree(f);CHKERRQ(ierr);
+  ierr = PetscFree2(g_f,f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1428,8 +1426,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
 
   /* determine starting point of each processor */
   nn    = x*y;
-  ierr  = PetscMalloc((2*size+1)*sizeof(PetscInt),&bases);CHKERRQ(ierr);
-  ldims = bases+size+1;
+  ierr  = PetscMalloc2(size+1,PetscInt,&bases,size,PetscInt,&ldims);CHKERRQ(ierr);
   ierr  = MPI_Allgather(&nn,1,MPIU_INT,ldims,1,MPIU_INT,comm);CHKERRQ(ierr);
   bases[0] = 0;
   for (i=1; i<=size; i++) {
@@ -1742,7 +1739,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
       }
     }
   }
-  ierr = PetscFree(bases);CHKERRQ(ierr); 
+  ierr = PetscFree2(bases,ldims);CHKERRQ(ierr); 
 
   da->m  = m;  da->n  = n;
   da->xs = xs; da->xe = xe; da->ys = ys; da->ye = ye; da->zs = 0; da->ze = 1;

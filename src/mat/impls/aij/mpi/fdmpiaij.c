@@ -70,8 +70,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     if (ctype == IS_COLORING_GLOBAL){
       /* Determine the total (parallel) number of columns of this color */
       ierr = MPI_Comm_size(((PetscObject)mat)->comm,&size);CHKERRQ(ierr); 
-      ierr = PetscMalloc(2*size*sizeof(PetscInt*),&ncolsonproc);CHKERRQ(ierr);
-      disp = ncolsonproc + size;
+      ierr = PetscMalloc2(size,PetscInt*,&ncolsonproc,size,PetscInt*,&disp);CHKERRQ(ierr);
 
       nn   = PetscMPIIntCast(n);
       ierr = MPI_Allgather(&nn,1,MPI_INT,ncolsonproc,1,MPI_INT,((PetscObject)mat)->comm);CHKERRQ(ierr);
@@ -88,7 +87,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       /* Get complete list of columns for color on each processor */
       ierr = PetscMalloc((nctot+1)*sizeof(PetscInt),&cols);CHKERRQ(ierr);
       ierr = MPI_Allgatherv((void*)is,n,MPIU_INT,cols,ncolsonproc,disp,MPIU_INT,((PetscObject)mat)->comm);CHKERRQ(ierr);
-      ierr = PetscFree(ncolsonproc);CHKERRQ(ierr);
+      ierr = PetscFree2(ncolsonproc,disp);CHKERRQ(ierr);
     } else if (ctype == IS_COLORING_GHOSTED){
       /* Determine local number of columns of this color on this process, including ghost points */
       nctot = n;

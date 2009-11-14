@@ -35,7 +35,7 @@ PetscErrorCode PetscContainerDestroy_Mat_MatMatMultMPI(void *ptr)
   Mat_MatMatMultMPI    *mult=(Mat_MatMatMultMPI*)ptr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(mult->startsj);CHKERRQ(ierr);
+  ierr = PetscFree2(mult->startsj,mult->startsj_r);CHKERRQ(ierr);
   ierr = PetscFree(mult->bufa);CHKERRQ(ierr);
   if (mult->isrowa){ierr = ISDestroy(mult->isrowa);CHKERRQ(ierr);}
   if (mult->isrowb){ierr = ISDestroy(mult->isrowb);CHKERRQ(ierr);}

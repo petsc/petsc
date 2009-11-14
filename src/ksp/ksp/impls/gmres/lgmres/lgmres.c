@@ -42,7 +42,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMRESSetConstant(KSP ksp)
 #define __FUNCT__ "KSPSetUp_LGMRES"
 PetscErrorCode    KSPSetUp_LGMRES(KSP ksp)
 {
-  PetscInt       size,hh,hes,rs,cc;
+  PetscInt       len,hh,hes,rs,cc;
   PetscErrorCode ierr;
   PetscInt       max_k,k, aug_dim;
   KSP_LGMRES     *lgmres = (KSP_LGMRES *)ksp->data;
@@ -57,12 +57,13 @@ PetscErrorCode    KSPSetUp_LGMRES(KSP ksp)
   hes           = (max_k + 1) * (max_k + 1);
   rs            = (max_k + 2);
   cc            = (max_k + 1);  /* SS and CC are the same size */
-  size          = (hh + hes + rs + 2*cc) * sizeof(PetscScalar);
+  len          = (hh + hes + rs + 2*cc) * sizeof(PetscScalar);
 
   /* Allocate space and set pointers to beginning */
-  ierr = PetscMalloc(size,&lgmres->hh_origin);CHKERRQ(ierr);
-  ierr = PetscMemzero(lgmres->hh_origin,size);CHKERRQ(ierr); 
-  ierr = PetscLogObjectMemory(ksp,size);CHKERRQ(ierr);  /* HH - modified (by plane rotations) hessenburg */
+  /* should switch to use PetscMalloc5() */
+  ierr = PetscMalloc(len,&lgmres->hh_origin);CHKERRQ(ierr);
+  ierr = PetscMemzero(lgmres->hh_origin,len);CHKERRQ(ierr); 
+  ierr = PetscLogObjectMemory(ksp,len);CHKERRQ(ierr);  /* HH - modified (by plane rotations) hessenburg */
   lgmres->hes_origin = lgmres->hh_origin + hh;     /* HES - unmodified hessenburg */
   lgmres->rs_origin  = lgmres->hes_origin + hes;   /* RS - the right-hand-side of the 
                                                       Hessenberg system */
@@ -71,10 +72,10 @@ PetscErrorCode    KSPSetUp_LGMRES(KSP ksp)
 
   if (ksp->calc_sings) {
     /* Allocate workspace to hold Hessenberg matrix needed by Eispack */
-    size = (max_k + 3)*(max_k + 9)*sizeof(PetscScalar);
-    ierr = PetscMalloc(size,&lgmres->Rsvd);CHKERRQ(ierr);
+    len = (max_k + 3)*(max_k + 9)*sizeof(PetscScalar);
+    ierr = PetscMalloc(len,&lgmres->Rsvd);CHKERRQ(ierr);
     ierr = PetscMalloc(5*(max_k+2)*sizeof(PetscReal),&lgmres->Dsvd);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(ksp,size+5*(max_k+2)*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(ksp,len+5*(max_k+2)*sizeof(PetscReal));CHKERRQ(ierr);
   }
 
   /* Allocate array to hold pointers to user vectors.  Note that we need
@@ -155,7 +156,6 @@ PetscErrorCode    KSPSetUp_LGMRES(KSP ksp)
 #define __FUNCT__ "LGMREScycle"
 PetscErrorCode LGMREScycle(PetscInt *itcount,KSP ksp)
 {
-
   KSP_LGMRES     *lgmres = (KSP_LGMRES *)(ksp->data);
   PetscReal      res_norm, res;             
   PetscReal      hapbnd, tt;

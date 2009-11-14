@@ -35,7 +35,7 @@ EXTERN PetscErrorCode KSPView_GMRES(KSP,PetscViewer);
 #define __FUNCT__ "KSPSetUp_FGMRES"
 PetscErrorCode    KSPSetUp_FGMRES(KSP ksp)
 {
-  PetscInt       size,hh,hes,rs,cc;
+  PetscInt       len,hh,hes,rs,cc;
   PetscErrorCode ierr;
   PetscInt       max_k,k;
   KSP_FGMRES     *fgmres = (KSP_FGMRES *)ksp->data;
@@ -51,12 +51,13 @@ PetscErrorCode    KSPSetUp_FGMRES(KSP ksp)
   hes           = (max_k + 1) * (max_k + 1);
   rs            = (max_k + 2);
   cc            = (max_k + 1);  /* SS and CC are the same size */
-  size          = (hh + hes + rs + 2*cc) * sizeof(PetscScalar);
+  len          = (hh + hes + rs + 2*cc) * sizeof(PetscScalar);
 
   /* Allocate space and set pointers to beginning */
-  ierr = PetscMalloc(size,&fgmres->hh_origin);CHKERRQ(ierr);
-  ierr = PetscMemzero(fgmres->hh_origin,size);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,size);CHKERRQ(ierr); /* HH - modified (by plane rotations) hessenburg */
+  /* should switch to use PetscMalloc5() */
+  ierr = PetscMalloc(len,&fgmres->hh_origin);CHKERRQ(ierr);
+  ierr = PetscMemzero(fgmres->hh_origin,len);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(ksp,len);CHKERRQ(ierr); /* HH - modified (by plane rotations) hessenburg */
   fgmres->hes_origin = fgmres->hh_origin + hh;     /* HES - unmodified hessenburg */
   fgmres->rs_origin  = fgmres->hes_origin + hes;   /* RS - the right-hand-side of the 
                                                       Hessenberg system */
@@ -65,10 +66,10 @@ PetscErrorCode    KSPSetUp_FGMRES(KSP ksp)
 
   if (ksp->calc_sings) {
     /* Allocate workspace to hold Hessenberg matrix needed by Eispack */
-    size = (max_k + 3)*(max_k + 9)*sizeof(PetscScalar);
-    ierr = PetscMalloc(size,&fgmres->Rsvd);CHKERRQ(ierr);
+    len = (max_k + 3)*(max_k + 9)*sizeof(PetscScalar);
+    ierr = PetscMalloc(len,&fgmres->Rsvd);CHKERRQ(ierr);
     ierr = PetscMalloc(5*(max_k+2)*sizeof(PetscReal),&fgmres->Dsvd);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(ksp,size+5*(max_k+2)*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(ksp,len+5*(max_k+2)*sizeof(PetscReal));CHKERRQ(ierr);
   }
 
   /* Allocate array to hold pointers to user vectors.  Note that we need

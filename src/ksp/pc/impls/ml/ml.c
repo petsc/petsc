@@ -777,9 +777,7 @@ PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *newmat)
   }
 
   ierr = MatSeqAIJSetPreallocation(*newmat,0,nnz);CHKERRQ(ierr);
-  ierr = PetscMalloc(nz_max*(sizeof(PetscInt)+sizeof(PetscScalar)),&aj);CHKERRQ(ierr);
-  aa = (PetscScalar*)(aj + nz_max);
- 
+  ierr = PetscMalloc2(nz_max,PetscScalar,&aa,nz_max,PetscInt,&aj);CHKERRQ(ierr);
   for (i=0; i<m; i++){
     k = 0;
     /* diagonal entry */
@@ -795,7 +793,7 @@ PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *newmat)
   ierr = MatAssemblyBegin(*newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = PetscFree(aj);CHKERRQ(ierr);  
+  ierr = PetscFree2(aa,aj);CHKERRQ(ierr);  
   ierr = PetscFree(nnz);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
@@ -873,8 +871,7 @@ PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,Mat *newmat)
 
   /* insert mat values -- remap row and column indices */
   nz_max++;
-  ierr = PetscMalloc(nz_max*(sizeof(PetscInt)+sizeof(PetscScalar)),&aj);CHKERRQ(ierr);
-  aa = (PetscScalar*)(aj + nz_max);
+  ierr = PetscMalloc2(nz_max,PetscScalar,&aa,nz_max,PetscInt,&aj);CHKERRQ(ierr);
   /* create global row numbering for a ML_Operator */
   ML_build_global_numbering(mlmat,&gordering,"rows"); 
   for (i=0; i<m; i++){
@@ -893,6 +890,6 @@ PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,Mat *newmat)
   *newmat = A;
 
   ierr = PetscFree3(nnzA,nnzB,nnz);
-  ierr = PetscFree(aj);CHKERRQ(ierr);
+  ierr = PetscFree2(aa,aj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

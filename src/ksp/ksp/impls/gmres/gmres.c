@@ -40,7 +40,7 @@ static PetscErrorCode    BuildGmresSoln(PetscScalar*,Vec,Vec,KSP,PetscInt);
 #define __FUNCT__ "KSPSetUp_GMRES"
 PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
 {
-  PetscInt       size,hh,hes,rs,cc;
+  PetscInt       len,hh,hes,rs,cc;
   PetscErrorCode ierr;
   PetscInt       max_k,k;
   KSP_GMRES      *gmres = (KSP_GMRES *)ksp->data;
@@ -55,11 +55,12 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
   hes           = (max_k + 1) * (max_k + 1);
   rs            = (max_k + 2);
   cc            = (max_k + 1);
-  size          = (hh + hes + rs + 2*cc) * sizeof(PetscScalar);
+  len          = (hh + hes + rs + 2*cc) * sizeof(PetscScalar);
 
-  ierr = PetscMalloc(size,&gmres->hh_origin);CHKERRQ(ierr);
-  ierr = PetscMemzero(gmres->hh_origin,size);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,size);CHKERRQ(ierr);
+  /* should switch to use PetscMalloc5() */
+  ierr = PetscMalloc(len,&gmres->hh_origin);CHKERRQ(ierr);
+  ierr = PetscMemzero(gmres->hh_origin,len);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(ksp,len);CHKERRQ(ierr);
   gmres->hes_origin = gmres->hh_origin + hh;
   gmres->rs_origin  = gmres->hes_origin + hes;
   gmres->cc_origin  = gmres->rs_origin + rs;
@@ -67,10 +68,10 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
 
   if (ksp->calc_sings) {
     /* Allocate workspace to hold Hessenberg matrix needed by lapack */
-    size = (max_k + 3)*(max_k + 9)*sizeof(PetscScalar);
-    ierr = PetscMalloc(size,&gmres->Rsvd);CHKERRQ(ierr);
+    len = (max_k + 3)*(max_k + 9)*sizeof(PetscScalar);
+    ierr = PetscMalloc(len,&gmres->Rsvd);CHKERRQ(ierr);
     ierr = PetscMalloc(5*(max_k+2)*sizeof(PetscReal),&gmres->Dsvd);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(ksp,size+5*(max_k+2)*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(ksp,len+5*(max_k+2)*sizeof(PetscReal));CHKERRQ(ierr);
   }
 
   /* Allocate array to hold pointers to user vectors.  Note that we need

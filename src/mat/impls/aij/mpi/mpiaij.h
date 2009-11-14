@@ -44,7 +44,7 @@ typedef struct {
 } Mat_MPIAIJ;
 
 typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ and MatPtAP_MPIAIJ_MPIAIJ for reusing symbolic mat product */
-  PetscInt       *startsj;
+  PetscInt       *startsj,*startsj_r;
   PetscScalar    *bufa;
   IS             isrowa,isrowb,iscolb; 
   Mat            *aseq,*bseq,C_seq; /* A_seq=aseq[0], B_seq=bseq[0] */

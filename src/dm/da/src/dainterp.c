@@ -1112,9 +1112,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAggregates(DA dac,DA daf,Mat *rest)
 			  max_agg_size, PETSC_NULL, max_agg_size, PETSC_NULL, rest);CHKERRQ(ierr);
 
   /* store nodes in the fine grid here */
-  ierr = PetscMalloc(sizeof(PetscInt)*max_agg_size, &fine_nodes);CHKERRQ(ierr);
-  /* these are the values to set to, a collection of 1's */
-  ierr = PetscMalloc(sizeof(PetscScalar)*max_agg_size, &one_vec);CHKERRQ(ierr);
+  ierr = PetscMalloc2(max_agg_size,PetscScalar, &one_vec,max_agg_size,PetscInt, &fine_nodes);CHKERRQ(ierr);
   for(i=0; i<max_agg_size; i++) one_vec[i] = 1.0;  
   
   /* loop over all coarse nodes */
@@ -1144,12 +1142,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAggregates(DA dac,DA daf,Mat *rest)
       }
     }
   }
-
-  ierr = PetscFree(fine_nodes);CHKERRQ(ierr);
-  ierr = PetscFree(one_vec);CHKERRQ(ierr);
-
+  ierr = PetscFree2(one_vec,fine_nodes);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*rest, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*rest, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  
   PetscFunctionReturn(0);
 } 

@@ -89,15 +89,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_SL_Minpack(Mat mat,MatColoringT
 
   ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(5*n*sizeof(PetscInt),&list);CHKERRQ(ierr);
-  work = list + n;
+  ierr = PetscMalloc2(n,PetscInt,&list,4*n,PetscInt,&work);CHKERRQ(ierr);
 
   MINPACKslo(&n,cja,cia,rja,ria,seq,list,&clique,work,work+n,work+2*n,work+3*n);
 
   ierr = PetscMalloc(n*sizeof(PetscInt),&coloring);CHKERRQ(ierr);
   MINPACKseq(&n,cja,cia,rja,ria,list,coloring,&ncolors,work);
 
-  ierr = PetscFree(list);CHKERRQ(ierr);
+  ierr = PetscFree2(list,work);CHKERRQ(ierr);
   ierr = PetscFree(seq);CHKERRQ(ierr);
   ierr = MatRestoreRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done);CHKERRQ(ierr);
   ierr = MatRestoreColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done);CHKERRQ(ierr);
@@ -177,8 +176,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_LF_Minpack(Mat mat,MatColoringT
 
   ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(5*n*sizeof(PetscInt),&list);CHKERRQ(ierr);
-  work = list + n;
+  ierr = PetscMalloc2(n,PetscInt,&list,4*n,PetscInt,&work);CHKERRQ(ierr);
 
   n1   = n - 1;
   none = -1;
@@ -186,7 +184,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_LF_Minpack(Mat mat,MatColoringT
   ierr = PetscMalloc(n*sizeof(PetscInt),&coloring);CHKERRQ(ierr);
   MINPACKseq(&n,cja,cia,rja,ria,list,coloring,&ncolors,work);
 
-  ierr = PetscFree(list);CHKERRQ(ierr);
+  ierr = PetscFree2(list,work);CHKERRQ(ierr);
   ierr = PetscFree(seq);CHKERRQ(ierr);
 
   ierr = MatRestoreRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done);CHKERRQ(ierr);
@@ -267,15 +265,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_ID_Minpack(Mat mat,MatColoringT
 
   ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(5*n*sizeof(PetscInt),&list);CHKERRQ(ierr);
-  work = list + n;
+  ierr = PetscMalloc2(n,PetscInt,&list,4*n,PetscInt,&work);CHKERRQ(ierr);
 
   MINPACKido(&n,&n,cja,cia,rja,ria,seq,list,&clique,work,work+n,work+2*n,work+3*n);
 
   ierr = PetscMalloc(n*sizeof(PetscInt),&coloring);CHKERRQ(ierr);
   MINPACKseq(&n,cja,cia,rja,ria,list,coloring,&ncolors,work);
 
-  ierr = PetscFree(list);CHKERRQ(ierr);
+  ierr = PetscFree2(list,work);CHKERRQ(ierr);
   ierr = PetscFree(seq);CHKERRQ(ierr);
 
   ierr = MatRestoreRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done);CHKERRQ(ierr);

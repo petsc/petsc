@@ -64,8 +64,7 @@ int main(int argc,char **args)
   /* printf(" [%d] C m: %d, Istart/end: %d %d\n",rank,m,Istart,Iend); */
   
   ierr = PetscMalloc((m*M+1)*sizeof(PetscScalar),&array);CHKERRQ(ierr);
-  ierr = PetscMalloc((m+M+1)*sizeof(PetscInt),&im);CHKERRQ(ierr);
-  in   = im + m;
+  ierr = PetscMalloc2(m,PetscInt,&im,M,PetscScalar,&in);CHKERRQ(ierr);
   k = 0;
   for (j=0; j<M; j++){ /* column oriented! */
     in[j] = j;
@@ -78,7 +77,7 @@ int main(int argc,char **args)
   ierr = MatSetValues(Cpetsc,m,im,M,in,array,ADD_VALUES);CHKERRQ(ierr); 
   ierr = MatSetValues(C,m,im,M,in,array,ADD_VALUES);CHKERRQ(ierr);
   ierr = PetscFree(array);CHKERRQ(ierr);
-  ierr = PetscFree(im);CHKERRQ(ierr); 
+  ierr = PetscFree2(im,in);CHKERRQ(ierr); 
 
   ierr = MatAssemblyBegin(Cpetsc,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Cpetsc,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); 

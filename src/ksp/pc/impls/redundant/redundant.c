@@ -124,8 +124,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
       IS       is1,is2;
       PetscInt *idx1,*idx2,i,j,k; 
 
-      ierr = PetscMalloc(2*red->psubcomm->n*mlocal*sizeof(PetscInt),&idx1);CHKERRQ(ierr);
-      idx2 = idx1 + red->psubcomm->n*mlocal;
+      ierr = PetscMalloc2(red->psubcomm->n*mlocal,PetscInt,&idx1,red->psubcomm->n*mlocal,PetscInt,&idx2);CHKERRQ(ierr);
       j = 0;
       for (k=0; k<red->psubcomm->n; k++){
         for (i=mstart; i<mend; i++){
@@ -144,7 +143,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
       ierr = VecScatterCreate(red->xdup,is1,vec,is2,&red->scatterout);CHKERRQ(ierr);      
       ierr = ISDestroy(is1);CHKERRQ(ierr);
       ierr = ISDestroy(is2);CHKERRQ(ierr);
-      ierr = PetscFree(idx1);CHKERRQ(ierr);
+      ierr = PetscFree2(idx1,idx2);CHKERRQ(ierr);
     }
   }
   ierr = VecDestroy(vec);CHKERRQ(ierr);

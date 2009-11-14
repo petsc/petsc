@@ -358,8 +358,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
 
   /* determine starting point of each processor */
   nn       = x*y*z;
-  ierr     = PetscMalloc((2*size+1)*sizeof(PetscInt),&bases);CHKERRQ(ierr);
-  ldims    = (PetscInt*)(bases+size+1);
+  ierr     = PetscMalloc2(size+1,PetscInt,&bases,size,PetscInt,&ldims);CHKERRQ(ierr);
   ierr     = MPI_Allgather(&nn,1,MPIU_INT,ldims,1,MPIU_INT,comm);CHKERRQ(ierr);
   bases[0] = 0;
   for (i=1; i<=size; i++) {
@@ -1642,7 +1641,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
       }
     }
   }
-  ierr = PetscFree(bases);CHKERRQ(ierr);
+  ierr = PetscFree2(bases,ldims);CHKERRQ(ierr);
   da->gtol      = gtol;
   da->ltog      = ltog;
   da->idx       = idx;

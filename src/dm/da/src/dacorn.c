@@ -128,8 +128,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DA da,DA *cda)
       DAPeriodicType pt;
       ierr = DAGetInfo(da,0,&m,&n,0,&M,&N,0,0,&s,&pt,0);CHKERRQ(ierr);
       ierr = DAGetCorners(da,0,0,0,&l,&k,0);CHKERRQ(ierr);
-      ierr = PetscMalloc(size*sizeof(PetscInt),&lc);CHKERRQ(ierr);
-      ierr = PetscMalloc(size*sizeof(PetscInt),&ld);CHKERRQ(ierr);
+      ierr = PetscMalloc2(size,PetscInt,&lc,size,PetscInt,&ld);CHKERRQ(ierr);
       /* only first M values in lc matter */
       ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
       /* every Mth value in ld matters */
@@ -138,16 +137,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DA da,DA *cda)
         ld[i] = ld[M*i];
       }
       ierr = DACreate2d(((PetscObject)da)->comm,pt,DA_STENCIL_BOX,m,n,M,N,2,s,lc,ld,&da->da_coordinates);CHKERRQ(ierr);
-      ierr = PetscFree(lc);CHKERRQ(ierr);
-      ierr = PetscFree(ld);CHKERRQ(ierr);
+      ierr = PetscFree2(lc,ld);CHKERRQ(ierr);
     } else if (da->dim == 3) {
       PetscInt            i,s,m,*lc,*ld,*le,l,k,q,n,M,N,P,p;
       DAPeriodicType pt;
       ierr = DAGetInfo(da,0,&m,&n,&p,&M,&N,&P,0,&s,&pt,0);CHKERRQ(ierr);
       ierr = DAGetCorners(da,0,0,0,&l,&k,&q);CHKERRQ(ierr);
-      ierr = PetscMalloc(size*sizeof(PetscInt),&lc);CHKERRQ(ierr);
-      ierr = PetscMalloc(size*sizeof(PetscInt),&ld);CHKERRQ(ierr);
-      ierr = PetscMalloc(size*sizeof(PetscInt),&le);CHKERRQ(ierr);
+      ierr = PetscMalloc3(size,PetscInt,&lc,size,PetscInt,&ld,size,PetscInt,&le);CHKERRQ(ierr);
       /* only first M values in lc matter */
       ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
       /* every Mth value in ld matters */
@@ -160,9 +156,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DA da,DA *cda)
         le[i] = le[M*N*i];
       }
       ierr = DACreate3d(((PetscObject)da)->comm,pt,DA_STENCIL_BOX,m,n,p,M,N,P,3,s,lc,ld,le,&da->da_coordinates);CHKERRQ(ierr);
-      ierr = PetscFree(lc);CHKERRQ(ierr);
-      ierr = PetscFree(ld);CHKERRQ(ierr);
-      ierr = PetscFree(le);CHKERRQ(ierr);
+      ierr = PetscFree3(lc,ld,le);CHKERRQ(ierr);
     }
   }
   ierr = PetscObjectReference((PetscObject) da->da_coordinates);CHKERRQ(ierr);

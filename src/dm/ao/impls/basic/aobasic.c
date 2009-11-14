@@ -53,7 +53,7 @@ PetscErrorCode AODestroy_Basic(AO ao)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(aodebug->app);CHKERRQ(ierr);
+  ierr = PetscFree2(aodebug->app,aodebug->petsc);CHKERRQ(ierr);
   ierr = PetscFree(ao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -237,8 +237,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateBasic(MPI_Comm comm,PetscInt napp,const
   /* transmit all lengths to all processors */
   ierr  = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr  = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr  = PetscMalloc(2*size * sizeof(PetscMPIInt), &lens);CHKERRQ(ierr);
-  disp  = lens + size;
+  ierr  = PetscMalloc2(size,PetscMPIInt, &lens,size,PetscMPIInt,&disp);CHKERRQ(ierr);
   nnapp = napp;
   ierr  = MPI_Allgather(&nnapp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
   N    =  0;
@@ -262,16 +261,15 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateBasic(MPI_Comm comm,PetscInt napp,const
   }
 
   /* get all indices on all processors */
-  ierr   = PetscMalloc(2*N * sizeof(PetscInt), &allpetsc);CHKERRQ(ierr);
-  allapp = allpetsc + N;
+  ierr   = PetscMalloc2(N,PetscInt, &allpetsc,N,PetscInt,&allapp);CHKERRQ(ierr);
   ierr   = MPI_Allgatherv(petsc, napp, MPIU_INT, allpetsc, lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
   ierr   = MPI_Allgatherv((void*)myapp, napp, MPIU_INT, allapp, lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
-  ierr   = PetscFree(lens);CHKERRQ(ierr);
+  ierr   = PetscFree2(lens,disp);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG)
   {
     PetscInt *sorted;
-    ierr = PetscMalloc((N+1)*sizeof(PetscInt),&sorted);CHKERRQ(ierr);
+    ierr = PetscMalloc(N*sizeof(PetscInt),&sorted);CHKERRQ(ierr);
 
     ierr = PetscMemcpy(sorted,allapp,N*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscSortInt(N,sorted);CHKERRQ(ierr);
@@ -290,10 +288,10 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateBasic(MPI_Comm comm,PetscInt napp,const
 #endif
 
   /* generate a list of application and PETSc node numbers */
-  ierr = PetscMalloc(2*N * sizeof(PetscInt), &aobasic->app);CHKERRQ(ierr);
+  ierr = PetscMalloc2(N,PetscInt, &aobasic->app,N,PetscInt,&aobasic->petsc);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(ao,2*N*sizeof(PetscInt));CHKERRQ(ierr);
-  aobasic->petsc = aobasic->app + N;
-  ierr = PetscMemzero(aobasic->app, 2*N*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(aobasic->app, N*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(aobasic->petsc, N*sizeof(PetscInt));CHKERRQ(ierr);
   for(i = 0; i < N; i++) {
     ip = allpetsc[i];
     ia = allapp[i];
@@ -306,7 +304,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateBasic(MPI_Comm comm,PetscInt napp,const
   if (!mypetsc) {
     ierr = PetscFree(petsc);CHKERRQ(ierr);
   }
-  ierr = PetscFree(allpetsc);CHKERRQ(ierr);
+  ierr = PetscFree2(allpetsc,allapp);CHKERRQ(ierr);
   /* shift indices down by one */
   for(i = 0; i < N; i++) {
     aobasic->app[i]--;

@@ -81,12 +81,8 @@ PetscErrorCode KSPSetUp_CG(KSP ksp)
   */
   if (ksp->calc_sings) {
     /* get space to store tridiagonal matrix for Lanczos */
-    ierr = PetscMalloc(2*(maxit+1)*sizeof(PetscScalar),&cgP->e);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(ksp,2*(maxit+1)*sizeof(PetscScalar));CHKERRQ(ierr);
-    cgP->d                         = cgP->e + maxit + 1; 
-    ierr = PetscMalloc(2*(maxit+1)*sizeof(PetscReal),&cgP->ee);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(ksp,2*(maxit+1)*sizeof(PetscScalar));CHKERRQ(ierr);
-    cgP->dd                        = cgP->ee + maxit + 1;
+    ierr = PetscMalloc4(maxit+1,PetscScalar,&cgP->e,maxit+1,PetscScalar,&cgP->d,maxit+1,PetscReal,&cgP->ee,maxit+1,PetscReal,&cgP->dd);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(ksp,2*(maxit+1)*(sizeof(PetscScalar)+sizeof(PetscReal)));CHKERRQ(ierr);
     ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_CG;
     ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_CG;
   }
@@ -96,7 +92,7 @@ PetscErrorCode KSPSetUp_CG(KSP ksp)
 /*
        KSPSolve_CG - This routine actually applies the conjugate gradient  method
 
-   This routine is MUCH too messy. I has two many options (norm type and single reduction) embedded making the code confusing and likely to be buggy.
+   This routine is MUCH too messy. I has too many options (norm type and single reduction) embedded making the code confusing and likely to be buggy.
 
    Input Parameter:
 .     ksp - the Krylov space object that was set to use conjugate gradient, by, for 
@@ -311,8 +307,7 @@ PetscErrorCode KSPDestroy_CG(KSP ksp)
   PetscFunctionBegin;
   /* free space used for singular value calculations */
   if (ksp->calc_sings) {
-    ierr = PetscFree(cg->e);CHKERRQ(ierr);
-    ierr = PetscFree(cg->ee);CHKERRQ(ierr);
+    ierr = PetscFree4(cg->e,cg->dd,cg->ee,cg->dd);CHKERRQ(ierr);
   }
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPCGSetType_C","",PETSC_NULL);CHKERRQ(ierr);
