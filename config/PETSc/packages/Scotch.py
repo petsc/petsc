@@ -18,23 +18,6 @@ class Configure(PETSc.package.Package):
     self.needsMath    = 1
     return
 
-  def __str__(self):
-    if self.found:
-      desc = ['Scotch:']	
-      desc.append('  Version: '+self.version)
-      desc.append('  Includes: '+str(self.include))
-      desc.append('  Library: '+str(self.lib))
-      return '\n'.join(desc)+'\n'
-    else:
-      return ''
-
-  def setupHelp(self, help):
-    import nargs
-    help.addArgument('Scotch', '-with-scotch=<bool>',                nargs.ArgBool(None, 0, 'Activate Scotch'))
-    help.addArgument('Scotch', '-with-scotch-dir=<root dir>',        nargs.ArgDir(None, None, 'Specify the root directory of the Scotch installation'))
-    help.addArgument('Scotch', '-download-scotch=<no,yes,ifneeded>', nargs.ArgFuzzyBool(None, 0, 'Automatically install Scotch'))
-    return
-
   def setupDependencies(self, framework):
     PETSc.package.Package.setupDependencies(self, framework)
     self.mpi            = framework.require('config.packages.MPI',self)
