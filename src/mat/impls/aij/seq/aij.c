@@ -1809,8 +1809,25 @@ PetscErrorCode MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,Mat
   PetscFunctionReturn(0);
 }
 
-/*
-*/
+#undef __FUNCT__  
+#define __FUNCT__ "MatILUFactor_SeqAIJ_newdatastruct"
+PetscErrorCode MatILUFactor_SeqAIJ_newdatastruct(Mat inA,IS row,IS col,const MatFactorInfo *info)
+{
+  PetscErrorCode ierr;
+  Mat            C;
+
+  PetscFunctionBegin;
+  /* A new factored matrix C replaces original matrix inA, not a truely in-place ILUFactor yet */
+  ierr = MatGetFactor(inA,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&C);CHKERRQ(ierr);
+  ierr = MatILUFactorSymbolic_SeqAIJ_newdatastruct(C,inA,row,col,info);CHKERRQ(ierr);
+  ierr = MatLUFactorNumeric_SeqAIJ_newdatastruct(C,inA,info);CHKERRQ(ierr);
+  inA->ops->solve            = C->ops->solve;
+  inA->ops->solvetranspose   = C->ops->solvetranspose;
+  ierr = MatHeaderCopy(inA,C);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(inA,((Mat_SeqAIJ*)(inA->data))->icol);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUFactor_SeqAIJ"
 PetscErrorCode MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,const MatFactorInfo *info)
@@ -1819,14 +1836,22 @@ PetscErrorCode MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,const MatFactorInfo *in
   PetscErrorCode ierr;
   Mat            outA;
   PetscTruth     row_identity,col_identity;
+  PetscTruth     newdatastruct=PETSC_FALSE;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-ilu_new",&newdatastruct,PETSC_NULL);CHKERRQ(ierr);
+  if(newdatastruct){
+    ierr = MatILUFactor_SeqAIJ_newdatastruct(inA,row,col,info);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
   if (info->levels != 0) SETERRQ(PETSC_ERR_SUP,"Only levels=0 supported for in-place ilu");
+
   ierr = ISIdentity(row,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(col,&col_identity);CHKERRQ(ierr);
 
   outA          = inA; 
-  inA->factor   = MAT_FACTOR_LU;
+  outA->factor  = MAT_FACTOR_LU;
   ierr = PetscObjectReference((PetscObject)row);CHKERRQ(ierr);
   if (a->row) { ierr = ISDestroy(a->row);CHKERRQ(ierr);}
   a->row = row;

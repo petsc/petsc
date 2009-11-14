@@ -53,7 +53,6 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedGetMatrix(Sliced slice, const MatType mty
 {
   PetscErrorCode         ierr;
   PetscInt               *globals,*sd_nnz,*so_nnz,rstart,bs,i;
-  PetscTruth             hassetbs;
   ISLocalToGlobalMapping lmap,blmap;
   void                   (*aij)(void) = PETSC_NULL;
 

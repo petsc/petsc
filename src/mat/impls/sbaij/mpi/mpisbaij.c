@@ -1403,6 +1403,24 @@ PetscErrorCode MatAXPY_MPISBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatSetBlockSize_MPISBAIJ"
+PetscErrorCode MatSetBlockSize_MPISBAIJ(Mat A,PetscInt bs)
+{
+  Mat_MPISBAIJ   *a = (Mat_MPISBAIJ*)A->data;
+  PetscInt        rbs,cbs;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSetBlockSize(a->A,bs);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(a->B,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutGetBlockSize(A->rmap,&rbs);CHKERRQ(ierr);
+  ierr = PetscLayoutGetBlockSize(A->cmap,&cbs);CHKERRQ(ierr);
+  if (rbs != bs) SETERRQ2(PETSC_ERR_ARG_SIZ,"Attempt to set block size %d with SBAIJ %d",bs,rbs);
+  if (cbs != bs) SETERRQ2(PETSC_ERR_ARG_SIZ,"Attempt to set block size %d with SBAIJ %d",bs,cbs);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_MPISBAIJ"
 PetscErrorCode MatGetSubMatrices_MPISBAIJ(Mat A,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *B[])
 {
@@ -1473,7 +1491,7 @@ static struct _MatOps MatOps_Values = {
        0,
        0,
        0,
-/*49*/ 0,
+/*49*/ MatSetBlockSize_MPISBAIJ,
        0,
        0,
        0,

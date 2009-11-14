@@ -53,10 +53,10 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
 
   ierr = PetscMalloc5(s,PetscScalar,&scheme->c,s*s,PetscScalar,&scheme->a,r*s,PetscScalar,&scheme->b,r*s,PetscScalar,&scheme->u,r*r,PetscScalar,&scheme->v);CHKERRQ(ierr);
   ierr = PetscMemcpy(scheme->c,c,s*sizeof(PetscScalar));CHKERRQ(ierr);
-  for (j=0; j<s*s; j++) scheme->a[j] = (PetscAbs(a[j]) < 1e-12) ? 0 : a[j];
-  for (j=0; j<r*s; j++) scheme->b[j] = (PetscAbs(b[j]) < 1e-12) ? 0 : b[j];
-  for (j=0; j<s*r; j++) scheme->u[j] = (PetscAbs(u[j]) < 1e-12) ? 0 : u[j];
-  for (j=0; j<r*r; j++) scheme->v[j] = (PetscAbs(v[j]) < 1e-12) ? 0 : v[j];
+  for (j=0; j<s*s; j++) scheme->a[j] = (PetscAbsScalar(a[j]) < 1e-12) ? 0 : a[j];
+  for (j=0; j<r*s; j++) scheme->b[j] = (PetscAbsScalar(b[j]) < 1e-12) ? 0 : b[j];
+  for (j=0; j<s*r; j++) scheme->u[j] = (PetscAbsScalar(u[j]) < 1e-12) ? 0 : u[j];
+  for (j=0; j<r*r; j++) scheme->v[j] = (PetscAbsScalar(v[j]) < 1e-12) ? 0 : v[j];
 
   ierr = PetscMalloc6(r,PetscScalar,&scheme->alpha,r,PetscScalar,&scheme->beta,r,PetscScalar,&scheme->gamma,3*s,PetscScalar,&scheme->phi,3*r,PetscScalar,&scheme->psi,r,PetscScalar,&scheme->stage_error);CHKERRQ(ierr);
   {

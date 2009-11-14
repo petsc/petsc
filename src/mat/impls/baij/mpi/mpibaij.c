@@ -1801,11 +1801,16 @@ PetscErrorCode MatAXPY_MPIBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
 PetscErrorCode MatSetBlockSize_MPIBAIJ(Mat A,PetscInt bs)
 {
   Mat_MPIBAIJ    *a   = (Mat_MPIBAIJ*)A->data;
+  PetscInt rbs,cbs;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatSetBlockSize(a->A,bs);CHKERRQ(ierr);
   ierr = MatSetBlockSize(a->B,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutGetBlockSize(A->rmap,&rbs);CHKERRQ(ierr);
+  ierr = PetscLayoutGetBlockSize(A->cmap,&cbs);CHKERRQ(ierr);
+  if (rbs != bs) SETERRQ2(PETSC_ERR_ARG_SIZ,"Attempt to set block size %d with BAIJ %d",bs,rbs);
+  if (cbs != bs) SETERRQ2(PETSC_ERR_ARG_SIZ,"Attempt to set block size %d with BAIJ %d",bs,cbs);
   PetscFunctionReturn(0);
 }
 

@@ -1749,6 +1749,8 @@ PetscErrorCode MatSetBlockSize_MPIAIJ(Mat A,PetscInt bs)
   PetscFunctionBegin;
   ierr = MatSetBlockSize(a->A,bs);CHKERRQ(ierr);
   ierr = MatSetBlockSize(a->B,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(A->rmap,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(A->cmap,bs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  

@@ -67,6 +67,9 @@ E*/
 #define MATHYPRESTRUCT     "hyprestruct"
 #define MATSUBMATRIX       "submatrix"
 
+#ifdef PETSC_USE_MATFRAMEWORK
+#define MATFRAMEWORK           "framework"
+#endif
 
 /*E
     MatSolverPackage - String with the name of a PETSc matrix solver type. 
@@ -313,6 +316,23 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeMerge(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateComposite(MPI_Comm,PetscInt,const Mat*,Mat*);
 typedef enum {MAT_COMPOSITE_ADDITIVE,MAT_COMPOSITE_MULTIPLICATIVE} MatCompositeType;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeSetType(Mat,MatCompositeType);
+
+#ifdef PETSC_USE_MATFRAMEWORK
+typedef enum {MAT_FRAMEWORK_ADDITIVE, MAT_FRAMEWORK_MULTIPLICATIVE} MatFrameworkType;
+typedef enum {MAT_FRAMEWORK_ASSEMBLED, MAT_FRAMEWORK_DISASSEMBLED} MatFrameworkMode;
+
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateFramework(MPI_Comm,Mat *);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFrameworkSetType(Mat,MatFrameworkType);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFrameworkGetType(Mat,MatFrameworkType*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFrameworkSetMode(Mat,MatFrameworkMode);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFrameworkGetMode(Mat,MatFrameworkMode*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFrameworkGetBlockCount(Mat, PetscInt*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFrameworkAddBlock(Mat, PetscInt*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFrameworkSetBlockEmbedding(Mat, PetscInt, IS,IS);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFrameworkGetBlockEmbedding(Mat, PetscInt, IS, IS);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFrameworkSetBlock(Mat, PetscInt, Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFrameworkGetBlock(Mat, PetscInt, Mat*);
+#endif
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqFFTW(MPI_Comm,PetscInt,const PetscInt[],Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateTranspose(Mat,Mat*);
