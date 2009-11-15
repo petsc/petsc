@@ -63,9 +63,9 @@ static PetscErrorCode ourdiagonalscale(Mat mat,Vec l,Vec r)
 {
   PetscErrorCode ierr = 0;
   if (!l) {
-    (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)mat)->fortran_func_pointers[5]))(&mat,PETSC_NULL_OBJECT_Fortran,&r,&ierr);
+    (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)mat)->fortran_func_pointers[5]))(&mat,(Vec*)PETSC_NULL_OBJECT_Fortran,&r,&ierr);
   } else if (!r) {
-    (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)mat)->fortran_func_pointers[5]))(&mat,&l,PETSC_NULL_OBJECT_Fortran,&ierr);
+    (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)mat)->fortran_func_pointers[5]))(&mat,&l,(Vec*)PETSC_NULL_OBJECT_Fortran,&ierr);
   } else {
     (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)mat)->fortran_func_pointers[5]))(&mat,&l,&r,&ierr);
   }
