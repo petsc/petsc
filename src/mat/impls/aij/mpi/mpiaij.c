@@ -4100,7 +4100,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpima
   /* insert mat values of mpimat */
   /*----------------------------*/
   ierr = PetscMalloc(N*sizeof(PetscScalar),&ba_i);CHKERRQ(ierr);
-  ierr = PetscMalloc3(merge->nrecv,PetscInt**,&buf_ri_k,merge->nrecv,PetscInt**,&nextrow,merge->nrecv,PetscInt**,&nextai);CHKERRQ(ierr);
+  ierr = PetscMalloc3(merge->nrecv,PetscInt*,&buf_ri_k,merge->nrecv,PetscInt*,&nextrow,merge->nrecv,PetscInt*,&nextai);CHKERRQ(ierr);
 
   for (k=0; k<merge->nrecv; k++){
     buf_ri_k[k] = buf_ri[k]; /* beginning of k-th recved i-structure */
@@ -4318,7 +4318,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
   current_space = free_space;
 
   /* determine symbolic info for each local row */
-  ierr = PetscMalloc3(merge->nrecv,PetscInt**,&buf_ri_k,merge->nrecv,PetscInt**,&nextrow,merge->nrecv,PetscInt**,&nextai);CHKERRQ(ierr);
+  ierr = PetscMalloc3(merge->nrecv,PetscInt*,&buf_ri_k,merge->nrecv,PetscInt*,&nextrow,merge->nrecv,PetscInt*,&nextai);CHKERRQ(ierr);
 
   for (k=0; k<merge->nrecv; k++){
     buf_ri_k[k] = buf_ri[k]; /* beginning of k-th recved i-structure */

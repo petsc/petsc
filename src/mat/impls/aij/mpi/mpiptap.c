@@ -387,9 +387,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr          = PetscFreeSpaceGet(nnz,&free_space);
   current_space = free_space;
 
-  ierr = PetscMalloc((3*merge->nrecv+1)*sizeof(PetscInt**),&buf_ri_k);CHKERRQ(ierr);
-  nextrow = buf_ri_k + merge->nrecv;
-  nextci  = nextrow + merge->nrecv;
+  ierr = PetscMalloc3(merge->nrecv,PetscInt**,&buf_ri_k,merge->nrecv,PetscInt**,&nextrow,merge->nrecv,PetscInt**,&nextci);CHKERRQ(ierr);
   for (k=0; k<merge->nrecv; k++){
     buf_ri_k[k] = buf_ri[k]; /* beginning of k-th recved i-structure */
     nrows       = *buf_ri_k[k];
@@ -436,7 +434,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
     bi[i+1] = bi[i] + nnz;
   }
   ierr = MatRestoreSymbolicTranspose_SeqAIJ(p->A,&pdti,&pdtj);CHKERRQ(ierr);
-  ierr = PetscFree(buf_ri_k);CHKERRQ(ierr);
+  ierr = PetscFree3(buf_ri_k,nextrow,nextci);CHKERRQ(ierr);
 
   ierr = PetscMalloc((bi[pn]+1)*sizeof(PetscInt),&bj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,bj);CHKERRQ(ierr);
@@ -643,9 +641,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 
   /* insert local and received values into C */
   /*-----------------------------------------*/
-  ierr = PetscMalloc((3*merge->nrecv+1)*sizeof(PetscInt**),&buf_ri_k);CHKERRQ(ierr);
-  nextrow   = buf_ri_k + merge->nrecv;
-  nextci = nextrow + merge->nrecv;
+  ierr = PetscMalloc3(merge->nrecv,PetscInt**,&buf_ri_k,merge->nrecv,PetscInt**,&nextrow,merge->nrecv,PetscInt**,&nextci);CHKERRQ(ierr);
 
   for (k=0; k<merge->nrecv; k++){
     buf_ri_k[k] = buf_ri[k]; /* beginning of k-th recved i-structure */
@@ -684,6 +680,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 
   ierr = PetscFree(ba);CHKERRQ(ierr);
   ierr = PetscFree(abuf_r);CHKERRQ(ierr);
-  ierr = PetscFree(buf_ri_k);CHKERRQ(ierr); 
+  ierr = PetscFree3(buf_ri_k,nextrow,nextci);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }

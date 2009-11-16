@@ -172,6 +172,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
     PetscInt  *d_p;
     char      *t_p;
 
+    /* should replace with PetscMallocN() */
     ierr  = PetscMalloc((imax)*(sizeof(PetscBT) + sizeof(PetscInt*)+ sizeof(PetscInt)) + 
       (m)*imax*sizeof(PetscInt)  + (m/PETSC_BITS_PER_BYTE+1)*imax*sizeof(char) + 1,&table);CHKERRQ(ierr);
     ierr  = PetscMemzero(table,(imax)*(sizeof(PetscBT) + sizeof(PetscInt*)+ sizeof(PetscInt)) + 
@@ -888,12 +889,9 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   ierr = PetscFree(olengths1);CHKERRQ(ierr);
   
   /* Allocate Memory for outgoing messages */
-  ierr     = PetscMalloc(2*size*sizeof(PetscInt*) + 2*msz*sizeof(PetscInt) + size*sizeof(PetscInt),&sbuf1);CHKERRQ(ierr);
-  ptr      = sbuf1 + size;   /* Pointers to the data in outgoing buffers */
-  ierr     = PetscMemzero(sbuf1,2*size*sizeof(PetscInt*));CHKERRQ(ierr);
-  /* allocate memory for outgoing data + buf to receive the first reply */
-  tmp      = (PetscInt*)(ptr + size);
-  ctr      = tmp + 2*msz;
+  ierr = PetscMalloc4(size,PetscInt*,&sbuf1,size,PetscInt*,&ptr,2*msz,PetscInt,&tmp,size,PetscInt,&ctr);CHKERRQ(ierr);
+  ierr = PetscMemzero(sbuf1,size*sizeof(PetscInt*));CHKERRQ(ierr);
+  ierr = PetscMemzero(ptr,size*sizeof(PetscInt*));CHKERRQ(ierr);
 
   {
     PetscInt *iptr = tmp,ict = 0;
@@ -1129,9 +1127,9 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   {
     const PetscInt *icol_i;
     
-    ierr    = PetscMalloc((1+ismax)*sizeof(PetscInt*)+ (1+ismax*C->cmap->N)*sizeof(PetscInt),&cmap);CHKERRQ(ierr);
-    cmap[0] = (PetscInt*)(cmap + ismax);
-    ierr    = PetscMemzero(cmap[0],(1+ismax*C->cmap->N)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr    = PetscMalloc(ismax*sizeof(PetscInt*),&cmap);CHKERRQ(ierr);
+    ierr    = PetscMalloc(ismax*C->cmap->N*sizeof(PetscInt),&cmap[0]);CHKERRQ(ierr);
+    ierr    = PetscMemzero(cmap[0],ismax*C->cmap->N*sizeof(PetscInt));CHKERRQ(ierr);
     for (i=1; i<ismax; i++) { cmap[i] = cmap[i-1] + C->cmap->N; }
     for (i=0; i<ismax; i++) {
       jmax   = ncol[i];
@@ -1145,8 +1143,8 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
 
   /* Create lens which is required for MatCreate... */
   for (i=0,j=0; i<ismax; i++) { j += nrow[i]; }
-  ierr    = PetscMalloc( (1+ismax)*sizeof(PetscInt*)+ j*sizeof(PetscInt),&lens);CHKERRQ(ierr);
-  lens[0] = (PetscInt*)(lens + ismax);
+  ierr    = PetscMalloc(ismax*sizeof(PetscInt*),&lens);CHKERRQ(ierr);
+  ierr    = PetscMalloc(j*sizeof(PetscInt),&lens[0]);CHKERRQ(ierr);
   ierr    = PetscMemzero(lens[0],j*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=1; i<ismax; i++) { lens[i] = lens[i-1] + nrow[i-1]; }
   
@@ -1172,8 +1170,8 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   }
   
   /* Create row map*/
-  ierr    = PetscMalloc((1+ismax)*sizeof(PetscInt*)+ ismax*C->rmap->N*sizeof(PetscInt),&rmap);CHKERRQ(ierr);
-  rmap[0] = (PetscInt*)(rmap + ismax);
+  ierr    = PetscMalloc(ismax*sizeof(PetscInt*),&rmap);CHKERRQ(ierr);
+  ierr    = PetscMalloc(ismax*C->rmap->N*sizeof(PetscInt),&rmap[0]);CHKERRQ(ierr);
   ierr    = PetscMemzero(rmap[0],ismax*C->rmap->N*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=1; i<ismax; i++) { rmap[i] = rmap[i-1] + C->rmap->N;}
   for (i=0; i<ismax; i++) {
@@ -1357,7 +1355,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   ierr = PetscFree4(w1,w2,w3,w4);CHKERRQ(ierr);
   ierr = PetscFree(pa);CHKERRQ(ierr);
 
-  ierr = PetscFree(sbuf1);CHKERRQ(ierr);
+  ierr = PetscFree4(sbuf1,ptr,tmp,ctr);CHKERRQ(ierr);
   ierr = PetscFree(rbuf2);CHKERRQ(ierr);
   for (i=0; i<nrqr; ++i) {
     ierr = PetscFree(sbuf2[i]);CHKERRQ(ierr);
@@ -1375,8 +1373,11 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   ierr = PetscFree(sbuf_aa[0]);CHKERRQ(ierr);
   ierr = PetscFree(sbuf_aa);CHKERRQ(ierr);
   
+  ierr = PetscFree(cmap[0]);CHKERRQ(ierr);
   ierr = PetscFree(cmap);CHKERRQ(ierr);
+  ierr = PetscFree(rmap[0]);CHKERRQ(ierr);
   ierr = PetscFree(rmap);CHKERRQ(ierr);
+  ierr = PetscFree(lens[0]);CHKERRQ(ierr);
   ierr = PetscFree(lens);CHKERRQ(ierr);
 
   for (i=0; i<ismax; i++) {

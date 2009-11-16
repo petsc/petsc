@@ -117,8 +117,8 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscS
         Fortran and C not PetscScalar aligned,recover by copying values into
         memory that is aligned with the Fortran
     */
-    PetscErrorCode       ierr;
-    PetscScalar          *work;
+    PetscErrorCode ierr;
+    PetscScalar    *work;
     PetscContainer container;
 
     ierr = PetscMalloc((N+align)*sizeof(PetscScalar),&work);CHKERRQ(ierr); 
@@ -177,10 +177,10 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscS
 */     
 PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,size_t addr,PetscInt N,PetscScalar **lx)
 {
-  PetscErrorCode       ierr;
-  PetscInt             shift;
+  PetscErrorCode ierr;
+  PetscInt       shift;
   PetscContainer container;
-  PetscScalar          *tlx;
+  PetscScalar    *tlx;
 
   ierr = PetscObjectQuery(obj,"GetArrayPtr",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
@@ -199,18 +199,15 @@ PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,s
   return 0;
 }
 
-
-
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define petscisinfornanscalar_            PETSCISINFORNANSCALAR
+#define petscisinfornanscalar_          PETSCISINFORNANSCALAR
 #define petscisinfornanreal_            PETSCISINFORNANREAL
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define petscisinfornanscalar_           petscisinfornanscalar
-#define petscisinfornanreal_           petscisinfornanreal
+#define petscisinfornanscalar_          petscisinfornanscalar
+#define petscisinfornanreal_            petscisinfornanreal
 #endif
 
 EXTERN_C_BEGIN
-
 PetscTruth PETSC_STDCALL petscisinfornanscalar_(PetscScalar *v)
 {
   return (PetscTruth) PetscIsInfOrNanScalar(*v);
@@ -220,7 +217,6 @@ PetscTruth PETSC_STDCALL petscisinfornanreal_(PetscReal *v)
 {
   return (PetscTruth) PetscIsInfOrNanReal(*v);
 }
-
 EXTERN_C_END
 
 
