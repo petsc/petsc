@@ -168,33 +168,32 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscTruth valOnly,PetscInt *n,PetscInt **c
     }
   }  
   {
-    
-    pastix_int_t    * tmpcolptr = malloc((*n+1)*sizeof(PetscInt));
-    pastix_int_t    * tmprows   = malloc(nnz*sizeof(PetscInt));
-    pastix_float_t  * tmpvalues = malloc(nnz*sizeof(PetscScalar));
-    if (sizeof(PetscScalar) != sizeof(pastix_float_t))
-      {
-	SETERRQ2(PETSC_ERR_SUP,"sizeof(PetscScalar) %d != sizeof(pastix_float_t) %d", sizeof(PetscScalar), sizeof(pastix_float_t));
-      }
+    PetscScalar *tmpvalues;
+    PetscInt *tmprows,*tmpcolptr;
+    ierr = PetscMalloc3(nnz,PetscScalar,&tmpvalues,nnz,PetscInt,&tmprows,(*n+1),PetscInt,&tmpcolptr);CHKERRQ(ierr);
+    if (sizeof(PetscScalar) != sizeof(pastix_float_t)) {
+      SETERRQ2(PETSC_ERR_SUP,"sizeof(PetscScalar) %d != sizeof(pastix_float_t) %d",sizeof(PetscScalar),sizeof(pastix_float_t));
+    }
+    if (sizeof(PetscInt) != sizeof(pastix_int_t)) {
+      SETERRQ2(PETSC_ERR_SUP,"sizeof(PetscInt) %d != sizeof(pastix_int_t) %d",sizeof(PetscInt),sizeof(pastix_int_t));
+    }
 
-    memcpy(tmpcolptr, *colptr, (*n+1)*sizeof(PetscInt)); 
-    memcpy(tmprows,   *row,    nnz*sizeof(PetscInt));
-    memcpy(tmpvalues, *values, nnz*sizeof(PetscScalar));
+    ierr = PetscMemcpy(tmpcolptr,*colptr,(*n+1)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(tmprows,*row,nnz*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(tmpvalues,*values,nnz*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = PetscFree(*row);CHKERRQ(ierr);
     ierr = PetscFree(*values);CHKERRQ(ierr);
 
-    pastix_checkMatrix(MPI_COMM_WORLD, API_VERBOSE_NO, 
-		       ((isSym != 0) ? API_SYM_YES : API_SYM_NO),  API_YES,
-		       *n, &tmpcolptr, &tmprows, &tmpvalues, NULL, 1);
+    pastix_checkMatrix(MPI_COMM_WORLD,API_VERBOSE_NO,
+		       ((isSym != 0) ? API_SYM_YES : API_SYM_NO),API_YES,
+		       *n,&tmpcolptr,&tmprows,&tmpvalues,NULL,1);
     
-    memcpy(*colptr, tmpcolptr, (*n+1)*sizeof(PetscInt));
-    free(tmpcolptr);
-    ierr = PetscMalloc( ((*colptr)[*n]-1)  *sizeof(PetscInt)   ,row);CHKERRQ(ierr);
-    memcpy(*row,    tmprows, ((*colptr)[*n]-1)*sizeof(PetscInt));
-    free(tmprows);
-    ierr = PetscMalloc( ((*colptr)[*n]-1)  *sizeof(PetscScalar),values);CHKERRQ(ierr);
-    memcpy(*values, tmpvalues, ((*colptr)[*n]-1)*sizeof(PetscScalar));
-    free(tmpvalues);
+    ierr = PetscMemcpy(*colptr,tmpcolptr,(*n+1)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMalloc(((*colptr)[*n]-1)*sizeof(PetscInt),row);CHKERRQ(ierr);
+    ierr = PetscMemcpy(*row,tmprows,((*colptr)[*n]-1)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMalloc(((*colptr)[*n]-1)*sizeof(PetscScalar),values);CHKERRQ(ierr);
+    ierr = PetscMemcpy(*values,tmpvalues,((*colptr)[*n]-1)*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscFree3(tmpvalues,tmprows,tmpcolptr);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
