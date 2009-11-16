@@ -139,8 +139,10 @@ for this function as well.</li>
 MatRelax()</li>
         <li>Changed MatRelax() to MatSOR() to match MatSORType() and
 PCSOR</li>
-	<li>Removed requirement that rows be sorted in
+        <li>Removed requirement that rows be sorted in
 MatCreateMPIAIJWithArrays() and MatMPIAIJSetPreallocationCSR().</li>
+        <li>Changed MATOP_DIAGONAL_SHIFT to MATOP_DIAGONAL_SET to match
+function name MatDiagonalSet().</li>
       </ul>
       <u><b>PC:</b></u>
       <ul>
@@ -154,8 +156,8 @@ option made no sense</li>
         <li>PCApplyRichardson() has an additional argument indicating
 if the initial guess being passed in is nonzero. SOR will save some
 work if it is zero.</li>
-	<li>MatSetBlockSize() is no longer an error for BAIJ matrices,
-but the argument must be the same as when the matrix was preallocated.
+        <li>MatSetBlockSize() is no longer an error for BAIJ matrices,
+but the argument must be the same as when the matrix was preallocated. </li>
       </ul>
       <p><u><b>KSP:</b></u></p>
       <ul>

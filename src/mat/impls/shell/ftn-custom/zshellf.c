@@ -100,7 +100,7 @@ void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,PetscErrorCod
   } else if (*op == MATOP_DIAGONAL_SCALE) {
     *ierr = MatShellSetOperation(*mat,*op,(PetscVoidFunction)ourdiagonalscale);
     ((PetscObject)*mat)->fortran_func_pointers[5] = (PetscVoidFunction)f;
-  } else if (*op == MATOP_DIAGONAL_SHIFT) {
+  } else if (*op == MATOP_DIAGONAL_SET) {
     *ierr = MatShellSetOperation(*mat,*op,(PetscVoidFunction)ourdiagonalset);
     ((PetscObject)*mat)->fortran_func_pointers[6] = (PetscVoidFunction)f;
   } else {

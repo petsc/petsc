@@ -235,7 +235,7 @@
       PetscEnum MATOP_GET_ROW_MAX
       PetscEnum MATOP_SCALE
       PetscEnum MATOP_SHIFT
-      PetscEnum MATOP_DIAGONAL_SHIFT
+      PetscEnum MATOP_DIAGONAL_SET
       PetscEnum MATOP_ILUDT_FACTOR
       PetscEnum MATOP_SET_BLOCK_SIZE
       PetscEnum MATOP_GET_ROW_IJ
@@ -359,7 +359,7 @@
       parameter(MATOP_GET_ROW_MAX=44)
       parameter(MATOP_SCALE=45)
       parameter(MATOP_SHIFT=46)
-      parameter(MATOP_DIAGONAL_SHIFT=47)
+      parameter(MATOP_DIAGONAL_SET=47)
       parameter(MATOP_ILUDT_FACTOR=48)
       parameter(MATOP_SET_BLOCK_SIZE=49)
       parameter(MATOP_GET_ROW_IJ=50)
