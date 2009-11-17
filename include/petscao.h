@@ -18,7 +18,7 @@ typedef enum {AO_BASIC=0, AO_ADVANCED=1, AO_MAPPING=2} AOType;
 
   Concepts: global numbering
 
-.seealso:  AOCreateBasic(), AOCreateBasicIS(), AOPetscToApplication(), AOView()
+.seealso:  AOCreateBasic(), AOCreateBasicIS(), AOPetscToApplication(), AOView(), AOApplicationToPetsc()
 S*/
 typedef struct _p_AO* AO;
 

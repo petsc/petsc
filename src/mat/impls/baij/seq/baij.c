@@ -1290,7 +1290,7 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
   ierr = PetscFree(a->saved_values);CHKERRQ(ierr);
   ierr = PetscFree(a->xtoy);CHKERRQ(ierr);
-  if (a->compressedrow.use){ierr = PetscFree(a->compressedrow.i);} 
+  if (a->compressedrow.use){ierr = PetscFree2(a->compressedrow.i,a->compressedrow.rindex);} 
 
   if (a->sbaijMat) {ierr = MatDestroy(a->sbaijMat);CHKERRQ(ierr);}
   if (a->parent) {ierr = MatDestroy(a->parent);CHKERRQ(ierr);}
@@ -3245,11 +3245,10 @@ PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C,Mat A,MatDuplicateOption cpval
   c->compressedrow.use     = a->compressedrow.use;
   c->compressedrow.nrows   = a->compressedrow.nrows;
   c->compressedrow.checked = a->compressedrow.checked;
-  if ( a->compressedrow.checked && a->compressedrow.use){
+  if (a->compressedrow.checked && a->compressedrow.use){
     i = a->compressedrow.nrows;
-    ierr = PetscMalloc((2*i+1)*sizeof(PetscInt),&c->compressedrow.i);CHKERRQ(ierr);
+    ierr = PetscMalloc2(i+1,PetscInt,&c->compressedrow.i,i+1,PetscInt,&c->compressedrow.rindex);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(C,(2*i+1)*sizeof(PetscInt));CHKERRQ(ierr);
-    c->compressedrow.rindex = c->compressedrow.i + i + 1;
     ierr = PetscMemcpy(c->compressedrow.i,a->compressedrow.i,(i+1)*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMemcpy(c->compressedrow.rindex,a->compressedrow.rindex,i*sizeof(PetscInt));CHKERRQ(ierr); 
   } else {

@@ -136,7 +136,8 @@ PetscErrorCode DAGetNatural_Private(DA da,PetscInt *outNlocal,IS *isnatural)
 .keywords: distributed array, get, global, indices, local-to-global
 
 .seealso: DACreate2d(), DAGetGhostCorners(), DAGetCorners(), DALocalToGlocal()
-          DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DALocalToLocalBegin(), DALocalToLocalEnd(), DAGetGlobalIndices(), DAGetOwnershipRanges()
+          DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DALocalToLocalBegin(), DALocalToLocalEnd(), DAGetGlobalIndices(), DAGetOwnershipRanges(),
+          AO, AOPetscToApplication(), AOApplicationToPetsc()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetAO(DA da,AO *ao)
 {

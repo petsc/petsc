@@ -47,11 +47,11 @@ PetscErrorCode MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C)
   ierr = PetscMalloc(((pm+1)*1)*sizeof(PetscInt),&ci);CHKERRQ(ierr);
   ci[0] = 0;
 
-  ierr = PetscMalloc((2*an+2*pm+1)*sizeof(PetscInt),&padenserow);CHKERRQ(ierr);
-  ierr = PetscMemzero(padenserow,(2*an+2*pm+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  pasparserow  = padenserow  + an;
-  denserow     = pasparserow + an;
-  sparserow    = denserow    + pm;
+  ierr = PetscMalloc4(an,PetscInt,&padenserow,an,PetscInt,&pasparserow,pm,PetscInt,&denserow,pm,PetscInt,&sparserow);CHKERRQ(ierr);
+  ierr = PetscMemzero(padenserow,an*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(pasparserow,an*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(denserow,pm*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(sparserow,pm*sizeof(PetscInt));CHKERRQ(ierr);
 
   /* Set initial free space to be nnz(A) scaled by aspect ratio of Pt. */
   /* This should be reasonable if sparsity of PAPt is similar to that of A. */
@@ -117,7 +117,7 @@ PetscErrorCode MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C)
   /* destroy list of free space and other temporary array(s) */
   ierr = PetscMalloc((ci[pm]+1)*sizeof(PetscInt),&cj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
-  ierr = PetscFree(padenserow);CHKERRQ(ierr);
+  ierr = PetscFree4(padenserow,pasparserow,denserow,sparserow);CHKERRQ(ierr);
     
   /* Allocate space for ca */
   ierr = PetscMalloc((ci[pm]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
@@ -170,11 +170,11 @@ PetscErrorCode MatApplyPAPt_Numeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
 
   /* Set up timers */
   ierr = PetscLogEventBegin(MAT_Applypapt_numeric,A,P,C,0);CHKERRQ(ierr);
-
-  ierr = PetscMalloc(an*(sizeof(MatScalar)+2*sizeof(PetscInt)),&paa);CHKERRQ(ierr);
-  ierr = PetscMemzero(paa,an*(sizeof(MatScalar)+2*sizeof(PetscInt)));CHKERRQ(ierr);
   ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
 
+  /* should replace with PetscMalloc3() */
+  ierr = PetscMalloc(an*(sizeof(MatScalar)+2*sizeof(PetscInt)),&paa);CHKERRQ(ierr);
+  ierr = PetscMemzero(paa,an*(sizeof(MatScalar)+2*sizeof(PetscInt)));CHKERRQ(ierr);
   paj      = (PetscInt*)(paa + an);
   pajdense = paj + an;
 

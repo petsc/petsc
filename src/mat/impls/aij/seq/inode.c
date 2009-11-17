@@ -2250,8 +2250,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A,IS 
 
   ierr  = Mat_CreateColInode(A,&nslim_col,&ns_col);CHKERRQ(ierr);
   ierr  = PetscMalloc((((nslim_row>nslim_col)?nslim_row:nslim_col)+1)*sizeof(PetscInt),&tns);CHKERRQ(ierr);
-  ierr  = PetscMalloc((m+n+1)*sizeof(PetscInt),&permr);CHKERRQ(ierr);
-  permc = permr + m;
+  ierr  = PetscMalloc2(m,PetscInt,&permr,n,PetscInt,&permc);CHKERRQ(ierr);
 
   ierr  = ISGetIndices(ris,&ridx);CHKERRQ(ierr);
   ierr  = ISGetIndices(cis,&cidx);CHKERRQ(ierr);
@@ -2279,15 +2278,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A,IS 
   }
 
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,permr,rperm);CHKERRQ(ierr);
-  ISSetPermutation(*rperm);
+  ierr = ISSetPermutation(*rperm);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,permc,cperm);CHKERRQ(ierr);
-  ISSetPermutation(*cperm);
+  ierr = ISSetPermutation(*cperm);CHKERRQ(ierr);
  
   ierr  = ISRestoreIndices(ris,&ridx);CHKERRQ(ierr);
   ierr  = ISRestoreIndices(cis,&cidx);CHKERRQ(ierr);
 
   ierr = PetscFree(ns_col);CHKERRQ(ierr);
-  ierr = PetscFree(permr);CHKERRQ(ierr);
+  ierr = PetscFree2(permr,permc);CHKERRQ(ierr);
   ierr = ISDestroy(cis);CHKERRQ(ierr);
   ierr = ISDestroy(ris);CHKERRQ(ierr);
   ierr = PetscFree(tns);CHKERRQ(ierr);

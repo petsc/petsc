@@ -30,7 +30,8 @@ PetscErrorCode Mat_CheckCompressedRow(Mat A,Mat_CompressedRow *compressedrow,Pet
   if (!compressedrow->use) PetscFunctionReturn(0);
   if (compressedrow->checked){
     if (!A->same_nonzero){
-      ierr = PetscFree(compressedrow->i);CHKERRQ(ierr); 
+      ierr = PetscFree2(compressedrow->i,compressedrow->rindex);CHKERRQ(ierr); 
+      compressedrow->i      = PETSC_NULL;
       compressedrow->rindex = PETSC_NULL;
       ierr = PetscInfo(A,"Mat structure might be changed. Free memory and recheck.\n");CHKERRQ(ierr);
     } else if (!compressedrow->i) {
@@ -59,8 +60,7 @@ PetscErrorCode Mat_CheckCompressedRow(Mat A,Mat_CompressedRow *compressedrow,Pet
 
     /* set compressed row format */
     nrows = mbs - nrows; /* num of non-zero rows */
-    ierr = PetscMalloc((2*nrows+1)*sizeof(PetscInt),&cpi);CHKERRQ(ierr);
-    ridx = cpi + nrows + 1;
+    ierr = PetscMalloc2(nrows+1,PetscInt,&cpi,nrows,PetscInt,&ridx);CHKERRQ(ierr);
     row    = 0;
     cpi[0] = 0; 
     for (i=0; i<mbs; i++){                

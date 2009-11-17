@@ -221,8 +221,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
       PetscInt    lsol_loc;
       PetscScalar *sol_loc;
       lsol_loc = lu->id.INFO(23); /* length of sol_loc */
-      ierr = PetscMalloc((1+lsol_loc)*(sizeof(PetscScalar)+sizeof(PetscInt)),&sol_loc);CHKERRQ(ierr);
-      lu->id.isol_loc = (PetscInt *)(sol_loc + lsol_loc);
+      ierr = PetscMalloc2(lsol_loc,PetscScalar,&sol_loc,lsol_loc,PetscInt,&lu->id.isol_loc);CHKERRQ(ierr);
       lu->id.lsol_loc = lsol_loc;
 #if defined(PETSC_USE_COMPLEX)
       lu->id.sol_loc  = (mumps_double_complex*)sol_loc;
@@ -528,7 +527,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
     F_diag->assembled = PETSC_TRUE;
     if (lu->nSolve){
       ierr = VecScatterDestroy(lu->scat_sol);CHKERRQ(ierr);  
-      ierr = PetscFree(lu->id.sol_loc);CHKERRQ(ierr);
+      ierr = PetscFree2(lu->id.sol_loc,lu->id.isol_loc);CHKERRQ(ierr);
       ierr = VecDestroy(lu->x_seq);CHKERRQ(ierr);
     }
   }
