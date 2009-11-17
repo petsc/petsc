@@ -34,7 +34,7 @@ EXTERN_C_BEGIN
 
    This is called by MPI, not by users.
 
-   Note: this is declared extern "C" because it is passed to MPI_Keyval_create
+   Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
 
 */
 PetscMPIInt PETSC_DLLEXPORT MPIAPI Petsc_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
@@ -57,7 +57,7 @@ EXTERN_C_BEGIN
 
   This is called by MPI, not by users.
 
-  Note: this is declared extern "C" because it is passed to MPI_Keyval_create
+  Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
 
 */
 PetscMPIInt PETSC_DLLEXPORT MPIAPI Petsc_DelComm(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)

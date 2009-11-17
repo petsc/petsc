@@ -37,7 +37,7 @@ PetscErrorCode MatDestroy_Essl(Mat A)
 
   PetscFunctionBegin;
   if (essl->CleanUpESSL) {
-    ierr = PetscFree(essl->a);CHKERRQ(ierr);
+    ierr = PetscFree4(essl->a,essl->aux,essl->ia,essl->ja);CHKERRQ(ierr);
   }
   ierr = PetscFree(essl);CHKERRQ(ierr);
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
@@ -117,10 +117,7 @@ PetscErrorCode MatLUFactorSymbolic_Essl(Mat B,Mat A,IS r,IS c,const MatFactorInf
   essl->naux = 100 + 10*A->rmap->n;
 
   /* since malloc is slow on IBM we try a single malloc */
-  ierr              = PetscMalloc(essl->lna*(2*sizeof(int)+sizeof(PetscScalar)) + essl->naux*sizeof(PetscScalar),&essl->a);CHKERRQ(ierr);
-  essl->aux         = essl->a + essl->lna;
-  essl->ia          = (int*)(essl->aux + essl->naux);
-  essl->ja          = essl->ia + essl->lna;
+  ierr = PetscMalloc4(essl->lna,PetscScalar,&essl->a,essl->naux,PetscScalar,&essl->aux,essl->lna,int,&essl->ia,essl->lna,int,&essl->ja);CHKERRQ(ierr);
   essl->CleanUpESSL = PETSC_TRUE;
 
   ierr = PetscLogObjectMemory(B,essl->lna*(2*sizeof(int)+sizeof(PetscScalar)) + essl->naux*sizeof(PetscScalar));CHKERRQ(ierr);

@@ -1,5 +1,6 @@
 #define PETSCMAT_DLL
 
+
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
   and to find submatrices that were shared across processors.
@@ -85,10 +86,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag1);CHKERRQ(ierr);
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag2);CHKERRQ(ierr);
 
-  ierr   = PetscMalloc((imax+1)*sizeof(PetscInt*)+ (imax + Mbs)*sizeof(PetscInt),&idx);CHKERRQ(ierr);
-  n      = (PetscInt*)(idx + imax);
-  rtable = n + imax;
-   
+  ierr = PetscMalloc3(imax+1,const PetscInt*,&idx,imax,PetscInt,&n,Mbs,PetscInt,&rtable);CHKERRQ(ierr);
   for (i=0; i<imax; i++) {
     ierr = ISGetIndices(is[i],&idx[i]);CHKERRQ(ierr);
     ierr = ISGetLocalSize(is[i],&n[i]);CHKERRQ(ierr);
@@ -104,11 +102,10 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[
 
   /* evaluate communication - mesg to who,length of mesg, and buffer space
      required. Based on this, buffers are allocated, and data copied into them*/
-  ierr = PetscMalloc(size*2*sizeof(PetscInt)+size*2*sizeof(PetscMPIInt),&w1);CHKERRQ(ierr);/*  mesg size */
-  w2   = w1 + size;                /* if w2[i] marked, then a message to proc i*/
-  w3   = (PetscInt*) (w2 + size);   /* no of IS that needs to be sent to proc i */
-  w4   = w3 + size;                /* temp work space used in determining w1, w2, w3 */
-  ierr = PetscMemzero(w1,size*sizeof(PetscInt)+2*size*sizeof(PetscMPIInt));CHKERRQ(ierr); /* initialise work vector*/
+  ierr = PetscMalloc4(size,PetscMPIInt,&w1,size,PetscMPIInt,&w2,size,PetscInt,&w3,size,PetscInt,&w4);CHKERRQ(ierr);
+  ierr = PetscMemzero(w1,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(w2,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(w3,size*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<imax; i++) { 
     ierr  = PetscMemzero(w4,size*sizeof(PetscInt));CHKERRQ(ierr); /* initialise work vector*/
     idx_i = idx[i];
@@ -154,12 +151,9 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[
   ierr = PetscPostIrecvInt(comm,tag1,nrqr,onodes1,olengths1,&rbuf,&r_waits1);CHKERRQ(ierr);
   
   /* Allocate Memory for outgoing messages */
-  ierr = PetscMalloc(2*size*sizeof(PetscInt*) + (size+msz)*sizeof(PetscInt),&outdat);CHKERRQ(ierr);
-  ptr    = outdat + size;     /* Pointers to the data in outgoing buffers */
-  ierr   = PetscMemzero(outdat,2*size*sizeof(PetscInt*));CHKERRQ(ierr);
-  tmp    = (PetscInt*)(outdat + 2*size);
-  ctr    = tmp + msz;
-
+  ierr = PetscMalloc4(size,PetscInt*,&outdat,size,PetscInt*,&ptr,msz,PetscInt,&tmp,size,PetscInt,&ctr);CHKERRQ(ierr);
+  ierr = PetscMemzero(outdat,size*sizeof(PetscInt*));CHKERRQ(ierr);
+  ierr = PetscMemzero(ptr,size*sizeof(PetscInt*));CHKERRQ(ierr);
   {
     PetscInt *iptr = tmp,ict  = 0;
     for (i=0; i<nrqs; i++) {
@@ -184,6 +178,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[
     PetscInt  *d_p;
     char      *t_p;
 
+    /* should change to use PetscMallocN() */
     ierr = PetscMalloc((imax)*(sizeof(PetscBT) + sizeof(PetscInt*)+ sizeof(PetscInt)) + 
       (Mbs)*imax*sizeof(PetscInt)  + (Mbs/PETSC_BITS_PER_BYTE+1)*imax*sizeof(char),&table);CHKERRQ(ierr);
     ierr = PetscMemzero(table,(imax)*(sizeof(PetscBT) + sizeof(PetscInt*)+ sizeof(PetscInt)) + 
@@ -246,7 +241,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[
   for (i=0; i<imax; ++i) {
     ierr = ISRestoreIndices(is[i],idx+i);CHKERRQ(ierr);
   }
-  ierr = PetscFree(idx);CHKERRQ(ierr);
+  ierr = PetscFree3(idx,n,rtable);CHKERRQ(ierr);
 
   for (i=0; i<imax; ++i) {
     ierr = ISDestroy(is[i]);CHKERRQ(ierr);
@@ -263,8 +258,8 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[
   if (nrqs) {ierr = MPI_Waitall(nrqs,s_waits1,s_status);CHKERRQ(ierr);}
 
   /* Phase 1 sends are complete - deallocate buffers */
-  ierr = PetscFree(outdat);CHKERRQ(ierr);
-  ierr = PetscFree(w1);CHKERRQ(ierr);
+  ierr = PetscFree4(outdat,ptr,tmp,ctr);CHKERRQ(ierr);
+  ierr = PetscFree4(w1,w2,w3,w4);CHKERRQ(ierr);
 
   ierr = PetscMalloc((nrqr+1)*sizeof(PetscInt*),&xdata);CHKERRQ(ierr);
   ierr = PetscMalloc((nrqr+1)*sizeof(PetscInt),&isz1);CHKERRQ(ierr);
@@ -310,7 +305,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[
     MPI_Status  *status2;
      
     ierr = PetscMalloc((PetscMax(nrqr,nrqs)+1)*sizeof(MPI_Status),&status2);CHKERRQ(ierr);
-
     for (i=0; i<nrqs; ++i) {
       ierr = MPI_Waitany(nrqs,r_waits2,&idex,status2+i);CHKERRQ(ierr);
       /* Process the message*/
@@ -569,8 +563,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
   /* The compression and expansion should be avoided. Does'nt point
      out errors might change the indices hence buggey */
 
-  ierr = PetscMalloc(2*(ismax+1)*sizeof(IS),&isrow_new);CHKERRQ(ierr);
-  iscol_new = isrow_new + ismax;
+  ierr = PetscMalloc2(ismax+1,IS,&isrow_new,ismax+1,IS,&iscol_new);CHKERRQ(ierr);
   ierr = ISCompressIndicesGeneral(N,bs,ismax,isrow,isrow_new);CHKERRQ(ierr);
   ierr = ISCompressIndicesGeneral(N,bs,ismax,iscol,iscol_new);CHKERRQ(ierr);
 
@@ -597,7 +590,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
     ierr = ISDestroy(isrow_new[i]);CHKERRQ(ierr);
     ierr = ISDestroy(iscol_new[i]);CHKERRQ(ierr);
   }
-  ierr = PetscFree(isrow_new);CHKERRQ(ierr);
+  ierr = PetscFree2(isrow_new,iscol_new);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -652,10 +645,10 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
   PetscMPIInt    *onodes1,*olengths1;
 
 #if defined (PETSC_USE_CTABLE)
-  PetscInt tt;
-  PetscTable  *rowmaps,*colmaps,lrow1_grow1,lcol1_gcol1;
+  PetscInt       tt;
+  PetscTable     *rowmaps,*colmaps,lrow1_grow1,lcol1_gcol1;
 #else
-  PetscInt    **cmap,*cmap_i,*rtable,*rmap_i,**rmap, Mbs = c->Mbs;
+  PetscInt       **cmap,*cmap_i,*rtable,*rmap_i,**rmap, Mbs = c->Mbs;
 #endif
 
   PetscFunctionBegin;
@@ -670,16 +663,9 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag3);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_CTABLE)
-  ierr = PetscMalloc((2*ismax+1)*(sizeof(PetscInt*)+ sizeof(PetscInt)),&irow);CHKERRQ(ierr);
+  ierr = PetscMalloc4(ismax,const PetscInt*,&irow,ismax,const PetscInt*,&icol,ismax,PetscInt,&nrow,ismax,PetscInt,&ncol);CHKERRQ(ierr);
 #else 
-  ierr = PetscMalloc((2*ismax+1)*(sizeof(PetscInt*)+ sizeof(PetscInt)) +  (Mbs+1)*sizeof(PetscInt),&irow);CHKERRQ(ierr);
-#endif
-
-  icol = irow + ismax;
-  nrow = (PetscInt*)(icol + ismax);
-  ncol = nrow + ismax;
-#if !defined (PETSC_USE_CTABLE)
-  rtable = ncol + ismax;
+  ierr = PetscMalloc5(ismax,const PetscInt*,&irow,ismax,const PetscInt*,&icol,ismax,PetscInt,&nrow,ismax,PetscInt,&ncol,Mbs+1,PetscInt,&rtable);CHKERRQ(ierr);
   /* Create hash table for the mapping :row -> proc*/
   for (i=0,j=0; i<size; i++) {
     jmax = c->rowners[i+1];
@@ -698,11 +684,10 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
 
   /* evaluate communication - mesg to who,length of mesg,and buffer space
      required. Based on this, buffers are allocated, and data copied into them*/
-  ierr = PetscMalloc(size*2*sizeof(PetscInt) + size*2*sizeof(PetscMPIInt),&w1);CHKERRQ(ierr); /* mesg size */
-  w2   = w1 + size;               /* if w2[i] marked, then a message to proc i*/
-  w3   = (PetscInt*)(w2 + size);  /* no of IS that needs to be sent to proc i */
-  w4   = w3 + size;                /* temp work space used in determining w1, w2, w3 */
-  ierr = PetscMemzero(w1,size*sizeof(PetscInt)+2*size*sizeof(PetscMPIInt));CHKERRQ(ierr); /* initialise work vector*/
+  ierr = PetscMalloc4(size,PetscMPIInt,&w1,size,PetscMPIInt,&w2,size,PetscInt,&w3,size,PetscInt,&w4);CHKERRQ(ierr);
+  ierr = PetscMemzero(w1,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(w2,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(w3,size*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<ismax; i++) { 
     ierr   = PetscMemzero(w4,size*sizeof(PetscInt));CHKERRQ(ierr); /* initialise work vector*/
     jmax   = nrow[i];
@@ -751,13 +736,9 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
   ierr = PetscFree(olengths1);CHKERRQ(ierr);
 
   /* Allocate Memory for outgoing messages */
-  ierr = PetscMalloc(2*size*sizeof(PetscInt*) + 2*msz*sizeof(PetscInt) + size*sizeof(PetscInt),&sbuf1);CHKERRQ(ierr);
-  ptr  = sbuf1 + size;   /* Pointers to the data in outgoing buffers */
-  ierr = PetscMemzero(sbuf1,2*size*sizeof(PetscInt*));CHKERRQ(ierr);
-  /* allocate memory for outgoing data + buf to receive the first reply */
-  tmp  = (PetscInt*)(ptr + size);
-  ctr  = tmp + 2*msz;
-
+  ierr = PetscMalloc4(size,PetscInt*,&sbuf1,size,PetscInt*,&ptr,2*msz,PetscInt,&tmp,size,PetscInt,&ctr);CHKERRQ(ierr);
+  ierr = PetscMemzero(sbuf1,size*sizeof(PetscInt*));CHKERRQ(ierr);
+  ierr = PetscMemzero(ptr,size*sizeof(PetscInt*));CHKERRQ(ierr);
   {
     PetscInt *iptr = tmp,ict = 0;
     for (i=0; i<nrqs; i++) {
@@ -829,12 +810,9 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
   /* Send to other procs the buf size they should allocate */
 
   /* Receive messages*/
-  ierr       = PetscMalloc((nrqr+1)*sizeof(MPI_Request),&s_waits2);CHKERRQ(ierr);
-  ierr       = PetscMalloc((nrqr+1)*sizeof(MPI_Status),&r_status1);CHKERRQ(ierr);
-  ierr       = PetscMalloc(2*nrqr*sizeof(PetscInt) + (nrqr+1)*sizeof(PetscInt*),&sbuf2);CHKERRQ(ierr);
-  req_size   = (PetscInt*)(sbuf2 + nrqr);
-  req_source = req_size + nrqr;
- 
+  ierr = PetscMalloc((nrqr+1)*sizeof(MPI_Request),&s_waits2);CHKERRQ(ierr);
+  ierr = PetscMalloc((nrqr+1)*sizeof(MPI_Status),&r_status1);CHKERRQ(ierr);
+  ierr = PetscMalloc3(nrqr+1,PetscInt*,&sbuf2,nrqr,PetscInt,&req_size,nrqr,PetscInt,&req_source);CHKERRQ(ierr);
   {
     Mat_SeqBAIJ *sA = (Mat_SeqBAIJ*)c->A->data,*sB = (Mat_SeqBAIJ*)c->B->data;
     PetscInt    *sAi = sA->i,*sBi = sB->i,id,*sbuf2_i;
@@ -990,9 +968,8 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
       ierr = PetscTableCreate(ncol[i]+1,&colmaps[i]);CHKERRQ(ierr);
     }
 #else
-    ierr    = PetscMalloc((1+ismax)*sizeof(PetscInt*)+ ismax*c->Nbs*sizeof(PetscInt),&cmap);CHKERRQ(ierr);
-    cmap[0] = (PetscInt*)(cmap + ismax);
-    ierr    = PetscMemzero(cmap[0],(1+ismax*c->Nbs)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr    = PetscMalloc(ismax*sizeof(PetscInt*),&cmap);CHKERRQ(ierr);
+    ierr    = PetscMalloc(ismax*c->Nbs*sizeof(PetscInt),&cmap[0]);CHKERRQ(ierr);
     for (i=1; i<ismax; i++) { cmap[i] = cmap[i-1] + c->Nbs; }
 #endif
     for (i=0; i<ismax; i++) {
@@ -1351,10 +1328,15 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
   }
 
   /* Destroy allocated memory */
-  ierr = PetscFree(irow);CHKERRQ(ierr);
-  ierr = PetscFree(w1);CHKERRQ(ierr);
+#if defined(PETSC_USE_CTABLE)
+  ierr = PetscFree4(irow,icol,nrow,ncol);CHKERRQ(ierr);
+#else
+  ierr = PetscFree5(irow,icol,nrow,ncol,rtable);CHKERRQ(ierr);
+#endif
+  ierr = PetscFree4(w1,w2,w3,w4);CHKERRQ(ierr);
   ierr = PetscFree(pa);CHKERRQ(ierr);
 
+  ierr = PetscFree4(sbuf1,ptr,tmp,ctr);CHKERRQ(ierr);
   ierr = PetscFree(sbuf1);CHKERRQ(ierr);
   ierr = PetscFree(rbuf2);CHKERRQ(ierr);
   for (i=0; i<nrqr; ++i) {
@@ -1364,8 +1346,7 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
     ierr = PetscFree(rbuf3[i]);CHKERRQ(ierr);
     ierr = PetscFree(rbuf4[i]);CHKERRQ(ierr);
   }
-
-  ierr = PetscFree(sbuf2);CHKERRQ(ierr);
+  ierr = PetscFree3(sbuf2,req_size,req_source);CHKERRQ(ierr);
   ierr = PetscFree(rbuf3);CHKERRQ(ierr);
   ierr = PetscFree(rbuf4);CHKERRQ(ierr);
   ierr = PetscFree(sbuf_aj[0]);CHKERRQ(ierr);
@@ -1382,6 +1363,7 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
   ierr = PetscFree(rowmaps);CHKERRQ(ierr);
 #else
   ierr = PetscFree(rmap);CHKERRQ(ierr);
+  ierr = PetscFree(cmap[0]);CHKERRQ(ierr);
   ierr = PetscFree(cmap);CHKERRQ(ierr);
 #endif
   ierr = PetscFree(lens);CHKERRQ(ierr);

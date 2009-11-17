@@ -198,7 +198,7 @@ PetscErrorCode MatDestroy_LUSOL(Mat A)
     ierr = PetscFree(lusol->iqinv);CHKERRQ(ierr);
     ierr = PetscFree(lusol->mnsw);CHKERRQ(ierr);
     ierr = PetscFree(lusol->mnsv);CHKERRQ(ierr);
-    ierr = PetscFree(lusol->indc);CHKERRQ(ierr);
+    ierr = PetscFree3(lusol->data,lusol->indc,lusol->indr);CHKERRQ(ierr);
   }
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -275,10 +275,8 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F,Mat A,const MatFactorInfo *info)
       nnz = PetscMax(nnz, (int)(lusol->luroom*(lusol->luparm[22] + lusol->luparm[23])));
 
       if (nnz > lusol->nnz){
-        ierr = PetscFree(lusol->indc);CHKERRQ(ierr);
-        ierr        = PetscMalloc((sizeof(double)+2*sizeof(int))*nnz,&lusol->indc);CHKERRQ(ierr);
-        lusol->indr = lusol->indc + nnz;
-        lusol->data = (double *)(lusol->indr + nnz);
+        ierr = PetscFree3(lusol->data,lusol->indc,lusol->indr);CHKERRQ(ierr);
+        ierr = PetscMalloc3(nnz,double,&lusol->data,nnz,PetscInt,&lusol->indc,nnz,PetscInt,&lusol->indr);CHKERRQ(ierr);
         lusol->nnz  = nnz;
       }
 
@@ -425,9 +423,7 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F,Mat A, IS r, IS c,const MatFactor
   ierr = PetscMalloc(sizeof(double)*n,&lusol->mnsw);
   ierr = PetscMalloc(sizeof(double)*n,&lusol->mnsv);
 
-  ierr        = PetscMalloc((sizeof(double)+2*sizeof(int))*nnz,&lusol->indc);
-  lusol->indr = lusol->indc + nnz;
-  lusol->data = (double *)(lusol->indr + nnz);
+  ierr = PetscMalloc3(nnz,double,&lusol->data,nnz,PetscInt,&lusol->indc,nnz,PetscInt,&lusol->indr);CHKERRQ(ierr);
   lusol->CleanUpLUSOL = PETSC_TRUE;
   F->ops->lufactornumeric  = MatLUFactorNumeric_LUSOL;
   PetscFunctionReturn(0);
