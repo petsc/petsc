@@ -101,15 +101,17 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
         /* definition of Scotch library arguments */
         SCOTCH_Strat stratptr;      /* scotch strategy */
         SCOTCH_Graph grafptr;       /* scotch graph */
+#if defined(DOES_NOT_COMPILE_DUE_TO_BROKEN_INTERFACE)
         int vertnbr = mat->rmap->N; /* number of vertices in full graph */
         int *verttab = adj->i;      /* start of edge list for each vertex */
         int *edgetab = adj->j;      /* edge list data */
         int edgenbr = adj->nz;      /* number of edges */
         int *velotab = NULL;        /* not used by petsc interface */
         int *vlbltab = NULL;    
-        int *edlotab = NULL;   
-        int baseval = 0;            /* 0 for C array indexing */
+        int *edlotab = NULL; 
         int flagval = 3;            /* (cf doc scotch no weight edge & vertices) */
+#endif  
+        int baseval = 0;            /* 0 for C array indexing */
         char strategy[256];
 
         ierr = PetscMalloc((mat->rmap->N) * sizeof(int), &parttab);CHKERRQ(ierr); 
@@ -127,6 +129,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
 
         /* Construction of the scotch graph object */
         ierr = SCOTCH_graphInit(&grafptr);
+#if defined(DOES_NOT_COMPILE_DUE_TO_BROKEN_INTERFACE)
         ierr = SCOTCH_graphBuild((SCOTCH_Graph *)   &grafptr, 
 				 (const SCOTCH_Num)  vertnbr, 
 				 (const SCOTCH_Num)  verttab, 
@@ -137,6 +140,9 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
 				 (const SCOTCH_Num)  edlotab, 
 				 (const SCOTCH_Num *)baseval, 
 				 (const SCOTCH_Num *)flagval);CHKERRQ(ierr);
+#else
+        SETERRQ(PETSC_ERR_SUP,"Scotch interface currently broken");
+#endif
         ierr = SCOTCH_graphCheck(&grafptr);CHKERRQ(ierr);
 
         /* Construction of the strategy */
@@ -206,11 +212,15 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
 	   * to be able to use PaStiX...		*
 	   *						*
 	   **********************************************/
+#if defined (DOES_NOT_COMPILE_DUE_TO_BROKEN_INTERFACE)
 	  SCOTCH_Strat tmp;
 	  ierr = SCOTCH_graphPart((const SCOTCH_Graph *)&grafptr, 
 				  (const SCOTCH_Num)    &stratptr, 
 				  (const SCOTCH_Strat *)&tmp,        /* The Argument changed from scotch 3.04 it was part->n, */ 
 				  (SCOTCH_Num *)        parttab);CHKERRQ(ierr);
+#else
+        SETERRQ(PETSC_ERR_SUP,"Scotch interface currently broken");
+#endif
             ierr = PetscPrintf(PETSC_COMM_SELF, "Partition simple without mapping\n");
         } else {
             SCOTCH_Graph grafarch;
