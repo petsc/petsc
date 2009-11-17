@@ -483,6 +483,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ML(PC pc)
 
   PetscFunctionBegin;
   /* PCML is an inherited class of PCMG. Initialize pc as PCMG */
+  ierr = PetscObjectChangeTypeName((PetscObject)pc,PCML);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCMG);CHKERRQ(ierr); /* calls PCCreate_MG() and MGCreate_Private() */
 
   /* create a supporting struct and attach it to pc */
