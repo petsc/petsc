@@ -88,7 +88,7 @@ class Configure(config.base.Configure):
                                             'unistd', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
                                             'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib','memory',
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',
-                                            'WindowsX', 'cxxabi','float','ieeefp','xmmintrin'])
+                                            'WindowsX', 'cxxabi','float','ieeefp','xmmintrin','stdint'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
                  'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'nanosleep', 'usleep', 'sleep', '_sleep', 'socket', 
@@ -276,6 +276,23 @@ class Configure(config.base.Configure):
     else:
       self.addDefine('Prefetch(a,b,c)', ' ')
     self.popLanguage()
+
+  def configureIntptrt(self):
+    '''Determine what to use for uintptr_t'''
+    def staticAssertSizeMatchesVoidStar(inc,typename):
+      # The declaration is an error if either array size is negative.
+      # It should be okay to use an int that is too large, but it would be very unlikely for this to be the case
+      return self.checkCompile(inc, '#define SZ (sizeof(void*)-sizeof(%s))\nint type_is_too_large[SZ],type_is_too_small[-SZ];'%typename)
+    self.pushLanguage(self.languages.clanguage)
+    if self.checkCompile('#include <stdint.h>', 'int x; uintptr_t i = (uintptr_t)&x;'):
+      self.addDefine('UINTPTR_T', 'uintptr_t')
+    elif staticAssertSizeMatchesVoidStar('','unsigned long long'):
+      self.addDefine('UINTPTR_T', 'unsigned long long')
+    elif staticAssertSizeMatchesVoidStar('#include <stdlib.h>','size_t') or staticAssertSizeMatchesVoidStar('#include <string.h>', 'size_t'):
+      self.addDefine('UINTPTR_T', 'size_t')
+    elif staticAssertSizeMatchesVoidStar('unsigned'):
+      self.addDefine('UINTPTR_T', 'unsigned')
+    self.popLanguage()
       
   def configureInline(self):
     '''Get a generic inline keyword, depending on the language'''
@@ -459,6 +476,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('Cannot set C language to C++ without a functional C++ compiler.')
     self.executeTest(self.configureInline)
     self.executeTest(self.configurePrefetch)
+    self.executeTest(self.configureIntptrt);
     self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)
     self.executeTest(self.configureWin32)
