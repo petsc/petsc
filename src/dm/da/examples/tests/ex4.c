@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   PetscInt       s=2,w=2,n = PETSC_DECIDE,nloc,l,i,j,kk;
   PetscInt       Xs,Xm,Ys,Ym,iloc,*iglobal,*ltog;
   PetscInt       *lx = PETSC_NULL,*ly = PETSC_NULL;
-  PetscTruth     testorder,flg;
+  PetscTruth     testorder = PETSC_FALSE,flg;
   DAPeriodicType wrap = DA_NONPERIODIC;
   DA             da;
   PetscViewer    viewer;

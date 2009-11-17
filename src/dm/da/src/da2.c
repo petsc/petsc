@@ -1078,7 +1078,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J
   PetscInt        i,Nc,N;
   ISColoringValue *color;
   DALocalInfo     info;
-  PetscScalar     *u,*g_u,*g_f,*f,*p_u;
+  PetscScalar     *u,*g_u,*g_f,*f = 0,*p_u;
   ISColoring      iscoloring;
   void            (*lf)(PetscInt*,DALocalInfo*,PetscScalar*,PetscScalar*,PetscInt*,PetscScalar*,PetscScalar*,PetscInt*,void*,PetscErrorCode*) = 
                   (void (*)(PetscInt*,DALocalInfo*,PetscScalar*,PetscScalar*,PetscInt*,PetscScalar*,PetscScalar*,PetscInt*,void*,PetscErrorCode*))*da->adifor_lf;

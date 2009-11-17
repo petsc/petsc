@@ -781,6 +781,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],co
   }
   PetscFunctionReturn(0);
 }
+
 /* -------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_MPIAIJ_Local" 
@@ -828,7 +829,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
     ierr = ISSorted(iscol[i],&sorted);CHKERRQ(ierr);
     /*    if (!sorted) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"iscol is not sorted"); */
   }
-  ierr = PetscMalloc4(ismax,PetscInt*,&irow,ismax,PetscInt*,&icol,ismax,PetscInt,&nrow,ismax,PetscInt,&ncol);CHKERRQ(ierr);
+  ierr = PetscMalloc4(ismax,const PetscInt*,&irow,ismax,const PetscInt*,&icol,ismax,PetscInt,&nrow,ismax,PetscInt,&ncol);CHKERRQ(ierr);
 
   for (i=0; i<ismax; i++) { 
     ierr = ISGetIndices(isrow[i],&irow[i]);CHKERRQ(ierr);

@@ -70,7 +70,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     if (ctype == IS_COLORING_GLOBAL){
       /* Determine the total (parallel) number of columns of this color */
       ierr = MPI_Comm_size(((PetscObject)mat)->comm,&size);CHKERRQ(ierr); 
-      ierr = PetscMalloc2(size,PetscInt*,&ncolsonproc,size,PetscInt*,&disp);CHKERRQ(ierr);
+      ierr = PetscMalloc2(size,PetscMPIInt,&ncolsonproc,size,PetscMPIInt,&disp);CHKERRQ(ierr);
 
       nn   = PetscMPIIntCast(n);
       ierr = MPI_Allgather(&nn,1,MPI_INT,ncolsonproc,1,MPI_INT,((PetscObject)mat)->comm);CHKERRQ(ierr);
