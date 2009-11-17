@@ -743,6 +743,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Scotch(MatPartitioning p
     MatPartitioning_Scotch *scotch;
 
     PetscFunctionBegin;
+    SETERRQ(PETSC_ERR_SUP,"Sorry, the PETSc interface to scotch has not been updated to the latest Scotch version");
     ierr = PetscNewLog(part,MatPartitioning_Scotch, &scotch);CHKERRQ(ierr);
     part->data = (void*) scotch;
 
