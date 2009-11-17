@@ -544,6 +544,25 @@ M*/
 #define PetscMalloc(a,b)  ((a != 0) ? (*PetscTrMalloc)((a),__LINE__,__FUNCT__,__FILE__,__SDIR__,(void**)(b)) : (*(b) = 0,0) )
 
 /*MC
+   PetscAddrAlign - Returns an address with PETSC_MEMALIGN alignment
+
+   Input Parameters:
+.  addr - address to align (any pointer type)
+
+   Synopsis:
+   void *PetscAddrAlign(void *addr)
+
+   Level: developer
+.seealso: PetscMallocAlign()
+  Concepts: memory allocation
+M*/
+#if defined PETSC_UINTPTR_T
+#  define PetscAddrAlign(a) (void*)((((PETSC_UINTPTR_T)(a))+(PETSC_MEMALIGN-1)) & ~(PETSC_MEMALIGN-1))
+#else
+#  define PetscAddrAlign(a) (void*)(a)
+#endif
+
+/*MC
    PetscMalloc2 - Allocates 2 chunks of  memory
 
    Input Parameter:
@@ -571,7 +590,8 @@ M*/
 #if defined(PETSC_USE_DEBUG)
 #define PetscMalloc2(m1,t1,r1,m2,t2,r2) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2))
 #else
-#define PetscMalloc2(m1,t1,r1,m2,t2,r2) (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2),r1) || (*(r2) = (t2*)(*(r1)+m1),0))
+#define PetscMalloc2(m1,t1,r1,m2,t2,r2) (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(PETSC_MEMALIGN-1),r1) \
+                                         || (*(r2) = (t2*)PetscAddrAlign(*(r1)+m1),0))
 #endif
 
 /*MC
@@ -605,7 +625,8 @@ M*/
 #if defined(PETSC_USE_DEBUG)
 #define PetscMalloc3(m1,t1,r1,m2,t2,r2,m3,t3,r3) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3))
 #else
-#define PetscMalloc3(m1,t1,r1,m2,t2,r2,m3,t3,r3) (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3),r1) || (*(r2) = (t2*)(*(r1)+m1),*(r3) = (t3*)(*(r2)+m2),0))
+#define PetscMalloc3(m1,t1,r1,m2,t2,r2,m3,t3,r3) (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3)+2*(PETSC_MEMALIGN-1),r1) \
+                                                  || (*(r2) = (t2*)PetscAddrAlign(*(r1)+m1),*(r3) = (t3*)PetscAddrAlign(*(r2)+m2),0))
 #endif
 
 /*MC
@@ -642,7 +663,9 @@ M*/
 #if defined(PETSC_USE_DEBUG)
 #define PetscMalloc4(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3) || PetscMalloc((m4)*sizeof(t4),r4))
 #else
-#define PetscMalloc4(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4) (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3)+(m4)*sizeof(t4),r1) || (*(r2) = (t2*)(*(r1)+m1),*(r3) = (t3*)(*(r2)+m2),*(r4) = (t4*)(*(r3)+m3),0))
+#define PetscMalloc4(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4)               \
+  (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3)+(m4)*sizeof(t4)+3*(PETSC_MEMALIGN-1),r1) \
+   || (*(r2) = (t2*)PetscAddrAlign(*(r1)+m1),*(r3) = (t3*)PetscAddrAlign(*(r2)+m2),*(r4) = (t4*)PetscAddrAlign(*(r3)+m3),0))
 #endif
 
 /*MC
@@ -682,7 +705,9 @@ M*/
 #if defined(PETSC_USE_DEBUG)
 #define PetscMalloc5(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3) || PetscMalloc((m4)*sizeof(t4),r4) || PetscMalloc((m5)*sizeof(t5),r5))
 #else
-#define PetscMalloc5(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5) (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3)+(m4)*sizeof(t4)+(m5)*sizeof(t5),r1) || (*(r2) = (t2*)(*(r1)+m1),*(r3) = (t3*)(*(r2)+m2),*(r4) = (t4*)(*(r3)+m3),*(r5) = (t5*)(*(r4)+m4),0))
+#define PetscMalloc5(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5)      \
+  (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3)+(m4)*sizeof(t4)+(m5)*sizeof(t5)+4*(PETSC_MEMALIGN-1),r1) \
+   || (*(r2) = (t2*)PetscAddrAlign(*(r1)+m1),*(r3) = (t3*)PetscAddrAlign(*(r2)+m2),*(r4) = (t4*)PetscAddrAlign(*(r3)+m3),*(r5) = (t5*)PetscAddrAlign(*(r4)+m4),0))
 #endif
 
 
@@ -726,7 +751,9 @@ M*/
 #if defined(PETSC_USE_DEBUG)
 #define PetscMalloc6(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5,m6,t6,r6) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3) || PetscMalloc((m4)*sizeof(t4),r4) || PetscMalloc((m5)*sizeof(t5),r5) || PetscMalloc((m6)*sizeof(t6),r6))
 #else
-#define PetscMalloc6(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5,m6,t6,r6) (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3)+(m4)*sizeof(t4)+(m5)*sizeof(t5)+(m6)*sizeof(t6),r1) || (*(r2) = (t2*)(*(r1)+m1),*(r3) = (t3*)(*(r2)+m2),*(r4) = (t4*)(*(r3)+m3),*(r5) = (t5*)(*(r4)+m4),*(r6) = (t6*)(*(r5)+m5),0))
+#define PetscMalloc6(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5,m6,t6,r6) \
+  (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3)+(m4)*sizeof(t4)+(m5)*sizeof(t5)+(m6)*sizeof(t6)+5*(PETSC_MEMALIGN-1),r1) \
+   || (*(r2) = (t2*)PetscAddrAlign(*(r1)+m1),*(r3) = (t3*)PetscAddrAlign(*(r2)+m2),*(r4) = (t4*)PetscAddrAlign(*(r3)+m3),*(r5) = (t5*)PetscAddrAlign(*(r4)+m4),*(r6) = (t6*)PetscAddrAlign(*(r5)+m5),0))
 #endif
 
 /*MC
@@ -772,7 +799,9 @@ M*/
 #if defined(PETSC_USE_DEBUG)
 #define PetscMalloc7(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5,m6,t6,r6,m7,t7,r7) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3) || PetscMalloc((m4)*sizeof(t4),r4) || PetscMalloc((m5)*sizeof(t5),r5) || PetscMalloc((m6)*sizeof(t6),r6) || PetscMalloc((m7)*sizeof(t7),r7))
 #else
-#define PetscMalloc7(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5,m6,t6,r6,m7,t7,r7) (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3)+(m4)*sizeof(t4)+(m5)*sizeof(t5)+(m6)*sizeof(t6)+(m7)*sizeof(t7),r1) || (*(r2) = (t2*)(*(r1)+m1),*(r3) = (t3*)(*(r2)+m2),*(r4) = (t4*)(*(r3)+m3),*(r5) = (t5*)(*(r4)+m4),*(r6) = (t6*)(*(r5)+m5),*(r7) = (t7*)(*(r6)+m6),0))
+#define PetscMalloc7(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5,m6,t6,r6,m7,t7,r7) \
+  (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3)+(m4)*sizeof(t4)+(m5)*sizeof(t5)+(m6)*sizeof(t6)+(m7)*sizeof(t7)+6*(PETSC_MEMALIGN-1),r1) \
+   || (*(r2) = (t2*)PetscAddrAlign(*(r1)+m1),*(r3) = (t3*)PetscAddrAlign(*(r2)+m2),*(r4) = (t4*)PetscAddrAlign(*(r3)+m3),*(r5) = (t5*)PetscAddrAlign(*(r4)+m4),*(r6) = (t6*)PetscAddrAlign(*(r5)+m5),*(r7) = (t7*)PetscAddrAlign(*(r6)+m6),0))
 #endif
 
 /*MC
@@ -1569,6 +1598,9 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt,const PetscScalar
 #endif
 #if defined(PETSC_HAVE_XMMINTRIN_H)
 #include <xmmintrin.h>
+#endif
+#if defined(PETSC_HAVE_STDINT_H)
+#include <stdint.h>
 #endif
 
 /*@C

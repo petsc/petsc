@@ -23,15 +23,6 @@
 */
 #define SHIFT_COOKIE 456123
 
-/* need to use 16 and 8 below instead of sizeof() cause #if cannot handle sizeof() */
-#if !defined(PETSC_MEMALIGN)
-#  if defined(PETSC_USE_COMPLEX)
-#    define PETSC_MEMALIGN 16
-#  else
-#    define PETSC_MEMALIGN 8
-#  endif
-#endif
-
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMallocAlign"
 PetscErrorCode PETSC_DLLEXPORT PetscMallocAlign(size_t mem,int line,const char func[],const char file[],const char dir[],void** result)

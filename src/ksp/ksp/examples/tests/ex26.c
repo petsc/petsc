@@ -68,6 +68,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
 
+  /* Set up distributed array for fine grid */
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,fine_ctx.mx,
                     fine_ctx.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&fine_ctx.da);CHKERRQ(ierr);
   ierr = DACreateGlobalVector(fine_ctx.da,&fine_ctx.x);CHKERRQ(ierr);
