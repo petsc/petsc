@@ -906,7 +906,7 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
   ierr = PetscFree(aij->garray);CHKERRQ(ierr);
   if (aij->lvec)   {ierr = VecDestroy(aij->lvec);CHKERRQ(ierr);}
   if (aij->Mvctx)  {ierr = VecScatterDestroy(aij->Mvctx);CHKERRQ(ierr);}
-  ierr = PetscFree(aij->rowvalues);CHKERRQ(ierr);
+  ierr = PetscFree2(aij->rowvalues,aij->rowindices);CHKERRQ(ierr);
   ierr = PetscFree(aij->ld);CHKERRQ(ierr);
   ierr = PetscFree(aij);CHKERRQ(ierr);
 
@@ -1483,7 +1483,7 @@ PetscErrorCode MatGetRow_MPIAIJ(Mat matin,PetscInt row,PetscInt *nz,PetscInt **i
         allocate enough space to hold information from the longest row.
     */
     Mat_SeqAIJ *Aa = (Mat_SeqAIJ*)mat->A->data,*Ba = (Mat_SeqAIJ*)mat->B->data; 
-    PetscInt     max = 1,tmp;
+    PetscInt   max = 1,tmp;
     for (i=0; i<matin->rmap->n; i++) {
       tmp = Aa->i[i+1] - Aa->i[i] + Ba->i[i+1] - Ba->i[i];
       if (max < tmp) { max = tmp; }
