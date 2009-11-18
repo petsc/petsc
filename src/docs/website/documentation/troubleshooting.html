@@ -258,7 +258,7 @@ problem.<br>
 - run with valgrind using:<br>
   <font color="#ff1a8b">${PETSC_DIR}/bin/petscmpiexec -valgrind -n NPROC PETSCPROGRAMNAME PROGRAMOPTIONS</font><br>
 or invoke valgrind directly with:<br>
-  <font color="#ff1a8b">mpiexec -n NPROC --tool=memcheck valgrind -q --num-callers=20 --log-file=valgrind.log.%p PETSCPROGRAMNAME PROGRAMOPTIONS</font><br>
+  <font color="#ff1a8b">mpiexec -n NPROC valgrind --tool=memcheck -q --num-callers=20 --log-file=valgrind.log.%p PETSCPROGRAMNAME PROGRAMOPTIONS</font><br>
 <br>
 Notes:<br>
 - option '--with-debugging=1' enables valgrind to give stack trace with additional source-file:line-number info.<br>

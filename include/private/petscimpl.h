@@ -679,6 +679,21 @@ M*/
 /* some vars for logging */
 extern PETSC_DLLEXPORT PetscTruth PetscPreLoadingUsed;       /* true if we are or have done preloading */
 extern PETSC_DLLEXPORT PetscTruth PetscPreLoadingOn;         /* true if we are currently in a preloading calculation */
+
+extern PETSC_DLLEXPORT PetscMPIInt Petsc_Counter_keyval;
+extern PETSC_DLLEXPORT PetscMPIInt Petsc_InnerComm_keyval;
+extern PETSC_DLLEXPORT PetscMPIInt Petsc_OuterComm_keyval;
+
+/*
+  PETSc communicators have this attribute, see
+  PetscCommDuplicate(), PetscCommDestroy(), PetscCommGetNewTag(), PetscObjectGetName()
+*/
+typedef struct {
+  PetscMPIInt tag;              /* next free tag value */
+  PetscInt    refcount;         /* number of references, communicator can be freed when this reaches 0 */
+  PetscInt    namecount;        /* used to generate the next name, as in Vec_0, Mat_1, ... */
+} PetscCommCounter;
+
 PETSC_EXTERN_CXX_END
 
 #endif /* _PETSCHEAD_H */

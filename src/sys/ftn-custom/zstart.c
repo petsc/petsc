@@ -121,6 +121,8 @@ extern PETSC_DLL_IMPORT MPI_Op PetscMaxSum_Op;
 
 EXTERN_C_BEGIN
 extern void PETSC_DLLEXPORT MPIAPI PetscMaxSum_Local(void*,void *,PetscMPIInt *,MPI_Datatype *);
+extern PetscMPIInt PETSC_DLLEXPORT MPIAPI Petsc_DelCounter(MPI_Comm,PetscMPIInt,void*,void*);
+extern PetscMPIInt PETSC_DLLEXPORT MPIAPI Petsc_DelComm(MPI_Comm,PetscMPIInt,void*,void*);
 EXTERN_C_END
 
 EXTERN PetscErrorCode PETSC_DLL_IMPORT PetscOptionsCheckInitial_Private(void);
@@ -339,6 +341,12 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops");return;}
   *ierr = MPI_Op_create(PetscADMin_Local,1,&PetscADMin_Op);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops");return;}
+  *ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelCounter,&Petsc_Counter_keyval,(void*)0);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI keyvals");return;}
+  *ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm,&Petsc_InnerComm_keyval,(void*)0);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI keyvals");return;}
+  *ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm,&Petsc_OuterComm_keyval,(void*)0);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI keyvals");return;}
 
   /*
      PetscInitializeFortran() is called twice. Here it initializes
