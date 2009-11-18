@@ -155,7 +155,7 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   if (lu->CleanUpMUMPS) {
     /* Terminate instance, deallocate memories */
     if (size > 1){
-      ierr = PetscFree(lu->id.sol_loc);CHKERRQ(ierr);
+      ierr = PetscFree2(lu->id.sol_loc,lu->id.isol_loc);CHKERRQ(ierr);
       ierr = VecScatterDestroy(lu->scat_rhs);CHKERRQ(ierr);
       ierr = VecDestroy(lu->b_seq);CHKERRQ(ierr);
       if (lu->nSolve && lu->scat_sol){ierr = VecScatterDestroy(lu->scat_sol);CHKERRQ(ierr);}

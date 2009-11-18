@@ -327,11 +327,6 @@ int main(int argc,char **args)
       ierr = PetscGetTime(&tsolve2);CHKERRQ(ierr);
       tsolve = tsolve2 - tsolve1;
 
-      /* 
-       Conclude profiling this stage
-      */
-      PreLoadStage("Cleanup");
-
       /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
             Check error, print output, free data structures.
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
