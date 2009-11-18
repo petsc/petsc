@@ -26,9 +26,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat C,Mat A,const MatFactorInfo *inf
   ierr = PetscMalloc(bs2*(n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,(bs2*n+1)*sizeof(MatScalar));CHKERRQ(ierr);
   /* generate work space needed by dense LU factorization */
-  ierr       = PetscMalloc(bs*sizeof(PetscInt) + (bs+bs2)*sizeof(MatScalar),&v_work);CHKERRQ(ierr);
-  multiplier = v_work + bs;
-  v_pivots   = (PetscInt*)(multiplier + bs2);
+  ierr = PetscMalloc3(bs,MatScalar,&v_work,bs2,MatScalar,&multiplier,bs,PetscInt,&v_pivots);CHKERRQ(ierr);
 
   /* flops in while loop */
   bslog = 2*bs*bs2;
@@ -78,7 +76,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat C,Mat A,const MatFactorInfo *inf
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
-  ierr = PetscFree(v_work);CHKERRQ(ierr);
+  ierr = PetscFree3(v_work,multiplier,v_pivots);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   C->ops->solve          = MatSolve_SeqBAIJ_N;

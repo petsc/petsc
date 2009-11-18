@@ -177,9 +177,8 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,Ma
   
   /* Verify if the indices corespond to each element in a block 
    and form the IS with compressed IS */
-  ierr = PetscMalloc(2*(a->mbs+1)*sizeof(PetscInt),&vary);CHKERRQ(ierr);
-  iary = vary + a->mbs;
-  ierr = PetscMemzero(vary,(a->mbs)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMalloc2(a->mbs,PetscInt,&vary,a->mbs,PetscInt,&iary);CHKERRQ(ierr);
+  ierr = PetscMemzero(vary,a->mbs*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<nrows; i++) vary[irow[i]/bs]++;
   count = 0;
   for (i=0; i<a->mbs; i++) {
@@ -198,7 +197,7 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,Ma
   ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,&is2);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&icol);CHKERRQ(ierr);
-  ierr = PetscFree(vary);CHKERRQ(ierr);
+  ierr = PetscFree2(vary,iary);CHKERRQ(ierr);
 
   ierr = MatGetSubMatrix_SeqBAIJ_Private(A,is1,is2,scall,B);CHKERRQ(ierr);
   ISDestroy(is1);

@@ -4999,14 +4999,12 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_newdatastruct(Mat B,Mat A,const MatF
   PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
-  ierr = PetscMalloc((bs2*n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
-  ierr = PetscMemzero(rtmp,(bs2*n+1)*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr = PetscMalloc(bs2*n*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
+  ierr = PetscMemzero(rtmp,bs2*n*sizeof(MatScalar));CHKERRQ(ierr);
   ics  = ic;
 
   /* generate work space needed by dense LU factorization */
-  ierr     = PetscMalloc(bs*sizeof(PetscInt) + (bs+bs2)*sizeof(MatScalar),&v_work);CHKERRQ(ierr);
-  mwork    = v_work + bs;
-  v_pivots = (PetscInt*)(mwork + bs2);
+  ierr  = PetscMalloc3(bs,MatScalar,&v_work,bs2,MatScalar,&mwork,bs,PetscInt,&v_pivots);CHKERRQ(ierr);
 
   for (i=0; i<n; i++){
     /* zero rtmp */
@@ -5078,7 +5076,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_newdatastruct(Mat B,Mat A,const MatF
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
-  ierr = PetscFree(v_work);CHKERRQ(ierr); 
+  ierr = PetscFree3(v_work,mwork,v_pivots);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
  
@@ -5243,8 +5241,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_newdatastruct(Mat fact,Mat A,IS isro
   ierr = PetscMalloc((n+1)*sizeof(PetscInt),&bdiag);CHKERRQ(ierr);
   bdiag[0]  = 0;
 
-  ierr = PetscMalloc((2*n+1)*sizeof(PetscInt**),&bj_ptr);CHKERRQ(ierr); 
-  bjlvl_ptr = (PetscInt**)(bj_ptr + n);
+  ierr = PetscMalloc2(n,PetscInt*,&bj_ptr,n,PetscInt*,&bjlvl_ptr);CHKERRQ(ierr); 
 
   /* create a linked list for storing column indices of the active row */
   nlnk = n + 1;
@@ -5330,7 +5327,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_newdatastruct(Mat fact,Mat A,IS isro
   
   ierr = PetscIncompleteLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
   ierr = PetscFreeSpaceDestroy(free_space_lvl);CHKERRQ(ierr); 
-  ierr = PetscFree(bj_ptr);CHKERRQ(ierr);
+  ierr = PetscFree2(bj_ptr,bjlvl_ptr);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_INFO)
   {

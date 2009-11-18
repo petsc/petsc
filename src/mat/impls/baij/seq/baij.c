@@ -1414,6 +1414,8 @@ PetscErrorCode MatRestoreRow_SeqBAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode MatSetValues_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatTranspose_SeqBAIJ"
 PetscErrorCode MatTranspose_SeqBAIJ(Mat A,MatReuse reuse,Mat *B)
@@ -1442,8 +1444,7 @@ PetscErrorCode MatTranspose_SeqBAIJ(Mat A,MatReuse reuse,Mat *B)
   }
 
   array = a->a;
-  ierr = PetscMalloc(2*bs*sizeof(PetscInt),&rows);CHKERRQ(ierr);
-  cols = rows + bs;
+  ierr = PetscMalloc2(bs,PetscInt,&rows,bs,PetscInt,&cols);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     cols[0] = i*bs;
     for (k=1; k<bs; k++) cols[k] = cols[k-1] + 1;
@@ -1451,11 +1452,11 @@ PetscErrorCode MatTranspose_SeqBAIJ(Mat A,MatReuse reuse,Mat *B)
     for (j=0; j<len; j++) {
       rows[0] = (*aj++)*bs;
       for (k=1; k<bs; k++) rows[k] = rows[k-1] + 1;
-      ierr = MatSetValues(C,bs,rows,bs,cols,array,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues_SeqBAIJ(C,bs,rows,bs,cols,array,INSERT_VALUES);CHKERRQ(ierr);
       array += bs2;
     }
   }
-  ierr = PetscFree(rows);CHKERRQ(ierr);
+  ierr = PetscFree2(rows,cols);CHKERRQ(ierr);
   
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -2018,8 +2019,7 @@ PetscErrorCode MatZeroRows_SeqBAIJ(Mat A,PetscInt is_n,const PetscInt is_idx[],P
   PetscFunctionBegin;
   /* Make a copy of the IS and  sort it */
   /* allocate memory for rows,sizes */
-  ierr  = PetscMalloc((3*is_n+1)*sizeof(PetscInt),&rows);CHKERRQ(ierr);
-  sizes = rows + is_n;
+  ierr  = PetscMalloc2(is_n,PetscInt,&rows,2*is_n,PetscInt,&sizes);CHKERRQ(ierr);
 
   /* copy IS values to rows, and sort them */
   for (i=0; i<is_n; i++) { rows[i] = is_idx[i]; }
@@ -2066,7 +2066,7 @@ PetscErrorCode MatZeroRows_SeqBAIJ(Mat A,PetscInt is_n,const PetscInt is_idx[],P
     }
   }
 
-  ierr = PetscFree(rows);CHKERRQ(ierr);
+  ierr = PetscFree2(rows,sizes);CHKERRQ(ierr);
   ierr = MatAssemblyEnd_SeqBAIJ(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3335,10 +3335,10 @@ PetscErrorCode MatLoad_SeqBAIJ(PetscViewer viewer, const MatType type,Mat *A)
   /* loop over row lengths determining block row lengths */
   ierr     = PetscMalloc(mbs*sizeof(PetscInt),&browlengths);CHKERRQ(ierr);
   ierr     = PetscMemzero(browlengths,mbs*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr     = PetscMalloc(2*mbs*sizeof(PetscInt),&mask);CHKERRQ(ierr);
+  ierr     = PetscMalloc2(mbs,PetscInt,&mask,mbs,PetscInt,&masked);CHKERRQ(ierr);
   ierr     = PetscMemzero(mask,mbs*sizeof(PetscInt));CHKERRQ(ierr);
-  masked   = mask + mbs;
-  rowcount = 0; nzcount = 0;
+  rowcount = 0;
+  nzcount = 0;
   for (i=0; i<mbs; i++) {
     nmask = 0;
     for (j=0; j<bs; j++) {
@@ -3417,7 +3417,7 @@ PetscErrorCode MatLoad_SeqBAIJ(PetscViewer viewer, const MatType type,Mat *A)
   ierr = PetscFree(browlengths);CHKERRQ(ierr);
   ierr = PetscFree(aa);CHKERRQ(ierr);
   ierr = PetscFree(jj);CHKERRQ(ierr);
-  ierr = PetscFree(mask);CHKERRQ(ierr);
+  ierr = PetscFree2(mask,masked);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

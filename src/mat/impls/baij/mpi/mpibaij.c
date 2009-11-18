@@ -659,8 +659,7 @@ PetscErrorCode MatNorm_MPIBAIJ(Mat mat,NormType type,PetscReal *nrm)
     } else if (type == NORM_1) { /* max column sum */
       PetscReal *tmp,*tmp2;
       PetscInt  *jj,*garray=baij->garray,cstart=baij->rstartbs;
-      ierr = PetscMalloc((2*mat->cmap->N+1)*sizeof(PetscReal),&tmp);CHKERRQ(ierr);
-      tmp2 = tmp + mat->cmap->N;
+      ierr = PetscMalloc2(mat->cmap->N,PetscReal,&tmp,mat->cmap->N,PetscReal,&tmp2);CHKERRQ(ierr);
       ierr = PetscMemzero(tmp,mat->cmap->N*sizeof(PetscReal));CHKERRQ(ierr);
       v = amat->a; jj = amat->j;
       for (i=0; i<amat->nz; i++) {
@@ -687,7 +686,7 @@ PetscErrorCode MatNorm_MPIBAIJ(Mat mat,NormType type,PetscReal *nrm)
       for (j=0; j<mat->cmap->N; j++) {
         if (tmp2[j] > *nrm) *nrm = tmp2[j];
       }
-      ierr = PetscFree(tmp);CHKERRQ(ierr);
+      ierr = PetscFree2(tmp,tmp2);CHKERRQ(ierr);
     } else if (type == NORM_INFINITY) { /* max row sum */
       PetscReal *sums;
       ierr = PetscMalloc(bs*sizeof(PetscReal),&sums);CHKERRQ(ierr)
@@ -741,7 +740,7 @@ PetscErrorCode MatCreateHashTable_MPIBAIJ_Private(Mat mat,PetscReal factor)
   Mat_SeqBAIJ    *a=(Mat_SeqBAIJ *)A->data,*b=(Mat_SeqBAIJ *)B->data;
   PetscInt       i,j,k,nz=a->nz+b->nz,h1,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
   PetscErrorCode ierr;
-  PetscInt       size,bs2=baij->bs2,rstart=baij->rstartbs;
+  PetscInt       ht_size,bs2=baij->bs2,rstart=baij->rstartbs;
   PetscInt       cstart=baij->cstartbs,*garray=baij->garray,row,col,Nbs=baij->Nbs;
   PetscInt       *HT,key;
   MatScalar      **HD;
@@ -751,22 +750,17 @@ PetscErrorCode MatCreateHashTable_MPIBAIJ_Private(Mat mat,PetscReal factor)
 #endif
 
   PetscFunctionBegin;
-  baij->ht_size=(PetscInt)(factor*nz);
-  size = baij->ht_size;
+  if (baij->ht) PetscFunctionReturn(0);
 
-  if (baij->ht) {
-    PetscFunctionReturn(0);
-  }
+  baij->ht_size = (PetscInt)(factor*nz);
+  ht_size       = baij->ht_size;
   
   /* Allocate Memory for Hash Table */
-  ierr     = PetscMalloc((size)*(sizeof(PetscInt)+sizeof(MatScalar*))+1,&baij->hd);CHKERRQ(ierr);
-  baij->ht = (PetscInt*)(baij->hd + size);
-  HD       = baij->hd;
-  HT       = baij->ht;
-
-
-  ierr = PetscMemzero(HD,size*(sizeof(PetscInt)+sizeof(PetscScalar*)));CHKERRQ(ierr);
-  
+  ierr = PetscMalloc2(ht_size,MatScalar*,&baij->hd,ht_size,PetscInt,&baij->ht);CHKERRQ(ierr);
+  ierr = PetscMemzero(baij->hd,ht_size*sizeof(MatScalar*));CHKERRQ(ierr);
+  ierr = PetscMemzero(baij->ht,ht_size*sizeof(PetscInt));CHKERRQ(ierr);
+  HD   = baij->hd;
+  HT   = baij->ht;
 
   /* Loop Over A */
   for (i=0; i<a->mbs; i++) {
@@ -775,11 +769,11 @@ PetscErrorCode MatCreateHashTable_MPIBAIJ_Private(Mat mat,PetscReal factor)
       col = aj[j]+cstart;
        
       key = row*Nbs + col + 1;
-      h1  = HASH(size,key,tmp);
-      for (k=0; k<size; k++){
-        if (!HT[(h1+k)%size]) {
-          HT[(h1+k)%size] = key;
-          HD[(h1+k)%size] = a->a + j*bs2;
+      h1  = HASH(ht_size,key,tmp);
+      for (k=0; k<ht_size; k++){
+        if (!HT[(h1+k)%ht_size]) {
+          HT[(h1+k)%ht_size] = key;
+          HD[(h1+k)%ht_size] = a->a + j*bs2;
           break;
 #if defined(PETSC_USE_INFO)
         } else {
@@ -798,11 +792,11 @@ PetscErrorCode MatCreateHashTable_MPIBAIJ_Private(Mat mat,PetscReal factor)
       row = i+rstart;
       col = garray[bj[j]];
       key = row*Nbs + col + 1;
-      h1  = HASH(size,key,tmp);
-      for (k=0; k<size; k++){
-        if (!HT[(h1+k)%size]) {
-          HT[(h1+k)%size] = key;
-          HD[(h1+k)%size] = b->a + j*bs2;
+      h1  = HASH(ht_size,key,tmp);
+      for (k=0; k<ht_size; k++){
+        if (!HT[(h1+k)%ht_size]) {
+          HT[(h1+k)%ht_size] = key;
+          HD[(h1+k)%ht_size] = b->a + j*bs2;
           break;
 #if defined(PETSC_USE_INFO)
         } else {
@@ -818,7 +812,7 @@ PetscErrorCode MatCreateHashTable_MPIBAIJ_Private(Mat mat,PetscReal factor)
   
   /* Print Summary */
 #if defined(PETSC_USE_INFO)
-  for (i=0,j=0; i<size; i++) {
+  for (i=0,j=0; i<ht_size; i++) {
     if (HT[i]) {j++;}
   }
   ierr = PetscInfo2(mat,"Average Search = %5.2f,max search = %D\n",(!j)? 0.0:((PetscReal)(ct+j))/j,max);CHKERRQ(ierr);
@@ -952,7 +946,7 @@ PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
     mat->ops->setvaluesblocked = MatSetValuesBlocked_MPIBAIJ_HT;
   }
 
-  ierr = PetscFree(baij->rowvalues);CHKERRQ(ierr);
+  ierr = PetscFree2(baij->rowvalues,baij->rowindices);CHKERRQ(ierr);
   baij->rowvalues = 0;
   PetscFunctionReturn(0);
 }
@@ -1117,9 +1111,9 @@ PetscErrorCode MatDestroy_MPIBAIJ(Mat mat)
   ierr = PetscFree(baij->garray);CHKERRQ(ierr);
   if (baij->lvec)   {ierr = VecDestroy(baij->lvec);CHKERRQ(ierr);}
   if (baij->Mvctx)  {ierr = VecScatterDestroy(baij->Mvctx);CHKERRQ(ierr);}
-  ierr = PetscFree(baij->rowvalues);CHKERRQ(ierr);
+  ierr = PetscFree2(baij->rowvalues,baij->rowindices);CHKERRQ(ierr);
   ierr = PetscFree(baij->barray);CHKERRQ(ierr);
-  ierr = PetscFree(baij->hd);CHKERRQ(ierr);
+  ierr = PetscFree2(baij->hd,baij->ht);CHKERRQ(ierr);
   ierr = PetscFree(baij->rangebs);CHKERRQ(ierr);
   ierr = PetscFree(baij);CHKERRQ(ierr);
 
@@ -1267,6 +1261,7 @@ PetscErrorCode MatGetRow_MPIBAIJ(Mat matin,PetscInt row,PetscInt *nz,PetscInt **
   PetscInt       *cmap,*idx_p,cstart = mat->cstartbs;
 
   PetscFunctionBegin;
+  if (row < brstart || row >= brend) SETERRQ(PETSC_ERR_SUP,"Only local rows")
   if (mat->getrowactive) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Already active");
   mat->getrowactive = PETSC_TRUE;
 
@@ -1280,11 +1275,8 @@ PetscErrorCode MatGetRow_MPIBAIJ(Mat matin,PetscInt row,PetscInt *nz,PetscInt **
       tmp = Aa->i[i+1] - Aa->i[i] + Ba->i[i+1] - Ba->i[i];
       if (max < tmp) { max = tmp; }
     }
-    ierr = PetscMalloc(max*bs2*(sizeof(PetscInt)+sizeof(PetscScalar)),&mat->rowvalues);CHKERRQ(ierr);
-    mat->rowindices = (PetscInt*)(mat->rowvalues + max*bs2);
+    ierr = PetscMalloc2(max*bs2,PetscScalar,&mat->rowvalues,max*bs2,PetscInt,&mat->rowindices);CHKERRQ(ierr);
   }
-       
-  if (row < brstart || row >= brend) SETERRQ(PETSC_ERR_SUP,"Only local rows")
   lrow = row - brstart;
 
   pvA = &vworkA; pcA = &cworkA; pvB = &vworkB; pcB = &cworkB;
@@ -1634,9 +1626,9 @@ PetscErrorCode MatZeroRows_MPIBAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscS
   base = owners[rank];
   
   /*  wait on receives */
-  ierr   = PetscMalloc(2*(nrecvs+1)*sizeof(PetscInt),&lens);CHKERRQ(ierr);
-  source = lens + nrecvs;
-  count  = nrecvs; slen = 0;
+  ierr   = PetscMalloc2(nrecvs+1,PetscInt,&lens,nrecvs+1,PetscInt,&source);CHKERRQ(ierr);
+  count  = nrecvs; 
+  slen = 0;
   while (count) {
     ierr = MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);CHKERRQ(ierr);
     /* unpack receives into our local space */
@@ -1658,7 +1650,7 @@ PetscErrorCode MatZeroRows_MPIBAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscS
     }
   }
   ierr = PetscFree(rvalues);CHKERRQ(ierr);
-  ierr = PetscFree(lens);CHKERRQ(ierr);
+  ierr = PetscFree2(lens,source);CHKERRQ(ierr);
   ierr = PetscFree(owner);CHKERRQ(ierr);
   ierr = PetscFree(nprocs);CHKERRQ(ierr);
     
@@ -2144,8 +2136,7 @@ PetscErrorCode MatFDColoringCreate_MPIBAIJ(Mat mat,ISColoring iscoloring,MatFDCo
     if (ctype == IS_COLORING_GLOBAL){
       /* Determine the total (parallel) number of columns of this color */
       ierr = MPI_Comm_size(((PetscObject)mat)->comm,&size);CHKERRQ(ierr); 
-      ierr = PetscMalloc(2*size*sizeof(PetscInt*),&ncolsonproc);CHKERRQ(ierr);
-      disp = ncolsonproc + size;
+      ierr = PetscMalloc2(size,PetscMPIInt,&ncolsonproc,size,PetscMPIInt,&disp);CHKERRQ(ierr);
 
       nn   = PetscMPIIntCast(n);
       ierr = MPI_Allgather(&nn,1,MPI_INT,ncolsonproc,1,MPI_INT,((PetscObject)mat)->comm);CHKERRQ(ierr);
@@ -2162,7 +2153,7 @@ PetscErrorCode MatFDColoringCreate_MPIBAIJ(Mat mat,ISColoring iscoloring,MatFDCo
       /* Get complete list of columns for color on each processor */
       ierr = PetscMalloc((nctot+1)*sizeof(PetscInt),&cols);CHKERRQ(ierr);
       ierr = MPI_Allgatherv((void*)is,n,MPIU_INT,cols,ncolsonproc,disp,MPIU_INT,((PetscObject)mat)->comm);CHKERRQ(ierr);
-      ierr = PetscFree(ncolsonproc);CHKERRQ(ierr);
+      ierr = PetscFree2(ncolsonproc,disp);CHKERRQ(ierr);
     } else if (ctype == IS_COLORING_GHOSTED){
       /* Determine local number of columns of this color on this process, including ghost points */
       nctot = n;
@@ -2726,8 +2717,7 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
   cend   = B->cmap->rend/bs;
 
   if (ii[0]) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"ii[0] must be 0 but it is %D",ii[0]);
-  ierr  = PetscMalloc((2*m+1)*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
-  o_nnz = d_nnz + m;
+  ierr  = PetscMalloc2(m,PetscInt,&d_nnz,m,PetscInt,&o_nnz);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     nz = ii[i+1] - ii[i];
     if (nz < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local row %D has a negative number of columns %D",i,nz);
@@ -2746,11 +2736,11 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
     o_nnz[i] = nz - d;
   }
   ierr = MatMPIBAIJSetPreallocation(B,bs,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
-  ierr = PetscFree(d_nnz);CHKERRQ(ierr);
+  ierr = PetscFree2(d_nnz,o_nnz);CHKERRQ(ierr);
 
   values = (PetscScalar*)V;
   if (!values) {
-    ierr = PetscMalloc(bs*bs*(nz_max+1)*sizeof(PetscScalar),&values);CHKERRQ(ierr);
+    ierr = PetscMalloc(bs*bs*nz_max*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     ierr = PetscMemzero(values,bs*bs*nz_max*sizeof(PetscScalar));CHKERRQ(ierr);
   }
   for (i=0; i<m; i++) {

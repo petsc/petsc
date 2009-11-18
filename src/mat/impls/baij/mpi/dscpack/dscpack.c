@@ -83,9 +83,7 @@ PetscErrorCode  BAIJtoMyANonz( PetscInt *AIndex, PetscInt *AStruct, PetscInt bs,
  */ 
 {  
   PetscErrorCode ierr;
-  PetscInt            i, j, k, iold,inew, jj, kk, bs2=bs*bs,
-                 *idx, *NewColNum,
-                 MyANonz_last, max_struct=0, struct_size;
+  PetscInt       i, j, k, iold,inew, jj, kk, bs2=bs*bs,*idx, *NewColNum, MyANonz_last, max_struct=0, struct_size;
   RealNumberType *MyANonz;             
 
   PetscFunctionBegin;
@@ -105,8 +103,7 @@ PetscErrorCode  BAIJtoMyANonz( PetscInt *AIndex, PetscInt *AStruct, PetscInt bs,
   }
 
   /* allocate tmp arrays large enough to hold densest struct */
-  ierr = PetscMalloc((2*max_struct+1)*sizeof(PetscInt),&NewColNum);CHKERRQ(ierr);
-  idx = NewColNum + max_struct;
+  ierr = PetscMalloc2(max_struct,PetscInt,&NewColNum,max_struct,PetscInt,&idx);CHKERRQ(ierr);
   
   ierr = PetscMalloc(NumLocalNonz*sizeof(RealNumberType),&MyANonz);CHKERRQ(ierr);  
   *adr_MyANonz = MyANonz;
@@ -143,7 +140,7 @@ PetscErrorCode  BAIJtoMyANonz( PetscInt *AIndex, PetscInt *AStruct, PetscInt bs,
     }
   } /* end outer loop for i */
 
-  ierr = PetscFree(NewColNum); 
+  ierr = PetscFree2(NewColNum); 
   if (MyANonz_last != NumLocalNonz) SETERRQ2(PETSC_ERR_PLIB,"MyANonz_last %d != NumLocalNonz %d\n",MyANonz_last, NumLocalNonz);
   PetscFunctionReturn(0);
 }
@@ -325,8 +322,7 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat F,Mat A,const MatFactorInfo 
       if (lu->dsc_id == -1) {
         itmp = 0;
       } else {     
-        ierr = PetscMalloc(2*lu->num_local_strucs*sizeof(PetscInt),&idx);CHKERRQ(ierr);
-        iidx = idx + lu->num_local_strucs;
+        ierr = PetscMalloc2(lu->num_local_strucs,PetscInt,&idx,lu->num_local_strucs,PetscInt,&iidx);CHKERRQ(ierr);
         ierr = PetscMalloc(lu->num_local_cols*sizeof(PetscInt),&itmp);CHKERRQ(ierr); 
       
         isort2(lu->num_local_strucs, lu->local_struc_old_num, idx);
@@ -359,7 +355,7 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat F,Mat A,const MatFactorInfo 
           DSC_ErrorDisplay(lu->My_DSC_Solver);
           SETERRQ1(PETSC_ERR_LIB,"Error setting local nonzeroes at processor %d \n", lu->dsc_id);
         }
-        ierr = PetscFree(idx);CHKERRQ(ierr);
+        ierr = PetscFree2(idx,iidex);CHKERRQ(ierr);
         ierr = PetscFree(itmp);CHKERRQ(ierr);
       } /* end of if(lu->dsc_id != -1)  */
     } else { /* size == 1 */
