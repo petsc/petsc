@@ -119,7 +119,9 @@
       PetscEnum MAT_REUSE_MATRIX
       PetscEnum MAT_IGNORE_MATRIX
 
-      parameter (MAT_INITIAL_MATRIX=0,MAT_REUSE_MATRIX=1)
+      parameter (MAT_INITIAL_MATRIX=0)
+      parameter (MAT_REUSE_MATRIX=1)
+      parameter (MAT_IGNORE_MATRIX=2)
 
 !
 !  MatInfoType
