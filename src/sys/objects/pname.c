@@ -52,14 +52,17 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectSetName(PetscObject obj,const char nam
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscObjectName(PetscObject obj)
 {
-  PetscErrorCode ierr;
-  char           name[64];
-  static int     counter = 0;
+  PetscErrorCode   ierr;
+  PetscCommCounter *counter;
+  PetscMPIInt      flg;
+  char             name[64];
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   if (!obj->name) {
-    sprintf(name,"%s_%d",obj->class_name,counter++);
+    ierr = MPI_Attr_get(obj->comm,Petsc_Counter_keyval,(void*)&counter,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Bad MPI communicator supplied; must be a PETSc communicator");
+    sprintf(name,"%s_%d",obj->class_name,counter->namecount++);
     ierr = PetscStrallocpy(name,&obj->name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

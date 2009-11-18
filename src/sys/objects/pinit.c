@@ -29,6 +29,10 @@ PetscErrorCode __gierr = 0;
 /* user may set this BEFORE calling PetscInitialize() */
 MPI_Comm PETSC_COMM_WORLD = MPI_COMM_NULL;
 
+PetscMPIInt Petsc_Counter_keyval   = MPI_KEYVAL_INVALID;
+PetscMPIInt Petsc_InnerComm_keyval = MPI_KEYVAL_INVALID;
+PetscMPIInt Petsc_OuterComm_keyval = MPI_KEYVAL_INVALID;
+
 /*
      Declare and set all the string names of the PETSc enums
 */
@@ -264,6 +268,51 @@ void PETSC_DLLEXPORT PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Data
 }
 EXTERN_C_END
 #endif
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "Petsc_DelCounter"
+/*
+   Private routine to delete internal tag/name counter storage when a communicator is freed.
+
+   This is called by MPI, not by users.
+
+   Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
+
+*/
+PetscMPIInt PETSC_DLLEXPORT MPIAPI Petsc_DelCounter(MPI_Comm comm,PetscMPIInt keyval,void *count_val,void *extra_state)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscInfo1(0,"Deleting counter data in an MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  ierr = PetscFree(count_val);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  PetscFunctionReturn(MPI_SUCCESS);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "Petsc_DelComm"
+/*
+  This does not actually free anything, it simply marks when a reference count to an internal MPI_Comm reaches zero and the
+  the external MPI_Comm drops its reference to the internal MPI_Comm
+
+  This is called by MPI, not by users.
+
+  Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
+
+*/
+PetscMPIInt PETSC_DLLEXPORT MPIAPI Petsc_DelComm(MPI_Comm comm,PetscMPIInt keyval,void *attr_val,void *extra_state)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscInfo1(0,"Deleting PETSc communicator imbedded in a user MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  /* actually don't delete anything because we cannot increase the reference count of the communicator anyways */
+  PetscFunctionReturn(MPI_SUCCESS);
+}
+EXTERN_C_END
 
 #if defined(PETSC_USE_PETSC_MPI_EXTERNAL32)
 #if !defined(PETSC_WORDS_BIGENDIAN)
@@ -554,6 +603,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
 
   ierr = MPI_Type_contiguous(2,MPIU_INT,&MPIU_2INT);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU_2INT);CHKERRQ(ierr);
+
+  /*
+     Attributes to be set on PETSc communicators
+  */
+  ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelCounter,&Petsc_Counter_keyval,(void*)0);CHKERRQ(ierr);
+  ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm,&Petsc_InnerComm_keyval,(void*)0);CHKERRQ(ierr);
+  ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm,&Petsc_OuterComm_keyval,(void*)0);CHKERRQ(ierr);
 
   /*
      Build the options database
@@ -886,6 +942,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   ierr = MPI_Op_free(&PetscMaxSum_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&PetscADMax_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&PetscADMin_Op);CHKERRQ(ierr);
+
+  ierr = MPI_Keyval_free(&Petsc_Counter_keyval);CHKERRQ(ierr);
+  ierr = MPI_Keyval_free(&Petsc_InnerComm_keyval);CHKERRQ(ierr);
+  ierr = MPI_Keyval_free(&Petsc_OuterComm_keyval);CHKERRQ(ierr);
 
   ierr = PetscInfo(0,"PETSc successfully ended!\n");CHKERRQ(ierr);
   if (PetscBeganMPI) {
