@@ -73,7 +73,7 @@ int main(int Argc,char **Args)
     ierr = ADDAGetMatrix(adda, MATMPIAIJ, &H);CHKERRQ(ierr);
   }
 
-  /* get local corners for this processor */
+  /* get local corners for this processor, user is responsible for freeing lcs,lce */
   ierr = ADDAGetCorners(adda, &lcs, &lce);CHKERRQ(ierr);
 
   /* Allocate space for the indices that we use to construct the matrix */
@@ -148,6 +148,9 @@ int main(int Argc,char **Args)
   
   ierr = PetscFree(sxy.x);CHKERRQ(ierr);
   ierr = PetscFree(sxy_m.x);CHKERRQ(ierr);
+
+  ierr = PetscFree(lcs);CHKERRQ(ierr);
+  ierr = PetscFree(lce);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(H, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(H, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
