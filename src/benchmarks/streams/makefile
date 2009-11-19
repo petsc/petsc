@@ -22,11 +22,9 @@ OpenMPVersion: OpenMPVersion.o  chkopts
 	-${CLINKER} -o OpenMPVersion OpenMPVersion.o ${PETSC_LIB}
 	${RM} -f OpenMPVersion.o
 
-test: ${TESTS}
-
-runtest: 
+test:  BasicVersion OpenMPVersion
 	-@echo "Time Taken by STREAMS as follows"
 	-@echo "------------------------------------------------"
 	-@${MPIEXEC} -n 1 ./BasicVersion
-	-@${MPIEXEC} -n 1 ./OpenMPVersion
+	-@read -p "Enter number of OpenMP threads to use: " cnt ; OMP_NUM_THREADS=${cnt}; export OMP_NUM_THREADS; ${MPIEXEC} -n 1 ./OpenMPVersion
 	-@echo "------------------------------------------------"
