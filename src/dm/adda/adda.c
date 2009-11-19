@@ -172,9 +172,11 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDACreate(MPI_Comm comm, PetscInt dim, PetscIn
   /* create global and local prototype vector */
   ierr = VecCreateMPIWithArray(comm,adda->lsize,PETSC_DECIDE,0,&(adda->global));CHKERRQ(ierr);
   ierr = VecSetBlockSize(adda->global,adda->dof);CHKERRQ(ierr);
+#if ADDA_NEEDS_LOCAL_VECTOR
   /* local includes ghost points */
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,adda->lgsize,0,&(adda->local));CHKERRQ(ierr);
   ierr = VecSetBlockSize(adda->local,dof);CHKERRQ(ierr);
+#endif
 
   ierr = PetscMalloc(dim*sizeof(PetscInt), &(adda->refine));CHKERRQ(ierr);
   for(i=0; i<dim; i++) adda->refine[i] = 3;
@@ -215,6 +217,8 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDADestroy(ADDA adda)
   ierr = PetscFree(adda->lce);CHKERRQ(ierr);
   ierr = PetscFree(adda->lgs);CHKERRQ(ierr);
   ierr = PetscFree(adda->lge);CHKERRQ(ierr);
+
+  ierr = VecDestroy(adda->global);CHKERRQ(ierr);
 
   ierr = PetscHeaderDestroy(adda);CHKERRQ(ierr);
   PetscFunctionReturn(0);
