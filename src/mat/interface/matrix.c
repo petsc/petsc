@@ -4302,8 +4302,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPermuteSparsify(Mat A, PetscInt band, Petsc
     ierr = ISGetIndices(irowp, &rows);CHKERRQ(ierr);
     ierr = ISInvertPermutation(colp, 0, &icolp);CHKERRQ(ierr);
     ierr = ISGetIndices(icolp, &cols);CHKERRQ(ierr);
-    ierr = PetscMalloc(N * sizeof(PetscInt),         &cnew);CHKERRQ(ierr);
-    ierr = PetscMalloc(N * sizeof(PetscScalar), &vnew);CHKERRQ(ierr);
+    ierr = PetscMalloc(N*sizeof(PetscInt),&cnew);CHKERRQ(ierr);
+    ierr = PetscMalloc(N*sizeof(PetscScalar),&vnew);CHKERRQ(ierr);
 
     /* Setup bandwidth to include */
     if (band == PETSC_DECIDE) {

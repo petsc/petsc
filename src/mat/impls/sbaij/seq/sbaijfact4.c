@@ -23,14 +23,11 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering(Mat C,Mat A,c
   /* initialization */
   ierr = PetscMalloc(9*mbs*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,9*mbs*sizeof(MatScalar));CHKERRQ(ierr); 
-  ierr = PetscMalloc(2*mbs*sizeof(PetscInt),&il);CHKERRQ(ierr);
-  jl   = il + mbs;
+  ierr = PetscMalloc2(mbs,PetscInt,&il,mbs,PetscInt,&jl);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     jl[i] = mbs; il[0] = 0;
   }
-  ierr = PetscMalloc(18*sizeof(MatScalar),&dk);CHKERRQ(ierr);
-  uik  = dk + 9;   
-
+  ierr = PetscMalloc2(9,MatScalar,&dk,9,MatScalar,&uik);CHKERRQ(ierr);
   ai   = a->i; aj = a->j; aa = a->a;
 
   /* for each row k */
@@ -147,8 +144,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering(Mat C,Mat A,c
   } 
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
-  ierr = PetscFree(il);CHKERRQ(ierr);
-  ierr = PetscFree(dk);CHKERRQ(ierr);
+  ierr = PetscFree2(il,jl);CHKERRQ(ierr);
+  ierr = PetscFree2(dk,uik);CHKERRQ(ierr);
 
   C->ops->solve          = MatSolve_SeqSBAIJ_3_NaturalOrdering;
   C->ops->solvetranspose = MatSolve_SeqSBAIJ_3_NaturalOrdering;

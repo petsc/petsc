@@ -80,8 +80,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_RowLength(Mat mat,const MatOrderin
   ierr = MatGetRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,&ia,&ja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PETSC_ERR_SUP,"Cannot get rows for matrix");
 
-  ierr  = PetscMalloc(2*n*sizeof(PetscInt),&lens);CHKERRQ(ierr);
-  permr = lens + n;
+  ierr  = PetscMalloc2(n,PetscInt,&lens,n,PetscInt,&permr);CHKERRQ(ierr);
   for (i=0; i<n; i++) { 
     lens[i]  = ia[i+1] - ia[i];
     permr[i] = i;
@@ -92,7 +91,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_RowLength(Mat mat,const MatOrderin
 
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,permr,irow);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,permr,icol);CHKERRQ(ierr);
-  ierr = PetscFree(lens);CHKERRQ(ierr);
+  ierr = PetscFree2(lens,permr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

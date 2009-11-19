@@ -24,13 +24,11 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_7(Mat C,Mat A,const MatFactorIn
   /* initialization */
   ierr = PetscMalloc(49*mbs*sizeof(MatScalar),&w);CHKERRQ(ierr);
   ierr = PetscMemzero(w,49*mbs*sizeof(MatScalar));CHKERRQ(ierr); 
-  ierr = PetscMalloc(2*mbs*sizeof(PetscInt),&il);CHKERRQ(ierr);
-  jl = il + mbs;
+  ierr = PetscMalloc2(mbs,PetscInt,&il,mbs,PetscInt,&jl);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     jl[i] = mbs; il[0] = 0;
   }
-  ierr = PetscMalloc(98*sizeof(MatScalar),&dk);CHKERRQ(ierr);
-  uik  = dk + 49;    
+  ierr = PetscMalloc2(49,MatScalar,&dk,49,MatScalar,&uik);CHKERRQ(ierr);
   ierr = ISGetIndices(perm,&perm_ptr);CHKERRQ(ierr);
 
   /* check permutation */
@@ -331,8 +329,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_7(Mat C,Mat A,const MatFactorIn
   } 
 
   ierr = PetscFree(w);CHKERRQ(ierr);
-  ierr = PetscFree(il);CHKERRQ(ierr);
-  ierr = PetscFree(dk);CHKERRQ(ierr);
+  ierr = PetscFree2(il,jl);CHKERRQ(ierr);
+  ierr = PetscFree2(dk,uik);CHKERRQ(ierr);
   if (a->permute){
     ierr = PetscFree(aa);CHKERRQ(ierr);
   }
