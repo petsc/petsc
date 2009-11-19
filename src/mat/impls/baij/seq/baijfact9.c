@@ -229,8 +229,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_newdatastruct(Mat B,Mat A,const MatF
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
 
   /* generate work space needed by the factorization */
-  ierr = PetscMalloc((bs2*n+bs2+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
-  mwork = rtmp + bs2*n;
+  ierr = PetscMalloc2(bs2*n,MatScalar,&rtmp,bs2,MatScalar,&mwork);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,bs2*n*sizeof(MatScalar));CHKERRQ(ierr);
   ics  = ic;
 
@@ -309,7 +308,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_newdatastruct(Mat B,Mat A,const MatF
     }
   }
 
-  ierr = PetscFree(rtmp);CHKERRQ(ierr);
+  ierr = PetscFree2(rtmp,mwork);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
  
@@ -504,8 +503,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering_newdatastruct(Mat B,
 
   PetscFunctionBegin;
   /* generate work space needed by the factorization */
-  ierr = PetscMalloc((bs2*n+bs2+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
-  mwork = rtmp + bs2*n;
+  ierr = PetscMalloc2(bs2*n,MatScalar,&rtmp,bs2,MatScalar,&mwork);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,bs2*n*sizeof(MatScalar));CHKERRQ(ierr);
 
   for (i=0; i<n; i++){
@@ -583,7 +581,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering_newdatastruct(Mat B,
     }
   }
 
-  ierr = PetscFree(rtmp);CHKERRQ(ierr);
+  ierr = PetscFree2(rtmp,mwork);CHKERRQ(ierr);
   C->assembled = PETSC_TRUE;
   ierr = PetscLogFlops(1.3333*bs2*n);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);

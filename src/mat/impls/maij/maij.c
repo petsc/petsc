@@ -2853,11 +2853,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
   ci[0] = 0;
 
   /* Work arrays for rows of P^T*A */
-  ierr = PetscMalloc((2*cn+2*an+1)*sizeof(PetscInt),&ptadenserow);CHKERRQ(ierr);
-  ierr = PetscMemzero(ptadenserow,(2*cn+2*an+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  ptasparserow = ptadenserow  + an;
-  denserow     = ptasparserow + an;
-  sparserow    = denserow     + cn;
+  ierr = PetscMalloc4(an,PetscInt,&ptadenserow,an,PetscInt,&ptasparserow,cn,PetscInt,&denserow,cn,PetscInt,&sparserow);CHKERRQ(ierr);
 
   /* Set initial free space to be nnz(A) scaled by aspect ratio of P. */
   /* This should be reasonable if sparsity of PtAP is similar to that of A. */
@@ -2937,7 +2933,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
   /* destroy list of free space and other temporary array(s) */
   ierr = PetscMalloc((ci[cn]+1)*sizeof(PetscInt),&cj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
-  ierr = PetscFree(ptadenserow);CHKERRQ(ierr);
+  ierr = PetscFree4(ptadenserow,ptasparserow,denserow,sparserow);CHKERRQ(ierr);
     
   /* Allocate space for ca */
   ierr = PetscMalloc((ci[cn]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
@@ -2980,11 +2976,10 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat C)
 
   PetscFunctionBegin;
   /* Allocate temporary array for storage of one row of A*P */
-  ierr = PetscMalloc(cn*(sizeof(MatScalar)+2*sizeof(PetscInt)),&apa);CHKERRQ(ierr);
-  ierr = PetscMemzero(apa,cn*(sizeof(MatScalar)+2*sizeof(PetscInt)));CHKERRQ(ierr);
-
-  apj      = (PetscInt *)(apa + cn);
-  apjdense = apj + cn;
+  ierr = PetscMalloc3(cn,MatScalar,&apa,cn,PetscInt,&apj,cn,PetscInt,&apjdense);CHKERRQ(ierr);
+  ierr = PetscMemzero(apa,cn*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr = PetscMemzero(apj,cn*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(apjdense,cn*sizeof(PetscInt));CHKERRQ(ierr);
 
   /* Clear old values in C */
   ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
@@ -3050,7 +3045,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat C)
   /* Assemble the final matrix and clean up */
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscFree(apa);CHKERRQ(ierr);
+  ierr = PetscFree3(apa,apj,apjdense);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

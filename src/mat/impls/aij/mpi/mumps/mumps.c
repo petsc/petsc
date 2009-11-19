@@ -139,7 +139,6 @@ PetscErrorCode MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,i
     }
     irow++;
   } 
-  
   PetscFunctionReturn(0);
 }
 
@@ -538,7 +537,6 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
   PetscFunctionReturn(0);
 }
 
-
 /* Note the Petsc r and c permutations are ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_AIJMUMPS"
@@ -573,7 +571,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SBAIJMUMPS(Mat F,Mat A,IS r,const MatFa
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorInfo_MUMPS"
-PetscErrorCode MatFactorInfo_MUMPS(Mat A,PetscViewer viewer) {
+PetscErrorCode MatFactorInfo_MUMPS(Mat A,PetscViewer viewer) 
+{
   Mat_MUMPS      *lu=(Mat_MUMPS*)A->spptr;
   PetscErrorCode ierr;
 
@@ -678,7 +677,6 @@ PetscErrorCode MatFactorInfo_MUMPS(Mat A,PetscViewer viewer) {
      ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(24) (after analysis: value of ICNTL(12) effectively used): %d \n",lu->id.INFOG(24));CHKERRQ(ierr);
      ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(25) (after factorization: number of pivots modified by static pivoting): %d \n",lu->id.INFOG(25));CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 

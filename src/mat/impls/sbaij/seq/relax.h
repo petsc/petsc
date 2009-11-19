@@ -142,7 +142,7 @@ PetscErrorCode PETSCMAP1(MatSOR_SeqSBAIJ)(Mat A,Vec bb,PetscReal omega,MatSORTyp
 
   if (!a->idiagvalid) {
     if (!a->idiag) {
-      ierr     = PetscMalloc(m*sizeof(PetscScalar),&a->idiag);CHKERRQ(ierr);
+      ierr = PetscMalloc(m*sizeof(PetscScalar),&a->idiag);CHKERRQ(ierr);
     }
     for (i=0; i<a->mbs; i++) a->idiag[i] = 1.0/a->a[a->i[i]];  
     a->idiagvalid = PETSC_TRUE;

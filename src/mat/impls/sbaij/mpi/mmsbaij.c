@@ -32,7 +32,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   
   /* For the first stab we make an array as long as the number of columns */
   /* mark those columns that are in sbaij->B */
-  ierr = PetscMalloc((Nbs+1)*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+  ierr = PetscMalloc(Nbs*sizeof(PetscInt),&indices);CHKERRQ(ierr);
   ierr = PetscMemzero(indices,Nbs*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     for (j=0; j<B->ilen[i]; j++) {
@@ -42,9 +42,8 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   }
 
   /* form arrays of columns we need */
-  ierr = PetscMalloc((ec+1)*sizeof(PetscInt),&garray);CHKERRQ(ierr);
-  ierr = PetscMalloc((3*ec+1)*sizeof(PetscInt),&sgarray);CHKERRQ(ierr);
-  ec_owner = sgarray + 2*ec;
+  ierr = PetscMalloc(ec*sizeof(PetscInt),&garray);CHKERRQ(ierr);
+  ierr = PetscMalloc2(2*ec,PetscInt,&sgarray,ec,PetscInt,&ec_owner);CHKERRQ(ierr);
   
   ec = 0;
   for (j=0; j<size; j++){
@@ -73,7 +72,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   ierr = VecCreateSeq(PETSC_COMM_SELF,ec*bs,&sbaij->lvec);CHKERRQ(ierr);
 
   /* create two temporary index sets for building scatter-gather */
-  ierr = PetscMalloc((2*ec+1)*sizeof(PetscInt),&stmp);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*ec*sizeof(PetscInt),&stmp);CHKERRQ(ierr);
   for (i=0; i<ec; i++) stmp[i] = bs*garray[i];  
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,&from);CHKERRQ(ierr);   
   
@@ -150,7 +149,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   ierr = PetscLogObjectMemory(mat,(ec+1)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISDestroy(from);CHKERRQ(ierr);  
   ierr = ISDestroy(to);CHKERRQ(ierr);
-  ierr = PetscFree(sgarray);CHKERRQ(ierr); 
+  ierr = PetscFree2(sgarray,ec_owner);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
@@ -188,7 +187,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
     }
   } 
   /* form array of columns we need */
-  ierr = PetscMalloc((ec+1)*sizeof(PetscInt),&garray);CHKERRQ(ierr);
+  ierr = PetscMalloc(ec*sizeof(PetscInt),&garray);CHKERRQ(ierr);
   ierr = PetscTableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr); 
   while (tpos) {  
     ierr = PetscTableGetNext(gid1_lid1,&tpos,&gid,&lid);CHKERRQ(ierr); 
@@ -217,7 +216,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
 #else
   /* For the first stab we make an array as long as the number of columns */
   /* mark those columns that are in baij->B */
-  ierr = PetscMalloc((Nbs+1)*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+  ierr = PetscMalloc(Nbs*sizeof(PetscInt),&indices);CHKERRQ(ierr);
   ierr = PetscMemzero(indices,Nbs*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<B->mbs; i++) {
     for (j=0; j<B->ilen[i]; j++) {
@@ -227,7 +226,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
   }
 
   /* form array of columns we need */
-  ierr = PetscMalloc((ec+1)*sizeof(PetscInt),&garray);CHKERRQ(ierr);
+  ierr = PetscMalloc(ec*sizeof(PetscInt),&garray);CHKERRQ(ierr);
   ec = 0;
   for (i=0; i<Nbs; i++) {
     if (indices[i]) {
@@ -263,7 +262,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
     garray[i] = garray[i]/bs;
   }
 
-  ierr = PetscMalloc((ec+1)*sizeof(PetscInt),&stmp);CHKERRQ(ierr);
+  ierr = PetscMalloc(ec*sizeof(PetscInt),&stmp);CHKERRQ(ierr);
   for (i=0; i<ec; i++) { stmp[i] = bs*i; } 
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,&to);CHKERRQ(ierr);
   ierr = PetscFree(stmp);CHKERRQ(ierr);

@@ -428,8 +428,7 @@ PetscErrorCode MatNorm_MPISBAIJ(Mat mat,NormType type,PetscReal *norm)
       PetscInt     brow,bcol,col,bs=baij->A->rmap->bs,row,grow,gcol,mbs=amat->mbs;
       MatScalar    *v;
 
-      ierr  = PetscMalloc((2*mat->cmap->N+1)*sizeof(PetscReal),&rsum);CHKERRQ(ierr);
-      rsum2 = rsum + mat->cmap->N;
+      ierr  = PetscMalloc2(mat->cmap->N,PetscReal,&rsum,mat->cmap->N,PetscReal,&rsum2);CHKERRQ(ierr);
       ierr  = PetscMemzero(rsum,mat->cmap->N*sizeof(PetscReal));CHKERRQ(ierr);
       /* Amat */
       v = amat->a; jj = amat->j;
@@ -469,7 +468,7 @@ PetscErrorCode MatNorm_MPISBAIJ(Mat mat,NormType type,PetscReal *norm)
       for (col=0; col<mat->cmap->N; col++) {
         if (rsum2[col] > *norm) *norm = rsum2[col];
       }
-      ierr = PetscFree(rsum);CHKERRQ(ierr);
+      ierr = PetscFree2(rsum,rsum2);CHKERRQ(ierr);
     } else {
       SETERRQ(PETSC_ERR_SUP,"No support for this norm yet");
     }
@@ -592,7 +591,7 @@ PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   ierr = MatAssemblyBegin(baij->B,mode);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(baij->B,mode);CHKERRQ(ierr);
   
-  ierr = PetscFree(baij->rowvalues);CHKERRQ(ierr);
+  ierr = PetscFree2(baij->rowvalues,baij->rowindices);CHKERRQ(ierr);
   baij->rowvalues = 0;
 
   PetscFunctionReturn(0);
@@ -1014,8 +1013,7 @@ PetscErrorCode MatGetRow_MPISBAIJ(Mat matin,PetscInt row,PetscInt *nz,PetscInt *
       tmp = Aa->i[i+1] - Aa->i[i] + Ba->i[i+1] - Ba->i[i]; /* row length */
       if (max < tmp) { max = tmp; }
     }
-    ierr = PetscMalloc(max*bs2*(sizeof(PetscInt)+sizeof(PetscScalar)),&mat->rowvalues);CHKERRQ(ierr);
-    mat->rowindices = (PetscInt*)(mat->rowvalues + max*bs2);
+    ierr = PetscMalloc2(max*bs2,PetscScalar,&mat->rowvalues,max*bs2,PetscInt,&mat->rowindices);CHKERRQ(ierr);
   }
        
   if (row < brstart || row >= brend) SETERRQ(PETSC_ERR_SUP,"Only local rows")
@@ -2208,8 +2206,7 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer, const MatType type,Mat *newm
   /* determine ownership of all rows */
   mbs        = Mbs/size + ((Mbs % size) > rank);
   m          = mbs*bs;
-  ierr       = PetscMalloc(2*(size+2)*sizeof(PetscMPIInt),&rowners);CHKERRQ(ierr);
-  browners   = rowners + size + 1;
+  ierr       = PetscMalloc2(size+1,PetscMPIInt,&rowners,size+1,PetscMPIInt,&browners);CHKERRQ(ierr);
   mmbs       = PetscMPIIntCast(mbs);
   ierr       = MPI_Allgather(&mmbs,1,MPI_INT,rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
   rowners[0] = 0;
@@ -2287,13 +2284,13 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer, const MatType type,Mat *newm
   }
 
   /* loop over local rows, determining number of off diagonal entries */
-  ierr     = PetscMalloc(2*(rend-rstart+1)*sizeof(PetscInt),&dlens);CHKERRQ(ierr);
-  odlens   = dlens + (rend-rstart);
-  ierr     = PetscMalloc(3*Mbs*sizeof(PetscInt),&mask);CHKERRQ(ierr);
-  ierr     = PetscMemzero(mask,3*Mbs*sizeof(PetscInt));CHKERRQ(ierr);
-  masked1  = mask    + Mbs;
-  masked2  = masked1 + Mbs;
-  rowcount = 0; nzcount = 0;
+  ierr     = PetscMalloc2(rend-rstart,PetscInt,&dlens,rend-rstart,PetscInt,&odlens);CHKERRQ(ierr);
+  ierr     = PetscMalloc3(Mbs,PetscInt,&mask,Mbs,PetscInt,&masked1,Mbs,PetscInt,&masked2);CHKERRQ(ierr);
+  ierr     = PetscMemzero(mask,Mbs*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr     = PetscMemzero(masked1,Mbs*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr     = PetscMemzero(masked2,Mbs*sizeof(PetscInt));CHKERRQ(ierr);
+  rowcount = 0; 
+  nzcount  = 0;
   for (i=0; i<mbs; i++) {
     dcount  = 0;
     odcount = 0;
@@ -2385,9 +2382,9 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer, const MatType type,Mat *newm
   ierr = PetscFree(locrowlens);CHKERRQ(ierr);
   ierr = PetscFree(buf);CHKERRQ(ierr);
   ierr = PetscFree(ibuf);CHKERRQ(ierr);
-  ierr = PetscFree(rowners);CHKERRQ(ierr);
-  ierr = PetscFree(dlens);CHKERRQ(ierr);
-  ierr = PetscFree(mask);CHKERRQ(ierr);
+  ierr = PetscFree2(rowners,browners);CHKERRQ(ierr);
+  ierr = PetscFree2(dlens,odlens);CHKERRQ(ierr);
+  ierr = PetscFree3(mask,masked1,masked2);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *newmat = A;

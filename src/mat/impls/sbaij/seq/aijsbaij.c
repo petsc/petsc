@@ -19,8 +19,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newt
 
   PetscFunctionBegin;
   /* compute rowlengths of newmat */
-  ierr = PetscMalloc((2*m+1)*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
-  rowstart = rowlengths + m;
+  ierr = PetscMalloc2(m,PetscInt,&rowlengths,m+1,PetscInt,&rowstart);CHKERRQ(ierr);
   
   for (i=0; i<mbs; i++) rowlengths[i*bs] = 0;
   aj = a->j;
@@ -100,7 +99,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newt
       aj++; av += bs2;
     }
   }
-  ierr = PetscFree(rowlengths);CHKERRQ(ierr);
+  ierr = PetscFree2(rowlengths,rowstart);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
@@ -186,8 +185,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType new
 
   PetscFunctionBegin;
   /* compute browlengths of newmat */
-  ierr = PetscMalloc(2*mbs*sizeof(PetscInt),&browlengths);CHKERRQ(ierr);
-  browstart = browlengths + mbs;
+  ierr = PetscMalloc2(mbs,PetscInt,&browlengths,mbs,PetscInt,&browstart);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) browlengths[i] = 0;
   aj = a->j;
   for (i=0; i<mbs; i++) {
@@ -249,7 +247,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType new
       browstart[i]++;
     }
   }
-  ierr = PetscFree(browlengths);CHKERRQ(ierr);
+  ierr = PetscFree2(browlengths,browstart);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 

@@ -415,9 +415,9 @@ PetscErrorCode MatZeroRows_MPIDense(Mat A,PetscInt N,const PetscInt rows[],Petsc
   base = owners[rank];
 
   /*  wait on receives */
-  ierr   = PetscMalloc(2*(nrecvs+1)*sizeof(PetscInt),&lens);CHKERRQ(ierr);
-  source = lens + nrecvs;
-  count  = nrecvs; slen = 0;
+  ierr   = PetscMalloc2(nrecvs,PetscInt,&lens,nrecvs,PetscInt,&source);CHKERRQ(ierr);
+  count  = nrecvs;
+  slen   = 0;
   while (count) {
     ierr = MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);CHKERRQ(ierr);
     /* unpack receives into our local space */
@@ -439,7 +439,7 @@ PetscErrorCode MatZeroRows_MPIDense(Mat A,PetscInt N,const PetscInt rows[],Petsc
     }
   }
   ierr = PetscFree(rvalues);CHKERRQ(ierr);
-  ierr = PetscFree(lens);CHKERRQ(ierr);
+  ierr = PetscFree2(lens,source);CHKERRQ(ierr);
   ierr = PetscFree(owner);CHKERRQ(ierr);
   ierr = PetscFree(nprocs);CHKERRQ(ierr);
     
@@ -933,9 +933,9 @@ PetscErrorCode MatNorm_MPIDense(Mat A,NormType type,PetscReal *nrm)
       ierr = PetscLogFlops(2.0*mdn->A->cmap->n*mdn->A->rmap->n);CHKERRQ(ierr);
     } else if (type == NORM_1) { 
       PetscReal *tmp,*tmp2;
-      ierr = PetscMalloc(2*A->cmap->N*sizeof(PetscReal),&tmp);CHKERRQ(ierr);
-      tmp2 = tmp + A->cmap->N;
-      ierr = PetscMemzero(tmp,2*A->cmap->N*sizeof(PetscReal));CHKERRQ(ierr);
+      ierr = PetscMalloc2(A->cmap->N,PetscReal,&tmp,A->cmap->N,PetscReal,&tmp2);CHKERRQ(ierr);
+      ierr = PetscMemzero(tmp,A->cmap->N*sizeof(PetscReal));CHKERRQ(ierr);
+      ierr = PetscMemzero(tmp2,A->cmap->N*sizeof(PetscReal));CHKERRQ(ierr);
       *nrm = 0.0;
       v = mat->v;
       for (j=0; j<mdn->A->cmap->n; j++) {
@@ -947,7 +947,7 @@ PetscErrorCode MatNorm_MPIDense(Mat A,NormType type,PetscReal *nrm)
       for (j=0; j<A->cmap->N; j++) {
         if (tmp2[j] > *nrm) *nrm = tmp2[j];
       }
-      ierr = PetscFree(tmp);CHKERRQ(ierr);
+      ierr = PetscFree2(tmp,tmp);CHKERRQ(ierr);
       ierr = PetscLogFlops(A->cmap->n*A->rmap->n);CHKERRQ(ierr);
     } else if (type == NORM_INFINITY) { /* max row norm */
       PetscReal ntemp;
@@ -1202,8 +1202,7 @@ PetscErrorCode MatSolve_MPIDense(Mat A,Vec b,Vec x)
     /* Create IS and cts for VecScatterring */
     PLA_Obj_local_length(v_pla, &loc_m);
     PLA_Obj_local_stride(v_pla, &loc_stride);
-    ierr = PetscMalloc((2*loc_m+1)*sizeof(PetscInt),&idx_pla);CHKERRQ(ierr);
-    idx_petsc = idx_pla + loc_m;
+    ierr = PetscMalloc2(loc_m,PetscInt,&idx_pla,loc_m,PetscInt,&idx_petsc);CHKERRQ(ierr);
 
     rstart = (r_rank*c_nproc+c_rank)*lu->nb;
     for (i=0; i<loc_m; i+=lu->nb){
@@ -1218,7 +1217,7 @@ PetscErrorCode MatSolve_MPIDense(Mat A,Vec b,Vec x)
 
     ierr = ISCreateGeneral(PETSC_COMM_SELF,loc_m,idx_pla,&lu->is_pla);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,loc_m,idx_petsc,&lu->is_petsc);CHKERRQ(ierr);  
-    ierr = PetscFree(idx_pla);CHKERRQ(ierr);
+    ierr = PetscFree2(idx_pla,idx_petsc);CHKERRQ(ierr);
     ierr = VecScatterCreate(loc_x,lu->is_pla,x,lu->is_petsc,&lu->ctx);CHKERRQ(ierr);
   }
   ierr = VecScatterBegin(lu->ctx,loc_x,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -1939,8 +1938,7 @@ PetscErrorCode MatLoad_MPIDense(PetscViewer viewer,const MatType type,Mat *newma
   rend   = rowners[rank+1]; 
 
   /* distribute row lengths to all processors */
-  ierr    = PetscMalloc(2*(rend-rstart+1)*sizeof(PetscInt),&ourlens);CHKERRQ(ierr);
-  offlens = ourlens + (rend-rstart);
+  ierr    = PetscMalloc2(rend-rstart,PetscInt,&ourlens,rend-rstart,PetscInt,&offlens);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscMalloc(M*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT);CHKERRQ(ierr);
@@ -2064,7 +2062,7 @@ PetscErrorCode MatLoad_MPIDense(PetscViewer viewer,const MatType type,Mat *newma
       jj++;
     }
   }
-  ierr = PetscFree(ourlens);CHKERRQ(ierr);
+  ierr = PetscFree2(ourlens,offlens);CHKERRQ(ierr);
   ierr = PetscFree(vals);CHKERRQ(ierr);
   ierr = PetscFree(mycols);CHKERRQ(ierr);
   ierr = PetscFree(rowners);CHKERRQ(ierr);

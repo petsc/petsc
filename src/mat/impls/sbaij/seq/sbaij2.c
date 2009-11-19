@@ -112,10 +112,10 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&nrows);CHKERRQ(ierr);
   
-  ierr  = PetscMalloc((1+oldcols)*sizeof(PetscInt),&smap);CHKERRQ(ierr);
+  ierr  = PetscMalloc(oldcols*sizeof(PetscInt),&smap);CHKERRQ(ierr);
+  ierr  = PetscMemzero(smap,oldcols*sizeof(PetscInt));CHKERRQ(ierr);
   ssmap = smap;
   ierr  = PetscMalloc((1+nrows)*sizeof(PetscInt),&lens);CHKERRQ(ierr);
-  ierr  = PetscMemzero(smap,oldcols*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<nrows; i++) smap[irow[i]] = i+1; /* nrows = ncols */
   /* determine lens of each row */
   for (i=0; i<nrows; i++) {
@@ -193,9 +193,8 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,M
   
   /* Verify if the indices corespond to each element in a block 
    and form the IS with compressed IS */
-  ierr = PetscMalloc(2*(a->mbs+1)*sizeof(PetscInt),&vary);CHKERRQ(ierr);
-  iary = vary + a->mbs;
-  ierr = PetscMemzero(vary,(a->mbs)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMalloc2(a->mbs,PetscInt,&vary,a->mbs,PetscInt,&iary);CHKERRQ(ierr);
+  ierr = PetscMemzero(vary,a->mbs*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<nrows; i++) vary[irow[i]/bs]++; 
  
   count = 0;
@@ -203,13 +202,12 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,M
     if (vary[i]!=0 && vary[i]!=bs) SETERRQ(PETSC_ERR_ARG_INCOMP,"Index set does not match blocks");
     if (vary[i]==bs) iary[count++] = i;
   }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,&is1);CHKERRQ(ierr);
-  
   ierr = ISRestoreIndices(isrow,&irow);CHKERRQ(ierr);
-  ierr = PetscFree(vary);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,&is1);CHKERRQ(ierr);
+  ierr = PetscFree2(vary,iary);CHKERRQ(ierr);
 
   ierr = MatGetSubMatrix_SeqSBAIJ_Private(A,is1,is1,scall,B);CHKERRQ(ierr);
-  ISDestroy(is1);
+  ierr = ISDestroy(is1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1147,9 +1145,7 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
     }
     *norm = sqrt(sum_diag + 2*sum_off);
   }  else if (type == NORM_INFINITY || type == NORM_1) { /* maximum row/column sum */
-    ierr = PetscMalloc((2*mbs+1)*sizeof(PetscInt)+bs*sizeof(PetscReal),&il);CHKERRQ(ierr); 
-    jl   = il + mbs;
-    sum  = (PetscReal*)(jl + mbs);
+    ierr = PetscMalloc3(bs,PetscReal,&sum,mbs,PetscInt,&il,mbs,PetscInt,&jl);CHKERRQ(ierr);
     for (i=0; i<mbs; i++) jl[i] = mbs; 
     il[0] = 0;
 
@@ -1200,7 +1196,7 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
         if (sum[j] > *norm) *norm = sum[j];
       } 
     }
-    ierr = PetscFree(il);CHKERRQ(ierr);
+    ierr = PetscFree3(sum,il,jl);CHKERRQ(ierr);
   } else {
     SETERRQ(PETSC_ERR_SUP,"No support for this norm yet");
   }

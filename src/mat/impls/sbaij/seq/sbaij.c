@@ -2138,10 +2138,10 @@ PetscErrorCode MatLoad_SeqSBAIJ(PetscViewer viewer, const MatType type,Mat *A)
   /* loop over row lengths determining block row lengths */
   ierr     = PetscMalloc(mbs*sizeof(PetscInt),&s_browlengths);CHKERRQ(ierr);
   ierr     = PetscMemzero(s_browlengths,mbs*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr     = PetscMalloc(2*mbs*sizeof(PetscInt),&mask);CHKERRQ(ierr);
+  ierr     = PetscMalloc2(mbs,PetscInt,&mask,mbs,PetscInt,&masked);CHKERRQ(ierr);
   ierr     = PetscMemzero(mask,mbs*sizeof(PetscInt));CHKERRQ(ierr);
-  masked   = mask + mbs;
-  rowcount = 0; nzcount = 0;
+  rowcount = 0;
+  nzcount  = 0;
   for (i=0; i<mbs; i++) {
     nmask = 0;
     for (j=0; j<bs; j++) {
@@ -2224,7 +2224,7 @@ PetscErrorCode MatLoad_SeqSBAIJ(PetscViewer viewer, const MatType type,Mat *A)
   ierr = PetscFree(s_browlengths);CHKERRQ(ierr);
   ierr = PetscFree(aa);CHKERRQ(ierr);
   ierr = PetscFree(jj);CHKERRQ(ierr);
-  ierr = PetscFree(mask);CHKERRQ(ierr);
+  ierr = PetscFree2(mask,masked);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
