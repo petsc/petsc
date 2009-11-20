@@ -172,9 +172,11 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDACreate(MPI_Comm comm, PetscInt dim, PetscIn
   /* create global and local prototype vector */
   ierr = VecCreateMPIWithArray(comm,adda->lsize,PETSC_DECIDE,0,&(adda->global));CHKERRQ(ierr);
   ierr = VecSetBlockSize(adda->global,adda->dof);CHKERRQ(ierr);
+#if ADDA_NEEDS_LOCAL_VECTOR
   /* local includes ghost points */
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,adda->lgsize,0,&(adda->local));CHKERRQ(ierr);
   ierr = VecSetBlockSize(adda->local,dof);CHKERRQ(ierr);
+#endif
 
   ierr = PetscMalloc(dim*sizeof(PetscInt), &(adda->refine));CHKERRQ(ierr);
   for(i=0; i<dim; i++) adda->refine[i] = 3;
@@ -215,6 +217,9 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDADestroy(ADDA adda)
   ierr = PetscFree(adda->lce);CHKERRQ(ierr);
   ierr = PetscFree(adda->lgs);CHKERRQ(ierr);
   ierr = PetscFree(adda->lge);CHKERRQ(ierr);
+  ierr = PetscFree(adda->refine);CHKERRQ(ierr);
+
+  ierr = VecDestroy(adda->global);CHKERRQ(ierr);
 
   ierr = PetscHeaderDestroy(adda);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -438,7 +443,6 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDARefine(ADDA adda, MPI_Comm comm, ADDA *adda
 PetscErrorCode PETSCDM_DLLEXPORT ADDACoarsen(ADDA adda, MPI_Comm comm,ADDA *addac) {
   PetscErrorCode ierr;
   PetscInt       *nodesc;
-  PetscInt       *procsc;
   PetscInt       dofc;
   PetscInt       i;
   PetscFunctionBegin;
@@ -449,9 +453,8 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDACoarsen(ADDA adda, MPI_Comm comm,ADDA *adda
     nodesc[i] = (adda->nodes[i] % adda->refine[i]) ? adda->nodes[i] / adda->refine[i] + 1 : adda->nodes[i] / adda->refine[i];
   }
   dofc = (adda->dof % adda->dofrefine) ? adda->dof / adda->dofrefine + 1 : adda->dof / adda->dofrefine;
-  ierr = PetscMalloc(adda->dim*sizeof(PetscInt), &procsc);CHKERRQ(ierr);
-  ierr = PetscMemcpy(procsc, adda->procs, adda->dim*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = ADDACreate(((PetscObject)adda)->comm, adda->dim, nodesc, procsc, dofc, adda->periodic, addac);CHKERRQ(ierr);
+  ierr = ADDACreate(((PetscObject)adda)->comm, adda->dim, nodesc, adda->procs, dofc, adda->periodic, addac);CHKERRQ(ierr);
+  ierr = PetscFree(nodesc);CHKERRQ(ierr);
   /* copy refinement factors */
   ierr = ADDASetRefinement(*addac, adda->refine, adda->dofrefine);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -684,7 +687,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetAggregates(ADDA addac,ADDA addaf,Mat *re
   ierr = PetscFree(lcs_f);CHKERRQ(ierr);
   ierr = PetscFree(lce_f);CHKERRQ(ierr);
   ierr = PetscFree(one_vec);CHKERRQ(ierr);
-  for(i=0; i<dim; i++) {
+  for(i=0; i<max_agg_size; i++) {
     ierr = PetscFree(fine_nodes[i].x);CHKERRQ(ierr);
   }
   ierr = PetscFree(fine_nodes);CHKERRQ(ierr);

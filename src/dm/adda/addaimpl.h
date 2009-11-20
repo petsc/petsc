@@ -3,6 +3,9 @@
 
 #include "private/dmimpl.h"
 
+/* vector was allocated and never referenced, clearly some task was not finished */
+#define ADDA_HAS_LOCAL_VECTOR 0
+
 typedef struct _ADDAOps *ADDAOps;
 struct _ADDAOps {
   DMOPS(ADDA)
@@ -21,7 +24,9 @@ struct _p_ADDA {
   PetscInt            lsize;                 /* number of nodes in local region */
   PetscInt            lgsize;                /* number of nodes in local region including ghost points */
   Vec                 global;                /* global prototype vector */
+#if ADDA_HAS_LOCAL_VECTOR
   Vec                 local;                 /* local prototype vector */
+#endif
   PetscInt            *refine;               /* refinement factors for each dimension */
   PetscInt            dofrefine;             /* refinement factor for the dof */
 };
