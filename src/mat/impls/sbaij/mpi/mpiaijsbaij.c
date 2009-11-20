@@ -1,17 +1,83 @@
 #define PETSCMAT_DLL
 
 #include "mpisbaij.h" /*I "petscmat.h" I*/
+#include "../src/mat/impls/aij/mpi/mpiaij.h"
+#include "private/matimpl.h"
+#include "petscmat.h"
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_MPIAIJ_MPISBAIJ"
 PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat) 
 {
-  PetscErrorCode ierr;
+  PetscErrorCode     ierr;
+  Mat                M;
+  PetscInt           *d_nnz,*o_nnz;
+  PetscInt           i,j,k,nz;
+  PetscInt           m,n,lm,ln;
+  PetscInt           rstart,rend;
+  const PetscScalar  *vwork;
+  const PetscInt     *cwork;
 
   PetscFunctionBegin;
-  /* Now, calls MatConvert_Basic(). Will implement later */
-  ierr = MatConvert_Basic(A, newtype,reuse,newmat);CHKERRQ(ierr);
+  ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&lm,&n);CHKERRQ(ierr);
+  ierr = PetscMalloc(lm*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
+  ierr = PetscMalloc(lm*sizeof(PetscInt),&o_nnz);CHKERRQ(ierr);
+
+  k = 0;
+  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
+  for(i=rstart;i<rend;i++){
+    ierr = MatGetRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
+    d_nnz[k] = o_nnz[k] = 0;
+    for(j=0;j<nz;j++){
+      if(cwork[j] >= rstart && cwork[j] <= rend-1) /* diagonal portion */
+	d_nnz[k] += 1;
+      else{
+	/* insert values only in upper triangular portion */
+	if(cwork[j] >= rend)
+	    o_nnz[k] += 1;  /* off-diagonal portion */
+      }
+    }
+    ierr = MatRestoreRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
+    k++;
+  }
+  
+  ierr = MatCreate(((PetscObject)A)->comm,&M);CHKERRQ(ierr);
+  ierr = MatSetSizes(M,lm,ln,m,n);CHKERRQ(ierr);
+  ierr = MatSetType(M,newtype);CHKERRQ(ierr);
+  ierr = MatMPISBAIJSetPreallocation(M,1,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
+
+  ierr = PetscFree(d_nnz);CHKERRQ(ierr);
+  ierr = PetscFree(o_nnz);CHKERRQ(ierr);
+
+  for(i=rstart;i<rend;i++){
+    ierr = MatGetRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
+    for(j=0;j<nz;j++){
+      if(cwork[j] >= rstart && cwork[j] <= rend-1){ /* diagonal portion */
+	ierr = MatSetValues(M,1,&i,1,&cwork[j],&vwork[j],INSERT_VALUES);CHKERRQ(ierr);
+      }else{
+	/* insert values only in upper triangular portion */
+	if(cwork[j] >= rend){
+	  ierr = MatSetValues(M,1,&i,1,&cwork[j],&vwork[j],INSERT_VALUES);CHKERRQ(ierr);
+	}
+      }
+    }
+    ierr = MatRestoreRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
+    k++;
+  }
+  ierr = MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  if (A->hermitian){
+    ierr = MatSetOption(M,MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
+  }
+
+  if (reuse == MAT_REUSE_MATRIX) {
+    ierr = MatHeaderReplace(A,M);CHKERRQ(ierr);
+  } else
+    *newmat = M;
+  
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
