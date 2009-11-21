@@ -21,7 +21,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newt
 
   PetscFunctionBegin;
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A,&lm,&n);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&lm,&ln);CHKERRQ(ierr);
   ierr = PetscMalloc(lm*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
   ierr = PetscMalloc(lm*sizeof(PetscInt),&o_nnz);CHKERRQ(ierr);
 
