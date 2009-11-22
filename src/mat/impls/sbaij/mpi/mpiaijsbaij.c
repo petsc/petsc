@@ -22,8 +22,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newt
   PetscFunctionBegin;
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&lm,&ln);CHKERRQ(ierr);
-  ierr = PetscMalloc(lm*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
-  ierr = PetscMalloc(lm*sizeof(PetscInt),&o_nnz);CHKERRQ(ierr);
+  ierr = PetscMalloc2(lm*sizeof(PetscInt),PetscInt,&d_nnz,lm*sizeof(PetscInt),PetscInt,&o_nnz);CHKERRQ(ierr);
 
   k = 0;
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
@@ -31,8 +30,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newt
     ierr = MatGetRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
     d_nnz[k] = o_nnz[k] = 0;
     for(j=0;j<nz;j++){
-      if(cwork[j] >= rstart && cwork[j] <= rend-1) /* diagonal portion */
-	d_nnz[k] += 1;
+      if(cwork[j] >= rstart && cwork[j] <= rend-1){ /* diagonal portion */
+	if(cwork[j] > i)
+	  d_nnz[k] += 1;
+      }
       else{
 	/* insert values only in upper triangular portion */
 	if(cwork[j] >= rend)
@@ -48,14 +49,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newt
   ierr = MatSetType(M,newtype);CHKERRQ(ierr);
   ierr = MatMPISBAIJSetPreallocation(M,1,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
 
-  ierr = PetscFree(d_nnz);CHKERRQ(ierr);
-  ierr = PetscFree(o_nnz);CHKERRQ(ierr);
+  ierr = PetscFree2(d_nnz,o_nnz);CHKERRQ(ierr);
 
   for(i=rstart;i<rend;i++){
     ierr = MatGetRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
     for(j=0;j<nz;j++){
       if(cwork[j] >= rstart && cwork[j] <= rend-1){ /* diagonal portion */
-	ierr = MatSetValues(M,1,&i,1,&cwork[j],&vwork[j],INSERT_VALUES);CHKERRQ(ierr);
+	if(cwork[j] > i)
+	  ierr = MatSetValues(M,1,&i,1,&cwork[j],&vwork[j],INSERT_VALUES);CHKERRQ(ierr);
       }else{
 	/* insert values only in upper triangular portion */
 	if(cwork[j] >= rend){
