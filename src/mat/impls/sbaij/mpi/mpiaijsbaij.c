@@ -31,7 +31,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newt
     d_nnz[k] = o_nnz[k] = 0;
     for(j=0;j<nz;j++){
       if(cwork[j] >= rstart && cwork[j] <= rend-1){ /* diagonal portion */
-	if(cwork[j] > i)
+	if(cwork[j] >= i)
 	  d_nnz[k] += 1;
       }
       else{
@@ -43,7 +43,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newt
     ierr = MatRestoreRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
     k++;
   }
-  
   ierr = MatCreate(((PetscObject)A)->comm,&M);CHKERRQ(ierr);
   ierr = MatSetSizes(M,lm,ln,m,n);CHKERRQ(ierr);
   ierr = MatSetType(M,newtype);CHKERRQ(ierr);
@@ -55,7 +54,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newt
     ierr = MatGetRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
     for(j=0;j<nz;j++){
       if(cwork[j] >= rstart && cwork[j] <= rend-1){ /* diagonal portion */
-	if(cwork[j] > i)
+	if(cwork[j] >= i)
 	  ierr = MatSetValues(M,1,&i,1,&cwork[j],&vwork[j],INSERT_VALUES);CHKERRQ(ierr);
       }else{
 	/* insert values only in upper triangular portion */
