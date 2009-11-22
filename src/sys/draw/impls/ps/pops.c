@@ -417,19 +417,16 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawCreate_PS(PetscDraw draw)
 
     /* now do the uniform hue part of the colors */
     ncolors = 256-PETSC_DRAW_BASIC_COLORS;
-    ierr    = PetscMalloc(3*ncolors*sizeof(unsigned char),&red);CHKERRQ(ierr);
-    green   = red   + ncolors;
-    blue    = green + ncolors;
+    ierr    = PetscMalloc3(ncolors,unsigned char,&red,ncolors,unsigned char,&green,ncolors,unsigned char,&blue);CHKERRQ(ierr);
     ierr    = PetscDrawUtilitySetCmapHue(red,green,blue,ncolors);CHKERRQ(ierr);
     for (i=PETSC_DRAW_BASIC_COLORS; i<ncolors+PETSC_DRAW_BASIC_COLORS; i++) {
       rgb[0][i]  = ((double)red[i-PETSC_DRAW_BASIC_COLORS])/255.;
       rgb[1][i]  = ((double)green[i-PETSC_DRAW_BASIC_COLORS])/255.;
       rgb[2][i]  = ((double)blue[i-PETSC_DRAW_BASIC_COLORS])/255.;
     }
-    ierr = PetscFree(red);CHKERRQ(ierr);
+    ierr = PetscFree3(red,green,blue);CHKERRQ(ierr);
   }
-
-  draw->data    = (void*)ps;
+  draw->data = (void*)ps;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

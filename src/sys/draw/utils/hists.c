@@ -202,7 +202,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGAddValue(PetscDrawHG hist, PetscReal v
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
   /* Allocate more memory if necessary */
   if (hist->numValues >= hist->maxValues) {
-    PetscReal *tmp;
+    PetscReal      *tmp;
     PetscErrorCode ierr;
 
     ierr = PetscMalloc((hist->maxValues+CHUNKSIZE) * sizeof(PetscReal), &tmp);CHKERRQ(ierr);
@@ -269,7 +269,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGDraw(PetscDrawHG hist)
   PetscReal      xmin,xmax,ymin,ymax,*bins,*values,binSize,binLeft,binRight,maxHeight,mean,var;
   char           title[256];
   char           xlabel[256];
-  int            numBins,numBinsOld,numValues,initSize,i,p,bcolor,color;
+  PetscInt       numBins,numBinsOld,numValues,initSize,i,p,bcolor,color;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -409,7 +409,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGPrint(PetscDrawHG hist)
 {
   PetscReal      xmax,xmin,*bins,*values,binSize,binLeft,binRight,mean,var;
   PetscErrorCode ierr;
-  int            numBins,numBinsOld,numValues,initSize,i,p;
+  PetscInt       numBins,numBinsOld,numValues,initSize,i,p;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);

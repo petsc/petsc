@@ -238,21 +238,16 @@ PetscErrorCode PETSC_DLLEXPORT PetscGatherMessageLengths2(MPI_Comm comm,PetscMPI
 PetscErrorCode PETSC_DLLEXPORT PetscPostIrecvInt(MPI_Comm comm,PetscMPIInt tag,PetscMPIInt nrecvs,const PetscMPIInt onodes[],const PetscMPIInt olengths[],PetscInt ***rbuf,MPI_Request **r_waits)
 {
   PetscErrorCode ierr;
-  PetscInt       **rbuf_t,i;
+  PetscInt       **rbuf_t,i,len = 0;
   MPI_Request    *r_waits_t;
-  /* see comment in PetscPostIrecvScalar() for explanation for variables below */
-  size_t         len = 1; 
-  PetscInt       tnrecvs = 1 + (nrecvs*sizeof(PetscInt*))/sizeof(PetscInt);
 
   PetscFunctionBegin;
   /* compute memory required for recv buffers */
   for (i=0; i<nrecvs; i++) len += olengths[i];  /* each message length */
-  len *= sizeof(PetscInt);
-  len += nrecvs*sizeof(PetscInt*); /* Array of pointers for each message */
 
   /* allocate memory for recv buffers */
-  ierr    = PetscMalloc(len,&rbuf_t);CHKERRQ(ierr);
-  rbuf_t[0] = ((PetscInt*)rbuf_t) + tnrecvs;
+  ierr = PetscMalloc((nrecvs+1)*sizeof(PetscInt*),&rbuf_t);CHKERRQ(ierr);
+  ierr = PetscMalloc(len*sizeof(PetscInt),&rbuf_t[0]);CHKERRQ(ierr);
   for (i=1; i<nrecvs; ++i) rbuf_t[i] = rbuf_t[i-1] + olengths[i-1];
 
   /* Post the receives */
@@ -274,20 +269,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscPostIrecvScalar(MPI_Comm comm,PetscMPIInt ta
   PetscMPIInt    i;
   PetscScalar    **rbuf_t;
   MPI_Request    *r_waits_t;
-  /* rbuf_t[0] (which equals (*ebuf)[0]) must be PetscScalar aligned (for example 8 byte aligned with double precision)
-     therefor initial space in rbuf_t must always be divisible by sizeof(PetscScalar). The values below insure this */
-  size_t         len = 1;  /* extra space if alignment is needed */
-  PetscInt       tnrecvs = 1 + (nrecvs*sizeof(PetscScalar*))/sizeof(PetscScalar);
+  PetscInt       len = 0;
 
   PetscFunctionBegin;
   /* compute memory required for recv buffers */
   for (i=0; i<nrecvs; i++) len += olengths[i];  /* each message length */
-  len *= sizeof(PetscScalar);
-  len += nrecvs*sizeof(PetscScalar*); /* Array of pointers for each message */
 
   /* allocate memory for recv buffers */
-  ierr    = PetscMalloc(len,&rbuf_t);CHKERRQ(ierr);
-  rbuf_t[0] = ((PetscScalar*)rbuf_t) + tnrecvs;
+  ierr    = PetscMalloc((nrecvs+1)*sizeof(PetscInt*),&rbuf_t);CHKERRQ(ierr);
+  ierr    = PetscMalloc(len*sizeof(PetscInt),&rbuf_t[0]);CHKERRQ(ierr);
   for (i=1; i<nrecvs; ++i) rbuf_t[i] = rbuf_t[i-1] + olengths[i-1];
 
   /* Post the receives */

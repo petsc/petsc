@@ -21,24 +21,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_QMD(Mat mat,const MatOrderingType 
   if (!done) SETERRQ(PETSC_ERR_SUP,"Cannot get rows for matrix");
 
   ierr = PetscMalloc(nrow * sizeof(PetscInt),&perm);CHKERRQ(ierr);
-  ierr = PetscMalloc(nrow * sizeof(PetscInt),&iperm);CHKERRQ(ierr);
-  ierr = PetscMalloc(nrow * sizeof(PetscInt),&deg);CHKERRQ(ierr);
-  ierr = PetscMalloc(nrow * sizeof(PetscInt),&marker);CHKERRQ(ierr);
-  ierr = PetscMalloc(nrow * sizeof(PetscInt),&rchset);CHKERRQ(ierr);
-  ierr = PetscMalloc(nrow * sizeof(PetscInt),&nbrhd);CHKERRQ(ierr);
-  ierr = PetscMalloc(nrow * sizeof(PetscInt),&qsize);CHKERRQ(ierr);
-  ierr = PetscMalloc(nrow * sizeof(PetscInt),&qlink);CHKERRQ(ierr);
+  ierr = PetscMalloc5(nrow,PetscInt,&iperm,nrow,PetscInt,&deg,nrow,PetscInt,&marker,nrow,PetscInt,&rchset,nrow,PetscInt,&nbrhd);CHKERRQ(ierr);
+  ierr = PetscMalloc2(nrow,PetscInt,&qsize,nrow,PetscInt,&qlink);CHKERRQ(ierr);
   /* WARNING - genqmd trashes ja */    
   SPARSEPACKgenqmd(&nrow,ia,ja,perm,iperm,deg,marker,rchset,nbrhd,qsize,qlink,&nofsub);
   ierr = MatRestoreRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
 
-  ierr = PetscFree(deg);CHKERRQ(ierr);
-  ierr = PetscFree(marker);CHKERRQ(ierr);
-  ierr = PetscFree(rchset);CHKERRQ(ierr);
-  ierr = PetscFree(nbrhd);CHKERRQ(ierr);
-  ierr = PetscFree(qsize);CHKERRQ(ierr);
-  ierr = PetscFree(qlink);CHKERRQ(ierr);
-  ierr = PetscFree(iperm);CHKERRQ(ierr);
+  ierr = PetscFree2(qsize,qlink);CHKERRQ(ierr);
+  ierr = PetscFree5(iperm,deg,marker,rchset,nbrhd);CHKERRQ(ierr);
   for (i=0; i<nrow; i++) perm[i]--;
   ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,row);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,col);CHKERRQ(ierr);

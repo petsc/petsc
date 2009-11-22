@@ -264,6 +264,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[
   ierr = PetscMalloc((nrqr+1)*sizeof(PetscInt*),&xdata);CHKERRQ(ierr);
   ierr = PetscMalloc((nrqr+1)*sizeof(PetscInt),&isz1);CHKERRQ(ierr);
   ierr = MatIncreaseOverlap_MPIBAIJ_Receive(C,nrqr,rbuf,xdata,isz1);CHKERRQ(ierr);
+  ierr = PetscFree(rbuf[0]);CHKERRQ(ierr);
   ierr = PetscFree(rbuf);CHKERRQ(ierr);
 
   /* Send the data back*/
@@ -337,6 +338,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[
   ierr = PetscFree(olengths2);CHKERRQ(ierr);
 
   ierr = PetscFree(pa);CHKERRQ(ierr);
+  ierr = PetscFree(rbuf2[0]);CHKERRQ(ierr);
   ierr = PetscFree(rbuf2);CHKERRQ(ierr);
   ierr = PetscFree(s_waits1);CHKERRQ(ierr);
   ierr = PetscFree(r_waits1);CHKERRQ(ierr);

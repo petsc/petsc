@@ -158,6 +158,14 @@
       parameter(MPIU_SCALAR = MPI_DOUBLE_PRECISION)
 #endif
 #endif
+
+      integer MPIU_INTEGER
+#if defined(PETSC_USE_64BIT_INDICES)
+      parameter(MPIU_INTEGER = MPI_INTEGER8)
+#else
+      parameter(MPIU_INTEGER = MPI_INTEGER)
+#endif
+
 !
 ! ----------------------------------------------------------------------------
 !    BEGIN COMMON-BLOCK VARIABLES

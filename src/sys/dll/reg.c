@@ -515,7 +515,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListGet(PetscFList list,char ***array,int *
   }
   (*array)[count] = 0;
   *n = count+1;
-
   PetscFunctionReturn(0);
 }
 

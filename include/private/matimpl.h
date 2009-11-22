@@ -220,9 +220,9 @@ typedef struct {
   MPI_Status    *send_status;           /* array of send status */
   PetscInt      nsends,nrecvs;          /* numbers of sends and receives */
   PetscScalar   *svalues;               /* sending data */
+  PetscInt      *sindices;    
   PetscScalar   **rvalues;              /* receiving data (values) */
   PetscInt      **rindices;             /* receiving data (indices) */
-  PetscMPIInt   *nprocs;                /* tmp data used both during scatterbegin and end */
   PetscInt      nprocessed;             /* number of messages already processed */
 } MatStash;
 

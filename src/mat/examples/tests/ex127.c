@@ -15,7 +15,6 @@ PetscInt main(PetscInt argc,char **args)
   Vec            x,y,ys;
   PetscTruth     flg,disp_mat=PETSC_FALSE,disp_vec=PETSC_FALSE;  
   PetscErrorCode ierr;
-  PetscScalar    sigma;
   PetscMPIInt    size,rank;
   PetscInt       m,i,j; 
   PetscScalar    v,sigma2;

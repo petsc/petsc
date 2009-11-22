@@ -19,20 +19,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_RCM(Mat mat,const MatOrderingType 
   ierr = MatGetRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PETSC_ERR_SUP,"Cannot get rows for matrix");
 
-  ierr = PetscMalloc(4*nrow * sizeof(PetscInt),&mask);CHKERRQ(ierr);
-  perm = mask + nrow;
-  xls  = perm + nrow;
-
+  ierr = PetscMalloc3(nrow,PetscInt,&mask,nrow,PetscInt,perm,2*nrow,PetscInt,&xls);CHKERRQ(ierr);
   SPARSEPACKgenrcm(&nrow,ia,ja,perm,mask,xls);
   ierr = MatRestoreRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
 
   /* shift because Sparsepack indices start at one */
   for (i=0; i<nrow; i++) perm[i]--;
-
   ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,row);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,col);CHKERRQ(ierr);
-  ierr = PetscFree(mask);CHKERRQ(ierr);
-
+  ierr = PetscFree3(mask,perm,xls);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

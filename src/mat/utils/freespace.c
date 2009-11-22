@@ -36,7 +36,7 @@ PetscErrorCode PetscFreeSpaceContiguous(PetscFreeSpaceList *head,PetscInt *space
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  while ((*head)!=NULL) {
+  while ((*head)) {
     a     =  (*head)->more_space;
     ierr  =  PetscMemcpy(space,(*head)->array_head,((*head)->local_used)*sizeof(PetscInt));CHKERRQ(ierr);
     space += (*head)->local_used;

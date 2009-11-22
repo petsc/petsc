@@ -815,9 +815,9 @@ PetscErrorCode DAGetNeighborsRank(DA da, PetscMPIInt neighbors[])
 
   neighbors[0] = rank;
   rank = 0;
-  ierr = PetscMalloc(sizeof(int*)*PJ,&procs);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscInt*)*PJ,&procs);CHKERRQ(ierr);
   for (pj=0;pj<PJ;pj++) {
-    ierr = PetscMalloc(sizeof(int)*PI,&(procs[pj]));CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PetscInt)*PI,&(procs[pj]));CHKERRQ(ierr);
     for (pi=0;pi<PI;pi++) {
       procs[pj][pi] = rank;
       rank++;

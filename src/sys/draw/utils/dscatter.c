@@ -45,9 +45,9 @@ struct _p_DrawSP {
 PetscErrorCode PETSC_DLLEXPORT PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
 {
   PetscErrorCode ierr;
-  PetscTruth  isnull;
-  PetscObject obj = (PetscObject)draw;
-  PetscDrawSP sp;
+  PetscTruth     isnull;
+  PetscObject    obj = (PetscObject)draw;
+  PetscDrawSP    sp;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
@@ -67,9 +67,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSPCreate(PetscDraw draw,int dim,PetscDra
   sp->ymin    = 1.e20;
   sp->xmax    = -1.e20;
   sp->ymax    = -1.e20;
-  ierr = PetscMalloc(2*dim*CHUNCKSIZE*sizeof(PetscReal),&sp->x);CHKERRQ(ierr);
+  ierr = PetscMalloc2(dim*CHUNCKSIZE,PetscReal,&sp->x,dim*CHUNCKSIZE,PetscReal,&sp->y);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(sp,2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
-  sp->y       = sp->x + dim*CHUNCKSIZE;
   sp->len     = dim*CHUNCKSIZE;
   sp->loc     = 0;
   ierr = PetscDrawAxisCreate(draw,&sp->axis);CHKERRQ(ierr);
@@ -103,11 +102,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
   PetscValidHeaderSpecific(sp,DRAWSP_COOKIE,1);
   if (sp->dim == dim) PetscFunctionReturn(0);
 
-  ierr = PetscFree(sp->x);CHKERRQ(ierr);
+  ierr = PetscFree2(sp->x,sp->y);CHKERRQ(ierr);
   sp->dim     = dim;
-  ierr = PetscMalloc(2*dim*CHUNCKSIZE*sizeof(PetscReal),&sp->x);CHKERRQ(ierr);
+  ierr = PetscMalloc2(dim*CHUNCKSIZE,PetscReal,&sp->x,dim*CHUNCKSIZE,PetscReal,&sp->y);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(sp,2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
-  sp->y       = sp->x + dim*CHUNCKSIZE;
   sp->len     = dim*CHUNCKSIZE;
   PetscFunctionReturn(0);
 }
@@ -168,7 +166,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSPDestroy(PetscDrawSP sp)
     PetscFunctionReturn(0);
   }
   ierr = PetscDrawAxisDestroy(sp->axis);CHKERRQ(ierr);
-  ierr = PetscFree(sp->x);CHKERRQ(ierr);
+  ierr = PetscFree2(sp->x,sp->y);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(sp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -194,7 +192,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSPDestroy(PetscDrawSP sp)
 PetscErrorCode PETSC_DLLEXPORT PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
 {
   PetscErrorCode ierr;
-  int i;
+  PetscInt       i;
 
   PetscFunctionBegin;
   if (sp && ((PetscObject)sp)->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
@@ -202,13 +200,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,P
   PetscValidHeaderSpecific(sp,DRAWSP_COOKIE,1);
   if (sp->loc+sp->dim >= sp->len) { /* allocate more space */
     PetscReal *tmpx,*tmpy;
-    ierr = PetscMalloc((2*sp->len+2*sp->dim*CHUNCKSIZE)*sizeof(PetscReal),&tmpx);CHKERRQ(ierr);
+    ierr = PetscMalloc2(sp->len+sp->dim*CHUNCKSIZE,PetscReal,&tmpx,sp->len+sp->dim*CHUNCKSIZE,PetscReal,&tmpy);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(sp,2*sp->dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
-    tmpy = tmpx + sp->len + sp->dim*CHUNCKSIZE;
     ierr = PetscMemcpy(tmpx,sp->x,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscMemcpy(tmpy,sp->y,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscFree(sp->x);CHKERRQ(ierr);
-    sp->x = tmpx; sp->y = tmpy;
+    ierr = PetscFree2(sp->x,sp->y);CHKERRQ(ierr);
+    sp->x = tmpx; 
+    sp->y = tmpy;
     sp->len += sp->dim*CHUNCKSIZE;
   }
   for (i=0; i<sp->dim; i++) {
@@ -247,23 +245,24 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,P
 PetscErrorCode PETSC_DLLEXPORT PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscReal **yy)
 {
   PetscErrorCode ierr;
-  int       i,j,k;
-  PetscReal *x,*y;
+  PetscInt       i,j,k;
+  PetscReal      *x,*y;
 
   PetscFunctionBegin;
   if (sp && ((PetscObject)sp)->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp,DRAWSP_COOKIE,1);
+
   if (sp->loc+n*sp->dim >= sp->len) { /* allocate more space */
     PetscReal *tmpx,*tmpy;
-    int    chunk = CHUNCKSIZE;
+    PetscInt  chunk = CHUNCKSIZE;
     if (n > chunk) chunk = n;
-    ierr = PetscMalloc((2*sp->len+2*sp->dim*chunk)*sizeof(PetscReal),&tmpx);CHKERRQ(ierr);
+    ierr = PetscMalloc2(sp->len+sp->dim*chunk,PetscReal,&tmpx,sp->len+sp->dim*chunk,PetscReal,&tmpy);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(sp,2*sp->dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
-    tmpy = tmpx + sp->len + sp->dim*chunk;
     ierr = PetscMemcpy(tmpx,sp->x,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscMemcpy(tmpy,sp->y,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscFree(sp->x);CHKERRQ(ierr);
-    sp->x   = tmpx; sp->y = tmpy;
+    ierr = PetscFree2(sp->x,sp->y);CHKERRQ(ierr);
+    sp->x    = tmpx;
+    sp->y    = tmpy;
     sp->len += sp->dim*CHUNCKSIZE;
   }
   for (j=0; j<sp->dim; j++) {
@@ -302,10 +301,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscRe
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDrawSPDraw(PetscDrawSP sp)
 {
-  PetscReal xmin=sp->xmin,xmax=sp->xmax,ymin=sp->ymin,ymax=sp->ymax;
+  PetscReal      xmin=sp->xmin,xmax=sp->xmax,ymin=sp->ymin,ymax=sp->ymax;
   PetscErrorCode ierr;
-  int       i,j,dim = sp->dim,nopts = sp->nopts,rank;
-  PetscDraw draw = sp->win;
+  PetscInt       i,j,dim = sp->dim,nopts = sp->nopts,rank;
+  PetscDraw      draw = sp->win;
 
   PetscFunctionBegin;
   if (sp && ((PetscObject)sp)->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);

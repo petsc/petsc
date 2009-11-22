@@ -95,9 +95,7 @@ PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual 
 
   /* set the uniform hue colors into the color map */
   ncolors = 256-PETSC_DRAW_BASIC_COLORS;
-  ierr    = PetscMalloc(3*ncolors*sizeof(unsigned char),&red);CHKERRQ(ierr);
-  green   = red   + ncolors;
-  blue    = green + ncolors;
+  ierr    = PetscMalloc3(ncolors,unsigned char,&red,ncolors,unsigned char,&green,ncolors,unsigned char,&blue);CHKERRQ(ierr);
   ierr    = PetscDrawUtilitySetCmapHue(red,green,blue,ncolors);CHKERRQ(ierr);
   ierr    = PetscOptionsGetTruth(PETSC_NULL,"-draw_fast",&fast,PETSC_NULL);CHKERRQ(ierr);
   if (!fast) {
@@ -110,7 +108,7 @@ PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual 
       gCmapping[i]   = colordef.pixel;
     }
   }
-  ierr = PetscFree(red);CHKERRQ(ierr);
+  ierr = PetscFree3(red,green,blue);CHKERRQ(ierr);
   ierr = PetscInfo(0,"Successfully allocated colors\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -165,9 +163,7 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual
 
   /* set the uniform hue colors into the color map */
   ncolors = 256-PETSC_DRAW_BASIC_COLORS;
-  ierr    = PetscMalloc(3*ncolors*sizeof(unsigned char),&red);CHKERRQ(ierr);
-  green   = red   + ncolors;
-  blue    = green + ncolors;
+  ierr    = PetscMalloc3(ncolors,unsigned char,&red,ncolors,unsigned char,&green,ncolors,unsigned char,&blue);CHKERRQ(ierr);
   ierr    = PetscDrawUtilitySetCmapHue(red,green,blue,ncolors);CHKERRQ(ierr);
   ierr    = PetscOptionsGetTruth(PETSC_NULL,"-draw_fast",&fast,PETSC_NULL);CHKERRQ(ierr);
   if (!fast) {
@@ -191,7 +187,7 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual
       gCmapping[i]   = colordef.pixel;
     }
   }
-  ierr = PetscFree(red);CHKERRQ(ierr);
+  ierr = PetscFree3(red,green,blue);CHKERRQ(ierr);
   ierr = PetscInfo(0,"Successfully allocated colors\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

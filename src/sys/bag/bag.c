@@ -646,7 +646,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagLoad(PetscViewer view,PetscBag *bag)
 
   Input Parameters:
 +  comm - communicator to share bag
--  size - size of the C structure holding the values
+-  bagsize - size of the C structure holding the values
 
   Output Parameter:
 .   bag - the bag of values
@@ -660,16 +660,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagLoad(PetscViewer view,PetscBag *bag)
            PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
            PetscBagSetFromOptions(), PetscBagCreate(), PetscBagDestroy(), PetscBagRegisterEnum()
 @*/
-PetscErrorCode PetscBagCreate(MPI_Comm comm, size_t size, PetscBag *bag)
+PetscErrorCode PetscBagCreate(MPI_Comm comm, size_t bagsize, PetscBag *bag)
 {
   PetscErrorCode ierr;
-  size_t tsize;
 
   PetscFunctionBegin;
-  tsize = sizeof(struct _n_PetscBag)+size;
-  ierr = PetscMalloc(tsize,bag);CHKERRQ(ierr);
-  ierr = PetscMemzero(*bag,tsize);CHKERRQ(ierr);
-  (*bag)->bagsize = tsize;
+  ierr = PetscMalloc(bagsize+sizeof(struct _n_PetscBag),bag);CHKERRQ(ierr);
+  ierr = PetscMemzero(*bag,bagsize+sizeof(struct _n_PetscBag));CHKERRQ(ierr);
+  (*bag)->bagsize = bagsize+sizeof(struct _n_PetscBag);
   (*bag)->bagcomm = comm;
   PetscFunctionReturn(0);
 }  
