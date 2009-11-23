@@ -2,7 +2,7 @@ static char help[] = "Test MatMult() for Hermitian matrix.\n\n";
 /* 
   Example of usage 
     ./ex127 -check_Hermitian -display_mat -display_vec
-    mpiexec -n 2 ./ex127 -mat_ignore_lower_triangular
+    mpiexec -n 2 ./ex127 
 */
 
 #include "petscmat.h"

@@ -31,18 +31,16 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newt
     d_nnz[k] = o_nnz[k] = 0;
     for(j=0;j<nz;j++){
       if(cwork[j] >= rstart && cwork[j] <= rend-1){ /* diagonal portion */
-	if(cwork[j] >= i)
-	  d_nnz[k] += 1;
-      }
-      else{
+	if(cwork[j] >= i) d_nnz[k] += 1;
+      } else {
 	/* insert values only in upper triangular portion */
-	if(cwork[j] >= rend)
-	    o_nnz[k] += 1;  /* off-diagonal portion */
+	if(cwork[j] >= rend) o_nnz[k] += 1;  /* off-diagonal portion */
       }
     }
     ierr = MatRestoreRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
     k++;
   }
+
   ierr = MatCreate(((PetscObject)A)->comm,&M);CHKERRQ(ierr);
   ierr = MatSetSizes(M,lm,ln,m,n);CHKERRQ(ierr);
   ierr = MatSetType(M,newtype);CHKERRQ(ierr);
@@ -52,17 +50,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newt
 
   for(i=rstart;i<rend;i++){
     ierr = MatGetRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
-    for(j=0;j<nz;j++){
-      if(cwork[j] >= rstart && cwork[j] <= rend-1){ /* diagonal portion */
-	if(cwork[j] >= i)
-	  ierr = MatSetValues(M,1,&i,1,&cwork[j],&vwork[j],INSERT_VALUES);CHKERRQ(ierr);
-      }else{
-	/* insert values only in upper triangular portion */
-	if(cwork[j] >= rend){
-	  ierr = MatSetValues(M,1,&i,1,&cwork[j],&vwork[j],INSERT_VALUES);CHKERRQ(ierr);
-	}
-      }
-    }
+    j = 0;
+    while (cwork[j] < i){ j++; nz--;}
+    ierr = MatSetValues(M,1,&i,nz,cwork+j,vwork+j,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatRestoreRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
     k++;
   }
@@ -75,9 +65,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newt
 
   if (reuse == MAT_REUSE_MATRIX) {
     ierr = MatHeaderReplace(A,M);CHKERRQ(ierr);
-  } else
+  } else {
     *newmat = M;
-  
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
