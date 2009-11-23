@@ -12,6 +12,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newt
 {
   PetscErrorCode     ierr;
   Mat                M;
+  Mat_MPIAIJ         *mpimat = (Mat_MPIAIJ*)A->data;
+  Mat_SeqAIJ         *Aa = (Mat_SeqAIJ*)mpimat->A->data,*Ba = (Mat_SeqAIJ*)mpimat->B->data; 
   PetscInt           *d_nnz,*o_nnz;
   PetscInt           i,j,k,nz;
   PetscInt           m,n,lm,ln;
@@ -27,17 +29,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newt
   k = 0;
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   for(i=rstart;i<rend;i++){
-    ierr = MatGetRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
-    d_nnz[k] = o_nnz[k] = 0;
-    for(j=0;j<nz;j++){
-      if(cwork[j] >= rstart && cwork[j] <= rend-1){ /* diagonal portion */
-	if(cwork[j] >= i) d_nnz[k] += 1;
-      } else {
-	/* insert values only in upper triangular portion */
-	if(cwork[j] >= rend) o_nnz[k] += 1;  /* off-diagonal portion */
-      }
-    }
-    ierr = MatRestoreRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
+    d_nnz[k] = Aa->i[i+1-rstart] - Aa->diag[i-rstart];
+    o_nnz[k] = Ba->i[i+1-rstart] - Ba->i[i-rstart];
     k++;
   }
 
