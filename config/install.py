@@ -95,12 +95,12 @@ class Installer(script.Script):
         errors.extend(err.args[0])
     try:
       shutil.copystat(src, dst)
-    except OSError as why:
-      if WindowsError is not None and isinstance(why, WindowsError):
+    except OSError, e:
+      if WindowsError is not None and isinstance(e, WindowsError):
         # Copying file access times may fail on Windows
         pass
       else:
-        errors.extend((src, dst, str(why)))
+        errors.extend((src, dst, str(e)))
     if errors:
       raise shutil.Error, errors
     return copies
