@@ -224,6 +224,7 @@ typedef struct {
   PetscScalar   **rvalues;              /* receiving data (values) */
   PetscInt      **rindices;             /* receiving data (indices) */
   PetscInt      nprocessed;             /* number of messages already processed */
+  PetscMPIInt   *flg_v;                 /* indicates what messages have arrived so far and from whom */
 } MatStash;
 
 EXTERN PetscErrorCode MatStashCreate_Private(MPI_Comm,PetscInt,MatStash*);

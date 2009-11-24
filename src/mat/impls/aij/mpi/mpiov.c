@@ -706,7 +706,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatGetSubMatrixOption flag,MatRe
        Gather all numerical values to all processors 
     */
     if (!recvcounts) {
-      ierr   = PetscMalloc2(size,PetscInt,&recvcounts,size,PetscInt,&displs);CHKERRQ(ierr);
+      ierr   = PetscMalloc2(size,PetscMPIInt,&recvcounts,size,PetscMPIInt,&displs);CHKERRQ(ierr);
     }
     for (i=0; i<size; i++) {
       recvcounts[i] = b->i[rstarts[i+1]] - b->i[rstarts[i]];

@@ -251,7 +251,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPostIrecvInt(MPI_Comm comm,PetscMPIInt tag,P
   for (i=1; i<nrecvs; ++i) rbuf_t[i] = rbuf_t[i-1] + olengths[i-1];
 
   /* Post the receives */
-  ierr = PetscMalloc((nrecvs+1)*sizeof(MPI_Request),&r_waits_t);CHKERRQ(ierr);
+  ierr = PetscMalloc(nrecvs*sizeof(MPI_Request),&r_waits_t);CHKERRQ(ierr);
   for (i=0; i<nrecvs; ++i) {
     ierr = MPI_Irecv(rbuf_t[i],olengths[i],MPIU_INT,onodes[i],tag,comm,r_waits_t+i);CHKERRQ(ierr);
   }
@@ -276,12 +276,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscPostIrecvScalar(MPI_Comm comm,PetscMPIInt ta
   for (i=0; i<nrecvs; i++) len += olengths[i];  /* each message length */
 
   /* allocate memory for recv buffers */
-  ierr    = PetscMalloc((nrecvs+1)*sizeof(PetscInt*),&rbuf_t);CHKERRQ(ierr);
-  ierr    = PetscMalloc(len*sizeof(PetscInt),&rbuf_t[0]);CHKERRQ(ierr);
+  ierr    = PetscMalloc((nrecvs+1)*sizeof(PetscScalar*),&rbuf_t);CHKERRQ(ierr);
+  ierr    = PetscMalloc(len*sizeof(PetscScalar),&rbuf_t[0]);CHKERRQ(ierr);
   for (i=1; i<nrecvs; ++i) rbuf_t[i] = rbuf_t[i-1] + olengths[i-1];
 
   /* Post the receives */
-  ierr = PetscMalloc((nrecvs+1)*sizeof(MPI_Request),&r_waits_t);CHKERRQ(ierr);
+  ierr = PetscMalloc(nrecvs*sizeof(MPI_Request),&r_waits_t);CHKERRQ(ierr);
   for (i=0; i<nrecvs; ++i) {
     ierr = MPI_Irecv(rbuf_t[i],olengths[i],MPIU_SCALAR,onodes[i],tag,comm,r_waits_t+i);CHKERRQ(ierr);
   }

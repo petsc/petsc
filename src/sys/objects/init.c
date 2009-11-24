@@ -358,7 +358,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
     */
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
     if (size > 2) {
-      PetscMPIInt dummy;
+      PetscMPIInt dummy = 0;
       MPI_Status  status;
       for (i=0; i<size; i++) {
         if (rank != i) {

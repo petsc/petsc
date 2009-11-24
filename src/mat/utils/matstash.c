@@ -23,7 +23,7 @@
 PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
 {
   PetscErrorCode ierr;
-  PetscInt       max,*opt,nopt;
+  PetscInt       max,*opt,nopt,i;
   PetscTruth     flg;
 
   PetscFunctionBegin;
@@ -33,6 +33,9 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
   ierr = PetscCommGetNewTag(stash->comm,&stash->tag2);CHKERRQ(ierr);
   ierr = MPI_Comm_size(stash->comm,&stash->size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(stash->comm,&stash->rank);CHKERRQ(ierr);
+  ierr  = PetscMalloc(2*stash->size*sizeof(PetscMPIInt),&stash->flg_v);CHKERRQ(ierr);
+  for (i=0; i<2*stash->size; i++) stash->flg_v[i] = -1;
+
 
   nopt = stash->size;
   ierr = PetscMalloc(nopt*sizeof(PetscInt),&opt);CHKERRQ(ierr);
@@ -84,6 +87,7 @@ PetscErrorCode MatStashDestroy_Private(MatStash *stash)
     stash->space_head = 0;
     stash->space      = 0;
   }
+  ierr = PetscFree(stash->flg_v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -100,10 +104,11 @@ PetscErrorCode MatStashDestroy_Private(MatStash *stash)
 PetscErrorCode MatStashScatterEnd_Private(MatStash *stash)
 { 
   PetscErrorCode ierr;
-  PetscInt       nsends=stash->nsends,bs2,oldnmax;
+  PetscInt       nsends=stash->nsends,bs2,oldnmax,i;
   MPI_Status     *send_status;
 
   PetscFunctionBegin;
+  for (i=0; i<2*stash->size; i++) stash->flg_v[i] = -1;
   /* wait on sends */
   if (nsends) {
     ierr = PetscMalloc(2*nsends*sizeof(MPI_Status),&send_status);CHKERRQ(ierr);
@@ -503,13 +508,13 @@ PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *ow
          the ith processor
   */
   ierr     = PetscMalloc2(bs2*stash->n,PetscScalar,&svalues,2*(stash->n+1),PetscInt,&sindices);CHKERRQ(ierr);
-  ierr     = PetscMalloc(2*(nsends+1)*sizeof(MPI_Request),&send_waits);CHKERRQ(ierr);
+  ierr     = PetscMalloc(2*nsends*sizeof(MPI_Request),&send_waits);CHKERRQ(ierr);
   ierr     = PetscMalloc2(size,PetscInt,&startv,size,PetscInt,&starti);CHKERRQ(ierr);
   /* use 2 sends the first with all_a, the next with all_i and all_j */
   startv[0]  = 0; starti[0] = 0;
   for (i=1; i<size; i++) { 
     startv[i] = startv[i-1] + nlengths[i-1];
-    starti[i] = starti[i-1] + nlengths[i-1]*2;
+    starti[i] = starti[i-1] + 2*nlengths[i-1];
   } 
   
   i     = 0;
@@ -561,7 +566,7 @@ PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *ow
   ierr = PetscFree(nprocs);CHKERRQ(ierr);
   
   /* recv_waits need to be contiguous for MatStashScatterGetMesg_Private() */
-  ierr  = PetscMalloc((nreceives+1)*2*sizeof(MPI_Request),&recv_waits);CHKERRQ(ierr);
+  ierr  = PetscMalloc(2*nreceives*sizeof(MPI_Request),&recv_waits);CHKERRQ(ierr);
 
   for (i=0; i<nreceives; i++) { 
     recv_waits[2*i]   = recv_waits1[i];
@@ -604,7 +609,7 @@ PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *ow
 PetscErrorCode MatStashScatterGetMesg_Private(MatStash *stash,PetscMPIInt *nvals,PetscInt **rows,PetscInt** cols,PetscScalar **vals,PetscInt *flg)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    i,*flg_v,i1,i2,size;
+  PetscMPIInt    i,*flg_v = stash->flg_v,i1,i2;
   PetscInt       bs2;
   MPI_Status     recv_status;
   PetscTruth     match_found = PETSC_FALSE;
@@ -615,15 +620,15 @@ PetscErrorCode MatStashScatterGetMesg_Private(MatStash *stash,PetscMPIInt *nvals
   /* Return if no more messages to process */
   if (stash->nprocessed == stash->nrecvs) { PetscFunctionReturn(0); } 
 
-  ierr = MPI_Comm_size(stash->comm,&stash->size);CHKERRQ(ierr);
-  ierr  = PetscMalloc(2*size*sizeof(PetscMPIInt),&flg_v);CHKERRQ(ierr);
-  for (i=0; i<2*size; i++) flg_v[i] = -1;
-
   bs2   = stash->bs*stash->bs;
   /* If a matching pair of receieves are found, process them, and return the data to
      the calling function. Until then keep receiving messages */
   while (!match_found) {
+    CHKMEMQ;
     ierr = MPI_Waitany(2*stash->nrecvs,stash->recv_waits,&i,&recv_status);CHKERRQ(ierr);
+    CHKMEMQ;
+    if (recv_status.MPI_SOURCE < 0) SETERRQ(PETSC_ERR_PLIB,"Negative MPI source!");
+
     /* Now pack the received message into a structure which is useable by others */
     if (i % 2) { 
       ierr = MPI_Get_count(&recv_status,MPIU_SCALAR,nvals);CHKERRQ(ierr);
@@ -647,6 +652,5 @@ PetscErrorCode MatStashScatterGetMesg_Private(MatStash *stash,PetscMPIInt *nvals
       match_found = PETSC_TRUE;
     }
   }
-  ierr = PetscFree(flg_v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -2834,7 +2834,6 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *ne
   ierr = PetscLayoutCopy(matin->rmap,&mat->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutCopy(matin->cmap,&mat->cmap);CHKERRQ(ierr);
 
-  ierr = MatStashCreate_Private(((PetscObject)matin)->comm,1,&mat->stash);CHKERRQ(ierr);
   if (oldmat->colmap) {
 #if defined (PETSC_USE_CTABLE)
     ierr = PetscTableCreateCopy(oldmat->colmap,&a->colmap);CHKERRQ(ierr);
@@ -3996,7 +3995,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
     ierr = PetscFree(merge->len_r);CHKERRQ(ierr);
     ierr = PetscFree(merge->bi);CHKERRQ(ierr);
     ierr = PetscFree(merge->bj);CHKERRQ(ierr);
+    ierr = PetscFree(merge->buf_ri[0]);CHKERRQ(ierr); 
     ierr = PetscFree(merge->buf_ri);CHKERRQ(ierr); 
+    ierr = PetscFree(merge->buf_rj[0]);CHKERRQ(ierr);
     ierr = PetscFree(merge->buf_rj);CHKERRQ(ierr);
     ierr = PetscFree(merge->coi);CHKERRQ(ierr);
     ierr = PetscFree(merge->coj);CHKERRQ(ierr);
@@ -4149,6 +4150,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpima
   ierr = MatAssemblyBegin(mpimat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mpimat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); 
 
+  ierr = PetscFree(abuf_r[0]);CHKERRQ(ierr);
   ierr = PetscFree(abuf_r);CHKERRQ(ierr);
   ierr = PetscFree(ba_i);CHKERRQ(ierr);
   ierr = PetscFree3(buf_ri_k,nextrow,nextai);CHKERRQ(ierr);

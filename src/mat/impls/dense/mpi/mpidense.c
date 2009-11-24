@@ -1808,7 +1808,6 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Ma
  
   ierr = PetscMemcpy(mat->rmap->range,A->rmap->range,(a->size+1)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemcpy(mat->cmap->range,A->cmap->range,(a->size+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = MatStashCreate_Private(((PetscObject)A)->comm,1,&mat->stash);CHKERRQ(ierr);
 
   ierr = MatSetUpMultiply_MPIDense(mat);CHKERRQ(ierr);
   ierr = MatDuplicate(oldmat->A,cpvalues,&a->A);CHKERRQ(ierr);
