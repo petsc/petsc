@@ -479,6 +479,7 @@ ex127: ex127.o chkopts
 	-${CLINKER} -o ex127 ex127.o ${PETSC_MAT_LIB}
 	${RM} ex127.o
 
+
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
@@ -1206,7 +1207,7 @@ runex127:
 	   else echo "Possible problem with ex127, diffs above"; fi; \
 	   ${RM} -f ex127.tmp
 runex127_2:
-	-@${MPIEXEC} -n 3 ./ex127 -mat_ignore_lower_triangular -n 1000 > ex127.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex127 -n 1000 > ex127.tmp 2>&1; \
 	   if (${DIFF} output/ex127.out ex127.tmp) then true; \
 	   else echo "Possible problem with ex127_2, diffs above"; fi; \
 	   ${RM} -f ex127.tmp
