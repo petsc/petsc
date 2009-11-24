@@ -123,7 +123,7 @@ static PetscErrorCode MatDiagonalScale_SubMatrix(Mat N,Vec left,Vec right)
 static PetscErrorCode MatMult_SubMatrix(Mat N,Vec x,Vec y)
 {
   Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
-  Vec             xx;
+  Vec             xx=0;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -144,7 +144,7 @@ static PetscErrorCode MatMult_SubMatrix(Mat N,Vec x,Vec y)
 static PetscErrorCode MatMultAdd_SubMatrix(Mat N,Vec v1,Vec v2,Vec v3)
 {
   Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
-  Vec             xx;
+  Vec             xx=0;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -165,7 +165,7 @@ static PetscErrorCode MatMultAdd_SubMatrix(Mat N,Vec v1,Vec v2,Vec v3)
 static PetscErrorCode MatMultTranspose_SubMatrix(Mat N,Vec x,Vec y)
 {
   Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
-  Vec             xx;
+  Vec             xx=0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -186,7 +186,7 @@ static PetscErrorCode MatMultTranspose_SubMatrix(Mat N,Vec x,Vec y)
 static PetscErrorCode MatMultTransposeAdd_SubMatrix(Mat N,Vec v1,Vec v2,Vec v3)
 {
   Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
-  Vec             xx;
+  Vec             xx =0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
