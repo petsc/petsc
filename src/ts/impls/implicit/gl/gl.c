@@ -844,7 +844,7 @@ static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
   if (gl->current_scheme < 0) SETERRQ(PETSC_ERR_ORDER,"A starting scheme has not been provided");
 
   for (k=0,final_step=PETSC_FALSE,finish=PETSC_FALSE; k<max_steps && !finish; k++) {
-    PetscInt j,r,s,next_scheme;
+    PetscInt j,r,s,next_scheme = 0;
     PetscReal h,hmnorm[4],enorm[3],next_h,tleft;
     PetscTruth accept;
     const PetscScalar *c,*a,*b,*u,*v;

@@ -4567,7 +4567,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyBegin(Mat mat,MatAssemblyType type)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatAssembed"
+#define __FUNCT__ "MatAssembled"
 /*@
    MatAssembled - Indicates if a matrix has been assembled and is ready for
      use; for example, in matrix-vector product.

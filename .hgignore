@@ -8,6 +8,7 @@ syntax: glob
 *.log
 *.dat
 *.vtk
+.*_license
 unix/*
 unix-opt/*
 unix-gcov/*

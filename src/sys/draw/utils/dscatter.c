@@ -303,7 +303,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSPDraw(PetscDrawSP sp)
 {
   PetscReal      xmin=sp->xmin,xmax=sp->xmax,ymin=sp->ymin,ymax=sp->ymax;
   PetscErrorCode ierr;
-  PetscInt       i,j,dim = sp->dim,nopts = sp->nopts,rank;
+  PetscInt       i,j,dim = sp->dim,nopts = sp->nopts;
+  PetscMPIInt    rank;
   PetscDraw      draw = sp->win;
 
   PetscFunctionBegin;
