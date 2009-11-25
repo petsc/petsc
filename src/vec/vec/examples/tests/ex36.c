@@ -49,7 +49,7 @@ int main(int argc,char **argv)
   /* Set the vectors */
   
   ierr = PetscMalloc(n*sizeof(PetscScalar),&values);CHKERRQ(ierr);
-  ierr = PetscMalloc(n * sizeof(PetscInt),&indices);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&indices);CHKERRQ(ierr);
 
   for (i=istart; i<iend; i++) {
     values[i - istart]  = (rank + 1) * i * 2;

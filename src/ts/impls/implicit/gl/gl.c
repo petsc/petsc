@@ -45,7 +45,7 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
   if (s < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"At least one stage is required");
   PetscValidPointer(inscheme,4);
   *inscheme = 0;
-  ierr = PetscMalloc(sizeof(struct _TSGLScheme),&scheme);CHKERRQ(ierr);
+  ierr = PetscNew(struct _TSGLScheme,&scheme);CHKERRQ(ierr);
   scheme->p  = p;
   scheme->q  = q;
   scheme->r  = r;
@@ -60,10 +60,10 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
 
   ierr = PetscMalloc6(r,PetscScalar,&scheme->alpha,r,PetscScalar,&scheme->beta,r,PetscScalar,&scheme->gamma,3*s,PetscScalar,&scheme->phi,3*r,PetscScalar,&scheme->psi,r,PetscScalar,&scheme->stage_error);CHKERRQ(ierr);
   {
-    PetscInt i,j,k,ss=s+2;
+    PetscInt     i,j,k,ss=s+2;
     PetscBLASInt m,n,one=1,*ipiv,lwork=4*((s+3)*3+3),info,rank,ldb;
-    PetscReal rcond,*sing,*workreal;
-    PetscScalar *ImV,*H,*bmat,*workscalar,*c=scheme->c,*a=scheme->a,*b=scheme->b,*u=scheme->u,*v=scheme->v;
+    PetscReal    rcond,*sing,*workreal;
+    PetscScalar  *ImV,*H,*bmat,*workscalar,*c=scheme->c,*a=scheme->a,*b=scheme->b,*u=scheme->u,*v=scheme->v;
     ierr = PetscMalloc7(PetscSqr(r),PetscScalar,&ImV,3*s,PetscScalar,&H,3*ss,PetscScalar,&bmat,lwork,PetscScalar,&workscalar,5*(3+r),PetscReal,&workreal,r+s,PetscReal,&sing,r+s,PetscBLASInt,&ipiv);CHKERRQ(ierr);
 
     /* column-major input */
@@ -225,7 +225,7 @@ static PetscErrorCode TSGLSchemeDestroy(TSGLScheme sc)
 static PetscErrorCode TSGLDestroy_Default(TS_GL *gl)
 {
   PetscErrorCode ierr;
-  PetscInt i;
+  PetscInt       i;
 
   PetscFunctionBegin;
   for (i=0; i<gl->nschemes; i++) {
@@ -307,7 +307,7 @@ static PetscErrorCode TSGLSchemeView(TSGLScheme sc,PetscTruth view_details,Petsc
 static PetscErrorCode TSGLEstimateHigherMoments_Default(TSGLScheme sc,PetscReal h,Vec Ydot[],Vec Xold[],Vec hm[])
 {
   PetscErrorCode ierr;
-  PetscInt i;
+  PetscInt       i;
 
   PetscFunctionBegin;
   if (sc->r > 64 || sc->s > 64) SETERRQ(PETSC_ERR_PLIB,"Ridiculous number of stages or items passed between stages");
@@ -328,8 +328,8 @@ static PetscErrorCode TSGLEstimateHigherMoments_Default(TSGLScheme sc,PetscReal 
 static PetscErrorCode TSGLCompleteStep_Rescale(TSGLScheme sc,PetscReal h,TSGLScheme next_sc,PetscReal next_h,Vec Ydot[],Vec Xold[],Vec X[])
 {
   PetscErrorCode ierr;
-  PetscScalar brow[32],vrow[32];
-  PetscInt i,j,r,s,ratio;
+  PetscScalar    brow[32],vrow[32];
+  PetscInt       i,j,r,s,ratio;
 
   PetscFunctionBegin;
   /* Build the new solution from (X,Ydot) */
@@ -351,9 +351,9 @@ static PetscErrorCode TSGLCompleteStep_Rescale(TSGLScheme sc,PetscReal h,TSGLSch
 static PetscErrorCode TSGLCompleteStep_RescaleAndModify(TSGLScheme sc,PetscReal h,TSGLScheme next_sc,PetscReal next_h,Vec Ydot[],Vec Xold[],Vec X[])
 {
   PetscErrorCode ierr;
-  PetscScalar brow[32],vrow[32];
-  PetscReal ratio;
-  PetscInt i,j,p,r,s;
+  PetscScalar    brow[32],vrow[32];
+  PetscReal      ratio;
+  PetscInt       i,j,p,r,s;
 
   PetscFunctionBegin;
   /* Build the new solution from (X,Ydot) */
@@ -394,7 +394,7 @@ static PetscErrorCode TSGLCompleteStep_RescaleAndModify(TSGLScheme sc,PetscReal 
 #define __FUNCT__ "TSGLCreate_IRKS"
 static PetscErrorCode TSGLCreate_IRKS(TS ts)
 {
-  TS_GL *gl = (TS_GL*)ts->data;
+  TS_GL          *gl = (TS_GL*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

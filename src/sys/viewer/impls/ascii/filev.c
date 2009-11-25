@@ -447,7 +447,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIPrintf(PetscViewer viewer,const c
     else       {queuebase   = queue = next;}
     queuelength++;
     next->size = QUEUESTRINGSIZE;
-    ierr = PetscMalloc(next->size * sizeof(char), &next->string);CHKERRQ(ierr);
+    ierr = PetscMalloc(next->size*sizeof(char), &next->string);CHKERRQ(ierr);
     ierr = PetscMemzero(next->string,next->size);CHKERRQ(ierr);
     string = next->string;
     tab = 2*ascii->tab;
@@ -858,7 +858,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIISynchronizedPrintf(PetscViewer vi
     else       {queuebase   = queue = next;}
     queuelength++;
     next->size = QUEUESTRINGSIZE;
-    ierr = PetscMalloc(next->size * sizeof(char), &next->string);CHKERRQ(ierr);
+    ierr = PetscMalloc(next->size*sizeof(char), &next->string);CHKERRQ(ierr);
     ierr = PetscMemzero(next->string,next->size);CHKERRQ(ierr);
     string = next->string;
     tab *= 2;
@@ -1000,14 +1000,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIMonitorPrintf(PetscViewerASCIIMon
     va_list     Argp;
     int         fullLength;
     char        *string;
-
     PrintfQueue next;
+
     ierr = PetscNew(struct _PrintfQueue,&next);CHKERRQ(ierr);
     if (queue) {queue->next = next; queue = next;}
     else       {queuebase   = queue = next;}
     queuelength++;
     next->size = QUEUESTRINGSIZE;
-    ierr = PetscMalloc(next->size * sizeof(char), &next->string);CHKERRQ(ierr);
+    ierr = PetscMalloc(next->size*sizeof(char), &next->string);CHKERRQ(ierr);
     ierr = PetscMemzero(next->string,next->size);CHKERRQ(ierr);
     string = next->string;
     tab = 2*(ascii->tab + ctx->tabs);

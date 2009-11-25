@@ -254,7 +254,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaSetFromOptions(PetscViewer 
   }
   /* Get link port */
   numPorts = size;
-  ierr = PetscMalloc(size * sizeof(int), &ports);CHKERRQ(ierr);
+  ierr = PetscMalloc(size*sizeof(int), &ports);CHKERRQ(ierr);
   ierr = PetscOptionsGetIntArray("viewer_", "-math_linkport", ports, &numPorts, &opt);CHKERRQ(ierr);
   if (opt) {
     if (numPorts > rank) {
@@ -267,7 +267,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaSetFromOptions(PetscViewer 
   ierr = PetscFree(ports);CHKERRQ(ierr);
   /* Get link host */
   numHosts = size;
-  ierr = PetscMalloc(size * sizeof(char *), &hosts);CHKERRQ(ierr);
+  ierr = PetscMalloc(size*sizeof(char *), &hosts);CHKERRQ(ierr);
   ierr = PetscOptionsGetStringArray("viewer_", "-math_linkhost", hosts, &numHosts, &opt);CHKERRQ(ierr);
   if (opt) {
     if (numHosts > rank) {
