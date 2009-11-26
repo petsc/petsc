@@ -31,6 +31,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMRESSetConstant(KSP ksp)
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode KSPSetUp_GMRES(KSP);
 /*
     KSPSetUp_LGMRES - Sets up the workspace needed by lgmres.
 
@@ -42,7 +43,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMRESSetConstant(KSP ksp)
 #define __FUNCT__ "KSPSetUp_LGMRES"
 PetscErrorCode    KSPSetUp_LGMRES(KSP ksp)
 {
-  PetscInt       len,hh,hes,rs,cc;
   PetscErrorCode ierr;
   PetscInt       max_k,k, aug_dim;
   KSP_LGMRES     *lgmres = (KSP_LGMRES *)ksp->data;
@@ -53,70 +53,16 @@ PetscErrorCode    KSPSetUp_LGMRES(KSP ksp)
   }
   max_k         = lgmres->max_k;
   aug_dim       = lgmres->aug_dim;
-  hh            = (max_k + 2) * (max_k + 1);
-  hes           = (max_k + 1) * (max_k + 1);
-  rs            = (max_k + 2);
-  cc            = (max_k + 1);  /* SS and CC are the same size */
-  len          = (hh + hes + rs + 2*cc) * sizeof(PetscScalar);
+  ierr          = KSPSetUp_GMRES(ksp);CHKERRQ(ierr);
 
-  /* Allocate space and set pointers to beginning */
-  /* should switch to use PetscMalloc5() */
-  ierr = PetscMalloc(len,&lgmres->hh_origin);CHKERRQ(ierr);
-  ierr = PetscMemzero(lgmres->hh_origin,len);CHKERRQ(ierr); 
-  ierr = PetscLogObjectMemory(ksp,len);CHKERRQ(ierr);  /* HH - modified (by plane rotations) hessenburg */
-  lgmres->hes_origin = lgmres->hh_origin + hh;     /* HES - unmodified hessenburg */
-  lgmres->rs_origin  = lgmres->hes_origin + hes;   /* RS - the right-hand-side of the 
-                                                      Hessenberg system */
-  lgmres->cc_origin  = lgmres->rs_origin + rs;     /* CC - cosines for rotations */
-  lgmres->ss_origin  = lgmres->cc_origin + cc;     /* SS - sines for rotations */
-
-  if (ksp->calc_sings) {
-    /* Allocate workspace to hold Hessenberg matrix needed by Eispack */
-    len = (max_k + 3)*(max_k + 9)*sizeof(PetscScalar);
-    ierr = PetscMalloc(len,&lgmres->Rsvd);CHKERRQ(ierr);
-    ierr = PetscMalloc(5*(max_k+2)*sizeof(PetscReal),&lgmres->Dsvd);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(ksp,len+5*(max_k+2)*sizeof(PetscReal));CHKERRQ(ierr);
-  }
-
-  /* Allocate array to hold pointers to user vectors.  Note that we need
-  we need it+1 vectors, and it <= max_k)  - vec_offset indicates some initial work vectors*/
-  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&lgmres->vecs);CHKERRQ(ierr);
-  lgmres->vecs_allocated = VEC_OFFSET + 2 + max_k;
-  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&lgmres->user_work);CHKERRQ(ierr);
-  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(PetscInt),&lgmres->mwork_alloc);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)+sizeof(PetscInt)));CHKERRQ(ierr);
-
-  /* LGMRES_MOD: need array of pointers to augvecs*/
+  /* need array of pointers to augvecs*/
   ierr = PetscMalloc((2 * aug_dim + AUG_OFFSET)*sizeof(void*),&lgmres->augvecs);CHKERRQ(ierr);
   lgmres->aug_vecs_allocated = 2 *aug_dim + AUG_OFFSET;
   ierr = PetscMalloc((2* aug_dim + AUG_OFFSET)*sizeof(void*),&lgmres->augvecs_user_work);CHKERRQ(ierr);
   ierr = PetscMalloc(aug_dim*sizeof(PetscInt),&lgmres->aug_order);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(ksp,(aug_dim)*(4*sizeof(void*) + sizeof(PetscInt)) + AUG_OFFSET*2*sizeof(void*));CHKERRQ(ierr);
 
- 
- /* if q_preallocate = 0 then only allocate one "chunk" of space (for 
-     5 vectors) - additional will then be allocated from LGMREScycle() 
-     as needed.  Otherwise, allocate all of the space that could be needed */
-  if (lgmres->q_preallocate) {
-    lgmres->vv_allocated   = VEC_OFFSET + 2 + max_k;
-    ierr = KSPGetVecs(ksp,lgmres->vv_allocated,&lgmres->user_work[0],0,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscLogObjectParents(ksp,lgmres->vv_allocated,lgmres->user_work[0]);CHKERRQ(ierr);
-    lgmres->mwork_alloc[0] = lgmres->vv_allocated;
-    lgmres->nwork_alloc    = 1;
-    for (k=0; k<lgmres->vv_allocated; k++) {
-      lgmres->vecs[k] = lgmres->user_work[0][k];
-    }
-  } else {
-    lgmres->vv_allocated    = 5;
-    ierr = KSPGetVecs(ksp,5,&lgmres->user_work[0],0,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscLogObjectParents(ksp,5,lgmres->user_work[0]);CHKERRQ(ierr);
-    lgmres->mwork_alloc[0]  = 5;
-    lgmres->nwork_alloc     = 1;
-    for (k=0; k<lgmres->vv_allocated; k++) {
-      lgmres->vecs[k] = lgmres->user_work[0][k];
-    }
-  }
-  /* LGMRES_MOD - for now we will preallocate the augvecs - because aug_dim << restart
+  /*  for now we will preallocate the augvecs - because aug_dim << restart
      ... also keep in mind that we need to keep augvecs from cycle to cycle*/  
   lgmres->aug_vv_allocated = 2* aug_dim + AUG_OFFSET;
   lgmres->augwork_alloc =  2* aug_dim + AUG_OFFSET;
@@ -442,6 +388,7 @@ PetscErrorCode KSPSolve_LGMRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode KSPDestroy_GMRES(KSP);
 /*
 
    KSPDestroy_LGMRES - Frees all memory space used by the Krylov method.
@@ -453,44 +400,15 @@ PetscErrorCode KSPDestroy_LGMRES(KSP ksp)
 {
   KSP_LGMRES     *lgmres = (KSP_LGMRES*)ksp->data;
   PetscErrorCode ierr;
-  PetscInt       i;
 
   PetscFunctionBegin;
-  /* Free the Hessenberg matrices */
-  ierr = PetscFree(lgmres->hh_origin);CHKERRQ(ierr);
-
-  /* Free pointers to user variables */
-  ierr = PetscFree(lgmres->vecs);CHKERRQ(ierr);
-
-  /*LGMRES_MOD - free pointers for extra vectors */ 
   ierr = PetscFree(lgmres->augvecs);CHKERRQ(ierr);
-
-  /* free work vectors */
-  for (i=0; i < lgmres->nwork_alloc; i++) {
-    ierr = VecDestroyVecs(lgmres->user_work[i],lgmres->mwork_alloc[i]);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(lgmres->user_work);CHKERRQ(ierr);
-
-  /*LGMRES_MOD - free aug work vectors also */
-  /*this was all allocated as one "chunk" */
   if (lgmres->augwork_alloc) {
     ierr = VecDestroyVecs(lgmres->augvecs_user_work[0],lgmres->augwork_alloc);CHKERRQ(ierr);
   }
   ierr = PetscFree(lgmres->augvecs_user_work);CHKERRQ(ierr);
   ierr = PetscFree(lgmres->aug_order);CHKERRQ(ierr);
-  ierr = PetscFree(lgmres->mwork_alloc);CHKERRQ(ierr);
-  ierr = PetscFree(lgmres->nrs);CHKERRQ(ierr);
-  if (lgmres->sol_temp) {ierr = VecDestroy(lgmres->sol_temp);CHKERRQ(ierr);}
-  ierr = PetscFree(lgmres->Rsvd);CHKERRQ(ierr);
-  ierr = PetscFree(lgmres->Dsvd);CHKERRQ(ierr);
-  ierr = PetscFree(lgmres->orthogwork);CHKERRQ(ierr);
-  ierr = PetscFree(ksp->data);CHKERRQ(ierr);
-  /* clear composed functions */
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetRestart_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetHapTol_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPDestroy_GMRES(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
