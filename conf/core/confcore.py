@@ -344,14 +344,15 @@ class build_ext(_build_ext):
                                    ('petsc_arch', 'petsc_arch'))
         import sys, os
         from distutils import sysconfig
-        if (sys.platform.startswith('linux') or \
-            sys.platform.startswith('gnu')) and \
-            sysconfig.get_config_var('Py_ENABLE_SHARED'):
+        if ((sys.platform.startswith('linux') or 
+             sys.platform.startswith('gnu') or
+             sys.platform.startswith('sunos')) and 
+            sysconfig.get_config_var('Py_ENABLE_SHARED')):
+            py_version = sysconfig.get_python_version()
+            bad_pylib_dir = os.path.join(sys.prefix, "lib",
+                                         "python" + py_version,
+                                         "config")
             try:
-                py_version = sysconfig.get_python_version()
-                bad_pylib_dir = os.path.join(sys.prefix, "lib",
-                                             "python" + py_version,
-                                             "config")
                 self.library_dirs.remove(bad_pylib_dir)
             except ValueError:
                 pass
