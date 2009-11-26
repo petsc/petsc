@@ -54,7 +54,6 @@ E*/
 #define PCSPAI            "spai"
 #define PCNN              "nn"
 #define PCCHOLESKY        "cholesky"
-#define PCSAMG            "samg"
 #define PCPBJACOBI        "pbjacobi"
 #define PCMAT             "mat"
 #define PCHYPRE           "hypre"
