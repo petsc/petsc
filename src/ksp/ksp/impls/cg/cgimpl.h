@@ -8,8 +8,8 @@
 
 */
 
-#if !defined(__CGCTX_H)
-#define __CGCTX_H
+#if !defined(__CGIMPL_H)
+#define __CGIMPL_H
 
 /*
         Defines the basic KSP object

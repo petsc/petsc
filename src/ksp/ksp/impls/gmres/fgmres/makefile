@@ -4,7 +4,7 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = fgmres.c modpcf.c
-SOURCEH  = fgmresp.h
+SOURCEH  = fgmresimpl.h
 SOURCEF  = 
 OBJSC    = fgmres.o modpcf.o
 OBJSF    = 

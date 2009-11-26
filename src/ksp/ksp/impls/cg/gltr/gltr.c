@@ -2,15 +2,13 @@
 
 #include "private/kspimpl.h"             /*I "petscksp.h" I*/
 #include "petscblaslapack.h"
-#include "../src/ksp/ksp/impls/cg/gltr/gltr.h"
+#include "../src/ksp/ksp/impls/cg/gltr/gltrimpl.h"
 
 #define GLTR_PRECONDITIONED_DIRECTION   0
 #define GLTR_UNPRECONDITIONED_DIRECTION 1
 #define GLTR_DIRECTION_TYPES            2
 
-static const char *DType_Table[64] = {
-  "preconditioned", "unpreconditioned"
-};
+static const char *DType_Table[64] = {"preconditioned", "unpreconditioned"};
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPGLTRSetRadius"
@@ -158,65 +156,38 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetLambda(KSP ksp, PetscReal *lambda)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_GLTR"
-/*
-  KSPSolve_GLTR - Use preconditioned conjugate gradient to compute
-  an approximate minimizer of the quadratic function
-
-            q(s) = g^T * s + .5 * s^T * H * s
-
-   subject to the trust region constraint
-
-            || s || <= delta,
-
-   where
-
-     delta is the trust region radius,
-     g is the gradient vector,
-     H is the Hessian approximation,
-     M is the positive definite preconditioner matrix.
-
-   KSPConvergedReason may be
-$  KSP_CONVERGED_CG_NEG_CURVE if convergence is reached along a negative curvature direction,
-$  KSP_CONVERGED_CG_CONSTRAINED if convergence is reached along a constrained step,
-$  other KSP converged/diverged reasons
-
-  Notes:
-  The preconditioner supplied should be symmetric and positive definite.
-*/
 PetscErrorCode KSPSolve_GLTR(KSP ksp)
 {
 #ifdef PETSC_USE_COMPLEX
   SETERRQ(PETSC_ERR_SUP, "GLTR is not available for complex systems");
 #else
-  KSP_GLTR *cg = (KSP_GLTR *)ksp->data;
-  PetscReal *t_soln, *t_diag, *t_offd, *e_valu, *e_vect, *e_rwrk;
-  PetscBLASInt *e_iblk, *e_splt, *e_iwrk;
+  KSP_GLTR       *cg = (KSP_GLTR *)ksp->data;
+  PetscReal      *t_soln, *t_diag, *t_offd, *e_valu, *e_vect, *e_rwrk;
+  PetscBLASInt   *e_iblk, *e_splt, *e_iwrk;
 
   PetscErrorCode ierr;
-  MatStructure pflag;
-  Mat Qmat, Mmat;
-  Vec r, z, p, d;
-  PC  pc;
+  MatStructure   pflag;
+  Mat            Qmat, Mmat;
+  Vec            r, z, p, d;
+  PC             pc;
 
-  PetscReal norm_r, norm_d, norm_dp1, norm_p, dMp;
-  PetscReal alpha, beta, kappa, rz, rzm1;
-  PetscReal rr, r2, piv, step;
-  PetscReal vl, vu;
-  PetscReal coef1, coef2, coef3, root1, root2, obj1, obj2;
-  PetscReal norm_t, norm_w, pert;
+  PetscReal      norm_r, norm_d, norm_dp1, norm_p, dMp;
+  PetscReal      alpha, beta, kappa, rz, rzm1;
+  PetscReal      rr, r2, piv, step;
+  PetscReal      vl, vu;
+  PetscReal      coef1, coef2, coef3, root1, root2, obj1, obj2;
+  PetscReal      norm_t, norm_w, pert;
 
-  PetscInt  i, j, max_cg_its, max_lanczos_its, max_newton_its, sigma;
-  PetscBLASInt t_size = 0, l_size = 0, il, iu, e_valus, info;
-  PetscBLASInt nrhs, nldb;
+  PetscInt       i, j, max_cg_its, max_lanczos_its, max_newton_its, sigma;
+  PetscBLASInt   t_size = 0, l_size = 0, il, iu, e_valus, info;
+  PetscBLASInt   nrhs, nldb;
 
 #if !defined(PETSC_MISSING_LAPACK_STEBZ)
-  PetscBLASInt e_splts;
+  PetscBLASInt  e_splts;
 #endif
-
-  PetscTruth diagonalscale;
+  PetscTruth    diagonalscale;
 
   PetscFunctionBegin;
-
   /***************************************************************************/
   /* Check the arguments and parameters.                                     */
   /***************************************************************************/
@@ -1312,15 +1283,11 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 
   cg->norm_d = norm_t;
 
-  cg->o_fcn = t_soln[0]*(0.5*(cg->diag[0]*t_soln[0]+
-			      cg->offd[1]*t_soln[1])+cg->norm_r[0]);
+  cg->o_fcn = t_soln[0]*(0.5*(cg->diag[0]*t_soln[0]+cg->offd[1]*t_soln[1])+cg->norm_r[0]);
   for (i = 1; i < t_size - 1; ++i) {
-    cg->o_fcn += 0.5*t_soln[i]*(cg->offd[i]*t_soln[i-1]+
-		 	        cg->diag[i]*t_soln[i]+
-			        cg->offd[i+1]*t_soln[i+1]);
+    cg->o_fcn += 0.5*t_soln[i]*(cg->offd[i]*t_soln[i-1]+cg->diag[i]*t_soln[i]+cg->offd[i+1]*t_soln[i+1]);
   }
-  cg->o_fcn += 0.5*t_soln[i]*(cg->offd[i]*t_soln[i-1]+
-			      cg->diag[i]*t_soln[i]);
+  cg->o_fcn += 0.5*t_soln[i]*(cg->offd[i]*t_soln[i-1]+cg->diag[i]*t_soln[i]);
 
   /***************************************************************************/
   /* Recover the direction.                                                  */
@@ -1547,7 +1514,7 @@ EXTERN_C_END
 PetscErrorCode KSPSetFromOptions_GLTR(KSP ksp)
 {
   PetscErrorCode ierr;
-  KSP_GLTR *cg = (KSP_GLTR *)ksp->data;
+  KSP_GLTR       *cg = (KSP_GLTR *)ksp->data;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP GLTR options");CHKERRQ(ierr);
@@ -1577,6 +1544,30 @@ PetscErrorCode KSPSetFromOptions_GLTR(KSP ksp)
 
    Notes: This is rarely used directly
 
+  Use preconditioned conjugate gradient to compute
+  an approximate minimizer of the quadratic function
+
+            q(s) = g^T * s + .5 * s^T * H * s
+
+   subject to the trust region constraint
+
+            || s || <= delta,
+
+   where
+
+     delta is the trust region radius,
+     g is the gradient vector,
+     H is the Hessian approximation,
+     M is the positive definite preconditioner matrix.
+
+   KSPConvergedReason may be
+$  KSP_CONVERGED_CG_NEG_CURVE if convergence is reached along a negative curvature direction,
+$  KSP_CONVERGED_CG_CONSTRAINED if convergence is reached along a constrained step,
+$  other KSP converged/diverged reasons
+
+  Notes:
+  The preconditioner supplied should be symmetric and positive definite.
+
    Level: developer
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPGLTRSetRadius(), KSPGLTRGetNormD(), KSPGLTRGetObjFcn(), KSPGLTRGetMinEig(), KSPGLTRGetLambda()
@@ -1588,12 +1579,10 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_GLTR(KSP ksp)
 {
   PetscErrorCode ierr;
-  KSP_GLTR *cg;
+  KSP_GLTR       *cg;
 
   PetscFunctionBegin;
-
   ierr = PetscNewLog(ksp, KSP_GLTR, &cg);CHKERRQ(ierr);
-
   cg->radius = 0.0;
   cg->dtype = GLTR_UNPRECONDITIONED_DIRECTION;
 

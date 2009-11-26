@@ -8,25 +8,20 @@
 
 */
 
-#if !defined(__LCDCTX_H)
-#define __LCDCTX_H
+#if !defined(__LCDIMPL_H)
+#define __LCDIMPL_H
 
 /*
         Defines the basic KSP object
 */
 #include "private/kspimpl.h"
 
-/*
-    The field should remain the same since it is shared by the BiCG code
-*/
-
 typedef struct {
-
-  PetscInt restart;
-  PetscInt max_iters;
+  PetscInt  restart;
+  PetscInt  max_iters;
   PetscReal haptol;
-  Vec *P;
-  Vec *Q;
+  Vec       *P;
+  Vec       *Q;
 }KSP_LCD;
 
 #endif

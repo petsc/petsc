@@ -1,15 +1,13 @@
 #define PETSCKSP_DLL
 
 #include "private/kspimpl.h"             /*I "petscksp.h" I*/
-#include "../src/ksp/ksp/impls/cg/stcg/stcg.h"
+#include "../src/ksp/ksp/impls/cg/stcg/stcgimpl.h"
 
 #define STCG_PRECONDITIONED_DIRECTION   0
 #define STCG_UNPRECONDITIONED_DIRECTION 1
 #define STCG_DIRECTION_TYPES            2
 
-static const char *DType_Table[64] = {
-  "preconditioned", "unpreconditioned"
-};
+static const char *DType_Table[64] = {"preconditioned", "unpreconditioned"};
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSTCGSetRadius"
@@ -101,54 +99,28 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetObjFcn(KSP ksp, PetscReal *o_fcn)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_STCG"
-/*
-  KSPSolve_STCG - Use preconditioned conjugate gradient to compute
-  an approximate minimizer of the quadratic function
-
-            q(s) = g^T * s + 0.5 * s^T * H * s
-
-   subject to the trust region constraint
-
-            || s || <= delta,
-
-   where
-
-     delta is the trust region radius,
-     g is the gradient vector,
-     H is the Hessian approximation, and
-     M is the positive definite preconditioner matrix.
-
-   KSPConvergedReason may be
-$  KSP_CONVERGED_CG_NEG_CURVE if convergence is reached along a negative curvature direction,
-$  KSP_CONVERGED_CG_CONSTRAINED if convergence is reached along a constrained step,
-$  other KSP converged/diverged reasons
-
-  Notes:
-  The preconditioner supplied should be symmetric and positive definite.
-*/
 PetscErrorCode KSPSolve_STCG(KSP ksp)
 {
 #ifdef PETSC_USE_COMPLEX
   SETERRQ(PETSC_ERR_SUP, "STCG is not available for complex systems");
 #else
-  KSP_STCG *cg = (KSP_STCG *)ksp->data;
+  KSP_STCG       *cg = (KSP_STCG *)ksp->data;
 
   PetscErrorCode ierr;
-  MatStructure pflag;
-  Mat Qmat, Mmat;
-  Vec r, z, p, d;
-  PC  pc;
+  MatStructure   pflag;
+  Mat            Qmat, Mmat;
+  Vec            r, z, p, d;
+  PC             pc;
 
-  PetscReal norm_r, norm_d, norm_dp1, norm_p, dMp;
-  PetscReal alpha, beta, kappa, rz, rzm1;
-  PetscReal rr, r2, step;
+  PetscReal      norm_r, norm_d, norm_dp1, norm_p, dMp;
+  PetscReal      alpha, beta, kappa, rz, rzm1;
+  PetscReal      rr, r2, step;
 
-  PetscInt max_cg_its;
+  PetscInt       max_cg_its;
 
-  PetscTruth diagonalscale;
+  PetscTruth     diagonalscale;
 
   PetscFunctionBegin;
-
   /***************************************************************************/
   /* Check the arguments and parameters.                                     */
   /***************************************************************************/
@@ -673,7 +645,6 @@ PetscErrorCode KSPSetUp_STCG(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   /***************************************************************************/
   /* This implementation of CG only handles left preconditioning so generate */
   /* an error otherwise.                                                     */
@@ -756,15 +727,12 @@ EXTERN_C_END
 PetscErrorCode KSPSetFromOptions_STCG(KSP ksp)
 {
   PetscErrorCode ierr;
-  KSP_STCG *cg = (KSP_STCG *)ksp->data;
+  KSP_STCG       *cg = (KSP_STCG *)ksp->data;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP STCG options");CHKERRQ(ierr);
-
   ierr = PetscOptionsReal("-ksp_stcg_radius", "Trust Region Radius", "KSPSTCGSetRadius", cg->radius, &cg->radius, PETSC_NULL);CHKERRQ(ierr);
-
   ierr = PetscOptionsEList("-ksp_stcg_dtype", "Norm used for direction", "", DType_Table, STCG_DIRECTION_TYPES, DType_Table[cg->dtype], &cg->dtype, PETSC_NULL);CHKERRQ(ierr);
-
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -779,6 +747,30 @@ PetscErrorCode KSPSetFromOptions_STCG(KSP ksp)
 
    Notes: This is rarely used directly
 
+  Use preconditioned conjugate gradient to compute
+  an approximate minimizer of the quadratic function
+
+            q(s) = g^T * s + 0.5 * s^T * H * s
+
+   subject to the trust region constraint
+
+            || s || <= delta,
+
+   where
+
+     delta is the trust region radius,
+     g is the gradient vector,
+     H is the Hessian approximation, and
+     M is the positive definite preconditioner matrix.
+
+   KSPConvergedReason may be
+$  KSP_CONVERGED_CG_NEG_CURVE if convergence is reached along a negative curvature direction,
+$  KSP_CONVERGED_CG_CONSTRAINED if convergence is reached along a constrained step,
+$  other KSP converged/diverged reasons
+
+  Notes:
+  The preconditioner supplied should be symmetric and positive definite.
+
    Level: developer
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPSTCGSetRadius(), KSPSTCGGetNormD(), KSPSTCGGetObjFcn()
@@ -790,7 +782,7 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_STCG(KSP ksp)
 {
   PetscErrorCode ierr;
-  KSP_STCG *cg;
+  KSP_STCG       *cg;
 
   PetscFunctionBegin;
 

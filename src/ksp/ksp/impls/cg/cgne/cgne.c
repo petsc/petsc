@@ -1,11 +1,11 @@
 #define PETSCKSP_DLL
 
 /*
-       cgctx.h defines the simple data structured used to store information
+       cgimpl.h defines the simple data structured used to store information
     related to the type of matrix (e.g. complex symmetric) being solved and
     data used during the optional Lanczo process used to compute eigenvalues
 */
-#include "../src/ksp/ksp/impls/cg/cgctx.h"       /*I "petscksp.h" I*/
+#include "../src/ksp/ksp/impls/cg/cgimpl.h"       /*I "petscksp.h" I*/
 EXTERN PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP,PetscReal *,PetscReal *);
 EXTERN PetscErrorCode KSPComputeEigenvalues_CG(KSP,PetscInt,PetscReal *,PetscReal *,PetscInt *);
 

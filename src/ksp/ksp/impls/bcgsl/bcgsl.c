@@ -13,7 +13,7 @@
  */
 #include "petscblaslapack.h"
 #include "private/kspimpl.h"              /*I   "petscksp.h" I*/
-#include "../src/ksp/ksp/impls/bcgsl/bcgsl.h"
+#include "../src/ksp/ksp/impls/bcgsl/bcgslimpl.h"
 
 
 #undef __FUNCT__
