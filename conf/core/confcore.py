@@ -16,6 +16,7 @@ from distutils.core import Extension as _Extension
 from distutils.command.config    import config     as _config
 from distutils.command.build     import build      as _build
 from distutils.command.build_ext import build_ext  as _build_ext
+from distutils.util import split_quoted
 from distutils import log
 from distutils.errors import DistutilsError
 
@@ -65,43 +66,45 @@ class PetscConfig:
         #
         confstr  = 'PETSC_DIR = %s\n'  % petsc_dir
         confstr += 'PETSC_ARCH = %s\n' % petsc_arch
-        confstr += 'PETSC_ARCH_NAME = %s\n' % petsc_arch
         confstr += contents
-        ## confstr += 'PACKAGES_INCLUDES = ${MPI_INCLUDE} ${X11_INCLUDE} ${BLASLAPACK_INCLUDE}\n'
-        ## confstr += 'PACKAGES_LIBS = ${MPI_LIB} ${X11_LIB} ${BLASLAPACK_LIB}\n'
         confdct = cfgutils.makefile(StringIO(confstr))
         return confdct
 
     def _get_petsc_conf_new(self, petsc_dir, petsc_arch):
-        PETSC_DIR  = petsc_dir
-        if (not petsc_arch or petsc_arch == os.path.sep or
+        PETSC_DIR = petsc_dir
+        if (not petsc_arch or
             not os.path.isdir(os.path.join(petsc_dir, petsc_arch))):
             PETSC_ARCH    = ''
-            PETSC_INCLUDE = '-I${PETSC_DIR}/include'
-            PETSC_LIB_DIR = '${PETSC_DIR}/lib'
+            PETSC_INCLUDE = ['-I${PETSC_DIR}/include']
+            PETSC_LIB_DIR = ['${PETSC_DIR}/lib']
         else:
             PETSC_ARCH    = petsc_arch
-            PETSC_INCLUDE = '-I${PETSC_DIR}/include -I${PETSC_DIR}/${PETSC_ARCH}/include'
-            PETSC_LIB_DIR = '${PETSC_DIR}/${PETSC_ARCH}/lib'
-        PETSC_INCLUDE += ' ${PACKAGES_INCLUDES} ${PETSC_BLASLAPACK_FLAGS}'
+            PETSC_INCLUDE = ['-I${PETSC_DIR}/include',
+                             '-I${PETSC_DIR}/${PETSC_ARCH}/include']
+            PETSC_LIB_DIR = ['${PETSC_DIR}/${PETSC_ARCH}/lib']
+        PETSC_INCLUDE += ['${PACKAGES_INCLUDES}',
+                          '${PETSC_BLASLAPACK_FLAGS}']
         #
-        variables = os.path.join(PETSC_DIR, 'conf', 'variables')
+        variables = os.path.join(PETSC_DIR,
+                                 'conf', 'variables')
         if not os.path.exists(variables):
-            variables = os.path.join(PETSC_DIR, PETSC_ARCH, 'conf', 'variables')
-        petscvars = os.path.join(PETSC_DIR, PETSC_ARCH, 'conf', 'petscvariables')
+            variables = os.path.join(PETSC_DIR, PETSC_ARCH,
+                                     'conf', 'variables')
+        petscvars = os.path.join(PETSC_DIR, PETSC_ARCH,
+                                 'conf', 'petscvariables')
         #
         variables = open(variables)
-        contents  = variables.read()
-        variables.close()
+        try: contents = variables.read()
+        finally: variables.close()
         petscvars = open(petscvars)
-        contents += petscvars.read()
-        petscvars.close()
+        try: contents += petscvars.read()
+        finally: petscvars.close()
         #
         confstr  = 'PETSC_DIR  = %s\n' % PETSC_DIR
         confstr += 'PETSC_ARCH = %s\n' % PETSC_ARCH
         confstr += contents
-        confstr += 'PETSC_INCLUDE = %s\n' % PETSC_INCLUDE
-        confstr += 'PETSC_LIB_DIR = %s\n' % PETSC_LIB_DIR
+        confstr += 'PETSC_INCLUDE = %s\n' % ' '.join(PETSC_INCLUDE)
+        confstr += 'PETSC_LIB_DIR = %s\n' % ' '.join(PETSC_LIB_DIR)
         confdict = cfgutils.makefile(StringIO(confstr))
         return confdict
 
@@ -122,18 +125,18 @@ class PetscConfig:
         extension.define_macros.extend(macros)
         # includes and libraries
         petsc_inc = cfgutils.flaglist(self['PETSC_INCLUDE'])
-        lib_info = (self['PETSC_LIB_DIR'], self['PETSC_LIB_BASIC'])
-        petsc_lib = cfgutils.flaglist('-L%s %s' % lib_info)
+        petsc_lib = cfgutils.flaglist(
+            '-L%s %s' % (self['PETSC_LIB_DIR'], self['PETSC_LIB_BASIC']))
         petsc_lib['runtime_library_dirs'].append(self['PETSC_LIB_DIR'])
         self._configure_ext(extension, petsc_inc, preppend=True)
         self._configure_ext(extension, petsc_lib)
         # extra compiler and linker configuration
-        ccflags = self['PCC_FLAGS'].split()
+        ccflags = split_quoted(self['PCC_FLAGS'])
         if sys.version_info[:2] < (2, 5):
             try: ccflags.remove('-Wwrite-strings')
             except ValueError: pass
         extension.extra_compile_args.extend(ccflags)
-        ldflags = self['PETSC_EXTERNAL_LIB_BASIC'].split()
+        ldflags = split_quoted(self['PETSC_EXTERNAL_LIB_BASIC'])
         extension.extra_link_args.extend(ldflags)
 
     def configure_compiler(self, compiler):
@@ -177,9 +180,8 @@ class PetscConfig:
             compiler.shared_lib_extension = so_ext
 
     def log_info(self):
-        log.info('PETSC_DIR:   %s' % self['PETSC_DIR'])
-        log.info('PETSC_ARCH:  %s' % (self['PETSC_ARCH'] or
-                                      self['PETSC_ARCH_NAME']))
+        log.info('PETSC_DIR:   %s' % self['PETSC_DIR']  )
+        log.info('PETSC_ARCH:  %s' % self['PETSC_ARCH'] )
         scalar_type = self['PETSC_SCALAR']
         precision   = self['PETSC_PRECISION']
         language    = self['PETSC_LANGUAGE']
@@ -235,7 +237,7 @@ class config(_config):
             arch_list = [ None ]
         for arch in arch_list:
             conf = self.get_config_arch(arch)
-            archname    = conf.PETSC_ARCH or conf['PETSC_ARCH_NAME']
+            archname    = conf.PETSC_ARCH or conf['PETSC_ARCH']
             scalar_type = conf['PETSC_SCALAR']
             precision   = conf['PETSC_PRECISION']
             language    = conf['PETSC_LANGUAGE']
@@ -270,21 +272,31 @@ class config(_config):
 
     @staticmethod
     def get_petsc_arch(petsc_dir, petsc_arch):
-        if not petsc_dir:  return None
-        have_bmake = os.path.isdir(os.path.join(petsc_dir, 'bmake'))
+        if not petsc_dir: return None
         petsc_arch = os.path.expandvars(petsc_arch)
-        if have_bmake and (not petsc_arch or '$PETSC_ARCH' in petsc_arch):
-            log.warn("PETSC_ARCH not specified, trying default")
-            petscconf = os.path.join(petsc_dir, 'bmake', 'petscconf')
-            if not os.path.exists(petscconf):
-                log.warn("file '%s' not found" % petscconf)
-                return None
-            petscconf = StringIO(file(petscconf).read())
-            petscconf = cfgutils.makefile(petscconf)
-            petsc_arch = petscconf.get('PETSC_ARCH')
-            if not petsc_arch:
-                log.warn("default PETSC_ARCH not found")
-                return None
+        if (not petsc_arch or '$PETSC_ARCH' in petsc_arch):
+            have_dir_bmake = os.path.isdir(os.path.join(petsc_dir, 'bmake'))
+            have_dir_conf  = os.path.isdir(os.path.join(petsc_dir, 'conf'))
+            if have_dir_bmake:
+                log.warn("PETSC_ARCH not specified, trying default")
+                petscconf = os.path.join(petsc_dir, 'bmake', 'petscconf')
+                if not os.path.exists(petscconf):
+                    log.warn("file '%s' not found" % petscconf)
+                    return None
+                conf = StringIO(open(petscconf).read())
+                conf = cfgutils.makefile(conf)
+                petsc_arch = conf.get('PETSC_ARCH', '')
+                if not petsc_arch:
+                    log.warn("default PETSC_ARCH not found")
+                    return None
+            elif have_dir_conf:
+                petscvars = os.path.join(petsc_dir, 'conf', 'petscvariables')
+                if os.path.exists(petscvars):
+                    conf = StringIO(open(petscvars).read())
+                    conf = cfgutils.makefile(conf)
+                    petsc_arch = conf.get('PETSC_ARCH', '')
+            else:
+                petsc_arch = ''
         petsc_arch = petsc_arch.split(os.pathsep)
         petsc_arch = cfgutils.unique(petsc_arch)
         petsc_arch = [arch for arch in petsc_arch if arch]
@@ -344,9 +356,9 @@ class build_ext(_build_ext):
                                    ('petsc_arch', 'petsc_arch'))
         import sys, os
         from distutils import sysconfig
-        if ((sys.platform.startswith('linux') or 
+        if ((sys.platform.startswith('linux') or
              sys.platform.startswith('gnu') or
-             sys.platform.startswith('sunos')) and 
+             sys.platform.startswith('sunos')) and
             sysconfig.get_config_var('Py_ENABLE_SHARED')):
             py_version = sysconfig.get_python_version()
             bad_pylib_dir = os.path.join(sys.prefix, "lib",
@@ -392,13 +404,11 @@ class build_ext(_build_ext):
         if not isinstance(ext, Extension):
             return _build_ext.build_extension(self, ext)
         petsc_arch = self.petsc_arch
-        if petsc_arch:
-            petsc_arch = [arch for arch in petsc_arch if arch]
         if not petsc_arch:
             petsc_arch = [ None ]
         for arch in petsc_arch:
             config = self.get_config_arch(arch)
-            ARCH = arch or config['PETSC_ARCH_NAME']
+            ARCH = arch or config['PETSC_ARCH']
             if ARCH not in self.PETSC_ARCH_LIST:
                 self.PETSC_ARCH_LIST.append(ARCH)
             ext.language = config.language

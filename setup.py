@@ -14,9 +14,9 @@ Python bindings for PETSc libraries.
 ##     pass
 
 
-# --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Metadata
-# --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 from conf.metadata import metadata
 
@@ -48,9 +48,9 @@ metadata['download_url'] = download
 metadata['provides'] = ['petsc4py']
 metadata['requires'] = ['numpy']
 
-# --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Extension modules
-# --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 def get_ext_modules(Extension):
     from os   import walk, path
@@ -75,14 +75,14 @@ def get_ext_modules(Extension):
                                     ] + numpy_includes,
                       depends=depends)]
 
-# --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Setup
-# --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 from conf.petscconf import setup, Extension
 from conf.petscconf import config, build, build_ext
 
-def main():
+def run_setup():
     setup(packages     = ['petsc4py',
                           'petsc4py.lib',],
           package_dir  = {'petsc4py'     : 'src',
@@ -99,24 +99,28 @@ def main():
                           'build_ext'  : build_ext},
           **metadata)
 
-if __name__ == '__main__':
+def chk_cython(*C_SOURCE):
     import sys, os
-    C_SOURCE = os.path.join('src', 'petsc4py.PETSc.c')
-    def cython_help():
-        if os.path.exists(C_SOURCE): return
-        warn = lambda msg='': sys.stderr.write(msg+'\n')
-        warn("*"*70)
-        warn()
-        warn("You need to generate C source files with Cython !!!")
-        warn("Please execute in your shell:")
-        warn()
-        warn("$ python ./conf/cythonize.py")
-        warn()
-        warn("*"*70)
-        warn()
-    ## from distutils import log
-    ## log.set_verbosity(log.DEBUG)
-    cython_help()
-    main()
+    if os.path.exists(os.path.join(*C_SOURCE)):
+        return
+    warn = lambda msg='': sys.stderr.write(msg+'\n')
+    warn("*"*80)
+    warn()
+    warn(" You need to generate C source files with Cython!!")
+    warn(" Download and install Cython <http://www.cython.org>")
+    warn(" and next execute in your shell:")
+    warn()
+    warn("   $ python ./conf/cythonize.py")
+    warn()
+    warn("*"*80)
 
-# --------------------------------------------------------------------
+if __name__ == '__main__':
+    try:
+        run_setup()
+    except:
+        try:
+            chk_cython('src', 'petsc4py.PETSc.c')
+        finally:
+            raise
+
+# -----------------------------------------------------------------------------
