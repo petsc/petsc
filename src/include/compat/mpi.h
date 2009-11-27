@@ -13,13 +13,14 @@
 #if HAVE_DLFCN_H
   #include <dlfcn.h>
 #else
-  #if defined(__CYGWIN__)
-    #define RTLD_LAZY     1
-    #define RTLD_NOW      2
-    #define RTLD_LOCAL    0
-    #define RTLD_GLOBAL   4
-    #define RTLD_NOLOAD   0
-    #define RTLD_NODELETE 0
+  #if defined(__linux__)
+    #define RTLD_LAZY     0x00001
+    #define RTLD_NOW      0x00002
+    #define RTLD_LOCAL    0x00000
+    #define RTLD_GLOBAL   0x00100
+    #define RTLD_NOLOAD   0x00004
+    #define RTLD_NODELETE 0x01000
+    #define RTLD_DEEPBIND 0x00008
   #elif defined(__APPLE__)
     #define RTLD_LAZY     0x1
     #define RTLD_NOW      0x2
@@ -27,19 +28,21 @@
     #define RTLD_GLOBAL   0x8
     #define RTLD_NOLOAD   0x10
     #define RTLD_NODELETE 0x80
-  #elif defined(__linux__)
-    #define RTLD_LAZY     0x00001
-    #define RTLD_NOW      0x00002
-    #define RTLD_LOCAL    0x00000
-    #define RTLD_GLOBAL   0x00100
-    #define RTLD_NOLOAD   0x00004
-    #define RTLD_NODELETE 0x01000
+    #define RTLD_FIRST    0x100
+  #elif defined(__CYGWIN__)
+    #define RTLD_LAZY     1
+    #define RTLD_NOW      2
+    #define RTLD_LOCAL    0
+    #define RTLD_GLOBAL   4
   #endif
-  #if defined(c_plusplus) || defined(__cplusplus)
+  #if defined(__cplusplus) || defined(c_plusplus)
   extern "C" {
   #endif
   extern void *dlopen(const char *, int);
-  #if defined(c_plusplus) || defined(__cplusplus)
+  extern void *dlsym(void *, const char *);
+  extern int   dlclose(void *);
+  extern char *dlerror(void);
+  #if defined(__cplusplus) || defined(c_plusplus)
   }
   #endif
 #endif
@@ -55,9 +58,6 @@
 #endif
 #ifndef RTLD_GLOBAL
 #define RTLD_GLOBAL RTLD_LOCAL
-#endif
-#ifndef RTLD_NOLOAD
-#define RTLD_NOLOAD 0
 #endif
 
 /*
@@ -76,7 +76,9 @@ static void * my_dlopen(const char *name, int mode) {
     printf("RTLD_NOW:     0x%X\n", RTLD_NOW    );
     printf("RTLD_LOCAL:   0x%X\n", RTLD_LOCAL  );
     printf("RTLD_GLOBAL:  0x%X\n", RTLD_GLOBAL );
+    #ifdef RTLD_NOLOAD
     printf("RTLD_NOLOAD:  0x%X\n", RTLD_NOLOAD );
+    #endif
     printf("\n");
   }
   handle = dlopen(name, mode);
@@ -89,8 +91,11 @@ static void * my_dlopen(const char *name, int mode) {
 
 static void OPENMPI_dlopen_libmpi(void)
 {
-  int mode = RTLD_NOW | RTLD_GLOBAL | RTLD_NOLOAD;
   void *handle = 0;
+  int mode = RTLD_NOW | RTLD_GLOBAL;
+  #ifdef RTLD_NOLOAD
+  mode |= RTLD_NOLOAD;
+  #endif
 #if defined(__CYGWIN__)
   if (!handle)
     handle = dlopen("cygmpi.dll", mode);
