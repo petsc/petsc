@@ -18,7 +18,6 @@ cdef extern from "petscpc.h" nogil:
     PetscPCType PCSPAI
     PetscPCType PCNN
     PetscPCType PCCHOLESKY
-    PetscPCType PCSAMG
     PetscPCType PCPBJACOBI
     PetscPCType PCMAT
     PetscPCType PCHYPRE

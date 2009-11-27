@@ -19,7 +19,6 @@ class PCType(object):
     SPAI       = PCSPAI
     NN         = PCNN
     CHOLESKY   = PCCHOLESKY
-    SAMG       = PCSAMG
     PBJACOBI   = PCPBJACOBI
     MAT        = PCMAT
     HYPRE      = PCHYPRE
