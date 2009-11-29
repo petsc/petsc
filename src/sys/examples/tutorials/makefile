@@ -11,7 +11,8 @@ EXAMPLESF       = ex3f.F ex4f90.F90 ex5f90.F90
 MANSEC          = Sys
 CLEANFILES      = binaryoutput binaryoutput.info
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 
 ex1: ex1.o   chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_SYS_LIB}

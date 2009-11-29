@@ -13,7 +13,8 @@ EXAMPLESMATLAB   =
 DIRS		 = 
 CLEANFILES       = 
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 
 #--------------------------------------------------------------------------
 

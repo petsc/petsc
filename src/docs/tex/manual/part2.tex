@@ -6863,7 +6863,8 @@ The first is a ``minimum'' makefile for maintaining
 a single program that uses the PETSc libraires.
 The most important line in this makefile is the line starting with \trl{include}:
 \begin{tabbing}
-   include \$\trl{{PETSC_DIR}/conf/base}
+   include  \$\trl{{PETSC_DIR}/conf/variables}
+   include \$\trl{{PETSC_DIR}/conf/rules}
 \end{tabbing}
 This line includes other makefiles that provide the needed definitions
 and rules for the particular base PETSc installation (specified by
@@ -6884,7 +6885,8 @@ within the makefile.
    FPPFLAGS   =
    CLEANFILES = ex2
 
-   include ${PETSC_DIR}/conf/base
+   include ${PETSC_DIR}/conf/variables
+   include ${PETSC_DIR}/conf/rules
 
    ex2: ex2.o chkopts
            ${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
@@ -6949,7 +6951,8 @@ controls the generation of several example programs.
    CPPFLAGS =
    FPPFLAGS =
 
-   include ${PETSC_DIR}/conf/base
+   include ${PETSC_DIR}/conf/variables
+   include ${PETSC_DIR}/conf/rules
 
    ex1: ex1.o 
         -${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
@@ -7047,7 +7050,8 @@ makefiles, they are also easily used.
    LIBBASE  = libpetscmat\\
    MANSEC   = Mat\\
 
-   include \$\trl{{PETSC_DIR}/conf/base}
+   include ${PETSC_DIR}/conf/variables
+   include ${PETSC_DIR}/conf/rules
 \end{tabbing}
 }
 \caption{Sample PETSc Makefile for Library Maintenance}

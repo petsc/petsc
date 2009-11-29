@@ -7,7 +7,8 @@ LOCDIR           = src/vec/is/examples/tutorials/
 EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c
 EXAMPLESF        = ex1f.F ex2f.F ex1f90.F ex3f90.F
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 
 ex1: ex1.o chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_VEC_LIB}

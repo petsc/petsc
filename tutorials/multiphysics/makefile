@@ -12,7 +12,8 @@ EXAMPLESFH       =
 EXAMPLESMATLAB   = 
 DIRS		 = 
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 
 p1: p1.o  ff1.o ff2.o chkopts
 	-${CLINKER} -o p1 p1.o ff1.o ff2.o ${PETSC_SNES_LIB}

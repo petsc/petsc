@@ -9,7 +9,8 @@ EXAMPLESF       = ex1f.F ex12f.F
 DIRS	        = 
 MANSEC          = SNES
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_SNES_LIB}

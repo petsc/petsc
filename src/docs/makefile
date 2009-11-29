@@ -29,7 +29,8 @@ LOCDIR   = src/docs/
 
 CLEANFILES = website/publications/petscapps.html website/publications/petscapps-bib.html
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
 
 # petscapps* get built with 'builddist' and 'rsync'ed over to www-fp via the crontab

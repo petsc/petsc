@@ -13,7 +13,8 @@ CLEANFILES       = rhs.vtk solution.vtk
 NP               = 1
 DISPLAY          = :0.0
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_KSP_LIB}

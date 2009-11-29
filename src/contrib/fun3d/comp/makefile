@@ -24,7 +24,8 @@ EXAMPLESC        = flow.c user.h
 EXAMPLESF        = user.F userJac.F
 FLOW_OBJSF       = user.o userJac.o
 #
-include $(PETSC_DIR)/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 include $(PETSC_DIR)/conf/test
 
 flow: flow.o $(FLOW_OBJSF) chkopts

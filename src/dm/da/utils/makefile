@@ -3,14 +3,15 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = fdda.c pack.c dm.c sda2.c sliced.c binaryMatlab.c daint.c
+SOURCEC  = fdda.c pack.c dm.c sda2.c sliced.c binaryMatlab.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = fdda.o pack.o dm.o sda2.o sliced.o binaryMatlab.o daint.o
+OBJSC    = fdda.o pack.o dm.o sda2.o sliced.o binaryMatlab.o
 OBJSF    =
 LIBBASE  = libpetscdm
 MANSEC   = DA
 LOCDIR   = src/dm/da/utils/
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test

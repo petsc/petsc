@@ -13,6 +13,7 @@ LIBBASE  = libpetsc
 DIRS     = 
 LOCDIR   = src/sys/random/impls/rand48/
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
 

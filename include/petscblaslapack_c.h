@@ -142,7 +142,7 @@ This file also deals with unmangled Fortran 77 naming convention.
 #  define LAPACKsygvx_ zhegvx 
 #  define LAPACKpttrs_ zpttrs 
 /* LAPACKstebz_ does not exist for complex. */
-# end
+# endif
 #endif
 
 #endif
