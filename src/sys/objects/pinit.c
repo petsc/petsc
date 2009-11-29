@@ -830,10 +830,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     ierr = PetscMPIDump(stdout);CHKERRQ(ierr);
   }
   flg1 = PETSC_FALSE;
-  flg2 = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-malloc_dump",&flg1,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-options_table",&flg2,PETSC_NULL);CHKERRQ(ierr);
-  if (flg2) {
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-options_table",&flg1,PETSC_NULL);CHKERRQ(ierr);
+  if (flg1) {
     if (!rank) {ierr = PetscOptionsPrint(stdout);CHKERRQ(ierr);}
   }
 
