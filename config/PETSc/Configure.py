@@ -442,7 +442,7 @@ class Configure(config.base.Configure):
     if self.framework.argDB['prefix']:
       self.installdir = self.framework.argDB['prefix']
       self.addMakeRule('shared_nomesg_noinstall','')
-      self.addMakeRule('shared_install','',['-@echo "Now to install the libraries do: make install"',\
+      self.addMakeRule('shared_install','',['-@echo "Now to install the libraries do: make install or perhaps sudo make install"',\
                                               '-@echo "========================================="'])
     else:
       self.installdir = os.path.join(self.petscdir.dir,self.arch.arch)

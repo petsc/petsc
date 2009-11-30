@@ -251,6 +251,9 @@ Run the following to verify the install (remain in current directory for the tes
     os.unlink(os.path.join(self.rootDir,'conf','petscvariables'))
     fd = file(os.path.join('conf','petscvariables'),'w')
     fd.close()
+    # if running as root then change file ownership back to user
+    if os.environ.has_key('SUDO_USER'):
+      os.chown(os.path.join(self.rootDir,'conf','petscvariables'),int(os.environ['SUDO_UID']),int(os.environ['SUDO_GID']))
     self.createUninstaller()
     self.outputHelp()
     return
