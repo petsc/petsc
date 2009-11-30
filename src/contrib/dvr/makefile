@@ -11,8 +11,8 @@ EXAMPLESC	 =
 EXAMPLESF	 = dvr.F mxm44f2g.F basic.F
 DVR_OBJSF        = dvr.o mxm44f2g.o basic.o
 
-include ${PETSC_DIR}/conf/base
-
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 
 dvr: $(DVR_OBJSF) chkopts
 	-${FLINKER} -o dvr $(DVR_OBJSF) ${PETSC_VEC_LIB}

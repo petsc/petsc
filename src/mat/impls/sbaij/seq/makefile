@@ -19,7 +19,8 @@ DIRS     = spooles
 MANSEC	 = Mat
 LOCDIR	 = src/mat/impls/sbaij/seq/
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
 
 

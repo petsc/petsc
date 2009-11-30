@@ -11,4 +11,5 @@ ex2f_blopex: ex2f_blopex.o blopex_c.o chkopts
 	-${FLINKER} -o ex2f_blopex ex2f_blopex.o blopex_c.o ${PETSC_KSP_LIB}
 	${RM} ex2f_blopex.o
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules

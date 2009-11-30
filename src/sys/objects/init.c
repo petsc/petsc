@@ -200,7 +200,7 @@ PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = 0;
 
    Input Parameter:
 +  help - the help function (may be PETSC_NULL)
--  version - the version function (may be PETSc null)
+-  version - the version function (may be PETSC_NULL)
 
    Level: developer
 

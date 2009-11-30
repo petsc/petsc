@@ -16,6 +16,7 @@ DIRS     =
 LOCDIR   = src/sys/adic/Gradient/
 MANSEC   = Sys
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
 

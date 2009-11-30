@@ -9,7 +9,8 @@ EXAMPLESF        =
 MANSEC           = KSP
 
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 
 driver: driver.o  chkopts
 	-${CLINKER} -o driver driver.o  ${PETSC_KSP_LIB}

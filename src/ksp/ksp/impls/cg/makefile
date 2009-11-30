@@ -13,5 +13,6 @@ DIRS     = cgne gltr nash stcg
 MANSEC   = KSP
 LOCDIR   = src/ksp/ksp/impls/cg/
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test

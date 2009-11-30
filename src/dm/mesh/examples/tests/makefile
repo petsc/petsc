@@ -10,7 +10,8 @@ NP              = 1
 DISPLAY         = :0.0
 EXTRA_ARGS      = 
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 
 ex00: ex00.o chkopts
 	-${CLINKER} -o ex00 ex00.o ${PETSC_DM_LIB}

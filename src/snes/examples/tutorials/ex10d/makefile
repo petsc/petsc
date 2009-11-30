@@ -8,7 +8,8 @@ EXAMPLESC	 = ex10.c
 EXAMPLESF	 =
 MANSEC          = SNES
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 
 ex10: ex10.o  chkopts
 	-$(CLINKER) -o ex10 ex10.o $(PETSC_LIB)

@@ -20,7 +20,8 @@ EXAMPLESFH       = ex5f.h
 EXAMPLESMATLAB   = ex5m.m
 DIRS		 = ex10d
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_SNES_LIB}

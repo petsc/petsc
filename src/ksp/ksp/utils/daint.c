@@ -1,8 +1,79 @@
 
 #define PETSCDM_DLL
  
-#include "private/daimpl.h" /*I      "petscda.h"     I*/
+#include "private/daimpl.h"   /*I      "petscda.h"     I*/
+#include "petscksp.h"         /*I      "petscda.h"     I*/
 #include "petscmat.h"         /*I      "petscmat.h"    I*/
+
+typedef struct _p_ExoticInterpolation*  ExoticInterpolation;
+struct _p_ExoticInterpolation {
+  MPI_Comm   comm;
+  PetscTruth useLU;
+  KSP        ksp;
+  DA         da;
+};
+
+#undef __FUNCT__  
+#define __FUNCT__ "ExoticInterpolationCreate"
+/*
+      ExoticInterpolationCreate - Creates an object that can return exotic (face and wirebasket) based interpolations for a DA
+
+*/
+PetscErrorCode ExoticInterpolationCreate(MPI_Comm comm,ExoticInterpolation *ex)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscNew(struct _p_ExoticInterpolation,ex);CHKERRQ(ierr);
+  (*ex)->comm = comm;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "ExoticInterpolationSetDA"
+/*
+      ExoticInterpolationSetDA - set the DA that defines the parallel layout of the mesh for an exotic interpolation
+
+*/
+PetscErrorCode ExoticInterpolationSetDA(ExoticInterpolation ex,DA da)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ex->da = da;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "ExoticInterpolationSetUp"
+/*
+      ExoticInterpolationSetUp - creates the internal data structure needed to generate interpolations
+
+*/
+PetscErrorCode ExoticInterpolationSetUp(ExoticInterpolation ex)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!ex->useLU) {
+    ierr = KSPCreate(ex->comm,&ex->ksp);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "ExoticInterpolationGetInterpolation"
+/*
+      ExoticInterpolationGetInterpolation - 
+
+*/
+PetscErrorCode ExoticInterpolationGetInterpolation(ExoticInterpolation ex,MatReuse reuse,Mat *P)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
 
 
 #undef __FUNCT__  
@@ -394,19 +465,45 @@ PetscErrorCode DAGetFaceInterpolation(DA da,Mat Aglobal,MatReuse reuse,Mat *P)
   /* 
      Solve for the interpolation onto the interior Xint
   */
-  ierr = MatGetFactor(Aii,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&iAii);CHKERRQ(ierr);
-  ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
-  ierr = MatGetOrdering(Aii,MATORDERING_ND,&row,&col);CHKERRQ(ierr);
-  ierr = MatLUFactorSymbolic(iAii,Aii,row,col,&info);CHKERRQ(ierr);
-  ierr = ISDestroy(row);CHKERRQ(ierr);
-  ierr = ISDestroy(col);CHKERRQ(ierr);
-  ierr = MatLUFactorNumeric(iAii,Aii,&info);CHKERRQ(ierr);
   ierr = MatDuplicate(Xint,MAT_DO_NOT_COPY_VALUES,&Xint_tmp);CHKERRQ(ierr);
   ierr = MatMatMult(Ais,Xsurf,MAT_REUSE_MATRIX,PETSC_DETERMINE,&Xint_tmp);CHKERRQ(ierr);
   ierr = MatScale(Xint_tmp,-1.0);CHKERRQ(ierr);
-  ierr = MatMatSolve(iAii,Xint_tmp,Xint);CHKERRQ(ierr);
+
+  if (0) {
+    ierr = MatGetFactor(Aii,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&iAii);CHKERRQ(ierr);
+    ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
+    ierr = MatGetOrdering(Aii,MATORDERING_ND,&row,&col);CHKERRQ(ierr);
+    ierr = MatLUFactorSymbolic(iAii,Aii,row,col,&info);CHKERRQ(ierr);
+    ierr = ISDestroy(row);CHKERRQ(ierr);
+    ierr = ISDestroy(col);CHKERRQ(ierr);
+    ierr = MatLUFactorNumeric(iAii,Aii,&info);CHKERRQ(ierr);
+    ierr = MatMatSolve(iAii,Xint_tmp,Xint);CHKERRQ(ierr);
+    ierr = MatDestroy(iAii);CHKERRQ(ierr);
+  } else {
+    KSP         ksp;
+    Vec         b,x;
+    PetscScalar *xint_tmp;
+
+    ierr = MatGetArray(Xint,&xint);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,Nint,0,&x);CHKERRQ(ierr);
+    ierr = MatGetArray(Xint_tmp,&xint_tmp);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,Nint,0,&b);CHKERRQ(ierr);
+    ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp,Aii,Aii,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    for (i=0; i<6; i++) {
+      ierr = VecPlaceArray(x,xint+i*Nint);CHKERRQ(ierr);
+      ierr = VecPlaceArray(b,xint_tmp+i*Nint);CHKERRQ(ierr);
+      ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+      ierr = VecResetArray(x);CHKERRQ(ierr);
+      ierr = VecResetArray(b);CHKERRQ(ierr);
+    }
+    ierr = MatRestoreArray(Xint,&xint);CHKERRQ(ierr);
+    ierr = MatRestoreArray(Xint_tmp,&xint_tmp);CHKERRQ(ierr);
+    ierr = KSPDestroy(ksp);CHKERRQ(ierr);
+    ierr = VecDestroy(x);CHKERRQ(ierr);
+    ierr = VecDestroy(b);CHKERRQ(ierr);
+  }
   ierr = MatDestroy(Xint_tmp);CHKERRQ(ierr);
-  ierr = MatDestroy(iAii);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG_foo)
   ierr = MatGetArray(Xint,&xint);CHKERRQ(ierr);

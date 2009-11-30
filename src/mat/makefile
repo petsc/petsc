@@ -13,5 +13,6 @@ DIRS     = interface impls examples utils matfd partition order color f90-mod ft
 LOCDIR   = src/mat/
 MANSEC   = Mat
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
