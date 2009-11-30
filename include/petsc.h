@@ -340,6 +340,51 @@ M*/
 #define PetscPolymorphicFunction(A,B,C,D,E)
 #endif
 
+/*MC
+    PetscUnlikely - hints the compiler that the given condition is usually FALSE
+
+    Not Collective
+
+    Synopsis:
+    PetscTruth PetscUnlikely(PetscTruth cond)
+
+    Input Parameters:
+.   cond - condition or expression
+
+    Note: This returns the same truth value, it is only a hint to compilers that the resulting
+    branch is unlikely.
+
+    Level: advanced
+
+.seealso: PetscLikely(), CHKERRQ
+M*/
+
+/*MC
+    PetscLikely - hints the compiler that the given condition is usually TRUE
+
+    Not Collective
+
+    Synopsis:
+    PetscTruth PetscUnlikely(PetscTruth cond)
+
+    Input Parameters:
+.   cond - condition or expression
+
+    Note: This returns the same truth value, it is only a hint to compilers that the resulting
+    branch is likely.
+
+    Level: advanced
+
+.seealso: PetscUnlikely()
+M*/
+#if defined(PETSC_HAVE_BUILTIN_EXPECT)
+#  define PetscUnlikely(cond)   __builtin_expect(!!(cond),0)
+#  define PetscLikely(cond)     __builtin_expect(!!(cond),1)
+#else
+#  define PetscUnlikely(cond)   cond
+#  define PetscLikely(cond)     cond
+#endif
+
 /*
     Extern indicates a PETSc function defined elsewhere
 */

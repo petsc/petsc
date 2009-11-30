@@ -139,13 +139,9 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_newdatastruct(Mat B,Mat A,IS isrow,IS
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
 
-  /* get new row pointers */
-  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&bi);CHKERRQ(ierr);
-  bi[0] = 0;
-
-  /* bdiag is location of diagonal in factor */
-  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&bdiag);CHKERRQ(ierr);
-  bdiag[0] = 0;
+  /* get new row and diagonal pointers */
+  ierr = PetscMalloc2(n+1,PetscInt,&bi,n+1,PetscInt,&bdiag);CHKERRQ(ierr);
+  bi[0] = bdiag[0] = 0;
 
   /* linked list for storing column indices of the active row */
   nlnk = n + 1;
@@ -359,12 +355,8 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
 
   /* get new row pointers */
-  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&bi);CHKERRQ(ierr);
-  bi[0] = 0;
-
-  /* bdiag is location of diagonal in factor */
-  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&bdiag);CHKERRQ(ierr);
-  bdiag[0] = 0;
+  ierr = PetscMalloc2(n+1,PetscInt,&bi,n+1,PetscInt,&bdiag);CHKERRQ(ierr);
+  bi[0] = bdiag[0] = 0;
 
   /* linked list for storing column indices of the active row */
   nlnk = n + 1;

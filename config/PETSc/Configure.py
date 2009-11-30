@@ -277,6 +277,13 @@ class Configure(config.base.Configure):
       self.addDefine('Prefetch(a,b,c)', ' ')
     self.popLanguage()
 
+  def configureExpect(self):
+    '''Sees if the __builtin_expect directive is supported'''
+    self.pushLanguage(self.languages.clanguage)
+    if self.checkLink('', 'if (__builtin_expect(0,1)) return 1;'):
+      self.addDefine('HAVE_BUILTIN_EXPECT', 1)
+    self.popLanguage()
+
   def configureIntptrt(self):
     '''Determine what to use for uintptr_t'''
     def staticAssertSizeMatchesVoidStar(inc,typename):
@@ -477,6 +484,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('Cannot set C language to C++ without a functional C++ compiler.')
     self.executeTest(self.configureInline)
     self.executeTest(self.configurePrefetch)
+    self.executeTest(self.configureExpect);
     self.executeTest(self.configureIntptrt);
     self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)
