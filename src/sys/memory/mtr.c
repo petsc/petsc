@@ -23,14 +23,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTrMallocDefault(size_t,int,const char
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTrFreeDefault(void*,int,const char[],const char[],const char[]);
 
 
-#if (PETSC_SIZEOF_VOID_P == 8)
-#define TR_ALIGN_BYTES      8
-#define TR_ALIGN_MASK       0x7
-#else
-#define TR_ALIGN_BYTES      4
-#define TR_ALIGN_MASK       0x3
-#endif
-
 #define COOKIE_VALUE   ((PetscCookie) 0xf0e0d0c9)
 #define ALREADY_FREED  ((PetscCookie) 0x0f0e0d9c)
 
@@ -48,17 +40,19 @@ typedef struct _trSPACE {
     struct _trSPACE *next,*prev;
 } TRSPACE;
 
-/* HEADER_DOUBLES is the number of doubles in a PetscMalloc() header */
-/* We have to be careful about alignment rules here */
+/* HEADER_BYTES is the number of bytes in a PetscMalloc() header.
+   It is sizeof(TRSPACE) padded to be a multiple of PETSC_MEMALIGN.
+*/
 
-#define HEADER_DOUBLES      sizeof(TRSPACE)/sizeof(double)+1
+#define HEADER_BYTES      (sizeof(TRSPACE)+(PETSC_MEMALIGN-1)) & ~(PETSC_MEMALIGN-1)
 
 
-/* This union is used to insure that the block passed to the user is
-   aligned on a double boundary */
+/* This union is used to insure that the block passed to the user retains
+   a minimum alignment of PETSC_MEMALIGN.
+*/
 typedef union {
     TRSPACE sp;
-    double  v[HEADER_DOUBLES];
+    char    v[HEADER_BYTES];
 } TrSPACE;
 
 
@@ -196,8 +190,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTrMallocDefault(size_t a,int lineno,const ch
     ierr = PetscMallocValidate(lineno,function,filename,dir); if (ierr) PetscFunctionReturn(ierr);
   }
 
-  nsize = a;
-  if (nsize & TR_ALIGN_MASK) nsize += (TR_ALIGN_BYTES - (nsize & TR_ALIGN_MASK));
+  nsize = (a + (PETSC_MEMALIGN-1)) & ~(PETSC_MEMALIGN-1);
   ierr = PetscMallocAlign(nsize+sizeof(TrSPACE)+sizeof(PetscCookie),lineno,function,filename,dir,(void**)&inew);CHKERRQ(ierr);
 
   head   = (TRSPACE *)inew;
