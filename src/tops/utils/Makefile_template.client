@@ -16,7 +16,8 @@ HIDE_COMPILE=--quiet
 PKG_NAME = $(shell echo $(CLIENT_NAME) | sed -e 's/Port//')
 
 include babel.make 	# default for clients
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
 include $(CCA_SPEC_VARS)
 
