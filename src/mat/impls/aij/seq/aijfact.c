@@ -1846,7 +1846,6 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const M
   PetscTruth     perm_identity;
 
   PetscFunctionBegin;
-
   shiftnz   = info->shiftnz;
   shiftpd   = info->shiftpd;
   zeropivot = info->zeropivot; 
@@ -1860,9 +1859,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const M
   */
   ierr = PetscMalloc3(mbs,MatScalar,&rtmp,mbs,PetscInt,&il,mbs,PetscInt,&c2r);CHKERRQ(ierr);
 
-  for (i=0; i<mbs; i++) {
-    c2r[i] = mbs; 
-  } 
+  for (i=0; i<mbs; i++) c2r[i] = mbs; 
   il[0] = 0;
  
   for (k = 0; k<mbs; k++){
@@ -1953,7 +1950,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *
   IS             ip=b->row,iip = b->icol;
   PetscErrorCode ierr;
   const PetscInt *rip,*riip;
-  PetscInt       i,j,mbs=A->rmap->n,*bi=b->i,*bj=b->j,*bcol;
+  PetscInt       i,j,mbs=A->rmap->n,*bi=b->i,*bj=b->j,*bcol,*bjtmp;
   PetscInt       *ai=a->i,*aj=a->j;
   PetscInt       k,jmin,jmax,*jl,*il,col,nexti,ili,nz;
   MatScalar      *rtmp,*ba=b->a,*bval,*aa=a->a,dk,uikdi;
@@ -1977,11 +1974,15 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *
   sctx.nshift       = 0;
   do {
     sctx.chshift = PETSC_FALSE;
-    for (i=0; i<mbs; i++) {
-      rtmp[i] = 0.0; jl[i] = mbs; il[0] = 0;
-    } 
+    for (i=0; i<mbs; i++) jl[i] = mbs; 
+    il[0] = 0;
  
     for (k = 0; k<mbs; k++){
+      /* zero rtmp */
+      nz = bi[k+1] - bi[k];
+      bjtmp = bj + bi[k];
+      for (j=0; j<nz; j++) rtmp[bjtmp[j]] = 0.0;
+
       bval = ba + bi[k];
       /* initialize k-th row by the perm[k]-th row of A */
       jmin = ai[rip[k]]; jmax = ai[rip[k]+1];
@@ -2132,21 +2133,19 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS perm,
 
   /* ICC(0) without matrix ordering: simply rearrange column indices */
   if (!levels && perm_identity) { 
-
-    for (i=0; i<am; i++) {
-      ui[i+1]  = ui[i] + ai[i+1] - a->diag[i]; 
-      udiag[i] = ui[i+1] - 1; /* points to the last entry of U(i,:) */
-    }
     ierr = PetscMalloc((ui[am]+1)*sizeof(PetscInt),&uj);CHKERRQ(ierr); 
     cols = uj;
     for (i=0; i<am; i++) {
-      aj    = a->j + a->diag[i] + 1; /* 1st entry of U(i,:) without diagonal */ 
-      ncols = ui[i+1] - ui[i] - 1;
+      ncols    = ai[i+1] - a->diag[i];
+      ui[i+1]  = ui[i] + ncols; 
+      udiag[i] = ui[i+1] - 1; /* points to the last entry of U(i,:) */
+
+      aj   = a->j + a->diag[i] + 1; /* 1st entry of U(i,:) without diagonal */ 
+      ncols--; /* exclude diagonal */
       for (j=0; j<ncols; j++) *cols++ = aj[j]; 
       *cols++ = i; /* diagoanl is located as the last entry of U(i,:) */
     }
   } else { /* case: levels>0 || (levels=0 && !perm_identity) */
-    if (levels) SETERRQ(PETSC_ERR_ARG_WRONG,"not done yet");
     ierr = ISGetIndices(iperm,&riip);CHKERRQ(ierr);
     ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);
 
@@ -2262,7 +2261,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS perm,
 
     /* destroy list of free space and other temporary array(s) */
     ierr = PetscMalloc((ui[am]+1)*sizeof(PetscInt),&uj);CHKERRQ(ierr);
-    ierr = PetscFreeSpaceContiguous_Cholesky(&free_space,uj,am,ui,udiag);CHKERRQ(ierr);
+    ierr = PetscFreeSpaceContiguous_Cholesky(&free_space,uj,am,ui,udiag);CHKERRQ(ierr); /* store matrix factor in newdatastruct */
     ierr = PetscIncompleteLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
     ierr = PetscFreeSpaceDestroy(free_space_lvl);CHKERRQ(ierr);
 
