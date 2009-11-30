@@ -1603,6 +1603,51 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt,const PetscScalar
 #include <stdint.h>
 #endif
 
+/*MC
+    PetscUnlikely - hints the compiler that the given condition is usually FALSE
+
+    Not Collective
+
+    Synopsis:
+    PetscTruth PetscUnlikely(PetscTruth cond)
+
+    Input Parameters:
+.   cond - condition or expression
+
+    Note: This returns the same truth value, it is only a hint to compilers that the resulting
+    branch is unlikely.
+
+    Level: advanced
+
+.seealso: PetscLikely(), CHKERRQ
+M*/
+
+/*MC
+    PetscLikely - hints the compiler that the given condition is usually TRUE
+
+    Not Collective
+
+    Synopsis:
+    PetscTruth PetscUnlikely(PetscTruth cond)
+
+    Input Parameters:
+.   cond - condition or expression
+
+    Note: This returns the same truth value, it is only a hint to compilers that the resulting
+    branch is likely.
+
+    Level: advanced
+
+.seealso: PetscUnlikely()
+M*/
+#if defined(PETSC_HAVE_BUILTIN_EXPECT)
+#  define PetscUnlikely(cond)   __builtin_expect(!!(cond),0)
+#  define PetscLikely(cond)     __builtin_expect(!!(cond),1)
+#else
+#  define PetscUnlikely(cond)   cond
+#  define PetscLikely(cond)     cond
+#endif
+
 /*@C
    PetscMemcpy - Copies n bytes, beginning at location b, to the space
    beginning at location a. The two memory regions CANNOT overlap, use
