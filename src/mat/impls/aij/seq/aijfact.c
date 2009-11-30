@@ -308,13 +308,9 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ_newdatastruct(Mat B,Mat A,IS isrow,IS 
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
 
-  /* get new row pointers */
-  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&bi);CHKERRQ(ierr);
-  bi[0] = 0;
-
-  /* bdiag is location of diagonal in factor */
-  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&bdiag);CHKERRQ(ierr);
-  bdiag[0] = 0;
+  /* get new row and diagonal pointers */
+  ierr = PetscMalloc2(n+1,PetscInt,&bi,n+1,PetscInt,&bdiag);CHKERRQ(ierr);
+  bi[0] = bdiag[0] = 0;
 
   /* linked list for storing column indices of the active row */
   nlnk = n + 1;
@@ -1498,12 +1494,9 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS isrow
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
 
-  /* get new row pointers */
-  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&bi);CHKERRQ(ierr);
-  bi[0] = 0;
-  /* bdiag is location of diagonal in factor */
-  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&bdiag);CHKERRQ(ierr);
-  bdiag[0]  = 0;
+  /* get new row and diagonal pointers */
+  ierr = PetscMalloc2(n+1,PetscInt,&bi,n+1,PetscInt,&bdiag);CHKERRQ(ierr);
+  bi[0] = bdiag[0] = 0;
 
   ierr = PetscMalloc2(n,PetscInt*,&bj_ptr,n,PetscInt*,&bjlvl_ptr);CHKERRQ(ierr); 
 
@@ -1700,12 +1693,9 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
 
-  /* get new row pointers */
-  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&bi);CHKERRQ(ierr);
-  bi[0] = 0;
-  /* bdiag is location of diagonal in factor */
-  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&bdiag);CHKERRQ(ierr);
-  bdiag[0]  = 0;
+  /* get new row and diagonal pointers */
+  ierr = PetscMalloc2(n+1,PetscInt,&bi,n+1,PetscInt,&bdiag);CHKERRQ(ierr);
+  bi[0] = bdiag[0] = 0;
 
   ierr = PetscMalloc2(n,PetscInt*,&bj_ptr,n,PetscInt*,&bjlvl_ptr);CHKERRQ(ierr); 
 
@@ -2931,9 +2921,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
 
   /* bdiag is location of diagonal in factor */
-  /* should replace with PetscMalloc2() */
-  ierr = PetscMalloc((2*n+2)*sizeof(PetscInt),&bdiag);CHKERRQ(ierr);
-  bdiag_rev = bdiag + n+1;
+  ierr = PetscMalloc2(n+1,PetscInt,&bdiag,n+1,PetscInt,&bdiag_rev);CHKERRQ(ierr);
 
   /* allocate row pointers bi */
   ierr = PetscMalloc((2*n+2)*sizeof(PetscInt),&bi);CHKERRQ(ierr);

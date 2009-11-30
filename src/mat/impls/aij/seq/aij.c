@@ -474,7 +474,6 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
     }
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
   } else {
-    //-----------------------------------------------
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     PetscTruth newdatastruct=PETSC_FALSE,newdatastruct1=PETSC_FALSE;
     ierr = PetscOptionsGetTruth(PETSC_NULL,"-ilu_new",&newdatastruct,PETSC_NULL);CHKERRQ(ierr);
@@ -524,10 +523,8 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
           ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",a->j[j]+shift,a->a[j]);CHKERRQ(ierr);
 #endif
 }
-	ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
-      }
-      // The test example: petsc-dev/src/mat/examples/tests/ex30.c
-      //----------------------------------------------
+	  ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+        }
     } else {
       for (i=0; i<m; i++) {
         ierr = PetscViewerASCIIPrintf(viewer,"row %D:",i);CHKERRQ(ierr);
