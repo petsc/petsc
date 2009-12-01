@@ -18,7 +18,7 @@ typedef  _p_TaoMatADACtx* TaoMatADACtx;
 PetscErrorCode MatCreateADA(Mat,Vec,Vec,Mat*);
 PetscErrorCode MatMult_ADA(Mat,Vec,Vec);
 PetscErrorCode MatMultTranspose_ADA(Mat,Vec,Vec);
-PetscErrorCode MatDiagonalShift_ADA(Vec,Mat);
+PetscErrorCode MatDiagonalSet_ADA(Vec,Mat);
 PetscErrorCode MatDestroy_ADA(Mat);
 PetscErrorCode MatView_ADA(Mat,PetscViewer);
 PetscErrorCode MatShift_ADA(Mat,PetscReal);
