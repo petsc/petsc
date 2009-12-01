@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = schurm.c daint.c
+SOURCEC  = schurm.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = schurm.o daint.o
+OBJSC    = schurm.o
 LIBBASE  = libpetscksp
 DIRS     =
 MANSEC   = KSP

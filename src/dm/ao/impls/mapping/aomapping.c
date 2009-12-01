@@ -303,7 +303,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateMapping(MPI_Comm comm,PetscInt napp,con
   ierr  = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr  = PetscMalloc2(size,PetscMPIInt, &lens,size,PetscMPIInt,&disp);CHKERRQ(ierr);
   nnapp = napp;
-  ierr  = MPI_Allgather(&nnapp, 1, MPIU_INT, lens, 1, MPIU_INT, comm);CHKERRQ(ierr);
+  ierr  = MPI_Allgather(&nnapp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
   N    = 0;
   for(i = 0; i < size; i++) {
     disp[i] = N;
