@@ -74,7 +74,7 @@ PetscErrorCode MatCreateADA(Mat mat,Vec d1, Vec d2, Mat *J)
   info = MatShellSetOperation(*J,MATOP_DESTROY,(void(*)())MatDestroy_ADA);CHKERRQ(info);
   info = MatShellSetOperation(*J,MATOP_VIEW,(void(*)())MatView_ADA);CHKERRQ(info);
   info = MatShellSetOperation(*J,MATOP_MULT_TRANSPOSE,(void(*)())MatMultTranspose_ADA);CHKERRQ(info);
-  info = MatShellSetOperation(*J,MATOP_DIAGONAL_SHIFT,(void(*)())MatDiagonalShift_ADA);CHKERRQ(info);
+  info = MatShellSetOperation(*J,MATOP_DIAGONAL_SET,(void(*)())MatDiagonalSet_ADA);CHKERRQ(info);
   info = MatShellSetOperation(*J,MATOP_SHIFT,(void(*)())MatShift_ADA);CHKERRQ(info);
   info = MatShellSetOperation(*J,MATOP_EQUAL,(void(*)())MatEqual_ADA);CHKERRQ(info);
   info = MatShellSetOperation(*J,MATOP_SCALE,(void(*)())MatScale_ADA);CHKERRQ(info);
@@ -127,8 +127,8 @@ PetscErrorCode MatMultTranspose_ADA(Mat mat,Vec a,Vec y)
 } 
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatDiagonalShift_ADA"
-PetscErrorCode MatDiagonalShift_ADA(Vec D, Mat M)
+#define __FUNCT__ "MatDiagonalSet_ADA"
+PetscErrorCode MatDiagonalSet_ADA(Vec D, Mat M)
 {
   TaoMatADACtx ctx;
   PetscReal        zero=0.0,one = 1.0;

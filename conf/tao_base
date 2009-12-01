@@ -13,7 +13,8 @@ tao_all_dummy:
 # you.  See the PETSc users manual for details.
 #
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 include ${TAO_DIR}/conf/tao_variables
 include ${TAO_DIR}/conf/tao_rules
 
