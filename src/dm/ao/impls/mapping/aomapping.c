@@ -331,7 +331,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateMapping(MPI_Comm comm,PetscInt napp,con
   ierr = PetscFree2(lens,disp);CHKERRQ(ierr);
 
   /* generate a list of application and PETSc node numbers */
-  ierr = PetscMalloc4(N,PetscInt, &aomap->app,N,PetscInt,&aomap->appPerm,N,PetscInt,&aomap->petsc,N,PetscInt,&aomap->petsc);CHKERRQ(ierr);
+  ierr = PetscMalloc4(N,PetscInt, &aomap->app,N,PetscInt,&aomap->appPerm,N,PetscInt,&aomap->petsc,N,PetscInt,&aomap->petscPerm);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(ao, 4*N * sizeof(PetscInt));CHKERRQ(ierr);
   for(i = 0; i < N; i++) {
     appPerm[i]   = i;
@@ -411,8 +411,8 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoo
 {
   MPI_Comm       comm;
   const PetscInt *mypetsc, *myapp;
-  PetscInt       napp, npetsc;
-  PetscErrorCode ierr;
+  PetscInt        napp, npetsc;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) isapp, &comm);CHKERRQ(ierr);
