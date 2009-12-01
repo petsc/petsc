@@ -25,7 +25,7 @@ class Installer(script.Script):
     import RDict
     argDB = RDict.RDict(None, None, 0, 0, readonly = True)
     if os.environ.has_key('PETSC_DIR'):
-      PETSC_ARCH = os.environ['PETSC_DIR']
+      PETSC_DIR = os.environ['PETSC_DIR']
     else:
       fd = file(os.path.join('conf','petscvariables'))
       a = fd.readline()
