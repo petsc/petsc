@@ -6,8 +6,15 @@
 #include "petscda.h"   /*I "petscda.h" I*/
 #include "../src/ksp/pc/impls/mg/mgimpl.h"
 
-const char *PCExoticTypes[] = {"face","wirebasket","PCExoticType","PC_Exotic",0};
+typedef struct {
+  DA           da;
+  PCExoticType type;
+  Mat          P;            /* the constructed interpolation matrix */
+  PetscTruth   directSolve;  /* use direct LU factorization to construct interpolation */
+  KSP          ksp;
+} PC_Exotic;
 
+const char *PCExoticTypes[] = {"face","wirebasket","PCExoticType","PC_Exotic",0};
 
 
 #undef __FUNCT__  
@@ -16,8 +23,9 @@ const char *PCExoticTypes[] = {"face","wirebasket","PCExoticType","PC_Exotic",0}
       DAGetWireBasketInterpolation - Gets the interpolation for a wirebasket based coarse space
 
 */
-PetscErrorCode DAGetWireBasketInterpolation(DA da,Mat Aglobal,MatReuse reuse,Mat *P)
+PetscErrorCode DAGetWireBasketInterpolation(PC_Exotic *exotic,Mat Aglobal,MatReuse reuse,Mat *P)
 {
+  DA                     da = exotic->da;
   PetscErrorCode         ierr;
   PetscInt               dim,i,j,k,m,n,p,dof,Nint,Nface,Nwire,Nsurf,*Iint,*Isurf,cint = 0,csurf = 0,istart,jstart,kstart,*II,N,c = 0;
   PetscInt               mwidth,nwidth,pwidth,cnt,mp,np,pp,Ntotal,gl[26],*globals,Ng,*IIint,*IIsurf;
@@ -28,7 +36,7 @@ PetscErrorCode DAGetWireBasketInterpolation(DA da,Mat Aglobal,MatReuse reuse,Mat
   Mat                    A,Aii,Ais,Asi,*Aholder,iAii;
   MatFactorInfo          info;
   PetscScalar            *xsurf,*xint;
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_DEBUG_foo)
   PetscScalar            tmp;
 #endif
   PetscTable             ht;
@@ -86,7 +94,8 @@ PetscErrorCode DAGetWireBasketInterpolation(DA da,Mat Aglobal,MatReuse reuse,Mat
   for (j=1;j<n-1-jstart;j++) { xsurf[cnt++ + 20*Nsurf] = 1;  for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 21*Nsurf] = 1;} xsurf[cnt++ + 22*Nsurf] = 1;}
   xsurf[cnt++ + 23*Nsurf] = 1; for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 24*Nsurf] = 1;} xsurf[cnt++ + 25*Nsurf] = 1;
 
-#if defined(PETSC_USE_DEBUG)
+  /* interpolations only sum to 1 when using direct solver */
+#if defined(PETSC_USE_DEBUG_foo)
   for (i=0; i<Nsurf; i++) {
     tmp = 0.0;
     for (j=0; j<26; j++) {
@@ -148,21 +157,43 @@ PetscErrorCode DAGetWireBasketInterpolation(DA da,Mat Aglobal,MatReuse reuse,Mat
   /* 
      Solve for the interpolation onto the interior Xint
   */
-  ierr = MatGetFactor(Aii,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&iAii);CHKERRQ(ierr);
-  ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
-  ierr = MatGetOrdering(Aii,MATORDERING_ND,&row,&col);CHKERRQ(ierr);
-  ierr = MatLUFactorSymbolic(iAii,Aii,row,col,&info);CHKERRQ(ierr);
-  ierr = ISDestroy(row);CHKERRQ(ierr);
-  ierr = ISDestroy(col);CHKERRQ(ierr);
-  ierr = MatLUFactorNumeric(iAii,Aii,&info);CHKERRQ(ierr);
   ierr = MatDuplicate(Xint,MAT_DO_NOT_COPY_VALUES,&Xint_tmp);CHKERRQ(ierr);
   ierr = MatMatMult(Ais,Xsurf,MAT_REUSE_MATRIX,PETSC_DETERMINE,&Xint_tmp);CHKERRQ(ierr);
   ierr = MatScale(Xint_tmp,-1.0);CHKERRQ(ierr);
-  ierr = MatMatSolve(iAii,Xint_tmp,Xint);CHKERRQ(ierr);
-  ierr = MatDestroy(Xint_tmp);CHKERRQ(ierr);
-  ierr = MatDestroy(iAii);CHKERRQ(ierr);
+  if (exotic->directSolve) {
+    ierr = MatGetFactor(Aii,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&iAii);CHKERRQ(ierr);
+    ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
+    ierr = MatGetOrdering(Aii,MATORDERING_ND,&row,&col);CHKERRQ(ierr);
+    ierr = MatLUFactorSymbolic(iAii,Aii,row,col,&info);CHKERRQ(ierr);
+    ierr = ISDestroy(row);CHKERRQ(ierr);
+    ierr = ISDestroy(col);CHKERRQ(ierr);
+    ierr = MatLUFactorNumeric(iAii,Aii,&info);CHKERRQ(ierr);
+    ierr = MatMatSolve(iAii,Xint_tmp,Xint);CHKERRQ(ierr);
+    ierr = MatDestroy(iAii);CHKERRQ(ierr);
+  } else {
+    Vec         b,x;
+    PetscScalar *xint_tmp;
 
-#if defined(PETSC_USE_DEBUG)
+    ierr = MatGetArray(Xint,&xint);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,Nint,0,&x);CHKERRQ(ierr);
+    ierr = MatGetArray(Xint_tmp,&xint_tmp);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,Nint,0,&b);CHKERRQ(ierr);
+    ierr = KSPSetOperators(exotic->ksp,Aii,Aii,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    for (i=0; i<26; i++) {
+      ierr = VecPlaceArray(x,xint+i*Nint);CHKERRQ(ierr);
+      ierr = VecPlaceArray(b,xint_tmp+i*Nint);CHKERRQ(ierr);
+      ierr = KSPSolve(exotic->ksp,b,x);CHKERRQ(ierr);
+      ierr = VecResetArray(x);CHKERRQ(ierr);
+      ierr = VecResetArray(b);CHKERRQ(ierr);
+    }
+    ierr = MatRestoreArray(Xint,&xint);CHKERRQ(ierr);
+    ierr = MatRestoreArray(Xint_tmp,&xint_tmp);CHKERRQ(ierr);
+    ierr = VecDestroy(x);CHKERRQ(ierr);
+    ierr = VecDestroy(b);CHKERRQ(ierr);
+  }
+  ierr = MatDestroy(Xint_tmp);CHKERRQ(ierr);
+
+#if defined(PETSC_USE_DEBUG_foo)
   ierr = MatGetArray(Xint,&xint);CHKERRQ(ierr);
   for (i=0; i<Nint; i++) {
     tmp = 0.0;
@@ -235,7 +266,7 @@ PetscErrorCode DAGetWireBasketInterpolation(DA da,Mat Aglobal,MatReuse reuse,Mat
   ierr = MatAssemblyEnd(*P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscFree2(IIint,IIsurf);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_DEBUG_foo)
   {
     Vec         x,y;
     PetscScalar *yy;
@@ -271,8 +302,9 @@ PetscErrorCode DAGetWireBasketInterpolation(DA da,Mat Aglobal,MatReuse reuse,Mat
       DAGetFaceInterpolation - Gets the interpolation for a face based coarse space
 
 */
-PetscErrorCode DAGetFaceInterpolation(DA da,Mat Aglobal,MatReuse reuse,Mat *P)
+PetscErrorCode DAGetFaceInterpolation(PC_Exotic *exotic,Mat Aglobal,MatReuse reuse,Mat *P)
 {
+  DA                     da = exotic->da;
   PetscErrorCode         ierr;
   PetscInt               dim,i,j,k,m,n,p,dof,Nint,Nface,Nwire,Nsurf,*Iint,*Isurf,cint = 0,csurf = 0,istart,jstart,kstart,*II,N,c = 0;
   PetscInt               mwidth,nwidth,pwidth,cnt,mp,np,pp,Ntotal,gl[6],*globals,Ng,*IIint,*IIsurf;
@@ -403,7 +435,7 @@ PetscErrorCode DAGetFaceInterpolation(DA da,Mat Aglobal,MatReuse reuse,Mat *P)
   ierr = MatMatMult(Ais,Xsurf,MAT_REUSE_MATRIX,PETSC_DETERMINE,&Xint_tmp);CHKERRQ(ierr);
   ierr = MatScale(Xint_tmp,-1.0);CHKERRQ(ierr);
 
-  if (0) {
+  if (exotic->directSolve) {
     ierr = MatGetFactor(Aii,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&iAii);CHKERRQ(ierr);
     ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
     ierr = MatGetOrdering(Aii,MATORDERING_ND,&row,&col);CHKERRQ(ierr);
@@ -414,7 +446,6 @@ PetscErrorCode DAGetFaceInterpolation(DA da,Mat Aglobal,MatReuse reuse,Mat *P)
     ierr = MatMatSolve(iAii,Xint_tmp,Xint);CHKERRQ(ierr);
     ierr = MatDestroy(iAii);CHKERRQ(ierr);
   } else {
-    KSP         ksp;
     Vec         b,x;
     PetscScalar *xint_tmp;
 
@@ -422,18 +453,16 @@ PetscErrorCode DAGetFaceInterpolation(DA da,Mat Aglobal,MatReuse reuse,Mat *P)
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,Nint,0,&x);CHKERRQ(ierr);
     ierr = MatGetArray(Xint_tmp,&xint_tmp);CHKERRQ(ierr);
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,Nint,0,&b);CHKERRQ(ierr);
-    ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
-    ierr = KSPSetOperators(ksp,Aii,Aii,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(exotic->ksp,Aii,Aii,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     for (i=0; i<6; i++) {
       ierr = VecPlaceArray(x,xint+i*Nint);CHKERRQ(ierr);
       ierr = VecPlaceArray(b,xint_tmp+i*Nint);CHKERRQ(ierr);
-      ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+      ierr = KSPSolve(exotic->ksp,b,x);CHKERRQ(ierr);
       ierr = VecResetArray(x);CHKERRQ(ierr);
       ierr = VecResetArray(b);CHKERRQ(ierr);
     }
     ierr = MatRestoreArray(Xint,&xint);CHKERRQ(ierr);
     ierr = MatRestoreArray(Xint_tmp,&xint_tmp);CHKERRQ(ierr);
-    ierr = KSPDestroy(ksp);CHKERRQ(ierr);
     ierr = VecDestroy(x);CHKERRQ(ierr);
     ierr = VecDestroy(b);CHKERRQ(ierr);
   }
@@ -539,11 +568,6 @@ PetscErrorCode DAGetFaceInterpolation(DA da,Mat Aglobal,MatReuse reuse,Mat *P)
   PetscFunctionReturn(0);
 }
 
-typedef struct {
-  DA           da;
-  PCExoticType type;
-  Mat          P;      /* the interpolation matrix */
-} PC_Exotic;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCExoticSetType"
@@ -607,15 +631,14 @@ PetscErrorCode PCSetUp_Exotic(PC pc)
   Mat            A;
   PC_MG          **mg = (PC_MG**)pc->data;
   PC_Exotic      *ex = (PC_Exotic*) mg[0]->innerctx;
-  DA             da = ex->da;
   MatReuse       reuse = (ex->P) ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX;
 
   PetscFunctionBegin;
   ierr = PCGetOperators(pc,PETSC_NULL,&A,PETSC_NULL);CHKERRQ(ierr);
   if (ex->type == PC_EXOTIC_FACE) {
-    ierr = DAGetFaceInterpolation(da,A,reuse,&ex->P);CHKERRQ(ierr);
+    ierr = DAGetFaceInterpolation(ex,A,reuse,&ex->P);CHKERRQ(ierr);
   } else if (ex->type == PC_EXOTIC_WIREBASKET) {
-    ierr = DAGetWireBasketInterpolation(da,A,reuse,&ex->P);CHKERRQ(ierr);
+    ierr = DAGetWireBasketInterpolation(ex,A,reuse,&ex->P);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_ERR_PLIB,"Unknown exotic coarse space %d",ex->type);
   ierr = PCMGSetInterpolation(pc,1,ex->P);CHKERRQ(ierr);
   ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
@@ -633,6 +656,7 @@ PetscErrorCode PCDestroy_Exotic(PC pc)
   PetscFunctionBegin;
   if (ctx->da) {ierr = DADestroy(ctx->da);CHKERRQ(ierr);}
   if (ctx->P) {ierr = MatDestroy(ctx->P);CHKERRQ(ierr);}
+  if (ctx->ksp) {ierr = KSPDestroy(ctx->ksp);CHKERRQ(ierr);}
   ierr = PetscFree(ctx);CHKERRQ(ierr);
   ierr = PCDestroy_MG(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -706,6 +730,24 @@ PetscErrorCode PCView_Exotic(PC pc,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"    Exotic type = %s\n",PCExoticTypes[ctx->type]);CHKERRQ(ierr);
+    if (ctx->directSolve) {
+      ierr = PetscViewerASCIIPrintf(viewer,"      Using direct solver to construct interpolation\n");CHKERRQ(ierr);
+    } else {
+      PetscViewer sviewer;
+      PetscMPIInt rank;
+
+      ierr = PetscViewerASCIIPrintf(viewer,"      Using iterative solver to construct interpolation\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr); 
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);  /* should not need to push this twice? */
+      ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(((PetscObject)pc)->comm,&rank);CHKERRQ(ierr);
+      if (!rank) {
+	ierr = KSPView(ctx->ksp,sviewer);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    }
   }
   ierr = PCView_MG(pc,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -726,6 +768,19 @@ PetscErrorCode PCSetFromOptions_Exotic(PC pc)
     ierr = PetscOptionsEnum("-pc_exotic_type","face or wirebasket","PCExoticSetType",PCExoticTypes,(PetscEnum)ctx->type,(PetscEnum*)&mgctype,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCExoticSetType(pc,mgctype);CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsTruth("-pc_exotic_direct_solver","use direct solver to construct interpolation","None",ctx->directSolve,&ctx->directSolve,PETSC_NULL);CHKERRQ(ierr);
+    if (!ctx->directSolve) {
+      if (!ctx->ksp) {
+        const char *prefix;
+        ierr = KSPCreate(PETSC_COMM_SELF,&ctx->ksp);CHKERRQ(ierr);
+        ierr = PetscObjectIncrementTabLevel((PetscObject)ctx->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
+        ierr = PetscLogObjectParent(pc,ctx->ksp);CHKERRQ(ierr);
+        ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
+        ierr = KSPSetOptionsPrefix(ctx->ksp,prefix);CHKERRQ(ierr);
+        ierr = KSPAppendOptionsPrefix(ctx->ksp,"exotic_");CHKERRQ(ierr);
+      }
+      ierr = KSPSetFromOptions(ctx->ksp);CHKERRQ(ierr);
     }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
