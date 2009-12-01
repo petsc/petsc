@@ -1622,8 +1622,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_newdatastruct(Mat A,Vec bb,Vec xx)
     vj = aj + ai[k];    
     xk = t[k];
     nz = ai[k+1] - ai[k] - 1; 
-    for (j=0; j<nz; j++) t[*vj++] += (*v++) * xk;
-    t[k] = xk*(*v++);  /* *v = 1/D(k) */
+    for (j=0; j<nz; j++) t[vj[j]] += v[j]*xk; 
+    t[k] = xk*v[nz];   /* v[nz] = 1/D(k) */
   }
 
   /* solve U*perm(x) = y by back substitution */   
@@ -1631,7 +1631,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_newdatastruct(Mat A,Vec bb,Vec xx)
     v  = aa + ai[k]; 
     vj = aj + ai[k];  
     nz = ai[k+1] - ai[k] - 1;    
-    for (j=0; j<nz; j++) t[k] += (*v++) * t[*vj++]; 
+    /* for (j=0; j<nz; j++) t[k] += v[j]*t[vj[j]]; */
+    for (j=nz-1; j>=0; j--) t[k] += v[j]*t[vj[j]];
     x[rp[k]] = t[k]; 
   }
 
@@ -1857,7 +1858,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct(Mat A,Vec bb,Ve
   }
 
   /* solve U*x = y by back substitution */ 
-  k = ai[mbs-1]-2; 
+  k = ai[mbs-1]-2; /* last entry of U(mbs-2,:), excluding diag[mbs-2] */
   for (i=mbs-2; i>=0; i--){ 
     xi = x[i];   
     nz = ai[i+1] - ai[i] - 1;    
