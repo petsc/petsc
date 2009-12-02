@@ -33,7 +33,7 @@ namespace ALE {
         if (dim == 2) {
           double lower[2] = {0.0, 0.0};
           double upper[2] = {1.0, 1.0};
-          int    edges[2] = {2, 2};
+          int    edges    = 2;
 
           mB = ALE::MeshBuilder<ALE::Mesh>::createSquareBoundary(comm, lower, upper, edges, debug);
         } else if (dim == 3) {

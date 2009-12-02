@@ -2,7 +2,7 @@
 #include <petscdmmg.h>
 #include <petscmesh.hh>
 
-EXTERN double IntegrateDualBasis_gen_0(const double *v0, const double *J, const int dualIndex, double (*func)(const double *coords));
+EXTERN double IntegrateBdDualBasis_gen_0(const double *v0, const double *J, const int dualIndex, double (*func)(const double *coords));
 EXTERN PetscErrorCode CreateProblem_gen_0(DM dm, const char *name, const int numBC, const int *markers, double (**bcFuncs)(const double *coords), double (*exactFunc)(const double *coords));
 EXTERN double IntegrateDualBasis_gen_1(const double *v0, const double *J, const int dualIndex, double (*func)(const double *coords));
 EXTERN PetscErrorCode CreateProblem_gen_1(DM dm, const char *name, const int numBC, const int *markers, double (**bcFuncs)(const double *coords), double (*exactFunc)(const double *coords));
@@ -23,9 +23,10 @@ class FunctionTestLaplaceBEM : public CppUnit::TestFixture
 
   CPPUNIT_TEST(testLaplaceBEMUnitSquareBdInterpolated);
 
+#if 0
   CPPUNIT_TEST(testLaplaceBEMUnitSquareInterpolated);
   CPPUNIT_TEST(testLaplaceBEMUnitSquareUninterpolated);
-
+#endif
   CPPUNIT_TEST_SUITE_END();
 public:
   // Typedefs
@@ -68,6 +69,7 @@ public:
     CPPUNIT_ASSERT_DOUBLES_EQUAL(exactError, errorNorm, tolerance);
   };
 
+#if 0
   void testLaplaceBEMUnitSquare(double exactError) {
     this->_problem->structured(false);
     this->_problem->createMesh();
@@ -91,14 +93,16 @@ public:
     this->_problem->interpolated(false);
     this->testLaplaceBEMUnitSquare(0.336959);
   };
+#endif
 
   void testLaplaceBEMUnitSquareBd(double exactError) {
     this->_problem->setDebug(2);
-    this->_problem->bcType(ALE::Problem::NEUMANN);
+    this->_problem->bcType(ALE::Problem::DIRICHLET);
     this->_problem->structured(false);
     this->_problem->createMesh();
     this->_problem->getMesh()->view("Boundary mesh");
     this->_problem->getMesh()->setDebug(2);
+    // What happens here?
     this->_problem->createProblem();
     this->_problem->createExactSolution();
     PetscReal errorNorm;
@@ -107,6 +111,7 @@ public:
     CPPUNIT_ASSERT_DOUBLES_EQUAL(exactError, errorNorm, 1.0e-6);
 #if 0
     this->_problem->createSolver();
+    // What is being solved?
     this->_problem->solve();
     this->checkSolution(exactError, 1.0e-6, "LaplaceBEMUnitSquareBd");
 #endif

@@ -1899,8 +1899,8 @@ namespace ALE {
       }
       if (J) {
         //r2   = coords[1*dim+0]*coords[1*dim+0] + coords[1*dim+1]*coords[1*dim+1];
-        J[0] =  coords[1*dim+0]*0.5; J[1] = coords[1*dim+1]*0.5;
-        J[2] = -coords[1*dim+1]*0.5; J[3] = coords[1*dim+0]*0.5;
+        J[0] =  (coords[1*dim+0] - coords[0*dim+0])*0.5; J[1] = (-coords[1*dim+1] + coords[0*dim+1])*0.5;
+        J[2] =  (coords[1*dim+1] - coords[0*dim+1])*0.5; J[3] = ( coords[1*dim+0] - coords[0*dim+0])*0.5;
         detJ = J[0]*J[3] - J[1]*J[2];
         if (detJ < 0.0) {
           const double  xLength = this->_periodicity[0];
@@ -3416,6 +3416,68 @@ namespace ALE {
           coords[(vy*(edges[0]+1)+vx)*2+0] = lower[0] + ((upper[0] - lower[0])/edges[0])*vx;
           coords[(vy*(edges[0]+1)+vx)*2+1] = lower[1] + ((upper[1] - lower[1])/edges[1])*vy;
         }
+      }
+      delete [] vertices;
+      ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, mesh->getDimension()+1, coords);
+      return mesh;
+    };
+    #undef __FUNCT__
+    #define __FUNCT__ "createSquareBoundary"
+    /*
+      Simple square boundary:
+
+     14--5-13--4--12
+      |           |
+      6           3
+      |           |
+     15           11
+      |           |
+      7           2
+      |           |
+      8--0--9--1--10
+    */
+    static Obj<Mesh> createSquareBoundary(const MPI_Comm comm, const double lower[], const double upper[], const int edges, const int debug = 0) {
+      Obj<Mesh> mesh        = new Mesh(comm, 1, debug);
+      int       numVertices = edges*4;
+      int       numEdges    = edges*4;
+      double   *coords      = new double[numVertices*2];
+      const Obj<typename Mesh::sieve_type> sieve    = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
+      typename Mesh::point_type           *vertices = new typename Mesh::point_type[numVertices];
+
+      mesh->setSieve(sieve);
+      const Obj<typename Mesh::label_type>& markers = mesh->createLabel("marker");
+      if (mesh->commRank() == 0) {
+        /* Create sieve and ordering */
+        for(int v = numEdges; v < numEdges+numVertices; v++) {
+          vertices[v-numEdges] = typename Mesh::point_type(v);
+        }
+        for(int e = 0; e < numEdges; ++e) {
+          typename Mesh::point_type edge(e);
+          int order = 0;
+
+          sieve->addArrow(vertices[e],                 edge, order++);
+          sieve->addArrow(vertices[(e+1)%numVertices], edge, order++);
+          mesh->setValue(markers, edge, 2);
+          mesh->setValue(markers, vertices[e], 1);
+          mesh->setValue(markers, vertices[(e+1)%numVertices], 1);
+        }
+      }
+      mesh->stratify();
+      for(int v = 0; v < edges; ++v) {
+        coords[(v+edges*0)*2+0] = lower[0] + ((upper[0] - lower[0])/edges)*v;
+        coords[(v+edges*0)*2+1] = lower[1];
+      }
+      for(int v = 0; v < edges; ++v) {
+        coords[(v+edges*1)*2+0] = upper[0];
+        coords[(v+edges*1)*2+1] = lower[1] + ((upper[1] - lower[1])/edges)*v;
+      }
+      for(int v = 0; v < edges; ++v) {
+        coords[(v+edges*2)*2+0] = upper[0] - ((upper[0] - lower[0])/edges)*v;
+        coords[(v+edges*2)*2+1] = upper[1];
+      }
+      for(int v = 0; v < edges; ++v) {
+        coords[(v+edges*3)*2+0] = lower[0];
+        coords[(v+edges*3)*2+1] = upper[1] - ((upper[1] - lower[1])/edges)*v;
       }
       delete [] vertices;
       ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, mesh->getDimension()+1, coords);
