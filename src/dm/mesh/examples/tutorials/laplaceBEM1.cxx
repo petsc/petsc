@@ -119,7 +119,7 @@ public:
 
   void testLaplaceBEMUnitSquareBdInterpolated(void) {
     this->_problem->interpolated(true);
-    this->testLaplaceBEMUnitSquareBd(0.337731);
+    this->testLaplaceBEMUnitSquareBd(0.166666);
   };
 };
 
