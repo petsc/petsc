@@ -39,9 +39,6 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ML(PC);
 #if defined(PETSC_HAVE_SPAI)
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SPAI(PC);
 #endif
-#if defined(PETSC_HAVE_SAMG)
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SAMG(PC);
-#endif
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Mat(PC);
 #if defined(PETSC_HAVE_HYPRE)
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_HYPRE(PC);
@@ -114,9 +111,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRegisterAll(const char path[])
 #endif
 #if defined(PETSC_HAVE_SPAI)
   ierr = PCRegisterDynamic(PCSPAI         ,path,"PCCreate_SPAI",PCCreate_SPAI);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_SAMG)
-  ierr = PCRegisterDynamic(PCSAMG         ,path,"PCCreate_SAMG",PCCreate_SAMG);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_HYPRE)
   ierr = PCRegisterDynamic(PCHYPRE        ,path,"PCCreate_HYPRE",PCCreate_HYPRE);CHKERRQ(ierr);

@@ -8,5 +8,6 @@ DIRS     = interface impls
 LOCDIR   = src/semiLagrange/
 MANSEC   = SemiLagrange
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test

@@ -48,7 +48,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewersDestroy(PetscViewers v)
 .   comm - the MPI communicator
 
    Output Parameter:
-.  PetscViewers - the collection of PetscViewers
+.  v - the collection of PetscViewers
 
    Level: intermediate
 

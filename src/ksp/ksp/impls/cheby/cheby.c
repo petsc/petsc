@@ -1,7 +1,7 @@
 #define PETSCKSP_DLL
 
 #include "private/kspimpl.h"                    /*I "petscksp.h" I*/
-#include "../src/ksp/ksp/impls/cheby/chebctx.h"
+#include "../src/ksp/ksp/impls/cheby/chebychevimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_Chebychev"

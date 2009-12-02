@@ -1,8 +1,17 @@
 #!/usr/bin/env python
 import re, os, sys, shutil
 
-sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config'))
-sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config', 'BuildSystem'))
+if os.environ.has_key('PETSC_DIR'):
+  PETSC_DIR = os.environ['PETSC_DIR']
+else:
+  fd = file(os.path.join('conf','petscvariables'))
+  a = fd.readline()
+  a = fd.readline()
+  PETSC_DIR = a.split('=')[1][0:-1]
+  fd.close()
+
+sys.path.insert(0, os.path.join(PETSC_DIR, 'config'))
+sys.path.insert(0, os.path.join(PETSC_DIR, 'config', 'BuildSystem'))
 
 import script
 
@@ -15,7 +24,22 @@ class Installer(script.Script):
   def __init__(self, clArgs = None):
     import RDict
     argDB = RDict.RDict(None, None, 0, 0, readonly = True)
-    argDB.saveFilename = os.path.join(os.environ['PETSC_DIR'], os.environ['PETSC_ARCH'], 'conf', 'RDict.db')
+    if os.environ.has_key('PETSC_DIR'):
+      PETSC_DIR = os.environ['PETSC_DIR']
+    else:
+      fd = file(os.path.join('conf','petscvariables'))
+      a = fd.readline()
+      a = fd.readline()
+      PETSC_DIR = a.split('=')[1][0:-1]
+      fd.close()
+    if os.environ.has_key('PETSC_ARCH'):
+      PETSC_ARCH = os.environ['PETSC_ARCH']
+    else:
+      fd = file(os.path.join('conf','petscvariables'))
+      a = fd.readline()
+      PETSC_ARCH = a.split('=')[1][0:-1]
+      fd.close()
+    argDB.saveFilename = os.path.join(PETSC_DIR, PETSC_ARCH, 'conf', 'RDict.db')
     argDB.load()
     script.Script.__init__(self, argDB = argDB)
     self.copies = []
@@ -225,6 +249,11 @@ Run the following to verify the install (remain in current directory for the tes
     print output
     # this file will mess up the make test run since it resets PETSC_ARCH when PETSC_ARCH needs to be null now
     os.unlink(os.path.join(self.rootDir,'conf','petscvariables'))
+    fd = file(os.path.join('conf','petscvariables'),'w')
+    fd.close()
+    # if running as root then change file ownership back to user
+    if os.environ.has_key('SUDO_USER'):
+      os.chown(os.path.join(self.rootDir,'conf','petscvariables'),int(os.environ['SUDO_UID']),int(os.environ['SUDO_GID']))
     self.createUninstaller()
     self.outputHelp()
     return

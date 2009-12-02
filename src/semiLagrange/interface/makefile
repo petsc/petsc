@@ -14,5 +14,6 @@ MANSEC   = SemiLagrange
 DIRS     = 
 LOCDIR   = src/semiLagrange/interface/
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test

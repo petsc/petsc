@@ -8,7 +8,8 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex9.c ex10.c
 EXAMPLESF       = ex4f.F ex5f.F
 MANSEC          = Draw
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_SYS_LIB}

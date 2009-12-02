@@ -36,72 +36,130 @@ static const char help[] = "1D periodic Finite Volume solver in slope-limiter fo
 
 #include "../src/mat/blockinvert.h" /* For the Kernel_*_gets_* stuff for BAIJ */
 
+static inline PetscReal Sgn(PetscReal a) { return (a<0) ? -1 : 1; }
+static inline PetscReal Abs(PetscReal a) { return (a<0) ? 0 : a; }
+static inline PetscReal Sqr(PetscReal a) { return a*a; }
 static inline PetscReal MaxAbs(PetscReal a,PetscReal b) { return (PetscAbs(a) > PetscAbs(b)) ? a : b; }
 static inline PetscReal MinAbs(PetscReal a,PetscReal b) { return (PetscAbs(a) < PetscAbs(b)) ? a : b; }
+static inline PetscReal MinMod2(PetscReal a,PetscReal b)
+{ return (a*b<0) ? 0 : Sgn(a)*PetscMin(PetscAbs(a),PetscAbs(b)); }
+static inline PetscReal MaxMod2(PetscReal a,PetscReal b)
+{ return (a*b<0) ? 0 : Sgn(a)*PetscMax(PetscAbs(a),PetscAbs(b)); }
+static inline PetscReal MinMod3(PetscReal a,PetscReal b,PetscReal c)
+{return (a*b<0 || a*c<0) ? 0 : Sgn(a)*PetscMin(PetscAbs(a),PetscMin(PetscAbs(b),PetscAbs(c))); }
 
 static inline PetscReal RangeMod(PetscReal a,PetscReal xmin,PetscReal xmax)
 { PetscReal range = xmax-xmin; return xmin + fmod(range+fmod(a,range),range); }
 
 
 /* ----------------------- Lots of limiters, these could go in a separate library ------------------------- */
-static void Limit_Upwind(PetscInt m,const PetscScalar *t,PetscScalar *lmt)
+typedef struct _LimitInfo {
+  PetscReal hx;
+  PetscInt m;
+} *LimitInfo;
+static void Limit_Upwind(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,PetscScalar *lmt)
 {
   PetscInt i;
-  for (i=0; i<m; i++) lmt[i] = 0;
+  for (i=0; i<info->m; i++) lmt[i] = 0;
 }
-static void Limit_LaxWendroff(PetscInt m,const PetscScalar *t,PetscScalar *lmt)
+static void Limit_LaxWendroff(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,PetscScalar *lmt)
 {
   PetscInt i;
-  for (i=0; i<m; i++) lmt[i] = 1;
+  for (i=0; i<info->m; i++) lmt[i] = jR[i];
 }
-static void Limit_BeamWarming(PetscInt m,const PetscScalar *t,PetscScalar *lmt)
+static void Limit_BeamWarming(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,PetscScalar *lmt)
 {
   PetscInt i;
-  for (i=0; i<m; i++) lmt[i] = t[i];
+  for (i=0; i<info->m; i++) lmt[i] = jL[i];
 }
-static void Limit_Fromm(PetscInt m,const PetscScalar *t,PetscScalar *lmt)
+static void Limit_Fromm(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,PetscScalar *lmt)
 {
   PetscInt i;
-  for (i=0; i<m; i++) lmt[i] = 0.5*(1+t[i]);
+  for (i=0; i<info->m; i++) lmt[i] = 0.5*(jL[i] + jR[i]);
 }
-static void Limit_Minmod(PetscInt m,const PetscScalar *t,PetscScalar *lmt)
+static void Limit_Minmod(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,PetscScalar *lmt)
 {
   PetscInt i;
-  for (i=0; i<m; i++) lmt[i] = PetscMax(0,PetscMin(1,t[i]));
+  for (i=0; i<info->m; i++) lmt[i] = MinMod2(jL[i],jR[i]);
 }
-static void Limit_Superbee(PetscInt m,const PetscScalar *t,PetscScalar *lmt)
+static void Limit_Superbee(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,PetscScalar *lmt)
 {
   PetscInt i;
-  for (i=0; i<m; i++) lmt[i] = PetscMax(0,PetscMax(PetscMin(1,2*t[i]),PetscMin(2,t[i])));
+  for (i=0; i<info->m; i++) lmt[i] = MaxMod2(MinMod2(jL[i],2*jR[i]),MinMod2(2*jL[i],jR[i]));
 }
-static void Limit_MC(PetscInt m,const PetscScalar *t,PetscScalar *lmt)
+static void Limit_MC(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,PetscScalar *lmt)
 {
   PetscInt i;
-  for (i=0; i<m; i++) lmt[i] = PetscMax(0,PetscMin((1+t[i])/2,PetscMin(2,2*t[i])));
+  for (i=0; i<info->m; i++) lmt[i] = MinMod3(2*jL[i],0.5*(jL[i]+jR[i]),2*jR[i]);
 }
-static void Limit_VanLeer(PetscInt m,const PetscScalar *t,PetscScalar *lmt)
-{
+static void Limit_VanLeer(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,PetscScalar *lmt)
+{ /* phi = (t + abs(t)) / (1 + abs(t)) */
   PetscInt i;
-  for (i=0; i<m; i++) lmt[i] = (t[i] + PetscAbsScalar(t[i])) / (1 + PetscAbsScalar(t[i]));
+  for (i=0; i<info->m; i++) lmt[i] = (jL[i]*Abs(jR[i]) + Abs(jL[i])*jR[i]) / (Abs(jL[i]) + Abs(jR[i]) + 1e-15);
 }
-static void Limit_VanAlbada(PetscInt m,const PetscScalar *t,PetscScalar *lmt) /* differentiable */
-{
+static void Limit_VanAlbada(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,PetscScalar *lmt) /* differentiable */
+{ /* phi = (t + t^2) / (1 + t^2) */
   PetscInt i;
-  for (i=0; i<m; i++) lmt[i] = (t[i] + PetscSqr(t[i])) / (1 + PetscSqr(t[i]));
+  for (i=0; i<info->m; i++) lmt[i] = (jL[i]*Sqr(jR[i]) + Sqr(jL[i])*jR[i]) / (Sqr(jL[i]) + Sqr(jR[i]) + 1e-15);
 }
-static void Limit_Koren(PetscInt m,const PetscScalar *t,PetscScalar *lmt) /* differentiable and less negative */
-{
+static void Limit_VanAlbadaTVD(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,PetscScalar *lmt)
+{ /* phi = (t + t^2) / (1 + t^2) */
   PetscInt i;
-  for (i=0; i<m; i++) lmt[i] = (t[i] + 2*PetscSqr(t[i])) / (2 - t[i] + 2*PetscSqr(t[i]));
+  for (i=0; i<info->m; i++) lmt[i] = (jL[i]*jR[i]<0) ? 0
+                        : (jL[i]*Sqr(jR[i]) + Sqr(jL[i])*jR[i]) / (Sqr(jL[i]) + Sqr(jR[i]) + 1e-15);
 }
-static void Limit_CadaTorrilhon(PetscInt m,const PetscScalar *t,PetscScalar *lmt) /* Cada-Torrilhon 2009 */
-{
+static void Limit_Koren(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,PetscScalar *lmt) /* differentiable */
+{ /* phi = (t + 2*t^2) / (2 - t + 2*t^2) */
   PetscInt i;
-  for (i=0; i<m; i++) lmt[i] = PetscMax(0,PetscMin((2+t[i])/3,
-                                                   PetscMax(-0.5*t[i],
-                                                            PetscMin(2*t[i],
-                                                                     PetscMin((2+t[i])/3,1.6)))));
+  for (i=0; i<info->m; i++) lmt[i] = ((jL[i]*Sqr(jR[i]) + 2*Sqr(jL[i])*jR[i])
+                                / (2*Sqr(jL[i]) - jL[i]*jR[i] + 2*Sqr(jR[i]) + 1e-15));
 }
+static void Limit_KorenSym(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,PetscScalar *lmt) /* differentiable */
+{ /* Symmetric version of above */
+  PetscInt i;
+  for (i=0; i<info->m; i++) lmt[i] = (1.5*(jL[i]*Sqr(jR[i]) + Sqr(jL[i])*jR[i])
+                                / (2*Sqr(jL[i]) - jL[i]*jR[i] + 2*Sqr(jR[i]) + 1e-15));
+}
+static void Limit_Koren3(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,PetscScalar *lmt)
+{ /* Eq 11 of Cada-Torrilhon 2009 */
+  PetscInt i;
+  for (i=0; i<info->m; i++) lmt[i] = MinMod3(2*jL[i],(jL[i]+2*jR[i])/3,2*jR[i]);
+}
+
+static PetscReal CadaTorrilhonPhiHatR_Eq13(PetscReal L,PetscReal R)
+{ return PetscMax(0,PetscMin((L+2*R)/3,
+                              PetscMax(-0.5*L,
+                                       PetscMin(2*L,
+                                                PetscMin((L+2*R)/3,1.6*R)))));
+}
+static void Limit_CadaTorrilhon2(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,PetscScalar *lmt)
+{ /* Cada-Torrilhon 2009, Eq 13 */
+  PetscInt i;
+  for (i=0; i<info->m; i++) lmt[i] = CadaTorrilhonPhiHatR_Eq13(jL[i],jR[i]);
+}
+static void Limit_CadaTorrilhon3R(PetscReal r,LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,PetscScalar *lmt)
+{ /* Cada-Torrilhon 2009, Eq 22 */
+  /* They recommend 0.001 < r < 1, but larger values are more accurate in smooth regions */
+  const PetscReal eps = 1e-7,hx = info->hx;
+  PetscInt i;
+  for (i=0; i<info->m; i++) {
+    const PetscReal eta = (Sqr(jL[i]) + Sqr(jR[i])) / Sqr(r*hx);
+    lmt[i] = ((eta < 1-eps)
+              ? (jL[i] + 2*jR[i]) / 3
+              : ((eta > 1+eps)
+                 ? CadaTorrilhonPhiHatR_Eq13(jL[i],jR[i])
+                 : 0.5*((1-(eta-1)/eps)*(jL[i]+2*jR[i])/3
+                        + (1+(eta+1)/eps)*CadaTorrilhonPhiHatR_Eq13(jL[i],jR[i]))));
+  }
+}
+static void Limit_CadaTorrilhon3R0p1(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,PetscScalar *lmt)
+{ Limit_CadaTorrilhon3R(0.1,info,jL,jR,lmt); }
+static void Limit_CadaTorrilhon3R1(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,PetscScalar *lmt)
+{ Limit_CadaTorrilhon3R(1,info,jL,jR,lmt); }
+static void Limit_CadaTorrilhon3R10(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,PetscScalar *lmt)
+{ Limit_CadaTorrilhon3R(10,info,jL,jR,lmt); }
+static void Limit_CadaTorrilhon3R100(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,PetscScalar *lmt)
+{ Limit_CadaTorrilhon3R(100,info,jL,jR,lmt); }
 
 
 /* --------------------------------- Finite Volume data structures ----------------------------------- */
@@ -122,7 +180,7 @@ typedef struct {
 } PhysicsCtx;
 
 typedef struct {
-  void (*limit)(PetscInt,const PetscScalar*,PetscScalar*);
+  void (*limit)(LimitInfo,const PetscScalar*,const PetscScalar*,PetscScalar*);
   PhysicsCtx physics;
 
   MPI_Comm comm;
@@ -132,8 +190,6 @@ typedef struct {
   PetscScalar *R,*Rinv;         /* Characteristic basis, and it's inverse.  COLUMN-MAJOR */
   PetscScalar *cjmpLR;          /* Jumps at left and right edge of cell, in characteristic basis, len=2*dof */
   PetscScalar *cslope;          /* Limited slope, written in characteristic basis */
-  PetscScalar *theta;           /* Ratio of jumps in characteristic basis, for limiting */
-  PetscScalar *lmt;             /* Limiter for each characteristic */
   PetscScalar *uLR;             /* Solution at left and right of interface, conservative variables, len=2*dof */
   PetscScalar *flux;            /* Flux across interface */
 
@@ -268,6 +324,8 @@ static PetscErrorCode PhysicsSample_Advect(void *vctx,PetscInt initial,FVBCType 
     case 0: u[0] = (x0 < 0) ? 1 : -1; break;
     case 1: u[0] = (x0 < 0) ? -1 : 1; break;
     case 2: u[0] = (0 < x0 && x0 < 1) ? 1 : 0; break;
+    case 3: u[0] = sin(2*M_PI*x0); break;
+    case 4: u[0] = PetscAbs(x0); break;
     default: SETERRQ(1,"unknown initial condition");
   }
   PetscFunctionReturn(0);
@@ -327,6 +385,11 @@ static PetscErrorCode PhysicsSample_Burgers(void *vctx,PetscInt initial,FVBCType
       else                  u[0] = 0;
       break;
     case 3:
+      if       (x < 0.2*t) u[0] = 0.2;
+      else if  (x < t) u[0] = x/t;
+      else             u[0] = 1;
+      break;
+    case 4:
       if (t > 0) SETERRQ(1,"Only initial condition available");
       u[0] = 0.7 + 0.3*sin(2*M_PI*((x-xmin)/(xmax-xmin)));
       break;
@@ -1017,6 +1080,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
     }
   }
   for (i=xs-1; i<xs+xm+1; i++) {
+    struct _LimitInfo info;
     PetscScalar *cjmpL,*cjmpR;
     /* Determine the right eigenvectors R, where A = R \Lambda R^{-1} */
     ierr = (*ctx->physics.characteristic)(ctx->physics.user,dof,&x[i*dof],ctx->R,ctx->Rinv);CHKERRQ(ierr);
@@ -1033,10 +1097,11 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
         cjmpR[k] += ctx->Rinv[k+j*dof] * jmpR;
       }
     }
-    /* Get ratio of characteristic jumps, apply limiter */
-    for (j=0; j<dof; j++) ctx->theta[j] = cjmpL[j]/cjmpR[j];
-    (*ctx->limit)(dof,ctx->theta,ctx->lmt);
-    for (j=0; j<dof; j++) ctx->cslope[j] = ctx->lmt[j] * cjmpR[j] / hx;
+    /* Apply limiter to the left and right characteristic jumps */
+    info.m = dof;
+    info.hx = hx;
+    (*ctx->limit)(&info,cjmpL,cjmpR,ctx->cslope);
+    for (j=0; j<dof; j++) ctx->cslope[j] /= hx; /* rescale to a slope */
     for (j=0; j<dof; j++) {
       PetscScalar tmp = 0;
       for (k=0; k<dof; k++) tmp += ctx->R[j+k*dof] * ctx->cslope[k];
@@ -1205,8 +1270,15 @@ int main(int argc,char *argv[])
   ierr = PetscFListAdd(&limiters,"mc"              ,"",(void(*)(void))Limit_MC);CHKERRQ(ierr);
   ierr = PetscFListAdd(&limiters,"vanleer"         ,"",(void(*)(void))Limit_VanLeer);CHKERRQ(ierr);
   ierr = PetscFListAdd(&limiters,"vanalbada"       ,"",(void(*)(void))Limit_VanAlbada);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&limiters,"vanalbadatvd"    ,"",(void(*)(void))Limit_VanAlbadaTVD);CHKERRQ(ierr);
   ierr = PetscFListAdd(&limiters,"koren"           ,"",(void(*)(void))Limit_Koren);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&limiters,"cada-torrilhon"  ,"",(void(*)(void))Limit_CadaTorrilhon);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&limiters,"korensym"        ,"",(void(*)(void))Limit_KorenSym);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&limiters,"koren3"          ,"",(void(*)(void))Limit_Koren3);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&limiters,"cada-torrilhon2" ,"",(void(*)(void))Limit_CadaTorrilhon2);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&limiters,"cada-torrilhon3-r0p1","",(void(*)(void))Limit_CadaTorrilhon3R0p1);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&limiters,"cada-torrilhon3-r1"  ,"",(void(*)(void))Limit_CadaTorrilhon3R1);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&limiters,"cada-torrilhon3-r10" ,"",(void(*)(void))Limit_CadaTorrilhon3R10);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&limiters,"cada-torrilhon3-r100","",(void(*)(void))Limit_CadaTorrilhon3R100);CHKERRQ(ierr);
 
   /* Register physical models to be available on the command line */
   ierr = PetscFListAdd(&physics,"advect"          ,"",(void(*)(void))PhysicsCreate_Advect);CHKERRQ(ierr);
@@ -1262,7 +1334,7 @@ int main(int argc,char *argv[])
 
   /* Allocate work space for the Finite Volume solver (so it doesn't have to be reallocated on each function evaluation) */
   ierr = PetscMalloc4(dof*dof,PetscScalar,&ctx.R,dof*dof,PetscScalar,&ctx.Rinv,2*dof,PetscScalar,&ctx.cjmpLR,1*dof,PetscScalar,&ctx.cslope);CHKERRQ(ierr);
-  ierr = PetscMalloc4(dof,PetscScalar,&ctx.theta,dof,PetscScalar,&ctx.lmt,2*dof,PetscScalar,&ctx.uLR,dof,PetscScalar,&ctx.flux);CHKERRQ(ierr);
+  ierr = PetscMalloc2(2*dof,PetscScalar,&ctx.uLR,dof,PetscScalar,&ctx.flux);CHKERRQ(ierr);
 
   /* Create a vector to store the solution and to save the initial state */
   ierr = DACreateGlobalVector(ctx.da,&X);CHKERRQ(ierr);
@@ -1324,7 +1396,7 @@ int main(int argc,char *argv[])
   ierr = (*ctx.physics.destroy)(ctx.physics.user);CHKERRQ(ierr);
   for (i=0; i<ctx.physics.dof; i++) {ierr = PetscFree(ctx.physics.fieldname[i]);CHKERRQ(ierr);}
   ierr = PetscFree4(ctx.R,ctx.Rinv,ctx.cjmpLR,ctx.cslope);CHKERRQ(ierr);
-  ierr = PetscFree4(ctx.theta,ctx.lmt,ctx.uLR,ctx.flux);CHKERRQ(ierr);
+  ierr = PetscFree2(ctx.uLR,ctx.flux);CHKERRQ(ierr);
   ierr = VecDestroy(X);CHKERRQ(ierr);
   ierr = VecDestroy(X0);CHKERRQ(ierr);
   ierr = DADestroy(ctx.da);CHKERRQ(ierr);

@@ -2,8 +2,8 @@
       Private data structure for Richardson Iteration 
 */
 
-#if !defined(__RICH_H)
-#define __RICH_H
+#if !defined(__RICHARDSONIMPL_H)
+#define __RICHARDSONIMPL_H
 
 typedef struct {
   PetscReal scale;               /* scaling on preconditioner */

@@ -9,7 +9,8 @@ EXAMPLESF       = ex1f.F
 EXAMPLESFH      = ex1f.h
 MANSEC          = TS
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_TS_LIB}

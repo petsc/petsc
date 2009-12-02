@@ -6485,21 +6485,20 @@ the two versions.
 \section{Complex Numbers} \sindex{complex numbers} \label{sec_complex}
 
 PETSc supports the use of complex numbers in application programs
-written in C, C++, and Fortran.  To do so, we employ C++ versions of
+written in C, C++, and Fortran.  To do so, we employ either the C99 \trl{complex} type or the C++ versions of
 the PETSc libraries in which the basic ``scalar'' datatype, given in
 PETSc codes by \trl{PetscScalar}, is defined as \trl{complex} (or \trl{
 complex<double>} for machines using templated complex class
 libraries).  To work with complex numbers,
 the user should run config/configure.py with the additional option \trl{--with-scalar-type=complex}.
 The file \trl{${PETSC_DIR}/src/docs/website/documentation/installation.html}
-provides detailed instructions for installing PETSc.
+provides detailed instructions for installing PETSc. You can use \trl{--with-clanguage=c} (the default) to use the C99 complex numbers or \trl{--with-clanguage=c++} to use the C++ complex type.
 
 
 We recommend using optimized Fortran kernels for some key numerical
 routines with complex numbers (such as matrix-vector products, vector
-norms, etc.) instead of the default C++ routines.  See the ``Complex
-Numbers'' section of the file \trl{${PETSC_DIR}/src/docs/website/documentation/installation.html} for
-details on building these kernels.  This implementation exploits the
+norms, etc.) instead of the default C/C++ routines.  This can be done with the \trl{./configure}  option \trl{--with-fortran-kernels=generic}.
+This implementation exploits the
 maturity of Fortran compilers while retaining the identical user
 interface.  For example, on rs6000 machines, the base single-node
 performance when using the Fortran kernels is 4-5 times faster than
@@ -6863,7 +6862,8 @@ The first is a ``minimum'' makefile for maintaining
 a single program that uses the PETSc libraires.
 The most important line in this makefile is the line starting with \trl{include}:
 \begin{tabbing}
-   include \$\trl{{PETSC_DIR}/conf/base}
+   include  \$\trl{{PETSC_DIR}/conf/variables}
+   include \$\trl{{PETSC_DIR}/conf/rules}
 \end{tabbing}
 This line includes other makefiles that provide the needed definitions
 and rules for the particular base PETSc installation (specified by
@@ -6884,7 +6884,8 @@ within the makefile.
    FPPFLAGS   =
    CLEANFILES = ex2
 
-   include ${PETSC_DIR}/conf/base
+   include ${PETSC_DIR}/conf/variables
+   include ${PETSC_DIR}/conf/rules
 
    ex2: ex2.o chkopts
            ${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
@@ -6949,7 +6950,8 @@ controls the generation of several example programs.
    CPPFLAGS =
    FPPFLAGS =
 
-   include ${PETSC_DIR}/conf/base
+   include ${PETSC_DIR}/conf/variables
+   include ${PETSC_DIR}/conf/rules
 
    ex1: ex1.o 
         -${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
@@ -7047,7 +7049,8 @@ makefiles, they are also easily used.
    LIBBASE  = libpetscmat\\
    MANSEC   = Mat\\
 
-   include \$\trl{{PETSC_DIR}/conf/base}
+   include \${PETSC\_DIR}/conf/variables
+   include \${PETSC\_DIR}/conf/rules
 \end{tabbing}
 }
 \caption{Sample PETSc Makefile for Library Maintenance}

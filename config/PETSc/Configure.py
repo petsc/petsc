@@ -277,6 +277,13 @@ class Configure(config.base.Configure):
       self.addDefine('Prefetch(a,b,c)', ' ')
     self.popLanguage()
 
+  def configureExpect(self):
+    '''Sees if the __builtin_expect directive is supported'''
+    self.pushLanguage(self.languages.clanguage)
+    if self.checkLink('', 'if (__builtin_expect(0,1)) return 1;'):
+      self.addDefine('HAVE_BUILTIN_EXPECT', 1)
+    self.popLanguage()
+
   def configureIntptrt(self):
     '''Determine what to use for uintptr_t'''
     def staticAssertSizeMatchesVoidStar(inc,typename):
@@ -395,6 +402,7 @@ class Configure(config.base.Configure):
     if self.framework.argDB['with-default-arch']:
       fd = file(conffile, 'w')
       fd.write('PETSC_ARCH='+self.arch.arch+'\n')
+      fd.write('PETSC_DIR='+self.petscdir.dir+'\n')
       fd.write('include ${PETSC_DIR}/${PETSC_ARCH}/conf/petscvariables\n')
       fd.close()
       self.framework.actions.addArgument('PETSc', 'Build', 'Set default architecture to '+self.arch.arch+' in '+conffile)
@@ -441,7 +449,7 @@ class Configure(config.base.Configure):
     if self.framework.argDB['prefix']:
       self.installdir = self.framework.argDB['prefix']
       self.addMakeRule('shared_nomesg_noinstall','')
-      self.addMakeRule('shared_install','',['-@echo "Now to install the libraries do: make install"',\
+      self.addMakeRule('shared_install','',['-@echo "Now to install the libraries do: make install or perhaps sudo make install"',\
                                               '-@echo "========================================="'])
     else:
       self.installdir = os.path.join(self.petscdir.dir,self.arch.arch)
@@ -476,6 +484,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('Cannot set C language to C++ without a functional C++ compiler.')
     self.executeTest(self.configureInline)
     self.executeTest(self.configurePrefetch)
+    self.executeTest(self.configureExpect);
     self.executeTest(self.configureIntptrt);
     self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)

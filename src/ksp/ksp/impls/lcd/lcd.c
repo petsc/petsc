@@ -1,6 +1,6 @@
 #define PETSCKSP_DLL
 
-#include "../src/ksp/ksp/impls/lcd/lcdctx.h"
+#include "../src/ksp/ksp/impls/lcd/lcdimpl.h"
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_LCD"
 

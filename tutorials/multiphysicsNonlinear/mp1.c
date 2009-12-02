@@ -505,8 +505,8 @@ PetscErrorCode PetscLogPrintSummaryToPy(MPI_Comm comm, PetscViewer viewer)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = PetscMalloc(size * sizeof(PetscLogDouble), &mydata);CHKERRQ(ierr);
-  ierr = PetscMalloc(size * sizeof(PetscMPIInt), &mycount);CHKERRQ(ierr);
+  ierr = PetscMalloc(size*sizeof(PetscLogDouble), &mydata);CHKERRQ(ierr);
+  ierr = PetscMalloc(size*sizeof(PetscMPIInt), &mycount);CHKERRQ(ierr);
 
   /* Pop off any stages the user forgot to remove */
   lastStage = 0;

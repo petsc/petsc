@@ -13,7 +13,8 @@ LIBBASE   = libpetsc
 DIRS      = 
 LOCDIR    = src/sys/viewer/impls/mathematica/
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 
 runtime: runtime.o chkopts
 	${CLINKER} -o $@ $@.o  ${PETSC_KSP_LIB}

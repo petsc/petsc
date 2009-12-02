@@ -16,7 +16,8 @@ LIBBASE	  = libpetsc
 DIRS	  = 
 LOCDIR	  = src/sys/fileio/
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
 
 

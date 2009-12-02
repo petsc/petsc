@@ -79,7 +79,8 @@ def FixDir(petscdir,dir):
     outbuf +=  'DIRS     =\n'
     outbuf +=  libbase + '\n'
     outbuf +=  locdir + '\n'
-    outbuf +=  'include ${PETSC_DIR}/conf/base\n'
+    outbuf +=  'include ${PETSC_DIR}/conf/variables\n'
+    outbuf +=  'include ${PETSC_DIR}/conf/rules\n'
     outbuf +=  'include ${PETSC_DIR}/conf/test\n'
     
     ff = open(os.path.join(dir, 'makefile'), 'w')

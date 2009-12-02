@@ -9,7 +9,8 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex9.c ex10.c ex11.c ex12.c \
 EXAMPLESF       = ex1f.F ex5f.F ex6f.F  ex17f.F
 MANSEC          = Sys
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 
 ex1: ex1.o chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_SYS_LIB}

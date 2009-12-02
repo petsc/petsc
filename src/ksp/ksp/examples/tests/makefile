@@ -10,7 +10,8 @@ EXAMPLESC       = ex1.c ex3.c ex4.c ex6.c ex7.c ex10.c \
 EXAMPLESCH      = 
 EXAMPLESF       = ex5f.F ex12f.F ex16f.F
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_KSP_LIB}
@@ -433,6 +434,18 @@ runex32_icc:
 	if (${DIFF} ex32_icc.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_icc, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_icc.out
+runex32_icc_lev1:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -check_symmetry -pc_type icc -ksp_type cg -pc_factor_levels 1 > ex32_icc.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -check_symmetry -pc_type icc -ksp_type cg -pc_factor_levels 1 -icc_new > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_icc.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_icc_lev1, diffs above"; fi; \
+	   ${RM} -f ex32.tmp; ${RM} -f ex32_icc.out
+runex32_icc_lev10:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -check_symmetry -pc_type icc -ksp_type cg -pc_factor_levels 10 > ex32_icc.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -check_symmetry -pc_type icc -ksp_type cg -pc_factor_levels 10 -icc_new > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_icc.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_icc_lev10, diffs above"; fi; \
+	   ${RM} -f ex32.tmp; ${RM} -f ex32_icc.out
 
 runex32_icc_nd:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type nd -mat_type aij -check_symmetry -pc_type icc -ksp_type cg > ex32_icc.out 2>&1;
@@ -440,6 +453,25 @@ runex32_icc_nd:
 	if (${DIFF} ex32_icc.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_icc_nd, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_icc.out
+runex32_icc_nd_lev10:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type nd -mat_type aij -check_symmetry -pc_type icc -ksp_type cg -pc_factor_levels 10 > ex32_icc.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type nd -mat_type aij -check_symmetry -pc_type icc -ksp_type cg -pc_factor_levels 10 -icc_new > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_icc.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_icc_nd_lev10, diffs above"; fi; \
+	   ${RM} -f ex32.tmp; ${RM} -f ex32_icc.out
+
+runex32_cholesky:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -check_symmetry -pc_type cholesky -ksp_type cg > ex32_cc.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -check_symmetry -pc_type cholesky -ksp_type cg -cholesky_new > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_cc.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_cholesky, diffs above"; fi; \
+	   ${RM} -f ex32.tmp; ${RM} -f ex32_cc.out
+runex32_cholesky_nd:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type nd -mat_type aij -check_symmetry -pc_type cholesky -ksp_type cg > ex32_cc.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type nd -mat_type aij -check_symmetry -pc_type cholesky -ksp_type cg -cholesky_new > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_cc.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_cholesky, diffs above"; fi; \
+	   ${RM} -f ex32.tmp; ${RM} -f ex32_cc.out
 
 runex32_2:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type natural -mat_type baij > ex32_2.out 2>&1;
@@ -720,7 +752,8 @@ TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.P
                                  runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc runex19 runex19_2 ex19.rm \
                                  ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm \
                                  ex26.PETSc runex26 runex26_2 ex26.rm ex27.PETSc ex27.rm \
-                                 ex32.PETSc runex32 runex32_icc runex32_icc_nd \
+                                 ex32.PETSc runex32 runex32_icc runex32_icc_lev1 runex32_icc_lev10 runex32_icc_nd runex32_icc_nd_lev10\
+                                 runex32_cholesky runex32_cholesky_nd \
                                  runex32_2 runex32_3 runex32_4 runex32_5 runex32_6 runex32_7 runex32_8 runex32_9 runex32_10 \
 	                         runex32_11 runex32_11_nd runex32_12 runex32_13 runex32_14 runex32_15 runex32_16 runex32_17 runex32_18  \
                                  runex32_20_lu runex32_20_lu_nd  runex32_23_lu runex32_23_lu_nd  runex32_24_lu runex32_24_lu_nd \

@@ -215,9 +215,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetStencilWidth(DA da, int width)
 
   Input Parameter:
 + da - The DA
-. lx - array containing number of nodes in the X direction on each process, or PETSC_NULL. If non-null, must be of length 'size'.
-. ly - array containing number of nodes in the Y direction on each process, or PETSC_NULL. If non-null, must be of length 'size'.
-- lz - array containing number of nodes in the Z direction on each process, or PETSC_NULL. If non-null, must be of length 'size'.
+. lx - array containing number of nodes in the X direction on each process, or PETSC_NULL. If non-null, must be of length da->m
+. ly - array containing number of nodes in the Y direction on each process, or PETSC_NULL. If non-null, must be of length da->n
+- lz - array containing number of nodes in the Z direction on each process, or PETSC_NULL. If non-null, must be of length da->p.
 
   Level: intermediate
 
@@ -226,31 +226,27 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetStencilWidth(DA da, int width)
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DASetVertexDivision(DA da, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[])
 {
-  MPI_Comm       comm;
-  PetscMPIInt    size;
   PetscErrorCode ierr;
-
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_COOKIE,1);
-  ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   if (lx) {
     if (!da->lx) {
-      ierr = PetscMalloc(size*sizeof(PetscInt), &da->lx);CHKERRQ(ierr);
+      ierr = PetscMalloc(da->m*sizeof(PetscInt), &da->lx);CHKERRQ(ierr);
     }
-    ierr = PetscMemcpy(da->lx, lx, size*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(da->lx, lx, da->m*sizeof(PetscInt));CHKERRQ(ierr);
   }
   if (ly) {
     if (!da->ly) {
-      ierr = PetscMalloc(size*sizeof(PetscInt), &da->ly);CHKERRQ(ierr);
+      ierr = PetscMalloc(da->n*sizeof(PetscInt), &da->ly);CHKERRQ(ierr);
     }
-    ierr = PetscMemcpy(da->ly, ly, size*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(da->ly, ly, da->n*sizeof(PetscInt));CHKERRQ(ierr);
   }
   if (lz) {
     if (!da->lz) {
-      ierr = PetscMalloc(size*sizeof(PetscInt), &da->lz);CHKERRQ(ierr);
+      ierr = PetscMalloc(da->p*sizeof(PetscInt), &da->lz);CHKERRQ(ierr);
     }
-    ierr = PetscMemcpy(da->lz, lz, size*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(da->lz, lz, da->p*sizeof(PetscInt));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

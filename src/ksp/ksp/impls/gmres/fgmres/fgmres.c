@@ -15,7 +15,7 @@
 
 */
 
-#include "../src/ksp/ksp/impls/gmres/fgmres/fgmresp.h"       /*I  "petscksp.h"  I*/
+#include "../src/ksp/ksp/impls/gmres/fgmres/fgmresimpl.h"       /*I  "petscksp.h"  I*/
 #define FGMRES_DELTA_DIRECTIONS 10
 #define FGMRES_DEFAULT_MAXK     30
 static PetscErrorCode FGMRESGetNewVectors(KSP,PetscInt);
@@ -23,11 +23,12 @@ static PetscErrorCode FGMRESUpdateHessenberg(KSP,PetscInt,PetscTruth,PetscReal *
 static PetscErrorCode BuildFgmresSoln(PetscScalar*,Vec,Vec,KSP,PetscInt);
 
 EXTERN PetscErrorCode KSPView_GMRES(KSP,PetscViewer);
+EXTERN PetscErrorCode KSPSetUp_GMRES(KSP);
 /*
 
     KSPSetUp_FGMRES - Sets up the workspace needed by fgmres.
 
-    This is called once, usually automatically by KSPSolveQ() or KSPSetUp(),
+    This is called once, usually automatically by KSPSolve() or KSPSetUp(),
     but can be called directly by KSPSetUp().
 
 */
@@ -35,7 +36,6 @@ EXTERN PetscErrorCode KSPView_GMRES(KSP,PetscViewer);
 #define __FUNCT__ "KSPSetUp_FGMRES"
 PetscErrorCode    KSPSetUp_FGMRES(KSP ksp)
 {
-  PetscInt       len,hh,hes,rs,cc;
   PetscErrorCode ierr;
   PetscInt       max_k,k;
   KSP_FGMRES     *fgmres = (KSP_FGMRES *)ksp->data;
@@ -47,73 +47,18 @@ PetscErrorCode    KSPSetUp_FGMRES(KSP ksp)
     SETERRQ(PETSC_ERR_SUP,"no left preconditioning for KSPFGMRES");
   }
   max_k         = fgmres->max_k;
-  hh            = (max_k + 2) * (max_k + 1);
-  hes           = (max_k + 1) * (max_k + 1);
-  rs            = (max_k + 2);
-  cc            = (max_k + 1);  /* SS and CC are the same size */
-  len          = (hh + hes + rs + 2*cc) * sizeof(PetscScalar);
 
-  /* Allocate space and set pointers to beginning */
-  /* should switch to use PetscMalloc5() */
-  ierr = PetscMalloc(len,&fgmres->hh_origin);CHKERRQ(ierr);
-  ierr = PetscMemzero(fgmres->hh_origin,len);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,len);CHKERRQ(ierr); /* HH - modified (by plane rotations) hessenburg */
-  fgmres->hes_origin = fgmres->hh_origin + hh;     /* HES - unmodified hessenburg */
-  fgmres->rs_origin  = fgmres->hes_origin + hes;   /* RS - the right-hand-side of the 
-                                                      Hessenberg system */
-  fgmres->cc_origin  = fgmres->rs_origin + rs;     /* CC - cosines for rotations */
-  fgmres->ss_origin  = fgmres->cc_origin + cc;     /* SS - sines for rotations */
+  ierr = KSPSetUp_GMRES(ksp);CHKERRQ(ierr);
 
-  if (ksp->calc_sings) {
-    /* Allocate workspace to hold Hessenberg matrix needed by Eispack */
-    len = (max_k + 3)*(max_k + 9)*sizeof(PetscScalar);
-    ierr = PetscMalloc(len,&fgmres->Rsvd);CHKERRQ(ierr);
-    ierr = PetscMalloc(5*(max_k+2)*sizeof(PetscReal),&fgmres->Dsvd);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(ksp,len+5*(max_k+2)*sizeof(PetscReal));CHKERRQ(ierr);
-  }
-
-  /* Allocate array to hold pointers to user vectors.  Note that we need
-   4 + max_k + 1 (since we need it+1 vectors, and it <= max_k) */
-  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&fgmres->vecs);CHKERRQ(ierr);
-  fgmres->vecs_allocated = VEC_OFFSET + 2 + max_k;
-  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&fgmres->user_work);CHKERRQ(ierr);
-  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(PetscInt),&fgmres->mwork_alloc);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)+sizeof(PetscInt)));CHKERRQ(ierr);
-
-  /* New for FGMRES - Allocate array to hold pointers to preconditioned 
-     vectors - same sizes as user vectors above */
   ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&fgmres->prevecs);CHKERRQ(ierr);
   ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&fgmres->prevecs_user_work);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)));CHKERRQ(ierr);
 
-
-  /* if q_preallocate = 0 then only allocate one "chunck" of space (for 
-     5 vectors) - additional will then be allocated from FGMREScycle() 
-     as needed.  Otherwise, allocate all of the space that could be needed */
-  if (fgmres->q_preallocate) {
-    fgmres->vv_allocated   = VEC_OFFSET + 2 + max_k;
-  } else {
-    fgmres->vv_allocated    = 5;
-  }
-
-  /* space for work vectors */
-  ierr = KSPGetVecs(ksp,fgmres->vv_allocated,&fgmres->user_work[0],0,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscLogObjectParents(ksp,fgmres->vv_allocated,fgmres->user_work[0]);CHKERRQ(ierr);
-  for (k=0; k < fgmres->vv_allocated; k++) {
-    fgmres->vecs[k] = fgmres->user_work[0][k];
-  } 
-
-  /* space for preconditioned vectors */
   ierr = KSPGetVecs(ksp,fgmres->vv_allocated,&fgmres->prevecs_user_work[0],0,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,fgmres->vv_allocated,fgmres->prevecs_user_work[0]);CHKERRQ(ierr);
   for (k=0; k < fgmres->vv_allocated; k++) {
     fgmres->prevecs[k] = fgmres->prevecs_user_work[0][k];
   } 
-
-  /* specify how many work vectors have been allocated in this 
-     chunck" (the first one) */
-  fgmres->mwork_alloc[0] = fgmres->vv_allocated;
-  fgmres->nwork_alloc    = 1;
 
   PetscFunctionReturn(0);
 }
@@ -367,6 +312,7 @@ PetscErrorCode KSPSolve_FGMRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode KSPDestroy_GMRES(KSP);
 /*
 
    KSPDestroy_FGMRES - Frees all memory space used by the Krylov method.
@@ -381,41 +327,18 @@ PetscErrorCode KSPDestroy_FGMRES(KSP ksp)
   PetscInt       i;
 
   PetscFunctionBegin;
-  /* Free the Hessenberg matrices */
-  ierr = PetscFree(fgmres->hh_origin);CHKERRQ(ierr);
-
-  /* Free pointers to user variables */
-  ierr = PetscFree(fgmres->vecs);CHKERRQ(ierr);
   ierr = PetscFree (fgmres->prevecs);CHKERRQ(ierr);
-
-  /* free work vectors */
-  for (i=0; i < fgmres->nwork_alloc; i++) {
-    ierr = VecDestroyVecs(fgmres->user_work[i],fgmres->mwork_alloc[i]);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(fgmres->user_work);CHKERRQ(ierr);
-
-  for (i=0; i < fgmres->nwork_alloc; i++) {
+  for (i=0; i<fgmres->nwork_alloc; i++) {
     ierr = VecDestroyVecs(fgmres->prevecs_user_work[i],fgmres->mwork_alloc[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(fgmres->prevecs_user_work);CHKERRQ(ierr);
-
-  ierr = PetscFree(fgmres->mwork_alloc);CHKERRQ(ierr);
-  ierr = PetscFree(fgmres->nrs);CHKERRQ(ierr);
-  if (fgmres->sol_temp) {ierr = VecDestroy(fgmres->sol_temp);CHKERRQ(ierr);}
-  ierr = PetscFree(fgmres->Rsvd);CHKERRQ(ierr);
-  ierr = PetscFree(fgmres->Dsvd);CHKERRQ(ierr);
-  ierr = PetscFree(fgmres->orthogwork);CHKERRQ(ierr);
   if (fgmres->modifydestroy) {
     ierr = (*fgmres->modifydestroy)(fgmres->modifyctx);CHKERRQ(ierr);
   }
-  ierr = PetscFree(ksp->data);CHKERRQ(ierr);
 
   /* clear composed functions */
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetRestart_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPFGMRESSetModifyPC_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPDestroy_GMRES(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

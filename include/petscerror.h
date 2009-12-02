@@ -236,15 +236,15 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ2()
 M*/
-#define CHKERRQ(n)             if (n) {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0," ");}
+#define CHKERRQ(n)             if (PetscUnlikely(n)) {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0," ");}
 
-#define CHKERRV(n)             if (n) {n = PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0," ");return;}
-#define CHKERRABORT(comm,n)    if (n) {PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0," ");MPI_Abort(comm,n);}
-#define CHKERRCONTINUE(n)      if (n) {PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0," ");}
+#define CHKERRV(n)             if (PetscUnlikely(n)) {n = PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0," ");return;}
+#define CHKERRABORT(comm,n)    if (PetscUnlikely(n)) {PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0," ");MPI_Abort(comm,n);}
+#define CHKERRCONTINUE(n)      if (PetscUnlikely(n)) {PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0," ");}
 
 #ifdef PETSC_CLANGUAGE_CXX
 
-#define CHKERRXX(n)            if (n) {PetscErrorCxx(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0);}
+#define CHKERRXX(n)            if (PetscUnlikely(n)) {PetscErrorCxx(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0);}
 
 #endif
 

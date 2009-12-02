@@ -9,7 +9,7 @@
 #define __FUNCT__ "VecMDot_MPI"
 PetscErrorCode VecMDot_MPI(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 {
-  PetscScalar awork[128],*work = awork;
+  PetscScalar    awork[128],*work = awork;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -28,7 +28,7 @@ PetscErrorCode VecMDot_MPI(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 #define __FUNCT__ "VecMTDot_MPI"
 PetscErrorCode VecMTDot_MPI(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 {
-  PetscScalar awork[128],*work = awork;
+  PetscScalar    awork[128],*work = awork;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

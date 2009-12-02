@@ -8,7 +8,8 @@ EXAMPLESC       = ex1.c ex2.c
 EXAMPLESF       =
 MANSEC          = PC
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER}  -o ex1 ex1.o ${PETSC_KSP_LIB} 

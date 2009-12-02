@@ -124,7 +124,8 @@ TAR        = tar
 # By default, pick up the options from the PETSc configuration files
 ########################################################################################
 BLASLAPACK_TYPE  = F2CBLASLAPACK
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 
 ########################################################################################
 # compile the source files and create the blas and lapack libs

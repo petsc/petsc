@@ -15,5 +15,6 @@ LOCDIR   = src/dm/mesh/sieve/
 ALE.o:  ALE.hh 
 ALE.hh: ALE_mem.hh ALE_log.hh ALE_containers.hh 
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test

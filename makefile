@@ -10,15 +10,18 @@ DIRS	 = src include tutorials
 CFLAGS	 = 
 FFLAGS	 = 
 
-include ${PETSC_DIR}/conf/base
+# next line defines PETSC_DIR and PETSC_ARCH if they are not set
+include ./${PETSC_ARCH}/conf/petscvariables
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
 
 #
 # Basic targets to build PETSc libraries.
 # all: builds the c, fortran, and f90 libraries
 all: 
-	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chkpetsc_dir
-	-@${OMAKE} all_build 2>&1 | tee ${PETSC_ARCH}/conf/make.log
+	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} chkpetsc_dir
+	-@${OMAKE} all_build PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} 2>&1 | tee ${PETSC_ARCH}/conf/make.log
 	-@if [ -L make.log ]; then ${RM} make.log; fi; ln -s ${PETSC_ARCH}/conf/make.log make.log
 	-@egrep -i "( error | error:)" ${PETSC_ARCH}/conf/make.log > /dev/null; if [ "$$?" = "0" ]; then \
            echo "********************************************************************" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log; \
@@ -27,7 +30,7 @@ all:
            echo "********************************************************************" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log; \
            exit 1; \
 	 else \
-	  ${OMAKE} shared_install  2>&1 | tee -a ${PETSC_ARCH}/conf/make.log ;\
+	  ${OMAKE} shared_install PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log ;\
 	 fi
 
 #
@@ -135,9 +138,9 @@ build:
 # Builds PETSc test examples for a given architecture
 #
 test: 
-	-@${OMAKE} test_build 2>&1 | tee ${PETSC_DIR}/${PETSC_ARCH}/conf/test.log
+	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} test_build 2>&1 | tee ./${PETSC_ARCH}/conf/test.log
 testx11: 
-	-@${OMAKE} testx11_build 2>&1 | tee ${PETSC_DIR}/${PETSC_ARCH}/conf/testx11.log
+	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testx11_build 2>&1 | tee ./${PETSC_ARCH}/conf/testx11.log
 test_build:
 	-@echo "Running test examples to verify correct installation"
 	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
@@ -259,7 +262,7 @@ deletefortranstubs:
 # These are here for the target allci and allco, and etags
 #
 
-BMAKEFILES = conf/base conf/test bmake/adic.init bmake/adicmf.init
+BMAKEFILES = conf/variables conf/rules conf/test bmake/adic.init bmake/adicmf.init
 SCRIPTS    = bin/maint/builddist  bin/maint/wwwman bin/maint/xclude bin/maint/bugReport.py bin/maint/buildconfigtest bin/maint/builddistlite \
              bin/maint/buildtest bin/maint/checkBuilds.py bin/maint/copylognightly bin/maint/copylognightly.tao bin/maint/countfiles bin/maint/findbadfiles \
              bin/maint/fixinclude bin/maint/getexlist bin/maint/getpdflabels.py bin/maint/helpindex.py bin/maint/hosts.local bin/maint/hosts.solaris  \

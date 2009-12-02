@@ -13,5 +13,6 @@ LIBBASE	  = libpetsc
 DIRS	  = rs6000_time nt_time
 LOCDIR	  = src/sys/time/
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test

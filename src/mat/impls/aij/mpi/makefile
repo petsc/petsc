@@ -13,5 +13,6 @@ DIRS	 = spooles superlu_dist mumps csrperm crl pastix
 MANSEC	 = Mat
 LOCDIR	 = src/mat/impls/aij/mpi/
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test

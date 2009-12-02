@@ -1,7 +1,7 @@
 #define PETSCKSP_DLL
 
 #include "private/kspimpl.h"         /*I "petscksp.h" I*/
-#include "../src/ksp/ksp/impls/rich/richctx.h"
+#include "../src/ksp/ksp/impls/rich/richardsonimpl.h"
 
 
 #undef __FUNCT__  

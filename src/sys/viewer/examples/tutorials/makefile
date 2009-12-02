@@ -22,7 +22,8 @@ runex1f90:
 	   else echo "Possible problem with ex1f90_1, diffs above"; fi; \
 	   ${RM} -f ex1f90_1.tmp 
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 
 TESTEXAMPLES_C_X11	  = 
 TESTEXAMPLES_C_X11_MPIUNI = 

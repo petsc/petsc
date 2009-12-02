@@ -7,7 +7,8 @@ LOCDIR          = src/sys/viewer/examples/tests/
 EXAMPLESC       = ex3.c
 MANSEC          = Viewer
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 
 ex3: ex3.o   chkopts
 	-${CLINKER} -o ex3 ex3.o  ${PETSC_SYS_LIB}

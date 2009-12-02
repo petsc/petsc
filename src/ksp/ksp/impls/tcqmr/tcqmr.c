@@ -8,7 +8,7 @@
 */
 
 #include "private/kspimpl.h"
-#include "../src/ksp/ksp/impls/tcqmr/tcqmrp.h"
+#include "../src/ksp/ksp/impls/tcqmr/tcqmrimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_TCQMR"

@@ -5,7 +5,7 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  = cg.c cgeig.c cgtype.c
 SOURCEF  =
-SOURCEH  = cgctx.h 
+SOURCEH  = cgimpl.h 
 OBJSC    = cg.o cgeig.o cgtype.o
 OBJSF    =
 LIBBASE  = libpetscksp
@@ -13,5 +13,6 @@ DIRS     = cgne gltr nash stcg
 MANSEC   = KSP
 LOCDIR   = src/ksp/ksp/impls/cg/
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
