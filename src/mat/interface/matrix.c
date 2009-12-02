@@ -6444,7 +6444,7 @@ M*/
     Input Parameters:
 +   mat - the original matrix
 .   isrow - parallel IS containing the rows this processor should obtain
-.   iscol - parallel IS containing all columns you wish to keep
+.   iscol - parallel IS containing all columns you wish to keep. Each process should list the columns that will be in IT's "diagonal part" in the new matrix.
 -   cll - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
     Output Parameter:
@@ -6455,7 +6455,7 @@ M*/
     Notes:
     The submatrix will be able to be multiplied with vectors using the same layout as iscol.
 
-    The rows is isrow will be sorted into the same order as the original matrix.
+    The rows in isrow will be sorted into the same order as the original matrix on each process.
 
       The first time this is called you should use a cll of MAT_INITIAL_MATRIX,
    the MatGetSubMatrix() routine will create the newmat for you. Any additional calls
