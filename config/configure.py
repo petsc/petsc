@@ -180,9 +180,9 @@ def petsc_configure(configure_options):
   if not os.path.isdir(bsDir):
     print '================================================================================='
     print '''++ Could not locate BuildSystem in %s.''' % configDir
-    print '''++ Downloading it using "hg clone http://hg.mcs.anl.gov/petsc/BuildSystem %s"''' % os.path.join(bsDir, 'BuildSystem')
+    print '''++ Downloading it using "hg clone http://hg.mcs.anl.gov/petsc/BuildSystem %s"''' % bsDir
     print '================================================================================='
-    (status,output) = commands.getstatusoutput('hg clone http://petsc.cs.iit.edu/petsc/BuildSystem '+ os.path.join(bsDir, 'BuildSystem'))
+    (status,output) = commands.getstatusoutput('hg clone http://petsc.cs.iit.edu/petsc/BuildSystem '+ bsDir)
     if status:
       if output.find('ommand not found') >= 0:
         print '================================================================================='
