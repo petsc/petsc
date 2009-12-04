@@ -495,40 +495,6 @@ runex10_19:
 	   else echo "Possible problem with ex10_19, diffs above"; fi; \
 	${RM} -f ex10_19aij.tmp ex10_19sbaij.tmp
 # See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
-runex10_20: # test ilu with shift
-	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type gmres -pc_factor_shift_nonzero 0.1 > ex10_20.tmp 2>&1; \
-	   if (${DIFF} output/ex10_20shiftnz.out ex10_20.tmp) then true; \
-	   else echo "Possible problem with ex10_20shiftnz, diffs above"; fi; \
-	   ${RM} -f ex10_20.tmp
-	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type gmres -pc_factor_shift_positive_definite > ex10_20.tmp 2>&1; \
-	   if (${DIFF} output/ex10_20shiftpd.out ex10_20.tmp) then true; \
-	   else echo "Possible problem with ex10_20shiftpd, diffs above"; fi; \
-	   ${RM} -f ex10_20.tmp
-runex10_21: #test icc with shift
-	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type cg -pc_type icc -pc_factor_shift_nonzero 0.1 -ksp_max_it 1 > ex10_21.tmp 2>&1; \
-	   if (${DIFF} output/ex10_21shiftnz.out ex10_21.tmp) then true; \
-	   else echo "Possible problem with ex10_21shiftnz on aij matrix, diffs above"; fi; \
-	   ${RM} -f ex10_21.tmp
-	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type cg -pc_type icc -pc_factor_shift_nonzero 0.1 -mat_type baij -ksp_max_it 1 > ex10_21.tmp 2>&1; \
-	   if (${DIFF} output/ex10_21shiftnz.out ex10_21.tmp) then true; \
-	   else echo "Possible problem with ex10_21shiftnz on baij matrix, diffs above"; fi; \
-	   ${RM} -f ex10_21.tmp
-	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type cg -pc_type icc -pc_factor_shift_nonzero 0.1 -mat_type sbaij -ksp_max_it 1 > ex10_21.tmp 2>&1; \
-	   if (${DIFF} output/ex10_21shiftnz.out ex10_21.tmp) then true; \
-	   else echo "Possible problem with ex10_21shiftnz on sbaij matrix, diffs above"; fi; \
-	   ${RM} -f ex10_21.tmp
-	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type cg -pc_type icc -pc_factor_shift_positive_definite -ksp_max_it 1 > ex10_21.tmp 2>&1; \
-	   if (${DIFF} output/ex10_21shiftpd.out ex10_21.tmp) then true; \
-	   else echo "Possible problem with ex10_21shiftpd on aij matrix, diffs above"; fi; \
-	   ${RM} -f ex10_21.tmp
-	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type cg -pc_type icc -pc_factor_shift_positive_definite -mat_type baij -ksp_max_it 1 > ex10_21.tmp 2>&1; \
-	   if (${DIFF} output/ex10_21shiftpd.out ex10_21.tmp) then true; \
-	   else echo "Possible problem with ex10_21shiftpd on baij matrix, diffs above"; fi; \
-	   ${RM} -f ex10_21.tmp
-	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type cg -pc_type icc -pc_factor_shift_positive_definite -mat_type sbaij -ksp_max_it 1 > ex10_21.tmp 2>&1; \
-	   if (${DIFF} output/ex10_21shiftpd.out ex10_21.tmp) then true; \
-	   else echo "Possible problem with ex10_21shiftpd on sbaij matrix, diffs above"; fi; \
-	   ${RM} -f ex10_21.tmp
 
 # Start a sequential user code [on 1 node, assembling seqaij] and then
 # spwan a parallel solver on 2 procs.
@@ -871,7 +837,7 @@ TESTEXAMPLES_C_X11_MPIUNI      = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.P
                                  ex23.PETSc runex23 ex23.rm
 TESTEXAMPLES_C_COMPLEX	       = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm ex39.PETSc runex39 ex39.rm ex40.PETSc runex40 ex40.rm
 TESTEXAMPLES_DATAFILESPATH     = ex10.PETSc runex10_2 runex10_3 runex10_4 runex10_5 runex10_6 runex10_7 runex10_8 \
-                                 runex10_9 runex10_10 runex10_19 runex10_20 runex10_22 runex10_23 runex10_24 runex10_25  runex10_ILU runex10_ILUBAIJ runex10_cg \
+                                 runex10_9 runex10_10 runex10_19 runex10_22 runex10_23 runex10_24 runex10_25  runex10_ILU runex10_ILUBAIJ runex10_cg \
                                  runex10_cg_single_reduction runex10_seqcrl runex10_mpicrl runex10_seqcsrperm runex10_mpicsrperm ex10.rm 
 # even though ex10.c is a C example to run with -mat_type lusol requires a Fortran compiler, hence
 # we list it with the fortran examples

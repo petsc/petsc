@@ -415,6 +415,34 @@ runex30_3:
            else echo "Possible problem with ex30_3, diffs above"; fi; \
            ${RM} -f ex30.tmp
 
+runex30_shift: # test lu with shift
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_nonzero 1.e-5 -lu_new > ex30.tmp 2>&1; \
+	   if (${DIFF} output/ex30_shiftnz.out ex30.tmp) then true; \
+	   else echo "Possible problem with ex30_shiftnz, diffs above"; fi; \
+	   ${RM} -f ex30.tmp
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_positive_definite -lu_new > ex30.tmp 2>&1; \
+	   if (${DIFF} output/ex30_shiftpd.out ex30.tmp) then true; \
+	   else echo "Possible problem with ex30_shiftpd, diffs above"; fi; \
+	   ${RM} -f ex30.tmp
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_in_blocks -lu_new> ex30.tmp 2>&1; \
+	   if (${DIFF} output/ex30_shiftinblocks.out ex30.tmp) then true; \
+	   else echo "Possible problem with ex30_shiftinblocks, diffs above"; fi; \
+	   ${RM} -f ex30.tmp
+
+runex30_shift_2: # test cholesky with shift
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_nonzero 1.e-5 -cholesky_new > ex30.tmp 2>&1; \
+	   if (${DIFF} output/ex30_shiftnz.out ex30.tmp) then true; \
+	   else echo "Possible problem with ex30_shiftnz_2, diffs above"; fi; \
+	   ${RM} -f ex30.tmp
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_positive_definite -cholesky_new > ex30.tmp 2>&1; \
+	   if (${DIFF} output/ex30_shiftpd_2.out ex30.tmp) then true; \
+	   else echo "Possible problem with ex30_shiftpd_2, diffs above"; fi; \
+	   ${RM} -f ex30.tmp
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_in_blocks -cholesky_new> ex30.tmp 2>&1; \
+	   if (${DIFF} output/ex30_shiftinblocks.out ex30.tmp) then true; \
+	   else echo "Possible problem with ex30_shiftinblocks_2, diffs above"; fi; \
+	   ${RM} -f ex30.tmp
+
 runex31:
 	-@${MPIEXEC} -n 3 ./ex31 -f ${DATAFILESPATH}/matrices/small -partition > ex31.tmp 2>&1; \
 	if (${DIFF} output/ex31.out ex31.tmp) then true; \
