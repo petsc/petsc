@@ -12,7 +12,7 @@
 
    Input Parameters:
 +  snes    - The nonlinear context obtained from SNESCreate()
-.  alpha   - The scalar such that .5*f_{n+1} . f_{n+1} <= .5*f_n . f_n - alpha |f_n . J . f_n|
+.  alpha   - The scalar such that .5*f_{n+1} . f_{n+1} <= .5*f_n . f_n - alpha |p_n . J . f_n|
 -  maxstep - The maximum norm of the update vector
 
    Level: intermediate
@@ -53,7 +53,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetParams(SNES snes,PetscReal a
 .  snes    - The nonlinear context obtained from SNESCreate()
 
    Output Parameters:
-+  alpha   - The scalar such that .5*f_{n+1} . f_{n+1} <= .5*f_n . f_n - alpha |f_n . J . f_n|
++  alpha   - The scalar such that .5*f_{n+1} . f_{n+1} <= .5*f_n . f_n - alpha |p_n . J . f_n|
 -  maxstep - The maximum norm of the update vector
 
 
