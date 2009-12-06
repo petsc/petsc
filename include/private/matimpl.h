@@ -507,8 +507,8 @@ EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
 {\
   PetscReal _zero = info->zeropivot;\
   if (PetscAbsScalar(sctx.pv) <= _zero){\
-    sctx.pv += info->shiftinblocks;\
-    sctx.shift_amount = 1.e-12;\
+    sctx.pv          += info->shiftinblocks;\
+    sctx.shift_amount = 0.0;\
     sctx.nshift++;\
   }\
   newshift = 0;\

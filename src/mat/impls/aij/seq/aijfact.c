@@ -522,7 +522,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const MatFact
         rtmp[ics[ajtmp[j]]] = v[j];
       }
       /* ZeropivotApply() */
-      rtmp[ics[r[i]]] += sctx.shift_amount;  /* shift the diagonal of the matrix */
+      rtmp[i] += sctx.shift_amount;  /* shift the diagonal of the matrix */
     
       /* elimination */
       bjtmp = bj + bi[i];
@@ -1844,14 +1844,35 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const M
   PetscInt       *ai=a->i,*aj=a->j;
   PetscInt       k,jmin,jmax,*c2r,*il,col,nexti,ili,nz;
   MatScalar      *rtmp,*ba=b->a,*bval,*aa=a->a,dk,uikdi;
-  PetscReal      zeropivot,shiftnz;
-  PetscReal      shiftpd;
   PetscTruth     perm_identity;
 
+  LUShift_Ctx    sctx;
+  PetscInt       newshift;
+  PetscReal      rs;
+  MatScalar      d,*v;
+
   PetscFunctionBegin;
-  shiftnz   = info->shiftnz;
-  shiftpd   = info->shiftpd;
-  zeropivot = info->zeropivot; 
+  /* MatPivotSetUp(): initialize shift context sctx */
+  ierr = PetscMemzero(&sctx,sizeof(LUShift_Ctx));CHKERRQ(ierr);
+
+  /* if both shift schemes are chosen by user, only use info->shiftpd */
+  if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
+    sctx.shift_top = info->zeropivot;
+    for (i=0; i<mbs; i++) {
+      /* calculate sum(|aij|)-RealPart(aii), amt of shift needed for this row */
+      d  = (aa)[a->diag[i]];
+      rs = -PetscAbsScalar(d) - PetscRealPart(d);
+      v  = aa+ai[i];
+      nz = ai[i+1] - ai[i];
+      for (j=0; j<nz; j++) 
+	rs += PetscAbsScalar(v[j]);
+      if (rs>sctx.shift_top) sctx.shift_top = rs;
+    }
+    sctx.shift_top   *= 1.1;
+    sctx.nshift_max   = 5;
+    sctx.shift_lo     = 0.;
+    sctx.shift_hi     = 1.;
+  } 
 
   ierr  = ISGetIndices(ip,&rip);CHKERRQ(ierr);
   ierr  = ISGetIndices(iip,&riip);CHKERRQ(ierr);
@@ -1861,64 +1882,86 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const M
      il:  for active k row, il[i] gives the index of the 1st nonzero entry in U[i,k:n-1] in bj and ba arrays 
   */
   ierr = PetscMalloc3(mbs,MatScalar,&rtmp,mbs,PetscInt,&il,mbs,PetscInt,&c2r);CHKERRQ(ierr);
-
-  for (i=0; i<mbs; i++) c2r[i] = mbs; 
-  il[0] = 0;
  
-  for (k = 0; k<mbs; k++){
-    /* zero rtmp */
-    nz = bi[k+1] - bi[k];
-    bjtmp = bj + bi[k];
-    for (j=0; j<nz; j++) rtmp[bjtmp[j]] = 0.0;
+  do {
+    sctx.lushift = PETSC_FALSE;
+
+    for (i=0; i<mbs; i++) c2r[i] = mbs; 
+    il[0] = 0;
+ 
+    for (k = 0; k<mbs; k++){
+      /* zero rtmp */
+      nz = bi[k+1] - bi[k];
+      bjtmp = bj + bi[k];
+      for (j=0; j<nz; j++) rtmp[bjtmp[j]] = 0.0;
       
-    /* load in initial unfactored row */
-    bval = ba + bi[k];
-    jmin = ai[rip[k]]; jmax = ai[rip[k]+1];
-    for (j = jmin; j < jmax; j++){
-      col = riip[aj[j]];
-      if (col >= k){ /* only take upper triangular entry */
-        rtmp[col] = aa[j];
-        *bval++   = 0.0; /* for in-place factorization */
-      }
-    } 
-    /* shift the diagonal of the matrix */ 
+      /* load in initial unfactored row */
+      bval = ba + bi[k];
+      jmin = ai[rip[k]]; jmax = ai[rip[k]+1];
+      for (j = jmin; j < jmax; j++){
+        col = riip[aj[j]];
+        if (col >= k){ /* only take upper triangular entry */
+          rtmp[col] = aa[j];
+          *bval++   = 0.0; /* for in-place factorization */
+        }
+      } 
+      /* shift the diagonal of the matrix: ZeropivotApply() */   
+      rtmp[k] += sctx.shift_amount;  /* shift the diagonal of the matrix */
+    
+      /* modify k-th row by adding in those rows i with U(i,k)!=0 */
+      dk = rtmp[k];
+      i  = c2r[k]; /* first row to be added to k_th row  */ 
 
-    /* modify k-th row by adding in those rows i with U(i,k)!=0 */
-    dk = rtmp[k];
-    i  = c2r[k]; /* first row to be added to k_th row  */ 
-
-    while (i < k){
-      nexti = c2r[i]; /* next row to be added to k_th row */
+      while (i < k){
+        nexti = c2r[i]; /* next row to be added to k_th row */
    
-      /* compute multiplier, update diag(k) and U(i,k) */
-      ili   = il[i];  /* index of first nonzero element in U(i,k:bms-1) */
-      uikdi = - ba[ili]*ba[bdiag[i]];  /* diagonal(k) */
-      dk   += uikdi*ba[ili]; /* update diag[k] */
-      ba[ili] = uikdi; /* -U(i,k) */
+        /* compute multiplier, update diag(k) and U(i,k) */
+        ili   = il[i];  /* index of first nonzero element in U(i,k:bms-1) */
+        uikdi = - ba[ili]*ba[bdiag[i]];  /* diagonal(k) */
+        dk   += uikdi*ba[ili]; /* update diag[k] */
+        ba[ili] = uikdi; /* -U(i,k) */
 
-      /* add multiple of row i to k-th row */
-      jmin = ili + 1; jmax = bi[i+1];
-      if (jmin < jmax){
-        for (j=jmin; j<jmax; j++) rtmp[bj[j]] += uikdi*ba[j];         
-        /* update il and c2r for row i */
-        il[i] = jmin;             
-        j = bj[jmin]; c2r[i] = c2r[j]; c2r[j] = i; 
-      }      
-      i = nexti;         
-    }
+        /* add multiple of row i to k-th row */
+        jmin = ili + 1; jmax = bi[i+1];
+        if (jmin < jmax){
+          for (j=jmin; j<jmax; j++) rtmp[bj[j]] += uikdi*ba[j];         
+          /* update il and c2r for row i */
+          il[i] = jmin;             
+          j = bj[jmin]; c2r[i] = c2r[j]; c2r[j] = i; 
+        }      
+        i = nexti;         
+      }
 
-    /* copy data into U(k,:) */
-    ba[bdiag[k]] = 1.0/dk; /* U(k,k) */
-    jmin = bi[k]; jmax = bi[k+1]-1; 
-    if (jmin < jmax) {
-      for (j=jmin; j<jmax; j++){
-        col = bj[j]; ba[j] = rtmp[col]; 
-      }       
-      /* add the k-th row into il and c2r */
-      il[k] = jmin;
-      i = bj[jmin]; c2r[k] = c2r[i]; c2r[i] = k;
-    }    
-  } 
+      /* copy data into U(k,:) */
+      rs   = 0.0;
+      jmin = bi[k]; jmax = bi[k+1]-1; 
+      if (jmin < jmax) {
+        for (j=jmin; j<jmax; j++){
+          col = bj[j]; ba[j] = rtmp[col]; rs += PetscAbsScalar(ba[j]);
+        }       
+        /* add the k-th row into il and c2r */
+        il[k] = jmin;
+        i = bj[jmin]; c2r[k] = c2r[i]; c2r[i] = k;
+      }  
+
+      /* MatPivotCheck() */
+      sctx.rs  = rs;
+      sctx.pv  = dk;
+      if (info->shiftnz){
+        ierr = MatPivotCheck_nz(info,sctx,k,newshift);CHKERRQ(ierr);
+      } else if (info->shiftpd){
+        ierr = MatPivotCheck_pd(info,sctx,k,newshift);CHKERRQ(ierr);
+      } else if (info->shiftinblocks){
+        ierr = MatPivotCheck_inblocks(info,sctx,k,newshift);CHKERRQ(ierr);       
+      } else {
+        ierr = MatPivotCheck_none(info,sctx,k,newshift);CHKERRQ(ierr); 
+      }
+      dk = sctx.pv;
+      if (newshift == 1) break;
+ 
+      ba[bdiag[k]] = 1.0/dk; /* U(k,k) */
+    } 
+  } while (sctx.lushift);
   
   ierr = PetscFree3(rtmp,il,c2r);CHKERRQ(ierr);
   ierr = ISRestoreIndices(ip,&rip);CHKERRQ(ierr);
@@ -1940,6 +1983,17 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const M
   C->assembled    = PETSC_TRUE; 
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(C->rmap->n);CHKERRQ(ierr);
+
+  /* MatPivotView() */
+  if (sctx.nshift){
+    if (info->shiftpd) {
+      ierr = PetscInfo4(A,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,sctx.shift_fraction,sctx.shift_top);CHKERRQ(ierr);
+    } else if (info->shiftnz) {
+      ierr = PetscInfo2(A,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
+    } else if (info->shiftinblocks){
+      ierr = PetscInfo2(A,"number of shift_inblocks applied %D, each shift_amount %G\n",sctx.nshift,info->shiftinblocks);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0); 
 }
 
