@@ -98,7 +98,7 @@ static PetscErrorCode SSPStep_RK_3(TS ts,PetscReal t0,PetscReal dt,Vec sol)
 
   PetscFunctionBegin;
   s = ssp->nstages;
-  n = floor(sqrt(s));
+  n = (PetscInt)sqrt(s);
   r = s-n;
   if (n*n != s) SETERRQ1(PETSC_ERR_SUP,"No support for optimal third order schemes with %d stages, must be a square number at least 4",s);
   ierr = SSPGetWorkVectors(ts,3,&work);CHKERRQ(ierr);
