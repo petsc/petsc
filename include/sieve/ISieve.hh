@@ -1879,6 +1879,9 @@ namespace ALE {
       imesh.stratify();
       convertOrientation(*mesh.getSieve(), *imesh.getSieve(), renumbering, mesh.getArrowSection("orientation").ptr());
       convertCoordinates(*mesh.getRealSection("coordinates"), *imesh.getRealSection("coordinates"), renumbering);
+      if (mesh.hasRealSection("normals")) {
+        convertCoordinates(*mesh.getRealSection("normals"), *imesh.getRealSection("normals"), renumbering);
+      }
       const typename Mesh::labels_type& labels = mesh.getLabels();
       std::string heightName("height");
       std::string depthName("depth");

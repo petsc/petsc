@@ -3481,6 +3481,30 @@ namespace ALE {
       }
       delete [] vertices;
       ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, mesh->getDimension()+1, coords);
+      // Build normals for cells
+      const Obj<typename Mesh::real_section_type>& normals = mesh->getRealSection("normals");
+      const Obj<typename Mesh::label_sequence>&    cells   = mesh->heightStratum(0);
+
+      //normals->setChart(typename Mesh::real_section_type::chart_type(*std::min_element(cells->begin(), cells->end()),
+      //                                                               *std::max_element(cells->begin(), cells->end())+1));
+      normals->setFiberDimension(cells, mesh->getDimension()+1);
+      mesh->allocate(normals);
+      for(int e = 0; e < edges; ++e) {
+        double normal[2] = {0.0, -1.0};
+        normals->updatePoint(e+edges*0, normal);
+      }
+      for(int e = 0; e < edges; ++e) {
+        double normal[2] = {1.0, 0.0};
+        normals->updatePoint(e+edges*1, normal);
+      }
+      for(int e = 0; e < edges; ++e) {
+        double normal[2] = {0.0, 1.0};
+        normals->updatePoint(e+edges*2, normal);
+      }
+      for(int e = 0; e < edges; ++e) {
+        double normal[2] = {-1.0, 0.0};
+        normals->updatePoint(e+edges*3, normal);
+      }
       return mesh;
     };
     #undef __FUNCT__
