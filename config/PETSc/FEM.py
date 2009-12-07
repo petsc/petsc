@@ -130,7 +130,8 @@ class QuadratureGenerator(script.Script):
       for e in [2, 0, 1, 3]:
         perm.extend(ids[1][e])
       for e in [4, 5]:
-        perm.extend(ids[1][e][::-1])
+        if len(ids[1][e]):
+          perm.extend(ids[1][e][::-1])
       for v in ids[0]:
         perm.extend(ids[0][v])
     else:
@@ -215,16 +216,20 @@ class QuadratureGenerator(script.Script):
                                 [], stmts)
     return self.Cxx.getFunctionHeader(funcName)+[func]
 
-  def mapToRealSpace(self, dim, decls, stmts, refVar = None, realVar = None):
+  def mapToRealSpace(self, dim, decls, stmts, refVar = None, realVar = None, isBd = False):
     '''Maps coordinates in the reference element to real space'''
     if refVar  is None: refVar  = self.Cxx.getVar('refCoords')
     if realVar is None: realVar = self.Cxx.getVar('coords')
+    if isBd:
+      embedDim = dim + 1
+    else:
+      embedDim = dim
     if not decls is None:
       decls.append(self.Cxx.getArray(refVar,  self.Cxx.getType('double'), dim))
-      decls.append(self.Cxx.getArray(realVar, self.Cxx.getType('double'), dim))
+      decls.append(self.Cxx.getArray(realVar, self.Cxx.getType('double'), embedDim))
     basisLoop = self.Cxx.getSimpleLoop(self.Cxx.getDeclarator('e', 'int'), 0, dim)
-    basisLoop.children[0].children.append(self.Cxx.getExpStmt(self.Cxx.getAdditionAssignment(self.Cxx.getArrayRef(realVar, 'd'), self.Cxx.getMultiplication(self.Cxx.getArrayRef('J', self.Cxx.getAddition(self.Cxx.getMultiplication('d', dim), 'e')), self.Cxx.getGroup(self.Cxx.getAddition(self.Cxx.getArrayRef(refVar, 'e'), 1.0))))))
-    testLoop = self.Cxx.getSimpleLoop(self.Cxx.getDeclarator('d', 'int'), 0, dim)
+    basisLoop.children[0].children.append(self.Cxx.getExpStmt(self.Cxx.getAdditionAssignment(self.Cxx.getArrayRef(realVar, 'd'), self.Cxx.getMultiplication(self.Cxx.getArrayRef('J', self.Cxx.getAddition(self.Cxx.getMultiplication('d', embedDim), 'e')), self.Cxx.getGroup(self.Cxx.getAddition(self.Cxx.getArrayRef(refVar, 'e'), 1.0))))))
+    testLoop = self.Cxx.getSimpleLoop(self.Cxx.getDeclarator('d', 'int'), 0, embedDim)
     testLoop.children[0].children.extend([self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(realVar, 'd'), self.Cxx.getArrayRef('v0', 'd'))), basisLoop])
     stmts.append(testLoop)
     return
@@ -270,7 +275,7 @@ class QuadratureGenerator(script.Script):
         dualPoints[i][d] = pts[perm[i]][d]
     return [numPoints, self.getArray(self.Cxx.getVar('dualPoints'+ext), dualPoints, 'Dual points\n   - (x1,y1,x2,y2,...)')]
 
-  def getIntegratorSetup_PointEvaluation(self, n, element):
+  def getIntegratorSetup_PointEvaluation(self, n, element, isBd = False):
     import FIAT.shapes
     from Cxx import Break, CompoundStatement, Function, Pointer, Switch
     dim  = FIAT.shapes.dimension(element.function_space().base.shape)
@@ -278,7 +283,10 @@ class QuadratureGenerator(script.Script):
     pts  = element.Udual.pts
     perm = self.getBasisFuncOrder(element)
     p    = 0
-    funcName = 'IntegrateDualBasis_gen_'+str(n)
+    if isBd:
+      funcName = 'IntegrateBdDualBasis_gen_'+str(n)
+    else:
+      funcName = 'IntegrateDualBasis_gen_'+str(n)
     idxVar  = self.Cxx.getVar('dualIndex')
     refVar  = self.Cxx.getVar('refCoords')
     realVar = self.Cxx.getVar('coords')
@@ -309,7 +317,7 @@ class QuadratureGenerator(script.Script):
     cmpd.children.extend([cStmt, self.Cxx.getThrow(self.Cxx.getFunctionCall('ALE::Exception', [self.Cxx.getString('Bad dual index')]))])
     switch.children = [cmpd]
     stmts.append(switch)
-    self.mapToRealSpace(dim, decls, stmts, refVar, realVar)
+    self.mapToRealSpace(dim, decls, stmts, refVar, realVar, isBd)
     stmts.append(self.Cxx.getReturn(self.Cxx.getFunctionCall(self.Cxx.getGroup(self.Cxx.getIndirection('func')), [realVar])))
     bcFunc = self.Cxx.getFunctionPointer('func', self.Cxx.getType('double'), [self.Cxx.getParameter('coords', self.Cxx.getType('double', 1, isConst = 1))])
     func = self.Cxx.getFunction(funcName, self.Cxx.getType('double'),
@@ -365,9 +373,9 @@ class QuadratureGenerator(script.Script):
       code.extend(self.Cxx.getFunctionHeader(funcName)+[func])
     return code
 
-  def getIntegratorSetup(self, n, element):
+  def getIntegratorSetup(self, n, element, isBd = False):
     if hasattr(element.Udual, 'pts'):
-      return self.getIntegratorSetup_PointEvaluation(n, element)
+      return self.getIntegratorSetup_PointEvaluation(n, element, isBd)
     elif element.Udual.get_functional_set():
       return self.getIntegratorSetup_IntegralMoment(n, element)
     raise RuntimeError('Could not generate dual basis evaluation code')
@@ -629,6 +637,7 @@ class QuadratureGenerator(script.Script):
         defns.extend(self.getBasisStructs(name, element, quadrature, n))
         defns.extend(self.getIntegratorPoints(n, element))
         defns.extend(self.getIntegratorSetup(n, element))
+        defns.extend(self.getIntegratorSetup(n, element, True))
         defns.extend(self.getSectionSetup(n, element))
         n += element.function_space().tensor_shape()[0]
       #defns.extend(self.getQuadratureSetup())
