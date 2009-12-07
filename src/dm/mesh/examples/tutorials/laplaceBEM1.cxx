@@ -65,6 +65,7 @@ public:
 
     ierr = MeshGetSectionReal((::Mesh) this->_problem->getDM(), "default", &solution);CHKERRXX(ierr);
     ierr = SectionRealToVec(solution, (::Mesh) this->_problem->getDM(), SCATTER_REVERSE, DMMGGetx(this->_problem->getDMMG()));CHKERRXX(ierr);
+    SectionRealView(solution, PETSC_VIEWER_STDOUT_WORLD);
     ierr = this->_problem->calculateError(solution, &errorNorm);CHKERRXX(ierr);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(exactError, errorNorm, tolerance);
   };
@@ -108,13 +109,20 @@ public:
     PetscReal errorNorm;
 
     this->_problem->calculateError(this->_problem->exactSolution().section, &errorNorm);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(exactError, errorNorm, 1.0e-6);
-#if 0
+    //CPPUNIT_ASSERT_DOUBLES_EQUAL(exactError, errorNorm, 1.0e-6);
     this->_problem->createSolver();
-    // What is being solved?
+    SectionReal exactSolution, residual;
+    ALE::Obj<PETSC_MESH_TYPE::real_section_type> r;
+
+    MeshGetSectionReal((Mesh) this->_problem->getDM(), "exactSolution", &exactSolution);
+    MeshGetSectionReal((Mesh) this->_problem->getDM(), "residual", &residual);
+    SectionRealGetSection(residual, r);
+    this->_problem->getMesh()->setupField(r);
+    SectionRealView(exactSolution, PETSC_VIEWER_STDOUT_WORLD);
+    ALE::Problem::LaplaceBEMFunctions::Rhs_Unstructured((Mesh) this->_problem->getDM(), exactSolution, residual, this->_problem->getOptions());
+    this->_problem->getMesh()->getRealSection("residual")->view("residual");
     this->_problem->solve();
     this->checkSolution(exactError, 1.0e-6, "LaplaceBEMUnitSquareBd");
-#endif
   };
 
   void testLaplaceBEMUnitSquareBdInterpolated(void) {
