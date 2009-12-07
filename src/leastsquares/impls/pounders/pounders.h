@@ -3,7 +3,7 @@
 #include "include/private/taosolver_impl.h"
 #include "petsc.h"
 #include "petscblaslapack.h"
-#include "taolapack.h"
+
 
 typedef struct {
   PetscInt npmax;  /* Max number of interpolation points (>n+1) (def: 2n+1) */
@@ -22,18 +22,20 @@ typedef struct {
     PetscReal *H; /* model hessians */   //mxnxn
     PetscReal *Hres;  //nxn
     PetscReal *Gres;  //n
-    PetscReal *Gdel; //n
+    PetscReal *Gdel; //mxn
     PetscReal *Hdel; //mxnxn
     PetscReal *Gpoints; //nxn
     PetscReal *C; //m
     PetscReal *Xsubproblem; //n
     PetscInt *indices; /* 1,2,3...m */
+    PetscInt minindex;
     PetscInt *model_indices; //n
     PetscInt *interp_indices; //n
     PetscInt *iwork; //n
     PetscInt nHist;
   VecScatter scatterf,scatterx; 
   Vec localf, localx, localfmin, localxmin;
+    Vec workxvec;
   PetscMPIInt mpisize;
 
   PetscReal delta; /* Trust region radius (>0) */
@@ -51,15 +53,22 @@ typedef struct {
   PetscInt gqt_maxits; /* parameter used by gqt */
     /* QR factorization data */
     PetscInt q_is_I;
-    PetscReal *Q; //nxn
+    PetscReal *Q; //npmax x npmax
+    PetscReal *Q_tmp; //npmax x npmax
     PetscReal *tau; //scalar factors of H(i)
-
+    PetscReal *tau_tmp; //scalar factors of H(i)
+    PetscReal *npmaxwork; //work vector of length npmax
+    PetscBLASInt *npmaxiwork; //integer work vector of length npmax
     /* morepoints and getquadnlsmfq */
-    PetscReal *L;
-    PetscReal *Z;
-    PetscReal *M;
-    PetscReal *N;
-    PetscReal *phi; //(n*(n+1)/2)
+    PetscReal *L;   //n*(n+1)/2 x npmax
+    PetscReal *L_tmp;   //n*(n+1)/2 x npmax
+    PetscReal *Z;   //npmax x npmax-(n+1)
+    PetscReal *M;   //npmax x n+1
+    PetscReal *N;   //npmax x n*(n+1)/2 
+    PetscReal *alpha; // n+1
+    PetscReal *beta; // r(n+1)/2
+    PetscReal *omega; //npmax - np - 1
+
 
     
        
