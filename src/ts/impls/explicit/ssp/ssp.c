@@ -281,7 +281,9 @@ static PetscErrorCode TSView_SSP(TS ts,PetscViewer viewer)
   still being SSP.  Some theoretical bounds
 
   1. There are no explicit methods with c_eff > 1.
+
   2. There are no explicit methods beyond order 4 (for nonlinear problems) and c_eff > 0.
+
   3. There are no implicit methods with order greater than 1 and c_eff > 2.
 
   This integrator provides Runge-Kutta methods of order 2, 3, and 4 with maximal values of c_eff.  More stages allows

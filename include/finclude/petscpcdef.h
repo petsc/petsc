@@ -42,6 +42,7 @@
 #define PCMAT 'mat'
 #define PCHYPRE 'hypre'
 #define PCFIELDSPLIT 'fieldsplit'
+#define PCTFS 'tfs'
 #define PCML 'ml'
 #define PCPYTHON 'python'
 #define PCPFMG 'pfmg'

@@ -3228,7 +3228,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
   PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       n;
-  Mat_MPIMAIJ    *b;
   Mat            B;
 
   PetscFunctionBegin;
@@ -3239,14 +3238,20 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
   } else {
     ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,dof*A->rmap->n,dof*A->cmap->n,dof*A->rmap->N,dof*A->cmap->N);CHKERRQ(ierr);
+    ierr = PetscLayoutSetBlockSize(B->rmap,dof);CHKERRQ(ierr);
+    ierr = PetscLayoutSetBlockSize(B->cmap,dof);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
     B->assembled    = PETSC_TRUE;
 
     ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
     if (size == 1) {
+      Mat_SeqMAIJ    *b;
+
       ierr = MatSetType(B,MATSEQMAIJ);CHKERRQ(ierr);
       B->ops->destroy = MatDestroy_SeqMAIJ;
       B->ops->view    = MatView_SeqMAIJ;
-      b      = (Mat_MPIMAIJ*)B->data;
+      b      = (Mat_SeqMAIJ*)B->data;
       b->dof = dof;
       b->AIJ = A;
       if (dof == 2) {
@@ -3316,10 +3321,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
       B->ops->ptapnumeric_seqaij  = MatPtAPNumeric_SeqAIJ_SeqMAIJ;
       ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqmaij_seqaij_C","MatConvert_SeqMAIJ_SeqAIJ",MatConvert_SeqMAIJ_SeqAIJ);CHKERRQ(ierr);
     } else {
-      Mat_MPIAIJ *mpiaij = (Mat_MPIAIJ *)A->data;
-      IS         from,to;
-      Vec        gvec;
-      PetscInt   *garray,i;
+      Mat_MPIAIJ  *mpiaij = (Mat_MPIAIJ *)A->data;
+      Mat_MPIMAIJ *b;
+      IS          from,to;
+      Vec         gvec;
+      PetscInt    *garray,i;
 
       ierr = MatSetType(B,MATMPIMAIJ);CHKERRQ(ierr);
       B->ops->destroy = MatDestroy_MPIMAIJ;
