@@ -1106,4 +1106,55 @@ PetscErrorCode updateOperator(Mat A, const Sieve& sieve, Visitor& iV, const ALE:
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "updateOperator"
+template<typename Sieve, typename Visitor>
+PetscErrorCode updateOperator(Mat A, const Sieve& rowSieve, Visitor& iVr, const ALE::IMesh<>::point_type& rowE, const Sieve& colSieve, Visitor& iVc, const ALE::IMesh<>::point_type& colE, PetscScalar array[], InsertMode mode)
+{
+  PetscFunctionBegin;
+  ALE::ISieveTraversal<Sieve>::orientedClosure(rowSieve, rowE, iVr);
+  ALE::ISieveTraversal<Sieve>::orientedClosure(colSieve, colE, iVc);
+  const PetscInt *rowIndices    = iVr.getValues();
+  const int       numRowIndices = iVr.getSize();
+  const PetscInt *colIndices    = iVc.getValues();
+  const int       numColIndices = iVc.getSize();
+  PetscErrorCode  ierr;
+
+  ierr = PetscLogEventBegin(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
+  if (rowSieve.debug()) {
+    ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]mat for element %d,%d\n", rowSieve.commRank(), rowE, colE);CHKERRQ(ierr);
+    for(int i = 0; i < numRowIndices; i++) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]mat row indices[%d] = %d\n", rowSieve.commRank(), i, rowIndices[i]);CHKERRQ(ierr);
+    }
+    for(int i = 0; i < numColIndices; i++) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]mat col indices[%d] = %d\n", rowSieve.commRank(), i, colIndices[i]);CHKERRQ(ierr);
+    }
+    for(int i = 0; i < numRowIndices; i++) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]", rowSieve.commRank());CHKERRQ(ierr);
+      for(int j = 0; j < numColIndices; j++) {
+#ifdef PETSC_USE_COMPLEX
+        ierr = PetscPrintf(PETSC_COMM_SELF, " (%g,%g)", PetscRealPart(array[i*numColIndices+j]), PetscImaginaryPart(array[i*numColIndices+j]));CHKERRQ(ierr);
+#else
+        ierr = PetscPrintf(PETSC_COMM_SELF, " %g", array[i*numColIndices+j]);CHKERRQ(ierr);
+#endif
+      }
+      ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
+    }
+  }
+  ierr = MatSetValues(A, numRowIndices, rowIndices, numColIndices, colIndices, array, mode);
+  if (ierr) {
+    PetscErrorCode ierr2;
+    ierr2 = PetscPrintf(PETSC_COMM_SELF, "[%d]ERROR in updateOperator: point %d,%d\n", rowSieve.commRank(), rowE, colE);CHKERRQ(ierr2);
+    for(int i = 0; i < numRowIndices; i++) {
+      ierr2 = PetscPrintf(PETSC_COMM_SELF, "[%d]mat row indices[%d] = %d\n", rowSieve.commRank(), i, rowIndices[i]);CHKERRQ(ierr2);
+    }
+    for(int i = 0; i < numColIndices; i++) {
+      ierr2 = PetscPrintf(PETSC_COMM_SELF, "[%d]mat col indices[%d] = %d\n", rowSieve.commRank(), i, colIndices[i]);CHKERRQ(ierr2);
+    }
+    CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventEnd(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #endif // __PETSCMESH_HH
