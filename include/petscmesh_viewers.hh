@@ -3,6 +3,7 @@
 
 #include <petscmesh.hh>
 #include <petscdmmg.h>
+#include <iomanip>
 
 using ALE::Obj;
 
@@ -94,8 +95,9 @@ class VTKViewer {
         const int&        dim   = field->getFiberDimension(*p_iter);
         ostringstream     line;
 
-        line.precision(precision);
-        line << scientific;
+        line << std::resetiosflags(std::ios::fixed)
+             << std::setiosflags(std::ios::scientific)
+             << std::setprecision(precision);
         // Perhaps there should be a flag for excluding boundary values
         if (dim != 0) {
           if (verify) {line << *p_iter << " ";}
@@ -125,13 +127,14 @@ class VTKViewer {
         for(int e = 0; e < numLocalElementsAndFiberDim[0]; e++) {
           ostringstream line;
 
-          line.precision(precision);
-          line << scientific;
+          line << std::resetiosflags(std::ios::fixed)
+               << std::setiosflags(std::ios::scientific)
+               << std::setprecision(precision);
           if (verify) {line << ((int) remoteValues[e*numLocalElementsAndFiberDim[1]+0]);}
           for(int d = verify; d < numLocalElementsAndFiberDim[1]; d++) {
             if (d > (int) verify) {              line << " ";
             }
-            line << remoteValues[e*numLocalElementsAndFiberDim[1]+d]);
+            line << remoteValues[e*numLocalElementsAndFiberDim[1]+d];
           }
           for(int d = numLocalElementsAndFiberDim[1]; d < enforceDim; d++) {
             line << " 0.0";
