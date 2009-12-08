@@ -155,7 +155,6 @@ namespace ALE {
           ierr = SectionRealRestrictClosure(boundaryData, mesh, *d_iter, closureSize, bdData);CHKERRQ(ierr);
           ierr = SectionRealRestrictClosure(normals, mesh, *d_iter, embedDim, normal);CHKERRQ(ierr);
 
-#if 1
           for(int d = 0; d < embedDim; d++) {
             coordsy[d] = v0y[d];
           }
@@ -176,44 +175,8 @@ namespace ALE {
                                        + (D/A)*(atan((2.0*A + B)/D) - atan(B/D)))*quadWeights[qx]*detJx;
             fMat[0] -= (L*(normal[0]*(coordsy[0] - coordsx[0]) + normal[1]*(coordsy[1] - coordsx[1]))/D * (atan((2.0*A + B)/D) - atan(B/D)))/M_PI*quadWeights[qx]*detJx;
           }
-#else
-            // Loop over y quadrature points
-            for(int qy = 0; qy < numQuadPoints; ++qy) {
-              for(int d = 0; d < embedDim; d++) {
-                coordsy[d] = v0y[d];
-                for(int e = 0; e < dim; e++) {
-                  coordsy[d] += Jy[d*embedDim+e]*(quadPoints[qy*dim+e] + 1.0);
-                }
-              }
-              //PetscPrintf(PETSC_COMM_WORLD, "coordsx %g %g coordsy %g %g\n", coordsx[0], coordsx[1], coordsy[0], coordsy[1]);
-
-              PetscScalar r = 0.0;
-              for(int d = 0; d < embedDim; d++) {
-                r += PetscSqr(coordsx[d] - coordsy[d]);
-              }
-              r = sqrt(r);
-
-              PetscScalar nDotR = 0.0;
-              for(int d = 0; d < embedDim; d++) {
-                nDotR += normal[d]*(coordsy[d] - coordsx[d])/r;
-              }
-              PetscPrintf(PETSC_COMM_WORLD, "r %g dr/dn %g\n", r, nDotR);
-
-              // Loop over trial functions
-              for(int f = 0; f < numBasisFuncs; ++f) {
-                // Loop over basis functions
-                for(int g = 0; g < numBasisFuncs; ++g) {
-                  PetscScalar identity = basis[qx*numBasisFuncs+f]*basis[qy*numBasisFuncs+g];
-
-                  //PetscPrintf(PETSC_COMM_WORLD, "%d %d %d %d %g %g\n", qx, qy, f, g, identity, r);
-                  fMat[f*numBasisFuncs+g] += identity*(nDotR/(2.0*M_PI*r))*quadWeights[qx]*detJx*quadWeights[qy]*detJy;
-                  gMat[f*numBasisFuncs+g] += identity*(log(1.0/r)/(2.0*M_PI))*quadWeights[qx]*detJx*quadWeights[qy]*detJy;
-                }
-              }
-            }
-#endif
-#if 0
-          PetscPrintf(PETSC_COMM_WORLD, "Cell pair: %d and %d\n", *c_iter, *d_iter);
+#if 1
+          PetscPrintf(PETSC_COMM_WORLD, "Cell: %d\n", *d_iter);
           PetscPrintf(PETSC_COMM_WORLD, "x: ");
           for(int f = 0; f < numBasisFuncs; ++f) {
             PetscPrintf(PETSC_COMM_WORLD, "(%d) %g ", f, x[f]);
@@ -222,13 +185,6 @@ namespace ALE {
           PetscPrintf(PETSC_COMM_WORLD, "bdData: ");
           for(int f = 0; f < numBasisFuncs; ++f) {
             PetscPrintf(PETSC_COMM_WORLD, "(%d) %g ", f, bdData[f]);
-          }
-          PetscPrintf(PETSC_COMM_WORLD, "\n");
-          PetscPrintf(PETSC_COMM_WORLD, "iMat: ");
-          for(int f = 0; f < numBasisFuncs; ++f) {
-            for(int g = 0; g < numBasisFuncs; ++g) {
-              PetscPrintf(PETSC_COMM_WORLD, "(%d,%d) %g ", f, g, iMat[f*numBasisFuncs+g]);
-            }
           }
           PetscPrintf(PETSC_COMM_WORLD, "\n");
           PetscPrintf(PETSC_COMM_WORLD, "fMat: ");

@@ -125,7 +125,8 @@ public:
     double      coords[2] = {0.5, 0.5};
     PetscScalar sol;
 
-    ALE::Problem::LaplaceBEMFunctions::PointEvaluation((Mesh) this->_problem->getDM(), exactSolution, coords, 0.5, &sol);
+    ALE::Problem::LaplaceBEMFunctions::PointEvaluation((Mesh) this->_problem->getDM(), exactSolution, coords, 0.25, &sol);
+    PetscPrintf(PETSC_COMM_WORLD, "Potential at (%g,%g): %g\n", coords[0], coords[1], sol);
     this->checkSolution(exactError, 1.0e-6, "LaplaceBEMUnitSquareBd");
   };
 
