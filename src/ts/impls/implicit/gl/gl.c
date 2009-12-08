@@ -329,13 +329,12 @@ static PetscErrorCode TSGLCompleteStep_Rescale(TSGLScheme sc,PetscReal h,TSGLSch
 {
   PetscErrorCode ierr;
   PetscScalar    brow[32],vrow[32];
-  PetscInt       i,j,r,s,ratio;
+  PetscInt       i,j,r,s;
 
   PetscFunctionBegin;
   /* Build the new solution from (X,Ydot) */
   r = sc->r;
   s = sc->s;
-  ratio = next_h/h;
   for (i=0; i<r; i++) {
     ierr = VecZeroEntries(X[i]);CHKERRQ(ierr);
     for (j=0; j<s; j++) brow[j] = h*sc->b[i*s+j];
