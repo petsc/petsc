@@ -120,7 +120,7 @@ namespace ALE {
       };
       #undef __FUNCT__
       #define __FUNCT__ "PointEvaluation"
-      PetscErrorCode PointEvaluation(::Mesh mesh, SectionReal X, double coordsx[], double detJx) {
+      PetscErrorCode PointEvaluation(::Mesh mesh, SectionReal X, double coordsx[], double detJx, PetscScalar elemVec[]) {
         Obj<PETSC_MESH_TYPE> m;
         Obj<PETSC_MESH_TYPE::real_section_type> s;
         SectionReal    boundaryData, normals;
@@ -142,7 +142,7 @@ namespace ALE {
         const int                                qx                 = 0;
         const int                                matSize            = numBasisFuncs*numBasisFuncs;
         double         coordsy[2], v0y[2], Jy[4], invJy[4], detJy;
-        PetscScalar    elemVec[1], fMat[1], gMat[1], normal[2], x[1], bdData[1];
+        PetscScalar    fMat[1], gMat[1], normal[2], x[1], bdData[1];
 
         for(PETSC_MESH_TYPE::label_sequence::iterator d_iter = cells->begin(); d_iter != cEnd; ++d_iter) {
           m->computeBdElementGeometry(coordinates, *d_iter, v0y, Jy, invJy, detJy);
@@ -321,25 +321,26 @@ namespace ALE {
             //PetscPrintf(PETSC_COMM_WORLD, "Initial 1/2 phi[%d] %g\n", f, elemVec[f]);
           }
 
-          for(PETSC_MESH_TYPE::label_sequence::iterator d_iter = cells->begin(); d_iter != cEnd; ++d_iter) {
-            m->computeBdElementGeometry(coordinates, *d_iter, v0y, Jy, invJy, detJy);
-            if (detJy <= 0.0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJy, *d_iter);
-            detJy = sqrt(detJy);
-            ierr = PetscMemzero(fMat, matSize * sizeof(PetscScalar));CHKERRQ(ierr);
-            ierr = PetscMemzero(gMat, matSize * sizeof(PetscScalar));CHKERRQ(ierr);
-
-            ierr = SectionRealRestrictClosure(X, mesh, *d_iter, closureSize, x);CHKERRQ(ierr);
-            ierr = SectionRealRestrictClosure(boundaryData, mesh, *d_iter, closureSize, bdData);CHKERRQ(ierr);
-            ierr = SectionRealRestrictClosure(normals, mesh, *d_iter, embedDim, normal);CHKERRQ(ierr);
-
-            // Loop over x quadrature points
-            for(int qx = 0; qx < numQuadPoints; ++qx) {
-              for(int d = 0; d < embedDim; d++) {
-                coordsx[d] = v0x[d];
-                for(int e = 0; e < dim; e++) {
-                  coordsx[d] += Jx[d*embedDim+e]*(quadPoints[qx*dim+e] + 1.0);
-                }
+          // Loop over x quadrature points
+          for(int qx = 0; qx < numQuadPoints; ++qx) {
+            for(int d = 0; d < embedDim; d++) {
+              coordsx[d] = v0x[d];
+              for(int e = 0; e < dim; e++) {
+                coordsx[d] += Jx[d*embedDim+e]*(quadPoints[qx*dim+e] + 1.0);
               }
+            }
+
+            for(PETSC_MESH_TYPE::label_sequence::iterator d_iter = cells->begin(); d_iter != cEnd; ++d_iter) {
+              m->computeBdElementGeometry(coordinates, *d_iter, v0y, Jy, invJy, detJy);
+              if (detJy <= 0.0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJy, *d_iter);
+              detJy = sqrt(detJy);
+              ierr = PetscMemzero(fMat, matSize * sizeof(PetscScalar));CHKERRQ(ierr);
+              ierr = PetscMemzero(gMat, matSize * sizeof(PetscScalar));CHKERRQ(ierr);
+
+              ierr = SectionRealRestrictClosure(X, mesh, *d_iter, closureSize, x);CHKERRQ(ierr);
+              ierr = SectionRealRestrictClosure(boundaryData, mesh, *d_iter, closureSize, bdData);CHKERRQ(ierr);
+              ierr = SectionRealRestrictClosure(normals, mesh, *d_iter, embedDim, normal);CHKERRQ(ierr);
+
 #if 1
               for(int d = 0; d < embedDim; d++) {
                 coordsy[d] = v0y[d];
@@ -399,7 +400,6 @@ namespace ALE {
                 }
               }
 #endif
-            }
 #if 0
             PetscPrintf(PETSC_COMM_WORLD, "Cell pair: %d and %d\n", *c_iter, *d_iter);
             PetscPrintf(PETSC_COMM_WORLD, "x: ");
@@ -442,6 +442,7 @@ namespace ALE {
               //PetscPrintf(PETSC_COMM_WORLD, "elemVec[%d] %g\n", f, elemVec[f]);
             }
           }
+          }
           for(int f = 0; f < numBasisFuncs; ++f) {
             PetscPrintf(PETSC_COMM_WORLD, "Full residual[%d] %g\n", f, elemVec[f]);
           }
@@ -466,7 +467,7 @@ namespace ALE {
       };
       #undef __FUNCT__
       #define __FUNCT__ "Jac_Unstructured"
-      PetscErrorCode Jac_Unstructured(::Mesh mesh, SectionReal section, Mat A, void *ctx) {
+      PetscErrorCode Jac_Unstructured(::Mesh mesh, SectionReal section, Mat M, void *ctx) {
         LaplaceBEMOptions  *options = (LaplaceBEMOptions *) ctx;
         Obj<PETSC_MESH_TYPE> m;
         Obj<PETSC_MESH_TYPE::real_section_type> s;
@@ -474,8 +475,8 @@ namespace ALE {
         PetscErrorCode ierr;
 
         PetscFunctionBegin;
-        ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
-        ierr = MatZeroEntries(A);CHKERRQ(ierr);
+        ierr = MatSetOption(M, MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+        ierr = MatZeroEntries(M);CHKERRQ(ierr);
         ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
         ierr = MeshGetSectionReal(mesh, "normals", &normals);CHKERRQ(ierr);
         ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
@@ -520,24 +521,25 @@ namespace ALE {
             }
           }
 #endif
-          ierr = updateOperator(A, m, s, order, *c_iter, elemMat, ADD_VALUES);CHKERRQ(ierr);
+          ierr = updateOperator(M, m, s, order, *c_iter, elemMat, ADD_VALUES);CHKERRQ(ierr);
 
-          for(PETSC_MESH_TYPE::label_sequence::iterator d_iter = cells->begin(); d_iter != cEnd; ++d_iter) {
-            ierr = PetscMemzero(elemMat, matSize * sizeof(PetscScalar));CHKERRQ(ierr);
-            m->computeBdElementGeometry(coordinates, *d_iter, v0y, Jy, invJy, detJy);
-            if (detJy <= 0.0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJy, *d_iter);
-            detJy = sqrt(detJy);
-
-            ierr = SectionRealRestrictClosure(normals, mesh, *d_iter, embedDim, normal);CHKERRQ(ierr);
-
-            // Loop over x quadrature points
-            for(int qx = 0; qx < numQuadPoints; ++qx) {
-              for(int d = 0; d < embedDim; d++) {
-                coordsx[d] = v0x[d];
-                for(int e = 0; e < dim; e++) {
-                  coordsx[d] += Jx[d*embedDim+e]*(quadPoints[qx*dim+e] + 1.0);
-                }
+          // Loop over x quadrature points
+          for(int qx = 0; qx < numQuadPoints; ++qx) {
+            for(int d = 0; d < embedDim; d++) {
+              coordsx[d] = v0x[d];
+              for(int e = 0; e < dim; e++) {
+                coordsx[d] += Jx[d*embedDim+e]*(quadPoints[qx*dim+e] + 1.0);
               }
+            }
+
+            for(PETSC_MESH_TYPE::label_sequence::iterator d_iter = cells->begin(); d_iter != cEnd; ++d_iter) {
+              ierr = PetscMemzero(elemMat, matSize * sizeof(PetscScalar));CHKERRQ(ierr);
+              m->computeBdElementGeometry(coordinates, *d_iter, v0y, Jy, invJy, detJy);
+              if (detJy <= 0.0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJy, *d_iter);
+              detJy = sqrt(detJy);
+              
+              ierr = SectionRealRestrictClosure(normals, mesh, *d_iter, embedDim, normal);CHKERRQ(ierr);
+
 #if 1
               for(int d = 0; d < embedDim; d++) {
                 coordsy[d] = v0y[d];
@@ -591,16 +593,16 @@ namespace ALE {
                 }
               }
 #endif
+              ierr = updateOperatorGeneral(M, m, s, order, *c_iter, m, s, order, *d_iter, elemMat, ADD_VALUES);CHKERRQ(ierr);
             }
-            ierr = updateOperatorGeneral(A, m, s, order, *c_iter, m, s, order, *d_iter, elemMat, ADD_VALUES);CHKERRQ(ierr);
           }
         }
         ierr = PetscFree2(elemMat,normal);CHKERRQ(ierr);
         ierr = PetscFree4(coordsx,v0x,Jx,invJx);CHKERRQ(ierr);
         ierr = PetscFree4(coordsy,v0y,Jy,invJy);CHKERRQ(ierr);
-        ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-        ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-        ierr = MatView(A, PETSC_VIEWER_STDOUT_SELF);
+        ierr = MatAssemblyBegin(M, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+        ierr = MatAssemblyEnd(M, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+        ierr = MatView(M, PETSC_VIEWER_STDOUT_SELF);
         PetscFunctionReturn(0);
       };
     };

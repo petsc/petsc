@@ -122,6 +122,10 @@ public:
     ALE::Problem::LaplaceBEMFunctions::Rhs_Unstructured((Mesh) this->_problem->getDM(), exactSolution, residual, this->_problem->getOptions());
     this->_problem->getMesh()->getRealSection("residual")->view("residual");
     this->_problem->solve();
+    double      coords[2] = {0.5, 0.5};
+    PetscScalar sol;
+
+    ALE::Problem::LaplaceBEMFunctions::PointEvaluation((Mesh) this->_problem->getDM(), exactSolution, coords, 0.5, &sol);
     this->checkSolution(exactError, 1.0e-6, "LaplaceBEMUnitSquareBd");
   };
 
