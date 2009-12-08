@@ -399,6 +399,84 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
 
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecScatterCopy_PtoP_AllToAll"
+PetscErrorCode VecScatterCopy_PtoP_AllToAll(VecScatter in,VecScatter out)
+{
+  VecScatter_MPI_General *in_to   = (VecScatter_MPI_General*)in->todata;
+  VecScatter_MPI_General *in_from = (VecScatter_MPI_General*)in->fromdata,*out_to,*out_from;
+  PetscErrorCode         ierr;
+  PetscInt               ny,bs = in_from->bs;
+  PetscMPIInt            size;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(((PetscObject)in)->comm,&size);CHKERRQ(ierr);
+  out->begin     = in->begin;
+  out->end       = in->end;
+  out->copy      = in->copy;
+  out->destroy   = in->destroy;
+  out->view      = in->view;
+
+  /* allocate entire send scatter context */
+  ierr = PetscNewLog(out,VecScatter_MPI_General,&out_to);CHKERRQ(ierr);
+  ierr = PetscNewLog(out,VecScatter_MPI_General,&out_from);CHKERRQ(ierr);
+
+  ny                = in_to->starts[in_to->n];
+  out_to->n         = in_to->n; 
+  out_to->type      = in_to->type;
+  out_to->sendfirst = in_to->sendfirst;
+
+  ierr = PetscMalloc(out_to->n*sizeof(MPI_Request),&out_to->requests);CHKERRQ(ierr);
+  ierr = PetscMalloc4(bs*ny,PetscScalar,&out_to->values,ny,PetscInt,&out_to->indices,out_to->n+1,PetscInt,&out_to->starts,out_to->n,PetscMPIInt,&out_to->procs);CHKERRQ(ierr);
+  ierr = PetscMalloc2(PetscMax(in_to->n,in_from->n),MPI_Status,&out_to->sstatus,PetscMax(in_to->n,in_from->n),MPI_Status,&out_to->rstatus);CHKERRQ(ierr);
+  ierr = PetscMemcpy(out_to->indices,in_to->indices,ny*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemcpy(out_to->starts,in_to->starts,(out_to->n+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemcpy(out_to->procs,in_to->procs,(out_to->n)*sizeof(PetscMPIInt));CHKERRQ(ierr);
+     
+  out->todata       = (void*)out_to;
+  out_to->local.n   = in_to->local.n;
+  out_to->local.nonmatching_computed = PETSC_FALSE;
+  out_to->local.n_nonmatching        = 0;
+  out_to->local.slots_nonmatching    = 0;
+  if (in_to->local.n) {
+    ierr = PetscMalloc(in_to->local.n*sizeof(PetscInt),&out_to->local.vslots);CHKERRQ(ierr);
+    ierr = PetscMalloc(in_from->local.n*sizeof(PetscInt),&out_from->local.vslots);CHKERRQ(ierr);
+    ierr = PetscMemcpy(out_to->local.vslots,in_to->local.vslots,in_to->local.n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(out_from->local.vslots,in_from->local.vslots,in_from->local.n*sizeof(PetscInt));CHKERRQ(ierr);
+  } else {
+    out_to->local.vslots   = 0;
+    out_from->local.vslots = 0;
+  }
+
+  /* allocate entire receive context */
+  out_from->type      = in_from->type;
+  ny                  = in_from->starts[in_from->n];
+  out_from->n         = in_from->n; 
+  out_from->sendfirst = in_from->sendfirst;
+
+  ierr = PetscMalloc(out_from->n*sizeof(MPI_Request),&out_from->requests);CHKERRQ(ierr);
+  ierr = PetscMalloc4(ny*bs,PetscScalar,&out_from->values,ny,PetscInt,&out_from->indices,out_from->n+1,PetscInt,&out_from->starts,out_from->n,PetscMPIInt,&out_from->procs);CHKERRQ(ierr);
+  ierr = PetscMemcpy(out_from->indices,in_from->indices,ny*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemcpy(out_from->starts,in_from->starts,(out_from->n+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemcpy(out_from->procs,in_from->procs,(out_from->n)*sizeof(PetscMPIInt));CHKERRQ(ierr);
+  out->fromdata       = (void*)out_from;
+  out_from->local.n   = in_from->local.n;
+  out_from->local.nonmatching_computed = PETSC_FALSE;
+  out_from->local.n_nonmatching        = 0;
+  out_from->local.slots_nonmatching    = 0;
+
+  out_to->use_alltoallv = out_from->use_alltoallv = PETSC_TRUE;
+
+  ierr = PetscMalloc2(size,PetscMPIInt,&out_to->counts,size,PetscMPIInt,&out_to->displs);CHKERRQ(ierr);
+  ierr = PetscMemcpy(out_to->counts,in_to->counts,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
+  ierr = PetscMemcpy(out_to->displs,in_to->displs,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
+
+  ierr = PetscMalloc2(size,PetscMPIInt,&out_from->counts,size,PetscMPIInt,&out_from->displs);CHKERRQ(ierr);
+  ierr = PetscMemcpy(out_from->counts,in_from->counts,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
+  ierr = PetscMemcpy(out_from->displs,in_from->displs,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 /* --------------------------------------------------------------------------------------------------
     Packs and unpacks the message data into send or from receive buffers. 
 
@@ -1793,10 +1871,13 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
 	  ierr = MPI_Type_commit(from->types+from->procs[i]);CHKERRQ(ierr);
         }
       }
+    } else {
+      ctx->copy = VecScatterCopy_PtoP_AllToAll;
     }
 #else 
     to->use_alltoallw   = PETSC_FALSE;
     from->use_alltoallw = PETSC_FALSE;
+    ctx->copy           = VecScatterCopy_PtoP_AllToAll;
 #endif
 #if defined(PETSC_HAVE_MPI_WIN_CREATE)
   } else if (to->use_window) {
