@@ -34,7 +34,8 @@ namespace ALE {
       AssemblyType  operatorAssembly;            // The type of operator assembly 
       double (*integrate)(const double *, const double *, const int, double (*)(const double *)); // Basis functional application
       double        lambda;                      // The parameter controlling nonlinearity
-      double        reentrant_angle;              // The angle for the reentrant corner.
+      double        reentrant_angle;             // The angle for the reentrant corner.
+      PetscScalar   phiCoefficient;              // Coefficient C for phi = {0 in interior, 0.5 on smooth boundary}
     } LaplaceBEMOptions;
     namespace LaplaceBEMFunctions {
       static PetscScalar lambda;
@@ -118,9 +119,146 @@ namespace ALE {
         return cos(2.0*PETSC_PI*x[0]);
       };
       #undef __FUNCT__
+      #define __FUNCT__ "PointEvaluation"
+      PetscErrorCode PointEvaluation(::Mesh mesh, SectionReal X, double coordsx[], double detJx) {
+        Obj<PETSC_MESH_TYPE> m;
+        Obj<PETSC_MESH_TYPE::real_section_type> s;
+        SectionReal    boundaryData, normals;
+        PetscErrorCode ierr;
+
+        PetscFunctionBegin;
+        ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+        ierr = MeshGetSectionReal(mesh, "boundaryData", &boundaryData);CHKERRQ(ierr);
+        ierr = MeshGetSectionReal(mesh, "normals", &normals);CHKERRQ(ierr);
+        ierr = SectionRealGetSection(X, s);CHKERRQ(ierr);
+
+        const Obj<PETSC_MESH_TYPE::real_section_type>&  coordinates = m->getRealSection("coordinates");
+        const Obj<PETSC_MESH_TYPE::label_sequence>&     cells       = m->heightStratum(0);
+        const PETSC_MESH_TYPE::label_sequence::iterator cEnd        = cells->end();
+        const int                                embedDim           = m->getDimension()+1;
+        const int                                closureSize        = m->sizeWithBC(s, *cells->begin()); // Should do a max of some sort
+        const int                                numBasisFuncs      = 1;
+        const double                             quadWeights[1]     = {1.0};
+        const int                                qx                 = 0;
+        const int                                matSize            = numBasisFuncs*numBasisFuncs;
+        double         coordsy[2], v0y[2], Jy[4], invJy[4], detJy;
+        PetscScalar    elemVec[1], fMat[1], gMat[1], normal[2], x[1], bdData[1];
+
+        for(PETSC_MESH_TYPE::label_sequence::iterator d_iter = cells->begin(); d_iter != cEnd; ++d_iter) {
+          m->computeBdElementGeometry(coordinates, *d_iter, v0y, Jy, invJy, detJy);
+          if (detJy <= 0.0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJy, *d_iter);
+          detJy = sqrt(detJy);
+          ierr = PetscMemzero(fMat, matSize * sizeof(PetscScalar));CHKERRQ(ierr);
+          ierr = PetscMemzero(gMat, matSize * sizeof(PetscScalar));CHKERRQ(ierr);
+
+          ierr = SectionRealRestrictClosure(X, mesh, *d_iter, closureSize, x);CHKERRQ(ierr);
+          ierr = SectionRealRestrictClosure(boundaryData, mesh, *d_iter, closureSize, bdData);CHKERRQ(ierr);
+          ierr = SectionRealRestrictClosure(normals, mesh, *d_iter, embedDim, normal);CHKERRQ(ierr);
+
+#if 1
+          for(int d = 0; d < embedDim; d++) {
+            coordsy[d] = v0y[d];
+          }
+          // I was warned about screwy integration
+          PetscScalar L = 2.0*detJy;
+          PetscScalar A = PetscSqr(L);
+          PetscScalar B = 2.0*L*(-normal[1]*(coordsy[0] - coordsx[0]) + normal[0]*(coordsy[1] - coordsx[1]));
+          PetscScalar E = PetscSqr(coordsy[0] - coordsx[0]) + PetscSqr(coordsy[1] - coordsx[1]);
+          PetscScalar D = sqrt(fabs(4.0*A*E - PetscSqr(B)));
+          PetscScalar BA = B/A;
+          PetscScalar EA = E/A;
+
+          if (D < 1.0e-10) {
+            gMat[0] -= (L/(2.0*M_PI))*(log(L) + (1.0 + 0.5*BA)*log(fabs(1.0 + 0.5*BA)) - 0.5*BA*log(fabs(0.5*BA)) - 1.0)*quadWeights[qx]*detJx;
+            fMat[0]  = 0.0;
+          } else {
+            gMat[0] -= (L/(4.0*M_PI))*(2.0*(log(L) - 1.0) - 0.5*BA*log(fabs(EA)) + (1.0 + 0.5*BA)*log(fabs(1.0 + BA + EA))
+                                       + (D/A)*(atan((2.0*A + B)/D) - atan(B/D)))*quadWeights[qx]*detJx;
+            fMat[0] -= (L*(normal[0]*(coordsy[0] - coordsx[0]) + normal[1]*(coordsy[1] - coordsx[1]))/D * (atan((2.0*A + B)/D) - atan(B/D)))/M_PI*quadWeights[qx]*detJx;
+          }
+#else
+            // Loop over y quadrature points
+            for(int qy = 0; qy < numQuadPoints; ++qy) {
+              for(int d = 0; d < embedDim; d++) {
+                coordsy[d] = v0y[d];
+                for(int e = 0; e < dim; e++) {
+                  coordsy[d] += Jy[d*embedDim+e]*(quadPoints[qy*dim+e] + 1.0);
+                }
+              }
+              //PetscPrintf(PETSC_COMM_WORLD, "coordsx %g %g coordsy %g %g\n", coordsx[0], coordsx[1], coordsy[0], coordsy[1]);
+
+              PetscScalar r = 0.0;
+              for(int d = 0; d < embedDim; d++) {
+                r += PetscSqr(coordsx[d] - coordsy[d]);
+              }
+              r = sqrt(r);
+
+              PetscScalar nDotR = 0.0;
+              for(int d = 0; d < embedDim; d++) {
+                nDotR += normal[d]*(coordsy[d] - coordsx[d])/r;
+              }
+              PetscPrintf(PETSC_COMM_WORLD, "r %g dr/dn %g\n", r, nDotR);
+
+              // Loop over trial functions
+              for(int f = 0; f < numBasisFuncs; ++f) {
+                // Loop over basis functions
+                for(int g = 0; g < numBasisFuncs; ++g) {
+                  PetscScalar identity = basis[qx*numBasisFuncs+f]*basis[qy*numBasisFuncs+g];
+
+                  //PetscPrintf(PETSC_COMM_WORLD, "%d %d %d %d %g %g\n", qx, qy, f, g, identity, r);
+                  fMat[f*numBasisFuncs+g] += identity*(nDotR/(2.0*M_PI*r))*quadWeights[qx]*detJx*quadWeights[qy]*detJy;
+                  gMat[f*numBasisFuncs+g] += identity*(log(1.0/r)/(2.0*M_PI))*quadWeights[qx]*detJx*quadWeights[qy]*detJy;
+                }
+              }
+            }
+#endif
+#if 0
+          PetscPrintf(PETSC_COMM_WORLD, "Cell pair: %d and %d\n", *c_iter, *d_iter);
+          PetscPrintf(PETSC_COMM_WORLD, "x: ");
+          for(int f = 0; f < numBasisFuncs; ++f) {
+            PetscPrintf(PETSC_COMM_WORLD, "(%d) %g ", f, x[f]);
+          }
+          PetscPrintf(PETSC_COMM_WORLD, "\n");
+          PetscPrintf(PETSC_COMM_WORLD, "bdData: ");
+          for(int f = 0; f < numBasisFuncs; ++f) {
+            PetscPrintf(PETSC_COMM_WORLD, "(%d) %g ", f, bdData[f]);
+          }
+          PetscPrintf(PETSC_COMM_WORLD, "\n");
+          PetscPrintf(PETSC_COMM_WORLD, "iMat: ");
+          for(int f = 0; f < numBasisFuncs; ++f) {
+            for(int g = 0; g < numBasisFuncs; ++g) {
+              PetscPrintf(PETSC_COMM_WORLD, "(%d,%d) %g ", f, g, iMat[f*numBasisFuncs+g]);
+            }
+          }
+          PetscPrintf(PETSC_COMM_WORLD, "\n");
+          PetscPrintf(PETSC_COMM_WORLD, "fMat: ");
+          for(int f = 0; f < numBasisFuncs; ++f) {
+            for(int g = 0; g < numBasisFuncs; ++g) {
+              PetscPrintf(PETSC_COMM_WORLD, "(%d,%d) %g ", f, g, fMat[f*numBasisFuncs+g]);
+            }
+          }
+          PetscPrintf(PETSC_COMM_WORLD, "\n");
+          PetscPrintf(PETSC_COMM_WORLD, "gMat: ");
+          for(int f = 0; f < numBasisFuncs; ++f) {
+            for(int g = 0; g < numBasisFuncs; ++g) {
+              PetscPrintf(PETSC_COMM_WORLD, "(%d,%d) %g ", f, g, gMat[f*numBasisFuncs+g]);
+            }
+          }
+          PetscPrintf(PETSC_COMM_WORLD, "\n");
+#endif
+          // Add linear contribution
+          for(int f = 0; f < numBasisFuncs; ++f) {
+            for(int g = 0; g < numBasisFuncs; ++g) {
+              elemVec[f] += fMat[f*numBasisFuncs+g]*bdData[g] - gMat[f*numBasisFuncs+g]*x[g];
+            }
+          }
+        }
+      };
+      #undef __FUNCT__
       #define __FUNCT__ "Rhs_Unstructured"
       PetscErrorCode Rhs_Unstructured(::Mesh mesh, SectionReal X, SectionReal section, void *ctx) {
         LaplaceBEMOptions  *options = (LaplaceBEMOptions *) ctx;
+        PetscScalar         C = options->phiCoefficient;
         Obj<PETSC_MESH_TYPE> m;
         Obj<PETSC_MESH_TYPE::real_section_type> s;
         SectionReal    boundaryData, normals;
@@ -174,14 +312,13 @@ namespace ALE {
             }
           }
 
-          CHKMEMQ;
           ierr = SectionRealRestrictClosure(boundaryData, mesh, *c_iter, closureSize, bdData);CHKERRQ(ierr);
 
           for(int f = 0; f < numBasisFuncs; ++f) {
             for(int g = 0; g < numBasisFuncs; ++g) {
               elemVec[f] += iMat[f*numBasisFuncs+g]*bdData[g];
             }
-            PetscPrintf(PETSC_COMM_WORLD, "Initial 1/2 phi[%d] %g\n", f, elemVec[f]);
+            //PetscPrintf(PETSC_COMM_WORLD, "Initial 1/2 phi[%d] %g\n", f, elemVec[f]);
           }
 
           for(PETSC_MESH_TYPE::label_sequence::iterator d_iter = cells->begin(); d_iter != cEnd; ++d_iter) {
@@ -263,7 +400,7 @@ namespace ALE {
               }
 #endif
             }
-#if 1
+#if 0
             PetscPrintf(PETSC_COMM_WORLD, "Cell pair: %d and %d\n", *c_iter, *d_iter);
             PetscPrintf(PETSC_COMM_WORLD, "x: ");
             for(int f = 0; f < numBasisFuncs; ++f) {
@@ -302,7 +439,7 @@ namespace ALE {
               for(int g = 0; g < numBasisFuncs; ++g) {
                 elemVec[f] += fMat[f*numBasisFuncs+g]*bdData[g] - gMat[f*numBasisFuncs+g]*x[g];
               }
-              PetscPrintf(PETSC_COMM_WORLD, "elemVec[%d] %g\n", f, elemVec[f]);
+              //PetscPrintf(PETSC_COMM_WORLD, "elemVec[%d] %g\n", f, elemVec[f]);
             }
           }
           for(int f = 0; f < numBasisFuncs; ++f) {
@@ -415,7 +552,7 @@ namespace ALE {
               PetscScalar EA = E/A;
 
               if (D < 1.0e-10) {
-                elemMat[0] += (L/(2.0*M_PI))*(log(L) + (1.0 + 0.5*BA)*log(fabs(1.0 + 0.5*BA)) - 0.5*BA*log(fabs(0.5*BA)) - 1.0);
+                elemMat[0] += (L/(2.0*M_PI))*(log(L) + (1.0 + 0.5*BA)*log(fabs(1.0 + 0.5*BA)) - 0.5*BA*log(fabs(0.5*BA)) - 1.0)*quadWeights[qx]*detJx;
               } else {
                 elemMat[0] += (L/(4.0*M_PI))*(2.0*(log(L) - 1.0) - 0.5*BA*log(fabs(EA)) + (1.0 + 0.5*BA)*log(fabs(1.0 + BA + EA))
                                          + (D/A)*(atan((2.0*A + B)/D) - atan(B/D)))*quadWeights[qx]*detJx;
@@ -515,6 +652,7 @@ namespace ALE {
         options->reentrantMesh    = PETSC_FALSE;
         options->circularMesh     = PETSC_FALSE;
         options->refineSingularity= PETSC_FALSE;
+        options->phiCoefficient   = 0.5;
 
         ierr = PetscOptionsBegin(comm, "", "LaplaceBEM Problem Options", "DMMG");CHKERRQ(ierr);
           ierr = PetscOptionsInt("-debug", "The debugging level", "bratu.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
