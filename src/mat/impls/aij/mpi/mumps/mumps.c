@@ -928,14 +928,34 @@ PetscErrorCode MatGetFactor_mpisbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
 }
 EXTERN_C_END
 
+/* -------------------------------------------------------------------------------------------*/
+/*@
+  MatMumpsSetIcntl - Set MUMPS parameter ICNTL()
+
+   Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
+.  idx - index of MUMPS parameter array ICNTL()
+-  icntl - value of MUMPS ICNTL(imumps)
+
+  Options Database:
+.   -mat_mumps_icntl_<idx> <icntl>
+
+   Level: beginner
+
+   References: MUMPS Users' Guide 
+
+.seealso: MatGetFactor()
+@*/
 #undef __FUNCT__   
 #define __FUNCT__ "MatMumpsSetIcntl"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMumpsSetIcntl(Mat F,PetscInt imumps,PetscInt icntl)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMumpsSetIcntl(Mat F,PetscInt idx,PetscInt icntl)
 {
   Mat_MUMPS      *lu =(Mat_MUMPS*)(F)->spptr; 
 
   PetscFunctionBegin; 
-  lu->id.ICNTL(imumps) = icntl;
+  lu->id.ICNTL(idx) = icntl;
   PetscFunctionReturn(0);
 }
 
