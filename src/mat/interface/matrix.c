@@ -2829,7 +2829,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatSolve_Basic(Mat A,Mat B,Mat X)
   ierr = MatGetArray(X,&xx);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B,&m,PETSC_NULL);CHKERRQ(ierr);  /* number local rows */
   ierr = MatGetSize(B,PETSC_NULL,&N);CHKERRQ(ierr);       /* total columns in dense matrix */
-  ierr = MatGetVecs(B,&x,&b);CHKERRQ(ierr);
+  ierr = MatGetVecs(A,&x,&b);CHKERRQ(ierr);
   for (i=0; i<N; i++) {
     ierr = VecPlaceArray(b,bb + i*m);CHKERRQ(ierr);
     ierr = VecPlaceArray(x,xx + i*m);CHKERRQ(ierr);
