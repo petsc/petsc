@@ -80,6 +80,21 @@ namespace ALE {
         return -6.0*(x[0] - 0.5) - 6.0*(x[1] - 0.5);
       };
 
+      PetscScalar linear_2d_bem(const double x[]) {
+        return x[0] + x[1];
+      };
+
+      // \frac{\partial u}{\partial n}
+      PetscScalar linear_nder_2d(const double x[]) {
+        if (x[0] + x[1] < 1.0) {
+          // Bottom/Left
+          return -1.0;
+        } else {
+        // Right/Top
+          return 1.0;
+        }
+      };
+
       PetscScalar quadratic_2d(const double x[]) {
         return x[0]*x[0] + x[1]*x[1];
       };
@@ -788,8 +803,8 @@ namespace ALE {
               this->_options.exactDirichletFunc = ALE::Problem::LaplaceBEMFunctions::singularity_exact_2d;
             } else {
               this->_options.func               = ALE::Problem::LaplaceBEMFunctions::constant;
-              this->_options.exactDirichletFunc = ALE::Problem::LaplaceBEMFunctions::quadratic_2d;
-              this->_options.exactNeumannFunc   = ALE::Problem::LaplaceBEMFunctions::quadratic_nder_2d;
+              this->_options.exactDirichletFunc = ALE::Problem::LaplaceBEMFunctions::linear_2d_bem;
+              this->_options.exactNeumannFunc   = ALE::Problem::LaplaceBEMFunctions::linear_nder_2d;
             }
           } else {
             this->_options.func               = ALE::Problem::LaplaceBEMFunctions::linear_2d;
@@ -1102,7 +1117,7 @@ namespace ALE {
       PetscErrorCode calculateError(SectionReal X, double *error) {
         Obj<PETSC_MESH_TYPE::real_section_type> u;
         Obj<PETSC_MESH_TYPE::real_section_type> s;
-        PetscScalar  (*func)(const double *) = this->_options.exactDirichletFunc;
+        PetscScalar  (*func)(const double *) = this->_options.exactNeumannFunc;
         PetscErrorCode ierr;
 
         PetscFunctionBegin;
@@ -1235,7 +1250,11 @@ namespace ALE {
         const int    N_1      = numEdges/4 + 1;
         const int    L        = std::ceil(log(N_1)/log(2));
         const double lower[2] = {-h/2.0, -h/2.0};
-        cosnt double upper[2] = {(((1 << (L+1)) - 1) h)/2.0, (((1 << (L+1)) - 1) h)/2.0};
+        const double upper[2] = {(((1 << (L+1)) - 1) * h)/2.0, (((1 << (L+1)) - 1) * h)/2.0};
+      };
+      // Evaluate BEM solution on FEM grid
+      //   
+      void BEMtoFEM() {
       };
     };
   }
