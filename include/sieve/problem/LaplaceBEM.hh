@@ -1223,6 +1223,21 @@ namespace ALE {
         PetscFunctionReturn(0);
       };
     };
+    class FMMforBEM {
+      // Create matching tree
+      //   For a square:
+      //     1) Take the box width to be the smallest edge length h
+      //     2) The number of boxes per dimension is N_1 = E/4 + 1 where is the total number of edges in the square
+      //     3) The tree is level is thus 2^{dL} > N_1^d --> L > log(E/4 + 1)/log(2)
+      //     4) The lower left is (-h/2, -h/2) and the upper right is (\frac{(2^{L+1}-1) h}{2}, \frac{(2^{L+1}-1) h}{2})
+      void setupTree(int numEdges, double minEdgeLength) {
+        const double h        = minEdgeLength;
+        const int    N_1      = numEdges/4 + 1;
+        const int    L        = std::ceil(log(N_1)/log(2));
+        const double lower[2] = {-h/2.0, -h/2.0};
+        cosnt double upper[2] = {(((1 << (L+1)) - 1) h)/2.0, (((1 << (L+1)) - 1) h)/2.0};
+      };
+    };
   }
 }
 
