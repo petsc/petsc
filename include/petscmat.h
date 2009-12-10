@@ -1690,3 +1690,10 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT PetscViewerMathematicaPutCSRMatrix(Pets
 
 PETSC_EXTERN_CXX_END
 #endif
+
+/* 
+   PETSc interface to MUMPS 
+*/
+#ifdef PETSC_HAVE_MUMPS
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMumpsSetIcntl(Mat,PetscInt,PetscInt);
+#endif

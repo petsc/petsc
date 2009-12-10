@@ -171,6 +171,9 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
     ierr = PetscFree(lu->jcn);CHKERRQ(ierr);    
     ierr = MPI_Comm_free(&(lu->comm_mumps));CHKERRQ(ierr);
   }
+  /* clear composed functions */
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatFactorGetSolverPackage_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMumpsSetIcntl_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = (lu->MatDestroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -784,6 +787,7 @@ PetscErrorCode MatGetFactor_seqaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   B->ops->view             = MatView_MUMPS;
   B->ops->getinfo          = MatGetInfo_MUMPS;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mumps",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMumpsSetIcntl_C","MatMumpsSetIcntl",MatMumpsSetIcntl);CHKERRQ(ierr);
   B->factor                = MAT_FACTOR_LU;  
 
   ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);
@@ -824,6 +828,7 @@ PetscErrorCode MatGetFactor_mpiaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMUMPS;
   B->ops->view             = MatView_MUMPS;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mumps",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMumpsSetIcntl_C","MatMumpsSetIcntl",MatMumpsSetIcntl);CHKERRQ(ierr);
   B->factor                = MAT_FACTOR_LU;  
 
   ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);
@@ -864,7 +869,7 @@ PetscErrorCode MatGetFactor_seqsbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SBAIJMUMPS;
   B->ops->view                   = MatView_MUMPS;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mumps",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
-
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMumpsSetIcntl_C","MatMumpsSetIcntl",MatMumpsSetIcntl);CHKERRQ(ierr);
   B->factor                      = MAT_FACTOR_CHOLESKY;
 
   ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);
@@ -905,6 +910,7 @@ PetscErrorCode MatGetFactor_mpisbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SBAIJMUMPS;
   B->ops->view                   = MatView_MUMPS;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mumps",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMumpsSetIcntl_C","MatMumpsSetIcntl",MatMumpsSetIcntl);CHKERRQ(ierr);
   B->factor                      = MAT_FACTOR_CHOLESKY;
 
   ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);
@@ -921,3 +927,35 @@ PetscErrorCode MatGetFactor_mpisbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+/* -------------------------------------------------------------------------------------------*/
+/*@
+  MatMumpsSetIcntl - Set MUMPS parameter ICNTL()
+
+   Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
+.  idx - index of MUMPS parameter array ICNTL()
+-  icntl - value of MUMPS ICNTL(imumps)
+
+  Options Database:
+.   -mat_mumps_icntl_<idx> <icntl>
+
+   Level: beginner
+
+   References: MUMPS Users' Guide 
+
+.seealso: MatGetFactor()
+@*/
+#undef __FUNCT__   
+#define __FUNCT__ "MatMumpsSetIcntl"
+PetscErrorCode PETSCMAT_DLLEXPORT MatMumpsSetIcntl(Mat F,PetscInt idx,PetscInt icntl)
+{
+  Mat_MUMPS      *lu =(Mat_MUMPS*)(F)->spptr; 
+
+  PetscFunctionBegin; 
+  lu->id.ICNTL(idx) = icntl;
+  PetscFunctionReturn(0);
+}
+
