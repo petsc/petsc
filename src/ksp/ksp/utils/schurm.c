@@ -179,10 +179,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSchurComplement(Mat A,Mat Ap,Mat B,Ma
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementGetKSP(Mat A,KSP *ksp)
 {
-  Mat_SchurComplement  *Na = (Mat_SchurComplement*)A->data;  
+  Mat_SchurComplement  *Na;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,0);
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidPointer(ksp,2);
+  Na = (Mat_SchurComplement*)A->data;
   *ksp = Na->ksp;
   PetscFunctionReturn(0);
 }

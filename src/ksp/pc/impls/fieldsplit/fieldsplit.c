@@ -135,13 +135,21 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
       ilink = ilink->next;
     }
     ierr = PetscViewerASCIIPrintf(viewer,"KSP solver for A block \n");CHKERRQ(ierr);
-    ierr = MatSchurComplementGetKSP(jac->schur,&ksp);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
+    if (jac->schur) {
+      ierr = MatSchurComplementGetKSP(jac->schur,&ksp);CHKERRQ(ierr);
+      ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"  not yet available\n");CHKERRQ(ierr);
+    }
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"KSP solver for S = D - C inv(A) B \n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = KSPView(jac->kspschur,viewer);CHKERRQ(ierr);
+    if (jac->kspschur) {
+      ierr = KSPView(jac->kspschur,viewer);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"  not yet available\n");CHKERRQ(ierr);
+    }
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   } else {
