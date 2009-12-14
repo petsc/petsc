@@ -270,9 +270,9 @@ class Configure(config.base.Configure):
       try:
         self.setCompilers.checkCompiler('FC')
       except RuntimeError, e:
-        self.logPrint('C libraries cannot directly be used from Fortran', 4, 'compilers')
-        self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
         self.setCompilers.LIBS = oldLibs
+        self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
+        raise RuntimeError('C libraries cannot directly be used from Fortran')
     return
 
   def checkCFormatting(self):
