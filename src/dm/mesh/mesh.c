@@ -1849,7 +1849,7 @@ PetscErrorCode MeshRefine_Mesh(Mesh mesh, MPI_Comm comm, Mesh *refinedMesh)
 .keywords: mesh, elements
 .seealso: MeshCreate(), MeshGenerate()
 @*/
-PetscErrorCode MeshCoarsenHierarchy(Mesh mesh, int numLevels, double coarseningFactor, PetscTruth interpolate, Mesh **coarseHierarchy)
+PetscErrorCode MeshCoarsenHierarchy(Mesh mesh, int numLevels, double coarseningFactor, PetscTruth interpolate, Mesh *coarseHierarchy)
 {
   ALE::Obj<PETSC_MESH_TYPE> oldMesh;
   PetscErrorCode      ierr;
@@ -1860,12 +1860,11 @@ PetscErrorCode MeshCoarsenHierarchy(Mesh mesh, int numLevels, double coarseningF
     PetscFunctionReturn(0);
   }
   ierr = MeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
-  ierr = PetscMalloc((numLevels+1) * sizeof(Mesh), coarseHierarchy);CHKERRQ(ierr);
-  for (int i = 0; i < numLevels+1; i++) {
-    ierr = MeshCreate(oldMesh->comm(), &(*coarseHierarchy)[i]);CHKERRQ(ierr);
+  for (int i = 0; i < numLevels; i++) {
+    ierr = MeshCreate(oldMesh->comm(), &coarseHierarchy[i]);CHKERRQ(ierr);
   }
   ierr = MeshSpacingFunction(mesh);CHKERRQ(ierr);
-  ierr = MeshCreateHierarchyLabel_Link(mesh, coarseningFactor, numLevels+1, *coarseHierarchy);
+  ierr = MeshCreateHierarchyLabel_Link(mesh, coarseningFactor, numLevels+1, coarseHierarchy);
   
 #if 0
   if (oldMesh->getDimension() != 2) SETERRQ(PETSC_ERR_SUP, "Coarsening only works in two dimensions right now");
@@ -1891,7 +1890,7 @@ PetscErrorCode MeshCoarsenHierarchy(Mesh mesh, int numLevels, double coarseningF
 
 #endif
 
-PetscErrorCode MeshCoarsenHierarchy_Mesh(Mesh mesh, int numLevels, Mesh **coarseHierarchy)
+PetscErrorCode MeshCoarsenHierarchy_Mesh(Mesh mesh, int numLevels, Mesh *coarseHierarchy)
 {
   PetscErrorCode ierr;
   double cfactor = 1.5;
