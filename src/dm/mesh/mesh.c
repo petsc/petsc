@@ -16,7 +16,7 @@ ALE::MemoryLogger Petsc_MemoryLogger;
 
 EXTERN PetscErrorCode MeshView_Mesh(Mesh, PetscViewer);
 EXTERN PetscErrorCode MeshRefine_Mesh(Mesh, MPI_Comm, Mesh *);
-EXTERN PetscErrorCode MeshCoarsenHierarchy_Mesh(Mesh, int, Mesh **);
+EXTERN PetscErrorCode MeshCoarsenHierarchy_Mesh(Mesh, int, Mesh *);
 EXTERN PetscErrorCode MeshGetInterpolation_Mesh(Mesh, Mesh, Mat *, Vec *);
 EXTERN PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh, Mesh, Mat *, Vec *);
 
