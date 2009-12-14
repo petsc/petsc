@@ -1688,12 +1688,12 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDWPSetComputeNormU(Mat,PetscTruth
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT PetscViewerMathematicaPutMatrix(PetscViewer, PetscInt, PetscInt, PetscReal *);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT PetscViewerMathematicaPutCSRMatrix(PetscViewer, PetscInt, PetscInt, PetscInt *, PetscInt *, PetscReal *);
 
-PETSC_EXTERN_CXX_END
-#endif
-
 /* 
    PETSc interface to MUMPS 
 */
 #ifdef PETSC_HAVE_MUMPS
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMumpsSetIcntl(Mat,PetscInt,PetscInt);
+#endif
+
+PETSC_EXTERN_CXX_END
 #endif
