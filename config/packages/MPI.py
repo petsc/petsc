@@ -54,13 +54,14 @@ class Configure(config.package.Package):
   def setupHelp(self, help):
     config.package.Package.setupHelp(self,help)
     import nargs
-    help.addArgument('MPI', '-download-mpich=<no,yes,ifneeded,filename>',    nargs.ArgDownload(None, 0, 'Download and install MPICH-2'))
-    help.addArgument('MPI', '-download-openmpi=<no,yes,ifneeded,filename>',  nargs.ArgDownload(None, 0, 'Download and install OpenMPI'))
-    help.addArgument('MPI', '-with-mpiexec=<prog>',                nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
-    help.addArgument('MPI', '-with-mpi-compilers=<bool>',         nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
-    help.addArgument('MPI', '-with-mpi-shared=<bool>',            nargs.ArgBool(None, None, 'Try to use shared MPI libraries'))
-    help.addArgument('MPI', '-download-mpich-pm=gforker or mpd',  nargs.Arg(None, 'gforker', 'Launcher for MPI processes')) 
+    help.addArgument('MPI', '-download-mpich=<no,yes,ifneeded,filename>',        nargs.ArgDownload(None, 0, 'Download and install MPICH-2'))
+    help.addArgument('MPI', '-download-openmpi=<no,yes,ifneeded,filename>',      nargs.ArgDownload(None, 0, 'Download and install OpenMPI'))
+    help.addArgument('MPI', '-with-mpiexec=<prog>',                              nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
+    help.addArgument('MPI', '-with-mpi-compilers=<bool>',                        nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
+    help.addArgument('MPI', '-with-mpi-shared=<bool>',                           nargs.ArgBool(None, None, 'Try to use shared MPI libraries'))
+    help.addArgument('MPI', '-download-mpich-pm=gforker or mpd',                 nargs.Arg(None, 'gforker', 'Launcher for MPI processes')) 
     help.addArgument('MPI', '-download-mpich-device=ch3:shm or see mpich2 docs', nargs.Arg(None, None, 'Communicator for MPI processes'))
+    help.addArgument('MPI', '-download-mpich-mpe',                               nargs.ArgBool(None, 0, 'Install MPE with MPICH'))
     return
 
   def setupDependencies(self, framework):
@@ -464,12 +465,11 @@ class Configure(config.package.Package):
     else:
       args.append('--disable-f77')
       args.append('--disable-f90')
-    if self.framework.argDB['with-shared']:
-      if self.setCompilers.staticLibraries:
-        raise RuntimeError('Configuring with shared libraries - but the system/compilers do not support this')
+    if self.framework.argDB['with-shared'] or self.framework.argDB['with-mpi-shared']:
       if self.compilers.isGCC or config.setCompilers.Configure.isIntel(compiler):
-        # disable dylibs on mac due to mpich build issues
-        if not config.setCompilers.Configure.isDarwin():
+        if config.setCompilers.Configure.isDarwin():
+          args.append('--enable-sharedlibs=gcc-osx')
+        else:
           args.append('--enable-sharedlibs=gcc')
       elif config.setCompilers.Configure.isSun(compiler):
         args.append('--enable-sharedlibs=solaris-cc')
@@ -477,7 +477,10 @@ class Configure(config.package.Package):
         args.append('--enable-sharedlibs=libtool')
     if 'download-mpich-device' in self.argDB:
       args.append('--with-device='+self.argDB['download-mpich-device'])
-    args.append('--without-mpe')
+    if self.argDB['download-mpich-mpe']:
+      args.append('--with-mpe')
+    else:
+      args.append('--without-mpe')
     args.append('--with-pm='+self.argDB['download-mpich-pm'])
     # make MPICH behave properly for valgrind
     args.append('--enable-g=meminit')    
