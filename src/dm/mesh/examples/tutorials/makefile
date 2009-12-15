@@ -1,7 +1,10 @@
+DIM              = 2
+NUM_TERMS        = 17
+NUM_COEFFICIENTS = ${NUM_TERMS}
 
 CFLAGS	        =
 FFLAGS	        =
-CPPFLAGS        =
+CPPFLAGS        = -I${PETFMM_DIR}/c++ -DDIMENSION=${DIM} -DNUM_TERMS=${NUM_TERMS} -DNUM_COEFFICIENTS=${NUM_COEFFICIENTS}
 FPPFLAGS        = 
 LOCDIR          = src/dm/mesh/examples/tutorials/
 EXAMPLESC       = ex1.c ex10.cxx ex12.cxx

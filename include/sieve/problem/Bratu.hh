@@ -3,17 +3,10 @@
 
 // TODO: Add a guard that looks for the generated quadrature header
 
-#include <DMBuilder.hh>
-
-#include <petscmesh_viewers.hh>
-#include <petscdmmg.h>
+#include <sieve/problem/Base.hh>
 
 namespace ALE {
   namespace Problem {
-    typedef enum {RUN_FULL, RUN_TEST, RUN_MESH} RunType;
-    typedef enum {NEUMANN, DIRICHLET} BCType;
-    typedef enum {ASSEMBLY_FULL, ASSEMBLY_STORED, ASSEMBLY_CALCULATED} AssemblyType;
-    typedef union {SectionReal section; Vec vec;} ExactSolType;
     typedef struct {
       PetscInt      debug;                       // The debugging level
       RunType       run;                         // The run type
@@ -616,6 +609,7 @@ namespace ALE {
       void bcType(const BCType bc) {this->_options.bcType = bc;};
       AssemblyType opAssembly() const {return this->_options.operatorAssembly;};
       void opAssembly(const AssemblyType at) {this->_options.operatorAssembly = at;};
+      PETSC_MESH_TYPE *getMesh() {return this->_mesh;};
       DM getDM() const {return this->_dm;};
       DMMG *getDMMG() const {return this->_dmmg;};
       ALE::Problem::ExactSolType exactSolution() const {return this->_options.exactSol;};

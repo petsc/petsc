@@ -6,12 +6,13 @@
 #include <petscmesh_viewers.hh>
 #include <petscdmmg.h>
 
+#include <Kernel_Laplacian_2D.hh>
+#include <FMM.hh>
+
+#include <sieve/problem/Bratu.hh>
+
 namespace ALE {
   namespace Problem {
-    typedef enum {RUN_FULL, RUN_TEST, RUN_MESH} RunType;
-    typedef enum {NEUMANN, DIRICHLET} BCType;
-    typedef enum {ASSEMBLY_FULL, ASSEMBLY_STORED, ASSEMBLY_CALCULATED} AssemblyType;
-    typedef union {SectionReal section; Vec vec;} ExactSolType;
     typedef struct {
       PetscInt      debug;                       // The debugging level
       RunType       run;                         // The run type
@@ -224,6 +225,7 @@ namespace ALE {
             }
           }
         }
+        PetscFunctionReturn(0);
       };
       #undef __FUNCT__
       #define __FUNCT__ "Rhs_Unstructured"
@@ -278,7 +280,7 @@ namespace ALE {
               for(int g = 0; g < numBasisFuncs; ++g) {
                 PetscScalar identity = basis[qx*numBasisFuncs+f]*basis[qx*numBasisFuncs+g];
 
-                iMat[f*numBasisFuncs+g] += 0.5*identity*quadWeights[qx]*detJx;
+                iMat[f*numBasisFuncs+g] += C*identity*quadWeights[qx]*detJx;
               }
             }
           }
@@ -439,7 +441,6 @@ namespace ALE {
       #undef __FUNCT__
       #define __FUNCT__ "Jac_Unstructured"
       PetscErrorCode Jac_Unstructured(::Mesh mesh, SectionReal section, Mat M, void *ctx) {
-        LaplaceBEMOptions  *options = (LaplaceBEMOptions *) ctx;
         Obj<PETSC_MESH_TYPE> m;
         Obj<PETSC_MESH_TYPE::real_section_type> s;
         SectionReal    normals;
@@ -456,7 +457,6 @@ namespace ALE {
         const double                            *quadPoints    = disc->getQuadraturePoints();
         const double                            *quadWeights   = disc->getQuadratureWeights();
         const int                                numBasisFuncs = disc->getBasisSize();
-        const double                            *basis         = disc->getBasis();
         const Obj<PETSC_MESH_TYPE::real_section_type>&  coordinates = m->getRealSection("coordinates");
         const Obj<PETSC_MESH_TYPE::label_sequence>&     cells       = m->heightStratum(0);
         const PETSC_MESH_TYPE::label_sequence::iterator cEnd        = cells->end();
@@ -477,22 +477,6 @@ namespace ALE {
           m->computeBdElementGeometry(coordinates, *c_iter, v0x, Jx, invJx, detJx);
           if (detJx <= 0.0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJx, *c_iter);
           detJx = sqrt(detJx);
-
-#if 0
-          // Loop over x quadrature points
-          for(int qx = 0; qx < numQuadPoints; ++qx) {
-            // Loop over trial functions
-            for(int f = 0; f < numBasisFuncs; ++f) {
-              // Loop over basis functions
-              for(int g = 0; g < numBasisFuncs; ++g) {
-                PetscScalar identity = basis[qx*numBasisFuncs+f]*basis[qx*numBasisFuncs+g];
-
-                elemMat[f*numBasisFuncs+g] += 0.5*identity*quadWeights[qx]*detJx;
-              }
-            }
-          }
-#endif
-          ierr = updateOperator(M, m, s, order, *c_iter, elemMat, ADD_VALUES);CHKERRQ(ierr);
 
           // Loop over x quadrature points
           for(int qx = 0; qx < numQuadPoints; ++qx) {
@@ -1239,22 +1223,103 @@ namespace ALE {
       };
     };
     class FMMforBEM {
+    public:
+      class Blob;
+      typedef FMM::Evaluator<Blob,FMM::Kernel<double, std::complex<double>, std::complex<double>, NUM_TERMS,DIMENSION,NUM_COEFFICIENTS>, DIMENSION> evaluator_type;
+      typedef evaluator_type::point_type point_type;
+      const static int dim = DIMENSION;
+      class Blob {
+      public:
+        typedef double               circ_type;
+        typedef std::complex<double> vel_type;
+      private:
+        int        num;
+        point_type position;
+        circ_type  circulation;
+        vel_type   velocity;
+      public:
+        Blob(): num(0), position(point_type()), circulation(0.0), velocity(0.0) {};
+        // TODO: Remove this. It is required by allocateStorage() in the section since I have value_type dummy(0)
+        Blob(const int dummy): num(0), position(point_type()), circulation(0.0), velocity(0.0) {};
+        Blob(const point_type& point): num(0), position(point), circulation(0.0), velocity(0.0) {};
+        Blob(const int num, const point_type& point): num(num), position(point), circulation(0.0), velocity(0.0) {};
+        Blob(const Blob& blob): num(blob.num), position(blob.position), circulation(blob.circulation), velocity(blob.velocity) {};
+      public:
+        friend std::ostream& operator<<(std::ostream& stream, const Blob& blob) {
+          stream << "blob num " << blob.num << std::endl;
+          stream << "blob pos " << blob.position << std::endl;
+          stream << "blob circ " << blob.circulation << std::endl;
+          stream << "blob vel " << blob.velocity << std::endl;
+          return stream;
+        };
+      public:
+        void clear() {};
+        int getNum() const {return this->num;};
+        point_type getPosition() const {return this->position;};
+        void setPosition(const point_type& position) {this->position = position;};
+        circ_type getCirculation() const {return this->circulation;};
+        void setCirculation(const circ_type circulation) {this->circulation = circulation;};
+        vel_type getVelocity() const {return this->velocity;};
+        void setVelocity(const vel_type velocity) {this->velocity = velocity;};
+        void setVelocity(const double velocity[]) {this->velocity = vel_type(velocity[0], velocity[1]);};
+        void addVelocity(const vel_type velocity) {this->velocity += velocity;};
+        void addVelocity(const double velocity[]) {this->velocity += vel_type(velocity[0], velocity[1]);};
+      };
+    protected:
+      ALE::Obj<evaluator_type::tree_type> tree;
+      ALE::Obj<evaluator_type>            evaluator;
+      FMM::Options<point_type>            options;
+    public:
+      FMMforBEM(ALE::Problem::LaplaceBEM& bemProblem) {
+        const Obj<PETSC_MESH_TYPE::label_sequence>& edges         = bemProblem.getMesh()->heightStratum(0);
+        const int                                   numEdges      = edges->size();
+        double                                      minEdgeLength = 0.5;
+
+        // Loop over edges and find minimum length
+        setupTree(numEdges, minEdgeLength, bemProblem.getOptions()->debug);
+        evaluator = new evaluator_type(PETSC_COMM_SELF, bemProblem.getOptions()->debug);
+      };
+    public:
       // Create matching tree
       //   For a square:
       //     1) Take the box width to be the smallest edge length h
       //     2) The number of boxes per dimension is N_1 = E/4 + 1 where is the total number of edges in the square
       //     3) The tree is level is thus 2^{dL} > N_1^d --> L > log(E/4 + 1)/log(2)
       //     4) The lower left is (-h/2, -h/2) and the upper right is (\frac{(2^{L+1}-1) h}{2}, \frac{(2^{L+1}-1) h}{2})
-      void setupTree(int numEdges, double minEdgeLength) {
+      void setupTree(int numEdges, double minEdgeLength, int debug = 0) {
         const double h        = minEdgeLength;
         const int    N_1      = numEdges/4 + 1;
         const int    L        = std::ceil(log(N_1)/log(2));
-        const double lower[2] = {-h/2.0, -h/2.0};
-        const double upper[2] = {(((1 << (L+1)) - 1) * h)/2.0, (((1 << (L+1)) - 1) * h)/2.0};
+        //const double lower[2] = {-h/2.0, -h/2.0};
+        //const double upper[2] = {(((1 << (L+1)) - 1) * h)/2.0, (((1 << (L+1)) - 1) * h)/2.0};
+
+        tree = new evaluator_type::tree_type(L+1, debug);
       };
       // Evaluate BEM solution on FEM grid
-      //   
-      void BEMtoFEM() {
+      //   This should be as simple as running the last step using different points
+      void BEMtoFEM(ALE::Problem::Bratu& femProblem) {
+        const Obj<PETSC_MESH_TYPE::label_sequence>&    vertices    = femProblem.getMesh()->depthStratum(0);
+        const Obj<PETSC_MESH_TYPE::real_section_type>& coordSec    = femProblem.getMesh()->getRealSection("coordinates");
+        const Obj<PETSC_MESH_TYPE::real_section_type>& solution    = femProblem.getMesh()->getRealSection("default");
+        const int                                      numPoints   = vertices->size();
+        point_type                                    *coordinates = new point_type[numPoints];
+        evaluator_type::kernel_type::vel_type         *potentials  = new evaluator_type::kernel_type::vel_type[numPoints];
+        int v = 0;
+
+        for(PETSC_MESH_TYPE::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter, ++v) {
+          const double *coords = coordSec->restrictPoint(*v_iter);
+
+          for(int d = 0; d < dim; ++d) {
+            coordinates[v*dim+d] = coords[d];
+          }
+        }
+        evaluator->evaluatePoints(*tree, options.sigma*options.sigma, options.k, numPoints, coordinates, potentials);
+        v = 0;
+        for(PETSC_MESH_TYPE::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter, ++v) {
+          PETSC_MESH_TYPE::real_section_type::value_type value = potentials[v].real();
+
+          solution->updatePoint(*v_iter, &value);
+        }
       };
     };
   }

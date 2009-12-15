@@ -2,6 +2,7 @@
 #include <petscdmmg.h>
 #include <petscmesh.hh>
 
+EXTERN double IntegrateDualBasis_gen_0(const double *v0, const double *J, const int dualIndex, double (*func)(const double *coords));
 EXTERN double IntegrateBdDualBasis_gen_0(const double *v0, const double *J, const int dualIndex, double (*func)(const double *coords));
 EXTERN PetscErrorCode CreateProblem_gen_0(DM dm, const char *name, const int numBC, const int *markers, double (**bcFuncs)(const double *coords), double (*exactFunc)(const double *coords));
 EXTERN double IntegrateDualBasis_gen_1(const double *v0, const double *J, const int dualIndex, double (*func)(const double *coords));
