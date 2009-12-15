@@ -10,6 +10,8 @@
 #include <iostream>
 #include <fstream>
 
+PetscScalar ALE::Problem::BratuFunctions::lambda = 0.0;
+
 class FunctionTestBratu : public CppUnit::TestFixture
 {
   CPPUNIT_TEST_SUITE(FunctionTestBratu);
