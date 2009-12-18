@@ -24,6 +24,20 @@ import confutils as cfgutils
 
 # --------------------------------------------------------------------
 
+from distutils.unixccompiler import UnixCCompiler
+rpath_option_orig = UnixCCompiler.runtime_library_dir_option
+def rpath_option(compiler, dir):
+    option = rpath_option_orig(compiler, dir)
+    if sys.platform[:5] == 'linux':
+        if option.startswith('-R'):
+            option =  option.replace('-R', '-Wl,-rpath,', 1)
+        elif option.startswith('-Wl,-R'):
+            option =  option.replace('-Wl,-R', '-Wl,-rpath,', 1)
+    return option
+UnixCCompiler.runtime_library_dir_option = rpath_option
+
+# --------------------------------------------------------------------
+
 class PetscConfig:
 
     def __init__(self, petsc_dir, petsc_arch):
@@ -371,6 +385,11 @@ class build_ext(_build_ext):
             pylib_dir = sysconfig.get_config_var("LIBDIR")
             if pylib_dir not in self.library_dirs:
                 self.library_dirs.append(pylib_dir)
+            if pylib_dir not in self.rpath:
+                self.rpath.append(pylib_dir)
+            if sys.exec_prefix == '/usr':
+                self.library_dirs.remove(pylib_dir)
+                self.rpath.remove(pylib_dir)
 
     def _copy_ext(self, ext):
         extclass = ext.__class__
