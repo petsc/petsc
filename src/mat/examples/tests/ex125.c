@@ -12,7 +12,7 @@ int main(int argc,char **args)
   Vec            u,x,b;
   PetscErrorCode ierr;
   PetscMPIInt    rank,nproc;
-  PetscInt       i,m,n,nfact,nsolve,nrhs=2,k;
+  PetscInt       i,m,n,nfact,nsolve,nrhs,k,ipack=0;
   PetscScalar    *array,rval;
   PetscReal      norm,tol=1.e-12;
   IS             perm,iperm;
@@ -40,8 +40,9 @@ int main(int argc,char **args)
   }
   
   /* Create dense matrix C and X; C holds true solution with identical colums */
+  nrhs = 2;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-nrhs",&nrhs,PETSC_NULL);CHKERRQ(ierr);
-  if (!rank) printf("ex126: nrhs %d\n",nrhs);
+  if (!rank) printf("ex125: nrhs %d\n",nrhs);
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,m,PETSC_DECIDE,PETSC_DECIDE,nrhs);CHKERRQ(ierr);
   ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr); 
@@ -75,14 +76,34 @@ int main(int argc,char **args)
 
   /* Test LU Factorization */
   ierr = MatGetOrdering(A,MATORDERING_ND,&perm,&iperm);CHKERRQ(ierr);
-  if (nproc == 1){
+  
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_solver_package",&ipack,PETSC_NULL);CHKERRQ(ierr);
+  switch (ipack){
+  case 1:
+#ifdef PETSC_HAVE_SUPERLU_DIST
+    if (!rank) printf(" SUPERLU_DIST LU:\n");
     ierr = MatGetFactor(A,MAT_SOLVER_SUPERLU_DIST,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
-  } else {
-    ierr = MatGetFactor(A,MAT_SOLVER_SUPERLU_DIST,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+    break;
+#endif
+  case 2:
+#ifdef PETSC_HAVE_MUMPS 
+    if (!rank) printf(" MUMPS LU:\n");
+    ierr = MatGetFactor(A,MAT_SOLVER_MUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+    {
+    /* test mumps options */
+    PetscInt icntl_7 = 5;
+    ierr = MatMumpsSetIcntl(F,7,icntl_7);CHKERRQ(ierr);
+    }
+    break;
+#endif
+  default:
+    if (!rank) printf(" PETSC LU:\n");
+    ierr = MatGetFactor(A,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
   }
+
+  info.fill = 5.0; 
   ierr = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
 
-  
   for (nfact = 0; nfact < 2; nfact++){
     if (!rank) printf(" %d-the LU numfactorization \n",nfact);
     ierr = MatLUFactorNumeric(F,A,&info);CHKERRQ(ierr);

@@ -122,12 +122,17 @@ public:
     ALE::Problem::LaplaceBEMFunctions::Rhs_Unstructured((Mesh) this->_problem->getDM(), exactSolution, residual, this->_problem->getOptions());
     this->_problem->getMesh()->getRealSection("residual")->view("residual");
     this->_problem->solve();
+    double      coords[2] = {0.5, 0.5};
+    PetscScalar sol;
+
+    ALE::Problem::LaplaceBEMFunctions::PointEvaluation((Mesh) this->_problem->getDM(), exactSolution, coords, 0.25, &sol);
+    PetscPrintf(PETSC_COMM_WORLD, "Potential at (%g,%g): %g\n", coords[0], coords[1], sol);
     this->checkSolution(exactError, 1.0e-6, "LaplaceBEMUnitSquareBd");
   };
 
   void testLaplaceBEMUnitSquareBdInterpolated(void) {
     this->_problem->interpolated(true);
-    this->testLaplaceBEMUnitSquareBd(0.166666);
+    this->testLaplaceBEMUnitSquareBd(0.356716);
   };
 };
 

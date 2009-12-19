@@ -226,7 +226,10 @@ namespace ALE {
         this->_createdType = true;
         return newtype;
       }
-      throw ALE::Exception("Cannot determine MPI type for value type");
+      ostringstream msg;
+
+      msg << "Cannot determine MPI type for value type with size " << sizeof(value_type);
+      throw PETSc::Exception(msg.str().c_str());
     };
     int getNewTag() const {
       static int tagKeyval = MPI_KEYVAL_INVALID;

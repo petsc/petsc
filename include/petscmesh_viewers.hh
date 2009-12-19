@@ -3,6 +3,7 @@
 
 #include <petscmesh.hh>
 #include <petscdmmg.h>
+#include <iomanip>
 
 using ALE::Obj;
 
@@ -55,7 +56,7 @@ class VTKViewer {
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteField"
   template<typename Section>
-    static PetscErrorCode writeField(const Obj<Section>& field, const std::string& name, const int fiberDim, const Obj<PETSC_MESH_TYPE::numbering_type>& numbering, PetscViewer viewer, int enforceDim = -1) {
+    static PetscErrorCode writeField(const Obj<Section>& field, const std::string& name, const int fiberDim, const Obj<PETSC_MESH_TYPE::numbering_type>& numbering, PetscViewer viewer, int enforceDim = -1, int precision = 6) {
     int            dim = enforceDim > 0 ? enforceDim : fiberDim;
     PetscErrorCode ierr;
 
@@ -71,14 +72,14 @@ class VTKViewer {
       }
       ierr = PetscViewerASCIIPrintf(viewer, "LOOKUP_TABLE default\n");CHKERRQ(ierr);
     }
-    ierr = writeSection(field, fiberDim, numbering, viewer, enforceDim);CHKERRQ(ierr);
+    ierr = writeSection(field, fiberDim, numbering, viewer, enforceDim, precision);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   };
 
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteSection"
   template<typename Section>
-  static PetscErrorCode writeSection(const Obj<Section>& field, const int fiberDim, const Obj<PETSC_MESH_TYPE::numbering_type>& numbering, PetscViewer viewer, int enforceDim = -1) {
+  static PetscErrorCode writeSection(const Obj<Section>& field, const int fiberDim, const Obj<PETSC_MESH_TYPE::numbering_type>& numbering, PetscViewer viewer, int enforceDim = -1, int precision = 6) {
     typedef typename Section::value_type value_type;
     const typename Section::chart_type& chart   = field->getChart();
     const MPI_Datatype                  mpiType = ALE::New::ParallelFactory<value_type>::singleton(field->debug())->getMPIType();
@@ -94,6 +95,9 @@ class VTKViewer {
         const int&        dim   = field->getFiberDimension(*p_iter);
         ostringstream     line;
 
+        line << std::resetiosflags(std::ios::fixed)
+             << std::setiosflags(std::ios::scientific)
+             << std::setprecision(precision);
         // Perhaps there should be a flag for excluding boundary values
         if (dim != 0) {
           if (verify) {line << *p_iter << " ";}
@@ -121,21 +125,22 @@ class VTKViewer {
         ierr = PetscMalloc(size * sizeof(value_type), &remoteValues);CHKERRQ(ierr);
         ierr = MPI_Recv(remoteValues, size, mpiType, p, 1, field->comm(), &status);CHKERRQ(ierr);
         for(int e = 0; e < numLocalElementsAndFiberDim[0]; e++) {
-          if (verify) {ierr = PetscViewerASCIIPrintf(viewer, "%d ", (int) remoteValues[e*numLocalElementsAndFiberDim[1]+0]);CHKERRQ(ierr);}
+          ostringstream line;
+
+          line << std::resetiosflags(std::ios::fixed)
+               << std::setiosflags(std::ios::scientific)
+               << std::setprecision(precision);
+          if (verify) {line << ((int) remoteValues[e*numLocalElementsAndFiberDim[1]+0]);}
           for(int d = verify; d < numLocalElementsAndFiberDim[1]; d++) {
-            if (d > (int) verify) {
-              ierr = PetscViewerASCIIPrintf(viewer, " ");CHKERRQ(ierr);
+            if (d > (int) verify) {              line << " ";
             }
-            if (mpiType == MPI_INT) {
-              ierr = PetscViewerASCIIPrintf(viewer, "%d", remoteValues[e*numLocalElementsAndFiberDim[1]+d]);CHKERRQ(ierr);
-            } else {
-              ierr = PetscViewerASCIIPrintf(viewer, "%G", remoteValues[e*numLocalElementsAndFiberDim[1]+d]);CHKERRQ(ierr);
-            }
+            line << remoteValues[e*numLocalElementsAndFiberDim[1]+d];
           }
           for(int d = numLocalElementsAndFiberDim[1]; d < enforceDim; d++) {
-            ierr = PetscViewerASCIIPrintf(viewer, " 0.0");CHKERRQ(ierr);
+            line << " 0.0";
           }
-          ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+          line << std::endl;
+          ierr = PetscViewerASCIIPrintf(viewer, "%s", line.str().c_str());CHKERRQ(ierr);
         }
         ierr = PetscFree(remoteValues);CHKERRQ(ierr);
       }
