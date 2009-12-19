@@ -150,6 +150,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetInfo(DA,PetscInt*,PetscInt*,Pets
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetProcessorSubset(DA,DADirection,PetscInt,MPI_Comm*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DARefine(DA,MPI_Comm,DA*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACoarsen(DA,MPI_Comm,DA*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DARefineHierarchy(DA,PetscInt,DA[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACoarsenHierarchy(DA,PetscInt,DA[]);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGlobalToNaturalAllCreate(DA,VecScatter*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DANaturalAllToGlobalCreate(DA,VecScatter*);
