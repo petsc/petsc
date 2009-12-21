@@ -391,12 +391,20 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
 .seealso DMCoarsenHierarchy(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMRefineHierarchy(DM dm,PetscInt nlevels,DM **dmf)
+PetscErrorCode PETSCDM_DLLEXPORT DMRefineHierarchy(DM dm,PetscInt nlevels,DM dmf[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = (*dm->ops->refinehierarchy)(dm,nlevels,dmf);CHKERRQ(ierr);
+  if (dm->ops->refinehierarchy) {
+    ierr = (*dm->ops->refinehierarchy)(dm,nlevels,dmf);CHKERRQ(ierr);
+  } else if (dm->ops->refine) {
+    PetscInt i;
+    ierr = DMRefine(dm,((PetscObject)dm)->comm,&dmf[0]);CHKERRQ(ierr);
+    for (i=1; i<nlevels; i++) {
+      ierr = DMRefine(dmf[i-1],((PetscObject)dm)->comm,&dmf[i]);CHKERRQ(ierr);
+    }
+  } else SETERRQ(PETSC_ERR_SUP,"No RefineHierarchy for this DM yet");
   PetscFunctionReturn(0);
 }
 
@@ -419,7 +427,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRefineHierarchy(DM dm,PetscInt nlevels,DM **d
 .seealso DMRefineHierarchy(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCoarsenHierarchy(DM dm, PetscInt nlevels, DM **dmc)
+PetscErrorCode PETSCDM_DLLEXPORT DMCoarsenHierarchy(DM dm, PetscInt nlevels, DM dmc[])
 {
   PetscErrorCode ierr;
 

@@ -3,7 +3,7 @@
 /* 
     Provides an interface to the MUMPS sparse solver
 */
-#include "../src/mat/impls/aij/seq/aij.h"
+#include "../src/mat/impls/aij/seq/aij.h"  /*I  "petscmat.h"  I*/
 #include "../src/mat/impls/aij/mpi/mpiaij.h"
 #include "../src/mat/impls/sbaij/seq/sbaij.h"
 #include "../src/mat/impls/sbaij/mpi/mpisbaij.h"

@@ -208,8 +208,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetDM(DMMG *dmmg, DM dm)
 {
   PetscInt       nlevels     = dmmg[0]->nlevels;
   PetscTruth     doRefine    = PETSC_TRUE;
-  PetscTruth     doHierarchy = PETSC_FALSE;
   PetscInt       i;
+  DM             *hierarchy;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -217,39 +217,22 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetDM(DMMG *dmmg, DM dm)
 
   /* Create DM data structure for all the levels */
   ierr = PetscOptionsGetTruth(PETSC_NULL, "-dmmg_refine", &doRefine, PETSC_IGNORE);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(PETSC_NULL, "-dmmg_hierarchy", &doHierarchy,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
+  ierr = PetscMalloc(nlevels*sizeof(DM),&hierarchy);CHKERRQ(ierr);
   if (doRefine) {
+    ierr = DMRefineHierarchy(dm,nlevels-1,hierarchy);CHKERRQ(ierr);
     dmmg[0]->dm = dm;
-    if (doHierarchy) {
-/*       DM *hierarchy; */
-
-/*       ierr = DMRefineHierarchy(dm, nlevels-1, &hierarchy);CHKERRQ(ierr); */
-/*       for(i = 1; i < nlevels; ++i) { */
-/*         dmmg[i]->dm = hierarchy[i-1]; */
-/*       } */
-      SETERRQ(PETSC_ERR_SUP, "Refinement hierarchy not yet implemented");
-    } else {
-      for(i = 1; i < nlevels; ++i) {
-        ierr = DMRefine(dmmg[i-1]->dm, dmmg[i]->comm, &dmmg[i]->dm);CHKERRQ(ierr);
-      }
+    for(i=1; i<nlevels; ++i) {
+      dmmg[i]->dm = hierarchy[i-1];
     }
   } else {
     dmmg[nlevels-1]->dm = dm;
-    if (doHierarchy) {
-      DM *hierarchy;
-
-      ierr = DMCoarsenHierarchy(dm, nlevels-1, &hierarchy);CHKERRQ(ierr);
-      for(i = 0; i < nlevels-1; ++i) {
-        dmmg[nlevels-2-i]->dm = hierarchy[i];
-      }
-    } else {
-/*       for(i = nlevels-2; i >= 0; --i) { */
-/*         ierr = DMCoarsen(dmmg[i+1]->dm, dmmg[i]->comm, &dmmg[i]->dm);CHKERRQ(ierr); */
-/*       } */
-      SETERRQ(PETSC_ERR_SUP, "Sequential coarsening not yet implemented");
+    ierr = DMCoarsenHierarchy(dm,nlevels-1,hierarchy);CHKERRQ(ierr);
+    for(i=0; i<nlevels-1; ++i) {
+      dmmg[nlevels-2-i]->dm = hierarchy[i];
     }
   }
+  ierr = PetscFree(hierarchy);CHKERRQ(ierr);
   /* Cleanup old structures (should use some private Destroy() instead) */
   for(i = 0; i < nlevels; ++i) {
     if (dmmg[i]->B) {ierr = MatDestroy(dmmg[i]->B);CHKERRQ(ierr); dmmg[i]->B = PETSC_NULL;}

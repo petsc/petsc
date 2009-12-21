@@ -22,8 +22,8 @@
 \
   PetscErrorCode (*refine)(type,MPI_Comm,type*);\
   PetscErrorCode (*coarsen)(type,MPI_Comm,type*);\
-  PetscErrorCode (*refinehierarchy)(type,PetscInt,type**);\
-  PetscErrorCode (*coarsenhierarchy)(type,PetscInt,type**);\
+  PetscErrorCode (*refinehierarchy)(type,PetscInt,type*);\
+  PetscErrorCode (*coarsenhierarchy)(type,PetscInt,type*);\
 \
   PetscErrorCode (*forminitialguess)(type,PetscErrorCode (*)(void),Vec,void*);\
   PetscErrorCode (*formfunction)(type,PetscErrorCode (*)(void),Vec,Vec);\

@@ -114,7 +114,6 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec,PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_Binary_DA(PetscViewer,Vec);
 EXTERN_C_END
 EXTERN PetscErrorCode DAView_Private(DA);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT DAGetAggregates(DA,DA,Mat*);
 
 extern PetscLogEvent  DA_GlobalToLocal, DA_LocalToGlobal, DA_LocalADFunction;
 
