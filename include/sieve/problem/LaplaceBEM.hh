@@ -707,9 +707,11 @@ namespace ALE {
           this->_dm = (DM) parallelMesh;
         }
         ierr = MeshGetMesh((::Mesh) this->_dm, this->_mesh);CHKERRQ(ierr);
+#if 0
         if (bcType() == DIRICHLET) {
           this->_mesh->markBoundaryCells("marker");
         }
+#endif
         ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view_vtk", &view);CHKERRQ(ierr);
         if (view) {
           PetscViewer viewer;
