@@ -400,11 +400,16 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRefineHierarchy(DM dm,PetscInt nlevels,DM dmf
     ierr = (*dm->ops->refinehierarchy)(dm,nlevels,dmf);CHKERRQ(ierr);
   } else if (dm->ops->refine) {
     PetscInt i;
-    ierr = DMRefine(dm,((PetscObject)dm)->comm,&dmf[0]);CHKERRQ(ierr);
+
+    if (nlevels > 0) {
+      ierr = DMRefine(dm,((PetscObject)dm)->comm,&dmf[0]);CHKERRQ(ierr);
+    }
     for (i=1; i<nlevels; i++) {
       ierr = DMRefine(dmf[i-1],((PetscObject)dm)->comm,&dmf[i]);CHKERRQ(ierr);
     }
-  } else SETERRQ(PETSC_ERR_SUP,"No RefineHierarchy for this DM yet");
+  } else {
+    SETERRQ(PETSC_ERR_SUP,"No RefineHierarchy for this DM yet");
+  }
   PetscFunctionReturn(0);
 }
 
@@ -432,7 +437,20 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCoarsenHierarchy(DM dm, PetscInt nlevels, DM 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = (*dm->ops->coarsenhierarchy)(dm, nlevels, dmc);CHKERRQ(ierr);
+  if (dm->ops->coarsenhierarchy) {
+    ierr = (*dm->ops->coarsenhierarchy)(dm, nlevels, dmc);CHKERRQ(ierr);
+  } else if (dm->ops->coarsen) {
+    PetscInt i;
+
+    if (nlevels > 0) {
+      ierr = DMCoarsen(dm,((PetscObject)dm)->comm,&dmc[0]);CHKERRQ(ierr);
+    }
+    for (i=1; i<nlevels; i++) {
+      ierr = DMRefine(dmc[i-1],((PetscObject)dm)->comm,&dmc[i]);CHKERRQ(ierr);
+    }
+  } else {
+    SETERRQ(PETSC_ERR_SUP,"No CoarsenHierarchy for this DM yet");
+  }
   PetscFunctionReturn(0);
 }
 
