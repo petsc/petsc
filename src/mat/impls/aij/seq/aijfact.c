@@ -1659,7 +1659,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const MatFacto
       /* if free space is not available, make more free space */
       if (current_space->local_remaining<nzk) {
         i = am - k + 1; /* num of unfactored rows */
-        i = PetscMin(i*nzk, i*(i-1)); /* i*nzk, i*(i-1): estimated and max additional space needed */
+        i *= PetscMin(nzk, (i-1)); /* i*nzk, i*(i-1): estimated and max additional space needed */
         ierr = PetscFreeSpaceGet(i,&current_space);CHKERRQ(ierr);
         ierr = PetscFreeSpaceGet(i,&current_space_lvl);CHKERRQ(ierr);
         reallocs++;
