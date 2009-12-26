@@ -17,10 +17,10 @@ configure_options = [
   '--with-f90-interface=cray_x1',
   
   '--with-batch=1',
-  '--with-mpi-shared=0',
+  '--known-mpi-shared=0',
   '--sizeof_void_p=8',
   '--sizeof_char=1',
-  '--with-memcmp-ok',
+  '--known-memcmp-ok',
   '--sizeof_long=8',
   '--sizeof_size_t=8',
   '--sizeof_MPI_Comm=4',

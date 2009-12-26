@@ -21,8 +21,8 @@ configure_options = [
   '--with-fortran-kernels=1',
 
   '--with-batch=1',
-  '--with-mpi-shared=0',
-  '--with-memcmp-ok',
+  '--known-mpi-shared=0',
+  '--known-memcmp-ok',
   '--sizeof_char=1',
   '--sizeof_void_p=4',
   '--sizeof_short=2',
