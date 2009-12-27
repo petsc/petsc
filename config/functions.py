@@ -14,8 +14,7 @@ class Configure(config.base.Configure):
 
   def setupHelp(self, help):
     import nargs
-    help.addArgument('Functions', '-with-memcmp-ok=<0 or 1>', nargs.ArgBool(None, 0, 'Does memcmp() work correctly?'))
-    help.addArgument('Functions', '-with-bad-memcmp=<0 or 1>', nargs.ArgBool(None, 0, 'Flag set by the batch check to indicate a faulty memcmp()'))
+    help.addArgument('Functions', '-known-memcmp-ok=<0 or 1>', nargs.ArgBool(None, None, 'Does memcmp() work correctly?'))
     return
 
   def setupDependencies(self, framework):
@@ -78,10 +77,11 @@ choke me
 
   def checkMemcmp(self):
     '''Check for 8-bit clean memcmp'''
-    if self.framework.argDB['with-bad-memcmp']:
-      raise RuntimeError('Failed to find 8-bit clean memcmp(). Cannot proceed')
-    if self.framework.argDB['with-memcmp-ok']:
-      return
+    if 'known-memcmp-ok' in self.framework.argDB:
+      if self.framework.argDB['known-memcmp-ok'] == 0:
+        raise RuntimeError('Failed to find 8-bit clean memcmp(). Cannot proceed')
+      else: 
+        return
     if not self.framework.argDB['with-batch']:
       if not self.checkRun('#include <string.h>\nvoid exit(int);\n\n', 'char c0 = 0x40;\nchar c1 = (char) 0x80;\nchar c2 = (char) 0x81;\nexit(memcmp(&c0, &c2, 1) < 0 && memcmp(&c1, &c2, 1) < 0 ? 0 : 1);\n'):
         raise RuntimeError('Failed to find 8-bit clean memcmp(). Cannot proceed.')
@@ -92,9 +92,9 @@ choke me
                                    '  char c1 = (char) 0x80;',
                                    '  char c2 = (char) 0x81;',
                                    '  if (memcmp(&c0, &c2, 1) < 0 && memcmp(&c1, &c2, 1) < 0 ? 0 : 1) {',
-                                   '    fprintf(output, " \'--with-bad-memcmp\',");',
+                                   '    fprintf(output, " \'--known-memcmp-ok=0\',\\n");',
                                    '  } else {',
-                                   '    fprintf(output, " \'--with-memcmp-ok\',");',
+                                   '    fprintf(output, " \'--known-memcmp-ok=1\',\\n");',
                                    '  }',
                                    '}'])
     return

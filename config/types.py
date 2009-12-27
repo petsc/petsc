@@ -15,7 +15,7 @@ class Configure(config.base.Configure):
 
   def setupHelp(self, help):
     import nargs
-    help.addArgument('Types', '-with-endian=<big or little>', nargs.Arg(None, None, 'Are bytes stored in big or little endian?'))
+    help.addArgument('Types', '-known-endian=<big or little>', nargs.Arg(None, None, 'Are bytes stored in big or little endian?'))
     return
 
   def setupDependencies(self, framework):
@@ -197,8 +197,8 @@ void (*signal())();
 
   def checkEndian(self):
     '''If the machine is big endian, defines WORDS_BIGENDIAN'''
-    if 'with-endian' in self.framework.argDB:
-      endian = self.framework.argDB['with-endian']
+    if 'known-endian' in self.framework.argDB:
+      endian = self.framework.argDB['known-endian']
     else:
       # See if sys/param.h defines the BYTE_ORDER macro
       includes = '#include <sys/types.h>\n#ifdef HAVE_SYS_PARAM_H\n  #include <sys/param.h>\n#endif\n'
@@ -240,7 +240,7 @@ void (*signal())();
           self.framework.addBatchBody(['{',
                                        '  union {long l; char c[sizeof(long)];} u;',
                                        '  u.l = 1;',
-                                       '  fprintf(output, " \'--with-endian=%s\',\\n", (u.c[sizeof(long) - 1] == 1) ? "big" : "little");',
+                                       '  fprintf(output, " \'--known-endian=%s\',\\n", (u.c[sizeof(long) - 1] == 1) ? "big" : "little");',
                                        '}'])
           # Dummy value
           endian = 'little'
@@ -262,8 +262,8 @@ void (*signal())();
     if otherInclude:
       includes += '#include <'+otherInclude+'>\n'
     body     = 'FILE *f = fopen("'+filename+'", "w");\n\nif (!f) exit(1);\nfprintf(f, "%lu\\n", (unsigned long)sizeof('+typeName+'));\n'
-    typename = 'sizeof_'+typeName.replace(' ', '_').replace('*', 'p')
-    if not typename in self.framework.argDB:
+    typename = typeName.replace(' ', '_').replace('*', 'p')
+    if not 'known-sizeof-'+typename in self.framework.argDB:
       if not self.framework.argDB['with-batch']:
         self.pushLanguage('C')
         if self.checkRun(includes, body) and os.path.exists(filename):
@@ -271,8 +271,8 @@ void (*signal())();
           size = int(f.read())
           f.close()
           os.remove(filename)
-        elif not typename == 'sizeof_long_long':
-          raise RuntimeError('Unable to determine '+typename)
+        elif not typename == 'long_long':
+          raise RuntimeError('Unable to determine size of '+typeName)
         else:
           self.framework.log.write('Compiler does not support long long\n')
           size = 0
@@ -281,13 +281,13 @@ void (*signal())();
         self.framework.addBatchInclude(['#include <stdlib.h>', '#include <stdio.h>', '#include <sys/types.h>'])
         if otherInclude:
           self.framework.addBatchInclude('#include <'+otherInclude+'>')
-        self.framework.addBatchBody('fprintf(output, "  \'--sizeof_'+typeName.replace(' ','_').replace('*','p')+'=%d\',\\n", sizeof('+typeName+'));')
+        self.framework.addBatchBody('fprintf(output, "  \'--known-sizeof-'+typename+'=%d\',\\n", sizeof('+typeName+'));')
         # dummy value
         size = 4
     else:
-      size = self.framework.argDB[typename]
-    self.sizes[typename] = int(size)
-    self.addDefine(typename.upper(), size)
+      size = self.framework.argDB['known-sizeof-'+typename]
+    self.sizes['known-sizeof-'+typename] = int(size)
+    self.addDefine('SIZEOF_'+typename.upper(), size)
     return size
 
   def checkBitsPerByte(self):
@@ -308,8 +308,8 @@ void (*signal())();
     while(val[0]) {val[0] <<= 1; i++;}
     fprintf(f, "%d\\n", i);\n
     '''
-    if 'bits_per_byte' in self.framework.argDB:
-      bits = self.framework.argDB['bits_per_byte']
+    if 'known-bits-per-byte' in self.framework.argDB:
+      bits = self.framework.argDB['known-bits-per-byte']
     elif not self.framework.argDB['with-batch']:
       if self.checkRun(includes, body) and os.path.exists(filename):
         f    = file(filename)
@@ -325,7 +325,7 @@ void (*signal())();
                                    '  val[0]=\'\\1\';',
                                    '  val[1]=\'\\0\';',
                                    '  while(val[0]) {val[0] <<= 1; i++;}',
-                                   '  fprintf(output, " \'--bits_per_byte=%d\',\\n", i);',
+                                   '  fprintf(output, " \'--known-bits-per-byte=%d\',\\n", i);',
                                    '}'])
       # dummy value
       bits = 8
