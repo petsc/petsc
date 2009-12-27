@@ -14,7 +14,6 @@ configure_options = [
   
   '--with-fortran-kernels=1',
   '--with-blas-lapack-lib=sci',
-  '--with-f90-interface=cray_x1',
   
   '--with-batch=1',
   '--known-mpi-shared=0',
@@ -29,7 +28,7 @@ configure_options = [
   '--known-endian=big',
   '--known-bits-per-byte=8',
   '--known-sizeof-MPI_Fint=4',
-  '--have-mpi-long-double=1',
+  '--known-mpi-long-double=1',
   '--known-sizeof-long_long=8',
   '--known-sizeof-float=4',
   '--known-sizeof-short=2'
