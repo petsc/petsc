@@ -18,21 +18,21 @@ configure_options = [
   
   '--with-batch=1',
   '--known-mpi-shared=0',
-  '--sizeof_void_p=8',
-  '--sizeof_char=1',
+  '--known-sizeof-void_p=8',
+  '--known-sizeof-char=1',
   '--known-memcmp-ok',
-  '--sizeof_long=8',
-  '--sizeof_size_t=8',
-  '--sizeof_MPI_Comm=4',
-  '--sizeof_double=8',
-  '--sizeof_int=4',
-  '--with-endian=big',
-  '--bits_per_byte=8',
-  '--sizeof_MPI_Fint=4',
+  '--known-sizeof-long=8',
+  '--known-sizeof-size_t=8',
+  '--known-sizeof-MPI_Comm=4',
+  '--known-sizeof-double=8',
+  '--known-sizeof-int=4',
+  '--known-endian=big',
+  '--known-bits-per-byte=8',
+  '--known-sizeof-MPI_Fint=4',
   '--have-mpi-long-double=1',
-  '--sizeof_long_long=8',
-  '--sizeof_float=4',
-  '--sizeof_short=2'
+  '--known-sizeof-long_long=8',
+  '--known-sizeof-float=4',
+  '--known-sizeof-short=2'
   ]
 
 if __name__ == '__main__':
