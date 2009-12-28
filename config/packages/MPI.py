@@ -288,8 +288,8 @@ class Configure(config.package.Package):
 
   def checkDownload(self, requireDownload = 1):
     '''Check if we should download MPICH or OpenMPI'''
-    if self.framework.argDB['download-mpi']:
-      raise RuntimeError('--download-mpi does not exist! Use --download-mpich or --download-openmpi')
+    if 'download-mpi' in self.framework.argDB and self.framework.argDB['download-mpi']:
+      raise RuntimeError('Option --download-mpi does not exist! Use --download-mpich or --download-openmpi instead.')
     
     if self.framework.argDB['download-mpich'] and self.framework.argDB['download-openmpi']:
       raise RuntimeError('Cannot install more than one of OpenMPI or  MPICH-2 for a single configuration. \nUse different PETSC_ARCH if you want to be able to switch between two')
