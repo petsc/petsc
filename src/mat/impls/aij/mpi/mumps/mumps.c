@@ -950,7 +950,7 @@ EXTERN_C_END
 @*/
 #undef __FUNCT__   
 #define __FUNCT__ "MatMumpsSetIcntl"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMumpsSetIcntl(Mat F,PetscInt idx,PetscInt icntl)
+PetscErrorCode MatMumpsSetIcntl(Mat F,PetscInt idx,PetscInt icntl)
 {
   Mat_MUMPS      *lu =(Mat_MUMPS*)(F)->spptr; 
 
