@@ -59,7 +59,7 @@ $
 
    Concepts: OpenMP
    
-.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscOpenMPFinalize(), PetscInitialize(), PetscOpenMPMerge(), PCOpenMPRun()
+.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscOpenMPFinalize(), PetscInitialize(), PetscOpenMPMerge(), PETScOpenMPRun()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOpenMPSpawn(PetscMPIInt nodesize)
