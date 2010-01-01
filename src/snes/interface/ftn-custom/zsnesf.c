@@ -2,6 +2,7 @@
 #include "petscsnes.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define matmffdcomputejacobian_          MATMFFDCOMPUTEJACOBIAN
 #define snessolve_                       SNESSOLVE
 #define snesdefaultcomputejacobian_      SNESDEFAULTCOMPUTEJACOBIAN
 #define snesdefaultcomputejacobiancolor_ SNESDEFAULTCOMPUTEJACOBIANCOLOR
@@ -29,6 +30,7 @@
 #define snesmonitorset_                  SNESMONITORSET
 #define snesgetapplicationcontext_       SNESGETAPPLICATIONCONTEXT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define matmffdcomputejacobian_          matmffdcomputejacobian           
 #define snessolve_                       snessolve
 #define snesdefaultcomputejacobian_      snesdefaultcomputejacobian
 #define snesdefaultcomputejacobiancolor_ snesdefaultcomputejacobiancolor
@@ -113,6 +115,10 @@ EXTERN_C_BEGIN
 
   functions, hence no STDCALL
 */
+void matmffdcomputejacobian_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure* type,void *ctx,PetscErrorCode *ierr)
+{
+  *ierr = MatMFFDComputeJacobian(*snes,*x,m,p,type,ctx);
+}
 void snesdefaultcomputejacobian_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure* type,void *ctx,PetscErrorCode *ierr)
 {
   *ierr = SNESDefaultComputeJacobian(*snes,*x,m,p,type,ctx);
@@ -148,6 +154,8 @@ void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,void (PETSC_STDCALL
     *ierr = SNESSetJacobian(*snes,*A,*B,SNESDAComputeJacobianWithAdifor,ctx);
   } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesdacomputejacobian_) {
     *ierr = SNESSetJacobian(*snes,*A,*B,SNESDAComputeJacobian,ctx);
+  } else if ((PetscVoidFunction)func == (PetscVoidFunction)matmffdcomputejacobian_) {
+    *ierr = SNESSetJacobian(*snes,*A,*B,MatMFFDComputeJacobian,ctx);
   } else if (!func) {
     *ierr = SNESSetJacobian(*snes,*A,*B,0,ctx);
   } else {
