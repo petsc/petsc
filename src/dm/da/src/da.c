@@ -696,6 +696,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DARefineHierarchy(DA da,PetscInt nlevels,DA daf
   PetscInt i;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  if (nlevels < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"nlevels cannot be negative");
+  if (nlevels == 0) PetscFunctionReturn(0);
+  PetscValidPointer(daf,3);
   ierr = DARefine(da,((PetscObject)da)->comm,&daf[0]);CHKERRQ(ierr);
   for (i=1; i<nlevels; i++) {
     ierr = DARefine(daf[i-1],((PetscObject)da)->comm,&daf[i]);CHKERRQ(ierr);
@@ -729,9 +733,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DACoarsenHierarchy(DA da,PetscInt nlevels,DA da
   PetscInt i;
 
   PetscFunctionBegin;
-  ierr = DACoarsen(da,((PetscObject)da)->comm,&dac[nlevels-1]);CHKERRQ(ierr);
-  for (i=nlevels-2; i >= 0; i--) {
-    ierr = DACoarsen(dac[i+1],((PetscObject)da)->comm,&dac[i]);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  if (nlevels < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"nlevels cannot be negative");
+  if (nlevels == 0) PetscFunctionReturn(0);
+  PetscValidPointer(dac,3);
+  ierr = DACoarsen(da,((PetscObject)da)->comm,&dac[0]);CHKERRQ(ierr);
+  for (i=1; i<nlevels; i++) {
+    ierr = DACoarsen(dac[i-1],((PetscObject)da)->comm,&dac[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
