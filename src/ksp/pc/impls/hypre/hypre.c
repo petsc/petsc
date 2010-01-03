@@ -1064,7 +1064,7 @@ EXTERN_C_END
 /* ---------------------------------------------------------------------------------------------------------------------------------*/
 
 /* we know we are working with a HYPRE_StructMatrix */
-#include "../src/mat/impls/hypre/mhyp.h"
+#include "../src/dm/da/utils/mhyp.h"
 #include "private/matimpl.h"
 #include "private/pcimpl.h"
 

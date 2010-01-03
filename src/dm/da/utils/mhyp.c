@@ -314,7 +314,7 @@ PetscErrorCode MatHYPRE_IJMatrixLink(Mat A,HYPRE_IJMatrix *ij)
 M*/
 
 #include "petscda.h"   /*I "petscda.h" I*/
-#include "../src/mat/impls/hypre/mhyp.h"
+#include "../src/dm/da/utils/mhyp.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesLocal_HYPREStruct_3d"
