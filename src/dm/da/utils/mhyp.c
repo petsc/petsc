@@ -5,6 +5,7 @@
 */
 
 #include "private/matimpl.h"          /*I "petscmat.h" I*/
+#if defined(PETSC_HAVE_HYPRE)
 EXTERN_C_BEGIN
 #include "HYPRE.h"
 #include "HYPRE_parcsr_ls.h"
@@ -605,3 +606,4 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_HYPREStruct(Mat B)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+#endif
