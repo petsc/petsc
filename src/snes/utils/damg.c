@@ -196,8 +196,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGDestroy(DMMG *dmmg)
 -   dm - the DA or DMComposite object
 
     Options Database Keys:
-+   -dmmg_refine: Use the input problem as the coarse level and refine. Otherwise, use it as the fine level and coarsen.
--   -dmmg_hierarchy: Construct all grids at once
+.   -dmmg_refine: Use the input problem as the coarse level and refine. Otherwise, use it as the fine level and coarsen.
 
     Level: advanced
 

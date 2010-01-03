@@ -231,18 +231,21 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetVertexDivision(DA da, const PetscInt lx[],
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_COOKIE,1);
   if (lx) {
+    if (da->m < 0) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot set vertex division before setting number of procs");
     if (!da->lx) {
       ierr = PetscMalloc(da->m*sizeof(PetscInt), &da->lx);CHKERRQ(ierr);
     }
     ierr = PetscMemcpy(da->lx, lx, da->m*sizeof(PetscInt));CHKERRQ(ierr);
   }
   if (ly) {
+    if (da->n < 0) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot set vertex division before setting number of procs");
     if (!da->ly) {
       ierr = PetscMalloc(da->n*sizeof(PetscInt), &da->ly);CHKERRQ(ierr);
     }
     ierr = PetscMemcpy(da->ly, ly, da->n*sizeof(PetscInt));CHKERRQ(ierr);
   }
   if (lz) {
+    if (da->p < 0) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot set vertex division before setting number of procs");
     if (!da->lz) {
       ierr = PetscMalloc(da->p*sizeof(PetscInt), &da->lz);CHKERRQ(ierr);
     }
@@ -664,5 +667,79 @@ PetscErrorCode PETSCDM_DLLEXPORT DACoarsen(DA da, MPI_Comm comm,DA *daref)
   da2->refine_y = da->refine_y;
   da2->refine_z = da->refine_z;
   *daref = da2;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DARefineHierarchy"
+/*@
+   DARefineHierarchy - Perform multiple levels of refinement.
+
+   Collective on DA
+
+   Input Parameter:
++  da - initial distributed array
+-  nlevels - number of levels of refinement to perform
+
+   Output Parameter:
+.  daf - array of refined DAs
+
+   Level: advanced
+
+.keywords: distributed array, refine
+
+.seealso: DARefine(), DACoarsenHierarchy()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DARefineHierarchy(DA da,PetscInt nlevels,DA daf[])
+{
+  PetscErrorCode ierr;
+  PetscInt i;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  if (nlevels < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"nlevels cannot be negative");
+  if (nlevels == 0) PetscFunctionReturn(0);
+  PetscValidPointer(daf,3);
+  ierr = DARefine(da,((PetscObject)da)->comm,&daf[0]);CHKERRQ(ierr);
+  for (i=1; i<nlevels; i++) {
+    ierr = DARefine(daf[i-1],((PetscObject)da)->comm,&daf[i]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DACoarsenHierarchy"
+/*@
+   DACoarsenHierarchy - Perform multiple levels of coarsening
+
+   Collective on DA
+
+   Input Parameter:
++  da - initial distributed array
+-  nlevels - number of levels of coarsening to perform
+
+   Output Parameter:
+.  dac - array of coarsened DAs
+
+   Level: advanced
+
+.keywords: distributed array, coarsen
+
+.seealso: DACoarsen(), DARefineHierarchy()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DACoarsenHierarchy(DA da,PetscInt nlevels,DA dac[])
+{
+  PetscErrorCode ierr;
+  PetscInt i;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  if (nlevels < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"nlevels cannot be negative");
+  if (nlevels == 0) PetscFunctionReturn(0);
+  PetscValidPointer(dac,3);
+  ierr = DACoarsen(da,((PetscObject)da)->comm,&dac[0]);CHKERRQ(ierr);
+  for (i=1; i<nlevels; i++) {
+    ierr = DACoarsen(dac[i-1],((PetscObject)da)->comm,&dac[i]);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
