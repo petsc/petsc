@@ -34,11 +34,11 @@ class Configure(config.package.Package):
     fd.close()
     if self.installNeeded(self.package):
       try:
-        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';./configure '+args, timeout=900, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running configure on QD (install manually): '+str(e))
       try:
-        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';make; make install; make clean', timeout=2500, log = self.framework.log)[0]
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';make; make install; make clean', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on QD (install manually): '+str(e))
       self.framework.actions.addArgument('QD', 'Install', 'Installed QD into '+self.installDir)

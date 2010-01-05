@@ -390,13 +390,13 @@ class Configure(config.package.Package):
       self.framework.log.write('Have to rebuild OPENMPI oldargs = '+oldargs+'\n new args = '+args+'\n')
       try:
         self.logPrintBox('Configuring OPENMPI/MPI; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+openmpiDir+';./configure '+args, timeout=1500, log = self.framework.log)[0]
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+';./configure '+args, timeout=1500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running configure on OPENMPI/MPI: '+str(e))
       try:
         self.logPrintBox('Compiling OPENMPI/MPI; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+openmpiDir+'; make install', timeout=6000, log = self.framework.log)[0]
-        output  = config.base.Configure.executeShellCommand('cd '+openmpiDir+'; make clean', timeout=200, log = self.framework.log)[0]        
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+'; make install', timeout=6000, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+'; make clean', timeout=200, log = self.framework.log)        
       except RuntimeError, e:
         raise RuntimeError('Error running make on OPENMPI/MPI: '+str(e))
       if not os.path.isdir(os.path.join(installDir,'lib')):
@@ -407,7 +407,7 @@ class Configure(config.package.Package):
         raise RuntimeError('Error running make on OPENMPI, libraries not installed')
       try:
         # OpenMPI puts Fortran 90 modules into lib instead of include like we want
-        output  = config.base.Configure.executeShellCommand('cp '+os.path.join(installDir,'lib','*.mod ')+os.path.join(installDir,'include'), timeout=30, log = self.framework.log)[0]
+        output,err,ret  = config.base.Configure.executeShellCommand('cp '+os.path.join(installDir,'lib','*.mod ')+os.path.join(installDir,'include'), timeout=30, log = self.framework.log)
       except RuntimeError, e:
         pass
     
@@ -417,7 +417,7 @@ class Configure(config.package.Package):
       #need to run ranlib on the libraries using the full path
       try:
         if not self.framework.argDB['with-shared']:
-          output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)[0]
+          output,err,ret  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on OPENMPI/MPI libraries: '+str(e))
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed OPENMPI/MPI into '+installDir)
@@ -502,7 +502,7 @@ class Configure(config.package.Package):
       self.framework.logPrint('Have to rebuild MPICH oldargs = '+oldargs+'\n new args = '+args)
       try:
         self.logPrintBox('Running configure on MPICH; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';./configure '+args, timeout=2000, log = self.framework.log)[0]
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+';./configure '+args, timeout=2000, log = self.framework.log)
       except RuntimeError, e:
         import sys
         if sys.platform.startswith('cygwin'):
@@ -516,8 +516,8 @@ class Configure(config.package.Package):
         raise RuntimeError('Error running configure on MPICH: '+str(e))
       try:
         self.logPrintBox('Running make on MPICH; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';make; make install', timeout=6000, log = self.framework.log)[0]
-        output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';make clean', timeout=200, log = self.framework.log)[0]        
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+';make; make install', timeout=6000, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+';make clean', timeout=200, log = self.framework.log)
       except RuntimeError, e:
         import sys
         if sys.platform.startswith('cygwin'):
