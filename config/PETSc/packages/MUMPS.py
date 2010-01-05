@@ -82,15 +82,15 @@ class Configure(PETSc.package.NewPackage):
     g.close()
     if self.installNeeded('Makefile.inc'):
       try:
-        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';make clean', timeout=2500, log = self.framework.log)[0]
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';make clean', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         pass
       try:
         self.logPrintBox('Compiling Mumps; this may take several minutes')
-        output = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; make alllib',timeout=2500, log = self.framework.log)[0]
+        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; make alllib',timeout=2500, log = self.framework.log)
         libDir     = os.path.join(self.installDir, self.libdir)
         includeDir = os.path.join(self.installDir, self.includedir)
-        output = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; mv -f lib/*.* '+libDir+'/.; cp -f include/*.* '+includeDir+'/.;', timeout=2500, log = self.framework.log)[0]
+        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; mv -f lib/*.* '+libDir+'/.; cp -f include/*.* '+includeDir+'/.;', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on MUMPS: '+str(e))
       self.postInstall(output,'Makefile.inc')

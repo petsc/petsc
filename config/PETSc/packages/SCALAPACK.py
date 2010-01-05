@@ -73,12 +73,12 @@ class Configure(PETSc.package.NewPackage):
 
     if self.installNeeded('SLmake.inc'):
       try:
-        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';make cleanlib', timeout=2500, log = self.framework.log)[0]
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';make cleanlib', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         pass
       try:
         self.logPrintBox('Compiling Scalapack; this may take several minutes')
-        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';make', timeout=2500, log = self.framework.log)[0]
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';make', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on SCALAPACK: '+str(e))
       self.postInstall(output,'SLmake.inc')

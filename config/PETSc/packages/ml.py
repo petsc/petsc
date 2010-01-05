@@ -83,23 +83,23 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded('ml'):
       try:
         self.logPrintBox('Configuring ml; this may take several minutes')
-        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; ./configure '+args, timeout=900, log = self.framework.log)[0]
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; ./configure '+args, timeout=900, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running configure on ML: '+str(e))
       # Build ML
       try:
         self.logPrintBox('Compiling ml; this may take several minutes')
-        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; ML_INSTALL_DIR='+self.installDir+'; export ML_INSTALL_DIR; make clean; make; make install', timeout=2500, log = self.framework.log)[0]
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; ML_INSTALL_DIR='+self.installDir+'; export ML_INSTALL_DIR; make clean; make; make install', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on ML: '+str(e))
 
       #need to run ranlib on the libraries using the full path
       try:
-        output  = PETSc.package.NewPackage.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)[0]
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on ML libraries: '+str(e))
 
-      self.postInstall(output,'ml')
+      self.postInstall(output+err,'ml')
     return self.installDir
 
   def consistencyChecks(self):

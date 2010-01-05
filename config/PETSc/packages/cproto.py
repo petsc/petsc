@@ -20,14 +20,14 @@ class Configure(PETSc.package.NewPackage):
     fd.close()
     if self.installNeeded('cproto.args'):
       try:
-        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';./configure '+args, timeout=900, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running configure on cproto: '+str(e))
       try:
-        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';make; make install; make clean', timeout=2500, log = self.framework.log)[0]
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';make; make install; make clean', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on cproto: '+str(e))
-      output  = PETSc.package.NewPackage.executeShellCommand('cp -f '+os.path.join(self.packageDir,'cproto.args')+' '+self.confDir+'/cproto', timeout=5, log = self.framework.log)[0]
+      output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cp -f '+os.path.join(self.packageDir,'cproto.args')+' '+self.confDir+'/cproto', timeout=5, log = self.framework.log)
       self.framework.actions.addArgument('CPROTO', 'Install', 'Installed cproto into '+self.installDir)
     self.binDir = os.path.join(self.installDir, 'bin')
     self.cproto = os.path.join(self.binDir, 'cproto')

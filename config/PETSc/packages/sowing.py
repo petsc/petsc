@@ -29,11 +29,11 @@ class Configure(PETSc.package.NewPackage):
     fd.close()
     if self.installNeeded(self.package):
       try:
-        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';./configure '+args, timeout=900, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running configure on Sowing (install manually): '+str(e))
       try:
-        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';make; make install; make clean', timeout=2500, log = self.framework.log)[0]
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';make; make install; make clean', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on Sowing (install manually): '+str(e))
       self.framework.actions.addArgument('Sowing', 'Install', 'Installed Sowing into '+self.installDir)
@@ -49,7 +49,7 @@ class Configure(PETSc.package.NewPackage):
     for prog in [self.bfort, self.doctext, self.mapnames]:
       if not (os.path.isfile(prog) and os.access(prog, os.X_OK)):
         raise RuntimeError('Error in Sowing installation: Could not find '+prog)
-      output  = PETSc.package.NewPackage.executeShellCommand('cp -f '+os.path.join(self.packageDir,'sowing')+' '+self.confDir+'/sowing', timeout=5, log = self.framework.log)[0]
+      output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cp -f '+os.path.join(self.packageDir,'sowing')+' '+self.confDir+'/sowing', timeout=5, log = self.framework.log)
     self.addMakeMacro('BFORT ', self.bfort)
     self.addMakeMacro('DOCTEXT ', self.doctext)
     self.addMakeMacro('MAPNAMES ', self.mapnames)

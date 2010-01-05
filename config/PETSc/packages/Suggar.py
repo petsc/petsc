@@ -59,10 +59,10 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded(os.path.join('src','FLAGS.local')):
       try:
         self.logPrintBox('Compiling SUGGAR; this may take several minutes')
-        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'/src; rm -f ../petsc/*/*.o ;make makedirs libsuggar_3d_opt', timeout=2500, log = self.framework.log)[0]
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'/src; rm -f ../petsc/*/*.o ;make makedirs libsuggar_3d_opt', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUGGAR: '+str(e))
-      output  = PETSc.package.NewPackage.executeShellCommand('mv -f '+os.path.join(self.packageDir,'bin','libsuggar_3d_opt_petsc.a')+' '+os.path.join(self.installDir,'lib'), timeout=5, log = self.framework.log)[0]      
+      output,err,ret  = PETSc.package.NewPackage.executeShellCommand('mv -f '+os.path.join(self.packageDir,'bin','libsuggar_3d_opt_petsc.a')+' '+os.path.join(self.installDir,'lib'), timeout=5, log = self.framework.log)
                           
-      self.postInstall(output,os.path.join('src','FLAGS.local'))
+      self.postInstall(output+err,os.path.join('src','FLAGS.local'))
     return self.installDir

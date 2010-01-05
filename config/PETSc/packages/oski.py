@@ -39,19 +39,19 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded('oski'):
       try:
         self.logPrintBox('Configuring oski; this may take several minutes')
-        output  = PETSc.package.NewPackage.executeShellCommand('./configure '+args, timeout=900, log = self.framework.log)[0]
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('./configure '+args, timeout=900, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running configure on OSKI: '+str(e))
       try:
         self.logPrintBox('Compiling oski; this may take several minutes')
-        output  = PETSc.package.NewPackage.executeShellCommand('make ; make benchmarks; make install', timeout=2500, log = self.framework.log)[0]
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('make ; make benchmarks; make install', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on OSKI: '+str(e))
       #need to run ranlib on the libraries using the full path
       try:
-        output  = PETSc.package.NewPackage.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)[0]
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on OSKI libraries: '+str(e))
-      self.postInstall(output,'oski')
+      self.postInstall(output+err,'oski')
     return self.installDir
 

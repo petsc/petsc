@@ -56,11 +56,11 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded('Make.include'):
       try:
         self.logPrintBox('Compiling PLAPACK; this may take several minutes')
-        output  = PETSc.package.NewPackage.executeShellCommand('cp -f '+incDir+'/*.h '+installIncDir, timeout=2500, log = self.framework.log)[0]        
-        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';make removeall; make', timeout=2500, log = self.framework.log)[0]
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cp -f '+incDir+'/*.h '+installIncDir, timeout=2500, log = self.framework.log)        
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';make removeall; make', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on PLAPACK: '+str(e))
-      self.postInstall(output,'Make.include')
+      self.postInstall(output+err,'Make.include')
     return self.installDir
 
   def consistencyChecks(self):
