@@ -311,7 +311,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_newdatastruct(Mat B,Mat A,const MatF
   ierr = PetscFree2(rtmp,mwork);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
- 
+  C->ops->solve          = MatSolve_SeqBAIJ_5_newdatastruct_v2;
+  /* C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_5; */
   C->assembled = PETSC_TRUE;
   ierr = PetscLogFlops(1.3333*bs2*n);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
@@ -580,8 +581,9 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering_newdatastruct(Mat B,
       ierr = PetscMemcpy(pv+bs2*j,rtmp+bs2*pj[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
     }
   }
-
   ierr = PetscFree2(rtmp,mwork);CHKERRQ(ierr);
+  C->ops->solve          = MatSolve_SeqBAIJ_5_NaturalOrdering_newdatastruct_v2;
+  /* C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_5_NaturalOrdering; */
   C->assembled = PETSC_TRUE;
   ierr = PetscLogFlops(1.3333*bs2*n);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
