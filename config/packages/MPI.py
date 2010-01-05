@@ -54,13 +54,15 @@ class Configure(config.package.Package):
   def setupHelp(self, help):
     config.package.Package.setupHelp(self,help)
     import nargs
-    help.addArgument('MPI', '-download-mpich=<no,yes,ifneeded,filename>',    nargs.ArgDownload(None, 0, 'Download and install MPICH-2'))
-    help.addArgument('MPI', '-download-openmpi=<no,yes,ifneeded,filename>',  nargs.ArgDownload(None, 0, 'Download and install OpenMPI'))
-    help.addArgument('MPI', '-with-mpiexec=<prog>',                nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
-    help.addArgument('MPI', '-with-mpi-compilers=<bool>',         nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
-    help.addArgument('MPI', '-with-mpi-shared=<bool>',            nargs.ArgBool(None, None, 'Try to use shared MPI libraries'))
-    help.addArgument('MPI', '-download-mpich-pm=gforker or mpd',  nargs.Arg(None, 'gforker', 'Launcher for MPI processes')) 
+    help.addArgument('MPI', '-download-mpich=<no,yes,ifneeded,filename>',        nargs.ArgDownload(None, 0, 'Download and install MPICH-2'))
+    help.addArgument('MPI', '-download-openmpi=<no,yes,ifneeded,filename>',      nargs.ArgDownload(None, 0, 'Download and install OpenMPI'))
+    help.addArgument('MPI', '-with-mpiexec=<prog>',                              nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
+    help.addArgument('MPI', '-with-mpi-compilers=<bool>',                        nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
+    help.addArgument('MPI', '-known-mpi-shared=<bool>',                           nargs.ArgBool(None, None, 'Indicates the MPI libraries are shared (the usual test will be skipped)'))
+    help.addArgument('MPI', '-download-mpich-pm=gforker or mpd',                 nargs.Arg(None, 'gforker', 'Launcher for MPI processes')) 
     help.addArgument('MPI', '-download-mpich-device=ch3:shm or see mpich2 docs', nargs.Arg(None, None, 'Communicator for MPI processes'))
+    help.addArgument('MPI', '-download-mpich-mpe',                               nargs.ArgBool(None, 0, 'Install MPE with MPICH'))
+    help.addArgument('MPI', '-download-mpich-shared',                            nargs.ArgBool(None, 0, 'Install MPICH with shared libraries'))    
     return
 
   def setupDependencies(self, framework):
@@ -123,10 +125,11 @@ class Configure(config.package.Package):
     return
 
   def checkSharedLibrary(self):
-    '''Check that the libraries for MPI are shared libraries'''
+    '''Sets flag indicating if MPI libraries are shared or not and
+    determines if MPI libraries CANNOT be used by shared libraries'''
     self.executeTest(self.configureMPIEXEC)
     try:
-      self.shared = self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, defaultArg = 'with-mpi-shared', executor = self.mpiexec)
+      self.shared = self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, defaultArg = 'known-mpi-shared', executor = self.mpiexec)
     except RuntimeError, e:
       if self.framework.argDB['with-shared']:
         raise RuntimeError('Shared libraries cannot be built using MPI provided.\nEither rebuild with --with-shared=0 or rebuild MPI with shared library support')
@@ -225,12 +228,12 @@ class Configure(config.package.Package):
     #for datatype, name in [('MPI_LONG_DOUBLE', 'long-double'), ('MPI_ENORMOUS_DOUBLE', 'enormous-double'), ('MPI_UNBELIEVABLE_DOUBLE', 'unbelievable-double')]:
     for datatype, name in [('MPI_LONG_DOUBLE', 'long-double')]:
       if self.checkCompile('#ifdef PETSC_HAVE_STDLIB_H\n  #include <stdlib.h>\n#endif\n#include <mpi.h>\n', 'MPI_Aint size;\nint ierr = MPI_Type_extent('+datatype+', &size);\nif(ierr || (size == 0)) exit(1);\n'):
-        if 'have-mpi-'+name in self.argDB:
-          if int(self.argDB['have-mpi-'+name]):
+        if 'known-mpi-'+name in self.argDB:
+          if int(self.argDB['known-mpi-'+name]):
             self.addDefine('HAVE_'+datatype, 1)
         elif not self.argDB['with-batch']:
           self.pushLanguage('C')
-          if self.checkRun('#ifdef PETSC_HAVE_STDLIB_H\n  #include <stdlib.h>\n#endif\n#include <mpi.h>\n', 'MPI_Aint size;\nint ierr = MPI_Type_extent('+datatype+', &size);\nif(ierr || (size == 0)) exit(1);\n', defaultArg = 'have-mpi-'+name):
+          if self.checkRun('#ifdef PETSC_HAVE_STDLIB_H\n  #include <stdlib.h>\n#endif\n#include <mpi.h>\n', 'MPI_Aint size;\nint ierr = MPI_Type_extent('+datatype+', &size);\nif(ierr || (size == 0)) exit(1);\n', defaultArg = 'known-mpi-'+name):
             self.addDefine('HAVE_'+datatype, 1)
           self.popLanguage()
         else:
@@ -247,9 +250,9 @@ class Configure(config.package.Package):
     ierr = MPI_Type_extent(%s, &size);
   }
   if(!ierr && (size != 0)) {
-    fprintf(output, "  \'--have-mpi-%s=1\',\\n");
+    fprintf(output, "  \'--known-mpi-%s=1\',\\n");
   } else {
-    fprintf(output, "  \'--have-mpi-%s=0\',\\n");
+    fprintf(output, "  \'--known-mpi-%s=0\',\\n");
   }
 }''' % (datatype, name, name))
     self.compilers.CPPFLAGS = oldFlags
@@ -285,9 +288,11 @@ class Configure(config.package.Package):
 
   def checkDownload(self, requireDownload = 1):
     '''Check if we should download MPICH or OpenMPI'''
-
+    if 'download-mpi' in self.framework.argDB and self.framework.argDB['download-mpi']:
+      raise RuntimeError('Option --download-mpi does not exist! Use --download-mpich or --download-openmpi instead.')
+    
     if self.framework.argDB['download-mpich'] and self.framework.argDB['download-openmpi']:
-      raise RuntimeError('Cannot install more than one of OpenMPI or  MPICH-2 for a single configuration.')
+      raise RuntimeError('Cannot install more than one of OpenMPI or  MPICH-2 for a single configuration. \nUse different PETSC_ARCH if you want to be able to switch between two')
 
     if self.framework.argDB['download-openmpi'] and self.framework.argDB['prefix']:
       raise RuntimeError('Currently --download-openmpi option does not work with --prefix install.\nSuggest installing OpenMPI separately, and then configuring PETSc with --with-mpi-dir option.')
@@ -464,12 +469,11 @@ class Configure(config.package.Package):
     else:
       args.append('--disable-f77')
       args.append('--disable-f90')
-    if self.framework.argDB['with-shared']:
-      if self.setCompilers.staticLibraries:
-        raise RuntimeError('Configuring with shared libraries - but the system/compilers do not support this')
+    if self.framework.argDB['with-shared'] or self.framework.argDB['download-mpich-shared']:
       if self.compilers.isGCC or config.setCompilers.Configure.isIntel(compiler):
-        # disable dylibs on mac due to mpich build issues
-        if not config.setCompilers.Configure.isDarwin():
+        if config.setCompilers.Configure.isDarwin():
+          args.append('--enable-sharedlibs=gcc-osx')
+        else:
           args.append('--enable-sharedlibs=gcc')
       elif config.setCompilers.Configure.isSun(compiler):
         args.append('--enable-sharedlibs=solaris-cc')
@@ -477,7 +481,10 @@ class Configure(config.package.Package):
         args.append('--enable-sharedlibs=libtool')
     if 'download-mpich-device' in self.argDB:
       args.append('--with-device='+self.argDB['download-mpich-device'])
-    args.append('--without-mpe')
+    if self.argDB['download-mpich-mpe']:
+      args.append('--with-mpe')
+    else:
+      args.append('--without-mpe')
     args.append('--with-pm='+self.argDB['download-mpich-pm'])
     # make MPICH behave properly for valgrind
     args.append('--enable-g=meminit')    
