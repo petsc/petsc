@@ -1,7 +1,13 @@
 
 static char help[] = "Sieve Package Correctness and Performance Unit Tests.\n\n";
 
-#include <petsc.h>
+#include <petscsnes.h>
+#include <petscdmmg.h>
+#include <petscmesh.hh>
+#include "bratu_quadrature.h"
+
+#include <iostream>
+#include <fstream>
 
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
@@ -11,11 +17,9 @@ static char help[] = "Sieve Package Correctness and Performance Unit Tests.\n\n"
 #include <cppunit/TestRunner.h>
 #include <cppunit/TextOutputter.h>
 
-extern PetscErrorCode RegisterBratuStressSuite();
-extern PetscErrorCode RegisterBratuFunctionSuite();
-extern PetscErrorCode RegisterBratuConvergenceSuite();
-
-extern PetscErrorCode RegisterLaplaceBEMFunctionSuite();
+#include <sieve/problem/Functions.hh>
+#include "bratu1.hh"
+#include "laplaceBEM1.hh"
 
 typedef struct {
   PetscTruth function;      // Run the functionality tests

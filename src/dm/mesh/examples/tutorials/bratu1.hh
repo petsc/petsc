@@ -1,16 +1,6 @@
-#include <petscsnes.h>
-#include <petscdmmg.h>
-#include <petscmesh.hh>
-#include "bratu_quadrature.h"
 #include <problem/Bratu.hh>
 
-#include <cppunit/extensions/TestFactoryRegistry.h>
-#include <cppunit/extensions/HelperMacros.h>
-
-#include <iostream>
-#include <fstream>
-
-PetscScalar ALE::Problem::BratuFunctions::lambda = 0.0;
+PetscScalar ALE::Problem::Functions::lambda = 0.0;
 
 class FunctionTestBratu : public CppUnit::TestFixture
 {
