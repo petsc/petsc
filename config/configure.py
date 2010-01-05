@@ -20,7 +20,18 @@ if not hasattr(sys, 'version_info') or not sys.version_info[1] >= 2 or not sys.v
   print '*    http://www.mcs.anl.gov/petsc/petsc-as/documentation/installation.html      *'
   print '*********************************************************************************'
   sys.exit(4)
-  
+
+def check_for_option_mistakes(opts):
+  for name in opts:
+    if name.find('_') >= 0:
+      exception = False
+      for exc in ['superlu_dist', 'PETSC_ARCH', 'PETSC_DIR', 'CXX_CXXFLAGS', 'LD_SHARED', 'CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'AR_FLAGS', 'C_VERSION', 'CXX_VERSION', 'FC_VERSION']:
+        if name.find(exc) >= 0:
+          exception = True
+      if not exception:
+        raise ValueError('The option '+name+' should probably be '+name.replace('_', '-'));
+  return
+
 def check_petsc_arch(opts):
   # If PETSC_ARCH not specified - use script name (if not configure.py)
   global petsc_arch
@@ -135,6 +146,7 @@ def petsc_configure(configure_options):
 
   # Command line arguments take precedence (but don't destroy argv[0])
   sys.argv = sys.argv[:1] + configure_options + sys.argv[1:]
+  check_for_option_mistakes(sys.argv)
   # check PETSC_ARCH
   check_petsc_arch(sys.argv)
   check_broken_configure_log_links()
