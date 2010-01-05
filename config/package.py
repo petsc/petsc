@@ -296,7 +296,7 @@ class Package(config.base.Configure):
     self.framework.log.write('********Output of running make on '+self.name+' follows *******\n')        
     self.framework.log.write(output)
     self.framework.log.write('********End of Output of running make on '+self.name+' *******\n')
-    output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, mkfile)+' '+os.path.join(self.confDir, self.name), timeout=5, log = self.framework.log)[0]            
+    output,err,ret  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, mkfile)+' '+os.path.join(self.confDir, self.name), timeout=5, log = self.framework.log)
     self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed '+self.name+' into '+self.installDir)
 
   def matchExcludeDir(self,dir):
