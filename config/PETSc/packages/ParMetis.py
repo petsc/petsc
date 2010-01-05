@@ -53,13 +53,16 @@ class Configure(PETSc.package.NewPackage):
     self.setCompilers.popLanguage()
     g.close()
 
+#   Warning: Scotch also installs a file metis.h which will be incorrectly found by ParMetis when compiling so you cannot build PETSc to use
+#   both Scotch and ParMetis in the same PETSc build
+
     if self.installNeeded('make.inc'):    # Now compile & install
       self.framework.outputHeader(metisconfigheader,prefix='METIS')
       self.framework.outputHeader(parmetisconfigheader,prefix='PARMETIS')
       try:
         self.logPrintBox('Compiling & installing Parmetis; this may take several minutes')
-        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; make clean; make lib; make minstall; make clean', timeout=2500, log = self.framework.log)[0]
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; make clean; make lib; make minstall; make clean', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on ParMetis: '+str(e))
-      self.postInstall(output,'make.inc')
+      self.postInstall(output+err,'make.inc')
     return self.installDir
