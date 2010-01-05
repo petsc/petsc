@@ -301,15 +301,18 @@ class Configure(config.base.Configure):
     '''Check that the given compiler is functional, and if not raise an exception'''
     self.pushLanguage(language)
     if not self.checkCompile():
+      msg = 'Cannot compile '+language+' with '+self.getCompiler()+'.'
       self.popLanguage()
-      raise RuntimeError('Cannot compile '+language+' with '+self.getCompiler()+'.')
+      raise RuntimeError(msg)
     if not self.checkLink():
+      msg = 'Cannot compile/link '+language+' with '+self.getCompiler()+'.'
       self.popLanguage()
-      raise RuntimeError('Cannot compile/link '+language+' with '+self.getCompiler()+'.')
+      raise RuntimeError(msg)
     if not self.framework.argDB['with-batch']:
       if not self.checkRun():
+        msg = 'Cannot run executables created with '+language+'. If this machine uses a batch system \nto submit jobs you will need to configure using/configure.py with the additional option  --with-batch.\n Otherwise there is problem with the compilers. Can you compile and run code with your C/C++ (and maybe Fortran) compilers?\n'
         self.popLanguage()
-        raise OSError('Cannot run executables created with '+language+'. If this machine uses a batch system \nto submit jobs you will need to configure using/configure.py with the additional option  --with-batch.\n Otherwise there is problem with the compilers. Can you compile and run code with your C/C++ (and maybe Fortran) compilers?\n')
+        raise OSError(msg)
     self.popLanguage()
     return
 
