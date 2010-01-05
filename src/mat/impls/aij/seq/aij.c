@@ -474,8 +474,8 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
     }
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
   } else {
-    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     PetscTruth newdatastruct=PETSC_FALSE,newdatastruct1=PETSC_FALSE;
+    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     ierr = PetscOptionsGetTruth(PETSC_NULL,"-ilu_new",&newdatastruct,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetTruth(PETSC_NULL,"-lu_new",&newdatastruct1,PETSC_NULL);CHKERRQ(ierr);
     if (A->factor && (newdatastruct || newdatastruct1)){
