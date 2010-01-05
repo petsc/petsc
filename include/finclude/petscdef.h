@@ -185,12 +185,6 @@
 
 #define PetscMatlabEngine PetscFortranAddr
 
-#if defined(PETSC_STDCALL)
-#define PETSC_DEC_ATTRIBUTES(A,B) DEC$ ATTRIBUTESC, ALIAS:B ::A
-#else
-#define PETSC_DEC_ATTRIBUTES(A,B)
-#endif
-
 #if !defined(PetscFlush)
 #if defined(PETSC_HAVE_FLUSH)
 #define PetscFlush(a)    call flush(a)
