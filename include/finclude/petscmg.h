@@ -25,8 +25,6 @@
 
       external  PCMGDEFAULTRESIDUAL
 
-!PETSC_DEC_ATTRIBUTES(PCMGDEFAULTRESIDUAL,'_PCMGDEFAULTRESIDUAL')
-
 !
 !     End of Fortran include file for the  MG include file in PETSc
 
