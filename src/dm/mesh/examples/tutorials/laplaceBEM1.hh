@@ -1,22 +1,4 @@
-#include <petscsnes.h>
-#include <petscdmmg.h>
-#include <petscmesh.hh>
-
-EXTERN double IntegrateDualBasis_gen_0(const double *v0, const double *J, const int dualIndex, double (*func)(const double *coords));
-EXTERN double IntegrateBdDualBasis_gen_0(const double *v0, const double *J, const int dualIndex, double (*func)(const double *coords));
-EXTERN PetscErrorCode CreateProblem_gen_0(DM dm, const char *name, const int numBC, const int *markers, double (**bcFuncs)(const double *coords), double (*exactFunc)(const double *coords));
-EXTERN double IntegrateDualBasis_gen_1(const double *v0, const double *J, const int dualIndex, double (*func)(const double *coords));
-EXTERN PetscErrorCode CreateProblem_gen_1(DM dm, const char *name, const int numBC, const int *markers, double (**bcFuncs)(const double *coords), double (*exactFunc)(const double *coords));
-EXTERN   double IntegrateDualBasis_gen_2(const double *v0, const double *J, const int dualIndex, double (*func)(const double *coords));
-EXTERN PetscErrorCode CreateProblem_gen_2(DM dm, const char *name, const int numBC, const int *markers, double (**bcFuncs)(const double *coords), double (*exactFunc)(const double *coords));
-
 #include <problem/LaplaceBEM.hh>
-
-#include <cppunit/extensions/TestFactoryRegistry.h>
-#include <cppunit/extensions/HelperMacros.h>
-
-#include <iostream>
-#include <fstream>
 
 class FunctionTestLaplaceBEM : public CppUnit::TestFixture
 {
@@ -120,13 +102,13 @@ public:
     SectionRealGetSection(residual, r);
     this->_problem->getMesh()->setupField(r);
     SectionRealView(exactSolution, PETSC_VIEWER_STDOUT_WORLD);
-    ALE::Problem::LaplaceBEMFunctions::Rhs_Unstructured((Mesh) this->_problem->getDM(), exactSolution, residual, this->_problem->getOptions());
+    ALE::Problem::Functions::RhsBd_Unstructured((Mesh) this->_problem->getDM(), exactSolution, residual, this->_problem->getOptions());
     this->_problem->getMesh()->getRealSection("residual")->view("residual");
     this->_problem->solve();
     double      coords[2] = {0.5, 0.5};
     PetscScalar sol;
 
-    ALE::Problem::LaplaceBEMFunctions::PointEvaluation((Mesh) this->_problem->getDM(), exactSolution, coords, 0.25, &sol);
+    ALE::Problem::Functions::PointEvaluation((Mesh) this->_problem->getDM(), exactSolution, coords, 0.25, &sol);
     PetscPrintf(PETSC_COMM_WORLD, "Potential at (%g,%g): %g\n", coords[0], coords[1], sol);
     this->checkSolution(exactError, 1.0e-6, "LaplaceBEMUnitSquareBd");
   };
