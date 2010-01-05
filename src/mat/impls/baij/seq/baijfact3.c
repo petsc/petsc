@@ -7,10 +7,39 @@
 #include "../src/mat/blockinvert.h"
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSeqBAIJSetNumericFactorization"
+#define __FUNCT__ "MatSeqBAIJSetNumericFactorization_newdatastruct"
 /*
    This is used to set the numeric factorization for both LU and ILU symbolic factorization
 */
+PetscErrorCode MatSeqBAIJSetNumericFactorization_newdatastruct(Mat fact,PetscTruth natural)
+{
+  PetscFunctionBegin;
+  switch (fact->rmap->bs){
+  case 2:
+    fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_newdatastruct;
+    break;
+  case 3:
+    fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_newdatastruct;
+    break;
+  case 4:
+    fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_newdatastruct;     
+    break;
+  case 5:
+    fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_newdatastruct;     
+    break;
+  case 6:
+    fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_newdatastruct;
+    break;
+  case 7:
+    fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_newdatastruct;
+    break;
+  default:
+    fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N_newdatastruct;
+    break;
+  }
+  PetscFunctionReturn(0); 
+}
+
 PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat inA,PetscTruth natural)
 {
   PetscFunctionBegin;

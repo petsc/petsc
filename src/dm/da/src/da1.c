@@ -375,11 +375,14 @@ EXTERN_C_END
 PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm, DAPeriodicType wrap, PetscInt M, PetscInt dof, PetscInt s, const PetscInt lx[], DA *da)
 {
   PetscErrorCode ierr;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   ierr = DACreate(comm, da);CHKERRQ(ierr);
   ierr = DASetDim(*da, 1);CHKERRQ(ierr);
   ierr = DASetSizes(*da, M, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = DASetNumProcs(*da, size, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = DASetPeriodicity(*da, wrap);CHKERRQ(ierr);
   ierr = DASetDof(*da, dof);CHKERRQ(ierr);
   ierr = DASetStencilWidth(*da, s);CHKERRQ(ierr);

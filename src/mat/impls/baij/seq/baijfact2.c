@@ -4980,6 +4980,7 @@ PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 /* ----------------------------------------------------------------*/
 EXTERN PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat,Mat,MatDuplicateOption,PetscTruth);
 EXTERN PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscTruth);
+EXTERN PetscErrorCode MatSeqBAIJSetNumericFactorization_newdatastruct(Mat,PetscTruth);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_N_newdatastruct"
@@ -4995,10 +4996,12 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_newdatastruct(Mat B,Mat A,const MatF
   MatScalar      *rtmp,*pc,*mwork,*v,*pv,*aa=a->a;
   PetscInt       bs=A->rmap->bs,bs2 = a->bs2,*v_pivots,flg;
   MatScalar      *v_work;
+  PetscTruth     col_identity,row_identity,both_identity;
 
   PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
+ 
   ierr = PetscMalloc(bs2*n*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,bs2*n*sizeof(MatScalar));CHKERRQ(ierr);
   ics  = ic;
@@ -5079,6 +5082,15 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_newdatastruct(Mat B,Mat A,const MatF
   ierr = PetscFree3(v_work,mwork,v_pivots);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
+
+  ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
+  ierr = ISIdentity(isicol,&col_identity);CHKERRQ(ierr);
+  both_identity = (PetscTruth) (row_identity && col_identity);
+  if (both_identity){
+    C->ops->solve = MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct_v2;
+  } else {
+    C->ops->solve = MatSolve_SeqBAIJ_N_newdatastruct_v2;
+  }
  
   C->assembled = PETSC_TRUE;
   ierr = PetscLogFlops(1.3333*bs*bs2*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
@@ -5190,32 +5202,8 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_newdatastruct(Mat fact,Mat A,IS isro
   if (!levels && both_identity) { 
     /* special case: ilu(0) with natural ordering */
     ierr = MatILUFactorSymbolic_SeqBAIJ_ilu0_newdatastruct(fact,A,isrow,iscol,info);CHKERRQ(ierr);
-    (fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N_newdatastruct;
-    /* set MatSolve routines */
-    switch (bs){
-    case 2:
-      fact->ops->solve = MatSolve_SeqBAIJ_2_NaturalOrdering_newdatastruct_v2;
-      break;
-    case 3:
-      fact->ops->solve = MatSolve_SeqBAIJ_3_NaturalOrdering_newdatastruct_v2;
-      break;
-    case 4:
-      fact->ops->solve = MatSolve_SeqBAIJ_4_NaturalOrdering_newdatastruct_v2;
-      break;
-    case 5:
-      fact->ops->solve = MatSolve_SeqBAIJ_5_NaturalOrdering_newdatastruct_v2;
-      break;
-    case 6:
-      fact->ops->solve = MatSolve_SeqBAIJ_6_NaturalOrdering_newdatastruct_v2;
-      break;
-    case 7:
-      fact->ops->solve = MatSolve_SeqBAIJ_7_NaturalOrdering_newdatastruct_v2;
-      break;
-    default:
-      fact->ops->solve = MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct_v2;
-      break;
-    }
-    
+    ierr = MatSeqBAIJSetNumericFactorization_newdatastruct(fact,both_identity);CHKERRQ(ierr);
+
     fact->factor = MAT_FACTOR_ILU;
     (fact)->info.factor_mallocs    = 0;
     (fact)->info.fill_ratio_given  = info->fill;
@@ -5366,60 +5354,10 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_newdatastruct(Mat fact,Mat A,IS isro
      Allocate bdiag, solve_work, new a, new j */
   ierr = PetscLogObjectMemory(fact,(bdiag[0]+1) * (sizeof(PetscInt)+bs2*sizeof(PetscScalar)));CHKERRQ(ierr);
   b->maxnz = b->nz = bdiag[0]+1;
-  (fact)->info.factor_mallocs    = reallocs;
-  (fact)->info.fill_ratio_given  = f;
-  (fact)->info.fill_ratio_needed = ((PetscReal)(bdiag[0]+1))/((PetscReal)ai[n]);
-  (fact)->ops->lufactornumeric   = MatLUFactorNumeric_SeqBAIJ_N_newdatastruct; 
-  /* set MatSolve routines */
-  if (both_identity){
-    switch (bs){
-    case 2:
-      fact->ops->solve = MatSolve_SeqBAIJ_2_NaturalOrdering_newdatastruct_v2;
-      break;
-    case 3:
-      fact->ops->solve = MatSolve_SeqBAIJ_3_NaturalOrdering_newdatastruct_v2;
-      break;
-    case 4:
-      fact->ops->solve = MatSolve_SeqBAIJ_4_NaturalOrdering_newdatastruct_v2;
-      break;
-    case 5:
-      fact->ops->solve = MatSolve_SeqBAIJ_5_NaturalOrdering_newdatastruct_v2;
-      break;
-    case 6:
-      fact->ops->solve = MatSolve_SeqBAIJ_6_NaturalOrdering_newdatastruct_v2;
-      break;
-    case 7:
-      fact->ops->solve = MatSolve_SeqBAIJ_7_NaturalOrdering_newdatastruct_v2;
-      break;
-    default:
-      fact->ops->solve = MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct_v2;
-      break;
-    }
-  } else {
-    switch (bs){
-    case 2:
-      fact->ops->solve = MatSolve_SeqBAIJ_2_newdatastruct_v2;
-      break;
-    case 3:
-      fact->ops->solve = MatSolve_SeqBAIJ_3_newdatastruct_v2;
-      break;
-    case 4:
-      fact->ops->solve = MatSolve_SeqBAIJ_4_newdatastruct_v2;
-      break;
-    case 5:
-      fact->ops->solve = MatSolve_SeqBAIJ_5_newdatastruct_v2;
-      break;
-    case 6:
-      fact->ops->solve = MatSolve_SeqBAIJ_6_newdatastruct_v2;
-      break;
-    case 7:
-      fact->ops->solve = MatSolve_SeqBAIJ_7_newdatastruct_v2;
-      break;
-    default:
-      fact->ops->solve = MatSolve_SeqBAIJ_N_newdatastruct_v2;
-      break;
-    }
-  }   
+  fact->info.factor_mallocs    = reallocs;
+  fact->info.fill_ratio_given  = f;
+  fact->info.fill_ratio_needed = ((PetscReal)(bdiag[0]+1))/((PetscReal)ai[n]);
+  ierr = MatSeqBAIJSetNumericFactorization_newdatastruct(fact,both_identity);CHKERRQ(ierr); 
   PetscFunctionReturn(0); 
 }
 
@@ -5468,7 +5406,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,con
     ierr = MatSeqBAIJSetNumericFactorization(fact,both_identity);CHKERRQ(ierr);
 
     fact->factor = MAT_FACTOR_ILU;
-    b            = (Mat_SeqBAIJ*)(fact)->data;
+    b            = (Mat_SeqBAIJ*)fact->data;
     b->row       = isrow;
     b->col       = iscol;
     ierr         = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
@@ -5622,7 +5560,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,con
     /* put together the new matrix */
     ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(fact,bs,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(fact,isicol);CHKERRQ(ierr);
-    b    = (Mat_SeqBAIJ*)(fact)->data;
+    b    = (Mat_SeqBAIJ*)fact->data;
     b->free_a       = PETSC_TRUE;
     b->free_ij      = PETSC_TRUE;
     b->singlemalloc = PETSC_FALSE;
@@ -5646,9 +5584,9 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,con
     ierr = PetscLogObjectMemory(fact,(ainew[n]-n)*(sizeof(PetscInt))+bs2*ainew[n]*sizeof(PetscScalar));CHKERRQ(ierr);
     b->maxnz          = b->nz = ainew[n];
 
-    (fact)->info.factor_mallocs    = reallocate;
-    (fact)->info.fill_ratio_given  = f;
-    (fact)->info.fill_ratio_needed = ((PetscReal)ainew[n])/((PetscReal)ai[prow]);
+    fact->info.factor_mallocs    = reallocate;
+    fact->info.fill_ratio_given  = f;
+    fact->info.fill_ratio_needed = ((PetscReal)ainew[n])/((PetscReal)ai[prow]);
 
   ierr = MatSeqBAIJSetNumericFactorization(fact,both_identity);CHKERRQ(ierr);
   PetscFunctionReturn(0); 

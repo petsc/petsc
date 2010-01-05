@@ -216,6 +216,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm, DA *da)
   d->ops->getmatrix          = DAGetMatrix;
   d->ops->refine             = DARefine;
   d->ops->coarsen            = DACoarsen;
+  d->ops->refinehierarchy    = DARefineHierarchy;
+  d->ops->coarsenhierarchy   = DACoarsenHierarchy;
   d->ops->getinjection       = DAGetInjection;
   d->ops->getaggregates      = DAGetAggregates;
 

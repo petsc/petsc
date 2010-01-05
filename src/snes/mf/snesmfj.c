@@ -34,8 +34,6 @@
      -snes_mf but rarely used directly by users. (All this routine does is call MatAssemblyBegin/End() on
      the Mat jac.
 
-     This is not callable or usable in Fortran
-
 .seealso: MatMFFDGetH(), MatCreateSNESMF(), MatCreateMFFD(), MATMFFD,
           MatMFFDSetHHistory(),
           MatMFFDKSPMonitor(), MatMFFDSetFunctionError(), MatMFFDCreate(), SNESSetJacobian()

@@ -5,6 +5,7 @@
 */
 
 #include "private/matimpl.h"          /*I "petscmat.h" I*/
+#if defined(PETSC_HAVE_HYPRE)
 EXTERN_C_BEGIN
 #include "HYPRE.h"
 #include "HYPRE_parcsr_ls.h"
@@ -314,7 +315,7 @@ PetscErrorCode MatHYPRE_IJMatrixLink(Mat A,HYPRE_IJMatrix *ij)
 M*/
 
 #include "petscda.h"   /*I "petscda.h" I*/
-#include "../src/mat/impls/hypre/mhyp.h"
+#include "../src/dm/da/utils/mhyp.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesLocal_HYPREStruct_3d"
@@ -605,3 +606,4 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_HYPREStruct(Mat B)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+#endif
