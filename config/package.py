@@ -433,9 +433,9 @@ class Package(config.base.Configure):
       raise RuntimeError('Specify either "--with-'+self.package+'-dir" or "--with-'+self.package+'-lib --with-'+self.package+'-include". But not both!')
     if self.framework.argDB['with-'+self.package]:
       if self.cxx and not hasattr(self.compilers, 'CXX'):
-        raise RuntimeError('Cannot use '+self.name+' without C++, run config/configure.py --with-cxx')
+        raise RuntimeError('Cannot use '+self.name+' without C++, make sure you do NOT have --with-cxx=0')
       if self.fc and not hasattr(self.compilers, 'FC'):
-        raise RuntimeError('Cannot use '+self.name+' without Fortran, run config/configure.py --with-fc')
+        raise RuntimeError('Cannot use '+self.name+' without Fortran, make sure you do NOT have --with-fc=0')
       if self.noMPIUni and self.mpi.usingMPIUni:
         raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
     return
