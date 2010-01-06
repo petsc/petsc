@@ -11,12 +11,14 @@ class Preprocessor(config.compile.processor.Processor):
   '''The C++ preprocessor'''
   def __init__(self, argDB):
     config.compile.processor.Processor.__init__(self, argDB, 'CXXCPP', 'CPPFLAGS', '.cpp', '.cc')
+    self.language = 'CXX'
     return
 
 class Compiler(config.compile.processor.Processor):
   '''The C++ compiler'''
   def __init__(self, argDB):
     config.compile.processor.Processor.__init__(self, argDB, 'CXX', ['CXXFLAGS', 'CXX_CXXFLAGS'], '.cc', '.o')
+    self.language           = 'CXX'
     self.requiredFlags[-1]  = '-c'
     self.outputFlag         = '-o'
     self.includeDirectories = sets.Set()
@@ -44,6 +46,7 @@ class Linker(config.compile.processor.Processor):
     self.compiler        = Compiler(argDB)
     self.configLibraries = config.libraries.Configure(config.framework.Framework(clArgs = '', argDB = argDB))
     config.compile.processor.Processor.__init__(self, argDB, ['CXX_LD', 'LD', self.compiler.name], ['LDFLAGS', 'CXX_LINKER_FLAGS'], '.o', '.a')
+    self.language   = 'CXX'
     self.outputFlag = '-o'
     self.libraries  = sets.Set()
     return
@@ -97,6 +100,7 @@ class SharedLinker(config.compile.processor.Processor):
     self.compiler = Compiler(argDB)
     self.configLibraries = config.libraries.Configure(config.framework.Framework(clArgs = '', argDB = argDB))
     config.compile.processor.Processor.__init__(self, argDB, ['LD_SHARED', self.compiler.name], ['LDFLAGS', 'sharedLibraryFlags'], '.o', None)
+    self.language   = 'CXX'
     self.outputFlag = '-o'
     self.libraries  = sets.Set()
     return

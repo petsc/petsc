@@ -10,6 +10,7 @@ class Preprocessor(config.compile.C.Preprocessor):
   '''The Fortran preprocessor, which now is just the C preprocessor'''
   def __init__(self, argDB):
     config.compile.C.Preprocessor.__init__(self, argDB)
+    self.language        = 'FC'
     self.targetExtension = '.F'
     return
 
@@ -17,6 +18,7 @@ class Compiler(config.compile.processor.Processor):
   '''The Fortran compiler'''
   def __init__(self, argDB):
     config.compile.processor.Processor.__init__(self, argDB, 'FC', 'FFLAGS', '.F', '.o')
+    self.language           = 'FC'
     self.requiredFlags[-1]  = '-c'
     self.outputFlag         = '-o'
     self.includeDirectories = sets.Set()
@@ -35,6 +37,7 @@ class Linker(config.compile.processor.Processor):
     self.compiler        = Compiler(argDB)
     self.configLibraries = config.libraries.Configure(config.framework.Framework(clArgs = '', argDB = argDB))
     config.compile.processor.Processor.__init__(self, argDB, ['FC_LD', 'LD', self.compiler.name], ['LDFLAGS', 'FC_LINKER_FLAGS'], '.o', '.a')
+    self.language   = 'FC'
     self.outputFlag = '-o'
     self.libraries  = sets.Set()
     return
