@@ -29,6 +29,7 @@ typedef struct {
     PetscReal *Xsubproblem; //n
     PetscInt *indices; /* 1,2,3...m */
     PetscInt minindex;
+    PetscInt nmodelpoints;
     PetscInt *model_indices; //n
     PetscInt *interp_indices; //n
     PetscInt *iwork; //n
@@ -62,6 +63,7 @@ typedef struct {
     /* morepoints and getquadnlsmfq */
     PetscReal *L;   //n*(n+1)/2 x npmax
     PetscReal *L_tmp;   //n*(n+1)/2 x npmax
+    PetscReal *L_save;   //n*(n+1)/2 x npmax
     PetscReal *Z;   //npmax x npmax-(n+1)
     PetscReal *M;   //npmax x n+1
     PetscReal *N;   //npmax x n*(n+1)/2 

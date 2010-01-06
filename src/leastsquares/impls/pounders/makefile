@@ -6,7 +6,8 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  = pounders.c
 SOURCEF  = dgqt.f destsv.f
-SOURCEH  = pounders.h taolapack.h
+SOURCEH  = pounders.h 
+#taolapack.h
 OBJSC    = pounders.o dgqt.o destsv.o
 OBJSF    = 
 LIBBASE  = libtaosolver

@@ -484,7 +484,27 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverView(TaoSolver tao, PetscViewer view
 	}
 
 	if (tao->reason>0){
-	    ierr = PetscViewerASCIIPrintf(viewer,"  Solution found\n");CHKERRQ(ierr);
+	    ierr = PetscViewerASCIIPrintf(viewer,    "  Solution found: ");CHKERRQ(ierr);
+	    switch (tao->reason) {
+		case TAO_CONVERGED_ATOL:
+		    ierr = PetscViewerASCIIPrintf(viewer," Atol -- F < F_minabs\n"); CHKERRQ(ierr);
+		    break;
+		case TAO_CONVERGED_RTOL:
+		    ierr = PetscViewerASCIIPrintf(viewer," Rtol -- F < F_mintol*F_init\n"); CHKERRQ(ierr);
+		    break;
+		case TAO_CONVERGED_TRTOL:
+		    ierr = PetscViewerASCIIPrintf(viewer," Trtol -- step size small\n"); CHKERRQ(ierr);
+		    break;
+		case TAO_CONVERGED_MINF:
+		    ierr = PetscViewerASCIIPrintf(viewer," Minf -- grad F < grad F_min\n"); CHKERRQ(ierr);
+		    break;
+		case TAO_CONVERGED_USER:
+		    ierr = PetscViewerASCIIPrintf(viewer," User Terminated\n"); CHKERRQ(ierr);
+		    break;
+		default:
+		    break;
+	    }		
+	    
 	} else {
 	    ierr = PetscViewerASCIIPrintf(viewer,"  Solver terminated: %d\n",tao->reason);CHKERRQ(ierr);
 	}
