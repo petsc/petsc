@@ -24,9 +24,6 @@ class Configure(config.package.Package):
     self.framework.pushLanguage('Cxx')
     args.append('CXX="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
     self.framework.popLanguage()
-    self.framework.pushLanguage('FC')
-    args.append('FC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
-    self.framework.popLanguage()
       
     args = ' '.join(args)
     fd = file(os.path.join(self.packageDir,self.package), 'w')
