@@ -1103,6 +1103,8 @@ class Configure(config.base.Configure):
     if not os.path.isdir(testdir):
       os.mkdir(testdir)
     os.rename(self.compilerObj, modobj)
+    if not os.path.isfile(modname):
+      raise RuntimeError('Fortran module '+modname+' was not created during the compile')
     os.rename(modname, os.path.join(testdir, modname))
     fcode = '''\
       use configtest
