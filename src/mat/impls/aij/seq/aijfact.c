@@ -1297,6 +1297,64 @@ PetscErrorCode MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolveTranspose_SeqAIJ_newdatastruct_v2"
+PetscErrorCode MatSolveTranspose_SeqAIJ_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+{
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  IS                iscol = a->col,isrow = a->row;
+  PetscErrorCode    ierr;
+  const PetscInt    *rout,*cout,*r,*c,*adiag = a->diag,*ai = a->i,*aj = a->j,*vi;
+  PetscInt          i,n = A->rmap->n,j;
+  PetscInt          nz;
+  PetscScalar       *x,*tmp,s1;
+  const MatScalar   *aa = a->a,*v;
+  const PetscScalar *b;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  tmp  = a->solve_work;
+
+  ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
+  ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout;
+
+  /* copy the b into temp work space according to permutation */
+  for (i=0; i<n; i++) tmp[i] = b[c[i]]; 
+
+  /* forward solve the U^T */
+  for (i=0; i<n; i++) {
+    v   = aa + adiag[i+1] + 1;
+    vi  = aj + adiag[i+1] + 1;
+    nz  = adiag[i] - adiag[i+1] - 1;
+    s1  = tmp[i];
+    s1 *= v[nz];  /* multiply by inverse of diagonal entry */
+    for (j=0; j<nz; j++) tmp[vi[j]] -= s1*v[j];
+    tmp[i] = s1;
+  }
+
+  /* backward solve the L^T */
+  for (i=n-1; i>=0; i--){
+    v   = aa + ai[i];
+    vi  = aj + ai[i];
+    nz  = ai[i+1] - ai[i];
+    s1  = tmp[i];
+    for (j=0; j<nz; j++) tmp[vi[j]] -= s1*v[j];
+  }
+
+  /* copy tmp into x according to permutation */
+  for (i=0; i<n; i++) x[r[i]] = tmp[i];
+
+  ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+
+  ierr = PetscLogFlops(2.0*a->nz-A->cmap->n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolveTransposeAdd_SeqAIJ"
 PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
@@ -3073,7 +3131,6 @@ PetscErrorCode MatSolve_SeqAIJ_newdatastruct_v2(Mat A,Vec bb,Vec xx)
   ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout; 
 
   /* forward solve the lower triangular */
-  /*  tmp[0] = b[*r++]; */
   tmp[0] = b[r[0]];
   v      = aa;
   vi     = aj;
@@ -3086,12 +3143,9 @@ PetscErrorCode MatSolve_SeqAIJ_newdatastruct_v2(Mat A,Vec bb,Vec xx)
   }
 
   /* backward solve the upper triangular */
-  /*  v  = aa + ai[k]; *//* 1st entry of U(n-1,:) */
-  /* vi = aj + ai[k]; */
-  v  = aa + adiag[n-1];
+  v  = aa + adiag[n-1]; /* 1st entry of U(n-1,:) */
   vi = aj + adiag[n-1];
   for (i=n-1; i>=0; i--){
-    /* nz = ai[k +1] - ai[k] - 1;*/
     nz = adiag[i]-adiag[i+1]-1;
     sum = tmp[i];
     PetscSparseDenseMinusDot(sum,tmp,v,vi,nz); 
