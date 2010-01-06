@@ -21,8 +21,15 @@ class Configure(PETSc.package.NewPackage):
   def Install(self):
     import os
 
-    self.logPrintBox('Creating Scotch '+os.path.join(os.path.join(self.packageDir,'src'),'Makefile.inc')+'\n')
-    g = open(os.path.join(os.path.join(self.packageDir,'src'),'Makefile.inc'),'w')
+    self.framework.log.write('Creating Scotch '+os.path.join(os.path.join(self.packageDir,'src'),'Makefile.inc')+'\n')
+
+    #Scotch has a file identical to one in ParMetis, remove it so ParMetis will not use it by mistake
+    try:
+      os.unlink(os.path.join(self.packageDir,'include','metis.h'))
+    except:
+      pass
+    
+    g = open(os.path.join(self.packageDir,'src','Makefile.inc'),'w')
 
     g.write('EXE	=\n')
     g.write('LIB	= .a\n')

@@ -76,7 +76,8 @@ PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_MPIAIJ_MatMatMult"
-PetscErrorCode MatDuplicate_MPIAIJ_MatMatMult(Mat A, MatDuplicateOption op, Mat *M) {
+PetscErrorCode MatDuplicate_MPIAIJ_MatMatMult(Mat A, MatDuplicateOption op, Mat *M) 
+{
   PetscErrorCode     ierr;
   Mat_MatMatMultMPI  *mult; 
   PetscContainer     container;
