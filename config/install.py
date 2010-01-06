@@ -245,8 +245,8 @@ Run the following to verify the install (remain in current directory for the tes
     self.installConf()
     self.installBin()
     self.installLib()
-    output = self.executeShellCommand(self.make+' PETSC_ARCH=""'+' PETSC_DIR='+self.installDir+' shared mpi4py petsc4py')[0]
-    print output
+    output,err,ret = self.executeShellCommand(self.make+' PETSC_ARCH=""'+' PETSC_DIR='+self.installDir+' shared mpi4py petsc4py')
+    print output+err
     # this file will mess up the make test run since it resets PETSC_ARCH when PETSC_ARCH needs to be null now
     os.unlink(os.path.join(self.rootDir,'conf','petscvariables'))
     fd = file(os.path.join('conf','petscvariables'),'w')

@@ -52,15 +52,15 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded('fftw'):
       try:
         self.logPrintBox('Configuring FFTW; this may take several minutes')
-        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; ./configure '+args, timeout=900, log = self.framework.log)[0]
+        output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; ./configure '+args, timeout=900, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running configure on FFTW: '+str(e))
       try:
         self.logPrintBox('Compiling FFTW; this may take several minutes')
-        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; make; make install', timeout=2500, log = self.framework.log)[0]
+        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; make; make install', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on FFTW: '+str(e))
-      self.postInstall(output,'fftw')
+      self.postInstall(output1+err1+output2+err2,'fftw')
     return self.installDir
 
   def consistencyChecks(self):

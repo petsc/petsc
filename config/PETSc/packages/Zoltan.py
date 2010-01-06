@@ -69,12 +69,12 @@ GL_LIBS    = -lGL -lGLU
       fd.close()
       try:
         self.logPrintBox('Compiling zoltan; this may take several minutes')
-        output  = PETSc.package.NewPackage.executeShellCommand('rm -f '+self.installDir+'lib/libzoltan*', timeout=2500, log = self.framework.log)[0]
-        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; make clean; make '+args+' zoltan', timeout=2500, log = self.framework.log)[0]        
+        output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('rm -f '+self.installDir+'lib/libzoltan*', timeout=2500, log = self.framework.log)
+        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; make clean; make '+args+' zoltan', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on ZOLTAN: '+str(e))
 
-      output  = PETSc.package.NewPackage.executeShellCommand('mv -f '+os.path.join(self.packageDir, 'Obj_'+self.arch)+'/* '+os.path.join(self.installDir, 'lib'))[0]
-      output  = PETSc.package.NewPackage.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'include')+'/* '+os.path.join(self.installDir, 'include'))[0]
-      self.postInstall(output,'Zoltanconfig')
+      output3,err3,ret3  = PETSc.package.NewPackage.executeShellCommand('mv -f '+os.path.join(self.packageDir, 'Obj_'+self.arch)+'/* '+os.path.join(self.installDir, 'lib'))
+      output4,err4,ret4  = PETSc.package.NewPackage.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'include')+'/* '+os.path.join(self.installDir, 'include'))
+      self.postInstall(output1+err1+output2+err2+output3+err3+output4+err4,'Zoltanconfig')
     return self.installDir

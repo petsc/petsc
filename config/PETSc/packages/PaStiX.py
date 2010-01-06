@@ -195,16 +195,16 @@ class Configure(PETSc.package.NewPackage):
 
     if self.installNeeded(os.path.join('src','config.in')):
       try:
-        output  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+';make clean', timeout=2500, log = self.framework.log)[0]
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+';make clean', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         pass
       try:
         self.logPrintBox('Compiling PaStiX; this may take several minutes')
-        output = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+'; make expor install',timeout=2500, log = self.framework.log)[0]
+        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+'; make expor install',timeout=2500, log = self.framework.log)
         libDir     = os.path.join(self.installDir, self.libdir)
         includeDir = os.path.join(self.installDir, self.includedir)
-        output = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; cp -f install/*.a '+libDir+'/.; cp -f install/*.h '+includeDir+'/.;', timeout=2500, log = self.framework.log)[0]
+        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; cp -f install/*.a '+libDir+'/.; cp -f install/*.h '+includeDir+'/.;', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on PaStiX: '+str(e))
-      self.postInstall(output,os.path.join('src','config.in'))
+      self.postInstall(output+err,os.path.join('src','config.in'))
     return self.installDir

@@ -24,7 +24,7 @@ class Configure(PETSc.package.NewPackage):
       self.framework.log.write('Did not find Lgrind executable; compiling lgrind\n')
       try:
         self.framework.pushLanguage('C')
-        output = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'source')+'; make clean; make CC=\''+self.framework.getCompiler()+'\'',timeout=2500,log = self.framework.log)[0]
+        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'source')+'; make clean; make CC=\''+self.framework.getCompiler()+'\'',timeout=2500,log = self.framework.log)
         self.framework.popLanguage()
       except RuntimeError, e:
         self.framework.popLanguage()
@@ -38,10 +38,10 @@ class Configure(PETSc.package.NewPackage):
           lgrindexe = lgrindexe+'.exe'
           lgrind    = 'lgrind.exe'
         else: lgrind = 'lgrind'
-        output  = PETSc.package.NewPackage.executeShellCommand('mv -f '+lgrindexe+' '+os.path.join(self.installDir,'bin'), timeout=25, log = self.framework.log)[0]
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('mv -f '+lgrindexe+' '+os.path.join(self.installDir,'bin'), timeout=25, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error copying lgrind executable: '+str(e))
-    output = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'source')+'; make clean',timeout=25, log = self.framework.log)[0]
+    output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'source')+'; make clean',timeout=25, log = self.framework.log)
     self.framework.actions.addArgument('lgrind', 'Install', 'Installed lgrind into '+self.installDir)
     self.lgrind = lgrindexe
     self.addMakeMacro('LGRIND',os.path.join(self.installDir,'bin',lgrind))

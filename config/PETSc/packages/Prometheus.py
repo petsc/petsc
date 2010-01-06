@@ -88,8 +88,8 @@ class Configure(PETSc.package.NewPackage):
     if self.compilePrometheus:
       try:
         self.logPrintBox('Compiling Prometheus; this may take several minutes')
-        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; make clean cleanlib; make prom minstall',timeout=1000, log = self.framework.log)[0]
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; make clean cleanlib; make prom minstall',timeout=1000, log = self.framework.log)
         self.framework.log.write(output)
       except RuntimeError, e:
         raise RuntimeError('Error running make on Prometheus: '+str(e))
-      self.postInstall(output,'makefile.petsc')
+      self.postInstall(output+err,'makefile.petsc')
