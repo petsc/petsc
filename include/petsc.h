@@ -131,9 +131,11 @@ M*/
     PETSc does not use the C++ binding of MPI at ALL. The following flag
     makes sure the C++ bindings are not included. The C++ bindings REQUIRE
     putting mpi.h before ANY C++ include files, we cannot control this
-    with all PETSc users.
+    with all PETSc users. Users who want to use the MPI C++ bindings can include 
+    mpicxx.h directly in their code
 */
 #define MPICH_SKIP_MPICXX 1
+#define OMPI_SKIP_MPICXX 1
 #include "mpi.h"
 /*
     Yuck, we need to put stdio.h AFTER mpi.h for MPICH2 with C++ compiler 
