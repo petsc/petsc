@@ -35,7 +35,6 @@ static PetscErrorCode MatPublish_Base(PetscObject obj)
    Options Database Keys:
 +    -mat_type seqaij   - AIJ type, uses MatCreateSeqAIJ()
 .    -mat_type mpiaij   - AIJ type, uses MatCreateMPIAIJ()
-.    -mat_type mpirowbs - rowbs type, uses MatCreateMPIRowbs()
 .    -mat_type seqdense - dense type, uses MatCreateSeqDense()
 .    -mat_type mpidense - dense type, uses MatCreateMPIDense()
 .    -mat_type seqbaij  - block AIJ type, uses MatCreateSeqBAIJ()
@@ -57,7 +56,7 @@ static PetscErrorCode MatPublish_Base(PetscObject obj)
 
 .seealso: MatCreateSeqAIJ(), MatCreateMPIAIJ(), 
           MatCreateSeqDense(), MatCreateMPIDense(), 
-          MatCreateMPIRowbs(), MatCreateSeqBAIJ(), MatCreateMPIBAIJ(),
+          MatCreateSeqBAIJ(), MatCreateMPIBAIJ(),
           MatCreateSeqSBAIJ(), MatCreateMPISBAIJ(),
           MatConvert()
 @*/
@@ -157,7 +156,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetSizes(Mat A, PetscInt m, PetscInt n, Pet
    Options Database Keys:
 +    -mat_type seqaij   - AIJ type, uses MatCreateSeqAIJ()
 .    -mat_type mpiaij   - AIJ type, uses MatCreateMPIAIJ()
-.    -mat_type mpirowbs - rowbs type, uses MatCreateMPIRowbs()
 .    -mat_type seqdense - dense type, uses MatCreateSeqDense()
 .    -mat_type mpidense - dense type, uses MatCreateMPIDense()
 .    -mat_type seqbaij  - block AIJ type, uses MatCreateSeqBAIJ()
@@ -173,7 +171,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetSizes(Mat A, PetscInt m, PetscInt n, Pet
 
 .seealso: MatCreateSeqAIJ((), MatCreateMPIAIJ(), 
           MatCreateSeqDense(), MatCreateMPIDense(), 
-          MatCreateMPIRowbs(), MatCreateSeqBAIJ(), MatCreateMPIBAIJ(),
+          MatCreateSeqBAIJ(), MatCreateMPIBAIJ(),
           MatCreateSeqSBAIJ(), MatCreateMPISBAIJ(),
           MatConvert()
 @*/
@@ -220,7 +218,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetFromOptions(Mat B)
 
 .seealso: MatCreateSeqAIJ((), MatCreateMPIAIJ(), 
           MatCreateSeqDense(), MatCreateMPIDense(), 
-          MatCreateMPIRowbs(), MatCreateSeqBAIJ(), MatCreateMPIBAIJ(),
+          MatCreateSeqBAIJ(), MatCreateMPIBAIJ(),
           MatCreateSeqSBAIJ(), MatCreateMPISBAIJ(),
           MatConvert()
 @*/
