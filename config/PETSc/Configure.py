@@ -52,10 +52,14 @@ class Configure(config.base.Configure):
     self.qd.archProvider      = self.arch
     self.qd.precisionProvider = self.scalartypes
     self.qd.installDirProvider= self.petscdir
+    
+    #force blaslapack to depend on scalarType so precision is set before BlasLapack is built
     self.blaslapack    = framework.require('config.packages.BlasLapack', self)
+    framework.require('PETSc.utilities.scalarTypes', self.blaslapack)
     self.blaslapack.archProvider      = self.arch
     self.blaslapack.precisionProvider = self.scalartypes
     self.blaslapack.installDirProvider= self.petscdir
+
     self.mpi           = framework.require('config.packages.MPI',        self)
     self.mpi.archProvider             = self.arch
     self.mpi.languageProvider         = self.languages

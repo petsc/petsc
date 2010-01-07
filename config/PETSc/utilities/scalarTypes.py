@@ -27,9 +27,6 @@ class Configure(config.base.Configure):
     self.languages = framework.require('PETSc.utilities.languages', self)
     self.compilers = framework.require('config.compilers', self)
     self.qd        = framework.require('config.packages.qd',self)
-    #force blaslapack to depend on scalarType so precision is set before BlasLapack is built
-    blas = framework.require('config.packages.BlasLapack', None)
-    framework.require('PETSc.utilities.scalarTypes', blas)
     return
 
 
