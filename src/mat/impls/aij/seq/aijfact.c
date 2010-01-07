@@ -610,7 +610,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const MatFact
   }
   
   C->ops->solveadd           = 0;
-  C->ops->solvetranspose     = 0;
+  C->ops->solvetranspose     = MatSolveTranspose_SeqAIJ_newdatastruct_v2;
   C->ops->solvetransposeadd  = 0;
   C->ops->matsolve           = 0;
   C->assembled    = PETSC_TRUE;
@@ -2161,7 +2161,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *
       jmin = bi[k]+1; jmax = bi[k+1];
       if (jmin < jmax) {
         for (j=jmin; j<jmax; j++){
-          col = bj[j]; ba[j] = rtmp[col]; rtmp[col] = 0.0;
+          col = bj[j]; ba[j] = rtmp[col]; 
         }       
         /* add the k-th row into il and jl */
         il[k] = jmin;
@@ -2327,8 +2327,8 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS perm,
 
       /* if free space is not available, make more free space */
       if (current_space->local_remaining<nzk) {
-        i = am - k + 1; /* num of unfactored rows */
-        i = PetscMin(i*nzk, i*(i-1)); /* i*nzk, i*(i-1): estimated and max additional space needed */
+        i  = am - k + 1; /* num of unfactored rows */
+        i *= PetscMin(nzk, i-1); /* i*nzk, i*(i-1): estimated and max additional space needed */
         ierr = PetscFreeSpaceGet(i,&current_space);CHKERRQ(ierr);
         ierr = PetscFreeSpaceGet(i,&current_space_lvl);CHKERRQ(ierr);
         reallocs++;
@@ -2705,8 +2705,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS 
 
     /* if free space is not available, make more free space */
     if (current_space->local_remaining<nzk) {
-      i = am - k + 1; /* num of unfactored rows */
-      i = PetscMin(i*nzk, i*(i-1)); /* i*nzk, i*(i-1): estimated and max additional space needed */
+      i  = am - k + 1; /* num of unfactored rows */
+      i *= PetscMin(nzk,i-1); /* i*nzk, i*(i-1): estimated and max additional space needed */
       ierr = PetscFreeSpaceGet(i,&current_space);CHKERRQ(ierr);
       reallocs++;
     }

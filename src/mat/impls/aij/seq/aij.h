@@ -180,6 +180,7 @@ EXTERN PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct_v2(Mat,Vec,V
 EXTERN PetscErrorCode MatSolve_SeqAIJ_InplaceWithPerm(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolveAdd_SeqAIJ(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatSolveTranspose_SeqAIJ(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatSolveTranspose_SeqAIJ_newdatastruct_v2(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatMatSolve_SeqAIJ(Mat,Mat,Mat);
 EXTERN PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg);
