@@ -604,13 +604,13 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const MatFact
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(isicol,&col_identity);CHKERRQ(ierr);
   if (row_identity && col_identity) {
-    C->ops->solve = MatSolve_SeqAIJ_NaturalOrdering_newdatastruct_v2;
+    C->ops->solve = MatSolve_SeqAIJ_NaturalOrdering_newdatastruct;
   } else {
-    C->ops->solve = MatSolve_SeqAIJ_newdatastruct_v2; 
+    C->ops->solve = MatSolve_SeqAIJ_newdatastruct; 
   }
   
   C->ops->solveadd           = 0;
-  C->ops->solvetranspose     = MatSolveTranspose_SeqAIJ_newdatastruct_v2;
+  C->ops->solvetranspose     = MatSolveTranspose_SeqAIJ_newdatastruct;
   C->ops->solvetransposeadd  = 0;
   C->ops->matsolve           = 0;
   C->assembled    = PETSC_TRUE;
@@ -1297,10 +1297,9 @@ PetscErrorCode MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolveTranspose_SeqAIJ_newdatastruct_v2"
-PetscErrorCode MatSolveTranspose_SeqAIJ_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolveTranspose_SeqAIJ_newdatastruct"
+PetscErrorCode MatSolveTranspose_SeqAIJ_newdatastruct(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   IS                iscol = a->col,isrow = a->row;
@@ -1429,7 +1428,7 @@ EXTERN PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat,Mat,MatDuplicateOption,Pet
      
   bdiag=fact->diag is an array of size n+1,in which
      bdiag[i]: points to diagonal of U(i,:), i=0,...,n-1
-     bdiag[n]: points to diagonal of U(n-1,0)-1
+     bdiag[n]: points to entry of U(n-1,0)-1
 
    U(i,:) contains bdiag[i] as its last entry, i.e., 
     U(i,:) = (u[i,i+1],...,u[i,n-1],diag[i])
@@ -1442,12 +1441,11 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0_newdatastruct(Mat fact,Mat A,IS 
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data,*b;
   PetscErrorCode     ierr;
   PetscInt           n=A->rmap->n,*ai=a->i,*aj,*adiag=a->diag;
-  PetscInt           i,j,nz,*bi,*bj,*bdiag,bi_temp;
+  PetscInt           i,j,nz,*bi,*bj,*bdiag; 
   PetscTruth         missing;
   IS                 isicol;
 
   PetscFunctionBegin;
-  /* printf("MatILUFactorSymbolic_SeqAIJ_ilu0_newdatastruct ...\n"); */
   if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
   ierr = MatMissingDiagonal(A,&missing,&i);CHKERRQ(ierr);
   if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",i);
@@ -1486,18 +1484,16 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0_newdatastruct(Mat fact,Mat A,IS 
   }
   
   /* U part */
-  bi_temp = bi[n];
   bdiag[n] = bi[n]-1;
   for (i=n-1; i>=0; i--){
     nz = ai[i+1] - adiag[i] - 1;
-    bi_temp = bi_temp + nz + 1;
     aj = a->j + adiag[i] + 1;
     for (j=0; j<nz; j++){
       *bj = aj[j]; bj++;
     }
     /* diag[i] */
     *bj = i; bj++;
-    bdiag[i] = bi_temp - 1;
+    bdiag[i] = bdiag[i+1] + nz + 1;
   }
 
   fact->factor                 = MAT_FACTOR_ILU;
@@ -2948,6 +2944,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const Mat
   PetscFunctionReturn(0); 
 }
 
+#if defined(OLD_ROUTINE_TO_BE_REPLACED)
 #undef __FUNCT__
 #define __FUNCT__ "MatSolve_SeqAIJ_NaturalOrdering_newdatastruct"
 PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
@@ -2997,10 +2994,11 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
-#define __FUNCT__ "MatSolve_SeqAIJ_NaturalOrdering_newdatastruct_v2"
-PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqAIJ_NaturalOrdering_newdatastruct"
+PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode    ierr;
@@ -3050,6 +3048,7 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct_v2(Mat A,Vec bb,Vec
   PetscFunctionReturn(0);
 }
 
+#if defined(OLD_ROUTINE_TO_BE_REPLACED)
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqAIJ_newdatastruct"
 PetscErrorCode MatSolve_SeqAIJ_newdatastruct(Mat A,Vec bb,Vec xx)
@@ -3106,10 +3105,11 @@ PetscErrorCode MatSolve_SeqAIJ_newdatastruct(Mat A,Vec bb,Vec xx)
   ierr = PetscLogFlops(2*a->nz - A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqAIJ_newdatastruct_v2"
-PetscErrorCode MatSolve_SeqAIJ_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqAIJ_newdatastruct"
+PetscErrorCode MatSolve_SeqAIJ_newdatastruct(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   IS                iscol = a->col,isrow = a->row;

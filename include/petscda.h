@@ -558,6 +558,7 @@ typedef struct _p_DMComposite* DMComposite;
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeCreate(MPI_Comm,DMComposite*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeDestroy(DMComposite);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeView(DMComposite,PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeAddArray(DMComposite,PetscMPIInt,PetscInt);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeAddDM(DMComposite,DM);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeSetCoupling(DMComposite,PetscErrorCode (*)(DMComposite,Mat,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt));
