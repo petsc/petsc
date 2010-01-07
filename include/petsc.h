@@ -260,6 +260,8 @@ typedef int PetscInt;
 #define MPIU_SIZE_T MPI_INT
 #elif  (PETSC_SIZEOF_SIZE_T) == (PETSC_SIZEOF_LONG)
 #define MPIU_SIZE_T MPI_LONG
+#elif  (PETSC_SIZEOF_SIZE_T) == (PETSC_SIZEOF_LONG_LONG)
+#define MPIU_SIZE_T MPI_LONG_LONG_INT
 #else
 #error "Unknown size for size_t! Send us a bugreport at petsc-maint@mcs.anl.gov"
 #endif
