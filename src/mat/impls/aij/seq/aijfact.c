@@ -604,13 +604,13 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const MatFact
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(isicol,&col_identity);CHKERRQ(ierr);
   if (row_identity && col_identity) {
-    C->ops->solve = MatSolve_SeqAIJ_NaturalOrdering_newdatastruct_v2;
+    C->ops->solve = MatSolve_SeqAIJ_NaturalOrdering_newdatastruct;
   } else {
-    C->ops->solve = MatSolve_SeqAIJ_newdatastruct_v2; 
+    C->ops->solve = MatSolve_SeqAIJ_newdatastruct; 
   }
   
   C->ops->solveadd           = 0;
-  C->ops->solvetranspose     = MatSolveTranspose_SeqAIJ_newdatastruct_v2;
+  C->ops->solvetranspose     = MatSolveTranspose_SeqAIJ_newdatastruct;
   C->ops->solvetransposeadd  = 0;
   C->ops->matsolve           = 0;
   C->assembled    = PETSC_TRUE;
@@ -1297,10 +1297,9 @@ PetscErrorCode MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolveTranspose_SeqAIJ_newdatastruct_v2"
-PetscErrorCode MatSolveTranspose_SeqAIJ_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolveTranspose_SeqAIJ_newdatastruct"
+PetscErrorCode MatSolveTranspose_SeqAIJ_newdatastruct(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   IS                iscol = a->col,isrow = a->row;
@@ -2945,6 +2944,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const Mat
   PetscFunctionReturn(0); 
 }
 
+#if defined(OLD_ROUTINE_TO_BE_REPLACED)
 #undef __FUNCT__
 #define __FUNCT__ "MatSolve_SeqAIJ_NaturalOrdering_newdatastruct"
 PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
@@ -2994,10 +2994,11 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
-#define __FUNCT__ "MatSolve_SeqAIJ_NaturalOrdering_newdatastruct_v2"
-PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqAIJ_NaturalOrdering_newdatastruct"
+PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode    ierr;
@@ -3047,6 +3048,7 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct_v2(Mat A,Vec bb,Vec
   PetscFunctionReturn(0);
 }
 
+#if defined(OLD_ROUTINE_TO_BE_REPLACED)
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqAIJ_newdatastruct"
 PetscErrorCode MatSolve_SeqAIJ_newdatastruct(Mat A,Vec bb,Vec xx)
@@ -3103,10 +3105,11 @@ PetscErrorCode MatSolve_SeqAIJ_newdatastruct(Mat A,Vec bb,Vec xx)
   ierr = PetscLogFlops(2*a->nz - A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqAIJ_newdatastruct_v2"
-PetscErrorCode MatSolve_SeqAIJ_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqAIJ_newdatastruct"
+PetscErrorCode MatSolve_SeqAIJ_newdatastruct(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   IS                iscol = a->col,isrow = a->row;
