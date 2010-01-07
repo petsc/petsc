@@ -253,7 +253,17 @@ typedef long long PetscInt;
 #else
 typedef int PetscInt;
 #define MPIU_INT MPI_INT
-#endif  
+#endif
+
+/* add in MPIU type for size_t */
+#if (PETSC_SIZEOF_SIZE_T) == (PETSC_SIZEOF_INT)
+#define MPIU_SIZE_T MPI_INT
+#elif  (PETSC_SIZEOF_SIZE_T) == (PETSC_SIZEOF_LONG)
+#define MPIU_SIZE_T MPI_LONG
+#else
+#error "Unknown size for size_t! Send us a bugreport at petsc-maint@mcs.anl.gov"
+#endif
+
 
 /*
       You can use PETSC_STDOUT as a replacement of stdout. You can also change
