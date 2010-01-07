@@ -1429,7 +1429,7 @@ EXTERN PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat,Mat,MatDuplicateOption,Pet
      
   bdiag=fact->diag is an array of size n+1,in which
      bdiag[i]: points to diagonal of U(i,:), i=0,...,n-1
-     bdiag[n]: points to diagonal of U(n-1,0)-1
+     bdiag[n]: points to entry of U(n-1,0)-1
 
    U(i,:) contains bdiag[i] as its last entry, i.e., 
     U(i,:) = (u[i,i+1],...,u[i,n-1],diag[i])
@@ -1442,12 +1442,11 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0_newdatastruct(Mat fact,Mat A,IS 
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data,*b;
   PetscErrorCode     ierr;
   PetscInt           n=A->rmap->n,*ai=a->i,*aj,*adiag=a->diag;
-  PetscInt           i,j,nz,*bi,*bj,*bdiag,bi_temp;
+  PetscInt           i,j,nz,*bi,*bj,*bdiag; 
   PetscTruth         missing;
   IS                 isicol;
 
   PetscFunctionBegin;
-  /* printf("MatILUFactorSymbolic_SeqAIJ_ilu0_newdatastruct ...\n"); */
   if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
   ierr = MatMissingDiagonal(A,&missing,&i);CHKERRQ(ierr);
   if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",i);
@@ -1486,18 +1485,16 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0_newdatastruct(Mat fact,Mat A,IS 
   }
   
   /* U part */
-  bi_temp = bi[n];
   bdiag[n] = bi[n]-1;
   for (i=n-1; i>=0; i--){
     nz = ai[i+1] - adiag[i] - 1;
-    bi_temp = bi_temp + nz + 1;
     aj = a->j + adiag[i] + 1;
     for (j=0; j<nz; j++){
       *bj = aj[j]; bj++;
     }
     /* diag[i] */
     *bj = i; bj++;
-    bdiag[i] = bi_temp - 1;
+    bdiag[i] = bdiag[i+1] + nz + 1;
   }
 
   fact->factor                 = MAT_FACTOR_ILU;
