@@ -29,11 +29,12 @@ int main(int argc,char **argv)
   DA             da;
   Mat            A;
   PetscInt       dof=1,M=-8;
-  PetscTruth     flg;
+  PetscTruth     flg,trans=PETSC_FALSE;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-trans",&trans,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = DACreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
   ierr = DASetDim(da,3);CHKERRQ(ierr);
@@ -73,7 +74,11 @@ int main(int argc,char **argv)
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetDA(pc,da);CHKERRQ(ierr);
  
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  if (trans) {
+    ierr = KSPSolveTranspose(ksp,b,x);CHKERRQ(ierr);
+  } else {
+    ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  }
 
   /* check final residual */
   flg  = PETSC_FALSE;

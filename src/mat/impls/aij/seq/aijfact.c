@@ -610,7 +610,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const MatFact
   }
   
   C->ops->solveadd           = 0;
-  C->ops->solvetranspose     = 0;
+  C->ops->solvetranspose     = MatSolveTranspose_SeqAIJ_newdatastruct_v2;
   C->ops->solvetransposeadd  = 0;
   C->ops->matsolve           = 0;
   C->assembled    = PETSC_TRUE;
