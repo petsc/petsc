@@ -775,7 +775,14 @@ The \trl{PetscFListAdd\_Private()} and all related routines can be found in the 
 
 In addition to using the PetscFList mechanism to compose functions into PETSc objects, it is
 also used to allow registration of new class implementations; for example, new
-preconditioners, see Section \ref{sec:registeringnewmethods}. 
+preconditioners, see Section \ref{sec:registeringnewmethods}.
+
+\subsection{Simple PETSc Objects}
+
+There are some simple PETSc objects that do not need PETSCHEADER - and
+the associated functionality. These objects are internally named as
+\_n\_$<$class$> as opposed to \_p\_$<$class$>. For eg: \_n\_PetscTable
+vs \_p\_Vec.
 
 \chapter{Mimimal Class Standards}
 This chapter discusses the miminal functionality and format required of any 
