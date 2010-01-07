@@ -611,7 +611,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const MatFact
   
   C->ops->solveadd           = MatSolveAdd_SeqAIJ_newdatastruct;
   C->ops->solvetranspose     = MatSolveTranspose_SeqAIJ_newdatastruct;
-  C->ops->solvetransposeadd  = 0;
+  C->ops->solvetransposeadd  = MatSolveTransposeAdd_SeqAIJ_newdatastruct;
   C->ops->matsolve           = 0;
   C->assembled    = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;
@@ -1453,6 +1453,65 @@ PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
     v   = aa + diag[i] - 1 ;
     vi  = aj + diag[i] - 1 ;
     nz  = diag[i] - ai[i];
+    s1  = tmp[i];
+    for (j=0; j>-nz; j--) tmp[vi[j]] -= s1*v[j];
+  }
+
+  /* copy tmp into x according to permutation */
+  for (i=0; i<n; i++) x[r[i]] += tmp[i];
+
+  ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+
+  ierr = PetscLogFlops(2.0*a->nz-A->cmap->n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolveTransposeAdd_SeqAIJ_newdatastruct"
+PetscErrorCode MatSolveTransposeAdd_SeqAIJ_newdatastruct(Mat A,Vec bb,Vec zz,Vec xx)
+{
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  IS                iscol = a->col,isrow = a->row;
+  PetscErrorCode    ierr;
+  const PetscInt    *rout,*cout,*r,*c,*adiag = a->diag,*ai = a->i,*aj = a->j,*vi;
+  PetscInt          i,n = A->rmap->n,j;
+  PetscInt          nz;
+  PetscScalar       *x,*tmp,s1;
+  const MatScalar   *aa = a->a,*v;
+  const PetscScalar *b;
+
+  PetscFunctionBegin;
+  if (zz != xx) {ierr = VecCopy(zz,xx);CHKERRQ(ierr);}
+  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  tmp  = a->solve_work;
+
+  ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
+  ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout;
+
+  /* copy the b into temp work space according to permutation */
+  for (i=0; i<n; i++) tmp[i] = b[c[i]]; 
+
+  /* forward solve the U^T */
+  for (i=0; i<n; i++) {
+    v   = aa + adiag[i+1] + 1;
+    vi  = aj + adiag[i+1] + 1;
+    nz  = adiag[i] - adiag[i+1] - 1;
+    s1  = tmp[i];
+    s1 *= v[nz];  /* multiply by inverse of diagonal entry */
+    for (j=0; j<nz; j++) tmp[vi[j]] -= s1*v[j];
+    tmp[i] = s1;
+  }
+
+
+  /* backward solve the L^T */
+  for (i=n-1; i>=0; i--){
+    v   = aa + ai[i] ;
+    vi  = aj + ai[i];
+    nz  = ai[i+1] - ai[i];
     s1  = tmp[i];
     for (j=0; j>-nz; j--) tmp[vi[j]] -= s1*v[j];
   }

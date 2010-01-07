@@ -181,6 +181,7 @@ EXTERN PetscErrorCode MatSolveAdd_SeqAIJ_newdatastruct(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatSolveTranspose_SeqAIJ(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolveTranspose_SeqAIJ_newdatastruct(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat,Vec,Vec,Vec);
+EXTERN PetscErrorCode MatSolveTransposeAdd_SeqAIJ_newdatastruct(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatMatSolve_SeqAIJ(Mat,Mat,Mat);
 EXTERN PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg);
 EXTERN PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat,ISColoring,MatFDColoring);
