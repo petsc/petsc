@@ -22,8 +22,6 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.qd   = framework.require('config.packages.qd',self)
-    self.deps = [self.qd]
     return
 
   
