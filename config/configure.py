@@ -22,7 +22,7 @@ if not hasattr(sys, 'version_info') or not sys.version_info[1] >= 2 or not sys.v
   sys.exit(4)
 
 def check_for_option_mistakes(opts):
-  for opt in opts:
+  for opt in opts[1:]:
     name = opt.split('=')[0]
     if name.find('_') >= 0:
       exception = False
