@@ -1175,6 +1175,7 @@ static PetscErrorCode MatGetRowIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscTruth symme
   if (!ia) PetscFunctionReturn(0);
   if (symmetric) {
     ierr = MatToSymmetricIJ_SeqAIJ(n,a->i,a->j,0,0,&tia,&tja);CHKERRQ(ierr);
+    nz   = tia[n];
   } else {
     tia = a->i; tja = a->j;
   }
