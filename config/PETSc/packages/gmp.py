@@ -6,11 +6,11 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/qd-2.3.8.tar.gz']
+    self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/gmp.tar.gz']
     self.complex          = 0;
     self.double           = 0;
-    self.includes         = ['qd/dd_real.h']
-    self.liblist          = [['libqd.a','libqd_f_main.a','libqdmod.a']]
+    self.includes         = ['']
+    self.liblist          = [['']]
     self.requires32bitint = 0;
     self.cxx              = 1    # requires 
     self.fc               = 0    # 1 means requires fortran    return
@@ -24,24 +24,25 @@ class Configure(config.package.Package):
     self.framework.pushLanguage('Cxx')
     args.append('CXX="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
     self.framework.popLanguage()
+    args.append('--enable-cxx')
       
     args = ' '.join(args)
     fd = file(os.path.join(self.packageDir,self.package), 'w')
     fd.write(args)
     fd.close()
     if self.installNeeded(self.package):
-      self.logPrintBox('Configuring QD; this may take several minutes')
+      self.logPrintBox('Configuring GMP; this may take several minutes')
       try:
         output1,err1,ret1  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';./configure '+args, timeout=900, log = self.framework.log)
       except RuntimeError, e:
-        raise RuntimeError('Error running configure on QD (install manually): '+str(e))
-      self.logPrintBox('Compiling QD; this may take several minutes')
+        raise RuntimeError('Error running configure on GMP (install manually): '+str(e))
+      self.logPrintBox('Compiling GMP; this may take several minutes')
       try:
         output2,err2,ret2  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';make; make install; make clean', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
-        raise RuntimeError('Error running make; make install on QD (install manually): '+str(e))
-      self.framework.actions.addArgument('QD', 'Install', 'Installed QD into '+self.installDir)
-      self.postInstall(output1+err1+output2+err2,'qd')
+        raise RuntimeError('Error running make; make install on GMP (install manually): '+str(e))
+      self.framework.actions.addArgument('GMP', 'Install', 'Installed GMP into '+self.installDir)
+      self.postInstall(output1+err1+output2+err2,'gmp')
     return self.installDir
 
   def configureLibrary(self):
@@ -56,9 +57,8 @@ class Configure(config.package.Package):
         self.compilers.CPPFLAGS = oldFlags
         self.compilers.LIBS = oldLibs
         self.popLanguage()
-        raise RuntimeError('Unable to use QD: ')
+        raise RuntimeError('Unable to use GMP: ')
       self.popLanguage()
-      self.addDefine('USE_QD_DD', 1)      
         
     return
   

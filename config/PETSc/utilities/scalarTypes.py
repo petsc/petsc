@@ -26,7 +26,7 @@ class Configure(config.base.Configure):
     self.types     = framework.require('config.types', self)
     self.languages = framework.require('PETSc.utilities.languages', self)
     self.compilers = framework.require('config.compilers', self)
-    self.qd        = framework.require('config.packages.qd',self)
+    self.qd        = framework.require('PETSc.packages.qd',self)
     return
 
 
