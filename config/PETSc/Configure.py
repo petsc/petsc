@@ -48,7 +48,7 @@ class Configure(config.base.Configure):
             utilityObj.languageProvider   = self.languages
             utilityObj.installDirProvider = self.petscdir
             setattr(self, utilityName.lower(), utilityObj)
-    self.qd    = framework.require('config.packages.qd', self)
+    self.qd    = framework.require('PETSc.packages.qd', self)
     self.qd.archProvider      = self.arch
     self.qd.precisionProvider = self.scalartypes
     self.qd.installDirProvider= self.petscdir
