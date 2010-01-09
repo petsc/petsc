@@ -1,5 +1,8 @@
 import PETSc.package
 
+#
+# DOES NOT CURRENTLY WORK BECAUSE REQUIRES GMP which I cannot get built
+#
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)

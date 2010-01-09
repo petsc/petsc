@@ -3,13 +3,16 @@ import user
 import config.base
 import config.package
 
+#
+# DOES NOT CURRENTLY WORK
+#
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/gmp.tar.gz']
     self.complex          = 0;
     self.double           = 0;
-    self.includes         = ['']
+    self.includes         = ['gmp.h','mp_bases.h','fib_table.h','gmpxx.h','randmt.h','longlong.h','trialdivtab.h','gmp-mparam.h','mp.h']
     self.liblist          = [['']]
     self.requires32bitint = 0;
     self.cxx              = 1    # requires 
@@ -33,7 +36,7 @@ class Configure(config.package.Package):
     if self.installNeeded(self.package):
       self.logPrintBox('Configuring GMP; this may take several minutes')
       try:
-        output1,err1,ret1  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';./configure '+args, timeout=900, log = self.framework.log)
+        output1,err1,ret1  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';ABI=32 ./configure '+args, timeout=900, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running configure on GMP (install manually): '+str(e))
       self.logPrintBox('Compiling GMP; this may take several minutes')
