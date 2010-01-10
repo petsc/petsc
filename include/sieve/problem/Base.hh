@@ -13,6 +13,7 @@ namespace ALE {
     typedef enum {ASSEMBLY_FULL, ASSEMBLY_STORED, ASSEMBLY_CALCULATED} AssemblyType;
     typedef union {SectionReal section; Vec vec;} ExactSolType;
 
+#if 0
     namespace Functions {
       extern PetscScalar lambda;
 
@@ -49,6 +50,7 @@ namespace ALE {
       PetscErrorCode RhsBd_Unstructured(::Mesh mesh, SectionReal X, SectionReal section, void *ctx);
       PetscErrorCode JacBd_Unstructured(::Mesh mesh, SectionReal section, Mat M, void *ctx);
     }
+#endif
 
     typedef struct {
       PetscInt      debug;                       // The debugging level

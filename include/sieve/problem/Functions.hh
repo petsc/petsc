@@ -5,26 +5,26 @@
 
 namespace ALE {
   namespace Problem {
-    namespace Function {
+    namespace Functions {
       static PetscScalar lambda;
       
-      static PetscScalar zero(const double x[]) {
+      PetscScalar zero(const double x[]) {
         return 0.0;
       };
       
-      static PetscScalar constant(const double x[]) {
+      PetscScalar constant(const double x[]) {
         return -4.0;
       };
 
-      static PetscScalar nonlinear_2d(const double x[]) {
+      PetscScalar nonlinear_2d(const double x[]) {
         return -4.0 - lambda*PetscExpScalar(x[0]*x[0] + x[1]*x[1]);
       };
 
-      static PetscScalar singularity_2d(const double x[]) {
+      PetscScalar singularity_2d(const double x[]) {
         return 0.;
       };
 
-      static PetscScalar singularity_exact_2d(const double x[]) {
+      PetscScalar singularity_exact_2d(const double x[]) {
         double r = sqrt(x[0]*x[0] + x[1]*x[1]);
         double theta;
         if (r == 0.) {
@@ -36,52 +36,52 @@ namespace ALE {
         return pow(r, 2./3.)*sin((2./3.)*theta);
       };
 
-      static PetscScalar singularity_exact_3d(const double x[]) {
+      PetscScalar singularity_exact_3d(const double x[]) {
         return sin(x[0] + x[1] + x[2]);  
       };
 
-      static PetscScalar singularity_3d(const double x[]) {
+      PetscScalar singularity_3d(const double x[]) {
         return (3)*sin(x[0] + x[1] + x[2]);
       };
 
-      static PetscScalar linear_2d(const double x[]) {
+      PetscScalar linear_2d(const double x[]) {
         return -6.0*(x[0] - 0.5) - 6.0*(x[1] - 0.5);
       };
 
-      static PetscScalar quadratic_2d(const double x[]) {
+      PetscScalar quadratic_2d(const double x[]) {
         return x[0]*x[0] + x[1]*x[1];
       };
 
-      static PetscScalar cubic_2d(const double x[]) {
+      PetscScalar cubic_2d(const double x[]) {
         return x[0]*x[0]*x[0] - 1.5*x[0]*x[0] + x[1]*x[1]*x[1] - 1.5*x[1]*x[1] + 0.5;
       };
 
-      static PetscScalar nonlinear_3d(const double x[]) {
+      PetscScalar nonlinear_3d(const double x[]) {
         return -4.0 - lambda*PetscExpScalar((2.0/3.0)*(x[0]*x[0] + x[1]*x[1] + x[2]*x[2]));
       };
 
-      static PetscScalar linear_3d(const double x[]) {
+      PetscScalar linear_3d(const double x[]) {
         return -6.0*(x[0] - 0.5) - 6.0*(x[1] - 0.5) - 6.0*(x[2] - 0.5);
       };
 
-      static PetscScalar quadratic_3d(const double x[]) {
+      PetscScalar quadratic_3d(const double x[]) {
         return (2.0/3.0)*(x[0]*x[0] + x[1]*x[1] + x[2]*x[2]);
       };
 
-      static PetscScalar cubic_3d(const double x[]) {
+      PetscScalar cubic_3d(const double x[]) {
         return x[0]*x[0]*x[0] - 1.5*x[0]*x[0] + x[1]*x[1]*x[1] - 1.5*x[1]*x[1] + x[2]*x[2]*x[2] - 1.5*x[2]*x[2] + 0.75;
       };
 
-      static PetscScalar cos_x(const double x[]) {
+      PetscScalar cos_x(const double x[]) {
         return cos(2.0*PETSC_PI*x[0]);
       };
 
-      static PetscScalar linear_2d_bem(const double x[]) {
+      PetscScalar linear_2d_bem(const double x[]) {
         return x[0] + x[1];
       };
 
       // \frac{\partial u}{\partial n}
-      static PetscScalar linear_nder_2d(const double x[]) {
+      PetscScalar linear_nder_2d(const double x[]) {
         if (x[0] + x[1] < 1.0) {
           // Bottom/Left
           return -1.0;
@@ -92,7 +92,7 @@ namespace ALE {
       };
 
       // \frac{\partial u}{\partial n}
-      static PetscScalar quadratic_nder_2d(const double x[]) {
+      PetscScalar quadratic_nder_2d(const double x[]) {
         if (x[0] + x[1] < 1.0) {
           // Bottom/Left
           return 0.0;
@@ -105,7 +105,7 @@ namespace ALE {
 
       #undef __FUNCT__
       #define __FUNCT__ "Function_Structured_2d"
-      static PetscErrorCode Function_Structured_2d(DALocalInfo *info, PetscScalar *x[], PetscScalar *f[], void *ctx) {
+      PetscErrorCode Function_Structured_2d(DALocalInfo *info, PetscScalar *x[], PetscScalar *f[], void *ctx) {
         BratuOptions  *options = (BratuOptions *) ctx;
         PetscScalar  (*func)(const double *) = options->func;
         DA             coordDA;
@@ -128,7 +128,7 @@ namespace ALE {
       };
       #undef __FUNCT__
       #define __FUNCT__ "Rhs_Structured_2d_FD"
-      static PetscErrorCode Rhs_Structured_2d_FD(DALocalInfo *info, PetscScalar *x[], PetscScalar *f[], void *ctx) {
+      PetscErrorCode Rhs_Structured_2d_FD(DALocalInfo *info, PetscScalar *x[], PetscScalar *f[], void *ctx) {
         BratuOptions  *options = (BratuOptions *) ctx;
         PetscScalar  (*func)(const double *)   = options->func;
         PetscScalar  (*bcFunc)(const double *) = options->exactFunc;
@@ -169,7 +169,7 @@ namespace ALE {
       };
       #undef __FUNCT__
       #define __FUNCT__ "Jac_Structured_2d_FD"
-      static PetscErrorCode Jac_Structured_2d_FD(DALocalInfo *info, PetscScalar *x[], Mat J, void *ctx) {
+      PetscErrorCode Jac_Structured_2d_FD(DALocalInfo *info, PetscScalar *x[], Mat J, void *ctx) {
         BratuOptions  *options = (BratuOptions *) ctx;
         const double   lambda  = options->lambda;
         DA             coordDA;
@@ -217,7 +217,7 @@ namespace ALE {
       };
       #undef __FUNCT__
       #define __FUNCT__ "Function_Structured_3d"
-      static PetscErrorCode Function_Structured_3d(DALocalInfo *info, PetscScalar **x[], PetscScalar **f[], void *ctx) {
+      PetscErrorCode Function_Structured_3d(DALocalInfo *info, PetscScalar **x[], PetscScalar **f[], void *ctx) {
         BratuOptions  *options = (BratuOptions *) ctx;
         PetscScalar  (*func)(const double *) = options->func;
         DA             coordDA;
@@ -242,7 +242,7 @@ namespace ALE {
       };
       #undef __FUNCT__
       #define __FUNCT__ "Rhs_Structured_3d_FD"
-      static PetscErrorCode Rhs_Structured_3d_FD(DALocalInfo *info, PetscScalar **x[], PetscScalar **f[], void *ctx) {
+      PetscErrorCode Rhs_Structured_3d_FD(DALocalInfo *info, PetscScalar **x[], PetscScalar **f[], void *ctx) {
         BratuOptions  *options = (BratuOptions *) ctx;
         PetscScalar  (*func)(const double *)   = options->func;
         PetscScalar  (*bcFunc)(const double *) = options->exactFunc;
@@ -290,7 +290,7 @@ namespace ALE {
       };
       #undef __FUNCT__
       #define __FUNCT__ "Jac_Structured_3d_FD"
-      static PetscErrorCode Jac_Structured_3d_FD(DALocalInfo *info, PetscScalar **x[], Mat J, void *ctx) {
+      PetscErrorCode Jac_Structured_3d_FD(DALocalInfo *info, PetscScalar **x[], Mat J, void *ctx) {
         BratuOptions  *options = (BratuOptions *) ctx;
         const double   lambda  = options->lambda;
         DA             coordDA;
@@ -347,7 +347,7 @@ namespace ALE {
 
       #undef __FUNCT__
       #define __FUNCT__ "Rhs_Unstructured"
-      static PetscErrorCode Rhs_Unstructured(::Mesh mesh, SectionReal X, SectionReal section, void *ctx) {
+      PetscErrorCode Rhs_Unstructured(::Mesh mesh, SectionReal X, SectionReal section, void *ctx) {
         BratuOptions  *options = (BratuOptions *) ctx;
         PetscScalar  (*func)(const double *) = options->func;
         const double   lambda                = options->lambda;
@@ -449,7 +449,7 @@ namespace ALE {
       };
       #undef __FUNCT__
       #define __FUNCT__ "Jac_Unstructured"
-      static PetscErrorCode Jac_Unstructured(::Mesh mesh, SectionReal section, Mat A, void *ctx) {
+      PetscErrorCode Jac_Unstructured(::Mesh mesh, SectionReal section, Mat A, void *ctx) {
         BratuOptions  *options = (BratuOptions *) ctx;
         const double   lambda  = options->lambda;
         Obj<PETSC_MESH_TYPE::real_section_type> s;
@@ -525,7 +525,7 @@ namespace ALE {
 
       #undef __FUNCT__
       #define __FUNCT__ "PointEvaluation"
-      static PetscErrorCode PointEvaluation(::Mesh mesh, SectionReal X, double coordsx[], double detJx, PetscScalar elemVec[]) {
+      PetscErrorCode PointEvaluation(::Mesh mesh, SectionReal X, double coordsx[], double detJx, PetscScalar elemVec[]) {
         Obj<PETSC_MESH_TYPE> m;
         Obj<PETSC_MESH_TYPE::real_section_type> s;
         SectionReal    boundaryData, normals;
@@ -618,7 +618,7 @@ namespace ALE {
       };
       #undef __FUNCT__
       #define __FUNCT__ "RhsBd_Unstructured"
-      static PetscErrorCode RhsBd_Unstructured(::Mesh mesh, SectionReal X, SectionReal section, void *ctx) {
+      PetscErrorCode RhsBd_Unstructured(::Mesh mesh, SectionReal X, SectionReal section, void *ctx) {
         LaplaceBEMOptions  *options = (LaplaceBEMOptions *) ctx;
         PetscScalar         C = options->phiCoefficient;
         Obj<PETSC_MESH_TYPE> m;
@@ -829,7 +829,7 @@ namespace ALE {
       };
       #undef __FUNCT__
       #define __FUNCT__ "JacBd_Unstructured"
-      static PetscErrorCode JacBd_Unstructured(::Mesh mesh, SectionReal section, Mat M, void *ctx) {
+      PetscErrorCode JacBd_Unstructured(::Mesh mesh, SectionReal section, Mat M, void *ctx) {
         Obj<PETSC_MESH_TYPE> m;
         Obj<PETSC_MESH_TYPE::real_section_type> s;
         SectionReal    normals;

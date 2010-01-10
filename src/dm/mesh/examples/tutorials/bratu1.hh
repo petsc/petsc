@@ -1,7 +1,5 @@
 #include <problem/Bratu.hh>
 
-PetscScalar ALE::Problem::Functions::lambda = 0.0;
-
 class FunctionTestBratu : public CppUnit::TestFixture
 {
   CPPUNIT_TEST_SUITE(FunctionTestBratu);

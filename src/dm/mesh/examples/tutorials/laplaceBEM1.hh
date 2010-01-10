@@ -1,9 +1,11 @@
 #include <problem/LaplaceBEM.hh>
+#include <petscmesh_formats.hh>
 
 class FunctionTestLaplaceBEM : public CppUnit::TestFixture
 {
   CPPUNIT_TEST_SUITE(FunctionTestLaplaceBEM);
 
+  CPPUNIT_TEST(testLaplaceBEMSphere);
   CPPUNIT_TEST(testLaplaceBEMUnitSquareBdInterpolated);
 
 #if 0
@@ -116,6 +118,23 @@ public:
   void testLaplaceBEMUnitSquareBdInterpolated(void) {
     this->_problem->interpolated(true);
     this->testLaplaceBEMUnitSquareBd(0.356716);
+  };
+
+  void testLaplaceBEMSphere(void) {
+    ALE::Obj<PETSC_MESH_TYPE> mesh = ALE::Bardhan::Builder::readMesh(PETSC_COMM_WORLD, 2, std::string("/home/knepley/Desktop/tmp2/surfaces/surf1QyXZD.mesh"), false, 0);
+
+    mesh->view("Sphere");
+    PetscViewer    viewer;
+    PetscErrorCode ierr;
+
+    ierr = PetscViewerCreate(mesh->comm(), &viewer);CHKERRXX(ierr);
+    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRXX(ierr);
+    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRXX(ierr);
+    ierr = PetscViewerFileSetName(viewer, "sphere.vtk");CHKERRXX(ierr);
+    ierr = VTKViewer::writeHeader(viewer); CHKERRXX(ierr);
+    ierr = VTKViewer::writeVertices(mesh, viewer);CHKERRXX(ierr);
+    ierr = VTKViewer::writeElements(mesh, viewer);CHKERRXX(ierr);
+    ierr = PetscViewerDestroy(viewer);CHKERRXX(ierr);
   };
 };
 

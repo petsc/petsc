@@ -69,6 +69,20 @@ namespace ALE {
 }
 
 namespace ALE {
+  namespace Bardhan {
+    class Builder {
+    public:
+      typedef PETSC_MESH_TYPE             Mesh;
+      typedef PETSC_MESH_TYPE::sieve_type sieve_type;
+    public:
+      static void readInpFile(MPI_Comm comm, const std::string& filename, const int dim, const int numCorners, int& numElements, int *vertices[], int& numVertices, double *coordinates[], double *faceNormals[]);
+      static Obj<Mesh> readMesh(MPI_Comm comm, const int dim, const std::string& filename, const bool interpolate, const int debug);
+      static void readFault(Obj<Mesh> mesh, const std::string& filename);
+    };
+  }
+}
+
+namespace ALE {
   namespace PCICE {
     void fuseBoundary(const ALE::Obj<PETSC_MESH_TYPE>& mesh);
 
