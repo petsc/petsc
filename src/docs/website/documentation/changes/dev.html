@@ -1,6 +1,8 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
 <head>
+
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
   <title>PETSc: Docs:&nbsp; Changes: Development</title>
 </head>
@@ -95,6 +97,8 @@ the object.</li>
         <li>In makefiles include ${PETSC_DIR}/conf/base is replaced
 with two lines include ${PETSC_DIR}/conf/variables and&nbsp; include
 ${PETSC_DIR}/conf/rules</li>
+        <li>BlockSolve95 interface is removed<br>
+        </li>
       </ul>
       <ul>
       </ul>
@@ -151,6 +155,8 @@ PCSOR</li>
 MatCreateMPIAIJWithArrays() and MatMPIAIJSetPreallocationCSR().</li>
         <li>Changed MATOP_DIAGONAL_SHIFT to MATOP_DIAGONAL_SET to match
 function name MatDiagonalSet().</li>
+        <li>MATMPIROWBS i.e BlockSolve95 interface is now removed<br>
+        </li>
       </ul>
       <u><b>PC:</b></u>
       <ul>
@@ -166,6 +172,7 @@ if the initial guess being passed in is nonzero. SOR will save some
 work if it is zero.</li>
         <li>MatSetBlockSize() is no longer an error for BAIJ matrices,
 but the argument must be the same as when the matrix was preallocated. </li>
+        <li>PCFactorSetPivoting() renamed to PCFactorSetColumnPivot()</li>
       </ul>
       <p><u><b>KSP:</b></u></p>
       <ul>

@@ -358,9 +358,7 @@ static PetscErrorCode PCApplyTranspose_ILU(PC pc,Vec x,Vec y)
 
   Concepts: incomplete factorization
 
-   Notes: Only implemented for some matrix formats. (for parallel use you 
-             must use MATMPIROWBS, see MatCreateMPIRowbs(), this supports only ILU(0) and this is not recommended
-             unless you really want a parallel ILU).
+   Notes: Only implemented for some matrix formats. (for parallel see PCHYPRE for hypre's ILU)
 
           For BAIJ matrices this implements a point block ILU
 

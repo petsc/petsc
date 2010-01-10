@@ -39,6 +39,8 @@
        parameter (MPI_STATUS_SIZE=4)
        integer MPI_UNDEFINED
        parameter (MPI_UNDEFINED=-32766)
+       INTEGER MPI_INFO_NULL
+       PARAMETER (MPI_INFO_NULL=469762048)
 
 
        integer MPI_REQUEST_NULL

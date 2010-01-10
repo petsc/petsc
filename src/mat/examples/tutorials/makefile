@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/mat/examples/tutorials/
-EXAMPLESC       = ex1.c ex2.c ex4.c ex5.c ex6.c ex8.c ex9.c ex10.c ex11.c ex12.c
+EXAMPLESC       = ex1.c ex2.c ex4.c ex5.c ex6.c ex8.c ex9.c ex10.c ex11.c ex12.c ex13.c
 EXAMPLESF       =
 MANSEC          = Mat
 
@@ -46,6 +46,9 @@ ex11: ex11.o  chkopts
 ex12: ex12.o  chkopts
 	-${CLINKER}  -o ex12 ex12.o ${PETSC_MAT_LIB}
 	${RM} ex12.o
+ex13: ex13.o  chkopts
+	-${CLINKER}  -o ex13 ex13.o ${PETSC_MAT_LIB}
+	${RM} ex13.o
 # See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex1: 
 	-@${MPIEXEC} -n 1 ./ex1 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
@@ -86,12 +89,15 @@ runex11:
 	   else echo "Possible problem with ex11, diffs above"; fi; \
 	   ${RM} -f ex11_1.tmp
 
+runex13: 
+	-@${MPIEXEC}  ./ex13 
+
 #-------------------------------------------------------------
 TESTEXAMPLES_C		    = ex4.PETSc ex4.rm ex5.PETSc ex5.rm ex10.PETSc ex10.rm ex12.PETSc ex12.rm
 TESTEXAMPLES_C_X11	    = ex2.PETSc ex2.rm 
 TESTEXAMPLES_FORTRAN	    = 
 TESTEXAMPLES_C_X11_MPIUNI   = 
-TESTEXAMPLES_DATAFILESPATH  = ex1.PETSc runex1 ex1.rm ex5.PETSc runex5 ex5.rm ex9.PETSc runex9 ex9.rm ex10.PETSc runex10_seqaij runex10_seqdense runex10_mpiaij runex10_mpidense ex10.rm
+TESTEXAMPLES_DATAFILESPATH  = ex1.PETSc runex1 ex1.rm ex5.PETSc runex5 ex5.rm ex9.PETSc runex9 ex9.rm ex10.PETSc runex10_seqaij runex10_seqdense runex10_mpiaij runex10_mpidense ex10.rm  ex13.PETSc runex13 ex13.rm
 TESTEXAMPLES_FORTRAN_MPIUNI = 
 TESTEXAMPLES_13		    = ex1.PETSc ex1.rm
 TESTEXAMPLES_PARAMETIS      = ex11.PETSc runex11 ex11.rm

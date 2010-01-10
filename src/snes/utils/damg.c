@@ -567,11 +567,12 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGView(DMMG *dmmg,PetscViewer viewer)
     if (iascii) {
       ierr = PetscViewerASCIIPrintf(viewer,"Using matrix type %s\n",dmmg[nlevels-1]->mtype);CHKERRQ(ierr);
     }
-    if (dmmg[nlevels-1]->ksp) {
-      ierr = KSPView(dmmg[nlevels-1]->ksp,viewer);CHKERRQ(ierr);
-    } else {
-      /* use of PetscObjectView() means we do not have to link with libpetscsnes if SNES is not being used */
-      ierr = PetscObjectView((PetscObject)dmmg[nlevels-1]->snes,viewer);CHKERRQ(ierr);
+    if (DMMGGetKSP(dmmg)) {
+      ierr = KSPView(DMMGGetKSP(dmmg),viewer);CHKERRQ(ierr);
+    } else if (DMMGGetSNES(dmmg)) {
+      ierr = SNESView(DMMGGetSNES(dmmg),viewer);CHKERRQ(ierr);
+    } else if (iascii) {
+      ierr = PetscViewerASCIIPrintf(viewer,"DMMG does not have a SNES or KSP set");CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

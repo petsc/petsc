@@ -95,17 +95,17 @@ int main(int argc,char **argv)
     ierr = PetscOptionsScalar("-dt", "The time step", "ex31.c", user.dt, &user.dt, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
-  ierr = CreateStructures(DMMGGetDMMG(dmmg));
-  ierr = ComputeInitialGuess(DMMGGetDMMG(dmmg));
-  ierr = ComputePredictor(DMMGGetDMMG(dmmg));
+  ierr = CreateStructures(DMMGGetFine(dmmg));
+  ierr = ComputeInitialGuess(DMMGGetFine(dmmg));
+  ierr = ComputePredictor(DMMGGetFine(dmmg));
 
   ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeMatrix);CHKERRQ(ierr);
   ierr = DMMGSetInitialGuess(dmmg, DMMGInitialGuessCurrent);CHKERRQ(ierr);
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
 
-  ierr = ComputeCorrector(DMMGGetDMMG(dmmg), DMMGGetx(dmmg), DMMGGetr(dmmg));
+  ierr = ComputeCorrector(DMMGGetFine(dmmg), DMMGGetx(dmmg), DMMGGetr(dmmg));
 
-  ierr = DestroyStructures(DMMGGetDMMG(dmmg));
+  ierr = DestroyStructures(DMMGGetFine(dmmg));
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;

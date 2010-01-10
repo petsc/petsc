@@ -1346,7 +1346,6 @@ PetscErrorCode MatMultHermitianTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultTransposeAdd_SeqBAIJ"
 PetscErrorCode MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
-
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar       *zb,*x,*z,*xb = 0,x1,x2,x3,x4,x5;

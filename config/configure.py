@@ -22,11 +22,11 @@ if not hasattr(sys, 'version_info') or not sys.version_info[1] >= 2 or not sys.v
   sys.exit(4)
 
 def check_for_option_mistakes(opts):
-  for opt in opts:
+  for opt in opts[1:]:
     name = opt.split('=')[0]
     if name.find('_') >= 0:
       exception = False
-      for exc in ['superlu_dist', 'PETSC_ARCH', 'PETSC_DIR', 'CXX_CXXFLAGS', 'LD_SHARED', 'CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'AR_FLAGS', 'C_VERSION', 'CXX_VERSION', 'FC_VERSION']:
+      for exc in ['superlu_dist', 'PETSC_ARCH', 'PETSC_DIR', 'CXX_CXXFLAGS', 'LD_SHARED', 'CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'AR_FLAGS', 'C_VERSION', 'CXX_VERSION', 'FC_VERSION','qd_dd']:
         if name.find(exc) >= 0:
           exception = True
       if not exception:

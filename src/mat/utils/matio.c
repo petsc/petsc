@@ -20,7 +20,7 @@
    Input Parameters:
 +  viewer - binary file viewer, created with PetscViewerBinaryOpen()
 -  outtype - type of matrix desired, for example MATSEQAIJ,
-             MATMPIROWBS, etc.  See types in petsc/include/petscmat.h.
+              MATMPISBAIJ etc.  See types in petsc/include/petscmat.h.
 
    Output Parameters:
 .  newmat - new matrix
@@ -32,7 +32,6 @@
 .    -matload_type mpibaij  - parallel block AIJ type
 .    -matload_type seqsbaij - block symmetric AIJ type
 .    -matload_type mpisbaij - parallel block symmetric AIJ type
-.    -matload_type mpirowbs - parallel rowbs type
 .    -matload_type seqdense - dense type
 .    -matload_type mpidense - parallel dense type
 -    -matload_symmetric - matrix in file is symmetric

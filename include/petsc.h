@@ -131,9 +131,11 @@ M*/
     PETSc does not use the C++ binding of MPI at ALL. The following flag
     makes sure the C++ bindings are not included. The C++ bindings REQUIRE
     putting mpi.h before ANY C++ include files, we cannot control this
-    with all PETSc users.
+    with all PETSc users. Users who want to use the MPI C++ bindings can include 
+    mpicxx.h directly in their code
 */
 #define MPICH_SKIP_MPICXX 1
+#define OMPI_SKIP_MPICXX 1
 #include "mpi.h"
 /*
     Yuck, we need to put stdio.h AFTER mpi.h for MPICH2 with C++ compiler 
@@ -251,7 +253,19 @@ typedef long long PetscInt;
 #else
 typedef int PetscInt;
 #define MPIU_INT MPI_INT
-#endif  
+#endif
+
+/* add in MPIU type for size_t */
+#if (PETSC_SIZEOF_SIZE_T) == (PETSC_SIZEOF_INT)
+#define MPIU_SIZE_T MPI_INT
+#elif  (PETSC_SIZEOF_SIZE_T) == (PETSC_SIZEOF_LONG)
+#define MPIU_SIZE_T MPI_LONG
+#elif  (PETSC_SIZEOF_SIZE_T) == (PETSC_SIZEOF_LONG_LONG)
+#define MPIU_SIZE_T MPI_LONG_LONG_INT
+#else
+#error "Unknown size for size_t! Send us a bugreport at petsc-maint@mcs.anl.gov"
+#endif
+
 
 /*
       You can use PETSC_STDOUT as a replacement of stdout. You can also change

@@ -1167,7 +1167,7 @@ PetscErrorCode DoOutput(DMMG *dmmg, PetscInt its)
 
   /* compute final residual and final viscosity/strain rate fields */
   ierr = SNESGetFunction(DMMGGetSNES(dmmg), &res, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-  ierr = ViscosityField(DMMGGetDMMG(dmmg), DMMGGetx(dmmg), ((AppCtx *)dmmg[0]->user)->Xguess);CHKERRQ(ierr); 
+  ierr = ViscosityField(DMMGGetFine(dmmg), DMMGGetx(dmmg), ((AppCtx *)dmmg[0]->user)->Xguess);CHKERRQ(ierr); 
 
   /* get the communicator and the rank of the processor */
   ierr = PetscObjectGetComm((PetscObject)DMMGGetSNES(dmmg), &comm);CHKERRQ(ierr);

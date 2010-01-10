@@ -1173,6 +1173,76 @@ PetscErrorCode MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
+/* ----------------------------------------------------------- */
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolveTranspose_SeqBAIJ_N"
+PetscErrorCode MatSolveTranspose_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
+{
+  Mat_SeqBAIJ       *a=(Mat_SeqBAIJ *)A->data;
+  IS                iscol=a->col,isrow=a->row;
+  PetscErrorCode    ierr;
+  const PetscInt    *r,*c,*rout,*cout,*ai=a->i,*aj=a->j,*vi;
+  PetscInt          i,n=a->mbs,j;
+  PetscInt          nz,bs=A->rmap->bs,bs2=a->bs2;
+  const MatScalar   *aa=a->a,*v;
+  PetscScalar       *x,*t,*ls;
+  const PetscScalar *b;
+  PetscFunctionBegin;
+  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr); 
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  t    = a->solve_work;
+
+  ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
+  ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout;
+
+  /* copy the b into temp work space according to permutation */
+  for (i=0; i<n; i++) {
+    for (j=0; j<bs; j++) {
+      t[i*bs+j] = b[c[i]*bs+j];
+    }
+  } 
+
+
+  /* forward solve the upper triangular transpose */
+  ls = a->solve_work + A->cmap->n;
+  for (i=0; i<n; i++){
+    ierr = PetscMemcpy(ls,t+i*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
+    Kernel_w_gets_transA_times_v(bs,ls,aa+bs2*a->diag[i],t+i*bs);
+    v   = aa + bs2*(a->diag[i] + 1);
+    vi  = aj + a->diag[i] + 1;
+    nz  = ai[i+1] - a->diag[i] - 1;
+    while (nz--) {
+      Kernel_v_gets_v_minus_transA_times_w(bs,t+bs*(*vi++),v,t+i*bs);
+      v += bs2;
+    }
+  }
+
+  /* backward solve the lower triangular transpose */
+  for (i=n-1; i>=0; i--) {
+    v   = aa + bs2*ai[i];
+    vi  = aj + ai[i];
+    nz  = a->diag[i] - ai[i];
+    while (nz--) {
+      Kernel_v_gets_v_minus_transA_times_w(bs,t+bs*(*vi++),v,t+i*bs);
+      v += bs2;
+    }
+  }
+
+  /* copy t into x according to permutation */
+  for (i=0; i<n; i++) {
+    for (j=0; j<bs; j++) {
+      x[bs*r[i]+j]   = t[bs*i+j];
+    }
+  } 
+
+  ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*(a->bs2)*(a->nz) - A->rmap->bs*A->cmap->n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqBAIJ_7"
 PetscErrorCode MatSolve_SeqBAIJ_7(Mat A,Vec bb,Vec xx)

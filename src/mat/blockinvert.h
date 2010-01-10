@@ -195,6 +195,20 @@ EXTERN PetscErrorCode Kernel_A_gets_inverse_A_9(MatScalar *,PetscReal);
 }
 
 /*
+    v = v - A w  v_gets_v_minus_transA_times_w
+
+   v - array of length bs
+   A - square bs by bs array
+   w - array of length bs
+*/
+#define  Kernel_v_gets_v_minus_transA_times_w(bs,v,A,w) \
+{  \
+  PetscScalar  _mone = -1.0,_one = 1.0; \
+  PetscBLASInt  _ione = 1,_bbs = PetscBLASIntCast(bs);			\
+  BLASgemv_("T",&(_bbs),&(_bbs),&_mone,A,&(_bbs),w,&_ione,&_one,v,&_ione); \
+}
+
+/*
     v = v + A w  v_gets_v_plus_A_times_w
 
    v - array of length bs
@@ -235,6 +249,20 @@ EXTERN PetscErrorCode Kernel_A_gets_inverse_A_9(MatScalar *,PetscReal);
   PetscScalar  _zero = 0.0,_one = 1.0; \
   PetscBLASInt _ione = 1,_bbs = PetscBLASIntCast(bs);			\
   BLASgemv_("N",&(_bbs),&(_bbs),&_one,A,&(_bbs),v,&_ione,&_zero,w,&_ione); \
+}
+
+/*
+    w = A' v   w_gets_transA_times_v
+
+   v - array of length bs
+   A - square bs by bs array
+   w - array of length bs
+*/
+#define Kernel_w_gets_transA_times_v(bs,v,A,w) \
+{  \
+  PetscScalar  _zero = 0.0,_one = 1.0; \
+  PetscBLASInt _ione = 1,_bbs = PetscBLASIntCast(bs);			\
+  BLASgemv_("T",&(_bbs),&(_bbs),&_one,A,&(_bbs),v,&_ione,&_zero,w,&_ione); \
 }
 
 /*

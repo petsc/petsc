@@ -17,7 +17,7 @@ class Configure(config.base.Configure):
     
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-precision=<single,double,longdouble,int,matsingle>', nargs.Arg(None, 'double', 'Specify numerical precision'))    
+    help.addArgument('PETSc', '-with-precision=<single,double,longdouble,int,matsingle,qd_dd>', nargs.Arg(None, 'double', 'Specify numerical precision'))    
     help.addArgument('PETSc', '-with-scalar-type=<real or complex>', nargs.Arg(None, 'real', 'Specify real or complex numbers'))
     return
 
@@ -26,6 +26,7 @@ class Configure(config.base.Configure):
     self.types     = framework.require('config.types', self)
     self.languages = framework.require('PETSc.utilities.languages', self)
     self.compilers = framework.require('config.compilers', self)
+    self.qd        = framework.require('PETSc.packages.qd',self)
     return
 
 
@@ -76,8 +77,10 @@ class Configure(config.base.Configure):
       self.addDefine('USE_SCALAR_LONG_DOUBLE', '1')
     elif self.precision == 'int':
       self.addDefine('USE_SCALAR_INT', '1')
+    elif self.precision == 'qd_dd':
+      self.addDefine('USE_SCALAR_QD_DD', '1')
     elif not self.precision == 'double':
-      raise RuntimeError('--with-precision must be single, double, longdouble, int or matsingle')
+      raise RuntimeError('--with-precision must be single, double, longdouble, int, qd_dd or matsingle')
     self.framework.logPrint('Precision is '+str(self.precision))
     return
 

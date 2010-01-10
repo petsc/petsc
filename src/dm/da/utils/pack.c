@@ -169,7 +169,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeCreate(MPI_Comm comm,DMComposite *pa
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(p,_p_DMComposite,struct _DMCompositeOps,DM_COOKIE,0,"DM",comm,DMCompositeDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(p,_p_DMComposite,struct _DMCompositeOps,DM_COOKIE,0,"DM",comm,DMCompositeDestroy,DMCompositeView);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)p,"DMComposite");CHKERRQ(ierr);
   p->n            = 0;
   p->next         = PETSC_NULL;
@@ -232,6 +232,51 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeDestroy(DMComposite packer)
     ierr = PetscFree(prev);CHKERRQ(ierr);
   }
   ierr = PetscHeaderDestroy(packer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMCompositeView"
+/*@
+    DMCompositeView - Views a composite DM
+
+    Collective on DMComposite
+
+    Input Parameter:
++   packer - the DMComposite object to view
+-   v - the viewer
+
+    Level: intermediate
+
+.seealso DMCompositeCreate()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeView(DMComposite packer,PetscViewer v)
+{
+  PetscErrorCode ierr;
+  PetscTruth     iascii;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)v,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    struct DMCompositeLink *lnk = packer->next;
+    PetscInt i;
+
+    ierr = PetscViewerASCIIPrintf(v,"DMComposite (%s)\n",((PetscObject)packer)->prefix?((PetscObject)packer)->prefix:"no prefix");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(v,"  contains %d DMs and %d redundant arrays\n",packer->nDM,packer->nredundant);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
+    for (i=0; lnk; lnk=lnk->next,i++) {
+      if (lnk->dm) {
+        ierr = PetscViewerASCIIPrintf(v,"Link %d: DM of type %s\n",i,((PetscObject)lnk->dm)->type_name);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPushTab(v);CHKERRQ(ierr);
+        ierr = DMView(lnk->dm,v);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIIPrintf(v,"Link %d: Redundant array of size %d owned by rank %d\n",i,lnk->n,lnk->rank);CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscViewerASCIIPopTab(v);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

@@ -69,7 +69,6 @@
 #define MATMPIMAIJ         'mpimaij'
 #define MATMAIJ            'maij'
 #define MATIS              'is'
-#define MATMPIROWBS        'mpirowbs'
 #define MATSEQAIJ          'seqaij'
 #define MATMPIAIJ          'mpiaij'
 #define MATAIJ             'aij'

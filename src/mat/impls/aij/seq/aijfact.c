@@ -604,14 +604,14 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const MatFact
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(isicol,&col_identity);CHKERRQ(ierr);
   if (row_identity && col_identity) {
-    C->ops->solve = MatSolve_SeqAIJ_NaturalOrdering_newdatastruct_v2;
+    C->ops->solve = MatSolve_SeqAIJ_NaturalOrdering_newdatastruct;
   } else {
-    C->ops->solve = MatSolve_SeqAIJ_newdatastruct_v2; 
+    C->ops->solve = MatSolve_SeqAIJ_newdatastruct; 
   }
   
-  C->ops->solveadd           = 0;
-  C->ops->solvetranspose     = 0;
-  C->ops->solvetransposeadd  = 0;
+  C->ops->solveadd           = MatSolveAdd_SeqAIJ_newdatastruct;
+  C->ops->solvetranspose     = MatSolveTranspose_SeqAIJ_newdatastruct;
+  C->ops->solvetransposeadd  = MatSolveTransposeAdd_SeqAIJ_newdatastruct;
   C->ops->matsolve           = 0;
   C->assembled    = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;
@@ -1241,6 +1241,63 @@ PetscErrorCode MatSolveAdd_SeqAIJ(Mat A,Vec bb,Vec yy,Vec xx)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatSolveAdd_SeqAIJ_newdatastruct"
+PetscErrorCode MatSolveAdd_SeqAIJ_newdatastruct(Mat A,Vec bb,Vec yy,Vec xx)
+{
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  IS                iscol = a->col,isrow = a->row;
+  PetscErrorCode    ierr;
+  PetscInt          i, n = A->rmap->n,j;
+  PetscInt          nz;
+  const PetscInt    *rout,*cout,*r,*c,*vi,*ai = a->i,*aj = a->j,*adiag = a->diag;
+  PetscScalar       *x,*tmp,sum;
+  const PetscScalar *b;
+  const MatScalar   *aa = a->a,*v;
+
+  PetscFunctionBegin;
+  if (yy != xx) {ierr = VecCopy(yy,xx);CHKERRQ(ierr);}
+
+  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  tmp  = a->solve_work;
+
+  ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
+  ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout;
+
+  /* forward solve the lower triangular */
+  tmp[0] = b[r[0]];
+  v      = aa;
+  vi     = aj;
+  for (i=1; i<n; i++) {
+    nz  = ai[i+1] - ai[i];
+    sum = b[r[i]];
+    for (j=0; j<nz; j++) sum -= v[j]*tmp[vi[j]];
+    tmp[i] = sum;
+    v += nz; vi += nz;
+  }
+
+  /* backward solve the upper triangular */
+  v  = aa + adiag[n-1];
+  vi = aj + adiag[n-1]; 
+  for (i=n-1; i>=0; i--){
+    nz  = adiag[i] - adiag[i+1] - 1;
+    sum = tmp[i];
+    for (j=0; j<nz; j++) sum -= v[j]*tmp[vi[j]];
+    tmp[i] = sum*v[nz];
+    x[c[i]] += tmp[i];
+    v += nz+1; vi += nz+1;
+  }
+
+  ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatSolveTranspose_SeqAIJ"
 PetscErrorCode MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
 {
@@ -1283,6 +1340,63 @@ PetscErrorCode MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
     nz  = diag[i] - ai[i];
     s1  = tmp[i];
     for (j=0; j>-nz; j--) tmp[vi[j]] -= s1*v[j];
+  }
+
+  /* copy tmp into x according to permutation */
+  for (i=0; i<n; i++) x[r[i]] = tmp[i];
+
+  ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+
+  ierr = PetscLogFlops(2.0*a->nz-A->cmap->n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolveTranspose_SeqAIJ_newdatastruct"
+PetscErrorCode MatSolveTranspose_SeqAIJ_newdatastruct(Mat A,Vec bb,Vec xx)
+{
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  IS                iscol = a->col,isrow = a->row;
+  PetscErrorCode    ierr;
+  const PetscInt    *rout,*cout,*r,*c,*adiag = a->diag,*ai = a->i,*aj = a->j,*vi;
+  PetscInt          i,n = A->rmap->n,j;
+  PetscInt          nz;
+  PetscScalar       *x,*tmp,s1;
+  const MatScalar   *aa = a->a,*v;
+  const PetscScalar *b;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  tmp  = a->solve_work;
+
+  ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
+  ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout;
+
+  /* copy the b into temp work space according to permutation */
+  for (i=0; i<n; i++) tmp[i] = b[c[i]]; 
+
+  /* forward solve the U^T */
+  for (i=0; i<n; i++) {
+    v   = aa + adiag[i+1] + 1;
+    vi  = aj + adiag[i+1] + 1;
+    nz  = adiag[i] - adiag[i+1] - 1;
+    s1  = tmp[i];
+    s1 *= v[nz];  /* multiply by inverse of diagonal entry */
+    for (j=0; j<nz; j++) tmp[vi[j]] -= s1*v[j];
+    tmp[i] = s1;
+  }
+
+  /* backward solve the L^T */
+  for (i=n-1; i>=0; i--){
+    v   = aa + ai[i];
+    vi  = aj + ai[i];
+    nz  = ai[i+1] - ai[i];
+    s1  = tmp[i];
+    for (j=0; j<nz; j++) tmp[vi[j]] -= s1*v[j];
   }
 
   /* copy tmp into x according to permutation */
@@ -1355,6 +1469,65 @@ PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolveTransposeAdd_SeqAIJ_newdatastruct"
+PetscErrorCode MatSolveTransposeAdd_SeqAIJ_newdatastruct(Mat A,Vec bb,Vec zz,Vec xx)
+{
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  IS                iscol = a->col,isrow = a->row;
+  PetscErrorCode    ierr;
+  const PetscInt    *rout,*cout,*r,*c,*adiag = a->diag,*ai = a->i,*aj = a->j,*vi;
+  PetscInt          i,n = A->rmap->n,j;
+  PetscInt          nz;
+  PetscScalar       *x,*tmp,s1;
+  const MatScalar   *aa = a->a,*v;
+  const PetscScalar *b;
+
+  PetscFunctionBegin;
+  if (zz != xx) {ierr = VecCopy(zz,xx);CHKERRQ(ierr);}
+  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  tmp  = a->solve_work;
+
+  ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
+  ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout;
+
+  /* copy the b into temp work space according to permutation */
+  for (i=0; i<n; i++) tmp[i] = b[c[i]]; 
+
+  /* forward solve the U^T */
+  for (i=0; i<n; i++) {
+    v   = aa + adiag[i+1] + 1;
+    vi  = aj + adiag[i+1] + 1;
+    nz  = adiag[i] - adiag[i+1] - 1;
+    s1  = tmp[i];
+    s1 *= v[nz];  /* multiply by inverse of diagonal entry */
+    for (j=0; j<nz; j++) tmp[vi[j]] -= s1*v[j];
+    tmp[i] = s1;
+  }
+
+
+  /* backward solve the L^T */
+  for (i=n-1; i>=0; i--){
+    v   = aa + ai[i] ;
+    vi  = aj + ai[i];
+    nz  = ai[i+1] - ai[i];
+    s1  = tmp[i];
+    for (j=0; j>-nz; j--) tmp[vi[j]] -= s1*v[j];
+  }
+
+  /* copy tmp into x according to permutation */
+  for (i=0; i<n; i++) x[r[i]] += tmp[i];
+
+  ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+
+  ierr = PetscLogFlops(2.0*a->nz-A->cmap->n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* ----------------------------------------------------------------*/
 EXTERN PetscErrorCode Mat_CheckInode(Mat,PetscTruth);
 EXTERN PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat,Mat,MatDuplicateOption,PetscTruth);
@@ -1371,7 +1544,7 @@ EXTERN PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat,Mat,MatDuplicateOption,Pet
      
   bdiag=fact->diag is an array of size n+1,in which
      bdiag[i]: points to diagonal of U(i,:), i=0,...,n-1
-     bdiag[n]: points to diagonal of U(n-1,0)-1
+     bdiag[n]: points to entry of U(n-1,0)-1
 
    U(i,:) contains bdiag[i] as its last entry, i.e., 
     U(i,:) = (u[i,i+1],...,u[i,n-1],diag[i])
@@ -1384,12 +1557,11 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0_newdatastruct(Mat fact,Mat A,IS 
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data,*b;
   PetscErrorCode     ierr;
   PetscInt           n=A->rmap->n,*ai=a->i,*aj,*adiag=a->diag;
-  PetscInt           i,j,nz,*bi,*bj,*bdiag,bi_temp;
+  PetscInt           i,j,nz,*bi,*bj,*bdiag; 
   PetscTruth         missing;
   IS                 isicol;
 
   PetscFunctionBegin;
-  /* printf("MatILUFactorSymbolic_SeqAIJ_ilu0_newdatastruct ...\n"); */
   if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
   ierr = MatMissingDiagonal(A,&missing,&i);CHKERRQ(ierr);
   if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",i);
@@ -1428,18 +1600,16 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0_newdatastruct(Mat fact,Mat A,IS 
   }
   
   /* U part */
-  bi_temp = bi[n];
   bdiag[n] = bi[n]-1;
   for (i=n-1; i>=0; i--){
     nz = ai[i+1] - adiag[i] - 1;
-    bi_temp = bi_temp + nz + 1;
     aj = a->j + adiag[i] + 1;
     for (j=0; j<nz; j++){
       *bj = aj[j]; bj++;
     }
     /* diag[i] */
     *bj = i; bj++;
-    bdiag[i] = bi_temp - 1;
+    bdiag[i] = bdiag[i+1] + nz + 1;
   }
 
   fact->factor                 = MAT_FACTOR_ILU;
@@ -2103,7 +2273,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *
       jmin = bi[k]+1; jmax = bi[k+1];
       if (jmin < jmax) {
         for (j=jmin; j<jmax; j++){
-          col = bj[j]; ba[j] = rtmp[col]; rtmp[col] = 0.0;
+          col = bj[j]; ba[j] = rtmp[col]; 
         }       
         /* add the k-th row into il and jl */
         il[k] = jmin;
@@ -2269,8 +2439,8 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS perm,
 
       /* if free space is not available, make more free space */
       if (current_space->local_remaining<nzk) {
-        i = am - k + 1; /* num of unfactored rows */
-        i = PetscMin(i*nzk, i*(i-1)); /* i*nzk, i*(i-1): estimated and max additional space needed */
+        i  = am - k + 1; /* num of unfactored rows */
+        i *= PetscMin(nzk, i-1); /* i*nzk, i*(i-1): estimated and max additional space needed */
         ierr = PetscFreeSpaceGet(i,&current_space);CHKERRQ(ierr);
         ierr = PetscFreeSpaceGet(i,&current_space_lvl);CHKERRQ(ierr);
         reallocs++;
@@ -2647,8 +2817,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS 
 
     /* if free space is not available, make more free space */
     if (current_space->local_remaining<nzk) {
-      i = am - k + 1; /* num of unfactored rows */
-      i = PetscMin(i*nzk, i*(i-1)); /* i*nzk, i*(i-1): estimated and max additional space needed */
+      i  = am - k + 1; /* num of unfactored rows */
+      i *= PetscMin(nzk,i-1); /* i*nzk, i*(i-1): estimated and max additional space needed */
       ierr = PetscFreeSpaceGet(i,&current_space);CHKERRQ(ierr);
       reallocs++;
     }
@@ -2890,6 +3060,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const Mat
   PetscFunctionReturn(0); 
 }
 
+#if defined(OLD_ROUTINE_TO_BE_REPLACED)
 #undef __FUNCT__
 #define __FUNCT__ "MatSolve_SeqAIJ_NaturalOrdering_newdatastruct"
 PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
@@ -2939,10 +3110,11 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
-#define __FUNCT__ "MatSolve_SeqAIJ_NaturalOrdering_newdatastruct_v2"
-PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqAIJ_NaturalOrdering_newdatastruct"
+PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode    ierr;
@@ -2973,17 +3145,13 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct_v2(Mat A,Vec bb,Vec
   }
   
   /* backward solve the upper triangular */
-  /*  v   = aa + ai[n+1];
-      vi  = aj + ai[n+1]; */
-  v  = aa + adiag[n-1];
-  vi = aj + adiag[n-1];
   for (i=n-1; i>=0; i--){
+    v   = aa + adiag[i+1] + 1;
+    vi  = aj + adiag[i+1] + 1;
     nz = adiag[i] - adiag[i+1]-1;
     sum = x[i];
     PetscSparseDenseMinusDot(sum,x,v,vi,nz);
-    v   += nz;
-    vi  += nz; vi++; 
-    x[i] = *v++ *sum; /* x[i]=aa[adiag[i]]*sum; v++; */
+    x[i] = sum*v[nz]; /* x[i]=aa[adiag[i]]*sum; v++; */
   }
    
   ierr = PetscLogFlops(2.0*a->nz - A->cmap->n);CHKERRQ(ierr);
@@ -2992,6 +3160,7 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct_v2(Mat A,Vec bb,Vec
   PetscFunctionReturn(0);
 }
 
+#if defined(OLD_ROUTINE_TO_BE_REPLACED)
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqAIJ_newdatastruct"
 PetscErrorCode MatSolve_SeqAIJ_newdatastruct(Mat A,Vec bb,Vec xx)
@@ -3048,10 +3217,11 @@ PetscErrorCode MatSolve_SeqAIJ_newdatastruct(Mat A,Vec bb,Vec xx)
   ierr = PetscLogFlops(2*a->nz - A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqAIJ_newdatastruct_v2"
-PetscErrorCode MatSolve_SeqAIJ_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqAIJ_newdatastruct"
+PetscErrorCode MatSolve_SeqAIJ_newdatastruct(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   IS                iscol = a->col,isrow = a->row;
@@ -3073,7 +3243,6 @@ PetscErrorCode MatSolve_SeqAIJ_newdatastruct_v2(Mat A,Vec bb,Vec xx)
   ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout; 
 
   /* forward solve the lower triangular */
-  /*  tmp[0] = b[*r++]; */
   tmp[0] = b[r[0]];
   v      = aa;
   vi     = aj;
@@ -3086,17 +3255,13 @@ PetscErrorCode MatSolve_SeqAIJ_newdatastruct_v2(Mat A,Vec bb,Vec xx)
   }
 
   /* backward solve the upper triangular */
-  /*  v  = aa + ai[k]; *//* 1st entry of U(n-1,:) */
-  /* vi = aj + ai[k]; */
-  v  = aa + adiag[n-1];
-  vi = aj + adiag[n-1];
   for (i=n-1; i>=0; i--){
-    /* nz = ai[k +1] - ai[k] - 1;*/
-    nz = adiag[i]-adiag[i+1]-1;
+    v   = aa + adiag[i+1]+1;
+    vi  = aj + adiag[i+1]+1;
+    nz  = adiag[i]-adiag[i+1]-1;
     sum = tmp[i];
     PetscSparseDenseMinusDot(sum,tmp,v,vi,nz); 
     x[c[i]] = tmp[i] = sum*v[nz]; /* v[nz] = aa[adiag[i]] */
-    v += nz+1; vi += nz+1;
   }
 
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);

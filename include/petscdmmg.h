@@ -403,24 +403,5 @@ M*/
 M*/
 #define DMMGGetLevels(ctx)         (ctx)[0]->nlevels
 
-/*MC
-   DMMGGetDMMG - Returns the DMMG struct for the finest level
-
-   Synopsis:
-   DMMG DMMGGetDMMG(DMMG *dmmg)
-
-   Not Collective
-
-   Input Parameter:
-.   dmmg - DMMG solve context
-
-   Level: intermediate
-
-.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetB()
-
-M*/
-#define DMMGGetDMMG(ctx)              (ctx)[(ctx)[0]->nlevels-1]
-
-
 PETSC_EXTERN_CXX_END
 #endif
