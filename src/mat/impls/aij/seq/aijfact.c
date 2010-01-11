@@ -1513,7 +1513,7 @@ PetscErrorCode MatSolveTransposeAdd_SeqAIJ_newdatastruct(Mat A,Vec bb,Vec zz,Vec
     vi  = aj + ai[i];
     nz  = ai[i+1] - ai[i];
     s1  = tmp[i];
-    for (j=0; j>-nz; j--) tmp[vi[j]] -= s1*v[j];
+    for (j=0; j<nz; j++) tmp[vi[j]] -= s1*v[j];
   }
 
   /* copy tmp into x according to permutation */
