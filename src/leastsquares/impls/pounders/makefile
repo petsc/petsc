@@ -8,7 +8,7 @@ SOURCEC  = pounders.c
 SOURCEF  = dgqt.f destsv.f
 SOURCEH  = pounders.h 
 #taolapack.h
-OBJSC    = pounders.o dgqt.o destsv.o
+OBJSC    = dgqt.o destsv.o pounders.o
 OBJSF    = 
 LIBBASE  = libtaosolver
 MANSEC   = solver

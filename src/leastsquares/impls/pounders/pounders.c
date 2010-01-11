@@ -667,7 +667,7 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
 	mfqP->q_is_I = 1;
 	ierr = affpoints(mfqP,mfqP->xmin,mfqP->c1,mfqP->interp_indices,&valid); CHKERRQ(ierr);
 	if (valid == PETSC_FALSE) {
-	    SETERRQ(1,"Model not valid -- model-improving not implemented yet");
+	    ierr = PetscInfo(tao,"Model not valid -- model-improving");
 	    
 	}
     }
