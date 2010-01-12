@@ -203,12 +203,7 @@ class Script(logger.Logger):
       import re
       # get rid of multiple blank lines
       output = re.sub('\n[\n]*','\n', output)
-      if len(output) < 600:
-        if log: log.write('sh: '+output+'\n')
-      else:
-        if log:
-          log.write('sh: '+output[:600]+'...\n')
-          log.write('... '+output[-600:]+'\n')
+      if log: log.write('sh: '+output+'\n')
       return output
 
     if log is None:

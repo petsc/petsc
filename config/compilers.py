@@ -1113,12 +1113,13 @@ class Configure(config.base.Configure):
     self.pushLanguage('FC')
     oldFLAGS = self.setCompilers.FFLAGS
     oldLIBS  = self.setCompilers.LIBS
-    for flag in ['-module ', '-fmod=', '-M ', '-J ', '-I']:
+    for flag in ['-I', '-module ', '-fmod=', '-M ', '-J ']:
       self.setCompilers.FFLAGS = flag+testdir+' '+self.setCompilers.FFLAGS
       self.setCompilers.LIBS   = modobj+' '+self.setCompilers.LIBS
       if not self.checkLink(None, fcode):
         self.logPrint('Fortran module include flag '+flag+' failed', 3, 'compilers')
       else:
+        self.logPrint('Fortran module include flag '+flag+' found', 3, 'compilers')        
         self.setCompilers.fortranModuleIncludeFlag = flag
         found = 1
       self.setCompilers.LIBS   = oldLIBS

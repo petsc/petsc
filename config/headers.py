@@ -10,7 +10,8 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
-    self.compilers = self.framework.require('config.compilers', self)
+    self.compilers    = self.framework.require('config.compilers', self)
+    self.setCompilers = self.framework.require('config.setCompilers', self)
     return
 
   def getIncludeArgumentList(self, include):
@@ -25,6 +26,22 @@ class Configure(config.base.Configure):
       return [include]
     return ['-I'+include]
 
+  def getIncludeModulesArgumentList(self, include):
+    '''Return the proper include line argument for the given filename as a list
+       - If the path is empty, return it unchanged
+       - If starts with - then return unchanged
+       - Otherwise return -fortranmoduleflag includedirectory'''
+    if not include:
+      return []
+    include = include.replace('\\ ',' ').replace(' ', '\\ ')
+    if include[0] == '-':
+      return [include]
+    
+    self.pushLanguage('FC')
+    string = self.setCompilers.fortranModuleIncludeFlag+include
+    self.popLanguage()
+    return [string]
+
   def getIncludeArgument(self, include):
     '''Same as getIncludeArgumentList - except it returns a string instead of list.'''
     return  ' '.join(self.getIncludeArgumentList(include))
@@ -38,6 +55,18 @@ class Configure(config.base.Configure):
     newincludes = []
     for include in includes:
       newincludes += self.getIncludeArgumentList(include)
+    includes = newincludes
+    newincludes = []
+    for j in includes:
+      if j in newincludes: continue
+      newincludes.append(j)
+    return ' '.join(newincludes)
+
+  def toStringModulesNoDupes(self,includes):
+    '''Converts a list of -fmodule flags includes to a string suitable for a compiler, removes duplicates'''
+    newincludes = []
+    for include in includes:
+      newincludes += self.getIncludeModulesArgumentList(include)
     includes = newincludes
     newincludes = []
     for j in includes:
