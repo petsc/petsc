@@ -77,6 +77,7 @@ static PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP) {
     }
 
     /* factor M */
+    mymatprint(mfqP->M,blasnplus1,15,blasnplus1,"M");
     LAPACKgetrf_(&blasnplus1,&blasnpmax,mfqP->M,&blasnplus1,mfqP->npmaxiwork,&blasinfo);
     if (blasinfo != 0) {
 	SETERRQ1(1,"LAPACK routine getrf returned with value %d\n",blasinfo);
@@ -151,11 +152,11 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP) {
     PetscFunctionBegin;
 
     CHKMEMQ;
-    //printf("morepoints (indices): ");
-    /*for (i=0;i<mfqP->n+1;i++) {
+    printf("morepoints (indices): ");
+    for (i=0;i<mfqP->n+1;i++) {
 	printf("%d\t",mfqP->model_indices[i]);
-	}*/
-    //printf("\n");
+	}
+    printf("\n");
 
     for (i=0;i<mfqP->n+1;i++) {
 	ierr = VecGetArray(mfqP->Xhist[mfqP->model_indices[i]],&x); CHKERRQ(ierr);
@@ -382,6 +383,7 @@ static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin,
 		CHKMEMQ;
 	    }
 	    proj = BLASnrm2_(&blasn,mfqP->work2,&ione);
+	    printf("i=%d, proj=%f, theta=%f\n",i,proj,mfqP->theta1);
 	    if (proj >= mfqP->theta1) { /* add this index to model */
 		indices[mfqP->nmodelpoints]=i;
 		BLAScopy_(&blasn,mfqP->work,&ione,&mfqP->Q_tmp[mfqP->npmax*(mfqP->nmodelpoints)],&ione);

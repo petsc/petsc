@@ -12,6 +12,11 @@ include ${TAO_DIR}/conf/tao_base
 
 test_link1: test_link1.o tao_chkopts
 
+test_link1f: test_link1f.o tao_chkopts
+	-${FLINKER} -o test_link1f test_link1f.o ${TAO_LIB_FORTRAN} ${TAO_LIB} ${PETSC_LIB_FORTRAN} ${PETSC_LIB}
+	${RM} test_link1f.o
+
+
 test_subvec1: test_subvec1.o tao_chkopts
 	-${CLINKER} -o test_subvec1 test_subvec1.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} test_subvec1.o

@@ -124,10 +124,11 @@ PetscErrorCode FormStartingPoint(Vec X, AppCtx *ctx) {
     ierr = VecGetArray(X,&x); CHKERRQ(ierr);
     dfoxs_(&ctx->n,x,&ctx->nprob,&ctx->factor);
     ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
-    ierr = VecNorm(X,NORM_INFINITY,&ctx->delta);
-    ctx->delta = PetscMax(ctx->delta,1.0);
-    snprintf(str,32,"%31f",ctx->delta);
-    ierr = PetscOptionsSetValue("-tao_pounders_delta",str); CHKERRQ(ierr);
+    ctx->nfev = 0;
+    //ierr = VecNorm(X,NORM_INFINITY,&ctx->delta);
+    //ctx->delta = PetscMax(ctx->delta,0.01);
+    //snprintf(str,32,"%31f",ctx->delta);
+    //ierr = PetscOptionsSetValue("-tao_pounders_delta",str); CHKERRQ(ierr);
     PetscFunctionReturn(0);
 }
 
@@ -144,10 +145,12 @@ PetscErrorCode EvaluateFunction(TaoSolver tao, Vec X, Vec F, void *vctx)
     dfovec_(&ctx->m,&ctx->n,x,f,&ctx->nprob);
     ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
     ierr = VecRestoreArray(F,&f); CHKERRQ(ierr);
+
     ierr = VecNorm(F,NORM_2,&fnrm); CHKERRQ(ierr);
     fnrm *= fnrm;
-    if (!PetscIsInfOrNanReal(fnrm)) fnrm=1.0e64;
+    if (PetscIsInfOrNanReal(fnrm)) fnrm=1.0e64;
     fnrm = PetscMin(fnrm,1.0e64);
+    printf("nfev=%d, fnrm=%f\n",ctx->nfev,fnrm);
     ctx->fevals[ctx->nfev][ctx->nrun] = fnrm;
     ctx->nfev++;
     PetscFunctionReturn(0);
