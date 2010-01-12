@@ -1113,7 +1113,7 @@ class Configure(config.base.Configure):
     self.pushLanguage('FC')
     oldFLAGS = self.setCompilers.FFLAGS
     oldLIBS  = self.setCompilers.LIBS
-    for flag in ['-I', '-module ', '-fmod=', '-M ', '-J ']:
+    for flag in ['-I', '-module ', '-fmod=', '-M', '-J']:
       self.setCompilers.FFLAGS = flag+testdir+' '+self.setCompilers.FFLAGS
       self.setCompilers.LIBS   = modobj+' '+self.setCompilers.LIBS
       if not self.checkLink(None, fcode):
