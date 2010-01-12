@@ -1,6 +1,9 @@
-DIM              = 2
-NUM_TERMS        = 17
-NUM_COEFFICIENTS = ${NUM_TERMS}
+#DIM              = 2
+#NUM_TERMS        = 17
+#NUM_COEFFICIENTS = ${NUM_TERMS}
+DIM              = 3
+NUM_TERMS        = 10
+NUM_COEFFICIENTS = ${NUM_TERMS}*${NUM_TERMS}*3
 
 CFLAGS	        =
 FFLAGS	        =

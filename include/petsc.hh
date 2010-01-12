@@ -42,6 +42,8 @@ namespace PETSc {
 
     inline int size() const {return dim;};
 
+    inline operator value_type *() {return x;};
+
     inline void operator=(value_type v) {for(int d = 0; d < dim; ++d) {x[d] = v;}}
     inline void operator=(const Point& p) {for(int d = 0; d < dim; ++d) {x[d] = p.x[d];}}
     inline bool operator==(const Point& p) {for(int d = 0; d < dim; ++d) {if (x[d] != p.x[d]) return false;} return true;}
