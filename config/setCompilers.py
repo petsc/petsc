@@ -211,6 +211,19 @@ class Configure(config.base.Configure):
       pass
     return 0
   isPGI = staticmethod(isPGI)
+
+  def isSolarisAR(ar):
+    '''Returns true AR is solaris'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(ar + ' -V',checkCommand = noCheck)
+      output = output + error
+      if output.find('Software Generation Utilities') >= 0:
+        return 1
+    except RuntimeError:
+      pass
+    return 0
+  isSolarisAR = staticmethod(isSolarisAR)
+
   
   def isLinux():
     '''Returns true if system is linux'''
@@ -868,7 +881,7 @@ class Configure(config.base.Configure):
         flag = '-a'
       elif 'tlib' in args:
         flag = '-a -P512'
-    if prog.endswith('ar'):
+    if prog.endswith('ar') and not self.isSolarisAR(prog):
       self.framework.addMakeMacro('FAST_AR_FLAGS', 'Scq')
     else:
       self.framework.addMakeMacro('FAST_AR_FLAGS', flag)
