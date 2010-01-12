@@ -1,16 +1,11 @@
 #!/usr/bin/python
-
-##############################################################
-# gcov.py : Contains the source code for running gcov, creating
-#           tar ball, and creating gcov html pages
-#           (index_gcov1.html and index_gcov2.html)
+#           
 # Usage:
-#       To run gcov and create tar ball
+#       Run gcov on the results of "make alltests" and create tar ball containing coverage results for one machine
 #           ./gcov.py -run_gcov
-#       To generate gcov_index html pages
-#           ./gcov.py -generate_html
+#       Generate html pages showing coverage by merging tar balls from multiple machines (index_gcov1.html and index_gcov2.html)
+#           ./gcov.py -merge_gcov [LOC] tarballs
 #
-#############################################################
 
 
 def run_gcov(petsc_dir,user,gcov_dir):
@@ -86,7 +81,7 @@ def make_tarball(gcov_dir):
     print """Tarball created\n"""
     return
 
-def make_htmlpage(loc):
+def make_htmlpage(loc,tarballs):
 
     # Create index_gcov webpages using information processed from
     # running gcov
@@ -106,10 +101,12 @@ def make_htmlpage(loc):
     from time import gmtime,strftime
 
     PETSC_DIR = os.environ['PETSC_DIR']
-    gcov_dir = os.path.join('tmp','gcov')
+    gcov_dir = os.path.join('/tmp','gcov')
+    if os.path.isdir(gcov_dir):
+        shutil.rmtree(gcov_dir)
+    os.makedirs(gcov_dir)
     cwd = os.getcwd()
     # -------------------------- Stage 1 -------------------------------
-    tarballs = glob.glob('*.tar.gz')
     len_tarballs = len(tarballs)
     if len_tarballs == 0:
         print "No gcov tar balls found in directory %s" %(cwd)
@@ -121,7 +118,8 @@ def make_htmlpage(loc):
     tmp_dirs = []
     for i in range(0,len_tarballs):
         tmp = []
-        dir_name = str(i)
+        dir_name = os.path.join(gcov_dir,str(i))
+        print dir_name
         tmp.append(dir_name)
         os.mkdir(dir_name)
         os.system("cd "+dir_name+";gunzip -c" +" ../"+tarballs[i] + "|tar -xof -")
@@ -139,7 +137,6 @@ def make_htmlpage(loc):
     tmp_dirs.sort(key=operator.itemgetter(1),reverse=True)
 
     # Create temporary gcov directory to store .lines files
-    os.makedirs(gcov_dir)
     print "Merging files"
     nfiles = tmp_dirs[0][1]
     dir1 = os.path.join(cwd,tmp_dirs[0][0])
@@ -316,12 +313,14 @@ def make_htmlpage(loc):
     print >>out_fid,"""<h2><center>Gcov statistics </center></h2>"""
     print >>out_fid,"""<center><font size = "4">Number of source code files = %s</font></center>""" %(nsrc_files)
     print >>out_fid,"""<center><font size = "4">Number of source code files not tested fully = %s</font></center>""" %(nsrc_files_not_tested)
-    print >>out_fid,"""<center><font size = "4">Percentage of source code files not tested fully = %3.2f</font></center><br>""" % (float(nsrc_files_not_tested)/float(nsrc_files)*\
-    100.0)
+    if float(nsrc_files) > 0: ratio = float(nsrc_files_not_tested)/float(nsrc_files)*100.0
+    else: ratio = 0.0
+    print >>out_fid,"""<center><font size = "4">Percentage of source code files not tested fully = %3.2f</font></center><br>""" %(ratio) 
     print >>out_fid,"""<center><font size = "4">Total number of source code lines = %s</font></center>""" %(ntotal_lines)
     print >>out_fid,"""<center><font size = "4">Total number of source code lines not tested = %s</font></center>""" %(ntotal_lines_not_tested)
-    print >>out_fid,"""<center><font size = "4">Percentage of source code lines not tested = %3.2f</font></center>""" % (float(ntotal_lines_not_tested)/float(ntotal_lines)*\
-    100.0)
+    if float(ntotal_lines) > 0: ratio = float(ntotal_lines_not_tested)/float(ntotal_lines)*100.0
+    else: ratio = 0.0
+    print >>out_fid,"""<center><font size = "4">Percentage of source code lines not tested = %3.2f</font></center>""" %ratio
     print >>out_fid,"""<hr>    
     <a href = %s>See statistics sorted by percent code tested</a>""" % ('index_gcov2.html')
     print >>out_fid,"""<br><br>
@@ -349,10 +348,14 @@ def make_htmlpage(loc):
     print >>out_fid,"""<h2><center>Gcov statistics</center></h2>"""
     print >>out_fid,"""<center><font size = "4">Number of source code files = %s</font></center>""" %(nsrc_files)
     print >>out_fid,"""<center><font size = "4">Number of source code files not tested fully = %s</font></center>""" %(nsrc_files_not_tested)
-    print >>out_fid,"""<center><font size = "4">Percentage of source code files not tested fully = %3.2f</font></center><br>""" % (float(nsrc_files_not_tested)/float(nsrc_files)*100.0)
+    if float(nsrc_files) > 0: ratio = float(nsrc_files_not_tested)/float(nsrc_files)*100.0
+    else: ratio = 0.0
+    print >>out_fid,"""<center><font size = "4">Percentage of source code files not tested fully = %3.2f</font></center><br>""" %ratio
     print >>out_fid,"""<center><font size = "4">Total number of source code lines = %s</font></center>""" %(ntotal_lines)
     print >>out_fid,"""<center><font size = "4">Total number of source code lines not tested = %s</font></center>""" %(ntotal_lines_not_tested)
-    print >>out_fid,"""<center><font size = "4">Percentage of source code lines not tested = %3.2f</font></center>""" % (float(ntotal_lines_not_tested)/float(ntotal_lines)*100.0)
+    if float(ntotal_lines) > 0: ratio = float(ntotal_lines_not_tested)/float(ntotal_lines)*100.0
+    else: ratio = 0.0
+    print >>out_fid,"""<center><font size = "4">Percentage of source code lines not tested = %3.2f</font></center>""" % ratio
     print >>out_fid,"""<hr>
     <a href = %s>See statistics sorted by file name</a>""" % ('index_gcov1.html') 
     print >>out_fid,"""<br><br>
@@ -380,16 +383,20 @@ gcov_dir = "/tmp/gcov-"+USER
 if (sys.argv[1] == "-run_gcov"):
     print "Running gcov and creating tarball"
     run_gcov(PETSC_DIR,USER,gcov_dir)
-elif (sys.argv[1] == "-generate_html"):
+elif (sys.argv[1] == "-merge_gcov"):
     print "Creating main html page"
     # check to see if LOC is given
-    if (len(sys.argv) == 3):
-        print "Using %s to save the main HTML file pages" % (sys.argv[1])
+    if os.path.isdir(sys.argv[2]):
+        print "Using %s to save the main HTML file pages" % (sys.argv[2])
         LOC = sys.argv[2]
+        tarballs = sys.argv[3:]
     else:
         print "No Directory specified for saving main HTML file pages, using PETSc root directory"
         LOC = PETSC_DIR
-        make_htmlpage(LOC)
+        tarballs = sys.argv[2:]
+    make_htmlpage(LOC,tarballs)
+
+        
 else:
     print "No or invalid option specified:"
     print "Usage: To run gcov and create tarball"

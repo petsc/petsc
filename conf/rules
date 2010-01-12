@@ -719,19 +719,6 @@ adiclib2:
 cleangcov:
 	@-${RM}  *.bb *.bbg *.da *.gcov *.lines *.gcno *.gcda
 #
-#  use allgcov to loop over all the directories; 
-#  generates the line numbers for all source code visited
-#  
-gcov:
-	@-if [ "${SOURCEC}" != "" ]; then \
-	  ${MKDIR} /tmp/gcov-${USER}; \
-	  for i in ${SOURCEC} foo; do if [ -f $$i ]; then \
-           gcov  $${i} > /dev/null; \
-           name=`echo ${LOCDIR} | sed s?/?_?g`; \
-	   grep "##" $${i}.gcov | cut -f 2 -d ":" > /tmp/gcov-${USER}/$${name}$${i}.lines ; \
-          fi; done ; \
-        fi
-
 #----------------------------------------------------------------------------------
 # Rules for finding errors in the source and errors in the coding style
 countfunctions: 
