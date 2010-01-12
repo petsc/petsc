@@ -19,9 +19,12 @@ class Configure(PETSc.package.NewPackage):
 
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
-    self.qd    = framework.require('PETSc.packages.qd',self)
-    self.gmp   = framework.require('PETSc.packages.gmp',self)    
-    self.deps  = [self.qd,self.gmp]
+    self.qd            = framework.require('PETSc.packages.qd',self)
+    self.gmp           = framework.require('PETSc.packages.gmp',self)    
+    self.deps          = [self.qd,self.gmp]
+    self.headers       = framework.require('config.headers',           self)
+    self.functions     = framework.require('config.functions',         self)
+    self.libraries     = framework.require('config.libraries',         self)
     return
 
   def Install(self):
@@ -33,10 +36,12 @@ class Configure(PETSc.package.NewPackage):
     args.append('CXX="'+self.framework.getCompiler()+'"')
     args.append('CFLAGS="'+self.framework.getCompilerFlags()+'"')
     self.framework.popLanguage()
+    args.append('FC=0')
     args.append('--with-qd-includedir='+self.qd.includeDir)
-    args.append('--with-qd-libdir='+self.qd.libDir)    
-    args.append('--with-gmp-includedir='+self.gmp.includeDir)
-    args.append('--with-gmp-libdir='+self.gmp.libDir)    
+    args.append('--with-qd-libdir='+self.qd.libDir)
+    args.append('--with-gmp-includedir="'+self.gmp.include[0]+'"')
+    # following is trashy, need a way to properly pull out the library directory from the list
+    args.append('--with-gmp-libdir="'+ self.gmp.lib[0][:-8]+'"')
     args = ' '.join(args)
     fd = file(os.path.join(self.packageDir,'mpack'), 'w')
     fd.write(args)

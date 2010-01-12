@@ -1,4 +1,5 @@
 import PETSc.package
+import os
 
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
@@ -27,6 +28,15 @@ class Configure(PETSc.package.NewPackage):
     args.append('CC="'+self.framework.getCompiler()+'"')
     args.append('CFLAGS="'+self.framework.getCompilerFlags()+'"')
     self.framework.popLanguage()
+    args.append('--enable-parallel')
+    if hasattr(self.compilers, 'FC'):
+      self.setCompilers.pushLanguage('FC')
+      args.append('--enable-fortran')
+      args.append('FC="'+self.setCompilers.getCompiler()+'"')
+      args.append('F9X="'+self.setCompilers.getCompiler()+'"')
+      args.append('F90="'+self.setCompilers.getCompiler()+'"')      
+      self.setCompilers.popLanguage()
+
     args = ' '.join(args)
     fd = file(os.path.join(self.packageDir,'hdf5'), 'w')
     fd.write(args)
@@ -47,6 +57,23 @@ class Configure(PETSc.package.NewPackage):
     return self.installDir
 
   def configureLibrary(self):
+    if hasattr(self.compilers, 'FC'):
+      self.liblist   = [['libhdf5_fortran.a', 'libhdf5.a']]
     PETSc.package.NewPackage.configureLibrary(self)
+    if hasattr(self.compilers, 'FC'):
+      # hdf5 puts its modules into the lib directory so add that directory to the include directories to search
+      # there is no correct way to determine the location of the library directory, this is a hack that will usually work
+
+      # should check that modules exist and work properly
+      if 'with-hdf5-dir' in self.framework.argDB:
+        libDir = self.framework.argDB['with-'+self.package+'-dir']
+        libDir = os.path.join(libDir,'lib')        
+        self.include.append(libDir)
+      elif 'download-hdf5' in self.framework.argDB:
+        libDir = self.installDir
+        libDir = os.path.join(libDir,'lib')        
+        self.include.append(libDir)
+      else:
+        self.log('Cannot determine HDF5 library directory therefor skipping module include for HDF5')
     if self.libraries.check(self.dlib, 'H5Pset_fapl_mpio'):
       self.addDefine('HAVE_H5PSET_FAPL_MPIO', 1)

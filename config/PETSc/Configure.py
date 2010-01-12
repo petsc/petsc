@@ -232,6 +232,7 @@ class Configure(config.base.Configure):
         self.addMakeMacro(i.PACKAGE+'_INCLUDE',self.headers.toStringNoDupes(i.include))
     self.addMakeMacro('PACKAGES_LIBS',self.libraries.toStringNoDupes(libs+self.libraries.math))
     self.addMakeMacro('PACKAGES_INCLUDES',self.headers.toStringNoDupes(includes))
+    self.addMakeMacro('PACKAGES_MODULES_INCLUDES',self.headers.toStringModulesNoDupes(includes))    
     
     self.addMakeMacro('INSTALL_DIR',self.installdir)
     self.addDefine('LIB_DIR','"'+os.path.join(self.installdir,'lib')+'"')
