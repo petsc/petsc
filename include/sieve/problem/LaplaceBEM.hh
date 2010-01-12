@@ -6,7 +6,11 @@
 #include <petscmesh_viewers.hh>
 #include <petscdmmg.h>
 
+#if 0
 #include <Kernel_Laplacian_2D.hh>
+#else
+#include <Kernel_BiotSavart_3D.hh>
+#endif
 #include <FMM.hh>
 
 #include <sieve/problem/Bratu.hh>
@@ -741,7 +745,7 @@ namespace ALE {
       //     3) The tree is level is thus 2^{dL} > N_1^d --> L > log(E/4 + 1)/log(2)
       //     4) The lower left is (-h/2, -h/2) and the upper right is (\frac{(2^{L+1}-1) h}{2}, \frac{(2^{L+1}-1) h}{2})
       void setupTree(int numEdges, double minEdgeLength, int debug = 0) {
-        const double h        = minEdgeLength;
+        //const double h        = minEdgeLength;
         const int    N_1      = numEdges/4 + 1;
         const int    L        = std::ceil(log(N_1)/log(2));
         //const double lower[2] = {-h/2.0, -h/2.0};
@@ -752,6 +756,7 @@ namespace ALE {
       // Evaluate BEM solution on FEM grid
       //   This should be as simple as running the last step using different points
       void BEMtoFEM(ALE::Problem::Bratu& femProblem) {
+#ifdef BROKEN_FOR_3D
         const Obj<PETSC_MESH_TYPE::label_sequence>&    vertices    = femProblem.getMesh()->depthStratum(0);
         const Obj<PETSC_MESH_TYPE::real_section_type>& coordSec    = femProblem.getMesh()->getRealSection("coordinates");
         const Obj<PETSC_MESH_TYPE::real_section_type>& solution    = femProblem.getMesh()->getRealSection("default");
@@ -774,6 +779,7 @@ namespace ALE {
 
           solution->updatePoint(*v_iter, &value);
         }
+#endif
       };
     };
   }

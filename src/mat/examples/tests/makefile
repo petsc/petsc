@@ -472,6 +472,10 @@ ex125: ex125.o chkopts
 	-${CLINKER} -o ex125 ex125.o ${PETSC_MAT_LIB}
 	${RM} ex125.o
 
+ex129: ex129.o chkopts
+	-${CLINKER} -o ex129 ex129.o ${PETSC_DM_LIB}
+	${RM} ex129.o
+
 ex126f: ex126f.o chkopts
 	-${FLINKER} -o ex126f ex126f.o ${PETSC_MAT_LIB}
 	${RM} ex126f.o

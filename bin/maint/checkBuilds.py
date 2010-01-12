@@ -213,4 +213,7 @@ class BuildChecker(script.Script):
     return
 
 if __name__ == '__main__':
+  print ''
+  print 'Logs located at http://ftp.mcs.anl.gov/pub/petsc/nightlylogs'
+  print ''
   BuildChecker().run()

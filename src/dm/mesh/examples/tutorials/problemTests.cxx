@@ -47,7 +47,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsTruth("-stress", "Run stress tests", "unitTests", options->stress, &options->stress, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-convergence", "Run convergence tests", "unitTests", options->convergence, &options->convergence, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-bratu", "Run Bratu tests", "unitTests", options->bratu, &options->bratu, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-laplace_bem", "Run Bratu tests", "unitTests", options->laplaceBEM, &options->laplaceBEM, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-laplace_bem", "Run Laplace BEM tests", "unitTests", options->laplaceBEM, &options->laplaceBEM, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }

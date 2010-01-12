@@ -55,7 +55,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
       ierr = MatView(B,viewer);CHKERRQ(ierr);
     }
     /* compare */
-    ierr = MatAXPY(B,-1.0,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatAYPX(B,-1.0,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatNorm(B,NORM_FROBENIUS,&nrm);CHKERRQ(ierr);
     ierr = MatNorm(A,NORM_FROBENIUS,&gnorm);CHKERRQ(ierr);
     if (neP->complete_print) {
@@ -98,7 +98,7 @@ static PetscErrorCode SNESSetFromOptions_Test(SNES snes)
   PetscFunctionBegin;
 
   ierr = PetscOptionsHead("Hand-coded Jacobian tester options");CHKERRQ(ierr);
-  ierr = PetscOptionsTruth("-snes_test_display","Display difference between approximate and handcoded Jacobian","None",ls->complete_print,&ls->complete_print,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-snes_test_display","Display difference between hand-coded and finite difference Jacobians","None",ls->complete_print,&ls->complete_print,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

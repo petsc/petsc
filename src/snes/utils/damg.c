@@ -572,7 +572,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGView(DMMG *dmmg,PetscViewer viewer)
     } else if (DMMGGetSNES(dmmg)) {
       ierr = SNESView(DMMGGetSNES(dmmg),viewer);CHKERRQ(ierr);
     } else if (iascii) {
-      ierr = PetscViewerASCIIPrintf(viewer,"DMMG does not have a SNES or KSP set");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"DMMG does not have a SNES or KSP set\n");CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
