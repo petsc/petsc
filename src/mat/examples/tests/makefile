@@ -1206,6 +1206,12 @@ runex125:
 	   else echo "Possible problem with ex125, diffs above"; fi; \
 	   ${RM} -f ex125.tmp
 
+runex129:
+	-@${MPIEXEC} -n 1 ./ex129 -mat_type aij -dof 1 > ex129.tmp 2>&1; \
+	   if (${DIFF} output/ex129.out ex129.tmp) then true; \
+	   else echo "Possible problem with ex129, diffs above"; fi; \
+	   ${RM} -f ex129.tmp
+
 runex126f:
 	-@${MPIEXEC} -n 1 ./ex126f  > ex126_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex126_1.out ex126_1.tmp) then true; \
