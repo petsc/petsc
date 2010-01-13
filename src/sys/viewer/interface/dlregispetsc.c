@@ -78,7 +78,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(const char path[])
 
 EXTERN_C_BEGIN
 
-#if defined(PETSC_USE_SINGLE_LIBRARY)
+#if defined(PETSC_USE_SINGLE_LIBRARY) && defined(PETSC_USE_DYNAMIC_LIBRARIES)
 extern PetscErrorCode PetscDLLibraryRegister_petscvec(const char[]);
 extern PetscErrorCode PetscDLLibraryRegister_petscmat(const char[]);
 extern PetscErrorCode PetscDLLibraryRegister_petscdm(const char[]);
@@ -111,7 +111,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRegister_petsc(const char path[])
   ierr = PetscViewerInitializePackage(path);CHKERRQ(ierr);
   ierr = PetscRandomInitializePackage(path);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_SINGLE_LIBRARY)
+#if defined(PETSC_USE_SINGLE_LIBRARY) && defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscDLLibraryRegister_petscvec(path);CHKERRQ(ierr);
   ierr = PetscDLLibraryRegister_petscmat(path);CHKERRQ(ierr);
   ierr = PetscDLLibraryRegister_petscdm(path);CHKERRQ(ierr);
