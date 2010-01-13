@@ -5,7 +5,7 @@ static char vcid[] = "$Id: dense.c,v 1.4 2000/01/10 03:13:10 knepley Exp $";
      Defines the basic bilinear operations for sequential dense.
 */
 
-#include "src/bilinear/impls/dense/seq/dense.h"
+#include "src/bilinear/impls/dense/seq/bldense.h"
 #include "pinclude/pviewer.h"
 
 /*--------------------------------------------- Basic Functions -----------------------------------------------------*/
