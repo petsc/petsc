@@ -291,62 +291,62 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_newdatastruct(Mat B,Mat A,IS isrow,IS
      switch(bs){
      case 2:
         B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_newdatastruct;
-        B->ops->solve           = MatSolve_SeqBAIJ_2_NaturalOrdering_newdatastruct_v2;
+        B->ops->solve           = MatSolve_SeqBAIJ_2_NaturalOrdering_newdatastruct;
         break;
      case 3:
 	B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_newdatastruct;
-        B->ops->solve = MatSolve_SeqBAIJ_3_NaturalOrdering_newdatastruct_v2;
+        B->ops->solve = MatSolve_SeqBAIJ_3_NaturalOrdering_newdatastruct;
         break;
      case 4:
         B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_newdatastruct;
-        B->ops->solve = MatSolve_SeqBAIJ_4_NaturalOrdering_newdatastruct_v2;
+        B->ops->solve = MatSolve_SeqBAIJ_4_NaturalOrdering_newdatastruct;
         break;
      case 5:
         B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering_newdatastruct;
-        B->ops->solve = MatSolve_SeqBAIJ_5_NaturalOrdering_newdatastruct_v2;
+        B->ops->solve = MatSolve_SeqBAIJ_5_NaturalOrdering_newdatastruct;
         break;
      case 6:
         B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering_newdatastruct;
-        B->ops->solve = MatSolve_SeqBAIJ_6_NaturalOrdering_newdatastruct_v2;
+        B->ops->solve = MatSolve_SeqBAIJ_6_NaturalOrdering_newdatastruct;
         break;
      case 7:
         B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering_newdatastruct;
-        B->ops->solve = MatSolve_SeqBAIJ_7_NaturalOrdering_newdatastruct_v2;
+        B->ops->solve = MatSolve_SeqBAIJ_7_NaturalOrdering_newdatastruct;
         break;
      default:
         B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N_newdatastruct; 
-        B->ops->solve = MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct_v2;
+        B->ops->solve = MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct;
       }
    } 
    else {
      switch(bs){
      case 2:
         B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_newdatastruct;
-        B->ops->solve           = MatSolve_SeqBAIJ_2_newdatastruct_v2;
+        B->ops->solve           = MatSolve_SeqBAIJ_2_newdatastruct;
         break;
      case 3:
 	B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_newdatastruct;
-        B->ops->solve = MatSolve_SeqBAIJ_3_newdatastruct_v2;
+        B->ops->solve = MatSolve_SeqBAIJ_3_newdatastruct;
         break;
      case 4:
         B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_newdatastruct;
-        B->ops->solve = MatSolve_SeqBAIJ_4_newdatastruct_v2;
+        B->ops->solve = MatSolve_SeqBAIJ_4_newdatastruct;
         break;
      case 5:
         B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_newdatastruct;
-        B->ops->solve = MatSolve_SeqBAIJ_5_newdatastruct_v2;
+        B->ops->solve = MatSolve_SeqBAIJ_5_newdatastruct;
         break;
      case 6:
         B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_newdatastruct;
-        B->ops->solve = MatSolve_SeqBAIJ_6_newdatastruct_v2;
+        B->ops->solve = MatSolve_SeqBAIJ_6_newdatastruct;
         break;
      case 7:
         B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_newdatastruct;
-        B->ops->solve = MatSolve_SeqBAIJ_7_newdatastruct_v2;
+        B->ops->solve = MatSolve_SeqBAIJ_7_newdatastruct;
         break;
      default:
         B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N_newdatastruct;
-        B->ops->solve = MatSolve_SeqBAIJ_N_newdatastruct_v2;
+        B->ops->solve = MatSolve_SeqBAIJ_N_newdatastruct;
       }
    }
   /*  ierr = MatSeqBAIJSetNumericFactorization(B,both_identity);CHKERRQ(ierr); */

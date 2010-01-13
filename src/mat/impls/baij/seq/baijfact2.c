@@ -1345,6 +1345,7 @@ PetscErrorCode MatSolve_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
+#if defined(OLD_ROUTINE_TO_BE_REPLACED)
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqBAIJ_7_newdatastruct"
 PetscErrorCode MatSolve_SeqBAIJ_7_newdatastruct(Mat A,Vec bb,Vec xx)
@@ -1446,10 +1447,11 @@ PetscErrorCode MatSolve_SeqBAIJ_7_newdatastruct(Mat A,Vec bb,Vec xx)
   ierr = PetscLogFlops(2.0*49*(a->nz) - 7.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqBAIJ_7_newdatastruct_v2"
-PetscErrorCode MatSolve_SeqBAIJ_7_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqBAIJ_7_newdatastruct"
+PetscErrorCode MatSolve_SeqBAIJ_7_newdatastruct(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ    *a=(Mat_SeqBAIJ *)A->data;
   IS             iscol=a->col,isrow=a->row;
@@ -1645,6 +1647,7 @@ PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
+#if defined(OLD_ROUTINE_TO_BE_REPLACED)
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqBAIJ_7_NaturalOrdering_newdatastruct"
 PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
@@ -1732,10 +1735,11 @@ PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec
   ierr = PetscLogFlops(2.0*bs2*(a->nz) - bs*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqBAIJ_7_NaturalOrdering_newdatastruct_v2"
-PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqBAIJ_7_NaturalOrdering_newdatastruct"
+PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
 {
     Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
     PetscInt          i,k,n=a->mbs,*vi,*ai=a->i,*aj=a->j,*adiag=a->diag,nz;
@@ -1916,6 +1920,7 @@ PetscErrorCode MatSolve_SeqBAIJ_6(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
+#if defined(OLD_ROUTINE_TO_BE_REPLACED)
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqBAIJ_6_newdatastruct"
 PetscErrorCode MatSolve_SeqBAIJ_6_newdatastruct(Mat A,Vec bb,Vec xx)
@@ -2010,10 +2015,11 @@ PetscErrorCode MatSolve_SeqBAIJ_6_newdatastruct(Mat A,Vec bb,Vec xx)
   ierr = PetscLogFlops(2.0*36*(a->nz) - 6.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqBAIJ_6_newdatastruct_v2"
-PetscErrorCode MatSolve_SeqBAIJ_6_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqBAIJ_6_newdatastruct"
+PetscErrorCode MatSolve_SeqBAIJ_6_newdatastruct(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a=(Mat_SeqBAIJ *)A->data;
   IS                iscol=a->col,isrow=a->row;
@@ -2186,6 +2192,7 @@ PetscErrorCode MatSolve_SeqBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
+#if defined(OLD_ROUTINE_TO_BE_REPLACED)
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqBAIJ_6_NaturalOrdering_newdatastruct"
 PetscErrorCode MatSolve_SeqBAIJ_6_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
@@ -2269,10 +2276,11 @@ PetscErrorCode MatSolve_SeqBAIJ_6_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec
   ierr = PetscLogFlops(2.0*bs2*(a->nz) - bs*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqBAIJ_6_NaturalOrdering_newdatastruct_v2"
-PetscErrorCode MatSolve_SeqBAIJ_6_NaturalOrdering_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqBAIJ_6_NaturalOrdering_newdatastruct"
+PetscErrorCode MatSolve_SeqBAIJ_6_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
 {
     Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
     PetscInt          i,k,n=a->mbs,*vi,*ai=a->i,*aj=a->j,*adiag=a->diag,nz;
@@ -2442,6 +2450,7 @@ PetscErrorCode MatSolve_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
+#if defined(OLD_ROUTINE_TO_BE_REPLACED)
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqBAIJ_5_newdatastruct"
 PetscErrorCode MatSolve_SeqBAIJ_5_newdatastruct(Mat A,Vec bb,Vec xx)
@@ -2529,10 +2538,11 @@ PetscErrorCode MatSolve_SeqBAIJ_5_newdatastruct(Mat A,Vec bb,Vec xx)
   ierr = PetscLogFlops(2.0*25*(a->nz) - 5.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqBAIJ_5_newdatastruct_v2"
-PetscErrorCode MatSolve_SeqBAIJ_5_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqBAIJ_5_newdatastruct"
+PetscErrorCode MatSolve_SeqBAIJ_5_newdatastruct(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a=(Mat_SeqBAIJ *)A->data;
   IS                iscol=a->col,isrow=a->row;
@@ -2689,6 +2699,7 @@ PetscErrorCode MatSolve_SeqBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
+#if defined(OLD_ROUTINE_TO_BE_REPLACED)
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqBAIJ_5_NaturalOrdering_newdatastruct"
 PetscErrorCode MatSolve_SeqBAIJ_5_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
@@ -2761,10 +2772,11 @@ PetscErrorCode MatSolve_SeqBAIJ_5_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec
   ierr = PetscLogFlops(2.0*25*(a->nz) - 5.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqBAIJ_5_NaturalOrdering_newdatastruct_v2"
-PetscErrorCode MatSolve_SeqBAIJ_5_NaturalOrdering_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqBAIJ_5_NaturalOrdering_newdatastruct"
+PetscErrorCode MatSolve_SeqBAIJ_5_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
   PetscInt          i,k,n=a->mbs,*vi,*ai=a->i,*aj=a->j,*adiag=a->diag,nz,idx,idt;
@@ -2913,6 +2925,7 @@ PetscErrorCode MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
+#if defined(OLD_ROUTINE_TO_BE_REPLACED)
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqBAIJ_4_newdatastruct"
 PetscErrorCode MatSolve_SeqBAIJ_4_newdatastruct(Mat A,Vec bb,Vec xx)
@@ -2990,10 +3003,11 @@ PetscErrorCode MatSolve_SeqBAIJ_4_newdatastruct(Mat A,Vec bb,Vec xx)
   ierr = PetscLogFlops(2.0*16*(a->nz) - 4.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqBAIJ_4_newdatastruct_v2"
-PetscErrorCode MatSolve_SeqBAIJ_4_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqBAIJ_4_newdatastruct"
+PetscErrorCode MatSolve_SeqBAIJ_4_newdatastruct(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
   IS                iscol=a->col,isrow=a->row;
@@ -3486,6 +3500,7 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
+#if defined(OLD_ROUTINE_TO_BE_REPLACED)
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqBAIJ_4_NaturalOrdering_newdatastruct"
 PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
@@ -3560,10 +3575,11 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec
   ierr = PetscLogFlops(2.0*bs2*(a->nz) - bs*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqBAIJ_4_NaturalOrdering_newdatastruct_v2"
-PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqBAIJ_4_NaturalOrdering_newdatastruct"
+PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
 {
     Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
     PetscInt          i,k,n=a->mbs,*vi,*ai=a->i,*aj=a->j,*adiag=a->diag,nz;
@@ -4197,6 +4213,7 @@ PetscErrorCode MatSolve_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
+#if defined(OLD_ROUTINE_TO_BE_REPLACED)
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqBAIJ_3_newdatastruct"
 PetscErrorCode MatSolve_SeqBAIJ_3_newdatastruct(Mat A,Vec bb,Vec xx)
@@ -4266,10 +4283,11 @@ PetscErrorCode MatSolve_SeqBAIJ_3_newdatastruct(Mat A,Vec bb,Vec xx)
   ierr = PetscLogFlops(2.0*9*(a->nz) - 3.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqBAIJ_3_newdatastruct_v2"
-PetscErrorCode MatSolve_SeqBAIJ_3_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqBAIJ_3_newdatastruct"
+PetscErrorCode MatSolve_SeqBAIJ_3_newdatastruct(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a=(Mat_SeqBAIJ *)A->data;
   IS                iscol=a->col,isrow=a->row;
@@ -4406,6 +4424,7 @@ PetscErrorCode MatSolve_SeqBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
+#if defined(OLD_ROUTINE_TO_BE_REPLACED)
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqBAIJ_3_NaturalOrdering_newdatastruct"
 PetscErrorCode MatSolve_SeqBAIJ_3_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
@@ -4476,10 +4495,11 @@ PetscErrorCode MatSolve_SeqBAIJ_3_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec
   ierr = PetscLogFlops(2.0*bs2*(a->nz) - bs*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqBAIJ_3_NaturalOrdering_newdatastruct_v2"
-PetscErrorCode MatSolve_SeqBAIJ_3_NaturalOrdering_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqBAIJ_3_NaturalOrdering_newdatastruct"
+PetscErrorCode MatSolve_SeqBAIJ_3_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
 {
     Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
     PetscInt          i,k,n=a->mbs,*vi,*ai=a->i,*aj=a->j,*adiag=a->diag,nz;
@@ -4615,6 +4635,7 @@ PetscErrorCode MatSolve_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
+#if defined(OLD_ROUTINE_TO_BE_REPLACED)
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqBAIJ_2_newdatastruct"
 PetscErrorCode MatSolve_SeqBAIJ_2_newdatastruct(Mat A,Vec bb,Vec xx)
@@ -4681,10 +4702,11 @@ PetscErrorCode MatSolve_SeqBAIJ_2_newdatastruct(Mat A,Vec bb,Vec xx)
   ierr = PetscLogFlops(2.0*4*(a->nz) - 2.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqBAIJ_2_newdatastruct_v2"
-PetscErrorCode MatSolve_SeqBAIJ_2_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqBAIJ_2_newdatastruct"
+PetscErrorCode MatSolve_SeqBAIJ_2_newdatastruct(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a=(Mat_SeqBAIJ *)A->data;
   IS                iscol=a->col,isrow=a->row;
@@ -4813,6 +4835,7 @@ PetscErrorCode MatSolve_SeqBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
+#if defined(OLD_ROUTINE_TO_BE_REPLACED)
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqBAIJ_2_NaturalOrdering_newdatastruct"
 PetscErrorCode MatSolve_SeqBAIJ_2_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
@@ -4872,10 +4895,11 @@ PetscErrorCode MatSolve_SeqBAIJ_2_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec
   ierr = PetscLogFlops(2.0*4*(a->nz) - 2.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqBAIJ_2_NaturalOrdering_newdatastruct_v2"
-PetscErrorCode MatSolve_SeqBAIJ_2_NaturalOrdering_newdatastruct_v2(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqBAIJ_2_NaturalOrdering_newdatastruct"
+PetscErrorCode MatSolve_SeqBAIJ_2_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
 {
     Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
     PetscInt          i,k,n=a->mbs,*vi,*ai=a->i,*aj=a->j,*adiag=a->diag,nz,idx,idt;
@@ -5157,9 +5181,9 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_newdatastruct(Mat B,Mat A,const MatF
   ierr = ISIdentity(isicol,&col_identity);CHKERRQ(ierr);
   both_identity = (PetscTruth) (row_identity && col_identity);
   if (both_identity){
-    C->ops->solve = MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct_v2;
+    C->ops->solve = MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct;
   } else {
-    C->ops->solve = MatSolve_SeqBAIJ_N_newdatastruct_v2;
+    C->ops->solve = MatSolve_SeqBAIJ_N_newdatastruct;
   }
  
   C->assembled = PETSC_TRUE;

@@ -118,12 +118,10 @@ def make_htmlpage(loc,tarballs):
     tmp_dirs = []
     for i in range(0,len_tarballs):
         tmp = []
-        dir_name = os.path.join(gcov_dir,str(i))
-        print dir_name
-        tmp.append(dir_name)
-        os.mkdir(dir_name)
-        os.system("cd "+dir_name+";gunzip -c" +" ../"+tarballs[i] + "|tar -xof -")
-        dir = os.path.join(cwd,dir_name)
+        dir = os.path.join(gcov_dir,str(i))
+        tmp.append(dir)
+        os.mkdir(dir)
+        os.system("cd "+dir+";gunzip -c "+cwd+"/"+tarballs[i] + "|tar -xof -")
         tmp.append(len(os.listdir(dir)))
         tmp_dirs.append(tmp)
 
@@ -139,8 +137,7 @@ def make_htmlpage(loc,tarballs):
     # Create temporary gcov directory to store .lines files
     print "Merging files"
     nfiles = tmp_dirs[0][1]
-    dir1 = os.path.join(cwd,tmp_dirs[0][0])
-    files_dir1 = os.listdir(dir1)
+    files_dir1 = os.listdir(tmp_dirs[0][0])
     for i in range(0,nfiles):
         out_file = os.path.join(gcov_dir,files_dir1[i])
         out_fid  = open(out_file,'w')
@@ -383,6 +380,7 @@ gcov_dir = "/tmp/gcov-"+USER
 if (sys.argv[1] == "-run_gcov"):
     print "Running gcov and creating tarball"
     run_gcov(PETSC_DIR,USER,gcov_dir)
+    make_tarball(gcov_dir)
 elif (sys.argv[1] == "-merge_gcov"):
     print "Creating main html page"
     # check to see if LOC is given
@@ -402,7 +400,7 @@ else:
     print "Usage: To run gcov and create tarball"
     print "         ./rungcov.py -run_gcov      "
     print "Usage: To create main html page"
-    print "         ./rungcov.py -generate_html [loc]"
+    print "         ./rungcov.py -merge_gcov [LOC] tarballs"
 
 
 
