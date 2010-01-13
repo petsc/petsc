@@ -1083,7 +1083,6 @@ class Configure(config.base.Configure):
       return
     found   = False
     testdir = 'confdir'
-    modname = 'configtest.mod'
     modobj  = 'configtest.o'
     modcode = '''\
       module configtest
@@ -1103,8 +1102,12 @@ class Configure(config.base.Configure):
     if not os.path.isdir(testdir):
       os.mkdir(testdir)
     os.rename(self.compilerObj, modobj)
-    if not os.path.isfile(modname):
-      raise RuntimeError('Fortran module '+modname+' was not created during the compile')
+    if os.path.isfile('configtest.mod'):
+      modname = 'configtest.mod'
+    elif os.path.isfile('CONFIGTEST.mod'):
+      modname = 'CONFIGTEST.mod'
+    else:
+      raise RuntimeError('Fortran module was not created during the compile. configtest.mod/CONFIGTEST.mod not found')
     os.rename(modname, os.path.join(testdir, modname))
     fcode = '''\
       use configtest
@@ -1113,7 +1116,7 @@ class Configure(config.base.Configure):
     self.pushLanguage('FC')
     oldFLAGS = self.setCompilers.FFLAGS
     oldLIBS  = self.setCompilers.LIBS
-    for flag in ['-I', '-module ', '-fmod=', '-M', '-J']:
+    for flag in ['-I', '-module ', '-fmod=', '-M', '-J', '-p']:
       self.setCompilers.FFLAGS = flag+testdir+' '+self.setCompilers.FFLAGS
       self.setCompilers.LIBS   = modobj+' '+self.setCompilers.LIBS
       if not self.checkLink(None, fcode):
