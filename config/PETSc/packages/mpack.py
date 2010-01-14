@@ -6,7 +6,7 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpack-0.6.0.tar.gz']
+    self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpack-0.6.4.tar.gz']
     self.functions        = ['']
     self.includes         = ['']
     self.liblist          = [['']]
