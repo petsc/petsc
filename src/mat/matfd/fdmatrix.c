@@ -163,7 +163,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringView(MatFDColoring c,PetscViewer 
 
 .keywords: Mat, finite differences, coloring, set, parameters
 
-.seealso: MatFDColoringCreate()
+.seealso: MatFDColoringCreate(), MatFDColoringSetFromOptions()
+
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetParameters(MatFDColoring matfd,PetscReal error,PetscReal umin)
 {
@@ -194,6 +195,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetParameters(MatFDColoring matfd
    Level: intermediate
 
 .keywords: Mat, Jacobian, finite differences, set, function
+
+.seealso: MatFDColoringCreate(), MatFDColoringSetFunction(), MatFDColoringSetFromOptions()
+
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringGetFunction(MatFDColoring matfd,PetscErrorCode (**f)(void),void **fctx)
 {
@@ -233,6 +237,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringGetFunction(MatFDColoring matfd,P
   within the TS solvers.
 
 .keywords: Mat, Jacobian, finite differences, set, function
+
+.seealso: MatFDColoringCreate(), MatFDColoringGetFunction(), MatFDColoringSetFromOptions()
+
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetFunction(MatFDColoring matfd,PetscErrorCode (*f)(void),void *fctx)
 {
