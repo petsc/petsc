@@ -12,7 +12,7 @@ OBJSC    = matusfft.o
 LIBBASE  = libpetscdm
 MANSEC   = DA
 DIRS     =
-LOCDIR   = src/dm/da/src/usfft
+LOCDIR   = src/dm/da/src/usfft/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

@@ -10,7 +10,7 @@ SOURCEH  =
 OBJSC    = ${SOURCEC:.c=.o}
 OBJSF    = 
 LIBBASE  = libpetsc
-LOCDIR   = src/sys/fileio/f90-custom/
+LOCDIR   = src/sys/viewer/impls/binary/f90-custom/
 
 
 include ${PETSC_DIR}/conf/variables

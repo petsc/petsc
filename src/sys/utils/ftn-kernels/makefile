@@ -11,7 +11,7 @@ OBJSC    =
 OBJSF    = fcopy.o
 LIBBASE  = libpetsc
 MANSEC   = Sys
-LOCDIR   = src/sys/utils/ftn-kernels
+LOCDIR   = src/sys/utils/ftn-kernels/
 DIRS     = bgl
 
 include ${PETSC_DIR}/conf/variables

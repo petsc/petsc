@@ -2,7 +2,7 @@
 ALL: lib
 
 DIRS     = tests
-LOCDIR   = src/dm/adda
+LOCDIR   = src/dm/adda/examples/
 MANSEC   = DA
 
 include ${PETSC_DIR}/conf/variables
