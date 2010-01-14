@@ -11,7 +11,7 @@ OBJSF    =
 DIRS     = 
 LIBBASE  = libpetscmat
 MANSEC   = Mat
-LOCDIR   = src/mat/impls/framework
+LOCDIR   = src/mat/impls/framework/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

@@ -17,7 +17,7 @@ OBJSC    =
 OBJSF    = fmultcrl.o
 LIBBASE  = libpetsc
 MANSEC   = Sys
-LOCDIR   = src/fortran/kernels/
+LOCDIR   = src/mat/impls/aij/seq/crl/ftn-kernels/
 DIRS     = 
 
 include ${PETSC_DIR}/conf/variables
