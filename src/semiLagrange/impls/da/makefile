@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = da.c
+SOURCEC  = slda.c
 SOURCEF  =
-SOURCEH  = da.h
-OBJSC    = da.o
+SOURCEH  = slda.h
+OBJSC    = slda.o
 OBJSF    =
 LIBBASE  = libpetsccontrib
 MANSEC   = SemiLagrange

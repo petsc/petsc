@@ -4,7 +4,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = dense.c
+SOURCEC  = bldense.c
 SOURCEF  =
 SOURCEH  = ${SOURCEC:.c=.h}
 OBJSC    = ${SOURCEC:.c=.o}

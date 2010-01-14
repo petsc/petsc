@@ -4,7 +4,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = bilinear.c bilinearreg.c bilinearserialize.c bilinearregall.c initializepackage.c dlregis.c
+SOURCEC  = bilinear.c bilinearreg.c bilinearserialize.c bilinearregall.c initializepackage.c blregis.c
 SOURCEF  =
 SOURCEH  = 
 OBJSC    = ${SOURCEC:.c=.o}

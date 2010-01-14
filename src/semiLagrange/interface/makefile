@@ -4,10 +4,10 @@ ALL: lib
 CPPFLAGS = 
 CFLAGS   = 
 FFLAGS   =
-SOURCEC  = characteristic.c mocregis.c dlregis.c
+SOURCEC  = characteristic.c mocregis.c slregis.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = characteristic.o mocregis.o dlregis.o
+OBJSC    = characteristic.o mocregis.o slregis.o
 OBJSF    =
 LIBBASE  = libpetsccontrib
 MANSEC   = SemiLagrange

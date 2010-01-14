@@ -359,16 +359,14 @@ createfastbuild:
 	cd src/vec; ${RM} -f files; /bin/echo -n "SOURCEC = " > files; make tree ACTION=sourcelist BASE_DIR=${PETSC_DIR}/src/vec;  /bin/echo -n "OBJSC    = $${SOURCEC:.c=.o} " >> files
 
 ###########################################################
-
 #
-#  makes .lines files for all source code
+#  See script for details
 # 
-allgcov: 
-	-@${RM} -rf /tmp/gcov-${USER}
-	-@mkdir /tmp/gcov-${USER}
-	-${OMAKE} ACTION=gcov PETSC_DIR=${PETSC_DIR} tree
-	-cd /tmp/gcov-${USER}; tar -czf ${PETSC_DIR}/gcov.tar.gz *.lines
-	-${RM) -rf /tmp/gcov-${USER}
+gcov: 
+	-@${PETSC_DIR}/bin/maint/gcov.py -run_gcov
+
+mergegcov: 
+	-@${PETSC_DIR}/bin/maint/gcov.py -merge_gcov ${LOC} *.tar.gz
 
 # usage make allrcslabel NEW_RCS_LABEL=v_2_0_28
 allrcslabel: 

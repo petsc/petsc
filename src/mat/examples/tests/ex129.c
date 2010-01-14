@@ -29,7 +29,7 @@ int main(int argc,char **argv)
   Mat               A,F;
   MatFactorInfo     info;
   IS                perm,iperm;
-  PetscInt          dof=1,M=-8,solve_type=0;
+  PetscInt          dof=1,M=-8;
   PetscScalar       one = 1.0;
   PetscReal         norm;
 
@@ -63,46 +63,40 @@ int main(int argc,char **argv)
   info.fill = 5.0;
   ierr = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(F,A,&info);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-solve_type",&solve_type,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecDuplicate(y,&b1);CHKERRQ(ierr);
-  switch (solve_type){
-  case 1:
-    /* MatSolve */
-    ierr = MatSolve(F,b,x);CHKERRQ(ierr);
-    ierr = MatMult(A,x,b1);CHKERRQ(ierr);
-    ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
-    ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error of norm %g\n",norm);CHKERRQ(ierr);
-    break;
-  case 2:
-    /* MatSolveTranspose */
-    ierr = MatSolveTranspose(F,b,x);CHKERRQ(ierr);
-    ierr = MatMultTranspose(A,x,b1);CHKERRQ(ierr);
-    ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
-    ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error of norm %g\n",norm);CHKERRQ(ierr);
-    break;
-  case 3:
-    /* MatSolveAdd */
-    ierr = MatSolveAdd(F,b,y,x);CHKERRQ(ierr);
-    ierr = MatMult(A,y,b1);CHKERRQ(ierr);
-    ierr = VecScale(b1,-1.0);CHKERRQ(ierr);
-    ierr = MatMultAdd(A,x,b1,b1);
-    ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
-    ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error or norm %g\n",norm);CHKERRQ(ierr);
-    break;
-  case 4:
-    /* MatSolveTransposeAdd */
-    ierr = MatSolveTransposeAdd(F,b,y,x);CHKERRQ(ierr); 
-    ierr = MatMultTranspose(A,y,b1);CHKERRQ(ierr);
-    ierr = VecScale(b1,-1.0);CHKERRQ(ierr);
-    ierr = MatMultTransposeAdd(A,x,b1,b1);
-    ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
-    ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error or norm %g\n",norm);CHKERRQ(ierr);
-    break;
-  }
+ 
+  /* MatSolve */
+  ierr = MatSolve(F,b,x);CHKERRQ(ierr);
+  ierr = MatMult(A,x,b1);CHKERRQ(ierr);
+  ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
+  ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolve:             Error of norm %A\n",norm);CHKERRQ(ierr);
+   
+  /* MatSolveTranspose */
+  ierr = MatSolveTranspose(F,b,x);CHKERRQ(ierr);
+  ierr = MatMultTranspose(A,x,b1);CHKERRQ(ierr);
+  ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
+  ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolveTranspose :   Error of norm %A\n",norm);CHKERRQ(ierr);
+   
+  /* MatSolveAdd */
+  ierr = MatSolveAdd(F,b,y,x);CHKERRQ(ierr);
+  ierr = MatMult(A,y,b1);CHKERRQ(ierr);
+  ierr = VecScale(b1,-1.0);CHKERRQ(ierr);
+  ierr = MatMultAdd(A,x,b1,b1);
+  ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
+  ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolveAdd:          Error or norm %A\n",norm);CHKERRQ(ierr);
+  
+  /* MatSolveTransposeAdd */
+  ierr = MatSolveTransposeAdd(F,b,y,x);CHKERRQ(ierr); 
+  ierr = MatMultTranspose(A,y,b1);CHKERRQ(ierr);
+  ierr = VecScale(b1,-1.0);CHKERRQ(ierr);
+  ierr = MatMultTransposeAdd(A,x,b1,b1);
+  ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
+  ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolveTransposeAdd: Error or norm %A\n",norm);CHKERRQ(ierr);
+  
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = VecDestroy(b1);CHKERRQ(ierr);
@@ -141,6 +135,7 @@ PetscErrorCode ComputeMatrix(DA da,Mat B)
   MatStencil     row,col;
   PetscRandom    rand; 
 
+  PetscFunctionBegin;
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetType(rand,PETSCRAND);CHKERRQ(ierr);
   ierr = PetscRandomSetSeed(rand,1);CHKERRQ(ierr);
@@ -211,6 +206,6 @@ PetscErrorCode ComputeMatrix(DA da,Mat B)
   ierr = PetscFree(v);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
   /* ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */ 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
