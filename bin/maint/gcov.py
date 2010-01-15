@@ -237,17 +237,22 @@ def make_htmlpage(loc,tarballs):
         nlines_not_tested = src_not_tested_nlines[file_ctr]
         line_ctr = 0
         last_line_blank = 0
-        for line in inhtml_fid:
+        for line_temp in inhtml_fid:
+            line = line_temp.split('\n')[0]
             if(line.find(temp_string) != -1):
                 nsrc_lines = int(line.split(':')[0].split('line')[1].split('"')[0].lstrip())
             if (line_ctr < nlines_not_tested):
                 temp_line = 'line'+src_not_tested_lines[file_ctr][line_ctr]
                 if (line.find(temp_line) != -1):
-                    temp_outline = '<table><tr><td bgcolor="yellow">'+'<font color="red">!</font>'+line+'</td></tr></table>'
+                    # Untested line
+                    if(line.startswith('<pre width=')):
+                        num = line.find('>')
+                        temp_outline = line[:num+1]+'<table cellspacing="0" cellpadding="0"><tr><td bgcolor="yellow"><font size="4"color="red">!</font>'+line[num+1:]+'</td></tr></table>'
+                    else:
+                        temp_outline = '<table cellspacing="0" cellpadding="0"><tr><td bgcolor="yellow"><font size="4"color="red">!</font>'+line+'</td></tr></table>'
+                        
                     line_ctr += 1
-                else:
-                    # Gcov information contains blank line numbers which C2HTML doesn't print, Need to handle this
-                    # Marked line numbers 
+                else: 
                     if(line.find(temp_string) != -1):
                         line_num = int(line.split(':')[0].split('line')[1].split('"')[0].lstrip())
 
@@ -261,7 +266,7 @@ def make_htmlpage(loc,tarballs):
                             if (last_line_blank == 0):        
                                 temp_line = 'line'+src_not_tested_lines[file_ctr][line_ctr]
                                 if(line.find(temp_line) != -1):
-                                    temp_outline =  '<table><tr><td bgcolor="yellow">'+'<font color="red">!</font>'+line+'</td></tr></table>'
+                                    temp_outline =  '<table cellspacing="0"><tr><td bgcolor="yellow">'+'<font size="4" color="red">!</font>'+line+'</td></tr></table>'
                                     line_ctr += 1
                                 else:
                                     temp_outline = line
