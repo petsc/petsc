@@ -330,7 +330,7 @@ def make_htmlpage(loc,tarballs):
     print >>out_fid,"""<table border="1" align = "center">                                                                                                                            
     <tr><th>Source Code</th><th>Lines in source code</th><th>Number of lines not tested</th><th>% Code not tested</th></tr>"""
 
-    output_list.sort(key=operator.itemgetter(0),reverse=False)
+    output_list.sort(key=lambda x:x[0].lower())
     for file_ctr in range(0,nsrc_files_not_tested-nfiles_not_processed):
         print >>out_fid,"<tr><td><a href = %s>%s</a></td><td>%s</td><td>%s</td><td>%3.2f</td></tr>" % (output_list[file_ctr][1],output_list[file_ctr][0],output_list[file_ctr][3],output_list[file_ctr][2],output_list[file_ctr][4])
 
