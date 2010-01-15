@@ -9,7 +9,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/gmp.tar.gz']
+    self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/gmp-5.0.0.tar.gz']
     self.complex          = 0;
     self.double           = 0;
     self.functions        = ['__gmpz_init']

@@ -9,7 +9,7 @@ SOURCEF  =
 SOURCEH  =
 DIRS     =
 LIBBASE  = libpetscdm
-LOCDIR   = src/dm/ao/impls/basic/ftn-custom/
+LOCDIR   = src/dm/ao/impls/mapping/ftn-custom/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

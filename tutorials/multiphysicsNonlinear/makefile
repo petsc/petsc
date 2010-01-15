@@ -3,7 +3,7 @@ CFLAGS           =
 FFLAGS		 = 
 CPPFLAGS         =
 FPPFLAGS         =
-LOCDIR		 = tutorials/multiphysics
+LOCDIR		 = tutorials/multiphysicsNonlinear/
 MANSEC           = SNES
 EXAMPLESC	 = p1.c p2.c ff1.c ff2.c mp1.c
 EXAMPLESF	 = 
@@ -36,7 +36,6 @@ TESTEXAMPLES_C_NOCOMPLEX       =
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = 
 TESTEXAMPLES_FORTRAN_MPIUNI    = 
 TESTEXAMPLES_C_X11_MPIUNI      = 
-                                 
 TESTEXAMPLES_F90	       = 
 TESTEXAMPLES_13		       = 
 TESTEXAMPLES_MATLAB_ENGINE     =
