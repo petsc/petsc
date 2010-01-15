@@ -50,7 +50,7 @@ class Configure(PETSc.package.NewPackage):
     # mpack ./configure doesn't properly propogate the --with-xxx-yy flags to the makefiles so put them in manually
     includes = '-I'+self.qd.includeDir+' -I'+self.gmp.include[0]
     libs = '-L'+self.qd.libDir+' -L'+self.gmp.lib[0][:-8]
-    FLAGS = 'CXXFLAGS="'+includes+'" ; export CXXFLAGS;  CPPFLAGS="'+includes+'" ; export CPPFLAGS  ; CFLAGS="'+includes+'" ; export CFLAGS ;$ LDFLAGS="'+libs+'"; export LDFLAGS'
+    FLAGS = 'CXXFLAGS="'+includes+'" ; export CXXFLAGS;  CPPFLAGS="'+includes+'" ; export CPPFLAGS  ; CFLAGS="'+includes+'" ; export CFLAGS ; LDFLAGS="'+libs+'"; export LDFLAGS'
 
     if self.installNeeded('mpack'):
       try:
