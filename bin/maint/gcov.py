@@ -41,7 +41,7 @@ def run_gcov(petsc_dir,user,gcov_dir):
                     gcov_file = file_name+".gcov"
                     try:
                         gcov_fid = open(gcov_file,'r')
-                        root_tmp1 = 'src'+root.split("src")[1].replace(os.sep,'_')
+                        root_tmp1 = root.split(PETSC_DIR+os.sep)[1].replace(os.sep,'_')
                         lines_fid = open(os.path.join(gcov_dir,root_tmp1+'_'+file_name+'.lines'),'w')
                         for line in gcov_fid:
                             if line.find("#####") > 0:
@@ -51,22 +51,22 @@ def run_gcov(petsc_dir,user,gcov_dir):
                         lines_fid.close()
                     except IOError:
                         continue
-                    else:
-                        # gcov did not create .gcno or .gcda file,save the source code line numbers to .lines file
-                        file_id = open(file_name,'r')
-                        root_tmp1 = 'src'+root.split("src")[1].replace(os.sep,'_')
-                        lines_fid = open(os.path.join(gcov_dir,root_tmp1+'_'+file_name+'.lines'),'w')
-                        nlines = 0
-                        line_num = 1
-                        for line in file_id:
-                            if line.strip() == '':
-                                line_num += 1
-                            else:
-                                print >>lines_fid,"""%s"""%(line_num)
-                                line_num += 1
-                        file_id.close()
-                        lines_fid.close()
-    print """End of script"""                                
+                else:
+                    # gcov did not create .gcno or .gcda file,save the source code line numbers to .lines file
+                    file_id = open(file_name,'r')
+                    root_tmp1 = root.split(PETSC_DIR+os.sep)[1].replace(os.sep,'_')
+                    lines_fid = open(os.path.join(gcov_dir,root_tmp1+'_'+file_name+'.lines'),'w')
+                    nlines = 0
+                    line_num = 1
+                    for line in file_id:
+                        if line.strip() == '':
+                            line_num += 1
+                        else:
+                            print >>lines_fid,"""%s"""%(line_num)
+                            line_num += 1
+                    file_id.close()
+                    lines_fid.close()
+    print """Finshed running gcov on PETSc source code"""                                
     return
 
 def make_tarball(gcov_dir):
@@ -74,11 +74,11 @@ def make_tarball(gcov_dir):
     # Create tarball of .lines files stored in gcov_dir
     import os
     import shutil
-    print """Creating tarball in %s\n""" %(gcov_dir)
+    print """Creating tarball in %s to store gcov results files""" %(gcov_dir)
     os.chdir(gcov_dir)
-    os.system("tar -czf "+PETSC_DIR+"/gcov.tar.gz *.lines")
+    os.system("tar -czf "+PETSC_DIR+os.sep+"gcov.tar.gz *.lines")
     shutil.rmtree(gcov_dir)
-    print """Tarball created\n"""
+    print """Tarball created in %s"""%(PETSC_DIR)
     return
 
 def make_htmlpage(loc,tarballs):
@@ -121,7 +121,7 @@ def make_htmlpage(loc,tarballs):
         dir = os.path.join(gcov_dir,str(i))
         tmp.append(dir)
         os.mkdir(dir)
-        os.system("cd "+dir+";gunzip -c "+cwd+"/"+tarballs[i] + "|tar -xof -")
+        os.system("cd "+dir+";gunzip -c "+cwd+os.sep+tarballs[i] + "|tar -xof -")
         tmp.append(len(os.listdir(dir)))
         tmp_dirs.append(tmp)
 
@@ -157,7 +157,7 @@ def make_htmlpage(loc,tarballs):
             in_fid.close()
 
         if(len(lines) != 0):
-            lines.sort()
+            lines.sort(key=int)
             out_fid.writelines(lines)
             out_fid.flush()
 
@@ -243,7 +243,7 @@ def make_htmlpage(loc,tarballs):
             if (line_ctr < nlines_not_tested):
                 temp_line = 'line'+src_not_tested_lines[file_ctr][line_ctr]
                 if (line.find(temp_line) != -1):
-                    temp_outline = '<table><tr><td bgcolor="yellow">'+'<font size="4" color="red">!</font>'+line+'</td></table>'
+                    temp_outline = '<table><tr><td bgcolor="yellow">'+'<font color="red">!</font>'+line+'</td></tr></table>'
                     line_ctr += 1
                 else:
                     # Gcov information contains blank line numbers which C2HTML doesn't print, Need to handle this
@@ -261,7 +261,7 @@ def make_htmlpage(loc,tarballs):
                             if (last_line_blank == 0):        
                                 temp_line = 'line'+src_not_tested_lines[file_ctr][line_ctr]
                                 if(line.find(temp_line) != -1):
-                                    temp_outline =  '<table><tr><td bgcolor="yellow">'+'<font size="4" color="red">!</font>'+line+'</td></table>'
+                                    temp_outline =  '<table><tr><td bgcolor="yellow">'+'<font color="red">!</font>'+line+'</td></tr></table>'
                                     line_ctr += 1
                                 else:
                                     temp_outline = line
