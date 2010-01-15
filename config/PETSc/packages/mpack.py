@@ -7,9 +7,9 @@ class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
     self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpack-0.6.4.tar.gz']
-    self.functions        = ['']
-    self.includes         = ['']
-    self.liblist          = [['']]
+    self.functions        = []
+    self.includes         = ['mpack/mblas_dd.h']
+    self.liblist          = [['libmblas_dd.a']]
     self.needsMath        = 1
     self.complex          = 1
     self.cxx              = 0
