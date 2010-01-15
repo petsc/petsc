@@ -77,7 +77,7 @@ This file is also used for the f2cblaslapack distribution.
 #  define LAPACKstebz_ dstebz_
 # endif
 #else
-# if defined(PETSC_USE_SINGLE)
+# if defined(PETSC_USE_SCALAR_SINGLE)
 /* Complex single precision with no character string arguments */
 #  define LAPACKgeqrf_ cgeqrf_
 #  define LAPACKungqr_ cungqr_

@@ -76,7 +76,7 @@ This file also deals with unmangled Fortran 77 naming convention.
 #  define LAPACKstebz_ dstebz
 # endif
 #else
-# if defined(PETSC_USE_SINGLE)
+# if defined(PETSC_USE_SCALAR_SINGLE)
 /* Complex single precision with no character string arguments */
 #  define LAPACKgeqrf_ cgeqrf
 #  define LAPACKungqr_ cungqr
