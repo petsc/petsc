@@ -55,7 +55,6 @@ struct _n_DMMG {
   /* SNES only */
   Vec            Rscale;                 /* scaling to restriction before computing Jacobian */
   PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);  
-  PetscErrorCode (*computefunction)(SNES,Vec,Vec,void*);  
 
   PetscTruth     updatejacobian;         /* compute new Jacobian when DMMGComputeJacobian_Multigrid() is called */
   PetscInt       updatejacobianperiod;   /* how often, inside a SNES, the Jacobian is recomputed */
