@@ -1,0 +1,6 @@
+#! /bin/csh
+#
+set MACH=140.221.123.61
+set USR=balay
+set LOC=/home/balay/petsc-dev-3
+set CONF=arch-freebsd-cxx-cmplx-pkgs-dbg

@@ -1,0 +1,6 @@
+#! /bin/csh
+#
+set MACH=140.221.123.184
+set USR=balay
+set LOC=/export/home/balay/petsc-dev-3
+set CONF=arch-opensolaris-cxx-cmplx-pkgs-dbg
