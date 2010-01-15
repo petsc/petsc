@@ -523,7 +523,7 @@ PetscErrorCode MatMultTranspose_SeqDense(Mat A,Vec xx,Vec yy)
   ierr = PetscLogFlops(2.0*A->rmap->n*A->cmap->n - A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
+#include <iostream>
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqDense"
 PetscErrorCode MatMult_SeqDense(Mat A,Vec xx,Vec yy)
@@ -539,7 +539,29 @@ PetscErrorCode MatMult_SeqDense(Mat A,Vec xx,Vec yy)
   if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+#if 0
   BLASgemv_("N",&m,&n,&_DOne,v,&(mat->lda),x,&_One,&_DZero,y,&_One);
+  {
+    PetscScalar *yCheck = new PetscScalar[m];
+    for(int i = 0; i < m; ++i) {
+      yCheck[i] = 0.0;
+      for(int j = 0; j < n; ++j) {
+        yCheck[i] += v[i*n+j]*x[j];
+      }
+      if (fabs(y[i] - yCheck[i]) > 1.0e-8) {
+        SETERRQ2(PETSC_ERR_LIB, "DGEMV call is fucked up: %g should be %g", y[i], yCheck[i]);
+      }
+    }
+    delete [] y;
+  }
+#else
+  for(int i = 0; i < m; ++i) {
+    y[i] = 0.0;
+    for(int j = 0; j < n; ++j) {
+      y[i] += v[i*n+j]*x[j];
+    }
+  }
+#endif
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*A->rmap->n*A->cmap->n - A->rmap->n);CHKERRQ(ierr);
