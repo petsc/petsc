@@ -1,20 +1,20 @@
 import PETSc.package
+import os
 
-#
-# DOES NOT CURRENTLY WORK BECAUSE REQUIRES GMP which I cannot get built
-#
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
     self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpack-0.6.4.tar.gz']
     self.functions        = []
-    self.includes         = ['mpack/mblas_dd.h']
+#  cannot list self.includes because these are C++ include files, but test is done with C compiler
+#    self.includes         = ['mblas_dd.h']
     self.liblist          = [['libmblas_dd.a']]
     self.needsMath        = 1
     self.complex          = 1
     self.cxx              = 0
     self.double           = 0      
     self.requires32bitint = 1;    
+    self.include         = [os.path.abspath(os.path.join('include', 'mpack'))]
     return
 
   def setupDependencies(self, framework):
@@ -23,7 +23,6 @@ class Configure(PETSc.package.NewPackage):
     self.gmp           = framework.require('PETSc.packages.gmp',self)    
     self.deps          = [self.qd,self.gmp]
     self.headers       = framework.require('config.headers',           self)
-    self.functions     = framework.require('config.functions',         self)
     self.libraries     = framework.require('config.libraries',         self)
     return
 
