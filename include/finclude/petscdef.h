@@ -85,7 +85,7 @@
 #define PetscFortranFloat real(kind=selected_real_kind(5))
 #define PetscFortranDouble real(kind=selected_real_kind(10))
 #define PetscFortranLongDouble real(kind=selected_real_kind(16))
-#if defined(PETSC_USE_SINGLE)
+#if defined(PETSC_USE_SCALAR_SINGLE)
 #define PetscFortranComplex complex(kind=selected_real_kind(5))
 #else
 #define PetscFortranComplex complex(kind=selected_real_kind(10))
@@ -95,7 +95,7 @@
 #define PetscFortranFloat real*4
 #define PetscFortranDouble real*8
 #define PetscFortranLongDouble real*16
-#if defined(PETSC_USE_SINGLE)
+#if defined(PETSC_USE_SCALAR_SINGLE)
 #define PetscFortranComplex complex*8
 #else
 #define PetscFortranComplex complex*16
