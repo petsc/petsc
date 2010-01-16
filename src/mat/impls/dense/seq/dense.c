@@ -523,7 +523,7 @@ PetscErrorCode MatMultTranspose_SeqDense(Mat A,Vec xx,Vec yy)
   ierr = PetscLogFlops(2.0*A->rmap->n*A->cmap->n - A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#include <iostream>
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqDense"
 PetscErrorCode MatMult_SeqDense(Mat A,Vec xx,Vec yy)
@@ -531,6 +531,7 @@ PetscErrorCode MatMult_SeqDense(Mat A,Vec xx,Vec yy)
   Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
   PetscScalar    *v = mat->v,*x,*y,_DOne=1.0,_DZero=0.0;
   PetscErrorCode ierr;
+  PetscInt       i, j;
   PetscBLASInt   m, n, _One=1;
 
   PetscFunctionBegin;
@@ -555,9 +556,9 @@ PetscErrorCode MatMult_SeqDense(Mat A,Vec xx,Vec yy)
     delete [] y;
   }
 #else
-  for(int i = 0; i < m; ++i) {
+  for(i = 0; i < m; ++i) {
     y[i] = 0.0;
-    for(int j = 0; j < n; ++j) {
+    for(j = 0; j < n; ++j) {
       y[i] += v[i*n+j]*x[j];
     }
   }
