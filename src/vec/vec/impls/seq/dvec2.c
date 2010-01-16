@@ -21,9 +21,9 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
   Vec               *yy;
 
   PetscFunctionBegin;
-  sum0 = 0;
-  sum1 = 0;
-  sum2 = 0;
+  sum0 = 0.0;
+  sum1 = 0.0;
+  sum2 = 0.0;
 
   i      = nv;
   nv_rem = nv&0x3;
@@ -66,10 +66,10 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
   yy += nv_rem;
 
   while (i >0) {
-    sum0 = 0;
-    sum1 = 0;
-    sum2 = 0;
-    sum3 = 0;
+    sum0 = 0.;
+    sum1 = 0.;
+    sum2 = 0.;
+    sum3 = 0.;
     ierr = VecGetArray(yy[0],(PetscScalar**)&yy0);CHKERRQ(ierr);
     ierr = VecGetArray(yy[1],(PetscScalar**)&yy1);CHKERRQ(ierr);
     ierr = VecGetArray(yy[2],(PetscScalar**)&yy2);CHKERRQ(ierr);
@@ -104,9 +104,9 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
   Vec               *yy;
 
   PetscFunctionBegin;
-  sum0 = 0;
-  sum1 = 0;
-  sum2 = 0;
+  sum0 = 0.;
+  sum1 = 0.;
+  sum2 = 0.;
 
   i      = nv;
   nv_rem = nv&0x3;
@@ -229,10 +229,10 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
   yy += nv_rem;
 
   while (i >0) {
-    sum0 = 0;
-    sum1 = 0;
-    sum2 = 0;
-    sum3 = 0;
+    sum0 = 0.;
+    sum1 = 0.;
+    sum2 = 0.;
+    sum3 = 0.;
     ierr = VecGetArray(yy[0],(PetscScalar **)&yy0);CHKERRQ(ierr);
     ierr = VecGetArray(yy[1],(PetscScalar **)&yy1);CHKERRQ(ierr);
     ierr = VecGetArray(yy[2],(PetscScalar **)&yy2);CHKERRQ(ierr);
@@ -305,9 +305,9 @@ PetscErrorCode VecMTDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
   
   PetscFunctionBegin;
 
-  sum0 = 0;
-  sum1 = 0;
-  sum2 = 0;
+  sum0 = 0.;
+  sum1 = 0.;
+  sum2 = 0.;
 
   i      = nv;
   nv_rem = nv&0x3;
@@ -428,10 +428,10 @@ PetscErrorCode VecMTDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
   yy += nv_rem;
 
   while (i >0) {
-    sum0 = 0;
-    sum1 = 0;
-    sum2 = 0;
-    sum3 = 0;
+    sum0 = 0.;
+    sum1 = 0.;
+    sum2 = 0.;
+    sum3 = 0.;
     ierr = VecGetArray(yy[0],&yy0);CHKERRQ(ierr);
     ierr = VecGetArray(yy[1],&yy1);CHKERRQ(ierr);
     ierr = VecGetArray(yy[2],&yy2);CHKERRQ(ierr);

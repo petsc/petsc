@@ -427,7 +427,7 @@ static PetscErrorCode MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
                                 /* Switch on the size of Node */
     switch (nsz){               /* Each loop in 'case' is unrolled */
     case 1 :
-      sum1  = 0;
+      sum1  = 0.;
       
       for(n = 0; n< sz-1; n+=2) {
         i1   = idx[0];          /* The instructions are ordered to */
@@ -445,8 +445,8 @@ static PetscErrorCode MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
       y[row++]=sum1;
       break;
     case 2:
-      sum1  = 0;
-      sum2  = 0;
+      sum1  = 0.;
+      sum2  = 0.;
       v2    = v1 + n;
       
       for (n = 0; n< sz-1; n+=2) {
@@ -469,9 +469,9 @@ static PetscErrorCode MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
       idx    +=sz;
       break;
     case 3:
-      sum1  = 0;
-      sum2  = 0;
-      sum3  = 0;
+      sum1  = 0.;
+      sum2  = 0.;
+      sum3  = 0.;
       v2    = v1 + n;
       v3    = v2 + n;
       
@@ -498,10 +498,10 @@ static PetscErrorCode MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
       idx     +=2*sz;
       break;
     case 4:
-      sum1  = 0;
-      sum2  = 0;
-      sum3  = 0;
-      sum4  = 0;
+      sum1  = 0.;
+      sum2  = 0.;
+      sum3  = 0.;
+      sum4  = 0.;
       v2    = v1 + n;
       v3    = v2 + n;
       v4    = v3 + n;
@@ -532,11 +532,11 @@ static PetscErrorCode MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
       idx    +=3*sz;
       break;
     case 5:
-      sum1  = 0;
-      sum2  = 0;
-      sum3  = 0;
-      sum4  = 0;
-      sum5  = 0;
+      sum1  = 0.;
+      sum2  = 0.;
+      sum3  = 0.;
+      sum4  = 0.;
+      sum5  = 0.;
       v2    = v1 + n;
       v3    = v2 + n;
       v4    = v3 + n;

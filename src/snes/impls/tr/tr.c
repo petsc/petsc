@@ -362,8 +362,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_TR(SNES snes)
   neP->delta3		= 2.0;
   neP->sigma		= 0.0001;
   neP->itflag		= PETSC_FALSE;
-  neP->rnorm0		= 0;
-  neP->ttol		= 0;
+  neP->rnorm0		= 0.0;
+  neP->ttol		= 0.0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

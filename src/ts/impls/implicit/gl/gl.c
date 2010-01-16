@@ -129,7 +129,7 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
     /* gamma[0] (sigma in B,J,W 2007)
     *   e.sigma = glm.B(1,:)*e.xi + glm.V(1,2:end)*e.gamma;
     * */
-    scheme->gamma[0] = 0;
+    scheme->gamma[0] = 0.0;
     for (j=0; j<s; j++) scheme->gamma[0] += b[0*s+j]*scheme->stage_error[j];
     for (j=1; j<r; j++) scheme->gamma[0] += v[0*s+j]*scheme->gamma[j];
 
@@ -154,9 +154,9 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
         H[2+j*3] -= CPowF(c[j],k-1)*scheme->gamma[k];
       }
     }
-    bmat[0+0*ss] = 1;  bmat[0+1*ss] = 0;  bmat[0+2*ss] = 0;
-    bmat[1+0*ss] = 1;  bmat[1+1*ss] = 1;  bmat[1+2*ss] = 0;
-    bmat[2+0*ss] = 0;  bmat[2+1*ss] = 0;  bmat[2+2*ss] = -1;
+    bmat[0+0*ss] = 1.;  bmat[0+1*ss] = 0.;  bmat[0+2*ss] = 0.;
+    bmat[1+0*ss] = 1.;  bmat[1+1*ss] = 1.;  bmat[1+2*ss] = 0.;
+    bmat[2+0*ss] = 0.;  bmat[2+1*ss] = 0.;  bmat[2+2*ss] = -1.;
     m = 3;
     n = PetscBLASIntCast(s);
     ldb = PetscBLASIntCast(ss);
@@ -178,13 +178,13 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
     }
 
     /* the other part of the error estimator, psi in B,J,W 2007 */
-    scheme->psi[0*r+0] = 0;
-    scheme->psi[1*r+0] = 0;
-    scheme->psi[2*r+0] = 0;
+    scheme->psi[0*r+0] = 0.;
+    scheme->psi[1*r+0] = 0.;
+    scheme->psi[2*r+0] = 0.;
     for (j=1; j<r; j++) {
-      scheme->psi[0*r+j] = 0;
-      scheme->psi[1*r+j] = 0;
-      scheme->psi[2*r+j] = 0;
+      scheme->psi[0*r+j] = 0.;
+      scheme->psi[1*r+j] = 0.;
+      scheme->psi[2*r+j] = 0.;
       for (k=0; k<s; k++) {
         scheme->psi[0*r+j] -= CPowF(c[k],j-1)*scheme->phi[0*s+k];
         scheme->psi[1*r+j] -= CPowF(c[k],j-1)*scheme->phi[1*s+k];
@@ -363,16 +363,16 @@ static PetscErrorCode TSGLCompleteStep_RescaleAndModify(TSGLScheme sc,PetscReal 
   for (i=0; i<r; i++) {
     ierr = VecZeroEntries(X[i]);CHKERRQ(ierr);
     for (j=0; j<s; j++) {
-      brow[j] = h*(pow(ratio,i)*sc->b[i*s+j]
-                   + (pow(ratio,i) - pow(ratio,p+1))*(+ sc->alpha[i]*sc->phi[0*s+j])
-                   + (pow(ratio,i) - pow(ratio,p+2))*(+ sc->beta [i]*sc->phi[1*s+j]
+      brow[j] = h*(PetscPowScalar(ratio,i)*sc->b[i*s+j]
+                   + (PetscPowScalar(ratio,i) - PetscPowScalar(ratio,p+1))*(+ sc->alpha[i]*sc->phi[0*s+j])
+                   + (PetscPowScalar(ratio,i) - PetscPowScalar(ratio,p+2))*(+ sc->beta [i]*sc->phi[1*s+j]
                                                       + sc->gamma[i]*sc->phi[2*s+j]));
     }
     ierr = VecMAXPY(X[i],s,brow,Ydot);CHKERRQ(ierr);
     for (j=0; j<r; j++) {
-      vrow[j] = (pow(ratio,i)*sc->v[i*r+j]
-                 + (pow(ratio,i) - pow(ratio,p+1))*(+ sc->alpha[i]*sc->psi[0*r+j])
-                 + (pow(ratio,i) - pow(ratio,p+2))*(+ sc->beta [i]*sc->psi[1*r+j]
+      vrow[j] = (PetscPowScalar(ratio,i)*sc->v[i*r+j]
+                 + (PetscPowScalar(ratio,i) - PetscPowScalar(ratio,p+1))*(+ sc->alpha[i]*sc->psi[0*r+j])
+                 + (PetscPowScalar(ratio,i) - PetscPowScalar(ratio,p+2))*(+ sc->beta [i]*sc->psi[1*r+j]
                                                     + sc->gamma[i]*sc->psi[2*r+j]));
     }
     ierr = VecMAXPY(X[i],r,vrow,Xold);CHKERRQ(ierr);
@@ -380,9 +380,9 @@ static PetscErrorCode TSGLCompleteStep_RescaleAndModify(TSGLScheme sc,PetscReal 
   if (r < next_sc->r) {
     if (r+1 != next_sc->r) SETERRQ(PETSC_ERR_PLIB,"Cannot accommodate jump in r greater than 1");
     ierr = VecZeroEntries(X[r]);
-    for (j=0; j<s; j++) brow[j] = h*pow(ratio,p+1)*sc->phi[0*s+j];
+    for (j=0; j<s; j++) brow[j] = h*PetscPowScalar(ratio,p+1)*sc->phi[0*s+j];
     ierr = VecMAXPY(X[r],s,brow,Ydot);CHKERRQ(ierr);
-    for (j=0; j<r; j++) vrow[j] = pow(ratio,p+1)*sc->psi[0*r+j];
+    for (j=0; j<r; j++) vrow[j] = PetscPowScalar(ratio,p+1)*sc->psi[0*r+j];
     ierr = VecMAXPY(X[r],r,vrow,Xold);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -682,16 +682,15 @@ static PetscErrorCode TSGLUpdateWRMS(TS ts)
 #define __FUNCT__ "TSGLVecNormWRMS"
 static PetscErrorCode TSGLVecNormWRMS(TS ts,Vec X,PetscReal *nrm)
 {
-  TS_GL *gl = (TS_GL*)ts->data;
+  TS_GL          *gl = (TS_GL*)ts->data;
   PetscErrorCode ierr;
-  PetscScalar *x,*w,sum;
-  PetscInt n,i;
+  PetscScalar    *x,*w,sum = 0.0;
+  PetscInt       n,i;
 
   PetscFunctionBegin;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(gl->W,&w);CHKERRQ(ierr);
   ierr = VecGetLocalSize(gl->W,&n);CHKERRQ(ierr);
-  sum = 0;
   for (i=0; i<n; i++) {
     sum += PetscAbsScalar(PetscSqr(x[i]*w[i]));
   }

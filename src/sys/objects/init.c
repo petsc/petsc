@@ -39,6 +39,10 @@ PetscScalar   PETSC_DLLEXPORT PETSC_i = 0.0;
 #endif
 MPI_Datatype  PETSC_DLLEXPORT MPIU_2SCALAR = 0;
 MPI_Datatype  PETSC_DLLEXPORT MPIU_2INT = 0;
+
+#if defined(PETSC_USE_SCALAR_QD_DD)
+MPI_Datatype  PETSC_DLLEXPORT MPIU_QD_DD;
+#endif
 /*
      These are needed by petscbt.h
 */

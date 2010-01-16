@@ -54,7 +54,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawCreate(MPI_Comm comm,const char display[
   draw->y       = y;
   draw->w       = w;
   draw->h       = h;
-  draw->pause   = 0;
+  draw->pause   = 0.0;
   draw->coor_xl = 0.0;  
   draw->coor_xr = 1.0;
   draw->coor_yl = 0.0;  

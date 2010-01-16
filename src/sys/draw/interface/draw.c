@@ -372,7 +372,7 @@ PetscErrorCode PetscDrawCreate_Null(PetscDraw draw)
   ierr = PetscMemzero(draw->ops,sizeof(struct _PetscDrawOps));CHKERRQ(ierr);
   draw->ops->destroy = PetscDrawDestroy_Null;
   draw->ops->view    = 0;
-  draw->pause   = 0;
+  draw->pause   = 0.0;
   draw->coor_xl = 0.0;  draw->coor_xr = 1.0;
   draw->coor_yl = 0.0;  draw->coor_yr = 1.0;
   draw->port_xl = 0.0;  draw->port_xr = 1.0;

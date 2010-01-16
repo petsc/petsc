@@ -526,7 +526,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
       break;
 
     default:
-      norm_r = 0;
+      norm_r = 0.;
       break;
     }
 

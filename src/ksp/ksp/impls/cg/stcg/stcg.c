@@ -196,7 +196,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     ksp->reason = KSP_DIVERGED_NAN;
     ierr = PetscInfo1(ksp, "KSPSolve_STCG: bad preconditioner: rz=%g\n", rz);CHKERRQ(ierr);
 
-    if (cg->radius) {
+    if (cg->radius != 0) {
       if (r2 >= rr) {
         alpha = 1.0;
         cg->norm_d = sqrt(rr);
@@ -232,7 +232,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
     ierr = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", rz);CHKERRQ(ierr);
 
-    if (cg->radius) {
+    if (cg->radius != 0.0) {
       if (r2 >= rr) {
         alpha = 1.0;
         cg->norm_d = sqrt(rr);
@@ -366,7 +366,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
     ierr = PetscInfo1(ksp, "KSPSolve_STCG: negative curvature: kappa=%g\n", kappa);CHKERRQ(ierr);
 
-    if (cg->radius && norm_p > 0.0) {
+    if (cg->radius != 0.0 && norm_p > 0.0) {
       /***********************************************************************/
       /* Follow direction of negative curvature to the boundary of the       */
       /* trust region.                                                       */
@@ -383,7 +383,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 
       cg->o_fcn += step * (0.5 * step * kappa - rz);
     }
-    else if (cg->radius) {
+    else if (cg->radius != 0.0) {
       /***********************************************************************/
       /* The norm of the preconditioned direction is zero; use the gradient  */
       /* step.                                                               */
@@ -433,7 +433,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     /*************************************************************************/
 
     norm_dp1 = norm_d + alpha*(2.0*dMp + alpha*norm_p);
-    if (cg->radius && norm_dp1 >= r2) {
+    if (cg->radius != 0.0 && norm_dp1 >= r2) {
       /***********************************************************************/
       /* In this case, the matrix is positive definite as far as we know.    */
       /* However, the full step goes beyond the trust region.                */
@@ -526,7 +526,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
       break;
 
     default:
-      norm_r = 0;
+      norm_r = 0.0;
       break;
     }
 
@@ -609,7 +609,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
       ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
       ierr = PetscInfo1(ksp, "KSPSolve_STCG: negative curvature: kappa=%g\n", kappa);CHKERRQ(ierr);
 
-      if (cg->radius && norm_p > 0.0) {
+      if (cg->radius != 0.0 && norm_p > 0.0) {
 	/*********************************************************************/
 	/* Follow direction of negative curvature to boundary.               */
 	/*********************************************************************/
@@ -625,7 +625,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 
         cg->o_fcn += step * (0.5 * step * kappa - rz);
       }
-      else if (cg->radius) {
+      else if (cg->radius != 0.0) {
 	/*********************************************************************/
 	/* The norm of the direction is zero; there is nothing to follow.    */
 	/*********************************************************************/
