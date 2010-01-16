@@ -1127,7 +1127,7 @@ PetscErrorCode PCSetFromOptions_PFMG(PC pc)
 {
   PetscErrorCode ierr;
   PC_PFMG        *ex = (PC_PFMG*) pc->data;
-  PetscTruth     flg;
+  PetscTruth     flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("PFMG options");CHKERRQ(ierr);
