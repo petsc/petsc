@@ -144,7 +144,7 @@
 !
       integer MPIU_SCALAR 
 #if defined(PETSC_USE_COMPLEX)
-#if defined (PETSC_USE_SINGLE)
+#if defined (PETSC_USE_SCALAR_SINGLE)
       parameter(MPIU_SCALAR = MPI_COMPLEX)
 #else
       parameter(MPIU_SCALAR = MPI_DOUBLE_COMPLEX)
