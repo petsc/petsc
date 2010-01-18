@@ -175,6 +175,18 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     if (!osm->is){ /* create the index sets */
       ierr = PCASMCreateSubdomains(pc->pmat,osm->n_local_true,&osm->is);CHKERRQ(ierr);
     }
+    if (osm->n_local_true > 1 && !osm->is_local) {
+      ierr = PetscMalloc(osm->n_local_true*sizeof(IS),&osm->is_local);CHKERRQ(ierr);
+      for (i=0; i<osm->n_local_true; i++) {
+        if (osm->overlap > 0) { /* With positive overlap, osm->is[i] will be modified */
+          ierr = ISDuplicate(osm->is[i],&osm->is_local[i]);CHKERRQ(ierr);
+          ierr = ISCopy(osm->is[i],osm->is_local[i]);CHKERRQ(ierr);
+        } else {
+          ierr = PetscObjectReference((PetscObject)osm->is[i]);CHKERRQ(ierr);
+          osm->is_local[i] = osm->is[i];
+        }
+      }
+    }
     ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
     flg  = PETSC_FALSE;
     ierr = PetscOptionsGetTruth(prefix,"-pc_asm_print_subdomains",&flg,PETSC_NULL);CHKERRQ(ierr);
@@ -208,23 +220,25 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       ierr = ISDestroy(isl);CHKERRQ(ierr);
       ierr = VecDuplicate(osm->x[i],&osm->y[i]);CHKERRQ(ierr);
       if (osm->is_local) {
-        IS              isShift;
-        const PetscInt *idx_local;
-        PetscInt       *idx, j;
+        ISLocalToGlobalMapping ltog;
+        IS                     isll;
+        const PetscInt         *idx_local;
+        PetscInt               *idx,nout;
 
+        ierr = ISLocalToGlobalMappingCreateIS(osm->is[i],&ltog);CHKERRQ(ierr);
         ierr = ISGetLocalSize(osm->is_local[i],&m_local);CHKERRQ(ierr);
         ierr = ISGetIndices(osm->is_local[i], &idx_local);CHKERRQ(ierr);
-        ierr = PetscMalloc(m*sizeof(PetscInt), &idx);CHKERRQ(ierr);
-        for(j = 0; j < m_local; ++j) {
-          idx[j] = idx_local[j] - firstRow;
-        }
+        ierr = PetscMalloc(m_local*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+        ierr = ISGlobalToLocalMappingApply(ltog,IS_GTOLM_DROP,m_local,idx_local,&nout,idx);CHKERRQ(ierr);
+        ierr = ISLocalToGlobalMappingDestroy(ltog);CHKERRQ(ierr);
+        if (nout != m_local) SETERRQ(PETSC_ERR_PLIB,"is_local not a subset of is");
         ierr = ISRestoreIndices(osm->is_local[i], &idx_local);CHKERRQ(ierr);
-        ierr = ISCreateGeneral(PETSC_COMM_SELF,m_local,idx,&isShift);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(PETSC_COMM_SELF,m_local,idx,&isll);CHKERRQ(ierr);
         ierr = PetscFree(idx);CHKERRQ(ierr);
         ierr = ISCreateStride(PETSC_COMM_SELF,m_local,0,1,&isl);CHKERRQ(ierr);
         ierr = VecCreateSeq(PETSC_COMM_SELF,m_local,&osm->y_local[i]);CHKERRQ(ierr);
-        ierr = VecScatterCreate(osm->y[i],isShift,osm->y_local[i],isl,&osm->localization[i]);CHKERRQ(ierr);
-        ierr = ISDestroy(isShift);CHKERRQ(ierr);
+        ierr = VecScatterCreate(osm->y[i],isll,osm->y_local[i],isl,&osm->localization[i]);CHKERRQ(ierr);
+        ierr = ISDestroy(isll);CHKERRQ(ierr);
 
         ierr = VecScatterCreate(vec,osm->is_local[i],osm->y_local[i],isl,&osm->prolongation[i]);CHKERRQ(ierr);
         ierr = ISDestroy(isl);CHKERRQ(ierr);
