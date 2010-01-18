@@ -982,8 +982,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecResetArray(Vec vec)
   Use VecLoad() to create the vector as the values are read in
 
   If using HDF5, you must assign the Vec the same name as was used in the Vec that was stored
-  in the file using PetscObjectSetName(). Otherwise you will get the error message:
-  "Cannot H5Dopen2() with Vec named NAMEOFOBJECT"
+  in the file using PetscObjectSetName(). Otherwise you will get the error message
+$     Cannot H5Dopen2() with Vec named NAMEOFOBJECT
 
   Notes for advanced users:
   Most users should not need to know the details of the binary storage
