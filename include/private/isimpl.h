@@ -21,6 +21,7 @@ struct _ISOps {
   PetscErrorCode (*destroy)(IS);
   PetscErrorCode (*view)(IS,PetscViewer);
   PetscErrorCode (*identity)(IS,PetscTruth*);
+  PetscErrorCode (*copy)(IS,IS);
 };
 
 struct _p_IS {

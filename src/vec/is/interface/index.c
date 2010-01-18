@@ -476,11 +476,15 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSorted(IS is,PetscTruth *flg)
    Output Parameters:
 .  isnew - the copy of the index set
 
+   Notes:
+   ISDuplicate() does not copy the index set, but rather allocates storage
+   for the new one.  Use ISCopy() to copy an index set.
+
    Level: beginner
 
    Concepts: index sets^duplicating
 
-.seealso: ISCreateGeneral()
+.seealso: ISCreateGeneral(), ISCopy()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT ISDuplicate(IS is,IS *newIS)
 {
@@ -493,6 +497,41 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISDuplicate(IS is,IS *newIS)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "ISCopy"
+/*@
+   ISCopy - Copies an index set.
+
+   Collective on IS
+
+   Input Parmeters:
+.  is - the index set
+
+   Output Parameters:
+.  isy - the copy of the index set
+
+   Level: beginner
+
+   Concepts: index sets^copying
+
+.seealso: ISDuplicate()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT ISCopy(IS is,IS isy)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidHeaderSpecific(isy,IS_COOKIE,2);
+  PetscCheckSameComm(is,1,isy,2);
+  if (is == isy) PetscFunctionReturn(0);
+  ierr = (*is->ops->copy)(is,isy);CHKERRQ(ierr);
+  isy->isperm     = is->isperm;
+  isy->max        = is->max;
+  isy->min        = is->min;
+  isy->isidentity = is->isidentity;
+  PetscFunctionReturn(0);
+}
 
 /*MC
     ISGetIndicesF90 - Accesses the elements of an index set from Fortran90.
