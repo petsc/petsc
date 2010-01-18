@@ -511,7 +511,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetLocalSubdomains_ASM(PC pc,PetscInt n,I
   PetscFunctionBegin;
   if (n < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Each process must have 1 or more blocks, n = %D",n);
   if (pc->setupcalled && (n != osm->n_local_true || is)) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"PCASMSetLocalSubdomains() should be called before calling PCSetup().");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"PCASMSetLocalSubdomains() should be called before calling PCSetUp().");
   }
   if (!pc->setupcalled) {
     if (is) {
@@ -554,13 +554,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetTotalSubdomains_ASM(PC pc,PetscInt N,I
   if (is) SETERRQ(PETSC_ERR_SUP,"Use PCASMSetLocalSubdomains() to set specific index sets\n\they cannot be set globally yet.");
 
   /*
-     Split the subdomains equally amoung all processors 
+     Split the subdomains equally among all processors
   */
   ierr = MPI_Comm_rank(((PetscObject)pc)->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
   n = N/size + ((N % size) > rank);
   if (!n) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Process %d must have at least one block: total processors %d total blocks %D",(int)rank,(int)size,N);
-  if (pc->setupcalled && n != osm->n_local_true) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"PCASMSetTotalSubdomains() should be called before PCSetup().");
+  if (pc->setupcalled && n != osm->n_local_true) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"PCASMSetTotalSubdomains() should be called before PCSetUp().");
   if (!pc->setupcalled) {
     if (osm->is) {
       ierr = PCASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local);CHKERRQ(ierr);
@@ -582,7 +582,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetOverlap_ASM(PC pc,PetscInt ovl)
 
   PetscFunctionBegin;
   if (ovl < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap value requested");
-  if (pc->setupcalled && ovl != osm->overlap) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"PCASMSetOverlap() should be called before PCSetup().");
+  if (pc->setupcalled && ovl != osm->overlap) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"PCASMSetOverlap() should be called before PCSetUp().");
   if (!pc->setupcalled) {
     osm->overlap = ovl;
   }
@@ -668,9 +668,6 @@ EXTERN_C_END
     The IS numbering is in the parallel, global numbering of the vector.
 
     By default the ASM preconditioner uses 1 block per processor.  
-
-    These index sets cannot be destroyed until after completion of the
-    linear solves for which the ASM preconditioner is being used.
 
     Use PCASMSetTotalSubdomains() to set the subdomains for all processors.
 
