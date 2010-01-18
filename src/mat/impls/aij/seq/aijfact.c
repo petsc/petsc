@@ -3060,58 +3060,6 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const Mat
   PetscFunctionReturn(0); 
 }
 
-#if defined(OLD_ROUTINE_TO_BE_REPLACED)
-#undef __FUNCT__
-#define __FUNCT__ "MatSolve_SeqAIJ_NaturalOrdering_newdatastruct"
-PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
-{
-  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode    ierr;
-  PetscInt          n = A->rmap->n;
-  const PetscInt    *ai = a->i,*aj = a->j,*vi;
-  PetscScalar       *x,sum;
-  const PetscScalar *b;
-  const MatScalar   *aa = a->a,*v;
-  PetscInt          i,nz;
-
-  PetscFunctionBegin;
-  if (!n) PetscFunctionReturn(0);
-
-  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-
-  /* forward solve the lower triangular */
-  x[0] = b[0];
-  v    = aa;
-  vi   = aj;
-  for (i=1; i<n; i++) {
-    nz  = ai[i+1] - ai[i];
-    sum = b[i];
-    PetscSparseDenseMinusDot(sum,x,v,vi,nz);
-    v  += nz;
-    vi += nz;
-    x[i] = sum;
-  }
-  
-  /* backward solve the upper triangular */
-  v   = aa + ai[n+1];
-  vi  = aj + ai[n+1];
-  for (i=n-1; i>=0; i--){
-    nz = ai[2*n-i +1] - ai[2*n-i]-1;
-    sum = x[i];
-    PetscSparseDenseMinusDot(sum,x,v,vi,nz);
-    v   += nz;
-    vi  += nz; vi++; 
-    x[i] = *v++ *sum; /* x[i]=aa[adiag[i]]*sum; v++; */
-  }
-
-  ierr = PetscLogFlops(2.0*a->nz - A->cmap->n);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#endif
-
 #undef __FUNCT__
 #define __FUNCT__ "MatSolve_SeqAIJ_NaturalOrdering_newdatastruct"
 PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
@@ -3159,65 +3107,6 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#if defined(OLD_ROUTINE_TO_BE_REPLACED)
-#undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqAIJ_newdatastruct"
-PetscErrorCode MatSolve_SeqAIJ_newdatastruct(Mat A,Vec bb,Vec xx)
-{
-  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
-  IS                iscol = a->col,isrow = a->row;
-  PetscErrorCode    ierr;
-  PetscInt          i,n=A->rmap->n,*vi,*ai=a->i,*aj=a->j,nz,k;
-  const PetscInt    *rout,*cout,*r,*c;
-  PetscScalar       *x,*tmp,*tmps,sum;
-  const PetscScalar *b;
-  const MatScalar   *aa = a->a,*v;
-
-  PetscFunctionBegin;
-  if (!n) PetscFunctionReturn(0);
-
-  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr); 
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  tmp  = a->solve_work;
-
-  ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
-  ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout; 
-
-  /* forward solve the lower triangular */
-  tmp[0] = b[*r++];
-  tmps   = tmp;
-  v      = aa;
-  vi     = aj;
-  for (i=1; i<n; i++) {
-    nz  = ai[i+1] - ai[i];
-    sum = b[*r++];
-    PetscSparseDenseMinusDot(sum,tmps,v,vi,nz); 
-    tmp[i] = sum;
-    v += nz; vi += nz;
-  }
-
-  /* backward solve the upper triangular */
-  k  = n+1; 
-  v  = aa + ai[k]; /* 1st entry of U(n-1,:) */
-  vi = aj + ai[k];
-  for (i=n-1; i>=0; i--){
-    k  = 2*n-i; 
-    nz = ai[k +1] - ai[k] - 1;
-    sum = tmp[i];
-    PetscSparseDenseMinusDot(sum,tmps,v,vi,nz); 
-    x[c[i]] = tmp[i] = sum*v[nz]; /* v[nz] = aa[adiag[i]] */
-    v += nz+1; vi += nz+1;
-  }
-
-  ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr); 
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*a->nz - A->cmap->n);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqAIJ_newdatastruct"

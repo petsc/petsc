@@ -216,7 +216,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_newdatastruct(Mat B,
   ierr = PetscFree2(rtmp,mwork);CHKERRQ(ierr);
 
   C->ops->solve          = MatSolve_SeqBAIJ_2_NaturalOrdering_newdatastruct;
-  /* C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_2; */
+  C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_2_NaturalOrdering_newdatastruct;
   C->assembled = PETSC_TRUE;
   ierr = PetscLogFlops(1.3333*bs2*n);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
@@ -1191,63 +1191,6 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
   PetscFunctionReturn(0);
 }
 
-/* --------------------------------------------------------- */
-#if defined(OLD_ROUTINE_TO_BE_REPLACED)
-#undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct"
-PetscErrorCode MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
-{
-  Mat_SeqBAIJ    *a=(Mat_SeqBAIJ *)A->data;
-  PetscErrorCode ierr;
-  const PetscInt *ai=a->i,*aj=a->j,*vi;
-  PetscInt       i,k,n=a->mbs;
-  PetscInt       nz,bs=A->rmap->bs,bs2=a->bs2,*adiag=a->diag;
-  MatScalar      *aa=a->a,*v;
-  PetscScalar    *x,*b,*s,*t,*ls;
-
-  PetscFunctionBegin;
-  /* printf("MatSolve_SeqBAIJ_NaturalOrdering_iludt..bs %d\n",bs); */
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  t  = a->solve_work;
-
-  /* forward solve the lower triangular */
-  ierr = PetscMemcpy(t,b,bs*sizeof(PetscScalar));CHKERRQ(ierr); /* copy 1st block of b to t */
-
-  for (i=1; i<n; i++) {
-    v   = aa + bs2*ai[i];
-    vi  = aj + ai[i];
-    nz = ai[i+1] - ai[i];
-    s = t + bs*i;
-    ierr = PetscMemcpy(s,b+bs*i,bs*sizeof(PetscScalar));CHKERRQ(ierr); /* copy i_th block of b to t */
-    for(k=0;k<nz;k++){
-      Kernel_v_gets_v_minus_A_times_w(bs,s,v,t+bs*vi[k]);
-      v += bs2;
-    }
-  }
-  
-  /* backward solve the upper triangular */
-  ls = a->solve_work + A->cmap->n;
-  for (i=n-1; i>=0; i--){
-    v  = aa + bs2*ai[2*n-i];
-    vi = aj + ai[2*n-i];
-    nz = ai[2*n-i +1] - ai[2*n-i]-1;
-    ierr = PetscMemcpy(ls,t+i*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
-    for(k=0;k<nz;k++){
-      Kernel_v_gets_v_minus_A_times_w(bs,ls,v,t+bs*vi[k]);
-      v += bs2;
-    }
-    Kernel_w_gets_A_times_v(bs,ls,aa+bs2*adiag[i],t+i*bs); /* *inv(diagonal[i]) */
-    ierr = PetscMemcpy(x+i*bs,t+i*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
-  }
-  
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2.0*(a->bs2)*(a->nz) - A->rmap->bs*A->cmap->n);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#endif
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct"
 PetscErrorCode MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
@@ -1300,66 +1243,6 @@ PetscErrorCode MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec
   ierr = PetscLogFlops(2.0*(a->bs2)*(a->nz) - A->rmap->bs*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#if defined(OLD_ROUTINE_TO_BE_REPLACED)
-#undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqBAIJ_N_newdatastruct"
-PetscErrorCode MatSolve_SeqBAIJ_N_newdatastruct(Mat A,Vec bb,Vec xx)
-{
-  Mat_SeqBAIJ    *a=(Mat_SeqBAIJ *)A->data;
-  IS             iscol=a->col,isrow=a->row;
-  PetscErrorCode ierr;
-  const PetscInt *r,*c,*rout,*cout,*ai=a->i,*aj=a->j,*vi;
-  PetscInt       i,m,n=a->mbs;
-  PetscInt       nz,bs=A->rmap->bs,bs2=a->bs2,k;
-  MatScalar      *aa=a->a,*v;
-  PetscScalar    *x,*b,*s,*t,*ls;
-
-  PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  t  = a->solve_work;
-
-  ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
-  ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout;
-
-  /* forward solve the lower triangular */
-  ierr = PetscMemcpy(t,b+bs*r[0],bs*sizeof(PetscScalar));CHKERRQ(ierr);
-  for (i=1; i<n; i++) {
-    v   = aa + bs2*ai[i];
-    vi  = aj + ai[i];
-    nz = ai[i+1] - ai[i];
-    s = t + bs*i;
-    ierr = PetscMemcpy(s,b+bs*r[i],bs*sizeof(PetscScalar));CHKERRQ(ierr);
-    for(m=0;m<nz;m++){
-      Kernel_v_gets_v_minus_A_times_w(bs,s,v,t+bs*vi[m]);
-      v += bs2;
-    }
-  }
-
-  /* backward solve the upper triangular */
-  ls = a->solve_work + A->cmap->n;
-  for (i=n-1; i>=0; i--){
-    k  = 2*n-i;
-    v  = aa + bs2*ai[k];
-    vi = aj + ai[k];
-    nz = ai[k+1] - ai[k] - 1;
-    ierr = PetscMemcpy(ls,t+i*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
-    for(m=0;m<nz;m++){
-      Kernel_v_gets_v_minus_A_times_w(bs,ls,v,t+bs*vi[m]);
-      v += bs2;
-    }
-    Kernel_w_gets_A_times_v(bs,ls,v,t+i*bs); /* *inv(diagonal[i]) */
-    ierr = PetscMemcpy(x + bs*c[i],t+i*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
-  }
-  ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2.0*(a->bs2)*(a->nz) - A->rmap->bs*A->cmap->n);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqBAIJ_N_newdatastruct"
