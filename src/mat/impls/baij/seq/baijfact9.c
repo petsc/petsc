@@ -312,7 +312,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_newdatastruct(Mat B,Mat A,const MatF
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   C->ops->solve          = MatSolve_SeqBAIJ_5_newdatastruct;
-  /* C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_5; */
+  C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_5_newdatastruct;
   C->assembled = PETSC_TRUE;
   ierr = PetscLogFlops(1.3333*bs2*n);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
