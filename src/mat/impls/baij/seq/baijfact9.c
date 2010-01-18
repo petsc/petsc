@@ -583,7 +583,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering_newdatastruct(Mat B,
   }
   ierr = PetscFree2(rtmp,mwork);CHKERRQ(ierr);
   C->ops->solve          = MatSolve_SeqBAIJ_5_NaturalOrdering_newdatastruct;
-  /* C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_5_NaturalOrdering; */
+  C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_5_NaturalOrdering_newdatastruct;
   C->assembled = PETSC_TRUE;
   ierr = PetscLogFlops(1.3333*bs2*n);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
