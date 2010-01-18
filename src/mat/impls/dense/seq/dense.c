@@ -1867,7 +1867,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
 +  comm - MPI communicator, set to PETSC_COMM_SELF
 .  m - number of rows
 .  n - number of columns
--  data - optional location of matrix data.  Set data=PETSC_NULL for PETSc
+-  data - optional location of matrix data in column major order.  Set data=PETSC_NULL for PETSc
    to control all matrix memory allocation.
 
    Output Parameter:
