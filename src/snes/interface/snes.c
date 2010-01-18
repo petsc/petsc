@@ -957,14 +957,14 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate(MPI_Comm comm,SNES *outsnes)
   kctx->version     = 2;
   kctx->rtol_0      = .3; /* Eisenstat and Walker suggest rtol_0=.5, but 
                              this was too large for some test cases */
-  kctx->rtol_last   = 0;
+  kctx->rtol_last   = 0.0;
   kctx->rtol_max    = .9;
   kctx->gamma       = 1.0;
   kctx->alpha       = .5*(1.0 + sqrt(5.0));
   kctx->alpha2      = kctx->alpha;
   kctx->threshold   = .1;
-  kctx->lresid_last = 0;
-  kctx->norm_last   = 0;
+  kctx->lresid_last = 0.0;
+  kctx->norm_last   = 0.0;
 
   *outsnes = snes;
   ierr = PetscPublishAll(snes);CHKERRQ(ierr);

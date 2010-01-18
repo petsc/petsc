@@ -141,8 +141,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGReset(PetscDrawHG hist)
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
   hist->xmin      = PETSC_MAX;
   hist->xmax      = PETSC_MIN;
-  hist->ymin      = 0;
-  hist->ymax      = 0;
+  hist->ymin      = 0.0;
+  hist->ymax      = 0.0;
   hist->numValues = 0;
   PetscFunctionReturn(0);
 }
@@ -299,7 +299,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGDraw(PetscDrawHG hist)
   if (xmin == xmax) {
     /* Calculate number of points in each bin */
     bins    = hist->bins;
-    bins[0] = 0;
+    bins[0] = 0.;
     for(p = 0; p < numValues; p++) {
       if (values[p] == xmin) bins[0]++;
       mean += values[p];
@@ -325,7 +325,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGDraw(PetscDrawHG hist)
     binLeft   = xmin;
     binRight  = xmax;
     ierr = PetscDrawRectangle(draw,binLeft,ymin,binRight,bins[0],bcolor,bcolor,bcolor,bcolor);CHKERRQ(ierr);
-    if (color == PETSC_DRAW_ROTATE && bins[0]) bcolor++; if (bcolor > 31) bcolor = 2;
+    if (color == PETSC_DRAW_ROTATE && bins[0] != 0.0) bcolor++; if (bcolor > 31) bcolor = 2;
     ierr = PetscDrawLine(draw,binLeft,ymin,binLeft,bins[0],PETSC_DRAW_BLACK);CHKERRQ(ierr);
     ierr = PetscDrawLine(draw,binRight,ymin,binRight,bins[0],PETSC_DRAW_BLACK);CHKERRQ(ierr);
     ierr = PetscDrawLine(draw,binLeft,bins[0],binRight,bins[0],PETSC_DRAW_BLACK);CHKERRQ(ierr);
@@ -344,7 +344,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGDraw(PetscDrawHG hist)
     bins    = hist->bins;
 
     ierr = PetscMemzero(bins, numBins * sizeof(PetscReal));CHKERRQ(ierr);
-    maxHeight = 0;
+    maxHeight = 0.0;
     for (i = 0; i < numBins; i++) {
       binLeft   = xmin + binSize*i;
       binRight  = xmin + binSize*(i+1);
@@ -425,7 +425,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGPrint(PetscDrawHG hist)
   if (xmax == xmin) {
     /* Calculate number of points in the bin */
     bins    = hist->bins;
-    bins[0] = 0;
+    bins[0] = 0.;
     for(p = 0; p < numValues; p++) {
       if (values[p] == xmin) bins[0]++;
       mean += values[p];

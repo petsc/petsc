@@ -998,7 +998,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetHHistory(Mat J,PetscScalar history[]
   PetscFunctionBegin;
   ctx->historyh    = history;
   ctx->maxcurrenth = nhistory;
-  ctx->currenth    = 0;
+  ctx->currenth    = 0.;
   PetscFunctionReturn(0);
 }
 

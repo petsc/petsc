@@ -214,7 +214,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
     /* In place ILU only makes sense with fill factor of 1.0 because 
        cannot have levels of fill */
     ((PC_Factor*)ilu)->info.fill          = 1.0;
-    ((PC_Factor*)ilu)->info.diagonal_fill = 0;
+    ((PC_Factor*)ilu)->info.diagonal_fill = 0.0;
     ierr = MatILUFactor(pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info);CHKERRQ(ierr);
     CHKMEMQ;
     ((PC_Factor*)ilu)->fact = pc->pmat;
@@ -395,7 +395,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC pc)
 
   ((PC_Factor*)ilu)->fact                    = 0;
   ierr = MatFactorInfoInitialize(&((PC_Factor*)ilu)->info);CHKERRQ(ierr);
-  ((PC_Factor*)ilu)->info.levels             = 0;
+  ((PC_Factor*)ilu)->info.levels             = 0.;
   ((PC_Factor*)ilu)->info.fill               = 1.0; 
   ilu->col                     = 0;
   ilu->row                     = 0;
@@ -413,7 +413,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC pc)
   ((PC_Factor*)ilu)->info.pivotinblocks      = 1.0;
   ((PC_Factor*)ilu)->info.shiftinblocks      = 1.e-12;
   ilu->reusefill               = PETSC_FALSE;
-  ((PC_Factor*)ilu)->info.diagonal_fill      = 0;
+  ((PC_Factor*)ilu)->info.diagonal_fill      = 0.;
   pc->data                     = (void*)ilu;
 
   pc->ops->destroy             = PCDestroy_ILU;

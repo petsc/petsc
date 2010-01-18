@@ -1041,7 +1041,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     PetscFunctionReturn(0);
   }
 
-  norm_t = 0;
+  norm_t = 0.;
   for (i = 0; i < t_size; ++i) {
     norm_t += t_soln[i] * t_soln[i];
   }
@@ -1196,7 +1196,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
       /* Modify lambda.                                                      */
       /***********************************************************************/
 
-      norm_w = 0;
+      norm_w = 0.;
       for (j = 0; j < t_size; ++j) {
 	norm_w += t_soln[j] * e_rwrk[j];
       }
@@ -1255,7 +1255,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 	PetscFunctionReturn(0);
       }
 
-      norm_t = 0;
+      norm_t = 0.;
       for (j = 0; j < t_size; ++j) {
 	norm_t += t_soln[j] * t_soln[j];
       }

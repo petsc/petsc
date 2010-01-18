@@ -498,7 +498,7 @@ PetscErrorCode PetscADefLabel(PetscReal val,PetscReal sep,char **p)
 	    val = 0.0;
 	    w   = d;
         }
-	else if (!val) w   = d;
+	else if (val == 0.0) w   = d;
 	else w = (int)(ceil(log10(PetscAbsReal(val))) + d);
 	if (w < 1)   w ++;
 	if (val < 0) w ++;
@@ -597,7 +597,7 @@ static PetscErrorCode PetscMod(PetscReal x,PetscReal y,PetscReal *result)
 
   PetscFunctionBegin;
   if (y == 1) {
-    *result = 0;
+    *result = 0.0;
     PetscFunctionReturn(0);
   }
   i   = ((int)x) / ((int)y);

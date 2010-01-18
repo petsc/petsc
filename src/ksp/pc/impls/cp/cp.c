@@ -49,7 +49,7 @@ static PetscErrorCode PCSetUp_CP(PC pc)
   for (i=0; i<aij->nz; i++) {
     colcnt[aij->j[i]]++;
   }
-  cp->i[0] = 0;
+  cp->i[0] = 0.;
   for (i=0; i<cp->n; i++) {
     cp->i[i+1] = cp->i[i] + colcnt[i];
   }
@@ -64,7 +64,7 @@ static PetscErrorCode PCSetUp_CP(PC pc)
 
   /* compute sum of squares of each column d[] */
   for (i=0; i<cp->n; i++) {  /* over columns */
-    cp->d[i] = 0;
+    cp->d[i] = 0.;
     for (j=cp->i[i]; j<cp->i[i+1]; j++) { /* over rows in column */
       cp->d[i] += cp->a[j]*cp->a[j];
     }
@@ -88,7 +88,7 @@ static PetscErrorCode PCApply_CP(PC pc,Vec bb,Vec xx)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
 
   for (i=0; i<cp->n; i++) {  /* over columns */
-    xt = 0;
+    xt = 0.;
     for (j=cp->i[i]; j<cp->i[i+1]; j++) { /* over rows in column */
         xt   += cp->a[j]*b[cp->j[j]]; 
     }
@@ -99,7 +99,7 @@ static PetscErrorCode PCApply_CP(PC pc,Vec bb,Vec xx)
     }
   }
   for (i=cp->n-1; i>-1; i--) {  /* over columns */
-    xt = 0;
+    xt = 0.;
     for (j=cp->i[i]; j<cp->i[i+1]; j++) { /* over rows in column */
         xt   += cp->a[j]*b[cp->j[j]]; 
     }

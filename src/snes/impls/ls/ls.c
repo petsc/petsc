@@ -64,7 +64,7 @@ PetscErrorCode SNESLSCheckResidual_Private(SNES snes,Mat A,Vec F,Vec X,Vec W1,Ve
     ierr = MatMultTranspose(A,W1,W2);CHKERRQ(ierr);
     ierr = VecNorm(W1,NORM_2,&a1);CHKERRQ(ierr);
     ierr = VecNorm(W2,NORM_2,&a2);CHKERRQ(ierr);
-    if (a1) {
+    if (a1 != 0.0) {
       ierr = PetscInfo1(snes,"||J^T(F-Ax)||/||F-AX|| %G near zero implies inconsistent rhs\n",a2/a1);CHKERRQ(ierr);
     }
   }
@@ -154,7 +154,7 @@ PetscErrorCode SNESSolve_LS(SNES snes)
 
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
-  snes->norm = 0;
+  snes->norm = 0.0;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
   if (snes->domainerror) {
@@ -533,7 +533,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchCubic(SNES snes,void *lsctx,Vec
   *flag   = PETSC_TRUE;
 
   ierr = VecNorm(y,NORM_2,ynorm);CHKERRQ(ierr);
-  if (!*ynorm) {
+  if (*ynorm == 0.0) {
     ierr = PetscInfo(snes,"Search direction and size is 0\n");CHKERRQ(ierr);
     *gnorm = fnorm;
     ierr   = VecCopy(x,w);CHKERRQ(ierr);

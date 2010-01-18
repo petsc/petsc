@@ -12,7 +12,7 @@ MANSEC           = SNES
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex5s.c ex6.c \
                    ex14.c ex18.c ex19.c ex20.c ex21.c ex22.c \
                    ex23.c ex24.c ex25.c ex26.c ex27.c ex29.c ex30.c ex31.c ex38.c ex42.c ex43.c \
-                   ex44.c ex45.c ex47.c
+                   ex44.c ex45.c ex47.c ex48.c
 EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5fs.F ex33f.F mex34f90.F ex34f90.F \
 		   mex35f90.F90 ex35f90.F90 mex36f90.F90 ex36f90.F90 mex37f90.F90 ex37f90.F90 ex39f90.F
 EXAMPLESCH	 = ex43-44.h
@@ -189,6 +189,9 @@ ex46: ex46.o  chkopts
 ex47: ex47.o  chkopts
 	-${CLINKER} -o ex47 ex47.o ${PETSC_SNES_LIB}
 	${RM} ex47.o
+ex48: ex48.o  chkopts
+	-${CLINKER} -o ex48 ex48.o ${PETSC_SNES_LIB}
+	${RM} ex48.o
 
 #--------------------------------------------------------------------------
 runex1:

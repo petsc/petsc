@@ -67,7 +67,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
   }
 
   ierr = VecSet(VVU[0],0.0);CHKERRQ(ierr);
-  alpha = 0;
+  alpha = 0.;
   rho0 = omega = 1;
 
   if (bcgsl->delta>0.0) {
@@ -191,12 +191,12 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       ierr = PetscMemcpy(&AY0c[1],&MZb[1],(bcgsl->ell-1)*sizeof(PetscScalar));CHKERRQ(ierr);
       LAPACKpotrs_("Lower", &neqs, &ione, &MZa[1+ldMZ], &ldMZ, &AY0c[1], &ldMZ, &bierr);
       AY0c[0] = -1;
-      AY0c[bcgsl->ell] = 0;
+      AY0c[bcgsl->ell] = 0.;
 
       ierr = PetscMemcpy(&AYlc[1],&MZb[1+ldMZ*(bcgsl->ell)],(bcgsl->ell-1)*sizeof(PetscScalar));CHKERRQ(ierr);
       LAPACKpotrs_("Lower", &neqs, &ione, &MZa[1+ldMZ], &ldMZ, &AYlc[1], &ldMZ, &bierr);
 
-      AYlc[0] = 0;
+      AYlc[0] = 0.;
       AYlc[bcgsl->ell] = -1;
 
       BLASgemv_("NoTr", &ldMZ, &ldMZ, &aone, MZb, &ldMZ, AY0c, &ione, &azero, AYtc, &ione);

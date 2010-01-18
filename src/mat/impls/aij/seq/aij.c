@@ -199,7 +199,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
 	  value = v[k + l*m];
 	}
       } else {
-        value = 0;
+        value = 0.;
       }
       if (value == 0.0 && ignorezeroentries && (is == ADD_VALUES)) continue;
 

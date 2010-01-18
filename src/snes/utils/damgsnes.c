@@ -675,7 +675,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
     }
 
     dmmg[i]->computejacobian = jacobian;
-    dmmg[i]->computefunction = function;
     if (useFAS) {
       if (cookie == DM_COOKIE) {
 #if defined(PETSC_HAVE_ADIC)

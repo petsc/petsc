@@ -1143,7 +1143,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscMallocSetDumpLog(void);
 
 E*/
 typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2, PETSC_LONG = 3 ,PETSC_SHORT = 4,PETSC_FLOAT = 5,
-              PETSC_CHAR = 6,PETSC_LOGICAL = 7,PETSC_ENUM = 8,PETSC_TRUTH=9, PETSC_LONG_DOUBLE = 10} PetscDataType;
+              PETSC_CHAR = 6,PETSC_LOGICAL = 7,PETSC_ENUM = 8,PETSC_TRUTH=9, PETSC_LONG_DOUBLE = 10, PETSC_QD_DD = 11} PetscDataType;
 extern const char *PetscDataTypes[];
 
 #if defined(PETSC_USE_COMPLEX)
@@ -1155,6 +1155,8 @@ extern const char *PetscDataTypes[];
 #define PETSC_SCALAR PETSC_LONG_DOUBLE
 #elif defined(PETSC_USE_SCALAR_INT)
 #define PETSC_SCALAR PETSC_INT
+#elif defined(PETSC_USE_SCALAR_QD_DD)
+#define PETSC_SCALAR PETSC_QD_DD
 #else
 #define PETSC_SCALAR PETSC_DOUBLE
 #endif
@@ -1165,6 +1167,8 @@ extern const char *PetscDataTypes[];
 #define PETSC_REAL PETSC_LONG_DOUBLE
 #elif defined(PETSC_USE_SCALAR_INT)
 #define PETSC_REAL PETSC_INT
+#elif defined(PETSC_USE_SCALAR_QD_DD)
+#define PETSC_REAL PETSC_QD_DD
 #else
 #define PETSC_REAL PETSC_DOUBLE
 #endif

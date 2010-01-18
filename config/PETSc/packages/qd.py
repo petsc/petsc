@@ -3,6 +3,11 @@ import user
 import config.base
 import config.package
 
+#
+#   This and gmp.py and mpack.py CANNOT be used by PETSc because QD does not support
+#       !dd_real, casts to int, bool, double from dd_real, dd_real++
+#   and these cannot easily be fixed without a lot of work on QD
+#
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)

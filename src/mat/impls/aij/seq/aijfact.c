@@ -26,7 +26,7 @@ PetscErrorCode MatOrdering_Flow_SeqAIJ(Mat mat,const MatOrderingType type,IS *ir
   /* pick initial row */
   best = -1;
   for (i=0; i<n; i++) {
-    future = 0;
+    future = 0.0;
     for (j=ai[i]; j<ai[i+1]; j++) {
       if (aj[j] != i) future  += PetscAbsScalar(aa[j]); else past = PetscAbsScalar(aa[j]);
     }
@@ -65,8 +65,8 @@ PetscErrorCode MatOrdering_Flow_SeqAIJ(Mat mat,const MatOrderingType type,IS *ir
       best = -1;
       for (k=0; k<n; k++) {
         if (done[k]) continue;
-        future = 0;
-        past   = 0;
+        future = 0.0;
+        past   = 0.0;
         for (j=ai[k]; j<ai[k+1]; j++) {
           kk = aj[j];
           if (done[kk]) past += PetscAbsScalar(aa[j]);
@@ -817,15 +817,15 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,const MatFa
   ierr  = PetscMemzero(rtmp,(n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   ics = ic;
 
-  sctx.shift_top      = 0;
-  sctx.nshift_max     = 0;
-  sctx.shift_lo       = 0;
-  sctx.shift_hi       = 0;
-  sctx.shift_fraction = 0;
+  sctx.shift_top      = 0.;
+  sctx.nshift_max     = 0.;
+  sctx.shift_lo       = 0.;
+  sctx.shift_hi       = 0.;
+  sctx.shift_fraction = 0.;
 
   /* if both shift schemes are chosen by user, only use info->shiftpd */
   if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
-    sctx.shift_top = 0;
+    sctx.shift_top = 0.;
     for (i=0; i<n; i++) {
       /* calculate sum(|aij|)-RealPart(aii), amt of shift needed for this row */
       d  = (a->a)[diag[i]];
@@ -843,7 +843,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,const MatFa
     sctx.shift_hi     = 1.;
   }
 
-  sctx.shift_amount = 0;
+  sctx.shift_amount = 0.;
   sctx.nshift       = 0;
   do {
     sctx.lushift = PETSC_FALSE;
@@ -1589,7 +1589,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0_newdatastruct(Mat fact,Mat A,IS 
   bj = b->j;
 
   /* L part */
-  bi[0] = 0;
+  bi[0] = 0.;
   for (i=0; i<n; i++){
     nz = adiag[i] - ai[i];
     bi[i+1] = bi[i] + nz;
@@ -1668,7 +1668,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS isrow
   /* get new row and diagonal pointers, must be allocated separately because they will be given to the Mat_SeqAIJ and freed separately */
   ierr = PetscMalloc((n+1)*sizeof(PetscInt),&bi);CHKERRQ(ierr);
   ierr = PetscMalloc((n+1)*sizeof(PetscInt),&bdiag);CHKERRQ(ierr);
-  bi[0] = bdiag[0] = 0;
+  bi[0] = bdiag[0] = 0.;
 
   ierr = PetscMalloc2(n,PetscInt*,&bj_ptr,n,PetscInt*,&bjlvl_ptr);CHKERRQ(ierr); 
 
