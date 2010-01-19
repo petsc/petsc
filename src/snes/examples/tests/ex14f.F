@@ -120,6 +120,7 @@
      &                            PETSC_DEFAULT_DOUBLE_PRECISION,
      &                          3,PETSC_DEFAULT_INTEGER,ierr)
       call SNESSolve(snes,PETSC_NULL_OBJECT,x,ierr)
+      call SNESSetLagJacobian(snes,-1,ierr) ! To prevent future Jacobian computations
 
 ! Get PCFactor to set MUMPS matrix ordering option
       call PCFactorGetMatrix(pc,F,ierr)
@@ -127,6 +128,7 @@
 #else
       call SNESSetFromOptions(snes,ierr)      
       call FormInitialGuess(snes,x,ierr)
+      call SNESSetLagJacobian(snes,1000,ierr) ! must compute Jacobian once
 #endif
 
 ! Solve nonlinear system
@@ -134,7 +136,6 @@
      &                            PETSC_DEFAULT_DOUBLE_PRECISION,
      &                            PETSC_DEFAULT_DOUBLE_PRECISION,
      &      1000,PETSC_DEFAULT_INTEGER,ierr)
-      call SNESSetLagJacobian(snes,-1,ierr)
 
 ! Call SNESSolve() for next few iterations
 !--------------------------------------------------
