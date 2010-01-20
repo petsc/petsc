@@ -201,6 +201,20 @@ PetscErrorCode ISIdentity_Block(IS is,PetscTruth *ident)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "ISCopy_Block"
+static PetscErrorCode ISCopy_Block(IS is,IS isy)
+{
+  IS_Block *is_block = (IS_Block*)is->data,*isy_block = (IS_Block*)isy->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (is_block->n != isy_block->n || is_block->N != isy_block->N || is_block->bs != isy_block->bs) SETERRQ(PETSC_ERR_ARG_INCOMP,"Index sets incompatible");
+  isy_block->sorted = is_block->sorted;
+  ierr = PetscMemcpy(isy_block->idx,is_block->idx,is_block->n*sizeof(PetscInt));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static struct _ISOps myops = { ISGetSize_Block,
                                ISGetLocalSize_Block,
                                ISGetIndices_Block,
@@ -211,7 +225,8 @@ static struct _ISOps myops = { ISGetSize_Block,
                                ISDuplicate_Block,
                                ISDestroy_Block,
                                ISView_Block,
-                               ISIdentity_Block };
+                               ISIdentity_Block,
+                               ISCopy_Block };
 #undef __FUNCT__  
 #define __FUNCT__ "ISCreateBlock" 
 /*@

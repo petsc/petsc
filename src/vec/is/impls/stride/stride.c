@@ -27,6 +27,18 @@ PetscErrorCode ISIdentity_Stride(IS is,PetscTruth *ident)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "ISCopy_Stride"
+static PetscErrorCode ISCopy_Stride(IS is,IS isy)
+{
+  IS_Stride *is_stride = (IS_Stride*)is->data,*isy_stride = (IS_Stride*)isy->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMemcpy(isy_stride,is_stride,sizeof(IS_Stride));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "ISDuplicate_Stride" 
 PetscErrorCode ISDuplicate_Stride(IS is,IS *newIS)
 {
@@ -274,7 +286,8 @@ static struct _ISOps myops = { ISGetSize_Stride,
                                ISDuplicate_Stride,
                                ISDestroy_Stride,
                                ISView_Stride,
-                               ISIdentity_Stride };
+                               ISIdentity_Stride,
+                               ISCopy_Stride };
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISCreateStride" 

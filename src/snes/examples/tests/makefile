@@ -68,9 +68,9 @@ ex13: ex13.o  chkopts
 	-${CLINKER} -o ex13 ex13.o ${PETSC_SNES_LIB}
 	${RM} ex13.o
 
-ex14: ex14.o  chkopts
-	-${FLINKER} -o ex14 ex14.o ${PETSC_SNES_LIB}
-	${RM} ex14.o
+ex14f: ex14f.o  chkopts
+	-${FLINKER} -o ex14f ex14f.o ${PETSC_SNES_LIB}
+	${RM} ex14f.o
 #--------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	 \
@@ -225,21 +225,11 @@ runex12f:
 	   if (${DIFF} output/ex12_1.out ex12_1.tmp) then true; \
 	   else echo "Possible problem with ex12_1, diffs above"; fi; \
 	   ${RM} -f ex12_1.tmp
-runex14:
-	-@${MPIEXEC} -n 4 ./ex14 -ksp_gmres_cgs_refinement_type refine_always -snes_mf -Nx 4 -Ny 1 -snes_monitor_short > ex14_1.tmp 2>&1; \
+runex14f:
+	-@${MPIEXEC} -n 1 ./ex14f -ksp_gmres_cgs_refinement_type refine_always -n 10 -snes_monitor_short > ex14_1.tmp 2>&1; \
 	   if (${DIFF} output/ex14_1.out ex14_1.tmp) then true; \
-	   else echo "Possible problem with ex14_1, diffs above"; fi; \
+	   else echo "Possible problem with ex14f_1, diffs above"; fi; \
 	   ${RM} -f ex14_1.tmp
-runex14_2:
-	-@${MPIEXEC} -n 4 ./ex14 -ksp_gmres_cgs_refinement_type refine_always -mat_type mpiaij -Nx 2 -Ny 2 -snes_monitor_short > ex14_2.tmp 2>&1; \
-	   if (${DIFF} output/ex14_2.out ex14_2.tmp) then true; \
-	   else echo "Possible problem with ex14_2, diffs above"; fi; \
-	   ${RM} -f ex14_2.tmp
-runex14_3:
-	-@${MPIEXEC} -n 3 ./ex14 -ksp_gmres_cgs_refinement_type refine_always -snes_fd  -snes_monitor_short > ex14_3.tmp 2>&1;\
-	   if (${DIFF} output/ex14_3.out ex14_3.tmp) then true; \
-	   else echo "Possible problem with ex14_3, diffs above"; fi; \
-	   ${RM} -f ex14_3.tmp
 
 #
 #  runex9_2 and runex9_3 are not included in RUNEXAMPLES_2 because 

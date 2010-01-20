@@ -7180,8 +7180,8 @@ MatGetOrdering().
 The following routines perform complete, in-place, symbolic, and numerical 
 factorizations for symmetric and nonsymmetric matrices, respectively:
 \begin{tabbing}
-  MatCholeskyFactor(Mat matrix,IS permutation,double pf);\\
-  MatLUFactor(Mat matrix,IS rowpermutation,IS columnpermutation,MatLUInfo *info); 
+  MatCholeskyFactor(Mat matrix,IS permutation,const MatFactorInfo *info);\\
+  MatLUFactor(Mat matrix,IS rowpermutation,IS columnpermutation,const MatFactorInfo *info);
 \end{tabbing}
 The argument \trl{info->fill > 1} is the predicted fill
 expected in the factored matrix, as a ratio of the original fill. 
@@ -7202,14 +7202,14 @@ stages \findex{MatCholeskyFactorNumeric()} \findex{MatLUFactorNumeric()}
 can also be performed separately, by using the out-of-place mode, first
 one obtains that matrix object that will hold the factor
 \begin{tabbing}
-  MatGetFactor(Mat matrix,MatFactorType,char *packagename,Mat *factor);
+  MatGetFactor(Mat matrix,const MatSolverPackage package,MatFactorType ftype,Mat *factor);
 \end{tabbing}
 and then performs the factorization
 \begin{tabbing}
-  MatCholeskyFactorSymbolic(Mat factor,Mat matrix,IS perm, double pf);\\
-  MatLUFactorSymbolic(Mat factor,Mat matrix,IS rowperm,IS colperm,MatLUInfo *info);\\
-  MatCholeskyFactorNumeric(Mat factor,Mat matrix);\\
-  MatLUFactorNumeric(Mat factor,Mat matrix);
+  MatCholeskyFactorSymbolic(Mat factor,Mat matrix,IS perm,const MatFactorInfo *info);\\
+  MatLUFactorSymbolic(Mat factor,Mat matrix,IS rowperm,IS colperm,const MatFactorInfo *info);\\
+  MatCholeskyFactorNumeric(Mat factor,Mat matrix,const MatFactorInfo);\\
+  MatLUFactorNumeric(Mat factor,Mat matrix,const MatFactorInfo *info);
 \end{tabbing}
 In this case, the contents of the matrix \trl{result} is undefined between 
 the symbolic and numeric factorization stages. 

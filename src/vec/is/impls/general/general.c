@@ -53,6 +53,20 @@ PetscErrorCode ISIdentity_General(IS is,PetscTruth *ident)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "ISCopy_General"
+static PetscErrorCode ISCopy_General(IS is,IS isy)
+{
+  IS_General *is_general = (IS_General*)is->data,*isy_general = (IS_General*)isy->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (is_general->n != isy_general->n || is_general->N != isy_general->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Index sets incompatible");
+  isy_general->sorted = is_general->sorted;
+  ierr = PetscMemcpy(isy_general->idx,is_general->idx,is_general->n*sizeof(PetscInt));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "ISGetIndices_General" 
 PetscErrorCode ISGetIndices_General(IS in,const PetscInt *idx[])
 {
@@ -224,7 +238,8 @@ static struct _ISOps myops = { ISGetSize_General,
                                ISDuplicate_General,
                                ISDestroy_General,
                                ISView_General,
-                               ISIdentity_General };
+                               ISIdentity_General,
+                               ISCopy_General };
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISCreateGeneral_Private" 

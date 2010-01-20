@@ -564,10 +564,10 @@ M*/
    (data = (obj)->realstarcomposeddata[id],flag = PETSC_TRUE) : (flag = PETSC_FALSE)),0)
 
 /*MC
-   PetscObjectSetScalarComposedData - attach scalar data to a PetscObject 
+   PetscObjectComposedDataSetScalar - attach scalar data to a PetscObject
 
    Synopsis:
-   PetscErrorCode PetscObjectSetScalarComposedData(PetscObject obj,int id,PetscScalar data)
+   PetscErrorCode PetscObjectComposedDataSetScalar(PetscObject obj,int id,PetscScalar data)
 
    Not collective
 
