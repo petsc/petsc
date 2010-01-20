@@ -2858,8 +2858,8 @@ PetscErrorCode MatMultTranspose_SeqMAIJ_N(Mat A,Vec xx,Vec yy)
     while (n-->0) {
       for (k=0; k<dof; k++) {
         y[dof*(*idx)+k] += alpha[k]*(*v);
-        idx++; v++;
       }
+      idx++; v++;
     }
   }
   ierr = PetscLogFlops(2.0*dof*a->nz);CHKERRQ(ierr);
@@ -2892,8 +2892,8 @@ PetscErrorCode MatMultTransposeAdd_SeqMAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
     while (n-->0) {
       for (k=0; k<dof; k++) {
         y[dof*(*idx)+k] += alpha[k]*(*v);
-        idx++; v++;
       }
+      idx++; v++;
     }
   }
   ierr = PetscLogFlops(2.0*dof*a->nz);CHKERRQ(ierr);
