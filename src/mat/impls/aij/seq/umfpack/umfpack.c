@@ -95,7 +95,7 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_UMFPACK"
-PetscErrorCode MatDestroy_UMFPACK(Mat A) 
+static PetscErrorCode MatDestroy_UMFPACK(Mat A)
 {
   PetscErrorCode ierr;
   Mat_UMFPACK    *lu=(Mat_UMFPACK*)A->spptr;
@@ -115,8 +115,8 @@ PetscErrorCode MatDestroy_UMFPACK(Mat A)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_UMFPACK"
-PetscErrorCode MatSolve_UMFPACK(Mat A,Vec b,Vec x)
+#define __FUNCT__ "MatSolve_UMFPACK_Private"
+static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
 {
   Mat_UMFPACK    *lu = (Mat_UMFPACK*)A->spptr;
   PetscScalar    *av=lu->av,*ba,*xa;
@@ -126,15 +126,14 @@ PetscErrorCode MatSolve_UMFPACK(Mat A,Vec b,Vec x)
   PetscFunctionBegin;
   /* solve Ax = b by umfpack_*_wsolve */
   /* ----------------------------------*/
-  ierr = VecConjugate(b);
 
   ierr = VecGetArray(b,&ba);
   ierr = VecGetArray(x,&xa);
 #if defined(PETSC_USE_COMPLEX)
-  status = umfpack_UMF_wsolve(UMFPACK_At,ai,aj,(PetscReal*)av,NULL,(PetscReal*)xa,NULL,(PetscReal*)ba,NULL,
+  status = umfpack_UMF_wsolve(uflag,ai,aj,(PetscReal*)av,NULL,(PetscReal*)xa,NULL,(PetscReal*)ba,NULL,
                               lu->Numeric,lu->Control,lu->Info,lu->Wi,lu->W);
 #else  
-  status = umfpack_UMF_wsolve(UMFPACK_At,ai,aj,av,xa,ba,lu->Numeric,lu->Control,lu->Info,lu->Wi,lu->W);
+  status = umfpack_UMF_wsolve(uflag,ai,aj,av,xa,ba,lu->Numeric,lu->Control,lu->Info,lu->Wi,lu->W);
 #endif
   umfpack_UMF_report_info(lu->Control, lu->Info); 
   if (status < 0){
@@ -144,15 +143,36 @@ PetscErrorCode MatSolve_UMFPACK(Mat A,Vec b,Vec x)
 
   ierr = VecRestoreArray(b,&ba);
   ierr = VecRestoreArray(x,&xa);
+  PetscFunctionReturn(0);
+}
 
-  ierr = VecConjugate(b);
-  ierr = VecConjugate(x);
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolve_UMFPACK"
+static PetscErrorCode MatSolve_UMFPACK(Mat A,Vec b,Vec x)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* We gave UMFPACK the algebraic transpose (because it assumes column alignment) */
+  ierr = MatSolve_UMFPACK_Private(A,b,x,UMFPACK_Aat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolveTranspose_UMFPACK"
+static PetscErrorCode MatSolveTranspose_UMFPACK(Mat A,Vec b,Vec x)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* We gave UMFPACK the algebraic transpose (because it assumes column alignment) */
+  ierr = MatSolve_UMFPACK_Private(A,b,x,UMFPACK_A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_UMFPACK"
-PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat F,Mat A,const MatFactorInfo *info) 
+static PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat_UMFPACK *lu=(Mat_UMFPACK*)(F)->spptr;
   PetscErrorCode ierr;
@@ -186,7 +206,8 @@ PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat F,Mat A,const MatFactorInfo *info)
 
   lu->flg = SAME_NONZERO_PATTERN;
   lu->CleanUpUMFPACK = PETSC_TRUE;
-  (F)->ops->solve            = MatSolve_UMFPACK;
+  F->ops->solve          = MatSolve_UMFPACK;
+  F->ops->solvetranspose = MatSolveTranspose_UMFPACK;
   PetscFunctionReturn(0);
 }
 
@@ -195,7 +216,7 @@ PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat F,Mat A,const MatFactorInfo *info)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_UMFPACK"
-PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info) 
+static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   Mat_SeqAIJ     *mat=(Mat_SeqAIJ*)A->data;
   Mat_UMFPACK    *lu = (Mat_UMFPACK*)(F->spptr);
@@ -253,7 +274,7 @@ PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,const MatFactor
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFactorInfo_UMFPACK"
-PetscErrorCode MatFactorInfo_UMFPACK(Mat A,PetscViewer viewer)
+static PetscErrorCode MatFactorInfo_UMFPACK(Mat A,PetscViewer viewer)
 {
   Mat_UMFPACK    *lu= (Mat_UMFPACK*)A->spptr;
   PetscErrorCode ierr;
@@ -294,7 +315,7 @@ PetscErrorCode MatFactorInfo_UMFPACK(Mat A,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatView_UMFPACK"
-PetscErrorCode MatView_UMFPACK(Mat A,PetscViewer viewer) 
+static PetscErrorCode MatView_UMFPACK(Mat A,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
   PetscTruth        iascii;
