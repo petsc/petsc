@@ -203,7 +203,7 @@
       PetscEnum MATOP_SOLVE_TRANSPOSE_ADD
       PetscEnum MATOP_LUFACTOR
       PetscEnum MATOP_CHOLESKYFACTOR
-      PetscEnum MATOP_RELAX
+      PetscEnum MATOP_SOR
       PetscEnum MATOP_TRANSPOSE
       PetscEnum MATOP_GETINFO
       PetscEnum MATOP_EQUAL
@@ -327,7 +327,7 @@
       parameter(MATOP_SOLVE_TRANSPOSE_ADD=10)
       parameter(MATOP_LUFACTOR=11)
       parameter(MATOP_CHOLESKYFACTOR=12)
-      parameter(MATOP_RELAX=13)
+      parameter(MATOP_SOR=13)
       parameter(MATOP_TRANSPOSE=14)
       parameter(MATOP_GETINFO=15)
       parameter(MATOP_EQUAL=16)
