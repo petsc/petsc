@@ -164,7 +164,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsAtol(const char value[], PetscTruth *
   SETERRQ1(PETSC_ERR_ARG_WRONG, "Unknown logical value: %s", value);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetProgramName"
 /*@C
