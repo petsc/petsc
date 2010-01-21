@@ -1,8 +1,17 @@
   0 SNES Function norm 9.37124 
+    Jacobian is built ...
   1 SNES Function norm 8.0237 
-  0 SNES Function norm 8.0237 
-  1 SNES Function norm 2.20417 
-  2 SNES Function norm 0.153449 
-  3 SNES Function norm 0.000597506 
-  4 SNES Function norm 1.05886e-08 
-Number of Newton iterations =     4
+  2 SNES Function norm 6.2328 
+  3 SNES Function norm 4.47539 
+  0 SNES Function norm 4.47539 
+    Jacobian is built ...
+  1 SNES Function norm 0.963728 
+  2 SNES Function norm 0.396112 
+  3 SNES Function norm 0.157137 
+    Jacobian is built ...
+  4 SNES Function norm 0.00100887 
+  5 SNES Function norm 1.52698e-05 
+  6 SNES Function norm 2.46267e-07 
+    Jacobian is built ...
+  7 SNES Function norm < 1.e-11
+Number of Newton iterations =     7

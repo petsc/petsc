@@ -1,8 +1,9 @@
 !
 !
-!  This example demonstrates basic use of the SNES Fortran interface.
+!  This example demonstrates use of the SNES Fortran interface.
 !  
-!  Note:  The program The program is modified from ex12f.F and used for testing MUMPS interface. 
+!  Note:  The program is modified from ex12f.F
+!         Used for testing MUMPS interface, and control when the Jacobian is rebuilt
 !
 !  In this example the application context is a Fortran integer array:
 !      ctx(1) = da    - distributed array
@@ -18,18 +19,81 @@
 !
 ! Macros to make setting/getting  values into vector clearer.
 ! The element xx(ib) is the ibth element in the vector indicated by ctx(3)
+
 #define xx(ib)  vxx(ixx + (ib))
 #define ff(ib)  vff(iff + (ib))
 #define F2(ib)  vF2(iF2 + (ib))
-      program main
-      implicit none
 
+      module Petscmod
+      implicit none
 #include "finclude/petsc.h"
 #include "finclude/petscvec.h"
-#include "finclude/petscda.h"
+#include "finclude/petscvec.h90"
 #include "finclude/petscmat.h"
+#include "finclude/petscmat.h90"
+#include "finclude/petscviewer.h"
+#include "finclude/petscksp.h"
+#include "finclude/petscpc.h"
 #include "finclude/petscsnes.h"
+#include "finclude/petscis.h"
+#include "finclude/petscda.h"
+      end module Petscmod
 
+      module Snesmonitormod
+      use Petscmod
+      implicit none
+      save
+      type monctx
+        PetscInt :: its,lag
+      end type monctx
+      end module Snesmonitormod
+
+! ---------------------------------------------------------------------
+! ---------------------------------------------------------------------
+!  Subroutine FormMonitor
+!  This function lets up keep track of the SNES progress at each step
+!  In this routine, we determine when the Jacobian is rebuilt with the parameter 'jag'
+!
+!  Input Parameters:
+!    snes    - SNES nonlinear solver context
+!    its     - current nonlinear iteration, starting from a call of SNESSolve()
+!    norm    - 2-norm of current residual (may be approximate)
+!    snesmonitor - monctx designed module (included in Snesmonitormod)
+! ---------------------------------------------------------------------
+      subroutine FormMonitor(snes,its,norm,snesmonitor,ierr)
+
+      use Snesmonitormod
+      implicit none
+
+      SNES ::           snes
+      PetscInt ::       its
+      PetscScalar ::    norm
+      type(monctx) ::   snesmonitor
+      PetscErrorCode :: ierr
+
+c      write(6,*) " "
+c      write(6,*) "    its ",its,snesmonitor%its,"lag", 
+c     &            snesmonitor%lag
+c      call flush(6)
+      if (mod(snesmonitor%its,snesmonitor%lag).eq.0) 
+     &      then 
+        call SNESSetLagJacobian(snes,1,ierr)  ! build jacobian 
+      else 
+        call SNESSetLagJacobian(snes,-1,ierr) ! do NOT build jacobian 
+      endif
+      snesmonitor%its = snesmonitor%its + 1
+      end subroutine FormMonitor
+
+! ---------------------------------------------------------------------
+! ---------------------------------------------------------------------
+      program main
+
+      use Petscmod
+      use Snesmonitormod
+
+      implicit none
+
+      type(monctx) :: snesmonitor
       PetscFortranAddr ctx(6)
       PetscMPIInt rank,size
       PetscErrorCode ierr
@@ -44,6 +108,7 @@
       PetscScalar      xp,FF,UU,h
       character*(10)   matrixname
       external         FormJacobian,FormFunction
+      external         FormMonitor
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       i1 = 1
@@ -101,15 +166,20 @@
 ! Set various routines and options
       call SNESSetFunction(snes,r,FormFunction,ctx,ierr)
       call SNESSetJacobian(snes,J,J,FormJacobian,ctx,ierr)
-      call SNESSetLagJacobian(snes,2,ierr)
+      call SNESSetLagJacobian(snes,3,ierr)
 
 ! Set linear solver defaults for this problem. 
-#ifdef PETSC_HAVE_MUMPS
       call SNESGetKSP(snes,ksp,ierr)
       call KSPGetPC(ksp,pc,ierr)
+#ifdef PETSC_HAVE_MUMPS
       call PCSetType(pc,PCLU,ierr)
       call PCFactorSetMatSolverPackage(pc,MAT_SOLVER_MUMPS,ierr)
+#endif
 
+      snesmonitor%its = 0
+      call SNESGetLagJacobian(snes,snesmonitor%lag,ierr)
+      call SNESMonitorSet(snes,FormMonitor,snesmonitor,
+     &                    PETSC_NULL_FUNCTION,ierr)
       call SNESSetFromOptions(snes,ierr)
       call FormInitialGuess(snes,x,ierr)
 
@@ -120,15 +190,11 @@
      &                            PETSC_DEFAULT_DOUBLE_PRECISION,
      &                          3,PETSC_DEFAULT_INTEGER,ierr)
       call SNESSolve(snes,PETSC_NULL_OBJECT,x,ierr)
-      call SNESSetLagJacobian(snes,-1,ierr) ! To prevent future Jacobian computations
 
+#ifdef PETSC_HAVE_MUMPS
 ! Get PCFactor to set MUMPS matrix ordering option
       call PCFactorGetMatrix(pc,F,ierr)
       call MatMumpsSetIcntl(F,7,2,ierr) ! must be called before next SNESSetUp? -- not being used!!!
-#else
-      call SNESSetFromOptions(snes,ierr)      
-      call FormInitialGuess(snes,x,ierr)
-      call SNESSetLagJacobian(snes,1000,ierr) ! must compute Jacobian once
 #endif
 
 ! Solve nonlinear system
@@ -139,6 +205,7 @@
 
 ! Call SNESSolve() for next few iterations
 !--------------------------------------------------
+      snesmonitor%its = snesmonitor%its - 1 !do not count the 0-th iteration
       call SNESSolve(snes,PETSC_NULL_OBJECT,x,ierr)
       call SNESGetIterationNumber(snes,its,ierr);
 
@@ -262,26 +329,28 @@
 ! --------------------  Evaluate Jacobian -------------------- 
 
       subroutine FormJacobian(snes,x,jac,B,flag,ctx,ierr)
+
+      use Petscmod
       implicit none
-#include "finclude/petsc.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscda.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscsnes.h"
+
       SNES             snes
       Vec              x
       Mat              jac,B
       PetscFortranAddr ctx(*)
       PetscTruth       flag
-      PetscInt  ii,istart,iend
-      PetscInt  i,j,n,end,start,i1
-      PetscErrorCode ierr
-      PetscMPIInt rank,size
+      PetscInt         ii,istart,iend
+      PetscInt         i,j,n,end,start,i1
+      PetscErrorCode   ierr
+      PetscMPIInt      rank,size
       PetscOffset      ixx
       PetscScalar      d,A,h,vxx(1)
 
-      write(6,*)"FormJacobian is called ..."
-      call flush(6)
+      rank = ctx(4)
+      size = ctx(5)
+      if (rank .eq. 0) then
+        write(6,*)"   Jacobian is built ..."
+        call flush(6)
+      endif
       i1 = 1
       h = 1.d0/(ctx(6) - 1.d0)
       d = h*h

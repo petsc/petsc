@@ -226,7 +226,7 @@ runex12f:
 	   else echo "Possible problem with ex12_1, diffs above"; fi; \
 	   ${RM} -f ex12_1.tmp
 runex14f:
-	-@${MPIEXEC} -n 1 ./ex14f -ksp_gmres_cgs_refinement_type refine_always -n 10 -snes_monitor_short > ex14_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex14f -snes_monitor_short > ex14_1.tmp 2>&1; \
 	   if (${DIFF} output/ex14_1.out ex14_1.tmp) then true; \
 	   else echo "Possible problem with ex14f_1, diffs above"; fi; \
 	   ${RM} -f ex14_1.tmp
