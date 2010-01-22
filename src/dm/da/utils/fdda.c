@@ -1172,22 +1172,11 @@ PetscErrorCode DAGetMatrix2d_MPIBAIJ(DA da,Mat J)
 
       /* Find block columns in block row */
       cnt  = 0;
-      if (st == DA_STENCIL_BOX) {   /* if using BOX stencil */
-        for (ii=istart; ii<iend+1; ii++) {
-          for (jj=jstart; jj<jend+1; jj++) {
-            cols[cnt++]  = slot + ii + gnx*jj; 
+      for (ii=istart; ii<iend+1; ii++) {
+        for (jj=jstart; jj<jend+1; jj++) {
+          if (st == DA_STENCIL_BOX || !ii || !jj) { /* BOX or on the STAR */
+            cols[cnt++]  = slot + ii + gnx*jj;
           }
-        }
-      } else {  /* Star stencil */
-        cnt  = 0;
-        for (ii=istart; ii<iend+1; ii++) {
-          if (ii) { /* jj must be zero */
-            cols[cnt++]  = slot + ii;
-          } else {
-            for (jj=jstart; jj<jend+1; jj++) { /* ii must be zero */
-              cols[cnt++] = slot + gnx*jj;
-            } 
-          } 
         }
       }
       ierr = MatPreallocateSetLocal(ltogb,1,&slot,cnt,cols,dnz,onz);CHKERRQ(ierr);
@@ -1216,24 +1205,13 @@ PetscErrorCode DAGetMatrix2d_MPIBAIJ(DA da,Mat J)
 	jend   = DAYPeriodic(wrap) ?  s : (PetscMin(s,n-j-1));
 	slot = i - gxs + gnx*(j - gys); 
 	cnt  = 0;
-	if (st == DA_STENCIL_BOX) {   /* if using BOX stencil */
-	  for (ii=istart; ii<iend+1; ii++) {
-	    for (jj=jstart; jj<jend+1; jj++) {
-	      cols[cnt++]  = slot + ii + gnx*jj; 
-	    }
-	  }
-	} else {  /* Star stencil */
-	  cnt  = 0;
-	  for (ii=istart; ii<iend+1; ii++) {
-	    if (ii) { /* jj must be zero */
-	      cols[cnt++]  = slot + ii;
-	    } else {
-	      for (jj=jstart; jj<jend+1; jj++) {/* ii must be zero */
-		cols[cnt++]  = slot + gnx*jj;   
-	      }
-	    }
-	  }
-	} 
+        for (ii=istart; ii<iend+1; ii++) {
+          for (jj=jstart; jj<jend+1; jj++) {
+            if (st == DA_STENCIL_BOX || !ii || !jj) { /* BOX or on the STAR */
+              cols[cnt++]  = slot + ii + gnx*jj;
+            }
+          }
+        }
 	ierr = MatSetValuesBlockedLocal(J,1,&slot,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
@@ -1293,32 +1271,11 @@ PetscErrorCode DAGetMatrix3d_MPIBAIJ(DA da,Mat J)
 
 	/* Find block columns in block row */
 	cnt  = 0;
-	if (st == DA_STENCIL_BOX) {   /* if using BOX stencil */
-	  for (ii=istart; ii<iend+1; ii++) {
-	    for (jj=jstart; jj<jend+1; jj++) {
-	      for (kk=kstart; kk<kend+1; kk++) {
+        for (ii=istart; ii<iend+1; ii++) {
+          for (jj=jstart; jj<jend+1; jj++) {
+            for (kk=kstart; kk<kend+1; kk++) {
+              if ((st == DA_STENCIL_BOX) || ((!ii && !jj) || (!jj && !kk) || (!ii && !kk))) {/* entries on star*/
 		cols[cnt++]  = slot + ii + gnx*jj + gnx*gny*kk;
-	      }
-	    }
-	  }
-	} else {  /* Star stencil */
-	  cnt  = 0;
-	  for (ii=istart; ii<iend+1; ii++) {
-	    if (ii) {
-	      /* jj and kk must be zero */
-	      /* cols[cnt++]  = slot + ii + gnx*jj + gnx*gny*kk; */
-	      cols[cnt++]  = slot + ii;
-	    } else {
-	      for (jj=jstart; jj<jend+1; jj++) {
-		if (jj) {
-                  /* ii and kk must be zero */
-		  cols[cnt++]  = slot + gnx*jj;
-		} else {
-		  /* ii and jj must be zero */
-		  for (kk=kstart; kk<kend+1; kk++) {
-		    cols[cnt++]  = slot + gnx*gny*kk;
-		  }
-		}
 	      }
 	    }
 	  }
@@ -1355,35 +1312,15 @@ PetscErrorCode DAGetMatrix3d_MPIBAIJ(DA da,Mat J)
 	  slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
 	
 	  cnt  = 0;
-	  if (st == DA_STENCIL_BOX) {   /* if using BOX stencil */
-	    for (ii=istart; ii<iend+1; ii++) {
-	      for (jj=jstart; jj<jend+1; jj++) {
-		for (kk=kstart; kk<kend+1; kk++) {
-		  cols[cnt++]  = slot + ii + gnx*jj + gnx*gny*kk;
-		}
-	      }
-	    }
-	  } else {  /* Star stencil */
-	    cnt  = 0;
-	    for (ii=istart; ii<iend+1; ii++) {
-	      if (ii) {
-		/* jj and kk must be zero */
-		cols[cnt++]  = slot + ii;
-	      } else {
-		for (jj=jstart; jj<jend+1; jj++) {
-		  if (jj) {
-		    /* ii and kk must be zero */
-		    cols[cnt++]  = slot + gnx*jj;
-		  } else {
-		    /* ii and jj must be zero */
-		    for (kk=kstart; kk<kend+1; kk++) {
-		      cols[cnt++]  = slot + gnx*gny*kk;
-		    }
-		  }
-		}
-	      }
-	    }
-	  }
+          for (ii=istart; ii<iend+1; ii++) {
+            for (jj=jstart; jj<jend+1; jj++) {
+              for (kk=kstart; kk<kend+1; kk++) {
+                if ((st == DA_STENCIL_BOX) || ((!ii && !jj) || (!jj && !kk) || (!ii && !kk))) {/* entries on star*/
+                  cols[cnt++]  = slot + ii + gnx*jj + gnx*gny*kk;
+                }
+              }
+            }
+          }
 	  ierr = MatSetValuesBlockedLocal(J,1,&slot,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
 	}
       }
