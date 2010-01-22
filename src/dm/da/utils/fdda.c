@@ -1149,7 +1149,6 @@ PetscErrorCode DAGetMatrix2d_MPIBAIJ(DA da,Mat J)
      col - number of colors needed in one direction for single component problem
   */
   ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&nc,&s,&wrap,&st);CHKERRQ(ierr);
-  if (wrap != DA_NONPERIODIC) SETERRQ(PETSC_ERR_SUP,"Currently no support for periodic");
   col = 2*s + 1;
 
   ierr = DAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
@@ -1267,7 +1266,6 @@ PetscErrorCode DAGetMatrix3d_MPIBAIJ(DA da,Mat J)
   
   */
   ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,&wrap,&st);CHKERRQ(ierr);
-  if (wrap != DA_NONPERIODIC) SETERRQ(PETSC_ERR_SUP,"Currently no support for periodic");
   col    = 2*s + 1;
 
   ierr = DAGetCorners(da,&xs,&ys,&zs,&nx,&ny,&nz);CHKERRQ(ierr);
