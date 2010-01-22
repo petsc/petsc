@@ -630,7 +630,13 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[]
 #if defined(PETSC_USE_DEBUG)  
       if (col >= a->nbs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",col,a->nbs-1);
 #endif
-      if (col < row) continue; /* ignore lower triangular block */
+      if (col < row) {
+        if (a->ignore_ltriangular) {
+          continue; /* ignore lower triangular block */
+        } else {
+          SETERRQ(PETSC_ERR_USER,"Lower triangular value cannot be set for sbaij format. Ignoring these values, run with -mat_ignore_lower_triangular or call MatSetOption(mat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE)");
+        }
+      }
       if (roworiented) { 
         value = v + k*(stepval+bs)*bs + l*bs;
       } else {
