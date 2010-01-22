@@ -1462,7 +1462,7 @@ PetscErrorCode DAGetMatrix2d_MPISBAIJ(DA da,Mat J)
       cnt  = 0;
       for (ii=istart; ii<iend+1; ii++) {
         for (jj=jstart; jj<jend+1; jj++) {
-          if (st == DA_STENCIL_BOX || !i || !j) {
+          if (st == DA_STENCIL_BOX || !ii || !jj) {
             cols[cnt++]  = slot + ii + gnx*jj;
           }
         }
@@ -1498,7 +1498,7 @@ PetscErrorCode DAGetMatrix2d_MPISBAIJ(DA da,Mat J)
         cnt  = 0;
         for (ii=istart; ii<iend+1; ii++) {
           for (jj=jstart; jj<jend+1; jj++) {
-            if (st == DA_STENCIL_BOX || !i || !j) {
+            if (st == DA_STENCIL_BOX || !ii || !jj) {
               cols[cnt++]  = slot + ii + gnx*jj;
             }
           }
