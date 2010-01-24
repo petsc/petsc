@@ -1525,7 +1525,7 @@ PetscErrorCode MatSetSizes_SeqDense(Mat A,PetscInt m,PetscInt n,PetscInt M,Petsc
   n = PetscMax(n,N);
   if (m > a->Mmax) SETERRQ2(PETSC_ERR_SUP,"Cannot yet resize number rows of dense matrix larger then its initial size %d, requested %d",a->lda,(int)m);
   if (n > a->Nmax) SETERRQ2(PETSC_ERR_SUP,"Cannot yet resize number columns of dense matrix larger then its initial size %d, requested %d",a->Nmax,(int)n);
-  A->rmap->n = A->rmap->n = m;
+  A->rmap->n = A->rmap->N = m;
   A->cmap->n = A->cmap->N = n;
   if (a->changelda) a->lda = m;
   PetscFunctionReturn(0);
