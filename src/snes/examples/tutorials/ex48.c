@@ -180,14 +180,7 @@ typedef struct {
   PetscScalar beta2;            /* friction */
 } PrmNode;
 
-typedef enum {THIQSACTION_ZERO,THIQSACTION_KEEP,THIQSACTION_UPDATE} THIQSAction;
 typedef enum {THIASSEMBLY_TRIDIAGONAL,THIASSEMBLY_FULL} THIAssemblyMode;
-
-typedef struct {
-  PetscScalar eta;
-  PetscScalar deta_du2;
-  PetscScalar deta_dv2;
-} QSNode;
 
 struct _p_THI {
   PETSCHEADER(int);
@@ -474,74 +467,6 @@ static PetscErrorCode THISetDMMG(THI thi,DMMG *dmmg)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "THIDAGetQS"
-static PetscErrorCode THIDAGetQS(DA da,THIQSAction act,QSNode ****qstore)
-{
-  PetscErrorCode ierr;
-  DA daqs;
-  Vec X;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)da,"DAQStore",(PetscObject*)&daqs);CHKERRQ(ierr);
-  if (!daqs && act == THIQSACTION_KEEP) { /* returns nothing if there is no store in Jacobian assembly */
-    *qstore = 0;
-    PetscFunctionReturn(0);
-  }
-  if (!daqs) {
-    PetscInt dim,M,N,P,m,n,p,s;
-    DAPeriodicType wrap;
-    ierr = DAGetInfo(da,&dim,&P,&N,&M,&p,&n,&m,0,&s,&wrap,0);CHKERRQ(ierr);
-    if (dim != 3) SETERRQ(PETSC_ERR_ARG_WRONG,"Expected a 3D DA");
-    P = 2*(P-1);                /* P was the number of nodes per column, values at two quadrature points per element */
-    ierr = DACreate3d(((PetscObject)da)->comm,wrap,DA_STENCIL_BOX,P,N,M,p,n,m,sizeof(QSNode)/sizeof(PetscScalar),s,0,0,0,&daqs);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)da,"DAQStore",(PetscObject)daqs);CHKERRQ(ierr);
-    ierr = DACreateLocalVector(daqs,&X);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)da,"DAQStore_Vec",(PetscObject)X);CHKERRQ(ierr);
-    /* give away ownership */
-    ierr = DADestroy(daqs);CHKERRQ(ierr);
-    ierr = VecDestroy(X);CHKERRQ(ierr);
-  }
-  ierr = PetscObjectQuery((PetscObject)da,"DAQStore_Vec",(PetscObject*)&X);CHKERRQ(ierr);
-  switch (act) {
-    case THIQSACTION_ZERO:
-      ierr = VecZeroEntries(X);CHKERRQ(ierr);
-      break;
-    case THIQSACTION_KEEP:
-      break;
-    case THIQSACTION_UPDATE:
-      /* Lazy updating is not yet implemented */
-    default: SETERRQ1(PETSC_ERR_ARG_WRONG,"Unexpected action %d",act);
-  }
-  ierr = DAVecGetArray(daqs,X,qstore);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "THIDARestoreQS"
-static PetscErrorCode THIDARestoreQS(DA da,THIQSAction act,QSNode ****qstore)
-{
-  PetscErrorCode ierr;
-  DA daqs;
-  Vec X;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)da,"DAQStore",(PetscObject*)&daqs);CHKERRQ(ierr);
-  if (!daqs || !qstore) PetscFunctionReturn(0);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject)da,"DAQStore_Vec",(PetscObject*)&X);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(daqs,X,qstore);CHKERRQ(ierr);
-  switch (act) {
-    case THIQSACTION_UPDATE:
-      ierr = DALocalToLocalBegin(da,X,ADD_VALUES,X);CHKERRQ(ierr);
-      ierr = DALocalToLocalEnd(da,X,ADD_VALUES,X);CHKERRQ(ierr);
-      break;
-    case THIQSACTION_KEEP:
-      break;
-    default: SETERRQ1(PETSC_ERR_ARG_WRONG,"Unexpected action %d",act);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "THIDAGetPrm"
 static PetscErrorCode THIDAGetPrm(DA da,PrmNode ***prm)
 {
@@ -659,7 +584,6 @@ static PetscErrorCode THIFunctionLocal(DALocalInfo *info,Node ***x,Node ***f,THI
   PetscInt       xs,ys,xm,ym,zm,i,j,k,q,l;
   PetscReal      hx,hy,etamin,etamax;
   PrmNode        **prm;
-  QSNode     ***qstore;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -675,7 +599,6 @@ static PetscErrorCode THIFunctionLocal(DALocalInfo *info,Node ***x,Node ***f,THI
   etamax = 0;
 
   ierr = THIDAGetPrm(info->da,&prm);CHKERRQ(ierr);
-  ierr = THIDAGetQS(info->da,THIQSACTION_ZERO,&qstore);CHKERRQ(ierr);
 
   for (i=xs; i<xs+xm; i++) {
     for (j=ys; j<ys+ym; j++) {
@@ -684,12 +607,10 @@ static PetscErrorCode THIFunctionLocal(DALocalInfo *info,Node ***x,Node ***f,THI
       for (k=0; k<zm-1; k++) {
         PetscInt ls = 0;
         Node n[8],*fn[8];
-        QSNode *qstoren[8];
         PetscReal zn[8],etabase = 0;
         PrmHexGetZ(pn,k,zm,zn);
         HexExtract(x,i,j,k,n);
         HexExtractRef(f,i,j,k,fn);
-        if (qstore) {HexExtractRef(qstore,i,j,2*k,qstoren);}
         if (thi->no_slip && k == 0) {
           for (l=0; l<4; l++) n[l].u = n[l].v = 0;
           /* The first 4 basis functions lie on the bottom layer, so their contribution is exactly 0, hence we can skip them */
@@ -701,11 +622,6 @@ static PetscErrorCode THIFunctionLocal(DALocalInfo *info,Node ***x,Node ***f,THI
           HexGrad(HexQDeriv[q],zn,dz);
           HexComputeGeometry(q,hx,hy,dz,phi,dphi,&jw);
           PointwiseNonlinearity(thi,n,phi,dphi,&u,&v,du,dv,&eta,&deta);
-          if (qstore) {
-            qstoren[q]->eta      += 0.25*eta;
-            qstoren[q]->deta_du2 += 0.25*sqrt(-deta)*du[2]; /* deta is negative */
-            qstoren[q]->deta_dv2 += 0.25*sqrt(-deta)*dv[2];
-          }
           jw /= thi->rhog;      /* scales residuals to be O(1) */
           if (q == 0) etabase = eta;
           if (eta > etamax)      etamax = eta;
@@ -753,7 +669,6 @@ static PetscErrorCode THIFunctionLocal(DALocalInfo *info,Node ***x,Node ***f,THI
   }
 
   ierr = THIDARestorePrm(info->da,&prm);CHKERRQ(ierr);
-  ierr = THIDARestoreQS(info->da,THIQSACTION_UPDATE,&qstore);CHKERRQ(ierr);
 
   thi->cetamin = etamin;
   thi->cetamax = etamax;
