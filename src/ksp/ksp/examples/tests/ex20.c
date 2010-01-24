@@ -67,7 +67,7 @@ int main(int argc,char **args)
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)b,"Right hand side");CHKERRQ(ierr);
 
-  ierr = VecSet(u,1);CHKERRQ(ierr);
+  ierr = VecSet(u,1.0);CHKERRQ(ierr);
   ierr = MatMult(C,u,b);CHKERRQ(ierr);
   ierr = VecSet(u,0.0);CHKERRQ(ierr);
 
@@ -80,7 +80,7 @@ int main(int argc,char **args)
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-fixnullspace",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
-    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,1,0,PETSC_NULL,&nullsp);CHKERRQ(ierr);
+    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,PETSC_NULL,&nullsp);CHKERRQ(ierr);
     ierr = KSPSetNullSpace(ksp,nullsp);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(nullsp);CHKERRQ(ierr);
   }
