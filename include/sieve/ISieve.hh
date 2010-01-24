@@ -952,6 +952,57 @@ namespace ALE {
       }
 #endif
     }
+    template<typename Visitor>
+    static void orientedStar(const Sieve& sieve, const point_type& p, Visitor& v) {
+      typedef ISieveVisitor::PointRetriever<Sieve,Visitor> Retriever;
+      Retriever sV[2] = {Retriever(200,v), Retriever(200,v)};
+      int       s     = 0;
+
+      v.visitPoint(p, 0);
+      // Support is guarateed to be ordered correctly
+      sieve.orientedSupport(p, sV[s]);
+
+      while(sV[s].getOrientedSize()) {
+        const typename Retriever::oriented_point_type *support     = sV[s].getOrientedPoints();
+        const int                                      supportSize = sV[s].getOrientedSize();
+        s = 1 - s;
+
+        for(int p = 0; p < supportSize; ++p) {
+          const typename Retriever::point_type& point        = support[p].first;
+          int                                   pO           = support[p].second == 0 ? 1 : support[p].second;
+          const int                             pSupportSize = sieve.getSupportSize(point);
+
+          if (pO < 0) {
+            if (pO == -pSupportSize) {
+              sieve.orientedReverseSupport(point, sV[s]);
+            } else {
+              const int numSkip = sieve.getSupportSize(point) + pO;
+
+              sV[s].setSkip(sV[s].getSize()+numSkip);
+              sV[s].setLimit(sV[s].getSize()+pSupportSize);
+              sieve.orientedReverseSupport(point, sV[s]);
+              sieve.orientedReverseSupport(point, sV[s]);
+              sV[s].setSkip(0);
+              sV[s].setLimit(0);
+            }
+          } else {
+            if (pO == 1) {
+              sieve.orientedSupport(point, sV[s]);
+            } else {
+              const int numSkip = pO-1;
+
+              sV[s].setSkip(sV[s].getSize()+numSkip);
+              sV[s].setLimit(sV[s].getSize()+pSupportSize);
+              sieve.orientedSupport(point, sV[s]);
+              sieve.orientedSupport(point, sV[s]);
+              sV[s].setSkip(0);
+              sV[s].setLimit(0);
+            }
+          }
+        }
+        sV[1-s].clear();
+      }
+    }
   };
 
   namespace IFSieveDef {
@@ -1628,6 +1679,36 @@ namespace ALE {
       for(index_type c = end-1; c >= start; --c) {
         v.visitArrow(arrow_type(this->cones[c], p), this->coneOrientations[c]);
         v.visitPoint(this->cones[c], this->coneOrientations[c] ? -(this->coneOrientations[c]+1): 0);
+      }
+    }
+    template<typename Visitor>
+    void orientedSupport(const point_type& p, Visitor& v) const {
+      //if (!this->orientCones) {throw ALE::Exception("IFSieve cones have not been oriented.");}
+      if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
+      this->chart.checkPoint(p);
+      const index_type start = this->supportOffsets[p];
+      const index_type end   = this->supportOffsets[p+1];
+
+      for(index_type s = start; s < end; ++s) {
+        //v.visitArrow(arrow_type(this->supports[s], p), this->supportOrientations[s]);
+        //v.visitPoint(this->supports[s], this->supportOrientations[s]);
+        v.visitArrow(arrow_type(this->supports[s], p), 0);
+        v.visitPoint(this->supports[s], 0);
+      }
+    }
+    template<typename Visitor>
+    void orientedReverseSupport(const point_type& p, Visitor& v) const {
+      //if (!this->orientCones) {throw ALE::Exception("IFSieve cones have not been oriented.");}
+      if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
+      this->chart.checkPoint(p);
+      const index_type start = this->supportOffsets[p];
+      const index_type end   = this->supportOffsets[p+1];
+
+      for(index_type s = end-1; s >= start; --s) {
+        //v.visitArrow(arrow_type(this->supports[s], p), this->supportOrientations[s]);
+        //v.visitPoint(this->supports[s], this->supportOrientations[s] ? -(this->supportOrientations[s]+1): 0);
+        v.visitArrow(arrow_type(this->supports[s], p), 0);
+        v.visitPoint(this->supports[s], 0);
       }
     }
     // Currently does only 1 level
