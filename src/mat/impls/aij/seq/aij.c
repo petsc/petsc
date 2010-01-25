@@ -860,6 +860,10 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op,PetscTruth flg)
     case MAT_USE_COMPRESSEDROW:
       a->compressedrow.use = flg;
       break;
+    case MAT_SYMMETRIC:
+    case MAT_STRUCTURALLY_SYMMETRIC:
+    case MAT_HERMITIAN:
+    case MAT_SYMMETRY_ETERNAL:
     case MAT_NEW_DIAGONALS:
     case MAT_IGNORE_OFF_PROC_ENTRIES:
     case MAT_USE_HASH_TABLE:
