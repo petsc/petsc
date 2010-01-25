@@ -7,6 +7,8 @@ boundary conditions in the x- and y-directions.\n\
 \n\
 Equations are rescaled so that the domain size and solution are O(1), details of this scaling\n\
 can be controlled by the options -units_meter, -units_second, and -units_kilogram.\n\
+\n\
+A VTK StructuredGrid output file can be written using the option -o filename.vts\n\
 \n\n";
 
 /*
@@ -1109,71 +1111,92 @@ static PetscErrorCode DAGetMatrix_THI_Tridiagonal(DA da,const MatType mtype,Mat 
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "THIDAVecView_VTK"
-static PetscErrorCode THIDAVecView_VTK(THI thi,DA da,Vec X,const char filename[])
+#define __FUNCT__ "THIDAVecView_VTK_XML"
+static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DA da,Vec X,const char filename[])
 {
-  Units units = thi->units;
+  const PetscInt dof   = 2;
+  Units          units = thi->units;
+  MPI_Comm       comm;
   PetscErrorCode ierr;
-  PetscViewer viewer;
-  PetscInt mx,my,mz,i,j,k;
+  PetscViewer    viewer;
+  PetscMPIInt    rank,size,tag,nn,nmax;
+  PetscInt       mx,my,mz,r,range[6];
+  PetscScalar    *x;
 
   PetscFunctionBegin;
+  comm = ((PetscObject)thi)->comm;
   ierr = DAGetInfo(da,0, &mz,&my,&mx, 0,0,0, 0,0,0,0);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIOpen(((PetscObject)thi)->comm,filename,&viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"# vtk DataFile Version 3.0\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Toy Hydrostatic Ice model with periodic boundary conditions\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"ASCII\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"DATASET STRUCTURED_GRID\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"DIMENSIONS %d %d %d\n",mz,my,mx);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"POINTS %d double\n",mx*my*mz);CHKERRQ(ierr);
-  for (i=0; i<mx; i++) {
-    for (j=0; j<my; j++) {
-      for (k=0; k<mz; k++) {
-        PrmNode p;
-        PetscReal xx = thi->Lx*i/mx,yy = thi->Ly*j/my,zz;
-        thi->initialize(thi,xx,yy,&p);
-        zz = PetscRealPart(p.b) + PetscRealPart(p.h)*k/(mz-1);
-        ierr = PetscViewerASCIIPrintf(viewer,"%f %f %f\n",xx,yy,zz);CHKERRQ(ierr);
-      }
-    }
-  }
-  ierr = PetscViewerASCIIPrintf(viewer,"\nPOINT_DATA %d\n",mx*my*mz);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"VECTORS velocity double\n");CHKERRQ(ierr);
-  {
-    MPI_Comm comm;
-    PetscMPIInt rank,size,tag,nn,nmax;
-    PetscInt n;
-    PetscScalar *array;
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIOpen(comm,filename,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  <StructuredGrid WholeExtent=\"%d %d %d %d %d %d\">\n",0,mz-1,0,my-1,0,mx-1);CHKERRQ(ierr);
 
-    comm = ((PetscObject)thi)->comm;
-    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-    ierr = VecGetSize(X,&n);CHKERRQ(ierr);
-    nn = PetscMPIIntCast(n);
-    ierr = VecGetArray(X,&array);CHKERRQ(ierr);
-    ierr = MPI_Reduce(&nn,&nmax,1,MPIU_INT,MPI_MAX,0,comm);CHKERRQ(ierr);
-    tag  = ((PetscObject) viewer)->tag;
-    if (!rank) {
-      PetscScalar *values;
-      PetscInt p;
-      ierr = PetscMalloc((nmax+1)*sizeof(PetscScalar),&values);CHKERRQ(ierr);
-      for(i=0; i<n; i+=2) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%f %f %f\n",PetscRealPart(array[i])*units->year/units->meter,PetscRealPart(array[i+1])*units->year/units->meter,0);CHKERRQ(ierr);
+  ierr = DAGetCorners(da,range,range+1,range+2,range+3,range+4,range+5);CHKERRQ(ierr);
+  nn = PetscMPIIntCast(range[3]*range[4]*range[5]*dof);
+  ierr = MPI_Reduce(&nn,&nmax,1,MPI_INT,MPI_MAX,0,comm);CHKERRQ(ierr);
+  tag  = ((PetscObject) viewer)->tag;
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  if (!rank) {
+    PetscScalar *array;
+    ierr = PetscMalloc(nmax*sizeof(PetscScalar),&array);CHKERRQ(ierr);
+    for (r=0; r<size; r++) {
+      PetscInt i,j,k,xs,xm,ys,ym,zs,zm;
+      PetscScalar *ptr;
+      MPI_Status status;
+      if (r) {
+        ierr = MPI_Recv(range,6,MPIU_INT,r,tag,comm,MPI_STATUS_IGNORE);CHKERRQ(ierr);
       }
-      for(p=1; p<size; p++) {
-        MPI_Status status;
-        ierr = MPI_Recv(values,(PetscMPIInt)n,MPIU_SCALAR,p,tag,comm,&status);CHKERRQ(ierr);
+      zs = range[0];ys = range[1];xs = range[2];zm = range[3];ym = range[4];xm = range[5];
+      if (xm*ym*zm*dof > nmax) SETERRQ(1,"should not happen");
+      if (r) {
+        ierr = MPI_Recv(array,nmax,MPIU_SCALAR,r,tag,comm,&status);CHKERRQ(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRQ(ierr);
-        for(i=0; i<nn; i+=2) {
-          ierr = PetscViewerASCIIPrintf(viewer,"%f %f %f\n",PetscRealPart(values[i])*units->year/units->meter,PetscRealPart(values[i+1])*units->year/units->meter,0);CHKERRQ(ierr);
+        if (nn != xm*ym*zm*dof) SETERRQ(1,"should not happen");
+        ptr = array;
+      } else ptr = x;
+      ierr = PetscViewerASCIIPrintf(viewer,"    <Piece Extent=\"%d %d %d %d %d %d\">\n",zs,zs+zm-1,ys,ys+ym-1,xs,xs+xm-1);CHKERRQ(ierr);
+
+      ierr = PetscViewerASCIIPrintf(viewer,"      <Points>\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"        <DataArray type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">\n");CHKERRQ(ierr);
+      for (i=xs; i<xs+xm; i++) {
+        for (j=ys; j<ys+ym; j++) {
+          for (k=zs; k<zs+zm; k++) {
+            PrmNode p;
+            PetscReal xx = thi->Lx*i/mx,yy = thi->Ly*j/my,zz;
+            thi->initialize(thi,xx,yy,&p);
+            zz = PetscRealPart(p.b) + PetscRealPart(p.h)*k/(mz-1);
+            ierr = PetscViewerASCIIPrintf(viewer,"%f %f %f\n",xx,yy,zz);CHKERRQ(ierr);
+          }
         }
       }
-      ierr = PetscFree(values);CHKERRQ(ierr);
-    } else {
-      ierr = MPI_Send(array,n,MPIU_SCALAR,0,tag,comm);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"        </DataArray>\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"      </Points>\n");CHKERRQ(ierr);
+
+      ierr = PetscViewerASCIIPrintf(viewer,"      <PointData>\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"        <DataArray type=\"Float32\" Name=\"velocity\" NumberOfComponents=\"3\" format=\"ascii\">\n");CHKERRQ(ierr);
+      for (i=0; i<nn; i+=dof) {
+        ierr = PetscViewerASCIIPrintf(viewer,"%f %f %f\n",PetscRealPart(ptr[i])*units->year/units->meter,PetscRealPart(ptr[i+1])*units->year/units->meter,0.0);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer,"        </DataArray>\n");CHKERRQ(ierr);
+
+      ierr = PetscViewerASCIIPrintf(viewer,"        <DataArray type=\"Int32\" Name=\"rank\" NumberOfComponents=\"1\" format=\"ascii\">\n");CHKERRQ(ierr);
+      for (i=0; i<nn; i+=dof) {
+        ierr = PetscViewerASCIIPrintf(viewer,"%d\n",r);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer,"        </DataArray>\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"      </PointData>\n");CHKERRQ(ierr);
+
+      ierr = PetscViewerASCIIPrintf(viewer,"    </Piece>\n");CHKERRQ(ierr);
     }
-    ierr = VecRestoreArray(X,&array);CHKERRQ(ierr);
+    ierr = PetscFree(array);CHKERRQ(ierr);
+  } else {
+    ierr = MPI_Send(range,6,MPIU_INT,0,tag,comm);CHKERRQ(ierr);
+    ierr = MPI_Send(x,nn,MPIU_SCALAR,0,tag,comm);CHKERRQ(ierr);
   }
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  </StructuredGrid>\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"</VTKFile>\n");CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1224,8 +1247,15 @@ int main(int argc,char *argv[])
   if (thi->tridiagonal) {
     (DMMGGetDA(dmmg))->ops->getmatrix = DAGetMatrix_THI_Tridiagonal;
   }
-  ierr = PetscOptionsSetValue("-dmmg_form_function_ghost","1");CHKERRQ(ierr); /* Spectacularly ugly */
-  ierr = DMMGSetMatType(dmmg,thi->mattype);CHKERRQ(ierr);
+  {
+    /* Use the user-defined matrix type on all but the coarse level */
+    ierr = DMMGSetMatType(dmmg,thi->mattype);CHKERRQ(ierr);
+    /* PCREDUNDANT only works with AIJ, and so do the third-party direct solvers.  So when running in parallel, we can't
+    * use the faster (S)BAIJ formats on the coarse level. */
+    ierr = PetscFree(dmmg[0]->mtype);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(MATAIJ,&dmmg[0]->mtype);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsSetValue("-dmmg_form_function_ghost","1");CHKERRQ(ierr); /* Spectacularly ugly API, our function evaluation provides ghost values */
   ierr = DMMGSetSNESLocal(dmmg,THIFunctionLocal,THIJacobianLocal_3D_Full,0,0);CHKERRQ(ierr);
   if (thi->tridiagonal) {
     ierr = DASetLocalJacobian(DMMGGetDA(dmmg),(DALocalFunction1)THIJacobianLocal_3D_Tridiagonal);CHKERRQ(ierr);
@@ -1246,6 +1276,7 @@ int main(int argc,char *argv[])
       ierr = MatSetOption(B,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
     }
   }
+  ierr = MatSetOptionsPrefix(DMMGGetB(dmmg),"thi_");CHKERRQ(ierr);
   ierr = DMMGSetFromOptions(dmmg);CHKERRQ(ierr);
   ierr = THISetDMMG(thi,dmmg);CHKERRQ(ierr);
 
@@ -1294,7 +1325,7 @@ int main(int argc,char *argv[])
     char filename[PETSC_MAX_PATH_LEN] = "";
     ierr = PetscOptionsGetString(PETSC_NULL,"-o",filename,sizeof(filename),&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = THIDAVecView_VTK(thi,DMMGGetDA(dmmg),DMMGGetx(dmmg),filename);CHKERRQ(ierr);
+      ierr = THIDAVecView_VTK_XML(thi,DMMGGetDA(dmmg),DMMGGetx(dmmg),filename);CHKERRQ(ierr);
     }
   }
 
