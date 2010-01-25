@@ -860,6 +860,20 @@ runex32_27_lu_nd:
 	   else echo "Possible problem with ex32_27_lu_nd, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_27.out
 
+runex32_28_lu:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 8 -pc_factor_mat_ordering_type natural -mat_type baij -pc_type lu > ex32_28.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 8 -pc_factor_mat_ordering_type natural -mat_type baij -pc_type lu -lu_new > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_28.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_28_lu, diffs above"; fi; \
+	   ${RM} -f ex32.tmp; ${RM} -f ex32_28.out
+
+runex32_28_lu_nd:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 8 -pc_factor_mat_ordering_type nd -mat_type baij -pc_type lu > ex32_28.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 8 -pc_factor_mat_ordering_type nd -mat_type baij -pc_type lu -lu_new > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_28.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_28_lu_nd, diffs above"; fi; \
+	   ${RM} -f ex32.tmp; ${RM} -f ex32_28.out
+
 runex32_27:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 7 -pc_factor_mat_ordering_type nd -pc_factor_levels 3 -mat_type baij > ex32_27.out 2>&1;
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 7 -pc_factor_mat_ordering_type nd -pc_factor_levels 3 -mat_type baij -ilu_new > ex32.tmp 2>&1; \
@@ -901,7 +915,7 @@ TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.P
 	                         runex32_11 runex32_11_nd runex32_12 runex32_13 runex32_14 runex32_15 runex32_16 runex32_17 runex32_18  \
                                  runex32_20_lu runex32_20_lu_nd  runex32_23_lu runex32_23_lu_nd  runex32_24_lu runex32_24_lu_nd \
                                  runex32_25_lu runex32_25_lu_nd  runex32_26_lu runex32_26_lu_nd  runex32_27_lu runex32_27_lu_nd \
-                                 runex32_22 runex32_23 runex32_24 runex32_25 runex32_26 runex32_27 runex32_28 \
+                                 runex32_28_lu runex32_28_lu_nd runex32_22 runex32_23 runex32_24 runex32_25 runex32_26 runex32_27 runex32_28 \
 				 runex32_trans runex32_trans_bs_2 runex32_trans_bs_3 runex32_trans_bs_4 runex32_trans_bs_5 runex32_trans_bs_6 \
 				 runex32_trans_bs_7 runex32_trans_bs_N runex32_trans_nd runex32_trans_nd_bs_2 runex32_trans_nd_bs_3 \
 				 runex32_trans_nd_bs_4 runex32_trans_nd_bs_5 runex32_trans_nd_bs_6 runex32_trans_nd_bs_7 runex32_trans_nd_bs_N ex32.rm  
