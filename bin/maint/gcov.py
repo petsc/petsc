@@ -208,6 +208,7 @@ def make_htmlpage(loc,tarballs):
     # ---------------------- Stage 3 -----------------------------------
     print "Creating marked HTML files"
     temp_string = '<a name'
+    spaces_12 = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp'
     file_len = len(src_not_tested_nlines)
     fileopen_error = [];
     ntotal_lines = 0
@@ -266,7 +267,7 @@ def make_htmlpage(loc,tarballs):
                                 line_ctr += 1
                                 if(line_ctr == nlines_not_tested):
                                     last_line_blank = 1
-                                    temp_outline = line
+                                    temp_outline = spaces_12+line
                                     break
                             if (last_line_blank == 0):        
                                 temp_line = 'line'+src_not_tested_lines[file_ctr][line_ctr]
@@ -275,18 +276,18 @@ def make_htmlpage(loc,tarballs):
                                     line_ctr += 1
                                 else:
                                     if pre_issue_fix:
-                                        temp_outline = line[:num+1]+'<font color="black">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  &nbsp;&nbsp;</font>'+line[num+1:]
+                                        temp_outline = line[:num+1]+spaces_12+line[num+1:]
                                     else:
-                                        temp_outline = '<font color="black">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  &nbsp;&nbsp</font>'+line
+                                        temp_outline = spaces_12+line
                         else:
                             if pre_issue_fix:
-                                temp_outline = line[:num+1]+'<font color="black">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  &nbsp;&nbsp;</font>'+line[num+1:]
+                                temp_outline = line[:num+1]+spaces_12+line[num+1:]
                             else:
-                                temp_outline = '<font color="black">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  &nbsp;&nbsp</font>'+line
+                                temp_outline = spaces_12+line
                     else:    
-                        temp_outline = line
+                        temp_outline = spaces_12+line
             else:
-                temp_outline = line
+                temp_outline = spaces_12+line
             print >>outhtml_fid,temp_outline
             outhtml_fid.flush()
 
