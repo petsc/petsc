@@ -25,7 +25,7 @@ def run_gcov(petsc_dir,user,gcov_dir):
     print "Running gcov\n"
     for root,dirs,files in os.walk(os.path.join(PETSC_DIR,"src")):
         # Exclude tests and tutorial directories
-        if root.endswith('tests') | root.endswith('tutorials') | root.endswith('benchmarks'):
+        if root.endswith('tests') | root.endswith('tutorials') | root.endswith('benchmarks') | root.endswith('examples'):
             continue
         os.chdir(root)
         for file_name in files:
