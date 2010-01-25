@@ -1641,7 +1641,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,Pet
     ierr = MatSetSizes(b->B,B->rmap->n,B->cmap->N,B->rmap->n,B->cmap->N);CHKERRQ(ierr);
     ierr = MatSetType(b->B,MATSEQBAIJ);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(B,b->B);CHKERRQ(ierr);
-    ierr = MatStashCreate_Private(((PetscObject)B)->comm,1,&B->bstash);CHKERRQ(ierr);
+    ierr = MatStashCreate_Private(((PetscObject)B)->comm,bs,&B->bstash);CHKERRQ(ierr);
   }
 
   ierr = MatSeqSBAIJSetPreallocation(b->A,bs,d_nz,d_nnz);CHKERRQ(ierr);
