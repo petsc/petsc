@@ -865,6 +865,9 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op,PetscTruth flg)
     case MAT_USE_HASH_TABLE:
       ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
       break;
+    case MAT_USE_INODES:
+      /* Not an error because MatSetOption_SeqAIJ_Inode handles this one */
+      break;
     default:
       SETERRQ1(PETSC_ERR_SUP,"unknown option %d",op);
   }
