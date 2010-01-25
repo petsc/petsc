@@ -512,10 +512,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISAllGather(IS is,IS *isout)
     ierr = ISGetIndices(is,&lindices);CHKERRQ(ierr);
     ierr = MPI_Allgatherv((void*)lindices,nn,MPIU_INT,indices,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr); 
     ierr = ISRestoreIndices(is,&lindices);CHKERRQ(ierr);
-    ierr = PetscFree(sizes);CHKERRQ(ierr);
+    ierr = PetscFree2(sizes,offsets);CHKERRQ(ierr);
 
     ierr = ISCreateGeneral(PETSC_COMM_SELF,N,indices,isout);CHKERRQ(ierr);
-    ierr = PetscFree2(indices,offsets);CHKERRQ(ierr);
+    ierr = PetscFree(indices);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
