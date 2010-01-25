@@ -226,7 +226,6 @@ def make_htmlpage(loc,tarballs):
             fileopen_error.append([src_not_tested_path[file_ctr],src_not_tested_filename[file_ctr]])
             nfiles_not_processed += 1
             continue
-
         temp_list = []
         temp_list.append(src_not_tested_filename[file_ctr])
         temp_list.append(string.split(outhtml_file,sep)[1]) # Relative path of hyperlink
@@ -276,14 +275,14 @@ def make_htmlpage(loc,tarballs):
                                     line_ctr += 1
                                 else:
                                     if pre_issue_fix:
-                                        temp_outline = line[:num+1]+'<font color="green">Tested&nbsp;&nbsp; :&nbsp;&nbsp;</font>'+line[num+1:]
+                                        temp_outline = line[:num+1]+'<font color="black">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  &nbsp;&nbsp;</font>'+line[num+1:]
                                     else:
-                                        temp_outline = '<font color="green">Tested&nbsp;&nbsp; :&nbsp;&nbsp</font>'+line
+                                        temp_outline = '<font color="black">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  &nbsp;&nbsp</font>'+line
                         else:
                             if pre_issue_fix:
-                                temp_outline = line[:num+1]+'<font color="green">Tested&nbsp;&nbsp; :&nbsp;&nbsp;</font>'+line[num+1:]
+                                temp_outline = line[:num+1]+'<font color="black">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  &nbsp;&nbsp;</font>'+line[num+1:]
                             else:
-                                temp_outline = '<font color="green">Tested&nbsp;&nbsp; :&nbsp;&nbsp</font>'+line
+                                temp_outline = '<font color="black">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  &nbsp;&nbsp</font>'+line
                     else:    
                         temp_outline = line
             else:
