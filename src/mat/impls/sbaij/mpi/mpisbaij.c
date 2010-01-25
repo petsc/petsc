@@ -258,7 +258,7 @@ PetscErrorCode MatSetValuesBlocked_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im
   Mat_MPISBAIJ    *baij = (Mat_MPISBAIJ*)mat->data;
   const MatScalar *value;
   MatScalar       *barray=baij->barray;
-  PetscTruth      roworiented = baij->roworiented;
+  PetscTruth      roworiented = baij->roworiented,ignore_ltriangular = ((Mat_SeqSBAIJ*)baij->A->data)->ignore_ltriangular;
   PetscErrorCode  ierr;
   PetscInt        i,j,ii,jj,row,col,rstart=baij->rstartbs;
   PetscInt        rend=baij->rendbs,cstart=baij->rstartbs,stepval;
@@ -283,6 +283,10 @@ PetscErrorCode MatSetValuesBlocked_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im
     if (im[i] >= rstart && im[i] < rend) {
       row = im[i] - rstart;
       for (j=0; j<n; j++) {
+        if (im[i] > in[j]) {
+          if (ignore_ltriangular) continue; /* ignore lower triangular blocks */
+          else SETERRQ(PETSC_ERR_USER,"Lower triangular value cannot be set for sbaij format. Ignoring these values, run with -mat_ignore_lower_triangular or call MatSetOption(mat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE)");
+        }
         /* If NumCol = 1 then a copy is not required */
         if ((roworiented) && (n == 1)) {
           barray = (MatScalar*) v + i*bs2;
