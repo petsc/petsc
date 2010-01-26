@@ -1149,7 +1149,6 @@ PetscErrorCode DAGetMatrix2d_MPIBAIJ(DA da,Mat J)
      col - number of colors needed in one direction for single component problem
   */
   ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&nc,&s,&wrap,&st);CHKERRQ(ierr);
-  if (wrap != DA_NONPERIODIC) SETERRQ(PETSC_ERR_SUP,"Currently no support for periodic");
   col = 2*s + 1;
 
   ierr = DAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
@@ -1173,22 +1172,11 @@ PetscErrorCode DAGetMatrix2d_MPIBAIJ(DA da,Mat J)
 
       /* Find block columns in block row */
       cnt  = 0;
-      if (st == DA_STENCIL_BOX) {   /* if using BOX stencil */
-        for (ii=istart; ii<iend+1; ii++) {
-          for (jj=jstart; jj<jend+1; jj++) {
-            cols[cnt++]  = slot + ii + gnx*jj; 
+      for (ii=istart; ii<iend+1; ii++) {
+        for (jj=jstart; jj<jend+1; jj++) {
+          if (st == DA_STENCIL_BOX || !ii || !jj) { /* BOX or on the STAR */
+            cols[cnt++]  = slot + ii + gnx*jj;
           }
-        }
-      } else {  /* Star stencil */
-        cnt  = 0;
-        for (ii=istart; ii<iend+1; ii++) {
-          if (ii) { /* jj must be zero */
-            cols[cnt++]  = slot + ii;
-          } else {
-            for (jj=jstart; jj<jend+1; jj++) { /* ii must be zero */
-              cols[cnt++] = slot + gnx*jj;
-            } 
-          } 
         }
       }
       ierr = MatPreallocateSetLocal(ltogb,1,&slot,cnt,cols,dnz,onz);CHKERRQ(ierr);
@@ -1217,24 +1205,13 @@ PetscErrorCode DAGetMatrix2d_MPIBAIJ(DA da,Mat J)
 	jend   = DAYPeriodic(wrap) ?  s : (PetscMin(s,n-j-1));
 	slot = i - gxs + gnx*(j - gys); 
 	cnt  = 0;
-	if (st == DA_STENCIL_BOX) {   /* if using BOX stencil */
-	  for (ii=istart; ii<iend+1; ii++) {
-	    for (jj=jstart; jj<jend+1; jj++) {
-	      cols[cnt++]  = slot + ii + gnx*jj; 
-	    }
-	  }
-	} else {  /* Star stencil */
-	  cnt  = 0;
-	  for (ii=istart; ii<iend+1; ii++) {
-	    if (ii) { /* jj must be zero */
-	      cols[cnt++]  = slot + ii;
-	    } else {
-	      for (jj=jstart; jj<jend+1; jj++) {/* ii must be zero */
-		cols[cnt++]  = slot + gnx*jj;   
-	      }
-	    }
-	  }
-	} 
+        for (ii=istart; ii<iend+1; ii++) {
+          for (jj=jstart; jj<jend+1; jj++) {
+            if (st == DA_STENCIL_BOX || !ii || !jj) { /* BOX or on the STAR */
+              cols[cnt++]  = slot + ii + gnx*jj;
+            }
+          }
+        }
 	ierr = MatSetValuesBlockedLocal(J,1,&slot,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
@@ -1267,7 +1244,6 @@ PetscErrorCode DAGetMatrix3d_MPIBAIJ(DA da,Mat J)
   
   */
   ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,&wrap,&st);CHKERRQ(ierr);
-  if (wrap != DA_NONPERIODIC) SETERRQ(PETSC_ERR_SUP,"Currently no support for periodic");
   col    = 2*s + 1;
 
   ierr = DAGetCorners(da,&xs,&ys,&zs,&nx,&ny,&nz);CHKERRQ(ierr);
@@ -1295,32 +1271,11 @@ PetscErrorCode DAGetMatrix3d_MPIBAIJ(DA da,Mat J)
 
 	/* Find block columns in block row */
 	cnt  = 0;
-	if (st == DA_STENCIL_BOX) {   /* if using BOX stencil */
-	  for (ii=istart; ii<iend+1; ii++) {
-	    for (jj=jstart; jj<jend+1; jj++) {
-	      for (kk=kstart; kk<kend+1; kk++) {
+        for (ii=istart; ii<iend+1; ii++) {
+          for (jj=jstart; jj<jend+1; jj++) {
+            for (kk=kstart; kk<kend+1; kk++) {
+              if ((st == DA_STENCIL_BOX) || ((!ii && !jj) || (!jj && !kk) || (!ii && !kk))) {/* entries on star*/
 		cols[cnt++]  = slot + ii + gnx*jj + gnx*gny*kk;
-	      }
-	    }
-	  }
-	} else {  /* Star stencil */
-	  cnt  = 0;
-	  for (ii=istart; ii<iend+1; ii++) {
-	    if (ii) {
-	      /* jj and kk must be zero */
-	      /* cols[cnt++]  = slot + ii + gnx*jj + gnx*gny*kk; */
-	      cols[cnt++]  = slot + ii;
-	    } else {
-	      for (jj=jstart; jj<jend+1; jj++) {
-		if (jj) {
-                  /* ii and kk must be zero */
-		  cols[cnt++]  = slot + gnx*jj;
-		} else {
-		  /* ii and jj must be zero */
-		  for (kk=kstart; kk<kend+1; kk++) {
-		    cols[cnt++]  = slot + gnx*gny*kk;
-		  }
-		}
 	      }
 	    }
 	  }
@@ -1357,35 +1312,15 @@ PetscErrorCode DAGetMatrix3d_MPIBAIJ(DA da,Mat J)
 	  slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
 	
 	  cnt  = 0;
-	  if (st == DA_STENCIL_BOX) {   /* if using BOX stencil */
-	    for (ii=istart; ii<iend+1; ii++) {
-	      for (jj=jstart; jj<jend+1; jj++) {
-		for (kk=kstart; kk<kend+1; kk++) {
-		  cols[cnt++]  = slot + ii + gnx*jj + gnx*gny*kk;
-		}
-	      }
-	    }
-	  } else {  /* Star stencil */
-	    cnt  = 0;
-	    for (ii=istart; ii<iend+1; ii++) {
-	      if (ii) {
-		/* jj and kk must be zero */
-		cols[cnt++]  = slot + ii;
-	      } else {
-		for (jj=jstart; jj<jend+1; jj++) {
-		  if (jj) {
-		    /* ii and kk must be zero */
-		    cols[cnt++]  = slot + gnx*jj;
-		  } else {
-		    /* ii and jj must be zero */
-		    for (kk=kstart; kk<kend+1; kk++) {
-		      cols[cnt++]  = slot + gnx*gny*kk;
-		    }
-		  }
-		}
-	      }
-	    }
-	  }
+          for (ii=istart; ii<iend+1; ii++) {
+            for (jj=jstart; jj<jend+1; jj++) {
+              for (kk=kstart; kk<kend+1; kk++) {
+                if ((st == DA_STENCIL_BOX) || ((!ii && !jj) || (!jj && !kk) || (!ii && !kk))) {/* entries on star*/
+                  cols[cnt++]  = slot + ii + gnx*jj + gnx*gny*kk;
+                }
+              }
+            }
+          }
 	  ierr = MatSetValuesBlockedLocal(J,1,&slot,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
 	}
       }
@@ -1397,6 +1332,28 @@ PetscErrorCode DAGetMatrix3d_MPIBAIJ(DA da,Mat J)
   ierr = PetscFree(cols);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "L2GFilterUpperTriangular"
+/*
+  This helper is for of SBAIJ preallocation, to discard the lower-triangular values which are difficult to
+  identify in the local ordering with periodic domain.
+*/
+static PetscErrorCode L2GFilterUpperTriangular(ISLocalToGlobalMapping ltog,PetscInt *row,PetscInt *cnt,PetscInt col[])
+{
+  PetscErrorCode ierr;
+  PetscInt i,n;
+
+  PetscFunctionBegin;
+  ierr = ISLocalToGlobalMappingApply(ltog,1,row,row);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApply(ltog,*cnt,col,col);CHKERRQ(ierr);
+  for (i=0,n=0; i<*cnt; i++) {
+    if (col[i] >= *row) col[n++] = col[i];
+  }
+  *cnt = n;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix2d_MPISBAIJ" 
 PetscErrorCode DAGetMatrix2d_MPISBAIJ(DA da,Mat J)
@@ -1404,7 +1361,7 @@ PetscErrorCode DAGetMatrix2d_MPISBAIJ(DA da,Mat J)
   PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
   PetscInt               m,n,dim,s,*cols,nc,col,cnt,*dnz,*onz;
-  PetscInt               iend,jend,ii,jj;
+  PetscInt               istart,iend,jstart,jend,ii,jj;
   MPI_Comm               comm;
   PetscScalar            *values;
   DAPeriodicType         wrap;
@@ -1417,7 +1374,6 @@ PetscErrorCode DAGetMatrix2d_MPISBAIJ(DA da,Mat J)
      col - number of colors needed in one direction for single component problem
   */
   ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&nc,&s,&wrap,&st);CHKERRQ(ierr);
-  if (wrap != DA_NONPERIODIC) SETERRQ(PETSC_ERR_SUP,"Currently no support for periodic");
   col = 2*s + 1;
 
   ierr = DAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
@@ -1432,32 +1388,24 @@ PetscErrorCode DAGetMatrix2d_MPISBAIJ(DA da,Mat J)
   /* determine the matrix preallocation information */
   ierr = MatPreallocateSymmetricInitialize(comm,nx*ny,nx*ny,dnz,onz);CHKERRQ(ierr);
   for (i=xs; i<xs+nx; i++) {
+    istart = DAXPeriodic(wrap) ? -s : (PetscMax(-s,-i));
     iend   = DAXPeriodic(wrap) ?  s : (PetscMin(s,m-i-1));
     for (j=ys; j<ys+ny; j++) {
+      jstart = DAYPeriodic(wrap) ? -s : (PetscMax(-s,-j));
       jend   = DAYPeriodic(wrap) ?  s : (PetscMin(s,n-j-1));
-      slot = i - gxs + gnx*(j - gys); 
+      slot = i - gxs + gnx*(j - gys);
 
       /* Find block columns in block row */
       cnt  = 0;
-      if (st == DA_STENCIL_BOX) {   /* if using BOX stencil */
-        for (ii=0; ii<iend+1; ii++) { 
-          for (jj=0; jj<jend+1; jj++) { 
-            cols[cnt++]  = slot + ii + gnx*jj; 
+      for (ii=istart; ii<iend+1; ii++) {
+        for (jj=jstart; jj<jend+1; jj++) {
+          if (st == DA_STENCIL_BOX || !ii || !jj) {
+            cols[cnt++]  = slot + ii + gnx*jj;
           }
         }
-      } else {  /* Star stencil */
-        cnt  = 0;
-        for (ii=0; ii<iend+1; ii++) { 
-          if (ii) { /* jj must be zero */
-            cols[cnt++]  = slot + ii;
-          } else {
-            for (jj=0; jj<jend+1; jj++) { /* ii must be zero */ 
-              cols[cnt++] = slot + gnx*jj;
-            } 
-          } 
-        }
       }
-      ierr = MatPreallocateSymmetricSetLocal(ltogb,1,&slot,cnt,cols,dnz,onz);CHKERRQ(ierr);
+      ierr = L2GFilterUpperTriangular(ltogb,&slot,&cnt,cols);CHKERRQ(ierr);
+      ierr = MatPreallocateSymmetricSet(slot,cnt,cols,dnz,onz);CHKERRQ(ierr);
     } 
   }
   ierr = MatSeqSBAIJSetPreallocation(J,nc,0,dnz);CHKERRQ(ierr);  
@@ -1476,30 +1424,24 @@ PetscErrorCode DAGetMatrix2d_MPISBAIJ(DA da,Mat J)
     ierr = PetscMalloc(col*col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     ierr = PetscMemzero(values,col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
+      istart = DAXPeriodic(wrap) ? -s : (PetscMax(-s,-i));
       iend   = DAXPeriodic(wrap) ?  s : (PetscMin(s,m-i-1));
       for (j=ys; j<ys+ny; j++) {
-	jend   = DAYPeriodic(wrap) ?  s : (PetscMin(s,n-j-1));
-	slot = i - gxs + gnx*(j - gys); 
-	cnt  = 0;
-	if (st == DA_STENCIL_BOX) {   /* if using BOX stencil */
-	  for (ii=0; ii<iend+1; ii++) {  
-	    for (jj=0; jj<jend+1; jj++) {
-	      cols[cnt++]  = slot + ii + gnx*jj; 
-	    }
-	  }
-	} else {  /* Star stencil */
-	  cnt  = 0;
-	  for (ii=0; ii<iend+1; ii++) { 
-	    if (ii) { /* jj must be zero */
-	      cols[cnt++]  = slot + ii;
-	    } else {
-	      for (jj=0; jj<jend+1; jj++) {/* ii must be zero */
-		cols[cnt++]  = slot + gnx*jj;   
-	      }
-	    }
-	  }
-	} 
-	ierr = MatSetValuesBlockedLocal(J,1,&slot,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+        jstart = DAYPeriodic(wrap) ? -s : (PetscMax(-s,-j));
+        jend   = DAYPeriodic(wrap) ?  s : (PetscMin(s,n-j-1));
+        slot = i - gxs + gnx*(j - gys);
+
+        /* Find block columns in block row */
+        cnt  = 0;
+        for (ii=istart; ii<iend+1; ii++) {
+          for (jj=jstart; jj<jend+1; jj++) {
+            if (st == DA_STENCIL_BOX || !ii || !jj) {
+              cols[cnt++]  = slot + ii + gnx*jj;
+            }
+          }
+        }
+        ierr = L2GFilterUpperTriangular(ltogb,&slot,&cnt,cols);CHKERRQ(ierr);
+	ierr = MatSetValuesBlocked(J,1,&slot,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
@@ -1517,7 +1459,7 @@ PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA da,Mat J)
   PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
   PetscInt               m,n,dim,s,*cols,k,nc,col,cnt,p,*dnz,*onz;
-  PetscInt               iend,jend,kend,zs,nz,gzs,gnz,ii,jj,kk;
+  PetscInt               istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
   MPI_Comm               comm;
   PetscScalar            *values;
   DAPeriodicType         wrap;
@@ -1530,7 +1472,6 @@ PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA da,Mat J)
      col - number of colors needed in one direction for single component problem 
   */
   ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,&wrap,&st);CHKERRQ(ierr);
-  if (wrap != DA_NONPERIODIC) SETERRQ(PETSC_ERR_SUP,"Currently no support for periodic");
   col = 2*s + 1;
 
   ierr = DAGetCorners(da,&xs,&ys,&zs,&nx,&ny,&nz);CHKERRQ(ierr);
@@ -1546,46 +1487,30 @@ PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA da,Mat J)
   /* determine the matrix preallocation information */
   ierr = MatPreallocateSymmetricInitialize(comm,nx*ny*nz,nx*ny*nz,dnz,onz);CHKERRQ(ierr);
   for (i=xs; i<xs+nx; i++) {
+    istart = DAXPeriodic(wrap) ? -s : (PetscMax(-s,-i));
     iend   = DAXPeriodic(wrap) ?  s : (PetscMin(s,m-i-1));
     for (j=ys; j<ys+ny; j++) {
+      jstart = DAYPeriodic(wrap) ? -s : (PetscMax(-s,-j));
       jend   = DAYPeriodic(wrap) ?  s : (PetscMin(s,n-j-1));
       for (k=zs; k<zs+nz; k++) {
+        kstart = DAZPeriodic(wrap) ? -s : (PetscMax(-s,-k));
 	kend   = DAZPeriodic(wrap) ?  s : (PetscMin(s,p-k-1));
 
 	slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
 
 	/* Find block columns in block row */
 	cnt  = 0;
-	if (st == DA_STENCIL_BOX) {   /* if using BOX stencil */
-	  for (ii=0; ii<iend+1; ii++) {
-	    for (jj=0; jj<jend+1; jj++) {
-	      for (kk=0; kk<kend+1; kk++) {
-		cols[cnt++]  = slot + ii + gnx*jj + gnx*gny*kk;
-	      }
-	    }
-	  }
-	} else {  /* Star stencil */
-	  cnt  = 0;
-	  for (ii=0; ii<iend+1; ii++) {
-	    if (ii) {
-	      /* jj and kk must be zero */
-	      cols[cnt++]  = slot + ii;
-	    } else {
-	      for (jj=0; jj<jend+1; jj++) {
-		if (jj) {
-                  /* ii and kk must be zero */
-		  cols[cnt++]  = slot + gnx*jj;
-		} else {
-		  /* ii and jj must be zero */
-		  for (kk=0; kk<kend+1; kk++) {
-		    cols[cnt++]  = slot + gnx*gny*kk;
-		  }
-		}
-	      }
-	    }
-	  }
-	}
-	ierr = MatPreallocateSymmetricSetLocal(ltogb,1,&slot,cnt,cols,dnz,onz);CHKERRQ(ierr);
+        for (ii=istart; ii<iend+1; ii++) {
+          for (jj=jstart; jj<jend+1; jj++) {
+            for (kk=kstart; kk<kend+1; kk++) {
+              if ((st == DA_STENCIL_BOX) || (!ii && !jj) || (!jj && !kk) || (!ii && !kk)) {
+                cols[cnt++] = slot + ii + gnx*jj + gnx*gny*kk;
+              }
+            }
+          }
+        }
+        ierr = L2GFilterUpperTriangular(ltogb,&slot,&cnt,cols);CHKERRQ(ierr);
+        ierr = MatPreallocateSymmetricSet(slot,cnt,cols,dnz,onz);CHKERRQ(ierr);
       }
     }
   }
@@ -1605,45 +1530,29 @@ PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA da,Mat J)
     ierr = PetscMalloc(col*col*col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     ierr = PetscMemzero(values,col*col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
+      istart = DAXPeriodic(wrap) ? -s : (PetscMax(-s,-i));
       iend   = DAXPeriodic(wrap) ?  s : (PetscMin(s,m-i-1));
       for (j=ys; j<ys+ny; j++) {
+        jstart = DAYPeriodic(wrap) ? -s : (PetscMax(-s,-j));
 	jend   = DAYPeriodic(wrap) ?  s : (PetscMin(s,n-j-1));
 	for (k=zs; k<zs+nz; k++) {
+          kstart = DAZPeriodic(wrap) ? -s : (PetscMax(-s,-k));
 	  kend   = DAZPeriodic(wrap) ?  s : (PetscMin(s,p-k-1));
 	  
 	  slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
 	  
 	  cnt  = 0;
-	  if (st == DA_STENCIL_BOX) {   /* if using BOX stencil */
-	    for (ii=0; ii<iend+1; ii++) {
-	      for (jj=0; jj<jend+1; jj++) {
-		for (kk=0; kk<kend+1; kk++) {
+          for (ii=istart; ii<iend+1; ii++) {
+            for (jj=jstart; jj<jend+1; jj++) {
+              for (kk=kstart; kk<kend+1; kk++) {
+                if ((st == DA_STENCIL_BOX) || (!ii && !jj) || (!jj && !kk) || (!ii && !kk)) {
 		  cols[cnt++]  = slot + ii + gnx*jj + gnx*gny*kk;
 		}
 	      }
 	    }
-	  } else {  /* Star stencil */
-	    cnt  = 0;
-	    for (ii=0; ii<iend+1; ii++) {
-	      if (ii) {
-		/* jj and kk must be zero */
-		cols[cnt++]  = slot + ii;
-	      } else {
-		for (jj=0; jj<jend+1; jj++) {
-		  if (jj) {
-		    /* ii and kk must be zero */
-		    cols[cnt++]  = slot + gnx*jj;
-		  } else {
-		    /* ii and jj must be zero */
-		    for (kk=0; kk<kend+1; kk++) {
-		      cols[cnt++]  = slot + gnx*gny*kk;
-		    }
-		  }
-		}
-	      }
-	    }
 	  }
-	  ierr = MatSetValuesBlockedLocal(J,1,&slot,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+          ierr = L2GFilterUpperTriangular(ltogb,&slot,&cnt,cols);CHKERRQ(ierr);
+          ierr = MatSetValuesBlocked(J,1,&slot,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
 	}
       }
     }
@@ -1806,7 +1715,3 @@ PetscErrorCode DAGetMatrix3d_MPIAIJ_Fill(DA da,Mat J)
   ierr = PetscFree(cols);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
-

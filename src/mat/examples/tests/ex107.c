@@ -64,7 +64,7 @@ int main(int argc,char **args)
   /* printf(" [%d] C m: %d, Istart/end: %d %d\n",rank,m,Istart,Iend); */
   
   ierr = PetscMalloc((m*M+1)*sizeof(PetscScalar),&array);CHKERRQ(ierr);
-  ierr = PetscMalloc2(m,PetscInt,&im,M,PetscScalar,&in);CHKERRQ(ierr);
+  ierr = PetscMalloc2(m,PetscInt,&im,M,PetscInt,&in);CHKERRQ(ierr);
   k = 0;
   for (j=0; j<M; j++){ /* column oriented! */
     in[j] = j;

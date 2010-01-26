@@ -1268,6 +1268,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetRandom(Vec x,PetscRandom rctx)
   PetscFunctionReturn(0);
 } 
 
+#undef __FUNCT__  
+#define __FUNCT__ "VecZeroEntries"
 /*@
   VecZeroEntries - puts a 0.0 in each element of a vector
 

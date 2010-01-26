@@ -263,7 +263,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
   PetscInt       m,levels = 1,cycles;
   PetscTruth     flg;
   PC_MG          **mg = (PC_MG**)pc->data;
-  PCMGType       mgtype = PC_MG_ADDITIVE;
+  PCMGType       mgtype;
   PCMGCycleType  mgctype;
 
   PetscFunctionBegin;
@@ -291,6 +291,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
     if (flg) {
       ierr = PCMGSetNumberSmoothDown(pc,m);CHKERRQ(ierr);
     }
+    mgtype = mg[0]->am;
     ierr = PetscOptionsEnum("-pc_mg_type","Multigrid type","PCMGSetType",PCMGTypes,(PetscEnum)mgtype,(PetscEnum*)&mgtype,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCMGSetType(pc,mgtype);CHKERRQ(ierr);

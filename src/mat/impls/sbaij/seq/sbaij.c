@@ -630,7 +630,13 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[]
 #if defined(PETSC_USE_DEBUG)  
       if (col >= a->nbs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",col,a->nbs-1);
 #endif
-      if (col < row) continue; /* ignore lower triangular block */
+      if (col < row) {
+        if (a->ignore_ltriangular) {
+          continue; /* ignore lower triangular block */
+        } else {
+          SETERRQ(PETSC_ERR_USER,"Lower triangular value cannot be set for sbaij format. Ignoring these values, run with -mat_ignore_lower_triangular or call MatSetOption(mat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE)");
+        }
+      }
       if (roworiented) { 
         value = v + k*(stepval+bs)*bs + l*bs;
       } else {
@@ -836,7 +842,7 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
   
   /* diagonals may have moved, reset it */
   if (a->diag) {
-    ierr = PetscMemcpy(a->diag,ai,(mbs+1)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(a->diag,ai,mbs*sizeof(PetscInt));CHKERRQ(ierr);
   } 
   if (fshift && a->nounused == -1) {
     SETERRQ4(PETSC_ERR_PLIB, "Unused space detected in matrix: %D X %D block size %D, %D unneeded", m, A->cmap->n, A->rmap->bs, fshift*bs2);
@@ -1583,7 +1589,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,Pet
     b->singlemalloc = PETSC_TRUE;
   
     /* pointer to beginning of each row */
-    b->i[0] = 0.;
+    b->i[0] = 0;
     for (i=1; i<mbs+1; i++) {
       b->i[i] = b->i[i-1] + b->imax[i-1];
     }
@@ -2062,8 +2068,8 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
       c->diag      = a->diag;
       c->free_diag = PETSC_FALSE;
     } else {
-      ierr = PetscMalloc((mbs+1)*sizeof(PetscInt),&c->diag);CHKERRQ(ierr);
-      ierr = PetscLogObjectMemory(C,(mbs+1)*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscMalloc(mbs*sizeof(PetscInt),&c->diag);CHKERRQ(ierr);
+      ierr = PetscLogObjectMemory(C,mbs*sizeof(PetscInt));CHKERRQ(ierr);
       for (i=0; i<mbs; i++) {
 	c->diag[i] = a->diag[i];
       }
@@ -2166,7 +2172,7 @@ PetscErrorCode MatLoad_SeqSBAIJ(PetscViewer viewer, const MatType type,Mat *A)
   a = (Mat_SeqSBAIJ*)B->data;
 
   /* set matrix "i" values */
-  a->i[0] = 0.;
+  a->i[0] = 0;
   for (i=1; i<= mbs; i++) {
     a->i[i]      = a->i[i-1] + s_browlengths[i-1];
     a->ilen[i-1] = s_browlengths[i-1];

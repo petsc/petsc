@@ -24,8 +24,8 @@ def run_gcov(petsc_dir,user,gcov_dir):
     os.mkdir(gcov_dir)
     print "Running gcov\n"
     for root,dirs,files in os.walk(os.path.join(PETSC_DIR,"src")):
-        # Exclude tests and tutorial directories
-        if root.endswith('tests') | root.endswith('tutorials'):
+        # Exclude 'examples','tests','tutorials',and 'benchmarks' directories
+        if (root.find('tests') != -1) | (root.find('tutorials') != -1) | (root.find('benchmarks') != -1)| (root.find('examples') != -1) :
             continue
         os.chdir(root)
         for file_name in files:
@@ -208,6 +208,7 @@ def make_htmlpage(loc,tarballs):
     # ---------------------- Stage 3 -----------------------------------
     print "Creating marked HTML files"
     temp_string = '<a name'
+    spaces_12 = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp'
     file_len = len(src_not_tested_nlines)
     fileopen_error = [];
     ntotal_lines = 0
@@ -226,7 +227,6 @@ def make_htmlpage(loc,tarballs):
             fileopen_error.append([src_not_tested_path[file_ctr],src_not_tested_filename[file_ctr]])
             nfiles_not_processed += 1
             continue
-
         temp_list = []
         temp_list.append(src_not_tested_filename[file_ctr])
         temp_list.append(string.split(outhtml_file,sep)[1]) # Relative path of hyperlink
@@ -237,22 +237,28 @@ def make_htmlpage(loc,tarballs):
         nlines_not_tested = src_not_tested_nlines[file_ctr]
         line_ctr = 0
         last_line_blank = 0
+        src_line = 0
         for line_temp in inhtml_fid:
+            pre_issue_fix = 0
             line = line_temp.split('\n')[0]
             if(line.find(temp_string) != -1):
                 nsrc_lines = int(line.split(':')[0].split('line')[1].split('"')[0].lstrip())
+                src_line = 1;
             if (line_ctr < nlines_not_tested):
                 temp_line = 'line'+src_not_tested_lines[file_ctr][line_ctr]
                 if (line.find(temp_line) != -1):
                     # Untested line
                     if(line.startswith('<pre width=')):
                         num = line.find('>')
-                        temp_outline = line[:num+1]+'<table cellspacing="0" cellpadding="0"><tr><td bgcolor="yellow"><font size="4"color="red">!</font>'+line[num+1:]+'</td></tr></table>'
+                        temp_outline = line[:num+1]+'<font color="red">Untested :&nbsp;&nbsp;</font>'+line[num+1:]
                     else:
-                        temp_outline = '<table cellspacing="0" cellpadding="0"><tr><td bgcolor="yellow"><font size="4"color="red">!</font>'+line+'</td></tr></table>'
+                        temp_outline = '<font color="red">Untested :&nbsp;&nbsp;</font>'+line
                         
                     line_ctr += 1
                 else: 
+                    if(line.startswith('<pre width=')):
+                        pre_issue_fix = 1;
+                        num = line.find('>')
                     if(line.find(temp_string) != -1):
                         line_num = int(line.split(':')[0].split('line')[1].split('"')[0].lstrip())
 
@@ -261,22 +267,27 @@ def make_htmlpage(loc,tarballs):
                                 line_ctr += 1
                                 if(line_ctr == nlines_not_tested):
                                     last_line_blank = 1
-                                    temp_outline = line
+                                    temp_outline = spaces_12+line
                                     break
                             if (last_line_blank == 0):        
                                 temp_line = 'line'+src_not_tested_lines[file_ctr][line_ctr]
                                 if(line.find(temp_line) != -1):
-                                    temp_outline =  '<table cellspacing="0"><tr><td bgcolor="yellow">'+'<font size="4" color="red">!</font>'+line+'</td></tr></table>'
+                                    temp_outline =  '<font color="red">Untested :&nbsp;&nbsp</font>'+line
                                     line_ctr += 1
                                 else:
-                                    temp_outline = line
+                                    if pre_issue_fix:
+                                        temp_outline = line[:num+1]+spaces_12+line[num+1:]
+                                    else:
+                                        temp_outline = spaces_12+line
                         else:
-                            temp_outline = line
+                            if pre_issue_fix:
+                                temp_outline = line[:num+1]+spaces_12+line[num+1:]
+                            else:
+                                temp_outline = spaces_12+line
                     else:    
-                        temp_outline = line
+                        temp_outline = spaces_12+line
             else:
-                temp_outline = line
-
+                temp_outline = spaces_12+line
             print >>outhtml_fid,temp_outline
             outhtml_fid.flush()
 
