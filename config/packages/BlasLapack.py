@@ -360,11 +360,15 @@ class Configure(config.package.Package):
       if line.startswith('COPTFLAGS '):
         self.setCompilers.pushLanguage('C')
         line = 'COPTFLAGS  = '+self.setCompilers.getCompilerFlags()
+        #  the f2cblaslapack source code only supports double precision
+        line += ' -DDOUBLE=double -DLONG=""\n'
         noopt = self.checkNoOptFlag()
         self.setCompilers.popLanguage()
       if line.startswith('CNOOPT'):
         self.setCompilers.pushLanguage('C')
         line = 'CNOOPT = '+noopt+ ' '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPrecisionFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())
+        #  the f2cblaslapack source code only supports double precision
+        line += ' -DDOUBLE=double -DLONG=""\n'
         self.setCompilers.popLanguage()
       if line.startswith('FC  '):
         fc = self.compilers.FC
