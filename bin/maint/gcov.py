@@ -24,8 +24,8 @@ def run_gcov(petsc_dir,user,gcov_dir):
     os.mkdir(gcov_dir)
     print "Running gcov\n"
     for root,dirs,files in os.walk(os.path.join(PETSC_DIR,"src")):
-        # Exclude 'examples','tests','tutorials',and 'benchmarks' directories
-        if (root.find('tests') != -1) | (root.find('tutorials') != -1) | (root.find('benchmarks') != -1)| (root.find('examples') != -1) :
+        # Directories to skip
+        if (root.find('tests') != -1) | (root.find('tutorials') != -1) | (root.find('benchmarks') != -1)| (root.find('examples') != -1) | (root.find('src'+os.sep+'dm'+os.sep+'mesh') != -1) | (root.find('draw'+os.sep+'impls'+os.sep+'win32') != -1) | (root.find('impls'+os.sep+'python') != -1) :
             continue
         os.chdir(root)
         for file_name in files:
@@ -216,7 +216,6 @@ def make_htmlpage(loc,tarballs):
     output_list = []
     nfiles_not_processed = 0
     sep = LOC+os.sep
-
     for file_ctr in range(0,file_len):
         inhtml_file = PETSC_DIR+os.sep+src_not_tested_path[file_ctr]+os.sep+src_not_tested_filename[file_ctr]+'.html'
         outhtml_file = LOC+os.sep+src_not_tested_path[file_ctr]+os.sep+src_not_tested_filename[file_ctr]+'.gcov.html'
