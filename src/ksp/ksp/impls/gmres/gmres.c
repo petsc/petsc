@@ -358,7 +358,7 @@ static PetscErrorCode BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,P
   PetscFunctionReturn(0);
 }
 /*
-   Do the scalar work for the orthogonalization.  Return new residual.
+   Do the scalar work for the orthogonalization.  Return new residual norm.
  */
 #undef __FUNCT__  
 #define __FUNCT__ "GMRESUpdateHessenberg"

@@ -54,6 +54,7 @@ E*/
 #define KSPSYMMLQ     "symmlq"
 #define KSPLCD        "lcd"
 #define KSPPYTHON     "python"
+#define KSPBROYDEN    "broyden"
 
 /* Logging support */
 extern PetscCookie PETSCKSP_DLLEXPORT KSP_COOKIE;
