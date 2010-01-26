@@ -12,7 +12,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.2/downloads/openmpi-1.2.8.tar.gz']
-    self.download_mpich     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich2-1.0.8.tar.gz']
+    self.download_mpich     = ['http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.2.1/mpich2-1.2.1.tar.gz']
     self.download           = ['redefine']
     self.functions          = ['MPI_Init', 'MPI_Comm_create']
     self.includes           = ['mpi.h']
@@ -60,8 +60,8 @@ class Configure(config.package.Package):
     help.addArgument('MPI', '-with-mpiexec=<prog>',                              nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
     help.addArgument('MPI', '-with-mpi-compilers=<bool>',                        nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
     help.addArgument('MPI', '-known-mpi-shared=<bool>',                           nargs.ArgBool(None, None, 'Indicates the MPI libraries are shared (the usual test will be skipped)'))
-    help.addArgument('MPI', '-download-mpich-pm=gforker or mpd',                 nargs.Arg(None, 'gforker', 'Launcher for MPI processes')) 
-    help.addArgument('MPI', '-download-mpich-device=ch3:shm or see mpich2 docs', nargs.Arg(None, None, 'Communicator for MPI processes'))
+    help.addArgument('MPI', '-download-mpich-pm=gforker hydra or mpd',           nargs.Arg(None, 'gforker', 'Launcher for MPI processes'))
+    help.addArgument('MPI', '-download-mpich-device=ch3:nemesis or see mpich2 docs', nargs.Arg(None, 'ch3:sock', 'Communicator for MPI processes'))
     help.addArgument('MPI', '-download-mpich-mpe',                               nargs.ArgBool(None, 0, 'Install MPE with MPICH'))
     help.addArgument('MPI', '-download-mpich-shared',                            nargs.ArgBool(None, 0, 'Install MPICH with shared libraries'))    
     return
