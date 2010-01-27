@@ -262,7 +262,7 @@ void (*signal())();
     if otherInclude:
       includes += '#include <'+otherInclude+'>\n'
     body     = 'FILE *f = fopen("'+filename+'", "w");\n\nif (!f) exit(1);\nfprintf(f, "%lu\\n", (unsigned long)sizeof('+typeName+'));\n'
-    typename = typeName.replace(' ', '_').replace('*', 'p')
+    typename = typeName.replace(' ', '-').replace('*', 'p')
     if not 'known-sizeof-'+typename in self.framework.argDB:
       if not self.framework.argDB['with-batch']:
         self.pushLanguage('C')
@@ -271,7 +271,7 @@ void (*signal())();
           size = int(f.read())
           f.close()
           os.remove(filename)
-        elif not typename == 'long_long':
+        elif not typename == 'long-long':
           raise RuntimeError('Unable to determine size of '+typeName)
         else:
           self.framework.log.write('Compiler does not support long long\n')
@@ -287,7 +287,7 @@ void (*signal())();
     else:
       size = self.framework.argDB['known-sizeof-'+typename]
     self.sizes['known-sizeof-'+typename] = int(size)
-    self.addDefine('SIZEOF_'+typename.upper(), size)
+    self.addDefine('SIZEOF_'+typeName.replace(' ', '_').replace('*', 'p').upper(), size)
     return size
 
   def checkBitsPerByte(self):
