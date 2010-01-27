@@ -828,7 +828,7 @@ static PetscErrorCode THIJacobianLocal_3D(DALocalInfo *info,Node ***x,Mat B,THI 
             /* gcc (up to my 4.5 snapshot) is really bad at hoisting intrinsics so we do it manually */
             __m128d
               p4 = _mm_set1_pd(4),p2 = _mm_set1_pd(2),p05 = _mm_set1_pd(0.5),
-              p42 = _mm_setr_pd(4,2),p24 = _mm_shuffle_pd(p42,p42,0b01),
+              p42 = _mm_setr_pd(4,2),p24 = _mm_shuffle_pd(p42,p42,_MM_SHUFFLE2(0,1)),
               du0 = _mm_set1_pd(du[0]),du1 = _mm_set1_pd(du[1]),du2 = _mm_set1_pd(du[2]),
               dv0 = _mm_set1_pd(dv[0]),dv1 = _mm_set1_pd(dv[1]),dv2 = _mm_set1_pd(dv[2]),
               jweta = _mm_set1_pd(jw*eta),jwdeta = _mm_set1_pd(jw*deta),
@@ -836,7 +836,7 @@ static PetscErrorCode THIJacobianLocal_3D(DALocalInfo *info,Node ***x,Mat B,THI 
               dp0jweta = _mm_mul_pd(dp0,jweta),dp1jweta = _mm_mul_pd(dp1,jweta),dp2jweta = _mm_mul_pd(dp2,jweta),
               p4du0p2dv1 = _mm_add_pd(_mm_mul_pd(p4,du0),_mm_mul_pd(p2,dv1)), /* 4 du0 + 2 dv1 */
               p4dv1p2du0 = _mm_add_pd(_mm_mul_pd(p4,dv1),_mm_mul_pd(p2,du0)), /* 4 dv1 + 2 du0 */
-              pdu2dv2 = _mm_shuffle_pd(du2,dv2,0b00),                         /* [du2, dv2] */
+              pdu2dv2 = _mm_unpacklo_pd(du2,dv2),                             /* [du2, dv2] */
               du1pdv0 = _mm_add_pd(du1,dv0),                                  /* du1 + dv0 */
               t1 = _mm_mul_pd(dp0,p4du0p2dv1),                                /* dp0 (4 du0 + 2 dv1) */
               t2 = _mm_mul_pd(dp1,p4dv1p2du0);                                /* dp1 (4 dv1 + 2 du0) */
@@ -868,29 +868,30 @@ static PetscErrorCode THIJacobianLocal_3D(DALocalInfo *info,Node ***x,Mat B,THI 
               }
 #else
               /* This SSE2 code is an exact replica of above, but uses explicit packed instructions for some speed
-              * benefit.  On my hardware, these intrinsics are 25% faster than above. */
+              * benefit.  On my hardware, these intrinsics are almost twice as fast as above, reducing total assembly cost
+              * by 25 to 30 percent. */
               {
                 __m128d
-                  keu = _mm_load_pd(&Ke[l*2+0][ll*2+0]),
-                  kev = _mm_load_pd(&Ke[l*2+1][ll*2+0]),
-                  dpl01 = _mm_loadu_pd(&dpl[0]),dpl10 = _mm_shuffle_pd(dpl01,dpl01,0b01),dpl2 = _mm_set_sd(dpl[2]),
+                  keu = _mm_loadu_pd(&Ke[l*2+0][ll*2+0]),
+                  kev = _mm_loadu_pd(&Ke[l*2+1][ll*2+0]),
+                  dpl01 = _mm_loadu_pd(&dpl[0]),dpl10 = _mm_shuffle_pd(dpl01,dpl01,_MM_SHUFFLE2(0,1)),dpl2 = _mm_set_sd(dpl[2]),
                   t0,t3,pdgduv;
                 keu = _mm_add_pd(keu,_mm_add_pd(_mm_mul_pd(_mm_mul_pd(dp0jweta,p42),dpl01),
                                                 _mm_add_pd(_mm_mul_pd(dp1jweta,dpl10),
                                                            _mm_mul_pd(dp2jweta,dpl2))));
                 kev = _mm_add_pd(kev,_mm_add_pd(_mm_mul_pd(_mm_mul_pd(dp1jweta,p24),dpl01),
                                                 _mm_add_pd(_mm_mul_pd(dp0jweta,dpl10),
-                                                           _mm_mul_pd(dp2jweta,_mm_shuffle_pd(dpl2,dpl2,0b01)))));
+                                                           _mm_mul_pd(dp2jweta,_mm_shuffle_pd(dpl2,dpl2,_MM_SHUFFLE2(0,1))))));
                 pdgduv = _mm_mul_pd(p05,_mm_add_pd(_mm_add_pd(_mm_mul_pd(p42,_mm_mul_pd(du0,dpl01)),
                                                               _mm_mul_pd(p24,_mm_mul_pd(dv1,dpl01))),
                                                    _mm_add_pd(_mm_mul_pd(du1pdv0,dpl10),
                                                               _mm_mul_pd(pdu2dv2,_mm_set1_pd(dpl[2]))))); /* [dgdu, dgdv] */
                 t0 = _mm_mul_pd(jwdeta,pdgduv);  /* jw deta [dgdu, dgdv] */
                 t3 = _mm_mul_pd(t0,du1pdv0);     /* t0 (du1 + dv0) */
-                _mm_store_pd(&Ke[l*2+0][ll*2+0],_mm_add_pd(keu,_mm_add_pd(_mm_mul_pd(t1,t0),
+                _mm_storeu_pd(&Ke[l*2+0][ll*2+0],_mm_add_pd(keu,_mm_add_pd(_mm_mul_pd(t1,t0),
                                                                           _mm_add_pd(_mm_mul_pd(dp1,t3),
                                                                                      _mm_mul_pd(t0,_mm_mul_pd(dp2,du2))))));
-                _mm_store_pd(&Ke[l*2+1][ll*2+0],_mm_add_pd(kev,_mm_add_pd(_mm_mul_pd(t2,t0),
+                _mm_storeu_pd(&Ke[l*2+1][ll*2+0],_mm_add_pd(kev,_mm_add_pd(_mm_mul_pd(t2,t0),
                                                                           _mm_add_pd(_mm_mul_pd(dp0,t3),
                                                                                      _mm_mul_pd(t0,_mm_mul_pd(dp2,dv2))))));
               }
