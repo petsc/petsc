@@ -79,7 +79,7 @@ EXTERN_C_END
 /* 
      Local utility routine that creates a mapping from the global column 
    number to the local number in the off-diagonal part of the local 
-   storage of the matrix.  This is done in a non scable way since the 
+   storage of the matrix.  This is done in a non scalable way since the
    length of colmap equals the global matrix length. 
 */
 #undef __FUNCT__  

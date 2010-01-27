@@ -6,7 +6,7 @@
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatConvert_SeqSBAI_SeqAIJ"
+#define __FUNCT__ "MatConvert_SeqSBAIJ_SeqAIJ"
 PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat) 
 {
   Mat            B;

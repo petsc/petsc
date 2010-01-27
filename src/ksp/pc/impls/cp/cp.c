@@ -49,7 +49,7 @@ static PetscErrorCode PCSetUp_CP(PC pc)
   for (i=0; i<aij->nz; i++) {
     colcnt[aij->j[i]]++;
   }
-  cp->i[0] = 0.;
+  cp->i[0] = 0;
   for (i=0; i<cp->n; i++) {
     cp->i[i+1] = cp->i[i] + colcnt[i];
   }

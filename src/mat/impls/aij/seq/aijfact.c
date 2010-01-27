@@ -818,7 +818,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,const MatFa
   ics = ic;
 
   sctx.shift_top      = 0.;
-  sctx.nshift_max     = 0.;
+  sctx.nshift_max     = 0;
   sctx.shift_lo       = 0.;
   sctx.shift_hi       = 0.;
   sctx.shift_fraction = 0.;
@@ -1589,7 +1589,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0_newdatastruct(Mat fact,Mat A,IS 
   bj = b->j;
 
   /* L part */
-  bi[0] = 0.;
+  bi[0] = 0;
   for (i=0; i<n; i++){
     nz = adiag[i] - ai[i];
     bi[i+1] = bi[i] + nz;
@@ -1668,7 +1668,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS isrow
   /* get new row and diagonal pointers, must be allocated separately because they will be given to the Mat_SeqAIJ and freed separately */
   ierr = PetscMalloc((n+1)*sizeof(PetscInt),&bi);CHKERRQ(ierr);
   ierr = PetscMalloc((n+1)*sizeof(PetscInt),&bdiag);CHKERRQ(ierr);
-  bi[0] = bdiag[0] = 0.;
+  bi[0] = bdiag[0] = 0;
 
   ierr = PetscMalloc2(n,PetscInt*,&bj_ptr,n,PetscInt*,&bjlvl_ptr);CHKERRQ(ierr); 
 

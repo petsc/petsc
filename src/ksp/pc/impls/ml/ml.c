@@ -94,7 +94,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   ML              *ml_object;
   ML_Aggregate    *agg_object;
   ML_Operator     *mlmat;
-  PetscInt        nlocal_allcols,Nlevels,mllevel,level,level1,m,fine_level;
+  PetscInt        nlocal_allcols,Nlevels,mllevel,level,level1,m,fine_level,bs;
   Mat             A,Aloc; 
   GridCtx         *gridctx; 
   PC_ML           *pc_ml=PETSC_NULL;
@@ -170,6 +170,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   /* create ML discretization matrix at fine grid */
   /* ML requires input of fine-grid matrix. It determines nlevels. */
   ierr = MatGetSize(Aloc,&m,&nlocal_allcols);CHKERRQ(ierr);
+  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
   ML_Create(&ml_object,pc_ml->MaxNlevels);
   pc_ml->ml_object = ml_object;
   ML_Init_Amatrix(ml_object,0,m,m,PetscMLdata);
@@ -179,7 +180,8 @@ PetscErrorCode PCSetUp_ML(PC pc)
   /* aggregation */
   ML_Aggregate_Create(&agg_object); 
   pc_ml->agg_object = agg_object;
-  
+
+  ML_Aggregate_Set_NullSpace(agg_object,bs,bs,0,0);CHKERRQ(ierr);
   ML_Aggregate_Set_MaxCoarseSize(agg_object,pc_ml->MaxCoarseSize);
   /* set options */
   switch (pc_ml->CoarsenScheme) { 

@@ -1589,7 +1589,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,Pet
     b->singlemalloc = PETSC_TRUE;
   
     /* pointer to beginning of each row */
-    b->i[0] = 0.;
+    b->i[0] = 0;
     for (i=1; i<mbs+1; i++) {
       b->i[i] = b->i[i-1] + b->imax[i-1];
     }
@@ -2172,7 +2172,7 @@ PetscErrorCode MatLoad_SeqSBAIJ(PetscViewer viewer, const MatType type,Mat *A)
   a = (Mat_SeqSBAIJ*)B->data;
 
   /* set matrix "i" values */
-  a->i[0] = 0.;
+  a->i[0] = 0;
   for (i=1; i<= mbs; i++) {
     a->i[i]      = a->i[i-1] + s_browlengths[i-1];
     a->ilen[i-1] = s_browlengths[i-1];

@@ -96,24 +96,27 @@ class Configure(PETSc.package.NewPackage):
 
     if self.framework.argDB['download-sowing']:
       PETSc.package.NewPackage.configure(self)
+      if self.petscdir.isClone:
+        self.framework.logPrint('PETSc clone, Building FortranStubs [with download-sowing=1]\n')
+        self.buildFortranStubs()
+      else:
+        self.framework.logPrint('Not a clone, skipping FortranStubs [with download-sowing=1]\n')
       return
 
+    # autodetect if sowing/bfort is required
     if self.petscdir.isClone:
       self.framework.logPrint('PETSc clone, checking for Sowing or if it is needed\n')
-      #if self.framework.argDB.has_key('with-sowing') and not self.framework.argDB['with-sowing']:
-        #self.framework.logPrint('--with-sowing is turned off, skipping sowing')
-        #return
 
       self.getExecutable('bfort', getFullPath = 1)
       self.getExecutable('doctext', getFullPath = 1)
-      self.getExecutable('mapnames', getFullPath = 1)            
+      self.getExecutable('mapnames', getFullPath = 1)
       self.getExecutable('bib2html', getFullPath = 1)
       self.getExecutable('pdflatex', getFullPath = 1)
-      
+
       if hasattr(self, 'bfort'):
         self.framework.logPrint('Found bfort, not installing sowing')
       else:
-        self.framework.logPrint('Installing bfort')
+        self.framework.logPrint('Bfort not found. Installing sowing for FortranStubs')
         self.framework.argDB['download-sowing'] = 1
         PETSc.package.NewPackage.configure(self)
       self.buildFortranStubs()
