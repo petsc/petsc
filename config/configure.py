@@ -26,7 +26,7 @@ def check_for_option_mistakes(opts):
     name = opt.split('=')[0]
     if name.find('_') >= 0:
       exception = False
-      for exc in ['superlu_dist', 'PETSC_ARCH', 'PETSC_DIR', 'CXX_CXXFLAGS', 'LD_SHARED', 'CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'AR_FLAGS', 'C_VERSION', 'CXX_VERSION', 'FC_VERSION','qd_dd']:
+      for exc in ['superlu_dist', 'PETSC_ARCH', 'PETSC_DIR', 'CXX_CXXFLAGS', 'LD_SHARED', 'CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'AR_FLAGS', 'C_VERSION', 'CXX_VERSION', 'FC_VERSION','qd_dd', 'void_p']:
         if name.find(exc) >= 0:
           exception = True
       if not exception:
