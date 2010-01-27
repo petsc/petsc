@@ -79,7 +79,7 @@ namespace ALE {
 
       mesh->setSieve(sieve);
       Builder::readInpFile(comm, filename, dim, numCorners, numCells, &cells, numVertices, &coordinates, &normals);
-      ALE::SieveBuilder<ALE::Mesh>::buildTopology(s, dim, numCells, cells, numVertices, interpolate, numCorners);
+      ALE::SieveBuilder<ALE::Mesh>::buildTopology(s, dim, numCells, cells, numVertices, interpolate, numCorners, -1, m->getArrowSection("orientation"));
       m->setSieve(s);
       m->stratify();
       ALE::SieveBuilder<ALE::Mesh>::buildCoordinates(m, dim+1, coordinates);
