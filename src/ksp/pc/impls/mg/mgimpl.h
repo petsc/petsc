@@ -7,14 +7,11 @@
 #include "petscmg.h"
 #include "petscksp.h"
 
-
 /*
-     Structure for abstract multigrid solver. 
-
+     Each level has its own copy of this data.
      Level (0) is always the coarsest level and Level (levels-1) is the finest.
 */
-typedef struct
-{
+typedef struct {
   PCMGType   am;                           /* Multiplicative, additive or full */
   PetscInt   cycles;                       /* Type of cycle to run: 1 V 2 W */
   PetscInt   cyclesperpcapply;             /* Number of cycles to use in each PCApply(), multiplicative only*/
@@ -40,7 +37,15 @@ typedef struct
   PetscLogEvent eventresidual;
   PetscLogEvent eventinterprestrict;    
   void           *innerctx;                   /* optional data for preconditioner, like PCEXOTIC that inherits off of PCMG */
-}  PC_MG;
+} PC_MG_Levels;
+
+/*
+    This data structure is shared by all the levels.
+*/
+typedef struct {
+  PetscInt     nlevels;
+  PC_MG_Levels **levels;
+} PC_MG;
 
 extern PetscErrorCode PCSetUp_MG(PC);
 extern PetscErrorCode PCDestroy_MG(PC);
