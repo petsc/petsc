@@ -28,7 +28,7 @@ class Configure(config.base.Configure):
 
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-shared', nargs.ArgBool(None, 1, 'Make PETSc libraries shared'))
+    help.addArgument('PETSc', '-with-shared', nargs.ArgBool(None, 0, 'Make PETSc libraries shared'))
     help.addArgument('PETSc', '-with-dynamic', nargs.ArgBool(None, 0, 'Make PETSc libraries dynamic'))
     return
 
