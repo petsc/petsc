@@ -130,6 +130,7 @@ PetscErrorCode MatGetFactor_seqaij_petsc(Mat A,MatFactorType ftype,Mat *B)
 }
 EXTERN_C_END
 
+EXTERN PetscErrorCode Mat_CheckInode(Mat,PetscTruth);
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ"
 PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
@@ -152,8 +153,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const Ma
   if(newdatastruct){
     ierr = MatLUFactorSymbolic_SeqAIJ_newdatastruct(B,A,isrow,iscol,info);CHKERRQ(ierr);
     PetscFunctionReturn(0);
-  }
-  
+  } 
 
   if (A->rmap->N != A->cmap->N) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be square");
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
@@ -422,7 +422,9 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ_newdatastruct(Mat B,Mat A,IS isrow,IS 
   } else {
     (B)->info.fill_ratio_needed = 0.0;
   }
-  (B)->ops->lufactornumeric  = MatLUFactorNumeric_SeqAIJ_newdatastruct;
+  (B)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_newdatastruct;
+  /* switch to inodes if appropriate */
+  ierr = Mat_CheckInode(B,PETSC_FALSE);CHKERRQ(ierr); /* Mat_CheckInode_FactorLU(B,PETSC_FALSE) ??? */
   PetscFunctionReturn(0); 
 }
 
@@ -600,15 +602,18 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const MatFact
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
-  
-  ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
-  ierr = ISIdentity(isicol,&col_identity);CHKERRQ(ierr);
-  if (row_identity && col_identity) {
-    C->ops->solve = MatSolve_SeqAIJ_NaturalOrdering_newdatastruct;
-  } else {
-    C->ops->solve = MatSolve_SeqAIJ_newdatastruct; 
+  if (b->inode.use){
+    SETERRQ(1,"MatSolve_SeqAIJ_Inode_newdatastruct not done yet");
+    /* C->ops->solve   = MatSolve_SeqAIJ_Inode_newdatastruct; not done yet! */
+  } else {   
+    ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
+    ierr = ISIdentity(isicol,&col_identity);CHKERRQ(ierr);
+    if (row_identity && col_identity) {
+      C->ops->solve = MatSolve_SeqAIJ_NaturalOrdering_newdatastruct;
+    } else {
+      C->ops->solve = MatSolve_SeqAIJ_newdatastruct; 
+    }
   }
-  
   C->ops->solveadd           = MatSolveAdd_SeqAIJ_newdatastruct;
   C->ops->solvetranspose     = MatSolveTranspose_SeqAIJ_newdatastruct;
   C->ops->solvetransposeadd  = MatSolveTransposeAdd_SeqAIJ_newdatastruct;
@@ -1529,7 +1534,7 @@ PetscErrorCode MatSolveTransposeAdd_SeqAIJ_newdatastruct(Mat A,Vec bb,Vec zz,Vec
 }
 
 /* ----------------------------------------------------------------*/
-EXTERN PetscErrorCode Mat_CheckInode(Mat,PetscTruth);
+
 EXTERN PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat,Mat,MatDuplicateOption,PetscTruth);
 
 /* 
@@ -1657,6 +1662,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS isrow
   if (!levels && row_identity && col_identity) { 
     /* special case: ilu(0) with natural ordering */
     ierr = MatILUFactorSymbolic_SeqAIJ_ilu0_newdatastruct(fact,A,isrow,iscol,info);CHKERRQ(ierr);
+    ierr = Mat_CheckInode(fact,PETSC_FALSE);CHKERRQ(ierr); /* Mat_CheckInode_FactorLU(fact,PETSC_FALSE) ??? */
     PetscFunctionReturn(0);
   }
 
@@ -1800,7 +1806,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS isrow
   (fact)->info.fill_ratio_given  = f;
   (fact)->info.fill_ratio_needed = ((PetscReal)(bdiag[0]+1))/((PetscReal)ai[n]);
   (fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_newdatastruct;
-  /* ierr = MatILUFactorSymbolic_SeqAIJ_Inode(fact,A,isrow,iscol,info);CHKERRQ(ierr); */
+  ierr = Mat_CheckInode(fact,PETSC_FALSE);CHKERRQ(ierr); /* Mat_CheckInode_FactorLU(fact,PETSC_FALSE) ??? */
   PetscFunctionReturn(0); 
 }
 
