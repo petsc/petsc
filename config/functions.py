@@ -92,9 +92,9 @@ choke me
                                    '  char c1 = (char) 0x80;',
                                    '  char c2 = (char) 0x81;',
                                    '  if (memcmp(&c0, &c2, 1) < 0 && memcmp(&c1, &c2, 1) < 0 ? 0 : 1) {',
-                                   '    fprintf(output, " \'--known-memcmp-ok=0\',\\n");',
+                                   '    fprintf(output, "  \'--known-memcmp-ok=0\',\\n");',
                                    '  } else {',
-                                   '    fprintf(output, " \'--known-memcmp-ok=1\',\\n");',
+                                   '    fprintf(output, "  \'--known-memcmp-ok=1\',\\n");',
                                    '  }',
                                    '}'])
     return

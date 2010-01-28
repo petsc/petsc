@@ -325,7 +325,7 @@ void (*signal())();
                                    '  val[0]=\'\\1\';',
                                    '  val[1]=\'\\0\';',
                                    '  while(val[0]) {val[0] <<= 1; i++;}',
-                                   '  fprintf(output, " \'--known-bits-per-byte=%d\',\\n", i);',
+                                   '  fprintf(output, "  \'--known-bits-per-byte=%d\',\\n", i);',
                                    '}'])
       # dummy value
       bits = 8
