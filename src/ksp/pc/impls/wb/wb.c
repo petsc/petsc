@@ -616,7 +616,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCExoticSetType(PC pc,PCExoticType type)
 PetscErrorCode PETSCKSP_DLLEXPORT PCExoticSetType_Exotic(PC pc,PCExoticType type)
 {
   PC_MG     *mg = (PC_MG*)pc->data;
-  PC_Exotic *ctx = (PC_Exotic*) mg->levels[0]->innerctx;
+  PC_Exotic *ctx = (PC_Exotic*) mg->innerctx;
 
   PetscFunctionBegin;
   ctx->type = type;
@@ -630,7 +630,7 @@ PetscErrorCode PCSetUp_Exotic(PC pc)
   PetscErrorCode ierr;
   Mat            A;
   PC_MG          *mg = (PC_MG*)pc->data;
-  PC_Exotic      *ex = (PC_Exotic*) mg->levels[0]->innerctx;
+  PC_Exotic      *ex = (PC_Exotic*) mg->innerctx;
   MatReuse       reuse = (ex->P) ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX;
 
   PetscFunctionBegin;
@@ -651,7 +651,7 @@ PetscErrorCode PCDestroy_Exotic(PC pc)
 {
   PetscErrorCode ierr;
   PC_MG          *mg = (PC_MG*)pc->data;
-  PC_Exotic      *ctx = (PC_Exotic*) mg->levels[0]->innerctx;
+  PC_Exotic      *ctx = (PC_Exotic*) mg->innerctx;
 
   PetscFunctionBegin;
   if (ctx->da) {ierr = DADestroy(ctx->da);CHKERRQ(ierr);}
@@ -708,7 +708,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetDA_Exotic(PC pc,DA da)
 {
   PetscErrorCode ierr;
   PC_MG          *mg = (PC_MG*)pc->data;
-  PC_Exotic      *ctx = (PC_Exotic*) mg->levels[0]->innerctx;
+  PC_Exotic      *ctx = (PC_Exotic*) mg->innerctx;
 
   PetscFunctionBegin;
   ctx->da = da;
@@ -724,7 +724,7 @@ PetscErrorCode PCView_Exotic(PC pc,PetscViewer viewer)
   PC_MG          *mg = (PC_MG*)pc->data;
   PetscErrorCode ierr;
   PetscTruth     iascii;
-  PC_Exotic      *ctx = (PC_Exotic*) mg->levels[0]->innerctx;
+  PC_Exotic      *ctx = (PC_Exotic*) mg->innerctx;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -761,7 +761,7 @@ PetscErrorCode PCSetFromOptions_Exotic(PC pc)
   PetscTruth     flg;
   PC_MG          *mg = (PC_MG*)pc->data;
   PCExoticType   mgctype;
-  PC_Exotic      *ctx = (PC_Exotic*) mg->levels[0]->innerctx;
+  PC_Exotic      *ctx = (PC_Exotic*) mg->innerctx;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Exotic coarse space options");CHKERRQ(ierr);
@@ -848,7 +848,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Exotic(PC pc)
   ierr = PetscNew(PC_Exotic,&ex);CHKERRQ(ierr);\
   ex->type = PC_EXOTIC_FACE;
   mg = (PC_MG*) pc->data;
-  mg->levels[0]->innerctx = ex;
+  mg->innerctx = ex;
 
 
   pc->ops->setfromoptions = PCSetFromOptions_Exotic;
