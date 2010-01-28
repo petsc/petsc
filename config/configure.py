@@ -221,11 +221,6 @@ def petsc_configure(configure_options):
   import config.framework
   import cPickle
 
-  # Disable shared libraries by default
-  import nargs
-  if nargs.Arg.findArgument('with-shared', sys.argv[1:]) is None:
-    sys.argv.append('--with-shared=0')
-
   framework = None
   try:
     framework = config.framework.Framework(['--configModules=PETSc.Configure','--optionsModule=PETSc.compilerOptions']+sys.argv[1:], loadArgDB = 0)
