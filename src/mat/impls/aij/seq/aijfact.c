@@ -617,7 +617,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const MatFact
   C->ops->solveadd           = MatSolveAdd_SeqAIJ_newdatastruct;
   C->ops->solvetranspose     = MatSolveTranspose_SeqAIJ_newdatastruct;
   C->ops->solvetransposeadd  = MatSolveTransposeAdd_SeqAIJ_newdatastruct;
-  C->ops->matsolve           = 0;
+  C->ops->matsolve           = MatMatSolve_SeqAIJ_newdatastruct;
   C->assembled    = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(C->cmap->n);CHKERRQ(ierr);
@@ -1066,6 +1066,69 @@ PetscErrorCode MatMatSolve_SeqAIJ(Mat A,Mat B,Mat X)
       x[c[i]] = tmp[i] = sum*aa[a->diag[i]];
     }
 
+    b += n;
+    x += n;
+  }
+  ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
+  ierr = MatRestoreArray(B,&b);CHKERRQ(ierr); 
+  ierr = MatRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = PetscLogFlops(B->cmap->n*(2.0*a->nz - n));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}  
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMatSolve_SeqAIJ_newdatastruct"
+PetscErrorCode MatMatSolve_SeqAIJ_newdatastruct(Mat A,Mat B,Mat X)
+{
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
+  IS              iscol = a->col,isrow = a->row;
+  PetscErrorCode  ierr;
+  PetscInt        i, n = A->rmap->n,*vi,*ai = a->i,*aj = a->j,*adiag = a->diag;
+  PetscInt        nz,neq; 
+  const PetscInt  *rout,*cout,*r,*c;
+  PetscScalar     *x,*b,*tmp,sum;
+  const MatScalar *aa = a->a,*v;
+  PetscTruth      bisdense,xisdense;
+
+  PetscFunctionBegin;
+  if (!n) PetscFunctionReturn(0);
+
+  ierr = PetscTypeCompare((PetscObject)B,MATSEQDENSE,&bisdense);CHKERRQ(ierr);
+  if (!bisdense) SETERRQ(PETSC_ERR_ARG_INCOMP,"B matrix must be a SeqDense matrix");
+  ierr = PetscTypeCompare((PetscObject)X,MATSEQDENSE,&xisdense);CHKERRQ(ierr);
+  if (!xisdense) SETERRQ(PETSC_ERR_ARG_INCOMP,"X matrix must be a SeqDense matrix");
+
+  ierr = MatGetArray(B,&b);CHKERRQ(ierr); 
+  ierr = MatGetArray(X,&x);CHKERRQ(ierr);
+  
+  tmp  = a->solve_work;
+  ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
+  ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout;
+
+  for (neq=0; neq<B->cmap->n; neq++){
+    /* forward solve the lower triangular */
+    tmp[0] = b[r[0]];
+    v      = aa;
+    vi     = aj;
+    for (i=1; i<n; i++) {
+      nz  = ai[i+1] - ai[i];
+      sum = b[r[i]];
+      PetscSparseDenseMinusDot(sum,tmp,v,vi,nz); 
+      tmp[i] = sum;
+      v += nz; vi += nz;
+    }
+
+    /* backward solve the upper triangular */
+    for (i=n-1; i>=0; i--){
+      v   = aa + adiag[i+1]+1;
+      vi  = aj + adiag[i+1]+1;
+      nz  = adiag[i]-adiag[i+1]-1;
+      sum = tmp[i];
+      PetscSparseDenseMinusDot(sum,tmp,v,vi,nz); 
+      x[c[i]] = tmp[i] = sum*v[nz]; /* v[nz] = aa[adiag[i]] */
+    }
+  
     b += n;
     x += n;
   }
