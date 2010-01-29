@@ -8,7 +8,7 @@ static char help[] = "Passes a sparse matrix to Matlab.\n\n";
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;
-  PetscInt       m = 4,n = 5,i,j,I,J;
+  PetscInt       m = 4,n = 5,i,j,II,J;
   PetscScalar    one = 1.0,v;
   Vec            x;
   Mat            A;
@@ -23,12 +23,12 @@ int main(int argc,char **args)
 
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {
-      v = -1.0;  I = j + n*i;
-      if (i>0)   {J = I - n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      if (i<m-1) {J = I + n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      if (j>0)   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      if (j<n-1) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      v = 4.0; ierr = MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES);CHKERRQ(ierr);
+      v = -1.0;  II = j + n*i;
+      if (i>0)   {J = II - n; ierr = MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+      if (i<m-1) {J = II + n; ierr = MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+      if (j>0)   {J = II - 1; ierr = MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+      if (j<n-1) {J = II + 1; ierr = MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+      v = 4.0; ierr = MatSetValues(A,1,&II,1,&II,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

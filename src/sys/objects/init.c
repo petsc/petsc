@@ -32,7 +32,9 @@ PetscMPIInt PETSC_DLLEXPORT PetscGlobalSize = -1;
 #if defined(PETSC_COMPLEX_INSTANTIATE)
 template <> class std::complex<double>; /* instantiate complex template class */
 #endif
-MPI_Datatype  PETSC_DLLEXPORT MPIU_COMPLEX;
+#if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
+MPI_Datatype  PETSC_DLLEXPORT MPI_C_DOUBLE_COMPLEX;
+#endif
 PetscScalar   PETSC_DLLEXPORT PETSC_i; 
 #else
 PetscScalar   PETSC_DLLEXPORT PETSC_i = 0.0; 

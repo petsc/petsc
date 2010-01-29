@@ -1222,7 +1222,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscTokenDestroy(PetscToken);
    These are  MPI operations for MPI_Allreduce() etc
 */
 EXTERN PETSC_DLLEXPORT MPI_Op PetscMaxSum_Op;
-#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
 EXTERN PETSC_DLLEXPORT MPI_Op PetscSum_Op;
 #else
 #define PetscSum_Op MPI_SUM

@@ -243,6 +243,11 @@ EXTERN_C_END
 /* ---------------------------------------------------------------------------------------*/
 
 #if defined(PETSC_USE_COMPLEX)
+
+/*
+    This operation is only needed when using complex numbers with older MPI that does not support complex numbers
+*/
+#if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
 MPI_Op PetscSum_Op = 0;
 
 EXTERN_C_BEGIN
@@ -267,6 +272,7 @@ void PETSC_DLLEXPORT PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Data
   return;
 }
 EXTERN_C_END
+#endif
 #endif
 
 EXTERN_C_BEGIN
@@ -585,9 +591,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
 #endif
   }
 
-  ierr = MPI_Type_contiguous(2,MPIU_REAL,&MPIU_COMPLEX);CHKERRQ(ierr);
-  ierr = MPI_Type_commit(&MPIU_COMPLEX);CHKERRQ(ierr);
+#if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
+  ierr = MPI_Type_contiguous(2,MPIU_REAL,&MPI_C_DOUBLE_COMPLEX);CHKERRQ(ierr);
+  ierr = MPI_Type_commit(&MPI_C_DOUBLE_COMPLEX);CHKERRQ(ierr);
   ierr = MPI_Op_create(PetscSum_Local,1,&PetscSum_Op);CHKERRQ(ierr);
+#endif
 #endif
 
   /*
@@ -934,8 +942,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   PetscGlobalArgs = 0;
 
 #if defined(PETSC_USE_COMPLEX)
+#if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
   ierr = MPI_Op_free(&PetscSum_Op);CHKERRQ(ierr);
-  ierr = MPI_Type_free(&MPIU_COMPLEX);CHKERRQ(ierr);
+  ierr = MPI_Type_free(&MPI_C_DOUBLE_COMPLEX);CHKERRQ(ierr);
+#endif
 #endif
   ierr = MPI_Type_free(&MPIU_2SCALAR);CHKERRQ(ierr);
   ierr = MPI_Type_free(&MPIU_2INT);CHKERRQ(ierr);
