@@ -10,6 +10,7 @@
 #           -tau_lib_dir     : TAU library dir
 #           -v,-verbose      : verbose mode - shows the exact commands invoked
 #           -leave_tmp       : do not delete temporary files
+#           -E               : run preprocessor only
 #
 import commands
 import sys
@@ -90,6 +91,9 @@ def main():
       else: sys.exit('Error: Unknown parser - use either cparse or cxxparse: '+pdt_parse)
     elif arg == '-c':
         compileonly = 1
+    elif arg == '-E':
+        compileonly = 1
+        arglist += ' '+arg
     elif arg == '-leave_tmp':
       leave_tmp = 1
     elif argsplit[0] == '-tau_lib_dir':
