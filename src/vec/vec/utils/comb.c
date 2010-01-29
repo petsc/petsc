@@ -181,7 +181,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscSplitReductionApply(PetscSplitReduction *
       ierr = MPI_Allreduce(lvalues,gvalues,numops,MPIU_REAL,MPI_MIN,comm);CHKERRQ(ierr);
 #endif
     } else {
-      ierr = MPI_Allreduce(lvalues,gvalues,numops,MPIU_SCALAR,PetscSum_Op,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(lvalues,gvalues,numops,MPIU_SCALAR,MPIU_SUM,comm);CHKERRQ(ierr);
     }
   }
   sr->state     = STATE_END;

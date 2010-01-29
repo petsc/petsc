@@ -307,7 +307,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorRange_Private(KSP ksp,PetscInt it,Pe
   for (i=0; i<n; i++) {
     pwork += (PetscAbsScalar(r[i]) > .20*rmax); 
   }
-  ierr = MPI_Allreduce(&pwork,per,1,MPIU_REAL,PetscSum_Op,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&pwork,per,1,MPIU_REAL,MPIU_SUM,((PetscObject)ksp)->comm);CHKERRQ(ierr);
   ierr = VecRestoreArray(work,&r);CHKERRQ(ierr);
   ierr = VecDestroy(work);CHKERRQ(ierr);
   *per  = *per/N;

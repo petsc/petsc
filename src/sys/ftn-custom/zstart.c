@@ -111,7 +111,7 @@ extern void PXFGETARG(int*,_fcd,int*,int*);
 EXTERN_C_END
 
 #if defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
-extern MPI_Op PetscSum_Op;
+extern MPI_Op MPIU_SUM;
 EXTERN_C_BEGIN
 extern void PETSC_DLLEXPORT MPIAPI PetscSum_Local(void*,void *,PetscMPIInt *,MPI_Datatype *);
 EXTERN_C_END
@@ -320,7 +320,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types");return;}
   *ierr = MPI_Type_commit(&MPI_C_DOUBLE_COMPLEX);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types");return;}  
-  *ierr = MPI_Op_create(PetscSum_Local,1,&PetscSum_Op);
+  *ierr = MPI_Op_create(PetscSum_Local,1,&MPIU_SUM);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops");return;}
 #endif
 

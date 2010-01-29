@@ -1215,7 +1215,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecDotNorm2(Vec s,Vec t,PetscScalar *dp, Petsc
   }
   work[0] = dpx;
   work[1] = nmx;
-  ierr = MPI_Allreduce(&work,&sum,2,MPIU_SCALAR,PetscSum_Op,((PetscObject)s)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&work,&sum,2,MPIU_SCALAR,MPIU_SUM,((PetscObject)s)->comm);CHKERRQ(ierr);
   *dp  = sum[0];
   *nm  = sum[1];
   
@@ -1259,7 +1259,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSum(Vec v,PetscScalar *sum)
   for (i=0; i<n; i++) {
     lsum += x[i];
   }
-  ierr = MPI_Allreduce(&lsum,sum,1,MPIU_SCALAR,PetscSum_Op,((PetscObject)v)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&lsum,sum,1,MPIU_SCALAR,MPIU_SUM,((PetscObject)v)->comm);CHKERRQ(ierr);
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

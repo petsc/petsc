@@ -1223,9 +1223,9 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscTokenDestroy(PetscToken);
 */
 EXTERN PETSC_DLLEXPORT MPI_Op PetscMaxSum_Op;
 #if defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
-EXTERN PETSC_DLLEXPORT MPI_Op PetscSum_Op;
+EXTERN PETSC_DLLEXPORT MPI_Op MPIU_SUM;
 #else
-#define PetscSum_Op MPI_SUM
+#define MPIU_SUM MPI_SUM
 #endif
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMaxSum(MPI_Comm,const PetscInt[],PetscInt*,PetscInt*);
 

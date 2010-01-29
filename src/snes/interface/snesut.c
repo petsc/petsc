@@ -174,7 +174,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorRange_Private(SNES snes,PetscInt i
   for (i=0; i<n; i++) {
     pwork += (PetscAbsScalar(r[i]) > .20*rmax); 
   }
-  ierr = MPI_Allreduce(&pwork,per,1,MPIU_REAL,PetscSum_Op,((PetscObject)snes)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&pwork,per,1,MPIU_REAL,MPIU_SUM,((PetscObject)snes)->comm);CHKERRQ(ierr);
   ierr = VecRestoreArray(resid,&r);CHKERRQ(ierr);
   *per  = *per/N;
   PetscFunctionReturn(0);
