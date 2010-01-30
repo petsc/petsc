@@ -3,7 +3,7 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_4.9.tar.gz']
+    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_4.9.2.tar.gz']
     self.liblist   = [['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a'],
                      ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libpthread.a']]
     self.functions = ['dmumps_c']
@@ -42,8 +42,9 @@ class Configure(PETSc.package.NewPackage):
       g.write('ORDERINGSF = '+self.compilers.FortranDefineCompilerOption+'metis'+' '+self.compilers.FortranDefineCompilerOption+'pord\n')
     else:
       raise RuntimeError('Fortran compiler cannot handle preprocessing directives from command line.')     
-    g.write('LORDERINGS = $(LMETIS) $(LPORD) $(LSCOTCH)\n')
-    g.write('IORDERINGS = $(IMETIS) $(IPORD) $(ISCOTCH)\n')
+    g.write('LORDERINGS  = $(LMETIS) $(LPORD) $(LSCOTCH)\n')
+    g.write('IORDERINGSC = $(IMETIS) $(IPORD) $(ISCOTCH)\n')
+    g.write('IORDERINGSF = $(ISCOTCH)\n')
 
     g.write('RM = /bin/rm -f\n')
     self.setCompilers.pushLanguage('C')
