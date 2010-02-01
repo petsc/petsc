@@ -1168,6 +1168,377 @@ PetscErrorCode MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
+/* ----------------------------------------------------------- */
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolve_SeqAIJ_Inode_newdatastruct"
+PetscErrorCode MatSolve_SeqAIJ_Inode_newdatastruct(Mat A,Vec bb,Vec xx)
+{
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  IS                iscol = a->col,isrow = a->row;
+  PetscErrorCode    ierr;
+  const PetscInt    *r,*c,*rout,*cout;
+  PetscInt          i,j,n = A->rmap->n,*ai = a->i,nz,*a_j = a->j;
+  PetscInt          node_max,*ns,row,nsz,aii,*vi,*ad,*aj,i0,i1;
+  PetscScalar       *x,*tmp,*tmps,tmp0,tmp1;
+  PetscScalar       sum1,sum2,sum3,sum4,sum5;
+  const MatScalar   *v1,*v2,*v3,*v4,*v5,*a_a = a->a,*aa;
+  const PetscScalar *b;
+
+  PetscFunctionBegin;  
+  if (!a->inode.size) SETERRQ(PETSC_ERR_COR,"Missing Inode Structure");
+  node_max = a->inode.node_count;   
+  ns       = a->inode.size;     /* Node Size array */
+
+  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  tmp  = a->solve_work;
+  
+  ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
+  ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout;
+  
+  /* forward solve the lower triangular */
+  tmps = tmp ;
+  aa   = a_a ;
+  aj   = a_j ;
+  ad   = a->diag;
+
+  for (i = 0,row = 0; i< node_max; ++i){
+    nsz = ns[i];
+    aii = ai[row];
+    v1  = aa + aii;
+    vi  = aj + aii;
+    nz  = ai[row+1]- ai[row];
+    
+    switch (nsz){               /* Each loop in 'case' is unrolled */
+    case 1 :
+      sum1 = b[r[row]];
+      for(j=0; j<nz-1; j+=2){
+        i0   = vi[j];
+        i1   = vi[j+1];
+        tmp0 = tmps[i0];
+        tmp1 = tmps[i1];
+        sum1 -= v1[j]*tmp0 + v1[j+1]*tmp1;
+      }
+      if(j == nz-1){
+        tmp0 = tmps[vi[j]];
+        sum1 -= v1[j]*tmp0;
+      }
+      tmp[row++]=sum1;
+      break;
+    case 2:
+      sum1 = b[r[row]];
+      sum2 = b[r[row+1]];
+      v2   = aa + ai[row+1];
+
+      for(j=0; j<nz-1; j+=2){
+        i0   = vi[j];
+        i1   = vi[j+1];
+        tmp0 = tmps[i0];
+        tmp1 = tmps[i1];
+        sum1 -= v1[j] * tmp0 + v1[j+1] * tmp1;
+        sum2 -= v2[j] * tmp0 + v2[j+1] * tmp1;
+      } 
+      if(j == nz-1){
+        tmp0 = tmps[vi[j]];
+        sum1 -= v1[j] *tmp0;
+        sum2 -= v2[j] *tmp0;
+      }
+      sum2 -= v2[nz] * sum1;
+      tmp[row ++]=sum1;
+      tmp[row ++]=sum2;
+      break;
+    case 3:
+      sum1 = b[r[row]];
+      sum2 = b[r[row+1]];
+      sum3 = b[r[row+2]];
+      v2   = aa + ai[row+1];
+      v3   = aa + ai[row+2];
+      
+      for (j=0; j<nz-1; j+=2){
+        i0   = vi[j];
+        i1   = vi[j+1];
+        tmp0 = tmps[i0];
+        tmp1 = tmps[i1];  
+        sum1 -= v1[j] * tmp0 + v1[j+1] * tmp1;
+        sum2 -= v2[j] * tmp0 + v2[j+1] * tmp1;
+        sum3 -= v3[j] * tmp0 + v3[j+1] * tmp1;
+      }
+      if (j == nz-1){
+        tmp0 = tmps[vi[j]];
+        sum1 -= v1[j] *tmp0;
+        sum2 -= v2[j] *tmp0;
+        sum3 -= v3[j] *tmp0;
+      }
+      sum2 -= v2[nz] * sum1;
+      sum3 -= v3[nz] * sum1;
+      sum3 -= v3[nz+1] * sum2;
+      tmp[row ++]=sum1;
+      tmp[row ++]=sum2;
+      tmp[row ++]=sum3;
+      break;
+      
+    case 4:
+      sum1 = b[r[row]];
+      sum2 = b[r[row+1]];
+      sum3 = b[r[row+2]];
+      sum4 = b[r[row+3]];
+      v2   = aa + ai[row+1];
+      v3   = aa + ai[row+2];
+      v4   = aa + ai[row+3];
+      
+      for (j=0; j<nz-1; j+=2){
+        i0   = vi[j];
+        i1   = vi[j+1];
+        tmp0 = tmps[i0];
+        tmp1 = tmps[i1];   
+        sum1 -= v1[j] * tmp0 + v1[j+1] * tmp1;
+        sum2 -= v2[j] * tmp0 + v2[j+1] * tmp1;
+        sum3 -= v3[j] * tmp0 + v3[j+1] * tmp1;
+        sum4 -= v4[j] * tmp0 + v4[j+1] * tmp1;
+      }
+      if (j == nz-1){
+        tmp0 = tmps[vi[j]];
+        sum1 -= v1[j] *tmp0;
+        sum2 -= v2[j] *tmp0;
+        sum3 -= v3[j] *tmp0;
+        sum4 -= v4[j] *tmp0;
+      }
+      sum2 -= v2[nz] * sum1;
+      sum3 -= v3[nz] * sum1;
+      sum4 -= v4[nz] * sum1;
+      sum3 -= v3[nz+1] * sum2;
+      sum4 -= v4[nz+1] * sum2;
+      sum4 -= v4[nz+2] * sum3;
+      
+      tmp[row ++]=sum1;
+      tmp[row ++]=sum2;
+      tmp[row ++]=sum3;
+      tmp[row ++]=sum4;
+      break;
+    case 5:
+      sum1 = b[r[row]];
+      sum2 = b[r[row+1]];
+      sum3 = b[r[row+2]];
+      sum4 = b[r[row+3]];
+      sum5 = b[r[row+4]];
+      v2   = aa + ai[row+1];
+      v3   = aa + ai[row+2];
+      v4   = aa + ai[row+3];
+      v5   = aa + ai[row+4];
+      
+      for (j=0; j<nz-1; j+=2){
+        i0   = vi[j];
+        i1   = vi[j+1];
+        tmp0 = tmps[i0];
+        tmp1 = tmps[i1];   
+        sum1 -= v1[j] * tmp0 + v1[j+1] * tmp1;
+        sum2 -= v2[j] * tmp0 + v2[j+1] * tmp1;
+        sum3 -= v3[j] * tmp0 + v3[j+1] * tmp1;
+        sum4 -= v4[j] * tmp0 + v4[j+1] * tmp1;
+        sum5 -= v5[j] * tmp0 + v5[j+1] * tmp1;
+      }
+      if (j == nz-1){
+        tmp0 = tmps[vi[j]];
+        sum1 -= v1[j] *tmp0;
+        sum2 -= v2[j] *tmp0;
+        sum3 -= v3[j] *tmp0;
+        sum4 -= v4[j] *tmp0;
+        sum5 -= v5[j] *tmp0;
+      }
+
+      sum2 -= v2[nz] * sum1;
+      sum3 -= v3[nz] * sum1;
+      sum4 -= v4[nz] * sum1;
+      sum5 -= v5[nz] * sum1;
+      sum3 -= v3[nz+1] * sum2;
+      sum4 -= v4[nz+1] * sum2;
+      sum5 -= v5[nz+1] * sum2;
+      sum4 -= v4[nz+2] * sum3;
+      sum5 -= v5[nz+2] * sum3;
+      sum5 -= v5[nz+3] * sum4;
+      
+      tmp[row ++]=sum1;
+      tmp[row ++]=sum2;
+      tmp[row ++]=sum3;
+      tmp[row ++]=sum4;
+      tmp[row ++]=sum5;
+      break;
+    default:
+      SETERRQ(PETSC_ERR_COR,"Node size not yet supported \n");
+    }
+  }
+  /* backward solve the upper triangular */
+  for (i=node_max -1 ,row = n-1 ; i>=0; i--){
+    nsz = ns[i];
+    aii = ad[row+1] + 1;
+    v1  = aa + aii;
+    vi  = aj + aii;
+    nz  = ad[row]- ad[row+1] - 1;
+    switch (nsz){               /* Each loop in 'case' is unrolled */
+    case 1 :
+      sum1 = tmp[row];
+
+      for(j=0 ; j<nz-1; j+=2){
+        i0   = vi[j];
+        i1   = vi[j+1];
+        tmp0 = tmps[i0];
+        tmp1 = tmps[i1];
+        sum1 -= v1[j] * tmp0 + v1[j+1] * tmp1;
+      }
+      if (j == nz-1){
+        tmp0  = tmps[vi[j]];
+        sum1 -= v1[j]*tmp0;
+      }
+      x[c[row]] = tmp[row] = sum1*v1[nz]; row--;
+      break;
+    case 2 :
+      sum1 = tmp[row];
+      sum2 = tmp[row-1];
+      v2   = aa + ad[row] + 1;
+      for (j=0 ; j<nz-1; j+=2){
+        i0   = vi[j];
+        i1   = vi[j+1];
+        tmp0 = tmps[i0];
+        tmp1 = tmps[i1];
+        sum1 -= v1[j] * tmp0 + v1[j+1] * tmp1;
+        sum2 -= v2[j+1] * tmp0 + v2[j+2] * tmp1;
+      }
+      if (j == nz-1){
+        tmp0  = tmps[vi[j]];
+        sum1 -= v1[j]* tmp0;
+        sum2 -= v2[j+1]* tmp0;
+      }
+      
+      tmp0    = x[c[row]] = tmp[row] = sum1*v1[nz]; row--;
+      sum2   -= v2[0] * tmp0;
+      x[c[row]] = tmp[row] = sum2*v2[nz+1]; row--;
+      break;
+    case 3 :
+      sum1 = tmp[row];
+      sum2 = tmp[row -1];
+      sum3 = tmp[row -2];
+      v2   = aa + ad[row] + 1;
+      v3   = aa + ad[row -1] + 1;
+      for (j=0 ; j<nz-1; j+=2){
+        i0   = vi[j];
+        i1   = vi[j+1];
+        tmp0 = tmps[i0];
+        tmp1 = tmps[i1];
+        sum1 -= v1[j] * tmp0 + v1[j+1] * tmp1;
+        sum2 -= v2[j+1] * tmp0 + v2[j+2] * tmp1;
+        sum3 -= v3[j+2] * tmp0 + v3[j+3] * tmp1;
+      }
+      if (j== nz-1){
+        tmp0  = tmps[vi[j]];
+        sum1 -= v1[j] * tmp0;
+        sum2 -= v2[j+1] * tmp0;
+        sum3 -= v3[j+2] * tmp0;
+      }
+      tmp0    = x[c[row]] = tmp[row] = sum1*v1[nz]; row--;
+      sum2   -= v2[0]* tmp0;
+      sum3   -= v3[1] * tmp0;
+      tmp0    = x[c[row]] = tmp[row] = sum2*v2[nz+1]; row--;
+      sum3   -= v3[0]* tmp0;
+      x[c[row]] = tmp[row] = sum3*v3[nz+2]; row--;
+      
+      break;
+    case 4 :
+      sum1 = tmp[row];
+      sum2 = tmp[row -1];
+      sum3 = tmp[row -2];
+      sum4 = tmp[row -3];
+      v2   = aa + ad[row]+1;
+      v3   = aa + ad[row -1]+1;
+      v4   = aa + ad[row -2]+1;
+
+      for (j=0 ; j<nz-1; j+=2){
+        i0   = vi[j];
+        i1   = vi[j+1];
+        tmp0 = tmps[i0];
+        tmp1 = tmps[i1];
+        sum1 -= v1[j] * tmp0   + v1[j+1] * tmp1;
+        sum2 -= v2[j+1] * tmp0 + v2[j+2] * tmp1;
+        sum3 -= v3[j+2] * tmp0 + v3[j+3] * tmp1;
+        sum4 -= v4[j+3] * tmp0 + v4[j+4] * tmp1;
+      }
+      if (j== nz-1){
+        tmp0  = tmps[vi[j]];
+        sum1 -= v1[j] * tmp0;
+        sum2 -= v2[j+1] * tmp0;
+        sum3 -= v3[j+2] * tmp0;
+        sum4 -= v4[j+3] * tmp0;
+      }
+
+      tmp0    = x[c[row]] = tmp[row] = sum1*v1[nz]; row--;
+      sum2   -= v2[0] * tmp0;
+      sum3   -= v3[1] * tmp0;
+      sum4   -= v4[2] * tmp0;
+      tmp0    = x[c[row]] = tmp[row] = sum2*v2[nz+1]; row--;
+      sum3   -= v3[0] * tmp0;
+      sum4   -= v4[1] * tmp0;
+      tmp0    = x[c[row]] = tmp[row] = sum3*v3[nz+2]; row--;
+      sum4   -= v4[0] * tmp0;
+      x[c[row]] = tmp[row] = sum4*v4[nz+3]; row--;
+      break;
+    case 5 :
+      sum1 = tmp[row];
+      sum2 = tmp[row -1];
+      sum3 = tmp[row -2];
+      sum4 = tmp[row -3];
+      sum5 = tmp[row -4];
+      v2   = aa + ad[row]+1;
+      v3   = aa + ad[row -1]+1;
+      v4   = aa + ad[row -2]+1;
+      v5   = aa + ad[row -3]+1;
+      for (j=0 ; j<nz-1; j+=2){
+        i0   = vi[j];
+        i1   = vi[j+1];
+        tmp0 = tmps[i0];
+        tmp1 = tmps[i1];
+        sum1 -= v1[j] * tmp0 + v1[j+1] * tmp1;
+        sum2 -= v2[j+1] * tmp0 + v2[j+2] * tmp1;
+        sum3 -= v3[j+2] * tmp0 + v3[j+3] * tmp1;
+        sum4 -= v4[j+3] * tmp0 + v4[j+4] * tmp1;
+        sum5 -= v5[j+4] * tmp0 + v5[j+5] * tmp1;
+      }
+      if (j==nz-1){
+        tmp0  = tmps[vi[j]];
+        sum1 -= v1[j] * tmp0;
+        sum2 -= v2[j+1] * tmp0;
+        sum3 -= v3[j+2] * tmp0;
+        sum4 -= v4[j+3] * tmp0;
+        sum5 -= v5[j+4] * tmp0;
+      }
+
+      tmp0    = x[c[row]] = tmp[row] = sum1*v1[nz]; row--;
+      sum2   -= v2[0] * tmp0;
+      sum3   -= v3[1] * tmp0;
+      sum4   -= v4[2] * tmp0;
+      sum5   -= v5[3] * tmp0;
+      tmp0    = x[c[row]] = tmp[row] = sum2*v2[nz+1]; row--;
+      sum3   -= v3[0] * tmp0;
+      sum4   -= v4[1] * tmp0;
+      sum5   -= v5[2] * tmp0;
+      tmp0    = x[c[row]] = tmp[row] = sum3*v3[nz+2]; row--;
+      sum4   -= v4[0] * tmp0;
+      sum5   -= v5[1] * tmp0;
+      tmp0    = x[c[row]] = tmp[row] = sum4*v4[nz+3]; row--;
+      sum5   -= v5[0] * tmp0;
+      x[c[row]] = tmp[row] = sum5*v5[nz+4]; row--;
+      break;
+    default:
+      SETERRQ(PETSC_ERR_COR,"Node size not yet supported \n");
+    }
+  }
+  ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz - A->cmap->n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
 /*
      Makes a longer coloring[] array and calls the usual code with that
 */
@@ -2205,6 +2576,82 @@ PetscErrorCode Mat_CheckInode(Mat A,PetscTruth samestructure)
     A->ops->restorecolumnij   = MatRestoreColumnIJ_SeqAIJ_Inode;
     A->ops->coloringpatch     = MatColoringPatch_SeqAIJ_Inode;
     A->ops->multdiagonalblock = MatMultDiagonalBlock_SeqAIJ_Inode;
+    a->inode.node_count       = node_count;
+    a->inode.size             = ns;
+    ierr = PetscInfo3(A,"Found %D nodes of %D. Limit used: %D. Using Inode routines\n",node_count,m,a->inode.limit);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#define MatGetRow_FactoredLU(cols,nzl,nzu,nz,ai,aj,adiag,row) {	\
+PetscInt __k, *__vi; \
+__vi = aj + ai[row];				\
+for(__k=0;__k<nzl;__k++) cols[__k] = __vi[__k]; \
+__vi = aj + adiag[row];				\
+cols[nzl] = __vi[0];\
+__vi = aj + adiag[row+1]+1;\
+for(__k=0;__k<nzu;__k++) cols[nzl+1+__k] = __vi[__k];}
+
+#undef __FUNCT__  
+#define __FUNCT__ "Mat_CheckInode_FactorLU"
+PetscErrorCode Mat_CheckInode_FactorLU(Mat A,PetscTruth samestructure)
+{
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode ierr;
+  PetscInt       i,j,m,nzl1,nzu1,nzl2,nzu2,nzx,nzy,node_count,blk_size;
+  PetscInt       *cols1,*cols2,*ns,*ai = a->i,*aj = a->j, *adiag = a->diag;
+  PetscTruth     flag;
+
+  PetscFunctionBegin;
+  if (!a->inode.use)                     PetscFunctionReturn(0);
+  if (a->inode.checked && samestructure) PetscFunctionReturn(0);
+
+  m = A->rmap->n;    
+  if (a->inode.size) {ns = a->inode.size;}
+  else {ierr = PetscMalloc((m+1)*sizeof(PetscInt),&ns);CHKERRQ(ierr);}
+
+  i          = 0;
+  node_count = 0; 
+  while (i < m){                /* For each row */
+    nzl1 = ai[i+1] - ai[i];       /* Number of nonzeros in L */
+    nzu1 = adiag[i] - adiag[i+1] - 1; /* Number of nonzeros in U excluding diagonal*/
+    nzx  = nzl1 + nzu1 + 1;
+    ierr = PetscMalloc((nzx+1)*sizeof(PetscInt),&cols1);CHKERRQ(ierr);
+    MatGetRow_FactoredLU(cols1,nzl1,nzu1,nzx,ai,aj,adiag,i); 
+  
+    /* Limits the number of elements in a node to 'a->inode.limit' */
+    for (j=i+1,blk_size=1; j<m && blk_size <a->inode.limit; ++j,++blk_size) {
+      nzl2    = ai[j+1] - ai[j];
+      nzu2    = adiag[j] - adiag[j+1] - 1;
+      nzy     = nzl2 + nzu2 + 1;
+      if( nzy != nzx) break;
+      ierr    = PetscMalloc((nzy+1)*sizeof(PetscInt),&cols2);CHKERRQ(ierr);
+      MatGetRow_FactoredLU(cols2,nzl2,nzu2,nzy,ai,aj,adiag,j);
+      ierr = PetscMemcmp(cols1,cols2,nzx*sizeof(PetscInt),&flag);CHKERRQ(ierr);
+      if (!flag) {ierr = PetscFree(cols2);CHKERRQ(ierr);break;}
+      ierr = PetscFree(cols2);CHKERRQ(ierr);
+    }
+    ns[node_count++] = blk_size;
+    ierr = PetscFree(cols1);CHKERRQ(ierr);
+    i    = j;
+  }
+  /* If not enough inodes found,, do not use inode version of the routines */
+  if (!a->inode.size && m && node_count > .9*m) {
+    ierr = PetscFree(ns);CHKERRQ(ierr);
+    a->inode.node_count     = 0;
+    a->inode.size           = PETSC_NULL;
+    a->inode.use            = PETSC_FALSE;
+    ierr = PetscInfo2(A,"Found %D nodes out of %D rows. Not using Inode routines\n",node_count,m);CHKERRQ(ierr);
+  } else {
+    A->ops->mult              = 0;
+    A->ops->sor               = 0;
+    A->ops->multadd           = 0;
+    A->ops->getrowij          = 0;
+    A->ops->restorerowij      = 0;
+    A->ops->getcolumnij       = 0;
+    A->ops->restorecolumnij   = 0;
+    A->ops->coloringpatch     = 0;
+    A->ops->multdiagonalblock = 0;
     a->inode.node_count       = node_count;
     a->inode.size             = ns;
     ierr = PetscInfo3(A,"Found %D nodes of %D. Limit used: %D. Using Inode routines\n",node_count,m,a->inode.limit);CHKERRQ(ierr);
