@@ -67,8 +67,38 @@ extern PetscErrorCode MatDestroy_ML(Mat);
 extern PetscErrorCode MatWrapML_SeqAIJ(ML_Operator*,MatReuse,Mat*);
 extern PetscErrorCode MatWrapML_MPIAIJ(ML_Operator*,Mat*);
 extern PetscErrorCode MatWrapML_SHELL(ML_Operator*,MatReuse,Mat*);
-extern PetscErrorCode PetscContainerDestroy_PC_ML(void *);
 
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_PC_ML_Private"
+PetscErrorCode PCDestroy_PC_ML_Private(void *ptr)
+{
+  PetscErrorCode  ierr;
+  PC_ML           *pc_ml = (PC_ML*)ptr;
+  PetscInt        level,fine_level=pc_ml->Nlevels-1;
+
+  PetscFunctionBegin; 
+  ML_Aggregate_Destroy(&pc_ml->agg_object); 
+  ML_Destroy(&pc_ml->ml_object);
+
+  if (pc_ml->PetscMLdata) {
+    ierr = PetscFree(pc_ml->PetscMLdata->pwork);CHKERRQ(ierr);
+    if (pc_ml->size > 1)      {ierr = MatDestroy(pc_ml->PetscMLdata->Aloc);CHKERRQ(ierr);} 
+    if (pc_ml->PetscMLdata->x){ierr = VecDestroy(pc_ml->PetscMLdata->x);CHKERRQ(ierr);}
+    if (pc_ml->PetscMLdata->y){ierr = VecDestroy(pc_ml->PetscMLdata->y);CHKERRQ(ierr);}
+  }
+  ierr = PetscFree(pc_ml->PetscMLdata);CHKERRQ(ierr);
+
+  for (level=0; level<fine_level; level++){
+    if (pc_ml->gridctx[level].A){ierr = MatDestroy(pc_ml->gridctx[level].A);CHKERRQ(ierr);}
+    if (pc_ml->gridctx[level].P){ierr = MatDestroy(pc_ml->gridctx[level].P);CHKERRQ(ierr);}
+    if (pc_ml->gridctx[level].R){ierr = MatDestroy(pc_ml->gridctx[level].R);CHKERRQ(ierr);}
+    if (pc_ml->gridctx[level].x){ierr = VecDestroy(pc_ml->gridctx[level].x);CHKERRQ(ierr);}
+    if (pc_ml->gridctx[level].b){ierr = VecDestroy(pc_ml->gridctx[level].b);CHKERRQ(ierr);}
+    if (pc_ml->gridctx[level+1].r){ierr = VecDestroy(pc_ml->gridctx[level+1].r);CHKERRQ(ierr);}
+  }
+  ierr = PetscFree(pc_ml->gridctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 /* -------------------------------------------------------------------------- */
 /*
    PCSetUp_ML - Prepares for the use of the ML preconditioner
@@ -97,19 +127,12 @@ PetscErrorCode PCSetUp_ML(PC pc)
   PetscInt        nlocal_allcols,Nlevels,mllevel,level,level1,m,fine_level,bs;
   Mat             A,Aloc; 
   GridCtx         *gridctx; 
-  PC_ML           *pc_ml=PETSC_NULL;
-  PetscContainer  container;
+  PC_MG           *mg = (PC_MG*)pc->data;
+  PC_ML           *pc_ml = (PC_ML*)mg->innerctx;
   MatReuse        reuse = MAT_INITIAL_MATRIX;
   PetscTruth      isSeq, isMPI;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)pc,"PC_ML",(PetscObject *)&container);CHKERRQ(ierr);
-  if (container) {
-    ierr = PetscContainerGetPointer(container,(void **)&pc_ml);CHKERRQ(ierr); 
-  } else {
-    SETERRQ(PETSC_ERR_ARG_NULL,"Container does not exit");
-  }
-
   if (pc->setupcalled){
     if (pc->flag == SAME_NONZERO_PATTERN){
       reuse = MAT_REUSE_MATRIX;
@@ -119,17 +142,9 @@ PetscErrorCode PCSetUp_ML(PC pc)
       ML_Destroy(&pc_ml->ml_object);
       ML_Aggregate_Destroy(&pc_ml->agg_object); 
     } else {
-      PC_ML           *pc_ml_new = PETSC_NULL;
-      PetscContainer  container_new;
-      ierr = PetscNewLog(pc,PC_ML,&pc_ml_new);CHKERRQ(ierr); 
-      ierr = PetscContainerCreate(PETSC_COMM_SELF,&container_new);CHKERRQ(ierr);
-      ierr = PetscContainerSetPointer(container_new,pc_ml_new);CHKERRQ(ierr);
-      ierr = PetscContainerSetUserDestroy(container_new,PetscContainerDestroy_PC_ML);CHKERRQ(ierr); 
-      ierr = PetscObjectCompose((PetscObject)pc,"PC_ML",(PetscObject)container_new);CHKERRQ(ierr);
-
-      ierr = PetscMemcpy(pc_ml_new,pc_ml,sizeof(PC_ML));CHKERRQ(ierr);
-      ierr = PetscContainerDestroy(container);CHKERRQ(ierr);
-      pc_ml = pc_ml_new; 
+      ML_Destroy(&pc_ml->ml_object);
+      ML_Aggregate_Destroy(&pc_ml->agg_object); 
+      ierr = PCDestroy_PC_ML_Private(pc_ml);CHKERRQ(ierr);
     }
   }
   
@@ -312,38 +327,6 @@ PetscErrorCode PCSetUp_ML(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscContainerDestroy_PC_ML"
-PetscErrorCode PetscContainerDestroy_PC_ML(void *ptr)
-{
-  PetscErrorCode  ierr;
-  PC_ML           *pc_ml = (PC_ML*)ptr;
-  PetscInt        level,fine_level=pc_ml->Nlevels-1;
-
-  PetscFunctionBegin; 
-  ML_Aggregate_Destroy(&pc_ml->agg_object); 
-  ML_Destroy(&pc_ml->ml_object);
-
-  if (pc_ml->PetscMLdata) {
-    ierr = PetscFree(pc_ml->PetscMLdata->pwork);CHKERRQ(ierr);
-    if (pc_ml->size > 1)      {ierr = MatDestroy(pc_ml->PetscMLdata->Aloc);CHKERRQ(ierr);} 
-    if (pc_ml->PetscMLdata->x){ierr = VecDestroy(pc_ml->PetscMLdata->x);CHKERRQ(ierr);}
-    if (pc_ml->PetscMLdata->y){ierr = VecDestroy(pc_ml->PetscMLdata->y);CHKERRQ(ierr);}
-  }
-  ierr = PetscFree(pc_ml->PetscMLdata);CHKERRQ(ierr);
-
-  for (level=0; level<fine_level; level++){
-    if (pc_ml->gridctx[level].A){ierr = MatDestroy(pc_ml->gridctx[level].A);CHKERRQ(ierr);}
-    if (pc_ml->gridctx[level].P){ierr = MatDestroy(pc_ml->gridctx[level].P);CHKERRQ(ierr);}
-    if (pc_ml->gridctx[level].R){ierr = MatDestroy(pc_ml->gridctx[level].R);CHKERRQ(ierr);}
-    if (pc_ml->gridctx[level].x){ierr = VecDestroy(pc_ml->gridctx[level].x);CHKERRQ(ierr);}
-    if (pc_ml->gridctx[level].b){ierr = VecDestroy(pc_ml->gridctx[level].b);CHKERRQ(ierr);}
-    if (pc_ml->gridctx[level+1].r){ierr = VecDestroy(pc_ml->gridctx[level+1].r);CHKERRQ(ierr);}
-  }
-  ierr = PetscFree(pc_ml->gridctx);CHKERRQ(ierr);
-  ierr = PetscFree(pc_ml);CHKERRQ(ierr); 
-  PetscFunctionReturn(0);
-}
 /* -------------------------------------------------------------------------- */
 /*
    PCDestroy_ML - Destroys the private context for the ML preconditioner
@@ -359,23 +342,13 @@ PetscErrorCode PetscContainerDestroy_PC_ML(void *ptr)
 PetscErrorCode PCDestroy_ML(PC pc)
 {
   PetscErrorCode  ierr;
-  PC_ML           *pc_ml=PETSC_NULL;
-  PetscContainer  container;
+  PC_MG           *mg = (PC_MG*)pc->data;
+  PC_ML           *pc_ml= (PC_ML*)mg->innerctx;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)pc,"PC_ML",(PetscObject *)&container);CHKERRQ(ierr);
-  if (container) {
-    ierr = PetscContainerGetPointer(container,(void **)&pc_ml);CHKERRQ(ierr);
-    pc->ops->destroy = pc_ml->PCDestroy;
-  } else {
-    SETERRQ(PETSC_ERR_ARG_NULL,"Container does not exit");
-  }
-  /* detach pc and PC_ML and dereference container */
-  ierr = PetscContainerDestroy(container);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)pc,"PC_ML",0);CHKERRQ(ierr); 
-  if (pc->ops->destroy) {
-    ierr = (*pc->ops->destroy)(pc);CHKERRQ(ierr);
-  }
+  ierr = PCDestroy_PC_ML_Private(pc_ml);CHKERRQ(ierr);
+  ierr = PetscFree(pc_ml);CHKERRQ(ierr); 
+  ierr = PCDestroy_MG(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -387,18 +360,11 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
   PetscInt        indx,m,PrintLevel; 
   PetscTruth      flg;
   const char      *scheme[] = {"Uncoupled","Coupled","MIS","METIS"};
-  PC_ML           *pc_ml=PETSC_NULL;
-  PetscContainer  container;
+  PC_MG           *mg = (PC_MG*)pc->data;
+  PC_ML           *pc_ml = (PC_ML*)mg->innerctx;
   PCMGType        mgtype;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)pc,"PC_ML",(PetscObject *)&container);CHKERRQ(ierr);
-  if (container) {
-    ierr = PetscContainerGetPointer(container,(void **)&pc_ml);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_ERR_ARG_NULL,"Container does not exit");
-  }
-
   /* inherited MG options */
   ierr = PetscOptionsHead("Multigrid options(inherited)");CHKERRQ(ierr); 
     ierr = PetscOptionsInt("-pc_mg_cycles","1 for V cycle, 2 for W-cycle","MGSetCycles",1,&m,&flg);CHKERRQ(ierr);
@@ -481,7 +447,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ML(PC pc)
 {
   PetscErrorCode  ierr;
   PC_ML           *pc_ml;
-  PetscContainer  container;
+  PC_MG           *mg;
 
   PetscFunctionBegin;
   /* PCML is an inherited class of PCMG. Initialize pc as PCMG */
@@ -490,10 +456,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ML(PC pc)
 
   /* create a supporting struct and attach it to pc */
   ierr = PetscNewLog(pc,PC_ML,&pc_ml);CHKERRQ(ierr);
-  ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
-  ierr = PetscContainerSetPointer(container,pc_ml);CHKERRQ(ierr);
-  ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_PC_ML);CHKERRQ(ierr); 
-  ierr = PetscObjectCompose((PetscObject)pc,"PC_ML",(PetscObject)container);CHKERRQ(ierr);
+  mg = (PC_MG*)pc->data;
+  mg->innerctx = pc_ml;
   
   pc_ml->ml_object     = 0;
   pc_ml->agg_object    = 0;
