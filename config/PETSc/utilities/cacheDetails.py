@@ -1,0 +1,95 @@
+import config.base
+import os
+import sys
+import string
+
+class CacheAttribute(object):
+  def __init__(self, name, keyword, help, default=None, min=0, max=sys.maxint):
+    self.name = name
+    self.help = help
+    self.keyword = keyword
+    self.default = default
+    self.min = min
+    self.max = max
+  def valid(self,val):
+    return self.min <= val <= self.max
+  def sanitize(self,val):
+    return val if self.valid(val) else self.default
+  def enum(self):
+    return self.name.upper().replace('-','_')
+
+class Configure(config.base.Configure):
+  def __init__(self, framework):
+    config.base.Configure.__init__(self, framework)
+    self.headerPrefix = 'PETSC'
+    self.substPrefix  = 'PETSC'
+    self.updated      = 0
+    self.strmsg       = ''
+    self.attrs        = [CacheAttribute('level1-dcache-size', 'size', 'Size in bytes of Level 1 data cache', 32768, 16),
+                         CacheAttribute('level1-dcache-linesize', 'size', 'Size in bytes of each line of the Level 1 data cache', 32, 16),
+                         CacheAttribute('level1-dcache-assoc', 'ways', 'Associativity of the Level 1 data cache, 0 for full associative', 2, 0)]
+    self.method       = None
+    return
+
+  def __str__(self):
+    return self.strmsg
+
+  def setupHelp(self, help):
+    import nargs
+    for a in self.attrs:
+      help.addArgument('PETSc', '-known-'+a.name+'=<'+a.keyword+'>', nargs.ArgInt(None, None, a.help, min=a.min, max=a.max))
+    return
+
+  def setupDependencies(self, framework):
+    config.base.Configure.setupDependencies(self, framework)
+    self.compilers = framework.require('config.compilers', self)
+    self.headers   = framework.require('config.headers', self)
+    return
+
+  def getconfFunction(self, a):
+    VAR = a.enum()
+    funcname = 'getconf_' + VAR
+    methods = {'sysconf':       # On some systems, maybe just with glibc, sysconf can provide this stuff
+               '#include <unistd.h>\nlong '+funcname+'() { return sysconf(_SC_'+VAR+'); }\n',
+               'getconf':       # A total hack since this will compile with any C compiler, but only return useful results when the getconf program is available
+               '#include <stdio.h>\nlong '+funcname+'() { long val=-1; FILE *f = popen("getconf '+VAR+'","r"); fscanf(f,"%ld",&val); pclose(f); return val; }\n'
+               }
+    if not self.method:         # Determine which method of finding configuration variables, only runs the first time around
+      self.pushLanguage('C')
+      for (m,d) in methods.iteritems():
+        if self.checkCompile(d,''):
+          self.method = m
+          break
+      self.popLanguage()
+    return (funcname,methods[self.method])
+
+  def configureCacheDetails(self):
+    '''Try to determine the size and associativity of the cache.'''
+    for a in self.attrs:
+      arg = 'known-' + a.name
+      (fname, source) = self.getconfFunction(a)
+      if arg in self.framework.argDB:
+        val = self.framework.argDB[arg]
+      elif self.framework.argDB['with-batch']:
+        body = 'fprintf(output,"  \'--'+arg+'=%ld\',\\n",'+fname+'());'
+        self.framework.addBatchInclude(source)
+        self.framework.addBatchBody(body)
+        val = a.default
+      else:
+        filename = 'conftestval'
+        body = 'FILE *output = fopen("'+filename+'","w"); if (!output) return 1; fprintf(output,"%ld",'+fname+'()); fclose(output);'
+        self.pushLanguage('C')
+        if self.checkRun(source, body) and os.path.exists(filename):
+          with open(filename) as f:
+            val = int(f.read())
+            if not a.valid(val):
+              self.framework.log.write('Cannot use value returned for '+a.enum()+': '+val+'\n')
+        else:
+          self.framework.log.write('Could not determine '+a.enum()+', using default '+str(a.default)+'\n')
+          val = a.default
+        self.popLanguage()
+      self.addDefine(a.enum(), a.sanitize(val))
+
+  def configure(self):
+    self.executeTest(self.configureCacheDetails)
+    return
