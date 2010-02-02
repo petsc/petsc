@@ -14,7 +14,10 @@ class CacheAttribute(object):
   def valid(self,val):
     return self.min <= val <= self.max
   def sanitize(self,val):
-    return val if self.valid(val) else self.default
+    if self.valid(val):
+      return val
+    else:
+      return self.default
   def enum(self):
     return self.name.upper().replace('-','_')
 
