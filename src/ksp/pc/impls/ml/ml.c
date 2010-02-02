@@ -52,14 +52,11 @@ typedef struct {
   PetscReal      Threshold,DampingFactor; 
   PetscTruth     SpectralNormScheme_Anorm;
   PetscMPIInt    size; /* size of communicator for pc->pmat */
-  PetscErrorCode (*PCSetUp)(PC);
-  PetscErrorCode (*PCDestroy)(PC);
 } PC_ML;
 
-extern int PetscML_getrow(ML_Operator *ML_data,int N_requested_rows,int requested_rows[],
-                          int allocated_space,int columns[],double values[],int row_lengths[]);
-extern int PetscML_matvec(ML_Operator *ML_data, int in_length, double p[], int out_length,double ap[]);
-extern int PetscML_comm(double x[], void *ML_data);
+extern int PetscML_getrow(ML_Operator*,int,int[],int,int[],double[],int[]);
+extern int PetscML_matvec(ML_Operator*, int, double[], int,double[]);
+extern int PetscML_comm(double[], void *);
 extern PetscErrorCode MatMult_ML(Mat,Vec,Vec);
 extern PetscErrorCode MatMultAdd_ML(Mat,Vec,Vec,Vec);
 extern PetscErrorCode MatConvert_MPIAIJ_ML(Mat,MatType,MatReuse,Mat*);
@@ -69,8 +66,8 @@ extern PetscErrorCode MatWrapML_MPIAIJ(ML_Operator*,Mat*);
 extern PetscErrorCode MatWrapML_SHELL(ML_Operator*,MatReuse,Mat*);
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCDestroy_PC_ML_Private"
-PetscErrorCode PCDestroy_PC_ML_Private(void *ptr)
+#define __FUNCT__ "PCDestroy_ML_Private"
+PetscErrorCode PCDestroy_ML_Private(void *ptr)
 {
   PetscErrorCode  ierr;
   PC_ML           *pc_ml = (PC_ML*)ptr;
@@ -144,7 +141,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
     } else {
       ML_Destroy(&pc_ml->ml_object);
       ML_Aggregate_Destroy(&pc_ml->agg_object); 
-      ierr = PCDestroy_PC_ML_Private(pc_ml);CHKERRQ(ierr);
+      ierr = PCDestroy_ML_Private(pc_ml);CHKERRQ(ierr);
     }
   }
   
@@ -321,9 +318,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   ierr = PCMGSetResidual(pc,fine_level,PCMGDefaultResidual,gridctx[fine_level].A);CHKERRQ(ierr); 
   ierr = KSPSetOperators(gridctx[fine_level].ksp,gridctx[level].A,gridctx[fine_level].A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   
-  /* now call PCSetUp_MG()         */
-  /*-------------------------------*/
-  ierr = (*pc_ml->PCSetUp)(pc);CHKERRQ(ierr);
+  ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -346,7 +341,7 @@ PetscErrorCode PCDestroy_ML(PC pc)
   PC_ML           *pc_ml= (PC_ML*)mg->innerctx;
 
   PetscFunctionBegin;
-  ierr = PCDestroy_PC_ML_Private(pc_ml);CHKERRQ(ierr);
+  ierr = PCDestroy_ML_Private(pc_ml);CHKERRQ(ierr);
   ierr = PetscFree(pc_ml);CHKERRQ(ierr); 
   ierr = PCDestroy_MG(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -357,40 +352,24 @@ PetscErrorCode PCDestroy_ML(PC pc)
 PetscErrorCode PCSetFromOptions_ML(PC pc)
 {
   PetscErrorCode  ierr;
-  PetscInt        indx,m,PrintLevel; 
-  PetscTruth      flg;
+  PetscInt        indx,PrintLevel; 
   const char      *scheme[] = {"Uncoupled","Coupled","MIS","METIS"};
   PC_MG           *mg = (PC_MG*)pc->data;
   PC_ML           *pc_ml = (PC_ML*)mg->innerctx;
-  PCMGType        mgtype;
 
   PetscFunctionBegin;
-  /* inherited MG options */
-  ierr = PetscOptionsHead("Multigrid options(inherited)");CHKERRQ(ierr); 
-    ierr = PetscOptionsInt("-pc_mg_cycles","1 for V cycle, 2 for W-cycle","MGSetCycles",1,&m,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-pc_mg_smoothup","Number of post-smoothing steps","MGSetNumberSmoothUp",1,&m,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-pc_mg_smoothdown","Number of pre-smoothing steps","MGSetNumberSmoothDown",1,&m,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsEnum("-pc_mg_type","Multigrid type","PCMGSetType",PCMGTypes,(PetscEnum)PC_MG_MULTIPLICATIVE,(PetscEnum*)&mgtype,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
-
-  /* ML options */
   ierr = PetscOptionsHead("ML options");CHKERRQ(ierr); 
-  /* set defaults */
   PrintLevel    = 0;
   indx          = 0; 
   ierr = PetscOptionsInt("-pc_ml_PrintLevel","Print level","ML_Set_PrintLevel",PrintLevel,&PrintLevel,PETSC_NULL);CHKERRQ(ierr);
   ML_Set_PrintLevel(PrintLevel);
   ierr = PetscOptionsInt("-pc_ml_maxNlevels","Maximum number of levels","None",pc_ml->MaxNlevels,&pc_ml->MaxNlevels,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_ml_maxCoarseSize","Maximum coarsest mesh size","ML_Aggregate_Set_MaxCoarseSize",pc_ml->MaxCoarseSize,&pc_ml->MaxCoarseSize,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-pc_ml_CoarsenScheme","Aggregate Coarsen Scheme","ML_Aggregate_Set_CoarsenScheme_*",scheme,4,scheme[0],&indx,PETSC_NULL);CHKERRQ(ierr); /* ??? */
+  ierr = PetscOptionsEList("-pc_ml_CoarsenScheme","Aggregate Coarsen Scheme","ML_Aggregate_Set_CoarsenScheme_*",scheme,4,scheme[0],&indx,PETSC_NULL);CHKERRQ(ierr);
   pc_ml->CoarsenScheme = indx;
-
   ierr = PetscOptionsReal("-pc_ml_DampingFactor","P damping factor","ML_Aggregate_Set_DampingFactor",pc_ml->DampingFactor,&pc_ml->DampingFactor,PETSC_NULL);CHKERRQ(ierr);
-  
   ierr = PetscOptionsReal("-pc_ml_Threshold","Smoother drop tol","ML_Aggregate_Set_Threshold",pc_ml->Threshold,&pc_ml->Threshold,PETSC_NULL);CHKERRQ(ierr);
-
   ierr = PetscOptionsTruth("-pc_ml_SpectralNormScheme_Anorm","Method used for estimating spectral radius","ML_Set_SpectralNormScheme_Anorm",pc_ml->SpectralNormScheme_Anorm,&pc_ml->SpectralNormScheme_Anorm,PETSC_NULL);
-  
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -466,14 +445,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ML(PC pc)
   pc_ml->Nlevels       = -1;
   pc_ml->MaxNlevels    = 10;
   pc_ml->MaxCoarseSize = 1;
-  pc_ml->CoarsenScheme = 1; /* ??? */
+  pc_ml->CoarsenScheme = 1; 
   pc_ml->Threshold     = 0.0;
   pc_ml->DampingFactor = 4.0/3.0; 
   pc_ml->SpectralNormScheme_Anorm = PETSC_FALSE;
   pc_ml->size          = 0;
-
-  pc_ml->PCSetUp   = pc->ops->setup;
-  pc_ml->PCDestroy = pc->ops->destroy;
 
   /* overwrite the pointers of PCMG by the functions of PCML */
   pc->ops->setfromoptions = PCSetFromOptions_ML;
@@ -483,8 +459,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ML(PC pc)
 }
 EXTERN_C_END
 
-int PetscML_getrow(ML_Operator *ML_data, int N_requested_rows, int requested_rows[],
-   int allocated_space, int columns[], double values[], int row_lengths[])
+int PetscML_getrow(ML_Operator *ML_data, int N_requested_rows, int requested_rows[],int allocated_space, int columns[], double values[], int row_lengths[])
 {
   PetscErrorCode ierr;
   Mat            Aloc; 
@@ -583,7 +558,6 @@ PetscErrorCode MatMult_ML(Mat A,Vec x,Vec y)
   ierr = VecRestoreArray(y,&yarray);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
-/* MatMultAdd_ML -  Compute y = w + A*x */
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultAdd_ML"
 PetscErrorCode MatMultAdd_ML(Mat A,Vec x,Vec w,Vec y)
