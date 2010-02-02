@@ -126,23 +126,11 @@ PetscErrorCode PCSetUp_ML(PC pc)
   GridCtx         *gridctx; 
   PC_MG           *mg = (PC_MG*)pc->data;
   PC_ML           *pc_ml = (PC_ML*)mg->innerctx;
-  MatReuse        reuse = MAT_INITIAL_MATRIX;
   PetscTruth      isSeq, isMPI;
 
   PetscFunctionBegin;
   if (pc->setupcalled){
-    if (pc->flag == SAME_NONZERO_PATTERN){
-      reuse = MAT_REUSE_MATRIX;
-      PetscMLdata = pc_ml->PetscMLdata;
-      gridctx     = pc_ml->gridctx;
-      /* ML objects cannot be reused */
-      ML_Destroy(&pc_ml->ml_object);
-      ML_Aggregate_Destroy(&pc_ml->agg_object); 
-    } else {
-      ML_Destroy(&pc_ml->ml_object);
-      ML_Aggregate_Destroy(&pc_ml->agg_object); 
-      ierr = PCDestroy_ML_Private(pc_ml);CHKERRQ(ierr);
-    }
+    ierr = PCDestroy_ML_Private(pc_ml);CHKERRQ(ierr);
   }
   
   /* setup special features of PCML */
@@ -154,8 +142,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   ierr = PetscTypeCompare((PetscObject) A, MATSEQAIJ, &isSeq);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject) A, MATMPIAIJ, &isMPI);CHKERRQ(ierr);
   if (isMPI){ 
-    if (reuse) Aloc = PetscMLdata->Aloc;
-    ierr = MatConvert_MPIAIJ_ML(A,PETSC_NULL,reuse,&Aloc);CHKERRQ(ierr);
+    ierr = MatConvert_MPIAIJ_ML(A,PETSC_NULL,MAT_INITIAL_MATRIX,&Aloc);CHKERRQ(ierr);
   } else if (isSeq) {
     Aloc = A;
   } else {
@@ -163,19 +150,17 @@ PetscErrorCode PCSetUp_ML(PC pc)
   }
 
   /* create and initialize struct 'PetscMLdata' */
-  if (!reuse){
-    ierr = PetscNewLog(pc,FineGridCtx,&PetscMLdata);CHKERRQ(ierr); 
-    pc_ml->PetscMLdata = PetscMLdata;
-    ierr = PetscMalloc((Aloc->cmap->n+1)*sizeof(PetscScalar),&PetscMLdata->pwork);CHKERRQ(ierr); 
+  ierr = PetscNewLog(pc,FineGridCtx,&PetscMLdata);CHKERRQ(ierr); 
+  pc_ml->PetscMLdata = PetscMLdata;
+  ierr = PetscMalloc((Aloc->cmap->n+1)*sizeof(PetscScalar),&PetscMLdata->pwork);CHKERRQ(ierr); 
 
-    ierr = VecCreate(PETSC_COMM_SELF,&PetscMLdata->x);CHKERRQ(ierr);   
-    ierr = VecSetSizes(PetscMLdata->x,Aloc->cmap->n,Aloc->cmap->n);CHKERRQ(ierr);
-    ierr = VecSetType(PetscMLdata->x,VECSEQ);CHKERRQ(ierr); 
+  ierr = VecCreate(PETSC_COMM_SELF,&PetscMLdata->x);CHKERRQ(ierr);   
+  ierr = VecSetSizes(PetscMLdata->x,Aloc->cmap->n,Aloc->cmap->n);CHKERRQ(ierr);
+  ierr = VecSetType(PetscMLdata->x,VECSEQ);CHKERRQ(ierr); 
 
-    ierr = VecCreate(PETSC_COMM_SELF,&PetscMLdata->y);CHKERRQ(ierr); 
-    ierr = VecSetSizes(PetscMLdata->y,A->rmap->n,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetType(PetscMLdata->y,VECSEQ);CHKERRQ(ierr);
-  } 
+  ierr = VecCreate(PETSC_COMM_SELF,&PetscMLdata->y);CHKERRQ(ierr); 
+  ierr = VecSetSizes(PetscMLdata->y,A->rmap->n,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetType(PetscMLdata->y,VECSEQ);CHKERRQ(ierr);
   PetscMLdata->A    = A;
   PetscMLdata->Aloc = Aloc;
    
@@ -236,10 +221,8 @@ PetscErrorCode PCSetUp_ML(PC pc)
     ierr = PCSetFromOptions_MG(pc);CHKERRQ(ierr); /* should be called in PCSetFromOptions_ML(), but cannot be called prior to PCMGSetLevels() */
   }
    
-  if (!reuse){
-    ierr = PetscMalloc(Nlevels*sizeof(GridCtx),&gridctx);CHKERRQ(ierr); 
-    pc_ml->gridctx = gridctx;
-  }
+  ierr = PetscMalloc(Nlevels*sizeof(GridCtx),&gridctx);CHKERRQ(ierr); 
+  pc_ml->gridctx = gridctx;
 
   /* wrap ML matrices by PETSc shell matrices at coarsened grids. 
      Level 0 is the finest grid for ML, but coarsest for PETSc! */
@@ -249,61 +232,52 @@ PetscErrorCode PCSetUp_ML(PC pc)
   if (size == 1){ /* convert ML P, R and A into seqaij format */
     for (mllevel=1; mllevel<Nlevels; mllevel++){ 
       mlmat = &(ml_object->Pmat[mllevel]);
-      ierr  = MatWrapML_SeqAIJ(mlmat,reuse,&gridctx[level].P);CHKERRQ(ierr);
+      ierr  = MatWrapML_SeqAIJ(mlmat,MAT_INITIAL_MATRIX,&gridctx[level].P);CHKERRQ(ierr);
       mlmat = &(ml_object->Rmat[mllevel-1]);
-      ierr  = MatWrapML_SeqAIJ(mlmat,reuse,&gridctx[level].R);CHKERRQ(ierr);
+      ierr  = MatWrapML_SeqAIJ(mlmat,MAT_INITIAL_MATRIX,&gridctx[level].R);CHKERRQ(ierr);
       
       mlmat = &(ml_object->Amat[mllevel]);
-      if (reuse){       
-        /* ML matrix A changes sparse pattern although PETSc A doesn't, thus gridctx[level].A must be recreated! */
-        ierr = MatDestroy(gridctx[level].A);CHKERRQ(ierr);  
-      }   
       ierr  = MatWrapML_SeqAIJ(mlmat,MAT_INITIAL_MATRIX,&gridctx[level].A);CHKERRQ(ierr);
       level--;
     }
   } else { /* convert ML P and R into shell format, ML A into mpiaij format */
     for (mllevel=1; mllevel<Nlevels; mllevel++){ 
       mlmat  = &(ml_object->Pmat[mllevel]);
-      ierr = MatWrapML_SHELL(mlmat,reuse,&gridctx[level].P);CHKERRQ(ierr);
+      ierr = MatWrapML_SHELL(mlmat,MAT_INITIAL_MATRIX,&gridctx[level].P);CHKERRQ(ierr);
       mlmat  = &(ml_object->Rmat[mllevel-1]);
-      ierr = MatWrapML_SHELL(mlmat,reuse,&gridctx[level].R);CHKERRQ(ierr);
+      ierr = MatWrapML_SHELL(mlmat,MAT_INITIAL_MATRIX,&gridctx[level].R);CHKERRQ(ierr);
 
       mlmat  = &(ml_object->Amat[mllevel]);
-      if (reuse){
-        ierr = MatDestroy(gridctx[level].A);CHKERRQ(ierr);
-      }
       ierr = MatWrapML_MPIAIJ(mlmat,&gridctx[level].A);CHKERRQ(ierr);  
       level--;
     }
   }
 
   /* create vectors and ksp at all levels */
-  if (!reuse){
-    for (level=0; level<fine_level; level++){  
-      level1 = level + 1;
-      ierr = VecCreate(((PetscObject)gridctx[level].A)->comm,&gridctx[level].x);CHKERRQ(ierr); 
-      ierr = VecSetSizes(gridctx[level].x,gridctx[level].A->cmap->n,PETSC_DECIDE);CHKERRQ(ierr);
-      ierr = VecSetType(gridctx[level].x,VECMPI);CHKERRQ(ierr); 
-      ierr = PCMGSetX(pc,level,gridctx[level].x);CHKERRQ(ierr); 
+  for (level=0; level<fine_level; level++){  
+    level1 = level + 1;
+    ierr = VecCreate(((PetscObject)gridctx[level].A)->comm,&gridctx[level].x);CHKERRQ(ierr); 
+    ierr = VecSetSizes(gridctx[level].x,gridctx[level].A->cmap->n,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecSetType(gridctx[level].x,VECMPI);CHKERRQ(ierr); 
+    ierr = PCMGSetX(pc,level,gridctx[level].x);CHKERRQ(ierr); 
    
-      ierr = VecCreate(((PetscObject)gridctx[level].A)->comm,&gridctx[level].b);CHKERRQ(ierr); 
-      ierr = VecSetSizes(gridctx[level].b,gridctx[level].A->rmap->n,PETSC_DECIDE);CHKERRQ(ierr);
-      ierr = VecSetType(gridctx[level].b,VECMPI);CHKERRQ(ierr); 
-      ierr = PCMGSetRhs(pc,level,gridctx[level].b);CHKERRQ(ierr); 
+    ierr = VecCreate(((PetscObject)gridctx[level].A)->comm,&gridctx[level].b);CHKERRQ(ierr); 
+    ierr = VecSetSizes(gridctx[level].b,gridctx[level].A->rmap->n,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecSetType(gridctx[level].b,VECMPI);CHKERRQ(ierr); 
+    ierr = PCMGSetRhs(pc,level,gridctx[level].b);CHKERRQ(ierr); 
     
-      ierr = VecCreate(((PetscObject)gridctx[level1].A)->comm,&gridctx[level1].r);CHKERRQ(ierr); 
-      ierr = VecSetSizes(gridctx[level1].r,gridctx[level1].A->rmap->n,PETSC_DECIDE);CHKERRQ(ierr);
-      ierr = VecSetType(gridctx[level1].r,VECMPI);CHKERRQ(ierr); 
-      ierr = PCMGSetR(pc,level1,gridctx[level1].r);CHKERRQ(ierr);
+    ierr = VecCreate(((PetscObject)gridctx[level1].A)->comm,&gridctx[level1].r);CHKERRQ(ierr); 
+    ierr = VecSetSizes(gridctx[level1].r,gridctx[level1].A->rmap->n,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecSetType(gridctx[level1].r,VECMPI);CHKERRQ(ierr); 
+    ierr = PCMGSetR(pc,level1,gridctx[level1].r);CHKERRQ(ierr);
 
-      if (level == 0){
-        ierr = PCMGGetCoarseSolve(pc,&gridctx[level].ksp);CHKERRQ(ierr);
-      } else {
-        ierr = PCMGGetSmoother(pc,level,&gridctx[level].ksp);CHKERRQ(ierr);
-      }  
-    }
-    ierr = PCMGGetSmoother(pc,fine_level,&gridctx[fine_level].ksp);CHKERRQ(ierr);
+    if (level == 0){
+      ierr = PCMGGetCoarseSolve(pc,&gridctx[level].ksp);CHKERRQ(ierr);
+    } else {
+      ierr = PCMGGetSmoother(pc,level,&gridctx[level].ksp);CHKERRQ(ierr);
+    }  
   }
+  ierr = PCMGGetSmoother(pc,fine_level,&gridctx[fine_level].ksp);CHKERRQ(ierr);
 
   /* create coarse level and the interpolation between the levels */
   for (level=0; level<fine_level; level++){  
@@ -584,7 +558,7 @@ PetscErrorCode MatMultAdd_ML(Mat A,Vec x,Vec w,Vec y)
   PetscFunctionReturn(0);
 }
 
-/* newtype is ignored because "ml" is not listed under Petsc MatType yet */
+/* newtype is ignored because "ml" is not listed under Petsc MatType */
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_MPIAIJ_ML"
 PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,MatType newtype,MatReuse scall,Mat *Aloc) 
