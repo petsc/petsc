@@ -423,6 +423,8 @@ static PetscErrorCode MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
     n    = ii[1] - ii[0];
     nonzerorow += (n>0)*nsz;
     ii  += nsz;
+    PetscPrefetchBlock(idx+nsz*n,n,0,0);    /* Prefetch the indices for the block row after the current one */
+    PetscPrefetchBlock(v1+nsz*n,nsz*n,0,0); /* Prefetch the values for the block row after the current one  */
     sz   = n;                   /* No of non zeros in this row */
                                 /* Switch on the size of Node */
     switch (nsz){               /* Each loop in 'case' is unrolled */

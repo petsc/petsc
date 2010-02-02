@@ -1793,6 +1793,41 @@ PETSC_STATIC_INLINE PetscErrorCode PETSC_DLLEXPORT PetscMemzero(void *a,size_t n
   return 0;
 }
 
+/*MC
+   PetscPrefetchBlock - Prefetches a block of memory
+
+   Not Collective
+
+   Input Parameters:
++  a - pointer to first element to fetch (any type but usually PetscInt or PetscScalar)
+.  n - number of elements to fetch
+.  rw - 1 if the memory will be written to, otherwise 0 (ignored by many processors)
+-  t - temporal locality (0,1,2,3), see note
+
+   Level: developer
+
+   Synopsis:
+    void PetscPrefetchBlock(const anytype *a,size_t n,int rw,int t)
+
+   Notes:
+   The last two arguments (rw and t) must be compile-time constants.
+
+   There are four levels of temporal locality (not all architectures distinguish)
++  0 - Non-temporal.  Prefetches directly to L1, evicts to memory (skips higher level cache unless it was already there when prefetched).
+.  1 - Temporal with respect to high-level cache only.  Only prefetches to high-level cache (not L1), kept at high levels after eviction from L1.
+.  2 - Same as 1, but keep in mid-level cache.  (On most systems, 1 and 2 are equivalent.)
+-  3 - Fetch to all levels of cache and evict to the closest level.  Use this when the memory will be reused regularly despite necessary eviction from L1.
+
+   This function does nothing on architectures that do not support prefetch and never errors (even if passed an invalid
+   address).
+
+   Concepts: memory
+M*/
+#define PetscPrefetchBlock(a,n,rw,t) do {                               \
+    const char *_p = (const char*)(a),*_end = (const char*)((a)+(n));   \
+    for ( ; _p < _end; _p += PETSC_LEVEL1_DCACHE_LINESIZE) PETSC_Prefetch(_p,(rw),(t)); \
+  } while (0)
+
 /*
     Allows accessing Matlab Engine
 */
