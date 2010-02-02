@@ -4,7 +4,7 @@ import sys
 import string
 
 class CacheAttribute(object):
-  def __init__(self, name, keyword, help, default=None, min=0, max=sys.maxint):
+  def __init__(self, name, keyword, help, default=None, min=0, max=min(sys.maxint,2**31-1)):
     self.name = name
     self.help = help
     self.keyword = keyword
@@ -49,14 +49,17 @@ class Configure(config.base.Configure):
   def getconfFunction(self, a):
     VAR = a.enum()
     funcname = 'getconf_' + VAR
-    methods = {'sysconf':       # On some systems, maybe just with glibc, sysconf can provide this stuff
-               '#include <unistd.h>\nlong '+funcname+'() { return sysconf(_SC_'+VAR+'); }\n',
-               'getconf':       # A total hack since this will compile with any C compiler, but only return useful results when the getconf program is available
-               '#include <stdio.h>\nlong '+funcname+'() { long val=-1; FILE *f = popen("getconf '+VAR+'","r"); fscanf(f,"%ld",&val); pclose(f); return val; }\n'
-               }
+    sanitize = '('+str(a.min)+' <= val && val <= '+str(a.max)+') ? val : '+str(a.default)
+    methods = [
+      # On some systems, maybe just with glibc, sysconf can provide this stuff
+      '#include <unistd.h>\nlong '+funcname+'() { long val = sysconf(_SC_'+VAR+'); return '+sanitize+'; }\n'
+      ,
+      # A total hack since this will compile with any C compiler, but only return useful results when the getconf program is available
+      '#include <stdio.h>\nlong '+funcname+'() { long val=-1; FILE *f = popen("getconf '+VAR+'","r"); fscanf(f,"%ld",&val); pclose(f); return '+sanitize+'; }\n'
+      ]
     if not self.method:         # Determine which method of finding configuration variables, only runs the first time around
       self.pushLanguage('C')
-      for (m,d) in methods.iteritems():
+      for (m,d) in enumerate(methods):
         if self.checkCompile(d,''):
           self.method = m
           break
@@ -77,9 +80,10 @@ class Configure(config.base.Configure):
         val = a.default
       else:
         filename = 'conftestval'
+        includes = '#include <stdio.h>\n'
         body = 'FILE *output = fopen("'+filename+'","w"); if (!output) return 1; fprintf(output,"%ld",'+fname+'()); fclose(output);'
         self.pushLanguage('C')
-        if self.checkRun(source, body) and os.path.exists(filename):
+        if self.checkRun(includes+source, body) and os.path.exists(filename):
           f = open(filename)
           val = int(f.read())
           if not a.valid(val):
