@@ -80,12 +80,13 @@ class Configure(config.base.Configure):
         body = 'FILE *output = fopen("'+filename+'","w"); if (!output) return 1; fprintf(output,"%ld",'+fname+'()); fclose(output);'
         self.pushLanguage('C')
         if self.checkRun(source, body) and os.path.exists(filename):
-          with open(filename) as f:
-            val = int(f.read())
-            if not a.valid(val):
-              self.framework.log.write('Cannot use value returned for '+a.enum()+': '+val+'\n')
+          f = open(filename)
+          val = int(f.read())
+          if not a.valid(val):
+            self.framework.log.write('Cannot use value returned for '+str(a.enum())+': '+str(val)+'\n')
+          f.close()
         else:
-          self.framework.log.write('Could not determine '+a.enum()+', using default '+str(a.default)+'\n')
+          self.framework.log.write('Could not determine '+str(a.enum())+', using default '+str(a.default)+'\n')
           val = a.default
         self.popLanguage()
       self.addDefine(a.enum(), a.sanitize(val))
