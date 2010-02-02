@@ -130,7 +130,6 @@ PetscErrorCode MatGetFactor_seqaij_petsc(Mat A,MatFactorType ftype,Mat *B)
 }
 EXTERN_C_END
 
-EXTERN PetscErrorCode Mat_CheckInode(Mat,PetscTruth);
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ"
 PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
@@ -424,7 +423,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ_newdatastruct(Mat B,Mat A,IS isrow,IS 
   }
   (B)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_newdatastruct;
   /* switch to inodes if appropriate */
-  ierr = Mat_CheckInode(B,PETSC_FALSE);CHKERRQ(ierr); /* Mat_CheckInode_FactorLU(B,PETSC_FALSE) ??? */
+  ierr = Mat_CheckInode_FactorLU(B,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
 
@@ -451,8 +450,6 @@ PetscErrorCode MatFactorDumpMatrix(Mat A)
   }
   PetscFunctionReturn(0);
 }
-
-extern PetscErrorCode MatSolve_SeqAIJ_Inode(Mat,Vec,Vec);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_newdatastruct"
@@ -603,8 +600,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const MatFact
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   if (b->inode.use){
-    SETERRQ(1,"MatSolve_SeqAIJ_Inode_newdatastruct not done yet");
-    /* C->ops->solve   = MatSolve_SeqAIJ_Inode_newdatastruct; not done yet! */
+    C->ops->solve   = MatSolve_SeqAIJ_Inode_newdatastruct;
   } else {   
     ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
     ierr = ISIdentity(isicol,&col_identity);CHKERRQ(ierr);
@@ -1725,7 +1721,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS isrow
   if (!levels && row_identity && col_identity) { 
     /* special case: ilu(0) with natural ordering */
     ierr = MatILUFactorSymbolic_SeqAIJ_ilu0_newdatastruct(fact,A,isrow,iscol,info);CHKERRQ(ierr);
-    ierr = Mat_CheckInode(fact,PETSC_FALSE);CHKERRQ(ierr); /* Mat_CheckInode_FactorLU(fact,PETSC_FALSE) ??? */
+    ierr = Mat_CheckInode_FactorLU(fact,PETSC_FALSE);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -1869,7 +1865,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS isrow
   (fact)->info.fill_ratio_given  = f;
   (fact)->info.fill_ratio_needed = ((PetscReal)(bdiag[0]+1))/((PetscReal)ai[n]);
   (fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_newdatastruct;
-  ierr = Mat_CheckInode(fact,PETSC_FALSE);CHKERRQ(ierr); /* Mat_CheckInode_FactorLU(fact,PETSC_FALSE) ??? */
+  ierr = Mat_CheckInode_FactorLU(fact,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
 

@@ -888,6 +888,34 @@ runex32_28:
 	   else echo "Possible problem with ex32_28, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_28.out
 
+runex32_inode_2:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -mat_type aij > ex32_inode_2.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -mat_type aij -ilu_new > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_inode_2.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_inode_2, diffs above"; fi; \
+	   ${RM} -f ex32.tmp; ${RM} -f ex32_inode_2.out
+
+runex32_inode_3:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type nd -mat_type aij > ex32_inode_3.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type nd -mat_type aij -ilu_new > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_inode_3.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_inode_3, diffs above"; fi; \
+	   ${RM} -f ex32.tmp; ${RM} -f ex32_inode_3.out
+
+runex32_inode_4:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 4 -pc_factor_levels 2 -mat_type aij > ex32_inode_4.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 4 -pc_factor_levels 2 -mat_type aij -ilu_new > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_inode_4.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_inode_4, diffs above"; fi; \
+	   ${RM} -f ex32.tmp; ${RM} -f ex32_inode_4.out
+
+runex32_inode_5:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 5 -mat_type aij > ex32_inode_5.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 5 -mat_type aij -ilu_new > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_inode_5.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_inode_5, diffs above"; fi; \
+	   ${RM} -f ex32.tmp; ${RM} -f ex32_inode_5.out
+
 runex33:
 	-@${MPIEXEC} -n 1 ./ex33 -sigma 2.0 > ex33.tmp 2>&1; \
 	if (${DIFF} output/ex33.out ex33.tmp) then true; \
@@ -918,7 +946,8 @@ TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.P
                                  runex32_28_lu runex32_28_lu_nd runex32_22 runex32_23 runex32_24 runex32_25 runex32_26 runex32_27 runex32_28 \
 				 runex32_trans runex32_trans_bs_2 runex32_trans_bs_3 runex32_trans_bs_4 runex32_trans_bs_5 runex32_trans_bs_6 \
 				 runex32_trans_bs_7 runex32_trans_bs_N runex32_trans_nd runex32_trans_nd_bs_2 runex32_trans_nd_bs_3 \
-				 runex32_trans_nd_bs_4 runex32_trans_nd_bs_5 runex32_trans_nd_bs_6 runex32_trans_nd_bs_7 runex32_trans_nd_bs_N ex32.rm  
+				 runex32_trans_nd_bs_4 runex32_trans_nd_bs_5 runex32_trans_nd_bs_6 runex32_trans_nd_bs_7 runex32_trans_nd_bs_N \ 
+				 runex32_inode_2 runex32_inode_3 runex32_inode_4 runex32_inode_5 ex32.rm  
 TESTEXAMPLES_C_X11	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm 
 TESTEXAMPLES_C_NOCOMPLEX       = ex33.PETSc runex33 ex33.rm 
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm
