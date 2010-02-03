@@ -717,8 +717,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatView(Mat mat,PetscViewer viewer)
 
    Notes: 
    For AIJ, and BAIJ matrix formats, the matrices are not 
-   internally scaled, so this does nothing. For MPIROWBS it
-   permutes and diagonally scales.
+   internally scaled, so this does nothing. 
 
    The KSP methods automatically call this routine when required
    (via PCPreSolve()) so it is rarely used directly.
@@ -737,8 +736,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatScaleSystem(Mat mat,Vec b,Vec x)
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
-  if (x) {PetscValidHeaderSpecific(x,VEC_COOKIE,2);PetscCheckSameComm(mat,1,x,2);}
-  if (b) {PetscValidHeaderSpecific(b,VEC_COOKIE,3);PetscCheckSameComm(mat,1,b,3);}
+  if (x) {PetscValidHeaderSpecific(x,VEC_COOKIE,3);PetscCheckSameComm(mat,1,x,3);}
+  if (b) {PetscValidHeaderSpecific(b,VEC_COOKIE,2);PetscCheckSameComm(mat,1,b,2);}
 
   if (mat->ops->scalesystem) {
     ierr = (*mat->ops->scalesystem)(mat,b,x);CHKERRQ(ierr);
@@ -762,8 +761,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatScaleSystem(Mat mat,Vec b,Vec x)
 
    Notes: 
    For AIJ and BAIJ matrix formats, the matrices are not 
-   internally scaled, so this does nothing. For MPIROWBS it
-   permutes and diagonally scales.
+   internally scaled, so this does nothing. 
 
    The KSP methods automatically call this routine when required
    (via PCPreSolve()) so it is rarely used directly.
@@ -780,8 +778,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatUnScaleSystem(Mat mat,Vec b,Vec x)
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
-  if (x) {PetscValidHeaderSpecific(x,VEC_COOKIE,2);PetscCheckSameComm(mat,1,x,2);}
-  if (b) {PetscValidHeaderSpecific(b,VEC_COOKIE,3);PetscCheckSameComm(mat,1,b,3);}
+  if (x) {PetscValidHeaderSpecific(x,VEC_COOKIE,3);PetscCheckSameComm(mat,1,x,3);}
+  if (b) {PetscValidHeaderSpecific(b,VEC_COOKIE,2);PetscCheckSameComm(mat,1,b,2);}
   if (mat->ops->unscalesystem) {
     ierr = (*mat->ops->unscalesystem)(mat,b,x);CHKERRQ(ierr);
   }
@@ -792,8 +790,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatUnScaleSystem(Mat mat,Vec b,Vec x)
 #define __FUNCT__ "MatUseScaledForm"
 /*@
    MatUseScaledForm - For matrix storage formats that scale the 
-   matrix (for example MPIRowBS matrices are diagonally scaled on
-   assembly) indicates matrix operations (MatMult() etc) are 
+   matrix indicates matrix operations (MatMult() etc) are 
    applied using the scaled matrix.
   
    Collective on Mat
