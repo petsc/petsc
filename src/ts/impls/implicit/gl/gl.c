@@ -1363,7 +1363,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLFinalizePackage(void)
 
   References:
   John Butcher and Z. Jackieweicz and W. Wright, On error propagation in general linear methods for
-  ordinary differential equations, Journal of Complexity, Vol 23 (4-6), 2009.
+  ordinary differential equations, Journal of Complexity, Vol 23 (4-6), 2007.
 
   John Butcher, Numerical methods for ordinary differential equations, second edition, Wiley, 2009.
 

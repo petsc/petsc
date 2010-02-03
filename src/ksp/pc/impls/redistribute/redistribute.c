@@ -9,7 +9,6 @@
 typedef struct {
   KSP          ksp;
   Vec          x,b;
-  Mat          mat;   
   VecScatter   scatter;
   IS           is;
   PetscInt     dcnt,*drows;   /* these are the local rows that have only diagonal entry */
@@ -71,6 +70,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
   if (pc->setupcalled) {
     ierr = KSPGetOperators(red->ksp,PETSC_NULL,&tmat,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatGetSubMatrix(pc->pmat,red->is,red->is,MAT_REUSE_MATRIX,&tmat);CHKERRQ(ierr);
+    ierr = KSPSetOperators(red->ksp,tmat,tmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   } else {
     ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -205,9 +205,9 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     ierr = VecScatterCreate(tvec,red->is,red->b,PETSC_NULL,&red->scatter);CHKERRQ(ierr);
     ierr = VecDestroy(tvec);CHKERRQ(ierr);
     ierr = MatGetSubMatrix(pc->pmat,red->is,red->is,MAT_INITIAL_MATRIX,&tmat);CHKERRQ(ierr);
+    ierr = KSPSetOperators(red->ksp,tmat,tmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatDestroy(tmat);CHKERRQ(ierr);
   }
-  ierr = KSPSetOperators(red->ksp,tmat,tmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatDestroy(tmat);CHKERRQ(ierr);
 
   /* get diagonal portion of matrix */
   ierr = PetscMalloc(red->dcnt*sizeof(PetscScalar),&red->diag);CHKERRQ(ierr);
@@ -273,7 +273,6 @@ static PetscErrorCode PCDestroy_Redistribute(PC pc)
   if (red->is)       {ierr = ISDestroy(red->is);CHKERRQ(ierr);}
   if (red->b)        {ierr = VecDestroy(red->b);CHKERRQ(ierr);}
   if (red->x)        {ierr = VecDestroy(red->x);CHKERRQ(ierr);}
-  if (red->mat)      {ierr = MatDestroy(red->mat);CHKERRQ(ierr);}
   if (red->ksp)      {ierr = KSPDestroy(red->ksp);CHKERRQ(ierr);}
   if (red->work)     {ierr = VecDestroy(red->work);CHKERRQ(ierr);}
   ierr = PetscFree(red->drows);

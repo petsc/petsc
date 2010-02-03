@@ -274,7 +274,7 @@ class Configure(config.base.Configure):
     self.pushLanguage(self.languages.clanguage)      
     if self.checkLink('#include <xmmintrin.h>', 'void *v = 0;_mm_prefetch(v,(enum _mm_hint)0);\n'):
       self.addDefine('HAVE_XMMINTRIN_H', 1)
-      self.addDefine('Prefetch(a,b,c)', '_mm_prefetch((void*)(a),(enum _mm_hint)c)')
+      self.addDefine('Prefetch(a,b,c)', '_mm_prefetch((const void*)(a),(enum _mm_hint)c)')
     elif self.checkLink('#include <xmmintrin.h>', 'void *v = 0;_mm_prefetch((const char*)v,(enum _mm_hint)0);\n'):
       self.addDefine('HAVE_XMMINTRIN_H', 1)
       self.addDefine('Prefetch(a,b,c)', '_mm_prefetch((const char*)(a),(enum _mm_hint)c)')
@@ -428,20 +428,24 @@ class Configure(config.base.Configure):
     scriptName = os.path.join(self.arch.arch,'conf', 'reconfigure-'+self.arch.arch+'.py')
     args = dict([(nargs.Arg.parseArgument(arg)[0], arg) for arg in self.framework.clArgs])
     if 'configModules' in args:
-      if nargs.Arg.parseArgument(args['configModules'])[1] == ['PETSc.Configure']:
+      if nargs.Arg.parseArgument(args['configModules'])[1] == 'PETSc.Configure':
         del args['configModules']
     if 'optionsModule' in args:
       if nargs.Arg.parseArgument(args['optionsModule'])[1] == 'PETSc.compilerOptions':
         del args['optionsModule']
     if not 'PETSC_ARCH' in args:
-      args['PETSC_ARCH'] = '-PETSC_ARCH='+str(self.arch.arch)
+      args['PETSC_ARCH'] = 'PETSC_ARCH='+str(self.arch.arch)
     f = file(scriptName, 'w')
     f.write('#!'+sys.executable+'\n')
     f.write('if __name__ == \'__main__\':\n')
     f.write('  import sys\n')
     f.write('  sys.path.insert(0, '+repr(os.path.join(self.petscdir.dir, 'config'))+')\n')
     f.write('  import configure\n')
-    f.write('  configure_options = '+repr(args.values())+'\n')
+    # pretty print repr(args.values())
+    f.write('  configure_options = [\n')
+    for itm in args.values():
+      f.write('    \''+str(itm)+'\',\n')
+    f.write('  ]\n')
     f.write('  configure.petsc_configure(configure_options)\n')
     f.close()
     try:

@@ -59,12 +59,23 @@ There are two compile-time options:
 #include <ctype.h>              /* toupper() */
 #include <private/daimpl.h>     /* There is not yet a public interface to manipulate dm->ops */
 
-#if !defined _ISOC99_SOURCE
-#  define restrict PETSC_RESTRICT
+#if !defined __STDC_VERSION__ || __STDC_VERSION__ < 199901L
+#  if defined __cplusplus       /* C++ restrict is nonstandard and compilers have inconsistent rules about where it can be used */
+#    define restrict
+#  else
+#    define restrict PETSC_RESTRICT
+#  endif
 #endif
 #if defined __SSE2__
 #  include <emmintrin.h>
 #endif
+
+/* The SSE2 kernels are only for PetscScalar=double on architectures that support it */
+#define USE_SSE2_KERNELS (!defined NO_SSE2                              \
+                          && !defined PETSC_USE_COMPLEX                 \
+                          && !defined PETSC_USE_SCALAR_SINGLE           \
+                          && !defined PETSC_USE_SCALAR_LONG_DOUBLE      \
+                          && defined __SSE2__)
 
 static PetscCookie THI_COOKIE;
 
@@ -231,7 +242,7 @@ static void PrmHexGetZ(const PrmNode pn[],PetscInt k,PetscInt zm,PetscReal zn[])
   for (i=0; i<8; i++) zn[i] = PetscRealPart(znl[i]);
 }
 
-
+/* Tests A and C are from the ISMIP-HOM paper (Pattyn et al. 2008) */
 static void THIInitialize_HOM_A(THI thi,PetscReal x,PetscReal y,PrmNode *p)
 {
   Units units = thi->units;
@@ -251,14 +262,28 @@ static void THIInitialize_HOM_C(THI thi,PetscReal x,PetscReal y,PrmNode *p)
   p->beta2 = 1000 * (1 + sin(x*2*PETSC_PI/thi->Lx)*sin(y*2*PETSC_PI/thi->Ly)) * units->Pascal * units->year / units->meter;
 }
 
-/* This one is just a toy */
-static void THIInitialize_HOM_Z(THI thi,PetscReal x,PetscReal y,PrmNode *p)
+/* These are just toys */
+
+/* Same bed as test A, free slip everywhere except for a discontinuous jump to a circular sticky region in the middle. */
+static void THIInitialize_HOM_X(THI thi,PetscReal xx,PetscReal yy,PrmNode *p)
 {
   Units units = thi->units;
-  PetscReal s = -x*tan(thi->alpha);
-  p->b = s - 1000*units->meter;
+  PetscReal x = xx*2*PETSC_PI/thi->Lx - PETSC_PI,y = yy*2*PETSC_PI/thi->Ly - PETSC_PI; /* [-pi,pi] */
+  PetscReal r = sqrt(x*x + y*y),s = -x*tan(thi->alpha);
+  p->b = s - 1000*units->meter + 500*units->meter * sin(x + PETSC_PI) * sin(y + PETSC_PI);
   p->h = s - p->b;
-  p->beta2 = 1e8 * units->Pascal * units->year / units->meter;
+  p->beta2 = 1000 * (r < 1 ? 2 : 0) * units->Pascal * units->year / units->meter;
+}
+
+/* Same bed as A, smoothly varying slipperiness, similar to Matlab's "sombrero" (uncorrelated with bathymetry) */
+static void THIInitialize_HOM_Z(THI thi,PetscReal xx,PetscReal yy,PrmNode *p)
+{
+  Units units = thi->units;
+  PetscReal x = xx*2*PETSC_PI/thi->Lx - PETSC_PI,y = yy*2*PETSC_PI/thi->Ly - PETSC_PI; /* [-pi,pi] */
+  PetscReal r = sqrt(x*x + y*y),s = -x*tan(thi->alpha);
+  p->b = s - 1000*units->meter + 500*units->meter * sin(x + PETSC_PI) * sin(y + PETSC_PI);
+  p->h = s - p->b;
+  p->beta2 = 1000 * (1. + sin(sqrt(16*r))/sqrt(1e-2 + 16*r)*cos(x*3/2)*cos(y*3/2)) * units->Pascal * units->year / units->meter;
 }
 
 static void THIViscosity(THI thi,PetscReal gam,PetscReal *eta,PetscReal *deta)
@@ -358,6 +383,11 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
         thi->initialize = THIInitialize_HOM_C;
         thi->no_slip = PETSC_FALSE;
         thi->alpha = 0.1;
+        break;
+      case 'X':
+        thi->initialize = THIInitialize_HOM_X;
+        thi->no_slip = PETSC_FALSE;
+        thi->alpha = 0.3;
         break;
       case 'Z':
         thi->initialize = THIInitialize_HOM_Z;
@@ -824,11 +854,11 @@ static PetscErrorCode THIJacobianLocal_3D(DALocalInfo *info,Node ***x,Mat B,THI 
           if (q == 0) etabase = eta;
           for (l=ls; l<8; l++) { /* test functions */
             const PetscReal *restrict dp = dphi[l];
-#if defined __SSE2__ && !defined NO_SSE2
+#if USE_SSE2_KERNELS
             /* gcc (up to my 4.5 snapshot) is really bad at hoisting intrinsics so we do it manually */
             __m128d
               p4 = _mm_set1_pd(4),p2 = _mm_set1_pd(2),p05 = _mm_set1_pd(0.5),
-              p42 = _mm_setr_pd(4,2),p24 = _mm_shuffle_pd(p42,p42,0b01),
+              p42 = _mm_setr_pd(4,2),p24 = _mm_shuffle_pd(p42,p42,_MM_SHUFFLE2(0,1)),
               du0 = _mm_set1_pd(du[0]),du1 = _mm_set1_pd(du[1]),du2 = _mm_set1_pd(du[2]),
               dv0 = _mm_set1_pd(dv[0]),dv1 = _mm_set1_pd(dv[1]),dv2 = _mm_set1_pd(dv[2]),
               jweta = _mm_set1_pd(jw*eta),jwdeta = _mm_set1_pd(jw*deta),
@@ -836,7 +866,7 @@ static PetscErrorCode THIJacobianLocal_3D(DALocalInfo *info,Node ***x,Mat B,THI 
               dp0jweta = _mm_mul_pd(dp0,jweta),dp1jweta = _mm_mul_pd(dp1,jweta),dp2jweta = _mm_mul_pd(dp2,jweta),
               p4du0p2dv1 = _mm_add_pd(_mm_mul_pd(p4,du0),_mm_mul_pd(p2,dv1)), /* 4 du0 + 2 dv1 */
               p4dv1p2du0 = _mm_add_pd(_mm_mul_pd(p4,dv1),_mm_mul_pd(p2,du0)), /* 4 dv1 + 2 du0 */
-              pdu2dv2 = _mm_shuffle_pd(du2,dv2,0b00),                         /* [du2, dv2] */
+              pdu2dv2 = _mm_unpacklo_pd(du2,dv2),                             /* [du2, dv2] */
               du1pdv0 = _mm_add_pd(du1,dv0),                                  /* du1 + dv0 */
               t1 = _mm_mul_pd(dp0,p4du0p2dv1),                                /* dp0 (4 du0 + 2 dv1) */
               t2 = _mm_mul_pd(dp1,p4dv1p2du0);                                /* dp1 (4 dv1 + 2 du0) */
@@ -849,7 +879,7 @@ static PetscErrorCode THIJacobianLocal_3D(DALocalInfo *info,Node ***x,Mat B,THI 
 #endif
               const PetscReal *restrict dpl = dphi[ll];
               if (amode == THIASSEMBLY_TRIDIAGONAL && (l-ll)%4) continue; /* these entries would not be inserted */
-#if !(defined __SSE2__ && !defined NO_SSE2)
+#if !USE_SSE2_KERNELS
               /* The analytic Jacobian in nice, easy-to-read form */
               {
                 PetscScalar dgdu,dgdv;
@@ -868,29 +898,30 @@ static PetscErrorCode THIJacobianLocal_3D(DALocalInfo *info,Node ***x,Mat B,THI 
               }
 #else
               /* This SSE2 code is an exact replica of above, but uses explicit packed instructions for some speed
-              * benefit.  On my hardware, these intrinsics are 25% faster than above. */
+              * benefit.  On my hardware, these intrinsics are almost twice as fast as above, reducing total assembly cost
+              * by 25 to 30 percent. */
               {
                 __m128d
-                  keu = _mm_load_pd(&Ke[l*2+0][ll*2+0]),
-                  kev = _mm_load_pd(&Ke[l*2+1][ll*2+0]),
-                  dpl01 = _mm_loadu_pd(&dpl[0]),dpl10 = _mm_shuffle_pd(dpl01,dpl01,0b01),dpl2 = _mm_set_sd(dpl[2]),
+                  keu = _mm_loadu_pd(&Ke[l*2+0][ll*2+0]),
+                  kev = _mm_loadu_pd(&Ke[l*2+1][ll*2+0]),
+                  dpl01 = _mm_loadu_pd(&dpl[0]),dpl10 = _mm_shuffle_pd(dpl01,dpl01,_MM_SHUFFLE2(0,1)),dpl2 = _mm_set_sd(dpl[2]),
                   t0,t3,pdgduv;
                 keu = _mm_add_pd(keu,_mm_add_pd(_mm_mul_pd(_mm_mul_pd(dp0jweta,p42),dpl01),
                                                 _mm_add_pd(_mm_mul_pd(dp1jweta,dpl10),
                                                            _mm_mul_pd(dp2jweta,dpl2))));
                 kev = _mm_add_pd(kev,_mm_add_pd(_mm_mul_pd(_mm_mul_pd(dp1jweta,p24),dpl01),
                                                 _mm_add_pd(_mm_mul_pd(dp0jweta,dpl10),
-                                                           _mm_mul_pd(dp2jweta,_mm_shuffle_pd(dpl2,dpl2,0b01)))));
+                                                           _mm_mul_pd(dp2jweta,_mm_shuffle_pd(dpl2,dpl2,_MM_SHUFFLE2(0,1))))));
                 pdgduv = _mm_mul_pd(p05,_mm_add_pd(_mm_add_pd(_mm_mul_pd(p42,_mm_mul_pd(du0,dpl01)),
                                                               _mm_mul_pd(p24,_mm_mul_pd(dv1,dpl01))),
                                                    _mm_add_pd(_mm_mul_pd(du1pdv0,dpl10),
                                                               _mm_mul_pd(pdu2dv2,_mm_set1_pd(dpl[2]))))); /* [dgdu, dgdv] */
                 t0 = _mm_mul_pd(jwdeta,pdgduv);  /* jw deta [dgdu, dgdv] */
                 t3 = _mm_mul_pd(t0,du1pdv0);     /* t0 (du1 + dv0) */
-                _mm_store_pd(&Ke[l*2+0][ll*2+0],_mm_add_pd(keu,_mm_add_pd(_mm_mul_pd(t1,t0),
+                _mm_storeu_pd(&Ke[l*2+0][ll*2+0],_mm_add_pd(keu,_mm_add_pd(_mm_mul_pd(t1,t0),
                                                                           _mm_add_pd(_mm_mul_pd(dp1,t3),
                                                                                      _mm_mul_pd(t0,_mm_mul_pd(dp2,du2))))));
-                _mm_store_pd(&Ke[l*2+1][ll*2+0],_mm_add_pd(kev,_mm_add_pd(_mm_mul_pd(t2,t0),
+                _mm_storeu_pd(&Ke[l*2+1][ll*2+0],_mm_add_pd(kev,_mm_add_pd(_mm_mul_pd(t2,t0),
                                                                           _mm_add_pd(_mm_mul_pd(dp0,t3),
                                                                                      _mm_mul_pd(t0,_mm_mul_pd(dp2,dv2))))));
               }

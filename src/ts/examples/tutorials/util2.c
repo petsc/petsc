@@ -102,7 +102,7 @@ PetscErrorCode RHSJacobianFD(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,MatStructur
     ierr = TSComputeRHSFunction(ts,t,xx2,jj2);CHKERRQ(ierr);
     ierr = VecAXPY(jj2,-1.0,jj1);CHKERRQ(ierr);
     /* Communicate scale to all processors */
-    ierr = MPI_Allreduce(&wscale,&scale,1,MPIU_SCALAR,PetscSum_Op,comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&wscale,&scale,1,MPIU_SCALAR,MPIU_SUM,comm);CHKERRQ(ierr);
     ierr = VecScale(jj2,scale);CHKERRQ(ierr);
     ierr = VecGetArray(jj2,&y);CHKERRQ(ierr);
     ierr = VecNorm(jj2,NORM_INFINITY,&amax);CHKERRQ(ierr);

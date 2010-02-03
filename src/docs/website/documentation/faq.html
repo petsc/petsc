@@ -1043,7 +1043,7 @@ values when in the debugger?</strong> </font></a></p>
 similar on other debuggers. You can look at local Vec values directly
 by obtaining the array. For a Vec v, we can print all local values using</p>
       <p>(gdb) p ((Vec_Seq*)
-v-&gt;data)-&gt;array[0]@v-&gt;n</p>
+v-&gt;data)-&gt;array[0]@v-&gt;map.n</p>
       <p>However, this becomes much more complicated for a
 matrix. Therefore, it is advisable to use the default viewer to look at
 the object. For a Vec v and a Mat m, this would be</p>

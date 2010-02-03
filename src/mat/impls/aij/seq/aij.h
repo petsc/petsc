@@ -173,6 +173,8 @@ EXTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat,Mat,const Ma
 EXTERN PetscErrorCode MatLUFactor_SeqAIJ(Mat,IS,IS,const MatFactorInfo*);
 EXTERN PetscErrorCode MatSolve_SeqAIJ(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqAIJ_newdatastruct(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatSolve_SeqAIJ_Inode(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatSolve_SeqAIJ_Inode_newdatastruct(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_newdatastruct(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqAIJ_InplaceWithPerm(Mat,Vec,Vec);
@@ -183,6 +185,7 @@ EXTERN PetscErrorCode MatSolveTranspose_SeqAIJ_newdatastruct(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatSolveTransposeAdd_SeqAIJ_newdatastruct(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatMatSolve_SeqAIJ(Mat,Mat,Mat);
+EXTERN PetscErrorCode MatMatSolve_SeqAIJ_newdatastruct(Mat,Mat,Mat);
 EXTERN PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg);
 EXTERN PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat,ISColoring,MatFDColoring);
 EXTERN PetscErrorCode MatILUDTFactor_SeqAIJ(Mat,IS,IS,const MatFactorInfo*,Mat*);
@@ -209,6 +212,9 @@ EXTERN PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscTruth,P
 EXTERN PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *);
 EXTERN PetscErrorCode MatDestroy_SeqAIJ(Mat);
 EXTERN PetscErrorCode MatView_SeqAIJ(Mat,PetscViewer);
+
+EXTERN PetscErrorCode Mat_CheckInode(Mat,PetscTruth);
+EXTERN PetscErrorCode Mat_CheckInode_FactorLU(Mat,PetscTruth);
 
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqSBAIJ(Mat,const MatType,MatReuse,Mat*);

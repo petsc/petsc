@@ -17,7 +17,7 @@ configure_options = [
   
   '--with-batch=1',
   '--known-mpi-shared=0',
-  '--known-sizeof-void_p=8',
+  '--known-sizeof-void-p=8',
   '--known-sizeof-char=1',
   '--known-memcmp-ok',
   '--known-sizeof-long=8',
@@ -29,7 +29,7 @@ configure_options = [
   '--known-bits-per-byte=8',
   '--known-sizeof-MPI_Fint=4',
   '--known-mpi-long-double=1',
-  '--known-sizeof-long_long=8',
+  '--known-sizeof-long-long=8',
   '--known-sizeof-float=4',
   '--known-sizeof-short=2'
   ]

@@ -110,9 +110,8 @@ extern void PXFGETARG(int*,_fcd,int*,int*);
 #endif
 EXTERN_C_END
 
-#if defined(PETSC_USE_COMPLEX)
-extern MPI_Op PetscSum_Op;
-
+#if defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
+extern MPI_Op MPIU_SUM;
 EXTERN_C_BEGIN
 extern void PETSC_DLLEXPORT MPIAPI PetscSum_Local(void*,void *,PetscMPIInt *,MPI_Datatype *);
 EXTERN_C_END
@@ -315,12 +314,16 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
     PETSC_i = ic;
 #endif
   }
-  *ierr = MPI_Type_contiguous(2,MPIU_REAL,&MPIU_COMPLEX);
+
+#if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
+  *ierr = MPI_Type_contiguous(2,MPIU_REAL,&MPI_C_DOUBLE_COMPLEX);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types");return;}
-  *ierr = MPI_Type_commit(&MPIU_COMPLEX);
+  *ierr = MPI_Type_commit(&MPI_C_DOUBLE_COMPLEX);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types");return;}  
-  *ierr = MPI_Op_create(PetscSum_Local,1,&PetscSum_Op);
+  *ierr = MPI_Op_create(PetscSum_Local,1,&MPIU_SUM);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops");return;}
+#endif
+
 #endif
   /*
        Create the PETSc MPI reduction operator that sums of the first

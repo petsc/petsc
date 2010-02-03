@@ -71,10 +71,10 @@ typedef struct {
   PetscScalar u,v,omega,temp;
 } Field;
 
-extern PetscErrorCode FormInitialGuess(DMMG,Vec);
-extern PetscErrorCode FormFunctionLocal(DALocalInfo*,Field**,Field**,void*);
-extern PetscErrorCode FormFunctionLocali(DALocalInfo*,MatStencil*,Field**,PetscScalar*,void*);
-extern PetscErrorCode FormFunctionLocali4(DALocalInfo*,MatStencil*,Field**,PetscScalar*,void*);
+PetscErrorCode FormInitialGuess(DMMG,Vec);
+PetscErrorCode FormFunctionLocal(DALocalInfo*,Field**,Field**,void*);
+PetscErrorCode FormFunctionLocali(DALocalInfo*,MatStencil*,Field**,PetscScalar*,void*);
+PetscErrorCode FormFunctionLocali4(DALocalInfo*,MatStencil*,Field**,PetscScalar*,void*);
 
 typedef struct {
    PassiveReal  lidvelocity,prandtl,grashof;  /* physical parameters */
