@@ -244,6 +244,30 @@ M*/
 
 #ifdef PETSC_CLANGUAGE_CXX
 
+/*MC
+   CHKERRXX - Checks error code, if non-zero it calls the C++ error handler which throws an exception
+
+   Not Collective
+
+   Synopsis:
+   void CHKERRXX(PetscErrorCode errorcode)
+
+
+   Input Parameters:
+.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+
+  Level: beginner
+
+   Notes:
+    Once the error handler throws a ??? exception.
+
+    You can use CHKERRV() which returns without an error code (bad idea since the error is ignored)
+    or CHKERRABORT(comm,n) to have MPI_Abort() returned immediately.
+
+   Concepts: error^setting condition
+
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKERRQ(), CHKMEMQ
+M*/
 #define CHKERRXX(n)            if (PetscUnlikely(n)) {PetscErrorCxx(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0);}
 
 #endif

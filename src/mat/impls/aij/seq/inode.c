@@ -815,7 +815,15 @@ PetscErrorCode MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
     v1  = aa + aii;
     vi  = aj + aii;
     nz  = ad[row]- aii;
-    
+    if (i < node_max-1) {
+      /* Prefetch the block after the current one, the prefetch itself can't cause a memory error,
+      * but our indexing to determine it's size could. */
+      PetscPrefetchBlock(aj+ai[row+nsz],ad[row+nsz]-ai[row+nsz],0,0); /* indices */
+      /* In my tests, it seems to be better to fetch entire rows instead of just the lower-triangular part */
+      PetscPrefetchBlock(aa+ai[row+nsz],ad[row+nsz+ns[i+1]-1]-ai[row+nsz],0,0);
+      /* for (j=0; j<ns[i+1]; j++) PetscPrefetchBlock(aa+ai[row+nsz+j],ad[row+nsz+j]-ai[row+nsz+j],0,0); */
+    }
+
     switch (nsz){               /* Each loop in 'case' is unrolled */
     case 1 :
       sum1 = b[*r++];

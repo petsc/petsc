@@ -421,7 +421,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetOwnershipRanges(DA da,const PetscInt *lx[]
   Options Database:
 +  -da_refine_x - refinement ratio in x direction
 .  -da_refine_y - refinement ratio in y direction
--  -da_refine_y - refinement ratio in z direction
+-  -da_refine_z - refinement ratio in z direction
 
   Level: intermediate
 
@@ -684,6 +684,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DACoarsen(DA da, MPI_Comm comm,DA *daref)
    Output Parameter:
 .  daf - array of refined DAs
 
+   Options Database:
++  -da_refine_hierarchy_x - list of refinement ratios in x direction
+.  -da_refine_hierarchy_y - list of refinement ratios in y direction
+-  -da_refine_hierarchy_z - list of refinement ratios in z direction
+
    Level: advanced
 
 .keywords: distributed array, refine
@@ -693,17 +698,33 @@ PetscErrorCode PETSCDM_DLLEXPORT DACoarsen(DA da, MPI_Comm comm,DA *daref)
 PetscErrorCode PETSCDM_DLLEXPORT DARefineHierarchy(DA da,PetscInt nlevels,DA daf[])
 {
   PetscErrorCode ierr;
-  PetscInt i;
+  PetscInt i,n,*refx,*refy,*refz;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_COOKIE,1);
   if (nlevels < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"nlevels cannot be negative");
   if (nlevels == 0) PetscFunctionReturn(0);
   PetscValidPointer(daf,3);
+
+  /* Get refinement factors, defaults taken from the coarse DA */
+  ierr = PetscMalloc3(nlevels,PetscInt,&refx,nlevels,PetscInt,&refy,nlevels,PetscInt,&refz);CHKERRQ(ierr);
+  for (i=0; i<nlevels; i++) {
+    ierr = DAGetRefinementFactor(da,&refx[i],&refy[i],&refz[i]);CHKERRQ(ierr);
+  }
+  n = nlevels;
+  ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_x",refx,&n,PETSC_NULL);CHKERRQ(ierr);
+  n = nlevels;
+  ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_y",refy,&n,PETSC_NULL);CHKERRQ(ierr);
+  n = nlevels;
+  ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_z",refz,&n,PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = DASetRefinementFactor(da,refx[0],refy[0],refz[0]);CHKERRQ(ierr);
   ierr = DARefine(da,((PetscObject)da)->comm,&daf[0]);CHKERRQ(ierr);
   for (i=1; i<nlevels; i++) {
+    ierr = DASetRefinementFactor(daf[i-1],refx[i],refy[i],refz[i]);CHKERRQ(ierr);
     ierr = DARefine(daf[i-1],((PetscObject)da)->comm,&daf[i]);CHKERRQ(ierr);
   }
+  ierr = PetscFree3(refx,refy,refz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

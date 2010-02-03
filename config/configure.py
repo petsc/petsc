@@ -132,7 +132,9 @@ def move_configure_log(framework):
     # Keep backup in $PETSC_ARCH/conf location
     if os.path.isfile(new_bkp): os.remove(new_bkp)
     if os.path.isfile(new_file): os.rename(new_file,new_bkp)
-    if os.path.isfile(curr_file): shutil.move(curr_file,new_file)
+    if os.path.isfile(curr_file):
+      shutil.copyfile(curr_file,new_file)
+      os.remove(curr_file)
     if os.path.isfile(new_file): os.symlink(new_file,curr_file)
     # If the old bkp is using the same PETSC_ARCH/conf - then update bkp link
     if os.path.realpath(curr_bkp) == os.path.realpath(new_file):
@@ -235,7 +237,11 @@ def petsc_configure(configure_options):
         i.postProcess()
     framework.logClear()
     framework.closeLog()
-    move_configure_log(framework)
+    try:
+      move_configure_log(framework)
+    except:
+      # perhaps print an error about unable to shuffle logs?
+      pass
     return 0
   except (RuntimeError, config.base.ConfigureSetupError), e:
     emsg = str(e)
