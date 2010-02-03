@@ -1,3 +1,4 @@
+from __future__ import generators
 import PETSc.package
 
 import os
