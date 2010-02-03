@@ -47,6 +47,8 @@ import config.base
 
 import os
 import re
+# workarround for python2.2 which does not have pathsep
+if not hasattr(os.path,'pathsep'): os.path.pathsep=':'
 
 import cPickle
 
