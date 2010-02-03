@@ -62,7 +62,8 @@ class Configure(config.base.Configure):
       ]
     if not self.method:         # Determine which method of finding configuration variables, only runs the first time around
       self.pushLanguage('C')
-      for (m,d) in enumerate(methods):
+      for m in range(len(methods)):
+        d = methods[m]
         if self.checkCompile(d,''):
           self.method = m
           break
