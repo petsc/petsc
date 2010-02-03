@@ -243,7 +243,7 @@ class Configure(config.package.Package):
             self.framework.addBatchSetup('if (MPI_Init(&argc, &argv));')
             self.framework.addBatchCleanup('if (MPI_Finalize());')
             self.needBatchMPI = 0
-          self.framework.addBatchInclude(['#include <stdlib.h>', '#include <mpi.h>'])
+          self.framework.addBatchInclude(['#include <stdlib.h>', '#define MPICH_IGNORE_CXX_SEEK', '#define MPICH_SKIP_MPICXX 1', '#define OMPI_SKIP_MPICXX 1', '#include <mpi.h>'])
           self.framework.addBatchBody('''
 {
   MPI_Aint size=0;

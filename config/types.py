@@ -259,7 +259,13 @@ void (*signal())();
 #include <stdio.h>
 #include <stddef.h>
 #endif\n'''
+    mpiFix = '''
+#define MPICH_IGNORE_CXX_SEEK
+#define MPICH_SKIP_MPICXX 1
+#define OMPI_SKIP_MPICXX 1\n'''
     if otherInclude:
+      if otherInclude == 'mpi.h':
+        includes += mpiFix
       includes += '#include <'+otherInclude+'>\n'
     body     = 'FILE *f = fopen("'+filename+'", "w");\n\nif (!f) exit(1);\nfprintf(f, "%lu\\n", (unsigned long)sizeof('+typeName+'));\n'
     typename = typeName.replace(' ', '-').replace('*', 'p')
@@ -280,6 +286,8 @@ void (*signal())();
       else:
         self.framework.addBatchInclude(['#include <stdlib.h>', '#include <stdio.h>', '#include <sys/types.h>'])
         if otherInclude:
+          if otherInclude == 'mpi.h':
+            self.framework.addBatchInclude(mpiFix)
           self.framework.addBatchInclude('#include <'+otherInclude+'>')
         self.framework.addBatchBody('fprintf(output, "  \'--known-sizeof-'+typename+'=%d\',\\n", sizeof('+typeName+'));')
         # dummy value
