@@ -59,8 +59,11 @@ class Configure(config.base.Configure):
       ,
       # A total hack since this will compile with any C compiler, but only return useful results when the getconf program is available
       '#include <stdio.h>\nlong '+funcname+'() { long val=-1; FILE *f = popen("getconf '+VAR+'","r"); fscanf(f,"%ld",&val); pclose(f); return '+sanitize+'; }\n'
+      ,
+      # Fallback that just returns the default, guaranteed to compile
+      'long '+funcname+'() { return '+str(a.default)+'; }\n'
       ]
-    if not self.method:         # Determine which method of finding configuration variables, only runs the first time around
+    if self.method is None:         # Determine which method of finding configuration variables, only runs the first time around
       self.pushLanguage('C')
       for m in range(len(methods)):
         d = methods[m]
@@ -68,6 +71,8 @@ class Configure(config.base.Configure):
           self.method = m
           break
       self.popLanguage()
+    if self.method is None:
+      raise RuntimeError("The C compiler does not work")
     return (funcname,methods[self.method])
 
   def configureCacheDetails(self):
@@ -78,7 +83,7 @@ class Configure(config.base.Configure):
       if arg in self.framework.argDB:
         val = self.framework.argDB[arg]
       elif self.framework.argDB['with-batch']:
-        body = 'fprintf(output,"  \'--'+arg+'=%ld\',\\n",'+fname+'());'
+        body = 'freopen("/dev/null","w",stderr);\n' + 'fprintf(output,"  \'--'+arg+'=%ld\',\\n",'+fname+'());'
         self.framework.addBatchInclude(source)
         self.framework.addBatchBody(body)
         val = a.default
