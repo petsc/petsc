@@ -105,7 +105,7 @@ typedef double complex PetscScalar;
 #endif
 
 #if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
-extern  MPI_Datatype PETSC_DLLEXPORT MPI_C_DOUBLE_COMPLEX
+extern  MPI_Datatype PETSC_DLLEXPORT MPI_C_DOUBLE_COMPLEX;
 #endif
 
 #define MPIU_SCALAR         MPI_C_DOUBLE_COMPLEX
