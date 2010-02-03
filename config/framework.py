@@ -877,7 +877,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       body.append('chmod("reconfigure.py",0744);')
 
       oldFlags = self.compilers.CPPFLAGS
-      self.compilers.CPPFLAGS += ' '.join(self.batchIncludeDirs)
+      self.compilers.CPPFLAGS += ' ' + ' '.join(self.batchIncludeDirs)
       self.batchIncludes.insert(0, '#include <stdio.h>\n#include <sys/types.h>\n#include <sys/stat.h>')
       if not self.checkLink('\n'.join(self.batchIncludes)+'\n', '\n'.join(body), cleanup = 0, codeBegin = '\nint main(int argc, char **argv) {\n'):
         sys.exit('Unable to generate test file for cross-compilers/batch-system\n')
