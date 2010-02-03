@@ -2,6 +2,7 @@
 #define included_ALE_mem_hh
 // This should be included indirectly -- only by including ALE.hh
 
+#include <assert.h>
 #include <deque>
 #include <iostream>
 #include <map>
@@ -180,6 +181,7 @@ namespace ALE {
     //const_pointer address(const_reference x) const {return &x;}
 
     pointer allocate(size_type n, const_pointer = 0) {
+      assert(n >= 0);
 #ifdef ALE_MEM_LOGGING
       ALE::MemoryLogger::singleton().logAllocation(className, n * sizeof(T));
 #endif
