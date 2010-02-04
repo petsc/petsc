@@ -8,7 +8,6 @@ cdef extern from "petscmat.h" nogil:
     PetscMatType MATMPIMAIJ
     PetscMatType MATMAIJ
     PetscMatType MATIS
-    PetscMatType MATMPIROWBS
     PetscMatType MATSEQAIJ
     PetscMatType MATMPIAIJ
     PetscMatType MATAIJ

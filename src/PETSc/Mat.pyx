@@ -6,7 +6,6 @@ class MatType(object):
     MPIMAIJ         = MATMPIMAIJ
     MAIJ            = MATMAIJ
     IS              = MATIS
-    MPIROWBS        = MATMPIROWBS
     SEQAIJ          = MATSEQAIJ
     MPIAIJ          = MATMPIAIJ
     AIJ             = MATAIJ
