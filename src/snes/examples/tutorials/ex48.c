@@ -193,6 +193,10 @@ typedef struct {
   PetscScalar beta2;            /* friction */
 } PrmNode;
 
+typedef struct {
+  PetscReal min,max,cmin,cmax;
+} PRange;
+
 typedef enum {THIASSEMBLY_TRIDIAGONAL,THIASSEMBLY_FULL} THIAssemblyMode;
 
 struct _p_THI {
@@ -205,10 +209,14 @@ struct _p_THI {
   Units     units;
   PetscReal dirichlet_scale;
   PetscReal ssa_friction_scale;
-  PetscReal etamin,etamax,cetamin,cetamax;
+  PRange    eta;
+  PRange    beta2;
   struct {
     PetscReal Bd2,eps,exponent;
   } viscosity;
+  struct {
+    PetscReal irefgam,eps2,exponent;
+  } friction;
   PetscReal rhog;
   PetscTruth no_slip;
   PetscTruth tridiagonal;
@@ -286,6 +294,22 @@ static void THIInitialize_HOM_Z(THI thi,PetscReal xx,PetscReal yy,PrmNode *p)
   p->beta2 = 1000 * (1. + sin(sqrt(16*r))/sqrt(1e-2 + 16*r)*cos(x*3/2)*cos(y*3/2)) * units->Pascal * units->year / units->meter;
 }
 
+static void THIFriction(THI thi,PetscReal rbeta2,PetscReal gam,PetscReal *beta2,PetscReal *dbeta2)
+{
+  if (thi->friction.irefgam == 0) {
+    Units units = thi->units;
+    thi->friction.irefgam = 1./(0.5*PetscSqr(100 * units->meter / units->year));
+    thi->friction.eps2 = 0.5*PetscSqr(1.e-4 / thi->friction.irefgam);
+  }
+  if (thi->friction.exponent == 0) {
+    *beta2 = rbeta2;
+    *dbeta2 = 0;
+  } else {
+    *beta2 = rbeta2 * pow(thi->friction.eps2 + gam*thi->friction.irefgam,thi->friction.exponent);
+    *dbeta2 = thi->friction.exponent * *beta2 / (thi->friction.eps2 + gam*thi->friction.irefgam) * thi->friction.irefgam;
+  }
+}
+
 static void THIViscosity(THI thi,PetscReal gam,PetscReal *eta,PetscReal *deta)
 {
   PetscReal Bd2,eps,exponent;
@@ -305,6 +329,31 @@ static void THIViscosity(THI thi,PetscReal gam,PetscReal *eta,PetscReal *deta)
   eps      = thi->viscosity.eps;
   *eta = Bd2 * pow(eps + gam,exponent);
   *deta = exponent * (*eta) / (eps + gam);
+}
+
+static void RangeUpdate(PetscReal *min,PetscReal *max,PetscReal x)
+{
+  if (x < *min) *min = x;
+  if (x > *max) *max = x;
+}
+
+static void PRangeClear(PRange *p)
+{
+  p->cmin = p->min = 1e100;
+  p->cmax = p->max = -1e100;
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PRangeMinMax"
+static PetscErrorCode PRangeMinMax(PRange *p,PetscReal min,PetscReal max)
+{
+
+  PetscFunctionBegin;
+  p->cmin = min;
+  p->cmax = max;
+  if (min < p->min) p->min = min;
+  if (max > p->max) p->max = max;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
@@ -364,7 +413,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
   {
     char homexp[] = "A";
     char mtype[256] = MATSBAIJ;
-    PetscReal L;
+    PetscReal L,m = 1.0;
     PetscTruth flg;
     L = thi->Lx;
     ierr = PetscOptionsReal("-thi_L","Domain size (m)","",L,&L,&flg);CHKERRQ(ierr);
@@ -398,6 +447,8 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
         SETERRQ1(PETSC_ERR_SUP,"HOM experiment '%c' not implemented",homexp[0]);
     }
     ierr = PetscOptionsReal("-thi_alpha","Bed angle (degrees)","",thi->alpha,&thi->alpha,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-thi_friction_m","Friction exponent, 0=Coulomb, 1=Navier","",m,&m,NULL);CHKERRQ(ierr);
+    thi->friction.exponent = (m-1)/2;
     ierr = PetscOptionsReal("-thi_dirichlet_scale","Scale Dirichlet boundary conditions by this factor","",thi->dirichlet_scale,&thi->dirichlet_scale,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-thi_ssa_friction_scale","Scale slip boundary conditions by this factor in SSA (2D) assembly","",thi->ssa_friction_scale,&thi->ssa_friction_scale,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-thi_nlevels","Number of levels of refinement","",thi->nlevels,&thi->nlevels,NULL);CHKERRQ(ierr);
@@ -415,8 +466,8 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
   thi->Lz     *= units->meter;
   thi->alpha  *= PETSC_PI / 180;
 
-  thi->etamin = 1e100;
-  thi->etamax = 0;
+  PRangeClear(&thi->eta);
+  PRangeClear(&thi->beta2);
 
   {
     PetscReal u = 1000*units->meter/(3e7*units->second),
@@ -614,7 +665,7 @@ static void PointwiseNonlinearity2D(THI thi,Node n[],PetscReal phi[],PetscReal d
 static PetscErrorCode THIFunctionLocal(DALocalInfo *info,Node ***x,Node ***f,THI thi)
 {
   PetscInt       xs,ys,xm,ym,zm,i,j,k,q,l;
-  PetscReal      hx,hy,etamin,etamax;
+  PetscReal      hx,hy,etamin,etamax,beta2min,beta2max;
   PrmNode        **prm;
   PetscErrorCode ierr;
 
@@ -627,8 +678,10 @@ static PetscErrorCode THIFunctionLocal(DALocalInfo *info,Node ***x,Node ***f,THI
   hx = thi->Lx / info->mz;
   hy = thi->Ly / info->my;
 
-  etamin = 1e100;
-  etamax = 0;
+  etamin   = 1e100;
+  etamax   = 0;
+  beta2min = 1e100;
+  beta2max = 0;
 
   ierr = THIDAGetPrm(info->da,&prm);CHKERRQ(ierr);
 
@@ -656,8 +709,7 @@ static PetscErrorCode THIFunctionLocal(DALocalInfo *info,Node ***x,Node ***f,THI
           PointwiseNonlinearity(thi,n,phi,dphi,&u,&v,du,dv,&eta,&deta);
           jw /= thi->rhog;      /* scales residuals to be O(1) */
           if (q == 0) etabase = eta;
-          if (eta > etamax)      etamax = eta;
-          else if (eta < etamin) etamin = eta;
+          RangeUpdate(&etamin,&etamax,eta);
           for (l=ls; l<8; l++) { /* test functions */
             const PetscReal ds[2] = {-tan(thi->alpha),0};
             const PetscReal pp=phi[l],*dp = dphi[l];
@@ -682,12 +734,15 @@ static PetscErrorCode THIFunctionLocal(DALocalInfo *info,Node ***x,Node ***f,THI
           } else {              /* Integrate over bottom face to apply boundary condition */
             for (q=0; q<4; q++) {
               const PetscReal jw = 0.25*hx*hy/thi->rhog,*phi = QuadQInterp[q];
-              PetscScalar u=0,v=0,beta2=0;
+              PetscScalar u=0,v=0,rbeta2=0;
+              PetscReal beta2,dbeta2;
               for (l=0; l<4; l++) {
                 u     += phi[l]*n[l].u;
                 v     += phi[l]*n[l].v;
-                beta2 += phi[l]*pn[l].beta2;
+                rbeta2 += phi[l]*pn[l].beta2;
               }
+              THIFriction(thi,PetscRealPart(rbeta2),PetscRealPart(u*u+v*v)/2,&beta2,&dbeta2);
+              RangeUpdate(&beta2min,&beta2max,beta2);
               for (l=0; l<4; l++) {
                 const PetscReal pp = phi[l];
                 fn[ls+l]->u += pp*jw*beta2*u;
@@ -702,10 +757,8 @@ static PetscErrorCode THIFunctionLocal(DALocalInfo *info,Node ***x,Node ***f,THI
 
   ierr = THIDARestorePrm(info->da,&prm);CHKERRQ(ierr);
 
-  thi->cetamin = etamin;
-  thi->cetamax = etamax;
-  if (etamin < thi->etamin) thi->etamin = etamin;
-  if (etamax > thi->etamax) thi->etamax = etamax;
+  ierr = PRangeMinMax(&thi->eta,etamin,etamax);CHKERRQ(ierr);
+  ierr = PRangeMinMax(&thi->beta2,beta2min,beta2max);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -726,7 +779,7 @@ static PetscErrorCode THIMatrixStatistics(THI thi,Mat B,PetscViewer viewer)
     PetscScalar val0,val2;
     ierr = MatGetValue(B,0,0,&val0);CHKERRQ(ierr);
     ierr = MatGetValue(B,2,2,&val2);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Matrix dim %8d  norm %8.2e, (0,0) %8.2e  (2,2) %8.2e, eta [%8.2e,%8.2e]\n",m,nrm,PetscRealPart(val0),PetscRealPart(val2),thi->cetamin,thi->cetamax);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Matrix dim %8d  norm %8.2e, (0,0) %8.2e  (2,2) %8.2e, eta [%8.2e,%8.2e] beta2 [%8.2e,%8.2e]\n",m,nrm,PetscRealPart(val0),PetscRealPart(val2),thi->eta.cmin,thi->eta.cmax,thi->beta2.cmin,thi->beta2.cmax);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -760,17 +813,18 @@ static PetscErrorCode THIJacobianLocal_2D(DALocalInfo *info,Node **x,Mat B,THI t
       QuadExtract(x,i,j,n);
       PetscMemzero(Ke,sizeof(Ke));
       for (q=0; q<4; q++) {
-        PetscReal phi[4],dphi[4][2],jw,eta,deta;
-        PetscScalar u,v,du[2],dv[2],h = 0,beta2 = 0;
+        PetscReal phi[4],dphi[4][2],jw,eta,deta,beta2,dbeta2;
+        PetscScalar u,v,du[2],dv[2],h = 0,rbeta2 = 0;
         for (l=0; l<4; l++) {
           phi[l] = QuadQInterp[q][l];
           dphi[l][0] = QuadQDeriv[q][l][0]*2./hx;
           dphi[l][1] = QuadQDeriv[q][l][1]*2./hy;
           h += phi[l] * pn[l].h;
-          beta2 += phi[l] * pn[l].beta2;
+          rbeta2 += phi[l] * pn[l].beta2;
         }
         jw = 0.25*hx*hy / thi->rhog; /* rhog is only scaling */
         PointwiseNonlinearity2D(thi,n,phi,dphi,&u,&v,du,dv,&eta,&deta);
+        THIFriction(thi,PetscRealPart(rbeta2),PetscRealPart(u*u+v*v)/2,&beta2,&dbeta2);
         for (l=0; l<4; l++) {
           const PetscReal pp = phi[l],*dp = dphi[l];
           for (ll=0; ll<4; ll++) {
@@ -784,10 +838,10 @@ static PetscErrorCode THIJacobianLocal_2D(DALocalInfo *info,Node **x,Mat B,THI t
             Ke[l*2+1][ll*2+0] += dp[1]*jw*eta*2.*dpl[0] + dp[0]*jw*eta*dpl[1];
             Ke[l*2+1][ll*2+1] += dp[1]*jw*eta*4.*dpl[1] + dp[0]*jw*eta*dpl[0] + pp*jw*(beta2/h)*ppl*thi->ssa_friction_scale;
             /* extra Newton terms */
-            Ke[l*2+0][ll*2+0] += dp[0]*jw*deta*dgdu*(4.*du[0]+2.*dv[1]) + dp[1]*jw*deta*dgdu*(du[1]+dv[0]);
-            Ke[l*2+0][ll*2+1] += dp[0]*jw*deta*dgdv*(4.*du[0]+2.*dv[1]) + dp[1]*jw*deta*dgdv*(du[1]+dv[0]);
-            Ke[l*2+1][ll*2+0] += dp[1]*jw*deta*dgdu*(4.*dv[1]+2.*du[0]) + dp[0]*jw*deta*dgdu*(du[1]+dv[0]);
-            Ke[l*2+1][ll*2+1] += dp[1]*jw*deta*dgdv*(4.*dv[1]+2.*du[0]) + dp[0]*jw*deta*dgdv*(du[1]+dv[0]);
+            Ke[l*2+0][ll*2+0] += dp[0]*jw*deta*dgdu*(4.*du[0]+2.*dv[1]) + dp[1]*jw*deta*dgdu*(du[1]+dv[0]) + pp*jw*(dbeta2/h)*u*u*ppl*thi->ssa_friction_scale;
+            Ke[l*2+0][ll*2+1] += dp[0]*jw*deta*dgdv*(4.*du[0]+2.*dv[1]) + dp[1]*jw*deta*dgdv*(du[1]+dv[0]) + pp*jw*(dbeta2/h)*u*v*ppl*thi->ssa_friction_scale;
+            Ke[l*2+1][ll*2+0] += dp[1]*jw*deta*dgdu*(4.*dv[1]+2.*du[0]) + dp[0]*jw*deta*dgdu*(du[1]+dv[0]) + pp*jw*(dbeta2/h)*v*u*ppl*thi->ssa_friction_scale;
+            Ke[l*2+1][ll*2+1] += dp[1]*jw*deta*dgdv*(4.*dv[1]+2.*du[0]) + dp[0]*jw*deta*dgdv*(du[1]+dv[0]) + pp*jw*(dbeta2/h)*v*v*ppl*thi->ssa_friction_scale;
           }
         }
       }
@@ -938,18 +992,22 @@ static PetscErrorCode THIJacobianLocal_3D(DALocalInfo *info,Node ***x,Mat B,THI 
           } else {
             for (q=0; q<4; q++) {
               const PetscReal jw = 0.25*hx*hy/thi->rhog,*phi = QuadQInterp[q];
-              PetscScalar u=0,v=0,beta2=0;
+              PetscScalar u=0,v=0,rbeta2=0;
+              PetscReal beta2,dbeta2;
               for (l=0; l<4; l++) {
                 u     += phi[l]*n[l].u;
                 v     += phi[l]*n[l].v;
-                beta2 += phi[l]*pn[l].beta2;
+                rbeta2 += phi[l]*pn[l].beta2;
               }
+              THIFriction(thi,PetscRealPart(rbeta2),PetscRealPart(u*u+v*v)/2,&beta2,&dbeta2);
               for (l=0; l<4; l++) {
                 const PetscReal pp = phi[l];
                 for (ll=0; ll<4; ll++) {
                   const PetscReal ppl = phi[ll];
-                  Ke[l*2+0][ll*2+0] += pp*jw*beta2*ppl;
-                  Ke[l*2+1][ll*2+1] += pp*jw*beta2*ppl;
+                  Ke[l*2+0][ll*2+0] += pp*jw*beta2*ppl + pp*jw*dbeta2*u*u*ppl;
+                  Ke[l*2+0][ll*2+1] +=                   pp*jw*dbeta2*u*v*ppl;
+                  Ke[l*2+1][ll*2+0] +=                   pp*jw*dbeta2*v*u*ppl;
+                  Ke[l*2+1][ll*2+1] += pp*jw*beta2*ppl + pp*jw*dbeta2*v*v*ppl;
                 }
               }
             }
@@ -1349,7 +1407,8 @@ int main(int argc,char *argv[])
     }
     ierr = PetscPrintf(comm,"|X|_2 %g   u in [%g, %g]   v in [%g, %g]   c in [%g, %g] \n",nrm2,min[0],max[0],min[1],max[1],min[2],max[2]);CHKERRQ(ierr);
     /* These values stay nondimensional */
-    ierr = PetscPrintf(comm,"Global eta range [%g, %g], converged range [%g, %g]\n",thi->etamin,thi->etamax,thi->cetamin,thi->cetamax);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"Global eta range   [%g, %g], converged range [%g, %g]\n",thi->eta.min,thi->eta.max,thi->eta.cmin,thi->eta.cmax);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"Global beta2 range [%g, %g], converged range [%g, %g]\n",thi->beta2.min,thi->beta2.max,thi->beta2.cmin,thi->beta2.cmax);CHKERRQ(ierr);
   }
   {
     PetscTruth flg;
