@@ -9,7 +9,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = ${SOURCEC:.c=.o}
 OBJSF    = 
-LIBBASE  = libpetsc
+LIBBASE  = libpetscsys
 LOCDIR   = src/sys/viewer/impls/binary/f90-custom/
 
 

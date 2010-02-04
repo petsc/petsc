@@ -9,7 +9,7 @@ SOURCEH	  =
 OBJSC	  = ${SOURCEC:.c=.o}
 OBJSF	  =
 MANSEC	  = Sys
-LIBBASE	  = libpetsc
+LIBBASE	  = libpetscsys
 DIRS	  = rs6000_time nt_time
 LOCDIR	  = src/sys/time/
 

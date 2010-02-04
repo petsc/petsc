@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    =  
 OBJSF    =
-LIBBASE  = libpetsc
+LIBBASE  = libpetscsys
 DIRS     = rand rand48 sprng
 LOCDIR   = src/sys/random/impls/
 

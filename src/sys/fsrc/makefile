@@ -9,7 +9,7 @@ SOURCEF  = somefort.F
 SOURCEH  =
 OBJSC    =
 OBJSF    = somefort.o
-LIBBASE  = libpetsc
+LIBBASE  = libpetscsys
 MANSEC   = Sys
 LOCDIR   = src/sys/fsrc/
 

@@ -14,7 +14,7 @@ OBJSC	  = gcomm.o   gtype.o   olist.o    pname.o  tagm.o \
 	    pinit.o ptype.o state.o aoptions.o mpinit.o subcomm.o
 OBJSF	  =
 MANSEC	  = Sys
-LIBBASE	  = libpetsc
+LIBBASE	  = libpetscsys
 DIRS	  = ams
 LOCDIR	  = src/sys/objects/
 

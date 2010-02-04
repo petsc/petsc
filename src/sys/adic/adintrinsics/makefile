@@ -23,7 +23,7 @@ OBJSC    = adintr_acos.o adintr_exp.o adintr_max.o adintr_acosh.o \
 	adintr_cos.o adintr_log.o adintr_tanh.o adintr_cosh.o \
 	adintr_log10.o adintrinsics.o report-once.o
 OBJSF    =
-LIBBASE  = libpetsc
+LIBBASE  = libpetscsys
 DIRS     = 
 LOCDIR   = src/sys/adic/adintrinsics/
 MANSEC   = Sys

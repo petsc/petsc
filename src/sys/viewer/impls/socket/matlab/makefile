@@ -26,7 +26,7 @@ SOURCEH   = sopen.c sclose.c  bread.c sread.c swrite.c
 OBJSC     = 
 OBJSF     =
 MANSEC    = Viewer
-LIBBASE   = libpetsc
+LIBBASE   = libpetscsys
 DIRS      =
 # LOCDIR is set to 0 because the string version is not passed properly down to MATLAB's mex program 
 LOCDIR    = 0

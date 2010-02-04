@@ -9,7 +9,7 @@ SOURCEH	  =
 OBJSC	  = dlimpl.o dl.o   reg.o
 OBJSF	  =
 MANSEC	  = Sys
-LIBBASE	  = libpetsc
+LIBBASE	  = libpetscsys
 DIRS	  = 
 LOCDIR	  = src/sys/dll/
 

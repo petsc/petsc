@@ -8,7 +8,7 @@ SOURCEH  =
 OBJSC    =
 OBJSF	 = f90_fwrap.o
 DIRS     = 
-LIBBASE  = libpetsc
+LIBBASE  = libpetscsys
 MANSEC   = Sys
 LOCDIR   = src/sys/f90-src/fsrc/
 
