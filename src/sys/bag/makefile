@@ -10,7 +10,7 @@ SOURCEH	  =
 OBJSC	  = bag.o
 OBJSF	  =
 MANSEC	  = Sys
-LIBBASE	  = libpetsc
+LIBBASE	  = libpetscsys
 DIRS	  = 
 LOCDIR	  = src/sys/bag/
 

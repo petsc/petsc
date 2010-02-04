@@ -7,7 +7,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = pythonsys.o
 OBJSF    =
-LIBBASE  = libpetsc
+LIBBASE  = libpetscsys
 DIRS     = ftn-custom
 LOCDIR   = src/sys/python/
 

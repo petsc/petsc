@@ -8,7 +8,7 @@ OBJSC    = ${SOURCEC:.c=.o}
 SOURCEF  =
 SOURCEH  =
 DIRS     =
-LIBBASE  = libpetsc
+LIBBASE  = libpetscsys
 LOCDIR   = src/sys/viewer/impls/string/ftn-custom/
 
 include ${PETSC_DIR}/conf/variables

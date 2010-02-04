@@ -10,7 +10,7 @@ SOURCEH  =
 OBJSC    = hdf5v.o
 OBJSF    =
 MANSEC   = Viewer
-LIBBASE  = libpetsc
+LIBBASE  = libpetscsys
 DIRS     = ftn-custom
 LOCDIR   = src/sys/viewer/impls/hdf5/
 

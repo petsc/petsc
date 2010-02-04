@@ -9,7 +9,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = ${SOURCEC:.c=.o}
 OBJSF    = 
-LIBBASE  = libpetsc
+LIBBASE  = libpetscsys
 LOCDIR   = src/sys/bag/f90-custom/
 
 include ${PETSC_DIR}/conf/variables

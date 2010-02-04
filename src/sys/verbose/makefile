@@ -10,7 +10,7 @@ SOURCEH	  =
 OBJSC	  = ${SOURCEC:.c=.o}
 OBJSF	  =
 MANSEC	  = Profiling
-LIBBASE	  = libpetsc
+LIBBASE	  = libpetscsys
 DIRS	  = 
 LOCDIR	  = src/sys/verbose/
 

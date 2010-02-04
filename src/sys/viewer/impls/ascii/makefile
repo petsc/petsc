@@ -9,7 +9,7 @@ SOURCEH  =
 OBJSC    = filev.o vcreatea.o
 OBJSF    =
 MANSEC   = Viewer
-LIBBASE  = libpetsc
+LIBBASE  = libpetscsys
 DIRS     = 
 LOCDIR   = src/sys/viewer/impls/ascii/
 

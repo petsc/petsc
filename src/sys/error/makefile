@@ -10,7 +10,7 @@ SOURCEH	  = ../../../include/petscerror.h
 OBJSC	  = adebug.o err.o errtrace.o errabort.o errstop.o fp.o signal.o stack.o
 OBJSF	  =
 MANSEC	  = Sys
-LIBBASE	  = libpetsc
+LIBBASE	  = libpetscsys
 DIRS	  = 
 LOCDIR	  = src/sys/error/
 

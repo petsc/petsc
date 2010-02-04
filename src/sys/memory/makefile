@@ -9,7 +9,7 @@ SOURCEH	  =
 OBJSC	  = mal.o   mem.o   mtr.o
 OBJSF	  =
 MANSEC	  = Sys
-LIBBASE	  = libpetsc
+LIBBASE	  = libpetscsys
 DIRS	  = 
 LOCDIR	  = src/sys/memory/
 

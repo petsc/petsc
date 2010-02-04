@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = view.o flush.o viewregall.o viewreg.o viewa.o dlregispetsc.o viewers.o dupl.o
 OBJSF    =
-LIBBASE  = libpetsc
+LIBBASE  = libpetscsys
 MANSEC   = Viewer
 LOCDIR   = src/sys/viewer/interface/
 

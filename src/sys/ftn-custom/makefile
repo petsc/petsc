@@ -9,7 +9,7 @@ SOURCEF  =
 SOURCEH  = ../../../include/private/fortranimpl.h
 OBJSC    =  zplog.o zstart.o zstartf.o zsys.o zutils.o
 OBJSF    = 
-LIBBASE  = libpetsc
+LIBBASE  = libpetscsys
 MANSEC   = Sys
 LOCDIR   = src/sys/ftn-custom/
 

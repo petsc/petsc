@@ -9,7 +9,7 @@ SOURCEH  = vdraw.h
 OBJSC    = drawv.o
 OBJSF    =
 MANSEC   = Viewer
-LIBBASE  = libpetsc
+LIBBASE  = libpetscsys
 DIRS     = 
 LOCDIR   = src/sys/viewer/impls/draw/
 

@@ -14,7 +14,7 @@ OBJSC    = draw.o dline.o dlinew.o dlinegw.o dtext.o dtextv.o dtexts.o \
            dgcoor.o dbuff.o dsetpause.o dflush.o dsflush.o dclear.o \
            dsclear.o drect.o dtri.o dmouse.o drawreg.o drawregall.o dellipse.o
 OBJSF    =
-LIBBASE  = libpetsc
+LIBBASE  = libpetscsys
 MANSEC   = Draw
 LOCDIR   = src/sys/draw/interface/
 

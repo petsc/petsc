@@ -12,7 +12,7 @@ OBJSC	  = ffpath.o ftest.o ghome.o mpiuopen.o rpath.o \
             fpath.o fwd.o grpath.o mprint.o sysio.o fretrieve.o smatlab.o
 OBJSF	  =
 MANSEC	  = Sys
-LIBBASE	  = libpetsc
+LIBBASE	  = libpetscsys
 DIRS	  = 
 LOCDIR	  = src/sys/fileio/
 
