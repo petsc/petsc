@@ -412,16 +412,16 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ_newdatastruct(Mat B,Mat A,IS isrow,IS 
   /* In b structure:  Free imax, ilen, old a, old j.  Allocate solve_work, new a, new j */
   ierr = PetscLogObjectMemory(B,(bdiag[0]+1)*(sizeof(PetscInt)+sizeof(PetscScalar)));CHKERRQ(ierr);
   b->maxnz = b->nz = bdiag[0]+1;
-  (B)->factor                = MAT_FACTOR_LU;
-  (B)->info.factor_mallocs   = reallocs;
-  (B)->info.fill_ratio_given = f;
+  B->factor                = MAT_FACTOR_LU;
+  B->info.factor_mallocs   = reallocs;
+  B->info.fill_ratio_given = f;
 
   if (ai[n]) {
-    (B)->info.fill_ratio_needed = ((PetscReal)(bdiag[0]+1))/((PetscReal)ai[n]);
+    B->info.fill_ratio_needed = ((PetscReal)(bdiag[0]+1))/((PetscReal)ai[n]);
   } else {
-    (B)->info.fill_ratio_needed = 0.0;
+    B->info.fill_ratio_needed = 0.0;
   }
-  (B)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_newdatastruct;
+  B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_newdatastruct;
   /* switch to inodes if appropriate */
   ierr = Mat_CheckInode_FactorLU(B,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
@@ -563,7 +563,6 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const MatFact
       /* MatPivotCheck() */
       sctx.rs  = rs;
       sctx.pv  = rtmp[i];
-      /* ierr = MatLUCheckShift_inline(info,sctx,i,newshift);CHKERRQ(ierr); */
       if (info->shiftnz){
         ierr = MatPivotCheck_nz(info,sctx,i,newshift);CHKERRQ(ierr);
       } else if (info->shiftpd){
@@ -2204,15 +2203,15 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const M
 
   ierr = ISIdentity(ip,&perm_identity);CHKERRQ(ierr);
   if (perm_identity){
-    (B)->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct;
-    (B)->ops->solvetranspose  = 0;
-    (B)->ops->forwardsolve    = 0;
-    (B)->ops->backwardsolve   = 0;
+    B->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct;
+    B->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct;
+    B->ops->forwardsolve    = 0;
+    B->ops->backwardsolve   = 0;
   } else {
-    (B)->ops->solve           = MatSolve_SeqSBAIJ_1_newdatastruct;
-    (B)->ops->solvetranspose  = 0;
-    (B)->ops->forwardsolve    = 0;
-    (B)->ops->backwardsolve   = 0;
+    B->ops->solve           = MatSolve_SeqSBAIJ_1_newdatastruct;
+    B->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_newdatastruct;
+    B->ops->forwardsolve    = 0;
+    B->ops->backwardsolve   = 0;
   }
 
   C->assembled    = PETSC_TRUE; 
@@ -2352,15 +2351,15 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *
 
   ierr = ISIdentity(ip,&perm_identity);CHKERRQ(ierr);
   if (perm_identity){
-    (B)->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering;
-    (B)->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_NaturalOrdering;
-    (B)->ops->forwardsolve    = MatForwardSolve_SeqSBAIJ_1_NaturalOrdering;
-    (B)->ops->backwardsolve   = MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering;
+    B->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering;
+    B->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_NaturalOrdering;
+    B->ops->forwardsolve    = MatForwardSolve_SeqSBAIJ_1_NaturalOrdering;
+    B->ops->backwardsolve   = MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering;
   } else {
-    (B)->ops->solve           = MatSolve_SeqSBAIJ_1;
-    (B)->ops->solvetranspose  = MatSolve_SeqSBAIJ_1;
-    (B)->ops->forwardsolve    = MatForwardSolve_SeqSBAIJ_1;
-    (B)->ops->backwardsolve   = MatBackwardSolve_SeqSBAIJ_1;
+    B->ops->solve           = MatSolve_SeqSBAIJ_1;
+    B->ops->solvetranspose  = MatSolve_SeqSBAIJ_1;
+    B->ops->forwardsolve    = MatForwardSolve_SeqSBAIJ_1;
+    B->ops->backwardsolve   = MatBackwardSolve_SeqSBAIJ_1;
   }
 
   C->assembled    = PETSC_TRUE; 
@@ -2582,14 +2581,14 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS perm,
   b->free_a  = PETSC_TRUE; 
   b->free_ij = PETSC_TRUE; 
   
-  (fact)->info.factor_mallocs    = reallocs;
-  (fact)->info.fill_ratio_given  = fill;
+  fact->info.factor_mallocs    = reallocs;
+  fact->info.fill_ratio_given  = fill;
   if (ai[am] != 0) {
-    (fact)->info.fill_ratio_needed = ((PetscReal)ui[am])/((PetscReal)ai[am]);
+    fact->info.fill_ratio_needed = ((PetscReal)ui[am])/((PetscReal)ai[am]);
   } else {
-    (fact)->info.fill_ratio_needed = 0.0;
+    fact->info.fill_ratio_needed = 0.0;
   }
-  (fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ_newdatastruct;
+  fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ_newdatastruct;
   PetscFunctionReturn(0); 
 }
 
@@ -2768,7 +2767,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const MatFacto
 
   /* put together the new matrix in MATSEQSBAIJ format */
 
-  b    = (Mat_SeqSBAIJ*)(fact)->data;
+  b    = (Mat_SeqSBAIJ*)fact->data;
   b->singlemalloc = PETSC_FALSE;
   ierr = PetscMalloc((ui[am]+1)*sizeof(MatScalar),&b->a);CHKERRQ(ierr);
   b->j    = uj;
@@ -2784,19 +2783,19 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const MatFacto
   b->icol = iperm;
   b->pivotinblocks = PETSC_FALSE; /* need to get from MatFactorInfo */
   ierr    = PetscMalloc((am+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory((fact),(ui[am]-am)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(fact,(ui[am]-am)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
   b->maxnz   = b->nz = ui[am];
   b->free_a  = PETSC_TRUE; 
   b->free_ij = PETSC_TRUE; 
   
-  (fact)->info.factor_mallocs    = reallocs;
-  (fact)->info.fill_ratio_given  = fill;
+  fact->info.factor_mallocs    = reallocs;
+  fact->info.fill_ratio_given  = fill;
   if (ai[am] != 0) {
-    (fact)->info.fill_ratio_needed = ((PetscReal)ui[am])/((PetscReal)ai[am]);
+    fact->info.fill_ratio_needed = ((PetscReal)ui[am])/((PetscReal)ai[am]);
   } else {
-    (fact)->info.fill_ratio_needed = 0.0;
+    fact->info.fill_ratio_needed = 0.0;
   }
-  (fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
+  fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
   PetscFunctionReturn(0); 
 }
 
@@ -2927,7 +2926,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS 
 
   /* put together the new matrix in MATSEQSBAIJ format */
 
-  b = (Mat_SeqSBAIJ*)(fact)->data;
+  b = (Mat_SeqSBAIJ*)fact->data;
   b->singlemalloc = PETSC_FALSE;
   b->free_a       = PETSC_TRUE;
   b->free_ij      = PETSC_TRUE;
@@ -2948,14 +2947,14 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS 
   ierr    = PetscLogObjectMemory(fact,(ui[am]-am)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
   b->maxnz = b->nz = ui[am];
   
-  (fact)->info.factor_mallocs    = reallocs;
-  (fact)->info.fill_ratio_given  = fill;
+  fact->info.factor_mallocs    = reallocs;
+  fact->info.fill_ratio_given  = fill;
   if (ai[am] != 0) {
-    (fact)->info.fill_ratio_needed = ((PetscReal)ui[am])/((PetscReal)ai[am]);
+    fact->info.fill_ratio_needed = ((PetscReal)ui[am])/((PetscReal)ai[am]);
   } else {
-    (fact)->info.fill_ratio_needed = 0.0;
+    fact->info.fill_ratio_needed = 0.0;
   }
-  (fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ_newdatastruct;
+  fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ_newdatastruct;
   PetscFunctionReturn(0); 
 }
 
@@ -3094,7 +3093,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const Mat
 
   /* put together the new matrix in MATSEQSBAIJ format */
 
-  b = (Mat_SeqSBAIJ*)(fact)->data;
+  b = (Mat_SeqSBAIJ*)fact->data;
   b->singlemalloc = PETSC_FALSE;
   b->free_a       = PETSC_TRUE;
   b->free_ij      = PETSC_TRUE;
@@ -3114,14 +3113,14 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const Mat
   ierr    = PetscLogObjectMemory(fact,(ui[am]-am)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
   b->maxnz = b->nz = ui[am];
   
-  (fact)->info.factor_mallocs    = reallocs;
-  (fact)->info.fill_ratio_given  = fill;
+  fact->info.factor_mallocs    = reallocs;
+  fact->info.fill_ratio_given  = fill;
   if (ai[am] != 0) {
-    (fact)->info.fill_ratio_needed = ((PetscReal)ui[am])/((PetscReal)ai[am]);
+    fact->info.fill_ratio_needed = ((PetscReal)ui[am])/((PetscReal)ai[am]);
   } else {
-    (fact)->info.fill_ratio_needed = 0.0;
+    fact->info.fill_ratio_needed = 0.0;
   }
-  (fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
+  fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
   PetscFunctionReturn(0); 
 }
 
@@ -3278,7 +3277,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   /* put together the new matrix */
   ierr = MatSeqAIJSetPreallocation_SeqAIJ(B,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(B,isicol);CHKERRQ(ierr);
-  b    = (Mat_SeqAIJ*)(B)->data;
+  b    = (Mat_SeqAIJ*)B->data;
   b->free_a       = PETSC_TRUE;
   b->free_ij      = PETSC_TRUE;
   b->singlemalloc = PETSC_FALSE;
@@ -3298,9 +3297,9 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   ierr = PetscLogObjectMemory(B,nnz_max*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
   b->maxnz = nnz_max;
 
-  (B)->factor                = MAT_FACTOR_ILUDT;
-  (B)->info.factor_mallocs   = 0;
-  (B)->info.fill_ratio_given = ((PetscReal)nnz_max)/((PetscReal)ai[n]);
+  B->factor                = MAT_FACTOR_ILUDT;
+  B->info.factor_mallocs   = 0;
+  B->info.fill_ratio_given = ((PetscReal)nnz_max)/((PetscReal)ai[n]);
   CHKMEMQ;
   /* ------- end of symbolic factorization ---------*/
 
