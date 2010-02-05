@@ -8,8 +8,8 @@
 
 /* ----------------------------------------------------------- */
 #undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_N"
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat C,Mat A,const MatFactorInfo *info)
+#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_N_inplace"
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_inplace(Mat C,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
   IS             isrow = b->row,isicol = b->icol;
@@ -79,8 +79,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat C,Mat A,const MatFactorInfo *inf
   ierr = PetscFree3(v_work,multiplier,v_pivots);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
-  C->ops->solve          = MatSolve_SeqBAIJ_N;
-  C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_N;
+  C->ops->solve          = MatSolve_SeqBAIJ_N_inplace;
+  C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_N_inplace;
   C->assembled  = PETSC_TRUE;
   ierr = PetscLogFlops(1.3333*bs*bs2*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
