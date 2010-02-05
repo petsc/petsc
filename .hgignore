@@ -4,6 +4,7 @@ syntax: glob
 BROWSE
 TAGS*
 lib/*
+*.o
 
 syntax: regexp
 test_(.*)[0-9]$
