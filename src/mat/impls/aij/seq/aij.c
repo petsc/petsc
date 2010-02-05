@@ -1902,7 +1902,7 @@ PetscErrorCode MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,const MatFactorInfo *in
 
   ierr = MatMarkDiagonal_SeqAIJ(inA);CHKERRQ(ierr);
   if (row_identity && col_identity) {
-    ierr = MatLUFactorNumeric_SeqAIJ(outA,inA,info);CHKERRQ(ierr);
+    ierr = MatLUFactorNumeric_SeqAIJ_inplace(outA,inA,info);CHKERRQ(ierr);
   } else {
     ierr = MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(outA,inA,info);CHKERRQ(ierr);
   }
