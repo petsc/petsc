@@ -788,8 +788,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat C,Mat A,co
   } while (sctx.chshift);
   ierr = PetscFree3(rtmp,il,jl);CHKERRQ(ierr);
   
-  C->ops->solve                 = MatSolve_SeqSBAIJ_1_NaturalOrdering;  
-  C->ops->solvetranspose        = MatSolve_SeqSBAIJ_1_NaturalOrdering;
+  C->ops->solve                 = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;  
+  C->ops->solvetranspose        = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
   C->assembled    = PETSC_TRUE; 
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(C->rmap->N);CHKERRQ(ierr);
@@ -1013,8 +1013,8 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFact
     B->info.fill_ratio_needed = 0.0;
   }
   if (perm_identity){
-    B->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering;
-    B->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_NaturalOrdering;
+    B->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
+    B->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
     B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering;
   } else {
     (fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqBAIJ_N;

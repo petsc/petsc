@@ -1128,11 +1128,11 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat C,Mat A,const MatFactorIn
   if (a->permute){ierr = PetscFree(aa);CHKERRQ(ierr);}
 
   ierr = ISRestoreIndices(ip,&rip);CHKERRQ(ierr);
-  C->ops->solve          = MatSolve_SeqSBAIJ_1;
+  C->ops->solve          = MatSolve_SeqSBAIJ_1_inplace;
   C->ops->solves         = MatSolves_SeqSBAIJ_1;
-  C->ops->solvetranspose = MatSolve_SeqSBAIJ_1;
-  C->ops->forwardsolve   = MatForwardSolve_SeqSBAIJ_1;
-  C->ops->backwardsolve  = MatBackwardSolve_SeqSBAIJ_1;
+  C->ops->solvetranspose = MatSolve_SeqSBAIJ_1_inplace;
+  C->ops->forwardsolve   = MatForwardSolve_SeqSBAIJ_1_inplace;
+  C->ops->backwardsolve  = MatBackwardSolve_SeqSBAIJ_1_inplace;
   C->assembled    = PETSC_TRUE; 
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(C->rmap->N);CHKERRQ(ierr);
@@ -1269,11 +1269,11 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat C,Mat A,c
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   ierr = PetscFree2(il,jl);CHKERRQ(ierr);
   
-  C->ops->solve          = MatSolve_SeqSBAIJ_1_NaturalOrdering;
+  C->ops->solve          = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
   C->ops->solves         = MatSolves_SeqSBAIJ_1;
-  C->ops->solvetranspose = MatSolve_SeqSBAIJ_1_NaturalOrdering;
-  C->ops->forwardsolve   = MatForwardSolve_SeqSBAIJ_1_NaturalOrdering;
-  C->ops->backwardsolve  = MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering;
+  C->ops->solvetranspose = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
+  C->ops->forwardsolve   = MatForwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
+  C->ops->backwardsolve  = MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
 
   C->assembled    = PETSC_TRUE; 
   C->preallocated = PETSC_TRUE;
