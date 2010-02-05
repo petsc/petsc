@@ -137,7 +137,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAVecRestoreArray(DA da,Vec vec,void *array)
 .  array - the array
 
    Notes:
-    Call DAVecRestoreArray() once you have finished accessing the vector entries.
+    Call DAVecRestoreArrayDOF() once you have finished accessing the vector entries.
 
     In C, the indexing is "backwards" from what expects: array[k][j][i][DOF] NOT array[i][j][k][DOF]!
 
