@@ -9,8 +9,8 @@
    u = 1 for x = 0, x = 1, y = 0, y = 1, z = 0, z = 1.
 */
 
-static char help[] = "This example is for testing different MatSolve routines,namely MatSolve,MatSolveAdd,MatSolveTranspose,MatSolveTransposeAdd and MatMatSolve.\n\
-Example usage: ./ex129 -solve_type 1 -dof 1\n\n";
+static char help[] = "This example is for testing different MatSolve routines :MatSolve,MatSolveAdd,MatSolveTranspose,MatSolveTransposeAdd and MatMatSolve.\n\
+Example usage: ./ex129 -mat_type aij -dof 2\n\n";
 
 #include "petscda.h"
 #include "petscmg.h"
