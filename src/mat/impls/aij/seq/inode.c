@@ -1219,6 +1219,13 @@ PetscErrorCode MatSolve_SeqAIJ_Inode_newdatastruct(Mat A,Vec bb,Vec xx)
     vi  = aj + aii;
     nz  = ai[row+1]- ai[row];
     
+    if (i < node_max-1) {
+      /* Prefetch the indices for the next block */
+      PetscPrefetchBlock(aj+ai[row+nsz],ai[row+nsz+1]-ai[row+nsz],0,0); /* indices */
+      /* Prefetch the data for the next block */
+      PetscPrefetchBlock(aa+ai[row+nsz],ai[row+nsz+ns[i+1]]-ai[row+nsz],0,0);
+    }
+
     switch (nsz){               /* Each loop in 'case' is unrolled */
     case 1 :
       sum1 = b[r[row]];
@@ -1384,6 +1391,14 @@ PetscErrorCode MatSolve_SeqAIJ_Inode_newdatastruct(Mat A,Vec bb,Vec xx)
     v1  = aa + aii;
     vi  = aj + aii;
     nz  = ad[row]- ad[row+1] - 1;
+    
+    if (i > 0) {
+      /* Prefetch the indices for the next block */
+      PetscPrefetchBlock(aj+ad[row-nsz+1]+1,ad[row-nsz]-ad[row-nsz+1],0,0); /* indices */
+      /* Prefetch the data for the next block */
+      PetscPrefetchBlock(aa+ad[row-nsz+1]+1,ad[row-nsz-ns[i-1]+1]-ad[row-nsz+1],0,0);
+    }
+
     switch (nsz){               /* Each loop in 'case' is unrolled */
     case 1 :
       sum1 = tmp[row];

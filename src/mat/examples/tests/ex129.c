@@ -175,6 +175,7 @@ PetscErrorCode ComputeRHSMatrix(PetscInt m,PetscInt nrhs,Mat* C)
   ierr = MatAssemblyBegin(RHS,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(RHS,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *C = RHS;
+  ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
