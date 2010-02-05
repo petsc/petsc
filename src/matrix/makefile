@@ -9,7 +9,7 @@ SOURCEH  = lmvmmat.h adamat.h
 OBJSC    = lmvmmat.o adamat.o
 OBJSF    = 
 LIBBASE  = libtao
-MANSEC   = matrix
+MANSEC   = tao
 LOCDIR   = src/matrix/
 
 include ${TAO_DIR}/conf/tao_base

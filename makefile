@@ -108,6 +108,8 @@ tao_build:
 
 
 
+tao_allfortranstubs:
+	-@maint/generatefortranstubs.py ${BFORT}
 
 # Deletes TAO libraries
 tao_deletelibs: 

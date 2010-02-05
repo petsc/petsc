@@ -14,7 +14,7 @@ OBJSC    = tao_util.o
 #	   tao_lsolver.o dlregis.o line.o newsolver.o fdtest.o
 OBJSF    = 
 LIBBASE  = libtao
-MANSEC   = solver
+MANSEC   = taosolver
 DIRS     = 
 EDIRS    = 
 LOCDIR   = src/sys

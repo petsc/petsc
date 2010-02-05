@@ -1,7 +1,20 @@
-#include "include/private/taosolver_impl.h"
+#include "include/private/taosolver_impl.h" /*I "taosolver.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverSetInitialVector"
+/*@
+  TaoSolverSetInitialVector - Sets the initial guess for the solve
+
+  Collective on TaoSolver
+  
+  Input Parameters:
++ tao - the TaoSolver context
+- x0  - the initial guess 
+ 
+  Level: beginner
+.seealso: TaoSolverCreate(), TaoSolverSolve()
+@*/
+
 PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetInitialVector(TaoSolver tao, Vec x0) {
     PetscErrorCode ierr;
 
@@ -21,7 +34,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetInitialVector(TaoSolver tao, Vec 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverComputeGradient"
 /*@
-  TaoComputeGradient - Computes the gradient of the objective function
+  TaoSolverComputeGradient - Computes the gradient of the objective function
 
   Collective on TaoSolver
 
@@ -77,7 +90,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeGradient(TaoSolver tao, Vec X
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverComputeObjective"
 /*@
-  TaoComputeObjective - Computes the objective function value at a given point
+  TaoSolverComputeObjective - Computes the objective function value at a given point
 
   Collective on TaoSOlver
 
@@ -134,6 +147,26 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjective(TaoSolver tao, Vec 
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverComputeObjectiveAndGradient"
+/*@
+  TaoSolverComputeObjectiveAndGradient - Computes the objective function value at a given point
+
+  Collective on TaoSOlver
+
+  Input Parameters:
++ tao - the TaoSolver context
+- X - input vector
+
+  Output Parameter:
++ f - Objective value at X
+- g - Gradient vector at X
+
+  Notes: TaoSolverComputeObjectiveAndGradient() is typically used within minimization implementations,
+  so most users would not generally call this routine themselves.
+
+  Level: advanced
+
+.seealso: TaoSolverComputeGradient(), TaoSolverComputeObjectiveAndGradient(), TaoSolverSetObjectiveRoutine()
+@*/
 PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjectiveAndGradient(TaoSolver tao, Vec X, PetscReal *f, Vec G)
 {
   PetscErrorCode ierr;
@@ -179,7 +212,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjectiveAndGradient(TaoSolve
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverSetObjectiveRoutine"
-/*@
+/*@C
   TaoSolverSetObjectiveRoutine - Sets the function evaluation routine for minimization
 
   Collective on TaoSolver
@@ -212,6 +245,28 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjectiveRoutine(TaoSolver tao, P
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverSetSeparableObjectiveRoutine"
+/*@C
+  TaoSolverSetSeparableObjectiveRoutine - Sets the function evaluation routine for least-square applications
+
+  Collective on TaoSolver
+
+  Input Parameter:
++ tao - the TaoSolver context
+. func - the objective function evaluation routine
+- ctx - [optional] user-defined context for private data for the function evaluation
+        routine (may be PETSC_NULL)
+
+  Calling sequence of func:
+$      func (TaoSolver tao, Vec x, Vec f, void *ctx);
+
++ x - input vector
+. f - function value vector 
+- ctx - [optional] user-defined function context
+
+  Level: beginner
+
+.seealso: TaoSolverSetObjectiveRoutine(), TaoSolverSetJacobianRoutine()
+@*/
 PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetSeparableObjectiveRoutine(TaoSolver tao, Vec sepobj, PetscErrorCode (*func)(TaoSolver, Vec, Vec, void*),void *ctx)
 {
     PetscFunctionBegin;
@@ -225,6 +280,25 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetSeparableObjectiveRoutine(TaoSolv
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverComputeSeparableObjective"
+/*@
+  TaoSolverComputeSeparableObjective - Computes an objective function vector at a given point
+
+  Collective on TaoSolver
+
+  Input Parameters:
++ tao - the TaoSolver context
+- X - input vector
+
+  Output Parameter:
+. f - Objective vector at X
+
+  Notes: TaoComputeSeparableObjective() is typically used within minimization implementations,
+  so most users would not generally call this routine themselves.
+
+  Level: advanced
+
+.seealso: TaoSolverSetSeparableObjective()
+@*/
 PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeSeparableObjective(TaoSolver tao, Vec X, Vec F) 
 {
     PetscErrorCode ierr;
@@ -252,7 +326,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeSeparableObjective(TaoSolver 
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverSetGradientRoutine"
-/*@
+/*@C
   TaoSolverSetGradientRoutine - Sets the gradient evaluation routine for minimization
 
   Collective on TaoSolver
@@ -286,6 +360,28 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetGradientRoutine(TaoSolver tao,  P
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverSetObjectiveAndGradientRoutine"
+/*@C
+  TaoSolverSetObjectiveAndGradientRoutine - Sets the gradient evaluation routine for minimization
+
+  Collective on TaoSolver
+
+  Input Parameter:
++ tao - the TaoSolver context
+. func - the gradient function
+- ctx - [optional] user-defined context for private data for the gradient evaluation
+        routine (may be PETSC_NULL)
+
+  Calling sequence of func:
+$      func (TaoSolver tao, Vec x, Vec g, void *ctx);
+
++ x - input vector
+. g - gradient value (output)
+- ctx - [optional] user-defined function context
+
+  Level: beginner
+
+.seealso: TaoSolverSetObjectiveRoutine(), TaoSolverSetHessianRoutine() TaoSolverSetObjectiveAndGradientRoutine()
+@*/
 PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjectiveAndGradientRoutine(TaoSolver tao, PetscErrorCode (*func)(TaoSolver, Vec, PetscReal *, Vec, void*), void *ctx)
 {
     PetscFunctionBegin;
@@ -297,6 +393,21 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjectiveAndGradientRoutine(TaoSo
   
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverSetVariableBounds"
+/*@
+  TaoSolverSetVariableBounds - Sets the upper and lower bounds
+
+  Collective on TaoSolver
+
+  Input Parameters:
++ tao - the TaoSolver context
+. XL  - vector of lower bounds 
+- XL  - vector of upper bounds
+
+  Level: beginner
+
+.seealso: TaoSolverSetObjectiveRoutine(), TaoSolverSetHessianRoutine() TaoSolverSetObjectiveAndGradientRoutine()
+@*/
+
 PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetVariableBounds(TaoSolver tao, Vec XL, Vec XU)
 {
     PetscErrorCode ierr;

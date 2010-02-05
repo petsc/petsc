@@ -1,4 +1,4 @@
-#include "taosolver.h"
+#include "taosolver.h"   /*I "tao_solver.h" */
 int TAOSOLVER_COOKIE;
 PetscTruth TaoInitializeCalled = PETSC_FALSE;
 

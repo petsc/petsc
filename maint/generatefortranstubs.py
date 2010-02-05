@@ -1,0 +1,173 @@
+#!/usr/bin/env python
+#!/bin/env python
+#
+#    Generates fortran stubs for PETSc using Sowings bfort program
+#
+import os
+#
+#  Opens all generated files and fixes them
+#
+def FixFile(filename):
+  import re
+  ff = open(filename)
+  data = ff.read()
+  ff.close()
+
+  # gotta be a better way to do this
+  data = re.subn('\nvoid ','\nvoid PETSC_STDCALL ',data)[0]
+  data = re.subn('\nPetscErrorCode ','\nvoid PETSC_STDCALL ',data)[0]
+  data = re.subn('Petsc([ToRm]*)Pointer\(int\)','Petsc\\1Pointer(void*)',data)[0]	  
+  data = re.subn('PetscToPointer\(a\) \(a\)','PetscToPointer(a) (*(long *)(a))',data)[0]
+  data = re.subn('PetscFromPointer\(a\) \(int\)\(a\)','PetscFromPointer(a) (long)(a)',data)[0]
+  data = re.subn('PetscToPointer\( \*\(int\*\)','PetscToPointer(',data)[0]
+  data = re.subn('MPI_Comm comm','MPI_Comm *comm',data)[0]
+  data = re.subn('\(MPI_Comm\)PetscToPointer\( \(comm\) \)','MPI_Comm_f2c(*(MPI_Fint*)(comm))',data)[0]
+  data = re.subn('\(PetscInt\* \)PetscToPointer','',data)[0]
+  data = re.subn('\(TaoSolver\* \)PetscToPointer','',data)[0]
+  data = re.subn('\(TaoSolverConvergedReason\* \)PetscToPointer','',data)[0]
+  match = re.compile(r"""\b(PETSC|TAO)(SOLVER_DLL|LINESEARCH_DLL|_DLL|VEC_DLL|MAT_DLL|DM_DLL|KSP_DLL|SNES_DLL|TS_DLL|FORTRAN_DLL)(EXPORT)""")
+  data = match.sub(r'',data)
+
+  ff = open(filename, 'w')
+  ff.write('#include "petsc.h"\n#include "petscfix.h"\n'+data)
+  ff.close()
+  return
+
+def FixDir(taodir,dir):
+  mansec = 'unknown'
+  cnames = []
+  hnames = []
+  parentdir =os.path.abspath(os.path.join(dir,'..'))
+  for f in os.listdir(dir):
+    ext = os.path.splitext(f)[1]
+    if ext == '.c':
+      FixFile(os.path.join(dir, f))
+      cnames.append(f)
+    elif ext == '.h90':
+      hnames.append(f)
+  if (cnames != [] or hnames != []):
+    mfile=os.path.abspath(os.path.join(parentdir,'makefile'))
+    try:
+      fd=open(mfile,'r')
+    except:
+      print 'Error! missing file:', mfile
+      return
+    inbuf = fd.read()
+    fd.close()
+    cppflags = ""
+    libbase = ""
+    locdir = ""
+    for line in inbuf.splitlines():
+      if line.find('CPPFLAGS') >=0:
+        cppflags = line
+      if line.find('LIBBASE') >=0:
+        libbase = line
+      elif line.find('LOCDIR') >=0:
+        locdir = line.rstrip() + 'ftn-auto/'
+      elif line.find('MANSEC') >=0:
+        mansec = line.split('=')[1].lower().strip()
+
+    # now assemble the makefile
+    outbuf  =  '\n'
+    outbuf +=  "#requirespackage   'PETSC_HAVE_FORTRAN'\n"
+    outbuf +=  'ALL: lib\n'
+    outbuf +=   cppflags + '\n'
+    outbuf +=  'CFLAGS   =\n'
+    outbuf +=  'FFLAGS   =\n'
+    outbuf +=  'SOURCEC  = ' +' '.join(cnames)+ '\n'
+    outbuf +=  'OBJSC    = ' +' '.join(cnames).replace('.c','.o')+ '\n'    
+    outbuf +=  'SOURCEF  =\n'
+    outbuf +=  'SOURCEH  = ' +' '.join(hnames)+ '\n'
+    outbuf +=  'DIRS     =\n'
+    outbuf +=  libbase + '\n'
+    outbuf +=  locdir + '\n'
+    outbuf +=  'include ${TAO_DIR}/conf/tao_base\n'
+    
+    ff = open(os.path.join(dir, 'makefile'), 'w')
+    ff.write(outbuf)
+    ff.close()
+
+  # if dir is empty - remove it
+  if os.path.exists(dir) and os.path.isdir(dir) and os.listdir(dir) == []:
+    os.rmdir(dir)
+
+  # Now process f90module.f90 file - and update include/finclude/ftn-auto
+  modfile = os.path.join(parentdir,'f90module.f90')
+  if os.path.exists(modfile):
+    fd = open(modfile)
+    txt = fd.read()
+    fd.close()
+
+    if txt and mansec == 'unknown':
+      print 'makefile has missing MANSEC',parentdir
+    elif txt:
+      ftype = 'w'
+      f90inc = os.path.join(taodir,'include','finclude','ftn-auto',mansec+'.h90')
+      if os.path.exists(f90inc): ftype = 'a'
+      fd = open(f90inc,ftype)
+      fd.write(txt)
+      fd.close()
+    os.remove(modfile)
+  return
+
+def PrepFtnDir(dir):
+  if os.path.exists(dir) and not os.path.isdir(dir):
+    raise RuntimeError('Error - specified path is not a dir: ' + dir)
+  elif not os.path.exists(dir):
+    os.mkdir(dir)
+  else:
+    files = os.listdir(dir)
+    for file in files:
+      os.remove(os.path.join(dir,file))
+  return
+
+def processDir(arg,dirname,names):
+  import commands
+  taodir = arg[0]
+  bfort    = arg[1]
+  newls = []
+  outdir = os.path.join(dirname,'ftn-auto')
+
+  # skip include/finclude/ftn-auto - as this is processed separately
+  if os.path.realpath(os.path.join(taodir,'include','finclude','ftn-auto')) == os.path.realpath(outdir): return
+
+  for l in names:
+    if os.path.splitext(l)[1] =='.c' or os.path.splitext(l)[1] == '.h':
+      newls.append(l)
+  if newls:
+    PrepFtnDir(outdir)
+    options = ['-dir '+outdir, '-mnative', '-ansi', '-nomsgs', '-noprofile', '-anyname', '-mapptr',
+               '-mpi', '-mpi2', '-ferr', '-ptrprefix Petsc', '-ptr64 PETSC_USE_POINTER_CONVERSION',
+               '-fcaps PETSC_HAVE_FORTRAN_CAPS', '-fuscore PETSC_HAVE_FORTRAN_UNDERSCORE','-f90mod_skip_header']
+    (status,output) = commands.getstatusoutput('cd '+dirname+';'+bfort+' '+' '.join(options+newls))
+    if status:
+      raise RuntimeError('Error running bfort '+output)
+    FixDir(taodir,outdir)
+  for name in ['.hg','SCCS', 'output', 'BitKeeper', 'examples', 'externalpackages', 'bilinear', 'ftn-auto','fortran','bin','maint','ftn-custom','config','f90-custom']:
+    if name in names:
+      names.remove(name)
+  # check for configure generated PETSC_ARCHes
+  rmnames=[]
+  for name in names:
+    if os.path.isdir(os.path.join(name,'conf')):
+      rmnames.append(name)
+  for rmname in rmnames:
+    names.remove(rmname)
+  return
+
+def main(bfort):
+  taodir = os.getcwd()
+  tmpdir = os.path
+  ftnautoinc = os.path.join(taodir,'include','finclude','ftn-auto')
+  PrepFtnDir(ftnautoinc)
+  os.path.walk(taodir, processDir, [taodir, bfort])
+  FixDir(taodir,ftnautoinc)
+  return
+#
+# The classes in this file can also be used in other python-programs by using 'import'
+#
+if __name__ ==  '__main__': 
+  import sys
+  if len(sys.argv) < 2:
+    sys.exit('Must give the BFORT program as the first argument')
+  main(sys.argv[1])

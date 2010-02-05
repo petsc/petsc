@@ -87,7 +87,7 @@ EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverResetStatistics(TaoSolver);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetDefaultMonitors(TaoSolver);
 
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDefaultConvergenceTest(TaoSolver,void*);
-EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetMonitor(TaoSolver, PetscErrorCode (*)(TaoSolver,void*),void *, PetscErrorCode (*)(void*));
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetMonitor(TaoSolver, PetscErrorCode (*)(TaoSolver,void*),void *);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDefaultMonitor(TaoSolver, void*);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDefaultSMonitor(TaoSolver, void*);
 PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverMonitor(TaoSolver, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal, TaoSolverConvergedReason*); 

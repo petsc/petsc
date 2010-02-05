@@ -1,5 +1,3 @@
-/*$Id$*/
-
 #include "tao.h"   /*I  "tao.h" I*/
 
 PetscErrorCode PETSC_DLLEXPORT TaoRegisterEvents();
@@ -85,7 +83,7 @@ PetscCookie TAOSOLVER_COOKIE = PETSC_FALSE;
  
 #undef __FUNCT__  
 #define __FUNCT__ "TaoFinalize"
-/*@
+/*@C
    TaoFinalize - Checks for options at the end of the TAO program
    and finalizes interfaces with other packages.
 

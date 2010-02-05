@@ -9,7 +9,7 @@ SOURCEH  = unit.h
 OBJSC    = unit.o
 OBJSF    = 
 LIBBASE  = libtaolinesearch
-MANSEC   = Line Search
+MANSEC   = linesearch
 LOCDIR   = src/linesearch/impls/unit/
 
 include ${TAO_DIR}/conf/tao_base

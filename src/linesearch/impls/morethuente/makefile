@@ -9,7 +9,7 @@ SOURCEH  = morethuente.h
 OBJSC    = morethuente.o
 OBJSF    = 
 LIBBASE  = libtaolinesearch
-MANSEC   = Line Search
+MANSEC   = linesearch
 LOCDIR   = src/linesearch/impls/morethuente/
 
 include ${TAO_DIR}/conf/tao_base

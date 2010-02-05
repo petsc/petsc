@@ -1,6 +1,6 @@
 #define TAOSOLVER_DLL
 
-#include "include/private/taosolver_impl.h" 
+#include "include/private/taosolver_impl.h" /*I "taosolver.h" I*/
 
 PetscTruth TaoSolverRegisterAllCalled = PETSC_FALSE;
 PetscFList TaoSolverList = PETSC_NULL;
@@ -346,10 +346,10 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetFromOptions(TaoSolver tao)
 	if (flg) {ierr = TaoSolverClearMonitor(tao);CHKERRQ(ierr);} */
 	ierr = PetscOptionsName("-tao_monitor","Use the default convergence monitor","TaoSetMonitor",&flg);CHKERRQ(ierr);
 	if (flg) {
-	  ierr = TaoSolverSetMonitor(tao,TaoSolverDefaultMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+	  ierr = TaoSolverSetMonitor(tao,TaoSolverDefaultMonitor,PETSC_NULL);CHKERRQ(ierr);
 	}
 	ierr = PetscOptionsName("-tao_smonitor","Use short monitor","None",&flg);CHKERRQ(ierr);
-	if (flg) {ierr = TaoSolverSetMonitor(tao,TaoSolverDefaultSMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);}
+	if (flg) {ierr = TaoSolverSetMonitor(tao,TaoSolverDefaultSMonitor,PETSC_NULL);CHKERRQ(ierr);}
 /*	ierr = PetscOptionsName("-tao_vecmonitor","Plot solution vector at each iteration","TaoVecViewMonitor",&flg);CHKERRQ(ierr);
 	if (flg) {ierr = TaoSetMonitor(tao,TaoVecViewMonitor,PETSC_NULL);CHKERRQ(ierr);} 
 	ierr = PetscOptionsName("-tao_vecmonitor_update","plots step direction at each iteration","TaoVecViewMonitorUpdate",&flg);CHKERRQ(ierr);
@@ -674,7 +674,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetDefaultMonitors(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverSetMonitor"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetMonitor(TaoSolver tao, PetscErrorCode (*func)(TaoSolver, void*), void *ctx, PetscErrorCode (*dest)(void*))
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetMonitor(TaoSolver tao, PetscErrorCode (*func)(TaoSolver, void*), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
@@ -683,7 +683,6 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetMonitor(TaoSolver tao, PetscError
   }
   tao->monitor[tao->numbermonitors] = func;
   tao->monitorcontext[tao->numbermonitors] = ctx;
-  tao->monitordestroy[tao->numbermonitors] = dest;
   ++tao->numbermonitors;
   PetscFunctionReturn(0);
 }
@@ -842,6 +841,10 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDefaultConvergenceTest(TaoSolver tao
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverSetType"
+/*@C
+   TaoSolverSetType - sets the algorithm for TAO to use
+
+   @*/
 PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetType(TaoSolver tao, const TaoSolverType type)
 {
     PetscErrorCode ierr;
@@ -910,6 +913,9 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverRegisterDestroy(void)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverGetConvergedReason"
+/*@ 
+  TaoSolverGetConvergedReason - get the reason why TAO stopped
+@*/
 PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetConvergedReason(TaoSolver tao, TaoSolverConvergedReason *reason) 
 {
     PetscFunctionBegin;

@@ -9,7 +9,7 @@ SOURCEH  =
 OBJSC    = linesearch.o dlregis_taolinesearch.o
 OBJSF    =
 LIBBASE  = libtaolinesearch
-MANSEC   = LineSearch
+MANSEC   = linesearch
 LOCDIR   = src/linesearch/interface/
 
 include ${TAO_DIR}/conf/tao_base
