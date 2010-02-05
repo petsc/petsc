@@ -55,7 +55,7 @@ static const char *NLS_UPDATE[64] = {
   "step", "reduction", "interpolation"
 };
 
-static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x) ;
+static PetscErrorCode MatLMVMSolveShell(void *pc, Vec b, Vec x) ;
 // Routine for BFGS preconditioner
 
 /*
@@ -1324,7 +1324,7 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLMVMSolveShell"
-static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x) 
+static PetscErrorCode MatLMVMSolveShell(void *pc, Vec b, Vec x) 
 {
     PetscErrorCode ierr;
     Mat M;
@@ -1332,7 +1332,7 @@ static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
     PetscValidHeaderSpecific(pc,PC_COOKIE,1);
     PetscValidHeaderSpecific(b,VEC_COOKIE,2);
     PetscValidHeaderSpecific(x,VEC_COOKIE,3);
-    ierr = PCShellGetContext(pc,(void**)&M); CHKERRQ(ierr);
+    ierr = PCShellGetContext((PC)pc,(void**)&M); CHKERRQ(ierr);
     ierr = MatLMVMSolve(M, b, x); CHKERRQ(ierr);
     PetscFunctionReturn(0);
 }
