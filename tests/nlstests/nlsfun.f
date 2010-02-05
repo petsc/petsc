@@ -76,7 +76,7 @@ c     Function value array
           f = 1.0d64
       end if
       
-
+      print *,'nfev=',nfev,' f=',f
       nfev = nfev + 1
       fevals(nfev,np) = f
 
