@@ -9,7 +9,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = rand.o
 OBJSF    =
-LIBBASE  = libpetsc
+LIBBASE  = libpetscsys
 DIRS     = 
 LOCDIR   = src/sys/random/impls/rand/
 

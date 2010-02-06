@@ -14,7 +14,7 @@ SOURCEH	  = ../../../include/petscmatlab.h
 OBJSC	  = matlab.o
 OBJSF	  =
 MANSEC	  = Sys
-LIBBASE	  = libpetsc
+LIBBASE	  = libpetscsys
 LOCDIR	  = src/sys/matlabengine/
 DIRS      = 
 

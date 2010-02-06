@@ -143,9 +143,9 @@ extern char **PetscGlobalArgs;
 PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
 {
 #if defined (PETSC_USE_NARGS)
-  short i,flg;
+  short          i,flg;
 #else
-  int   i;
+  int            i;
 #endif
   PetscErrorCode ierr;
   int            warg = 256;
@@ -179,8 +179,10 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
       }
 #elif defined (PETSC_USE_NARGS)
       GETARG(&i,(*argv)[i],warg,&flg);
-#else
+#elif defined(PETSC_HAVE_GETARG)
       getarg_(&i,(*argv)[i],warg);
+#else
+      SETERRQ(PETSC_ERR_SUP,"Cannot get Fortran command line arguments");
 #endif
       /* zero out garbage at end of each argument */
       p = (*argv)[i] + warg-1;

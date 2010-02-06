@@ -202,7 +202,11 @@ explicit Runge-Kutta scheme.</li>
       <p><u><b>DA:</b></u></p>
       <ul>
         <li>DAGetColoring() now takes a MatType as an additional
-argument, should be MATAIJ or MATBAIJ<u><b></b></u></li>
+argument, should be MATAIJ or MATBAIJ</li>
+        <li>Added DARefineHierarchy(), DMMG now always uses
+        DMRefineHierarchy to generate refined grids.  Added options
+        -da_refine_hierarchy_[xyz] to allow semi-coarsening at some
+        levels of the hierarchy.</li>
       </ul>
       <p><u><b>DMMG:</b></u></p>
       <ul>

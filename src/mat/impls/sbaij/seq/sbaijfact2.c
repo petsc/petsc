@@ -1603,7 +1603,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_newdatastruct(Mat A,Vec bb,Vec xx)
   Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ *)A->data;
   IS                isrow=a->row;
   PetscErrorCode    ierr;
-  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*rp,*vj;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*rp,*vj,*adiag = a->diag;
   const MatScalar   *aa=a->a,*v;
   const PetscScalar *b;
   PetscScalar       *x,xk,*t;
@@ -1628,11 +1628,10 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_newdatastruct(Mat A,Vec bb,Vec xx)
 
   /* solve U*perm(x) = y by back substitution */   
   for (k=mbs-1; k>=0; k--){ 
-    v  = aa + ai[k]; 
-    vj = aj + ai[k];  
+    v  = aa + adiag[k] - 1;
+    vj = aj + adiag[k] - 1; 
     nz = ai[k+1] - ai[k] - 1;    
-    /* for (j=0; j<nz; j++) t[k] += v[j]*t[vj[j]]; */
-    for (j=nz-1; j>=0; j--) t[k] += v[j]*t[vj[j]];
+    for (j=0; j<nz; j++) t[k] += v[-j]*t[vj[-j]];
     x[rp[k]] = t[k]; 
   }
 
@@ -1644,8 +1643,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_newdatastruct(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqSBAIJ_1"
-PetscErrorCode MatSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqSBAIJ_1_inplace"
+PetscErrorCode MatSolve_SeqSBAIJ_1_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ *)A->data;
   IS              isrow=a->row;
@@ -1689,8 +1688,47 @@ PetscErrorCode MatSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_1"
-PetscErrorCode MatForwardSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_1_newdatastruct"
+PetscErrorCode MatForwardSolve_SeqSBAIJ_1_newdatastruct(Mat A,Vec bb,Vec xx)
+{
+  Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ *)A->data;
+  IS              isrow=a->row;
+  PetscErrorCode  ierr;
+  const PetscInt  mbs=a->mbs,*ai=a->i,*aj=a->j,*rp,*vj;
+  const MatScalar *aa=a->a,*v;
+  PetscReal       diagk;
+  PetscScalar     *x,*b,xk;
+  PetscInt        nz,k;
+
+  PetscFunctionBegin;
+  SETERRQ(1,"Not done yet");
+  /* solve U^T*D^(1/2)*x = perm(b) by forward substitution */
+  ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
+  ierr = ISGetIndices(isrow,&rp);CHKERRQ(ierr); 
+  
+  for (k=0; k<mbs; k++) x[k] = b[rp[k]]; 
+  for (k=0; k<mbs; k++){
+    v  = aa + ai[k] + 1; 
+    vj = aj + ai[k] + 1;   
+    xk = x[k];
+    nz = ai[k+1] - ai[k] - 1; 
+    while (nz--) x[*vj++] += (*v++) * xk;
+
+    diagk = PetscRealPart(aa[ai[k]]); /* note: aa[diag[k]] = 1/D(k) */
+    if (PetscImaginaryPart(aa[ai[k]]) || diagk < 0) SETERRQ(PETSC_ERR_SUP,"Diagonal must be real and nonnegative");   
+    x[k] = xk*sqrt(diagk);  
+  }
+  ierr = ISRestoreIndices(isrow,&rp);CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+  ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_1_inplace"
+PetscErrorCode MatForwardSolve_SeqSBAIJ_1_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ *)A->data;
   IS              isrow=a->row;
@@ -1727,8 +1765,15 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_1"
-PetscErrorCode MatBackwardSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_1_newdatastruct"
+PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_newdatastruct(Mat A,Vec bb,Vec xx)
+{
+  SETERRQ(1,"Not done yet");
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_1_inplace"
+PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ *)A->data;
   IS              isrow=a->row;
@@ -1772,7 +1817,7 @@ PetscErrorCode MatSolves_SeqSBAIJ_1(Mat A,Vecs bb,Vecs xx)
 
   PetscFunctionBegin;
   if (A->rmap->bs == 1) {
-    ierr = MatSolve_SeqSBAIJ_1(A,bb->v,xx->v);CHKERRQ(ierr);
+    ierr = MatSolve_SeqSBAIJ_1_inplace(A,bb->v,xx->v);CHKERRQ(ierr);
   } else {
     IS              isrow=a->row;
     const PetscInt  *vj,mbs=a->mbs,*ai=a->i,*aj=a->j,*rp;
@@ -1824,21 +1869,17 @@ PetscErrorCode MatSolves_SeqSBAIJ_1(Mat A,Vecs bb,Vecs xx)
   PetscFunctionReturn(0);
 }
 
-/*
-      Special case where the matrix was ILU(0) factored in the natural
-   ordering. This eliminates the need for the column and row permutation.
-*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct"
 PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ *)A->data;
   PetscErrorCode    ierr;
-  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*vj;
+  const PetscInt    mbs=a->mbs,*ai=a->i,*aj=a->j,*vj,*adiag = a->diag;
   const MatScalar   *aa=a->a,*v;
   const PetscScalar *b;
   PetscScalar       *x,xi;
-  PetscInt          nz,i,k,j;
+  PetscInt          nz,i,j;
 
   PetscFunctionBegin;
   ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr); 
@@ -1857,16 +1898,14 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct(Mat A,Vec bb,Ve
     x[i] = xi*v[nz];  /* v[nz] = aa[diag[i]] = 1/D(i) */
   }
 
-  /* solve U*x = y by back substitution */ 
-  k = ai[mbs-1]-2; /* last entry of U(mbs-2,:), excluding diag[mbs-2] */
+  /* solve U*x = y by backward substitution */ 
   for (i=mbs-2; i>=0; i--){ 
     xi = x[i];   
+    v  = aa + adiag[i] - 1; /* end of row i, excluding diag */
+    vj = aj + adiag[i] - 1;
     nz = ai[i+1] - ai[i] - 1;    
-    for (j=0; j<nz; j++){
-      xi += aa[k]* x[aj[k]]; k--;     
-    }
+    for (j=0; j<nz; j++) xi += v[-j]*x[vj[-j]];
     x[i] = xi;    
-    k--; /* skip diagonal[i] */
   }
   
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr); 
@@ -1876,8 +1915,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct(Mat A,Vec bb,Ve
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqSBAIJ_1_NaturalOrdering"
-PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace"
+PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ *)A->data;
   PetscErrorCode ierr;
@@ -1920,8 +1959,15 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_1_NaturalOrdering"
-PetscErrorCode MatForwardSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct"
+PetscErrorCode MatForwardSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
+{
+  SETERRQ(1,"Not done yet");
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace"
+PetscErrorCode MatForwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ *)A->data;
   PetscErrorCode ierr;
@@ -1952,8 +1998,15 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering"
-PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct"
+PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
+{
+  SETERRQ(1,"Not done yet");
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace"
+PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ *)A->data;
   PetscErrorCode ierr;

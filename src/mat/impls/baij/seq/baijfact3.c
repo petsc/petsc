@@ -73,13 +73,13 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat inA,PetscTruth natural)
   if (natural) {
     switch (inA->rmap->bs) {
     case 1:
-      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1;
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1_inplace;
       break;
     case 2:
-      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering;
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_inplace;
       break;
     case 3:
-      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering;
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_inplace;
       break; 
     case 4:
 #if defined(PETSC_USE_SCALAR_MAT_SINGLE)
@@ -112,51 +112,51 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat inA,PetscTruth natural)
           SETERRQ(PETSC_ERR_SUP,"SSE Hardware unavailable");
 #  endif
         } else {
-          inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
+          inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace;
         }
       }
 #else
-      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace;
 #endif
       break;
     case 5:
-      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering;
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering_inplace;
       break;
     case 6: 
-      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering;
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering_inplace;
       break; 
     case 7:
-      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering;
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering_inplace;
       break; 
     default:
-      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N;  
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N_inplace;  
       break;
     }
   } else {
     switch (inA->rmap->bs) {
     case 1:
-      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1;  
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1_inplace;  
       break;
     case 2:
-      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2;  
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_inplace;  
       break;
     case 3:
-      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3;  
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_inplace;  
       break;
     case 4:
-      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4;  
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_inplace;  
       break;
     case 5:
-      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5;  
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_inplace;  
       break;
     case 6:
-      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6;  
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_inplace;  
       break;
     case 7:
-      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7;  
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_inplace;  
       break;
     default:
-      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N;  
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N_inplace;  
       break;
     }
   }
@@ -188,8 +188,14 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_newdatastruct(Mat B,Mat A,IS isrow,IS
   PetscInt           nlnk,*lnk,k,**bi_ptr;
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
   PetscBT            lnkbt;
+  PetscTruth         newdatastruct=PETSC_FALSE;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-lu_old",&newdatastruct,PETSC_NULL);CHKERRQ(ierr);
+  if(newdatastruct){
+    ierr = MatLUFactorSymbolic_SeqBAIJ_inplace(B,A,isrow,iscol,info);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   if (A->rmap->N != A->cmap->N) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be square");
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -319,8 +325,8 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_newdatastruct(Mat B,Mat A,IS isrow,IS
  }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorSymbolic_SeqBAIJ"
-PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
+#define __FUNCT__ "MatLUFactorSymbolic_SeqBAIJ_inplace"
+PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data,*b;
   PetscInt           n=a->mbs,bs = A->rmap->bs,bs2=a->bs2;
@@ -335,15 +341,8 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
   PetscInt           nlnk,*lnk,k,**bi_ptr;
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
   PetscBT            lnkbt;
-  PetscTruth         newdatastruct=PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-lu_new",&newdatastruct,PETSC_NULL);CHKERRQ(ierr);
-  if(newdatastruct){
-    ierr = MatLUFactorSymbolic_SeqBAIJ_newdatastruct(B,A,isrow,iscol,info);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }  
-  
   if (A->rmap->N != A->cmap->N) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be square");
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);

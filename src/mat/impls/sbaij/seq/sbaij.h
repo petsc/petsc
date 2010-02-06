@@ -49,12 +49,18 @@ EXTERN PetscErrorCode MatGetRowMaxAbs_SeqSBAIJ(Mat,Vec,PetscInt[]);
 EXTERN PetscErrorCode MatGetInertia_SeqSBAIJ(Mat,PetscInt*,PetscInt*,PetscInt*);
 
 EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat,Mat,const MatFactorInfo*);
-EXTERN PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct(Mat,Vec,Vec);
-EXTERN PetscErrorCode MatForwardSolve_SeqSBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
-EXTERN PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
-EXTERN PetscErrorCode MatForwardSolve_SeqSBAIJ_1(Mat,Vec,Vec);
-EXTERN PetscErrorCode MatBackwardSolve_SeqSBAIJ_1(Mat,Vec,Vec);
+
+EXTERN PetscErrorCode MatForwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatForwardSolve_SeqSBAIJ_1_inplace(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_inplace(Mat,Vec,Vec);
+
+EXTERN PetscErrorCode MatForwardSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatForwardSolve_SeqSBAIJ_1_newdatastruct(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_newdatastruct(Mat,Vec,Vec);
 
 EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatSolve_SeqSBAIJ_2_NaturalOrdering(Mat,Vec,Vec);
@@ -103,7 +109,7 @@ EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6(Mat,Mat,const MatFacto
 EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_7(Mat,Mat,const MatFactorInfo*);
 
 EXTERN PetscErrorCode MatSolve_SeqSBAIJ_N(Mat,Vec,Vec);
-EXTERN PetscErrorCode MatSolve_SeqSBAIJ_1(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatSolve_SeqSBAIJ_1_inplace(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqSBAIJ_1_newdatastruct(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqSBAIJ_2(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqSBAIJ_3(Mat,Vec,Vec);
@@ -114,7 +120,8 @@ EXTERN PetscErrorCode MatSolve_SeqSBAIJ_7(Mat,Vec,Vec);
 
 EXTERN PetscErrorCode MatSolves_SeqSBAIJ_1(Mat,Vecs,Vecs);
 
-EXTERN PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqSBAIJ_2_NaturalOrdering(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqSBAIJ_3_NaturalOrdering(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqSBAIJ_4_NaturalOrdering(Mat,Vec,Vec);

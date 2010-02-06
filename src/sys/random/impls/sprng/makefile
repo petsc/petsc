@@ -9,7 +9,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = sprng.o
 OBJSF    =
-LIBBASE  = libpetsc
+LIBBASE  = libpetscsys
 DIRS     = 
 LOCDIR   = src/sys/random/impls/sprng/
 

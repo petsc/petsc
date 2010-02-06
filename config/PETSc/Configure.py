@@ -19,7 +19,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc',  '-prefix=<path>',                  nargs.Arg(None, '', 'Specifiy location to install PETSc (eg. /usr/local)'))
     help.addArgument('Windows','-with-windows-graphics=<bool>',   nargs.ArgBool(None, 1,'Enable check for Windows Graphics'))
     help.addArgument('PETSc', '-with-default-arch=<bool>',        nargs.ArgBool(None, 1, 'Allow using the last configured arch without setting PETSC_ARCH'))
-    help.addArgument('PETSc','-with-single-library=<bool>',       nargs.ArgBool(None, 0,'Put all PETSc code into the single -lpetsc library'))
+    help.addArgument('PETSc','-with-single-library=<bool>',       nargs.ArgBool(None, 1,'Put all PETSc code into the single -lpetsc library'))
 
     return
 
@@ -251,6 +251,7 @@ class Configure(config.base.Configure):
       self.addMakeMacro('PETSC_TS_LIB_BASIC','-lpetsc')
       self.addMakeMacro('PETSC_LIB_BASIC','-lpetsc')
       self.addMakeMacro('PETSC_CONTRIB_BASIC','-lpetsc')
+      self.addMakeMacro('SHLIBS','libpetsc')
       self.addDefine('USE_SINGLE_LIBRARY', '1')
       
     if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib')):

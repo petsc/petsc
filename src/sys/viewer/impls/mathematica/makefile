@@ -9,7 +9,7 @@ SOURCEC   = mathematica.c
 SOURCEH   = mathematica.h
 OBJSC     = ${SOURCEC:.c=.o}
 MANSEC    = Viewer
-LIBBASE   = libpetsc
+LIBBASE   = libpetscsys
 DIRS      = 
 LOCDIR    = src/sys/viewer/impls/mathematica/
 

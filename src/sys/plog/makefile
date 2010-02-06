@@ -9,7 +9,7 @@ SOURCEH	  = plog.h ../../../include/petsclog.h
 OBJSC	  = ${SOURCEC:.c=.o}
 OBJSF	  =
 MANSEC	  = Profiling
-LIBBASE	  = libpetsc
+LIBBASE	  = libpetscsys
 DIRS	  = utils
 LOCDIR	  = src/sys/plog/
 

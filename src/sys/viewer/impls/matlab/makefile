@@ -14,7 +14,7 @@ SOURCEH	  =
 OBJSC	  = vmatlab.o
 OBJSF	  =
 MANSEC	  = Viewer
-LIBBASE	  = libpetsc
+LIBBASE	  = libpetscsys
 LOCDIR	  = src/sys/viewer/impls/matlab/
 DIRS      = 
 

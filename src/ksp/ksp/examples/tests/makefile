@@ -416,31 +416,31 @@ runex30_3:
            ${RM} -f ex30.tmp
 
 runex30_shift: # test lu with shift
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_nonzero 1.e-5 -lu_new > ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_nonzero 1.e-5 > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftnz.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30_shiftnz, diffs above"; fi; \
 	   ${RM} -f ex30.tmp
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_positive_definite -lu_new > ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_positive_definite > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftpd.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30_shiftpd, diffs above"; fi; \
 	   ${RM} -f ex30.tmp
 
 runex30_shift_2: # test cholesky with shift
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_nonzero 1.e-5 -cholesky_new > ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_nonzero 1.e-5 > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftnz.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30_shiftnz_2, diffs above"; fi; \
 	   ${RM} -f ex30.tmp
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_positive_definite -cholesky_new > ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_positive_definite > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftpd_2.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30_shiftpd_2, diffs above"; fi; \
 	   ${RM} -f ex30.tmp
 
 runex30_shift_3: # test shift_in_blocks: sensitive to machine, thus not submitted to the nightly tests
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_in_blocks -lu_new > ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_in_blocks > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftinblocks.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30_shiftinblocks_lu, diffs above"; fi; \
 	   ${RM} -f ex30.tmp
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_in_blocks -cholesky_new> ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_in_blocks > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftinblocks.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30_shiftinblocks_cholesky, diffs above"; fi; \
 	   ${RM} -f ex30.tmp
@@ -453,465 +453,465 @@ runex31:
 
 runex32:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij > ex32.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -ilu_new> ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -ilu_old> ex32.tmp 2>&1; \
 	if (${DIFF} ex32.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32.out
 
 runex32_trans:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -trans > ex32.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -trans -ilu_new> ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -trans -ilu_old> ex32.tmp 2>&1; \
 	if (${DIFF} ex32.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_trans, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32.out
 
 runex32_trans_bs_2:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type natural -trans > ex32.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type natural -trans -ilu_new> ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type natural -trans -ilu_old> ex32.tmp 2>&1; \
 	if (${DIFF} ex32.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_trans_bs_2, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32.out
 
 runex32_trans_bs_3:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type natural -trans > ex32.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type natural -trans -ilu_new> ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type natural -trans -ilu_old> ex32.tmp 2>&1; \
 	if (${DIFF} ex32.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_trans_bs_3, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32.out
 
 runex32_trans_bs_4:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 4 -pc_factor_mat_ordering_type natural -trans > ex32.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 4 -pc_factor_mat_ordering_type natural -trans -ilu_new> ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 4 -pc_factor_mat_ordering_type natural -trans -ilu_old> ex32.tmp 2>&1; \
 	if (${DIFF} ex32.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_trans_4, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32.out
 
 runex32_trans_bs_5:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 5 -pc_factor_mat_ordering_type natural -trans > ex32.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 5 -pc_factor_mat_ordering_type natural -trans -ilu_new> ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 5 -pc_factor_mat_ordering_type natural -trans -ilu_old> ex32.tmp 2>&1; \
 	if (${DIFF} ex32.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_trans_bs_5, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32.out
 
 runex32_trans_bs_6:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 6 -pc_factor_mat_ordering_type natural -trans > ex32.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 6 -pc_factor_mat_ordering_type natural -trans -ilu_new> ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 6 -pc_factor_mat_ordering_type natural -trans -ilu_old> ex32.tmp 2>&1; \
 	if (${DIFF} ex32.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_trans_bs_6, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32.out
 
 runex32_trans_bs_7:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 7 -pc_factor_mat_ordering_type natural -trans > ex32.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 7 -pc_factor_mat_ordering_type natural -trans -ilu_new> ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 7 -pc_factor_mat_ordering_type natural -trans -ilu_old> ex32.tmp 2>&1; \
 	if (${DIFF} ex32.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_trans_bs_7, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32.out
 
 runex32_trans_bs_N:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 8 -pc_factor_mat_ordering_type natural -trans > ex32.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 8 -pc_factor_mat_ordering_type natural -trans -ilu_new> ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 8 -pc_factor_mat_ordering_type natural -trans -ilu_old> ex32.tmp 2>&1; \
 	if (${DIFF} ex32.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_trans_bs_N, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32.out
 
 runex32_trans_nd:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type nd -mat_type aij -trans > ex32.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type nd -mat_type aij -trans -ilu_new> ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type nd -mat_type aij -trans -ilu_old> ex32.tmp 2>&1; \
 	if (${DIFF} ex32.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_trans_nd, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32.out
 
 runex32_trans_nd_bs_2:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type nd -trans > ex32.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type nd -trans -ilu_new> ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type nd -trans -ilu_old> ex32.tmp 2>&1; \
 	if (${DIFF} ex32.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_trans_nd_bs_2, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32.out
 
 runex32_trans_nd_bs_3:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type nd -trans > ex32.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type nd -trans -ilu_new> ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type nd -trans -ilu_old> ex32.tmp 2>&1; \
 	if (${DIFF} ex32.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_trans_nd_bs_3, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32.out
 
 runex32_trans_nd_bs_4:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 4 -pc_factor_mat_ordering_type nd -trans > ex32.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 4 -pc_factor_mat_ordering_type nd -trans -ilu_new> ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 4 -pc_factor_mat_ordering_type nd -trans -ilu_old> ex32.tmp 2>&1; \
 	if (${DIFF} ex32.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_trans_nd_bs_4, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32.out
 
 runex32_trans_nd_bs_5:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 5 -pc_factor_mat_ordering_type nd -trans > ex32.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 5 -pc_factor_mat_ordering_type nd -trans -ilu_new> ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 5 -pc_factor_mat_ordering_type nd -trans -ilu_old> ex32.tmp 2>&1; \
 	if (${DIFF} ex32.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_trans_nd_bs_5, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32.out
 
 runex32_trans_nd_bs_6:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 6 -pc_factor_mat_ordering_type nd -trans > ex32.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 6 -pc_factor_mat_ordering_type nd -trans -ilu_new> ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 6 -pc_factor_mat_ordering_type nd -trans -ilu_old> ex32.tmp 2>&1; \
 	if (${DIFF} ex32.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_trans_nd_bs_6, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32.out
 
 runex32_trans_nd_bs_7:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 7 -pc_factor_mat_ordering_type nd -trans > ex32.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 7 -pc_factor_mat_ordering_type nd -trans -ilu_new> ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 7 -pc_factor_mat_ordering_type nd -trans -ilu_old> ex32.tmp 2>&1; \
 	if (${DIFF} ex32.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_trans_nd_bs_7, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32.out
 
 runex32_trans_nd_bs_N:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 8 -pc_factor_mat_ordering_type nd -trans > ex32.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 8 -pc_factor_mat_ordering_type nd -trans -ilu_new> ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 8 -pc_factor_mat_ordering_type nd -trans -ilu_old> ex32.tmp 2>&1; \
 	if (${DIFF} ex32.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_trans_nd_bs_N, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32.out
 
 runex32_icc:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -check_symmetry -pc_type icc -ksp_type cg > ex32_icc.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -check_symmetry -pc_type icc -ksp_type cg -icc_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -check_symmetry -pc_type icc -ksp_type cg -icc_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_icc.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_icc, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_icc.out
 runex32_icc_lev1:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -check_symmetry -pc_type icc -ksp_type cg -pc_factor_levels 1 > ex32_icc.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -check_symmetry -pc_type icc -ksp_type cg -pc_factor_levels 1 -icc_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -check_symmetry -pc_type icc -ksp_type cg -pc_factor_levels 1 -icc_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_icc.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_icc_lev1, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_icc.out
 runex32_icc_lev10:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -check_symmetry -pc_type icc -ksp_type cg -pc_factor_levels 10 > ex32_icc.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -check_symmetry -pc_type icc -ksp_type cg -pc_factor_levels 10 -icc_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -check_symmetry -pc_type icc -ksp_type cg -pc_factor_levels 10 -icc_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_icc.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_icc_lev10, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_icc.out
 
 runex32_icc_nd:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type nd -mat_type aij -check_symmetry -pc_type icc -ksp_type cg > ex32_icc.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type nd -mat_type aij -check_symmetry -pc_type icc -ksp_type cg -icc_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type nd -mat_type aij -check_symmetry -pc_type icc -ksp_type cg -icc_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_icc.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_icc_nd, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_icc.out
 runex32_icc_nd_lev10:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type nd -mat_type aij -check_symmetry -pc_type icc -ksp_type cg -pc_factor_levels 10 > ex32_icc.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type nd -mat_type aij -check_symmetry -pc_type icc -ksp_type cg -pc_factor_levels 10 -icc_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type nd -mat_type aij -check_symmetry -pc_type icc -ksp_type cg -pc_factor_levels 10 -icc_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_icc.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_icc_nd_lev10, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_icc.out
 
 runex32_cholesky:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -check_symmetry -pc_type cholesky -ksp_type cg > ex32_cc.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -check_symmetry -pc_type cholesky -ksp_type cg -cholesky_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -check_symmetry -pc_type cholesky -ksp_type cg -cholesky_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_cc.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_cholesky, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_cc.out
 runex32_cholesky_nd:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type nd -mat_type aij -check_symmetry -pc_type cholesky -ksp_type cg > ex32_cc.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type nd -mat_type aij -check_symmetry -pc_type cholesky -ksp_type cg -cholesky_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type nd -mat_type aij -check_symmetry -pc_type cholesky -ksp_type cg -cholesky_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_cc.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_cholesky, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_cc.out
 
 runex32_2:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type natural -mat_type baij > ex32_2.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type natural -mat_type baij -ilu_new> ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type natural -mat_type baij -ilu_old> ex32.tmp 2>&1; \
 	if (${DIFF} ex32_2.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_2, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_2.out
 
 runex32_3:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type natural -mat_type baij > ex32_3.out 2>&1; 
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type natural -mat_type baij -ilu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type natural -mat_type baij -ilu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_3.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_3, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_3.out
 
 runex32_4:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 4 -pc_factor_mat_ordering_type natural -mat_type baij > ex32_4.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 4 -pc_factor_mat_ordering_type natural -mat_type baij -ilu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 4 -pc_factor_mat_ordering_type natural -mat_type baij -ilu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_4.out ex32.tmp) then true; \
            else echo "Possible problem with ex32_4, diffs above"; fi; \
            ${RM} -f ex32.tmp; ${RM} -f ex32_4.out  
 
 runex32_5:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 5 -pc_factor_mat_ordering_type natural -mat_type baij > ex32_5.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 5 -pc_factor_mat_ordering_type natural -mat_type baij -ilu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 5 -pc_factor_mat_ordering_type natural -mat_type baij -ilu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_5.out ex32.tmp) then true; \
            else echo "Possible problem with ex32_5, diffs above"; fi; \
            ${RM} -f ex32.tmp; ${RM} -f ex32_5.out
 
 runex32_6:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 6 -pc_factor_mat_ordering_type natural -mat_type baij > ex32_6.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 6 -pc_factor_mat_ordering_type natural -mat_type baij -ilu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 6 -pc_factor_mat_ordering_type natural -mat_type baij -ilu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_6.out ex32.tmp) then true; \
            else echo "Possible problem with ex32_6, diffs above"; fi; \
            ${RM} -f ex32.tmp; ${RM} -f ex32_6.out
 
 runex32_7:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 7 -pc_factor_mat_ordering_type natural -mat_type baij > ex32_7.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 7 -pc_factor_mat_ordering_type natural -mat_type baij -ilu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 7 -pc_factor_mat_ordering_type natural -mat_type baij -ilu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_7.out ex32.tmp) then true; \
            else echo "Possible problem with ex32_7, diffs above"; fi; \
            ${RM} -f ex32.tmp; ${RM} -f ex32_7.out
 
 runex32_8:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 8 -pc_factor_mat_ordering_type natural -mat_type baij > ex32_8.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 8 -pc_factor_mat_ordering_type natural -mat_type baij -ilu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 8 -pc_factor_mat_ordering_type natural -mat_type baij -ilu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_8.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_8, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_8.out
 
 runex32_9:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -pc_factor_mat_ordering_type natural -mat_type aij -pc_factor_levels 1 -da_grid_x 50 -da_grid_y 50 -da_grid_z 50 > ex32_9.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -pc_factor_mat_ordering_type natural -mat_type aij -pc_factor_levels 1 -da_grid_x 50 -da_grid_y 50 -da_grid_z 50 -ilu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -pc_factor_mat_ordering_type natural -mat_type aij -pc_factor_levels 1 -da_grid_x 50 -da_grid_y 50 -da_grid_z 50 -ilu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_9.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_9, diffs above"; fi; \
 	${RM} -f ex32.tmp; ${RM} -f ex32_9.out
 
 runex32_10:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -pc_factor_mat_ordering_type natural -mat_type aij -pc_factor_levels 4 -da_grid_x 50 -da_grid_y 50 -da_grid_z 50 > ex32_10.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -pc_factor_mat_ordering_type natural -mat_type aij -pc_factor_levels 4 -da_grid_x 50 -da_grid_y 50 -da_grid_z 50 -ilu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -pc_factor_mat_ordering_type natural -mat_type aij -pc_factor_levels 4 -da_grid_x 50 -da_grid_y 50 -da_grid_z 50 -ilu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_10.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_10, diffs above"; fi; \
 	${RM} -f ex32.tmp; ${RM} -f ex32_10.out
 
 runex32_11:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -pc_type lu -da_grid_x 20 -da_grid_y 20 -da_grid_z 20 > ex32_11.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -pc_type lu -da_grid_x 20 -da_grid_y 20 -da_grid_z 20 -lu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type natural -mat_type aij -pc_type lu -da_grid_x 20 -da_grid_y 20 -da_grid_z 20 -lu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_11.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_11, diffs above"; fi; \
 	${RM} -f ex32.tmp; ${RM} -f ex32_11.out
 
 runex32_11_nd:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type nd -mat_type aij -pc_type lu -da_grid_x 20 -da_grid_y 20 -da_grid_z 20 > ex32_11.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type nd -mat_type aij -pc_type lu -da_grid_x 20 -da_grid_y 20 -da_grid_z 20 -lu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_factor_mat_ordering_type nd -mat_type aij -pc_type lu -da_grid_x 20 -da_grid_y 20 -da_grid_z 20 -lu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_11.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_11_nd, diffs above"; fi; \
 	${RM} -f ex32.tmp; ${RM} -f ex32_11.out
 
 runex32_12:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type natural -mat_type baij -pc_factor_levels 3 > ex32_2.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type natural -mat_type baij -pc_factor_levels 3 -ilu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type natural -mat_type baij -pc_factor_levels 3 -ilu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_2.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_12, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_2.out
 
 runex32_13:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type natural -pc_factor_levels 3 -mat_type baij > ex32_13.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type natural -pc_factor_levels 3 -mat_type baij -ilu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type natural -pc_factor_levels 3 -mat_type baij -ilu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_13.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_13, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_13.out
 
 runex32_14:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 4 -pc_factor_mat_ordering_type natural -pc_factor_levels 3 -mat_type baij > ex32_14.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 4 -pc_factor_mat_ordering_type natural -pc_factor_levels 3 -mat_type baij -ilu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 4 -pc_factor_mat_ordering_type natural -pc_factor_levels 3 -mat_type baij -ilu_old > ex32.tmp 2>&1; \
 	 if (${DIFF} ex32_14.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_14, diffs above"; fi; \
            ${RM} -f ex32.tmp; ${RM} -f ex32_14.out
 
 runex32_15:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 5 -pc_factor_mat_ordering_type natural -pc_factor_levels 3 -mat_type baij > ex32_15.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 5 -pc_factor_mat_ordering_type natural -pc_factor_levels 3 -mat_type baij -ilu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 5 -pc_factor_mat_ordering_type natural -pc_factor_levels 3 -mat_type baij -ilu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_15.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_15, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_15.out
 
 runex32_16:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 6 -pc_factor_mat_ordering_type natural -pc_factor_levels 3 -mat_type baij > ex32_16.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 6 -pc_factor_mat_ordering_type natural -pc_factor_levels 3 -mat_type baij -ilu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 6 -pc_factor_mat_ordering_type natural -pc_factor_levels 3 -mat_type baij -ilu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_16.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_16, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_16.out
 
 runex32_17:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 7 -pc_factor_mat_ordering_type natural -pc_factor_levels 3 -mat_type baij > ex32_17.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 7 -pc_factor_mat_ordering_type natural -pc_factor_levels 3 -mat_type baij -ilu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 7 -pc_factor_mat_ordering_type natural -pc_factor_levels 3 -mat_type baij -ilu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_17.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_17, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_17.out
 
 runex32_18:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 8 -pc_factor_mat_ordering_type natural -pc_factor_levels 3 -mat_type baij > ex32_18.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 8 -pc_factor_mat_ordering_type natural -pc_factor_levels 3 -mat_type baij -ilu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 8 -pc_factor_mat_ordering_type natural -pc_factor_levels 3 -mat_type baij -ilu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_18.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_18, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_18.out
 
 runex32_20_lu:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type natural -mat_type baij -pc_type lu > ex32_20.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type natural -mat_type baij -pc_type lu -lu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type natural -mat_type baij -pc_type lu -lu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_20.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_20_lu, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_20.out
 
 runex32_20_lu_nd:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type nd -mat_type baij -pc_type lu > ex32_20.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type nd -mat_type baij -pc_type lu -lu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type nd -mat_type baij -pc_type lu -lu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_20.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_20_lu_nd, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_20.out
 
 runex32_22:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type nd -mat_type baij -pc_factor_levels 3 > ex32_22.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type nd -mat_type baij -pc_factor_levels 3 -ilu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -pc_factor_mat_ordering_type nd -mat_type baij -pc_factor_levels 3 -ilu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_22.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_22, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_22.out
 
 runex32_23_lu:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type natural -mat_type baij -pc_type lu > ex32_23.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type natural -mat_type baij -pc_type lu -lu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type natural -mat_type baij -pc_type lu -lu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_23.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_23_lu, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_23.out
 
 runex32_23_lu_nd:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type nd -mat_type baij -pc_type lu > ex32_23.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type nd -mat_type baij -pc_type lu -lu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type nd -mat_type baij -pc_type lu -lu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_23.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_23_lu_nd, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_23.out
 
 runex32_23:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type nd -pc_factor_levels 3 -mat_type baij > ex32_23.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type nd -pc_factor_levels 3 -mat_type baij -ilu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type nd -pc_factor_levels 3 -mat_type baij -ilu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_23.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_23, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_23.out
 
 runex32_24_lu:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 4 -pc_factor_mat_ordering_type natural -mat_type baij -pc_type lu > ex32_24.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 4 -pc_factor_mat_ordering_type natural -mat_type baij -pc_type lu -lu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 4 -pc_factor_mat_ordering_type natural -mat_type baij -pc_type lu -lu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_24.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_24_lu, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_24.out
 
 runex32_24_lu_nd:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 4 -pc_factor_mat_ordering_type nd -mat_type baij -pc_type lu > ex32_24.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 4 -pc_factor_mat_ordering_type nd -mat_type baij -pc_type lu -lu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 4 -pc_factor_mat_ordering_type nd -mat_type baij -pc_type lu -lu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_24.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_24_lu_nd, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_24.out
 
 runex32_24:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 4 -pc_factor_mat_ordering_type nd -pc_factor_levels 3 -mat_type baij > ex32_24.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 4 -pc_factor_mat_ordering_type nd -pc_factor_levels 3 -mat_type baij -ilu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 4 -pc_factor_mat_ordering_type nd -pc_factor_levels 3 -mat_type baij -ilu_old > ex32.tmp 2>&1; \
 	 if (${DIFF} ex32_24.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_24, diffs above"; fi; \
            ${RM} -f ex32.tmp; ${RM} -f ex32_24.out
 
 runex32_25_lu:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 5 -pc_factor_mat_ordering_type natural -mat_type baij -pc_type lu > ex32_25.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 5 -pc_factor_mat_ordering_type natural -mat_type baij -pc_type lu -lu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 5 -pc_factor_mat_ordering_type natural -mat_type baij -pc_type lu -lu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_25.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_25_lu, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_25.out
 
 runex32_25_lu_nd:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 5 -pc_factor_mat_ordering_type nd -mat_type baij -pc_type lu > ex32_25.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 5 -pc_factor_mat_ordering_type nd -mat_type baij -pc_type lu -lu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 5 -pc_factor_mat_ordering_type nd -mat_type baij -pc_type lu -lu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_25.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_25_lu_nd, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_25.out
 
 runex32_25:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 5 -pc_factor_mat_ordering_type nd -pc_factor_levels 3 -mat_type baij > ex32_25.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 5 -pc_factor_mat_ordering_type nd -pc_factor_levels 3 -mat_type baij -ilu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 5 -pc_factor_mat_ordering_type nd -pc_factor_levels 3 -mat_type baij -ilu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_25.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_25, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_25.out
 
 runex32_26_lu:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 6 -pc_factor_mat_ordering_type natural -mat_type baij -pc_type lu > ex32_26.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 6 -pc_factor_mat_ordering_type natural -mat_type baij -pc_type lu -lu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 6 -pc_factor_mat_ordering_type natural -mat_type baij -pc_type lu -lu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_26.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_26_lu, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_26.out
 
 runex32_26_lu_nd:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 6 -pc_factor_mat_ordering_type nd -mat_type baij -pc_type lu > ex32_26.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 6 -pc_factor_mat_ordering_type nd -mat_type baij -pc_type lu -lu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 6 -pc_factor_mat_ordering_type nd -mat_type baij -pc_type lu -lu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_26.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_26_lu_nd, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_26.out
 
 runex32_26:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 6 -pc_factor_mat_ordering_type nd -pc_factor_levels 3 -mat_type baij > ex32_26.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 6 -pc_factor_mat_ordering_type nd -pc_factor_levels 3 -mat_type baij -ilu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 6 -pc_factor_mat_ordering_type nd -pc_factor_levels 3 -mat_type baij -ilu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_26.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_26, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_26.out
 
 runex32_27_lu:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 7 -pc_factor_mat_ordering_type natural -mat_type baij -pc_type lu > ex32_27.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 7 -pc_factor_mat_ordering_type natural -mat_type baij -pc_type lu -lu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 7 -pc_factor_mat_ordering_type natural -mat_type baij -pc_type lu -lu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_27.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_27_lu, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_27.out
 
 runex32_27_lu_nd:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 7 -pc_factor_mat_ordering_type nd -mat_type baij -pc_type lu > ex32_27.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 7 -pc_factor_mat_ordering_type nd -mat_type baij -pc_type lu -lu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 7 -pc_factor_mat_ordering_type nd -mat_type baij -pc_type lu -lu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_27.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_27_lu_nd, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_27.out
 
 runex32_28_lu:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 8 -pc_factor_mat_ordering_type natural -mat_type baij -pc_type lu > ex32_28.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 8 -pc_factor_mat_ordering_type natural -mat_type baij -pc_type lu -lu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 8 -pc_factor_mat_ordering_type natural -mat_type baij -pc_type lu -lu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_28.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_28_lu, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_28.out
 
 runex32_28_lu_nd:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 8 -pc_factor_mat_ordering_type nd -mat_type baij -pc_type lu > ex32_28.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 8 -pc_factor_mat_ordering_type nd -mat_type baij -pc_type lu -lu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 8 -pc_factor_mat_ordering_type nd -mat_type baij -pc_type lu -lu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_28.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_28_lu_nd, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_28.out
 
 runex32_27:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 7 -pc_factor_mat_ordering_type nd -pc_factor_levels 3 -mat_type baij > ex32_27.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 7 -pc_factor_mat_ordering_type nd -pc_factor_levels 3 -mat_type baij -ilu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 7 -pc_factor_mat_ordering_type nd -pc_factor_levels 3 -mat_type baij -ilu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_27.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_27, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_27.out
 
 runex32_28:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 8 -pc_factor_mat_ordering_type nd -pc_factor_levels 3 -mat_type baij > ex32_28.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 8 -pc_factor_mat_ordering_type nd -pc_factor_levels 3 -mat_type baij -ilu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 8 -pc_factor_mat_ordering_type nd -pc_factor_levels 3 -mat_type baij -ilu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_28.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_28, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_28.out
 
 runex32_inode_2:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -mat_type aij > ex32_inode_2.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -mat_type aij -ilu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 2 -mat_type aij -ilu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_inode_2.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_inode_2, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_inode_2.out
 
 runex32_inode_3:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type nd -mat_type aij > ex32_inode_3.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type nd -mat_type aij -ilu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 3 -pc_factor_mat_ordering_type nd -mat_type aij -ilu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_inode_3.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_inode_3, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_inode_3.out
 
 runex32_inode_4:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 4 -pc_factor_levels 2 -mat_type aij > ex32_inode_4.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 4 -pc_factor_levels 2 -mat_type aij -ilu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 4 -pc_factor_levels 2 -mat_type aij -ilu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_inode_4.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_inode_4, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_inode_4.out
 
 runex32_inode_5:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 5 -mat_type aij > ex32_inode_5.out 2>&1;
-	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 5 -mat_type aij -ilu_new > ex32.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 5 -mat_type aij -ilu_old > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_inode_5.out ex32.tmp) then true; \
 	   else echo "Possible problem with ex32_inode_5, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_inode_5.out

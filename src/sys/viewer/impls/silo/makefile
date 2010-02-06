@@ -9,7 +9,7 @@ SOURCEC   = vsilo.c
 SOURCEH   = vsilo.h
 OBJSC     = ${SOURCEC:.c=.o}
 MANSEC    = Viewer
-LIBBASE   = libpetsc
+LIBBASE   = libpetscsys
 DIRS      = 
 LOCDIR    = src/sys/viewer/impls/silo/
 

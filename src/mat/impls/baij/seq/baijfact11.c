@@ -11,8 +11,8 @@
       Version for when blocks are 4 by 4
 */
 #undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_4"
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat C,Mat A,const MatFactorInfo *info)
+#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_4_inplace"
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_inplace(Mat C,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
   IS             isrow = b->row,isicol = b->icol;
@@ -151,8 +151,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat C,Mat A,const MatFactorInfo *inf
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
-  C->ops->solve          = MatSolve_SeqBAIJ_4;
-  C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_4;
+  C->ops->solve          = MatSolve_SeqBAIJ_4_inplace;
+  C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_4_inplace;
   C->assembled = PETSC_TRUE;
   ierr = PetscLogFlops(1.3333*64*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
@@ -275,8 +275,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_newdatastruct(Mat B,Mat A,const MatF
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering"
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat C,Mat A,const MatFactorInfo *info)
+#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace"
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace(Mat C,Mat A,const MatFactorInfo *info)
 {
 /*
     Default Version for when blocks are 4 by 4 Using natural ordering
@@ -410,8 +410,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat C,Mat A,const Ma
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
-  C->ops->solve          = MatSolve_SeqBAIJ_4_NaturalOrdering;
-  C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_4_NaturalOrdering;
+  C->ops->solve          = MatSolve_SeqBAIJ_4_NaturalOrdering_inplace;
+  C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_4_NaturalOrdering_inplace;
   C->assembled = PETSC_TRUE;
   ierr = PetscLogFlops(1.3333*64*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
