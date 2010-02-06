@@ -2208,8 +2208,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const M
   } else {
     B->ops->solve           = MatSolve_SeqSBAIJ_1_newdatastruct;
     B->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_newdatastruct;
-    B->ops->forwardsolve    = 0;
-    B->ops->backwardsolve   = 0;
+    B->ops->forwardsolve    = MatForwardSolve_SeqSBAIJ_1_newdatastruct;
+    B->ops->backwardsolve   = MatBackwardSolve_SeqSBAIJ_1_newdatastruct;
   }
 
   C->assembled    = PETSC_TRUE; 
@@ -2230,8 +2230,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_newdatastruct(Mat B,Mat A,const M
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatCholeskyFactorNumeric_SeqAIJ"
-PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
+#define __FUNCT__ "MatCholeskyFactorNumeric_SeqAIJ_inplace"
+PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat            C = B;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data;
@@ -2349,15 +2349,15 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *
 
   ierr = ISIdentity(ip,&perm_identity);CHKERRQ(ierr);
   if (perm_identity){
-    B->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering;
-    B->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_NaturalOrdering;
-    B->ops->forwardsolve    = MatForwardSolve_SeqSBAIJ_1_NaturalOrdering;
-    B->ops->backwardsolve   = MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering;
+    B->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
+    B->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
+    B->ops->forwardsolve    = MatForwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
+    B->ops->backwardsolve   = MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
   } else {
-    B->ops->solve           = MatSolve_SeqSBAIJ_1;
-    B->ops->solvetranspose  = MatSolve_SeqSBAIJ_1;
-    B->ops->forwardsolve    = MatForwardSolve_SeqSBAIJ_1;
-    B->ops->backwardsolve   = MatBackwardSolve_SeqSBAIJ_1;
+    B->ops->solve           = MatSolve_SeqSBAIJ_1_inplace;
+    B->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_inplace;
+    B->ops->forwardsolve    = MatForwardSolve_SeqSBAIJ_1_inplace;
+    B->ops->backwardsolve   = MatBackwardSolve_SeqSBAIJ_1_inplace;
   }
 
   C->assembled    = PETSC_TRUE; 
@@ -2792,7 +2792,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS perm,const 
   } else {
     fact->info.fill_ratio_needed = 0.0;
   }
-  fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
+  fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ_inplace;
   PetscFunctionReturn(0); 
 }
 
@@ -3116,7 +3116,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS perm,c
   } else {
     fact->info.fill_ratio_needed = 0.0;
   }
-  fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
+  fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ_inplace;
   PetscFunctionReturn(0); 
 }
 
