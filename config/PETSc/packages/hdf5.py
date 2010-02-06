@@ -69,7 +69,9 @@ class Configure(PETSc.package.NewPackage):
         libDir = self.framework.argDB['with-'+self.package+'-dir']
         libDir = os.path.join(libDir,'lib')        
         self.include.append(libDir)
-      elif 'download-hdf5' in self.framework.argDB:
+      elif 'with-hdf5-lib' in self.framework.argDB:
+        self.include.append(os.path.dirname(self.framework.argDB['with-hdf5-lib'][0]))
+      elif self.framework.argDB['download-hdf5']:
         libDir = self.installDir
         libDir = os.path.join(libDir,'lib')        
         self.include.append(libDir)
