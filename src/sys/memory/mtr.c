@@ -499,16 +499,19 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocDump(FILE *fp)
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscMallocSetDumpLog(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscLogMalloc = 0;
+  ierr = PetscMemorySetGetMaximumUsage();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMallocDumpLog"
 /*@C
-    PetscMallocDumpLog - Dumps the log of all calls to PetscMalloc(); also calls 
-       PetscMemoryGetCurrentUsage() and PetscMemoryGetMaximumUsage()
+    PetscMallocDumpLog - Dumps the log of all calls to PetscMalloc(); also calls
+       PetscMemoryGetMaximumUsage()
 
     Collective on PETSC_COMM_WORLD
 
