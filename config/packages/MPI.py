@@ -229,13 +229,15 @@ class Configure(config.package.Package):
     self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
     #for datatype, name in [('MPI_LONG_DOUBLE', 'long-double'), ('MPI_ENORMOUS_DOUBLE', 'enormous-double'), ('MPI_UNBELIEVABLE_DOUBLE', 'unbelievable-double')]:
     for datatype, name in [('MPI_LONG_DOUBLE', 'long-double'),('MPI_C_DOUBLE_COMPLEX', 'c-double-complex')]:
-      if self.checkCompile('#ifdef PETSC_HAVE_STDLIB_H\n  #include <stdlib.h>\n#endif\n#include <mpi.h>\n', 'MPI_Aint size;\nint ierr = MPI_Type_extent('+datatype+', &size);\nif(ierr || (size == 0)) exit(1);\n'):
+      includes = '#ifdef PETSC_HAVE_STDLIB_H\n  #include <stdlib.h>\n#endif\n#include <mpi.h>\n'
+      body     = 'MPI_Aint size;\nint ierr;\nMPI_Init(0,0);\nierr = MPI_Type_extent('+datatype+', &size);\nif(ierr || (size == 0)) exit(1);\nMPI_Finalize();\n'
+      if self.checkCompile(includes, body):
         if 'known-mpi-'+name in self.argDB:
           if int(self.argDB['known-mpi-'+name]):
             self.addDefine('HAVE_'+datatype, 1)
         elif not self.argDB['with-batch']:
           self.pushLanguage('C')
-          if self.checkRun('#ifdef PETSC_HAVE_STDLIB_H\n  #include <stdlib.h>\n#endif\n#include <mpi.h>\n', 'MPI_Aint size;\nint ierr = MPI_Type_extent('+datatype+', &size);\nif(ierr || (size == 0)) exit(1);\n', defaultArg = 'known-mpi-'+name):
+          if self.checkRun(includes, body, defaultArg = 'known-mpi-'+name):
             self.addDefine('HAVE_'+datatype, 1)
           self.popLanguage()
         else:
