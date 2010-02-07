@@ -195,8 +195,8 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[
 
   /* Parse the IS and update local tables and the outgoing buf with the data*/
   {
-    PetscInt     n_i,*data_i,isz_i,*outdat_j,ctr_j;
-    PetscBT table_i;
+    PetscInt n_i,*data_i,isz_i,*outdat_j,ctr_j;
+    PetscBT  table_i;
 
     for (i=0; i<imax; i++) {
       ierr    = PetscMemzero(ctr,size*sizeof(PetscInt));CHKERRQ(ierr);
