@@ -212,8 +212,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[
           ctr[proc]++;
           *ptr[proc] = row;
           ptr[proc]++;
-        }
-        else { /* Update the local table */
+        } else { /* Update the local table */
           if (!PetscBTLookupSet(table_i,row)) { data_i[isz_i++] = row;}
         }
       }
