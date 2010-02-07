@@ -228,7 +228,7 @@ class Configure(config.package.Package):
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
     self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
     #for datatype, name in [('MPI_LONG_DOUBLE', 'long-double'), ('MPI_ENORMOUS_DOUBLE', 'enormous-double'), ('MPI_UNBELIEVABLE_DOUBLE', 'unbelievable-double')]:
-    for datatype, name in [('MPI_LONG_DOUBLE', 'long-double')]:
+    for datatype, name in [('MPI_LONG_DOUBLE', 'long-double'),('MPI_C_DOUBLE_COMPLEX', 'c-double-complex')]:
       if self.checkCompile('#ifdef PETSC_HAVE_STDLIB_H\n  #include <stdlib.h>\n#endif\n#include <mpi.h>\n', 'MPI_Aint size;\nint ierr = MPI_Type_extent('+datatype+', &size);\nif(ierr || (size == 0)) exit(1);\n'):
         if 'known-mpi-'+name in self.argDB:
           if int(self.argDB['known-mpi-'+name]):
@@ -271,6 +271,7 @@ class Configure(config.package.Package):
     self.addDefine('HAVE_MPI_COMM_F2C', 1)
     self.addDefine('HAVE_MPI_COMM_C2F', 1)
     self.addDefine('HAVE_MPI_FINT', 1)
+    self.addDefine('HAVE_MPI_C_DOUBLE_COMPLEX', 1)    
     self.commf2c = 1
     self.commc2f = 1
     self.framework.packages.append(self)
