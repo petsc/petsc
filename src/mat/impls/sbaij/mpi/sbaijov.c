@@ -131,7 +131,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
     /* hash table ctable which maps c->row to proc_id) */
     ierr = PetscMalloc(Mbs*sizeof(PetscInt),&ctable);CHKERRQ(ierr);
     for (proc_id=0,j=0; proc_id<size; proc_id++) {
-      for (; j<C->rmap->range[proc_id+1]; j++) {
+      for (; j<C->rmap->range[proc_id+1]/bs; j++) {
         ctable[j] = proc_id;
       }
     }

@@ -499,16 +499,19 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocDump(FILE *fp)
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscMallocSetDumpLog(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscLogMalloc = 0;
+  ierr = PetscMemorySetGetMaximumUsage();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMallocDumpLog"
 /*@C
-    PetscMallocDumpLog - Dumps the log of all calls to PetscMalloc(); also calls 
-       PetscMemoryGetCurrentUsage() and PetscMemoryGetMaximumUsage()
+    PetscMallocDumpLog - Dumps the log of all calls to PetscMalloc(); also calls
+       PetscMemoryGetMaximumUsage()
 
     Collective on PETSC_COMM_WORLD
 
@@ -553,9 +556,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocDumpLog(FILE *fp)
   }
 
   if (!fp) fp = PETSC_STDOUT;
-  ierr = PetscMemoryGetCurrentUsage(&rss);CHKERRQ(ierr);
+  ierr = PetscMemoryGetMaximumUsage(&rss);CHKERRQ(ierr);
   if (rss) {
-    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Maximum memory PetscMalloc()ed %.0f maximum size of entire process %D\n",rank,(PetscLogDouble)TRMaxMem,rss);CHKERRQ(ierr);
+    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Maximum memory PetscMalloc()ed %.0f maximum size of entire process %.0f\n",rank,(PetscLogDouble)TRMaxMem,rss);CHKERRQ(ierr);
   } else {
     ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Maximum memory PetscMalloc()ed %.0f OS cannot compute size of entire process\n",rank,(PetscLogDouble)TRMaxMem);CHKERRQ(ierr);
   }

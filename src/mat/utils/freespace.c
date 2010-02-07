@@ -141,7 +141,7 @@ PetscErrorCode PetscFreeSpaceContiguous_LU_v2(PetscFreeSpaceList *head,PetscInt 
     total += (*head)->local_used;
     array  = (*head)->array_head;
   
-    while (bi[row+1] <= total && row < n){
+    while (row < n && bi[row+1] <= total) {
       /* copy array entries into bj for this row */  
       nnz  = bi[row+1] - bi[row];
       /* set bi[row] for new datastruct */

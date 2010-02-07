@@ -5959,27 +5959,35 @@ allocation can be activated for optimixed-mode (configured with
 debugging is enabled.  When running timing tests, one should build
 libraries in optimized-mode.
 
-\findex{-trdump} \findex{PetscTrDump()}
+\findex{-malloc_dump} \findex{PetscMallocDump()}
 \item When the PETSc memory allocation routines are used, the option 
-\trl{-trdump} will print a list of unfreed memory at the conclusion of a
+\trl{-malloc_dump} will print a list of unfreed memory at the conclusion of a
 program.  If all memory has been freed, only a message stating
 the maximum allocated space will be printed.  However, if some memory
 remains unfreed, this information will be printed.  Note that the
-option \trl{-trdump} merely activates a call to PetscTrDump() during
-PetscFinalize(); the user can also call PetscTrDump() elsewhere
+option \trl{-malloc_dump} merely activates a call to \trl{PetscMallocDump()} during
+\trl{PetscFinalize()} the user can also call \trl{PetscMallocDump()} elsewhere
 in a program.
 
-\findex{-malloc_log} \findex{PetscGetResidentSetSize()}
-\findex{PetscTrLog()} \findex{PetscTrLogDump()}
+\findex{-malloc_log}
+\findex{PetscMallocSetDumpLog()} \findex{PetscMallocDumpLog()}
+\findex{PetscMallocGetCurrentUsage()} \findex{PetscMallocGetMaximumUsage()}
+\findex{PetscMemoryGetCurrentUsage()} \findex{PetscMemoryGetMaximumUsage()}
+\findex{PetscMemorySetGetMaximumUsage()}
 \item Another useful option for use with PETSc memory allocation
 routines is \trl{-malloc_log}, which activates logging of all calls
 to malloc and reports memory usage, including all Fortran arrays.
-This option provides a more complete picture than \trl{-trdump} for
-codes that employ Fortran with hardwired arrays.  Note that the option
-\trl{-malloc_log} activates calls to PetscTrLog(), \trl{
-PetscTrLogDump()}, and PetscGetResidentSetSize() during \trl{
-PetscFinalize()}; the user can also call these routines elsewhere in a
-program.
+This option provides a more complete picture than \trl{-malloc_dump} for
+codes that employ Fortran with hardwired arrays.  The option
+\trl{-malloc_log} activates logging by calling \trl{PetscMallocSetDumpLog()} in
+\trl{PetscInitialize()} and then prints the log by calling \trl{PetscMallocDumpLog()}
+in \trl{PetscFinalize()}.  The user can also call these routines elsewhere in a
+program.  When finer granularity is desired, the user should call
+\trl{PetscMallocGetCurrentUsage()} and \trl{PetscMallocGetMaximumUsage()} for memory
+allocated by PETSc, or \trl{PetscMemoryGetCurrentUsage()} and
+\trl{PetscMemoryGetMaximumUsage()} for the total memory used by the program.
+Note that \trl{PetscMemorySetGetMaximumUsage()} must be called before
+\trl{PetscMemoryGetMaximumUsage()} (typically at the beginning of the program).
 
 \end{itemize}
 

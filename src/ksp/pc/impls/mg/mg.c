@@ -436,7 +436,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   ierr = KSPGetOperatorsSet(mglevels[n-1]->smoothd,PETSC_NULL,&opsset);CHKERRQ(ierr);
   ierr = KSPGetPC(mglevels[0]->smoothd,&cpc);CHKERRQ(ierr);
   ierr = KSPGetPC(mglevels[n-1]->smoothd,&mpc);CHKERRQ(ierr);
-  if (!opsset || ((cpc->setupcalled == 1) && (mpc->setupcalled == 2))) {
+  if (!opsset || ((cpc->setupcalled == 1) && (mpc->setupcalled == 2)) || ((mpc == cpc) && (mpc->setupcalled == 2))) {
     ierr = PetscInfo(pc,"Using outer operators to define finest grid operator \n  because PCMGGetSmoother(pc,nlevels-1,&ksp);KSPSetOperators(ksp,...); was not called.\n");CHKERRQ(ierr);
     ierr = KSPSetOperators(mglevels[n-1]->smoothd,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
   }
