@@ -612,7 +612,9 @@ M*/
    void *PetscAddrAlign(void *addr)
 
    Level: developer
+
 .seealso: PetscMallocAlign()
+
   Concepts: memory allocation
 M*/
 #if defined PETSC_UINTPTR_T
@@ -1918,32 +1920,6 @@ M*/
 /* --------------------------------------------------------------------*/
 
 /*MC
-    size - integer variable used to contain the number of processors in
-           the relevent MPI_Comm
-
-   Level: beginner
-
-.seealso: rank, comm
-M*/
-
-/*MC
-    rank - integer variable used to contain the number of this processor relative
-           to all in the relevent MPI_Comm
-
-   Level: beginner
-
-.seealso: size, comm
-M*/
-
-/*MC
-    comm - MPI_Comm used in the current routine or object
-
-   Level: beginner
-
-.seealso: size, rank
-M*/
-
-/*MC
     MPI_Comm - the basic object used by MPI to determine which processes are involved in a 
         communication
 
@@ -1951,7 +1927,7 @@ M*/
 
    Note: This manual page is a place-holder because MPICH does not have a manual page for MPI_Comm
 
-.seealso: size, rank, comm, PETSC_COMM_WORLD, PETSC_COMM_SELF
+.seealso: PETSC_COMM_WORLD, PETSC_COMM_SELF
 M*/
 
 /*MC
