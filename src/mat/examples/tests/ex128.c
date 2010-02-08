@@ -20,7 +20,6 @@ int main(int argc,char **args)
   PetscTruth     CHOLESKY=PETSC_FALSE,TRIANGULAR=PETSC_FALSE,flg;
   PetscScalar    v;
   IS             row,col;
-  PetscViewer    viewer1,viewer2;
   MatFactorInfo  info;
   Vec            x,y,b,ytmp;
   PetscReal      norm2;
@@ -33,9 +32,6 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-lf",&lf,PETSC_NULL);CHKERRQ(ierr);
-
-  ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,0,0,0,400,400,&viewer1);CHKERRQ(ierr);
-  ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,0,400,0,400,400,&viewer2);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_SELF,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,m*n,m*n,m*n,m*n);CHKERRQ(ierr);
@@ -106,6 +102,7 @@ int main(int argc,char **args)
   } 
 
   ierr = MatSolve(sA,b,y);CHKERRQ(ierr);
+  ierr = MatDestroy(sC);CHKERRQ(ierr);
   ierr = MatDestroy(sA);CHKERRQ(ierr);
   ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
