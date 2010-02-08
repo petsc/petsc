@@ -1,5 +1,5 @@
 
-static char help[] = "Tests ILU and ICC factorization with matrix ordering, and illustrates drawing of matrix sparsity structure with MatView().\n\
+static char help[] = "Tests ILU and ICC factorization with and without matrix ordering on seqaij format, and illustrates drawing of matrix sparsity structure with MatView().\n\
   Input parameters are:\n\
   -lf <level> : level of fill for ILU (default is 0)\n\
   -lu : use full LU or Cholesky factorization\n\
@@ -171,7 +171,7 @@ int main(int argc,char **args)
 
   /* test MatForwardSolve() and MatBackwardSolve() with matrix reordering on aij matrix C */
   if (lf == -1){
-    ierr = PetscOptionsHasName(PETSC_NULL,"-trangular_solve",&TRIANGULAR);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-triangular_solve",&TRIANGULAR);CHKERRQ(ierr);
     if (TRIANGULAR){
       printf("Test MatForwardSolve...\n");
       ierr = MatForwardSolve(A,b,ytmp);CHKERRQ(ierr);
@@ -194,67 +194,6 @@ int main(int argc,char **args)
   }
   ierr = ISDestroy(row);CHKERRQ(ierr);
   ierr = ISDestroy(col);CHKERRQ(ierr);
-
-#if defined(TMP) 
-  /* Test Cholesky and ICC on seqaij matrix without matrix reordering on aij matrix C */
-  ierr = MatGetOrdering(C,MATORDERING_NATURAL,&row,&col);CHKERRQ(ierr);   
-  ierr = PetscOptionsHasName(PETSC_NULL,"-cholesky",&CHOLESKY);CHKERRQ(ierr);
-  if (CHOLESKY){ 
-    printf(" Test Cholesky without matrix reordering...\n");
-    lf = -1;
-    ierr = MatGetFactor(C,MAT_SOLVER_PETSC,MAT_FACTOR_CHOLESKY,&A);CHKERRQ(ierr);
-    ierr = MatCholeskyFactorSymbolic(A,C,row,&info);CHKERRQ(ierr);
-  } else {
-    printf(" Test ICC without matrix reordering...\n");
-    info.levels        = lf;
-    info.fill          = 1.0;
-    info.diagonal_fill = 0;
-    info.shiftnz       = 0;
-    info.zeropivot     = 0.0;
-    ierr = MatGetFactor(C,MAT_SOLVER_PETSC,MAT_FACTOR_ICC,&A);CHKERRQ(ierr);
-    ierr = MatICCFactorSymbolic(A,C,row,&info);CHKERRQ(ierr);
-  }
-
-  ierr = MatCholeskyFactorNumeric(A,C,&info);CHKERRQ(ierr);
-
-  /* test MatForwardSolve() and MatBackwardSolve() */
-  if (lf == -1){
-    ierr = MatForwardSolve(A,b,ytmp);CHKERRQ(ierr);
-    ierr = MatBackwardSolve(A,ytmp,y);CHKERRQ(ierr);      
-    ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
-    ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
-    if (norm2 > 1.e-14){
-      ierr = PetscPrintf(PETSC_COMM_SELF,"MatForwardSolve and BackwardSolve: Norm of error=%G\n",norm2);CHKERRQ(ierr); 
-    }
-  } 
-
-  /* Test MatSolve() */
-  ierr = MatSolve(A,b,y);CHKERRQ(ierr);
-  ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
-  ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
-  if (lf == -1 && norm2 > 1.e-14){
-    printf(" SEQAIJ:   Cholesky/ICC levels %d, residual %g\n",lf,norm2);CHKERRQ(ierr);
-  }
-
-  /* Test Cholesky and ICC on seqsbaij matrix without matrix reordering on sbaij matrix sC */
-  Mat sC,sA
-  ierr = MatConvert(C,MATSEQSBAIJ,MAT_INITIAL_MATRIX,&sC);CHKERRQ(ierr);
-  if (LU){ 
-    ierr = MatGetFactor(sC,MAT_SOLVER_PETSC,MAT_FACTOR_CHOLESKY,&sA);CHKERRQ(ierr);
-    ierr = MatCholeskyFactorSymbolic(sA,sC,row,&info);CHKERRQ(ierr);
-  } else {
-    ierr = MatGetFactor(sC,MAT_SOLVER_PETSC,MAT_FACTOR_ICC,&sA);CHKERRQ(ierr);
-    ierr = MatICCFactorSymbolic(sA,sC,row,&info);CHKERRQ(ierr);
-  }
-  ierr = MatCholeskyFactorNumeric(sA,sC,&info);CHKERRQ(ierr);
-  ierr = MatEqual(A,sA,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(1,"CholeskyFactors for aij and sbaij matrices are different");
-  ierr = MatDestroy(sC);CHKERRQ(ierr);
-  ierr = MatDestroy(sA);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = ISDestroy(row);CHKERRQ(ierr);
-  ierr = ISDestroy(col);CHKERRQ(ierr);
-#endif
 
   /* Free data structures */
   ierr = MatDestroy(C);CHKERRQ(ierr);
