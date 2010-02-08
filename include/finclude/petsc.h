@@ -203,9 +203,10 @@
       common /petscfortran4/ PETSC_NULL_SCALAR
       common /petscfortran5/ PETSC_NULL_DOUBLE
       common /petscfortran6/ PETSC_NULL_REAL
-      common /petscfortran7/ PETSC_COMM_WORLD,PETSC_COMM_SELF
-      common /petscfortran8/ PETSC_NULL_TRUTH
-      common /petscfortran9/ PETSC_NULL_OBJECT
+      common /petscfortran7/ PETSC_NULL_TRUTH
+      common /petscfortran8/ PETSC_NULL_OBJECT
+      common /petscfortran9/ PETSC_COMM_WORLD
+      common /petscfortran10/ PETSC_COMM_SELF
 !
 !     Possible arguments to PetscPushErrorHandler()
 !
