@@ -687,15 +687,20 @@ runex22:
 	   else echo "Possible problem with ex22_1, diffs above"; fi; \
 	   ${RM} -f ex22_1.tmp
 runex30:
-	-@${MPIEXEC} -n 1  ./ex30 -nox > ex30_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex30 -display_matrices -nox > ex30_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex30_1.out ex30_1.tmp) then true; \
 	   else echo "Possible problem with ex30_1, diffs above"; fi; \
 	   ${RM} -f ex30_1.tmp
 runex30_2:
-	-@${MPIEXEC} -n 1  ./ex30 -nox -lu > ex30_2.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex30 -display_matrices -nox -lu > ex30_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex30_2.out ex30_2.tmp) then true; \
 	   else echo "Possible problem with ex30_2, diffs above"; fi; \
 	   ${RM} -f ex30_2.tmp
+runex30_3:
+	-@${MPIEXEC} -n 1 ./ex30 -lu -trangular_solve -cholesky_old > ex30_3.tmp 2>&1;   \
+	   if (${DIFF} output/ex30_3.out ex30_3.tmp) then true; \
+	   else echo "Possible problem with ex30_3, diffs above"; fi; \
+	   ${RM} -f ex30_3.tmp
 runex31:
 	-@${MPIEXEC} -n 1  ./ex31 > ex31_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex31_1.out ex31_1.tmp) then true; \
