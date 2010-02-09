@@ -107,9 +107,6 @@ tao_build:
 	-@echo "========================================="
 
 #
-# Builds TAO Fortran source
-tao_allfortranstubs:
-	-@maint/generatefortranstubs.py ${BFORT}
 
 # Deletes TAO libraries
 tao_deletelibs: 
