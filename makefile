@@ -106,8 +106,8 @@ tao_build:
 	-@echo "Completed building libraries"
 	-@echo "========================================="
 
-
-
+#
+# Builds TAO Fortran source
 tao_allfortranstubs:
 	-@maint/generatefortranstubs.py ${BFORT}
 
@@ -125,5 +125,11 @@ tao_alletags:
 
 tao_testexamples_c: 
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} TAO_DIR=${TAO_DIR} ACTION=testexamples_C tree
+
+
+# Builds Fortran stub files
+tao_allfortranstubs:
+	-@maint/generatefortranstubs.py ${BFORT}
+
 
 tao_chk_lib_dir: chklib_dir

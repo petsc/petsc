@@ -15,21 +15,18 @@ global m nfev Fvals Xhist Fhist Deltahist delta  % Global vars used in nls_f
 path(path,'/home/sarich/working/ptho/mfqnls/gqt'); 
 
 % 1. Things the user must set:
-n = 9;                      % [int] Number of variables
+n = 3;                      % [int] Number of variables
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 maxfev = 200;               % [int] Maximum Number of Evaluations
-m = 63+27;                     % [int] Number of components
+m = 214;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Xs = .5*ones(n,1);          % [dbl] n-by-1 Initial point
-fid = fopen('x.start','r');
-Xs = fscanf(fid,'%e');
-fclose(fid);
+Xs = [0.15;0.008;0.01];
 %delta = max(norm(Xs,inf),1);% [dbl] Initial trust-region-radius/step-size
-delta = 0.0001;
+delta = 0.001;
 % 2. Advanced options:
 npmax = (n+1)*(n+2)/2;     % [int] Max # interpolation pts [(n+1)(n+2)/2]
 mtype = 1;                  % [int] Flag for type of nls solver [1]
@@ -46,7 +43,7 @@ ts = cputime;               % Start a timer
 diary('mfqnls_diary');      % Start the diary log
 
 % 4. Call mnhnls (no additional output requested):
-showme_xs = Xs'
+%showme_xs = Xs'
 [X,F,flag]=MFQnls('nls_f',Xs',n,npmax,maxfev,tolx,delta,m,mtype);
 
 % 5.Summary information 

@@ -150,7 +150,7 @@ PetscErrorCode EvaluateFunction(TaoSolver tao, Vec X, Vec F, void *vctx)
     fnrm *= fnrm;
     if (PetscIsInfOrNanReal(fnrm)) fnrm=1.0e64;
     fnrm = PetscMin(fnrm,1.0e64);
-    printf("nfev=%d, fnrm=%f\n",ctx->nfev,fnrm);
+
     ctx->fevals[ctx->nfev][ctx->nrun] = fnrm;
     ctx->nfev++;
     PetscFunctionReturn(0);

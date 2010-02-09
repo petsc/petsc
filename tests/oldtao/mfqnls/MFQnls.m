@@ -66,13 +66,13 @@ F = zeros(nfmax,m);     % Stores the function values of evaluated points
 Fres = zeros(nfmax,1);     % Stores the residual values of evaluated points
 nm = 0; % Counter for the number of model points evaluated
 
-X(1,:) = X0
-X(2:n+1,:) = repmat(X(1,:),n,1)+delta*eye(n)
+X(1,:) = X0;
+X(2:n+1,:) = repmat(X(1,:),n,1)+delta*eye(n);
 for nf = 1:n+1
-sizef=size(F)
-    F(nf,:) = nls_f(X(nf,:))'
+
+    F(nf,:) = nls_f(X(nf,:))';
 %    F(nf,:) = func(X(nf,:))'
-    Fres(nf) = sum(F(nf,:).^2)
+    Fres(nf) = sum(F(nf,:).^2);
 end
 
 [c,xkin] = min(Fres(1:n+1));    % Find index of best f in setup phase
@@ -141,7 +141,8 @@ while nf<nfmax
 
     % 2. Solve the subproblem min{Q(s): ||s|| <= delta}
         [Xsp,mdec,dum1,dum2] = gqt(Hres,Gres,1,rtol,itmax,ng);
-        mdec = -mdec; % Correct the sign
+
+        mdec = -mdec % Correct the sign
 
     % 3a. Evaluate the function at the new point
     nf = nf + 1;    X(nf,:) = X(xkin,:) + delta*Xsp';   
@@ -209,12 +210,15 @@ while nf<nfmax
 
     % 6a. Compute the next interpolation set.
     [ModelIn,Modeld,Q,R] = AffPoints(X(1:nf,:),eye(n),[],[],xkin,delta,theta1,c1);
+    showq=Q
+    showr=R			 
     if size(ModelIn,1)==n
         valid = true;
     else
         valid = false;
         [ModelIn,GPoints] = AffPoints(X(1:nf,:),Q,R,ModelIn,xkin,delta,theta1,c2);
         np = size(ModelIn,1);
+        disp('invalid')			 
         for i=1:n-np
             if GPoints(i,:)*Gres>0 % Model says use the other direction!
                 GPoints(i,:) = -GPoints(i,:);

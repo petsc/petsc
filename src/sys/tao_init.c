@@ -1,6 +1,6 @@
 #include "tao.h"   /*I  "tao.h" I*/
 
-PetscErrorCode PETSC_DLLEXPORT TaoRegisterEvents();
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoRegisterEvents();
 
 /* ------------------------Nasty global variables -------------------------------*/
 int TaoInitializeCalled = 0;

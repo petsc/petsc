@@ -1,5 +1,6 @@
 #include "pounders.h"
 void mymatprint(PetscReal *M, PetscInt m, PetscInt n, PetscInt dm, const char *name);
+void mymatprintq(PetscReal *Q, PetscReal *tau, PetscInt n, PetscInt k, PetscInt ldm, const char *name);
 void mymatprintslice(PetscReal *M, PetscInt n, PetscInt stride, const char *name);
 
 #undef __FUNCT__
@@ -77,7 +78,7 @@ static PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP) {
     }
 
     /* factor M */
-    mymatprint(mfqP->M,blasnplus1,15,blasnplus1,"M");
+    //mymatprint(mfqP->M,blasnplus1,15,blasnplus1,"M");
     LAPACKgetrf_(&blasnplus1,&blasnpmax,mfqP->M,&blasnplus1,mfqP->npmaxiwork,&blasinfo);
     if (blasinfo != 0) {
 	SETERRQ1(1,"LAPACK routine getrf returned with value %d\n",blasinfo);
@@ -88,6 +89,7 @@ static PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP) {
 	//mymatprint(mfqP->Z,blasnp,blasint2,blasnpmax,"Z");
 	BLASgemv_("T",&blasnp,&blasint2,&one,mfqP->Z,&blasnpmax,&mfqP->RES[mfqP->npmax*k],&ione,&zero,mfqP->omega,&ione);
 	//mymatprint(mfqP->omega,blasint2,1,mfqP->npmax,"Z'*RESk");
+
 	LAPACKpotrs_("L",&blasint2,&ione,mfqP->L_tmp,&blasint,mfqP->omega,&blasint2,&blasinfo);
 	if (blasinfo != 0) {
 	    SETERRQ1(1,"LAPACK routine potrs returned with value %d\n",blasinfo);
@@ -152,11 +154,11 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP) {
     PetscFunctionBegin;
 
     CHKMEMQ;
-    printf("morepoints (indices): ");
+    /*printf("morepoints (indices): ");
     for (i=0;i<mfqP->n+1;i++) {
 	printf("%d\t",mfqP->model_indices[i]);
 	}
-    printf("\n");
+	printf("\n");*/
 
     for (i=0;i<mfqP->n+1;i++) {
 	ierr = VecGetArray(mfqP->Xhist[mfqP->model_indices[i]],&x); CHKERRQ(ierr);
@@ -353,7 +355,7 @@ static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin,
 				PetscReal c, PetscInt *indices, 
 				PetscTruth *flag) {
     PetscInt i,j;
-    PetscBLASInt blasm=mfqP->m,blask,blasn=mfqP->n,ione=1,info;
+    PetscBLASInt blasm=mfqP->m,blasj,blask,blasn=mfqP->n,ione=1,info;
     PetscBLASInt blasnpmax = mfqP->npmax;
     PetscReal proj,normd;
     PetscReal *x;
@@ -372,21 +374,27 @@ static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin,
 	normd = BLASnrm2_(&blasn,mfqP->work,&ione);
 	CHKMEMQ;
 	if (normd <= c*c) {
+	  blasj=(mfqP->n - mfqP->nmodelpoints);
 	    if (!mfqP->q_is_I) {
 		// project D onto null
 		blask=(mfqP->nmodelpoints);
+		//mymatprintq(mfqP->Q,mfqP->tau,mfqP->n,mfqP->nmodelpoints,mfqP->npmax,"Q");
+		//mymatprint(mfqP->work2,1,mfqP->n,1,"D");
 		LAPACKormqr_("R","N",&ione,&blasn,&blask,mfqP->Q,&blasnpmax,mfqP->tau,
 			     mfqP->work2,&ione,mfqP->mwork,&blasm,&info);
+		//mymatprint(mfqP->work2,1,blasj,1,"DQ");
+		
 		if (info < 0) {
 		    SETERRQ1(1,"ormqr returned value %d\n",info);
 		}
 		CHKMEMQ;
 	    }
-	    proj = BLASnrm2_(&blasn,mfqP->work2,&ione);
-	    printf("i=%d, proj=%f, theta=%f\n",i,proj,mfqP->theta1);
+	    proj = BLASnrm2_(&blasj,&mfqP->work2[mfqP->nmodelpoints],&ione);
+	    //printf("i=%d, proj=%f, theta=%f\n",i,proj,mfqP->theta1);
 	    if (proj >= mfqP->theta1) { /* add this index to model */
 		indices[mfqP->nmodelpoints]=i;
-		BLAScopy_(&blasn,mfqP->work,&ione,&mfqP->Q_tmp[mfqP->npmax*(mfqP->nmodelpoints)],&ione);
+		mfqP->nmodelpoints++;
+		BLAScopy_(&blasn,mfqP->work,&ione,&mfqP->Q_tmp[mfqP->npmax*(mfqP->nmodelpoints-1)],&ione);
 		blask=mfqP->npmax*(mfqP->nmodelpoints);
 		BLAScopy_(&blask,mfqP->Q_tmp,&ione,mfqP->Q,&ione);
 		blask = mfqP->nmodelpoints;
@@ -398,7 +406,6 @@ static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin,
 		    SETERRQ1(1,"geqrf returned value %d\n",info);
 		}
 
-		mfqP->nmodelpoints++;
 		    
 	    }
 	    if (mfqP->nmodelpoints == mfqP->n)  {
@@ -771,6 +778,10 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
 
     CHKMEMQ;
     /* Update the quadratic model */
+    if (mfqP->nmodelpoints - mfqP->n - 1 == 0) {
+      reason = TAO_DIVERGED_USER;
+      continue;
+    }
     ierr = getquadpounders(mfqP); CHKERRQ(ierr);
     ierr = VecGetArray(mfqP->Fhist[mfqP->minindex],&fmin); CHKERRQ(ierr);
     BLAScopy_(&blasm,fmin,&ione,mfqP->C,&ione);
@@ -1053,6 +1064,22 @@ void mymatprint(PetscReal *M, PetscInt m, PetscInt n, PetscInt dm, const char *n
     }
 }
 
+void mymatprintq(PetscReal *Q, PetscReal *tau, PetscInt n, PetscInt k, PetscInt ldm, const char *name) {
+  int i;
+  PetscBLASInt blasn=n,blask=k,blasldm=ldm,info;
+  PetscReal *A,*work;
+  PetscMalloc(sizeof(PetscReal)*n*n,&A);
+  PetscMalloc(sizeof(PetscReal)*n,&work);
+  for (i=0;i<n*n;i++) A[i]=0.0;
+  for (i=0;i<n;i++) A[i+n*i] = 1.0;
+  
+  LAPACKormqr_("L","N",&blasn,&blasn,&blask,Q,&blasldm,tau,A,&blasn,
+	       work,&blasn,&info);
+  mymatprint(A,n,n,n,name);
+  PetscFree(A);
+  PetscFree(work);
+	       
+}
 
 void mymatprintslice(PetscReal *M, PetscInt n, PetscInt stride, const char *name) {
     int i;

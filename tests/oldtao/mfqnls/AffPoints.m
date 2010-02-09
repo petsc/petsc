@@ -24,13 +24,15 @@ function [ModelIn,Modeld,Q,R] = AffPoints(X,Q,R,ModelIn,xkin,delta,theta1,c1)
 % proj    [dbl] Value of the appropriate projection
 % -------------------------------------------------------------------------
 
-[nf,n] = size(X);
-np = size(ModelIn,1); % Stores (<=n) indices of the interpolation points
+[nf,n] = size(X)
+np = size(ModelIn,1) % Stores (<=n) indices of the interpolation points
 %Modeld = zeros(1,n); % Initialize for output
 for i = nf:-1:1
     D = (X(i,:)-X(xkin,:))/delta;
+    normD = norm(D)
     if norm(D)<= c1
-        proj = norm(D*Q(:,np+1:n),2); % Project D onto null
+        showD = D
+        proj = norm(D*Q(:,np+1:n),2) % Project D onto null
         if (proj>=theta1) % add this index to ModelIn
             np = np+1;
             ModelIn(np,1) = i;
@@ -42,7 +44,7 @@ for i = nf:-1:1
     end
 end
 
-Modeld = Q(:,np+1:n)';  % Will be empty if np=n
-
+Modeld = Q(:,np+1:n)'  % Will be empty if np=n
+size(ModelIn)
 
 %%% Eventually note that don't need to output both Q and Modeld
