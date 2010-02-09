@@ -552,10 +552,10 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat C,Mat A,const MatFactorIn
   }
 
   ierr = ISRestoreIndices(perm,&perm_ptr);CHKERRQ(ierr);
-  C->ops->solve          = MatSolve_SeqSBAIJ_N;
-  C->ops->solvetranspose = MatSolve_SeqSBAIJ_N;
-  C->ops->forwardsolve   = MatForwardSolve_SeqSBAIJ_N;
-  C->ops->backwardsolve  = MatBackwardSolve_SeqSBAIJ_N;
+  C->ops->solve          = MatSolve_SeqSBAIJ_N_inplace;
+  C->ops->solvetranspose = MatSolve_SeqSBAIJ_N_inplace;
+  C->ops->forwardsolve   = MatForwardSolve_SeqSBAIJ_N_inplace;
+  C->ops->backwardsolve  = MatBackwardSolve_SeqSBAIJ_N_inplace;
 
   C->assembled    = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;
@@ -677,10 +677,10 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering(Mat C,Mat A,c
   ierr = PetscFree3(dk,uik,work);CHKERRQ(ierr);
   ierr = PetscFree(pivots);CHKERRQ(ierr);
 
-  C->ops->solve          = MatSolve_SeqSBAIJ_N_NaturalOrdering;
-  C->ops->solvetranspose = MatSolve_SeqSBAIJ_N_NaturalOrdering;
-  C->ops->forwardsolve   = MatForwardSolve_SeqSBAIJ_N_NaturalOrdering;
-  C->ops->backwardsolve  = MatBackwardSolve_SeqSBAIJ_N_NaturalOrdering;
+  C->ops->solve          = MatSolve_SeqSBAIJ_N_NaturalOrdering_inplace;
+  C->ops->solvetranspose = MatSolve_SeqSBAIJ_N_NaturalOrdering_inplace;
+  C->ops->forwardsolve   = MatForwardSolve_SeqSBAIJ_N_NaturalOrdering_inplace;
+  C->ops->backwardsolve  = MatBackwardSolve_SeqSBAIJ_N_NaturalOrdering_inplace;
   C->assembled = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(1.3333*bs*bs2*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
@@ -852,8 +852,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat C,Mat A,const MatFactorIn
     ierr = PetscFree(aa);CHKERRQ(ierr);
   }
   ierr = ISRestoreIndices(perm,&perm_ptr);CHKERRQ(ierr);
-  C->ops->solve          = MatSolve_SeqSBAIJ_2;
-  C->ops->solvetranspose = MatSolve_SeqSBAIJ_2;
+  C->ops->solve          = MatSolve_SeqSBAIJ_2_inplace;
+  C->ops->solvetranspose = MatSolve_SeqSBAIJ_2_inplace;
   C->assembled = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(1.3333*8*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
@@ -985,10 +985,10 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat C,Mat A,c
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   ierr = PetscFree2(il,jl);CHKERRQ(ierr);
 
-  C->ops->solve          = MatSolve_SeqSBAIJ_2_NaturalOrdering;
-  C->ops->solvetranspose = MatSolve_SeqSBAIJ_2_NaturalOrdering;
-  C->ops->forwardsolve   = MatForwardSolve_SeqSBAIJ_2_NaturalOrdering;
-  C->ops->backwardsolve  = MatBackwardSolve_SeqSBAIJ_2_NaturalOrdering;
+  C->ops->solve          = MatSolve_SeqSBAIJ_2_NaturalOrdering_inplace;
+  C->ops->solvetranspose = MatSolve_SeqSBAIJ_2_NaturalOrdering_inplace;
+  C->ops->forwardsolve   = MatForwardSolve_SeqSBAIJ_2_NaturalOrdering_inplace;
+  C->ops->backwardsolve  = MatBackwardSolve_SeqSBAIJ_2_NaturalOrdering_inplace;
   C->assembled = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(1.3333*8*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
@@ -1129,7 +1129,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat C,Mat A,const MatFactorIn
 
   ierr = ISRestoreIndices(ip,&rip);CHKERRQ(ierr);
   C->ops->solve          = MatSolve_SeqSBAIJ_1_inplace;
-  C->ops->solves         = MatSolves_SeqSBAIJ_1;
+  C->ops->solves         = MatSolves_SeqSBAIJ_1_inplace;
   C->ops->solvetranspose = MatSolve_SeqSBAIJ_1_inplace;
   C->ops->forwardsolve   = MatForwardSolve_SeqSBAIJ_1_inplace;
   C->ops->backwardsolve  = MatBackwardSolve_SeqSBAIJ_1_inplace;
@@ -1270,7 +1270,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat C,Mat A,c
   ierr = PetscFree2(il,jl);CHKERRQ(ierr);
   
   C->ops->solve          = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
-  C->ops->solves         = MatSolves_SeqSBAIJ_1;
+  C->ops->solves         = MatSolves_SeqSBAIJ_1_inplace;
   C->ops->solvetranspose = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
   C->ops->forwardsolve   = MatForwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
   C->ops->backwardsolve  = MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace;

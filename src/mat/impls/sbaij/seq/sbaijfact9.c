@@ -291,8 +291,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6(Mat C,Mat A,const MatFactorIn
   }
 
   ierr = ISRestoreIndices(perm,&perm_ptr);CHKERRQ(ierr);
-  C->ops->solve          = MatSolve_SeqSBAIJ_6;
-  C->ops->solvetranspose = MatSolve_SeqSBAIJ_6;
+  C->ops->solve          = MatSolve_SeqSBAIJ_6_inplace;
+  C->ops->solvetranspose = MatSolve_SeqSBAIJ_6_inplace;
   C->assembled = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;  
   ierr = PetscLogFlops(1.3333*216*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
