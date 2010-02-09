@@ -39,7 +39,7 @@ test_rosenbrock1: test_rosenbrock1.o tao_chkopts
 	${RM} test_rosenbrock1.o
 
 test_rosenbrock1f: test_rosenbrock1f.o tao_chkopts
-	-${FLINKER} -o  test_rosenbrock1f test_rosenbrock1f.o ${TAO_FORTRAN_LIB} ${TAO_LIB} ${PETSC_SNES_LIB}
+	-${FLINKER} -o  test_rosenbrock1f test_rosenbrock1f.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} test_rosenbrock1f.o
 
 test_jbearing2: test_jbearing2.o tao_chkopts
@@ -58,6 +58,9 @@ test_chwirut1: test_chwirut1.o tao_chkopts
 	-${CLINKER} -o test_chwirut1 test_chwirut1.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} test_chwirut1.o
 
+test_chwirut1f: test_chwirut1f.o tao_chkopts
+	-${FLINKER} -o  test_chwirut1f test_chwirut1f.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_chwirut1f.o
 
 
 runtest_link1: 
