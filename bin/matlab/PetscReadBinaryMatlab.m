@@ -1,4 +1,4 @@
-unction Set = PetscReadBinaryMatlab(filename)
+function Set = PetscReadBinaryMatlab(filename)
 % PETSCREADBINARYMATLAB - Reads and interprets matlab specific lines
 %   from the .info files produced by PetscViewerBinaryMatlab
 %
