@@ -117,7 +117,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
   ierr = PetscMalloc(size*sizeof(PetscInt*),&data1_start);CHKERRQ(ierr);
   for (i=0; i<size; i++) data1_start[i] = data1 + i*len;
 
-  ierr = PetscMalloc4(size,PetscInt,&len_s,size,PetscInt,&btable,size,PetscInt,&iwork,size,PetscInt,&Bowners);CHKERRQ(ierr);
+  ierr = PetscMalloc4(size,PetscInt,&len_s,size,PetscInt,&btable,size,PetscInt,&iwork,size+1,PetscInt,&Bowners);CHKERRQ(ierr);
 
   /* gather c->garray from all processors */
   ierr = ISCreateGeneral(comm,Bnbs,c->garray,&garray_local);CHKERRQ(ierr);
