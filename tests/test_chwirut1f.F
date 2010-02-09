@@ -158,9 +158,7 @@
       PetscErrorCode   ierr
       PetscInt         dummy
 
-
-      PetscReal        ff,t1,t2
-      PetscInt         i,nn
+      PetscInt         i
 
 ! PETSc's VecGetArray acts differently in Fortran than it does in C.
 ! Calling VecGetArray((Vec) X, (PetscReal) x_array(0:1), (PetscOffset) x_index, ierr)
@@ -171,27 +169,31 @@
       PetscOffset      f_i,x_i
 
       ierr = 0
-      nn = n/2
-      ff = 0
 
 !     Get pointers to vector data
       call VecGetArray(x,x_v,x_i,ierr)
+      CHKERRQ(ierr)
       call VecGetArray(f,f_v,f_i,ierr)
+      CHKERRQ(ierr)
 
 
 !     Compute F(X)
       do i=0,m-1
-         f_v(f_i+i) = f_v(f_i+i) - exp(-x_v(x_i+0)*t(i))/                &
+         f_v(f_i+i) = y(i) - exp(-x_v(x_i+0)*t(i))/                      &
      &    (x_v(x_i+1) + x_v(x_i+2)*t(i))
+
       enddo
+
 
 !     Restore vectors
       call VecRestoreArray(X,x_v,x_i,ierr)
+      CHKERRQ(ierr)
       call VecRestoreArray(F,f_v,f_i,ierr)
+      CHKERRQ(ierr)
       
-      f = ff
-      call PetscLogFlops(6*m)
       
+      call PetscLogFlops(6*m,ierr)
+
       return
       end
 
@@ -224,7 +226,7 @@
 ! n,alpha defined in chwirut1f.h
 #include "test_chwirut1f.h"
       integer i
-
+      i=0
       y(i) =    92.9000;  t(i) =  0.5000; i=i+1
       y(i) =    78.7000;  t(i) =   0.6250; i=i+1
       y(i) =    64.2000;  t(i) =   0.7500; i=i+1
