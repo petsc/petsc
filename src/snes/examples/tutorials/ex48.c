@@ -79,6 +79,8 @@ There are two compile-time options:
 
 static PetscCookie THI_COOKIE;
 
+typedef enum {QUAD_GAUSS,QUAD_LOBATTO} QuadratureType;
+static const char *QuadratureTypes[] = {"gauss","lobatto","QuadratureType","QUAD_",0};
 static const PetscReal HexQWeights[8] = {1,1,1,1,1,1,1,1};
 static const PetscReal HexQNodes[]    = {-0.57735026918962573, 0.57735026918962573};
 #define G 0.57735026918962573
@@ -87,15 +89,15 @@ static const PetscReal HexQNodes[]    = {-0.57735026918962573, 0.577350269189625
 #define M (-0.5)
 #define P (0.5)
 /* Special quadrature: Lobatto in horizontal, Gauss in vertical */
-static const PetscReal HexQInterp[8][8] = {{H,0,0,0,L,0,0,0},
-                                           {0,H,0,0,0,L,0,0},
-                                           {0,0,H,0,0,0,L,0},
-                                           {0,0,0,H,0,0,0,L},
-                                           {L,0,0,0,H,0,0,0},
-                                           {0,L,0,0,0,H,0,0},
-                                           {0,0,L,0,0,0,H,0},
-                                           {0,0,0,L,0,0,0,H}};
-static const PetscReal HexQDeriv[8][8][3] = {
+static const PetscReal HexQInterp_Lobatto[8][8] = {{H,0,0,0,L,0,0,0},
+                                                   {0,H,0,0,0,L,0,0},
+                                                   {0,0,H,0,0,0,L,0},
+                                                   {0,0,0,H,0,0,0,L},
+                                                   {L,0,0,0,H,0,0,0},
+                                                   {0,L,0,0,0,H,0,0},
+                                                   {0,0,L,0,0,0,H,0},
+                                                   {0,0,0,L,0,0,0,H}};
+static const PetscReal HexQDeriv_Lobatto[8][8][3] = {
   {{M*H,M*H,M},{P*H,0,0}  ,{0,0,0}    ,{0,P*H,0}  ,{M*L,M*L,P},{P*L,0,0}  ,{0,0,0}    ,{0,P*L,0}  },
   {{M*H,0,0}  ,{P*H,M*H,M},{0,P*H,0}  ,{0,0,0}    ,{M*L,0,0}  ,{P*L,M*L,P},{0,P*L,0}  ,{0,0,0}    },
   {{0,0,0}    ,{0,M*H,0}  ,{P*H,P*H,M},{M*H,0,0}  ,{0,0,0}    ,{0,M*L,0}  ,{P*L,P*L,P},{M*L,0,0}  },
@@ -104,6 +106,25 @@ static const PetscReal HexQDeriv[8][8][3] = {
   {{M*L,0,0}  ,{P*L,M*L,M},{0,P*L,0}  ,{0,0,0}    ,{M*H,0,0}  ,{P*H,M*H,P},{0,P*H,0}  ,{0,0,0}    },
   {{0,0,0}    ,{0,M*L,0}  ,{P*L,P*L,M},{M*L,0,0}  ,{0,0,0}    ,{0,M*H,0}  ,{P*H,P*H,P},{M*H,0,0}  },
   {{0,M*L,0}  ,{0,0,0}    ,{P*L,0,0}  ,{M*L,P*L,M},{0,M*H,0}  ,{0,0,0}    ,{P*H,0,0}  ,{M*H,P*H,P}}};
+/* Stanndard Gauss */
+static const PetscReal HexQInterp_Gauss[8][8] = {{H*H*H,L*H*H,L*L*H,H*L*H, H*H*L,L*H*L,L*L*L,H*L*L},
+                                                 {L*H*H,H*H*H,H*L*H,L*L*H, L*H*L,H*H*L,H*L*L,L*L*L},
+                                                 {L*L*H,H*L*H,H*H*H,L*H*H, L*L*L,H*L*L,H*H*L,L*H*L},
+                                                 {H*L*H,L*L*H,L*H*H,H*H*H, H*L*L,L*L*L,L*H*L,H*H*L},
+                                                 {H*H*L,L*H*L,L*L*L,H*L*L, H*H*H,L*H*H,L*L*H,H*L*H},
+                                                 {L*H*L,H*H*L,H*L*L,L*L*L, L*H*H,H*H*H,H*L*H,L*L*H},
+                                                 {L*L*L,H*L*L,H*H*L,L*H*L, L*L*H,H*L*H,H*H*H,L*H*H},
+                                                 {H*L*L,L*L*L,L*H*L,H*H*L, H*L*H,L*L*H,L*H*H,H*H*H}};
+static const PetscReal HexQDeriv_Gauss[8][8][3] = {
+  {{M*H*H,H*M*H,H*H*M},{P*H*H,L*M*H,L*H*M},{P*L*H,L*P*H,L*L*M},{M*L*H,H*P*H,H*L*M}, {M*H*L,H*M*L,H*H*P},{P*H*L,L*M*L,L*H*P},{P*L*L,L*P*L,L*L*P},{M*L*L,H*P*L,H*L*P}},
+  {{M*H*H,L*M*H,L*H*M},{P*H*H,H*M*H,H*H*M},{P*L*H,H*P*H,H*L*M},{M*L*H,L*P*H,L*L*M}, {M*H*L,L*M*L,L*H*P},{P*H*L,H*M*L,H*H*P},{P*L*L,H*P*L,H*L*P},{M*L*L,L*P*L,L*L*P}},
+  {{M*L*H,L*M*H,L*L*M},{P*L*H,H*M*H,H*L*M},{P*H*H,H*P*H,H*H*M},{M*H*H,L*P*H,L*H*M}, {M*L*L,L*M*L,L*L*P},{P*L*L,H*M*L,H*L*P},{P*H*L,H*P*L,H*H*P},{M*H*L,L*P*L,L*H*P}},
+  {{M*L*H,H*M*H,H*L*M},{P*L*H,L*M*H,L*L*M},{P*H*H,L*P*H,L*H*M},{M*H*H,H*P*H,H*H*M}, {M*L*L,H*M*L,H*L*P},{P*L*L,L*M*L,L*L*P},{P*H*L,L*P*L,L*H*P},{M*H*L,H*P*L,H*H*P}},
+  {{M*H*L,H*M*L,H*H*M},{P*H*L,L*M*L,L*H*M},{P*L*L,L*P*L,L*L*M},{M*L*L,H*P*L,H*L*M}, {M*H*H,H*M*H,H*H*P},{P*H*H,L*M*H,L*H*P},{P*L*H,L*P*H,L*L*P},{M*L*H,H*P*H,H*L*P}},
+  {{M*H*L,L*M*L,L*H*M},{P*H*L,H*M*L,H*H*M},{P*L*L,H*P*L,H*L*M},{M*L*L,L*P*L,L*L*M}, {M*H*H,L*M*H,L*H*P},{P*H*H,H*M*H,H*H*P},{P*L*H,H*P*H,H*L*P},{M*L*H,L*P*H,L*L*P}},
+  {{M*L*L,L*M*L,L*L*M},{P*L*L,H*M*L,H*L*M},{P*H*L,H*P*L,H*H*M},{M*H*L,L*P*L,L*H*M}, {M*L*H,L*M*H,L*L*P},{P*L*H,H*M*H,H*L*P},{P*H*H,H*P*H,H*H*P},{M*H*H,L*P*H,L*H*P}},
+  {{M*L*L,H*M*L,H*L*M},{P*L*L,L*M*L,L*L*M},{P*H*L,L*P*L,L*H*M},{M*H*L,H*P*L,H*H*M}, {M*L*H,H*M*H,H*L*P},{P*L*H,L*M*H,L*L*P},{P*H*H,L*P*H,L*H*P},{M*H*H,H*P*H,H*H*P}}};
+static const PetscReal (*HexQInterp)[8],(*HexQDeriv)[8][3];
 /* Standard 2x2 Gauss quadrature for the bottom layer. */
 static const PetscReal QuadQInterp[4][4] = {{H*H,L*H,L*L,H*L},
                                             {L*H,H*H,H*L,L*L},
@@ -411,6 +432,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
 
   ierr = PetscOptionsBegin(comm,NULL,"Toy Hydrostatic Ice options","");CHKERRQ(ierr);
   {
+    QuadratureType quad = QUAD_GAUSS;
     char homexp[] = "A";
     char mtype[256] = MATSBAIJ;
     PetscReal L,m = 1.0;
@@ -445,6 +467,17 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
         break;
       default:
         SETERRQ1(PETSC_ERR_SUP,"HOM experiment '%c' not implemented",homexp[0]);
+    }
+    ierr = PetscOptionsEnum("-thi_quadrature","Quadrature to use for 3D elements","",QuadratureTypes,quad,(PetscEnum*)&quad,NULL);CHKERRQ(ierr);
+    switch (quad) {
+      case QUAD_GAUSS:
+        HexQInterp = HexQInterp_Gauss;
+        HexQDeriv  = HexQDeriv_Gauss;
+        break;
+      case QUAD_LOBATTO:
+        HexQInterp = HexQInterp_Lobatto;
+        HexQDeriv  = HexQDeriv_Lobatto;
+        break;
     }
     ierr = PetscOptionsReal("-thi_alpha","Bed angle (degrees)","",thi->alpha,&thi->alpha,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-thi_friction_m","Friction exponent, 0=Coulomb, 1=Navier","",m,&m,NULL);CHKERRQ(ierr);
