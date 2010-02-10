@@ -56,13 +56,13 @@ PetscErrorCode PetscFreeSpaceContiguous(PetscFreeSpaceList *head,PetscInt *space
 +  head - linked list of column indices obtained from matrix symbolic ILU or LU factorization
 .  space - an allocated int array with length nnz of factored matrix. 
 .  n - order of the matrix
-.  bi - row pointer of factored matrix with length 2n+2. First n+1 entries are set based on the traditional layout of L and U matrices
--  bdiag - int array holding the number of nonzeros in each row of L matrix, excluding diagonals.
+.  bi - row pointer of factored matrix L with length n+1.
+-  bdiag - int array of length n+1. bdiag[i] points to diagonal of U(i,:), and bdiag[n] points to entry of U(n-1,0)-1.
 
    Output Parameter:
 .  space - column indices are copied into this int array with contiguous layout of L and U
 
-   See MatILUFactorSymbolic_SeqAIJ_ilu0_newdatastruct() for detailed description.
+   See MatILUFactorSymbolic_SeqAIJ_ilu0() for detailed data structure of L and U
 */
 #undef __FUNCT__
 #define __FUNCT__ "PetscFreeSpaceContiguous_LU"
@@ -70,69 +70,10 @@ PetscErrorCode PetscFreeSpaceContiguous_LU(PetscFreeSpaceList *head,PetscInt *sp
 {
   PetscFreeSpaceList a;
   PetscErrorCode     ierr;
-  PetscInt           row,nnz,*bj,*array,total;
-  PetscInt           nnzL,nnzU;
-
-  PetscFunctionBegin;
-  bi[2*n+1] = bi[n];
-  row       = 0; 
-  total     = 0; 
-  nnzL  = bdiag[0];
-  while ((*head)!=NULL) {
-    total += (*head)->local_used;
-    array  = (*head)->array_head;
-  
-    while (bi[row+1] <= total && row < n){
-      /* copy array entries into bj for this row */  
-      nnz  = bi[row+1] - bi[row];
-      /* set bi[row] for new datastruct */
-      if (row == 0 ){
-        bi[row] = 0;
-      } else {
-        bi[row] = bi[row-1] + nnzL; /* nnzL of previous row */
-      } 
-
-      /* L part */
-      nnzL = bdiag[row];
-      bj   = space+bi[row];
-      ierr = PetscMemcpy(bj,array,nnzL*sizeof(PetscInt));CHKERRQ(ierr);
-    
-      /* diagonal entry */
-      bdiag[row]        = bi[2*n-row+1]-1;
-      space[bdiag[row]] = row;
-
-      /* U part */
-      nnzU        = nnz - nnzL; 
-      bi[2*n-row] = bi[2*n-row+1] - nnzU;
-      nnzU --;      /* exclude diagonal */
-      bj   = space + bi[2*n-(row)];
-      ierr = PetscMemcpy(bj,array+nnzL+1,nnzU*sizeof(PetscInt));CHKERRQ(ierr);
-  
-      array += nnz; 
-      row++;
-    }
-
-    a     = (*head)->more_space;
-    ierr  = PetscFree((*head)->array_head);CHKERRQ(ierr);
-    ierr  = PetscFree(*head);CHKERRQ(ierr);
-    *head = a;
-  }
-  bi[n] = bi[n-1] + nnzL;
-  if (bi[n] != bi[n+1]) SETERRQ2(1,"bi[n] %d != bi[n+1] %d",bi[n],bi[n+1]);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscFreeSpaceContiguous_LU_v2"
-PetscErrorCode PetscFreeSpaceContiguous_LU_v2(PetscFreeSpaceList *head,PetscInt *space,PetscInt n,PetscInt *bi,PetscInt *bdiag) 
-{
-  PetscFreeSpaceList a;
-  PetscErrorCode     ierr;
   PetscInt           row,nnz,*bj,*array,total,bi_temp;
   PetscInt           nnzL,nnzU;
 
   PetscFunctionBegin;
-  /* bi[2*n+1] = bi[n]; */
   bi_temp = bi[n];
   row       = 0; 
   total     = 0; 
@@ -157,19 +98,15 @@ PetscErrorCode PetscFreeSpaceContiguous_LU_v2(PetscFreeSpaceList *head,PetscInt 
       ierr = PetscMemcpy(bj,array,nnzL*sizeof(PetscInt));CHKERRQ(ierr);
     
       /* diagonal entry */
-      /*   bdiag[row]        = bi[2*n-row+1]-1; */
       bdiag[row] = bi_temp - 1;
       space[bdiag[row]] = row;
 
       /* U part */
       nnzU        = nnz - nnzL; 
-      /*   bi[2*n-row] = bi[2*n-row+1] - nnzU; */
       bi_temp = bi_temp - nnzU;
       nnzU --;      /* exclude diagonal */
-      /* bj   = space + bi[2*n-(row)]; */
       bj = space + bi_temp;
       ierr = PetscMemcpy(bj,array+nnzL+1,nnzU*sizeof(PetscInt));CHKERRQ(ierr);
-  
       array += nnz; 
       row++;
     }
@@ -181,8 +118,6 @@ PetscErrorCode PetscFreeSpaceContiguous_LU_v2(PetscFreeSpaceList *head,PetscInt 
   }
   bi[n] = bi[n-1] + nnzL;
   bdiag[n] = bdiag[n-1]-1;
-  /*  if (bi[n] != bi[n+1]) SETERRQ2(1,"bi[n] %d != bi[n+1] %d",bi[n],bi[n+1]); */
-  if(bi[n] != bdiag[n-1]) SETERRQ2(1,"bi[n] %d != bdiag[n-1] %d",bi[n],bdiag[n-1]);
   PetscFunctionReturn(0);
 }
 

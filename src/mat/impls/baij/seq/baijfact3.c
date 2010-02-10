@@ -246,7 +246,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_newdatastruct(Mat B,Mat A,IS isrow,IS
       nzbd++;
       k = lnk[k]; 
     }
-    bdiag[i] = nzbd; /* note : bdaig[i] = nnzL as input for PetscFreeSpaceContiguous_LU_v2() */
+    bdiag[i] = nzbd; /* note : bdaig[i] = nnzL as input for PetscFreeSpaceContiguous_LU() */
 
     /* if free space is not available, make more free space */
     if (current_space->local_remaining<nzi) {
@@ -279,7 +279,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_newdatastruct(Mat B,Mat A,IS isrow,IS
 
   /* destroy list of free space and other temporary array(s) */
   ierr = PetscMalloc((bi[n]+1)*sizeof(PetscInt),&bj);CHKERRQ(ierr);
-  ierr = PetscFreeSpaceContiguous_LU_v2(&free_space,bj,n,bi,bdiag);CHKERRQ(ierr); 
+  ierr = PetscFreeSpaceContiguous_LU(&free_space,bj,n,bi,bdiag);CHKERRQ(ierr); 
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
   ierr = PetscFree2(bi_ptr,im);CHKERRQ(ierr);
 
