@@ -2928,37 +2928,37 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,Petsc
     case 1:
       B->ops->mult            = MatMult_SeqBAIJ_1;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_1;
-      B->ops->sor           = MatSOR_SeqBAIJ_1;
+      B->ops->sor             = MatSOR_SeqBAIJ_1;
       break;
     case 2:
       B->ops->mult            = MatMult_SeqBAIJ_2;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_2;
-      B->ops->sor           = MatSOR_SeqBAIJ_2;
+      B->ops->sor             = MatSOR_SeqBAIJ_2;
       break;
     case 3:
       B->ops->mult            = MatMult_SeqBAIJ_3;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_3;
-      B->ops->sor           = MatSOR_SeqBAIJ_3;
+      B->ops->sor             = MatSOR_SeqBAIJ_3;
       break;
     case 4:
       B->ops->mult            = MatMult_SeqBAIJ_4;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_4;
-      B->ops->sor           = MatSOR_SeqBAIJ_4;
+      B->ops->sor             = MatSOR_SeqBAIJ_4;
       break;
     case 5:
       B->ops->mult            = MatMult_SeqBAIJ_5;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_5;
-      B->ops->sor           = MatSOR_SeqBAIJ_5;
+      B->ops->sor             = MatSOR_SeqBAIJ_5;
       break;
     case 6:
       B->ops->mult            = MatMult_SeqBAIJ_6;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_6;
-      B->ops->sor           = MatSOR_SeqBAIJ_6;
+      B->ops->sor             = MatSOR_SeqBAIJ_6;
       break;
     case 7:
       B->ops->mult            = MatMult_SeqBAIJ_7; 
       B->ops->multadd         = MatMultAdd_SeqBAIJ_7;
-      B->ops->sor           = MatSOR_SeqBAIJ_7;
+      B->ops->sor             = MatSOR_SeqBAIJ_7;
       break;
     default:
       B->ops->mult            = MatMult_SeqBAIJ_N; 
@@ -3259,6 +3259,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C,Mat A,MatDuplicateOption cpval
   }
   C->same_nonzero = A->same_nonzero;
   ierr = PetscFListDuplicate(((PetscObject)A)->qlist,&((PetscObject)C)->qlist);CHKERRQ(ierr);
+  ierr = PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
