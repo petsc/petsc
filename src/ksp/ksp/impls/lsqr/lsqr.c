@@ -6,7 +6,7 @@
 #define MAX(a,b)   (((a) < (b)) ? (b) : (a))
 
 #include "private/kspimpl.h"
-#include "precond_lsqr.h"
+#include "../src/ksp/ksp/impls/lsqr/lsqr.h"
 
 typedef struct {
   PetscInt  nwork_n,nwork_m; 
@@ -17,16 +17,16 @@ typedef struct {
   PetscReal  arnorm;   /* Norm of the vector A.r */
   PetscReal  anorm;    /* Frobenius norm of the matrix A */
   PetscReal  rhs_norm; /* Norm of the right hand side */
-} KSP_PrecondLSQR;
+} KSP_LSQR;
 
 extern PetscErrorCode PETSCVEC_DLLEXPORT VecSquare(Vec);
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPSetUp_PrecondLSQR"
-static PetscErrorCode KSPSetUp_PrecondLSQR(KSP ksp)
+#define __FUNCT__ "KSPSetUp_LSQR"
+static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
 {
   PetscErrorCode ierr;
-  KSP_PrecondLSQR       *lsqr = (KSP_PrecondLSQR*)ksp->data;
+  KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC){
@@ -53,8 +53,8 @@ static PetscErrorCode KSPSetUp_PrecondLSQR(KSP ksp)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPSolve_PrecondLSQR"
-static PetscErrorCode KSPSolve_PrecondLSQR(KSP ksp)
+#define __FUNCT__ "KSPSolve_LSQR"
+static PetscErrorCode KSPSolve_LSQR(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i,size1,size2;
@@ -63,13 +63,13 @@ static PetscErrorCode KSPSolve_PrecondLSQR(KSP ksp)
   Vec            X,B,V,V1,U,U1,TMP,W,W2,SE,Xwrk;
   Mat            Amat,Pmat;
   MatStructure   pflag;
-  KSP_PrecondLSQR       *lsqr = (KSP_PrecondLSQR*)ksp->data;
+  KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
   PetscTruth     diagonalscale;
   const PCType pc_type;
   
   PetscFunctionBegin;
   ierr = PCGetType(ksp->pc, &pc_type); CHKERRQ(ierr);
-  printf("Preconditioner type '%s'; PCNONE='%s'\n", pc_type , PCNONE);
+  printf("itioner type '%s'; PCNONE='%s'\n", pc_type , PCNONE);
 
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
@@ -210,10 +210,10 @@ static PetscErrorCode KSPSolve_PrecondLSQR(KSP ksp)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPDestroy_PrecondLSQR" 
-PetscErrorCode KSPDestroy_PrecondLSQR(KSP ksp)
+#define __FUNCT__ "KSPDestroy_LSQR" 
+PetscErrorCode KSPDestroy_LSQR(KSP ksp)
 {
-  KSP_PrecondLSQR       *lsqr = (KSP_PrecondLSQR*)ksp->data;
+  KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -236,7 +236,7 @@ PetscErrorCode KSPDestroy_PrecondLSQR(KSP ksp)
 #define __FUNCT__ "KSPLSQRSetStandardErrorVec"
 PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRSetStandardErrorVec( KSP ksp, Vec se )
 {
-  KSP_PrecondLSQR  *lsqr = (KSP_PrecondLSQR*)ksp->data;
+  KSP_LSQR  *lsqr = (KSP_LSQR*)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -251,7 +251,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRSetStandardErrorVec( KSP ksp, Vec se )
 #define __FUNCT__ "KSPLSQRGetStandardErrorVec"
 PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRGetStandardErrorVec( KSP ksp,Vec *se )
 {
-  KSP_PrecondLSQR *lsqr = (KSP_PrecondLSQR*)ksp->data;
+  KSP_LSQR *lsqr = (KSP_LSQR*)ksp->data;
 
   PetscFunctionBegin;
   *se = lsqr->se;
@@ -266,7 +266,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRGetStandardErrorVec( KSP ksp,Vec *se )
 PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRGetArnorm( KSP ksp,
      PetscReal *arnorm, PetscReal *rhs_norm , PetscReal *anorm)
 {
-  KSP_PrecondLSQR *lsqr = (KSP_PrecondLSQR*)ksp->data;
+  KSP_LSQR *lsqr = (KSP_LSQR*)ksp->data;
 
   PetscFunctionBegin;
   *arnorm = lsqr->arnorm;
@@ -276,24 +276,24 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRGetArnorm( KSP ksp,
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPSetFromOptions_PrecondLSQR"
-PetscErrorCode KSPSetFromOptions_PrecondLSQR(KSP ksp)
+#define __FUNCT__ "KSPSetFromOptions_LSQR"
+PetscErrorCode KSPSetFromOptions_LSQR(KSP ksp)
 {
   PetscErrorCode ierr;
-  KSP_PrecondLSQR       *lsqr = (KSP_PrecondLSQR*)ksp->data;
+  KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP LSQR Options");CHKERRQ(ierr);
-  ierr = PetscOptionsName("-ksp_PrecondLSQR_set_standard_error","Set Standard Error Estimates of Solution","KSPLSQRSetStandardErrorVec",&lsqr->se_flg);CHKERRQ(ierr);
+  ierr = PetscOptionsName("-ksp_LSQR_set_standard_error","Set Standard Error Estimates of Solution","KSPLSQRSetStandardErrorVec",&lsqr->se_flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPView_PrecondLSQR" 
-PetscErrorCode KSPView_PrecondLSQR(KSP ksp,PetscViewer viewer)
+#define __FUNCT__ "KSPView_LSQR" 
+PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
 {
-  KSP_PrecondLSQR       *lsqr = (KSP_PrecondLSQR*)ksp->data;
+  KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -320,26 +320,26 @@ PetscErrorCode KSPView_PrecondLSQR(KSP ksp,PetscViewer viewer)
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP
 
 M*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_PrecondLSQR(KSP ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_LSQR(KSP ksp)
 {
-  KSP_PrecondLSQR       *lsqr;
+  KSP_LSQR       *lsqr;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(ksp,KSP_PrecondLSQR,&lsqr);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,KSP_LSQR,&lsqr);CHKERRQ(ierr);
   lsqr->se     = PETSC_NULL;
   lsqr->se_flg = PETSC_FALSE;
   lsqr->arnorm = 0.0;
   ierr = PCSetType(ksp->pc,PCNONE);CHKERRQ(ierr);
   ksp->data                      = (void*)lsqr;
   ksp->pc_side                   = PC_LEFT;
-  ksp->ops->setup                = KSPSetUp_PrecondLSQR;
-  ksp->ops->solve                = KSPSolve_PrecondLSQR;
-  ksp->ops->destroy              = KSPDestroy_PrecondLSQR;
+  ksp->ops->setup                = KSPSetUp_LSQR;
+  ksp->ops->solve                = KSPSolve_LSQR;
+  ksp->ops->destroy              = KSPDestroy_LSQR;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
-  ksp->ops->setfromoptions       = KSPSetFromOptions_PrecondLSQR;
-  ksp->ops->view                 = KSPView_PrecondLSQR;
+  ksp->ops->setfromoptions       = KSPSetFromOptions_LSQR;
+  ksp->ops->view                 = KSPView_LSQR;
   PetscFunctionReturn(0);
 }
 

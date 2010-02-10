@@ -20,8 +20,9 @@ typedef struct  {
   FILE          *fdes_info;      /* optional file containing info on binary file*/
   PetscTruth    storecompressed; /* gzip the write binary file when closing it*/
   char          *filename;
-   PetscTruth    skipinfo;        /* Don't create info file for writing; don't use for reading */
+  PetscTruth    skipinfo;        /* Don't create info file for writing; don't use for reading */
   PetscTruth    skipoptions;     /* don't use PETSc options database when loading */
+  PetscInt      flowcontrol;     /* allow only <flowcontrol> messages outstanding at a time while doing IO */
 } PetscViewer_Binary;
 
 #undef __FUNCT__  
@@ -192,6 +193,33 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryGetMPIIO(PetscViewer viewer,Pets
   PetscFunctionReturn(0);
 }
 #endif
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerBinaryGetFlowControl" 
+/*@C
+    PetscViewerBinaryGetFlowControl - Returns how many messages are allowed to outstanding at the same time during parallel IO reads/writes
+
+    Not Collective
+
+    Input Parameter:
+.   viewer - PetscViewer context, obtained from PetscViewerBinaryOpen()
+
+    Output Parameter:
+.   fc - the number of messages
+
+    Level: advanced
+
+.seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetInfoPointer(), PetscViewerBinarySetFlowControl()
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryGetFlowControl(PetscViewer viewer,PetscInt *fc)
+{
+  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
+
+  PetscFunctionBegin;
+  *fc = vbinary->flowcontrol;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerBinaryGetDescriptor" 
@@ -1038,7 +1066,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerBinarySetMPIIO_Binary" 
-PetscErrorCode PETSC_DLLEXPORT PetscViewerBinarySetMPIIO_Binary(PetscViewer viewer,PetscFileMode *type)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerBinarySetMPIIO_Binary(PetscViewer viewer)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
   PetscErrorCode     ierr;
@@ -1080,6 +1108,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Binary(PetscViewer v)
   vbinary->btype           = (PetscFileMode) -1; 
   vbinary->storecompressed = PETSC_FALSE;
   vbinary->filename        = 0;
+  vbinary->flowcontrol     = 256; /* seems a good number for Cray XT-5 */
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerFileSetName_C",
                                     "PetscViewerFileSetName_Binary",
