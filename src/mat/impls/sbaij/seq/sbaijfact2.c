@@ -9,8 +9,8 @@
 #include "../src/mat/blockinvert.h"
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqSBAIJ_N"
-PetscErrorCode MatSolve_SeqSBAIJ_N(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqSBAIJ_N_inplace"
+PetscErrorCode MatSolve_SeqSBAIJ_N_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ*)A->data;
   IS              isrow=a->row;
@@ -79,8 +79,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_N(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_N"
-PetscErrorCode MatForwardSolve_SeqSBAIJ_N(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_N_inplace"
+PetscErrorCode MatForwardSolve_SeqSBAIJ_N_inplace(Mat A,Vec bb,Vec xx)
 {
   PetscFunctionBegin;
   SETERRQ(1,"not implemented yet");
@@ -88,8 +88,8 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_N(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_N"
-PetscErrorCode MatBackwardSolve_SeqSBAIJ_N(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_N_inplace"
+PetscErrorCode MatBackwardSolve_SeqSBAIJ_N_inplace(Mat A,Vec bb,Vec xx)
 {
   PetscFunctionBegin;
   SETERRQ(1,"not implemented yet");
@@ -156,8 +156,8 @@ PetscErrorCode BackwardSolve_SeqSBAIJ_N_NaturalOrdering_private(PetscInt *ai,Pet
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqSBAIJ_N_NaturalOrdering"
-PetscErrorCode MatSolve_SeqSBAIJ_N_NaturalOrdering(Mat A,Vec bb,Vec xx) 
+#define __FUNCT__ "MatSolve_SeqSBAIJ_N_NaturalOrdering_inplace"
+PetscErrorCode MatSolve_SeqSBAIJ_N_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx) 
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
@@ -187,8 +187,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_N_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }   
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_N_NaturalOrdering"
-PetscErrorCode MatForwardSolve_SeqSBAIJ_N_NaturalOrdering(Mat A,Vec bb,Vec xx) 
+#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_N_NaturalOrdering_inplace"
+PetscErrorCode MatForwardSolve_SeqSBAIJ_N_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx) 
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
@@ -212,8 +212,8 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_N_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }  
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_N_NaturalOrdering"
-PetscErrorCode MatBackwardSolve_SeqSBAIJ_N_NaturalOrdering(Mat A,Vec bb,Vec xx) 
+#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_N_NaturalOrdering_inplace"
+PetscErrorCode MatBackwardSolve_SeqSBAIJ_N_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx) 
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
@@ -237,8 +237,8 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_N_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }  
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqSBAIJ_7"
-PetscErrorCode MatSolve_SeqSBAIJ_7(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqSBAIJ_7_inplace"
+PetscErrorCode MatSolve_SeqSBAIJ_7_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   IS             isrow=a->row;
@@ -417,8 +417,8 @@ PetscErrorCode BackwardSolve_SeqSBAIJ_7_NaturalOrdering_private(PetscInt *ai,Pet
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqSBAIJ_7_NaturalOrdering"
-PetscErrorCode MatSolve_SeqSBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx) 
+#define __FUNCT__ "MatSolve_SeqSBAIJ_7_NaturalOrdering_inplace"
+PetscErrorCode MatSolve_SeqSBAIJ_7_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx) 
 { 
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
@@ -444,8 +444,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_7_NaturalOrdering"
-PetscErrorCode MatForwardSolve_SeqSBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx) 
+#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_7_NaturalOrdering_inplace"
+PetscErrorCode MatForwardSolve_SeqSBAIJ_7_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx) 
 { 
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
@@ -465,8 +465,8 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_7_NaturalOrdering"
-PetscErrorCode MatBackwardSolve_SeqSBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx) 
+#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_7_NaturalOrdering_inplace"
+PetscErrorCode MatBackwardSolve_SeqSBAIJ_7_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx) 
 { 
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
@@ -486,8 +486,8 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqSBAIJ_6"
-PetscErrorCode MatSolve_SeqSBAIJ_6(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqSBAIJ_6_inplace"
+PetscErrorCode MatSolve_SeqSBAIJ_6_inplace(Mat A,Vec bb,Vec xx)
 {  
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   IS             isrow=a->row;
@@ -658,8 +658,8 @@ PetscErrorCode BackwardSolve_SeqSBAIJ_6_NaturalOrdering_private(PetscInt *ai,Pet
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqSBAIJ_6_NaturalOrdering"
-PetscErrorCode MatSolve_SeqSBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqSBAIJ_6_NaturalOrdering_inplace"
+PetscErrorCode MatSolve_SeqSBAIJ_6_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
@@ -685,8 +685,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_6_NaturalOrdering"
-PetscErrorCode MatForwardSolve_SeqSBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_6_NaturalOrdering_inplace"
+PetscErrorCode MatForwardSolve_SeqSBAIJ_6_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
@@ -706,8 +706,8 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_6_NaturalOrdering"
-PetscErrorCode MatBackwardSolve_SeqSBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_6_NaturalOrdering_inplace"
+PetscErrorCode MatBackwardSolve_SeqSBAIJ_6_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
@@ -727,8 +727,8 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqSBAIJ_5"
-PetscErrorCode MatSolve_SeqSBAIJ_5(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqSBAIJ_5_inplace"
+PetscErrorCode MatSolve_SeqSBAIJ_5_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   IS             isrow=a->row;
@@ -892,8 +892,8 @@ PetscErrorCode BackwardSolve_SeqSBAIJ_5_NaturalOrdering_private(PetscInt *ai,Pet
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqSBAIJ_5_NaturalOrdering"
-PetscErrorCode MatSolve_SeqSBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqSBAIJ_5_NaturalOrdering_inplace"
+PetscErrorCode MatSolve_SeqSBAIJ_5_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
@@ -919,8 +919,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_5_NaturalOrdering"
-PetscErrorCode MatForwardSolve_SeqSBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_5_NaturalOrdering_inplace"
+PetscErrorCode MatForwardSolve_SeqSBAIJ_5_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
@@ -940,8 +940,8 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_5_NaturalOrdering"
-PetscErrorCode MatBackwardSolve_SeqSBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_5_NaturalOrdering_inplace"
+PetscErrorCode MatBackwardSolve_SeqSBAIJ_5_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
@@ -961,8 +961,8 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqSBAIJ_4"
-PetscErrorCode MatSolve_SeqSBAIJ_4(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqSBAIJ_4_inplace"
+PetscErrorCode MatSolve_SeqSBAIJ_4_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   IS             isrow=a->row;
@@ -1118,8 +1118,8 @@ PetscErrorCode BackwardSolve_SeqSBAIJ_4_NaturalOrdering_private(PetscInt *ai,Pet
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqSBAIJ_4_NaturalOrdering"
-PetscErrorCode MatSolve_SeqSBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqSBAIJ_4_NaturalOrdering_inplace"
+PetscErrorCode MatSolve_SeqSBAIJ_4_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
@@ -1144,8 +1144,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_4_NaturalOrdering"
-PetscErrorCode MatForwardSolve_SeqSBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_4_NaturalOrdering_inplace"
+PetscErrorCode MatForwardSolve_SeqSBAIJ_4_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
@@ -1165,8 +1165,8 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_4_NaturalOrdering"
-PetscErrorCode MatBackwardSolve_SeqSBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_4_NaturalOrdering_inplace"
+PetscErrorCode MatBackwardSolve_SeqSBAIJ_4_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
@@ -1186,8 +1186,8 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqSBAIJ_3"
-PetscErrorCode MatSolve_SeqSBAIJ_3(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqSBAIJ_3_inplace"
+PetscErrorCode MatSolve_SeqSBAIJ_3_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   IS             isrow=a->row;
@@ -1335,8 +1335,8 @@ PetscErrorCode BackwardSolve_SeqSBAIJ_3_NaturalOrdering_private(PetscInt *ai,Pet
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqSBAIJ_3_NaturalOrdering"
-PetscErrorCode MatSolve_SeqSBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqSBAIJ_3_NaturalOrdering_inplace"
+PetscErrorCode MatSolve_SeqSBAIJ_3_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
@@ -1362,8 +1362,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_3_NaturalOrdering"
-PetscErrorCode MatForwardSolve_SeqSBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_3_NaturalOrdering_inplace"
+PetscErrorCode MatForwardSolve_SeqSBAIJ_3_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
@@ -1383,8 +1383,8 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_3_NaturalOrdering"
-PetscErrorCode MatBackwardSolve_SeqSBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_3_NaturalOrdering_inplace"
+PetscErrorCode MatBackwardSolve_SeqSBAIJ_3_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
@@ -1404,8 +1404,8 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqSBAIJ_2"
-PetscErrorCode MatSolve_SeqSBAIJ_2(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqSBAIJ_2_inplace"
+PetscErrorCode MatSolve_SeqSBAIJ_2_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ *)A->data;
   IS             isrow=a->row;
@@ -1528,8 +1528,8 @@ PetscErrorCode BackwardSolve_SeqSBAIJ_2_NaturalOrdering_private(PetscInt *ai,Pet
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqSBAIJ_2_NaturalOrdering"
-PetscErrorCode MatSolve_SeqSBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqSBAIJ_2_NaturalOrdering_inplace"
+PetscErrorCode MatSolve_SeqSBAIJ_2_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
@@ -1555,8 +1555,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_2_NaturalOrdering"
-PetscErrorCode MatForwardSolve_SeqSBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_2_NaturalOrdering_inplace"
+PetscErrorCode MatForwardSolve_SeqSBAIJ_2_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
@@ -1576,8 +1576,8 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_2_NaturalOrdering"
-PetscErrorCode MatBackwardSolve_SeqSBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_2_NaturalOrdering_inplace"
+PetscErrorCode MatBackwardSolve_SeqSBAIJ_2_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
@@ -1809,8 +1809,8 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_inplace(Mat A,Vec bb,Vec xx)
 }    
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolves_SeqSBAIJ_1"
-PetscErrorCode MatSolves_SeqSBAIJ_1(Mat A,Vecs bb,Vecs xx)
+#define __FUNCT__ "MatSolves_SeqSBAIJ_1_inplace"
+PetscErrorCode MatSolves_SeqSBAIJ_1_inplace(Mat A,Vecs bb,Vecs xx)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ *)A->data;
   PetscErrorCode ierr;

@@ -2428,15 +2428,16 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_newdatastruct(Mat fact,Mat A,IS perm,
 
   /* ICC(0) without matrix ordering: simply rearrange column indices */
   if (!levels && perm_identity) { 
-    ierr = PetscMalloc((ui[am]+1)*sizeof(PetscInt),&uj);CHKERRQ(ierr); 
-    cols = uj;
     for (i=0; i<am; i++) {
       ncols    = ai[i+1] - a->diag[i];
       ui[i+1]  = ui[i] + ncols; 
       udiag[i] = ui[i+1] - 1; /* points to the last entry of U(i,:) */
-
-      aj   = a->j + a->diag[i] + 1; /* 1st entry of U(i,:) without diagonal */ 
-      ncols--; /* exclude diagonal */
+    }
+    ierr = PetscMalloc((ui[am]+1)*sizeof(PetscInt),&uj);CHKERRQ(ierr); 
+    cols = uj;
+    for (i=0; i<am; i++) {
+      aj    = a->j + a->diag[i] + 1; /* 1st entry of U(i,:) without diagonal */ 
+      ncols = ai[i+1] - a->diag[i] -1;
       for (j=0; j<ncols; j++) *cols++ = aj[j]; 
       *cols++ = i; /* diagoanl is located as the last entry of U(i,:) */
     }

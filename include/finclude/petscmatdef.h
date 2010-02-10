@@ -101,6 +101,7 @@
 #define MATSCHURCOMPLEMENT 'schurcomplement'
 #define MATPYTHON          'python'
 #define MATHYPRESTRUCT     'hyprestruct'
+#define MATHYPRESSTRUCT    'hypresstruct'
 !
 ! MatSolverPackages
 !

@@ -39,7 +39,8 @@
 !
       MPI_Comm PETSC_COMM_WORLD
       MPI_Comm PETSC_COMM_SELF
-      common /petscfortran7/ PETSC_COMM_WORLD,PETSC_COMM_SELF
+      common /petscfortran9/ PETSC_COMM_WORLD
+      common /petscfortran10/ PETSC_COMM_SELF
       data   PETSC_COMM_WORLD /0/
       data   PETSC_COMM_SELF /0/
       end

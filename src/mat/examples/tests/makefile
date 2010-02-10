@@ -472,10 +472,6 @@ ex125: ex125.o chkopts
 	-${CLINKER} -o ex125 ex125.o ${PETSC_MAT_LIB}
 	${RM} ex125.o
 
-ex129: ex129.o chkopts
-	-${CLINKER} -o ex129 ex129.o ${PETSC_DM_LIB}
-	${RM} ex129.o
-
 ex126f: ex126f.o chkopts
 	-${FLINKER} -o ex126f ex126f.o ${PETSC_MAT_LIB}
 	${RM} ex126f.o
@@ -484,6 +480,13 @@ ex127: ex127.o chkopts
 	-${CLINKER} -o ex127 ex127.o ${PETSC_MAT_LIB}
 	${RM} ex127.o
 
+ex128: ex128.o chkopts
+	-${CLINKER} -o ex128 ex128.o ${PETSC_MAT_LIB}
+	${RM} ex128.o
+
+ex129: ex129.o chkopts
+	-${CLINKER} -o ex129 ex129.o ${PETSC_DM_LIB}
+	${RM} ex129.o
 
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
@@ -687,15 +690,36 @@ runex22:
 	   else echo "Possible problem with ex22_1, diffs above"; fi; \
 	   ${RM} -f ex22_1.tmp
 runex30:
-	-@${MPIEXEC} -n 1  ./ex30 -nox > ex30_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex30 -display_matrices -nox > ex30_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex30_1.out ex30_1.tmp) then true; \
 	   else echo "Possible problem with ex30_1, diffs above"; fi; \
 	   ${RM} -f ex30_1.tmp
 runex30_2:
-	-@${MPIEXEC} -n 1  ./ex30 -nox -lu > ex30_2.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex30 -display_matrices -nox -lu > ex30_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex30_2.out ex30_2.tmp) then true; \
 	   else echo "Possible problem with ex30_2, diffs above"; fi; \
 	   ${RM} -f ex30_2.tmp
+runex30_3:
+	-@${MPIEXEC} -n 1 ./ex30 -lu -triangular_solve -cholesky_old > ex30_3.tmp 2>&1;   \
+	   if (${DIFF} output/ex30_3.out ex30_3.tmp) then true; \
+	   else echo "Possible problem with ex30_3, diffs above"; fi; \
+	   ${RM} -f ex30_3.tmp
+runex30_4:
+	-@${MPIEXEC} -n 1 ./ex30 -no_rowperm -no_colperm > ex30_4.tmp 2>&1;   \
+	   if (${DIFF} output/ex30_4.out ex30_4.tmp) then true; \
+	   else echo "Possible problem with ex30_4, diffs above"; fi; \
+	   ${RM} -f ex30_4.tmp
+runex30_5:
+	-@${MPIEXEC} -n 1 ./ex30 -lu -no_rowperm -no_colperm > ex30_5.tmp 2>&1;   \
+	   if (${DIFF} output/ex30_5.out ex30_5.tmp) then true; \
+	   else echo "Possible problem with ex30_5, diffs above"; fi; \
+	   ${RM} -f ex30_5.tmp
+runex30_6:
+	-@${MPIEXEC} -n 1 ./ex30 -lu -no_rowperm -no_colperm -triangular_solve -cholesky_old > ex30_3.tmp 2>&1;   \
+	   if (${DIFF} output/ex30_3.out ex30_3.tmp) then true; \
+	   else echo "Possible problem with ex30_6, diffs above"; fi; \
+	   ${RM} -f ex30_3.tmp
+
 runex31:
 	-@${MPIEXEC} -n 1  ./ex31 > ex31_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex31_1.out ex31_1.tmp) then true; \
@@ -1206,12 +1230,6 @@ runex125:
 	   else echo "Possible problem with ex125, diffs above"; fi; \
 	   ${RM} -f ex125.tmp
 
-runex129:
-	-@${MPIEXEC} -n 1 ./ex129 -mat_type aij -dof 1 > ex129.tmp 2>&1; \
-	   if (${DIFF} output/ex129.out ex129.tmp) then true; \
-	   else echo "Possible problem with ex129, diffs above"; fi; \
-	   ${RM} -f ex129.tmp
-
 runex126f:
 	-@${MPIEXEC} -n 1 ./ex126f  > ex126_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex126_1.out ex126_1.tmp) then true; \
@@ -1229,6 +1247,23 @@ runex127_2:
 	   else echo "Possible problem with ex127_2, diffs above"; fi; \
 	   ${RM} -f ex127.tmp
 
+runex128:
+	-@${MPIEXEC} -n 1 ./ex128  > ex128.tmp 2>&1; \
+	   if (${DIFF} output/ex128.out ex128.tmp) then true; \
+	   else echo "Possible problem with ex128, diffs above"; fi; \
+	   ${RM} -f ex128.tmp
+runex128_2:
+	-@${MPIEXEC} -n 1 ./ex128 -cholesky -triangular_solve > ex128.tmp 2>&1; \
+	   if (${DIFF} output/ex128_2.out ex128.tmp) then true; \
+	   else echo "Possible problem with ex128_2, diffs above"; fi; \
+	   ${RM} -f ex128.tmp
+
+runex129:
+	-@${MPIEXEC} -n 1 ./ex129 -mat_type aij -dof 1 > ex129.tmp 2>&1; \
+	   if (${DIFF} output/ex129.out ex129.tmp) then true; \
+	   else echo "Possible problem with ex129, diffs above"; fi; \
+	   ${RM} -f ex129.tmp
+
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc \
@@ -1241,11 +1276,12 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PET
                                  ex52.PETSc runex52_1 runex52_2 runex52_3 runex52_4 ex52.rm \
                                  ex109.PETSc runex109 runex109_2 ex109.rm ex110.PETSc runex110 ex110.rm ex122.PETSc runex122 ex122.rm \
                                  ex114.PETSc runex114 runex114_2 runex114_3 ex114.rm ex117.PETSc ex117.rm ex118.PETSc ex118.rm ex119.PETSc ex119.rm \
-                                 ex129.PETSc runex129 ex129.rm
+                                 ex128.PETSc runex128 runex128_2 ex128.rm ex129.PETSc runex129 ex129.rm
 TESTEXAMPLES_C_X11	       = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 runex4_2 ex4.rm ex7.PETSc runex7 ex7.rm \
                                  ex12.PETSc runex12 runex12_2 runex12_3 runex12_4 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex17.PETSc runex17 ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc ex24.rm ex25.PETSc \
-                                 ex25.rm ex27.PETSc ex27.rm ex28.PETSc ex28.rm ex30.PETSc runex30 runex30_2 ex30.rm ex31.PETSc \
+                                 ex25.rm ex27.PETSc ex27.rm ex28.PETSc ex28.rm \
+                                 ex30.PETSc runex30 runex30_2 runex30_3 runex30_4 runex30_5 runex30_6 ex30.rm ex31.PETSc \
                                  runex31 runex31_2 ex31.rm ex33.PETSc ex33.rm ex34.PETSc ex34.rm ex35.PETSc runex35 \
                                  ex35.rm ex37.PETSc runex37 ex37.rm ex38.PETSc ex38.rm ex43.PETSc ex43.rm ex48.PETSc \
                                  runex48 ex48.rm ex49.PETSc ex49.rm ex51.PETSc runex51 ex51.rm ex52.PETSc ex52.rm \
