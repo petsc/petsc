@@ -632,7 +632,7 @@ PetscErrorCode MatGetSubMatrix_BlockMat(Mat A,IS isrow,IS iscol,MatReuse scall,M
   Mat_SeqAIJ     *c;
   PetscErrorCode ierr;
   PetscInt       i,k,first,step,lensi,nrows,ncols;
-  PetscInt       *j_new,*i_new,*aj = a->j,*ai = a->i,ii,*ailen = a->ilen;
+  PetscInt       *j_new,*i_new,*aj = a->j,*ailen = a->ilen;
   PetscScalar    *a_new;
   Mat            C,*aa = a->a;
   PetscTruth     stride,equal;
@@ -674,7 +674,6 @@ PetscErrorCode MatGetSubMatrix_BlockMat(Mat A,IS isrow,IS iscol,MatReuse scall,M
   i_new    = c->i;
   
   for (i=0; i<nrows; i++) {
-    ii    = ai[i];
     lensi = ailen[i];
     for (k=0; k<lensi; k++) {
       *j_new++ = *aj++;
