@@ -7,8 +7,8 @@
 #include "../src/mat/blockinvert.h"
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_2_newdatastruct"
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_newdatastruct(Mat B,Mat A,const MatFactorInfo *info)
+#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_2"
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat            C=B;
   Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)A->data,*b=(Mat_SeqBAIJ *)C->data;
@@ -108,8 +108,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_newdatastruct(Mat B,Mat A,const MatF
   ierr = PetscFree2(rtmp,mwork);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
-  C->ops->solve          = MatSolve_SeqBAIJ_2_newdatastruct;
-  C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_2_newdatastruct;
+  C->ops->solve          = MatSolve_SeqBAIJ_2;
+  C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_2;
  
   C->assembled = PETSC_TRUE;
   ierr = PetscLogFlops(1.3333*bs2*n);CHKERRQ(ierr); /* from inverting diagonal blocks */
@@ -117,8 +117,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_newdatastruct(Mat B,Mat A,const MatF
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_newdatastruct"
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_newdatastruct(Mat B,Mat A,const MatFactorInfo *info)
+#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering"
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat            C=B;
   Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)A->data,*b=(Mat_SeqBAIJ *)C->data;
@@ -215,8 +215,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_newdatastruct(Mat B,
   }
   ierr = PetscFree2(rtmp,mwork);CHKERRQ(ierr);
 
-  C->ops->solve          = MatSolve_SeqBAIJ_2_NaturalOrdering_newdatastruct;
-  C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_2_NaturalOrdering_newdatastruct;
+  C->ops->solve          = MatSolve_SeqBAIJ_2_NaturalOrdering;
+  C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_2_NaturalOrdering;
   C->assembled = PETSC_TRUE;
   ierr = PetscLogFlops(1.3333*bs2*n);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
@@ -499,8 +499,8 @@ PetscErrorCode MatGetFactor_seqbaij_petsc(Mat A,MatFactorType ftype,Mat *B)
   ierr = MatSetSizes(*B,n,n,n,n);CHKERRQ(ierr);
   if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU || ftype == MAT_FACTOR_ILUDT) {
     ierr = MatSetType(*B,MATSEQBAIJ);CHKERRQ(ierr);
-    (*B)->ops->lufactorsymbolic  = MatLUFactorSymbolic_SeqBAIJ_newdatastruct;  
-    (*B)->ops->ilufactorsymbolic = MatILUFactorSymbolic_SeqBAIJ_newdatastruct;  
+    (*B)->ops->lufactorsymbolic  = MatLUFactorSymbolic_SeqBAIJ;  
+    (*B)->ops->ilufactorsymbolic = MatILUFactorSymbolic_SeqBAIJ;  
     (*B)->ops->iludtfactor       = MatILUDTFactor_SeqBAIJ;
   } else if (ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC) {
     ierr = MatSetType(*B,MATSEQSBAIJ);CHKERRQ(ierr);
@@ -1192,8 +1192,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct"
-PetscErrorCode MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqBAIJ_N_NaturalOrdering"
+PetscErrorCode MatSolve_SeqBAIJ_N_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ    *a=(Mat_SeqBAIJ *)A->data;
   PetscErrorCode ierr;
@@ -1245,8 +1245,8 @@ PetscErrorCode MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqBAIJ_N_newdatastruct"
-PetscErrorCode MatSolve_SeqBAIJ_N_newdatastruct(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqBAIJ_N"
+PetscErrorCode MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ    *a=(Mat_SeqBAIJ *)A->data;
   IS             iscol=a->col,isrow=a->row;
@@ -1576,9 +1576,9 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   ierr = ISIdentity(isicol,&icol_identity);CHKERRQ(ierr);
   both_identity = (PetscTruth) (row_identity && icol_identity);
   if (row_identity && icol_identity) {
-    B->ops->solve = MatSolve_SeqBAIJ_N_NaturalOrdering_newdatastruct; 
+    B->ops->solve = MatSolve_SeqBAIJ_N_NaturalOrdering; 
   } else {
-    B->ops->solve = MatSolve_SeqBAIJ_N_newdatastruct; 
+    B->ops->solve = MatSolve_SeqBAIJ_N; 
   }
   
   B->ops->solveadd          = 0;

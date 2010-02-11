@@ -7,60 +7,60 @@
 #include "../src/mat/blockinvert.h"
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSeqBAIJSetNumericFactorization_newdatastruct"
+#define __FUNCT__ "MatSeqBAIJSetNumericFactorization"
 /*
    This is used to set the numeric factorization for both LU and ILU symbolic factorization
 */
-PetscErrorCode MatSeqBAIJSetNumericFactorization_newdatastruct(Mat fact,PetscTruth natural)
+PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat fact,PetscTruth natural)
 {
   PetscFunctionBegin;
   if(natural){
     switch (fact->rmap->bs){
     case 2:
-      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_newdatastruct;
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering;
       break;
     case 3:
-      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_newdatastruct;
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering;
       break;
     case 4:
-      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_newdatastruct;     
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;     
       break;
     case 5:
-      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering_newdatastruct;     
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering;     
       break;
     case 6:
-      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering_newdatastruct;
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering;
       break;
     case 7:
-      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering_newdatastruct;
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering;
       break;
     default:
-      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N_newdatastruct;
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N;
       break;
     }
   }
   else{
     switch (fact->rmap->bs){
     case 2:
-      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_newdatastruct;
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2;
       break;
     case 3:
-      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_newdatastruct;
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3;
       break;
     case 4:
-      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_newdatastruct;     
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4;     
       break;
     case 5:
-      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_newdatastruct;     
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5;     
       break;
     case 6:
-      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_newdatastruct;
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6;
       break;
     case 7:
-      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_newdatastruct;
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7;
       break;
     default:
-      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N_newdatastruct;
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N;
       break;
     }
   }
@@ -172,8 +172,8 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat inA,PetscTruth natu
 #include "../src/mat/utils/freespace.h"
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorSymbolic_SeqBAIJ_newdatastruct"
-PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_newdatastruct(Mat B,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
+#define __FUNCT__ "MatLUFactorSymbolic_SeqBAIJ"
+PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data,*b;
   PetscInt           n=a->mbs,bs = A->rmap->bs,bs2=a->bs2;
@@ -320,7 +320,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_newdatastruct(Mat B,Mat A,IS isrow,IS
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
   both_identity = (PetscTruth) (row_identity && col_identity);
-  ierr = MatSeqBAIJSetNumericFactorization_newdatastruct(B,both_identity);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetNumericFactorization(B,both_identity);CHKERRQ(ierr);
   PetscFunctionReturn(0);
  }
 
