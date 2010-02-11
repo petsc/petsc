@@ -325,6 +325,9 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP
 
 M*/
+EXTERN_C_BEGIN
+#undef __FUNCT__ 
+#define __FUNCT__ "KSPCreate_LSQR"
 PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_LSQR(KSP ksp)
 {
   KSP_LSQR       *lsqr;
@@ -347,6 +350,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_LSQR(KSP ksp)
   ksp->ops->view                 = KSPView_LSQR;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "VecSquare"

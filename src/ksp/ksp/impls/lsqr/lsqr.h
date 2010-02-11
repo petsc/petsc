@@ -2,7 +2,6 @@
 #define PCEUCLID      "euclid"
 #define PCSPBASICC    "spbasicc"
 
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_PrecondLSQR(KSP ksp);
 PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRGetArnorm( KSP ksp,
      PetscReal *arnorm, PetscReal *rhs_norm , PetscReal *anorm);
 PetscErrorCode precond_lsqr_monitor(
