@@ -152,8 +152,6 @@ PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat A,MatDuplicateOption cpvalues,Mat *
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatSolve_SeqAIJ_Inode_inplace(Mat,Vec,Vec);
-
 #undef __FUNCT__
 #define __FUNCT__ "MatILUDTFactor_SeqAIJ_Inode"
 PetscErrorCode MatILUDTFactor_SeqAIJ_Inode(Mat A,IS isrow,IS iscol,const MatFactorInfo *info,Mat *fact)

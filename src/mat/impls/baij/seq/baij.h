@@ -200,6 +200,9 @@ EXTERN PetscErrorCode MatMultAdd_SeqBAIJ_7(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatMultAdd_SeqBAIJ_N(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatLoad_SeqBAIJ(PetscViewer, const MatType,Mat*);
 
+EXTERN PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat,PetscTruth);
+EXTERN PetscErrorCode MatSeqBAIJSetNumericFactorization_newdatastruct(Mat,PetscTruth);
+
 /*
   Kernel_A_gets_A_times_B_2: A = A * B with size bs=2
 

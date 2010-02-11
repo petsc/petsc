@@ -5101,8 +5101,8 @@ PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 
 /* ----------------------------------------------------------------*/
 EXTERN PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat,Mat,MatDuplicateOption,PetscTruth);
-EXTERN PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscTruth);
-EXTERN PetscErrorCode MatSeqBAIJSetNumericFactorization_newdatastruct(Mat,PetscTruth);
+//EXTERN PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat,PetscTruth);
+//EXTERN PetscErrorCode MatSeqBAIJSetNumericFactorization_newdatastruct(Mat,PetscTruth);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_N_newdatastruct"
@@ -5525,7 +5525,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact,Mat A,IS isrow,IS i
 
   if (!levels && both_identity) {  /* special case copy the nonzero structure */  
     ierr = MatDuplicateNoCreate_SeqBAIJ(fact,A,MAT_DO_NOT_COPY_VALUES,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = MatSeqBAIJSetNumericFactorization(fact,both_identity);CHKERRQ(ierr);
+    ierr = MatSeqBAIJSetNumericFactorization_inplace(fact,both_identity);CHKERRQ(ierr);
 
     fact->factor = MAT_FACTOR_ILU;
     b            = (Mat_SeqBAIJ*)fact->data;
@@ -5710,7 +5710,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact,Mat A,IS isrow,IS i
     fact->info.fill_ratio_given  = f;
     fact->info.fill_ratio_needed = ((PetscReal)ainew[n])/((PetscReal)ai[prow]);
 
-  ierr = MatSeqBAIJSetNumericFactorization(fact,both_identity);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetNumericFactorization_inplace(fact,both_identity);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
 

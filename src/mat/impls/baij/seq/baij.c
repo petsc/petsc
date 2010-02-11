@@ -2152,8 +2152,6 @@ PetscErrorCode MatSetValues_SeqBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscIn
   PetscFunctionReturn(0);
 } 
 
-EXTERN PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscTruth);
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUFactor_SeqBAIJ"
 PetscErrorCode MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,const MatFactorInfo *info)
@@ -2190,7 +2188,7 @@ PetscErrorCode MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,const MatFactorInfo *i
   ierr = ISInvertPermutation(col,PETSC_DECIDE,&a->icol);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(inA,a->icol);CHKERRQ(ierr);
   
-  ierr = MatSeqBAIJSetNumericFactorization(inA,(PetscTruth)(row_identity && col_identity));CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetNumericFactorization_inplace(inA,(PetscTruth)(row_identity && col_identity));CHKERRQ(ierr);
   if (!a->solve_work) {
     ierr = PetscMalloc((inA->rmap->N+inA->rmap->bs)*sizeof(PetscScalar),&a->solve_work);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(inA,(inA->rmap->N+inA->rmap->bs)*sizeof(PetscScalar));CHKERRQ(ierr);

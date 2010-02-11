@@ -1614,11 +1614,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,Pet
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatSeqBAIJSetNumericFactorization"
 /*
    This is used to set the numeric factorization for both Cholesky and ICC symbolic factorization
 */
+#undef __FUNCT__  
+#define __FUNCT__ "MatSeqSBAIJSetNumericFactorization"
 PetscErrorCode MatSeqSBAIJSetNumericFactorization(Mat B,PetscTruth natural)
 {
   PetscErrorCode ierr;
