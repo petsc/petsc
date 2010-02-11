@@ -58,11 +58,17 @@ def run_gcov(petsc_dir,user,gcov_dir):
                     lines_fid = open(os.path.join(gcov_dir,root_tmp1+'_'+file_name+'.lines'),'w')
                     nlines = 0
                     line_num = 1
+                    in_comment = 0
                     for line in file_id:
                         if line.strip() == '':
                             line_num += 1
                         else:
-                            print >>lines_fid,"""%s"""%(line_num)
+                            if line.lstrip().startswith('/*'):
+                                in_comment = 1
+                            if in_comment == 0:    
+                                print >>lines_fid,"""%s"""%(line_num)
+                            if in_comment & (line.find('*/') != -1):
+                                in_comment = 0
                             line_num += 1
                     file_id.close()
                     lines_fid.close()
