@@ -1597,8 +1597,8 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_2_NaturalOrdering_inplace(Mat A,Vec bb,
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqSBAIJ_1_newdatastruct"
-PetscErrorCode MatSolve_SeqSBAIJ_1_newdatastruct(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqSBAIJ_1"
+PetscErrorCode MatSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ *)A->data;
   IS                isrow=a->row;
@@ -1688,8 +1688,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_inplace(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_1_newdatastruct"
-PetscErrorCode MatForwardSolve_SeqSBAIJ_1_newdatastruct(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_1"
+PetscErrorCode MatForwardSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ *)A->data;
   IS              isrow=a->row;
@@ -1765,8 +1765,8 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_1_inplace(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_1_newdatastruct"
-PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_newdatastruct(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_1"
+PetscErrorCode MatBackwardSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
 {
   SETERRQ(1,"Not done yet");
 }
@@ -1870,8 +1870,8 @@ PetscErrorCode MatSolves_SeqSBAIJ_1_inplace(Mat A,Vecs bb,Vecs xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct"
-PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqSBAIJ_1_NaturalOrdering"
+PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ *)A->data;
   PetscErrorCode    ierr;
@@ -1959,8 +1959,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct"
-PetscErrorCode MatForwardSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_1_NaturalOrdering"
+PetscErrorCode MatForwardSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   SETERRQ(1,"Not done yet");
 }
@@ -1998,8 +1998,8 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A,Vec bb,V
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct"
-PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering_newdatastruct(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering"
+PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   SETERRQ(1,"Not done yet");
 }

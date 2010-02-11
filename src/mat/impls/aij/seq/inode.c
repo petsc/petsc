@@ -1180,8 +1180,8 @@ PetscErrorCode MatSolve_SeqAIJ_Inode_inplace(Mat A,Vec bb,Vec xx)
 
 /* ----------------------------------------------------------- */
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqAIJ_Inode_newdatastruct"
-PetscErrorCode MatSolve_SeqAIJ_Inode_newdatastruct(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqAIJ_Inode"
+PetscErrorCode MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   IS                iscol = a->col,isrow = a->row;
