@@ -9,10 +9,10 @@
 #include "../src/ksp/ksp/impls/lsqr/lsqr.h"
 
 typedef struct {
-  PetscInt  nwork_n,nwork_m; 
-  Vec       *vwork_m;  /* work vectors of length m, where the system is size m x n */
-  Vec       *vwork_n;  /* work vectors of length n */
-  Vec       se;        /* Optional standard error vector */
+  PetscInt   nwork_n,nwork_m; 
+  Vec        *vwork_m;  /* work vectors of length m, where the system is size m x n */
+  Vec        *vwork_n;  /* work vectors of length n */
+  Vec        se;        /* Optional standard error vector */
   PetscTruth se_flg;   /* flag for -ksp_lsqr_set_standard_error */
   PetscReal  arnorm;   /* Norm of the vector A.r */
   PetscReal  anorm;    /* Frobenius norm of the matrix A */
@@ -31,9 +31,10 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC){
     SETERRQ(PETSC_ERR_SUP,"no symmetric preconditioning for KSPLSQR");
+  } else if (ksp->pc_side == PC_RIGHT){
+    SETERRQ(PETSC_ERR_SUP,"no right preconditioning for KSPLSQR");
   }
 
-  /* Get work vectors */
   lsqr->nwork_m = 2;
   if (lsqr->vwork_m) {
     ierr = VecDestroyVecs(lsqr->vwork_m,lsqr->nwork_m);CHKERRQ(ierr);
@@ -45,9 +46,10 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
   ierr = KSPGetVecs(ksp,lsqr->nwork_n,&lsqr->vwork_n,lsqr->nwork_m,&lsqr->vwork_m);CHKERRQ(ierr);
   if (lsqr->se_flg && !lsqr->se){
     /* lsqr->se is not set by user, get it from pmat */
-    Mat pmat;
-    ierr = PCGetOperators(ksp->pc,PETSC_NULL,&pmat,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatGetVecs(pmat,&lsqr->se,PETSC_NULL);CHKERRQ(ierr);
+    Vec *se;
+    ierr = KSPGetVecs(ksp,1,&se,0,PETSC_NULL);CHKERRQ(ierr);
+    lsqr->se = *se;
+    ierr = PetscFree(se);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -64,18 +66,14 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   Mat            Amat,Pmat;
   MatStructure   pflag;
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
-  PetscTruth     diagonalscale;
-  const PCType   pc_type;
+  PetscTruth     diagonalscale,nopreconditioner;
   
   PetscFunctionBegin;
-  ierr = PCGetType(ksp->pc, &pc_type); CHKERRQ(ierr);
-  printf("itioner type '%s'; PCNONE='%s'\n", pc_type , PCNONE);
-
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
-
-  ierr     = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
-
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)ksp->pc,PCNONE,&nopreconditioner);CHKERRQ(ierr);
+  nopreconditioner = PETSC_FALSE;
   /* Calculate norm of right hand side */
   ierr = VecNorm(ksp->vec_rhs,NORM_2,&lsqr->rhs_norm);CHKERRQ(ierr);
 
@@ -128,8 +126,15 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   ierr = VecScale(U,1.0/beta);CHKERRQ(ierr);
   ierr = KSP_MatMultTranspose(ksp,Amat,U,Xwrk); CHKERRQ(ierr);
   ierr = PCApply(ksp->pc,Xwrk,V);  CHKERRQ(ierr);
-	ierr = VecNorm(V,NORM_2,&alpha);CHKERRQ(ierr);
-	//ierr = VecDot(V,Xwrk,&alpha); alpha = sqrt(MAX(0,alpha)); CHKERRQ(ierr);
+  if (nopreconditioner) {
+    ierr = VecNorm(V,NORM_2,&alpha);CHKERRQ(ierr);
+  } else {
+    ierr = VecDot(V,Xwrk,&alpha); alpha = sqrt(MAX(0,alpha)); CHKERRQ(ierr);
+    if (alpha == 0.0) {
+      ksp->reason = KSP_DIVERGED_BREAKDOWN;
+      PetscFunctionReturn(0);
+    }
+  }
   ierr = VecScale(V,1.0/alpha);CHKERRQ(ierr);
 
   ierr = VecCopy(V,W);CHKERRQ(ierr);
@@ -144,25 +149,26 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     ierr = KSP_MatMult(ksp,Amat,V,U1);CHKERRQ(ierr);
     ierr = VecAXPY(U1,-alpha,U);CHKERRQ(ierr);
     ierr = VecNorm(U1,NORM_2,&beta);CHKERRQ(ierr);
-    if ( beta > 0)
-      { 
-        ierr = VecScale(U1,1.0/beta);CHKERRQ(ierr);
+    if (beta == 0.0){ 
+      ksp->reason = KSP_DIVERGED_BREAKDOWN;
+      break;
+    }
+    ierr = VecScale(U1,1.0/beta);CHKERRQ(ierr);
 
-        ierr = KSP_MatMultTranspose(ksp,Amat,U1,Xwrk);CHKERRQ(ierr);
-        ierr = PCApply(ksp->pc,Xwrk,V1);CHKERRQ(ierr);
-        ierr = VecAXPY(V1,-beta,V);CHKERRQ(ierr);
-	{ PetscScalar alpha2;
-	     ierr = VecDot(V1,Xwrk,&alpha2);CHKERRQ(ierr);
-        alpha2 = sqrt(MAX(0,alpha2));
-	ierr = VecNorm(V1,NORM_2,&alpha);CHKERRQ(ierr);
-        if (alpha != alpha2) printf("alpha %g alpha2 %g alpha - alpha2 %g\n",alpha,alpha2,alpha-alpha2);
-	}
-        if ( alpha > 0 )
-          {
-            ierr = VecScale(V1,1.0/alpha);CHKERRQ(ierr);
-          }
+    ierr = KSP_MatMultTranspose(ksp,Amat,U1,Xwrk);CHKERRQ(ierr);
+    ierr = PCApply(ksp->pc,Xwrk,V1);CHKERRQ(ierr);
+    ierr = VecAXPY(V1,-beta,V);CHKERRQ(ierr);
+    if (nopreconditioner) { 
+      ierr = VecNorm(V1,NORM_2,&alpha);CHKERRQ(ierr);
+    } else {
+      ierr = VecDot(V1,Xwrk,&alpha);CHKERRQ(ierr);
+      alpha = sqrt(MAX(0,alpha));
+      if (alpha == 0.0) {
+        ksp->reason = KSP_DIVERGED_BREAKDOWN;
+        break;
       }
-
+    }
+    ierr   = VecScale(V1,1.0/alpha);CHKERRQ(ierr);
     rho    = PetscSqrtScalar(rhobar*rhobar + beta*beta);
     c      = rhobar / rho;
     s      = beta / rho;
@@ -241,7 +247,7 @@ PetscErrorCode KSPDestroy_LSQR(KSP ksp)
 #define __FUNCT__ "KSPLSQRSetStandardErrorVec"
 PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRSetStandardErrorVec( KSP ksp, Vec se )
 {
-  KSP_LSQR  *lsqr = (KSP_LSQR*)ksp->data;
+  KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -265,11 +271,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRGetStandardErrorVec( KSP ksp,Vec *se )
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPLSQRGetArnorm"
-/*
-  This function does not exist in PETSc
-*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRGetArnorm( KSP ksp,
-     PetscReal *arnorm, PetscReal *rhs_norm , PetscReal *anorm)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRGetArnorm( KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm , PetscReal *anorm)
 {
   KSP_LSQR *lsqr = (KSP_LSQR*)ksp->data;
 
@@ -319,8 +321,11 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
 
    Level: beginner
 
-   Notes:  This algorithm USES a preconditioner. 
-           Reference: Paige and Saunders, ACM Transactions on Mathematical Software, Vol 8, pp 43-71, 1982
+   Notes:  The original unpreconditioned algorithm can be found in Paige and Saunders, ACM Transactions on Mathematical Software, Vol 8, pp 43-71, 1982. 
+     In exact arithematic the LSQR method (with no preconditioning) is identical to the KSPCG algorithm applied to the normal equations.
+     The preconditioned varient was implemented by Bas van't Hof and is essentially a left preconditioning for the Normal Equations. 
+     This varient, when applied with no preconditioning is identical to the original algorithm in exact arithematic; however, in practice, with no preconditioning
+     due to inexact arithematic, it can converge differently. Hence when no preconditioner is used (PCType PCNONE) it automatically reverts to the original algorithm.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP
 
@@ -338,7 +343,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_LSQR(KSP ksp)
   lsqr->se     = PETSC_NULL;
   lsqr->se_flg = PETSC_FALSE;
   lsqr->arnorm = 0.0;
-  ierr = PCSetType(ksp->pc,PCNONE);CHKERRQ(ierr);
   ksp->data                      = (void*)lsqr;
   ksp->pc_side                   = PC_LEFT;
   ksp->ops->setup                = KSPSetUp_LSQR;
