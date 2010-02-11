@@ -7,16 +7,20 @@
 #           ./gcov.py -merge_gcov [LOC] tarballs
 #
 
+import os
+import string
+import shutil
+import operator
+import sys
+from   time import gmtime,strftime
 
-def run_gcov(petsc_dir,user,gcov_dir):
+PETSC_DIR = os.environ['PETSC_DIR']
+
+def run_gcov(gcov_dir):
 
     # 1. Runs gcov 
     # 2. Saves the untested source code line numbers in 
     #    xxx.c.lines files in gcov_dir
-
-    import os
-    import string
-    import shutil
 
     print "Creating directory to save .lines files\n"
     if os.path.isdir(gcov_dir):
@@ -75,19 +79,17 @@ def run_gcov(petsc_dir,user,gcov_dir):
     print """Finshed running gcov on PETSc source code"""                                
     return
 
-def make_tarball(gcov_dir):
+def make_tarball(dirname):
 
     # Create tarball of .lines files stored in gcov_dir
-    import os
-    import shutil
-    print """Creating tarball in %s to store gcov results files""" %(gcov_dir)
-    os.chdir(gcov_dir)
+    print """Creating tarball in %s to store gcov results files""" %(PETSC_DIR)
+    os.chdir(dirname)
     os.system("tar -czf "+PETSC_DIR+os.sep+"gcov.tar.gz *.lines")
-    shutil.rmtree(gcov_dir)
+    shutil.rmtree(dirname)
     print """Tarball created in %s"""%(PETSC_DIR)
     return
 
-def make_htmlpage(loc,tarballs):
+def make_htmlpage(LOC,tarballs):
 
     # Create index_gcov webpages using information processed from
     # running gcov
@@ -98,15 +100,6 @@ def make_htmlpage(loc,tarballs):
     # Stage 4: Create HTML pages having statistics and hyperlinks to HTML source code           files (files are sorted by filename and percentage code tested) 
     #  Stores the main HTML pages in LOC if LOC is defined via command line argument o-wise it uses the default PETSC_DIR
     
-    import os
-    import string
-    import operator
-    import sys
-    import shutil
-    import glob
-    from time import gmtime,strftime
-
-    PETSC_DIR = os.environ['PETSC_DIR']
     gcov_dir = os.path.join('/tmp','gcov')
     if os.path.isdir(gcov_dir):
         shutil.rmtree(gcov_dir)
@@ -392,36 +385,34 @@ def make_htmlpage(loc,tarballs):
     print """See index_gcov1.html in %s""" % (LOC)
     return
 
-################# Main Script ########################
-import os,sys
-PETSC_DIR = os.environ['PETSC_DIR']
-USER = os.environ['USER']
-gcov_dir = "/tmp/gcov-"+USER
+def main():
 
-if (sys.argv[1] == "-run_gcov"):
-    print "Running gcov and creating tarball"
-    run_gcov(PETSC_DIR,USER,gcov_dir)
-    make_tarball(gcov_dir)
-elif (sys.argv[1] == "-merge_gcov"):
-    print "Creating main html page"
+    USER = os.environ['USER']
+    gcov_dir = "/tmp/gcov-"+USER
+
+    if (sys.argv[1] == "-run_gcov"):
+        print "Running gcov and creating tarball"
+        run_gcov(gcov_dir)
+        make_tarball(gcov_dir)
+    elif (sys.argv[1] == "-merge_gcov"):
+        print "Creating main html page"
     # check to see if LOC is given
-    if os.path.isdir(sys.argv[2]):
-        print "Using %s to save the main HTML file pages" % (sys.argv[2])
-        LOC = sys.argv[2]
-        tarballs = sys.argv[3:]
+        if os.path.isdir(sys.argv[2]):
+            print "Using %s to save the main HTML file pages" % (sys.argv[2])
+            LOC = sys.argv[2]
+            tarballs = sys.argv[3:]
+        else:
+            print "No Directory specified for saving main HTML file pages, using PETSc root directory"
+            LOC = PETSC_DIR
+            tarballs = sys.argv[2:]
+            make_htmlpage(LOC,tarballs)
     else:
-        print "No Directory specified for saving main HTML file pages, using PETSc root directory"
-        LOC = PETSC_DIR
-        tarballs = sys.argv[2:]
-    make_htmlpage(LOC,tarballs)
+        print "No or invalid option specified:"
+        print "Usage: To run gcov and create tarball"
+        print "         ./gcov.py -run_gcov      "
+        print "Usage: To create main html page"
+        print "         ./gcov.py -merge_gcov [LOC] tarballs"
 
-        
-else:
-    print "No or invalid option specified:"
-    print "Usage: To run gcov and create tarball"
-    print "         ./rungcov.py -run_gcov      "
-    print "Usage: To create main html page"
-    print "         ./rungcov.py -merge_gcov [LOC] tarballs"
-
-
+if __name__ == '__main__':
+    main()
 
