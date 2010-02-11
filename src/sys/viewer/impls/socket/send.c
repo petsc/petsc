@@ -192,7 +192,7 @@ static PetscErrorCode SOCKEstablish_Private(u_short portnum,int *ss)
   sa.sin_port = htons(portnum); 
 
   if ((s = socket(AF_INET,SOCK_STREAM,0)) < 0) {
-    SETERRQ(PETSC_ERR_SYS,"Error running socket() command");CHKERRQ(ierr);
+    SETERRQ(PETSC_ERR_SYS,"Error running socket() command");
   }
   ierr = setsockopt(s,SOL_SOCKET,SO_REUSEADDR,(char *)&optval,sizeof(optval));CHKERRQ(ierr);
 

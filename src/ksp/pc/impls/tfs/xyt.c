@@ -341,14 +341,11 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
   for (dim=i=j=0;i<m;i++)
     {
       /* time to move to the next level? */
-      while (i==segs[dim])
-	{
-	  if (dim==level)
-	    {SETERRQ(PETSC_ERR_PLIB,"dim about to exceed level\n"); break;}
-
-	  stages[dim++]=i;
-	  end+=lnsep[dim];
-	}
+      while (i==segs[dim]){
+        if (dim==level) SETERRQ(PETSC_ERR_PLIB,"dim about to exceed level\n");
+	stages[dim++]=i;
+	end+=lnsep[dim];
+      }
       stages[dim]=i;
 
       /* which column are we firing? */

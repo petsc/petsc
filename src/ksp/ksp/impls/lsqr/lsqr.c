@@ -65,7 +65,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   MatStructure   pflag;
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
   PetscTruth     diagonalscale;
-  const PCType pc_type;
+  const PCType   pc_type;
   
   PetscFunctionBegin;
   ierr = PCGetType(ksp->pc, &pc_type); CHKERRQ(ierr);
@@ -77,10 +77,10 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   ierr     = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
 
   /* Calculate norm of right hand side */
-  ierr = VecNorm(U,NORM_2,&lsqr->rhs_norm);CHKERRQ(ierr);
+  ierr = VecNorm(ksp->vec_rhs,NORM_2,&lsqr->rhs_norm);CHKERRQ(ierr);
 
-  /* Calculate norm of teh matrix*/
-  MatNorm( Amat, NORM_FROBENIUS, &lsqr->anorm );
+  /* Calculate norm of matrix*/
+  ierr = MatNorm( Amat, NORM_FROBENIUS, &lsqr->anorm);CHKERRQ(ierr);
 
   /* vectors of length m, where system size is mxn */
   B        = ksp->vec_rhs;
@@ -128,7 +128,8 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   ierr = VecScale(U,1.0/beta);CHKERRQ(ierr);
   ierr = KSP_MatMultTranspose(ksp,Amat,U,Xwrk); CHKERRQ(ierr);
   ierr = PCApply(ksp->pc,Xwrk,V);  CHKERRQ(ierr);
-  ierr = VecDot(V,Xwrk,&alpha); alpha = sqrt(MAX(0,alpha)); CHKERRQ(ierr);
+	ierr = VecNorm(V,NORM_2,&alpha);CHKERRQ(ierr);
+	//ierr = VecDot(V,Xwrk,&alpha); alpha = sqrt(MAX(0,alpha)); CHKERRQ(ierr);
   ierr = VecScale(V,1.0/alpha);CHKERRQ(ierr);
 
   ierr = VecCopy(V,W);CHKERRQ(ierr);
@@ -150,8 +151,12 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
         ierr = KSP_MatMultTranspose(ksp,Amat,U1,Xwrk);CHKERRQ(ierr);
         ierr = PCApply(ksp->pc,Xwrk,V1);CHKERRQ(ierr);
         ierr = VecAXPY(V1,-beta,V);CHKERRQ(ierr);
-        ierr = VecDot(V1,Xwrk,&alpha);CHKERRQ(ierr);
-        alpha = sqrt(MAX(0,alpha));
+	{ PetscScalar alpha2;
+	     ierr = VecDot(V1,Xwrk,&alpha2);CHKERRQ(ierr);
+        alpha2 = sqrt(MAX(0,alpha2));
+	ierr = VecNorm(V1,NORM_2,&alpha);CHKERRQ(ierr);
+        if (alpha != alpha2) printf("alpha %g alpha2 %g alpha - alpha2 %g\n",alpha,alpha2,alpha-alpha2);
+	}
         if ( alpha > 0 )
           {
             ierr = VecScale(V1,1.0/alpha);CHKERRQ(ierr);
