@@ -213,8 +213,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCDestroy_MG"
-PetscErrorCode PCDestroy_MG(PC pc)
+#define __FUNCT__ "PCDestroy_MG_Private"
+PetscErrorCode PCDestroy_MG_Private(PC pc)
 {
   PC_MG          *mg = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
@@ -241,6 +241,20 @@ PetscErrorCode PCDestroy_MG(PC pc)
     }
     ierr = PetscFree(mglevels);CHKERRQ(ierr);
   }
+  mg->nlevels = -1;
+  mg->levels  = PETSC_NULL;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_MG"
+PetscErrorCode PCDestroy_MG(PC pc)
+{
+  PC_MG          *mg = (PC_MG*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCDestroy_MG_Private(pc);CHKERRQ(ierr);
   ierr = PetscFree(mg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -111,6 +111,8 @@ PetscErrorCode PCDestroy_ML_Private(void *ptr)
    the user, but instead is called by PCApply() if necessary.
 */
 extern PetscErrorCode PCSetFromOptions_MG(PC);
+extern PetscErrorCode PCDestroy_MG_Private(PC);
+
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_ML"
 PetscErrorCode PCSetUp_ML(PC pc)
@@ -127,10 +129,14 @@ PetscErrorCode PCSetUp_ML(PC pc)
   PC_MG           *mg = (PC_MG*)pc->data;
   PC_ML           *pc_ml = (PC_ML*)mg->innerctx;
   PetscTruth      isSeq, isMPI;
+  KSP             smoother;
+  PC              subpc;
 
   PetscFunctionBegin;
   if (pc->setupcalled){
+    /* since ML can change the size of vectors/matrices at any level we must destroy everything */
     ierr = PCDestroy_ML_Private(pc_ml);CHKERRQ(ierr);
+    ierr = PCDestroy_MG_Private(pc);CHKERRQ(ierr);
   }
   
   /* setup special features of PCML */
@@ -197,29 +203,25 @@ PetscErrorCode PCSetUp_ML(PC pc)
 
   Nlevels = ML_Gen_MGHierarchy_UsingAggregation(ml_object,0,ML_INCREASING,agg_object);
   if (Nlevels<=0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Nlevels %d must > 0",Nlevels);
-  if (pc->setupcalled && pc_ml->Nlevels != Nlevels) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"previous Nlevels %D and current Nlevels %d must be same", pc_ml->Nlevels,Nlevels);
   pc_ml->Nlevels = Nlevels;
   fine_level = Nlevels - 1;
-  if (!pc->setupcalled){
-    ierr = PCMGSetLevels(pc,Nlevels,PETSC_NULL);CHKERRQ(ierr); 
-    /* set default smoothers */
-    KSP smoother;
-    PC  subpc;
-    for (level=1; level<=fine_level; level++){
-      if (size == 1){
-        ierr = PCMGGetSmoother(pc,level,&smoother);CHKERRQ(ierr);
-        ierr = KSPSetType(smoother,KSPRICHARDSON);CHKERRQ(ierr);
-        ierr = KSPGetPC(smoother,&subpc);CHKERRQ(ierr);
-        ierr = PCSetType(subpc,PCSOR);CHKERRQ(ierr);
-      } else {
-        ierr = PCMGGetSmoother(pc,level,&smoother);CHKERRQ(ierr);
-        ierr = KSPSetType(smoother,KSPRICHARDSON);CHKERRQ(ierr);
-        ierr = KSPGetPC(smoother,&subpc);CHKERRQ(ierr);
-        ierr = PCSetType(subpc,PCSOR);CHKERRQ(ierr);
-      }
+
+  ierr = PCMGSetLevels(pc,Nlevels,PETSC_NULL);CHKERRQ(ierr); 
+  /* set default smoothers */
+  for (level=1; level<=fine_level; level++){
+    if (size == 1){
+      ierr = PCMGGetSmoother(pc,level,&smoother);CHKERRQ(ierr);
+      ierr = KSPSetType(smoother,KSPRICHARDSON);CHKERRQ(ierr);
+      ierr = KSPGetPC(smoother,&subpc);CHKERRQ(ierr);
+      ierr = PCSetType(subpc,PCSOR);CHKERRQ(ierr);
+    } else {
+      ierr = PCMGGetSmoother(pc,level,&smoother);CHKERRQ(ierr);
+      ierr = KSPSetType(smoother,KSPRICHARDSON);CHKERRQ(ierr);
+      ierr = KSPGetPC(smoother,&subpc);CHKERRQ(ierr);
+      ierr = PCSetType(subpc,PCSOR);CHKERRQ(ierr);
     }
-    ierr = PCSetFromOptions_MG(pc);CHKERRQ(ierr); /* should be called in PCSetFromOptions_ML(), but cannot be called prior to PCMGSetLevels() */
   }
+  ierr = PCSetFromOptions_MG(pc);CHKERRQ(ierr); /* should be called in PCSetFromOptions_ML(), but cannot be called prior to PCMGSetLevels() */
    
   ierr = PetscMalloc(Nlevels*sizeof(GridCtx),&gridctx);CHKERRQ(ierr); 
   pc_ml->gridctx = gridctx;
@@ -291,7 +293,9 @@ PetscErrorCode PCSetUp_ML(PC pc)
   }  
   ierr = PCMGSetResidual(pc,fine_level,PCMGDefaultResidual,gridctx[fine_level].A);CHKERRQ(ierr); 
   ierr = KSPSetOperators(gridctx[fine_level].ksp,gridctx[level].A,gridctx[fine_level].A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  
+
+  /* setupcalled is set to 0 so that MG is setup from scratch */
+  pc->setupcalled = 0;  
   ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
