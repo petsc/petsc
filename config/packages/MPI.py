@@ -11,7 +11,7 @@ from stat import *
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.2/downloads/openmpi-1.2.8.tar.gz']
+    self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.4/downloads/openmpi-1.4.1.tar.gz']
     self.download_mpich     = ['http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.2.1/mpich2-1.2.1.tar.gz']
     self.download           = ['redefine']
     self.functions          = ['MPI_Init', 'MPI_Comm_create']
