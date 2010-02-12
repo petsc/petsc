@@ -311,7 +311,7 @@ PetscErrorCode LGMREScycle(PetscInt *itcount,KSP ksp)
  
      /* first do H+*y */
      ierr = VecSet(AUG_TEMP,0.0);CHKERRQ(ierr);
-     VecGetArray(AUG_TEMP, &avec);
+     ierr = VecGetArray(AUG_TEMP, &avec);CHKERRQ(ierr);
      for (ii=0; ii < it_total + 1; ii++) {
         for (jj=0; jj <= ii+1; jj++) {
            avec[jj] += *HES(jj ,ii) * *GRS(ii);
@@ -319,15 +319,13 @@ PetscErrorCode LGMREScycle(PetscInt *itcount,KSP ksp)
      }
 
      /*now multiply result by V+ */
-     ierr = VecSet(VEC_TEMP,0.0);
-     ierr = VecMAXPY(VEC_TEMP, it_total+1, avec, &VEC_VV(0)); /*answer is in VEC_TEMP*/
-     VecRestoreArray(AUG_TEMP, &avec);
+     ierr = VecSet(VEC_TEMP,0.0);CHKERRQ(ierr);
+     ierr = VecMAXPY(VEC_TEMP, it_total+1, avec, &VEC_VV(0));CHKERRQ(ierr); /*answer is in VEC_TEMP*/
+     ierr = VecRestoreArray(AUG_TEMP, &avec);CHKERRQ(ierr);
   
      /*copy answer to aug location  and scale*/
      ierr = VecCopy(VEC_TEMP,  A_AUGVEC(spot));CHKERRQ(ierr);
      ierr = VecScale(A_AUGVEC(spot),inv_tmp_norm);CHKERRQ(ierr);
-
-
   }
   PetscFunctionReturn(0);
 }
@@ -513,9 +511,7 @@ static PetscErrorCode BuildLgmresSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP 
 
   /* add solution to previous solution */
   /* put updated solution into vdest.*/
-  if (vdest != vguess) {
-    ierr = VecCopy(VEC_TEMP,vdest);CHKERRQ(ierr);
-  }
+  ierr = VecCopy(vguess,vdest);CHKERRQ(ierr);
   ierr = VecAXPY(vdest,1.0,VEC_TEMP);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
