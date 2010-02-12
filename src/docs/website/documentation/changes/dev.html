@@ -1,8 +1,8 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
 <head>
-
-<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
   <title>PETSc: Docs:&nbsp; Changes: Development</title>
 </head>
@@ -109,13 +109,17 @@ ${PETSC_DIR}/conf/rules</li>
 [check fortran usage]<br>
         </li>
       </ul>
-      <u><b>config/configure.py: <br>
-      <br>
+      <u><b>config/configure.py:<br>
       </b></u>
-      <div style="margin-left: 40px;">All ./configure options that
-state known values, so that ./configure doesn't try to test for them.
-Often used with the --with-batch option now begin with -known-</div>
-      <u><b> </b></u>
+      <ul>
+        <li>All ./configure options that state known values, so that
+./configure doesn't try to test for them. Often used with the --with-batch
+option now begin with --known-</li>
+        <li>--download-mpich now defaults to --with-pm=hydra [instead
+of pm=gforker]<br>
+        </li>
+      </ul>
+      <u><b></b></u>
       <ul>
       </ul>
       <p><u><b>IS:</b></u></p>
@@ -204,9 +208,9 @@ explicit Runge-Kutta scheme.</li>
         <li>DAGetColoring() now takes a MatType as an additional
 argument, should be MATAIJ or MATBAIJ</li>
         <li>Added DARefineHierarchy(), DMMG now always uses
-        DMRefineHierarchy to generate refined grids.  Added options
-        -da_refine_hierarchy_[xyz] to allow semi-coarsening at some
-        levels of the hierarchy.</li>
+DMRefineHierarchy to generate refined grids. Added options
+-da_refine_hierarchy_[xyz] to allow semi-coarsening at some levels of
+the hierarchy.</li>
       </ul>
       <p><u><b>DMMG:</b></u></p>
       <ul>
