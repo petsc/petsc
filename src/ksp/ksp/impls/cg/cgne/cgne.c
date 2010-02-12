@@ -229,6 +229,8 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
    as well as the operator and preconditioner. If the transpose of the preconditioner is not available then
    the preconditioner is used in its place so one ends up preconditioning A'A with B B. Seems odd?
 
+   Developer Notes: How is this related to the preconditioned LSQR implementation?
+
    This object is subclassed off of KSPCG
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
