@@ -613,7 +613,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsPrint(FILE *fd)
     }
   }
   if (options->N) {
-    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"#End o PETSc Option Table entries\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"#End of PETSc Option Table entries\n");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
