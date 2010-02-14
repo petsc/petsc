@@ -275,7 +275,6 @@ $     -openmp_pc_type hypre -openmp_pc_hypre_type boomeramg
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types)
 
 M*/
-extern MPI_Comm PETSC_COMM_LOCAL_WORLD;
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -291,7 +290,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_OpenMP(PC pc)
   if (size > 1) SETERRQ(PETSC_ERR_ARG_SIZ,"OpenMP preconditioner only works for sequential solves");
   /* caste the struct length to a PetscInt for easier MPI calls */
 
-  ierr      = PetscOpenMPNew(PETSC_COMM_LOCAL_WORLD,(PetscInt)sizeof(PC_OpenMP),(void**)&red);CHKERRQ(ierr);
+  ierr      = PetscOpenMPMalloc(PETSC_COMM_LOCAL_WORLD,(PetscInt)sizeof(PC_OpenMP),(void**)&red);CHKERRQ(ierr);
   red->comm = PETSC_COMM_LOCAL_WORLD;
   pc->data  = (void*) red;
 

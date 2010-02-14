@@ -668,14 +668,17 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   ierr = PetscOptionsGetInt(PETSC_NULL,"-openmp_spawn_size",&nodesize,&flg);CHKERRQ(ierr);
   if (flg) {
 #if defined(PETSC_HAVE_MPI_COMM_SPAWN)
-    ierr = PetscOpenMPSpawn((PetscMPIInt) nodesize);CHKERRQ(ierr); 
+    ierr = PetscOpenMPSpawn((PetscMPIInt) nodesize);CHKERRQ(ierr); /* worker nodes never return from here; they go directly to PetscEnd() */
 #else
     SETERRQ(PETSC_ERR_SUP,"PETSc built without MPI 2 (MPI_Comm_spawn) support, use -openmp_merge_size instead");
 #endif
   } else {
     ierr = PetscOptionsGetInt(PETSC_NULL,"-openmp_merge_size",&nodesize,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscOpenMPMerge((PetscMPIInt) nodesize);CHKERRQ(ierr); 
+      ierr = PetscOpenMPMerge((PetscMPIInt) nodesize,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr); 
+      if (PetscOpenMPWorker) { /* if worker then never enter user code */
+        ierr = PetscEnd(); 
+      }
     }
   }
   flg  = PETSC_FALSE;

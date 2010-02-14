@@ -27,19 +27,26 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
+  PetscTruth     nopreconditioner;
 
   PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)ksp->pc,PCNONE,&nopreconditioner);CHKERRQ(ierr);
   if (ksp->pc_side == PC_SYMMETRIC){
     SETERRQ(PETSC_ERR_SUP,"no symmetric preconditioning for KSPLSQR");
   } else if (ksp->pc_side == PC_RIGHT){
     SETERRQ(PETSC_ERR_SUP,"no right preconditioning for KSPLSQR");
   }
+  //  nopreconditioner =PETSC_FALSE;
 
   lsqr->nwork_m = 2;
   if (lsqr->vwork_m) {
     ierr = VecDestroyVecs(lsqr->vwork_m,lsqr->nwork_m);CHKERRQ(ierr);
   }
-  lsqr->nwork_n = 5;
+  if (nopreconditioner) {
+     lsqr->nwork_n = 4;
+  } else {
+     lsqr->nwork_n = 5;
+  }
   if (lsqr->vwork_n) {
     ierr = VecDestroyVecs(lsqr->vwork_n,lsqr->nwork_n);CHKERRQ(ierr);
   }
@@ -62,18 +69,20 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   PetscInt       i,size1,size2;
   PetscScalar    rho,rhobar,phi,phibar,theta,c,s,tmp,tau,alphac;
   PetscReal      beta,alpha,rnorm;
-  Vec            X,B,V,V1,U,U1,TMP,W,W2,SE,Xwrk;
+  Vec            X,B,V,V1,U,U1,TMP,W,W2,SE,Z;
   Mat            Amat,Pmat;
   MatStructure   pflag;
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
   PetscTruth     diagonalscale,nopreconditioner;
   
   PetscFunctionBegin;
-  ierr = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
+  ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+
+  ierr     = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)ksp->pc,PCNONE,&nopreconditioner);CHKERRQ(ierr);
 
+  //  nopreconditioner =PETSC_FALSE;
   /* Calculate norm of right hand side */
   ierr = VecNorm(ksp->vec_rhs,NORM_2,&lsqr->rhs_norm);CHKERRQ(ierr);
 
@@ -91,7 +100,9 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   V        = lsqr->vwork_n[1];
   V1       = lsqr->vwork_n[2];
   W2       = lsqr->vwork_n[3];
-  Xwrk     = lsqr->vwork_n[4];
+  if (!nopreconditioner) {
+     Z     = lsqr->vwork_n[4];
+  }
 
   /* standard error vector */
   SE = lsqr->se;
@@ -124,29 +135,39 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   ierr = VecCopy(B,U);CHKERRQ(ierr);
   ierr = VecNorm(U,NORM_2,&beta);CHKERRQ(ierr);
   ierr = VecScale(U,1.0/beta);CHKERRQ(ierr);
-  ierr = KSP_MatMultTranspose(ksp,Amat,U,Xwrk); CHKERRQ(ierr);
-  ierr = PCApply(ksp->pc,Xwrk,V);CHKERRQ(ierr);
+  ierr = KSP_MatMultTranspose(ksp,Amat,U,V); CHKERRQ(ierr);
   if (nopreconditioner) {
-    ierr = VecNorm(V,NORM_2,&alpha);CHKERRQ(ierr);
+     ierr = VecNorm(V,NORM_2,&alpha); CHKERRQ(ierr);
   } else {
-    ierr = VecDot(V,Xwrk,&alphac);CHKERRQ(ierr);
+    ierr = PCApply(ksp->pc,V,Z);CHKERRQ(ierr);
+    ierr = VecDot(V,Z,&alphac);CHKERRQ(ierr);
     if (PetscRealPart(alphac) <= 0.0) {
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
       PetscFunctionReturn(0);
     }
     alpha = sqrt(PetscRealPart(alphac));
+    ierr = VecScale(Z,1.0/alpha); CHKERRQ(ierr);
   }
   ierr = VecScale(V,1.0/alpha);CHKERRQ(ierr);
-  ierr = VecCopy(V,W);CHKERRQ(ierr);
+
+  if (nopreconditioner){
+    ierr = VecCopy(V,W);CHKERRQ(ierr);
+  } else {
+    ierr = VecCopy(Z,W);CHKERRQ(ierr);
+  }
   ierr = VecSet(X,0.0);CHKERRQ(ierr);
 
   lsqr->arnorm = alpha * beta;
   phibar = beta;
   rhobar = alpha;
-  tau    = -beta;
-  i      = 0;
+  tau = -beta;
+  i = 0;
   do {
-    ierr = KSP_MatMult(ksp,Amat,V,U1);CHKERRQ(ierr);
+    if (nopreconditioner) {
+       ierr = KSP_MatMult(ksp,Amat,V,U1);CHKERRQ(ierr);
+    } else {
+       ierr = KSP_MatMult(ksp,Amat,Z,U1);CHKERRQ(ierr);
+    }
     ierr = VecAXPY(U1,-alpha,U);CHKERRQ(ierr);
     ierr = VecNorm(U1,NORM_2,&beta);CHKERRQ(ierr);
     if (beta == 0.0){ 
@@ -155,18 +176,19 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     }
     ierr = VecScale(U1,1.0/beta);CHKERRQ(ierr);
 
-    ierr = KSP_MatMultTranspose(ksp,Amat,U1,Xwrk);CHKERRQ(ierr);
-    ierr = PCApply(ksp->pc,Xwrk,V1);CHKERRQ(ierr);
+    ierr = KSP_MatMultTranspose(ksp,Amat,U1,V1);CHKERRQ(ierr);
     ierr = VecAXPY(V1,-beta,V);CHKERRQ(ierr);
-    if (nopreconditioner) { 
-      ierr = VecNorm(V1,NORM_2,&alpha);CHKERRQ(ierr);
+    if (nopreconditioner) {
+      ierr = VecNorm(V1,NORM_2,&alpha); CHKERRQ(ierr);
     } else {
-      ierr = VecDot(V1,Xwrk,&alphac);CHKERRQ(ierr);
+      ierr = PCApply(ksp->pc,V1,Z);CHKERRQ(ierr);
+      ierr = VecDot(V1,Z,&alphac);CHKERRQ(ierr);
       if (PetscRealPart(alphac) <= 0.0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
         break;
       }
       alpha = sqrt(PetscRealPart(alphac));
+      ierr = VecScale(Z,1.0/alpha);CHKERRQ(ierr);
     }
     ierr   = VecScale(V1,1.0/alpha);CHKERRQ(ierr);
     rho    = PetscSqrtScalar(rhobar*rhobar + beta*beta);
@@ -179,13 +201,18 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     tau    = s * phi;
 
     ierr = VecAXPY(X,phi/rho,W);CHKERRQ(ierr);  /*    x <- x + (phi/rho) w   */
+
     if (SE) {
       ierr = VecCopy(W,W2);CHKERRQ(ierr);
       ierr = VecSquare(W2);CHKERRQ(ierr);
       ierr = VecScale(W2,1.0/(rho*rho));CHKERRQ(ierr);
       ierr = VecAXPY(SE, 1.0, W2);CHKERRQ(ierr); /* SE <- SE + (w^2/rho^2) */
     }
-    ierr = VecAYPX(W,-theta/rho,V1);CHKERRQ(ierr); /* w <- v - (theta/rho) w */
+    if (nopreconditioner) {
+       ierr = VecAYPX(W,-theta/rho,V1);CHKERRQ(ierr); /* w <- v - (theta/rho) w */  
+    } else {
+       ierr = VecAYPX(W,-theta/rho,Z);CHKERRQ(ierr);  /* w <- z - (theta/rho) w */  
+    } 
 
     lsqr->arnorm = alpha*PetscAbsScalar(tau);
     rnorm = PetscRealPart(phibar);
@@ -219,6 +246,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
 
   PetscFunctionReturn(0);
 }
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDestroy_LSQR" 
