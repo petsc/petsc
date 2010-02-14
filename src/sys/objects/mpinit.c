@@ -276,7 +276,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPHandle(MPI_Comm comm)
       PetscInt       i;
       PetscErrorCode (*f)(MPI_Comm,void*);
       ierr = MPI_Bcast(&i,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-      ierr = MPI_Bcast(&f,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+      ierr = MPI_Bcast(&f,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr);
       ierr = (*f)(comm,objects[i]);CHKERRQ(ierr);
       break;
     }
@@ -284,7 +284,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPHandle(MPI_Comm comm)
       PetscInt       i;
       PetscErrorCode (*f)(MPI_Comm,void*,void*);
       ierr = MPI_Bcast(&i,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-      ierr = MPI_Bcast(&f,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+      ierr = MPI_Bcast(&f,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr);
       ierr = (*f)(comm,PetscOpenMPCtx,objects[i]);CHKERRQ(ierr);
       break;
     }
@@ -404,7 +404,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPRun(MPI_Comm comm,PetscErrorCode (*f)(
   for (i=0; i<numberobjects; i++) {
     if (objects[i] == ptr) {
       ierr = MPI_Bcast(&i,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-      ierr = MPI_Bcast(&f,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+      ierr = MPI_Bcast(&f,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr);
       ierr = (*f)(comm,ptr);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
@@ -445,7 +445,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPRunCtx(MPI_Comm comm,PetscErrorCode (*
   for (i=0; i<numberobjects; i++) {
     if (objects[i] == ptr) {
       ierr = MPI_Bcast(&i,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-      ierr = MPI_Bcast(&f,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+      ierr = MPI_Bcast(&f,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr);
       ierr = (*f)(comm,PetscOpenMPCtx,ptr);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
