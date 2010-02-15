@@ -1550,7 +1550,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_2_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  ierr = PetscLogFlops(4.0*(2.0*a->nz + mbs));CHKERRQ(ierr); /* bs2*(2*a->nz + mbs) */
+  ierr = PetscLogFlops(4.0*(4.0*a->nz + mbs));CHKERRQ(ierr); /* bs2*(4*a->nz + mbs) */
   PetscFunctionReturn(0);
 }
 
@@ -2061,6 +2061,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat B,Mat A,IS perm,const MatFa
     a->permute = PETSC_FALSE;
     ai = a->i; aj = a->j;
   } else { /*  non-trivial permutation */   
+    SETERRQ(PETSC_ERR_SUP,"Matrix reordering is not supported for sbaij matrix. Use aij format");
     a->permute = PETSC_TRUE; 
     ierr = MatReorderingSeqSBAIJ(A, perm);CHKERRQ(ierr);   
     ai = a->inew; aj = a->jnew;
@@ -2290,6 +2291,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
       a->permute = PETSC_FALSE;
       ai = a->i; aj = a->j;
     } else { /*  non-trivial permutation */   
+      SETERRQ(PETSC_ERR_SUP,"Matrix reordering is not supported for sbaij matrix. Use aij format");
       a->permute = PETSC_TRUE;
       ierr = MatReorderingSeqSBAIJ(A, perm);CHKERRQ(ierr);   
       ai   = a->inew; aj = a->jnew;
@@ -2429,10 +2431,14 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
   ierr    = PetscMalloc((am+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
   b->maxnz = b->nz = ui[am];
   
-  (fact)->info.factor_mallocs    = reallocs;
-  (fact)->info.fill_ratio_given  = fill;
-  (fact)->info.fill_ratio_needed = ratio_needed;
-  ierr = MatSeqSBAIJSetNumericFactorization(fact,perm_identity);CHKERRQ(ierr);
+  fact->info.factor_mallocs    = reallocs;
+  fact->info.fill_ratio_given  = fill;
+  fact->info.fill_ratio_needed = ratio_needed;
+  if (perm_identity){
+    fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering;
+  } else {
+    fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1;
+  }
   PetscFunctionReturn(0); 
 } 
 
