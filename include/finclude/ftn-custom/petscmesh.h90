@@ -52,6 +52,26 @@
       End Interface
 
       Interface
+        Subroutine MeshGetConeF90(m,p,array,ierr)
+          USE_MESH_HIDE
+          PetscInt, pointer :: array(:,:)
+	  PetscInt p
+          PetscErrorCode ierr
+          MESH_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine MeshRestoreConeF90(m,p,array,ierr)
+          USE_MESH_HIDE
+          PetscInt, pointer :: array(:,:)
+	  PetscInt p
+          PetscErrorCode ierr
+          MESH_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
         Subroutine SectionGetArrayF90(m,name,array,ierr)
           USE_MESH_HIDE
           CHARACTER*80 name
