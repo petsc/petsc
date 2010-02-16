@@ -1289,3 +1289,274 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_PFMG(PC pc)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+/* we know we are working with a HYPRE_SStructMatrix */
+typedef struct {
+  MPI_Comm            hcomm;       /* does not share comm with HYPRE_SStructMatrix because need to create solver before getting matrix */
+  HYPRE_SStructSolver  ss_solver;
+
+  /* keep copy of SYSPFMG options used so may view them */
+  int                 its;
+  double              tol;
+  int                 relax_type;
+  int                 num_pre_relax,num_post_relax;
+} PC_SysPFMG;
+
+#undef __FUNCT__
+#define __FUNCT__ "PCDestroy_SysPFMG"
+PetscErrorCode PCDestroy_SysPFMG(PC pc)
+{
+  PetscErrorCode ierr;
+  PC_SysPFMG    *ex = (PC_SysPFMG*) pc->data;
+
+  PetscFunctionBegin;
+  if (ex->ss_solver) {ierr = HYPRE_SStructSysPFMGDestroy(ex->ss_solver);CHKERRQ(ierr);}
+  ierr = MPI_Comm_free(&ex->hcomm);CHKERRQ(ierr);
+  ierr = PetscFree(ex);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static const char *SysPFMGRelaxType[]   = {"Weighted-Jacobi","Red/Black-Gauss-Seidel"};
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCView_SysPFMG"
+PetscErrorCode PCView_SysPFMG(PC pc,PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  PetscTruth     iascii;
+  PC_SysPFMG    *ex = (PC_SysPFMG*) pc->data;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE SysPFMG preconditioning\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE SysPFMG: max iterations %d\n",ex->its);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE SysPFMG: tolerance %g\n",ex->tol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE SysPFMG: relax type %s\n",PFMGRelaxType[ex->relax_type]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE SysPFMG: number pre-relax %d post-relax %d\n",ex->num_pre_relax,ex->num_post_relax);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetFromOptions_SysPFMG"
+PetscErrorCode PCSetFromOptions_SysPFMG(PC pc)
+{
+  PetscErrorCode ierr;
+  PC_SysPFMG    *ex = (PC_SysPFMG*) pc->data;
+  PetscTruth     flg = PETSC_FALSE;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHead("SysPFMG options");CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-pc_syspfmg_print_statistics","Print statistics","HYPRE_SStructSysPFMGSetPrintLevel",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+  if (flg) {
+    int level=3;
+    ierr = HYPRE_SStructSysPFMGSetPrintLevel(ex->ss_solver,level);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsInt("-pc_syspfmg_its","Number of iterations of SysPFMG to use as preconditioner","HYPRE_SStructSysPFMGSetMaxIter",ex->its,&ex->its,PETSC_NULL);CHKERRQ(ierr);
+  ierr = HYPRE_SStructSysPFMGSetMaxIter(ex->ss_solver,ex->its);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_syspfmg_num_pre_relax","Number of smoothing steps before coarse grid","HYPRE_SStructSysPFMGSetNumPreRelax",ex->num_pre_relax,&ex->num_pre_relax,PETSC_NULL);CHKERRQ(ierr);
+  ierr = HYPRE_SStructSysPFMGSetNumPreRelax(ex->ss_solver,ex->num_pre_relax);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_syspfmg_num_post_relax","Number of smoothing steps after coarse grid","HYPRE_SStructSysPFMGSetNumPostRelax",ex->num_post_relax,&ex->num_post_relax,PETSC_NULL);CHKERRQ(ierr);
+  ierr = HYPRE_SStructSysPFMGSetNumPostRelax(ex->ss_solver,ex->num_post_relax);CHKERRQ(ierr);
+
+  ierr = PetscOptionsReal("-pc_syspfmg_tol","Tolerance of SysPFMG","HYPRE_SStructSysPFMGSetTol",ex->tol,&ex->tol,PETSC_NULL);CHKERRQ(ierr);
+  ierr = HYPRE_SStructSysPFMGSetTol(ex->ss_solver,ex->tol);CHKERRQ(ierr); 
+  ierr = PetscOptionsEList("-pc_syspfmg_relax_type","Relax type for the up and down cycles","HYPRE_SStructSysPFMGSetRelaxType",SysPFMGRelaxType,4,SysPFMGRelaxType[ex->relax_type],&ex->relax_type,PETSC_NULL);CHKERRQ(ierr);
+  ierr = HYPRE_SStructSysPFMGSetRelaxType(ex->ss_solver, ex->relax_type);CHKERRQ(ierr); 
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply_SysPFMG"
+PetscErrorCode PCApply_SysPFMG(PC pc,Vec x,Vec y)
+{
+  PetscErrorCode    ierr;
+  PC_SysPFMG       *ex = (PC_SysPFMG*) pc->data;
+  PetscScalar      *xx,*yy;
+  int               ilower[3],iupper[3];
+  Mat_HYPRESStruct *mx = (Mat_HYPRESStruct *)(pc->pmat->data);
+  int               ordering= mx->dofs_order;
+  int               nvars= mx->nvars;
+  int               part= 0;
+  int               size;
+  int               i;
+
+  PetscFunctionBegin;
+  ierr = DAGetCorners(mx->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
+  iupper[0] += ilower[0] - 1;    
+  iupper[1] += ilower[1] - 1;    
+  iupper[2] += ilower[2] - 1;    
+
+  size= 1;
+  for (i= 0; i< 3; i++) {
+     size*= (iupper[i]-ilower[i]+1);
+  }
+  /* copy x values over to hypre for variable ordering */
+  if (ordering) {
+     ierr = HYPRE_SStructVectorSetConstantValues(mx->ss_b,0.0);CHKERRQ(ierr);
+     ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+     for (i= 0; i< nvars; i++) {
+        ierr = HYPRE_SStructVectorSetBoxValues(mx->ss_b,part,ilower,iupper,i,xx+(size*i));CHKERRQ(ierr);
+     }
+     ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+     ierr = HYPRE_SStructVectorAssemble(mx->ss_b);CHKERRQ(ierr);
+
+     ierr = HYPRE_SStructMatrixMatvec(1.0,mx->ss_mat,mx->ss_b,0.0,mx->ss_x);CHKERRQ(ierr);
+     ierr = HYPRE_SStructSysPFMGSolve(ex->ss_solver,mx->ss_mat,mx->ss_b,mx->ss_x);CHKERRQ(ierr);
+
+     /* copy solution values back to PETSc */
+     ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+     for (i= 0; i< nvars; i++) {
+        ierr = HYPRE_SStructVectorGetBoxValues(mx->ss_x,part,ilower,iupper,i,yy+(size*i));CHKERRQ(ierr);
+     }
+     ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
+  }
+
+  else {      /* nodal ordering must be mapped to variable ordering for sys_pfmg */
+     PetscScalar     *z;
+     int              j, k;
+
+     ierr = PetscMalloc(nvars*size*sizeof(PetscScalar),&z);CHKERRQ(ierr);
+     ierr = HYPRE_SStructVectorSetConstantValues(mx->ss_b,0.0);CHKERRQ(ierr);
+     ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+
+     /* transform nodal to hypre's variable ordering for sys_pfmg */
+     for (i= 0; i< size; i++) {
+        k= i*nvars;
+        for (j= 0; j< nvars; j++) {
+           z[j*size+i]= xx[k+j];
+        }
+     }
+     for (i= 0; i< nvars; i++) {
+        ierr = HYPRE_SStructVectorSetBoxValues(mx->ss_b,part,ilower,iupper,i,z+(size*i));CHKERRQ(ierr);
+     }
+     ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+
+     ierr = HYPRE_SStructVectorAssemble(mx->ss_b);CHKERRQ(ierr);
+
+     ierr = HYPRE_SStructSysPFMGSolve(ex->ss_solver,mx->ss_mat,mx->ss_b,mx->ss_x);CHKERRQ(ierr);
+
+     /* copy solution values back to PETSc */
+     ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+     for (i= 0; i< nvars; i++) {
+        ierr = HYPRE_SStructVectorGetBoxValues(mx->ss_x,part,ilower,iupper,i,z+(size*i));CHKERRQ(ierr);
+     }
+     /* transform hypre's variable ordering for sys_pfmg to nodal ordering */
+     for (i= 0; i< size; i++) {
+        k= i*nvars;
+        for (j= 0; j< nvars; j++) {
+           yy[k+j]= z[j*size+i];
+        }
+     }
+     ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
+
+     ierr = PetscFree(z);CHKERRQ(ierr);
+  }
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplyRichardson_SysPFMG"
+static PetscErrorCode PCApplyRichardson_SysPFMG(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscTruth guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
+{
+  PC_SysPFMG    *jac = (PC_SysPFMG*)pc->data;
+  PetscErrorCode ierr;
+  int            oits;
+
+  PetscFunctionBegin;
+
+  ierr = HYPRE_SStructSysPFMGSetMaxIter(jac->ss_solver,its*jac->its);CHKERRQ(ierr);
+  ierr = HYPRE_SStructSysPFMGSetTol(jac->ss_solver,rtol);CHKERRQ(ierr);
+
+  ierr = PCApply_SysPFMG(pc,b,y);CHKERRQ(ierr);
+  ierr = HYPRE_SStructSysPFMGGetNumIterations(jac->ss_solver,&oits);CHKERRQ(ierr);
+  *outits = oits;
+  if (oits == its) *reason = PCRICHARDSON_CONVERGED_ITS;
+  else             *reason = PCRICHARDSON_CONVERGED_RTOL;
+  ierr = HYPRE_SStructSysPFMGSetTol(jac->ss_solver,jac->tol);CHKERRQ(ierr);
+  ierr = HYPRE_SStructSysPFMGSetMaxIter(jac->ss_solver,jac->its);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "PCSetUp_SysPFMG"
+PetscErrorCode PCSetUp_SysPFMG(PC pc)
+{
+  PetscErrorCode    ierr;
+  PC_SysPFMG       *ex = (PC_SysPFMG*) pc->data;
+  Mat_HYPRESStruct *mx = (Mat_HYPRESStruct *)(pc->pmat->data);
+  PetscTruth        flg;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)pc->pmat,MATHYPRESSTRUCT,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_ERR_ARG_INCOMP,"Must use MATHYPRESSTRUCT with this preconditioner");
+
+  /* create the hypre sstruct solver object and set its information */
+  if (ex->ss_solver) {
+    ierr = HYPRE_SStructSysPFMGDestroy(ex->ss_solver);CHKERRQ(ierr);
+  }
+  ierr = HYPRE_SStructSysPFMGCreate(ex->hcomm,&ex->ss_solver);CHKERRQ(ierr);
+  ierr = PCSetFromOptions_SysPFMG(pc);CHKERRQ(ierr);
+  ierr = HYPRE_SStructSysPFMGSetZeroGuess(ex->ss_solver);CHKERRQ(ierr);
+  ierr = HYPRE_SStructSysPFMGSetup(ex->ss_solver,mx->ss_mat,mx->ss_b,mx->ss_x);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+
+/*MC
+     PCSysPFMG - the hypre SysPFMG multigrid solver
+
+   Level: advanced
+
+   Options Database:
++ -pc_syspfmg_its <its> number of iterations of SysPFMG to use as preconditioner
+. -pc_syspfmg_num_pre_relax <steps> number of smoothing steps before coarse grid
+. -pc_syspfmg_num_post_relax <steps> number of smoothing steps after coarse grid
+. -pc_syspfmg_tol <tol> tolerance of SysPFMG
+. -pc_syspfmg_relax_type -relaxation type for the up and down cycles, one of Weighted-Jacobi,Red/Black-Gauss-Seidel
+
+   Notes:  This is for CELL-centered descretizations
+
+           This must be used with the MATHYPRESSTRUCT matrix type
+.
+           This is less general than in hypre, it supports only one part, and one block per process defined by a PETSc DA.
+           Also, only cell-centered variables.
+
+.seealso:  PCMG, MATHYPRESSTRUCT
+M*/
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCCreate_SysPFMG"
+PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SysPFMG(PC pc)
+{
+  PetscErrorCode     ierr;
+  PC_SysPFMG        *ex;
+
+  PetscFunctionBegin;
+  ierr = PetscNew(PC_SysPFMG,&ex);CHKERRQ(ierr);\
+  pc->data = ex;
+
+  ex->its            = 1;
+  ex->tol            = 1.e-8;
+  ex->relax_type     = 1;
+  ex->num_pre_relax  = 1;
+  ex->num_post_relax = 1;
+
+  pc->ops->setfromoptions  = PCSetFromOptions_SysPFMG;
+  pc->ops->view            = PCView_SysPFMG;
+  pc->ops->destroy         = PCDestroy_SysPFMG;
+  pc->ops->apply           = PCApply_SysPFMG;
+  pc->ops->applyrichardson = PCApplyRichardson_SysPFMG;
+  pc->ops->setup           = PCSetUp_SysPFMG;
+  ierr = MPI_Comm_dup(((PetscObject)pc)->comm,&(ex->hcomm));CHKERRQ(ierr);
+  ierr = HYPRE_SStructSysPFMGCreate(ex->hcomm,&ex->ss_solver);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END

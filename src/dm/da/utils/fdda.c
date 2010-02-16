@@ -666,9 +666,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, const MatType mtype,Mat *J)
         ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqSBAIJSetPreallocation_C",&sbaij);CHKERRQ(ierr);
       }
       if (!sbaij) {
-        PetscTruth flg;
+        PetscTruth flg, flg2;
         ierr = PetscTypeCompare((PetscObject)A,MATHYPRESTRUCT,&flg);CHKERRQ(ierr);
-        if (!flg) SETERRQ2(PETSC_ERR_SUP,"Not implemented for the matrix type: %s in %D dimension!\n" \
+        ierr = PetscTypeCompare((PetscObject)A,MATHYPRESSTRUCT,&flg2);CHKERRQ(ierr);
+        if (!flg && !flg2) SETERRQ2(PETSC_ERR_SUP,"Not implemented for the matrix type: %s in %D dimension!\n" \
                            "Send mail to petsc-maint@mcs.anl.gov for code",Atype,dim);
       }
     }
