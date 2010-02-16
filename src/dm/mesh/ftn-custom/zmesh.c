@@ -27,7 +27,6 @@ extern void PetscRmPointer(void*);
 #endif
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define meshcreatepflotran_     MESHCREATEPFLOTRAN
 #define meshcreatepcice_        MESHCREATEPCICE
 #define meshcreateexodus_       MESHCREATEEXODUS
 #define meshdistribute_         MESHDISTRIBUTE
@@ -55,7 +54,6 @@ extern void PetscRmPointer(void*);
 #define alestagepop_            ALESTAGEPOP
 #define alestageprintmemory_    ALESTAGEPRINTMEMORY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define meshcreatepflotran_     meshcreatepflotran_
 #define meshcreatepcice_        meshcreatepcice
 #define meshcreateexodus_       meshcreateexodus
 #define meshdistribute_         meshdistribute
@@ -87,13 +85,6 @@ extern void PetscRmPointer(void*);
 /* Definitions of Fortran Wrapper routines */
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL  meshcreatepflotran(MPI_Fint * comm, int *dim, CHAR hdf5Filename PETSC_MIXED_LEN(lenG), PetscTruth *interpolate, Mesh *mesh, PetscErrorCode *ierr PETSC_END_LEN(lenG))
-{
-  char *gF;
-  FIXCHAR(hdf5Filename,lenG,gF);
-  *ierr = MeshCreatePFLOTRAN(MPI_Comm_f2c( *(comm) ),*dim,gF,*interpolate,mesh);
-  FREECHAR(hdf5Filename,gF);
-}
 void PETSC_STDCALL  meshcreatepcice_(MPI_Fint * comm, int *dim, CHAR coordFilename PETSC_MIXED_LEN(lenC), CHAR adjFilename PETSC_MIXED_LEN(lenA), PetscTruth *interpolate, CHAR bcFilename PETSC_MIXED_LEN(lenB), Mesh *mesh, PetscErrorCode *ierr PETSC_END_LEN(lenC) PETSC_END_LEN(lenA) PETSC_END_LEN(lenB))
 {
   char *cF, *aF, *bF;
