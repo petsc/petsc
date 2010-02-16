@@ -1,12 +1,8 @@
 #include "petscksp.h"
-#include "precond_lsqr.h"
+#include "../src/ksp/ksp/impls/lsqr/lsqr.h"
+extern PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRGetArnorm(KSP,PetscReal*,PetscReal*,PetscReal*);
 
-PetscErrorCode precond_lsqr_monitor(
-                  KSP       solksp, /* Krylov Subspace method context */
-                  PetscInt  iter,   /* Current iteration number */
-                  PetscReal rnorm,  /* Current residual norm */
-                  void      *ctx    /* Pointer to user defined context */
-                  )
+PetscErrorCode KSPMonitorLSQR(KSP solksp, PetscInt iter, PetscReal rnorm, void *ctx)
 {
   PetscInt         mxiter;    /* Maximum number of iterations */
   PetscReal        arnorm;    /* The norm of the vector A.r */
@@ -14,24 +10,23 @@ PetscErrorCode precond_lsqr_monitor(
   PetscReal        dtol;      /* Divergence tolerance */
   PetscReal        rtol;      /* Relative convergence tolerance */
   Vec              x_sol;
-  PetscScalar      rdum;
-  PetscScalar      xnorm;
+  PetscReal        rdum;
+  PetscReal        xnorm;
   PetscErrorCode   ierr;
-  ierr = KSPGetTolerances( solksp, &rtol, &atol, &dtol, &mxiter ); CHKERRQ(ierr);
-  ierr = KSPLSQRGetArnorm( solksp, &arnorm, &rdum, &rdum); CHKERRQ(ierr);
-  ierr = KSPGetSolution( solksp, &x_sol ); CHKERRQ(ierr);
-  ierr = VecNorm( x_sol, NORM_2, &xnorm );  CHKERRQ(ierr);
+  MPI_Comm         comm;      
+  
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)solksp,&comm);CHKERRQ(ierr);
+  ierr = KSPGetTolerances( solksp, &rtol, &atol, &dtol, &mxiter );CHKERRQ(ierr);
+  ierr = KSPLSQRGetArnorm( solksp, &arnorm, &rdum, &rdum);CHKERRQ(ierr);
+  ierr = KSPGetSolution( solksp, &x_sol );CHKERRQ(ierr);
+  ierr = VecNorm( x_sol, NORM_2, &xnorm ); CHKERRQ(ierr);
 
-  if ( iter % 100 == 0 )
-  {
-     printf( "Iteration  Res norm      Grad norm     Upd norm\n");
+  if (iter % 100 == 0){
+    ierr = PetscPrintf(comm, "Iteration  Res norm      Grad norm     Upd norm\n");CHKERRQ(ierr);
   }
-  if ( iter <= 10                        ||
-       iter >= mxiter - 10               ||
-       iter % 10 == 0                    )
-  {
-     printf( "%10d %10.7e %10.7e %10.7e\n", iter, rnorm , arnorm, xnorm );
+  if (iter <= 10 || iter >= mxiter - 10 || iter % 10 == 0){
+    ierr = PetscPrintf(comm, "%10d %10.7e %10.7e %10.7e\n", iter, rnorm , arnorm, xnorm );CHKERRQ(ierr);
   }
-
-  return 0;
+  PetscFunctionReturn(0);
 }

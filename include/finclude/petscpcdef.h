@@ -46,4 +46,5 @@
 #define PCML 'ml'
 #define PCPYTHON 'python'
 #define PCPFMG 'pfmg'
+#define PCSYSPFMG 'syspfmg'
 #endif

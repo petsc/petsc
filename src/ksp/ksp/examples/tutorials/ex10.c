@@ -273,8 +273,20 @@ int main(int argc,char **args)
     num_numfac = 1;
     ierr = PetscOptionsGetInt(PETSC_NULL,"-num_numfac",&num_numfac,PETSC_NULL);CHKERRQ(ierr);
     while ( num_numfac-- ){
-     
-      ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      PetscTruth lsqr;
+      char       str[32];
+      ierr = PetscOptionsGetString(PETSC_NULL,"-ksp_type",str,32,&lsqr);CHKERRQ(ierr);
+      if (lsqr) {
+        ierr = PetscStrcmp("lsqr",str,&lsqr);CHKERRQ(ierr);
+      }
+      if (lsqr) {
+	Mat B;
+        ierr = MatMatMultTranspose(A,A,MAT_INITIAL_MATRIX,4,&B);CHKERRQ(ierr);
+        ierr = KSPSetOperators(ksp,A,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+        ierr = MatDestroy(B);CHKERRQ(ierr);
+      } else {
+        ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      }
       ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
       /* 

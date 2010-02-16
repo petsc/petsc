@@ -71,6 +71,7 @@ E*/
 #define PCLSC             "lsc"
 #define PCPYTHON          "python"
 #define PCPFMG            "pfmg"
+#define PCSYSPFMG         "syspfmg"
 #define PCREDISTRIBUTE    "redistribute"
 
 /* Logging support */

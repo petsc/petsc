@@ -252,6 +252,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPAddOptionsChecker(PetscErrorCode (*)
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorSingularValue(KSP,PetscInt,PetscReal,void *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefault(KSP,PetscInt,PetscReal,void *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefaultLSQR(KSP,PetscInt,PetscReal,void *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorRange(KSP,PetscInt,PetscReal,void *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorTrueResidualNorm(KSP,PetscInt,PetscReal,void *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefaultShort(KSP,PetscInt,PetscReal,void *);
@@ -502,6 +503,7 @@ M*/
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetConvergenceTest(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *,PetscErrorCode (*)(void*));
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetConvergenceContext(KSP,void **);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP,PetscInt,PetscReal,KSPConvergedReason*,void *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPConvergedLSQR(KSP,PetscInt,PetscReal,KSPConvergedReason*,void *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedDestroy(void *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedCreate(void **);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUIRNorm(KSP);

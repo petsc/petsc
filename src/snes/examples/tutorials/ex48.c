@@ -568,9 +568,9 @@ static PetscErrorCode THISetDMMG(THI thi,DMMG *dmmg)
     {
       PetscReal Lx = thi->Lx / thi->units->meter,Ly = thi->Ly / thi->units->meter,Lz = thi->Lz / thi->units->meter;
       if (dim == 2) {
-        ierr = PetscPrintf(((PetscObject)thi)->comm,"Level %d domain size (m) %8.2g x %8.2g, num elements %3dx%3d (%8d), size (m) %g x %g\n",i,Lx,Ly,Mx,My,Mx*My,Lx/Mx,Ly/My);CHKERRQ(ierr);
+        ierr = PetscPrintf(((PetscObject)thi)->comm,"Level %d domain size (m) %8.2g x %8.2g, num elements %3d x %3d (%8d), size (m) %g x %g\n",i,Lx,Ly,Mx,My,Mx*My,Lx/Mx,Ly/My);CHKERRQ(ierr);
       } else {
-        ierr = PetscPrintf(((PetscObject)thi)->comm,"Level %d domain size (m) %8.2g x %8.2g x %8.2g, num elements %3dx%3dx%3d (%8d), size (m) %g x %g x %g\n",i,Lx,Ly,Lz,Mx,My,Mz,Mx*My*Mz,Lx/Mx,Ly/My,1000./(Mz-1));CHKERRQ(ierr);
+        ierr = PetscPrintf(((PetscObject)thi)->comm,"Level %d domain size (m) %8.2g x %8.2g x %8.2g, num elements %3d x %3d x %3d (%8d), size (m) %g x %g x %g\n",i,Lx,Ly,Lz,Mx,My,Mz,Mx*My*Mz,Lx/Mx,Ly/My,1000./(Mz-1));CHKERRQ(ierr);
       }
     }
     ierr = THIInitializePrm(thi,da2prm,X);CHKERRQ(ierr);
@@ -814,6 +814,98 @@ static PetscErrorCode THIMatrixStatistics(THI thi,Mat B,PetscViewer viewer)
     ierr = MatGetValue(B,2,2,&val2);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Matrix dim %8d  norm %8.2e, (0,0) %8.2e  (2,2) %8.2e, eta [%8.2e,%8.2e] beta2 [%8.2e,%8.2e]\n",m,nrm,PetscRealPart(val0),PetscRealPart(val2),thi->eta.cmin,thi->eta.cmax,thi->beta2.cmin,thi->beta2.cmax);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "THISurfaceStatistics"
+static PetscErrorCode THISurfaceStatistics(DA da,Vec X,PetscReal *min,PetscReal *max,PetscReal *mean)
+{
+  PetscErrorCode ierr;
+  Node           ***x;
+  PetscInt       i,j,xs,ys,zs,xm,ym,zm,mx,my,mz;
+  PetscReal      umin = 1e100,umax=-1e100,usum=0,gusum;
+
+  PetscFunctionBegin;
+  *min = *max = *mean = 0;
+  ierr = DAGetInfo(da,0, &mz,&my,&mx, 0,0,0, 0,0,0,0);CHKERRQ(ierr);
+  ierr = DAGetCorners(da,&zs,&ys,&xs,&zm,&ym,&xm);CHKERRQ(ierr);
+  if (zs != 0 || zm != mz) SETERRQ(1,"Unexpected decomposition");
+  ierr = DAVecGetArray(da,X,&x);CHKERRQ(ierr);
+  for (i=xs; i<xs+xm; i++) {
+    for (j=ys; j<ys+ym; j++) {
+      PetscReal u = PetscRealPart(x[i][j][zm-1].u);
+      RangeUpdate(&umin,&umax,u);
+      usum += u;
+    }
+  }
+  ierr = DAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
+  ierr = PetscGlobalMin(&umin,min,((PetscObject)da)->comm);CHKERRQ(ierr);
+  ierr = PetscGlobalMax(&umax,max,((PetscObject)da)->comm);CHKERRQ(ierr);
+  ierr = PetscGlobalSum(&usum,&gusum,((PetscObject)da)->comm);CHKERRQ(ierr);
+  *mean = gusum / (mx*my);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "THISolveStatistics"
+static PetscErrorCode THISolveStatistics(THI thi,DMMG *dmmg,PetscInt coarsened,const char name[])
+{
+  MPI_Comm       comm    = ((PetscObject)thi)->comm;
+  PetscInt       nlevels = DMMGGetLevels(dmmg),level = nlevels-1-coarsened;
+  SNES           snes    = dmmg[level]->snes;
+  Vec            X       = dmmg[level]->x;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscPrintf(comm,"Solution statistics after solve: %s\n",name);CHKERRQ(ierr);
+  {
+    PetscInt its,lits;
+    SNESConvergedReason reason;
+    ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
+    ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
+    ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"%s: Number of Newton iterations = %d, total linear iterations = %d\n",SNESConvergedReasons[reason],its,lits);CHKERRQ(ierr);
+  }
+  {
+    PetscReal nrm2,min[3]={1e100,1e100,1e100},max[3]={-1e100,-1e100,-1e100};
+    PetscInt i,j,m;
+    PetscScalar *x;
+    ierr = VecNorm(X,NORM_2,&nrm2);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(X,&m);CHKERRQ(ierr);
+    ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+    for (i=0; i<m; i+=2) {
+      PetscReal u = PetscRealPart(x[i]),v = PetscRealPart(x[i+1]),c = sqrt(u*u+v*v);
+      min[0] = PetscMin(u,min[0]);
+      min[1] = PetscMin(v,min[1]);
+      min[2] = PetscMin(c,min[2]);
+      max[0] = PetscMax(u,max[0]);
+      max[1] = PetscMax(v,max[1]);
+      max[2] = PetscMax(c,max[2]);
+    }
+    ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(MPI_IN_PLACE,min,3,MPIU_REAL,MPI_MIN,((PetscObject)thi)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(MPI_IN_PLACE,max,3,MPIU_REAL,MPI_MAX,((PetscObject)thi)->comm);CHKERRQ(ierr);
+    /* Dimensionalize to meters/year */
+    nrm2 *= thi->units->year / thi->units->meter;
+    for (j=0; j<3; j++) {
+      min[j] *= thi->units->year / thi->units->meter;
+      max[j] *= thi->units->year / thi->units->meter;
+    }
+    ierr = PetscPrintf(comm,"|X|_2 %g   u in [%g, %g]   v in [%g, %g]   c in [%g, %g] \n",nrm2,min[0],max[0],min[1],max[1],min[2],max[2]);CHKERRQ(ierr);
+    {
+      PetscReal umin,umax,umean;
+      ierr = THISurfaceStatistics((DA)dmmg[level]->dm,X,&umin,&umax,&umean);CHKERRQ(ierr);
+      umin  *= thi->units->year / thi->units->meter;
+      umax  *= thi->units->year / thi->units->meter;
+      umean *= thi->units->year / thi->units->meter;
+      ierr = PetscPrintf(comm,"Surface statistics: u in [%12.6e, %12.6e] mean %12.6e\n",umin,umax,umean);CHKERRQ(ierr);
+    }
+    /* These values stay nondimensional */
+    ierr = PetscPrintf(comm,"Global eta range   [%g, %g], converged range [%g, %g]\n",thi->eta.min,thi->eta.max,thi->eta.cmin,thi->eta.cmax);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"Global beta2 range [%g, %g], converged range [%g, %g]\n",thi->beta2.min,thi->beta2.max,thi->beta2.cmin,thi->beta2.cmax);CHKERRQ(ierr);
+  }
+  ierr = PetscPrintf(comm,"\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1332,9 +1424,23 @@ int main(int argc,char *argv[])
   THI            thi;
   PetscInt       i;
   PetscErrorCode ierr;
+  PetscLogStage  stages[3];
+  PetscTruth     repeat_fine_solve = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
+
+  /* We define two stages.  The first includes all setup costs and solves from a naive initial guess.  The second solve
+  * is more indicative of what might occur during time-stepping.  The initial guess is interpolated from the next
+  * coarser (as in the last step of grid sequencing), and so requires fewer Newton steps. */
+  ierr = PetscOptionsGetTruth(NULL,"-repeat_fine_solve",&repeat_fine_solve,NULL);CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("Full solve",&stages[0]);CHKERRQ(ierr);
+  if (repeat_fine_solve) {
+    ierr = PetscLogStageRegister("Fine-1 solve",&stages[1]);CHKERRQ(ierr);
+    ierr = PetscLogStageRegister("Fine-only solve",&stages[2]);CHKERRQ(ierr);
+  }
+
+  ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);
 
   ierr = THICreate(comm,&thi);CHKERRQ(ierr);
   ierr = DMMGCreate(PETSC_COMM_WORLD,thi->nlevels,thi,&dmmg);CHKERRQ(ierr);
@@ -1404,45 +1510,33 @@ int main(int argc,char *argv[])
 
   ierr = DMMGSetInitialGuess(dmmg,THIInitial);CHKERRQ(ierr);
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
-  {
-    PetscInt its,lits;
-    SNESConvergedReason reason;
-    ierr = SNESGetIterationNumber(DMMGGetSNES(dmmg),&its);CHKERRQ(ierr);
-    ierr = SNESGetConvergedReason(DMMGGetSNES(dmmg),&reason);CHKERRQ(ierr);
-    ierr = SNESGetLinearSolveIterations(DMMGGetSNES(dmmg),&lits);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"%s: Number of Newton iterations = %d, total linear iterations = %d\n",SNESConvergedReasons[reason],its,lits);CHKERRQ(ierr);
+
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  ierr = THISolveStatistics(thi,dmmg,0,"Full");CHKERRQ(ierr);
+  /* The first solve is complete */
+
+  if (repeat_fine_solve && DMMGGetLevels(dmmg) > 1) {
+    PetscInt nlevels = DMMGGetLevels(dmmg);
+    DMMG dmmgc = dmmg[nlevels-2],dmmgf = dmmg[nlevels-1];
+    Vec Xc = dmmgc->x,Xf = dmmgf->x;
+    ierr = MatRestrict(dmmgf->R,Xf,Xc);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(Xc,Xc,dmmgf->Rscale);CHKERRQ(ierr);
+
+    /* Solve on the level with one coarsening, this is a more stringent test of latency */
+    ierr = PetscLogStagePush(stages[1]);CHKERRQ(ierr);
+    ierr = (*dmmgc->solve)(dmmg,nlevels-2);CHKERRQ(ierr);
+    ierr = PetscLogStagePop();CHKERRQ(ierr);
+    ierr = THISolveStatistics(thi,dmmg,1,"Fine-1");CHKERRQ(ierr);
+
+    ierr = MatInterpolate(dmmgf->R,Xc,Xf);CHKERRQ(ierr);
+
+    /* Solve again on the finest level, this is representative of what is needed in a time-stepping code */
+    ierr = PetscLogStagePush(stages[2]);CHKERRQ(ierr);
+    ierr = (*dmmgf->solve)(dmmg,nlevels-1);CHKERRQ(ierr);
+    ierr = PetscLogStagePop();CHKERRQ(ierr);
+    ierr = THISolveStatistics(thi,dmmg,0,"Fine");CHKERRQ(ierr);
   }
-  {
-    PetscReal nrm2,min[3]={1e100,1e100,1e100},max[3]={-1e100,-1e100,-1e100};
-    PetscInt i,j,m;
-    PetscScalar *x;
-    Vec X = DMMGGetx(dmmg);CHKERRQ(ierr);
-    ierr = VecNorm(X,NORM_2,&nrm2);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(X,&m);CHKERRQ(ierr);
-    ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-    for (i=0; i<m; i+=2) {
-      PetscReal u = PetscRealPart(x[i]),v = PetscRealPart(x[i+1]),c = sqrt(u*u+v*v);
-      min[0] = PetscMin(u,min[0]);
-      min[1] = PetscMin(v,min[1]);
-      min[2] = PetscMin(c,min[2]);
-      max[0] = PetscMax(u,max[0]);
-      max[1] = PetscMax(v,max[1]);
-      max[2] = PetscMax(c,max[2]);
-    }
-    ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(MPI_IN_PLACE,min,3,MPIU_REAL,MPI_MIN,((PetscObject)thi)->comm);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(MPI_IN_PLACE,max,3,MPIU_REAL,MPI_MAX,((PetscObject)thi)->comm);CHKERRQ(ierr);
-    /* Dimensionalize to meters/year */
-    nrm2 *= thi->units->year / thi->units->meter;
-    for (j=0; j<3; j++) {
-      min[j] *= thi->units->year / thi->units->meter;
-      max[j] *= thi->units->year / thi->units->meter;
-    }
-    ierr = PetscPrintf(comm,"|X|_2 %g   u in [%g, %g]   v in [%g, %g]   c in [%g, %g] \n",nrm2,min[0],max[0],min[1],max[1],min[2],max[2]);CHKERRQ(ierr);
-    /* These values stay nondimensional */
-    ierr = PetscPrintf(comm,"Global eta range   [%g, %g], converged range [%g, %g]\n",thi->eta.min,thi->eta.max,thi->eta.cmin,thi->eta.cmax);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"Global beta2 range [%g, %g], converged range [%g, %g]\n",thi->beta2.min,thi->beta2.max,thi->beta2.cmin,thi->beta2.cmax);CHKERRQ(ierr);
-  }
+
   {
     PetscTruth flg;
     char filename[PETSC_MAX_PATH_LEN] = "";

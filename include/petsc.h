@@ -1309,12 +1309,14 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFreeArguments(char **);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscEnd(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(const char[]); 
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPMerge(PetscMPIInt);
+extern MPI_Comm PETSC_COMM_LOCAL_WORLD;
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPMerge(PetscMPIInt,PetscErrorCode (*)(void*),void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPSpawn(PetscMPIInt);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPFinalize(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPRun(MPI_Comm,PetscErrorCode (*)(MPI_Comm,void *),void*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPRunCtx(MPI_Comm,PetscErrorCode (*)(MPI_Comm,void*,void *),void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPFree(MPI_Comm,void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPNew(MPI_Comm,PetscInt,void**);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPMalloc(MPI_Comm,size_t,void**);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPythonInitialize(const char[],const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPythonFinalize(void);

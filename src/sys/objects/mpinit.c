@@ -6,6 +6,7 @@
 static MPI_Comm saved_PETSC_COMM_WORLD = 0;
 MPI_Comm PETSC_COMM_LOCAL_WORLD        = 0;           /* comm for a single node (local set of processes) */
 PetscTruth PetscOpenMPWorker           = PETSC_FALSE;  /* this is a regular process, nonworker process */
+void* PetscOpenMPCtx                   = 0;
 
 extern PetscErrorCode PETSC_DLLEXPORT PetscOpenMPHandle(MPI_Comm);
 
@@ -103,7 +104,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPSpawn(PetscMPIInt nodesize)
    Collective on MPI_COMM_WORLD or PETSC_COMM_WORLD if it has been set
 
    Input Parameter:
-.  nodesize - size of each compute node that will share processors
++  nodesize - size of each compute node that will share processors
+.  func - optional function to call on the master nodes
+-  ctx - context passed to function on master nodes
 
    Options Database:
 .   -openmp_merge_size <n>
@@ -140,10 +143,10 @@ $
 
    Concepts: OpenMP
    
-.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscOpenMPFinalize(), PetscInitialize(), PetscOpenMPSpawn(), PCOpenMPRun()
+.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscOpenMPFinalize(), PetscInitialize(), PetscOpenMPSpawn(), PetscOpenMPRun()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOpenMPMerge(PetscMPIInt nodesize)
+PetscErrorCode PETSC_DLLEXPORT PetscOpenMPMerge(PetscMPIInt nodesize,PetscErrorCode (*func)(void*),void *ctx)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank,*ranks,i;
@@ -176,14 +179,19 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPMerge(PetscMPIInt nodesize)
   ierr = PetscInfo2(0,"PETSc OpenMP successfully started: number of nodes = %d node size = %d\n",size/nodesize,nodesize);CHKERRQ(ierr);
   ierr = PetscInfo1(0,"PETSc OpenMP process %sactive\n",(rank % nodesize) ? "in" : "");CHKERRQ(ierr);
 
+  PetscOpenMPCtx = ctx;
   /* 
      All process not involved in user application code wait here
   */
   if (!PETSC_COMM_WORLD) {
-    ierr             = PetscOpenMPHandle(PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr);
+    ierr              = PetscOpenMPHandle(PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr);
     PETSC_COMM_WORLD  = saved_PETSC_COMM_WORLD;
     PetscOpenMPWorker = PETSC_TRUE; /* so that PetscOpenMPIFinalize() will not attempt a broadcast from this process */
-    ierr              = PetscEnd();  /* cannot continue into user code */
+    ierr = PetscInfo(0,"PETSc OpenMP inactive process becoming active");CHKERRQ(ierr);
+  } else {
+    if (func) {
+      ierr = (*func)(ctx);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -210,6 +218,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPFinalize(void)
   if (!PetscOpenMPWorker && PETSC_COMM_LOCAL_WORLD) {
     ierr = MPI_Bcast(&command,1,MPIU_INT,0,PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr); /* broadcast to my worker group to end program */
     PETSC_COMM_WORLD = saved_PETSC_COMM_WORLD;
+    ierr = PetscInfo(0,"PETSc OpenMP active process ending PetscOpenMPMerge()");CHKERRQ(ierr);
   }
   PetscFunctionReturn(ierr);
 }
@@ -224,9 +233,14 @@ static void     *objects[100];
 
    Collective on MPI_Comm
 
+   Input Parameter:
+.   comm - Must be PETSC_COMM_LOCAL_WORLD
+
    Level: developer
 
    Notes: this is usually handled automatically, likely you do not need to use this directly
+
+   Developer Notes: Since comm must be PETSC_COMM_LOCAL_WORLD, why have this argument?
            
 .seealso: PetscOpenMPMerge(), PCOpenMPRun(), PCOpenMPNew()
 
@@ -242,9 +256,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPHandle(MPI_Comm comm)
     ierr = MPI_Bcast(&command,1,MPIU_INT,0,comm);CHKERRQ(ierr);
     switch (command) {
     case 0: { /* allocate some memory on this worker process */
-      PetscInt n;
+      size_t   n;
       void     *ptr;
-      ierr = MPI_Bcast(&n,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+      ierr = MPI_Bcast(&n,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr);
       /* cannot use PetscNew() cause it requires struct argument */
       ierr = PetscMalloc(n,&ptr);CHKERRQ(ierr);
       ierr = PetscMemzero(ptr,n);CHKERRQ(ierr);
@@ -262,8 +276,16 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPHandle(MPI_Comm comm)
       PetscInt       i;
       PetscErrorCode (*f)(MPI_Comm,void*);
       ierr = MPI_Bcast(&i,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-      ierr = MPI_Bcast(&f,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+      ierr = MPI_Bcast(&f,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr);
       ierr = (*f)(comm,objects[i]);CHKERRQ(ierr);
+      break;
+    }
+    case 4: {  /* run a function on this worker process with provided context */
+      PetscInt       i;
+      PetscErrorCode (*f)(MPI_Comm,void*,void*);
+      ierr = MPI_Bcast(&i,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+      ierr = MPI_Bcast(&f,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr);
+      ierr = (*f)(comm,PetscOpenMPCtx,objects[i]);CHKERRQ(ierr);
       break;
     }
     case 3: {
@@ -278,20 +300,24 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPHandle(MPI_Comm comm)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOpenMPNew"
+#define __FUNCT__ "PetscOpenMPMalloc"
 /*@C
-   PetscOpenMPNew - Creates a "c struct" on all nodes of an OpenMP communicator
+   PetscOpenMPMalloc - Creates a "c struct" on all nodes of an OpenMP communicator
 
    Collective on MPI_Comm
 
+   Input Parameters:
++   comm - Must be PETSC_COMM_LOCAL_WORLD
+-   n  - amount of memory requested
+
    Level: developer
-           
-   Note: n is a PetscInt when it "really" should be a size_t
+
+   Developer Notes: Since comm must be PETSC_COMM_LOCAL_WORLD, why have this argument?
 
 .seealso: PetscOpenMPMerge(), PCOpenMPRun(), PCOpenMPFree()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOpenMPNew(MPI_Comm comm,PetscInt n,void **ptr)
+PetscErrorCode PETSC_DLLEXPORT PetscOpenMPMalloc(MPI_Comm comm,size_t n,void **ptr)
 {
   PetscErrorCode ierr;
   PetscInt       command = 0;
@@ -300,7 +326,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPNew(MPI_Comm comm,PetscInt n,void **pt
   if (PetscOpenMPWorker) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not using OpenMP feature of PETSc");
 
   ierr = MPI_Bcast(&command,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-  ierr = MPI_Bcast(&n,1,MPIU_INT,0,comm);CHKERRQ(ierr); 
+  ierr = MPI_Bcast(&n,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr); 
   /* cannot use PetscNew() cause it requires struct argument */
   ierr = PetscMalloc(n,ptr);CHKERRQ(ierr);
   ierr = PetscMemzero(*ptr,n);CHKERRQ(ierr);
@@ -315,9 +341,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPNew(MPI_Comm comm,PetscInt n,void **pt
 
    Collective on MPI_Comm
 
+   Input Parameters:
++   comm - Must be PETSC_COMM_LOCAL_WORLD
+-   ptr - pointer to data to be freed, must have been obtained with PetscOpenMPMalloc()
+
    Level: developer
            
-.seealso: PetscOpenMPMerge(), PetscOpenMPNew()
+  Developer Notes: Since comm must be PETSC_COMM_LOCAL_WORLD, why have this argument?
+
+.seealso: PetscOpenMPMerge(), PetscOpenMPMalloc()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOpenMPFree(MPI_Comm comm,void *ptr)
@@ -337,7 +369,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPFree(MPI_Comm comm,void *ptr)
       PetscFunctionReturn(0);
     }
   }
-  SETERRQ(PETSC_ERR_ARG_WRONG,"Pointer does not appear to have been created with PetscOpenMPNew()");
+  SETERRQ(PETSC_ERR_ARG_WRONG,"Pointer does not appear to have been created with PetscOpenMPMalloc()");
   PetscFunctionReturn(ierr);
 }
 
@@ -348,9 +380,16 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPFree(MPI_Comm comm,void *ptr)
 
    Collective on MPI_Comm
 
+   Input Parameters:
++   comm - communicator to run function on, must be PETSC_COMM_LOCAL_WORLD
+.   f - function to run
+-   ptr - pointer to data to pass to function; must be obtained with PetscOpenMPMalloc()
+
    Level: developer
            
-.seealso: PetscOpenMPMerge(), PetscOpenMPNew(), PetscOpenMPFree()
+   Developer Notes: Since comm must be PETSC_COMM_LOCAL_WORLD, why have this argument?
+
+.seealso: PetscOpenMPMerge(), PetscOpenMPMalloc(), PetscOpenMPFree(), PetscOpenMPRunCtx()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOpenMPRun(MPI_Comm comm,PetscErrorCode (*f)(MPI_Comm,void *),void *ptr)
@@ -365,11 +404,52 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPRun(MPI_Comm comm,PetscErrorCode (*f)(
   for (i=0; i<numberobjects; i++) {
     if (objects[i] == ptr) {
       ierr = MPI_Bcast(&i,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-      ierr = MPI_Bcast(&f,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+      ierr = MPI_Bcast(&f,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr);
       ierr = (*f)(comm,ptr);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
   }
-  SETERRQ(PETSC_ERR_ARG_WRONG,"Pointer does not appear to have been created with PetscOpenMPNew()");
+  SETERRQ(PETSC_ERR_ARG_WRONG,"Pointer does not appear to have been created with PetscOpenMPMalloc()");
+  PetscFunctionReturn(ierr);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOpenMPRunCtx"
+/*@C
+   PetscOpenMPRunCtx - runs a function on all the processes of a node
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++   comm - communicator to run function on, must be PETSC_COMM_LOCAL_WORLD
+.   f - function to run
+-   ptr - pointer to data to pass to function; must be obtained with PetscOpenMPMalloc()
+
+   Notes: This is like PetscOpenMPRun() except it also passes the context passed in PetscOpenMPMerge()
+   Level: developer
+           
+   Developer Notes: Since comm must be PETSC_COMM_LOCAL_WORLD, why have this argument?
+
+.seealso: PetscOpenMPMerge(), PetscOpenMPMalloc(), PetscOpenMPFree(), PetscOpenMPRun()
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscOpenMPRunCtx(MPI_Comm comm,PetscErrorCode (*f)(MPI_Comm,void*,void *),void *ptr)
+{
+  PetscErrorCode ierr;
+  PetscInt       command = 4,i;
+
+  PetscFunctionBegin;
+  if (PetscOpenMPWorker) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not using OpenMP feature of PETSc");
+
+  ierr = MPI_Bcast(&command,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+  for (i=0; i<numberobjects; i++) {
+    if (objects[i] == ptr) {
+      ierr = MPI_Bcast(&i,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+      ierr = MPI_Bcast(&f,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr);
+      ierr = (*f)(comm,PetscOpenMPCtx,ptr);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+  }
+  SETERRQ(PETSC_ERR_ARG_WRONG,"Pointer does not appear to have been created with PetscOpenMPMalloc()");
   PetscFunctionReturn(ierr);
 }
