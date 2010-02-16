@@ -37,6 +37,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultEqual(Mat A,Mat B,PetscInt n,PetscTruth
   ierr = MatGetLocalSize(B,&bm,&bn);CHKERRQ(ierr);
   if (am != bm || an != bn) SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat A,Mat B: local dim %D %D %D %D",am,bm,an,bn);
   PetscCheckSameComm(A,1,B,2);
+
+#if defined(PETSC_USE_SCALAR_SINGLE)
+  tol  = 1.e-5;
+#endif
   ierr = PetscRandomCreate(((PetscObject)A)->comm,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
   ierr = VecCreate(((PetscObject)A)->comm,&x);CHKERRQ(ierr);

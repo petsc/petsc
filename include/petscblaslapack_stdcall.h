@@ -1,8 +1,5 @@
 /*
-  This file provides some name space protection from LAPACK and BLAS and
-  allows the appropriate single or double precision version to be used.
-
-  This file also deals with STDCALL Fortran 77 naming conventions.  This also
+  This file deals with STDCALL Fortran 77 naming conventions.  This also
   assumes PETSC_HAVE_FORTRAN_CAPS is also defined, which is the case on certain Windows
   FORTRAN compilers which use STDCALL.
 

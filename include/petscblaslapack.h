@@ -1,5 +1,6 @@
 /*
-  This file dispatches between various header files for blas/lapack distributions.
+  This file dispatches between various header files for blas/lapack distributions to handle the name mangling.
+  It also provides C prototypes for all the BLAS/LAPACK functions that PETSc uses
 */
 #if !defined(_BLASLAPACK_H)
 #define _BLASLAPACK_H

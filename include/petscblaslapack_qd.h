@@ -1,8 +1,5 @@
 /*
-   This file provides some name space protection from LAPACK and BLAS.
-  This is for the mpack multi-precision version of BLAS and LAPACK using 
-  the qd multiprecision package.
-
+  This is for the mpack multi-precision version of BLAS and LAPACK using the qd multiprecision package.
 */
 #if !defined(_BLASLAPACK_QD_H)
 #define _BLASLAPACK_QD_H

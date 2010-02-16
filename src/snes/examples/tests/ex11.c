@@ -50,12 +50,12 @@ typedef struct {
 } GridCtx;
 
 typedef struct {
-   double      param;           /* test problem parameter */
+   PetscReal   param;           /* test problem parameter */
    GridCtx     fine;
    GridCtx     coarse;
-   KSP        ksp_coarse;
-   KSP        ksp_fine;
-   PetscInt         ratio;
+   KSP         ksp_coarse;
+   KSP         ksp_fine;
+   PetscInt    ratio;
    Mat         R;               /* restriction fine to coarse */
    Vec         Rscale;
    PetscTruth  redundant_build; /* build coarse matrix redundantly */

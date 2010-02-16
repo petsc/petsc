@@ -14,7 +14,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSeed_Rand(PetscRandom r)
   PetscFunctionReturn(0);
 }
 
-#define RAND_WRAP() (rand()/(double)((unsigned int)RAND_MAX+1))
+#define RAND_WRAP ((PetscReal)((rand()/(double)((unsigned int)RAND_MAX+1))))
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomGetValue_Rand"
 PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue_Rand(PetscRandom r,PetscScalar *val)
@@ -22,12 +22,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue_Rand(PetscRandom r,PetscScala
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
   if (r->iset)
-    *val = PetscRealPart(r->width)*RAND_WRAP() + PetscRealPart(r->low) +
-      (PetscImaginaryPart(r->width)*RAND_WRAP() + PetscImaginaryPart(r->low)) * PETSC_i;
-  else *val = RAND_WRAP() + RAND_WRAP()*PETSC_i;
+    *val = PetscRealPart(r->width)*RAND_WRAP + PetscRealPart(r->low) +
+      (PetscImaginaryPart(r->width)*RAND_WRAP + PetscImaginaryPart(r->low)) * PETSC_i;
+  else *val = RAND_WRAP + RAND_WRAP*PETSC_i;
 #else
-  if (r->iset) *val = r->width * RAND_WRAP() + r->low;
-  else         *val = RAND_WRAP();
+  if (r->iset) *val = r->width * RAND_WRAP + r->low;
+  else         *val = RAND_WRAP;
 #endif
   PetscFunctionReturn(0);
 }
@@ -38,11 +38,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueReal_Rand(PetscRandom r,PetscR
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
-    if (r->iset) *val = PetscRealPart(r->width)*RAND_WRAP() + PetscRealPart(r->low);
-    else         *val = RAND_WRAP();
+    if (r->iset) *val = PetscRealPart(r->width)*RAND_WRAP + PetscRealPart(r->low);
+    else         *val = RAND_WRAP;
 #else
-  if (r->iset) *val = r->width * RAND_WRAP() + r->low;
-  else         *val = RAND_WRAP();
+  if (r->iset) *val = r->width * RAND_WRAP + r->low;
+  else         *val = RAND_WRAP;
 #endif
   PetscFunctionReturn(0);
 }

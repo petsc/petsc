@@ -1,8 +1,5 @@
 /*
-   This file provides some name space protection from LAPACK and BLAS and
-allows the appropriate single or double precision version to be used.
-
-This file also deals with unmangled Fortran 77 naming convention.
+      This file deals with unmangled Fortran 77 naming convention.
 */
 #if !defined(_BLASLAPACK_C_H)
 #define _BLASLAPACK_C_H
@@ -91,6 +88,7 @@ This file also deals with unmangled Fortran 77 naming convention.
 #  define BLASasum_    scasum
 #  define LAPACKpttrf_ cpttrf 
 #  define LAPACKstein_ cstein
+#  define LAPACKgelss_ cgelss
 /* Complex single precision with character string arguments */
 /* LAPACKormqr_ does not exist for complex. */
 #  define LAPACKtrtrs_ ctrtrs
@@ -101,6 +99,7 @@ This file also deals with unmangled Fortran 77 naming convention.
 #  define BLAStrmv_    ctrmv
 #  define BLASgemm_    cgemm
 #  define LAPACKgesvd_ cgesvd
+#  define LAPACKgesv_  cgesv
 #  define LAPACKgeev_  cgeev
 #  define LAPACKsyev_  cheev 
 #  define LAPACKsyevx_ cheevx 
@@ -123,8 +122,8 @@ This file also deals with unmangled Fortran 77 naming convention.
 #  define BLASasum_    dzasum
 #  define LAPACKpttrf_ zpttrf 
 #  define LAPACKstein_ zstein
-# define LAPACKgesv_  zgesv
-# define LAPACKgelss_ zgelss
+# define LAPACKgesv_   zgesv
+# define LAPACKgelss_  zgelss
 /* Complex double precision with character string arguments */
 /* LAPACKormqr_ does not exist for complex. */
 #  define LAPACKtrtrs_ ztrtrs

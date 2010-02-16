@@ -29,8 +29,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscDataTypeToMPIDataType(PetscDataType ptype,MP
   } else if (ptype == PETSC_DOUBLE) {
     *mtype = MPI_DOUBLE;
 #if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_SCALAR_SINGLE)
+  } else if (ptype == PETSC_COMPLEX) {
+    *mtype = MPI_C_COMPLEX;
+#else
   } else if (ptype == PETSC_COMPLEX) {
     *mtype = MPI_C_DOUBLE_COMPLEX;
+#endif
 #endif
   } else if (ptype == PETSC_LONG) {
     *mtype = MPI_LONG;
@@ -81,8 +86,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscMPIDataTypeToPetscDataType(MPI_Datatype mtyp
   } else if (mtype == MPI_DOUBLE) {
     *ptype = PETSC_DOUBLE;
 #if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_SCALAR_SINGLE)
+  } else if (mtype == MPI_C_COMPLEX) {
+    *ptype = PETSC_COMPLEX;
+#else
   } else if (mtype == MPI_C_DOUBLE_COMPLEX) {
     *ptype = PETSC_COMPLEX;
+#endif
 #endif
   } else if (mtype == MPI_LONG) {
     *ptype = PETSC_LONG;

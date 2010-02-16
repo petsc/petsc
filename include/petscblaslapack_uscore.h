@@ -1,9 +1,5 @@
 /*
-   This file provides some name space protection from LAPACK and BLAS and
-allows the appropriate single or double precision version to be used.
-
-This file also deals with underscore Fortran 77 naming conventions.
-This file is also used for the f2cblaslapack distribution.
+   This file deals with underscore Fortran 77 naming conventions and those from the f2cblaslapack distribution.
 */
 #if !defined(_BLASLAPACK_USCORE_H)
 #define _BLASLAPACK_USCORE_H
@@ -91,6 +87,7 @@ This file is also used for the f2cblaslapack distribution.
 #  define BLASasum_    scasum_
 #  define LAPACKpttrf_ cpttrf_
 #  define LAPACKstein_ cstein_
+#  define LAPACKgelss_ cgelss_
 /* Complex single precision with character string arguments */
 /* LAPACKormqr_ does not exist for complex. */
 #  define LAPACKtrtrs_ ctrtrs_
@@ -101,6 +98,7 @@ This file is also used for the f2cblaslapack distribution.
 #  define BLAStrmv_    ctrmv_
 #  define BLASgemm_    cgemm_
 #  define LAPACKgesvd_ cgesvd_
+#  define LAPACKgesv_  cgesv_
 #  define LAPACKgeev_  cgeev_
 #  define LAPACKsyev_  cheev_
 #  define LAPACKsyevx_ cheevx_
