@@ -1,8 +1,5 @@
 /*
-   This file provides some name space protection from LAPACK and BLAS and
-allows the appropriate single or double precision version to be used.
-
-This file also deals with CAPS Fortran 77 naming convention.
+     This file deals with CAPS Fortran 77 naming convention.
 */
 #if !defined(_BLASLAPACK_CAPS_H)
 #define _BLASLAPACK_CAPS_H

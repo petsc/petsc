@@ -120,9 +120,8 @@ int main(int argc,char **args)
           SETERRQ2(1,"Error in conversion from %s to %s",type[i],type[j]);
         }
       } else { /* bs > 1 */
-        ierr = MatMultEqual(A,B,10,&equal);
-		CHKERRQ(ierr);
-        if (!equal) SETERRQ2(PETSC_ERR_ARG_NOTSAMETYPE,"Error in conversion from %s to %s",type[i],type[j]);
+        ierr = MatMultEqual(A,B,10,&equal);CHKERRQ(ierr);
+        if (!equal) SETERRQ2(PETSC_ERR_PLIB,"Error in conversion from %s to %s",type[i],type[j]);
       }
       ierr = MatDestroy(B);CHKERRQ(ierr);
       ierr = MatDestroy(D);CHKERRQ(ierr);
