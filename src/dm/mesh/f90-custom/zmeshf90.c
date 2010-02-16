@@ -66,6 +66,16 @@ void PETSC_STDCALL meshrestoreelementsf90_(Mesh *x,F90Array2d *ptr,int *__ierr P
   *__ierr = F90Array2dDestroy(ptr,PETSC_INT PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
   *__ierr = PetscFree(v);
 }
+void PETSC_STDCALL meshgetconef90_(Mesh *mesh,PetscInt *p,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  PetscInt   *v, n;
+  *__ierr = MeshGetCone(*mesh,*p,&n,&v); if (*__ierr) return;
+  *__ierr = F90Array1dCreate(v,PETSC_INT,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));
+}
+void PETSC_STDCALL meshrestoreconef90_(Mesh *mesh,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  *__ierr = F90Array2dDestroy(ptr,PETSC_INT PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
+}
 
 #if 0
 void PETSC_STDCALL meshrestoreclosuref90_(Mesh mesh,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
