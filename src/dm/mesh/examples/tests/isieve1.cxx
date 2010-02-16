@@ -334,8 +334,13 @@ public:
     ALE::Obj<ALE::Mesh> m;
     std::map<ALE::Mesh::point_type,sieve_type::point_type> renumbering;
 
-    createTriangularMesh(interpolate, m, renumbering);
-    testOrientedClosure(m, renumbering);
+    try {
+      createTriangularMesh(interpolate, m, renumbering);
+      testOrientedClosure(m, renumbering);
+    } catch (ALE::Exception e) {
+      std::cerr << e << std::endl;
+      CPPUNIT_FAIL(e.msg());
+    }
   };
 
   void testTriangularInterpolatedOrientedClosure() {
