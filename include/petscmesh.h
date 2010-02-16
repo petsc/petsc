@@ -123,8 +123,6 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT updateOperator(Mat, const ALE::Obj<PETSC
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT updateOperator(Mat, const ALE::Obj<PETSC_MESH_TYPE>&, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>&, const ALE::Obj<PETSC_MESH_TYPE::order_type>&, int, int, PetscScalar [], InsertMode);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT updateOperatorGeneral(Mat, const ALE::Obj<PETSC_MESH_TYPE>&, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>&, const ALE::Obj<PETSC_MESH_TYPE::order_type>&, const PETSC_MESH_TYPE::point_type&, const ALE::Obj<PETSC_MESH_TYPE>&, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>&, const ALE::Obj<PETSC_MESH_TYPE::order_type>&, const PETSC_MESH_TYPE::point_type&, PetscScalar [], InsertMode);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreatePFLOTRAN(MPI_Comm, const int, const char[], PetscTruth, Mesh *);
-
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreatePCICE(MPI_Comm, const int, const char[], const char[], PetscTruth, const char[], Mesh *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetCoordinates(Mesh, PetscTruth, PetscInt *, PetscInt *, PetscReal *[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetElements(Mesh, PetscTruth, PetscInt *, PetscInt *, PetscInt *[]);
