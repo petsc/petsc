@@ -594,6 +594,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
 #if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
   ierr = MPI_Type_contiguous(2,MPIU_REAL,&MPI_C_DOUBLE_COMPLEX);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPI_C_DOUBLE_COMPLEX);CHKERRQ(ierr);
+  ierr = MPI_Type_contiguous(2,MPI_FLOAT,&MPI_C_COMPLEX);CHKERRQ(ierr);
+  ierr = MPI_Type_commit(&MPI_C_COMPLEX);CHKERRQ(ierr);
   ierr = MPI_Op_create(PetscSum_Local,1,&MPIU_SUM);CHKERRQ(ierr);
 #endif
 #endif
@@ -948,6 +950,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
 #if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
   ierr = MPI_Op_free(&MPIU_SUM);CHKERRQ(ierr);
   ierr = MPI_Type_free(&MPI_C_DOUBLE_COMPLEX);CHKERRQ(ierr);
+  ierr = MPI_Type_free(&MPI_C_COMPLEX);CHKERRQ(ierr);
 #endif
 #endif
   ierr = MPI_Type_free(&MPIU_2SCALAR);CHKERRQ(ierr);

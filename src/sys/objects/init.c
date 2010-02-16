@@ -34,6 +34,7 @@ template <> class std::complex<double>; /* instantiate complex template class */
 #endif
 #if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
 MPI_Datatype  PETSC_DLLEXPORT MPI_C_DOUBLE_COMPLEX;
+MPI_Datatype  PETSC_DLLEXPORT MPI_C_COMPLEX;
 #endif
 PetscScalar   PETSC_DLLEXPORT PETSC_i; 
 #else
