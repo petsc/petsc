@@ -156,6 +156,20 @@ PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<PETSC_MESH_TYPE>& mesh, Petsc
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshView_Sieve_Binary"
+PetscErrorCode MeshView_Sieve_Binary(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscViewer viewer)
+{
+  char           *filename;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerFileGetName(viewer, &filename);CHKERRQ(ierr);
+  ALE::MeshSerializer::writeMesh(filename, *mesh);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MeshView_Sieve"
 PetscErrorCode MeshView_Sieve(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscViewer viewer)
@@ -171,7 +185,7 @@ PetscErrorCode MeshView_Sieve(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscViewer
   if (iascii){
     ierr = MeshView_Sieve_Ascii(mesh, viewer);CHKERRQ(ierr);
   } else if (isbinary) {
-    SETERRQ(PETSC_ERR_SUP, "Binary viewer not implemented for Mesh");
+    ierr = MeshView_Sieve_Binary(mesh, viewer);CHKERRQ(ierr);
   } else if (isdraw){ 
     SETERRQ(PETSC_ERR_SUP, "Draw viewer not implemented for Mesh");
   } else {
@@ -270,9 +284,23 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshView(Mesh mesh, PetscViewer viewer)
 .seealso MeshView()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshLoad(PetscViewer viewer, Mesh *mesh)
+PetscErrorCode PETSCDM_DLLEXPORT MeshLoad(PetscViewer viewer, Mesh mesh)
 {
-  SETERRQ(PETSC_ERR_SUP, "");
+  char           *filename;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  if (!mesh->m) {
+    MPI_Comm comm;
+
+    ierr = PetscObjectGetComm((PetscObject) viewer, &comm);CHKERRQ(ierr);
+    ALE::Obj<PETSC_MESH_TYPE> m = new PETSC_MESH_TYPE(comm, 1);
+
+    ierr = MeshSetMesh(mesh, m);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerFileGetName(viewer, &filename);CHKERRQ(ierr);
+  ALE::MeshSerializer::loadMesh(filename, *mesh->m);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
@@ -1578,6 +1606,41 @@ PetscErrorCode MeshGetElements(Mesh mesh, PetscTruth columnMajor, PetscInt *numE
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ALE::PCICE::Builder::outputElementsLocal(m, numElements, numCorners, vertices, columnMajor);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshGetCone"
+/*@C
+  MeshGetCone - Creates an array holding the cone of a given point
+
+  Not Collective
+
+  Input Parameters:
++ mesh - The Mesh object
+- p - The mesh point
+
+  Output Parameters:
++ numPoints - The number of points in the cone
+- points - The array holding the cone points
+
+  Level: intermediate
+
+.keywords: mesh, cone
+.seealso: MeshCreate()
+@*/
+PetscErrorCode MeshGetCone(Mesh mesh, PetscInt p, PetscInt *numPoints, PetscInt *points[])
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  *numPoints = m->getSieve()->getConeSize(p);
+  ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> v(*numPoints);
+
+  m->getSieve()->cone(p, v);
+  *points = const_cast<PetscInt*>(v.getPoints());
   PetscFunctionReturn(0);
 }
 

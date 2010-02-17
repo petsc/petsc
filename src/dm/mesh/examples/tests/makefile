@@ -101,6 +101,10 @@ memoryTests: memoryTests.o chkopts
 	-${CLINKER} -o memoryTests memoryTests.o ${PETSC_DM_LIB}
 	${RM} -f memoryTests.o
 
+sieveScalability: sieveScalability.o chkopts
+	-${CLINKER} -o sieveScalability sieveScalability.o ${PETSC_DM_LIB}
+	${RM} -f sieveScalability.o
+
 distributionTests: distributionTests.o chkopts
 	-${CLINKER} -o distributionTests distributionTests.o ${PETSC_DM_LIB}
 	${RM} -f distributionTests.o

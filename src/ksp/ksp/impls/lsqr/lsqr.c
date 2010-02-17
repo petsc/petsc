@@ -69,7 +69,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   PetscInt       i,size1,size2;
   PetscScalar    rho,rhobar,phi,phibar,theta,c,s,tmp,tau,alphac;
   PetscReal      beta,alpha,rnorm;
-  Vec            X,B,V,V1,U,U1,TMP,W,W2,SE,Z;
+  Vec            X,B,V,V1,U,U1,TMP,W,W2,SE,Z = PETSC_NULL;
   Mat            Amat,Pmat;
   MatStructure   pflag;
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;

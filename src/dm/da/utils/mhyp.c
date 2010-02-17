@@ -636,7 +636,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPRESStruct_3d(Mat mat,Pets
   int               ordering;
   int               grid_rank, to_grid_rank;
   int               var_type, to_var_type;
-  int               to_var_entry;
+  int               to_var_entry = 0;
 
   int               nvars= ex->nvars;
   PetscInt          row,entries[nvars*7];

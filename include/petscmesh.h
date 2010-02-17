@@ -126,6 +126,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT updateOperatorGeneral(Mat, const ALE::Ob
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreatePCICE(MPI_Comm, const int, const char[], const char[], PetscTruth, const char[], Mesh *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetCoordinates(Mesh, PetscTruth, PetscInt *, PetscInt *, PetscReal *[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetElements(Mesh, PetscTruth, PetscInt *, PetscInt *, PetscInt *[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetCone(Mesh, PetscInt, PetscInt *, PetscInt *[]);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreatePyLith(MPI_Comm, const int, const char[], PetscTruth, PetscTruth, Mesh *);
 

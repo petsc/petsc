@@ -919,6 +919,19 @@ runex32_inode_5:
 	   else echo "Possible problem with ex32_inode_5, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_inode_5.out
 
+runex32_sbaij_icc:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -mat_type sbaij -mat_ignore_lower_triangular -pc_type icc > ex32_sbaij_icc.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -mat_type sbaij -mat_ignore_lower_triangular -pc_type icc -icc_old > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_sbaij_icc.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_sbaij_icc, diffs above"; fi; \
+	   ${RM} -f ex32.tmp; ${RM} -f ex32__sbaij_icc
+
+runex32_sbaij_cholesky:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -mat_type sbaij -mat_ignore_lower_triangular -pc_type cholesky > ex32_sbaij_cholesky.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -mat_type sbaij -mat_ignore_lower_triangular -pc_type cholesky -cholesky_old > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_sbaij_cholesky.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_sbaij_cholesky, diffs above"; fi; \
+	   ${RM} -f ex32.tmp; ${RM} -f ex32__sbaij_cholesky
 runex33:
 	-@${MPIEXEC} -n 1 ./ex33 -sigma 2.0 > ex33.tmp 2>&1; \
 	if (${DIFF} output/ex33.out ex33.tmp) then true; \

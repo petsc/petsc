@@ -405,7 +405,8 @@ def main():
             print "No Directory specified for saving main HTML file pages, using PETSc root directory"
             LOC = PETSC_DIR
             tarballs = sys.argv[2:]
-            make_htmlpage(LOC,tarballs)
+
+        make_htmlpage(LOC,tarballs)
     else:
         print "No or invalid option specified:"
         print "Usage: To run gcov and create tarball"

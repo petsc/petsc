@@ -86,12 +86,72 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
     ierr = PetscFree(connect[eb]);CHKERRQ(ierr);
   }
   ALE::Obj<PETSC_MESH_TYPE::sieve_type> sieve = new PETSC_MESH_TYPE::sieve_type(mesh->comm(), mesh->debug());
-  ALE::Obj<ALE::Mesh::sieve_type>       s     = new ALE::Mesh::sieve_type(mesh->comm(), mesh->debug());
-  ALE::SieveBuilder<ALE::Mesh>::buildTopology(s, num_dim, num_elem, cells, num_nodes, false, numCorners);
-  std::map<PETSC_MESH_TYPE::point_type,PETSC_MESH_TYPE::point_type> renumbering;
-  ALE::ISieveConverter::convertSieve(*s, *sieve, renumbering);
+  bool interpolate = false;
+
+  try {
   mesh->setSieve(sieve);
-  mesh->stratify();
+  if (0 == rank) {
+    if (!interpolate) {
+      // Create the ISieve
+      sieve->setChart(PETSC_MESH_TYPE::sieve_type::chart_type(0, num_elem+num_nodes));
+      // Set cone and support sizes
+      for (int c = 0; c < num_elem; ++c) {
+	sieve->setConeSize(c, numCorners);
+      }
+      sieve->symmetrizeSizes(num_elem, numCorners, cells, num_elem);
+      // Allocate point storage
+      sieve->allocate();
+      // Fill up cones
+      int *cone  = new int[numCorners];
+      int *coneO = new int[numCorners];
+      for (int v = 0; v < numCorners; ++v) {
+	coneO[v] = 1;
+      }
+      for (int c = 0; c < num_elem; ++c) {
+        for (int v = 0; v < numCorners; ++v) {
+	  cone[v] = cells[c*numCorners+v]+num_elem - 1;
+	}
+        sieve->setCone(cone, c);
+        sieve->setConeOrientation(coneO, c);
+      } // for
+      delete[] cone; cone = 0;
+      delete[] coneO; coneO = 0;
+      // Symmetrize to fill up supports
+      sieve->symmetrize();
+    } else {
+      // Same old thing
+      ALE::Obj<ALE::Mesh::sieve_type> s = new ALE::Mesh::sieve_type(sieve->comm(), sieve->debug());
+
+      ALE::SieveBuilder<ALE::Mesh>::buildTopology(s, num_dim, num_elem, cells, num_nodes, interpolate, numCorners);
+      std::map<ALE::Mesh::point_type,ALE::Mesh::point_type> renumbering;
+      ALE::ISieveConverter::convertSieve(*s, *sieve, renumbering);
+    }
+    if (!interpolate) {
+      // Optimized stratification
+      const ALE::Obj<PETSC_MESH_TYPE::label_type>& height = mesh->createLabel("height");
+      const ALE::Obj<PETSC_MESH_TYPE::label_type>& depth  = mesh->createLabel("depth");
+
+      for(int c = 0; c < num_elem; ++c) {
+        height->setCone(0, c);
+        depth->setCone(1, c);
+      }
+      for(int v = num_elem; v < num_elem+num_nodes; ++v) {
+        height->setCone(1, v);
+        depth->setCone(0, v);
+      }
+      mesh->setHeight(1);
+      mesh->setDepth(1);
+    } else {
+      mesh->stratify();
+    }
+  } else {
+    mesh->getSieve()->setChart(PETSC_MESH_TYPE::sieve_type::chart_type());
+    mesh->getSieve()->allocate();
+    mesh->stratify();
+  }
+  } catch (ALE::Exception e) {
+    SETERRQ(PETSC_ERR_LIB, e.msg().c_str());
+  }
   ierr = PetscFree(cells);CHKERRQ(ierr);
 
   // Build cell blocks
