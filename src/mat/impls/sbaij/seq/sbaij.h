@@ -31,8 +31,10 @@ EXTERN_C_BEGIN
 EXTERN PetscErrorCode MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat,PetscInt,PetscInt,PetscInt*);
 EXTERN_C_END
 EXTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat,Mat,IS,const MatFactorInfo*);
+EXTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_inplace(Mat,Mat,IS,const MatFactorInfo*);
 EXTERN PetscErrorCode MatCholeskyFactor_SeqSBAIJ(Mat,IS,const MatFactorInfo*);
 EXTERN PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat,Mat,IS,const MatFactorInfo*);
+EXTERN PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat,Mat,IS,const MatFactorInfo*);
 EXTERN PetscErrorCode MatDuplicate_SeqSBAIJ(Mat,MatDuplicateOption,Mat*);
 EXTERN PetscErrorCode MatMarkDiagonal_SeqSBAIJ(Mat);
 EXTERN PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat,PetscInt,IS[],PetscInt);
@@ -49,6 +51,7 @@ EXTERN PetscErrorCode MatGetRowMaxAbs_SeqSBAIJ(Mat,Vec,PetscInt[]);
 EXTERN PetscErrorCode MatGetInertia_SeqSBAIJ(Mat,PetscInt*,PetscInt*,PetscInt*);
 
 EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat,Mat,const MatFactorInfo*);
+EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
 
@@ -100,7 +103,7 @@ EXTERN PetscErrorCode MatForwardSolve_SeqSBAIJ_N_inplace(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatBackwardSolve_SeqSBAIJ_N_inplace(Mat,Vec,Vec);
 
 EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat,Mat,const MatFactorInfo*);
-EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat,Mat,const MatFactorInfo*);
+EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_inplace(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_4(Mat,Mat,const MatFactorInfo*);
@@ -152,5 +155,7 @@ EXTERN PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat,Vec,Vec,Vec);
 
 EXTERN PetscErrorCode MatSOR_SeqSBAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
 EXTERN PetscErrorCode MatLoad_SeqSBAIJ(PetscViewer, const MatType,Mat*);
+
+EXTERN PetscErrorCode MatSeqSBAIJSetNumericFactorization_inplace(Mat,PetscTruth);
 
 #endif
