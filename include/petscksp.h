@@ -55,6 +55,7 @@ E*/
 #define KSPLCD        "lcd"
 #define KSPPYTHON     "python"
 #define KSPBROYDEN    "broyden"
+#define KSPGCR        "gcr"
 
 /* Logging support */
 extern PetscCookie PETSCKSP_DLLEXPORT KSP_COOKIE;
@@ -179,6 +180,9 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESClassicalGramSchmidtOrthogonali
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMRESSetAugDim(KSP,PetscInt);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMRESSetConstant(KSP);
+
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGCRSetRestart(KSP,PetscInt);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGCRSetRecycleSolution(KSP,PetscTruth);
 
 /*E
     KSPGMRESCGSRefinementType - How the classical (unmodified) Gram-Schmidt is performed.
