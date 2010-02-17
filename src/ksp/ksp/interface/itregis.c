@@ -28,6 +28,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_SYMMLQ(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_LGMRES(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_LCD(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Broyden(KSP);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_GCR(KSP);
 EXTERN_C_END
   
 /*
@@ -82,6 +83,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPRegisterAll(const char path[])
   ierr = KSPRegisterDynamic(KSPLGMRES,     path,"KSPCreate_LGMRES",    KSPCreate_LGMRES);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPLCD,        path,"KSPCreate_LCD",       KSPCreate_LCD);CHKERRQ(ierr)
   ierr = KSPRegisterDynamic(KSPBROYDEN,    path,"KSPCreate_Broyden",   KSPCreate_Broyden);CHKERRQ(ierr);
+  ierr = KSPRegisterDynamic(KSPGCR,        path,"KSPCreate_GCR",       KSPCreate_GCR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
