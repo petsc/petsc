@@ -109,7 +109,7 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
       }
       for (int c = 0; c < num_elem; ++c) {
         for (int v = 0; v < numCorners; ++v) {
-	  cone[v] = cells[c*numCorners+v]+num_elem;
+	  cone[v] = cells[c*numCorners+v]+num_elem - 1;
 	}
         sieve->setCone(cone, c);
         sieve->setConeOrientation(coneO, c);
