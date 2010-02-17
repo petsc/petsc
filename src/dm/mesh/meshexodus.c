@@ -88,6 +88,7 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
   ALE::Obj<PETSC_MESH_TYPE::sieve_type> sieve = new PETSC_MESH_TYPE::sieve_type(mesh->comm(), mesh->debug());
   bool interpolate = false;
 
+  try {
   mesh->setSieve(sieve);
   if (0 == rank) {
     if (!interpolate) {
@@ -147,6 +148,9 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
     mesh->getSieve()->setChart(PETSC_MESH_TYPE::sieve_type::chart_type());
     mesh->getSieve()->allocate();
     mesh->stratify();
+  }
+  } catch (ALE::Exception e) {
+    SETERRQ(PETSC_ERR_LIB, e.msg().c_str());
   }
   ierr = PetscFree(cells);CHKERRQ(ierr);
 
