@@ -56,6 +56,7 @@ public:
 
   /// Setup data.
   void setUp(void) {
+    try {
     this->processOptions();
     double                    lower[3]    = {0.0, 0.0, 0.0};
     double                    upper[3]    = {1.0, 1.0, 1.0};
@@ -75,6 +76,10 @@ public:
       newMesh->setSieve(newSieve);
       ALE::DistributionNew<mesh_type>::distributeMeshAndSectionsV(this->_mesh, newMesh);
       this->_mesh = newMesh;
+    }
+    } catch (ALE::Exception e) {
+      std::cerr << e << std::endl;
+      CPPUNIT_FAIL(e.msg());
     }
   };
 
