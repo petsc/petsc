@@ -11,7 +11,7 @@
 #define USESHORT
 #include "../src/mat/impls/sbaij/seq/relax.h"
 
-extern PetscErrorCode MatSeqSBAIJSetNumericFactorization(Mat,PetscTruth);
+extern PetscErrorCode MatSeqSBAIJSetNumericFactorization_inplace(Mat,PetscTruth);
 #define CHUNKSIZE  10
 
 
@@ -1034,7 +1034,7 @@ PetscErrorCode MatICCFactor_SeqSBAIJ(Mat inA,IS row,const MatFactorInfo *info)
   inA->factor = MAT_FACTOR_ICC;
   
   ierr = MatMarkDiagonal_SeqSBAIJ(inA);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetNumericFactorization(inA,row_identity);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetNumericFactorization_inplace(inA,row_identity);CHKERRQ(ierr);
 
   ierr   = PetscObjectReference((PetscObject)row);CHKERRQ(ierr);
   if (a->row) { ierr = ISDestroy(a->row);CHKERRQ(ierr); }
@@ -1618,8 +1618,8 @@ EXTERN_C_END
    This is used to set the numeric factorization for both Cholesky and ICC symbolic factorization
 */
 #undef __FUNCT__  
-#define __FUNCT__ "MatSeqSBAIJSetNumericFactorization"
-PetscErrorCode MatSeqSBAIJSetNumericFactorization(Mat B,PetscTruth natural)
+#define __FUNCT__ "MatSeqSBAIJSetNumericFactorization_inplace"
+PetscErrorCode MatSeqSBAIJSetNumericFactorization_inplace(Mat B,PetscTruth natural)
 {
   PetscErrorCode ierr;
   PetscTruth     flg = PETSC_FALSE;
@@ -1632,7 +1632,7 @@ PetscErrorCode MatSeqSBAIJSetNumericFactorization(Mat B,PetscTruth natural)
   if (!natural) {
     switch (bs) {
     case 1:
-      B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1;
+      B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_inplace;
       break;
     case 2:
       B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_2;  
@@ -1659,7 +1659,7 @@ PetscErrorCode MatSeqSBAIJSetNumericFactorization(Mat B,PetscTruth natural)
   } else {
     switch (bs) {
     case 1:
-      B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering;
+      B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace;
       break;
     case 2:
       B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering;  
@@ -1707,8 +1707,8 @@ PetscErrorCode MatGetFactor_seqsbaij_petsc(Mat A,MatFactorType ftype,Mat *B)
   if (ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC) {
     ierr = MatSetType(*B,MATSEQSBAIJ);CHKERRQ(ierr);
     ierr = MatSeqSBAIJSetPreallocation(*B,1,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
-    (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJ;
-    (*B)->ops->iccfactorsymbolic      = MatICCFactorSymbolic_SeqSBAIJ;
+    (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJ_inplace;
+    (*B)->ops->iccfactorsymbolic      = MatICCFactorSymbolic_SeqSBAIJ_inplace;
   } else SETERRQ(PETSC_ERR_SUP,"Factor type not supported");
   (*B)->factor = ftype;
   PetscFunctionReturn(0);
