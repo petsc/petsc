@@ -59,6 +59,7 @@ SHLIBS       = libtao libtaosolver libtaolinesearch
 
 #??libtaoga libappspacktao libooqptao libesitao taoadic ${SIDL_SHLIBS} ${CCA_SHLIBS}
 
+LIBNAME = ${INSTALL_LIB_DIR}/${LIBBASE}.${AR_LIB_SUFFIX}
 
 tao_clean: clean
 tao_chkopts: chkopts
