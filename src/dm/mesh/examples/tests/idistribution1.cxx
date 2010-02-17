@@ -17,8 +17,10 @@ class FunctionTestIDistribution : public CppUnit::TestFixture
   CPPUNIT_TEST_SUITE(FunctionTestIDistribution);
 
   CPPUNIT_TEST(testDistributeMesh2DUninterpolated);
+#if 0
   CPPUNIT_TEST(testPreallocationMesh2DUninterpolated);
   CPPUNIT_TEST(testPreallocationMesh3DUninterpolated);
+#endif
 
   CPPUNIT_TEST_SUITE_END();
 public:
@@ -81,6 +83,7 @@ public:
     }
     ALE::ISieveConverter::convertMesh(*m, *this->_mesh, this->_renumbering, false);
     this->_renumbering.clear();
+    if (this->_debug > 1) this->_mesh->view("Mesh");
   };
 
   void readMesh(const char filename[], const int dim, const bool interpolate) {
@@ -180,7 +183,20 @@ public:
   void checkMesh(const ALE::Obj<mesh_type>& mesh, const char basename[]) {
     const ALE::Obj<sieve_type>& sieve = mesh->getSieve();
     ostringstream filename;
-    filename << "data/" << basename << mesh->commSize() << "_p" << mesh->commRank() << ".mesh";
+    // How do I check distribution_type::partition_type::graph_partitioner_type?
+#ifdef PETSC_HAVE_CHACO
+    std::string partName = "chaco";
+#elif defined(PETSC_HAVE_PARMETIS)
+    std::string partName = "parmetis";
+#else
+    std::string partName = "simple";
+#endif
+
+    if (mesh->commSize() == 1) {
+      filename << "data/" << basename << mesh->commSize() << "_p" << mesh->commRank() << ".mesh";
+    } else {
+      filename << "data/" << basename << mesh->commSize() << "_" << partName << "_p" << mesh->commRank() << ".mesh";
+    }
     std::ifstream f;
 
     f.open(filename.str().c_str());
@@ -416,6 +432,12 @@ public:
 
     parallelMesh->setupCoordinates(parallelCoordinates);
     distribution_type::distributeSection(coordinates, partition, this->_renumbering, sendMeshOverlap, recvMeshOverlap, parallelCoordinates);
+    if (this->_debug) {
+      parallelMesh->view("Parallel Mesh");
+      for(mesh_type::renumbering_type::const_iterator r_iter = this->_renumbering.begin(); r_iter != this->_renumbering.end(); ++r_iter) {
+	std::cout << "renumbering["<<r_iter->first<<"]: " << r_iter->second << std::endl;
+      }
+    }
     ALE::SetFromMap<std::map<point_type,point_type> > globalPoints(this->_renumbering);
 
     ALE::OverlapBuilder<>::constructOverlap(globalPoints, this->_renumbering, parallelMesh->getSendOverlap(), parallelMesh->getRecvOverlap());
