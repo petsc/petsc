@@ -100,10 +100,14 @@ namespace ALE {
       Obj<oriented_cones_wrapper_type> cones        = new oriented_cones_wrapper_type(sieve);
       Obj<oriented_cones_type>         overlapCones = new oriented_cones_type(sieve->comm(), sieve->debug());
 
+      std::cout << "Starting completeConesV" << std::endl;
+      std::cout << "  Copying cones" << std::endl;
       ALE::Pullback::SimpleCopy::copy(sendMeshOverlap, recvMeshOverlap, cones, overlapCones);
       if (sieve->debug()) {overlapCones->view("Overlap Cones");}
       // Inserts cones into parallelMesh (must renumber here)
+      std::cout << "  Fusing cones" << std::endl;
       ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvMeshOverlap, renumbering, newSieve);
+      std::cout << "Ending completeConesV" << std::endl;
       return overlapCones;
     };
     // Given a partition of sieve points, copy the mesh pieces to each process and fuse into the new mesh
@@ -157,12 +161,14 @@ namespace ALE {
       const Obj<part_send_overlap_type> sendOverlap = new part_send_overlap_type(partition->comm());
       const Obj<part_recv_overlap_type> recvOverlap = new part_recv_overlap_type(partition->comm());
 
+      std::cout << "Starting completeBaseV" << std::endl;
       // Create overlap for partition points
       //   TODO: This needs to be generalized for multiple sources
       Partitioner::createDistributionPartOverlap(sendOverlap, recvOverlap);
       // Communicate partition pieces to processes
       Obj<partition_type> overlapPartition = new partition_type(partition->comm(), partition->debug());
 
+      std::cout << "  Communicating partition" << std::endl;
       overlapPartition->setChart(partition->getChart());
       ALE::Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, partition, overlapPartition);
       // Create renumbering
@@ -170,10 +176,12 @@ namespace ALE {
       const point_type *localPoints    = partition->restrictPoint(rank);
       const int         numLocalPoints = partition->getFiberDimension(rank);
 
+      std::cout << "  Creating local renumbering" << std::endl;
       for(point_type p = 0; p < numLocalPoints; ++p) {
         ///std::cout <<"["<<partition->commRank()<<"]: local renumbering " << localPoints[p] << " --> " << p << std::endl;
         renumbering[localPoints[p]] = p;
       }
+      std::cout << "  Creating remote renumbering" << std::endl;
       const Obj<typename part_recv_overlap_type::traits::baseSequence> rPoints    = recvOverlap->base();
       point_type                                                       localPoint = numLocalPoints;
 
@@ -191,7 +199,9 @@ namespace ALE {
       newMesh->getSieve()->setChart(typename NewMesh::sieve_type::chart_type(0, renumbering.size()));
       // Create mesh overlap from partition overlap
       //   TODO: Generalize to redistribution (receive from multiple sources)
+      std::cout << "  Creating Mesh Overlap" << std::endl;
       Partitioner::createDistributionMeshOverlap(partition, recvOverlap, renumbering, overlapPartition, sendMeshOverlap, recvMeshOverlap);
+      std::cout << "Ending completeBaseV" << std::endl;
     };
     template<typename NewMesh, typename Renumbering, typename SendOverlap, typename RecvOverlap>
     static Obj<partition_type> distributeMesh(const Obj<Mesh>& mesh, const Obj<NewMesh>& newMesh, Renumbering& renumbering, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap, const int height = 0) {
@@ -289,11 +299,14 @@ namespace ALE {
       // Create the remote bases
       completeBaseV(mesh, partition, renumbering, newMesh, sendMeshOverlap, recvMeshOverlap);
       // Size the local mesh
+      std::cout << "Sizing local mesh" << std::endl;
       Partitioner::sizeLocalMeshV(mesh, partition, renumbering, newMesh, height);
       // Create the remote meshes
       completeConesV(mesh->getSieve(), newMesh->getSieve(), renumbering, sendMeshOverlap, recvMeshOverlap);
       // Create the local mesh
+      std::cout << "Creating local mesh" << std::endl;
       Partitioner::createLocalMeshV(mesh, partition, renumbering, newMesh, height);
+      std::cout << "Fixing up mesh strata" << std::endl;
       newMesh->getSieve()->symmetrize();
       newMesh->stratify();
       PETSc::Log::Event("DistributeMesh").end();
