@@ -1590,7 +1590,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetConvergenceContext(KSP ksp,void **ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPBuildSolution"
-/*@
+/*@C
    KSPBuildSolution - Builds the approximate solution in a vector provided.
    This routine is NOT commonly needed (see KSPSolve()).
 
@@ -1642,7 +1642,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBuildSolution(KSP ksp,Vec v,Vec *V)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPBuildResidual"
-/*@
+/*@C
    KSPBuildResidual - Builds the residual in a vector provided.
 
    Collective on KSP

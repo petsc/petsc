@@ -10,7 +10,10 @@
 #define kspgetfischerguess_        KSPGETFISCHERGUESS
 #define kspfischerguesscreate_     KSPFISCHERGUESSCREATE
 #define kspfischerguessdestroy_    KSPFISCHERGUESSDESTROY
+#define kspbuildsolution_          KSPBUILDSOLUTION
+#define kspbuildresidual_          KSPBUILDRESIDUAL
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define kspbuildresidual_          kspbuildresidual
 #define kspgetoptionsprefix_       kspgetoptionsprefix
 #define kspappendoptionsprefix_    kspappendoptionsprefix
 #define kspsetoptionsprefix_       kspsetoptionsprefix
@@ -22,6 +25,19 @@
 #endif
 
 EXTERN_C_BEGIN
+void PETSC_STDCALL kspbuildsolution_(KSP *ksp,Vec *v,Vec *V, int *ierr )
+{
+  CHKFORTRANNULLOBJECT(v);
+  *ierr = KSPBuildSolution(*ksp,*v,V);
+}
+
+void PETSC_STDCALL   kspbuildresidual_(KSP *ksp,Vec *t,Vec *v,Vec *V, int *ierr )
+{
+  CHKFORTRANNULLOBJECT(t);
+  CHKFORTRANNULLOBJECT(v);
+  *ierr = KSPBuildResidual(*ksp,*t,*v,V);
+}
+
 void PETSC_STDCALL kspgetoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *tname;
