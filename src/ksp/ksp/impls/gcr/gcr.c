@@ -25,8 +25,7 @@ PetscErrorCode KSPSolve_GCR_cycle( KSP ksp )
 {
   KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
   PetscErrorCode ierr;
-  PetscReal      nrm;
-  PetscScalar    r_dot_v;
+  PetscScalar    nrm,r_dot_v;
   Mat            A, B;
   PC             pc;
   Vec            s,v,r;
