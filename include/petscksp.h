@@ -182,7 +182,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMRESSetAugDim(KSP,PetscInt);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMRESSetConstant(KSP);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGCRSetRestart(KSP,PetscInt);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGCRSetRecycleSolution(KSP,PetscTruth);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGCRSetModifyPC(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*),void*,PetscErrorCode(*)(void*));
 
 /*E
     KSPGMRESCGSRefinementType - How the classical (unmodified) Gram-Schmidt is performed.
