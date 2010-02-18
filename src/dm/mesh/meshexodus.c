@@ -98,7 +98,7 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
       for (int c = 0; c < num_elem; ++c) {
 	sieve->setConeSize(c, numCorners);
       }
-      sieve->symmetrizeSizes(num_elem, numCorners, cells, num_elem);
+      sieve->symmetrizeSizes(num_elem, numCorners, cells, num_elem - 1); /* Notice the -1 for 1-based indexing in cells[] */
       // Allocate point storage
       sieve->allocate();
       // Fill up cones

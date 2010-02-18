@@ -1677,8 +1677,10 @@ PetscErrorCode MeshDistribute(Mesh serialMesh, const char partitioner[], Mesh *p
   const Obj<PETSC_MESH_TYPE::sieve_type> newSieve = new PETSC_MESH_TYPE::sieve_type(oldMesh->comm(), oldMesh->debug());
 
   newMesh->setSieve(newSieve);
+  ierr = PetscPrintf(oldMesh->comm(), "Starting Mesh Distribution");CHKERRQ(ierr);
   ALE::DistributionNew<PETSC_MESH_TYPE>::distributeMeshAndSectionsV(oldMesh, newMesh);
   ierr = MeshSetMesh(*parallelMesh, newMesh);CHKERRQ(ierr);
+  ierr = PetscPrintf(oldMesh->comm(), "Ending Mesh Distribution");CHKERRQ(ierr);
 #else
   if (partitioner == NULL) {
     ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Distribution<PETSC_MESH_TYPE>::distributeMesh(oldMesh);
