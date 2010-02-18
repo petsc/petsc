@@ -2894,7 +2894,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const Mat
     ierr = PetscLLClean(am,am,nzk,lnk,current_space->array,lnkbt);CHKERRQ(ierr); 
 
     /* add the k-th row into il and jl */
-    if (nzk-1 > 0){
+    if (nzk > 1){
       i = current_space->array[1]; /* col value of the first nonzero element in U(k, k+1:am-1) */    
       jl[k] = jl[i]; jl[i] = k;
       il[k] = ui[k] + 1;
