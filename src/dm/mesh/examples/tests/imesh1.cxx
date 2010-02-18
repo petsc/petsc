@@ -1,11 +1,14 @@
 #define ALE_MEM_LOGGING
 
 #include <petsc.h>
+#include <petsclog.hh>
 #include <petscmesh_formats.hh>
 #include <Mesh.hh>
 #include <Generator.hh>
 #include <Selection.hh>
 #include "unitTests.hh"
+
+#include <boost/pool/pool_alloc.hpp>
 
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
@@ -275,6 +278,148 @@ public:
 #define __FUNCT__ "RegisterIMeshFunctionSuite"
 PetscErrorCode RegisterIMeshFunctionSuite() {
   CPPUNIT_TEST_SUITE_REGISTRATION(FunctionTestIMesh);
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+class StressTestIMesh : public CppUnit::TestFixture
+{
+  CPPUNIT_TEST_SUITE(StressTestIMesh);
+
+  CPPUNIT_TEST(testLabelAllocator);
+
+  CPPUNIT_TEST_SUITE_END();
+public:
+  typedef ALE::IMesh<>          mesh_type;
+  typedef mesh_type::sieve_type sieve_type;
+  typedef mesh_type::point_type point_type;
+protected:
+  ALE::Obj<mesh_type> _mesh;
+  std::map<point_type,point_type> _renumbering;
+  int                 _debug; // The debugging level
+  PetscInt            _iters; // The number of test repetitions
+  PetscInt            _size;  // The number of mesh points
+public:
+  PetscErrorCode processOptions() {
+    PetscErrorCode ierr;
+
+    this->_debug = 0;
+    this->_iters = 1;
+    this->_size  = 1000;
+
+    PetscFunctionBegin;
+    ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for interval section stress test", "ISection");CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-debug", "The debugging level", "isection.c", this->_debug, &this->_debug, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isection.c", this->_iters, &this->_iters, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-size", "The number of points", "isection.c", this->_size, &this->_size, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  };
+
+  /// Setup data.
+  void setUp(void) {
+    this->processOptions();
+    try {
+#if 0
+      double                    lower[3]    = {0.0, 0.0, 0.0};
+      double                    upper[3]    = {1.0, 1.0, 1.0};
+      int                       faces[3]    = {3, 3, 3};
+      bool                      interpolate = this->_interpolate;
+      const ALE::Obj<ALE::Mesh> mB          = ALE::MeshBuilder<ALE::Mesh>::createCubeBoundary(PETSC_COMM_WORLD, lower, upper, faces, this->_debug);
+      this->_m    = ALE::Generator<ALE::Mesh>::generateMesh(mB, interpolate);
+      this->_mesh = new mesh_type(mB->comm(), 3, this->_debug);
+      ALE::Obj<mesh_type::sieve_type> sieve = new mesh_type::sieve_type(this->_mesh->comm(), 0, 119, this->_debug);
+
+      this->_mesh->setSieve(sieve);
+      ALE::ISieveConverter::convertMesh(*this->_m, *this->_mesh, this->_renumbering);
+      if (this->_mesh->commSize() > 1) {
+	ALE::Obj<mesh_type>             newMesh  = new mesh_type(PETSC_COMM_WORLD, this->_mesh->getDimension(), this->_debug);
+	ALE::Obj<mesh_type::sieve_type> newSieve = new mesh_type::sieve_type(newMesh->comm(), this->_debug);
+
+	newMesh->setSieve(newSieve);
+	ALE::DistributionNew<mesh_type>::distributeMeshAndSectionsV(this->_mesh, newMesh);
+	this->_mesh = newMesh;
+      }
+#endif
+    } catch (ALE::Exception e) {
+      std::cerr << e << std::endl;
+      CPPUNIT_FAIL(e.msg());
+    }
+  };
+
+  /// Tear down data.
+  void tearDown(void) {};
+
+  void testLabelAllocator(void) {
+    // Q_2 mesh, 50x50x50, 64s, few labels
+    typedef ALE::LabelSifter<int,int> LabelALE;
+    typedef ALE::NewSifterDef::ArrowContainer<int,int>::traits::arrow_type arrow_type;
+    typedef ALE::LabelSifter<int,int,boost::pool_allocator<arrow_type> > LabelPool;
+    PETSc::Log::Stage("LabelTests").push();
+    PETSc::Log::Event("ALEAllocatorTestTotal").begin();
+    {
+      LabelALE  labelALE(PETSC_COMM_WORLD, this->_debug);
+
+      PETSc::Log::Event("ALEAllocatorTest").begin();
+      for(int val = 0; val < this->_iters; ++val) {
+	for(int p = val*this->_size + this->_iters; p < (val+1)*this->_size + this->_iters; ++p) {
+	  labelALE.setCone(val, p);
+	}
+      }
+      PETSc::Log::Event("ALEAllocatorTest").end();
+      CPPUNIT_ASSERT_EQUAL(this->_iters*this->_size, labelALE.size());
+    }
+    PETSc::Log::Event("ALEAllocatorTestTotal").end();
+    PETSc::Log::Event("PoolAllocatorTestTotal").begin();
+    {
+      boost::pool_allocator<arrow_type> pool;
+      LabelPool labelPool(PETSC_COMM_WORLD, pool, this->_debug);
+
+      arrow_type *a = pool.allocate(this->_iters*this->_size);
+      pool.deallocate(a, this->_iters*this->_size);
+      PETSc::Log::Event("PoolAllocatorTest").begin();
+      for(int val = 0; val < this->_iters; ++val) {
+	for(int p = val*this->_size + this->_iters; p < (val+1)*this->_size + this->_iters; ++p) {
+	  labelPool.setCone(val, p);
+	}
+      }
+      PETSc::Log::Event("PoolAllocatorTest").end();
+      CPPUNIT_ASSERT_EQUAL(this->_iters*this->_size, labelPool.size());
+    }
+    PETSc::Log::Event("PoolAllocatorTestTotal").end();
+    PETSc::Log::Stage("LabelTests").pop();
+    StageLog             stageLog;
+    EventPerfLog         eventLog;
+    const PetscLogDouble maxTimePerInsertion = 2.0e-5;
+    PetscErrorCode       ierr;
+
+    ierr = PetscLogGetStageLog(&stageLog);CHKERRXX(ierr);
+    ierr = StageLogGetEventPerfLog(stageLog, PETSc::Log::Stage("LabelTests").getId(), &eventLog);CHKERRXX(ierr);
+    EventPerfInfo eventInfoALE = eventLog->eventInfo[PETSc::Log::Event("ALEAllocatorTest").getId()];
+    EventPerfInfo eventInfoALETotal = eventLog->eventInfo[PETSc::Log::Event("ALEAllocatorTestTotal").getId()];
+
+    CPPUNIT_ASSERT_EQUAL(eventInfoALE.count, 1);
+    CPPUNIT_ASSERT_EQUAL((int) eventInfoALE.flops, 0);
+    if (this->_debug) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "\nInsertion time: %g  Total time: %g  Average time per insertion: %gs\n", eventInfoALE.time, eventInfoALETotal.time, eventInfoALE.time/(this->_iters*this->_size));CHKERRXX(ierr);
+    }
+    CPPUNIT_ASSERT((eventInfoALE.time < maxTimePerInsertion * this->_size * this->_iters));
+    EventPerfInfo eventInfoPool = eventLog->eventInfo[PETSc::Log::Event("PoolAllocatorTest").getId()];
+    EventPerfInfo eventInfoPoolTotal = eventLog->eventInfo[PETSc::Log::Event("PoolAllocatorTestTotal").getId()];
+
+    CPPUNIT_ASSERT_EQUAL(eventInfoPool.count, 1);
+    CPPUNIT_ASSERT_EQUAL((int) eventInfoPool.flops, 0);
+    if (this->_debug) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "\nInsertion time: %g  Total time: %g  Average time per insertion: %gs\n", eventInfoPool.time, eventInfoPoolTotal.time, eventInfoPool.time/(this->_iters*this->_size));CHKERRXX(ierr);
+    }
+    CPPUNIT_ASSERT((eventInfoPool.time < maxTimePerInsertion * this->_size * this->_iters));
+  };
+};
+
+#undef __FUNCT__
+#define __FUNCT__ "RegisterIMeshStressSuite"
+PetscErrorCode RegisterIMeshStressSuite() {
+  CPPUNIT_TEST_SUITE_REGISTRATION(StressTestIMesh);
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }

@@ -20,6 +20,7 @@ extern PetscErrorCode RegisterISieveMemorySuite();
 extern PetscErrorCode RegisterSectionStressSuite();
 extern PetscErrorCode RegisterISectionStressSuite();
 extern PetscErrorCode RegisterIMeshFunctionSuite();
+extern PetscErrorCode RegisterIMeshStressSuite();
 extern PetscErrorCode RegisterIMeshMemorySuite();
 extern PetscErrorCode RegisterDistributionFunctionSuite();
 extern PetscErrorCode RegisterIDistributionFunctionSuite();
@@ -104,6 +105,7 @@ PetscErrorCode RegisterSuites(Options *options) {
   }
   if (options->imesh) {
     if (options->function) {ierr = RegisterIMeshFunctionSuite();CHKERRQ(ierr);}
+    if (options->stress)   {ierr = RegisterIMeshStressSuite();CHKERRQ(ierr);}
     if (options->memory)   {ierr = RegisterIMeshMemorySuite();CHKERRQ(ierr);}
   }
   if (options->distribution) {

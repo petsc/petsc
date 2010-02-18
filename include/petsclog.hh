@@ -19,6 +19,7 @@ namespace PETSc {
     void pop() {
       PetscErrorCode ierr = PetscLogStagePop(); CHKERRXX(ierr);
     };
+    PetscLogEvent getId() {return this->id;};
   };
 
   class LogEvent {
@@ -43,6 +44,7 @@ namespace PETSc {
       if (comm == MPI_COMM_NULL) comm = PETSC_COMM_WORLD;
       PetscErrorCode ierr = PetscLogEventBarrierEnd(this->id, o1, o2, o3, o4, comm); CHKERRXX(ierr);
     };
+    PetscLogEvent getId() {return this->id;};
   };
 
   class Log {

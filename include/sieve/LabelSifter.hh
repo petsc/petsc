@@ -260,7 +260,8 @@ namespace ALE {
       // Define container's encapsulated types
       typedef ArrowContainerTraits<Source_, Target_> traits;
       // need to def arrow_type locally, since BOOST_MULTI_INDEX_MEMBER barfs when first template parameter starts with 'typename'
-      typedef typename traits::arrow_type                                   arrow_type; 
+      typedef typename traits::arrow_type                                   arrow_type;
+      typedef Alloc_ alloc_type;
 
       // multi-index set type -- arrow set
       typedef ::boost::multi_index::multi_index_container<
@@ -287,6 +288,9 @@ namespace ALE {
       > set_type;      
       // multi-index set of arrow records 
       set_type set;
+
+      ArrowContainer() {};
+      ArrowContainer(const alloc_type& allocator) {this->set = set_type(typename set_type::ctor_args_list(), allocator);};
     }; // class ArrowContainer
   }; // namespace NewSifterDef
 
@@ -400,7 +404,6 @@ namespace ALE {
     MPI_Comm    _comm;
     int         _commRank;
     int         _commSize;
-    PetscObject _petscObj;
     void __init(MPI_Comm comm) {
       static PetscCookie sifterType = -1;
       //const char        *id_name = ALE::getClassName<T>();
@@ -413,9 +416,6 @@ namespace ALE {
       this->_comm = comm;
       ierr = MPI_Comm_rank(this->_comm, &this->_commRank);CHKERROR(ierr, "Error in MPI_Comm_rank");
       ierr = MPI_Comm_size(this->_comm, &this->_commSize);CHKERROR(ierr, "Error in MPI_Comm_rank"); 
-#ifdef USE_PETSC_OBJ
-      ierr = PetscObjectCreateGeneric(this->_comm, sifterType, id_name, &this->_petscObj);CHKERROR(ierr, "Error in PetscObjectCreate");
-#endif
       //ALE::restoreClassName<T>(id_name);
     };
     // We store these sequence objects to avoid creating them each query
@@ -425,20 +425,17 @@ namespace ALE {
     // 
     // Basic interface
     //
-    LabelSifter(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : _debug(debug), _petscObj(NULL) {
+    LabelSifter(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : _debug(debug) {
       __init(comm);
       this->_coneSeq    = new typename traits::coneSequence(*this, ::boost::multi_index::get<typename traits::coneInd>(this->_arrows.set), typename traits::target_type()); 
       this->_supportSeq = new typename traits::supportSequence(*this, ::boost::multi_index::get<typename traits::supportInd>(this->_arrows.set), typename traits::source_type());
-   }
-    virtual ~LabelSifter() {
-#ifdef USE_PETSC_OBJ
-      if (this->_petscObj) {
-        PetscErrorCode ierr;
-        ierr = PetscObjectDestroy(this->_petscObj);CHKERROR(ierr, "Failed in PetscObjectDestroy");
-        this->_petscObj = NULL;
-      }
-#endif
     };
+    LabelSifter(MPI_Comm comm, Alloc_& allocator, const int& debug) : _debug(debug), _arrows(allocator) {
+      __init(comm);
+      this->_coneSeq    = new typename traits::coneSequence(*this, ::boost::multi_index::get<typename traits::coneInd>(this->_arrows.set), typename traits::target_type()); 
+      this->_supportSeq = new typename traits::supportSequence(*this, ::boost::multi_index::get<typename traits::supportInd>(this->_arrows.set), typename traits::source_type());
+    };
+    virtual ~LabelSifter() {};
     //
     // Query methods
     //
@@ -447,9 +444,6 @@ namespace ALE {
     MPI_Comm    comm()     const {return this->_comm;};
     int         commSize() const {return this->_commSize;};
     int         commRank() const {return this->_commRank;}
-#ifdef USE_PETSC_OBJ
-    PetscObject petscObj() const {return this->_petscObj;};
-#endif
 
     // FIX: should probably have cone and const_cone etc, since arrows can be modified through an iterator (modifyColor).
     Obj<typename traits::arrowSequence> 
@@ -731,6 +725,7 @@ namespace ALE {
         this->addArrow(a_iter->source, target);
       }
     };
+    int size() const {return _arrows.set.size();};
     int getCapSize() const {
       std::set<source_type> cap;
       for(typename traits::arrow_container_type::set_type::iterator a_iter = _arrows.set.begin(); a_iter != _arrows.set.end(); ++a_iter) {
