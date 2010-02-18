@@ -2241,8 +2241,8 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
   const PetscInt     *rip;
   PetscInt           reallocs=0,i,*ui,*udiag;
   PetscInt           jmin,jmax,nzk,k,j,*jl,prow,*il,nextprow;
-  PetscInt           nlnk,*lnk,*lnk_lvl=PETSC_NULL,ncols,*cols_lvl,*uj,**uj_ptr,**uj_lvl_ptr;
-  PetscReal          fill=info->fill,levels=info->levels,ratio_needed;
+  PetscInt           nlnk,*lnk,*lnk_lvl=PETSC_NULL,ncols,*uj,**uj_ptr,**uj_lvl_ptr;
+  PetscReal          fill=info->fill,levels=info->levels;
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
   PetscFreeSpaceList free_space_lvl=PETSC_NULL,current_space_lvl=PETSC_NULL;
   PetscBT            lnkbt;
