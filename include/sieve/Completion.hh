@@ -215,6 +215,7 @@ namespace ALE {
       };
       template<typename SifterType, typename Renumbering>
       static void scatterCones(const Obj<SifterType>& sifter, const Obj<SifterType>& sifterNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, Renumbering& renumbering, const Obj<bundle_type>& bundle = NULL) {
+	PETSc::Log::Event("ScatterCones").begin();
         typedef typename ALE::New::ConeSizeSection<bundle_type, SifterType> cone_size_section;
         typedef typename ALE::New::ConeSection<SifterType>                  cone_section;
         typedef typename ALE::Field<send_overlap_type, int, ALE::Section<point_type, value_type, value_alloc_type> > send_section_type;
@@ -243,6 +244,7 @@ namespace ALE {
             }
           }
         }
+	PETSc::Log::Event("ScatterCones").end();
       };
       template<typename SifterType>
       static void scatterSupports(const Obj<SifterType>& sifter, const Obj<SifterType>& sifterNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<bundle_type>& bundle = NULL, const int minimumDepth = 0) {
