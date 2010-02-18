@@ -2947,7 +2947,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const Mat
   b->icol = iperm;
   b->pivotinblocks = PETSC_FALSE; /* need to get from MatFactorInfo */
   ierr    = PetscMalloc((am+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
-  ierr    = PetscLogObjectMemory(fact,(ui[am]-am)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
+  ierr    = PetscLogObjectMemory(fact,ui[am]*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
   b->maxnz = b->nz = ui[am];
   
   fact->info.factor_mallocs    = reallocs;
