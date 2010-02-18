@@ -152,7 +152,6 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
   } catch (ALE::Exception e) {
     SETERRQ(PETSC_ERR_LIB, e.msg().c_str());
   }
-  mesh->view("Mesh");
   ierr = PetscFree(cells);CHKERRQ(ierr);
 
   // Build cell blocks
