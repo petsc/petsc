@@ -1127,6 +1127,7 @@ namespace ALE {
       int              *start     = NULL;
       int              *adjacency = NULL;
 
+      PETSc::Log::Event("PartitionCreate").begin();
       if (height == 0) {
         int numVertices;
 
@@ -1145,6 +1146,7 @@ namespace ALE {
       } else {
         throw ALE::Exception("Invalid partition height");
       }
+      PETSc::Log::Event("PartitionCreate").end();
     };
     // Add in the points in the closure (and star) of the partitioned points
     template<typename Mesh, typename Section>
@@ -1257,6 +1259,7 @@ namespace ALE {
       const typename Section::chart_type&   chart = pointPartition->getChart();
       size_t                                size  = 0;
 
+      PETSc::Log::Event("PartitionClosure").begin();
       for(typename Section::chart_type::const_iterator r_iter = chart.begin(); r_iter != chart.end(); ++r_iter) {
         const typename Section::value_type *points    = pointPartition->restrictPoint(*r_iter);
         const int                           numPoints = pointPartition->getFiberDimension(*r_iter);
@@ -1297,6 +1300,7 @@ namespace ALE {
         partition->updatePoint(*r_iter, values);
       }
       delete [] values;
+      PETSc::Log::Event("PartitionClosure").end();
     };
     // Create a section mapping points to partitions
     template<typename Section, typename MapSection>
