@@ -154,6 +154,10 @@ PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat A,MatDuplicateOption cpvalues,Mat *
 
 #undef __FUNCT__
 #define __FUNCT__ "MatILUDTFactor_SeqAIJ_Inode"
+/*
+    This will get a new name and become a varient of MatILUFactor_SeqAIJ() there is no longer seperate functions in the matrix function table for dt factors
+*/
+
 PetscErrorCode MatILUDTFactor_SeqAIJ_Inode(Mat A,IS isrow,IS iscol,const MatFactorInfo *info,Mat *fact)
 {
   PetscErrorCode ierr;

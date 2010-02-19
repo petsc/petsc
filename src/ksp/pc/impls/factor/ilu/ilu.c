@@ -215,40 +215,8 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
        cannot have levels of fill */
     ((PC_Factor*)ilu)->info.fill          = 1.0;
     ((PC_Factor*)ilu)->info.diagonal_fill = 0.0;
-    ierr = MatILUFactor(pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info);CHKERRQ(ierr);
-    CHKMEMQ;
+    ierr = MatILUFactor(pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info);CHKERRQ(ierr);CHKMEMQ;
     ((PC_Factor*)ilu)->fact = pc->pmat;
-  } else if (ilu->usedt) {
-    if (!pc->setupcalled) {
-      ierr = MatGetOrdering(pc->pmat,((PC_Factor*)ilu)->ordering,&ilu->row,&ilu->col);CHKERRQ(ierr);
-    CHKMEMQ;
-      ierr = MatGetFactor(pc->pmat,MAT_SOLVER_PETSC,MAT_FACTOR_ILUDT,&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
-      if (ilu->row) {ierr = PetscLogObjectParent(pc,ilu->row);CHKERRQ(ierr);}
-      if (ilu->col) {ierr = PetscLogObjectParent(pc,ilu->col);CHKERRQ(ierr);}
-      ierr = MatILUDTFactor(pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info,&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(pc,((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
-    } else if (pc->flag != SAME_NONZERO_PATTERN) { 
-    CHKMEMQ;
-      ierr = MatDestroy(((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
-    CHKMEMQ;
-      if (!ilu->reuseordering) {
-        if (ilu->row) {ierr = ISDestroy(ilu->row);CHKERRQ(ierr);}
-        if (ilu->col) {ierr = ISDestroy(ilu->col);CHKERRQ(ierr);}
-        ierr = MatGetOrdering(pc->pmat,((PC_Factor*)ilu)->ordering,&ilu->row,&ilu->col);CHKERRQ(ierr);
-        if (ilu->row) {ierr = PetscLogObjectParent(pc,ilu->row);CHKERRQ(ierr);}
-        if (ilu->col) {ierr = PetscLogObjectParent(pc,ilu->col);CHKERRQ(ierr);}
-      }
-      ierr = MatGetFactor(pc->pmat,MAT_SOLVER_PETSC,MAT_FACTOR_ILUDT,&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
-      ierr = MatILUDTFactor(pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info,&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(pc,((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
-    } else if (!ilu->reusefill) { 
-      ierr = MatDestroy(((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
-      ierr = MatGetFactor(pc->pmat,MAT_SOLVER_PETSC,MAT_FACTOR_ILUDT,&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
-      ierr = MatILUDTFactor(pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info,&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(pc,((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
-    } else {
-      ierr = MatLUFactorNumeric(((PC_Factor*)ilu)->fact,pc->pmat,&((PC_Factor*)ilu)->info);CHKERRQ(ierr);
-    }
   } else {
     if (!pc->setupcalled) {
       /* first time in so compute reordering and symbolic factorization */

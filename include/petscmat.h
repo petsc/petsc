@@ -349,6 +349,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConjugate(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRealPart(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatImaginaryPart(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonalBlock(Mat,PetscTruth*,MatReuse,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetTrace(Mat,PetscScalar*);
 
 /* ------------------------------------------------------------*/
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetValues(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
@@ -1148,9 +1149,6 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatILUFactorSymbolic(Mat,Mat,IS,IS,cons
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatICCFactorSymbolic(Mat,Mat,IS,const MatFactorInfo*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatICCFactor(Mat,IS,const MatFactorInfo*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatLUFactorNumeric(Mat,Mat,const MatFactorInfo*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactor(Mat,IS,IS,const MatFactorInfo*,Mat *);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactorSymbolic(Mat,Mat,IS,IS,const MatFactorInfo*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactorNumeric(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetInertia(Mat,PetscInt*,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSolve(Mat,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatForwardSolve(Mat,Vec,Vec);
@@ -1540,8 +1538,6 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_MATGETSEQNONZEROSTRUCTURE=114,
                MATOP_CREATE=115,
                MATOP_GET_GHOSTS=116,
-               MATOP_ILUDTFACTORSYMBOLIC=117,
-               MATOP_ILUDTFACTORNUMERIC=118,
                MATOP_MULT_DIAGONAL_BLOCK=119,
                MATOP_HERMITIANTRANSPOSE=120,
                MATOP_MULTHERMITIANTRANSPOSE=121,

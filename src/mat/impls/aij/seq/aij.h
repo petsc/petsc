@@ -65,7 +65,6 @@ EXTERN PetscErrorCode MatDestroy_SeqAIJ_Inode(Mat);
 EXTERN PetscErrorCode MatCreate_SeqAIJ_Inode(Mat);
 EXTERN PetscErrorCode MatSetOption_SeqAIJ_Inode(Mat,MatOption,PetscTruth);
 EXTERN PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat,MatDuplicateOption,Mat*);
-EXTERN PetscErrorCode MatILUDTFactor_SeqAIJ_Inode(Mat,IS,IS,const MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatLUFactorSymbolic_SeqAIJ_Inode(Mat,Mat,IS,IS,const MatFactorInfo*);
 EXTERN PetscErrorCode MatILUFactorSymbolic_SeqAIJ_Inode(Mat,Mat,IS,IS,const MatFactorInfo*);
 
@@ -191,9 +190,6 @@ EXTERN PetscErrorCode MatMatSolve_SeqAIJ_inplace(Mat,Mat,Mat);
 EXTERN PetscErrorCode MatMatSolve_SeqAIJ(Mat,Mat,Mat);
 EXTERN PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg);
 EXTERN PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat,ISColoring,MatFDColoring);
-EXTERN PetscErrorCode MatILUDTFactor_SeqAIJ(Mat,IS,IS,const MatFactorInfo*,Mat*);
-EXTERN PetscErrorCode MatILUDTFactorSymbolic_SeqAIJ(Mat,Mat,IS,IS,const MatFactorInfo*);
-EXTERN PetscErrorCode MatILUDTFactorNumeric_SeqAIJ(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatLoad_SeqAIJ(PetscViewer, const MatType,Mat*);
 EXTERN PetscErrorCode RegisterApplyPtAPRoutines_Private(Mat);
 EXTERN PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);

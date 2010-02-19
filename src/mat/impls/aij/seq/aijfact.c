@@ -118,7 +118,6 @@ PetscErrorCode MatGetFactor_seqaij_petsc(Mat A,MatFactorType ftype,Mat *B)
     ierr = MatSetType(*B,MATSEQAIJ);CHKERRQ(ierr);
     (*B)->ops->ilufactorsymbolic = MatILUFactorSymbolic_SeqAIJ;
     (*B)->ops->lufactorsymbolic  = MatLUFactorSymbolic_SeqAIJ;
-    (*B)->ops->iludtfactor       = MatILUDTFactor_SeqAIJ;
   } else if (ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC) {
     ierr = MatSetType(*B,MATSEQSBAIJ);CHKERRQ(ierr);
     ierr = MatSeqSBAIJSetPreallocation(*B,1,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
@@ -3223,6 +3222,9 @@ PetscErrorCode MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUDTFactor_SeqAIJ"
+/*
+    This will get a new name and become a varient of MatILUFactor_SeqAIJ() there is no longer seperate functions in the matrix function table for dt factors
+*/
 PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo *info,Mat *fact)
 {
   Mat                B = *fact;
@@ -3459,8 +3461,6 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
     B->ops->solve = MatSolve_SeqAIJ;
   }
   
-  B->ops->lufactorsymbolic  = MatILUDTFactorSymbolic_SeqAIJ;
-  B->ops->lufactornumeric   = MatILUDTFactorNumeric_SeqAIJ;
   B->ops->solveadd          = 0;
   B->ops->solvetranspose    = 0;
   B->ops->solvetransposeadd = 0;
@@ -3473,14 +3473,16 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
 /* a wraper of MatILUDTFactor_SeqAIJ() */
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUDTFactorSymbolic_SeqAIJ"
+/*
+    This will get a new name and become a varient of MatILUFactor_SeqAIJ() there is no longer seperate functions in the matrix function table for dt factors
+*/
+
 PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS row,IS col,const MatFactorInfo *info)
 {
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = MatILUDTFactor_SeqAIJ(A,row,col,info,&fact);CHKERRQ(ierr);
-
-  fact->ops->lufactornumeric = MatILUDTFactorNumeric_SeqAIJ;
   PetscFunctionReturn(0); 
 }
 
@@ -3490,6 +3492,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactorSymbolic_SeqAIJ(Mat fact,Mat A,I
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUDTFactorNumeric_SeqAIJ"
+/*
+    This will get a new name and become a varient of MatILUFactor_SeqAIJ() there is no longer seperate functions in the matrix function table for dt factors
+*/
+
 PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactorNumeric_SeqAIJ(Mat fact,Mat A,const MatFactorInfo *info)
 {
   Mat            C=fact;
