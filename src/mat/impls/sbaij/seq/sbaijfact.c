@@ -213,6 +213,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F,Mat A,IS perm,const 
 }
 /*
     Symbolic U^T*D*U factorization for SBAIJ format. 
+    See MatICCFactorSymbolic_SeqAIJ() for description of its data structure.
 */
 #include "petscbt.h"
 #include "../src/mat/utils/freespace.h"
@@ -1311,7 +1312,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_inplace(Mat C,Mat A,const Mat
 }
 
 /*
-  Version for when blocks are 1 by 1 Using natural ordering - modified from MatCholeskyFactorNumeric_SeqAIJ()
+  Version for when blocks are 1 by 1 Using natural ordering under new datastructure
+  Modified from MatCholeskyFactorNumeric_SeqAIJ() 
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering"
@@ -1442,8 +1444,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat B,Mat A,c
   B->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering;
   B->ops->solves          = MatSolves_SeqSBAIJ_1;
   B->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_NaturalOrdering;
-  B->ops->forwardsolve    = 0;
-  B->ops->backwardsolve   = 0; 
+  B->ops->forwardsolve    = MatForwardSolve_SeqSBAIJ_1_NaturalOrdering;
+  B->ops->backwardsolve   = MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering; 
 
   B->assembled    = PETSC_TRUE; 
   B->preallocated = PETSC_TRUE;
@@ -1459,18 +1461,6 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat B,Mat A,c
       ierr = PetscInfo2(A,"number of shift_inblocks applied %D, each shift_amount %G\n",sctx.nshift,info->shiftinblocks);CHKERRQ(ierr);
     }
   }
-  /*
-  for (k = 0; k<mbs; k++){
-    printf(" row %d, diag %d ",k,bdiag[k]);
-    nz = bi[k+1] - bi[k];
-    bjtmp = bj + bi[k];
-    bval  = ba + bi[k];
-      for (j=0; j<nz; j++) {
-        printf(" (%d, %g),",bjtmp[j],bval[j]);
-      }
-      printf(" \n");
-  }
-  */
   PetscFunctionReturn(0); 
 }
 
