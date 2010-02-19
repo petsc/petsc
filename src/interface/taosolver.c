@@ -363,7 +363,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetFromOptions(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverView"
-/*@
+/*@C
   TaoSolverView - Prints information about the TaoSolver
  
   Collective on TaoSolver

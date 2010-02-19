@@ -10,6 +10,7 @@
 #define taosolversetjacobianroutine_             TAOSOLVERSETJACOBIANROUTINE
 #define taosolversetmonitor_                     TAOSOLVERSETMONITOR
 #define taosolversettype_                        TAOSOLVERSETTYPE
+#define taosolverview_                           TAOSOLVERVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 
 #define taosolversetobjectiveroutine_            taosolversetobjectiveroutine
@@ -20,6 +21,7 @@
 #define taosolversetjacobianroutine_             taosolversetjacobianroutine
 #define taosolversetmonitor_                     taosolversetmonitor
 #define taosolversettype_                        taosolversettype
+#define taosolverview_                           taosolverview
 #endif
 
 static int OBJ=0;       // objective routine index
@@ -206,4 +208,11 @@ void PETSC_STDCALL taosolversettype_(TaoSolver *tao, CHAR type_name PETSC_MIXED_
     *ierr = TaoSolverSetType(*tao,t);
     FREECHAR(type_name,t);
 	
+}
+
+void PETSC_STDCALL taosolverview_(TaoSolver *tao, PetscViewer *viewer, PetscErrorCode *ierr)
+{
+    PetscViewer v;
+    PetscPatchDefaultViewers_Fortran(viewer,v);
+    *ierr = TaoSolverView(*tao,v);
 }
