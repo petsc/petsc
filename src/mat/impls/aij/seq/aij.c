@@ -3341,9 +3341,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactorAvailable_petsc_C",
                                      "MatGetFactorAvailable_seqaij_petsc",
                                      MatGetFactorAvailable_seqaij_petsc);CHKERRQ(ierr);
-  /*  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_bas_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_bas_C",
                                      "MatGetFactor_seqaij_bas",
-                                     MatGetFactor_seqaij_bas); */
+                                     MatGetFactor_seqaij_bas); 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqAIJSetColumnIndices_C",
                                      "MatSeqAIJSetColumnIndices_SeqAIJ",
                                      MatSeqAIJSetColumnIndices_SeqAIJ);CHKERRQ(ierr);

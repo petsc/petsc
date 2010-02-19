@@ -115,7 +115,7 @@ $    FILE_MODE_READ - open existing file for binary input
 $    FILE_MODE_APPEND - open existing file for binary output
 
    Output Parameter:
-.  hd5v - PetscViewer for HDF5 input/output to use with the specified file
+.  hdf5v - PetscViewer for HDF5 input/output to use with the specified file
 
    Level: beginner
 

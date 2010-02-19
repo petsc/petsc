@@ -43,7 +43,7 @@ PetscErrorCode KSPSolve_GCR_cycle( KSP ksp )
   b = ksp->vec_rhs;
   r = ctx->R;
 
-  for( k=0; k<restart; k++ ) {
+  for ( k=0; k<restart; k++ ) {
     v = ctx->VV[k];
     s = ctx->SS[k];
     if (ctx->modifypc) {
@@ -345,6 +345,8 @@ PetscErrorCode  KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
            where ksp->chknorm is specified via the command line argument -ksp_check_norm_iteration or via 
            the function KSPSetCheckNormIteration().
            The method implemented requires the storage of 2 x restart + 1 vectors.
+
+    Contributed by Dave May
  
     References:
            S. C. Eisenstat, H. C. Elman, and H. C. Schultz. Variational iterative methods for 

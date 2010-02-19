@@ -15,7 +15,7 @@ static PetscErrorCode PCSetup_ICC(PC pc)
   ierr = MatGetOrdering(pc->pmat, ((PC_Factor*)icc)->ordering,&perm,&cperm);CHKERRQ(ierr);
 
   if (!pc->setupcalled) {
-    ierr = MatGetFactor(pc->pmat,MAT_SOLVER_PETSC,MAT_FACTOR_ICC,& ((PC_Factor*)icc)->fact);CHKERRQ(ierr);
+    ierr = MatGetFactor(pc->pmat,((PC_Factor*)icc)->solvertype,MAT_FACTOR_ICC,& ((PC_Factor*)icc)->fact);CHKERRQ(ierr);
     ierr = MatICCFactorSymbolic(((PC_Factor*)icc)->fact,pc->pmat,perm,&((PC_Factor*)icc)->info);CHKERRQ(ierr);
   } else if (pc->flag != SAME_NONZERO_PATTERN) {
     ierr = MatDestroy(((PC_Factor*)icc)->fact);CHKERRQ(ierr);
@@ -41,6 +41,7 @@ static PetscErrorCode PCDestroy_ICC(PC pc)
   PetscFunctionBegin;
   if (((PC_Factor*)icc)->fact) {ierr = MatDestroy(((PC_Factor*)icc)->fact);CHKERRQ(ierr);}
   ierr = PetscStrfree(((PC_Factor*)icc)->ordering);CHKERRQ(ierr);
+  ierr = PetscStrfree(((PC_Factor*)icc)->solvertype);CHKERRQ(ierr);
   ierr = PetscFree(icc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -192,6 +193,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC pc)
 
   ((PC_Factor*)icc)->fact	          = 0;
   ierr = PetscStrallocpy(MATORDERING_NATURAL,&((PC_Factor*)icc)->ordering);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MAT_SOLVER_PETSC,&((PC_Factor*)icc)->solvertype);CHKERRQ(ierr);
   ierr = MatFactorInfoInitialize(&((PC_Factor*)icc)->info);CHKERRQ(ierr);
   ((PC_Factor*)icc)->info.levels	  = 0.;
   ((PC_Factor*)icc)->info.fill          = 1.0;
@@ -229,6 +231,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC pc)
                     PCFactorSetFill_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatOrderingType_C","PCFactorSetMatOrderingType_Factor",
                     PCFactorSetMatOrderingType_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatSolverPackage_C","PCFactorSetMatSolverPackage_Factor",
+                    PCFactorSetMatSolverPackage_Factor);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
