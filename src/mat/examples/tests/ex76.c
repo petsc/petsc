@@ -233,7 +233,8 @@ int main(int argc,char **args)
     }      
     ierr = MatCholeskyFactorNumeric(sC,sA,&factinfo);CHKERRQ(ierr);  
 
-    if (lvl==0 && bs==1){ /* Test inplace ICC(0) for sbaij sA */
+    if (lvl==0 && bs==1){ /* Test inplace ICC(0) for sbaij sA - does not work for new datastructure */
+      /*
         Mat B;
         ierr = MatDuplicate(sA,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
         ierr = MatICCFactor(B,perm,&factinfo);CHKERRQ(ierr);
@@ -242,7 +243,9 @@ int main(int argc,char **args)
           SETERRQ(PETSC_ERR_USER,"in-place Cholesky factor != out-place Cholesky factor");
         }
         ierr = MatDestroy(B);CHKERRQ(ierr);
+      */
     }
+
 
     ierr = MatMult(sA,x,b);CHKERRQ(ierr);
     ierr = MatSolve(sC,b,y);CHKERRQ(ierr); 

@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   PC             pc;
   Vec            x,b;
   DA             da;
-  Mat            A;
+  Mat            A,Atrans;
   PetscInt       dof=1,M=-8;
   PetscTruth     flg,trans=PETSC_FALSE;
 
@@ -53,19 +53,21 @@ int main(int argc,char **argv)
   ierr = DAGetMatrix(da,MATBAIJ,&A);CHKERRQ(ierr);
   ierr = ComputeMatrix(da,A);CHKERRQ(ierr);
 
+
+  /* A is non-symmetric. Make A = 0.5*(A + Atrans) symmetric for testing icc and cholesky */
+  ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&Atrans);CHKERRQ(ierr);
+  ierr = MatAXPY(A,1.0,Atrans,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatScale(A,0.5);CHKERRQ(ierr);
+  ierr = MatDestroy(Atrans);CHKERRQ(ierr);
+
+  /* Test sbaij matrix */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL, "-check_symmetry", &flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL, "-test_sbaij1", &flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg){
-    PetscTruth isSymmetric;
-    ierr = MatIsSymmetric(A,0.0,&isSymmetric);CHKERRQ(ierr);
-    if (!isSymmetric){
-      printf("A is not symmetric, make A = 0.5*(A+A^T) symmetric ...\n");
-      Mat Atrans;
-      ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&Atrans);CHKERRQ(ierr);
-      ierr = MatAXPY(A,1.0,Atrans,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = MatScale(A,0.5);CHKERRQ(ierr);
-      ierr = MatDestroy(Atrans);CHKERRQ(ierr);
-    }
+    Mat sA;
+    ierr = MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&sA);CHKERRQ(ierr);
+    ierr = MatDestroy(A);CHKERRQ(ierr);
+    A = sA;
   }
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);

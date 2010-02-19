@@ -100,14 +100,10 @@ namespace ALE {
       Obj<oriented_cones_wrapper_type> cones        = new oriented_cones_wrapper_type(sieve);
       Obj<oriented_cones_type>         overlapCones = new oriented_cones_type(sieve->comm(), sieve->debug());
 
-      std::cout << "Starting completeConesV" << std::endl;
-      std::cout << "  Copying cones" << std::endl;
       ALE::Pullback::SimpleCopy::copy(sendMeshOverlap, recvMeshOverlap, cones, overlapCones);
       if (sieve->debug()) {overlapCones->view("Overlap Cones");}
       // Inserts cones into parallelMesh (must renumber here)
-      std::cout << "  Fusing cones" << std::endl;
       ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvMeshOverlap, renumbering, newSieve);
-      std::cout << "Ending completeConesV" << std::endl;
       return overlapCones;
     };
     // Given a partition of sieve points, copy the mesh pieces to each process and fuse into the new mesh
@@ -161,14 +157,12 @@ namespace ALE {
       const Obj<part_send_overlap_type> sendOverlap = new part_send_overlap_type(partition->comm());
       const Obj<part_recv_overlap_type> recvOverlap = new part_recv_overlap_type(partition->comm());
 
-      std::cout << "Starting completeBaseV" << std::endl;
       // Create overlap for partition points
       //   TODO: This needs to be generalized for multiple sources
       Partitioner::createDistributionPartOverlap(sendOverlap, recvOverlap);
       // Communicate partition pieces to processes
       Obj<partition_type> overlapPartition = new partition_type(partition->comm(), partition->debug());
 
-      std::cout << "  Communicating partition" << std::endl;
       overlapPartition->setChart(partition->getChart());
       ALE::Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, partition, overlapPartition);
       // Create renumbering
@@ -176,12 +170,10 @@ namespace ALE {
       const point_type *localPoints    = partition->restrictPoint(rank);
       const int         numLocalPoints = partition->getFiberDimension(rank);
 
-      std::cout << "  Creating local renumbering" << std::endl;
       for(point_type p = 0; p < numLocalPoints; ++p) {
         ///std::cout <<"["<<partition->commRank()<<"]: local renumbering " << localPoints[p] << " --> " << p << std::endl;
         renumbering[localPoints[p]] = p;
       }
-      std::cout << "  Creating remote renumbering" << std::endl;
       const Obj<typename part_recv_overlap_type::traits::baseSequence> rPoints    = recvOverlap->base();
       point_type                                                       localPoint = numLocalPoints;
 
@@ -199,9 +191,7 @@ namespace ALE {
       newMesh->getSieve()->setChart(typename NewMesh::sieve_type::chart_type(0, renumbering.size()));
       // Create mesh overlap from partition overlap
       //   TODO: Generalize to redistribution (receive from multiple sources)
-      std::cout << "  Creating Mesh Overlap" << std::endl;
       Partitioner::createDistributionMeshOverlap(partition, recvOverlap, renumbering, overlapPartition, sendMeshOverlap, recvMeshOverlap);
-      std::cout << "Ending completeBaseV" << std::endl;
     };
     template<typename NewMesh, typename Renumbering, typename SendOverlap, typename RecvOverlap>
     static Obj<partition_type> distributeMesh(const Obj<Mesh>& mesh, const Obj<NewMesh>& newMesh, Renumbering& renumbering, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap, const int height = 0) {
@@ -299,19 +289,31 @@ namespace ALE {
       // Create the remote bases
       completeBaseV(mesh, partition, renumbering, newMesh, sendMeshOverlap, recvMeshOverlap);
       // Size the local mesh
-      std::cout << "Sizing local mesh" << std::endl;
       Partitioner::sizeLocalMeshV(mesh, partition, renumbering, newMesh, height);
       // Create the remote meshes
       completeConesV(mesh->getSieve(), newMesh->getSieve(), renumbering, sendMeshOverlap, recvMeshOverlap);
       // Create the local mesh
-      std::cout << "Creating local mesh" << std::endl;
       Partitioner::createLocalMeshV(mesh, partition, renumbering, newMesh, height);
-      std::cout << "Fixing up mesh strata" << std::endl;
       newMesh->getSieve()->symmetrize();
       newMesh->stratify();
       PETSc::Log::Event("DistributeMesh").end();
       return partition;
     };
+    // distributeMeshV:
+    //   createPartitionV (can be dumb)
+    //   createPartitionClosureV (should be low memory)
+    //   completeBaseV (???)
+    //     Partitioner::createDistributionPartOverlap (low memory)
+    //     copy points to partitions (uses small overlap and fake sections)
+    //     renumber (map is potentially big, can measure)
+    //     Partitioner::createDistributionMeshOverlap (should be large for distribution)
+    //       sendMeshOverlap is localPoint--- remotePoint --->remoteRank
+    //       recvMeshOverlap is remoteRank--- remotePoint --->localPoint
+    //   sizeLocalMeshV (should be low memory)
+    //   completeConesV (???)
+    //   createLocalMesh (should be low memory)
+    //   symmetrize
+    //   stratify
     template<typename NewMesh>
     static void distributeMeshAndSectionsV(const Obj<Mesh>& mesh, const Obj<NewMesh>& newMesh) {
       typedef typename Mesh::point_type point_type;
@@ -385,10 +387,7 @@ namespace ALE {
         Partitioner::createLocalSieveV(origLabel, partition, renumbering, newLabel);
         newLabel->symmetrize();
 #else
-        // Get remote labels
-        ALE::New::Completion<Mesh,point_type>::scatterCones(origLabel, newLabel, sendMeshOverlap, recvMeshOverlap, renumbering);
-        // Create local label
-        newLabel->add(origLabel, newMesh->getSieve(), renumbering);
+	distributeLabelV(newMesh->getSieve(), origLabel, partition, renumbering, sendMeshOverlap, recvMeshOverlap, newLabel);
 #endif
       }
       PETSc::Log::Event("DistributeLabels").end();
@@ -418,14 +417,51 @@ namespace ALE {
         // Inserts cones into newL (must renumber here)
         //ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvOverlap, renumbering, newSieve);
         {
+	  typedef typename cones_type::point_type overlap_point_type;
+          const Obj<typename RecvOverlap::traits::baseSequence>      rPoints = recvOverlap->base();
+	  const typename RecvOverlap::traits::baseSequence::iterator rEnd    = rPoints->end();
+
+          for(typename RecvOverlap::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
+            const Obj<typename RecvOverlap::coneSequence>& points       = recvOverlap->cone(*p_iter);
+            const typename RecvOverlap::target_type&       localPoint   = *p_iter;
+            const typename cones_type::point_type&         remotePoint  = points->begin().color();
+	    const overlap_point_type                       overlapPoint = overlap_point_type(remotePoint.second, remotePoint.first);
+            const int                                      size         = overlapCones->getFiberDimension(overlapPoint);
+            const typename cones_type::value_type         *values       = overlapCones->restrictPoint(overlapPoint);
+
+            newL->clearCone(localPoint);
+            for(int i = 0; i < size; ++i) {newL->addCone(values[i], localPoint);}
+          }
+        }
+      }
+    };
+    template<typename Label, typename Partition, typename Renumbering, typename SendOverlap, typename RecvOverlap, typename NewLabel>
+    static void distributeLabelV(const Obj<typename Mesh::sieve_type>& sieve, const Obj<Label>& l, const Obj<Partition>& partition, Renumbering& renumbering, const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<NewLabel>& newL) {
+      Partitioner::createLocalSifter(l, partition, renumbering, newL);
+      //completeCones(l, newL, renumbering, sendMeshOverlap, recvMeshOverlap);
+      {
+	typedef typename Label::alloc_type::template rebind<int>::other alloc_type;
+	typedef LabelBaseSectionV<typename Mesh::sieve_type, Label, alloc_type> atlas_type;
+        typedef ALE::UniformSection<ALE::Pair<int, point_type>, int>            cones_type;
+        typedef ALE::LabelSection<typename Mesh::sieve_type, Label, alloc_type, atlas_type> cones_wrapper_type;
+        Obj<cones_wrapper_type> cones        = new cones_wrapper_type(sieve, l);
+        Obj<cones_type>         overlapCones = new cones_type(l->comm(), l->debug());
+
+        ALE::Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, cones, overlapCones);
+        if (l->debug()) {overlapCones->view("Overlap Label Values");}
+        // Inserts cones into newL (must renumber here)
+        //ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvOverlap, renumbering, newSieve);
+        {
+	  typedef typename cones_type::point_type overlap_point_type;
           const Obj<typename RecvOverlap::traits::baseSequence> rPoints = recvOverlap->base();
 
           for(typename RecvOverlap::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rPoints->end(); ++p_iter) {
-            const Obj<typename RecvOverlap::coneSequence>& points      = recvOverlap->cone(*p_iter);
-            const typename RecvOverlap::target_type&       localPoint  = *p_iter;
-            const typename cones_type::point_type&         remotePoint = points->begin().color();
-            const int                                      size        = overlapCones->getFiberDimension(remotePoint);
-            const typename cones_type::value_type         *values      = overlapCones->restrictPoint(remotePoint);
+            const Obj<typename RecvOverlap::coneSequence>& points       = recvOverlap->cone(*p_iter);
+            const typename RecvOverlap::target_type&       localPoint   = *p_iter;
+            const typename cones_type::point_type&         remotePoint  = points->begin().color();
+	    const overlap_point_type                       overlapPoint = overlap_point_type(remotePoint.second, remotePoint.first);
+            const int                                      size         = overlapCones->getFiberDimension(overlapPoint);
+            const typename cones_type::value_type         *values       = overlapCones->restrictPoint(overlapPoint);
 
             newL->clearCone(localPoint);
             for(int i = 0; i < size; ++i) {newL->addCone(values[i], localPoint);}

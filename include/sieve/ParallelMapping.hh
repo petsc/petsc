@@ -1091,6 +1091,10 @@ namespace ALE {
         copyConstant(sendOverlap, recvOverlap, sendSection, recvSection);
       };
 #endif
+      template<typename SendOverlap, typename RecvOverlap, typename Sieve_, typename Label_>
+      static void copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<LabelBaseSectionV<Sieve_, Label_> >& sendSection, const Obj<ConstantSection<ALE::Pair<int, typename SendOverlap::source_type>, int> >& recvSection) {
+        copyConstant(sendOverlap, recvOverlap, sendSection, recvSection);
+      };
       // Specialize to a ConstantSection for ArrowSection
       template<typename SendOverlap, typename RecvOverlap, typename Value>
       static void copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<ConstantSection<MinimalArrow<typename SendOverlap::source_type,typename SendOverlap::source_type>, Value> >& sendSection, const Obj<ConstantSection<MinimalArrow<typename SendOverlap::source_type,typename SendOverlap::source_type>, Value> >& recvSection) {

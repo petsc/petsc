@@ -357,7 +357,7 @@ PetscErrorCode  KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
            KSPGCRSetRestart(), KSPGCRSetModifyPC(), KSPGMRES, KSPFGMRES
  
 M*/
-
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_GCR"
 PetscErrorCode KSPCreate_GCR(KSP ksp)
@@ -386,7 +386,7 @@ PetscErrorCode KSPCreate_GCR(KSP ksp)
 					   "KSPGCRSetModifyPC_GCR",KSPGCRSetModifyPC_GCR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 
 
 
