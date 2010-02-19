@@ -21,6 +21,7 @@ class FunctionTestIDistribution : public CppUnit::TestFixture
   CPPUNIT_TEST(testPreallocationMesh2DUninterpolated);
   CPPUNIT_TEST(testPreallocationMesh3DUninterpolated);
 #endif
+  CPPUNIT_TEST(testDistributeLabel);
 
   CPPUNIT_TEST_SUITE_END();
 public:
@@ -328,6 +329,45 @@ public:
     f.close();
   };
 
+  void checkLabel(const ALE::Obj<mesh_type::label_type>& label, const char basename[]) {
+    ostringstream filename;
+    // How do I check distribution_type::partition_type::graph_partitioner_type?
+#ifdef PETSC_HAVE_CHACO
+    std::string partName = "chaco";
+#elif defined(PETSC_HAVE_PARMETIS)
+    std::string partName = "parmetis";
+#else
+    std::string partName = "simple";
+#endif
+
+    if (label->commSize() == 1) {
+      filename << "data/" << basename << label->commSize() << "_p" << label->commRank() << ".label";
+    } else {
+      filename << "data/" << basename << label->commSize() << "_" << partName << "_p" << label->commRank() << ".label";
+    }
+    std::ifstream f;
+
+    f.open(filename.str().c_str());
+    // Check label
+    int numPoints = 0;
+    f >> numPoints;
+    int *points = new point_type[numPoints];
+    int *values = new int[numPoints];
+    for(int p = 0; p < numPoints; ++p) {
+      f >> points[p];
+      f >> values[p];
+    }
+
+    CPPUNIT_ASSERT_EQUAL(numPoints, label->getBaseSize());
+    for(int i = 0; i < numPoints; ++i) {
+      CPPUNIT_ASSERT_EQUAL(1, label->getConeSize(points[i]));
+      CPPUNIT_ASSERT_EQUAL(values[i], *label->cone(points[i])->begin());
+    }
+    delete [] points;
+    delete [] values;
+    f.close();
+  };
+
   void checkOrder(mesh_type::order_type& globalOrder, const char basename[]) {
     ostringstream filename;
     filename << "data/" << basename << globalOrder.commSize() << "_p" << globalOrder.commRank() << ".order";
@@ -442,6 +482,41 @@ public:
 
     ALE::OverlapBuilder<>::constructOverlap(globalPoints, this->_renumbering, parallelMesh->getSendOverlap(), parallelMesh->getRecvOverlap());
     this->checkMesh(parallelMesh, "2DUninterpolatedIDist");
+  };
+
+  void testDistributeLabel(void) {
+    this->createMesh(2, false);
+    const Obj<mesh_type::label_type>& origLabel = this->_mesh->createLabel("test");
+    for(point_type p = this->_mesh->getSieve()->getChart().min(); p < this->_mesh->getSieve()->getChart().max()/2; ++p) {
+      this->_mesh->setValue(origLabel, p, 15);
+    }
+    for(point_type p = this->_mesh->getSieve()->getChart().max()/2 + 1; p < this->_mesh->getSieve()->getChart().max(); ++p) {
+      this->_mesh->setValue(origLabel, p, 37);
+    }
+    if (this->_debug) {origLabel->view("Serial Label");}
+
+    typedef ALE::Partitioner<>::part_type                rank_type;
+    typedef ALE::Sifter<point_type,rank_type,point_type> mesh_send_overlap_type;
+    typedef ALE::Sifter<rank_type,point_type,point_type> mesh_recv_overlap_type;
+    typedef ALE::DistributionNew<mesh_type>              distribution_type;
+    typedef distribution_type::partition_type            partition_type;
+    ALE::Obj<mesh_type>                    parallelMesh    = new mesh_type(this->_mesh->comm(), this->_mesh->getDimension(), this->_mesh->debug());
+    ALE::Obj<mesh_type::sieve_type>        parallelSieve   = new mesh_type::sieve_type(this->_mesh->comm(), this->_mesh->debug());
+    const ALE::Obj<mesh_send_overlap_type> sendMeshOverlap = new mesh_send_overlap_type(this->_mesh->comm(), this->_mesh->debug());
+    const ALE::Obj<mesh_recv_overlap_type> recvMeshOverlap = new mesh_recv_overlap_type(this->_mesh->comm(), this->_mesh->debug());
+
+    parallelMesh->setSieve(parallelSieve);
+    ALE::Obj<partition_type> partition = distribution_type::distributeMeshV(this->_mesh, parallelMesh, this->_renumbering, sendMeshOverlap, recvMeshOverlap);
+    const Obj<mesh_type::label_type>& newLabel = parallelMesh->createLabel("test");
+
+    distribution_type::distributeLabelV(parallelMesh->getSieve(), origLabel, partition, this->_renumbering, sendMeshOverlap, recvMeshOverlap, newLabel);
+    if (this->_debug) {
+      newLabel->view("Parallel Label");
+      for(mesh_type::renumbering_type::const_iterator r_iter = this->_renumbering.begin(); r_iter != this->_renumbering.end(); ++r_iter) {
+	std::cout << "renumbering["<<r_iter->first<<"]: " << r_iter->second << std::endl;
+      }
+    }
+    this->checkLabel(newLabel, "2DUninterpolated");
   };
 
   void testPreallocationMesh2DUninterpolated(void) {

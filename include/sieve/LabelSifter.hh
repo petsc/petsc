@@ -390,6 +390,7 @@ namespace ALE {
       typedef LabelSifter<OtherSource_, OtherTarget_> type;
     };
 
+    typedef Alloc_                           alloc_type;
     typedef typename traits::source_type     source_type;
     typedef typename traits::target_type     target_type;
     typedef typename traits::coneSequence    coneSequence;
@@ -477,6 +478,9 @@ namespace ALE {
         cone->insert(pCone->begin(), pCone->end());
       }
       return cone;
+    };
+    int getConeSize(const typename traits::target_type& p) {
+      return this->cone(p)->size();
     };
     template<typename PointCheck>
     bool coneContains(const typename traits::target_type& p, const PointCheck& checker) {

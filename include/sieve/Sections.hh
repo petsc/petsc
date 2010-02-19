@@ -350,7 +350,7 @@ namespace ALE {
     };
   };
 
-  template<typename Sieve_, typename Label_, typename Alloc_ = malloc_allocator<int> >
+  template<typename Sieve_, typename Label_, typename Alloc_ = malloc_allocator<int>, typename Atlas_ = LabelBaseSection<Sieve_, Label_, Alloc_> >
   class LabelSection : public ALE::ParallelObject {
   public:
     typedef Sieve_                              sieve_type;
@@ -358,7 +358,7 @@ namespace ALE {
     typedef Alloc_                              alloc_type;
     typedef int                                 value_type;
     typedef typename sieve_type::target_type    point_type;
-    typedef LabelBaseSection<sieve_type, label_type, alloc_type> atlas_type;
+    typedef Atlas_                              atlas_type;
     typedef typename atlas_type::chart_type     chart_type;
     typedef typename alloc_type::template rebind<atlas_type>::other atlas_alloc_type;
     typedef typename atlas_alloc_type::pointer                      atlas_ptr;
@@ -389,6 +389,45 @@ namespace ALE {
     const value_type *restrictPoint(const point_type& p) {
       this->_value = *this->_label->cone(p)->begin();
       return &this->_value;
+    };
+  };
+
+  template<typename Sieve_, typename Label_, typename Alloc_ = malloc_allocator<typename Sieve_::target_type> >
+  class LabelBaseSectionV : public ALE::ParallelObject {
+  public:
+    typedef Sieve_                                    sieve_type;
+    typedef Label_                                    label_type;
+    typedef Alloc_                                    alloc_type;
+    typedef int                                       value_type;
+    typedef typename sieve_type::target_type          point_type;
+    //typedef typename sieve_type::traits::baseSequence chart_type;
+    typedef int                                       chart_type;
+  protected:
+    Obj<sieve_type> _sieve;
+    Obj<label_type> _label;
+    //chart_type      _chart;
+    int             _sizes[2];
+  public:
+    //LabelBaseSectionV(const Obj<sieve_type>& sieve, const Obj<label_type>& label) : ParallelObject(sieve->comm(), sieve->debug()), _sieve(sieve), _label(label), _chart(*sieve->base()) {_sizes[0] = 1; _sizes[1] = 0;};
+    LabelBaseSectionV(const Obj<sieve_type>& sieve, const Obj<label_type>& label) : ParallelObject(sieve->comm(), sieve->debug()), _sieve(sieve), _label(label) {_sizes[0] = 1; _sizes[1] = 0;};
+    ~LabelBaseSectionV() {};
+  public: // Verifiers
+    bool hasPoint(const point_type& point) const {
+      return this->_label->cone(point)->size() ? true : false;
+    };
+  public:
+    //const chart_type& getChart() const {
+    //  return this->_chart;
+    //};
+    const int getFiberDimension(const point_type& p) const {
+      return this->hasPoint(p) ? 1 : 0;
+    };
+    const value_type *restrictSpace() const {
+      return this->_sizes;
+    };
+    const value_type *restrictPoint(const point_type& p) const {
+      if (this->hasPoint(p)) return this->_sizes;
+      return &this->_sizes[1];
     };
   };
 

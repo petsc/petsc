@@ -226,7 +226,10 @@ namespace ALE {
         Obj<send_section_type> sendSection     = new send_section_type(sifter->comm(), sifter->debug());
         Obj<recv_section_type> recvSection     = new recv_section_type(sifter->comm(), sendSection->getTag(), sifter->debug());
 
+	PETSc::Log::Event("ScatterConesComplete").begin();
         completion::completeSection(sendOverlap, recvOverlap, coneSizeSection, coneSection, sendSection, recvSection);
+	PETSc::Log::Event("ScatterConesComplete").end();
+	PETSc::Log::Event("ScatterConesUpdate").begin();
         // Unpack the section into the sieve
         const typename recv_section_type::sheaf_type& patches = recvSection->getPatches();
 
@@ -244,6 +247,7 @@ namespace ALE {
             }
           }
         }
+	PETSc::Log::Event("ScatterConesUpdate").end();
 	PETSc::Log::Event("ScatterCones").end();
       };
       template<typename SifterType>
