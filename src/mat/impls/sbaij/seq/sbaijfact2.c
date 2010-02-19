@@ -1797,7 +1797,68 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_inplace(Mat A,Vec bb,Vec xx)
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = PetscLogFlops(2.0*a->nz - mbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}    
+}   
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolves_SeqSBAIJ_1"
+PetscErrorCode MatSolves_SeqSBAIJ_1(Mat A,Vecs bb,Vecs xx)
+{
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ *)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (A->rmap->bs == 1) {
+    ierr = MatSolve_SeqSBAIJ_1(A,bb->v,xx->v);CHKERRQ(ierr);
+  } else {
+    IS              isrow=a->row;
+    const PetscInt  *vj,mbs=a->mbs,*ai=a->i,*aj=a->j,*rp;
+    const MatScalar *aa=a->a,*v;
+    PetscScalar     *x,*b,*t;
+    PetscInt        nz,k,n,i,j;
+    if (bb->n > a->solves_work_n) {
+      ierr = PetscFree(a->solves_work);CHKERRQ(ierr);
+      ierr = PetscMalloc(bb->n*A->rmap->N*sizeof(PetscScalar),&a->solves_work);CHKERRQ(ierr);
+      a->solves_work_n = bb->n;
+    }
+    n    = bb->n;
+    ierr = VecGetArray(bb->v,&b);CHKERRQ(ierr); 
+    ierr = VecGetArray(xx->v,&x);CHKERRQ(ierr); 
+    t    = a->solves_work;
+
+    ierr = ISGetIndices(isrow,&rp);CHKERRQ(ierr); 
+  
+    /* solve U^T*D*y = perm(b) by forward substitution */
+    for (k=0; k<mbs; k++) {for (i=0; i<n; i++) t[n*k+i] = b[rp[k]+i*mbs];} /* values are stored interlaced in t */
+    for (k=0; k<mbs; k++){
+      v  = aa + ai[k]; 
+      vj = aj + ai[k];    
+      nz = ai[k+1] - ai[k] - 1;     
+      for (j=0; j<nz; j++){
+        for (i=0; i<n; i++) t[n*(*vj)+i] += (*v) * t[n*k+i];
+        v++;vj++;
+      }
+      for (i=0; i<n; i++) t[n*k+i] *= aa[nz];  /* note: aa[nz] = 1/D(k) */
+    }
+    
+    /* solve U*perm(x) = y by back substitution */   
+    for (k=mbs-1; k>=0; k--){ 
+      v  = aa + ai[k] - 1; 
+      vj = aj + ai[k] - 1; 
+      nz = ai[k+1] - ai[k] - 1;    
+      for (j=0; j<nz; j++){
+        for (i=0; i<n; i++) t[n*k+i] += (*v) * t[n*(*vj)+i]; 
+        v++;vj++;
+      }
+      for (i=0; i<n; i++) x[rp[k]+i*mbs] = t[n*k+i];
+    }
+
+    ierr = ISRestoreIndices(isrow,&rp);CHKERRQ(ierr);
+    ierr = VecRestoreArray(bb->v,&b);CHKERRQ(ierr); 
+    ierr = VecRestoreArray(xx->v,&x);CHKERRQ(ierr);
+    ierr = PetscLogFlops(bb->n*(4.0*a->nz - 3.0*mbs));CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolves_SeqSBAIJ_1_inplace"

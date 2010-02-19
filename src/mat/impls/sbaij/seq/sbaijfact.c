@@ -1440,6 +1440,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat B,Mat A,c
   ierr = PetscFree3(rtmp,il,c2r);CHKERRQ(ierr);
  
   B->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering;
+  B->ops->solves          = MatSolves_SeqSBAIJ_1;
   B->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_NaturalOrdering;
   B->ops->forwardsolve    = 0;
   B->ops->backwardsolve   = 0; 
