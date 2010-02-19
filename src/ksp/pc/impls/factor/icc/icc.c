@@ -88,6 +88,8 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc)
 {
   PC_ICC         *icc = (PC_ICC*)pc->data;
   PetscTruth     flg;
+  PetscInt       dtmax = 3;
+  PetscReal      dt[3];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -95,6 +97,14 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc)
     ierr = PCSetFromOptions_Factor(pc);CHKERRQ(ierr);
 
     ierr = PetscOptionsReal("-pc_factor_levels","levels of fill","PCFactorSetLevels",((PC_Factor*)icc)->info.levels,&((PC_Factor*)icc)->info.levels,&flg);CHKERRQ(ierr);
+    dt[0] = ((PC_Factor*)icc)->info.dt;
+    dt[1] = ((PC_Factor*)icc)->info.dtcol;
+    dt[2] = ((PC_Factor*)icc)->info.dtcount;
+    ierr = PetscOptionsRealArray("-pc_factor_use_drop_tolerance","<dt,dtcol,maxrowcount>","PCFactorSetUseDropTolerance",dt,&dtmax,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCFactorSetUseDropTolerance(pc,dt[0],dt[1],(PetscInt)dt[2]);CHKERRQ(ierr);
+    }
+
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -139,6 +149,8 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
+
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseDropTolerance_ILU(PC,PetscReal,PetscReal,PetscInt);
 
 /*MC
      PCICC - Incomplete Cholesky factorization preconditioners.
@@ -233,6 +245,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC pc)
                     PCFactorSetMatOrderingType_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatSolverPackage_C","PCFactorSetMatSolverPackage_Factor",
                     PCFactorSetMatSolverPackage_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetUseDropTolerance_C","PCFactorSetUseDropTolerance_ILU",
+                    PCFactorSetUseDropTolerance_ILU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

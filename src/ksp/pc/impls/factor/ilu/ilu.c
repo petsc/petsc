@@ -57,18 +57,15 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseDropTolerance_ILU(PC pc,PetscReal dt,PetscReal dtcol,PetscInt dtcount)
 {
   PC_ILU         *ilu = (PC_ILU*)pc->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (pc->setupcalled && (!ilu->usedt || ((PC_Factor*)ilu)->info.dt != dt || ((PC_Factor*)ilu)->info.dtcol != dtcol || ((PC_Factor*)ilu)->info.dtcount != dtcount)) {
-    pc->setupcalled   = 0;
-    ierr = PCDestroy_ILU_Internal(pc);CHKERRQ(ierr);
+  if (pc->setupcalled && (((PC_Factor*)ilu)->info.dt != dt || ((PC_Factor*)ilu)->info.dtcol != dtcol || ((PC_Factor*)ilu)->info.dtcount != dtcount)) {
+    SETERRQ(PETSC_ERR_SUP,"Cannot change drop tolerance after using PC");
   }
-  ilu->usedt                      = PETSC_TRUE;
   ((PC_Factor*)ilu)->info.dt      = dt;
   ((PC_Factor*)ilu)->info.dtcol   = dtcol;
   ((PC_Factor*)ilu)->info.dtcount = dtcount;
-  ((PC_Factor*)ilu)->info.fill    = PETSC_DEFAULT;
+  ((PC_Factor*)ilu)->info.usedt   = 1.0;
   PetscFunctionReturn(0);
 }  
 EXTERN_C_END
@@ -151,7 +148,7 @@ static PetscErrorCode PCView_ILU(PC pc,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    if (ilu->usedt) {
+    if (((PC_Factor*)ilu)->info.dt > 0) {
         ierr = PetscViewerASCIIPrintf(viewer,"  ILU: drop tolerance %G\n",((PC_Factor*)ilu)->info.dt);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"  ILU: max nonzeros per row %D\n",(PetscInt)((PC_Factor*)ilu)->info.dtcount);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"  ILU: column permutation tolerance %G\n",((PC_Factor*)ilu)->info.dtcol);CHKERRQ(ierr);
@@ -371,7 +368,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC pc)
   ierr = PetscStrallocpy(MAT_SOLVER_PETSC,&((PC_Factor*)ilu)->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATORDERING_NATURAL,&((PC_Factor*)ilu)->ordering);CHKERRQ(ierr);
   ilu->reuseordering           = PETSC_FALSE;
-  ilu->usedt                   = PETSC_FALSE;
   ((PC_Factor*)ilu)->info.dt                 = PETSC_DEFAULT;
   ((PC_Factor*)ilu)->info.dtcount            = PETSC_DEFAULT;
   ((PC_Factor*)ilu)->info.dtcol              = PETSC_DEFAULT;
