@@ -983,15 +983,6 @@ runex76:
 	else echo "Possible problem with ex76, diffs above"; fi; \
 	${RM} -f ex76_1.tmp
 
-runex76_1:
-	-@touch ex76_1.tmp;\
-	for bs in ${MATBLOCKSIZE}; do \
-	  ${MPIEXEC} -n 1  ./ex76 -bs  $$bs -reorder 1 >> ex76_1.tmp 2>&1; \
-	done; \
-	if (${DIFF} output/ex76_1.out ex76_1.tmp) then true; \
-	else echo "Possible problem with ex76_1, diffs above"; fi; \
-	${RM} -f ex76_1.tmp
-
 runex76_2:
 	-@touch ex76_1.tmp;\
 	${MPIEXEC} -n 1  ./ex76 -testaij -reorder 1 >> ex76_1.tmp 2>&1; \
