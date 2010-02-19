@@ -501,7 +501,6 @@ PetscErrorCode MatGetFactor_seqbaij_petsc(Mat A,MatFactorType ftype,Mat *B)
     ierr = MatSetType(*B,MATSEQBAIJ);CHKERRQ(ierr);
     (*B)->ops->lufactorsymbolic  = MatLUFactorSymbolic_SeqBAIJ;  
     (*B)->ops->ilufactorsymbolic = MatILUFactorSymbolic_SeqBAIJ;  
-    (*B)->ops->iludtfactor       = MatILUDTFactor_SeqBAIJ;
   } else if (ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC) {
     ierr = MatSetType(*B,MATSEQSBAIJ);CHKERRQ(ierr);
     ierr = MatSeqSBAIJSetPreallocation(*B,1,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
@@ -1319,6 +1318,9 @@ PetscErrorCode BlockAbs_private(PetscInt nbs,PetscInt bs2,PetscScalar *blockarra
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUDTFactor_SeqBAIJ"
+/*
+     This needs to be renamed and called by the regular MatILUFactor_SeqBAIJ when drop tolerance is used
+*/
 PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo *info,Mat *fact)
 {
   Mat                B = *fact;

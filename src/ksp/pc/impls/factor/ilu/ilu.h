@@ -13,7 +13,6 @@ typedef struct {
   PetscTruth        inplace;          /* in-place ILU factorization */
   PetscTruth        reuseordering;    /* reuses previous reordering computed */
 
-  PetscTruth        usedt;            /* use drop tolerance form of ILU */
   PetscTruth        reusefill;        /* reuse fill from previous ILUDT */
   PetscReal         actualfill;       /* expected fill in factorization */
   PetscTruth        nonzerosalongdiagonal;

@@ -104,16 +104,33 @@ PetscErrorCode MatLUFactorNumeric_Matlab(Mat F,Mat A,const MatFactorInfo *info)
   char           *_A,*name;
 
   PetscFunctionBegin;
-  ierr = PetscMatlabEnginePut(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),(PetscObject)A);CHKERRQ(ierr);
-  _A   = ((PetscObject)A)->name;
-  ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),"[l_%s,u_%s,p_%s] = lu(%s',%g);",_A,_A,_A,_A,info->dtcol);CHKERRQ(ierr);
-  ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),"%s = 0;",_A);CHKERRQ(ierr);
-  ierr = PetscStrlen(_A,&len);CHKERRQ(ierr);
-  ierr = PetscMalloc((len+2)*sizeof(char),&name);CHKERRQ(ierr);
-  sprintf(name,"_%s",_A);
-  ierr = PetscObjectSetName((PetscObject)F,name);CHKERRQ(ierr);
-  ierr = PetscFree(name);CHKERRQ(ierr);
-  F->ops->solve              = MatSolve_Matlab;
+  if (info->dt > 0) {
+    if (info->dtcol == PETSC_DEFAULT)   info->dtcol = .01;
+    F->ops->solve           = MatSolve_Matlab;
+    F->factor               = MAT_FACTOR_LU;
+    ierr = PetscMatlabEnginePut(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),(PetscObject)A);CHKERRQ(ierr);
+    _A   = ((PetscObject)A)->name;
+    ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),"info_%s = struct('droptol',%g,'thresh',%g);",_A,info->dt,info->dtcol);CHKERRQ(ierr);
+    ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),"[l_%s,u_%s,p_%s] = luinc(%s',info_%s);",_A,_A,_A,_A,_A);CHKERRQ(ierr);
+    ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),"%s = 0;",_A);CHKERRQ(ierr);
+
+    ierr = PetscStrlen(_A,&len);CHKERRQ(ierr);
+    ierr = PetscMalloc((len+2)*sizeof(char),&name);CHKERRQ(ierr);
+    sprintf(name,"_%s",_A);
+    ierr = PetscObjectSetName((PetscObject)F,name);CHKERRQ(ierr);
+    ierr = PetscFree(name);CHKERRQ(ierr);
+  } else {
+    ierr = PetscMatlabEnginePut(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),(PetscObject)A);CHKERRQ(ierr);
+    _A   = ((PetscObject)A)->name;
+    ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),"[l_%s,u_%s,p_%s] = lu(%s',%g);",_A,_A,_A,_A,info->dtcol);CHKERRQ(ierr);
+    ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),"%s = 0;",_A);CHKERRQ(ierr);
+    ierr = PetscStrlen(_A,&len);CHKERRQ(ierr);
+    ierr = PetscMalloc((len+2)*sizeof(char),&name);CHKERRQ(ierr);
+    sprintf(name,"_%s",_A);
+    ierr = PetscObjectSetName((PetscObject)F,name);CHKERRQ(ierr);
+    ierr = PetscFree(name);CHKERRQ(ierr);
+    F->ops->solve              = MatSolve_Matlab;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -159,35 +176,6 @@ PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype,Mat *F)
 
 
 /* --------------------------------------------------------------------------------*/
-#undef __FUNCT__  
-#define __FUNCT__ "MatILUDTFactor_Matlab"
-PetscErrorCode MatILUDTFactor_Matlab(Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
-{
-  PetscErrorCode ierr;
-  size_t         len;
-  char           *_A,*name;
-  PetscReal      dt,dtcol;
-  Mat            F;
-
-  PetscFunctionBegin;
-  if (info->dt == PETSC_DEFAULT)      dt    = .005;
-  if (info->dtcol == PETSC_DEFAULT)   dtcol = .01;
-  ierr = MatGetFactor(A,MAT_SOLVER_MATLAB,MAT_FACTOR_ILU,&F);CHKERRQ(ierr);
-  F->ops->solve           = MatSolve_Matlab;
-  F->factor               = MAT_FACTOR_LU;
-  ierr = PetscMatlabEnginePut(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),(PetscObject)A);CHKERRQ(ierr);
-  _A   = ((PetscObject)A)->name;
-  ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),"info_%s = struct('droptol',%g,'thresh',%g);",_A,dt,dtcol);CHKERRQ(ierr);
-  ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),"[l_%s,u_%s,p_%s] = luinc(%s',info_%s);",_A,_A,_A,_A,_A);CHKERRQ(ierr);
-  ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),"%s = 0;",_A);CHKERRQ(ierr);
-
-  ierr = PetscStrlen(_A,&len);CHKERRQ(ierr);
-  ierr = PetscMalloc((len+2)*sizeof(char),&name);CHKERRQ(ierr);
-  sprintf(name,"_%s",_A);
-  ierr = PetscObjectSetName((PetscObject)F,name);CHKERRQ(ierr);
-  ierr = PetscFree(name);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFactorInfo_Matlab"

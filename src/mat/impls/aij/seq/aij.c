@@ -2533,7 +2533,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatScale_SeqAIJ,
        0,
        MatDiagonalSet_SeqAIJ,
-       MatILUDTFactor_SeqAIJ,
+       0,
 /*49*/ MatSetBlockSize_SeqAIJ,
        MatGetRowIJ_SeqAIJ,
        MatRestoreRowIJ_SeqAIJ,
@@ -2606,8 +2606,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
 /*114*/0,
        0,
        0,
-       MatILUDTFactorSymbolic_SeqAIJ,
-       MatILUDTFactorNumeric_SeqAIJ
+       0,
+       0
 };
 
 EXTERN_C_BEGIN
@@ -3341,9 +3341,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactorAvailable_petsc_C",
                                      "MatGetFactorAvailable_seqaij_petsc",
                                      MatGetFactorAvailable_seqaij_petsc);CHKERRQ(ierr);
-  /*  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_bas_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_bas_C",
                                      "MatGetFactor_seqaij_bas",
-                                     MatGetFactor_seqaij_bas); */
+                                     MatGetFactor_seqaij_bas); 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqAIJSetColumnIndices_C",
                                      "MatSeqAIJSetColumnIndices_SeqAIJ",
                                      MatSeqAIJSetColumnIndices_SeqAIJ);CHKERRQ(ierr);

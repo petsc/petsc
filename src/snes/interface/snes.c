@@ -2096,7 +2096,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetConvergenceHistory(SNES snes,PetscReal
 
 . step - The current step of the iteration
 
-  Level: intermediate
+  Level: advanced
+
+  Note: This is NOT what one uses to update the ghost points before a function evaluation, that should be done at the beginning of your FormFunction()
+        This is not used by most users.
 
 .keywords: SNES, update
 

@@ -15,7 +15,7 @@ static PetscErrorCode PCSetup_ICC(PC pc)
   ierr = MatGetOrdering(pc->pmat, ((PC_Factor*)icc)->ordering,&perm,&cperm);CHKERRQ(ierr);
 
   if (!pc->setupcalled) {
-    ierr = MatGetFactor(pc->pmat,MAT_SOLVER_PETSC,MAT_FACTOR_ICC,& ((PC_Factor*)icc)->fact);CHKERRQ(ierr);
+    ierr = MatGetFactor(pc->pmat,((PC_Factor*)icc)->solvertype,MAT_FACTOR_ICC,& ((PC_Factor*)icc)->fact);CHKERRQ(ierr);
     ierr = MatICCFactorSymbolic(((PC_Factor*)icc)->fact,pc->pmat,perm,&((PC_Factor*)icc)->info);CHKERRQ(ierr);
   } else if (pc->flag != SAME_NONZERO_PATTERN) {
     ierr = MatDestroy(((PC_Factor*)icc)->fact);CHKERRQ(ierr);
@@ -41,6 +41,7 @@ static PetscErrorCode PCDestroy_ICC(PC pc)
   PetscFunctionBegin;
   if (((PC_Factor*)icc)->fact) {ierr = MatDestroy(((PC_Factor*)icc)->fact);CHKERRQ(ierr);}
   ierr = PetscStrfree(((PC_Factor*)icc)->ordering);CHKERRQ(ierr);
+  ierr = PetscStrfree(((PC_Factor*)icc)->solvertype);CHKERRQ(ierr);
   ierr = PetscFree(icc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -87,6 +88,8 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc)
 {
   PC_ICC         *icc = (PC_ICC*)pc->data;
   PetscTruth     flg;
+  PetscInt       dtmax = 3;
+  PetscReal      dt[3];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -94,6 +97,14 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc)
     ierr = PCSetFromOptions_Factor(pc);CHKERRQ(ierr);
 
     ierr = PetscOptionsReal("-pc_factor_levels","levels of fill","PCFactorSetLevels",((PC_Factor*)icc)->info.levels,&((PC_Factor*)icc)->info.levels,&flg);CHKERRQ(ierr);
+    dt[0] = ((PC_Factor*)icc)->info.dt;
+    dt[1] = ((PC_Factor*)icc)->info.dtcol;
+    dt[2] = ((PC_Factor*)icc)->info.dtcount;
+    ierr = PetscOptionsRealArray("-pc_factor_use_drop_tolerance","<dt,dtcol,maxrowcount>","PCFactorSetUseDropTolerance",dt,&dtmax,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCFactorSetUseDropTolerance(pc,dt[0],dt[1],(PetscInt)dt[2]);CHKERRQ(ierr);
+    }
+
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -138,6 +149,8 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
+
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseDropTolerance_ILU(PC,PetscReal,PetscReal,PetscInt);
 
 /*MC
      PCICC - Incomplete Cholesky factorization preconditioners.
@@ -192,6 +205,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC pc)
 
   ((PC_Factor*)icc)->fact	          = 0;
   ierr = PetscStrallocpy(MATORDERING_NATURAL,&((PC_Factor*)icc)->ordering);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MAT_SOLVER_PETSC,&((PC_Factor*)icc)->solvertype);CHKERRQ(ierr);
   ierr = MatFactorInfoInitialize(&((PC_Factor*)icc)->info);CHKERRQ(ierr);
   ((PC_Factor*)icc)->info.levels	  = 0.;
   ((PC_Factor*)icc)->info.fill          = 1.0;
@@ -229,6 +243,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC pc)
                     PCFactorSetFill_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatOrderingType_C","PCFactorSetMatOrderingType_Factor",
                     PCFactorSetMatOrderingType_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatSolverPackage_C","PCFactorSetMatSolverPackage_Factor",
+                    PCFactorSetMatSolverPackage_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetUseDropTolerance_C","PCFactorSetUseDropTolerance_ILU",
+                    PCFactorSetUseDropTolerance_ILU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
