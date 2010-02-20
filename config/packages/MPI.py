@@ -267,7 +267,8 @@ class Configure(config.package.Package):
     '''Setup MPIUNI, our uniprocessor version of MPI'''
     self.addDefine('HAVE_MPIUNI', 1)
     self.include = [os.path.abspath(os.path.join('include', 'mpiuni'))]
-    self.lib = [os.path.abspath(os.path.join(self.arch, 'lib','libmpiuni'))]
+    if not self.framework.argDB['with-single-library']:
+      self.lib = [os.path.abspath(os.path.join(self.arch, 'lib','libmpiuni'))]
     self.mpiexec = '${PETSC_DIR}/bin/mpiexec.uni'
     self.addMakeMacro('MPIEXEC','${PETSC_DIR}/bin/mpiexec.uni')
     self.addDefine('HAVE_MPI_COMM_F2C', 1)
