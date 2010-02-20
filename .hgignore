@@ -1,4 +1,5 @@
 syntax: glob
+*.bkp
 *.info
 *.gcov
 *.gcna
@@ -20,7 +21,6 @@ arch-*/*
 c_test
 RDict.db
 RDict.log
-RDict.log.bkp
 TAGS*
 bmake/*/*
 conf/petscvariables
@@ -31,6 +31,7 @@ lib/*
 make_log_*
 test_log_*
 src/python/*
+*.o
 *.pyc
 *~
 *.orig
@@ -66,8 +67,6 @@ docs/manconcepts
 docs/manual.pdf
 docs/troubleshooting.html
 src/docs/tex/manual/manual1.tex
+src/dm/mesh/examples/tests/unitTests
 src/dm/mesh/examples/tutorials/*_quadrature.h
 src/dm/mesh/examples/tutorials/*.vtk
-src/dm/mesh/examples/tutorials/build.log
-src/dm/mesh/examples/tutorials/build.log.bkp
-src/dm/mesh/examples/tutorials/default.log

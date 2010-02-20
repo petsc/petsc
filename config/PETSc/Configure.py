@@ -169,6 +169,8 @@ class Configure(config.base.Configure):
       # F90 Modules
       if self.setCompilers.fortranModuleIncludeFlag:
         self.addMakeMacro('FC_MODULE_FLAG', self.setCompilers.fortranModuleIncludeFlag)
+      if self.setCompilers.fortranModuleIncludeFlag:
+        self.addMakeMacro('FC_MODULE_OUTPUT_FLAG', self.setCompilers.fortranModuleOutputFlag)
     else:
       self.addMakeMacro('FC','')
 

@@ -116,10 +116,10 @@ namespace ALE {
     template<typename Sieve>
     class NullVisitor {
     public:
-      void visitArrow(const typename Sieve::arrow_type&) {};
-      void visitPoint(const typename Sieve::point_type&) {};
-      void visitArrow(const typename Sieve::arrow_type&, const int orientation) {};
-      void visitPoint(const typename Sieve::point_type&, const int orientation) {};
+      inline void visitArrow(const typename Sieve::arrow_type&) {};
+      inline void visitPoint(const typename Sieve::point_type&) {};
+      inline void visitArrow(const typename Sieve::arrow_type&, const int orientation) {};
+      inline void visitPoint(const typename Sieve::point_type&, const int orientation) {};
     };
     class PrintVisitor {
     protected:
@@ -128,27 +128,27 @@ namespace ALE {
     public:
       PrintVisitor(ostringstream& s, const int rank = 0) : os(s), rank(rank) {};
       template<typename Arrow>
-      void visitArrow(const Arrow& arrow) const {
+      inline void visitArrow(const Arrow& arrow) const {
         this->os << "["<<this->rank<<"]: " << arrow << std::endl;
       }
       template<typename Point>
-      void visitPoint(const Point&) const {}
+      inline void visitPoint(const Point&) const {}
     };
     class ReversePrintVisitor : public PrintVisitor {
     public:
       ReversePrintVisitor(ostringstream& s, const int rank) : PrintVisitor(s, rank) {};
       template<typename Arrow>
-      void visitArrow(const Arrow& arrow) const {
+      inline void visitArrow(const Arrow& arrow) const {
         this->os << "["<<this->rank<<"]: " << arrow.target << "<----" << arrow.source << std::endl;
       }
       template<typename Arrow>
-      void visitArrow(const Arrow& arrow, const int orientation) const {
+      inline void visitArrow(const Arrow& arrow, const int orientation) const {
         this->os << "["<<this->rank<<"]: " << arrow.target << "<----" << arrow.source << ": " << orientation << std::endl;
       }
       template<typename Point>
-      void visitPoint(const Point&) const {}
+      inline void visitPoint(const Point&) const {}
       template<typename Point>
-      void visitPoint(const Point&, const int) const {}
+      inline void visitPoint(const Point&, const int) const {}
     };
     template<typename Sieve, typename Visitor = NullVisitor<Sieve> >
     class PointRetriever {
@@ -190,13 +190,13 @@ namespace ALE {
         this->points  = NULL;
         this->oPoints = NULL;
       };
-      void visitArrow(const arrow_type& arrow) {
+      inline void visitArrow(const arrow_type& arrow) {
         this->visitor->visitArrow(arrow);
       };
-      void visitArrow(const arrow_type& arrow, const int orientation) {
+      inline void visitArrow(const arrow_type& arrow, const int orientation) {
         this->visitor->visitArrow(arrow, orientation);
       };
-      void visitPoint(const point_type& point) {
+      inline void visitPoint(const point_type& point) {
         if (i >= size) {
           ostringstream msg;
           msg << "Too many points (>" << size << ")for PointRetriever visitor";
@@ -213,7 +213,7 @@ namespace ALE {
           this->visitor->visitPoint(point);
         }
       };
-      void visitPoint(const point_type& point, const int orientation) {
+      inline void visitPoint(const point_type& point, const int orientation) {
         if (o >= size) {
           ostringstream msg;
           msg << "Too many ordered points (>" << size << ")for PointRetriever visitor";
@@ -314,8 +314,8 @@ namespace ALE {
         delete [] this->points;
         delete [] this->oPoints;
       };
-      void visitArrow(const arrow_type& arrow) {};
-      void visitPoint(const point_type& point) {
+      inline void visitArrow(const arrow_type& arrow) {};
+      inline void visitPoint(const point_type& point) {
         if (i >= size) throw ALE::Exception("Too many points for FilteredPointRetriever visitor");
         if (this->pointSet.find(point) == this->pointSet.end()) return;
         if (renumber) {
@@ -324,8 +324,8 @@ namespace ALE {
           points[i++] = point;
         }
       };
-      void visitArrow(const arrow_type& arrow, const int orientation) {};
-      void visitPoint(const point_type& point, const int orientation) {
+      inline void visitArrow(const arrow_type& arrow, const int orientation) {};
+      inline void visitPoint(const point_type& point, const int orientation) {
         if (o >= size) throw ALE::Exception("Too many points for FilteredPointRetriever visitor");
         if (this->pointSet.find(point) == this->pointSet.end()) return;
         if (renumber) {
@@ -361,20 +361,20 @@ namespace ALE {
         this->visitor = &nV;
       };
       ArrowRetriever(Visitor& v) : i(0), o(0), visitor(&v) {};
-      void visitArrow(const typename Sieve::arrow_type& arrow) {
+      inline void visitArrow(const typename Sieve::arrow_type& arrow) {
         if (i >= size) throw ALE::Exception("Too many arrows for visitor");
         arrows[i++] = arrow;
         this->visitor->visitArrow(arrow);
       };
-      void visitArrow(const typename Sieve::arrow_type& arrow, const int orientation) {
+      inline void visitArrow(const typename Sieve::arrow_type& arrow, const int orientation) {
         if (o >= size) throw ALE::Exception("Too many arrows for visitor");
         oArrows[o++] = oriented_arrow_type(arrow, orientation);
         this->visitor->visitArrow(arrow, orientation);
       };
-      void visitPoint(const point_type& point) {
+      inline void visitPoint(const point_type& point) {
         this->visitor->visitPoint(point);
       };
-      void visitPoint(const point_type& point, const int orientation) {
+      inline void visitPoint(const point_type& point, const int orientation) {
         this->visitor->visitPoint(point, orientation);
       };
     public:
@@ -392,10 +392,10 @@ namespace ALE {
       bool         useSource;
     public:
       ConeVisitor(const Sieve& s, Visitor& v, bool useSource = false) : sieve(s), visitor(v), useSource(useSource) {};
-      void visitPoint(const typename Sieve::point_type& point) {
+      inline void visitPoint(const typename Sieve::point_type& point) {
         this->sieve.cone(point, visitor);
       };
-      void visitArrow(const typename Sieve::arrow_type& arrow) {};
+      inline void visitArrow(const typename Sieve::arrow_type& arrow) {};
     };
     template<typename Sieve, typename Visitor>
     class OrientedConeVisitor {
@@ -405,10 +405,10 @@ namespace ALE {
       bool         useSource;
     public:
       OrientedConeVisitor(const Sieve& s, Visitor& v, bool useSource = false) : sieve(s), visitor(v), useSource(useSource) {};
-      void visitPoint(const typename Sieve::point_type& point) {
+      inline void visitPoint(const typename Sieve::point_type& point) {
         this->sieve.orientedCone(point, visitor);
       };
-      void visitArrow(const typename Sieve::arrow_type& arrow) {};
+      inline void visitArrow(const typename Sieve::arrow_type& arrow) {};
     };
     template<typename Sieve, typename Visitor>
     class SupportVisitor {
@@ -418,10 +418,10 @@ namespace ALE {
       bool         useSource;
     public:
       SupportVisitor(const Sieve& s, Visitor& v, bool useSource = true) : sieve(s), visitor(v), useSource(useSource) {};
-      void visitPoint(const typename Sieve::point_type& point) {
+      inline void visitPoint(const typename Sieve::point_type& point) {
         this->sieve.support(point, visitor);
       };
-      void visitArrow(const typename Sieve::arrow_type& arrow) {};
+      inline void visitArrow(const typename Sieve::arrow_type& arrow) {};
     };
     template<typename Sieve, typename Visitor = NullVisitor<Sieve> >
     class TransitiveClosureVisitor {
@@ -434,8 +434,8 @@ namespace ALE {
       std::set<typename Sieve::point_type> seen;
     public:
       TransitiveClosureVisitor(const Sieve& s, Visitor& v) : sieve(s), visitor(v), isCone(true) {};
-      void visitPoint(const typename Sieve::point_type& point) const {};
-      void visitArrow(const typename Sieve::arrow_type& arrow) {
+      inline void visitPoint(const typename Sieve::point_type& point) const {};
+      inline void visitArrow(const typename Sieve::arrow_type& arrow) {
         if (this->isCone) {
           if (this->seen.find(arrow.target) == this->seen.end()) {
             this->seen.insert(arrow.target);
@@ -479,10 +479,10 @@ namespace ALE {
       int            size;
     public:
       SizeVisitor(const Section& s) : section(s), size(0) {};
-      void visitPoint(const typename Sieve::point_type& point) {
+      inline void visitPoint(const typename Sieve::point_type& point) {
         this->size += section.getConstrainedFiberDimension(point);
       };
-      void visitArrow(const typename Sieve::arrow_type&) {};
+      inline void visitArrow(const typename Sieve::arrow_type&) {};
     public:
       int getSize() {return this->size;};
     };
@@ -493,10 +493,10 @@ namespace ALE {
       int            size;
     public:
       SizeWithBCVisitor(const Section& s) : section(s), size(0) {};
-      void visitPoint(const typename Sieve::point_type& point) {
+      inline void visitPoint(const typename Sieve::point_type& point) {
         this->size += section.getFiberDimension(point);
       };
-      void visitArrow(const typename Sieve::arrow_type&) {};
+      inline void visitArrow(const typename Sieve::arrow_type&) {};
     public:
       int getSize() {return this->size;};
     };
@@ -521,7 +521,7 @@ namespace ALE {
       };
       ~RestrictVisitor() {if (this->allocated) {delete [] this->values;}};
       template<typename Point>
-      void visitPoint(const Point& point, const int orientation) {
+      inline void visitPoint(const Point& point, const int orientation) {
         const int         dim = section.getFiberDimension(point);
         if (i+dim > size) {throw ALE::Exception("Too many values for RestrictVisitor.");}
         const value_type *v   = section.restrictPoint(point);
@@ -537,7 +537,7 @@ namespace ALE {
         }
       }
       template<typename Arrow>
-      void visitArrow(const Arrow& arrow, const int orientation) {}
+      inline void visitArrow(const Arrow& arrow, const int orientation) {}
     public:
       const value_type *getValues() const {return this->values;};
       int  getSize() const {return this->i;};
@@ -564,13 +564,13 @@ namespace ALE {
     public:
       UpdateVisitor(Section& s, const value_type *v) : section(s), values(v), i(0) {};
       template<typename Point>
-      void visitPoint(const Point& point, const int orientation) {
+      inline void visitPoint(const Point& point, const int orientation) {
         const int dim = section.getFiberDimension(point);
         this->section.updatePoint(point, &this->values[this->i], orientation);
         this->i += dim;
       }
       template<typename Arrow>
-      void visitArrow(const Arrow& arrow, const int orientation) {}
+      inline void visitArrow(const Arrow& arrow, const int orientation) {}
       void clear() {this->i = 0;};
     };
     template<typename Section>
@@ -584,13 +584,13 @@ namespace ALE {
     public:
       UpdateAllVisitor(Section& s, const value_type *v) : section(s), values(v), i(0) {};
       template<typename Point>
-      void visitPoint(const Point& point, const int orientation) {
+      inline void visitPoint(const Point& point, const int orientation) {
         const int dim = section.getFiberDimension(point);
         this->section.updatePointAll(point, &this->values[this->i], orientation);
         this->i += dim;
       }
       template<typename Arrow>
-      void visitArrow(const Arrow& arrow, const int orientation) {}
+      inline void visitArrow(const Arrow& arrow, const int orientation) {}
       void clear() {this->i = 0;};
     };
     template<typename Section>
@@ -604,13 +604,13 @@ namespace ALE {
     public:
       UpdateAddVisitor(Section& s, const value_type *v) : section(s), values(v), i(0) {};
       template<typename Point>
-      void visitPoint(const Point& point, const int orientation) {
+      inline void visitPoint(const Point& point, const int orientation) {
         const int dim = section.getFiberDimension(point);
         this->section.updateAddPoint(point, &this->values[this->i], orientation);
         this->i += dim;
       }
       template<typename Arrow>
-      void visitArrow(const Arrow& arrow, const int orientation) {}
+      inline void visitArrow(const Arrow& arrow, const int orientation) {}
       void clear() {this->i = 0;};
     };
     template<typename Section, typename Order, typename Value>
@@ -735,7 +735,7 @@ namespace ALE {
         if (this->allocated) {delete [] this->values;}
         if (this->allocatedPoints) {delete [] this->points;}
       };
-      void visitPoint(const point_type& point, const int orientation) {
+      inline void visitPoint(const point_type& point, const int orientation) {
         if (p >= size) {
           ostringstream msg;
           msg << "Too many points (>" << size << ")for IndicesVisitor visitor";
@@ -756,7 +756,7 @@ namespace ALE {
         }
       }
       template<typename Arrow>
-      void visitArrow(const Arrow& arrow, const int orientation) {}
+      inline void visitArrow(const Arrow& arrow, const int orientation) {}
     public:
       const value_type *getValues() const {return this->values;};
       int  getSize() const {return this->i;};
@@ -782,10 +782,10 @@ namespace ALE {
       int    marker;
     public:
       MarkVisitor(Label& l, const int marker) : label(l), marker(marker) {};
-      void visitPoint(const typename Sieve::point_type& point) {
+      inline void visitPoint(const typename Sieve::point_type& point) {
         this->label.setCone(this->marker, point);
       };
-      void visitArrow(const typename Sieve::arrow_type&) {};
+      inline void visitArrow(const typename Sieve::arrow_type&) {};
     };
   };
 
