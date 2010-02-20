@@ -232,6 +232,9 @@ class PETScMaker(script.Script):
    import re
    reg   = re.compile(' [ ]*')
    fname = os.path.join(dir,'makefile')
+   if not os.path.isfile(fname):
+     if os.path.isfile(os.path.join(dir,'Makefile')): print 'Bad makefile name'
+     return False
    fd = open(fname)
    text = fd.readline()
    while text:
@@ -277,6 +280,16 @@ class PETScMaker(script.Script):
      text = fd.readline()
    fd.close()
    return 1
+
+ def runbase(self, rootDir):
+   self.setup()
+   if not self.checkDir(rootDir):
+     print 'Nothing to be done'
+   for root, dirs, files in os.walk(rootDir):
+     print 'Processing',root
+     for badDir in [d for d in dirs if not self.checkDir(os.path.join(root, d))]:
+       dirs.remove(badDir)
+   return
    
 if __name__ == '__main__':
-  PETScMaker().runbase()
+  PETScMaker().runbase(os.environ['PETSC_DIR'])
