@@ -1116,7 +1116,7 @@ class Configure(config.base.Configure):
     self.pushLanguage('FC')
     oldFLAGS = self.setCompilers.FFLAGS
     oldLIBS  = self.setCompilers.LIBS
-    for flag in ['-I', '-module ', '-fmod=', '-M', '-J', '-p']:
+    for flag in ['-I', '-p']:
       self.setCompilers.FFLAGS = flag+testdir+' '+self.setCompilers.FFLAGS
       self.setCompilers.LIBS   = modobj+' '+self.setCompilers.LIBS
       if not self.checkLink(None, fcode):
@@ -1135,6 +1135,50 @@ class Configure(config.base.Configure):
     os.rmdir(testdir)
     if not found:
       raise RuntimeError('Cannot determine Fortran module include flag')
+    return
+
+  def checkFortranModuleOutput(self):
+    '''Figures out what flag is used to specify the include path for Fortran modules'''
+    self.setCompilers.fortranModuleOutputFlag = None
+    if not self.fortranIsF90:
+      self.logPrint('Not a Fortran90 compiler - hence skipping module include test')
+      return
+    found   = False
+    testdir = 'confdir'
+    modobj  = 'configtest.o'
+    modcode = '''\
+      module configtest
+      integer testint
+      parameter (testint = 42)
+      end module configtest\n'''
+    modname = None
+    # Compile the Fortran test module
+    if not os.path.isdir(testdir):
+      os.mkdir(testdir)
+    self.pushLanguage('FC')
+    oldFLAGS = self.setCompilers.FFLAGS
+    oldLIBS  = self.setCompilers.LIBS
+    for flag in ['-module ', '-fmod=', '-J', '-M', '-p']:
+      self.setCompilers.FFLAGS = flag+testdir+' '+self.setCompilers.FFLAGS
+      self.setCompilers.LIBS   = modobj+' '+self.setCompilers.LIBS
+      if not self.checkCompile(modcode, None, cleanup = 0):
+        self.logPrint('Fortran module output flag '+flag+' compile failed', 3, 'compilers')
+      elif os.path.isfile(os.path.join(testdir, 'configtest.mod')) or os.path.isfile(os.path.join(testdir, 'CONFIGTEST.mod')):
+        if os.path.isfile(os.path.join(testdir, 'configtest.mod')): modname = 'configtest.mod'
+        if os.path.isfile(os.path.join(testdir, 'CONFIGTEST.mod')): modname = 'CONFIGTEST.mod'
+        self.logPrint('Fortran module output flag '+flag+' found', 3, 'compilers')        
+        self.setCompilers.fortranModuleOutputFlag = flag
+        found = 1
+      else:
+        self.logPrint('Fortran module output flag '+flag+' failed', 3, 'compilers')
+      self.setCompilers.LIBS   = oldLIBS
+      self.setCompilers.FFLAGS = oldFLAGS
+      if found: break
+    self.popLanguage()
+    if modname: os.remove(os.path.join(testdir, modname))
+    os.rmdir(testdir)
+    if not found:
+      raise RuntimeError('Cannot determine Fortran module output flag')
     return
 
   def configure(self):
@@ -1172,6 +1216,7 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkFortran90)
       self.executeTest(self.checkFortran90Array)
       self.executeTest(self.checkFortranModuleInclude)
+      self.executeTest(self.checkFortranModuleOutput)
     self.no_configure()
     return
 
