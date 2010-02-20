@@ -38,11 +38,24 @@ class PETScMaker(script.Script):
    self.libraryOptions= self.framework.require('PETSc.utilities.libraryOptions', None)      
    return
 
+ def setupHelp(self, help):
+   import nargs
+
+   help = script.Script.setupHelp(self, help)
+   help.addArgument('RepManager', '-rootDir', nargs.ArgDir(None, os.environ['PETSC_DIR'], 'The root directory for this build', isTemporary = 1))
+   help.addArgument('RepManager', '-verbose', nargs.ArgInt(None, 0, 'The verbosity level', min = 0, isTemporary = 1))
+   return help
+
  def setup(self):
    script.Script.setup(self)
    self.framework = self.loadConfigure()
    self.setupModules()
    return
+
+ @property
+ def verbose(self):
+   '''The verbosity level'''
+   return self.argDB['verbose']
 
  def getPackageInfo(self):
    packageIncludes = []
@@ -75,8 +88,8 @@ class PETScMaker(script.Script):
    return
 
  def compileC(self, source):
-   '''PETSC_INCLUDE	        = -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include
-                              ${PACKAGES_INCLUDES} ${TAU_DEFS} ${TAU_INCLUDE}
+   '''PETSC_INCLUDE         = -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include
+                               ${PACKAGES_INCLUDES} ${TAU_DEFS} ${TAU_INCLUDE}
       PETSC_CC_INCLUDES     = ${PETSC_INCLUDE}
       PETSC_CCPPFLAGS	    = ${PETSC_CC_INCLUDES} ${PETSCFLAGS} ${CPP_FLAGS} ${CPPFLAGS}  -D__SDIR__='"${LOCDIR}"'
       CCPPFLAGS	            = ${PETSC_CCPPFLAGS}
@@ -175,65 +188,53 @@ class PETScMaker(script.Script):
      pass
    os.path.walk(os.getcwd(),self.rundir,libname)
   
- def rundir(self,libname,dir,fnames):
+ def buildDir(self, libname, dirname, fnames):
    ''' This is run in a PETSc source directory'''
-   basename = os.path.basename(dir)
-   os.chdir(dir)
-
-   # First, remove all subdirectories we should not enter
-   if 'examples' in fnames: fnames.remove('examples')
-
-   if not hasattr(self.compilers, 'FC'):
-     rmnames = []
-     for name in fnames:
-       if name.startswith('ftn-'): rmnames.append(name)
-       if name.startswith('f90-'): rmnames.append(name)
-     for name in rmnames:
-       fnames.remove(name)
-
-   rmnames = []
-   for name in fnames:
-     if os.path.isdir(name):
-       if not self.checkDir(name):rmnames.append(name)
-   for name in rmnames:
-     fnames.remove(name)
+   if self.verbose: print 'Entering '+dirname
+   os.chdir(dirname)
 
    # Get list of source files in the directory 
-   if self.debug: print 'entering '+dir
    cnames = []
    onames = []
    fnames = []
-   for f in os.listdir(dir):
+   for f in os.listdir(dirname):
      ext = os.path.splitext(f)[1]
      if ext == '.c':
        cnames.append(f)
-       onames.append(f.replace('.c','.o'))
-
+       onames.append(f.replace('.c', '.o'))
      if hasattr(self.compilers, 'FC'):
-       if ext == '.F': 
+       if ext == '.F':
          fnames.append(f)
-         onames.append(f.replace('.F','.o'))                     
-       if ext == '.F90':
-         fnames.append(f)
-         onames.append(f.replace('.F90','.o'))                     
-       
-
+         onames.append(f.replace('.F', '.o'))
+       if self.compilers.fortranIsF90:
+         if ext == '.F90':
+           fnames.append(f)
+           onames.append(f.replace('.F90', '.o'))
    if cnames:
-     if self.debug: print 'Compiling C files ',cnames
-     self.compileC(cnames)
+     if self.verbose: print 'Compiling C files',cnames
+     #self.compileC(cnames)
    if fnames:
-     if self.debug:print 'Compiling F files ',fnames
-     self.compileF(fnames)
+     if self.verbose: print 'Compiling Fortran files',fnames
+     #self.compileF(fnames)
    if onames:
-     self.linkAR(libname,onames)
+     if self.verbose: print 'Archiving files',onames,'into',libname
+     #self.linkAR(libname, onames)
+   return
 
- def checkDir(self,dir):
-   '''Checks makefile to see if compiler is allowed to visit this directory for this configuration'''
+ def checkDir(self, dirname):
+   '''Checks whether we should recurse into this directory
+   - Excludes examples
+   - Checks whether fortran bindings are necessary
+   - Checks makefile to see if compiler is allowed to visit this directory for this configuration'''
+   if dirname == 'examples': return False
+   if not hasattr(self.compilers, 'FC'):
+     if dirname.startswith('ftn-') or dirname.startswith('f90-'): return False
+
    import re
    reg   = re.compile(' [ ]*')
-   fname = os.path.join(dir,'makefile')
+   fname = os.path.join(dirname, 'makefile')
    if not os.path.isfile(fname):
-     if os.path.isfile(os.path.join(dir,'Makefile')): print 'Bad makefile name'
+     if os.path.isfile(os.path.join(dirname, 'Makefile')): print 'ERROR: Change Makefile to makefile in',dirname
      return False
    fd = open(fname)
    text = fd.readline()
@@ -279,17 +280,20 @@ class PETScMaker(script.Script):
          
      text = fd.readline()
    fd.close()
-   return 1
+   return True
 
- def runbase(self, rootDir):
+ def buildAll(self, rootDir = None):
    self.setup()
+   if rootDir is None:
+     rootDir = self.argDB['rootDir']
    if not self.checkDir(rootDir):
      print 'Nothing to be done'
    for root, dirs, files in os.walk(rootDir):
      print 'Processing',root
+     self.buildDir('libpetscfake', root, files)
      for badDir in [d for d in dirs if not self.checkDir(os.path.join(root, d))]:
        dirs.remove(badDir)
    return
    
 if __name__ == '__main__':
-  PETScMaker().runbase(os.environ['PETSC_DIR'])
+  PETScMaker().buildAll()
