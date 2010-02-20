@@ -15,7 +15,6 @@ class PETScMaker(script.Script):
    argDB.saveFilename = os.path.join(os.environ['PETSC_DIR'], os.environ['PETSC_ARCH'], 'conf', 'RDict.db')
    argDB.load()
    script.Script.__init__(self, argDB = argDB)
-   self.debug = 1
    self.log = sys.stdout
    return
 
@@ -43,7 +42,8 @@ class PETScMaker(script.Script):
 
    help = script.Script.setupHelp(self, help)
    help.addArgument('RepManager', '-rootDir', nargs.ArgDir(None, os.environ['PETSC_DIR'], 'The root directory for this build', isTemporary = 1))
-   help.addArgument('RepManager', '-verbose', nargs.ArgInt(None, 0, 'The verbosity level', min = 0, isTemporary = 1))
+   help.addArgument('RepManager', '-dryRun',  nargs.ArgBool(None, True, 'Only output what would be run', isTemporary = 1))
+   help.addArgument('RepManager', '-verbose', nargs.ArgInt(None, 1, 'The verbosity level', min = 0, isTemporary = 1))
    return help
 
  def setup(self):
@@ -56,6 +56,11 @@ class PETScMaker(script.Script):
  def verbose(self):
    '''The verbosity level'''
    return self.argDB['verbose']
+
+ @property
+ def dryRun(self):
+   '''Flag for only output of what would be run'''
+   return self.argDB['dryRun']
 
  def getPackageInfo(self):
    packageIncludes = []
@@ -82,7 +87,7 @@ class PETScMaker(script.Script):
    flags.extend([self.setCompilers.CPPFLAGS, self.CHUD.CPPFLAGS]) # CPP_FLAGS
    flags.append('-D__SDIR__=\'"'+os.getcwd()+'"\'')
    cmd = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
-   if self.debug: print cmd
+   if self.verbose: print cmd
    self.executeShellCommand(cmd,log=self.log)
    self.setCompilers.popLanguage()
    return
@@ -116,13 +121,14 @@ class PETScMaker(script.Script):
 
    includes = ['-I'+inc for inc in [os.path.join(self.petscdir.dir, self.arch.arch, 'include'), os.path.join(self.petscdir.dir, 'include')]]
    self.setCompilers.pushLanguage(self.languages.clanguage)
-   compiler      = self.setCompilers.getCompiler()
+   compiler = self.setCompilers.getCompiler()
    flags.append(self.setCompilers.getCompilerFlags())             # PCC_FLAGS
    flags.extend([self.setCompilers.CPPFLAGS, self.CHUD.CPPFLAGS]) # CPP_FLAGS
    flags.append('-D__SDIR__=\'"'+os.getcwd()+'"\'')
    cmd = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
-   if self.debug: print cmd
-   self.executeShellCommand(cmd,log=self.log)
+   if self.dryRun or self.verbose: print cmd
+   if not self.dryRun:
+     self.executeShellCommand(cmd,log=self.log)
    self.setCompilers.popLanguage()
    return
 
@@ -143,15 +149,14 @@ class PETScMaker(script.Script):
    flags.append(self.setCompilers.getCompilerFlags())             # PCC_FLAGS
    flags.extend([self.setCompilers.CPPFLAGS, self.CHUD.CPPFLAGS]) # CPP_FLAGS
    cmd = ' '.join([compiler]+['-c']+includes+flags+source)
-   if self.debug: print cmd
-   self.executeShellCommand(cmd,log=self.log)
+   if self.dryRun or self.verbose: print cmd
+   if not self.dryRun:
+     self.executeShellCommand(cmd,log=self.log)
    self.setCompilers.popLanguage()
    return
 
  def compileFortran(self, source):
-   '''
-   '''
-
+   '''What is this?'''
    flags           = []
    packageIncludes, packageLibs = self.getPackageInfo()
    includes = ['-I'+inc for inc in [os.path.join(self.petscdir.dir, self.arch.arch, 'include'), os.path.join(self.petscdir.dir, 'include')]]
@@ -161,7 +166,7 @@ class PETScMaker(script.Script):
    else:
      flags.append(self.setCompilers.AR_FLAGS)
    cmd = ' '.join([linker]+flags+[libname+'.'+self.setCompilers.AR_LIB_SUFFIX]+objects)
-   if self.debug: print cmd
+   if self.verbose: print cmd
    self.executeShellCommand(cmd,log=self.log)   
    for i in objects:
      try:
@@ -177,16 +182,6 @@ class PETScMaker(script.Script):
    lib = os.path.splitext(lib)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX
    cmd = ' '.join([self.setCompilers.AR, self.setCompilers.AR_FLAGS, lib, obj])
    return
-
-   self.setup()
-   
-   libname = os.path.join(self.petscdir.dir,self.arch.arch,'lib','libpetsc'+os.path.basename(os.getcwd()))
-   if libname.endswith('sys'): libname = libname[:-3]
-   try:
-     os.unlink(libname+'.'+self.setCompilers.AR_LIB_SUFFIX)
-   except:
-     pass
-   os.path.walk(os.getcwd(),self.rundir,libname)
   
  def buildDir(self, libname, dirname, fnames):
    ''' This is run in a PETSc source directory'''
@@ -212,7 +207,7 @@ class PETScMaker(script.Script):
            onames.append(f.replace('.F90', '.o'))
    if cnames:
      if self.verbose: print 'Compiling C files',cnames
-     #self.compileC(cnames)
+     self.compileC(cnames)
    if fnames:
      if self.verbose: print 'Compiling Fortran files',fnames
      #self.compileF(fnames)
@@ -245,28 +240,28 @@ class PETScMaker(script.Script):
        rtype = text.split(' ')[0]
        rvalue = text.split(' ')[1]
        if rtype == 'scalar' and not self.scalarType.scalartype == rvalue:
-         if self.debug: print 'rejecting because scalar type '+self.scalarType.scalartype+' is not '+rvalue
+         if self.verbose: print 'rejecting because scalar type '+self.scalarType.scalartype+' is not '+rvalue
          return 0
        if rtype == 'language':
          if rvalue == 'CXXONLY' and self.languages.clanguage == 'C':
-           if self.debug: print 'rejecting because language is '+self.languages.clanguage+' is not C++'
+           if self.verbose: print 'rejecting because language is '+self.languages.clanguage+' is not C++'
            return 0
        if rtype == 'precision' and not rvalue == self.scalarType.precision:
-         if self.debug: print 'rejecting because precision '+self.scalarType.precision+' is not '+rvalue
+         if self.verbose: print 'rejecting because precision '+self.scalarType.precision+' is not '+rvalue
          return 0
        # handles both missing packages and other random stuff that is treated as a package, that should be changed
        if rtype == 'package':
          if rvalue == "'"+'PETSC_HAVE_FORTRAN'+"'" or rvalue == "'"+'PETSC_USING_F90'+"'":
            if not hasattr(self.compilers, 'FC'):
-             if self.debug: print 'rejecting because fortran is not being used'
+             if self.verbose: print 'rejecting because fortran is not being used'
              return 0
          elif rvalue == "'"+'PETSC_USE_LOG'+"'":
            if not self.libraryOptions.useLog:
-             if self.debug: print 'rejecting because logging is turned off'
+             if self.verbose: print 'rejecting because logging is turned off'
              return 0
          elif rvalue == "'"+'PETSC_USE_FORTRAN_KERNELS'+"'":
            if not self.libraryOptions.useFortranKernels:
-             if self.debug: print 'rejecting because fortran kernels are turned off'
+             if self.verbose: print 'rejecting because fortran kernels are turned off'
              return 0
          else:    
            found = 0
@@ -275,7 +270,7 @@ class PETScMaker(script.Script):
              pname = "'"+pname+"'"
              if pname == rvalue: found = 1
            if not found:
-             if self.debug: print 'rejecting because package '+rvalue+' is not installed'
+             if self.verbose: print 'rejecting because package '+rvalue+' is not installed'
              return 0
          
      text = fd.readline()
