@@ -74,6 +74,7 @@ PetscInt main(PetscInt argc,char **args)
 
   }
   ierr = DASetCoordinates(da, coords);CHKERRQ(ierr);
+
   // Work vectors
   ierr = DAGetGlobalVector(da, &x);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);
@@ -126,7 +127,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_SELF, "|x|_2 = %g\n",norm);CHKERRQ(ierr);
   
   /* create USFFT object */
-  ierr = MatCreateSeqUSFFT(da,da,&A);CHKERRQ(ierr);
+  ierr = MatCreateSeqUSFFT(coords,da,&A);CHKERRQ(ierr);
   /* create FFTW object */
   ierr = MatCreateSeqFFTW(PETSC_COMM_SELF,3,dim,&AA);CHKERRQ(ierr);
   
@@ -191,7 +192,8 @@ PetscInt main(PetscInt argc,char **args)
   ierr = DARestoreGlobalVector(da,&yy);CHKERRQ(ierr);
   ierr = DARestoreGlobalVector(da,&z);CHKERRQ(ierr);
   ierr = DARestoreGlobalVector(da,&zz);CHKERRQ(ierr);
-
+  ierr = VecDestroy(coords);CHKERRQ(ierr);
+  ierr = DADestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

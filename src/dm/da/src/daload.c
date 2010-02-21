@@ -93,6 +93,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DALoad(PetscViewer viewer,PetscInt M,PetscInt N
     ierr = VecDestroy(tmpglobal);CHKERRQ(ierr); 
     ierr = DADestroy(dac);CHKERRQ(ierr);
     ierr = DASetCoordinates(*da,global);CHKERRQ(ierr);
+    ierr = VecDestroy(global);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
