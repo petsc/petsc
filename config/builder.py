@@ -79,18 +79,7 @@ class PETScMaker(script.Script):
          packageIncludes.extend(p.include)
    packageLibs     = self.libraries.toStringNoDupes(packageLibs+self.libraries.math)
    packageIncludes = self.headers.toStringNoDupes(packageIncludes)
-
-   includes = ['-I'+inc for inc in [os.path.join(self.petscdir.dir, self.arch.arch, 'include'), os.path.join(self.petscdir.dir, 'include')]]
-   self.setCompilers.pushLanguage(self.languages.clanguage)
-   compiler      = self.setCompilers.getCompiler()
-   flags.append(self.setCompilers.getCompilerFlags())             # PCC_FLAGS
-   flags.extend([self.setCompilers.CPPFLAGS, self.CHUD.CPPFLAGS]) # CPP_FLAGS
-   flags.append('-D__SDIR__=\'"'+os.getcwd()+'"\'')
-   cmd = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
-   if self.verbose: print cmd
-   self.executeShellCommand(cmd,log=self.log)
-   self.setCompilers.popLanguage()
-   return
+   return packageIncludes, packageLibs
 
  def compileC(self, source):
    '''PETSC_INCLUDE         = -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include
@@ -101,30 +90,14 @@ class PETScMaker(script.Script):
       PETSC_COMPILE         = ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}  ${SOURCEC} ${SSOURCE}
       PETSC_COMPILE_SINGLE  = ${PCC} -o $*.o -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}'''
    # PETSCFLAGS, CFLAGS and CPPFLAGS are taken from user input (or empty)
-   flags           = []
-   packageIncludes = []
-   packageLibs     = []
-   for p in self.framework.packages:
-     # Could put on compile line, self.addDefine('HAVE_'+i.PACKAGE, 1)
-     if hasattr(p, 'lib'):
-       if not isinstance(p.lib, list):
-         packageLibs.append(p.lib)
-       else:
-         packageLibs.extend(p.lib)
-     if hasattr(p, 'include'):
-       if not isinstance(p.include, list):
-         packageIncludes.append(p.include)
-       else:
-         packageIncludes.extend(p.include)
-   packageLibs     = self.libraries.toStringNoDupes(packageLibs+self.libraries.math)
-   packageIncludes = self.headers.toStringNoDupes(packageIncludes)
-
    includes = ['-I'+inc for inc in [os.path.join(self.petscdir.dir, self.arch.arch, 'include'), os.path.join(self.petscdir.dir, 'include')]]
    self.setCompilers.pushLanguage(self.languages.clanguage)
    compiler = self.setCompilers.getCompiler()
+   flags = []
    flags.append(self.setCompilers.getCompilerFlags())             # PCC_FLAGS
    flags.extend([self.setCompilers.CPPFLAGS, self.CHUD.CPPFLAGS]) # CPP_FLAGS
-   flags.append('-D__SDIR__=\'"'+os.getcwd()+'"\'')
+   flags.append('-D__SDIR__=\'"'+os.getcwd().replace(self.petscdir.dir, '')+'"\'')
+   packageIncludes, packageLibs = self.getPackageInfo()
    cmd = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
    if self.dryRun or self.verbose: print cmd
    if not self.dryRun:
@@ -176,11 +149,13 @@ class PETScMaker(script.Script):
    self.setCompilers.popLanguage()
    return
 
- def archive(self, source, library):
+ def archive(self, library, objects):
    '''${AR} ${AR_FLAGS} ${LIBNAME} $*.o'''
-   obj = os.path.splitext(source)[0]+'.o'
-   lib = os.path.splitext(lib)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX
-   cmd = ' '.join([self.setCompilers.AR, self.setCompilers.AR_FLAGS, lib, obj])
+   lib = os.path.splitext(library)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX
+   cmd = ' '.join([self.setCompilers.AR, self.setCompilers.AR_FLAGS, lib]+objects)
+   if self.dryRun or self.verbose: print cmd
+   if not self.dryRun:
+     self.executeShellCommand(cmd,log=self.log)
    return
   
  def buildDir(self, libname, dirname, fnames):
@@ -210,10 +185,10 @@ class PETScMaker(script.Script):
      self.compileC(cnames)
    if fnames:
      if self.verbose: print 'Compiling Fortran files',fnames
-     #self.compileF(fnames)
+     self.compileF(fnames)
    if onames:
      if self.verbose: print 'Archiving files',onames,'into',libname
-     #self.linkAR(libname, onames)
+     self.archive(os.path.join(self.petscdir.dir, self.arch.arch, 'lib', libname), onames)
    return
 
  def checkDir(self, dirname):
