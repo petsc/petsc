@@ -13,8 +13,6 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-class FunctionTestISieve;
-
 class FunctionTestIMesh : public CppUnit::TestFixture
 {
   CPPUNIT_TEST_SUITE(FunctionTestIMesh);
@@ -142,9 +140,64 @@ public:
     CPPUNIT_ASSERT_EQUAL(sectionA.getDefaultValue(), sectionB.getDefaultValue());
   };
 
+
+  template<typename ISieve>
+  static void checkSieve(ISieve& sieveA, const ISieve& sieveB) {
+    ALE::ISieveVisitor::PointRetriever<ISieve> baseV(sieveA.getBaseSize());
+
+    sieveA.base(baseV);
+    const typename ISieve::point_type *base = baseV.getPoints();
+    for(int b = 0; b < (int) baseV.getSize(); ++b) {
+      ALE::ISieveVisitor::PointRetriever<ISieve>    retrieverA((int) pow((double) sieveA.getMaxConeSize(), 3));
+      ALE::ISieveVisitor::PointRetriever<ISieve>    retrieverB((int) pow((double) sieveB.getMaxConeSize(), 3));
+
+      sieveA.cone(base[b], retrieverA);
+      sieveB.cone(base[b], retrieverB);
+      const typename ISieve::point_type *coneA = retrieverA.getPoints();
+      const typename ISieve::point_type *coneB = retrieverB.getPoints();
+
+      CPPUNIT_ASSERT_EQUAL(retrieverA.getSize(), retrieverB.getSize());
+      for(int c = 0; c < (int) retrieverA.getSize(); ++c) {
+        CPPUNIT_ASSERT_EQUAL(coneA[c], coneB[c]);
+      }
+      CPPUNIT_ASSERT_EQUAL(sieveA.orientedCones(), sieveB.orientedCones());
+      if (sieveA.orientedCones()) {
+        retrieverA.clear();
+        retrieverB.clear();
+        sieveA.orientedCone(base[b], retrieverA);
+        sieveB.orientedCone(base[b], retrieverB);
+        const typename ALE::ISieveVisitor::PointRetriever<ISieve>::oriented_point_type *oConeA = retrieverA.getOrientedPoints();
+        const typename ALE::ISieveVisitor::PointRetriever<ISieve>::oriented_point_type *oConeB = retrieverB.getOrientedPoints();
+
+        CPPUNIT_ASSERT_EQUAL(retrieverA.getOrientedSize(), retrieverB.getOrientedSize());
+        for(int c = 0; c < (int) retrieverA.getOrientedSize(); ++c) {
+          CPPUNIT_ASSERT_EQUAL(oConeA[c].second, oConeB[c].second);
+        }
+      }
+    }
+    ALE::ISieveVisitor::PointRetriever<ISieve> capV(sieveA.getCapSize());
+
+    sieveA.cap(capV);
+    const typename ISieve::point_type *cap = capV.getPoints();
+    for(int c = 0; c < (int) capV.getSize(); ++c) {
+      ALE::ISieveVisitor::PointRetriever<ISieve> retrieverA((int) pow((double) sieveA.getMaxSupportSize(), 3));
+      ALE::ISieveVisitor::PointRetriever<ISieve> retrieverB((int) pow((double) sieveB.getMaxSupportSize(), 3));
+
+      sieveA.support(cap[c], retrieverA);
+      sieveB.support(cap[c], retrieverB);
+      const typename ISieve::point_type *supportA = retrieverA.getPoints();
+      const typename ISieve::point_type *supportB = retrieverB.getPoints();
+
+      CPPUNIT_ASSERT_EQUAL(retrieverA.getSize(), retrieverB.getSize());
+      for(int s = 0; s < (int) retrieverA.getSize(); ++s) {
+        CPPUNIT_ASSERT_EQUAL(supportA[s], supportB[s]);
+      }
+    }
+  };
+
   template<typename Mesh>
   static void checkMesh(Mesh& meshA, Mesh& meshB) {
-    //FunctionTestISieve::checkSieve(*meshA.getSieve(), *meshB.getSieve());
+    checkSieve(*meshA.getSieve(), *meshB.getSieve());
     const typename Mesh::labels_type&          labelsA = meshA.getLabels();
     const typename Mesh::labels_type&          labelsB = meshB.getLabels();
     typename Mesh::labels_type::const_iterator l_iterA = labelsA.begin();
