@@ -236,6 +236,14 @@ public:
     ALE::Obj<mesh_type> newMesh = new mesh_type(PETSC_COMM_WORLD, 3, this->_debug);
     const char         *filename = "meshTest.sav";
 
+    if (newMesh->commSize() > 1) {
+      typedef ALE::DistributionNew<mesh_type> distribution_type;
+      ALE::Obj<mesh_type>             parallelMesh  = new mesh_type(this->_mesh->comm(), this->_mesh->getDimension(), this->_mesh->debug());
+      ALE::Obj<mesh_type::sieve_type> parallelSieve = new mesh_type::sieve_type(this->_mesh->comm(), this->_mesh->debug());
+
+      distribution_type::distributeMeshAndSectionsV(this->_mesh, parallelMesh);
+      this->_mesh = parallelMesh;
+    }
     ALE::MeshSerializer::writeMesh(filename, *this->_mesh);
     ALE::MeshSerializer::loadMesh(filename, *newMesh);
     unlink(filename);
