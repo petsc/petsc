@@ -1,0 +1,677 @@
+
+/*
+   spbas_cholesky_row_alloc: 
+      in the data arrays, find a place where another row may be stored.
+      Return PETSC_ERR_MEM if there is insufficient space to store the 
+      row, so garbage collection and/or re-allocation may be done.
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "spbas_cholesky_row_alloc"
+PetscErrorCode spbas_cholesky_row_alloc(spbas_matrix retval, PetscInt k, PetscInt r_nnz,PetscInt * n_alloc_used)
+{
+   PetscFunctionBegin;
+   retval.icols[k]  = &retval.alloc_icol[*n_alloc_used];
+   retval.values[k] = &retval.alloc_val[*n_alloc_used];
+   *n_alloc_used   += r_nnz; 
+   if (*n_alloc_used > retval.n_alloc_icol)
+   {
+      PetscFunctionReturn(PETSC_ERR_MEM);
+   }
+   else
+   {
+      PetscFunctionReturn(0);
+   }
+}
+
+
+/*
+  spbas_cholesky_garbage_collect:
+     move the rows which have been calculated so far, as well as 
+     those currently under construction, to the front of the 
+     array, while putting them in the proper order.
+     When it seems necessary, enlarge the current arrays.
+
+     NB: re-allocation is being simulated using 
+         PetscMalloc, memcpy, PetscFree, because
+         PetscRealloc does not seem to exist.
+
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "spbas_cholesky_garbage_collect"
+PetscErrorCode spbas_cholesky_garbage_collect( 
+      spbas_matrix * result, // I/O: the Cholesky factor matrix being constructed.
+                             //      Only the storage, not the contents of this matrix 
+                             //      is changed in this function
+      PetscInt i_row,             // I  : Number of rows for which the final contents are 
+                             //      known
+      PetscInt *n_row_alloc_ok,   // I/O: Number of rows which are already in their final  
+                             //      places in the arrays: they need not be moved any more
+      PetscInt *n_alloc_used,     // I/O: 
+      PetscInt *max_row_nnz       // I  : Over-estimate of the number of nonzeros needed to 
+                             //      store each row
+     )
+{
+
+#undef garbage_debug
+
+   // PSEUDO-CODE:
+   //  1. Choose the appropriate size for the arrays
+   //  2. Rescue the arrays which would be lost during garbage collection
+   //  3. Reallocate and correct administration
+   //  4. Move all arrays so that they are in proper order
+
+   PetscInt i,j;
+   PetscInt nrows = result->nrows;
+   PetscInt n_alloc_ok=0;
+   PetscInt n_alloc_ok_max=0;
+
+   PetscErrorCode ierr;
+   PetscInt need_already= 0;
+   PetscInt n_rows_ahead=0;
+   PetscInt max_need_extra= 0;
+   PetscInt n_alloc_max, n_alloc_est, n_alloc;
+   PetscInt n_alloc_now = result->n_alloc_icol;
+   PetscInt *alloc_icol_old = result->alloc_icol;
+   PetscScalar *alloc_val_old  = result->alloc_val;
+   PetscInt *icol_rescue; 
+   PetscScalar *val_rescue; 
+   PetscInt n_rescue; 
+   PetscInt n_row_rescue;
+   PetscInt i_here, i_last, n_copy;
+   const PetscScalar xtra_perc = 20;
+
+   PetscFunctionBegin;
+
+   //*********************************************************
+   // 1. Choose appropriate array size
+   // Count number of rows and memory usage which is already final
+   for (i=0;i<i_row; i++) 
+   { 
+      n_alloc_ok += result->row_nnz[i]; 
+      n_alloc_ok_max += max_row_nnz[i];
+   }
+ 
+   // Count currently needed memory usage and future memory requirements
+   // (max, predicted)
+   for (i=i_row; i<nrows; i++) 
+   { 
+      if (result->row_nnz[i]==0) 
+      { 
+         max_need_extra  += max_row_nnz[i]; 
+      }
+      else                      
+      { 
+         need_already    += max_row_nnz[i];
+         n_rows_ahead++;
+      }
+   }
+
+   // Make maximal and realistic memory requirement estimates
+   n_alloc_max = n_alloc_ok + need_already + max_need_extra;
+   n_alloc_est = n_alloc_ok + need_already + (int) 
+            ((PetscScalar) max_need_extra * 
+                          (PetscScalar) n_alloc_ok /
+                          (PetscScalar) n_alloc_ok_max);
+
+   // Choose array sizes
+   if (n_alloc_max == n_alloc_est)
+      { n_alloc = n_alloc_max; }
+   else if (n_alloc_now >= n_alloc_est)
+      { n_alloc = n_alloc_now; }
+   else if (n_alloc_max < n_alloc_est * (1+xtra_perc/100.0))
+      { n_alloc  = n_alloc_max;  }
+   else
+      { n_alloc = (int) (n_alloc_est * (1+xtra_perc/100.0)); }
+
+   // If new estimate is less than what we already have,
+   //   don't reallocate, just garbage-collect
+   if (n_alloc_max != n_alloc_est && n_alloc < result->n_alloc_icol) 
+   {
+      n_alloc = result->n_alloc_icol;
+   }
+
+#ifdef garbage_debug
+   // Print allocation considerations
+   printf(" + Final version of rows 1..%d is available\n",i_row);
+   printf("   They have %d nonzeros: %6.2f per row\n",n_alloc_ok,
+                  (PetscScalar) n_alloc_ok / (PetscScalar)i_row);
+   printf("   Without droptol, I would have had %d nonzeros\n", 
+              n_alloc_ok_max);
+   printf("   So I use %6.2f%% of the allowed sparseness\n",
+                  100.0 * (PetscScalar) n_alloc_ok /
+                          (PetscScalar) n_alloc_ok_max);
+   printf(" + I have %d rows for which I need full sparseness pattern\n",
+                  n_rows_ahead);
+   printf("   They require %d nonzeros\n",
+               need_already);
+   printf(" + After that, I shall need %d more rows\n",
+              nrows-n_rows_ahead-i_row);
+   printf("   Maximally, I will need %d nonzeros there\n",
+                       max_need_extra);
+   printf("   Realistically, I expect to need %6.2f nonzeros there\n",
+               (PetscScalar) max_need_extra * 
+                          (PetscScalar) n_alloc_ok /
+                          (PetscScalar) n_alloc_ok_max);
+   printf(" + New allocated arrays should be %d (max) or %d (realistic) long\n",
+              n_alloc_max, n_alloc_est);
+
+#endif
+   // Motivate dimension choice
+   printf("   Allocating %d nonzeros: ",n_alloc);
+   if (n_alloc_max == n_alloc_est)
+      { printf("this is the correct size\n"); }
+   else if (n_alloc_now >= n_alloc_est)
+      { printf("the current size, which seems enough\n"); }
+   else if (n_alloc_max < n_alloc_est * (1+xtra_perc/100.0))
+      { printf("the maximum estimate\n"); }
+   else
+      { printf("%6.2f %% more than the estimate\n",xtra_perc); }
+   
+
+   //*********************************************************
+   // 2. Rescue arrays which would be lost
+   // Count how many rows and nonzeros will have to be rescued
+   // when moving all arrays in place
+   n_row_rescue = 0; n_rescue = 0;
+   if (*n_row_alloc_ok==0) { *n_alloc_used = 0; }
+   else
+   {
+      i = *n_row_alloc_ok - 1;
+      *n_alloc_used = (result->icols[i]-result->alloc_icol) + 
+                       result->row_nnz[i];
+   }
+
+#ifdef garbage_debug
+   printf("\n\n");
+   printf("Rows 0..%d are already OK\n", *n_row_alloc_ok);
+   printf("Rows 0..%d have the right dimensions\n", i_row-1);
+#endif
+
+   for (i=*n_row_alloc_ok; i<nrows; i++)
+   {
+      i_here = result->icols[i]-result->alloc_icol;
+      i_last = i_here + result->row_nnz[i];
+      if (result->row_nnz[i]>0)
+      {
+         if (*n_alloc_used > i_here || i_last > n_alloc)
+         {
+            n_rescue += result->row_nnz[i];
+            n_row_rescue++;
+            //printf("     Rescue row %d: %d nonzeros\n",i,result->row_nnz[i]);
+            //printf("        (New start at %d, old start at %d)\n",
+            //             *n_alloc_used, i_here);
+         }
+        
+         if (i<i_row) {  *n_alloc_used += result->row_nnz[i];}
+         else         {  *n_alloc_used += max_row_nnz[i];} 
+      }
+   }
+
+#ifdef garbage_debug
+   printf(" + %d arrays will have to be rescued:  %d nnz\n",
+             n_row_rescue, n_rescue);
+#endif
+
+   // Allocate rescue arrays
+   ierr = PetscMalloc( n_rescue * sizeof(int), &icol_rescue); 
+   CHKERRQ(ierr);
+   ierr = PetscMalloc( n_rescue * sizeof(PetscScalar), &val_rescue); 
+   CHKERRQ(ierr);
+
+   // Rescue the arrays which need rescuing
+   n_row_rescue = 0; n_rescue = 0;
+   if (*n_row_alloc_ok==0) { *n_alloc_used = 0; }
+   else
+   {
+      i = *n_row_alloc_ok - 1;
+      *n_alloc_used = (result->icols[i]-result->alloc_icol) + 
+                       result->row_nnz[i];
+   }
+
+   for (i=*n_row_alloc_ok; i<nrows; i++)
+   {
+      i_here = result->icols[i]-result->alloc_icol;
+      i_last = i_here + result->row_nnz[i];
+      if (result->row_nnz[i]>0)
+      {
+         if (*n_alloc_used > i_here || i_last > n_alloc)
+         {
+            //printf("     Rescuing row %d to array[%d..]\n",i,n_rescue);
+            memcpy((void*) &icol_rescue[n_rescue],
+                   (void*) result->icols[i],
+                    result->row_nnz[i] * sizeof(int));
+            memcpy((void*) &val_rescue[n_rescue],
+                   (void*) result->values[i],
+                   result->row_nnz[i] * sizeof(PetscScalar));
+            n_rescue += result->row_nnz[i];
+            n_row_rescue++;
+         }
+        
+         if (i<i_row) {  *n_alloc_used += result->row_nnz[i];}
+         else         {  *n_alloc_used += max_row_nnz[i];} 
+      }
+   }
+
+   //*********************************************************
+   // 3. Reallocate and correct administration
+   
+   if (n_alloc != result->n_alloc_icol)
+   {
+      n_copy = MIN(n_alloc,result->n_alloc_icol);
+
+      // PETSC knows no REALLOC, so we'll REALLOC ourselves.
+
+      // Allocate new icol-data, copy old contents
+      ierr = PetscMalloc(  n_alloc * sizeof(int),
+                           &result->alloc_icol); CHKERRQ(ierr);
+      memcpy(result->alloc_icol, alloc_icol_old, n_copy*sizeof(int));
+
+      // Update administration, Reset pointers to new arrays 
+      result->n_alloc_icol = n_alloc;
+      for (i=0; i<nrows; i++)
+      {
+          result->icols[i] =  result->alloc_icol + 
+                  (result->icols[i]  - alloc_icol_old);
+          result->values[i] =  result->alloc_val + 
+                  (result->icols[i]  - result->alloc_icol);
+      } 
+
+      // Delete old array
+      ierr = PetscFree(alloc_icol_old);  CHKERRQ(ierr); 
+
+      // Allocate new value-data, copy old contents
+      ierr = PetscMalloc(  n_alloc * sizeof(PetscScalar),
+                           &result->alloc_val); CHKERRQ(ierr);
+      memcpy(result->alloc_val, alloc_val_old, n_copy*sizeof(PetscScalar));
+
+      // Update administration, Reset pointers to new arrays 
+      result->n_alloc_val  = n_alloc;
+      for (i=0; i<nrows; i++)
+      {
+          result->values[i] =  result->alloc_val + 
+                  (result->icols[i]  - result->alloc_icol);
+      } 
+
+      // Delete old array
+      ierr = PetscFree(alloc_val_old);  CHKERRQ(ierr);
+   }
+
+
+   //*********************************************************
+   // 4. Copy all the arrays to their proper places
+   n_row_rescue = 0; n_rescue = 0;
+   if (*n_row_alloc_ok==0) { *n_alloc_used = 0; }
+   else
+   {
+      i = *n_row_alloc_ok - 1;
+      *n_alloc_used = (result->icols[i]-result->alloc_icol) + 
+                       result->row_nnz[i];
+   }
+
+   for (i=*n_row_alloc_ok; i<nrows; i++)
+   {
+      i_here = result->icols[i]-result->alloc_icol;
+      i_last = i_here + result->row_nnz[i];
+
+      result->icols[i] = result->alloc_icol + *n_alloc_used;
+      result->values[i]= result->alloc_val  + *n_alloc_used;
+
+      if (result->row_nnz[i]>0)
+      {
+         if (*n_alloc_used > i_here || i_last > n_alloc)
+         {
+            //printf("     Copying rescued array[%d..] to row %d\n",
+            //       n_rescue,i);
+            //fflush(stdout);
+            memcpy((void*) result->icols[i], 
+                   (void*) &icol_rescue[n_rescue],
+                    result->row_nnz[i] * sizeof(int));
+            memcpy((void*) result->values[i],
+                   (void*) &val_rescue[n_rescue],
+                    result->row_nnz[i] * sizeof(PetscScalar));
+            n_rescue += result->row_nnz[i];
+            n_row_rescue++;
+         }
+         else 
+         {
+            for (j=0; j<result->row_nnz[i]; j++)
+            {
+                result->icols[i][j]   = result->alloc_icol[i_here+j];
+                result->values[i][j]  = result->alloc_val[ i_here+j];
+            }
+         }
+         if (i<i_row) {  *n_alloc_used += result->row_nnz[i];}
+         else         {  *n_alloc_used += max_row_nnz[i];} 
+      }
+   }
+
+   // Delete the rescue arrays
+   ierr = PetscFree(icol_rescue); CHKERRQ(ierr);
+   ierr = PetscFree(val_rescue);  CHKERRQ(ierr);
+   *n_row_alloc_ok = i_row;
+
+   PetscFunctionReturn(0);
+   
+}
+
+/*
+  spbas_incomplete_cholesky:
+     incomplete Cholesky decomposition of a square, symmetric, 
+     positive definite matrix. 
+
+     In case negative diagonals are encountered, function returns
+     NEGATIVE_DIAGONAL. When this happens, call this function again
+     with a larger epsdiag_in, a less sparse pattern, and/or a smaller 
+     droptol
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "spbas_incomplete_cholesky"
+PetscErrorCode spbas_incomplete_cholesky(
+        Mat A, const PetscInt *rip, const PetscInt *riip,
+        spbas_matrix pattern, 
+        PetscScalar droptol, PetscScalar epsdiag_in,
+        spbas_matrix * matrix_L)
+{
+
+#undef cholesky_debug
+
+#ifdef cholesky_debug
+   PetscInt idebug=0;
+   const char * fmt= "   (%d,%d) -> %12.8e\n";
+   PetscScalar tmp;
+#endif
+
+   PetscInt jL;
+   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data;
+   PetscInt       *ai=a->i,*aj=a->j;
+   MatScalar      *aa=a->a;
+   PetscInt nrows, ncols;
+   PetscInt *max_row_nnz;
+   PetscErrorCode ierr;
+   spbas_matrix retval;
+   PetscScalar * diag;
+   PetscScalar * val;
+   PetscScalar * lvec;
+   PetscScalar epsdiag;
+   PetscInt i,j,k;
+   const PetscTruth do_values = PETSC_TRUE;
+   PetscInt * r1_icol; PetscScalar *r1_val;
+   PetscInt * r_icol; PetscInt r_nnz; PetscScalar *r_val;
+   PetscInt * A_icol; PetscInt A_nnz; PetscScalar *A_val;
+   PetscInt * p_icol; PetscInt p_nnz;
+   PetscInt n_row_alloc_ok = 0;  // number of rows which have been stored
+                            // correctly in the matrix
+   PetscInt n_alloc_used = 0;    // part of result->icols and result->values
+                            // which is currently being used
+   PetscFunctionBegin;
+
+   // Convert the Manteuffel shift from 'fraction of average diagonal' to
+   // dimensioned value
+   ierr = MatGetSize(A, &nrows, &ncols); CHKERRQ(ierr);
+   ierr = MatGetTrace(A, &epsdiag); CHKERRQ(ierr);
+   epsdiag *= epsdiag_in / nrows;
+   printf("   Dimensioned Manteuffel shift=%e\n", epsdiag);
+   printf("   Drop tolerance              =%e\n",droptol);
+
+   if (droptol<1e-10) {droptol=1e-10;}
+
+   // Check dimensions
+   if ( (nrows != pattern.nrows) ||
+        (ncols != pattern.ncols) ||
+        (ncols != nrows) )
+   {
+      SETERRQ( PETSC_ERR_ARG_INCOMP,
+               "Dimension error in spbas_incomplete_cholesky\n");
+   }
+
+   // Set overall values
+   retval.nrows = nrows;
+   retval.ncols = nrows;
+   retval.nnz   = pattern.nnz/10;
+   retval.col_idx_type = SPBAS_COLUMN_NUMBERS;
+   retval.block_data = PETSC_TRUE;
+
+   // Allocate sparseness pattern
+   ierr =  spbas_allocate_pattern(&retval, do_values); CHKERRQ(ierr);
+   // Initial allocation of data
+   memset((void*) retval.row_nnz, 0, nrows*sizeof(int));
+   ierr =  spbas_allocate_data(&retval); CHKERRQ(ierr);
+   retval.nnz   = 0;
+
+   // Allocate work arrays
+   ierr = PetscMalloc(nrows*sizeof(PetscScalar), &diag); CHKERRQ(ierr);
+   ierr = PetscMalloc(nrows*sizeof(PetscScalar), &val);  CHKERRQ(ierr);
+   ierr = PetscMalloc(nrows*sizeof(PetscScalar), &lvec); CHKERRQ(ierr);
+   ierr = PetscMalloc(nrows*sizeof(int), &max_row_nnz);  CHKERRQ(ierr);
+   if (!(diag && val && lvec && max_row_nnz))
+   { 
+      SETERRQ( PETSC_ERR_MEM,
+              "Allocation error in spbas_incomplete_cholesky\n"); 
+   }
+
+   memset((void*) val, 0, nrows*sizeof(PetscScalar));
+   memset((void*) lvec, 0, nrows*sizeof(PetscScalar));
+   memset((void*) max_row_nnz, 0, nrows*sizeof(int));
+
+   // Check correct format of sparseness pattern
+   if (pattern.col_idx_type != SPBAS_DIAGONAL_OFFSETS)
+   {
+      SETERRQ( PETSC_ERR_SUP_SYS,
+               "Error in spbas_incomplete_cholesky: must have diagonal offsets in pattern\n");
+   }
+
+   // Count the nonzeros on transpose of pattern
+   for (i = 0; i<nrows; i++)
+   {
+      p_nnz  = pattern.row_nnz[i];
+      p_icol = pattern.icols[i];
+      for (j=0; j<p_nnz; j++)
+      {
+         max_row_nnz[i+p_icol[j]]++;
+      }
+   }
+
+   // Calculate rows of L
+   for (i = 0; i<nrows; i++)
+   {
+      p_nnz  = pattern.row_nnz[i];
+      p_icol = pattern.icols[i];
+
+      r_nnz  = retval.row_nnz[i];
+      r_icol = retval.icols[i];
+      r_val  = retval.values[i];
+      A_nnz  = ai[rip[i]+1] - ai[rip[i]];
+      A_icol = &aj[ai[rip[i]]];
+      A_val  = &aa[ai[rip[i]]]; 
+
+      // Calculate  val += A(i,i:n)';
+      for (j=0; j<A_nnz; j++) 
+      { 
+         k = riip[A_icol[j]];
+         if (k>=i) { val[k] = A_val[j]; }
+      }
+
+      // Add regularization
+      val[i] += epsdiag;
+
+      // Calculate lvec   = diag(D(0:i-1)) * L(0:i-1,i);
+      //           val(i) = A(i,i) - L(0:i-1,i)' * lvec
+      for ( j=0; j<r_nnz; j++)
+      {
+         k           = r_icol[j];
+         lvec[k]     = diag[k] * r_val[j];
+         val[i]     -= r_val[j] * lvec[k];
+      }
+
+      // Calculate the new diagonal
+      diag[i] = val[i];
+      if (diag[i]<droptol)
+      {
+         printf("Error in spbas_incomplete_cholesky:\n");
+         printf("Negative diagonal in row %d\n",i+1);
+
+         // Delete the whole matrix at once.
+         ierr = spbas_delete(retval);
+         return NEGATIVE_DIAGONAL;
+      }
+
+#ifdef cholesky_debug
+      if (idebug>=3)
+      {
+         printf("diagD * L (%d,:)=\n",i+1);
+         for (j=0; j<r_nnz; j++)
+         {
+            printf(fmt,r_icol[j]+1,i+1,lvec[r_icol[j]]);
+         }
+         printf("\n\n");
+      }
+
+      if (idebug>=1) { printf("Diag = %12.8e\n\n\n",diag[i]);}
+
+      if (idebug>=2) 
+      { 
+         printf("L^T * diagD * L=\n");
+         tmp = 0.0;
+         for ( j=0; j<r_nnz; j++)
+         {
+            k     =  r_icol[j];
+            tmp   += r_val[j] * lvec[k];
+         }
+         printf(fmt, i+1,i+1,tmp);
+      }
+#endif
+
+      // If necessary, allocate arrays
+      if (r_nnz==0)
+      {
+         ierr = spbas_cholesky_row_alloc( retval, i, 1, &n_alloc_used);
+         if (ierr == PETSC_ERR_MEM)
+         {
+            ierr = spbas_cholesky_garbage_collect( &retval,  i, &n_row_alloc_ok,
+                               &n_alloc_used, max_row_nnz);
+            CHKERRQ(ierr);
+            ierr = spbas_cholesky_row_alloc( retval, i, 1, &n_alloc_used);
+         }
+         CHKERRQ(ierr);
+         r_icol = retval.icols[i];
+         r_val  = retval.values[i];
+      }
+
+      // Now, fill in
+      r_icol[r_nnz] = i;
+      r_val [r_nnz] = 1.0;
+      r_nnz++;
+      retval.row_nnz[i]++;
+
+      retval.nnz += r_nnz;
+
+      // Calculate
+      //   val(i+1:n) = (A(i,i+1:n)- L(0:i-1,i+1:n)' * lvec)/diag(i)
+      for (j=1; j<p_nnz; j++)
+      {
+         k = i+p_icol[j];
+         r1_icol = retval.icols[k];
+         r1_val  = retval.values[k];
+#ifdef cholesky_debug
+         tmp = 0.0;
+#endif
+         for (jL=0; jL<retval.row_nnz[k]; jL++)
+         {
+            val[k] -= r1_val[jL] * lvec[r1_icol[jL]];
+#ifdef cholesky_debug
+            tmp    += r1_val[jL] * lvec[r1_icol[jL]];
+#endif
+         }
+#ifdef cholesky_debug
+         if (idebug>=2 && tmp!=0) {printf(fmt, k+1,i+1,tmp);}
+#endif
+         val[k] /= diag[i];
+
+         if (val[k] > droptol || val[k]< -droptol)
+         {
+            // If necessary, allocate arrays
+            if (retval.row_nnz[k]==0)
+            {
+               ierr = spbas_cholesky_row_alloc( retval, k, max_row_nnz[k], 
+                            &n_alloc_used);
+               if (ierr == PETSC_ERR_MEM)
+               {
+                  ierr = spbas_cholesky_garbage_collect( 
+                                     &retval,  i, &n_row_alloc_ok,
+                                     &n_alloc_used, max_row_nnz);
+                  CHKERRQ(ierr);
+                  ierr = spbas_cholesky_row_alloc( retval, k, max_row_nnz[k], 
+                            &n_alloc_used);
+                  r_icol = retval.icols[i];
+                  r_val  = retval.values[i];
+               }
+               CHKERRQ(ierr);
+            }
+
+            // Now, fill in
+            retval.icols[k][retval.row_nnz[k]] = i;
+            retval.values[k][retval.row_nnz[k]] = val[k];
+            retval.row_nnz[k]++;
+         }
+         val[k] = 0;
+      }
+#ifdef cholesky_debug
+      if (idebug>=2) {printf("\n\n");}
+#endif
+
+      // Erase the values used in the work arrays
+      for (j=0; j<r_nnz; j++) { lvec[r_icol[j]] = 0; }
+
+#ifdef cholesky_debug
+      if (idebug>=2)
+      {
+         printf("new L=\n");
+         for (jL=i; jL<nrows; jL++)
+         {
+             j = retval.row_nnz[jL]-1;
+             if (j>=0)
+             {
+                k = retval.icols[jL][j];
+                if (k==i) printf(fmt, jL+1,i+1,retval.values[jL][j]);
+             }
+         }
+         printf("\n\n");
+      }
+#endif
+   }
+
+   ierr=PetscFree(lvec); CHKERRQ(ierr); ierr=PetscFree(val); CHKERRQ(ierr);
+
+   ierr = spbas_cholesky_garbage_collect( &retval, nrows, &n_row_alloc_ok,
+                                     &n_alloc_used, max_row_nnz);
+   ierr=PetscFree(max_row_nnz); CHKERRQ(ierr);
+
+   // Place the inverse of the diagonals in the matrix
+   for (i=0; i<nrows; i++)
+   {
+      r_nnz = retval.row_nnz[i];
+      retval.values[i][r_nnz-1] = 1.0 / diag[i];
+      for (j=0; j<r_nnz-1; j++)
+      {
+         retval.values[i][j] *= -1;
+      }
+   }
+   ierr=PetscFree(diag); CHKERRQ(ierr);
+
+
+   // Return successfully
+   *matrix_L = retval;
+
+#ifdef cholesky_debug
+   for (i = 0; i<nrows; i++)
+   {
+      printf("Row %d\n",i+1);
+      for (j=0; j<retval.row_nnz[i]; j++)
+      {
+         printf(fmt, i+1,retval.icols[i][j]+1,retval.values[i][j]);
+      }
+   }
+#endif
+   PetscFunctionReturn(0);
+}
+
