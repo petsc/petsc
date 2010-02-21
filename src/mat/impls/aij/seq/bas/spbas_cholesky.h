@@ -78,7 +78,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(
    PetscInt n_rescue; 
    PetscInt n_row_rescue;
    PetscInt i_here, i_last, n_copy;
-   const PetscScalar xtra_perc = 20;
+   const PetscReal xtra_perc = 20;
 
    PetscFunctionBegin;
 
@@ -108,10 +108,8 @@ PetscErrorCode spbas_cholesky_garbage_collect(
 
    // Make maximal and realistic memory requirement estimates
    n_alloc_max = n_alloc_ok + need_already + max_need_extra;
-   n_alloc_est = n_alloc_ok + need_already + (int) 
-            ((PetscScalar) max_need_extra * 
-                          (PetscScalar) n_alloc_ok /
-                          (PetscScalar) n_alloc_ok_max);
+   n_alloc_est = n_alloc_ok + need_already + (int) (((PetscReal) max_need_extra) * 
+						    ((PetscReal) n_alloc_ok) /((PetscReal) n_alloc_ok_max));
 
    // Choose array sizes
    if (n_alloc_max == n_alloc_est)
@@ -369,7 +367,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(
 PetscErrorCode spbas_incomplete_cholesky(
         Mat A, const PetscInt *rip, const PetscInt *riip,
         spbas_matrix pattern, 
-        PetscScalar droptol, PetscScalar epsdiag_in,
+        PetscReal droptol, PetscReal epsdiag_in,
         spbas_matrix * matrix_L)
 {
 
@@ -505,7 +503,7 @@ PetscErrorCode spbas_incomplete_cholesky(
 
       // Calculate the new diagonal
       diag[i] = val[i];
-      if (diag[i]<droptol)
+      if (PetscAbsScalar(diag[i])<droptol)
       {
          printf("Error in spbas_incomplete_cholesky:\n");
          printf("Negative diagonal in row %d\n",i+1);
@@ -587,7 +585,7 @@ PetscErrorCode spbas_incomplete_cholesky(
 #endif
          val[k] /= diag[i];
 
-         if (val[k] > droptol || val[k]< -droptol)
+         if (PetscAbsScalar(val[k]) > droptol || PetscAbsScalar(val[k])< -droptol)
          {
             // If necessary, allocate arrays
             if (retval.row_nnz[k]==0)

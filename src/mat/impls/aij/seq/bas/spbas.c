@@ -418,8 +418,7 @@ PetscErrorCode spbas_compress_pattern(PetscInt *irow_in, PetscInt *icol_in, Pets
       B->icols[i] = B->icols[ipoint[i]];
    }
    printf("Row patterns have been compressed\n");
-   printf("         (%6.2f nonzeros per row)\n",
-          (PetscScalar) nnz / (PetscScalar) nrows);
+   printf("         (%6.2f nonzeros per row)\n",  (PetscReal) nnz / (PetscReal) nrows);
    
 
    // Clean up
@@ -493,7 +492,7 @@ PetscErrorCode spbas_matrix_to_crs(spbas_matrix matrix_A,MatScalar **val_out, Pe
    MatScalar *val;
    PetscScalar *val_A;
    PetscInt col_idx_type = matrix_A.col_idx_type;
-   PetscTruth do_values = matrix_A.values != NULL;
+   PetscTruth do_values = matrix_A.values ? PETSC_TRUE : PETSC_FALSE;
    PetscErrorCode ierr;
 
    PetscFunctionBegin;
@@ -655,7 +654,7 @@ PetscErrorCode spbas_transpose( spbas_matrix in_matrix, spbas_matrix * result)
    result->block_data   = PETSC_TRUE;
 
    // Allocate sparseness pattern
-   ierr =  spbas_allocate_pattern(result, in_matrix.values != NULL);
+   ierr =  spbas_allocate_pattern(result, in_matrix.values ? PETSC_TRUE : PETSC_FALSE);
    CHKERRQ(ierr);
 
    // Count the number of nonzeros in each row
@@ -876,7 +875,7 @@ PetscErrorCode spbas_apply_reordering_rows(spbas_matrix *matrix_A, const PetscIn
    PetscInt nrows=matrix_A->nrows;
    PetscInt * row_nnz;
    PetscInt **icols;
-   PetscTruth do_values = matrix_A->values != NULL;
+   PetscTruth do_values = matrix_A->values ? PETSC_TRUE : PETSC_FALSE;
    PetscScalar **vals=NULL;
    PetscErrorCode ierr;
 
@@ -927,7 +926,7 @@ PetscErrorCode spbas_apply_reordering_cols( spbas_matrix *matrix_A,const PetscIn
    PetscInt nrows=matrix_A->nrows;
    PetscInt row_nnz;
    PetscInt *icols;
-   PetscTruth do_values = matrix_A->values != NULL;
+   PetscTruth do_values = matrix_A->values ? PETSC_TRUE : PETSC_FALSE;
    PetscScalar *vals=NULL;
 
    PetscErrorCode ierr;
@@ -1116,7 +1115,7 @@ PetscErrorCode spbas_power (spbas_matrix in_matrix,PetscInt power, spbas_matrix 
    retval.block_data = PETSC_FALSE;
 
    // Allocate sparseness pattern
-   ierr =  spbas_allocate_pattern(&retval, in_matrix.values != NULL);
+   ierr =  spbas_allocate_pattern(&retval, in_matrix.values ? PETSC_TRUE : PETSC_FALSE);
    CHKERRQ(ierr);
 
    // Allocate marker array
