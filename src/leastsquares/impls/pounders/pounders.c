@@ -750,7 +750,6 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
 	if (valid == PETSC_FALSE) {
 	  ierr = PetscInfo(tao,"Model not valid -- model-improving");
 	  ierr = modelimprove(tao,mfqP); CHKERRQ(ierr);
-	    
 	}
     }
     
@@ -852,8 +851,8 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
     CHKMEMQ;
     /* Update the quadratic model */
     if (mfqP->nmodelpoints - mfqP->n - 1 == 0) {
-      tao->reason = TAO_DIVERGED_USER;
       reason = TAO_DIVERGED_USER;
+      tao->reason = TAO_DIVERGED_USER;
       continue;
     }
     ierr = getquadpounders(mfqP); CHKERRQ(ierr);
