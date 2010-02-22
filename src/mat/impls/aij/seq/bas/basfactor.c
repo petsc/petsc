@@ -211,6 +211,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorIn
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetFactor_seqaij_bas"
 PetscErrorCode MatGetFactor_seqaij_bas(Mat A,MatFactorType ftype,Mat *B)
@@ -230,6 +231,4 @@ PetscErrorCode MatGetFactor_seqaij_bas(Mat A,MatFactorType ftype,Mat *B)
   (*B)->factor = ftype;
   PetscFunctionReturn(0);
 }
-
-
-
+EXTERN_C_END
