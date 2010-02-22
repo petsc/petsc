@@ -196,7 +196,7 @@ class PETScMaker(script.Script):
    - Excludes examples
    - Checks whether fortran bindings are necessary
    - Checks makefile to see if compiler is allowed to visit this directory for this configuration'''
-   if dirname == 'examples': return False
+   if dirname.endswith('examples'): return False
    if not hasattr(self.compilers, 'FC'):
      if dirname.startswith('ftn-') or dirname.startswith('f90-'): return False
 
@@ -215,28 +215,28 @@ class PETScMaker(script.Script):
        rtype = text.split(' ')[0]
        rvalue = text.split(' ')[1]
        if rtype == 'scalar' and not self.scalarType.scalartype == rvalue:
-         if self.verbose: print 'rejecting because scalar type '+self.scalarType.scalartype+' is not '+rvalue
+         if self.verbose: print 'Rejecting',dirname,'because scalar type '+self.scalarType.scalartype+' is not '+rvalue
          return 0
        if rtype == 'language':
          if rvalue == 'CXXONLY' and self.languages.clanguage == 'C':
-           if self.verbose: print 'rejecting because language is '+self.languages.clanguage+' is not C++'
+           if self.verbose: print 'Rejecting',dirname,'because language is '+self.languages.clanguage+' is not C++'
            return 0
        if rtype == 'precision' and not rvalue == self.scalarType.precision:
-         if self.verbose: print 'rejecting because precision '+self.scalarType.precision+' is not '+rvalue
+         if self.verbose: print 'Rejecting',dirname,'because precision '+self.scalarType.precision+' is not '+rvalue
          return 0
        # handles both missing packages and other random stuff that is treated as a package, that should be changed
        if rtype == 'package':
          if rvalue == "'"+'PETSC_HAVE_FORTRAN'+"'" or rvalue == "'"+'PETSC_USING_F90'+"'":
            if not hasattr(self.compilers, 'FC'):
-             if self.verbose: print 'rejecting because fortran is not being used'
+             if self.verbose: print 'Rejecting',dirname,'because fortran is not being used'
              return 0
          elif rvalue == "'"+'PETSC_USE_LOG'+"'":
            if not self.libraryOptions.useLog:
-             if self.verbose: print 'rejecting because logging is turned off'
+             if self.verbose: print 'Rejecting',dirname,'because logging is turned off'
              return 0
          elif rvalue == "'"+'PETSC_USE_FORTRAN_KERNELS'+"'":
            if not self.libraryOptions.useFortranKernels:
-             if self.verbose: print 'rejecting because fortran kernels are turned off'
+             if self.verbose: print 'Rejecting',dirname,'because fortran kernels are turned off'
              return 0
          else:    
            found = 0
@@ -245,7 +245,7 @@ class PETScMaker(script.Script):
              pname = "'"+pname+"'"
              if pname == rvalue: found = 1
            if not found:
-             if self.verbose: print 'rejecting because package '+rvalue+' is not installed'
+             if self.verbose: print 'Rejecting',dirname,'because package '+rvalue+' is not installed'
              return 0
          
      text = fd.readline()
