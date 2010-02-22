@@ -150,7 +150,9 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-extern "C" PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseDropTolerance_ILU(PC,PetscReal,PetscReal,PetscInt);
+EXTERN_C_BEGIN
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseDropTolerance_ILU(PC,PetscReal,PetscReal,PetscInt);
+EXTERN_C_END
 
 /*MC
      PCICC - Incomplete Cholesky factorization preconditioners.
