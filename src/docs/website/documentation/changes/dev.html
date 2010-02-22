@@ -211,6 +211,8 @@ argument, should be MATAIJ or MATBAIJ</li>
 DMRefineHierarchy to generate refined grids. Added options
 -da_refine_hierarchy_[xyz] to allow semi-coarsening at some levels of
 the hierarchy.</li>
+        <li>DASetCoordinates() now references the vector, so the user
+        should release their reference by calling VecDestroy().</li>
       </ul>
       <p><u><b>DMMG:</b></u></p>
       <ul>

@@ -12,7 +12,7 @@
    DASetCoordinates - Sets into the DA a vector that indicates the 
       coordinates of the local nodes (NOT including ghost nodes).
 
-   Not Collective
+   Collective on DA
 
    Input Parameter:
 +  da - the distributed array
@@ -20,9 +20,6 @@
 
    Note:
     The coordinates should NOT include those for all ghost points
-
-     Does NOT increase the reference count of this vector, so caller should NOT
-  destroy the vector.
 
   Level: intermediate
 
@@ -37,11 +34,14 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetCoordinates(DA da,Vec c)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_COOKIE,1);
   PetscValidHeaderSpecific(c,VEC_COOKIE,2);
-  if (da->coordinates) {
-    ierr = VecDestroy(da->coordinates);CHKERRQ(ierr);
-  }
+  ierr = PetscObjectReference((PetscObject)c);CHKERRQ(ierr);
+  if (da->coordinates) {ierr = VecDestroy(da->coordinates);CHKERRQ(ierr);}
   da->coordinates = c;
   ierr = VecSetBlockSize(c,da->dim);CHKERRQ(ierr);
+  if (da->ghosted_coordinates) { /* The ghosted coordinates are no longer valid */
+    ierr = VecDestroy(da->ghosted_coordinates);CHKERRQ(ierr);
+    da->ghosted_coordinates = PETSC_NULL;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -50,7 +50,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetCoordinates(DA da,Vec c)
 /*@
    DAGetCoordinates - Gets the node coordinates associated with a DA.
 
-   Not Collective
+   Collective on DA
 
    Input Parameter:
 .  da - the distributed array
@@ -170,7 +170,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DA da,DA *cda)
 /*@
    DAGetGhostedCoordinates - Gets the node coordinates associated with a DA.
 
-   Collective on DA the first time it is called
+   Collective on DA
 
    Input Parameter:
 .  da - the distributed array

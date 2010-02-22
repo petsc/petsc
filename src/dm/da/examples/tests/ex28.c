@@ -86,6 +86,8 @@ PetscInt main(PetscInt argc,char **args)
 
   }
   ierr = DASetCoordinates(da, coords);CHKERRQ(ierr);
+  ierr = VecDestroy(coords);CHKERRQ(ierr);
+
   // Work vectors
   ierr = DAGetGlobalVector(da, &x);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);
