@@ -5,18 +5,20 @@ void mymatprintslice(PetscReal *M, PetscInt n, PetscInt stride, const char *name
 
 
 #undef __FUNCT__
-#define __FUNCT__ "gqt"
-static PetscErrorCode gqt(TAO_POUNDERS *mfqP,PetscReal gnorm, PetscReal *qmin) {
+#define __FUNCT__ "gqtwrap"
+static PetscErrorCode gqtwrap(TAO_POUNDERS *mfqP,PetscReal *gnorm, PetscReal *qmin) {
     PetscReal one=1.0,atol=1.0e-10;
-    int info,its;
+    PetscInt info,its;
     PetscFunctionBegin;
 //      subroutine dgqt(n,a,lda,b,delta,rtol,atol,itmax,par,f,x,info,iter,z,wa1,wa2)
-    dgqt_(&mfqP->n,mfqP->Hres,&mfqP->n,mfqP->Gres,&one,&mfqP->gqt_rtol,&atol,
-	  &mfqP->gqt_maxits,&gnorm,qmin,mfqP->Xsubproblem,&info,&its,mfqP->work,mfqP->work2,
-	  mfqP->work3);
+    gqt(mfqP->n,mfqP->Hres,mfqP->n,mfqP->Gres,1.0,mfqP->gqt_rtol,atol,
+	mfqP->gqt_maxits,gnorm,qmin,mfqP->Xsubproblem,&info,&its,
+	mfqP->work,mfqP->work2, mfqP->work3);
+    CHKMEMQ;
     *qmin *= -1;
     PetscFunctionReturn(0);
 }
+
 
 #undef __FUNCT__
 #define __FUNCT__ "phi2eval"
@@ -672,9 +674,9 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
     iter++;
 
     /* Solve the subproblem min{Q(s): ||s|| <= delta} */
-    ierr = gqt(mfqP,gnorm,&mdec); CHKERRQ(ierr);
+    ierr = gqtwrap(mfqP,&gnorm,&mdec); CHKERRQ(ierr);
     //mymatprint(mfqP->Xsubproblem,1,mfqP->n,1,"xsubproblem");
-    
+    CHKMEMQ;
     /* Evaluate the function at the new point */
     for (i=0;i<mfqP->n;i++) {
 	mfqP->work[i] = mfqP->Xsubproblem[i]*mfqP->delta + mfqP->xmin[i];

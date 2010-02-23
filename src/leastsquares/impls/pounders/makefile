@@ -4,12 +4,12 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = pounders.c
-SOURCEF  = dgqt.f destsv.f 
+SOURCEC  = pounders.c gqt.c
+SOURCEF  = 
 SOURCEH  = pounders.h 
 #taolapack.h
-OBJSC    = pounders.o
-OBJSF    = dgqt.o destsv.o
+OBJSC    = pounders.o gqt.o
+OBJSF    = 
 LIBBASE  = libtaosolver
 MANSEC   = solver
 LOCDIR   = src/leastsquares/impls/pounders/

@@ -77,8 +77,6 @@ typedef struct {
 } TAO_POUNDERS;
 
 
-void dgqt_(int *n, PetscReal *a, int *lda, PetscReal *b, PetscReal *delta, PetscReal *rtol,
-	   PetscReal *atol, int *itmax, PetscReal *par, PetscReal *f, PetscReal *x,
-	   int *info, int *its, PetscReal *z, PetscReal *wa1, PetscReal *wa2);
+void gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b, PetscReal delta, PetscReal rtol, PetscReal atol, PetscInt itmax, PetscReal *par, PetscReal *f, PetscReal *x, PetscInt *info, int *its, PetscReal *z, PetscReal *wa1, PetscReal *wa2);
 
 #endif /* ifndef __TAO_MFQNLS */
