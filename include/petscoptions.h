@@ -85,7 +85,10 @@ $             = 0  : The GUI objects are created in PetscOptionsInt() etc and di
 $                    database updated updated with user changes; PetscOptionsGetInt() etc are also called
 $             = 1 : The PetscOptionsInt() etc again call the PetscOptionsGetInt() etc (possibly getting new values), in addition the help message and 
 $                   default values are printed if -help was given.
-$            
+$           When PetscOptionsObject.changedmethod is set this causes PetscOptionsPublishCount to be reset to -2 (so in the next loop iteration it is -1)
+$           and the whole process is repeated. This is to handle when, for example, the KSPType is changed thus changing the list of 
+$           options available so they need to be redisplayed so the user can change the. Chaning PetscOptionsObjects.changedmethod is never 
+$           currently set.       
 
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
