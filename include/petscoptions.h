@@ -75,8 +75,17 @@ extern PETSC_DLLEXPORT PetscInt   PetscOptionsPublishCount;
   Level: intermediate
 
   Notes: Needs to be ended by a call the PetscOptionsEnd()
-
          Can add subheadings with PetscOptionsHead()
+
+  Developer notes: PetscOptionsPublish is set in PetscOptionsCheckInitial_Private() with -options_gui. When PetscOptionsPublish is set the 
+$             loop between PetscOptionsBegin() and PetscOptionsEnd() is run THREE times with PetscOptionsPublishCount of values -1,0,1 otherwise
+$             the loop is run ONCE with a PetscOptionsPublishCount of 1.
+$             = -1 : The PetscOptionsInt() etc just call the PetscOptionsGetInt() etc
+$             = 0  : The GUI objects are created in PetscOptionsInt() etc and displayed in PetscOptionsEnd() and the options
+$                    database updated updated with user changes
+$             = 1 : The PetscOptionsInt() etc again call the PetscOptionsGetInt() etc (possibly getting new values)
+$            
+
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth()

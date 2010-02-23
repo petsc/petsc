@@ -1840,8 +1840,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCreate(void)
    Collective on PETSC_COMM_WORLD
 
    Options Database Keys:
-+  -options_monitor <optional filename> - prints the names and values of all 
- 				runtime options as they are set. The monitor functionality is not 
++  -options_monitor <optional filename> - prints the names and values of all runtime options as they are set. The monitor functionality is not 
                 available for options set through a file, environment variable, or on 
                 the command line. Only options set after PetscInitialize completes will 
                 be monitored.
@@ -1857,25 +1856,21 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCreate(void)
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetFromOptions(void)
 {
-  PetscTruth          flg;
+  PetscTruth          flgc,flgm;
   PetscErrorCode      ierr;
   char                monfilename[PETSC_MAX_PATH_LEN];
   PetscViewer         monviewer; 
 
   PetscFunctionBegin;
-
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Options database options","PetscOptions");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-options_monitor","Monitor options database","PetscOptionsMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (flg && (!options->numbermonitors)) {
+    ierr = PetscOptionsString("-options_monitor","Monitor options database","PetscOptionsMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flgm);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-options_monitor_cancel","Cancel all options database monitors","PetscOptionsMonitorCancel",&flgc);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  if (flgm) {
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,monfilename,&monviewer);CHKERRQ(ierr);
     ierr = PetscOptionsMonitorSet(PetscOptionsMonitorDefault,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
   }
-     
-  ierr = PetscOptionsName("-options_monitor_cancel","Cancel all options database monitors","PetscOptionsMonitorCancel",&flg);CHKERRQ(ierr);
-  if (flg) { ierr = PetscOptionsMonitorCancel();CHKERRQ(ierr); }
-  
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-
+  if (flgc) { ierr = PetscOptionsMonitorCancel();CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 

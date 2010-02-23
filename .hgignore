@@ -70,3 +70,10 @@ src/docs/tex/manual/manual1.tex
 src/dm/mesh/examples/tests/unitTests
 src/dm/mesh/examples/tutorials/*_quadrature.h
 src/dm/mesh/examples/tutorials/*.vtk
+*.gcov.html
+*.dSYM
+*.mexmaci
+arch-*
+valgrind*
+.DS_Store
+session_*
