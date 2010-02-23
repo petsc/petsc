@@ -82,8 +82,9 @@ $             loop between PetscOptionsBegin() and PetscOptionsEnd() is run THRE
 $             the loop is run ONCE with a PetscOptionsPublishCount of 1.
 $             = -1 : The PetscOptionsInt() etc just call the PetscOptionsGetInt() etc
 $             = 0  : The GUI objects are created in PetscOptionsInt() etc and displayed in PetscOptionsEnd() and the options
-$                    database updated updated with user changes
-$             = 1 : The PetscOptionsInt() etc again call the PetscOptionsGetInt() etc (possibly getting new values)
+$                    database updated updated with user changes; PetscOptionsGetInt() etc are also called
+$             = 1 : The PetscOptionsInt() etc again call the PetscOptionsGetInt() etc (possibly getting new values), in addition the help message and 
+$                   default values are printed if -help was given.
 $            
 
 

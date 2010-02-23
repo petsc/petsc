@@ -91,13 +91,18 @@ static PetscErrorCode DASetTypeFromOptions_Private(DA da)
 PetscErrorCode PETSCDM_DLLEXPORT DASetFromOptions(DA da)
 {
   PetscErrorCode ierr;
+  PetscInt       dim;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_COOKIE,1);
 
   ierr = PetscOptionsBegin(((PetscObject)da)->comm,((PetscObject)da)->prefix,"DA Options","DA");CHKERRQ(ierr);
     /* Handle DA dimensions */
-    ierr = PetscOptionsInt("-da_dim","Number of dimensions","DASetDim",da->dim,&da->dim,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_dim","Number of dimensions","DASetDim",da->dim,&dim,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = DASetDim(da,dim);CHKERRQ(ierr);
+    }
     /* Handle DA grid sizes */
     if (da->M < 0) {
       PetscInt newM = -da->M;
