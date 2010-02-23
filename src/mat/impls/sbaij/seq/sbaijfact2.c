@@ -2477,12 +2477,6 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
         j     = *(uj - 1); 
         ierr = PetscICCLLAddSorted(ncols,cols,levels,uj,am,nlnk,lnk,lnk_lvl,lnkbt,j);CHKERRQ(ierr); 
         nzk += nlnk;
-        /*
-        j     = *(uj_lvl_ptr[prow] + i - 1);
-        cols_lvl = uj_lvl_ptr[prow]+i;
-        ierr = PetscICCLLAddSorted(ncols,cols,levels,cols_lvl,am,nlnk,lnk,lnk_lvl,lnkbt,j);CHKERRQ(ierr);
-        nzk += nlnk;
-        */
 
         /* update il and jl for prow */
         if (jmin < jmax){
