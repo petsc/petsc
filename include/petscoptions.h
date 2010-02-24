@@ -196,20 +196,11 @@ struct _p_PetscOptions {
   PetscOptions    next;
 };
 
-typedef struct _p_PetscOptionsHelp* PetscOptionsHelp;
-struct _p_PetscOptionsHelp {
-  char             *prefix;
-  char             *title;
-  char             *mansec;
-  PetscOptionsHelp next;
-};
-
 typedef struct {
   PetscOptions     next;
   char             *prefix,*mprefix;  
   char             *title;
   MPI_Comm         comm;
   PetscTruth       printhelp,changedmethod,alreadyprinted;
-  PetscOptionsHelp help;
 } PetscOptionsObjectType;
 #endif

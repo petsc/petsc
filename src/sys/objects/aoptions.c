@@ -22,81 +22,6 @@
 PetscOptionsObjectType PetscOptionsObject;
 PetscInt               PetscOptionsPublishCount = 0;
 
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsHelpAddList"
-PetscErrorCode PetscOptionsHelpAddList(const char prefix[],const char title[],const char mansec[])
-{
-  int               ierr;
-  PetscOptionsHelp  newhelp;
-  PetscFunctionBegin;
-  ierr = PetscNew(struct _p_PetscOptionsHelp,&newhelp);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(prefix,&newhelp->prefix);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(title,&newhelp->title);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(mansec,&newhelp->mansec);CHKERRQ(ierr);
-  newhelp->next = 0;
-
-  if (!PetscOptionsObject.help) {
-    PetscOptionsObject.help = newhelp;
-  } else {
-    newhelp->next = PetscOptionsObject.help;
-    PetscOptionsObject.help = newhelp;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsHelpDestroyList"
-PetscErrorCode PetscOptionsHelpDestroyList(void)
-{
-  PetscErrorCode   ierr;
-  PetscOptionsHelp help = PetscOptionsObject.help, next;
-
-  PetscFunctionBegin;
-  while (help) {
-    next = help->next;
-    ierr = PetscStrfree(help->prefix);CHKERRQ(ierr);
-    ierr = PetscStrfree(help->title);CHKERRQ(ierr);
-    ierr = PetscStrfree(help->mansec);CHKERRQ(ierr);
-    ierr = PetscFree(help);CHKERRQ(ierr);
-    help = next;
-  }
-  PetscFunctionReturn(0);
-}
-  
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsHelpFindList"
-PetscErrorCode PetscOptionsHelpFindList(const char prefix[],const char title[],const char mansec[],PetscTruth *flg)
-{
-  PetscErrorCode   ierr;
-  PetscTruth       flg1,flg2,flg3;
-  PetscOptionsHelp help = PetscOptionsObject.help;
-  PetscFunctionBegin;
-  while (help) {
-    ierr = PetscStrcmp(help->prefix,prefix,&flg1);CHKERRQ(ierr);
-    ierr = PetscStrcmp(help->title,title,&flg2);CHKERRQ(ierr);
-    ierr = PetscStrcmp(help->mansec,mansec,&flg3);CHKERRQ(ierr);
-    if (flg1 && flg2 && flg3) {
-      *flg = PETSC_TRUE;
-      break;
-    }
-    help = help->next;
-  }
-  PetscFunctionReturn(0);
-
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsHelpCheckAddList"
-PetscErrorCode PetscOptionsHelpCheckAddList(const char prefix[],const char title[],const char mansec[],PetscTruth *flg)
-{
-  PetscFunctionBegin;
-  PetscOptionsHelpFindList(prefix,title,mansec,flg);
-  if (!(*flg)) PetscOptionsHelpAddList(prefix,title,mansec);
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsBegin_Private"
 /*
@@ -121,7 +46,6 @@ PetscErrorCode PetscOptionsBegin_Private(MPI_Comm comm,const char prefix[],const
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-help",&PetscOptionsObject.printhelp);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1) {
-    ierr = PetscOptionsHelpCheckAddList(prefix,title,mansec,&PetscOptionsObject.alreadyprinted);
     if (!PetscOptionsObject.alreadyprinted) {
       ierr = (*PetscHelpPrintf)(comm,"%s -------------------------------------------------\n",title);CHKERRQ(ierr);
     }
