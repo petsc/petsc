@@ -1,10 +1,8 @@
 #define PETSC_DLL
 /*
-   These routines simplify the use of command line, file options, etc.,
-   and are used to manipulate the options database.
+   Implements the higher-level options database querying methods. These are self-documenting and can attach at runtime to 
+   GUI code to display the options and get values from the users.
 
-  This file uses regular malloc and free because it cannot know 
-  what malloc is being used until it has already processed the input.
 */
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
@@ -15,7 +13,7 @@
 
 /*
     Keep a linked list of options that have been posted and we are waiting for 
-   user selection
+   user selection. See the manual page for PetscOptionsBegin()
 
     Eventually we'll attach this beast to a MPI_Comm
 */
@@ -88,17 +86,24 @@ static int PetscOptionsCreate_Private(const char opt[],const char text[],const c
 #undef __FUNCT__  
 #define __FUNCT__ "PetscScanString"
 /*
-    PetscScanString - 
+    PetscScanString -  Gets user input via stdin from process and broadcasts to all processes
+
+    Collective on MPI_Comm
+
+   Input Parameters:
++     commm - communicator for the broadcast, must be PETSC_COMM_WORLD
+.     n - length of the string, must be the same on all processes 
+-     str - location to store input
 
     Bugs: 
 .   Assumes process 0 of the given communicator has access to stdin
 
 */
-static PetscErrorCode PetscScanString(MPI_Comm comm,PetscInt n,char str[],PetscTruth *set)
+static PetscErrorCode PetscScanString(MPI_Comm comm,size_t n,char str[])
 {
   PetscInt       i;
   char           c;
-  PetscMPIInt    rank;
+  PetscMPIInt    rank,nm;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -112,8 +117,8 @@ static PetscErrorCode PetscScanString(MPI_Comm comm,PetscInt n,char str[],PetscT
     }
     str[i] = 0;
   }
-  ierr = MPI_Bcast(str,n,MPI_CHAR,0,comm);CHKERRQ(ierr);
-  if (str[0]) *set = PETSC_TRUE; else *set = PETSC_FALSE;
+  nm   = PetscMPIIntCast(n);
+  ierr = MPI_Bcast(str,nm,MPI_CHAR,0,comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -135,7 +140,6 @@ PetscErrorCode PetscOptionsGetFromTextInput()
   PetscOptions   next = PetscOptionsObject.next;
   char           str[512];
   int            id;
-  PetscTruth     set;
   double         ir;
 
   ierr = (*PetscPrintf)(PetscOptionsObject.comm,"%s -------------------------------------------------\n",PetscOptionsObject.title);CHKERRQ(ierr);
@@ -145,8 +149,8 @@ PetscErrorCode PetscOptionsGetFromTextInput()
         break;
       case OPTION_INT: 
         ierr = PetscPrintf(PetscOptionsObject.comm,"-%s%s <%d>: %s (%s)",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",next->option+1,*(int*)next->data,next->text,next->man);CHKERRQ(ierr);
-        ierr = PetscScanString(PETSC_COMM_WORLD,512,str,&set);CHKERRQ(ierr);
-        if (set) {
+        ierr = PetscScanString(PETSC_COMM_WORLD,512,str);CHKERRQ(ierr);
+        if (str[0]) {
            sscanf(str,"%d",&id);
            next->set = PETSC_TRUE;
            *((PetscInt*)next->data) = id;
@@ -154,8 +158,8 @@ PetscErrorCode PetscOptionsGetFromTextInput()
         break;
       case OPTION_REAL: 
         ierr = PetscPrintf(PetscOptionsObject.comm,"-%s%s <%g>: %s (%s)",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",next->option+1,*(double*)next->data,next->text,next->man);CHKERRQ(ierr);
-        ierr = PetscScanString(PETSC_COMM_WORLD,512,str,&set);CHKERRQ(ierr);
-        if (set) {
+        ierr = PetscScanString(PETSC_COMM_WORLD,512,str);CHKERRQ(ierr);
+        if (str[0]) {
            sscanf(str,"%le",&ir);
            next->set = PETSC_TRUE;
            *((PetscReal*)next->data) = ir;
@@ -164,8 +168,8 @@ PetscErrorCode PetscOptionsGetFromTextInput()
       case OPTION_LOGICAL: 
       case OPTION_STRING: 
         ierr = PetscPrintf(PetscOptionsObject.comm,"-%s%s <%s>: %s (%s)",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",next->option+1,(char*)next->data,next->text,next->man);CHKERRQ(ierr);
-        ierr = PetscScanString(PETSC_COMM_WORLD,512,str,&set);CHKERRQ(ierr);
-        if (set) {
+        ierr = PetscScanString(PETSC_COMM_WORLD,512,str);CHKERRQ(ierr);
+        if (str[0]) {
            next->set = PETSC_TRUE;
            ierr = PetscStrcpy(next->data,str);CHKERRQ(ierr);
         }

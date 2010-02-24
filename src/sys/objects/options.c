@@ -1,10 +1,10 @@
 #define PETSC_DLL
 /*
-   These routines simplify the use of command line, file options, etc.,
-   and are used to manipulate the options database.
+   These routines simplify the use of command line, file options, etc., and are used to manipulate the options database.
+   This provides the low-level interface, the high level interface is in aoptions.c
 
-  This file uses regular malloc and free because it cannot know 
-  what malloc is being used until it has already processed the input.
+   Some routines use regular malloc and free because it cannot know  what malloc is requested with the 
+   options database until it has already processed the input.
 */
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
@@ -21,19 +21,19 @@
 #include "petscfix.h"
 
 /* 
-    For simplicity, we use a static size database
+    This table holds all the options set by the user. For simplicity, we use a static size database
 */
 #define MAXOPTIONS 512
 #define MAXALIASES 25
 #define MAXOPTIONSMONITORS 5
 
 typedef struct {
-  int        N,argc,Naliases;
-  char       **args,*names[MAXOPTIONS],*values[MAXOPTIONS];
-  char       *aliases1[MAXALIASES],*aliases2[MAXALIASES];
-  PetscTruth used[MAXOPTIONS];
-  PetscTruth namegiven;
-  char       programname[PETSC_MAX_PATH_LEN]; /* HP includes entire path in name */
+  int            N,argc,Naliases;
+  char           **args,*names[MAXOPTIONS],*values[MAXOPTIONS];
+  char           *aliases1[MAXALIASES],*aliases2[MAXALIASES];
+  PetscTruth     used[MAXOPTIONS];
+  PetscTruth     namegiven;
+  char           programname[PETSC_MAX_PATH_LEN]; /* HP includes entire path in name */
 
   /* --------User (or default) routines (most return -1 on error) --------*/
   PetscErrorCode (*monitor[MAXOPTIONSMONITORS])(const char[], const char[], void*); /* returns control to user after */
@@ -44,8 +44,7 @@ typedef struct {
 } PetscOptionsTable;
 
 
-static PetscOptionsTable *options = 0;
-
+static PetscOptionsTable      *options = 0;
 extern PetscOptionsObjectType PetscOptionsObject;
 
 /*
@@ -60,6 +59,9 @@ extern PetscOptionsObjectType PetscOptionsObject;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsAtoi"
+/*
+   PetscOptionsAtoi - Converts a string to an integer value. Handles special cases such as "default" and "decide"
+*/
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsAtoi(const char name[],PetscInt *a)
 {
   PetscErrorCode ierr;
@@ -102,6 +104,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsAtoi(const char name[],PetscInt *a)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsAtod"
+/*
+   Converts a string to PetscReal value. Handles special cases like "default" and "decide"
+*/
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsAtod(const char name[],PetscReal *a)
 {
   PetscErrorCode ierr;
@@ -136,6 +141,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsAtod(const char name[],PetscReal *a)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsAtol"
+/*
+   PetscOptionsAtol - Converts string to PetscTruth, handles cases like "yes", "no", "true", "false", "0", "1"
+*/
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsAtol(const char value[], PetscTruth *a)
 {
   PetscTruth     istrue, isfalse;
@@ -210,6 +218,16 @@ PetscErrorCode PETSC_DLLEXPORT PetscSetProgramName(const char name[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsValidKey"
+/*@
+    PetscOptionsValidKey - PETSc Options database keys must begin with a - followed by a letter.
+
+   Input Parameter:
+.    in_str - string to check if valid
+
+   Output Parameter:
+.    key - PETSC_TRUE if a valid key
+
+@*/
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsValidKey(const char in_str[],PetscTruth *key)
 {
   PetscFunctionBegin;
@@ -275,6 +293,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertString(const char in_str[])
   PetscFunctionReturn(0);
 }
 
+/*
+    Returns a line (ended by a \n, \r or null character of any length. Result should be freed with free()
+*/
 static char *Petscgetline(FILE * f)
 {
   size_t size = 0;
@@ -628,6 +649,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsPrint(FILE *fd)
    Output Parameter:
 .  copts - pointer where string pointer is stored
 
+   Notes: the array and each entry in the array should be freed with PetscFree()
+
    Level: advanced
 
    Concepts: options database^listing
@@ -877,18 +900,16 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsClearValue(const char iname[])
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsSetAlias"
 /*@C
-   PetscOptionsReject - Generates an error if a certain option is given.
+   PetscOptionsSetAlias - Makes a key and alias for another key
 
    Not Collective, but setting values on certain processors could cause problems
    for parallel objects looking for options.
 
    Input Parameters:
-+  name - the option one is seeking 
--  mess - error message (may be PETSC_NULL)
++  inewname - the alias
+-  ioldname - the name that alias will refer to 
 
    Level: advanced
-
-   Concepts: options database^rejecting option
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),OptionsHasName(),
            PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(),PetscOptionsTruth(),
@@ -1808,12 +1829,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsLeft(void)
 }
 
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsCreate"
 /*
     PetscOptionsCreate - Creates the empty options database.
 
 */
-#undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsCreate"
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsCreate(void)
 {
   PetscErrorCode ierr;
