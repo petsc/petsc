@@ -1322,7 +1322,7 @@ if (dlclose(handle)) {
 Warning: [with-mpi-dir] option is used along with options: ''' + str(optsMatch) + '''
 This prevents configure from picking up MPI compilers from specified mpi-dir.
 
-Sugest using *only* [with-mpi-dir] option - and no other compiler option.
+Suggest using *only* [with-mpi-dir] option - and no other compiler option.
 This way - mpi compilers from '''+self.argDB['with-mpi-dir']+ ''' are used.'''
       self.logPrintBox(mesg)
     return
