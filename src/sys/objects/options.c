@@ -1567,7 +1567,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetRealArray(const char pre[],const c
    Input Parameters:
 +  pre - string to prepend to each name or PETSC_NULL
 .  name - the option one is seeking
--  nmax - maximum number of values to retrieve
+-  nmax - maximum number of values to retrieve, can include d-D to indicate d,d+1,..,D-1
 
    Output Parameter:
 +  dvalue - the integer values to return

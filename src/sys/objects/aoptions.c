@@ -140,15 +140,102 @@ PetscErrorCode PetscOptionsGetFromTextInput()
   PetscOptions   next = PetscOptionsObject.next;
   char           str[512];
   int            id;
-  double         ir;
-
-  ierr = (*PetscPrintf)(PetscOptionsObject.comm,"%s -------------------------------------------------\n",PetscOptionsObject.title);CHKERRQ(ierr);
+  double         ir,*valr;
+  PetscInt       i,*vald;
+  
+  ierr = (*PetscPrintf)(PETSC_COMM_WORLD,"%s -------------------------------------------------\n",PetscOptionsObject.title);CHKERRQ(ierr);
   while (next) {
     switch (next->type) {
       case OPTION_HEAD:
         break;
+      case OPTION_INT_ARRAY: 
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"-%s%s <",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",next->option+1);CHKERRQ(ierr);
+        vald = (PetscInt*) next->data;
+        for (i=0; i<next->arraylength; i++) {
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"%d",vald[i]);CHKERRQ(ierr);
+          if (i < next->arraylength-1) {
+            ierr = PetscPrintf(PETSC_COMM_WORLD,",");CHKERRQ(ierr);
+          }
+        }
+        ierr = PetscPrintf(PETSC_COMM_WORLD,">: %s (%s)",next->text,next->man);CHKERRQ(ierr);
+        ierr = PetscScanString(PETSC_COMM_WORLD,512,str);CHKERRQ(ierr);
+        if (str[0]) {
+          PetscToken token;
+          PetscInt   n=0,nmax = next->arraylength,*dvalue = (PetscInt*)next->data,start,end;
+          size_t     len;
+          char*      value;
+          PetscTruth foundrange;
+
+          next->set = PETSC_TRUE;
+          value = str;
+	  ierr = PetscTokenCreate(value,',',&token);CHKERRQ(ierr);
+	  ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
+	  while (n < nmax) {
+	    if (!value) break;
+    
+	    /* look for form  d-D where d and D are integers */
+	    foundrange = PETSC_FALSE;
+	    ierr      = PetscStrlen(value,&len);CHKERRQ(ierr); 
+	    if (value[0] == '-') i=2;
+	    else i=1;
+	    for (;i<(int)len; i++) {
+	      if (value[i] == '-') {
+		if (i == (int)len-1) SETERRQ2(PETSC_ERR_USER,"Error in %D-th array entry %s\n",n,value);
+		value[i] = 0;
+		ierr     = PetscOptionsAtoi(value,&start);CHKERRQ(ierr);        
+		ierr     = PetscOptionsAtoi(value+i+1,&end);CHKERRQ(ierr);        
+		if (end <= start) SETERRQ3(PETSC_ERR_USER,"Error in %D-th array entry, %s-%s cannot have decreasing list",n,value,value+i+1);
+		if (n + end - start - 1 >= nmax) SETERRQ4(PETSC_ERR_USER,"Error in %D-th array entry, not enough space in left in array (%D) to contain entire range from %D to %D",n,nmax-n,start,end);
+		for (;start<end; start++) {
+		  *dvalue = start; dvalue++;n++;
+		}
+		foundrange = PETSC_TRUE;
+		break;
+	      }
+	    }
+	    if (!foundrange) {
+	      ierr      = PetscOptionsAtoi(value,dvalue);CHKERRQ(ierr);
+	      dvalue++;
+	      n++;
+	    }
+	    ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
+	  }
+	  ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
+        }
+        break;
+      case OPTION_REAL_ARRAY: 
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"-%s%s <",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",next->option+1);CHKERRQ(ierr);
+        valr = (PetscReal*) next->data;
+        for (i=0; i<next->arraylength; i++) {
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"%g",valr[i]);CHKERRQ(ierr);
+          if (i < next->arraylength-1) {
+            ierr = PetscPrintf(PETSC_COMM_WORLD,",");CHKERRQ(ierr);
+          }
+        }
+        ierr = PetscPrintf(PETSC_COMM_WORLD,">: %s (%s)",next->text,next->man);CHKERRQ(ierr);
+        ierr = PetscScanString(PETSC_COMM_WORLD,512,str);CHKERRQ(ierr);
+        if (str[0]) {
+          PetscToken token;
+          PetscInt   n=0,nmax = next->arraylength;
+          PetscReal   *dvalue = (PetscReal*)next->data;
+          char*      value;
+
+          next->set = PETSC_TRUE;
+          value = str;
+	  ierr = PetscTokenCreate(value,',',&token);CHKERRQ(ierr);
+	  ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
+	  while (n < nmax) {
+	    if (!value) break;
+            ierr      = PetscOptionsAtod(value,dvalue);CHKERRQ(ierr);
+	    dvalue++;
+	    n++;
+	    ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
+	  }
+	  ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
+        }
+        break;
       case OPTION_INT: 
-        ierr = PetscPrintf(PetscOptionsObject.comm,"-%s%s <%d>: %s (%s)",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",next->option+1,*(int*)next->data,next->text,next->man);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"-%s%s <%d>: %s (%s)",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",next->option+1,*(int*)next->data,next->text,next->man);CHKERRQ(ierr);
         ierr = PetscScanString(PETSC_COMM_WORLD,512,str);CHKERRQ(ierr);
         if (str[0]) {
            sscanf(str,"%d",&id);
@@ -157,7 +244,7 @@ PetscErrorCode PetscOptionsGetFromTextInput()
         }
         break;
       case OPTION_REAL: 
-        ierr = PetscPrintf(PetscOptionsObject.comm,"-%s%s <%g>: %s (%s)",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",next->option+1,*(double*)next->data,next->text,next->man);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"-%s%s <%g>: %s (%s)",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",next->option+1,*(double*)next->data,next->text,next->man);CHKERRQ(ierr);
         ierr = PetscScanString(PETSC_COMM_WORLD,512,str);CHKERRQ(ierr);
         if (str[0]) {
            sscanf(str,"%le",&ir);
@@ -167,7 +254,7 @@ PetscErrorCode PetscOptionsGetFromTextInput()
         break;
       case OPTION_LOGICAL: 
       case OPTION_STRING: 
-        ierr = PetscPrintf(PetscOptionsObject.comm,"-%s%s <%s>: %s (%s)",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",next->option+1,(char*)next->data,next->text,next->man);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"-%s%s <%s>: %s (%s)",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",next->option+1,(char*)next->data,next->text,next->man);CHKERRQ(ierr);
         ierr = PetscScanString(PETSC_COMM_WORLD,512,str);CHKERRQ(ierr);
         if (str[0]) {
            next->set = PETSC_TRUE;
@@ -219,6 +306,14 @@ PetscErrorCode PetscOptionsEnd_Private(void)
 
       switch (PetscOptionsObject.next->type) {
         case OPTION_HEAD:
+          break;
+        case OPTION_INT_ARRAY:
+          sprintf(value,"%d",(int)((PetscInt*)PetscOptionsObject.next->data)[0]);
+          for (j=1; j<PetscOptionsObject.next->arraylength; j++) {
+            sprintf(tmp,"%d",(int)((PetscInt*)PetscOptionsObject.next->data)[j]);
+            ierr = PetscStrcat(value,",");CHKERRQ(ierr);
+            ierr = PetscStrcat(value,tmp);CHKERRQ(ierr);
+          }
           break;
         case OPTION_INT: 
           sprintf(value,"%d",(int) *(PetscInt*)PetscOptionsObject.next->data);
@@ -873,8 +968,18 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsRealArray(const char opt[],const char
 {
   PetscErrorCode ierr;
   PetscInt       i;
+  PetscOptions   amsopt;
 
   PetscFunctionBegin;
+  if (PetscOptionsPublishCount == 0) {
+    PetscReal *vals;
+
+    ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_REAL_ARRAY,&amsopt);CHKERRQ(ierr);
+    ierr = PetscMalloc((*n)*sizeof(PetscReal),&amsopt->data);CHKERRQ(ierr);
+    vals = (PetscReal*)amsopt->data;
+    for (i=0; i<*n; i++) vals[i] = value[i];
+    amsopt->arraylength = *n;
+  }
   ierr = PetscOptionsGetRealArray(PetscOptionsObject.prefix,opt,value,n,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
     ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%G",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,value[0]);CHKERRQ(ierr);
@@ -927,8 +1032,18 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsIntArray(const char opt[],const char 
 {
   PetscErrorCode ierr;
   PetscInt       i;
+  PetscOptions   amsopt;
 
   PetscFunctionBegin;
+  if (PetscOptionsPublishCount == 0) {
+    PetscInt *vals;
+
+    ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_INT_ARRAY,&amsopt);CHKERRQ(ierr);
+    ierr = PetscMalloc((*n)*sizeof(PetscInt),&amsopt->data);CHKERRQ(ierr);
+    vals = (PetscInt*)amsopt->data;
+    for (i=0; i<*n; i++) vals[i] = value[i];
+    amsopt->arraylength = *n;
+  }
   ierr = PetscOptionsGetIntArray(PetscOptionsObject.prefix,opt,value,n,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
     ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%d",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,value[0]);CHKERRQ(ierr);
