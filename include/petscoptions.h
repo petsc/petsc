@@ -28,6 +28,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsGetStringArray(const char[],c
 PetscPolymorphicSubroutine(PetscOptionsGetStringArray,(const char b[],char *i[],PetscInt *ii,PetscTruth *f),(PETSC_NULL,b,i,ii,f))
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetEList(const char[],const char[],const char**,PetscInt,PetscInt*,PetscTruth*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetEnum(const char[],const char[],const char**,PetscEnum*,PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsValidKey(const char[],PetscTruth*);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsSetAlias(const char[],const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsSetValue(const char[],const char[]);

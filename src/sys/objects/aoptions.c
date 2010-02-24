@@ -100,7 +100,7 @@ static int PetscOptionsCreate_Private(const char opt[],const char text[],const c
 */
 static PetscErrorCode PetscScanString(MPI_Comm comm,size_t n,char str[])
 {
-  PetscInt       i;
+  size_t         i;
   char           c;
   PetscMPIInt    rank,nm;
   PetscErrorCode ierr;
@@ -144,7 +144,8 @@ PetscErrorCode PetscOptionsGetFromTextInput()
   char           str[512];
   int            id;
   double         ir,*valr;
-  PetscInt       i,*vald;
+  PetscInt       *vald;
+  size_t         i;
   
   ierr = (*PetscPrintf)(PETSC_COMM_WORLD,"%s -------------------------------------------------\n",PetscOptionsObject.title);CHKERRQ(ierr);
   while (next) {
@@ -181,9 +182,9 @@ PetscErrorCode PetscOptionsGetFromTextInput()
 	    ierr      = PetscStrlen(value,&len);CHKERRQ(ierr); 
 	    if (value[0] == '-') i=2;
 	    else i=1;
-	    for (;i<(int)len; i++) {
+	    for (;i<len; i++) {
 	      if (value[i] == '-') {
-		if (i == (int)len-1) SETERRQ2(PETSC_ERR_USER,"Error in %D-th array entry %s\n",n,value);
+		if (i == len-1) SETERRQ2(PETSC_ERR_USER,"Error in %D-th array entry %s\n",n,value);
 		value[i] = 0;
 		ierr     = PetscOptionsAtoi(value,&start);CHKERRQ(ierr);        
 		ierr     = PetscOptionsAtoi(value+i+1,&end);CHKERRQ(ierr);        
@@ -261,7 +262,7 @@ PetscErrorCode PetscOptionsGetFromTextInput()
         ierr = PetscScanString(PETSC_COMM_WORLD,512,str);CHKERRQ(ierr);
         if (str[0]) {
           next->set = PETSC_TRUE;
-          ierr = PetscStrcpy(next->data,str);CHKERRQ(ierr);
+          ierr = PetscStrcpy((char*)next->data,str);CHKERRQ(ierr);
         }
         break;
       case OPTION_LIST: 
@@ -270,7 +271,7 @@ PetscErrorCode PetscOptionsGetFromTextInput()
         if (str[0]) {
 	  PetscOptionsObject.changedmethod = PETSC_TRUE;
           next->set = PETSC_TRUE;
-          ierr = PetscStrcpy(next->data,str);CHKERRQ(ierr);
+          ierr = PetscStrcpy((char*)next->data,str);CHKERRQ(ierr);
         }
         break;
     default:
@@ -288,7 +289,7 @@ PetscErrorCode PetscOptionsEnd_Private(void)
   PetscErrorCode ierr;
   PetscOptions   last;
   char           option[256],value[1024],tmp[32];
-  PetscInt       j;
+  size_t         j;
 
   PetscFunctionBegin;
 
@@ -699,7 +700,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsList(const char opt[],const char ltex
   if (PetscOptionsPublishCount == 0) {
     ierr = PetscOptionsCreate_Private(opt,ltext,man,OPTION_LIST,&amsopt);CHKERRQ(ierr);
     ierr = PetscMalloc(1024*sizeof(char),&amsopt->data);CHKERRQ(ierr);
-    ierr = PetscStrcpy(amsopt->data,defaultv);CHKERRQ(ierr);
+    ierr = PetscStrcpy((char*)amsopt->data,defaultv);CHKERRQ(ierr);
     amsopt->flist = list;
   }
   ierr = PetscOptionsGetString(PetscOptionsObject.prefix,opt,value,len,set);CHKERRQ(ierr);
