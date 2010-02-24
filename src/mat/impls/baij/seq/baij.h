@@ -100,6 +100,8 @@ EXTERN PetscErrorCode MatSolve_SeqBAIJ_7(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering_inplace(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering(Mat,Vec,Vec);
 
+EXTERN PetscErrorCode MatSolve_SeqBAIJ_15(Mat,Vec,Vec);
+
 EXTERN PetscErrorCode MatSolve_SeqBAIJ_N_inplace(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqBAIJ_N(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqBAIJ_N_NaturalOrdering(Mat,Vec,Vec);
@@ -178,6 +180,7 @@ EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7(Mat,Mat,const MatFactorInfo*)
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering_inplace(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering(Mat,Mat,const MatFactorInfo*);
 
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_inplace(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat,Mat,const MatFactorInfo*);
 
@@ -628,5 +631,31 @@ EXTERN PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscTruth);
   A[48]  -=  B[6]*C[42]   + B[13]*C[43]   + B[20]*C[44]   + B[27]*C[45]  + B[34]*C[46] + B[41]*C[47]  + B[48]*C[48];\
 }
 
+#define Kernel_A_gets_A_times_B_15(A,B,W) 0;\
+{	\
+PetscInt __i,__j,__k;	\
+PetscMemcpy(W,A,225*sizeof(MatScalar)); \
+for(__i=0;__i<15;__i++){  \
+  for(__j=0;__j<15;__j++) { \
+    for(__k=0;__k<15;__k++) A[15*__i+__j] += W[15*__k+__j]*B[15*__i+k];}};\
+}
+
+/*
+  Kernel_A_gets_A_minus_B_times_C_15: A = A - B * C with size bs=15
+
+  Input Parameters:
++  A,B,C - square bs by bs arrays stored in column major order
+
+  Output Parameter:
+.  A = A - B*C
+*/
+
+#define Kernel_A_gets_A_minus_B_times_C_15(A,B,C) 0;\
+{	\
+PetscInt __i,__j,__k; \
+ for(__i=0;__i<15;__i++){\
+  for(__j=0;__j<15;__j++){\
+    for(__k=0;__k<15;__k++) A[15*__i+__j] -= B[15*__k+__j]*C[15*__i+__k];}}\
+}
 
 #endif

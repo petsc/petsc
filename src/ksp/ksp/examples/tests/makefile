@@ -474,11 +474,11 @@ runex32_testset1:
 			for flevels in {0..3}; do \
    	    	    	    count=$$[$$count+1]; \
 	   		    echo "[$${count}]_start" > ex32.tmp 2>&1; \
-   		    	    ${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof $$i -pc_factor_mat_ordering_type $$ordering -mat_type $$mattype $$simtype -pc_factor_levels $$flevels >> ex32.tmp 2>&1;  \
+   		    	    ${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof $$i -pc_type ilu -pc_factor_mat_ordering_type $$ordering -mat_type $$mattype $$simtype -pc_factor_levels $$flevels >> ex32.tmp 2>&1;  \
 		    	    echo "[$${count}]_end" >> ex32.tmp 2>&1;  \
 		    	    sed -n '/\['$${count}']_start/,/\['$${count}']_end/p' output/ex32_1.out > ex32.tmp2 2>&1;  \
 		    	    if (${DIFF} ex32.tmp ex32.tmp2) then true;  \
-		    		else echo "Possible problem with ./ex32 -dof $$i -mat_type $$mattype $$simtype -pc_factor_mat_ordering_type $$ordering -pc_factor_levels $$flevels"; fi;   \
+		    		else echo "Possible problem with ./ex32 -ksp_monitor_short -dof $$i -pc_type ilu -pc_factor_mat_ordering_type $$ordering -mat_type $$mattype $$simtype -pc_factor_levels $$flevels"; fi;   \
 			    ${RM} -f ex32.tmp; ${RM} -f ex32.tmp2; \
 			done; \
    	    	    done; \
