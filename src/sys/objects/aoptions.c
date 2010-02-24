@@ -67,7 +67,6 @@ static int PetscOptionsCreate_Private(const char opt[],const char text[],const c
   (*amsopt)->set   = PETSC_FALSE;
   (*amsopt)->type  = t;
   (*amsopt)->data  = 0;
-  (*amsopt)->edata = 0;
 
   ierr             = PetscStrallocpy(text,&(*amsopt)->text);CHKERRQ(ierr);
   ierr             = PetscStrallocpy(opt,&(*amsopt)->option);CHKERRQ(ierr);
@@ -125,13 +124,17 @@ static PetscErrorCode PetscScanString(MPI_Comm comm,size_t n,char str[])
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsGetFromTextInput"
 /*
-    PetscOptionsGetFromTextInput
+    PetscOptionsGetFromTextInput - Presents all the PETSc Options processed by the program so the user may change them at runtime
 
     Notes: this isn't really practical, it is just to demonstrate the principle
 
     Bugs: 
 +    All processes must traverse through the exact same set of option queries do to the call to PetscScanString()
+.    Internal strings have arbitrary length and string copies are not checked that they fit into string space 
 -    Only works for PetscInt == int, PetscReal == double etc   
+
+    Developer Notes: Normally the GUI that presents the options the user and retrieves the values would be running in a different 
+     address space and communicating with the PETSc program
 
 */
 PetscErrorCode PetscOptionsGetFromTextInput()
@@ -238,18 +241,18 @@ PetscErrorCode PetscOptionsGetFromTextInput()
         ierr = PetscPrintf(PETSC_COMM_WORLD,"-%s%s <%d>: %s (%s)",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",next->option+1,*(int*)next->data,next->text,next->man);CHKERRQ(ierr);
         ierr = PetscScanString(PETSC_COMM_WORLD,512,str);CHKERRQ(ierr);
         if (str[0]) {
-           sscanf(str,"%d",&id);
-           next->set = PETSC_TRUE;
-           *((PetscInt*)next->data) = id;
+          sscanf(str,"%d",&id);
+          next->set = PETSC_TRUE;
+          *((PetscInt*)next->data) = id;
         }
         break;
       case OPTION_REAL: 
         ierr = PetscPrintf(PETSC_COMM_WORLD,"-%s%s <%g>: %s (%s)",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",next->option+1,*(double*)next->data,next->text,next->man);CHKERRQ(ierr);
         ierr = PetscScanString(PETSC_COMM_WORLD,512,str);CHKERRQ(ierr);
         if (str[0]) {
-           sscanf(str,"%le",&ir);
-           next->set = PETSC_TRUE;
-           *((PetscReal*)next->data) = ir;
+          sscanf(str,"%le",&ir);
+          next->set = PETSC_TRUE;
+          *((PetscReal*)next->data) = ir;
         }
         break;
       case OPTION_LOGICAL: 
@@ -257,8 +260,17 @@ PetscErrorCode PetscOptionsGetFromTextInput()
         ierr = PetscPrintf(PETSC_COMM_WORLD,"-%s%s <%s>: %s (%s)",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",next->option+1,(char*)next->data,next->text,next->man);CHKERRQ(ierr);
         ierr = PetscScanString(PETSC_COMM_WORLD,512,str);CHKERRQ(ierr);
         if (str[0]) {
-           next->set = PETSC_TRUE;
-           ierr = PetscStrcpy(next->data,str);CHKERRQ(ierr);
+          next->set = PETSC_TRUE;
+          ierr = PetscStrcpy(next->data,str);CHKERRQ(ierr);
+        }
+        break;
+      case OPTION_LIST: 
+        ierr = PetscFListPrintTypes(PETSC_COMM_WORLD,stdout,PetscOptionsObject.prefix,next->option,next->text,next->man,next->flist,(char*)next->data);CHKERRQ(ierr);
+        ierr = PetscScanString(PETSC_COMM_WORLD,512,str);CHKERRQ(ierr);
+        if (str[0]) {
+	  PetscOptionsObject.changedmethod = PETSC_TRUE;
+          next->set = PETSC_TRUE;
+          ierr = PetscStrcpy(next->data,str);CHKERRQ(ierr);
         }
         break;
     default:
@@ -345,7 +357,6 @@ PetscErrorCode PetscOptionsEnd_Private(void)
     ierr   = PetscStrfree(PetscOptionsObject.next->option);CHKERRQ(ierr);
     ierr   = PetscFree(PetscOptionsObject.next->man);CHKERRQ(ierr);
     ierr   = PetscFree(PetscOptionsObject.next->data);CHKERRQ(ierr);
-    ierr   = PetscFree(PetscOptionsObject.next->edata);CHKERRQ(ierr);
     last                    = PetscOptionsObject.next;
     PetscOptionsObject.next = PetscOptionsObject.next->next;
     ierr                    = PetscFree(last);CHKERRQ(ierr);
@@ -654,7 +665,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsName(const char opt[],const char text
 .  text - short string that describes the option
 .  man - manual page with additional information on option
 .  list - the possible choices
--  defaultv - the default (current) value
+.  defaultv - the default (current) value
+-  len - the length of the character array value
 
    Output Parameter:
 +  value - the value to return
@@ -678,14 +690,21 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsName(const char opt[],const char text
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsList(const char opt[],const char ltext[],const char man[],PetscFList list,const char defaultv[],char value[],PetscInt len,PetscTruth *set)
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsList(const char opt[],const char ltext[],const char man[],PetscFList list,const char defaultv[],char value[],size_t len,PetscTruth *set)
 {
   PetscErrorCode ierr;
+  PetscOptions   amsopt;
 
   PetscFunctionBegin;
+  if (PetscOptionsPublishCount == 0) {
+    ierr = PetscOptionsCreate_Private(opt,ltext,man,OPTION_LIST,&amsopt);CHKERRQ(ierr);
+    ierr = PetscMalloc(1024*sizeof(char),&amsopt->data);CHKERRQ(ierr);
+    ierr = PetscStrcpy(amsopt->data,defaultv);CHKERRQ(ierr);
+    amsopt->flist = list;
+  }
   ierr = PetscOptionsGetString(PetscOptionsObject.prefix,opt,value,len,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
-    ierr = PetscFListPrintTypes(list,PetscOptionsObject.comm,stdout,PetscOptionsObject.prefix,opt,ltext,man);CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = PetscFListPrintTypes(PetscOptionsObject.comm,stdout,PetscOptionsObject.prefix,opt,ltext,man,list,defaultv);CHKERRQ(ierr);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

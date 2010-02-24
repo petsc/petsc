@@ -172,7 +172,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsTruth(const char[],const char[
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsTruthGroupBegin(const char[],const char[],const char[],PetscTruth*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsTruthGroup(const char[],const char[],const char[],PetscTruth*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsTruthGroupEnd(const char[],const char[],const char[],PetscTruth*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsList(const char[],const char[],const char[],PetscFList,const char[],char[],PetscInt,PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsList(const char[],const char[],const char[],PetscFList,const char[],char[],size_t,PetscTruth*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsEList(const char[],const char[],const char[],const char**,PetscInt,const char[],PetscInt*,PetscTruth*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsRealArray(const char[],const char[],const char[],PetscReal[],PetscInt*,PetscTruth*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsIntArray(const char[],const char[],const char[],PetscInt[],PetscInt*,PetscTruth*);
@@ -190,11 +190,11 @@ typedef struct _p_PetscOptions* PetscOptions;
 struct _p_PetscOptions {
   char            *option;
   char            *text;
-  void            *data;
-  void            *edata;
+  void            *data;         /* used to hold the default value and then any value it is changed to by GUI */
+  PetscFList      flist;         /* used for available values for PetscOptionsList() */
   char            *man;
-  int             arraylength;
-  PetscTruth      set;
+  size_t          arraylength;   /* number of entries in data in the case that it is an array (of PetscInt etc) */
+  PetscTruth      set;           /* the user has changed this value in the GUI */
   PetscOptionType type;
   PetscOptions    next;
 };

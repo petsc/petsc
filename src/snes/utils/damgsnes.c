@@ -571,6 +571,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
   ierr = PetscOptionsBegin(dmmg[0]->comm,dmmg[0]->prefix,"DMMG Options","SNES");CHKERRQ(ierr);
     ierr = PetscOptionsName("-dmmg_monitor","Monitor DMMG iterations","DMMG",&monitor);CHKERRQ(ierr);
     ierr = PetscOptionsName("-dmmg_monitor_all","Monitor DMMG iterations","DMMG",&monitorAll);CHKERRQ(ierr);
+    /*
     ierr = PetscOptionsTruth("-dmmg_fas","Use the Full Approximation Scheme","DMMGSetSNES",useFAS,&useFAS,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsName("-dmmg_fas_block","Use point-block smoothing","DMMG",&fasBlock);CHKERRQ(ierr);
     ierr = PetscOptionsName("-dmmg_fas_ngmres","Use Nonlinear GMRES","DMMG",&fasGMRES);CHKERRQ(ierr);
@@ -580,6 +581,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
     ierr = PetscOptionsReal("-dmmg_fas_rtol","Relative tolerance for FAS","DMMG",fasRtol,&fasRtol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-dmmg_fas_atol","Absolute tolerance for FAS","DMMG",fasAbstol,&fasAbstol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-dmmg_fas_max_its","Maximum number of iterates per smoother","DMMG",fasMaxIter,&fasMaxIter,PETSC_NULL);CHKERRQ(ierr);
+    */
 
     ierr = PetscOptionsTruth("-dmmg_coloring_from_mat","Compute the coloring directly from the matrix nonzero structure","DMMGSetSNES",dmmg[0]->getcoloringfrommat,&dmmg[0]->getcoloringfrommat,PETSC_NULL);CHKERRQ(ierr);
 

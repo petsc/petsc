@@ -533,13 +533,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListGet(PetscFList list,char ***array,int *
 .  name   - option string (for example, "-ksp_type")
 .  text - short description of the object (for example, "Krylov solvers")
 .  man - name of manual page that discusses the object (for example, "KSPCreate")
--  list   - list of types
+.  list   - list of types
+-  def - default (current) value
 
    Level: developer
 
 .seealso: PetscFListAddDynamic(), PetscFList
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscFListPrintTypes(PetscFList list,MPI_Comm comm,FILE *fd,const char prefix[],const char name[],const char text[],const char man[])
+PetscErrorCode PETSC_DLLEXPORT PetscFListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[],const char text[],const char man[],PetscFList list,const char def[])
 {
   PetscErrorCode ierr;
   PetscInt       count = 0;
@@ -550,7 +551,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListPrintTypes(PetscFList list,MPI_Comm com
 
   ierr = PetscStrcpy(p,"-");CHKERRQ(ierr);
   if (prefix) {ierr = PetscStrcat(p,prefix);CHKERRQ(ierr);}
-  ierr = PetscFPrintf(comm,fd,"  %s%s %s:(one of)",p,name+1,text);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"  %s%s <%s>: %s (one of)",p,name+1,def,text);CHKERRQ(ierr);
 
   while (list) {
     ierr = PetscFPrintf(comm,fd," %s",list->name);CHKERRQ(ierr);
