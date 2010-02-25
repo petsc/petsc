@@ -142,8 +142,8 @@ PetscErrorCode PetscOptionsGetFromTextInput()
   PetscErrorCode ierr;
   PetscOptions   next = PetscOptionsObject.next;
   char           str[512];
-  int            id;
-  double         ir,*valr;
+  PetscInt       id;
+  PetscReal      ir,*valr;
   PetscInt       *vald;
   size_t         i;
   
@@ -251,7 +251,11 @@ PetscErrorCode PetscOptionsGetFromTextInput()
         ierr = PetscPrintf(PETSC_COMM_WORLD,"-%s%s <%g>: %s (%s)",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",next->option+1,*(double*)next->data,next->text,next->man);CHKERRQ(ierr);
         ierr = PetscScanString(PETSC_COMM_WORLD,512,str);CHKERRQ(ierr);
         if (str[0]) {
+#if defined(PETSC_USE_SCALAR_SINGLE)
+          sscanf(str,"%e",&ir);
+#else
           sscanf(str,"%le",&ir);
+#endif
           next->set = PETSC_TRUE;
           *((PetscReal*)next->data) = ir;
         }
