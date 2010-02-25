@@ -1,7 +1,23 @@
 #include "petsc.h"
 #include "../src/mat/impls/aij/seq/aij.h"
-#include "spbas.h"
+#include "../src/mat/impls/aij/seq/bas/spbas.h"
 
+/*MC
+  MAT_SOLVER_BAS -  Provides ICC(k) with drop tolerance
+
+  Works with MATAIJ  matrices
+
+  Options Database Keys:
++ -pc_factor_levels <l>
+- -pc_factor_use_drop_tolerance
+
+  Level: beginner
+
+   Contributed by: Bas van 't Hof
+
+.seealso: PCFactorSetMatSolverPackage(), MatSolverPackage, PCFactorSetLevels(), PCFactorSetUseDropTolerance()
+
+M*/
 
 /*
   spbas_memory_requirement:
@@ -349,7 +365,7 @@ PetscErrorCode spbas_compress_pattern(PetscInt *irow_in, PetscInt *icol_in, Pets
    spbas_incomplete_cholesky 
        Incomplete Cholesky decomposition
 */
-#include "spbas_cholesky.h"
+#include "../src/mat/impls/aij/seq/bas/spbas_cholesky.h"
 
 /*
   spbas_delete : de-allocate the arrays owned by this matrix

@@ -115,5 +115,5 @@
 #define MAT_SOLVER_DSCPACK      'dscpack'
 #define MAT_SOLVER_MATLAB       'matlab'
 #define MAT_SOLVER_PETSC        'petsc'
-
+#define MAT_SOLVER_BAS          'bas'
 #endif

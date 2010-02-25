@@ -95,7 +95,7 @@ E*/
 #define MAT_SOLVER_MATLAB       "matlab"
 #define MAT_SOLVER_PETSC        "petsc"
 #define MAT_SOLVER_PLAPACK      "plapack"
-
+#define MAT_SOLVER_BAS          "bas"
 
 /*E
     MatFactorType - indicates what type of factorization is requested
