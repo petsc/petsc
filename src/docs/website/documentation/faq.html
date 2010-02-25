@@ -852,8 +852,7 @@ MatZeroRows() to eliminate the Dirichlet rows but this results in a
 non-symmetric system. How come there is no MatZeroColumns() to keep the
 matrix symmetric?<br>
             <br>
-            </span>After calling MatZeroRows() you can use the
-PCREDISTRIBUTE preconditioner to solve the reduced system using
+            </span>For the default PETSc sparse matrix data structures (parallel and sequential) which are row based, zeroing certain columns is very expensive (it would require either searches or additional data structures). Hence we don't provide this functionality. One can solve Dirichilet boundary condition problems using symmetric methods two ways. (1) Manually call MatGetSubMatrix() to extract your symmetric subproblem or (2) call MatZeroRows() then use the PCREDISTRIBUTE preconditioner to solve the reduced system using
 symmetric methods. See its manual page.
             <hr> </td>
           </tr>

@@ -882,7 +882,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchQuadratic(SNES snes,void *lsctx
 .   x - current iterate
 .   f - residual evaluated at x
 .   y - search direction 
-.   w - work vector
 -   fnorm - 2-norm of f
 
     Output parameters for func:
