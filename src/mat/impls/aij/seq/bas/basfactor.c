@@ -1,5 +1,4 @@
 
-
 #include <petsc.h>
 #include <petscksp.h>
 #include "private/kspimpl.h"
@@ -31,7 +30,6 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact,Mat A,IS perm,const MatF
   if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",d);
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
   ierr = ISInvertPermutation(perm,PETSC_DECIDE,&iperm);CHKERRQ(ierr);
-
 
   /* ICC(0) without matrix ordering: simply copies fill pattern */
   if (!levels && perm_identity) { 
@@ -120,7 +118,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorIn
   PetscReal      droptol = -1;
   PetscTruth     perm_identity;
   spbas_matrix   Pattern, matrix_L,matrix_LT;
-  PetscReal    mem_reduction;
+  PetscReal      mem_reduction;
 
   PetscFunctionBegin;
   /* Reduce memory requirements:   erase values of B-matrix */

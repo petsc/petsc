@@ -2,6 +2,7 @@
 #include "../src/mat/impls/aij/seq/aij.h"
 #include "spbas.h"
 
+
 /*
   spbas_memory_requirement:
     Calculate the number of bytes needed to store tha matrix
@@ -428,33 +429,25 @@ PetscErrorCode spbas_compress_pattern(PetscInt *irow_in, PetscInt *icol_in, Pets
 #define __FUNCT__ "spbas_delete"
 PetscErrorCode spbas_delete(spbas_matrix matrix)
 {
-   PetscInt i;
+   PetscInt       i;
    PetscErrorCode ierr;
+
    PetscFunctionBegin;
-   if (matrix.block_data)
-   {
+   if (matrix.block_data) {
       ierr=PetscFree(matrix.alloc_icol);CHKERRQ(ierr)
       if (matrix.values){ierr=PetscFree(matrix.alloc_val);CHKERRQ(ierr);}
-   }
-   else
-   {
-      for (i=0; i<matrix.nrows; i++) 
-	{ ierr=PetscFree(matrix.icols[i]);CHKERRQ(ierr);}
-      ierr = PetscFree(matrix.icols);CHKERRQ(ierr);
-      if (matrix.values)
-      {
-         for (i=0; i<matrix.nrows; i++) 
-          { ierr=PetscFree(matrix.values[i]);CHKERRQ(ierr);}
+   } else  {
+     for (i=0; i<matrix.nrows; i++) { ierr=PetscFree(matrix.icols[i]);CHKERRQ(ierr);}
+     ierr = PetscFree(matrix.icols);CHKERRQ(ierr);
+     if (matrix.values) {
+         for (i=0; i<matrix.nrows; i++) { ierr=PetscFree(matrix.values[i]);CHKERRQ(ierr);}
       }
    }
 
    ierr=PetscFree(matrix.row_nnz);CHKERRQ(ierr);
    ierr=PetscFree(matrix.icols);CHKERRQ(ierr);
-   if (matrix.col_idx_type == SPBAS_OFFSET_ARRAY) 
-      {ierr=PetscFree(matrix.icol0);CHKERRQ(ierr);}
-   if (matrix.values) 
-      {ierr=PetscFree(matrix.values);CHKERRQ(ierr);}
-
+   if (matrix.col_idx_type == SPBAS_OFFSET_ARRAY) {ierr=PetscFree(matrix.icol0);CHKERRQ(ierr);}
+   if (matrix.values)  {ierr=PetscFree(matrix.values);CHKERRQ(ierr);}
    PetscFunctionReturn(0);
 }
 
@@ -466,62 +459,53 @@ spbas_matrix_to_crs:
 #define __FUNCT__ "spbas_matrix_to_crs"
 PetscErrorCode spbas_matrix_to_crs(spbas_matrix matrix_A,MatScalar **val_out, PetscInt **irow_out, PetscInt **icol_out)
 {
-   PetscInt nrows = matrix_A.nrows;
-   PetscInt nnz   = matrix_A.nnz;
-   PetscInt i,j,r_nnz,i0;
-   PetscInt *irow;
-   PetscInt *icol;
-   PetscInt *icol_A;
-   MatScalar *val;
-   PetscScalar *val_A;
-   PetscInt col_idx_type = matrix_A.col_idx_type;
-   PetscTruth do_values = matrix_A.values ? PETSC_TRUE : PETSC_FALSE;
+   PetscInt       nrows = matrix_A.nrows;
+   PetscInt       nnz   = matrix_A.nnz;
+   PetscInt       i,j,r_nnz,i0;
+   PetscInt       *irow;
+   PetscInt       *icol;
+   PetscInt       *icol_A;
+   MatScalar      *val;
+   PetscScalar    *val_A;
+   PetscInt       col_idx_type = matrix_A.col_idx_type;
+   PetscTruth     do_values = matrix_A.values ? PETSC_TRUE : PETSC_FALSE;
    PetscErrorCode ierr;
 
    PetscFunctionBegin;
    ierr = PetscMalloc( sizeof(PetscInt) * (nrows+1), &irow);CHKERRQ(ierr);
    ierr = PetscMalloc( sizeof(PetscInt) * nnz, &icol);CHKERRQ(ierr);
-   *icol_out = icol; *irow_out=irow;
-   if (do_values)
-   {
+   *icol_out = icol; 
+   *irow_out=irow;
+   if (do_values)  {
       ierr = PetscMalloc( sizeof(MatScalar) * nnz, &val);CHKERRQ(ierr);
       *val_out = val; *icol_out = icol; *irow_out=irow;
    }
 
    irow[0]=0;
-   for (i=0; i<nrows; i++)
-   {
+   for (i=0; i<nrows; i++) {
       r_nnz = matrix_A.row_nnz[i];
       i0 = irow[i];
       irow[i+1] = i0 + r_nnz;
       icol_A = matrix_A.icols[i];
 
-      if (do_values) 
-      { 
+      if (do_values) { 
           val_A = matrix_A.values[i];
-          for (j=0; j<r_nnz; j++)
-          {
+          for (j=0; j<r_nnz; j++) {
              icol[i0+j] = icol_A[j];
              val[i0+j]  = val_A[j];
           }
-      }
-      else
-      { 
+      } else { 
           for (j=0; j<r_nnz; j++) { icol[i0+j] = icol_A[j]; }
       }
 
-      if (col_idx_type == SPBAS_DIAGONAL_OFFSETS)
-      {
+      if (col_idx_type == SPBAS_DIAGONAL_OFFSETS) {
          for (j=0; j<r_nnz; j++) { icol[i0+j] += i; }
       }
-      else if (col_idx_type == SPBAS_OFFSET_ARRAY)
-      {
+      else if (col_idx_type == SPBAS_OFFSET_ARRAY) {
          i0 = matrix_A.icol0[i];
          for (j=0; j<r_nnz; j++) { icol[i0+j] += i0; }
       }
-      
    }
-
    PetscFunctionReturn(0);
 }
 
@@ -534,17 +518,16 @@ PetscErrorCode spbas_matrix_to_crs(spbas_matrix matrix_A,MatScalar **val_out, Pe
 #define __FUNCT__ "spbas_transpose"
 PetscErrorCode spbas_transpose( spbas_matrix in_matrix, spbas_matrix * result)
 {
-   PetscInt col_idx_type = in_matrix.col_idx_type;
-   PetscInt nnz   = in_matrix.nnz;
-   PetscInt ncols = in_matrix.nrows;
-   PetscInt nrows = in_matrix.ncols;
-   PetscInt i,j,k;
-   PetscInt r_nnz;
-   PetscInt *irow;
-   PetscInt icol0;
-   PetscScalar * val;
+   PetscInt       col_idx_type = in_matrix.col_idx_type;
+   PetscInt       nnz   = in_matrix.nnz;
+   PetscInt       ncols = in_matrix.nrows;
+   PetscInt       nrows = in_matrix.ncols;
+   PetscInt       i,j,k;
+   PetscInt       r_nnz;
+   PetscInt       *irow;
+   PetscInt       icol0;
+   PetscScalar    * val;
    PetscErrorCode ierr;
-
    PetscFunctionBegin;
 
    /* Copy input values */
@@ -560,20 +543,14 @@ PetscErrorCode spbas_transpose( spbas_matrix in_matrix, spbas_matrix * result)
    /*  Count the number of nonzeros in each row */
    for (i = 0; i<nrows; i++) { result->row_nnz[i] = 0; }
 
-   for (i=0; i<ncols; i++)
-   {
+   for (i=0; i<ncols; i++) {
       r_nnz = in_matrix.row_nnz[i];
       irow  = in_matrix.icols[i];
-      if (col_idx_type == SPBAS_COLUMN_NUMBERS)
-      {
+      if (col_idx_type == SPBAS_COLUMN_NUMBERS)  {
          for (j=0; j<r_nnz; j++) { result->row_nnz[irow[j]]++; }
-      }
-      else if (col_idx_type == SPBAS_DIAGONAL_OFFSETS)
-      {
+      } else if (col_idx_type == SPBAS_DIAGONAL_OFFSETS)  {
          for (j=0; j<r_nnz; j++) { result->row_nnz[i+irow[j]]++; }
-      }
-      else if (col_idx_type == SPBAS_OFFSET_ARRAY)
-      {
+      } else if (col_idx_type == SPBAS_OFFSET_ARRAY) {
          icol0=in_matrix.icol0[i];
          for (j=0; j<r_nnz; j++) { result->row_nnz[icol0+irow[j]]++; }
       }
@@ -586,10 +563,8 @@ PetscErrorCode spbas_transpose( spbas_matrix in_matrix, spbas_matrix * result)
    for (i = 0; i<nrows; i++) { result->row_nnz[i] = 0; }
 
    /* Fill the data arrays */
-   if (in_matrix.values)
-   {
-      for (i=0; i<ncols; i++)
-      {
+   if (in_matrix.values) {
+      for (i=0; i<ncols; i++) {
          r_nnz = in_matrix.row_nnz[i];
          irow  = in_matrix.icols[i];
          val   = in_matrix.values[i];
@@ -598,29 +573,23 @@ PetscErrorCode spbas_transpose( spbas_matrix in_matrix, spbas_matrix * result)
          else if (col_idx_type == SPBAS_DIAGONAL_OFFSETS) {icol0=i;}
          else if (col_idx_type == SPBAS_OFFSET_ARRAY)     
                  {icol0=in_matrix.icol0[i];} 
-         for (j=0; j<r_nnz; j++)
-         {
+         for (j=0; j<r_nnz; j++)  {
             k = icol0 + irow[j]; 
             result->icols[k][result->row_nnz[k]]  = i;
             result->values[k][result->row_nnz[k]] = val[j];
             result->row_nnz[k]++;
          }
       }
-   }
-   else
-   {
-      for (i=0; i<ncols; i++)
-      {
+   }  else {
+      for (i=0; i<ncols; i++) {
          r_nnz = in_matrix.row_nnz[i];
          irow  = in_matrix.icols[i];
  
          if      (col_idx_type == SPBAS_COLUMN_NUMBERS)   {icol0=0;}
          else if (col_idx_type == SPBAS_DIAGONAL_OFFSETS) {icol0=i;}
-         else if (col_idx_type == SPBAS_OFFSET_ARRAY)     
-                 {icol0=in_matrix.icol0[i];} 
+         else if (col_idx_type == SPBAS_OFFSET_ARRAY)     {icol0=in_matrix.icol0[i];} 
 
-         for (j=0; j<r_nnz; j++)
-         {
+         for (j=0; j<r_nnz; j++) {
             k = icol0 + irow[j];
             result->icols[k][result->row_nnz[k]]  = i;
             result->row_nnz[k]++;
@@ -646,25 +615,24 @@ PetscErrorCode spbas_transpose( spbas_matrix in_matrix, spbas_matrix * result)
 #define __FUNCT__ "spbas_mergesort"
 PetscErrorCode spbas_mergesort(PetscInt nnz, PetscInt *icol, PetscScalar *val)
 {
-  PetscInt istep;       /* Chunk-sizes of already sorted parts of arrays */
-  PetscInt i, i1, i2;   /* Loop counters for (partly) sorted arrays */
-  PetscInt istart, i1end, i2end; /* start of newly sorted array part, end of both parts */
-  PetscInt *ialloc;     /* Allocated arrays */
-   PetscScalar *valloc=PETSC_NULL;
-   PetscInt *iswap;      /* auxiliary pointers for swapping */
-   PetscScalar *vswap;
-   PetscInt *ihlp1;      /* Pointers to new version of arrays, */
-   PetscScalar *vhlp1=PETSC_NULL;  /* (arrays under construction) */
-   PetscInt *ihlp2;      /* Pointers to previous version of arrays, */
-   PetscScalar *vhlp2=PETSC_NULL;
-   PetscErrorCode ierr;
+  PetscInt       istep;       /* Chunk-sizes of already sorted parts of arrays */
+  PetscInt       i, i1, i2;   /* Loop counters for (partly) sorted arrays */
+  PetscInt       istart, i1end, i2end; /* start of newly sorted array part, end of both parts */
+  PetscInt       *ialloc;     /* Allocated arrays */
+  PetscScalar    *valloc=PETSC_NULL;
+  PetscInt       *iswap;      /* auxiliary pointers for swapping */
+  PetscScalar    *vswap;
+  PetscInt       *ihlp1;      /* Pointers to new version of arrays, */
+  PetscScalar    *vhlp1=PETSC_NULL;  /* (arrays under construction) */
+  PetscInt       *ihlp2;      /* Pointers to previous version of arrays, */
+  PetscScalar    *vhlp2=PETSC_NULL;
+  PetscErrorCode ierr;
 
    ierr = PetscMalloc(nnz*sizeof(PetscInt),&ialloc);CHKERRQ(ierr);
    ihlp1 = ialloc;
    ihlp2 = icol;
 
-   if (val)
-   {
+   if (val) {
       ierr = PetscMalloc(nnz*sizeof(PetscScalar),&valloc);CHKERRQ(ierr);
       vhlp1 = valloc;
       vhlp2 = val;
@@ -672,8 +640,7 @@ PetscErrorCode spbas_mergesort(PetscInt nnz, PetscInt *icol, PetscScalar *val)
 
 
    /* Sorted array chunks are first 1 long, and increase until they are the complete array */
-   for (istep=1; istep<nnz; istep*=2)
-   {
+   for (istep=1; istep<nnz; istep*=2) {
      /*
        Combine sorted parts
             istart:istart+istep-1 and istart+istep-1:istart+2*istep-1
@@ -683,40 +650,30 @@ PetscErrorCode spbas_mergesort(PetscInt nnz, PetscInt *icol, PetscScalar *val)
             istart:istart+2*istep-1
        of ihlp1 and vhlp1
      */
-      for (istart=0; istart<nnz; istart+=2*istep)
-      {
+      for (istart=0; istart<nnz; istart+=2*istep) {
 
 	/* Set counters and bound array part endings */
          i1=istart;        i1end = i1+istep;  if (i1end>nnz) {i1end=nnz;}
          i2=istart+istep;  i2end = i2+istep;  if (i2end>nnz) {i2end=nnz;}
 
          /* Merge the two array parts */
-         if (val)
-         {
-            for (i=istart; i<i2end; i++)
-            {
-               if (i1<i1end && i2<i2end && ihlp2[i1] < ihlp2[i2])
-               {
+         if (val) {
+            for (i=istart; i<i2end; i++) {
+               if (i1<i1end && i2<i2end && ihlp2[i1] < ihlp2[i2]) {
                    ihlp1[i] = ihlp2[i1];
                    vhlp1[i] = vhlp2[i1];
                    i1++;
-               }
-               else if (i2<i2end )
-               {
+               } else if (i2<i2end ){
                    ihlp1[i] = ihlp2[i2];
                    vhlp1[i] = vhlp2[i2];
                    i2++;
-               }
-               else
-               {
+               } else {
                    ihlp1[i] = ihlp2[i1];
                    vhlp1[i] = vhlp2[i1];
                    i1++;
                }
             }
-         }
-         else
-         {
+         } else {
             for (i=istart; i<i2end; i++)
             {
                if (i1<i1end && i2<i2end && ihlp2[i1] < ihlp2[i2])
