@@ -9,6 +9,14 @@ HISTORY: PETSc for Python
 :Address:      PTLC, 3000 Santa Fe, Argentina
 
 
+Release 1.0.3
+=============
+
+This is a bug-fix release. 
+
+- Added a quick fix to solve build issues. The macro __SDIR__ is no
+  longer passed to the compiler in the command line.
+
 Release 1.0.2
 =============
 
