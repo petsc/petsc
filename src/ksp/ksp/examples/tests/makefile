@@ -730,7 +730,7 @@ TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.P
                                  runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc runex19 runex19_2 ex19.rm \
                                  ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm \
                                  ex26.PETSc runex26 runex26_2 ex26.rm ex27.PETSc ex27.rm \
-                                 ex32.PETSc runex32_testset1 runex32_icc runex32_icc_lev1 runex32_icc_lev10 \
+                                 ex32.PETSc runex32_icc runex32_icc_lev1 runex32_icc_lev10 \
                                  runex32_icc_nd runex32_icc_nd_lev10\
                                  runex32_cholesky runex32_cholesky_nd \
                                  runex32_11 runex32_11_nd runex32_20_lu runex32_20_lu_nd  runex32_23_lu runex32_23_lu_nd  runex32_24_lu runex32_24_lu_nd \
