@@ -436,8 +436,8 @@ class build_ext(_build_ext):
             config.configure(newext, self.compiler)
             name =  self.distribution.get_name()
             version = self.distribution.get_version()
-            distdir = '"%s-%s/"' % (name, version)
-            #newext.define_macros.append(('__SDIR__', distdir))
+            distdir = "%s-%s/" % (name, version)
+            newext.define_macros.append(('__INSDIR__', distdir))
             self._build_ext_arch(newext, pkgpath, ARCH)
 
     def build_extensions(self, *args, **kargs):
