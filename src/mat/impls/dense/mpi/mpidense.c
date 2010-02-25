@@ -1443,6 +1443,42 @@ PetscErrorCode MatAXPY_MPIDense(Mat Y,PetscScalar alpha,Mat X,MatStructure str)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatConjugate_MPIDense"
+PetscErrorCode PETSCMAT_DLLEXPORT MatConjugate_MPIDense(Mat mat)
+{
+  Mat_MPIDense   *a = (Mat_MPIDense *)mat->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatConjugate(a->A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatRealPart_MPIDense"
+PetscErrorCode MatRealPart_MPIDense(Mat A)
+{
+  Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatRealPart(a->A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatImaginaryPart_MPIDense"
+PetscErrorCode MatImaginaryPart_MPIDense(Mat A)
+{
+  Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatImaginaryPart(a->A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        MatGetRow_MPIDense,
@@ -1544,10 +1580,22 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        0,
 #endif
        0,
+       0,
 /*94*/ 0,
        0,
        0,
-       0};
+       0,
+       0,
+/*99*/ 0,
+       0,
+       0,
+       MatConjugate_MPIDense,
+       0,
+/*104*/0,
+       MatRealPart_MPIDense,
+       MatImaginaryPart_MPIDense,
+       0
+};
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
