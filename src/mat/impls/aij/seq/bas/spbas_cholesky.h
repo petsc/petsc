@@ -518,7 +518,7 @@ PetscErrorCode spbas_incomplete_cholesky(
          val[k] = 0;
       }
 
-      //*Erase the values used in the work arrays */
+      /*Erase the values used in the work arrays */
       for (j=0; j<r_nnz; j++) { lvec[r_icol[j]] = 0; }
    }
 
