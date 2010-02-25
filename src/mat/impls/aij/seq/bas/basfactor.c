@@ -67,7 +67,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact,Mat A,IS perm,const MatF
     ierr = spbas_keep_upper( &Pattern_P );
 
     // Convert to Sparse Row Storage 
-    ierr = spbas_matrix_to_crs(Pattern_P, NULL, &ui, &uj); CHKERRQ(ierr);
+    ierr = spbas_matrix_to_crs(Pattern_P, PETSC_NULL, &ui, &uj); CHKERRQ(ierr);
     ierr = spbas_delete(Pattern_P);CHKERRQ(ierr);
   } /* end of case: levels>0 || (levels=0 && !perm_identity) */
 
