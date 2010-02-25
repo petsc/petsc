@@ -305,7 +305,7 @@ PetscErrorCode spbas_mergesort_icols( PetscInt nrows, PetscInt * irow_in, PetscI
 #undef __FUNCT__  
 #define __FUNCT__ "spbas_compress_pattern"
 PetscErrorCode spbas_compress_pattern(PetscInt *irow_in, PetscInt *icol_in, PetscInt nrows, PetscInt ncols,
-				      PetscInt col_idx_type, spbas_matrix *B,PetscScalar *mem_reduction)
+				      PetscInt col_idx_type, spbas_matrix *B,PetscReal *mem_reduction)
 {
    PetscInt nnz = irow_in[nrows];
    long int mem_orig = (nrows + nnz) * sizeof(PetscInt);
@@ -427,8 +427,8 @@ PetscErrorCode spbas_compress_pattern(PetscInt *irow_in, PetscInt *icol_in, Pets
    ierr=PetscFree(ipoint);  CHKERRQ(ierr); 
 
    mem_compressed = spbas_memory_requirement( *B );
-   *mem_reduction = 100.0 * (PetscScalar)(mem_orig-mem_compressed)/ 
-                            (PetscScalar) mem_orig;
+   *mem_reduction = 100.0 * (PetscReal)(mem_orig-mem_compressed)/ 
+                            (PetscReal) mem_orig;
    PetscFunctionReturn(0);
 }
 
@@ -542,88 +542,6 @@ PetscErrorCode spbas_matrix_to_crs(spbas_matrix matrix_A,MatScalar **val_out, Pe
    PetscFunctionReturn(0);
 }
 
-/*
-   spbas_dump
-     Print the matrix in i,j,val-format
-*/
-#undef __FUNCT__  
-#define __FUNCT__ "spbas_dump"
-PetscErrorCode spbas_dump( const char *fname, spbas_matrix in_matrix)
-{
-   FILE *outfile = fopen(fname, "w");
-   PetscInt col_idx_type = in_matrix.col_idx_type;
-   PetscInt nrows=in_matrix.nrows;
-   PetscInt *icol;
-   PetscScalar *val;
-   PetscInt r_nnz, icol0;
-   PetscInt i,j;
-   PetscInt nwrite=1;
-
-   PetscFunctionBegin;
-   if (!outfile)
-   {
-      SETERRQ1( PETSC_ERR_FILE_OPEN,
-               "Error in spbas_dump: cannot open file '%s'\n",fname);
-   }
-   if (in_matrix.values)
-   {
-      for (i=0; i<nrows; i++)
-      {
-         icol = in_matrix.icols[i];
-         val  = in_matrix.values[i];
-         r_nnz= in_matrix.row_nnz[i];
-         if (col_idx_type == SPBAS_COLUMN_NUMBERS)
-         {  
-            for (j=0; nwrite>0 && j<r_nnz; j++)
-              { nwrite = fprintf(outfile,"%d %d %e\n",i,icol[j],val[j]); }
-         }
-         else if (col_idx_type == SPBAS_DIAGONAL_OFFSETS)
-         {  
-            for (j=0; nwrite>0 && j<r_nnz; j++)
-              { nwrite = fprintf(outfile,"%d %d %e\n",i,i+icol[j],val[j]);}
-         }
-         else if (col_idx_type == SPBAS_OFFSET_ARRAY)
-         {  
-            icol0 = in_matrix.icol0[i];
-            for (j=0; nwrite>0 && j<r_nnz; j++)
-              { nwrite = fprintf(outfile,"%d %d %e\n",i,icol0+icol[j],val[j]); }
-         }
-       
-      }
-   }
-   else
-   {
-      for (i=0; i<nrows; i++)
-      {
-         icol = in_matrix.icols[i];
-         r_nnz= in_matrix.row_nnz[i];
-         nwrite = 2;
-         if (col_idx_type == SPBAS_COLUMN_NUMBERS)
-         {  
-            for (j=0; nwrite>0 && j<r_nnz; j++)
-              { nwrite = fprintf(outfile,"%d %d\n",i,icol[j]); }
-         }
-         else if (col_idx_type == SPBAS_DIAGONAL_OFFSETS)
-         {  
-            for (j=0; nwrite>0 && j<r_nnz; j++)
-              { nwrite = fprintf(outfile,"%d %d\n",i,i+icol[j]); }
-         }
-         else if (col_idx_type == SPBAS_OFFSET_ARRAY)
-         {  
-            icol0 = in_matrix.icol0[i];
-            for (j=0; nwrite>0 && j<r_nnz; j++)
-              { nwrite = fprintf(outfile,"%d %d\n",i,icol0+icol[j]); }
-         }
-      }
-   }
-   if (nwrite<0)
-   {
-      SETERRQ1(PETSC_ERR_FILE_WRITE,
-         "Error in spbas_dump: cannot write to file '%s'\n",fname);
-   }
-   fclose(outfile);
-   PetscFunctionReturn(0);
-}
 
 /*
     spbas_transpose

@@ -408,8 +408,7 @@ PetscErrorCode spbas_incomplete_cholesky(
    ierr = MatGetSize(A, &nrows, &ncols); CHKERRQ(ierr);
    ierr = MatGetTrace(A, &epsdiag); CHKERRQ(ierr);
    epsdiag *= epsdiag_in / nrows;
-   printf("   Dimensioned Manteuffel shift=%e\n", epsdiag);
-   printf("   Drop tolerance              =%e\n",droptol);
+   ierr = PetscInfo2(PETSC_NULL,"   Dimensioned Manteuffel shift %G Drop tolerance %G\n", PetscRealPart(epsdiag),droptol);CHKERRQ(ierr);
 
    if (droptol<1e-10) {droptol=1e-10;}
 
@@ -503,7 +502,7 @@ PetscErrorCode spbas_incomplete_cholesky(
 
       // Calculate the new diagonal
       diag[i] = val[i];
-      if (PetscAbsScalar(diag[i])<droptol)
+      if (PetscRealPart(diag[i])<droptol)
       {
          printf("Error in spbas_incomplete_cholesky:\n");
          printf("Negative diagonal in row %d\n",i+1);

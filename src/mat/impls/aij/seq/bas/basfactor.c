@@ -1,4 +1,5 @@
 
+
 #include <petsc.h>
 #include <petscksp.h>
 #include "private/kspimpl.h"
@@ -120,21 +121,18 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorIn
   PetscReal      droptol = -1;
   PetscTruth     perm_identity;
   spbas_matrix   Pattern, matrix_L,matrix_LT;
-  PetscScalar    mem_reduction;
+  PetscReal    mem_reduction;
 
   PetscFunctionBegin;
   // Reduce memory requirements:
   //   erase values of B-matrix
   ierr = PetscFree(ba); CHKERRQ(ierr);
   //   Compress (maximum) sparseness pattern of B-matrix
-  ierr = spbas_compress_pattern(bi, bj, mbs, mbs, SPBAS_DIAGONAL_OFFSETS, 
-				&Pattern, &mem_reduction);CHKERRQ(ierr);
+  ierr = spbas_compress_pattern(bi, bj, mbs, mbs, SPBAS_DIAGONAL_OFFSETS,&Pattern, &mem_reduction);CHKERRQ(ierr);
   ierr = PetscFree(bi); CHKERRQ(ierr);
   ierr = PetscFree(bj); CHKERRQ(ierr);
 
-  printf("Results from spbas_compress_pattern:\n");
-  printf("    compression rate %6.2f %%\n",mem_reduction);
-  ierr=7;
+  ierr = PetscInfo1(PETSC_NULL,"    compression rate for spbas_compress_pattern %G \n",mem_reduction);CHKERRQ(ierr);
 
   // Make Cholesky decompositions with larger Manteuffel shifts until no more
   // negative diagonals are found.
@@ -151,16 +149,15 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorIn
      if (ierr == NEGATIVE_DIAGONAL) 
      {
         shiftnz *= 1.5;
-        printf("spbas_incomplete_cholesky found a negative diagonal.\n");
-        printf("   Trying again with Manteuffel shift=%e\n",shiftnz);
+        if (shiftnz < 1e-5) shiftnz=1e-5;
+        ierr = PetscInfo1(PETSC_NULL,"spbas_incomplete_cholesky found a negative diagonal. Trying again with Manteuffel shift=%G\n",shiftnz);CHKERRQ(ierr);
      }
   }
   CHKERRQ(ierr);
   ierr = spbas_delete(Pattern); CHKERRQ(ierr);
 
-  printf("Results from spbas_incomplete_cholesky:\n");
-  printf("    memory_usage:    %6.2f bytes per row\n", 
-              (PetscScalar) spbas_memory_requirement( matrix_LT)/ (PetscScalar) mbs);
+  ierr = PetscInfo1(PETSC_NULL,"    memory_usage for  spbas_incomplete_cholesky  %G bytes per row\n", 
+              (PetscReal) spbas_memory_requirement( matrix_LT)/ (PetscReal) mbs);CHKERRQ(ierr);
 
   ierr = ISRestoreIndices(ip,&rip);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iip,&riip);CHKERRQ(ierr);
