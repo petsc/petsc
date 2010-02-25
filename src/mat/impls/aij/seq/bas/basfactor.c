@@ -130,8 +130,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorIn
 
   ierr = PetscInfo1(PETSC_NULL,"    compression rate for spbas_compress_pattern %G \n",mem_reduction);CHKERRQ(ierr);
 
-  /* Make Cholesky decompositions with larger Manteuffel shifts until no more
-     negative diagonals are found. */
+  /* Make Cholesky decompositions with larger Manteuffel shifts until no more    negative diagonals are found. */
   ierr  = ISGetIndices(ip,&rip);CHKERRQ(ierr);
   ierr  = ISGetIndices(iip,&riip);CHKERRQ(ierr);
 
@@ -150,8 +149,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorIn
   }
   ierr = spbas_delete(Pattern);CHKERRQ(ierr);
 
-  ierr = PetscInfo1(PETSC_NULL,"    memory_usage for  spbas_incomplete_cholesky  %G bytes per row\n", 
-              (PetscReal) spbas_memory_requirement( matrix_LT)/ (PetscReal) mbs);CHKERRQ(ierr);
+  ierr = PetscInfo1(PETSC_NULL,"    memory_usage for  spbas_incomplete_cholesky  %G bytes per row\n", (PetscReal) spbas_memory_requirement( matrix_LT)/ (PetscReal) mbs);CHKERRQ(ierr);
 
   ierr = ISRestoreIndices(ip,&rip);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iip,&riip);CHKERRQ(ierr);

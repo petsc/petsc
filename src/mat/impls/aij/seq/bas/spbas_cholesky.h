@@ -158,8 +158,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(
       i_here = result->icols[i]-result->alloc_icol;
       i_last = i_here + result->row_nnz[i];
       if (result->row_nnz[i]>0) {
-         if (*n_alloc_used > i_here || i_last > n_alloc)
-         {
+         if (*n_alloc_used > i_here || i_last > n_alloc) {
             ierr = PetscMemcpy((void*) &icol_rescue[n_rescue], (void*) result->icols[i], result->row_nnz[i] * sizeof(int));CHKERRQ(ierr);
             ierr = PetscMemcpy((void*) &val_rescue[n_rescue], (void*) result->values[i], result->row_nnz[i] * sizeof(PetscScalar));CHKERRQ(ierr);
             n_rescue += result->row_nnz[i];
@@ -290,8 +289,7 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
    PetscInt         n_alloc_used = 0;    /* part of result->icols and result->values   which is currently being used */
 
    PetscFunctionBegin;
-   /* Convert the Manteuffel shift from 'fraction of average diagonal' to
-      dimensioned value */
+   /* Convert the Manteuffel shift from 'fraction of average diagonal' to   dimensioned value */
    ierr = MatGetSize(A, &nrows, &ncols);CHKERRQ(ierr);
    ierr = MatGetTrace(A, &epsdiag);CHKERRQ(ierr);
    epsdiag *= epsdiag_in / nrows;
@@ -299,13 +297,7 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
 
    if (droptol<1e-10) {droptol=1e-10;}
 
-   if ( (nrows != pattern.nrows) ||
-        (ncols != pattern.ncols) ||
-        (ncols != nrows) )
-   {
-      SETERRQ( PETSC_ERR_ARG_INCOMP,
-               "Dimension error in spbas_incomplete_cholesky\n");
-   }
+   if ( (nrows != pattern.nrows) || (ncols != pattern.ncols) || (ncols != nrows) ) SETERRQ( PETSC_ERR_ARG_INCOMP,"Dimension error in spbas_incomplete_cholesky\n");
 
    retval.nrows = nrows;
    retval.ncols = nrows;
@@ -314,7 +306,7 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
    retval.block_data = PETSC_TRUE;
 
    ierr =  spbas_allocate_pattern(&retval, do_values);CHKERRQ(ierr);
-   memset((void*) retval.row_nnz, 0, nrows*sizeof(int));
+   ierr = PetscMemzero((void*) retval.row_nnz, nrows*sizeof(int));CHKERRQ(ierr);
    ierr =  spbas_allocate_data(&retval);CHKERRQ(ierr);
    retval.nnz   = 0;
 
@@ -322,37 +314,26 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
    ierr = PetscMalloc(nrows*sizeof(PetscScalar), &val);CHKERRQ(ierr);
    ierr = PetscMalloc(nrows*sizeof(PetscScalar), &lvec);CHKERRQ(ierr);
    ierr = PetscMalloc(nrows*sizeof(int), &max_row_nnz);CHKERRQ(ierr);
-   if (!(diag && val && lvec && max_row_nnz))
-   { 
-      SETERRQ( PETSC_ERR_MEM,
-              "Allocation error in spbas_incomplete_cholesky\n"); 
-   }
+   if (!(diag && val && lvec && max_row_nnz))  SETERRQ( PETSC_ERR_MEM, "Allocation error in spbas_incomplete_cholesky\n"); 
 
-   memset((void*) val, 0, nrows*sizeof(PetscScalar));
-   memset((void*) lvec, 0, nrows*sizeof(PetscScalar));
-   memset((void*) max_row_nnz, 0, nrows*sizeof(int));
+   ierr = PetscMemzero((void*) val, nrows*sizeof(PetscScalar));CHKERRQ(ierr);
+   ierr = PetscMemzero((void*) lvec, nrows*sizeof(PetscScalar));CHKERRQ(ierr);
+   ierr = PetscMemzero((void*) max_row_nnz, nrows*sizeof(int));CHKERRQ(ierr);
 
    /* Check correct format of sparseness pattern */
-   if (pattern.col_idx_type != SPBAS_DIAGONAL_OFFSETS)
-   {
-      SETERRQ( PETSC_ERR_SUP_SYS,
-               "Error in spbas_incomplete_cholesky: must have diagonal offsets in pattern\n");
-   }
+   if (pattern.col_idx_type != SPBAS_DIAGONAL_OFFSETS)  SETERRQ( PETSC_ERR_SUP_SYS, "Error in spbas_incomplete_cholesky: must have diagonal offsets in pattern\n");
 
    /* Count the nonzeros on transpose of pattern */
-   for (i = 0; i<nrows; i++)
-   {
+   for (i = 0; i<nrows; i++)  {
       p_nnz  = pattern.row_nnz[i];
       p_icol = pattern.icols[i];
-      for (j=0; j<p_nnz; j++)
-      {
+      for (j=0; j<p_nnz; j++)  {
          max_row_nnz[i+p_icol[j]]++;
       }
    }
 
    /* Calculate rows of L */
-   for (i = 0; i<nrows; i++)
-   {
+   for (i = 0; i<nrows; i++)  {
       p_nnz  = pattern.row_nnz[i];
       p_icol = pattern.icols[i];
 
@@ -364,8 +345,7 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
       A_val  = &aa[ai[rip[i]]]; 
 
       /* Calculate  val += A(i,i:n)'; */
-      for (j=0; j<A_nnz; j++) 
-      { 
+      for (j=0; j<A_nnz; j++) { 
          k = riip[A_icol[j]];
          if (k>=i) { val[k] = A_val[j]; }
       }
@@ -375,8 +355,7 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
 
       /* Calculate lvec   = diag(D(0:i-1)) * L(0:i-1,i);
 	 val(i) = A(i,i) - L(0:i-1,i)' * lvec */
-      for ( j=0; j<r_nnz; j++)
-      {
+      for ( j=0; j<r_nnz; j++)  {
          k           = r_icol[j];
          lvec[k]     = diag[k] * r_val[j];
          val[i]     -= r_val[j] * lvec[k];
@@ -384,8 +363,7 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
 
       /* Calculate the new diagonal */
       diag[i] = val[i];
-      if (PetscRealPart(diag[i])<droptol)
-      {
+      if (PetscRealPart(diag[i])<droptol)  {
          ierr = PetscInfo(PETSC_NULL,"Error in spbas_incomplete_cholesky:\n");
          ierr = PetscInfo1(PETSC_NULL,"Negative diagonal in row %d\n",i+1);
 
@@ -395,11 +373,9 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
       }
 
       /* If necessary, allocate arrays */
-      if (r_nnz==0)
-      {
+      if (r_nnz==0) {
          ierr = spbas_cholesky_row_alloc( retval, i, 1, &n_alloc_used);CHKERRQ(ierr);
-         if (ierr == PETSC_ERR_MEM)
-         {
+         if (ierr == PETSC_ERR_MEM) {
             ierr = spbas_cholesky_garbage_collect( &retval,  i, &n_row_alloc_ok, &n_alloc_used, max_row_nnz);CHKERRQ(ierr);
             ierr = spbas_cholesky_row_alloc( retval, i, 1, &n_alloc_used);
          }
@@ -417,22 +393,18 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
 
       /* Calculate
          val(i+1:n) = (A(i,i+1:n)- L(0:i-1,i+1:n)' * lvec)/diag(i) */
-      for (j=1; j<p_nnz; j++)
-      {
+      for (j=1; j<p_nnz; j++)  {
          k = i+p_icol[j];
          r1_icol = retval.icols[k];
          r1_val  = retval.values[k];
-         for (jL=0; jL<retval.row_nnz[k]; jL++)
-         {
+         for (jL=0; jL<retval.row_nnz[k]; jL++)   {
             val[k] -= r1_val[jL] * lvec[r1_icol[jL]];
          }
          val[k] /= diag[i];
 
-         if (PetscAbsScalar(val[k]) > droptol || PetscAbsScalar(val[k])< -droptol)
-         {
+         if (PetscAbsScalar(val[k]) > droptol || PetscAbsScalar(val[k])< -droptol) {
 	   /* If necessary, allocate arrays */
-            if (retval.row_nnz[k]==0)
-            {
+            if (retval.row_nnz[k]==0) {
                ierr = spbas_cholesky_row_alloc( retval, k, max_row_nnz[k], &n_alloc_used);
                if (ierr == PETSC_ERR_MEM) {
                   ierr = spbas_cholesky_garbage_collect( &retval,  i, &n_row_alloc_ok, &n_alloc_used, max_row_nnz);CHKERRQ(ierr);
