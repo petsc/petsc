@@ -2539,13 +2539,13 @@ Some of the options for ILU preconditioner are
 \begin{tabbing}
   PCFactorSetLevels(PC pc,int levels);\\
   PCFactorSetReuseOrdering(PC pc,PetscTruth flag);\\
-  PCFactorSetUseDropTolerance(PC pc,double dt,double dtcol,int dtcount);\\
+  PCFactorSetDropTolerance(PC pc,double dt,double dtcol,int dtcount);\\
   PCFactorSetReuseFill(PC pc,PetscTruth flag);\\
   PCFactorSetUseInPlace(PC pc); \\
   PCFactorSetAllowDiagonalFill(PC pc);
 \end{tabbing}
 \findex{PCFactorSetLevels()} \findex{PCFactorSetReuseOrdering()}
-\findex{PCFactorSetUseDropTolerance()} \findex{PCFactorSetReuseFill()}
+\findex{PCFactorSetDropTolerance()} \findex{PCFactorSetReuseFill()}
 \findex{PCFactorSetUseInPlace()} \findex{PCFactorSetAllowDiagonalFill()}
 
 When repeatedly solving linear systems with the same KSP
@@ -2565,7 +2565,7 @@ factorization. These options may be set in the database with
 \begin{tabbing}
    \trl{-pc_factor_levels <levels>}\\
    \trl{-pc_factor_reuse_ordering}\\
-   \trl{-pc_factor_use_drop_tolerance <dt>,<dtcol>,<dtcount>}\\
+   \trl{-pc_factor_drop_tolerance <dt>,<dtcol>,<dtcount>}\\
    \trl{-pc_factor_reuse_fill}\\
    \trl{-pc_factor_in_place}\\
    \trl{-pc_factor_nonzeros_along_diagonal}\\
@@ -2573,7 +2573,7 @@ factorization. These options may be set in the database with
 }
 \end{tabbing}
 \findex{-pc_factor_levels} \findex{-pc_factor_reuse_ordering}
-\findex{-pc_factor_use_drop_tolerance} \findex{-pc_factor_reuse_fill}
+\findex{-pc_factor_drop_tolerance} \findex{-pc_factor_reuse_fill}
 \findex{-pc_factor_in_place} \findex{-pc_factor_nonzeros_along_diagonal}
 \findex{-pc_factor_diagonal_fill}
 

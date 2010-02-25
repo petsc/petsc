@@ -403,17 +403,17 @@ runex29_2:
 	   else echo "Possible problem with ex29_2, diffs above"; fi; \
 	   ${RM} -f ex29_2.tmp
 runex30:
-	-@${MPIEXEC} -n 1 ./ex30 -f ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type ilu -pc_factor_use_drop_tolerance 0.0,0.0,4 -pc_factor_mat_ordering_type natural -num_numfac 2 -pc_factor_reuse_fill > ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type ilu -pc_factor_drop_tolerance 0.0,0.0,4 -pc_factor_mat_ordering_type natural -num_numfac 2 -pc_factor_reuse_fill > ex30.tmp 2>&1; \
 	if (${DIFF} output/ex30.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30, diffs above"; fi; \
 	   ${RM} -f ex30.tmp
 runex30_2:
-	-@${MPIEXEC} -n 1 ./ex30 -f ${DATAFILESPATH}/matrices/arco1 -mat_type baij -matload_block_size 3 -ksp_type preonly -pc_type ilu -pc_factor_use_drop_tolerance 0.0,0.0,50 -pc_factor_mat_ordering_type natural -num_numfac 2 > ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f ${DATAFILESPATH}/matrices/arco1 -mat_type baij -matload_block_size 3 -ksp_type preonly -pc_type ilu -pc_factor_drop_tolerance 0.0,0.0,50 -pc_factor_mat_ordering_type natural -num_numfac 2 > ex30.tmp 2>&1; \
 	if (${DIFF} output/ex30_2.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30_2, diffs above"; fi; \
 	   ${RM} -f ex30.tmp
 runex30_3:
-	-@${MPIEXEC} -n 1 ./ex30 -f ${DATAFILESPATH}/matrices/arco1 -mat_type baij -matload_block_size 3 -ksp_type preonly -pc_type ilu -pc_factor_use_drop_tolerance 1.e-4,0.0,50 -pc_factor_mat_ordering_type natural -num_numfac 2 > ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f ${DATAFILESPATH}/matrices/arco1 -mat_type baij -matload_block_size 3 -ksp_type preonly -pc_type ilu -pc_factor_drop_tolerance 1.e-4,0.0,50 -pc_factor_mat_ordering_type natural -num_numfac 2 > ex30.tmp 2>&1; \
         if (${DIFF} output/ex30_3.out ex30.tmp) then true; \
            else echo "Possible problem with ex30_3, diffs above"; fi; \
            ${RM} -f ex30.tmp

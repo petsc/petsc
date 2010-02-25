@@ -53,8 +53,8 @@ PetscErrorCode PCDestroy_ILU_Internal(PC pc)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCFactorSetUseDropTolerance_ILU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseDropTolerance_ILU(PC pc,PetscReal dt,PetscReal dtcol,PetscInt dtcount)
+#define __FUNCT__ "PCFactorSetDropTolerance_ILU"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetDropTolerance_ILU(PC pc,PetscReal dt,PetscReal dtcol,PetscInt dtcount)
 {
   PC_ILU         *ilu = (PC_ILU*)pc->data;
 
@@ -120,9 +120,9 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
     dt[0] = ((PC_Factor*)ilu)->info.dt;
     dt[1] = ((PC_Factor*)ilu)->info.dtcol;
     dt[2] = ((PC_Factor*)ilu)->info.dtcount;
-    ierr = PetscOptionsRealArray("-pc_factor_use_drop_tolerance","<dt,dtcol,maxrowcount>","PCFactorSetUseDropTolerance",dt,&dtmax,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsRealArray("-pc_factor_drop_tolerance","<dt,dtcol,maxrowcount>","PCFactorSetDropTolerance",dt,&dtmax,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCFactorSetUseDropTolerance(pc,dt[0],dt[1],(PetscInt)dt[2]);CHKERRQ(ierr);
+      ierr = PCFactorSetDropTolerance(pc,dt[0],dt[1],(PetscInt)dt[2]);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsName("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",&flg);CHKERRQ(ierr);
@@ -306,7 +306,7 @@ static PetscErrorCode PCApplyTranspose_ILU(PC pc,Vec x,Vec y)
                       its factorization (overwrites original matrix)
 .  -pc_factor_diagonal_fill - fill in a zero diagonal even if levels of fill indicate it wouldn't be fill
 .  -pc_factor_reuse_ordering - reuse ordering of factorized matrix from previous factorization
-.  -pc_factor_use_drop_tolerance <dt,dtcol,maxrowcount> - use Saad's drop tolerance ILUdt
+.  -pc_factor_drop_tolerance <dt,dtcol,maxrowcount> - use drop tolerance factorization
 .  -pc_factor_fill <nfill> - expected amount of fill in factored matrix compared to original matrix, nfill > 1
 .  -pc_factor_nonzeros_along_diagonal - reorder the matrix before factorization to remove zeros from the diagonal,
                                    this decreases the chance of getting a zero pivot
@@ -342,7 +342,7 @@ static PetscErrorCode PCApplyTranspose_ILU(PC pc,Vec x,Vec y)
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,
            PCFactorSetZeroPivot(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(), PCFactorSetShiftInBlocks(),
-           PCFactorSetUseDropTolerance(),PCFactorSetFill(), PCFactorSetMatOrderingType(), PCFactorSetReuseOrdering(),
+           PCFactorSetDropTolerance(),PCFactorSetFill(), PCFactorSetMatOrderingType(), PCFactorSetReuseOrdering(),
            PCFactorSetLevels(), PCFactorSetUseInPlace(), PCFactorSetAllowDiagonalFill(), PCFactorSetPivotInBlocks()
 
 M*/
@@ -402,8 +402,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC pc)
                     PCFactorGetMatSolverPackage_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatSolverPackage_C","PCFactorSetMatSolverPackage_Factor",
                     PCFactorSetMatSolverPackage_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetUseDropTolerance_C","PCFactorSetUseDropTolerance_ILU",
-                    PCFactorSetUseDropTolerance_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetDropTolerance_C","PCFactorSetDropTolerance_ILU",
+                    PCFactorSetDropTolerance_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetFill_C","PCFactorSetFill_Factor",
                     PCFactorSetFill_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatOrderingType_C","PCFactorSetMatOrderingType_Factor",

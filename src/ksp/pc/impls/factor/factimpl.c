@@ -53,8 +53,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCFactorSetUseDropTolerance_Factor"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseDropTolerance_Factor(PC pc,PetscReal dt,PetscReal dtcol,PetscInt dtcount)
+#define __FUNCT__ "PCFactorSetDropTolerance_Factor"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetDropTolerance_Factor(PC pc,PetscReal dt,PetscReal dtcol,PetscInt dtcount)
 {
   PC_Factor         *ilu = (PC_Factor*)pc->data;
 

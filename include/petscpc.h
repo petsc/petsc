@@ -252,7 +252,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetAllowDiagonalFill(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivotInBlocks(PC,PetscTruth);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetLevels(PC,PetscInt);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseDropTolerance(PC,PetscReal,PetscReal,PetscInt);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetDropTolerance(PC,PetscReal,PetscReal,PetscInt);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetLocalSubdomains(PC,PetscInt,IS[],IS[]);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetTotalSubdomains(PC,PetscInt,IS[],IS[]);

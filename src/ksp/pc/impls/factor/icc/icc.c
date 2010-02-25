@@ -100,9 +100,9 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc)
     dt[0] = ((PC_Factor*)icc)->info.dt;
     dt[1] = ((PC_Factor*)icc)->info.dtcol;
     dt[2] = ((PC_Factor*)icc)->info.dtcount;
-    ierr = PetscOptionsRealArray("-pc_factor_use_drop_tolerance","<dt,dtcol,maxrowcount>","PCFactorSetUseDropTolerance",dt,&dtmax,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsRealArray("-pc_factor_drop_tolerance","<dt,dtcol,maxrowcount>","PCFactorSetDropTolerance",dt,&dtmax,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCFactorSetUseDropTolerance(pc,dt[0],dt[1],(PetscInt)dt[2]);CHKERRQ(ierr);
+      ierr = PCFactorSetDropTolerance(pc,dt[0],dt[1],(PetscInt)dt[2]);CHKERRQ(ierr);
     }
 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -151,7 +151,7 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
 }
 
 EXTERN_C_BEGIN
-extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseDropTolerance_ILU(PC,PetscReal,PetscReal,PetscInt);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetDropTolerance_ILU(PC,PetscReal,PetscReal,PetscInt);
 EXTERN_C_END
 
 /*MC
@@ -247,8 +247,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC pc)
                     PCFactorSetMatOrderingType_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatSolverPackage_C","PCFactorSetMatSolverPackage_Factor",
                     PCFactorSetMatSolverPackage_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetUseDropTolerance_C","PCFactorSetUseDropTolerance_ILU",
-                    PCFactorSetUseDropTolerance_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetDropTolerance_C","PCFactorSetDropTolerance_ILU",
+                    PCFactorSetDropTolerance_ILU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

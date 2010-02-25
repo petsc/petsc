@@ -9,13 +9,13 @@
 
   Options Database Keys:
 + -pc_factor_levels <l>
-- -pc_factor_use_drop_tolerance
+- -pc_factor_drop_tolerance
 
   Level: beginner
 
    Contributed by: Bas van 't Hof
 
-.seealso: PCFactorSetMatSolverPackage(), MatSolverPackage, PCFactorSetLevels(), PCFactorSetUseDropTolerance()
+.seealso: PCFactorSetMatSolverPackage(), MatSolverPackage, PCFactorSetLevels(), PCFactorSetDropTolerance()
 
 M*/
 
