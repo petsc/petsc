@@ -340,7 +340,6 @@ PetscErrorCode SNESDestroy_LS(SNES snes)
 .  x - current iterate
 .  f - residual evaluated at x
 .  y - search direction 
-.  w - work vector
 .  fnorm - 2-norm of f
 -  xnorm - norm of x if known, otherwise 0
 

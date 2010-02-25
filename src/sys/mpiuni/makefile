@@ -10,7 +10,7 @@ SOURCEH	 = ../../../include/mpiuni/mpi.h ../../../include/mpiuni/mpif.h
 OBJSC	 = mpi.o
 OBJSF	 =
 SCRIPTS  = ../../../../bin/mpiexec.uni
-LIBBASE	 = libmpiuni
+LIBBASE	 = libpetscsys
 DIRS     = f90-mod
 LOCDIR   = src/sys/mpiuni/
 
