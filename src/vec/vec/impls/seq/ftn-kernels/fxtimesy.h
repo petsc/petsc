@@ -1,6 +1,6 @@
 
 #if !defined(__FMAXPY_H)
-#include "petsc.h"
+#include "petscsys.h"
 #if defined(PETSC_USE_FORTRAN_KERNEL_MAXPY)
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define fortranxtimesy_ FORTRANXTIMESY

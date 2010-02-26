@@ -1,7 +1,6 @@
 
 static char help[] = "Tests timing PetscSortInt().\n\n";
 
-#include "petsc.h"
 #include "petscsys.h"
 
 #undef __FUNCT__

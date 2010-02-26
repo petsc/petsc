@@ -2,7 +2,6 @@
 static char help[] = "Tests DAGetElements() and VecView() contour plotting for 2d DAs.\n\n";
 
 #include "petscda.h"
-#include "petscsys.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

@@ -14,8 +14,8 @@ T*/
 /* 
   Include "petscmat.h" so that we can use matrices.
   automatically includes:
-     petsc.h       - base PETSc routines   petscvec.h    - vectors
-     petscsys.h    - system routines       petscmat.h    - matrices
+     petscsys.h       - base PETSc routines   petscvec.h    - vectors
+     petscmat.h    - matrices
      petscis.h     - index sets            petscviewer.h - viewers               
 */
 #include "petscmat.h"

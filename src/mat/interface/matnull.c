@@ -5,7 +5,6 @@
 */
 
 #include "private/matimpl.h"      /*I "petscmat.h" I*/
-#include "petscsys.h"
 
 PetscCookie PETSCMAT_DLLEXPORT MAT_NULLSPACE_COOKIE;
 

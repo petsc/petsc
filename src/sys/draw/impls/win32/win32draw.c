@@ -1,5 +1,5 @@
 #define PETSC_DLL
-#include "petsc.h"
+#include "petscsys.h"
 #include "../src/sys/draw/drawimpl.h"
 #include "win32draw.h"
 

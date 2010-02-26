@@ -16,9 +16,9 @@ codes.  Note that the code must be compiled with the flag -DPETSC_USE_LOG\n\
 T*/
 
 /* 
-  Include "petsc.h" so that we can use PETSc profiling routines.
+  Include "petscsys.h" so that we can use PETSc profiling routines.
 */
-#include "petsc.h"
+#include "petscsys.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

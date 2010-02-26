@@ -35,7 +35,7 @@ timestepping.  Runtime options include:\n\
 
 /*
    Include "petscts.h" to use the PETSc timestepping routines. Note that
-   this file automatically includes "petsc.h" and other lower-level
+   this file automatically includes "petscsys.h" and other lower-level
    PETSc include files.
 
    Include the "petscda.h" to allow us to use the distributed array data 

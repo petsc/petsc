@@ -5,7 +5,6 @@
 */
 
 #include "../src/sys/draw/drawimpl.h"
-#include "petscsys.h"
 
 #if !defined(_PSIMPL_H)
 #define _PSIMPL_H

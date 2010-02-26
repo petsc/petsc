@@ -5,8 +5,7 @@
 
 */
 
-#include "petsc.h"        /*I  "petsc.h"   I*/
-#include "petscsys.h"
+#include "petscsys.h"        /*I  "petscsys.h"   I*/
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif

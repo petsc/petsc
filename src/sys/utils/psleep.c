@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include "petsc.h"                 /*I   "petsc.h"    I*/
+#include "petscsys.h"                 /*I   "petscsys.h"    I*/
 #if defined (PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
@@ -13,7 +13,6 @@
 #if defined (PETSC_HAVE_TIME_H)
 #include <time.h>
 #endif
-#include "petscfix.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSleep"

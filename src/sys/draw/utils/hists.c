@@ -3,7 +3,7 @@
   Contains the data structure for plotting a histogram in a window with an axis.
 */
 
-#include "petsc.h"         /*I "petsc.h" I*/
+#include "petscsys.h"         /*I "petscsys.h" I*/
 
 PetscCookie DRAWHG_COOKIE = 0;
 

@@ -2,7 +2,6 @@
 static char help[] = "Tests various 3-dimensional DA routines.\n\n";
 
 #include "petscda.h"
-#include "petscsys.h"
 #include "petscao.h"
 
 #undef __FUNCT__

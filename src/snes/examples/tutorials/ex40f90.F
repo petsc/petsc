@@ -10,7 +10,7 @@
 
       program ex40f90
       implicit none
-#include "finclude/petscall.h"
+#include "finclude/petsc.h"
 
       DMMG             dmmg
       PetscErrorCode   ierr

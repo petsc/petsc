@@ -1,8 +1,7 @@
 
 /* This file contains info for the use of PETSc Fortran interface stubs */
 
-#include "petsc.h"
-#include "petscfix.h"
+#include "petscsys.h"
 
 EXTERN PetscErrorCode PetscScalarAddressToFortran(PetscObject,PetscInt,PetscScalar*,PetscScalar*,PetscInt,size_t*);
 EXTERN PetscErrorCode PetscScalarAddressFromFortran(PetscObject,PetscScalar*,size_t,PetscInt,PetscScalar **);
@@ -123,7 +122,7 @@ extern void *PETSCNULLPOINTERADDRESS;
     These are used to support the default viewers that are 
   created at run time, in C using the , trick.
 
-    The numbers here must match the numbers in include/finclude/petsc.h
+    The numbers here must match the numbers in include/finclude/petscsys.h
 */
 #define PETSC_VIEWER_DRAW_WORLD_FORTRAN     -4
 #define PETSC_VIEWER_DRAW_SELF_FORTRAN      -5

@@ -7,8 +7,7 @@
    options database until it has already processed the input.
 */
 
-#include "petsc.h"        /*I  "petsc.h"   I*/
-#include "petscsys.h"
+#include "petscsys.h"        /*I  "petscsys.h"   I*/
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
@@ -18,7 +17,6 @@
 #if defined(PETSC_HAVE_SYS_PARAM_H)
 #include "sys/param.h"
 #endif
-#include "petscfix.h"
 
 /* 
     This table holds all the options set by the user. For simplicity, we use a static size database

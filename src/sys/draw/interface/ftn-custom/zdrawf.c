@@ -1,5 +1,4 @@
 #include "private/fortranimpl.h"
-#include "petscsys.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscdrawgettitle_        PETSCDRAWGETTITLE

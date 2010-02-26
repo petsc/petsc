@@ -25,7 +25,7 @@ typedef struct _p_PetscViewer* PetscViewer;
 }
 #endif
 
-#include "petsc.h"
+#include "petscsys.h"
 
 #if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
 extern "C" {
@@ -39,7 +39,7 @@ extern PETSC_DLLEXPORT PetscCookie PETSC_VIEWER_COOKIE;
 
 
 /*
-    petsc.h must be included AFTER the definition of PetscViewer for ADIC to 
+    petscsys.h must be included AFTER the definition of PetscViewer for ADIC to 
    process correctly.
 */
 PETSC_EXTERN_CXX_BEGIN

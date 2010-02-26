@@ -4,7 +4,7 @@
     constants and functions for working with single and double precision
     floating point numbers as well as complex and integers.
 
-    This file is included by petsc.h and should not be used directly.
+    This file is included by petscsys.h and should not be used directly.
 
 */
 

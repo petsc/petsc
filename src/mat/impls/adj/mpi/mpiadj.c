@@ -4,7 +4,6 @@
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure. 
 */
 #include "../src/mat/impls/adj/mpi/mpiadj.h"
-#include "petscsys.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_MPIAdj_ASCII"

@@ -11,7 +11,7 @@
 !T*/
 !
 !  The following include statements are required for KSP Fortran programs:
-!     petsc.h       - base PETSc routines
+!     petscsys.h       - base PETSc routines
 !     petscvec.h    - vectors
 !     petscmat.h    - matrices
 !     petscpc.h     - preconditioners
@@ -22,7 +22,7 @@
 !     petscis.h     - index sets
 !
       program main
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscpc.h"
@@ -149,7 +149,7 @@
 !
       subroutine solve1(ksp,A,x,b,u,count,nsteps,ierr)
 
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscpc.h"

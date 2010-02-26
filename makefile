@@ -384,7 +384,7 @@ alladic:
 	-@echo "Using ADIC compiler: ${ADIC_CC} ${CCPPFLAGS}"
 	-@echo "========================================="
 	-@cd include ; \
-           ${ADIC_CC} -s -f 1 ${CCPPFLAGS} petsc.h 
+           ${ADIC_CC} -s -f 1 ${CCPPFLAGS} petscsys.h 
 	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} ACTION=adic  tree 
 
 alladiclib:

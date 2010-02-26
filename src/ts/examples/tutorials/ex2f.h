@@ -4,7 +4,7 @@
 !
 !  The following include statements are generally used in TS Fortran
 !  programs:
-!     petsc.h       - base PETSc routines
+!     petscsys.h       - base PETSc routines
 !     petscvec.h    - vectors
 !     petscmat.h    - matrices
 !     petscksp.h    - Krylov subspace methods
@@ -19,7 +19,7 @@
 !  routines in a Fortran program, e.g.,
 !     petscis.h     - index sets
 
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscda.h"
 #include "finclude/petscmat.h"

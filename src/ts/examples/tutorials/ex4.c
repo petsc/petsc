@@ -51,8 +51,8 @@ Input parameters include:\n\
    Include "petscda.h" so that we can use distributed arrays (DAs) to manage
    the parallel grid.  Include "petscts.h" so that we can use TS solvers.  
    Note that this file automatically includes:
-     petsc.h       - base PETSc routines   petscvec.h  - vectors
-     petscsys.h    - system routines       petscmat.h  - matrices
+     petscsys.h       - base PETSc routines   petscvec.h  - vectors
+     petscmat.h  - matrices
      petscis.h     - index sets            petscksp.h  - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h   - preconditioners
      petscksp.h   - linear solvers        petscsnes.h - nonlinear solvers

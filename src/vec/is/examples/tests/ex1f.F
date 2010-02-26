@@ -4,7 +4,7 @@
 !
       program main
       implicit none
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscis.h"
 
 

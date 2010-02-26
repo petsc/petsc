@@ -2,7 +2,6 @@
 /*
       Code for manipulating files.
 */
-#include "petsc.h"
 #include "petscsys.h"
 #if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
@@ -25,7 +24,6 @@
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#include "petscfix.h"
 
 
 #if defined(PETSC_HAVE_GET_USER_NAME)

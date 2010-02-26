@@ -14,7 +14,6 @@
 
 static char help[] = "Solves a nonlinear ODE. \n\n";
 
-#include "petscsys.h"
 #include "petscts.h"
 #include "petscpc.h"
 

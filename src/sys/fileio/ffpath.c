@@ -1,6 +1,5 @@
 #define PETSC_DLL
 
-#include "petsc.h"
 #include "petscsys.h"
 #if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
@@ -20,7 +19,6 @@
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
-#include "petscfix.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetFileFromPath"

@@ -8,7 +8,7 @@
   {bischof,roh}@mcs.anl.gov.
 */
 
-#include "petsc.h"
+#include "petscsys.h"
 #include <stdarg.h>
 
 #include "ad_deriv.h"

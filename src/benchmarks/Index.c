@@ -1,5 +1,4 @@
 
-#include "petsc.h"
 #include "petscsys.h"
 
 extern int BlastCache(void);

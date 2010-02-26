@@ -1,6 +1,6 @@
 #ifndef __PETSCCTABLE_H
 #define __PETSCCTABLE_H
-#include "petsc.h"
+#include "petscsys.h"
 PETSC_EXTERN_CXX_BEGIN
 /* Contributed by - Mark Adams */
 

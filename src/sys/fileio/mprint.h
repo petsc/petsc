@@ -7,7 +7,6 @@
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#include "petscfix.h"
 
 
 /* ----------------------------------------------------------------------- */

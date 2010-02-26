@@ -1,7 +1,7 @@
 
 static char help[] = "Tests catching of floating point exceptions.\n\n";
 
-#include "petsc.h"
+#include "petscsys.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateError"

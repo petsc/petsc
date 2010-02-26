@@ -3,15 +3,13 @@
      Interface to malloc() and free(). This code allows for 
   logging of memory usage and some error checking 
 */
-#include "petsc.h"           /*I "petsc.h" I*/
-#include "petscsys.h"
+#include "petscsys.h"           /*I "petscsys.h" I*/
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #if defined(PETSC_HAVE_MALLOC_H)
 #include <malloc.h>
 #endif
-#include "petscfix.h"
 
 
 /*

@@ -724,8 +724,6 @@ PetscErrorCode MatGetValues_SeqDense(Mat A,PetscInt m,const PetscInt indexm[],Pe
 
 /* -----------------------------------------------------------------*/
 
-#include "petscsys.h"
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_SeqDense"
 PetscErrorCode MatLoad_SeqDense(PetscViewer viewer, const MatType type,Mat *A)
@@ -806,8 +804,6 @@ PetscErrorCode MatLoad_SeqDense(PetscViewer viewer, const MatType type,Mat *A)
   }
   PetscFunctionReturn(0);
 }
-
-#include "petscsys.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_SeqDense_ASCII"

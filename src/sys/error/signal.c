@@ -3,10 +3,8 @@
       Routines to handle signals the program will receive. 
     Usually this will call the error handlers.
 */
-#include "petsc.h"             /*I   "petsc.h"   I*/
+#include "petscsys.h"             /*I   "petscsys.h"   I*/
 #include <signal.h>
-#include "petscsys.h"
-#include "petscfix.h"     
 
 static PetscCookie SIGNAL_COOKIE = 0;
 

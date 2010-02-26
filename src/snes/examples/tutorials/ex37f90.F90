@@ -1,4 +1,4 @@
-#include "finclude/petscalldef.h"
+#include "finclude/petscdef.h"
 !
 !   Notes:
 !     This uses Fortran 90 free-form, this means the lines can be up to 132 columns wide
@@ -128,7 +128,7 @@
 
       program ex37f90
       use mex37f90
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscviewer.h"
 #include "finclude/petscvec.h"
 

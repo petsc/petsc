@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include "private/viewerimpl.h"  /*I "petsc.h" I*/  
+#include "private/viewerimpl.h"  /*I "petscsys.h" I*/  
 
 PetscCookie PETSC_VIEWER_COOKIE;
 

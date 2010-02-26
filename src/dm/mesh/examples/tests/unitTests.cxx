@@ -1,7 +1,7 @@
 #define ALE_MEM_LOGGING
 static char help[] = "Sieve Package Correctness and Performance Unit Tests.\n\n";
 
-#include <petsc.h>
+#include <petscsys.h>
 
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>

@@ -2,8 +2,7 @@
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */
-#include "petsc.h"  /*I   "petsc.h"    I*/
-#include "petscsys.h"
+#include "petscsys.h"  /*I   "petscsys.h"    I*/
 
 EXTERN PetscErrorCode PetscObjectGetComm_Petsc(PetscObject,MPI_Comm *);
 EXTERN PetscErrorCode PetscObjectCompose_Petsc(PetscObject,const char[],PetscObject);

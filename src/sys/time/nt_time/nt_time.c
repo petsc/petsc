@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include <petsc.h>
+#include <petscsys.h>
 #include <Windows.h>
 #define FACTOR   4294967296.0 /* pow(2,32) */
 

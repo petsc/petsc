@@ -1,14 +1,9 @@
 #define PETSC_DLL
-/* 
-        Written by Matt Knepley, knepley@cs.purdue.edu 7/23/97
-        Major overhall for interactivity               11/14/97
-        Reorganized                                    11/8/98
-*/
-#include "private/viewerimpl.h"   /* "petsc.h" */
+
+#include "private/viewerimpl.h"   /* "petscsys.h" */
 #include "private/pcimpl.h"
 #include "../src/mat/impls/aij/seq/aij.h"
 #include "mathematica.h"
-#include "petscfix.h"
 
 #if defined (PETSC_HAVE__SNPRINTF) && !defined(PETSC_HAVE_SNPRINTF)
 #define snprintf _snprintf

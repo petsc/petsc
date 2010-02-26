@@ -6,7 +6,6 @@ static char help[] = "Tests DA with variable multiple degrees of freedom per nod
 */
 
 #include "petscda.h"
-#include "petscsys.h"
 
 PetscErrorCode doit(DA da,Vec global)
 {

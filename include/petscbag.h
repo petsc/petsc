@@ -1,7 +1,7 @@
 
 #if !defined(__PETSCBAG_H)
 #define __PETSCBAG_H
-#include "petsc.h"
+#include "petscsys.h"
 PETSC_EXTERN_CXX_BEGIN
 
 /*S

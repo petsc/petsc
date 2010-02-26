@@ -4,7 +4,6 @@
 */
 
 #include "private/pcimpl.h"      /*I "petscpc.h" I*/
-#include "petscsys.h"
 
 PetscTruth PCRegisterAllCalled = PETSC_FALSE;
 /*

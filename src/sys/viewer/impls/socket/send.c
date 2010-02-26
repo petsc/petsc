@@ -1,5 +1,4 @@
 #define PETSC_DLL
-#include "petsc.h"
 #include "petscsys.h"
 
 #if defined(PETSC_NEEDS_UTYPE_TYPEDEFS)
@@ -47,7 +46,6 @@ typedef unsigned long   u_long;
 #endif
 
 #include "../src/sys/viewer/impls/socket/socket.h"
-#include "petscfix.h"
 
 EXTERN_C_BEGIN
 #if defined(PETSC_NEED_CLOSE_PROTO)

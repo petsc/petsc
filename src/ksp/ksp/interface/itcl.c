@@ -5,7 +5,6 @@
 */
 
 #include "private/kspimpl.h"  /*I "petscksp.h" I*/
-#include "petscsys.h"
 
 /*
        We retain a list of functions that also take KSP command 

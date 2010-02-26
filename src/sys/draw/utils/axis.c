@@ -3,7 +3,7 @@
    This file contains a simple routine for generating a 2-d axis.
 */
 
-#include "petsc.h"              /*I "petsc.h" I*/
+#include "petscsys.h"              /*I "petscsys.h" I*/
 
 PetscCookie DRAWAXIS_COOKIE = 0;
 

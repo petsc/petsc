@@ -9,7 +9,7 @@
 #include <memory>
 #include <cstdlib>
 #include <typeinfo>
-#include <petsc.h>
+#include <petscsys.h>
 #include <ALE_log.hh>
 
 #ifdef ALE_HAVE_CXX_ABI

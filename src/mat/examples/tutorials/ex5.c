@@ -1,7 +1,7 @@
 
 #define USE_FAST_MAT_SET_VALUES
 
-#include "petsc.h"
+#include "petscsys.h"
 #include "petscviewer.h"
 
 #if defined(USE_FAST_MAT_SET_VALUES)

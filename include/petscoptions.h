@@ -3,7 +3,7 @@
 */
 #if !defined(__PETSCOPTIONS_H)
 #define __PETSCOPTIONS_H
-#include "petsc.h"
+#include "petscsys.h"
 PETSC_EXTERN_CXX_BEGIN
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsHasName(const char[],const char[],PetscTruth*);
