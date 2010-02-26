@@ -2375,14 +2375,12 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat B,Mat A,IS perm,const MatFa
 #define __FUNCT__ "MatICCFactorSymbolic_SeqSBAIJ"
 PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFactorInfo *info)
 {
-  Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data;
-  Mat_SeqSBAIJ       *b;
+  Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data,*b;
   PetscErrorCode     ierr;
   PetscTruth         perm_identity,free_ij = PETSC_TRUE,missing;
-  PetscInt           bs=A->rmap->bs,am=a->mbs,d;
-  PetscInt           *cols,*ai,*aj;
+  PetscInt           bs=A->rmap->bs,am=a->mbs,d,*ai=a->i,*aj= a->j;
   const PetscInt     *rip;
-  PetscInt           reallocs=0,i,*ui,*udiag;
+  PetscInt           reallocs=0,i,*ui,*udiag,*cols;
   PetscInt           jmin,jmax,nzk,k,j,*jl,prow,*il,nextprow;
   PetscInt           nlnk,*lnk,*lnk_lvl=PETSC_NULL,ncols,*uj,**uj_ptr,**uj_lvl_ptr;
   PetscReal          fill=info->fill,levels=info->levels;
@@ -2414,7 +2412,6 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
   /* ICC(0) without matrix ordering: simply rearrange column indices */
   if (!levels){  
     /* reuse the column pointers and row offsets for memory savings */
-    ai = a->i; aj = a->j;  
     for (i=0; i<am; i++) {
       ncols    = ai[i+1] - ai[i];
       ui[i+1]  = ui[i] + ncols; 
@@ -2428,9 +2425,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
       for (j=0; j<ncols; j++) *cols++ = aj[j]; 
       *cols++ = i; /* diagoanl is located as the last entry of U(i,:) */
     }
-  } else { /* case: levels>0 || (levels=0 && !perm_identity) */ 
-    ai = a->i; aj = a->j; 
-
+  } else { /* case: levels>0 */ 
     ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);  
 
     /* initialization */
@@ -2452,7 +2447,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
     current_space_lvl = free_space_lvl;
 
     for (k=0; k<am; k++){  /* for each active row k */
-      /* initialize lnk by the column indices of row rip[k] */
+      /* initialize lnk by the column indices of row k */
       nzk   = 0;
       ncols = ai[k+1] - ai[k]; 
       if (!ncols) SETERRQ1(PETSC_ERR_MAT_CH_ZRPVT,"Empty row %D in matrix ",k);

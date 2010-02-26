@@ -1323,31 +1323,36 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat B,Mat A,c
   Mat_SeqSBAIJ   *b=(Mat_SeqSBAIJ*)B->data;
   PetscErrorCode ierr;
   PetscInt       i,j,mbs=A->rmap->n,*bi=b->i,*bj=b->j,*bdiag=b->diag,*bjtmp;
-  PetscInt       *ai=a->i,*aj=a->j;
+  PetscInt       *ai=a->i,*aj=a->j,*ajtmp;
   PetscInt       k,jmin,jmax,*c2r,*il,col,nexti,ili,nz;
   MatScalar      *rtmp,*ba=b->a,*bval,*aa=a->a,dk,uikdi;
-
   LUShift_Ctx    sctx;
   PetscInt       newshift;
   PetscReal      rs;
   MatScalar      d,*v;
 
   PetscFunctionBegin;
+  ierr = PetscMalloc3(mbs,MatScalar,&rtmp,mbs,PetscInt,&il,mbs,PetscInt,&c2r);CHKERRQ(ierr);
+
   /* MatPivotSetUp(): initialize shift context sctx */
   ierr = PetscMemzero(&sctx,sizeof(LUShift_Ctx));CHKERRQ(ierr);
 
   /* if both shift schemes are chosen by user, only use info->shiftpd */
   if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
     sctx.shift_top = info->zeropivot;
+    ierr = PetscMemzero(rtmp,mbs*sizeof(MatScalar));CHKERRQ(ierr);
     for (i=0; i<mbs; i++) {
       /* calculate sum(|aij|)-RealPart(aii), amt of shift needed for this row */
       d  = (aa)[a->diag[i]];
-      rs = -PetscAbsScalar(d) - PetscRealPart(d);
-      v  = aa+ai[i];
-      nz = ai[i+1] - ai[i];
-      for (j=0; j<nz; j++) 
-	rs += PetscAbsScalar(v[j]);
-      if (rs>sctx.shift_top) sctx.shift_top = rs;
+      rtmp[i] += - PetscRealPart(d); /* diagonal entry */
+      ajtmp = aj + ai[i] + 1;        /* exclude diagonal */
+      v     = aa + ai[i] + 1;
+      nz    = ai[i+1] - ai[i] - 1 ;
+      for (j=0; j<nz; j++){
+	rtmp[i] += PetscAbsScalar(v[j]);  
+        rtmp[ajtmp[j]] += PetscAbsScalar(v[j]);
+      }
+      if (rtmp[i] > sctx.shift_top) sctx.shift_top = rtmp[i];
     }
     sctx.shift_top   *= 1.1;
     sctx.nshift_max   = 5;
@@ -1359,8 +1364,6 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat B,Mat A,c
      c2r: linked list, keep track of pivot rows for a given column. c2r[col]: head of the list for a given col
      il:  for active k row, il[i] gives the index of the 1st nonzero entry in U[i,k:n-1] in bj and ba arrays 
   */
-  ierr = PetscMalloc3(mbs,MatScalar,&rtmp,mbs,PetscInt,&il,mbs,PetscInt,&c2r);CHKERRQ(ierr);
- 
   do {
     sctx.lushift = PETSC_FALSE;
 

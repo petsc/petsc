@@ -5230,8 +5230,6 @@ PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 
 /* ----------------------------------------------------------------*/
 EXTERN PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat,Mat,MatDuplicateOption,PetscTruth);
-//EXTERN PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat,PetscTruth);
-//EXTERN PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscTruth);
 
 /* bs = 15 for PFLOTRAN */
 #undef __FUNCT__  
@@ -5247,7 +5245,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15(Mat B,Mat A,const MatFactorInfo *in
   PetscInt       *ajtmp,*bjtmp,nz,nzL,row,*bdiag=b->diag,*pj,*v_pivots;
   MatScalar      *rtmp,*pc,*mwork,*v,*v_work,*pv,*aa=a->a;
   PetscInt       bs2 = a->bs2,bs=A->rmap->bs,flg;
-  PetscReal      shift = info->shiftinblocks;
+  /* PetscReal      shift = info->shiftinblocks; */
 
   PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -5323,7 +5321,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15(Mat B,Mat A,const MatFactorInfo *in
     pj   = b->j + bdiag[i];
     ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);   
     ierr = Kernel_A_gets_inverse_A(bs,pv,v_pivots,v_work);CHKERRQ(ierr);
-							    /*ierr = Kernel_A_gets_inverse_A_7(pv,shift);CHKERRQ(ierr); */
+    /*ierr = Kernel_A_gets_inverse_A_7(pv,shift);CHKERRQ(ierr); */
       
     /* U part */
     pv = b->a + bs2*(bdiag[i+1]+1);
