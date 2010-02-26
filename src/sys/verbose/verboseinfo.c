@@ -6,14 +6,12 @@
 #include "petsc.h"        /*I    "petsc.h"   I*/
 #include <stdarg.h>
 #include <sys/types.h>
-#include "petscsys.h"
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #if defined(PETSC_HAVE_MALLOC_H)
 #include <malloc.h>
 #endif
-#include "petscfix.h"
 
 /*
   The next three variables determine which, if any, PetscInfo() calls are used.

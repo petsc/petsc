@@ -7,7 +7,7 @@
 #ifndef __PETSCVEC_H 
 #define __PETSCVEC_H
 #include "petscis.h"
-#include "petscsys.h"
+
 PETSC_EXTERN_CXX_BEGIN
 
 /*S

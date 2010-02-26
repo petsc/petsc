@@ -7,7 +7,6 @@
    place inner-loop variables into registers.
  */
 #include "petsc.h"                /*I  "petsc.h"  I*/
-#include "petscsys.h"             /*I  "petscsys.h"    I*/
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
 

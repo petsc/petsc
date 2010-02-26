@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include "../src/sys/random/randomimpl.h"         /*I "petscsys.h" I*/
+#include "../src/sys/random/randomimpl.h"         /*I "petsc.h" I*/
 
 PetscFList PetscRandomList              = PETSC_NULL;
 PetscTruth PetscRandomRegisterAllCalled = PETSC_FALSE;
@@ -21,7 +21,7 @@ PetscTruth PetscRandomRegisterAllCalled = PETSC_FALSE;
                      of available types
 
   Notes:
-  See "petsc/include/petscsys.h" for available random types (for instance, PETSCRAND48, PETSCRAND).
+  See "petsc/include/petsc.h" for available random types (for instance, PETSCRAND48, PETSCRAND).
 
   Level: intermediate
 

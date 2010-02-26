@@ -10,8 +10,6 @@
 #include <stdlib.h>
 #endif
 
-#include "petscfix.h"
-
 EXTERN_C_BEGIN
 
 #include "jostle.h"

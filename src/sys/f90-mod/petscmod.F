@@ -18,7 +18,3 @@
 #include "finclude/petscviewer.h90"
         end module
 
-        module petscsys
-        use petsc
-#include "finclude/petscsys.h"
-        end module

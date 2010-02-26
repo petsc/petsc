@@ -8,7 +8,6 @@
 #include "private/vecimpl.h"         /*I "petscvec.h" I*/
 #include "../src/vec/vec/impls/dvecimpl.h"
 #include "../src/vec/vec/impls/mpi/pvecimpl.h"
-#include "petscsys.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterView_MPI"

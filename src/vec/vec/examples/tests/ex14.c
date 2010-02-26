@@ -3,7 +3,6 @@ static char help[] = "Scatters from a sequential vector to a parallel vector.\n\
 This does the tricky case.\n\n";
 
 #include "petscvec.h"
-#include "petscsys.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

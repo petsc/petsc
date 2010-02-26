@@ -10,8 +10,6 @@
 #include <stdlib.h>
 #endif
 
-#include "petscfix.h"
-
 /* 
    Currently using Scotch-3.4
 */

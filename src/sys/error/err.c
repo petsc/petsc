@@ -3,7 +3,6 @@
       Code that allows one to set the error handlers
 */
 #include "petsc.h"           /*I "petsc.h" I*/
-#include "petscsys.h"
 #include <stdarg.h>
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>

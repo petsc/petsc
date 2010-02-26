@@ -1,12 +1,10 @@
 #define PETSC_DLL
 
 #include "petsc.h"        
-#include "petscsys.h"             /*I    "petscsys.h"   I*/
 #include <stdarg.h>
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#include "petscfix.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsGetenv"

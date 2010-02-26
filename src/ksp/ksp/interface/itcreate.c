@@ -4,7 +4,6 @@
      The basic KSP routines, Create, View etc. are here.
 */
 #include "private/kspimpl.h"      /*I "petscksp.h" I*/
-#include "petscsys.h"
 
 /* Logging support */
 PetscCookie PETSCKSP_DLLEXPORT KSP_COOKIE;

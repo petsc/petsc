@@ -20,7 +20,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !     petsc.h  - base PETSc routines      petscvec.h - vectors
-!     petscsys.h    - system routines          petscmat.h - matrices
+!     petscmat.h - matrices
 !     petscksp.h    - Krylov subspace methods  petscpc.h  - preconditioners
 
 #include "finclude/petsc.h"

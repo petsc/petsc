@@ -5,8 +5,6 @@
   matrix storage format.
 */
 #include "../src/mat/impls/baij/seq/baij.h"
-#include "petscsys.h"                     /*I "petscmat.h" I*/
-
 #include "../src/mat/blockinvert.h"
 
 #undef __FUNCT__

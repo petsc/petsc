@@ -7,7 +7,6 @@
 #include "finclude/petsc.h"
 #include "finclude/petscis.h"
 #include "finclude/petscvec.h"
-#include "finclude/petscsys.h"
 
       PetscErrorCode ierr
       PetscMPIInt  size,rank

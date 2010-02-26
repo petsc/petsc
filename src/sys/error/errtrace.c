@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include "petscsys.h"        /*I "petscsys.h" I*/
+#include "petsc.h"        /*I "petsc.h" I*/
 #include "petscconfiginfo.h"
 
 #undef __FUNCT__  

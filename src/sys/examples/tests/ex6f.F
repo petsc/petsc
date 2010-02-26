@@ -3,7 +3,6 @@
 !
        program main
 #include "finclude/petsc.h"
-#include "finclude/petscsys.h"
       PetscErrorCode  ierr
       PetscRandom     r
       PetscScalar     rand

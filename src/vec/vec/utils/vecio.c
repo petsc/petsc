@@ -6,7 +6,6 @@
  */
 
 #include "petsc.h"
-#include "petscsys.h"
 #include "petscvec.h"         /*I  "petscvec.h"  I*/
 #include "private/vecimpl.h"
 #if defined(PETSC_HAVE_PNETCDF)

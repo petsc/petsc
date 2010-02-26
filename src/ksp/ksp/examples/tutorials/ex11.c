@@ -27,7 +27,7 @@ T*/
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
      petsc.h       - base PETSc routines   petscvec.h - vectors
-     petscsys.h    - system routines       petscmat.h - matrices
+     petscmat.h - matrices
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */

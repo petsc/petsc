@@ -9,14 +9,12 @@
 */
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
-#include "petscsys.h"
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #if defined(PETSC_HAVE_MALLOC_H)
 #include <malloc.h>
 #endif
-#include "petscfix.h"
 /* ------------------------Nasty global variables -------------------------------*/
 /*
      Indicates if PETSc started up MPI, or it was 

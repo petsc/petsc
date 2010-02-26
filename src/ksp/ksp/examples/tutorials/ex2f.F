@@ -41,8 +41,6 @@
 !     petscmat.h    - matrices
 !     petscpc.h     - preconditioners
 !     petscksp.h    - Krylov subspace methods
-!  Include the following to use PETSc random numbers:
-!     petscsys.h    - system routines
 !  Additional include statements may be needed if using additional
 !  PETSc routines in a Fortran program, e.g.,
 !     petscviewer.h - viewers
@@ -53,7 +51,6 @@
 #include "finclude/petscmat.h"
 #include "finclude/petscpc.h"
 #include "finclude/petscksp.h"
-#include "finclude/petscsys.h"
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations

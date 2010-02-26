@@ -1865,8 +1865,6 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Ma
   PetscFunctionReturn(0);
 }
 
-#include "petscsys.h"
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIDense_DenseInFile"
 PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M,PetscInt N, const MatType type,Mat *newmat)

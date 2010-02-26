@@ -18,7 +18,7 @@ T*/
   Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:
      petsc.h       - base PETSc routines   petscis.h     - index sets
-     petscsys.h    - system routines       petscviewer.h - viewers
+     petscviewer.h - viewers
 */
 #define PETSC_UNDERSCORE_CHKERR
 

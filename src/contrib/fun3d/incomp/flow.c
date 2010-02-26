@@ -4,7 +4,6 @@ originally written by W. K. Anderson of NASA Langley, \n\
 and ported into PETSc by D. K. Kaushik, ODU and ICASE.\n\n";
 
 #include "petscsnes.h"
-#include "petscsys.h"
 #include "petscao.h"
 #include "user.h"
 #if defined(_OPENMP)

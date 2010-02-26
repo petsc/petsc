@@ -3,15 +3,12 @@
     Code that allows a user to dictate what malloc() PETSc uses.
 */
 #include "petsc.h"             /*I   "petsc.h"   I*/
-#include "petscsys.h"
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #if defined(PETSC_HAVE_MALLOC_H)
 #include <malloc.h>
 #endif
-#include "petscfix.h"
-
 
 /*
         We want to make sure that all mallocs of double or complex numbers are complex aligned.

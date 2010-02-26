@@ -12,7 +12,6 @@
 */
 
 #include "petsc.h"
-#include "petscsys.h"
 
 #if defined(PETSC_NEEDS_UTYPE_TYPEDEFS)
 /* Some systems have inconsistent include files that use but don't
@@ -69,7 +68,6 @@ typedef unsigned long   u_long;
 #include <Ws2tcpip.h>
 #endif
 #include "../src/sys/viewer/impls/socket/socket.h"
-#include "petscfix.h"
 #include "mex.h"
 
 #define PETSC_MEX_ERROR(a) {mexErrMsgTxt(a); return ;}

@@ -4,7 +4,6 @@
      This is used to allow PETSc objects to carry a list of "composed" objects
 */
 #include "petsc.h"
-#include "petscsys.h"
 
 struct _n_PetscOList {
     char        name[256];

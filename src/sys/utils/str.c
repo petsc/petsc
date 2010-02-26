@@ -6,14 +6,12 @@
 
 */
 #include "petsc.h"                   /*I  "petsc.h"   I*/
-#include "petscsys.h"
 #if defined(PETSC_HAVE_STRING_H)
 #include <string.h>
 #endif
 #if defined(PETSC_HAVE_STRINGS_H)
 #include <strings.h>
 #endif
-#include "petscfix.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStrlen"

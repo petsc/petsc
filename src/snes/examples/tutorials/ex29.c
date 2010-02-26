@@ -35,7 +35,7 @@ T*/
    Include "petscmg.h" to control the multigrid solvers. 
    Note that these automatically include:
      petsc.h       - base PETSc routines   petscvec.h - vectors
-     petscsys.h    - system routines       petscmat.h - matrices
+     petscmat.h - matrices
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers 

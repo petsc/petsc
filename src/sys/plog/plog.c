@@ -9,15 +9,13 @@
 #endif
 #include <stdarg.h>
 #include <sys/types.h>
-#include "petscsys.h"
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #if defined(PETSC_HAVE_MALLOC_H)
 #include <malloc.h>
 #endif
-#include "petscfix.h"
-#include "plog.h"
+#include "../src/sys/plog/plog.h"
 
 PetscLogEvent  PETSC_LARGEST_EVENT  = PETSC_EVENT;
 

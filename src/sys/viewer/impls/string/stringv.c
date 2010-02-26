@@ -4,7 +4,6 @@
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#include "petscfix.h"
 
 typedef struct  {
   char         *string;   /* string where info is stored */

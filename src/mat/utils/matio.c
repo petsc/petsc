@@ -5,7 +5,6 @@
  */
 
 #include "private/matimpl.h"             /*I  "petscmat.h"  I*/
-#include "petscsys.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad"

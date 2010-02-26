@@ -3,7 +3,6 @@
       Code for manipulating files.
 */
 #include "petsc.h"
-#include "petscsys.h"
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
@@ -22,7 +21,6 @@
 #if defined(PETSC_HAVE_NETDB_H)
 #include <netdb.h>
 #endif
-#include "petscfix.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetHostName"

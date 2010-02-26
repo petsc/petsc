@@ -3,8 +3,6 @@
       Code for opening and closing files.
 */
 #include "petsc.h"
-#include "petscsys.h"
-#include "petscfix.h"
 #if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif
@@ -25,7 +23,6 @@
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
-#include "petscfix.h"
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

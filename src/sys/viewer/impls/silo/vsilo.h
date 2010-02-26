@@ -1,7 +1,6 @@
 
 
 #include "petsc.h"
-#include "petscsys.h" 
 #include "silo.h"
 #include "private/viewerimpl.h"
 

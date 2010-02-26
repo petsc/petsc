@@ -2,7 +2,6 @@
 
 #include "petsc.h"
 #include "petscdraw.h"
-#include "petscsys.h"
 
 extern PetscLogEvent PETSC_DLLEXPORT PETSC_Barrier;
 

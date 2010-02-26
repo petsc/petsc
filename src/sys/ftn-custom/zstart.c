@@ -12,7 +12,6 @@
 #define T3EMPI_FORTRAN
 
 #include "private/fortranimpl.h" 
-#include "petscsys.h"
 
 extern PETSC_DLL_IMPORT PetscTruth PetscBeganMPI;
 

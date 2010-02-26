@@ -5,7 +5,6 @@
 */
 
 #include "private/fortranimpl.h" 
-#include "petscsys.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define petscoptionsgettruth_              PETSCOPTIONSGETTRUTH

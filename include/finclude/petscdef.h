@@ -13,7 +13,7 @@
 #include "finclude/petscviewerdef.h"
 #include "finclude/petscerrordef.h"
 #include "finclude/petsclogdef.h"
-#include "finclude/petscsysdef.h"
+#include "finclude/petscdef.h"
 #include "finclude/petscdrawdef.h"
 
 !
@@ -195,5 +195,8 @@
 #endif
 #endif
 
+#define PetscRandom PetscFortranAddr
+#define PetscRandomType character*(80)
+#define PetscBinarySeekType PetscEnum
 
 #endif

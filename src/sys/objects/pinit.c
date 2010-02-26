@@ -4,7 +4,6 @@
 */
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
-#include "petscsys.h"
 
 #if defined(PETSC_USE_LOG)
 EXTERN PetscErrorCode PetscLogBegin_Private(void);

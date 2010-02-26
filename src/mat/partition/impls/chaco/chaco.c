@@ -10,8 +10,6 @@
 #include <stdlib.h>
 #endif
 
-#include "petscfix.h"
-
 EXTERN_C_BEGIN
 /* Chaco does not have an include file */
 extern int interface(int nvtxs, int *start, int *adjacency, int *vwgts,

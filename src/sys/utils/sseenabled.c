@@ -1,5 +1,5 @@
 #define PETSC_DLL
-#include "petscsys.h" /*I "petscsys.h" I*/
+#include "petsc.h" /*I "petsc.h" I*/
 
 #ifdef PETSC_HAVE_SSE
 

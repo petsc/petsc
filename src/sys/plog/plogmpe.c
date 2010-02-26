@@ -4,7 +4,6 @@
 */
 #include "petsc.h"        /*I    "petsc.h"   I*/
 #if defined(PETSC_USE_LOG) && defined (PETSC_HAVE_MPE)
-#include "petscsys.h"
 #include "mpe.h"
 
 PetscTruth UseMPE = PETSC_FALSE;

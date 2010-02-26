@@ -2,7 +2,6 @@
 static char help[] = "Tests DAGetInterpolation for nonuniform DA coordinates.\n\n";
 
 #include "petscda.h"
-#include "petscsys.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "SetCoordinates1d"

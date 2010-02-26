@@ -4,7 +4,6 @@
 */
 
 #include "private/viewerimpl.h"   /*I  "petsc.h"  I*/
-#include "petscsys.h" 
 
 typedef struct {
   int           port;

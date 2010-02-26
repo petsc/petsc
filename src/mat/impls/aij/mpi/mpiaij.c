@@ -2864,8 +2864,6 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *ne
   PetscFunctionReturn(0);
 }
 
-#include "petscsys.h"
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIAIJ"
 PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer, const MatType type,Mat *newmat)

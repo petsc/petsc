@@ -8,7 +8,6 @@
 #include "private/pcimpl.h"
 #include "../src/mat/impls/aij/seq/aij.h"
 #include "mathematica.h"
-#include "petscfix.h"
 
 #if defined (PETSC_HAVE__SNPRINTF) && !defined(PETSC_HAVE_SNPRINTF)
 #define snprintf _snprintf

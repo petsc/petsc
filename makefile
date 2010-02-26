@@ -490,7 +490,7 @@ getsigs:
 	-@if [ ! -d src/sigs ]; then mkdir -p sigs; fi
 	-@echo ${PETSC_INCLUDE} > sigs/petsc_include
 	-@echo "#include \"petscvec.h\"" > sigs/vec.sigs.h
-	-@grep -h "enum " include/petscsys.h include/petscvec.h >> sigs/vec.sigs.h
+	-@grep -h "enum " include/petsc.h include/petscvec.h >> sigs/vec.sigs.h
 	-@grep " Vec[a-zA-Z][a-zA-Z]*(Vec," include/petscvec.h | grep EXTERN | grep -v "(\*)" | grep -v IS |grep -v VecType | sed "s/EXTERN PetscErrorCode PETSCVEC_DLLEXPORT//g" >> sigs/vec.sigs.h
 	-@echo "#include \"petscmat.h\"" > sigs/mat.sigs.h
 	-@grep "enum " include/petscmat.h | grep } >> sigs/mat.sigs.h

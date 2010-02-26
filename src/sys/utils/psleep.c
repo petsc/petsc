@@ -13,7 +13,6 @@
 #if defined (PETSC_HAVE_TIME_H)
 #include <time.h>
 #endif
-#include "petscfix.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSleep"
