@@ -3,7 +3,7 @@
 */
 #if !defined(__PETSCERROR_H)
 #define __PETSCERROR_H
-#include "petsc.h"
+#include "petscsys.h"
 PETSC_EXTERN_CXX_BEGIN
 
 /*

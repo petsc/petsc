@@ -1,7 +1,7 @@
 /*
       Demonstrates the use of the "extra", polymorphic versions of many functions
 */
-#include "petsc.h"
+#include "petscsys.h"
 #include "petscvec.h"
 
 

@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include "petsc.h"        
+#include "petscsys.h"        
 #include <stdarg.h>
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>

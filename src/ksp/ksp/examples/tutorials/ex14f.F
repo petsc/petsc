@@ -52,12 +52,12 @@
 !                    Include files
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
-!     petsc.h       - base PETSc routines   petscvec.h - vectors
+!     petscsys.h       - base PETSc routines   petscvec.h - vectors
 !     petscmat.h - matrices
 !     petscis.h     - index sets            petscksp.h - Krylov subspace methods
 !     petscviewer.h - viewers               petscpc.h  - preconditioners
 
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscis.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
@@ -297,12 +297,12 @@
       subroutine FormInitialGuess(X,ierr)
       implicit none
 
-!     petsc.h       - base PETSc routines   petscvec.h - vectors
+!     petscsys.h       - base PETSc routines   petscvec.h - vectors
 !     petscmat.h - matrices
 !     petscis.h     - index sets            petscksp.h - Krylov subspace methods
 !     petscviewer.h - viewers               petscpc.h  - preconditioners
 
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscis.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
@@ -382,12 +382,12 @@
       subroutine  ComputeFunction(X,F,ierr)
       implicit none
 
-!     petsc.h       - base PETSc routines   petscvec.h - vectors
+!     petscsys.h       - base PETSc routines   petscvec.h - vectors
 !     petscmat.h - matrices
 !     petscis.h     - index sets            petscksp.h - Krylov subspace methods
 !     petscviewer.h - viewers               petscpc.h  - preconditioners
 
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscis.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
@@ -489,12 +489,12 @@
       subroutine ComputeJacobian(X,jac,ierr)
       implicit none
 
-!     petsc.h  - base PETSc routines   petscvec.h - vectors
+!     petscsys.h  - base PETSc routines   petscvec.h - vectors
 !     petscmat.h - matrices
 !     petscis.h     - index sets            petscksp.h - Krylov subspace methods
 !     petscviewer.h - viewers               petscpc.h  - preconditioners
 
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscis.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"

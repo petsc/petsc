@@ -5,7 +5,7 @@
 
    Currently not supported
 */
-#include "petsc.h"        /*I  "petsc.h"   I*/
+#include "petscsys.h"        /*I  "petscsys.h"   I*/
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define petscmain_ PETSCMAIN

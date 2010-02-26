@@ -4,7 +4,7 @@
 !
       program main
 
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 
       PetscErrorCode ierr
 
@@ -33,7 +33,7 @@
 !
       subroutine Demo1()
 
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscviewer.h"
 
@@ -85,7 +85,7 @@
 !
       subroutine Demo2()
 
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscviewer.h"
 

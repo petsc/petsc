@@ -1,6 +1,6 @@
 static char help[] = "Section Tests.\n\n";
 
-#include <petsc.h>
+#include <petscsys.h>
 #include "sectionTest.hh"
 
 using ALE::Obj;

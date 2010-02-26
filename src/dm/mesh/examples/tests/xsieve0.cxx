@@ -1,6 +1,6 @@
 static char help[] = "XSieve Basic Ordering Tests.\n\n";
 
-#include <petsc.h>
+#include <petscsys.h>
 #include "xsieveTest.hh"
 
 

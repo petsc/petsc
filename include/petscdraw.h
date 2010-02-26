@@ -3,7 +3,7 @@
 */
 #if !defined(__PETSCDRAW_H)
 #define __PETSCDRAW_H
-#include "petsc.h"
+#include "petscsys.h"
 PETSC_EXTERN_CXX_BEGIN
 
 extern PetscCookie PETSC_DRAW_COOKIE;

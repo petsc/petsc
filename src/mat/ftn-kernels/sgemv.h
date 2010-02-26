@@ -1,6 +1,6 @@
 
 #if !defined(__SGEMV_H)
-#include "petsc.h"
+#include "petscsys.h"
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define msgemv_  MSGEMV
 #define msgemvp_ MSGEMVP

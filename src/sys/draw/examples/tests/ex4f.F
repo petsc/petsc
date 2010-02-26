@@ -6,7 +6,7 @@
 !      redraw the figure
 !
       subroutine zoomfunction(draw,dummy,ierr)
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscdraw.h"
       PetscDraw    draw
       integer dummy
@@ -21,7 +21,7 @@
       end
 
       program main
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscdraw.h"
       PetscDraw draw
       PetscErrorCode ierr

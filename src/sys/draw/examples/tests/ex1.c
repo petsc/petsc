@@ -1,7 +1,7 @@
 
 static char help[] = "Demonstrates opening and drawing a window\n";
 
-#include "petsc.h"
+#include "petscsys.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

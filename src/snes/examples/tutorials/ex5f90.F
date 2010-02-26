@@ -37,7 +37,7 @@
 
       module f90module
       type userctx
-#include "finclude/petscdef.h"
+#include "finclude/petscsysdef.h"
 #include "finclude/petscvecdef.h"
 #include "finclude/petscdadef.h"
         DA      da
@@ -73,7 +73,7 @@
       subroutine FormFunction(snes,X,F,user,ierr)
       implicit none
 
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscda.h"
 #include "finclude/petscis.h"
@@ -158,7 +158,7 @@
       use f90moduleinterfaces
       implicit none
 !
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscda.h"
 #include "finclude/petscis.h"
@@ -375,7 +375,7 @@
       implicit none
 
 #include "finclude/petscvec.h90"
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscda.h"
 #include "finclude/petscis.h"
@@ -439,7 +439,7 @@
       use f90module
       implicit none
 
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscda.h"
 #include "finclude/petscis.h"
@@ -595,7 +595,7 @@
       use f90module
       implicit none
 
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscda.h"
 #include "finclude/petscis.h"
@@ -720,7 +720,7 @@
       use f90module
       implicit none
 
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscda.h"
 #include "finclude/petscis.h"

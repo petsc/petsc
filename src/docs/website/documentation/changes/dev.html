@@ -97,8 +97,9 @@ the object.</li>
         <li>In makefiles include ${PETSC_DIR}/conf/base is replaced
 with two lines include ${PETSC_DIR}/conf/variables and&nbsp; include
 ${PETSC_DIR}/conf/rules</li>
-        <li>BlockSolve95 interface is removed<br>
-        </li>
+        <li>BlockSolve95 interface is removed</li>
+        <li>petsc.h and petscdef.h are replaced with petscsys.h and
+petscsysdef.h; while petsc.h now includes ALL PETSc include files.</li>
       </ul>
       <ul>
       </ul>
@@ -113,7 +114,8 @@ ${PETSC_DIR}/conf/rules</li>
       </b></u>
       <ul>
         <li>All ./configure options that state known values, so that
-./configure doesn't try to test for them. Often used with the --with-batch
+./configure doesn't try to test for them. Often used with the
+--with-batch
 option now begin with --known-</li>
       </ul>
       <u><b></b></u>
@@ -209,7 +211,7 @@ DMRefineHierarchy to generate refined grids. Added options
 -da_refine_hierarchy_[xyz] to allow semi-coarsening at some levels of
 the hierarchy.</li>
         <li>DASetCoordinates() now references the vector, so the user
-        should release their reference by calling VecDestroy().</li>
+should release their reference by calling VecDestroy().</li>
       </ul>
       <p><u><b>DMMG:</b></u></p>
       <ul>

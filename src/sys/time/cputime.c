@@ -4,7 +4,7 @@
   NOT real time usage. Do not use this for reported timings, speedup etc.
 */
 
-#include "petsc.h"                       /*I "petsc.h" I*/
+#include "petscsys.h"                       /*I "petscsys.h" I*/
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -69,7 +69,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetCPUTime(PetscLogDouble *t)
 
     Example:
 .vb
-    #include "petsc.h"
+    #include "petscsys.h"
     ...
     PetscLogDouble t1, t2;
  

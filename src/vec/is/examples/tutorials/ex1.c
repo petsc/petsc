@@ -13,7 +13,7 @@ T*/
  
 /*
     Include petscis.h so we can use PETSc IS objects. Note that this automatically 
-  includes petsc.h.
+  includes petscsys.h.
 */
 #include "petscis.h"
 

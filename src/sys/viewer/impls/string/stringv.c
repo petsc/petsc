@@ -1,5 +1,5 @@
 #define PETSC_DLL
-#include "private/viewerimpl.h"   /*I  "petsc.h"  I*/
+#include "private/viewerimpl.h"   /*I  "petscsys.h"  I*/
 #include <stdarg.h>
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>

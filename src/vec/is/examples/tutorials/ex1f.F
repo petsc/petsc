@@ -9,13 +9,13 @@
 !
 !  The following include statements are required for Fortran programs
 !  that use PETSc index sets:
-!     petsc.h  - base PETSc routines
+!     petscsys.h  - base PETSc routines
 !     petscis.h     - index sets (IS objects)
 !
       program main
       implicit none
 
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscis.h"
 
       PetscErrorCode ierr

@@ -2,7 +2,7 @@
 /*
      Code for the parallel NetCDF viewer.
 */
-#include "private/viewerimpl.h"    /*I   "petsc.h"   I*/
+#include "private/viewerimpl.h"    /*I   "petscsys.h"   I*/
 EXTERN_C_BEGIN
 #include "pnetcdf.h"
 EXTERN_C_END

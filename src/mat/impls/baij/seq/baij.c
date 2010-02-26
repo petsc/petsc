@@ -4,7 +4,7 @@
     Defines the basic matrix operations for the BAIJ (compressed row)
   matrix storage format.
 */
-#include "../src/mat/impls/baij/seq/baij.h"
+#include "../src/mat/impls/baij/seq/baij.h"  /*I   "petscmat.h"  I*/
 #include "../src/mat/blockinvert.h"
 
 #undef __FUNCT__

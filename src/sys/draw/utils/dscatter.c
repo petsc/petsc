@@ -5,7 +5,7 @@
     plots that change dynamically.
 */
 
-#include "petsc.h"         /*I "petsc.h" I*/
+#include "petscsys.h"         /*I "petscsys.h" I*/
 
 PetscCookie DRAWSP_COOKIE = 0;
 

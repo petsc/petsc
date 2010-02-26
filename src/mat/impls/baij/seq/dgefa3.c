@@ -11,7 +11,7 @@
     dgefa() and dgedi() specialized for a size of 3.
 
 */
-#include "petsc.h"
+#include "petscsys.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "Kernel_A_gets_inverse_A_3"

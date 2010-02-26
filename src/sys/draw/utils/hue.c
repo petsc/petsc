@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include "petsc.h"              /*I "petsc.h" I*/
+#include "petscsys.h"              /*I "petscsys.h" I*/
 
 /*
     Set up a color map, using uniform separation in hue space.

@@ -16,11 +16,11 @@
 !                    Include files
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
-!     petsc.h  - base PETSc routines      petscvec.h - vectors
+!     petscsys.h  - base PETSc routines      petscvec.h - vectors
 !     petscmat.h - matrices
 !     petscksp.h    - Krylov subspace methods  petscpc.h  - preconditioners
 
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscpc.h"
@@ -61,7 +61,7 @@
       subroutine ComputeRHS(dmmg,b,ierr)
       implicit none
 
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscda.h"
 
@@ -88,7 +88,7 @@
       subroutine ComputeJacobian(dmmg,JJ,jac,ierr)
       implicit none
 
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscda.h"

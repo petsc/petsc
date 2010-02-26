@@ -4,7 +4,7 @@ static char help[] = "Demonstrates using the PetscViewerBinaryMatlab viewer\n\n"
    Concepts: viewers; bags;
    Processors: n
 T*/
-#include "petsc.h"
+#include "petscsys.h"
 #include "petscda.h"
 #include "petscbag.h"
 

@@ -20,7 +20,7 @@
 !   and solved using the method of Newton alone.
 !
 !   Include "petscts.h"    to use the PETSc timestepping routines,
-!           "petsc.h" for basic PETSc operation,
+!           "petscsys.h" for basic PETSc operation,
 !           "petscmat.h"   for matrix operations,
 !           "petscpc.h"    for preconditions, and
 !           "petscvec.h"   for vector operations.
@@ -28,7 +28,7 @@
 !23456789012345678901234567890123456789012345678901234567890123456789012
       program main
       implicit none
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscpc.h"
@@ -197,7 +197,7 @@
 !
       subroutine FormInitialGuess(X,user,ierr)
       implicit none
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscpc.h"
@@ -245,7 +245,7 @@
 !
       subroutine FormFunction(ts,t,X,F,user,ierr)
       implicit none
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscpc.h"
@@ -308,7 +308,7 @@
 !
       subroutine FormJacobian(ts,ctime,X,JJ,B,flag,user,ierr)
       implicit none
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscpc.h"

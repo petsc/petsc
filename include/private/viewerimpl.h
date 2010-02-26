@@ -2,7 +2,7 @@
 #ifndef _VIEWERIMPL
 #define _VIEWERIMPL
 
-#include "petsc.h"
+#include "petscsys.h"
 
 struct _PetscViewerOps {
    PetscErrorCode (*destroy)(PetscViewer);

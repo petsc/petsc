@@ -1,6 +1,5 @@
 #define PETSC_DLL
 
-#include "petsc.h"
 #include "petscdraw.h"
 
 extern PetscLogEvent PETSC_DLLEXPORT PETSC_Barrier;

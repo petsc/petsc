@@ -4,7 +4,7 @@
 */
 #if !defined(_BLASLAPACK_H)
 #define _BLASLAPACK_H
-#include "petsc.h"
+#include "petscsys.h"
 
 #if defined(PETSC_BLASLAPACK_STDCALL)
 #include "petscblaslapack_stdcall.h"

@@ -1,6 +1,6 @@
 static char help[] = "Sieve Distribution Tests.\n\n";
 
-#include <petsc.h>
+#include <petscsys.h>
 #include "overlapTest.hh"
 #include "meshTest.hh"
 #include <Completion.hh>

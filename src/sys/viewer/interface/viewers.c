@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include "petsc.h"
+#include "petscsys.h"
 
 struct _n_PetscViewers {
    MPI_Comm    comm;

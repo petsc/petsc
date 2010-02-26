@@ -3,7 +3,7 @@
    This file defines the initialization of PETSc, including PetscInitialize()
 */
 
-#include "petsc.h"        /*I  "petsc.h"   I*/
+#include "petscsys.h"        /*I  "petscsys.h"   I*/
 
 #if defined(PETSC_USE_LOG)
 EXTERN PetscErrorCode PetscLogBegin_Private(void);

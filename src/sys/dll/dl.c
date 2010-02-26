@@ -4,7 +4,7 @@
    path of DLLs, obtaining remote DLLs via a URL and opening them locally.
 */
 
-#include "petsc.h"
+#include "petscsys.h"
 #include "../src/sys/dll/dlimpl.h"
 
 /* ------------------------------------------------------------------------------*/

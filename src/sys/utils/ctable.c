@@ -1,7 +1,7 @@
 #define PETSC_DLL
 /* Contributed by - Mark Adams */
 
-#include "petsc.h"
+#include "petscsys.h"
 #include "../src/sys/ctable.h" 
 #if defined (PETSC_HAVE_LIMITS_H)
 #include <limits.h>

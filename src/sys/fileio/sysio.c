@@ -4,7 +4,7 @@
    This file contains simple binary read/write routines.
  */
 
-#include "petsc.h"
+#include "petscsys.h"
 #include <errno.h>
 #include <fcntl.h>
 #if defined(PETSC_HAVE_UNISTD_H)

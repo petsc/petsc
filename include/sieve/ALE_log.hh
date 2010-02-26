@@ -1,7 +1,7 @@
 #ifndef included_ALE_ALE_log_hh
 #define included_ALE_ALE_log_hh
 
-#include <petsc.h>
+#include <petscsys.h>
 
 namespace ALE {
   int  getVerbosity();

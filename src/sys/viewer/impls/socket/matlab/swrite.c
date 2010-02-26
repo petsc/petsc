@@ -5,7 +5,7 @@
 */
 
 #include <stdio.h>
-#include "petsc.h"
+#include "petscsys.h"
 #include "../src/sys/viewer/impls/socket/socket.h"
 #include "mex.h"
 

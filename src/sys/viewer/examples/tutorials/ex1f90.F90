@@ -1,7 +1,7 @@
 
       program ex5f90
       implicit none
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscviewer.h"
 #include "finclude/petscviewer.h90"
       PetscViewer viewer

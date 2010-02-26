@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include "../src/sys/viewer/impls/ascii/asciiimpl.h"  /*I     "petsc.h"   I*/
+#include "../src/sys/viewer/impls/ascii/asciiimpl.h"  /*I     "petscsys.h"   I*/
 #include <stdarg.h>
 
 #define QUEUESTRINGSIZE 8192

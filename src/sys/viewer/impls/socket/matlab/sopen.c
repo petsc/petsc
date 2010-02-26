@@ -11,7 +11,7 @@
  Only compiles as C code.
 */
 
-#include "petsc.h"
+#include "petscsys.h"
 
 #if defined(PETSC_NEEDS_UTYPE_TYPEDEFS)
 /* Some systems have inconsistent include files that use but don't

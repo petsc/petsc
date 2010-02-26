@@ -1,6 +1,6 @@
 static char help[] = "Topology Tests.\n\n";
 
-#include <petsc.h>
+#include <petscsys.h>
 #include "topologyTest.hh"
 
 using ALE::Obj;

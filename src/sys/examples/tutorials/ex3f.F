@@ -19,7 +19,7 @@
 !
 !  The following include statements are required for using PetscLog Routines
 !
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petsclog.h"
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

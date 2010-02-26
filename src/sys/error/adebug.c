@@ -3,7 +3,7 @@
       Code to handle PETSc starting up in debuggers,etc.
 */
 
-#include "petsc.h"               /*I   "petsc.h"   I*/
+#include "petscsys.h"               /*I   "petscsys.h"   I*/
 #include <signal.h> 
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>

@@ -1,5 +1,5 @@
 
-#include "petsc.h"
+#include "petscsys.h"
 #include "petsctime.h"
 
 #undef __FUNCT__

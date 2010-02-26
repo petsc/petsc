@@ -37,6 +37,10 @@
      a run. Usually this information is logged for only one stage.
 */
 
+#include "petscsys.h"
+#include "petsctime.h"
+#include "petsclog.h"
+
 /* The structure for action logging */
 #define CREATE      0
 #define DESTROY     1

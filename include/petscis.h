@@ -4,7 +4,7 @@
 */
 #if !defined(__PETSCIS_H)
 #define __PETSCIS_H
-#include "petsc.h"
+#include "petscsys.h"
 PETSC_EXTERN_CXX_BEGIN
 
 extern PETSCVEC_DLLEXPORT PetscCookie IS_COOKIE;

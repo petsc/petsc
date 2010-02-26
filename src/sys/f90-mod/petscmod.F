@@ -6,7 +6,7 @@
         use mpi
 #define PETSC_AVOID_MPIF_H
 #endif
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscviewer.h"
 #include "finclude/ftn-custom/petscviewerdef.h90"
 #include "finclude/petscdraw.h"

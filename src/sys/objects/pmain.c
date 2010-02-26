@@ -7,7 +7,7 @@
 */
 
 #include "petscconfig.h"
-#include "petsc.h"        /*I  "petsc.h"   I*/
+#include "petscsys.h"        /*I  "petscsys.h"   I*/
 
 extern int PetscMain(void);
 

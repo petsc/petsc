@@ -31,7 +31,7 @@
 !  See the Fortran section of the PETSc users manual for details.
 !
 !  The following include statements are required for KSP Fortran programs:
-!     petsc.h       - base PETSc routines
+!     petscsys.h       - base PETSc routines
 !     petscvec.h    - vectors
 !     petscmat.h    - matrices
 !     petscksp.h    - Krylov subspace methods
@@ -41,7 +41,7 @@
 !     petscviewer.h - viewers
 !     petscis.h     - index sets
 !
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscksp.h"

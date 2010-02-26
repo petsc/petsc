@@ -2,7 +2,7 @@
 
 /* genqmd.f -- translated by f2c (version 19931217).*/
 
-#include "petsc.h"
+#include "petscsys.h"
 
 /******************************************************************/
 /***********    GENQMD ..... QUOT MIN DEGREE ORDERING    **********/

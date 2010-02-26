@@ -30,7 +30,7 @@
       MODULE barry_mod
       IMPLICIT NONE
 
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscda.h"
 #include "finclude/petscmat.h"

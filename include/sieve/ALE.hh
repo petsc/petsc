@@ -1,7 +1,7 @@
 #ifndef included_ALE_ALE_hh
 #define included_ALE_ALE_hh
 
-#include <petsc.h>
+#include <petscsys.h>
 
 #ifndef  included_ALE_exception_hh
 #include <ALE_exception.hh>

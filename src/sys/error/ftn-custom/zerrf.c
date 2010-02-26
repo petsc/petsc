@@ -1,5 +1,5 @@
 #include "private/fortranimpl.h"
-#include "petsc.h"
+#include "petscsys.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscpusherrorhandler_        PETSCPUSHERRORHANDLER

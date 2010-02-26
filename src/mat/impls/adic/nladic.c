@@ -6,7 +6,7 @@
     was cloned off of Mat_DAAD I'm leaving it here until I have a better place
 
 */
-#include "petsc.h"
+#include "petscsys.h"
 #include "petscda.h"
 
 EXTERN_C_BEGIN

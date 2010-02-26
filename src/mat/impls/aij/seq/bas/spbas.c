@@ -1,4 +1,3 @@
-#include "petsc.h"
 #include "../src/mat/impls/aij/seq/aij.h"
 #include "../src/mat/impls/aij/seq/bas/spbas.h"
 

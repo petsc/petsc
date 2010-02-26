@@ -70,7 +70,7 @@ EXTERN_C_END
 /* ----------------------------------------------------------------------------------------
      Code to manage shared memory allocation using standard Unix shared memory
 */
-#include "petsc.h"
+#include "petscsys.h"
 #if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif

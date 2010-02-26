@@ -2,7 +2,7 @@
 /*
       Code for manipulating files.
 */
-#include "petsc.h"
+#include "petscsys.h"
 #if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif

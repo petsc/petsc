@@ -12,13 +12,13 @@ set day=`date | cut -f1 -d" "`
 #
 # on cygwin - tcsh gives funky paths - so reset it to normal bash one so 'chkpetsc_dir' doesn't complain
 set nPETSC_DIR=`pwd | sed s~/cygdrive/h~~`
-if ( ! -f ${nPETSC_DIR}/include/petsc.h ) then
+if ( ! -f ${nPETSC_DIR}/include/petscsys.h ) then
   set maintdir=`dirname $0`
   set nPETSC_DIR=`dirname $maintdir`
-  if ( ( ${nPETSC_DIR} !~ /*) || (! -f ${nPETSC_DIR}/include/petsc.h )) then
+  if ( ( ${nPETSC_DIR} !~ /*) || (! -f ${nPETSC_DIR}/include/petscsys.h )) then
     if (${?PETSC_DIR}) then 
       set nPETSC_DIR=${PETSC_DIR}
-      if ( ! -f ${nPETSC_DIR}/include/petsc.h ) then
+      if ( ! -f ${nPETSC_DIR}/include/petscsys.h ) then
         echo "Unable to locate PETSc directory, run with full path or in PETSc directory"
         exit
       endif

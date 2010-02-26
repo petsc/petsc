@@ -4,7 +4,7 @@
 *   enough slight differences we have completely separate codes for each one.
 *
 */
-#include "petsc.h"           /*I  "petsc.h"  I*/
+#include "petscsys.h"           /*I  "petscsys.h"  I*/
 #include <signal.h>
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>

@@ -1,11 +1,6 @@
 
-#include "petsc.h"
-#include "petscvec.h"
-#include "petscmat.h"
 #include "petscksp.h"
-
 #include "private/kspimpl.h"
-
 
 typedef struct {
   PetscInt       restart;

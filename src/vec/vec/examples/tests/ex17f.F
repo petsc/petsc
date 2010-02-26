@@ -4,7 +4,7 @@
 !  this case each local vector is as long as the entire parallel vector.
 !
       implicit none
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscis.h"
 #include "finclude/petscvec.h"
 

@@ -246,13 +246,13 @@ class Configure(config.base.Configure):
     return found
 
   def checkInclude(self, includeDir):
-    '''Check that petsc.h is present'''
+    '''Check that petscsys.h is present'''
     oldFlags = self.compilers.CPPFLAGS
     self.compilers.CPPFLAGS += ' '.join([self.headers.getIncludeArgument(inc) for inc in includeDir])
     if self.otherIncludes:
       self.compilers.CPPFLAGS += ' '+self.otherIncludes
     self.pushLanguage(self.languages.clanguage)
-    found = self.checkPreprocess('#include <petsc.h>\n')
+    found = self.checkPreprocess('#include <petscsys.h>\n')
     self.popLanguage()
     self.compilers.CPPFLAGS = oldFlags
     return found
@@ -284,7 +284,7 @@ class Configure(config.base.Configure):
     if hasattr(self.compilers, 'CXX') and self.languages.clanguage == 'C':
       self.pushLanguage('C++')
       self.sourceExtension = '.C'
-      if not self.checkPETScLink('#define PETSC_USE_EXTERN_CXX\n#include <petsc.h>\n', 'PetscLogDouble time;\nPetscErrorCode ierr;\n\nierr = PetscGetTime(&time); CHKERRQ(ierr);\n'):
+      if not self.checkPETScLink('#define PETSC_USE_EXTERN_CXX\n#include <petscsys.h>\n', 'PetscLogDouble time;\nPetscErrorCode ierr;\n\nierr = PetscGetTime(&time); CHKERRQ(ierr);\n'):
         self.logPrint('PETSc cannot link C++ but can link C, which indicates a problem with the PETSc installation')
         self.popLanguage()
         return 0
@@ -309,7 +309,7 @@ class Configure(config.base.Configure):
       # since they are already copied into the PETSc dynamic library.
       self.setOtherLibs([])
     self.pushLanguage(self.languages.clanguage)
-    isShared = self.libraries.checkShared('#include <petsc.h>\n', 'PetscInitialize', 'PetscInitialized', 'PetscFinalize', checkLink = self.checkPETScLink, libraries = libraries, initArgs = '&argc, &argv, 0, 0', boolType = 'PetscTruth', executor = self.mpi.mpiexec)
+    isShared = self.libraries.checkShared('#include <petscsys.h>\n', 'PetscInitialize', 'PetscInitialized', 'PetscFinalize', checkLink = self.checkPETScLink, libraries = libraries, initArgs = '&argc, &argv, 0, 0', boolType = 'PetscTruth', executor = self.mpi.mpiexec)
     self.popLanguage()
     return isShared
 

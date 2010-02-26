@@ -19,7 +19,7 @@ T*/
    Include "petscdraw.h" so that we can use PETSc drawing routines.
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
-     petsc.h       - base PETSc routines   petscvec.h - vectors
+     petscsys.h       - base PETSc routines   petscvec.h - vectors
      petscmat.h - matrices
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners

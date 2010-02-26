@@ -2,7 +2,7 @@
 !
        subroutine ex7f(vec,comm)
 
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 !
 !  This routine demonstates how a computational module may be written

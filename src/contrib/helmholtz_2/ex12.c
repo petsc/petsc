@@ -40,7 +40,7 @@ T*/
    Include "da.h" so that we can use distributed arrays (DAs).
    Include "sles.h" so that we can use SLES solvers.  Note that this file
    automatically includes:
-     petsc.h  - base PETSc routines   vec.h - vectors
+     petscsys.h  - base PETSc routines   vec.h - vectors
      sys.h    - system routines       mat.h - matrices
      is.h     - index sets            ksp.h - Krylov subspace methods
      viewer.h - viewers               pc.h  - preconditioners
