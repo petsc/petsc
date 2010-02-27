@@ -18,6 +18,7 @@ asterix*/*
 linux*/*
 darwin*/*
 arch-*/*
+batch-test
 c_test
 RDict.db
 RDict.log
