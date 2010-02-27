@@ -11,7 +11,8 @@
  * 2/ with -pc_factor_shift_positive_definite option (or comment in the PCFactorSetShiftPd line below):
  *    the method will now successfully converge.
  *
- * Contributed by Victor Eijkhout 2003.
+ * Modified from ex1.c by malte.foerster@scai.fraunhofer.de [petsc-maint #42323]
+ * such that the matrix A has inode structure.
  */
 
 #include "petscksp.h"
@@ -29,19 +30,21 @@ int main(int argc,char **argv)
   KSPConvergedReason reason;
   PetscInt           i,j,its;
   PetscErrorCode     ierr;
-
+  PetscInt           nnu=1000;
+  
   ierr = PetscInitialize(&argc,&argv,0,0);CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-options_left",PETSC_NULL);CHKERRQ(ierr);
   comm = MPI_COMM_SELF;
   
+ 
   /*
    * Construct the Kershaw matrix
    * and a suitable rhs / initial guess
    */
-  ierr = MatCreateSeqAIJ(comm,4,4,4,0,&A);CHKERRQ(ierr);
-  ierr = VecCreateSeq(comm,4,&B);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(comm,nnu,nnu,20,0,&A);CHKERRQ(ierr);
+  ierr = VecCreateSeq(comm,nnu,&B);CHKERRQ(ierr);
   ierr = VecDuplicate(B,&X);CHKERRQ(ierr);
-  for (i=0; i<4; i++) {
+  for (i=0; i<nnu; i++) {
     v=3;
     ierr = MatSetValues(A,1,&i,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
     v=1;
@@ -52,11 +55,13 @@ int main(int argc,char **argv)
   i=0; v=0;
   ierr = VecSetValues(X,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
 
-  for (i=0; i<3; i++) {
-    v=-2; j=i+1;
+  for (i=0; i<nnu-1; i+=1) {
+    v=-2; j=i+1; 
     ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatSetValues(A,1,&j,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
+    if (i>4) i++;
   }
+
   i=0; j=3; v=2;
   ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatSetValues(A,1,&j,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
@@ -64,7 +69,7 @@ int main(int argc,char **argv)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(B);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(B);CHKERRQ(ierr);
-  printf("\nThe Kershaw matrix:\n\n"); MatView(A,0);
+  //printf("\nThe Kershaw matrix:\n\n"); MatView(A,0);
 
   /*
    * A Conjugate Gradient method
@@ -95,7 +100,7 @@ int main(int argc,char **argv)
   ierr = PCFactorGetMatrix(prec,&M);CHKERRQ(ierr);
   ierr = VecDuplicate(B,&D);CHKERRQ(ierr);
   ierr = MatGetDiagonal(M,D);CHKERRQ(ierr);
-  printf("\nPivots:\n\n"); VecView(D,0);
+  //printf("\nPivots:\n\n"); VecView(D,0);
 
   /*
    * Solve the system;

@@ -882,18 +882,28 @@ PetscErrorCode MatGetDiagonal_SeqAIJ(Mat A,Vec v)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i,j,n;
-  PetscScalar    *x,zero = 0.0;
+  PetscInt       i,j,n,*ai=a->i,*aj=a->j,*diag=a->diag,nz;
+  PetscScalar    *aa=a->a,*x,zero=0.0;
 
   PetscFunctionBegin;
+  ierr = VecGetSize(v,&n);CHKERRQ(ierr);
+  if (n != A->rmap->n) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
+
+  if (diag || A->factor == MAT_FACTOR_ILU || A->factor == MAT_FACTOR_LU){
+    ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+    for (i=0; i<n; i++) x[i] = aa[diag[i]];
+    ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
   ierr = VecSet(v,zero);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  if (n != A->rmap->n) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
-  for (i=0; i<A->rmap->n; i++) {
-    for (j=a->i[i]; j<a->i[i+1]; j++) {
-      if (a->j[j] == i) {
-        x[i] = a->a[j];
+  for (i=0; i<n; i++) {
+    nz = ai[i+1] - ai[i];
+    if (!nz) SETERRQ1(PETSC_ERR_ARG_WRONG,"empty row %D",i);
+    for (j=ai[i]; j<ai[i+1]; j++){
+      if (aj[j] == i) {
+        x[i] = aa[j];
         break;
       }
     }

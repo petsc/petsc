@@ -371,11 +371,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC pc)
   ((PC_Factor*)ilu)->info.dt                 = PETSC_DEFAULT;
   ((PC_Factor*)ilu)->info.dtcount            = PETSC_DEFAULT;
   ((PC_Factor*)ilu)->info.dtcol              = PETSC_DEFAULT;
-  ((PC_Factor*)ilu)->info.shiftnz            = 1.e-12;
-  ((PC_Factor*)ilu)->info.shiftpd            = 0.0; /* false */
+  /* Only one of shiftnz, shiftpd and shiftinblocks is allowed to be set as non-zero. 
+     Setting shiftnz=TURE as default causes confusion if user sets shiftpd or shiftinblocks as true */
+  ((PC_Factor*)ilu)->info.shiftnz            = 0.0;    /* false */
+  ((PC_Factor*)ilu)->info.shiftpd            = 0.0;    /* false */
+  ((PC_Factor*)ilu)->info.shiftinblocks      = 0.0;    /* false */
   ((PC_Factor*)ilu)->info.zeropivot          = 1.e-12;
   ((PC_Factor*)ilu)->info.pivotinblocks      = 1.0;
-  ((PC_Factor*)ilu)->info.shiftinblocks      = 1.e-12;
   ilu->reusefill               = PETSC_FALSE;
   ((PC_Factor*)ilu)->info.diagonal_fill      = 0.;
   pc->data                     = (void*)ilu;
