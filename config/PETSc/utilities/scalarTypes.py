@@ -10,12 +10,12 @@ class Configure(config.base.Configure):
     self.substPrefix  = ''
     return
 
-  def __str__(self):
+  def __str1__(self):
     desc = []
     if hasattr(self, 'scalartype'):
-      desc.append('  Scalar type:' + self.scalartype)
+      desc.append('  Scalar type: ' + self.scalartype)
     if hasattr(self, 'precision'):
-      desc.append('  Precision:' + self.precision)
+      desc.append('  Precision: ' + self.precision)
     return '\n'.join(desc)+'\n'
     
   def setupHelp(self, help):

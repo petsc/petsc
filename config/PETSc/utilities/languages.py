@@ -10,7 +10,7 @@ class Configure(config.base.Configure):
     self.substPrefix  = ''
     return
 
-  def __str__(self):
+  def __str1__(self):
     if not hasattr(self, 'clanguage'):
       return ''
     return '  Clanguage: ' + self.clanguage +'\n'

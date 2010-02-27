@@ -10,10 +10,10 @@ class Configure(config.base.Configure):
     self.substPrefix  = ''
     return
 
-  def __str__(self):
+  def __str1__(self):
     if not hasattr(self, 'memalign'):
       return ''
-    return '  Memory alignment:' + self.memalign + '\n'
+    return '  Memory alignment: ' + self.memalign + '\n'
 
   def setupHelp(self, help):
     import nargs
