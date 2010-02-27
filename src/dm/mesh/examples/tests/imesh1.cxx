@@ -347,7 +347,11 @@ class StressTestIMesh : public CppUnit::TestFixture
 {
   CPPUNIT_TEST_SUITE(StressTestIMesh);
 
+  CPPUNIT_TEST(testClosure);
+#if 0
+  // Did not give any improvement (in fact was worse)
   CPPUNIT_TEST(testLabelAllocator);
+#endif
 
   CPPUNIT_TEST_SUITE_END();
 public:
@@ -381,7 +385,6 @@ public:
   void setUp(void) {
     this->processOptions();
     try {
-#if 0
       double                    lower[3]    = {0.0, 0.0, 0.0};
       double                    upper[3]    = {1.0, 1.0, 1.0};
       int                       faces[3]    = {3, 3, 3};
@@ -401,7 +404,6 @@ public:
 	ALE::DistributionNew<mesh_type>::distributeMeshAndSectionsV(this->_mesh, newMesh);
 	this->_mesh = newMesh;
       }
-#endif
     } catch (ALE::Exception e) {
       std::cerr << e << std::endl;
       CPPUNIT_FAIL(e.msg());
@@ -474,6 +476,55 @@ public:
       ierr = PetscPrintf(PETSC_COMM_WORLD, "\nInsertion time: %g  Total time: %g  Average time per insertion: %gs\n", eventInfoPool.time, eventInfoPoolTotal.time, eventInfoPool.time/(this->_iters*this->_size));CHKERRXX(ierr);
     }
     CPPUNIT_ASSERT((eventInfoPool.time < maxTimePerInsertion * this->_size * this->_iters));
+  };
+
+  testClosure(void) {
+    const int    baseSize          = 10;
+    const double maxTimePerClosure = 2.0e-5;
+    const long   numClosurePoints  = (long) baseSize*4;
+    long         count             = 0;
+
+    ALE::LogStage  stage = ALE::LogStageRegister("Mesh Closure Test");
+    PetscLogEvent  closureEvent;
+    PetscErrorCode ierr;
+
+    ierr = PetscLogEventRegister("Closure", PETSC_OBJECT_COOKIE,&closureEvent);
+    ALE::LogStagePush(stage);
+    ierr = PetscLogEventBegin(closureEvent,0,0,0,0);
+#if 0
+    for(int r = 0; r < this->_iters; r++) {
+      for(sieve_type::traits::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+        const ALE::Obj<sieveAlg_type::coneArray>& closure = sieveAlg_type::closure(this->_bundle, *b_iter);
+
+        for(sieveAlg_type::coneArray::iterator c_iter = closure->begin(); c_iter != closure->end(); ++c_iter) {
+          count++;
+        }
+      }
+    }
+
+  topology::Mesh::RestrictVisitor coordsVisitor(*coordinates, 
+						coordinatesCell.size(),
+						&coordinatesCell[0]);
+
+    coordsVisitor.clear();
+    sieveMesh->restrictClosure(*c_iter, coordsVisitor);
+#end
+    ierr = PetscLogEventEnd(closureEvent,0,0,0,0);
+    ALE::LogStagePop(stage);
+    CPPUNIT_ASSERT_EQUAL(count, numClosurePoints*this->_iters);
+    StageLog     stageLog;
+    EventPerfLog eventLog;
+
+    ierr = PetscLogGetStageLog(&stageLog);
+    ierr = StageLogGetEventPerfLog(stageLog, stage, &eventLog);
+    EventPerfInfo eventInfo = eventLog->eventInfo[closureEvent];
+
+    CPPUNIT_ASSERT_EQUAL(eventInfo.count, 1);
+    CPPUNIT_ASSERT_EQUAL((int) eventInfo.flops, 0);
+    if (this->_debug) {
+      ierr = PetscPrintf(this->_sieve->comm(), "Average time per closure: %gs\n", eventInfo.time/(this->_iters*baseSize));
+    }
+    CPPUNIT_ASSERT((eventInfo.time < maxTimePerClosure * baseSize * this->_iters));
   };
 };
 
