@@ -10,20 +10,10 @@ class Configure(config.base.Configure):
     self.isPetsc      = 1
     return
 
-  def __str__(self):
-    if not hasattr(self, 'dir'):
-      return ''
-    desc  = []
-    cdir  = str(self.dir)
-    envdir  = os.getenv('PETSC_DIR')
-    if not cdir == envdir :
-      desc.append('  **\n  ** Before running "make" your PETSC_DIR must be specified with:')
-      desc.append('  **  ** setenv PETSC_DIR '+str(cdir)+' (csh/tcsh)')
-      desc.append('  **  ** PETSC_DIR='+str(cdir)+'; export PETSC_DIR (sh/bash)\n  **')
-    else:
-      desc.append('  PETSC_DIR: '+str(self.dir))
-    desc.append('  **\n  ** Now build the libraries with "make all"\n  **')
-    return '\n'.join(desc)+'\n'
+  def __str1__(self):
+    if hasattr(self, 'dir'):
+      return '  PETSC_DIR: '+str(self.dir)+'\n'
+    return ''
 
   def setupHelp(self, help):
     import nargs

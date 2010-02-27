@@ -12,18 +12,18 @@ class Configure(config.base.Configure):
     self.useDynamic   = 0
     return
 
-  def __str__(self):
+  def __str1__(self):
     if not hasattr(self, 'useShared') or not hasattr(self, 'useDynamic'):
       return ''
     txt = ''
     if self.useShared:
-      txt += '  PETSc shared libraries: enabled\n'
+      txt += '  shared libraries: enabled\n'
     else:
-      txt += '  PETSc shared libraries: disabled\n'
+      txt += '  shared libraries: disabled\n'
     if self.useDynamic:
-      txt += '  PETSc dynamic libraries: enabled\n'
+      txt += '  dynamic libraries: enabled\n'
     else:
-      txt += '  PETSc dynamic libraries: disabled\n'
+      txt += '  dynamic libraries: disabled\n'
     return txt
 
   def setupHelp(self, help):
