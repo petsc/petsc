@@ -55,7 +55,7 @@
         Subroutine MeshGetConeF90(m,p,array,ierr)
           USE_MESH_HIDE
           PetscInt, pointer :: array(:,:)
-	  PetscInt p
+          PetscInt p
           PetscErrorCode ierr
           MESH_HIDE m
         End Subroutine
@@ -65,7 +65,7 @@
         Subroutine MeshRestoreConeF90(m,p,array,ierr)
           USE_MESH_HIDE
           PetscInt, pointer :: array(:,:)
-	  PetscInt p
+          PetscInt p
           PetscErrorCode ierr
           MESH_HIDE m
         End Subroutine
