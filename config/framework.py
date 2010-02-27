@@ -98,6 +98,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.batchBodies        = []
     self.batchCleanup       = []
     self.batchIncludeDirs   = []
+    self.batchLibs          = []
     self.dependencies       = {}
     self.configureParent    = None
     # List of packages actually found
@@ -838,6 +839,13 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.batchIncludes.extend(includes)
     return
 
+  def addBatchLib(self, libs):
+    '''Add a library or a list of libraries to the batch run'''
+    if not isinstance(libs, list):
+      libs = [libs]
+    self.batchLibs.extend(libs)
+    return
+
   def addBatchBody(self, statements):
     '''Add a statement or a list of statements to the batch run'''
     if not isinstance(statements, list):
@@ -877,11 +885,14 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       body.append('chmod("reconfigure.py",0744);')
 
       oldFlags = self.compilers.CPPFLAGS
+      oldLibs  = self.compilers.LIBS
       self.compilers.CPPFLAGS += ' ' + ' '.join(self.batchIncludeDirs)
+      self.compilers.LIBS = self.libraries.toString(self.batchLibs)+' '+self.compilers.LIBS
       self.batchIncludes.insert(0, '#include <stdio.h>\n#include <sys/types.h>\n#include <sys/stat.h>')
       if not self.checkLink('\n'.join(self.batchIncludes)+'\n', '\n'.join(body), cleanup = 0, codeBegin = '\nint main(int argc, char **argv) {\n'):
         sys.exit('Unable to generate test file for cross-compilers/batch-system\n')
       self.compilers.CPPFLAGS = oldFlags
+      self.compilers.LIBS = oldLibs
       self.logClear()
       print '=================================================================================\r'
       print '    Since your compute nodes require use of a batch system or mpiexec you must:  \r'
