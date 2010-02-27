@@ -7,11 +7,7 @@
 #include "finclude/petscsysdef.h"
 
 #if !defined(PETSC_AVOID_MPIF_H)
-#if defined(PETSC_HAVE_MPI)
 #include "mpif.h"
-#else
-#include "mpiuni/mpif.h"
-#endif
 #endif
 
 ! ------------------------------------------------------------------------

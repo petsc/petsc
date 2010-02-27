@@ -9,16 +9,16 @@
 /* Logging support */
 PetscCookie PETSCVEC_DLLEXPORT VEC_COOKIE;
 PetscLogEvent  VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MDotBarrier, VEC_MDot, VEC_TDot;
-PetscLogEvent  VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY; 
+PetscLogEvent  VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY;
 PetscLogEvent  VEC_MTDot, VEC_NormBarrier, VEC_MAXPY, VEC_Swap, VEC_AssemblyBegin, VEC_ScatterBegin, VEC_ScatterEnd;
 PetscLogEvent  VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier;
 PetscLogEvent  VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication,VEC_Ops;
 PetscLogEvent  VEC_DotNormBarrier, VEC_DotNorm, VEC_AXPBYPCZ;
 
 EXTERN PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt*);
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecStashGetInfo"
-/*@ 
+/*@
    VecStashGetInfo - Gets how many values are currently in the vector stash, i.e. need
        to be communicated to other processors during the VecAssemblyBegin/End() process
 
@@ -32,11 +32,11 @@ EXTERN PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt*);
 .   reallocs - the number of additional mallocs incurred.
 .   bnstash   - the size of the block stash
 -   breallocs - the number of additional mallocs incurred.in the block stash
- 
+
    Level: advanced
 
 .seealso: VecAssemblyBegin(), VecAssemblyEnd(), Vec, VecStashSetInitialSize(), VecStashView()
-  
+
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecStashGetInfo(Vec vec,PetscInt *nstash,PetscInt *reallocs,PetscInt *bnstash,PetscInt *breallocs)
 {
@@ -47,7 +47,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStashGetInfo(Vec vec,PetscInt *nstash,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecSetLocalToGlobalMapping"
 /*@
    VecSetLocalToGlobalMapping - Sets a local numbering to global numbering used
@@ -60,7 +60,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStashGetInfo(Vec vec,PetscInt *nstash,Petsc
 +  x - vector
 -  mapping - mapping created with ISLocalToGlobalMappingCreate() or ISLocalToGlobalMappingCreateIS()
 
-   Notes: 
+   Notes:
    All vectors obtained with VecDuplicate() from this vector inherit the same mapping.
 
    Level: intermediate
@@ -92,7 +92,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetLocalToGlobalMapping(Vec x,ISLocalToGlob
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecSetLocalToGlobalMappingBlock"
 /*@
    VecSetLocalToGlobalMappingBlock - Sets a local numbering to global numbering used
@@ -105,7 +105,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetLocalToGlobalMapping(Vec x,ISLocalToGlob
 +  x - vector
 -  mapping - mapping created with ISLocalToGlobalMappingCreate() or ISLocalToGlobalMappingCreateIS()
 
-   Notes: 
+   Notes:
    All vectors obtained with VecDuplicate() from this vector inherit the same mapping.
 
    Level: intermediate
@@ -132,7 +132,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetLocalToGlobalMappingBlock(Vec x,ISLocalT
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecAssemblyBegin"
 /*@
    VecAssemblyBegin - Begins assembling the vector.  This routine should
@@ -174,7 +174,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAssemblyBegin(Vec vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecView_Private"
 /*
   Processes command line options to determine if/how a matrix
@@ -245,7 +245,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecView_Private(Vec vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecAssemblyEnd"
 /*@
    VecAssemblyEnd - Completes assembling the vector.  This routine should
@@ -264,7 +264,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecView_Private(Vec vec)
 .  -display <name> - Sets display name (default is host)
 .  -draw_pause <sec> - Sets number of seconds to pause after display
 -  -vec_view_socket - Activates vector viewing using a socket
- 
+
    Level: beginner
 
 .seealso: VecAssemblyBegin(), VecSetValues()
@@ -285,7 +285,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAssemblyEnd(Vec vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecPointwiseMax"
 /*@
    VecPointwiseMax - Computes the componentwise maximum w_i = max(x_i, y_i).
@@ -313,7 +313,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMax(Vec w,Vec x,Vec y)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(w,VEC_COOKIE,1);
-  PetscValidHeaderSpecific(x,VEC_COOKIE,2); 
+  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
   PetscValidHeaderSpecific(y,VEC_COOKIE,3);
   PetscValidType(w,1);
   PetscValidType(x,2);
@@ -326,10 +326,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMax(Vec w,Vec x,Vec y)
   ierr = (*w->ops->pointwisemax)(w,x,y);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-} 
+}
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecPointwiseMin"
 /*@
    VecPointwiseMin - Computes the componentwise minimum w_i = min(x_i, y_i).
@@ -357,7 +357,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMin(Vec w,Vec x,Vec y)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(w,VEC_COOKIE,1);
-  PetscValidHeaderSpecific(x,VEC_COOKIE,2); 
+  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
   PetscValidHeaderSpecific(y,VEC_COOKIE,3);
   PetscValidType(w,1);
   PetscValidType(x,2);
@@ -370,9 +370,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMin(Vec w,Vec x,Vec y)
   ierr = (*w->ops->pointwisemin)(w,x,y);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-} 
+}
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecPointwiseMaxAbs"
 /*@
    VecPointwiseMaxAbs - Computes the componentwise maximum of the absolute values w_i = max(abs(x_i), abs(y_i)).
@@ -399,7 +399,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMaxAbs(Vec w,Vec x,Vec y)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(w,VEC_COOKIE,1);
-  PetscValidHeaderSpecific(x,VEC_COOKIE,2); 
+  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
   PetscValidHeaderSpecific(y,VEC_COOKIE,3);
   PetscValidType(w,1);
   PetscValidType(x,2);
@@ -412,9 +412,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMaxAbs(Vec w,Vec x,Vec y)
   ierr = (*w->ops->pointwisemaxabs)(w,x,y);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-} 
+}
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecPointwiseDivide"
 /*@
    VecPointwiseDivide - Computes the componentwise division w = x/y.
@@ -441,7 +441,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseDivide(Vec w,Vec x,Vec y)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(w,VEC_COOKIE,1);
-  PetscValidHeaderSpecific(x,VEC_COOKIE,2); 
+  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
   PetscValidHeaderSpecific(y,VEC_COOKIE,3);
   PetscValidType(w,1);
   PetscValidType(x,2);
@@ -457,7 +457,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseDivide(Vec w,Vec x,Vec y)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecDuplicate"
 /*@
    VecDuplicate - Creates a new vector of the same type as an existing vector.
@@ -475,13 +475,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseDivide(Vec w,Vec x,Vec y)
    for the new vector.  Use VecCopy() to copy a vector.
 
    Use VecDestroy() to free the space. Use VecDuplicateVecs() to get several
-   vectors. 
+   vectors.
 
    Level: beginner
 
 .seealso: VecDestroy(), VecDuplicateVecs(), VecCreate(), VecCopy()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecDuplicate(Vec v,Vec *newv) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecDuplicate(Vec v,Vec *newv)
 {
   PetscErrorCode ierr;
 
@@ -494,7 +494,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecDuplicate(Vec v,Vec *newv)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecDestroy"
 /*@
    VecDestroy - Destroys a vector.
@@ -531,7 +531,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecDestroy(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecDuplicateVecs"
 /*@C
    VecDuplicateVecs - Creates several vectors of the same type as an existing vector.
@@ -550,7 +550,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecDestroy(Vec v)
    vector.
 
    Fortran Note:
-   The Fortran interface is slightly different from that given below, it 
+   The Fortran interface is slightly different from that given below, it
    requires one to pass in V a Vec (integer) array of size at least m.
    See the Fortran chapter of the users manual and petsc/src/vec/vec/examples for details.
 
@@ -558,7 +558,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecDestroy(Vec v)
 
 .seealso:  VecDestroyVecs(), VecDuplicate(), VecCreate(), VecDuplicateVecsF90()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecDuplicateVecs(Vec v,PetscInt m,Vec *V[])  
+PetscErrorCode PETSCVEC_DLLEXPORT VecDuplicateVecs(Vec v,PetscInt m,Vec *V[])
 {
   PetscErrorCode ierr;
 
@@ -570,7 +570,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecDuplicateVecs(Vec v,PetscInt m,Vec *V[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecDestroyVecs"
 /*@C
    VecDestroyVecs - Frees a block of vectors obtained with VecDuplicateVecs().
@@ -583,7 +583,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecDuplicateVecs(Vec v,PetscInt m,Vec *V[])
 
    Fortran Note:
    The Fortran interface is slightly different from that given below.
-   See the Fortran chapter of the users manual and 
+   See the Fortran chapter of the users manual and
    petsc/src/vec/examples for details.
 
    Level: intermediate
@@ -627,10 +627,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec vec, const char *title)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecView"
 /*@C
-   VecView - Views a vector object. 
+   VecView - Views a vector object.
 
    Collective on Vec
 
@@ -643,10 +643,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec vec, const char *title)
 +     PETSC_VIEWER_STDOUT_SELF - standard output (default)
 -     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
          output where only the first processor opens
-         the file.  All other processors send their 
-         data to the first processor to print. 
+         the file.  All other processors send their
+         data to the first processor to print.
 
-   You can change the format the vector is printed using the 
+   You can change the format the vector is printed using the
    option PetscViewerSetFormat().
 
    The user can open alternative visualization contexts with
@@ -662,7 +662,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec vec, const char *title)
 +    PETSC_VIEWER_DEFAULT - default, prints vector contents
 .    PETSC_VIEWER_ASCII_MATLAB - prints vector contents in Matlab format
 .    PETSC_VIEWER_ASCII_INDEX - prints vector contents, including indices of vector elements
--    PETSC_VIEWER_ASCII_COMMON - prints vector contents, using a 
+-    PETSC_VIEWER_ASCII_COMMON - prints vector contents, using a
          format common among all vector types
 
    Notes for HDF5 Viewer: the name of the Vec (given with PetscObjectSetName() is the name that is used
@@ -713,7 +713,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecView(Vec vec,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecGetSize"
 /*@
    VecGetSize - Returns the global number of elements of the vector.
@@ -744,11 +744,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetSize(Vec x,PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecGetLocalSize"
 /*@
-   VecGetLocalSize - Returns the number of elements of the vector stored 
-   in local memory. This routine may be implementation dependent, so use 
+   VecGetLocalSize - Returns the number of elements of the vector stored
+   in local memory. This routine may be implementation dependent, so use
    with care.
 
    Not Collective
@@ -777,14 +777,14 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetLocalSize(Vec x,PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecGetOwnershipRange"
 /*@C
-   VecGetOwnershipRange - Returns the range of indices owned by 
+   VecGetOwnershipRange - Returns the range of indices owned by
    this processor, assuming that the vectors are laid out with the
    first n1 elements on the first processor, next n2 elements on the
-   second, etc.  For certain parallel layouts this range may not be 
-   well defined. 
+   second, etc.  For certain parallel layouts this range may not be
+   well defined.
 
    Not Collective
 
@@ -819,14 +819,14 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetOwnershipRange(Vec x,PetscInt *low,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecGetOwnershipRanges"
 /*@C
-   VecGetOwnershipRanges - Returns the range of indices owned by EACH processor, 
+   VecGetOwnershipRanges - Returns the range of indices owned by EACH processor,
    assuming that the vectors are laid out with the
    first n1 elements on the first processor, next n2 elements on the
-   second, etc.  For certain parallel layouts this range may not be 
-   well defined. 
+   second, etc.  For certain parallel layouts this range may not be
+   well defined.
 
    Not Collective
 
@@ -859,7 +859,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetOwnershipRanges(Vec x,const PetscInt *ra
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecSetOption"
 /*@
    VecSetOption - Sets an option for controling a vector's behavior.
@@ -872,9 +872,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetOwnershipRanges(Vec x,const PetscInt *ra
 -  flag - turn the option on or off
 
    Supported Options:
-+     VEC_IGNORE_OFF_PROC_ENTRIES, which causes VecSetValues() to ignore 
++     VEC_IGNORE_OFF_PROC_ENTRIES, which causes VecSetValues() to ignore
           entries destined to be stored on a separate processor. This can be used
-          to eliminate the global reduction in the VecAssemblyXXXX() if you know 
+          to eliminate the global reduction in the VecAssemblyXXXX() if you know
           that you have only used VecSetValues() to set local elements
 .     VEC_IGNORE_NEGATIVE_INDICES, which means you can pass negative indices
           in ix in calls to VecSetValues or VecGetValues. These rows are simply
@@ -896,7 +896,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetOption(Vec x,VecOption op,PetscTruth fla
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecDuplicateVecs_Default"
 /* Default routines for obtaining and releasing; */
 /* may be used by any implementation */
@@ -914,7 +914,7 @@ PetscErrorCode VecDuplicateVecs_Default(Vec w,PetscInt m,Vec *V[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecDestroyVecs_Default"
 PetscErrorCode VecDestroyVecs_Default(Vec v[], PetscInt m)
 {
@@ -929,10 +929,10 @@ PetscErrorCode VecDestroyVecs_Default(Vec v[], PetscInt m)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecResetArray"
 /*@
-   VecResetArray - Resets a vector to use its default memory. Call this 
+   VecResetArray - Resets a vector to use its default memory. Call this
    after the use of VecPlaceArray().
 
    Not Collective
@@ -961,13 +961,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecResetArray(Vec vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecLoadIntoVector"
-/*@C 
-  VecLoadIntoVector - Loads a vector that has been stored in binary (or HDF5) format 
+/*@C
+  VecLoadIntoVector - Loads a vector that has been stored in binary (or HDF5) format
   with VecView().
 
-  Collective on PetscViewer 
+  Collective on PetscViewer
 
   Input Parameters:
 + viewer - binary file viewer, obtained from PetscViewerBinaryOpen()
@@ -1004,8 +1004,8 @@ and PetscBinaryWrite() to see how this may be done.
 
    Concepts: vector^loading from file
 
-.seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoad() 
-@*/  
+.seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoad()
+@*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecLoadIntoVector(PetscViewer viewer,Vec vec)
 {
   PetscErrorCode    ierr;
@@ -1035,7 +1035,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoadIntoVector(PetscViewer viewer,Vec vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecReciprocal"
 /*@
    VecReciprocal - Replaces each component of a vector by its reciprocal.
@@ -1043,7 +1043,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoadIntoVector(PetscViewer viewer,Vec vec)
    Collective on Vec
 
    Input Parameter:
-.  vec - the vector 
+.  vec - the vector
 
    Output Parameter:
 .  vec - the vector reciprocal
@@ -1069,7 +1069,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecReciprocal(Vec vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecSetOperation"
 PetscErrorCode PETSCVEC_DLLEXPORT VecSetOperation(Vec vec,VecOperation op, void (*f)(void))
 {
@@ -1086,11 +1086,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetOperation(Vec vec,VecOperation op, void 
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecStashSetInitialSize"
 /*@
    VecStashSetInitialSize - sets the sizes of the vec-stash, that is
-   used during the assembly process to store values that belong to 
+   used during the assembly process to store values that belong to
    other processors.
 
    Collective on Vec
@@ -1106,13 +1106,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetOperation(Vec vec,VecOperation op, void 
 
    Level: intermediate
 
-   Notes: 
+   Notes:
      The block-stash is used for values set with VecSetValuesBlocked() while
      the stash is used for values set with VecSetValues()
 
      Run with the option -info and look for output of the form
      VecAssemblyBegin_MPIXXX:Stash has MM entries, uses nn mallocs.
-     to determine the appropriate value, MM, to use for size and 
+     to determine the appropriate value, MM, to use for size and
      VecAssemblyBegin_MPIXXX:Block-Stash has BMM entries, uses nn mallocs.
      to determine the value, BMM to use for bsize
 
@@ -1133,7 +1133,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStashSetInitialSize(Vec vec,PetscInt size,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecConjugate"
 /*@
    VecConjugate - Conjugates a vector.
@@ -1166,7 +1166,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecConjugate(Vec x)
 #endif
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecPointwiseMult"
 /*@
    VecPointwiseMult - Computes the componentwise multiplication w = x*y.
@@ -1193,7 +1193,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMult(Vec w, Vec x,Vec y)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(w,VEC_COOKIE,1);
-  PetscValidHeaderSpecific(x,VEC_COOKIE,2); 
+  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
   PetscValidHeaderSpecific(y,VEC_COOKIE,3);
   PetscValidType(w,1);
   PetscValidType(x,2);
@@ -1207,9 +1207,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMult(Vec w, Vec x,Vec y)
   ierr = PetscLogEventEnd(VEC_PointwiseMult,x,y,w,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-} 
+}
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecSetRandom"
 /*@
    VecSetRandom - Sets all components of a vector to random numbers.
@@ -1238,7 +1238,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMult(Vec w, Vec x,Vec y)
 
 .seealso: VecSet(), VecSetValues(), PetscRandomCreate(), PetscRandomDestroy()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecSetRandom(Vec x,PetscRandom rctx) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecSetRandom(Vec x,PetscRandom rctx)
 {
   PetscErrorCode ierr;
   PetscRandom    randObj = PETSC_NULL;
@@ -1260,15 +1260,15 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetRandom(Vec x,PetscRandom rctx)
   ierr = PetscLogEventBegin(VEC_SetRandom,x,rctx,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->setrandom)(x,rctx);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_SetRandom,x,rctx,0,0);CHKERRQ(ierr);
-  
+
   if (randObj) {
     ierr = PetscRandomDestroy(randObj);CHKERRQ(ierr);
   }
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-} 
+}
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecZeroEntries"
 /*@
   VecZeroEntries - puts a 0.0 in each element of a vector
@@ -1283,15 +1283,15 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetRandom(Vec x,PetscRandom rctx)
 .keywords: Vec, set, options, database
 .seealso: VecCreate(),  VecSetOptionsPrefix(), VecSet(), VecSetValues()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecZeroEntries (Vec vec) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecZeroEntries(Vec vec)
 {
   PetscErrorCode ierr;
-  PetscFunctionBegin; 
+  PetscFunctionBegin;
   ierr = VecSet(vec,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecSetTypeFromOptions_Private"
 /*
   VecSetTypeFromOptions_Private - Sets the type of vector from user options. Defaults to a PETSc sequential vector on one
@@ -1337,7 +1337,7 @@ static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecSetFromOptions"
 /*@
   VecSetFromOptions - Configures the vector from the options database.
@@ -1379,7 +1379,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetFromOptions(Vec vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecSetSizes"
 /*@
   VecSetSizes - Sets the local and global sizes, and checks to determine compatibility
@@ -1404,7 +1404,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetSizes(Vec v, PetscInt n, PetscInt N)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v, VEC_COOKIE,1); 
+  PetscValidHeaderSpecific(v, VEC_COOKIE,1);
   if (N > 0 && n > N) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Local size %D cannot be larger than global size %D",n,N);
   if ((v->map->n >= 0 || v->map->N >= 0) && (v->map->n != n || v->map->N != N)) SETERRQ4(PETSC_ERR_SUP,"Cannot change/reset vector sizes to %D local %D global after previously setting them to %D local %D global",n,N,v->map->n,v->map->N);
   v->map->n = n;
@@ -1416,7 +1416,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetSizes(Vec v, PetscInt n, PetscInt N)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecSetBlockSize"
 /*@
    VecSetBlockSize - Sets the blocksize for future calls to VecSetValuesBlocked()
@@ -1440,19 +1440,19 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetSizes(Vec v, PetscInt n, PetscInt N)
 PetscErrorCode PETSCVEC_DLLEXPORT VecSetBlockSize(Vec v,PetscInt bs)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_COOKIE,1); 
+  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
   if (bs <= 0) bs = 1;
   if (bs == v->map->bs) PetscFunctionReturn(0);
   if (v->map->N != -1 && v->map->N % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Vector length not divisible by blocksize %D %D",v->map->N,bs);
   if (v->map->n != -1 && v->map->n % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local vector length not divisible by blocksize %D %D\n\
    Try setting blocksize before setting the vector type",v->map->n,bs);
-  
+
   v->map->bs   = bs;
   v->bstash.bs = bs; /* use the same blocksize for the vec's block-stash */
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecGetBlockSize"
 /*@
    VecGetBlockSize - Gets the blocksize for the vector, i.e. what is used for VecSetValuesBlocked()
@@ -1480,13 +1480,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetBlockSize(Vec v,PetscInt bs)
 PetscErrorCode PETSCVEC_DLLEXPORT VecGetBlockSize(Vec v,PetscInt *bs)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_COOKIE,1); 
+  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
   PetscValidIntPointer(bs,2);
   *bs = v->map->bs;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecValid"
 /*@
    VecValid - Checks whether a vector object is valid.
@@ -1513,10 +1513,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecValid(Vec v,PetscTruth *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecSetOptionsPrefix"
 /*@C
-   VecSetOptionsPrefix - Sets the prefix used for searching for all 
+   VecSetOptionsPrefix - Sets the prefix used for searching for all
    Vec options in the database.
 
    Collective on Vec
@@ -1545,10 +1545,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetOptionsPrefix(Vec v,const char prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecAppendOptionsPrefix"
 /*@C
-   VecAppendOptionsPrefix - Appends to the prefix used for searching for all 
+   VecAppendOptionsPrefix - Appends to the prefix used for searching for all
    Vec options in the database.
 
    Collective on Vec
@@ -1570,17 +1570,17 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetOptionsPrefix(Vec v,const char prefix[])
 PetscErrorCode PETSCVEC_DLLEXPORT VecAppendOptionsPrefix(Vec v,const char prefix[])
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
   ierr = PetscObjectAppendOptionsPrefix((PetscObject)v,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecGetOptionsPrefix"
 /*@C
-   VecGetOptionsPrefix - Sets the prefix used for searching for all 
+   VecGetOptionsPrefix - Sets the prefix used for searching for all
    Vec options in the database.
 
    Not Collective
@@ -1610,7 +1610,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetOptionsPrefix(Vec v,const char *prefix[]
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecSetUp"
 /*@
    VecSetUp - Sets up the internal vector data structures for the later use.
@@ -1648,13 +1648,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetUp(Vec v)
   PetscFunctionReturn(0);
 }
 
-/*  
+/*
     These currently expose the PetscScalar/PetscReal in updating the
     cached norm. If we push those down into the implementation these
     will become independent of PetscScalar/PetscReal
 */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecCopy"
 /*@
    VecCopy - Copies a vector. y <- x
@@ -1683,7 +1683,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCopy(Vec x,Vec y)
   PetscInt       i;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1); 
+  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
   PetscValidHeaderSpecific(y,VEC_COOKIE,2);
   PetscValidType(x,1);
   PetscValidType(y,2);
@@ -1714,7 +1714,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCopy(Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecSwap"
 /*@
    VecSwap - Swaps the vectors x and y.
@@ -1737,7 +1737,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSwap(Vec x,Vec y)
   PetscInt       i;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);  
+  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
   PetscValidHeaderSpecific(y,VEC_COOKIE,2);
   PetscValidType(x,1);
   PetscValidType(y,2);
@@ -1767,7 +1767,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSwap(Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecStashView"
 /*@
    VecStashView - Prints the entries in the vector stash and block stash.
@@ -1829,7 +1829,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStashView(Vec v,PetscViewer viewer)
   for (i=0; i<s->n; i++) {
     val = s->array[i];
 #if defined(PETSC_USE_COMPLEX)
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %D (%18.16e %18.16e) ",rank,s->idx[i],PetscRealPart(val),PetscImaginaryPart(val));CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %D (%18.16e %18.16e) ",rank,s->idx[i],PetscRealPart(val),PetscImaginaryPart(val));CHKERRQ(ierr);
 #else
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %D %18.16e\n",rank,s->idx[i],val);CHKERRQ(ierr);
 #endif
@@ -1838,5 +1838,5 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStashView(Vec v,PetscViewer viewer)
 
   ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}  
+}
 

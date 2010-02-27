@@ -204,9 +204,11 @@ typedef void  (MPI_User_function)(void*, void *, int *, MPI_Datatype *);
 /*
   In order that the PETSc MPIUNI can be used with another package that has its
   own MPIUni we map the following function names to a unique PETSc name. Those functions
-  are defined in mpi.c
+  are defined in mpi.c and put into the libpetscsys.a or libpetsc.a library.
+
+  Note that this does not work for the MPIUni Fortran symbols which are explicitly in the 
+  PETSc libraries unless the flag MPIUNI_AVOID_MPI_NAMESPACE is set.
 */
-#if defined(MPIUNI_AVOID_MPI_NAMESPACE)
 #define MPI_Abort         Petsc_MPI_Abort
 #define MPI_Attr_get      Petsc_MPI_Attr_get
 #define MPI_Keyval_free   Petsc_MPI_Keyval_free
@@ -220,7 +222,6 @@ typedef void  (MPI_User_function)(void*, void *, int *, MPI_Datatype *);
 #define MPI_Finalize      Petsc_MPI_Finalize
 #define MPI_Initialized   Petsc_MPI_Initialized
 #define MPI_Finalized     Petsc_MPI_Finalized
-#endif
 
 extern int    MPI_Abort(MPI_Comm,int);
 extern int    MPI_Attr_get(MPI_Comm comm,int keyval,void *attribute_val,int *flag);

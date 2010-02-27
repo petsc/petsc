@@ -134,13 +134,10 @@ M*/
     with all PETSc users. Users who want to use the MPI C++ bindings can include 
     mpicxx.h directly in their code
 */
-#if defined(PETSC_HAVE_MPI)
 #define MPICH_SKIP_MPICXX 1
 #define OMPI_SKIP_MPICXX 1
 #include "mpi.h"
-#else
-#include "mpiuni/mpi.h"
-#endif
+
 /*
     Yuck, we need to put stdio.h AFTER mpi.h for MPICH2 with C++ compiler 
     see the top of mpicxx.h in the MPICH2 distribution.
