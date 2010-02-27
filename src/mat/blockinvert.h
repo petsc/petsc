@@ -107,6 +107,7 @@ EXTERN PetscErrorCode Kernel_A_gets_inverse_A_5(MatScalar *,PetscReal);
 EXTERN PetscErrorCode Kernel_A_gets_inverse_A_6(MatScalar *,PetscReal);
 EXTERN PetscErrorCode Kernel_A_gets_inverse_A_7(MatScalar *,PetscReal);
 EXTERN PetscErrorCode Kernel_A_gets_inverse_A_9(MatScalar *,PetscReal);
+EXTERN PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *,PetscReal);
 
 /*
     A = inv(A)    A_gets_inverse_A
