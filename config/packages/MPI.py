@@ -60,7 +60,7 @@ class Configure(config.package.Package):
     help.addArgument('MPI', '-with-mpiexec=<prog>',                              nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
     help.addArgument('MPI', '-with-mpi-compilers=<bool>',                        nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
     help.addArgument('MPI', '-known-mpi-shared=<bool>',                           nargs.ArgBool(None, None, 'Indicates the MPI libraries are shared (the usual test will be skipped)'))
-    help.addArgument('MPI', '-download-mpich-pm=hydra gforker or mpd',           nargs.Arg(None, 'hydra', 'Launcher for MPI processes'))
+    help.addArgument('MPI', '-download-mpich-pm=gforker hydra or mpd',           nargs.Arg(None, 'gforker', 'Launcher for MPI processes'))
     help.addArgument('MPI', '-download-mpich-device=ch3:nemesis or see mpich2 docs', nargs.Arg(None, 'ch3:sock', 'Communicator for MPI processes'))
     help.addArgument('MPI', '-download-mpich-mpe',                               nargs.ArgBool(None, 0, 'Install MPE with MPICH'))
     help.addArgument('MPI', '-download-mpich-shared',                            nargs.ArgBool(None, 0, 'Install MPICH with shared libraries'))    
@@ -267,9 +267,12 @@ class Configure(config.package.Package):
   def alternateConfigureLibrary(self):
     '''Setup MPIUNI, our uniprocessor version of MPI'''
     self.addDefine('HAVE_MPIUNI', 1)
+    #
+    #  Even though MPI-Uni is not an external package (it is in PETSc source) we need to stick the
+    #  include path for its mpi.h and mpif.h so that external packages that are built with PETSc to
+    #  use MPI-Uni can find them.
     self.include = [os.path.abspath(os.path.join('include', 'mpiuni'))]
-    if not self.framework.argDB['with-single-library']:
-      self.lib = [os.path.abspath(os.path.join(self.arch, 'lib','libmpiuni'))]
+    self.framework.packages.append(self)    
     self.mpiexec = '${PETSC_DIR}/bin/mpiexec.uni'
     self.addMakeMacro('MPIEXEC','${PETSC_DIR}/bin/mpiexec.uni')
     self.addDefine('HAVE_MPI_COMM_F2C', 1)
@@ -278,7 +281,6 @@ class Configure(config.package.Package):
     self.addDefine('HAVE_MPI_C_DOUBLE_COMPLEX', 1)    
     self.commf2c = 1
     self.commc2f = 1
-    self.framework.packages.append(self)
     self.usingMPIUni = 1
     self.version = 'PETSc MPIUNI uniprocessor MPI replacement'
     return

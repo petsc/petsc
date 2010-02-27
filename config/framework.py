@@ -8,7 +8,6 @@ in the run.
   The setup() method preforms generic Script setup and then is called recursively
 on all the child modules. The cleanup() method performs the final output and
 logging actions
-    - Produce report from child __str__ methods
     - Subtitute files
     - Output configure header
     - Log filesystem actions
@@ -249,12 +248,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
   def cleanup(self):
     '''Performs cleanup actions
-       - Log all child string methods
        - Subtitute files
        - Output configure header
        - Log actions'''
-    for child in self.childGraph.vertices:
-      self.logWrite(str(child), debugSection = 'screen', forceScroll = 1)
     self.substitute()
     if self.makeMacroHeader:
       self.outputMakeMacroHeader(self.makeMacroHeader)
@@ -278,6 +274,18 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.actions.addArgument('Framework', 'File creation', 'Created C specific configure header '+self.cHeader)
     self.log.write('\n')
     self.actions.output(self.log)
+    return
+
+  def printSummary(self):
+    # __str__(), __str1__(), __str2__() are used to crate 3 different groups of summary outputs.
+    for child in self.childGraph.vertices:
+      self.logWrite(str(child), debugSection = 'screen', forceScroll = 1)
+    for child in self.childGraph.vertices:
+      if hasattr(child,'__str1__'):
+        self.logWrite(child.__str1__(), debugSection = 'screen', forceScroll = 1)
+    for child in self.childGraph.vertices:
+      if hasattr(child,'__str2__'):
+        self.logWrite(child.__str2__(), debugSection = 'screen', forceScroll = 1)
     return
 
   def addChild(self, config):
