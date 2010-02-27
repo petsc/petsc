@@ -253,7 +253,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGCRSetModifyPC(KSP ksp,PetscErrorCode (*fun
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGCRSetModifyPC_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
-    CHKERRQ(ierr);(*f)(ksp,function,data,destroy);CHKERRQ(ierr);
+    ierr = (*f)(ksp,function,data,destroy);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
