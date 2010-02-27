@@ -22,7 +22,6 @@ class Configure(PETSc.package.NewPackage):
   
   def Install(self):
     import os
-    self.logPrintBox('Creating Pastix '+os.path.join(os.path.join(self.packageDir,'src'),'config.in')+'\n')
     g = open(os.path.join(os.path.join(self.packageDir,'src'),'config.in'),'w')
 
     g.write('HOSTHARCH   = i686_pc_linux\n')
