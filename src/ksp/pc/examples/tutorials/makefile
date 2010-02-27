@@ -4,7 +4,7 @@ FFLAGS          =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/ksp/pc/examples/tutorials/
-EXAMPLESC       = ex1.c ex2.c
+EXAMPLESC       = ex1.c ex2.c ex3.c
 EXAMPLESF       =
 MANSEC          = PC
 
@@ -18,6 +18,10 @@ ex1: ex1.o  chkopts
 ex2: ex2.o  chkopts
 	-${CLINKER}  -o ex2 ex2.o ${PETSC_KSP_LIB} 
 	${RM} ex2.o
+
+ex3: ex3.o  chkopts
+	-${CLINKER}  -o ex3 ex3.o ${PETSC_KSP_LIB} 
+	${RM} ex3.o
 
 TESTEXAMPLES_C	   = ex1.PETSc ex1.rm
 TESTEXAMPLES_C_X11 = ex2.PETSc ex2.rm

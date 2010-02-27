@@ -328,7 +328,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Cholesky(PC pc)
   ierr = MatFactorInfoInitialize(&((PC_Factor*)dir)->info);CHKERRQ(ierr);
   ((PC_Factor*)dir)->info.fill              = 5.0;
   ((PC_Factor*)dir)->info.shiftnz           = 0.0;
-  ((PC_Factor*)dir)->info.shiftpd           = 0.0; /* false */
+  ((PC_Factor*)dir)->info.shiftpd           = 0.0; 
+  ((PC_Factor*)dir)->info.shiftinblocks     = 0.0;
   ((PC_Factor*)dir)->info.pivotinblocks     = 1.0;
   dir->col                    = 0;
   dir->row                    = 0;

@@ -9,18 +9,11 @@ class Configure(config.base.Configure):
     self.substPrefix  = 'PETSC'
     return
 
-  def __str__(self):
+  def __str1__(self):
     if not hasattr(self, 'arch'):
       return ''
     desc = ['PETSc:']
-    carch = str(self.arch)
-    envarch = os.getenv('PETSC_ARCH')
-    if not carch == envarch :
-      desc.append('  **\n  ** Before running "make" your PETSC_ARCH must be specified with:')
-      desc.append('  **  ** setenv PETSC_ARCH '+str(self.arch)+' (csh/tcsh)')
-      desc.append('  **  ** PETSC_ARCH='+str(self.arch)+'; export PETSC_ARCH (sh/bash)\n  **')
-    else:
-      desc.append('  PETSC_ARCH: '+str(self.arch))
+    desc.append('  PETSC_ARCH: '+str(self.arch))
     return '\n'.join(desc)+'\n'
   
   def setupHelp(self, help):

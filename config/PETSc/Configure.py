@@ -11,9 +11,14 @@ class Configure(config.base.Configure):
     self.defineAutoconfMacros()
     return
 
-  def __str__(self):
-    return ''
-                              
+  def __str2__(self):
+    desc = []
+    desc.append('xxx==========================================================================xxx')
+    desc.append('   Configure stage complete. Now build PETSc libraries with:')
+    desc.append('   make PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch.arch+' all')
+    desc.append('xxx==========================================================================xxx')
+    return '\n'.join(desc)+'\n'
+
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc',  '-prefix=<path>',                  nargs.Arg(None, '', 'Specifiy location to install PETSc (eg. /usr/local)'))
@@ -463,12 +468,14 @@ class Configure(config.base.Configure):
     if self.framework.argDB['prefix']:
       self.installdir = self.framework.argDB['prefix']
       self.addMakeRule('shared_nomesg_noinstall','')
-      self.addMakeRule('shared_install','',['-@echo "Now to install the libraries do: make install or perhaps sudo make install"',\
+      self.addMakeRule('shared_install','',['-@echo "Now to install the libraries do:"',\
+                                              '-@echo "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} install"',\
                                               '-@echo "========================================="'])
     else:
       self.installdir = os.path.join(self.petscdir.dir,self.arch.arch)
       self.addMakeRule('shared_nomesg_noinstall','shared_nomesg')            
-      self.addMakeRule('shared_install','',['-@echo "Now to check if the libraries are working do: make test"',\
+      self.addMakeRule('shared_install','',['-@echo "Now to check if the libraries are working do:"',\
+                                              '-@echo "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} test"',\
                                               '-@echo "========================================="'])
       return
 

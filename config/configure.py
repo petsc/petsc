@@ -235,6 +235,7 @@ def petsc_configure(configure_options):
     for i in framework.packages:
       if hasattr(i,'postProcess'):
         i.postProcess()
+    framework.printSummary()
     framework.logClear()
     framework.closeLog()
     try:

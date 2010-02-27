@@ -554,7 +554,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
   PetscErrorCode          ierr;
   PetscInt                i,nlevels = dmmg[0]->nlevels;
   PetscTruth              mffdoperator,mffd,fdjacobian;
-  PetscTruth              useFAS = PETSC_FALSE, fasBlock, fasGMRES;
+  PetscTruth              useFAS = PETSC_FALSE, fasBlock=PETSC_FALSE, fasGMRES=PETSC_FALSE;
   PetscTruth              monitor, monitorAll;
   PetscInt                fasPresmooth = 1, fasPostsmooth = 1, fasCoarsesmooth = 1, fasMaxIter = 2;
   PetscReal               fasRtol = 1.0e-8, fasAbstol = 1.0e-50;
