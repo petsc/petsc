@@ -209,7 +209,7 @@ for src, dst in copies:
 Install complete. It is useable with PETSC_DIR=%s [and no more PETSC_ARCH].
 Now to check if the libraries are working do (in current directory):
 make PETSC_DIR=%s test
-====================================
+====================================\
 ''' % (self.installDir,self.installDir)
     return
 
