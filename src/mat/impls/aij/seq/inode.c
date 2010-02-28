@@ -1615,13 +1615,13 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
   PetscScalar        sum1,sum2,sum3,sum4,sum5,tmp0,tmp1,tmp2,tmp3;
-  MatScalar          *ibdiag,*bdiag;
+  MatScalar          *ibdiag,*bdiag,work[25];
   PetscScalar        *x,*xb,tmp4,tmp5,x1,x2,x3,x4,x5;
   const MatScalar    *v = a->a,*v1,*v2,*v3,*v4,*v5;
   PetscReal          zeropivot = 1.0e-15, shift = 0.0;
   PetscErrorCode     ierr;
   PetscInt           n,m = a->inode.node_count,*sizes = a->inode.size,cnt = 0,i,j,row,i1,i2;
-  PetscInt           *idx,*diag = a->diag,*ii = a->i,sz,k;
+  PetscInt           *idx,*diag = a->diag,*ii = a->i,sz,k,ipvt[5];
 
   PetscFunctionBegin;
   if (omega != 1.0) SETERRQ(PETSC_ERR_SUP,"No support for omega != 1.0; use -mat_no_inode");
@@ -1670,7 +1670,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
           ierr = Kernel_A_gets_inverse_A_4(ibdiag+cnt,shift);CHKERRQ(ierr);
           break;
         case 5:
-          ierr = Kernel_A_gets_inverse_A_5(ibdiag+cnt,shift);CHKERRQ(ierr);
+          ierr = Kernel_A_gets_inverse_A_5(ibdiag+cnt,ipvt,work,shift);CHKERRQ(ierr);
           break;
        default:
 	 SETERRQ1(PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
