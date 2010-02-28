@@ -1352,7 +1352,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat B,Mat A,c
 	rtmp[i] += PetscAbsScalar(v[j]);  
         rtmp[ajtmp[j]] += PetscAbsScalar(v[j]);
       }
-      if (rtmp[i] > sctx.shift_top) sctx.shift_top = rtmp[i];
+      if (PetscRealPart(rtmp[i]) > sctx.shift_top) sctx.shift_top = PetscRealPart(rtmp[i]);
     }
     sctx.shift_top   *= 1.1;
     sctx.nshift_max   = 5;
