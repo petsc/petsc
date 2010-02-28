@@ -154,7 +154,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_inplace(Mat C,Mat A,const MatFactorI
   C->ops->solve          = MatSolve_SeqBAIJ_4_inplace;
   C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_4_inplace;
   C->assembled = PETSC_TRUE;
-  ierr = PetscLogFlops(1.3333*64*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
+  ierr = PetscLogFlops(1.333333333333*4*4*4*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
 
@@ -270,7 +270,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat B,Mat A,const MatFactorInfo *inf
   C->ops->solve          = MatSolve_SeqBAIJ_4;
   C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_4;
   C->assembled = PETSC_TRUE;
-  ierr = PetscLogFlops(1.3333*bs2*n);CHKERRQ(ierr); /* from inverting diagonal blocks */
+  ierr = PetscLogFlops(1.333333333333*4*4*4*n);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
 
@@ -413,7 +413,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace(Mat C,Mat A,
   C->ops->solve          = MatSolve_SeqBAIJ_4_NaturalOrdering_inplace;
   C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_4_NaturalOrdering_inplace;
   C->assembled = PETSC_TRUE;
-  ierr = PetscLogFlops(1.3333*64*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
+  ierr = PetscLogFlops(1.333333333333*4*4*4*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
 
@@ -517,7 +517,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat B,Mat A,const Ma
   C->ops->solve          = MatSolve_SeqBAIJ_4_NaturalOrdering;
   C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_4_NaturalOrdering;
   C->assembled = PETSC_TRUE;
-  ierr = PetscLogFlops(1.3333*bs2*n);CHKERRQ(ierr); /* from inverting diagonal blocks */
+  ierr = PetscLogFlops(1.333333333333*4*4*4*n);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
 
@@ -959,7 +959,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B,Mat A,cons
   C->ops->solve          = MatSolve_SeqBAIJ_4_NaturalOrdering_SSE;
   C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_4_NaturalOrdering_SSE;
   C->assembled = PETSC_TRUE;
-  ierr = PetscLogFlops(1.3333*64*b->mbs);CHKERRQ(ierr);
+  ierr = PetscLogFlops(1.333333333333*bs*bs2*b->mbs);CHKERRQ(ierr);
   /* Flop Count from inverting diagonal blocks */ 
   SSE_SCOPE_END;
   PetscFunctionReturn(0);
@@ -1402,7 +1402,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
   C->ops->solve          = MatSolve_SeqBAIJ_4_NaturalOrdering_SSE;
   C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_4_NaturalOrdering_SSE;
   C->assembled = PETSC_TRUE;
-  ierr = PetscLogFlops(1.3333*64*b->mbs);CHKERRQ(ierr);
+  ierr = PetscLogFlops(1.333333333333*bs*bs2*b->mbs);CHKERRQ(ierr);
   /* Flop Count from inverting diagonal blocks */ 
   SSE_SCOPE_END;
   PetscFunctionReturn(0);
@@ -1846,7 +1846,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C,Mat A,
   C->ops->solve          = MatSolve_SeqBAIJ_4_NaturalOrdering_SSE;
   C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_4_NaturalOrdering_SSE;
   C->assembled = PETSC_TRUE;
-  ierr = PetscLogFlops(1.3333*64*b->mbs);CHKERRQ(ierr);
+  ierr = PetscLogFlops(1.333333333333*bs*bs2*b->mbs);CHKERRQ(ierr);
   /* Flop Count from inverting diagonal blocks */ 
   SSE_SCOPE_END;
   PetscFunctionReturn(0);

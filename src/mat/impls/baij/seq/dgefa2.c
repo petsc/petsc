@@ -309,12 +309,12 @@ PetscErrorCode Kernel_A_gets_inverse_A_9(MatScalar *a,PetscReal shift)
 
 #undef __FUNCT__  
 #define __FUNCT__ "Kernel_A_gets_inverse_A_15"
-PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *a,PetscReal shift)
+PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *a,PetscInt *ipvt,MatScalar *work,PetscReal shift)
 {
-    PetscInt   i__2,i__3,kp1,j,k,l,ll,i,ipvt[15],kb,k3;
-    PetscInt   k4,j3;
-    MatScalar  *aa,*ax,*ay,work[225],stmp;
-    MatReal    tmp,max;
+    PetscInt         i__2,i__3,kp1,j,k,l,ll,i,kb,k3;
+    PetscInt         k4,j3;
+    MatScalar        *aa,*ax,*ay,stmp;
+    MatReal          tmp,max;
 
 /*     gaussian elimination with partial pivoting */
 

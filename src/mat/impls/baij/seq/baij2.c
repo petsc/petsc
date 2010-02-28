@@ -439,7 +439,8 @@ PetscErrorCode MatMult_SeqBAIJ_5(Mat A,Vec xx,Vec zz)
   const PetscScalar *xb,*x;
   const MatScalar   *v;
   PetscErrorCode    ierr;
-  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL,nonzerorow=0;
+  const PetscInt    *idx,*ii,*ridx=PETSC_NULL;
+  PetscInt          mbs,i,j,n,nonzerorow=0;
   PetscTruth        usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;

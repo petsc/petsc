@@ -18,7 +18,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_inplace(Mat C,Mat A,const MatFactorI
   IS              isrow = b->row,isicol = b->icol;
   PetscErrorCode  ierr;
   const PetscInt  *r,*ic,*bi = b->i,*bj = b->j,*ajtmpold,*ajtmp;
-  PetscInt        i,j,n = a->mbs,nz,row,idx;
+  PetscInt        i,j,n = a->mbs,nz,row,idx,ipvt[5];
   const PetscInt  *diag_offset = b->diag,*ai=a->i,*aj=a->j,*pj;
   MatScalar       *w,*pv,*rtmp,*x,*pc;
   const MatScalar *v,*aa = a->a;
@@ -27,7 +27,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_inplace(Mat C,Mat A,const MatFactorI
   MatScalar       x17,x18,x19,x20,x21,x22,x23,x24,x25,p10,p11,p12,p13,p14;
   MatScalar       p15,p16,p17,p18,p19,p20,p21,p22,p23,p24,p25,m10,m11,m12;
   MatScalar       m13,m14,m15,m16,m17,m18,m19,m20,m21,m22,m23,m24,m25;
-  MatScalar       *ba = b->a;
+  MatScalar       *ba = b->a,work[25];
   PetscReal       shift = info->shiftinblocks;
 
   PetscFunctionBegin;
@@ -189,7 +189,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_inplace(Mat C,Mat A,const MatFactorI
     }
     /* invert diagonal block */
     w = ba + 25*diag_offset[i];
-    ierr = Kernel_A_gets_inverse_A_5(w,shift);CHKERRQ(ierr);
+    ierr = Kernel_A_gets_inverse_A_5(w,ipvt,work,shift);CHKERRQ(ierr);
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
@@ -198,7 +198,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_inplace(Mat C,Mat A,const MatFactorI
   C->ops->solve          = MatSolve_SeqBAIJ_5_inplace;
   C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_5_inplace;
   C->assembled = PETSC_TRUE;
-  ierr = PetscLogFlops(1.3333*125*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
+  ierr = PetscLogFlops(1.333333333333*5*5*5*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
 
@@ -220,8 +220,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5(Mat B,Mat A,const MatFactorInfo *inf
   const PetscInt *r,*ic,*ics;
   PetscInt       i,j,k,n=a->mbs,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
   PetscInt       *ajtmp,*bjtmp,nz,nzL,row,*bdiag=b->diag,*pj;
-  MatScalar      *rtmp,*pc,*mwork,*v,*pv,*aa=a->a;
-  PetscInt       bs2 = a->bs2,flg;
+  MatScalar      *rtmp,*pc,*mwork,*v,*pv,*aa=a->a,work[25];
+  PetscInt       bs2 = a->bs2,flg,ipvt[5];
   PetscReal      shift = info->shiftinblocks;
 
   PetscFunctionBegin;
@@ -297,7 +297,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5(Mat B,Mat A,const MatFactorInfo *inf
     pj   = b->j + bdiag[i];
     ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);   
     /* ierr = Kernel_A_gets_inverse_A(bs,pv,v_pivots,v_work);CHKERRQ(ierr); */
-    ierr = Kernel_A_gets_inverse_A_5(pv,shift);CHKERRQ(ierr);
+    ierr = Kernel_A_gets_inverse_A_5(pv,ipvt,work,shift);CHKERRQ(ierr);
       
     /* U part */
     pv = b->a + bs2*(bdiag[i+1]+1);
@@ -314,7 +314,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5(Mat B,Mat A,const MatFactorInfo *inf
   C->ops->solve          = MatSolve_SeqBAIJ_5;
   C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_5;
   C->assembled = PETSC_TRUE;
-  ierr = PetscLogFlops(1.3333*bs2*n);CHKERRQ(ierr); /* from inverting diagonal blocks */
+  ierr = PetscLogFlops(1.333333333333*5*5*5*n);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
 
@@ -327,7 +327,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering_inplace(Mat C,Mat A,
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
   PetscErrorCode ierr;
-  PetscInt       i,j,n = a->mbs,*bi = b->i,*bj = b->j;
+  PetscInt       i,j,n = a->mbs,*bi = b->i,*bj = b->j,ipvt[5];
   PetscInt       *ajtmpold,*ajtmp,nz,row;
   PetscInt       *diag_offset = b->diag,*ai=a->i,*aj=a->j,*pj;
   MatScalar      *pv,*v,*rtmp,*pc,*w,*x;
@@ -337,7 +337,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering_inplace(Mat C,Mat A,
   MatScalar      p16,p17,p18,p19,p20,p21,p22,p23,p24,p25;
   MatScalar      m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11,m12,m13,m14,m15;
   MatScalar      m16,m17,m18,m19,m20,m21,m22,m23,m24,m25;
-  MatScalar      *ba = b->a,*aa = a->a;
+  MatScalar      *ba = b->a,*aa = a->a,work[25];
   PetscReal      shift = info->shiftinblocks;
 
   PetscFunctionBegin;
@@ -478,14 +478,14 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering_inplace(Mat C,Mat A,
     }
     /* invert diagonal block */
     w = ba + 25*diag_offset[i];
-    ierr = Kernel_A_gets_inverse_A_5(w,shift);CHKERRQ(ierr);
+    ierr = Kernel_A_gets_inverse_A_5(w,ipvt,work,shift);CHKERRQ(ierr);
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   C->ops->solve          = MatSolve_SeqBAIJ_5_NaturalOrdering_inplace;
   C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_5_NaturalOrdering_inplace;
   C->assembled = PETSC_TRUE;
-  ierr = PetscLogFlops(1.3333*125*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
+  ierr = PetscLogFlops(1.333333333333*5*5*5*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
 
@@ -493,14 +493,17 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering_inplace(Mat C,Mat A,
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering(Mat B,Mat A,const MatFactorInfo *info)
 {
-  Mat            C=B;
-  Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)A->data,*b=(Mat_SeqBAIJ *)C->data;
-  PetscErrorCode ierr;
-  PetscInt       i,j,k,n=a->mbs,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
-  PetscInt       *ajtmp,*bjtmp,nz,nzL,row,*bdiag=b->diag,*pj;
-  MatScalar      *rtmp,*pc,*mwork,*v,*pv,*aa=a->a;
-  PetscInt       bs2 = a->bs2,flg;
-  PetscReal      shift = info->shiftinblocks;
+  Mat              C=B;
+  Mat_SeqBAIJ      *a=(Mat_SeqBAIJ*)A->data,*b=(Mat_SeqBAIJ *)C->data;
+  PetscErrorCode   ierr;
+  PetscInt         i,j,k;
+  const PetscInt   n=a->mbs,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
+  PetscInt         nz,nzL,row;
+  const PetscInt   *ajtmp,*bjtmp,*bdiag=b->diag,*pj;
+  MatScalar        *rtmp,*pc,*mwork,*pv,work[25],*vv;
+  const MatScalar  *v,*aa=a->a;
+  PetscInt         bs2 = a->bs2,flg,ipvt[5];
+  PetscReal        shift = info->shiftinblocks;
 
   PetscFunctionBegin;
   /* generate work space needed by the factorization */
@@ -549,8 +552,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering(Mat B,Mat A,const Ma
         for (j=0; j<nz; j++) {
           /* Kernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j); */
           /* rtmp+bs2*pj[j] = rtmp+bs2*pj[j] - (*pc)*(pv+bs2*j) */
-          v    = rtmp + bs2*pj[j];
-          ierr = Kernel_A_gets_A_minus_B_times_C_5(v,pc,pv);CHKERRQ(ierr);
+          vv    = rtmp + bs2*pj[j];
+          ierr = Kernel_A_gets_A_minus_B_times_C_5(vv,pc,pv);CHKERRQ(ierr);
           pv  += bs2;          
         }
         ierr = PetscLogFlops(250*nz+225);CHKERRQ(ierr); /* flops = 2*bs^3*nz + 2*bs^3 - bs2) */
@@ -571,7 +574,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering(Mat B,Mat A,const Ma
     pj   = b->j + bdiag[i];
     ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);   
     /* ierr = Kernel_A_gets_inverse_A(bs,pv,v_pivots,v_work);CHKERRQ(ierr); */
-    ierr = Kernel_A_gets_inverse_A_5(pv,shift);CHKERRQ(ierr);
+    ierr = Kernel_A_gets_inverse_A_5(pv,ipvt,work,shift);CHKERRQ(ierr);
       
     /* U part */
     pv = b->a + bs2*(bdiag[i+1]+1);
@@ -585,6 +588,6 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering(Mat B,Mat A,const Ma
   C->ops->solve          = MatSolve_SeqBAIJ_5_NaturalOrdering;
   C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_5_NaturalOrdering;
   C->assembled = PETSC_TRUE;
-  ierr = PetscLogFlops(1.3333*bs2*n);CHKERRQ(ierr); /* from inverting diagonal blocks */
+  ierr = PetscLogFlops(1.333333333333*5*5*5*n);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
