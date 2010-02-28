@@ -469,12 +469,11 @@ PetscErrorCode spbas_transpose( spbas_matrix in_matrix, spbas_matrix * result)
    PetscInt       i,j,k;
    PetscInt       r_nnz;
    PetscInt       *irow;
-   PetscInt       icol0;
+   PetscInt       icol0 = 0;
    PetscScalar    * val;
    PetscErrorCode ierr;
 
    PetscFunctionBegin;
-
    /* Copy input values */
    result->nrows        = nrows;
    result->ncols        = ncols;
@@ -516,8 +515,7 @@ PetscErrorCode spbas_transpose( spbas_matrix in_matrix, spbas_matrix * result)
 
          if      (col_idx_type == SPBAS_COLUMN_NUMBERS)   {icol0=0;}
          else if (col_idx_type == SPBAS_DIAGONAL_OFFSETS) {icol0=i;}
-         else if (col_idx_type == SPBAS_OFFSET_ARRAY)     
-                 {icol0=in_matrix.icol0[i];} 
+         else if (col_idx_type == SPBAS_OFFSET_ARRAY)     {icol0=in_matrix.icol0[i];} 
          for (j=0; j<r_nnz; j++)  {
             k = icol0 + irow[j]; 
             result->icols[k][result->row_nnz[k]]  = i;
