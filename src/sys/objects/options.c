@@ -1240,7 +1240,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetEList(const char pre[],const char 
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetEnum(const char pre[],const char opt[],const char *const*list,PetscEnum *value,PetscTruth *set)
 {
   PetscErrorCode ierr;
-  PetscInt       ntext = 0;
+  PetscInt       ntext = 0,tval;
 
   PetscFunctionBegin;
   while (list[ntext++]) {
@@ -1248,7 +1248,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetEnum(const char pre[],const char o
   }
   if (ntext < 3) SETERRQ(PETSC_ERR_ARG_WRONG,"List argument must have at least two entries: typename and type prefix");
   ntext -= 3;
-  ierr = PetscOptionsGetEList(pre,opt,list,ntext,(PetscInt*)value,set);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEList(pre,opt,list,ntext,&tval,set);CHKERRQ(ierr);
+  /* with PETSC_USE_64BIT_INDICES sizeof(PetscInt) != sizeof(PetscEnum) */
+  if (*set) *value = (PetscEnum)tval;
   PetscFunctionReturn(0);
 }
 
