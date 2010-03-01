@@ -1171,7 +1171,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetInt(const char pre[],const char na
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetEList(const char pre[],const char opt[],const char **list,PetscInt ntext,PetscInt *value,PetscTruth *set)
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetEList(const char pre[],const char opt[],const char *const*list,PetscInt ntext,PetscInt *value,PetscTruth *set)
 {
   PetscErrorCode ierr;
   size_t         alen,len = 0;
@@ -1237,7 +1237,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetEList(const char pre[],const char 
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList(), PetscOptionsGetEList(), PetscOptionsEnum()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetEnum(const char pre[],const char opt[],const char **list,PetscEnum *value,PetscTruth *set)
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetEnum(const char pre[],const char opt[],const char *const*list,PetscEnum *value,PetscTruth *set)
 {
   PetscErrorCode ierr;
   PetscInt       ntext = 0;

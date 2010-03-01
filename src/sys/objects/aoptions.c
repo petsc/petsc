@@ -403,7 +403,7 @@ PetscErrorCode PetscOptionsEnd_Private(void)
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsEnum(const char opt[],const char text[],const char man[],const char **list,PetscEnum defaultv,PetscEnum *value,PetscTruth *set)
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsEnum(const char opt[],const char text[],const char man[],const char *const*list,PetscEnum defaultv,PetscEnum *value,PetscTruth *set)
 {
   PetscErrorCode ierr;
   PetscInt       ntext = 0;
@@ -747,7 +747,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsList(const char opt[],const char ltex
           PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsEList(const char opt[],const char ltext[],const char man[],const char **list,PetscInt ntext,const char defaultv[],PetscInt *value,PetscTruth *set)
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsEList(const char opt[],const char ltext[],const char man[],const char *const*list,PetscInt ntext,const char defaultv[],PetscInt *value,PetscTruth *set)
 {
   PetscErrorCode ierr;
   PetscInt       i;
