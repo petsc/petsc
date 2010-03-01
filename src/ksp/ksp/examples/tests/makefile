@@ -470,16 +470,6 @@ runex31:
 	   else echo "Possible problem with ex31, diffs above"; fi; \
 	   ${RM} -f ex31.tmp
 
-#DOF = 1 2 3 4 5 6 7 8
-#runex32_trans:
-#	-@touch ex32.tmp
-#	-@for dof in ${DOF}; do \
-#	 ${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof $$dof -pc_factor_mat_ordering_type natural -mat_type aij -trans >> ex32.tmp 2>&1; \
-#         done;
-#	-@if (${DIFF} output/ex32_trans.out ex32.tmp) then true; \
-#	   else echo "Possible problem with ex32_trans, diffs above"; fi;
-#	-@${RM} -f ex32.tmp
-
 runex32_testset1:
 	@-count=0; \
 	for i in {1..5}; do \

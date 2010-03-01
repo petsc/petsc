@@ -232,15 +232,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const M
   PetscInt           nlnk,*lnk,ncols,*cols,*uj,**ui_ptr,*uj_ptr,*udiag;
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
   PetscBT            lnkbt;
-  PetscTruth         olddatastruct=PETSC_FALSE;
 
   PetscFunctionBegin;
-    ierr = PetscOptionsGetTruth(PETSC_NULL,"-cholesky_old",&olddatastruct,PETSC_NULL);CHKERRQ(ierr);
-  if (olddatastruct || bs>1 ){
-    ierr = MatCholeskyFactorSymbolic_SeqSBAIJ_inplace(fact,A,perm,info);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-
   if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
   ierr = MatMissingDiagonal(A,&missing,&d);CHKERRQ(ierr);
   if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",d);

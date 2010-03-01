@@ -292,14 +292,8 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const Ma
   PetscInt           nlnk,*lnk,k,**bi_ptr;
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
   PetscBT            lnkbt;
-  PetscTruth         olddatastruct= PETSC_FALSE;
 
-  PetscFunctionBegin;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-lu_old",&olddatastruct,PETSC_NULL);CHKERRQ(ierr);
-  if(olddatastruct){
-    ierr = MatLUFactorSymbolic_SeqAIJ_inplace(B,A,isrow,iscol,info);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  } 
+  PetscFunctionBegin; 
   if (A->rmap->N != A->cmap->N) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be square");
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -1708,14 +1702,16 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
   PetscInt           nzi,*bj,**bj_ptr,**bjlvl_ptr; 
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL; 
   PetscFreeSpaceList free_space_lvl=PETSC_NULL,current_space_lvl=PETSC_NULL; 
-  PetscTruth         olddatastruct=PETSC_FALSE;
   
   PetscFunctionBegin;
+  /* // Testing new data structure for MatSolve() 
+  PetscTruth         olddatastruct=PETSC_FALSE
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-ilu_old",&olddatastruct,PETSC_NULL);CHKERRQ(ierr);
   if(olddatastruct){
     ierr = MatILUFactorSymbolic_SeqAIJ_inplace(fact,A,isrow,iscol,info);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
+  */
 
   levels = (PetscInt)info->levels;
   ierr   = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
@@ -2202,8 +2198,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *
   if (perm_identity){
     B->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering;
     B->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_NaturalOrdering;
-    B->ops->forwardsolve    = 0;
-    B->ops->backwardsolve   = 0;
+    B->ops->forwardsolve    = MatForwardSolve_SeqSBAIJ_1_NaturalOrdering;
+    B->ops->backwardsolve   = MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering;
   } else {
     B->ops->solve           = MatSolve_SeqSBAIJ_1;
     B->ops->solvetranspose  = MatSolve_SeqSBAIJ_1;
@@ -2407,14 +2403,8 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const MatFacto
   PetscFreeSpaceList free_space_lvl=PETSC_NULL,current_space_lvl=PETSC_NULL;
   PetscBT            lnkbt;
   IS                 iperm;  
-  PetscTruth         olddatastruct=PETSC_FALSE;
   
   PetscFunctionBegin; 
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-icc_old",&olddatastruct,PETSC_NULL);CHKERRQ(ierr);
-  if(olddatastruct){
-    ierr = MatICCFactorSymbolic_SeqAIJ_inplace(fact,A,perm,info);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
   if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
   ierr = MatMissingDiagonal(A,&missing,&d);CHKERRQ(ierr);
   if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",d);
@@ -2809,14 +2799,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const Mat
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
   PetscBT            lnkbt;
   IS                 iperm;  
-  PetscTruth         olddatastruct=PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-cholesky_old",&olddatastruct,PETSC_NULL);CHKERRQ(ierr);
-  if(olddatastruct){
-    ierr = MatCholeskyFactorSymbolic_SeqAIJ_inplace(fact,A,perm,info);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
   if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
   /* check whether perm is the identity mapping */
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);  
