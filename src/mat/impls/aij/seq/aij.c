@@ -882,14 +882,15 @@ PetscErrorCode MatGetDiagonal_SeqAIJ(Mat A,Vec v)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i,j,n,*ai=a->i,*aj=a->j,*diag=a->diag,nz;
+  PetscInt       i,j,n,*ai=a->i,*aj=a->j,nz;
   PetscScalar    *aa=a->a,*x,zero=0.0;
 
   PetscFunctionBegin;
-  ierr = VecGetSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   if (n != A->rmap->n) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
 
-  if (diag || A->factor == MAT_FACTOR_ILU || A->factor == MAT_FACTOR_LU){
+  if (A->factor == MAT_FACTOR_ILU || A->factor == MAT_FACTOR_LU){
+    PetscInt *diag=a->diag;
     ierr = VecGetArray(v,&x);CHKERRQ(ierr);
     for (i=0; i<n; i++) x[i] = aa[diag[i]];
     ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
