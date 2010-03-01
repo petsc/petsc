@@ -241,7 +241,11 @@ PetscErrorCode PetscOptionsGetFromTextInput()
         ierr = PetscPrintf(PETSC_COMM_WORLD,"-%s%s <%d>: %s (%s)",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",next->option+1,*(int*)next->data,next->text,next->man);CHKERRQ(ierr);
         ierr = PetscScanString(PETSC_COMM_WORLD,512,str);CHKERRQ(ierr);
         if (str[0]) {
+#if defined(PETSC_USE_64BIT_INDICES)
+          sscanf(str,"%lld",&id);
+#else
           sscanf(str,"%d",&id);
+#endif
           next->set = PETSC_TRUE;
           *((PetscInt*)next->data) = id;
         }
