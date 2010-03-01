@@ -2,7 +2,7 @@
 
 configure_options = [
   '--with-cc=gcc',
-  '--with-fc=0',
+  '--with-fc=gfortran -m64', # http://r.research.att.com/tools/ defaults to 32bit
   '--with-cxx=g++',
   '--download-mpich=1',
   ]
