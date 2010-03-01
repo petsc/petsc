@@ -2,5 +2,5 @@
 
 set MACH=petsc-mini.mcs.anl.gov
 set USR=petsc
-set LOC=Users/petsc/petsc-dev
-set CONF=arch-linux-gcov
+set LOC=/Users/petsc/petsc-dev
+set CONF=arch-osx-10.6

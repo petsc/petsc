@@ -73,7 +73,6 @@ src/dm/mesh/examples/tutorials/*.vtk
 *.gcov.html
 *.dSYM
 *.mexmaci
-arch-*
 valgrind*
 .DS_Store
 session_*
