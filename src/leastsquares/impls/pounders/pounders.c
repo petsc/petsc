@@ -8,7 +8,7 @@ void mymatprintslice(PetscReal *M, PetscInt n, PetscInt stride, const char *name
 #define __FUNCT__ "gqtwrap"
 static PetscErrorCode gqtwrap(TAO_POUNDERS *mfqP,PetscReal *gnorm, PetscReal *qmin) {
     PetscReal atol=1.0e-10;
-    PetscInt info,its;
+    PetscInt info,its,i;
     PetscFunctionBegin;
 //      subroutine dgqt(n,a,lda,b,delta,rtol,atol,itmax,par,f,x,info,iter,z,wa1,wa2)
     gqt(mfqP->n,mfqP->Hres,mfqP->n,mfqP->Gres,1.0,mfqP->gqt_rtol,atol,
@@ -439,6 +439,7 @@ static PetscErrorCode modelimprove(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt a
   if (!addallpoints) {
       ierr = addpoint(tao,mfqP,minindex); CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
 }
 
 
@@ -485,7 +486,7 @@ static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin,
 
 	    //printf("i=%d, proj=%f, theta=%f\n",i,proj,mfqP->theta1);
 	    if (proj >= mfqP->theta1) { /* add this index to model */
-		mfqP->model_points[mfqP->nmodelpoints]=i;
+		mfqP->model_indices[mfqP->nmodelpoints]=i;
 		mfqP->nmodelpoints++;
 		BLAScopy_(&blasn,mfqP->work,&ione,&mfqP->Q_tmp[mfqP->npmax*(mfqP->nmodelpoints-1)],&ione);
 		blask=mfqP->npmax*(mfqP->nmodelpoints);
@@ -807,8 +808,8 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
 	}
     }
     CHKMEMQ;
-    for (i=0;i<mfqP->nmodelpoints;i++) {
-	mfqP->model_indices[i+1] = mfqP->model_indices[i];
+    for (i=mfqP->nmodelpoints;i>0;i--) {
+	mfqP->model_indices[i] = mfqP->model_indices[i-1];
     }
     mfqP->model_indices[0] = mfqP->minindex;
     CHKMEMQ;
@@ -853,7 +854,7 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
       reason = TAO_DIVERGED_USER;
       tao->reason = TAO_DIVERGED_USER;
       continue;
-    }
+      }
     ierr = getquadpounders(mfqP); CHKERRQ(ierr);
     ierr = VecGetArray(mfqP->Fhist[mfqP->minindex],&fmin); CHKERRQ(ierr);
     BLAScopy_(&blasm,fmin,&ione,mfqP->C,&ione);
