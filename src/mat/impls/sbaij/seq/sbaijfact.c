@@ -1320,7 +1320,6 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat B,Mat A,c
   PetscInt       k,jmin,jmax,*c2r,*il,col,nexti,ili,nz;
   MatScalar      *rtmp,*ba=b->a,*bval,*aa=a->a,dk,uikdi;
   LUShift_Ctx    sctx;
-  PetscInt       newshift;
   PetscReal      rs;
   MatScalar      d,*v;
 
@@ -1420,16 +1419,16 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat B,Mat A,c
       sctx.rs  = rs;
       sctx.pv  = dk;
       if (info->shiftnz){
-        ierr = MatPivotCheck_nz(info,sctx,k,newshift);CHKERRQ(ierr);
+        ierr = MatPivotCheck_nz(info,sctx,k);CHKERRQ(ierr);
       } else if (info->shiftpd){
-        ierr = MatPivotCheck_pd(info,sctx,k,newshift);CHKERRQ(ierr);
+        ierr = MatPivotCheck_pd(info,sctx,k);CHKERRQ(ierr);
       } else if (info->shiftinblocks){
-        ierr = MatPivotCheck_inblocks(info,sctx,k,newshift);CHKERRQ(ierr);       
+        ierr = MatPivotCheck_inblocks(info,sctx,k);CHKERRQ(ierr);       
       } else {
-        ierr = MatPivotCheck_none(info,sctx,k,newshift);CHKERRQ(ierr); 
+        ierr = MatPivotCheck_none(info,sctx,k);CHKERRQ(ierr); 
       }
       dk = sctx.pv;
-      if (newshift == 1) break;
+      //  if (newshift == 1) break;
  
       ba[bdiag[k]] = 1.0/dk; /* U(k,k) */
     } 

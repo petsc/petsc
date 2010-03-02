@@ -218,10 +218,11 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5(Mat B,Mat A,const MatFactorInfo *inf
   IS             isrow = b->row,isicol = b->icol;
   PetscErrorCode ierr;
   const PetscInt *r,*ic,*ics;
-  PetscInt       i,j,k,n=a->mbs,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
-  PetscInt       *ajtmp,*bjtmp,nz,nzL,row,*bdiag=b->diag,*pj;
+  PetscInt       i,j,k,nz,nzL,row;
+  const PetscInt n=a->mbs,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
+  const PetscInt *ajtmp,*bjtmp,*bdiag=b->diag,*pj,bs2=a->bs2;
   MatScalar      *rtmp,*pc,*mwork,*v,*pv,*aa=a->a,work[25];
-  PetscInt       bs2 = a->bs2,flg,ipvt[5];
+  PetscInt       flg,ipvt[5];
   PetscReal      shift = info->shiftinblocks;
 
   PetscFunctionBegin;
@@ -493,17 +494,15 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering_inplace(Mat C,Mat A,
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering(Mat B,Mat A,const MatFactorInfo *info)
 {
-  Mat              C=B;
-  Mat_SeqBAIJ      *a=(Mat_SeqBAIJ*)A->data,*b=(Mat_SeqBAIJ *)C->data;
-  PetscErrorCode   ierr;
-  PetscInt         i,j,k;
-  const PetscInt   n=a->mbs,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
-  PetscInt         nz,nzL,row;
-  const PetscInt   *ajtmp,*bjtmp,*bdiag=b->diag,*pj;
-  MatScalar        *rtmp,*pc,*mwork,*pv,work[25],*vv;
-  const MatScalar  *v,*aa=a->a;
-  PetscInt         bs2 = a->bs2,flg,ipvt[5];
-  PetscReal        shift = info->shiftinblocks;
+  Mat            C=B;
+  Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)A->data,*b=(Mat_SeqBAIJ *)C->data;
+  PetscErrorCode ierr;
+  PetscInt       i,j,k,nz,nzL,row;
+  const PetscInt n=a->mbs,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
+  const PetscInt *ajtmp,*bjtmp,*bdiag=b->diag,*pj,bs2=a->bs2;
+  MatScalar      *rtmp,*pc,*mwork,*v,*vv,*pv,*aa=a->a,work[25];
+  PetscInt       flg,ipvt[5];
+  PetscReal      shift = info->shiftinblocks;
 
   PetscFunctionBegin;
   /* generate work space needed by the factorization */

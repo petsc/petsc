@@ -455,12 +455,11 @@ EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
   newshift = _newshift;\
 }
 
-#define MatPivotCheck_nz(info,sctx,row,newshift) 0;\
+#define MatPivotCheck_nz(info,sctx,row) 0;\
 {\
-  PetscInt  _newshift;\
   PetscReal _rs   = sctx.rs;\
   PetscReal _zero = info->zeropivot*_rs;\
-  if (info->shiftnz && PetscAbsScalar(sctx.pv) <= _zero){\
+  if (PetscAbsScalar(sctx.pv) <= _zero){\
     /* force |diag| > zeropivot*rs */\
     if (!sctx.nshift){\
       sctx.shift_amount = info->shiftnz;\
@@ -469,16 +468,12 @@ EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
     }\
     sctx.lushift = PETSC_TRUE;\
     (sctx.nshift)++;\
-    _newshift = 1;\
-  } else {\
-    _newshift = 0;\
-  }\
-  newshift = _newshift;\
+    break;          \
+  } \
 }
 
-#define MatPivotCheck_pd(info,sctx,row,newshift) 0;\
+#define MatPivotCheck_pd(info,sctx,row) 0;\
 {\
-  PetscInt  _newshift;\
   PetscReal _rs   = sctx.rs;\
   PetscReal _zero = info->zeropivot*_rs;\
   if (info->shiftpd && PetscRealPart(sctx.pv) <= _zero){\
@@ -496,14 +491,11 @@ EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
     }\
     sctx.shift_amount = sctx.shift_fraction * sctx.shift_top;\
     sctx.nshift++;\
-    _newshift = 1;\
-  } else {\
-    _newshift = 0;\
+    break; \
   }\
-  newshift = _newshift;\
 }
 
-#define MatPivotCheck_inblocks(info,sctx,row,newshift) 0;\
+#define MatPivotCheck_inblocks(info,sctx,row) 0;\
 {\
   PetscReal _zero = info->zeropivot;\
   if (PetscAbsScalar(sctx.pv) <= _zero){\
@@ -511,20 +503,15 @@ EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
     sctx.shift_amount = 0.0;\
     sctx.nshift++;\
   }\
-  newshift = 0;\
 }
 
-#define MatPivotCheck_none(info,sctx,row,newshift) 0;\
+#define MatPivotCheck_none(info,sctx,row) 0;\
 {\
-  PetscInt  _newshift;\
   PetscReal _zero = info->zeropivot;\
   if (PetscAbsScalar(sctx.pv) <= _zero){\
     ierr = MatFactorDumpMatrix(A);CHKERRQ(ierr);\
     SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G",row,PetscAbsScalar(sctx.pv),_zero); \
-  } else {\
-    _newshift = 0;\
-  }\
-  newshift = _newshift;\
+  } \
 }
 
 /* 

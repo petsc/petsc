@@ -447,18 +447,20 @@ PetscErrorCode MatFactorDumpMatrix(Mat A)
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ"
 PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
 {
-  Mat            C=B;
-  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ *)C->data;
-  IS             isrow = b->row,isicol = b->icol;
-  PetscErrorCode ierr;
-  const PetscInt *r,*ic,*ics;
-  PetscInt       i,j,k,n=A->rmap->n,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
-  PetscInt       *ajtmp,*bjtmp,nz,nzL,row,*bdiag=b->diag,*pj;
-  MatScalar      *rtmp,*pc,multiplier,*v,*pv,*aa=a->a;
-  PetscTruth     row_identity,col_identity;
+  Mat              C=B;
+  Mat_SeqAIJ       *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ *)C->data;
+  IS               isrow = b->row,isicol = b->icol;
+  PetscErrorCode   ierr;
+  const PetscInt   *r,*ic,*ics;
+  const PetscInt   n=A->rmap->n,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bdiag=b->diag;
+  PetscInt         i,j,k,nz,nzL,row,*pj;
+  const PetscInt   *ajtmp,*bjtmp;
+  MatScalar        *rtmp,*pc,multiplier,*pv;
+  const  MatScalar *aa=a->a,*v;
+  PetscTruth       row_identity,col_identity;
 
   LUShift_Ctx    sctx;
-  PetscInt       *ddiag,newshift;
+  PetscInt       *ddiag;
   PetscReal      rs;
   MatScalar      d;
 
@@ -556,16 +558,16 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
       sctx.rs  = rs;
       sctx.pv  = rtmp[i];
       if (info->shiftnz){
-        ierr = MatPivotCheck_nz(info,sctx,i,newshift);CHKERRQ(ierr);
+        ierr = MatPivotCheck_nz(info,sctx,i);CHKERRQ(ierr);
       } else if (info->shiftpd){
-        ierr = MatPivotCheck_pd(info,sctx,i,newshift);CHKERRQ(ierr);
+        ierr = MatPivotCheck_pd(info,sctx,i);CHKERRQ(ierr);
       } else if (info->shiftinblocks){
-        ierr = MatPivotCheck_inblocks(info,sctx,i,newshift);CHKERRQ(ierr);       
+        ierr = MatPivotCheck_inblocks(info,sctx,i);CHKERRQ(ierr);       
       } else {
-        ierr = MatPivotCheck_none(info,sctx,i,newshift);CHKERRQ(ierr);   
+        ierr = MatPivotCheck_none(info,sctx,i);CHKERRQ(ierr);   
       }
       rtmp[i] = sctx.pv;
-      if (newshift == 1) break;
+      // if (newshift == 1) break;
 
       /* Mark diagonal and invert diagonal for simplier triangular solves */
       pv  = b->a + bdiag[i];
@@ -1611,8 +1613,8 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0(Mat fact,Mat A,IS isrow,IS iscol
   
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data,*b;
   PetscErrorCode     ierr;
-  PetscInt           n=A->rmap->n,*ai=a->i,*aj,*adiag=a->diag;
-  PetscInt           i,j,nz,*bi,*bj,*bdiag; 
+  const PetscInt     n=A->rmap->n,*ai=a->i,*aj,*adiag=a->diag;
+  PetscInt           i,j,k=0,nz,*bi,*bj,*bdiag; 
   PetscTruth         missing;
   IS                 isicol;
 
@@ -1650,7 +1652,8 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0(Mat fact,Mat A,IS isrow,IS iscol
     bi[i+1] = bi[i] + nz;
     aj = a->j + ai[i];
     for (j=0; j<nz; j++){
-      *bj = aj[j]; bj++;
+      /*   *bj = aj[j]; bj++; */
+      bj[k++] = aj[j];
     }
   }
   
@@ -1660,10 +1663,12 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0(Mat fact,Mat A,IS isrow,IS iscol
     nz = ai[i+1] - adiag[i] - 1;
     aj = a->j + adiag[i] + 1;
     for (j=0; j<nz; j++){
-      *bj = aj[j]; bj++;
+      /*      *bj = aj[j]; bj++; */
+      bj[k++] = aj[j];
     }
     /* diag[i] */
-    *bj = i; bj++;
+    /*    *bj = i; bj++; */
+    bj[k++] = i;
     bdiag[i] = bdiag[i+1] + nz + 1;
   }
 
@@ -2074,7 +2079,6 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *
   PetscTruth     perm_identity;
 
   LUShift_Ctx    sctx;
-  PetscInt       newshift;
   PetscReal      rs;
   MatScalar      d,*v;
 
@@ -2175,16 +2179,16 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *
       sctx.rs  = rs;
       sctx.pv  = dk;
       if (info->shiftnz){
-        ierr = MatPivotCheck_nz(info,sctx,k,newshift);CHKERRQ(ierr);
+        ierr = MatPivotCheck_nz(info,sctx,k);CHKERRQ(ierr);
       } else if (info->shiftpd){
-        ierr = MatPivotCheck_pd(info,sctx,k,newshift);CHKERRQ(ierr);
+        ierr = MatPivotCheck_pd(info,sctx,k);CHKERRQ(ierr);
       } else if (info->shiftinblocks){
-        ierr = MatPivotCheck_inblocks(info,sctx,k,newshift);CHKERRQ(ierr);       
+        ierr = MatPivotCheck_inblocks(info,sctx,k);CHKERRQ(ierr);       
       } else {
-        ierr = MatPivotCheck_none(info,sctx,k,newshift);CHKERRQ(ierr); 
+        ierr = MatPivotCheck_none(info,sctx,k);CHKERRQ(ierr); 
       }
       dk = sctx.pv;
-      if (newshift == 1) break;
+      //   if (newshift == 1) break;
  
       ba[bdiag[k]] = 1.0/dk; /* U(k,k) */
     } 
