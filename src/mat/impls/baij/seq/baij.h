@@ -191,6 +191,12 @@ EXTERN PetscErrorCode MatMult_SeqBAIJ_4(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatMult_SeqBAIJ_5(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatMult_SeqBAIJ_6(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatMult_SeqBAIJ_7(Mat,Vec,Vec);
+
+EXTERN PetscErrorCode MatMult_SeqBAIJ_15_ver1(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatMult_SeqBAIJ_15_ver2(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatMult_SeqBAIJ_15_ver3(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatMult_SeqBAIJ_15_ver4(Mat,Vec,Vec);
+
 EXTERN PetscErrorCode MatMult_SeqBAIJ_N(Mat,Vec,Vec);
 
 EXTERN PetscErrorCode MatMultAdd_SeqBAIJ_1(Mat,Vec,Vec,Vec);
