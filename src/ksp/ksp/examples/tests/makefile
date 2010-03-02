@@ -472,84 +472,84 @@ runex31:
 
 runex32_testset1:
 	@-count=0; \
-	for i in {1..5}; do \
+	for i in 1 2 3 4 5; do \
 	    for ordering in natural nd; do \
 		for simtype in '' -trans;do \
-		    for flevels in {0..3}; do \
-   	    	    	count=$$[$$count+1]; \
+		    for flevels in 0 1 2 3; do \
+	    	    	count=$$[$$count+1]; \
 	   		echo "[$${count}]_start" > ex32.tmp 2>&1; \
-   		    	${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof $$i -pc_type ilu -pc_factor_mat_ordering_type $$ordering -mat_type aij $$simtype -pc_factor_levels $$flevels >> ex32.tmp 2>&1;  \
+		    	${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof $$i -pc_type ilu -pc_factor_mat_ordering_type $$ordering -mat_type aij $$simtype -pc_factor_levels $$flevels >> ex32.tmp 2>&1;  \
 		    	echo "[$${count}]_end" >> ex32.tmp 2>&1;  \
 		    	sed -n '/\['$${count}']_start/,/\['$${count}']_end/p' output/ex32_1.out > ex32.tmp2 2>&1;  \
 		    	if (${DIFF} ex32.tmp ex32.tmp2) then true;  \
 		    	    else echo "Possible problem with ./ex32 -ksp_monitor_short -dof $$i -pc_type ilu -pc_factor_mat_ordering_type $$ordering -mat_type aij $$simtype -pc_factor_levels $$flevels"; fi;   \
 			    ${RM} -f ex32.tmp; ${RM} -f ex32.tmp2; \
-   	    	    done; \
+	    	    done; \
 		done; \
-    	    done; \
+	    done; \
 	done;
 
 runex32_testset2:
 	@-count=0; \
-	for i in {1..8}; do \
+	for i in 1 2 3 4 5 6 7 8; do \
 	    for ordering in natural nd; do \
 		for simtype in '' -trans;do \
-		    for flevels in {0..3}; do \
-   	    	    	count=$$[$$count+1]; \
+		    for flevels in 0 1 2 3; do \
+	    	    	count=$$[$$count+1]; \
 	   		echo "[$${count}]_start" > ex32.tmp 2>&1; \
-   		    	${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof $$i -pc_type ilu -pc_factor_mat_ordering_type $$ordering -mat_type baij $$simtype -pc_factor_levels $$flevels >> ex32.tmp 2>&1;  \
+		    	${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof $$i -pc_type ilu -pc_factor_mat_ordering_type $$ordering -mat_type baij $$simtype -pc_factor_levels $$flevels >> ex32.tmp 2>&1;  \
 		    	    echo "[$${count}]_end" >> ex32.tmp 2>&1;  \
 		    	    sed -n '/\['$${count}']_start/,/\['$${count}']_end/p' output/ex32_2.out > ex32.tmp2 2>&1;  \
 		    	if (${DIFF} ex32.tmp ex32.tmp2) then true;  \
 		    	    else echo "Possible problem with ./ex32 -ksp_monitor_short -dof $$i -pc_type ilu -pc_factor_mat_ordering_type $$ordering -mat_type baij $$simtype -pc_factor_levels $$flevels"; fi;   \
 			${RM} -f ex32.tmp; ${RM} -f ex32.tmp2; \
-   	    	    done; \
+	    	    done; \
 		done; \
-    	    done; \
+	    done; \
 	done;
 
 runex32_testset3:
 	@-count=0; \
-	for i in {1..5}; do \
+	for i in 1 2 3 4 5; do \
 	    for ordering in natural nd; do \
 		for simtype in '' -trans;do \
-   	    	    count=$$[$$count+1]; \
+	    	    count=$$[$$count+1]; \
 	   	    echo "[$${count}]_start" > ex32.tmp 2>&1; \
-   		    ${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof $$i -pc_type lu -pc_factor_mat_ordering_type $$ordering -mat_type aij $$simtype >> ex32.tmp 2>&1;  \
+		    ${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof $$i -pc_type lu -pc_factor_mat_ordering_type $$ordering -mat_type aij $$simtype >> ex32.tmp 2>&1;  \
 		    echo "[$${count}]_end" >> ex32.tmp 2>&1;  \
 		    sed -n '/\['$${count}']_start/,/\['$${count}']_end/p' output/ex32_3.out > ex32.tmp2 2>&1;  \
 		    if (${DIFF} ex32.tmp ex32.tmp2) then true;  \
 		    	else echo "Possible problem with ./ex32 -ksp_monitor_short -dof $$i -pc_type lu -pc_factor_mat_ordering_type $$ordering -mat_type aij $$simtype "; fi;   \
 		    ${RM} -f ex32.tmp; ${RM} -f ex32.tmp2; \
 		done; \
-    	    done; \
+	    done; \
 	done;
 
 runex32_testset4:
 	@-count=0; \
-	for i in {1..8}; do \
+	for i in 1 2 3 4 5 6 7 8; do \
 	    for ordering in natural nd; do \
 		for simtype in '' -trans;do \
-   	    	    count=$$[$$count+1]; \
+	    	    count=$$[$$count+1]; \
 	   	    echo "[$${count}]_start" > ex32.tmp 2>&1; \
-   		    ${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof $$i -pc_type lu -pc_factor_mat_ordering_type $$ordering -mat_type baij $$simtype >> ex32.tmp 2>&1;  \
+		    ${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof $$i -pc_type lu -pc_factor_mat_ordering_type $$ordering -mat_type baij $$simtype >> ex32.tmp 2>&1;  \
 		    echo "[$${count}]_end" >> ex32.tmp 2>&1;  \
 		    sed -n '/\['$${count}']_start/,/\['$${count}']_end/p' output/ex32_4.out > ex32.tmp2 2>&1;  \
 		    if (${DIFF} ex32.tmp ex32.tmp2) then true;  \
 		    	else echo "Possible problem with ./ex32 -ksp_monitor_short -dof $$i -pc_type lu -pc_factor_mat_ordering_type $$ordering -mat_type baij $$simtype "; fi;   \
 		    ${RM} -f ex32.tmp; ${RM} -f ex32.tmp2; \
 		done; \
-    	    done; \
+	    done; \
 	done;
 
 runex32_testset5:
 	@-count=0; \
 	for ordering in natural nd; do \
 	    for pc in icc cholesky; do \
-		for flevels in {0..3}; do \
+		for flevels in 0 1 2 3; do \
 		    count=$$[$$count+1]; \
 	   	    echo "[$${count}]_start" > ex32.tmp 2>&1; \
-    		    ${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_type $$pc -ksp_type cg -pc_factor_mat_ordering_type $$ordering -mat_type aij -pc_factor_levels $$flevels >> ex32.tmp 2>&1;  \
+		    ${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_type $$pc -ksp_type cg -pc_factor_mat_ordering_type $$ordering -mat_type aij -pc_factor_levels $$flevels >> ex32.tmp 2>&1;  \
 		    echo "[$${count}]_end" >> ex32.tmp 2>&1;  \
 		    sed -n '/\['$${count}']_start/,/\['$${count}']_end/p' output/ex32_5.out > ex32.tmp2 2>&1;  \
 		    if (${DIFF} ex32.tmp ex32.tmp2) then true;  \
@@ -562,7 +562,7 @@ runex32_testset5:
 	@-count=16; \
 	count=$$[$$count+1]; \
 	echo "[$${count}]_start" > ex32.tmp 2>&1; \
-    	${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_type icc -test_sbaij1 >> ex32.tmp 2>&1;  \
+	${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_type icc -test_sbaij1 >> ex32.tmp 2>&1;  \
 	echo "[$${count}]_end" >> ex32.tmp 2>&1;  \
 	sed -n '/\['$${count}']_start/,/\['$${count}']_end/p' output/ex32_5.out > ex32.tmp2 2>&1;  \
 	if (${DIFF} ex32.tmp ex32.tmp2) then true;  \
