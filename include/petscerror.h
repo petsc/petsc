@@ -78,7 +78,8 @@ PETSC_EXTERN_CXX_BEGIN
 
 #if defined(PETSC_USE_ERRORCHECKING)
 
-#define PetscStringize(a) #a
+#define PetscStringizeArg(a) #a
+#define PetscStringize(a) PetscStringizeArg(a)
 #define __SDIR__ PetscStringize(__INSDIR__)
 
 /*MC
