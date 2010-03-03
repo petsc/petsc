@@ -2292,6 +2292,7 @@ PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering(Mat A,Vec bb,Vec xx)
       x6   = t[5+idx];   x7  = t[6+idx];  x8  = t[7+idx];  x9  = t[8+idx];  x10 = t[9+idx];
       x11  = t[10+idx]; x12  = t[11+idx]; x13 = t[12+idx]; x14 = t[13+idx]; x15 = t[14+idx];
 
+ 
       s1 -=  v[0]*x1  + v[15]*x2 + v[30]*x3 + v[45]*x4 + v[60]*x5 + v[75]*x6 + v[90]*x7  + v[105]*x8 + v[120]*x9 + v[135]*x10 + v[150]*x11 + v[165]*x12 + v[180]*x13 + v[195]*x14 + v[210]*x15;
       s2 -=  v[1]*x1  + v[16]*x2 + v[31]*x3 + v[46]*x4 + v[61]*x5 + v[76]*x6 + v[91]*x7  + v[106]*x8 + v[121]*x9 + v[136]*x10 + v[151]*x11 + v[166]*x12 + v[181]*x13 + v[196]*x14 + v[211]*x15;
       s3 -=  v[2]*x1  + v[17]*x2 + v[32]*x3 + v[47]*x4 + v[62]*x5 + v[77]*x6 + v[92]*x7  + v[107]*x8 + v[122]*x9 + v[137]*x10 + v[152]*x11 + v[167]*x12 + v[182]*x13 + v[197]*x14 + v[212]*x15;
@@ -2351,7 +2352,7 @@ PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering(Mat A,Vec bb,Vec xx)
       v += bs2;
     }
     idc = bs*i;
-    
+
     x[idc]    = t[idt]    = v[0]*s1  + v[15]*s2 + v[30]*s3 + v[45]*s4 + v[60]*s5 + v[75]*s6 + v[90]*s7  + v[105]*s8 + v[120]*s9 + v[135]*s10 + v[150]*s11 + v[165]*s12 + v[180]*s13 + v[195]*s14 + v[210]*s15;
     x[1+idc]  = t[1+idt]  = v[1]*s1  + v[16]*s2 + v[31]*s3 + v[46]*s4 + v[61]*s5 + v[76]*s6 + v[91]*s7  + v[106]*s8 + v[121]*s9 + v[136]*s10 + v[151]*s11 + v[166]*s12 + v[181]*s13 + v[196]*s14 + v[211]*s15;
     x[2+idc]  = t[2+idt]  = v[2]*s1  + v[17]*s2 + v[32]*s3 + v[47]*s4 + v[62]*s5 + v[77]*s6 + v[92]*s7  + v[107]*s8 + v[122]*s9 + v[137]*s10 + v[152]*s11 + v[167]*s12 + v[182]*s13 + v[197]*s14 + v[212]*s15;
@@ -2375,6 +2376,129 @@ PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering(Mat A,Vec bb,Vec xx)
   ierr = PetscLogFlops(2.0*bs2*(a->nz) - bs*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolve_SeqBAIJ_15_NaturalOrdering_ver2"
+PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver2(Mat A,Vec bb,Vec xx)
+{
+  Mat_SeqBAIJ      *a=(Mat_SeqBAIJ *)A->data;
+  PetscErrorCode    ierr;
+  const PetscInt    n=a->mbs,*ai=a->i,*aj=a->j,*adiag=a->diag,*vi,bs=A->rmap->bs,bs2=a->bs2;
+  PetscInt          i,k,nz,idx,idt,idc,m;
+  const MatScalar   *aa=a->a,*v;
+  PetscScalar       s[15];
+  PetscScalar       *x,*t;
+  const PetscScalar *b;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  t  = a->solve_work;
+
+  /* forward solve the lower triangular */
+  idx    = 0; 
+  t[0]  = b[idx];    t[1]  = b[1+idx];  t[2]  = b[2+idx];  t[3]  = b[3+idx];  t[4]  = b[4+idx];
+  t[5]  = b[5+idx];  t[6]  = b[6+idx];  t[7]  = b[7+idx];  t[8]  = b[8+idx];  t[9]  = b[9+idx];
+  t[10] = b[10+idx]; t[11] = b[11+idx]; t[12] = b[12+idx]; t[13] = b[13+idx]; t[14] = b[14+idx];
+
+  for (i=1; i<n; i++) {
+    v     = aa + bs2*ai[i];
+    vi    = aj + ai[i];
+    nz    = ai[i+1] - ai[i];
+    idx   = bs*i;
+    s[0]   = b[idx];    s[1]  = b[1+idx];  s[2]  = b[2+idx];  s[3]  = b[3+idx];  s[4]  = b[4+idx];
+    s[5]   = b[5+idx];  s[6]  = b[6+idx];  s[7]  = b[7+idx];  s[8]  = b[8+idx];  s[9] = b[9+idx];
+    s[10]  = b[10+idx]; s[11] = b[11+idx]; s[12] = b[12+idx]; s[13] = b[13+idx]; s[14] = b[14+idx];
+    for(m=0;m<nz;m++){
+      idx   = bs*vi[m];
+
+      for(k=0;k<15;k++){
+	s[0] -= v[0]*t[k+idx];
+	s[1] -= v[1]*t[k+idx];
+	s[2] -= v[2]*t[k+idx];
+        s[3] -= v[3]*t[k+idx];
+	s[4] -= v[4]*t[k+idx];
+	s[5] -= v[5]*t[k+idx];
+	s[6] -= v[6]*t[k+idx];
+        s[7] -= v[7]*t[k+idx];
+	s[8] -= v[8]*t[k+idx];
+	s[9] -= v[9]*t[k+idx];
+	s[10] -= v[10]*t[k+idx];
+        s[11] -= v[11]*t[k+idx];
+	s[12] -= v[12]*t[k+idx];
+	s[13] -= v[13]*t[k+idx];
+	s[14] -= v[14]*t[k+idx];
+	v += 15;
+      }
+    }
+    idx = bs*i;
+    t[idx]    = s[0];  t[1+idx]  = s[1];  t[2+idx]  = s[2];  t[3+idx]  = s[3];  t[4+idx]  = s[4];
+    t[5+idx]  = s[5];  t[6+idx]  = s[6];  t[7+idx]  = s[7];  t[8+idx]  = s[8];  t[9+idx]  = s[9];
+    t[10+idx] = s[10]; t[11+idx] = s[11]; t[12+idx] = s[12]; t[13+idx] = s[13]; t[14+idx] = s[14];
+    
+  }
+  /* backward solve the upper triangular */
+  for (i=n-1; i>=0; i--){
+    v    = aa + bs2*(adiag[i+1]+1);
+    vi   = aj + adiag[i+1]+1;
+    nz   = adiag[i] - adiag[i+1] - 1;
+    idt  = bs*i;
+    s[0]   = t[idt];    s[1]  = t[1+idt];  s[2]  = t[2+idt];  s[3]  = t[3+idt];  s[4]  = t[4+idt];
+    s[5]   = t[5+idt];  s[6]  = t[6+idt];  s[7]  = t[7+idt];  s[8]  = t[8+idt];  s[9] = t[9+idt];
+    s[10]  = t[10+idt]; s[11] = t[11+idt]; s[12] = t[12+idt]; s[13] = t[13+idt]; s[14] = t[14+idt];
+ 
+    for(m=0;m<nz;m++){
+      idx   = bs*vi[m];
+      for(k=0;k<15;k++){
+	s[0] -= v[0]*t[k+idx];
+	s[1] -= v[1]*t[k+idx];
+	s[2] -= v[2]*t[k+idx];
+        s[3] -= v[3]*t[k+idx];
+	s[4] -= v[4]*t[k+idx];
+	s[5] -= v[5]*t[k+idx];
+	s[6] -= v[6]*t[k+idx];
+        s[7] -= v[7]*t[k+idx];
+	s[8] -= v[8]*t[k+idx];
+	s[9] -= v[9]*t[k+idx];
+	s[10] -= v[10]*t[k+idx];
+        s[11] -= v[11]*t[k+idx];
+	s[12] -= v[12]*t[k+idx];
+	s[13] -= v[13]*t[k+idx];
+	s[14] -= v[14]*t[k+idx];
+	v += 15;
+      }
+    }
+    idc = bs*i;
+
+    for(k=0;k<15;k++){
+      t[idt]    += v[0]*s[k];
+      t[1+idt]  += v[1]*s[k];
+      t[2+idt]  += v[2]*s[k];
+      t[3+idt]  += v[3]*s[k];
+      t[4+idt]  += v[4]*s[k];
+      t[5+idt]  += v[5]*s[k];
+      t[6+idt]  += v[6]*s[k];
+      t[7+idt]  += v[7]*s[k];
+      t[8+idt]  += v[8]*s[k];
+      t[9+idt]  += v[9]*s[k];
+      t[10+idt] += v[10]*s[k];
+      t[11+idt] += v[11]*s[k];
+      t[12+idt] += v[12]*s[k];
+      t[13+idt] += v[13]*s[k];
+      t[14+idt] += v[14]*s[k];
+      v += 15;
+     }
+     x[idc] = t[idt]; x[1+idc] = t[1+idt]; x[2+idc] = t[2+idt]; x[3+idc] = t[3+idt]; x[4+idc] = t[4+idt];
+     x[5+idc] = t[5+idt]; x[6+idc] = t[6+idt]; x[7+idc] = t[7+idt]; x[8+idc] = t[8+idt]; x[9+idc] = t[9+idt];
+     x[10+idc] = t[10+idt]; x[11+idc] = t[11+idt]; x[12+idc] = t[12+idt]; x[13+idc] = t[13+idt]; x[14+idc] = t[14+idt];
+  }
+
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*bs2*(a->nz) - bs*A->cmap->n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqBAIJ_7_inplace"

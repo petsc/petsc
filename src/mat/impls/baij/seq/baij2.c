@@ -678,7 +678,7 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver2(Mat A,Vec xx,Vec zz)
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar       *z = 0,sum1,sum2,sum3,sum4,sum5,sum6,sum7,sum8,sum9,sum10,sum11,sum12,sum13,sum14,sum15;
   const PetscScalar *x,*xb;
-  PetscScalar        x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,*zarray;
+  PetscScalar        x1,x2,x3,x4,*zarray;
   const MatScalar   *v;
   PetscErrorCode    ierr;
   const PetscInt    *ii,*ij=a->j,*idx;
@@ -709,8 +709,7 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver2(Mat A,Vec xx,Vec zz)
     nonzerorow += (n>0);
     for (j=0; j<n; j++) {
       xb = x + 15*(idx[j]);
-      x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5 = xb[4]; x6 = xb[5]; x7 = xb[6];
-      x8 = xb[7]; x9 = xb[8]; x10 = xb[9]; x11 = xb[10]; x12 = xb[11]; x13 = xb[12]; x14 = xb[13];x15 = xb[14];
+      x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3];
 
       sum1  += v[0]*x1 + v[15]*x2 + v[30]*x3   + v[45]*x4;
       sum2  += v[1]*x1 + v[16]*x2 + v[31]*x3   + v[46]*x4;
@@ -730,6 +729,8 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver2(Mat A,Vec xx,Vec zz)
 
       v += 60;
 
+      x1 = xb[4]; x2 = xb[5]; x3 = xb[6]; x4 = xb[7];
+
       sum1  += v[0]*x1 + v[15]*x2 + v[30]*x3   + v[45]*x4;
       sum2  += v[1]*x1 + v[16]*x2 + v[31]*x3   + v[46]*x4;
       sum3  += v[2]*x1 + v[17]*x2 + v[32]*x3  + v[47]*x4;
@@ -747,6 +748,7 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver2(Mat A,Vec xx,Vec zz)
       sum15 += v[14]*x1 + v[29]*x2 + v[44]*x3  + v[59]*x4;
       v += 60;
 
+      x1 = xb[8]; x2 = xb[9]; x3 = xb[10]; x4 = xb[11];
       sum1  += v[0]*x1 + v[15]*x2 + v[30]*x3   + v[45]*x4;
       sum2  += v[1]*x1 + v[16]*x2 + v[31]*x3   + v[46]*x4;
       sum3  += v[2]*x1 + v[17]*x2 + v[32]*x3  + v[47]*x4;
@@ -764,6 +766,7 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver2(Mat A,Vec xx,Vec zz)
       sum15 += v[14]*x1 + v[29]*x2 + v[44]*x3  + v[59]*x4;
       v  += 60;
 
+      x1 = xb[12]; x2 = xb[13]; x3 = xb[14];
       sum1  += v[0]*x1 + v[15]*x2 + v[30]*x3;
       sum2  += v[1]*x1 + v[16]*x2 + v[31]*x3;
       sum3  += v[2]*x1 + v[17]*x2 + v[32]*x3;
@@ -802,7 +805,7 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver3(Mat A,Vec xx,Vec zz)
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar       *z = 0,sum1,sum2,sum3,sum4,sum5,sum6,sum7,sum8,sum9,sum10,sum11,sum12,sum13,sum14,sum15;
   const PetscScalar *x,*xb;
-  PetscScalar        x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,*zarray;
+  PetscScalar        x1,x2,x3,x4,x5,x6,x7,x8,*zarray;
   const MatScalar   *v;
   PetscErrorCode    ierr;
   const PetscInt    *ii,*ij=a->j,*idx;
@@ -834,7 +837,7 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver3(Mat A,Vec xx,Vec zz)
     for (j=0; j<n; j++) {
       xb = x + 15*(idx[j]);
       x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5 = xb[4]; x6 = xb[5]; x7 = xb[6];
-      x8 = xb[7]; x9 = xb[8]; x10 = xb[9]; x11 = xb[10]; x12 = xb[11]; x13 = xb[12]; x14 = xb[13];x15 = xb[14];
+      x8 = xb[7];
 
       sum1  += v[0]*x1 + v[15]*x2  + v[30]*x3  + v[45]*x4 + v[60]*x5 + v[75]*x6 + v[90]*x7 + v[105]*x8;
       sum2  += v[1]*x1 + v[16]*x2  + v[31]*x3  + v[46]*x4 + v[61]*x5 + v[76]*x6 + v[91]*x7 + v[106]*x8;
@@ -852,6 +855,8 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver3(Mat A,Vec xx,Vec zz)
       sum14 += v[13]*x1 + v[28]*x2 + v[43]*x3  + v[58]*x4 + v[73]*x5 + v[88]*x6 + v[103]*x7 + v[118]*x8;
       sum15 += v[14]*x1 + v[29]*x2 + v[44]*x3  + v[59]*x4 + v[74]*x5 + v[89]*x6 + v[104]*x7 + v[119]*x8;
       v += 120;
+
+      x1 = xb[8]; x2 = xb[9]; x3 = xb[10]; x4 = xb[11]; x5 = xb[12]; x6 = xb[13]; x7 = xb[14];
 
       sum1  += v[0]*x1 + v[15]*x2  + v[30]*x3  + v[45]*x4 + v[60]*x5 + v[75]*x6 + v[90]*x7;
       sum2  += v[1]*x1 + v[16]*x2  + v[31]*x3  + v[46]*x4 + v[61]*x5 + v[76]*x6 + v[91]*x7;
