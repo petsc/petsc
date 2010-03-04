@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = x ps win32
+DIRS     = x win32
 LOCDIR   = src/sys/draw/impls/
 
 include ${PETSC_DIR}/conf/variables
