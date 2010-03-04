@@ -468,7 +468,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
       default:
         SETERRQ1(PETSC_ERR_SUP,"HOM experiment '%c' not implemented",homexp[0]);
     }
-    ierr = PetscOptionsEnum("-thi_quadrature","Quadrature to use for 3D elements","",QuadratureTypes,quad,(PetscEnum*)&quad,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-thi_quadrature","Quadrature to use for 3D elements","",QuadratureTypes,(PetscEnum)quad,(PetscEnum*)&quad,NULL);CHKERRQ(ierr);
     switch (quad) {
       case QUAD_GAUSS:
         HexQInterp = HexQInterp_Gauss;

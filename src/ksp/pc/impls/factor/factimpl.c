@@ -19,6 +19,38 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
+#define __FUNCT__ "PCFactorSetShiftType_Factor"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftType_Factor(PC pc,MatFactorShiftType shifttype)
+{
+  PC_Factor *dir = (PC_Factor*)pc->data;
+
+  PetscFunctionBegin;
+  if (shifttype == (MatFactorShiftType)PETSC_DECIDE){
+    dir->info.shifttype = MAT_SHIFT_NONE; 
+  } else {
+    dir->info.shifttype = shifttype;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCFactorSetShiftAmount_Factor"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftAmount_Factor(PC pc,PetscReal shiftamount)
+{
+  PC_Factor *dir = (PC_Factor*)pc->data;
+
+  PetscFunctionBegin;
+  if (shiftamount == (PetscReal) PETSC_DECIDE){
+    dir->info.shiftamount = 1.e-12; 
+  } else {
+    dir->info.shiftamount = shiftamount; 
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetShiftNonzero_Factor"
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftNonzero_Factor(PC pc,PetscReal shift)
 {
@@ -255,6 +287,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions_Factor(PC pc)
     }
     ierr = PetscOptionsReal("-pc_factor_fill","Expected non-zeros in factored matrix","PCFactorSetFill",((PC_Factor*)factor)->info.fill,&((PC_Factor*)factor)->info.fill,0);CHKERRQ(ierr);
 
+    ierr = PetscOptionsEnum("-pc_factor_shift_type","Shift added to diagonal","PCFactorSetShiftType",
+                            MatFactorShiftTypes,(PetscEnum)((PC_Factor*)factor)->info.shifttype,(PetscEnum*)&((PC_Factor*)factor)->info.shifttype,&flg);CHKERRQ(ierr);
+    /* printf("type: %d\n",(PetscEnum)((PC_Factor*)factor)->info.shifttype); */
+    
+    ierr = PetscOptionsReal("-pc_factor_shift_amount","Shift added to diagonal","PCFactorSetShiftAmount",((PC_Factor*)factor)->info.shiftamount,&((PC_Factor*)factor)->info.shiftamount,0);CHKERRQ(ierr);
+    /* printf(" amount: %g\n",((PC_Factor*)factor)->info.shiftamount); */
+  
     flg  = PETSC_FALSE;
     ierr = PetscOptionsName("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
     if (flg) {

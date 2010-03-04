@@ -459,14 +459,14 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
   const  MatScalar *aa=a->a,*v;
   PetscTruth       row_identity,col_identity;
 
-  LUShift_Ctx    sctx;
+  FactorShiftCtx sctx;
   PetscInt       *ddiag;
   PetscReal      rs;
   MatScalar      d;
 
   PetscFunctionBegin;
   /* MatPivotSetUp(): initialize shift context sctx */
-  ierr = PetscMemzero(&sctx,sizeof(LUShift_Ctx));CHKERRQ(ierr);
+  ierr = PetscMemzero(&sctx,sizeof(FactorShiftCtx));CHKERRQ(ierr);
 
   /* if both shift schemes are chosen by user, only use info->shiftpd */
   if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
@@ -494,7 +494,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
   ics  = ic;
 
   do {
-    sctx.lushift = PETSC_FALSE;
+    sctx.useshift = PETSC_FALSE;
     for (i=0; i<n; i++){
       /* zero rtmp */
       /* L part */
@@ -567,7 +567,6 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
         ierr = MatPivotCheck_none(info,sctx,i);CHKERRQ(ierr);   
       }
       rtmp[i] = sctx.pv;
-      // if (newshift == 1) break;
 
       /* Mark diagonal and invert diagonal for simplier triangular solves */
       pv  = b->a + bdiag[i];
@@ -576,7 +575,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
     } /* endof for (i=0; i<n; i++){ */
 
     /* MatPivotRefine() */
-    if (info->shiftpd && !sctx.lushift && sctx.shift_fraction>0 && sctx.nshift<sctx.nshift_max){
+    if (info->shiftpd && !sctx.useshift && sctx.shift_fraction>0 && sctx.nshift<sctx.nshift_max){
       /* 
        * if no shift in this attempt & shifting & started shifting & can refine,
        * then try lower shift
@@ -584,10 +583,10 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
       sctx.shift_hi       = sctx.shift_fraction;
       sctx.shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;
       sctx.shift_amount   = sctx.shift_fraction * sctx.shift_top;
-      sctx.lushift        = PETSC_TRUE;
+      sctx.useshift        = PETSC_TRUE;
       sctx.nshift++;
     }
-  } while (sctx.lushift);
+  } while (sctx.useshift);
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
@@ -639,7 +638,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFactorInfo
   MatScalar       *pv,*rtmp,*pc,multiplier,d;
   const MatScalar *v,*aa=a->a;
   PetscReal       rs=0.0;
-  LUShift_Ctx     sctx;
+  FactorShiftCtx  sctx;
   PetscInt        newshift,*ddiag;
 
   PetscFunctionBegin;
@@ -678,7 +677,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFactorInfo
   }
 
   do {
-    sctx.lushift = PETSC_FALSE;
+    sctx.useshift = PETSC_FALSE;
     for (i=0; i<n; i++){
       nz    = bi[i+1] - bi[i];
       bjtmp = bj + bi[i];
@@ -727,7 +726,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFactorInfo
       if (newshift == 1) break;
     } 
 
-    if (info->shiftpd && !sctx.lushift && sctx.shift_fraction>0 && sctx.nshift<sctx.nshift_max) {
+    if (info->shiftpd && !sctx.useshift && sctx.shift_fraction>0 && sctx.nshift<sctx.nshift_max) {
       /*
        * if no shift in this attempt & shifting & started shifting & can refine,
        * then try lower shift
@@ -735,10 +734,10 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFactorInfo
       sctx.shift_hi       = sctx.shift_fraction;
       sctx.shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;
       sctx.shift_amount   = sctx.shift_fraction * sctx.shift_top;
-      sctx.lushift        = PETSC_TRUE;
+      sctx.useshift        = PETSC_TRUE;
       sctx.nshift++;
     }
-  } while (sctx.lushift);
+  } while (sctx.useshift);
 
   /* invert diagonal entries for simplier triangular solves */
   for (i=0; i<n; i++) {
@@ -800,7 +799,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,const MatFa
   PetscScalar    *rtmp,*pc,multiplier,d;
   MatScalar      *v,*pv;
   PetscReal      rs;
-  LUShift_Ctx    sctx;
+  FactorShiftCtx sctx;
   PetscInt       newshift;
 
   PetscFunctionBegin;
@@ -840,7 +839,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,const MatFa
   sctx.shift_amount = 0.;
   sctx.nshift       = 0;
   do {
-    sctx.lushift = PETSC_FALSE;
+    sctx.useshift = PETSC_FALSE;
     for (i=0; i<n; i++){
       /* load in initial unfactored row */
       nz    = ai[r[i]+1] - ai[r[i]];
@@ -891,7 +890,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,const MatFa
       if (newshift == 1) break;
     } 
 
-    if (info->shiftpd && !sctx.lushift && sctx.shift_fraction>0 && sctx.nshift<sctx.nshift_max) {
+    if (info->shiftpd && !sctx.useshift && sctx.shift_fraction>0 && sctx.nshift<sctx.nshift_max) {
       /*
        * if no shift in this attempt & shifting & started shifting & can refine,
        * then try lower shift
@@ -899,10 +898,10 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,const MatFa
       sctx.shift_hi        = sctx.shift_fraction;
       sctx.shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;
       sctx.shift_amount    = sctx.shift_fraction * sctx.shift_top;
-      sctx.lushift         = PETSC_TRUE;
+      sctx.useshift         = PETSC_TRUE;
       sctx.nshift++;
     }
-  } while (sctx.lushift);
+  } while (sctx.useshift);
 
   /* invert diagonal entries for simplier triangular solves */
   for (i=0; i<n; i++) {
@@ -2078,13 +2077,13 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *
   MatScalar      *rtmp,*ba=b->a,*bval,*aa=a->a,dk,uikdi;
   PetscTruth     perm_identity;
 
-  LUShift_Ctx    sctx;
+  FactorShiftCtx sctx;
   PetscReal      rs;
   MatScalar      d,*v;
 
   PetscFunctionBegin;
   /* MatPivotSetUp(): initialize shift context sctx */
-  ierr = PetscMemzero(&sctx,sizeof(LUShift_Ctx));CHKERRQ(ierr);
+  ierr = PetscMemzero(&sctx,sizeof(FactorShiftCtx));CHKERRQ(ierr);
 
   /* if both shift schemes are chosen by user, only use info->shiftpd */
   if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
@@ -2115,7 +2114,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *
   ierr = PetscMalloc3(mbs,MatScalar,&rtmp,mbs,PetscInt,&il,mbs,PetscInt,&c2r);CHKERRQ(ierr);
  
   do {
-    sctx.lushift = PETSC_FALSE;
+    sctx.useshift = PETSC_FALSE;
 
     for (i=0; i<mbs; i++) c2r[i] = mbs; 
     il[0] = 0;
@@ -2188,11 +2187,10 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *
         ierr = MatPivotCheck_none(info,sctx,k);CHKERRQ(ierr); 
       }
       dk = sctx.pv;
-      //   if (newshift == 1) break;
  
       ba[bdiag[k]] = 1.0/dk; /* U(k,k) */
     } 
-  } while (sctx.lushift);
+  } while (sctx.useshift);
   
   ierr = PetscFree3(rtmp,il,c2r);CHKERRQ(ierr);
   ierr = ISRestoreIndices(ip,&rip);CHKERRQ(ierr);
