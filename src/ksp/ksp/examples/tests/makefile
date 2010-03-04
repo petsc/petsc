@@ -495,7 +495,7 @@ runex32_testset2:
 	    for ordering in natural nd; do \
 		for simtype in '' -trans;do \
 		    for flevels in 0 1 2 3; do \
-	    	    	count=`expr $$count +1`; \
+                        count=`expr $$count + 1`; \
 	   		echo "[$${count}]_start" > ex32.tmp 2>&1; \
 		    	${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof $$i -pc_type ilu -pc_factor_mat_ordering_type $$ordering -mat_type baij $$simtype -pc_factor_levels $$flevels >> ex32.tmp 2>&1;  \
 		    	    echo "[$${count}]_end" >> ex32.tmp 2>&1;  \
@@ -513,7 +513,7 @@ runex32_testset3:
 	for i in 1 2 3 4 5; do \
 	    for ordering in natural nd; do \
 		for simtype in '' -trans;do \
-	    	    count=`expr $$count +1`; \
+	    	    count=`expr $$count + 1`; \
 	   	    echo "[$${count}]_start" > ex32.tmp 2>&1; \
 		    ${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof $$i -pc_type lu -pc_factor_mat_ordering_type $$ordering -mat_type aij $$simtype >> ex32.tmp 2>&1;  \
 		    echo "[$${count}]_end" >> ex32.tmp 2>&1;  \
@@ -530,7 +530,7 @@ runex32_testset4:
 	for i in 1 2 3 4 5 6 7 8; do \
 	    for ordering in natural nd; do \
 		for simtype in '' -trans;do \
-	    	    count=`expr $$count +1`; \
+	    	    count=`expr $$count + 1`; \
 	   	    echo "[$${count}]_start" > ex32.tmp 2>&1; \
 		    ${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof $$i -pc_type lu -pc_factor_mat_ordering_type $$ordering -mat_type baij $$simtype >> ex32.tmp 2>&1;  \
 		    echo "[$${count}]_end" >> ex32.tmp 2>&1;  \
@@ -547,7 +547,7 @@ runex32_testset5:
 	for ordering in natural nd; do \
 	    for pc in icc cholesky; do \
 		for flevels in 0 1 2 3; do \
-		    count=`expr $$count +1`; \
+		    count=`expr $$count + 1`; \
 	   	    echo "[$${count}]_start" > ex32.tmp 2>&1; \
 		    ${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_type $$pc -ksp_type cg -pc_factor_mat_ordering_type $$ordering -mat_type aij -pc_factor_levels $$flevels >> ex32.tmp 2>&1;  \
 		    echo "[$${count}]_end" >> ex32.tmp 2>&1;  \
@@ -560,7 +560,7 @@ runex32_testset5:
 	done; \
 
 	@-count=16; \
-	count=`expr $$count +1`; \
+	count=`expr $$count + 1`; \
 	echo "[$${count}]_start" > ex32.tmp 2>&1; \
 	${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_type icc -test_sbaij1 >> ex32.tmp 2>&1;  \
 	echo "[$${count}]_end" >> ex32.tmp 2>&1;  \
