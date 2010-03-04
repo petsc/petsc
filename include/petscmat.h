@@ -1106,6 +1106,15 @@ extern PetscFList MatOrderingList;
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatReorderForNonzeroDiagonal(Mat,PetscReal,IS,IS);
 
+/*S
+    MatFactorShiftType - Numeric Shift.
+
+   Level: beginner
+
+S*/
+typedef enum {MAT_SHIFT_NONE,MAT_SHIFT_NONZERO,MAT_SHIFT_POSITIVE_DEFINITE,MAT_SHIFT_INBLOCKS} MatFactorShiftType;
+extern const char *MatFactorShiftTypes[];
+
 /*S 
    MatFactorInfo - Data passed into the matrix factorization routines
 
@@ -1136,6 +1145,8 @@ typedef struct {
                                    factorization may be faster if do not pivot */
   PetscReal     shiftinblocks;  /* if block in block factorization has zero pivot then shift diagonal until non-singular */
   PetscReal     zeropivot;      /* pivot is called zero if less than this */
+  MatFactorShiftType shifttype;   /* type of shift added to matrix factor to prevent zero pivots */
+  PetscReal          shiftamount; /* shfit amount */
 } MatFactorInfo;
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFactorInfoInitialize(MatFactorInfo*);

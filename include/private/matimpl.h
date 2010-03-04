@@ -391,10 +391,10 @@ struct _p_MatNullSpace {
 typedef struct {
   PetscInt       nshift,nshift_max;
   PetscReal      shift_amount,shift_lo,shift_hi,shift_top,shift_fraction;
-  PetscTruth     lushift;
+  PetscTruth     useshift;
   PetscReal      rs;  /* active row sum of abs(offdiagonals) */
   PetscScalar    pv;  /* pivot of the active row */
-} LUShift_Ctx;
+} FactorShiftCtx;
 
 EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
 
@@ -407,7 +407,7 @@ EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
 
    Input Parameters:
 +  info - information about the matrix factorization 
-.  sctx - pointer to the struct LUShift_Ctx
+.  sctx - pointer to the struct FactorShiftCtx
 -  row  - active row index
 
    Output  Parameter:
@@ -427,7 +427,7 @@ EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
     } else {\
       sctx.shift_amount *= 2.0;\
     }\
-    sctx.lushift = PETSC_TRUE;\
+    sctx.useshift = PETSC_TRUE;\
     (sctx.nshift)++;\
     _newshift = 1;\
   } else if (info->shiftpd && PetscRealPart(sctx.pv) <= _zero){\
@@ -437,11 +437,11 @@ EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
       SETERRQ1(PETSC_ERR_CONV_FAILED,"Unable to determine shift to enforce positive definite preconditioner after %d tries",sctx.nshift);\
     } else if (sctx.nshift == sctx.nshift_max) {\
       sctx.shift_fraction = sctx.shift_hi;\
-      sctx.lushift        = PETSC_TRUE;\
+      sctx.useshift        = PETSC_TRUE;\
     } else {\
       sctx.shift_lo = sctx.shift_fraction;\
       sctx.shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;\
-      sctx.lushift  = PETSC_TRUE;\
+      sctx.useshift  = PETSC_TRUE;\
     }\
     sctx.shift_amount = sctx.shift_fraction * sctx.shift_top;\
     sctx.nshift++;\
@@ -466,7 +466,7 @@ EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
     } else {\
       sctx.shift_amount *= 2.0;\
     }\
-    sctx.lushift = PETSC_TRUE;\
+    sctx.useshift = PETSC_TRUE;\
     (sctx.nshift)++;\
     break;          \
   } \
@@ -483,11 +483,11 @@ EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
       SETERRQ1(PETSC_ERR_CONV_FAILED,"Unable to determine shift to enforce positive definite preconditioner after %d tries",sctx.nshift);\
     } else if (sctx.nshift == sctx.nshift_max) {\
       sctx.shift_fraction = sctx.shift_hi;\
-      sctx.lushift        = PETSC_TRUE;\
+      sctx.useshift        = PETSC_TRUE;\
     } else {\
       sctx.shift_lo = sctx.shift_fraction;\
       sctx.shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;\
-      sctx.lushift  = PETSC_TRUE;\
+      sctx.useshift = PETSC_TRUE;\
     }\
     sctx.shift_amount = sctx.shift_fraction * sctx.shift_top;\
     sctx.nshift++;\

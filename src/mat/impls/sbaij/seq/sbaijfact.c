@@ -1323,7 +1323,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat B,Mat A,c
   PetscInt       *ai=a->i,*aj=a->j,*ajtmp;
   PetscInt       k,jmin,jmax,*c2r,*il,col,nexti,ili,nz;
   MatScalar      *rtmp,*ba=b->a,*bval,*aa=a->a,dk,uikdi;
-  LUShift_Ctx    sctx;
+  FactorShiftCtx sctx;
   PetscReal      rs;
   MatScalar      d,*v;
 
@@ -1331,7 +1331,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat B,Mat A,c
   ierr = PetscMalloc3(mbs,MatScalar,&rtmp,mbs,PetscInt,&il,mbs,PetscInt,&c2r);CHKERRQ(ierr);
 
   /* MatPivotSetUp(): initialize shift context sctx */
-  ierr = PetscMemzero(&sctx,sizeof(LUShift_Ctx));CHKERRQ(ierr);
+  ierr = PetscMemzero(&sctx,sizeof(FactorShiftCtx));CHKERRQ(ierr);
 
   /* if both shift schemes are chosen by user, only use info->shiftpd */
   if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
@@ -1361,7 +1361,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat B,Mat A,c
      il:  for active k row, il[i] gives the index of the 1st nonzero entry in U[i,k:n-1] in bj and ba arrays 
   */
   do {
-    sctx.lushift = PETSC_FALSE;
+    sctx.useshift = PETSC_FALSE;
 
     for (i=0; i<mbs; i++)  c2r[i] = mbs; 
     il[0] = 0;
@@ -1432,11 +1432,10 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat B,Mat A,c
         ierr = MatPivotCheck_none(info,sctx,k);CHKERRQ(ierr); 
       }
       dk = sctx.pv;
-      //  if (newshift == 1) break;
  
       ba[bdiag[k]] = 1.0/dk; /* U(k,k) */
     } 
-  } while (sctx.lushift);
+  } while (sctx.useshift);
   
   ierr = PetscFree3(rtmp,il,c2r);CHKERRQ(ierr);
  
