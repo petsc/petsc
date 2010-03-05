@@ -2251,11 +2251,11 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-/* bs = 15 for PFLOTRAN */
+/* bs = 15 for PFLOTRAN. Block operations are done by accessing all the columns   of the block at once */
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqBAIJ_15_NaturalOrdering"
-PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqBAIJ_15_NaturalOrdering_ver2"
+PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver2(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ      *a=(Mat_SeqBAIJ *)A->data;
   PetscErrorCode    ierr;
@@ -2374,9 +2374,12 @@ PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
+/* bs = 15 for PFLOTRAN. Block operations are done by accessing one column at at time */
+/* Default MatSolve for block size 15 */
+
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqBAIJ_15_NaturalOrdering_ver2"
-PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver2(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqBAIJ_15_NaturalOrdering_ver1"
+PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver1(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ      *a=(Mat_SeqBAIJ *)A->data;
   PetscErrorCode    ierr;
@@ -2392,46 +2395,36 @@ PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver2(Mat A,Vec bb,Vec xx)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
 
   /* forward solve the lower triangular */
-  idx    = 0; 
-  x[0]  = b[idx];    x[1]  = b[1+idx];  x[2]  = b[2+idx];  x[3]  = b[3+idx];  x[4]  = b[4+idx];
-  x[5]  = b[5+idx];  x[6]  = b[6+idx];  x[7]  = b[7+idx];  x[8]  = b[8+idx];  x[9]  = b[9+idx];
-  x[10] = b[10+idx]; x[11] = b[11+idx]; x[12] = b[12+idx]; x[13] = b[13+idx]; x[14] = b[14+idx];
-
-  for (i=1; i<n; i++) {
+  for (i=0; i<n; i++) {
     v     = aa + bs2*ai[i];
     vi    = aj + ai[i];
     nz    = ai[i+1] - ai[i];
     idt   = bs*i;
-    s[0]   = b[idt];    s[1]  = b[1+idt];  s[2]  = b[2+idt];  s[3]  = b[3+idt];  s[4]  = b[4+idt];
-    s[5]   = b[5+idt];  s[6]  = b[6+idt];  s[7]  = b[7+idt];  s[8]  = b[8+idt];  s[9] = b[9+idt];
-    s[10]  = b[10+idt]; s[11] = b[11+idt]; s[12] = b[12+idt]; s[13] = b[13+idt]; s[14] = b[14+idt];
+    x[idt]   = b[idt];    x[1+idt]  = b[1+idt];  x[2+idt]  = b[2+idt];  x[3+idt]  = b[3+idt];  x[4+idt]  = b[4+idt];
+    x[5+idt]   = b[5+idt];  x[6+idt]  = b[6+idt];  x[7+idt]  = b[7+idt];  x[8+idt]  = b[8+idt];  x[9+idt] = b[9+idt];
+    x[10+idt]  = b[10+idt]; x[11+idt] = b[11+idt]; x[12+idt] = b[12+idt]; x[13+idt] = b[13+idt]; x[14+idt] = b[14+idt];
     for(m=0;m<nz;m++){
       idx   = bs*vi[m];
-
       for(k=0;k<15;k++){
 	kdx = k + idx;
-	s[0]  -= v[0]*x[kdx];
-	s[1]  -= v[1]*x[kdx];
-	s[2]  -= v[2]*x[kdx];
-        s[3]  -= v[3]*x[kdx];
-	s[4]  -= v[4]*x[kdx];
-	s[5]  -= v[5]*x[kdx];
-	s[6]  -= v[6]*x[kdx];
-        s[7]  -= v[7]*x[kdx];
-	s[8]  -= v[8]*x[kdx];
-	s[9]  -= v[9]*x[kdx];
-	s[10] -= v[10]*x[kdx];
-        s[11] -= v[11]*x[kdx];
-	s[12] -= v[12]*x[kdx];
-	s[13] -= v[13]*x[kdx];
-	s[14] -= v[14]*x[kdx];
+	x[idt]    -= v[0]*x[kdx];
+	x[1+idt]  -= v[1]*x[kdx];
+	x[2+idt]  -= v[2]*x[kdx];
+        x[3+idt]  -= v[3]*x[kdx];
+	x[4+idt]  -= v[4]*x[kdx];
+	x[5+idt]  -= v[5]*x[kdx];
+	x[6+idt]  -= v[6]*x[kdx];
+        x[7+idt]  -= v[7]*x[kdx];
+	x[8+idt]  -= v[8]*x[kdx];
+	x[9+idt]  -= v[9]*x[kdx];
+	x[10+idt] -= v[10]*x[kdx];
+        x[11+idt] -= v[11]*x[kdx];
+	x[12+idt] -= v[12]*x[kdx];
+	x[13+idt] -= v[13]*x[kdx];
+	x[14+idt] -= v[14]*x[kdx];
 	v += 15;
       }
     }
-    x[idt]    = s[0];  x[1+idt]  = s[1];  x[2+idt]  = s[2];  x[3+idt]  = s[3];  x[4+idt]  = s[4];
-    x[5+idt]  = s[5];  x[6+idt]  = s[6];  x[7+idt]  = s[7];  x[8+idt]  = s[8];  x[9+idt]  = s[9];
-    x[10+idt] = s[10]; x[11+idt] = s[11]; x[12+idt] = s[12]; x[13+idt] = s[13]; x[14+idt] = s[14];
-    
   }
   /* backward solve the upper triangular */
   for (i=n-1; i>=0; i--){
@@ -5465,9 +5458,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering(Mat B,Mat A,const M
   }
 
   ierr = PetscFree2(rtmp,mwork);CHKERRQ(ierr);
-  if(sol_ver == 1) C->ops->solve = MatSolve_SeqBAIJ_15_NaturalOrdering;
-  else if (sol_ver == 2) C->ops->solve = MatSolve_SeqBAIJ_15_NaturalOrdering_ver2;
-  else C->ops->solve = MatSolve_SeqBAIJ_N_NaturalOrdering;
+  C->ops->solve = MatSolve_SeqBAIJ_15_NaturalOrdering_ver1;
   C->ops->solvetranspose = MatSolve_SeqBAIJ_N_NaturalOrdering;
   C->assembled = PETSC_TRUE;
   ierr = PetscLogFlops(1.333333333333*bs*bs2*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */

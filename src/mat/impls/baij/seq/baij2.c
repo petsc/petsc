@@ -596,6 +596,7 @@ PetscErrorCode MatMult_SeqBAIJ_7(Mat A,Vec xx,Vec zz)
 }
 
 /* MatMult_SeqBAIJ_15 version 1: Columns in the block are accessed one at a time */
+/* Default MatMult for block size 15 */
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqBAIJ_15_ver1"

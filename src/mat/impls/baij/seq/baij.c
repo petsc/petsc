@@ -2871,11 +2871,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,Petsc
   PetscErrorCode ierr;
   PetscInt       i,mbs,nbs,bs2,newbs = PetscAbs(bs);
   PetscTruth     flg,skipallocation = PETSC_FALSE;
-  PetscInt       ver;
 
   PetscFunctionBegin;
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-ver",&ver,PETSC_NULL);CHKERRQ(ierr);
   if (nz == MAT_SKIP_ALLOCATION) {
     skipallocation = PETSC_TRUE;
     nz             = 0;
@@ -2959,11 +2957,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,Petsc
       B->ops->sor             = MatSOR_SeqBAIJ_7;
       break;
     case 15:
-      if (ver == 1) B->ops->mult = MatMult_SeqBAIJ_15_ver1;
-      else if (ver == 2) B->ops->mult = MatMult_SeqBAIJ_15_ver2;
-      else if (ver == 3) B->ops->mult = MatMult_SeqBAIJ_15_ver3;
-      else if (ver == 4) B->ops->mult = MatMult_SeqBAIJ_15_ver4;
-      else B->ops->mult = MatMult_SeqBAIJ_N;
+      B->ops->mult = MatMult_SeqBAIJ_15_ver1;
       break;
     default:
       B->ops->mult            = MatMult_SeqBAIJ_N; 
