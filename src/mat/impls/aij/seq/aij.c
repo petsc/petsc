@@ -901,7 +901,7 @@ PetscErrorCode MatGetDiagonal_SeqAIJ(Mat A,Vec v)
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     nz = ai[i+1] - ai[i];
-    if (!nz) SETERRQ1(PETSC_ERR_ARG_WRONG,"empty row %D",i);
+    if (!nz) x[i] = 0.0;
     for (j=ai[i]; j<ai[i+1]; j++){
       if (aj[j] == i) {
         x[i] = aa[j];
