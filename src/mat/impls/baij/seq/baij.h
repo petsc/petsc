@@ -101,6 +101,7 @@ EXTERN PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering_inplace(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering(Mat,Vec,Vec);
 
 EXTERN PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver2(Mat,Vec,Vec);
 
 EXTERN PetscErrorCode MatSolve_SeqBAIJ_N_inplace(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqBAIJ_N(Mat,Vec,Vec);
