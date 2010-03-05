@@ -545,21 +545,32 @@ runex32_testset4:
 runex32_testset5:
 	@-count=0; \
 	for ordering in natural nd; do \
-	    for pc in icc cholesky; do \
-		for flevels in 0 1 2 3; do \
-		    count=`expr $$count + 1`; \
-	   	    echo "[$${count}]_start" > ex32.tmp 2>&1; \
-		    ${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_type $$pc -ksp_type cg -pc_factor_mat_ordering_type $$ordering -mat_type aij -pc_factor_levels $$flevels >> ex32.tmp 2>&1;  \
-		    echo "[$${count}]_end" >> ex32.tmp 2>&1;  \
-		    sed -n '/\['$${count}']_start/,/\['$${count}']_end/p' output/ex32_5.out > ex32.tmp2 2>&1;  \
-		    if (${DIFF} ex32.tmp ex32.tmp2) then true;  \
-		    	else echo "Possible problem with ./ex32 -ksp_monitor_short -dof 1 -pc_type $$pc -ksp_type cg -pc_factor_mat_ordering_type $$ordering -mat_type aij -pc_factor_levels $$flevels "; fi;   \
-		    ${RM} -f ex32.tmp; ${RM} -f ex32.tmp2; \
-		done; \
+	    for flevels in 0 1 2 3; do \
+		count=`expr $$count + 1`; \
+	   	echo "[$${count}]_start" > ex32.tmp 2>&1; \
+		${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_type icc -ksp_type cg -pc_factor_mat_ordering_type $$ordering -mat_type aij -pc_factor_levels $$flevels >> ex32.tmp 2>&1;  \
+		echo "[$${count}]_end" >> ex32.tmp 2>&1;  \
+		sed -n '/\['$${count}']_start/,/\['$${count}']_end/p' output/ex32_5.out > ex32.tmp2 2>&1;  \
+		if (${DIFF} ex32.tmp ex32.tmp2) then true;  \
+		    	else echo "Possible problem with ./ex32 -ksp_monitor_short -dof 1 -pc_type icc -ksp_type cg -pc_factor_mat_ordering_type $$ordering -mat_type aij -pc_factor_levels $$flevels"; fi;   \
+		${RM} -f ex32.tmp; ${RM} -f ex32.tmp2; \
 	   done; \
 	done; \
+       
+	@-count=8; \
+        for ordering in natural nd; do \
+	    count=`expr $$count + 1`; \
+	    echo "[$${count}]_start" > ex32.tmp 2>&1; \
+	    ${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_type cholesky -ksp_type cg -pc_factor_mat_ordering_type $$ordering -mat_type aij >> ex32.tmp 2>&1;  \
+	    echo "[$${count}]_end" >> ex32.tmp 2>&1;  \
+	    sed -n '/\['$${count}']_start/,/\['$${count}']_end/p' output/ex32_5.out > ex32.tmp2 2>&1;  \
+	    if (${DIFF} ex32.tmp ex32.tmp2) then true;  \
+	    else echo "Possible problem with ./ex32 -ksp_monitor_short -dof 1 -pc_type cholesky -ksp_type cg -pc_factor_mat_ordering_type $$ordering -mat_type aij "; fi;   \
+	    ${RM} -f ex32.tmp; ${RM} -f ex32.tmp2; \
+	done; \
+       
 
-	@-count=16; \
+	@-count=10; \
 	count=`expr $$count + 1`; \
 	echo "[$${count}]_start" > ex32.tmp 2>&1; \
 	${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_type icc -test_sbaij1 >> ex32.tmp 2>&1;  \

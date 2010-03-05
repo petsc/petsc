@@ -29,34 +29,6 @@
   3 KSP Residual norm 3.04436e-06 
 [4]_end
 [5]_start
-  0 KSP Residual norm 0.491924 
-  1 KSP Residual norm < 1.e-11
-WARNING! There are options you set that were not used!
-WARNING! could be spelling mistake, etc!
-Option left: name:-pc_factor_levels value: 0
-[5]_end
-[6]_start
-  0 KSP Residual norm 0.491924 
-  1 KSP Residual norm < 1.e-11
-WARNING! There are options you set that were not used!
-WARNING! could be spelling mistake, etc!
-Option left: name:-pc_factor_levels value: 1
-[6]_end
-[7]_start
-  0 KSP Residual norm 0.491924 
-  1 KSP Residual norm < 1.e-11
-WARNING! There are options you set that were not used!
-WARNING! could be spelling mistake, etc!
-Option left: name:-pc_factor_levels value: 2
-[7]_end
-[8]_start
-  0 KSP Residual norm 0.491924 
-  1 KSP Residual norm < 1.e-11
-WARNING! There are options you set that were not used!
-WARNING! could be spelling mistake, etc!
-Option left: name:-pc_factor_levels value: 3
-[8]_end
-[9]_start
   0 KSP Residual norm 0.163491 
   1 KSP Residual norm 0.0735699 
   2 KSP Residual norm 0.020875 
@@ -67,58 +39,38 @@ Option left: name:-pc_factor_levels value: 3
   7 KSP Residual norm 9.62303e-06 
   8 KSP Residual norm 2.26451e-06 
   9 KSP Residual norm 5.15935e-07 
-[9]_end
-[10]_start
+[5]_end
+[6]_start
   0 KSP Residual norm 0.30159 
   1 KSP Residual norm 0.0575736 
   2 KSP Residual norm 0.00283063 
   3 KSP Residual norm 0.000258858 
   4 KSP Residual norm 2.60992e-05 
   5 KSP Residual norm 2.08835e-06 
-[10]_end
-[11]_start
+[6]_end
+[7]_start
   0 KSP Residual norm 0.386486 
   1 KSP Residual norm 0.0285738 
   2 KSP Residual norm 0.000445324 
   3 KSP Residual norm 2.51287e-05 
   4 KSP Residual norm 1.63504e-06 
-[11]_end
-[12]_start
+[7]_end
+[8]_start
   0 KSP Residual norm 0.445244 
   1 KSP Residual norm 0.0139449 
   2 KSP Residual norm 0.0002943 
   3 KSP Residual norm 9.95477e-06 
   4 KSP Residual norm 2.19947e-07 
-[12]_end
-[13]_start
+[8]_end
+[9]_start
   0 KSP Residual norm 0.491924 
   1 KSP Residual norm < 1.e-11
-WARNING! There are options you set that were not used!
-WARNING! could be spelling mistake, etc!
-Option left: name:-pc_factor_levels value: 0
-[13]_end
-[14]_start
+[9]_end
+[10]_start
   0 KSP Residual norm 0.491924 
   1 KSP Residual norm < 1.e-11
-WARNING! There are options you set that were not used!
-WARNING! could be spelling mistake, etc!
-Option left: name:-pc_factor_levels value: 1
-[14]_end
-[15]_start
-  0 KSP Residual norm 0.491924 
-  1 KSP Residual norm < 1.e-11
-WARNING! There are options you set that were not used!
-WARNING! could be spelling mistake, etc!
-Option left: name:-pc_factor_levels value: 2
-[15]_end
-[16]_start
-  0 KSP Residual norm 0.491924 
-  1 KSP Residual norm < 1.e-11
-WARNING! There are options you set that were not used!
-WARNING! could be spelling mistake, etc!
-Option left: name:-pc_factor_levels value: 3
-[16]_end
-[17]_start
+[10]_end
+[11]_start
   0 KSP Residual norm 0.210648 
   1 KSP Residual norm 0.07826 
   2 KSP Residual norm 0.0115565 
@@ -126,4 +78,4 @@ Option left: name:-pc_factor_levels value: 3
   4 KSP Residual norm 0.00013248 
   5 KSP Residual norm 9.04476e-06 
   6 KSP Residual norm 4.52149e-07 
-[17]_end
+[11]_end
