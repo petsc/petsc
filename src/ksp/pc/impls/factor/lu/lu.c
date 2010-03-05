@@ -292,10 +292,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_LU(PC pc)
   dir->nonzerosalongdiagonal = PETSC_FALSE;
 
   ((PC_Factor*)dir)->info.fill           = 5.0;
-  ((PC_Factor*)dir)->info.dtcol          = 1.e-6; /* default to pivoting; this is only thing PETSc LU supports */
-  ((PC_Factor*)dir)->info.shiftnz        = 0.0;
-  ((PC_Factor*)dir)->info.shiftpd        = 0.0; 
-  ((PC_Factor*)dir)->info.shiftinblocks  = 0.0;    
+  ((PC_Factor*)dir)->info.dtcol          = 1.e-6; /* default to pivoting; this is only thing PETSc LU supports */    
+  ((PC_Factor*)dir)->info.shifttype      = MAT_SHIFT_NONE;
+  ((PC_Factor*)dir)->info.shiftamount    = 0.0;
   ((PC_Factor*)dir)->info.zeropivot      = 1.e-12;
   ((PC_Factor*)dir)->info.pivotinblocks  = 1.0;
   dir->col                 = 0;

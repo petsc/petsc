@@ -326,11 +326,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Cholesky(PC pc)
   ((PC_Factor*)dir)->fact                   = 0;
   dir->inplace                = PETSC_FALSE;
   ierr = MatFactorInfoInitialize(&((PC_Factor*)dir)->info);CHKERRQ(ierr);
-  ((PC_Factor*)dir)->info.fill              = 5.0;
-  ((PC_Factor*)dir)->info.shiftnz           = 0.0;
-  ((PC_Factor*)dir)->info.shiftpd           = 0.0; 
-  ((PC_Factor*)dir)->info.shiftinblocks     = 0.0;
-  ((PC_Factor*)dir)->info.pivotinblocks     = 1.0;
+  ((PC_Factor*)dir)->info.fill          = 5.0;
+  ((PC_Factor*)dir)->info.shifttype     = MAT_SHIFT_NONE;
+  ((PC_Factor*)dir)->info.shiftamount   = 0.0;
+  ((PC_Factor*)dir)->info.pivotinblocks = 1.0;
   dir->col                    = 0;
   dir->row                    = 0;
   ierr = PetscStrallocpy(MATORDERING_NATURAL,&((PC_Factor*)dir)->ordering);CHKERRQ(ierr);

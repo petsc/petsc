@@ -419,47 +419,47 @@ runex30_3:
            ${RM} -f ex30.tmp
 
 runex30_shift: # test lu with shift
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_nonzero 1.e-5 > ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_type NONZERO -pc_factor_shift_amount 1.e-5 > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftnz.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30_shiftnz, diffs above"; fi; \
 	   ${RM} -f ex30.tmp
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_positive_definite > ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_type POSITIVE_DEFINITE > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftpd.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30_shiftpd, diffs above"; fi; \
 	   ${RM} -f ex30.tmp
 
 runex30_shift_cholesky_aij: # test cholesky with shift
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_nonzero 1.e-5 > ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_type NONZERO -pc_factor_shift_amount 1.e-5 > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftnz.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30_shiftnz_cholesky_aij, diffs above"; fi; \
 	   ${RM} -f ex30.tmp
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_positive_definite > ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_type POSITIVE_DEFINITE > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftpd_2.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30_shiftpd_cholesky_aij, diffs above"; fi; \
 	   ${RM} -f ex30.tmp
 
 runex30_shift_cholesky_sbaij: # test cholesky with shift
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_nonzero 1.e-5 -mat_type sbaij > ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_type NONZERO -pc_factor_shift_amount 1.e-5 -mat_type sbaij > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftnz.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30_shiftnz_cholesky_sbaij, diffs above"; fi; \
 	   ${RM} -f ex30.tmp
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_positive_definite -mat_type sbaij > ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_type POSITIVE_DEFINITE -mat_type sbaij > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftpd_2.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30_shiftpd_cholesky_sbaij, diffs above"; fi; \
 	   ${RM} -f ex30.tmp
 
 runex30_shift_in_blocks_aij: # sensitive to machine, thus not submitted to the nightly tests
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_in_blocks > ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_type INBLOCKS > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftinblocks.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30_shiftinblocks_lu, diffs above"; fi; \
 	   ${RM} -f ex30.tmp
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_in_blocks > ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_type INBLOCKS > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftinblocks.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30_shiftinblocks_cholesky, diffs above"; fi; \
 	   ${RM} -f ex30.tmp
 
 runex30_shift_in_blocks_sbaij: # sensitive to machine, thus not submitted to the nightly tests
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_in_blocks -mat_type sbaij > ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_type INBLOCKS -mat_type sbaij > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftinblocks.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30_shift_in_blocks_sbaij, diffs above"; fi; \
 	   ${RM} -f ex30.tmp
@@ -545,21 +545,32 @@ runex32_testset4:
 runex32_testset5:
 	@-count=0; \
 	for ordering in natural nd; do \
-	    for pc in icc cholesky; do \
-		for flevels in 0 1 2 3; do \
-		    count=`expr $$count + 1`; \
-	   	    echo "[$${count}]_start" > ex32.tmp 2>&1; \
-		    ${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_type $$pc -ksp_type cg -pc_factor_mat_ordering_type $$ordering -mat_type aij -pc_factor_levels $$flevels >> ex32.tmp 2>&1;  \
-		    echo "[$${count}]_end" >> ex32.tmp 2>&1;  \
-		    sed -n '/\['$${count}']_start/,/\['$${count}']_end/p' output/ex32_5.out > ex32.tmp2 2>&1;  \
-		    if (${DIFF} ex32.tmp ex32.tmp2) then true;  \
-		    	else echo "Possible problem with ./ex32 -ksp_monitor_short -dof 1 -pc_type $$pc -ksp_type cg -pc_factor_mat_ordering_type $$ordering -mat_type aij -pc_factor_levels $$flevels "; fi;   \
-		    ${RM} -f ex32.tmp; ${RM} -f ex32.tmp2; \
-		done; \
+	    for flevels in 0 1 2 3; do \
+		count=`expr $$count + 1`; \
+	   	echo "[$${count}]_start" > ex32.tmp 2>&1; \
+		${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_type icc -ksp_type cg -pc_factor_mat_ordering_type $$ordering -mat_type aij -pc_factor_levels $$flevels >> ex32.tmp 2>&1;  \
+		echo "[$${count}]_end" >> ex32.tmp 2>&1;  \
+		sed -n '/\['$${count}']_start/,/\['$${count}']_end/p' output/ex32_5.out > ex32.tmp2 2>&1;  \
+		if (${DIFF} ex32.tmp ex32.tmp2) then true;  \
+		    	else echo "Possible problem with ./ex32 -ksp_monitor_short -dof 1 -pc_type icc -ksp_type cg -pc_factor_mat_ordering_type $$ordering -mat_type aij -pc_factor_levels $$flevels"; fi;   \
+		${RM} -f ex32.tmp; ${RM} -f ex32.tmp2; \
 	   done; \
 	done; \
+       
+	@-count=8; \
+        for ordering in natural nd; do \
+	    count=`expr $$count + 1`; \
+	    echo "[$${count}]_start" > ex32.tmp 2>&1; \
+	    ${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_type cholesky -ksp_type cg -pc_factor_mat_ordering_type $$ordering -mat_type aij >> ex32.tmp 2>&1;  \
+	    echo "[$${count}]_end" >> ex32.tmp 2>&1;  \
+	    sed -n '/\['$${count}']_start/,/\['$${count}']_end/p' output/ex32_5.out > ex32.tmp2 2>&1;  \
+	    if (${DIFF} ex32.tmp ex32.tmp2) then true;  \
+	    else echo "Possible problem with ./ex32 -ksp_monitor_short -dof 1 -pc_type cholesky -ksp_type cg -pc_factor_mat_ordering_type $$ordering -mat_type aij "; fi;   \
+	    ${RM} -f ex32.tmp; ${RM} -f ex32.tmp2; \
+	done; \
+       
 
-	@-count=16; \
+	@-count=10; \
 	count=`expr $$count + 1`; \
 	echo "[$${count}]_start" > ex32.tmp 2>&1; \
 	${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -pc_type icc -test_sbaij1 >> ex32.tmp 2>&1;  \
