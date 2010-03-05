@@ -213,15 +213,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC pc)
   ((PC_Factor*)icc)->info.fill          = 1.0;
   icc->implctx            = 0;
 
-  ((PC_Factor*)icc)->info.dtcol              = PETSC_DEFAULT;
-  /* Only one of shiftnz, shiftpd and shiftinblocks is allowed to be set as non-zero. 
-     Setting shiftnz=TURE as default causes confusion if user sets shiftpd or shiftinblocks as true */
-  ((PC_Factor*)icc)->info.shiftnz            = 0.0;    /* false */
-  ((PC_Factor*)icc)->info.shiftpd            = 0.0;    /* false */
-  ((PC_Factor*)icc)->info.shiftinblocks      = 0.0;    /* false */
-  ((PC_Factor*)icc)->info.zeropivot          = 1.e-12;
-  pc->data	               = (void*)icc;
+  ((PC_Factor*)icc)->info.dtcol       = PETSC_DEFAULT;
+  ((PC_Factor*)icc)->info.shifttype   = MAT_SHIFT_POSITIVE_DEFINITE;
+  ((PC_Factor*)icc)->info.shiftamount = 0.0;
+  ((PC_Factor*)icc)->info.zeropivot   = 1.e-12;
 
+  pc->data	               = (void*)icc;
   pc->ops->apply	       = PCApply_ICC;
   pc->ops->setup               = PCSetup_ICC;
   pc->ops->destroy	       = PCDestroy_ICC;

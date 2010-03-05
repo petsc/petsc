@@ -468,8 +468,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
   /* MatPivotSetUp(): initialize shift context sctx */
   ierr = PetscMemzero(&sctx,sizeof(FactorShiftCtx));CHKERRQ(ierr);
 
-  /* if both shift schemes are chosen by user, only use info->shiftpd */
-  if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
+  if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE) { /* set sctx.shift_top=max{rs} */
     ddiag          = a->diag;
     sctx.shift_top = info->zeropivot;
     for (i=0; i<n; i++) {
@@ -557,11 +556,11 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
       /* MatPivotCheck() */
       sctx.rs  = rs;
       sctx.pv  = rtmp[i];
-      if (info->shiftnz){
+      if (info->shifttype == MAT_SHIFT_NONZERO){
         ierr = MatPivotCheck_nz(info,sctx,i);CHKERRQ(ierr);
-      } else if (info->shiftpd){
+      } else if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE){
         ierr = MatPivotCheck_pd(info,sctx,i);CHKERRQ(ierr);
-      } else if (info->shiftinblocks){
+      } else if (info->shifttype == MAT_SHIFT_INBLOCKS){
         ierr = MatPivotCheck_inblocks(info,sctx,i);CHKERRQ(ierr);       
       } else {
         ierr = MatPivotCheck_none(info,sctx,i);CHKERRQ(ierr);   
@@ -575,7 +574,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
     } /* endof for (i=0; i<n; i++){ */
 
     /* MatPivotRefine() */
-    if (info->shiftpd && !sctx.useshift && sctx.shift_fraction>0 && sctx.nshift<sctx.nshift_max){
+    if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE && !sctx.useshift && sctx.shift_fraction>0 && sctx.nshift<sctx.nshift_max){
       /* 
        * if no shift in this attempt & shifting & started shifting & can refine,
        * then try lower shift
@@ -612,12 +611,12 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
 
   /* MatPivotView() */
   if (sctx.nshift){
-    if (info->shiftpd) {
+    if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE) {
       ierr = PetscInfo4(A,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,sctx.shift_fraction,sctx.shift_top);CHKERRQ(ierr);
-    } else if (info->shiftnz) {
+    } else if (info->shifttype == MAT_SHIFT_NONZERO) {
       ierr = PetscInfo2(A,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
-    } else if (info->shiftinblocks){
-      ierr = PetscInfo2(A,"number of shift_inblocks applied %D, each shift_amount %G\n",sctx.nshift,info->shiftinblocks);CHKERRQ(ierr);
+    } else if (info->shifttype == MAT_SHIFT_INBLOCKS){
+      ierr = PetscInfo2(A,"number of shift_inblocks applied %D, each shift_amount %G\n",sctx.nshift,info->shiftamount);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

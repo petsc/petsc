@@ -419,47 +419,47 @@ runex30_3:
            ${RM} -f ex30.tmp
 
 runex30_shift: # test lu with shift
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_nonzero 1.e-5 > ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_type NONZERO -pc_factor_shift_amount 1.e-5 > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftnz.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30_shiftnz, diffs above"; fi; \
 	   ${RM} -f ex30.tmp
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_positive_definite > ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_type POSITIVE_DEFINITE > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftpd.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30_shiftpd, diffs above"; fi; \
 	   ${RM} -f ex30.tmp
 
 runex30_shift_cholesky_aij: # test cholesky with shift
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_nonzero 1.e-5 > ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_type NONZERO -pc_factor_shift_amount 1.e-5 > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftnz.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30_shiftnz_cholesky_aij, diffs above"; fi; \
 	   ${RM} -f ex30.tmp
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_positive_definite > ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_type POSITIVE_DEFINITE > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftpd_2.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30_shiftpd_cholesky_aij, diffs above"; fi; \
 	   ${RM} -f ex30.tmp
 
 runex30_shift_cholesky_sbaij: # test cholesky with shift
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_nonzero 1.e-5 -mat_type sbaij > ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_type NONZERO -pc_factor_shift_amount 1.e-5 -mat_type sbaij > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftnz.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30_shiftnz_cholesky_sbaij, diffs above"; fi; \
 	   ${RM} -f ex30.tmp
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_positive_definite -mat_type sbaij > ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_type POSITIVE_DEFINITE -mat_type sbaij > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftpd_2.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30_shiftpd_cholesky_sbaij, diffs above"; fi; \
 	   ${RM} -f ex30.tmp
 
 runex30_shift_in_blocks_aij: # sensitive to machine, thus not submitted to the nightly tests
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_in_blocks > ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_type INBLOCKS > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftinblocks.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30_shiftinblocks_lu, diffs above"; fi; \
 	   ${RM} -f ex30.tmp
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_in_blocks > ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_type INBLOCKS > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftinblocks.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30_shiftinblocks_cholesky, diffs above"; fi; \
 	   ${RM} -f ex30.tmp
 
 runex30_shift_in_blocks_sbaij: # sensitive to machine, thus not submitted to the nightly tests
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_in_blocks -mat_type sbaij > ex30.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_type INBLOCKS -mat_type sbaij > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftinblocks.out ex30.tmp) then true; \
 	   else echo "Possible problem with ex30_shift_in_blocks_sbaij, diffs above"; fi; \
 	   ${RM} -f ex30.tmp

@@ -37,6 +37,25 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetZeroPivot(PC pc,PetscReal zero)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetShiftType"
+/*@
+   PCFactorSetShiftType - adds a particular type of quantity to the diagonal of the matrix during 
+     numerical factorization, thus the matrix has nonzero pivots
+
+   Collective on PC
+   
+   Input Parameters:
++  pc - the preconditioner context
+-  shifttype - type of shift; one of MAT_SHIFT_NONE, MAT_SHIFT_NONZERO,  MAT_SHIFT_POSITIVE_DEFINITE, MAT_SHIFT_INBLOCKS 
+
+   Options Database Key:
+.  -pc_factor_shift_type <shifttype> - Sets shift type or PETSC_DECIDE for the default; use '-help' for a list of available types
+
+   Level: intermediate
+
+.keywords: PC, set, factorization, 
+
+.seealso: PCFactorSetZeroPivot(), PCFactorSetShiftAmount()
+@*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftType(PC pc,MatFactorShiftType shifttype)
 {
   PetscErrorCode ierr,(*f)(PC,MatFactorShiftType);
@@ -52,6 +71,25 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftType(PC pc,MatFactorShiftType 
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetShiftAmount"
+/*@
+   PCFactorSetShiftAmount - adds a quantity to the diagonal of the matrix during 
+     numerical factorization, thus the matrix has nonzero pivots
+
+   Collective on PC
+   
+   Input Parameters:
++  pc - the preconditioner context
+-  shiftamount - amount of shift 
+
+   Options Database Key:
+.  -pc_factor_shift_amount <shiftamount> - Sets shift amount or PETSC_DECIDE for the default
+
+   Level: intermediate
+
+.keywords: PC, set, factorization, 
+
+.seealso: PCFactorSetZeroPivot(), PCFactorSetShiftType()
+@*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftAmount(PC pc,PetscReal shiftamount)
 {
   PetscErrorCode ierr,(*f)(PC,PetscReal);

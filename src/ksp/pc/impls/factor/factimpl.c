@@ -289,11 +289,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions_Factor(PC pc)
 
     ierr = PetscOptionsEnum("-pc_factor_shift_type","Shift added to diagonal","PCFactorSetShiftType",
                             MatFactorShiftTypes,(PetscEnum)((PC_Factor*)factor)->info.shifttype,(PetscEnum*)&((PC_Factor*)factor)->info.shifttype,&flg);CHKERRQ(ierr);
-    /* printf("type: %d\n",(PetscEnum)((PC_Factor*)factor)->info.shifttype); */
     
     ierr = PetscOptionsReal("-pc_factor_shift_amount","Shift added to diagonal","PCFactorSetShiftAmount",((PC_Factor*)factor)->info.shiftamount,&((PC_Factor*)factor)->info.shiftamount,0);CHKERRQ(ierr);
-    /* printf(" amount: %g\n",((PC_Factor*)factor)->info.shiftamount); */
   
+#if defined(MV)
     flg  = PETSC_FALSE;
     ierr = PetscOptionsName("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
     if (flg) {
@@ -311,6 +310,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions_Factor(PC pc)
       ierr = PCFactorSetShiftInBlocks(pc,(PetscReal) PETSC_DEFAULT);CHKERRQ(ierr);
     }
     ierr = PetscOptionsReal("-pc_factor_shift_in_blocks","Shift added to diagonal dense blocks","PCFactorSetShiftInBlocks",((PC_Factor*)factor)->info.shiftinblocks,&((PC_Factor*)factor)->info.shiftinblocks,0);CHKERRQ(ierr);
+#endif
 
     ierr = PetscOptionsReal("-pc_factor_zeropivot","Pivot is considered zero if less than","PCFactorSetZeroPivot",((PC_Factor*)factor)->info.zeropivot,&((PC_Factor*)factor)->info.zeropivot,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_factor_column_pivot","Column pivot tolerance (used only for some factorization)","PCFactorSetColumnPivot",((PC_Factor*)factor)->info.dtcol,&((PC_Factor*)factor)->info.dtcol,&flg);CHKERRQ(ierr);
