@@ -2260,37 +2260,36 @@ PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering(Mat A,Vec bb,Vec xx)
   Mat_SeqBAIJ      *a=(Mat_SeqBAIJ *)A->data;
   PetscErrorCode    ierr;
   const PetscInt    n=a->mbs,*ai=a->i,*aj=a->j,*adiag=a->diag,*vi,bs=A->rmap->bs,bs2=a->bs2;
-  PetscInt          i,nz,idx,idt,idc,m;
+  PetscInt          i,nz,idx,idt,m;
   const MatScalar   *aa=a->a,*v;
   PetscScalar       s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,s13,s14,s15;
   PetscScalar       x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15;
-  PetscScalar       *x,*t;
+  PetscScalar       *x;
   const PetscScalar *b;
 
   PetscFunctionBegin;
   ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  t  = a->solve_work;
 
   /* forward solve the lower triangular */
   idx    = 0; 
-  t[0]  = b[idx];    t[1]  = b[1+idx];  t[2]  = b[2+idx];  t[3]  = b[3+idx];  t[4]  = b[4+idx];
-  t[5]  = b[5+idx];  t[6]  = b[6+idx];  t[7]  = b[7+idx];  t[8]  = b[8+idx];  t[9]  = b[9+idx];
-  t[10] = b[10+idx]; t[11] = b[11+idx]; t[12] = b[12+idx]; t[13] = b[13+idx]; t[14] = b[14+idx];
+  x[0]  = b[idx];    x[1]  = b[1+idx];  x[2]  = b[2+idx];  x[3]  = b[3+idx];  x[4]  = b[4+idx];
+  x[5]  = b[5+idx];  x[6]  = b[6+idx];  x[7]  = b[7+idx];  x[8]  = b[8+idx];  x[9]  = b[9+idx];
+  x[10] = b[10+idx]; x[11] = b[11+idx]; x[12] = b[12+idx]; x[13] = b[13+idx]; x[14] = b[14+idx];
 
   for (i=1; i<n; i++) {
     v     = aa + bs2*ai[i];
     vi    = aj + ai[i];
     nz    = ai[i+1] - ai[i];
-    idx   = bs*i;
-    s1   = b[idx];    s2  = b[1+idx];  s3  = b[2+idx];  s4  = b[3+idx];  s5  = b[4+idx];
-    s6   = b[5+idx];  s7  = b[6+idx];  s8  = b[7+idx];  s9  = b[8+idx];  s10 = b[9+idx];
-    s11  = b[10+idx]; s12 = b[11+idx]; s13 = b[12+idx]; s14 = b[13+idx]; s15 = b[14+idx];
+    idt   = bs*i;
+    s1   = b[idt];    s2  = b[1+idt];  s3  = b[2+idt];  s4  = b[3+idt];  s5  = b[4+idt];
+    s6   = b[5+idt];  s7  = b[6+idt];  s8  = b[7+idt];  s9  = b[8+idt];  s10 = b[9+idt];
+    s11  = b[10+idt]; s12 = b[11+idt]; s13 = b[12+idt]; s14 = b[13+idt]; s15 = b[14+idt];
     for(m=0;m<nz;m++){
       idx   = bs*vi[m];
-      x1   = t[idx];     x2  = t[1+idx];  x3  = t[2+idx];  x4  = t[3+idx];  x5  = t[4+idx];
-      x6   = t[5+idx];   x7  = t[6+idx];  x8  = t[7+idx];  x9  = t[8+idx];  x10 = t[9+idx];
-      x11  = t[10+idx]; x12  = t[11+idx]; x13 = t[12+idx]; x14 = t[13+idx]; x15 = t[14+idx];
+      x1   = x[idx];     x2  = x[1+idx];  x3  = x[2+idx];  x4  = x[3+idx];  x5  = x[4+idx];
+      x6   = x[5+idx];   x7  = x[6+idx];  x8  = x[7+idx];  x9  = x[8+idx];  x10 = x[9+idx];
+      x11  = x[10+idx]; x12  = x[11+idx]; x13 = x[12+idx]; x14 = x[13+idx]; x15 = x[14+idx];
 
  
       s1 -=  v[0]*x1  + v[15]*x2 + v[30]*x3 + v[45]*x4 + v[60]*x5 + v[75]*x6 + v[90]*x7  + v[105]*x8 + v[120]*x9 + v[135]*x10 + v[150]*x11 + v[165]*x12 + v[180]*x13 + v[195]*x14 + v[210]*x15;
@@ -2311,10 +2310,9 @@ PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering(Mat A,Vec bb,Vec xx)
       
       v += bs2;
     }
-    idx = bs*i;
-    t[idx]    = s1;  t[1+idx]  = s2;  t[2+idx]  = s3;  t[3+idx]  = s4;  t[4+idx]  = s5;
-    t[5+idx]  = s6;  t[6+idx]  = s7;  t[7+idx]  = s8;  t[8+idx]  = s9;  t[9+idx]  = s10;
-    t[10+idx] = s11; t[11+idx] = s12; t[12+idx] = s13; t[13+idx] = s14; t[14+idx] = s15;
+    x[idt]    = s1;  x[1+idt]  = s2;  x[2+idt]  = s3;  x[3+idt]  = s4;  x[4+idt]  = s5;
+    x[5+idt]  = s6;  x[6+idt]  = s7;  x[7+idt]  = s8;  x[8+idt]  = s9;  x[9+idt]  = s10;
+    x[10+idt] = s11; x[11+idt] = s12; x[12+idt] = s13; x[13+idt] = s14; x[14+idt] = s15;
     
   }
   /* backward solve the upper triangular */
@@ -2323,15 +2321,15 @@ PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering(Mat A,Vec bb,Vec xx)
     vi   = aj + adiag[i+1]+1;
     nz   = adiag[i] - adiag[i+1] - 1;
     idt  = bs*i;
-    s1   = t[idt];     s2  = t[1+idt];  s3  = t[2+idt];  s4  = t[3+idt];  s5  = t[4+idt];
-    s6   = t[5+idt];   s7  = t[6+idt];  s8  = t[7+idt];  s9  = t[8+idt];  s10 = t[9+idt];
-    s11  = t[10+idt]; s12  = t[11+idt]; s13 = t[12+idt]; s14 = t[13+idt]; s15 = t[14+idt];
+    s1   = x[idt];     s2  = x[1+idt];  s3  = x[2+idt];  s4  = x[3+idt];  s5  = x[4+idt];
+    s6   = x[5+idt];   s7  = x[6+idt];  s8  = x[7+idt];  s9  = x[8+idt];  s10 = x[9+idt];
+    s11  = x[10+idt]; s12  = x[11+idt]; s13 = x[12+idt]; s14 = x[13+idt]; s15 = x[14+idt];
  
     for(m=0;m<nz;m++){
       idx   = bs*vi[m];
-      x1   = t[idx];     x2  = t[1+idx];  x3  = t[2+idx];  x4  = t[3+idx];  x5  = t[4+idx];
-      x6   = t[5+idx];   x7  = t[6+idx];  x8  = t[7+idx];  x9  = t[8+idx];  x10 = t[9+idx];
-      x11  = t[10+idx]; x12  = t[11+idx]; x13 = t[12+idx]; x14 = t[13+idx]; x15 = t[14+idx];
+      x1   = x[idx];     x2  = x[1+idx];  x3  = x[2+idx];  x4  = x[3+idx];  x5  = x[4+idx];
+      x6   = x[5+idx];   x7  = x[6+idx];  x8  = x[7+idx];  x9  = x[8+idx];  x10 = x[9+idx];
+      x11  = x[10+idx]; x12  = x[11+idx]; x13 = x[12+idx]; x14 = x[13+idx]; x15 = x[14+idx];
 
       s1  -= v[0]*x1  + v[15]*x2 + v[30]*x3 + v[45]*x4 + v[60]*x5 + v[75]*x6 + v[90]*x7  + v[105]*x8 + v[120]*x9 + v[135]*x10 + v[150]*x11 + v[165]*x12 + v[180]*x13 + v[195]*x14 + v[210]*x15;
       s2  -= v[1]*x1  + v[16]*x2 + v[31]*x3 + v[46]*x4 + v[61]*x5 + v[76]*x6 + v[91]*x7  + v[106]*x8 + v[121]*x9 + v[136]*x10 + v[151]*x11 + v[166]*x12 + v[181]*x13 + v[196]*x14 + v[211]*x15;
@@ -2351,23 +2349,22 @@ PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
       v += bs2;
     }
-    idc = bs*i;
 
-    x[idc]    = t[idt]    = v[0]*s1  + v[15]*s2 + v[30]*s3 + v[45]*s4 + v[60]*s5 + v[75]*s6 + v[90]*s7  + v[105]*s8 + v[120]*s9 + v[135]*s10 + v[150]*s11 + v[165]*s12 + v[180]*s13 + v[195]*s14 + v[210]*s15;
-    x[1+idc]  = t[1+idt]  = v[1]*s1  + v[16]*s2 + v[31]*s3 + v[46]*s4 + v[61]*s5 + v[76]*s6 + v[91]*s7  + v[106]*s8 + v[121]*s9 + v[136]*s10 + v[151]*s11 + v[166]*s12 + v[181]*s13 + v[196]*s14 + v[211]*s15;
-    x[2+idc]  = t[2+idt]  = v[2]*s1  + v[17]*s2 + v[32]*s3 + v[47]*s4 + v[62]*s5 + v[77]*s6 + v[92]*s7  + v[107]*s8 + v[122]*s9 + v[137]*s10 + v[152]*s11 + v[167]*s12 + v[182]*s13 + v[197]*s14 + v[212]*s15;
-    x[3+idc]  = t[3+idt]  = v[3]*s1  + v[18]*s2 + v[33]*s3 + v[48]*s4 + v[63]*s5 + v[78]*s6 + v[93]*s7  + v[108]*s8 + v[123]*s9 + v[138]*s10 + v[153]*s11 + v[168]*s12 + v[183]*s13 + v[198]*s14 + v[213]*s15;
-    x[4+idc]  = t[4+idt]  = v[4]*s1  + v[19]*s2 + v[34]*s3 + v[49]*s4 + v[64]*s5 + v[79]*s6 + v[94]*s7  + v[109]*s8 + v[124]*s9 + v[139]*s10 + v[154]*s11 + v[169]*s12 + v[184]*s13 + v[199]*s14 + v[214]*s15;
-    x[5+idc]  = t[5+idt]  = v[5]*s1  + v[20]*s2 + v[35]*s3 + v[50]*s4 + v[65]*s5 + v[80]*s6 + v[95]*s7  + v[110]*s8 + v[125]*s9 + v[140]*s10 + v[155]*s11 + v[170]*s12 + v[185]*s13 + v[200]*s14 + v[215]*s15;
-    x[6+idc]  = t[6+idt]  = v[6]*s1  + v[21]*s2 + v[36]*s3 + v[51]*s4 + v[66]*s5 + v[81]*s6 + v[96]*s7  + v[111]*s8 + v[126]*s9 + v[141]*s10 + v[156]*s11 + v[171]*s12 + v[186]*s13 + v[201]*s14 + v[216]*s15;
-    x[7+idc]  = t[7+idt]  = v[7]*s1  + v[22]*s2 + v[37]*s3 + v[52]*s4 + v[67]*s5 + v[82]*s6 + v[97]*s7  + v[112]*s8 + v[127]*s9 + v[142]*s10 + v[157]*s11 + v[172]*s12 + v[187]*s13 + v[202]*s14 + v[217]*s15;
-    x[8+idc]  = t[8+idt]  = v[8]*s1  + v[23]*s2 + v[38]*s3 + v[53]*s4 + v[68]*s5 + v[83]*s6 + v[98]*s7  + v[113]*s8 + v[128]*s9 + v[143]*s10 + v[158]*s11 + v[173]*s12 + v[188]*s13 + v[203]*s14 + v[218]*s15;
-    x[9+idc]  = t[9+idt]  = v[9]*s1  + v[24]*s2 + v[39]*s3 + v[54]*s4 + v[69]*s5 + v[84]*s6 + v[99]*s7  + v[114]*s8 + v[129]*s9 + v[144]*s10 + v[159]*s11 + v[174]*s12 + v[189]*s13 + v[204]*s14 + v[219]*s15;
-    x[10+idc] = t[10+idt] = v[10]*s1 + v[25]*s2 + v[40]*s3 + v[55]*s4 + v[70]*s5 + v[85]*s6 + v[100]*s7 + v[115]*s8 + v[130]*s9 + v[145]*s10 + v[160]*s11 + v[175]*s12 + v[190]*s13 + v[205]*s14 + v[220]*s15;
-    x[11+idc] = t[11+idt] = v[11]*s1 + v[26]*s2 + v[41]*s3 + v[56]*s4 + v[71]*s5 + v[86]*s6 + v[101]*s7 + v[116]*s8 + v[131]*s9 + v[146]*s10 + v[161]*s11 + v[176]*s12 + v[191]*s13 + v[206]*s14 + v[221]*s15;
-    x[12+idc] = t[12+idt] = v[12]*s1 + v[27]*s2 + v[42]*s3 + v[57]*s4 + v[72]*s5 + v[87]*s6 + v[102]*s7 + v[117]*s8 + v[132]*s9 + v[147]*s10 + v[162]*s11 + v[177]*s12 + v[192]*s13 + v[207]*s14 + v[222]*s15;
-    x[13+idc] = t[13+idt] = v[13]*s1 + v[28]*s2 + v[43]*s3 + v[58]*s4 + v[73]*s5 + v[88]*s6 + v[103]*s7 + v[118]*s8 + v[133]*s9 + v[148]*s10 + v[163]*s11 + v[178]*s12 + v[193]*s13 + v[208]*s14 + v[223]*s15;
-    x[14+idc] = t[14+idt] = v[14]*s1 + v[29]*s2 + v[44]*s3 + v[59]*s4 + v[74]*s5 + v[89]*s6 + v[104]*s7 + v[119]*s8 + v[134]*s9 + v[149]*s10 + v[164]*s11 + v[179]*s12 + v[194]*s13 + v[209]*s14 + v[224]*s15;
+    x[idt] = v[0]*s1  + v[15]*s2 + v[30]*s3 + v[45]*s4 + v[60]*s5 + v[75]*s6 + v[90]*s7  + v[105]*s8 + v[120]*s9 + v[135]*s10 + v[150]*s11 + v[165]*s12 + v[180]*s13 + v[195]*s14 + v[210]*s15;
+    x[1+idt] = v[1]*s1  + v[16]*s2 + v[31]*s3 + v[46]*s4 + v[61]*s5 + v[76]*s6 + v[91]*s7  + v[106]*s8 + v[121]*s9 + v[136]*s10 + v[151]*s11 + v[166]*s12 + v[181]*s13 + v[196]*s14 + v[211]*s15;
+    x[2+idt] = v[2]*s1  + v[17]*s2 + v[32]*s3 + v[47]*s4 + v[62]*s5 + v[77]*s6 + v[92]*s7  + v[107]*s8 + v[122]*s9 + v[137]*s10 + v[152]*s11 + v[167]*s12 + v[182]*s13 + v[197]*s14 + v[212]*s15;
+    x[3+idt] = v[3]*s1  + v[18]*s2 + v[33]*s3 + v[48]*s4 + v[63]*s5 + v[78]*s6 + v[93]*s7  + v[108]*s8 + v[123]*s9 + v[138]*s10 + v[153]*s11 + v[168]*s12 + v[183]*s13 + v[198]*s14 + v[213]*s15;
+    x[4+idt] = v[4]*s1  + v[19]*s2 + v[34]*s3 + v[49]*s4 + v[64]*s5 + v[79]*s6 + v[94]*s7  + v[109]*s8 + v[124]*s9 + v[139]*s10 + v[154]*s11 + v[169]*s12 + v[184]*s13 + v[199]*s14 + v[214]*s15;
+    x[5+idt] = v[5]*s1  + v[20]*s2 + v[35]*s3 + v[50]*s4 + v[65]*s5 + v[80]*s6 + v[95]*s7  + v[110]*s8 + v[125]*s9 + v[140]*s10 + v[155]*s11 + v[170]*s12 + v[185]*s13 + v[200]*s14 + v[215]*s15;
+    x[6+idt] = v[6]*s1  + v[21]*s2 + v[36]*s3 + v[51]*s4 + v[66]*s5 + v[81]*s6 + v[96]*s7  + v[111]*s8 + v[126]*s9 + v[141]*s10 + v[156]*s11 + v[171]*s12 + v[186]*s13 + v[201]*s14 + v[216]*s15;
+    x[7+idt] = v[7]*s1  + v[22]*s2 + v[37]*s3 + v[52]*s4 + v[67]*s5 + v[82]*s6 + v[97]*s7  + v[112]*s8 + v[127]*s9 + v[142]*s10 + v[157]*s11 + v[172]*s12 + v[187]*s13 + v[202]*s14 + v[217]*s15;
+    x[8+idt] = v[8]*s1  + v[23]*s2 + v[38]*s3 + v[53]*s4 + v[68]*s5 + v[83]*s6 + v[98]*s7  + v[113]*s8 + v[128]*s9 + v[143]*s10 + v[158]*s11 + v[173]*s12 + v[188]*s13 + v[203]*s14 + v[218]*s15;
+    x[9+idt] = v[9]*s1  + v[24]*s2 + v[39]*s3 + v[54]*s4 + v[69]*s5 + v[84]*s6 + v[99]*s7  + v[114]*s8 + v[129]*s9 + v[144]*s10 + v[159]*s11 + v[174]*s12 + v[189]*s13 + v[204]*s14 + v[219]*s15;
+    x[10+idt] = v[10]*s1 + v[25]*s2 + v[40]*s3 + v[55]*s4 + v[70]*s5 + v[85]*s6 + v[100]*s7 + v[115]*s8 + v[130]*s9 + v[145]*s10 + v[160]*s11 + v[175]*s12 + v[190]*s13 + v[205]*s14 + v[220]*s15;
+    x[11+idt] = v[11]*s1 + v[26]*s2 + v[41]*s3 + v[56]*s4 + v[71]*s5 + v[86]*s6 + v[101]*s7 + v[116]*s8 + v[131]*s9 + v[146]*s10 + v[161]*s11 + v[176]*s12 + v[191]*s13 + v[206]*s14 + v[221]*s15;
+    x[12+idt] = v[12]*s1 + v[27]*s2 + v[42]*s3 + v[57]*s4 + v[72]*s5 + v[87]*s6 + v[102]*s7 + v[117]*s8 + v[132]*s9 + v[147]*s10 + v[162]*s11 + v[177]*s12 + v[192]*s13 + v[207]*s14 + v[222]*s15;
+    x[13+idt] = v[13]*s1 + v[28]*s2 + v[43]*s3 + v[58]*s4 + v[73]*s5 + v[88]*s6 + v[103]*s7 + v[118]*s8 + v[133]*s9 + v[148]*s10 + v[163]*s11 + v[178]*s12 + v[193]*s13 + v[208]*s14 + v[223]*s15;
+    x[14+idt] = v[14]*s1 + v[29]*s2 + v[44]*s3 + v[59]*s4 + v[74]*s5 + v[89]*s6 + v[104]*s7 + v[119]*s8 + v[134]*s9 + v[149]*s10 + v[164]*s11 + v[179]*s12 + v[194]*s13 + v[209]*s14 + v[224]*s15;
 
   }
 
@@ -2384,57 +2381,56 @@ PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver2(Mat A,Vec bb,Vec xx)
   Mat_SeqBAIJ      *a=(Mat_SeqBAIJ *)A->data;
   PetscErrorCode    ierr;
   const PetscInt    n=a->mbs,*ai=a->i,*aj=a->j,*adiag=a->diag,*vi,bs=A->rmap->bs,bs2=a->bs2;
-  PetscInt          i,k,nz,idx,idt,idc,m;
+  PetscInt          i,k,nz,kdx,idx,idt,m;
   const MatScalar   *aa=a->a,*v;
   PetscScalar       s[15];
-  PetscScalar       *x,*t;
+  PetscScalar       *x;
   const PetscScalar *b;
 
   PetscFunctionBegin;
   ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  t  = a->solve_work;
 
   /* forward solve the lower triangular */
   idx    = 0; 
-  t[0]  = b[idx];    t[1]  = b[1+idx];  t[2]  = b[2+idx];  t[3]  = b[3+idx];  t[4]  = b[4+idx];
-  t[5]  = b[5+idx];  t[6]  = b[6+idx];  t[7]  = b[7+idx];  t[8]  = b[8+idx];  t[9]  = b[9+idx];
-  t[10] = b[10+idx]; t[11] = b[11+idx]; t[12] = b[12+idx]; t[13] = b[13+idx]; t[14] = b[14+idx];
+  x[0]  = b[idx];    x[1]  = b[1+idx];  x[2]  = b[2+idx];  x[3]  = b[3+idx];  x[4]  = b[4+idx];
+  x[5]  = b[5+idx];  x[6]  = b[6+idx];  x[7]  = b[7+idx];  x[8]  = b[8+idx];  x[9]  = b[9+idx];
+  x[10] = b[10+idx]; x[11] = b[11+idx]; x[12] = b[12+idx]; x[13] = b[13+idx]; x[14] = b[14+idx];
 
   for (i=1; i<n; i++) {
     v     = aa + bs2*ai[i];
     vi    = aj + ai[i];
     nz    = ai[i+1] - ai[i];
-    idx   = bs*i;
-    s[0]   = b[idx];    s[1]  = b[1+idx];  s[2]  = b[2+idx];  s[3]  = b[3+idx];  s[4]  = b[4+idx];
-    s[5]   = b[5+idx];  s[6]  = b[6+idx];  s[7]  = b[7+idx];  s[8]  = b[8+idx];  s[9] = b[9+idx];
-    s[10]  = b[10+idx]; s[11] = b[11+idx]; s[12] = b[12+idx]; s[13] = b[13+idx]; s[14] = b[14+idx];
+    idt   = bs*i;
+    s[0]   = b[idt];    s[1]  = b[1+idt];  s[2]  = b[2+idt];  s[3]  = b[3+idt];  s[4]  = b[4+idt];
+    s[5]   = b[5+idt];  s[6]  = b[6+idt];  s[7]  = b[7+idt];  s[8]  = b[8+idt];  s[9] = b[9+idt];
+    s[10]  = b[10+idt]; s[11] = b[11+idt]; s[12] = b[12+idt]; s[13] = b[13+idt]; s[14] = b[14+idt];
     for(m=0;m<nz;m++){
       idx   = bs*vi[m];
 
       for(k=0;k<15;k++){
-	s[0] -= v[0]*t[k+idx];
-	s[1] -= v[1]*t[k+idx];
-	s[2] -= v[2]*t[k+idx];
-        s[3] -= v[3]*t[k+idx];
-	s[4] -= v[4]*t[k+idx];
-	s[5] -= v[5]*t[k+idx];
-	s[6] -= v[6]*t[k+idx];
-        s[7] -= v[7]*t[k+idx];
-	s[8] -= v[8]*t[k+idx];
-	s[9] -= v[9]*t[k+idx];
-	s[10] -= v[10]*t[k+idx];
-        s[11] -= v[11]*t[k+idx];
-	s[12] -= v[12]*t[k+idx];
-	s[13] -= v[13]*t[k+idx];
-	s[14] -= v[14]*t[k+idx];
+	kdx = k + idx;
+	s[0]  -= v[0]*x[kdx];
+	s[1]  -= v[1]*x[kdx];
+	s[2]  -= v[2]*x[kdx];
+        s[3]  -= v[3]*x[kdx];
+	s[4]  -= v[4]*x[kdx];
+	s[5]  -= v[5]*x[kdx];
+	s[6]  -= v[6]*x[kdx];
+        s[7]  -= v[7]*x[kdx];
+	s[8]  -= v[8]*x[kdx];
+	s[9]  -= v[9]*x[kdx];
+	s[10] -= v[10]*x[kdx];
+        s[11] -= v[11]*x[kdx];
+	s[12] -= v[12]*x[kdx];
+	s[13] -= v[13]*x[kdx];
+	s[14] -= v[14]*x[kdx];
 	v += 15;
       }
     }
-    idx = bs*i;
-    t[idx]    = s[0];  t[1+idx]  = s[1];  t[2+idx]  = s[2];  t[3+idx]  = s[3];  t[4+idx]  = s[4];
-    t[5+idx]  = s[5];  t[6+idx]  = s[6];  t[7+idx]  = s[7];  t[8+idx]  = s[8];  t[9+idx]  = s[9];
-    t[10+idx] = s[10]; t[11+idx] = s[11]; t[12+idx] = s[12]; t[13+idx] = s[13]; t[14+idx] = s[14];
+    x[idt]    = s[0];  x[1+idt]  = s[1];  x[2+idt]  = s[2];  x[3+idt]  = s[3];  x[4+idt]  = s[4];
+    x[5+idt]  = s[5];  x[6+idt]  = s[6];  x[7+idt]  = s[7];  x[8+idt]  = s[8];  x[9+idt]  = s[9];
+    x[10+idt] = s[10]; x[11+idt] = s[11]; x[12+idt] = s[12]; x[13+idt] = s[13]; x[14+idt] = s[14];
     
   }
   /* backward solve the upper triangular */
@@ -2443,56 +2439,52 @@ PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver2(Mat A,Vec bb,Vec xx)
     vi   = aj + adiag[i+1]+1;
     nz   = adiag[i] - adiag[i+1] - 1;
     idt  = bs*i;
-    s[0]   = t[idt];    s[1]  = t[1+idt];  s[2]  = t[2+idt];  s[3]  = t[3+idt];  s[4]  = t[4+idt];
-    s[5]   = t[5+idt];  s[6]  = t[6+idt];  s[7]  = t[7+idt];  s[8]  = t[8+idt];  s[9] = t[9+idt];
-    s[10]  = t[10+idt]; s[11] = t[11+idt]; s[12] = t[12+idt]; s[13] = t[13+idt]; s[14] = t[14+idt];
+    s[0]   = x[idt];    s[1]  = x[1+idt];  s[2]  = x[2+idt];  s[3]  = x[3+idt];  s[4]  = x[4+idt];
+    s[5]   = x[5+idt];  s[6]  = x[6+idt];  s[7]  = x[7+idt];  s[8]  = x[8+idt];  s[9]  = x[9+idt];
+    s[10]  = x[10+idt]; s[11] = x[11+idt]; s[12] = x[12+idt]; s[13] = x[13+idt]; s[14] = x[14+idt];
  
     for(m=0;m<nz;m++){
       idx   = bs*vi[m];
       for(k=0;k<15;k++){
-	s[0] -= v[0]*t[k+idx];
-	s[1] -= v[1]*t[k+idx];
-	s[2] -= v[2]*t[k+idx];
-        s[3] -= v[3]*t[k+idx];
-	s[4] -= v[4]*t[k+idx];
-	s[5] -= v[5]*t[k+idx];
-	s[6] -= v[6]*t[k+idx];
-        s[7] -= v[7]*t[k+idx];
-	s[8] -= v[8]*t[k+idx];
-	s[9] -= v[9]*t[k+idx];
-	s[10] -= v[10]*t[k+idx];
-        s[11] -= v[11]*t[k+idx];
-	s[12] -= v[12]*t[k+idx];
-	s[13] -= v[13]*t[k+idx];
-	s[14] -= v[14]*t[k+idx];
+	kdx = k + idx;
+	s[0]  -= v[0]*x[kdx];
+	s[1]  -= v[1]*x[kdx];
+	s[2]  -= v[2]*x[kdx];
+        s[3]  -= v[3]*x[kdx];
+	s[4]  -= v[4]*x[kdx];
+	s[5]  -= v[5]*x[kdx];
+	s[6]  -= v[6]*x[kdx];
+        s[7]  -= v[7]*x[kdx];
+	s[8]  -= v[8]*x[kdx];
+	s[9]  -= v[9]*x[kdx];
+	s[10] -= v[10]*x[kdx];
+        s[11] -= v[11]*x[kdx];
+	s[12] -= v[12]*x[kdx];
+	s[13] -= v[13]*x[kdx];
+	s[14] -= v[14]*x[kdx];
 	v += 15;
       }
     }
-    idc = bs*i;
-
+    ierr = PetscMemzero(x+idt,bs*sizeof(MatScalar));CHKERRQ(ierr);
     for(k=0;k<15;k++){
-      t[idt]    += v[0]*s[k];
-      t[1+idt]  += v[1]*s[k];
-      t[2+idt]  += v[2]*s[k];
-      t[3+idt]  += v[3]*s[k];
-      t[4+idt]  += v[4]*s[k];
-      t[5+idt]  += v[5]*s[k];
-      t[6+idt]  += v[6]*s[k];
-      t[7+idt]  += v[7]*s[k];
-      t[8+idt]  += v[8]*s[k];
-      t[9+idt]  += v[9]*s[k];
-      t[10+idt] += v[10]*s[k];
-      t[11+idt] += v[11]*s[k];
-      t[12+idt] += v[12]*s[k];
-      t[13+idt] += v[13]*s[k];
-      t[14+idt] += v[14]*s[k];
+      x[idt]    += v[0]*s[k];
+      x[1+idt]  += v[1]*s[k];
+      x[2+idt]  += v[2]*s[k];
+      x[3+idt]  += v[3]*s[k];
+      x[4+idt]  += v[4]*s[k];
+      x[5+idt]  += v[5]*s[k];
+      x[6+idt]  += v[6]*s[k];
+      x[7+idt]  += v[7]*s[k];
+      x[8+idt]  += v[8]*s[k];
+      x[9+idt]  += v[9]*s[k];
+      x[10+idt] += v[10]*s[k];
+      x[11+idt] += v[11]*s[k];
+      x[12+idt] += v[12]*s[k];
+      x[13+idt] += v[13]*s[k];
+      x[14+idt] += v[14]*s[k];
       v += 15;
-     }
-     x[idc] = t[idt]; x[1+idc] = t[1+idt]; x[2+idc] = t[2+idt]; x[3+idc] = t[3+idt]; x[4+idc] = t[4+idt];
-     x[5+idc] = t[5+idt]; x[6+idc] = t[6+idt]; x[7+idc] = t[7+idt]; x[8+idc] = t[8+idt]; x[9+idc] = t[9+idt];
-     x[10+idc] = t[10+idt]; x[11+idc] = t[11+idt]; x[12+idc] = t[12+idt]; x[13+idc] = t[13+idt]; x[14+idc] = t[14+idt];
+    }
   }
-
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*bs2*(a->nz) - bs*A->cmap->n);CHKERRQ(ierr);
@@ -5389,8 +5381,11 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering(Mat B,Mat A,const M
   MatScalar       *rtmp,*pc,*mwork,*pv,*vv,work[225];
   const MatScalar *v,*aa=a->a;
   PetscInt        bs2 = a->bs2,bs=A->rmap->bs,flg;
+  PetscInt        sol_ver; 
 
   PetscFunctionBegin;
+
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-sol_ver",&sol_ver,PETSC_NULL);CHKERRQ(ierr);
 
   /* generate work space needed by the factorization */
   ierr = PetscMalloc2(bs2*n,MatScalar,&rtmp,bs2,MatScalar,&mwork);CHKERRQ(ierr);
@@ -5470,7 +5465,9 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering(Mat B,Mat A,const M
   }
 
   ierr = PetscFree2(rtmp,mwork);CHKERRQ(ierr);
-  C->ops->solve          = MatSolve_SeqBAIJ_15_NaturalOrdering;
+  if(sol_ver == 1) C->ops->solve = MatSolve_SeqBAIJ_15_NaturalOrdering;
+  else if (sol_ver == 2) C->ops->solve = MatSolve_SeqBAIJ_15_NaturalOrdering_ver2;
+  else C->ops->solve = MatSolve_SeqBAIJ_N_NaturalOrdering;
   C->ops->solvetranspose = MatSolve_SeqBAIJ_N_NaturalOrdering;
   C->assembled = PETSC_TRUE;
   ierr = PetscLogFlops(1.333333333333*bs*bs2*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
