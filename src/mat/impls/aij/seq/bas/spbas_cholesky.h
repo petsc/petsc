@@ -174,7 +174,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(
     3. Reallocate and correct administration */
    
    if (n_alloc != result->n_alloc_icol)  {
-      n_copy = MIN(n_alloc,result->n_alloc_icol);
+      n_copy = PetscMin(n_alloc,result->n_alloc_icol);
 
       /* PETSC knows no REALLOC, so we'll REALLOC ourselves.
 
