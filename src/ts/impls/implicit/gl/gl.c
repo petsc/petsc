@@ -857,6 +857,13 @@ static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
     X = gl->X; Ydot = gl->Ydot; Y = gl->Y;
 
     if (ts->ptime > ts->max_time) break;
+
+    /*
+      We only call PreStep at the start of each STEP, not each STAGE.  This is because it is
+      possible to fail (have to restart a step) after multiple stages.
+    */
+    ierr = TSPreStep(ts);CHKERRQ(ierr);
+
     gl->base_time = ts->ptime;  /* save time at the start of this step */
 
     for (i=0; i<s; i++) {
@@ -937,6 +944,7 @@ static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
 
     ts->ptime = gl->base_time + h;
     ts->steps++;
+    ierr = TSPostStep(ts);CHKERRQ(ierr);
     ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
 
     gl->current_scheme = next_scheme;

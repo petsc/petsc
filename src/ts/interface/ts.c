@@ -1368,7 +1368,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetSolution(TS ts,Vec x)
 #define __FUNCT__ "TSSetPreStep"
 /*@C
   TSSetPreStep - Sets the general-purpose function
-  called once at the beginning of time stepping.
+  called once at the beginning of each time step.
 
   Collective on TS
 
@@ -1388,6 +1388,38 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetPreStep(TS ts, PetscErrorCode (*func)(TS))
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
   ts->ops->prestep = func;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSPreStep"
+/*@C
+  TSPreStep - Runs the user-defined pre-step function.
+
+  Collective on TS
+
+  Input Parameters:
+. ts   - The TS context obtained from TSCreate()
+
+  Notes:
+  TSPreStep() is typically used within time stepping implementations,
+  so most users would not generally call this routine themselves.
+
+  Level: developer
+
+.keywords: TS, timestep
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSPreStep(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscStackPush("TS PreStep function");
+  CHKMEMQ;
+  ierr = (*ts->ops->prestep)(ts);CHKERRQ(ierr);
+  CHKMEMQ;
+  PetscStackPop;
   PetscFunctionReturn(0);
 }
 
@@ -1415,7 +1447,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSDefaultPreStep(TS ts)
 #define __FUNCT__ "TSSetPostStep"
 /*@C
   TSSetPostStep - Sets the general-purpose function
-  called once at the end of time stepping.
+  called once at the end of each time step.
 
   Collective on TS
 
@@ -1435,6 +1467,38 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetPostStep(TS ts, PetscErrorCode (*func)(TS)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
   ts->ops->poststep = func;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSPostStep"
+/*@C
+  TSPostStep - Runs the user-defined post-step function.
+
+  Collective on TS
+
+  Input Parameters:
+. ts   - The TS context obtained from TSCreate()
+
+  Notes:
+  TSPostStep() is typically used within time stepping implementations,
+  so most users would not generally call this routine themselves.
+
+  Level: developer
+
+.keywords: TS, timestep
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSPostStep(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscStackPush("TS PostStep function");
+  CHKMEMQ;
+  ierr = (*ts->ops->poststep)(ts);CHKERRQ(ierr);
+  CHKMEMQ;
+  PetscStackPop;
   PetscFunctionReturn(0);
 }
 
@@ -1603,9 +1667,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSStep(TS ts,PetscInt *steps,PetscReal *ptime)
   }
 
   ierr = PetscLogEventBegin(TS_Step, ts, 0, 0, 0);CHKERRQ(ierr);
-  ierr = (*ts->ops->prestep)(ts);CHKERRQ(ierr);
   ierr = (*ts->ops->step)(ts, steps, ptime);CHKERRQ(ierr);
-  ierr = (*ts->ops->poststep)(ts);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TS_Step, ts, 0, 0, 0);CHKERRQ(ierr);
 
   if (!PetscPreLoadingOn) {

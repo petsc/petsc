@@ -193,9 +193,11 @@ static PetscErrorCode TSStep_SSP(TS ts,PetscInt *steps,PetscReal *ptime)
   for (i=0; i<max_steps; i++) {
     PetscReal dt = ts->time_step;
 
+    ierr = TSPreStep(ts);CHKERRQ(ierr);
     ts->ptime += dt;
     ierr = (*ssp->onestep)(ts,ts->ptime-dt,dt,sol);CHKERRQ(ierr);
     ts->steps++;
+    ierr = TSPostStep(ts);CHKERRQ(ierr);
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
     if (ts->ptime > ts->max_time) break;
   }
