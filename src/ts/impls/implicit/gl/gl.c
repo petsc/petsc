@@ -842,8 +842,8 @@ static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
   if (gl->current_scheme < 0) SETERRQ(PETSC_ERR_ORDER,"A starting scheme has not been provided");
 
   for (k=0,final_step=PETSC_FALSE,finish=PETSC_FALSE; k<max_steps && !finish; k++) {
-    PetscInt j,r,s,next_scheme = 0;
-    PetscReal h,hmnorm[4],enorm[3],next_h,tleft;
+    PetscInt j,r,s,next_scheme = 0,rejections;
+    PetscReal h,hmnorm[4],enorm[3],next_h;
     PetscTruth accept;
     const PetscScalar *c,*a,*b,*u,*v;
     Vec *X,*Ydot,Y;
@@ -866,58 +866,77 @@ static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
 
     gl->base_time = ts->ptime;  /* save time at the start of this step */
 
-    for (i=0; i<s; i++) {
-      PetscScalar shift = gl->shift = 1./PetscRealPart(h*a[i*s+i]);
-      gl->stage = i;
-      ts->ptime = gl->base_time + PetscRealPart(c[i])*h;
+    rejections = 0;
+    while (1) {
+      for (i=0; i<s; i++) {
+        PetscScalar shift = gl->shift = 1./PetscRealPart(h*a[i*s+i]);
+        gl->stage = i;
+        ts->ptime = gl->base_time + PetscRealPart(c[i])*h;
 
-      /*
-      * Stage equation: Y = h A Y' + U X
-      * We assume that A is lower-triangular so that we can solve the stages (Y,Y') sequentially
-      * Build the affine vector z_i = -[1/(h a_ii)](h sum_j a_ij y'_j + sum_j u_ij x_j)
-      * Then y'_i = z + 1/(h a_ii) y_i
-      */
-      ierr = VecZeroEntries(gl->Z);CHKERRQ(ierr);
-      for (j=0; j<r; j++) {
-        ierr = VecAXPY(gl->Z,-shift*u[i*r+j],X[j]);CHKERRQ(ierr);
-      }
-      for (j=0; j<i; j++) {
-        ierr = VecAXPY(gl->Z,-shift*h*a[i*s+j],Ydot[j]);CHKERRQ(ierr);
-      }
-      /* Note: Z is used within function evaluation, Ydot = Z + shift*Y */
-
-      /* Compute an estimate of Y to start Newton iteration */
-      if (gl->extrapolate) {
-        if (i==0) {
-          /* Linear extrapolation on the first stage */
-          ierr = VecWAXPY(Y,c[i]*h,X[1],X[0]);CHKERRQ(ierr);
-        } else {
-          /* Linear extrapolation from the last stage */
-          ierr = VecAXPY(Y,(c[i]-c[i-1])*h,Ydot[i-1]);
+        /*
+        * Stage equation: Y = h A Y' + U X
+        * We assume that A is lower-triangular so that we can solve the stages (Y,Y') sequentially
+        * Build the affine vector z_i = -[1/(h a_ii)](h sum_j a_ij y'_j + sum_j u_ij x_j)
+        * Then y'_i = z + 1/(h a_ii) y_i
+        */
+        ierr = VecZeroEntries(gl->Z);CHKERRQ(ierr);
+        for (j=0; j<r; j++) {
+          ierr = VecAXPY(gl->Z,-shift*u[i*r+j],X[j]);CHKERRQ(ierr);
         }
-      } else if (i==0) {        /* Directly use solution from the last step, otherwise reuse the last stage (do nothing) */
-        ierr = VecCopy(X[0],Y);CHKERRQ(ierr);
+        for (j=0; j<i; j++) {
+          ierr = VecAXPY(gl->Z,-shift*h*a[i*s+j],Ydot[j]);CHKERRQ(ierr);
+        }
+        /* Note: Z is used within function evaluation, Ydot = Z + shift*Y */
+
+        /* Compute an estimate of Y to start Newton iteration */
+        if (gl->extrapolate) {
+          if (i==0) {
+            /* Linear extrapolation on the first stage */
+            ierr = VecWAXPY(Y,c[i]*h,X[1],X[0]);CHKERRQ(ierr);
+          } else {
+            /* Linear extrapolation from the last stage */
+            ierr = VecAXPY(Y,(c[i]-c[i-1])*h,Ydot[i-1]);
+          }
+        } else if (i==0) {        /* Directly use solution from the last step, otherwise reuse the last stage (do nothing) */
+          ierr = VecCopy(X[0],Y);CHKERRQ(ierr);
+        }
+
+        /* Solve this stage (Ydot[i] is computed during function evaluation) */
+        ierr = SNESSolve(ts->snes,PETSC_NULL,Y);CHKERRQ(ierr);
+        ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
+        ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
+        ts->nonlinear_its += its; ts->linear_its += lits;
       }
 
-      /* Solve this stage (Ydot[i] is computed during function evaluation) */
-      ierr = SNESSolve(ts->snes,PETSC_NULL,Y);CHKERRQ(ierr);
-      ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
-      ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
-      ts->nonlinear_its += its; ts->linear_its += lits;
+      ierr = (*gl->EstimateHigherMoments)(scheme,h,Ydot,gl->X,gl->himom);CHKERRQ(ierr);
+      /* hmnorm[i] = h^{p+i}x^{(p+i)} with i=0,1,2; hmnorm[3] = h^{p+2}(dx'/dx) x^{(p+1)} */
+      for (i=0; i<3; i++) {
+        ierr = TSGLVecNormWRMS(ts,gl->himom[i],&hmnorm[i+1]);CHKERRQ(ierr);
+      }
+      enorm[0] = PetscRealPart(scheme->alpha[0])*hmnorm[1];
+      enorm[1] = PetscRealPart(scheme->beta[0]) *hmnorm[2];
+      enorm[2] = PetscRealPart(scheme->gamma[0])*hmnorm[3];
+      ierr = (*gl->Accept)(ts,ts->max_time-ts->ptime,h,enorm,&accept);CHKERRQ(ierr);
+      if (accept) goto accepted;
+      rejections++;
+      ierr = PetscInfo3(ts,"Step %D (t=%g) not accepted, rejections=%D\n",k,ts->ptime,rejections);CHKERRQ(ierr);
+      if (rejections > gl->max_step_rejections) break;
+      /*
+        There are lots of reasons why a step might be rejected, including solvers not converging and other factors that
+        TSGLChooseNextScheme does not support.  Additionally, the error estimates may be very screwed up, so I'm not
+        convinced that it's safe to just compute a new error estimate using the same interface as the current adaptor
+        (the adaptor interface probably has to change).  Here we make an arbitrary and naive choice.  This assumes that
+        steps were written in Nordsieck form.  The "correct" method would be to re-complete the previous time step with
+        the correct "next" step size.  It is unclear to me whether the present ad-hoc method of rescaling X is stable.
+      */
+      h *= 0.5;
+      for (i=1; i<scheme->r; i++) {
+        ierr = VecScale(X[i],PetscPowScalar(0.5,i));CHKERRQ(ierr);
+      }
     }
+    SETERRQ3(PETSC_ERR_CONV_FAILED,"Time step %D (t=%g) not accepted after %D failures\n",k,ts->ptime,rejections);CHKERRQ(ierr);
 
-    ierr = (*gl->EstimateHigherMoments)(scheme,h,Ydot,gl->X,gl->himom);CHKERRQ(ierr);
-    /* hmnorm[i] = h^{p+i}x^{(p+i)} with i=0,1,2; hmnorm[3] = h^{p+2}(dx'/dx) x^{(p+1)} */
-    for (i=0; i<3; i++) {
-      ierr = TSGLVecNormWRMS(ts,gl->himom[i],&hmnorm[i+1]);CHKERRQ(ierr);
-    }
-    enorm[0] = PetscRealPart(scheme->alpha[0])*hmnorm[1];
-    enorm[1] = PetscRealPart(scheme->beta[0]) *hmnorm[2];
-    enorm[2] = PetscRealPart(scheme->gamma[0])*hmnorm[3];
-    tleft = ts->max_time - ts->ptime;
-    ierr = (*gl->Accept)(ts,tleft,h,enorm,&accept);CHKERRQ(ierr);
-    if (!accept) {ierr = PetscInfo1(ts,"Step %D (t=%g) not accepted, proceeding anyway (FIXME)\n",k);CHKERRQ(ierr);}
-
+    accepted:
     /* This term is not error, but it *would* be the leading term for a lower order method */
     ierr = TSGLVecNormWRMS(ts,gl->X[scheme->r-1],&hmnorm[0]);CHKERRQ(ierr);
     /* Correct scaling so that these are equivalent to norms of the Nordsieck vectors */
@@ -1082,6 +1101,7 @@ static PetscErrorCode TSSetFromOptions_GL(TS ts)
     if (flg || !gl->type_name[0]) {
       ierr = TSGLSetType(ts,tname);CHKERRQ(ierr);
     }
+    ierr = PetscOptionsInt("-ts_gl_max_step_rejections","Maximum number of times to attempt a step","None",gl->max_step_rejections,&gl->max_step_rejections,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ts_gl_max_order","Maximum order to try","TSGLSetMaxOrder",gl->max_order,&gl->max_order,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ts_gl_min_order","Minimum order to try","TSGLSetMinOrder",gl->min_order,&gl->min_order,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ts_gl_start_order","Initial order to try","TSGLSetMinOrder",gl->start_order,&gl->start_order,PETSC_NULL);CHKERRQ(ierr);
@@ -1403,11 +1423,12 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_GL(TS ts)
   ierr = SNESCreate(((PetscObject)ts)->comm,&ts->snes);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)ts->snes,(PetscObject)ts,1);CHKERRQ(ierr);
 
-  gl->min_order      = 1;
-  gl->max_order      = 3;
-  gl->start_order    = 1;
-  gl->current_scheme = -1;
-  gl->extrapolate    = PETSC_FALSE;
+  gl->max_step_rejections = 1;
+  gl->min_order           = 1;
+  gl->max_order           = 3;
+  gl->start_order         = 1;
+  gl->current_scheme      = -1;
+  gl->extrapolate         = PETSC_FALSE;
 
   gl->wrms_atol = 1e-8;
   gl->wrms_rtol = 1e-5;
