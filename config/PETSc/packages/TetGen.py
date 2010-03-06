@@ -139,9 +139,8 @@ class Configure(PETSc.package.NewPackage):
     installmakeinc = os.path.join(self.installDir, 'make.inc')
     configheader   = os.path.join(self.packageDir, 'configureheader.h')
 
-    # Configure ParMetis 
+    self.setCompilers.pushLanguage('C++')
     g = open(makeinc,'w')
-    ##g.write('include '+os.path.join(self.petscdir.dir, 'conf', 'rules')+'\n')
     g.write('SHELL            = '+self.programs.SHELL+'\n')
     g.write('CP               = '+self.programs.cp+'\n')
     g.write('RM               = '+self.programs.RM+'\n')
@@ -162,7 +161,6 @@ class Configure(PETSc.package.NewPackage):
     g.write('TETGENLIB        = $(LIBDIR)/libtetgen.$(AR_LIB_SUFFIX)\n')
     g.write('SHLIB            = libtetgen\n')
     
-    self.setCompilers.pushLanguage('C')
     cflags = self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','')
     cflags += ' '+self.headers.toString('.')
         
