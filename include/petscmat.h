@@ -1051,6 +1051,7 @@ E*/
 #define MATORDERING_IDENTITY    "identity"
 #define MATORDERING_REVERSE     "reverse"
 #define MATORDERING_FLOW        "flow"
+#define MATORDERING_AMD         "amd"
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat,const MatOrderingType,IS*,IS*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrderingList(PetscFList *list);

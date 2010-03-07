@@ -325,6 +325,7 @@ static PetscErrorCode TSStep_Rk(TS ts,PetscInt *steps,PetscReal *ptime)
   ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
   /* while loop to get from start to stop */
   for (i = 0; i < max_steps; i++) {
+    ierr = TSPreStep(ts);CHKERRQ(ierr); /* Note that this is called once per STEP, not once per STAGE. */
    /* calling rkqs */
      /*
        -- input
@@ -355,9 +356,9 @@ static PetscErrorCode TSStep_Rk(TS ts,PetscInt *steps,PetscReal *ptime)
         rk->nok++;
         fac=5.0;
         /* trying to save the vector */
-       /* calling monitor */
-       ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);  
-       if (ts->ptime >= ts->max_time) break;
+        ierr = TSPostStep(ts);CHKERRQ(ierr);
+        ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+        if (ts->ptime >= ts->max_time) break;
      } else{
         /* if not OK */
         rk->nnok++;

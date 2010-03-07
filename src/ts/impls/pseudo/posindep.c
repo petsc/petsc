@@ -157,6 +157,7 @@ static PetscErrorCode TSStep_Pseudo(TS ts,PetscInt *steps,PetscReal *ptime)
     ierr = TSPseudoComputeTimeStep(ts,&ts->time_step);CHKERRQ(ierr);
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
     current_time_step = ts->time_step;
+    ierr = TSPreStep(ts);CHKERRQ(ierr);
     while (PETSC_TRUE) {
       ts->ptime  += current_time_step;
       ierr = SNESSolve(ts->snes,PETSC_NULL,pseudo->update);CHKERRQ(ierr);
@@ -170,6 +171,7 @@ static PetscErrorCode TSStep_Pseudo(TS ts,PetscInt *steps,PetscReal *ptime)
     }
     ierr = VecCopy(pseudo->update,sol);CHKERRQ(ierr);
     ts->steps++;
+    ierr = TSPostStep(ts);CHKERRQ(ierr);
   }
   ierr = TSComputeRHSFunction(ts,ts->ptime,ts->vec_sol,pseudo->func);CHKERRQ(ierr);  
   ierr = VecNorm(pseudo->func,NORM_2,&pseudo->fnorm);CHKERRQ(ierr); 

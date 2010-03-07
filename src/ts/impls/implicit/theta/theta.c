@@ -45,6 +45,7 @@ static PetscErrorCode TSStep_Theta(TS ts,PetscInt *steps,PetscReal *ptime)
 
   for (i=0; i<max_steps; i++) {
     if (ts->ptime + ts->time_step > ts->max_time) break;
+    ierr = TSPreStep(ts);CHKERRQ(ierr);
     th->stage_time = ts->ptime + th->Theta*ts->time_step;
     th->shift = 1./(th->Theta*ts->time_step);
     ts->ptime += ts->time_step;
@@ -61,6 +62,7 @@ static PetscErrorCode TSStep_Theta(TS ts,PetscInt *steps,PetscReal *ptime)
     ts->nonlinear_its += its; ts->linear_its += lits;
     ierr = VecAXPY(sol,ts->time_step,th->Xdot);CHKERRQ(ierr);
     ts->steps++;
+    ierr = TSPostStep(ts);CHKERRQ(ierr);
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
   }
 

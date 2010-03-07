@@ -158,8 +158,7 @@ PCSOR</li>
 MatCreateMPIAIJWithArrays() and MatMPIAIJSetPreallocationCSR().</li>
         <li>Changed MATOP_DIAGONAL_SHIFT to MATOP_DIAGONAL_SET to match
 function name MatDiagonalSet().</li>
-        <li>MATMPIROWBS i.e BlockSolve95 interface is now removed<br>
-        </li>
+        <li>MATMPIROWBS i.e BlockSolve95 interface is now removed.</li>
       </ul>
       <u><b>PC:</b></u>
       <ul>
@@ -201,6 +200,8 @@ TSGL). These can be used for solving differential algebraic equations
         <li>Add TSSSP which implements optimal strong stability
 preserving time integrators of order 2, 3, and 4 using a low-storage
 explicit Runge-Kutta scheme.</li>
+        <li>Change TSSetPreStep() and TSSetPostStep() to run before and
+after each step instead of before and after each solve.</li>
       </ul>
       <p><u><b>DA:</b></u></p>
       <ul>
@@ -253,6 +254,10 @@ aswell]<br>
       </ul>
       <p><u><b><a
  href="http:/www.mcs.anl.gov/petsc/petsc-as/miscellaneous/external.html">ExternalPackages</a>:</b></u></p>
+      <ul>
+        <li>Added MATORDERING_AMD for Tim Davis' Approximate Minimum
+Degree package.</li>
+      </ul>
       </td>
     </tr>
     <tr>
