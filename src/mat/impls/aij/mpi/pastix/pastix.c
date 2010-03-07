@@ -47,6 +47,8 @@ typedef struct Mat_Pastix_ {
 
 EXTERN PetscErrorCode MatDuplicate_Pastix(Mat,MatDuplicateOption,Mat*);
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatConvertToCSC"
 /* 
    convert Petsc seqaij matrix to CSC: colptr[n], row[nz], val[nz] 
 
@@ -155,14 +157,13 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscTruth valOnly,PetscInt *n,PetscInt **c
 	    for (k = (*colptr)[colidx] - base; 
 		 k < (*colptr)[colidx + 1] - base; 
 		 k++) {
-	      if ((*row)[k] == i) {
+	      if (((*row)[k]-base) == i) {
 		(*values)[k] = rvalues[j];
 		break;
 	      }
 	    }
 	    /* shouldn't happen, overflow */
-	    if (k == (*colptr)[colidx + 1] - base)
-	      PetscFunctionReturn(1);
+	    if (k == (*colptr)[colidx + 1] - base) SETERRQ1(PETSC_ERR_PLIB,"overflow on k %D",k);
 	  }
       }
     }
