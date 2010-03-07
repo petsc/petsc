@@ -602,9 +602,7 @@ PetscErrorCode MatGetFactor_seqaij_pastix(Mat A,MatFactorType ftype,Mat *F)
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJPASTIX;
   B->ops->view             = MatView_PaStiX;
   B->ops->getinfo          = MatGetInfo_PaStiX;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C",
-					   "MatFactorGetSolverPackage_pastix",
-					   MatFactorGetSolverPackage_pastix);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_pastix", MatFactorGetSolverPackage_pastix);CHKERRQ(ierr);
   B->factor                = MAT_FACTOR_LU;  
 
   ierr = PetscNewLog(B,Mat_Pastix,&pastix);CHKERRQ(ierr);
@@ -642,10 +640,7 @@ PetscErrorCode MatGetFactor_mpiaij_pastix(Mat A,MatFactorType ftype,Mat *F)
 
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJPASTIX;
   B->ops->view             = MatView_PaStiX;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,
-					   "MatFactorGetSolverPackage_C",
-					   "MatFactorGetSolverPackage_pastix",
-					   MatFactorGetSolverPackage_pastix);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_pastix",MatFactorGetSolverPackage_pastix);CHKERRQ(ierr);
   B->factor                = MAT_FACTOR_LU;  
 
   ierr = PetscNewLog(B,Mat_Pastix,&pastix);CHKERRQ(ierr);
@@ -684,10 +679,7 @@ PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat A,MatFactorType ftype,Mat *F)
 
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SBAIJPASTIX;
   B->ops->view                   = MatView_PaStiX;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,
-					   "MatFactorGetSolverPackage_C",
-					   "MatFactorGetSolverPackage_pastix",
-					   MatFactorGetSolverPackage_pastix);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_pastix",MatFactorGetSolverPackage_pastix);CHKERRQ(ierr);
 
   B->factor                      = MAT_FACTOR_CHOLESKY;
 
@@ -726,10 +718,7 @@ PetscErrorCode MatGetFactor_mpisbaij_pastix(Mat A,MatFactorType ftype,Mat *F)
 
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SBAIJPASTIX;
   B->ops->view                   = MatView_PaStiX;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,
-					   "MatFactorGetSolverPackage_C",
-					   "MatFactorGetSolverPackage_pastix",
-					   MatFactorGetSolverPackage_pastix);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_pastix",MatFactorGetSolverPackage_pastix);CHKERRQ(ierr);
   B->factor                      = MAT_FACTOR_CHOLESKY;
 
   ierr = PetscNewLog(B,Mat_Pastix,&pastix);CHKERRQ(ierr);
