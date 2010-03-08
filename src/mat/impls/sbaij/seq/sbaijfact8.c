@@ -16,7 +16,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering(Mat C,Mat A,c
   PetscInt       *ai,*aj,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili,ipvt[5];
   MatScalar      *ba = b->a,*aa,*ap,*dk,*uik;
   MatScalar      *u,*d,*rtmp,*rtmp_ptr,work[25];
-  PetscReal      shift = info->shiftinblocks;
+  PetscReal      shift = info->shiftamount;
 
   PetscFunctionBegin;
   /* initialization */

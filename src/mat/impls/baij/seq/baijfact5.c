@@ -30,7 +30,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7_inplace(Mat C,Mat A,const MatFactorI
   MatScalar      m26,m27,m28,m29,m30,m31,m32,m33,m34,m35,m36;
   MatScalar      m37,m38,m39,m40,m41,m42,m43,m44,m45,m46,m47,m48,m49;
   MatScalar      *ba = b->a,*aa = a->a;
-  PetscReal      shift = info->shiftinblocks;
+  PetscReal      shift = info->shiftamount;
 
   PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -300,7 +300,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7(Mat B,Mat A,const MatFactorInfo *inf
   const PetscInt *ajtmp,*bjtmp,*bdiag=b->diag,*pj,bs2=a->bs2;
   MatScalar      *rtmp,*pc,*mwork,*v,*pv,*aa=a->a;
   PetscInt       flg;
-  PetscReal      shift = info->shiftinblocks;
+  PetscReal      shift = info->shiftamount;
 
   PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -419,7 +419,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering_inplace(Mat C,Mat A,
   MatScalar      m26,m27,m28,m29,m30,m31,m32,m33,m34,m35,m36;
   MatScalar      m37,m38,m39,m40,m41,m42,m43,m44,m45,m46,m47,m48,m49;
   MatScalar      *ba = b->a,*aa = a->a;
-  PetscReal      shift = info->shiftinblocks;
+  PetscReal      shift = info->shiftamount;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(49*(n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
@@ -680,7 +680,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering(Mat B,Mat A,const Ma
   const PetscInt *ajtmp,*bjtmp,*bdiag=b->diag,*pj,bs2=a->bs2;
   MatScalar      *rtmp,*pc,*mwork,*v,*pv,*aa=a->a;
   PetscInt       flg;
-  PetscReal      shift = info->shiftinblocks;
+  PetscReal      shift = info->shiftamount;
 
   PetscFunctionBegin;
   /* generate work space needed by the factorization */

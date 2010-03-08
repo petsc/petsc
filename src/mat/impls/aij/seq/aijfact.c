@@ -3226,7 +3226,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   MatScalar          *aatmp,*pv,*batmp,*ba,*rtmp,*pc,multiplier,*vtmp,diag_tmp;
   const PetscInt     *ics;
   PetscInt           j,nz,*pj,*bjtmp,k,ncut,*jtmp;
-  PetscReal          dt=info->dt,dtcol=info->dtcol,shift=info->shiftinblocks;
+  PetscReal          dt=info->dt,dtcol=info->dtcol,shift=info->shiftamount;
   PetscInt           dtcount=(PetscInt)info->dtcount,nnz_max;
   PetscTruth         missing;
 
@@ -3491,7 +3491,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactorNumeric_SeqAIJ(Mat fact,Mat A,co
   PetscInt       i,j,k,n=A->rmap->n,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
   PetscInt       *ajtmp,*bjtmp,nz,nzl,nzu,row,*bdiag = b->diag,*pj;
   MatScalar      *rtmp,*pc,multiplier,*v,*pv,*aa=a->a;
-  PetscReal      dt=info->dt,shift=info->shiftinblocks;
+  PetscReal      dt=info->dt,shift=info->shiftamount;
   PetscTruth     row_identity, col_identity;
 
   PetscFunctionBegin;
