@@ -192,7 +192,7 @@
       CHKERRQ(ierr)
       
       
-      call PetscLogFlops(6*m,ierr)
+      call PetscLogFlops(6*m)
 
       return
       end

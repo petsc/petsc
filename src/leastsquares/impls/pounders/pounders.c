@@ -1,20 +1,15 @@
 #include "pounders.h"
-void mymatprint(PetscReal *M, PetscInt m, PetscInt n, PetscInt dm, const char *name);
-void mymatprintq(PetscReal *Q, PetscReal *tau, PetscInt n, PetscInt k, PetscInt ldm, const char *name);
-void mymatprintslice(PetscReal *M, PetscInt n, PetscInt stride, const char *name);
-
 
 #undef __FUNCT__
 #define __FUNCT__ "gqtwrap"
 static PetscErrorCode gqtwrap(TAO_POUNDERS *mfqP,PetscReal *gnorm, PetscReal *qmin) {
     PetscReal atol=1.0e-10;
-    PetscInt info,its,i;
+    PetscInt info,its;
     PetscFunctionBegin;
-//      subroutine dgqt(n,a,lda,b,delta,rtol,atol,itmax,par,f,x,info,iter,z,wa1,wa2)
+
     gqt(mfqP->n,mfqP->Hres,mfqP->n,mfqP->Gres,1.0,mfqP->gqt_rtol,atol,
 	mfqP->gqt_maxits,gnorm,qmin,mfqP->Xsubproblem,&info,&its,
 	mfqP->work,mfqP->work2, mfqP->work3);
-    CHKMEMQ;
     *qmin *= -1;
     PetscFunctionReturn(0);
 }
@@ -68,20 +63,17 @@ static PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP) {
     for (i=0;i<mfqP->n*mfqP->n*mfqP->m;i++) {
 	mfqP->Hdel[i] = 0;
     }
-    //mymatprint(&mfqP->L[(mfqP->n+1)*blasint],blasint,blasint2,blasint,"L - before mult");
+
     /* Let Ltmp = (L'*L) */
     BLASgemm_("T","N",&blasint2,&blasint2,&blasint,&one,&mfqP->L[(mfqP->n+1)*blasint],&blasint,&mfqP->L[(mfqP->n+1)*blasint],&blasint,&zero,mfqP->L_tmp,&blasint);
     
     /* factor Ltmp */
-    //mymatprint(mfqP->L_tmp,blasint2,blasint2,blasint,"L'*L");
-
     LAPACKpotrf_("L",&blasint2,mfqP->L_tmp,&blasint,&blasinfo);
     if (blasinfo != 0) {
 	SETERRQ1(1,"LAPACK routine potrf returned with value %d\n",blasinfo);
     }
 
     /* factor M */
-    //mymatprint(mfqP->M,blasnplus1,15,blasnplus1,"M");
     LAPACKgetrf_(&blasnplus1,&blasnpmax,mfqP->M,&blasnplus1,mfqP->npmaxiwork,&blasinfo);
     if (blasinfo != 0) {
 	SETERRQ1(1,"LAPACK routine getrf returned with value %d\n",blasinfo);
@@ -89,34 +81,24 @@ static PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP) {
     
     for (k=0;k<mfqP->m;k++) {
 	/* Solve L'*L*Omega = Z' * RESk*/
-	//mymatprint(mfqP->Z,blasnp,blasint2,blasnpmax,"Z");
 	BLASgemv_("T",&blasnp,&blasint2,&one,mfqP->Z,&blasnpmax,&mfqP->RES[mfqP->npmax*k],&ione,&zero,mfqP->omega,&ione);
-	//mymatprint(mfqP->omega,blasint2,1,mfqP->npmax,"Z'*RESk");
 
 	LAPACKpotrs_("L",&blasint2,&ione,mfqP->L_tmp,&blasint,mfqP->omega,&blasint2,&blasinfo);
 	if (blasinfo != 0) {
 	    SETERRQ1(1,"LAPACK routine potrs returned with value %d\n",blasinfo);
 	}
-	//mymatprint(mfqP->omega,blasint2,1,mfqP->npmax,"Omega");
 	
 	
 	/* Beta = L*Omega */
 	BLASgemv_("N",&blasint,&blasint2,&one,&mfqP->L[(mfqP->n+1)*blasint],&blasint,mfqP->omega,&ione,&zero,mfqP->beta,&ione);
-	//mymatprint(mfqP->beta,blasint,1,blasint,"Beta");
-
 	
 	/* solve M'*Alpha = RESk - N'*Beta */
-
-
 	BLASgemv_("T",&blasint,&blasnp,&negone,mfqP->N,&blasint,mfqP->beta,&ione,&one,&mfqP->RES[mfqP->npmax*k],&ione);
-//	mymatprint(&mfqP->RES[mfqP->npmax*k],np,1,mfqP->npmax,"RESk - n'*Beta");
 	LAPACKgetrs_("T",&blasnplus1,&ione,mfqP->M,&blasnplus1,mfqP->npmaxiwork,&mfqP->RES[mfqP->npmax*k],&blasnplus1,&blasinfo);
 	if (blasinfo != 0) {
 	    SETERRQ1(1,"LAPACK routine getrs returned with value %d\n",blasinfo);
 	}
 
-
-	//mymatprint(&mfqP->RES[mfqP->npmax*k],mfqP->n+1,1,mfqP->n+1,"Alpha");
 	/* Gdel(:,k) = Alpha(2:n+1) */
 	for (i=0;i<mfqP->n;i++) {
 	    mfqP->Gdel[i + mfqP->n*k] = mfqP->RES[mfqP->npmax*k + i+1];
@@ -125,11 +107,11 @@ static PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP) {
 	/* Set Hdels */
 	num=0;
 	for (i=0;i<mfqP->n;i++) {
-	    //H[i,i,k] = Beta(num)
+	    /* H[i,i,k] = Beta(num) */
 	    mfqP->Hdel[(i*mfqP->n + i)*mfqP->m + k] = mfqP->beta[num];
 	    num++;
 	    for (j=i+1;j<mfqP->n;j++) {
-		//H[i,j,k] = H[j,i,k] = Beta(num)/sqrt(2)
+		/* H[i,j,k] = H[j,i,k] = Beta(num)/sqrt(2) */
 		mfqP->Hdel[(j*mfqP->n + i)*mfqP->m + k] = mfqP->beta[num]/sqrt2;
 		mfqP->Hdel[(i*mfqP->n + j)*mfqP->m + k] = mfqP->beta[num]/sqrt2;
 		num++;
@@ -137,32 +119,22 @@ static PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP) {
 	}
     }
     
-    //    mymatprint(mfqP->Gdel,mfqP->n,mfqP->m,mfqP->n,"Gdel");
-    //    mymatprint(mfqP->Hdel,mfqP->m,1,mfqP->m,"Hdel[0,0,:]");
     PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "morepoints"
 static PetscErrorCode morepoints(TAO_POUNDERS *mfqP) {
-    // Assumes mfqP->model_indices[0]  is minimum index
-    // Finishes adding points to mfqP->model_indices (up to npmax)
-    // Computes L,Z,M,N
-    // np is actual number of points in model (should equal npmax?)
+    /* Assumes mfqP->model_indices[0]  is minimum index
+       Finishes adding points to mfqP->model_indices (up to npmax)
+       Computes L,Z,M,N
+       np is actual number of points in model (should equal npmax?) */
     PetscInt point,i,j,offset;
     PetscInt reject;
     PetscBLASInt blasn=mfqP->n,blasnpmax=mfqP->npmax,blasnplus1=mfqP->n+1,blasinfo,blasnpmax_x_5=mfqP->npmax*5,blasint,blasint2,blasnp;
     PetscReal *x,normd;
     PetscErrorCode ierr;
     PetscFunctionBegin;
-
-    CHKMEMQ;
-
-    //printf("morepoints (indices): ");
-    //for (i=0;i<mfqP->n+1;i++) {
-    //printf("%d\t",mfqP->model_indices[i]);
-    //	}
-    //    printf("\n");
 
     for (i=0;i<mfqP->n+1;i++) {
 	ierr = VecGetArray(mfqP->Xhist[mfqP->model_indices[i]],&x); CHKERRQ(ierr);
@@ -176,42 +148,22 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP) {
 
 
     }
-    //mymatprint(mfqP->M,mfqP->n+1,mfqP->n+1,mfqP->n+1,"M");
-    //mymatprint(mfqP->N,mfqP->n*(mfqP->n+1)/2,mfqP->npmax,mfqP->n*(mfqP->n+1)/2,"N");
 
-    /* Copy M to Q */
-/*    CHKMEMQ;
-    for (i=0;i<mfqP->npmax* (mfqP->n+1);i++) {
-	mfqP->Q[i] = mfqP->M[i];
-    }
-    
-    CHKMEMQ;
-    LAPACKgeqrf_(&blasnplus1,&blasn,mfqP->Q,&blasnpmax,mfqP->tau,mfqP->npmaxwork,&blasnpmax_x_5,&blasinfo);
-
-
-
-    if (blasinfo != 0) {
-	SETERRQ1(1,"LAPACK routine geqrf returned with value %d\n",blasinfo);
-    }
-*/
     /* Now we add points until we have npmax starting with the most recent ones */
     point = mfqP->nHist-1;
     mfqP->nmodelpoints = mfqP->n+1;
     
     while (mfqP->nmodelpoints < mfqP->npmax && point>=0) {
 	/* Reject any points already in the model */
-	//printf("point index=%d\n",point);
-	CHKMEMQ;
 	reject = 0;
 	for (j=0;j<mfqP->n+1;j++) {
 	    if (point == mfqP->model_indices[j]) {
 		reject = 1;
-		//printf("rejecting -- already in model\n");
 		break;
 	    }
 	}
+
 	/* Reject if norm(d) >c2 */
-	CHKMEMQ;
 	if (!reject) {
 	    ierr = VecCopy(mfqP->Xhist[point],mfqP->workxvec); CHKERRQ(ierr);
 	    ierr = VecAXPY(mfqP->workxvec,-1.0,mfqP->Xhist[mfqP->minindex]); CHKERRQ(ierr);
@@ -219,7 +171,6 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP) {
 	    normd /= mfqP->delta;
 	    if (normd > mfqP->c2) {
 		reject =1;
-		//printf("rejecting -- normd (%8.6f) > c2 (%8.6f)\n",normd,mfqP->c2);
 	    }
 	}
 	if (reject)
@@ -229,48 +180,42 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP) {
 	}
 
 	
-	CHKMEMQ;
 	ierr = VecGetArray(mfqP->Xhist[point],&x); CHKERRQ(ierr);
 	mfqP->M[(mfqP->n+1)*mfqP->nmodelpoints] = 1.0;
 	for (j=0;j<mfqP->n;j++) {
 	    mfqP->M[j+1+((mfqP->n+1)*mfqP->nmodelpoints)] = (x[j]  - mfqP->xmin[j]) / mfqP->delta;
 	}
 
-	//mymatprint(mfqP->M,mfqP->n+1,mfqP->nmodelpoints+1,mfqP->n+1,"M");
-
-	CHKMEMQ;
 	ierr = VecRestoreArray(mfqP->Xhist[point],&x); CHKERRQ(ierr);
 	ierr = phi2eval(&mfqP->M[1+(mfqP->n+1)*mfqP->nmodelpoints],mfqP->n,&mfqP->N[mfqP->n*(mfqP->n+1)/2 * (mfqP->nmodelpoints)]); CHKERRQ(ierr);
-	//mymatprint(mfqP->N,mfqP->n*(mfqP->n+1)/2,mfqP->nmodelpoints+1, mfqP->n*(mfqP->n+1)/2,"N");
+
 	/* Update QR factorization */
+
 	/* Copy M' to Q_tmp */
 	for (i=0;i<mfqP->n+1;i++) {
 	    for (j=0;j<mfqP->npmax;j++) {
 		mfqP->Q_tmp[j+mfqP->npmax*i] = mfqP->M[i+(mfqP->n+1)*j];
 	    }
 	}
-	CHKMEMQ;
-	//mymatprint(mfqP->Q_tmp,mfqP->nmodelpoints+1,mfqP->n+1, mfqP->npmax,"M'");
 	blasnp = mfqP->nmodelpoints+1;
-	// Q_tmp,R = qr(M')
+	/* Q_tmp,R = qr(M') */
 	LAPACKgeqrf_(&blasnp,&blasnplus1,mfqP->Q_tmp,&blasnpmax,mfqP->tau_tmp,mfqP->npmaxwork,&blasnpmax_x_5,&blasinfo);
 
 	if (blasinfo != 0) {
 	    SETERRQ1(1,"LAPACK routine geqrf returned with value %d\n",blasinfo);
 	}
 	
-	CHKMEMQ;
 	/* Reject if min(svd(N*Q(:,n+2:np+1)) <= theta2 */
-	//L = N*Qtmp
+	/* L = N*Qtmp */
 	blasint2 = mfqP->n * (mfqP->n+1) / 2;
-	//Copy N to L_tmp
+	/* Copy N to L_tmp */
 	for (i=0;i<mfqP->n*(mfqP->n+1)/2 * mfqP->npmax;i++) {
 	    mfqP->L_tmp[i]= mfqP->N[i];
 	}
 	
-	//Copy L_save to L_tmp
+	/* Copy L_save to L_tmp */
 
-	//L_tmp = N*Qtmp'
+	/* L_tmp = N*Qtmp' */
 	LAPACKormqr_("R","N",&blasint2,&blasnp,&blasnplus1,mfqP->Q_tmp,&blasnpmax,mfqP->tau_tmp,
 		     mfqP->L_tmp,&blasint2,mfqP->npmaxwork,&blasnpmax_x_5,&blasinfo);
 
@@ -278,26 +223,20 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP) {
 	    SETERRQ1(1,"LAPACK routine ormqr returned with value %d\n",blasinfo);
 	}
 
-	CHKMEMQ;
 	/* Copy L_tmp to L_save */
 	for (i=0;i<mfqP->npmax * mfqP->n*(mfqP->n+1)/2;i++) {
 	    mfqP->L_save[i] = mfqP->L_tmp[i];
 	}
-	CHKMEMQ;
 	
 	/* Get svd for L_tmp(:,n+2:np+1) (L_tmp is modified in process) */
 	blasint = mfqP->nmodelpoints - mfqP->n;
-	//printf("nmodelpoints=%d\tblasint=%d\tblasint2=%d\n",mfqP->nmodelpoints,blasint,blasint2);
-	//mymatprint(&mfqP->L_tmp[(mfqP->n+1)*blasint2],blasint2,blasint,blasint2,"L_y");
 	LAPACKgesvd_("N","N",&blasint2,&blasint,&mfqP->L_tmp[(mfqP->n+1)*blasint2],&blasint2,
 		     mfqP->beta,mfqP->work,&blasn,mfqP->work,&blasn,mfqP->npmaxwork,&blasnpmax_x_5,
 		     &blasinfo);
-	//mymatprint(mfqP->beta,(PetscMin(blasint,blasint2)),1,blasint2,"singular values(L):");
 	if (blasinfo != 0) {
 	    SETERRQ1(1,"LAPACK routine gesvd returned with value %d\n",blasinfo);
 	}
-	CHKMEMQ;
-	//printf("min(svd(L)) = %8.6f\n",mfqP->beta[PetscMin(blasint,blasint2)-1]);
+
 	if (mfqP->beta[PetscMin(blasint,blasint2)-1] > mfqP->theta2) {
 	    /* accept point */
 	    mfqP->model_indices[mfqP->nmodelpoints] = point;
@@ -310,18 +249,13 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP) {
 	    }
 	    mfqP->nmodelpoints++;
 	    blasnp = mfqP->nmodelpoints+1;
-	    //printf("point added to model -- current model:\n");
-	    /*for (i=0;i<mfqP->nmodelpoints;i++) {
-		printf("%i\t",mfqP->model_indices[i]);
-		}*/
-	    //printf("\n");
+
 	    /* Copy L_save to L */
 	    for (i=0;i<mfqP->npmax * mfqP->n*(mfqP->n+1)/2;i++) {
 		mfqP->L[i] = mfqP->L_save[i];
 	    }
 	}
 	point--;
-	CHKMEMQ;
 
     }    
 
@@ -335,21 +269,19 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP) {
     for (i=0;i<mfqP->npmax;i++) {
 	mfqP->Q_tmp[i + mfqP->npmax*i] = 1.0;
     }
-    CHKMEMQ;
+
     /* Q_tmp = I * Q */
-    //printf("blasnp=%d\tblasnplus1=%d\n",blasnp,blasnplus1);
     LAPACKormqr_("R","N",&blasnp,&blasnp,&blasnplus1,mfqP->Q,&blasnpmax,mfqP->tau,mfqP->Q_tmp,&blasnpmax,mfqP->npmaxwork,&blasnpmax_x_5,&blasinfo);
 
     if (blasinfo != 0) {
 	SETERRQ1(1,"LAPACK routine ormqr returned with value %d\n",blasinfo);
     }
-    CHKMEMQ;
+
     /* Copy Q_tmp(:,n+2:np) to Z) */
     offset = mfqP->npmax * (mfqP->n+1);
     for (i=offset;i<mfqP->npmax*mfqP->npmax;i++) {
 	mfqP->Z[i-offset] = mfqP->Q_tmp[i];
     }
-    //mymatprint(mfqP->Z,mfqP->nmodelpoints,mfqP->nmodelpoints-mfqP->n-1,mfqP->npmax,"Z");
     PetscFunctionReturn(0);
 }
 
@@ -360,7 +292,7 @@ static PetscErrorCode addpoint(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt index
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  // Create new vector in history: X[newidx] = X[mfqP->index] + delta*X[index] 
+  /* Create new vector in history: X[newidx] = X[mfqP->index] + delta*X[index]*/
     
   ierr = VecDuplicate(mfqP->Xhist[0],&mfqP->Xhist[mfqP->nHist]); CHKERRQ(ierr);
   ierr = VecSetValues(mfqP->Xhist[mfqP->nHist],mfqP->n,mfqP->indices,&mfqP->Q_tmp[index*mfqP->npmax],INSERT_VALUES); CHKERRQ(ierr);
@@ -368,13 +300,13 @@ static PetscErrorCode addpoint(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt index
   ierr = VecAssemblyEnd(mfqP->Xhist[mfqP->nHist]); CHKERRQ(ierr);
   ierr = VecAYPX(mfqP->Xhist[mfqP->nHist],mfqP->delta,mfqP->Xhist[mfqP->minindex]); CHKERRQ(ierr);
 
-  // Compute value of new vector
+  /* Compute value of new vector */
   ierr = VecDuplicate(mfqP->Fhist[0],&mfqP->Fhist[mfqP->nHist]); CHKERRQ(ierr);
   ierr = TaoSolverComputeSeparableObjective(tao,mfqP->Xhist[mfqP->nHist],mfqP->Fhist[mfqP->nHist]); CHKERRQ(ierr);
   ierr = VecNorm(mfqP->Fhist[mfqP->nHist],NORM_2,&mfqP->Fres[mfqP->nHist]); CHKERRQ(ierr);
   mfqP->Fres[mfqP->nHist]*=mfqP->Fres[mfqP->nHist];
 
-  // Add new vector to model
+  /* Add new vector to model */
   mfqP->model_indices[mfqP->nmodelpoints] = mfqP->nHist;
   mfqP->nmodelpoints++;
   mfqP->nHist++;
@@ -386,8 +318,8 @@ static PetscErrorCode addpoint(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt index
 #undef __FUNCT__
 #define __FUNCT__ "modelimprove"
 static PetscErrorCode modelimprove(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt addallpoints) {
+  /* modeld = Q(:,np+1:n)' */
   PetscErrorCode ierr;
-  //modeld = Q(:,np+1:n)'
   PetscInt i,j,minindex;
   PetscScalar dp,half=0.5,one=1.0,minvalue;
   PetscBLASInt blasn=mfqP->n,  blasnpmax = mfqP->npmax, blask,info;
@@ -395,7 +327,7 @@ static PetscErrorCode modelimprove(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt a
   blask = mfqP->nmodelpoints;
 
    
-  // Qtmp = I(n x n)
+  /* Qtmp = I(n x n) */
   for (i=0;i<mfqP->n;i++) {
     for (j=0;j<mfqP->n;j++) {
       mfqP->Q_tmp[i + mfqP->npmax*j] = 0.0;
@@ -406,18 +338,18 @@ static PetscErrorCode modelimprove(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt a
   }
   
 
-  // Qtmp = Q * I
+  /* Qtmp = Q * I */
   LAPACKormqr_("R","N",&blasn,&blasn,&blask,mfqP->Q,&blasnpmax,
 	       mfqP->tau, mfqP->Q_tmp, &blasnpmax, mfqP->npmaxwork,&blasnpmax_x_5, &info);
   
   for (i=mfqP->nmodelpoints;i<mfqP->n;i++) {
     dp = BLASdot_(&blasn,&mfqP->Q_tmp[i*mfqP->npmax],&blas1,mfqP->Gres,&blas1);
-    if (dp>0.0) { //Model says use the other direction!
+    if (dp>0.0) { /* Model says use the other direction! */
       for (j=0;j<mfqP->n;j++) {
 	mfqP->Q_tmp[i*mfqP->npmax+j] *= -1;
       }
     }
-    //mfqP->work[i] = Cres+Modeld(i,:)*(Gres+.5*Hres*Modeld(i,:)')
+    /* mfqP->work[i] = Cres+Modeld(i,:)*(Gres+.5*Hres*Modeld(i,:)') */
     for (j=0;j<mfqP->n;j++) {
       mfqP->work2[j] = mfqP->Gres[j];
     }
@@ -454,7 +386,6 @@ static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin,
     PetscReal *x;
     PetscErrorCode ierr;
     PetscFunctionBegin;
-    //printf("AffPoints\n");
 
     if (flag != PETSC_NULL)  *flag = PETSC_FALSE;
     for (i=mfqP->nHist-1;i>=0;i--) {
@@ -465,26 +396,20 @@ static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin,
 	ierr = VecRestoreArray(mfqP->Xhist[i],&x); CHKERRQ(ierr);
 	BLAScopy_(&blasn,mfqP->work,&ione,mfqP->work2,&ione);
 	normd = BLASnrm2_(&blasn,mfqP->work,&ione);
-	CHKMEMQ;
 	if (normd <= c*c) {
 	  blasj=(mfqP->n - mfqP->nmodelpoints);
 	    if (!mfqP->q_is_I) {
-		// project D onto null
+		/* project D onto null */
 		blask=(mfqP->nmodelpoints);
-		//mymatprintq(mfqP->Q,mfqP->tau,mfqP->n,mfqP->nmodelpoints,mfqP->npmax,"Q");
-		//mymatprint(mfqP->work2,1,mfqP->n,1,"D");
 		LAPACKormqr_("R","N",&ione,&blasn,&blask,mfqP->Q,&blasnpmax,mfqP->tau,
 			     mfqP->work2,&ione,mfqP->mwork,&blasm,&info);
-		//mymatprint(mfqP->work2,1,blasj,1,"DQ");
 		
 		if (info < 0) {
 		    SETERRQ1(1,"ormqr returned value %d\n",info);
 		}
-		CHKMEMQ;
 	    }
 	    proj = BLASnrm2_(&blasj,&mfqP->work2[mfqP->nmodelpoints],&ione);
 
-	    //printf("i=%d, proj=%f, theta=%f\n",i,proj,mfqP->theta1);
 	    if (proj >= mfqP->theta1) { /* add this index to model */
 		mfqP->model_indices[mfqP->nmodelpoints]=i;
 		mfqP->nmodelpoints++;
@@ -506,19 +431,12 @@ static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin,
 		if (flag != PETSC_NULL) *flag = PETSC_TRUE;
 		break;
 	    }
-	    CHKMEMQ;
 	}		
     }
     
     if (mfqP->nmodelpoints == mfqP->n && flag != PETSC_NULL)  {
 	*flag = PETSC_TRUE;
     }
-    //printf("Model:   ");
-    /*for (i=0;i<mfqP->nmodelpoints;i++) {
-	printf("%d\t",indices[i]);
-	}*/
-    //printf("\nLeaving AffPoints\n");
-
     PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -664,16 +582,16 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
 	  
   /* Determine the initial quadratic models */
   
-  //G = D(ModelIn,:) \ (F(ModelIn,1:m)-repmat(F(xkin,1:m),n,1));
-  // D (nxn) Fdiff (nxm)  => G (nxm)
+  /* G = D(ModelIn,:) \ (F(ModelIn,1:m)-repmat(F(xkin,1:m),n,1)); */
+  /* D (nxn) Fdiff (nxm)  => G (nxm) */
   LAPACKgesv_(&blasn,&blasm,mfqP->Disp,&blasnpmax,mfqP->iwork,mfqP->Fdiff,&blasn,&info);
   ierr = PetscInfo1(tao,"gesv returned %d\n",info); CHKERRQ(ierr);
 
   cres = minnorm;
-  //Gres = G*F(xkin,1:m)' //  G (nxm)   Fk (m)  
+  /* Gres = G*F(xkin,1:m)' //  G (nxm)   Fk (m)   */
   BLASgemv_("N",&blasn,&blasm,&one,mfqP->Fdiff,&blasn,mfqP->C,&ione,&zero,mfqP->Gres,&ione);
 
-  //  Hres = G*G' 
+  /*  Hres = G*G'  */
   BLASgemm_("N","T",&blasn,&blasn,&blasm,&one,mfqP->Fdiff, &blasn,mfqP->Fdiff,&blasn,&zero,mfqP->Hres,&blasn);
 
   valid = PETSC_TRUE;
@@ -694,8 +612,6 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
 
     /* Solve the subproblem min{Q(s): ||s|| <= delta} */
     ierr = gqtwrap(mfqP,&gnorm,&mdec); CHKERRQ(ierr);
-    //mymatprint(mfqP->Xsubproblem,1,mfqP->n,1,"xsubproblem");
-    CHKMEMQ;
     /* Evaluate the function at the new point */
     for (i=0;i<mfqP->n;i++) {
 	mfqP->work[i] = mfqP->Xsubproblem[i]*mfqP->delta + mfqP->xmin[i];
@@ -705,45 +621,35 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
     ierr = VecSetValues(mfqP->Xhist[mfqP->nHist],mfqP->n,mfqP->indices,mfqP->work,INSERT_VALUES); CHKERRQ(ierr);
     ierr = VecAssemblyBegin(mfqP->Xhist[mfqP->nHist]); CHKERRQ(ierr);
     ierr = VecAssemblyEnd(mfqP->Xhist[mfqP->nHist]); CHKERRQ(ierr);
-    CHKMEMQ;
     ierr = TaoSolverComputeSeparableObjective(tao,mfqP->Xhist[mfqP->nHist],mfqP->Fhist[mfqP->nHist]); CHKERRQ(ierr);
-    CHKMEMQ;
     ierr = VecNorm(mfqP->Fhist[mfqP->nHist],NORM_2,&mfqP->Fres[mfqP->nHist]); CHKERRQ(ierr);
     mfqP->Fres[mfqP->nHist]*=mfqP->Fres[mfqP->nHist];
     rho = (mfqP->Fres[mfqP->minindex] - mfqP->Fres[mfqP->nHist]) / mdec;
     mfqP->nHist++;
 
-    //printf("rho=%8.6f\n",rho);
-    CHKMEMQ;
     /* Update the center */
     if ((rho >= mfqP->eta1) || (rho > mfqP->eta0 && valid==PETSC_TRUE)) {
-	//printf("Update the center\n");
 	/* Update model to reflect new base point */
-	//mymatprint(mfqP->xmin,1,mfqP->n,1,"xmin");
-	
 	for (i=0;i<mfqP->n;i++) {
 	    mfqP->work[i] = (mfqP->work[i] - mfqP->xmin[i])/mfqP->delta;
 	}
-        //mymatprint(mfqP->work,1,mfqP->n,1,"Displace");
 	for (j=0;j<mfqP->m;j++) {
-	    // C(j) = C(j) + work*G(:,j) + .5*work*H(:,:,j)*work';
-	    // G(:,j) = G(:,j) + H(:,:,j)*work'
+	    /* C(j) = C(j) + work*G(:,j) + .5*work*H(:,:,j)*work';
+	       G(:,j) = G(:,j) + H(:,:,j)*work' */
 	    for (k=0;k<mfqP->n;k++) {
 		mfqP->work2[k]=0.0;
 		for (l=0;l<mfqP->n;l++) {
 		    mfqP->work2[k]+=mfqP->H[j + mfqP->m*(k + l*mfqP->n)]*mfqP->work[l];
 		}
 	    }
-//	    BLASgemv_("N",&blasn,&blasn,&one,&mfqP->H[j*mfqP->n*mfqP->n],&blasn,mfqP->work,&ione,
-//		      &zero,mfqP->work2,&ione);
 	    for (i=0;i<mfqP->n;i++) {
 		mfqP->C[j]+=mfqP->work[i]*(mfqP->Fdiff[i + mfqP->n* j] + 0.5*mfqP->work2[i]);
 		mfqP->Fdiff[i+mfqP->n*j] +=mfqP-> work2[i];
 	    }
 	}
-	//Cres += work*Gres + .5*work*Hres*work';
-	//Gres += Hres*work';
-	CHKMEMQ;
+	/* Cres += work*Gres + .5*work*Hres*work';
+	   Gres += Hres*work'; */
+
 	BLASgemv_("N",&blasn,&blasn,&one,mfqP->Hres,&blasn,mfqP->work,&ione,
 		  &zero,mfqP->work2,&ione);
 	for (i=0;j<mfqP->n;j++) {
@@ -759,25 +665,20 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
 	}
 	ierr = VecRestoreArray(mfqP->Xhist[mfqP->minindex],&xmint); CHKERRQ(ierr);
 
-	CHKMEMQ;
+
     }
-    //mymatprint(mfqP->xmin,1,mfqP->n,1,"xmin");
-    CHKMEMQ;
+
     /* Evaluate at a model-improving point if necessary */
     if (valid == PETSC_FALSE) {
-	//printf("Model improve\n");
 	mfqP->q_is_I = 1;
 	ierr = affpoints(mfqP,mfqP->xmin,mfqP->c1,&valid); CHKERRQ(ierr);
 	if (mfqP->nmodelpoints < mfqP->n) {
-	  //	if (valid == PETSC_FALSE) {
 	  ierr = PetscInfo(tao,"Model not valid -- model-improving");
 	  ierr = modelimprove(tao,mfqP,1); CHKERRQ(ierr);
 	}
     }
     
-    
-    CHKMEMQ;
-    //mymatprint(mfqP->Xsubproblem,1,mfqP->n,1,"xsubproblem");
+
     /* Update the trust region radius */
     deltaold = mfqP->delta;
     normxsp = 0;
@@ -785,39 +686,28 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
 	normxsp += mfqP->Xsubproblem[i]*mfqP->Xsubproblem[i];
     }
     normxsp = sqrt(normxsp);
-    //printf("normxsp=%8.6f\n",normxsp);
-    //printf("deltaold=%8.6f\n",deltaold);
     if (rho >= mfqP->eta1 && normxsp > 0.5*mfqP->delta) {
 	mfqP->delta = PetscMin(mfqP->delta*mfqP->gamma1,mfqP->deltamax); 
     } else {
 	mfqP->delta = PetscMax(mfqP->delta*mfqP->gamma0,mfqP->deltamin);
     }
-    //printf("delta = %8.6f\n",mfqP->delta);
+
     /* Compute the next interpolation set */
-    CHKMEMQ;
     mfqP->q_is_I = 1;
     mfqP->nmodelpoints=0;
     ierr = affpoints(mfqP,mfqP->xmin,mfqP->c1,&valid); CHKERRQ(ierr);
-    CHKMEMQ;
     if (valid == PETSC_FALSE) {
 	ierr = affpoints(mfqP,mfqP->xmin,mfqP->c2,PETSC_NULL); CHKERRQ(ierr);
-	CHKMEMQ;
 	if (mfqP->n > mfqP->nmodelpoints) {
 	    ierr = PetscInfo(tao,"Model not valid -- adding geometry points");
 	    ierr = modelimprove(tao,mfqP,mfqP->n - mfqP->nmodelpoints); CHKERRQ(ierr);
 	}
     }
-    CHKMEMQ;
     for (i=mfqP->nmodelpoints;i>0;i--) {
 	mfqP->model_indices[i] = mfqP->model_indices[i-1];
     }
     mfqP->model_indices[0] = mfqP->minindex;
-    CHKMEMQ;
     ierr = morepoints(mfqP); CHKERRQ(ierr);
-    CHKMEMQ;
-    //printf("mfqP->nmodelpoints = %i\n",mfqP->nmodelpoints); 
-    //mymatprint(mfqP->C,1,7,1,"C[1:7]");
-    //mymatprint(mfqP->Fdiff,mfqP->n,7,mfqP->n,"Fdiff[1:7]");
     for (i=0;i<mfqP->nmodelpoints;i++) {
 	ierr = VecGetArray(mfqP->Xhist[mfqP->model_indices[i]],&x); CHKERRQ(ierr);
 	for (j=0;j<mfqP->n;j++) {
@@ -825,7 +715,6 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
 	}
 	ierr = VecRestoreArray(mfqP->Xhist[mfqP->model_indices[i]],&x); CHKERRQ(ierr);
 	ierr = VecGetArray(mfqP->Fhist[mfqP->model_indices[i]],&f); CHKERRQ(ierr);
-	// RES(i,j) = -C(j) - D(i,:)*(G(:,j) + .5*H(:,:,j)*D(i,:)') + F(model[i],j)
 	for (j=0;j<mfqP->m;j++) {
 	    for (k=0;k<mfqP->n;k++)  {
 		mfqP->work[k]=0.0;
@@ -833,22 +722,12 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
 		    mfqP->work[k] += mfqP->H[j + mfqP->m*(k + mfqP->n*l)] * mfqP->Disp[i + mfqP->npmax*l];
 		}
 	    }
-		    //BLASgemv_("N",&blasn,&blasn,&one,&mfqP->H[j*mfqP->n*mfqP->n],&blasn,&mfqP->Disp[i],&blasnpmax,&zero,mfqP->work,&ione); 
-	    if (i==1 && j==0) {
-		//printf("i=%d\tj=%d\n",i,j);
-		//mymatprintslice(&mfqP->H[j],mfqP->n*mfqP->n,mfqP->m,"H[j,:,:]");
-		//mymatprint(mfqP->work,mfqP->n,1,mfqP->n,"H[j,:,:]*mfqP->Disp[i]");
-	    }
 	    mfqP->RES[j*mfqP->npmax + i] = -mfqP->C[j] - BLASdot_(&blasn,&mfqP->Fdiff[j*mfqP->n],&ione,&mfqP->Disp[i],&blasnpmax) - 0.5*BLASdot_(&blasn,mfqP->work,&ione,&mfqP->Disp[i],&blasnpmax) + f[j];
 	}
 	ierr = VecRestoreArray(mfqP->Fhist[mfqP->model_indices[i]],&f); CHKERRQ(ierr);
     }
 
-    //mymatprint(mfqP->RES,mfqP->npmax,7,mfqP->npmax,"RES[:,1:7]");
-    //mymatprint(mfqP->Disp,mfqP->npmax,np,mfqP->npmax,"Disp");
-    //mmyatprint(mfqP->Fdiff,mfqP->n,7,mfqP->n,"Fdiff[:,1:7]");
 
-    CHKMEMQ;
     /* Update the quadratic model */
     if (mfqP->nmodelpoints - mfqP->n - 1 == 0) {
       reason = TAO_DIVERGED_USER;
@@ -858,40 +737,31 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
     ierr = getquadpounders(mfqP); CHKERRQ(ierr);
     ierr = VecGetArray(mfqP->Fhist[mfqP->minindex],&fmin); CHKERRQ(ierr);
     BLAScopy_(&blasm,fmin,&ione,mfqP->C,&ione);
-    // G = G*(delta/deltaold) + Gdel
+    /* G = G*(delta/deltaold) + Gdel */
     ratio = mfqP->delta/deltaold;
     iblas = blasm*blasn;
     BLASscal_(&iblas,&ratio,mfqP->Fdiff,&ione);
     BLASaxpy_(&iblas,&one,mfqP->Gdel,&ione,mfqP->Fdiff,&ione);
-    //mymatprint(mfqP->Fdiff,mfqP->n,mfqP->m,mfqP->n,"Gdel");
-    // H = H*(delta/deltaold) + Hdel
-    //mymatprintslice(mfqP->Hdel,blasn*blasn,blasm,"Hdel[:,:,0]");
+    /* H = H*(delta/deltaold) + Hdel */
     iblas = blasm*blasn*blasn;
     ratio *= ratio;
     BLASscal_(&iblas,&ratio,mfqP->H,&ione);
     BLASaxpy_(&iblas,&one,mfqP->Hdel,&ione,mfqP->H,&ione);
-    //mymatprintslice(mfqP->H,blasn*blasn,blasm,"H[:,:,0]");
 
 
-    CHKMEMQ;
     /* Get residuals */
     cres = mfqP->Fres[mfqP->minindex];
-    //Gres = G*F(xkin,1:m)'
+    /* Gres = G*F(xkin,1:m)' */
     BLASgemv_("N",&blasn,&blasm,&one,mfqP->Fdiff,&blasn,mfqP->C,&ione,&zero,mfqP->Gres,&ione);
-    // Hres = sum i=1..m {F(xkin,i)*H(:,:,i)}   + G*G'
+    /* Hres = sum i=1..m {F(xkin,i)*H(:,:,i)}   + G*G' */
     BLASgemm_("N","T",&blasn,&blasn,&blasm,&one,mfqP->Fdiff,&blasn,mfqP->Fdiff,&blasn,
 	      &zero,mfqP->Hres,&blasn);
-    //mymatprint(mfqP->Hres,mfqP->n,mfqP->n,mfqP->n,"G*G'");
 
     iblas = mfqP->n*mfqP->n;
-    //mymatprint(fmin,1,mfqP->m,1,"fmin");
-    for (j=0;j<mfqP->m;j++) { //TODO rewrite as gemv
+
+    for (j=0;j<mfqP->m;j++) { 
 	BLASaxpy_(&iblas,&fmin[j],&mfqP->H[j],&blasm,mfqP->Hres,&ione);
     }
-    //mymatprintslice(mfqP->H,blasn*blasn,blasm,"H[:,:,0]");
-    //printf("cres = %8.6f\n",cres);
-    //mymatprint(mfqP->Gres,mfqP->n,1,mfqP->n,"Gres");
-    //mymatprint(mfqP->Hres,mfqP->n,mfqP->n,mfqP->n,"Hres");
     
     /* Export solution and gradient residual to TAO */
     ierr = VecCopy(mfqP->Xhist[mfqP->minindex],tao->solution); CHKERRQ(ierr);
@@ -901,7 +771,6 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
     ierr = VecNorm(tao->gradient,NORM_2,&gnorm); CHKERRQ(ierr);
     gnorm *= mfqP->delta;
     /*  final criticality test */
-    CHKMEMQ;
     ierr = TaoSolverMonitor(tao, iter, minnorm, gnorm, 0.0, step, &reason); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -923,7 +792,7 @@ static PetscErrorCode TaoSolverSetUp_POUNDERS(TaoSolver tao)
     ierr = VecGetSize(tao->solution,&mfqP->n); CHKERRQ(ierr);
     ierr = VecGetSize(tao->sep_objective,&mfqP->m); CHKERRQ(ierr);
     mfqP->c1 = sqrt(mfqP->n);
-    mfqP->npmax = (mfqP->n+1)*(mfqP->n+2)/2; // TODO check if manually set
+    mfqP->npmax = (mfqP->n+1)*(mfqP->n+2)/2; /* TODO check if manually set */
 
     ierr = PetscMalloc((tao->max_funcs+10)*sizeof(Vec),&mfqP->Xhist); CHKERRQ(ierr);
     ierr = PetscMalloc((tao->max_funcs+10)*sizeof(Vec),&mfqP->Fhist); CHKERRQ(ierr);
@@ -1123,41 +992,3 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverCreate_POUNDERS(TaoSolver tao)
 }
 EXTERN_C_END
 
-
-void mymatprint(PetscReal *M, PetscInt m, PetscInt n, PetscInt dm, const char *name) {
-    int i,j;
-    if (name != 0)  printf("%s=\n",name);
-    for (i=0;i<m;i++) {
-	for (j=0;j<n;j++) {
-	    printf("%9.6f ",M[i+dm*j]);
-	}
-	printf("\n");
-    }
-}
-
-void mymatprintq(PetscReal *Q, PetscReal *tau, PetscInt n, PetscInt k, PetscInt ldm, const char *name) {
-  int i;
-  PetscBLASInt blasn=n,blask=k,blasldm=ldm,info;
-  PetscReal *A,*work;
-  PetscMalloc(sizeof(PetscReal)*n*n,&A);
-  PetscMalloc(sizeof(PetscReal)*n,&work);
-  for (i=0;i<n*n;i++) A[i]=0.0;
-  for (i=0;i<n;i++) A[i+n*i] = 1.0;
-  
-  LAPACKormqr_("L","N",&blasn,&blasn,&blask,Q,&blasldm,tau,A,&blasn,
-	       work,&blasn,&info);
-  mymatprint(A,n,n,n,name);
-  PetscFree(A);
-  PetscFree(work);
-	       
-}
-
-void mymatprintslice(PetscReal *M, PetscInt n, PetscInt stride, const char *name) {
-    int i;
-    if (name != 0)  printf("%s=\n",name);
-    for (i=0;i<n;i++) {
-	printf("%9.6f ",M[i*stride]);
-    }
-    printf("\n");
-
-}

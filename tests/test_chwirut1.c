@@ -161,14 +161,12 @@ PetscErrorCode EvaluateFunction(TaoSolver tao, Vec X, Vec F, void *ptr)
   for (i=0;i<NOBSERVATIONS;i++) {
     f[i] = y[i] - exp(-x[0]*t[i])/(x[1] + x[2]*t[i]);
   }
-  printf("x=%f,%f,%f\n",x[0],x[1],x[2]);
   
 
   ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f); CHKERRQ(ierr);
   PetscReal tmp;
   ierr = VecNorm(F,NORM_2,&tmp); CHKERRQ(ierr);
-  printf("f=%f\n",tmp*tmp); 
 
   PetscLogFlops(6*NOBSERVATIONS);
 
