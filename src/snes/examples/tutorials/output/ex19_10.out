@@ -71,7 +71,6 @@ SNES Object:
             ILU: factor fill ratio allocated 1
             ILU: tolerance for zero pivot 1e-12
             ILU: using diagonal shift to prevent zero pivot
-            ILU: using diagonal shift on blocks to prevent zero pivot
                  out-of-place factorization
                  matrix ordering: natural
             ILU: factor fill ratio needed 1
@@ -114,7 +113,6 @@ SNES Object:
             ILU: factor fill ratio allocated 1
             ILU: tolerance for zero pivot 1e-12
             ILU: using diagonal shift to prevent zero pivot
-            ILU: using diagonal shift on blocks to prevent zero pivot
                  out-of-place factorization
                  matrix ordering: natural
             ILU: factor fill ratio needed 1
@@ -157,7 +155,6 @@ SNES Object:
             ILU: factor fill ratio allocated 1
             ILU: tolerance for zero pivot 1e-12
             ILU: using diagonal shift to prevent zero pivot
-            ILU: using diagonal shift on blocks to prevent zero pivot
                  out-of-place factorization
                  matrix ordering: natural
             ILU: factor fill ratio needed 1
@@ -200,7 +197,6 @@ SNES Object:
             ILU: factor fill ratio allocated 1
             ILU: tolerance for zero pivot 1e-12
             ILU: using diagonal shift to prevent zero pivot
-            ILU: using diagonal shift on blocks to prevent zero pivot
                  out-of-place factorization
                  matrix ordering: natural
             ILU: factor fill ratio needed 1

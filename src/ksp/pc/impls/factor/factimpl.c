@@ -292,26 +292,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions_Factor(PC pc)
     
     ierr = PetscOptionsReal("-pc_factor_shift_amount","Shift added to diagonal","PCFactorSetShiftAmount",((PC_Factor*)factor)->info.shiftamount,&((PC_Factor*)factor)->info.shiftamount,0);CHKERRQ(ierr);
   
-#if defined(MV)
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsName("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCFactorSetShiftNonzero(pc,(PetscReal) PETSC_DECIDE);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsReal("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",((PC_Factor*)factor)->info.shiftnz,&((PC_Factor*)factor)->info.shiftnz,0);CHKERRQ(ierr);
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-pc_factor_shift_positive_definite","Manteuffel shift applied to diagonal","PCFactorSetShiftPd",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCFactorSetShiftPd(pc,PETSC_TRUE);CHKERRQ(ierr);
-    }
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsName("-pc_factor_shift_in_blocks","Shift added to diagonal dense blocks","PCFactorSetShiftInBlocks",&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCFactorSetShiftInBlocks(pc,(PetscReal) PETSC_DEFAULT);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsReal("-pc_factor_shift_in_blocks","Shift added to diagonal dense blocks","PCFactorSetShiftInBlocks",((PC_Factor*)factor)->info.shiftinblocks,&((PC_Factor*)factor)->info.shiftinblocks,0);CHKERRQ(ierr);
-#endif
-
     ierr = PetscOptionsReal("-pc_factor_zeropivot","Pivot is considered zero if less than","PCFactorSetZeroPivot",((PC_Factor*)factor)->info.zeropivot,&((PC_Factor*)factor)->info.zeropivot,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_factor_column_pivot","Column pivot tolerance (used only for some factorization)","PCFactorSetColumnPivot",((PC_Factor*)factor)->info.dtcol,&((PC_Factor*)factor)->info.dtcol,&flg);CHKERRQ(ierr);
 

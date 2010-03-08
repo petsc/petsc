@@ -643,7 +643,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetNullSpace(DMMG *dmmg,PetscTruth has_cn
       if (isred) {
         ierr = PCRedundantGetPC(ipc,&ipc);CHKERRQ(ierr);
       }
-      ierr = PCFactorSetShiftPd(ipc,PETSC_TRUE);CHKERRQ(ierr); 
+      ierr = PCFactorSetShiftType(ipc,MAT_SHIFT_POSITIVE_DEFINITE);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

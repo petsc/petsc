@@ -67,6 +67,7 @@ int main(int argc,char **args)
 
   ierr = MatGetOrdering(A,MATORDERING_ND,&perm,&iperm);CHKERRQ(ierr);
   ierr = MatGetFactor(A,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+  ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
   info.fill = 5.0;
   ierr = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(F,A,&info);CHKERRQ(ierr);

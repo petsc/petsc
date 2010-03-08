@@ -92,7 +92,17 @@ static PetscErrorCode PCView_LU(PC pc,PetscViewer viewer)
     else             {ierr = PetscViewerASCIIPrintf(viewer,"  LU: out-of-place factorization\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"    matrix ordering: %s\n",((PC_Factor*)lu)->ordering);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  LU: tolerance for zero pivot %G\n",((PC_Factor*)lu)->info.zeropivot);CHKERRQ(ierr);
-    if (((PC_Factor*)lu)->info.shiftpd) {ierr = PetscViewerASCIIPrintf(viewer,"  LU: using Manteuffel shift\n");CHKERRQ(ierr);}
+
+    if (((PC_Factor*)lu)->info.shifttype==MAT_SHIFT_POSITIVE_DEFINITE) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  LU: using Manteuffel shift\n");CHKERRQ(ierr);
+    }
+    if (((PC_Factor*)lu)->info.shifttype==MAT_SHIFT_NONZERO) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  LU: using diagonal shift to prevent zero pivot\n");CHKERRQ(ierr);
+    }
+    if (((PC_Factor*)lu)->info.shifttype==MAT_SHIFT_INBLOCKS) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  LU: using diagonal shift on blocks to prevent zero pivot\n");CHKERRQ(ierr);
+    }
+
     if (((PC_Factor*)lu)->fact) {
       ierr = PetscViewerASCIIPrintf(viewer,"  LU: factor fill ratio needed %G\n",lu->actualfill);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"       Factored matrix follows\n");CHKERRQ(ierr);
@@ -249,9 +259,8 @@ EXTERN_C_END
 .  -pc_factor_mat_ordering_type <nd,rcm,...> - Sets ordering routine
 .  -pc_factor_pivot_in_blocks <true,false> - allow pivoting within the small blocks during factorization (may increase
                                          stability of factorization.
-.  -pc_factor_shift_nonzero <shift> - Sets shift amount or PETSC_DECIDE for the default
-.  -pc_factor_shift_positive_definite [PETSC_TRUE/PETSC_FALSE] - Activate/Deactivate PCFactorSetShiftPd(); the value
-        is optional with PETSC_TRUE being the default
+.  -pc_factor_shift_type <shifttype> - Sets shift type or PETSC_DECIDE for the default; use '-help' for a list of available types
+.  -pc_factor_shift_amount <shiftamount> - Sets shift amount or PETSC_DECIDE for the default
 -   -pc_factor_nonzeros_along_diagonal - permutes the rows and columns to try to put nonzero value along the
         diagonal.
 
@@ -270,7 +279,7 @@ EXTERN_C_END
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCILU, PCCHOLESKY, PCICC, PCFactorSetReuseOrdering(), PCFactorSetReuseFill(), PCFactorGetMatrix(),
            PCFactorSetFill(), PCFactorSetUseInPlace(), PCFactorSetMatOrderingType(), PCFactorSetColumnPivot(),
-           PCFactorSetPivotingInBlocks(),PCFactorSetShiftNonzero(),PCFactorSetShiftPd(),PCFactorSetShiftInBlocks() 
+           PCFactorSetPivotingInBlocks(),PCFactorSetShiftType(),PCFactorSetShiftAmount()
            PCFactorReorderForNonzeroDiagonal()
 M*/
 
@@ -326,19 +335,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_LU(PC pc)
                     PCFactorSetMatSolverPackage_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetZeroPivot_C","PCFactorSetZeroPivot_Factor",
                     PCFactorSetZeroPivot_Factor);CHKERRQ(ierr);
-
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftType_C","PCFactorSetShiftType_Factor",
                     PCFactorSetShiftType_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftAmount_C","PCFactorSetShiftAmount_Factor",
                     PCFactorSetShiftAmount_Factor);CHKERRQ(ierr);
-
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftNonzero_C","PCFactorSetShiftNonzero_Factor",
-                    PCFactorSetShiftNonzero_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftPd_C","PCFactorSetShiftPd_Factor",
-                    PCFactorSetShiftPd_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftInBlocks_C","PCFactorSetShiftInBlocks_Factor",
-                    PCFactorSetShiftInBlocks_Factor);CHKERRQ(ierr);
-
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetFill_C","PCFactorSetFill_Factor",
                     PCFactorSetFill_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetUseInPlace_C","PCFactorSetUseInPlace_LU",
