@@ -366,6 +366,9 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec Y)
     } else {
       if (ts->ops->rhsmatrix) { /* assemble matrix for this timestep */
         MatStructure flg;
+        /* Note: flg is not being used.
+           For it to be useful, we'd have to cache it and then apply it in TSComputeIJacobian.
+        */
         PetscStackPush("TS user right-hand-side matrix function");
         ierr = (*ts->ops->rhsmatrix)(ts,t,&ts->Arhs,&ts->B,&flg,ts->jacP);CHKERRQ(ierr);
         PetscStackPop;
@@ -373,8 +376,19 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec Y)
       ierr = MatMult(ts->Arhs,X,Y);CHKERRQ(ierr);
     }
 
-    /* Convert to implicit form */
-    ierr = VecAYPX(Y,-1,Xdot);CHKERRQ(ierr);
+    /* Convert to implicit form: F(X,Xdot) = Alhs * Xdot - Frhs(X) */
+    if (ts->Alhs) {
+      if (ts->ops->lhsmatrix) {
+        MatStructure flg;
+        PetscStackPush("TS user left-hand-side matrix function");
+        ierr = (*ts->ops->lhsmatrix)(ts,t,&ts->Alhs,PETSC_NULL,&flg,ts->jacP);CHKERRQ(ierr);
+        PetscStackPop;
+      }
+      ierr = VecScale(Y,-1.);CHKERRQ(ierr);
+      ierr = MatMultAdd(ts->Alhs,Xdot,Y,Y);CHKERRQ(ierr);
+    } else {
+      ierr = VecAYPX(Y,-1,Xdot);CHKERRQ(ierr);
+    }
   }
   ierr = PetscLogEventEnd(TS_FunctionEval,ts,X,Xdot,Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -430,6 +444,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSComputeIJacobian(TS ts,PetscReal t,Vec X,Vec 
   PetscValidHeaderSpecific(*B,MAT_COOKIE,7);
   PetscValidPointer(flg,8);
 
+  *flg = SAME_NONZERO_PATTERN;  /* In case it we're solving a linear problem in which case it wouldn't get initialized below. */
   ierr = PetscLogEventBegin(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
   if (ts->ops->ijacobian) {
     PetscStackPush("TS user implicit Jacobian");
@@ -452,7 +467,11 @@ PetscErrorCode PETSCTS_DLLEXPORT TSComputeIJacobian(TS ts,PetscReal t,Vec X,Vec 
     /* Convert to implicit form */
     /* inefficient because these operations will normally traverse all matrix elements twice */
     ierr = MatScale(*A,-1);CHKERRQ(ierr);
-    ierr = MatShift(*A,shift);CHKERRQ(ierr);
+    if (ts->Alhs) {
+      ierr = MatAXPY(*A,shift,ts->Alhs,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    } else {
+      ierr = MatShift(*A,shift);CHKERRQ(ierr);
+    }
     if (*A != *B) {
       ierr = MatScale(*B,-1);CHKERRQ(ierr);
       ierr = MatShift(*B,shift);CHKERRQ(ierr);
