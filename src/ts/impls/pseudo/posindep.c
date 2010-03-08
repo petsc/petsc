@@ -547,7 +547,41 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPseudoSetTimeStep_Pseudo(TS ts,FCN2 dt,void* 
 EXTERN_C_END
 
 /* ----------------------------------------------------------------------------- */
+/*MC
+      TSPSEUDO - Solve steady state ODE and DAE problems with pseudo time stepping
 
+  This method solves equations of the form
+
+$    F(X,Xdot) = 0
+
+  for steady state using the iteration
+
+$    [G'] S = -F(X,0)
+$    X += S
+
+  where
+
+$    G(Y) = F(Y,(Y-X)/dt)
+
+  This is very much like linearly-implicit Euler, except that the residual is evaluated "at steady
+  state".
+
+  Options database keys:
++  -ts_pseudo_increment <real> - ratio of increase dt
+-  -ts_pseudo_increment_dt_from_initial_dt <truth> - Increase dt as a ratio from original dt
+
+  Level: beginner
+
+  References:
+  Todd S. Coffey and C. T. Kelley and David E. Keyes, Pseudotransient Continuation and Differential-Algebraic Equations, 2003.
+  C. T. Kelley and David E. Keyes, Convergence analysis of Pseudotransient Continuation, 1998.
+
+  Notes:
+  At the moment, this uses uses a transient residual, so it is not the pseudotransient continuation described in these papers.
+
+.seealso:  TSCreate(), TS, TSSetType()
+
+M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSCreate_Pseudo"
@@ -643,20 +677,3 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPseudoDefaultTimeStep(TS ts,PetscReal* newdt,
   pseudo->fnorm_previous = pseudo->fnorm;
   PetscFunctionReturn(0);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
