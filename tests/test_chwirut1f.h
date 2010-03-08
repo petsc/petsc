@@ -23,7 +23,7 @@
 !     petscvec.h   - vectors
 !     petsc.h      - basic PETSc routines
 
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscksp.h"
