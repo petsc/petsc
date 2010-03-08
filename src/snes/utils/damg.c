@@ -440,7 +440,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
 {
   PetscErrorCode ierr;
   PetscInt       i,nlevels = dmmg[0]->nlevels,level;
-  PetscTruth     ismg,galerkin;
+  PetscTruth     ismg,galerkin=PETSC_FALSE;
   PC             pc;
   KSP            lksp;
   
