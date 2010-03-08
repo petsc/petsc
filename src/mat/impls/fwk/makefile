@@ -1,12 +1,15 @@
+#requirespackage  'PETSC_USE_MATFWK'
+#requireslanguage CXXONLY
+
 ALL: lib
 
 CPPFLAGS = 
 CFLAGS   = 
 FFLAGS   =
-SOURCEC  = mframework.c
+SOURCEC  = matfwk.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = mframework.o
+OBJSC    = matfwk.o
 OBJSF    =
 DIRS     = 
 LIBBASE  = libpetscmat
