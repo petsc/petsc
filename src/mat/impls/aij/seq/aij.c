@@ -3258,6 +3258,11 @@ extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_umfpack(Mat,MatFact
 #if defined(PETSC_HAVE_LUSOL)
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_lusol(Mat,MatFactorType,Mat*);
 #endif
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_matlab(Mat,MatFactorType,Mat*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatlabEnginePut_SeqAIJ(PetscObject,void*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatlabEngineGet_SeqAIJ(PetscObject,void*);
+#endif
 EXTERN_C_END
 
 
@@ -3306,6 +3311,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
   B->same_nonzero          = PETSC_FALSE;
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_matlab_C",
+					   "MatGetFactor_seqaij_matlab",
+					   MatGetFactor_seqaij_matlab);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEnginePut_C","MatlabEnginePut_SeqAIJ",MatlabEnginePut_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEngineGet_C","MatlabEngineGet_SeqAIJ",MatlabEngineGet_SeqAIJ);CHKERRQ(ierr);
+#endif
 #if defined(PETSC_HAVE_PASTIX)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_pastix_C",
 					   "MatGetFactor_seqaij_pastix",

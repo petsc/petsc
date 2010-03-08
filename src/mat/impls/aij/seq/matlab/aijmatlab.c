@@ -12,8 +12,8 @@
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatMatlabEnginePut_Matlab"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMatlabEnginePut_Matlab(PetscObject obj,void *mengine)
+#define __FUNCT__ "MatlabEnginePut_SeqAIJ"
+PetscErrorCode PETSCMAT_DLLEXPORT MatlabEnginePut_SeqAIJ(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
   Mat            B = (Mat)obj;
@@ -38,8 +38,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatMatlabEngineGet_Matlab"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMatlabEngineGet_Matlab(PetscObject obj,void *mengine)
+#define __FUNCT__ "MatlabEngineGet_SeqAIJ"
+PetscErrorCode PETSCMAT_DLLEXPORT MatlabEngineGet_SeqAIJ(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
   int            ii;
@@ -102,15 +102,16 @@ PetscErrorCode MatLUFactorNumeric_Matlab(Mat F,Mat A,const MatFactorInfo *info)
   PetscErrorCode ierr;
   size_t         len;
   char           *_A,*name;
+  PetscReal      dtcol = info->dtcol;
 
   PetscFunctionBegin;
-  if (info->dt > 0) {
-    if (info->dtcol == PETSC_DEFAULT)   info->dtcol = .01;
+  if (F->factor == MAT_FACTOR_ILU || info->dt > 0) {
+    if (info->dtcol == PETSC_DEFAULT)  dtcol = .01;
     F->ops->solve           = MatSolve_Matlab;
     F->factor               = MAT_FACTOR_LU;
     ierr = PetscMatlabEnginePut(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),(PetscObject)A);CHKERRQ(ierr);
     _A   = ((PetscObject)A)->name;
-    ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),"info_%s = struct('droptol',%g,'thresh',%g);",_A,info->dt,info->dtcol);CHKERRQ(ierr);
+    ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),"info_%s = struct('droptol',%g,'thresh',%g);",_A,info->dt,dtcol);CHKERRQ(ierr);
     ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),"[l_%s,u_%s,p_%s] = luinc(%s',info_%s);",_A,_A,_A,_A,_A);CHKERRQ(ierr);
     ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),"%s = 0;",_A);CHKERRQ(ierr);
 
@@ -122,7 +123,7 @@ PetscErrorCode MatLUFactorNumeric_Matlab(Mat F,Mat A,const MatFactorInfo *info)
   } else {
     ierr = PetscMatlabEnginePut(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),(PetscObject)A);CHKERRQ(ierr);
     _A   = ((PetscObject)A)->name;
-    ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),"[l_%s,u_%s,p_%s] = lu(%s',%g);",_A,_A,_A,_A,info->dtcol);CHKERRQ(ierr);
+    ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),"[l_%s,u_%s,p_%s] = lu(%s',%g);",_A,_A,_A,_A,dtcol);CHKERRQ(ierr);
     ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),"%s = 0;",_A);CHKERRQ(ierr);
     ierr = PetscStrlen(_A,&len);CHKERRQ(ierr);
     ierr = PetscMalloc((len+2)*sizeof(char),&name);CHKERRQ(ierr);
@@ -141,6 +142,7 @@ PetscErrorCode MatLUFactorSymbolic_Matlab(Mat F,Mat A,IS r,IS c,const MatFactorI
   PetscFunctionBegin;
   if (A->cmap->N != A->rmap->N) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
   F->ops->lufactornumeric    = MatLUFactorNumeric_Matlab;
+  F->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -163,14 +165,15 @@ PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype,Mat *F)
 
   PetscFunctionBegin;
   if (A->cmap->N != A->rmap->N) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
-  ierr                        = MatCreate(((PetscObject)A)->comm,F);CHKERRQ(ierr);
-  ierr                        = MatSetSizes(*F,A->rmap->n,A->cmap->n,A->rmap->n,A->cmap->n);CHKERRQ(ierr);
-  ierr                        = MatSetType(*F,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr                        = MatSeqAIJSetPreallocation(*F,0,PETSC_NULL);CHKERRQ(ierr);
-  (*F)->ops->lufactorsymbolic = MatLUFactorSymbolic_Matlab;
+  ierr                         = MatCreate(((PetscObject)A)->comm,F);CHKERRQ(ierr);
+  ierr                         = MatSetSizes(*F,A->rmap->n,A->cmap->n,A->rmap->n,A->cmap->n);CHKERRQ(ierr);
+  ierr                         = MatSetType(*F,((PetscObject)A)->type_name);CHKERRQ(ierr);
+  ierr                         = MatSeqAIJSetPreallocation(*F,0,PETSC_NULL);CHKERRQ(ierr);
+  (*F)->ops->lufactorsymbolic  = MatLUFactorSymbolic_Matlab;
+  (*F)->ops->ilufactorsymbolic = MatLUFactorSymbolic_Matlab;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)(*F),"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqaij_matlab",MatFactorGetSolverPackage_seqaij_matlab);CHKERRQ(ierr);
 
-  (*F)->factor                = MAT_FACTOR_LU;
+  (*F)->factor                = ftype;
   PetscFunctionReturn(0);
 }
 
