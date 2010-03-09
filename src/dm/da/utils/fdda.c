@@ -605,6 +605,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, const MatType mtype,Mat *J)
   PetscTruth     flg;
 
   PetscFunctionBegin;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
   ierr = PetscStrcpy((char*)ttype,mtype);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(((PetscObject)da)->comm,((PetscObject)da)->prefix,"DA options","Mat");CHKERRQ(ierr); 
   ierr = PetscOptionsList("-da_mat_type","Matrix type","MatSetType",MatList,mtype,(char*)ttype,256,&flg);CHKERRQ(ierr);

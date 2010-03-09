@@ -1,6 +1,5 @@
 #define PETSCVEC_DLL
 
-#include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/
 
 const char *ISColoringTypes[] = {"global","ghosted","ISColoringType","IS_COLORING_",0};

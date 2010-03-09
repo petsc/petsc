@@ -2,7 +2,6 @@
 static char help[] = "Demonstrates using 3 DA's to manage a slightly non-trivial grid";
 
 #include "petscda.h"
-#include "petscsys.h"
 
 struct _p_FA {
   MPI_Comm   comm[3];

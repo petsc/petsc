@@ -529,7 +529,8 @@ PetscErrorCode MatView_SeqSBAIJ(Mat A,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscTruth     iascii,isdraw;
-  
+  FILE           *file = 0;
+
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
@@ -542,6 +543,10 @@ PetscErrorCode MatView_SeqSBAIJ(Mat A,PetscViewer viewer)
     ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
     ierr = MatView(B,viewer);CHKERRQ(ierr);
     ierr = MatDestroy(B);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
+    if (file) {
+      fprintf(file,"-matload_block_size %d\n",(int)A->rmap->bs);
+    }
   }
   PetscFunctionReturn(0);
 }

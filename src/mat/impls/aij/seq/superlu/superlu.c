@@ -457,10 +457,14 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
 	options.ILU_Norm = INF_NORM;
 	options.ILU_MILU = SMILU_2;
     */
+    
     ilu_set_default_options(&lu->options);
   }
-
+  /* equilibration causes error in solve()(ref. [petsc-maint #42782] SuperLU troubles)
+     thus not supported here. See dgssvx.c for possible reason. */
+  lu->options.Equil     = NO;
   lu->options.PrintStat = NO;
+
   /* Initialize the statistics variables. */
   StatInit(&lu->stat);
   lu->lwork = 0;   /* allocate space internally by system malloc */

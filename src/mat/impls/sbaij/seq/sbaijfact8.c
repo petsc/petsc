@@ -13,10 +13,10 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering(Mat C,Mat A,c
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
   PetscErrorCode ierr;
   PetscInt       i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
-  PetscInt       *ai,*aj,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
+  PetscInt       *ai,*aj,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili,ipvt[5];
   MatScalar      *ba = b->a,*aa,*ap,*dk,*uik;
-  MatScalar      *u,*d,*rtmp,*rtmp_ptr;
-  PetscReal      shift = info->shiftinblocks;
+  MatScalar      *u,*d,*rtmp,*rtmp_ptr,work[25];
+  PetscReal      shift = info->shiftamount;
 
   PetscFunctionBegin;
   /* initialization */
@@ -176,7 +176,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering(Mat C,Mat A,c
     /* invert diagonal block */
     d = ba+k*25;
     ierr = PetscMemcpy(d,dk,25*sizeof(MatScalar));CHKERRQ(ierr);
-    ierr = Kernel_A_gets_inverse_A_5(d,shift);CHKERRQ(ierr);
+    ierr = Kernel_A_gets_inverse_A_5(d,ipvt,work,shift);CHKERRQ(ierr);
     
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {

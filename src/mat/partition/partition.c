@@ -93,8 +93,6 @@ EXTERN_C_END
 
 /* ===========================================================================================*/
 
-#include "petscsys.h"
-
 PetscFList MatPartitioningList = 0;
 PetscTruth MatPartitioningRegisterAllCalled = PETSC_FALSE;
 

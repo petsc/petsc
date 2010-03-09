@@ -1,6 +1,6 @@
 static char help[] = "Overlap Tests.\n\n";
 
-#include <petsc.h>
+#include <petscsys.h>
 #include "overlapTest.hh"
 
 using ALE::Obj;

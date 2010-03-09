@@ -4,7 +4,7 @@
 
 #if !defined(__PetscLog_H)
 #define __PetscLog_H
-#include "petsc.h"  
+#include "petscsys.h"  
 PETSC_EXTERN_CXX_BEGIN
 
 #define PETSC_EVENT  1311311

@@ -20,11 +20,11 @@
 !
 !  The following include statements are required for Fortran programs
 !  that use PETSc vectors:
-!     petsc.h       - base PETSc routines
+!     petscsys.h       - base PETSc routines
 !     petscvec.h    - vectors
 !
 
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 
       PetscMPIInt size,rank

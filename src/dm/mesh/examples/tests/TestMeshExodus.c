@@ -2,7 +2,7 @@ static char help[] = "Test distribution of properties using a mesh\n\n";
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <petsc.h>
+#include <petscsys.h>
 #include <petscmesh.hh>
 #include <sieve/Selection.hh>
 #include <exodusII.h>

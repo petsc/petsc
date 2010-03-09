@@ -3,8 +3,7 @@
    This file defines the initialization of PETSc, including PetscInitialize()
 */
 
-#include "petsc.h"        /*I  "petsc.h"   I*/
-#include "petscsys.h"
+#include "petscsys.h"        /*I  "petscsys.h"   I*/
 
 #if defined(PETSC_USE_LOG)
 EXTERN PetscErrorCode PetscLogBegin_Private(void);
@@ -21,7 +20,6 @@ EXTERN PetscErrorCode PetscFListDestroyAll(void);
 EXTERN PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm,int);
 EXTERN PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm,int);
 EXTERN PetscErrorCode PetscLogCloseHistoryFile(FILE **);
-EXTERN PetscErrorCode PetscOptionsHelpDestroyList(void);
 
 /* this is used by the _, __, and ___ macros (see include/petscerror.h) */
 PetscErrorCode __gierr = 0;
@@ -791,8 +789,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Total flops over all processors %g\n",flops);CHKERRQ(ierr);
   }
 #endif
-
-  ierr = PetscOptionsHelpDestroyList();CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG)
   if (PetscStackActive) {

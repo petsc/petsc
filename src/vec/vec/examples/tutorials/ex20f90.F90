@@ -18,14 +18,14 @@
 !   see the manual page UsingFortran
 !
 #define PETSC_USE_FORTRAN_MODULES
-#include "finclude/petscdef.h"
+#include "finclude/petscsysdef.h"
 #include "finclude/petscvecdef.h"
 #if defined(PETSC_USE_FORTRAN_MODULES)
       use petscvec
 #endif
       implicit none
 #if !defined(PETSC_USE_FORTRAN_MODULES)
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscvec.h90"
 

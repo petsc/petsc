@@ -3,7 +3,7 @@
 */
 #if !defined(__PETSCDRAW_H)
 #define __PETSCDRAW_H
-#include "petsc.h"
+#include "petscsys.h"
 PETSC_EXTERN_CXX_BEGIN
 
 extern PetscCookie PETSC_DRAW_COOKIE;
@@ -18,7 +18,6 @@ E*/
 #define PetscDrawType  char*
 #define PETSC_DRAW_X     "x"
 #define PETSC_DRAW_NULL  "null"
-#define PETSC_DRAW_PS    "ps"
 #define PETSC_DRAW_WIN32 "win32"
  
 /*S

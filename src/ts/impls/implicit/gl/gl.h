@@ -69,6 +69,8 @@ typedef struct TS_GL {
   PetscTruth extrapolate;           /* use extrapolation to produce initial Newton iterate? */
   TSGLErrorDirection error_direction; /* TSGLERROR_FORWARD or TSGLERROR_BACKWARD */
 
+  PetscInt max_step_rejections;
+
   PetscTruth setupcalled;
   void *data;
 } TS_GL;

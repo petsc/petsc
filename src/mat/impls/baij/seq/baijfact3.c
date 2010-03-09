@@ -26,14 +26,17 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat fact,PetscTruth natural)
       fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;     
       break;
     case 5:
-      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering;     
-      break;
+       fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering;     
+       break; 
     case 6:
       fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering;
       break;
     case 7:
       fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering;
       break;
+    case 15:
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering;
+      break;    
     default:
       fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N;
       break;
@@ -188,14 +191,8 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
   PetscInt           nlnk,*lnk,k,**bi_ptr;
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
   PetscBT            lnkbt;
-  PetscTruth         newdatastruct=PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-lu_old",&newdatastruct,PETSC_NULL);CHKERRQ(ierr);
-  if(newdatastruct){
-    ierr = MatLUFactorSymbolic_SeqBAIJ_inplace(B,A,isrow,iscol,info);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
   if (A->rmap->N != A->cmap->N) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be square");
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);

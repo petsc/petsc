@@ -22,7 +22,6 @@ class Configure(PETSc.package.NewPackage):
   
   def Install(self):
     import os
-    self.logPrintBox('Creating Pastix '+os.path.join(os.path.join(self.packageDir,'src'),'config.in')+'\n')
     g = open(os.path.join(os.path.join(self.packageDir,'src'),'config.in'),'w')
 
     g.write('HOSTHARCH   = i686_pc_linux\n')
@@ -31,7 +30,7 @@ class Configure(PETSc.package.NewPackage):
     g.write('OBJEXT      = .o\n')
     g.write('LIBEXT      = .'+self.setCompilers.AR_LIB_SUFFIX+'\n')
     self.setCompilers.pushLanguage('C')
-    g.write('CCPROG      = '+self.setCompilers.getCompiler()+'\n')
+    g.write('CCPROG      = '+self.setCompilers.getCompiler()+'\n')      
     # common.c tries to use some silly clock_gettime() routine that Mac doesn't have unless this is set
     if self.setCompilers.isDarwin():    
       cflags = ' -DX_ARCHi686_mac    '
@@ -49,7 +48,11 @@ class Configure(PETSc.package.NewPackage):
     g.write('\n')
     g.write('LKFOPT      =\n')
     g.write('MKPROG      = '+self.make.make+'\n')
-    g.write('MPCCPROG    = '+self.setCompilers.getCompiler()+'\n')
+    # PaStiX make system has error where in one location it doesn't pass in CCFOTP
+    if self.setCompilers.isDarwin():
+      g.write('MPCCPROG    = '+self.setCompilers.getCompiler()+' -DX_ARCHi686_mac \n')
+    else:
+      g.write('MPCCPROG    = '+self.setCompilers.getCompiler()+'\n')
     g.write('ARFLAGS     = '+self.setCompilers.AR_FLAGS+'\n')
     g.write('ARPROG      = '+self.setCompilers.AR+'\n')
     extralib = ''

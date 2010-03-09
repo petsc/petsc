@@ -88,7 +88,7 @@ typedef struct {
      Return the sparseness pattern (matrix without values) of a
      compressed row storage
 */
-PetscErrorCode spbas_compress_pattern(PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,spbas_matrix*,PetscScalar*);
+PetscErrorCode spbas_compress_pattern(PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,spbas_matrix*,PetscReal*);
 long int spbas_memory_requirement( spbas_matrix);
 PetscErrorCode spbas_delete(spbas_matrix);
 PetscErrorCode spbas_incomplete_cholesky(Mat,const PetscInt*,const PetscInt*,spbas_matrix,PetscReal,PetscReal,spbas_matrix*);

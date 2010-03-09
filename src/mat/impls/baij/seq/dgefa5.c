@@ -10,15 +10,15 @@
     dgefa() and dgedi() specialized for a size of 5.
 
 */
-#include "petsc.h"
+#include "petscsys.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "Kernel_A_gets_inverse_A_5"
-PetscErrorCode Kernel_A_gets_inverse_A_5(MatScalar *a,PetscReal shift)
+PetscErrorCode Kernel_A_gets_inverse_A_5(MatScalar *a,PetscInt *ipvt,MatScalar *work,PetscReal shift)
 {
-    PetscInt   i__2,i__3,kp1,j,k,l,ll,i,ipvt[5],kb,k3;
+    PetscInt   i__2,i__3,kp1,j,k,l,ll,i,kb,k3;
     PetscInt   k4,j3;
-    MatScalar  *aa,*ax,*ay,work[25],stmp;
+    MatScalar  *aa,*ax,*ay,stmp;
     MatReal    tmp,max;
 
 /*     gaussian elimination with partial pivoting */

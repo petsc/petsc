@@ -1,6 +1,6 @@
 static char help[] = "XSieve Cone and Support Tests.\n\n";
 
-#include <petsc.h>
+#include <petscsys.h>
 #include "xsieveTest.hh"
 
 

@@ -2,7 +2,6 @@
 !  Progran to test random number generation routines from fortran.
 !
        program main
-#include "finclude/petsc.h"
 #include "finclude/petscsys.h"
       PetscErrorCode  ierr
       PetscRandom     r

@@ -20,7 +20,7 @@
      &                 vol,xyzn,cfl,irank,nvertices)
 !
       implicit none     
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscpc.h"
@@ -856,7 +856,7 @@
 #define __FUNCT__ "CHK_ERR"
       subroutine CHK_ERR(irank, ierr, irow, icol)
       implicit none
-#include "finclude/petscdef.h"
+#include "finclude/petscsysdef.h"
       integer irank,ierr,irow,icol
       if (ierr .gt. 0) then 
        write(*,*) 'On processor ',irank, ': Non-zero entry in row ',     &

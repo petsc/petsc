@@ -127,16 +127,10 @@ PetscErrorCode ComputeMatrix(DA da,Mat B)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs,dof,k1,k2,k3;
-  PetscScalar    *v,*v_neighbor,Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy,r1,r2;
+  PetscScalar    *v,*v_neighbor,Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
   MatStencil     row,col;
-  PetscRandom    rand; 
-
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
-  ierr = PetscRandomSetType(rand,PETSCRAND);CHKERRQ(ierr);
-  ierr = PetscRandomSetSeed(rand,1);CHKERRQ(ierr);
-  ierr = PetscRandomSetInterval(rand,-.001,.001);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
-
+ 
+  PetscFunctionBegin;
   ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);CHKERRQ(ierr); 
   /* For simplicity, this example only works on mx=my=mz */
   if ( mx != my || mx != mz) SETERRQ3(1,"This example only works with mx %d = my %d = mz %d\n",mx,my,mz);
@@ -154,10 +148,8 @@ PetscErrorCode ComputeMatrix(DA da,Mat B)
         v[k3]          = 2.0*(HxHydHz + HxHzdHy + HyHzdHx);
         v_neighbor[k3] = -HxHydHz;
       } else {
-	ierr = PetscRandomGetValue(rand,&r1);CHKERRQ(ierr);
-	ierr = PetscRandomGetValue(rand,&r2);CHKERRQ(ierr);
-	v[k3] = r1;
-	v_neighbor[k3] = r2;
+	v[k3] = k1/(dof*dof); ;
+	v_neighbor[k3] = k2/(dof*dof);
       }	
       k3++;
     }
@@ -199,8 +191,6 @@ PetscErrorCode ComputeMatrix(DA da,Mat B)
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscFree(v);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
-  /* ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */ 
-  return 0;
+  PetscFunctionReturn(0);
 }
 

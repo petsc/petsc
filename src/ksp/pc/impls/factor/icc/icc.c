@@ -100,9 +100,9 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc)
     dt[0] = ((PC_Factor*)icc)->info.dt;
     dt[1] = ((PC_Factor*)icc)->info.dtcol;
     dt[2] = ((PC_Factor*)icc)->info.dtcount;
-    ierr = PetscOptionsRealArray("-pc_factor_use_drop_tolerance","<dt,dtcol,maxrowcount>","PCFactorSetUseDropTolerance",dt,&dtmax,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsRealArray("-pc_factor_drop_tolerance","<dt,dtcol,maxrowcount>","PCFactorSetDropTolerance",dt,&dtmax,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCFactorSetUseDropTolerance(pc,dt[0],dt[1],(PetscInt)dt[2]);CHKERRQ(ierr);
+      ierr = PCFactorSetDropTolerance(pc,dt[0],dt[1],(PetscInt)dt[2]);CHKERRQ(ierr);
     }
 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -127,8 +127,17 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"  ICC: %D levels of fill\n",(PetscInt)((PC_Factor*)icc)->info.levels);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  ICC: factor fill ratio allocated %G, ordering used %s\n",((PC_Factor*)icc)->info.fill,((PC_Factor*)icc)->ordering);CHKERRQ(ierr);
-    if (((PC_Factor*)icc)->info.shiftpd) {ierr = PetscViewerASCIIPrintf(viewer,"  ICC: using Manteuffel shift\n");CHKERRQ(ierr);}
-    if (((PC_Factor*)icc)->info.shiftnz) {ierr = PetscViewerASCIIPrintf(viewer,"  ICC: using diagonal shift to prevent zero pivot\n");CHKERRQ(ierr);}
+
+    if (((PC_Factor*)icc)->info.shifttype==MAT_SHIFT_POSITIVE_DEFINITE) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICC: using Manteuffel shift\n");CHKERRQ(ierr);
+    }
+    if (((PC_Factor*)icc)->info.shifttype==MAT_SHIFT_NONZERO) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICC: using diagonal shift to prevent zero pivot\n");CHKERRQ(ierr);
+    }
+    if (((PC_Factor*)icc)->info.shifttype==MAT_SHIFT_INBLOCKS) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICC: using diagonal shift on blocks to prevent zero pivot\n");CHKERRQ(ierr);
+    }
+
     if (((PC_Factor*)icc)->fact) {
       ierr = PetscViewerASCIIPrintf(viewer,"  ICC: factor fill ratio needed %G\n",icc->actualfill);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"       Factored matrix follows\n");CHKERRQ(ierr);
@@ -150,7 +159,9 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-extern "C" PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseDropTolerance_ILU(PC,PetscReal,PetscReal,PetscInt);
+EXTERN_C_BEGIN
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetDropTolerance_ILU(PC,PetscReal,PetscReal,PetscInt);
+EXTERN_C_END
 
 /*MC
      PCICC - Incomplete Cholesky factorization preconditioners.
@@ -160,10 +171,7 @@ extern "C" PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseDropTolerance_ILU(PC,
 .  -pc_factor_in_place - only for ICC(0) with natural ordering, reuses the space of the matrix for
                       its factorization (overwrites original matrix)
 .  -pc_factor_fill <nfill> - expected amount of fill in factored matrix compared to original matrix, nfill > 1
-.  -pc_factor_mat_ordering_type <natural,nd,1wd,rcm,qmd> - set the row/column ordering of the factored matrix
-.  -pc_factor_shift_nonzero <shift> - Sets shift amount or PETSC_DECIDE for the default
--  -pc_factor_shift_positive_definite [PETSC_TRUE/PETSC_FALSE] - Activate/Deactivate PCFactorSetShiftPd(); the value
-   is optional with PETSC_TRUE being the default
+-  -pc_factor_mat_ordering_type <natural,nd,1wd,rcm,qmd> - set the row/column ordering of the factored matrix
 
    Level: beginner
 
@@ -211,12 +219,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC pc)
   ((PC_Factor*)icc)->info.fill          = 1.0;
   icc->implctx            = 0;
 
-  ((PC_Factor*)icc)->info.dtcol              = PETSC_DEFAULT;
-  ((PC_Factor*)icc)->info.shiftnz            = 0.0;
-  ((PC_Factor*)icc)->info.shiftpd            = 1.0; /* true */
-  ((PC_Factor*)icc)->info.zeropivot          = 1.e-12;
-  pc->data	               = (void*)icc;
+  ((PC_Factor*)icc)->info.dtcol       = PETSC_DEFAULT;
+  ((PC_Factor*)icc)->info.shifttype   = MAT_SHIFT_POSITIVE_DEFINITE;
+  ((PC_Factor*)icc)->info.shiftamount = 0.0;
+  ((PC_Factor*)icc)->info.zeropivot   = 1.e-12;
 
+  pc->data	               = (void*)icc;
   pc->ops->apply	       = PCApply_ICC;
   pc->ops->setup               = PCSetup_ICC;
   pc->ops->destroy	       = PCDestroy_ICC;
@@ -230,13 +238,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC pc)
                     PCFactorGetMatSolverPackage_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetZeroPivot_C","PCFactorSetZeroPivot_Factor",
                     PCFactorSetZeroPivot_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftNonzero_C","PCFactorSetShiftNonzero_Factor",
-                    PCFactorSetShiftNonzero_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftPd_C","PCFactorSetShiftPd_Factor",
-                    PCFactorSetShiftPd_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftInBlocks_C","PCFactorSetShiftInBlocks_Factor",
-                    PCFactorSetShiftInBlocks_Factor);CHKERRQ(ierr);
-
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftType_C","PCFactorSetShiftType_Factor",
+                    PCFactorSetShiftType_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftAmount_C","PCFactorSetShiftAmount_Factor",
+                    PCFactorSetShiftAmount_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetLevels_C","PCFactorSetLevels_Factor",
                     PCFactorSetLevels_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetFill_C","PCFactorSetFill_Factor",
@@ -245,8 +250,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC pc)
                     PCFactorSetMatOrderingType_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatSolverPackage_C","PCFactorSetMatSolverPackage_Factor",
                     PCFactorSetMatSolverPackage_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetUseDropTolerance_C","PCFactorSetUseDropTolerance_ILU",
-                    PCFactorSetUseDropTolerance_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetDropTolerance_C","PCFactorSetDropTolerance_ILU",
+                    PCFactorSetDropTolerance_ILU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

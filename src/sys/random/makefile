@@ -1,7 +1,7 @@
 
 ALL: lib 
 
-SOURCEH  = randomimpl.h ../../../include/petscsys.h
+SOURCEH  = randomimpl.h 
 DIRS     = interface examples impls 
 LOCDIR   = src/sys/random/
 MANSEC   = Sys

@@ -95,7 +95,7 @@ E*/
 #define MAT_SOLVER_MATLAB       "matlab"
 #define MAT_SOLVER_PETSC        "petsc"
 #define MAT_SOLVER_PLAPACK      "plapack"
-
+#define MAT_SOLVER_BAS          "bas"
 
 /*E
     MatFactorType - indicates what type of factorization is requested
@@ -1051,6 +1051,7 @@ E*/
 #define MATORDERING_IDENTITY    "identity"
 #define MATORDERING_REVERSE     "reverse"
 #define MATORDERING_FLOW        "flow"
+#define MATORDERING_AMD         "amd"
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat,const MatOrderingType,IS*,IS*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrderingList(PetscFList *list);
@@ -1106,6 +1107,15 @@ extern PetscFList MatOrderingList;
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatReorderForNonzeroDiagonal(Mat,PetscReal,IS,IS);
 
+/*S
+    MatFactorShiftType - Numeric Shift.
+
+   Level: beginner
+
+S*/
+typedef enum {MAT_SHIFT_NONE,MAT_SHIFT_NONZERO,MAT_SHIFT_POSITIVE_DEFINITE,MAT_SHIFT_INBLOCKS} MatFactorShiftType;
+extern const char *MatFactorShiftTypes[];
+
 /*S 
    MatFactorInfo - Data passed into the matrix factorization routines
 
@@ -1136,6 +1146,8 @@ typedef struct {
                                    factorization may be faster if do not pivot */
   PetscReal     shiftinblocks;  /* if block in block factorization has zero pivot then shift diagonal until non-singular */
   PetscReal     zeropivot;      /* pivot is called zero if less than this */
+  MatFactorShiftType shifttype;   /* type of shift added to matrix factor to prevent zero pivots */
+  PetscReal          shiftamount; /* shfit amount */
 } MatFactorInfo;
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFactorInfoInitialize(MatFactorInfo*);

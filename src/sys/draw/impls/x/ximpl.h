@@ -6,7 +6,6 @@
 */
 
 #include "../src/sys/draw/drawimpl.h"
-#include "petscsys.h"
 
 #if !defined(_XIMPL_H)
 #define _XIMPL_H

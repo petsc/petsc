@@ -1,6 +1,6 @@
 
 #if !defined(__FSOLVE_H)
-#include "petsc.h"
+#include "petscsys.h"
 #if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ)
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define fortransolveaij_   FORTRANSOLVEAIJ

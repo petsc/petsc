@@ -5,7 +5,7 @@
 #if !defined(_DRAWIMPL_H)
 #define _DRAWIMPL_H
 
-#include "petsc.h"
+#include "petscsys.h"
 
 struct _PetscDrawOps {
   PetscErrorCode (*setdoublebuffer)(PetscDraw);

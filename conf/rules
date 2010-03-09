@@ -453,6 +453,7 @@ getmpiexec:
           grep -v "warning prebinding disabled"  |\
           grep -v "ex20f.F:34: warning:" | \
 	  grep -v "Unused dummy argument" | \
+	  grep -v "is being replaced by a real definition" | \
           grep -v "IPO Error: unresolved" | \
           grep -v "warning multiple definitions of symbol _matgetarray_" | \
 	  egrep -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \
@@ -845,6 +846,7 @@ shared_osf5: shared_alpha
 shared_solaris2: shared_solaris
 shared_solaris2_gnu: shared_solaris_gnu
 
+shared_freebsd8: shared_freebsd
 shared_freebsd7: shared_freebsd
 shared_freebsd6: shared_freebsd
 shared_freebsd5: shared_freebsd

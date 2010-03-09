@@ -1,5 +1,4 @@
 #include "private/fortranimpl.h"
-#include "petsc.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petsctypecompare_          PETSCTYPECOMPARE

@@ -61,7 +61,7 @@ static PetscErrorCode PCSetFromOptions_Cholesky(PC pc)
 #define __FUNCT__ "PCView_Cholesky"
 static PetscErrorCode PCView_Cholesky(PC pc,PetscViewer viewer)
 {
-  PC_Cholesky    *lu = (PC_Cholesky*)pc->data;
+  PC_Cholesky    *chol = (PC_Cholesky*)pc->data;
   PetscErrorCode ierr;
   PetscTruth     iascii,isstring;
   
@@ -69,27 +69,36 @@ static PetscErrorCode PCView_Cholesky(PC pc,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
+    if (((PC_Factor*)chol)->info.shifttype==MAT_SHIFT_POSITIVE_DEFINITE) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Cholesky: using Manteuffel shift\n");CHKERRQ(ierr);
+    }
+    if (((PC_Factor*)chol)->info.shifttype==MAT_SHIFT_NONZERO) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Cholesky: using diagonal shift to prevent zero pivot\n");CHKERRQ(ierr);
+    }
+    if (((PC_Factor*)chol)->info.shifttype==MAT_SHIFT_INBLOCKS) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Cholesky: using diagonal shift on blocks to prevent zero pivot\n");CHKERRQ(ierr);
+    }
     
-    if (lu->inplace) {ierr = PetscViewerASCIIPrintf(viewer,"  Cholesky: in-place factorization\n");CHKERRQ(ierr);}
+    if (chol->inplace) {ierr = PetscViewerASCIIPrintf(viewer,"  Cholesky: in-place factorization\n");CHKERRQ(ierr);}
     else             {ierr = PetscViewerASCIIPrintf(viewer,"  Cholesky: out-of-place factorization\n");CHKERRQ(ierr);}
-    ierr = PetscViewerASCIIPrintf(viewer,"    matrix ordering: %s\n",((PC_Factor*)lu)->ordering);CHKERRQ(ierr);
-    if (((PC_Factor*)lu)->fact) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Cholesky: factor fill ratio needed %G\n",lu->actualfill);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    matrix ordering: %s\n",((PC_Factor*)chol)->ordering);CHKERRQ(ierr);
+    if (((PC_Factor*)chol)->fact) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Cholesky: factor fill ratio needed %G\n",chol->actualfill);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"       Factored matrix follows\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-      ierr = MatView(((PC_Factor*)lu)->fact,viewer);CHKERRQ(ierr);
+      ierr = MatView(((PC_Factor*)chol)->fact,viewer);CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
-    if (lu->reusefill)    {ierr = PetscViewerASCIIPrintf(viewer,"       Reusing fill from past factorization\n");CHKERRQ(ierr);}
-    if (lu->reuseordering) {ierr = PetscViewerASCIIPrintf(viewer,"       Reusing reordering from past factorization\n");CHKERRQ(ierr);}
+    if (chol->reusefill)    {ierr = PetscViewerASCIIPrintf(viewer,"       Reusing fill from past factorization\n");CHKERRQ(ierr);}
+    if (chol->reuseordering) {ierr = PetscViewerASCIIPrintf(viewer,"       Reusing reordering from past factorization\n");CHKERRQ(ierr);}
   } else if (isstring) {
-    ierr = PetscViewerStringSPrintf(viewer," order=%s",((PC_Factor*)lu)->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = PetscViewerStringSPrintf(viewer," order=%s",((PC_Factor*)chol)->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for PCCHOLESKY",((PetscObject)viewer)->type_name);
   }
@@ -290,10 +299,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseOrdering(PC pc,PetscTruth flag
 .  -pc_factor_reuse_fill - Activates PCFactorSetReuseFill()
 .  -pc_factor_fill <fill> - Sets fill amount
 .  -pc_factor_in_place - Activates in-place factorization
-.  -pc_factor_mat_ordering_type <nd,rcm,...> - Sets ordering routine
-.  -pc_factor_shift_nonzero <shift> - Sets shift amount or PETSC_DECIDE for the default
--  -pc_factor_shift_positive_definite true or false - Activate/Deactivate PCFactorSetShiftPd(); the value
-   is optional with true being the default
+-  -pc_factor_mat_ordering_type <nd,rcm,...> - Sets ordering routine
 
    Notes: Not all options work for all matrix formats
 
@@ -307,7 +313,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseOrdering(PC pc,PetscTruth flag
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCILU, PCLU, PCICC, PCFactorSetReuseOrdering(), PCFactorSetReuseFill(), PCFactorGetMatrix(),
-           PCFactorSetFill(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(), PCFactorSetShiftInBlocks()
+           PCFactorSetFill(), PCFactorSetShiftNonzero(), PCFactorSetShiftType(), PCFactorSetShiftAmount()
 	   PCFactorSetUseInPlace(), PCFactorSetMatOrderingType()
 
 M*/
@@ -326,10 +332,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Cholesky(PC pc)
   ((PC_Factor*)dir)->fact                   = 0;
   dir->inplace                = PETSC_FALSE;
   ierr = MatFactorInfoInitialize(&((PC_Factor*)dir)->info);CHKERRQ(ierr);
-  ((PC_Factor*)dir)->info.fill              = 5.0;
-  ((PC_Factor*)dir)->info.shiftnz           = 0.0;
-  ((PC_Factor*)dir)->info.shiftpd           = 0.0; /* false */
-  ((PC_Factor*)dir)->info.pivotinblocks     = 1.0;
+  ((PC_Factor*)dir)->info.fill          = 5.0;
+  ((PC_Factor*)dir)->info.shifttype     = MAT_SHIFT_NONE;
+  ((PC_Factor*)dir)->info.shiftamount   = 0.0;
+  ((PC_Factor*)dir)->info.pivotinblocks = 1.0;
   dir->col                    = 0;
   dir->row                    = 0;
   ierr = PetscStrallocpy(MATORDERING_NATURAL,&((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
@@ -353,13 +359,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Cholesky(PC pc)
                     PCFactorGetMatSolverPackage_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetZeroPivot_C","PCFactorSetZeroPivot_Factor",
                     PCFactorSetZeroPivot_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftNonzero_C","PCFactorSetShiftNonzero_Factor",
-                    PCFactorSetShiftNonzero_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftPd_C","PCFactorSetShiftPd_Factor",
-                    PCFactorSetShiftPd_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftInBlocks_C","PCFactorSetShiftInBlocks_Factor",
-                    PCFactorSetShiftInBlocks_Factor);CHKERRQ(ierr);
-
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftType_C","PCFactorSetShiftType_Factor",
+                    PCFactorSetShiftType_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftAmount_C","PCFactorSetShiftAmount_Factor",
+                    PCFactorSetShiftAmount_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetFill_C","PCFactorSetFill_Factor",
                     PCFactorSetFill_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetUseInPlace_C","PCFactorSetUseInPlace_Cholesky",

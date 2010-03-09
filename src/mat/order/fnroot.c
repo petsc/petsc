@@ -2,7 +2,7 @@
 
 /* fnroot.f -- translated by f2c (version 19931217).*/
 
-#include "petsc.h"
+#include "petscsys.h"
 
 EXTERN PetscErrorCode SPARSEPACKrootls(PetscInt*, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
 

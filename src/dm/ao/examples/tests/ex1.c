@@ -1,7 +1,7 @@
 
 static char help[] = "Demonstrates constructing an application ordering.\n\n";
 
-#include "petsc.h"
+#include "petscsys.h"
 #include "petscao.h"
 
 #undef __FUNCT__

@@ -16,7 +16,7 @@ static char help[] = "Preconditioning FEM problems using RBF discretizations.\n\
 #define DIMENSION 2
 #define NUM_COEFFICIENTS 17
 
-#include <petsc.h>
+#include <petscsys.h>
 #include <problem/Bratu.hh>
 
 // Needed for FMM

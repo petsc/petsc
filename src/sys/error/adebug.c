@@ -3,16 +3,14 @@
       Code to handle PETSc starting up in debuggers,etc.
 */
 
-#include "petsc.h"               /*I   "petsc.h"   I*/
+#include "petscsys.h"               /*I   "petscsys.h"   I*/
 #include <signal.h> 
-#include "petscsys.h"            /*I   "petscsys.h" I*/
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif 
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#include "petscfix.h"
 
 /*
       These are the debugger and display used if the debugger is started up

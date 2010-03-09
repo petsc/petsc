@@ -1,4 +1,4 @@
-#include "finclude/petscalldef.h"
+#include "finclude/petscdef.h"
 
 !  Error handler that aborts when error is detected
 !
@@ -123,7 +123,7 @@
       program ex36f90
       use mex36f90
 !     use mex36f90interfaces
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscviewer.h"
 #include "finclude/petscvec.h"
 

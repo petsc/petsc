@@ -1363,7 +1363,7 @@ can also install additional packages that are used by the TOPS packages."""
 
 
         petscroot = os.path.join(reply,'petsc-dev')
-        if not os.path.isfile(os.path.join(petscroot,'include','petsc.h')):
+        if not os.path.isfile(os.path.join(petscroot,'include','petscsys.h')):
           y = ynbox('Could not locate PETSc directory, should I download it?',title)
           if not y: sys.exit()
           # download PETSc

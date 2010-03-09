@@ -4,9 +4,7 @@
     Defines the basic matrix operations for the BAIJ (compressed row)
   matrix storage format.
 */
-#include "../src/mat/impls/baij/seq/baij.h"
-#include "petscsys.h"                     /*I "petscmat.h" I*/
-
+#include "../src/mat/impls/baij/seq/baij.h"  /*I   "petscmat.h"  I*/
 #include "../src/mat/blockinvert.h"
 
 #undef __FUNCT__
@@ -46,8 +44,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInvertBlockDiagonal_SeqBAIJ(Mat A)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*) A->data;
   PetscErrorCode ierr;
-  PetscInt       *diag_offset,i,bs = A->rmap->bs,mbs = a->mbs;
-  MatScalar      *v = a->a,*odiag,*diag,*mdiag;
+  PetscInt       *diag_offset,i,bs = A->rmap->bs,mbs = a->mbs,ipvt[5];
+  MatScalar      *v = a->a,*odiag,*diag,*mdiag,work[25];
   PetscReal      shift = 0.0;
 
   PetscFunctionBegin;
@@ -111,7 +109,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInvertBlockDiagonal_SeqBAIJ(Mat A)
         odiag = v + 25*diag_offset[i];
         ierr   = PetscMemcpy(diag,odiag,25*sizeof(PetscScalar));CHKERRQ(ierr);
         ierr   = PetscMemcpy(mdiag,odiag,25*sizeof(PetscScalar));CHKERRQ(ierr);
-	ierr   = Kernel_A_gets_inverse_A_5(diag,shift);CHKERRQ(ierr);
+	ierr   = Kernel_A_gets_inverse_A_5(diag,ipvt,work,shift);CHKERRQ(ierr);
 	diag  += 25;
 	mdiag += 25;
       }
@@ -2957,6 +2955,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,Petsc
       B->ops->mult            = MatMult_SeqBAIJ_7; 
       B->ops->multadd         = MatMultAdd_SeqBAIJ_7;
       B->ops->sor             = MatSOR_SeqBAIJ_7;
+      break;
+    case 15:
+      B->ops->mult = MatMult_SeqBAIJ_15_ver1;
       break;
     default:
       B->ops->mult            = MatMult_SeqBAIJ_N; 

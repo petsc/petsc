@@ -1,7 +1,6 @@
 #define PETSC_DLL
 
-#include "private/viewerimpl.h"  /*I     "petsc.h"   I*/
-#include "petscfix.h"
+#include "private/viewerimpl.h"  /*I     "petscsys.h"   I*/
 #include <stdarg.h>
 
 typedef struct {

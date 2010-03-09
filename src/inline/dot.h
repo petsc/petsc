@@ -1,6 +1,6 @@
 
 #ifndef DOT
-#include "petsc.h"
+#include "petscsys.h"
 
 EXTERN_C_BEGIN
 

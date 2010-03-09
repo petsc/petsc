@@ -42,9 +42,9 @@ set qrun = `echo ${nrun} | sed -e sz\$PETSC_DIRz${PETSC_DIR}z`
 
 if ( ${valgrind} == "1" ) then
   if ( `uname` == 'Darwin') then
-    $qrun -n $np valgrind -q --tool=memcheck --dsymutil=yes --num-callers=20  $*
+    $qrun -n $np `which valgrind` -q --tool=memcheck --dsymutil=yes --num-callers=20  $*
   else 
-    $qrun -n $np valgrind -q --tool=memcheck --num-callers=20  $*
+    $qrun -n $np `which valgrind` -q --tool=memcheck --num-callers=20  $*
   endif
 else
   $qrun -n $np $*

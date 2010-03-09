@@ -3,11 +3,10 @@
        The default error handlers and code that allows one to change
    error handlers.
 */
-#include "petsc.h"           /*I "petsc.h" I*/
+#include "petscsys.h"           /*I "petscsys.h" I*/
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#include "petscfix.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscAbortErrorHandler" 

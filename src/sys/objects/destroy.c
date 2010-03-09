@@ -2,7 +2,7 @@
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
-#include "petsc.h"  /*I   "petsc.h"    I*/
+#include "petscsys.h"  /*I   "petscsys.h"    I*/
 
 typedef struct _p_GenericObject* GenericObject;
 

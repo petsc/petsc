@@ -2,7 +2,6 @@
 static char help[] = "Tests DA wirebasket interpolation.\n\n";
 
 #include "petscda.h"
-#include "petscsys.h"
 
 extern PetscErrorCode DAGetWireBasketInterpolation(DA,Mat,MatReuse,Mat*);
 extern PetscErrorCode ComputeMatrix(DA,Mat);

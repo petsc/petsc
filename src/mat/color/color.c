@@ -383,8 +383,6 @@ EXTERN_C_END
   
 /* ===========================================================================================*/
 
-#include "petscsys.h"
-
 PetscFList MatColoringList = 0;
 PetscTruth MatColoringRegisterAllCalled = PETSC_FALSE;
 

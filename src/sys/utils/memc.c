@@ -6,7 +6,7 @@
   they are broken.
 
 */
-#include "petsc.h"        /*I  "petsc.h"   I*/
+#include "petscsys.h"        /*I  "petscsys.h"   I*/
 #include "petscbt.h"
 #include "../src/sys/utils/ftn-kernels/fcopy.h"
 

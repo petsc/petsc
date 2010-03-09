@@ -25,7 +25,7 @@
       program main
       implicit none
 
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscda.h"
 #include "finclude/petscmat.h"
@@ -139,7 +139,7 @@
       PetscErrorCode ierr
       PetscOffset      ixx,iff,iF2
       PetscScalar      h,d,vf2(1),vxx(1),vff(1)
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscda.h"
 #include "finclude/petscmat.h"
@@ -211,7 +211,7 @@
 
       subroutine FormInitialGuess(snes,x,ierr)
       implicit none
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscsnes.h"
       PetscErrorCode   ierr
@@ -228,7 +228,7 @@
 
       subroutine FormJacobian(snes,x,jac,B,flag,ctx,ierr)
       implicit none
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscda.h"
 #include "finclude/petscmat.h"

@@ -2,7 +2,6 @@
 static char help[] = "Tests SDALocalToLocalxxx().\n\n";
 
 #include "petscda.h"
-#include "petscsys.h"
 
 /*
          For testing purposes this example also creates a 

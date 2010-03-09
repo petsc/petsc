@@ -1,6 +1,6 @@
 
       module MyModule
-#include "finclude/petscdef.h"
+#include "finclude/petscsysdef.h"
 #include "finclude/petscbagdef.h"
 #include "finclude/petscviewerdef.h"
 !   Data structure used to contain information about the problem
@@ -31,7 +31,7 @@
       use MyModule
       use MyInterface
       implicit none
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscbag.h"
 #include "finclude/petscviewer.h"
 

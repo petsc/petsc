@@ -7,7 +7,6 @@
 #include "private/matimpl.h"
 #include "petscda.h"          /*I   "petscda.h"    I*/
 #include "petscsnes.h"        /*I   "petscsnes.h"  I*/
-#include "petscsys.h"
 EXTERN_C_BEGIN
 #include "adic/ad_utils.h"
 EXTERN_C_END

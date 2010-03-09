@@ -97,8 +97,9 @@ the object.</li>
         <li>In makefiles include ${PETSC_DIR}/conf/base is replaced
 with two lines include ${PETSC_DIR}/conf/variables and&nbsp; include
 ${PETSC_DIR}/conf/rules</li>
-        <li>BlockSolve95 interface is removed<br>
-        </li>
+        <li>BlockSolve95 interface is removed</li>
+        <li>petsc.h and petscdef.h are replaced with petscsys.h and
+petscsysdef.h; while petsc.h now includes ALL PETSc include files.</li>
       </ul>
       <ul>
       </ul>
@@ -113,11 +114,9 @@ ${PETSC_DIR}/conf/rules</li>
       </b></u>
       <ul>
         <li>All ./configure options that state known values, so that
-./configure doesn't try to test for them. Often used with the --with-batch
+./configure doesn't try to test for them. Often used with the
+--with-batch
 option now begin with --known-</li>
-        <li>--download-mpich now defaults to --with-pm=hydra [instead
-of pm=gforker]<br>
-        </li>
       </ul>
       <u><b></b></u>
       <ul>
@@ -159,8 +158,7 @@ PCSOR</li>
 MatCreateMPIAIJWithArrays() and MatMPIAIJSetPreallocationCSR().</li>
         <li>Changed MATOP_DIAGONAL_SHIFT to MATOP_DIAGONAL_SET to match
 function name MatDiagonalSet().</li>
-        <li>MATMPIROWBS i.e BlockSolve95 interface is now removed<br>
-        </li>
+        <li>MATMPIROWBS i.e BlockSolve95 interface is now removed.</li>
       </ul>
       <u><b>PC:</b></u>
       <ul>
@@ -177,6 +175,10 @@ work if it is zero.</li>
         <li>MatSetBlockSize() is no longer an error for BAIJ matrices,
 but the argument must be the same as when the matrix was preallocated. </li>
         <li>PCFactorSetPivoting() renamed to PCFactorSetColumnPivot()</li>
+        <li>Replaced PCFactorSetShiftNonzero(), PCFactorSetShiftPd() and PCFactorSetShiftInBlocks()
+with PCFactorSetShiftType() and PCFactorSetShiftAmount(). Replaced 
+-pc_factor_shift_nonzero, -pc_factor_shift_positive_definite and -pc_factor_shift_in_blocks
+with -pc_factor_shift_type <shifttype> and -pc_factor_shift_amount <shiftamount>. </li>
       </ul>
       <p><u><b>KSP:</b></u></p>
       <ul>
@@ -202,6 +204,8 @@ TSGL). These can be used for solving differential algebraic equations
         <li>Add TSSSP which implements optimal strong stability
 preserving time integrators of order 2, 3, and 4 using a low-storage
 explicit Runge-Kutta scheme.</li>
+        <li>Change TSSetPreStep() and TSSetPostStep() to run before and
+after each step instead of before and after each solve.</li>
       </ul>
       <p><u><b>DA:</b></u></p>
       <ul>
@@ -212,7 +216,7 @@ DMRefineHierarchy to generate refined grids. Added options
 -da_refine_hierarchy_[xyz] to allow semi-coarsening at some levels of
 the hierarchy.</li>
         <li>DASetCoordinates() now references the vector, so the user
-        should release their reference by calling VecDestroy().</li>
+should release their reference by calling VecDestroy().</li>
       </ul>
       <p><u><b>DMMG:</b></u></p>
       <ul>
@@ -254,6 +258,10 @@ aswell]<br>
       </ul>
       <p><u><b><a
  href="http:/www.mcs.anl.gov/petsc/petsc-as/miscellaneous/external.html">ExternalPackages</a>:</b></u></p>
+      <ul>
+        <li>Added MATORDERING_AMD for Tim Davis' Approximate Minimum
+Degree package.</li>
+      </ul>
       </td>
     </tr>
     <tr>

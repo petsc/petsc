@@ -2152,8 +2152,6 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalue
   PetscFunctionReturn(0);
 }
 
-#include "petscsys.h"
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPISBAIJ"
 PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer, const MatType type,Mat *newmat)

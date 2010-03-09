@@ -6,7 +6,6 @@ arguments are\n\
   -n <length> : local vector length\n\n";
 
 #include "petscvec.h"
-#include "petscsys.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

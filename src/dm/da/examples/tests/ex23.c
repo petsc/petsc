@@ -2,7 +2,6 @@
 static char help[] = "Tests VecView()/VecLoad() for DA vectors (this tests DAGlobalToNatural()).\n\n";
 
 #include "petscda.h"
-#include "petscsys.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

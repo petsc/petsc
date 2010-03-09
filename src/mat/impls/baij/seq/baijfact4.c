@@ -82,6 +82,6 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_inplace(Mat C,Mat A,const MatFactorI
   C->ops->solve          = MatSolve_SeqBAIJ_N_inplace;
   C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_N_inplace;
   C->assembled  = PETSC_TRUE;
-  ierr = PetscLogFlops(1.3333*bs*bs2*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
+  ierr = PetscLogFlops(1.333333333333*bs*bs2*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }

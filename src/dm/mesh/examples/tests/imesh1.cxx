@@ -1,6 +1,6 @@
 #define ALE_MEM_LOGGING
 
-#include <petsc.h>
+#include <petscsys.h>
 #include <petsclog.hh>
 #include <petscmesh_formats.hh>
 #include <Mesh.hh>

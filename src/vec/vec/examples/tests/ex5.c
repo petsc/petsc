@@ -4,7 +4,6 @@ This does case when we are merely selecting the local part of the\n\
 parallel vector.\n\n";
 
 #include "petscvec.h"
-#include "petscsys.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

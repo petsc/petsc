@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include "petsc.h"
+#include "petscsys.h"
 #include <sys/time.h>
 #include <sys/systemcfg.h>
 

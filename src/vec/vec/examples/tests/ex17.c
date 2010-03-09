@@ -3,7 +3,6 @@ static char help[] = "Scatters from a parallel vector to a sequential vector.  I
 this case each local vector is as long as the entire parallel vector.\n\n";
 
 #include "petscvec.h"
-#include "petscsys.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

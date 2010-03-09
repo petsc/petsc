@@ -127,6 +127,7 @@ static PetscErrorCode TSStep_CN_Linear_Constant_Matrix(TS ts,PetscInt *steps,Pet
 
   for (i=0; i<max_steps; i++) {
     if (ts->ptime + ts->time_step > ts->max_time) break;
+    ierr = TSPreStep(ts);CHKERRQ(ierr);
     /* set rhs = (1/dt*Alhs + 0.5*Arhs)*sol */
     ierr = MatMult(ts->Arhs,sol,rhs);CHKERRQ(ierr); /* rhs = 0.5*Arhs*sol */
     if (ts->Alhs){
@@ -143,8 +144,10 @@ static PetscErrorCode TSStep_CN_Linear_Constant_Matrix(TS ts,PetscInt *steps,Pet
     ts->linear_its += PetscAbsInt(its);
     ierr = VecCopy(update,sol);CHKERRQ(ierr);
     ts->steps++;
+    ierr = TSPostStep(ts);CHKERRQ(ierr);
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
-  }  *steps += ts->steps;
+  }
+  *steps += ts->steps;
   *ptime  = ts->ptime;
   PetscFunctionReturn(0);
 }
@@ -172,6 +175,7 @@ static PetscErrorCode TSStep_CN_Linear_Variable_Matrix(TS ts,PetscInt *steps,Pet
 
   for (i=0; i<max_steps; i++) {
     if (ts->ptime + ts->time_step > ts->max_time) break;
+    ierr = TSPreStep(ts);CHKERRQ(ierr);
 
     /* set rhs = (1/dt*Alhs(t_mid) + 0.5*Arhs(t_n)) * sol */
     if (i==0){
@@ -203,6 +207,7 @@ static PetscErrorCode TSStep_CN_Linear_Variable_Matrix(TS ts,PetscInt *steps,Pet
     ts->linear_its += PetscAbsInt(its);
     ierr = VecCopy(update,sol);CHKERRQ(ierr);
     ts->steps++;
+    ierr = TSPostStep(ts);CHKERRQ(ierr);
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
   }
 
@@ -228,6 +233,7 @@ static PetscErrorCode TSStep_CN_Nonlinear(TS ts,PetscInt *steps,PetscReal *ptime
 
   for (i=0; i<max_steps; i++) {
     if (ts->ptime + ts->time_step > ts->max_time) break;
+    ierr = TSPreStep(ts);CHKERRQ(ierr);
     ts->ptime += ts->time_step;
    
     ierr = VecCopy(sol,cn->update);CHKERRQ(ierr);
@@ -237,6 +243,7 @@ static PetscErrorCode TSStep_CN_Nonlinear(TS ts,PetscInt *steps,PetscReal *ptime
     ts->nonlinear_its += its; ts->linear_its += lits;
     ierr = VecCopy(cn->update,sol);CHKERRQ(ierr);
     ts->steps++;
+    ierr = TSPostStep(ts);CHKERRQ(ierr);
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
   }
 

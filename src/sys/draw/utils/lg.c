@@ -6,7 +6,7 @@
     the end of the X axis.
 */
 
-#include "petsc.h"         /*I "petsc.h" I*/
+#include "petscsys.h"         /*I "petscsys.h" I*/
 
 PetscCookie DRAWLG_COOKIE = 0;
 

@@ -3,19 +3,19 @@
 */
 #if !defined(__PETSCERROR_H)
 #define __PETSCERROR_H
-#include "petsc.h"
+#include "petscsys.h"
 PETSC_EXTERN_CXX_BEGIN
 
 /*
    Defines the directory where the compiled source is located; used
    in printing error messages. Each makefile has an entry 
    LOCDIR	  =  thedirectory
-   and bmake/common_variables includes in CCPPFLAGS -D__SDIR__='"${LOCDIR}"'
+   and bmake/common_variables includes in CCPPFLAGS -D__SDIR__=${LOCDIR}
    which is a flag passed to the C/C++ compilers. This declaration below
    is only needed if some code is compiled without the -D__SDIR__
 */
-#if !defined(__SDIR__)
-#define __SDIR__ "unknowndirectory/"
+#if !defined(__INSDIR__)
+#define __INSDIR__ "unknowndirectory/"
 #endif
 
 /*
@@ -77,6 +77,10 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_ERR_MAX_VALUE        91  /* this is always the one more than the largest error code */
 
 #if defined(PETSC_USE_ERRORCHECKING)
+
+#define PetscStringizeArg(a) #a
+#define PetscStringize(a) PetscStringizeArg(a)
+#define __SDIR__ PetscStringize(__INSDIR__)
 
 /*MC
    SETERRQ - Macro that is called when an error has been detected, 

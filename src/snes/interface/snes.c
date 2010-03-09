@@ -113,6 +113,16 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESView(SNES snes,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"    gamma=%G, alpha=%G, alpha2=%G\n",kctx->gamma,kctx->alpha,kctx->alpha2);CHKERRQ(ierr);
       }
     }
+    if (snes->lagpreconditioner == -1) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioned is never rebuilt\n");CHKERRQ(ierr);
+    } else if (snes->lagpreconditioner > 1) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioned is rebuilt every %D new Jacobians\n",snes->lagpreconditioner);CHKERRQ(ierr);
+    }
+    if (snes->lagjacobian == -1) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Jacobian is never rebuilt\n");CHKERRQ(ierr);
+    } else if (snes->lagjacobian > 1) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Jacobian is rebuilt every %D Newton iterations\n",snes->lagjacobian);CHKERRQ(ierr);
+    }
   } else if (isstring) {
     ierr = SNESGetType(snes,&type);CHKERRQ(ierr);
     ierr = PetscViewerStringSPrintf(viewer," %-3.3s",type);CHKERRQ(ierr);

@@ -19,11 +19,11 @@
 !                    Include files
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
-!     petsc.h  - base PETSc routines      petscvec.h - vectors
-!     petscsys.h    - system routines          petscmat.h - matrices
+!     petscsys.h  - base PETSc routines      petscvec.h - vectors
+!     petscmat.h - matrices
 !     petscksp.h    - Krylov subspace methods  petscpc.h  - preconditioners
 
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscpc.h"
@@ -275,7 +275,7 @@
 
       implicit none
 
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
 
@@ -332,7 +332,7 @@
 
       implicit none
 
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscpc.h"
 

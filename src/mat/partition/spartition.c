@@ -1,6 +1,5 @@
 #define PETSCMAT_DLL
 
-#include "petsc.h"
 #include "petscmat.h"
 
 EXTERN_C_BEGIN

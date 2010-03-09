@@ -391,10 +391,10 @@ struct _p_MatNullSpace {
 typedef struct {
   PetscInt       nshift,nshift_max;
   PetscReal      shift_amount,shift_lo,shift_hi,shift_top,shift_fraction;
-  PetscTruth     lushift;
+  PetscTruth     useshift;
   PetscReal      rs;  /* active row sum of abs(offdiagonals) */
   PetscScalar    pv;  /* pivot of the active row */
-} LUShift_Ctx;
+} FactorShiftCtx;
 
 EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
 
@@ -407,7 +407,7 @@ EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
 
    Input Parameters:
 +  info - information about the matrix factorization 
-.  sctx - pointer to the struct LUShift_Ctx
+.  sctx - pointer to the struct FactorShiftCtx
 -  row  - active row index
 
    Output  Parameter:
@@ -420,28 +420,28 @@ EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
   PetscInt  _newshift;\
   PetscReal _rs   = sctx.rs;\
   PetscReal _zero = info->zeropivot*_rs;\
-  if (info->shiftnz && PetscAbsScalar(sctx.pv) <= _zero){\
+  if (info->shifttype == MAT_SHIFT_NONZERO && PetscAbsScalar(sctx.pv) <= _zero){\
     /* force |diag| > zeropivot*rs */\
     if (!sctx.nshift){\
-      sctx.shift_amount = info->shiftnz;\
+      sctx.shift_amount = info->shiftamount;\
     } else {\
       sctx.shift_amount *= 2.0;\
     }\
-    sctx.lushift = PETSC_TRUE;\
+    sctx.useshift = PETSC_TRUE;\
     (sctx.nshift)++;\
     _newshift = 1;\
-  } else if (info->shiftpd && PetscRealPart(sctx.pv) <= _zero){\
+  } else if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE && PetscRealPart(sctx.pv) <= _zero){\
     /* force matfactor to be diagonally dominant */\
     if (sctx.nshift > sctx.nshift_max) {\
       ierr = MatFactorDumpMatrix(A);CHKERRQ(ierr);\
       SETERRQ1(PETSC_ERR_CONV_FAILED,"Unable to determine shift to enforce positive definite preconditioner after %d tries",sctx.nshift);\
     } else if (sctx.nshift == sctx.nshift_max) {\
       sctx.shift_fraction = sctx.shift_hi;\
-      sctx.lushift        = PETSC_TRUE;\
+      sctx.useshift        = PETSC_TRUE;\
     } else {\
       sctx.shift_lo = sctx.shift_fraction;\
       sctx.shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;\
-      sctx.lushift  = PETSC_TRUE;\
+      sctx.useshift  = PETSC_TRUE;\
     }\
     sctx.shift_amount = sctx.shift_fraction * sctx.shift_top;\
     sctx.nshift++;\
@@ -455,76 +455,63 @@ EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
   newshift = _newshift;\
 }
 
-#define MatPivotCheck_nz(info,sctx,row,newshift) 0;\
+#define MatPivotCheck_nz(info,sctx,row) 0;\
 {\
-  PetscInt  _newshift;\
   PetscReal _rs   = sctx.rs;\
   PetscReal _zero = info->zeropivot*_rs;\
-  if (info->shiftnz && PetscAbsScalar(sctx.pv) <= _zero){\
+  if (PetscAbsScalar(sctx.pv) <= _zero){\
     /* force |diag| > zeropivot*rs */\
     if (!sctx.nshift){\
-      sctx.shift_amount = info->shiftnz;\
+      sctx.shift_amount = info->shiftamount;\
     } else {\
       sctx.shift_amount *= 2.0;\
     }\
-    sctx.lushift = PETSC_TRUE;\
+    sctx.useshift = PETSC_TRUE;\
     (sctx.nshift)++;\
-    _newshift = 1;\
-  } else {\
-    _newshift = 0;\
-  }\
-  newshift = _newshift;\
+    break;          \
+  } \
 }
 
-#define MatPivotCheck_pd(info,sctx,row,newshift) 0;\
+#define MatPivotCheck_pd(info,sctx,row) 0;\
 {\
-  PetscInt  _newshift;\
   PetscReal _rs   = sctx.rs;\
   PetscReal _zero = info->zeropivot*_rs;\
-  if (info->shiftpd && PetscRealPart(sctx.pv) <= _zero){\
+  if (PetscRealPart(sctx.pv) <= _zero){\
     /* force matfactor to be diagonally dominant */\
     if (sctx.nshift > sctx.nshift_max) {\
       ierr = MatFactorDumpMatrix(A);CHKERRQ(ierr);\
       SETERRQ1(PETSC_ERR_CONV_FAILED,"Unable to determine shift to enforce positive definite preconditioner after %d tries",sctx.nshift);\
     } else if (sctx.nshift == sctx.nshift_max) {\
       sctx.shift_fraction = sctx.shift_hi;\
-      sctx.lushift        = PETSC_TRUE;\
+      sctx.useshift        = PETSC_TRUE;\
     } else {\
       sctx.shift_lo = sctx.shift_fraction;\
       sctx.shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;\
-      sctx.lushift  = PETSC_TRUE;\
+      sctx.useshift = PETSC_TRUE;\
     }\
     sctx.shift_amount = sctx.shift_fraction * sctx.shift_top;\
     sctx.nshift++;\
-    _newshift = 1;\
-  } else {\
-    _newshift = 0;\
+    break; \
   }\
-  newshift = _newshift;\
 }
 
-#define MatPivotCheck_inblocks(info,sctx,row,newshift) 0;\
+#define MatPivotCheck_inblocks(info,sctx,row) 0;\
 {\
   PetscReal _zero = info->zeropivot;\
   if (PetscAbsScalar(sctx.pv) <= _zero){\
-    sctx.pv          += info->shiftinblocks;\
+    sctx.pv          += info->shiftamount;\
     sctx.shift_amount = 0.0;\
     sctx.nshift++;\
   }\
-  newshift = 0;\
 }
 
-#define MatPivotCheck_none(info,sctx,row,newshift) 0;\
+#define MatPivotCheck_none(info,sctx,row) 0;\
 {\
-  PetscInt  _newshift;\
   PetscReal _zero = info->zeropivot;\
   if (PetscAbsScalar(sctx.pv) <= _zero){\
     ierr = MatFactorDumpMatrix(A);CHKERRQ(ierr);\
     SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G",row,PetscAbsScalar(sctx.pv),_zero); \
-  } else {\
-    _newshift = 0;\
-  }\
-  newshift = _newshift;\
+  } \
 }
 
 /* 
@@ -562,17 +549,17 @@ typedef struct {
   PetscInt  _newshift;\
   PetscReal _rs   = sctx.rs;\
   PetscReal _zero = info->zeropivot*_rs;\
-  if (info->shiftnz && PetscAbsScalar(sctx.pv) <= _zero){\
+  if (info->shifttype == MAT_SHIFT_NONZERO && PetscAbsScalar(sctx.pv) <= _zero){\
     /* force |diag| > zeropivot*sctx.rs */\
     if (!sctx.nshift){\
-      sctx.shift_amount = info->shiftnz;\
+      sctx.shift_amount = info->shiftamount;\
     } else {\
       sctx.shift_amount *= 2.0;\
     }\
     sctx.chshift = PETSC_TRUE;\
     sctx.nshift++;\
     _newshift = 1;\
-  } else if (info->shiftpd && PetscRealPart(sctx.pv) <= _zero){\
+  } else if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE && PetscRealPart(sctx.pv) <= _zero){\
     /* calculate a shift that would make this row diagonally dominant */\
     sctx.shift_amount = PetscMax(_rs+PetscAbs(PetscRealPart(sctx.pv)),1.1*sctx.shift_amount);\
     sctx.chshift      = PETSC_TRUE;\

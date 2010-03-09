@@ -1,5 +1,5 @@
 /*
- * Test file for the PCFactorSetShiftPd routine or -pc_factor_shift_positive_definite option.
+ * Test file for the PCFactorSetShiftType() routine or -pc_factor_shift_type POSITIVE_DEFINITE option.
  * The test matrix is the example from Kershaw's paper [J.Comp.Phys 1978]
  * of a positive definite matrix for which ILU(0) will give a negative pivot.
  * This means that the CG method will break down; the Manteuffel shift
@@ -8,13 +8,12 @@
  * Run the executable twice:
  * 1/ without options: the iterative method diverges because of an
  *    indefinite preconditioner
- * 2/ with -pc_factor_shift_positive_definite option (or comment in the PCFactorSetShiftPd line below):
+ * 2/ with -pc_factor_shift_type POSITIVE_DEFINITE option (or comment in the PCFactorSetShiftType() line below):
  *    the method will now successfully converge.
  *
  * Contributed by Victor Eijkhout 2003.
  */
 
-#include <stdlib.h>
 #include "petscksp.h"
 
 #undef __FUNCT__
@@ -31,7 +30,6 @@ int main(int argc,char **argv)
   PetscInt           i,j,its;
   PetscErrorCode     ierr;
 
-  PetscFunctionBegin;
   ierr = PetscInitialize(&argc,&argv,0,0);CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-options_left",PETSC_NULL);CHKERRQ(ierr);
   comm = MPI_COMM_SELF;
@@ -84,7 +82,7 @@ int main(int argc,char **argv)
    * or use the -pc_factor_shift_positive_definite option */
   ierr = KSPGetPC(solver,&prec);CHKERRQ(ierr);
   ierr = PCSetType(prec,PCILU);CHKERRQ(ierr);
-  /*  ierr = PCFactorSetShiftPd(prec,PETSC_TRUE);CHKERRQ(ierr); */
+  /* ierr = PCFactorSetShiftType(prec,MAT_SHIFT_POSITIVE_DEFINITE);CHKERRQ(ierr); */
 
   ierr = KSPSetFromOptions(solver);CHKERRQ(ierr);
   ierr = KSPSetUp(solver);CHKERRQ(ierr);
@@ -108,7 +106,7 @@ int main(int argc,char **argv)
   ierr = KSPGetConvergedReason(solver,&reason);CHKERRQ(ierr);
   if (reason==KSP_DIVERGED_INDEFINITE_PC) {
     printf("\nDivergence because of indefinite preconditioner;\n");
-    printf("Run the executable again but with -pc_factor_shift_positive_definite option.\n");
+    printf("Run the executable again but with '-pc_factor_shift_type POSITIVE_DEFINITE' option.\n");
   } else if (reason<0) {
     printf("\nOther kind of divergence: this should not happen.\n");
   } else {
@@ -123,5 +121,5 @@ int main(int argc,char **argv)
   ierr = MatDestroy(A);CHKERRQ(ierr);
   ierr = KSPDestroy(solver);CHKERRQ(ierr);
   PetscFinalize();
-  PetscFunctionReturn(0);
+  return 0;
 }

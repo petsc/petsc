@@ -6,7 +6,6 @@ static char help[] = "Tests PetscRandom functions.\n\n";
 #include <time.h>
 #include <sys/types.h>
 
-#include "petsc.h"
 #include "petscsys.h"
 
 #define MAXBSIZE     40

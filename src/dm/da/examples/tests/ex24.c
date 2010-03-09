@@ -2,7 +2,6 @@
 static char help[] = "Tests DALocalToGlocal() for dof > 1\n\n";
 
 #include "petscda.h"
-#include "petscsys.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

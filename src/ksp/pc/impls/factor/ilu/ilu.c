@@ -53,8 +53,8 @@ PetscErrorCode PCDestroy_ILU_Internal(PC pc)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCFactorSetUseDropTolerance_ILU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseDropTolerance_ILU(PC pc,PetscReal dt,PetscReal dtcol,PetscInt dtcount)
+#define __FUNCT__ "PCFactorSetDropTolerance_ILU"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetDropTolerance_ILU(PC pc,PetscReal dt,PetscReal dtcol,PetscInt dtcount)
 {
   PC_ILU         *ilu = (PC_ILU*)pc->data;
 
@@ -120,9 +120,9 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
     dt[0] = ((PC_Factor*)ilu)->info.dt;
     dt[1] = ((PC_Factor*)ilu)->info.dtcol;
     dt[2] = ((PC_Factor*)ilu)->info.dtcount;
-    ierr = PetscOptionsRealArray("-pc_factor_use_drop_tolerance","<dt,dtcol,maxrowcount>","PCFactorSetUseDropTolerance",dt,&dtmax,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsRealArray("-pc_factor_drop_tolerance","<dt,dtcol,maxrowcount>","PCFactorSetDropTolerance",dt,&dtmax,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCFactorSetUseDropTolerance(pc,dt[0],dt[1],(PetscInt)dt[2]);CHKERRQ(ierr);
+      ierr = PCFactorSetDropTolerance(pc,dt[0],dt[1],(PetscInt)dt[2]);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsName("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",&flg);CHKERRQ(ierr);
@@ -159,9 +159,17 @@ static PetscErrorCode PCView_ILU(PC pc,PetscViewer viewer)
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  ILU: factor fill ratio allocated %G\n",((PC_Factor*)ilu)->info.fill);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  ILU: tolerance for zero pivot %G\n",((PC_Factor*)ilu)->info.zeropivot);CHKERRQ(ierr);
-    if (((PC_Factor*)ilu)->info.shiftpd) {ierr = PetscViewerASCIIPrintf(viewer,"  ILU: using Manteuffel shift\n");CHKERRQ(ierr);}
-    if (((PC_Factor*)ilu)->info.shiftnz) {ierr = PetscViewerASCIIPrintf(viewer,"  ILU: using diagonal shift to prevent zero pivot\n");CHKERRQ(ierr);}
-    if (((PC_Factor*)ilu)->info.shiftinblocks) {ierr = PetscViewerASCIIPrintf(viewer,"  ILU: using diagonal shift on blocks to prevent zero pivot\n");CHKERRQ(ierr);}
+
+    if (((PC_Factor*)ilu)->info.shifttype==MAT_SHIFT_POSITIVE_DEFINITE) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  ILU: using Manteuffel shift\n");CHKERRQ(ierr);
+    }
+    if (((PC_Factor*)ilu)->info.shifttype==MAT_SHIFT_NONZERO) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  ILU: using diagonal shift to prevent zero pivot\n");CHKERRQ(ierr);
+    }
+    if (((PC_Factor*)ilu)->info.shifttype==MAT_SHIFT_INBLOCKS) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  ILU: using diagonal shift on blocks to prevent zero pivot\n");CHKERRQ(ierr);
+    }
+
     if (ilu->inplace) {ierr = PetscViewerASCIIPrintf(viewer,"       in-place factorization\n");CHKERRQ(ierr);}
     else              {ierr = PetscViewerASCIIPrintf(viewer,"       out-of-place factorization\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"       matrix ordering: %s\n",((PC_Factor*)ilu)->ordering);CHKERRQ(ierr);
@@ -306,7 +314,7 @@ static PetscErrorCode PCApplyTranspose_ILU(PC pc,Vec x,Vec y)
                       its factorization (overwrites original matrix)
 .  -pc_factor_diagonal_fill - fill in a zero diagonal even if levels of fill indicate it wouldn't be fill
 .  -pc_factor_reuse_ordering - reuse ordering of factorized matrix from previous factorization
-.  -pc_factor_use_drop_tolerance <dt,dtcol,maxrowcount> - use Saad's drop tolerance ILUdt
+.  -pc_factor_drop_tolerance <dt,dtcol,maxrowcount> - use drop tolerance factorization
 .  -pc_factor_fill <nfill> - expected amount of fill in factored matrix compared to original matrix, nfill > 1
 .  -pc_factor_nonzeros_along_diagonal - reorder the matrix before factorization to remove zeros from the diagonal,
                                    this decreases the chance of getting a zero pivot
@@ -314,10 +322,6 @@ static PetscErrorCode PCApplyTranspose_ILU(PC pc,Vec x,Vec y)
 .  -pc_factor_pivot_in_blocks - for block ILU(k) factorization, i.e. with BAIJ matrices with block size larger
                              than 1 the diagonal blocks are factored with partial pivoting (this increases the 
                              stability of the ILU factorization
-.  -pc_factor_shift_in_blocks - adds a small diagonal to any block if it is singular during ILU factorization
-.  -pc_factor_shift_nonzero <shift> - Sets shift amount or PETSC_DECIDE for the default
--  -pc_factor_shift_positive_definite true or false - Activate/Deactivate PCFactorSetShiftPd(); the value
-   is optional with true being the default
 
    Level: beginner
 
@@ -341,8 +345,8 @@ static PetscErrorCode PCApplyTranspose_ILU(PC pc,Vec x,Vec y)
 
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,
-           PCFactorSetZeroPivot(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(), PCFactorSetShiftInBlocks(),
-           PCFactorSetUseDropTolerance(),PCFactorSetFill(), PCFactorSetMatOrderingType(), PCFactorSetReuseOrdering(),
+           PCFactorSetZeroPivot(), PCFactorSetShiftSetType(), PCFactorSetAmount(),
+           PCFactorSetDropTolerance(),PCFactorSetFill(), PCFactorSetMatOrderingType(), PCFactorSetReuseOrdering(),
            PCFactorSetLevels(), PCFactorSetUseInPlace(), PCFactorSetAllowDiagonalFill(), PCFactorSetPivotInBlocks()
 
 M*/
@@ -371,11 +375,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC pc)
   ((PC_Factor*)ilu)->info.dt                 = PETSC_DEFAULT;
   ((PC_Factor*)ilu)->info.dtcount            = PETSC_DEFAULT;
   ((PC_Factor*)ilu)->info.dtcol              = PETSC_DEFAULT;
-  ((PC_Factor*)ilu)->info.shiftnz            = 1.e-12;
-  ((PC_Factor*)ilu)->info.shiftpd            = 0.0; /* false */
+  ((PC_Factor*)ilu)->info.shifttype          = MAT_SHIFT_NONZERO;
+  ((PC_Factor*)ilu)->info.shiftamount        = 1.e-12;
   ((PC_Factor*)ilu)->info.zeropivot          = 1.e-12;
   ((PC_Factor*)ilu)->info.pivotinblocks      = 1.0;
-  ((PC_Factor*)ilu)->info.shiftinblocks      = 1.e-12;
   ilu->reusefill               = PETSC_FALSE;
   ((PC_Factor*)ilu)->info.diagonal_fill      = 0.;
   pc->data                     = (void*)ilu;
@@ -391,19 +394,16 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC pc)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetZeroPivot_C","PCFactorSetZeroPivot_Factor",
                     PCFactorSetZeroPivot_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftNonzero_C","PCFactorSetShiftNonzero_Factor",
-                    PCFactorSetShiftNonzero_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftPd_C","PCFactorSetShiftPd_Factor",
-                    PCFactorSetShiftPd_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftInBlocks_C","PCFactorSetShiftInBlocks_Factor",
-                    PCFactorSetShiftInBlocks_Factor);CHKERRQ(ierr);
-
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftType_C","PCFactorSetShiftType_Factor",
+                    PCFactorSetShiftType_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftAmount_C","PCFactorSetShiftAmount_Factor",
+                    PCFactorSetShiftAmount_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorGetMatSolverPackage_C","PCFactorGetMatSolverPackage_Factor",
                     PCFactorGetMatSolverPackage_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatSolverPackage_C","PCFactorSetMatSolverPackage_Factor",
                     PCFactorSetMatSolverPackage_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetUseDropTolerance_C","PCFactorSetUseDropTolerance_ILU",
-                    PCFactorSetUseDropTolerance_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetDropTolerance_C","PCFactorSetDropTolerance_ILU",
+                    PCFactorSetDropTolerance_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetFill_C","PCFactorSetFill_Factor",
                     PCFactorSetFill_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatOrderingType_C","PCFactorSetMatOrderingType_Factor",

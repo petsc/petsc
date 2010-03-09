@@ -10,6 +10,15 @@ else:
   PETSC_DIR = a.split('=')[1][0:-1]
   fd.close()
 
+if os.environ.has_key('PETSC_ARCH'):
+  PETSC_ARCH = os.environ['PETSC_ARCH']
+else:
+  fd = file(os.path.join('conf','petscvariables'))
+  a = fd.readline()
+  PETSC_ARCH = a.split('=')[1][0:-1]
+  fd.close()
+
+print '*** using PETSC_DIR='+PETSC_DIR+' PETSC_ARCH='+PETSC_ARCH+' ***'
 sys.path.insert(0, os.path.join(PETSC_DIR, 'config'))
 sys.path.insert(0, os.path.join(PETSC_DIR, 'config', 'BuildSystem'))
 
@@ -31,13 +40,6 @@ class Installer(script.Script):
       a = fd.readline()
       a = fd.readline()
       PETSC_DIR = a.split('=')[1][0:-1]
-      fd.close()
-    if os.environ.has_key('PETSC_ARCH'):
-      PETSC_ARCH = os.environ['PETSC_ARCH']
-    else:
-      fd = file(os.path.join('conf','petscvariables'))
-      a = fd.readline()
-      PETSC_ARCH = a.split('=')[1][0:-1]
       fd.close()
     argDB.saveFilename = os.path.join(PETSC_DIR, PETSC_ARCH, 'conf', 'RDict.db')
     argDB.load()
@@ -202,18 +204,13 @@ for src, dst in copies:
     return
 
   def outputHelp(self):
-    print '''
+    print '''\
 ====================================
-If using sh/bash, do the following:
-  PETSC_DIR=%s; export PETSC_DIR
-  unset PETSC_ARCH
-If using csh/tcsh, do the following:
-  setenv PETSC_DIR %s
-  unsetenv PETSC_ARCH
-Run the following to verify the install (remain in current directory for the tests):
-  make test
-====================================
-''' % (self.installDir, self.installDir)
+Install complete. It is useable with PETSC_DIR=%s [and no more PETSC_ARCH].
+Now to check if the libraries are working do (in current directory):
+make PETSC_DIR=%s test
+====================================\
+''' % (self.installDir,self.installDir)
     return
 
   def run(self):

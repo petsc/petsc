@@ -3,7 +3,6 @@ static char help[] = "Tests VecMax() with index.\n\
   -n <length> : vector length\n\n";
 
 #include "petscvec.h"
-#include "petscsys.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

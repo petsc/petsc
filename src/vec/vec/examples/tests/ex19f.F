@@ -1,7 +1,7 @@
 !
 !
       program main
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 !
 !  This example demonstrates basic use of the PETSc Fortran interface

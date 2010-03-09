@@ -1,5 +1,4 @@
 #include "private/fortranimpl.h"
-#include "petsc.h"
 #include "petscmatlab.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)

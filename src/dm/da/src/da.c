@@ -52,6 +52,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetDim(DA da, PetscInt dim)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da, DM_COOKIE, 1);
+  if (da->dim > 0 && dim != da->dim) SETERRQ2(PETSC_ERR_ARG_WRONGSTATE,"Cannot change DA dim from %D after it was set to %D",da->dim,dim);
   da->dim = dim;
   PetscFunctionReturn(0);
 }

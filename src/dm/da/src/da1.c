@@ -100,7 +100,7 @@ PetscErrorCode DAView_Private(DA da)
   PetscViewer    view;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsBegin(((PetscObject)da)->comm,((PetscObject)da)->prefix,"Distributed array (DA) options","DA");CHKERRQ(ierr); 
+  ierr = PetscOptionsBegin(((PetscObject)da)->comm,((PetscObject)da)->prefix,"DA viewing options","DA");CHKERRQ(ierr); 
     ierr = PetscOptionsTruth("-da_view","Print information about the DA's distribution","DAView",PETSC_FALSE,&flg1,PETSC_NULL);CHKERRQ(ierr);
     if (flg1) {
       ierr = PetscViewerASCIIGetStdout(((PetscObject)da)->comm,&view);CHKERRQ(ierr);
@@ -125,14 +125,14 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_1D(DA da)
   const PetscInt       sDist = s*dof;  /* absolute stencil distance */
   const PetscInt      *lx    = da->lx;
   const DAPeriodicType wrap  = da->wrap;
-  MPI_Comm       comm;
-  Vec            local, global;
-  VecScatter     ltog, gtol;
-  IS             to, from;
-  PetscTruth     flg1 = PETSC_FALSE, flg2 = PETSC_FALSE;
-  PetscMPIInt    rank, size;
-  PetscInt       i,*idx,nn,left,xs,xe,x,Xs,Xe,start,end,m;
-  PetscErrorCode ierr;
+  MPI_Comm             comm;
+  Vec                  local, global;
+  VecScatter           ltog, gtol;
+  IS                   to, from;
+  PetscTruth           flg1 = PETSC_FALSE, flg2 = PETSC_FALSE;
+  PetscMPIInt          rank, size;
+  PetscInt             i,*idx,nn,left,xs,xe,x,Xs,Xe,start,end,m;
+  PetscErrorCode       ierr;
 
   PetscFunctionBegin;
   if (dim != PETSC_DECIDE && dim != 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Dimension should be 1: %D",dim);

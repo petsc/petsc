@@ -3,7 +3,7 @@
 !     Test for PetscFOpen() from Fortran
 !
        program main
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 
       PetscErrorCode ierr
       PetscMPIInt rank

@@ -147,6 +147,7 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
   ierr = VecRestoreArray(ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
   for (i = 0; i < max_steps; i++) {
     if (ts->ptime >= ts->max_time) break;
+    ierr = TSPreStep(ts);CHKERRQ(ierr);
     if (cvode->monitorstep){
       flag = CVode(mem,tout,cvode->y,&t,CV_ONE_STEP);
     } else {
@@ -171,6 +172,7 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
     ierr = CVSpilsGetNumLinIters(mem, &its);
     ts->linear_its = its; 
     ts->steps++;
+    ierr = TSPostStep(ts);CHKERRQ(ierr);
     ierr = TSMonitor(ts,ts->steps,t,sol);CHKERRQ(ierr); 
   }
   *steps += ts->steps;

@@ -1,4 +1,4 @@
-#include "finclude/petscalldef.h"
+#include "finclude/petscdef.h"
 
 !
 !      Implements a nonlinear solver for a simple domain

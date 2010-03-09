@@ -2,7 +2,6 @@
 static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
 
 #include "petscda.h"
-#include "petscsys.h"
 #include "petscao.h"
 
 #undef __FUNCT__

@@ -4,14 +4,11 @@
 *   enough slight differences we have completely separate codes for each one.
 *
 */
-#include "petsc.h"           /*I  "petsc.h"  I*/
-#include "petscsys.h"
+#include "petscsys.h"           /*I  "petscsys.h"  I*/
 #include <signal.h>
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#include "petscfix.h"
-
 
 /*--------------------------------------- ---------------------------------------------------*/
 #if defined(PETSC_HAVE_SUN4_STYLE_FPTRAP)

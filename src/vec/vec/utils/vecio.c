@@ -5,7 +5,6 @@
    VecView (with viewer types PETSC_VIEWER_BINARY)
  */
 
-#include "petsc.h"
 #include "petscsys.h"
 #include "petscvec.h"         /*I  "petscvec.h"  I*/
 #include "private/vecimpl.h"

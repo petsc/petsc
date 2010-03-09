@@ -19,6 +19,38 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
+#define __FUNCT__ "PCFactorSetShiftType_Factor"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftType_Factor(PC pc,MatFactorShiftType shifttype)
+{
+  PC_Factor *dir = (PC_Factor*)pc->data;
+
+  PetscFunctionBegin;
+  if (shifttype == (MatFactorShiftType)PETSC_DECIDE){
+    dir->info.shifttype = MAT_SHIFT_NONE; 
+  } else {
+    dir->info.shifttype = shifttype;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCFactorSetShiftAmount_Factor"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftAmount_Factor(PC pc,PetscReal shiftamount)
+{
+  PC_Factor *dir = (PC_Factor*)pc->data;
+
+  PetscFunctionBegin;
+  if (shiftamount == (PetscReal) PETSC_DECIDE){
+    dir->info.shiftamount = 1.e-12; 
+  } else {
+    dir->info.shiftamount = shiftamount; 
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetShiftNonzero_Factor"
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftNonzero_Factor(PC pc,PetscReal shift)
 {
@@ -53,8 +85,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCFactorSetUseDropTolerance_Factor"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseDropTolerance_Factor(PC pc,PetscReal dt,PetscReal dtcol,PetscInt dtcount)
+#define __FUNCT__ "PCFactorSetDropTolerance_Factor"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetDropTolerance_Factor(PC pc,PetscReal dt,PetscReal dtcol,PetscInt dtcount)
 {
   PC_Factor         *ilu = (PC_Factor*)pc->data;
 
@@ -255,24 +287,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions_Factor(PC pc)
     }
     ierr = PetscOptionsReal("-pc_factor_fill","Expected non-zeros in factored matrix","PCFactorSetFill",((PC_Factor*)factor)->info.fill,&((PC_Factor*)factor)->info.fill,0);CHKERRQ(ierr);
 
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsName("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCFactorSetShiftNonzero(pc,(PetscReal) PETSC_DECIDE);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsReal("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",((PC_Factor*)factor)->info.shiftnz,&((PC_Factor*)factor)->info.shiftnz,0);CHKERRQ(ierr);
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-pc_factor_shift_positive_definite","Manteuffel shift applied to diagonal","PCFactorSetShiftPd",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCFactorSetShiftPd(pc,PETSC_TRUE);CHKERRQ(ierr);
-    }
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsName("-pc_factor_shift_in_blocks","Shift added to diagonal dense blocks","PCFactorSetShiftInBlocks",&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCFactorSetShiftInBlocks(pc,(PetscReal) PETSC_DEFAULT);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsReal("-pc_factor_shift_in_blocks","Shift added to diagonal dense blocks","PCFactorSetShiftInBlocks",((PC_Factor*)factor)->info.shiftinblocks,&((PC_Factor*)factor)->info.shiftinblocks,0);CHKERRQ(ierr);
-
+    ierr = PetscOptionsEnum("-pc_factor_shift_type","Shift added to diagonal","PCFactorSetShiftType",
+                            MatFactorShiftTypes,(PetscEnum)((PC_Factor*)factor)->info.shifttype,(PetscEnum*)&((PC_Factor*)factor)->info.shifttype,&flg);CHKERRQ(ierr);
+    
+    ierr = PetscOptionsReal("-pc_factor_shift_amount","Shift added to diagonal","PCFactorSetShiftAmount",((PC_Factor*)factor)->info.shiftamount,&((PC_Factor*)factor)->info.shiftamount,0);CHKERRQ(ierr);
+  
     ierr = PetscOptionsReal("-pc_factor_zeropivot","Pivot is considered zero if less than","PCFactorSetZeroPivot",((PC_Factor*)factor)->info.zeropivot,&((PC_Factor*)factor)->info.zeropivot,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_factor_column_pivot","Column pivot tolerance (used only for some factorization)","PCFactorSetColumnPivot",((PC_Factor*)factor)->info.dtcol,&((PC_Factor*)factor)->info.dtcol,&flg);CHKERRQ(ierr);
 

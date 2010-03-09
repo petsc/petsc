@@ -2,7 +2,7 @@
 
 static char help[] = "Tests signal handling.\n\n";
 
-#include "petsc.h"
+#include "petscsys.h"
 #include <signal.h>
 
 typedef struct _handlerCtx {

@@ -6,7 +6,6 @@
     Defines the data structure used for the general index set
 */
 #include "private/isimpl.h"
-#include "petscsys.h"
 
 typedef struct {
   PetscInt   N;         /* number of indices */ 

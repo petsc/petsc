@@ -27,7 +27,7 @@ def FixFile(filename):
   data = match.sub(r'',data)
 
   ff = open(filename, 'w')
-  ff.write('#include "petsc.h"\n#include "petscfix.h"\n'+data)
+  ff.write('#include "petscsys.h"\n#include "petscfix.h"\n'+data)
   ff.close()
   return
 

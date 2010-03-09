@@ -882,18 +882,29 @@ PetscErrorCode MatGetDiagonal_SeqAIJ(Mat A,Vec v)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i,j,n;
-  PetscScalar    *x,zero = 0.0;
+  PetscInt       i,j,n,*ai=a->i,*aj=a->j,nz;
+  PetscScalar    *aa=a->a,*x,zero=0.0;
 
   PetscFunctionBegin;
-  ierr = VecSet(v,zero);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   if (n != A->rmap->n) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
-  for (i=0; i<A->rmap->n; i++) {
-    for (j=a->i[i]; j<a->i[i+1]; j++) {
-      if (a->j[j] == i) {
-        x[i] = a->a[j];
+
+  if (A->factor == MAT_FACTOR_ILU || A->factor == MAT_FACTOR_LU){
+    PetscInt *diag=a->diag;
+    ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+    for (i=0; i<n; i++) x[i] = aa[diag[i]];
+    ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+  ierr = VecSet(v,zero);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    nz = ai[i+1] - ai[i];
+    if (!nz) x[i] = 0.0;
+    for (j=ai[i]; j<ai[i+1]; j++){
+      if (aj[j] == i) {
+        x[i] = aa[j];
         break;
       }
     }
@@ -3247,6 +3258,11 @@ extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_umfpack(Mat,MatFact
 #if defined(PETSC_HAVE_LUSOL)
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_lusol(Mat,MatFactorType,Mat*);
 #endif
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_matlab(Mat,MatFactorType,Mat*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatlabEnginePut_SeqAIJ(PetscObject,void*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatlabEngineGet_SeqAIJ(PetscObject,void*);
+#endif
 EXTERN_C_END
 
 
@@ -3295,6 +3311,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
   B->same_nonzero          = PETSC_FALSE;
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_matlab_C",
+					   "MatGetFactor_seqaij_matlab",
+					   MatGetFactor_seqaij_matlab);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEnginePut_C","MatlabEnginePut_SeqAIJ",MatlabEnginePut_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEngineGet_C","MatlabEngineGet_SeqAIJ",MatlabEngineGet_SeqAIJ);CHKERRQ(ierr);
+#endif
 #if defined(PETSC_HAVE_PASTIX)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_pastix_C",
 					   "MatGetFactor_seqaij_pastix",

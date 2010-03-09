@@ -36,6 +36,74 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetZeroPivot(PC pc,PetscReal zero)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PCFactorSetShiftType"
+/*@
+   PCFactorSetShiftType - adds a particular type of quantity to the diagonal of the matrix during 
+     numerical factorization, thus the matrix has nonzero pivots
+
+   Collective on PC
+   
+   Input Parameters:
++  pc - the preconditioner context
+-  shifttype - type of shift; one of MAT_SHIFT_NONE, MAT_SHIFT_NONZERO,  MAT_SHIFT_POSITIVE_DEFINITE, MAT_SHIFT_INBLOCKS 
+
+   Options Database Key:
+.  -pc_factor_shift_type <shifttype> - Sets shift type or PETSC_DECIDE for the default; use '-help' for a list of available types
+
+   Level: intermediate
+
+.keywords: PC, set, factorization, 
+
+.seealso: PCFactorSetZeroPivot(), PCFactorSetShiftAmount()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftType(PC pc,MatFactorShiftType shifttype)
+{
+  PetscErrorCode ierr,(*f)(PC,MatFactorShiftType);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorSetShiftType_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,shifttype);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCFactorSetShiftAmount"
+/*@
+   PCFactorSetShiftAmount - adds a quantity to the diagonal of the matrix during 
+     numerical factorization, thus the matrix has nonzero pivots
+
+   Collective on PC
+   
+   Input Parameters:
++  pc - the preconditioner context
+-  shiftamount - amount of shift 
+
+   Options Database Key:
+.  -pc_factor_shift_amount <shiftamount> - Sets shift amount or PETSC_DECIDE for the default
+
+   Level: intermediate
+
+.keywords: PC, set, factorization, 
+
+.seealso: PCFactorSetZeroPivot(), PCFactorSetShiftType()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftAmount(PC pc,PetscReal shiftamount)
+{
+  PetscErrorCode ierr,(*f)(PC,PetscReal);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorSetShiftAmount_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,shiftamount);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetShiftNonzero"
 /*@
    PCFactorSetShiftNonzero - adds this quantity to the diagonal of the matrix during 
@@ -111,9 +179,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftPd(PC pc,PetscTruth shift)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCFactorSetUseDropTolerance"
+#define __FUNCT__ "PCFactorSetDropTolerance"
 /*@
-   PCFactorSetUseDropTolerance - The preconditioner will use an ILU 
+   PCFactorSetDropTolerance - The preconditioner will use an ILU 
    based on a drop tolerance.
 
    Collective on PC
@@ -126,25 +194,22 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftPd(PC pc,PetscTruth shift)
                  depends on the number of nonzeros in row of original matrix
 
    Options Database Key:
-.  -pc_factor_use_drop_tolerance <dt,dtcol,maxrowcount> - Sets drop tolerance
+.  -pc_factor_drop_tolerance <dt,dtcol,maxrowcount> - Sets drop tolerance
 
    Level: intermediate
-
-    Notes:
-      This uses the iludt() code of Saad's SPARSKIT package
 
       There are NO default values for the 3 parameters, you must set them with reasonable values for your
       matrix. We don't know how to compute reasonable values.
 
 .keywords: PC, levels, reordering, factorization, incomplete, ILU
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,PetscInt maxrowcount)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,PetscInt maxrowcount)
 {
   PetscErrorCode ierr,(*f)(PC,PetscReal,PetscReal,PetscInt);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorSetUseDropTolerance_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorSetDropTolerance_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,dt,dtcol,maxrowcount);CHKERRQ(ierr);
   } 

@@ -1,8 +1,7 @@
 #define PETSC_DLL
 
-#include "private/viewerimpl.h"  /*I     "petsc.h"   I*/
+#include "private/viewerimpl.h"  /*I     "petscsys.h"   I*/
 #include <stdarg.h>
-#include "petscfix.h"
 
 #define QUEUESTRINGSIZE 1024
 

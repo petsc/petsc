@@ -80,7 +80,7 @@ class Patch (object):
 
   def checkPetscRoot(self, root):
     '''Find the root of the Petsc tree. Currently, we require it to be os.getcwd()'''
-    if not os.path.isfile(os.path.join(root, 'include', 'petsc.h')):
+    if not os.path.isfile(os.path.join(root, 'include', 'petscsys.h')):
       raise RuntimeError('Directory '+root+' is not the root of a Petsc tree')
     return
 

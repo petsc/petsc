@@ -82,7 +82,8 @@ PetscErrorCode PetscFreeSpaceContiguous_LU(PetscFreeSpaceList *head,PetscInt *sp
     total += (*head)->local_used;
     array  = (*head)->array_head;
   
-    while (row < n && bi[row+1] <= total) {
+    while (row < n) {
+      if (bi[row+1] > total) break;
       /* copy array entries into bj for this row */  
       nnz  = bi[row+1] - bi[row];
       /* set bi[row] for new datastruct */
@@ -151,11 +152,12 @@ PetscErrorCode PetscFreeSpaceContiguous_Cholesky(PetscFreeSpaceList *head,PetscI
   PetscFunctionBegin;
   row   = 0; 
   total = 0; 
-  while ((*head)!=NULL) {
+  while (*head) {
     total += (*head)->local_used;
     array  = (*head)->array_head;
   
-    while (ui[row+1] <= total && row < n){
+    while (row < n){
+      if (ui[row+1] > total) break;
       udiag[row] = ui[row+1] - 1;     /* points to the last entry of U(row,:) */     
       nnz  = ui[row+1] - ui[row] - 1; /* exclude diagonal */
       uj   = space + ui[row];

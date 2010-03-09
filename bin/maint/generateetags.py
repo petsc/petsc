@@ -108,7 +108,7 @@ def processFiles(dirname,tagfile):
   for glist in lists:
     gfiles = glob.glob(glist)
     for file in gfiles:
-      if not (file.endswith('pyc') or file.endswith('/SCCS')):
+      if not (file.endswith('pyc') or file.endswith('/SCCS') or file.endswith('~')):
         files.append(file)
   if files: createTags(tagfile,dirname,files)
   return

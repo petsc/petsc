@@ -20,7 +20,7 @@
 !
 !  The following include statements are generally used in SNES Fortran
 !  programs:
-!     petsc.h  - base PETSc routines
+!     petscsys.h  - base PETSc routines
 !     petscvec.h    - vectors
 !     petscmat.h    - matrices
 !     petscksp.h    - Krylov subspace methods
@@ -29,7 +29,7 @@
 !  In addition, we need the following for use of distributed arrays
 !     petscda.h     - distributed arrays (DAs)
 
-#include "finclude/petsc.h"
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscda.h"
 #include "finclude/petscis.h"

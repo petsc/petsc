@@ -234,6 +234,10 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetName(PC,const char[]);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellGetName(PC,char*[]);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetZeroPivot(PC,PetscReal);
+
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftType(PC,MatFactorShiftType); 
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftAmount(PC,PetscReal); 
+
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftNonzero(PC,PetscReal); 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftPd(PC,PetscTruth); 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftInBlocks(PC,PetscReal);
@@ -252,7 +256,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetAllowDiagonalFill(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivotInBlocks(PC,PetscTruth);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetLevels(PC,PetscInt);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseDropTolerance(PC,PetscReal,PetscReal,PetscInt);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetDropTolerance(PC,PetscReal,PetscReal,PetscInt);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetLocalSubdomains(PC,PetscInt,IS[],IS[]);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetTotalSubdomains(PC,PetscInt,IS[],IS[]);

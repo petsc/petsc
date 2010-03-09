@@ -366,6 +366,9 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec Y)
     } else {
       if (ts->ops->rhsmatrix) { /* assemble matrix for this timestep */
         MatStructure flg;
+        /* Note: flg is not being used.
+           For it to be useful, we'd have to cache it and then apply it in TSComputeIJacobian.
+        */
         PetscStackPush("TS user right-hand-side matrix function");
         ierr = (*ts->ops->rhsmatrix)(ts,t,&ts->Arhs,&ts->B,&flg,ts->jacP);CHKERRQ(ierr);
         PetscStackPop;
@@ -373,8 +376,19 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec Y)
       ierr = MatMult(ts->Arhs,X,Y);CHKERRQ(ierr);
     }
 
-    /* Convert to implicit form */
-    ierr = VecAYPX(Y,-1,Xdot);CHKERRQ(ierr);
+    /* Convert to implicit form: F(X,Xdot) = Alhs * Xdot - Frhs(X) */
+    if (ts->Alhs) {
+      if (ts->ops->lhsmatrix) {
+        MatStructure flg;
+        PetscStackPush("TS user left-hand-side matrix function");
+        ierr = (*ts->ops->lhsmatrix)(ts,t,&ts->Alhs,PETSC_NULL,&flg,ts->jacP);CHKERRQ(ierr);
+        PetscStackPop;
+      }
+      ierr = VecScale(Y,-1.);CHKERRQ(ierr);
+      ierr = MatMultAdd(ts->Alhs,Xdot,Y,Y);CHKERRQ(ierr);
+    } else {
+      ierr = VecAYPX(Y,-1,Xdot);CHKERRQ(ierr);
+    }
   }
   ierr = PetscLogEventEnd(TS_FunctionEval,ts,X,Xdot,Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -430,6 +444,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSComputeIJacobian(TS ts,PetscReal t,Vec X,Vec 
   PetscValidHeaderSpecific(*B,MAT_COOKIE,7);
   PetscValidPointer(flg,8);
 
+  *flg = SAME_NONZERO_PATTERN;  /* In case it we're solving a linear problem in which case it wouldn't get initialized below. */
   ierr = PetscLogEventBegin(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
   if (ts->ops->ijacobian) {
     PetscStackPush("TS user implicit Jacobian");
@@ -452,7 +467,11 @@ PetscErrorCode PETSCTS_DLLEXPORT TSComputeIJacobian(TS ts,PetscReal t,Vec X,Vec 
     /* Convert to implicit form */
     /* inefficient because these operations will normally traverse all matrix elements twice */
     ierr = MatScale(*A,-1);CHKERRQ(ierr);
-    ierr = MatShift(*A,shift);CHKERRQ(ierr);
+    if (ts->Alhs) {
+      ierr = MatAXPY(*A,shift,ts->Alhs,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    } else {
+      ierr = MatShift(*A,shift);CHKERRQ(ierr);
+    }
     if (*A != *B) {
       ierr = MatScale(*B,-1);CHKERRQ(ierr);
       ierr = MatShift(*B,shift);CHKERRQ(ierr);
@@ -1368,7 +1387,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetSolution(TS ts,Vec x)
 #define __FUNCT__ "TSSetPreStep"
 /*@C
   TSSetPreStep - Sets the general-purpose function
-  called once at the beginning of time stepping.
+  called once at the beginning of each time step.
 
   Collective on TS
 
@@ -1388,6 +1407,38 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetPreStep(TS ts, PetscErrorCode (*func)(TS))
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
   ts->ops->prestep = func;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSPreStep"
+/*@C
+  TSPreStep - Runs the user-defined pre-step function.
+
+  Collective on TS
+
+  Input Parameters:
+. ts   - The TS context obtained from TSCreate()
+
+  Notes:
+  TSPreStep() is typically used within time stepping implementations,
+  so most users would not generally call this routine themselves.
+
+  Level: developer
+
+.keywords: TS, timestep
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSPreStep(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscStackPush("TS PreStep function");
+  CHKMEMQ;
+  ierr = (*ts->ops->prestep)(ts);CHKERRQ(ierr);
+  CHKMEMQ;
+  PetscStackPop;
   PetscFunctionReturn(0);
 }
 
@@ -1415,7 +1466,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSDefaultPreStep(TS ts)
 #define __FUNCT__ "TSSetPostStep"
 /*@C
   TSSetPostStep - Sets the general-purpose function
-  called once at the end of time stepping.
+  called once at the end of each time step.
 
   Collective on TS
 
@@ -1435,6 +1486,38 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetPostStep(TS ts, PetscErrorCode (*func)(TS)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
   ts->ops->poststep = func;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSPostStep"
+/*@C
+  TSPostStep - Runs the user-defined post-step function.
+
+  Collective on TS
+
+  Input Parameters:
+. ts   - The TS context obtained from TSCreate()
+
+  Notes:
+  TSPostStep() is typically used within time stepping implementations,
+  so most users would not generally call this routine themselves.
+
+  Level: developer
+
+.keywords: TS, timestep
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSPostStep(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscStackPush("TS PostStep function");
+  CHKMEMQ;
+  ierr = (*ts->ops->poststep)(ts);CHKERRQ(ierr);
+  CHKMEMQ;
+  PetscStackPop;
   PetscFunctionReturn(0);
 }
 
@@ -1603,9 +1686,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSStep(TS ts,PetscInt *steps,PetscReal *ptime)
   }
 
   ierr = PetscLogEventBegin(TS_Step, ts, 0, 0, 0);CHKERRQ(ierr);
-  ierr = (*ts->ops->prestep)(ts);CHKERRQ(ierr);
   ierr = (*ts->ops->step)(ts, steps, ptime);CHKERRQ(ierr);
-  ierr = (*ts->ops->poststep)(ts);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TS_Step, ts, 0, 0, 0);CHKERRQ(ierr);
 
   if (!PetscPreLoadingOn) {

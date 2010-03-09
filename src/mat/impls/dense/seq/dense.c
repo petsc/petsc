@@ -724,8 +724,6 @@ PetscErrorCode MatGetValues_SeqDense(Mat A,PetscInt m,const PetscInt indexm[],Pe
 
 /* -----------------------------------------------------------------*/
 
-#include "petscsys.h"
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_SeqDense"
 PetscErrorCode MatLoad_SeqDense(PetscViewer viewer, const MatType type,Mat *A)
@@ -806,8 +804,6 @@ PetscErrorCode MatLoad_SeqDense(PetscViewer viewer, const MatType type,Mat *A)
   }
   PetscFunctionReturn(0);
 }
-
-#include "petscsys.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_SeqDense_ASCII"
@@ -1531,6 +1527,44 @@ PetscErrorCode MatSetSizes_SeqDense(Mat A,PetscInt m,PetscInt n,PetscInt M,Petsc
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatConjugate_SeqDense"
+static PetscErrorCode MatConjugate_SeqDense(Mat A)
+{
+  Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
+  PetscInt       i,nz = A->rmap->n*A->cmap->n;
+  PetscScalar    *aa = a->v;
+
+  PetscFunctionBegin;
+  for (i=0; i<nz; i++) aa[i] = PetscConj(aa[i]);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatRealPart_SeqDense"
+static PetscErrorCode MatRealPart_SeqDense(Mat A)
+{
+  Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
+  PetscInt       i,nz = A->rmap->n*A->cmap->n;
+  PetscScalar    *aa = a->v;
+
+  PetscFunctionBegin;
+  for (i=0; i<nz; i++) aa[i] = PetscRealPart(aa[i]);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatImaginaryPart_SeqDense"
+static PetscErrorCode MatImaginaryPart_SeqDense(Mat A)
+{
+  Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
+  PetscInt       i,nz = A->rmap->n*A->cmap->n;
+  PetscScalar    *aa = a->v;
+
+  PetscFunctionBegin;
+  for (i=0; i<nz; i++) aa[i] = PetscImaginaryPart(aa[i]);
+  PetscFunctionReturn(0);
+}
 
 /* ----------------------------------------------------------------*/
 #undef __FUNCT__
@@ -1841,11 +1875,11 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
 /*99*/ 0,
        0,
        0,
-       0,
+       MatConjugate_SeqDense,
        MatSetSizes_SeqDense,
-       0,
-       0,
-       0,
+/*104*/0,
+       MatRealPart_SeqDense,
+       MatImaginaryPart_SeqDense,
        0,
        0,
 /*109*/0,

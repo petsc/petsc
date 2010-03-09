@@ -12,7 +12,7 @@
      src/mat/impls/baij/seq
 
 */
-#include "petsc.h"
+#include "petscsys.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "LINPACKdgefa"

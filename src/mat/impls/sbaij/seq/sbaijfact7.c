@@ -12,10 +12,10 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_5(Mat C,Mat A,const MatFactorIn
   IS             perm = b->row;
   PetscErrorCode ierr;
   const PetscInt *ai,*aj,*perm_ptr,mbs=a->mbs,*bi=b->i,*bj=b->j;
-  PetscInt       i,j,*a2anew,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
+  PetscInt       i,j,*a2anew,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili,ipvt[5];
   MatScalar      *ba = b->a,*aa,*ap,*dk,*uik;
-  MatScalar      *u,*d,*rtmp,*rtmp_ptr;
-  PetscReal      shift = info->shiftinblocks;
+  MatScalar      *u,*d,*rtmp,*rtmp_ptr,work[25];
+  PetscReal      shift = info->shiftamount;
 
   PetscFunctionBegin;
   /* initialization */
@@ -210,7 +210,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_5(Mat C,Mat A,const MatFactorIn
     /* invert diagonal block */
     d = ba+k*25;
     ierr = PetscMemcpy(d,dk,25*sizeof(MatScalar));CHKERRQ(ierr);
-    ierr = Kernel_A_gets_inverse_A_5(d,shift);CHKERRQ(ierr);
+    ierr = Kernel_A_gets_inverse_A_5(d,ipvt,work,shift);CHKERRQ(ierr);
     
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {

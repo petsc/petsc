@@ -232,15 +232,12 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const M
   PetscInt           nlnk,*lnk,ncols,*cols,*uj,**ui_ptr,*uj_ptr,*udiag;
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
   PetscBT            lnkbt;
-  PetscTruth         olddatastruct=PETSC_FALSE;
 
   PetscFunctionBegin;
-    ierr = PetscOptionsGetTruth(PETSC_NULL,"-cholesky_old",&olddatastruct,PETSC_NULL);CHKERRQ(ierr);
-  if (olddatastruct || bs>1 ){
+  if (bs > 1){
     ierr = MatCholeskyFactorSymbolic_SeqSBAIJ_inplace(fact,A,perm,info);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(0); 
   }
-
   if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
   ierr = MatMissingDiagonal(A,&missing,&d);CHKERRQ(ierr);
   if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",d);
@@ -1323,31 +1320,35 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat B,Mat A,c
   Mat_SeqSBAIJ   *b=(Mat_SeqSBAIJ*)B->data;
   PetscErrorCode ierr;
   PetscInt       i,j,mbs=A->rmap->n,*bi=b->i,*bj=b->j,*bdiag=b->diag,*bjtmp;
-  PetscInt       *ai=a->i,*aj=a->j;
+  PetscInt       *ai=a->i,*aj=a->j,*ajtmp;
   PetscInt       k,jmin,jmax,*c2r,*il,col,nexti,ili,nz;
   MatScalar      *rtmp,*ba=b->a,*bval,*aa=a->a,dk,uikdi;
-
-  LUShift_Ctx    sctx;
-  PetscInt       newshift;
+  FactorShiftCtx sctx;
   PetscReal      rs;
   MatScalar      d,*v;
 
   PetscFunctionBegin;
+  ierr = PetscMalloc3(mbs,MatScalar,&rtmp,mbs,PetscInt,&il,mbs,PetscInt,&c2r);CHKERRQ(ierr);
+
   /* MatPivotSetUp(): initialize shift context sctx */
-  ierr = PetscMemzero(&sctx,sizeof(LUShift_Ctx));CHKERRQ(ierr);
+  ierr = PetscMemzero(&sctx,sizeof(FactorShiftCtx));CHKERRQ(ierr);
 
   /* if both shift schemes are chosen by user, only use info->shiftpd */
   if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
     sctx.shift_top = info->zeropivot;
+    ierr = PetscMemzero(rtmp,mbs*sizeof(MatScalar));CHKERRQ(ierr);
     for (i=0; i<mbs; i++) {
       /* calculate sum(|aij|)-RealPart(aii), amt of shift needed for this row */
       d  = (aa)[a->diag[i]];
-      rs = -PetscAbsScalar(d) - PetscRealPart(d);
-      v  = aa+ai[i];
-      nz = ai[i+1] - ai[i];
-      for (j=0; j<nz; j++) 
-	rs += PetscAbsScalar(v[j]);
-      if (rs>sctx.shift_top) sctx.shift_top = rs;
+      rtmp[i] += - PetscRealPart(d); /* diagonal entry */
+      ajtmp = aj + ai[i] + 1;        /* exclude diagonal */
+      v     = aa + ai[i] + 1;
+      nz    = ai[i+1] - ai[i] - 1 ;
+      for (j=0; j<nz; j++){
+	rtmp[i] += PetscAbsScalar(v[j]);  
+        rtmp[ajtmp[j]] += PetscAbsScalar(v[j]);
+      }
+      if (PetscRealPart(rtmp[i]) > sctx.shift_top) sctx.shift_top = PetscRealPart(rtmp[i]);
     }
     sctx.shift_top   *= 1.1;
     sctx.nshift_max   = 5;
@@ -1359,10 +1360,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat B,Mat A,c
      c2r: linked list, keep track of pivot rows for a given column. c2r[col]: head of the list for a given col
      il:  for active k row, il[i] gives the index of the 1st nonzero entry in U[i,k:n-1] in bj and ba arrays 
   */
-  ierr = PetscMalloc3(mbs,MatScalar,&rtmp,mbs,PetscInt,&il,mbs,PetscInt,&c2r);CHKERRQ(ierr);
- 
   do {
-    sctx.lushift = PETSC_FALSE;
+    sctx.useshift = PETSC_FALSE;
 
     for (i=0; i<mbs; i++)  c2r[i] = mbs; 
     il[0] = 0;
@@ -1424,20 +1423,19 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat B,Mat A,c
       sctx.rs  = rs;
       sctx.pv  = dk;
       if (info->shiftnz){
-        ierr = MatPivotCheck_nz(info,sctx,k,newshift);CHKERRQ(ierr);
+        ierr = MatPivotCheck_nz(info,sctx,k);CHKERRQ(ierr);
       } else if (info->shiftpd){
-        ierr = MatPivotCheck_pd(info,sctx,k,newshift);CHKERRQ(ierr);
+        ierr = MatPivotCheck_pd(info,sctx,k);CHKERRQ(ierr);
       } else if (info->shiftinblocks){
-        ierr = MatPivotCheck_inblocks(info,sctx,k,newshift);CHKERRQ(ierr);       
+        ierr = MatPivotCheck_inblocks(info,sctx,k);CHKERRQ(ierr);       
       } else {
-        ierr = MatPivotCheck_none(info,sctx,k,newshift);CHKERRQ(ierr); 
+        ierr = MatPivotCheck_none(info,sctx,k);CHKERRQ(ierr); 
       }
       dk = sctx.pv;
-      if (newshift == 1) break;
  
       ba[bdiag[k]] = 1.0/dk; /* U(k,k) */
     } 
-  } while (sctx.lushift);
+  } while (sctx.useshift);
   
   ierr = PetscFree3(rtmp,il,c2r);CHKERRQ(ierr);
  

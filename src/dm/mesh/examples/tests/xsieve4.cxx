@@ -1,6 +1,6 @@
 static char help[] = "XSieve Boundary Test.\n\n";
 
-#include <petsc.h>
+#include <petscsys.h>
 #include "xsieveTest.hh"
 
 

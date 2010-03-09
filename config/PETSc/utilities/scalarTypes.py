@@ -10,10 +10,13 @@ class Configure(config.base.Configure):
     self.substPrefix  = ''
     return
 
-  def __str__(self):
-    if not hasattr(self, 'scalartype'):
-      return ''
-    return '  Scalar type:' + self.scalartype + '\n'
+  def __str1__(self):
+    desc = []
+    if hasattr(self, 'scalartype'):
+      desc.append('  Scalar type: ' + self.scalartype)
+    if hasattr(self, 'precision'):
+      desc.append('  Precision: ' + self.precision)
+    return '\n'.join(desc)+'\n'
     
   def setupHelp(self, help):
     import nargs

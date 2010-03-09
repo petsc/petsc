@@ -5,7 +5,7 @@
 #if !defined (__PETSCISDEF_H)
 #define __PETSCISDEF_H
 
-#include "finclude/petscdef.h"
+#include "finclude/petscsysdef.h"
 
 #if !defined(PETSC_USE_FORTRAN_DATATYPES) 
 #define IS PetscFortranAddr

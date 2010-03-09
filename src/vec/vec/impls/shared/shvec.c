@@ -71,7 +71,6 @@ EXTERN_C_END
      Code to manage shared memory allocation using standard Unix shared memory
 */
 #include "petscsys.h"
-#include "petscfix.h"
 #if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif
@@ -118,8 +117,6 @@ static PetscErrorCode Petsc_DeleteShared(MPI_Comm comm,PetscInt keyval,void* att
   ierr = PetscFree(attr_val);CHKERRQ(ierr);
   PetscFunctionReturn(MPI_SUCCESS);
 }
-
-#include "petscfix.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSharedMalloc"

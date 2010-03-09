@@ -6,7 +6,7 @@
 #define __FUNCT__ "main"
       program main
       implicit none
-#include "finclude/petsc.h"      
+#include "finclude/petscsys.h"      
 #include "finclude/petsclog.h"      
       double precision A(n,n,dim),B(n,n,dim),v(n,n,n),w(n,n,n),sum
       double precision starttime,endtime
