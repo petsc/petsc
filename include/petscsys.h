@@ -2062,7 +2062,6 @@ extern PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Datatype
 
 /* Special support for C++ */
 #include "petscsys.hh"
-#include "petscblaslapack.h"
 
 
 /*MC

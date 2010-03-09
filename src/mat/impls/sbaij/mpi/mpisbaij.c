@@ -3,6 +3,7 @@
 #include "../src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "mpisbaij.h"
 #include "../src/mat/impls/sbaij/seq/sbaij.h"
+#include "petscblaslapack.h"
 
 EXTERN PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat); 
 EXTERN PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat); 

@@ -1,6 +1,7 @@
 #define PETSCMAT_DLL
 
 #include "../src/mat/impls/aij/mpi/mpiaij.h"   /*I "petscmat.h" I*/
+#include "petscblaslapack.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDistribute_MPIAIJ"

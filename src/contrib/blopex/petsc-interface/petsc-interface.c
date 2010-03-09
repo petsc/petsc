@@ -2,6 +2,7 @@
 
 #include "petscvec.h"
 #include "petscmat.h"
+#include "petscblaslapack.h"
 #include <assert.h>
 #include "interpreter.h"
 #include "temp_multivector.h"

@@ -1,6 +1,7 @@
 #define PETSCKSP_DLL
 
 #include "../src/ksp/ksp/impls/gmres/gmresimpl.h"
+#include "petscblaslapack.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPComputeExtremeSingularValues_GMRES"

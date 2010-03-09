@@ -4,6 +4,7 @@
 #include "../src/mat/blockinvert.h"
 #include "petscbt.h"
 #include "../src/mat/impls/sbaij/seq/sbaij.h"
+#include "petscblaslapack.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_SeqSBAIJ"

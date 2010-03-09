@@ -8,6 +8,7 @@ Input parameters include\n\
 e.g. ./ex116 -f /home/petsc/datafiles/matrices/small  \n\n";
 
 #include "petscmat.h"
+#include "petscblaslapack.h"
 
 extern PetscErrorCode CkEigenSolutions(PetscInt,Mat,PetscInt,PetscInt,PetscReal*,Vec*,PetscReal*);
 

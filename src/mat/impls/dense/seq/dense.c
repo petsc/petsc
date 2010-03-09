@@ -5,6 +5,7 @@
 */
 
 #include "../src/mat/impls/dense/seq/dense.h"
+#include "petscblaslapack.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_SeqDense"

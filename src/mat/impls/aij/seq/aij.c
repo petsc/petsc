@@ -8,6 +8,7 @@
 
 
 #include "../src/mat/impls/aij/seq/aij.h"          /*I "petscmat.h" I*/
+#include "petscblaslapack.h"
 #include "petscbt.h"
 
 #undef __FUNCT__  

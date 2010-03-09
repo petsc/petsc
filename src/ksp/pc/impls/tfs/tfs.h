@@ -23,6 +23,7 @@ File Description:
 
 ***********************************const.h************************************/
 #include "petscsys.h"
+#include "petscblaslapack.h"
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif

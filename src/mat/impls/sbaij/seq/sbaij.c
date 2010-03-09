@@ -6,6 +6,7 @@
 */
 #include "../src/mat/impls/baij/seq/baij.h"         /*I "petscmat.h" I*/
 #include "../src/mat/impls/sbaij/seq/sbaij.h"
+#include "petscblaslapack.h"
 
 #include "../src/mat/impls/sbaij/seq/relax.h"
 #define USESHORT
