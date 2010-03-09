@@ -1158,7 +1158,7 @@ class Configure(config.base.Configure):
     self.pushLanguage('FC')
     oldFLAGS = self.setCompilers.FFLAGS
     oldLIBS  = self.setCompilers.LIBS
-    for flag in ['-module ', '-fmod=', '-J', '-M', '-p']:
+    for flag in ['-module ', '-module:', '-fmod=', '-J', '-M', '-p', '-moddir=']:
       self.setCompilers.FFLAGS = flag+testdir+' '+self.setCompilers.FFLAGS
       self.setCompilers.LIBS   = modobj+' '+self.setCompilers.LIBS
       if not self.checkCompile(modcode, None, cleanup = 0):
@@ -1177,8 +1177,9 @@ class Configure(config.base.Configure):
     self.popLanguage()
     if modname: os.remove(os.path.join(testdir, modname))
     os.rmdir(testdir)
-    if not found:
-      raise RuntimeError('Cannot determine Fortran module output flag')
+    # Flag not used by PETSc - do do not flag a runtime error
+    #if not found:
+    #  raise RuntimeError('Cannot determine Fortran module output flag')
     return
 
   def configure(self):
