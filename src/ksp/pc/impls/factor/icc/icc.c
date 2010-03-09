@@ -194,7 +194,7 @@ EXTERN_C_END
 
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,
-           PCFactorSetZeroPivot(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(),PCFactorSetShiftInBlocks(), 
+           PCFactorSetZeroPivot(), PCFactorSetShiftType(), PCFactorSetShiftAmount(), 
            PCFactorSetFill(), PCFactorSetMatOrderingType(), PCFactorSetReuseOrdering(), 
            PCFactorSetLevels()
 
