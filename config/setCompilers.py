@@ -882,9 +882,10 @@ class Configure(config.base.Configure):
       elif 'tlib' in args:
         flag = '-a -P512'
     if prog.endswith('ar') and not self.isSolarisAR(prog):
-      self.framework.addMakeMacro('FAST_AR_FLAGS', 'Scq')
+      self.FAST_AR_FLAGS = 'Scq'
     else:
-      self.framework.addMakeMacro('FAST_AR_FLAGS', flag)
+      self.FAST_AR_FLAGS = flag      
+    self.framework.addMakeMacro('FAST_AR_FLAGS',self.FAST_AR_FLAGS )
     return flag
   
   def generateArchiverGuesses(self):
