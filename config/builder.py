@@ -279,8 +279,9 @@ class PETScMaker(script.Script):
    if rootDir == os.environ['PETSC_DIR']:
      library = os.path.join(self.petscdir.dir, self.arch.arch, 'lib', 'libpetsc')   
      lib = os.path.splitext(library)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX
-     if self.verbose: print 'Removing '+lib
-     os.unlink(lib)
+     if os.path.isfile(lib):
+       if self.verbose: print 'Removing '+lib
+       os.unlink(lib)
    for root, dirs, files in os.walk(rootDir):
      print 'Processing',root
      self.buildDir('libpetsc', root, files)
