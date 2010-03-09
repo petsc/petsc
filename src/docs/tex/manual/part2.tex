@@ -4041,6 +4041,13 @@ the time steps $dt^{n}$ and the left-hand-side matrix $B$
 identity matrix,
 a scalar timestep), as well as optionally the Jacobian of $F(u)$. 
 
+More generally, this can be applied to implicit ODE and DAE for which
+the transient form is
+\[
+  F(u,\dot{u}) = 0.
+\]
+See Section~\ref{sec_dae} for details on this formulation.
+
 \section{Basic Usage}
 
 The user first creates a TS object with the command
@@ -4218,8 +4225,8 @@ uses:
   details), and the (optional) user-provided context \trl{jacP}.
 \end{itemize}
 
-Note: only the general linear \trl{TSGL} and $\theta$ method
-\trl{TSTHETA} have support for solving DAE.
+Note: currently only \trl{TSGL}, \trl{TSTHETA}, and \trl{TSPSEUDO} have
+support for solving DAE.
 
 \subsection{Using Sundials from PETSc}
 \label{sec_sundials}
