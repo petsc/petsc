@@ -61,11 +61,12 @@ class Configure(PETSc.package.NewPackage):
       self.framework.popLanguage()
     else:
       raise RuntimeError('Error: ML requires C++ compiler. None specified')
-      
+    
+    args.append('--with-mpi="'+self.mpi.directory+'"') 
     if self.mpi.directory:
       args.append('--with-mpi="'+self.mpi.directory+'"') 
-    else:
-      raise RuntimeError("Installing ML requires explicit root directory of MPI\nRun config/configure.py again with the additional argument --with-mpi-dir=rootdir")
+    #else:
+    #  raise RuntimeError("Installing ML requires explicit root directory of MPI\nRun config/configure.py again with the additional argument --with-mpi-dir=rootdir")
 
     libs = []
     for l in self.mpi.lib:
