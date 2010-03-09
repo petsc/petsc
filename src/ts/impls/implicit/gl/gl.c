@@ -1,7 +1,6 @@
 #define PETSCTS_DLL
 
 #include "gl.h"                /*I   "petscts.h"   I*/
-#include "petscblaslapack.h"
 
 static const char *TSGLErrorDirections[] = {"FORWARD","BACKWARD","TSGLErrorDirection","TSGLERROR_",0};
 static PetscFList TSGLList;

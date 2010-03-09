@@ -1176,7 +1176,6 @@ PetscErrorCode MatRestoreArray_SeqSBAIJ(Mat A,PetscScalar *array[])
   PetscFunctionReturn(0);
  }
 
-#include "petscblaslapack.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_SeqSBAIJ"
 PetscErrorCode MatAXPY_SeqSBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)

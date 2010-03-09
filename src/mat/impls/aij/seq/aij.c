@@ -1917,7 +1917,6 @@ PetscErrorCode MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,const MatFactorInfo *in
   PetscFunctionReturn(0);
 }
 
-#include "petscblaslapack.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_SeqAIJ"
 PetscErrorCode MatScale_SeqAIJ(Mat inA,PetscScalar alpha)
@@ -2263,7 +2262,6 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
   PetscFunctionReturn(0);
 }
 
-#include "petscblaslapack.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_SeqAIJ"
 PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)

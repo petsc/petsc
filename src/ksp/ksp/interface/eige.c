@@ -90,8 +90,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExplicitOperator(KSP ksp,Mat *mat)
   PetscFunctionReturn(0);
 }
 
-#include "petscblaslapack.h"
-
 #undef __FUNCT__  
 #define __FUNCT__ "KSPComputeEigenvaluesExplicitly"
 /*@

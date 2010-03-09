@@ -5,7 +5,6 @@
 #include <Mesh.hh>
 #include "private/vecimpl.h" /*I  "petscvec.h"  I*/
 #include "private/petscaxpy.h"
-#include "petscblaslapack.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSet_Sieve"

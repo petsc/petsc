@@ -13,8 +13,6 @@
 #if !defined(__ILU_H)
 #define __ILU_H
 
-#include "petscblaslapack.h"
-
 /*
       These are C kernels,they are contained in 
    src/mat/impls/baij/seq

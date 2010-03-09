@@ -2,8 +2,8 @@
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
 */
-#if !defined(__PETSC_H)
-#define __PETSC_H
+#if !defined(__PETSCSYS_H)
+#define __PETSCSYS_H
 /* ========================================================================== */
 /* 
    petscconf.h is contained in ${PETSC_ARCH}/include/petscconf.h it is 
@@ -1516,6 +1516,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMPIDump(FILE*);
 */
 #include "petsclog.h"
 
+
 /*
           For locking, unlocking and destroying AMS memories associated with 
     PETSc objects. Not currently used.
@@ -1661,9 +1662,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt,const PetscScalar
 #if defined(PETSC_HAVE_STRING_H)
 #include <string.h>
 #endif
-#if defined(PETSC_PREFER_DCOPY_FOR_MEMCPY)
-#include "petscblaslapack.h"
-#endif
+
+
 #if defined(PETSC_HAVE_XMMINTRIN_H)
 #include <xmmintrin.h>
 #endif
@@ -2062,6 +2062,8 @@ extern PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Datatype
 
 /* Special support for C++ */
 #include "petscsys.hh"
+#include "petscblaslapack.h"
+
 
 /*MC
 
@@ -2446,4 +2448,5 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommCreate(MPI_Comm,PetscInt,Pe
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommDestroy(PetscSubcomm);
 
 PETSC_EXTERN_CXX_END
+
 #endif

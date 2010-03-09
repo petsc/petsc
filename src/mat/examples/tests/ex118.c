@@ -1,7 +1,6 @@
 static char help[] = "Test LAPACK routine DSTEBZ() and DTEIN().  \n\n";
 
 #include "petscmat.h"
-#include "petscblaslapack.h"
 
 extern PetscErrorCode CkEigenSolutions(PetscInt,Mat,PetscInt,PetscInt,PetscScalar*,Vec*,PetscReal*);
 

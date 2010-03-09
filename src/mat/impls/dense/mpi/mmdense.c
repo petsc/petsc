@@ -423,7 +423,6 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
   PetscFunctionReturn(0);
 }
 
-#include "petscblaslapack.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_MPIDense"
 PetscErrorCode MatScale_MPIDense(Mat inA,PetscScalar alpha)

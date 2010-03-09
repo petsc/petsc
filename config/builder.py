@@ -96,7 +96,7 @@ class PETScMaker(script.Script):
    flags = []
    flags.append(self.setCompilers.getCompilerFlags())             # PCC_FLAGS
    flags.extend([self.setCompilers.CPPFLAGS, self.CHUD.CPPFLAGS]) # CPP_FLAGS
-   flags.append('-D__SDIR__=\'"'+os.getcwd().replace(self.petscdir.dir, '')+'"\'')
+   flags.append('-D__INSDIR__='+os.getcwd().replace(self.petscdir.dir, ''))
    packageIncludes, packageLibs = self.getPackageInfo()
    cmd = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
    if self.dryRun or self.verbose: print cmd
@@ -152,7 +152,7 @@ class PETScMaker(script.Script):
  def archive(self, library, objects):
    '''${AR} ${AR_FLAGS} ${LIBNAME} $*.o'''
    lib = os.path.splitext(library)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX
-   cmd = ' '.join([self.setCompilers.AR, self.setCompilers.AR_FLAGS, lib]+objects)
+   cmd = ' '.join([self.setCompilers.AR, self.setCompilers.FAST_AR_FLAGS, lib]+objects)
    if self.dryRun or self.verbose: print cmd
    if not self.dryRun:
      self.executeShellCommand(cmd,log=self.log)
@@ -196,9 +196,12 @@ class PETScMaker(script.Script):
    - Excludes examples
    - Checks whether fortran bindings are necessary
    - Checks makefile to see if compiler is allowed to visit this directory for this configuration'''
-   if dirname.endswith('examples'): return False
+   base = os.path.basename(dirname)
+
+   if base == 'examples': return False
    if not hasattr(self.compilers, 'FC'):
-     if dirname.startswith('ftn-') or dirname.startswith('f90-'): return False
+     if base.startswith('ftn-') or base.startswith('f90-'): return False
+   if base == 'contrib':  return False     
 
    import re
    reg   = re.compile(' [ ]*')

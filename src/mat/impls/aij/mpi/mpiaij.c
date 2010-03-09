@@ -1821,7 +1821,6 @@ PetscErrorCode MatSetUpPreallocation_MPIAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-#include "petscblaslapack.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_MPIAIJ"
 PetscErrorCode MatAXPY_MPIAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)

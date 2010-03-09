@@ -227,7 +227,6 @@ PetscErrorCode MatGetSubMatrices_SeqBAIJ(Mat A,PetscInt n,const IS irow[],const 
 /* -------------------------------------------------------*/
 /* Should check that shapes of vectors and matrices match */
 /* -------------------------------------------------------*/
-#include "petscblaslapack.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqBAIJ_1"

@@ -45,11 +45,6 @@
 */
 #include "../src/ksp/pc/impls/asa/asa.h"
 
-/*
-  We need the QR algorithm from LAPACK
-*/
-#include "petscblaslapack.h"
-
 /* -------------------------------------------------------------------------- */
 
 /* Event logging */

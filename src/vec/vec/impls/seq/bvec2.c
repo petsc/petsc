@@ -5,7 +5,6 @@
 
 #include "private/vecimpl.h"          /*I "petscvec.h" I*/
 #include "../src/vec/vec/impls/dvecimpl.h" 
-#include "petscblaslapack.h"
 #if defined(PETSC_HAVE_PNETCDF)
 EXTERN_C_BEGIN
 #include "pnetcdf.h"

@@ -3,7 +3,6 @@
      Code for some of the parallel vector primatives.
 */
 #include "../src/vec/vec/impls/mpi/pvecimpl.h" 
-#include "petscblaslapack.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecMDot_MPI"
