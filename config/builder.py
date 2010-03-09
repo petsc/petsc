@@ -20,7 +20,8 @@ class PETScMaker(script.Script):
 
  def setupModules(self):
 #    self.mpi           = self.framework.require('config.packages.MPI',      None)
-   self.setCompilers  = self.framework.require('config.setCompilers',         None)
+   self.base          = self.framework.require('config.base',                 None)
+   self.setCompilers  = self.framework.require('config.setCompilers',         None)   
    self.arch          = self.framework.require('PETSc.utilities.arch',        None)
    self.petscdir      = self.framework.require('PETSc.utilities.petscdir',    None)
    self.languages     = self.framework.require('PETSc.utilities.languages',   None)
@@ -42,7 +43,7 @@ class PETScMaker(script.Script):
 
    help = script.Script.setupHelp(self, help)
    help.addArgument('RepManager', '-rootDir', nargs.ArgDir(None, os.environ['PETSC_DIR'], 'The root directory for this build', isTemporary = 1))
-   help.addArgument('RepManager', '-dryRun',  nargs.ArgBool(None, True, 'Only output what would be run', isTemporary = 1))
+   help.addArgument('RepManager', '-dryRun',  nargs.ArgBool(None, False, 'Only output what would be run', isTemporary = 1))
    help.addArgument('RepManager', '-verbose', nargs.ArgInt(None, 1, 'The verbosity level', min = 0, isTemporary = 1))
    return help
 
@@ -101,7 +102,10 @@ class PETScMaker(script.Script):
    cmd = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
    if self.dryRun or self.verbose: print cmd
    if not self.dryRun:
-     self.executeShellCommand(cmd,log=self.log)
+     try:
+       self.executeShellCommand(cmd,log=self.log)
+     except:
+       print "ERROR IN COMPILE ******************************"
    self.setCompilers.popLanguage()
    return
 
@@ -124,28 +128,10 @@ class PETScMaker(script.Script):
    cmd = ' '.join([compiler]+['-c']+includes+flags+source)
    if self.dryRun or self.verbose: print cmd
    if not self.dryRun:
-     self.executeShellCommand(cmd,log=self.log)
-   self.setCompilers.popLanguage()
-   return
-
- def compileFortran(self, source):
-   '''What is this?'''
-   flags           = []
-   packageIncludes, packageLibs = self.getPackageInfo()
-   includes = ['-I'+inc for inc in [os.path.join(self.petscdir.dir, self.arch.arch, 'include'), os.path.join(self.petscdir.dir, 'include')]]
-   # should add FAST_AR_FLAGS to setCompilers
-   if linker.endswith('ar'):
-     flags.append('Scq')
-   else:
-     flags.append(self.setCompilers.AR_FLAGS)
-   cmd = ' '.join([linker]+flags+[libname+'.'+self.setCompilers.AR_LIB_SUFFIX]+objects)
-   if self.verbose: print cmd
-   self.executeShellCommand(cmd,log=self.log)   
-   for i in objects:
      try:
-       os.unlink(i)
+       self.executeShellCommand(cmd,log=self.log)
      except:
-       print 'File '+i+' was not compiled'
+       print "ERROR IN COMPILE ******************************"
    self.setCompilers.popLanguage()
    return
 
@@ -155,9 +141,25 @@ class PETScMaker(script.Script):
    cmd = ' '.join([self.setCompilers.AR, self.setCompilers.FAST_AR_FLAGS, lib]+objects)
    if self.dryRun or self.verbose: print cmd
    if not self.dryRun:
-     self.executeShellCommand(cmd,log=self.log)
+     try:
+       self.executeShellCommand(cmd,log=self.log)
+     except:
+       pass
    return
-  
+
+ def ranlib(self, library):
+   '''${ranlib} ${LIBNAME} '''
+   library = os.path.join(self.petscdir.dir, self.arch.arch, 'lib', library)   
+   lib = os.path.splitext(library)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX
+   cmd = ' '.join([self.setCompilers.RANLIB, lib])
+   if self.dryRun or self.verbose: print cmd
+   if not self.dryRun:
+     try:
+       self.executeShellCommand(cmd,log=self.log)
+     except:
+       pass
+   return
+ 
  def buildDir(self, libname, dirname, fnames):
    ''' This is run in a PETSc source directory'''
    if self.verbose: print 'Entering '+dirname
@@ -193,7 +195,10 @@ class PETScMaker(script.Script):
 
  def checkDir(self, dirname):
    '''Checks whether we should recurse into this directory
-   - Excludes examples
+   - Excludes examples directory
+   - Excludes contrib directory
+   - Excludes tutorials directory
+   - Excludes benchmarks directory
    - Checks whether fortran bindings are necessary
    - Checks makefile to see if compiler is allowed to visit this directory for this configuration'''
    base = os.path.basename(dirname)
@@ -201,7 +206,9 @@ class PETScMaker(script.Script):
    if base == 'examples': return False
    if not hasattr(self.compilers, 'FC'):
      if base.startswith('ftn-') or base.startswith('f90-'): return False
-   if base == 'contrib':  return False     
+   if base == 'contrib':  return False
+   if base == 'tutorials':  return False
+   if base == 'benchmarks':  return False     
 
    import re
    reg   = re.compile(' [ ]*')
@@ -247,8 +254,16 @@ class PETScMaker(script.Script):
              pname = 'PETSC_HAVE_'+i.PACKAGE
              pname = "'"+pname+"'"
              if pname == rvalue: found = 1
+           for i in self.base.defines:
+             pname = 'PETSC_'+i
+             pname = "'"+pname+"'"
+             if pname == rvalue: found = 1
+           for i in self.functions.defines:
+             pname = 'PETSC_'+i
+             pname = "'"+pname+"'"
+             if pname == rvalue: found = 1
            if not found:
-             if self.verbose: print 'Rejecting',dirname,'because package '+rvalue+' is not installed'
+             if self.verbose: print 'Rejecting',dirname,'because package '+rvalue+' is not installed or function does not exist'
              return 0
          
      text = fd.readline()
@@ -261,11 +276,18 @@ class PETScMaker(script.Script):
      rootDir = self.argDB['rootDir']
    if not self.checkDir(rootDir):
      print 'Nothing to be done'
+   if rootDir == os.environ['PETSC_DIR']:
+     library = os.path.join(self.petscdir.dir, self.arch.arch, 'lib', 'libpetsc')   
+     lib = os.path.splitext(library)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX
+     if self.verbose: print 'Removing '+lib
+     os.unlink(lib)
    for root, dirs, files in os.walk(rootDir):
      print 'Processing',root
-     self.buildDir('libpetscfake', root, files)
+     self.buildDir('libpetsc', root, files)
      for badDir in [d for d in dirs if not self.checkDir(os.path.join(root, d))]:
        dirs.remove(badDir)
+   self.ranlib('libpetsc')
+     
    return
    
 if __name__ == '__main__':

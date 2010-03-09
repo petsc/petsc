@@ -435,6 +435,7 @@ getmpiexec:
           grep -v "symbol if the symbol" | \
           grep -v -i inconsistent | \
           grep -v -i "unused dummy" | \
+          grep -v "alignment lost in merging tentative definition" | \
 	  grep -v "WARNING:  -cpp is ignored" | \
           grep -v "ignoring symbol version info" | \
 	  grep -v "At least one PA 2.0" | \
