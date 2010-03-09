@@ -43,13 +43,14 @@ class Configure(PETSc.package.NewPackage):
     
     self.framework.pushLanguage('C')
     args.append('CC="'+self.framework.getCompiler()+'"')
-    args.append('--with-cflags="'+self.framework.getCompilerFlags()+' -DMPICH_SKIP_MPICXX"')
+    args.append('--with-cflags="'+self.framework.getCompilerFlags()+' -DMPICH_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
+    args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.mpi.include)+'"')
     self.framework.popLanguage()
 
     if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
       args.append('F77="'+self.framework.getCompiler()+'"')
-      args.append('--with-fflags="'+self.framework.getCompilerFlags()+'"')
+      args.append('--with-fflags="'+self.framework.getCompilerFlags()+' '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
       self.framework.popLanguage()
     else:
       args.append('F77=""')
@@ -57,23 +58,14 @@ class Configure(PETSc.package.NewPackage):
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
       args.append('CXX="'+self.framework.getCompiler()+'"')
-      args.append('--with-cxxflags="'+self.framework.getCompilerFlags()+' -DMPICH_SKIP_MPICXX"')
+      args.append('--with-cxxflags="'+self.framework.getCompilerFlags()+' -DMPICH_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
       self.framework.popLanguage()
     else:
       raise RuntimeError('Error: ML requires C++ compiler. None specified')
-    
-    args.append('--with-mpi="'+self.mpi.directory+'"') 
-    if self.mpi.directory:
-      args.append('--with-mpi="'+self.mpi.directory+'"') 
-    #else:
-    #  raise RuntimeError("Installing ML requires explicit root directory of MPI\nRun config/configure.py again with the additional argument --with-mpi-dir=rootdir")
 
-    libs = []
-    for l in self.mpi.lib:
-      ll = os.path.basename(l)
-      libs.append('-l'+ll[3:-2])
-    libs = ' '.join(libs) # '-lmpich -lpmpich'
-    args.append('--with-mpi-libs=" '+libs+'"')
+    # ML does not have --with-mpi-include - so specify includes with cflags,fflags,cxxflags,CPPFLAGS
+    args.append('--enable-mpi') 
+    args.append('--with-mpi-libs="'+self.libraries.toString(self.mpi.lib)+'"')
     args.append('--with-blas="'+self.libraries.toString(self.blasLapack.dlib)+'"')
     args = ' '.join(args)
     fd = file(os.path.join(self.packageDir,'ml'), 'w')
