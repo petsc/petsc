@@ -327,3 +327,86 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCorners(DA da,PetscInt *x,PetscInt *y,Pets
   PetscFunctionReturn(0);
 } 
 
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetLocalBoundingBox"
+/*@
+   DAGetLocalBoundingBox - Returns the local bounding box for the DA.
+
+   Not Collective
+
+   Input Parameter:
+.  da - the distributed array
+
+   Output Parameters:
++  lmin - local minimum coordinates (length dim, optional)
+-  lmax - local maximim coordinates (length dim, optional)
+
+  Level: beginner
+
+.keywords: distributed array, get, coordinates
+
+.seealso: DAGetCoordinateDA(), DAGetCoordinates(), DAGetBoundingBox()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalBoundingBox(DA da,PetscReal lmin[],PetscReal lmax[])
+{
+  PetscErrorCode ierr;
+  Vec coords;
+  PetscInt dim,i,j;
+  PetscScalar *local_coords;
+  PetscReal min[3]={PETSC_MAX,PETSC_MAX,PETSC_MAX},max[3]={PETSC_MIN,PETSC_MIN,PETSC_MIN};
+  PetscInt N,Ni;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  dim = da->dim;
+  ierr = DAGetCoordinates(da,&coords);CHKERRQ(ierr);
+  ierr = VecGetArray(coords,&local_coords);CHKERRQ(ierr);
+  ierr = VecGetSize(coords,&N);CHKERRQ(ierr);
+  Ni = N/dim;
+  for (i=0; i<Ni; i++) {
+    for (j=0; j<dim; j++) {
+      min[j] = PetscMin(min[j],PetscRealPart(local_coords[i*dim+j]));CHKERRQ(ierr);
+      max[j] = PetscMax(min[j],PetscRealPart(local_coords[i*dim+j]));CHKERRQ(ierr);
+    }
+  }
+  ierr = VecRestoreArray(coords,&local_coords);CHKERRQ(ierr);
+  ierr = VecDestroy(coords);CHKERRQ(ierr);
+  if (lmin) {ierr = PetscMemcpy(lmin,min,dim*sizeof(PetscReal));CHKERRQ(ierr);}
+  if (lmax) {ierr = PetscMemcpy(lmax,max,dim*sizeof(PetscReal));CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetBoundingBox"
+/*@
+   DAGetBoundingBox - Returns the global bounding box for the DA.
+
+   Collective on DA
+
+   Input Parameter:
+.  da - the distributed array
+
+   Output Parameters:
++  gmin - global minimum coordinates (length dim, optional)
+-  gmax - global maximim coordinates (length dim, optional)
+
+  Level: beginner
+
+.keywords: distributed array, get, coordinates
+
+.seealso: DAGetCoordinateDA(), DAGetCoordinates(), DAGetBoundingBox()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DAGetBoundingBox(DA da,PetscReal gmin[],PetscReal gmax[])
+{
+  PetscErrorCode ierr;
+  PetscMPIInt count;
+  PetscReal lmin[3],lmax[3];
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  count = PetscMPIIntCast(da->dim);
+  ierr = DAGetLocalBoundingBox(da,lmin,lmax);CHKERRQ(ierr);
+  if (gmin) {ierr = MPI_Allreduce(lmin,gmin,count,MPIU_REAL,MPI_MIN,((PetscObject)da)->comm);CHKERRQ(ierr);}
+  if (gmax) {ierr = MPI_Allreduce(lmax,gmax,count,MPIU_REAL,MPI_MAX,((PetscObject)da)->comm);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
