@@ -577,8 +577,6 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat C,Mat A,const MatFactorInf
   }
   
   /* initialization */
-  shiftnz   = info->shiftnz;
-  shiftpd   = info->shiftpd;
   zeropivot = info->zeropivot;
 
   ierr  = ISGetIndices(ip,&rip);CHKERRQ(ierr);
@@ -696,8 +694,6 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat C,Mat A,co
 
   PetscFunctionBegin;
   /* initialization */
-  shiftnz   = info->shiftnz;
-  shiftpd   = info->shiftpd;
   zeropivot = info->zeropivot;
 
   ierr = PetscMalloc3(am,MatScalar,&rtmp,am,PetscInt,&il,am,PetscInt,&jl);CHKERRQ(ierr);

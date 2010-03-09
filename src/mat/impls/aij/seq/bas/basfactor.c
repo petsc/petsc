@@ -110,7 +110,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorIn
   PetscInt       mbs=A->rmap->n,*bi=b->i,*bj=b->j;
 
   MatScalar      *ba=b->a;
-  PetscReal      shiftnz = info->shiftnz;
+  PetscReal      shiftnz = info->shiftamount;
   PetscReal      droptol = -1;
   PetscTruth     perm_identity;
   spbas_matrix   Pattern, matrix_L,matrix_LT;
