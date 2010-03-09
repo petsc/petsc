@@ -183,7 +183,7 @@ EXTERN_C_END
 
           The Manteuffel shift is only implemented for matrices with block size 1
 
-          By default, the Manteuffel is applied (for matrices with block size 1). Call PCFactorSetShiftPd(pc,PETSC_FALSE);
+          By default, the Manteuffel is applied (for matrices with block size 1). Call PCFactorSetShiftType(pc,MAT_SHIFT_POSITIVE_DEFINITE);
           to turn off the shift.
 
    References:

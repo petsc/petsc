@@ -70,7 +70,6 @@ int main(int argc,char **args)
   ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
   info.fill          = 1.0;
   info.diagonal_fill = 0;
-  info.shiftnz       = 0;
   info.zeropivot     = 0.0;
   ierr = PetscOptionsHasName(PETSC_NULL,"-cholesky",&CHOLESKY);CHKERRQ(ierr);
   if (CHOLESKY){ 

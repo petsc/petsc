@@ -44,6 +44,7 @@ int main(int argc,char **argv)
     (PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
 
   /* Cholesky factorization is not yet in place for this matrix format */
+  ierr = MatFactorInfoInitialize(&factinfo);CHKERRQ(ierr);
   factinfo.fill = 1.0;
   ierr = MatMult(mat,x,b);CHKERRQ(ierr);
   ierr = MatConvert(mat,MATSAME,MAT_INITIAL_MATRIX,&fact);CHKERRQ(ierr);
@@ -68,12 +69,14 @@ int main(int argc,char **argv)
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatMult(mat,x,b);CHKERRQ(ierr);
   ierr = MatConvert(mat,MATSAME,MAT_INITIAL_MATRIX,&fact);CHKERRQ(ierr);
-  luinfo.fill           = 5.0;
+
+  ierr = MatFactorInfoInitialize(&luinfo);CHKERRQ(ierr);
+  luinfo.fill           = 1.0;
   luinfo.dtcol          = 1.e-6; /* default to pivoting; this is only thing PETSc LU supports */
-  luinfo.shiftnz        = 0.0;
   luinfo.zeropivot      = 1.e-12;
-  luinfo.pivotinblocks  = 1.0;
-  luinfo.shiftpd        = 0.0; /* false */
+  luinfo.shifttype      = MAT_SHIFT_INBLOCKS;
+  luinfo.shiftamount    = 1.e-12;
+  
   ierr = MatLUFactor(fact,perm,perm,&luinfo);CHKERRQ(ierr);
   ierr = MatSolve(fact,b,y);CHKERRQ(ierr);
   value = -1.0; ierr = VecAXPY(y,value,x);CHKERRQ(ierr);
@@ -81,11 +84,11 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error for LU %A\n",norm);CHKERRQ(ierr);
   ierr = MatDestroy(fact);CHKERRQ(ierr);
 
-  luinfo.fill      = 2.0;
-  luinfo.dtcol     = 0.0; 
-  luinfo.shiftnz   = 0.0; 
-  luinfo.zeropivot = 1.e-14; 
-  luinfo.pivotinblocks = 1.0; 
+  luinfo.fill        = 1.0;
+  luinfo.dtcol       = 0.0; 
+  luinfo.zeropivot   = 1.e-14; 
+  luinfo.shifttype   = MAT_SHIFT_INBLOCKS;
+  luinfo.shiftamount = 1.e-12;
   ierr = MatGetFactor(mat,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&fact);CHKERRQ(ierr);
   ierr = MatLUFactorSymbolic(fact,mat,perm,perm,&luinfo);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(fact,mat,&luinfo);CHKERRQ(ierr);
@@ -99,7 +102,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = VecDestroy(y);CHKERRQ(ierr);
   ierr = ISDestroy(perm);CHKERRQ(ierr);
-
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

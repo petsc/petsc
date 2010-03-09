@@ -1133,8 +1133,6 @@ $     MatFactorInfo  info(MAT_FACTORINFO_SIZE)
 
 S*/
 typedef struct {
-  PetscReal     shiftnz;        /* scaling of identity added to matrix to prevent zero pivots */
-  PetscReal     shiftpd;        /* if true, shift until positive pivots */
   PetscReal     diagonal_fill;  /* force diagonal to fill in if initially not filled */
   PetscReal     usedt;
   PetscReal     dt;             /* drop tolerance */
@@ -1144,7 +1142,6 @@ typedef struct {
   PetscReal     levels;         /* ICC/ILU(levels) */ 
   PetscReal     pivotinblocks;  /* for BAIJ and SBAIJ matrices pivot in factorization on blocks, default 1.0 
                                    factorization may be faster if do not pivot */
-  PetscReal     shiftinblocks;  /* if block in block factorization has zero pivot then shift diagonal until non-singular */
   PetscReal     zeropivot;      /* pivot is called zero if less than this */
   MatFactorShiftType shifttype;   /* type of shift added to matrix factor to prevent zero pivots */
   PetscReal          shiftamount; /* shfit amount */

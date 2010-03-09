@@ -865,7 +865,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat C,Mat A,const MatFactorIn
   PetscInt       *a2anew,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
   MatScalar      *ba = b->a,*aa,*ap;
   MatScalar      *u,*diag,*rtmp,*rtmp_ptr,dk[4],uik[4];
-  PetscReal      shift = info->shiftinblocks;
+  PetscReal      shift = info->shiftamount;
 
   PetscFunctionBegin;
   /* initialization */
@@ -1035,7 +1035,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat C,Mat A,c
   PetscInt       *ai,*aj,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
   MatScalar      *ba = b->a,*aa,*ap,dk[8],uik[8];
   MatScalar      *u,*diag,*rtmp,*rtmp_ptr;
-  PetscReal      shift = info->shiftinblocks;
+  PetscReal      shift = info->shiftamount;
 
   PetscFunctionBegin;
   /* initialization */
@@ -1172,16 +1172,13 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_inplace(Mat C,Mat A,const Mat
   PetscInt       *a2anew,i,j,mbs=a->mbs,*bi=b->i,*bj=b->j,*bcol;
   PetscInt       k,jmin,jmax,*jl,*il,col,nexti,ili,nz;
   MatScalar      *rtmp,*ba=b->a,*bval,*aa,dk,uikdi;
-  PetscReal      zeropivot,rs,shiftnz;
-  PetscReal      shiftpd;
+  PetscReal      rs,shift;
   ChShift_Ctx    sctx;
   PetscInt       newshift;
 
   PetscFunctionBegin;
   /* initialization */
-  shiftnz   = info->shiftnz;
-  shiftpd   = info->shiftpd;
-  zeropivot = info->zeropivot; 
+  shift   = info->shiftamount;
 
   ierr  = ISGetIndices(ip,&rip);CHKERRQ(ierr);
   if (!a->permute){
@@ -1299,9 +1296,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_inplace(Mat C,Mat A,const Mat
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(C->rmap->N);CHKERRQ(ierr);
   if (sctx.nshift){
-    if (shiftnz) {
+    if (info->shifttype == MAT_SHIFT_NONZERO) {
       ierr = PetscInfo2(A,"number of shiftnz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
-    } else if (shiftpd) {
+    } else if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE) {
       ierr = PetscInfo2(A,"number of shiftpd tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
     }
   }
@@ -1333,8 +1330,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat B,Mat A,c
   /* MatPivotSetUp(): initialize shift context sctx */
   ierr = PetscMemzero(&sctx,sizeof(FactorShiftCtx));CHKERRQ(ierr);
 
-  /* if both shift schemes are chosen by user, only use info->shiftpd */
-  if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
+  if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE) { /* set sctx.shift_top=max{rs} */
     sctx.shift_top = info->zeropivot;
     ierr = PetscMemzero(rtmp,mbs*sizeof(MatScalar));CHKERRQ(ierr);
     for (i=0; i<mbs; i++) {
@@ -1422,11 +1418,11 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat B,Mat A,c
       /* MatPivotCheck() */
       sctx.rs  = rs;
       sctx.pv  = dk;
-      if (info->shiftnz){
+      if (info->shifttype == MAT_SHIFT_NONZERO){
         ierr = MatPivotCheck_nz(info,sctx,k);CHKERRQ(ierr);
-      } else if (info->shiftpd){
+      } else if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE){
         ierr = MatPivotCheck_pd(info,sctx,k);CHKERRQ(ierr);
-      } else if (info->shiftinblocks){
+      } else if (info->shifttype == MAT_SHIFT_INBLOCKS){
         ierr = MatPivotCheck_inblocks(info,sctx,k);CHKERRQ(ierr);       
       } else {
         ierr = MatPivotCheck_none(info,sctx,k);CHKERRQ(ierr); 
@@ -1451,12 +1447,12 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat B,Mat A,c
 
   /* MatPivotView() */
   if (sctx.nshift){
-    if (info->shiftpd) {
+    if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE) {
       ierr = PetscInfo4(A,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,sctx.shift_fraction,sctx.shift_top);CHKERRQ(ierr);
-    } else if (info->shiftnz) {
+    } else if (info->shifttype == MAT_SHIFT_NONZERO) {
       ierr = PetscInfo2(A,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
-    } else if (info->shiftinblocks){
-      ierr = PetscInfo2(A,"number of shift_inblocks applied %D, each shift_amount %G\n",sctx.nshift,info->shiftinblocks);CHKERRQ(ierr);
+    } else if (info->shifttype == MAT_SHIFT_INBLOCKS){
+      ierr = PetscInfo2(A,"number of shift_inblocks applied %D, each shift_amount %G\n",sctx.nshift,info->shiftamount);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0); 
@@ -1472,17 +1468,12 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace(Mat C
   PetscInt       *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
   PetscInt       k,jmin,*jl,*il,nexti,ili,*acol,*bcol,nz;
   MatScalar      *rtmp,*ba=b->a,*aa=a->a,dk,uikdi,*aval,*bval;
-  PetscReal      zeropivot,rs,shiftnz;
-  PetscReal      shiftpd;
+  PetscReal      rs;
   ChShift_Ctx    sctx;
   PetscInt       newshift;
 
   PetscFunctionBegin;
   /* initialization */
-  shiftnz   = info->shiftnz;
-  shiftpd   = info->shiftpd;
-  zeropivot = info->zeropivot; 
-
   /* il and jl record the first nonzero element in each row of the accessing 
      window U(0:k, k:mbs-1).
      jl:    list of rows to be added to uneliminated rows 
@@ -1592,9 +1583,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace(Mat C
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(C->rmap->N);CHKERRQ(ierr);
   if (sctx.nshift){
-    if (shiftnz) {
+    if (info->shifttype == MAT_SHIFT_NONZERO) {
       ierr = PetscInfo2(A,"number of shiftnz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
-    } else if (shiftpd) {
+    } else if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE) {
       ierr = PetscInfo2(A,"number of shiftpd tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
     }
   }
