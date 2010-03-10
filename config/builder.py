@@ -102,10 +102,10 @@ class PETScMaker(script.Script):
    cmd = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
    if self.dryRun or self.verbose: print cmd
    if not self.dryRun:
-     try:
-       self.executeShellCommand(cmd,log=self.log)
-     except:
+     (output, error, status) = self.executeShellCommand(cmd,checkCommand = noCheckCommand,log=self.log)
+     if status:
        print "ERROR IN COMPILE ******************************"
+       print output+error
    self.setCompilers.popLanguage()
    return
 
@@ -128,10 +128,10 @@ class PETScMaker(script.Script):
    cmd = ' '.join([compiler]+['-c']+includes+flags+source)
    if self.dryRun or self.verbose: print cmd
    if not self.dryRun:
-     try:
-       self.executeShellCommand(cmd,log=self.log)
-     except:
+     (output, error, status) = self.executeShellCommand(cmd,checkCommand = noCheckCommand,log=self.log)
+     if status:
        print "ERROR IN COMPILE ******************************"
+       print output+error
    self.setCompilers.popLanguage()
    return
 
@@ -141,10 +141,10 @@ class PETScMaker(script.Script):
    cmd = ' '.join([self.setCompilers.AR, self.setCompilers.FAST_AR_FLAGS, lib]+objects)
    if self.dryRun or self.verbose: print cmd
    if not self.dryRun:
-     try:
-       self.executeShellCommand(cmd,log=self.log)
-     except:
-       pass
+     (output, error, status) = self.executeShellCommand(cmd,checkCommand = noCheckCommand,log=self.log)
+     if status:
+       print "ERROR IN ARCHIVE ******************************"
+       print output+error
    return
 
  def ranlib(self, library):
@@ -154,10 +154,10 @@ class PETScMaker(script.Script):
    cmd = ' '.join([self.setCompilers.RANLIB, lib])
    if self.dryRun or self.verbose: print cmd
    if not self.dryRun:
-     try:
-       self.executeShellCommand(cmd,log=self.log)
-     except:
-       pass
+     (output, error, status) = self.executeShellCommand(cmd,checkCommand = noCheckCommand,log=self.log)
+     if status:
+       print "ERROR IN RANLIB ******************************"
+       print output+error
    return
  
  def buildDir(self, libname, dirname, fnames):
@@ -290,6 +290,11 @@ class PETScMaker(script.Script):
    self.ranlib('libpetsc')
      
    return
-   
+
+def noCheckCommand(command, status, output, error):
+  ''' Do no check result'''
+  return 
+  noCheckCommand = staticmethod(noCheckCommand)
+  
 if __name__ == '__main__':
   PETScMaker().buildAll()
