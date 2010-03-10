@@ -36,10 +36,10 @@ SNES Object:
       PC Object:(fieldsplit_0_)
         type: lu
           LU: out-of-place factorization
-            matrix ordering: nd
-          LU: tolerance for zero pivot 1e-12
-          LU: factor fill ratio needed 2.5576
-               Factored matrix follows
+          tolerance for zero pivot 1e-12
+          matrix ordering: nd
+          factor fill ratio given 5, needed 2.5576
+            Factored matrix follows:
               Matrix Object:
                 type=seqaij, rows=196, cols=196
                 package used to perform factorization: petsc
@@ -60,10 +60,10 @@ SNES Object:
       PC Object:(fieldsplit_1_)
         type: lu
           LU: out-of-place factorization
-            matrix ordering: nd
-          LU: tolerance for zero pivot 1e-12
-          LU: factor fill ratio needed 2.5576
-               Factored matrix follows
+          tolerance for zero pivot 1e-12
+          matrix ordering: nd
+          factor fill ratio given 5, needed 2.5576
+            Factored matrix follows:
               Matrix Object:
                 type=seqaij, rows=196, cols=196
                 package used to perform factorization: petsc
