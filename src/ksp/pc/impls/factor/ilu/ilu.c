@@ -142,57 +142,21 @@ static PetscErrorCode PCView_ILU(PC pc,PetscViewer viewer)
 {
   PC_ILU         *ilu = (PC_ILU*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth     isstring,iascii;
+  PetscTruth     iascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    if (((PC_Factor*)ilu)->info.dt > 0) {
-        ierr = PetscViewerASCIIPrintf(viewer,"  ILU: drop tolerance %G\n",((PC_Factor*)ilu)->info.dt);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  ILU: max nonzeros per row %D\n",(PetscInt)((PC_Factor*)ilu)->info.dtcount);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  ILU: column permutation tolerance %G\n",((PC_Factor*)ilu)->info.dtcol);CHKERRQ(ierr);
-    } else if (((PC_Factor*)ilu)->info.levels == 1) {
-        ierr = PetscViewerASCIIPrintf(viewer,"  ILU: %D level of fill\n",(PetscInt)((PC_Factor*)ilu)->info.levels);CHKERRQ(ierr);
+    if (ilu->inplace) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  ILU: in-place factorization\n");CHKERRQ(ierr);
     } else {
-        ierr = PetscViewerASCIIPrintf(viewer,"  ILU: %D levels of fill\n",(PetscInt)((PC_Factor*)ilu)->info.levels);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ILU: out-of-place factorization\n");CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"  ILU: factor fill ratio allocated %G\n",((PC_Factor*)ilu)->info.fill);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  ILU: tolerance for zero pivot %G\n",((PC_Factor*)ilu)->info.zeropivot);CHKERRQ(ierr);
-
-    if (((PC_Factor*)ilu)->info.shifttype==MAT_SHIFT_POSITIVE_DEFINITE) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  ILU: using Manteuffel shift\n");CHKERRQ(ierr);
-    }
-    if (((PC_Factor*)ilu)->info.shifttype==MAT_SHIFT_NONZERO) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  ILU: using diagonal shift to prevent zero pivot\n");CHKERRQ(ierr);
-    }
-    if (((PC_Factor*)ilu)->info.shifttype==MAT_SHIFT_INBLOCKS) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  ILU: using diagonal shift on blocks to prevent zero pivot\n");CHKERRQ(ierr);
-    }
-
-    if (ilu->inplace) {ierr = PetscViewerASCIIPrintf(viewer,"       in-place factorization\n");CHKERRQ(ierr);}
-    else              {ierr = PetscViewerASCIIPrintf(viewer,"       out-of-place factorization\n");CHKERRQ(ierr);}
-    ierr = PetscViewerASCIIPrintf(viewer,"       matrix ordering: %s\n",((PC_Factor*)ilu)->ordering);CHKERRQ(ierr);
-    if (ilu->reusefill)     {ierr = PetscViewerASCIIPrintf(viewer,"       Reusing fill from past factorization\n");CHKERRQ(ierr);}
-    if (ilu->reuseordering) {ierr = PetscViewerASCIIPrintf(viewer,"       Reusing reordering from past factorization\n");CHKERRQ(ierr);}
-    if (((PC_Factor*)ilu)->fact) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  ILU: factor fill ratio needed %G\n",ilu->actualfill);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"       Factored matrix follows\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-      ierr = MatView(((PC_Factor*)ilu)->fact,viewer);CHKERRQ(ierr);
-      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-    }
-  } else if (isstring) {
-    ierr = PetscViewerStringSPrintf(viewer," lvls=%D,order=%s",(PetscInt)((PC_Factor*)ilu)->info.levels,((PC_Factor*)ilu)->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for PCILU",((PetscObject)viewer)->type_name);
-  }
+   
+    if (ilu->reusefill)     {ierr = PetscViewerASCIIPrintf(viewer,"  ILU: Reusing fill from past factorization\n");CHKERRQ(ierr);}
+    if (ilu->reuseordering) {ierr = PetscViewerASCIIPrintf(viewer,"  ILU: Reusing reordering from past factorization\n");CHKERRQ(ierr);}
+  } 
+  ierr = PCView_Factor(pc,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -169,6 +169,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetCoordinates(DA,Vec *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetGhostedCoordinates(DA,Vec *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetCoordinateDA(DA,DA *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DASetUniformCoordinates(DA,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetBoundingBox(DA,PetscReal[],PetscReal[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetLocalBoundingBox(DA,PetscReal[],PetscReal[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DASetFieldName(DA,PetscInt,const char[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetFieldName(DA,PetscInt,char **);
 

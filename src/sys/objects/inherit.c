@@ -289,6 +289,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectCompose(PetscObject obj,const char nam
   PetscFunctionReturn(0);
 }
 
+
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectQuery"
 /*@C

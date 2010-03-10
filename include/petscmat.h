@@ -67,8 +67,8 @@ E*/
 #define MATHYPRESSTRUCT    "hypresstruct"
 #define MATSUBMATRIX       "submatrix"
 
-#ifdef PETSC_USE_MATFRAMEWORK
-#define MATFRAMEWORK           "framework"
+#ifdef PETSC_USE_MATFWK
+#define MATFWK           "matfwk"
 #endif
 
 /*E
@@ -316,21 +316,18 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateComposite(MPI_Comm,PetscInt,co
 typedef enum {MAT_COMPOSITE_ADDITIVE,MAT_COMPOSITE_MULTIPLICATIVE} MatCompositeType;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeSetType(Mat,MatCompositeType);
 
-#ifdef PETSC_USE_MATFRAMEWORK
-typedef enum {MAT_FRAMEWORK_ADDITIVE, MAT_FRAMEWORK_MULTIPLICATIVE} MatFrameworkType;
-typedef enum {MAT_FRAMEWORK_ASSEMBLED, MAT_FRAMEWORK_DISASSEMBLED} MatFrameworkMode;
+#ifdef PETSC_USE_MATFWK
+typedef enum {MATFWK_ADDITIVE, MATFWK_MULTIPLICATIVE} MatFwkType;
+typedef enum {MATFWK_MERGED, MATFWK_SPLIT} MatFwkMode;
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateFramework(MPI_Comm,Mat *);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFrameworkSetType(Mat,MatFrameworkType);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFrameworkGetType(Mat,MatFrameworkType*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFrameworkSetMode(Mat,MatFrameworkMode);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFrameworkGetMode(Mat,MatFrameworkMode*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFrameworkGetBlockCount(Mat, PetscInt*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFrameworkAddBlock(Mat, PetscInt*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFrameworkSetBlockEmbedding(Mat, PetscInt, IS,IS);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFrameworkGetBlockEmbedding(Mat, PetscInt, IS, IS);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFrameworkSetBlock(Mat, PetscInt, Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFrameworkGetBlock(Mat, PetscInt, Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateFwk(MPI_Comm,Mat *);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetType(Mat,MatFwkType);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkGetType(Mat,MatFwkType*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetMode(Mat,MatFwkMode);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkGetMode(Mat,MatFwkMode*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkAddBlock(Mat, IS, IS, Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkBlockSetMat(Mat, Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkBlockGetMat(Mat, Mat*);
 #endif
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqFFTW(MPI_Comm,PetscInt,const PetscInt[],Mat*);

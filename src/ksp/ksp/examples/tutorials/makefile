@@ -212,8 +212,8 @@ ex42: ex42.o chkopts
 	-${CLINKER} -o ex42 ex42.o ${PETSC_SNES_LIB}
 	${RM} ex42.o
 
-ex43: ex43.o chkopts
-	-${CLINKER} -o ex43 ex43.o ${PETSC_SNES_LIB}
+ex43: ex43.o solCx.o chkopts
+	-${CLINKER} -o ex43 ex43.o solCx.o ${PETSC_KSP_LIB}
 	${RM} ex43.o
 
 # not tested in nightly builds because requires F90 compiler that handles long lines
@@ -809,6 +809,12 @@ runex40:
 	   if (${DIFF} output/ex40_1.out ex40_1.tmp) then true; \
 	   else echo "Possible problem with ex40_1, diffs above"; fi; \
 	   ${RM} -f ex40_1.tmp
+
+runex43:
+	-@${MPIEXEC} -n 1 ./ex43 -stokes_ksp_type fgmres -stokes_ksp_rtol 1e-8 -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_block_size 3 -stokes_pc_fieldsplit_type SYMMETRIC_MULTIPLICATIVE -stokes_pc_fieldsplit_0_fields 0,1 -stokes_pc_fieldsplit_1_fields 2 -stokes_fieldsplit_0_ksp_type preonly -stokes_fieldsplit_0_pc_type lu -stokes_fieldsplit_1_ksp_type preonly -stokes_fieldsplit_1_pc_type jacobi -c_str 0 -solcx_eta0 1.0 -solcx_eta1 1.0e6 -solcx_xc 0.5 -solcx_nz 2 -mx 20 -my 20 -stokes_ksp_monitor_short > ex43_1.tmp 2>&1;	  \
+	   ${DIFF} output/ex43_1.out ex43_1.tmp || echo "Possible problem with ex43_1, diffs above"; \
+	   ${RM} -f ex43_1.tmp
+
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_7 ex2.rm ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 runex5_2 ex5.rm \

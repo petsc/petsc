@@ -171,7 +171,7 @@
         3 KSP Residual norm 0.000140055 
         4 KSP Residual norm 2.13656e-05 
         5 KSP Residual norm 4.67554e-06 
-        6 KSP Residual norm 6.8501e-07 
+        6 KSP Residual norm 6.85011e-07 
       0 KSP Residual norm 0.00760324 
         0 KSP Residual norm 9.03542 
         1 KSP Residual norm 0.745635 
@@ -225,14 +225,14 @@
         1 KSP Residual norm 0.0171301 
         2 KSP Residual norm 0.00157475 
         3 KSP Residual norm 0.000145827 
-        4 KSP Residual norm 2.29424e-05 
+        4 KSP Residual norm 2.29425e-05 
         5 KSP Residual norm 4.88453e-06 
         6 KSP Residual norm 7.12025e-07 
       0 KSP Residual norm 0.0136948 
         0 KSP Residual norm 10.4415 
         1 KSP Residual norm 0.776282 
         2 KSP Residual norm 0.0735525 
-        3 KSP Residual norm 0.00971698 
+        3 KSP Residual norm 0.00971697 
         4 KSP Residual norm 0.00123551 
         5 KSP Residual norm 0.000318277 
         6 KSP Residual norm 3.47446e-05 
@@ -260,7 +260,7 @@
         5 KSP Residual norm 5.0636e-05 
       4 KSP Residual norm 3.63881e-06 
         0 KSP Residual norm 6.87569 
-        1 KSP Residual norm 0.717338 
+        1 KSP Residual norm 0.717337 
         2 KSP Residual norm 0.0880105 
         3 KSP Residual norm 0.0140316 
         4 KSP Residual norm 0.00129905 
@@ -275,7 +275,7 @@
         5 KSP Residual norm 7.81601e-06 
         6 KSP Residual norm 1.12883e-06 
     1 KSP Residual norm 8.45119e-08 
-  4 SNES Function norm 4.05806e-07 
+  4 SNES Function norm 4.058e-07 
 SNES Object:
   type: ls
     line search variant: SNESLineSearchCubic
@@ -309,15 +309,13 @@ SNES Object:
           using PRECONDITIONED norm type for convergence test
         PC Object:(fieldsplit_0_)
           type: ilu
-            ILU: 0 levels of fill
-            ILU: factor fill ratio allocated 1
-            ILU: tolerance for zero pivot 1e-12
-            ILU: using diagonal shift to prevent zero pivot
-            ILU: using diagonal shift on blocks to prevent zero pivot
-                 out-of-place factorization
-                 matrix ordering: natural
-            ILU: factor fill ratio needed 1
-                 Factored matrix follows
+            ILU: out-of-place factorization
+            0 levels of fill
+            tolerance for zero pivot 1e-12
+            using diagonal shift to prevent zero pivot
+            matrix ordering: natural
+            factor fill ratio given 1, needed 1
+              Factored matrix follows:
                 Matrix Object:
                   type=seqaij, rows=48, cols=48
                   package used to perform factorization: petsc
@@ -339,15 +337,13 @@ SNES Object:
           using UNPRECONDITIONED norm type for convergence test
         PC Object:(fieldsplit_1_)
           type: ilu
-            ILU: 0 levels of fill
-            ILU: factor fill ratio allocated 1
-            ILU: tolerance for zero pivot 1e-12
-            ILU: using diagonal shift to prevent zero pivot
-            ILU: using diagonal shift on blocks to prevent zero pivot
-                 out-of-place factorization
-                 matrix ordering: natural
-            ILU: factor fill ratio needed 1
-                 Factored matrix follows
+            ILU: out-of-place factorization
+            0 levels of fill
+            tolerance for zero pivot 1e-12
+            using diagonal shift to prevent zero pivot
+            matrix ordering: natural
+            factor fill ratio given 1, needed 1
+              Factored matrix follows:
                 Matrix Object:
                   type=seqaij, rows=16, cols=16
                   package used to perform factorization: petsc

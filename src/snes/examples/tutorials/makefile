@@ -261,7 +261,7 @@ runex5_2:
 	   ${RM} -f ex5_2.tmp
 runex5_3:
 	-@${MPIEXEC} -n 4 ./ex5 -snes_mf -da_processors_x 2 -da_processors_y 2 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5_3.tmp 2>&1;\
-	   if (${DIFF} output/ex5_1.out ex5_3.tmp) then true; \
+	   if (${DIFF} output/ex5_3.out ex5_3.tmp) then true; \
 	   else echo "Possible problem with ex5_3, diffs above"; fi; \
 	   ${RM} -f ex5_3.tmp
 runex5_4:

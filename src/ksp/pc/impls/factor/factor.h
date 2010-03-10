@@ -28,6 +28,7 @@ extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage_Factor(PC,c
 extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatSolverPackage_Factor(PC,const MatSolverPackage*);
 extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetColumnPivot_Factor(PC,PetscReal);
 extern PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions_Factor(PC);
+extern PetscErrorCode PCView_Factor(PC,PetscViewer);
 EXTERN_C_END
 
 #endif
