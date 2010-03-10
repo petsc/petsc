@@ -440,7 +440,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
 {
   PetscErrorCode ierr;
   PetscInt       i,nlevels = dmmg[0]->nlevels,level;
-  PetscTruth     ismg,galerkin;
+  PetscTruth     ismg,galerkin=PETSC_FALSE;
   PC             pc;
   KSP            lksp;
   
@@ -643,7 +643,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetNullSpace(DMMG *dmmg,PetscTruth has_cn
       if (isred) {
         ierr = PCRedundantGetPC(ipc,&ipc);CHKERRQ(ierr);
       }
-      ierr = PCFactorSetShiftPd(ipc,PETSC_TRUE);CHKERRQ(ierr); 
+      ierr = PCFactorSetShiftType(ipc,MAT_SHIFT_POSITIVE_DEFINITE);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

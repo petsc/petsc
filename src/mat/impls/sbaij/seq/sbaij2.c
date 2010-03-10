@@ -4,6 +4,7 @@
 #include "../src/mat/blockinvert.h"
 #include "petscbt.h"
 #include "../src/mat/impls/sbaij/seq/sbaij.h"
+#include "petscblaslapack.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_SeqSBAIJ"
@@ -232,8 +233,6 @@ PetscErrorCode MatGetSubMatrices_SeqSBAIJ(Mat A,PetscInt n,const IS irow[],const
 /* -------------------------------------------------------*/
 /* Should check that shapes of vectors and matrices match */
 /* -------------------------------------------------------*/
-#include "petscblaslapack.h"
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqSBAIJ_2"

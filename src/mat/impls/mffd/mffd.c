@@ -103,7 +103,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT MatMFFDInitializePackage(const char path[])
           F'(u)a  ~=  ----------------
                               h
 
-.seealso: MatCreateSNESMF(), MatMFFDRegisterDynamic)
+.seealso: MatCreateSNESMF(), MatMFFDRegisterDynamic(), MatMFFDSetFunction()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetType(Mat mat,const MatMFFDType ftype)
 {
@@ -570,7 +570,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFromOptions(Mat mat)
 
   Level: advanced
 
-.seealso: MatCreateMFFD(), MatCreateSNESMF()
+.seealso: MatCreateMFFD(), MatCreateSNESMF(), MatMFFDSetFunction()
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -698,7 +698,7 @@ EXTERN_C_END
 .keywords: default, matrix-free, create, matrix
 
 .seealso: MatDestroy(), MatMFFDSetFunctionError(), MatMFFDDefaultSetUmin(), MatMFFDSetFunction()
-          MatMFFDSetHHistory(), MatMFFDResetHHistory(), MatCreateSNESMF(),
+          MatMFFDSetHHistory(), MatMFFDResetHHistory(), MatCreateSNESMF(), 
           MatMFFDGetH(),MatMFFDKSPMonitor(), MatMFFDRegisterDynamic),, MatMFFDComputeJacobian()
  
 @*/

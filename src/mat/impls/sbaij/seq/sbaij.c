@@ -6,6 +6,7 @@
 */
 #include "../src/mat/impls/baij/seq/baij.h"         /*I "petscmat.h" I*/
 #include "../src/mat/impls/sbaij/seq/sbaij.h"
+#include "petscblaslapack.h"
 
 #include "../src/mat/impls/sbaij/seq/relax.h"
 #define USESHORT
@@ -1176,7 +1177,6 @@ PetscErrorCode MatRestoreArray_SeqSBAIJ(Mat A,PetscScalar *array[])
   PetscFunctionReturn(0);
  }
 
-#include "petscblaslapack.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_SeqSBAIJ"
 PetscErrorCode MatAXPY_SeqSBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)

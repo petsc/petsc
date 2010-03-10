@@ -175,6 +175,10 @@ work if it is zero.</li>
         <li>MatSetBlockSize() is no longer an error for BAIJ matrices,
 but the argument must be the same as when the matrix was preallocated. </li>
         <li>PCFactorSetPivoting() renamed to PCFactorSetColumnPivot()</li>
+        <li>Replaced PCFactorSetShiftNonzero(), PCFactorSetShiftPd() and PCFactorSetShiftInBlocks()
+with PCFactorSetShiftType() and PCFactorSetShiftAmount(). Replaced 
+-pc_factor_shift_nonzero, -pc_factor_shift_positive_definite and -pc_factor_shift_in_blocks
+with -pc_factor_shift_type <shifttype> and -pc_factor_shift_amount <shiftamount>. </li>
       </ul>
       <p><u><b>KSP:</b></u></p>
       <ul>

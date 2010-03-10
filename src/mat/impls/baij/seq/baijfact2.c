@@ -5446,7 +5446,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering(Mat B,Mat A,const M
     pj   = b->j + bdiag[i];
     ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);
     /* Kernel_A_gets_inverse_A(bs,pv,pivots,work); */
-    ierr = Kernel_A_gets_inverse_A_15(pv,ipvt,work,info->shiftinblocks);CHKERRQ(ierr); 
+    ierr = Kernel_A_gets_inverse_A_15(pv,ipvt,work,info->shiftamount);CHKERRQ(ierr); 
        
     /* U part */
     pv = b->a + bs2*(bdiag[i+1]+1);

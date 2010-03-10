@@ -113,40 +113,10 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc)
 #define __FUNCT__ "PCView_ICC"
 static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
 {
-  PC_ICC         *icc = (PC_ICC*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth     isstring,iascii;
-
+  
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
-  if (iascii) {
-    if (((PC_Factor*)icc)->info.levels == 1) {
-        ierr = PetscViewerASCIIPrintf(viewer,"  ICC: %D level of fill\n",(PetscInt)((PC_Factor*)icc)->info.levels);CHKERRQ(ierr);
-    } else {
-        ierr = PetscViewerASCIIPrintf(viewer,"  ICC: %D levels of fill\n",(PetscInt)((PC_Factor*)icc)->info.levels);CHKERRQ(ierr);
-    }
-    ierr = PetscViewerASCIIPrintf(viewer,"  ICC: factor fill ratio allocated %G, ordering used %s\n",((PC_Factor*)icc)->info.fill,((PC_Factor*)icc)->ordering);CHKERRQ(ierr);
-    if (((PC_Factor*)icc)->info.shiftpd) {ierr = PetscViewerASCIIPrintf(viewer,"  ICC: using Manteuffel shift\n");CHKERRQ(ierr);}
-    if (((PC_Factor*)icc)->info.shiftnz) {ierr = PetscViewerASCIIPrintf(viewer,"  ICC: using diagonal shift to prevent zero pivot\n");CHKERRQ(ierr);}
-    if (((PC_Factor*)icc)->fact) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICC: factor fill ratio needed %G\n",icc->actualfill);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"       Factored matrix follows\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-      ierr = MatView(((PC_Factor*)icc)->fact,viewer);CHKERRQ(ierr);
-      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-    }
-  } else if (isstring) {
-    ierr = PetscViewerStringSPrintf(viewer," lvls=%D",(PetscInt)((PC_Factor*)icc)->info.levels);CHKERRQ(ierr);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for PCICC",((PetscObject)viewer)->type_name);
-  }
+  ierr = PCView_Factor(pc,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -162,10 +132,7 @@ EXTERN_C_END
 .  -pc_factor_in_place - only for ICC(0) with natural ordering, reuses the space of the matrix for
                       its factorization (overwrites original matrix)
 .  -pc_factor_fill <nfill> - expected amount of fill in factored matrix compared to original matrix, nfill > 1
-.  -pc_factor_mat_ordering_type <natural,nd,1wd,rcm,qmd> - set the row/column ordering of the factored matrix
-.  -pc_factor_shift_nonzero <shift> - Sets shift amount or PETSC_DECIDE for the default
--  -pc_factor_shift_positive_definite [PETSC_TRUE/PETSC_FALSE] - Activate/Deactivate PCFactorSetShiftPd(); the value
-   is optional with PETSC_TRUE being the default
+-  -pc_factor_mat_ordering_type <natural,nd,1wd,rcm,qmd> - set the row/column ordering of the factored matrix
 
    Level: beginner
 
@@ -177,7 +144,7 @@ EXTERN_C_END
 
           The Manteuffel shift is only implemented for matrices with block size 1
 
-          By default, the Manteuffel is applied (for matrices with block size 1). Call PCFactorSetShiftPd(pc,PETSC_FALSE);
+          By default, the Manteuffel is applied (for matrices with block size 1). Call PCFactorSetShiftType(pc,MAT_SHIFT_POSITIVE_DEFINITE);
           to turn off the shift.
 
    References:
@@ -188,7 +155,7 @@ EXTERN_C_END
 
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,
-           PCFactorSetZeroPivot(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(),PCFactorSetShiftInBlocks(), 
+           PCFactorSetZeroPivot(), PCFactorSetShiftType(), PCFactorSetShiftAmount(), 
            PCFactorSetFill(), PCFactorSetMatOrderingType(), PCFactorSetReuseOrdering(), 
            PCFactorSetLevels()
 
@@ -232,19 +199,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC pc)
                     PCFactorGetMatSolverPackage_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetZeroPivot_C","PCFactorSetZeroPivot_Factor",
                     PCFactorSetZeroPivot_Factor);CHKERRQ(ierr);
-
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftType_C","PCFactorSetShiftType_Factor",
                     PCFactorSetShiftType_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftAmount_C","PCFactorSetShiftAmount_Factor",
                     PCFactorSetShiftAmount_Factor);CHKERRQ(ierr);
-
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftNonzero_C","PCFactorSetShiftNonzero_Factor",
-                    PCFactorSetShiftNonzero_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftPd_C","PCFactorSetShiftPd_Factor",
-                    PCFactorSetShiftPd_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftInBlocks_C","PCFactorSetShiftInBlocks_Factor",
-                    PCFactorSetShiftInBlocks_Factor);CHKERRQ(ierr);
-
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetLevels_C","PCFactorSetLevels_Factor",
                     PCFactorSetLevels_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetFill_C","PCFactorSetFill_Factor",

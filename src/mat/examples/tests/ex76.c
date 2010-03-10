@@ -152,9 +152,10 @@ int main(int argc,char **args)
   /* initialize factinfo */
   ierr = MatFactorInfoInitialize(&factinfo);CHKERRQ(ierr);
   if (TestShift == 1){
-    factinfo.shiftnz = 0.1;
+    factinfo.shifttype   = MAT_SHIFT_NONZERO;
+    factinfo.shiftamount = 0.1;
   } else if (TestShift == 2){
-    factinfo.shiftpd = 1.0; /* true*/
+    factinfo.shifttype = MAT_SHIFT_POSITIVE_DEFINITE; 
   }
   
   /* Test MatCholeskyFactor(), MatICCFactor() */

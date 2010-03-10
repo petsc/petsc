@@ -5,6 +5,7 @@
   matrix storage format.
 */
 #include "../src/mat/impls/baij/seq/baij.h"  /*I   "petscmat.h"  I*/
+#include "petscblaslapack.h"
 #include "../src/mat/blockinvert.h"
 
 #undef __FUNCT__
@@ -2351,7 +2352,6 @@ PetscErrorCode MatRestoreArray_SeqBAIJ(Mat A,PetscScalar *array[])
   PetscFunctionReturn(0);
 }
 
-#include "petscblaslapack.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_SeqBAIJ"
 PetscErrorCode MatAXPY_SeqBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)

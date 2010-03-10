@@ -13,9 +13,8 @@
 
 #ifndef PetscAXPY
 
-#include "petscblaslapack.h"
 #include "../src/vec/vec/impls/seq/ftn-kernels/fmaxpy.h"
-
+#include "petscblaslapack.h"
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MAXPY)
 #define PetscAXPY(U,a1,p1,n)  {PetscBLASInt one=1; PetscBLASInt nn = (PetscBLASInt) n; \

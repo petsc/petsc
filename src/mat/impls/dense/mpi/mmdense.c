@@ -4,6 +4,7 @@
    Support for the parallel dense matrix vector multiply
 */
 #include "../src/mat/impls/dense/mpi/mpidense.h"
+#include "petscblaslapack.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUpMultiply_MPIDense"
@@ -423,7 +424,6 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
   PetscFunctionReturn(0);
 }
 
-#include "petscblaslapack.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_MPIDense"
 PetscErrorCode MatScale_MPIDense(Mat inA,PetscScalar alpha)

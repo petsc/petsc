@@ -435,6 +435,7 @@ getmpiexec:
           grep -v "symbol if the symbol" | \
           grep -v -i inconsistent | \
           grep -v -i "unused dummy" | \
+          grep -v "alignment lost in merging tentative definition" | \
 	  grep -v "WARNING:  -cpp is ignored" | \
           grep -v "ignoring symbol version info" | \
 	  grep -v "At least one PA 2.0" | \
@@ -453,6 +454,7 @@ getmpiexec:
           grep -v "warning prebinding disabled"  |\
           grep -v "ex20f.F:34: warning:" | \
 	  grep -v "Unused dummy argument" | \
+	  grep -v "is being replaced by a real definition" | \
           grep -v "IPO Error: unresolved" | \
           grep -v "warning multiple definitions of symbol _matgetarray_" | \
 	  egrep -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \

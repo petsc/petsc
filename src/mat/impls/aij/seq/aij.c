@@ -8,6 +8,7 @@
 
 
 #include "../src/mat/impls/aij/seq/aij.h"          /*I "petscmat.h" I*/
+#include "petscblaslapack.h"
 #include "petscbt.h"
 
 #undef __FUNCT__  
@@ -1917,7 +1918,6 @@ PetscErrorCode MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,const MatFactorInfo *in
   PetscFunctionReturn(0);
 }
 
-#include "petscblaslapack.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_SeqAIJ"
 PetscErrorCode MatScale_SeqAIJ(Mat inA,PetscScalar alpha)
@@ -2263,7 +2263,6 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
   PetscFunctionReturn(0);
 }
 
-#include "petscblaslapack.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_SeqAIJ"
 PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
@@ -3258,6 +3257,11 @@ extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_umfpack(Mat,MatFact
 #if defined(PETSC_HAVE_LUSOL)
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_lusol(Mat,MatFactorType,Mat*);
 #endif
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_matlab(Mat,MatFactorType,Mat*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatlabEnginePut_SeqAIJ(PetscObject,void*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatlabEngineGet_SeqAIJ(PetscObject,void*);
+#endif
 EXTERN_C_END
 
 
@@ -3306,6 +3310,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
   B->same_nonzero          = PETSC_FALSE;
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_matlab_C",
+					   "MatGetFactor_seqaij_matlab",
+					   MatGetFactor_seqaij_matlab);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEnginePut_C","MatlabEnginePut_SeqAIJ",MatlabEnginePut_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEngineGet_C","MatlabEngineGet_SeqAIJ",MatlabEngineGet_SeqAIJ);CHKERRQ(ierr);
+#endif
 #if defined(PETSC_HAVE_PASTIX)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_pastix_C",
 					   "MatGetFactor_seqaij_pastix",

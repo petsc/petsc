@@ -21,7 +21,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat B,Mat A,const MatFactorInfo *inf
   MatScalar       *rtmp,*pc,*mwork,*pv;
   MatScalar       *aa=a->a,*v;
   PetscInt        flg;
-  PetscReal       shift = info->shiftinblocks;
+  PetscReal       shift = info->shiftamount;
 
   PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -131,7 +131,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat B,Mat A,const Ma
   MatScalar       *rtmp,*pc,*mwork,*pv;
   MatScalar       *aa=a->a,*v;
   PetscInt       flg;
-  PetscReal      shift = info->shiftinblocks;
+  PetscReal      shift = info->shiftamount;
 
   PetscFunctionBegin;
   /* generate work space needed by the factorization */
@@ -241,7 +241,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_inplace(Mat B,Mat A,const MatFactorI
   MatScalar      *pv,*v,*rtmp,m1,m2,m3,m4,*pc,*w,*x,x1,x2,x3,x4;
   MatScalar      p1,p2,p3,p4;
   MatScalar      *ba = b->a,*aa = a->a;
-  PetscReal      shift = info->shiftinblocks;
+  PetscReal      shift = info->shiftamount;
 
   PetscFunctionBegin;
   ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -329,7 +329,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_inplace(Mat C,Mat A,
   MatScalar      *pv,*v,*rtmp,*pc,*w,*x;
   MatScalar      p1,p2,p3,p4,m1,m2,m3,m4,x1,x2,x3,x4;
   MatScalar      *ba = b->a,*aa = a->a;
-  PetscReal      shift = info->shiftinblocks;
+  PetscReal      shift = info->shiftamount;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(4*(n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
@@ -560,8 +560,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat C,Mat A,const MatFactorInf
   PetscInt       *ai=a->i,*aj=a->j;
   PetscInt       k,jmin,jmax,*jl,*il,col,nexti,ili,nz;
   MatScalar      *rtmp,*ba=b->a,*bval,*aa=a->a,dk,uikdi;
-  PetscReal      zeropivot,rs,shiftnz;
-  PetscReal      shiftpd;
+  PetscReal      zeropivot,rs;
   ChShift_Ctx    sctx;
   PetscInt       newshift;
 
@@ -577,8 +576,6 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat C,Mat A,const MatFactorInf
   }
   
   /* initialization */
-  shiftnz   = info->shiftnz;
-  shiftpd   = info->shiftpd;
   zeropivot = info->zeropivot;
 
   ierr  = ISGetIndices(ip,&rip);CHKERRQ(ierr);
@@ -669,9 +666,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat C,Mat A,const MatFactorInf
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(C->rmap->N);CHKERRQ(ierr);
   if (sctx.nshift){
-    if (shiftpd) {
+    if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE) {
       ierr = PetscInfo2(A,"number of shiftpd tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
-    } else if (shiftnz) {
+    } else if (info->shifttype == MAT_SHIFT_NONZERO) {
       ierr = PetscInfo2(A,"number of shiftnz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
     } 
   }
@@ -689,15 +686,12 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat C,Mat A,co
   PetscInt       *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
   PetscInt       k,jmin,*jl,*il,nexti,ili,*acol,*bcol,nz;
   MatScalar      *rtmp,*ba=b->a,*aa=a->a,dk,uikdi,*aval,*bval;
-  PetscReal      zeropivot,rs,shiftnz;
-  PetscReal      shiftpd;
+  PetscReal      zeropivot,rs;
   ChShift_Ctx    sctx;
   PetscInt       newshift;
 
   PetscFunctionBegin;
   /* initialization */
-  shiftnz   = info->shiftnz;
-  shiftpd   = info->shiftpd;
   zeropivot = info->zeropivot;
 
   ierr = PetscMalloc3(am,MatScalar,&rtmp,am,PetscInt,&il,am,PetscInt,&jl);CHKERRQ(ierr);
@@ -797,9 +791,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat C,Mat A,co
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(C->rmap->N);CHKERRQ(ierr);
     if (sctx.nshift){
-    if (shiftnz) {
+    if (info->shifttype == MAT_SHIFT_NONZERO) {
       ierr = PetscInfo2(A,"number of shiftnz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
-    } else if (shiftpd) {
+    } else if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE) {
       ierr = PetscInfo2(A,"number of shiftpd tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
     }
   }
@@ -1343,7 +1337,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   const PetscInt     *ics;
   PetscInt           j,nz,*pj,*bjtmp,k,ncut,*jtmp;
   
-  PetscReal          dt=info->dt; /* shift=info->shiftinblocks; */
+  PetscReal          dt=info->dt; /* shift=info->shiftamount; */
   PetscInt           nnz_max;
   PetscTruth         missing;
   PetscReal          *vtmp_abs;

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 configure_options = [
-  '--with-gcov=1',
   '--download-mpich=1',
   '--download-mpich-device=ch3:nemesis',
   '--download-f-blas-lapack=1',

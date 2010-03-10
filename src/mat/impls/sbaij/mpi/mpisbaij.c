@@ -3,6 +3,7 @@
 #include "../src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "mpisbaij.h"
 #include "../src/mat/impls/sbaij/seq/sbaij.h"
+#include "petscblaslapack.h"
 
 EXTERN PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat); 
 EXTERN PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat); 
@@ -1374,7 +1375,6 @@ PetscErrorCode MatSetUpPreallocation_MPISBAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-#include "petscblaslapack.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_MPISBAIJ"
 PetscErrorCode MatAXPY_MPISBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
