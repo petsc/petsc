@@ -274,3 +274,67 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions_Factor(PC pc)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+EXTERN_C_BEGIN
+#include "private/matimpl.h"
+#undef __FUNCT__  
+#define __FUNCT__ "PCView_Factor"
+PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
+{
+  PC_Factor       *factor = (PC_Factor*)pc->data;
+  PetscErrorCode  ierr;
+  PetscTruth      isstring,iascii;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    if (factor->fact->factor == MAT_FACTOR_ILU || factor->fact->factor == MAT_FACTOR_ICC){
+      if (factor->info.dt > 0) {
+        ierr = PetscViewerASCIIPrintf(viewer,"  drop tolerance %G\n",factor->info.dt);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  max nonzeros per row %D\n",factor->info.dtcount);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  column permutation tolerance %G\n",(PetscInt)factor->info.dtcol);CHKERRQ(ierr);
+      } else if (factor->info.levels == 1) {
+        ierr = PetscViewerASCIIPrintf(viewer,"  %D level of fill\n",(PetscInt)factor->info.levels);CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIIPrintf(viewer,"  %D levels of fill\n",(PetscInt)factor->info.levels);CHKERRQ(ierr);
+      }
+    }
+    
+    ierr = PetscViewerASCIIPrintf(viewer,"  tolerance for zero pivot %G\n",factor->info.zeropivot);CHKERRQ(ierr);
+    if (factor->info.shifttype==MAT_SHIFT_POSITIVE_DEFINITE) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  using Manteuffel shift\n");CHKERRQ(ierr);
+    }
+    if (factor->info.shifttype==MAT_SHIFT_NONZERO) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  using diagonal shift to prevent zero pivot\n");CHKERRQ(ierr);
+    }
+    if (factor->info.shifttype==MAT_SHIFT_INBLOCKS) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  using diagonal shift on blocks to prevent zero pivot\n");CHKERRQ(ierr);
+    }
+    
+    ierr = PetscViewerASCIIPrintf(viewer,"  matrix ordering: %s\n",factor->ordering);CHKERRQ(ierr);
+    
+    if (factor->fact) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  factor fill ratio given %G, needed %G\n",factor->fact->info.fill_ratio_given,factor->fact->info.fill_ratio_needed);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"    Factored matrix follows:\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+      ierr = MatView(factor->fact,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    }
+    
+  } else if (isstring) {
+    if (factor->fact->factor == MAT_FACTOR_ILU || factor->fact->factor == MAT_FACTOR_ICC){
+      ierr = PetscViewerStringSPrintf(viewer," lvls=%D,order=%s",(PetscInt)factor->info.levels,factor->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
+    }
+  } else {
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for PC_Factor",((PetscObject)viewer)->type_name);
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
