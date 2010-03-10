@@ -1,9 +1,8 @@
 #!/usr/bin/env python
-
 import sys, os, glob
 
-def cythonize(source, includes=[],
-              output_h=os.curdir):
+def cythonize(source, includes=(),
+              output_h=os.path.curdir):
     name, ext = os.path.splitext(source)
     output_c = name + '.c'
     #
@@ -43,8 +42,8 @@ def cythonize(source, includes=[],
             pass
         os.rename(header, dest)
 
-def run(source, wdir=os.path.curdir, includes=[]):
-    name, ext = os.path.splitext(source)
+def run(source, includes=(), wdir=os.path.curdir):
+    name = os.path.splitext(source)[0]
     if name.count('.') == 0:
         package = ''
         module  = name
@@ -56,7 +55,7 @@ def run(source, wdir=os.path.curdir, includes=[]):
     os.chdir(wdir)
     try:
         cythonize(source,
-                  includes=[os.curdir, 'include'] + includes,
+                  includes=['include'] + list(includes),
                   output_h=os.path.join('include', package),
                   )
     finally:
