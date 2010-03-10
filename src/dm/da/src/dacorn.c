@@ -394,7 +394,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalBoundingBox(DA da,PetscReal lmin[],Pe
 
 .keywords: distributed array, get, coordinates
 
-.seealso: DAGetCoordinateDA(), DAGetCoordinates(), DAGetBoundingBox()
+.seealso: DAGetCoordinateDA(), DAGetCoordinates(), DAGetLocalBoundingBox()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetBoundingBox(DA da,PetscReal gmin[],PetscReal gmax[])
 {
