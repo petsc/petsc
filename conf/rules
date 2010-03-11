@@ -432,6 +432,7 @@ getmpiexec:
           grep -v "D4024 : unrecognized" | \
           grep -v "WARNING: TOC overflow." | \
           grep -v "Extra instructions are being" | \
+          grep -v "tentative definition of size" | \
           grep -v "symbol if the symbol" | \
           grep -v -i inconsistent | \
           grep -v -i "unused dummy" | \

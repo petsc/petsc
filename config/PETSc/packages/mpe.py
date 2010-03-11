@@ -55,5 +55,4 @@ class Configure(PETSc.package.NewPackage):
         output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';make clean; make; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on MPE: '+str(e))
-      self.checkInstall(output,'mpe')
     return self.installDir
