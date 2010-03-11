@@ -6,7 +6,7 @@
 
 
 
-void evaluate_solCx(
+static void evaluate_solCx(
 		double pos[], 
 		double _eta_A, double _eta_B, 	/* Input parameters: density, viscosity A, viscosity B */
 		double _x_c, int _n, 			/* Input parameters: viscosity jump location, wavenumber in z */
