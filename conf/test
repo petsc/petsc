@@ -117,7 +117,7 @@ alltests:
 
 alltest:
 	-@for i in ${TEST_RUNS} ; do \
-	  make PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=${TESTMODE}_$$i MPIEXEC="${MPIEXEC}" tree ; \
+	  ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=${TESTMODE}_$$i MPIEXEC="${MPIEXEC}" tree ; \
 	done
 
 tests_DATAFILESPATH:
