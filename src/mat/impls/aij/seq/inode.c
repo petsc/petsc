@@ -2617,6 +2617,16 @@ cols[nzl] = __vi[0];\
 __vi = aj + adiag[row+1]+1;\
 for(__k=0;__k<nzu;__k++) cols[nzl+1+__k] = __vi[__k];}
 
+
+/*
+   Mat_CheckInode_FactorLU - Check Inode for factored seqaij matrix.
+   Modified from Mat_CheckInode().
+
+   Input Parameters:
++  Mat A - ILU or LU matrix factor
+-  samestructure - TURE indicates that the matrix has not changed its nonzero structure so we 
+    do not need to recompute the inodes 
+*/
 #undef __FUNCT__  
 #define __FUNCT__ "Mat_CheckInode_FactorLU"
 PetscErrorCode Mat_CheckInode_FactorLU(Mat A,PetscTruth samestructure)
