@@ -96,11 +96,11 @@ echo $PETSC_ARCH | grep valgrind > /dev/null
 if ( $? ) then
   set VALGRIND=''
 else
-  set VALGRIND=`echo MPIEXEC=\"${PETSC_DIR}/bin/petscmpirun -valgrind\"`
+  set VALGRIND=`echo MPIEXEC="${PETSC_DIR}/bin/petscmpirun -valgrind"`
 endif
 rm -f examples.log
 echo "Build on $MACH $PETSC_ARCH  `date` " > examples.log
-make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  alltests TESTMODE=$TESTMODE $VALGRIND |& grep -v 'up to date' >>& examples.log
+make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  alltests TESTMODE=$TESTMODE "${VALGRIND}" |& grep -v 'up to date' >>& examples.log
 echo '******************************************************' >>& $nPETSC_DIR/examples.log
 
 set GCOV=`grep PETSC_USE_GCOV $nPETSC_DIR/$PETSC_ARCH/include/petscconf.h`
