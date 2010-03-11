@@ -96,7 +96,7 @@ echo $PETSC_ARCH | grep valgrind > /dev/null
 if ( $? ) then
   set VALGRIND=''
 else
-  set VALGRIND=`echo MPIEXEC=${PETSC_DIR}/bin/petscmpirun -valgrind`
+  set VALGRIND=`echo MPIEXEC=\"${PETSC_DIR}/bin/petscmpirun -valgrind\"`
 endif
 rm -f examples.log
 echo "Build on $MACH $PETSC_ARCH  `date` " > examples.log
