@@ -495,6 +495,8 @@ class Configure(config.base.Configure):
   def configure(self):
     if not os.path.samefile(self.petscdir.dir, os.getcwd()):
       raise RuntimeError('Wrong PETSC_DIR option specified: '+str(self.petscdir.dir) + '\n  Configure invoked in: '+os.path.realpath(os.getcwd()))
+    if self.framework.argDB['prefix'] and os.path.samefile(self.framework.argDB['prefix'],self.petscdir.dir):
+      raise RuntimeError('Incorrect option --prefix='+self.framework.argDB['prefix']+' specified. It cannot be same as PETSC_DIR!')
     self.framework.header          = self.arch.arch+'/include/petscconf.h'
     self.framework.cHeader         = self.arch.arch+'/include/petscfix.h'
     self.framework.makeMacroHeader = self.arch.arch+'/conf/petscvariables'
