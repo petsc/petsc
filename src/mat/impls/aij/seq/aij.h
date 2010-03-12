@@ -68,6 +68,7 @@ EXTERN PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat,MatDuplicateOption,Mat*);
 EXTERN PetscErrorCode MatLUFactorSymbolic_SeqAIJ_Inode_inplace(Mat,Mat,IS,IS,const MatFactorInfo*);
 EXTERN PetscErrorCode MatILUFactorSymbolic_SeqAIJ_Inode_inplace(Mat,Mat,IS,IS,const MatFactorInfo*);
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat,Mat,const MatFactorInfo*);
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat,Mat,const MatFactorInfo*);
 
 typedef struct {
   SEQAIJHEADER(MatScalar);
