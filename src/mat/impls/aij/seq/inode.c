@@ -3463,8 +3463,8 @@ PetscErrorCode Mat_CheckInode_FactorLU(Mat A,PetscTruth samestructure)
     A->ops->getcolumnij       = 0;
     A->ops->restorecolumnij   = 0;
     A->ops->coloringpatch     = 0;
-    A->ops->multdiagonalblock = 0;
-    A->ops->lufactornumeric   = MatLUFactorNumeric_SeqAIJ_Inode;
+    A->ops->multdiagonalblock = 0; 
+    /* A->ops->lufactornumeric   = MatLUFactorNumeric_SeqAIJ_Inode; not done yet */
     a->inode.node_count       = node_count;
     a->inode.size             = ns;
     ierr = PetscInfo3(A,"Found %D nodes of %D. Limit used: %D. Using Inode routines\n",node_count,m,a->inode.limit);CHKERRQ(ierr);
