@@ -1,14 +1,14 @@
 #define PETSC_USE_FORTRAN_MODULES
 
         module petscisdef
-        use petscdef
+        use petscsysdef
 #include "finclude/petscis.h"
 #include "finclude/ftn-custom/petscisdef.h90"
         end module
 
         module petscis
         use petscisdef
-        use petsc
+        use petscsys
 #include "finclude/petscis.h90"
         end module
 
