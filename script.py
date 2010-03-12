@@ -228,6 +228,8 @@ class Script(logger.Logger):
         if log: log.write(error)
       else:
         output = logOutput(log, output)
+        error  = "Runaway process and thread is not alive"
+        status = -1
     else:
       (output, error, status) = Script.runShellCommand(command, log)
       output                  = logOutput(log, output)
