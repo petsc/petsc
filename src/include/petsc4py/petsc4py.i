@@ -1,3 +1,6 @@
+/* Author:  Lisandro Dalcin   */
+/* Contact: dalcinl@gmail.com */
+
 /* ---------------------------------------------------------------- */
 
 %header %{#include "petsc4py/petsc4py.h"%}

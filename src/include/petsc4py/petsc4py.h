@@ -1,3 +1,6 @@
+/* Author:  Lisandro Dalcin   */
+/* Contact: dalcinl@gmail.com */
+
 #ifndef PETSC4PY_H
 #define PETSC4PY_H
 

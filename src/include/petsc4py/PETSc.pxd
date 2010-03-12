@@ -1,3 +1,6 @@
+# Author:  Lisandro Dalcin
+# Contact: dalcinl@gmail.com
+
 # --------------------------------------------------------------------
 
 cdef extern from "mpi.h":
