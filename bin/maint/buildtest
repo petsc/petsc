@@ -94,9 +94,9 @@ endif
 #
 echo $PETSC_ARCH | grep valgrind > /dev/null
 if ( $? ) then
-  set VALGRIND=''
+  set VALGRIND='DUMMYARGUMENT=foobar'
 else
-  set VALGRIND=`echo MPIEXEC="${PETSC_DIR}/bin/petscmpirun -valgrind"`
+  set VALGRIND=`echo MPIEXEC="${PETSC_DIR}/bin/petscmpiexec -valgrind"`
 endif
 rm -f examples.log
 echo "Build on $MACH $PETSC_ARCH  `date` " > examples.log
