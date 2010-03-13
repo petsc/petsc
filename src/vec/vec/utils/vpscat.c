@@ -164,7 +164,7 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
   }
 #endif
 
-#if defined(PETSC_HAVE_MPI_WINDOW)
+#if defined(PETSC_HAVE_MPI_WIN_CREATE)
   if (to->use_window) {
     ierr = MPI_Win_free(&from->window);CHKERRQ(ierr);
     ierr = MPI_Win_free(&to->window);CHKERRQ(ierr);
@@ -182,7 +182,7 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
      message passing.
   */
 #if !defined(PETSC_HAVE_BROKEN_REQUEST_FREE)
-  if (!to->use_alltoallv) {   /* currently the to->requests etc are ALWAYS allocated even if not used */
+  if (!to->use_alltoallv && !to->use_window) {   /* currently the to->requests etc are ALWAYS allocated even if not used */
     if (to->requests) {
       for (i=0; i<to->n; i++) {
 	ierr = MPI_Request_free(to->requests + i);CHKERRQ(ierr);
@@ -199,7 +199,7 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
     cannot free the requests. It may be fixed now, if not then put the following 
     code inside a if !to->use_readyreceiver) {
   */
-  if (!to->use_alltoallv) {    /* currently the from->requests etc are ALWAYS allocated even if not used */
+  if (!to->use_alltoallv && !to->use_window) {    /* currently the from->requests etc are ALWAYS allocated even if not used */
     if (from->requests) {
       for (i=0; i<from->n; i++) {
 	ierr = MPI_Request_free(from->requests + i);CHKERRQ(ierr);
