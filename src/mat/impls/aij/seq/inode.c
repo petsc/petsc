@@ -1389,9 +1389,9 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
           pc1 = rtmp1 + row;
           pc2 = rtmp2 + row;
           if (*pc1 != 0.0 || *pc2 != 0.0) {
-            pv         = b->a + bdiag[row];
-            mul1 = *pc1*(*pv);    mul2 = *pc2*(*pv);
-            *pc1        = mul1;   *pc2 = mul2;
+            pv   = b->a + bdiag[row];
+            mul1 = *pc1*(*pv); mul2 = *pc2*(*pv);
+            *pc1 = mul1;       *pc2 = mul2;
 
             pj = b->j + bdiag[row+1]+1;     /* beginning of U(row,:) */
             pv = b->a + bdiag[row+1]+1;
@@ -1409,22 +1409,20 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
         /* finished row i; check zero pivot, then stick row i into b->a */
         rs  = 0.0;
         /* L part */
-        k  = 0;
         pc1 = b->a + bi[i]; 
         pj  = b->j + bi[i] ;
         nz  = bi[i+1] - bi[i];
         for (j=0; j<nz; j++) {
           col = pj[j];
-          if (col < i){pc1[k] = rtmp1[col]; k++; rs += PetscAbsScalar(pc1[k]);}
+          pc1[j] = rtmp1[col]; rs += PetscAbsScalar(pc1[j]);
         }
         /* U part */
         pc1 = b->a + bdiag[i+1]+1; 
         pj  = b->j + bdiag[i+1]+1;
-        nz  = bdiag[i] - bdiag[i+1]; /* include diagonal */
-        k  = 0;
+        nz  = bdiag[i] - bdiag[i+1] - 1; /* exclude diagonal */
         for (j=0; j<nz; j++) {
           col = pj[j];
-          if (col > i)  {pc1[k] = rtmp1[col]; k++; rs += PetscAbsScalar(pc1[k]);}
+          pc1[j] = rtmp1[col]; rs += PetscAbsScalar(pc1[j]);
         }
         
         sctx.rs  = rs;
@@ -1452,19 +1450,17 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
         pc2 = b->a + bi[i+1];
         pj  = b->j + bi[i+1] ;
         nz  = bi[i+2] - bi[i+1];
-        k  = 0;
         for (j=0; j<nz; j++) {
           col = pj[j];
-          if (col < i+1){pc2[k] = rtmp2[col]; k++; rs += PetscAbsScalar(pc2[k]);} 
+          pc2[j] = rtmp2[col]; rs += PetscAbsScalar(pc2[j]);
         }        
         /* U part */
         pc2 = b->a + bdiag[i+2]+1; 
-        pj  = b->j + bdiag[i+1]+1;
-        nz  = bdiag[i] - bdiag[i+1]; /* inlcude diagonal */
-        k =0;
+        pj  = b->j + bdiag[i+2]+1;
+        nz  = bdiag[i+1] - bdiag[i+2] - 1; /* exclude diagonal */
         for (j=0; j<nz; j++) {
           col = pj[j];
-          if (col > i+1){pc2[k] = rtmp2[col]; k++; rs += PetscAbsScalar(pc2[k]);}
+          pc2[j] = rtmp2[col]; rs += PetscAbsScalar(pc2[j]);
         }
 
         sctx.rs  = rs;
@@ -1537,19 +1533,17 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
         pc1 = b->a + bi[i]; 
         pj  = b->j + bi[i] ;
         nz  = bi[i+1] - bi[i];
-        k  = 0;
         for (j=0; j<nz; j++) {
           col = pj[j];
-          if (col < i){pc1[k] = rtmp1[col]; k++; rs += PetscAbsScalar(pc1[k]);}
+          pc1[j] = rtmp1[col]; rs += PetscAbsScalar(pc1[j]);
         }
         /* U part */
         pc1 = b->a + bdiag[i+1]+1; 
         pj  = b->j + bdiag[i+1]+1;
-        nz  = bdiag[i] - bdiag[i+1]; /* include diagonal */
-        k  = 0;
+        nz  = bdiag[i] - bdiag[i+1] - 1; /* exclude diagonal */
         for (j=0; j<nz; j++) {
           col = pj[j];
-          if (col > i){pc1[k] = rtmp1[col]; k++; rs += PetscAbsScalar(pc1[k]);}
+          pc1[j] = rtmp1[col]; rs += PetscAbsScalar(pc1[j]);
         }
         
         sctx.rs  = rs;
@@ -1580,19 +1574,17 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
         pc2 = b->a + bi[i+1];
         pj  = b->j + bi[i+1] ;
         nz  = bi[i+2] - bi[i+1];
-        k   = 0;
         for (j=0; j<nz; j++) {
           col = pj[j];
-          if (col < i+1){pc2[k] = rtmp2[col]; k++; rs += PetscAbsScalar(pc2[k]);} 
+          pc2[j] = rtmp2[col]; rs += PetscAbsScalar(pc2[j]);
         }        
         /* U part */
         pc2 = b->a + bdiag[i+2]+1; 
-        pj  = b->j + bdiag[i+1]+1;
-        nz  = bdiag[i] - bdiag[i+1]; /* inlcude diagonal */
-        k   = 0;
+        pj  = b->j + bdiag[i+2]+1;
+        nz  = bdiag[i+1] - bdiag[i+2] - 1; /* exclude diagonal */
         for (j=0; j<nz; j++) {
           col = pj[j];
-          if (col > i+1){pc2[k] = rtmp2[col]; k++; rs += PetscAbsScalar(pc2[k]);}
+          pc2[j] = rtmp2[col]; rs += PetscAbsScalar(pc2[j]);
         }
 
         sctx.rs  = rs;
@@ -1620,19 +1612,17 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
         pc3 = b->a + bi[i+2];
         pj  = b->j + bi[i+2] ;
         nz  = bi[i+3] - bi[i+2];
-        k   = 0;
         for (j=0; j<nz; j++) {
           col = pj[j];
-          if (col < i+2){pc3[k] = rtmp3[col]; k++; rs += PetscAbsScalar(pc3[k]);}
+          pc3[j] = rtmp3[col]; rs += PetscAbsScalar(pc3[j]);
         }
         /* U part */
         pc3 = b->a + bdiag[i+3]+1;
-        pj  = b->j + bdiag[i+1]+1;
-        nz  = bdiag[i] - bdiag[i+1]; /* inlcude diagonal */
-        k  = 0;
+        pj  = b->j + bdiag[i+3]+1;
+        nz  = bdiag[i+2] - bdiag[i+3] - 1; /* exclude diagonal */
         for (j=0; j<nz; j++) {
           col = pj[j];
-          if (col > i+2){pc3[k] = rtmp3[col]; k++; rs += PetscAbsScalar(pc3[k]);}
+          pc3[j] = rtmp3[col]; rs += PetscAbsScalar(pc3[j]);
         }
 
         sctx.rs  = rs;
