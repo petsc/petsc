@@ -196,45 +196,42 @@ class Script(logger.Logger):
   def executeShellCommand(command, checkCommand = None, timeout = 600.0, log = None):
     '''Execute a shell command returning the output, and optionally provide a custom error checker
        - This returns a tuple of the (output, error, statuscode)'''
-    import threading
-    global output, error, status
-
+    if not checkCommand:
+      checkCommand = Script.defaultCheckCommand
+    if log is None:
+      log = logger.Logger.defaultLog
     def logOutput(log, output):
       import re
       # get rid of multiple blank lines
       output = re.sub('\n[\n]*','\n', output)
-      if log: log.write('sh: '+output+'\n')
+      log.write('sh: '+output+'\n')
       return output
-
-    if log is None:
-      log = logger.Logger.defaultLog
-    if log:
-      log.write('sh: '+command+'\n')
-    if useThreads:
-      status = -1
-      output = 'Runaway process'
-      def run(command, log):
-        global output, error, status
-        (output, error, status) = Script.runShellCommand(command, log)
-        return
-
-      thread = threading.Thread(target = run, name = 'Shell Command', args = (command, log))
-      thread.setDaemon(1)
-      thread.start()
-      thread.join(timeout)
-      if thread.isAlive():
-        error  = 'Runaway process exceeded time limit of '+str(timeout)+'s\n'
-        status = -1
-        if log: log.write(error)
+    def runInShell(command, log):
+      if useThreads:
+        import threading
+        class InShell(threading.Thread):
+          def __init__(self):
+            threading.Thread.__init__(self)
+            self.name = 'Shell Command'
+            self.setDaemon(1)
+          def run(self):
+            (self.output, self.error, self.status) = Script.runShellCommand(command, log)
+        thread = InShell()
+        thread.start()
+        thread.join(timeout)
+        if thread.isAlive():
+          error = 'Runaway process exceeded time limit of '+str(timeout)+'s\n'
+          log.write(error)
+          return ('', error, -1)
+        else:
+          return (thread.output, thread.error, thread.status)
       else:
-        output = logOutput(log, output)
-    else:
-      (output, error, status) = Script.runShellCommand(command, log)
-      output                  = logOutput(log, output)
-    if checkCommand:
-      checkCommand(command, status, output, error)
-    else:
-      Script.defaultCheckCommand(command, status, output, error)
+        return Script.runShellCommand(command, log)
+
+    log.write('sh: '+command+'\n')
+    (output, error, status) = runInShell(command, log)
+    output = logOutput(log, output)
+    checkCommand(command, status, output, error)
     return (output, error, status)
   executeShellCommand = staticmethod(executeShellCommand)
 
