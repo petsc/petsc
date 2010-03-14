@@ -288,7 +288,7 @@ class Configure(config.base.Configure):
       fd.write('\"Libraries compiled on %s on %s \\n\"\n' % (time.ctime(time.time()), script.Script.executeShellCommand('hostname|/usr/bin/dos2unix')))
     else:
       fd.write('\"Libraries compiled on %s on %s \\n\"\n' % (time.ctime(time.time()), platform.node()))
-    fd.write('\"Machine characteristics: %s\\n\"' % (platform.paltform()))
+    fd.write('\"Machine characteristics: %s\\n\"' % (platform.platform()))
     fd.write('\"Using PETSc directory: %s\\n\"' % (self.petscdir.dir))
     fd.write('\"Using PETSc arch: %s\\n\"' % (self.arch.arch))
     fd.write('\"-----------------------------------------\\n\"\n')
