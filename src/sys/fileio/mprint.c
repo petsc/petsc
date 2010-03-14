@@ -164,7 +164,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscVFPrintfDefault(FILE *fd,const char *format,
   if (oldLength < 8*1024) {
     newformat = formatbuf;
   } else {
-    PetscMalloc((oldLength+1) * sizeof(char), &newformat);
+    (void)PetscMalloc((oldLength+1) * sizeof(char), &newformat);
   }
   PetscFormatConvert(format,newformat,oldLength+1);
   if(PETSC_ZOPEFD != NULL && PETSC_ZOPEFD != PETSC_STDOUT){

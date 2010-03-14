@@ -1,6 +1,6 @@
 #define PETSC_USE_FORTRAN_MODULES
 
-        module petscdef
+        module petscsysdef
 #include "petscconf.h"
 #if defined(PETSC_HAVE_MPI_F90MODULE) || defined(PETSC_HAVE_MPIUNI)
         use mpi
@@ -13,8 +13,8 @@
 #include "finclude/petsclog.h"
         end module
 
-        module petsc
-        use petscdef
+        module petscsys
+        use petscsysdef
 #include "finclude/petscviewer.h90"
         end module
 

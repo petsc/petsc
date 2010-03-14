@@ -12,7 +12,7 @@ static char help[] = "Model multi-physics solver. Modified from src/snes/example
 
 extern PetscErrorCode FormInitialGuessComp(DMMG,Vec);
 extern PetscErrorCode FormFunctionComp(SNES,Vec,Vec,void*);
-extern PetscLogEvent  EVENT_FORMFUNCTIONLOCAL1, EVENT_FORMFUNCTIONLOCAL2;;
+extern PetscLogEvent  EVENT_FORMFUNCTIONLOCAL1, EVENT_FORMFUNCTIONLOCAL2;
 extern PetscErrorCode FormCoupleLocations(DMComposite,Mat,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt);
 
 #undef __FUNCT__

@@ -1,6 +1,7 @@
 #define PETSCMAT_DLL
 
 #include "../src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
+#include "petscblaslapack.h"
 
 EXTERN PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat); 
 EXTERN PetscErrorCode DisAssemble_MPIBAIJ(Mat);
@@ -1761,7 +1762,6 @@ PetscErrorCode MatSetUpPreallocation_MPIBAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-#include "petscblaslapack.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_MPIBAIJ"
 PetscErrorCode MatAXPY_MPIBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)

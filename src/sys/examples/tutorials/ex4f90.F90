@@ -12,7 +12,7 @@
 ! -----------------------------------------------------------------------
 
       program main
-      use petsc
+      use petscsys
       implicit none
 
       integer ierr

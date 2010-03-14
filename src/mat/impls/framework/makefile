@@ -1,3 +1,4 @@
+#requirespackage   'PETSC_USE_MATFRAMEWORK"
 ALL: lib
 
 CPPFLAGS = 

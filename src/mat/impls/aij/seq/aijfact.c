@@ -273,7 +273,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol,
   (B)->ops->solve            = MatSolve_SeqAIJ_inplace;
   (B)->ops->solvetranspose   = MatSolveTranspose_SeqAIJ_inplace;
   /* switch to inodes if appropriate */
-  ierr = MatLUFactorSymbolic_SeqAIJ_Inode(B,A,isrow,iscol,info);CHKERRQ(ierr); 
+  ierr = MatLUFactorSymbolic_SeqAIJ_Inode_inplace(B,A,isrow,iscol,info);CHKERRQ(ierr); 
   PetscFunctionReturn(0); 
 }
 
@@ -294,6 +294,15 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const Ma
   PetscBT            lnkbt;
 
   PetscFunctionBegin; 
+  // Uncomment the oldatastruct part only while testing new data structure for MatSolve() 
+  PetscTruth         olddatastruct=PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-ilu_old",&olddatastruct,PETSC_NULL);CHKERRQ(ierr);
+  if(olddatastruct){
+    ierr = MatLUFactorSymbolic_SeqAIJ_inplace(B,A,isrow,iscol,info);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  
+
   if (A->rmap->N != A->cmap->N) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be square");
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -609,7 +618,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(C->cmap->n);CHKERRQ(ierr);
 
-  /* MatPivotView() */
+  /* MatShiftView(A,info,&sctx) */
   if (sctx.nshift){
     if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE) {
       ierr = PetscInfo4(A,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,sctx.shift_fraction,sctx.shift_top);CHKERRQ(ierr);
@@ -655,8 +664,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFactorInfo
   sctx.shift_fraction = 0.0;
   sctx.shift_amount   = 0.0;
 
-  /* if both shift schemes are chosen by user, only use info->shiftpd */
-  if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
+  if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE) { /* set sctx.shift_top=max{rs} */
     ddiag          = a->diag;
     sctx.shift_top = info->zeropivot;
     for (i=0; i<n; i++) {
@@ -725,7 +733,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFactorInfo
       if (newshift == 1) break;
     } 
 
-    if (info->shiftpd && !sctx.useshift && sctx.shift_fraction>0 && sctx.nshift<sctx.nshift_max) {
+    if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE && !sctx.useshift && sctx.shift_fraction>0 && sctx.nshift<sctx.nshift_max) {
       /*
        * if no shift in this attempt & shifting & started shifting & can refine,
        * then try lower shift
@@ -765,9 +773,9 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFactorInfo
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(C->cmap->n);CHKERRQ(ierr);
   if (sctx.nshift){
-     if (info->shiftpd) {
+     if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE) {
       ierr = PetscInfo4(A,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,sctx.shift_fraction,sctx.shift_top);CHKERRQ(ierr);
-    } else if (info->shiftnz) {
+    } else if (info->shifttype == MAT_SHIFT_NONZERO) {
       ierr = PetscInfo2(A,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
     }
   }
@@ -815,8 +823,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,const MatFa
   sctx.shift_hi       = 0.;
   sctx.shift_fraction = 0.;
 
-  /* if both shift schemes are chosen by user, only use info->shiftpd */
-  if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
+  if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE) { /* set sctx.shift_top=max{rs} */
     sctx.shift_top = 0.;
     for (i=0; i<n; i++) {
       /* calculate sum(|aij|)-RealPart(aii), amt of shift needed for this row */
@@ -889,7 +896,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,const MatFa
       if (newshift == 1) break;
     } 
 
-    if (info->shiftpd && !sctx.useshift && sctx.shift_fraction>0 && sctx.nshift<sctx.nshift_max) {
+    if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE && !sctx.useshift && sctx.shift_fraction>0 && sctx.nshift<sctx.nshift_max) {
       /*
        * if no shift in this attempt & shifting & started shifting & can refine,
        * then try lower shift
@@ -918,9 +925,9 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,const MatFa
   A->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(A->cmap->n);CHKERRQ(ierr);
   if (sctx.nshift){
-    if (info->shiftpd) {
+    if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE) {
       ierr = PetscInfo4(A,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,sctx.shift_fraction,sctx.shift_top);CHKERRQ(ierr);
-    } else if (info->shiftnz) {
+    } else if (info->shifttype == MAT_SHIFT_NONZERO) {
       ierr = PetscInfo2(A,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
     } 
   }
@@ -1707,15 +1714,14 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
   PetscFreeSpaceList free_space_lvl=PETSC_NULL,current_space_lvl=PETSC_NULL; 
   
   PetscFunctionBegin;
-  /* // Testing new data structure for MatSolve() 
-  PetscTruth         olddatastruct=PETSC_FALSE
+  // Uncomment the old data struct part only while testing new data structure for MatSolve() 
+  PetscTruth         olddatastruct=PETSC_FALSE;
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-ilu_old",&olddatastruct,PETSC_NULL);CHKERRQ(ierr);
   if(olddatastruct){
     ierr = MatILUFactorSymbolic_SeqAIJ_inplace(fact,A,isrow,iscol,info);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  */
-
+  
   levels = (PetscInt)info->levels;
   ierr   = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr   = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
@@ -1918,7 +1924,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS isrow,IS is
     ierr                = PetscMalloc(((fact)->rmap->n+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
     ierr                = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
     ierr                = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
-    ierr = MatILUFactorSymbolic_SeqAIJ_Inode(fact,A,isrow,iscol,info);CHKERRQ(ierr); 
+    ierr = MatILUFactorSymbolic_SeqAIJ_Inode_inplace(fact,A,isrow,iscol,info);CHKERRQ(ierr); 
     PetscFunctionReturn(0);
   }
 
@@ -2056,7 +2062,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS isrow,IS is
   (fact)->info.fill_ratio_given  = f;
   (fact)->info.fill_ratio_needed = ((PetscReal)bi[n])/((PetscReal)ai[n]);
   (fact)->ops->lufactornumeric =  MatLUFactorNumeric_SeqAIJ_inplace;
-  ierr = MatILUFactorSymbolic_SeqAIJ_Inode(fact,A,isrow,iscol,info);CHKERRQ(ierr); 
+  ierr = MatILUFactorSymbolic_SeqAIJ_Inode_inplace(fact,A,isrow,iscol,info);CHKERRQ(ierr); 
   PetscFunctionReturn(0); 
 }
 
@@ -2084,8 +2090,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *
   /* MatPivotSetUp(): initialize shift context sctx */
   ierr = PetscMemzero(&sctx,sizeof(FactorShiftCtx));CHKERRQ(ierr);
 
-  /* if both shift schemes are chosen by user, only use info->shiftpd */
-  if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
+  if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE) { /* set sctx.shift_top=max{rs} */
     sctx.shift_top = info->zeropivot;
     for (i=0; i<mbs; i++) {
       /* calculate sum(|aij|)-RealPart(aii), amt of shift needed for this row */
@@ -2176,11 +2181,11 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *
       /* MatPivotCheck() */
       sctx.rs  = rs;
       sctx.pv  = dk;
-      if (info->shiftnz){
+      if (info->shifttype == MAT_SHIFT_NONZERO){
         ierr = MatPivotCheck_nz(info,sctx,k);CHKERRQ(ierr);
-      } else if (info->shiftpd){
+      } else if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE){
         ierr = MatPivotCheck_pd(info,sctx,k);CHKERRQ(ierr);
-      } else if (info->shiftinblocks){
+      } else if (info->shifttype == MAT_SHIFT_INBLOCKS){
         ierr = MatPivotCheck_inblocks(info,sctx,k);CHKERRQ(ierr);       
       } else {
         ierr = MatPivotCheck_none(info,sctx,k);CHKERRQ(ierr); 
@@ -2214,12 +2219,12 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *
 
   /* MatPivotView() */
   if (sctx.nshift){
-    if (info->shiftpd) {
+    if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE) {
       ierr = PetscInfo4(A,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,sctx.shift_fraction,sctx.shift_top);CHKERRQ(ierr);
-    } else if (info->shiftnz) {
+    } else if (info->shifttype == MAT_SHIFT_NONZERO) {
       ierr = PetscInfo2(A,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
-    } else if (info->shiftinblocks){
-      ierr = PetscInfo2(A,"number of shift_inblocks applied %D, each shift_amount %G\n",sctx.nshift,info->shiftinblocks);CHKERRQ(ierr);
+    } else if (info->shifttype == MAT_SHIFT_INBLOCKS){
+      ierr = PetscInfo2(A,"number of shift_inblocks applied %D, each shift_amount %G\n",sctx.nshift,info->shiftamount);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0); 
@@ -2239,15 +2244,12 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFact
   PetscInt       *ai=a->i,*aj=a->j;
   PetscInt       k,jmin,jmax,*jl,*il,col,nexti,ili,nz;
   MatScalar      *rtmp,*ba=b->a,*bval,*aa=a->a,dk,uikdi;
-  PetscReal      zeropivot,rs,shiftnz;
-  PetscReal      shiftpd;
+  PetscReal      zeropivot,rs;
   ChShift_Ctx    sctx;
   PetscInt       newshift;
   PetscTruth     perm_identity;
 
   PetscFunctionBegin;
-  shiftnz   = info->shiftnz;
-  shiftpd   = info->shiftpd;
   zeropivot = info->zeropivot; 
 
   ierr  = ISGetIndices(ip,&rip);CHKERRQ(ierr);
@@ -2360,9 +2362,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFact
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(C->rmap->n);CHKERRQ(ierr);
   if (sctx.nshift){
-    if (shiftnz) {
+    if (info->shifttype == MAT_SHIFT_NONZERO) {
       ierr = PetscInfo2(A,"number of shiftnz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
-    } else if (shiftpd) {
+    } else if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE) {
       ierr = PetscInfo2(A,"number of shiftpd tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
     }
   }

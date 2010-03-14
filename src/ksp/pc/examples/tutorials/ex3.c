@@ -8,7 +8,7 @@
  * Run the executable twice:
  * 1/ without options: the iterative method diverges because of an
  *    indefinite preconditioner
- * 2/ with -pc_factor_shift_positive_definite option (or comment in the PCFactorSetShiftPd line below):
+ * 2/ with -pc_factor_shift_positive_definite option (or comment in the PCFactorSetShiftType() line below):
  *    the method will now successfully converge.
  *
  * Modified from ex1.c by malte.foerster@scai.fraunhofer.de [petsc-maint #42323]
@@ -33,7 +33,7 @@ int main(int argc,char **argv)
   PetscInt           nnu=1000;
   
   ierr = PetscInitialize(&argc,&argv,0,0);CHKERRQ(ierr);
-  ierr = PetscOptionsSetValue("-options_left",PETSC_NULL);CHKERRQ(ierr);
+  //ierr = PetscOptionsSetValue("-options_left",PETSC_NULL);CHKERRQ(ierr);
   comm = MPI_COMM_SELF;
   
  

@@ -17,9 +17,6 @@ EXTERN_C_BEGIN
 extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetZeroPivot_Factor(PC,PetscReal);
 extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftType_Factor(PC,MatFactorShiftType);
 extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftAmount_Factor(PC,PetscReal);
-extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftNonzero_Factor(PC,PetscReal);
-extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftPd_Factor(PC,PetscTruth);
-extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftInBlocks_Factor(PC,PetscReal);
 extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetDropTolerance_Factor(PC,PetscReal,PetscReal,PetscInt);
 extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetFill_Factor(PC,PetscReal);
 extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType_Factor(PC,const MatOrderingType);
@@ -31,6 +28,7 @@ extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage_Factor(PC,c
 extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatSolverPackage_Factor(PC,const MatSolverPackage*);
 extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetColumnPivot_Factor(PC,PetscReal);
 extern PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions_Factor(PC);
+extern PetscErrorCode PCView_Factor(PC,PetscViewer);
 EXTERN_C_END
 
 #endif

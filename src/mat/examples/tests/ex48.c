@@ -163,7 +163,6 @@ int main(int argc,char **args)
   ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);   
   info.fill      = 2.0;
   info.dtcol     = 0.0; 
-  info.shiftnz   = 0.0; 
   info.zeropivot = 1.e-14; 
   info.pivotinblocks = 1.0; 
   ierr = MatLUFactor(B,is1,is2,&info);CHKERRQ(ierr);

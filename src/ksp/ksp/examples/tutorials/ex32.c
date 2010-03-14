@@ -153,66 +153,54 @@ PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J,Mat jac)
   HxdHy = Hx/Hy;
   HydHx = Hy/Hx;
   ierr = DAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  for (j=ys; j<ys+ym; j++)
-    {
-      for(i=xs; i<xs+xm; i++)
-	{
-	  row.i = i; row.j = j;
-	  if (i==0 || j==0 || i==mx-1 || j==my-1) 
-	    {
-	      if (user->bcType == DIRICHLET) 
-		{
-		  SETERRQ(PETSC_ERR_SUP,"Dirichlet boundary conditions not supported !\n");
-		  v[0] = 2.0*(HxdHy + HydHx);
-		  ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
-		} 
-	      else if (user->bcType == NEUMANN) 
-		{
-		  num = 0; numi=0; numj=0;
-		  if (j!=0) 
-		    {
-		      v[num] = -HxdHy;              
-		      col[num].i = i;   
-		      col[num].j = j-1;
-		      num++; numj++;
-		    }
-		  if (i!=0) 
-		    {
-		      v[num] = -HydHx;              
-		      col[num].i = i-1; 
-		      col[num].j = j;
-		      num++; numi++;
-		    }
-		  if (i!=mx-1) 
-		    {
-		      v[num] = -HydHx;              
-		      col[num].i = i+1; 
-		      col[num].j = j;
-		      num++; numi++;
-		    }
-		  if (j!=my-1) 
-		    {
-		      v[num] = -HxdHy;              
-		      col[num].i = i;   
-		      col[num].j = j+1;
-		      num++; numj++;
-		    }
-		  v[num]   = (PetscReal)(numj)*HxdHy + (PetscReal)(numi)*HydHx; col[num].i = i;   col[num].j = j;
-		  num++;
-		  ierr = MatSetValuesStencil(jac,1,&row,num,col,v,INSERT_VALUES);CHKERRQ(ierr);
-		}
-	    } 
-	  else 
-	    {
-	      v[0] = -HxdHy;              col[0].i = i;   col[0].j = j-1;
-	      v[1] = -HydHx;              col[1].i = i-1; col[1].j = j;
-	      v[2] = 2.0*(HxdHy + HydHx); col[2].i = i;   col[2].j = j;
-	      v[3] = -HydHx;              col[3].i = i+1; col[3].j = j;
-	      v[4] = -HxdHy;              col[4].i = i;   col[4].j = j+1;
-	      ierr = MatSetValuesStencil(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
-	    }
+  for (j=ys; j<ys+ym; j++)  {
+    for(i=xs; i<xs+xm; i++) {
+      row.i = i; row.j = j;
+      if (i==0 || j==0 || i==mx-1 || j==my-1) {
+	if (user->bcType == DIRICHLET) {
+	  v[0] = 2.0*(HxdHy + HydHx);
+	  ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
+	  SETERRQ(PETSC_ERR_SUP,"Dirichlet boundary conditions not supported !\n");
+	} else if (user->bcType == NEUMANN) {
+	  num = 0; numi=0; numj=0;
+	  if (j!=0)  {
+	    v[num] = -HxdHy;              
+	    col[num].i = i;   
+	    col[num].j = j-1;
+	    num++; numj++;
+	  }
+	  if (i!=0)   {
+	    v[num] = -HydHx;              
+	    col[num].i = i-1; 
+	    col[num].j = j;
+	    num++; numi++;
+	  }
+	  if (i!=mx-1) {
+	    v[num] = -HydHx;              
+	    col[num].i = i+1; 
+	    col[num].j = j;
+	    num++; numi++;
+	  }
+	  if (j!=my-1)  {
+	    v[num] = -HxdHy;              
+	    col[num].i = i;   
+	    col[num].j = j+1;
+	    num++; numj++;
+	  }
+	  v[num]   = (PetscReal)(numj)*HxdHy + (PetscReal)(numi)*HydHx; col[num].i = i;   col[num].j = j;
+	  num++;
+	  ierr = MatSetValuesStencil(jac,1,&row,num,col,v,INSERT_VALUES);CHKERRQ(ierr);
 	}
+      } else   {
+	v[0] = -HxdHy;              col[0].i = i;   col[0].j = j-1;
+	v[1] = -HydHx;              col[1].i = i-1; col[1].j = j;
+	v[2] = 2.0*(HxdHy + HydHx); col[2].i = i;   col[2].j = j;
+	v[3] = -HydHx;              col[3].i = i+1; col[3].j = j;
+	v[4] = -HxdHy;              col[4].i = i;   col[4].j = j+1;
+	ierr = MatSetValuesStencil(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
+      }
     }
+  }
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);

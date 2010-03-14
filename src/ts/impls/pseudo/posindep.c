@@ -8,7 +8,7 @@
 typedef struct {
   Vec  update;      /* work vector where new solution is formed */
   Vec  func;        /* work vector where F(t[i],u[i]) is stored */
-  Vec  rhs;         /* work vector for RHS; vec_sol/dt */
+  Vec  xdot;        /* work vector for time derivative of state */
 
   /* information used for Pseudo-timestepping */
 
@@ -21,7 +21,7 @@ typedef struct {
   PetscReal  fnorm_previous;
 
   PetscReal  dt_increment;                  /* scaling that dt is incremented each time-step */
-  PetscTruth increment_dt_from_initial_dt;  
+  PetscTruth increment_dt_from_initial_dt;
 } TS_Pseudo;
 
 /* ------------------------------------------------------------------------------*/
@@ -193,7 +193,7 @@ static PetscErrorCode TSDestroy_Pseudo(TS ts)
   PetscFunctionBegin;
   if (pseudo->update) {ierr = VecDestroy(pseudo->update);CHKERRQ(ierr);}
   if (pseudo->func) {ierr = VecDestroy(pseudo->func);CHKERRQ(ierr);}
-  if (pseudo->rhs)  {ierr = VecDestroy(pseudo->rhs);CHKERRQ(ierr);}
+  if (pseudo->xdot) {ierr = VecDestroy(pseudo->xdot);CHKERRQ(ierr);}
   ierr = PetscFree(pseudo);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -201,55 +201,84 @@ static PetscErrorCode TSDestroy_Pseudo(TS ts)
 
 /*------------------------------------------------------------*/
 
-/* 
-    This defines the nonlinear equation that is to be solved with SNES
-
-              (U^{n+1} - U^{n})/dt - F(U^{n+1})
-*/
 #undef __FUNCT__  
-#define __FUNCT__ "TSPseudoFunction"
-PetscErrorCode TSPseudoFunction(SNES snes,Vec x,Vec y,void *ctx)
+#define __FUNCT__ "TSPseudoGetXdot"
+/*
+    Compute Xdot = (X^{n+1}-X^n)/dt) = 0
+*/
+static PetscErrorCode TSPseudoGetXdot(TS ts,Vec X,Vec *Xdot)
 {
-  TS             ts = (TS) ctx;
-  PetscScalar    mdt = 1.0/ts->time_step,*unp1,*un,*Funp1;
+  TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
+  PetscScalar    mdt = 1.0/ts->time_step,*xnp1,*xn,*xdot;
   PetscErrorCode ierr;
   PetscInt       i,n;
 
   PetscFunctionBegin;
-  /* apply user provided function */
-  ierr = TSComputeRHSFunction(ts,ts->ptime,x,y);CHKERRQ(ierr);
-  /* compute (u^{n+1) - u^{n})/dt - F(u^{n+1}) */
-  ierr = VecGetArray(ts->vec_sol,&un);CHKERRQ(ierr);
-  ierr = VecGetArray(x,&unp1);CHKERRQ(ierr);
-  ierr = VecGetArray(y,&Funp1);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(ts->vec_sol,&xn);CHKERRQ(ierr);
+  ierr = VecGetArray(X,&xnp1);CHKERRQ(ierr);
+  ierr = VecGetArray(pseudo->xdot,&xdot);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    Funp1[i] = mdt*(unp1[i] - un[i]) - Funp1[i];
+    xdot[i] = mdt*(xnp1[i] - xn[i]);
   }
-  ierr = VecRestoreArray(ts->vec_sol,&un);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&unp1);CHKERRQ(ierr);
-  ierr = VecRestoreArray(y,&Funp1);CHKERRQ(ierr);
+  ierr = VecRestoreArray(ts->vec_sol,&xn);CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&xnp1);CHKERRQ(ierr);
+  ierr = VecRestoreArray(pseudo->xdot,&xdot);CHKERRQ(ierr);
+  *Xdot = pseudo->xdot;
   PetscFunctionReturn(0);
 }
 
-/*
-   This constructs the Jacobian needed for SNES 
-
-             J = I/dt - J_{F}   where J_{F} is the given Jacobian of F.
-*/
 #undef __FUNCT__  
-#define __FUNCT__ "TSPseudoJacobian"
-PetscErrorCode TSPseudoJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+#define __FUNCT__ "TSPseudoFunction"
+/*
+    The transient residual is
+
+        F(U^{n+1},(U^{n+1}-U^n)/dt) = 0
+
+    or for ODE,
+
+        (U^{n+1} - U^{n})/dt - F(U^{n+1}) = 0
+
+    This is the function that must be evaluated for transient simulation and for
+    finite difference Jacobians.  On the first Newton step, this algorithm uses
+    a guess of U^{n+1} = U^n in which case the transient term vanishes and the
+    residual is actually the steady state residual.  Pseudotransient
+    continuation as described in the literature is a linearly implicit
+    algorithm, it only takes this one Newton step with the steady state
+    residual, and then advances to the next time step.
+*/
+static PetscErrorCode TSPseudoFunction(SNES snes,Vec X,Vec Y,void *ctx)
 {
-  TS             ts = (TS) ctx;
+  TS             ts = (TS)ctx;
+  Vec            Xdot;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* construct users Jacobian */
-  ierr = TSComputeRHSJacobian(ts,ts->ptime,x,AA,BB,str);CHKERRQ(ierr);
+  ierr = TSPseudoGetXdot(ts,X,&Xdot);CHKERRQ(ierr);
+  ierr = TSComputeIFunction(ts,ts->ptime,X,Xdot,Y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
-  /* shift and scale Jacobian */
-  ierr = TSScaleShiftMatrices(ts,*AA,*BB,*str);CHKERRQ(ierr);
+#undef __FUNCT__  
+#define __FUNCT__ "TSPseudoJacobian"
+/*
+   This constructs the Jacobian needed for SNES.  For DAE, this is
+
+       dF(X,Xdot)/dX + shift*dF(X,Xdot)/dXdot
+
+    and for ODE:
+
+       J = I/dt - J_{Frhs}   where J_{Frhs} is the given Jacobian of Frhs.
+*/
+static PetscErrorCode TSPseudoJacobian(SNES snes,Vec X,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+{
+  TS             ts = (TS)ctx;
+  Vec            Xdot;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = TSPseudoGetXdot(ts,X,&Xdot);CHKERRQ(ierr);
+  ierr = TSComputeIJacobian(ts,ts->ptime,X,Xdot,1./ts->time_step,AA,BB,str);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -262,8 +291,9 @@ static PetscErrorCode TSSetUp_Pseudo(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(ts->vec_sol,&pseudo->update);CHKERRQ(ierr);  
-  ierr = VecDuplicate(ts->vec_sol,&pseudo->func);CHKERRQ(ierr);  
+  ierr = VecDuplicate(ts->vec_sol,&pseudo->update);CHKERRQ(ierr);
+  ierr = VecDuplicate(ts->vec_sol,&pseudo->func);CHKERRQ(ierr);
+  ierr = VecDuplicate(ts->vec_sol,&pseudo->xdot);CHKERRQ(ierr);
   ierr = SNESSetFunction(ts->snes,pseudo->func,TSPseudoFunction,ts);CHKERRQ(ierr);
   ierr = SNESSetJacobian(ts->snes,ts->Arhs,ts->B,TSPseudoJacobian,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -563,8 +593,8 @@ $    X += S
 
 $    G(Y) = F(Y,(Y-X)/dt)
 
-  This is very much like linearly-implicit Euler, except that the residual is evaluated "at steady
-  state".
+  This is linearly-implicit Euler with the residual always evaluated "at steady
+  state".  See note below.
 
   Options database keys:
 +  -ts_pseudo_increment <real> - ratio of increase dt
@@ -577,7 +607,15 @@ $    G(Y) = F(Y,(Y-X)/dt)
   C. T. Kelley and David E. Keyes, Convergence analysis of Pseudotransient Continuation, 1998.
 
   Notes:
-  At the moment, this uses uses a transient residual, so it is not the pseudotransient continuation described in these papers.
+  The residual computed by this method includes the transient term (Xdot is computed instead of
+  always being zero), but since the prediction from the last step is always the solution from the
+  last step, on the first Newton iteration we have
+
+$  Xdot = (Xpredicted - Xold)/dt = (Xold-Xold)/dt = 0
+
+  Therefore, the linear system solved by the first Newton iteration is equivalent to the one
+  described above and in the papers.  If the user chooses to perform multiple Newton iterations, the
+  algorithm is no longer the one described in the referenced papers.
 
 .seealso:  TSCreate(), TS, TSSetType()
 

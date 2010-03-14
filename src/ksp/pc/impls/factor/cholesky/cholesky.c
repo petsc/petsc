@@ -63,45 +63,21 @@ static PetscErrorCode PCView_Cholesky(PC pc,PetscViewer viewer)
 {
   PC_Cholesky    *chol = (PC_Cholesky*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth     iascii,isstring;
+  PetscTruth     iascii;
   
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
-  if (iascii) {
-    if (((PC_Factor*)chol)->info.shifttype==MAT_SHIFT_POSITIVE_DEFINITE) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Cholesky: using Manteuffel shift\n");CHKERRQ(ierr);
-    }
-    if (((PC_Factor*)chol)->info.shifttype==MAT_SHIFT_NONZERO) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Cholesky: using diagonal shift to prevent zero pivot\n");CHKERRQ(ierr);
-    }
-    if (((PC_Factor*)chol)->info.shifttype==MAT_SHIFT_INBLOCKS) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Cholesky: using diagonal shift on blocks to prevent zero pivot\n");CHKERRQ(ierr);
+  if (iascii) {  
+    if (chol->inplace) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Cholesky: in-place factorization\n");CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Cholesky: out-of-place factorization\n");CHKERRQ(ierr);
     }
     
-    if (chol->inplace) {ierr = PetscViewerASCIIPrintf(viewer,"  Cholesky: in-place factorization\n");CHKERRQ(ierr);}
-    else             {ierr = PetscViewerASCIIPrintf(viewer,"  Cholesky: out-of-place factorization\n");CHKERRQ(ierr);}
-    ierr = PetscViewerASCIIPrintf(viewer,"    matrix ordering: %s\n",((PC_Factor*)chol)->ordering);CHKERRQ(ierr);
-    if (((PC_Factor*)chol)->fact) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Cholesky: factor fill ratio needed %G\n",chol->actualfill);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"       Factored matrix follows\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-      ierr = MatView(((PC_Factor*)chol)->fact,viewer);CHKERRQ(ierr);
-      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-    }
-    if (chol->reusefill)    {ierr = PetscViewerASCIIPrintf(viewer,"       Reusing fill from past factorization\n");CHKERRQ(ierr);}
-    if (chol->reuseordering) {ierr = PetscViewerASCIIPrintf(viewer,"       Reusing reordering from past factorization\n");CHKERRQ(ierr);}
-  } else if (isstring) {
-    ierr = PetscViewerStringSPrintf(viewer," order=%s",((PC_Factor*)chol)->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for PCCHOLESKY",((PetscObject)viewer)->type_name);
-  }
+    if (chol->reusefill)    {ierr = PetscViewerASCIIPrintf(viewer,"  Reusing fill from past factorization\n");CHKERRQ(ierr);}
+    if (chol->reuseordering) {ierr = PetscViewerASCIIPrintf(viewer,"  Reusing reordering from past factorization\n");CHKERRQ(ierr);}
+  } 
+  ierr = PCView_Factor(pc,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

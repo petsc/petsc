@@ -1,5 +1,8 @@
 import PETSc.package
-
+#
+#   Scotch is not currently usable as a partitioner for PETSc (the PETSc calls to Scotch need to be
+#   updated. But Scotch is needed for use of the PasTiX direct solver
+#
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)

@@ -171,7 +171,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCISSetUp(PC pc)
 
       if (pcis->pure_neumann) {  /* floating subdomain */ 
 	if (!(not_damp_floating)) {
-          ierr = PCFactorSetShiftNonzero(pc_ctx,floating_factor);CHKERRQ(ierr);
+          ierr = PCFactorSetShiftType(pc_ctx,MAT_SHIFT_NONZERO);CHKERRQ(ierr);
+          ierr = PCFactorSetShiftAmount(pc_ctx,floating_factor);CHKERRQ(ierr);
 	}
 	if (!(not_remove_nullspace_floating)){
 	  MatNullSpace nullsp;
@@ -181,7 +182,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCISSetUp(PC pc)
 	}
       } else {  /* fixed subdomain */
 	if (damp_fixed) {
-          ierr = PCFactorSetShiftNonzero(pc_ctx,fixed_factor);CHKERRQ(ierr);
+          ierr = PCFactorSetShiftType(pc_ctx,MAT_SHIFT_NONZERO);CHKERRQ(ierr);
+          ierr = PCFactorSetShiftAmount(pc_ctx,floating_factor);CHKERRQ(ierr);
 	}
 	if (remove_nullspace_fixed) {
 	  MatNullSpace nullsp;

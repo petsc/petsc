@@ -52,7 +52,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
       ierr = MPI_Alltoallw(xv,to->wcounts,to->wdispls,to->types,yv,from->wcounts,from->wdispls,from->types,((PetscObject)ctx)->comm);CHKERRQ(ierr);
     } else
 #endif
-    if (ctx->packtogether || to->use_alltoallv) {
+    if (ctx->packtogether || to->use_alltoallv || to->use_window) {
       /* this version packs all the messages together and sends, when -vecscatter_packtogether used */
       PETSCMAP1(Pack)(sstarts[nsends],indices,xv,svalues);
       if (to->use_alltoallv) {
@@ -135,7 +135,7 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
   indices  = from->indices;
   rstarts  = from->starts;
 
-  if (ctx->packtogether || (to->use_alltoallw && (addv != INSERT_VALUES)) || (to->use_alltoallv && !to->use_alltoallw)) {
+  if (ctx->packtogether || (to->use_alltoallw && (addv != INSERT_VALUES)) || (to->use_alltoallv && !to->use_alltoallw) || to->use_window) {
     if (nrecvs && !to->use_alltoallv && !to->use_window) {ierr = MPI_Waitall(nrecvs,rwaits,rstatus);CHKERRQ(ierr);}
     PETSCMAP1(UnPack)(from->starts[from->n],from->values,indices,yv,addv);
   } else if (!to->use_alltoallw) {

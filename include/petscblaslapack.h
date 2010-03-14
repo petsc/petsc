@@ -1,10 +1,13 @@
 /*
   This file dispatches between various header files for blas/lapack distributions to handle the name mangling.
   It also provides C prototypes for all the BLAS/LAPACK functions that PETSc uses
+
+  This is not included automatically by petscsys.h because some external packages include their own prototypes for 
+  certain BLAS/LAPACK functions that conflict with the ones given here. Hence this should only be included when needed.
+
 */
 #if !defined(_BLASLAPACK_H)
 #define _BLASLAPACK_H
-#include "petscsys.h"
 
 #if defined(PETSC_BLASLAPACK_STDCALL)
 #include "petscblaslapack_stdcall.h"
