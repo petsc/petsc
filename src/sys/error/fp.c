@@ -19,7 +19,7 @@ PetscErrorCode ieee_flags(char*,char*,char*,char**);
 PetscErrorCode ieee_handler(char *,char *,sigfpe_handler_type(int,int,struct sigcontext*,char *));
 EXTERN_C_END
 
-struct { int code_no; char *name; } error_codes[] = {
+static struct { int code_no; char *name; } error_codes[] = {
            { FPE_INTDIV_TRAP	,"integer divide" },
 	   { FPE_FLTOPERR_TRAP	,"IEEE operand error" },
 	   { FPE_FLTOVF_TRAP	,"floating point overflow" },
@@ -111,7 +111,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
 #include <siginfo.h>
 #include <ucontext.h>
 
-struct { int code_no; char *name; } error_codes[] = {
+static struct { int code_no; char *name; } error_codes[] = {
   {  FPE_FLTINV,"invalid floating point operand"},
   {  FPE_FLTRES,"inexact floating point result"},
   {  FPE_FLTDIV,"division-by-zero"},
@@ -168,7 +168,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
 
 #elif defined (PETSC_HAVE_IRIX_STYLE_FPTRAP)
 #include <sigfpe.h>
-struct { int code_no; char *name; } error_codes[] = {
+static struct { int code_no; char *name; } error_codes[] = {
        { _INVALID   ,"IEEE operand error" },
        { _OVERFL    ,"floating point overflow" },
        { _UNDERFL   ,"floating point underflow" },
@@ -222,7 +222,7 @@ struct sigcontext;
 #define FPE_FLTDIV_TRAP   (fptrap_t)(0x04000000)
 #define FPE_FLTINEX_TRAP  (fptrap_t)(0x02000000)
 
-struct { int code_no; char *name; } error_codes[] = {
+static struct { int code_no; char *name; } error_codes[] = {
            {FPE_FLTOPERR_TRAP	,"IEEE operand error" },
 	   { FPE_FLTOVF_TRAP	,"floating point overflow" },
 	   { FPE_FLTUND_TRAP	,"floating point underflow" },
@@ -290,9 +290,6 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap on)
 
 /* -------------------------Default -----------------------------------*/
 #else 
-struct PETSCERRORCODES { int code_no; const char *name; } error_codes[] = {
-	   { 0		,"unknown error" } 
-} ;
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDefaultFPTrap"

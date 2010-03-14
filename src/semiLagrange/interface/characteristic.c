@@ -68,7 +68,7 @@ PetscErrorCode CharacteristicDestroy(Characteristic c)
   if (c->request)       {ierr = PetscFree(c->request);CHKERRQ(ierr);}
   if (c->status)        {ierr = PetscFree(c->status);CHKERRQ(ierr);}
   ierr = PetscLogObjectDestroy(c);CHKERRQ(ierr);
-  PetscHeaderDestroy(c);
+  ierr = PetscHeaderDestroy(c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1190,17 +1190,16 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
   const PetscInt   n=A->rmap->n,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bdiag=b->diag;
   PetscInt         i,j,k,nz,nzL,row,*pj;
   const PetscInt   *ajtmp,*bjtmp;
-  MatScalar        *rtmp,*pc,*pc1,*pc2,multiplier,multiplier1,multiplier2,*pv,*rtmp11,*rtmp22,*rtmp33;
-  const  MatScalar *aa=a->a,*v,*v1,*v2;
+  MatScalar        *pc,*pc1,*pc2,*pc3,mul1,mul2,mul3,*pv,*rtmp1,*rtmp2,*rtmp3;
+  const  MatScalar *aa=a->a,*v,*v1,*v2,*v3;
   FactorShiftCtx   sctx;
   PetscInt         *ddiag;
   PetscReal        rs;
   MatScalar        d;
-  PetscInt         inod,nodesz,kk1,kk2;
+  PetscInt         inod,nodesz,node_max,*ns,col;
+  PetscInt         *tmp_vec1,*tmp_vec2,*nsmap;
   
-
   PetscFunctionBegin;
-  printf("MatLUFactorNumeric_SeqAIJ_Inode...\n");
   /* MatPivotSetUp(): initialize shift context sctx */
   ierr = PetscMemzero(&sctx,sizeof(FactorShiftCtx));CHKERRQ(ierr);
 
@@ -1225,124 +1224,150 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
 
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
-  //ierr = PetscMalloc((n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
-  ierr  = PetscMalloc((3*n+1)*sizeof(PetscScalar),&rtmp11);CHKERRQ(ierr);
-  ierr  = PetscMemzero(rtmp11,(3*n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
-  rtmp   = rtmp11;
-  rtmp22 = rtmp11 + n;  
-  rtmp33 = rtmp22 + n;  
-  ics  = ic;
+  
+  ierr  = PetscMalloc((3*n+1)*sizeof(PetscScalar),&rtmp1);CHKERRQ(ierr);
+  ierr  = PetscMemzero(rtmp1,(3*n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
+  rtmp2 = rtmp1 + n;  
+  rtmp3 = rtmp2 + n;  
+  ics   = ic;
 
-  PetscInt node_max,*ns;
   node_max = a->inode.node_count; 
   ns       = a->inode.size;
   if (!ns){                   
     SETERRQ(PETSC_ERR_PLIB,"Matrix without inode information");
   }
 
+  /* If max inode size > 3, split it into two inodes.*/
+  /* also map the inode sizes according to the ordering */
+  ierr = PetscMalloc((n+1)* sizeof(PetscInt),&tmp_vec1);CHKERRQ(ierr);
+  for (i=0,j=0; i<node_max; ++i,++j){
+    if (ns[i]>3) {
+      tmp_vec1[j] = ns[i]/2; /* Assuming ns[i] < =5  */
+      ++j; 
+      tmp_vec1[j] = ns[i] - tmp_vec1[j-1];
+    } else {
+      tmp_vec1[j] = ns[i];
+    }
+  }
+  /* Use the correct node_max */
+  node_max = j;
+  
+  /* Now reorder the inode info based on mat re-ordering info */
+  /* First create a row -> inode_size_array_index map */
+  ierr = PetscMalloc(n*sizeof(PetscInt)+1,&nsmap);CHKERRQ(ierr);
+  ierr = PetscMalloc(node_max*sizeof(PetscInt)+1,&tmp_vec2);CHKERRQ(ierr);
+  for (i=0,row=0; i<node_max; i++) {
+    nodesz = tmp_vec1[i];
+    for (j=0; j<nodesz; j++,row++) {
+      nsmap[row] = i;
+    }
+  }
+  /* Using nsmap, create a reordered ns structure */
+  for (i=0,j=0; i< node_max; i++) {
+    nodesz       = tmp_vec1[nsmap[r[j]]];    /* here the reordered row_no is in r[] */
+    tmp_vec2[i]  = nodesz;
+    j           += nodesz;
+  }
+  ierr = PetscFree(nsmap);CHKERRQ(ierr);
+  ierr = PetscFree(tmp_vec1);CHKERRQ(ierr);
+
+  /* Now use the correct ns */
+  ns = tmp_vec2;
+
   do {
     sctx.useshift = PETSC_FALSE;
     /* Now loop over each block-row, and do the factorization */
     for (inod=0,i=0; inod<node_max; inod++){ /* i: row index; inod: inode index */
-      //for (i=0; i<n; i++){ 
       nodesz = ns[inod];
-      //printf("row %d, inod %d, nodesz %d\n",i,inod,nodesz);
-
+     
       switch (nodesz){
       case 1:
-      /* zero rtmp */
-      /* L part */
-      nz    = bi[i+1] - bi[i];
-      bjtmp = bj + bi[i];
-      for  (j=0; j<nz; j++) rtmp[bjtmp[j]] = 0.0;
+      /*----------*/
+        /* zero rtmp1 */
+        /* L part */
+        nz    = bi[i+1] - bi[i];
+        bjtmp = bj + bi[i];
+        for (j=0; j<nz; j++) rtmp1[bjtmp[j]] = 0.0;
 
-      /* U part */
-      nz = bdiag[i]-bdiag[i+1];
-      bjtmp = bj + bdiag[i+1]+1;
-      for  (j=0; j<nz; j++) rtmp[bjtmp[j]] = 0.0; 
+        /* U part */
+        nz = bdiag[i]-bdiag[i+1];
+        bjtmp = bj + bdiag[i+1]+1;
+        for (j=0; j<nz; j++) rtmp1[bjtmp[j]] = 0.0; 
    
-      /* load in initial (unfactored row) */
-      nz    = ai[r[i]+1] - ai[r[i]];
-      ajtmp = aj + ai[r[i]];
-      v     = aa + ai[r[i]];
-      for (j=0; j<nz; j++) {
-        rtmp[ics[ajtmp[j]]] = v[j];
-      }
-      /* ZeropivotApply() */
-      rtmp[i] += sctx.shift_amount;  /* shift the diagonal of the matrix */
-    
-      /* elimination */
-      bjtmp = bj + bi[i];
-      row   = *bjtmp++;
-      nzL   = bi[i+1] - bi[i];
-      for(k=0; k < nzL;k++) {
-        pc = rtmp + row;
-        if (*pc != 0.0) {
-          pv         = b->a + bdiag[row];
-          multiplier = *pc * (*pv); 
-          *pc        = multiplier;
-          pj = b->j + bdiag[row+1]+1; /* beginning of U(row,:) */
-	  pv = b->a + bdiag[row+1]+1;
-	  nz = bdiag[row]-bdiag[row+1]-1; /* num of entries in U(row,:) excluding diag */
-          for (j=0; j<nz; j++) rtmp[pj[j]] -= multiplier * pv[j];
-          ierr = PetscLogFlops(2.0*nz);CHKERRQ(ierr);
+        /* load in initial (unfactored row) */
+        nz    = ai[r[i]+1] - ai[r[i]];
+        ajtmp = aj + ai[r[i]];
+        v     = aa + ai[r[i]];
+        for (j=0; j<nz; j++) {
+          rtmp1[ics[ajtmp[j]]] = v[j];
         }
-        row = *bjtmp++;
-      }
+        /* ZeropivotApply() */
+        rtmp1[i] += sctx.shift_amount;  /* shift the diagonal of the matrix */
+    
+        /* elimination */
+        bjtmp = bj + bi[i];
+        row   = *bjtmp++;
+        nzL   = bi[i+1] - bi[i];
+        for(k=0; k < nzL;k++) {
+          pc = rtmp1 + row;
+          if (*pc != 0.0) {
+            pv   = b->a + bdiag[row];
+            mul1 = *pc * (*pv); 
+            *pc  = mul1;
+            pj = b->j + bdiag[row+1]+1; /* beginning of U(row,:) */
+            pv = b->a + bdiag[row+1]+1;
+            nz = bdiag[row]-bdiag[row+1]-1; /* num of entries in U(row,:) excluding diag */
+            for (j=0; j<nz; j++) rtmp1[pj[j]] -= mul1 * pv[j];
+            ierr = PetscLogFlops(2.0*nz);CHKERRQ(ierr);
+          }
+          row = *bjtmp++;
+        }
 
-      /* finished row so stick it into b->a */
-      rs = 0.0;
-      /* L part */
-      pv   = b->a + bi[i] ;
-      pj   = b->j + bi[i] ;
-      nz   = bi[i+1] - bi[i];
-      for (j=0; j<nz; j++) {
-        pv[j] = rtmp[pj[j]]; rs += PetscAbsScalar(pv[j]);
-      }
+        /* finished row so stick it into b->a */
+        rs = 0.0;
+        /* L part */
+        pv = b->a + bi[i] ;
+        pj = b->j + bi[i] ;
+        nz = bi[i+1] - bi[i];
+        for (j=0; j<nz; j++) {
+          pv[j] = rtmp1[pj[j]]; rs += PetscAbsScalar(pv[j]);
+        }
 
-      /* U part */
-      pv = b->a + bdiag[i+1]+1;
-      pj = b->j + bdiag[i+1]+1;
-      nz = bdiag[i] - bdiag[i+1]-1;
-      for (j=0; j<nz; j++) {
-        pv[j] = rtmp[pj[j]]; rs += PetscAbsScalar(pv[j]);
-      }
+        /* U part */
+        pv = b->a + bdiag[i+1]+1;
+        pj = b->j + bdiag[i+1]+1;
+        nz = bdiag[i] - bdiag[i+1]-1;
+        for (j=0; j<nz; j++) {
+          pv[j] = rtmp1[pj[j]]; rs += PetscAbsScalar(pv[j]);
+        }
 
-      /* MatPivotCheck() */
-      sctx.rs  = rs;
-      sctx.pv  = rtmp[i];
-      if (info->shifttype == MAT_SHIFT_NONZERO){
-        ierr = MatPivotCheck_nz(info,sctx,i);CHKERRQ(ierr);
-      } else if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE){
-        ierr = MatPivotCheck_pd(info,sctx,i);CHKERRQ(ierr);
-      } else if (info->shifttype == MAT_SHIFT_INBLOCKS){
-        ierr = MatPivotCheck_inblocks(info,sctx,i);CHKERRQ(ierr);       
-      } else {
-        ierr = MatPivotCheck_none(info,sctx,i);CHKERRQ(ierr);   
-      }
-      rtmp[i] = sctx.pv;
-
-      /* Mark diagonal and invert diagonal for simplier triangular solves */
-      pv  = b->a + bdiag[i];
-      *pv = 1.0/rtmp[i];
-
-      break;
+        /* Check zero pivot */
+        sctx.rs = rs;
+        sctx.pv = rtmp1[i];
+        ierr = MatPivotCheck(info,sctx,i);CHKERRQ(ierr); 
+       
+        /* Mark diagonal and invert diagonal for simplier triangular solves */
+        pv  = b->a + bdiag[i];
+        *pv = 1.0/sctx.pv; /* sctx.pv = rtmp1[i]+shiftamount if shifttype==MAT_SHIFT_INBLOCKS */
+        break;
       
       case 2:
       /*----------*/
-        /* zero rtmp */
+        /* zero rtmp1 and rtmp2 */
         /* L part */
         nz    = bi[i+1] - bi[i];
         bjtmp = bj + bi[i];
         for  (j=0; j<nz; j++) {
-          rtmp11[bjtmp[j]] = 0.0; rtmp22[bjtmp[j]] = 0.0;
+          col = bjtmp[j];
+          rtmp1[col] = 0.0; rtmp2[col] = 0.0;
         }
 
         /* U part */
         nz = bdiag[i]-bdiag[i+1];
         bjtmp = bj + bdiag[i+1]+1;
         for  (j=0; j<nz; j++) {
-          rtmp11[bjtmp[j]] = 0.0; rtmp22[bjtmp[j]] = 0.0;
+          col = bjtmp[j];
+          rtmp1[col] = 0.0; rtmp2[col] = 0.0;
         }
    
         /* load in initial (unfactored row) */
@@ -1350,139 +1375,268 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
         ajtmp = aj + ai[r[i]];
         v1 = aa + ai[r[i]]; v2 = aa + ai[r[i]+1];
         for (j=0; j<nz; j++) {
-          rtmp11[ics[ajtmp[j]]] = v1[j]; rtmp22[ics[ajtmp[j]]] = v2[j];
+          col = ics[ajtmp[j]];
+          rtmp1[col] = v1[j]; rtmp2[col] = v2[j];
         }
         /* ZeropivotApply(): shift the diagonal of the matrix  */
-        rtmp11[i] += sctx.shift_amount; rtmp22[i+1] += sctx.shift_amount;
+        rtmp1[i] += sctx.shift_amount; rtmp2[i+1] += sctx.shift_amount;
     
         /* elimination */
         bjtmp = bj + bi[i];
         row   = *bjtmp++; /* pivot row */
         nzL   = bi[i+1] - bi[i];
-        for(k=0; k < nzL;k++) {
-          
-          pc1 = rtmp11 + row;
-          pc2 = rtmp22 + row;
+        for(k=0; k < nzL;k++) {          
+          pc1 = rtmp1 + row;
+          pc2 = rtmp2 + row;
           if (*pc1 != 0.0 || *pc2 != 0.0) {
-            pv         = b->a + bdiag[row];
-            multiplier1 = *pc1*(*pv);    multiplier2 = *pc2*(*pv);
-            *pc1        = multiplier1;   *pc2 = multiplier2;
+            pv   = b->a + bdiag[row];
+            mul1 = *pc1*(*pv); mul2 = *pc2*(*pv);
+            *pc1 = mul1;       *pc2 = mul2;
 
-            pj = b->j + bdiag[row+1]+1; /* beginning of U(row,:) */
+            pj = b->j + bdiag[row+1]+1;     /* beginning of U(row,:) */
             pv = b->a + bdiag[row+1]+1;
             nz = bdiag[row]-bdiag[row+1]-1; /* num of entries in U(row,:) excluding diag */
             for (j=0; j<nz; j++){
-              rtmp11[pj[j]] -= multiplier1 * pv[j];
-              rtmp22[pj[j]] -= multiplier2 * pv[j];
+              col = pj[j];
+              rtmp1[col] -= mul1 * pv[j];
+              rtmp2[col] -= mul2 * pv[j];
             }
             ierr = PetscLogFlops(4*nz);CHKERRQ(ierr);
           }
           row = *bjtmp++;
         }
 
-        /* Now take care of diagonal 2x2 block. */
-        pc1 = rtmp11 + i;
-        pc2 = rtmp22 + i;
+        /* finished row i; check zero pivot, then stick row i into b->a */
+        rs  = 0.0;
+        /* L part */
+        pc1 = b->a + bi[i]; 
+        pj  = b->j + bi[i] ;
+        nz  = bi[i+1] - bi[i];
+        for (j=0; j<nz; j++) {
+          col = pj[j];
+          pc1[j] = rtmp1[col]; rs += PetscAbsScalar(pc1[j]);
+        }
+        /* U part */
+        pc1 = b->a + bdiag[i+1]+1; 
+        pj  = b->j + bdiag[i+1]+1;
+        nz  = bdiag[i] - bdiag[i+1] - 1; /* exclude diagonal */
+        for (j=0; j<nz; j++) {
+          col = pj[j];
+          pc1[j] = rtmp1[col]; rs += PetscAbsScalar(pc1[j]);
+        }
+        
+        sctx.rs  = rs;
+        sctx.pv  = rtmp1[i];
+        ierr = MatPivotCheck(info,sctx,i);CHKERRQ(ierr);
+        pc1  = b->a + bdiag[i]; /* Mark diagonal */
+        *pc1 = 1.0/sctx.pv; 
 
+        /* Now take care of diagonal 2x2 block. */
+        pc2 = rtmp2 + i;
         if (*pc2 != 0.0){
-          multiplier = (*pc2)/(*pc1); /* since diag is not yet inverted.*/
-          *pc2       = multiplier;    /* insert L entry */
-          pj = b->j + bdiag[i+1]+1; /* beginning of U(i,:) */
-          nz = bdiag[i]-bdiag[i+1]-1; /* num of entries in U(i,:) excluding diag */
+          mul1 = (*pc2)*(*pc1); /* *pc1=diag[i] is inverted! */
+          *pc2 = mul1;          /* insert L entry */
+          pj   = b->j + bdiag[i+1]+1;   /* beginning of U(i,:) */
+          nz   = bdiag[i]-bdiag[i+1]-1; /* num of entries in U(i,:) excluding diag */
           for (j=0; j<nz; j++) {
-            rtmp22[pj[j]] -= multiplier * rtmp11[pj[j]];
+            col = pj[j]; rtmp2[col] -= mul1 * rtmp1[col];
           }
           ierr = PetscLogFlops(2*nz);CHKERRQ(ierr);
         }
 
-
-        /* finished rows so stick it into b->a */    
+        /* finished row i+1; check zero pivot, then stick row i+1 into b->a */    
         rs = 0.0;
         /* L part */
-        kk1 = kk2 =0;
-        pc1 = b->a + bi[i]; pc2 = b->a + bi[i+1];
-        pj  = b->j + bi[i] ;
-        nz  = bi[i+1] - bi[i];
+        pc2 = b->a + bi[i+1];
+        pj  = b->j + bi[i+1] ;
+        nz  = bi[i+2] - bi[i+1];
         for (j=0; j<nz; j++) {
-          if (pj[j] < i) {pc1[kk1] = rtmp11[pj[j]]; kk1++; rs += PetscAbsScalar(pc1[j]);}
-          if (pj[j] < i+1) pc2[kk2] = rtmp22[pj[j]]; kk2++;
-          //printf("%d, rtmp11 %g, rtmp22 = %g\n",pj[j],rtmp11[pj[j]],rtmp22[pj[j]]);
+          col = pj[j];
+          pc2[j] = rtmp2[col]; rs += PetscAbsScalar(pc2[j]);
+        }        
+        /* U part */
+        pc2 = b->a + bdiag[i+2]+1; 
+        pj  = b->j + bdiag[i+2]+1;
+        nz  = bdiag[i+1] - bdiag[i+2] - 1; /* exclude diagonal */
+        for (j=0; j<nz; j++) {
+          col = pj[j];
+          pc2[j] = rtmp2[col]; rs += PetscAbsScalar(pc2[j]);
+        }
+
+        sctx.rs  = rs;
+        sctx.pv  = rtmp2[i+1];
+        ierr = MatPivotCheck(info,sctx,i+1);CHKERRQ(ierr);
+        pc2  = b->a + bdiag[i+1];
+        *pc2 = 1.0/sctx.pv;
+        break;
+
+      case 3:
+      /*----------*/
+        /* zero rtmp */
+        /* L part */
+        nz    = bi[i+1] - bi[i];
+        bjtmp = bj + bi[i];
+        for  (j=0; j<nz; j++) {
+          col = bjtmp[j];
+          rtmp1[col] = 0.0; rtmp2[col] = 0.0; rtmp3[col] = 0.0;
         }
 
         /* U part */
-        pc1 = b->a + bdiag[i+1]+1; pc2 = b->a + bdiag[i+2]+1; 
-        pj = b->j + bdiag[i+1]+1;
-        nz = bdiag[i] - bdiag[i+1]; // inlcude diagonal
-        
-        kk1 = kk2 =0;
+        nz = bdiag[i]-bdiag[i+1];
+        bjtmp = bj + bdiag[i+1]+1;
+        for  (j=0; j<nz; j++) {
+          col = bjtmp[j];
+          rtmp1[col] = 0.0; rtmp2[col] = 0.0; rtmp3[col] = 0.0;
+        }
+   
+        /* load in initial (unfactored row) */
+        nz    = ai[r[i]+1] - ai[r[i]];
+        ajtmp = aj + ai[r[i]];
+        v1 = aa + ai[r[i]]; v2 = aa + ai[r[i]+1]; v3 = aa + ai[r[i]+2]; 
         for (j=0; j<nz; j++) {
-          if (pj[j]>i) {
-            pc1[kk1] = rtmp11[pj[j]]; rs += PetscAbsScalar(pc1[j]);
-            kk1++;
+          col = ics[ajtmp[j]];
+          rtmp1[col] = v1[j]; rtmp2[col] = v2[j]; rtmp3[col] = v3[j];
+        }
+        /* ZeropivotApply(): shift the diagonal of the matrix  */
+        rtmp1[i] += sctx.shift_amount; rtmp2[i+1] += sctx.shift_amount; rtmp3[i+2] += sctx.shift_amount;
+    
+        /* elimination */
+        bjtmp = bj + bi[i];
+        row   = *bjtmp++; /* pivot row */
+        nzL   = bi[i+1] - bi[i];
+        for(k=0; k < nzL;k++) {        
+          pc1 = rtmp1 + row;
+          pc2 = rtmp2 + row;
+          pc3 = rtmp3 + row;
+          if (*pc1 != 0.0 || *pc2 != 0.0 || *pc3 != 0.0) {
+            pv  = b->a + bdiag[row];
+            mul1 = *pc1*(*pv); mul2 = *pc2*(*pv); mul3 = *pc3*(*pv);
+            *pc1 = mul1; *pc2 = mul2; *pc3 = mul3;
+
+            pj = b->j + bdiag[row+1]+1; /* beginning of U(row,:) */
+            pv = b->a + bdiag[row+1]+1;
+            nz = bdiag[row]-bdiag[row+1]-1; /* num of entries in U(row,:) excluding diag */
+            for (j=0; j<nz; j++){
+              col = pj[j];
+              rtmp1[col] -= mul1 * pv[j];
+              rtmp2[col] -= mul2 * pv[j];
+              rtmp3[col] -= mul3 * pv[j];
+            }
+            ierr = PetscLogFlops(6*nz);CHKERRQ(ierr);
           }
-          if (pj[j] > i+1){
-            pc2[kk2] = rtmp22[pj[j]]; kk2++;
-            //printf("%d, rtmp11 %g, rtmp22 = %g\n",pj[j],rtmp11[pj[j]],rtmp22[pj[j]]);
-          }
+          row = *bjtmp++;
         }
 
-#if defined(TMP)
-      /* MatPivotCheck() */
-      sctx.rs  = rs;
-      sctx.pv  = rtmp11[i];
-      if (info->shifttype == MAT_SHIFT_NONZERO){
-        ierr = MatPivotCheck_nz(info,sctx,i);CHKERRQ(ierr);
-      } else if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE){
-        ierr = MatPivotCheck_pd(info,sctx,i);CHKERRQ(ierr);
-      } else if (info->shifttype == MAT_SHIFT_INBLOCKS){
-        ierr = MatPivotCheck_inblocks(info,sctx,i);CHKERRQ(ierr);       
-      } else {
-        ierr = MatPivotCheck_none(info,sctx,i);CHKERRQ(ierr);   
-      }
-      rtmp11[i] = sctx.pv;
-#endif
-      /* Mark diagonal and invert diagonal for simplier triangular solves */
-      pc1  = b->a + bdiag[i];
-      *pc1 = 1.0/rtmp11[i];
-#if defined(TMP)
-      sctx.rs  = rs;
-      sctx.pv  = rtmp22[i+1];
-      if (info->shifttype == MAT_SHIFT_NONZERO){
-        ierr = MatPivotCheck_nz(info,sctx,i+1);CHKERRQ(ierr);
-      } else if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE){
-        ierr = MatPivotCheck_pd(info,sctx,i+1);CHKERRQ(ierr);
-      } else if (info->shifttype == MAT_SHIFT_INBLOCKS){
-        ierr = MatPivotCheck_inblocks(info,sctx,i+1);CHKERRQ(ierr);       
-      } else {
-        ierr = MatPivotCheck_none(info,sctx,i+1);CHKERRQ(ierr);   
-      }
-      rtmp22[i+1] = sctx.pv;
-#endif
-      /* Mark diagonal and invert diagonal for simplier triangular solves */
-      pc2  = b->a + bdiag[i+1];
-      *pc2 = 1.0/rtmp22[i+1];
-#if defined(MV)
-      // L part
-      printf("row %d: ",i+1);
-      for (j=b->i[i+1]; j<b->i[i+1+1]; j++) {
-        printf( "(%d, %g), ",b->j[j],b->a[j]);
-      }
-      /* diagonal */
-      j = b->diag[i+1];
-      printf( "(%d, %g), ",b->j[j],b->a[j]);
-      // U
-      for (j=b->diag[i+1+1]+1; j<b->diag[i+1]; j++) {
-        printf( "(%d, %g), ",b->j[j],b->a[j]);
-      }
-      printf("\n");
-#endif   
+        /* finished row i; check zero pivot, then stick row i into b->a */
+        rs  = 0.0;
+        /* L part */
+        pc1 = b->a + bi[i]; 
+        pj  = b->j + bi[i] ;
+        nz  = bi[i+1] - bi[i];
+        for (j=0; j<nz; j++) {
+          col = pj[j];
+          pc1[j] = rtmp1[col]; rs += PetscAbsScalar(pc1[j]);
+        }
+        /* U part */
+        pc1 = b->a + bdiag[i+1]+1; 
+        pj  = b->j + bdiag[i+1]+1;
+        nz  = bdiag[i] - bdiag[i+1] - 1; /* exclude diagonal */
+        for (j=0; j<nz; j++) {
+          col = pj[j];
+          pc1[j] = rtmp1[col]; rs += PetscAbsScalar(pc1[j]);
+        }
+        
+        sctx.rs  = rs;
+        sctx.pv  = rtmp1[i];
+        ierr = MatPivotCheck(info,sctx,i);CHKERRQ(ierr);
+        pc1  = b->a + bdiag[i]; /* Mark diag[i] */
+        *pc1 = 1.0/sctx.pv; 
+
+        /* Now take care of 1st column of diagonal 3x3 block. */
+        pc2 = rtmp2 + i;
+        pc3 = rtmp3 + i;
+        if (*pc2 != 0.0 || *pc3 != 0.0){
+          mul2 = (*pc2)*(*pc1); *pc2 = mul2;
+          mul3 = (*pc3)*(*pc1); *pc3 = mul3;             
+          pj = b->j + bdiag[i+1]+1;   /* beginning of U(i,:) */
+          nz = bdiag[i]-bdiag[i+1]-1; /* num of entries in U(i,:) excluding diag */
+          for (j=0; j<nz; j++) {
+            col = pj[j];
+            rtmp2[col] -= mul2 * rtmp1[col];
+            rtmp3[col] -= mul3 * rtmp1[col];
+          }
+          ierr = PetscLogFlops(4*nz);CHKERRQ(ierr);
+        }
+        
+        /* finished row i+1; check zero pivot, then stick row i+1 into b->a */
+        rs = 0.0;
+        /* L part */
+        pc2 = b->a + bi[i+1];
+        pj  = b->j + bi[i+1] ;
+        nz  = bi[i+2] - bi[i+1];
+        for (j=0; j<nz; j++) {
+          col = pj[j];
+          pc2[j] = rtmp2[col]; rs += PetscAbsScalar(pc2[j]);
+        }        
+        /* U part */
+        pc2 = b->a + bdiag[i+2]+1; 
+        pj  = b->j + bdiag[i+2]+1;
+        nz  = bdiag[i+1] - bdiag[i+2] - 1; /* exclude diagonal */
+        for (j=0; j<nz; j++) {
+          col = pj[j];
+          pc2[j] = rtmp2[col]; rs += PetscAbsScalar(pc2[j]);
+        }
+
+        sctx.rs  = rs;
+        sctx.pv  = rtmp2[i+1];
+        ierr = MatPivotCheck(info,sctx,i+1);CHKERRQ(ierr);
+        pc2  = b->a + bdiag[i+1];
+        *pc2 = 1.0/sctx.pv; /* Mark diag[i+1] */
+
+        /* Now take care of 2nd column of diagonal 3x3 block. */
+        pc3 = rtmp3 + i+1;
+        if (*pc3 != 0.0){ 
+          mul3 = (*pc3)*(*pc2); *pc3 = mul3;  
+          pj = b->j + bdiag[i+2]+1;     /* beginning of U(i+1,:) */
+          nz = bdiag[i+1]-bdiag[i+2]-1; /* num of entries in U(i+1,:) excluding diag */
+          for (j=0; j<nz; j++) {
+            col = pj[j];
+            rtmp3[col] -= mul3 * rtmp2[col];
+          }
+          ierr = PetscLogFlops(2*nz);CHKERRQ(ierr);
+        }
+
+        /* finished i+2; check zero pivot, then stick row i+2 into b->a */    
+        rs = 0.0;
+        /* L part */
+        pc3 = b->a + bi[i+2];
+        pj  = b->j + bi[i+2] ;
+        nz  = bi[i+3] - bi[i+2];
+        for (j=0; j<nz; j++) {
+          col = pj[j];
+          pc3[j] = rtmp3[col]; rs += PetscAbsScalar(pc3[j]);
+        }
+        /* U part */
+        pc3 = b->a + bdiag[i+3]+1;
+        pj  = b->j + bdiag[i+3]+1;
+        nz  = bdiag[i+2] - bdiag[i+3] - 1; /* exclude diagonal */
+        for (j=0; j<nz; j++) {
+          col = pj[j];
+          pc3[j] = rtmp3[col]; rs += PetscAbsScalar(pc3[j]);
+        }
+
+        sctx.rs  = rs;
+        sctx.pv  = rtmp3[i+2];
+        ierr = MatPivotCheck(info,sctx,i+2);CHKERRQ(ierr);
+        pc3  = b->a + bdiag[i+2];
+        *pc3 = 1.0/sctx.pv; /* Mark diag[i+2] */
         break;
+
       default:
         SETERRQ(PETSC_ERR_SUP,"Node size not yet supported \n");
       }
       i += nodesz;                 /* Update the row */
-
-    } /* endof for (i=0; i<n; i++){ */
+    } 
 
     /* MatPivotRefine() */
     if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE && !sctx.useshift && sctx.shift_fraction>0 && sctx.nshift<sctx.nshift_max){
@@ -1493,12 +1647,13 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
       sctx.shift_hi       = sctx.shift_fraction;
       sctx.shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;
       sctx.shift_amount   = sctx.shift_fraction * sctx.shift_top;
-      sctx.useshift        = PETSC_TRUE;
+      sctx.useshift       = PETSC_TRUE;
       sctx.nshift++;
     }
   } while (sctx.useshift);
 
-  ierr = PetscFree(rtmp);CHKERRQ(ierr);
+  ierr = PetscFree(rtmp1);CHKERRQ(ierr);
+  ierr = PetscFree(tmp_vec2);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
 
@@ -1897,7 +2052,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
             tmp = rtmp22[idx];
             rtmp33[idx] -= mul3 * tmp;
           }
-          ierr = PetscLogFlops(4*nz_tmp);CHKERRQ(ierr);
+          ierr = PetscLogFlops(2*nz_tmp);CHKERRQ(ierr);
         }
 
         pj  = bj + bi[row];
@@ -3464,7 +3619,7 @@ PetscErrorCode Mat_CheckInode_FactorLU(Mat A,PetscTruth samestructure)
     A->ops->restorecolumnij   = 0;
     A->ops->coloringpatch     = 0;
     A->ops->multdiagonalblock = 0; 
-    /* A->ops->lufactornumeric   = MatLUFactorNumeric_SeqAIJ_Inode; not done yet */
+    A->ops->lufactornumeric   = MatLUFactorNumeric_SeqAIJ_Inode; /* not done yet */
     a->inode.node_count       = node_count;
     a->inode.size             = ns;
     ierr = PetscInfo3(A,"Found %D nodes of %D. Limit used: %D. Using Inode routines\n",node_count,m,a->inode.limit);CHKERRQ(ierr);

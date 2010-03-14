@@ -514,6 +514,19 @@ EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
   } \
 }
 
+#define MatPivotCheck(info,sctx,row) 0;\
+{\
+  if (info->shifttype == MAT_SHIFT_NONZERO){\
+    ierr = MatPivotCheck_nz(info,sctx,row);CHKERRQ(ierr);\
+  } else if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE){\
+    ierr = MatPivotCheck_pd(info,sctx,row);CHKERRQ(ierr);\
+  } else if (info->shifttype == MAT_SHIFT_INBLOCKS){\
+    ierr = MatPivotCheck_inblocks(info,sctx,srow);CHKERRQ(ierr);\
+  } else {\
+    ierr = MatPivotCheck_none(info,sctx,row);CHKERRQ(ierr);\
+  }\
+}
+
 /* 
    Checking zero pivot for Cholesky, ICC preconditioners.
 */

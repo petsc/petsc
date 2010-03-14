@@ -33,7 +33,7 @@ int main(int argc,char **argv)
   PetscInt           nnu=1000;
   
   ierr = PetscInitialize(&argc,&argv,0,0);CHKERRQ(ierr);
-  ierr = PetscOptionsSetValue("-options_left",PETSC_NULL);CHKERRQ(ierr);
+  //ierr = PetscOptionsSetValue("-options_left",PETSC_NULL);CHKERRQ(ierr);
   comm = MPI_COMM_SELF;
   
  
