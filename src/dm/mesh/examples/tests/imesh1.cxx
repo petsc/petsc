@@ -364,19 +364,23 @@ protected:
   int                 _debug; // The debugging level
   PetscInt            _iters; // The number of test repetitions
   PetscInt            _size;  // The number of mesh points
+  PetscTruth          _interpolate;  // Flag for mesh interpolation
+  ALE::Obj<ALE::Mesh> _m;
 public:
   PetscErrorCode processOptions() {
     PetscErrorCode ierr;
 
-    this->_debug = 0;
-    this->_iters = 1;
-    this->_size  = 1000;
+    this->_debug       = 0;
+    this->_iters       = 1;
+    this->_size        = 1000;
+    this->_interpolate = PETSC_FALSE;
 
     PetscFunctionBegin;
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for interval section stress test", "ISection");CHKERRQ(ierr);
       ierr = PetscOptionsInt("-debug", "The debugging level", "isection.c", this->_debug, &this->_debug, PETSC_NULL);CHKERRQ(ierr);
       ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isection.c", this->_iters, &this->_iters, PETSC_NULL);CHKERRQ(ierr);
       ierr = PetscOptionsInt("-size", "The number of points", "isection.c", this->_size, &this->_size, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsTruth("-interpolate", "Flag for mesh interpolation", "imesh.c", this->_interpolate, &this->_interpolate, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     PetscFunctionReturn(0);
   };
@@ -478,10 +482,8 @@ public:
     CPPUNIT_ASSERT((eventInfoPool.time < maxTimePerInsertion * this->_size * this->_iters));
   };
 
-  testClosure(void) {
-    const int    baseSize          = 10;
+  void testClosure(void) {
     const double maxTimePerClosure = 2.0e-5;
-    const long   numClosurePoints  = (long) baseSize*4;
     long         count             = 0;
 
     ALE::LogStage  stage = ALE::LogStageRegister("Mesh Closure Test");
@@ -491,29 +493,25 @@ public:
     ierr = PetscLogEventRegister("Closure", PETSC_OBJECT_COOKIE,&closureEvent);
     ALE::LogStagePush(stage);
     ierr = PetscLogEventBegin(closureEvent,0,0,0,0);
-#if 0
-    for(int r = 0; r < this->_iters; r++) {
-      for(sieve_type::traits::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-        const ALE::Obj<sieveAlg_type::coneArray>& closure = sieveAlg_type::closure(this->_bundle, *b_iter);
+    const ALE::Obj<mesh_type::label_sequence>& cells      = this->_mesh->heightStratum(0);
+    const mesh_type::label_sequence::iterator  cellsBegin = cells->begin();
+    const mesh_type::label_sequence::iterator  cellsEnd   = cells->end();
+    double coords[12];
+    ALE::ISieveVisitor::RestrictVisitor<mesh_type::real_section_type> coordsVisitor(*this->_mesh->getRealSection("coordinates"), 12, coords);
 
-        for(sieveAlg_type::coneArray::iterator c_iter = closure->begin(); c_iter != closure->end(); ++c_iter) {
-          count++;
-        }
+    for(int r = 0; r < this->_iters; r++) {
+      for(mesh_type::label_sequence::iterator c_iter = cellsBegin; c_iter != cellsEnd; ++c_iter) {
+	coordsVisitor.clear();
+	this->_mesh->restrictClosure(*c_iter, coordsVisitor);
+	  count += coordsVisitor.getSize();
       }
     }
-
-  topology::Mesh::RestrictVisitor coordsVisitor(*coordinates, 
-						coordinatesCell.size(),
-						&coordinatesCell[0]);
-
-    coordsVisitor.clear();
-    sieveMesh->restrictClosure(*c_iter, coordsVisitor);
-#end
     ierr = PetscLogEventEnd(closureEvent,0,0,0,0);
     ALE::LogStagePop(stage);
-    CPPUNIT_ASSERT_EQUAL(count, numClosurePoints*this->_iters);
+    CPPUNIT_ASSERT_EQUAL(count, (long) cells->size()*12*this->_iters);
     StageLog     stageLog;
     EventPerfLog eventLog;
+    const long   numClosures = cells->size() * this->_iters;
 
     ierr = PetscLogGetStageLog(&stageLog);
     ierr = StageLogGetEventPerfLog(stageLog, stage, &eventLog);
@@ -522,9 +520,9 @@ public:
     CPPUNIT_ASSERT_EQUAL(eventInfo.count, 1);
     CPPUNIT_ASSERT_EQUAL((int) eventInfo.flops, 0);
     if (this->_debug) {
-      ierr = PetscPrintf(this->_sieve->comm(), "Average time per closure: %gs\n", eventInfo.time/(this->_iters*baseSize));
+      ierr = PetscPrintf(this->_mesh->comm(), "Closures: %d Average time per closure: %gs\n", numClosures, eventInfo.time/numClosures);
     }
-    CPPUNIT_ASSERT((eventInfo.time < maxTimePerClosure * baseSize * this->_iters));
+    CPPUNIT_ASSERT((eventInfo.time < maxTimePerClosure * numClosures));
   };
 };
 
