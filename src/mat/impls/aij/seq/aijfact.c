@@ -270,6 +270,9 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol,
     (B)->info.fill_ratio_needed = 0.0;
   }
   (B)->ops->lufactornumeric  = MatLUFactorNumeric_SeqAIJ_inplace;
+  if (a->inode.size) {
+    (B)->ops->lufactornumeric  = MatLUFactorNumeric_SeqAIJ_Inode_inplace;
+  }
   PetscFunctionReturn(0); 
 }
 
@@ -419,7 +422,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const Ma
     B->info.fill_ratio_needed = 0.0;
   }
   B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ;
-  if (a->inode.use) {
+  if (a->inode.size) {
     B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
   }
   PetscFunctionReturn(0); 
@@ -1868,7 +1871,9 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
   (fact)->info.fill_ratio_given  = f;
   (fact)->info.fill_ratio_needed = ((PetscReal)(bdiag[0]+1))/((PetscReal)ai[n]);
   (fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ;
-  ierr = Mat_CheckInode_FactorLU(fact,PETSC_FALSE);CHKERRQ(ierr);
+  if (a->inode.size) {
+    (fact)->ops->lufactornumeric  = MatLUFactorNumeric_SeqAIJ_Inode;
+  }
   PetscFunctionReturn(0); 
 }
 
@@ -1905,7 +1910,9 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS isrow,IS is
   if (!levels && row_identity && col_identity) { /* special case: ilu(0) with natural ordering */    
     ierr = MatDuplicateNoCreate_SeqAIJ(fact,A,MAT_DO_NOT_COPY_VALUES,PETSC_TRUE);CHKERRQ(ierr);
     (fact)->ops->lufactornumeric =  MatLUFactorNumeric_SeqAIJ_inplace;    
-    
+    if (a->inode.size) {
+      (fact)->ops->lufactornumeric  = MatLUFactorNumeric_SeqAIJ_Inode_inplace;
+    }   
     fact->factor = MAT_FACTOR_ILU;
     (fact)->info.factor_mallocs    = 0;
     (fact)->info.fill_ratio_given  = info->fill;
@@ -2056,8 +2063,8 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS isrow,IS is
   (fact)->info.fill_ratio_given  = f;
   (fact)->info.fill_ratio_needed = ((PetscReal)bi[n])/((PetscReal)ai[n]);
   (fact)->ops->lufactornumeric =  MatLUFactorNumeric_SeqAIJ_inplace;
-  if (a->inode.use) {
-    (fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
+  if (a->inode.size) {
+    (fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode_inplace;
   }
   PetscFunctionReturn(0); 
 }
