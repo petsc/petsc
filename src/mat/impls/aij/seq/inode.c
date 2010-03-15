@@ -1193,10 +1193,11 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
   MatScalar        *pc,*pc1,*pc2,*pc3,mul1,mul2,mul3,*pv,*rtmp1,*rtmp2,*rtmp3;
   const  MatScalar *aa=a->a,*v,*v1,*v2,*v3;
   FactorShiftCtx   sctx;
-  PetscInt         *ddiag;
+  const PetscInt   *ddiag;
   PetscReal        rs;
   MatScalar        d;
-  PetscInt         inod,nodesz,node_max,*ns,col;
+  PetscInt         inod,nodesz,node_max,col;
+  const PetscInt   *ns;
   PetscInt         *tmp_vec1,*tmp_vec2,*nsmap;
   
   PetscFunctionBegin;

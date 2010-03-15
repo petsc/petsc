@@ -467,11 +467,10 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
   MatScalar        *rtmp,*pc,multiplier,*pv;
   const  MatScalar *aa=a->a,*v;
   PetscTruth       row_identity,col_identity;
-
-  FactorShiftCtx sctx;
-  PetscInt       *ddiag;
-  PetscReal      rs;
-  MatScalar      d;
+  FactorShiftCtx   sctx;
+  const PetscInt   *ddiag;
+  PetscReal        rs;
+  MatScalar        d;
 
   PetscFunctionBegin;
   /* MatPivotSetUp(): initialize shift context sctx */
@@ -647,7 +646,8 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFactorInfo
   const MatScalar *v,*aa=a->a;
   PetscReal       rs=0.0;
   FactorShiftCtx  sctx;
-  PetscInt        newshift,*ddiag;
+  PetscInt        newshift;
+  const PetscInt  *ddiag;
 
   PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
