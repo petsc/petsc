@@ -1658,7 +1658,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
 
-  C->ops->solve              = MatSolve_SeqAIJ_Inode;  
+  C->ops->solve              = MatSolve_SeqAIJ;  
   C->ops->solveadd           = MatSolveAdd_SeqAIJ;
   C->ops->solvetranspose     = MatSolveTranspose_SeqAIJ;
   C->ops->solvetransposeadd  = MatSolveTransposeAdd_SeqAIJ;
@@ -1677,6 +1677,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
       ierr = PetscInfo2(A,"number of shift_inblocks applied %D, each shift_amount %G\n",sctx.nshift,info->shiftamount);CHKERRQ(ierr);
     }
   }
+  ierr = Mat_CheckInode_FactorLU(C,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2092,7 +2093,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&c);CHKERRQ(ierr);
-  (B)->ops->solve           = MatSolve_SeqAIJ_Inode_inplace;
+  (B)->ops->solve           = MatSolve_SeqAIJ_inplace;
   /* do not set solve add, since MatSolve_Inode + Add is faster */
   C->ops->solvetranspose     = MatSolveTranspose_SeqAIJ_inplace;
   C->ops->solvetransposeadd  = MatSolveTransposeAdd_SeqAIJ_inplace;
@@ -2106,6 +2107,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
     }
   }
   ierr = PetscLogFlops(C->cmap->n);CHKERRQ(ierr);
+  ierr = Mat_CheckInode(C,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3524,16 +3526,19 @@ PetscErrorCode Mat_CheckInode(Mat A,PetscTruth samestructure)
     a->inode.use            = PETSC_FALSE;
     ierr = PetscInfo2(A,"Found %D nodes out of %D rows. Not using Inode routines\n",node_count,m);CHKERRQ(ierr);
   } else {
-    A->ops->mult              = MatMult_SeqAIJ_Inode;
-    A->ops->sor               = MatSOR_SeqAIJ_Inode;
-    A->ops->multadd           = MatMultAdd_SeqAIJ_Inode;
-    A->ops->getrowij          = MatGetRowIJ_SeqAIJ_Inode;
-    A->ops->restorerowij      = MatRestoreRowIJ_SeqAIJ_Inode;
-    A->ops->getcolumnij       = MatGetColumnIJ_SeqAIJ_Inode;
-    A->ops->restorecolumnij   = MatRestoreColumnIJ_SeqAIJ_Inode;
-    A->ops->coloringpatch     = MatColoringPatch_SeqAIJ_Inode;
-    A->ops->multdiagonalblock = MatMultDiagonalBlock_SeqAIJ_Inode;
-    A->ops->lufactornumeric   = MatLUFactorNumeric_SeqAIJ_Inode_inplace;
+    if (!A->factor) {
+      A->ops->mult              = MatMult_SeqAIJ_Inode;
+      A->ops->sor               = MatSOR_SeqAIJ_Inode;
+      A->ops->multadd           = MatMultAdd_SeqAIJ_Inode;
+      A->ops->getrowij          = MatGetRowIJ_SeqAIJ_Inode;
+      A->ops->restorerowij      = MatRestoreRowIJ_SeqAIJ_Inode;
+      A->ops->getcolumnij       = MatGetColumnIJ_SeqAIJ_Inode;
+      A->ops->restorecolumnij   = MatRestoreColumnIJ_SeqAIJ_Inode;
+      A->ops->coloringpatch     = MatColoringPatch_SeqAIJ_Inode;
+      A->ops->multdiagonalblock = MatMultDiagonalBlock_SeqAIJ_Inode;
+    } else {
+      A->ops->solve             = MatSolve_SeqAIJ_Inode_inplace;
+    }
     a->inode.node_count       = node_count;
     a->inode.size             = ns;
     ierr = PetscInfo3(A,"Found %D nodes of %D. Limit used: %D. Using Inode routines\n",node_count,m,a->inode.limit);CHKERRQ(ierr);
@@ -3620,7 +3625,7 @@ PetscErrorCode Mat_CheckInode_FactorLU(Mat A,PetscTruth samestructure)
     A->ops->restorecolumnij   = 0;
     A->ops->coloringpatch     = 0;
     A->ops->multdiagonalblock = 0; 
-    A->ops->lufactornumeric   = MatLUFactorNumeric_SeqAIJ_Inode; /* not done yet */
+    A->ops->solve             = MatSolve_SeqAIJ_Inode;
     a->inode.node_count       = node_count;
     a->inode.size             = ns;
     ierr = PetscInfo3(A,"Found %D nodes of %D. Limit used: %D. Using Inode routines\n",node_count,m,a->inode.limit);CHKERRQ(ierr);

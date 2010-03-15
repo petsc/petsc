@@ -395,6 +395,7 @@ getmpiexec:
 	-@grep -v clog trashz | grep -v "information sections" | \
           grep -v "WARNING: TOC" | \
           grep -v "D4024 : unrecognized" | \
+          grep -v "tentative definition of size" | \
           grep -v "Extra instructions" | \
           grep -v "Unused external reference" | \
           grep -v "f90 continuing despite warning messages" | \
@@ -418,6 +419,7 @@ getmpiexec:
           grep -v "add line info to anonymous symbol" | \
           grep -v "/opt/ibmcmp/xlsmp/1.3/../.." | \
           grep -v "IPO Error: unresolved" | \
+	  grep -v "is being replaced by a real definition" | \
           grep -v "may result in errors or" | \
 	  egrep -i '(Error|warning|Can|Unresolved)' >> /dev/null;\
 	  if [ "$$?" != 1 ]; then \
