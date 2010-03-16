@@ -465,26 +465,37 @@ MatFactorInfoDefaults(PetscTruth incomplete, MatFactorInfo *info)
   PetscFunctionBegin;
   PetscValidPointer(info,2);
   ierr = MatFactorInfoInitialize(info);CHKERRQ(ierr);
+
   if (incomplete) {
     info->dt             = PETSC_DEFAULT;
     info->dtcount        = PETSC_DEFAULT;
     info->dtcol          = PETSC_DEFAULT;
     info->fill           = PETSC_DEFAULT;
-    info->shiftnz        = 1.e-12;
-    info->shiftpd        = 0.0;
     info->zeropivot      = 1.e-12;
     info->pivotinblocks  = 1.0;
+  } else {
+    info->dtcol          = 1.e-6;
+    info->fill           = 5.0;
+    info->zeropivot      = 1.e-12;
+    info->pivotinblocks  = 1.0;
+  }
+
+#if 0
+  if (incomplete) {
+    info->shiftnz        = 1.e-12;
+    info->shiftpd        = 0.0;
 #if !PETSC_VERSION_(2,3,3) && !PETSC_VERSION_(2,3,2)
     info->shiftinblocks  = 1.e-12;
 #endif
   } else {
-    info->dtcol          = 1.e-6;
-    info->fill           = 5.0;
     info->shiftnz        = 0.0;
     info->shiftpd        = 0.0;
-    info->zeropivot      = 1.e-12;
-    info->pivotinblocks  = 1.0;
+#if !PETSC_VERSION_(2,3,3) && !PETSC_VERSION_(2,3,2)
+    info->shiftinblocks  = 0.0;
+#endif
   }
+#endif
+
   PetscFunctionReturn(0);
 }
 
