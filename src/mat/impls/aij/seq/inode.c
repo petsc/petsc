@@ -1193,17 +1193,18 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
   MatScalar        *pc,*pc1,*pc2,*pc3,mul1,mul2,mul3,*pv,*rtmp1,*rtmp2,*rtmp3;
   const  MatScalar *aa=a->a,*v,*v1,*v2,*v3;
   FactorShiftCtx   sctx;
-  PetscInt         *ddiag;
+  const PetscInt   *ddiag;
   PetscReal        rs;
   MatScalar        d;
-  PetscInt         inod,nodesz,node_max,*ns,col;
+  PetscInt         inod,nodesz,node_max,col;
+  const PetscInt   *ns;
   PetscInt         *tmp_vec1,*tmp_vec2,*nsmap;
   
   PetscFunctionBegin;
   /* MatPivotSetUp(): initialize shift context sctx */
   ierr = PetscMemzero(&sctx,sizeof(FactorShiftCtx));CHKERRQ(ierr);
 
-  if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE) { /* set sctx.shift_top=max{rs} */
+  if (info->shifttype == (PetscReal)MAT_SHIFT_POSITIVE_DEFINITE) { /* set sctx.shift_top=max{rs} */
     ddiag          = a->diag;
     sctx.shift_top = info->zeropivot;
     for (i=0; i<n; i++) {
@@ -1639,7 +1640,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
     } 
 
     /* MatPivotRefine() */
-    if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE && !sctx.useshift && sctx.shift_fraction>0 && sctx.nshift<sctx.nshift_max){
+    if (info->shifttype == (PetscReal) MAT_SHIFT_POSITIVE_DEFINITE && !sctx.useshift && sctx.shift_fraction>0 && sctx.nshift<sctx.nshift_max){
       /* 
        * if no shift in this attempt & shifting & started shifting & can refine,
        * then try lower shift
@@ -1657,7 +1658,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
 
-  C->ops->solve              = MatSolve_SeqAIJ_Inode;  
+  C->ops->solve              = MatSolve_SeqAIJ;  
   C->ops->solveadd           = MatSolveAdd_SeqAIJ;
   C->ops->solvetranspose     = MatSolveTranspose_SeqAIJ;
   C->ops->solvetransposeadd  = MatSolveTransposeAdd_SeqAIJ;
@@ -1668,14 +1669,15 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
 
   /* MatShiftView(A,info,&sctx) */
   if (sctx.nshift){
-    if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE) {
+    if (info->shifttype == (PetscReal) MAT_SHIFT_POSITIVE_DEFINITE) {
       ierr = PetscInfo4(A,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,sctx.shift_fraction,sctx.shift_top);CHKERRQ(ierr);
-    } else if (info->shifttype == MAT_SHIFT_NONZERO) {
+    } else if (info->shifttype == (PetscReal)MAT_SHIFT_NONZERO) {
       ierr = PetscInfo2(A,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
-    } else if (info->shifttype == MAT_SHIFT_INBLOCKS){
+    } else if (info->shifttype == (PetscReal)MAT_SHIFT_INBLOCKS){
       ierr = PetscInfo2(A,"number of shift_inblocks applied %D, each shift_amount %G\n",sctx.nshift,info->shiftamount);CHKERRQ(ierr);
     }
   }
+  ierr = Mat_CheckInode_FactorLU(C,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1707,7 +1709,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
   sctx.shift_fraction = 0;
 
   /* if both shift schemes are chosen by user, only use info->shiftpd */
-  if (info->shifttype==MAT_SHIFT_POSITIVE_DEFINITE) { /* set sctx.shift_top=max{rs} */
+  if (info->shifttype==(PetscReal)MAT_SHIFT_POSITIVE_DEFINITE) { /* set sctx.shift_top=max{rs} */
     sctx.shift_top = 0;
     for (i=0; i<n; i++) {
       /* calculate rs = sum(|aij|)-RealPart(aii), amt of shift needed for this row */
@@ -2091,20 +2093,21 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&c);CHKERRQ(ierr);
-  (B)->ops->solve           = MatSolve_SeqAIJ_Inode_inplace;
+  (B)->ops->solve           = MatSolve_SeqAIJ_inplace;
   /* do not set solve add, since MatSolve_Inode + Add is faster */
   C->ops->solvetranspose     = MatSolveTranspose_SeqAIJ_inplace;
   C->ops->solvetransposeadd  = MatSolveTransposeAdd_SeqAIJ_inplace;
   C->assembled   = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;
   if (sctx.nshift) {
-    if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE) {
+    if (info->shifttype == (PetscReal)MAT_SHIFT_POSITIVE_DEFINITE) {
       ierr = PetscInfo4(A,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,sctx.shift_fraction,sctx.shift_top);CHKERRQ(ierr);
-    } else if (info->shifttype == MAT_SHIFT_NONZERO) {
+    } else if (info->shifttype == (PetscReal)MAT_SHIFT_NONZERO) {
       ierr = PetscInfo2(A,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
     }
   }
   ierr = PetscLogFlops(C->cmap->n);CHKERRQ(ierr);
+  ierr = Mat_CheckInode(C,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3523,16 +3526,19 @@ PetscErrorCode Mat_CheckInode(Mat A,PetscTruth samestructure)
     a->inode.use            = PETSC_FALSE;
     ierr = PetscInfo2(A,"Found %D nodes out of %D rows. Not using Inode routines\n",node_count,m);CHKERRQ(ierr);
   } else {
-    A->ops->mult              = MatMult_SeqAIJ_Inode;
-    A->ops->sor               = MatSOR_SeqAIJ_Inode;
-    A->ops->multadd           = MatMultAdd_SeqAIJ_Inode;
-    A->ops->getrowij          = MatGetRowIJ_SeqAIJ_Inode;
-    A->ops->restorerowij      = MatRestoreRowIJ_SeqAIJ_Inode;
-    A->ops->getcolumnij       = MatGetColumnIJ_SeqAIJ_Inode;
-    A->ops->restorecolumnij   = MatRestoreColumnIJ_SeqAIJ_Inode;
-    A->ops->coloringpatch     = MatColoringPatch_SeqAIJ_Inode;
-    A->ops->multdiagonalblock = MatMultDiagonalBlock_SeqAIJ_Inode;
-    A->ops->lufactornumeric   = MatLUFactorNumeric_SeqAIJ_Inode_inplace;
+    if (!A->factor) {
+      A->ops->mult              = MatMult_SeqAIJ_Inode;
+      A->ops->sor               = MatSOR_SeqAIJ_Inode;
+      A->ops->multadd           = MatMultAdd_SeqAIJ_Inode;
+      A->ops->getrowij          = MatGetRowIJ_SeqAIJ_Inode;
+      A->ops->restorerowij      = MatRestoreRowIJ_SeqAIJ_Inode;
+      A->ops->getcolumnij       = MatGetColumnIJ_SeqAIJ_Inode;
+      A->ops->restorecolumnij   = MatRestoreColumnIJ_SeqAIJ_Inode;
+      A->ops->coloringpatch     = MatColoringPatch_SeqAIJ_Inode;
+      A->ops->multdiagonalblock = MatMultDiagonalBlock_SeqAIJ_Inode;
+    } else {
+      A->ops->solve             = MatSolve_SeqAIJ_Inode_inplace;
+    }
     a->inode.node_count       = node_count;
     a->inode.size             = ns;
     ierr = PetscInfo3(A,"Found %D nodes of %D. Limit used: %D. Using Inode routines\n",node_count,m,a->inode.limit);CHKERRQ(ierr);
@@ -3619,7 +3625,7 @@ PetscErrorCode Mat_CheckInode_FactorLU(Mat A,PetscTruth samestructure)
     A->ops->restorecolumnij   = 0;
     A->ops->coloringpatch     = 0;
     A->ops->multdiagonalblock = 0; 
-    A->ops->lufactornumeric   = MatLUFactorNumeric_SeqAIJ_Inode; /* not done yet */
+    A->ops->solve             = MatSolve_SeqAIJ_Inode;
     a->inode.node_count       = node_count;
     a->inode.size             = ns;
     ierr = PetscInfo3(A,"Found %D nodes of %D. Limit used: %D. Using Inode routines\n",node_count,m,a->inode.limit);CHKERRQ(ierr);

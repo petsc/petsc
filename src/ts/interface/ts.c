@@ -1434,10 +1434,12 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPreStep(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
-  PetscStackPush("TS PreStep function");
-  CHKMEMQ;
-  ierr = (*ts->ops->prestep)(ts);CHKERRQ(ierr);
-  CHKMEMQ;
+  if (ts->ops->prestep) {
+    PetscStackPush("TS PreStep function");
+    CHKMEMQ;
+    ierr = (*ts->ops->prestep)(ts);CHKERRQ(ierr);
+    CHKMEMQ;
+  }
   PetscStackPop;
   PetscFunctionReturn(0);
 }
@@ -1513,11 +1515,13 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPostStep(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
-  PetscStackPush("TS PostStep function");
-  CHKMEMQ;
-  ierr = (*ts->ops->poststep)(ts);CHKERRQ(ierr);
-  CHKMEMQ;
-  PetscStackPop;
+  if (ts->ops->poststep) {
+    PetscStackPush("TS PostStep function");
+    CHKMEMQ;
+    ierr = (*ts->ops->poststep)(ts);CHKERRQ(ierr);
+    CHKMEMQ;
+    PetscStackPop;
+  }
   PetscFunctionReturn(0);
 }
 
