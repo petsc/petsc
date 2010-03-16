@@ -9,7 +9,7 @@ OBJSC    = taosolver.o taosolver_fg.o taosolverregi.o taosolver_hj.o dlregistaos
 OBJSF    =
 LIBBASE  = libtaosolver
 MANSEC   = taosolver
-LOCDIR   = src/interface
+LOCDIR   = src/interface/
 
 
 include ${TAO_DIR}/conf/tao_base

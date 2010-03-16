@@ -4,7 +4,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoRegisterEvents();
 
 /* ------------------------Nasty global variables -------------------------------*/
 int TaoInitializeCalled = 0;
-PetscCookie TAOSOLVER_COOKIE = PETSC_FALSE;
+//PetscCookie TAOSOLVER_COOKIE = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "TaoInitialize"

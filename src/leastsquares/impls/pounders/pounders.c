@@ -302,6 +302,7 @@ static PetscErrorCode addpoint(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt index
 
   /* Compute value of new vector */
   ierr = VecDuplicate(mfqP->Fhist[0],&mfqP->Fhist[mfqP->nHist]); CHKERRQ(ierr);
+  CHKMEMQ;
   ierr = TaoSolverComputeSeparableObjective(tao,mfqP->Xhist[mfqP->nHist],mfqP->Fhist[mfqP->nHist]); CHKERRQ(ierr);
   ierr = VecNorm(mfqP->Fhist[mfqP->nHist],NORM_2,&mfqP->Fres[mfqP->nHist]); CHKERRQ(ierr);
   mfqP->Fres[mfqP->nHist]*=mfqP->Fres[mfqP->nHist];
@@ -466,11 +467,12 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
      m = dimension (components) of function  */
   
   PetscFunctionBegin;
+  CHKMEMQ;
   blasm = mfqP->m; blasn=mfqP->n; blasnpmax = mfqP->npmax;
   for (i=0;i<mfqP->n*mfqP->n*mfqP->m;i++) mfqP->H[i]=0;
 
   ierr = VecCopy(tao->solution,mfqP->Xhist[0]); CHKERRQ(ierr);
-
+  CHKMEMQ;
   ierr = TaoSolverComputeSeparableObjective(tao,tao->solution,mfqP->Fhist[0]); CHKERRQ(ierr);
   ierr = VecNorm(mfqP->Fhist[0],NORM_2,&mfqP->Fres[0]); CHKERRQ(ierr);
   mfqP->Fres[0]*=mfqP->Fres[0];
@@ -484,6 +486,7 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
 	  x[i-1-low] += mfqP->delta;
 	  ierr = VecRestoreArray(mfqP->Xhist[i],&x); CHKERRQ(ierr);
       }
+      CHKMEMQ;
       ierr = TaoSolverComputeSeparableObjective(tao,mfqP->Xhist[i],mfqP->Fhist[i]); CHKERRQ(ierr);
       ierr = VecNorm(mfqP->Fhist[i],NORM_2,&mfqP->Fres[i]); CHKERRQ(ierr);
       mfqP->Fres[i]*=mfqP->Fres[i];
@@ -621,6 +624,7 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
     ierr = VecSetValues(mfqP->Xhist[mfqP->nHist],mfqP->n,mfqP->indices,mfqP->work,INSERT_VALUES); CHKERRQ(ierr);
     ierr = VecAssemblyBegin(mfqP->Xhist[mfqP->nHist]); CHKERRQ(ierr);
     ierr = VecAssemblyEnd(mfqP->Xhist[mfqP->nHist]); CHKERRQ(ierr);
+    CHKMEMQ;
     ierr = TaoSolverComputeSeparableObjective(tao,mfqP->Xhist[mfqP->nHist],mfqP->Fhist[mfqP->nHist]); CHKERRQ(ierr);
     ierr = VecNorm(mfqP->Fhist[mfqP->nHist],NORM_2,&mfqP->Fres[mfqP->nHist]); CHKERRQ(ierr);
     mfqP->Fres[mfqP->nHist]*=mfqP->Fres[mfqP->nHist];
@@ -837,9 +841,9 @@ static PetscErrorCode TaoSolverSetUp_POUNDERS(TaoSolver tao)
     ierr = PetscMalloc(mfqP->n*sizeof(PetscReal),&mfqP->Xsubproblem); CHKERRQ(ierr);
     ierr = PetscMalloc(mfqP->m*mfqP->n*sizeof(PetscReal),&mfqP->Gdel); CHKERRQ(ierr);
     ierr = PetscMalloc(mfqP->n*mfqP->n*mfqP->m*sizeof(PetscReal), &mfqP->Hdel); CHKERRQ(ierr);
-    ierr = PetscMalloc(mfqP->m*sizeof(PetscInt),&mfqP->indices); CHKERRQ(ierr);
+    ierr = PetscMalloc(PetscMax(mfqP->m,mfqP->n)*sizeof(PetscInt),&mfqP->indices); CHKERRQ(ierr);
     ierr = PetscMalloc(mfqP->n*sizeof(PetscInt),&mfqP->iwork); CHKERRQ(ierr);
-    for (i=0;i<mfqP->m;i++) {
+    for (i=0;i<PetscMax(mfqP->m,mfqP->n);i++) {
 	mfqP->indices[i] = i;
     }
   ierr = MPI_Comm_size(((PetscObject)tao)->comm,&mfqP->mpisize); CHKERRQ(ierr);
@@ -863,7 +867,6 @@ static PetscErrorCode TaoSolverSetUp_POUNDERS(TaoSolver tao)
       ierr = ISDestroy(isfglob); CHKERRQ(ierr);
 
   }
-
   PetscFunctionReturn(0);
 }
 
