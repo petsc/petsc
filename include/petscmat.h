@@ -1140,8 +1140,8 @@ typedef struct {
   PetscReal     pivotinblocks;  /* for BAIJ and SBAIJ matrices pivot in factorization on blocks, default 1.0 
                                    factorization may be faster if do not pivot */
   PetscReal     zeropivot;      /* pivot is called zero if less than this */
-  MatFactorShiftType shifttype;   /* type of shift added to matrix factor to prevent zero pivots */
-  PetscReal          shiftamount; /* shfit amount */
+  PetscReal     shifttype;      /* type of shift added to matrix factor to prevent zero pivots */
+  PetscReal     shiftamount;     /* how large the shift is */
 } MatFactorInfo;
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFactorInfoInitialize(MatFactorInfo*);

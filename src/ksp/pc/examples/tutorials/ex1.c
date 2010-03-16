@@ -1,5 +1,5 @@
 /*
- * Test file for the PCFactorSetShiftType() routine or -pc_factor_shift_type POSITIVE_DEFINITE option.
+ * Test file for the PCFactorSetShiftTypem() routine or -pc_factor_shift_type POSITIVE_DEFINITE option.
  * The test matrix is the example from Kershaw's paper [J.Comp.Phys 1978]
  * of a positive definite matrix for which ILU(0) will give a negative pivot.
  * This means that the CG method will break down; the Manteuffel shift

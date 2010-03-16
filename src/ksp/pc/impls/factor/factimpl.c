@@ -26,9 +26,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftType_Factor(PC pc,MatFactorShi
 
   PetscFunctionBegin;
   if (shifttype == (MatFactorShiftType)PETSC_DECIDE){
-    dir->info.shifttype = MAT_SHIFT_NONE; 
+    dir->info.shifttype = (PetscReal) MAT_SHIFT_NONE; 
   } else {
-    dir->info.shifttype = shifttype;
+    dir->info.shifttype = (PetscReal) shifttype;
   }
   PetscFunctionReturn(0);
 }
@@ -302,13 +302,13 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
     }
     
     ierr = PetscViewerASCIIPrintf(viewer,"  tolerance for zero pivot %G\n",factor->info.zeropivot);CHKERRQ(ierr);
-    if (factor->info.shifttype==MAT_SHIFT_POSITIVE_DEFINITE) {
+    if (factor->info.shifttype==(PetscReal)MAT_SHIFT_POSITIVE_DEFINITE) {
       ierr = PetscViewerASCIIPrintf(viewer,"  using Manteuffel shift\n");CHKERRQ(ierr);
     }
-    if (factor->info.shifttype==MAT_SHIFT_NONZERO) {
+    if (factor->info.shifttype==(PetscReal)MAT_SHIFT_NONZERO) {
       ierr = PetscViewerASCIIPrintf(viewer,"  using diagonal shift to prevent zero pivot\n");CHKERRQ(ierr);
     }
-    if (factor->info.shifttype==MAT_SHIFT_INBLOCKS) {
+    if (factor->info.shifttype==(PetscReal)MAT_SHIFT_INBLOCKS) {
       ierr = PetscViewerASCIIPrintf(viewer,"  using diagonal shift on blocks to prevent zero pivot\n");CHKERRQ(ierr);
     }
     

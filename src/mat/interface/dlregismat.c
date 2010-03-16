@@ -14,6 +14,7 @@ const char *MatOptions[] = {"ROW_ORIENTED","NEW_NONZERO_LOCATIONS",
               "SYMMETRY_ETERNAL",
               "USE_COMPRESSEDROW",
               "IGNORE_LOWER_TRIANGULAR","ERROR_LOWER_TRIANGULAR","GETROW_UPPERTRIANGULAR","MatOption","MAT_",0};
+const char *MatFactorShiftTypes[] = {"NONE","NONZERO","POSITIVE_DEFINITE","INBLOCKS","MatFactorShiftType","PC_FACTOR_",0};
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDInitializePackage(const char[]);
 static PetscTruth MatPackageInitialized = PETSC_FALSE;

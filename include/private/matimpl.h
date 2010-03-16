@@ -420,7 +420,7 @@ EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
   PetscInt  _newshift;\
   PetscReal _rs   = sctx.rs;\
   PetscReal _zero = info->zeropivot*_rs;\
-  if (info->shifttype == MAT_SHIFT_NONZERO && PetscAbsScalar(sctx.pv) <= _zero){\
+  if (info->shifttype == (PetscReal)MAT_SHIFT_NONZERO && PetscAbsScalar(sctx.pv) <= _zero){\
     /* force |diag| > zeropivot*rs */\
     if (!sctx.nshift){\
       sctx.shift_amount = info->shiftamount;\
@@ -430,7 +430,7 @@ EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
     sctx.useshift = PETSC_TRUE;\
     (sctx.nshift)++;\
     _newshift = 1;\
-  } else if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE && PetscRealPart(sctx.pv) <= _zero){\
+  } else if (info->shifttype == (PetscReal)MAT_SHIFT_POSITIVE_DEFINITE && PetscRealPart(sctx.pv) <= _zero){\
     /* force matfactor to be diagonally dominant */\
     if (sctx.nshift > sctx.nshift_max) {\
       ierr = MatFactorDumpMatrix(A);CHKERRQ(ierr);\
@@ -516,11 +516,11 @@ EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
 
 #define MatPivotCheck(info,sctx,row) 0;\
 {\
-  if (info->shifttype == MAT_SHIFT_NONZERO){\
+  if (info->shifttype == (PetscReal)MAT_SHIFT_NONZERO){\
     ierr = MatPivotCheck_nz(info,sctx,row);CHKERRQ(ierr);\
-  } else if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE){\
+  } else if (info->shifttype == (PetscReal)MAT_SHIFT_POSITIVE_DEFINITE){\
     ierr = MatPivotCheck_pd(info,sctx,row);CHKERRQ(ierr);\
-  } else if (info->shifttype == MAT_SHIFT_INBLOCKS){\
+  } else if (info->shifttype == (PetscReal)MAT_SHIFT_INBLOCKS){\
     ierr = MatPivotCheck_inblocks(info,sctx,srow);CHKERRQ(ierr);\
   } else {\
     ierr = MatPivotCheck_none(info,sctx,row);CHKERRQ(ierr);\
@@ -562,7 +562,7 @@ typedef struct {
   PetscInt  _newshift;\
   PetscReal _rs   = sctx.rs;\
   PetscReal _zero = info->zeropivot*_rs;\
-  if (info->shifttype == MAT_SHIFT_NONZERO && PetscAbsScalar(sctx.pv) <= _zero){\
+  if (info->shifttype == (PetscReal)MAT_SHIFT_NONZERO && PetscAbsScalar(sctx.pv) <= _zero){\
     /* force |diag| > zeropivot*sctx.rs */\
     if (!sctx.nshift){\
       sctx.shift_amount = info->shiftamount;\
@@ -572,7 +572,7 @@ typedef struct {
     sctx.chshift = PETSC_TRUE;\
     sctx.nshift++;\
     _newshift = 1;\
-  } else if (info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE && PetscRealPart(sctx.pv) <= _zero){\
+  } else if (info->shifttype == (PetscReal)MAT_SHIFT_POSITIVE_DEFINITE && PetscRealPart(sctx.pv) <= _zero){\
     /* calculate a shift that would make this row diagonally dominant */\
     sctx.shift_amount = PetscMax(_rs+PetscAbs(PetscRealPart(sctx.pv)),1.1*sctx.shift_amount);\
     sctx.chshift      = PETSC_TRUE;\
