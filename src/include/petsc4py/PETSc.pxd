@@ -63,12 +63,18 @@ cdef extern from "petscda.h":
 
 # --------------------------------------------------------------------
 
-ctypedef public api class Comm [type PyPetscComm_Type, object PyPetscCommObject]:
+ctypedef public api class Comm [
+    type   PyPetscComm_Type, 
+    object PyPetscCommObject,
+    ]:
     cdef MPI_Comm comm
     cdef int isdup
     cdef object base
 
-ctypedef public api class Object [type PyPetscObject_Type, object PyPetscObjectObject]:
+ctypedef public api class Object [
+    type   PyPetscObject_Type, 
+    object PyPetscObjectObject,
+    ]:
     #cdef __weakref__
     cdef PetscObject oval
     cdef PetscObject *obj
@@ -78,46 +84,88 @@ ctypedef public api class Object [type PyPetscObject_Type, object PyPetscObjectO
     cdef object set_attr(self, char name[], object attr)
     cdef object get_dict(self)
 
-ctypedef public api class Viewer(Object) [type PyPetscViewer_Type, object PyPetscViewerObject]:
+ctypedef public api class Viewer(Object) [
+    type   PyPetscViewer_Type, 
+    object PyPetscViewerObject,
+    ]:
     cdef PetscViewer vwr
 
-ctypedef public api class Random(Object) [type PyPetscRandom_Type, object PyPetscRandomObject]:
+ctypedef public api class Random(Object) [
+    type   PyPetscRandom_Type, 
+    object PyPetscRandomObject,
+    ]:
     cdef PetscRandom rnd
 
-ctypedef public api class IS(Object) [type PyPetscIS_Type, object PyPetscISObject]:
+ctypedef public api class IS(Object) [
+    type   PyPetscIS_Type, 
+    object PyPetscISObject,
+    ]:
     cdef PetscIS iset
 
-ctypedef public api class LGMap(Object) [type PyPetscLGMap_Type, object PyPetscLGMapObject]:
+ctypedef public api class LGMap(Object) [
+    type   PyPetscLGMap_Type, 
+    object PyPetscLGMapObject,
+    ]:
     cdef PetscLGMap lgm
 
-ctypedef public api class Vec(Object) [type PyPetscVec_Type, object PyPetscVecObject]:
+ctypedef public api class Vec(Object) [
+    type   PyPetscVec_Type, 
+    object PyPetscVecObject,
+    ]:
     cdef PetscVec vec
 
-ctypedef public api class Scatter(Object) [type PyPetscScatter_Type, object PyPetscScatterObject]:
+ctypedef public api class Scatter(Object) [
+    type   PyPetscScatter_Type, 
+    object PyPetscScatterObject,
+    ]:
     cdef PetscScatter sct
 
-ctypedef public api class Mat(Object) [type PyPetscMat_Type, object PyPetscMatObject]:
+ctypedef public api class Mat(Object) [
+    type   PyPetscMat_Type, 
+    object PyPetscMatObject,
+    ]:
     cdef PetscMat mat
 
-ctypedef public api class NullSpace(Object) [type PyPetscNullSpace_Type, object PyPetscNullSpaceObject]:
+ctypedef public api class NullSpace(Object) [
+    type   PyPetscNullSpace_Type, 
+    object PyPetscNullSpaceObject,
+    ]:
     cdef PetscNullSpace nsp
 
-ctypedef public api class PC(Object) [type PyPetscPC_Type, object PyPetscPCObject]:
+ctypedef public api class PC(Object) [
+    type   PyPetscPC_Type, 
+    object PyPetscPCObject,
+    ]:
     cdef PetscPC pc
 
-ctypedef public api class KSP(Object) [type PyPetscKSP_Type, object PyPetscKSPObject]:
+ctypedef public api class KSP(Object) [
+    type   PyPetscKSP_Type, 
+    object PyPetscKSPObject,
+    ]:
     cdef PetscKSP ksp
 
-ctypedef public api class SNES(Object) [type PyPetscSNES_Type, object PyPetscSNESObject]:
+ctypedef public api class SNES(Object) [
+    type   PyPetscSNES_Type, 
+    object PyPetscSNESObject,
+    ]:
     cdef PetscSNES snes
 
-ctypedef public api class TS(Object) [type PyPetscTS_Type, object PyPetscTSObject]:
+ctypedef public api class TS(Object) [
+    type   PyPetscTS_Type, 
+    object PyPetscTSObject,
+    ]:
     cdef PetscTS ts
 
-ctypedef public api class AO(Object) [type PyPetscAO_Type, object PyPetscAOObject]:
+ctypedef public api class AO(Object) [
+    type   PyPetscAO_Type, 
+    object PyPetscAOObject,
+    ]:
     cdef PetscAO ao
 
-ctypedef public api class DA(Object) [type PyPetscDA_Type, object PyPetscDAObject]:
+ctypedef public api class DA(Object) [
+    type   PyPetscDA_Type, 
+    object PyPetscDAObject,
+    ]:
     cdef PetscDA da
 
 # --------------------------------------------------------------------
