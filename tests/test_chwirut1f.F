@@ -119,7 +119,7 @@
 !  TaoView() prints ierr about the TAO solver; the option
 !      -tao_view 
 !  can alternatively be used to activate this at runtime.
-!     call TaoView(tao,ierr)
+      call TaoSolverView(tao,PETSC_VIEWER_STDOUT_SELF,ierr)
       
 
 !  Free TAO data structures
