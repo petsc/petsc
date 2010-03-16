@@ -195,7 +195,6 @@ void PETSC_STDCALL taosolversetmonitor_(TaoSolver *tao, void (PETSC_STDCALL *fun
     }
 }
 
-EXTERN_C_END
 	
     
 
@@ -216,3 +215,4 @@ void PETSC_STDCALL taosolverview_(TaoSolver *tao, PetscViewer *viewer, PetscErro
     PetscPatchDefaultViewers_Fortran(viewer,v);
     *ierr = TaoSolverView(*tao,v);
 }
+EXTERN_C_END
