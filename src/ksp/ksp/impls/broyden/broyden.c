@@ -182,7 +182,7 @@ PetscErrorCode KSPSetFromOptions_Broyden(KSP ksp)
     It must be wrapped in EXTERN_C_BEGIN to be dynamically linkable in C++
 */
 /*MC
-     KSPBroyden - The preconditioned conjugate gradient (Broyden) iterative method
+     KSPBROYDEN - The preconditioned conjugate gradient (Broyden) iterative method
 
    Level: beginner
 
