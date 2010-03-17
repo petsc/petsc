@@ -665,7 +665,7 @@ cdef class Vec(Object):
         def __get__(self):
             return asarray(self)
         def __set__(self, value):
-            asarray(self)[:] = value
+            asarray(self)[:] = asarray(value).ravel('a')
 
 # --------------------------------------------------------------------
 
