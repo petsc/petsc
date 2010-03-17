@@ -86,28 +86,28 @@ cdef class SNES(Object):
     # --- xxx ---
 
     def setFunction(self, function, Vec f not None, *args, **kargs):
-        SNES_setFun(self.snes, f.vec, (function, args, kargs))
+        SNES_setFunction(self.snes, f.vec, (function, args, kargs))
 
     def getFunction(self):
         cdef Vec f = Vec()
         CHKERR( SNESGetFunction(self.snes, &f.vec, NULL, NULL) )
         PetscIncref(<PetscObject>f.vec)
-        cdef object fun = SNES_getFun(self.snes)
-        return (f, fun)
+        cdef object function = SNES_getFunction(self.snes)
+        return (f, function)
 
     def setUpdate(self, update, *args, **kargs):
-        if update is None: SNES_setUpd(self.snes, None)
-        else: SNES_setUpd(self.snes, (update, args, kargs))
+        if update is None: SNES_setUpdate(self.snes, None)
+        else: SNES_setUpdate(self.snes, (update, args, kargs))
 
     def getUpdate(self):
-        return SNES_getUpd(self.snes)
+        return SNES_getUpdate(self.snes)
 
     def setJacobian(self, jacobian, Mat J, Mat P=None, *args, **kargs):
         cdef PetscMat Jmat=NULL
         if J is not None: Jmat = J.mat
         cdef PetscMat Pmat = Jmat
         if P is not None: Pmat = P.mat
-        SNES_setJac(self.snes, Jmat, Pmat, (jacobian, args, kargs))
+        SNES_setJacobian(self.snes, Jmat, Pmat, (jacobian, args, kargs))
 
     def getJacobian(self):
         cdef Mat J = Mat()
@@ -115,8 +115,8 @@ cdef class SNES(Object):
         CHKERR( SNESGetJacobian(self.snes, &J.mat, &P.mat, NULL, NULL) )
         PetscIncref(<PetscObject>J.mat)
         PetscIncref(<PetscObject>P.mat)
-        cdef object jac = SNES_getJac(self.snes)
-        return (J, P, jac)
+        cdef object jacobian = SNES_getJacobian(self.snes)
+        return (J, P, jacobian)
 
     def computeFunction(self, Vec x not None, Vec f not None):
         CHKERR( SNESComputeFunction(self.snes, x.vec, f.vec) )
@@ -158,11 +158,11 @@ cdef class SNES(Object):
         return (toReal(crtol), toReal(catol), toReal(cstol), cmaxit)
 
     def setConvergenceTest(self, converged, *args, **kargs):
-        if converged is None: SNES_setCnv(self.snes, None)
-        else: SNES_setCnv(self.snes, (converged, args, kargs))
+        if converged is None: SNES_setConverged(self.snes, None)
+        else: SNES_setConverged(self.snes, (converged, args, kargs))
 
     def getConvergenceTest(self):
-        return SNES_getCnv(self.snes)
+        return SNES_getConverged(self.snes)
 
     def callConvergenceTest(self, its, xnorm, ynorm, fnorm):
         cdef PetscInt  ival  = its
@@ -203,11 +203,11 @@ cdef class SNES(Object):
         CHKERR( SNESLogConvergenceHistory(self.snes, ival1, rval, ival2) )
 
     def setMonitor(self, monitor, *args, **kargs):
-        if monitor is None: return
-        SNES_setMon(self.snes, (monitor, args, kargs))
+        if monitor is None: SNES_setMonitor(self.snes, None)
+        else: SNES_setMonitor(self.snes, (monitor, args, kargs))
 
     def getMonitor(self):
-        return SNES_getMon(self.snes)
+        return SNES_getMonitor(self.snes)
 
     def callMonitor(self, its, rnorm):
         cdef PetscInt  ival = its
@@ -215,7 +215,8 @@ cdef class SNES(Object):
         CHKERR( SNESMonitorCall(self.snes, ival, rval) )
 
     def cancelMonitor(self):
-        SNES_clsMon(self.snes)
+        CHKERR( SNESMonitorCancel(self.snes) )
+        SNES_delMonitor(self.snes)
 
     # --- xxx ---
 

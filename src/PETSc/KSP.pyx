@@ -206,9 +206,9 @@ cdef class KSP(Object):
             for i from 0 <= i < nl:
                 vecsl.append(ref_Vec(vl[i]))
         finally:
-            if nr > 0 and vr != NULL: 
+            if nr > 0 and vr != NULL:
                 VecDestroyVecs(vr, nr) # XXX errors?
-            if nl > 0 and vl !=NULL: 
+            if nl > 0 and vl !=NULL:
                 VecDestroyVecs(vl, nl) # XXX errors?
         #
         if R and L: return (vecsr, vecsl)
@@ -235,11 +235,11 @@ cdef class KSP(Object):
         return (toReal(crtol), toReal(catol), toReal(cdivtol), cmaxits)
 
     def setConvergenceTest(self, converged, *args, **kargs):
-        if converged is None: KSP_setCnv(self.ksp, None)
-        else: KSP_setCnv(self.ksp, (converged, args, kargs))
+        if converged is None: KSP_setConverged(self.ksp, None)
+        else: KSP_setConverged(self.ksp, (converged, args, kargs))
 
     def getConvergenceTest(self):
-        return KSP_getCnv(self.ksp)
+        return KSP_getConverged(self.ksp)
 
     def callConvergenceTest(self, its, rnorm):
         cdef PetscInt  ival = its
@@ -272,11 +272,11 @@ cdef class KSP(Object):
         CHKERR( KSPLogConvergenceHistory(self.ksp, its, rval) )
 
     def setMonitor(self, monitor, *args, **kargs):
-        if monitor is None: return
-        KSP_setMon(self.ksp, (monitor, args, kargs))
+        if monitor is None: KSP_setMonitor(self.ksp, None)
+        else: KSP_setMonitor(self.ksp, (monitor, args, kargs))
 
     def getMonitor(self):
-        return KSP_getMon(self.ksp)
+        return KSP_getMonitor(self.ksp)
 
     def callMonitor(self, its, rnorm):
         cdef PetscInt  ival = its
@@ -284,7 +284,8 @@ cdef class KSP(Object):
         CHKERR( KSPMonitorCall(self.ksp, ival, rval) )
 
     def cancelMonitor(self):
-        KSP_delMon(self.ksp)
+        CHKERR( KSPMonitorCancel(self.ksp) )
+        KSP_delMonitor(self.ksp)
 
     # --- xxx ---
 

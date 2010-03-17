@@ -90,13 +90,13 @@ cdef class TS(Object):
     # --- xxx ---
 
     def setFunction(self, function, Vec f not None, *args, **kargs):
-        TS_setFun(self.ts, f.vec, (function, args, kargs))
+        TS_setFunction(self.ts, f.vec, (function, args, kargs))
 
     def getFunction(self):
         cdef Vec f = Vec()
         CHKERR( TSGetRHSFunction(self.ts, &f.vec, NULL, NULL) )
         PetscIncref(<PetscObject>f.vec)
-        cdef object fun = TS_getFun(self.ts)
+        cdef object fun = TS_getFunction(self.ts)
         return (f, fun)
 
     def setJacobian(self, jacobian, Mat J, Mat P=None, *args, **kargs):
@@ -104,14 +104,14 @@ cdef class TS(Object):
         if J is not None: Jmat = J.mat
         cdef PetscMat Pmat = Jmat
         if P is not None: Pmat = P.mat
-        TS_setJac(self.ts, Jmat, Pmat, (jacobian, args, kargs))
+        TS_setJacobian(self.ts, Jmat, Pmat, (jacobian, args, kargs))
 
     def getJacobian(self):
         cdef Mat J = Mat(), P = Mat()
         CHKERR( TSGetRHSJacobian(self.ts, &J.mat, &P.mat, NULL, NULL) )
         PetscIncref(<PetscObject>J.mat)
         PetscIncref(<PetscObject>P.mat)
-        cdef object jac = TS_getJac(self.ts)
+        cdef object jac = TS_getJacobian(self.ts)
         return (J, P, jac)
 
     def computeFunction(self, t, Vec x not None, Vec f not None):
@@ -231,11 +231,11 @@ cdef class TS(Object):
     #
 
     def setMonitor(self, monitor, *args, **kargs):
-        if monitor is None: return
-        TS_setMon(self.ts, (monitor, args, kargs))
+        if monitor is None: TS_setMonitor(self.ts, None)
+        else: TS_setMonitor(self.ts, (monitor, args, kargs))
 
     def getMonitor(self):
-        return TS_getMon(self.ts)
+        return TS_getMonitor(self.ts)
 
     def callMonitor(self, step, time, Vec u=None):
         cdef PetscInt  ival = step
@@ -249,7 +249,8 @@ cdef class TS(Object):
         CHKERR( TSMonitorCall(self.ts, ival, rval, uvec) )
 
     def cancelMonitor(self):
-        TS_clsMon(self.ts)
+        CHKERR( TSMonitorCancel(self.ts) )
+        TS_delMonitor(self.ts)
 
     #
 
@@ -266,7 +267,7 @@ cdef class TS(Object):
 
     def getPostStep(self):
         return TS_getPostStep(self.ts)
-        
+
     #
 
     def solve(self, Vec u not None):

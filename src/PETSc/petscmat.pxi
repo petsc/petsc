@@ -280,11 +280,15 @@ cdef extern from "petscmat.h" nogil:
     int MatNullSpaceAttach(PetscMat,PetscNullSpace)
     int MatNullSpaceTest(PetscNullSpace,PetscMat)
 
-cdef extern from "petscmat.h" nogil:
     ctypedef int MatNullSpaceFunction(PetscNullSpace,
                                       PetscVec,
                                       void*) except PETSC_ERR_PYTHON
     int MatNullSpaceSetFunction(PetscNullSpace,MatNullSpaceFunction*,void*)
+
+cdef extern from *:
+    enum: PETSC_300 "(PETSC_VERSION_(3,0,0))"
+    enum: PETSC_233 "(PETSC_VERSION_(2,3,3))"
+    enum: PETSC_232 "(PETSC_VERSION_(2,3,2))"
 
 cdef inline NullSpace ref_NullSpace(PetscNullSpace nsp):
     cdef NullSpace ob = <NullSpace> NullSpace()
@@ -292,26 +296,11 @@ cdef inline NullSpace ref_NullSpace(PetscNullSpace nsp):
     ob.nsp = nsp
     return ob
 
-cdef inline object NullSpace_getFun(PetscNullSpace nsp):
+cdef inline object NullSpace_getFunction(PetscNullSpace nsp):
     return Object_getAttr(<PetscObject>nsp, '__function__')
 
-cdef int NullSpace_Function(PetscNullSpace n, PetscVec v, void *ctx) \
-                            except PETSC_ERR_PYTHON with gil:
-    cdef NullSpace nsp = ref_NullSpace(n)
-    cdef Vec vec = ref_Vec(v)
-    (function, args, kargs) = NullSpace_getFun(n)
-    function(nsp, vec, *args, **kargs)
-    return 0
-
-cdef extern from *:
-    enum: PETSC_300 "(PETSC_VERSION_(3,0,0))"
-    enum: PETSC_233 "(PETSC_VERSION_(2,3,3))"
-    enum: PETSC_232 "(PETSC_VERSION_(2,3,2))"
-cdef int NullSpace_Function_OLD(PetscVec v, void* ctx) nogil:
-    return NullSpace_Function(<PetscNullSpace> ctx, v, ctx)
-
-cdef inline int NullSpace_setFun(PetscNullSpace nsp,
-                                 object function) except -1:
+cdef inline int NullSpace_setFunction(PetscNullSpace nsp,
+                                      object function) except -1:
     if function is None:
         CHKERR( MatNullSpaceSetFunction(nsp, NULL, NULL) )
     elif PETSC_300 or PETSC_233 or PETSC_232:
@@ -322,6 +311,17 @@ cdef inline int NullSpace_setFun(PetscNullSpace nsp,
                 nsp, <MatNullSpaceFunction*>NullSpace_Function, nsp) )
     Object_setAttr(<PetscObject>nsp, '__function__', function)
     return 0
+
+cdef int NullSpace_Function(PetscNullSpace n, PetscVec v, void *ctx) \
+                            except PETSC_ERR_PYTHON with gil:
+    cdef NullSpace nsp = ref_NullSpace(n)
+    cdef Vec vec = ref_Vec(v)
+    (function, args, kargs) = NullSpace_getFunction(n)
+    function(nsp, vec, *args, **kargs)
+    return 0
+
+cdef int NullSpace_Function_OLD(PetscVec v, void* ctx) nogil:
+    return NullSpace_Function(<PetscNullSpace> ctx, v, ctx)
 
 # --------------------------------------------------------------------
 

@@ -983,11 +983,11 @@ cdef class NullSpace(Object):
         return self
 
     def setFunction(self, function, *args, **kargs):
-        if function is None: NullSpace_setFun(self.nsp, None)
-        else: NullSpace_setFun(self.nsp, (function, args, kargs))
+        if function is None: NullSpace_setFunction(self.nsp, None)
+        else: NullSpace_setFunction(self.nsp, (function, args, kargs))
 
     def getFunction(self):
-        return NullSpace_getFun(self.nsp)
+        return NullSpace_getFunction(self.nsp)
 
     def remove(self, Vec vec not None, Vec out=None):
         cdef PetscVec v = NULL, *vp = NULL

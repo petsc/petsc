@@ -17,28 +17,28 @@ cdef extern from "petscts.h" nogil:
 
     ctypedef int PetscTSCtxDel(void*)
 
-    ctypedef int PetscTSFunction(PetscTS,
-                                 PetscReal,
-                                 PetscVec,
-                                 PetscVec,
-                                 void*) except PETSC_ERR_PYTHON
+    ctypedef int (*PetscTSFunctionFunction)(PetscTS,
+                                            PetscReal,
+                                            PetscVec,
+                                            PetscVec,
+                                            void*) except PETSC_ERR_PYTHON
 
-    ctypedef int PetscTSJacobian(PetscTS,
-                                 PetscReal,
-                                 PetscVec,
-                                 PetscMat*,
-                                 PetscMat*,
-                                 PetscMatStructure*,
-                                 void*) except PETSC_ERR_PYTHON
+    ctypedef int (*PetscTSJacobianFunction)(PetscTS,
+                                            PetscReal,
+                                            PetscVec,
+                                            PetscMat*,
+                                            PetscMat*,
+                                            PetscMatStructure*,
+                                            void*) except PETSC_ERR_PYTHON
 
-    ctypedef int PetscTSMonitor(PetscTS,
-                                PetscInt,
-                                PetscReal,
-                                PetscVec,
-                                void*) except PETSC_ERR_PYTHON
+    ctypedef int (*PetscTSMonitorFunction)(PetscTS,
+                                           PetscInt,
+                                           PetscReal,
+                                           PetscVec,
+                                           void*) except PETSC_ERR_PYTHON
 
-    ctypedef int PetscTSPreStepFunction  (PetscTS) except PETSC_ERR_PYTHON
-    ctypedef int PetscTSPostStepFunction (PetscTS) except PETSC_ERR_PYTHON
+    ctypedef int (*PetscTSPreStepFunction)  (PetscTS) except PETSC_ERR_PYTHON
+    ctypedef int (*PetscTSPostStepFunction) (PetscTS) except PETSC_ERR_PYTHON
 
     int TSCreate(MPI_Comm comm,PetscTS*)
     int TSDestroy(PetscTS)
@@ -56,10 +56,10 @@ cdef extern from "petscts.h" nogil:
 
     int TSSetSolution(PetscTS,PetscVec)
     int TSGetSolution(PetscTS,PetscVec*)
-    int TSSetRHSFunction(PetscTS,PetscVec,PetscTSFunction*,void*)
-    int TSGetRHSFunction(PetscTS,PetscVec*,PetscTSFunction**,void*)
-    int TSSetRHSJacobian(PetscTS,PetscMat,PetscMat,PetscTSJacobian*,void*)
-    int TSGetRHSJacobian(PetscTS,PetscMat*,PetscMat*,PetscTSJacobian**,void**)
+    int TSSetRHSFunction(PetscTS,PetscVec,PetscTSFunctionFunction,void*)
+    int TSGetRHSFunction(PetscTS,PetscVec*,PetscTSFunctionFunction*,void*)
+    int TSSetRHSJacobian(PetscTS,PetscMat,PetscMat,PetscTSJacobianFunction,void*)
+    int TSGetRHSJacobian(PetscTS,PetscMat*,PetscMat*,PetscTSJacobianFunction*,void**)
     int TSGetKSP(PetscTS,PetscKSP*)
     int TSGetSNES(PetscTS,PetscSNES*)
 
@@ -76,11 +76,11 @@ cdef extern from "petscts.h" nogil:
     int TSSetDuration(PetscTS,PetscInt,PetscReal)
     int TSGetDuration(PetscTS,PetscInt*,PetscReal*)
 
-    int TSMonitorSet(PetscTS,PetscTSMonitor*,void*,PetscTSCtxDel*)
+    int TSMonitorSet(PetscTS,PetscTSMonitorFunction,void*,PetscTSCtxDel*)
     int TSMonitorCancel(PetscTS)
 
-    int TSSetPreStep(PetscTS, PetscTSPreStepFunction*)
-    int TSSetPostStep(PetscTS, PetscTSPostStepFunction*)
+    int TSSetPreStep(PetscTS, PetscTSPreStepFunction)
+    int TSSetPostStep(PetscTS, PetscTSPostStepFunction)
 
     int TSSetUp(PetscTS)
     int TSStep(PetscTS,PetscInt*,PetscReal*)
@@ -91,7 +91,7 @@ cdef extern from "custom.h" nogil:
     int TSGetUseFDColoring(PetscTS,PetscTruth*)
     int TSMonitorCall(PetscTS,PetscInt,PetscReal,PetscVec)
 
-# --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 cdef inline TS ref_TS(PetscTS ts):
     cdef TS ob = <TS> TS()
@@ -99,10 +99,15 @@ cdef inline TS ref_TS(PetscTS ts):
     ob.ts = ts
     return ob
 
-# --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-cdef inline object TS_getFun(PetscTS ts):
+cdef inline object TS_getFunction(PetscTS ts):
     return Object_getAttr(<PetscObject>ts, '__function__')
+
+cdef inline int TS_setFunction(PetscTS ts, PetscVec f, object fun) except -1:
+    CHKERR( TSSetRHSFunction(ts, f, TS_Function, NULL) )
+    Object_setAttr(<PetscObject>ts, '__function__', fun)
+    return 0
 
 cdef int TS_Function(PetscTS ts,
                      PetscReal t,
@@ -112,19 +117,21 @@ cdef int TS_Function(PetscTS ts,
     cdef TS  Ts   = ref_TS(ts)
     cdef Vec Xvec = ref_Vec(x)
     cdef Vec Fvec = ref_Vec(f)
-    (function, args, kargs) = TS_getFun(ts)
+    (function, args, kargs) = TS_getFunction(ts)
     function(Ts, toReal(t), Xvec, Fvec, *args, **kargs)
     return 0
 
-cdef inline int TS_setFun(PetscTS ts, PetscVec f, object fun) except -1:
-    CHKERR( TSSetRHSFunction(ts, f, TS_Function, NULL) )
-    Object_setAttr(<PetscObject>ts, '__function__', fun)
-    return 0
+# -----------------------------------------------------------------------------
 
-# --------------------------------------------------------------------
-
-cdef inline object TS_getJac(PetscTS ts):
+cdef inline object TS_getJacobian(PetscTS ts):
     return Object_getAttr(<PetscObject>ts, '__jacobian__')
+
+cdef inline int TS_setJacobian(PetscTS ts,
+                               PetscMat J, PetscMat P,
+                               object jacobian) except -1:
+    CHKERR( TSSetRHSJacobian(ts, J, P, TS_Jacobian, NULL) )
+    Object_setAttr(<PetscObject>ts, '__jacobian__', jacobian)
+    return 0
 
 cdef int TS_Jacobian(PetscTS ts,
                      PetscReal t,
@@ -137,7 +144,7 @@ cdef int TS_Jacobian(PetscTS ts,
     cdef Vec  Xvec = ref_Vec(x)
     cdef Mat  Jmat = ref_Mat(J[0])
     cdef Mat  Pmat = ref_Mat(P[0])
-    (jacobian, args, kargs) = TS_getJac(ts)
+    (jacobian, args, kargs) = TS_getJacobian(ts)
     retv = jacobian(Ts, toReal(t), Xvec, Jmat, Pmat, *args, **kargs)
     s[0] = matstructure(retv)
     cdef PetscMat Jtmp = NULL, Ptmp = NULL
@@ -145,42 +152,35 @@ cdef int TS_Jacobian(PetscTS ts,
     Ptmp = P[0]; P[0] = Pmat.mat; Pmat.mat = Ptmp
     return 0
 
-cdef inline int TS_setJac(PetscTS ts,
-                          PetscMat J, PetscMat P,
-                          object jac) except -1:
-    CHKERR( TSSetRHSJacobian(ts, J, P, TS_Jacobian, NULL) )
-    Object_setAttr(<PetscObject>ts, '__jacobian__', jac)
+# -----------------------------------------------------------------------------
+
+cdef inline object TS_getMonitor(PetscTS ts):
+    return Object_getAttr(<PetscObject>ts, '__monitor__')
+
+cdef inline int TS_setMonitor(PetscTS ts, object monitor) except -1:
+    CHKERR( TSMonitorSet(ts, TS_Monitor, NULL, NULL) )
+    cdef object monitorlist = TS_getMonitor(ts)
+    if monitor is None: monitorlist = None
+    elif monitorlist is None: monitorlist = [monitor]
+    else: monitorlist.append(monitor)
+    Object_setAttr(<PetscObject>ts, '__monitor__', monitorlist)
     return 0
 
-# --------------------------------------------------------------------
-
-cdef inline object TS_getMon(PetscTS ts):
-    return Object_getAttr(<PetscObject>ts, '__monitor__')
+cdef inline int TS_delMonitor(PetscTS ts) except -1:
+    Object_setAttr(<PetscObject>ts, '__monitor__', None)
+    return 0
 
 cdef int TS_Monitor(PetscTS    ts,
                     PetscInt   step,
                     PetscReal  time,
                     PetscVec   u,
                     void* ctx) except PETSC_ERR_PYTHON with gil:
-    cdef object monitorlist = TS_getMon(ts)
+    cdef object monitorlist = TS_getMonitor(ts)
     if monitorlist is None: return 0
     cdef TS  Ts = ref_TS(ts)
     cdef Vec Vu = ref_Vec(u)
     for (monitor, args, kargs) in monitorlist:
         monitor(Ts, step, toReal(time), Vu, *args, **kargs)
-    return 0
-
-cdef inline int TS_setMon(PetscTS ts, object mon) except -1:
-    CHKERR( TSMonitorSet(ts, TS_Monitor, NULL, NULL) )
-    cdef object monitorlist = TS_getMon(ts)
-    if monitorlist is None: monitorlist = [mon]
-    else: monitorlist.append(mon)
-    Object_setAttr(<PetscObject>ts, '__monitor__', monitorlist)
-    return 0
-
-cdef inline int TS_clsMon(PetscTS ts) except -1:
-    CHKERR( TSMonitorCancel(ts) )
-    Object_setAttr(<PetscObject>ts, '__monitor__', None)
     return 0
 
 # --------------------------------------------------------------------
@@ -205,16 +205,16 @@ cdef inline int TS_setPreStep(PetscTS ts, object prestep) except -1:
 cdef inline object TS_getPostStep(PetscTS ts):
     return Object_getAttr(<PetscObject>ts, '__poststep__')
 
-cdef int TS_PostStep(PetscTS ts) except PETSC_ERR_PYTHON with gil:
-    cdef TS Ts = ref_TS(ts)
-    (poststep, args, kargs) = TS_getPostStep(ts)
-    poststep(Ts, *args, **kargs)
-    return 0
-
 cdef inline int TS_setPostStep(PetscTS ts, object poststep) except -1:
     if poststep is None: CHKERR( TSSetPostStep(ts, NULL) )
     else: CHKERR( TSSetPostStep(ts, TS_PostStep) )
     Object_setAttr(<PetscObject>ts, '__poststep__', poststep)
+    return 0
+
+cdef int TS_PostStep(PetscTS ts) except PETSC_ERR_PYTHON with gil:
+    cdef TS Ts = ref_TS(ts)
+    (poststep, args, kargs) = TS_getPostStep(ts)
+    poststep(Ts, *args, **kargs)
     return 0
 
 # --------------------------------------------------------------------
