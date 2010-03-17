@@ -1,0 +1,6 @@
+#! /bin/csh
+#
+set MACH=140.221.123.184
+set USR=petsc
+set LOC=/export/home/petsc/petsc31
+set CONF=arch-opensolaris-pkgs-opt
