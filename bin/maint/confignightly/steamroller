@@ -4,3 +4,5 @@ set MACH=steamroller
 set USR=petsc
 set LOC=/sandbox/petsc/petsc-dev
 set CONF=arch-linux-pkgs-gcov
+set PURL=http://petsc.cs.iit.edu/petsc/petsc-dev
+set BURL=http://petsc.cs.iit.edu/petsc/BuildSystem
