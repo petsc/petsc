@@ -147,6 +147,17 @@ cdef class TS(Object):
         PetscIncref(<PetscObject>ksp.ksp)
         return ksp
 
+    #
+
+    def setUseFD(self, flag=True):
+        cdef PetscTruth cflag = flag
+        CHKERR( TSSetUseFDColoring(self.ts, cflag) )
+
+    def getUseFD(self):
+        cdef PetscTruth flag = PETSC_FALSE
+        CHKERR( TSGetUseFDColoring(self.ts, &flag) )
+        return <bint> flag
+
     # --- xxx ---
 
     def setTime(self, t):
@@ -242,20 +253,25 @@ cdef class TS(Object):
 
     #
 
+    def setPreStep(self, prestep, *args, **kargs):
+        if prestep is not None: prestep = (prestep, args, kargs)
+        TS_setPreStep(self.ts, prestep)
+
+    def getPreStep(self, prestep):
+        return TS_getPreStep(self.ts)
+
+    def setPostStep(self, poststep, *args, **kargs):
+        if poststep is not None: prestep = (poststep, args, kargs)
+        TS_setPostStep(self.ts, (poststep, args, kargs))
+
+    def getPostStep(self):
+        return TS_getPostStep(self.ts)
+        
+    #
+
     def solve(self, Vec u not None):
         CHKERR( TSSolve(self.ts, u.vec) )
 
-
-    #
-
-    def setUseFD(self, flag=True):
-        cdef PetscTruth cflag = flag
-        CHKERR( TSSetUseFDColoring(self.ts, cflag) )
-
-    def getUseFD(self):
-        cdef PetscTruth flag = PETSC_FALSE
-        CHKERR( TSGetUseFDColoring(self.ts, &flag) )
-        return <bint> flag
     #
 
     def createPython(self, context=None, comm=None):

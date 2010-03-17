@@ -37,6 +37,9 @@ cdef extern from "petscts.h" nogil:
                                 PetscVec,
                                 void*) except PETSC_ERR_PYTHON
 
+    ctypedef int PetscTSPreStepFunction  (PetscTS) except PETSC_ERR_PYTHON
+    ctypedef int PetscTSPostStepFunction (PetscTS) except PETSC_ERR_PYTHON
+
     int TSCreate(MPI_Comm comm,PetscTS*)
     int TSDestroy(PetscTS)
     int TSView(PetscTS,PetscViewer)
@@ -75,6 +78,9 @@ cdef extern from "petscts.h" nogil:
 
     int TSMonitorSet(PetscTS,PetscTSMonitor*,void*,PetscTSCtxDel*)
     int TSMonitorCancel(PetscTS)
+
+    int TSSetPreStep(PetscTS, PetscTSPreStepFunction*)
+    int TSSetPostStep(PetscTS, PetscTSPostStepFunction*)
 
     int TSSetUp(PetscTS)
     int TSStep(PetscTS,PetscInt*,PetscReal*)
@@ -175,6 +181,40 @@ cdef inline int TS_setMon(PetscTS ts, object mon) except -1:
 cdef inline int TS_clsMon(PetscTS ts) except -1:
     CHKERR( TSMonitorCancel(ts) )
     Object_setAttr(<PetscObject>ts, '__monitor__', None)
+    return 0
+
+# --------------------------------------------------------------------
+
+cdef inline object TS_getPreStep(PetscTS ts):
+    return Object_getAttr(<PetscObject>ts, '__prestep__')
+
+cdef int TS_PreStep(PetscTS ts) except PETSC_ERR_PYTHON with gil:
+    cdef TS Ts = ref_TS(ts)
+    (prestep, args, kargs) = TS_getPreStep(ts)
+    prestep(Ts, *args, **kargs)
+    return 0
+
+cdef inline int TS_setPreStep(PetscTS ts, object prestep) except -1:
+    if prestep is None: CHKERR( TSSetPreStep(ts, NULL) )
+    else: CHKERR( TSSetPreStep(ts, TS_PreStep) )
+    Object_setAttr(<PetscObject>ts, '__prestep__', prestep)
+    return 0
+
+# --
+
+cdef inline object TS_getPostStep(PetscTS ts):
+    return Object_getAttr(<PetscObject>ts, '__poststep__')
+
+cdef int TS_PostStep(PetscTS ts) except PETSC_ERR_PYTHON with gil:
+    cdef TS Ts = ref_TS(ts)
+    (poststep, args, kargs) = TS_getPostStep(ts)
+    poststep(Ts, *args, **kargs)
+    return 0
+
+cdef inline int TS_setPostStep(PetscTS ts, object poststep) except -1:
+    if poststep is None: CHKERR( TSSetPostStep(ts, NULL) )
+    else: CHKERR( TSSetPostStep(ts, TS_PostStep) )
+    Object_setAttr(<PetscObject>ts, '__poststep__', poststep)
     return 0
 
 # --------------------------------------------------------------------
