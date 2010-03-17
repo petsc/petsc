@@ -59,8 +59,8 @@ class Configure(config.package.Package):
     help.addArgument('MPI', '-download-openmpi=<no,yes,ifneeded,filename>',      nargs.ArgDownload(None, 0, 'Download and install OpenMPI'))
     help.addArgument('MPI', '-with-mpiexec=<prog>',                              nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
     help.addArgument('MPI', '-with-mpi-compilers=<bool>',                        nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
-    help.addArgument('MPI', '-known-mpi-shared=<bool>',                           nargs.ArgBool(None, None, 'Indicates the MPI libraries are shared (the usual test will be skipped)'))
-    help.addArgument('MPI', '-download-mpich-pm=gforker hydra or mpd',           nargs.Arg(None, 'gforker', 'Launcher for MPI processes'))
+    help.addArgument('MPI', '-known-mpi-shared=<bool>',                          nargs.ArgBool(None, None, 'Indicates the MPI libraries are shared (the usual test will be skipped)'))
+    help.addArgument('MPI', '-download-mpich-pm=hydra, gforker or mpd',          nargs.Arg(None, 'hydra', 'Launcher for MPI processes'))
     help.addArgument('MPI', '-download-mpich-device=ch3:nemesis or see mpich2 docs', nargs.Arg(None, 'ch3:sock', 'Communicator for MPI processes'))
     help.addArgument('MPI', '-download-mpich-mpe',                               nargs.ArgBool(None, 0, 'Install MPE with MPICH'))
     help.addArgument('MPI', '-download-mpich-shared',                            nargs.ArgBool(None, 0, 'Install MPICH with shared libraries'))    
@@ -495,6 +495,8 @@ class Configure(config.package.Package):
     else:
       args.append('--without-mpe')
     args.append('--with-pm='+self.argDB['download-mpich-pm'])
+    if self.argDB['download-mpich-pm'] == 'hydra':
+      args.append('--with-hydra-bss=fork,ssh')
     # make MPICH behave properly for valgrind
     args.append('--enable-g=meminit')    
     args.append('--enable-fast')    
