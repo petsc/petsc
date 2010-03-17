@@ -4383,6 +4383,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatEqual(Mat A,Mat B,PetscTruth *flg)
    Notes:
    MatDiagonalScale() computes A = LAR, where
    L = a diagonal matrix (stored as a vector), R = a diagonal matrix (stored as a vector)
+   The L scales the rows of the matrix, the R scales the columns of the matrix.
 
    Level: intermediate
 
