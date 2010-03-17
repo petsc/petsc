@@ -97,7 +97,7 @@ class Configure(config.base.Configure):
                                             'unistd', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
                                             'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib','memory',
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',
-                                            'WindowsX', 'cxxabi','float','ieeefp','xmmintrin','stdint'])
+                                            'WindowsX', 'cxxabi','float','ieeefp','stdint'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
                  'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'nanosleep', 'usleep', 'sleep', '_sleep', 'socket', 
@@ -319,6 +319,9 @@ class Configure(config.base.Configure):
 
   def configurePrefetch(self):
     '''Sees if there are any prefetch functions supported'''
+    if config.setCompilers.Configure.isSolaris():
+      self.addDefine('Prefetch(a,b,c)', ' ')
+      return
     self.pushLanguage(self.languages.clanguage)      
     if self.checkLink('#include <xmmintrin.h>', 'void *v = 0;_mm_prefetch(v,(int)0);\n'):
       self.addDefine('HAVE_XMMINTRIN_H', 1)
