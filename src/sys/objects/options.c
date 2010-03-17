@@ -1036,7 +1036,7 @@ static PetscErrorCode PetscOptionsFindPair_Private(const char pre[],const char n
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsReject(const char name[],const char mess[])
 {
   PetscErrorCode ierr;
-  PetscTruth     flag;
+  PetscTruth     flag = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(PETSC_NULL,name,&flag);CHKERRQ(ierr);

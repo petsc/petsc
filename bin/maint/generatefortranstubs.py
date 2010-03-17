@@ -138,7 +138,8 @@ def processDir(arg,dirname,names):
     PrepFtnDir(outdir)
     options = ['-dir '+outdir, '-mnative', '-ansi', '-nomsgs', '-noprofile', '-anyname', '-mapptr',
                '-mpi', '-mpi2', '-ferr', '-ptrprefix Petsc', '-ptr64 PETSC_USE_POINTER_CONVERSION',
-               '-fcaps PETSC_HAVE_FORTRAN_CAPS', '-fuscore PETSC_HAVE_FORTRAN_UNDERSCORE','-f90mod_skip_header']
+               '-fcaps PETSC_HAVE_FORTRAN_CAPS', '-fuscore PETSC_HAVE_FORTRAN_UNDERSCORE',
+               '-f90mod_skip_header','-f90modfile','f90module.f90']
     (status,output) = commands.getstatusoutput('cd '+dirname+';'+bfort+' '+' '.join(options+newls))
     if status:
       raise RuntimeError('Error running bfort '+output)

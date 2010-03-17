@@ -25,6 +25,7 @@
 #define MPScotchLocalType PetscEnum
 #define MatAssemblyType PetscEnum
 #define MatFactorType PetscEnum
+#define MatFactorShiftType PetscEnum
 #define MatOrderingType character*(80)
 #define MatSORType PetscEnum
 #define MatInfoType PetscEnum

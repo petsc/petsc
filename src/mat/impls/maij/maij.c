@@ -83,7 +83,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMAIJGetAIJ(Mat A,Mat *B)
 PetscErrorCode PETSCMAT_DLLEXPORT MatMAIJRedimension(Mat A,PetscInt dof,Mat *B)
 {
   PetscErrorCode ierr;
-  Mat            Aij;
+  Mat            Aij = PETSC_NULL;
 
   PetscFunctionBegin;
   ierr = MatMAIJGetAIJ(A,&Aij);CHKERRQ(ierr);

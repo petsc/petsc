@@ -3307,7 +3307,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSOR(Mat mat,Vec b,PetscReal omega,MatSORTyp
 PetscErrorCode MatCopy_Basic(Mat A,Mat B,MatStructure str)
 {
   PetscErrorCode    ierr;
-  PetscInt          i,rstart,rend,nz;
+  PetscInt          i,rstart = 0,rend = 0,nz;
   const PetscInt    *cwork;
   const PetscScalar *vwork;
 
@@ -3975,7 +3975,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMaxAbs(Mat mat,Vec v,PetscInt idx[])
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowSum(Mat mat, Vec v)
 {
-  PetscInt       start, end, row;
+  PetscInt       start = 0, end = 0, row;
   PetscScalar   *array;
   PetscErrorCode ierr;
 
@@ -4251,7 +4251,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPermuteSparsify(Mat A, PetscInt band, Petsc
 {
   IS                irowp, icolp;
   const PetscInt    *rows, *cols;
-  PetscInt          M, N, locRowStart, locRowEnd;
+  PetscInt          M, N, locRowStart = 0, locRowEnd = 0;
   PetscInt          nz, newNz;
   const PetscInt    *cwork;
   PetscInt          *cnew;

@@ -1392,7 +1392,7 @@ PetscErrorCode MatGetInfo_SeqAIJ(Mat A,MatInfoType flag,MatInfo *info)
 PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscInt       i,m = A->rmap->n - 1,d;
+  PetscInt       i,m = A->rmap->n - 1,d = 0;
   PetscErrorCode ierr;
   PetscTruth     missing;
 
@@ -2015,12 +2015,12 @@ PetscErrorCode MatPermute_SeqAIJ(Mat A,IS rowp,IS colp,Mat *B)
 { 
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i,nz,m = A->rmap->n,n = A->cmap->n;
+  PetscInt       i,nz = 0,m = A->rmap->n,n = A->cmap->n;
   const PetscInt *row,*col;
   PetscInt       *cnew,j,*lens;
   IS             icolp,irowp;
-  PetscInt       *cwork;
-  PetscScalar    *vwork;
+  PetscInt       *cwork = PETSC_NULL;
+  PetscScalar    *vwork = PETSC_NULL;
 
   PetscFunctionBegin;
   ierr = ISInvertPermutation(rowp,PETSC_DECIDE,&irowp);CHKERRQ(ierr);
