@@ -639,9 +639,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPRESStruct_3d(Mat mat,Pets
   int               to_var_entry = 0;
 
   int               nvars= ex->nvars;
-  PetscInt          row,entries[nvars*7];
+  PetscInt          row,*entries;
 
   PetscFunctionBegin;
+  ierr = PetscMalloc(7*nvars*sizeof(PetscInt),&entries);CHKERRQ(ierr);
 
   ordering= ex-> dofs_order; /* ordering= 0   nodal ordering
                                           1   variable ordering */
@@ -737,6 +738,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPRESStruct_3d(Mat mat,Pets
     }
 
   }
+  ierr = PetscFree(entries);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -754,9 +756,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal_HYPRESStruct_3d(Mat mat,Petsc
   int               grid_rank;
   int               var_type; 
   int               nvars= ex->nvars;
-  PetscInt          row,entries[nvars*7];
+  PetscInt          row,*entries;
 
   PetscFunctionBegin;
+  ierr = PetscMalloc(7*nvars*sizeof(PetscInt),&entries);CHKERRQ(ierr);
 
   ierr = PetscMalloc(nvars*sizeof(PetscScalar *),&values);CHKERRQ(ierr);
   ierr = PetscMalloc(7*nvars*nvars*sizeof(PetscScalar),&values[0]);CHKERRQ(ierr);
@@ -804,6 +807,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal_HYPRESStruct_3d(Mat mat,Petsc
   ierr = PetscFree(values[0]);CHKERRQ(ierr);
   ierr = PetscFree(values);CHKERRQ(ierr);
 
+  ierr = PetscFree(entries);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
