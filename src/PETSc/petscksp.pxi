@@ -13,7 +13,8 @@ cdef extern from "petscksp.h" nogil:
     PetscKSPType   KSPLGMRES
     PetscKSPType KSPTCQMR
     PetscKSPType KSPBCGS
-    PetscKSPType KSPBCGSL
+    PetscKSPType   KSPIBCGS
+    PetscKSPType   KSPBCGSL
     PetscKSPType KSPCGS
     PetscKSPType KSPTFQMR
     PetscKSPType KSPCR
@@ -24,6 +25,10 @@ cdef extern from "petscksp.h" nogil:
     PetscKSPType KSPMINRES
     PetscKSPType KSPSYMMLQ
     PetscKSPType KSPLCD
+    #PetscKSPType KSPPYTHON
+    PetscKSPType KSPBROYDEN
+    PetscKSPType KSPGCR
+
 
     ctypedef enum PetscKSPNormType "KSPNormType":
         KSP_NORM_NO

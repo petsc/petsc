@@ -8,6 +8,9 @@ class TSType(object):
     RUNGE_KUTTA     = TSRUNGE_KUTTA
     PSEUDO          = TSPSEUDO
     SUNDIALS        = TSSUNDIALS
+    THETA           = TSTHETA
+    GL              = TSGL
+    SSP             = TSSSP
     # aliases
     FE = EULER
     BE = BEULER

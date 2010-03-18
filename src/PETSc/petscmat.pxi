@@ -36,6 +36,12 @@ cdef extern from "petscmat.h" nogil:
     PetscMatType MATBLOCKMAT
     PetscMatType MATCOMPOSITE
     PetscMatType MATSEQFFTW
+    PetscMatType MATTRANSPOSEMAT
+    PetscMatType MATSCHURCOMPLEMENT
+    #PetscMatType MATPYTHON
+    PetscMatType MATHYPRESTRUCT
+    PetscMatType MATHYPRESSTRUCT
+    PetscMatType MATSUBMATRIX
 
     ctypedef char* PetscMatOrderingType "const char*"
     PetscMatOrderingType MAT_ORDERING_NATURAL     "MATORDERING_NATURAL"
@@ -50,14 +56,18 @@ cdef extern from "petscmat.h" nogil:
     PetscMatOrderingType MAT_ORDERING_CONSTRAINED "MATORDERING_CONSTRAINED "
     PetscMatOrderingType MAT_ORDERING_IDENTITY    "MATORDERING_IDENTITY"
     PetscMatOrderingType MAT_ORDERING_REVERSE     "MATORDERING_REVERSE"
+    PetscMatOrderingType MAT_ORDERING_FLOW        "MAT_ORDERING_FLOW"
+    PetscMatOrderingType MAT_ORDERING_AMD         "MAT_ORDERING_AMD"
 
     ctypedef enum PetscMatReuse "MatReuse":
         MAT_INITIAL_MATRIX
         MAT_REUSE_MATRIX
+        MAT_IGNORE_MATRIX
 
     ctypedef enum PetscMatDuplicateOption "MatDuplicateOption":
         MAT_DO_NOT_COPY_VALUES
         MAT_COPY_VALUES
+        MAT_SHARE_NONZERO_PATTERN
 
     ctypedef enum PetscMatAssemblyType "MatAssemblyType":
         MAT_FLUSH_ASSEMBLY

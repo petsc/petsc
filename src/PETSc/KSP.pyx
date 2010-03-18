@@ -12,6 +12,7 @@ class KSPType(object):
     LGMRES     = KSPLGMRES
     TCQMR      = KSPTCQMR
     BCGS       = KSPBCGS
+    IBCGS      = KSPIBCGS
     BCGSL      = KSPBCGSL
     CGS        = KSPCGS
     TFQMR      = KSPTFQMR

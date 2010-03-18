@@ -34,6 +34,11 @@ class MatType(object):
     BLOCKMAT        = MATBLOCKMAT
     COMPOSITE       = MATCOMPOSITE
     SEQFFTW         = MATSEQFFTW
+    TRANSPOSE       = MATTRANSPOSEMAT
+    SCHURCOMPLEMENT = MATSCHURCOMPLEMENT
+    HYPRESTRUCT     = MATHYPRESTRUCT
+    HYPRESSTRUCT    = MATHYPRESSTRUCT
+    SUBMATRIX       = MATSUBMATRIX
     #
     PYTHON = MATPYTHON
 
@@ -90,6 +95,8 @@ class MatOrderingType(object):
     CONSTRAINED = MAT_ORDERING_CONSTRAINED
     IDENTITY    = MAT_ORDERING_IDENTITY
     REVERSE     = MAT_ORDERING_REVERSE
+    FLOW        = MAT_ORDERING_FLOW
+    AMD         = MAT_ORDERING_AMD
 
 # --------------------------------------------------------------------
 
