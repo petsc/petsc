@@ -56,8 +56,8 @@ cdef extern from "petscmat.h" nogil:
     PetscMatOrderingType MAT_ORDERING_CONSTRAINED "MATORDERING_CONSTRAINED "
     PetscMatOrderingType MAT_ORDERING_IDENTITY    "MATORDERING_IDENTITY"
     PetscMatOrderingType MAT_ORDERING_REVERSE     "MATORDERING_REVERSE"
-    PetscMatOrderingType MAT_ORDERING_FLOW        "MAT_ORDERING_FLOW"
-    PetscMatOrderingType MAT_ORDERING_AMD         "MAT_ORDERING_AMD"
+    PetscMatOrderingType MAT_ORDERING_FLOW        "MATORDERING_FLOW"
+    PetscMatOrderingType MAT_ORDERING_AMD         "MATORDERING_AMD"
 
     ctypedef enum PetscMatReuse "MatReuse":
         MAT_INITIAL_MATRIX
