@@ -44,7 +44,7 @@ cdef extern from "petscts.h" nogil:
                                              PetscReal,
                                              PetscMat*,
                                              PetscMat*,
-                                             MatStructure*,
+                                             PetscMatStructure*,
                                              void*) except PETSC_ERR_PYTHON
 
     ctypedef int (*PetscTSMonitorFunction)(PetscTS,
@@ -85,7 +85,7 @@ cdef extern from "petscts.h" nogil:
     int TSComputeRHSFunction(PetscTS,PetscReal,PetscVec,PetscVec)
     int TSComputeRHSJacobian(PetscTS,PetscReal,PetscVec,PetscMat*,PetscMat*,PetscMatStructure*)
     int TSComputeIFunction(PetscTS,PetscReal,PetscVec,PetscVec,PetscVec,)
-    int TSComputeIJacobian(PetscTS,PetscReal,PetscVec,PetscVec,PetscMat*,PetscMat*,PetscMatStructure*)
+    int TSComputeIJacobian(PetscTS,PetscReal,PetscVec,PetscVec,PetscReal,PetscMat*,PetscMat*,PetscMatStructure*)
 
     int TSSetTime(PetscTS,PetscReal)
     int TSGetTime(PetscTS,PetscReal*)
@@ -142,8 +142,6 @@ cdef int TS_Function(PetscTS ts,
     function(Ts, toReal(t), Xvec, Fvec, *args, **kargs)
     return 0
 
-# -----------------------------------------------------------------------------
-
 cdef inline object TS_getJacobian(PetscTS ts):
     return Object_getAttr(<PetscObject>ts, '__jacobian__')
 
@@ -167,6 +165,68 @@ cdef int TS_Jacobian(PetscTS ts,
     cdef Mat  Pmat = ref_Mat(P[0])
     (jacobian, args, kargs) = TS_getJacobian(ts)
     retv = jacobian(Ts, toReal(t), Xvec, Jmat, Pmat, *args, **kargs)
+    s[0] = matstructure(retv)
+    cdef PetscMat Jtmp = NULL, Ptmp = NULL
+    Jtmp = J[0]; J[0] = Jmat.mat; Jmat.mat = Jtmp
+    Ptmp = P[0]; P[0] = Pmat.mat; Pmat.mat = Ptmp
+    return 0
+
+# -----------------------------------------------------------------------------
+
+cdef inline object TS_getIFunction(PetscTS ts):
+    return Object_getAttr(<PetscObject>ts, '__function__')
+
+cdef inline int TS_setIFunction(PetscTS ts, PetscVec f, 
+                                object function) except -1:
+    CHKERR( TSSetIFunction(ts, TS_IFunction, NULL) )
+    CHKERR( PetscObjectCompose(<PetscObject>ts, 
+                                "__i_funcvec__", <PetscObject>f) )
+    Object_setAttr(<PetscObject>ts, '__function__', function)
+    return 0
+
+cdef int TS_IFunction(PetscTS ts,
+                      PetscReal t,
+                      PetscVec  x,
+                      PetscVec  xdot,
+                      PetscVec  f,
+                      void* ctx) except PETSC_ERR_PYTHON with gil:
+    cdef TS  Ts    = ref_TS(ts)
+    cdef Vec Xvec  = ref_Vec(x)
+    cdef Vec XDvec = ref_Vec(xdot)
+    cdef Vec Fvec  = ref_Vec(f)
+    (function, args, kargs) = TS_getIFunction(ts)
+    function(Ts, toReal(t), Xvec, XDvec, Fvec, *args, **kargs)
+    return 0
+
+cdef inline object TS_getIJacobian(PetscTS ts):
+    return Object_getAttr(<PetscObject>ts, '__jacobian__')
+
+cdef inline int TS_setIJacobian(PetscTS ts,
+                                PetscMat J, PetscMat P,
+                                object jacobian) except -1:
+    CHKERR( TSSetIJacobian(ts, J, P, TS_IJacobian, NULL) )
+    CHKERR( PetscObjectCompose(<PetscObject>ts,
+                                "__i_pjacmat__", <PetscObject>P) )
+    Object_setAttr(<PetscObject>ts, '__jacobian__', jacobian)
+    return 0
+
+cdef int TS_IJacobian(PetscTS ts,
+                      PetscReal t,
+                      PetscVec  x,
+                      PetscVec  xdot,
+                      PetscReal a,
+                      PetscMat  *J,
+                      PetscMat  *P,
+                      PetscMatStructure* s,
+                      void* ctx) except PETSC_ERR_PYTHON with gil:
+    cdef TS   Ts    = ref_TS(ts)
+    cdef Vec  Xvec  = ref_Vec(x)
+    cdef Vec  XDvec = ref_Vec(xdot)
+    cdef Mat  Jmat  = ref_Mat(J[0])
+    cdef Mat  Pmat  = ref_Mat(P[0])
+    (jacobian, args, kargs) = TS_getJacobian(ts)
+    retv = jacobian(Ts, toReal(t), Xvec, XDvec, toReal(a), 
+                    Jmat, Pmat, *args, **kargs)
     s[0] = matstructure(retv)
     cdef PetscMat Jtmp = NULL, Ptmp = NULL
     Jtmp = J[0]; J[0] = Jmat.mat; Jmat.mat = Jtmp

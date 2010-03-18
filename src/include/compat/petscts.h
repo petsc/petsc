@@ -18,7 +18,24 @@
 #define TSSSP             "ssp"
 #endif
 
-
+#if (PETSC_VERSION_(3,0,0) || \
+     PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2))
+typedef PetscErrorCode (*TSIFunction)(TS,PetscReal,Vec,Vec,Vec,void*);
+static PetscErrorCode TSSetIFunction(TS ts,TSIFunction f,void *ctx)
+{
+  PetscFunctionBegin;
+  SETERRQ(PETSC_ERR_SUP,"TSSetIFunction() not supported in this PETSc version");
+  PetscFunctionReturn(0);
+}
+typedef PetscErrorCode (*TSIJacobian)(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
+static PetscErrorCode TSSetIJacobian(TS ts,Mat A,Mat B,TSIJacobian j,void *ctx)
+{
+  PetscFunctionBegin;
+  SETERRQ(PETSC_ERR_SUP,"TSSetIJacobian() not supported in this PETSc version");
+  PetscFunctionReturn(0);
+}
+#endif
 
 #if PETSC_VERSION_(2,3,2)
 #undef __FUNCT__

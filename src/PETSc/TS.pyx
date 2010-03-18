@@ -1,4 +1,4 @@
-# --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 class TSType(object):
     # native
@@ -23,7 +23,7 @@ class TSProblemType(object):
     LINEAR    = TS_LINEAR
     NONLINEAR = TS_NONLINEAR
 
-# --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 cdef class TS(Object):
 
@@ -95,27 +95,12 @@ cdef class TS(Object):
     def setFunction(self, function, Vec f not None, *args, **kargs):
         TS_setFunction(self.ts, f.vec, (function, args, kargs))
 
-    def getFunction(self):
-        cdef Vec f = Vec()
-        CHKERR( TSGetRHSFunction(self.ts, &f.vec, NULL, NULL) )
-        PetscIncref(<PetscObject>f.vec)
-        cdef object fun = TS_getFunction(self.ts)
-        return (f, fun)
-
     def setJacobian(self, jacobian, Mat J, Mat P=None, *args, **kargs):
         cdef PetscMat Jmat=NULL
         if J is not None: Jmat = J.mat
         cdef PetscMat Pmat = Jmat
         if P is not None: Pmat = P.mat
         TS_setJacobian(self.ts, Jmat, Pmat, (jacobian, args, kargs))
-
-    def getJacobian(self):
-        cdef Mat J = Mat(), P = Mat()
-        CHKERR( TSGetRHSJacobian(self.ts, &J.mat, &P.mat, NULL, NULL) )
-        PetscIncref(<PetscObject>J.mat)
-        PetscIncref(<PetscObject>P.mat)
-        cdef object jac = TS_getJacobian(self.ts)
-        return (J, P, jac)
 
     def computeFunction(self, t, Vec x not None, Vec f not None):
         cdef PetscReal time = asReal(t)
@@ -126,8 +111,55 @@ cdef class TS(Object):
         cdef PetscMat *jmat = &J.mat, *pmat = &J.mat
         if P is not None: pmat = &P.mat
         cdef PetscMatStructure flag = MAT_DIFFERENT_NONZERO_PATTERN
-        CHKERR( TSComputeRHSJacobian(self.ts, time, x.vec, jmat, pmat, &flag) )
+        CHKERR( TSComputeRHSJacobian(self.ts, time, x.vec, 
+                                     jmat, pmat, &flag) )
         return flag
+
+    def getFunction(self):
+        cdef Vec f = Vec()
+        CHKERR( TSGetRHSFunction(self.ts, &f.vec, NULL, NULL) )
+        PetscIncref(<PetscObject>f.vec)
+        cdef object fun = TS_getFunction(self.ts)
+        return (f, fun)
+
+    def getJacobian(self):
+        cdef Mat J = Mat(), P = Mat()
+        CHKERR( TSGetRHSJacobian(self.ts, &J.mat, &P.mat, NULL, NULL) )
+        PetscIncref(<PetscObject>J.mat)
+        PetscIncref(<PetscObject>P.mat)
+        cdef object jac = TS_getJacobian(self.ts)
+        return (J, P, jac)
+
+    #
+
+    def setIFunction(self, function, Vec f not None, *args, **kargs):
+        TS_setIFunction(self.ts, f.vec, (function, args, kargs))
+
+    def setIJacobian(self, jacobian, Mat J, Mat P=None, *args, **kargs):
+        cdef PetscMat Jmat=NULL
+        if J is not None: Jmat = J.mat
+        cdef PetscMat Pmat = Jmat
+        if P is not None: Pmat = P.mat
+        TS_setIJacobian(self.ts, Jmat, Pmat, (jacobian, args, kargs))
+
+    def computeIFunction(self, 
+                         t, Vec x not None, Vec xdot not None,
+                         Vec f not None):
+        cdef PetscReal time = asReal(t)
+        CHKERR( TSComputeIFunction(self.ts, time, x.vec, xdot.vec, f.vec) )
+
+    def computeIJacobian(self, 
+                         t, Vec x not None, Vec xdot not None, a, 
+                         Mat J not None, Mat P=None):
+        cdef PetscReal time  = asReal(t)
+        cdef PetscReal shift = asReal(a)
+        cdef PetscMat *jmat = &J.mat, *pmat = &J.mat
+        if P is not None: pmat = &P.mat
+        cdef PetscMatStructure flag = MAT_DIFFERENT_NONZERO_PATTERN
+        CHKERR( TSComputeIJacobian(self.ts, time, x.vec, xdot.vec, shift,
+                                   jmat, pmat, &flag) )
+        return flag
+    #
 
     def setSolution(self, Vec u not None):
         CHKERR( TSSetSolution(self.ts,  u.vec) )
@@ -137,6 +169,7 @@ cdef class TS(Object):
         CHKERR( TSGetSolution(self.ts, &u.vec) )
         PetscIncref(<PetscObject>u.vec)
         return u
+    #
 
     def getSNES(self):
         cdef SNES snes = SNES()
@@ -367,9 +400,9 @@ cdef class TS(Object):
         def __set__(self, value):
             self.setUseFD(value)
 
-# --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 del TSType
 del TSProblemType
 
-# --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
