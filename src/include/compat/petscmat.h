@@ -6,6 +6,22 @@
 #if (PETSC_VERSION_(3,0,0) || \
      PETSC_VERSION_(2,3,3) || \
      PETSC_VERSION_(2,3,2))
+#define MATHYPRESTRUCT  "hyprestruct"
+#define MATHYPRESSTRUCT "hypresstruct"
+#define MATSUBMATRIX    "submatrix"
+#define MATORDERING_FLOW "flow"
+#define MATORDERING_AMD  "amd"
+#endif
+
+#if (PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2))
+#define MATTRANSPOSEMAT    "transpose"
+#define MATSCHURCOMPLEMENT "schurcomplement"
+#endif
+
+#if (PETSC_VERSION_(3,0,0) || \
+     PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2))
 typedef PetscErrorCode MatNullSpaceFunction(Vec,void*);
 #else
 typedef PetscErrorCode MatNullSpaceFunction(MatNullSpace,Vec,void*);

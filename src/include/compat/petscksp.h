@@ -3,10 +3,18 @@
 
 #include "private/kspimpl.h"
 
+#if (PETSC_VERSION_(3,0,0) || \
+     PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2))
+#define KSPBROYDEN "broyden"
+#define KSPGCR     "gcr"
+#endif
+
 #if (PETSC_VERSION_(2,3,3) || \
      PETSC_VERSION_(2,3,2))
-#define KSPNASH "nash"
-#define KSPGLTR "gltr"
+#define KSPNASH  "nash"
+#define KSPGLTR  "gltr"
+#define KSPIBCGS "ibcgs"
 #endif
 
 #if PETSC_VERSION_(2,3,2)

@@ -3,6 +3,16 @@
 
 #include "private/snesimpl.h"
 
+#if !defined(SNESPICARD)
+#define SNESPICARD "picard"
+#endif
+
+#if (PETSC_VERSION_(3,0,0) || \
+     PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2))
+#define SNESPICARD "picard"
+#endif
+
 #if (PETSC_VERSION_(3,0,0) || \
      PETSC_VERSION_(2,3,3) || \
      PETSC_VERSION_(2,3,2))
