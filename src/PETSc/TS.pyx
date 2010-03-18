@@ -11,13 +11,13 @@ class TSType(object):
     THETA           = TSTHETA
     GL              = TSGL
     SSP             = TSSSP
+    #
+    PYTHON = TSPYTHON
     # aliases
     FE = EULER
     BE = BEULER
     CN = CRANK_NICHOLSON
     RK = RUNGE_KUTTA
-    #
-    PYTHON = TSPYTHON
 
 class TSProblemType(object):
     LINEAR    = TS_LINEAR

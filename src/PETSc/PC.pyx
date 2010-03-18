@@ -2,31 +2,41 @@
 
 class PCType(object):
     # native
-    NONE       = PCNONE
-    JACOBI     = PCJACOBI
-    SOR        = PCSOR
-    LU         = PCLU
-    SHELL      = PCSHELL
-    BJACOBI    = PCBJACOBI
-    MG         = PCMG
-    EISENSTAT  = PCEISENSTAT
-    ILU        = PCILU
-    ICC        = PCICC
-    ASM        = PCASM
-    KSP        = PCKSP
-    COMPOSITE  = PCCOMPOSITE
-    REDUNDANT  = PCREDUNDANT
-    SPAI       = PCSPAI
-    NN         = PCNN
-    CHOLESKY   = PCCHOLESKY
-    PBJACOBI   = PCPBJACOBI
-    MAT        = PCMAT
-    HYPRE      = PCHYPRE
-    FIELDSPLIT = PCFIELDSPLIT
-    TFS        = PCTFS
-    ML         = PCML
-    PROMETHEUS = PCPROMETHEUS
-    GALERKIN   = PCGALERKIN
+    NONE         = PCNONE
+    JACOBI       = PCJACOBI
+    SOR          = PCSOR
+    LU           = PCLU
+    SHELL        = PCSHELL
+    BJACOBI      = PCBJACOBI
+    MG           = PCMG
+    EISENSTAT    = PCEISENSTAT
+    ILU          = PCILU
+    ICC          = PCICC
+    ASM          = PCASM
+    KSP          = PCKSP
+    COMPOSITE    = PCCOMPOSITE
+    REDUNDANT    = PCREDUNDANT
+    SPAI         = PCSPAI
+    NN           = PCNN
+    CHOLESKY     = PCCHOLESKY
+    PBJACOBI     = PCPBJACOBI
+    MAT          = PCMAT
+    HYPRE        = PCHYPRE
+    FIELDSPLIT   = PCFIELDSPLIT
+    TFS          = PCTFS
+    ML           = PCML
+    PROMETHEUS   = PCPROMETHEUS
+    GALERKIN     = PCGALERKIN
+    EXOTIC       = PCEXOTIC
+    OPENMP       = PCOPENMP
+    SUPPORTGRAPH = PCSUPPORTGRAPH
+    ASA          = PCASA
+    CP           = PCCP
+    BFBT         = PCBFBT
+    LSC          = PCLSC
+    PFMG         = PCPFMG
+    SYSPFMG      = PCSYSPFMG
+    REDISTRIBUTE = PCREDISTRIBUTE
     #
     PYTHON = PCPYTHON
 

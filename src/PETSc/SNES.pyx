@@ -1,8 +1,9 @@
 # --------------------------------------------------------------------
 
 class SNESType(object):
-    LS = SNESLS
-    TR = SNESTR
+    LS     = SNESLS
+    TR     = SNESTR
+    PICARD = SNESPICARD
     #
     PYTHON = SNESPYTHON
 

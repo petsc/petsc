@@ -31,6 +31,22 @@ cdef extern from "petscts.h" nogil:
                                             PetscMatStructure*,
                                             void*) except PETSC_ERR_PYTHON
 
+    ctypedef int (*PetscTSIFunctionFunction)(PetscTS,
+                                             PetscReal,
+                                             PetscVec,
+                                             PetscVec,
+                                             PetscVec,
+                                             void*) except PETSC_ERR_PYTHON
+    ctypedef int (*PetscTSIJacobianFunction)(PetscTS,
+                                             PetscReal,
+                                             PetscVec,
+                                             PetscVec,
+                                             PetscReal,
+                                             PetscMat*,
+                                             PetscMat*,
+                                             MatStructure*,
+                                             void*) except PETSC_ERR_PYTHON
+
     ctypedef int (*PetscTSMonitorFunction)(PetscTS,
                                            PetscInt,
                                            PetscReal,
@@ -56,15 +72,20 @@ cdef extern from "petscts.h" nogil:
 
     int TSSetSolution(PetscTS,PetscVec)
     int TSGetSolution(PetscTS,PetscVec*)
-    int TSSetRHSFunction(PetscTS,PetscVec,PetscTSFunctionFunction,void*)
     int TSGetRHSFunction(PetscTS,PetscVec*,PetscTSFunctionFunction*,void*)
-    int TSSetRHSJacobian(PetscTS,PetscMat,PetscMat,PetscTSJacobianFunction,void*)
     int TSGetRHSJacobian(PetscTS,PetscMat*,PetscMat*,PetscTSJacobianFunction*,void**)
+    int TSSetRHSFunction(PetscTS,PetscVec,PetscTSFunctionFunction,void*)
+    int TSSetRHSJacobian(PetscTS,PetscMat,PetscMat,PetscTSJacobianFunction,void*)
+    int TSSetIFunction(PetscTS,PetscTSIFunctionFunction,void*)
+    int TSSetIJacobian(PetscTS,PetscMat,PetscMat,PetscTSIJacobianFunction,void*)
+
     int TSGetKSP(PetscTS,PetscKSP*)
     int TSGetSNES(PetscTS,PetscSNES*)
 
     int TSComputeRHSFunction(PetscTS,PetscReal,PetscVec,PetscVec)
     int TSComputeRHSJacobian(PetscTS,PetscReal,PetscVec,PetscMat*,PetscMat*,PetscMatStructure*)
+    int TSComputeIFunction(PetscTS,PetscReal,PetscVec,PetscVec,PetscVec,)
+    int TSComputeIJacobian(PetscTS,PetscReal,PetscVec,PetscVec,PetscMat*,PetscMat*,PetscMatStructure*)
 
     int TSSetTime(PetscTS,PetscReal)
     int TSGetTime(PetscTS,PetscReal*)

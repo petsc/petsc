@@ -5,6 +5,7 @@ class KSPType(object):
     CHEBYCHEV  = KSPCHEBYCHEV
     CG         = KSPCG
     CGNE       = KSPCGNE
+    NASH       = KSPNASH
     STCG       = KSPSTCG
     GLTR       = KSPGLTR
     GMRES      = KSPGMRES
@@ -24,6 +25,8 @@ class KSPType(object):
     MINRES     = KSPMINRES
     SYMMLQ     = KSPSYMMLQ
     LCD        = KSPLCD
+    BROYDEN    = KSPBROYDEN
+    GCR        = KSPGCR
     #
     PYTHON = KSPPYTHON
 

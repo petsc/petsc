@@ -26,6 +26,17 @@ cdef extern from "petscpc.h" nogil:
     PetscPCType PCML
     PetscPCType PCPROMETHEUS
     PetscPCType PCGALERKIN
+    PetscPCType PCEXOTIC
+    PetscPCType PCOPENMP
+    PetscPCType PCSUPPORTGRAPH
+    PetscPCType PCASA
+    PetscPCType PCCP
+    PetscPCType PCBFBT
+    PetscPCType PCLSC
+    #PetscPCType PCPYTHON
+    PetscPCType PCPFMG
+    PetscPCType PCSYSPFMG
+    PetscPCType PCREDISTRIBUTE
 
     ctypedef enum PetscPCSide "PCSide":
         PC_LEFT
