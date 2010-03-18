@@ -7361,6 +7361,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal f
   if (fill < 1.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
   ierr = MatPreallocated(A);CHKERRQ(ierr);
 
+  if (!A->ops->ptap) {
+    const MatType mattype;
+    ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
+    SETERRQ1(PETSC_ERR_SUP,"Matrix of type <%s> does not support PtAP",mattype);
+  }
   ierr = PetscLogEventBegin(MAT_PtAP,A,P,0,0);CHKERRQ(ierr); 
   ierr = (*A->ops->ptap)(A,P,scall,fill,C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_PtAP,A,P,0,0);CHKERRQ(ierr); 
