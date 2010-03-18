@@ -295,7 +295,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const Ma
   PetscFunctionBegin; 
   // Uncomment the oldatastruct part only while testing new data structure for MatSolve() 
   PetscTruth         olddatastruct=PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-ilu_old",&olddatastruct,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-lu_old",&olddatastruct,PETSC_NULL);CHKERRQ(ierr);
   if(olddatastruct){
     ierr = MatLUFactorSymbolic_SeqAIJ_inplace(B,A,isrow,iscol,info);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -561,18 +561,9 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
         pv[j] = rtmp[pj[j]]; rs += PetscAbsScalar(pv[j]);
       }
 
-      /* MatPivotCheck() */
       sctx.rs  = rs;
       sctx.pv  = rtmp[i];
-      if (info->shifttype == (PetscReal)MAT_SHIFT_NONZERO){
-        ierr = MatPivotCheck_nz(info,sctx,i);CHKERRQ(ierr);
-      } else if (info->shifttype == (PetscReal) MAT_SHIFT_POSITIVE_DEFINITE){
-        ierr = MatPivotCheck_pd(info,sctx,i);CHKERRQ(ierr);
-      } else if (info->shifttype == (PetscReal)MAT_SHIFT_INBLOCKS){
-        ierr = MatPivotCheck_inblocks(info,sctx,i);CHKERRQ(ierr);       
-      } else {
-        ierr = MatPivotCheck_none(info,sctx,i);CHKERRQ(ierr);   
-      }
+      ierr = MatPivotCheck(info,sctx,i);CHKERRQ(ierr);
       rtmp[i] = sctx.pv;
 
       /* Mark diagonal and invert diagonal for simplier triangular solves */
@@ -2184,15 +2175,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *
       /* MatPivotCheck() */
       sctx.rs  = rs;
       sctx.pv  = dk;
-      if (info->shifttype == (PetscReal)MAT_SHIFT_NONZERO){
-        ierr = MatPivotCheck_nz(info,sctx,k);CHKERRQ(ierr);
-      } else if (info->shifttype == (PetscReal)MAT_SHIFT_POSITIVE_DEFINITE){
-        ierr = MatPivotCheck_pd(info,sctx,k);CHKERRQ(ierr);
-      } else if (info->shifttype == (PetscReal)MAT_SHIFT_INBLOCKS){
-        ierr = MatPivotCheck_inblocks(info,sctx,k);CHKERRQ(ierr);       
-      } else {
-        ierr = MatPivotCheck_none(info,sctx,k);CHKERRQ(ierr); 
-      }
+      ierr = MatPivotCheck(info,sctx,i);CHKERRQ(ierr);
       dk = sctx.pv;
  
       ba[bdiag[k]] = 1.0/dk; /* U(k,k) */

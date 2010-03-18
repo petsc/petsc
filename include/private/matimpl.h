@@ -455,76 +455,83 @@ EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
   newshift = _newshift;\
 }
 
-#define MatPivotCheck_nz(info,sctx,row) 0;\
-{\
-  PetscReal _rs   = sctx.rs;\
-  PetscReal _zero = info->zeropivot*_rs;\
-  if (PetscAbsScalar(sctx.pv) <= _zero){\
-    /* force |diag| > zeropivot*rs */\
-    if (!sctx.nshift){\
-      sctx.shift_amount = info->shiftamount;\
-    } else {\
-      sctx.shift_amount *= 2.0;\
-    }\
-    sctx.useshift = PETSC_TRUE;\
-    (sctx.nshift)++;\
-    break;          \
-  } \
+PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_nz(const MatFactorInfo *info,FactorShiftCtx sctx,PetscInt row)
+{
+  PetscReal _rs   = sctx.rs;
+  PetscReal _zero = info->zeropivot*_rs;
+
+  PetscFunctionBegin;
+  if (PetscAbsScalar(sctx.pv) <= _zero){
+    /* force |diag| > zeropivot*rs */
+    if (!sctx.nshift) sctx.shift_amount = info->shiftamount;
+    else sctx.shift_amount *= 2.0;
+    sctx.useshift = PETSC_TRUE;
+    (sctx.nshift)++;
+  }
+  PetscFunctionReturn(0);
 }
 
-#define MatPivotCheck_pd(info,sctx,row) 0;\
-{\
-  PetscReal _rs   = sctx.rs;\
-  PetscReal _zero = info->zeropivot*_rs;\
-  if (PetscRealPart(sctx.pv) <= _zero){\
-    /* force matfactor to be diagonally dominant */\
-    if (sctx.nshift > sctx.nshift_max) {\
-      ierr = MatFactorDumpMatrix(A);CHKERRQ(ierr);\
-      SETERRQ1(PETSC_ERR_CONV_FAILED,"Unable to determine shift to enforce positive definite preconditioner after %d tries",sctx.nshift);\
-    } else if (sctx.nshift == sctx.nshift_max) {\
-      sctx.shift_fraction = sctx.shift_hi;\
-      sctx.useshift        = PETSC_TRUE;\
-    } else {\
-      sctx.shift_lo = sctx.shift_fraction;\
-      sctx.shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;\
-      sctx.useshift = PETSC_TRUE;\
-    }\
-    sctx.shift_amount = sctx.shift_fraction * sctx.shift_top;\
-    sctx.nshift++;\
-    break; \
-  }\
+PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_pd(const MatFactorInfo *info,FactorShiftCtx sctx,PetscInt row)
+{
+  PetscReal _rs   = sctx.rs;
+  PetscReal _zero = info->zeropivot*_rs;
+
+  PetscFunctionBegin;
+  if (PetscRealPart(sctx.pv) <= _zero){
+    /* force matfactor to be diagonally dominant */
+    if (sctx.nshift == sctx.nshift_max) {
+      sctx.shift_fraction = sctx.shift_hi;
+      sctx.useshift        = PETSC_TRUE;
+    } else {
+      sctx.shift_lo = sctx.shift_fraction;
+      sctx.shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;
+      sctx.useshift = PETSC_TRUE;
+    }
+    sctx.shift_amount = sctx.shift_fraction * sctx.shift_top;
+    sctx.nshift++;
+  }
+  PetscFunctionReturn(0);
 }
 
-#define MatPivotCheck_inblocks(info,sctx,row) 0;\
-{\
-  PetscReal _zero = info->zeropivot;\
-  if (PetscAbsScalar(sctx.pv) <= _zero){\
-    sctx.pv          += info->shiftamount;\
-    sctx.shift_amount = 0.0;\
-    sctx.nshift++;\
-  }\
+PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_inblocks(const MatFactorInfo *info,FactorShiftCtx sctx,PetscInt row)
+{
+  PetscReal _zero = info->zeropivot;
+
+  PetscFunctionBegin;
+  if (PetscAbsScalar(sctx.pv) <= _zero){
+    sctx.pv          += info->shiftamount;
+    sctx.shift_amount = 0.0;
+    sctx.nshift++;
+  }
+  PetscFunctionReturn(0);
 }
 
-#define MatPivotCheck_none(info,sctx,row) 0;\
-{\
-  PetscReal _zero = info->zeropivot;\
-  if (PetscAbsScalar(sctx.pv) <= _zero){\
-    ierr = MatFactorDumpMatrix(A);CHKERRQ(ierr);\
-    SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G",row,PetscAbsScalar(sctx.pv),_zero); \
-  } \
+PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(const MatFactorInfo *info,FactorShiftCtx sctx,PetscInt row)
+{
+  PetscReal _zero = info->zeropivot;
+
+  PetscFunctionBegin;
+  if (PetscAbsScalar(sctx.pv) <= _zero){
+    SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G",row,PetscAbsScalar(sctx.pv),_zero);
+  }
+  PetscFunctionReturn(0);
 }
 
-#define MatPivotCheck(info,sctx,row) 0;\
-{\
-  if (info->shifttype == (PetscReal)MAT_SHIFT_NONZERO){\
-    ierr = MatPivotCheck_nz(info,sctx,row);CHKERRQ(ierr);\
-  } else if (info->shifttype == (PetscReal)MAT_SHIFT_POSITIVE_DEFINITE){\
-    ierr = MatPivotCheck_pd(info,sctx,row);CHKERRQ(ierr);\
-  } else if (info->shifttype == (PetscReal)MAT_SHIFT_INBLOCKS){\
-    ierr = MatPivotCheck_inblocks(info,sctx,srow);CHKERRQ(ierr);\
-  } else {\
-    ierr = MatPivotCheck_none(info,sctx,row);CHKERRQ(ierr);\
-  }\
+PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(const MatFactorInfo *info,FactorShiftCtx sctx,PetscInt row)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (info->shifttype == (PetscReal)MAT_SHIFT_NONZERO){
+    ierr = MatPivotCheck_nz(info,sctx,row);CHKERRQ(ierr);
+  } else if (info->shifttype == (PetscReal)MAT_SHIFT_POSITIVE_DEFINITE){
+    ierr = MatPivotCheck_pd(info,sctx,row);CHKERRQ(ierr);
+  } else if (info->shifttype == (PetscReal)MAT_SHIFT_INBLOCKS){
+    ierr = MatPivotCheck_inblocks(info,sctx,row);CHKERRQ(ierr);
+  } else {
+    ierr = MatPivotCheck_none(info,sctx,row);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }
 
 /* 
