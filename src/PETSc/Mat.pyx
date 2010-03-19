@@ -292,6 +292,12 @@ cdef class Mat(Object):
         PetscCLEAR(self.obj); self.mat = newmat
         return self
 
+    def createTranspose(self, Mat mat not None):
+        cdef PetscMat newmat = NULL
+        CHKERR( MatCreateTranspose(mat.mat, &newmat) )
+        PetscCLEAR(self.obj); self.mat = newmat
+        return self
+
     def createLRC(self, Mat A not None, Mat U not None, Mat V not None):
         cdef PetscMat newmat = NULL
         CHKERR( MatCreateLRC(A.mat, U.mat, V.mat, &newmat) )

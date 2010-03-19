@@ -173,6 +173,27 @@ class BaseTestMatAnyAIJ(object):
         self.A.getSubMatrix(rows, cols, S)
         S.destroy()
 
+    def testCreateTranspose(self):
+        self._preallocate()
+        self._set_values_ijv()
+        self.A.assemble()
+        A = self.A
+        AT = PETSc.Mat().createTranspose(A)
+        x, y = A.getVecs()
+        xt, yt = AT.getVecs()
+        #
+        y.setRandom()
+        A.multTranspose(y, x)
+        y.copy(xt)
+        AT.mult(xt, yt)
+        self.assertTrue(yt.equal(x))
+        #
+        x.setRandom()
+        A.mult(x, y)
+        x.copy(yt)
+        AT.multTranspose(yt, xt)
+        self.assertTrue(xt.equal(y))
+
     def _get_aijv(self):
         return (self.rows, self.xadj, self.adjy, self.vals,)
 

@@ -58,6 +58,27 @@ class BaseTestMatAnyDense(object):
         self.assertEqual(self.A.getLocalSize(), B.getSize())
         B.destroy()
 
+    def testCreateTranspose(self):
+        self._preallocate()
+        self._set_values()
+        self.A.assemble()
+        A = self.A
+        AT = PETSc.Mat().createTranspose(A)
+        x, y = A.getVecs()
+        xt, yt = AT.getVecs()
+        #
+        y.setRandom()
+        A.multTranspose(y, x)
+        y.copy(xt)
+        AT.mult(xt, yt)
+        self.assertTrue(yt.equal(x))
+        #
+        x.setRandom()
+        A.mult(x, y)
+        x.copy(yt)
+        AT.multTranspose(yt, xt)
+        self.assertTrue(xt.equal(y))
+
     def _preallocate(self):
         self.A.setPreallocationDense(None)
 

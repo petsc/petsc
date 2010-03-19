@@ -27,6 +27,23 @@ typedef PetscErrorCode MatNullSpaceFunction(Vec,void*);
 typedef PetscErrorCode MatNullSpaceFunction(MatNullSpace,Vec,void*);
 #endif
 
+#if (PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2))
+#undef __FUNCT__
+#define __FUNCT__ "MatCreateTranspose"
+static PETSC_UNUSED
+PetscErrorCode MatCreateTranspose_Compat(Mat A,Mat *B)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidPointer(B,2);
+  SETERRQ(PETSC_ERR_SUP,"MatCreateTranspose() "
+	  "not available in this PETSc version");
+  PetscFunctionReturn(0);
+}
+#define MatCreateTranspose MatCreateTranspose_Compat 
+#endif
+
 #if (PETSC_VERSION_(3,0,0) || \
      PETSC_VERSION_(2,3,3) || \
      PETSC_VERSION_(2,3,2))
@@ -121,10 +138,11 @@ PetscErrorCode MatGetSubMatrix_Compat(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat
 
 #if (PETSC_VERSION_(2,3,3) || \
      PETSC_VERSION_(2,3,2))
+
 #undef __FUNCT__
 #define __FUNCT__ "MatSetUp"
 static PETSC_UNUSED
-PetscErrorCode PETSCMAT_DLLEXPORT MatSetUp_Compat(Mat A)
+PetscErrorCode MatSetUp_Compat(Mat A)
 {
   PetscMPIInt    size;
   PetscErrorCode ierr;
@@ -300,7 +318,10 @@ PetscErrorCode MatSetBlockSize_Compat(Mat mat,PetscInt bs)
 #endif
 
 #if PETSC_VERSION_(2,3,2)
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRanges_Compat(Mat mat,const PetscInt *ranges[])
+#undef __FUNCT__
+#define __FUNCT__ "MatGetOwnershipRanges"
+static PETSC_UNUSED
+PetscErrorCode MatGetOwnershipRanges_Compat(Mat mat,const PetscInt *ranges[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

@@ -115,6 +115,7 @@ cdef extern from "petscmat.h" nogil:
     int MatScatterGetVecScatter(PetscMat,PetscScatter*)
 
     int MatCreateNormal(PetscMat,PetscMat*)
+    int MatCreateTranspose(PetscMat,PetscMat*)
     int MatCreateLRC(PetscMat,PetscMat,PetscMat,PetscMat*)
     int MatCreateShell(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,void*,PetscMat*)
 
