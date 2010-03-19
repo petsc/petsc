@@ -2,19 +2,13 @@
 /*
     This is included by sbaij.c to generate unsigned short and regular versions of these two functions
 */
-#undef  USHORT
-#if defined(USESHORT)
-#define USHORT _ushort
-#else
-#define USHORT
-#endif
-#define PETSCMAP1_a(a,b)  a ## b
-#define PETSCMAP1_b(a,b)  PETSCMAP1_a(a,b)
-#define PETSCMAP1(a)      PETSCMAP1_b(a,USHORT)
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqSBAIJ_1_Hermitian"
-PetscErrorCode PETSCMAP1(MatMult_SeqSBAIJ_1_Hermitian)(Mat A,Vec xx,Vec zz)
+#if defined(USESHORT)
+PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian_ushort(Mat A,Vec xx,Vec zz) 
+#else
+PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian(Mat A,Vec xx,Vec zz)
+#endif
 {
   Mat_SeqSBAIJ         *a = (Mat_SeqSBAIJ*)A->data;
   const PetscScalar    *x;
@@ -61,7 +55,11 @@ PetscErrorCode PETSCMAP1(MatMult_SeqSBAIJ_1_Hermitian)(Mat A,Vec xx,Vec zz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqSBAIJ_1"
-PetscErrorCode PETSCMAP1(MatMult_SeqSBAIJ_1)(Mat A,Vec xx,Vec zz)
+#if defined(USESHORT)
+PetscErrorCode MatMult_SeqSBAIJ_1_ushort(Mat A,Vec xx,Vec zz)
+#else
+PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
+#endif
 {
   Mat_SeqSBAIJ         *a = (Mat_SeqSBAIJ*)A->data;
   const PetscScalar    *x;
@@ -108,7 +106,11 @@ PetscErrorCode PETSCMAP1(MatMult_SeqSBAIJ_1)(Mat A,Vec xx,Vec zz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSOR_SeqSBAIJ"
-PetscErrorCode PETSCMAP1(MatSOR_SeqSBAIJ)(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+#if defined(USESHORT)
+PetscErrorCode MatSOR_SeqSBAIJ_ushort(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+#else
+PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+#endif
 {
   Mat_SeqSBAIJ         *a = (Mat_SeqSBAIJ*)A->data;
   const MatScalar      *aa=a->a,*v,*v1,*aidiag;
