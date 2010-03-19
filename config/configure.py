@@ -51,6 +51,23 @@ def check_petsc_arch(opts):
         opts.append(useName)
   return 0
 
+def chkcompaqf90():
+  for arg in sys.argv:
+    if (arg.find('win32fe') >= 0 and arg.find('f90') >=0):
+      return 1
+  return 0
+
+def chkcygwinlink():
+  if os.path.exists('/usr/bin/cygcheck.exe') and os.path.exists('/usr/bin/link.exe') and chkcompaqf90():
+      if '--ignore-cygwin-link' in sys.argv: return 0
+      print '==============================================================================='
+      print ' *** Cygwin /usr/bin/link.exe detected! Compiles with Compaq f90 can break! **'
+      print ' *** To workarround do: "mv /usr/bin/link.exe /usr/bin/link-cygwin.exe"     **'
+      print ' *** Or to ignore this check, use configure option: --ignore-cygwin-link    **'
+      print '==============================================================================='
+      sys.exit(3)
+  return 0
+
 def chkbrokencygwin():
   if os.path.exists('/usr/bin/cygcheck.exe'):
     buf = os.popen('/usr/bin/cygcheck.exe -c cygwin').read()
@@ -187,6 +204,7 @@ def petsc_configure(configure_options):
   chkusingwindowspython()
   # Threads don't work for cygwin & python-2.4, 2.5 etc..
   chkcygwinpythonver()
+  chkcygwinlink()
 
   # Should be run from the toplevel
   configDir = os.path.abspath('config')
