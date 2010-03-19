@@ -27,6 +27,26 @@ typedef PetscErrorCode MatNullSpaceFunction(Vec,void*);
 typedef PetscErrorCode MatNullSpaceFunction(MatNullSpace,Vec,void*);
 #endif
 
+#if (PETSC_VERSION_(3,0,0) ||  \
+     PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2))
+#undef __FUNCT__
+#define __FUNCT__ "MatCreateSubMatrix"
+static PETSC_UNUSED
+PetscErrorCode MatCreateSubMatrix_Compat(Mat A, IS r, IS c, Mat *B)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(r,IS_COOKIE,2);
+  PetscValidHeaderSpecific(c,IS_COOKIE,3);
+  PetscValidPointer(B,4);
+  SETERRQ(PETSC_ERR_SUP,"MatCreateSubMatrix() "
+	  "not available in this PETSc version");
+  PetscFunctionReturn(0);
+}
+#define MatCreateSubMatrix MatCreateSubMatrix_Compat 
+#endif
+
 #if (PETSC_VERSION_(2,3,3) || \
      PETSC_VERSION_(2,3,2))
 #undef __FUNCT__

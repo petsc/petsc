@@ -304,6 +304,15 @@ cdef class Mat(Object):
         PetscCLEAR(self.obj); self.mat = newmat
         return self
 
+    def createSubMatrix(self, Mat A not None,
+                        IS isrow not None, IS iscol=None):
+        if iscol is None: iscol = isrow
+        cdef PetscMat newmat = NULL
+        CHKERR( MatCreateSubMatrix(A.mat, isrow.iset, iscol.iset, &newmat) )
+        PetscCLEAR(self.obj); self.mat = newmat
+        return self
+        
+
     ## def createShell(self, size, context, comm=None):
     ##     raise NotImplementedError
     ##     cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)

@@ -117,6 +117,7 @@ cdef extern from "petscmat.h" nogil:
     int MatCreateNormal(PetscMat,PetscMat*)
     int MatCreateTranspose(PetscMat,PetscMat*)
     int MatCreateLRC(PetscMat,PetscMat,PetscMat,PetscMat*)
+    int MatCreateSubMatrix(PetscMat,PetscIS,PetscIS,PetscMat*)
     int MatCreateShell(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,void*,PetscMat*)
 
     int MatSetSizes(PetscMat,PetscInt,PetscInt,PetscInt,PetscInt)
