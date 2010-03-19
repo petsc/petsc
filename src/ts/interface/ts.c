@@ -2064,6 +2064,40 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetRHSJacobian(TS ts,Mat *J,Mat *M,void **ctx
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TSGetIJacobian"
+/*@C
+   TSGetIJacobian - Returns the implicit Jacobian at the present timestep.
+
+   Not Collective, but parallel objects are returned if TS is parallel
+
+   Input Parameter:
+.  ts  - The TS context obtained from TSCreate()
+
+   Output Parameters:
++  A   - The Jacobian of F(t,U,U_t)
+.  B   - The preconditioner matrix, often the same as A
+.  f   - The function to compute the matrices
+- ctx - User-defined context for Jacobian evaluation routine
+
+   Notes: You can pass in PETSC_NULL for any return argument you do not need.
+
+   Level: advanced
+
+.seealso: TSGetTimeStep(), TSGetRHSJacobian(), TSGetMatrices(), TSGetTime(), TSGetTimeStepNumber()
+
+.keywords: TS, timestep, get, matrix, Jacobian
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSGetIJacobian(TS ts,Mat *A,Mat *B,TSIJacobian *f,void **ctx)
+{
+  PetscFunctionBegin;
+  if (A) *A = ts->A;
+  if (B) *B = ts->B;
+  if (f) *f = ts->ops->ijacobian;
+  if (ctx) *ctx = ts->jacP;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "TSMonitorSolution"
 /*@C
