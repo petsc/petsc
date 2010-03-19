@@ -100,6 +100,11 @@ ${PETSC_DIR}/conf/rules</li>
         <li>BlockSolve95 interface is removed</li>
         <li>petsc.h and petscdef.h are replaced with petscsys.h and
 petscsysdef.h; while petsc.h now includes ALL PETSc include files.</li>
+        <li>win32fe [used for MS/Intel compiler builds on windows] now
+defaults to 'noautodetect' mode. However the previous behavior can be
+restored by using the option '--autodetect'. For eg: '--withcc=win32fe
+cl --autodetect'.  This works primarily with old VC6/VC7/Intel8 etc
+compilers anyway.</li>
       </ul>
       <ul>
       </ul>
