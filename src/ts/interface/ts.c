@@ -1439,8 +1439,8 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPreStep(TS ts)
     CHKMEMQ;
     ierr = (*ts->ops->prestep)(ts);CHKERRQ(ierr);
     CHKMEMQ;
+    PetscStackPop;
   }
-  PetscStackPop;
   PetscFunctionReturn(0);
 }
 
