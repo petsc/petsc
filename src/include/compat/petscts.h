@@ -69,7 +69,7 @@ PetscErrorCode TSComputeIJacobian(TS ts,
 #define __FUNCT__ "TSGetIJacobian"
 static PETSC_UNUSED
 PetscErrorCode TSGetIJacobian(TS ts,Mat *A,Mat *B,
-			      void **ctx)
+			      TSIJacobian *j,void **ctx)
 {
   PetscFunctionBegin;
   SETERRQ(PETSC_ERR_SUP,"TSGetIJacobian() "
