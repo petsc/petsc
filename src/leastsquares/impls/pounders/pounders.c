@@ -918,7 +918,9 @@ static PetscErrorCode TaoSolverDestroy_POUNDERS(TaoSolver tao)
       ierr = VecDestroy(mfqP->Xhist[i]); CHKERRQ(ierr);
       ierr = VecDestroy(mfqP->Fhist[i]); CHKERRQ(ierr);
   }
-  ierr = VecDestroy(mfqP->workxvec); CHKERRQ(ierr);
+  if (mfqP->workxvec) {
+    ierr = VecDestroy(mfqP->workxvec); CHKERRQ(ierr);
+  }
   ierr = PetscFree(mfqP->Xhist); CHKERRQ(ierr);
   ierr = PetscFree(mfqP->Fhist); CHKERRQ(ierr);
 
@@ -992,6 +994,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverCreate_POUNDERS(TaoSolver tao)
   mfqP->eta1 = 0.1;
   mfqP->gqt_rtol = 0.001;
   mfqP->gqt_maxits = 50;
+  mfqP->workxvec = 0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
