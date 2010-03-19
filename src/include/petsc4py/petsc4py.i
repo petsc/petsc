@@ -149,13 +149,13 @@ SWIG_AsVal_dec(long double)(SWIG_Object obj, long double *val) {
           fragment=SWIG_From_frag(float),
 	  fragment=SWIG_From_frag(int))
 {
-%#if   defined(PETSC_USE_SINGLE)
+%#if   defined(PETSC_USE_SCALAR_SINGLE) || defined(PETSC_USE_SINGLE)
 %define_as(SWIG_From(PetscReal), SWIG_From(float))
-%#elif defined(PETSC_USE_LONG_DOUBLE)
+%#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE) || defined(PETSC_USE_LONG_DOUBLE)
 %define_as(SWIG_From(PetscReal), SWIG_From(long double))
-%#elif defined(PETSC_USE_INT)
+%#elif defined(PETSC_USE_SCALAR_INT) || defined(PETSC_USE_INT)
 %define_as(SWIG_From(PetscReal), SWIG_From(int))
-%#else
+%#else /* (PETSC_USE_SCALAR_DOUBLE) || (PETSC_USE_DOUBLE) */
 %define_as(SWIG_From(PetscReal), SWIG_From(double))
 %#endif
 }

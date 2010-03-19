@@ -7,16 +7,16 @@
 # define NPY_PETSC_INT     NPY_INT
 #endif
 
-#if   defined(PETSC_USE_SINGLE)
+#if   defined(PETSC_USE_SCALAR_SINGLE) || defined(PETSC_USE_SINGLE)
 # define NPY_PETSC_REAL    NPY_FLOAT
 # define NPY_PETSC_COMPLEX NPY_CFLOAT
-#elif defined(PETSC_USE_LONG_DOUBLE)
+#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE) ||defined(PETSC_USE_LONG_DOUBLE)
 # define NPY_PETSC_REAL    NPY_LONGDOUBLE
 # define NPY_PETSC_COMPLEX NPY_CLONGDOUBLE
-#elif defined(PETSC_USE_INT)
+#elif defined(PETSC_USE_SCALAR_INT) || defined(PETSC_USE_INT)
 # define NPY_PETSC_REAL    NPY_INT
 # define NPY_PETSC_COMPLEX NPY_CFLOAT /* ??? */
-#else      /* PETSC_USE_DOUBLE */
+#else    /*  (PETSC_USE_SCALAR_DOUBLE) || (PETSC_USE_DOUBLE)  */
 # define NPY_PETSC_REAL    NPY_DOUBLE
 # define NPY_PETSC_COMPLEX NPY_CDOUBLE
 #endif
