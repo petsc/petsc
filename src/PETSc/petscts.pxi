@@ -72,12 +72,14 @@ cdef extern from "petscts.h" nogil:
 
     int TSSetSolution(PetscTS,PetscVec)
     int TSGetSolution(PetscTS,PetscVec*)
+
     int TSGetRHSFunction(PetscTS,PetscVec*,PetscTSFunctionFunction*,void*)
     int TSGetRHSJacobian(PetscTS,PetscMat*,PetscMat*,PetscTSJacobianFunction*,void**)
     int TSSetRHSFunction(PetscTS,PetscVec,PetscTSFunctionFunction,void*)
     int TSSetRHSJacobian(PetscTS,PetscMat,PetscMat,PetscTSJacobianFunction,void*)
     int TSSetIFunction(PetscTS,PetscTSIFunctionFunction,void*)
     int TSSetIJacobian(PetscTS,PetscMat,PetscMat,PetscTSIJacobianFunction,void*)
+    int TSGetIJacobian(PetscTS,PetscMat*,PetscMat*,PetscTSIJacobianFunction*,void**)
 
     int TSGetKSP(PetscTS,PetscKSP*)
     int TSGetSNES(PetscTS,PetscSNES*)
@@ -174,14 +176,11 @@ cdef int TS_Jacobian(PetscTS ts,
 # -----------------------------------------------------------------------------
 
 cdef inline object TS_getIFunction(PetscTS ts):
-    return Object_getAttr(<PetscObject>ts, '__function__')
+    return Object_getAttr(<PetscObject>ts, '__ifunction__')
 
-cdef inline int TS_setIFunction(PetscTS ts, PetscVec f, 
-                                object function) except -1:
+cdef inline int TS_setIFunction(PetscTS ts, object function) except -1:
     CHKERR( TSSetIFunction(ts, TS_IFunction, NULL) )
-    CHKERR( PetscObjectCompose(<PetscObject>ts, 
-                                "__i_funcvec__", <PetscObject>f) )
-    Object_setAttr(<PetscObject>ts, '__function__', function)
+    Object_setAttr(<PetscObject>ts, '__ifunction__', function)
     return 0
 
 cdef int TS_IFunction(PetscTS ts,
@@ -199,15 +198,15 @@ cdef int TS_IFunction(PetscTS ts,
     return 0
 
 cdef inline object TS_getIJacobian(PetscTS ts):
-    return Object_getAttr(<PetscObject>ts, '__jacobian__')
+    return Object_getAttr(<PetscObject>ts, '__ijacobian__')
 
 cdef inline int TS_setIJacobian(PetscTS ts,
                                 PetscMat J, PetscMat P,
                                 object jacobian) except -1:
     CHKERR( TSSetIJacobian(ts, J, P, TS_IJacobian, NULL) )
+    Object_setAttr(<PetscObject>ts, '__ijacobian__', jacobian)
     CHKERR( PetscObjectCompose(<PetscObject>ts,
-                                "__i_pjacmat__", <PetscObject>P) )
-    Object_setAttr(<PetscObject>ts, '__jacobian__', jacobian)
+                                "__ijacpmat__", <PetscObject>P) )
     return 0
 
 cdef int TS_IJacobian(PetscTS ts,
@@ -224,7 +223,7 @@ cdef int TS_IJacobian(PetscTS ts,
     cdef Vec  XDvec = ref_Vec(xdot)
     cdef Mat  Jmat  = ref_Mat(J[0])
     cdef Mat  Pmat  = ref_Mat(P[0])
-    (jacobian, args, kargs) = TS_getJacobian(ts)
+    (jacobian, args, kargs) = TS_getIJacobian(ts)
     retv = jacobian(Ts, toReal(t), Xvec, XDvec, toReal(a), 
                     Jmat, Pmat, *args, **kargs)
     s[0] = matstructure(retv)

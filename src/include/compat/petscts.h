@@ -22,17 +22,58 @@
      PETSC_VERSION_(2,3,3) || \
      PETSC_VERSION_(2,3,2))
 typedef PetscErrorCode (*TSIFunction)(TS,PetscReal,Vec,Vec,Vec,void*);
-static PetscErrorCode TSSetIFunction(TS ts,TSIFunction f,void *ctx)
+#undef __FUNCT__
+#define __FUNCT__ "TSSetIFunction"
+static PETSC_UNUSED
+PetscErrorCode TSSetIFunction(TS ts,TSIFunction f,void *ctx)
 {
   PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP,"TSSetIFunction() not supported in this PETSc version");
+  SETERRQ(PETSC_ERR_SUP,"TSSetIFunction() "
+	  "not supported in this PETSc version");
   PetscFunctionReturn(0);
 }
 typedef PetscErrorCode (*TSIJacobian)(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
-static PetscErrorCode TSSetIJacobian(TS ts,Mat A,Mat B,TSIJacobian j,void *ctx)
+#undef __FUNCT__
+#define __FUNCT__ "TSSetIJacobian"
+static PETSC_UNUSED
+PetscErrorCode TSSetIJacobian(TS ts,Mat A,Mat B,TSIJacobian j,void *ctx)
 {
   PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP,"TSSetIJacobian() not supported in this PETSc version");
+  SETERRQ(PETSC_ERR_SUP,"TSSetIJacobian() "
+	  "not supported in this PETSc version");
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "TSComputeIFunction"
+static PETSC_UNUSED
+PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec x,Vec Xdot,Vec f)
+{
+  PetscFunctionBegin;
+  SETERRQ(PETSC_ERR_SUP,"TSComputeIFunction() "
+	  "not supported in this PETSc version");
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "TSComputeIJacobian"
+static PETSC_UNUSED
+PetscErrorCode TSComputeIJacobian(TS ts,
+				  PetscReal t,Vec x,Vec Xdot,PetscReal a,
+				  Mat *A,Mat *B,MatStructure *flag)
+{
+  PetscFunctionBegin;
+  SETERRQ(PETSC_ERR_SUP,"TSComputeIJacobian() "
+	  "not supported in this PETSc version");
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "TSGetIJacobian"
+static PETSC_UNUSED
+PetscErrorCode TSGetIJacobian(TS ts,Mat *A,Mat *B,
+			      void **ctx)
+{
+  PetscFunctionBegin;
+  SETERRQ(PETSC_ERR_SUP,"TSGetIJacobian() "
+	  "not supported in this PETSc version");
   PetscFunctionReturn(0);
 }
 #endif

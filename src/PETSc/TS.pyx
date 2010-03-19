@@ -132,8 +132,8 @@ cdef class TS(Object):
 
     #
 
-    def setIFunction(self, function, Vec f not None, *args, **kargs):
-        TS_setIFunction(self.ts, f.vec, (function, args, kargs))
+    def setIFunction(self, function, *args, **kargs):
+        TS_setIFunction(self.ts, (function, args, kargs))
 
     def setIJacobian(self, jacobian, Mat J, Mat P=None, *args, **kargs):
         cdef PetscMat Jmat=NULL
@@ -159,6 +159,19 @@ cdef class TS(Object):
         CHKERR( TSComputeIJacobian(self.ts, time, x.vec, xdot.vec, shift,
                                    jmat, pmat, &flag) )
         return flag
+
+    def getIFunction(self):
+        cdef object function = TS_getIFunction(self.ts)
+        return function
+
+    def getIJacobian(self):
+        cdef Mat J = Mat(), P = Mat()
+        CHKERR( TSGetIJacobian(self.ts, &J.mat, &P.mat, NULL, NULL) )
+        PetscIncref(<PetscObject>J.mat)
+        PetscIncref(<PetscObject>P.mat)
+        cdef object jacobian = TS_getIJacobian(self.ts)
+        return (J, P, jacobian)
+
     #
 
     def setSolution(self, Vec u not None):
