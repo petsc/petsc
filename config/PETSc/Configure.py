@@ -281,6 +281,7 @@ class Configure(config.base.Configure):
   def dumpMachineInfo(self):
     import platform
     import time
+    import script
     fd = file(os.path.join(self.arch.arch,'include','petscmachineinfo.h'),'w')
     fd.write('static const char *petscmachineinfo = \"\\n\"\n')
     fd.write('\"-----------------------------------------\\n\"\n')
