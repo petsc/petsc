@@ -15,7 +15,7 @@ class CE(object):
         l = self.lambda_
         x[0] = l/(l*l+1)*(l*cos(t)+sin(t)) - l*l/(l*l+1)*exp(-l*t)
         x.assemble()
-    def evalFunction(self, ts, t, x, xdot, f):
+    def evalFunction(self, ts, t, x, xdot, a, f):
         l = self.lambda_
         f[0] = xdot[0] + l*(x[0] - cos(t))
         f.assemble()
@@ -59,7 +59,8 @@ class Monitor(object):
         PETSc.Sys.Print("step %3d t=%8.2e h=%8.2e error=%8.2e" %
                         (k, t, h, e), comm=self.ode.comm)
 
-ts.setMonitor(Monitor(ode))
+if OptDB.getBool('monitor_error', False):
+    ts.setMonitor(Monitor(ode))
 
 ts.setFromOptions()
 ode.evalSolution(0.0, x)
