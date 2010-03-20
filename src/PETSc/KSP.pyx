@@ -312,6 +312,11 @@ cdef class KSP(Object):
         cdef PetscTruth guess_knoll = PETSC_FALSE
         CHKERR( KSPGetInitialGuessKnoll(self.ksp, &guess_knoll) )
         return <bint>guess_knoll
+    
+    def setUseFischerGuess(self, model, size):
+        cdef PetscInt ival1 = asInt(model)
+        cdef PetscInt ival2 = asInt(size)
+        CHKERR( KSPSetUseFischerGuess(self.ksp, ival1, ival2) )
 
     # --- xxx ---
 

@@ -107,6 +107,23 @@ PetscErrorCode KSPSetNormType_Compat(KSP ksp, KSPNormType normtype)
 #define KSPSetNormType KSPSetNormType_Compat
 #endif
 
+#if (PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2))
+#undef __FUNCT__
+#define __FUNCT__ "KSPSetUseFischerGuess"
+static PETSC_UNUSED
+PetscErrorCode KSPSetUseFischerGuess(KSP ksp,PetscInt model,PetscInt size)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  SETERRQ(PETSC_ERR_SUP,"KSPSetUseFischerGuess()"
+	  " not available in this PETSc version");
+  PetscFunctionReturn(0);
+}
+#define KSPSetNormType KSPSetNormType_Compat
+#endif
+
 #if PETSC_VERSION_(2,3,2)
 #undef __FUNCT__
 #define __FUNCT__ "KSPGetNormType"

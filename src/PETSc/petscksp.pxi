@@ -105,6 +105,7 @@ cdef extern from "petscksp.h" nogil:
     int KSPGetInitialGuessNonzero(PetscKSP,PetscTruth*)
     int KSPSetInitialGuessKnoll(PetscKSP,PetscTruth)
     int KSPGetInitialGuessKnoll(PetscKSP,PetscTruth*)
+    int KSPSetUseFischerGuess(PetscKSP,PetscInt,PetscInt)
 
     int KSPGetComputeEigenvalues(PetscKSP,PetscTruth*)
     int KSPSetComputeEigenvalues(PetscKSP,PetscTruth)
