@@ -80,10 +80,10 @@ static PetscErrorCode TSDestroy_Theta(TS ts)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = VecDestroy(th->Xold);CHKERRQ(ierr);
-  ierr = VecDestroy(th->X);CHKERRQ(ierr);
-  ierr = VecDestroy(th->Xdot);CHKERRQ(ierr);
-  ierr = VecDestroy(th->res);CHKERRQ(ierr);
+  if (th->Xold) {ierr = VecDestroy(th->Xold);CHKERRQ(ierr);}
+  if (th->X)    {ierr = VecDestroy(th->X);CHKERRQ(ierr);}
+  if (th->Xdot) {ierr = VecDestroy(th->Xdot);CHKERRQ(ierr);}
+  if (th->res)  {ierr = VecDestroy(th->res);CHKERRQ(ierr);}
   ierr = PetscFree(th);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
