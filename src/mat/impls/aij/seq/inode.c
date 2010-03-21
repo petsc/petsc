@@ -1190,8 +1190,8 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
   const PetscInt   n=A->rmap->n,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bdiag=b->diag;
   PetscInt         i,j,k,nz,nzL,row,*pj;
   const PetscInt   *ajtmp,*bjtmp;
-  MatScalar        *pc,*pc1,*pc2,*pc3,mul1,mul2,mul3,*pv,*rtmp1,*rtmp2,*rtmp3;
-  const  MatScalar *aa=a->a,*v,*v1,*v2,*v3;
+  MatScalar        *pc,*pc1,*pc2,*pc3,*pc4,mul1,mul2,mul3,mul4,*pv,*rtmp1,*rtmp2,*rtmp3,*rtmp4;
+  const  MatScalar *aa=a->a,*v,*v1,*v2,*v3,*v4;
   FactorShiftCtx   sctx;
   const PetscInt   *ddiag;
   PetscReal        rs;
@@ -1226,10 +1226,11 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   
-  ierr  = PetscMalloc((3*n+1)*sizeof(PetscScalar),&rtmp1);CHKERRQ(ierr);
-  ierr  = PetscMemzero(rtmp1,(3*n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr  = PetscMalloc((4*n+1)*sizeof(PetscScalar),&rtmp1);CHKERRQ(ierr);
+  ierr  = PetscMemzero(rtmp1,(4*n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   rtmp2 = rtmp1 + n;  
   rtmp3 = rtmp2 + n;  
+  rtmp4 = rtmp3 + n;
   ics   = ic;
 
   node_max = a->inode.node_count; 
@@ -1238,12 +1239,12 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
     SETERRQ(PETSC_ERR_PLIB,"Matrix without inode information");
   }
 
-  /* If max inode size > 3, split it into two inodes.*/
+  /* If max inode size > 4, split it into two inodes.*/
   /* also map the inode sizes according to the ordering */
   ierr = PetscMalloc((n+1)* sizeof(PetscInt),&tmp_vec1);CHKERRQ(ierr);
   for (i=0,j=0; i<node_max; ++i,++j){
-    if (ns[i]>3) {
-      tmp_vec1[j] = ns[i]/2; /* Assuming ns[i] < =5  */
+    if (ns[i]>4) {
+      tmp_vec1[j] = 4;
       ++j; 
       tmp_vec1[j] = ns[i] - tmp_vec1[j-1];
     } else {
@@ -1632,6 +1633,213 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
         pc3  = b->a + bdiag[i+2];
         *pc3 = 1.0/sctx.pv; /* Mark diag[i+2] */
         break;
+      case 4:
+      /*----------*/
+        /* zero rtmp */
+        /* L part */
+        nz    = bi[i+1] - bi[i];
+        bjtmp = bj + bi[i];
+        for  (j=0; j<nz; j++) {
+          col = bjtmp[j];
+          rtmp1[col] = 0.0; rtmp2[col] = 0.0; rtmp3[col] = 0.0;rtmp4[col] = 0.0;
+        }
+
+        /* U part */
+        nz = bdiag[i]-bdiag[i+1];
+        bjtmp = bj + bdiag[i+1]+1;
+        for  (j=0; j<nz; j++) {
+          col = bjtmp[j];
+          rtmp1[col] = 0.0; rtmp2[col] = 0.0; rtmp3[col] = 0.0; rtmp4[col] = 0.0;
+        }
+   
+        /* load in initial (unfactored row) */
+        nz    = ai[r[i]+1] - ai[r[i]];
+        ajtmp = aj + ai[r[i]];
+        v1 = aa + ai[r[i]]; v2 = aa + ai[r[i]+1]; v3 = aa + ai[r[i]+2]; v4 = aa + ai[r[i]+3]; 
+        for (j=0; j<nz; j++) {
+          col = ics[ajtmp[j]];
+          rtmp1[col] = v1[j]; rtmp2[col] = v2[j]; rtmp3[col] = v3[j]; rtmp4[col] = v4[j];
+        }
+        /* ZeropivotApply(): shift the diagonal of the matrix  */
+        rtmp1[i] += sctx.shift_amount; rtmp2[i+1] += sctx.shift_amount; rtmp3[i+2] += sctx.shift_amount; rtmp4[i+3] += sctx.shift_amount;
+    
+        /* elimination */
+        bjtmp = bj + bi[i];
+        row   = *bjtmp++; /* pivot row */
+        nzL   = bi[i+1] - bi[i];
+        for(k=0; k < nzL;k++) {        
+          pc1 = rtmp1 + row;
+          pc2 = rtmp2 + row;
+          pc3 = rtmp3 + row;
+	  pc4 = rtmp4 + row;
+          if (*pc1 != 0.0 || *pc2 != 0.0 || *pc3 != 0.0 || *pc4 != 0.0) {
+            pv  = b->a + bdiag[row];
+            mul1 = *pc1*(*pv); mul2 = *pc2*(*pv); mul3 = *pc3*(*pv); mul4 = *pc4*(*pv);
+            *pc1 = mul1; *pc2 = mul2; *pc3 = mul3; *pc4 = mul4;
+
+            pj = b->j + bdiag[row+1]+1; /* beginning of U(row,:) */
+            pv = b->a + bdiag[row+1]+1;
+            nz = bdiag[row]-bdiag[row+1]-1; /* num of entries in U(row,:) excluding diag */
+            for (j=0; j<nz; j++){
+              col = pj[j];
+              rtmp1[col] -= mul1 * pv[j];
+              rtmp2[col] -= mul2 * pv[j];
+              rtmp3[col] -= mul3 * pv[j];
+	      rtmp4[col] -= mul4 * pv[j];
+            }
+            ierr = PetscLogFlops(8*nz);CHKERRQ(ierr);
+          }
+          row = *bjtmp++;
+        }
+
+        /* finished row i; check zero pivot, then stick row i into b->a */
+        rs  = 0.0;
+        /* L part */
+        pc1 = b->a + bi[i]; 
+        pj  = b->j + bi[i] ;
+        nz  = bi[i+1] - bi[i];
+        for (j=0; j<nz; j++) {
+          col = pj[j];
+          pc1[j] = rtmp1[col]; rs += PetscAbsScalar(pc1[j]);
+        }
+        /* U part */
+        pc1 = b->a + bdiag[i+1]+1; 
+        pj  = b->j + bdiag[i+1]+1;
+        nz  = bdiag[i] - bdiag[i+1] - 1; /* exclude diagonal */
+        for (j=0; j<nz; j++) {
+          col = pj[j];
+          pc1[j] = rtmp1[col]; rs += PetscAbsScalar(pc1[j]);
+        }
+        
+        sctx.rs  = rs;
+        sctx.pv  = rtmp1[i];
+        ierr = MatPivotCheck(info,sctx,i);CHKERRQ(ierr);
+        pc1  = b->a + bdiag[i]; /* Mark diag[i] */
+        *pc1 = 1.0/sctx.pv; 
+
+        /* Now take care of 1st column of diagonal 4x4 block. */
+        pc2 = rtmp2 + i;
+        pc3 = rtmp3 + i;
+	pc4 = rtmp4 + i;
+        if (*pc2 != 0.0 || *pc3 != 0.0 || *pc4 != 0.0){
+          mul2 = (*pc2)*(*pc1); *pc2 = mul2;
+          mul3 = (*pc3)*(*pc1); *pc3 = mul3;
+	  mul4 = (*pc4)*(*pc1); *pc4 = mul4;
+          pj = b->j + bdiag[i+1]+1;   /* beginning of U(i,:) */
+          nz = bdiag[i]-bdiag[i+1]-1; /* num of entries in U(i,:) excluding diag */
+          for (j=0; j<nz; j++) {
+            col = pj[j];
+            rtmp2[col] -= mul2 * rtmp1[col];
+            rtmp3[col] -= mul3 * rtmp1[col];
+	    rtmp4[col] -= mul4 * rtmp1[col];
+          }
+          ierr = PetscLogFlops(6*nz);CHKERRQ(ierr);
+        }
+        
+        /* finished row i+1; check zero pivot, then stick row i+1 into b->a */
+        rs = 0.0;
+        /* L part */
+        pc2 = b->a + bi[i+1];
+        pj  = b->j + bi[i+1] ;
+        nz  = bi[i+2] - bi[i+1];
+        for (j=0; j<nz; j++) {
+          col = pj[j];
+          pc2[j] = rtmp2[col]; rs += PetscAbsScalar(pc2[j]);
+        }        
+        /* U part */
+        pc2 = b->a + bdiag[i+2]+1; 
+        pj  = b->j + bdiag[i+2]+1;
+        nz  = bdiag[i+1] - bdiag[i+2] - 1; /* exclude diagonal */
+        for (j=0; j<nz; j++) {
+          col = pj[j];
+          pc2[j] = rtmp2[col]; rs += PetscAbsScalar(pc2[j]);
+        }
+
+        sctx.rs  = rs;
+        sctx.pv  = rtmp2[i+1];
+        ierr = MatPivotCheck(info,sctx,i+1);CHKERRQ(ierr);
+        pc2  = b->a + bdiag[i+1];
+        *pc2 = 1.0/sctx.pv; /* Mark diag[i+1] */
+
+        /* Now take care of 2nd column of diagonal 4x4 block. */
+        pc3 = rtmp3 + i+1;
+	pc4 = rtmp4 + i+1;
+        if (*pc3 != 0.0 || *pc4 != 0.0){ 
+          mul3 = (*pc3)*(*pc2); *pc3 = mul3;
+	  mul4 = (*pc4)*(*pc2); *pc4 = mul4;
+          pj = b->j + bdiag[i+2]+1;     /* beginning of U(i+1,:) */
+          nz = bdiag[i+1]-bdiag[i+2]-1; /* num of entries in U(i+1,:) excluding diag */
+          for (j=0; j<nz; j++) {
+            col = pj[j];
+            rtmp3[col] -= mul3 * rtmp2[col];
+	    rtmp4[col] -= mul4 * rtmp2[col];
+          }
+          ierr = PetscLogFlops(4*nz);CHKERRQ(ierr);
+        }
+
+        /* finished i+2; check zero pivot, then stick row i+2 into b->a */    
+        rs = 0.0;
+        /* L part */
+        pc3 = b->a + bi[i+2];
+        pj  = b->j + bi[i+2] ;
+        nz  = bi[i+3] - bi[i+2];
+        for (j=0; j<nz; j++) {
+          col = pj[j];
+          pc3[j] = rtmp3[col]; rs += PetscAbsScalar(pc3[j]);
+        }
+        /* U part */
+        pc3 = b->a + bdiag[i+3]+1;
+        pj  = b->j + bdiag[i+3]+1;
+        nz  = bdiag[i+2] - bdiag[i+3] - 1; /* exclude diagonal */
+        for (j=0; j<nz; j++) {
+          col = pj[j];
+          pc3[j] = rtmp3[col]; rs += PetscAbsScalar(pc3[j]);
+        }
+
+        sctx.rs  = rs;
+        sctx.pv  = rtmp3[i+2];
+        ierr = MatPivotCheck(info,sctx,i+2);CHKERRQ(ierr);
+        pc3  = b->a + bdiag[i+2];
+        *pc3 = 1.0/sctx.pv; /* Mark diag[i+2] */
+    
+	/* Now take care of 3rd column of diagonal 4x4 block. */
+	pc4 = rtmp4 + i+2;
+        if (*pc4 != 0.0){ 
+	  mul4 = (*pc4)*(*pc3); *pc4 = mul4;
+          pj = b->j + bdiag[i+3]+1;     /* beginning of U(i+2,:) */
+          nz = bdiag[i+2]-bdiag[i+3]-1; /* num of entries in U(i+2,:) excluding diag */
+          for (j=0; j<nz; j++) {
+            col = pj[j];
+	    rtmp4[col] -= mul4 * rtmp3[col];
+          }
+          ierr = PetscLogFlops(2*nz);CHKERRQ(ierr);
+        }
+
+        /* finished i+3; check zero pivot, then stick row i+3 into b->a */    
+        rs = 0.0;
+        /* L part */
+        pc4 = b->a + bi[i+3];
+        pj  = b->j + bi[i+3] ;
+        nz  = bi[i+4] - bi[i+3];
+        for (j=0; j<nz; j++) {
+          col = pj[j];
+          pc4[j] = rtmp4[col]; rs += PetscAbsScalar(pc4[j]);
+        }
+        /* U part */
+        pc4 = b->a + bdiag[i+4]+1;
+        pj  = b->j + bdiag[i+4]+1;
+        nz  = bdiag[i+3] - bdiag[i+4] - 1; /* exclude diagonal */
+        for (j=0; j<nz; j++) {
+          col = pj[j];
+          pc4[j] = rtmp4[col]; rs += PetscAbsScalar(pc4[j]);
+        }
+
+        sctx.rs  = rs;
+        sctx.pv  = rtmp4[i+3];
+        ierr = MatPivotCheck(info,sctx,i+3);CHKERRQ(ierr);
+        pc4  = b->a + bdiag[i+3];
+        *pc4 = 1.0/sctx.pv; /* Mark diag[i+3] */
+         break;
 
       default:
         SETERRQ(PETSC_ERR_SUP,"Node size not yet supported \n");
