@@ -834,20 +834,18 @@ PetscErrorCode MatZeroEntries_HYPRESStruct_3d(Mat mat)
         iupper[i]= ex->hbox.imax[i];
      }
 
-     ierr = PetscMalloc(nvars*7*sizeof(PetscInt),&values);CHKERRQ(ierr);
+     ierr = PetscMalloc2(nvars*7,PetscInt,&entries,nvars*7*size,PetscScalar,&values);CHKERRQ(ierr);
      for (i= 0; i< nvars*7; i++) {
         entries[i]= i;
      }
 
-     ierr = PetscMalloc(nvars*7*size*sizeof(PetscScalar),&values);CHKERRQ(ierr);
      ierr = PetscMemzero(values,nvars*7*size*sizeof(PetscScalar));CHKERRQ(ierr);
 
      for (i= 0; i< nvars; i++) {
         ierr = HYPRE_SStructMatrixSetBoxValues(ex->ss_mat,part,ilower,iupper,i,nvars*7,entries,values);CHKERRQ(ierr);
      }
 
-     ierr = PetscFree(values);CHKERRQ(ierr);
-     ierr = PetscFree(entries);CHKERRQ(ierr);
+     ierr = PetscFree2(entries,values);CHKERRQ(ierr);
   }
 
   ierr = HYPRE_SStructMatrixAssemble(ex->ss_mat);CHKERRQ(ierr);
