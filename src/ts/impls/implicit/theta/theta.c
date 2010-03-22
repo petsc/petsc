@@ -117,7 +117,7 @@ static PetscErrorCode TSThetaJacobian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecAXPBYPCZ(th->Xdot,-th->shift,th->shift,0,ts->vec_sol,x);CHKERRQ(ierr);
+  /* th->Xdot has already been computed in TSThetaFunction (SNES guarantees this) */
   ierr = TSComputeIJacobian(ts,th->stage_time,x,th->Xdot,th->shift,A,B,str);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

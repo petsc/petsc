@@ -11,9 +11,11 @@
 #define fortransolvebaij4unroll_    fortransolvebaij4unroll
 #define fortransolvebaij4blas_      fortransolvebaij4blas
 #endif
+EXTERN_C_BEGIN
 EXTERN void fortransolvebaij4_(const PetscInt*,void*,const PetscInt*,const PetscInt*,const PetscInt*,const void*,const void*,const void*);
 EXTERN void fortransolvebaij4unroll_(const PetscInt*,void*,const PetscInt*,const PetscInt*,const PetscInt*,const void*,const void*);
 EXTERN void fortransolvebaij4blas_(const PetscInt*,void*,const PetscInt*,const PetscInt*,const PetscInt*,const void*,const void*,const void*);
+EXTERN_C_END
 #endif
 #endif
 

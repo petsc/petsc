@@ -36,6 +36,9 @@ configure_options = [
   '--known-sizeof-MPI_Comm=4',
   '--known-sizeof-MPI_Fint=4',
   '--known-mpi-long-double=1',
+  '--known-level1-dcache-assoc=0',
+  '--known-level1-dcache-linesize=32',
+  '--known-level1-dcache-size=32768',
 
   '--download-hypre=1',
   '--download-plapack=1',
