@@ -187,22 +187,14 @@ cdef int TS_IFunction(PetscTS ts,
                       PetscReal t,
                       PetscVec  x,
                       PetscVec  xdot,
-                      #PetscReal a,
                       PetscVec  f,
                       void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef TS  Ts    = ref_TS(ts)
     cdef Vec Xvec  = ref_Vec(x)
     cdef Vec XDvec = ref_Vec(xdot)
     cdef Vec Fvec  = ref_Vec(f)
-    # XXX This should be passed as an argument !!
-    cdef PetscReal a=0.0
-    cdef PetscReal t0=0.0, dt=0.0
-    TSGetTime(ts, &t0); TSGetTimeStep(ts, &dt);
-    a = (t-t0)/dt
-    # XXX ---------------------------------------
     (function, args, kargs) = TS_getIFunction(ts)
-    function(Ts, toReal(t), Xvec, XDvec, toReal(a),
-             Fvec, *args, **kargs)
+    function(Ts, toReal(t), Xvec, XDvec, Fvec, *args, **kargs)
     return 0
 
 cdef inline object TS_getIJacobian(PetscTS ts):
@@ -232,7 +224,7 @@ cdef int TS_IJacobian(PetscTS ts,
     cdef Mat  Jmat  = ref_Mat(J[0])
     cdef Mat  Pmat  = ref_Mat(P[0])
     (jacobian, args, kargs) = TS_getIJacobian(ts)
-    retv = jacobian(Ts, toReal(t), Xvec, XDvec, toReal(a),
+    retv = jacobian(Ts, toReal(t), Xvec, XDvec, toReal(a), 
                     Jmat, Pmat, *args, **kargs)
     s[0] = matstructure(retv)
     cdef PetscMat Jtmp = NULL, Ptmp = NULL

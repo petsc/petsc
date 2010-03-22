@@ -14,7 +14,7 @@ class Rober(object):
         assert t == 0.0, "only for t=0.0"
         x[:] = [1, 0, 0]
         x.assemble()
-    def evalFunction(self, ts, t, x, xdot, a, f):
+    def evalFunction(self, ts, t, x, xdot, f):
         f[:] = [xdot[0] + 0.04*x[0] - 1e4*x[1]*x[2],
                 xdot[1] - 0.04*x[0] + 1e4*x[1]*x[2] + 3e7*x[1]**2,
                 xdot[2] - 3e7*x[1]**2]
