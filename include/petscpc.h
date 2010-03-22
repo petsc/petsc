@@ -4,6 +4,7 @@
 #if !defined(__PETSCPC_H)
 #define __PETSCPC_H
 #include "petscmat.h"
+#include "petscda.h"
 PETSC_EXTERN_CXX_BEGIN
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT  PCInitializePackage(const char[]);
@@ -356,6 +357,10 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSetCoordinates(PC,PetscInt,PetscReal*
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSASetVectors(PC,PetscInt,PetscReal *);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetType(PC,const char[]);
+
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSetDM(PC,DM);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGetDM(PC,DM*);
+
 
 PETSC_EXTERN_CXX_END
 

@@ -7,7 +7,6 @@
 #include "../src/ksp/pc/impls/mg/mgimpl.h"
 
 typedef struct {
-  DA           da;
   PCExoticType type;
   Mat          P;            /* the constructed interpolation matrix */
   PetscTruth   directSolve;  /* use direct LU factorization to construct interpolation */
@@ -23,9 +22,8 @@ const char *PCExoticTypes[] = {"face","wirebasket","PCExoticType","PC_Exotic",0}
       DAGetWireBasketInterpolation - Gets the interpolation for a wirebasket based coarse space
 
 */
-PetscErrorCode DAGetWireBasketInterpolation(PC_Exotic *exotic,Mat Aglobal,MatReuse reuse,Mat *P)
+PetscErrorCode DAGetWireBasketInterpolation(DA da,PC_Exotic *exotic,Mat Aglobal,MatReuse reuse,Mat *P)
 {
-  DA                     da = exotic->da;
   PetscErrorCode         ierr;
   PetscInt               dim,i,j,k,m,n,p,dof,Nint,Nface,Nwire,Nsurf,*Iint,*Isurf,cint = 0,csurf = 0,istart,jstart,kstart,*II,N,c = 0;
   PetscInt               mwidth,nwidth,pwidth,cnt,mp,np,pp,Ntotal,gl[26],*globals,Ng,*IIint,*IIsurf;
@@ -302,9 +300,8 @@ PetscErrorCode DAGetWireBasketInterpolation(PC_Exotic *exotic,Mat Aglobal,MatReu
       DAGetFaceInterpolation - Gets the interpolation for a face based coarse space
 
 */
-PetscErrorCode DAGetFaceInterpolation(PC_Exotic *exotic,Mat Aglobal,MatReuse reuse,Mat *P)
+PetscErrorCode DAGetFaceInterpolation(DA da,PC_Exotic *exotic,Mat Aglobal,MatReuse reuse,Mat *P)
 {
-  DA                     da = exotic->da;
   PetscErrorCode         ierr;
   PetscInt               dim,i,j,k,m,n,p,dof,Nint,Nface,Nwire,Nsurf,*Iint,*Isurf,cint = 0,csurf = 0,istart,jstart,kstart,*II,N,c = 0;
   PetscInt               mwidth,nwidth,pwidth,cnt,mp,np,pp,Ntotal,gl[6],*globals,Ng,*IIint,*IIsurf;
@@ -634,11 +631,12 @@ PetscErrorCode PCSetUp_Exotic(PC pc)
   MatReuse       reuse = (ex->P) ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX;
 
   PetscFunctionBegin;
+  if (!pc->dm) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to call PCSetDM() before using this PC");
   ierr = PCGetOperators(pc,PETSC_NULL,&A,PETSC_NULL);CHKERRQ(ierr);
   if (ex->type == PC_EXOTIC_FACE) {
-    ierr = DAGetFaceInterpolation(ex,A,reuse,&ex->P);CHKERRQ(ierr);
+    ierr = DAGetFaceInterpolation((DA)pc->dm,ex,A,reuse,&ex->P);CHKERRQ(ierr);
   } else if (ex->type == PC_EXOTIC_WIREBASKET) {
-    ierr = DAGetWireBasketInterpolation(ex,A,reuse,&ex->P);CHKERRQ(ierr);
+    ierr = DAGetWireBasketInterpolation((DA)pc->dm,ex,A,reuse,&ex->P);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_ERR_PLIB,"Unknown exotic coarse space %d",ex->type);
   ierr = PCMGSetInterpolation(pc,1,ex->P);CHKERRQ(ierr);
   ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
@@ -654,66 +652,10 @@ PetscErrorCode PCDestroy_Exotic(PC pc)
   PC_Exotic      *ctx = (PC_Exotic*) mg->innerctx;
 
   PetscFunctionBegin;
-  if (ctx->da) {ierr = DADestroy(ctx->da);CHKERRQ(ierr);}
   if (ctx->P) {ierr = MatDestroy(ctx->P);CHKERRQ(ierr);}
   if (ctx->ksp) {ierr = KSPDestroy(ctx->ksp);CHKERRQ(ierr);}
   ierr = PetscFree(ctx);CHKERRQ(ierr);
   ierr = PCDestroy_MG(pc);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_Exotic_Error"
-PetscErrorCode PCSetUp_Exotic_Error(PC pc)
-{
-  PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You are using the Exotic preconditioner but never called PCSetDA()");
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PCSetDA"
-/*@
-   PCSetDA - Sets the DA that is to be used by the PCEXOTIC or certain other preconditioners
-
-   Collective on PC
-
-   Input Parameters:
-+  pc - the preconditioner context
--  da - the da
-
-   Level: intermediate
-
-
-.seealso: PCEXOTIC, PCExoticType()
-@*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCSetDA(PC pc,DA da)
-{
-  PetscErrorCode ierr,(*f)(PC,DA);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSetDA_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,da);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__  
-#define __FUNCT__ "PCSetDA_Exotic"
-PetscErrorCode PETSCKSP_DLLEXPORT PCSetDA_Exotic(PC pc,DA da)
-{
-  PetscErrorCode ierr;
-  PC_MG          *mg = (PC_MG*)pc->data;
-  PC_Exotic      *ctx = (PC_Exotic*) mg->innerctx;
-
-  PetscFunctionBegin;
-  ctx->da = da;
-  pc->ops->setup = PCSetUp_Exotic;
-  ierr   = PetscObjectReference((PetscObject)da);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
@@ -824,7 +766,7 @@ PetscErrorCode PCSetFromOptions_Exotic(PC pc)
 
    Level: advanced
 
-.seealso:  PCMG, PCSetDA(), PCExoticType, PCExoticSetType()
+.seealso:  PCMG, PCSetDM(), PCExoticType, PCExoticSetType()
 M*/
 
 EXTERN_C_BEGIN
@@ -854,9 +796,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Exotic(PC pc)
   pc->ops->setfromoptions = PCSetFromOptions_Exotic;
   pc->ops->view           = PCView_Exotic;
   pc->ops->destroy        = PCDestroy_Exotic;
-  pc->ops->setup          = PCSetUp_Exotic_Error;
+  pc->ops->setup          = PCSetUp_Exotic;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCExoticSetType_C","PCExoticSetType_Exotic",PCExoticSetType_Exotic);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSetDA_C","PCSetDA_Exotic",PCSetDA_Exotic);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

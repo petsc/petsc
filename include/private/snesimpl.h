@@ -27,6 +27,7 @@ struct _SNESOps {
 
 struct _p_SNES {
   PETSCHEADER(struct _SNESOps);
+  DM   dm;
 
   /*  ------------------------ User-provided stuff -------------------------------*/
   void  *user;		          /* user-defined context */

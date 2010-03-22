@@ -359,5 +359,8 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESTestLocalMin(SNES);
 /* Should this routine be private? */
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*);
 
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT SNESSetDM(SNES,DM);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT SNESGetDM(SNES,DM*);
+
 PETSC_EXTERN_CXX_END
 #endif

@@ -74,7 +74,7 @@ int main(int argc,char **argv)
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetDA(pc,da);CHKERRQ(ierr);
+  ierr = PCSetDM(pc,(DM)da);CHKERRQ(ierr);
  
   if (trans) {
     ierr = KSPSolveTranspose(ksp,b,x);CHKERRQ(ierr);

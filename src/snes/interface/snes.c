@@ -1403,6 +1403,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDestroy(SNES snes)
 
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(snes);CHKERRQ(ierr);
+
+  if (snes->dm) {ierr = DMDestroy(snes->dm);CHKERRQ(ierr);}
   if (snes->ops->destroy) {ierr = (*(snes)->ops->destroy)(snes);CHKERRQ(ierr);}
   
   if (snes->vec_rhs) {ierr = VecDestroy(snes->vec_rhs);CHKERRQ(ierr);}
@@ -2943,5 +2945,60 @@ PetscErrorCode SNES_KSPSolve(SNES snes, KSP ksp, Vec b, Vec x)
   if (snes->ksp_ewconv) { ierr = SNESKSPEW_PreSolve(snes,ksp,b,x);CHKERRQ(ierr);  }
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
   if (snes->ksp_ewconv) { ierr = SNESKSPEW_PostSolve(snes,ksp,b,x);CHKERRQ(ierr); }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetDM"
+/*@
+   SNESSetDM - Sets the DM that may be used by some preconditioners
+
+   Collective on SNES
+
+   Input Parameters:
++  snes - the preconditioner context
+-  dm - the dm
+
+   Level: intermediate
+
+
+.seealso: SNESGetDM(), KSPSetDM(), KSPGetDM()
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESSetDM(SNES snes,DM dm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  if (snes->dm) {ierr = DMDestroy(snes->dm);CHKERRQ(ierr);}
+  snes->dm = dm;
+  ierr = PetscObjectReference((PetscObject)snes->dm);CHKERRQ(ierr);
+  ierr = KSPSetDM(snes->ksp,dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESGetDM"
+/*@
+   SNESGetDM - Gets the DM that may be used by some preconditioners
+
+   Collective on SNES
+
+   Input Parameter:
+. snes - the preconditioner context
+
+   Output Parameter:
+.  dm - the dm
+
+   Level: intermediate
+
+
+.seealso: SNESSetDM(), KSPSetDM(), KSPGetDM()
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESGetDM(SNES snes,DM *dm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  *dm = snes->dm;
   PetscFunctionReturn(0);
 }

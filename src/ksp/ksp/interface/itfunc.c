@@ -684,6 +684,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDestroy(KSP ksp)
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(ksp);CHKERRQ(ierr);
 
+  if (ksp->dm) {ierr = DMDestroy(ksp->dm);CHKERRQ(ierr);}
   if (ksp->ops->destroy) {
     ierr = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr);
   }

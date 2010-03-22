@@ -29,6 +29,7 @@ struct _PCOps {
 */
 struct _p_PC {
   PETSCHEADER(struct _PCOps);
+  DM             dm;
   PetscInt       setupcalled;
   PetscInt       setfromoptionscalled;
   MatStructure   flag;

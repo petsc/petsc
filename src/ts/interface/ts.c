@@ -1206,6 +1206,8 @@ PetscErrorCode PETSCTS_DLLEXPORT TSDestroy(TS ts)
 
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(ts);CHKERRQ(ierr);
+
+  if (ts->dm) {ierr = DMDestroy(ts->dm);CHKERRQ(ierr);}
   if (ts->A) {ierr = MatDestroy(ts->A);CHKERRQ(ierr)}
   if (ts->ksp) {ierr = KSPDestroy(ts->ksp);CHKERRQ(ierr);}
   if (ts->snes) {ierr = SNESDestroy(ts->snes);CHKERRQ(ierr);}
@@ -2132,4 +2134,58 @@ PetscErrorCode PETSCTS_DLLEXPORT TSMonitorSolution(TS ts,PetscInt step,PetscReal
 }
 
 
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetDM"
+/*@
+   TSSetDM - Sets the DM that may be used by some preconditioners
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the preconditioner context
+-  dm - the dm
+
+   Level: intermediate
+
+
+.seealso: TSGetDM(), SNESSetDM(), SNESGetDM()
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSSetDM(TS ts,DM dm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  if (ts->dm) {ierr = DMDestroy(ts->dm);CHKERRQ(ierr);}
+  ts->dm = dm;
+  ierr = PetscObjectReference((PetscObject)ts->dm);CHKERRQ(ierr);
+  if (ts->snes) {ierr = SNESSetDM(ts->snes,dm);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSGetDM"
+/*@
+   TSGetDM - Gets the DM that may be used by some preconditioners
+
+   Collective on TS
+
+   Input Parameter:
+. ts - the preconditioner context
+
+   Output Parameter:
+.  dm - the dm
+
+   Level: intermediate
+
+
+.seealso: TSSetDM(), SNESSetDM(), SNESGetDM()
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSGetDM(TS ts,DM *dm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  *dm = ts->dm;
+  PetscFunctionReturn(0);
+}
 

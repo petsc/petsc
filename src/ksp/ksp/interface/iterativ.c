@@ -921,3 +921,58 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetConvergedReason(KSP ksp,KSPConvergedReas
   *reason = ksp->reason;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetDM"
+/*@
+   KSPSetDM - Sets the DM that may be used by some preconditioners
+
+   Collective on KSP
+
+   Input Parameters:
++  ksp - the preconditioner context
+-  dm - the dm
+
+   Level: intermediate
+
+
+.seealso: KSPGetDM(), KSPSetDM(), KSPGetDM()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDM(KSP ksp,DM dm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  if (ksp->dm) {ierr = DMDestroy(ksp->dm);CHKERRQ(ierr);}
+  ksp->dm = dm;
+  ierr = PetscObjectReference((PetscObject)ksp->dm);CHKERRQ(ierr);
+  ierr = PCSetDM(ksp->pc,dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGetDM"
+/*@
+   KSPGetDM - Gets the DM that may be used by some preconditioners
+
+   Collective on KSP
+
+   Input Parameter:
+. ksp - the preconditioner context
+
+   Output Parameter:
+.  dm - the dm
+
+   Level: intermediate
+
+
+.seealso: KSPSetDM(), KSPSetDM(), KSPGetDM()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGetDM(KSP ksp,DM *dm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  *dm = ksp->dm;
+  PetscFunctionReturn(0);
+}

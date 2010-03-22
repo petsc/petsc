@@ -35,20 +35,21 @@ typedef struct {PetscInt model,curl,maxl;Mat mat; KSP ksp;}* KSPGuessFischer;
 */
 struct _p_KSP {
   PETSCHEADER(struct _KSPOps);
+  DM              dm;
   /*------------------------- User parameters--------------------------*/
   PetscInt        max_it;                     /* maximum number of iterations */
   KSPFischerGuess guess;
   PetscTruth      guess_zero,                  /* flag for whether initial guess is 0 */
                   calc_sings,                  /* calculate extreme Singular Values */
                   guess_knoll;                /* use initial guess of PCApply(ksp->B,b */
-  PCSide pc_side;                  /* flag for left, right, or symmetric 
+  PCSide          pc_side;                  /* flag for left, right, or symmetric 
                                       preconditioning */
-  PetscReal rtol,                     /* relative tolerance */
-            abstol,                     /* absolute tolerance */
-            ttol,                     /* (not set by user)  */
-            divtol;                   /* divergence tolerance */
-  PetscReal rnorm0;                   /* initial residual norm (used for divergence testing) */
-  PetscReal rnorm;                    /* current residual norm */
+  PetscReal       rtol,                     /* relative tolerance */
+                  abstol,                     /* absolute tolerance */
+                  ttol,                     /* (not set by user)  */
+                  divtol;                   /* divergence tolerance */
+  PetscReal       rnorm0;                   /* initial residual norm (used for divergence testing) */
+  PetscReal       rnorm;                    /* current residual norm */
   KSPConvergedReason reason;     
   PetscTruth         printreason;     /* prints converged reason after solve */
 

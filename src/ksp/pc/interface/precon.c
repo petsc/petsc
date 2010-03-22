@@ -79,6 +79,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCDestroy(PC pc)
 
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(pc);CHKERRQ(ierr);
+  if (pc->dm) {ierr = DMDestroy(pc->dm);CHKERRQ(ierr);}
 
   if (pc->ops->destroy)       {ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);}
   if (pc->diagonalscaleright) {ierr = VecDestroy(pc->diagonalscaleright);CHKERRQ(ierr);}
