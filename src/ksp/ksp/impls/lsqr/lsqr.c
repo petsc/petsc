@@ -36,7 +36,7 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
   } else if (ksp->pc_side == PC_RIGHT){
     SETERRQ(PETSC_ERR_SUP,"no right preconditioning for KSPLSQR");
   }
-  //  nopreconditioner =PETSC_FALSE;
+  /*  nopreconditioner =PETSC_FALSE; */
 
   lsqr->nwork_m = 2;
   if (lsqr->vwork_m) {
@@ -82,7 +82,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   ierr     = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)ksp->pc,PCNONE,&nopreconditioner);CHKERRQ(ierr);
 
-  //  nopreconditioner =PETSC_FALSE;
+  /*  nopreconditioner =PETSC_FALSE; */
   /* Calculate norm of right hand side */
   ierr = VecNorm(ksp->vec_rhs,NORM_2,&lsqr->rhs_norm);CHKERRQ(ierr);
 
