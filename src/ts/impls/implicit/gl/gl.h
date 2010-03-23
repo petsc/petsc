@@ -60,7 +60,7 @@ typedef struct TS_GL {
   Vec Y;                        /* Stage vector, only used while solving the stage so we don't need to store it */
   Vec Z;                        /* Affine vector */
   PetscReal shift;              /* Ydot = Z + shift*Y */
-  PetscReal base_time;          /* physical time at start of current step */
+  PetscReal stage_time;         /* time at current stage */
   PetscInt  stage;              /* index of the stage we are currently solving for */
 
   /* Runtime options */

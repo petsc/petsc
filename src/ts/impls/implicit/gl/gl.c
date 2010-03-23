@@ -422,9 +422,9 @@ static PetscErrorCode TSGLCreate_IRKS(TS ts)
     /* p=q=2, r=s=3: irks(4/9,0,[1:3]/3,[0.33852],1) */
     /* http://www.math.auckland.ac.nz/~hpod/atlas/i2a.html */
     const PetscScalar c[3] = {1./3., 2./3., 1}
-    ,a[3][3] = {{4./9.                ,0                      , 0      }
-                ,{1.03750643704090e+00 ,                  4./9.,       0}
-                ,{7.67024779410304e-01 ,  -3.81140216918943e-01,   4./9.}}
+    ,a[3][3] = {{4./9.                ,0                      ,       0},
+                {1.03750643704090e+00 ,                  4./9.,       0},
+                {7.67024779410304e-01 ,  -3.81140216918943e-01,   4./9.}}
     ,b[3][3] = {{0.767024779410304,  -0.381140216918943,   4./9.},
                 {0.000000000000000,  0.000000000000000,   1.000000000000000},
                 {-2.075048385225385,   0.621728385225383,   1.277197204924873}}
@@ -767,7 +767,7 @@ static PetscErrorCode TSGLChooseNextScheme(TS ts,PetscReal h,const PetscReal hmn
   PetscFunctionBegin;
   cur = -1;
   cur_p = gl->schemes[gl->current_scheme]->p;
-  tleft = ts->max_time - ts->ptime;
+  tleft = ts->max_time - (ts->ptime + ts->time_step);
   for (i=0,n=0; i<gl->nschemes; i++) {
     TSGLScheme sc = gl->schemes[i];
     if (sc->p < gl->min_order || gl->max_order < sc->p) continue;
@@ -807,13 +807,15 @@ static PetscErrorCode TSGLGetMaxSizes(TS ts,PetscInt *max_r,PetscInt *max_s)
 #define __FUNCT__ "TSStep_GL"
 static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
 {
-  PetscErrorCode ierr;
+  TS_GL          *gl = (TS_GL*)ts->data;
   PetscInt       i,k,max_steps = ts->max_steps,its,lits,max_r,max_s;
   PetscTruth     final_step,finish;
-  TS_GL          *gl = (TS_GL*)ts->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *steps = -ts->steps;
+  *ptime  = ts->ptime;
+
   ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
 
   ierr = TSGLGetMaxSizes(ts,&max_r,&max_s);CHKERRQ(ierr);
@@ -825,8 +827,7 @@ static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
 
   if (0) {
     /* Find consistent initial data for DAE */
-    gl->base_time = ts->ptime;
-    ts->ptime += ts->time_step;
+    gl->stage_time = ts->ptime + ts->time_step;
     gl->shift = 1./ts->time_step;
     gl->stage = 0;
     ierr = VecCopy(ts->vec_sol,gl->Z);CHKERRQ(ierr);
@@ -835,8 +836,6 @@ static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
     ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
     ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
     ts->nonlinear_its += its; ts->linear_its += lits;
-
-    ts->ptime = gl->base_time;
   }
 
   if (gl->current_scheme < 0) SETERRQ(PETSC_ERR_ORDER,"A starting scheme has not been provided");
@@ -864,14 +863,12 @@ static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
     */
     ierr = TSPreStep(ts);CHKERRQ(ierr);
 
-    gl->base_time = ts->ptime;  /* save time at the start of this step */
-
     rejections = 0;
     while (1) {
       for (i=0; i<s; i++) {
         PetscScalar shift = gl->shift = 1./PetscRealPart(h*a[i*s+i]);
         gl->stage = i;
-        ts->ptime = gl->base_time + PetscRealPart(c[i])*h;
+        gl->stage_time = ts->ptime + PetscRealPart(c[i])*h;
 
         /*
         * Stage equation: Y = h A Y' + U X
@@ -908,6 +905,8 @@ static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
         ts->nonlinear_its += its; ts->linear_its += lits;
       }
 
+      gl->stage_time = ts->ptime + ts->time_step;
+
       ierr = (*gl->EstimateHigherMoments)(scheme,h,Ydot,gl->X,gl->himom);CHKERRQ(ierr);
       /* hmnorm[i] = h^{p+i}x^{(p+i)} with i=0,1,2; hmnorm[3] = h^{p+2}(dx'/dx) x^{(p+1)} */
       for (i=0; i<3; i++) {
@@ -916,10 +915,10 @@ static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
       enorm[0] = PetscRealPart(scheme->alpha[0])*hmnorm[1];
       enorm[1] = PetscRealPart(scheme->beta[0]) *hmnorm[2];
       enorm[2] = PetscRealPart(scheme->gamma[0])*hmnorm[3];
-      ierr = (*gl->Accept)(ts,ts->max_time-ts->ptime,h,enorm,&accept);CHKERRQ(ierr);
+      ierr = (*gl->Accept)(ts,ts->max_time-gl->stage_time,h,enorm,&accept);CHKERRQ(ierr);
       if (accept) goto accepted;
       rejections++;
-      ierr = PetscInfo3(ts,"Step %D (t=%g) not accepted, rejections=%D\n",k,ts->ptime,rejections);CHKERRQ(ierr);
+      ierr = PetscInfo3(ts,"Step %D (t=%g) not accepted, rejections=%D\n",k,gl->stage_time,rejections);CHKERRQ(ierr);
       if (rejections > gl->max_step_rejections) break;
       /*
         There are lots of reasons why a step might be rejected, including solvers not converging and other factors that
@@ -934,7 +933,7 @@ static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
         ierr = VecScale(X[i],PetscPowScalar(0.5,i));CHKERRQ(ierr);
       }
     }
-    SETERRQ3(PETSC_ERR_CONV_FAILED,"Time step %D (t=%g) not accepted after %D failures\n",k,ts->ptime,rejections);CHKERRQ(ierr);
+    SETERRQ3(PETSC_ERR_CONV_FAILED,"Time step %D (t=%g) not accepted after %D failures\n",k,gl->stage_time,rejections);CHKERRQ(ierr);
 
     accepted:
     /* This term is not error, but it *would* be the leading term for a lower order method */
@@ -960,9 +959,9 @@ static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
 
     /* Post the solution for the user, we could avoid this copy with a small bit of cleverness */
     ierr = VecCopy(gl->X[0],ts->vec_sol);CHKERRQ(ierr);
-
-    ts->ptime = gl->base_time + h;
+    ts->ptime += h;
     ts->steps++;
+
     ierr = TSPostStep(ts);CHKERRQ(ierr);
     ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
 
@@ -1015,7 +1014,7 @@ static PetscErrorCode TSGLFunction(SNES snes,Vec x,Vec f,void *ctx)
 
   PetscFunctionBegin;
   ierr = VecWAXPY(gl->Ydot[gl->stage],gl->shift,x,gl->Z);CHKERRQ(ierr);
-  ierr = TSComputeIFunction(ts,ts->ptime,x,gl->Ydot[gl->stage],f);CHKERRQ(ierr);
+  ierr = TSComputeIFunction(ts,gl->stage_time,x,gl->Ydot[gl->stage],f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1029,7 +1028,7 @@ static PetscErrorCode TSGLJacobian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *s
 
   PetscFunctionBegin;
   /* gl->Xdot will have already been computed in TSGLFunction */
-  ierr = TSComputeIJacobian(ts,ts->ptime,x,gl->Ydot[gl->stage],gl->shift,A,B,str);CHKERRQ(ierr);
+  ierr = TSComputeIJacobian(ts,gl->stage_time,x,gl->Ydot[gl->stage],gl->shift,A,B,str);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1044,6 +1043,9 @@ static PetscErrorCode TSSetUp_GL(TS ts)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  if (ts->problem_type == TS_LINEAR) {
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Only for nonlinear problems");
+  }
   gl->setupcalled = PETSC_TRUE;
   ierr = TSGLGetMaxSizes(ts,&max_r,&max_s);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ts->vec_sol,max_r,&gl->X);CHKERRQ(ierr);
@@ -1420,6 +1422,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_GL(TS ts)
   ts->ops->step           = TSStep_GL;
   ts->ops->setfromoptions = TSSetFromOptions_GL;
 
+  ts->problem_type = TS_NONLINEAR;
   ierr = SNESCreate(((PetscObject)ts)->comm,&ts->snes);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)ts->snes,(PetscObject)ts,1);CHKERRQ(ierr);
 

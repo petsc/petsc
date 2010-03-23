@@ -834,20 +834,18 @@ PetscErrorCode MatZeroEntries_HYPRESStruct_3d(Mat mat)
         iupper[i]= ex->hbox.imax[i];
      }
 
-     ierr = PetscMalloc(nvars*7*sizeof(PetscInt),&values);CHKERRQ(ierr);
+     ierr = PetscMalloc2(nvars*7,PetscInt,&entries,nvars*7*size,PetscScalar,&values);CHKERRQ(ierr);
      for (i= 0; i< nvars*7; i++) {
         entries[i]= i;
      }
 
-     ierr = PetscMalloc(nvars*7*size*sizeof(PetscScalar),&values);CHKERRQ(ierr);
      ierr = PetscMemzero(values,nvars*7*size*sizeof(PetscScalar));CHKERRQ(ierr);
 
      for (i= 0; i< nvars; i++) {
         ierr = HYPRE_SStructMatrixSetBoxValues(ex->ss_mat,part,ilower,iupper,i,nvars*7,entries,values);CHKERRQ(ierr);
      }
 
-     ierr = PetscFree(values);CHKERRQ(ierr);
-     ierr = PetscFree(entries);CHKERRQ(ierr);
+     ierr = PetscFree2(entries,values);CHKERRQ(ierr);
   }
 
   ierr = HYPRE_SStructMatrixAssemble(ex->ss_mat);CHKERRQ(ierr);
@@ -890,22 +888,22 @@ PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA_HYPRESStruct(Mat mat,DA da)
 
   /* assuming that the same number of dofs on each gridpoint. Also assume all cell-centred based */
   ex->nvars= dof;
-  {
-     HYPRE_SStructVariable vartypes[ex->nvars];
-  
-     for (i= 0; i< dof; i++) {
-        vartypes[i]= HYPRE_SSTRUCT_VARIABLE_CELL;
-     }
-
-     ex->vartypes= vartypes;
-  }
 
   /* create the hypre grid object and set its information */
   if (p) SETERRQ(PETSC_ERR_SUP,"Ask us to add periodic support by calling HYPRE_SStructGridSetPeriodic()");
   ierr = HYPRE_SStructGridCreate(ex->hcomm,dim,nparts,&ex->ss_grid);CHKERRQ(ierr);
 
   ierr = HYPRE_SStructGridSetExtents(ex->ss_grid,part,ex->hbox.imin,ex->hbox.imax);CHKERRQ(ierr);
-  ierr = HYPRE_SStructGridSetVariables(ex->ss_grid, part, ex->nvars,ex->vartypes);CHKERRQ(ierr);
+
+  {
+    HYPRE_SStructVariable *vartypes;
+    ierr = PetscMalloc(ex->nvars*sizeof(HYPRE_SStructVariable),&vartypes);CHKERRQ(ierr);
+    for (i= 0; i< ex->nvars; i++) {
+      vartypes[i]= HYPRE_SSTRUCT_VARIABLE_CELL;
+    }
+    ierr = HYPRE_SStructGridSetVariables(ex->ss_grid, part, ex->nvars,vartypes);CHKERRQ(ierr);
+    ierr = PetscFree(vartypes);CHKERRQ(ierr);
+  }
 
   ierr = HYPRE_SStructGridAssemble(ex->ss_grid);CHKERRQ(ierr);
 

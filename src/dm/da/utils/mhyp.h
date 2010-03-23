@@ -27,7 +27,6 @@ typedef struct {
   MPI_Comm               hcomm;
   DA                     da;
   HYPRE_SStructGrid      ss_grid;
-  HYPRE_SStructVariable *vartypes;
   HYPRE_SStructGraph     ss_graph;
   HYPRE_SStructStencil   ss_stencil;
   HYPRE_SStructMatrix    ss_mat;

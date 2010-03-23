@@ -388,6 +388,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_MPIIO)
   PetscTruth     isMPIIO;
 #endif
+  PetscInt message_count;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
@@ -405,7 +406,6 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
   ierr = PetscViewerBinaryGetMPIIO(viewer,&isMPIIO);CHKERRQ(ierr);
   if (!isMPIIO) {
 #endif
-    PetscInt message_count;
     ierr = PetscViewerBinaryGetFlowControl(viewer,&message_count);CHKERRQ(ierr);
     if (!rank) {
       ierr = PetscBinaryWrite(fdes,xarray,xin->map->n,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
