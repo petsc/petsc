@@ -941,13 +941,15 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetConvergedReason(KSP ksp,KSPConvergedReas
 PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDM(KSP ksp,DM dm)
 {
   PetscErrorCode ierr;
+  PC             pc;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   if (ksp->dm) {ierr = DMDestroy(ksp->dm);CHKERRQ(ierr);}
   ksp->dm = dm;
   ierr = PetscObjectReference((PetscObject)ksp->dm);CHKERRQ(ierr);
-  ierr = PCSetDM(ksp->pc,dm);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = PCSetDM(pc,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

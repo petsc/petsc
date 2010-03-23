@@ -195,6 +195,19 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
 
   ierr = PetscLogEventBegin(KSP_SetUp,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
 
+  if (ksp->dm) {
+    if (!ksp->setupcalled) {
+      Mat A;
+      /* first time in so build matrix and vector data structures using DM */
+      if (!ksp->vec_rhs) {ierr = DMCreateGlobalVector(ksp->dm,&ksp->vec_rhs);CHKERRQ(ierr);}
+      if (!ksp->vec_sol) {ierr = DMCreateGlobalVector(ksp->dm,&ksp->vec_sol);CHKERRQ(ierr);}
+      /* How to set the matrix type ? */
+      ierr = DMGetMatrix(ksp->dm,MATAIJ,&A);CHKERRQ(ierr);
+      /* How to handle different A and B matrix ? */
+      ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    }
+  }
+
   if (!ksp->setupcalled) {
     ierr = (*ksp->ops->setup)(ksp);CHKERRQ(ierr);
   }
@@ -307,19 +320,21 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  PetscValidHeaderSpecific(b,VEC_COOKIE,2);
-  PetscValidHeaderSpecific(x,VEC_COOKIE,3);
+  if (b) PetscValidHeaderSpecific(b,VEC_COOKIE,2);
+  if (x) PetscValidHeaderSpecific(x,VEC_COOKIE,3);
 
-  if (x == b) {
-    ierr     = VecDuplicate(b,&x);CHKERRQ(ierr);
-    inXisinB = PETSC_TRUE;
+  if (b && x) {
+    if (x == b) {
+      ierr     = VecDuplicate(b,&x);CHKERRQ(ierr);
+      inXisinB = PETSC_TRUE;
+    }
+    ierr = PetscObjectReference((PetscObject)b);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)x);CHKERRQ(ierr);
+    if (ksp->vec_rhs) {ierr = VecDestroy(ksp->vec_rhs);CHKERRQ(ierr);}
+    if (ksp->vec_sol) {ierr = VecDestroy(ksp->vec_sol);CHKERRQ(ierr);}
+    ksp->vec_rhs = b;
+    ksp->vec_sol = x;
   }
-  ierr = PetscObjectReference((PetscObject)b);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)x);CHKERRQ(ierr);
-  if (ksp->vec_rhs) {ierr = VecDestroy(ksp->vec_rhs);CHKERRQ(ierr);}
-  if (ksp->vec_sol) {ierr = VecDestroy(ksp->vec_sol);CHKERRQ(ierr);}
-  ksp->vec_rhs = b;
-  ksp->vec_sol = x;
 
   ierr = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_view_binary",&flg,PETSC_NULL);CHKERRQ(ierr); 
   if (flg) {

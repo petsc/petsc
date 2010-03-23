@@ -2967,13 +2967,15 @@ PetscErrorCode SNES_KSPSolve(SNES snes, KSP ksp, Vec b, Vec x)
 PetscErrorCode PETSCSNES_DLLEXPORT SNESSetDM(SNES snes,DM dm)
 {
   PetscErrorCode ierr;
+  KSP            ksp;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   if (snes->dm) {ierr = DMDestroy(snes->dm);CHKERRQ(ierr);}
   snes->dm = dm;
   ierr = PetscObjectReference((PetscObject)snes->dm);CHKERRQ(ierr);
-  ierr = KSPSetDM(snes->ksp,dm);CHKERRQ(ierr);
+  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetDM(ksp,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
