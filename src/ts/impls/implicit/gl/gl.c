@@ -1043,6 +1043,9 @@ static PetscErrorCode TSSetUp_GL(TS ts)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  if (ts->problem_type == TS_LINEAR) {
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Only for nonlinear problems");
+  }
   gl->setupcalled = PETSC_TRUE;
   ierr = TSGLGetMaxSizes(ts,&max_r,&max_s);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ts->vec_sol,max_r,&gl->X);CHKERRQ(ierr);
@@ -1419,6 +1422,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_GL(TS ts)
   ts->ops->step           = TSStep_GL;
   ts->ops->setfromoptions = TSSetFromOptions_GL;
 
+  ts->problem_type = TS_NONLINEAR;
   ierr = SNESCreate(((PetscObject)ts)->comm,&ts->snes);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)ts->snes,(PetscObject)ts,1);CHKERRQ(ierr);
 

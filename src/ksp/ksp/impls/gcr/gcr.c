@@ -105,7 +105,7 @@ PetscErrorCode KSPSolve_GCR( KSP ksp )
         
   /* compute initial residual */
   ierr = MatMult( A, x, r );CHKERRQ(ierr);
-  ierr = VecAYPX( r, -1.0, b );CHKERRQ(ierr); // r = b - A x 
+  ierr = VecAYPX( r, -1.0, b );CHKERRQ(ierr); /* r = b - A x  */
   ierr = VecNorm( r, NORM_2, &norm_r );CHKERRQ(ierr);
         
   ksp->its = 0;

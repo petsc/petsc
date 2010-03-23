@@ -13,10 +13,12 @@
 #define fortranmdot2_      fortranmdot2
 #define fortranmdot1_      fortranmdot1
 #endif
+EXTERN_C_BEGIN
 EXTERN void fortranmdot4_(const void*,const void*,const void*,const void*,const void*,PetscInt*,void*,void*,void*,void*);
 EXTERN void fortranmdot3_(const void*,const void*,const void*,const void*,PetscInt*,void*,void*,void*);
 EXTERN void fortranmdot2_(const void*,const void*,const void*,PetscInt*,void*,void*);
 EXTERN void fortranmdot1_(const void*,const void*,PetscInt*,void*);
+EXTERN_C_END
 #endif
 #endif
 
