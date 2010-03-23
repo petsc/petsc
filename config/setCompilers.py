@@ -234,7 +234,7 @@ class Configure(config.base.Configure):
     except RuntimeError:
       pass
     return 0
-  isSolarisAR = staticmethod(isAIXAR)
+  isAIXAR = staticmethod(isAIXAR)
 
   
   def isLinux():
