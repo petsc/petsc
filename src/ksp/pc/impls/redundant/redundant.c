@@ -26,29 +26,27 @@ static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscTruth     iascii,isstring;
-  PetscViewer    sviewer,subviewer;
-  PetscInt       color = red->psubcomm->color;
+  PetscViewer    subviewer;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)pc)->comm,&rank);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Redundant preconditioner: First (color=0) of %D PCs follows\n",red->nsubcomm);CHKERRQ(ierr);
-    ierr = PetscViewerGetSubcomm(viewer,((PetscObject)red->pc)->comm,&subviewer);CHKERRQ(ierr);
-    if (!color) { /* only view first redundant pc */
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = KSPView(red->ksp,subviewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    if (!red->psubcomm) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Redundant preconditioner: Not yet setup\n");CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Redundant preconditioner: First (color=0) of %D PCs follows\n",red->nsubcomm);CHKERRQ(ierr);
+      ierr = PetscViewerGetSubcomm(viewer,((PetscObject)red->pc)->comm,&subviewer);CHKERRQ(ierr);
+      if (red->psubcomm->color) { /* only view first redundant pc */
+	ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+	ierr = KSPView(red->ksp,subviewer);CHKERRQ(ierr);
+	ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerRestoreSubcomm(viewer,((PetscObject)red->pc)->comm,&subviewer);CHKERRQ(ierr);
     }
-    ierr = PetscViewerRestoreSubcomm(viewer,((PetscObject)red->pc)->comm,&subviewer);CHKERRQ(ierr);
-  } else if (isstring) { /* not test it yet! */
+  } else if (isstring) { 
     ierr = PetscViewerStringSPrintf(viewer," Redundant solver preconditioner");CHKERRQ(ierr);
-    ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
-    if (!rank) {
-      ierr = KSPView(red->ksp,sviewer);CHKERRQ(ierr);
-    }
-    ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for PC redundant",((PetscObject)viewer)->type_name);
   }
