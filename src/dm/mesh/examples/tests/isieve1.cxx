@@ -245,14 +245,10 @@ public:
     int    faces[3] = {1, 1, 1};
 
     const ALE::Obj<ALE::Mesh> mB = ALE::MeshBuilder<ALE::Mesh>::createCubeBoundary(PETSC_COMM_WORLD, lower, upper, faces, 0);
-    std::cout << "Create mesh boundary" << std::endl;
     mB->getFactory()->clear(); // Necessary since we get pointer aliasing
     m  = ALE::Generator<ALE::Mesh>::generateMesh(mB, interpolate);
-    std::cout << "Created mesh" << std::endl;
     ALE::ISieveConverter::convertSieve(*m->getSieve(), *this->_sieve, renumbering);
-    std::cout << "Created sieve" << std::endl;
     ALE::ISieveConverter::convertOrientation(*m->getSieve(), *this->_sieve, renumbering, m->getArrowSection("orientation").ptr());
-    std::cout << "Created sieve orientation" << std::endl;
     if (this->_debug > 1) {
       m->view("Cube Mesh");
       this->_sieve->view("Cube Sieve");
@@ -433,9 +429,7 @@ public:
 
     for(int p = copySieve.getChart().min(); p < copySieve.getChart().max(); ++p) {
       renumbering[p] = copySieve.getChart().max()-1 - p;
-      std::cout << "renumbering["<<p<<"]: " << renumbering[p] << std::endl;
     }
-    std::cout << "Made renumbering" << std::endl;
     // Make section reversing numbering
     ALE::Obj<ALE::IUniformSection<int,int> > labeling = new ALE::IUniformSection<int,int>(PETSC_COMM_WORLD);
 
@@ -447,12 +441,8 @@ public:
     for(int p = copySieve.getChart().min(); p < copySieve.getChart().max(); ++p) {
       labeling->updatePoint(p, &renumbering[p]);
     }
-    std::cout << "Made labeling" << std::endl;
     this->_sieve->relabel(*labeling);
-    std::cout << "Relabeled sieve" << std::endl;
     // Check that we get the reverse
-    copySieve.view("Original sieve");
-    this->_sieve->view("Relabeled sieve");
     checkSieve(copySieve, *this->_sieve, renumbering);
     } catch(ALE::Exception e) {
       std::cerr << "ERROR: " << e << std::endl;
@@ -465,13 +455,10 @@ public:
     std::map<ALE::Mesh::point_type,sieve_type::point_type> renumbering2;
 
     createTetrahedralMesh(interpolate, m, renumbering);
-    std::cout << "Made mesh" << std::endl;
     ALE::Obj<sieve_type> copySieve = this->_sieve;
-    std::cout << "Made copy" << std::endl;
     m = PETSC_NULL;
     this->_sieve = new sieve_type(PETSC_COMM_WORLD, this->_debug);
     createTetrahedralMesh(interpolate, m, renumbering2);
-    std::cout << "Made mesh again" << std::endl;
     testRelabeling(*copySieve);
   };
 
