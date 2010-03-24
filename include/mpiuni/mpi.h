@@ -496,10 +496,8 @@ extern int    MPI_Finalized(int*);
      array_of_types, newtype) MPI_SUCCESS
 #define MPI_Address(location,address) \
      (*(address) = (MPIUNI_INTPTR)(char *)(location),MPI_SUCCESS)
-#define MPI_Type_extent(datatype,extent) \
-     MPI_Abort(MPI_COMM_WORLD,0)
-#define MPI_Type_size(datatype,size) \
-     MPI_Abort(MPI_COMM_WORLD,0)
+#define MPI_Type_extent(datatype,extent) *(extent) = datatype
+#define MPI_Type_size(datatype,size) *(size) = datatype
 #define MPI_Type_lb(datatype,displacement) \
      MPI_Abort(MPI_COMM_WORLD,0)
 #define MPI_Type_ub(datatype,displacement) \
@@ -710,9 +708,7 @@ extern int    MPI_Finalized(int*);
 
 #define MPI_Type_get_extent(datatype,lb,extent) \
   (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (datatype),      \
-   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (lb),     \
-   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (extent), \
-   MPI_Abort(MPI_COMM_WORLD,0))
+   *(lb) = 0, *(extent) = datatype,0)
 
 #define MPI_File_write_all(mpi_fh,buf,count,datatype,status) \
   (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (mpi_fh),             \
