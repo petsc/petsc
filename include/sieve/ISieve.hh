@@ -1545,25 +1545,33 @@ namespace ALE {
       }
       this->prefixSum(offsets);
       ierr = PetscMemcpy(this->supportOffsets, offsets, (this->chart.size()+1)*sizeof(index_type));CHKERRXX(ierr);
-      // Recalculate coneOrientations
-      for(index_type p = this->chart.min(); p < this->chart.max(); ++p) {
-	const point_type newP = labeling.restrictPoint(p)[0];
-
-	offsets[newP] = this->coneOrientations[p];
-      }
-      ierr = PetscMemcpy(this->coneOrientations, offsets, this->chart.size()*sizeof(index_type));CHKERRXX(ierr);
       for(index_type i = this->chart.min(); i <= this->chart.max(); ++i) {indexAlloc.destroy(offsets+i);}
       indexAlloc.deallocate(offsets, this->chart.size()+1);
-      // Recalculate cones
-      index_type  size  = std::max(this->coneOffsets[this->chart.max()] - this->coneOffsets[this->chart.min()],
+      index_type  size = std::max(this->coneOffsets[this->chart.max()] - this->coneOffsets[this->chart.min()],
 				   this->supportOffsets[this->chart.max()] - this->supportOffsets[this->chart.min()]);
+      index_type *orientations = offsets = indexAlloc.allocate(size);
+      for(index_type i = 0; i < size; ++i) {indexAlloc.construct(orientations+i, index_type(0));}
+      // Recalculate coneOrientations
+      for(index_type p = this->chart.min(), offset = 0; p < this->chart.max(); ++p) {
+	const point_type newP  = labeling.restrictPoint(p)[0];
+	const index_type start = this->coneOffsets[newP];
+	const index_type end   = this->coneOffsets[newP+1];
+
+	for(index_type c = start; c < end; ++c, ++offset) {
+	  orientations[c] = this->coneOrientations[offset];
+	}
+      }
+      ierr = PetscMemcpy(this->coneOrientations, orientations, (this->coneOffsets[this->chart.max()] - this->coneOffsets[this->chart.min()])*sizeof(index_type));CHKERRXX(ierr);
+      for(index_type i = 0; i < size; ++i) {indexAlloc.destroy(orientations+i);}
+      indexAlloc.deallocate(orientations, size);
+      // Recalculate cones
       point_type *array = pointAlloc.allocate(size);
 
       for(index_type i = 0; i < size; ++i) {pointAlloc.construct(array+i, point_type(0));}
       for(index_type p = this->chart.min(), offset = 0; p < this->chart.max(); ++p) {
-	const point_type newP     = labeling.restrictPoint(p)[0];
-	const index_type start    = this->coneOffsets[newP];
-	const index_type end      = this->coneOffsets[newP+1];
+	const point_type newP  = labeling.restrictPoint(p)[0];
+	const index_type start = this->coneOffsets[newP];
+	const index_type end   = this->coneOffsets[newP+1];
 
 	for(index_type c = start; c < end; ++c, ++offset) {
 	  const point_type newQ = labeling.restrictPoint(this->cones[offset])[0];
@@ -1574,9 +1582,9 @@ namespace ALE {
       ierr = PetscMemcpy(this->cones, array, size*sizeof(point_type));CHKERRXX(ierr);
       // Recalculate supports
       for(index_type p = this->chart.min(), offset = 0; p < this->chart.max(); ++p) {
-	const point_type newP     = labeling.restrictPoint(p)[0];
-	const index_type start    = this->supportOffsets[newP];
-	const index_type end      = this->supportOffsets[newP+1];
+	const point_type newP  = labeling.restrictPoint(p)[0];
+	const index_type start = this->supportOffsets[newP];
+	const index_type end   = this->supportOffsets[newP+1];
 
 	for(index_type c = start; c < end; ++c, ++offset) {
 	  const point_type newQ = labeling.restrictPoint(this->supports[offset])[0];
