@@ -1710,15 +1710,17 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
   PetscInt           nzi,*bj,**bj_ptr,**bjlvl_ptr; 
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL; 
   PetscFreeSpaceList free_space_lvl=PETSC_NULL,current_space_lvl=PETSC_NULL; 
-  PetscTruth         olddatastruct=PETSC_FALSE;
   
   PetscFunctionBegin;
   /* Uncomment the old data struct part only while testing new data structure for MatSolve() */
+  /*
+  PetscTruth         olddatastruct=PETSC_FALSE;
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-ilu_old",&olddatastruct,PETSC_NULL);CHKERRQ(ierr);
   if(olddatastruct){
     ierr = MatILUFactorSymbolic_SeqAIJ_inplace(fact,A,isrow,iscol,info);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
+  */
   
   levels = (PetscInt)info->levels;
   ierr   = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
@@ -1727,7 +1729,9 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
   if (!levels && row_identity && col_identity) { 
     /* special case: ilu(0) with natural ordering */
     ierr = MatILUFactorSymbolic_SeqAIJ_ilu0(fact,A,isrow,iscol,info);CHKERRQ(ierr);
-    ierr = Mat_CheckInode_FactorLU(fact,PETSC_FALSE);CHKERRQ(ierr);
+    if (a->inode.size) {
+      fact->ops->lufactornumeric  = MatLUFactorNumeric_SeqAIJ_Inode;
+    }
     PetscFunctionReturn(0);
   }
 
