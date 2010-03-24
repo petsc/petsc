@@ -942,7 +942,15 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DAL
   CHKMEMQ;
   ierr = PetscObjectGetCookie((PetscObject) dmmg[0]->dm,&cookie);CHKERRQ(ierr);
   if (cookie == DM_COOKIE) {
-    ierr = DMMGSetSNES(dmmg,DMMGFormFunction,computejacobian);CHKERRQ(ierr);
+    PetscTruth flag;
+    /* it makes no sense to use an option to decide on ghost, it depends on whether the 
+       formfunctionlocal computes ghost values in F or not. */
+    ierr = PetscOptionsHasName(PETSC_NULL, "-dmmg_form_function_ghost", &flag);CHKERRQ(ierr);
+    if (flag) {
+      ierr = DMMGSetSNES(dmmg,DMMGFormFunctionGhost,computejacobian);CHKERRQ(ierr);
+    } else {
+      ierr = DMMGSetSNES(dmmg,DMMGFormFunction,computejacobian);CHKERRQ(ierr);
+    }
     for (i=0; i<nlevels; i++) {
       dmmg[i]->isctype  = IS_COLORING_GHOSTED;   /* switch to faster version since have local function evaluation */
       ierr = DASetLocalFunction((DA)dmmg[i]->dm,function);CHKERRQ(ierr);
