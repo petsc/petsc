@@ -625,6 +625,20 @@ runex45_3:
 	   else echo "Possible problem with ex45_3, diffs above"; fi; \
 	   ${RM} -f ex45.tmp
 
+runex48:
+	-@${MPIEXEC} -n 1 ./ex48 -M 6 -P 4 -thi_nlevels 2 -snes_monitor_short -snes_converged_reason -ksp_monitor_short -ksp_converged_reason -thi_mat_type sbaij > ex48.tmp 2>&1; \
+	   ${DIFF} output/ex48_1.out ex48.tmp || echo "Possible problem with ex48_1, diffs above"; \
+	   ${RM} -f ex48.tmp
+runex48_2:
+	-@${MPIEXEC} -n 2 ./ex48 -M 6 -P 4 -thi_hom z -thi_nlevels 2 -snes_monitor_short -snes_converged_reason -ksp_monitor_short -ksp_converged_reason -thi_mat_type sbaij -mg_levels_pc_type asm -mg_levels_pc_asm_blocks 6 -mg_levels_0_pc_type redundant -dmmg_grid_sequence -thi_mat_partitioning_type current > ex48.tmp 2>&1; \
+	   ${DIFF} output/ex48_2.out ex48.tmp || echo "Possible problem with ex48_2, diffs above"; \
+	   ${RM} -f ex48.tmp
+runex48_3:
+	-@${MPIEXEC} -n 3 ./ex48 -M 7 -P 4 -thi_hom z -thi_nlevels 2 -snes_monitor_short -snes_converged_reason -ksp_monitor_short -ksp_converged_reason -thi_mat_type baij -mg_levels_pc_type asm -mg_levels_pc_asm_blocks 9 -thi_mat_partitioning_type current > ex48.tmp 2>&1; \
+	   ${DIFF} output/ex48_3.out ex48.tmp || echo "Possible problem with ex48_3, diffs above"; \
+	   ${RM} -f ex48.tmp
+
+
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \
                                  runex3_2 runex3_3 runex3_4 ex3.rm ex5.PETSc runex5 runex5_2 runex5_3 runex5_4 \
                                  runex5_5 runex5_6 runex5_7 runex5_9 runex5_13 runex5_14 ex5.rm \
@@ -634,7 +648,8 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  ex22.PETSc runex22 ex22.rm ex18.PETSc ex18.rm ex19.PETSc ex19.rm ex21.PETSc runex21 ex21.rm \
                                  ex23.PETSc runex23 ex23.rm ex24.PETSc ex24.rm   ex25.PETSc runex25 runex25_2 \
                                  ex25.rm ex29.PETSc ex29.rm ex31.PETSc ex31.rm ex42.PETSc runex42 ex42.rm ex43.PETSc ex43.rm \
-                                 ex44.PETSc runex44 runex44_2 ex44.rm ex45.PETSc runex45 runex45_2 runex45_3 ex45.rm ex47.PETSc ex47.rm
+                                 ex44.PETSc runex44 runex44_2 ex44.rm ex45.PETSc runex45 runex45_2 runex45_3 ex45.rm ex47.PETSc ex47.rm \
+                                 ex48.PETSc runex48 runex48_2 runex48_3 ex48.rm
 TESTEXAMPLES_C_X11	       = ex5.PETSc runex5_8 runex5_10 ex5.rm 
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex26.PETSc ex26.rm ex30.PETSc ex30.rm
