@@ -325,7 +325,11 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   *ierr = MPI_Type_contiguous(2,MPIU_REAL,&MPI_C_DOUBLE_COMPLEX);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types");return;}
   *ierr = MPI_Type_commit(&MPI_C_DOUBLE_COMPLEX);
-  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types");return;}  
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types");return;}
+  *ierr = MPI_Type_contiguous(2,MPI_FLOAT,&MPI_C_COMPLEX);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types");return;}
+  *ierr = MPI_Type_commit(&MPI_C_COMPLEX);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types");return;}
   *ierr = MPI_Op_create(PetscSum_Local,1,&MPIU_SUM);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops");return;}
 #endif

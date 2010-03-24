@@ -1415,18 +1415,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat B,Mat A,c
         i = bj[jmin]; c2r[k] = c2r[i]; c2r[i] = k;
       }  
 
-      /* MatPivotCheck() */
       sctx.rs  = rs;
       sctx.pv  = dk;
-      if (info->shifttype == (PetscReal)MAT_SHIFT_NONZERO){
-        ierr = MatPivotCheck_nz(info,sctx,k);CHKERRQ(ierr);
-      } else if (info->shifttype == (PetscReal)MAT_SHIFT_POSITIVE_DEFINITE){
-        ierr = MatPivotCheck_pd(info,sctx,k);CHKERRQ(ierr);
-      } else if (info->shifttype == (PetscReal)MAT_SHIFT_INBLOCKS){
-        ierr = MatPivotCheck_inblocks(info,sctx,k);CHKERRQ(ierr);       
-      } else {
-        ierr = MatPivotCheck_none(info,sctx,k);CHKERRQ(ierr); 
-      }
+      ierr = MatPivotCheck(info,sctx,k);CHKERRQ(ierr);
       dk = sctx.pv;
  
       ba[bdiag[k]] = 1.0/dk; /* U(k,k) */

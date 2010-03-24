@@ -1199,7 +1199,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUp(DMMG *dmmg)
     }
     ierr = PetscFree(fields);CHKERRQ(ierr);
   }
-  ierr = PCSetDA(pc,(DA)DMMGGetDM(dmmg));CHKERRQ(ierr);
+  ierr = PCSetDM(pc,DMMGGetDM(dmmg));CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

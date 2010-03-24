@@ -21,7 +21,6 @@
 #include "private/tsimpl.h"                /*I   "petscts.h"   I*/
 
 typedef struct {
-  Vec Xold;
   Vec X,Xdot;                   /* Storage for one stage */
   Vec res;                      /* DAE residuals */
   PetscTruth extrapolate;
@@ -34,36 +33,40 @@ typedef struct {
 #define __FUNCT__ "TSStep_Theta"
 static PetscErrorCode TSStep_Theta(TS ts,PetscInt *steps,PetscReal *ptime)
 {
-  Vec            sol = ts->vec_sol;
-  PetscErrorCode ierr;
-  PetscInt       i,max_steps = ts->max_steps,its,lits;
   TS_Theta       *th = (TS_Theta*)ts->data;
+  PetscInt       i,max_steps = ts->max_steps,its,lits;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *steps = -ts->steps;
-  ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
+  *ptime = ts->ptime;
+
+  ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
 
   for (i=0; i<max_steps; i++) {
     if (ts->ptime + ts->time_step > ts->max_time) break;
     ierr = TSPreStep(ts);CHKERRQ(ierr);
+
     th->stage_time = ts->ptime + th->Theta*ts->time_step;
     th->shift = 1./(th->Theta*ts->time_step);
-    ts->ptime += ts->time_step;
 
-    ierr = VecCopy(sol,th->Xold);CHKERRQ(ierr); /* Used within function evalutaion */
     if (th->extrapolate) {
-      ierr = VecWAXPY(th->X,1./th->shift,th->Xdot,sol);CHKERRQ(ierr);
+      ierr = VecWAXPY(th->X,1./th->shift,th->Xdot,ts->vec_sol);CHKERRQ(ierr);
     } else {
-      ierr = VecCopy(sol,th->X);CHKERRQ(ierr);
+      ierr = VecCopy(ts->vec_sol,th->X);CHKERRQ(ierr);
     }
     ierr = SNESSolve(ts->snes,PETSC_NULL,th->X);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
     ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
     ts->nonlinear_its += its; ts->linear_its += lits;
-    ierr = VecAXPY(sol,ts->time_step,th->Xdot);CHKERRQ(ierr);
+
+    ierr = VecAXPBYPCZ(th->Xdot,-th->shift,th->shift,0,ts->vec_sol,th->X);CHKERRQ(ierr);
+    ierr = VecAXPY(ts->vec_sol,ts->time_step,th->Xdot);CHKERRQ(ierr);
+    ts->ptime += ts->time_step;
     ts->steps++;
+
     ierr = TSPostStep(ts);CHKERRQ(ierr);
-    ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
+    ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
   }
 
   *steps += ts->steps;
@@ -80,17 +83,16 @@ static PetscErrorCode TSDestroy_Theta(TS ts)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = VecDestroy(th->Xold);CHKERRQ(ierr);
-  ierr = VecDestroy(th->X);CHKERRQ(ierr);
-  ierr = VecDestroy(th->Xdot);CHKERRQ(ierr);
-  ierr = VecDestroy(th->res);CHKERRQ(ierr);
+  if (th->X)    {ierr = VecDestroy(th->X);CHKERRQ(ierr);}
+  if (th->Xdot) {ierr = VecDestroy(th->Xdot);CHKERRQ(ierr);}
+  if (th->res)  {ierr = VecDestroy(th->res);CHKERRQ(ierr);}
   ierr = PetscFree(th);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*
-    This defines the nonlinear equation that is to be solved with SNES
-    G(U) = F[t0+T*dt, U, (U-U0)*shift] = 0
+  This defines the nonlinear equation that is to be solved with SNES
+  G(U) = F[t0+Theta*dt, U, (U-U0)*shift] = 0
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSThetaFunction"
@@ -101,7 +103,7 @@ static PetscErrorCode TSThetaFunction(SNES snes,Vec x,Vec y,void *ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecAXPBYPCZ(th->Xdot,-th->shift,th->shift,0,th->Xold,x);CHKERRQ(ierr);
+  ierr = VecAXPBYPCZ(th->Xdot,-th->shift,th->shift,0,ts->vec_sol,x);CHKERRQ(ierr);
   ierr = TSComputeIFunction(ts,th->stage_time,x,th->Xdot,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -115,7 +117,7 @@ static PetscErrorCode TSThetaJacobian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* th->Xdot will have already been computed in TSThetaFunction */
+  /* th->Xdot has already been computed in TSThetaFunction (SNES guarantees this) */
   ierr = TSComputeIJacobian(ts,th->stage_time,x,th->Xdot,th->shift,A,B,str);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -129,7 +131,9 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(ts->vec_sol,&th->Xold);CHKERRQ(ierr);
+  if (ts->problem_type == TS_LINEAR) {
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Only for nonlinear problems");
+  }
   ierr = VecDuplicate(ts->vec_sol,&th->X);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&th->Xdot);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&th->res);CHKERRQ(ierr);
@@ -210,6 +214,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Theta(TS ts)
   ts->ops->step           = TSStep_Theta;
   ts->ops->setfromoptions = TSSetFromOptions_Theta;
 
+  ts->problem_type = TS_NONLINEAR;
   ierr = SNESCreate(((PetscObject)ts)->comm,&ts->snes);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)ts->snes,(PetscObject)ts,1);CHKERRQ(ierr);
 

@@ -174,6 +174,8 @@ class Configure(config.base.Configure):
       # F90 Modules
       if self.setCompilers.fortranModuleIncludeFlag:
         self.addMakeMacro('FC_MODULE_FLAG', self.setCompilers.fortranModuleIncludeFlag)
+      else: # for non-f90 compilers like g77
+        self.addMakeMacro('FC_MODULE_FLAG', '-I')
       if self.setCompilers.fortranModuleIncludeFlag:
         self.addMakeMacro('FC_MODULE_OUTPUT_FLAG', self.setCompilers.fortranModuleOutputFlag)
     else:
@@ -281,6 +283,7 @@ class Configure(config.base.Configure):
   def dumpMachineInfo(self):
     import platform
     import time
+    import script
     fd = file(os.path.join(self.arch.arch,'include','petscmachineinfo.h'),'w')
     fd.write('static const char *petscmachineinfo = \"\\n\"\n')
     fd.write('\"-----------------------------------------\\n\"\n')

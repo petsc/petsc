@@ -17,11 +17,18 @@ foreach CONF ($*)
 
   echo "start build at `date`:$SSH $USR@$MACH $DASHN $LOC/bin/maint/buildtest $CONF" 
   if ("${MERCURIAL}" == "yes") then
-    $SSH $USR@$MACH $DASHN "cd $LOC ; hg revert -a; hg pull; hg update; $LOC/bin/maint/buildtest $CONF" &
+    $SSH $USR@$MACH $DASHN test "\( -d  $LOC \)"
+    if ("$?" != "0") then
+      if ("$PURL" != "" || "$BURL" != "") then
+      echo "$LOC does not exist! Creating clones using $PURL and $BURL"
+      $SSH $USR@$MACH $DASHN "hg clone -q $PURL $LOC; hg clone -q $BURL $LOC/config/BuildSystem"
+      endif
+    endif
+    $SSH $USR@$MACH $DASHN "cd $LOC ; hg revert -a; hg pull; hg update"
   else
     rsync -e ssh -az --delete  $pdir/ ${USR}@${MACH}:${LOC}
-    $SSH $USR@$MACH $DASHN "cd $LOC; $LOC/bin/maint/buildtest $CONF" &
   endif
+  $SSH $USR@$MACH $DASHN "cd $LOC; $LOC/bin/maint/buildtest $CONF" &
   sleep 120 # perhaps ease the nfs load
 end
 wait

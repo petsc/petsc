@@ -1763,6 +1763,7 @@ pages="1--21"
 }
 
 % -------------------------------------------------------------------------
+% -------------------------------------------------------------------------
 
 @Article(torczon,
     Author=      "J.~E.~Dennis and V.~Torczon",
@@ -2028,7 +2029,7 @@ Booktitle = "Supercomputing '95 Proceedings",
 @Misc{overture-web-page,
   author = "William Henshaw and Kyle Chand",
   title  = "{Overture} {W}eb page",
-  note   = "Lawrence Livermore National Laboratory, see \url{http://www.llnl.gov/CASC/Overture}"
+  howpublished = "\url{http://www.llnl.gov/CASC/Overture}"
 }
 
 @INPROCEEDINGS{ overture99,
@@ -2262,6 +2263,12 @@ Booktitle = "Supercomputing '95 Proceedings",
   institution = "Cornell University and Argonne National Laboratory"
 }
 
+@misc{sundials:homepage,
+   author = "C. {Woodward}",
+   title = "{SUNDIALS {W}eb page}",
+   howpublished  = "\url{https://computation.llnl.gov/casc/sundials/main.html}"
+}
+
 @misc{sundials-user-ref,
   title       = "{SUNDIALS}: Suite of Nonlinear and Differential/Algebraic Equation Solvers",
   note        =	"See \url{http://www.llnl.gov/CASC/sundials}",
@@ -2270,6 +2277,37 @@ Booktitle = "Supercomputing '95 Proceedings",
   number = "UCRL-JP-200037",
   year = 2003
 }
+
+@article{sundials05,
+  author = "A. Hindmarsh and P. Brown and K. Grant and S. Lee and R. Serban and D. Shumaker and C. Woodward", 
+  title = "{SUNDIALS:} Suite of Nonlinear and Differential/Algebraic Equation Solvers",
+  journal = "ACM Transactions on Mathematical Software", 
+  volume = 31,
+  number = 3, 
+  pages = "363 -- 396", 
+  year = 2005
+}
+
+@article{pvode99,
+  author = "G. Byrne and A. Hindmarsh", 
+  title = "{PVODE}, An {ODE} Solver for Parallel Computers", 
+  journal = "Int. J. High Perf. Comput. Apps.", 
+  volume = 13,
+  number = 4, 
+  year = 1999, 
+  pages = "354 -- 365"
+}
+
+@article{cvode95,
+  author = "S. Cohen and A. Hindmarsh", 
+  title = "{CVODE}, A Stiff/Nonstiff {ODE} Solver in {C}",
+  journal = "Computers in Physics", 
+  volume = 10,
+  number = 2, 
+  year = 1996, 
+  pages = "138 -- 143"
+}
+
 @techreport{ifpack,
   title       = "Robust Algebraic Preconditioners using {IFPACK} 3.0",
   author      = "Marzio Sala and Michael Heroux",
@@ -2472,7 +2510,7 @@ mesh refinement",
 @Misc{tops:homepage,
   author =	 {David {Keyes (PI)}},
   title =	 {{Towards Optimal Petascale Simulations (TOPS) Center}},
-  howpublished = {\url{http://tops-scidac.org}}
+  howpublished = {\url{http://scalablesolvers.org}}
 }
 
 @Misc{tstt:homepage,
@@ -2572,6 +2610,12 @@ mesh refinement",
    author = "M. {Heroux}",
    title = "{Trilinos Web page}",
    howpublished  = "http://software.sandia.gov/Trilinos"
+}
+
+@misc{rythmos:homepage,
+  author = "T. Coffey and R. Bartlett",
+  title = "Rythmos: Transient Integration of Differential Equations",
+  howpublished = "http://trilinos.sandia.gov/packages/rythmos"
 }
 
 @misc{ase:homepage,
@@ -3109,10 +3153,10 @@ note = "Available via \url{http://w3.pppl.gov/usjapanim/FSPReport.pdf}"
   pages = "326--350" 
 }
 
-@unpublished{compass07:proposal,
+@unpublished{compass:homepage,
   author = {Panagiotis {Spentzouris (PI)}},
-  title  = {Community Petascale Project for Accelerator Science and Simulation},
-  note   = {SciDAC2 accelerator sciences proposal, submitted January, 2007},
+  title  = {Community Petascale Project for Accelerator Science and Simulation (ComPASS)},
+  note   = {SciDAC2 project, see \url{https://compass.fnal.gov/}}
 }
 
 @Misc{scidac:homepage,
@@ -3147,6 +3191,17 @@ note = "Available via \url{http://w3.pppl.gov/usjapanim/FSPReport.pdf}"
   year          = "2000",
   volume        = "7",
   pages         = "1951",
+  note          = ""
+}
+
+@Article{         bout++,
+  author        = "B. Dudson and M. Umansky and X.~Q. Xu and P. B. Snyder and H. R. Wilson",
+  title         = "{BOUT++}: A Framework for Parallel Plasma Fluid Simulations",
+  journal       = "Computer Physics Communications",
+  year          = "2009",
+  volume        = "180",
+  issue         = "9",
+  pages         = "1467 -- 1480",
   note          = ""
 }
 
@@ -3206,6 +3261,21 @@ note = "Available via \url{http://w3.pppl.gov/usjapanim/FSPReport.pdf}"
 % Model coupling refs
 
 http://csdrm.caltech.edu/
+
+@book{greve-blatter,
+  author = "Ralf Greve and Heinz Blatter",
+  title = "Dynamics of Ice Sheets and Glaciers",
+  series = "Advances in Geophysical and Environmental Mechanics and Mathematics",
+  publisher = "Springer",
+  year = 2009
+}
+
+@Misc{doe-isicles,
+  key = {ISICLES},
+  title ="Ice {S}heet {I}nitiative for {CL}-imate {E}xtreme{S}",
+  howpublished="\url{http://www.csm.ornl.gov/ISICLES/index.html}"
+}
+
 
 @Misc{mct-website,
   key = {MCT},
@@ -3404,6 +3474,14 @@ http://csdrm.caltech.edu/
   url = {http://www.cactuscode.org/Papers/VecPar_2002.pdf}
 }
 
+@misc{cactus:homepage,
+   author = "G. {Allen} et al.",
+   title = "{Cactus Web page}",
+   howpublished  = "http://cactuscode.org/"
+}
+
+
+
 @Misc{open-grid-forum:web,
   key = "{Open Grid Forum}",
   title = "{Open Grid Forum}",
@@ -3524,6 +3602,16 @@ http://csdrm.caltech.edu/
   issue = 3, 
   pages = "198--213",
   year = 2005
+}
+
+@article{dubey09,
+  title = "Extensibe Component-Based Architecture for {FLASH}, a Massively Parallel Multiphysics Simulation Code",
+  author = "A. Dubey and K. Antypass and M. Ganapathy and L. Reid and D. Sheeler and A. Siegel and K. Weide",
+  journal = "Parallel Computing",
+  volume = 35,
+  issue = "10 -- 11",
+  pages = "512 -- 522",
+  year = 2009
 }
 
 @Book{BottLoring95,
@@ -4198,4 +4286,136 @@ pages = {29-35}
   pages     = {675},
   year      = {2001},
   isbn      = {0792373510}
+}
+
+@misc{KritzKeyesFSP07,
+author= "A. Kritz and D. Keyes",
+title=  "{Fusion Simulation Project Workshop Report}",
+month=  "July",
+year =  2007,
+note = "Available via \url{http://www.sc.doe.gov/ofes/More_HTML/FESAC/FESAC07/FSP_report_070702d.pdf}"
+}
+
+@misc{Dahlburg04,
+author= "{J. Dahlburg (Chair)}", 
+title=  "{Final Report of the FESAC ISOFS SubCommittee}",
+year =  2004,
+note = "Available via \url{http://www.ofes.fusion.doe.gov/More_HTML/FESAC/FESAC11-02/Dahlburg.pdf}"
+}
+
+@misc{Brown08,
+author= "{D. Brown (Chair)}",
+title=  "{Applied Mathematics at the U.S. Department of Energy:  Past, Present, and a View to the Future}", 
+month=  "May",
+year =  2008,
+note = "Available via \url{http://www.sc.doe.gov/ascr/ProgramDocuments/Docs/Brown_Report_May_08.pdf}"
+}
+
+@misc{Crosscutting10,
+author= "{D. Brown and P. Messina (Chairs)}",
+title=  "{Workshop on Cross-cutting Technologies for Computing at the Exascale}",
+month=  "Feb",
+year =  2010,
+note = "See \url{http://extremecomputing.labworks.org/crosscut/index.stm} and references therein for workshop reports on nuclear science, nuclear energy, climate, high-energy physics, fusion"
+}
+
+@misc{MonizRosner09,
+author= "{E. Moniz and R. Rosner}",
+title=  "{Workshop on Science Based Nuclear Energy Systems Enabled by Advanced Modeling and Simulation at the Extreme Scale}",
+month=  "May",
+year =  2009,
+note = "See \url{http://extremecomputing.labworks.org/crosscut/references/nuclearenergy10exascael.pdf}"
+}
+
+@misc{Blanford08,
+author= "{R. Blandord (Chair)}",
+title=  "{Workshop on Challenges for Understanding the Quantum Universe and the Role of Computing at the Extreme Scale}",
+month=  "Dec",
+year =  2008,
+note = "See \url{http://extremecomputing.labworks.org/crosscut/references/HEPreport10exascale.pdf}"
+}
+
+@misc{Exascale07,
+author= "H. Simon and T. Zacharia and R. Stevens",
+title=  "{Modeling and Simulation at the Exascale for Energy and the Environment}",
+year =  2007,
+note = "See \url{http://www.sc.doe.gov/ascr/ProgramDocuments/Docs/TownHall.pdf}"
+}
+
+@misc{ASCRBreakthroughs08,
+  author = "Panel on Recent Significant Advancements in Computational Science",
+  title = "Breakthroughs 2008",
+  year = 2008,
+  note = "See \url{http://www.er.doe.gov/ASCR/ProgramDocuments/Docs/Breakthroughs_2008.pdf}"
+}
+
+@misc{petsc-RD100-2009,
+  author = "R\&D Magazine",
+  title = "{PETSc} {R}\&{D} 100 Award",
+  year = 2009,
+  note = "See \url{http://www.rdmag.com/Awards/RD-100-Awards/2009/07/PETSc-Release-3-0-Expands-Capabilities}"
+}
+
+@article{compass-scidac08,
+   author = "P. Spentzouris and J. Cary and L. C. McInnes and W. Mori and C. Ng and E. Ng and R. Ryne",
+   title  = "Community Petascale Project for Accelerator Science and Simulation: 
+             Advancing Computational Science for Future Accelerators and Accelerator Technologies",
+   journal = "J. Phys.: Conf. Ser.",
+   volume = 125,
+   year = 2008,
+   pages = 012001, 
+   url = "http://iopscience.iop.org/1742-6596/125/1/012001"
+}
+
+@inproceedings{muszala09,
+  title = "Two-tiered Component Design and Performance Analysis of {Synergia2} Accelerator Simulations", 
+  author = "S. Muszala and J. Amundson and L. C. McInnes and B. Norris", 
+  booktitle = "Proceedings of the 2009 Workshop on Component-Based High Performance Computing (CBHPC 2009)",
+  year = 2009
+}
+
+@article{gaston09,
+  title = "{MOOSE}:  A Parallel Computational Framework for Coupled Systems of Nonlinear Equations",
+  author = "Derek Gaston and Chris Newman and Glen Hansen and Damien Lebrun-Grandie",
+  journal = "Nuclear Engineering and Design",
+  volume = 239,
+  number = 10,
+  year = 2009,
+  pages = "1768 -- 1778"
+}
+
+@article{gaston09b,
+  title = "Parallel Multiphysics Algorithms and Software for Computational Nuclear Engineering",
+  author = "D. Gaston and G. Hansen and S. Kadioglu and D. Knoll and C. Newman and H. Park and C. Permann and W. Taitano",
+  journal = "J. Phys.: Conf. Ser.",
+  volume = 180,
+  year = 2009,
+  pages = 012012
+}
+
+@article{newman09,
+  title = "Three Dimensional Coupled Simulation of Thermomechanics, Heat, and Oxygen Diffusion in {UO$_2$} Nuclear Fuel Rods",
+  author = "Chris Newman and Glen Hansen and Derek Gaston",
+  journal = "Journal of Nuclear Materials",
+  volume = 392,
+  issue = 1,
+  year = 2009,
+  pages = "6 -- 15"
+}
+
+@misc{www:fenics,
+     author = {{FE}ni{CS}},
+     title = {{FE}ni{CS} Project},
+     howpublished = {URL: url{http://www.fenics.org/}}},
+     year = {2010},
+}
+
+@inproceedings{zwart08,
+   title = "A Multiphysics and Multiscale Software Environment for Modeling Astrophysical Systems",
+   author = "S. Zwart and S. McMillan and B. Nuallain and D. Heggie and J. Lombarsi and P. Hut and 
+             S. Banerjee and H. Belkus and T. Fragos and J. Fregeau and M. Fuji and E. Gaburov and
+             E. Glebbeek and D. Groen and S. Harfst and R. Izzard and J. Juric and S. Justham and 
+             P. Teuben and J. van Bever and O. Yaron and M. Zemp", 
+   booktitle = "Proceedings of ICCS 2008",
+   year = 2008,
 }

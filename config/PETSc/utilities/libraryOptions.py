@@ -35,7 +35,7 @@ class Configure(config.base.Configure):
 
   def isBGL(self):
     '''Returns true if compiler is IBM cross compiler for BGL'''
-    if self.libraries.check('', 'bgl_perfctr_void') and self.libraries.check('', '_xlqadd'):
+    if (self.libraries.check('', 'bgl_perfctr_void') or self.libraries.check('','ADIOI_BGL_Open')) and self.libraries.check('', '_xlqadd'):
       self.logPrint('BGL/IBM detected')
       return 1
     else:

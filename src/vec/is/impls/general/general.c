@@ -314,6 +314,10 @@ PetscErrorCode ISCreateGeneral_Private(MPI_Comm comm,IS *is)
    distributed sets of indices and thus certain operations on them are
    collective.
 
+   ISCreateGeneral() allocates space for the list and indices and copies that list over. ISCreateGeneralNC() does not copy the list over,
+   instead keeps the pointer to the list and frees the list when the ISDestroy() is called. ISCreateGeneralWithArray() is the 
+   same as ISCreateGeneralNC() except it does NOT free the list when ISDestroy() is called.
+
    Level: beginner
 
   Concepts: index sets^creating
@@ -362,7 +366,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneral(MPI_Comm comm,PetscInt n,const
    Input Parameters:
 +  comm - the MPI communicator
 .  n - the length of the index set
--  idx - the list of integers
+-  idx - the list of integers, must be obtained with PetscMalloc()
 
    Output Parameter:
 .  is - the new index set
@@ -378,6 +382,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneral(MPI_Comm comm,PetscInt n,const
    conceptually the same as MPI_Group operations. The IS are then
    distributed sets of indices and thus certain operations on them are
    collective.
+
+   ISCreateGeneral() allocates space for the list and indices and copies that list over. ISCreateGeneralNC() does not copy the list over,
+   instead keeps the pointer to the list and frees the list when the ISDestroy() is called. ISCreateGeneralWithArray() is the 
+   same as ISCreateGeneralNC() except it does NOT free the list when ISDestroy() is called.
 
    Level: beginner
 
@@ -431,19 +439,23 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneralNC(MPI_Comm comm,PetscInt n,con
 .  is - the new index set
 
    Notes:
-   Unlike with ISCreateGeneral, the indices are not copied to internally
+   Unlike with ISCreateGeneral(), the indices are not copied to internally
    allocated storage. The user array is not freed by ISDestroy().
 
    When the communicator is not MPI_COMM_SELF, the operations on IS are NOT
    conceptually the same as MPI_Group operations. The IS are then
    distributed sets of indices and thus certain operations on them are collective.
 
+   ISCreateGeneral() allocates space for the list and indices and copies that list over. ISCreateGeneralNC() does not copy the list over,
+   instead keeps the pointer to the list and frees the list when the ISDestroy() is called. ISCreateGeneralWithArray() is the 
+   same as ISCreateGeneralNC() except it does NOT free the list when ISDestroy() is called.
+
    Level: beginner
 
   Concepts: index sets^creating
   Concepts: IS^creating
 
-.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather()
+.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather(), ISCreateGeneralNC()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneralWithArray(MPI_Comm comm,PetscInt n,PetscInt idx[],IS *is)
 {

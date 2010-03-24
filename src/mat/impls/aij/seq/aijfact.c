@@ -291,11 +291,11 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const Ma
   PetscInt           nlnk,*lnk,k,**bi_ptr;
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
   PetscBT            lnkbt;
+  PetscTruth         olddatastruct=PETSC_FALSE;
 
   PetscFunctionBegin; 
-  // Uncomment the oldatastruct part only while testing new data structure for MatSolve() 
-  PetscTruth         olddatastruct=PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-ilu_old",&olddatastruct,PETSC_NULL);CHKERRQ(ierr);
+  /* Uncomment the oldatastruct part only while testing new data structure for MatSolve() */
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-lu_old",&olddatastruct,PETSC_NULL);CHKERRQ(ierr);
   if(olddatastruct){
     ierr = MatLUFactorSymbolic_SeqAIJ_inplace(B,A,isrow,iscol,info);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -561,18 +561,9 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
         pv[j] = rtmp[pj[j]]; rs += PetscAbsScalar(pv[j]);
       }
 
-      /* MatPivotCheck() */
       sctx.rs  = rs;
       sctx.pv  = rtmp[i];
-      if (info->shifttype == (PetscReal)MAT_SHIFT_NONZERO){
-        ierr = MatPivotCheck_nz(info,sctx,i);CHKERRQ(ierr);
-      } else if (info->shifttype == (PetscReal) MAT_SHIFT_POSITIVE_DEFINITE){
-        ierr = MatPivotCheck_pd(info,sctx,i);CHKERRQ(ierr);
-      } else if (info->shifttype == (PetscReal)MAT_SHIFT_INBLOCKS){
-        ierr = MatPivotCheck_inblocks(info,sctx,i);CHKERRQ(ierr);       
-      } else {
-        ierr = MatPivotCheck_none(info,sctx,i);CHKERRQ(ierr);   
-      }
+      ierr = MatPivotCheck(info,sctx,i);CHKERRQ(ierr);
       rtmp[i] = sctx.pv;
 
       /* Mark diagonal and invert diagonal for simplier triangular solves */
@@ -1712,13 +1703,15 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
   PetscFreeSpaceList free_space_lvl=PETSC_NULL,current_space_lvl=PETSC_NULL; 
   
   PetscFunctionBegin;
-  // Uncomment the old data struct part only while testing new data structure for MatSolve() 
+  /* Uncomment the old data struct part only while testing new data structure for MatSolve() */
+  /*
   PetscTruth         olddatastruct=PETSC_FALSE;
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-ilu_old",&olddatastruct,PETSC_NULL);CHKERRQ(ierr);
   if(olddatastruct){
     ierr = MatILUFactorSymbolic_SeqAIJ_inplace(fact,A,isrow,iscol,info);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
+  */
   
   levels = (PetscInt)info->levels;
   ierr   = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
@@ -1727,7 +1720,9 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
   if (!levels && row_identity && col_identity) { 
     /* special case: ilu(0) with natural ordering */
     ierr = MatILUFactorSymbolic_SeqAIJ_ilu0(fact,A,isrow,iscol,info);CHKERRQ(ierr);
-    ierr = Mat_CheckInode_FactorLU(fact,PETSC_FALSE);CHKERRQ(ierr);
+    if (a->inode.size) {
+      fact->ops->lufactornumeric  = MatLUFactorNumeric_SeqAIJ_Inode;
+    }
     PetscFunctionReturn(0);
   }
 
@@ -2184,15 +2179,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *
       /* MatPivotCheck() */
       sctx.rs  = rs;
       sctx.pv  = dk;
-      if (info->shifttype == (PetscReal)MAT_SHIFT_NONZERO){
-        ierr = MatPivotCheck_nz(info,sctx,k);CHKERRQ(ierr);
-      } else if (info->shifttype == (PetscReal)MAT_SHIFT_POSITIVE_DEFINITE){
-        ierr = MatPivotCheck_pd(info,sctx,k);CHKERRQ(ierr);
-      } else if (info->shifttype == (PetscReal)MAT_SHIFT_INBLOCKS){
-        ierr = MatPivotCheck_inblocks(info,sctx,k);CHKERRQ(ierr);       
-      } else {
-        ierr = MatPivotCheck_none(info,sctx,k);CHKERRQ(ierr); 
-      }
+      ierr = MatPivotCheck(info,sctx,i);CHKERRQ(ierr);
       dk = sctx.pv;
  
       ba[bdiag[k]] = 1.0/dk; /* U(k,k) */

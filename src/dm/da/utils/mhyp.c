@@ -639,9 +639,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPRESStruct_3d(Mat mat,Pets
   int               to_var_entry = 0;
 
   int               nvars= ex->nvars;
-  PetscInt          row,entries[nvars*7];
+  PetscInt          row,*entries;
 
   PetscFunctionBegin;
+  ierr = PetscMalloc(7*nvars*sizeof(PetscInt),&entries);CHKERRQ(ierr);
 
   ordering= ex-> dofs_order; /* ordering= 0   nodal ordering
                                           1   variable ordering */
@@ -737,6 +738,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPRESStruct_3d(Mat mat,Pets
     }
 
   }
+  ierr = PetscFree(entries);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -754,9 +756,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal_HYPRESStruct_3d(Mat mat,Petsc
   int               grid_rank;
   int               var_type; 
   int               nvars= ex->nvars;
-  PetscInt          row,entries[nvars*7];
+  PetscInt          row,*entries;
 
   PetscFunctionBegin;
+  ierr = PetscMalloc(7*nvars*sizeof(PetscInt),&entries);CHKERRQ(ierr);
 
   ierr = PetscMalloc(nvars*sizeof(PetscScalar *),&values);CHKERRQ(ierr);
   ierr = PetscMalloc(7*nvars*nvars*sizeof(PetscScalar),&values[0]);CHKERRQ(ierr);
@@ -804,6 +807,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal_HYPRESStruct_3d(Mat mat,Petsc
   ierr = PetscFree(values[0]);CHKERRQ(ierr);
   ierr = PetscFree(values);CHKERRQ(ierr);
 
+  ierr = PetscFree(entries);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
@@ -821,7 +825,7 @@ PetscErrorCode MatZeroEntries_HYPRESStruct_3d(Mat mat)
 
   size= ((ex->hbox.imax[0])-(ex->hbox.imin[0])+1)*((ex->hbox.imax[1])-(ex->hbox.imin[1])+1)*((ex->hbox.imax[2])-(ex->hbox.imin[2])+1);
   {
-     PetscInt          i,entries[nvars*7];
+     PetscInt          i,*entries;
      PetscScalar      *values;
      int               iupper[3], ilower[3];
      
@@ -830,18 +834,18 @@ PetscErrorCode MatZeroEntries_HYPRESStruct_3d(Mat mat)
         iupper[i]= ex->hbox.imax[i];
      }
 
+     ierr = PetscMalloc2(nvars*7,PetscInt,&entries,nvars*7*size,PetscScalar,&values);CHKERRQ(ierr);
      for (i= 0; i< nvars*7; i++) {
         entries[i]= i;
      }
 
-     ierr = PetscMalloc(nvars*7*size*sizeof(PetscScalar),&values);CHKERRQ(ierr);
      ierr = PetscMemzero(values,nvars*7*size*sizeof(PetscScalar));CHKERRQ(ierr);
 
      for (i= 0; i< nvars; i++) {
         ierr = HYPRE_SStructMatrixSetBoxValues(ex->ss_mat,part,ilower,iupper,i,nvars*7,entries,values);CHKERRQ(ierr);
      }
 
-     ierr = PetscFree(values);CHKERRQ(ierr);
+     ierr = PetscFree2(entries,values);CHKERRQ(ierr);
   }
 
   ierr = HYPRE_SStructMatrixAssemble(ex->ss_mat);CHKERRQ(ierr);
@@ -884,22 +888,22 @@ PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA_HYPRESStruct(Mat mat,DA da)
 
   /* assuming that the same number of dofs on each gridpoint. Also assume all cell-centred based */
   ex->nvars= dof;
-  {
-     HYPRE_SStructVariable vartypes[ex->nvars];
-  
-     for (i= 0; i< dof; i++) {
-        vartypes[i]= HYPRE_SSTRUCT_VARIABLE_CELL;
-     }
-
-     ex->vartypes= vartypes;
-  }
 
   /* create the hypre grid object and set its information */
   if (p) SETERRQ(PETSC_ERR_SUP,"Ask us to add periodic support by calling HYPRE_SStructGridSetPeriodic()");
   ierr = HYPRE_SStructGridCreate(ex->hcomm,dim,nparts,&ex->ss_grid);CHKERRQ(ierr);
 
   ierr = HYPRE_SStructGridSetExtents(ex->ss_grid,part,ex->hbox.imin,ex->hbox.imax);CHKERRQ(ierr);
-  ierr = HYPRE_SStructGridSetVariables(ex->ss_grid, part, ex->nvars,ex->vartypes);CHKERRQ(ierr);
+
+  {
+    HYPRE_SStructVariable *vartypes;
+    ierr = PetscMalloc(ex->nvars*sizeof(HYPRE_SStructVariable),&vartypes);CHKERRQ(ierr);
+    for (i= 0; i< ex->nvars; i++) {
+      vartypes[i]= HYPRE_SSTRUCT_VARIABLE_CELL;
+    }
+    ierr = HYPRE_SStructGridSetVariables(ex->ss_grid, part, ex->nvars,vartypes);CHKERRQ(ierr);
+    ierr = PetscFree(vartypes);CHKERRQ(ierr);
+  }
 
   ierr = HYPRE_SStructGridAssemble(ex->ss_grid);CHKERRQ(ierr);
 
@@ -912,116 +916,42 @@ PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA_HYPRESStruct(Mat mat,DA da)
   if (st == DA_STENCIL_BOX) SETERRQ(PETSC_ERR_SUP,"Ask us to add support for box stencils");
 
   if (dim == 1) {
-    int offsets[3*(ex->nvars)][1];
+    int offsets[3][1] = {{-1},{0},{1}};
     int j, cnt;
 
     ssize = 3*(ex->nvars);
-    cnt= 0;
-    for (i= 0; i< (ex->nvars); i++) {
-       for (j=-1; j< 2; j++) {
-          offsets[cnt][0]= j;
-          cnt++;
-       }
-    }
-
     ierr = HYPRE_SStructStencilCreate(dim,ssize,&ex->ss_stencil);CHKERRQ(ierr);
     cnt= 0;
     for (i= 0; i< (ex->nvars); i++) {
        for (j= 0; j< 3; j++) {
-          ierr = HYPRE_SStructStencilSetEntry(ex->ss_stencil, cnt, offsets[cnt], i);CHKERRQ(ierr);
+          ierr = HYPRE_SStructStencilSetEntry(ex->ss_stencil, cnt, offsets[j], i);CHKERRQ(ierr);
           cnt++;
        }
     }
 
   } else if (dim == 2) {
-    int offsets[5*(ex->nvars)][2];
+    int offsets[5][2] = {{0,-1},{-1,0},{0,0},{1,0},{0,1}};
     int j, cnt;
 
     ssize = 5*(ex->nvars);
-
-    cnt= 0;
-    for (i= 0; i< (ex->nvars); i++) {
-       /* no simple formula, so just list */
-       offsets[cnt][0]= 0;
-       offsets[cnt][1]=-1;
-       cnt++;
-
-       offsets[cnt][0]=-1;
-       offsets[cnt][1]= 0;
-       cnt++;
-
-       offsets[cnt][0]= 0;
-       offsets[cnt][1]= 0;
-       cnt++;
-
-       offsets[cnt][0]= 1;
-       offsets[cnt][1]= 0;
-       cnt++;
-
-       offsets[cnt][0]= 0;
-       offsets[cnt][1]= 1;
-       cnt++;
-    }
-
     ierr = HYPRE_SStructStencilCreate(dim,ssize,&ex->ss_stencil);CHKERRQ(ierr);
     cnt= 0;
     for (i= 0; i< (ex->nvars); i++) {
        for (j= 0; j< 5; j++) {
-          ierr = HYPRE_SStructStencilSetEntry(ex->ss_stencil, cnt, offsets[cnt], i);CHKERRQ(ierr);
+          ierr = HYPRE_SStructStencilSetEntry(ex->ss_stencil, cnt, offsets[j], i);CHKERRQ(ierr);
           cnt++;
        }
     }
   } else if (dim == 3) {
-
-    int offsets[7*(ex->nvars)][3];
+    int offsets[7][3] = {{0,0,-1},{0,-1,0},{-1,0,0},{0,0,0},{1,0,0},{0,1,0},{0,0,1}}; 
     int j, cnt;
 
     ssize = 7*(ex->nvars);
-
-    cnt= 0;
-    for (i= 0; i< (ex->nvars); i++) {
-       /* no simple formula, so just list */
-       offsets[cnt][0]= 0;
-       offsets[cnt][1]= 0;
-       offsets[cnt][2]=-1;
-       cnt++;
-
-       offsets[cnt][0]= 0;
-       offsets[cnt][1]=-1;
-       offsets[cnt][2]= 0;
-       cnt++;
-
-       offsets[cnt][0]=-1;
-       offsets[cnt][1]= 0;
-       offsets[cnt][2]= 0;
-       cnt++;
-
-       offsets[cnt][0]= 0;
-       offsets[cnt][1]= 0;
-       offsets[cnt][2]= 0;
-       cnt++;
-
-       offsets[cnt][0]= 1;
-       offsets[cnt][1]= 0;
-       offsets[cnt][2]= 0;
-       cnt++;
-
-       offsets[cnt][0]= 0;
-       offsets[cnt][1]= 1;
-       offsets[cnt][2]= 0;
-       cnt++;
-
-       offsets[cnt][0]= 0;
-       offsets[cnt][1]= 0;
-       offsets[cnt][2]= 1;
-       cnt++;
-    }
-
     ierr = HYPRE_SStructStencilCreate(dim,ssize,&ex->ss_stencil);CHKERRQ(ierr);
     cnt= 0;
     for (i= 0; i< (ex->nvars); i++) {
        for (j= 0; j< 7; j++) {
-          ierr = HYPRE_SStructStencilSetEntry(ex->ss_stencil, cnt, offsets[cnt], i);CHKERRQ(ierr);
+          ierr = HYPRE_SStructStencilSetEntry(ex->ss_stencil, cnt, offsets[j], i);CHKERRQ(ierr);
           cnt++;
        }
     }
