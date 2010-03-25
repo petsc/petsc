@@ -790,6 +790,22 @@ class Configure(config.base.Configure):
     self.popLanguage()
     return
 
+  def containsInvalidFlag(self, output):
+    '''If the output contains evidence that an invalid flag was used, return True''
+    if (output.find('Unrecognized command line option') >= 0 or output.find('Unrecognised command line option') >= 0 or
+        output.find('unrecognized command line option') >= 0 or output.find('unrecognized option') >= 0 or output.find('unrecognised option') >= 0 or
+        output.find('not recognized') >= 0 or output.find('not recognised') >= 0 or
+        output.find('unknown option') >= 0 or output.find('unknown flag') >= 0 or output.find('Unknown switch') >= 0 or
+        output.find('ignoring option') >= 0 or output.find('ignored') >= 0 or
+        output.find('illegal option') >= 0 or output.find('Invalid option') >= 0 or
+        (output.find('bad ') >= 0 and output.find(' option') >= 0) or
+        output.find('linker input file unused because linking not done') >= 0 or
+        output.find('PETSc Error') >= 0 or
+        output.find('Unbekannte Option') >= 0 or
+        output.find('no se reconoce la opci') >= 0) or output.find('non reconnue') >= 0:
+      return 1
+    return 0
+
   def checkCompilerFlag(self, flag, includes = '', body = '', compilerOnly = 0):
     '''Determine whether the compiler accepts the given flag'''
     flagsArg = self.getCompilerFlagsArg(compilerOnly)
@@ -805,7 +821,7 @@ class Configure(config.base.Configure):
     # Lahaye F95
     if output.find('Invalid suboption') >= 0:
       valid = 0
-    if output.find('unrecognized command line option') >= 0 or output.find('unrecognized option') >= 0 or output.find('unrecognised option') >= 0 or output.find('unknown flag') >= 0 or output.find('unknown option') >= 0 or output.find('ignoring option') >= 0 or output.find('not recognized') >= 0 or output.find('not recognised') >= 0 or output.find('ignored') >= 0 or output.find('illegal option') >= 0  or output.find('linker input file unused because linking not done') >= 0 or output.find('Unknown switch') >= 0 or output.find('PETSc Error') >= 0 or output.find('Unbekannte Option') >= 0 or output.find('no se reconoce la opci') >= 0:
+    if self.containsInvalidFlag(output):
       valid = 0
       self.framework.logPrint('Rejecting compiler flag '+flag+' due to \n'+output)
     setattr(self, flagsArg, oldFlags)
@@ -1095,7 +1111,7 @@ class Configure(config.base.Configure):
     if status:
       valid = 0
       self.framework.logPrint('Rejecting linker flag '+flag+' due to nonzero status from link')
-    if output.find('Unrecognised command line option') >= 0 or  output.find('Unrecognized command line option') >= 0 or output.find('unrecognized option') >= 0 or output.find('unrecognised option') >= 0 or output.find('unknown flag') >= 0 or (output.find('bad ') >= 0 and output.find(' option') >= 0) or output.find('linker input file unused because linking not done') >= 0 or output.find('flag is ignored') >= 0 or output.find('Invalid option') >= 0 or output.find('unknown option') >= 0 or output.find('ignoring option') >= 0 or output.find('non reconnue') >= 0:
+    if self.containsInvalidFlag(output):
       valid = 0
       self.framework.logPrint('Rejecting '+self.language[-1]+' linker flag '+flag+' due to \n'+output)
     else:
