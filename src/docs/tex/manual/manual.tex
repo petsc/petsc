@@ -51,25 +51,44 @@ hyperbaseurl
 \def\shortintro{false}
 
 \begin{document}
-\pagestyle{empty}
-\begin{figure*}[hbt]
-\centerline{\includegraphics{titlepage1}}
-\end{figure*}
+%\pagestyle{empty}
+%\begin{figure*}[hbt]
+%\centerline{\includegraphics{titlepage1}}
+%\end{figure*}
+
+%  ANL changed the style of its title pages - so we are using titlepage1.pdf [above]
+%  The following is an attempt to emulate titlepage1.pdf in latex
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\hfill {\large{\bf ANL-95/11}}
+
+\vspace*{3in}
+\noindent {\huge{\bf PETSc Users Manual}}
+\vspace*{8pt}
+\hrule
+\vspace*{8pt}
+\noindent {\huge{\it Revision 3.1}}
+
+\vspace*{1in}
+\noindent by \\
+S. Balay, K. Buschelman, V. Eijkhout, W. Gropp, D. Kaushik, \\
+M. Knepley, L. Curfman McInnes, B. Smith, and H. Zhang \\
+Mathematics and Computer Science Division, Argonne National Laboratory
+
+\vspace*{10pt}
+\noindent March 2010
+
+\vspace*{20pt}
+\noindent This work was supported by the Office of Advanced Scientific Computing Research, \\
+Office of Science, U.S. Department of Energy, under Contract DE-AC02-06CH11357.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \begin{figure*}[hbt]
 \centerline{\includegraphics{titlepage2}}
 \end{figure*}
 
-%  ANL changed the style of its title pages, rather than reproduce the style in latex
-%  we just stick in their pages
-%\ANLTitle{PETSc Users Manual}{\em Satish Balay\\Kris Buschelman\\
-%Victor Eijkhout\\William Gropp\\Dinesh Kaushik\\Matt Knepley\\Lois Curfman McInnes\\
-%Barry Smith\\Hong Zhang\\
-%\hspace{0.3in}\\
-%Mathematics and Computer Science Division \\
-%http://www.mcs.anl.gov/petsc
-%\vspace{0.5in} \\
-%{\rm This manual is intended for use with PETSc 3.1}}
-%{95/11 - Revision 3.1}{March 2010}
 
 \cleardoublepage
 \pagestyle{plain}
