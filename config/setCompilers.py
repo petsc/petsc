@@ -224,6 +224,18 @@ class Configure(config.base.Configure):
     return 0
   isSolarisAR = staticmethod(isSolarisAR)
 
+  def isAIXAR(ar):
+    '''Returns true AR is AIX'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(ar + ' -V',checkCommand = noCheck)
+      output = output + error
+      if output.find('[-X{32|64|32_64|d64|any}]') >= 0:
+        return 1
+    except RuntimeError:
+      pass
+    return 0
+  isAIXAR = staticmethod(isAIXAR)
+
   
   def isLinux():
     '''Returns true if system is linux'''
@@ -897,7 +909,7 @@ class Configure(config.base.Configure):
         flag = '-a'
       elif 'tlib' in args:
         flag = '-a -P512'
-    if prog.endswith('ar') and not self.isSolarisAR(prog):
+    if prog.endswith('ar') and not (self.isSolarisAR(prog) or self.isAIXAR(prog)):
       self.FAST_AR_FLAGS = 'Scq'
     else:
       self.FAST_AR_FLAGS = flag      
