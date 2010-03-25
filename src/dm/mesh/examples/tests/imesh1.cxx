@@ -13,10 +13,23 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+struct reorderedComparator {
+  void equal(const int& a, const int& b) {
+    CPPUNIT_ASSERT_EQUAL(a, b);
+  };
+  void equal(const double& a, const double& b) {
+    CPPUNIT_ASSERT_EQUAL(a, b);
+  };
+  void equal(const ALE::Point& a, const ALE::Point& b) {
+    CPPUNIT_ASSERT_EQUAL(a.prefix, b.prefix);
+  };
+};
+
 class FunctionTestIMesh : public CppUnit::TestFixture
 {
   CPPUNIT_TEST_SUITE(FunctionTestIMesh);
 
+  CPPUNIT_TEST(testRelabel);
   CPPUNIT_TEST(testSerialization);
   CPPUNIT_TEST(testStratify);
   CPPUNIT_TEST(testStratifyLine);
@@ -106,6 +119,36 @@ public:
     // Could also check cones
   };
 
+  template<typename Label, typename Renumbering>
+  static void checkLabel(Label& labelA, Label& labelB, Renumbering& renumbering) {
+    typename Label::capSequence cap = labelA.cap();
+
+    CPPUNIT_ASSERT_EQUAL(cap.size(), labelB.cap().size());
+    for(typename Label::capSequence::iterator p_iter = cap.begin(); p_iter != cap.end(); ++p_iter) {
+      const Obj<typename Label::traits::supportSequence>&     supportA = labelA.support(*p_iter);
+      const Obj<typename Label::traits::supportSequence>&     supportB = labelB.support(*p_iter);
+      typename Label::traits::supportSequence::const_iterator s_iterA  = supportA->begin();
+
+      CPPUNIT_ASSERT_EQUAL(supportA->size(), supportB->size());
+      for(; s_iterA != supportA->end(); ++s_iterA) {
+	bool found = false;
+
+	for(typename Label::traits::supportSequence::const_iterator s_iterB  = supportB->begin(); s_iterB != supportB->end(); ++s_iterB) {
+	  if (*s_iterA == *s_iterB) {
+	    found = true;
+	    break;
+	  }
+	}
+	if (!found) {
+	  ostringstream msg;
+
+	  msg << "Cound not find point " << *s_iterA << "("<<renumbering[*s_iterA]<<")" << " in support of " << *p_iter;
+	  CPPUNIT_FAIL(msg.str().c_str());
+	}
+      }
+    }
+  };
+
   template<typename Section>
   static void checkSection(Section& sectionA, Section& sectionB) {
     // Check atlas
@@ -132,8 +175,43 @@ public:
     }
   };
 
+  template<typename Section, typename Renumbering>
+  static void checkSection(Section& sectionA, Section& sectionB, Renumbering& renumbering) {
+    // Check atlas
+    checkSection(*sectionA.getAtlas(), *sectionB.getAtlas(), renumbering);
+    // Check values
+    typedef typename Section::point_type point_type;
+    typedef typename Section::value_type value_type;
+    point_type min = sectionA.getChart().min();
+    point_type max = sectionA.getChart().max();
+    reorderedComparator comp;
+
+    CPPUNIT_ASSERT_EQUAL(min, sectionB.getChart().min());
+    CPPUNIT_ASSERT_EQUAL(max, sectionB.getChart().max());
+    for(point_type p = min; p < max; ++p) {
+      const int         dim     = sectionA.getFiberDimension(p);
+      const value_type *valuesA = sectionA.restrictPoint(p);
+      const value_type *valuesB = sectionB.restrictPoint(renumbering[p]);
+
+      CPPUNIT_ASSERT_EQUAL(dim, sectionB.getFiberDimension(renumbering[p]));
+      CPPUNIT_ASSERT(valuesA != NULL);
+      CPPUNIT_ASSERT(valuesB != NULL);
+      for(int d = 0; d < dim; ++d) {
+	comp.equal(valuesA[d], valuesB[d]);
+      }
+    }
+  };
+
   template<typename Point_, typename Value_>
   static void checkSection(ALE::IConstantSection<Point_, Value_>& sectionA, ALE::IConstantSection<Point_, Value_>& sectionB) {
+    CPPUNIT_ASSERT_EQUAL(sectionA.getChart().min(), sectionB.getChart().min());
+    CPPUNIT_ASSERT_EQUAL(sectionA.getChart().max(), sectionB.getChart().max());
+    CPPUNIT_ASSERT_EQUAL(sectionA.restrictPoint(sectionA.getChart().min())[0], sectionB.restrictPoint(sectionB.getChart().min())[0]);
+    CPPUNIT_ASSERT_EQUAL(sectionA.getDefaultValue(), sectionB.getDefaultValue());
+  };
+
+  template<typename Point_, typename Value_, typename Renumbering>
+  static void checkSection(ALE::IConstantSection<Point_, Value_>& sectionA, ALE::IConstantSection<Point_, Value_>& sectionB, Renumbering& renumbering) {
     CPPUNIT_ASSERT_EQUAL(sectionA.getChart().min(), sectionB.getChart().min());
     CPPUNIT_ASSERT_EQUAL(sectionA.getChart().max(), sectionB.getChart().max());
     CPPUNIT_ASSERT_EQUAL(sectionA.restrictPoint(sectionA.getChart().min())[0], sectionB.restrictPoint(sectionB.getChart().min())[0]);
@@ -195,6 +273,60 @@ public:
     }
   };
 
+  template<typename ISieve, typename Renumbering>
+  static void checkSieve(ISieve& sieveA, const ISieve& sieveB, Renumbering& renumbering) {
+    ALE::ISieveVisitor::PointRetriever<ISieve> baseV(sieveA.getBaseSize());
+
+    sieveA.base(baseV);
+    const typename ISieve::point_type *base = baseV.getPoints();
+    for(int b = 0; b < (int) baseV.getSize(); ++b) {
+      ALE::ISieveVisitor::PointRetriever<ISieve>    retrieverA((int) pow((double) sieveA.getMaxConeSize(), 3));
+      ALE::ISieveVisitor::PointRetriever<ISieve>    retrieverB((int) pow((double) sieveB.getMaxConeSize(), 3));
+
+      sieveA.cone(base[b], retrieverA);
+      sieveB.cone(renumbering[base[b]], retrieverB);
+      const typename ISieve::point_type *coneA = retrieverA.getPoints();
+      const typename ISieve::point_type *coneB = retrieverB.getPoints();
+
+      CPPUNIT_ASSERT_EQUAL(retrieverA.getSize(), retrieverB.getSize());
+      for(int c = 0; c < (int) retrieverA.getSize(); ++c) {
+        CPPUNIT_ASSERT_EQUAL(coneA[c], renumbering[coneB[c]]);
+      }
+      CPPUNIT_ASSERT_EQUAL(sieveA.orientedCones(), sieveB.orientedCones());
+      if (sieveA.orientedCones()) {
+        retrieverA.clear();
+        retrieverB.clear();
+        sieveA.orientedCone(base[b], retrieverA);
+        sieveB.orientedCone(renumbering[base[b]], retrieverB);
+        const typename ALE::ISieveVisitor::PointRetriever<ISieve>::oriented_point_type *oConeA = retrieverA.getOrientedPoints();
+        const typename ALE::ISieveVisitor::PointRetriever<ISieve>::oriented_point_type *oConeB = retrieverB.getOrientedPoints();
+
+        CPPUNIT_ASSERT_EQUAL(retrieverA.getOrientedSize(), retrieverB.getOrientedSize());
+        for(int c = 0; c < (int) retrieverA.getOrientedSize(); ++c) {
+          CPPUNIT_ASSERT_EQUAL(oConeA[c].second, oConeB[c].second);
+        }
+      }
+    }
+    ALE::ISieveVisitor::PointRetriever<ISieve> capV(sieveA.getCapSize());
+
+    sieveA.cap(capV);
+    const typename ISieve::point_type *cap = capV.getPoints();
+    for(int c = 0; c < (int) capV.getSize(); ++c) {
+      ALE::ISieveVisitor::PointRetriever<ISieve> retrieverA((int) pow((double) sieveA.getMaxSupportSize(), 3));
+      ALE::ISieveVisitor::PointRetriever<ISieve> retrieverB((int) pow((double) sieveB.getMaxSupportSize(), 3));
+
+      sieveA.support(cap[c], retrieverA);
+      sieveB.support(renumbering[cap[c]], retrieverB);
+      const typename ISieve::point_type *supportA = retrieverA.getPoints();
+      const typename ISieve::point_type *supportB = retrieverB.getPoints();
+
+      CPPUNIT_ASSERT_EQUAL(retrieverA.getSize(), retrieverB.getSize());
+      for(int s = 0; s < (int) retrieverA.getSize(); ++s) {
+        CPPUNIT_ASSERT_EQUAL(supportA[s], renumbering[supportB[s]]);
+      }
+    }
+  };
+
   template<typename Mesh>
   static void checkMesh(Mesh& meshA, Mesh& meshB) {
     checkSieve(*meshA.getSieve(), *meshB.getSieve());
@@ -230,6 +362,86 @@ public:
       checkSection(*meshA.getIntSection(*i_iterA), *meshB.getIntSection(*i_iterB));
     }
     // Check overlap
+  };
+
+  template<typename Mesh, typename Renumbering>
+  static void checkMesh(Mesh& meshA, Mesh& meshB, Renumbering& renumbering) {
+    checkSieve(*meshA.getSieve(), *meshB.getSieve(), renumbering);
+    const typename Mesh::labels_type&          labelsA = meshA.getLabels();
+    const typename Mesh::labels_type&          labelsB = meshB.getLabels();
+    typename Mesh::labels_type::const_iterator l_iterA = labelsA.begin();
+    typename Mesh::labels_type::const_iterator l_iterB = labelsB.begin();
+
+    CPPUNIT_ASSERT_EQUAL(labelsA.size(), labelsB.size());
+    for(; l_iterA != labelsA.end(); ++l_iterA, ++l_iterB) {
+      CPPUNIT_ASSERT_EQUAL(l_iterA->first, l_iterB->first);
+      checkLabel(*l_iterA->second, *l_iterB->second, renumbering);
+    }
+    // Check sections
+    Obj<std::set<std::string> >                    realNamesA = meshA.getRealSections();
+    Obj<std::set<std::string> >                    realNamesB = meshB.getRealSections();
+    typename std::set<std::string>::const_iterator r_iterA    = realNamesA->begin();
+    typename std::set<std::string>::const_iterator r_iterB    = realNamesB->begin();
+
+    CPPUNIT_ASSERT_EQUAL(realNamesA->size(), realNamesB->size());
+    for(; r_iterA != realNamesA->end(); ++r_iterA, ++r_iterB) {
+      CPPUNIT_ASSERT_EQUAL(*r_iterA, *r_iterB);
+      checkSection(*meshA.getRealSection(*r_iterA), *meshB.getRealSection(*r_iterB), renumbering);
+    }
+    Obj<std::set<std::string> >                    intNamesA = meshA.getIntSections();
+    Obj<std::set<std::string> >                    intNamesB = meshB.getIntSections();
+    typename std::set<std::string>::const_iterator i_iterA   = intNamesA->begin();
+    typename std::set<std::string>::const_iterator i_iterB   = intNamesB->begin();
+
+    CPPUNIT_ASSERT_EQUAL(intNamesA->size(), intNamesB->size());
+    for(; i_iterA != intNamesA->end(); ++i_iterA, ++i_iterB) {
+      CPPUNIT_ASSERT_EQUAL(*i_iterA, *i_iterB);
+      checkSection(*meshA.getIntSection(*i_iterA), *meshB.getIntSection(*i_iterB), renumbering);
+    }
+    // Check overlap
+  };
+
+  void testRelabel() {
+    ALE::Obj<mesh_type> copyMesh = this->_mesh;
+    std::map<mesh_type::point_type,mesh_type::point_type> renumbering;
+
+    this->_m    = PETSC_NULL;
+    this->_mesh = PETSC_NULL;
+    this->_renumbering.clear();
+    this->setUp();
+    // Renumbering must respect the cell/vertex division
+    if (this->_interpolate) {CPPUNIT_FAIL("Test renumbering not yet setup for interpolated meshes.");}
+    const ALE::Obj<mesh_type::label_sequence>& cells    = copyMesh->heightStratum(0);
+    const int                                  numCells = cells->size();
+
+    for(mesh_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+      renumbering[*c_iter] = numCells-1 - *c_iter;
+    }
+    const ALE::Obj<mesh_type::label_sequence>& vertices    = copyMesh->depthStratum(0);
+    const int                                  numVertices = vertices->size();
+
+    for(mesh_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+      renumbering[*v_iter] = numVertices-1 - (*v_iter-numCells) + numCells;
+    }
+    // Make section reversing numbering
+    ALE::Obj<ALE::IUniformSection<int,int> > labeling = new ALE::IUniformSection<int,int>(PETSC_COMM_WORLD);
+
+    labeling->setChart(copyMesh->getSieve()->getChart());
+    for(int p = copyMesh->getSieve()->getChart().min(); p < copyMesh->getSieve()->getChart().max(); ++p) {
+      labeling->setFiberDimension(p, 1);
+    }
+    labeling->allocatePoint();
+    for(int p = copyMesh->getSieve()->getChart().min(); p < copyMesh->getSieve()->getChart().max(); ++p) {
+      labeling->updatePoint(p, &renumbering[p]);
+    }
+    try {
+      this->_mesh->relabel(*labeling);
+    } catch (ALE::Exception e) {
+      std::cerr << e << std::endl;
+      CPPUNIT_FAIL(e.msg());
+    }
+    // Check that we get the reverse
+    checkMesh(*copyMesh, *this->_mesh, renumbering);
   };
 
   void testSerialization() {

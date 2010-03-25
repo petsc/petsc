@@ -32,6 +32,10 @@
 #include <Partitioner.hh>
 #endif
 
+#ifndef  included_ALE_Ordering_hh
+#include <Ordering.hh>
+#endif
+
 namespace ALE {
   class indexSet : public std::valarray<int> {
   public:
@@ -1583,6 +1587,7 @@ namespace ALE {
     typedef typename base_type::labels_type           labels_type;
     typedef typename base_type::label_sequence        label_sequence;
     typedef typename base_type::real_section_type     real_section_type;
+    typedef typename base_type::int_section_type      int_section_type;
     typedef typename base_type::numbering_type        numbering_type;
     typedef typename base_type::order_type            order_type;
     typedef typename base_type::send_overlap_type     send_overlap_type;
@@ -2401,25 +2406,39 @@ namespace ALE {
       Obj<std::set<std::string> > realNames = this->getRealSections();
 
       for(std::set<std::string>::const_iterator n_iter = realNames->begin(); n_iter != realNames->end(); ++n_iter) {
-	this->getRealSection(*n_iter)->relabel(labeling);
+        Obj<real_section_type> section = new real_section_type(this->comm(), this->debug());
+
+        section->setName(*n_iter);
+	ALE::Ordering<>::relabelSection(*this->getRealSection(*n_iter), labeling, *section);
+	this->setRealSection(*n_iter, section);
       }
       Obj<std::set<std::string> > intNames = this->getIntSections();
 
       for(std::set<std::string>::const_iterator n_iter = intNames->begin(); n_iter != intNames->end(); ++n_iter) {
-	this->getIntSection(*n_iter)->relabel(labeling);
+        Obj<int_section_type> section = new int_section_type(this->comm(), this->debug());
+
+        section->setName(*n_iter);
+	ALE::Ordering<>::relabelSection(*this->getIntSection(*n_iter), labeling, *section);
+	this->setIntSection(*n_iter, section);
       }
       // Relabel labels
       const labels_type& labels = this->getLabels();
 
       for(typename labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
-        l_iter->second->relabel(labeling);
+	Obj<label_type> label = new label_type(this->comm(), this->debug());
+
+        l_iter->second->relabel(labeling, *label);
+	this->setLabel(l_iter->first, label);
       }
       // Relabel overlap
-      this->getSendOverlap()->relabel(labeling);
-      this->getRecvOverlap()->relabel(labeling);
-      // Relabel distribution overlap
-      this->getSendDistributionOverlap()->relabel(labeling);
-      this->getRecvDistributionOverlap()->relabel(labeling);
+      Obj<send_overlap_type> sendOverlap = new send_overlap_type(this->comm(), this->debug());
+      Obj<recv_overlap_type> recvOverlap = new recv_overlap_type(this->comm(), this->debug());
+
+      this->getSendOverlap()->relabel(labeling, *sendOverlap);
+      this->setSendOverlap(sendOverlap);
+      this->getRecvOverlap()->relabel(labeling, *recvOverlap);
+      this->setRecvOverlap(recvOverlap);
+      // Relabel distribution overlap ???
       // Relabel renumbering
     };
   };
