@@ -141,9 +141,9 @@ acfindx:
           break
     # Check for X11 libraries
     if self.framework.argDB.has_key('with-x-lib'):
-      if not os.path.isfile(self.framework.argDB['with-x-lib']):
-        raise RuntimeError('Invalid X library specified by --with-x-lib='+os.path.abspath(self.framework.argDB['with-x-lib']))
-      libraryDir = os.path.dirname(self.framework.argDB['with-x-lib'])
+      if not os.path.isfile(self.framework.argDB['with-x-lib'][0]):
+        raise RuntimeError('Invalid X library specified by --with-x-lib='+os.path.abspath(self.framework.argDB['with-x-lib'][0]))
+      libraryDir = os.path.dirname(self.framework.argDB['with-x-lib'][0])
       foundLibrary = 1
     else:
       testLibraries = [('X11', 'XSetWMName')]
