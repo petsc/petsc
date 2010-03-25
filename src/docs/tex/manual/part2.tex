@@ -1,4 +1,4 @@
-41%
+%
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
 %    Otherwise, numbering will be incorrect.  For example, use the following:
@@ -4333,11 +4333,11 @@ pseudo-timestep. As a default one can use
 \trl{TSPseudoDefaultTimeStep(TS,double*,void*)} for \trl{dt}. This routine
 updates the pseudo-timestep with one of two strategies: the default
 \[
-   dt^{n} = dt_{\text{increment}}*dt^{n-1}*\frac{|| F(u^{n-1}) ||}{|| F(u^{n})||}
+   dt^{n} = dt_{\mathrm{increment}}*dt^{n-1}*\frac{|| F(u^{n-1}) ||}{|| F(u^{n})||}
 \]
 or, the alternative, 
 \[
-   dt^{n} = dt_{\text{increment}}*dt^{0}*\frac{|| F(u^{0}) ||}{|| F(u^{n})||}
+   dt^{n} = dt_{\mathrm{increment}}*dt^{0}*\frac{|| F(u^{0}) ||}{|| F(u^{n})||}
 \]
 which can be set with the call
 \begin{tabbing}
@@ -4346,7 +4346,7 @@ which can be set with the call
 or \findex{TSPseudoIncrementDtFromInitialDt()} 
 the option \trl{-ts_pseudo_increment_dt_from_initial_dt}. 
 \findex{-ts_pseudo_increment_dt_from_initial_dt}
-The value $ dt_{\text{increment}} $ is by default $ 1.1$, but can be reset with the 
+The value $ dt_{\mathrm{increment}} $ is by default $ 1.1$, but can be reset with the 
 call 
 \begin{tabbing}
  TSPseudoSetTimeStepIncrement(TS ts,double inc); 
