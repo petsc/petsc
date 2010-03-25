@@ -1,6 +1,8 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
 <head>
+
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
   <meta content="Microsoft FrontPage 4.0" name="GENERATOR">
   <title>PETSc: Docs:&nbsp; Supplementary:&nbsp; Installation</title>
 </head>
@@ -77,18 +79,17 @@ directory
 PETSC_DIR=$PWD</font><br>
       </div>
       <div style="margin-left: 40px;"><font color="#ff0000">./config/configure.py
---with-cc=gcc --with-fc=gfortran --download-f-blas-lapack=1
+--with-cc=gcc
+--with-fc=gfortran --download-f-blas-lapack=1
 --download-mpich=1</font><br>
       </div>
       <div style="margin-left: 40px;"><font color="#ff0000">make all
 test</font></div>
-      <h3>&nbsp; Detailed instructions:</h3>
+      <h3>&nbsp; Detailed instructions:&nbsp; [<a
+ style="color: rgb(204, 102, 0);" href="#Windows">Check here for MS
+Windows Installation</a>]<br>
+      </h3>
       <ul>
-        <li><a name="(Windows only)">(MS Windows
-only) Install</a> <a href="#Cygwin:">cygwin</a>
-package (including <font color="#ff1a8b">make,
-python </font>modules<strong></strong>) and use
-cygwin shell.</li>
         <li>Sugest downloading and installing PETSc as a <span
  style="font-weight: bold;">regular/non-root user,</span> perhaps in <span
  style="font-weight: bold;">/home/username/soft</span></li>
@@ -100,11 +101,13 @@ release tarball: petsc-3.0.0-p0.tar.gz<br>
 | tar -xof -</font></li>
         <li><font color="#ff0000">cd petsc-3.0.0-p0</font></li>
         <li>sh/bash shell:&nbsp;&nbsp; <font color="#ff0000">PETSC_DIR=$PWD;
-export PETSC_DIR</font><br>
+export
+PETSC_DIR</font><br>
 csh/tcsh shell:&nbsp; <font color="#ff0000">setenv
 PETSC_DIR $PWD</font></li>
         <li><font color="#ff0000">./config/configure.py</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-(use --help for options or the <a href="#ExampleUsage">example usages</a>
+(use
+--help for options or the <a href="#ExampleUsage">example usages</a>
 below)</li>
         <li> <font color="#ff0000">make all</font><br>
         </li>
@@ -122,7 +125,8 @@ try <font color="#ff0000">python config/configure.py</font></li>
 LAPACK problems</a></li>
         <li><a href="installation.html#MPI:"> MPI problems</a>.
 I <a href="installation.html#I%20don%27t%20want%20to%20use%20MPI:">Don't
-want MPI</a></li>
+want
+MPI</a></li>
         <li>Trouble using other <a href="#external">external packages</a><br>
         </li>
         <li> Check the <a
@@ -141,11 +145,12 @@ bug-reporting</a> section</li>
       <h3><b><a name="ExampleUsage"></a>Example Usages:</b></h3>
       <ul>
         <li>Examples are at <span style="font-weight: bold;">config/examples/*.py</span>.
-We use some of these scripts locally for testing - <span
+We
+use some of these scripts locally for testing - <span
  style="font-weight: bold;"></span>for example one can update these
 files and run as:<span style="font-weight: bold;"><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span
- style="color: rgb(255, 0, 0);">config/examples/linux-gnu-amd64.py</span><br>
+ style="color: rgb(255, 0, 0);">config/examples/arch-osx-10.6.py</span><br>
         </li>
         <li>Using the bash shell, assuming BLAS,
 LAPACK, MPICH are not currently installed <font color="#551a8b">./config/configure.py</font>
@@ -183,7 +188,9 @@ make <br>
 make test</font></li>
         <li>Using the bash shell, assuming BLAS,
 LAPACK, MPICH software are installed at the specified locations, and
-use MPI compilers <span style="font-weight: bold;">mpicc/mpif77</span>:<br>
+use MPI compilers <span style="font-weight: bold;">mpicc/mpif90</span>:<br>
+[Note: Do not specify --with-cc --with-fc&nbsp; etc when using
+--with-mpi-dir - so that mpicc/mpif90 can be picked up from mpi-dir]<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">export
 PETSC_DIR=/home/petsc/petsc-3.0.0-p0<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -203,17 +210,20 @@ PETSC_ARCH=linux-gnu CC=gcc FC=gfortran --download-mpich=1<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 make </font><font color="#ff0000">PETSC_ARCH=linux-gnu</font><br>
           <font color="#ff0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-make </font><font color="#ff0000">PETSC_ARCH=linux-gnu test</font><font
+make
+          </font><font color="#ff0000">PETSC_ARCH=linux-gnu test</font><font
  color="#ff0000"><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 ./config/configure.py </font><font color="#ff0000">PETSC_ARCH=linux-gnu-intel
+
           </font><font color="#ff0000">CC=icc FC=ifort </font><font
  color="#ff0000">--download-mpich=1</font><font color="#ff0000">
 --with-blas-lapack-dir=/usr/local/mkl<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 make </font><font color="#ff0000">PETSC_ARCH=linux-gnu-intel</font><br>
           <font color="#ff0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-make </font><font color="#ff0000">PETSC_ARCH=linux-gnu-intel </font><font
+make
+          </font><font color="#ff0000">PETSC_ARCH=linux-gnu-intel </font><font
  color="#ff0000">test </font></li>
       </ul>
       <hr>
@@ -238,7 +248,8 @@ in ~/.cshrc]<br>
         </li>
       </ul>
       <p><b><a name="PETSC_DIR"><font color="#551a8b">PETSC_DIR</font></a></b>:
-this variable should point to the location of the
+this
+variable should point to the location of the
 PETSc installation that is used. Multiple PETSc versions can coexist
 on the same file-system. By changing PETSC_DIR value, one can switch
 between these installed versions of PETSc.</p>
@@ -260,47 +271,9 @@ value and uses it. Also - if make doesn't find a PETSC_ARCH env
 variable - it defaults to the value used by last successful invocation
 of previous configure.</p>
       <p><font color="#551a8b"><b><a href="#Docs:%20%20Installation">Return
-to Installation Instructions</a>
+to
+Installation Instructions</a>
 &nbsp;&nbsp;&nbsp;&nbsp;</b></font> </p>
-      <hr>
-      <h4><font color="#551a8b"><a name="Cygwin:">Cygwin</a></font> <span
- style="font-weight: 400;">&nbsp;provides
-UNIX tools on Microsoft
-Windows. When installing Cygwin <font color="#ff0000">make
-sure</font>
-you install the following additional
-packages</span></h4>
-      <ul>
-        <li> <span style="font-weight: 400;"><font color="#ff0000">make</font></span>
-        </li>
-        <li> <span style="font-weight: 400;"><font color="#ff0000">python</font></span>
-        </li>
-      </ul>
-      <h4><span style="font-weight: 400;">Cygwin
-also has GNU
-compilers ( <font color="#ff1a8b">gcc, g++, g77</font>)
-which can be
-used&nbsp; if Microsoft, Intel, or Borland Group compilers are not
-available</span></h4>
-      <p>Note: Previously we recommanded doing 'rebaseall' to
-avoid
-python problems. However 'rebaseall' has its own problems - so if there
-any python issues, the current recommendation is to reinstall cygwin
-from scratch.<br>
-      </p>
-      <table style="border-collapse: collapse;" id="AutoNumber1"
- border="1" bordercolor="#111111" cellpadding="0" cellspacing="0"
- width="72%">
-        <tbody>
-          <tr>
-            <td width="23%">&nbsp;Cygwin</td>
-            <td width="77%">&nbsp;<a href="http://www.cygwin.com">http://www.cygwin.com</a></td>
-          </tr>
-        </tbody>
-      </table>
-      <p><font color="#551a8b"><b><a
- href="installation.html#Docs:%20%20Installation">Return
-to Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp;</b></font></p>
       <hr>
       <p><font color="#551a8b"><b><a name="Compilers">Compilers:</a></b></font>
 Specify compilers and compiler options used to build PETSc [and perhaps
@@ -311,6 +284,9 @@ external packages]<br>
  style="color: rgb(255, 0, 0);">--with-cc --with-fc --with-cxx</span>
 for c, c++, fortran compilers</li>
         <ul>
+          <li><span style="color: rgb(255, 0, 0);">--with-cc=mpicc
+--with-fc=mpif90</span><br>
+            <span style="color: rgb(255, 0, 0);"></span></li>
           <li><span style="color: rgb(255, 0, 0);">--with-cc=gcc
 --with-fc=gfortran</span></li>
         </ul>
@@ -334,7 +310,16 @@ automatically look for available MPI or regular compilers in users PATH</li>
         <li>Its best to use <a href="MPICompilers">MPI compilers</a>
 as this will avoid the situation where MPI is compiled with one set of
 compilers [like gcc/g77] and user specified incompatible
-compilers&nbsp; to PETSc [perhaps icc/ifort]</li>
+compilers&nbsp; to PETSc [perhaps icc/ifort]. This can be done by
+either specifying --with-cc=mpicc or --with-mpi-dir [and not
+--with-cc=gcc]</li>
+        <ul>
+          <li><span style="color: rgb(255, 0, 0);">--with-cc=mpicc
+--with-fc=mpif90</span></li>
+          <li><span style="color: rgb(255, 0, 0);">--with-mpi-dir=/opt/mpich2-1.1
+[but *no* --with-cc=gcc ]<br>
+            </span></li>
+        </ul>
         <li>Configure defaults to building PETSc in debug mode. One can
 switch to using optimzed mode with the toggle option --with-debugging
 [defaults to debug enabled]. Additionally one can specify more suitable
@@ -342,7 +327,8 @@ optimization flags
 with the options COPTFLAGS, FOPTFLAGS, CXXOPTFLAGS.</li>
         <ul>
           <li><span style="color: rgb(255, 0, 0);">./config/configure.py
---with-cc=gcc --with-fc=gfortran --with-debugging=0 COPTFLAGS='-O3
+--with-cc=gcc
+--with-fc=gfortran --with-debugging=0 COPTFLAGS='-O3
 -march=p4
 -mtune=p4' FOPTFLAGS='-O3 -qarch=p4 -qtune=p4'</span></li>
         </ul>
@@ -351,7 +337,8 @@ of compilers. In this case one can specify additional system/compiler
 libraries using the LIBS option</li>
         <ul>
           <li><span style="color: rgb(255, 0, 0);">./config/configure.py
-LIBS='-ldl /usr/lib/libm.a'</span><br>
+LIBS='-ldl
+/usr/lib/libm.a'</span><br>
           </li>
         </ul>
       </ul>
@@ -478,7 +465,8 @@ for the url for download this package.</span></span></li>
 However one can choose a different location where these packages are
 installed.</p>
       <p><font color="#551a8b"><b><a href="#Docs:%20%20Installation">Return
-to Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp;</b></font></p>
+to
+Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp;</b></font></p>
       <hr>
       <p><font color="#551a8b"><b><a name="BLAS/LAPACK">BLAS/LAPACK</a>:</b></font>
 these packages provide some basic numeric kernels used by PETSc.</p>
@@ -503,7 +491,8 @@ download/install blas automatically. <br>
         </li>
         <ul>
           <li><span style="color: rgb(255, 0, 0);">--download-f-blas-lapack=1</span>&nbsp;
-[when fortran compiler is present]<br>
+[when
+fortran compiler is present]<br>
           </li>
           <li><span style="color: rgb(255, 0, 0);">--download-c-blas-lapack=1</span>
 [when configuring without a fortran compiler - i.e --with-fc=0]</li>
@@ -530,7 +519,8 @@ In this case, use </font><font style="color: rgb(255, 0, 0);"
  color="#0f0000">--download-f-blas-lapack=yes</font></li>
       </ul>
       <p><font color="#551a8b"><b><a href="#Docs:%20%20Installation">Return
-to Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp;</b></font></p>
+to
+Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp;</b></font></p>
       <hr>
       <p><font color="#551a8b"><b><a name="MPI:">MPI:</a></b></font>
 This software provides the parallel functionality for PETSc. </p>
@@ -543,10 +533,11 @@ mpicc/mpif77 etc and use them if found [in default PATH]<br>
         <li>One can use the following options to let configure
 download/install MPI automatically</li>
         <ul>
-          <li><span style="color: rgb(255, 0, 0);">--download-mpich=1</span>&nbsp;&nbsp;
-[install and use MPICH]</li>
-          <li><span style="color: rgb(255, 0, 0);">--download-openmpi=1</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-[Install LAM version of MPI]<br>
+          <li><span style="color: rgb(255, 0, 0);">--download-mpich=1</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+[install
+and use MPICH]</li>
+          <li><span style="color: rgb(255, 0, 0);">--download-openmpi=1</span>&nbsp;
+[Install and useOpenMPI]<br>
           </li>
         </ul>
         <li>Alternatively one can use other <a
@@ -572,14 +563,16 @@ be installed.&nbsp; IBM, SGI, Cray etc provide their own.<br>
         </ul>
         <ul>
           <li>If <font color="#0f0000">using MPICH which is already
-installed [perhaps using myrinet/gm] then use:<br>
+installed [perhaps using myrinet/gm] then use [without specifying
+--with-cc=gcc etc.so that configure picks up mpicc from mpi-dir]:<br>
 &nbsp; <span style="color: rgb(255, 0, 0);">./config/configure.py</span></font><span
  style="color: rgb(255, 0, 0);">
 --with-mpi-dir=/path-to-mpich-install</span></li>
         </ul>
       </ul>
       <p><font color="#551a8b"><b><a name="I don't want to use MPI:">Installing
-without MPI:</a></b></font> <br>
+without
+MPI:</a></b></font> <br>
       </p>
       <ul>
         <li>You can build
@@ -594,7 +587,7 @@ the usage is currently limited to uniprocessor mode.</li>
         </ul>
       </ul>
       <font color="#551a8b"><b>Installing
-with OpenMPI/LAM with shared MPI libraries:<br>
+with OpenMPI with shared MPI libraries:<br>
       <br>
       </b></font>OpenMPI defaults to building shared libraries for MPI.
 However, the binaries generated by MPI wrappers mpicc/mpif77 etc
@@ -634,32 +627,9 @@ overwride them with user specified <span style="color: rgb(255, 0, 0);">--with-c
  href="http://www.mcs.anl.gov/mpi/mpich">http://www.mcs.anl.gov/mpi/mpich</a></td>
           </tr>
           <tr>
-            <td width="26%">&nbsp;LAM</td>
-            <td width="74%">&nbsp;<a href="http://www.lam-mpi.org">http://www.lam-mpi.org</a></td>
-          </tr>
-          <tr>
-            <td width="26%">&nbsp;MPICH-NT (Microsoft
-Windows)</td>
-            <td width="74%">&nbsp;<a
- href="http://www.mcs.anl.gov/%7Eashton/mpich.nt">http://www.mcs.anl.gov/~ashton/mpich.nt</a></td>
-          </tr>
-          <tr>
-            <td width="26%">&nbsp;MPI/Pro (Microsoft
-Windows)</td>
-            <td width="74%">&nbsp;<a
- href="http://www.mpi-softtech.com/products/mpi_pro">http://www.mpi-softtech.com/products/mpi_pro</a></td>
-          </tr>
-          <tr>
-            <td width="26%">&nbsp;HPVM (Microsoft
-Windows)</td>
-            <td width="74%">&nbsp;<a
- href="http://www-csag.ucsd.edu/projects/hpvm.html">http://www-csag.ucsd.edu/projects/hpvm.html</a></td>
-          </tr>
-          <tr>
-            <td width="26%">&nbsp;WMPI (Microsoft
-Windows)</td>
-            <td width="74%">&nbsp;<a
- href="http://www.criticalsoftware.com/hpc">http://www.criticalsoftware.com/hpc</a></td>
+            <td width="26%">&nbsp;OpenMPI</td>
+            <td width="74%">&nbsp;<a href="http://www.lam-mpi.org">http://www.open-mpi.org<br>
+            </a></td>
           </tr>
         </tbody>
       </table>
@@ -668,80 +638,93 @@ Windows)</td>
  href="installation.html#Docs:%20%20Installation">Return
 to Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp;</b></font> </p>
       <hr>
-      <h3><a name="AdditionalMicrosoftWindowsNotes"><font
- color="#551a8b">Additional
-Microsoft Windows Notes:</font></a></h3>
-      <p><font color="#551a8b"><b>Microsoft Compilers</b></font><font
- color="#551a8b"><b>:</b> </font>Use configure with the following
-options to build for Microsoft C/C++ &amp; Compaq Fortran [assuming
-MPICH &amp; Intel MLK are already installed in the default locations]<br>
-      <font color="#ff0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <h3><a name="Windows"><font color="#551a8b">&nbsp;Microsoft
+Windows Installation With MS/Intel/Compaq Compilers:</font></a></h3>
+      <p>Microsoft windows OS does not provide the same unix shell
+enviornment as the other OSes. Also the default MS/Intel/Compaq
+compilers behave differently than other unix compilers. And PETSc
+primarily relies on a unix envirment for build tools. So to install
+PETSc on windows - one has to install <a href="http://www.cygwin.com">cygwin</a>
+[for the unix enviornment] and use <a href="#Win32fe">win32fe</a>
+[part of PETSc sources,to interface to MS/Intel/Compaq compilers].<br>
+      </p>
+      <p><font color="#551a8b"><b>Install Cygwin: </b></font>Please
+download and install cygwin package from <a
+ href="http://www.cygwin.com">http://www.cygwin.com</a>&nbsp; Make sure
+the following cygwin components are installed.<br>
+      </p>
+      <ul>
+        <li style="color: rgb(204, 102, 204);">python</li>
+        <li style="color: rgb(204, 102, 204);">make</li>
+        <li>[default selection should already have <span
+ style="color: rgb(204, 102, 204);">diff</span> and other tools]</li>
+      </ul>
+      <p><font color="#551a8b"><b>Remove Cygwin link.exe: </b></font>Cygwin
+link.exe can conflict with Intel ifort and Comapq F90 compilers. If you
+are using these compilers - please do [from cygwin/bash shell]:<br>
+      </p>
+      <ul>
+        <li><span style="color: rgb(255, 0, 0);">mv /usr/bin/link.exe
+/usr/bin/link-cygwin.exe</span><br>
+        </li>
+      </ul>
+      <p><font color="#551a8b"><b>Setup cygwin bash shell with Working
+Compilers: </b></font>We require the compilers to be setup properly in
+a cygwin bash command shell, so that "<span
+ style="color: rgb(255, 0, 0);">cl foo.c</span>" or "<span
+ style="color: rgb(255, 0, 0);">ifort foo.f</span>" works from this
+shell. For example - if using VS2005 C and Intel 10 Fortran one can do:</p>
+      <ul>
+        <li>Start -&gt; Programs -&gt; Intel Software Development Tools
+-&gt; Intel Fortran Compiler 10 -&gt; Visual Fortran Build Enviornment
+[32bit or 64bit depending on your usage]. This should start a 'dos cmd'
+shell.<br>
+        </li>
+        <li>Within this shell - run cygwin bash.exe as: <span
+ style="color: rgb(255, 0, 0);">c:\cygwin\bin\bash.exe --login</span></li>
+        <li>verify if the compilers are useable [by running cl, ifort
+in this shell]<br>
+        </li>
+        <li>Now run configure with win32fe and then build the libraries
+with make [as per the usual instructions]</li>
+      </ul>
+Notes: This a new requirement as win32fe can no longer autodetect the
+newer versions of compilers. They currently default to "noautodetect
+mode.<br>
+      <p><font color="#551a8b"><b>Example Configure usage</b></font><font
+ color="#551a8b"><b> with Windows Compilers:<br>
+      </b></font></p>
+      <p><br>
+Use configure with VC2005 C and Intel Fortran 10 [With MPICH2
+installed].<br>
+      </p>
+      <p> <font color="#ff0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 ./config/configure.py
---with-cc='win32fe cl' --with-fc='win32fe f90'&nbsp;
---with-cxx='win32fe cl'<br>
-      </font></p>
-      <p>If fortran usage is not required - and you don't have Intel
-MLK - just use:<br>
+--with-cc='win32fe
+cl' --with-fc='win32fe ifort'&nbsp;
+--with-cxx='win32fe cl'&nbsp; --download-f-blas-lapack=1</font></p>
+      <p>If fortran usage is not required, use:<br>
       </p>
       <font color="#ff0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 ./config/configure.py --with-cc='win32fe cl' --with-fc=0
---download-c-blas-lapack=1<br>
-      </font>
-      <p>If fortran usage is required [with Digital/Compaq f90
-compiler] - and you don't have Intel
-MLK - just use the following [assuming the path to compaq fortran
-libraries is correct]:<br>
+--download-c-blas-lapack=1</font>
+      <p><font color="#551a8b"><b>Using Compaq F90</b></font>:<br>
+      </p>
+      <p>Using Microsoft C/C++ 6.0 &amp; Compaq Fortran 6.0 with MPICH2
+configure command to use:<br>
       </p>
       <font color="#ff0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 ./config/configure.py --with-cc='win32fe cl' --with-fc='win32fe f90'
---download-f-blas-lapack=1 LIBS="-L'/cygdrive/c/Program Files/Microsoft
-Visual Studio/DF98/LIB'"</font><br>
+--download-f-blas-lapack=1</font><br>
       <br>
-Note the usage of both single quotes and double quotes in the above
-line. <br>
-      <br>
-      <font color="#551a8b"><b>Using Visual Studio 2005</b></font><font
- color="#551a8b"><b>:</b></font> win32fe currently is unable to
-autodetect visual studio 2005 compilers. In such case one should adopt
-the following procedure to install PETSc <br>
-      <ul>
-        <li>setup compilers to work from 'cmd' shell. This is done by
-running vcvars32.bat or equivalent compiler initialization scripts in
-'cmd' shell.<br>
-          <br>
-Some compilers install&nbsp; shortcuts in program files for this
-operation [For eg:&nbsp; Start&nbsp; -&gt; Programs -&gt; Visual C++
-2005 Express Edition -&gt; Visual Studio Tools -&gt; Visual Studio 2005
-Command Prompt]<br>
-          <br>
-If using both C and Fortran compilers, the fortran compiler shell
-[either .bat file - or the&nbsp; Start -&gt; Program shortcut]&nbsp; is
-likely to initialize both C and fortran compilers. <br>
-          <br>
-        </li>
-        <li>make sure the compilers work in this cmd shell,&nbsp; by
-compiling sample test code<br>
-&nbsp; cl testcode.c<br>
-&nbsp; ifort testcode.f<br>
-          <br>
-        </li>
-        <li>from within this 'cmd' shell, run '<span
- style="color: rgb(255, 0, 0);">bash --login</span>' [which is in
-likley at
-c:\cygwin\bin\bash.exe]<br>
-          <br>
-        </li>
-        <li>within this bash shell, run win32fe with --nodetect option
-i.e:</li>
-      </ul>
-      <span style="color: rgb(255, 0, 0);">&nbsp;&nbsp;&nbsp;&nbsp;
-./config/configure.py --with-cc='win32fe cl --nodetect'
---with-fc='win32fe ifort --nodetect' --with-mpi=0
---download-f-blas-lapack=1</span><br>
-      <p><font color="#551a8b"><b>Configure</b></font><font
+Note:&nbsp; MPICH2 mpif.h needs a fix for it to work with Compaq F90
+[specifically remove line with MPI_DISPLACEMENT_CURRENT - which uses
+'integer*8' - which is unsupported by Compaq F90]<br>
+      <p><font color="#551a8b"><b>ExternalPackages</b></font><font
  color="#551a8b"><b>:</b> </font>--download-package
 option does not
-work with many external packages [for eg: mpich]</p>
+work with many external packages.<br>
+      </p>
       <p><font color="#551a8b"><b>Project</b></font><font
  color="#551a8b"><b> Files:</b> </font>We
 provide
@@ -780,15 +763,22 @@ Visual Studio 6: <b>msdev&nbsp;ex1.exe</b>, Microsoft
 Visual Studio
 .NET: <b>devenv&nbsp;ex1.exe</b>, Intel Enhanced
 Debugger: <b>edb&nbsp;ex1.exe</b>,
-or GNU Debugger <b>gdb&nbsp;ex1.exe</b>.</p>
-      <p><b><font color="#551a8b">PETSc Win32
+or GNU Debugger <b>gdb&nbsp;ex1.exe</b>.<br>
+      </p>
+      <p><b><font color="#551a8b">Using Cygwin gcc/g++/gfortran: </font></b>One
+can install and use PETSc with gcc/gfortran compilers from cygwin. In
+this case follow the regular instructions.<br>
+      </p>
+      <p><b><font color="#551a8b"><a name="Win32fe"></a>PETSc Win32
 front end - win32fe</font>:</b>&nbsp;
 This tool is used as a wrapper to Microsoft/ Borland/ Intel compilers
-and associated tools - to enable building PETSc libraries using make
+and associated tools - to enable building PETSc libraries using cygwin
+make
 and other UNIX tools. For additional info, run
 ${PETSC_DIR}/bin/win32/win32fe without any options.</p>
       <p><font color="#551a8b"><b><a href="#Docs:%20%20Installation">Return
-to Installation Instructions</a><br>
+to
+Installation Instructions</a><br>
       </b></font></p>
       <hr>
       <h3 style="font-weight: bold;"><a name="root"><font
@@ -832,12 +822,14 @@ PETSC_DIR=$PWD<br>
       </ul>
 After the install is done, one has to switch to using <span
  style="color: rgb(255, 0, 0);">PETSC_DIR=/opt/petsc/petsc-3.0.0-p0</span>.
-&nbsp;If you've installed PETSc with the --prefix option then you DO
+&nbsp;If
+you've installed PETSc with the --prefix option then you DO
 NOT use a PETSC_ARCH variable. You should install different
 configurations using different --prefix names.<br>
       <hr>
       <h3 style="font-weight: bold;"><a name="SP"><font color="#551a8b">Installing
-on machine requiring cross compiler or a job scheduler:</font></a></h3>
+on
+machine requiring cross compiler or a job scheduler:</font></a></h3>
       <p>If one has to use a cross compiler - or go through the job
 scheduler to use MPI on a
 given machine - use the configure option <span
@@ -859,31 +851,42 @@ using the job scheduler.</li>
  style="font-weight: bold;">'python reconfigure'</span>&nbsp; again on
 the <span style="font-weight: bold;">frontend node</span> (compiler
 server)to
-complete the configuration process<br>
-        </li>
+complete the configuration process</li>
       </ul>
+      <br>
+      <hr style="width: 100%; height: 2px;">
       <h3 style="font-weight: bold;"><a name="SP"><font color="#551a8b">Installing
-on IBM SP:</font></a></h3>
+on
+IBM SP:</font></a></h3>
 To run any code compiled with MPI on IBM SP - one has to
 go
 through the <span style="font-weight: bold;">job scheduler</span>.&nbsp;
-[So follow the instructions from the above section 'Installing on
+[So
+follow the instructions from the above section 'Installing on
 machine requiring job scheduler']. Alternatively check/run
 config/examples/aix5.1.0.0.py for all
 configure options
 required on the SP with compilers defaulting to 32bit mode, and
 config/examples/aix5.1.0.0-64.py with compilers defaulting to 64bit
-mode.
-      <h3 style="font-weight: bold;"><a
- name="AdditionalMicrosoftWindowsNotes"><font color="#551a8b">Installing
-on IBM Blue Gene:</font></a></h3>
-      <p>IBM Blue Gene [as of now] requires modified compiler
+mode.<br>
+      <h3 style="font-weight: bold;"><font><font><font><font
+ color="#551a8b">Installing
+on IBM BG/L:</font></font></font></font></h3>
+IBM BG/L [as of now] requires modified compiler
 script
 wrappers to compile PETSc-3.0.0-p0. Please download <a
  href="http://ftp.mcs.anl.gov/pub/petsc/tmp/petsc-bgl-tools.tar.gz">http://ftp.mcs.anl.gov/pub/petsc/tmp/petsc-bgl-tools.tar.gz</a>
 and follow instructions provided in the <span
- style="font-weight: bold;">README</span> file.<br>
-      </p>
+ style="font-weight: bold;">README</span> file<br>
+      <br>
+      <h3 style="font-weight: bold;"><font><font><font><font
+ color="#551a8b">Installing
+on IBM BG/P:</font></font></font></font></h3>
+IBM BG/P has mpixlc and mpixlf wrappers so no additional compiler
+wrappers are needed.<br>
+      <br>
+      <h3 style="font-weight: bold;"></h3>
+      <p> </p>
       <hr>
       <h3><a name="AdditionalMicrosoftWindowsNotes"><font
  color="#551a8b">Installing with TAU Instrumentation package:</font></a></h3>
@@ -896,12 +899,12 @@ compiler for TAU. This needs to be invoked with the correct information
 for the installed TAU and PDT packages. For eg:<br>
       </p>
       <p>&nbsp;<span style="color: rgb(255, 0, 0);">./config/configure.py
---with-mpi-dir=/home/petsc/soft/linux-rh73/mpich-1.2.4 </span><span
- style="color: rgb(255, 0, 0);">--with-fc=0 --with-cxx=0
--PETSC_ARCH=linux-tau -with-cpp=cpp </span><span
- style="color: rgb(255, 0, 0);">--with-cc="`pwd`/bin/taucc.py
+--with-mpi-dir=/home/petsc/soft/linux-rh73/mpich-1.2.4
+      </span><span style="color: rgb(255, 0, 0);">--with-fc=0
+--with-cxx=0
+-PETSC_ARCH=linux-tau </span><span style="color: rgb(255, 0, 0);">--with-cc="`pwd`/bin/taucc.py
 -cc=gcc
--pdt_parse=/homes/petsc/soft/linux-rh73/pdtoolkit-2.2b1/linux/bin/cxxparse
+-pdt_parse=/homes/petsc/soft/linux-rh73/pdtoolkit-2.2b1/linux/bin/cparse
 -tau_lib_dir=/homes/petsc/soft/linux-rh73/tau-2.11.18/i386_linux/lib"<br>
       </span></p>
       <hr>
