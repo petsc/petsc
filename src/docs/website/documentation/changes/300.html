@@ -1,6 +1,8 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
 <head>
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
   <title>PETSc: Docs:&nbsp; Changes: 3.0.0</title>
 </head>
@@ -38,8 +40,8 @@ PETSc</strong></a></li>
               </strong></li>
             <li><strong><a href="index.html">Changes</a></strong>
               <ul>
-                <li><font color="#ff0000">Development</font></li>
-                <li><a href="300.html">3.0.0</a></li>
+                <li><a href="dev.html">Development</a></li>
+                <li style="color: rgb(255, 0, 0);">3.0.0</li>
                 <li><a href="233.html">2.3.3</a></li>
                 <li><a href="232.html">2.3.2</a></li>
                 <li><a href="231.html">2.3.1</a></li>
@@ -264,7 +266,8 @@ SNESGetLagJacobian()</li>
 conjunction with DMMGSetSNES(). You should call this sometime after
 DMMGSetSNES() is called, otherwise the SNES/KSPSetFromOptions() does
 not get called.</li>
-        <li>Removed -dmmg_snes_monitor since now -snes_monitor and -snes_monitor_short
+        <li>Removed -dmmg_snes_monitor since now -snes_monitor and
+-snes_monitor_short
 will now do the proper indenting so this is no longer needed</li>
         <li>Removed -dmmg_ksp_monitor since now -ksp_monitor[_short)
 and -mg_levels_ksp_monitor[_short) etc will handle the proper indenting.</li>
@@ -297,19 +300,12 @@ call PetscLogFlops() it no longer has a return in it.<br>
       <p><u><b>Sieve:</b></u></p>
       <p><u><b>Fortran:</b></u><br>
       </p>
-      <li> If you previously used text like the following [perhaps in data section of f90 modules]
-<pre>
-#define PETSC_AVOID_DECLARATIONS
-#include "finclude/petsc.h"
-#include "finclude/petscvec.h"
-#endif
-</pre>
+      <li> If you previously used text like the following [perhaps in
+data section of f90 modules]
+        <pre>#define PETSC_AVOID_DECLARATIONS<br>#include "finclude/petsc.h"<br>#include "finclude/petscvec.h"<br>#endif<br></pre>
 you should replace it with
-<pre>
-#include "finclude/petscdef.h"
-#include "finclude/petscvecdef.h"
-</pre> </li>
-
+        <pre>#include "finclude/petscdef.h"<br>#include "finclude/petscvecdef.h"<br></pre>
+      </li>
       <li>PetscTruth is now logical*4 or logical(kind=4) an unsigned
 int of 4 bytes. To get back PetscTruth as an integer*4 put a #define
 PETSC_FORTRAN_PETSCTRUTH_INT 1 into $PETSC_ARCH/conf/petscconf.h </li>
