@@ -57,7 +57,7 @@ namespace PETSc {
         PetscLogEvent  id;
         PetscErrorCode ierr;
 
-        // Should check for already registered events
+        /* Should check for already registered events */
         ierr = PetscLogEventRegister(name.c_str(), cookie, &id);CHKERRXX(ierr);
         event_registry[name] = LogEvent(name, id);
       }
@@ -69,7 +69,7 @@ namespace PETSc {
         PetscLogStage  id;
         PetscErrorCode ierr;
 
-        // Should check for already registered stages
+        /* Should check for already registered stages */
         ierr = PetscLogStageRegister(name.c_str(), &id);CHKERRXX(ierr);
         stage_registry[name] = LogStage(name, id);
       }
