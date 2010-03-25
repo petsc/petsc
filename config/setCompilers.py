@@ -803,7 +803,7 @@ class Configure(config.base.Configure):
     return
 
   def containsInvalidFlag(self, output):
-    '''If the output contains evidence that an invalid flag was used, return True''
+    '''If the output contains evidence that an invalid flag was used, return True'''
     if (output.find('Unrecognized command line option') >= 0 or output.find('Unrecognised command line option') >= 0 or
         output.find('unrecognized command line option') >= 0 or output.find('unrecognized option') >= 0 or output.find('unrecognised option') >= 0 or
         output.find('not recognized') >= 0 or output.find('not recognised') >= 0 or
