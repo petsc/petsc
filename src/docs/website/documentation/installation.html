@@ -94,12 +94,12 @@ Windows Installation</a>]<br>
  style="font-weight: bold;">regular/non-root user,</span> perhaps in <span
  style="font-weight: bold;">/home/username/soft</span></li>
         <li><a href="../download/index.html">Download</a> latest PETSc
-release tarball: petsc-3.0.0-p0.tar.gz<br>
+release tarball: petsc-3.1-p0.tar.gz<br>
         </li>
         <li><font color="#ff0000">cd /home/username/soft</font></li>
-        <li><font color="#ff0000">gunzip -c petsc-3.0.0-p0.tar.gz
+        <li><font color="#ff0000">gunzip -c petsc-3.1-p0.tar.gz
 | tar -xof -</font></li>
-        <li><font color="#ff0000">cd petsc-3.0.0-p0</font></li>
+        <li><font color="#ff0000">cd petsc-3.1-p0</font></li>
         <li>sh/bash shell:&nbsp;&nbsp; <font color="#ff0000">PETSC_DIR=$PWD;
 export
 PETSC_DIR</font><br>
@@ -158,7 +158,7 @@ will download &amp;
 install BLAS, LAPACK, MPICH if they are not already installed on the
 system) :<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">export
-PETSC_DIR=/home/petsc/petsc-3.0.0-p0<br>
+PETSC_DIR=/home/petsc/petsc-3.1-p0<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 cd $PETSC_DIR<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -173,7 +173,7 @@ make test</font></li>
 c++ compiler] (add the option <span style="color: rgb(255, 0, 0);">--with-fortran-kernels=generic</span>
 to get possibly faster complex number performance on some systems):<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">export
-PETSC_DIR=/home/petsc/petsc-3.0.0-p0<br>
+PETSC_DIR=/home/petsc/petsc-3.1-p0<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 cd $PETSC_DIR<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -192,7 +192,7 @@ use MPI compilers <span style="font-weight: bold;">mpicc/mpif90</span>:<br>
 [Note: Do not specify --with-cc --with-fc&nbsp; etc when using
 --with-mpi-dir - so that mpicc/mpif90 can be picked up from mpi-dir]<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">export
-PETSC_DIR=/home/petsc/petsc-3.0.0-p0<br>
+PETSC_DIR=/home/petsc/petsc-3.1-p0<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 cd $PETSC_DIR<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -234,17 +234,17 @@ or specified on the command line [to both configure and make]</p>
       <ul>
         <li>specify enviornment variable for csh/tcsh [can be specified
 in ~/.cshrc]<br>
-          <pre><font color="#ff0000">setenv PETSC_DIR /home/balay/petsc-3.0.0-p0<br>setenv PETSC_ARCH linux-gnu-c-debug</font></pre>
+          <pre><font color="#ff0000">setenv PETSC_DIR /home/balay/petsc-3.1-p0<br>setenv PETSC_ARCH linux-gnu-c-debug</font></pre>
         </li>
         <li>specify enviornment variable for bash [can be specified in
 ~/.bashrc]<br>
-          <pre><font color="#ff0000">export PETSC_DIR=/home/balay/petsc-3.0.0-p0<br>export PETSC_ARCH=linux-gnu-c-debug</font>        </pre>
+          <pre><font color="#ff0000">export PETSC_DIR=/home/balay/petsc-3.1-p0<br>export PETSC_ARCH=linux-gnu-c-debug</font>        </pre>
         </li>
         <li>specify variable on commandline to configure<br>
-          <pre><font color="#ff0000">config/configure.py PETSC_DIR=/home/balay/petsc-3.0.0-p0 PETSC_ARCH=linux-gnu-c-debug [other configure options]</font><br></pre>
+          <pre><font color="#ff0000">config/configure.py PETSC_DIR=/home/balay/petsc-3.1-p0 PETSC_ARCH=linux-gnu-c-debug [other configure options]</font><br></pre>
         </li>
         <li>specify variables on command line to make<br>
-          <pre><font color="#ff0000">make PETSC_DIR=/home/balay/petsc-3.0.0-p0 PETSC_ARCH=linux-gnu-c-debug [other make options]</font></pre>
+          <pre><font color="#ff0000">make PETSC_DIR=/home/balay/petsc-3.1-p0 PETSC_ARCH=linux-gnu-c-debug [other make options]</font></pre>
         </li>
       </ul>
       <p><b><a name="PETSC_DIR"><font color="#551a8b">PETSC_DIR</font></a></b>:
@@ -798,8 +798,8 @@ user</span>]. i.e<br>
  style="color: rgb(255, 0, 0);"></span><span
  style="color: rgb(255, 0, 0);">/opt/petsc</span></li>
         <li><span style="color: rgb(255, 0, 0);">tar -xzf
-petsc-3.0.0-p0.tar.gz</span></li>
-        <li><span style="color: rgb(255, 0, 0);">cd petsc-3.0.0-p0</span></li>
+petsc-3.1-p0.tar.gz</span></li>
+        <li><span style="color: rgb(255, 0, 0);">cd petsc-3.1-p0</span></li>
         <li><span style="color: rgb(255, 0, 0);">./config/configure.py</span></li>
         <li><span style="color: rgb(255, 0, 0);">make<br>
           </span></li>
@@ -813,7 +813,7 @@ non-root regular location - say /home/username]</span></li>
         <li><span style="color: rgb(255, 0, 0);">setenv PETSC_DIR $PWD<br>
           </span></li>
         <li><span style="color: rgb(255, 0, 0);">./config/configure.py
---prefix=/opt/petsc/petsc-3.0.0-p0&nbsp; [other configure options]<br>
+--prefix=/opt/petsc/petsc-3.1-p0&nbsp; [other configure options]<br>
           </span></li>
         <li><span style="color: rgb(255, 0, 0);">make</span></li>
         <li><span style="color: rgb(255, 0, 0);">sudo make install
@@ -821,7 +821,7 @@ PETSC_DIR=$PWD<br>
           </span></li>
       </ul>
 After the install is done, one has to switch to using <span
- style="color: rgb(255, 0, 0);">PETSC_DIR=/opt/petsc/petsc-3.0.0-p0</span>.
+ style="color: rgb(255, 0, 0);">PETSC_DIR=/opt/petsc/petsc-3.1-p0</span>.
 &nbsp;If
 you've installed PETSc with the --prefix option then you DO
 NOT use a PETSC_ARCH variable. You should install different
@@ -874,7 +874,7 @@ mode.<br>
 on IBM BG/L:</font></font></font></font></h3>
 IBM BG/L [as of now] requires modified compiler
 script
-wrappers to compile PETSc-3.0.0-p0. Please download <a
+wrappers to compile PETSc-3.1-p0. Please download <a
  href="http://ftp.mcs.anl.gov/pub/petsc/tmp/petsc-bgl-tools.tar.gz">http://ftp.mcs.anl.gov/pub/petsc/tmp/petsc-bgl-tools.tar.gz</a>
 and follow instructions provided in the <span
  style="font-weight: bold;">README</span> file<br>
