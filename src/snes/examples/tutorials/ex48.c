@@ -824,7 +824,8 @@ static PetscErrorCode THISurfaceStatistics(DA da,Vec X,PetscReal *min,PetscReal 
   PetscErrorCode ierr;
   Node           ***x;
   PetscInt       i,j,xs,ys,zs,xm,ym,zm,mx,my,mz;
-  PetscReal      umin = 1e100,umax=-1e100,usum=0,gusum;
+  PetscReal      umin = 1e100,umax=-1e100;
+  PetscScalar    usum=0.0,gusum;
 
   PetscFunctionBegin;
   *min = *max = *mean = 0;
@@ -843,7 +844,7 @@ static PetscErrorCode THISurfaceStatistics(DA da,Vec X,PetscReal *min,PetscReal 
   ierr = PetscGlobalMin(&umin,min,((PetscObject)da)->comm);CHKERRQ(ierr);
   ierr = PetscGlobalMax(&umax,max,((PetscObject)da)->comm);CHKERRQ(ierr);
   ierr = PetscGlobalSum(&usum,&gusum,((PetscObject)da)->comm);CHKERRQ(ierr);
-  *mean = gusum / (mx*my);
+  *mean = PetscRealPart(gusum) / (mx*my);
   PetscFunctionReturn(0);
 }
 
@@ -971,7 +972,7 @@ static PetscErrorCode THIJacobianLocal_2D(DALocalInfo *info,Node **x,Mat B,THI t
         }
       }
       {
-        const MatStencil rc[4] = {{0,i,j},{0,i+1,j},{0,i+1,j+1},{0,i,j+1}};
+        const MatStencil rc[4] = {{0,i,j,0},{0,i+1,j,0},{0,i+1,j+1,0},{0,i,j+1,0}};
         ierr = MatSetValuesBlockedStencil(B,4,rc,4,rc,&Ke[0][0],ADD_VALUES);CHKERRQ(ierr);
       }
     }
@@ -1139,11 +1140,11 @@ static PetscErrorCode THIJacobianLocal_3D(DALocalInfo *info,Node ***x,Mat B,THI 
           }
         }
         {
-          const MatStencil rc[8] = {{i,j,k},{i+1,j,k},{i+1,j+1,k},{i,j+1,k},{i,j,k+1},{i+1,j,k+1},{i+1,j+1,k+1},{i,j+1,k+1}};
+          const MatStencil rc[8] = {{i,j,k,0},{i+1,j,k,0},{i+1,j+1,k,0},{i,j+1,k,0},{i,j,k+1,0},{i+1,j,k+1,0},{i+1,j+1,k+1,0},{i,j+1,k+1,0}};
           if (amode == THIASSEMBLY_TRIDIAGONAL) {
             for (l=0; l<4; l++) { /* Copy out each of the blocks, discarding horizontal coupling */
               const PetscInt l4 = l+4;
-              const MatStencil rcl[2] = {{rc[l].k,rc[l].j,rc[l].i},{rc[l4].k,rc[l4].j,rc[l4].i}};
+              const MatStencil rcl[2] = {{rc[l].k,rc[l].j,rc[l].i,0},{rc[l4].k,rc[l4].j,rc[l4].i,0}};
 #if defined COMPUTE_LOWER_TRIANGULAR
               const PetscScalar Kel[4][4] = {{Ke[2*l+0][2*l+0] ,Ke[2*l+0][2*l+1] ,Ke[2*l+0][2*l4+0] ,Ke[2*l+0][2*l4+1]},
                                              {Ke[2*l+1][2*l+0] ,Ke[2*l+1][2*l+1] ,Ke[2*l+1][2*l4+0] ,Ke[2*l+1][2*l4+1]},
