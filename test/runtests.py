@@ -29,8 +29,7 @@ petsc4py.init(args)
 from petsc4py import PETSc
 
 version = PETSc.Sys.getVersion()
-exclude = {'test_gc'       : True,
-           }
+exclude = {}
 
 def test_cases():
     from glob import glob
