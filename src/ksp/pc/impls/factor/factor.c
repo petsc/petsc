@@ -105,9 +105,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftAmount(PC pc,PetscReal shiftam
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetDropTolerance"
-/*@
+/*
    PCFactorSetDropTolerance - The preconditioner will use an ILU 
-   based on a drop tolerance.
+   based on a drop tolerance. (Under development)
 
    Collective on PC
 
@@ -127,7 +127,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftAmount(PC pc,PetscReal shiftam
       matrix. We don't know how to compute reasonable values.
 
 .keywords: PC, levels, reordering, factorization, incomplete, ILU
-@*/
+*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,PetscInt maxrowcount)
 {
   PetscErrorCode ierr,(*f)(PC,PetscReal,PetscReal,PetscInt);

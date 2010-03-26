@@ -88,7 +88,6 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc)
 {
   PC_ICC         *icc = (PC_ICC*)pc->data;
   PetscTruth     flg;
-  PetscInt       dtmax = 3;
   PetscReal      dt[3];
   PetscErrorCode ierr;
 
@@ -100,11 +99,13 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc)
     dt[0] = ((PC_Factor*)icc)->info.dt;
     dt[1] = ((PC_Factor*)icc)->info.dtcol;
     dt[2] = ((PC_Factor*)icc)->info.dtcount;
+    /*
+    PetscInt       dtmax = 3;
     ierr = PetscOptionsRealArray("-pc_factor_drop_tolerance","<dt,dtcol,maxrowcount>","PCFactorSetDropTolerance",dt,&dtmax,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCFactorSetDropTolerance(pc,dt[0],dt[1],(PetscInt)dt[2]);CHKERRQ(ierr);
     }
-
+    */
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
