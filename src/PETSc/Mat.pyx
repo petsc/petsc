@@ -226,6 +226,23 @@ cdef class Mat(Object):
             CHKERR( Mat_AllocAIJ_DEFAULT(self.mat, bs) )
         return self
 
+    def createCRL(self, size, bsize=None, nnz=None, csr=None, comm=None):
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscInt bs=0, m=0, n=0, M=0, N=0
+        CHKERR( Mat_SplitSizes(ccomm, size, bsize, &bs, &m, &n, &M, &N) )
+        # create matrix
+        cdef PetscMat newmat = NULL
+        CHKERR( MatCreateAnyCRL(ccomm, bs, m, n, M, N, &newmat) )
+        PetscCLEAR(self.obj); self.mat = newmat
+        # preallocate matrix
+        if csr is not None:   # with CSR preallocation
+            CHKERR( Mat_AllocAIJ_CSR(self.mat, bs, csr) )
+        elif nnz is not None: # with NNZ preallocation
+            CHKERR( Mat_AllocAIJ_NNZ(self.mat, bs, nnz) )
+        else:                 # default preallocation
+            CHKERR( Mat_AllocAIJ_DEFAULT(self.mat, bs) )
+        return self
+
     def setPreallocationNNZ(self, nnz, bsize=None):
         cdef PetscInt bs = PETSC_DECIDE
         CHKERR( Mat_BlockSize(bsize, &bs) )
@@ -241,6 +258,7 @@ cdef class Mat(Object):
             CHKERR( Mat_AllocAIJ_CSR(self.mat, bs, csr) )
         else:
             CHKERR( Mat_AllocAIJ_DEFAULT(self.mat, bs) )
+
     #
 
     def createDense(self, size, bsize=None, array=None, comm=None):
@@ -311,7 +329,6 @@ cdef class Mat(Object):
         CHKERR( MatCreateSubMatrix(A.mat, isrow.iset, iscol.iset, &newmat) )
         PetscCLEAR(self.obj); self.mat = newmat
         return self
-        
 
     ## def createShell(self, size, context, comm=None):
     ##     raise NotImplementedError
@@ -467,6 +484,22 @@ cdef class Mat(Object):
         if out is None: out = self
         if out.mat != NULL: reuse = MAT_REUSE_MATRIX
         CHKERR( MatTranspose(self.mat, reuse, &out.mat) )
+        return out
+
+    def realPart(self, Mat out=None):
+        if out is None:
+            out = self
+        elif out.mat == NULL:
+            CHKERR( MatDuplicate(self.mat, MAT_COPY_VALUES, &out.mat) )
+        CHKERR( MatRealPart(out.mat) )
+        return out
+
+    def imagPart(self, Mat out=None):
+        if out is None:
+            out = self
+        elif out.mat == NULL:
+            CHKERR( MatDuplicate(self.mat, MAT_COPY_VALUES, &out.mat) )
+        CHKERR( MatImaginaryPart(out.mat) )
         return out
 
     def conjugate(self, Mat out=None):
@@ -919,6 +952,9 @@ cdef class Mat(Object):
 
     def solveTransposeAdd(self, Vec b not None, Vec y, Vec x not None):
         CHKERR( MatSolveTransposeAdd(self.mat, b.vec, y.vec, x.vec) )
+
+    def matSolve(self, Mat B not None, Mat X not None):
+        CHKERR( MatMatSolve(self.mat, B.mat, X.mat) )
 
     #
 

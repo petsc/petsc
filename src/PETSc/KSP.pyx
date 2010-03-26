@@ -293,6 +293,14 @@ cdef class KSP(Object):
 
     # --- xxx ---
 
+    def buildSolution(self, Vec x not None):
+        CHKERR( KSPBuildSolution(self.ksp, x.vec, NULL) )
+
+    def buildResidual(self, Vec r not None):
+        CHKERR( KSPBuildResidual(self.ksp , NULL, r.vec, &r.vec) )
+
+    # --- xxx ---
+
     def setInitialGuessNonzero(self, bint flag):
         cdef PetscTruth guess_nonzero = PETSC_FALSE
         if flag: guess_nonzero = PETSC_TRUE
@@ -312,7 +320,7 @@ cdef class KSP(Object):
         cdef PetscTruth guess_knoll = PETSC_FALSE
         CHKERR( KSPGetInitialGuessKnoll(self.ksp, &guess_knoll) )
         return <bint>guess_knoll
-    
+
     def setUseFischerGuess(self, model, size):
         cdef PetscInt ival1 = asInt(model)
         cdef PetscInt ival2 = asInt(size)

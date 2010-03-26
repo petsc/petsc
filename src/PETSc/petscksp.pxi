@@ -133,6 +133,9 @@ cdef extern from "petscksp.h" nogil:
     int KSPGetIterationNumber(PetscKSP,PetscInt*)
     int KSPGetResidualNorm(PetscKSP,PetscReal*)
 
+    int KSPBuildSolution(PetscKSP,PetscVec,PetscVec*)
+    int KSPBuildResidual(PetscKSP,PetscVec,PetscVec,PetscVec*)
+
     int KSPSetDiagonalScale(PetscKSP,PetscTruth)
     int KSPGetDiagonalScale(PetscKSP,PetscTruth*)
     int KSPSetDiagonalScaleFix(PetscKSP,PetscTruth)

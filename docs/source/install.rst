@@ -8,16 +8,21 @@ You need to have the following software properly installed in order to
 build *PETSc for Python*:
 
 * Any MPI_ implementation [#]_ (e.g., MPICH_ or `Open MPI`_), 
-  built with shared libraries.
+  built with **shared libraries**.
 
-* PETSc_ 2.3.2/2.3.3/3.0.0 release, built with shared libraries.
+* PETSc_ 2.3.2/2.3.3/3.0.0/3.1 release, built with **shared
+  libraries** [#]_.
 
-* Python_ 2.4/2.5/2.6 [#]_.
+* Python_ 2.4/2.5/2.6/2.7 [#]_.
 
 * NumPy_ package.
 
 .. [#] Unless you have appropiatelly configured and built PETSc
-       PETSc without MPI (configure option ``--with-mpi=0``).
+       PETSc without MPI (configure option :option:`--with-mpi=0`).
+
+.. [#] In order to build PETSc with shared libraries, you have to pass
+       :option:`--with-shared` option to PETSc's :program:`configure`
+       script.
 
 .. [#] You may need to use a parallelized version of the Python
        interpreter with some MPI-1 implementations (e.g. MPICH1).
@@ -31,7 +36,7 @@ If you already have a working PETSc you can take advantage of
 setuptools's :program:`easy_install` command::
 
    $ export PETSC_DIR=/path/to/petsc
-   $ export PETSC_ARCH=linux-gnu # may not be requiered
+   $ export PETSC_ARCH=linux-gnu # may not be required
 
    $ easy_install petsc4py
 
@@ -63,14 +68,14 @@ applies to you shell or system) the environmental variables
 :envvar:`PETSC_DIR`, and :envvar:`PETSC_ARCH` indicating where you
 have built/installed PETSc::
 
-   $ export PETSC_DIR=/usr/local/petsc/3.0.0
+   $ export PETSC_DIR=/usr/local/petsc
    $ export PETSC_ARCH=linux-gnu
 
 Alternatively, you can edit the file :file:`setup.cfg` and provide the
 required information below the ``[config]`` section::
 
    [config]
-   petsc_dir  = /usr/local/petsc/3.0.0
+   petsc_dir  = /usr/local/petsc
    petsc_arch = linux-gnu
    ...
 
@@ -94,11 +99,17 @@ or, in case you need root privileges::
 This will install the :mod:`petsc4py` package in the standard location
 :file:`{prefix}/lib/python{X}.{X}/site-packages`.
 
-You can also do a user-install type::
+You can also do a user-install type. Threre are two options depending
+on the target Python version.
 
-   $ python setup.py install --home=$HOME
+* For Python 2.6 and up::
 
-This will install the :mod:`petsc4py` package in the standard location
-:file:`$HOME/lib/python` (or perhaps :file:`$HOME/lib64/python`). This
-location should be listed in the :envvar:`PYTHONPATH` environmental
-variable.
+      $ python setup.py install --user
+
+* For Python 2.5 and below (assuming your home directory is available
+  through the :envvar:`HOME` environment variable)::
+
+      $ python setup.py install --home=$HOME
+
+  and then add :file:`$HOME/lib/python` or :file:`$HOME/lib64/python`
+  to your :envvar:`PYTHONPATH` environment variable.

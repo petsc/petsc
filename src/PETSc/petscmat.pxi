@@ -258,6 +258,7 @@ cdef extern from "petscmat.h" nogil:
     int MatSolveTranspose(PetscMat,PetscVec,PetscVec)
     int MatSolveAdd(PetscMat,PetscVec,PetscVec,PetscVec)
     int MatSolveTransposeAdd(PetscMat,PetscVec,PetscVec,PetscVec)
+    int MatMatSolve(PetscMat,PetscMat,PetscMat)
 
     int MatComputeExplicitOperator(PetscMat,PetscMat*)
     int MatUseScaledForm(PetscMat,PetscTruth)
@@ -268,6 +269,10 @@ cdef extern from "petscmat.h" nogil:
 cdef extern from "custom.h" nogil:
     enum: MAT_SKIP_ALLOCATION
     int MatCreateAnyAIJ(MPI_Comm,PetscInt,
+                        PetscInt,PetscInt,
+                        PetscInt,PetscInt,
+                        PetscMat*)
+    int MatCreateAnyCRL(MPI_Comm,PetscInt,
                         PetscInt,PetscInt,
                         PetscInt,PetscInt,
                         PetscMat*)

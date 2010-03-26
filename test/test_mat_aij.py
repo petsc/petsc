@@ -505,6 +505,124 @@ class TestMatMPIAIJ_B_G45_B5(TestMatMPIAIJ_B_G45):
 class TestMatMPIAIJ_B_G89_B5(TestMatMPIAIJ_B_G89):
     BSIZE = 5
 
+
+# -- CRL ---------------------
+
+class BaseTestMatCRL(BaseTestMatAIJ, unittest.TestCase):
+    TYPE  = PETSc.Mat.Type.CRL
+
+# -- Seq CRL --
+
+class TestMatSeqCRL(BaseTestMatCRL):
+    COMM = PETSc.COMM_SELF
+    TYPE = PETSc.Mat.Type.SEQCRL
+class TestMatSeqCRL_G23(TestMatSeqCRL):
+    GRID  = 2, 3
+class TestMatSeqCRL_G45(TestMatSeqCRL):
+    GRID  = 4, 5
+class TestMatSeqCRL_G89(TestMatSeqCRL):
+    GRID  = 8, 9
+
+# -- MPI CRL --
+
+class TestMatMPICRL(BaseTestMatCRL):
+    COMM = PETSc.COMM_WORLD
+    TYPE = PETSc.Mat.Type.MPICRL
+class TestMatMPICRL_G23(TestMatMPICRL):
+    GRID  = 2, 3
+class TestMatMPICRL_G45(TestMatMPICRL):
+    GRID  = 4, 5
+class TestMatMPICRL_G89(TestMatMPICRL):
+    GRID  = 8, 9
+
+# -- CRL + Block -------------
+
+class BaseTestMatCRL_B(BaseTestMatAIJ_B, unittest.TestCase):
+    TYPE  = PETSc.Mat.Type.AIJ
+
+# -- Seq CRL + Block --
+
+class TestMatSeqCRL_B(BaseTestMatCRL_B):
+    COMM = PETSc.COMM_SELF
+    TYPE = PETSc.Mat.Type.SEQCRL
+# bs = 1
+class TestMatSeqCRL_B_G23(TestMatSeqCRL_B):
+    GRID  = 2, 3
+class TestMatSeqCRL_B_G45(TestMatSeqCRL_B):
+    GRID  = 4, 5
+class TestMatSeqCRL_B_G89(TestMatSeqCRL_B):
+    GRID  = 8, 9
+# bs = 2
+class TestMatSeqCRL_B_G23_B2(TestMatSeqCRL_B_G23):
+    BSIZE = 2
+class TestMatSeqCRL_B_G45_B2(TestMatSeqCRL_B_G45):
+    BSIZE = 2
+class TestMatSeqCRL_B_G89_B2(TestMatSeqCRL_B_G89):
+    BSIZE = 2
+# bs = 3
+class TestMatSeqCRL_B_G23_B3(TestMatSeqCRL_B_G23):
+    BSIZE = 3
+class TestMatSeqCRL_B_G45_B3(TestMatSeqCRL_B_G45):
+    BSIZE = 3
+class TestMatSeqCRL_B_G89_B3(TestMatSeqCRL_B_G89):
+    BSIZE = 3
+# bs = 4
+class TestMatSeqCRL_B_G23_B4(TestMatSeqCRL_B_G23):
+    BSIZE = 4
+class TestMatSeqCRL_B_G45_B4(TestMatSeqCRL_B_G45):
+    BSIZE = 4
+class TestMatSeqCRL_B_G89_B4(TestMatSeqCRL_B_G89):
+    BSIZE = 4
+# bs = 5
+class TestMatSeqCRL_B_G23_B5(TestMatSeqCRL_B_G23):
+    BSIZE = 5
+class TestMatSeqCRL_B_G45_B5(TestMatSeqCRL_B_G45):
+    BSIZE = 5
+class TestMatSeqCRL_B_G89_B5(TestMatSeqCRL_B_G89):
+    BSIZE = 5
+
+
+# -- MPI CRL + Block --
+
+class TestMatMPICRL_B(BaseTestMatCRL_B):
+    COMM = PETSc.COMM_WORLD
+    TYPE = PETSc.Mat.Type.MPICRL
+# bs = 1
+class TestMatMPICRL_B_G23(TestMatMPICRL_B):
+    GRID  = 2, 3
+class TestMatMPICRL_B_G45(TestMatMPICRL_B):
+    GRID  = 4, 5
+class TestMatMPICRL_B_G89(TestMatMPICRL_B):
+    GRID  = 8, 9
+# bs = 2
+class TestMatMPICRL_B_G23_B2(TestMatMPICRL_B_G23):
+    BSIZE = 2
+class TestMatMPICRL_B_G45_B2(TestMatMPICRL_B_G45):
+    BSIZE = 2
+class TestMatMPICRL_B_G89_B2(TestMatMPICRL_B_G89):
+    BSIZE = 2
+# bs = 3
+class TestMatMPICRL_B_G23_B3(TestMatMPICRL_B_G23):
+    BSIZE = 3
+class TestMatMPICRL_B_G45_B3(TestMatMPICRL_B_G45):
+    BSIZE = 3
+class TestMatMPICRL_B_G89_B3(TestMatMPICRL_B_G89):
+    BSIZE = 3
+# bs = 4
+class TestMatMPICRL_B_G23_B4(TestMatMPICRL_B_G23):
+    BSIZE = 4
+class TestMatMPICRL_B_G45_B4(TestMatMPICRL_B_G45):
+    BSIZE = 4
+class TestMatMPICRL_B_G89_B4(TestMatMPICRL_B_G89):
+    BSIZE = 4
+# bs = 5
+class TestMatMPICRL_B_G23_B5(TestMatMPICRL_B_G23):
+    BSIZE = 5
+class TestMatMPICRL_B_G45_B5(TestMatMPICRL_B_G45):
+    BSIZE = 5
+class TestMatMPICRL_B_G89_B5(TestMatMPICRL_B_G89):
+    BSIZE = 5
+
 # -----
 
 if PETSc.Sys.getVersion() < (3,0,0):
