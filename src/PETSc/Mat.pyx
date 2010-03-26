@@ -226,6 +226,23 @@ cdef class Mat(Object):
             CHKERR( Mat_AllocAIJ_DEFAULT(self.mat, bs) )
         return self
 
+    def createCRL(self, size, bsize=None, nnz=None, csr=None, comm=None):
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscInt bs=0, m=0, n=0, M=0, N=0
+        CHKERR( Mat_SplitSizes(ccomm, size, bsize, &bs, &m, &n, &M, &N) )
+        # create matrix
+        cdef PetscMat newmat = NULL
+        CHKERR( MatCreateAnyCRL(ccomm, bs, m, n, M, N, &newmat) )
+        PetscCLEAR(self.obj); self.mat = newmat
+        # preallocate matrix
+        if csr is not None:   # with CSR preallocation
+            CHKERR( Mat_AllocAIJ_CSR(self.mat, bs, csr) )
+        elif nnz is not None: # with NNZ preallocation
+            CHKERR( Mat_AllocAIJ_NNZ(self.mat, bs, nnz) )
+        else:                 # default preallocation
+            CHKERR( Mat_AllocAIJ_DEFAULT(self.mat, bs) )
+        return self
+
     def setPreallocationNNZ(self, nnz, bsize=None):
         cdef PetscInt bs = PETSC_DECIDE
         CHKERR( Mat_BlockSize(bsize, &bs) )
@@ -241,6 +258,7 @@ cdef class Mat(Object):
             CHKERR( Mat_AllocAIJ_CSR(self.mat, bs, csr) )
         else:
             CHKERR( Mat_AllocAIJ_DEFAULT(self.mat, bs) )
+
     #
 
     def createDense(self, size, bsize=None, array=None, comm=None):

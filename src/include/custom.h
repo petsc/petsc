@@ -347,6 +347,35 @@ MatCreateAnyAIJ(MPI_Comm comm, PetscInt bs,
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatCreateAnyCRL"
+PETSC_STATIC_INLINE PetscErrorCode
+MatCreateAnyCRL(MPI_Comm comm, PetscInt bs,
+                PetscInt m, PetscInt n,
+                PetscInt M, PetscInt N,
+                Mat *A)
+{
+  Mat            mat = PETSC_NULL;
+  MatType        mtype = PETSC_NULL;
+  PetscMPIInt    size = 0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(A,7);
+  ierr = MatCreate(comm,&mat);CHKERRQ(ierr);
+  ierr = MatSetSizes(mat,m,n,M,N);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  if (size > 1) mtype = (MatType)MATMPICRL;
+  else          mtype = (MatType)MATSEQCRL;
+  ierr = MatSetType(mat,mtype);CHKERRQ(ierr);
+  if (bs != PETSC_DECIDE) {
+    ierr = MatBlockSize_Check(mat,bs);CHKERRQ(ierr);
+    ierr = MatBlockSize_SetUp(mat,bs);CHKERRQ(ierr);
+  }
+  *A = mat;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatAnyAIJSetPreallocation"
 PETSC_STATIC_INLINE PetscErrorCode
 MatAnyAIJSetPreallocation(Mat A,PetscInt bs,
