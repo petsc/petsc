@@ -311,7 +311,6 @@ cdef class Mat(Object):
         CHKERR( MatCreateSubMatrix(A.mat, isrow.iset, iscol.iset, &newmat) )
         PetscCLEAR(self.obj); self.mat = newmat
         return self
-        
 
     ## def createShell(self, size, context, comm=None):
     ##     raise NotImplementedError
@@ -467,6 +466,22 @@ cdef class Mat(Object):
         if out is None: out = self
         if out.mat != NULL: reuse = MAT_REUSE_MATRIX
         CHKERR( MatTranspose(self.mat, reuse, &out.mat) )
+        return out
+
+    def realPart(self, Mat out=None):
+        if out is None:
+            out = self
+        elif out.mat == NULL:
+            CHKERR( MatDuplicate(self.mat, MAT_COPY_VALUES, &out.mat) )
+        CHKERR( MatRealPart(out.mat) )
+        return out
+
+    def imagPart(self, Mat out=None):
+        if out is None:
+            out = self
+        elif out.mat == NULL:
+            CHKERR( MatDuplicate(self.mat, MAT_COPY_VALUES, &out.mat) )
+        CHKERR( MatImaginaryPart(out.mat) )
         return out
 
     def conjugate(self, Mat out=None):
