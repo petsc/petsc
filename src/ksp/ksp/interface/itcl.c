@@ -346,9 +346,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     flag = PETSC_FALSE;
     ierr = PetscOptionsTruth("-ksp_converged_use_min_initial_residual_norm","Use minimum of initial residual norm and b for computing relative convergence","KSPDefaultConvergedSetUMIRNorm",flag,&flag,PETSC_NULL);CHKERRQ(ierr);
     if (flag) {ierr = KSPDefaultConvergedSetUMIRNorm(ksp);CHKERRQ(ierr);}
-    flag = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-ksp_initial_guess_nonzero","Use the contents of the solution vector for initial guess","KSPSetInitialNonzero",flag,&flag,PETSC_NULL);CHKERRQ(ierr);
-    if (flag) ksp->guess_zero = PETSC_FALSE;
+    ierr = KSPGetInitialGuessNonzero(ksp,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-ksp_initial_guess_nonzero","Use the contents of the solution vector for initial guess","KSPSetInitialNonzero",flag,&flag,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = KSPSetInitialGuessNonzero(ksp,flag);CHKERRQ(ierr);
+    }
 
     ierr = PetscOptionsTruth("-ksp_knoll","Use preconditioner applied to b for initial guess","KSPSetInitialGuessKnoll",ksp->guess_knoll,&ksp->guess_knoll,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsIntArray("-ksp_fischer_guess","Use Paul Fischer's algorihtm for initial guess","KSPSetUseFischerGuess",model,&nmax,&flag);CHKERRQ(ierr);
@@ -373,21 +375,21 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
 
     ierr = PetscOptionsInt("-ksp_check_norm_iteration","First iteration to compute residual norm","KSPSetCheckNormIteration",ksp->chknorm,&ksp->chknorm,PETSC_NULL);CHKERRQ(ierr);
 
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-ksp_lag_norm","Lag the calculation of the residual norm","KSPSetLagNorm",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    flag  = ksp->lagnorm;
+    ierr = PetscOptionsTruth("-ksp_lag_norm","Lag the calculation of the residual norm","KSPSetLagNorm",flag,&flag,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = KSPSetLagNorm(ksp,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = KSPSetLagNorm(ksp,flag);CHKERRQ(ierr);
     }
 
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-ksp_diagonal_scale","Diagonal scale matrix before building preconditioner","KSPSetDiagonalScale",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = KSPGetDiagonalScale(ksp,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-ksp_diagonal_scale","Diagonal scale matrix before building preconditioner","KSPSetDiagonalScale",flag,&flag,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = KSPSetDiagonalScale(ksp,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = KSPSetDiagonalScale(ksp,flag);CHKERRQ(ierr);
     }
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-ksp_diagonal_scale_fix","Fix diagonaled scaled matrix after solve","KSPSetDiagonalScaleFix",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = KSPGetDiagonalScaleFix(ksp,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-ksp_diagonal_scale_fix","Fix diagonally scaled matrix after solve","KSPSetDiagonalScaleFix",flag,&flag,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = KSPSetDiagonalScaleFix(ksp,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = KSPSetDiagonalScaleFix(ksp,flag);CHKERRQ(ierr);
     }
 
     flg  = PETSC_FALSE;
