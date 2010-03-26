@@ -935,6 +935,9 @@ cdef class Mat(Object):
     def solveTransposeAdd(self, Vec b not None, Vec y, Vec x not None):
         CHKERR( MatSolveTransposeAdd(self.mat, b.vec, y.vec, x.vec) )
 
+    def matSolve(self, Mat B not None, Mat X not None):
+        CHKERR( MatMatSolve(self.mat, B.mat, X.mat) )
+
     #
 
     property sizes:

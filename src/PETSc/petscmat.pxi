@@ -258,6 +258,7 @@ cdef extern from "petscmat.h" nogil:
     int MatSolveTranspose(PetscMat,PetscVec,PetscVec)
     int MatSolveAdd(PetscMat,PetscVec,PetscVec,PetscVec)
     int MatSolveTransposeAdd(PetscMat,PetscVec,PetscVec,PetscVec)
+    int MatMatSolve(PetscMat,PetscMat,PetscMat)
 
     int MatComputeExplicitOperator(PetscMat,PetscMat*)
     int MatUseScaledForm(PetscMat,PetscTruth)
