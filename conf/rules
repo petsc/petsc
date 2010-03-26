@@ -402,6 +402,7 @@ getmpiexec:
           grep -v "symbol if the" | \
           grep -v "ignoring symbol version info" | \
           grep -v "warning, duplicate dylib" | \
+          grep -v "warning: duplicate dylib" | \
           grep -v "preempts that definition" | \
           grep -v "is an array from" | \
 	  grep -v "At least one PA 2.0" | \
@@ -449,6 +450,7 @@ getmpiexec:
 	  grep -v "f90 continuing despite warning messages" | \
           grep -v "is an array from" | \
           grep -v "warning, duplicate dylib" | \
+          grep -v "warning: duplicate dylib" | \
           grep -v "consider using mkstemp"  |\
 	  grep -v "Unused external reference" | \
           grep -v "WARNING 134: weak definition of" | \
