@@ -2554,9 +2554,10 @@ during the first linear solve.
 In particular, PCFactorSetReuseOrdering() causes the ordering  (for example, set with 
 \trl{-pc_factor_mat_ordering_type} \trl{order}) computed in the first factorization to be reused
 for later factorizations. \sindex{orderings} 
-The \trl{ PCFactorDTSetReuseFill()} causes the 
-fill computed during the first drop tolerance factorization to be reused
-in later factorizations. PCFactorSetUseInPlace() is often used with 
+%The \trl{ PCFactorDTSetReuseFill()} causes the 
+%fill computed during the first drop tolerance factorization to be reused
+%in later factorizations. 
+PCFactorSetUseInPlace() is often used with 
 \trl{PCASM} or \trl{PCBJACOBI} when zero fill is used, since it reuses the 
 matrix space to store the incomplete factorization it saves memory and 
 copying time. Note that in-place factorization is not appropriate with 
@@ -2565,7 +2566,7 @@ factorization. These options may be set in the database with
 \begin{tabbing}
    \trl{-pc_factor_levels <levels>}\\
    \trl{-pc_factor_reuse_ordering}\\
-   \trl{-pc_factor_drop_tolerance <dt>,<dtcol>,<dtcount>}\\
+%   \trl{-pc_factor_drop_tolerance <dt>,<dtcol>,<dtcount>}\\
    \trl{-pc_factor_reuse_fill}\\
    \trl{-pc_factor_in_place}\\
    \trl{-pc_factor_nonzeros_along_diagonal}\\
@@ -2573,7 +2574,8 @@ factorization. These options may be set in the database with
 }
 \end{tabbing}
 \findex{-pc_factor_levels} \findex{-pc_factor_reuse_ordering}
-\findex{-pc_factor_drop_tolerance} \findex{-pc_factor_reuse_fill}
+%\findex{-pc_factor_drop_tolerance} 
+\findex{-pc_factor_reuse_fill}
 \findex{-pc_factor_in_place} \findex{-pc_factor_nonzeros_along_diagonal}
 \findex{-pc_factor_diagonal_fill}
 

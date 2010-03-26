@@ -101,7 +101,7 @@ EXTERN_C_END
 static PetscErrorCode PCSetFromOptions_ILU(PC pc)
 {
   PetscErrorCode ierr;
-  PetscInt       dtmax = 3,itmp;
+  PetscInt       itmp;
   PetscTruth     flg;
   PetscReal      dt[3];
   PC_ILU         *ilu = (PC_ILU*)pc->data;
@@ -120,11 +120,13 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
     dt[0] = ((PC_Factor*)ilu)->info.dt;
     dt[1] = ((PC_Factor*)ilu)->info.dtcol;
     dt[2] = ((PC_Factor*)ilu)->info.dtcount;
-    ierr = PetscOptionsRealArray("-pc_factor_drop_tolerance","<dt,dtcol,maxrowcount>","PCFactorSetDropTolerance",dt,&dtmax,&flg);CHKERRQ(ierr);
+    /*
+    PetscInt       dtmax = 3;
+    ierr = PetscOptionsRealArray("-pc_factor_drop_tolerance,","<dt,dtcol,maxrowcount>","PCFactorSetDropTolerance",dt,&dtmax,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCFactorSetDropTolerance(pc,dt[0],dt[1],(PetscInt)dt[2]);CHKERRQ(ierr);
     }
-
+    */
     ierr = PetscOptionsName("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",&flg);CHKERRQ(ierr);
     if (flg) {
       tol = PETSC_DECIDE;
@@ -278,7 +280,6 @@ static PetscErrorCode PCApplyTranspose_ILU(PC pc,Vec x,Vec y)
                       its factorization (overwrites original matrix)
 .  -pc_factor_diagonal_fill - fill in a zero diagonal even if levels of fill indicate it wouldn't be fill
 .  -pc_factor_reuse_ordering - reuse ordering of factorized matrix from previous factorization
-.  -pc_factor_drop_tolerance <dt,dtcol,maxrowcount> - use drop tolerance factorization
 .  -pc_factor_fill <nfill> - expected amount of fill in factored matrix compared to original matrix, nfill > 1
 .  -pc_factor_nonzeros_along_diagonal - reorder the matrix before factorization to remove zeros from the diagonal,
                                    this decreases the chance of getting a zero pivot
