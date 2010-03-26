@@ -64,7 +64,8 @@ PetscErrorCode MPICRL_create_crl(Mat A)
   crl->nz   = Aij->nz+Bij->nz;
   crl->m    = A->rmap->n;
   crl->rmax = rmax;
-  ierr  = PetscMalloc2(rmax*m,PetscScalar,&crl->acols,rmax*m,PetscInt,&crl->icols);CHKERRQ(ierr);
+  ierr = PetscFree2(crl->acols,crl->icols);CHKERRQ(ierr);
+  ierr = PetscMalloc2(rmax*m,PetscScalar,&crl->acols,rmax*m,PetscInt,&crl->icols);CHKERRQ(ierr);
   acols = crl->acols;
   icols = crl->icols;
   for (i=0; i<m; i++) {
@@ -83,9 +84,12 @@ PetscErrorCode MPICRL_create_crl(Mat A)
   }
   ierr = PetscInfo1(A,"Percentage of 0's introduced for vectorized multiply %g\n",1.0-((double)(crl->nz))/((double)(rmax*m)));
 
+  ierr = PetscFree(crl->array);CHKERRQ(ierr);
   ierr = PetscMalloc((a->B->cmap->n+nd)*sizeof(PetscScalar),&array);CHKERRQ(ierr);
   /* xwork array is actually B->n+nd long, but we define xwork this length so can copy into it */
+  if (crl->xwork) {ierr = VecDestroy(crl->xwork);CHKERRQ(ierr);}
   ierr = VecCreateMPIWithArray(((PetscObject)A)->comm,nd,PETSC_DECIDE,array,&crl->xwork);CHKERRQ(ierr);
+  if (crl->fwork) {ierr = VecDestroy(crl->fwork);CHKERRQ(ierr);}
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,a->B->cmap->n,array+nd,&crl->fwork);CHKERRQ(ierr);
   crl->array = array;
   crl->xscat = a->Mvctx;
