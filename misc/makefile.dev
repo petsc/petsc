@@ -14,7 +14,7 @@ PETSC_DEV=${HOME}/Devel/PETSc/petsc-dev
 
 PETSC_ARCH=linux-gnu
 
-all: petsc-232 petsc-233 petsc-300 petsc-dev
+all: petsc-232 petsc-233 petsc-300 petsc-31 petsc-dev
 
 MAKE_ARGS= -f misc/makefile.dev MPIEXEC='${MPIEXEC}' VALGRIND='${VALGRIND}' PYTHON='${PYTHON}'
 petsc-232: 

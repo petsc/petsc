@@ -507,6 +507,10 @@ class TestMatMPIAIJ_B_G89_B5(TestMatMPIAIJ_B_G89):
 
 # -----
 
+if PETSc.Sys.getVersion() < (3,0,0):
+    del BaseTestMatAnyAIJ.testCreateTranspose
+
+# -----
 
 
 
