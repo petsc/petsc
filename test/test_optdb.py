@@ -62,6 +62,15 @@ class TestOptions(unittest.TestCase):
         for k,v in allopts.items():
             self.assertTrue((k, v) in optlist)
         self._delopts()
+        dct = {'o0' : '"0 1 2"',
+               'o1' : '"a b c"',
+               'o2' : '"x y z"',}
+        for k in dct:
+            self.opts[k] =  dct[k]
+        allopts = self.opts.getAll()
+        for k in dct:
+            self.assertEqual(allopts[k], dct[k][1:-1])
+            del self.opts[k]
 
     def testMonitor(self):
         optlist = []

@@ -22,6 +22,12 @@ cdef extern from "petsc.h" nogil:
 
     int PetscStrfree(char*)
 
+    ctypedef struct _p_PetscToken
+    ctypedef _p_PetscToken* PetscToken
+    int PetscTokenCreate(char[],char,PetscToken*)
+    int PetscTokenDestroy(PetscToken)
+    int PetscTokenFind(PetscToken,char*[])
+
 #
 
 cdef getprefix(prefix, deft=None):
@@ -123,9 +129,26 @@ cdef getopt(PetscOptType otype, prefix, name, deft):
 
 # simple minded options parser
 
+cdef tokenize(options):
+  cdef PetscToken t
+  cdef char *s = str2cp(options)
+  cdef char *p = NULL
+  cdef list tokens = []
+  CHKERR( PetscTokenCreate(s, c' ', &t) )
+  try:
+      CHKERR( PetscTokenFind(t, &p) )
+      while p != NULL:
+          tokens.append(cp2str(p))
+          CHKERR( PetscTokenFind(t, &p) )
+  finally:
+      CHKERR( PetscTokenDestroy(t) )
+  return tokens
+
 cdef gettok(tokens):
-    if not tokens: return None
-    else: return tokens.pop(0)
+    if tokens: 
+        return tokens.pop(0)
+    else: 
+        return None
 
 cdef getkey(key, prefix):
     if not key or key[0] != '-' :
@@ -137,7 +160,7 @@ cdef getkey(key, prefix):
 
 cdef parseopt(options, prefix):
     if isinstance(options, str):
-        tokens = options.split()
+        tokens = tokenize(options)
     else:
         tokens = list(options)
     prefix = prefix or ''
@@ -159,3 +182,5 @@ cdef parseopt(options, prefix):
             opts[key] = value
     # we are done
     return opts
+
+#
