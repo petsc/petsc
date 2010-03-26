@@ -6,7 +6,8 @@ ALL: build
 source: ${MODULE}module.c
 build:  ${MODULE}.so
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 
 PYTHON = python
 F2PY   = f2py
