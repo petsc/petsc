@@ -255,7 +255,10 @@ class TestDiagonal(TestMatrix):
         self.assertTrue(xt.equal(y))
         del A
 
-if PETSc.Sys.getVersion() == (2,3,2):
+if PETSc.Sys.getVersion() < (3,0,0):
+    del TestDiagonal.testCreateTranspose
+
+if PETSc.Sys.getVersion() < (2,3,3):
     del TestMatrix
     del TestIdentity
     del TestDiagonal
