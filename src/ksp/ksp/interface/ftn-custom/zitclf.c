@@ -13,7 +13,6 @@
 #define kspbuildsolution_          KSPBUILDSOLUTION
 #define kspbuildresidual_          KSPBUILDRESIDUAL
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define kspbuildresidual_          kspbuildresidual
 #define kspgetoptionsprefix_       kspgetoptionsprefix
 #define kspappendoptionsprefix_    kspappendoptionsprefix
 #define kspsetoptionsprefix_       kspsetoptionsprefix
@@ -22,6 +21,9 @@
 #define kspgetfischerguess_        kspgetfischerguess
 #define kspfischerguesscreate_     kspfischerguesscreate
 #define kspfischerguessdestroy_    kspfischerguessdestroy
+#define kspbuildsolution_          kspbuildsolution
+#define kspbuildresidual_          kspbuildresidual
+
 #endif
 
 EXTERN_C_BEGIN

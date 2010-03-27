@@ -13,10 +13,10 @@ class Configure(config.base.Configure):
 
   def __str2__(self):
     desc = []
-    desc.append('xxx==========================================================================xxx')
+    desc.append('xxx=========================================================================xxx')
     desc.append('   Configure stage complete. Now build PETSc libraries with:')
     desc.append('   make PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch.arch+' all')
-    desc.append('xxx==========================================================================xxx')
+    desc.append('xxx=========================================================================xxx')
     return '\n'.join(desc)+'\n'
 
   def setupHelp(self, help):
@@ -97,13 +97,13 @@ class Configure(config.base.Configure):
                                             'unistd', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
                                             'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib','memory',
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',
-                                            'WindowsX', 'cxxabi','float','ieeefp','xmmintrin','stdint'])
+                                            'WindowsX', 'cxxabi','float','ieeefp','stdint'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
                  'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'nanosleep', 'usleep', 'sleep', '_sleep', 'socket', 
                  'times', 'gethostbyname', 'uname','snprintf','_snprintf','_fullpath','lseek','_lseek','time','fork','stricmp',
                  'strcasecmp', 'bzero', 'dlopen', 'dlsym', 'dlclose', 'dlerror',
-                 '_intel_fast_memcpy','_intel_fast_memset','_finite','_isnan']
+                 '_intel_fast_memcpy','_intel_fast_memset']
     libraries1 = [(['socket', 'nsl'], 'socket'), (['fpe'], 'handle_sigfpes')]
     self.headers.headers.extend(headersC)
     self.functions.functions.extend(functions)
@@ -130,7 +130,7 @@ class Configure(config.base.Configure):
     # compiler values
     self.setCompilers.pushLanguage(self.languages.clanguage)
     self.addMakeMacro('PCC',self.setCompilers.getCompiler())
-    self.addMakeMacro('PCC_FLAGS',self.setCompilers.getCompilerFlags())    
+    self.addMakeMacro('PCC_FLAGS',self.setCompilers.getCompilerFlags())
     self.setCompilers.popLanguage()
     # .o or .obj 
     self.addMakeMacro('CC_SUFFIX','o')
@@ -152,7 +152,7 @@ class Configure(config.base.Configure):
       self.addMakeMacro('FPP_FLAGS',self.setCompilers.CPPFLAGS)
     
       # compiler values
-      self.addMakeMacro('FC_FLAGS',self.setCompilers.getCompilerFlags())    
+      self.addMakeMacro('FC_FLAGS',self.setCompilers.getCompilerFlags())
       self.setCompilers.popLanguage()
       # .o or .obj 
       self.addMakeMacro('FC_SUFFIX','o')
@@ -174,6 +174,8 @@ class Configure(config.base.Configure):
       # F90 Modules
       if self.setCompilers.fortranModuleIncludeFlag:
         self.addMakeMacro('FC_MODULE_FLAG', self.setCompilers.fortranModuleIncludeFlag)
+      else: # for non-f90 compilers like g77
+        self.addMakeMacro('FC_MODULE_FLAG', '-I')
       if self.setCompilers.fortranModuleIncludeFlag:
         self.addMakeMacro('FC_MODULE_OUTPUT_FLAG', self.setCompilers.fortranModuleOutputFlag)
     else:
@@ -238,7 +240,9 @@ class Configure(config.base.Configure):
         includes.extend(i.include)
         self.addMakeMacro(i.PACKAGE+'_INCLUDE',self.headers.toStringNoDupes(i.include))
     self.addMakeMacro('PACKAGES_LIBS',self.libraries.toStringNoDupes(libs+self.libraries.math))
+    self.PACKAGES_LIBS = self.libraries.toStringNoDupes(libs+self.libraries.math)
     self.addMakeMacro('PACKAGES_INCLUDES',self.headers.toStringNoDupes(includes))
+    self.PACKAGES_INCLUDES = self.headers.toStringNoDupes(includes)
     if hasattr(self.compilers, 'FC'):
       if self.compilers.fortranIsF90:
         self.addMakeMacro('PACKAGES_MODULES_INCLUDES',self.headers.toStringModulesNoDupes(includes))    
@@ -276,18 +280,60 @@ class Configure(config.base.Configure):
     fd.close()
     return
 
+  def dumpMachineInfo(self):
+    import platform
+    import time
+    import script
+    fd = file(os.path.join(self.arch.arch,'include','petscmachineinfo.h'),'w')
+    fd.write('static const char *petscmachineinfo = \"\\n\"\n')
+    fd.write('\"-----------------------------------------\\n\"\n')
+    if os.path.isfile(os.path.join('/usr', 'bin', 'cygcheck.exe')):
+      fd.write('\"Libraries compiled on %s on %s \\n\"\n' % (time.ctime(time.time()), script.Script.executeShellCommand('hostname|/usr/bin/dos2unix')))
+    else:
+      fd.write('\"Libraries compiled on %s on %s \\n\"\n' % (time.ctime(time.time()), platform.node()))
+    fd.write('\"Machine characteristics: %s\\n\"' % (platform.platform()))
+    fd.write('\"Using PETSc directory: %s\\n\"' % (self.petscdir.dir))
+    fd.write('\"Using PETSc arch: %s\\n\"' % (self.arch.arch))
+    fd.write('\"-----------------------------------------\\n\"\n')
+    fd.write('static const char *petsccompilerinfo = \"\\n\"\n')
+    self.setCompilers.pushLanguage(self.languages.clanguage)
+    fd.write('\"Using C compiler: %s %s ${COPTFLAGS} ${CFLAGS}\\n\"' % (self.setCompilers.getCompiler(), self.setCompilers.getCompilerFlags()))
+    self.setCompilers.popLanguage()
+    if hasattr(self.compilers, 'FC'):
+      self.setCompilers.pushLanguage('FC')
+      fd.write('\"Using Fortran compiler: %s %s ${FOPTFLAGS} ${FFLAGS} %s\\n\"' % (self.setCompilers.getCompiler(), self.setCompilers.getCompilerFlags(), self.setCompilers.CPPFLAGS))
+      self.setCompilers.popLanguage()
+    fd.write('\"-----------------------------------------\\n\"\n')
+    fd.write('static const char *petsccompilerflagsinfo = \"\\n\"\n')
+    fd.write('\"Using include paths: %s %s %s\\n\"' % ('-I'+os.path.join(self.petscdir.dir, self.arch.arch, 'include'), '-I'+os.path.join(self.petscdir.dir, 'include'), self.PACKAGES_INCLUDES))
+    fd.write('\"-----------------------------------------\\n\"\n')
+    fd.write('static const char *petsclinkerinfo = \"\\n\"\n')
+    self.setCompilers.pushLanguage(self.languages.clanguage)
+    fd.write('\"Using C linker: %s\\n\"' % (self.setCompilers.getLinker()))
+    self.setCompilers.popLanguage()
+    if hasattr(self.compilers, 'FC'):
+      self.setCompilers.pushLanguage('FC')
+      fd.write('\"Using Fortran linker: %s\\n\"' % (self.setCompilers.getLinker()))
+      self.setCompilers.popLanguage()
+    fd.write('\"Using libraries: %s%s -L%s %s %s %s\\n\"' % (self.setCompilers.CSharedLinkerFlag, os.path.join(self.petscdir.dir, self.arch.arch, 'lib'), os.path.join(self.petscdir.dir, self.arch.arch, 'lib'), '-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys', self.PACKAGES_LIBS, self.libraries.toStringNoDupes(self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS))
+    fd.write('\"-----------------------------------------\\n\"\n')
+    fd.close()
+    return
 
   def configurePrefetch(self):
     '''Sees if there are any prefetch functions supported'''
+    if config.setCompilers.Configure.isSolaris():
+      self.addDefine('Prefetch(a,b,c)', ' ')
+      return
     self.pushLanguage(self.languages.clanguage)      
-    if self.checkLink('#include <xmmintrin.h>', 'void *v = 0;_mm_prefetch(v,(enum _mm_hint)0);\n'):
+    if self.checkLink('#include <xmmintrin.h>', 'void *v = 0;_mm_prefetch(v,(int)0);\n'):
       self.addDefine('HAVE_XMMINTRIN_H', 1)
-      self.addDefine('Prefetch(a,b,c)', '_mm_prefetch((const void*)(a),(enum _mm_hint)c)')
-    elif self.checkLink('#include <xmmintrin.h>', 'void *v = 0;_mm_prefetch((const char*)v,(enum _mm_hint)0);\n'):
+      self.addDefine('Prefetch(a,b,c)', '_mm_prefetch((const void*)(a),(int)(c))')
+    elif self.checkLink('#include <xmmintrin.h>', 'void *v = 0;_mm_prefetch((const char*)v,(int)0);\n'):
       self.addDefine('HAVE_XMMINTRIN_H', 1)
-      self.addDefine('Prefetch(a,b,c)', '_mm_prefetch((const char*)(a),(enum _mm_hint)c)')
+      self.addDefine('Prefetch(a,b,c)', '_mm_prefetch((const char*)(a),(int)(c))')
     elif self.checkLink('', 'void *v = 0;__builtin_prefetch(v,0,0);\n'):
-      self.addDefine('Prefetch(a,b,c)', '__builtin_prefetch(a,b,c)')
+      self.addDefine('Prefetch(a,b,c)', '__builtin_prefetch((a),(b),(c))')
     else:
       self.addDefine('Prefetch(a,b,c)', ' ')
     self.popLanguage()
@@ -495,6 +541,8 @@ class Configure(config.base.Configure):
   def configure(self):
     if not os.path.samefile(self.petscdir.dir, os.getcwd()):
       raise RuntimeError('Wrong PETSC_DIR option specified: '+str(self.petscdir.dir) + '\n  Configure invoked in: '+os.path.realpath(os.getcwd()))
+    if self.framework.argDB['prefix'] and os.path.samefile(self.framework.argDB['prefix'],self.petscdir.dir):
+      raise RuntimeError('Incorrect option --prefix='+self.framework.argDB['prefix']+' specified. It cannot be same as PETSC_DIR!')
     self.framework.header          = self.arch.arch+'/include/petscconf.h'
     self.framework.cHeader         = self.arch.arch+'/include/petscfix.h'
     self.framework.makeMacroHeader = self.arch.arch+'/conf/petscvariables'
@@ -521,6 +569,7 @@ class Configure(config.base.Configure):
     
     self.Dump()
     self.dumpConfigInfo()
+    self.dumpMachineInfo()
     self.framework.log.write('================================================================================\n')
     self.logClear()
     return

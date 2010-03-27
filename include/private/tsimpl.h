@@ -35,6 +35,7 @@ struct _TSOps {
 
 struct _p_TS {
   PETSCHEADER(struct _TSOps);
+  DM            dm;
   TSProblemType problem_type;
   Vec           vec_sol,vec_sol_always;
 

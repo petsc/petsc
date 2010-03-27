@@ -26,9 +26,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftType_Factor(PC pc,MatFactorShi
 
   PetscFunctionBegin;
   if (shifttype == (MatFactorShiftType)PETSC_DECIDE){
-    dir->info.shifttype = MAT_SHIFT_NONE; 
+    dir->info.shifttype = (PetscReal) MAT_SHIFT_NONE; 
   } else {
-    dir->info.shifttype = shifttype;
+    dir->info.shifttype = (PetscReal) shifttype;
   }
   PetscFunctionReturn(0);
 }
@@ -226,6 +226,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions_Factor(PC pc)
   PetscTruth      flg = PETSC_FALSE,set;
   char            tname[256], solvertype[64];
   PetscFList      ordlist;
+  PetscEnum       etmp;
 
   PetscFunctionBegin;
   if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
@@ -236,8 +237,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions_Factor(PC pc)
   ierr = PetscOptionsReal("-pc_factor_fill","Expected non-zeros in factored matrix","PCFactorSetFill",((PC_Factor*)factor)->info.fill,&((PC_Factor*)factor)->info.fill,0);CHKERRQ(ierr);
 
   ierr = PetscOptionsEnum("-pc_factor_shift_type","Shift added to diagonal","PCFactorSetShiftType",
-                            MatFactorShiftTypes,(PetscEnum)((PC_Factor*)factor)->info.shifttype,(PetscEnum*)&((PC_Factor*)factor)->info.shifttype,&flg);CHKERRQ(ierr);
-    
+                          MatFactorShiftTypes,(PetscEnum)(int)((PC_Factor*)factor)->info.shifttype,&etmp,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ((PC_Factor*)factor)->info.shifttype = (PetscReal)(etmp);
+  }
   ierr = PetscOptionsReal("-pc_factor_shift_amount","Shift added to diagonal","PCFactorSetShiftAmount",((PC_Factor*)factor)->info.shiftamount,&((PC_Factor*)factor)->info.shiftamount,0);CHKERRQ(ierr);
   
   ierr = PetscOptionsReal("-pc_factor_zeropivot","Pivot is considered zero if less than","PCFactorSetZeroPivot",((PC_Factor*)factor)->info.zeropivot,&((PC_Factor*)factor)->info.zeropivot,0);CHKERRQ(ierr);
@@ -302,13 +305,13 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
     }
     
     ierr = PetscViewerASCIIPrintf(viewer,"  tolerance for zero pivot %G\n",factor->info.zeropivot);CHKERRQ(ierr);
-    if (factor->info.shifttype==MAT_SHIFT_POSITIVE_DEFINITE) {
+    if (factor->info.shifttype==(PetscReal)MAT_SHIFT_POSITIVE_DEFINITE) {
       ierr = PetscViewerASCIIPrintf(viewer,"  using Manteuffel shift\n");CHKERRQ(ierr);
     }
-    if (factor->info.shifttype==MAT_SHIFT_NONZERO) {
+    if (factor->info.shifttype==(PetscReal)MAT_SHIFT_NONZERO) {
       ierr = PetscViewerASCIIPrintf(viewer,"  using diagonal shift to prevent zero pivot\n");CHKERRQ(ierr);
     }
-    if (factor->info.shifttype==MAT_SHIFT_INBLOCKS) {
+    if (factor->info.shifttype==(PetscReal)MAT_SHIFT_INBLOCKS) {
       ierr = PetscViewerASCIIPrintf(viewer,"  using diagonal shift on blocks to prevent zero pivot\n");CHKERRQ(ierr);
     }
     

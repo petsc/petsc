@@ -65,7 +65,6 @@ hg -q update
 version_release=`grep '^#define PETSC_VERSION_RELEASE ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
 version_major=`grep '^#define PETSC_VERSION_MAJOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
 version_minor=`grep '^#define PETSC_VERSION_MINOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
-version_subminor=`grep '^#define PETSC_VERSION_SUBMINOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
 version_patch=`grep '^#define PETSC_VERSION_PATCH ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
 
 #generated a couple of more values
@@ -75,7 +74,7 @@ version_date_hg=`hg tip --template '{date|date}'`
 if  [ ${version_release} = 0 ]; then
   version=-dev
 elif [ ${version_release} = 1 ]; then
-  version=-${version_major}.${version_minor}.${version_subminor}-p${version_patch}
+  version=-${version_major}.${version_minor}-p${version_patch}
 else
   echo "Unknown PETSC_VERSION_RELEASE: ${version_release}"
   exit

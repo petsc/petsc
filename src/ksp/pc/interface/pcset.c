@@ -188,3 +188,58 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions(PC pc)
   pc->setfromoptionscalled++;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetDM"
+/*@
+   PCSetDM - Sets the DM that may be used by some preconditioners
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+-  dm - the dm
+
+   Level: intermediate
+
+
+.seealso: PCGetDM(), KSPSetDM(), KSPGetDM()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT PCSetDM(PC pc,DM dm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  if (pc->dm) {ierr = DMDestroy(pc->dm);CHKERRQ(ierr);}
+  pc->dm = dm;
+  ierr = PetscObjectReference((PetscObject)pc->dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCGetDM"
+/*@
+   PCGetDM - Gets the DM that may be used by some preconditioners
+
+   Collective on PC
+
+   Input Parameter:
+. pc - the preconditioner context
+
+   Output Parameter:
+.  dm - the dm
+
+   Level: intermediate
+
+
+.seealso: PCSetDM(), KSPSetDM(), KSPGetDM()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT PCGetDM(PC pc,DM *dm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  *dm = pc->dm;
+  PetscFunctionReturn(0);
+}
+

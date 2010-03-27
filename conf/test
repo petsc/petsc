@@ -46,6 +46,8 @@ testexamples_TRIANGLE: ${TESTEXAMPLES_TRIANGLE}
 testexamples_SIEVE: ${TESTEXAMPLES_SIEVE}
 testexamples_BOOST: ${TESTEXAMPLES_BOOST}
 testexamples_TETGEN: ${TESTEXAMPLES_TETGEN}
+testexamples_SCOTCH: ${TESTEXAMPLES_SCOTCH}
+testexamples_PASTIX: ${TESTEXAMPLES_PASTIX}
 testexamples_ML: ${TESTEXAMPLES_ML}
 testexamples_X11:
 testexamples_MPE:
@@ -107,9 +109,15 @@ buildexamples_ESSL:
 	-@${OMAKE} testexamples_ESSL TESTEXAMPLES_ESSL=`echo ${TESTEXAMPLES_ESSL} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 
 TESTMODE = testexamples
+
 alltests:
+	-@${RM} ${PETSC_ARCH}/conf/alltests.log alltests.log
+	-@ln -s ${PETSC_ARCH}/conf/alltests.log alltests.log
+	-@${OMAKE} alltest PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} MPIEXEC="${MPIEXEC}" DATAFILESPATH=${DATAFILESPATH} 2>&1 | tee ${PETSC_ARCH}/conf/alltests.log
+
+alltest:
 	-@for i in ${TEST_RUNS} ; do \
-	  make PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=${TESTMODE}_$$i MPIEXEC="${MPIEXEC}" tree ; \
+	  ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=${TESTMODE}_$$i MPIEXEC="${MPIEXEC}" tree ; \
 	done
 
 tests_DATAFILESPATH:

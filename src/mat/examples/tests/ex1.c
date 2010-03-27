@@ -74,7 +74,7 @@ int main(int argc,char **argv)
   luinfo.fill           = 1.0;
   luinfo.dtcol          = 1.e-6; /* default to pivoting; this is only thing PETSc LU supports */
   luinfo.zeropivot      = 1.e-12;
-  luinfo.shifttype      = MAT_SHIFT_INBLOCKS;
+  luinfo.shifttype      = (PetscReal)MAT_SHIFT_INBLOCKS;
   luinfo.shiftamount    = 1.e-12;
   
   ierr = MatLUFactor(fact,perm,perm,&luinfo);CHKERRQ(ierr);
@@ -87,7 +87,7 @@ int main(int argc,char **argv)
   luinfo.fill        = 1.0;
   luinfo.dtcol       = 0.0; 
   luinfo.zeropivot   = 1.e-14; 
-  luinfo.shifttype   = MAT_SHIFT_INBLOCKS;
+  luinfo.shifttype   = (PetscReal)MAT_SHIFT_INBLOCKS;
   luinfo.shiftamount = 1.e-12;
   ierr = MatGetFactor(mat,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&fact);CHKERRQ(ierr);
   ierr = MatLUFactorSymbolic(fact,mat,perm,perm,&luinfo);CHKERRQ(ierr);

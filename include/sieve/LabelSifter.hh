@@ -729,6 +729,17 @@ namespace ALE {
         this->addArrow(a_iter->source, target);
       }
     };
+    template<typename Labeling, typename AnotherSifter>
+    void relabel(Labeling& relabeling, AnotherSifter& newLabel) {
+      typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type& aInd = ::boost::multi_index::get<typename traits::arrowInd>(this->_arrows.set);
+
+      for(typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type::iterator a_iter = aInd.begin(); a_iter != aInd.end(); ++a_iter) {
+	const typename traits::target_type newTarget = relabeling.restrictPoint(a_iter->target)[0];
+
+        newLabel.addArrow(a_iter->source, newTarget);
+      }
+    };
+
     int size() const {return _arrows.set.size();};
     int getCapSize() const {
       std::set<source_type> cap;

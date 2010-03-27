@@ -48,18 +48,26 @@ class Configure(config.base.Configure):
       raise RuntimeError('--with-scalar-type must be real or complex')
     self.framework.logPrint('Scalar type is '+str(self.scalartype))
     # On apple isinf() and isnan() do not work when <complex> is included
-    self.compilers.pushLanguage(self.languages.clanguage)
+    self.pushLanguage(self.languages.clanguage)
     if self.scalartype == 'complex' and self.languages.clanguage == 'Cxx':
       if self.checkLink('#include <math.h>\n#include <complex>\n','double b = 2.0;int a = isnan(b);\n'):
         self.addDefine('HAVE_ISNAN',1)    
       if self.checkLink('#include <math.h>\n#include <complex>\n','double b = 2.0;int a = isinf(b);\n'):
         self.addDefine('HAVE_ISINF',1)    
+      if self.checkLink('#include <math.h>\n#include <complex>\n','double b = 2.0;int a = _isnan(b);\n'):
+        self.addDefine('HAVE__ISNAN',1)    
+      if self.checkLink('#include <math.h>\n#include <complex>\n','double b = 2.0;int a = _finite(b);\n'):
+        self.addDefine('HAVE__FINITE',1)    
     else:
       if self.checkLink('#include <math.h>\n','double b = 2.0; int a = isnan(b);\n'):
         self.addDefine('HAVE_ISNAN',1)    
       if self.checkLink('#include <math.h>\n','double b = 2.0; int a = isinf(b);\n'):
         self.addDefine('HAVE_ISINF',1)    
-    self.compilers.popLanguage()
+      if self.checkLink('#include <math.h>\n','double b = 2.0;int a = _isnan(b);\n'):
+        self.addDefine('HAVE__ISNAN',1)    
+      if self.checkLink('#include <math.h>\n','double b = 2.0;int a = _finite(b);\n'):
+        self.addDefine('HAVE__FINITE',1)    
+    self.popLanguage()
     return
 
   def configurePrecision(self):
@@ -70,13 +78,13 @@ class Configure(config.base.Configure):
     elif self.precision == 'matsingle':
       self.addDefine('USE_SCALAR_MAT_SINGLE', '1')
     elif self.precision == 'longdouble':
-      self.compilers.pushLanguage('C')
+      self.pushLanguage('C')
       if config.setCompilers.Configure.isIntel(self.compilers.getCompiler()):
         # Intel's C long double is 80 bits, so does not match Fortran's real*16, but
         # Intel C has a _Quad that is 128 bits
         self.precision = 'quad'
         self.addDefine('USE_SCALAR__QUAD', '1')        
-      self.compilers.popLanguage()
+      self.popLanguage()
       self.addDefine('USE_SCALAR_LONG_DOUBLE', '1')
     elif self.precision == 'int':
       self.addDefine('USE_SCALAR_INT', '1')

@@ -61,7 +61,7 @@ static PetscErrorCode TestQ2Q1DA( void )
   ierr = VecDestroy(gcoords);CHKERRQ(ierr);
   ierr = DADestroy(Q2_da);CHKERRQ(ierr);
   ierr = DADestroy(Q1_da);CHKERRQ(ierr);
-  PetscFunctionReturn(0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  

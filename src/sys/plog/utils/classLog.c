@@ -294,7 +294,7 @@ PetscErrorCode PetscLogObjCreateDefault(PetscObject obj)
   Action        *tmpAction;
   Object        *tmpObjects;
   PetscLogDouble start, end;
-  int            oclass;
+  int            oclass = 0;
   int            stage;
   PetscErrorCode ierr;
 
@@ -365,7 +365,7 @@ PetscErrorCode PetscLogObjDestroyDefault(PetscObject obj)
   ClassPerfLog   classPerfLog;
   Action        *tmpAction;
   PetscLogDouble start, end;
-  int            oclass;
+  int            oclass = 0;
   int            stage;
   PetscErrorCode ierr;
 

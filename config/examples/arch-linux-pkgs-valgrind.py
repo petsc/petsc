@@ -2,7 +2,6 @@
 
 configure_options = [
   '--download-mpich=1',
-  '--download-mpich-device=ch3:nemesis',
   '--download-f-blas-lapack=1',
   '--download-hypre=1',
   '--download-plapack=1',

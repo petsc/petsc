@@ -4,3 +4,5 @@ set MACH=grind
 set USR=petsc
 set LOC=/sandbox/petsc/petsc-dev-2
 set CONF=arch-linux-gcc-pgf90
+set PURL=http://petsc.cs.iit.edu/petsc/petsc-dev
+set BURL=http://petsc.cs.iit.edu/petsc/BuildSystem

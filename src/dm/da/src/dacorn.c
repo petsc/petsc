@@ -350,11 +350,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCorners(DA da,PetscInt *x,PetscInt *y,Pets
 PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalBoundingBox(DA da,PetscReal lmin[],PetscReal lmax[])
 {
   PetscErrorCode ierr;
-  Vec coords;
-  PetscInt dim,i,j;
-  PetscScalar *local_coords;
-  PetscReal min[3]={PETSC_MAX,PETSC_MAX,PETSC_MAX},max[3]={PETSC_MIN,PETSC_MIN,PETSC_MIN};
-  PetscInt N,Ni;
+  Vec            coords  = PETSC_NULL;
+  PetscInt       dim,i,j;
+  PetscScalar    *local_coords;
+  PetscReal      min[3]={PETSC_MAX,PETSC_MAX,PETSC_MAX},max[3]={PETSC_MIN,PETSC_MIN,PETSC_MIN};
+  PetscInt       N,Ni;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_COOKIE,1);

@@ -1206,6 +1206,8 @@ PetscErrorCode PETSCTS_DLLEXPORT TSDestroy(TS ts)
 
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(ts);CHKERRQ(ierr);
+
+  if (ts->dm) {ierr = DMDestroy(ts->dm);CHKERRQ(ierr);}
   if (ts->A) {ierr = MatDestroy(ts->A);CHKERRQ(ierr)}
   if (ts->ksp) {ierr = KSPDestroy(ts->ksp);CHKERRQ(ierr);}
   if (ts->snes) {ierr = SNESDestroy(ts->snes);CHKERRQ(ierr);}
@@ -1434,11 +1436,13 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPreStep(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
-  PetscStackPush("TS PreStep function");
-  CHKMEMQ;
-  ierr = (*ts->ops->prestep)(ts);CHKERRQ(ierr);
-  CHKMEMQ;
-  PetscStackPop;
+  if (ts->ops->prestep) {
+    PetscStackPush("TS PreStep function");
+    CHKMEMQ;
+    ierr = (*ts->ops->prestep)(ts);CHKERRQ(ierr);
+    CHKMEMQ;
+    PetscStackPop;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1513,11 +1517,13 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPostStep(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
-  PetscStackPush("TS PostStep function");
-  CHKMEMQ;
-  ierr = (*ts->ops->poststep)(ts);CHKERRQ(ierr);
-  CHKMEMQ;
-  PetscStackPop;
+  if (ts->ops->poststep) {
+    PetscStackPush("TS PostStep function");
+    CHKMEMQ;
+    ierr = (*ts->ops->poststep)(ts);CHKERRQ(ierr);
+    CHKMEMQ;
+    PetscStackPop;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -2060,6 +2066,40 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetRHSJacobian(TS ts,Mat *J,Mat *M,void **ctx
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TSGetIJacobian"
+/*@C
+   TSGetIJacobian - Returns the implicit Jacobian at the present timestep.
+
+   Not Collective, but parallel objects are returned if TS is parallel
+
+   Input Parameter:
+.  ts  - The TS context obtained from TSCreate()
+
+   Output Parameters:
++  A   - The Jacobian of F(t,U,U_t)
+.  B   - The preconditioner matrix, often the same as A
+.  f   - The function to compute the matrices
+- ctx - User-defined context for Jacobian evaluation routine
+
+   Notes: You can pass in PETSC_NULL for any return argument you do not need.
+
+   Level: advanced
+
+.seealso: TSGetTimeStep(), TSGetRHSJacobian(), TSGetMatrices(), TSGetTime(), TSGetTimeStepNumber()
+
+.keywords: TS, timestep, get, matrix, Jacobian
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSGetIJacobian(TS ts,Mat *A,Mat *B,TSIJacobian *f,void **ctx)
+{
+  PetscFunctionBegin;
+  if (A) *A = ts->A;
+  if (B) *B = ts->B;
+  if (f) *f = ts->ops->ijacobian;
+  if (ctx) *ctx = ts->jacP;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "TSMonitorSolution"
 /*@C
@@ -2094,4 +2134,58 @@ PetscErrorCode PETSCTS_DLLEXPORT TSMonitorSolution(TS ts,PetscInt step,PetscReal
 }
 
 
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetDM"
+/*@
+   TSSetDM - Sets the DM that may be used by some preconditioners
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the preconditioner context
+-  dm - the dm
+
+   Level: intermediate
+
+
+.seealso: TSGetDM(), SNESSetDM(), SNESGetDM()
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSSetDM(TS ts,DM dm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  if (ts->dm) {ierr = DMDestroy(ts->dm);CHKERRQ(ierr);}
+  ts->dm = dm;
+  ierr = PetscObjectReference((PetscObject)ts->dm);CHKERRQ(ierr);
+  if (ts->snes) {ierr = SNESSetDM(ts->snes,dm);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSGetDM"
+/*@
+   TSGetDM - Gets the DM that may be used by some preconditioners
+
+   Collective on TS
+
+   Input Parameter:
+. ts - the preconditioner context
+
+   Output Parameter:
+.  dm - the dm
+
+   Level: intermediate
+
+
+.seealso: TSSetDM(), SNESSetDM(), SNESGetDM()
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSGetDM(TS ts,DM *dm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  *dm = ts->dm;
+  PetscFunctionReturn(0);
+}
 

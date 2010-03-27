@@ -532,9 +532,11 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh mesh)
 
   PetscFunctionBegin;
   if (--((PetscObject)mesh)->refct > 0) PetscFunctionReturn(0);
+  PETSc::Log::Event("MeshDestroy").begin();
   if (mesh->globalScatter) {ierr = VecScatterDestroy(mesh->globalScatter);CHKERRQ(ierr);}
   mesh->m = PETSC_NULL;
   ierr = PetscHeaderDestroy(mesh);CHKERRQ(ierr);
+  PETSc::Log::Event("MeshDestroy").end();
   PetscFunctionReturn(0);
 }
 

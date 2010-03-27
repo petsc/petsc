@@ -152,6 +152,6 @@ PC Object:
     type=seqaij, rows=64, cols=64
     total: nonzeros=696, allocated nonzeros=696
       using I-node routines: found 48 nodes, limit used is 5
-  2 SNES Function norm 5.967e-11 
+  2 SNES Function norm 5.968e-11 
 Composite Physics: Number of Newton iterations = 2
 

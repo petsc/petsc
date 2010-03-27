@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        = 
 LOCDIR          = src/dm/da/examples/tutorials/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c
 EXAMPLESF       = ex6f90.F
 MANSEC          = DA
 
@@ -50,6 +50,10 @@ ex8: ex8.o   chkopts
 ex9: ex9.o   chkopts
 	-${CLINKER} -o ex9 ex9.o  ${PETSC_DM_LIB}
 	${RM} -f ex9.o
+
+ex10: ex10.o   chkopts
+	-${CLINKER} -o ex10 ex10.o  ${PETSC_DM_LIB}
+	${RM} -f ex10.o
 #-----------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 2 ./ex1 -nox
@@ -70,6 +74,9 @@ runex3_3:
 	   if (${DIFF} output/ex3_3.out ex3_3.tmp) then true; \
 	   else echo "Possible problem with ex3_3, diffs above"; fi; \
 	   ${RM} -f ex3_3.tmp
+runex10:
+	-@${MPIEXEC} -n 4 ./ex10
+
 TESTEXAMPLES_C		  = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex4.PETSc ex4.rm
 TESTEXAMPLES_C_X11	  = ex1.PETSc runex1 ex1.rm ex5.PETSc ex5.rm  
 TESTEXAMPLES_FORTRAN	  = 
@@ -78,5 +85,6 @@ TESTEXAMPLES_C_X11_MPIUNI =
 TESTEXAMPLES_C_COMPLEX	  = 
 TESTEXAMPLES_C_NOCOMPLEX  = ex2.PETSc runex2 ex2.rm ex6.PETSc ex6.rm
 TESTEXAMPLES_13		  = 
+TESTEXAMPLES_HDF5         = ex10.PETSc runex10 ex10.rm
 
 include ${PETSC_DIR}/conf/test

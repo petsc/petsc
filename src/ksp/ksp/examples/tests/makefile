@@ -608,6 +608,58 @@ runex32_aij_sbaij_cholesky:
 	   else echo "Possible problem with ex32_aij_sbaij_icc_lev1, diffs above"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_aij_sbaij_icc.out
 
+runex32_inode2:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 2 > ex32_inode.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 2 -mat_no_inode > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_inode.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_inode2, diffs above"; fi; \
+	   ${RM} -f ex32.tmp; ${RM} -f ex32_inode.out
+runex32_inode2_nd:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 2 -pc_factor_mat_ordering_type nd > ex32_inode.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 2 -pc_factor_mat_ordering_type nd -mat_no_inode > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_inode.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_inode2_nd, diffs above"; fi; \
+	   ${RM} -f ex32.tmp; ${RM} -f ex32_inode.out
+
+runex32_inode3:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 3 > ex32_inode.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 3 -mat_no_inode > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_inode.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_inode3, diffs above"; fi; \
+	   ${RM} -f ex32.tmp; ${RM} -f ex32_inode.out
+runex32_inode3_nd:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 3 -pc_factor_mat_ordering_type nd > ex32_inode.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 3 -pc_factor_mat_ordering_type nd -mat_no_inode > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_inode.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_inode3_nd, diffs above"; fi; \
+	   ${RM} -f ex32.tmp; ${RM} -f ex32_inode.out
+
+runex32_inode4:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 4 > ex32_inode.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 4 -mat_no_inode > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_inode.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_inode4, diffs above"; fi; \
+	   ${RM} -f ex32.tmp; ${RM} -f ex32_inode.out
+runex32_inode4_nd:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 4 -pc_factor_mat_ordering_type nd > ex32_inode.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 4 -pc_factor_mat_ordering_type nd -mat_no_inode > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_inode.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_inode4_nd, diffs above"; fi; \
+	   ${RM} -f ex32.tmp; ${RM} -f ex32_inode.out
+
+runex32_inode5:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 5 > ex32_inode.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 5 -mat_no_inode > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_inode.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_inode5, diffs above"; fi; \
+	   ${RM} -f ex32.tmp; ${RM} -f ex32_inode.out
+runex32_inode5_nd:
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 5 -pc_factor_mat_ordering_type nd > ex32_inode.out 2>&1;
+	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 5 -pc_factor_mat_ordering_type nd -mat_no_inode > ex32.tmp 2>&1; \
+	if (${DIFF} ex32_inode.out ex32.tmp) then true; \
+	   else echo "Possible problem with ex32_inode5_nd, diffs above"; fi; \
+	   ${RM} -f ex32.tmp; ${RM} -f ex32_inode.out
+
 runex33:
 	-@${MPIEXEC} -n 1 ./ex33 -sigma 2.0 > ex33.tmp 2>&1; \
 	if (${DIFF} output/ex33.out ex33.tmp) then true; \
@@ -634,7 +686,9 @@ TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.P
                                  ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm \
                                  ex26.PETSc runex26 runex26_2 ex26.rm ex27.PETSc ex27.rm \
                                  ex32.PETSc runex32_testset1 runex32_testset2 runex32_testset3 runex32_testset4 runex32_testset5 \
-                                 runex32_aij_sbaij_icc runex32_aij_sbaij_icc_lev1 runex32_aij_sbaij_icc_lev10 runex32_aij_sbaij_cholesky ex32.rm  
+                                 runex32_aij_sbaij_icc runex32_aij_sbaij_icc_lev1 runex32_aij_sbaij_icc_lev10 runex32_aij_sbaij_cholesky \
+                                 runex32_inode2 runex32_inode2_nd runex32_inode3 runex32_inode3_nd runex32_inode4 runex32_inode4_nd \
+                                 runex32_inode5 runex32_inode5_nd ex32.rm  
 TESTEXAMPLES_C_X11	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm 
 TESTEXAMPLES_C_NOCOMPLEX       = ex33.PETSc runex33 ex33.rm 
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm
@@ -643,7 +697,7 @@ TESTEXAMPLES_C_X11_MPIUNI      = ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm
 TESTEXAMPLES_C_COMPLEX	       = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_C_COMPLEX_MPIUNI  = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_DATAFILESPATH     = ex6.PETSc runex6 runex6_2 runex6_3 ex6.r ex25.PETSc runex25 runex25_2 ex25.rm ex27.PETSc runex27 ex25.rm \
-                                 ex30.PETSc runex30 runex30_2 runex30_3 runex30_shift runex30_shift_cholesky_aij runex30_shift_cholesky_sbaij ex30.rm \
+                                 ex30.PETSc runex30_shift runex30_shift_cholesky_aij runex30_shift_cholesky_sbaij ex30.rm \
                                  ex31.PETSc runex31 ex31.rm \
                                  ex34.PETSc runex34 ex34.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex16f.PETSc runex16f ex16f.rm  ex12f.PETSc runex12f ex12f.rm 

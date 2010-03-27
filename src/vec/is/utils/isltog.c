@@ -499,7 +499,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISGlobalToLocalMappingApply(ISLocalToGlobalMap
 +   nproc - number of processors that are connected to this one
 .   proc - neighboring processors
 .   numproc - number of indices for each subdomain (processor)
--   indices - indices of local nodes shared with neighbor (sorted by global numbering)
+-   indices - indices of nodes (in local numbering) shared with neighbors (sorted by global numbering)
 
     Level: advanced
 

@@ -5,7 +5,7 @@ export LANG=en_US
 export LC=C
 export LC_ALL=C
 
-RELEASE=3.0.0
+RELEASE=3.1
 PETSC_DIR=/home/balay/hg-repo/petsc-release-${RELEASE}
 
 #automatically crankup the patchlevel
@@ -32,19 +32,21 @@ ssh petsc@login.mcs.anl.gov " \
 ssh petsc@login.mcs.anl.gov chmod u+w /mcs/web/research/projects/petsc/petsc-as/download/index.html
 scp ${PETSC_DIR}/src/docs/website/download/index.html petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-as/download
 
-#######################################3333
-# M include/petscversion.h
+#######################################
 # M bin/maint/createpatch
-# M maint/rebuildtar
-# M maint/update-docs.py
+# M bin/maint/rebuildtar
+# M bin/maint/update-docs.py
+# M include/petscversion.h
 # M src/docs/tex/manual/intro.tex
 # M src/docs/tex/manual/manual.tex
+# M src/docs/website/documentation/changes/300.html
 # M src/docs/website/documentation/changes/dev.html
 # M src/docs/website/documentation/changes/index.html
+# M src/docs/website/documentation/installation.html
 # M src/docs/website/download/index.html
 # M src/docs/website/index.html
-# M src/docs/website/documentation/installation.html
-# A src/docs/website/documentation/changes/232.html
+# A src/docs/website/documentation/changes/31.html
 
 # ? bin/win32fe/win32fe.exe
 # ? bin/win32fe/win32feutils.dll
+

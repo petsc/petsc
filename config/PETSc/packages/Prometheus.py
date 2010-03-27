@@ -42,6 +42,9 @@ class Configure(PETSc.package.NewPackage):
     args += 'RANLIB         = '+self.setCompilers.RANLIB+'\n'
     args += 'AR             = '+self.setCompilers.AR+'\n'
     args += 'ARFLAGS        = '+self.setCompilers.AR_FLAGS+'\n'
+    args += 'PROM_LIB       = libprometheus.'+ self.setCompilers.AR_LIB_SUFFIX+'\n'
+    args += 'FEI_LIB        = libpromfei.'+ self.setCompilers.AR_LIB_SUFFIX+'\n'
+
 
     self.framework.pushLanguage('C++')
     args += 'CXX            = '+self.framework.getCompiler()

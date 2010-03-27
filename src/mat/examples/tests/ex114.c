@@ -3,13 +3,16 @@ static char help[] = "Tests MatGetRowMax(), MatGetRowMin(), MatGetRowMaxAbs()\n"
 
 #include "petscmat.h"
 
+#define M 5
+#define N 6
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            A;
   Vec            min,max,maxabs;
-  PetscInt       M=5,N=6,m,n;
+  PetscInt       m,n;
   PetscInt       imin[M],imax[M],imaxabs[M],indices[N],row;
   PetscScalar    values[N];
   PetscErrorCode ierr;

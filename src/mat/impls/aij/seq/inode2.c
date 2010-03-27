@@ -152,46 +152,5 @@ PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat A,MatDuplicateOption cpvalues,Mat *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatILUDTFactor_SeqAIJ_Inode"
-/*
-    This will get a new name and become a varient of MatILUFactor_SeqAIJ() there is no longer seperate functions in the matrix function table for dt factors
-*/
-
-PetscErrorCode MatILUDTFactor_SeqAIJ_Inode(Mat A,IS isrow,IS iscol,const MatFactorInfo *info,Mat *fact)
-{
-  PetscErrorCode ierr;
-  Mat_SeqAIJ     *f = (Mat_SeqAIJ*)(*fact)->data;
-
-  PetscFunctionBegin;
-    /* check for identical nodes. If found, use inode functions */
-  ierr = Mat_CheckInode(*fact,PETSC_FALSE);CHKERRQ(ierr);
-  if (f->inode.use) {
-    (*fact)->ops->solve = MatSolve_SeqAIJ_Inode_inplace;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_Inode"
-PetscErrorCode MatLUFactorSymbolic_SeqAIJ_Inode(Mat fact,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
-{
-  PetscErrorCode ierr;
-  
-  PetscFunctionBegin;
-  ierr = Mat_CheckInode(fact,PETSC_FALSE);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatILUFactorSymbolic_SeqAIJ_Inode"
-PetscErrorCode MatILUFactorSymbolic_SeqAIJ_Inode(Mat fact,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = Mat_CheckInode(fact,PETSC_FALSE);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 

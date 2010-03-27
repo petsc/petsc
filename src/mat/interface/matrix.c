@@ -3307,7 +3307,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSOR(Mat mat,Vec b,PetscReal omega,MatSORTyp
 PetscErrorCode MatCopy_Basic(Mat A,Mat B,MatStructure str)
 {
   PetscErrorCode    ierr;
-  PetscInt          i,rstart,rend,nz;
+  PetscInt          i,rstart = 0,rend = 0,nz;
   const PetscInt    *cwork;
   const PetscScalar *vwork;
 
@@ -3975,7 +3975,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMaxAbs(Mat mat,Vec v,PetscInt idx[])
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowSum(Mat mat, Vec v)
 {
-  PetscInt       start, end, row;
+  PetscInt       start = 0, end = 0, row;
   PetscScalar   *array;
   PetscErrorCode ierr;
 
@@ -4251,7 +4251,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPermuteSparsify(Mat A, PetscInt band, Petsc
 {
   IS                irowp, icolp;
   const PetscInt    *rows, *cols;
-  PetscInt          M, N, locRowStart, locRowEnd;
+  PetscInt          M, N, locRowStart = 0, locRowEnd = 0;
   PetscInt          nz, newNz;
   const PetscInt    *cwork;
   PetscInt          *cnew;
@@ -4383,6 +4383,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatEqual(Mat A,Mat B,PetscTruth *flg)
    Notes:
    MatDiagonalScale() computes A = LAR, where
    L = a diagonal matrix (stored as a vector), R = a diagonal matrix (stored as a vector)
+   The L scales the rows of the matrix, the R scales the columns of the matrix.
 
    Level: intermediate
 
@@ -7360,6 +7361,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal f
   if (fill < 1.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
   ierr = MatPreallocated(A);CHKERRQ(ierr);
 
+  if (!A->ops->ptap) {
+    const MatType mattype;
+    ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
+    SETERRQ1(PETSC_ERR_SUP,"Matrix of type <%s> does not support PtAP",mattype);
+  }
   ierr = PetscLogEventBegin(MAT_PtAP,A,P,0,0);CHKERRQ(ierr); 
   ierr = (*A->ops->ptap)(A,P,scall,fill,C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_PtAP,A,P,0,0);CHKERRQ(ierr); 

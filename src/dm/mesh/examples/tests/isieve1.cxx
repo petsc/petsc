@@ -26,6 +26,8 @@ class FunctionTestISieve : public CppUnit::TestFixture
   CPPUNIT_TEST(testTriangularInterpolatedOrientedClosure);
   CPPUNIT_TEST(testTetrahedralUninterpolatedOrientedClosure);
   CPPUNIT_TEST(testTetrahedralInterpolatedOrientedClosure);
+  CPPUNIT_TEST(testTetrahedralInterpolatedRelabeling);
+  CPPUNIT_TEST(testTetrahedralUninterpolatedRelabeling);
 
   CPPUNIT_TEST_SUITE_END();
 public:
@@ -109,6 +111,60 @@ public:
           supportSet.insert(renumbering[*s_iter]);
         }
         CPPUNIT_ASSERT(supportSet == isupportSet);
+      }
+    }
+  };
+
+  template<typename ISieve, typename Renumbering>
+  static void checkSieve(ISieve& sieveA, const ISieve& sieveB, Renumbering& renumbering) {
+    ALE::ISieveVisitor::PointRetriever<ISieve> baseV(sieveA.getBaseSize());
+
+    sieveA.base(baseV);
+    const typename ISieve::point_type *base = baseV.getPoints();
+    for(int b = 0; b < (int) baseV.getSize(); ++b) {
+      ALE::ISieveVisitor::PointRetriever<ISieve>    retrieverA((int) pow((double) sieveA.getMaxConeSize(), 3));
+      ALE::ISieveVisitor::PointRetriever<ISieve>    retrieverB((int) pow((double) sieveB.getMaxConeSize(), 3));
+
+      sieveA.cone(base[b], retrieverA);
+      sieveB.cone(renumbering[base[b]], retrieverB);
+      const typename ISieve::point_type *coneA = retrieverA.getPoints();
+      const typename ISieve::point_type *coneB = retrieverB.getPoints();
+
+      CPPUNIT_ASSERT_EQUAL(retrieverA.getSize(), retrieverB.getSize());
+      for(int c = 0; c < (int) retrieverA.getSize(); ++c) {
+        CPPUNIT_ASSERT_EQUAL(coneA[c], renumbering[coneB[c]]);
+      }
+      CPPUNIT_ASSERT_EQUAL(sieveA.orientedCones(), sieveB.orientedCones());
+      if (sieveA.orientedCones()) {
+        retrieverA.clear();
+        retrieverB.clear();
+        sieveA.orientedCone(base[b], retrieverA);
+        sieveB.orientedCone(renumbering[base[b]], retrieverB);
+        const typename ALE::ISieveVisitor::PointRetriever<ISieve>::oriented_point_type *oConeA = retrieverA.getOrientedPoints();
+        const typename ALE::ISieveVisitor::PointRetriever<ISieve>::oriented_point_type *oConeB = retrieverB.getOrientedPoints();
+
+        CPPUNIT_ASSERT_EQUAL(retrieverA.getOrientedSize(), retrieverB.getOrientedSize());
+        for(int c = 0; c < (int) retrieverA.getOrientedSize(); ++c) {
+          CPPUNIT_ASSERT_EQUAL(oConeA[c].second, oConeB[c].second);
+        }
+      }
+    }
+    ALE::ISieveVisitor::PointRetriever<ISieve> capV(sieveA.getCapSize());
+
+    sieveA.cap(capV);
+    const typename ISieve::point_type *cap = capV.getPoints();
+    for(int c = 0; c < (int) capV.getSize(); ++c) {
+      ALE::ISieveVisitor::PointRetriever<ISieve> retrieverA((int) pow((double) sieveA.getMaxSupportSize(), 3));
+      ALE::ISieveVisitor::PointRetriever<ISieve> retrieverB((int) pow((double) sieveB.getMaxSupportSize(), 3));
+
+      sieveA.support(cap[c], retrieverA);
+      sieveB.support(renumbering[cap[c]], retrieverB);
+      const typename ISieve::point_type *supportA = retrieverA.getPoints();
+      const typename ISieve::point_type *supportB = retrieverB.getPoints();
+
+      CPPUNIT_ASSERT_EQUAL(retrieverA.getSize(), retrieverB.getSize());
+      for(int s = 0; s < (int) retrieverA.getSize(); ++s) {
+        CPPUNIT_ASSERT_EQUAL(supportA[s], renumbering[supportB[s]]);
       }
     }
   };
@@ -365,6 +421,53 @@ public:
 
   void testTetrahedralUninterpolatedOrientedClosure() {
     testTetrahedralOrientedClosure(false);
+  };
+
+  void testRelabeling(sieve_type& copySieve) {
+    try {
+    std::map<ALE::Mesh::point_type,sieve_type::point_type> renumbering;
+
+    for(int p = copySieve.getChart().min(); p < copySieve.getChart().max(); ++p) {
+      renumbering[p] = copySieve.getChart().max()-1 - p;
+    }
+    // Make section reversing numbering
+    ALE::Obj<ALE::IUniformSection<int,int> > labeling = new ALE::IUniformSection<int,int>(PETSC_COMM_WORLD);
+
+    labeling->setChart(copySieve.getChart());
+    for(int p = copySieve.getChart().min(); p < copySieve.getChart().max(); ++p) {
+      labeling->setFiberDimension(p, 1);
+    }
+    labeling->allocatePoint();
+    for(int p = copySieve.getChart().min(); p < copySieve.getChart().max(); ++p) {
+      labeling->updatePoint(p, &renumbering[p]);
+    }
+    this->_sieve->relabel(*labeling);
+    // Check that we get the reverse
+    checkSieve(copySieve, *this->_sieve, renumbering);
+    } catch(ALE::Exception e) {
+      std::cerr << "ERROR: " << e << std::endl;
+    }
+  };
+
+  void testTetrahedralRelabeling(bool interpolate) {
+    ALE::Obj<ALE::Mesh> m;
+    std::map<ALE::Mesh::point_type,sieve_type::point_type> renumbering;
+    std::map<ALE::Mesh::point_type,sieve_type::point_type> renumbering2;
+
+    createTetrahedralMesh(interpolate, m, renumbering);
+    ALE::Obj<sieve_type> copySieve = this->_sieve;
+    m = PETSC_NULL;
+    this->_sieve = new sieve_type(PETSC_COMM_WORLD, this->_debug);
+    createTetrahedralMesh(interpolate, m, renumbering2);
+    testRelabeling(*copySieve);
+  };
+
+  void testTetrahedralInterpolatedRelabeling() {
+    testTetrahedralRelabeling(true);
+  };
+
+  void testTetrahedralUninterpolatedRelabeling() {
+    testTetrahedralRelabeling(false);
   };
 };
 
