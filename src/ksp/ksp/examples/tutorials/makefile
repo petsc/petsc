@@ -70,7 +70,7 @@ ex9: ex9.o  chkopts
 
 ex10: ex10.o  chkopts
 	-${CLINKER} -o ex10 ex10.o  ${PETSC_KSP_LIB}
-	${RM} ex10.o
+#	${RM} ex10.o
 
 ex11: ex11.o  chkopts
 	-${CLINKER} -o ex11 ex11.o  ${PETSC_KSP_LIB}
