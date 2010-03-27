@@ -5,24 +5,25 @@
 #include <Partitioner.hh>
 #endif
 
+PetscErrorCode SPARSEPACKgenrcm(PetscInt *neqns,PetscInt *xadj,PetscInt *adjncy,PetscInt *perm,PetscInt *mask,PetscInt *xls);
+
 namespace ALE {
   template<typename Alloc_ = malloc_allocator<int> >
   class Ordering {
   public:
-    typedef Alloc_ alloc_type;
+    typedef Alloc_                   alloc_type;
+    typedef IUniformSection<int,int> perm_type;
   public:
     template<typename Mesh>
-    static reorderMesh(const Obj<Mesh>& mesh) {
-      typedef IUniformSection<int,int> perm_type;
+    static void calculateMeshReordering(const Obj<Mesh>& mesh, Obj<perm_type>& permutation) {
       int *start     = NULL;
       int *adjacency = NULL;
       int *perm      = NULL;
       int  numVertices;
 
       Partitioner<>::buildDualCSR(mesh, &numVertices, &start, &adjacency, true);
-      Obj<perm_type> permutation;
       permutation->setChart(perm_type::chart_type(0, numVertices));
-      perm = const_cst<int*>(permutation->restrictSpace());
+      perm = const_cast<int*>(permutation->restrictSpace());
       int *mask = alloc_type().allocate(numVertices);
       for(int i = 0; i < numVertices; ++i) {alloc_type().construct(mask+i, 1);}
       int *xls  = alloc_type().allocate(numVertices);
@@ -32,8 +33,23 @@ namespace ALE {
       alloc_type().deallocate(mask, numVertices);
       for(int i = 0; i < numVertices; ++i) {alloc_type().destroy(xls+i);}
       alloc_type().deallocate(xls, numVertices);
+    };
 
-      mesh->permute(*permutation);
+    template<typename Section, typename Labeling>
+    static void relabelSection(Section& section, Labeling& relabeling, Section& newSection) {
+      newSection.setChart(section.getChart());
+
+      for(typename Section::point_type p = section.getChart().min(); p < section.getChart().max(); ++p) {
+	const typename Section::point_type newP = relabeling.restrictPoint(p)[0];
+
+	newSection.setFiberDimension(newP, section.getFiberDimension(p));
+      }
+      newSection.allocatePoint();
+      for(typename Section::point_type p = section.getChart().min(); p < section.getChart().max(); ++p) {
+	const typename Section::point_type newP = relabeling.restrictPoint(p)[0];
+
+	newSection.updatePoint(newP, section.restrictPoint(p));
+      }
     };
   };
 }
