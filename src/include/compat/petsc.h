@@ -79,4 +79,10 @@ int Petsc_MPI_Finalized(int *flag)
 #endif
 #endif
 
+#if (PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2))
+typedef PetscToken* PetscToken_Compat;
+#define PetscToken PetscToken_Compat
+#endif
+
 #endif /* _COMPAT_PETSC_H */
