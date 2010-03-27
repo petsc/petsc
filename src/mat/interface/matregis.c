@@ -38,6 +38,8 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPICRL(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Scatter(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BlockMat(Mat);
 
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Fwk(Mat);
+
 
 EXTERN_C_END
   
@@ -104,6 +106,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char path[])
   ierr = MatRegisterDynamic(MATMPIADJ,         path,"MatCreate_MPIAdj",    MatCreate_MPIAdj);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSCATTER,        path,"MatCreate_Scatter",   MatCreate_Scatter);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATBLOCKMAT,       path,"MatCreate_BlockMat",   MatCreate_BlockMat);CHKERRQ(ierr);
+
+  ierr = MatRegisterDynamic(MATFWK,            path,"MatCreate_Fwk",   MatCreate_Fwk);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
