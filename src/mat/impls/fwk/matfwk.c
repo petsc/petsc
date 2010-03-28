@@ -411,6 +411,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFwkAddBlock(Mat A, PetscInt rowblock, Petsc
   }
   ierr = MatFwkLocateBlock_AIJ(A,rowblock, colblock, PETSC_FALSE, &block); CHKERRQ(ierr);
   ierr = Mat_FwkBlock_SetMat(block,B); CHKERRQ(ierr);
+  
+  ierr = PetscObjectReference((PetscObject)B); CHKERRQ(ierr);
   *Bout = B;
   PetscFunctionReturn(0);
 }/* MatFwkAddBlock() */
@@ -583,7 +585,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_FwkAIJ(Mat A) {
 
   aij->reallocs         = 0;
   aij->nonew            = 0;
-  A->ops->setuppreallocation = MatFwkSetUpPreallocation;
   
   PetscFunctionReturn(0);
 }/* MatCreate_FwkAIJ() */
@@ -670,6 +671,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Fwk(Mat A) {
 
   PetscFunctionBegin;
 
+  A->ops->setuppreallocation = MatFwkSetUpPreallocation;
   A->ops->mult          = MatMult_Fwk;
   A->ops->multtranspose = MatMultTranspose_Fwk;
   A->ops->destroy       = MatDestroy_Fwk;

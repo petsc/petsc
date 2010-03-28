@@ -24,6 +24,7 @@ int main(int argc,char **args)
   Vec v,V, W;
   IS isloc, isglob;
   PetscInt size;
+  PetscInt id, *idx;
   VecScatter scatter;
   Mat scattermat;
   PetscInt i, *blocks;
@@ -52,11 +53,24 @@ int main(int argc,char **args)
   ierr = VecCreateMPI(PETSC_COMM_WORLD, e*2, PETSC_DECIDE, &v); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(v, &llow, &lhigh); CHKERRQ(ierr);
   
-  /* Construct a map from local degrees of freedom (2 per element) to the global numbering of degrees of freedom */
-  /* Create the set of local dof indices */
-  ierr = ISCreateStride(PETSC_COMM_SELF, lhigh-llow+1, llow, 1, &isloc); CHKERRQ(ierr);
-  /* Create the set of corresponding global dof indices */
-  ierr = ISCreateStride(PETSC_COMM_SELF, ghigh-glow+1, glow, 1, &isglob); CHKERRQ(ierr);
+  /* 
+     Construct a map from local degrees of freedom (2 per element) to the global numbering of degrees of freedom 
+  */
+  /* Create the set of local dof indices: 
+     the endpoints of the locally-held elements, each interior endpoint appearing twice with difference indices; 
+     these duplicated points are still numbered globally */
+  ierr = ISCreateStride(PETSC_COMM_WORLD, lhigh-llow, llow, 1, &isloc); CHKERRQ(ierr);
+  /* Create the set of corresponding global dof indices -- unduplicated element endpoints numbered globally and consecutively;
+     the global range of locally-held elements is from llow/2 to lhigh/2-1; the corresponding range of element endpoints is from llow/2 to lhigh/2;
+     the number of locally-held elements is e = (lhigh-llow)/2;
+  */
+  ierr = PetscMalloc(sizeof(PetscInt)*2*e, &idx); CHKERRQ(ierr);  
+  idx[0] = llow/2;
+  for(i = 1,id=idx[0]+1; i < 2*e-1; i+=2,++id) {
+    idx[i] = idx[i+1] = id;
+  }
+  idx[2*e-1]=lhigh/2;
+  ierr = ISCreateGeneral(PETSC_COMM_WORLD, 2*e, idx, &isglob); CHKERRQ(ierr);
   /* Create a global to local scatter */
   ierr = VecScatterCreate(V, isglob, v, isloc, &scatter); CHKERRQ(ierr);
   ierr = MatCreateScatter(PETSC_COMM_WORLD, scatter, &scattermat); CHKERRQ(ierr);
@@ -77,10 +91,11 @@ int main(int argc,char **args)
 
   /* Now set up the blocks */
   for(i = 0; i < e; ++i) {
-    ierr = MatFwkAddBlock(M, i, i, MATDENSE, &B); CHKERRQ(ierr);
+    ierr = MatFwkAddBlock(M, i, i, MATDENSE, &B); CHKERRQ(ierr); /* Acquire reference to B */
     ierr = MatSetValues(B, 2,ii, 2,jj, values, INSERT_VALUES); CHKERRQ(ierr);
     ierr = MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
     ierr = MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY);   CHKERRQ(ierr);
+    ierr = MatDestroy(B); CHKERRQ(ierr); /* Drop reference to B */
   }
 
   /* Now we can apply the matrix */
@@ -93,6 +108,20 @@ int main(int argc,char **args)
 
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Final vector W = M*V:\n"); CHKERRQ(ierr);
   ierr = VecView(W, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+
+  /* Clean up */
+  ierr = VecDestroy(v); CHKERRQ(ierr);
+  ierr = VecDestroy(V); CHKERRQ(ierr);
+  ierr = VecDestroy(W); CHKERRQ(ierr);
+  
+  ierr = VecScatterDestroy(scatter); CHKERRQ(ierr);
+  ierr = ISDestroy(isloc);           CHKERRQ(ierr);
+  ierr = ISDestroy(isglob);          CHKERRQ(ierr);
+  ierr = PetscFree(idx);             CHKERRQ(ierr);
+
+  ierr = PetscFree(blocks);          CHKERRQ(ierr);
+  ierr = MatDestroy(scattermat);     CHKERRQ(ierr);
+  ierr = MatDestroy(M);              CHKERRQ(ierr);
 
   ierr = PetscFinalize(); CHKERRQ(ierr);
   return 0;
