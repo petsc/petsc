@@ -21,14 +21,14 @@ namespace ALE {
       int *perm      = NULL;
       int  numVertices;
 
-      Partitioner<>::buildDualCSR(mesh, &numVertices, &start, &adjacency, true);
+      Partitioner<>::buildDualCSRV(mesh, &numVertices, &start, &adjacency, true);
       permutation->setChart(perm_type::chart_type(0, numVertices));
       perm = const_cast<int*>(permutation->restrictSpace());
       int *mask = alloc_type().allocate(numVertices);
       for(int i = 0; i < numVertices; ++i) {alloc_type().construct(mask+i, 1);}
       int *xls  = alloc_type().allocate(numVertices);
       for(int i = 0; i < numVertices; ++i) {alloc_type().construct(xls+i,  0);}
-      PetscErrorCode ierr = SPARSEPACKgenrcm(numVertices, start, adjacency, perm, mask, xls);CHKERRXX(ierr);
+      PetscErrorCode ierr = SPARSEPACKgenrcm(&numVertices, start, adjacency, perm, mask, xls);CHKERRXX(ierr);
       for(int i = 0; i < numVertices; ++i) {alloc_type().destroy(mask+i);}
       alloc_type().deallocate(mask, numVertices);
       for(int i = 0; i < numVertices; ++i) {alloc_type().destroy(xls+i);}
