@@ -1,7 +1,7 @@
 
 CFLAGS 	        = 
 FFLAGS	        = 
-CPPFLAGS        =
+CPPFLAGS        = 
 FPPFLAGS        =
 LOCDIR          = src/mat/examples/tutorials/
 EXAMPLESC       = ex1.c ex2.c ex4.c ex5.c ex6.c ex8.c ex9.c ex10.c ex11.c ex12.c ex13.c
@@ -49,6 +49,10 @@ ex12: ex12.o  chkopts
 ex13: ex13.o  chkopts
 	-${CLINKER}  -o ex13 ex13.o ${PETSC_MAT_LIB}
 	${RM} ex13.o
+
+ex14: ex14.o  chkopts
+	-${CLINKER}  -o ex14 ex14.o ${PETSC_MAT_LIB}
+	${RM} ex14.o
 # See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex1: 
 	-@${MPIEXEC} -n 1 ./ex1 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info

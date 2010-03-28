@@ -471,6 +471,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
   const PetscInt   *ddiag;
   PetscReal        rs;
   MatScalar        d;
+  PetscInt         newshift;
 
   PetscFunctionBegin;
   /* MatPivotSetUp(): initialize shift context sctx */
@@ -563,7 +564,8 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
 
       sctx.rs  = rs;
       sctx.pv  = rtmp[i];
-      ierr = MatPivotCheck(info,sctx,i);CHKERRQ(ierr);
+      ierr = MatPivotCheck(info,&sctx,i,&newshift);CHKERRQ(ierr);
+      if(newshift == 1) break;
       rtmp[i] = sctx.pv;
 
       /* Mark diagonal and invert diagonal for simplier triangular solves */
@@ -2079,6 +2081,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *
   PetscInt       k,jmin,jmax,*c2r,*il,col,nexti,ili,nz;
   MatScalar      *rtmp,*ba=b->a,*bval,*aa=a->a,dk,uikdi;
   PetscTruth     perm_identity;
+  PetscInt       newshift;
 
   FactorShiftCtx sctx;
   PetscReal      rs;
@@ -2179,7 +2182,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *
       /* MatPivotCheck() */
       sctx.rs  = rs;
       sctx.pv  = dk;
-      ierr = MatPivotCheck(info,sctx,i);CHKERRQ(ierr);
+      ierr = MatPivotCheck(info,&sctx,i,&newshift);CHKERRQ(ierr);
+      if(newshift == 1) break;
       dk = sctx.pv;
  
       ba[bdiag[k]] = 1.0/dk; /* U(k,k) */

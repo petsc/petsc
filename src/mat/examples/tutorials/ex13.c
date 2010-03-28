@@ -1,5 +1,6 @@
 
-static char help[] = "Test MatSolveTranspose() for BAIJ matrix  -f <input_file> : file to load \n\n";
+static char help[] = "Test MatFwkAIJ: a block matrix with an AIJ-like datastructure keeping track of nonzero blocks.  
+Each block is a matrix of (generally) any type.\n\n";
 
 /* 
   Include "petscmat.h" so that we can use matrices.

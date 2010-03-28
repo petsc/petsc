@@ -67,9 +67,10 @@ E*/
 #define MATHYPRESSTRUCT    "hypresstruct"
 #define MATSUBMATRIX       "submatrix"
 
-#ifdef PETSC_USE_MATFWK
-#define MATFWK           "matfwk"
-#endif
+
+#define MATFWK             "matfwk"
+#define MATFWKDEFAULT      "matfwkdefault"
+
 
 /*E
     MatSolverPackage - String with the name of a PETSc matrix solver type. 
@@ -316,19 +317,14 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateComposite(MPI_Comm,PetscInt,co
 typedef enum {MAT_COMPOSITE_ADDITIVE,MAT_COMPOSITE_MULTIPLICATIVE} MatCompositeType;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeSetType(Mat,MatCompositeType);
 
-#ifdef PETSC_USE_MATFWK
-typedef enum {MATFWK_ADDITIVE, MATFWK_MULTIPLICATIVE} MatFwkType;
-typedef enum {MATFWK_MERGED, MATFWK_SPLIT} MatFwkMode;
-
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateFwk(MPI_Comm,Mat *);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetType(Mat,MatFwkType);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkGetType(Mat,MatFwkType*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetMode(Mat,MatFwkMode);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkGetMode(Mat,MatFwkMode*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkAddBlock(Mat, IS, IS, Mat*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkBlockSetMat(Mat, Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkBlockGetMat(Mat, Mat*);
-#endif
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkAIJSetPreallocation(Mat A,PetscInt nz,PetscInt *nnz);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkGetDefaltBlockType(Mat A, const MatType *type);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetDefaltBlockType(Mat A, const MatType type);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetPreallocation_AIJ(Mat A,PetscInt nz,PetscInt *nnz);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkAddBlock(Mat A, PetscInt rowblock, PetscInt colblock, const MatType type, Mat *block);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkGetBlock(Mat A, PetscInt rowblock, PetscInt colblock, Mat *block);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetScatter(Mat A, Mat S, PetscInt blockcount, PetscInt *blocksizes);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetGather(Mat A, Mat G, PetscInt blockcount, PetscInt *blocksizes);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqFFTW(MPI_Comm,PetscInt,const PetscInt[],Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateTranspose(Mat,Mat*);

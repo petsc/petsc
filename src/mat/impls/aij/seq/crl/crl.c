@@ -21,6 +21,8 @@ PetscErrorCode MatDestroy_SeqCRL(Mat A)
 
   /* Free everything in the Mat_CRL data structure. */
   ierr = PetscFree2(crl->acols,crl->icols);CHKERRQ(ierr);
+  ierr = PetscFree(crl);CHKERRQ(ierr);
+  A->spptr = 0;
 
   ierr = PetscObjectChangeTypeName( (PetscObject)A, MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
@@ -51,7 +53,8 @@ PetscErrorCode SeqCRL_create_crl(Mat A)
   crl->nz   = a->nz;
   crl->m    = A->rmap->n;
   crl->rmax = rmax;
-  ierr  = PetscMalloc2(rmax*m,PetscScalar,&crl->acols,rmax*m,PetscInt,&crl->icols);CHKERRQ(ierr);
+  ierr = PetscFree2(crl->acols,crl->icols);CHKERRQ(ierr);
+  ierr = PetscMalloc2(rmax*m,PetscScalar,&crl->acols,rmax*m,PetscInt,&crl->icols);CHKERRQ(ierr);
   acols = crl->acols;
   icols = crl->icols;
   for (i=0; i<m; i++) {
