@@ -78,7 +78,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatFwkXAIJFreeAIJ(Mat AAA, Mat_FwkBlock **a,P
   PetscInt *AI = ai, *AJ = aj, *RP = j_row_pointer;\
   Mat_FwkBlock *AP = a_row_pointer;\
   PetscInt *AIMAX = allocated_row_lengths;\
-  PetscTruth NONEW=no_new_block_flag;\
+  PetscTruth NONEW=(no_new_block_flag) ? PETSC_TRUE: PETSC_FALSE;	\
   if (NROW >= RMAX) {\
         /* there is no extra room in row, therefore enlarge */ \
         PetscInt   new_nz = AI[AM] + CHUNKSIZE,len,*new_i=0,*new_j=0; \
