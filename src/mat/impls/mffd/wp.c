@@ -43,7 +43,7 @@ M*/
 
 typedef struct {
   PetscReal  normUfact;                   /* previous sqrt(1.0 + || U ||) */
-  PetscTruth computenorma,computenormU;   
+  PetscTruth computenormU;   
 } MatMFFD_WP;
 
 #undef __FUNCT__  
@@ -64,23 +64,16 @@ typedef struct {
 static PetscErrorCode MatMFFDCompute_WP(MatMFFD ctx,Vec U,Vec a,PetscScalar *h,PetscTruth *zeroa)
 {
   MatMFFD_WP    *hctx = (MatMFFD_WP*)ctx->hctx;
-  PetscReal      normU,norma = 1.0;
+  PetscReal      normU,norma;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!(ctx->count % ctx->recomputeperiod)) {
-    if (hctx->computenorma && (hctx->computenormU || !ctx->ncurrenth)) {
-      ierr = VecNormBegin(U,NORM_2,&normU);CHKERRQ(ierr);
-      ierr = VecNormBegin(a,NORM_2,&norma);CHKERRQ(ierr);
-      ierr = VecNormEnd(U,NORM_2,&normU);CHKERRQ(ierr);
-      ierr = VecNormEnd(a,NORM_2,&norma);CHKERRQ(ierr);
-      hctx->normUfact = sqrt(1.0+normU);
-    } else if (hctx->computenormU || !ctx->ncurrenth) {
+    if (hctx->computenormU || !ctx->ncurrenth) {
       ierr = VecNorm(U,NORM_2,&normU);CHKERRQ(ierr);
       hctx->normUfact = sqrt(1.0+normU);
-    } else if (hctx->computenorma) {
-      ierr = VecNorm(a,NORM_2,&norma);CHKERRQ(ierr);
     }
+    ierr = VecNorm(a,NORM_2,&norma);CHKERRQ(ierr);
     if (norma == 0.0) {
       *zeroa = PETSC_TRUE;
       PetscFunctionReturn(0);
@@ -115,8 +108,6 @@ static PetscErrorCode MatMFFDView_WP(MatMFFD ctx,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    if (hctx->computenorma){ierr = PetscViewerASCIIPrintf(viewer,"    Computes normA\n");CHKERRQ(ierr);}
-    else                   {ierr =  PetscViewerASCIIPrintf(viewer,"    Does not compute normA\n");CHKERRQ(ierr);}
     if (hctx->computenormU){ierr =  PetscViewerASCIIPrintf(viewer,"    Computes normU\n");CHKERRQ(ierr);}  
     else                   {ierr =  PetscViewerASCIIPrintf(viewer,"    Does not compute normU\n");CHKERRQ(ierr);}  
   } else {
@@ -143,7 +134,7 @@ static PetscErrorCode MatMFFDSetFromOptions_WP(MatMFFD ctx)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Walker-Pernice options");CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-mat_mffd_compute_normu","Compute the norm of u","MatMFFDWPSetComputeNormU",
-                          hctx->computenorma,&hctx->computenorma,0);CHKERRQ(ierr);
+                          hctx->computenormU,&hctx->computenormU,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -241,7 +232,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDCreate_WP(MatMFFD ctx)
   ierr               = PetscNewLog(ctx,MatMFFD_WP,&hctx);CHKERRQ(ierr);
   ctx->hctx          = (void*)hctx;
   hctx->computenormU = PETSC_FALSE;
-  hctx->computenorma = PETSC_TRUE;
 
   /* set the functions I am providing */
   ctx->ops->compute        = MatMFFDCompute_WP;

@@ -318,7 +318,7 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
     PetscFunctionReturn(0);
   }
 
-  if (h != h) SETERRQ(PETSC_ERR_PLIB,"Computed Nan differencing parameter h");
+  if (PetscIsInfOrNanScalar(h)) SETERRQ(PETSC_ERR_PLIB,"Computed Nan differencing parameter h");
   if (ctx->checkh) {
     ierr = (*ctx->checkh)(ctx->checkhctx,U,a,&h);CHKERRQ(ierr);
   }

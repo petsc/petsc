@@ -68,10 +68,9 @@ char  matrix_free_options[] = "-mat_mffd_compute_normu no \
 /*
     Currently only global coloring is supported with DMComposite
 */
-char  matrix_based_options[] = "-dmmg_iscoloring_type global";
-
-
-
+char  matrix_based_options[] = "-dmmg_iscoloring_type global \
+                                -mg_coarse_ksp_type gmres \
+                                -ksp_type fgmres ";
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
