@@ -72,6 +72,14 @@ char  matrix_based_options[] = "-dmmg_iscoloring_type global \
                                 -mg_coarse_ksp_type gmres \
                                 -ksp_type fgmres ";
 
+/*
+     The -use_matrix_based version does not work! This is because the DMComposite code cannot determine the nonzero
+  pattern of the Jacobian since the coupling between the boundary condition (array variable) and DA variables is problem 
+  dependent. To get the explicit Jacobian correct you would need to use the DMCompositeSetCoupling() to indicate the extra nonzero 
+  pattern and run with -dmmg_coloring_from_mat.
+*/
+
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
