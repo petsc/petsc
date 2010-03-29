@@ -145,6 +145,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetScatter(Mat A, Mat scatter, PetscInt 
     fwk->colblockoffset[i] = sum;
     sum += blocksizes[i];
   }
+  /* make sure block sizes add up to the local scatter row count */
+  if(sum != scatter->rmap->n) {
+    SETERRQ2(PETSC_ERR_USER, "Local block sizes add up to %d, not the same as the number of local scatter rows %d", sum, scatter->rmap->n);
+  }
   fwk->colblockoffset[blockcount] = sum;
   fwk->en = sum;
   fwk->scatter = scatter;
@@ -186,6 +190,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetGather(Mat A, Mat gather, PetscInt bl
   for(sum=0,i = 0; i < blockcount; ++i) {
     fwk->rowblockoffset[i] = sum;
     sum += blocksizes[i];
+  }
+  if(sum != gather->cmap->n) {
+    SETERRQ2(PETSC_ERR_USER, "Local block sizes add up to %d, not the same as the number of local gather columns %d", sum, gather->cmap->n);
   }
   fwk->rowblockoffset[blockcount] = sum;
   fwk->em = sum;
@@ -314,11 +321,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetUpPreallocation_AIJ(Mat A)
 PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetUpPreallocation(Mat A) 
 {
   Mat_Fwk* fwk = (Mat_Fwk*)A->data;
+  MPI_Comm comm;
   PetscErrorCode ierr;
   PetscFunctionBegin;
 
-  ierr = VecCreateSeq(PETSC_COMM_SELF, fwk->en, &(fwk->invec)); CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF, fwk->em, &(fwk->outvec)); CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)A, &comm); CHKERRQ(ierr);
+  ierr = VecCreateMPI(comm, fwk->en, PETSC_DECIDE, &(fwk->invec)); CHKERRQ(ierr);
+  ierr = VecCreateMPI(comm, fwk->em, PETSC_DECIDE, &(fwk->outvec)); CHKERRQ(ierr);
   ierr = MatFwkSetUpPreallocation_AIJ(A); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }/* MatFwkSetUpPreallocation() */
@@ -454,18 +463,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFwkGetBlock(Mat A, PetscInt rowblock, Petsc
 PetscErrorCode PETSCMAT_DLLEXPORT MatMult_FwkAIJ(Mat A, Vec x, Vec y) {
   Mat_Fwk  *fwk = (Mat_Fwk*)A->data;
   Mat_FwkAIJ *aij = (Mat_FwkAIJ*)fwk->data;
-  const PetscInt *ai, *aim, *aj;
-  PetscInt i,j,k,n;
-  Mat_FwkBlock *aa, b;
+  const PetscInt *aj;
+  PetscInt i,j,k;
+  Mat_FwkBlock *aa, *b;
+  Mat B;
   Vec xx,yy;
   PetscScalar *xarr, *yarr;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = VecZeroEntries(y); CHKERRQ(ierr);
-  aj = aij->j;
-  ai = aij->i;
-  aim = aij->ilen;
-  aa = aij->a;
   x  = fwk->invec;
   y  = fwk->outvec;
   xx = fwk->binvec;
@@ -479,23 +485,21 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMult_FwkAIJ(Mat A, Vec x, Vec y) {
        and place the correct array chunk there 
     */
     MatFwk_SetUpBlockVec(fwk->rowblockoffset,yy,yarr,i);
-    aj  = aj + ai[i];
-    aa  = aa + ai[i];
-    n   = aim[i] - ai[i]; 
-    for(k = 0; k < n; ++k) {
-      j = *aj;
-      b = *aa;
+    aj  = aij->j + aij->i[i];
+    aa  = aij->a + aij->i[i];
+    for(k = 0; k < aij->ilen[i]; ++k) {
+      j = *(aj+k);
+      b = aa+k;
     /* Set up the work vector corresponding to j-th in block */
     /* 
        HACK: we directly manipulate internal Vec structures to change the Vec size 
        and place the correct array chunk there 
     */
       MatFwk_SetUpBlockVec(fwk->colblockoffset,xx,xarr,j);
-      
-      ierr = MatMultAdd(b,xx,yy,yy); CHKERRQ(ierr);
-      ++aa;
+      ierr = Mat_FwkBlock_GetMat(b,&B); CHKERRQ(ierr);
+      ierr = MatMultAdd(B,xx,yy,yy); CHKERRQ(ierr);
     }
-  }
+  } 
   PetscFunctionReturn(0);
 }// MatMult_FwkAIJ()
 
@@ -505,18 +509,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMult_FwkAIJ(Mat A, Vec x, Vec y) {
 PetscErrorCode PETSCMAT_DLLEXPORT MatMultTranspose_FwkAIJ(Mat A, Vec x, Vec y) {
   Mat_Fwk  *fwk = (Mat_Fwk*)A->data;
   Mat_FwkAIJ *aij = (Mat_FwkAIJ*)fwk->data;
-  const PetscInt *ai, *aim, *aj;
-  PetscInt i,j,k,n;
-  Mat_FwkBlock *aa, b;
-  PetscScalar *xarr, *yarr;
+  const PetscInt *aj;
+  PetscInt i,j,k;
+  Mat_FwkBlock *aa, *b;
+  Mat B;
   Vec xx,yy;
+  PetscScalar *xarr, *yarr;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = VecZeroEntries(y); CHKERRQ(ierr);
-  aj = aij->j;
-  ai = aij->i;
-  aim = aij->ilen;
-  aa = aij->a;
   x  = fwk->invec;
   y  = fwk->outvec;
   xx = fwk->binvec;
@@ -530,25 +531,24 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTranspose_FwkAIJ(Mat A, Vec x, Vec y) {
        and place the correct array chunk there 
     */
     MatFwk_SetUpBlockVec(fwk->rowblockoffset,yy,yarr,i);
-    aj  = aj + ai[i];
-    aa  = aa + ai[i];
-    n   = aim[i] - ai[i]; 
-    for(k = 0; k < n; ++k) {
-      j = *aj;
-      b = *aa;
+    aj  = aij->j + aij->i[i];
+    aa  = aij->a + aij->i[i];
+    for(k = 0; k < aij->ilen[i]; ++k) {
+      j = *(aj+k);
+      b = aa+k;
     /* Set up the work vector corresponding to j-th in block */
     /* 
        HACK: we directly manipulate internal Vec structures to change the Vec size 
        and place the correct array chunk there 
-     */
+    */
       MatFwk_SetUpBlockVec(fwk->colblockoffset,xx,xarr,j);
-      
-      ierr = MatMultTransposeAdd(b,yy,xx,xx); CHKERRQ(ierr);
-      ++aa;
+      ierr = Mat_FwkBlock_GetMat(b,&B); CHKERRQ(ierr);
+      ierr = MatMultTransposeAdd(B,yy,xx,xx); CHKERRQ(ierr);
     }
-  }
+  } 
   PetscFunctionReturn(0);
 }// MatMultTranspose_FwkAIJ()
+
 
 
 

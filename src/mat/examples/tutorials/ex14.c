@@ -107,7 +107,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(M, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(M, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
-  /* Now we can apply the matrix */
+  /* Now we apply the matrix */
   ierr = VecSet(V, 1.0);      CHKERRQ(ierr);
   ierr = VecDuplicate(V, &W); CHKERRQ(ierr);
   ierr = MatMult(M,V,W);      CHKERRQ(ierr);
@@ -116,6 +116,16 @@ int main(int argc,char **args)
   ierr = VecView(V, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Final vector W = M*V:\n"); CHKERRQ(ierr);
+  ierr = VecView(W, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+
+  /* Now we apply the transpose matrix */
+  ierr = VecSet(V, 1.0);      CHKERRQ(ierr);
+  ierr = MatMultTranspose(M,V,W);      CHKERRQ(ierr);
+
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial vector V:\n"); CHKERRQ(ierr);
+  ierr = VecView(V, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "Final vector W = M'*V:\n"); CHKERRQ(ierr);
   ierr = VecView(W, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
 
   /* Clean up */
