@@ -6,8 +6,8 @@
 
 typedef Mat Mat_FwkBlock;
 
-#define Mat_FwkBlock_SetMat(block, mat) 0; block = mat
-#define Mat_FwkBlock_GetMat(block, _mat) 0; *_mat = block
+#define Mat_FwkBlock_SetMat(_block, mat) 0; *_block = mat
+#define Mat_FwkBlock_GetMat(_block, _mat) 0; *_mat = *_block
 
 typedef struct {
   PetscInt          nonew;            /* 1 don't add new nonzero blocks, -1 generate error on new */

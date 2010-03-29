@@ -69,7 +69,6 @@ E*/
 
 
 #define MATFWK             "matfwk"
-#define MATFWKDEFAULT      "matfwkdefault"
 
 
 /*E
