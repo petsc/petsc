@@ -6,8 +6,8 @@
 
 typedef Mat Mat_FwkBlock;
 
-#define Mat_FwkBlock_SetMat(block, mat) 0; block = mat
-#define Mat_FwkBlock_GetMat(block, _mat) 0; *_mat = block
+#define Mat_FwkBlock_SetMat(_block, mat) 0; *_block = mat
+#define Mat_FwkBlock_GetMat(_block, _mat) 0; *_mat = *_block
 
 typedef struct {
   PetscInt          nonew;            /* 1 don't add new nonzero blocks, -1 generate error on new */
@@ -114,9 +114,11 @@ PETSC_STATIC_INLINE PetscErrorCode MatFwkXAIJFreeAIJ(Mat AAA, Mat_FwkBlock **a,P
 #define MatFwk_SetUpBlockVec(blockoffsets,vec,arr,block) \
 {\
   Vec_Seq *s = (Vec_Seq*)vec->data;\
-  s->array=arr+fwk->rowblockoffset[block]; \
+  s->array=arr+blockoffsets[block]; \
   vec->map->n=blockoffsets[block+1]-blockoffsets[block]; \
   vec->map->N=vec->map->n; \
+  vec->map->rend=vec->map->n;\
+  vec->map->range[1]=vec->map->n;\
 }\
 
 #endif
