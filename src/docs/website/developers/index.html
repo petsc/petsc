@@ -1,7 +1,8 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html">
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=ISO-8859-1">
   <title>PETSc: Developers</title>
 </head>
 <body bgcolor="#d5eaff">
@@ -39,7 +40,8 @@ Software</strong></a></li>
  href="../documentation/changes/dev.html">Development Changes</a></font></strong></li>
             <li><strong><font color="#ff0000"><a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/index.html">Development
-copy of documentation</a></font></strong></li>
+copy
+of documentation</a></font></strong></li>
             <li><strong></strong><strong><font color="#ff0000"><a
  href="developers.pdf">Developers Instructions<br>
               </a></font></strong></li>
@@ -80,13 +82,16 @@ to the master copy of petsc-dev</a></li>
       <ul>
         <li><a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/src/ksp/pc/impls/jacobi/jacobi.c.html">add
-a new PC type</a></li>
+a
+new PC type</a></li>
         <li><a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/src/ksp/ksp/impls/cg/cg.c.html">add
-a new KSP type</a></li>
+a
+new KSP type</a></li>
         <li><a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/src/mat/impls/aij/seq/superlu/superlu.c.html">add
-a new subclass of a matrix type (implementation inheritence)</a></li>
+a
+new subclass of a matrix type (implementation inheritence)</a></li>
       </ul>
       <br>
       <big><span style="font-weight: bold;"><a name="Browsing"></a>Browsing
@@ -99,7 +104,8 @@ One can browse the development repositories at the following location<br>
       </ul>
       <br>
       <big><span style="font-weight: bold;"><a name="Obtaining"></a>Obtaining
-the development version of PETSc:</span></big><br>
+the
+development version of PETSc:</span></big><br>
       <br>
 You have three options<br>
       <ol>
@@ -138,12 +144,12 @@ the software <br>
         <li>MacOS: <a
  href="http://www.selenic.com/mercurial/wiki/index.cgi/BinaryPackages">Prebuilt
 binaries</a> are available. For eg: <a
- href="http://mercurial.berkwood.com/binaries/Mercurial-0.9.5-py2.5-macosx10.5.zip">Mercurial
-0.9.5 for <span class="release"> OS X 10.5</span></a></li>
+ href="http://mercurial.berkwood.com/binaries/Mercurial-1.5-py2.6-macosx10.6.zip">Mercurial
+1.5 for <span class="release"> OS X 10.6</span></a></li>
         <li>Windows: <a
  href="http://www.selenic.com/mercurial/wiki/index.cgi/BinaryPackages">Prebuilt
 binaries</a> are available. For ex: <a
- href="http://mercurial.berkwood.com/binaries/Mercurial-0.9.5.exe">mercurial-0.9.5.exe</a><br>
+ href="http://mercurial.berkwood.com/binaries/Mercurial-1.4.3.exe">mercurial-1.4.3.exe</a><br>
         </li>
         <li><a
  href="http://www.selenic.com/mercurial/wiki/index.cgi/Download">From
@@ -182,8 +188,10 @@ The Mercurial download always has the latest version of petsc-dev.<br>
 For additional help use<br>
       <ul style="color: rgb(128, 0, 0);">
         <li>hg help&nbsp; [or]</li>
-        <li>man hg<br>
-        </li>
+        <li>man hg</li>
+        <li><a href="http://hginit.com">http://hginit.com</a> <span
+ style="color: rgb(0, 0, 0);">[mercurial tutorial]<br>
+          </span></li>
       </ul>
       <strong></strong><br>
       <a name="2_"></a>2) One can obtain the current petsc-dev and
@@ -220,7 +228,8 @@ the tarballs&nbsp; including the new changes.<br>
       <br>
       <a name="3_"></a>3) The nightly tarball will be equivalent to the
 release tarball - with all the doumentation built. To use the <strong>nightly
-tarball </strong>snapshot,
+tarball
+      </strong>snapshot,
 simply download <a
  href="http://ftp.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz">http://ftp.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz</a>
 and extract it.
@@ -238,7 +247,8 @@ using the development copy (petsc-dev):</big><br>
       </p>
 Use config/configure.py <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/installation.html">to
-install PETSc</a>, (trouble, please contact us
+install
+PETSc</a>, (trouble, please contact us
 petsc-maint@mcs.anl.gov). And subscribe to <a
  href="../miscellaneous/mailing-lists.html">petsc mailing lists</a>.
       <p style="font-weight: bold;" align="left"><br>
@@ -251,18 +261,21 @@ downloaded and installed by config/configure.py.&nbsp;</p>
         <li>
           <p align="left"><font size="4"><a
  href="http://ftp.mcs.anl.gov/pub/sowing/sowing.tar.gz">Sowing</a>:</font>&nbsp;
-A text processing tools developed by Bill Gropp</p>
+A
+text processing tools developed by Bill Gropp</p>
         </li>
         <li>
           <p align="left"><font size="4"><a
  href="http://ftp.mcs.anl.gov/pub/petsc/c2html.tar.gz">C2html</a></font>:
-A text processing package required to generate the PETSc documentation.</p>
+A
+text processing package required to generate the PETSc documentation.</p>
         </li>
         <li>
           <p align="left">A version of pdflatex <a
  href="http://www.tug.org/teTeX/"></a><font size="4"><a
  href="http://www.tug.org/teTeX/">(for example in teTeX)</a>:</font>This
-package might already be installed on most systems. It is required to
+package
+might already be installed on most systems. It is required to
 generate the users manual (part of the PETSc documentation)</p>
         </li>
       </ul>
