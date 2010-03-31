@@ -26,13 +26,13 @@ namespace ALE {
       perm = const_cast<int*>(permutation->restrictSpace());
       int *mask = alloc_type().allocate(numVertices);
       for(int i = 0; i < numVertices; ++i) {alloc_type().construct(mask+i, 1);}
-      int *xls  = alloc_type().allocate(numVertices);
-      for(int i = 0; i < numVertices; ++i) {alloc_type().construct(xls+i,  0);}
+      int *xls  = alloc_type().allocate(numVertices*2);
+      for(int i = 0; i < numVertices*2; ++i) {alloc_type().construct(xls+i,  0);}
       PetscErrorCode ierr = SPARSEPACKgenrcm(&numVertices, start, adjacency, perm, mask, xls);CHKERRXX(ierr);
       for(int i = 0; i < numVertices; ++i) {alloc_type().destroy(mask+i);}
       alloc_type().deallocate(mask, numVertices);
-      for(int i = 0; i < numVertices; ++i) {alloc_type().destroy(xls+i);}
-      alloc_type().deallocate(xls, numVertices);
+      for(int i = 0; i < numVertices*2; ++i) {alloc_type().destroy(xls+i);}
+      alloc_type().deallocate(xls, numVertices*2);
     };
 
     template<typename Section, typename Labeling>
