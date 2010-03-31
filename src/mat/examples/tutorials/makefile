@@ -96,6 +96,10 @@ runex11:
 runex13: 
 	-@${MPIEXEC}  ./ex13 
 
+N=1
+runex14: 
+	-@${MPIEXEC}  -n $N ./ex14 ${ARGS}
+
 #-------------------------------------------------------------
 TESTEXAMPLES_C		    = ex4.PETSc ex4.rm ex5.PETSc ex5.rm ex10.PETSc ex10.rm ex12.PETSc ex12.rm
 TESTEXAMPLES_C_X11	    = ex2.PETSc ex2.rm 
