@@ -321,6 +321,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkGetDefaltBlockType(Mat A, const M
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetDefaltBlockType(Mat A, const MatType type);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetPreallocation_AIJ(Mat A,PetscInt nz,PetscInt *nnz);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkAddBlock(Mat A, PetscInt rowblock, PetscInt colblock, const MatType type, Mat *block);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetBlock(Mat A, PetscInt rowblock, PetscInt colblock, Mat block);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkGetBlock(Mat A, PetscInt rowblock, PetscInt colblock, Mat *block);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetScatter(Mat A, Mat S, PetscInt blockcount, PetscInt *blocksizes);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetGather(Mat A, Mat G, PetscInt blockcount, PetscInt *blocksizes);

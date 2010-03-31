@@ -120,11 +120,16 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetScatter(Mat A, Mat scatter, PetscInt 
   
   PetscFunctionBegin;
 
+  /* 
+     If scatter is PETSC_NULL, assume an identity map on the Vec space of the local "expanded dimension": 
+     the sum of block sizes. In that case the expanded dimension must equal the local MatFwk column dimension.
+  */
+
   /* make sure the scatter column dimension matches that of MatFwk */
-  if(scatter->cmap->N != A->cmap->N){
+  if(scatter && scatter->cmap->N != A->cmap->N){
     SETERRQ2(PETSC_ERR_USER, "Scatter's global columng dimension %d doesn't match MatFwk's %d", scatter->cmap->N, A->cmap->N);
   }
-  if(scatter->cmap->n != A->cmap->n) {
+  if(scatter && scatter->cmap->n != A->cmap->n) {
     SETERRQ2(PETSC_ERR_USER, "Scatter's local column dimension %d doesn't match MatFwk's %d", scatter->cmap->n, A->cmap->n);
   }
   /* check validity of block parameters */
@@ -146,13 +151,22 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetScatter(Mat A, Mat scatter, PetscInt 
     sum += blocksizes[i];
   }
   /* make sure block sizes add up to the local scatter row count */
-  if(sum != scatter->rmap->n) {
-    SETERRQ2(PETSC_ERR_USER, "Local block sizes add up to %d, not the same as the number of local scatter rows %d", sum, scatter->rmap->n);
+  if(scatter){
+    if(sum != scatter->rmap->n) {
+      SETERRQ2(PETSC_ERR_USER, "Local block sizes add up to %d, not the same as the number of local scatter rows %d", sum, scatter->rmap->n);
+    }
+  }
+  else {
+    if(sum != A->cmap->n) {
+      SETERRQ2(PETSC_ERR_USER, "Local block sizes add up to %d, not the same as the number of local matrix columns  %d", sum, A->cmap->n); 
+    }
   }
   fwk->colblockoffset[blockcount] = sum;
   fwk->en = sum;
   fwk->scatter = scatter;
-  ierr = PetscObjectReference((PetscObject)(fwk->scatter)); CHKERRQ(ierr);
+  if(fwk->scatter) {
+    ierr = PetscObjectReference((PetscObject)(fwk->scatter)); CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
   
 }/* MatFwkSetScatter() */
@@ -165,11 +179,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetGather(Mat A, Mat gather, PetscInt bl
   PetscInt i,sum;
   
   PetscFunctionBegin;
+  /* If gather is PETSC_NULL, assume an identity map on the Vec space of the local "expanded dimension": the sum of block sizes. */
+
   /* make sure the gather row dimension matches that of MatFwk */
-  if(gather->rmap->N != A->rmap->N){
+  if(gather && gather->rmap->N != A->rmap->N){
     SETERRQ2(PETSC_ERR_USER, "Gather's global columng dimension %d doesn't match MatFwk's %d", gather->rmap->N, A->rmap->N);
   }
-  if(gather->rmap->n != A->rmap->n) {
+  if(gather && gather->rmap->n != A->rmap->n) {
     SETERRQ2(PETSC_ERR_USER, "Gather's local column dimension %d doesn't match MatFwk's %d", gather->rmap->n, A->rmap->n);
   }
 
@@ -191,13 +207,22 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetGather(Mat A, Mat gather, PetscInt bl
     fwk->rowblockoffset[i] = sum;
     sum += blocksizes[i];
   }
-  if(sum != gather->cmap->n) {
-    SETERRQ2(PETSC_ERR_USER, "Local block sizes add up to %d, not the same as the number of local gather columns %d", sum, gather->cmap->n);
+  if(gather) {
+    if(sum != gather->cmap->n) {
+      SETERRQ2(PETSC_ERR_USER, "Local block sizes add up to %d, not the same as the number of local gather columns %d", sum, gather->cmap->n);
+    }
+  }
+  else {
+    if(sum != A->rmap->n) {
+      SETERRQ2(PETSC_ERR_USER, "Local block sizes add up to %d, not the same as the number of local matrix rows %d", sum, A->rmap->n);
+    }
   }
   fwk->rowblockoffset[blockcount] = sum;
   fwk->em = sum;
   fwk->gather = gather;
-  ierr = PetscObjectReference((PetscObject)(fwk->gather)); CHKERRQ(ierr);
+  if(fwk->gather) {
+    ierr = PetscObjectReference((PetscObject)(fwk->gather)); CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
   
 }/* MatFwkSetGather() */
@@ -326,8 +351,18 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetUpPreallocation(Mat A)
   PetscFunctionBegin;
 
   ierr = PetscObjectGetComm((PetscObject)A, &comm); CHKERRQ(ierr);
-  ierr = VecCreateMPI(comm, fwk->en, PETSC_DECIDE, &(fwk->invec)); CHKERRQ(ierr);
-  ierr = VecCreateMPI(comm, fwk->em, PETSC_DECIDE, &(fwk->outvec)); CHKERRQ(ierr);
+  if(fwk->scatter) {
+    if(fwk->invec) {
+      ierr = VecDestroy(fwk->invec); CHKERRQ(ierr);
+    }
+    ierr = VecCreateMPI(comm, fwk->en, PETSC_DECIDE, &(fwk->invec)); CHKERRQ(ierr);
+  }
+  if(fwk->gather) {
+    if(fwk->outvec) {
+      ierr = VecDestroy(fwk->outvec); CHKERRQ(ierr);
+    }
+    ierr = VecCreateMPI(comm, fwk->em, PETSC_DECIDE, &(fwk->outvec)); CHKERRQ(ierr);
+  }
   ierr = MatFwkSetUpPreallocation_AIJ(A); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }/* MatFwkSetUpPreallocation() */
@@ -435,6 +470,47 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFwkAddBlock(Mat A, PetscInt rowblock, Petsc
 }/* MatFwkAddBlock() */
 
 #undef  __FUNCT__
+#define __FUNCT__ "MatFwkSetBlock"
+PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetBlock(Mat A, PetscInt rowblock, PetscInt colblock, Mat B) {
+  PetscErrorCode        ierr;
+  Mat_Fwk*              fwk = (Mat_Fwk*)A->data;
+  Mat_FwkBlock          *_block;
+  PetscInt              m,n;
+  MPI_Comm              comm;
+  PetscMPIInt           size;
+  
+  PetscFunctionBegin;
+  ierr = MatPreallocated(A); CHKERRQ(ierr);
+  if(rowblock < 0 || rowblock > fwk->rowblockcount) {
+    SETERRQ2(PETSC_ERR_USER, "row block id %d is invalid; must be >= 0 and < %d", rowblock, fwk->rowblockcount);
+  }
+  if(colblock < 0 || colblock > fwk->colblockcount){
+    SETERRQ2(PETSC_ERR_USER, "col block id %d is invalid; must be >= 0 and < %d", colblock, fwk->colblockcount);
+  }
+  /**/
+  ierr = PetscObjectGetComm((PetscObject)B, &comm); CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size); CHKERRQ(ierr);
+  if(size > 1) {
+    SETERRQ1(PETSC_ERR_USER, "MatFwk blocks must be serial matrices: got comm of size %d", size);
+  }
+  /**/
+  m = fwk->rowblockoffset[rowblock+1]-fwk->rowblockoffset[rowblock];
+  n = fwk->colblockoffset[colblock+1]-fwk->colblockoffset[colblock];
+  if(B->rmap->n != m){
+    SETERRQ3(PETSC_ERR_USER, "Block matrix row dimension %d incompatible with the rowblock size %d for row %d", B->rmap->n, m, rowblock); 
+  }
+  if(B->cmap->n != n) {
+    SETERRQ3(PETSC_ERR_USER, "Block matrix column dimension %d incompatible with the colblock size %d for col %d", B->cmap->n, n, colblock);     
+  }
+  ierr = MatFwkLocateBlock_AIJ(A,rowblock, colblock, PETSC_FALSE, &_block); CHKERRQ(ierr);
+  ierr = Mat_FwkBlock_SetMat(_block,B); CHKERRQ(ierr);
+  
+  ierr = PetscObjectReference((PetscObject)B); CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}/* MatFwkSetBlock() */
+
+#undef  __FUNCT__
 #define __FUNCT__ "MatFwkGetBlock"
 PetscErrorCode PETSCMAT_DLLEXPORT MatFwkGetBlock(Mat A, PetscInt rowblock, PetscInt colblock, Mat *B) {
   PetscErrorCode     ierr;
@@ -472,8 +548,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMult_FwkAIJ(Mat A, Vec x, Vec y) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = VecZeroEntries(y); CHKERRQ(ierr);
-  x  = fwk->invec;
-  y  = fwk->outvec;
   xx = fwk->binvec;
   yy = fwk->boutvec;
   ierr = VecGetArray(x,&xarr); CHKERRQ(ierr);
@@ -500,6 +574,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMult_FwkAIJ(Mat A, Vec x, Vec y) {
       ierr = MatMultAdd(B,xx,yy,yy); CHKERRQ(ierr);
     }
   } 
+  ierr = VecRestoreArray(x,&xarr); CHKERRQ(ierr);
+  ierr = VecRestoreArray(y,&yarr); CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }// MatMult_FwkAIJ()
 
@@ -518,8 +594,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTranspose_FwkAIJ(Mat A, Vec x, Vec y) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = VecZeroEntries(y); CHKERRQ(ierr);
-  x  = fwk->invec;
-  y  = fwk->outvec;
   xx = fwk->binvec;
   yy = fwk->boutvec;
   ierr = VecGetArray(x,&xarr); CHKERRQ(ierr);
@@ -530,7 +604,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTranspose_FwkAIJ(Mat A, Vec x, Vec y) {
        HACK: we directly manipulate internal Vec structures to change the Vec size 
        and place the correct array chunk there 
     */
-    MatFwk_SetUpBlockVec(fwk->rowblockoffset,yy,yarr,i);
+    MatFwk_SetUpBlockVec(fwk->rowblockoffset,xx,xarr,i);
     aj  = aij->j + aij->i[i];
     aa  = aij->a + aij->i[i];
     for(k = 0; k < aij->ilen[i]; ++k) {
@@ -541,11 +615,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTranspose_FwkAIJ(Mat A, Vec x, Vec y) {
        HACK: we directly manipulate internal Vec structures to change the Vec size 
        and place the correct array chunk there 
     */
-      MatFwk_SetUpBlockVec(fwk->colblockoffset,xx,xarr,j);
+      MatFwk_SetUpBlockVec(fwk->colblockoffset,yy,yarr,j);
       ierr = Mat_FwkBlock_GetMat(b,&B); CHKERRQ(ierr);
-      ierr = MatMultTransposeAdd(B,yy,xx,xx); CHKERRQ(ierr);
+      ierr = MatMultTransposeAdd(B,xx,yy,yy); CHKERRQ(ierr);
     }
-  } 
+  }
+  ierr = VecRestoreArray(x,&xarr); CHKERRQ(ierr);
+  ierr = VecRestoreArray(y,&yarr); CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }// MatMultTranspose_FwkAIJ()
 
@@ -556,13 +632,28 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTranspose_FwkAIJ(Mat A, Vec x, Vec y) {
 #define __FUNCT__ "MatMult_Fwk"
 PetscErrorCode PETSCMAT_DLLEXPORT MatMult_Fwk(Mat A, Vec x, Vec y) {
   Mat_Fwk  *fwk = (Mat_Fwk*)A->data;
+  Vec xx, yy;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   /* Scatter */
-  ierr = MatMult(fwk->scatter,x,fwk->invec); CHKERRQ(ierr); 
-  ierr = MatMult_FwkAIJ(A, fwk->invec, fwk->outvec); CHKERRQ(ierr);
+  if(fwk->scatter) {
+    ierr = MatMult(fwk->scatter,x,fwk->invec); CHKERRQ(ierr); 
+    xx = fwk->invec;
+  }
+  else {
+    xx = x;
+  }
+  if(fwk->gather) {
+    yy = fwk->outvec; 
+  }
+  else {
+    yy = y;
+  }
+  ierr = MatMult_FwkAIJ(A, xx, yy); CHKERRQ(ierr);
   /* Gather */
-  ierr = MatMultAdd(fwk->gather,fwk->outvec,y,y); CHKERRQ(ierr);
+  if(fwk->gather) {
+    ierr = MatMult(fwk->gather,fwk->outvec,y); CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }// MatMult_Fwk()
 
@@ -570,13 +661,28 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMult_Fwk(Mat A, Vec x, Vec y) {
 #define __FUNCT__ "MatMultTransporse_Fwk"
 PetscErrorCode PETSCMAT_DLLEXPORT MatMultTranspose_Fwk(Mat A, Vec x, Vec y) {
   Mat_Fwk  *fwk = (Mat_Fwk*)A->data;
+  Vec xx,yy;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   /* Gather^T */
-  ierr = MatMultTranspose(fwk->gather,x,fwk->outvec); CHKERRQ(ierr); 
-  ierr = MatMult_FwkAIJ(A, fwk->outvec, fwk->invec); CHKERRQ(ierr);
+  if(fwk->gather) {
+    ierr = MatMultTranspose(fwk->gather,x,fwk->outvec); CHKERRQ(ierr); 
+    xx = fwk->outvec;
+  }
+  else {
+    xx = x;
+  }
+  if(fwk->scatter) {
+    yy = fwk->invec;
+  }
+  else {
+    yy = y;
+  }
+  ierr = MatMultTranspose_FwkAIJ(A, xx, yy); CHKERRQ(ierr);
   /* Scatter^T */
-  ierr = MatMultTransposeAdd(fwk->scatter,fwk->invec,y,y); CHKERRQ(ierr);
+  if(fwk->scatter) {
+    ierr = MatMultTranspose(fwk->scatter,fwk->invec,y); CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }// MatMultTranspose_Fwk()
 
@@ -756,7 +862,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Fwk(Mat A) {
 
   fwk->invec = PETSC_NULL;
   fwk->outvec = PETSC_NULL;
-
   /*
     HACK: these Vecs are created with minimal size and array information, 
      as we will later directly manipulate those inside MatMult loops to 
