@@ -23,6 +23,8 @@ namespace ALE {
 
       Partitioner<>::buildDualCSRV(mesh, &numVertices, &start, &adjacency, true);
       permutation->setChart(perm_type::chart_type(0, numVertices));
+      for(int i = 0; i < numVertices; ++i) permutation->setFiberDimension(i, 1);
+      permutation->allocate();
       perm = const_cast<int*>(permutation->restrictSpace());
       int *mask = alloc_type().allocate(numVertices);
       for(int i = 0; i < numVertices; ++i) {alloc_type().construct(mask+i, 1);}
