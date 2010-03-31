@@ -3750,17 +3750,15 @@ The second approach, taken from Walker and Pernice, \cite{pw98}, computes $ h $ 
 \begin{eqnarray*}
         h = \frac{\sqrt{1 + ||u||}e_{rel}}{||a||}
 \end{eqnarray*}
-This has no tunable parameters, but note that (a) for GMRES with left preconditioning
-$ ||a|| = 1 $ and (b) for the entire {\bf linear} iterative process $ u $ does not change hence
+This has no tunable parameters, but note that inside the nonlinear solve for 
+the entire {\bf linear} iterative process $ u $ does not change hence
 $\sqrt{1 + ||u||} $ need be computed only once. This information may be set with the 
 options
 \begin{tabbing}
-  MatMFFDWPSetComputeNormA(Mat mat,PetscTruth);\\
   MatMFFDWPSetComputeNormU(Mat mat,PetscTruth);
 \end{tabbing}
 or 
 \begin{tabbing}
-   -mat\_mffd\_compute\_norma\trl{ <true or false>}\\
    -mat\_mffd\_compute\_normu \trl{<true or false>}
 \end{tabbing}
 This information is used to eliminate the redundant computation of these parameters,
