@@ -715,6 +715,7 @@ PetscErrorCode MatDestroy_Fwk(Mat mat)
 }/* MatDestroy_Fwk() */
 
 
+EXTERN_C_BEGIN
 #undef  __FUNCT__
 #define __FUNCT__ "MatCreate_Fwk"
 PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Fwk(Mat A) {
@@ -769,3 +770,4 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Fwk(Mat A) {
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATFWK);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }/* MatCreate_Fwk() */
+EXTERN_C_END
