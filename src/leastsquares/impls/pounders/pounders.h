@@ -79,4 +79,7 @@ typedef struct {
 
 void gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b, PetscReal delta, PetscReal rtol, PetscReal atol, PetscInt itmax, PetscReal *par, PetscReal *f, PetscReal *x, PetscInt *info, int *its, PetscReal *z, PetscReal *wa1, PetscReal *wa2);
 
+EXTERN_C_BEGIN
+void dgqt_(PetscInt *n, PetscReal *a, PetscInt *lda, PetscReal *b, PetscReal *delta, PetscReal *rtol, PetscReal *atol, PetscInt *itmax, PetscReal *par, PetscReal *f, PetscReal *x, PetscInt *info, int *its, PetscReal *z, PetscReal *wa1, PetscReal *wa2);
+EXTERN_C_END
 #endif /* ifndef __TAO_MFQNLS */

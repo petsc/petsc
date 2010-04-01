@@ -5,10 +5,14 @@
 static PetscErrorCode gqtwrap(TAO_POUNDERS *mfqP,PetscReal *gnorm, PetscReal *qmin) {
     PetscReal atol=1.0e-10;
     PetscInt info,its;
+    PetscReal one = 1.0;
     PetscFunctionBegin;
 
-    gqt(mfqP->n,mfqP->Hres,mfqP->n,mfqP->Gres,1.0,mfqP->gqt_rtol,atol,
+    /*    gqt(mfqP->n,mfqP->Hres,mfqP->n,mfqP->Gres,1.0,mfqP->gqt_rtol,atol,
 	mfqP->gqt_maxits,gnorm,qmin,mfqP->Xsubproblem,&info,&its,
+	mfqP->work,mfqP->work2, mfqP->work3);*/
+    dgqt_(&mfqP->n,mfqP->Hres,&mfqP->n,mfqP->Gres,&one,&mfqP->gqt_rtol,&atol,
+	&mfqP->gqt_maxits,gnorm,qmin,mfqP->Xsubproblem,&info,&its,
 	mfqP->work,mfqP->work2, mfqP->work3);
     *qmin *= -1;
     PetscFunctionReturn(0);
@@ -380,7 +384,7 @@ static PetscErrorCode modelimprove(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt a
 #undef __FUNCT__
 #define __FUNCT__ "affpoints"
 static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin, 
-				PetscReal c, PetscTruth *flag) {
+				PetscReal c) {
     PetscInt i,j;
     PetscBLASInt blasm=mfqP->m,blasj,blask,blasn=mfqP->n,ione=1,info;
     PetscBLASInt blasnpmax = mfqP->npmax,blasmaxmn;
@@ -389,7 +393,6 @@ static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin,
     PetscErrorCode ierr;
     PetscFunctionBegin;
 
-    if (flag != PETSC_NULL)  *flag = PETSC_FALSE;
     for (i=mfqP->nHist-1;i>=0;i--) {
 	ierr = VecGetArray(mfqP->Xhist[i],&x); CHKERRQ(ierr);
 	for (j=0;j<mfqP->n;j++) {
@@ -430,15 +433,11 @@ static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin,
 		    
 	    }
 	    if (mfqP->nmodelpoints == mfqP->n)  {
-		if (flag != PETSC_NULL) *flag = PETSC_TRUE;
 		break;
 	    }
 	}		
     }
     
-    if (mfqP->nmodelpoints == mfqP->n && flag != PETSC_NULL)  {
-	*flag = PETSC_TRUE;
-    }
     PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -617,6 +616,8 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
     /* Solve the subproblem min{Q(s): ||s|| <= delta} */
     ierr = gqtwrap(mfqP,&gnorm,&mdec); CHKERRQ(ierr);
     /* Evaluate the function at the new point */
+    printf("mfqP->delta=%f\n",mfqP->delta);
+
     for (i=0;i<mfqP->n;i++) {
 	mfqP->work[i] = mfqP->Xsubproblem[i]*mfqP->delta + mfqP->xmin[i];
     }
@@ -676,7 +677,7 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
     /* Evaluate at a model-improving point if necessary */
     if (valid == PETSC_FALSE) {
 	mfqP->q_is_I = 1;
-	ierr = affpoints(mfqP,mfqP->xmin,mfqP->c1,&valid); CHKERRQ(ierr);
+	ierr = affpoints(mfqP,mfqP->xmin,mfqP->c1); CHKERRQ(ierr);
 	if (mfqP->nmodelpoints < mfqP->n) {
 	  ierr = PetscInfo(tao,"Model not valid -- model-improving");
 	  ierr = modelimprove(tao,mfqP,1); CHKERRQ(ierr);
@@ -693,26 +694,35 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
     normxsp = sqrt(normxsp);
     if (rho >= mfqP->eta1 && normxsp > 0.5*mfqP->delta) {
 	mfqP->delta = PetscMin(mfqP->delta*mfqP->gamma1,mfqP->deltamax); 
-    } else {
+    } else if (valid == PETSC_TRUE) {
 	mfqP->delta = PetscMax(mfqP->delta*mfqP->gamma0,mfqP->deltamin);
     }
 
     /* Compute the next interpolation set */
     mfqP->q_is_I = 1;
     mfqP->nmodelpoints=0;
-    ierr = affpoints(mfqP,mfqP->xmin,mfqP->c1,&valid); CHKERRQ(ierr);
-    if (valid == PETSC_FALSE) {
-	ierr = affpoints(mfqP,mfqP->xmin,mfqP->c2,PETSC_NULL); CHKERRQ(ierr);
-	if (mfqP->n > mfqP->nmodelpoints) {
-	    ierr = PetscInfo(tao,"Model not valid -- adding geometry points");
-	    ierr = modelimprove(tao,mfqP,mfqP->n - mfqP->nmodelpoints); CHKERRQ(ierr);
-	}
+    ierr = affpoints(mfqP,mfqP->xmin,mfqP->c1); CHKERRQ(ierr);
+    if (mfqP->nmodelpoints == mfqP->n) {
+      valid = PETSC_TRUE;
+    } else {
+      valid = PETSC_FALSE;
+      ierr = affpoints(mfqP,mfqP->xmin,mfqP->c2); CHKERRQ(ierr);
+      if (mfqP->n > mfqP->nmodelpoints) {
+	ierr = PetscInfo(tao,"Model not valid -- adding geometry points");
+	ierr = modelimprove(tao,mfqP,mfqP->n - mfqP->nmodelpoints); CHKERRQ(ierr);
+      }
     }
     for (i=mfqP->nmodelpoints;i>0;i--) {
 	mfqP->model_indices[i] = mfqP->model_indices[i-1];
     }
+    mfqP->nmodelpoints++;
     mfqP->model_indices[0] = mfqP->minindex;
     ierr = morepoints(mfqP); CHKERRQ(ierr);
+    if (mfqP->nmodelpoints - mfqP->n - 1 == 0) {
+      reason = TAO_DIVERGED_USER;
+      tao->reason = TAO_DIVERGED_USER;
+      continue;
+    }
     for (i=0;i<mfqP->nmodelpoints;i++) {
 	ierr = VecGetArray(mfqP->Xhist[mfqP->model_indices[i]],&x); CHKERRQ(ierr);
 	for (j=0;j<mfqP->n;j++) {
@@ -734,11 +744,6 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
 
 
     /* Update the quadratic model */
-    if (mfqP->nmodelpoints - mfqP->n - 1 == 0) {
-      reason = TAO_DIVERGED_USER;
-      tao->reason = TAO_DIVERGED_USER;
-      continue;
-      }
     ierr = getquadpounders(mfqP); CHKERRQ(ierr);
     ierr = VecGetArray(mfqP->Fhist[mfqP->minindex],&fmin); CHKERRQ(ierr);
     BLAScopy_(&blasm,fmin,&ione,mfqP->C,&ione);
