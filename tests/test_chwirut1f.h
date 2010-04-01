@@ -38,9 +38,9 @@
 !
 !  common /params/ - contains parameters that help to define the application 
 !
-      PetscReal t(214)
-      PetscReal y(214)
-      PetscInt  idm(214)
+      PetscReal t(0:213)
+      PetscReal y(0:213)
+      PetscInt  idm(0:213)
       PetscInt  idn(3)
       PetscInt  m,n
 

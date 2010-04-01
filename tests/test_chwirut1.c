@@ -145,7 +145,7 @@ int main(int argc,char **argv)
 
 /*--------------------------------------------------------------------*/
 #undef __FUNCT__
-#define __FUNCT__ "EvaluateConstraints"
+#define __FUNCT__ "EvaluateFunction"
 PetscErrorCode EvaluateFunction(TaoSolver tao, Vec X, Vec F, void *ptr)
 {
   AppCtx *user = (AppCtx *)ptr;
@@ -161,6 +161,7 @@ PetscErrorCode EvaluateFunction(TaoSolver tao, Vec X, Vec F, void *ptr)
   for (i=0;i<NOBSERVATIONS;i++) {
     f[i] = y[i] - exp(-x[0]*t[i])/(x[1] + x[2]*t[i]);
   }
+
   
 
   ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);

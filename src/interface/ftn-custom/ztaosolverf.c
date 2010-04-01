@@ -77,12 +77,11 @@ static PetscErrorCode ourtaosolverjacobianroutine(TaoSolver tao, Vec x, Mat *H, 
     return 0;
 }
 
-static PetscErrorCode ourtaosolverseparableobjectiveroutine(TaoSolver tao, Vec x, Vec g, void *ctx) 
+static PetscErrorCode ourtaosolverseparableobjectiveroutine(TaoSolver tao, Vec x, Vec f, void *ctx) 
 {
     PetscErrorCode ierr = 0;
     (*(void (PETSC_STDCALL *)(TaoSolver*,Vec*,Vec*,void*,PetscErrorCode*))
-     (((PetscObject)tao)->fortran_func_pointers[SEPOBJ]))(&tao,&x,&g,ctx,&ierr);
-    CHKERRQ(ierr);
+     (((PetscObject)tao)->fortran_func_pointers[SEPOBJ]))(&tao,&x,&f,ctx,&ierr);
     return 0;
 }
 
