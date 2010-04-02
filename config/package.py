@@ -25,6 +25,7 @@ class Package(config.base.Configure):
     self.version          = ''
     # These are specified for the package
     self.required         = 0    # 1 means the package is required
+    self.useddirectly     = 1    # 1 indicates used by PETSc directly, 0 indicates used by a package used by PETSc
     self.download         = []   # urls where repository or tarballs may be found
     self.deps             = []   # other packages whose dlib or include we depend on, usually we also use self.framework.require()
     self.defaultLanguage  = 'C'  # The language in which to run tests
