@@ -141,6 +141,10 @@ ex34: ex34.o  chkopts
 ex35: ex35.o  chkopts
 	-${CLINKER} -o ex35 ex35.o  ${PETSC_KSP_LIB}
 	${RM} ex35.o
+ex36: ex36.o  chkopts
+	-${CLINKER} -o ex36 ex36.o  ${PETSC_KSP_LIB}
+	${RM} ex36.o
+
 #------------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
