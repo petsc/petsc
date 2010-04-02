@@ -168,6 +168,8 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
   if (to->use_window) {
     ierr = MPI_Win_free(&from->window);CHKERRQ(ierr);
     ierr = MPI_Win_free(&to->window);CHKERRQ(ierr);
+    ierr = PetscFree(from->winstarts);CHKERRQ(ierr);
+    ierr = PetscFree(to->winstarts);CHKERRQ(ierr);
   }
 #endif
 
