@@ -8,11 +8,10 @@ class Configure(PETSc.package.NewPackage):
     self.includes   = ['superlu_ddefs.h']
     self.liblist    = [['libsuperlu_dist_2.3.a']]
     #
-    #  SuperLU_dist supports 64 bit integers but uses ParMetis which does not, it has
-    #  a hack that uses the 32 bit parmetis
-    #  SuperLU_dist's support for 64 bit integers is nonsense! (Fortran code -qintsize=8 compile options)
-    self.requires32bitint = 1;
-    self.complex    = 1
+    #  SuperLU_dist supports 64 bit integers but uses ParMetis which does not, see the comment in ParMetis.py
+    #  in the method configureLibrary()
+    self.requires32bitint = 0;
+    self.complex          = 1
     return
 
   def setupDependencies(self, framework):
@@ -43,6 +42,7 @@ class Configure(PETSc.package.NewPackage):
     g.write('LOADER       = '+self.setCompilers.getLinker()+'\n') 
     g.write('LOADOPTS     = \n')
     self.setCompilers.popLanguage()
+    # set blas/lapack name mangling
     if self.blasLapack.mangling == 'underscore':
       g.write('CDEFS   = -DAdd_')
     elif self.blasLapack.mangling == 'caps':
@@ -52,13 +52,12 @@ class Configure(PETSc.package.NewPackage):
     if self.framework.argDB['with-64-bit-indices']:
       g.write(' -D_LONGINT')
     g.write('\n')
-    if hasattr(self.compilers, 'FC'):
-      self.setCompilers.pushLanguage('FC')
-      g.write('FORTRAN      = '+self.setCompilers.getCompiler()+'\n')
-      g.write('FFLAGS       = '+self.setCompilers.getCompilerFlags().replace('-Mfree','')+'\n')
-      # set fortran name mangling
-      # this mangling information is for both BLAS and the Fortran compiler so cannot use the BlasLapack mangling flag      
-      self.setCompilers.popLanguage()
+#    if hasattr(self.compilers, 'FC'):
+#      self.setCompilers.pushLanguage('FC')
+#      g.write('FORTRAN      = '+self.setCompilers.getCompiler()+'\n')
+#      g.write('FFLAGS       = '+self.setCompilers.getCompilerFlags().replace('-Mfree','')+'\n')
+#      self.setCompilers.popLanguage()
+    # not sure what this is for
     g.write('NOOPTS       = '+self.blasLapack.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.blasLapack.getPrecisionFlag(self.setCompilers.getCompilerFlags())+' '+self.blasLapack.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+'\n')
     g.close()
 

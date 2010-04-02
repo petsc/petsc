@@ -229,7 +229,8 @@ class Configure(config.base.Configure):
     includes = []
     libs = []
     for i in self.framework.packages:
-      self.addDefine('HAVE_'+i.PACKAGE, 1)
+      if i.useddirectly:
+        self.addDefine('HAVE_'+i.PACKAGE, 1)  # ONLY list package if it is used directly by PETSc (and not only by another package)
       if not isinstance(i.lib, list):
         i.lib = [i.lib]
       libs.extend(i.lib)
