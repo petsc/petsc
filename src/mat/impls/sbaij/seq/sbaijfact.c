@@ -19,7 +19,7 @@ PetscErrorCode MatGetInertia_SeqSBAIJ(Mat F,PetscInt *nneig,PetscInt *nzero,Pets
 { 
   Mat_SeqSBAIJ *fact_ptr = (Mat_SeqSBAIJ*)F->data;
   MatScalar    *dd = fact_ptr->a;
-  PetscInt     mbs=fact_ptr->mbs,bs=F->rmap->bs,i,nneig_tmp,npos_tmp,*fi = fact_ptr->i;
+  PetscInt     mbs=fact_ptr->mbs,bs=F->rmap->bs,i,nneig_tmp,npos_tmp,*fi = fact_ptr->diag;
 
   PetscFunctionBegin;
   if (bs != 1) SETERRQ1(PETSC_ERR_SUP,"No support for bs: %D >1 yet",bs);
