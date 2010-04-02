@@ -5,7 +5,6 @@
 #include "../src/mat/blockinvert.h"
 #include "petscis.h"
 
-#if !defined(PETSC_USE_COMPLEX)
 /* 
   input:
    F -- numeric factor 
@@ -38,7 +37,6 @@ PetscErrorCode MatGetInertia_SeqSBAIJ(Mat F,PetscInt *nneig,PetscInt *nzero,Pets
 
   PetscFunctionReturn(0);
 }
-#endif /* !defined(PETSC_USE_COMPLEX) */
 
 /* 
   Symbolic U^T*D*U factorization for SBAIJ format. Modified from SSF of YSMP.
