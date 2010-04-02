@@ -881,11 +881,15 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       body.extend(self.batchSetup)
       body.extend(self.batchBodies)
       body.extend(self.batchCleanup)
-      body.append('fprintf(output, "  '+repr(args)[1:-1]+'\\n]");')
+      # pretty print repr(args.values())
+      for itm in args:
+        if (itm != '--configModules=PETSc.Configure') and (itm != '--optionsModule=PETSc.compilerOptions'):
+          body.append('fprintf(output,"  \''+str(itm)+'\',\\n");')
+      body.append('fprintf(output,"]");')
       driver = ['fprintf(output, "\\nif __name__ == \'__main__\':',
                 '  import os',
                 '  import sys',
-                '  sys.path.insert(0, os.path.abspath(os.path.join(\'config\')))',
+                '  sys.path.insert(0, os.path.abspath(\'config\'))',
                 '  import configure',
                 '  configure.petsc_configure(configure_options)\\n");']
       body.append('\\n'.join(driver))
