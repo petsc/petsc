@@ -1367,11 +1367,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
 /*79*/ 0,
        0,
        0,
-#if !defined(PETSC_USE_COMPLEX)
        MatGetInertia_SeqSBAIJ,
-#else
-       0,
-#endif
        MatLoad_SeqSBAIJ,
 /*84*/ MatIsSymmetric_SeqSBAIJ,
        MatIsHermitian_SeqSBAIJ,
