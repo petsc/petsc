@@ -179,6 +179,24 @@ int main(int argc,char **args)
   */
   ierr = KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),1.e-50,PETSC_DEFAULT,
                           PETSC_DEFAULT);CHKERRQ(ierr);
+  
+
+  /*
+    Example of how to use external package MUMPS 
+    Note: runtime options '-ksp_type preonly -pc_type lu -pc_factor_mat_solver_package mumps' 
+          are equivalent to these procedual calls 
+  */
+#ifdef PETSC_HAVE_MUMPS 
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-use_mumps",&flg,PETSC_NULL);CHKERRQ(ierr);
+  if (flg){
+    ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
+    PC pc;
+    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+    ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
+    ierr = PCFactorSetMatSolverPackage(pc,MAT_SOLVER_MUMPS);CHKERRQ(ierr);
+  }
+#endif
 
   /* 
     Set runtime options, e.g.,
