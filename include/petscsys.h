@@ -197,7 +197,14 @@ typedef int PetscLogStage;
     Level: intermediate
 
     Notes: usually this is the same as PetscInt, but if PETSc was built with --with-64-bit-indices but 
-           standard C/Fortran integers are 32 bit then this is NOT the same as PetscInt
+           standard C/Fortran integers are 32 bit then this is NOT the same as PetscInt it remains 32 bit 
+           (except on very rare BLAS/LAPACK implementations that support 64 bit integers).
+
+    PetscBLASIntCheck(a) checks if the given PetscInt a will fit in a PetscBLASInt, if not it generates a 
+      PETSC_ERR_ARG_OUTOFRANGE.
+
+    PetscBLASInt b = PetscBLASIntCast(a) checks if the given PetscInt a will fit in a PetscBLASInt, if not it 
+      generates a PETSC_ERR_ARG_OUTOFRANGE
 
 .seealso: PetscMPIInt, PetscInt
 
@@ -210,12 +217,12 @@ typedef int PetscBLASInt;
     Level: intermediate
 
     Notes: usually this is the same as PetscInt, but if PETSc was built with --with-64-bit-indices but 
-           standard C/Fortran integers are 32 bit then this is NOT the same as PetscInt
+           standard C/Fortran integers are 32 bit then this is NOT the same as PetscInt it remains 32 bit
 
-    PetscBLASIntCheck(a) checks if the given PetscInt a will fit in a PetscBLASInt, if not it generates a 
+    PetscMPIIntCheck(a) checks if the given PetscInt a will fit in a PetscMPIInt, if not it generates a 
       PETSC_ERR_ARG_OUTOFRANGE.
 
-    PetscBLASInt b = PetscBLASIntCast(a) checks if the given PetscInt a will fit in a PetscBLASInt, if not it 
+    PetscMPIInt b = PetscMPIIntCast(a) checks if the given PetscInt a will fit in a PetscMPIInt, if not it 
       generates a PETSC_ERR_ARG_OUTOFRANGE
 
 .seealso: PetscBLASInt, PetscInt
@@ -240,7 +247,7 @@ typedef enum { ENUM_DUMMY } PetscEnum;
 
 /*MC
     PetscInt - PETSc type that represents integer - used primarily to
-      represent size of objects. Its size can be configured with the option
+      represent size of arrays and indexing into arrays. Its size can be configured with the option
       --with-64-bit-indices - to be either 32bit or 64bit [default 32 bit ints]
 
    Level: intermediate

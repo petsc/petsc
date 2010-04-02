@@ -95,6 +95,8 @@ gnu compiler)?</a></li>
       <li><a href="faq.html#use-mpi">Why do you use MPI</a>?</li>
       <li><a href="faq.html#mpi-compilers">What do I do if my MPI
 compiler wrappers are invalid</a>?</li>
+      <li><a href="faq.html#64-bit-indices">When should/can I use the
+./configure option --with-64-bit-indices</a>?</li>
       </menu>
       <p><a href="#usage"><b>Usage</b></a></p>
       <ul>
@@ -463,7 +465,23 @@ will try to auto-detect working compilers; however, these compilers may
 be incompatible with the particular MPI build. If this fix does not
 work, run with --with-cc=c_compiler where you know c_compiler works
 with this particular MPI, and likewise for C++ and Fortran.</p>
-      <p>&nbsp; </p>
+      <p>&nbsp;</p>
+      <p><strong><font color="#ff0000"><a name="64-bit-indices">When
+should/can I use the ./configure option --with-64-bit-indices?</a></font></strong></p>
+      <p><strong></strong>By default the type that PETSc uses to index
+into arrays and keep sizes of arrays is a PetscInt defined to be a 32
+bit int. If your problem&nbsp;</p>
+      <ul>
+        <li>involves more than 2^31 - 1 unknowns (around 2 billion)
+OR&nbsp;</li>
+        <li>your matrix might contain more than 2^31 - 1 nonzeros on a
+single process&nbsp;</li>
+      </ul>
+then you need to use this option. Otherwise you will get strange
+crashes.
+      <p>This option can be used when you are using either 32 bit or 64
+bit pointers. You do not need to use this option if you are using 64
+bit pointers unless the two conditions above hold.&nbsp; </p>
       <hr>
       <h3><a name="Using">Using</a></h3>
       <p>&nbsp;<strong><a name="redirectstdout"><font color="#ff0000">How
@@ -852,7 +870,19 @@ MatZeroRows() to eliminate the Dirichlet rows but this results in a
 non-symmetric system. How come there is no MatZeroColumns() to keep the
 matrix symmetric?<br>
             <br>
-            </span>For the default PETSc sparse matrix data structures (parallel and sequential) which are row based, zeroing certain columns is very expensive (it would require either searches or additional data structures). Hence we don't provide this functionality. One can solve Dirichilet boundary condition problems using symmetric methods three ways. (1) Manually call MatGetSubMatrix() to extract your symmetric subproblem or (2) call MatZeroRows() then use the PCREDISTRIBUTE preconditioner to solve the reduced system using. (3) When assemblying the matrix, (generating values and passing them to the matrix), never include locations for the Dirichlet grid points in the vector and matrix, instead take them into account as you put the other values into the load. This approach has the advantage of less memory usage since (1) and (2) will require essentially twice as much memory.
+            </span>For the default PETSc sparse matrix data structures
+(parallel and sequential) which are row based, zeroing certain columns
+is very expensive (it would require either searches or additional data
+structures). Hence we don't provide this functionality. One can solve
+Dirichilet boundary condition problems using symmetric methods three
+ways. (1) Manually call MatGetSubMatrix() to extract your symmetric
+subproblem or (2) call MatZeroRows() then use the PCREDISTRIBUTE
+preconditioner to solve the reduced system using. (3) When assemblying
+the matrix, (generating values and passing them to the matrix), never
+include locations for the Dirichlet grid points in the vector and
+matrix, instead take them into account as you put the other values into
+the load. This approach has the advantage of less memory usage since
+(1) and (2) will require essentially twice as much memory.
 symmetric methods. See its manual page.
             <hr> </td>
           </tr>
