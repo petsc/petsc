@@ -1,8 +1,8 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
 <head>
-
-<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
   <title>PETSc: Docs:&nbsp;&nbsp; FAQ</title>
 </head>
 <body style="background-color: rgb(213, 234, 255);">
@@ -217,14 +217,15 @@ error mean? <br>
       <li><a href="faq.html#zeropivot"><font face="Terminal">What does </font><font
  color="#ff0000"><strong> </strong></font></a><font face="Terminal"><a
  href="faq.html#zeropivot">Detected zero pivot in LU factorization mean?</a></font></li>
-      <li><a href="faq.html#xwindows"><font face="Terminal"><a>You
+      <li><a href="faq.html#xwindows"><font face="Terminal"></font></a><font
+ face="Terminal"><a href="faq.html#xwindows">You
 create Draw windows or ViewerDraw windows or use options
 -ksp_monitor or_draw -snes_monitor_draw and the program seems to run OK
-but windows never open.</a></font></a></li>
-      <li><a href="faq.html#memory"><font face="Terminal"><a>The
+but windows never open.</a></font></li>
+      <li><a href="faq.html#memory"><font face="Terminal"></font></a><font
+ face="Terminal"><a href="faq.html#memory">The
 program seems to use more and more memory as it runs, even
-though you don't think you are allocating more memory.
-        </a></font></a></li>
+though you don't think you are allocating more memory. </a></font></li>
       <li><a href="faq.html#key"><font face="Terminal">When
 calling MatPartitioningApply() you get a message Error! Key 16615 not
 found </font></a></li>
@@ -396,7 +397,8 @@ difference in results for different numbers of processes. In some cases
 works for some number of processes and does not work for others.
       <p><strong><a name="differentiterations"><font color="#ff0000">How
 come
-when I run the same linear solver on a different number of
+when
+I run the same linear solver on a different number of
 processes it takes a different number of iterations?</font></a></strong><span
  style="font-weight: bold;"></span></p>
       <p><span style="font-weight: bold;"></span>The convergence of
@@ -423,7 +425,8 @@ there are more than 1 (which causes this), then you know its true.</p>
 not commit. You pull down and it aborts part way because you have
 "uncommitted local changes". However, you do not <strong>hg rollback</strong>.
 Instead
-you just <strong>hg commit</strong>, which creates another
+you
+just <strong>hg commit</strong>, which creates another
 head. This is supposed to be a feature. I think it should have a user
 disable.</p>
       <p>Fixing this is complicated. Basically, you clone the repo
@@ -531,7 +534,8 @@ bit pointers unless the two conditions above hold.&nbsp; </p>
       <h3><a name="Using">Using</a></h3>
       <p>&nbsp;<strong><a name="redirectstdout"><font color="#ff0000">How
 can
-I redirect PETSc's stdout and stderr when programming with a GUI
+I
+redirect PETSc's stdout and stderr when programming with a GUI
 interface in Windows Developer Studio?&nbsp;</font></a></strong><strong></strong>
       </p>
 These directions where supplied by a user. You just need to add this <br>
@@ -621,7 +625,8 @@ just as efficient as an SAIJ would be
       <p></p>
       <p>&nbsp;<strong><a name="long-link-time"><font color="#ff0000">How
 do
-I use P</font></a></strong><strong><a name="domaindecomposition"><font
+I
+use P</font></a></strong><strong><a name="domaindecomposition"><font
  color="#ff0000">ETSc
 for Domain Decomposition?</font></a></strong> </p>
       <p>PETSc includes Additive Schwarz methods in the suite of
@@ -818,7 +823,8 @@ retreive the information in your FormJacobian() function.<br>
             <br>
             <span style="color: rgb(255, 0, 0);"><a name="invertmatrix"></a>How
 can
-I compute the inverse of a matrix in PETSc?<br>
+I
+compute the inverse of a matrix in PETSc?<br>
             <br>
             </span>It is very expensive to compute the inverse of a
 matrix and very rarely needed in practice. We highly recommend avoiding
@@ -877,7 +883,8 @@ VecScatter to communicate the required ghost point communication. See <a
             <br>
             <span style="color: rgb(255, 0, 0);"><a name="da_mpi_cart"></a>The
 PETSc
-DA object decomposes the domain differently than the
+DA
+object decomposes the domain differently than the
 MPI_Cart_create() command. How can one use them together?<br>
             <br>
             </span>The MPI_Cart_create() first divides the mesh along
@@ -916,7 +923,8 @@ PETSC_COMM_WORLD = NewComm;<br>
             <span style="color: rgb(255, 0, 0);"><a name="redistribute"></a>The
 When
 solving
-a symmetric system with Dirichlet boundary conditions I can use
+a
+symmetric system with Dirichlet boundary conditions I can use
 MatZeroRows() to eliminate the Dirichlet rows but this results in a
 non-symmetric system. How come there is no MatZeroColumns() to keep the
 matrix symmetric?<br>
@@ -973,7 +981,8 @@ relationships among objects during program execution in the form of a
 dynamic icon tree.</p>
       <p><strong><a name="efficient-assembly"><font color="#ff0000">Assembling
 large
-sparse matrices takes a
+sparse
+matrices takes a
 long time. What can I do make this process faster?</font> </a></strong></p>
       <p>See the Performance chapter of the users manual for many
 tips on this.</p>
@@ -1031,7 +1040,8 @@ cannot use PetscViewerBinaryOpen() directly.<br>
       </p>
       <p><font><strong><a name="slow"><font color="#ff0000">MatSetValues()
 is
-so slow, what can I do to speed it up?<br>
+so
+slow, what can I do to speed it up?<br>
       </font></a></strong></font> </p>
 Preallocation of matrix memory is crucial for good performance for
 large problems, see <br>
@@ -1051,21 +1061,24 @@ process). Note: it is fine to have some entries generated on the
       <br>
       <p><font><strong><a name="slowerparallel"><font color="#ff0000">Why
 is
-my parallel solver&nbsp;slower than my sequential solver?<br>
+my
+parallel solver&nbsp;slower than my sequential solver?<br>
       </font></a></strong></font> </p>
 This can happen for many reasons:<br>
       <ul>
         <li>First make sure it is truely the time in KSPSolve() that is
 slower (by running the code with <a href="faq.html#log-summary">-log_summary</a>).
 Often
-the slower time is in <a href="faq.html#slow">generating the
+the
+slower time is in <a href="faq.html#slow">generating the
 matrix</a> or some other operation.</li>
         <li>There must be enough work for each process to overweigh the
 communication time. We recommend an absolute minimum of about 10,000
 unknowns per process, better is 20,000 or more.</li>
         <li>Make sure the&nbsp; <a href="faq.html#computers">communication
 speed
-of the parallel computer</a> is good enough for parallel solvers.</li>
+of
+the parallel computer</a> is good enough for parallel solvers.</li>
         <li>Check the number of solver iterates with the parallel
 solver against the sequential solver. Most preconditioners require more
 iterations when used on
@@ -1073,7 +1086,8 @@ more processes, this is particularly true for block Jaccobi, the
 default parallel preconditioner, you can try -pc_type asm (<a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCASM.html">PCASM</a>)
 its
-iterations scale a bit better for more processes. You may also
+iterations
+scale a bit better for more processes. You may also
 consider multigrid preconditioners like <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCMG.html">PCMG</a>
 or BoomerAMG in <a
@@ -1081,7 +1095,8 @@ or BoomerAMG in <a
       </ul>
       <p><font><strong><a name="singleprecision"><font color="#ff0000">When
 using
-PETSc in single precision mode (--with-precision=single when
+PETSc
+in single precision mode (--with-precision=single when
 running config/configure.py) are the operations done in single or
 double precision? </font></a></strong></font> </p>
 PETSc does NOT do any explicit conversion of single precision to double
@@ -1146,7 +1161,8 @@ the object. For a Vec v and a Mat m, this would be</p>
 PETSC_VIEWER_STDOUT_(m-&gt;comm))</p>
       <p>&nbsp;<span style="color: rgb(255, 0, 0);"><a name="libimf"></a>Error
 while
-loading shared libraries: libimf.so: cannot open shared object
+loading
+shared libraries: libimf.so: cannot open shared object
 file: No such file or directory.</span></p>
       <p>The Intel compilers use shared libraries (like libimf) that
 cannot by default at run time. When using the Intel compilers (and
@@ -1168,7 +1184,8 @@ source /opt/intel/fc/10.1.012/bin/ifortvars.sh<br>
 source /opt/intel/idb/10.1.012/bin/idbvars.sh<br>
       <br>
       <p><span style="color: rgb(255, 0, 0);"><a name="objecttypenotset">What
-does Object Type not set: Argument # n mean?</a></span></p>
+does
+Object Type not set: Argument # n mean?</a></span></p>
 Many
 operations on PETSc objects require that the specific type of the
 object be set before the operations is performed. You must call
@@ -1216,6 +1233,7 @@ problem.<br>
 If -malloc_debug does not help: on GNU/Linux and Apple Mac OS X
 machines - you can try using&nbsp;<a href="http://valgrind.org/">http://valgrind.org
 
+
       </a>to look for memory corruption.</span></font>
 - Make sure valgrind is installed<br>
 - Recommend building PETSc with "--download-mpich=1 --with-debugging=1"
@@ -1257,6 +1275,7 @@ that the matrix is singular. You can use -pc_factor_shift_nonzero or
 -[level]_pc_factor_shift_nonzero,&nbsp; </span></font><font
  style="color: rgb(0, 0, 0);" color="#ff0000">-[level]_pc_factor_shift_postive_definite
 
+
       </font><font style="color: rgb(0, 0, 0);" color="#ff0000">to
 prevent the zero pivot. For lu, ilu,
 cholesky, or icc and [level] is sub is for a block in the bjacobi or
@@ -1282,10 +1301,11 @@ that generates the matrix.</span></font><a><span
  style="font-family: Terminal;"><br>
       </span></a></p>
       <p><a><span style="font-family: Terminal;"></span><span
- style="color: rgb(255, 0, 0);"><a name="xwindows"></a>You
+ style="color: rgb(255, 0, 0);"></span></a><a name="xwindows"></a><span
+ style="color: rgb(255, 0, 0);">You
 create Draw windows or ViewerDraw windows or use options
 -ksp_monitor or_draw -snes_monitor_draw and the program seems to run OK
-but windows never open.</span></a></p>
+but windows never open.</span></p>
       <p>The
 libraries were compiled without support for X windows.<font
  color="#ff0000"><strong> </strong></font>Make
@@ -1341,10 +1361,11 @@ the MPI profiling
 libraries. <br>
         </li>
       </ol>
-      </font><font face="Terminal"><a name="key"></a>When
+      </font><font face="Terminal"></font></a><font face="Terminal"><a
+ name="key"></a>When
 calling MatPartitioningApply() you get a message Error! Key 16615 not
 found<br>
-      </font></a></p>
+      </font></p>
       <p>The
 graph of &nbsp;the matrix you are using is not symmetric. Yo<font
  color="#ff0000"><strong></strong></font>u must use symmetric matrices
@@ -1390,7 +1411,8 @@ matrix-free parameters.<br>
       </p>
       <p style="color: rgb(0, 0, 0);"><font face="Terminal"><font
  face="Terminal"><span style="color: rgb(255, 0, 0);"><a name="2its"></a>Why
-do some
+do
+some
 Krylov methods seem to print two residual norms per iteration?<br>
       </span></font></font></p>
       <p style="color: rgb(0, 0, 0);"><font face="Terminal"><font
