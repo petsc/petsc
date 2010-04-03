@@ -1,6 +1,8 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
 <head>
+
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
   <title>PETSc: Docs:&nbsp;&nbsp; FAQ</title>
 </head>
 <body style="background-color: rgb(213, 234, 255);">
@@ -36,7 +38,6 @@ PETSc</strong></a></li>
             <li><strong><a href="installation.html">Installation</a> </strong></li>
             <li><strong><a href="zope.html">Zope</a> </strong></li>
             <li><strong><a href="changes/index.html">Changes</a></strong></li>
-            <li><strong><a href="troubleshooting.html">Troubleshooting</a></strong></li>
             <li><strong><a href="bugreporting.html">Bug
 Reporting</a></strong></li>
             <li><strong><a href="codemanagement.html">Code
@@ -55,7 +56,8 @@ Site</strong></a></li>
       </td>
       <td valign="top" width="75%"><!--##begin-->
       <h4><a href="faq.html#General">General</a></h4>
-      <menu> <li><a href="faq.html#petsc-mailing-list">How
+      <menu>
+      <li><a href="faq.html#petsc-mailing-list">How
 can I subscribe to the PETSc&nbsp;mailing lists?</a></li>
       <li><a href="faq.html#computers">What kind of
 parallel computers or clusters are needed
@@ -81,7 +83,8 @@ error indicating "new remote branches" might be created when I try to
 push?</a></li>
       </menu>
       <h4><a href="faq.html#Installation">Installation</a></h4>
-      <menu> <li><a href="faq.html#already-installed">How
+      <menu>
+      <li><a href="faq.html#already-installed">How
 do I begin using PETSc if the software has already been completely
 built and installed by someone else?</a></li>
       <li><a href="faq.html#reduce-disk-space">The
@@ -146,10 +149,12 @@ system with Dirichlet boundary conditions I can use MatZeroRows() to
 eliminate the Dirichlet rows but this results in a non-symmetric
 system. How come there is no MatZeroColumns() to keep the matrix
 symmetric?</a></li>
-        <li></li>
+        <li><br>
+        </li>
       </ul>
       <h4><a href="faq.html#Execution">Execution</a></h4>
-      <menu> <li><a href="faq.html#long-link-time">PETSc
+      <menu>
+      <li><a href="faq.html#long-link-time">PETSc
 executables are SO big and take SO long to link.</a></li>
       <li><a href="faq.html#petsc-options">PETSc has
 so many options for my program that it is hard to keep them straight.</a></li>
@@ -183,7 +188,8 @@ config/configure.py) are the operations done in single or double
 precision?</a></li>
       </menu>
       <a href="faq.html#Debugging"><span style="font-weight: bold;"></span>Debugging</a>
-      <menu> <li><a href="faq.html#debug-ibmfortran">How
+      <menu>
+      <li><a href="faq.html#debug-ibmfortran">How
 do I turn off PETSc signal handling so I can use the -C option on xlF?</a></li>
       <li><a href="faq.html#debug-cray">How do I
 debug on the Cray T3D/T3E?</a></li>
@@ -193,13 +199,50 @@ do I debug if -start_in_debugger does not work on my machine?</a></li>
 see where my code is hanging?</a></li>
       <li><a href="faq.html#debug-inspect">How can I
 inspect Vec and Mat values when in the debugger?</a></li>
-      <li><a href="faq.html#libimf">error while loading shared
+      <li><a href="faq.html#libimf">Error while loading shared
 libraries: libimf.so: cannot open shared object file: No such file or
 directory.</a></li>
+      <li><font color="#ff0000"><strong></strong></font><a
+ href="faq.html#objecttypenotset"><font face="Terminal">What does
+Object Type not set: Argument # n mean?</font></a></li>
+      <li><a href="faq.html#split"><font face="Terminal">What does </font><font
+ color="#ff0000"><strong> </strong></font></a><font face="Terminal"><a
+ href="faq.html#split">Error detected&nbsp;in
+PetscSplitOwnership() about "sum of local lengths ...": mean?</a></font></li>
+      <li><a href="faq.html#valgrind"><font face="Terminal">What does </font><font
+ color="#ff0000"><strong></strong></font><font face="Terminal">Corrupt
+argument or Caught signal or SEQV or segmentation violation or bus
+error mean? <br>
+        </font></a></li>
+      <li><a href="faq.html#zeropivot"><font face="Terminal">What does </font><font
+ color="#ff0000"><strong> </strong></font></a><font face="Terminal"><a
+ href="faq.html#zeropivot">Detected zero pivot in LU factorization mean?</a></font></li>
+      <li><a href="faq.html#xwindows"><font face="Terminal"><a>You
+create Draw windows or ViewerDraw windows or use options
+-ksp_monitor or_draw -snes_monitor_draw and the program seems to run OK
+but windows never open.</a></font></a></li>
+      <li><a href="faq.html#memory"><font face="Terminal"><a>The
+program seems to use more and more memory as it runs, even
+though you don't think you are allocating more memory.
+        </a></font></a></li>
+      <li><a href="faq.html#key"><font face="Terminal">When
+calling MatPartitioningApply() you get a message Error! Key 16615 not
+found </font></a></li>
+      <li><a href="faq.html#gmres"><font face="Terminal">With
+GMRES At restart the second residual norm printed does not
+match the first </font></a></li>
+      <li><font face="Terminal"><font face="Terminal"><a
+ href="faq.html#2its">Why do some
+Krylov methods seem to print two residual norms per iteration?</a></font></font></li>
+      <li><font face="Terminal"><a href="faq.html#dylib">Unable to
+locate PETSc dynamic library
+/home/balay/spetsc/lib/libg/linux/libpetsc </a><br>
+        </font></li>
       </menu>
       <h4><a href="faq.html#Shared%20Libraries">Shared
 Libraries</a></h4>
-      <menu> <li><a href="faq.html#install-shared">Can
+      <menu>
+      <li><a href="faq.html#install-shared">Can
 I install PETSc libraries as shared libraries?</a></li>
       <li><a href="faq.html#why-use-shared">Why
 should I use shared libraries?</a></li>
@@ -352,7 +395,8 @@ difference in results for different numbers of processes. In some cases
 (for example block Jacobi preconditioner) it may be that the algorithm
 works for some number of processes and does not work for others.
       <p><strong><a name="differentiterations"><font color="#ff0000">How
-come when I run the same linear solver on a different number of
+come
+when I run the same linear solver on a different number of
 processes it takes a different number of iterations?</font></a></strong><span
  style="font-weight: bold;"></span></p>
       <p><span style="font-weight: bold;"></span>The convergence of
@@ -378,7 +422,8 @@ there are more than 1 (which causes this), then you know its true.</p>
       <p>Here is how it happens. You make some local changes, but do
 not commit. You pull down and it aborts part way because you have
 "uncommitted local changes". However, you do not <strong>hg rollback</strong>.
-Instead you just <strong>hg commit</strong>, which creates another
+Instead
+you just <strong>hg commit</strong>, which creates another
 head. This is supposed to be a feature. I think it should have a user
 disable.</p>
       <p>Fixing this is complicated. Basically, you clone the repo
@@ -485,7 +530,8 @@ bit pointers unless the two conditions above hold.&nbsp; </p>
       <hr>
       <h3><a name="Using">Using</a></h3>
       <p>&nbsp;<strong><a name="redirectstdout"><font color="#ff0000">How
-can I redirect PETSc's stdout and stderr when programming with a GUI
+can
+I redirect PETSc's stdout and stderr when programming with a GUI
 interface in Windows Developer Studio?&nbsp;</font></a></strong><strong></strong>
       </p>
 These directions where supplied by a user. You just need to add this <br>
@@ -574,7 +620,8 @@ Just for historical reasons, the SBAIJ format with blocksize one is
 just as efficient as an SAIJ would be
       <p></p>
       <p>&nbsp;<strong><a name="long-link-time"><font color="#ff0000">How
-do I use P</font></a></strong><strong><a name="domaindecomposition"><font
+do
+I use P</font></a></strong><strong><a name="domaindecomposition"><font
  color="#ff0000">ETSc
 for Domain Decomposition?</font></a></strong> </p>
       <p>PETSc includes Additive Schwarz methods in the suite of
@@ -622,7 +669,8 @@ communication </li>
       <table width="100%">
         <tbody>
           <tr>
-            <td valign="top" width="75%"><li> Actually do the
+            <td valign="top" width="75%">
+            <li> Actually do the
 communication; this can be done
 repeatedly as needed</li>
             <ul>
@@ -769,7 +817,8 @@ context (the final argument to FormFunction and FormJacobian) and then
 retreive the information in your FormJacobian() function.<br>
             <br>
             <span style="color: rgb(255, 0, 0);"><a name="invertmatrix"></a>How
-can I compute the inverse of a matrix in PETSc?<br>
+can
+I compute the inverse of a matrix in PETSc?<br>
             <br>
             </span>It is very expensive to compute the inverse of a
 matrix and very rarely needed in practice. We highly recommend avoiding
@@ -827,7 +876,8 @@ VecScatter to communicate the required ghost point communication. See <a
             <br>
             <br>
             <span style="color: rgb(255, 0, 0);"><a name="da_mpi_cart"></a>The
-PETSc DA object decomposes the domain differently than the
+PETSc
+DA object decomposes the domain differently than the
 MPI_Cart_create() command. How can one use them together?<br>
             <br>
             </span>The MPI_Cart_create() first divides the mesh along
@@ -865,7 +915,8 @@ PETSC_COMM_WORLD = NewComm;<br>
             <br>
             <span style="color: rgb(255, 0, 0);"><a name="redistribute"></a>The
 When
-solving a symmetric system with Dirichlet boundary conditions I can use
+solving
+a symmetric system with Dirichlet boundary conditions I can use
 MatZeroRows() to eliminate the Dirichlet rows but this results in a
 non-symmetric system. How come there is no MatZeroColumns() to keep the
 matrix symmetric?<br>
@@ -921,7 +972,8 @@ within a PETSc program. This tool illustrates the changing
 relationships among objects during program execution in the form of a
 dynamic icon tree.</p>
       <p><strong><a name="efficient-assembly"><font color="#ff0000">Assembling
-large sparse matrices takes a
+large
+sparse matrices takes a
 long time. What can I do make this process faster?</font> </a></strong></p>
       <p>See the Performance chapter of the users manual for many
 tips on this.</p>
@@ -978,7 +1030,8 @@ PetscViewerFileSetName(). In other words you<br>
 cannot use PetscViewerBinaryOpen() directly.<br>
       </p>
       <p><font><strong><a name="slow"><font color="#ff0000">MatSetValues()
-is so slow, what can I do to speed it up?<br>
+is
+so slow, what can I do to speed it up?<br>
       </font></a></strong></font> </p>
 Preallocation of matrix memory is crucial for good performance for
 large problems, see <br>
@@ -997,33 +1050,38 @@ process). Note: it is fine to have some entries generated on the
 "wrong" process, just not many.<br>
       <br>
       <p><font><strong><a name="slowerparallel"><font color="#ff0000">Why
-is my parallel solver&nbsp;slower than my sequential solver?<br>
+is
+my parallel solver&nbsp;slower than my sequential solver?<br>
       </font></a></strong></font> </p>
 This can happen for many reasons:<br>
       <ul>
         <li>First make sure it is truely the time in KSPSolve() that is
 slower (by running the code with <a href="faq.html#log-summary">-log_summary</a>).
-Often the slower time is in <a href="faq.html#slow">generating the
+Often
+the slower time is in <a href="faq.html#slow">generating the
 matrix</a> or some other operation.</li>
         <li>There must be enough work for each process to overweigh the
 communication time. We recommend an absolute minimum of about 10,000
 unknowns per process, better is 20,000 or more.</li>
         <li>Make sure the&nbsp; <a href="faq.html#computers">communication
-speed of the parallel computer</a> is good enough for parallel solvers.</li>
+speed
+of the parallel computer</a> is good enough for parallel solvers.</li>
         <li>Check the number of solver iterates with the parallel
 solver against the sequential solver. Most preconditioners require more
 iterations when used on
 more processes, this is particularly true for block Jaccobi, the
 default parallel preconditioner, you can try -pc_type asm (<a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCASM.html">PCASM</a>)
-its iterations scale a bit better for more processes. You may also
+its
+iterations scale a bit better for more processes. You may also
 consider multigrid preconditioners like <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCMG.html">PCMG</a>
 or BoomerAMG in <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCHYPRE.html">PCHYPRE</a>.</li>
       </ul>
       <p><font><strong><a name="singleprecision"><font color="#ff0000">When
-using PETSc in single precision mode (--with-precision=single when
+using
+PETSc in single precision mode (--with-precision=single when
 running config/configure.py) are the operations done in single or
 double precision? </font></a></strong></font> </p>
 PETSc does NOT do any explicit conversion of single precision to double
@@ -1086,8 +1144,9 @@ the object. For a Vec v and a Mat m, this would be</p>
       <p>or with a communicator other than MPI_COMM_WORLD,</p>
       <p>(gdb) call MatView(m,
 PETSC_VIEWER_STDOUT_(m-&gt;comm))</p>
-      <p>&nbsp;<span style="color: rgb(255, 0, 0);"><a name="libimf"></a>error
-while loading shared libraries: libimf.so: cannot open shared object
+      <p>&nbsp;<span style="color: rgb(255, 0, 0);"><a name="libimf"></a>Error
+while
+loading shared libraries: libimf.so: cannot open shared object
 file: No such file or directory.</span></p>
       <p>The Intel compilers use shared libraries (like libimf) that
 cannot by default at run time. When using the Intel compilers (and
@@ -1108,8 +1167,265 @@ source /opt/intel/cc/10.1.012/bin/iccvars.sh<br>
 source /opt/intel/fc/10.1.012/bin/ifortvars.sh<br>
 source /opt/intel/idb/10.1.012/bin/idbvars.sh<br>
       <br>
+      <p><span style="color: rgb(255, 0, 0);"><a name="objecttypenotset">What
+does Object Type not set: Argument # n mean?</a></span></p>
+Many
+operations on PETSc objects require that the specific type of the
+object be set before the operations is performed. You must call
+XXXSetType() or XXXSetFromOptions() before you make the offending call.
+For example, MatCreate(comm,&amp;A); MatSetValues(A,....); will not
+work. You must add MatSetType(A,...) or MatSetFromOptions(A,....);
+before the call to MatSetValues();
       <p></p>
-      <p></p>
+      <a name="split"></a><font style="color: rgb(255, 0, 0);"
+ face="Terminal">What does </font><font style="color: rgb(255, 0, 0);"
+ color="#ff0000"><strong> </strong></font><font
+ style="color: rgb(255, 0, 0);" face="Terminal">Error detected&nbsp;in
+PetscSplitOwnership() about "sum of local lengths ...": mean?<br>
+      <br>
+      </font><font color="#ff0000"><strong></strong><span
+ style="color: rgb(0, 0, 0);">In
+a previous call to VecSetSizes(), MatSetSizes(), VecCreateXXX() or
+MatCreateXXX() you passed in local and global sizes that do not make
+sense for the correct number of processors. For example if you pass in
+a local size of 2 and a global size of 100 and run on two processors,
+this cannot work since the sum of the local sizes is 4, not 100.</span></font><br>
+      <br>
+      <a name="valgrind"></a><font style="color: rgb(255, 0, 0);"
+ face="Terminal">What does </font><font style="color: rgb(255, 0, 0);"
+ color="#ff0000"><strong></strong></font><font
+ style="color: rgb(255, 0, 0);" face="Terminal">Corrupt argument or
+Caught signal or SEQV or segmentation violation or bus error mean? </font><br>
+      <br>
+      <font color="#ff0000"><span style="color: rgb(0, 0, 0);">An
+argument to
+a function is invalid. In Fortran this may be caused by forgeting to
+list an argument in the call, especially the final ierr.<br>
+&nbsp; &nbsp;&nbsp; <br>
+Otherwise it
+is usually caused by memory corruption; that is somewhere the code is
+writing out of array bounds. To track this down rerun the debug version
+of the code with the option -malloc_debug. Occasionally the
+code may crash only with the optimized version, in that case
+run the optimized version with -malloc_debug. If you determine the
+problem
+is from memory corruption you can put the macro CHKMEMQ in the code
+near the crash to determine exactly what line is causing the
+problem.<br>
+&nbsp; <br>
+If -malloc_debug does not help: on GNU/Linux and Apple Mac OS X
+machines - you can try using&nbsp;<a href="http://valgrind.org/">http://valgrind.org
+
+      </a>to look for memory corruption.</span></font>
+- Make sure valgrind is installed<br>
+- Recommend building PETSc with "--download-mpich=1 --with-debugging=1"
+[debugging is enabled by default]<br>
+- Compile application code with this build of PETSc<br>
+- run with valgrind using:<br>
+      <font color="#ff1a8b">${PETSC_DIR}/bin/petscmpiexec -valgrind -n
+NPROC PETSCPROGRAMNAME -malloc off PROGRAMOPTIONS</font><br>
+or invoke valgrind directly with:<br>
+      <font color="#ff1a8b">mpiexec -n NPROC valgrind --tool=memcheck
+-q
+--num-callers=20 --log-file=valgrind.log.%p PETSCPROGRAMNAME -malloc
+off PROGRAMOPTIONS</font><br>
+      <br>
+Notes:<br>
+- option '--with-debugging=1' enables valgrind to give stack trace with
+additional source-file:line-number info.<br>
+- option '-download-mpich=1' gives valgrind clean MPI - hence the
+recommendation.<br>
+- Wrt Other MPI impls, OpenMPI should also work. MPICH1 will not work.
+Don't know about other MPIs.<br>
+- if '-download-mpich=1' is used - mpiexec will be in PETSC_ARCH/bin<br>
+'--log-file=valgrind.log.%p' option tells valgrind to store the output
+from each proc in a different file [as %p i.e PID, is different for
+each MPI proc].<br>
+- On Apple you need the additional valgrind option '--dsymutil=yes'<br>
+      <br>
+      <font style="color: rgb(255, 0, 0);" face="Terminal"><a
+ name="zeropivot"></a>What does </font><font
+ style="color: rgb(255, 0, 0);" color="#ff0000"><strong> </strong></font><font
+ style="color: rgb(255, 0, 0);" face="Terminal">Detected zero pivot in
+LU factorization mean?</font><br>
+      <br>
+      <font color="#ff0000"><span style="color: rgb(0, 0, 0);">A zero
+pivot
+in LU, ILU, Cholesky, or ICC sparse factorization does not always mean
+that the matrix is singular. You can use -pc_factor_shift_nonzero or
+-pc_factor_shift_positive_definite,
+-[level]_pc_factor_shift_nonzero,&nbsp; </span></font><font
+ style="color: rgb(0, 0, 0);" color="#ff0000">-[level]_pc_factor_shift_postive_definite
+
+      </font><font style="color: rgb(0, 0, 0);" color="#ff0000">to
+prevent the zero pivot. For lu, ilu,
+cholesky, or icc and [level] is sub is for a block in the bjacobi or
+ASM preconditioner and -mg_levels and -mg_coarse are for inside
+multigrid
+smoothers or the coarse grid solver). See PCFactorSetShiftNonzero(),
+PCFactorSetShiftPd().</font> <font style="color: rgb(0, 0, 0);"
+ color="#ff0000"> </font>
+      <p style="color: rgb(0, 0, 0);">This error can also
+happen if your matrix
+is <strong>singular </strong>, see KSPSetNullSpace() for
+how to
+handle this.</p>
+      <font style="color: rgb(0, 0, 0);" color="#ff0000"> </font>
+      <p><font color="#ff0000"><span style="color: rgb(0, 0, 0);">If
+this
+error occurs in
+the </span><strong style="color: rgb(0, 0, 0);">zeroth
+row </strong><span style="color: rgb(0, 0, 0);"> of
+the matrix it is likely you have an error in
+the code
+that generates the matrix.</span></font><a><span
+ style="font-family: Terminal;"><br>
+      </span></a></p>
+      <p><a><span style="font-family: Terminal;"></span><span
+ style="color: rgb(255, 0, 0);"><a name="xwindows"></a>You
+create Draw windows or ViewerDraw windows or use options
+-ksp_monitor or_draw -snes_monitor_draw and the program seems to run OK
+but windows never open.</span></a></p>
+      <p>The
+libraries were compiled without support for X windows.<font
+ color="#ff0000"><strong> </strong></font>Make
+sure that ./configure was run with the option --with-x=1<br>
+      </p>
+      <p style="color: rgb(255, 0, 0);"><font face="Terminal"><a
+ name="memory"></a><a>The
+program seems to use more and more memory as it runs, even
+though you don't think you are allocating more memory.<br>
+      </a></font></p>
+      <p style="color: rgb(255, 0, 0);"><a><font face="Terminal">
+      <p style="color: rgb(0, 0, 0);"><strong>Problem:</strong>
+Possibly some of the following:</p>
+      <ol style="color: rgb(0, 0, 0);">
+        <li>You are creating new PETSc objects but never freeing
+them.</li>
+        <li>There is a memory leak in PETSc or your code. </li>
+        <li>Something much more subtle: (if you are using Fortran).
+When you declare a large array in Fortran, the operating
+system does not allocate all the memory pages for that array until you
+start using the different locations in the array. Thus, in a
+code, if at each step you start using later values in the
+array your virtual memory usage will "continue" to increase
+as measured by ps or top. </li>
+        <li>You are running with the -log, -log_mpe, or -log_all
+option. He a great deal of logging information is stored in
+memory until the conclusion of the run.</li>
+        <li>You are linking with the MPI profiling libraries; these
+cause logging of all MPI activities. Another <strong>Symptom</strong>
+is at the conclusion of the run it may print some
+message about writing log
+files. </li>
+      </ol>
+      <p style="color: rgb(0, 0, 0);"><strong>Cures:</strong></p>
+      <ol>
+        <li style="color: rgb(0, 0, 0);">Run with the -malloc_debug
+option and -malloc_dump. Or
+use
+the
+commands PetscMallocDump() and PetscMallocLogDump() sprinkled in
+your code to track memory that is allocated and not later freed. Use
+the commands PetscMallocSpace() and PetscGetResidentSetSize()
+to monitor memory allocated and total memory used as the
+code progresses. </li>
+        <li style="color: rgb(0, 0, 0);">This is just the way Unix
+works and is harmless.</li>
+        <li style="color: rgb(0, 0, 0);">Do not use the -log, -log_mpe,
+or -log_all option, or
+use PLogEventDeactivate() or PLogEventDeactivateClass(),
+PLogEventMPEDeactivate() to turn off logging of specific events. </li>
+        <li style="color: rgb(0, 0, 0);">Make sure you do not link with
+the MPI profiling
+libraries. <br>
+        </li>
+      </ol>
+      </font><font face="Terminal"><a name="key"></a>When
+calling MatPartitioningApply() you get a message Error! Key 16615 not
+found<br>
+      </font></a></p>
+      <p>The
+graph of &nbsp;the matrix you are using is not symmetric. Yo<font
+ color="#ff0000"><strong></strong></font>u must use symmetric matrices
+for partitioning.<br>
+      </p>
+      <p style="color: rgb(255, 0, 0);"><font face="Terminal"><a
+ name="gmres"></a>With
+GMRES At restart the second residual norm printed does not
+match the first</font></p>
+      <p style="color: rgb(255, 0, 0);"><font face="Terminal"> <span
+ style="color: rgb(0, 0, 0);">26 KSP Residual norm 3.421544615851e-04 </span><br
+ style="color: rgb(0, 0, 0);">
+      <span style="color: rgb(0, 0, 0);">27 KSP Residual norm
+2.973675659493e-04 </span><br style="color: rgb(0, 0, 0);">
+      <span style="color: rgb(0, 0, 0);">28 KSP Residual norm
+2.588642948270e-04 </span><br style="color: rgb(0, 0, 0);">
+      <span style="color: rgb(0, 0, 0);">29 KSP Residual norm
+2.268190747349e-04 </span><br style="color: rgb(0, 0, 0);">
+      <span style="color: rgb(0, 0, 0);">30 KSP Residual norm
+1.977245964368e-04</span><br style="color: rgb(0, 0, 0);">
+      <span style="color: rgb(0, 0, 0);">30 KSP Residual norm
+1.994426291979e-04 &lt;----- At restart the
+residual norm is printed a second time </span>
+      <p style="color: rgb(0, 0, 0);"><strong>Problem:</strong>
+Actually this is not surprising. GMRES computes the norm of the
+residual at each iteration via a recurrence relation between
+the norms of the residuals at the previous iterations and quantities
+computed at the current iteration; it does not compute it via directly
+|| b - A x^{n} ||. Sometimes, especially with an
+ill-conditioned matrix, or computation of the matrix-vector product via
+differencing, the residual norms computed by GMRES start to
+"drift" from the correct values. At the restart, we compute the
+residual norm directly, hence the "strange stuff," the
+difference printed. The drifting, if it remains small, is harmless
+(doesn't effect the accuracy of the solution that GMRES
+computes). </p>
+      <p style="color: rgb(0, 0, 0);"><strong>Cure:</strong>
+There
+realy isn't a cure, but if you use a more powerful
+preconditioner the drift will often be smaller and less noticeable. Of
+if you are running matrix-free you may need to tune the
+matrix-free parameters.<br>
+      </p>
+      <p style="color: rgb(0, 0, 0);"><font face="Terminal"><font
+ face="Terminal"><span style="color: rgb(255, 0, 0);"><a name="2its"></a>Why
+do some
+Krylov methods seem to print two residual norms per iteration?<br>
+      </span></font></font></p>
+      <p style="color: rgb(0, 0, 0);"><font face="Terminal"><font
+ face="Terminal"><font face="Terminal">&gt; 1198 KSP Residual norm
+1.366052062216e-04<br>
+&gt; 1198 KSP Residual norm 1.931875025549e-04<br>
+&gt; 1199 KSP Residual norm 1.366026406067e-04<br>
+&gt; 1199 KSP Residual norm 1.931819426344e-04&nbsp;</font></font>
+      <p><font color="#ff0000"><strong></strong></font>Some Krylov
+methods, for example tfqmr, actually have a
+"sub-iteration"<br>
+of size 2 inside the loop; each of the two substeps has its own matrix
+vector<br>
+product and application of the preconditioner and updates the residual<br>
+approximations. This is why you get this "funny" output where it looks
+like&nbsp;<br>
+there are two residual norms per iteration. You can also think of it as
+twice<br>
+as many iterations.<br>
+      </p>
+      <p><font face="Terminal"><span style="color: rgb(255, 0, 0);"><a
+ name="dylib"></a>Unable to locate PETSc dynamic library
+/home/balay/spetsc/lib/libg/linux/libpetsc <br>
+      </span></font></p>
+      </font></p>
+      </font></p>
+      <p>When
+using DYNAMIC libraries - the libraries cannot be moved after
+they are installed. This could also happen on clusters - where
+the paths are different on the (run) nodes - than on the
+(compile) front-end.<font color="#ff0000"><strong> </strong></font>Do
+not use dynamic libraries &amp; shared libraries. Run ./configure with
+--with-shared=0 --with-dynamic=0</p>
+      <p style="color: rgb(255, 0, 0);"> </p>
+      <p style="color: rgb(255, 0, 0);"> </p>
       <p><span style="color: rgb(255, 0, 0);"></span></p>
       <p><span style="color: rgb(255, 0, 0);"></span></p>
       <hr>
