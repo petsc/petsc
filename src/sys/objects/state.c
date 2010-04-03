@@ -27,7 +27,7 @@
 
    Level: advanced
 
-   seealso: PetscObjectStateIncrease, PetscObjectSetState
+   seealso: PetscObjectStateIncrease(), PetscObjectSetState()
 
    Concepts: state
 
@@ -62,7 +62,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectStateQuery(PetscObject obj,PetscInt *s
 
    Level: advanced
 
-   seealso: PetscObjectStateQuery,PetscObjectStateIncrease
+   seealso: PetscObjectStateQuery(),PetscObjectStateIncrease()
 
    Concepts: state
 
@@ -88,7 +88,7 @@ PetscInt PETSC_DLLEXPORT globalmaxstate = 10;
 
    Level: developer
 
-   seealso: PetscObjectComposedDataSetInt
+   seealso: PetscObjectComposedDataSetInt()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscObjectComposedDataRegister(PetscInt *id)
