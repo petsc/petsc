@@ -191,21 +191,27 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
     ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
   }
 
+  /* if using DM how do we know when to return ? */
   if (ksp->setupcalled == 2) PetscFunctionReturn(0);
 
   ierr = PetscLogEventBegin(KSP_SetUp,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
 
   if (ksp->dm) {
+    Mat A;
     if (!ksp->setupcalled) {
-      Mat A;
       /* first time in so build matrix and vector data structures using DM */
       if (!ksp->vec_rhs) {ierr = DMCreateGlobalVector(ksp->dm,&ksp->vec_rhs);CHKERRQ(ierr);}
       if (!ksp->vec_sol) {ierr = DMCreateGlobalVector(ksp->dm,&ksp->vec_sol);CHKERRQ(ierr);}
       /* How to set the matrix type ? */
-      ierr = DMGetMatrix(ksp->dm,MATAIJ,&A);CHKERRQ(ierr);
       /* How to handle different A and B matrix ? */
-      ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-    }
+      ierr = DMGetMatrix(ksp->dm,MATAIJ,&A);CHKERRQ(ierr);
+    } else {
+      ierr = KSPGetOperators(ksp,&A,&A,PETSC_NULL);CHKERRQ(ierr);
+    }     
+    ierr = DMKSPComputeRhs(ksp->dm,ksp->vec_rhs);CHKERRQ(ierr);
+    /* how do we know when to compute new matrix? */
+    ierr = DMKSPComputeMat(ksp->dm,A,A);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   }
 
   if (!ksp->setupcalled) {

@@ -317,7 +317,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Multigrid options");CHKERRQ(ierr);
-    if (!pc->data) {
+    if (!mglevels) {
       ierr = PetscOptionsInt("-pc_mg_levels","Number of Levels","PCMGSetLevels",levels,&levels,&flg);CHKERRQ(ierr);
       ierr = PCMGSetLevels(pc,levels,PETSC_NULL);CHKERRQ(ierr);
       mglevels = mg->levels;

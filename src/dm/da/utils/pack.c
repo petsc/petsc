@@ -40,7 +40,6 @@ struct _p_DMComposite {
   struct DMCompositeLink *next;
 
   PetscErrorCode (*FormCoupleLocations)(DMComposite,Mat,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt);
-  void                   *ctx;                 /* place for user to set information they may need in FormCoupleLocation */
 };
 
 #undef __FUNCT__  
