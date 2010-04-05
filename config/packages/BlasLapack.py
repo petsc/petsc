@@ -308,7 +308,7 @@ class Configure(config.package.Package):
     return ''
 
   def getWindowsNonOptFlags(self,cflags):
-    for flag in ['-MT','-threads']:
+    for flag in ['-MT','-MTd','-MD','-threads']:
       if cflags.find(flag) >=0: return flag
     return ''
 
