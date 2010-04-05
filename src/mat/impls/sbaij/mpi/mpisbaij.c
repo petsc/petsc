@@ -774,7 +774,7 @@ PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
     ierr = VecDestroy(baij->slvec1b);CHKERRQ(ierr); 
   }
   if (baij->sMvctx)  {ierr = VecScatterDestroy(baij->sMvctx);CHKERRQ(ierr);} 
-  ierr = PetscFree(baij->rowvalues);CHKERRQ(ierr);
+  ierr = PetscFree2(baij->rowvalues,baij->rowindices);CHKERRQ(ierr);
   ierr = PetscFree(baij->barray);CHKERRQ(ierr);
   ierr = PetscFree(baij->hd);CHKERRQ(ierr);
   if (baij->diag) {ierr = VecDestroy(baij->diag);CHKERRQ(ierr);}
