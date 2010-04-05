@@ -8,7 +8,7 @@ __all__ = ['PetscConfig',
 
 # --------------------------------------------------------------------
 
-import sys, os
+import sys, os, re
 from cStringIO import StringIO
 
 from distutils.core import setup
@@ -23,6 +23,34 @@ from distutils.errors import DistutilsError
 import confutils as cfgutils
 
 # --------------------------------------------------------------------
+
+from distutils import sysconfig
+
+def fix_config_vars(names, values):
+    values = list(values)
+    if sys.platform == 'darwin':
+        if 'ARCHFLAGS' in os.environ:
+            ARCHFLAGS = os.environ['ARCHFLAGS']
+            for i, flag in enumerate(list(values)):
+                flag, count = re.subn('-arch\s+\w+', ' ', flag)
+                if count and ARCHFLAGS:
+                    flag = flag + ' ' + ARCHFLAGS
+                values[i] = flag
+        if 'SDKROOT' in os.environ:
+            SDKROOT = os.environ['SDKROOT']
+            for i, flag in enumerate(list(values)):
+                flag, count = re.subn('-isysroot [^ \t]*', ' ', flag)
+                if count and SDKROOT:
+                    flag = flag + ' ' + '-isysroot ' + SDKROOT
+                values[i] = flag
+    return values
+
+def get_config_vars(*names):
+    # Core Python configuration
+    values = sysconfig.get_config_vars(*names)
+    # Do any distutils flags fixup right now
+    values = fix_config_vars(names, values)
+    return values
 
 from distutils.unixccompiler import UnixCCompiler
 rpath_option_orig = UnixCCompiler.runtime_library_dir_option
@@ -154,7 +182,6 @@ class PetscConfig:
         extension.extra_link_args.extend(ldflags)
 
     def configure_compiler(self, compiler):
-        from distutils.sysconfig import get_config_vars
         if compiler.compiler_type == 'unix':
             (cc, cxx, cflags, ccshared, ldshared, so_ext) = \
             get_config_vars('CC', 'CXX', 'CFLAGS',
@@ -169,9 +196,9 @@ class PetscConfig:
                     CXX = cxx
             #
             def extra_flags(cmd):
-                cmd  = cmd.split(' ', 1)
-                try: return cmd[1]
-                except IndexError: return ''
+                bits  = split_quoted(cmd)
+                try: return ' '.join(bits[1:])
+                except: return ''
             if self.language == 'c':
                 cc_cmd = cc
                 ld_cmd = ldshared

@@ -62,6 +62,8 @@ class TestOptions(unittest.TestCase):
         for k,v in allopts.items():
             self.assertTrue((k, v) in optlist)
         self._delopts()
+
+    def testGetAllQuoted(self):
         dct = {'o0' : '"0 1 2"',
                'o1' : '"a b c"',
                'o2' : '"x y z"',}
@@ -86,6 +88,9 @@ class TestOptions(unittest.TestCase):
         self._delopts()
 
 # --------------------------------------------------------------------
+
+if PETSc.Sys.getVersion() < (3,0,0):
+    del TestOptions.testGetAllQuoted
 
 del TestOptions.testMonitor # XXX
 

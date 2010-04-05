@@ -2,7 +2,7 @@
 PETSc for Python
 ================
 
-:Authors:      Lisandro Dalcín
+:Authors:      Lisandro Dalcin
 :Contact:      dalcinl@gmail.com
 :Organization: CIMEC_
 :Address:      PTLC, (3000) Santa Fe, Argentina
