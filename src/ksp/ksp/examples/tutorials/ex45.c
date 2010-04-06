@@ -20,8 +20,9 @@ static char help[] = "Solves 3D Laplacian using multigrid.\n\n";
 #include "petscdmmg.h"
 
 
-extern PetscErrorCode ComputeMatrix(DM,Mat,Mat);
+extern PetscErrorCode ComputeMatrix(DM,Mat,Mat,MatStructure*);
 extern PetscErrorCode ComputeRHS(DM,Vec);
+extern PetscErrorCode ComputeInitialGuess(DM,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -38,6 +39,7 @@ int main(int argc,char **argv)
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,-7,-7,-7,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);  
+  ierr = DMKSPSetInitialGuess((DM)da,ComputeInitialGuess);CHKERRQ(ierr);
   ierr = DMKSPSetRhs((DM)da,ComputeRHS);CHKERRQ(ierr);
   ierr = DMKSPSetMat((DM)da,ComputeMatrix);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,(DM)da);CHKERRQ(ierr);
@@ -80,8 +82,19 @@ PetscErrorCode ComputeRHS(DM dm,Vec b)
 }
     
 #undef __FUNCT__
+#define __FUNCT__ "ComputeInitialGuess"
+PetscErrorCode ComputeInitialGuess(DM dm,Vec b)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecSet(b,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ComputeMatrix"
-PetscErrorCode ComputeMatrix(DM dm,Mat jac,Mat B)
+PetscErrorCode ComputeMatrix(DM dm,Mat jac,Mat B,MatStructure *stflg)
 {
   DA             da = (DA)dm;
   PetscErrorCode ierr;
@@ -116,6 +129,7 @@ PetscErrorCode ComputeMatrix(DM dm,Mat jac,Mat B)
   }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  stflg = SAME_NONZERO_PATTERN;
   return 0;
 }
 

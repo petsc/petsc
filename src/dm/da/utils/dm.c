@@ -597,7 +597,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMKSPSetRhs(DM dm,PetscErrorCode (*f)(DM,Vec))
          DMKSPSetRhs()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMKSPSetMat(DM dm,PetscErrorCode (*f)(DM,Mat,Mat))
+PetscErrorCode PETSCDM_DLLEXPORT DMKSPSetMat(DM dm,PetscErrorCode (*f)(DM,Mat,Mat,MatStructure*))
 {
   PetscFunctionBegin;
   dm->ops->formkspmat = f;
@@ -626,6 +626,31 @@ PetscErrorCode PETSCDM_DLLEXPORT DMKSPComputeInitialGuess(DM dm,Vec x)
   PetscFunctionBegin;
   if (!dm->ops->formkspinitialguess) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMKSPSetInitialGuess()");
   ierr = (*dm->ops->formkspinitialguess)(dm,x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMKSPHasInitialGuess"
+/*@
+    DMKSPHasInitialGuess - does the DM object have an initial guess function
+
+    Collective on DM
+
+    Input Parameter:
+.   dm - the DM object to destroy
+
+    Output Parameter:
+.   flg - PETSC_TRUE if function exists
+
+    Level: developer
+
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMKSPSetRhs(), DMKSPSetMat()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMKSPHasInitialGuess(DM dm,PetscTruth *flg)
+{
+  PetscFunctionBegin;
+  *flg =  (dm->ops->formkspinitialguess) ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -673,11 +698,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DMKSPComputeRhs(DM dm,Vec b)
          DMKSPSetRhs()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMKSPComputeMat(DM dm,Mat A,Mat B)
+PetscErrorCode PETSCDM_DLLEXPORT DMKSPComputeMat(DM dm,Mat A,Mat B,MatStructure *stflag)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if (!dm->ops->formkspmat) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMKSPSetMat()");
-  ierr = (*dm->ops->formkspmat)(dm,A,B);CHKERRQ(ierr);
+  ierr = (*dm->ops->formkspmat)(dm,A,B,stflag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

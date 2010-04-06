@@ -37,7 +37,7 @@
 \
   PetscErrorCode (*formkspinitialguess)(type,Vec); \
   PetscErrorCode (*formksprhs)(type,Vec);\
-  PetscErrorCode (*formkspmat)(type,Mat,Mat);	\
+  PetscErrorCode (*formkspmat)(type,Mat,Mat,MatStructure*);	\
 \
   PetscErrorCode (*destroy)(type);
 

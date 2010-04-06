@@ -519,10 +519,11 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMSetContext(DM,void*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetContext(DM,void**);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPSetInitialGuess(DM,PetscErrorCode (*)(DM,Vec));
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPSetRhs(DM,PetscErrorCode (*)(DM,Vec));
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPSetMat(DM,PetscErrorCode (*)(DM,Mat,Mat));
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPSetMat(DM,PetscErrorCode (*)(DM,Mat,Mat,MatStructure *));
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPComputeInitialGuess(DM,Vec);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPHasInitialGuess(DM,PetscTruth*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPComputeRhs(DM,Vec);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPComputeMat(DM,Mat,Mat);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPComputeMat(DM,Mat,Mat,MatStructure *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMFinalizePackage(void);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetColoring(DA,ISColoringType,const MatType,ISColoring *);
