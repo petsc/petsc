@@ -1,9 +1,13 @@
 syntax: glob
 build
-docs/html
+docs/*.html
 docs/*.pdf
+docs/apiref
+docs/usrman
 dist
 MANIFEST
 *.pyc
 *.pyo
 *~
+#petsc4py.PETSc.c
+#petsc4py.PETSc*.h
