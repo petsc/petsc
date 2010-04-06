@@ -62,6 +62,19 @@ After unpacking the release tarball::
 
 the distribution is ready for building.
 
+.. note:: **Mac OS X** users employing a Python distribution built
+   with **universal binaries** may need to set the environment
+   variables :envvar:`MACOSX_DEPLOYMENT_TARGET`, :envvar:`SDKROOT`,
+   and :envvar:`ARCHFLAGS` to appropriate values. As an example,
+   assume your Mac is running **Snow Leopard** on a **64-bit Intel**
+   processor and you want to override the hard-wired cross-development
+   SDK in Python configuration, your environment should be modified
+   like this::
+
+      $ export MACOSX_DEPLOYMENT_TARGET=10.6
+      $ export SDKROOT=/
+      $ export ARCHFLAGS='-arch x86_64'
+
 Some environmental configuration is needed to inform the location of
 PETSc. You can set (using :command:`setenv`, :command:`export` or what
 applies to you shell or system) the environmental variables
