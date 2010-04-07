@@ -934,7 +934,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivateClass(PetscCookie cookie)
                        PetscObject o4)
 
    Fortran Synopsis:
-   void PetscLogEventEnd(int e,PetscErrorCode ierr)
+   void PetscLogEventBegin(integer e,PetscErrorCode ierr)
 
    Usage:
 .vb
@@ -976,7 +976,7 @@ M*/
                      PetscObject o4)
 
    Fortran Synopsis:
-   void PetscLogEventEnd(int e,PetscErrorCode ierr)
+   void PetscLogEventEnd(integer e,PetscErrorCode ierr)
 
    Usage:
 .vb
