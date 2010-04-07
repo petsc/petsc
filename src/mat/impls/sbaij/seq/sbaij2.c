@@ -1245,7 +1245,7 @@ PetscErrorCode MatGetDiagonal_SeqSBAIJ(Mat A,Vec v)
 
   PetscFunctionBegin;
   bs   = A->rmap->bs;
-  if (A->factor && bs>1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix with bs>1");   
+  if (A->factortype && bs>1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix with bs>1");   
   
   aa   = a->a;
   ai   = a->i;
@@ -1262,7 +1262,7 @@ PetscErrorCode MatGetDiagonal_SeqSBAIJ(Mat A,Vec v)
     if (aj[j] == i) {             /* if this is a diagonal element */
       row  = i*bs;      
       aa_j = aa + j*bs2;  
-      if (A->factor && bs==1){
+      if (A->factortype && bs==1){
         for (k=0; k<bs2; k+=(bs+1),row++) x[row] = 1.0/aa_j[k];
       } else {
         for (k=0; k<bs2; k+=(bs+1),row++) x[row] = aa_j[k];  
@@ -1334,7 +1334,7 @@ PetscErrorCode MatGetInfo_SeqSBAIJ(Mat A,MatInfoType flag,MatInfo *info)
   info->assemblies   = A->num_ass;
   info->mallocs      = a->reallocs;
   info->memory       = ((PetscObject)A)->mem;
-  if (A->factor) {
+  if (A->factortype) {
     info->fill_ratio_given  = A->info.fill_ratio_given;
     info->fill_ratio_needed = A->info.fill_ratio_needed;
     info->factor_mallocs    = A->info.factor_mallocs;
@@ -1377,7 +1377,7 @@ PetscErrorCode MatGetRowMaxAbs_SeqSBAIJ(Mat A,Vec v,PetscInt idx[])
 
   PetscFunctionBegin;
   if (idx) SETERRQ(PETSC_ERR_SUP,"Send email to petsc-maint@mcs.anl.gov");
-  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
+  if (A->factortype) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
   bs   = A->rmap->bs;
   aa   = a->a;
   ai   = a->i;

@@ -102,7 +102,7 @@ PetscErrorCode MatGetFactor_seqaij_spooles(Mat A,MatFactorType ftype,Mat *F)
   B->ops->view    = MatView_Spooles;
   B->ops->destroy = MatDestroy_SeqAIJSpooles;  
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqaij_spooles",MatFactorGetSolverPackage_seqaij_spooles);CHKERRQ(ierr);
-  B->factor       = ftype;  
+  B->factortype   = ftype;  
 
   *F = B;
   PetscFunctionReturn(0); 

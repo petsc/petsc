@@ -332,7 +332,7 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
     }
     
   } else if (isstring) {
-    if (factor->fact->factor == MAT_FACTOR_ILU || factor->fact->factor == MAT_FACTOR_ICC){
+    if (factor->factortype == MAT_FACTOR_ILU || factor->factortype == MAT_FACTOR_ICC){
       ierr = PetscViewerStringSPrintf(viewer," lvls=%D,order=%s",(PetscInt)factor->info.levels,factor->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
     }
   } else {

@@ -443,7 +443,7 @@ PetscErrorCode MatGetFactor_seqbaij_dscpack(Mat A,MatFactorType ftype,Mat *F)
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_DSCPACK;
   B->ops->destroy                = MatDestroy_DSCPACK;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqaij_dscpack",MatFactorGetSolverPackage_seqaij_dscpack);CHKERRQ(ierr);
-  B->factor                      = MAT_FACTOR_CHOLESKY;  
+  B->factortype                  = MAT_FACTOR_CHOLESKY;  
 
   /* Set the default input options */
   lu->order_code  = 2; 

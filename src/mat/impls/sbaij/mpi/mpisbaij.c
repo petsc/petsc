@@ -2061,7 +2061,7 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalue
   ierr = PetscLayoutCopy(matin->rmap,&mat->rmap);CHKERRQ(ierr);  
   ierr = PetscLayoutCopy(matin->cmap,&mat->cmap);CHKERRQ(ierr);  
   
-  mat->factor       = matin->factor; 
+  mat->factortype   = matin->factortype; 
   mat->preallocated = PETSC_TRUE;
   mat->assembled    = PETSC_TRUE;
   mat->insertmode   = NOT_SET_VALUES;

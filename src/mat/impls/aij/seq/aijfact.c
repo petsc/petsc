@@ -124,7 +124,7 @@ PetscErrorCode MatGetFactor_seqaij_petsc(Mat A,MatFactorType ftype,Mat *B)
     (*B)->ops->iccfactorsymbolic      = MatICCFactorSymbolic_SeqAIJ;
     (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJ;
   } else SETERRQ(PETSC_ERR_SUP,"Factor type not supported");
-  (*B)->factor = ftype;
+  (*B)->factortype = ftype;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -260,7 +260,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol,
   ierr = PetscLogObjectMemory(B,(bi[n]-n)*(sizeof(PetscInt)+sizeof(PetscScalar)));CHKERRQ(ierr);
   b->maxnz = b->nz = bi[n] ;
 
-  (B)->factor                = MAT_FACTOR_LU;
+  (B)->factortype            = MAT_FACTOR_LU;
   (B)->info.factor_mallocs   = reallocs;
   (B)->info.fill_ratio_given = f;
 
@@ -412,7 +412,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const Ma
   /* In b structure:  Free imax, ilen, old a, old j.  Allocate solve_work, new a, new j */
   ierr = PetscLogObjectMemory(B,(bdiag[0]+1)*(sizeof(PetscInt)+sizeof(PetscScalar)));CHKERRQ(ierr);
   b->maxnz = b->nz = bdiag[0]+1;
-  B->factor                = MAT_FACTOR_LU;
+  B->factortype            = MAT_FACTOR_LU;
   B->info.factor_mallocs   = reallocs;
   B->info.fill_ratio_given = f;
 
@@ -1668,7 +1668,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0(Mat fact,Mat A,IS isrow,IS iscol
     bdiag[i] = bdiag[i+1] + nz + 1;
   }
 
-  fact->factor                 = MAT_FACTOR_ILU;
+  fact->factortype             = MAT_FACTOR_ILU;
   fact->info.factor_mallocs    = 0;
   fact->info.fill_ratio_given  = info->fill;
   fact->info.fill_ratio_needed = 1.0;
@@ -1910,7 +1910,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS isrow,IS is
     if (a->inode.size) {
       (fact)->ops->lufactornumeric  = MatLUFactorNumeric_SeqAIJ_Inode_inplace;
     }   
-    fact->factor = MAT_FACTOR_ILU;
+    fact->factortype = MAT_FACTOR_ILU;
     (fact)->info.factor_mallocs    = 0;
     (fact)->info.fill_ratio_given  = info->fill;
     (fact)->info.fill_ratio_needed = 1.0;
@@ -3276,7 +3276,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   ierr = PetscLogObjectMemory(B,nnz_max*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
   b->maxnz = nnz_max;
 
-  B->factor                = MAT_FACTOR_ILUDT;
+  B->factortype            = MAT_FACTOR_ILUDT;
   B->info.factor_mallocs   = 0;
   B->info.fill_ratio_given = ((PetscReal)nnz_max)/((PetscReal)ai[n]);
   CHKMEMQ;

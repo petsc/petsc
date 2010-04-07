@@ -296,7 +296,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
         SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong size");
       }
       ierr = PetscMemzero(mat->v,submats[i]->rmap->n*submats[i]->cmap->n*sizeof(PetscScalar));CHKERRQ(ierr);
-      submats[i]->factor = C->factor;
+      submats[i]->factortype = C->factortype;
     }
   } else {
     for (i=0; i<ismax; i++) {

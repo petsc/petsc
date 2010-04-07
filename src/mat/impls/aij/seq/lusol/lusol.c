@@ -462,7 +462,7 @@ PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,Mat *F)
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_LUSOL;
   B->ops->destroy          = MatDestroy_LUSOL;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqaij_lusol",MatFactorGetSolverPackage_seqaij_lusol);CHKERRQ(ierr);
-  B->factor                = MAT_FACTOR_LU;
+  B->factortype            = MAT_FACTOR_LU;
   PetscFunctionReturn(0);
 }
 

@@ -104,7 +104,7 @@ PetscErrorCode MatGetFactor_seqsbaij_spooles(Mat A,MatFactorType ftype,Mat *F)
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJSpooles;
   B->ops->destroy                = MatDestroy_SeqSBAIJSpooles;  
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqsbaij_spooles",MatFactorGetSolverPackage_seqsbaij_spooles);CHKERRQ(ierr);
-  B->factor                      = ftype;
+  B->factortype                  = ftype;
   *F = B;
   PetscFunctionReturn(0);
 }

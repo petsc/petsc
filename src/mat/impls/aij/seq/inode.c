@@ -3743,7 +3743,7 @@ PetscErrorCode Mat_CheckInode(Mat A,PetscTruth samestructure)
     a->inode.use            = PETSC_FALSE;
     ierr = PetscInfo2(A,"Found %D nodes out of %D rows. Not using Inode routines\n",node_count,m);CHKERRQ(ierr);
   } else {
-    if (!A->factor) {
+    if (!A->factortype) {
       A->ops->mult              = MatMult_SeqAIJ_Inode;
       A->ops->sor               = MatSOR_SeqAIJ_Inode;
       A->ops->multadd           = MatMultAdd_SeqAIJ_Inode;

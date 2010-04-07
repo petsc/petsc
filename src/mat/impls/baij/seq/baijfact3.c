@@ -304,7 +304,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
   ierr = PetscLogObjectMemory(B,(bdiag[0]+1)*(sizeof(PetscInt)+sizeof(PetscScalar)*bs2));CHKERRQ(ierr);
   
   b->maxnz = b->nz = bdiag[0]+1; 
-  B->factor                =  MAT_FACTOR_LU;
+  B->factortype            =  MAT_FACTOR_LU;
   B->info.factor_mallocs   = reallocs;
   B->info.fill_ratio_given = f;
 
@@ -452,7 +452,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol
   ierr = PetscLogObjectMemory(B,(bi[n]-n)*(sizeof(PetscInt)+sizeof(PetscScalar)*bs2));CHKERRQ(ierr);
   
   b->maxnz = b->nz = bi[n] ;
-  (B)->factor                =  MAT_FACTOR_LU;
+  (B)->factortype            =  MAT_FACTOR_LU;
   (B)->info.factor_mallocs   = reallocs;
   (B)->info.fill_ratio_given = f;
 
