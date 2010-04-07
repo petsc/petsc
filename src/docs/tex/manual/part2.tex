@@ -1541,14 +1541,14 @@ matrix assembly.  For the MATMPIAIJ and MATMPIBAIJ formats, PETSc will also list
 the number of elements owned by on each process that were generated
 on a different process.  For example, the statements
 \begin{tabbing}
-   MatAssemblyBegin\_MPIAIJ:Stash has 10 entries, uses 0 mallocs
-   MatAssemblyBegin\_MPIAIJ:Stash has 3 entries, uses 0 mallocs 
+   MatAssemblyBegin\_MPIAIJ:Stash has 10 entries, uses 0 mallocs \\
+   MatAssemblyBegin\_MPIAIJ:Stash has 3 entries, uses 0 mallocs \\
    MatAssemblyBegin\_MPIAIJ:Stash has 5 entries, uses 0 mallocs 
 \end{tabbing}
 indicate that very few values have been generated on different processes.
 On the other hand, the statements
 \begin{tabbing}
-   MatAssemblyBegin\_MPIAIJ:Stash has 100000 entries, uses 100 mallocs
+   MatAssemblyBegin\_MPIAIJ:Stash has 100000 entries, uses 100 mallocs \\
    MatAssemblyBegin\_MPIAIJ:Stash has 77777 entries, uses 70 mallocs
 \end{tabbing}
 indicate that many values have been generated on the ``wrong'' processes.
@@ -2173,16 +2173,15 @@ or via the options database with
 -ksp\_gmres\_cgs\_refinement\_type none,ifneeded,always
 \end{tabbing}
 \findex{-ksp_gmres_cgs_refinement_type}
-The values for \trl{KSPGMRESCGSRefinementType} are \trl{KSP_GMRES_CGS_REFINEMENT_NONE},
-\findex{KSP_GMRES_CGS_REFINEMENT_NONE},
+The values for \trl{KSPGMRESCGSRefinementType} are \trl{KSP_GMRES_CGS_REFINEMENT_NONE}, \findex{KSP_GMRES_CGS_REFINEMENT_NONE}
 \trl{KSP_GMRES_CGS_REFINEMENT_IFNEEDED} and \trl{KSP_GMRES_CGS_REFINEMENT_ALWAYS}.
-\findex{KSP_GMRES_CGS_REFINEMENT_IFNEEDED}, \findex{KSP_GMRES_CGS_REFINEMENT_ALWAYS}
+\findex{KSP_GMRES_CGS_REFINEMENT_IFNEEDED} \findex{KSP_GMRES_CGS_REFINEMENT_ALWAYS}
 
 One can also use 
 modifed Gram-Schmidt, 
 \findex{KSPGMRESModifiedGramSchmidtOrthogonalization} by setting the orthogonalization routine,
 KSPGMRESModifiedGramSchmidtOrthogonalization(), by using the command line option 
-\trl{-ksp_gmres_modifiedgramschmidt}. \findex{-ksp_gmres_modifiedgramschmidt}
+\trl{-ksp_gmres_modifiedgram-schmidt}. \findex{-ksp_gmres_modifiedgramschmidt}
 
 For the conjugate gradient method with complex numbers, there are two
 slightly different algorithms depending on whether the matrix is 
@@ -2319,8 +2318,8 @@ customized convergence-testing routines.  \sindex{convergence tests}
 The user can specify a customized 
 routine with the command \findex{KSPSetConvergenceTest()}
 \begin{tabbing}
-  KSPSetConvergenceTest\=(KSP ksp,PetscErrorCode (*test)(KSP ksp,int it,double rnorm,\\
-                       \>KSPConvergedReason *reason,void *ctx),void *ctx,PetscErrorCode (*destroy)(void *ctx));
+  KSPSet\=ConvergenceTest(KSP ksp,PetscErrorCode (*test)(KSP ksp,int it,double rnorm,\\
+          \>KSPConvergedReason *reason,void *ctx),void *ctx,PetscErrorCode (*destroy)(void *ctx));
 \end{tabbing}
 The final routine argument, \trl{ctx}, is an optional context for private
 data for the user-defined convergence routine, \trl{test}.  Other
@@ -2681,9 +2680,7 @@ The possible orderings are
 \sindex{one-way dissection} \sindex{reverse Cuthill-McKee} 
 \sindex{quotient minimum degree} \findex{-pc_factor_mat_ordering_type}
 These orderings can also be set through the options database by specifying 
-one of the following:  \trl{-pc_factor_mat_ordering_type} \trl{natural}, \trl{-pc_factor_mat_ordering_type}
-\trl{nd}, \trl{-pc_factor_mat_ordering_type} \trl{1wd}, \trl{-pc_factor_mat_ordering_type} \trl{rcm},
-\trl{-pc_factor_mat_ordering_type} \trl{qmd}.
+one of the following:  \trl{-pc_factor_mat_ordering_type} \trl{natural}, or \trl{nd}, or  \trl{1wd}, or \trl{rcm}, or \trl{qmd}.
 In addition, see MatGetOrdering(), discussed in Section~\ref{sec_matfactor}.
 
 The sparse LU factorization provided in PETSc does not perform pivoting for 
@@ -3442,7 +3439,8 @@ default, this technique employs cubic backtracking \cite{dennis:83}.
 An alternative line search routine can be set with the command
 \findex{SNESSetLineSearch()}
 \begin{tabbing}
-  SNESSetLineSearch(SNES snes,PetscErrorCode (*ls)(SNES,Vec,Vec,Vec,Vec,double,double*,double*),void *lsctx);
+  SNESSetLineSearch\=(SNES snes,PetscErrorCode (*ls)(SNES,Vec,Vec,Vec,Vec,double,double*,double*),\\
+                   \>void *lsctx);
 \end{tabbing}
 Other line search methods provided by PETSc are 
 SNESQuadraticLineSearch(), SNESNoLineSearch(), and SNESNoLineSearchNoNorms(),
@@ -4216,7 +4214,7 @@ uses:
   F(t,u,w+au)$ where $w$ and $a$ are provided by the integrator.  The
   function that evaluates $G'(u) = F_u + aF_{\dot{u}}$ is set with
   \begin{tabbing}
-    TSSetIJacobian(\=TS ts,Mat A,Mat B,\\
+    TS\=SetIJacobian(TS ts,Mat A,Mat B,\\
     \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*),void *jacP);
   \end{tabbing}
   The \findex{TSSetIJacobian} arguments for the function \trl{fjac()}
@@ -4388,7 +4386,7 @@ Other timestep features:
 \end{itemize}
 
 More details about the solver and code examples can be found at
-http://www.parallab.uib.no/projects/molecul/matrix/
+\trl{http://www.parallab.uib.no/projects/molecul/matrix/}.
 
 
 \cleardoublepage
@@ -4681,94 +4679,6 @@ PetscMatlabEnginedPrintOutput(PetscMatlabEngine,FILE*).
 There is a short-cut to starting the Matlab engine
 with \trl{PETSC_MATLAB_ENGINE_(MPI_Comm)}.
 
-
-\cleardoublepage
-\chapter{Using ESI with PETSc}
-\label{ch_esi} \findex{ESI} \findex{Equation Solver Interface}
-The \href{http://z.ca.sandia.gov/esi}{Equation Solver Interface} 
-(\href{http://www.eterascale.com/esi}{location of official headers}) 
-is an attempt to 
-define a common linear solver interface for a variety of scalable solver
-packages. It is currently only for C++ and defines a set of abstract
-C++ classes (the header files for these classes are in \trl{include/esi}).
-
-PETSc provides code that allows
-\begin{itemize}
-\item  ESI objects to be wrapped as PETSc objects
-      and then be used with ``regular'' PETSc code and
-\item PETSc objects to be wrapped as ESI objects and then used with other
-      ESI code.
-\end{itemize}
-The wrapping does not involve data copies and thus is efficient.
-
-To wrap ESI objects as PETSc objects use
-\begin{tabbing}
-VecCreate(MPI\_Comm,Vec *x);\\
-VecSetType(x,VECESI);\\
-VecESISetVector(s,::esi::Vector\trl{<}double,int\trl{>} *v);
-\end{tabbing}
-
-\begin{tabbing}
-MatCreate(MPI\_Comm,Mat *A);\\
-MatSetSizes(Mat A,...);\\
-MatSetType(A,MATESI);\\
-MatESISetOperator(A,::esi::Operator\trl{<}double,int\trl{>} *a);
-\end{tabbing}
-
-\begin{tabbing}
-PCCreate(MPI\_Comm,PC *pc);\\
-PCSetType(pc,PCESI);\\
-PCESISetPreconditioner(A,::esi::Preconditioner\trl{<}double,int\trl{>} *p);
-\end{tabbing}
-
-To wrap PETSc objects as ESI objects
-\begin{tabbing}
-int VecESIWrap(Vec xin,::esi::Vector\trl{<}double,int\trl{>} **v);\\
-eis  = new esi::petsc::IndexSpace\trl{<}int\trl{>}::IndexSpace(PetscLayout map);\\
-evec = new esi::petsc::Vector\trl{<}double,int\trl{>}::Vector(Vec vec);\\
-emat = new esi::petsc::Operator\trl{<}double,int\trl{>}::Operator(Mat mat);\\
-epc  = new esi::petsc::Preconditioner\trl{<}double,int\trl{>}::Preconditioner(PC pc);
-\end{tabbing}
-
-One can also create ESI objects directly with 
-\begin{tabbing}
-eis  = new esi::petsc::IndexSpace\trl{<}int\trl{>}::IndexSpace(MPI\_Comm icomm, int n, int N)\\
-esi  = new esi::petsc::IndexSpace\trl{<}int\trl{>}::IndexSpace(::esi::IndexSpace\trl{<}int\trl{>} \&sourceIndexSpace)\\
-evec = new esi::petsc::Vector\trl{<}double,int\trl{>}::Vector( ::esi::IndexSpace\trl{<}int\trl{>} *inmap)\\
-emat = new esi::petsc::Matrix\trl{<}double,int\trl{>}::Matrix(esi::IndexSpace\trl{<}int\trl{>} *inrmap,esi::IndexSpace\trl{<}int\trl{>} *incmap)
-\end{tabbing}
-
-PETSc also provides mechanisms to load ESI classes directly from dynamic libraries to be
-used with PETSc.
-\begin{tabbing}
-VecESISetType(Vec pc,char *name);\\
-MatESISetType(Mat pc,char *name)\\
-PCESISetType(PC pc,char *name)
-\end{tabbing}
-where \trl{name} is the full name of the class; for example, \trl{esi::petsc::Vector}
-or \trl{Petra_ESI_Vector}. These are implemented by loading a factory which then creates the
-actual class object. This can also be achieved from the command line with 
-\begin{tabbing}
--is\_esi\_type  esi::petsc::IndexSpace\\
--vec\_type esi -vec\_esi\_type esi::petsc::Vector\\
--mat\_type esi -mat\_esi\_type esi::petsc::Matrix\\
--pc\_type esi -pc\_esi\_type esi:petsc::Preconditioner
-\end{tabbing}
-Note that the \trl{is} in \trl{-is_esi_type} is short for IndexSpace, {\bf not} PETSc IS objects.
-Finally when using the PETSc ESI objects (not Trilinos or some other implementation), one
-can set the underly PETSc object type to the PETSc objected that is wrapped as ESI with
-\begin{tabbing}
--vec\_type esi -vec\_esi\_type esi::petsc::Vector  -esi\_vec\_type \trl{<}seq,mpi\trl{>}\\
--mat\_type esi -mat\_esi\_type esi::petsc::Matrix -esi\_mat\_type \trl{<}seqaij,mpiaij,...\trl{>}\\
--pc\_type esi -pc\_esi\_type esi:petsc::Preconditioner -esi\_pc\_type \trl{<}lu,ilu,....\trl{>}
-\end{tabbing}
-Mostly for testing purposes PETSc provides a short hand way of using ESI with the PETSc ESI objects.
-One can use 
-\begin{tabbing}
--vec\_type petscesi  -esi\_vec\_type \trl{<}seq,mpi\trl{>}\\
--mat\_type petscesi -esi\_mat\_type \trl{<}seqaij,mpiaij,...\trl{>}\\
--pc\_type petscesi -esi\_pc\_type \trl{<}lu,ilu,....\trl{>}
-\end{tabbing}
 
 
 
@@ -7012,37 +6922,25 @@ line that includes the files defining all of the macro variables.
 Some additional variables that can be used in the makefile are defined
 as follows:
 \begin{itemize}
-\item[CFLAGS, FFLAGS] User specified additional options for the C compiler and
+\item \trl{CFLAGS, FFLAGS} User specified additional options for the C compiler and
         fortran compiler.
-\item[CPPFLAGS, FPPFLAGS] User specified additional flags for the C preprocessor
+\item \trl{CPPFLAGS, FPPFLAGS} User specified additional flags for the C preprocessor
         and fortran preprocesor.
-\item[CLINKER, FLINKER] the C and Fortran linkers. 
-\item[RM] the remove command for deleting files.
-\item[EXAMPLES\_1] examples that will be built with
-             \trl{make examples} (see Section~\ref{sec_common})
-\item[RUNEXAMPLES\_1] examples that will be run with
-             \trl{make} \trl{runexamples} (see Section~\ref{sec_common})
-\item[EXAMPLESC] all C examples that will be checked in/out of RCS
-             with \trl{make} \trl{ci} and \trl{make} \trl{co} (not generally
-             needed by users).
-\item[EXAMPLESF] all Fortran examples that will be checked in/out of
-             RCS with \trl{make} \trl{ci} and \trl{make} \trl{co} (not generally
-             needed by users).
-\item[PETSC\_LIB] all of the base PETSc libraries.
-             \findex{PETSC_LIB}
+\item \trl{CLINKER, FLINKER} the C and Fortran linkers. 
+\item \trl{RM} the remove command for deleting files.
 \end{itemize}
 Note that the PETSc example programs are divided into several
 categories, which currently include: 
 \begin{itemize}
-\item[EXAMPLES\_1] basic C suite used in installation tests\\
-\item[EXAMPLES\_2] additional C suite including graphics\\
-\item[EXAMPLES\_3] basic Fortran .F suite\\
-\item[EXAMPLES\_4] subset of 1 and 2 that runs on only a single process\\
-\item[EXAMPLES\_5] examples that require complex numbers\\
-\item[EXAMPLES\_6] C examples that do not work with complex numbers\\
-\item[EXAMPLES\_8] Fortran .F examples that do not work with complex numbers\\
-\item[EXAMPLES\_9] uniprocess version of 3\\
-\item[EXAMPLES\_10] Fortran .F examples that require complex numbers\\
+\item \trl{EXAMPLES_1} basic C suite used in installation tests\\
+\item \trl{EXAMPLES_2} additional C suite including graphics\\
+\item \trl{EXAMPLES_3} basic Fortran .F suite\\
+\item \trl{EXAMPLES_4} subset of 1 and 2 that runs on only a single process\\
+\item \trl{EXAMPLES_5} examples that require complex numbers\\
+\item \trl{EXAMPLES_6} C examples that do not work with complex numbers\\
+\item \trl{EXAMPLES_8} Fortran .F examples that do not work with complex numbers\\
+\item \trl{EXAMPLES_9} uniprocess version of 3\\
+\item \trl{EXAMPLES_10} Fortran .F examples that require complex numbers\\
 \end{itemize}
 
 We next list in Figure \ref{fig_make3} a makefile that maintains a PETSc 
@@ -7152,14 +7050,7 @@ The currently available alternatives for the ordering \trl{type} are
 \item \trl{MATORDERING_RCM} - Reverse Cuthill-McKee
 \item \trl{MATORDERING_QMD} - Quotient Minimum Degree
 \end{itemize}
-These orderings can also be set through the options database by specifying 
-one of the following:  \trl{-pc_factor_mat_ordering_type} \trl{natural}, \trl{-pc_factor_mat_ordering_type} \trl{nd}, 
-\trl{-pc_factor_mat_ordering_type} \trl{1wd}, \trl{-pc_factor_mat_ordering_type} \trl{rcm}, \trl{-pc_factor_mat_ordering_type}
-\trl{qmd}.
-\findex{MATORDERING_NATURAL} \findex{MATORDERING_ND} \findex{MATORDERING_1WD}
-\findex{MATORDERING_RCM} \findex{MATORDERING_QMD} \sindex{nested dissection}
-\sindex{one-way dissection} \sindex{reverse Cuthill-McKee} 
-\sindex{quotient minimum degree} \findex{-pc_factor_mat_ordering_type}
+These orderings can also be set through the options database.
 
 Certain matrix formats may support only a subset of these; more options may 
 be added. Check the manual pages for up-to-date information. All of these orderings are 
@@ -7391,9 +7282,10 @@ method.
 \findex{PCApplyBAorABTranspose()} \findex{PCApplyRichardson()}
 Additional preconditioner routines are
 \begin{tabbing}
-  PCApplyBAorAB(PC pc,PCSide right,Vec x,Vec y,Vec work,int its);\\
+  PCApply\=BAorAB(PC pc,PCSide right,Vec x,Vec y,Vec work,int its);\\
   PCApplyBAorABTranspose(PC pc,PCSide right,Vec x,Vec y,Vec work,int its);\\
-  PCApplyRichardson(PC pc,Vec x,Vec y,Vec work,PetscReal rtol,PetscReal atol, PetscReal dtol,PetscInt maxits,PetscTruth zeroguess,PetscInt *its,PCRichardsonConvergedReason*);
+  PCApplyRichardson(PC pc,Vec x,Vec y,Vec work,PetscReal rtol,PetscReal atol, PetscReal dtol,PetscInt \\
+   \>  maxits,PetscTruth zeroguess,PetscInt *its,PCRichardsonConvergedReason*);
 \end{tabbing}
 The first two routines apply the action of the matrix followed by the
 preconditioner or the preconditioner followed by the matrix depending
