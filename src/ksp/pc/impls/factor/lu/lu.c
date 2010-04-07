@@ -269,9 +269,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_LU(PC pc)
   ierr = PetscNewLog(pc,PC_LU,&dir);CHKERRQ(ierr);
 
   ierr = MatFactorInfoInitialize(&((PC_Factor*)dir)->info);CHKERRQ(ierr);
-  ((PC_Factor*)dir)->fact                  = 0;
-  dir->inplace               = PETSC_FALSE;
-  dir->nonzerosalongdiagonal = PETSC_FALSE;
+  ((PC_Factor*)dir)->fact       = PETSC_NULL;
+  ((PC_Factor*)dir)->factortype = MAT_FACTOR_LU;e
+  dir->inplace                  = PETSC_FALSE;
+  dir->nonzerosalongdiagonal    = PETSC_FALSE;
 
   ((PC_Factor*)dir)->info.fill           = 5.0;
   ((PC_Factor*)dir)->info.dtcol          = 1.e-6; /* default to pivoting; this is only thing PETSc LU supports */    

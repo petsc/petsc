@@ -1,5 +1,5 @@
 
-static char help[] = "Newton's method to solve a two-variable system, sequentially.\n\n";
+static char help[] = "Newton's method for a two-variable system, sequential.\n\n";
 
 /*T
    Concepts: SNES^basic example
@@ -150,9 +150,7 @@ int main(int argc,char **argv)
     ierr = VecView(r,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
-  if (!rank){
-    ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %D\n\n",its);CHKERRQ(ierr);
-  }
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"number of Newton iterations = %D\n\n",its);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -199,7 +197,8 @@ PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *ctx)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (size > 1){
     /* 
-       This is a ridiculous case for testing intermidiate steps from sequential code development to parallel implementation.
+       This is a ridiculous case for testing intermidiate steps from sequential
+           code development to parallel implementation.
        (1) scatter x into a sequetial vector;
        (2) each process evaluates all values of floc; 
        (3) scatter floc back to the parallel f.

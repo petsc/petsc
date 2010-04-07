@@ -36,7 +36,7 @@ class MyODE:
 da = PETSc.DA().create([9],comm=PETSc.COMM_WORLD)
 f = da.createGlobalVector()
 x = f.duplicate()
-J = da.getMatrix(PETSc.MatType.AIJ);
+J = da.getMatrix(PETSc.Mat.Type.AIJ);
    
 ts = PETSc.TS().create(PETSc.COMM_WORLD)
 ts.setProblemType(PETSc.TS.ProblemType.NONLINEAR)

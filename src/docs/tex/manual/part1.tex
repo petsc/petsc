@@ -69,7 +69,7 @@ appropriate for a particular problem.
 \end{figure}
 
 \begin{figure}[hbt]
-\centerline{ \includegraphics{zoom}}
+\centerline{ \includegraphics[scale=0.75]{zoom}}
 %\centerline{\psfig{file=zoom_ls.ps,angle=270,height=3.4in}}
 \caption{Numerical Libraries of PETSc}
 \label{fig_2}
@@ -596,9 +596,9 @@ demonstrate the ease of extracting performance information.
 {\footnotesize
 \begin{verbatim}
 eagle> mpiexec -n 1 ./ex1 -n 1000 -pc_type ilu -ksp_type gmres -ksp_rtol 1.e-7 -log_summary
--------------------------------- PETSc Performance Summary: --------------------------------------
+-------------------------------- PETSc Performance Summary: -------------------------------
 
-ex1 on a sun4 named merlin.mcs.anl.gov with 1 processor, by curfman Wed Aug  7 17:24:27 1996
+ex1 on a sun4 named merlin.mcs.anl.gov with 1 processor, by curfman Wed Aug 7 17:24 1996
 
                          Max         Min        Avg        Total 
 Time (sec):           1.150e-01      1.0   1.150e-01
@@ -609,31 +609,31 @@ MPI Messages:         0.000e+00      0.0   0.000e+00  0.000e+00
 MPI Messages:         0.000e+00      0.0   0.000e+00  0.000e+00 (lengths)
 MPI Reductions:       0.000e+00      0.0
 
---------------------------------------------------------------------------------------------------
-Phase             Count      Time (sec)       Flops/sec                             -- Global --    
-                            Max     Ratio    Max    Ratio   Mess  Avg len  Reduct  %T %F %M %L %R   
---------------------------------------------------------------------------------------------------
-MatMult               2  2.553e-03    1.0  3.9e+06    1.0  0.0e+00 0.0e+00 0.0e+00  2 25  0  0  0
-MatAssemblyBegin      1  2.193e-05    1.0  0.0e+00    0.0  0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0
-MatAssemblyEnd        1  5.004e-03    1.0  0.0e+00    0.0  0.0e+00 0.0e+00 0.0e+00  4  0  0  0  0
-MatGetReordering      1  3.004e-03    1.0  0.0e+00    0.0  0.0e+00 0.0e+00 0.0e+00  3  0  0  0  0
-MatILUFctrSymbol      1  5.719e-03    1.0  0.0e+00    0.0  0.0e+00 0.0e+00 0.0e+00  5  0  0  0  0
-MatLUFactorNumer      1  1.092e-02    1.0  2.7e+05    1.0  0.0e+00 0.0e+00 0.0e+00  9  7  0  0  0
-MatSolve              2  4.193e-03    1.0  2.4e+06    1.0  0.0e+00 0.0e+00 0.0e+00  4 25  0  0  0
-MatSetValues       1000  2.461e-02    1.0  0.0e+00    0.0  0.0e+00 0.0e+00 0.0e+00 21  0  0  0  0
-VecDot                1     60e-04    1.0  9.7e+06    1.0  0.0e+00 0.0e+00 0.0e+00  0  5  0  0  0
-VecNorm               3  5.870e-04    1.0  1.0e+07    1.0  0.0e+00 0.0e+00 0.0e+00  1 15  0  0  0
-VecScale              1  1.640e-04    1.0  6.1e+06    1.0  0.0e+00 0.0e+00 0.0e+00  0  3  0  0  0
-VecCopy               1  3.101e-04    1.0  0.0e+00    0.0  0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0
-VecSet                3  5.029e-04    1.0  0.0e+00    0.0  0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0
-VecAXPY               3  8.690e-04    1.0  6.9e+06    1.0  0.0e+00 0.0e+00 0.0e+00  1 15  0  0  0
-VecMAXPY              1  2.550e-04    1.0  7.8e+06    1.0  0.0e+00 0.0e+00 0.0e+00  0  5  0  0  0
-KSPSolve             1  1.288e-02    1.0  2.2e+06    1.0  0.0e+00 0.0e+00 0.0e+00 11 70  0  0  0
-KSPSetUp             1  2.669e-02    1.0  1.1e+05    1.0  0.0e+00 0.0e+00 0.0e+00 23  7  0  0  0
-KSPGMRESOrthog        1  1.151e-03    1.0  3.5e+06    1.0  0.0e+00 0.0e+00 0.0e+00  1 10  0  0  0
-PCSetUp               1 24e-02    1.0  1.5e+05    1.0  0.0e+00 0.0e+00 0.0e+00 18  7  0  0  0
-PCApply               2  4.474e-03    1.0  2.2e+06    1.0  0.0e+00 0.0e+00 0.0e+00  4 25  0  0  0
--------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+Phase             Count      Time (sec)       Flops/sec     Messages    -- Global --    
+                            Max     Ratio    Max    Ratio Avg len  Redc %T %F %M %L %R   
+--------------------------------------------------------------------------------------
+MatMult               2  2.553e-03    1.0  3.9e+06    1.0  0.0 0.0 0.0  2 25  0  0  0
+MatAssemblyBegin      1  2.193e-05    1.0  0.0e+00    0.0  0.0 0.0 0.0  0  0  0  0  0
+MatAssemblyEnd        1  5.004e-03    1.0  0.0e+00    0.0  0.0 0.0 0.0  4  0  0  0  0
+MatGetReordering      1  3.004e-03    1.0  0.0e+00    0.0  0.0 0.0 0.0  3  0  0  0  0
+MatILUFctrSymbol      1  5.719e-03    1.0  0.0e+00    0.0  0.0 0.0 0.0  5  0  0  0  0
+MatLUFactorNumer      1  1.092e-02    1.0  2.7e+05    1.0  0.0 0.0 0.0  9  7  0  0  0
+MatSolve              2  4.193e-03    1.0  2.4e+06    1.0  0.0 0.0 0.0  4 25  0  0  0
+MatSetValues       1000  2.461e-02    1.0  0.0e+00    0.0  0.0 0.0 0.0 21  0  0  0  0
+VecDot                1     60e-04    1.0  9.7e+06    1.0  0.0 0.0 0.0  0  5  0  0  0
+VecNorm               3  5.870e-04    1.0  1.0e+07    1.0  0.0 0.0 0.0  1 15  0  0  0
+VecScale              1  1.640e-04    1.0  6.1e+06    1.0  0.0 0.0 0.0  0  3  0  0  0
+VecCopy               1  3.101e-04    1.0  0.0e+00    0.0  0.0 0.0 0.0  0  0  0  0  0
+VecSet                3  5.029e-04    1.0  0.0e+00    0.0  0.0 0.0 0.0  0  0  0  0  0
+VecAXPY               3  8.690e-04    1.0  6.9e+06    1.0  0.0 0.0 0.0  1 15  0  0  0
+VecMAXPY              1  2.550e-04    1.0  7.8e+06    1.0  0.0 0.0 0.0  0  5  0  0  0
+KSPSolve             1  1.288e-02    1.0  2.2e+06     1.0  0.0 0.0 0.0 11 70  0  0  0
+KSPSetUp             1  2.669e-02    1.0  1.1e+05     1.0  0.0 0.0 0.0 23  7  0  0  0
+KSPGMRESOrthog        1  1.151e-03    1.0  3.5e+06    1.0  0.0 0.0 0.0  1 10  0  0  0
+PCSetUp               1 24e-02    1.0  1.5e+05        1.0  0.0 0.0 0.0 18  7  0  0  0
+PCApply               2  4.474e-03    1.0  2.2e+06    1.0  0.0 0.0 0.0  4 25  0  0  0
+--------------------------------------------------------------------------------------
 
 Memory usage is given in bytes:
 
