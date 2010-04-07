@@ -180,7 +180,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUpOnBlocks(KSP ksp)
 PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
 {
   PetscErrorCode ierr;
-  PetscTruth     ig = PETSC_FALSE;
+  PetscTruth     ir = PETSC_FALSE,ig = PETSC_FALSE,im = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -211,11 +211,17 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
       ierr = DMKSPComputeInitialGuess(ksp->dm,ksp->vec_sol);CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
     }
-    ierr = DMKSPComputeRhs(ksp->dm,ksp->vec_rhs);CHKERRQ(ierr);
+    ierr = DMKSPHasRhs(ksp->dm,&ir);CHKERRQ(ierr);
+    if (ir) {
+      ierr = DMKSPComputeRhs(ksp->dm,ksp->vec_rhs);CHKERRQ(ierr);
+    }
 
     /* how do we know when to compute new matrix? Now it always does */
-    ierr = DMKSPComputeMat(ksp->dm,A,A,&stflg);CHKERRQ(ierr);
-    ierr = KSPSetOperators(ksp,A,A,stflg);CHKERRQ(ierr);
+    ierr = DMKSPHasMat(ksp->dm,&im);CHKERRQ(ierr);
+    if (im) {
+      ierr = DMKSPComputeMat(ksp->dm,A,A,&stflg);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,A,A,stflg);CHKERRQ(ierr);
+    }
   }
 
   if (ksp->setupcalled == 2) PetscFunctionReturn(0);

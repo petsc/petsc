@@ -522,6 +522,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPSetRhs(DM,PetscErrorCode (*)(DM,Ve
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPSetMat(DM,PetscErrorCode (*)(DM,Mat,Mat,MatStructure *));
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPComputeInitialGuess(DM,Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPHasInitialGuess(DM,PetscTruth*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPHasMat(DM,PetscTruth*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPHasRhs(DM,PetscTruth*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPComputeRhs(DM,Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPComputeMat(DM,Mat,Mat,MatStructure *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMFinalizePackage(void);

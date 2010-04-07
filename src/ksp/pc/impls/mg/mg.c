@@ -152,7 +152,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *
   }
   if (mg->levels) SETERRQ(PETSC_ERR_PLIB,"Internal error in PETSc, this array should not yet exist");
 
-  mg->nlevels = levels;
+  mg->nlevels      = levels;
+  mg->galerkin     = PETSC_FALSE;
+  mg->galerkinused = PETSC_FALSE;
 
   ierr = PetscMalloc(levels*sizeof(PC_MG*),&mglevels);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(pc,levels*(sizeof(PC_MG*)));CHKERRQ(ierr);
@@ -164,8 +166,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *
     mglevels[i]->level           = i;
     mglevels[i]->levels          = levels;
     mglevels[i]->cycles          = PC_MG_CYCLE_V;
-    mglevels[i]->galerkin        = PETSC_FALSE;
-    mglevels[i]->galerkinused    = PETSC_FALSE;
     mg->default_smoothu = 1;
     mg->default_smoothd = 1;
 
@@ -395,7 +395,7 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
     if (mg->am == PC_MG_MULTIPLICATIVE) {
       ierr = PetscViewerASCIIPrintf(viewer,"    Cycles per PCApply=%d\n",mg->cyclesperpcapply);CHKERRQ(ierr);
     }
-    if (mglevels[0]->galerkin) {
+    if (mg->galerkin) {
       ierr = PetscViewerASCIIPrintf(viewer,"    Using Galerkin computed coarse grid matrices\n");CHKERRQ(ierr);
     }
     for (i=0; i<levels; i++) {
@@ -441,6 +441,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   Mat                     dA,dB;
   MatStructure            uflag;
   Vec                     tvec;
+  DM                      *dms;
 
   PetscFunctionBegin;
 
@@ -455,9 +456,20 @@ PetscErrorCode PCSetUp_MG(PC pc)
     ierr = KSPSetOperators(mglevels[n-1]->smoothd,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
   }
 
-  if (mglevels[0]->galerkin) {
+  if (pc->dm) {
+    ierr = PetscMalloc(n*sizeof(DM),&dms);CHKERRQ(ierr);
+    dms[n-1] = pc->dm;
+    for (i=n-2; i>-1; i--) {
+      ierr = DMCoarsen(dms[i+1],PETSC_NULL,&dms[i]);CHKERRQ(ierr);
+    }
+    for (i=n-2; i>-1; i--) {
+      ierr = DMDestroy(dms[i]);CHKERRQ(ierr);
+    }
+  }
+
+  if (mg->galerkin) {
     Mat B;
-    mglevels[0]->galerkinused = PETSC_TRUE;
+    mg->galerkinused = PETSC_TRUE;
     /* currently only handle case where mat and pmat are the same on coarser levels */
     ierr = KSPGetOperators(mglevels[n-1]->smoothd,&dA,&dB,&uflag);CHKERRQ(ierr);
     if (!pc->setupcalled) {
@@ -476,7 +488,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
         dB   = B;
       }
     }
-  }
+  } 
 
   if (!pc->setupcalled) {
     ierr = PetscOptionsGetTruth(0,"-pc_mg_monitor",&monitor,PETSC_NULL);CHKERRQ(ierr);
@@ -802,17 +814,10 @@ $  -pc_mg_galerkin
 PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetGalerkin(PC pc)
 { 
   PC_MG        *mg = (PC_MG*)pc->data;
-  PC_MG_Levels **mglevels = mg->levels;
-  PetscInt     i,levels;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  if (!mglevels) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  levels = mglevels[0]->levels;
-
-  for (i=0; i<levels; i++) {  
-    mglevels[i]->galerkin = PETSC_TRUE;
-  }
+  mg->galerkin = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -843,12 +848,10 @@ $  -pc_mg_galerkin
 PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetGalerkin(PC pc,PetscTruth *galerkin)
 { 
   PC_MG        *mg = (PC_MG*)pc->data;
-  PC_MG_Levels **mglevels = mg->levels;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  if (!mglevels) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  *galerkin = mglevels[0]->galerkin;
+  *galerkin = mg->galerkin;
   PetscFunctionReturn(0);
 }
 

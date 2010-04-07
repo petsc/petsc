@@ -655,6 +655,56 @@ PetscErrorCode PETSCDM_DLLEXPORT DMKSPHasInitialGuess(DM dm,PetscTruth *flg)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "DMKSPHasRhs"
+/*@
+    DMKSPHasRhs - does the DM object have a right hand side function
+
+    Collective on DM
+
+    Input Parameter:
+.   dm - the DM object to destroy
+
+    Output Parameter:
+.   flg - PETSC_TRUE if function exists
+
+    Level: developer
+
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMKSPSetRhs(), DMKSPSetMat()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMKSPHasRhs(DM dm,PetscTruth *flg)
+{
+  PetscFunctionBegin;
+  *flg =  (dm->ops->formksprhs) ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMKSPHasMat"
+/*@
+    DMKSPHasMat - does the DM object have a matrix function
+
+    Collective on DM
+
+    Input Parameter:
+.   dm - the DM object to destroy
+
+    Output Parameter:
+.   flg - PETSC_TRUE if function exists
+
+    Level: developer
+
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMKSPSetRhs(), DMKSPSetMat()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMKSPHasMat(DM dm,PetscTruth *flg)
+{
+  PetscFunctionBegin;
+  *flg =  (dm->ops->formkspmat) ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "DMKSPComputeRhs"
 /*@
     DMKSPComputeRhs - computes the right hand side vector entries for the KSP solver
