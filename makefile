@@ -21,7 +21,7 @@ include ${PETSC_DIR}/conf/test
 # all: builds the c, fortran, and f90 libraries
 all: 
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} chkpetsc_dir
-	-@${OMAKE} all_build PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} 2>&1 | grep -v "_configtest.c:3:17: error: mpe.h: No such file or directory" | tee ${PETSC_ARCH}/conf/make.log
+	-@${OMAKE} all_build PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} 2>&1  | tee ${PETSC_ARCH}/conf/make.log
 	-@if [ -L make.log ]; then ${RM} make.log; fi; ln -s ${PETSC_ARCH}/conf/make.log make.log
 	-@egrep -i "( error | error:)" ${PETSC_ARCH}/conf/make.log > /dev/null; if [ "$$?" = "0" ]; then \
            echo "********************************************************************" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log; \
