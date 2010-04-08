@@ -174,7 +174,8 @@ M*/
 typedef int PetscClassId;
 
 /*MC
-    PetscLogEvent - id used to identify PETSc or user events - primarily for logging
+    PetscLogEvent - id used to identify PETSc or user events which timed portions (blocks of executable)
+     code.
 
     Level: intermediate
 
@@ -183,7 +184,7 @@ M*/
 typedef int PetscLogEvent;
 
 /*MC
-    PetscLogStage - id used to identify user stages of runs - for logging
+    PetscLogStage - id used to identify user stages (phases, sections) of runs - for logging
 
     Level: intermediate
 

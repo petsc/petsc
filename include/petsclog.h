@@ -44,64 +44,20 @@ extern PetscTruth     PETSC_DLLEXPORT PetscLogPrintInfo;  /* if true, indicates 
    function call each time, we could make these private.
 */
 
-/* The class naming scheme procedes as follows:
-
-   Event:
-     Events are a class which describes certain blocks of executable
-     code. The corresponding instantiations of events are Actions.
-
-   Class:
-     Classes are the classes representing Petsc structures. The
-     corresponding instantiations are called Objects.
-
-   StageLog:
-     This type holds information about stages of computation. These
-     are understood to be chunks encompassing several events, or
-     alternatively, as a covering (possibly nested) of the timeline.
-
-   StageInfo:
-     The information about each stage. This log contains an
-     EventPerfLog and a ClassPerfLog.
-
-   EventRegLog:
-     This type holds the information generated for each event as
-     it is registered. This information does not change and thus is
-     stored separately from performance information.
-
-   EventPerfLog:
-     This type holds the performance information logged for each
-     event. Usually this information is logged for only one stage.
-
-   ClassRegLog:
-     This type holds the information generated for each class as
-     it is registered. This information does not change and thus is
-     stored separately from performance information.
-
-   ClassPerfLog:
-     This class holds information describing class/object usage during
-     a run. Usually this information is logged for only one stage.
-*/
-
-/* Default log */
-typedef struct _n_StageLog *StageLog;
-extern PETSC_DLLEXPORT StageLog _stageLog;
-
 /* A simple stack (should replace) */
 typedef struct _n_IntStack *IntStack;
 
-/* The structures for logging performance */
-typedef struct {
-  int            id;            /* The integer identifying this section */
-  PetscTruth     active;        /* The flag to activate logging */
-  PetscTruth     visible;       /* The flag to print info in summary */
-  int            depth;         /* The nesting depth of the event call */
-  int            count;         /* The number of times this section was executed */
-  PetscLogDouble flops;         /* The flops used in this section */
-  PetscLogDouble time;          /* The time taken for this section */
-  PetscLogDouble numMessages;   /* The number of messages in this section */
-  PetscLogDouble messageLength; /* The total message lengths in this section */
-  PetscLogDouble numReductions; /* The number of reductions in this section */
-} EventPerfInfo;
+/*
+    ClassRegInfo, ClassPerfInfo - Each class has two data structures associated with it. The first has 
+       static information about it, the second collects statistics on how many objects of the class are created,
+       how much memory they use, etc.
+
+    ClassRegLog, ClassPerfLog - arrays of the ClassRegInfo and ClassPerfInfo for all classes.
+*/
+typedef struct  {
+  char           *name;   /* The class name */
+  PetscClassId   classid; /* The integer identifying this class */
+} ClassRegInfo;
 
 typedef struct {
   PetscClassId   id;           /* The integer identifying this class */
@@ -111,20 +67,50 @@ typedef struct {
   PetscLogDouble descMem;      /* The total memory allocated by descendents of these objects */
 } ClassPerfInfo;
 
-/* The structures for logging registration */
-typedef struct  {
-  char         *name;   /* The class name */
-  PetscClassId classid; /* The integer identifying this class */
-} ClassRegInfo;
+typedef struct _n_ClassRegLog *ClassRegLog;
+struct _n_ClassRegLog {
+  int            numClasses; /* The number of classes registered */
+  int            maxClasses; /* The maximum number of classes */
+  ClassRegInfo * classInfo;  /* The structure for class information (classids are monotonicly increasing) */
+};
 
+typedef struct _n_ClassPerfLog *ClassPerfLog;
+struct _n_ClassPerfLog {
+  int            numClasses; /* The number of logging classes */
+  int            maxClasses; /* The maximum number of classes */
+  ClassPerfInfo *classInfo;  /* The structure for class information (classids are monotonicly increasing) */
+};
+/* -----------------------------------------------------------------------------------------------------*/
+/*
+    EventRegInfo, EventPerfInfo - Each event has two data structures associated with it. The first has 
+       static information about it, the second collects statistics on how many times the event is used, how 
+       much time it takes, etc.
+
+    EventRegLog, EventPerfLog - an array of all EventRegInfo and EventPerfInfo for all events. There is one
+      of these for each stage.
+
+*/
 typedef struct {
-  char         *name;   /* The name of this event */
-  PetscClassId classid; /* The class id for this event (should maybe give class ID instead) */
+  char         *name;         /* The name of this event */
+  PetscClassId classid;       /* The class the event is associated with */
 #if defined (PETSC_HAVE_MPE)
   int          mpe_id_begin; /* MPE IDs that define the event */
   int          mpe_id_end;
 #endif
 } EventRegInfo;
+
+typedef struct {
+  int            id;            /* The integer identifying this event */
+  PetscTruth     active;        /* The flag to activate logging */
+  PetscTruth     visible;       /* The flag to print info in summary */
+  int            depth;         /* The nesting depth of the event call */
+  int            count;         /* The number of times this event was executed */
+  PetscLogDouble flops;         /* The flops used in this event */
+  PetscLogDouble time;          /* The time taken for this event */
+  PetscLogDouble numMessages;   /* The number of messages in this event */
+  PetscLogDouble messageLength; /* The total message lengths in this event */
+  PetscLogDouble numReductions; /* The number of reductions in this event */
+} EventPerfInfo;
 
 typedef struct _n_EventRegLog *EventRegLog;
 struct _n_EventRegLog {
@@ -139,23 +125,12 @@ struct _n_EventPerfLog {
   int            maxEvents; /* The maximum number of events */
   EventPerfInfo *eventInfo; /* The performance information for each event */
 };
+/* ------------------------------------------------------------------------------------------------------------*/
+/*
+   StageInfo - Contains all the information about a particular stage.
 
-/* The structure for logging class information */
-typedef struct _n_ClassRegLog *ClassRegLog;
-struct _n_ClassRegLog {
-  int           numClasses; /* The number of classes registered */
-  int           maxClasses; /* The maximum number of classes */
-  ClassRegInfo *classInfo;  /* The structure for class information (classids are monotonicly increasing) */
-};
-
-typedef struct _n_ClassPerfLog *ClassPerfLog;
-struct _n_ClassPerfLog {
-  int            numClasses; /* The number of logging classes */
-  int            maxClasses; /* The maximum number of classes */
-  ClassPerfInfo *classInfo;  /* The structure for class information (classids are monotonicly increasing) */
-};
-
-/* The structures for logging in stages */
+   StageLog - An array of StageInfo for each registered stage. There is a single one of these in the code.
+*/
 typedef struct _StageInfo {
   char         *name;     /* The stage name */
   PetscTruth    used;     /* The stage was pushed on this processor */
@@ -164,14 +139,13 @@ typedef struct _StageInfo {
   ClassPerfLog  classLog; /* The class information for this stage */
 } StageInfo;
 
+typedef struct _n_StageLog *StageLog;
+extern PETSC_DLLEXPORT StageLog _stageLog;
 struct _n_StageLog {
-  /* Size information */
   int         numStages; /* The number of registered stages */
   int         maxStages; /* The maximum number of stages */
-  /* Runtime information */
   IntStack    stack;     /* The stack for active stages */
   int         curStage;  /* The current stage (only used in macros so we don't call StackTop) */
-  /* Stage specific information */
   StageInfo  *stageInfo; /* The information for each stage */
   EventRegLog eventLog;  /* The registered events */
   ClassRegLog classLog;  /* The registered classes */
