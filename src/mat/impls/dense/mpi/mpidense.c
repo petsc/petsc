@@ -1633,6 +1633,8 @@ EXTERN_C_END
 . -mat_plapack_nb_alg <n> - algorithmic block size
 - -mat_plapack_ckerror <n> - error checking flag
 
+   Level: intermediate
+
 .seealso: MatCreateMPIDense(), MATDENSE, MATSEQDENSE, PCFactorSetSolverPackage(), MatSolverPackage
 
 M*/

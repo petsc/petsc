@@ -321,7 +321,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkRegisterDependence(PetscFwk fwk, const ch
   s = (*(fwk->vertex))[serverid];
   ::boost::add_edge(c,s, *(fwk->dependence_graph));
   PetscFunctionReturn(0);
-}/*PetscFwkRegisterDependence()*/
+}/* PetscFwkRegisterDependence()*/
 
 
 
