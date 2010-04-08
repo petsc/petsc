@@ -11,6 +11,16 @@ struct _n_IntStack {
   int *stack; /* The storage */
 };
 
+#ifdef PETSC_USE_LOG
+/* Stack Functions */
+EXTERN PetscErrorCode StackCreate(IntStack *);
+EXTERN PetscErrorCode StackDestroy(IntStack);
+EXTERN PetscErrorCode StackPush(IntStack, int);
+EXTERN PetscErrorCode StackPop(IntStack, int *);
+EXTERN PetscErrorCode StackEmpty(IntStack, PetscTruth *);
+EXTERN PetscErrorCode StackTop(IntStack, int *);
+#endif /* PETSC_USE_LOG */
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogGetStageLog"
 /*@C
@@ -157,13 +167,6 @@ EXTERN PetscErrorCode StageLogGetClassRegLog(StageLog, ClassRegLog *);
 EXTERN PetscErrorCode StageLogGetEventRegLog(StageLog, EventRegLog *);
 EXTERN PetscErrorCode StageLogGetClassPerfLog(StageLog, int, ClassPerfLog *);
 EXTERN PetscErrorCode StageLogGetEventPerfLog(StageLog, int, EventPerfLog *);
-/* Stack Functions */
-EXTERN PetscErrorCode StackCreate(IntStack *);
-EXTERN PetscErrorCode StackDestroy(IntStack);
-EXTERN PetscErrorCode StackPush(IntStack, int);
-EXTERN PetscErrorCode StackPop(IntStack, int *);
-EXTERN PetscErrorCode StackTop(IntStack, int *);
-EXTERN PetscErrorCode StackEmpty(IntStack, PetscTruth *);
 
 /* Creation and destruction functions */
 EXTERN PetscErrorCode EventRegLogCreate(EventRegLog *);
