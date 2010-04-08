@@ -52,9 +52,9 @@ class Configure(PETSc.package.NewPackage):
       prefix = sys.exec_prefix
       if os.path.isfile(os.path.join(prefix,'Python')):
         for i in ['/usr/lib/libpython.dylib','/opt/local/lib/libpython2.5.dylib','/opt/local/lib/libpython2.6.dylib']:
-        if os.path.realpath(i) == os.path.join(prefix,'Python'):
-          self.addDefine('PYTHON_LIB','"'+os.path.join(i)+'"')
-          return
+          if os.path.realpath(i) == os.path.join(prefix,'Python'):
+            self.addDefine('PYTHON_LIB','"'+os.path.join(i)+'"')
+            return
         raise RuntimeError('realpath of /usr/lib/libpython.dylib ('+os.path.realpath('/usr/lib/libpython.dylib')+') does not point to Python library path ('+os.path.join(prefix,'Python')+') for current Python;\n Are you not using the Apple python?')
       elif os.path.isfile(os.path.join(prefix,'lib','libpython.dylib')):
         self.addDefine('PYTHON_LIB','"'+os.path.join(prefix,'lib','libpython.dylib')+'"')
