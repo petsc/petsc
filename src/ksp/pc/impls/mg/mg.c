@@ -456,15 +456,31 @@ PetscErrorCode PCSetUp_MG(PC pc)
     ierr = KSPSetOperators(mglevels[n-1]->smoothd,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
   }
 
-  if (pc->dm) {
+  if (pc->dm && !pc->setupcalled) {
+    /* construct the interpolation from the DMs */
+    Mat A,p;
     ierr = PetscMalloc(n*sizeof(DM),&dms);CHKERRQ(ierr);
     dms[n-1] = pc->dm;
     for (i=n-2; i>-1; i--) {
       ierr = DMCoarsen(dms[i+1],PETSC_NULL,&dms[i]);CHKERRQ(ierr);
+      ierr = DMGetInterpolation(dms[i],dms[i+1],&p,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PCMGSetInterpolation(pc,i+1,p);CHKERRQ(ierr);
+      ierr = MatDestroy(p);CHKERRQ(ierr);
     }
+
+    if (!mg->galerkin) {
+      /* build the empty matrices for the coarser meshes */
+      for (i=n-2; i>-1; i--) {
+	ierr = DMGetMatrix(dms[i],MATAIJ,&A);CHKERRQ(ierr);
+	ierr = KSPSetOperators(mglevels[i]->smoothd,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+	ierr = MatDestroy(A);CHKERRQ(ierr);
+      }
+    }
+
     for (i=n-2; i>-1; i--) {
       ierr = DMDestroy(dms[i]);CHKERRQ(ierr);
     }
+    ierr = PetscFree(dms);CHKERRQ(ierr);
   }
 
   if (mg->galerkin) {
