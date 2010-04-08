@@ -41,7 +41,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(
       PetscInt     *n_row_alloc_ok,   /* I/O: Number of rows which are already in their final  
 				     places in the arrays: they need not be moved any more */
       PetscInt     *n_alloc_used,     /* I/O:  */
-      PetscInt     *max_row_nnz       /*I  : Over-estimate of the number of nonzeros needed to 
+      PetscInt     *max_row_nnz       /* I  : Over-estimate of the number of nonzeros needed to 
 				    store each row */
      )
 {
@@ -421,7 +421,7 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
          val[k] = 0;
       }
 
-      /*Erase the values used in the work arrays */
+      /* Erase the values used in the work arrays */
       for (j=0; j<r_nnz; j++) { lvec[r_icol[j]] = 0; }
    }
 

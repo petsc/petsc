@@ -305,6 +305,7 @@ PetscErrorCode MatHYPRE_IJMatrixLink(Mat A,HYPRE_IJMatrix *ij)
    MATHYPRESTRUCT - MATHYPRESTRUCT = "hyprestruct" - A matrix type to be used for parallel sparse matrices
           based on the hypre HYPRE_StructMatrix.
 
+   Level: intermediate
 
    Notes: Unlike the more general support for blocks in hypre this allows only one block per process and requires the block
           be defined by a DA.
@@ -612,6 +613,8 @@ EXTERN_C_END
    MATHYPRESSTRUCT - MATHYPRESSTRUCT = "hypresstruct" - A matrix type to be used for parallel sparse matrices
           based on the hypre HYPRE_SStructMatrix.
   
+
+   Level: intermediate
   
    Notes: Unlike hypre's general semi-struct object consisting of a collection of structured-grid objects and unstructured
           grid objects, we will restrict the semi-struct objects to consist of only structured-grid components.
