@@ -3,7 +3,7 @@
 #include "petscsys.h"
 #include "petscfwk.h"
 
-PetscCookie PETSC_FWK_COOKIE;
+PetscClassId PETSC_FWK_CLASSID;
 static char PETSC_FWK_CLASS_NAME[] = "PetscFwk";
 
 static PetscTruth PetscFwkPackageInitialized = PETSC_FALSE;
@@ -353,7 +353,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkCreate(MPI_Comm comm, PetscFwk *framework
   ierr = PetscFwkInitializePackage(PETSC_NULL);CHKERRQ(ierr);
   /*#endif*/
   PetscValidPointer(framework,2);
-  ierr = PetscHeaderCreate(fwk,_p_PetscFwk,PetscInt,PETSC_FWK_COOKIE,0,"PetscFwk",comm,PetscFwkDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(fwk,_p_PetscFwk,PetscInt,PETSC_FWK_CLASSID,0,"PetscFwk",comm,PetscFwkDestroy,0);CHKERRQ(ierr);
   // >> C++
   fwk->id               = new std::map<std::string, PetscInt>;
   fwk->url              = new std::vector<std::string>;
@@ -421,7 +421,7 @@ PetscErrorCode PetscFwkInitializePackage(const char path[]){
     PetscFwkPackageInitialized = PETSC_TRUE;
   }
   /* Regster classes */
-  ierr = PetscCookieRegister(PETSC_FWK_CLASS_NAME, &PETSC_FWK_COOKIE); CHKERRQ(ierr);
+  ierr = PetscClassIdRegister(PETSC_FWK_CLASS_NAME, &PETSC_FWK_CLASSID); CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(PetscFwkFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }/* PetscFwkInitializePackage() */

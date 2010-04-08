@@ -520,8 +520,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagView(PetscBag bag,PetscViewer view)
       nitem = nitem->next;
     }
   } else if (isbinary) {
-    PetscInt cookie = PETSC_BAG_FILE_COOKIE, bagsize = (PetscInt) bag->bagsize, dtype;
-    ierr = PetscViewerBinaryWrite(view,&cookie,1,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
+    PetscInt classid = PETSC_BAG_FILE_CLASSID, bagsize = (PetscInt) bag->bagsize, dtype;
+    ierr = PetscViewerBinaryWrite(view,&classid,1,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(view,&bagsize,1,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(view,&bag->count,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(view,bag->bagname,PETSC_BAG_NAME_LENGTH,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
@@ -572,7 +572,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagLoad(PetscViewer view,PetscBag *bag)
 {
   PetscErrorCode ierr;
   PetscTruth     isbinary,skipoptions;
-  PetscInt       cookie,bagsizecount[2],i,offsetdtype[2],msize;
+  PetscInt       classid,bagsizecount[2],i,offsetdtype[2],msize;
   char           name[PETSC_BAG_NAME_LENGTH],help[PETSC_BAG_HELP_LENGTH],**list;
   PetscBagItem   nitem;
 
@@ -580,8 +580,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagLoad(PetscViewer view,PetscBag *bag)
   ierr = PetscTypeCompare((PetscObject)view,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_ERR_SUP,"No support for this viewer type");
 
-  ierr = PetscViewerBinaryRead(view,&cookie,1,PETSC_INT);CHKERRQ(ierr);
-  if (cookie != PETSC_BAG_FILE_COOKIE) SETERRQ(PETSC_ERR_ARG_WRONG,"Not PetscBag next in binary file");
+  ierr = PetscViewerBinaryRead(view,&classid,1,PETSC_INT);CHKERRQ(ierr);
+  if (classid != PETSC_BAG_FILE_CLASSID) SETERRQ(PETSC_ERR_ARG_WRONG,"Not PetscBag next in binary file");
   ierr = PetscViewerBinaryRead(view,bagsizecount,2,PETSC_INT);CHKERRQ(ierr);
   ierr = PetscMalloc(bagsizecount[0],bag);CHKERRQ(ierr);
   ierr = PetscMemzero(*bag,bagsizecount[0]);CHKERRQ(ierr);

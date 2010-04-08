@@ -6,7 +6,7 @@
 
 #include "private/matimpl.h"      /*I "petscmat.h" I*/
 
-PetscCookie PETSCMAT_DLLEXPORT MAT_NULLSPACE_COOKIE;
+PetscClassId PETSCMAT_DLLEXPORT MAT_NULLSPACE_CLASSID;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatNullSpaceSetFunction"
@@ -30,7 +30,7 @@ PetscCookie PETSCMAT_DLLEXPORT MAT_NULLSPACE_COOKIE;
 PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*rem)(MatNullSpace,Vec,void*),void *ctx)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(sp,MAT_NULLSPACE_COOKIE,1);
+  PetscValidHeaderSpecific(sp,MAT_NULLSPACE_CLASSID,1);
   sp->remove = rem;
   sp->rmctx  = ctx;
   PetscFunctionReturn(0);
@@ -79,7 +79,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceCreate(MPI_Comm comm,PetscTruth ha
   PetscFunctionBegin;
   if (n < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Number of vectors (given %D) cannot be negative",n);
   if (n) PetscValidPointer(vecs,4);
-  for (i=0; i<n; i++) PetscValidHeaderSpecific(vecs[i],VEC_COOKIE,4);
+  for (i=0; i<n; i++) PetscValidHeaderSpecific(vecs[i],VEC_CLASSID,4);
   PetscValidPointer(SP,5); 
  
   *SP = PETSC_NULL; 
@@ -87,7 +87,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceCreate(MPI_Comm comm,PetscTruth ha
   ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr); 
 #endif 
 
-  ierr = PetscHeaderCreate(sp,_p_MatNullSpace,int,MAT_NULLSPACE_COOKIE,0,"MatNullSpace",comm,MatNullSpaceDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(sp,_p_MatNullSpace,int,MAT_NULLSPACE_CLASSID,0,"MatNullSpace",comm,MatNullSpaceDestroy,0);CHKERRQ(ierr);
 
   sp->has_cnst = has_cnst;
   sp->n        = n;
@@ -133,7 +133,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceDestroy(MatNullSpace sp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(sp,MAT_NULLSPACE_COOKIE,1); 
+  PetscValidHeaderSpecific(sp,MAT_NULLSPACE_CLASSID,1); 
   if (--((PetscObject)sp)->refct > 0) PetscFunctionReturn(0);
 
   if (sp->vec)  { ierr = VecDestroy(sp->vec);CHKERRQ(ierr); }
@@ -171,8 +171,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(sp,MAT_NULLSPACE_COOKIE,1); 
-  PetscValidHeaderSpecific(vec,VEC_COOKIE,2); 
+  PetscValidHeaderSpecific(sp,MAT_NULLSPACE_CLASSID,1); 
+  PetscValidHeaderSpecific(vec,VEC_CLASSID,2); 
 
   if (out) {
     PetscValidPointer(out,3); 
@@ -237,8 +237,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceTest(MatNullSpace sp,Mat mat,Petsc
   PetscViewer    viewer;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(sp,MAT_NULLSPACE_COOKIE,1);
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,2);
+  PetscValidHeaderSpecific(sp,MAT_NULLSPACE_CLASSID,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
   n = sp->n;
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-mat_null_space_test_view",&flg1,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-mat_null_space_test_view_draw",&flg2,PETSC_NULL);CHKERRQ(ierr);

@@ -162,16 +162,16 @@ typedef int PetscErrorCode;
 
 /*MC
 
-    PetscCookie - A unique id used to identify each PETSc object.
+    PetscClassId - A unique id used to identify each PETSc object.
          (internal integer in the data structure used for error
          checking). These are all defined by an offset from the lowest
-         one, PETSC_SMALLEST_COOKIE. 
+         one, PETSC_SMALLEST_CLASSID. 
 
     Level: advanced
 
-.seealso: PetscCookieRegister(), PetscLogEventRegister(), PetscHeaderCreate()
+.seealso: PetscClassIdRegister(), PetscLogEventRegister(), PetscHeaderCreate()
 M*/
-typedef int PetscCookie;
+typedef int PetscClassId;
 
 /*MC
     PetscLogEvent - id used to identify PETSc or user events - primarily for logging
@@ -1282,10 +1282,10 @@ typedef enum {FILE_MODE_READ, FILE_MODE_WRITE, FILE_MODE_APPEND, FILE_MODE_UPDAT
 #include "petscviewer.h"
 #include "petscoptions.h"
 
-#define PETSC_SMALLEST_COOKIE 1211211
-extern PETSC_DLLEXPORT PetscCookie PETSC_LARGEST_COOKIE;
-extern PETSC_DLLEXPORT PetscCookie PETSC_OBJECT_COOKIE;
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscCookieRegister(const char[],PetscCookie *);
+#define PETSC_SMALLEST_CLASSID 1211211
+extern PETSC_DLLEXPORT PetscClassId PETSC_LARGEST_CLASSID;
+extern PETSC_DLLEXPORT PetscClassId PETSC_OBJECT_CLASSID;
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscClassIdRegister(const char[],PetscClassId *);
 
 /*
    Routines that get memory usage information from the OS
@@ -1357,11 +1357,11 @@ typedef PetscErrorCode (*PetscErrorCodeFunction)(void);
     Functions that can act on any PETSc object.
 */
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectCreate(MPI_Comm,PetscObject*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectCreateGeneric(MPI_Comm, PetscCookie, const char [], PetscObject *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectCreateGeneric(MPI_Comm, PetscClassId, const char [], PetscObject *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectDestroy(PetscObject);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectExists(PetscObject,PetscTruth*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetComm(PetscObject,MPI_Comm *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetCookie(PetscObject,PetscCookie *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetClassid(PetscObject,PetscClassId *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectSetType(PetscObject,const char []);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetType(PetscObject,const char *[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectSetName(PetscObject,const char[]);
@@ -1639,7 +1639,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscPopUpSelect(MPI_Comm,const char*,con
 
 .seealso:  PetscObject, PetscContainerCreate()
 S*/
-extern PetscCookie PETSC_DLLEXPORT PETSC_CONTAINER_COOKIE;
+extern PetscClassId PETSC_DLLEXPORT PETSC_CONTAINER_CLASSID;
 typedef struct _p_PetscContainer*  PetscContainer;
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscContainerGetPointer(PetscContainer,void **);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscContainerSetPointer(PetscContainer,void *);
@@ -2189,7 +2189,7 @@ E*/
 #define PETSCSPRNG      "sprng"          
 
 /* Logging support */
-extern PETSC_DLLEXPORT PetscCookie PETSC_RANDOM_COOKIE;
+extern PETSC_DLLEXPORT PetscClassId PETSC_RANDOM_CLASSID;
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomInitializePackage(const char[]);
 

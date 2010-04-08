@@ -761,7 +761,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileGetMode(PetscViewer viewer,PetscFi
   PetscErrorCode ierr,(*f)(PetscViewer,PetscFileMode*);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(type,2);
   ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerFileGetMode_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -793,7 +793,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinarySetMPIIO(PetscViewer viewer)
   PetscErrorCode ierr,(*f)(PetscViewer);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerBinarySetMPIIO_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(viewer);CHKERRQ(ierr);
@@ -824,7 +824,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetMode(PetscViewer viewer,PetscFi
   PetscErrorCode ierr,(*f)(PetscViewer,PetscFileMode);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerFileSetMode_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(viewer,type);CHKERRQ(ierr);

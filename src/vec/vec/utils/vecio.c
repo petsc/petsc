@@ -49,7 +49,7 @@ EXTERN PetscErrorCode VecLoadIntoVector_Netcdf(PetscViewer, Vec);
   But for anyone who's interested, the standard binary matrix storage
   format is
 .vb
-     int    VEC_FILE_COOKIE
+     int    VEC_FILE_CLASSID
      int    number of rows
      PetscScalar *values of all entries
 .ve
@@ -78,7 +78,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, const VecType outt
 #endif
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(newvec,3);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HDF5)
@@ -179,7 +179,7 @@ PetscErrorCode VecLoad_Netcdf(PetscViewer viewer,Vec *newvec)
 }
 #endif
 
-#include "petscmat.h" /* so that MAT_FILE_COOKIE is defined */
+#include "petscmat.h" /* so that MAT_FILE_CLASSID is defined */
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoad_Binary"
@@ -210,9 +210,9 @@ PetscErrorCode VecLoad_Binary(PetscViewer viewer, const VecType itype,Vec *newve
   ierr = PetscViewerBinaryRead(viewer,tr,2,PETSC_INT);CHKERRQ(ierr);
   type = tr[0];
   rows = tr[1];
-  if (type != VEC_FILE_COOKIE) {
+  if (type != VEC_FILE_CLASSID) {
       ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
-      if (type == MAT_FILE_COOKIE) {
+      if (type == MAT_FILE_CLASSID) {
         SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix is next in file, not a vector as you requested");
       } else {
         SETERRQ(PETSC_ERR_ARG_WRONG,"Not a vector next in file");
@@ -442,7 +442,7 @@ PetscErrorCode VecLoadIntoVector_Binary(PetscViewer viewer,Vec vec)
   if (!rank) {
     /* Read vector header. */
     ierr = PetscBinaryRead(fd,&type,1,PETSC_INT);CHKERRQ(ierr);
-    if (type != VEC_FILE_COOKIE) SETERRQ(PETSC_ERR_ARG_WRONG,"Non-vector object");
+    if (type != VEC_FILE_CLASSID) SETERRQ(PETSC_ERR_ARG_WRONG,"Non-vector object");
     ierr = PetscBinaryRead(fd,&rows,1,PETSC_INT);CHKERRQ(ierr);
     ierr = VecGetSize(vec,&n);CHKERRQ(ierr);
     if (n != rows) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Vector in file different length then input vector");

@@ -54,7 +54,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFormat(PetscViewer viewer,PetscView
 {
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   CHKMEMQ;
   viewer->format     = format;
   CHKMEMQ;
@@ -105,7 +105,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFormat(PetscViewer viewer,PetscView
 PetscErrorCode PETSC_DLLEXPORT PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat format)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   if (viewer->iformat > 9) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Too many pushes");
 
   viewer->formats[viewer->iformat++]  = viewer->format;
@@ -134,7 +134,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerPushFormat(PetscViewer viewer,PetscVie
 PetscErrorCode PETSC_DLLEXPORT PetscViewerPopFormat(PetscViewer viewer)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   if (viewer->iformat <= 0) PetscFunctionReturn(0);
 
   viewer->format = viewer->formats[--viewer->iformat];

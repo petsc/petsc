@@ -32,7 +32,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGSetRadius(KSP ksp, PetscReal radius)
   PetscErrorCode ierr, (*f)(KSP, PetscReal);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_COOKIE, 1);
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (radius < 0.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE, "Radius negative");
   ierr = PetscObjectQueryFunction((PetscObject)ksp, "KSPSTCGSetRadius_C", (void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -61,7 +61,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetNormD(KSP ksp, PetscReal *norm_d)
   PetscErrorCode ierr, (*f)(KSP, PetscReal *);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_COOKIE, 1);
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   ierr = PetscObjectQueryFunction((PetscObject)ksp, "KSPSTCGGetNormD_C", (void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp, norm_d);CHKERRQ(ierr);
@@ -89,7 +89,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetObjFcn(KSP ksp, PetscReal *o_fcn)
   PetscErrorCode ierr, (*f)(KSP, PetscReal *);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_COOKIE, 1);
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   ierr = PetscObjectQueryFunction((PetscObject)ksp, "KSPSTCGGetObjFcn_C", (void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp, o_fcn);CHKERRQ(ierr);

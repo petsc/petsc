@@ -229,7 +229,7 @@ PetscErrorCode EventPerfLogEnsureSize(EventPerfLog eventLog, int size)
   Input Parameters:
 + eventLog - The EventLog
 . ename    - The name associated with the event
-- cookie   - The cookie associated to the class for this event
+- classid   - The classid associated to the class for this event
 
   Output Parameter:
 . event    - The event
@@ -265,7 +265,7 @@ PetscErrorCode EventPerfLogEnsureSize(EventPerfLog eventLog, int size)
 .seealso: PetscLogEventBegin(), PetscLogEventEnd(), PetscLogFlops(), PetscLogEventMPEActivate(), PetscLogEventMPEDeactivate(),
           EventLogActivate(), EventLogDeactivate()
 @*/
-PetscErrorCode EventRegLogRegister(EventRegLog eventLog, const char ename[], PetscCookie cookie, PetscLogEvent *event) 
+PetscErrorCode EventRegLogRegister(EventRegLog eventLog, const char ename[], PetscClassId classid, PetscLogEvent *event) 
 {
   EventRegInfo *eventInfo;
   char         *str;
@@ -275,7 +275,7 @@ PetscErrorCode EventRegLogRegister(EventRegLog eventLog, const char ename[], Pet
   PetscFunctionBegin;
   PetscValidCharPointer(ename,2);
   PetscValidIntPointer(event,4);
-  /* Should check cookie I think */
+  /* Should check classid I think */
   e = eventLog->numEvents++;
   if (eventLog->numEvents > eventLog->maxEvents) {
     ierr = PetscMalloc(eventLog->maxEvents*2 * sizeof(EventRegInfo), &eventInfo);CHKERRQ(ierr);
@@ -286,7 +286,7 @@ PetscErrorCode EventRegLogRegister(EventRegLog eventLog, const char ename[], Pet
   }
   ierr = PetscStrallocpy(ename, &str);CHKERRQ(ierr);
   eventLog->eventInfo[e].name   = str;
-  eventLog->eventInfo[e].cookie = cookie;
+  eventLog->eventInfo[e].classid = classid;
 #if defined(PETSC_HAVE_MPE)
   if (UseMPE) {
     const char  *color;
@@ -389,21 +389,21 @@ PetscErrorCode EventPerfLogDeactivate(EventPerfLog eventLog, PetscLogEvent event
   Input Parameters:
 + eventLog    - The EventPerfLog
 . eventRegLog - The EventRegLog
-- cookie      - The class id, for example MAT_COOKIE, SNES_COOKIE,
+- classid      - The class id, for example MAT_CLASSID, SNES_CLASSID,
 
   Level: developer
 
 .seealso: EventPerfLogDeactivateClass(), EventPerfLogActivate(), EventPerfLogDeactivate()
 @*/
-PetscErrorCode EventPerfLogActivateClass(EventPerfLog eventLog, EventRegLog eventRegLog, PetscCookie cookie) 
+PetscErrorCode EventPerfLogActivateClass(EventPerfLog eventLog, EventRegLog eventRegLog, PetscClassId classid) 
 { 
   int e;
 
   PetscFunctionBegin;
   for(e = 0; e < eventLog->numEvents; e++) {
-    int c = eventRegLog->eventInfo[e].cookie;
+    int c = eventRegLog->eventInfo[e].classid;
 
-    if (c == cookie) eventLog->eventInfo[e].active = PETSC_TRUE;
+    if (c == classid) eventLog->eventInfo[e].active = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }
@@ -418,21 +418,21 @@ PetscErrorCode EventPerfLogActivateClass(EventPerfLog eventLog, EventRegLog even
   Input Parameters:
 + eventLog    - The EventPerfLog
 . eventRegLog - The EventRegLog
-- cookie - The class id, for example MAT_COOKIE, SNES_COOKIE,
+- classid - The class id, for example MAT_CLASSID, SNES_CLASSID,
 
   Level: developer
 
 .seealso: EventPerfLogDeactivateClass(), EventPerfLogDeactivate(), EventPerfLogActivate()
 @*/
-PetscErrorCode EventPerfLogDeactivateClass(EventPerfLog eventLog, EventRegLog eventRegLog, PetscCookie cookie) 
+PetscErrorCode EventPerfLogDeactivateClass(EventPerfLog eventLog, EventRegLog eventRegLog, PetscClassId classid) 
 {
   int e;
 
   PetscFunctionBegin;
   for(e = 0; e < eventLog->numEvents; e++) {
-    int c = eventRegLog->eventInfo[e].cookie;
+    int c = eventRegLog->eventInfo[e].classid;
 
-    if (c == cookie) eventLog->eventInfo[e].active = PETSC_FALSE;
+    if (c == classid) eventLog->eventInfo[e].active = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
 }
@@ -686,7 +686,7 @@ PetscErrorCode PetscLogEventBeginComplete(PetscLogEvent event, int t, PetscObjec
     actions[numActions].time   = curTime - BaseTime;
     actions[numActions].action = ACTIONBEGIN;
     actions[numActions].event  = event;
-    actions[numActions].cookie = eventRegLog->eventInfo[event].cookie;
+    actions[numActions].classid = eventRegLog->eventInfo[event].classid;
     if (o1) actions[numActions].id1 = o1->id; else actions[numActions].id1 = -1;
     if (o2) actions[numActions].id2 = o2->id; else actions[numActions].id2 = -1;
     if (o3) actions[numActions].id3 = o3->id; else actions[numActions].id3 = -1;
@@ -743,7 +743,7 @@ PetscErrorCode PetscLogEventEndComplete(PetscLogEvent event, int t, PetscObject 
     actions[numActions].time   = curTime - BaseTime;
     actions[numActions].action = ACTIONEND;
     actions[numActions].event  = event;
-    actions[numActions].cookie = eventRegLog->eventInfo[event].cookie;
+    actions[numActions].classid = eventRegLog->eventInfo[event].classid;
     if (o1) actions[numActions].id1 = o1->id; else actions[numActions].id1 = -1;
     if (o2) actions[numActions].id2 = o2->id; else actions[numActions].id2 = -1;
     if (o3) actions[numActions].id3 = o3->id; else actions[numActions].id3 = -1;

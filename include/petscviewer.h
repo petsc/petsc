@@ -31,7 +31,7 @@ typedef struct _p_PetscViewer* PetscViewer;
 extern "C" {
 #endif
 
-extern PETSC_DLLEXPORT PetscCookie PETSC_VIEWER_COOKIE;
+extern PETSC_DLLEXPORT PetscClassId PETSC_VIEWER_CLASSID;
 
 #if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
 }

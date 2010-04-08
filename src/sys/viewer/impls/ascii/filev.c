@@ -238,7 +238,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIISetTab(PetscViewer viewer,PetscIn
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ascii->tab = tabs;
@@ -276,7 +276,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIPushTab(PetscViewer viewer)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ascii->tab++;
@@ -314,7 +314,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIPopTab(PetscViewer viewer)
   PetscTruth        iascii;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     if (ascii->tab <= 0) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"More tabs popped than pushed");
@@ -353,7 +353,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIUseTabs(PetscViewer viewer,PetscT
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     if (flg) {
@@ -407,7 +407,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIPrintf(PetscViewer viewer,const c
   int               err;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidCharPointer(format,2);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (!iascii) SETERRQ(PETSC_ERR_ARG_WRONG,"Not ASCII PetscViewer");
@@ -480,7 +480,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName(PetscViewer viewer,const c
   PetscErrorCode ierr,(*f)(PetscViewer,const char[]);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidCharPointer(name,2);
   ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerFileSetName_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -512,7 +512,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileGetName(PetscViewer viewer,char **
   PetscErrorCode ierr,(*f)(PetscViewer,char **);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerFileGetName_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(viewer,name);CHKERRQ(ierr);
@@ -818,7 +818,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIISynchronizedPrintf(PetscViewer vi
   int               err;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidCharPointer(format,2);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (!iascii) SETERRQ(PETSC_ERR_ARG_WRONG,"Not ASCII PetscViewer");
@@ -967,7 +967,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIMonitorPrintf(PetscViewerASCIIMon
   int               err;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidCharPointer(format,2);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (!iascii) SETERRQ(PETSC_ERR_ARG_WRONG,"Not ASCII PetscViewer");

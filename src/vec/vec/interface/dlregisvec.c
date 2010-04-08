@@ -48,16 +48,16 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISInitializePackage(const char path[])
   if (ISPackageInitialized) PetscFunctionReturn(0);
   ISPackageInitialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscCookieRegister("Index Set",&IS_COOKIE);CHKERRQ(ierr);
-  ierr = PetscCookieRegister("IS L to G Mapping",&IS_LTOGM_COOKIE);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Index Set",&IS_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("IS L to G Mapping",&IS_LTOGM_CLASSID);CHKERRQ(ierr);
 
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "is", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscInfoDeactivateClass(IS_COOKIE);CHKERRQ(ierr);
-      ierr = PetscInfoDeactivateClass(IS_LTOGM_COOKIE);CHKERRQ(ierr);
+      ierr = PetscInfoDeactivateClass(IS_CLASSID);CHKERRQ(ierr);
+      ierr = PetscInfoDeactivateClass(IS_LTOGM_CLASSID);CHKERRQ(ierr);
     }
   }
   /* Process summary exclusions */
@@ -65,8 +65,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISInitializePackage(const char path[])
   if (opt) {
     ierr = PetscStrstr(logList, "is", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogEventDeactivateClass(IS_COOKIE);CHKERRQ(ierr);
-      ierr = PetscLogEventDeactivateClass(IS_LTOGM_COOKIE);CHKERRQ(ierr);
+      ierr = PetscLogEventDeactivateClass(IS_CLASSID);CHKERRQ(ierr);
+      ierr = PetscLogEventDeactivateClass(IS_LTOGM_CLASSID);CHKERRQ(ierr);
     }
   }
   ierr = PetscRegisterFinalize(ISFinalizePackage);CHKERRQ(ierr);
@@ -115,47 +115,47 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char path[])
   if (VecPackageInitialized) PetscFunctionReturn(0);
   VecPackageInitialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscCookieRegister("Vec",&VEC_COOKIE);CHKERRQ(ierr);
-  ierr = PetscCookieRegister("Vec Scatter",&VEC_SCATTER_COOKIE);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Vec",&VEC_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Vec Scatter",&VEC_SCATTER_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = VecRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister("VecView",          VEC_COOKIE,&VEC_View);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecMax",           VEC_COOKIE,&VEC_Max);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecMin",           VEC_COOKIE,&VEC_Min);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecDotBarrier",    VEC_COOKIE,&VEC_DotBarrier);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecDot",           VEC_COOKIE,&VEC_Dot);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecDotNormBarr",   VEC_COOKIE,&VEC_DotNormBarrier);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecDotNorm2",      VEC_COOKIE,&VEC_DotNorm);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecMDotBarrier",   VEC_COOKIE,&VEC_MDotBarrier);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecMDot",          VEC_COOKIE,&VEC_MDot);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecTDot",          VEC_COOKIE,&VEC_TDot);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecMTDot",         VEC_COOKIE,&VEC_MTDot);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecNormBarrier",   VEC_COOKIE,&VEC_NormBarrier);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecNorm",          VEC_COOKIE,&VEC_Norm);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecScale",         VEC_COOKIE,&VEC_Scale);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecCopy",          VEC_COOKIE,&VEC_Copy);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecSet",           VEC_COOKIE,&VEC_Set);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecAXPY",          VEC_COOKIE,&VEC_AXPY);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecAYPX",          VEC_COOKIE,&VEC_AYPX);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecAXPBYCZ",       VEC_COOKIE,&VEC_AXPBYPCZ);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecWAXPY",         VEC_COOKIE,&VEC_WAXPY);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecMAXPY",         VEC_COOKIE,&VEC_MAXPY);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecSwap",          VEC_COOKIE,&VEC_Swap);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecOps",           VEC_COOKIE,&VEC_Ops);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecAssemblyBegin", VEC_COOKIE,&VEC_AssemblyBegin);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecAssemblyEnd",   VEC_COOKIE,&VEC_AssemblyEnd);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecPointwiseMult", VEC_COOKIE,&VEC_PointwiseMult);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecSetValues",     VEC_COOKIE,&VEC_SetValues);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecLoad",          VEC_COOKIE,&VEC_Load);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecScatterBarrie", VEC_COOKIE,&VEC_ScatterBarrier);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecScatterBegin",  VEC_COOKIE,&VEC_ScatterBegin);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecScatterEnd",    VEC_COOKIE,&VEC_ScatterEnd);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecSetRandom",     VEC_COOKIE,&VEC_SetRandom);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecReduceArith",   VEC_COOKIE,&VEC_ReduceArithmetic);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecReduceBarrier", VEC_COOKIE,&VEC_ReduceBarrier);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecReduceComm",    VEC_COOKIE,&VEC_ReduceCommunication);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecNormalize",     VEC_COOKIE,&VEC_Normalize);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecView",          VEC_CLASSID,&VEC_View);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecMax",           VEC_CLASSID,&VEC_Max);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecMin",           VEC_CLASSID,&VEC_Min);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecDotBarrier",    VEC_CLASSID,&VEC_DotBarrier);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecDot",           VEC_CLASSID,&VEC_Dot);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecDotNormBarr",   VEC_CLASSID,&VEC_DotNormBarrier);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecDotNorm2",      VEC_CLASSID,&VEC_DotNorm);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecMDotBarrier",   VEC_CLASSID,&VEC_MDotBarrier);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecMDot",          VEC_CLASSID,&VEC_MDot);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecTDot",          VEC_CLASSID,&VEC_TDot);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecMTDot",         VEC_CLASSID,&VEC_MTDot);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecNormBarrier",   VEC_CLASSID,&VEC_NormBarrier);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecNorm",          VEC_CLASSID,&VEC_Norm);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecScale",         VEC_CLASSID,&VEC_Scale);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecCopy",          VEC_CLASSID,&VEC_Copy);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecSet",           VEC_CLASSID,&VEC_Set);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecAXPY",          VEC_CLASSID,&VEC_AXPY);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecAYPX",          VEC_CLASSID,&VEC_AYPX);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecAXPBYCZ",       VEC_CLASSID,&VEC_AXPBYPCZ);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecWAXPY",         VEC_CLASSID,&VEC_WAXPY);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecMAXPY",         VEC_CLASSID,&VEC_MAXPY);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecSwap",          VEC_CLASSID,&VEC_Swap);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecOps",           VEC_CLASSID,&VEC_Ops);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecAssemblyBegin", VEC_CLASSID,&VEC_AssemblyBegin);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecAssemblyEnd",   VEC_CLASSID,&VEC_AssemblyEnd);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecPointwiseMult", VEC_CLASSID,&VEC_PointwiseMult);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecSetValues",     VEC_CLASSID,&VEC_SetValues);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecLoad",          VEC_CLASSID,&VEC_Load);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecScatterBarrie", VEC_CLASSID,&VEC_ScatterBarrier);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecScatterBegin",  VEC_CLASSID,&VEC_ScatterBegin);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecScatterEnd",    VEC_CLASSID,&VEC_ScatterEnd);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecSetRandom",     VEC_CLASSID,&VEC_SetRandom);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecReduceArith",   VEC_CLASSID,&VEC_ReduceArithmetic);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecReduceBarrier", VEC_CLASSID,&VEC_ReduceBarrier);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecReduceComm",    VEC_CLASSID,&VEC_ReduceCommunication);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecNormalize",     VEC_CLASSID,&VEC_Normalize);CHKERRQ(ierr);
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(VEC_DotBarrier, PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscLogEventSetActiveAll(VEC_DotNormBarrier, PETSC_FALSE);CHKERRQ(ierr);
@@ -169,7 +169,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char path[])
   if (opt) {
     ierr = PetscStrstr(logList, "vec", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscInfoDeactivateClass(VEC_COOKIE);CHKERRQ(ierr);
+      ierr = PetscInfoDeactivateClass(VEC_CLASSID);CHKERRQ(ierr);
     }
   }
   /* Process summary exclusions */
@@ -177,7 +177,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char path[])
   if (opt) {
     ierr = PetscStrstr(logList, "vec", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogEventDeactivateClass(VEC_COOKIE);CHKERRQ(ierr);
+      ierr = PetscLogEventDeactivateClass(VEC_CLASSID);CHKERRQ(ierr);
     }
   }
   /* Special processing */

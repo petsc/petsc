@@ -957,7 +957,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHYPRESetType(PC pc,const char name[])
   PetscErrorCode ierr,(*f)(PC,const char[]);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidCharPointer(name,2);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCHYPRESetType_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -988,7 +988,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHYPREGetType(PC pc,const char *name[])
   PetscErrorCode ierr,(*f)(PC,const char*[]);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(name,2);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCHYPREGetType_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {

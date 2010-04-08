@@ -256,9 +256,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSubMatrix(Mat A,IS isrow,IS iscol,Mat
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
-  PetscValidHeaderSpecific(isrow,IS_COOKIE,2);
-  PetscValidHeaderSpecific(iscol,IS_COOKIE,3);
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(isrow,IS_CLASSID,2);
+  PetscValidHeaderSpecific(iscol,IS_CLASSID,3);
   PetscValidPointer(newmat,4);
   *newmat = 0;
 
@@ -337,10 +337,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSubMatrixUpdate(Mat N,Mat A,IS isrow,IS isc
   Mat_SubMatrix  *Na;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(N,MAT_COOKIE,1);
-  PetscValidHeaderSpecific(A,MAT_COOKIE,2);
-  PetscValidHeaderSpecific(isrow,IS_COOKIE,3);
-  PetscValidHeaderSpecific(iscol,IS_COOKIE,4);
+  PetscValidHeaderSpecific(N,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(A,MAT_CLASSID,2);
+  PetscValidHeaderSpecific(isrow,IS_CLASSID,3);
+  PetscValidHeaderSpecific(iscol,IS_CLASSID,4);
   ierr = PetscTypeCompare((PetscObject)N,MATSUBMATRIX,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix has wrong type");
 

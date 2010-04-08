@@ -173,7 +173,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOMappingHasApplicationIndex(AO ao, PetscInt id
   PetscInt   low, high, mid;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao, AO_COOKIE,1);
+  PetscValidHeaderSpecific(ao, AO_CLASSID,1);
   PetscValidPointer(hasIndex,3);
   aomap = (AO_Mapping *) ao->data;
   app   = aomap->app;
@@ -222,7 +222,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOMappingHasPetscIndex(AO ao, PetscInt idex, Pe
   PetscInt   low, high, mid;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao, AO_COOKIE,1);
+  PetscValidHeaderSpecific(ao, AO_CLASSID,1);
   PetscValidPointer(hasIndex,3);
   aomap = (AO_Mapping *) ao->data;
   petsc = aomap->petsc;
@@ -292,7 +292,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateMapping(MPI_Comm comm,PetscInt napp,con
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_COOKIE, AO_MAPPING, "AO", comm, AODestroy, AOView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_CLASSID, AO_MAPPING, "AO", comm, AODestroy, AOView);CHKERRQ(ierr);
   ierr = PetscNewLog(ao, AO_Mapping, &aomap);CHKERRQ(ierr);
   ierr = PetscMemcpy(ao->ops, &AOps, sizeof(AOps));CHKERRQ(ierr);
   ao->data = (void*) aomap;

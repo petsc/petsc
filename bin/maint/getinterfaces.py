@@ -220,7 +220,7 @@ def getaliases():
   aliases['MPI_Request']        = 'int'  
   aliases['FILE']               = 'int'
   aliases['PetscMPIInt']        = 'int'
-  aliases['PetscCookie']        = 'int'
+  aliases['PetscClassId']        = 'int'
   aliases['PetscLogDouble']     = 'double'
   aliases['PetscTablePosition'] = 'int*'
   aliases['ISColoringValue']    = 'ushort'

@@ -40,8 +40,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColumnVector(Mat A,Vec yy,PetscInt col)
   const PetscInt     *idx;
   
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,1); 
-  PetscValidHeaderSpecific(yy,VEC_COOKIE,2); 
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1); 
+  PetscValidHeaderSpecific(yy,VEC_CLASSID,2); 
   if (col < 0)  SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Requested negative column: %D",col);
   ierr = MatGetSize(A,PETSC_NULL,&N);CHKERRQ(ierr);
   if (col >= N)  SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Requested column %D larger than number columns in matrix %D",col,N);

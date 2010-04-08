@@ -58,7 +58,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPChebychevSetEigenvalues(KSP ksp,PetscReal e
   PetscErrorCode ierr,(*f)(KSP,PetscReal,PetscReal);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPChebychevSetEigenvalues_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,emax,emin);CHKERRQ(ierr);

@@ -295,7 +295,7 @@ PetscErrorCode MatView_SeqAIJ_Binary(Mat A,PetscViewer viewer)
   PetscFunctionBegin;  
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscMalloc((4+A->rmap->n)*sizeof(PetscInt),&col_lens);CHKERRQ(ierr);
-  col_lens[0] = MAT_FILE_COOKIE;
+  col_lens[0] = MAT_FILE_CLASSID;
   col_lens[1] = A->rmap->n;
   col_lens[2] = A->cmap->n;
   col_lens[3] = a->nz;
@@ -2674,7 +2674,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetColumnIndices(Mat mat,PetscInt *in
   PetscErrorCode ierr,(*f)(Mat,PetscInt *);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(indices,2);
   ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSeqAIJSetColumnIndices_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -2767,7 +2767,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatStoreValues(Mat mat)
   PetscErrorCode ierr,(*f)(Mat);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
@@ -2824,7 +2824,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRetrieveValues(Mat mat)
   PetscErrorCode ierr,(*f)(Mat);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
@@ -3072,7 +3072,7 @@ PetscErrorCode MatSeqAIJSetPreallocationCSR(Mat B,const PetscInt i[],const Petsc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(B,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(B,MAT_CLASSID,1);
   ierr = PetscObjectQueryFunction((PetscObject)B,"MatSeqAIJSetPreallocationCSR_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(B,i,j,v);CHKERRQ(ierr);
@@ -3543,7 +3543,7 @@ PetscErrorCode MatLoad_SeqAIJ(PetscViewer viewer, const MatType type,Mat *A)
   if (size > 1) SETERRQ(PETSC_ERR_ARG_SIZ,"view must have one processor");
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,header,4,PETSC_INT);CHKERRQ(ierr);
-  if (header[0] != MAT_FILE_COOKIE) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"not matrix object in file");
+  if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"not matrix object in file");
   M = header[1]; N = header[2]; nz = header[3];
 
   if (nz < 0) {

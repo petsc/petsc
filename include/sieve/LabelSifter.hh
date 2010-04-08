@@ -406,13 +406,13 @@ namespace ALE {
     int         _commRank;
     int         _commSize;
     void __init(MPI_Comm comm) {
-      static PetscCookie sifterType = -1;
+      static PetscClassId sifterType = -1;
       //const char        *id_name = ALE::getClassName<T>();
       const char        *id_name = "LabelSifter";
       PetscErrorCode     ierr;
 
       if (sifterType < 0) {
-        ierr = PetscCookieRegister(id_name,&sifterType);CHKERROR(ierr, "Error in MPI_Comm_rank"); 
+        ierr = PetscClassIdRegister(id_name,&sifterType);CHKERROR(ierr, "Error in MPI_Comm_rank"); 
       }
       this->_comm = comm;
       ierr = MPI_Comm_rank(this->_comm, &this->_commRank);CHKERROR(ierr, "Error in MPI_Comm_rank");

@@ -31,8 +31,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure
   PetscInt       m1,m2,n1,n2;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(X,MAT_COOKIE,3); 
-  PetscValidHeaderSpecific(Y,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(X,MAT_CLASSID,3); 
+  PetscValidHeaderSpecific(Y,MAT_CLASSID,1);
 
   ierr = MatGetSize(X,&m1,&n1);CHKERRQ(ierr);
   ierr = MatGetSize(Y,&m2,&n2);CHKERRQ(ierr);
@@ -106,7 +106,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatShift(Mat Y,PetscScalar a)
   PetscInt       i,start,end;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(Y,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(Y,MAT_CLASSID,1);
   if (!Y->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (Y->factortype) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   ierr = MatPreallocated(Y);CHKERRQ(ierr);
@@ -174,8 +174,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalSet(Mat Y,Vec D,InsertMode is)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(Y,MAT_COOKIE,1);
-  PetscValidHeaderSpecific(D,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(Y,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(D,VEC_CLASSID,2);
   if (Y->ops->diagonalset) {
     ierr = (*Y->ops->diagonalset)(Y,D,is);CHKERRQ(ierr);
   } else {
@@ -213,8 +213,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAYPX(Mat Y,PetscScalar a,Mat X,MatStructure
   PetscInt       mX,mY,nX,nY;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(X,MAT_COOKIE,2);
-  PetscValidHeaderSpecific(Y,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(X,MAT_CLASSID,2);
+  PetscValidHeaderSpecific(Y,MAT_CLASSID,1);
 
   ierr = MatGetSize(X,&mX,&nX);CHKERRQ(ierr);
   ierr = MatGetSize(X,&mY,&nY);CHKERRQ(ierr);
@@ -261,7 +261,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatComputeExplicitOperator(Mat inmat,Mat *mat)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(inmat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(inmat,MAT_CLASSID,1);
   PetscValidPointer(mat,2);
 
   comm = ((PetscObject)inmat)->comm;

@@ -1116,7 +1116,7 @@
        data flag/-1/,flux_label/'FluxEvaluation  '/
        save flux_event, fun3d_class, flag, flux_label
        if (flag .eq. -1) then
-          call PetscCookieRegister('PetscFun3d',fun3d_class,ierr)
+          call PetscClassIdRegister('PetscFun3d',fun3d_class,ierr)
           call PetscLogEventRegister(flux_label,                        &
      &         fun3d_class,flux_event,ierr)         
           flag = 1

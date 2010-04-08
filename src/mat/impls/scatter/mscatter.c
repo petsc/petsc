@@ -35,7 +35,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatScatterGetVecScatter(Mat mat,VecScatter *sc
   Mat_Scatter    *mscatter;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(scatter,2); 
   mscatter = (Mat_Scatter*)mat->data;
   *scatter = mscatter->scatter;
@@ -314,8 +314,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatScatterSetVecScatter(Mat mat,VecScatter sca
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
-  PetscValidHeaderSpecific(scatter,VEC_SCATTER_COOKIE,2);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(scatter,VEC_SCATTER_CLASSID,2);
   PetscCheckSameComm((PetscObject)scatter,1,(PetscObject)mat,2);
   if (mat->rmap->n != scatter->to_n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Number of local rows in matrix %D not equal local scatter size %D",mat->rmap->n,scatter->to_n);
   if (mat->cmap->n != scatter->from_n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Number of local columns in matrix %D not equal local scatter size %D",mat->cmap->n,scatter->from_n);

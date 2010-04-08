@@ -26,7 +26,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessCreate_Method1(KSP ksp,int  max
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   ierr = PetscMalloc(sizeof(KSPFischerGuess_Method1),&itg);CHKERRQ(ierr);
   ierr = PetscMalloc(maxl * sizeof(PetscScalar),&itg->alpha);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(ksp,sizeof(KSPFischerGuess_Method1) + maxl*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -70,7 +70,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessFormGuess_Method1(KSPFischerGue
 
   PetscFunctionBegin;
   PetscValidPointer(itg,2);
-  PetscValidHeaderSpecific(x,VEC_COOKIE,3);  
+  PetscValidHeaderSpecific(x,VEC_CLASSID,3);  
   ierr = VecSet(x,0.0);CHKERRQ(ierr);
   ierr = VecMDot(b,itg->curl,itg->btilde,itg->alpha);CHKERRQ(ierr);
   if (itg->monitor) {
@@ -95,7 +95,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessUpdate_Method1(KSPFischerGuess_
   int            curl = itg->curl,i;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidPointer(itg,3);
   if (curl == itg->maxl) {
     ierr = KSP_MatMult(itg->ksp,itg->mat,x,itg->btilde[0]);CHKERRQ(ierr);
@@ -149,7 +149,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessCreate_Method2(KSP ksp,int  max
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   ierr = PetscMalloc(sizeof(KSPFischerGuess_Method2),&itg);CHKERRQ(ierr);
   ierr = PetscMalloc(maxl * sizeof(PetscScalar),&itg->alpha);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(ksp,sizeof(KSPFischerGuess_Method2) + maxl*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -193,7 +193,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessFormGuess_Method2(KSPFischerGue
 
   PetscFunctionBegin;
   PetscValidPointer(itg,2);
-  PetscValidHeaderSpecific(x,VEC_COOKIE,3);  
+  PetscValidHeaderSpecific(x,VEC_CLASSID,3);  
   ierr = VecSet(x,0.0);CHKERRQ(ierr);
   ierr = VecMDot(b,itg->curl,itg->xtilde,itg->alpha);CHKERRQ(ierr);
   if (itg->monitor) {
@@ -218,7 +218,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessUpdate_Method2(KSPFischerGuess_
   int            curl = itg->curl,i;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidPointer(itg,3);
   if (curl == itg->maxl) {
     ierr = KSP_MatMult(itg->ksp,itg->mat,x,itg->Ax);CHKERRQ(ierr); /* norm = sqrt(x'Ax) */

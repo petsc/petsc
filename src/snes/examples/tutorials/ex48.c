@@ -77,7 +77,7 @@ There are two compile-time options:
                           && !defined PETSC_USE_SCALAR_LONG_DOUBLE      \
                           && defined __SSE2__)
 
-static PetscCookie THI_COOKIE;
+static PetscClassId THI_CLASSID;
 
 typedef enum {QUAD_GAUSS,QUAD_LOBATTO} QuadratureType;
 static const char *QuadratureTypes[] = {"gauss","lobatto","QuadratureType","QUAD_",0};
@@ -403,10 +403,10 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
   PetscFunctionBegin;
   *inthi = 0;
   if (!registered) {
-    ierr = PetscCookieRegister("Toy Hydrostatic Ice",&THI_COOKIE);CHKERRQ(ierr);
+    ierr = PetscClassIdRegister("Toy Hydrostatic Ice",&THI_CLASSID);CHKERRQ(ierr);
     registered = PETSC_TRUE;
   }
-  ierr = PetscHeaderCreate(thi,_p_THI,0,THI_COOKIE,-1,"THI",comm,THIDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(thi,_p_THI,0,THI_CLASSID,-1,"THI",comm,THIDestroy,0);CHKERRQ(ierr);
 
   ierr = PetscNew(struct _n_Units,&thi->units);CHKERRQ(ierr);
   units = thi->units;
@@ -1249,8 +1249,8 @@ static PetscErrorCode DAGetInterpolation_THI(DA dac,DA daf,Mat *A,Vec *scale)
   PetscTruth flg,isda2;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dac,DM_COOKIE,1);
-  PetscValidHeaderSpecific(daf,DM_COOKIE,2);
+  PetscValidHeaderSpecific(dac,DM_CLASSID,1);
+  PetscValidHeaderSpecific(daf,DM_CLASSID,2);
   PetscValidPointer(A,3);
   if (scale) PetscValidPointer(scale,4);
   ierr = PetscTypeCompare((PetscObject)dac,DA2D,&flg);

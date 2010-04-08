@@ -7,7 +7,7 @@ namespace ALE {
   int  getVerbosity();
   void setVerbosity(const int& verbosity);
 
-  typedef PetscCookie LogCookie;
+  typedef PetscClassId LogCookie;
   typedef int         LogStage;
   typedef PetscLogEvent  LogEvent;
 

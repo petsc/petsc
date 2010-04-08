@@ -108,7 +108,7 @@ M*/
 
 typedef enum { DA_X,DA_Y,DA_Z } DADirection;
 
-extern PetscCookie PETSCDM_DLLEXPORT DM_COOKIE;
+extern PetscClassId PETSCDM_DLLEXPORT DM_CLASSID;
 
 #define MATSEQUSFFT        "sequsfft"
 
@@ -642,7 +642,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryMatlabOutputVecDA(PetscVi
 S*/
 typedef struct _p_ADDA* ADDA;
 
-extern PetscCookie PETSCDM_DLLEXPORT ADDA_COOKIE;
+extern PetscClassId PETSCDM_DLLEXPORT ADDA_CLASSID;
 
 PetscErrorCode PETSCDM_DLLEXPORT ADDACreate(MPI_Comm,PetscInt,PetscInt*,PetscInt*,PetscInt,PetscTruth*,ADDA*);
 PetscErrorCode PETSCDM_DLLEXPORT ADDADestroy(ADDA);

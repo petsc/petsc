@@ -50,7 +50,7 @@ typedef struct {
    from which all objects are derived.
 */
 typedef struct _p_PetscObject {
-  PetscCookie    cookie;                                        
+  PetscClassId   classid;                                        
   PetscOps       *bops;                                         
   MPI_Comm       comm;                                          
   PetscInt       type;                                          
@@ -99,7 +99,7 @@ typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer);
     Input Parameters:
 +   tp - the data structure type of the object
 .   pops - the data structure type of the objects operations (for example VecOps)
-.   cook - the cookie associated with this object
+.   cook - the classid associated with this object
 .   t - type (no longer should be used)
 .   class_name - string name of class; should be static
 .   com - the MPI Communicator
@@ -111,7 +111,7 @@ typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer);
 
     Level: developer
 
-.seealso: PetscHeaderDestroy(), PetscCookieRegister()
+.seealso: PetscHeaderDestroy(), PetscClassIdRegister()
 
 @*/ 
 #define PetscHeaderCreate(h,tp,pops,cook,t,class_name,com,des,vie)	\
@@ -123,7 +123,7 @@ typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer);
    PetscLogObjectMemory(h, sizeof(struct tp) + sizeof(PetscOps) + sizeof(pops)))
 
 EXTERN PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscHeaderCreate_Private(PetscObject,PetscCookie,PetscInt,const char[],MPI_Comm,PetscErrorCode (*)(PetscObject),PetscErrorCode (*)(PetscObject,PetscViewer));
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscHeaderCreate_Private(PetscObject,PetscClassId,PetscInt,const char[],MPI_Comm,PetscErrorCode (*)(PetscObject),PetscErrorCode (*)(PetscObject,PetscViewer));
 
 /*@C
     PetscHeaderDestroy - Final step in destroying a PetscObject
@@ -166,8 +166,8 @@ valid
    if ((unsigned long)(h) & (unsigned long)3) {			\
     SETERRQ1(PETSC_ERR_ARG_CORRUPT,"Invalid Pointer to Object: Parameter # %d",arg);   \
   }                                                                                   \
-  if (((PetscObject)(h))->cookie != ck) {                                             \
-    if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {                             \
+  if (((PetscObject)(h))->classid != ck) {                                             \
+    if (((PetscObject)(h))->classid == PETSCFREEDHEADER) {                             \
       SETERRQ1(PETSC_ERR_ARG_CORRUPT,"Object already free: Parameter # %d",arg);       \
     } else {                                                                          \
       SETERRQ1(PETSC_ERR_ARG_WRONG,"Wrong type of object: Parameter # %d",arg);       \
@@ -178,10 +178,10 @@ valid
   {if (!h) {SETERRQ1(PETSC_ERR_ARG_NULL,"Null Object: Parameter # %d",arg);}             \
    if ((unsigned long)(h) & (unsigned long)3) {			\
     SETERRQ1(PETSC_ERR_ARG_CORRUPT,"Invalid Pointer to Object: Parameter # %d",arg);     \
-  } else if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {                           \
+  } else if (((PetscObject)(h))->classid == PETSCFREEDHEADER) {                           \
       SETERRQ1(PETSC_ERR_ARG_CORRUPT,"Object already free: Parameter # %d",arg);         \
-  } else if (((PetscObject)(h))->cookie < PETSC_SMALLEST_COOKIE ||                                \
-      ((PetscObject)(h))->cookie > PETSC_LARGEST_COOKIE) {                               \
+  } else if (((PetscObject)(h))->classid < PETSC_SMALLEST_CLASSID ||                                \
+      ((PetscObject)(h))->classid > PETSC_LARGEST_CLASSID) {                               \
       SETERRQ1(PETSC_ERR_ARG_CORRUPT,"Invalid type of object: Parameter # %d",arg);      \
   }}
 
@@ -221,8 +221,8 @@ valid
 */
 #define PetscValidHeaderSpecific(h,ck,arg)                              \
   {if (!h) {SETERRQ(PETSC_ERR_ARG_NULL,"Null Object");}        \
-  if (((PetscObject)(h))->cookie != ck) {                           \
-    if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {           \
+  if (((PetscObject)(h))->classid != ck) {                           \
+    if (((PetscObject)(h))->classid == PETSCFREEDHEADER) {           \
       SETERRQ(PETSC_ERR_ARG_CORRUPT,"Object already free");       \
     } else {                                                        \
       SETERRQ(PETSC_ERR_ARG_WRONG,"Wrong Object");                \
@@ -231,10 +231,10 @@ valid
 
 #define PetscValidHeader(h,arg)                                         \
   {if (!h) {SETERRQ(PETSC_ERR_ARG_NULL,"Null Object");}        \
-  if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {      \
+  if (((PetscObject)(h))->classid == PETSCFREEDHEADER) {      \
       SETERRQ(PETSC_ERR_ARG_CORRUPT,"Object already free");       \
-  } else if (((PetscObject)(h))->cookie < PETSC_SMALLEST_COOKIE ||           \
-      ((PetscObject)(h))->cookie > PETSC_LARGEST_COOKIE) {          \
+  } else if (((PetscObject)(h))->classid < PETSC_SMALLEST_CLASSID ||           \
+      ((PetscObject)(h))->classid > PETSC_LARGEST_CLASSID) {          \
       SETERRQ(PETSC_ERR_ARG_CORRUPT,"Invalid type of object");            \
   }}
 

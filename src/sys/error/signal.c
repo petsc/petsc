@@ -6,10 +6,10 @@
 #include "petscsys.h"             /*I   "petscsys.h"   I*/
 #include <signal.h>
 
-static PetscCookie SIGNAL_COOKIE = 0;
+static PetscClassId SIGNAL_CLASSID = 0;
 
 struct SH {
-  PetscCookie    cookie;
+  PetscClassId   classid;
   PetscErrorCode (*handler)(int,void *);
   void           *ctx;
   struct SH*     previous;
@@ -49,7 +49,7 @@ static void PetscSignalHandler_Private(int sig)
   if (!sh || !sh->handler) {
     ierr = PetscDefaultSignalHandler(sig,(void*)0);
   } else{
-    if (sh->cookie != SIGNAL_COOKIE) SETERRABORT(PETSC_COMM_WORLD,PETSC_ERR_COR,"Signal object has been corrupted");
+    if (sh->classid != SIGNAL_CLASSID) SETERRABORT(PETSC_COMM_WORLD,PETSC_ERR_COR,"Signal object has been corrupted");
     ierr = (*sh->handler)(sig,sh->ctx);
   }
   if (ierr) MPI_Abort(PETSC_COMM_WORLD,0);
@@ -199,9 +199,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscPushSignalHandler(PetscErrorCode (*routine)(
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!SIGNAL_COOKIE) {
-    /* ierr = PetscCookieRegister("Signal",&SIGNAL_COOKIE);CHKERRQ(ierr); */
-    SIGNAL_COOKIE = 19;
+  if (!SIGNAL_CLASSID) {
+    /* ierr = PetscClassIdRegister("Signal",&SIGNAL_CLASSID);CHKERRQ(ierr); */
+    SIGNAL_CLASSID = 19;
   }
   if (!SignalSet && routine) {
     /* Do not catch ABRT, CHLD, KILL */
@@ -314,13 +314,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscPushSignalHandler(PetscErrorCode (*routine)(
   }
   ierr = PetscNew(struct SH,&newsh);CHKERRQ(ierr);
   if (sh) {
-    if (sh->cookie != SIGNAL_COOKIE) SETERRQ(PETSC_ERR_COR,"Signal object has been corrupted");
+    if (sh->classid != SIGNAL_CLASSID) SETERRQ(PETSC_ERR_COR,"Signal object has been corrupted");
     newsh->previous = sh;
   } 
   else {newsh->previous = 0;}
   newsh->handler = routine;
   newsh->ctx     = ctx;
-  newsh->cookie  = SIGNAL_COOKIE;
+  newsh->classid  = SIGNAL_CLASSID;
   sh             = newsh;
   PetscFunctionReturn(0);
 }
@@ -347,7 +347,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPopSignalHandler(void)
 
   PetscFunctionBegin;
   if (!sh) PetscFunctionReturn(0);
-  if (sh->cookie != SIGNAL_COOKIE) SETERRQ(PETSC_ERR_COR,"Signal object has been corrupted");
+  if (sh->classid != SIGNAL_CLASSID) SETERRQ(PETSC_ERR_COR,"Signal object has been corrupted");
 
   tmp = sh;
   sh  = sh->previous;

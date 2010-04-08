@@ -31,7 +31,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetMode_HDF5(PetscViewer viewer, P
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   hdf5->btype = type;
   PetscFunctionReturn(0);
 }
@@ -163,7 +163,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF5GetFileId(PetscViewer viewer, hid_
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *) viewer->data;
  
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   if (file_id) *file_id = hdf5->file_id;
   PetscFunctionReturn(0);
 }

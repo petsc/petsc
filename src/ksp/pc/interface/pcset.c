@@ -57,7 +57,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetType(PC pc,const PCType type)
   PetscTruth     match;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidCharPointer(type,2);
 
   ierr = PetscTypeCompare((PetscObject)pc,type,&match);CHKERRQ(ierr);
@@ -129,7 +129,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRegisterDestroy(void)
 PetscErrorCode PETSCKSP_DLLEXPORT PCGetType(PC pc,const PCType *type)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(type,2);
   *type = ((PetscObject)pc)->type_name;
   PetscFunctionReturn(0);
@@ -164,7 +164,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions(PC pc)
   PetscTruth     flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
 
   if (!PCRegisterAllCalled) {ierr = PCRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsBegin(((PetscObject)pc)->comm,((PetscObject)pc)->prefix,"Preconditioner (PC) Options","PC");CHKERRQ(ierr);
@@ -210,7 +210,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetDM(PC pc,DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (pc->dm) {ierr = DMDestroy(pc->dm);CHKERRQ(ierr);}
   pc->dm = dm;
   ierr = PetscObjectReference((PetscObject)pc->dm);CHKERRQ(ierr);
@@ -238,7 +238,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetDM(PC pc,DM dm)
 PetscErrorCode PETSCKSP_DLLEXPORT PCGetDM(PC pc,DM *dm)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   *dm = pc->dm;
   PetscFunctionReturn(0);
 }

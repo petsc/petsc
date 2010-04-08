@@ -31,8 +31,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultEqual(Mat A,Mat B,PetscInt n,PetscTruth
   PetscScalar    none = -1.0;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,1); 
-  PetscValidHeaderSpecific(B,MAT_COOKIE,2);
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1); 
+  PetscValidHeaderSpecific(B,MAT_CLASSID,2);
   ierr = MatGetLocalSize(A,&am,&an);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B,&bm,&bn);CHKERRQ(ierr);
   if (am != bm || an != bn) SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat A,Mat B: local dim %D %D %D %D",am,bm,an,bn);

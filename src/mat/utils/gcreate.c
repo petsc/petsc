@@ -72,7 +72,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate(MPI_Comm comm,Mat *A)
   ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,0,"Mat",comm,MatDestroy,MatView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_CLASSID,0,"Mat",comm,MatDestroy,MatView);CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,&B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,&B->cmap);CHKERRQ(ierr);
   B->preallocated  = PETSC_FALSE;
@@ -115,7 +115,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetSizes(Mat A, PetscInt m, PetscInt n, Pet
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,1); 
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1); 
   if (M > 0 && m > M) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Local column size %D cannot be larger than global column size %D",m,M);
   if (N > 0 && n > N) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Local row size %D cannot be larger than global row size %D",n,N);
   if (A->ops->setsizes) {
@@ -182,7 +182,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetFromOptions(Mat B)
   PetscTruth     flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(B,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(B,MAT_CLASSID,1);
 
   ierr = PetscOptionsBegin(((PetscObject)B)->comm,((PetscObject)B)->prefix,"Matrix options","Mat");CHKERRQ(ierr); 
     ierr = PetscOptionsList("-mat_type","Matrix type","MatSetType",MatList,deft,type,256,&flg);CHKERRQ(ierr);

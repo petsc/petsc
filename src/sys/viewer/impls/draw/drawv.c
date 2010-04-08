@@ -73,7 +73,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDraw(PetscViewer viewer,PetscIn
   char             *title;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   if (draw) PetscValidPointer(draw,3);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (!isdraw) {
@@ -143,7 +143,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawBaseAdd(PetscViewer viewer,PetscIn
   PetscTruth       isdraw;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (!isdraw) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
@@ -180,7 +180,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawBaseSet(PetscViewer viewer,PetscIn
   PetscTruth       isdraw;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (!isdraw) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
@@ -221,7 +221,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDrawLG(PetscViewer viewer,Petsc
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(drawlg,3);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (!isdraw) {
@@ -271,7 +271,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDrawAxis(PetscViewer viewer,Pet
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(drawaxis,3);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (!isdraw) {

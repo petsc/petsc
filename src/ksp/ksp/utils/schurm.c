@@ -97,10 +97,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSchurComplement(Mat A,Mat Ap,Mat B,Ma
   Mat_SchurComplement  *Na;  
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
-  PetscValidHeaderSpecific(Ap,MAT_COOKIE,2);
-  PetscValidHeaderSpecific(B,MAT_COOKIE,3);
-  PetscValidHeaderSpecific(C,MAT_COOKIE,4);
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(Ap,MAT_CLASSID,2);
+  PetscValidHeaderSpecific(B,MAT_CLASSID,3);
+  PetscValidHeaderSpecific(C,MAT_CLASSID,4);
   PetscCheckSameComm(A,1,Ap,2);
   PetscCheckSameComm(A,1,B,3);
   PetscCheckSameComm(A,1,C,4);
@@ -110,7 +110,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSchurComplement(Mat A,Mat Ap,Mat B,Ma
   if (A->cmap->n != B->rmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local columns of A %D do not equal local rows of B %D",A->cmap->n,B->rmap->n);
   if (C->cmap->n != A->rmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local columns of C %D do not equal local rows of A %D",C->cmap->n,A->rmap->n);
   if (D) {
-    PetscValidHeaderSpecific(D,MAT_COOKIE,5);
+    PetscValidHeaderSpecific(D,MAT_CLASSID,5);
     PetscCheckSameComm(A,1,D,5);
     if (D->rmap->n != D->cmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of D %D do not equal local columns %D",D->rmap->n,D->cmap->n);
     if (C->rmap->n != D->rmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of C %D do not equal local rows D %D",C->rmap->n,D->rmap->n);
@@ -182,7 +182,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementGetKSP(Mat A,KSP *ksp)
   Mat_SchurComplement  *Na;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidPointer(ksp,2);
   Na = (Mat_SchurComplement*)A->data;
   *ksp = Na->ksp;
@@ -220,9 +220,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementUpdate(Mat N,Mat A,Mat Ap,Ma
   Mat_SchurComplement  *Na = (Mat_SchurComplement*)N->data;  
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
-  PetscValidHeaderSpecific(B,MAT_COOKIE,2);
-  PetscValidHeaderSpecific(C,MAT_COOKIE,3);
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(B,MAT_CLASSID,2);
+  PetscValidHeaderSpecific(C,MAT_CLASSID,3);
   PetscCheckSameComm(A,1,Ap,2);
   PetscCheckSameComm(A,1,B,3);
   PetscCheckSameComm(A,1,C,4);
@@ -232,7 +232,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementUpdate(Mat N,Mat A,Mat Ap,Ma
   if (A->cmap->n != B->rmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local columns of A %D do not equal local rows of B %D",A->cmap->n,B->rmap->n);
   if (C->cmap->n != A->rmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local columns of C %D do not equal local rows of A %D",C->cmap->n,A->rmap->n);
   if (D) {
-    PetscValidHeaderSpecific(D,MAT_COOKIE,5);
+    PetscValidHeaderSpecific(D,MAT_CLASSID,5);
     PetscCheckSameComm(A,1,D,5);
     if (D->rmap->n != D->cmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of D %D do not equal local columns %D",D->rmap->n,D->cmap->n);
     if (C->rmap->n != D->rmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of C %D do not equal local rows D %D",C->rmap->n,D->rmap->n);
@@ -288,7 +288,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementGetSubmatrices(Mat N,Mat *A,
   PetscTruth           flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(N,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(N,MAT_CLASSID,1);
   ierr = PetscTypeCompare((PetscObject)N,MATSCHURCOMPLEMENT,&flg);CHKERRQ(ierr);
   if (flg) {
     if (A)  *A  = Na->A;
@@ -343,13 +343,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetSchurComplement(Mat mat,IS isrow0,IS isc
   PetscErrorCode ierr,(*f)(Mat,IS,IS,IS,IS,MatReuse,Mat*,MatReuse,Mat*);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
-  PetscValidHeaderSpecific(isrow0,IS_COOKIE,2);
-  PetscValidHeaderSpecific(iscol0,IS_COOKIE,3);
-  PetscValidHeaderSpecific(isrow1,IS_COOKIE,4);
-  PetscValidHeaderSpecific(iscol1,IS_COOKIE,5);
-  if (mreuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*newmat,MAT_COOKIE,7);
-  if (preuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*newpmat,MAT_COOKIE,9);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(isrow0,IS_CLASSID,2);
+  PetscValidHeaderSpecific(iscol0,IS_CLASSID,3);
+  PetscValidHeaderSpecific(isrow1,IS_CLASSID,4);
+  PetscValidHeaderSpecific(iscol1,IS_CLASSID,5);
+  if (mreuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*newmat,MAT_CLASSID,7);
+  if (preuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*newpmat,MAT_CLASSID,9);
   PetscValidType(mat,1);
   if (mat->factortype) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 

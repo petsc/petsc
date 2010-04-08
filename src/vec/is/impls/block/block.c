@@ -279,7 +279,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscI
   ierr = ISInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_BLOCK,"IS",comm,ISDestroy,ISView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_CLASSID,IS_BLOCK,"IS",comm,ISDestroy,ISView);CHKERRQ(ierr);
   ierr = PetscNewLog(Nindex,IS_Block,&sub);CHKERRQ(ierr);
   ierr = PetscMalloc(n*sizeof(PetscInt),&sub->idx);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(Nindex,n*sizeof(PetscInt));CHKERRQ(ierr);
@@ -331,7 +331,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetIndices(IS in,const PetscInt *idx[])
   IS_Block *sub;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(in,IS_COOKIE,1);
+  PetscValidHeaderSpecific(in,IS_CLASSID,1);
   PetscValidPointer(idx,2);
   if (((PetscObject)in)->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,"Not a block index set");
 
@@ -364,7 +364,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetIndices(IS in,const PetscInt *idx[])
 PetscErrorCode PETSCVEC_DLLEXPORT ISBlockRestoreIndices(IS is,const PetscInt *idx[])
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(idx,2);
   if (((PetscObject)is)->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,"Not a block index set");
   PetscFunctionReturn(0);
@@ -395,7 +395,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetBlockSize(IS is,PetscInt *size)
   IS_Block *sub;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(size,2);
   if (((PetscObject)is)->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,"Not a block index set");
 
@@ -427,7 +427,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetBlockSize(IS is,PetscInt *size)
 PetscErrorCode PETSCVEC_DLLEXPORT ISBlock(IS is,PetscTruth *flag)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(flag,2);
   if (((PetscObject)is)->type != IS_BLOCK) *flag = PETSC_FALSE;
   else                          *flag = PETSC_TRUE;
@@ -459,7 +459,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetLocalSize(IS is,PetscInt *size)
   IS_Block *sub;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(size,2);
   if (((PetscObject)is)->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,"Not a block index set");
 
@@ -493,7 +493,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetSize(IS is,PetscInt *size)
   IS_Block *sub;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(size,2);
   if (((PetscObject)is)->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,"Not a block index set");
 

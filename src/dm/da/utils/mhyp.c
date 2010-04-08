@@ -65,7 +65,7 @@ PetscErrorCode MatHYPRE_IJMatrixCreate(Mat A,HYPRE_IJMatrix *ij)
   int            rstart,rend,cstart,cend;
   
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   PetscValidPointer(ij,2);
   ierr = MatPreallocated(A);CHKERRQ(ierr);
@@ -167,7 +167,7 @@ PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat A,HYPRE_IJMatrix ij)
   hypre_CSRMatrix       *hdiag,*hoffd;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   PetscValidPointer(ij,2);
 
@@ -206,7 +206,7 @@ PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A,HYPRE_IJMatrix ij)
   hypre_CSRMatrix       *hdiag,*hoffd;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   PetscValidPointer(ij,2);
   pdiag = (Mat_SeqAIJ*) pA->A->data;
@@ -271,7 +271,7 @@ PetscErrorCode MatHYPRE_IJMatrixLink(Mat A,HYPRE_IJMatrix *ij)
   hypre_AuxParCSRMatrix *aux_matrix;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   PetscValidPointer(ij,2);
   ierr = PetscTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);

@@ -16,14 +16,14 @@ EXTERN PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject,const char[],vo
    PetscHeaderCreate_Private - Creates a base PETSc object header and fills
    in the default values.  Called by the macro PetscHeaderCreate().
 */
-PetscErrorCode PETSC_DLLEXPORT PetscHeaderCreate_Private(PetscObject h,PetscCookie cookie,PetscInt type,const char class_name[],MPI_Comm comm,
+PetscErrorCode PETSC_DLLEXPORT PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,PetscInt type,const char class_name[],MPI_Comm comm,
                                          PetscErrorCode (*des)(PetscObject),PetscErrorCode (*vie)(PetscObject,PetscViewer))
 {
   static PetscInt idcnt = 1;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  h->cookie                 = cookie;
+  h->classid                 = classid;
   h->type                   = type;
   h->class_name             = (char*)class_name;
   h->prefix                 = 0;
@@ -74,7 +74,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscHeaderDestroy_Private(PetscObject h)
   ierr = PetscOListDestroy(h->olist);CHKERRQ(ierr);
   ierr = PetscCommDestroy(&h->comm);CHKERRQ(ierr);
   /* next destroy other things */
-  h->cookie = PETSCFREEDHEADER;
+  h->classid = PETSCFREEDHEADER;
   ierr = PetscFree(h->bops);CHKERRQ(ierr);
   ierr = PetscFListDestroy(&h->qlist);CHKERRQ(ierr);
   ierr = PetscStrfree(h->type_name);CHKERRQ(ierr);
@@ -404,7 +404,7 @@ struct _p_PetscContainer {
 PetscErrorCode PETSC_DLLEXPORT PetscContainerGetPointer(PetscContainer obj,void **ptr)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(obj,PETSC_CONTAINER_COOKIE,1);
+  PetscValidHeaderSpecific(obj,PETSC_CONTAINER_CLASSID,1);
   PetscValidPointer(ptr,2);
   *ptr = obj->ptr;
   PetscFunctionReturn(0);
@@ -430,7 +430,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscContainerGetPointer(PetscContainer obj,void 
 PetscErrorCode PETSC_DLLEXPORT PetscContainerSetPointer(PetscContainer obj,void *ptr)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(obj,PETSC_CONTAINER_COOKIE,1);
+  PetscValidHeaderSpecific(obj,PETSC_CONTAINER_CLASSID,1);
   if (ptr) PetscValidPointer(ptr,2);
   obj->ptr = ptr;
   PetscFunctionReturn(0);
@@ -454,7 +454,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscContainerDestroy(PetscContainer obj)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(obj,PETSC_CONTAINER_COOKIE,1);
+  PetscValidHeaderSpecific(obj,PETSC_CONTAINER_CLASSID,1);
   if (--((PetscObject)obj)->refct > 0) PetscFunctionReturn(0);
   if (obj->userdestroy) (*obj->userdestroy)(obj->ptr);
   ierr = PetscHeaderDestroy(obj);CHKERRQ(ierr);
@@ -479,12 +479,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscContainerDestroy(PetscContainer obj)
 PetscErrorCode PETSC_DLLEXPORT PetscContainerSetUserDestroy(PetscContainer obj, PetscErrorCode (*des)(void*))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(obj,PETSC_CONTAINER_COOKIE,1);
+  PetscValidHeaderSpecific(obj,PETSC_CONTAINER_CLASSID,1);
   obj->userdestroy = des;
   PetscFunctionReturn(0);
 }
 
-PetscCookie PETSC_DLLEXPORT PETSC_CONTAINER_COOKIE;
+PetscClassId PETSC_DLLEXPORT PETSC_CONTAINER_CLASSID;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscContainerCreate"
@@ -513,7 +513,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscContainerCreate(MPI_Comm comm,PetscContainer
 
   PetscFunctionBegin;
   PetscValidPointer(container,2);
-  ierr = PetscHeaderCreate(contain,_p_PetscContainer,PetscInt,PETSC_CONTAINER_COOKIE,0,"PetscContainer",comm,PetscContainerDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(contain,_p_PetscContainer,PetscInt,PETSC_CONTAINER_CLASSID,0,"PetscContainer",comm,PetscContainerDestroy,0);CHKERRQ(ierr);
   *container = contain;
   PetscFunctionReturn(0);
 }

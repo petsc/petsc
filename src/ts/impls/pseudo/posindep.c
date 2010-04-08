@@ -391,7 +391,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPseudoSetVerifyTimeStep(TS ts,PetscErrorCode 
   PetscErrorCode ierr,(*f)(TS,PetscErrorCode (*)(TS,Vec,void*,PetscReal *,PetscTruth *),void *);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
 
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPseudoSetVerifyTimeStep_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -426,7 +426,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPseudoSetTimeStepIncrement(TS ts,PetscReal in
   PetscErrorCode ierr,(*f)(TS,PetscReal);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
 
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPseudoSetTimeStepIncrement_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -463,7 +463,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPseudoIncrementDtFromInitialDt(TS ts)
   PetscErrorCode ierr,(*f)(TS);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
 
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPseudoIncrementDtFromInitialDt_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -508,7 +508,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPseudoSetTimeStep(TS ts,PetscErrorCode (*dt)(
   PetscErrorCode ierr,(*f)(TS,PetscErrorCode (*)(TS,PetscReal *,void *),void *);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
 
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPseudoSetTimeStep_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {

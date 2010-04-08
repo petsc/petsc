@@ -202,7 +202,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDWPSetComputeNormU(Mat A,PetscTruth flag
   PetscErrorCode ierr,(*f)(Mat,PetscTruth);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatMFFDWPSetComputeNormU_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(A,flag);CHKERRQ(ierr);

@@ -33,7 +33,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawGetMouseButton(PetscDraw draw,PetscDrawB
   PetscTruth isnull;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   *button = BUTTON_NONE;
   ierr = PetscTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
@@ -69,7 +69,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSynchronizedGetMouseButton(PetscDraw dra
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   ierr = MPI_Comm_rank(((PetscObject)draw)->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscDrawGetMouseButton(draw,button,x_user,y_user,x_phys,y_phys);CHKERRQ(ierr);

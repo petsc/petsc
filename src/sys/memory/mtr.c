@@ -21,8 +21,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTrMallocDefault(size_t,int,const char
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTrFreeDefault(void*,int,const char[],const char[],const char[]);
 
 
-#define COOKIE_VALUE   ((PetscCookie) 0xf0e0d0c9)
-#define ALREADY_FREED  ((PetscCookie) 0x0f0e0d9c)
+#define CLASSID_VALUE   ((PetscClassId) 0xf0e0d0c9)
+#define ALREADY_FREED  ((PetscClassId) 0x0f0e0d9c)
 
 typedef struct _trSPACE {
     size_t          size;
@@ -31,7 +31,7 @@ typedef struct _trSPACE {
     const char      *filename;
     const char      *functionname;
     const char      *dirname;
-    PetscCookie     cookie;        
+    PetscClassId    classid;        
 #if defined(PETSC_USE_DEBUG)
     PetscStack      stack;
 #endif
@@ -124,12 +124,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocValidate(int line,const char function[
 {
   TRSPACE     *head,*lasthead;
   char        *a;
-  PetscCookie *nend;
+  PetscClassId *nend;
 
   PetscFunctionBegin;
   head = TRhead; lasthead = NULL;
   while (head) {
-    if (head->cookie != COOKIE_VALUE) {
+    if (head->classid != CLASSID_VALUE) {
       (*PetscErrorPrintf)("PetscMallocValidate: error detected at  %s() line %d in %s%s\n",function,line,dir,file);
       (*PetscErrorPrintf)("Memory at address %p is corrupted\n",head);
       (*PetscErrorPrintf)("Probably write past beginning or end of array\n");
@@ -138,8 +138,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocValidate(int line,const char function[
       SETERRQ(PETSC_ERR_MEMC," ");
     }
     a    = (char *)(((TrSPACE*)head) + 1);
-    nend = (PetscCookie *)(a + head->size);
-    if (*nend != COOKIE_VALUE) {
+    nend = (PetscClassId *)(a + head->size);
+    if (*nend != CLASSID_VALUE) {
       (*PetscErrorPrintf)("PetscMallocValidate: error detected at %s() line %d in %s%s\n",function,line,dir,file);
       if (*nend == ALREADY_FREED) { 
         (*PetscErrorPrintf)("Memory [id=%d(%.0f)] at address %p already freed\n",head->id,(PetscLogDouble)head->size,a);
@@ -189,7 +189,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTrMallocDefault(size_t a,int lineno,const ch
   }
 
   nsize = (a + (PETSC_MEMALIGN-1)) & ~(PETSC_MEMALIGN-1);
-  ierr = PetscMallocAlign(nsize+sizeof(TrSPACE)+sizeof(PetscCookie),lineno,function,filename,dir,(void**)&inew);CHKERRQ(ierr);
+  ierr = PetscMallocAlign(nsize+sizeof(TrSPACE)+sizeof(PetscClassId),lineno,function,filename,dir,(void**)&inew);CHKERRQ(ierr);
 
   head   = (TRSPACE *)inew;
   inew  += sizeof(TrSPACE);
@@ -205,8 +205,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscTrMallocDefault(size_t a,int lineno,const ch
   head->filename     = filename;
   head->functionname = function;
   head->dirname      = dir;
-  head->cookie       = COOKIE_VALUE;
-  *(PetscCookie *)(inew + nsize) = COOKIE_VALUE;
+  head->classid       = CLASSID_VALUE;
+  *(PetscClassId *)(inew + nsize) = CLASSID_VALUE;
 
   TRallocated += nsize;
   if (TRallocated > TRMaxMem) {
@@ -260,7 +260,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTrFreeDefault(void *aa,int line,const char f
   TRSPACE        *head;
   char           *ahead;
   PetscErrorCode ierr;
-  PetscCookie    *nend;
+  PetscClassId   *nend;
   
   PetscFunctionBegin; 
   /* Do not try to handle empty blocks */
@@ -277,13 +277,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscTrFreeDefault(void *aa,int line,const char f
   a     = a - sizeof(TrSPACE);
   head  = (TRSPACE *)a;
   
-  if (head->cookie != COOKIE_VALUE) {
+  if (head->classid != CLASSID_VALUE) {
     (*PetscErrorPrintf)("PetscTrFreeDefault() called from %s() line %d in %s%s\n",function,line,dir,file);
     (*PetscErrorPrintf)("Block at address %p is corrupted; cannot free;\nmay be block not allocated with PetscMalloc()\n",a);
     SETERRQ(PETSC_ERR_MEMC,"Bad location or corrupted memory");
   }
-  nend = (PetscCookie *)(ahead + head->size);
-  if (*nend != COOKIE_VALUE) {
+  nend = (PetscClassId *)(ahead + head->size);
+  if (*nend != CLASSID_VALUE) {
     if (*nend == ALREADY_FREED) {
       (*PetscErrorPrintf)("PetscTrFreeDefault() called from %s() line %d in %s%s\n",function,line,dir,file);
       (*PetscErrorPrintf)("Block [id=%d(%.0f)] at address %p was already freed\n",head->id,(PetscLogDouble)head->size,a + sizeof(TrSPACE));

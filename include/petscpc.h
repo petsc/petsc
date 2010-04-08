@@ -76,7 +76,7 @@ E*/
 #define PCREDISTRIBUTE    "redistribute"
 
 /* Logging support */
-extern PetscCookie PETSCKSP_DLLEXPORT PC_COOKIE;
+extern PetscClassId PETSCKSP_DLLEXPORT PC_CLASSID;
 
 /*E
     PCSide - If the preconditioner is to be applied to the left, right

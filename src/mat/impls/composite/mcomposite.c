@@ -468,8 +468,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeAddMat(Mat mat,Mat smat)
   Mat_CompositeLink ilink,next;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
-  PetscValidHeaderSpecific(smat,MAT_COOKIE,2);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(smat,MAT_CLASSID,2);
   ierr        = PetscNewLog(mat,struct _Mat_CompositeLink,&ilink);CHKERRQ(ierr);
   ilink->next = 0;
   ierr        = PetscObjectReference((PetscObject)smat);CHKERRQ(ierr);

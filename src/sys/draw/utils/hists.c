@@ -5,7 +5,7 @@
 
 #include "petscsys.h"         /*I "petscsys.h" I*/
 
-PetscCookie DRAWHG_COOKIE = 0;
+PetscClassId DRAWHG_CLASSID = 0;
 
 struct _p_DrawHG {
   PETSCHEADER(int);
@@ -56,10 +56,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGCreate(PetscDraw draw, int bins, Petsc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw, PETSC_DRAW_COOKIE,1);
+  PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID,1);
   PetscValidPointer(hist,3);
   ierr = PetscObjectGetComm((PetscObject) draw, &comm);CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(h, _p_DrawHG, int, DRAWHG_COOKIE, 0, "PetscDrawHG", comm, PetscDrawHGDestroy, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(h, _p_DrawHG, int, DRAWHG_CLASSID, 0, "PetscDrawHG", comm, PetscDrawHGDestroy, PETSC_NULL);CHKERRQ(ierr);
   h->view        = PETSC_NULL;
   h->destroy     = PETSC_NULL;
   h->win         = draw;
@@ -110,7 +110,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGSetNumberBins(PetscDrawHG hist, int bi
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
+  PetscValidHeaderSpecific(hist, DRAWHG_CLASSID,1);
   if (hist->maxBins < bins) {
     ierr = PetscFree(hist->bins);CHKERRQ(ierr);
     ierr = PetscMalloc(bins * sizeof(PetscReal), &hist->bins);CHKERRQ(ierr);
@@ -138,7 +138,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGSetNumberBins(PetscDrawHG hist, int bi
 PetscErrorCode PETSC_DLLEXPORT PetscDrawHGReset(PetscDrawHG hist)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
+  PetscValidHeaderSpecific(hist, DRAWHG_CLASSID,1);
   hist->xmin      = PETSC_MAX;
   hist->xmax      = PETSC_MIN;
   hist->ymin      = 0.0;
@@ -199,7 +199,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGDestroy(PetscDrawHG hist)
 PetscErrorCode PETSC_DLLEXPORT PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
+  PetscValidHeaderSpecific(hist, DRAWHG_CLASSID,1);
   /* Allocate more memory if necessary */
   if (hist->numValues >= hist->maxValues) {
     PetscReal      *tmp;
@@ -273,7 +273,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGDraw(PetscDrawHG hist)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
+  PetscValidHeaderSpecific(hist, DRAWHG_CLASSID,1);
   ierr = PetscTypeCompare((PetscObject) draw, PETSC_DRAW_NULL, &isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
   if ((hist->xmin >= hist->xmax) || (hist->ymin >= hist->ymax)) PetscFunctionReturn(0);
@@ -412,7 +412,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGPrint(PetscDrawHG hist)
   PetscInt       numBins,numBinsOld,numValues,initSize,i,p;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
+  PetscValidHeaderSpecific(hist, DRAWHG_CLASSID,1);
   if ((hist->xmin > hist->xmax) || (hist->ymin >= hist->ymax)) PetscFunctionReturn(0);
   if (hist->numValues < 1) PetscFunctionReturn(0);
 
@@ -502,7 +502,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGPrint(PetscDrawHG hist)
 PetscErrorCode PETSC_DLLEXPORT PetscDrawHGSetColor(PetscDrawHG hist, int color)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
+  PetscValidHeaderSpecific(hist, DRAWHG_CLASSID,1);
   hist->color = color;
   PetscFunctionReturn(0);
 }
@@ -527,7 +527,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGSetColor(PetscDrawHG hist, int color)
 PetscErrorCode PETSC_DLLEXPORT PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal x_min, PetscReal x_max, int y_min, int y_max) 
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
+  PetscValidHeaderSpecific(hist, DRAWHG_CLASSID,1);
   hist->xmin = x_min; 
   hist->xmax = x_max; 
   hist->ymin = y_min; 
@@ -554,7 +554,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal 
 PetscErrorCode PETSC_DLLEXPORT PetscDrawHGCalcStats(PetscDrawHG hist, PetscTruth calc)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
+  PetscValidHeaderSpecific(hist, DRAWHG_CLASSID,1);
   hist->calcStats = calc;
   PetscFunctionReturn(0);
 }
@@ -577,7 +577,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGCalcStats(PetscDrawHG hist, PetscTruth
 PetscErrorCode PETSC_DLLEXPORT PetscDrawHGIntegerBins(PetscDrawHG hist, PetscTruth ints)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
+  PetscValidHeaderSpecific(hist, DRAWHG_CLASSID,1);
   hist->integerBins = ints;
   PetscFunctionReturn(0);
 }
@@ -604,7 +604,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGIntegerBins(PetscDrawHG hist, PetscTru
 PetscErrorCode PETSC_DLLEXPORT PetscDrawHGGetAxis(PetscDrawHG hist, PetscDrawAxis *axis)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
+  PetscValidHeaderSpecific(hist, DRAWHG_CLASSID,1);
   PetscValidPointer(axis,2);
   *axis = hist->axis;
   PetscFunctionReturn(0);
@@ -629,7 +629,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGGetAxis(PetscDrawHG hist, PetscDrawAxi
 PetscErrorCode PETSC_DLLEXPORT PetscDrawHGGetDraw(PetscDrawHG hist, PetscDraw *win)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
+  PetscValidHeaderSpecific(hist, DRAWHG_CLASSID,1);
   PetscValidPointer(win,2);
   *win = hist->win;
   PetscFunctionReturn(0);

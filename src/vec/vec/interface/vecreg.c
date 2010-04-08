@@ -37,7 +37,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetType(Vec vec, const VecType method)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(vec, VEC_COOKIE,1);
+  PetscValidHeaderSpecific(vec, VEC_CLASSID,1);
   ierr = PetscTypeCompare((PetscObject) vec, method, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
@@ -79,7 +79,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetType(Vec vec, const VecType *type)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(vec, VEC_COOKIE,1);
+  PetscValidHeaderSpecific(vec, VEC_CLASSID,1);
   PetscValidCharPointer(type,2);
   if (!VecRegisterAllCalled) {
     ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);

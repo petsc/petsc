@@ -18,7 +18,7 @@
 #endif
 
 /* Logging support */
-PetscCookie PETSC_DLLEXPORT PETSC_RANDOM_COOKIE;
+PetscClassId PETSC_DLLEXPORT PETSC_RANDOM_CLASSID;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomDestroy" 
@@ -39,7 +39,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomDestroy(PetscRandom r)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
   if (--((PetscObject)r)->refct > 0) PetscFunctionReturn(0);
   ierr = PetscHeaderDestroy(r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -69,7 +69,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomDestroy(PetscRandom r)
 PetscErrorCode PETSC_DLLEXPORT PetscRandomGetInterval(PetscRandom r,PetscScalar *low,PetscScalar *high)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
   if (low) {
     PetscValidScalarPointer(low,2);
     *low = r->low;
@@ -106,7 +106,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetInterval(PetscRandom r,PetscScalar 
 PetscErrorCode PETSC_DLLEXPORT PetscRandomSetInterval(PetscRandom r,PetscScalar low,PetscScalar high)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
 #if defined(PETSC_USE_COMPLEX)
   if (PetscRealPart(low) > PetscRealPart(high))           SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"only low < high");
   if (PetscImaginaryPart(low) > PetscImaginaryPart(high)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"only low < high");
@@ -141,7 +141,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSetInterval(PetscRandom r,PetscScalar 
 PetscErrorCode PETSC_DLLEXPORT PetscRandomGetSeed(PetscRandom r,unsigned long *seed)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
   if (seed) {
     PetscValidPointer(seed,2);
     *seed = r->seed;
@@ -176,7 +176,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetSeed(PetscRandom r,unsigned long *s
 PetscErrorCode PETSC_DLLEXPORT PetscRandomSetSeed(PetscRandom r,unsigned long seed)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
   r->seed = seed;
   PetscFunctionReturn(0);
 }
@@ -248,7 +248,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSetFromOptions(PetscRandom rnd)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(rnd,PETSC_RANDOM_COOKIE,1);
+  PetscValidHeaderSpecific(rnd,PETSC_RANDOM_CLASSID,1);
 
   ierr = PetscOptionsBegin(((PetscObject)rnd)->comm, ((PetscObject)rnd)->prefix, "PetscRandom options", "PetscRandom");CHKERRQ(ierr);
 
@@ -296,12 +296,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomView(PetscRandom rnd,PetscViewer viewe
   PetscTruth        iascii;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(rnd,PETSC_RANDOM_COOKIE,1);
+  PetscValidHeaderSpecific(rnd,PETSC_RANDOM_CLASSID,1);
   PetscValidType(rnd,1);
   if (!viewer) {
     ierr = PetscViewerASCIIGetStdout(((PetscObject)rnd)->comm,&viewer);CHKERRQ(ierr);
   }
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(rnd,1,viewer,2);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
@@ -428,7 +428,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
   ierr = PetscRandomInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(rr,_p_PetscRandom,struct _PetscRandomOps,PETSC_RANDOM_COOKIE,-1,"PetscRandom",comm,PetscRandomDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(rr,_p_PetscRandom,struct _PetscRandomOps,PETSC_RANDOM_CLASSID,-1,"PetscRandom",comm,PetscRandomDestroy,0);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   rr->data  = PETSC_NULL;
@@ -468,7 +468,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSeed(PetscRandom r)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
   PetscValidType(r,1);
 
   ierr = (*r->ops->seed)(r);CHKERRQ(ierr);
@@ -520,7 +520,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue(PetscRandom r,PetscScalar *va
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
   PetscValidIntPointer(val,2);
   PetscValidType(r,1);
 
@@ -566,7 +566,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueReal(PetscRandom r,PetscReal *
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
   PetscValidIntPointer(val,2);
   PetscValidType(r,1);
 

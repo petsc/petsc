@@ -360,7 +360,7 @@ static PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
   Vec_Seq        *x = (Vec_Seq *)xin->data;
   PetscErrorCode ierr;
   int            fdes;
-  PetscInt       n = xin->map->n,cookie=VEC_FILE_COOKIE;
+  PetscInt       n = xin->map->n,classid=VEC_FILE_CLASSID;
   FILE           *file;
 #if defined(PETSC_HAVE_MPIIO)
   PetscTruth     isMPIIO;
@@ -369,7 +369,7 @@ static PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
   PetscFunctionBegin;
 
   /* Write vector header */
-  ierr = PetscViewerBinaryWrite(viewer,&cookie,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscViewerBinaryWrite(viewer,&n,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
 
   /* Write vector contents */

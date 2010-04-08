@@ -227,7 +227,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateBasic(MPI_Comm comm,PetscInt napp,const
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_COOKIE, AO_BASIC, "AO", comm, AODestroy, AOView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_CLASSID, AO_BASIC, "AO", comm, AODestroy, AOView);CHKERRQ(ierr);
   ierr = PetscNewLog(ao, AO_Basic, &aobasic);CHKERRQ(ierr);
 
   ierr = PetscMemcpy(ao->ops, &AOops, sizeof(AOops));CHKERRQ(ierr);

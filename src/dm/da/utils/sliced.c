@@ -138,7 +138,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedSetGhosts(Sliced slice,PetscInt bs,PetscI
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(slice,DM_COOKIE,1);
+  PetscValidHeaderSpecific(slice,DM_CLASSID,1);
   ierr = PetscFree(slice->ghosts);CHKERRQ(ierr);
   ierr = PetscMalloc(Nghosts*sizeof(PetscInt),&slice->ghosts);CHKERRQ(ierr);
   ierr = PetscMemcpy(slice->ghosts,ghosts,Nghosts*sizeof(PetscInt));CHKERRQ(ierr);
@@ -181,7 +181,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedSetGhosts(Sliced slice,PetscInt bs,PetscI
 PetscErrorCode PETSCDM_DLLEXPORT SlicedSetPreallocation(Sliced slice,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(slice,DM_COOKIE,1);
+  PetscValidHeaderSpecific(slice,DM_CLASSID,1);
   slice->d_nz  = d_nz;
   slice->d_nnz = (PetscInt*)d_nnz;
   slice->o_nz  = o_nz;
@@ -242,7 +242,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedSetBlockFills(Sliced slice,const PetscInt
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(slice,DM_COOKIE,1);
+  PetscValidHeaderSpecific(slice,DM_CLASSID,1);
   ierr = SlicedSetBlockFills_Private(slice->bs,dfill,&slice->dfill);CHKERRQ(ierr);
   ierr = SlicedSetBlockFills_Private(slice->bs,ofill,&slice->ofill);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -278,7 +278,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedCreate(MPI_Comm comm,Sliced *slice)
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(p,_p_Sliced,struct _SlicedOps,DM_COOKIE,0,"DM",comm,SlicedDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(p,_p_Sliced,struct _SlicedOps,DM_CLASSID,0,"DM",comm,SlicedDestroy,0);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)p,"Sliced");CHKERRQ(ierr);
   p->ops->createglobalvector = SlicedCreateGlobalVector;
   p->ops->getmatrix          = SlicedGetMatrix;
@@ -349,7 +349,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedCreateGlobalVector(Sliced slice,Vec *gvec
   PetscInt           bs,cnt,i;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(slice,DM_COOKIE,1);
+  PetscValidHeaderSpecific(slice,DM_CLASSID,1);
   PetscValidPointer(gvec,2);
   *gvec = 0;
   if (slice->globalvector) {

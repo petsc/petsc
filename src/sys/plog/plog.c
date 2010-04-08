@@ -141,8 +141,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogDestroy(void)
   traceblanks     = "                                                                                                    ";
   tracespace[0] = ' '; tracespace[1] = 0;
   tracetime       = 0.0;
-  PETSC_LARGEST_COOKIE = PETSC_SMALLEST_COOKIE;
-  PETSC_OBJECT_COOKIE  = 0;
+  PETSC_LARGEST_CLASSID = PETSC_SMALLEST_CLASSID;
+  PETSC_OBJECT_CLASSID  = 0;
   _stageLog = 0;
   PetscLogBegin_PrivateCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -690,8 +690,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetId(const char name[], PetscLogSta
 
   Input Parameter:
 + name   - The name associated with the event
-- cookie - The cookie associated to the class for this event, obtain either with
-           PetscCookieRegister() or use a predefined one such as KSP_COOKIE, SNES_COOKIE
+- classid - The classid associated to the class for this event, obtain either with
+           PetscClassIdRegister() or use a predefined one such as KSP_CLASSID, SNES_CLASSID
             
   Output Parameter:
 . event - The event id for use with PetscLogEventBegin() and PetscLogEventEnd().
@@ -699,10 +699,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetId(const char name[], PetscLogSta
   Example of Usage:
 .vb
       PetscLogEvent USER_EVENT;
-      PetscCookie cookie;
+      PetscClassId classid;
       PetscLogDouble user_event_flops;
-      PetscCookieRegister("class name",&cookie);
-      PetscLogEventRegister("User event name",cookie,&USER_EVENT);
+      PetscClassIdRegister("class name",&classid);
+      PetscLogEventRegister("User event name",classid,&USER_EVENT);
       PetscLogEventBegin(USER_EVENT,0,0,0,0);
          [code segment to monitor]
          PetscLogFlops(user_event_flops);
@@ -723,9 +723,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetId(const char name[], PetscLogSta
   to create a logfile, "mpe.log", which can be visualized
   Upshot/Nupshot. 
 
-  The cookie is associated with each event so that classes of events
+  The classid is associated with each event so that classes of events
   can be disabled simultaneously, such as all matrix events. The user
-  can either use an existing cookie, such as MAT_COOKIE, or create
+  can either use an existing classid, such as MAT_CLASSID, or create
   their own as shown in the example.
 
   Level: intermediate
@@ -733,9 +733,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetId(const char name[], PetscLogSta
 .keywords: log, event, register
 .seealso: PetscLogEventBegin(), PetscLogEventEnd(), PetscLogFlops(),
           PetscLogEventMPEActivate(), PetscLogEventMPEDeactivate(),
-          PetscLogEventActivate(), PetscLogEventDeactivate(), PetscCookieRegister()
+          PetscLogEventActivate(), PetscLogEventDeactivate(), PetscClassIdRegister()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscLogEventRegister(const char name[],PetscCookie cookie,PetscLogEvent *event) 
+PetscErrorCode PETSC_DLLEXPORT PetscLogEventRegister(const char name[],PetscClassId classid,PetscLogEvent *event) 
 {
   StageLog       stageLog;
   int            stage;
@@ -744,7 +744,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogEventRegister(const char name[],PetscCook
   PetscFunctionBegin;
   *event = PETSC_DECIDE;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
-  ierr = EventRegLogRegister(stageLog->eventLog, name, cookie, event);CHKERRQ(ierr);
+  ierr = EventRegLogRegister(stageLog->eventLog, name, classid, event);CHKERRQ(ierr);
   for(stage = 0; stage < stageLog->numStages; stage++) {
     ierr = EventPerfLogEnsureSize(stageLog->stageInfo[stage].eventLog, stageLog->eventLog->numEvents);CHKERRQ(ierr);
     ierr = ClassPerfLogEnsureSize(stageLog->stageInfo[stage].classLog, stageLog->classLog->numClasses);CHKERRQ(ierr);
@@ -874,14 +874,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogEventSetActiveAll(PetscLogEvent event, Pe
   Not Collective
 
   Input Parameter:
-. cookie - The event class, for example MAT_COOKIE, SNES_COOKIE, etc.
+. classid - The event class, for example MAT_CLASSID, SNES_CLASSID, etc.
 
   Level: developer
 
 .keywords: log, event, activate, class
 .seealso: PetscInfoActivate(),PetscInfo(),PetscInfoAllow(),PetscLogEventDeactivateClass(), PetscLogEventActivate(),PetscLogEventDeactivate()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscLogEventActivateClass(PetscCookie cookie) 
+PetscErrorCode PETSC_DLLEXPORT PetscLogEventActivateClass(PetscClassId classid) 
 {
   StageLog       stageLog;
   int            stage;
@@ -890,7 +890,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogEventActivateClass(PetscCookie cookie)
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = StageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
-  ierr = EventPerfLogActivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, cookie);CHKERRQ(ierr);
+  ierr = EventPerfLogActivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, classid);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -902,14 +902,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogEventActivateClass(PetscCookie cookie)
   Not Collective
 
   Input Parameter:
-. cookie - The event class, for example MAT_COOKIE, SNES_COOKIE, etc.
+. classid - The event class, for example MAT_CLASSID, SNES_CLASSID, etc.
 
   Level: developer
 
 .keywords: log, event, deactivate, class
 .seealso: PetscInfoActivate(),PetscInfo(),PetscInfoAllow(),PetscLogEventActivateClass(), PetscLogEventActivate(),PetscLogEventDeactivate()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivateClass(PetscCookie cookie)
+PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivateClass(PetscClassId classid)
 {
   StageLog       stageLog;
   int            stage;
@@ -918,7 +918,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivateClass(PetscCookie cookie)
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = StageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
-  ierr = EventPerfLogDeactivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, cookie);CHKERRQ(ierr);
+  ierr = EventPerfLogDeactivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, classid);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1175,7 +1175,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogDump(const char sname[])
     ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Actions accomplished %d\n", numActions);
     for(action = 0; action < numActions; action++) {
       ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "%g %d %d %d %d %d %d %g %g %g\n",
-                          actions[action].time, actions[action].action, (int)actions[action].event, (int)actions[action].cookie, actions[action].id1,
+                          actions[action].time, actions[action].action, (int)actions[action].event, (int)actions[action].classid, actions[action].id1,
                           actions[action].id2, actions[action].id3, actions[action].flops, actions[action].mem, actions[action].maxmem);
     }
   }
@@ -2258,13 +2258,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogObjectState(PetscObject obj, const char f
 #endif /* PETSC_USE_LOG*/
 
 
-PetscCookie PETSC_LARGEST_COOKIE = PETSC_SMALLEST_COOKIE;
-PetscCookie PETSC_OBJECT_COOKIE  = 0;
+PetscClassId PETSC_LARGEST_CLASSID = PETSC_SMALLEST_CLASSID;
+PetscClassId PETSC_OBJECT_CLASSID  = 0;
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscCookieRegister"
+#define __FUNCT__ "PetscClassIdRegister"
 /*@C
-  PetscCookieRegister - Registers a new class name for objects and logging operations in an application code. 
+  PetscClassIdRegister - Registers a new class name for objects and logging operations in an application code. 
 
   Not Collective
 
@@ -2272,14 +2272,14 @@ PetscCookie PETSC_OBJECT_COOKIE  = 0;
 . name   - The class name
             
   Output Parameter:
-. oclass - The class id or cookie
+. oclass - The class id or classid
 
   Level: developer
 
 .keywords: log, class, register
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscCookieRegister(const char name[],PetscCookie *oclass )
+PetscErrorCode PETSC_DLLEXPORT PetscClassIdRegister(const char name[],PetscClassId *oclass )
 {
 #if defined(PETSC_USE_LOG)
   StageLog       stageLog;
@@ -2288,7 +2288,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscCookieRegister(const char name[],PetscCookie
 #endif
 
   PetscFunctionBegin;
-  *oclass = ++PETSC_LARGEST_COOKIE;
+  *oclass = ++PETSC_LARGEST_CLASSID;
 #if defined(PETSC_USE_LOG)
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = ClassRegLogRegister(stageLog->classLog, name, *oclass);CHKERRQ(ierr);

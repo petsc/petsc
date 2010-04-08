@@ -16,9 +16,9 @@
     2) on systems without memalign() we 
        - allocate one sizeof(PetscScalar) extra space
        - we shift the pointer up slightly if needed to get PetscScalar aligned
-       - if shifted we store at ptr[-1] the amount of shift (plus a cookie)
+       - if shifted we store at ptr[-1] the amount of shift (plus a classid)
 */
-#define SHIFT_COOKIE 456123
+#define SHIFT_CLASSID 456123
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMallocAlign"
@@ -38,7 +38,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocAlign(size_t mem,int line,const char f
     if (ptr) {
       shift        = (int)(((unsigned long) ptr) % PETSC_MEMALIGN);
       shift        = (2*PETSC_MEMALIGN - shift)/sizeof(int);
-      ptr[shift-1] = shift + SHIFT_COOKIE ;
+      ptr[shift-1] = shift + SHIFT_CLASSID ;
       ptr         += shift;
       *result      = (void*)ptr;
     } else {
@@ -60,7 +60,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFreeAlign(void *ptr,int line,const char func
        Previous int tells us how many ints the pointer has been shifted from
     the original address provided by the system malloc().
   */
-  shift = *(((int*)ptr)-1) - SHIFT_COOKIE;   
+  shift = *(((int*)ptr)-1) - SHIFT_CLASSID;   
   if (shift > PETSC_MEMALIGN-1) return PetscError(line,func,file,dir,1,1,"Likely memory corruption in heap");
   if (shift < 0) return PetscError(line,func,file,dir,1,1,"Likely memory corruption in heap");
   ptr   = (void*)(((int*)ptr) - shift);

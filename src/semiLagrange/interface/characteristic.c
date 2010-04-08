@@ -1,7 +1,7 @@
 
 #include "../src/semiLagrange/characteristicimpl.h" /*I "characteristic.h" I*/
 
-PetscCookie CHARACTERISTIC_COOKIE;
+PetscClassId CHARACTERISTIC_CLASSID;
 PetscLogEvent  CHARACTERISTIC_SetUp, CHARACTERISTIC_Solve, CHARACTERISTIC_QueueSetup, CHARACTERISTIC_DAUpdate;
 PetscLogEvent  CHARACTERISTIC_HalfTimeLocal, CHARACTERISTIC_HalfTimeRemote, CHARACTERISTIC_HalfTimeExchange;
 PetscLogEvent  CHARACTERISTIC_FullTimeLocal, CHARACTERISTIC_FullTimeRemote, CHARACTERISTIC_FullTimeExchange;
@@ -26,11 +26,11 @@ PetscErrorCode CharacteristicView(Characteristic c, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(c, CHARACTERISTIC_COOKIE, 1);
+  PetscValidHeaderSpecific(c, CHARACTERISTIC_CLASSID, 1);
   if (!viewer) {
     ierr = PetscViewerASCIIGetStdout(((PetscObject)c)->comm,&viewer);CHKERRQ(ierr);
   }
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE, 2);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(c, 1, viewer, 2);
 
   ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &iascii);CHKERRQ(ierr);
@@ -50,7 +50,7 @@ PetscErrorCode CharacteristicDestroy(Characteristic c)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(c, CHARACTERISTIC_COOKIE, 1);
+  PetscValidHeaderSpecific(c, CHARACTERISTIC_CLASSID, 1);
   if (--((PetscObject)c)->refct > 0) PetscFunctionReturn(0);
 
   if (c->ops->destroy) {
@@ -86,7 +86,7 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
   ierr = CharacteristicInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(newC, _p_Characteristic, struct _CharacteristicOps, CHARACTERISTIC_COOKIE, -1, "Characteristic", comm, CharacteristicDestroy, CharacteristicView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(newC, _p_Characteristic, struct _CharacteristicOps, CHARACTERISTIC_CLASSID, -1, "Characteristic", comm, CharacteristicDestroy, CharacteristicView);CHKERRQ(ierr);
   ierr = PetscLogObjectCreate(newC);CHKERRQ(ierr);
   *c = newC;
 
@@ -171,7 +171,7 @@ PetscErrorCode CharacteristicSetType(Characteristic c, const CharacteristicType 
   PetscTruth     match;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(c, CHARACTERISTIC_COOKIE, 1);
+  PetscValidHeaderSpecific(c, CHARACTERISTIC_CLASSID, 1);
   PetscValidCharPointer(type, 2);
 
   ierr = PetscTypeCompare((PetscObject) c, type, &match);CHKERRQ(ierr);
@@ -213,7 +213,7 @@ PetscErrorCode CharacteristicSetUp(Characteristic c)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(c, CHARACTERISTIC_COOKIE, 1);
+  PetscValidHeaderSpecific(c, CHARACTERISTIC_CLASSID, 1);
 
   if (!((PetscObject)c)->type_name){
     ierr = CharacteristicSetType(c, CHARACTERISTICDA);CHKERRQ(ierr);

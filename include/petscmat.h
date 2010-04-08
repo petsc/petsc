@@ -113,12 +113,12 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFactorGetSolverPackage(Mat,const Mat
 
 
 /* Logging support */
-#define    MAT_FILE_COOKIE 1211216    /* used to indicate matrices in binary files */
-extern PetscCookie PETSCMAT_DLLEXPORT MAT_COOKIE;
-extern PetscCookie PETSCMAT_DLLEXPORT MAT_FDCOLORING_COOKIE;
-extern PetscCookie PETSCMAT_DLLEXPORT MAT_PARTITIONING_COOKIE;
-extern PetscCookie PETSCMAT_DLLEXPORT MAT_NULLSPACE_COOKIE;
-extern PetscCookie PETSCMAT_DLLEXPORT MATMFFD_COOKIE;
+#define    MAT_FILE_CLASSID 1211216    /* used to indicate matrices in binary files */
+extern PetscClassId PETSCMAT_DLLEXPORT MAT_CLASSID;
+extern PetscClassId PETSCMAT_DLLEXPORT MAT_FDCOLORING_CLASSID;
+extern PetscClassId PETSCMAT_DLLEXPORT MAT_PARTITIONING_CLASSID;
+extern PetscClassId PETSCMAT_DLLEXPORT MAT_NULLSPACE_CLASSID;
+extern PetscClassId PETSCMAT_DLLEXPORT MATMFFD_CLASSID;
 
 /*E
     MatReuse - Indicates if matrices obtained from a previous call to MatGetSubMatrices()

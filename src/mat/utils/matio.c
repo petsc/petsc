@@ -62,7 +62,7 @@
    But for anyone who's interested, the standard binary matrix storage
    format is
 
-$    int    MAT_FILE_COOKIE
+$    int    MAT_FILE_CLASSID
 $    int    number of rows
 $    int    number of columns
 $    int    total number of nonzeros
@@ -92,7 +92,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer viewer, const MatType outt
   const char     *prefix;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(newmat,3);
   *newmat = 0;
 

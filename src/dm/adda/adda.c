@@ -53,7 +53,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDACreate(MPI_Comm comm, PetscInt dim, PetscIn
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(*adda_p,_p_ADDA,struct _ADDAOps,ADDA_COOKIE,0,"ADDA",comm,ADDADestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(*adda_p,_p_ADDA,struct _ADDAOps,ADDA_CLASSID,0,"ADDA",comm,ADDADestroy,0);CHKERRQ(ierr);
   adda = *adda_p;
   adda->ops->view = ADDAView;
   adda->ops->createglobalvector = ADDACreateGlobalVector;
@@ -205,7 +205,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDADestroy(ADDA adda)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adda,ADDA_COOKIE,1);
+  PetscValidHeaderSpecific(adda,ADDA_CLASSID,1);
 
   /* check reference count */
   if(--((PetscObject)adda)->refct > 0) PetscFunctionReturn(0);
@@ -270,7 +270,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAView(ADDA adda, PetscViewer v) {
 PetscErrorCode PETSCDM_DLLEXPORT ADDACreateGlobalVector(ADDA adda, Vec *vec) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adda,ADDA_COOKIE,1);
+  PetscValidHeaderSpecific(adda,ADDA_CLASSID,1);
   PetscValidPointer(vec,2);
   ierr = VecDuplicate(adda->global, vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -326,7 +326,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetColoring(ADDA adda, ISColoringType ctype
 PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrix(ADDA adda, const MatType mtype, Mat *mat) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adda, ADDA_COOKIE, 1);
+  PetscValidHeaderSpecific(adda, ADDA_CLASSID, 1);
   ierr = MatCreate(((PetscObject)adda)->comm, mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat, adda->lsize, adda->lsize, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(*mat, mtype);CHKERRQ(ierr);
@@ -358,8 +358,8 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrix(ADDA adda, const MatType mtype, M
 PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrixNS(ADDA addar, ADDA addac, const MatType mtype, Mat *mat) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(addar, ADDA_COOKIE, 1);
-  PetscValidHeaderSpecific(addac, ADDA_COOKIE, 2);
+  PetscValidHeaderSpecific(addar, ADDA_CLASSID, 1);
+  PetscValidHeaderSpecific(addac, ADDA_CLASSID, 2);
   PetscCheckSameComm(addar, 1, addac, 2);
   ierr = MatCreate(((PetscObject)addar)->comm, mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat, addar->lsize, addac->lsize, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
@@ -446,7 +446,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDACoarsen(ADDA adda, MPI_Comm comm,ADDA *adda
   PetscInt       dofc;
   PetscInt       i;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adda, ADDA_COOKIE, 1);
+  PetscValidHeaderSpecific(adda, ADDA_CLASSID, 1);
   PetscValidPointer(addac, 3);
   ierr = PetscMalloc(adda->dim*sizeof(PetscInt), &nodesc);CHKERRQ(ierr);
   for(i=0; i<adda->dim; i++) {
@@ -596,8 +596,8 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetAggregates(ADDA addac,ADDA addaf,Mat *re
   PetscScalar    *one_vec;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(addac, ADDA_COOKIE, 1);
-  PetscValidHeaderSpecific(addaf, ADDA_COOKIE, 2);
+  PetscValidHeaderSpecific(addac, ADDA_CLASSID, 1);
+  PetscValidHeaderSpecific(addaf, ADDA_CLASSID, 2);
   PetscValidPointer(rest,3);
   if (addac->dim != addaf->dim) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Dimensions of ADDA do not match %D %D", addac->dim, addaf->dim);CHKERRQ(ierr);
 /*   if (addac->dof != addaf->dof) SETERRQ2(PETSC_ERR_ARG_INCOMP,"DOF of ADDA do not match %D %D", addac->dof, addaf->dof);CHKERRQ(ierr); */
@@ -716,7 +716,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetAggregates(ADDA addac,ADDA addaf,Mat *re
 PetscErrorCode PETSCDM_DLLEXPORT ADDASetRefinement(ADDA adda, PetscInt *refine, PetscInt dofrefine) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adda, ADDA_COOKIE, 1);
+  PetscValidHeaderSpecific(adda, ADDA_CLASSID, 1);
   PetscValidPointer(refine,3);
   ierr = PetscMemcpy(adda->refine, refine, adda->dim*sizeof(PetscInt));CHKERRQ(ierr);
   adda->dofrefine = dofrefine;
@@ -747,7 +747,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDASetRefinement(ADDA adda, PetscInt *refine, 
 PetscErrorCode PETSCDM_DLLEXPORT ADDAGetCorners(ADDA adda, PetscInt **lcorner, PetscInt **ucorner) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adda, ADDA_COOKIE, 1);
+  PetscValidHeaderSpecific(adda, ADDA_CLASSID, 1);
   PetscValidPointer(lcorner,2);
   PetscValidPointer(ucorner,3);
   ierr = PetscMalloc(adda->dim*sizeof(PetscInt), lcorner);CHKERRQ(ierr);
@@ -781,7 +781,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetCorners(ADDA adda, PetscInt **lcorner, P
 PetscErrorCode PETSCDM_DLLEXPORT ADDAGetGhostCorners(ADDA adda, PetscInt **lcorner, PetscInt **ucorner) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adda, ADDA_COOKIE, 1);
+  PetscValidHeaderSpecific(adda, ADDA_CLASSID, 1);
   PetscValidPointer(lcorner,2);
   PetscValidPointer(ucorner,3);
   ierr = PetscMalloc(adda->dim*sizeof(PetscInt), lcorner);CHKERRQ(ierr);

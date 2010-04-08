@@ -182,7 +182,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat mat,const MatOrderingType t
   PetscTruth     flg = PETSC_FALSE,isseqdense,ismpidense,ismpiaij,ismpibaij,ismpisbaij;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(rperm,2);
   PetscValidPointer(cperm,3);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");

@@ -232,7 +232,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDDSSetUmin(Mat A,PetscReal umin)
   PetscErrorCode ierr,(*f)(Mat,PetscReal);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatMFFDDSSetUmin_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(A,umin);CHKERRQ(ierr);

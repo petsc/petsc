@@ -3,7 +3,7 @@
 #include <petscmesh_formats.hh>
 
 /* Logging support */
-PetscCookie PETSCDM_DLLEXPORT MESH_COOKIE;
+PetscClassId PETSCDM_DLLEXPORT MESH_CLASSID;
 PetscLogEvent  Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assembleVector,
             Mesh_assembleVectorComplete, Mesh_assembleMatrix, Mesh_updateOperator;
 
@@ -252,12 +252,12 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshView(Mesh mesh, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
+  PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
   PetscValidType(mesh, 1);
   if (!viewer) {
     ierr = PetscViewerASCIIGetStdout(((PetscObject)mesh)->comm,&viewer);CHKERRQ(ierr);
   }
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE, 2);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(mesh, 1, viewer, 2);
 
   ierr = PetscLogEventBegin(Mesh_View,0,0,0,0);CHKERRQ(ierr);
@@ -324,7 +324,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshLoad(PetscViewer viewer, Mesh mesh)
 PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh mesh, ALE::Obj<PETSC_MESH_TYPE>& m)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
+  PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
   m = mesh->m;
   PetscFunctionReturn(0);
 }
@@ -348,7 +348,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh mesh, ALE::Obj<PETSC_MESH_TYPE
 PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, const ALE::Obj<PETSC_MESH_TYPE>& m)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
+  PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
   mesh->m = m;
   if (mesh->globalScatter) {
     PetscErrorCode ierr;
@@ -487,7 +487,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm comm,Mesh *mesh)
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(p,_p_Mesh,struct _MeshOps,MESH_COOKIE,0,"Mesh",comm,MeshDestroy,MeshView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(p,_p_Mesh,struct _MeshOps,MESH_CLASSID,0,"Mesh",comm,MeshDestroy,MeshView);CHKERRQ(ierr);
   p->ops->view               = MeshView_Mesh;
   p->ops->destroy            = PETSC_NULL;
   p->ops->createglobalvector = MeshCreateGlobalVector;
@@ -570,7 +570,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetType(Mesh mesh, const MeshType type)
   PetscTruth     match;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh,MESH_COOKIE,1);
+  PetscValidHeaderSpecific(mesh,MESH_CLASSID,1);
   PetscValidCharPointer(type,2);
 
   ierr = PetscTypeCompare((PetscObject)mesh,type,&match);CHKERRQ(ierr);
@@ -609,7 +609,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetType(Mesh mesh, const MeshType type)
 PetscErrorCode PETSCDM_DLLEXPORT MeshGetType(Mesh mesh,const MeshType *type)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh,MESH_COOKIE,1);
+  PetscValidHeaderSpecific(mesh,MESH_CLASSID,1);
   PetscValidPointer(type,2);
   *type = ((PetscObject)mesh)->type_name;
   PetscFunctionReturn(0);
@@ -861,7 +861,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(Mesh mesh, VecScatter *sca
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
+  PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
   PetscValidPointer(scatter, 2);
   if (!mesh->globalScatter) {
     SectionReal section;
@@ -879,7 +879,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(Mesh mesh, VecScatter *sca
 PetscErrorCode PETSCDM_DLLEXPORT MeshGetLocalFunction(Mesh mesh, PetscErrorCode (**lf)(Mesh, SectionReal, SectionReal, void *))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
+  PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
   if (lf) *lf = mesh->lf;
   PetscFunctionReturn(0);
 }
@@ -889,7 +889,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetLocalFunction(Mesh mesh, PetscErrorCode 
 PetscErrorCode PETSCDM_DLLEXPORT MeshSetLocalFunction(Mesh mesh, PetscErrorCode (*lf)(Mesh, SectionReal, SectionReal, void *))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
+  PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
   mesh->lf = lf;
   PetscFunctionReturn(0);
 }
@@ -899,7 +899,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetLocalFunction(Mesh mesh, PetscErrorCode 
 PetscErrorCode PETSCDM_DLLEXPORT MeshGetLocalJacobian(Mesh mesh, PetscErrorCode (**lj)(Mesh, SectionReal, Mat, void *))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
+  PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
   if (lj) *lj = mesh->lj;
   PetscFunctionReturn(0);
 }
@@ -909,7 +909,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetLocalJacobian(Mesh mesh, PetscErrorCode 
 PetscErrorCode PETSCDM_DLLEXPORT MeshSetLocalJacobian(Mesh mesh, PetscErrorCode (*lj)(Mesh, SectionReal, Mat, void *))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
+  PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
   mesh->lj = lj;
   PetscFunctionReturn(0);
 }
@@ -921,9 +921,9 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshFormFunction(Mesh mesh, SectionReal X, Sect
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
-  PetscValidHeaderSpecific(X, SECTIONREAL_COOKIE, 2);
-  PetscValidHeaderSpecific(F, SECTIONREAL_COOKIE, 3);
+  PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
+  PetscValidHeaderSpecific(X, SECTIONREAL_CLASSID, 2);
+  PetscValidHeaderSpecific(F, SECTIONREAL_CLASSID, 3);
   if (mesh->lf) {
     ierr = (*mesh->lf)(mesh, X, F, ctx);CHKERRQ(ierr);
   }
@@ -937,9 +937,9 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshFormJacobian(Mesh mesh, SectionReal X, Mat 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
-  PetscValidHeaderSpecific(X, SECTIONREAL_COOKIE, 2);
-  PetscValidHeaderSpecific(J, MAT_COOKIE, 3);
+  PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
+  PetscValidHeaderSpecific(X, SECTIONREAL_CLASSID, 2);
+  PetscValidHeaderSpecific(J, MAT_CLASSID, 3);
   if (mesh->lj) {
     ierr = (*mesh->lj)(mesh, X, J, ctx);CHKERRQ(ierr);
   }

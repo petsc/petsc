@@ -50,9 +50,9 @@ E*/
 #define VECSIEVE       "sieve"
 
 /* Logging support */
-#define    VEC_FILE_COOKIE 1211214
-extern PETSCVEC_DLLEXPORT PetscCookie VEC_COOKIE;
-extern PETSCVEC_DLLEXPORT PetscCookie VEC_SCATTER_COOKIE;
+#define    VEC_FILE_CLASSID 1211214
+extern PETSCVEC_DLLEXPORT PetscClassId VEC_CLASSID;
+extern PETSCVEC_DLLEXPORT PetscClassId VEC_SCATTER_CLASSID;
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecFinalizePackage(void);

@@ -5551,17 +5551,17 @@ components that support such logging (de)activation are Mat (matrices),
 Vec (vectors), KSP (linear solvers, including KSP 
 and PC), and SNES (nonlinear solvers):
 \begin{tabbing}
-   PetscLogEventDeactivateClass(MAT\_COOKIE);\\
-   PetscLogEventDeactivateClass(KSP\_COOKIE); /* includes PC and KSP */\\
-   PetscLogEventDeactivateClass(VEC\_COOKIE);\\
-   PetscLogEventDeactivateClass(SNES\_COOKIE);
+   PetscLogEventDeactivateClass(MAT\_CLASSID);\\
+   PetscLogEventDeactivateClass(KSP\_CLASSID); /* includes PC and KSP */\\
+   PetscLogEventDeactivateClass(VEC\_CLASSID);\\
+   PetscLogEventDeactivateClass(SNES\_CLASSID);
 \end{tabbing}
 and 
 \begin{tabbing}
-   PetscLogEventActivateClass(MAT\_COOKIE);\\
-   PetscLogEventActivateClass(KSP\_COOKIE);   /* includes PC and KSP */\\
-   PetscLogEventActivateClass(VEC\_COOKIE);\\
-   PetscLogEventActivateClass(SNES\_COOKIE);
+   PetscLogEventActivateClass(MAT\_CLASSID);\\
+   PetscLogEventActivateClass(KSP\_CLASSID);   /* includes PC and KSP */\\
+   PetscLogEventActivateClass(VEC\_CLASSID);\\
+   PetscLogEventActivateClass(SNES\_CLASSID);
 \end{tabbing}
 
 Recall that the option \trl{-log_all} produces extensive profile
@@ -5605,13 +5605,13 @@ For example, in the line search Newton methods, we use a statement such as
 One can selectively turn off informative messages about any of the 
 basic PETSc objects (e.g., Mat, SNES) with the command
 \begin{tabbing}
-   PetscInfoDeactivateClass(int object\_cookie)
+   PetscInfoDeactivateClass(int object\_classid)
 \end{tabbing}
 where \findex{PetscInfoDeactivateClass()} \findex{PetscInfoActivateClass()}
-\trl{object_cookie} is one of \trl{MAT_COOKIE}, \trl{SNES_COOKIE}, etc.
+\trl{object_classid} is one of \trl{MAT_CLASSID}, \trl{SNES_CLASSID}, etc.
 Messages can be reactivated with the command
 \begin{tabbing}
-   PetscInfoActivateClass(int object\_cookie)
+   PetscInfoActivateClass(int object\_classid)
 \end{tabbing}
 Such deactivation can be useful when one wishes to view information
 about higher-level PETSc libraries (e.g., TS and SNES) without 

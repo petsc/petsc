@@ -6,7 +6,7 @@
 #include "private/isimpl.h"      /*I "petscis.h" I*/
 
 /* Logging support */
-PetscCookie PETSCVEC_DLLEXPORT IS_COOKIE;
+PetscClassId PETSCVEC_DLLEXPORT IS_CLASSID;
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISIdentity" 
@@ -33,7 +33,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISIdentity(IS is,PetscTruth *ident)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(ident,2);
   *ident = is->isidentity;
   if (*ident) PetscFunctionReturn(0);
@@ -63,7 +63,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISIdentity(IS is,PetscTruth *ident)
 PetscErrorCode PETSCVEC_DLLEXPORT ISSetIdentity(IS is)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
   is->isidentity = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -92,7 +92,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSetIdentity(IS is)
 PetscErrorCode PETSCVEC_DLLEXPORT ISPermutation(IS is,PetscTruth *perm)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(perm,2);
   *perm = (PetscTruth) is->isperm;
   PetscFunctionReturn(0);
@@ -121,7 +121,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISPermutation(IS is,PetscTruth *perm)
 PetscErrorCode PETSCVEC_DLLEXPORT ISSetPermutation(IS is)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
 #if defined(PETSC_USE_DEBUG)
   {
     PetscMPIInt    size;
@@ -167,7 +167,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISDestroy(IS is)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
   if (--((PetscObject)is)->refct > 0) PetscFunctionReturn(0);
   if (is->ops->destroy) {
     ierr = (*is->ops->destroy)(is);CHKERRQ(ierr);
@@ -206,7 +206,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISInvertPermutation(IS is,PetscInt nlocal,IS *
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(isout,3);
   if (!is->isperm) SETERRQ(PETSC_ERR_ARG_WRONG,"Not a permutation, must call ISSetPermutation() on the IS first");
   ierr = (*is->ops->invertpermutation)(is,nlocal,isout);CHKERRQ(ierr);
@@ -238,7 +238,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISGetSize(IS is,PetscInt *size)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(size,2);
   ierr = (*is->ops->getsize)(is,size);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -269,7 +269,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISGetLocalSize(IS is,PetscInt *size)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(size,2);
   ierr = (*is->ops->getlocalsize)(is,size);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -319,7 +319,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISGetIndices(IS is,const PetscInt *ptr[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(ptr,2);
   ierr = (*is->ops->getindices)(is,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -363,7 +363,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISRestoreIndices(IS is,const PetscInt *ptr[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(ptr,2);
   if (is->ops->restoreindices) {
     ierr = (*is->ops->restoreindices)(is,ptr);CHKERRQ(ierr);
@@ -391,11 +391,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISView(IS is,PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
   if (!viewer) {
     ierr = PetscViewerASCIIGetStdout(((PetscObject)is)->comm,&viewer);CHKERRQ(ierr);
   }
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(is,1,viewer,2);
   
   ierr = (*is->ops->view)(is,viewer);CHKERRQ(ierr);
@@ -424,7 +424,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSort(IS is)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
   ierr = (*is->ops->sortindices)(is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -456,7 +456,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSorted(IS is,PetscTruth *flg)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(flg,2);
   ierr = (*is->ops->sorted)(is,flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -490,7 +490,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISDuplicate(IS is,IS *newIS)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(newIS,2);
   ierr = (*is->ops->duplicate)(is,newIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -520,8 +520,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCopy(IS is,IS isy)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE,1);
-  PetscValidHeaderSpecific(isy,IS_COOKIE,2);
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidHeaderSpecific(isy,IS_CLASSID,2);
   PetscCheckSameComm(is,1,isy,2);
   if (is == isy) PetscFunctionReturn(0);
   ierr = (*is->ops->copy)(is,isy);CHKERRQ(ierr);

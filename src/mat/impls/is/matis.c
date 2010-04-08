@@ -366,7 +366,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatISGetLocalMat(Mat mat,Mat *local)
   PetscErrorCode ierr,(*f)(Mat,Mat *);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(local,2);
   ierr = PetscObjectQueryFunction((PetscObject)mat,"MatISGetLocalMat_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {

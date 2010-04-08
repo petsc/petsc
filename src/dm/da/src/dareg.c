@@ -34,7 +34,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetType(DA da, const DAType method)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da, DM_COOKIE,1);
+  PetscValidHeaderSpecific(da, DM_CLASSID,1);
   ierr = PetscTypeCompare((PetscObject) da, method, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
@@ -73,7 +73,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetType(DA da, const DAType *type)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da, DM_COOKIE,1);
+  PetscValidHeaderSpecific(da, DM_CLASSID,1);
   PetscValidCharPointer(type,2);
   if (!DARegisterAllCalled) {
     ierr = DARegisterAll(PETSC_NULL);CHKERRQ(ierr);

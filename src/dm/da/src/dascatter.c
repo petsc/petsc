@@ -39,7 +39,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetScatter(DA da,VecScatter *ltog,VecScatter 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (ltog) *ltog = da->ltog;
   if (gtol) *gtol = da->gtol;
   if (ltol) {

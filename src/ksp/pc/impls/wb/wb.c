@@ -600,7 +600,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCExoticSetType(PC pc,PCExoticType type)
   PetscErrorCode ierr,(*f)(PC,PCExoticType);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCExoticSetType_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,type);CHKERRQ(ierr);

@@ -35,8 +35,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInfo_Private(const char[],void*,const
 #define PetscInfo6(A,S,a1,a2,a3,a4,a5,a6)    0
 #define PetscInfo7(A,S,a1,a2,a3,a4,a5,a6,a7) 0
 #endif
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInfoDeactivateClass(PetscCookie);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInfoActivateClass(PetscCookie);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInfoDeactivateClass(PetscClassId);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInfoActivateClass(PetscClassId);
 extern PetscTruth     PETSC_DLLEXPORT PetscLogPrintInfo;  /* if true, indicates PetscInfo() is turned on */
 
 /* We must make these structures available if we are to access the event
@@ -104,7 +104,7 @@ typedef struct {
 } EventPerfInfo;
 
 typedef struct {
-  PetscCookie    id;           /* The integer identifying this class */
+  PetscClassId   id;           /* The integer identifying this class */
   int            creations;    /* The number of objects of this class created */
   int            destructions; /* The number of objects of this class destroyed */
   PetscLogDouble mem;          /* The total memory allocated by objects of this class */
@@ -113,16 +113,16 @@ typedef struct {
 
 /* The structures for logging registration */
 typedef struct  {
-  char        *name;   /* The class name */
-  PetscCookie cookie; /* The integer identifying this class */
+  char         *name;   /* The class name */
+  PetscClassId classid; /* The integer identifying this class */
 } ClassRegInfo;
 
 typedef struct {
-  char        *name;   /* The name of this event */
-  PetscCookie cookie; /* The class id for this event (should maybe give class ID instead) */
+  char         *name;   /* The name of this event */
+  PetscClassId classid; /* The class id for this event (should maybe give class ID instead) */
 #if defined (PETSC_HAVE_MPE)
-  int         mpe_id_begin; /* MPE IDs that define the event */
-  int         mpe_id_end;
+  int          mpe_id_begin; /* MPE IDs that define the event */
+  int          mpe_id_end;
 #endif
 } EventRegInfo;
 
@@ -145,14 +145,14 @@ typedef struct _n_ClassRegLog *ClassRegLog;
 struct _n_ClassRegLog {
   int           numClasses; /* The number of classes registered */
   int           maxClasses; /* The maximum number of classes */
-  ClassRegInfo *classInfo;  /* The structure for class information (cookies are monotonicly increasing) */
+  ClassRegInfo *classInfo;  /* The structure for class information (classids are monotonicly increasing) */
 };
 
 typedef struct _n_ClassPerfLog *ClassPerfLog;
 struct _n_ClassPerfLog {
   int            numClasses; /* The number of logging classes */
   int            maxClasses; /* The maximum number of classes */
-  ClassPerfInfo *classInfo;  /* The structure for class information (cookies are monotonicly increasing) */
+  ClassPerfInfo *classInfo;  /* The structure for class information (classids are monotonicly increasing) */
 };
 
 /* The structures for logging in stages */
@@ -264,12 +264,12 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageSetVisible(PetscLogStage, Pet
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetVisible(PetscLogStage, PetscTruth *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetId(const char [], PetscLogStage *);
 /* Event functions */
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventRegister(const char[], PetscCookie,PetscLogEvent*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventRegister(const char[], PetscClassId,PetscLogEvent*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventActivate(PetscLogEvent);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivate(PetscLogEvent);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventSetActiveAll(PetscLogEvent, PetscTruth);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventActivateClass(PetscCookie);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivateClass(PetscCookie);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventActivateClass(PetscClassId);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivateClass(PetscClassId);
 
 
 /* Global counters */

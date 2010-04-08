@@ -452,12 +452,12 @@ static PetscErrorCode DAArrayMPIIO(DA da,PetscViewer viewer,Vec xin,PetscTruth w
     ierr = PetscViewerBinaryRead(viewer,tr,2,PETSC_INT);CHKERRQ(ierr);
     type = tr[0];
     rows = tr[1];
-    if (type != VEC_FILE_COOKIE) {
+    if (type != VEC_FILE_CLASSID) {
       SETERRQ(PETSC_ERR_ARG_WRONG,"Not vector next in file");
     }
     if (rows != vecrows) SETERRQ(PETSC_ERR_ARG_SIZ,"Vector in file not same size as DA vector");
   } else {
-    tr[0] = VEC_FILE_COOKIE;
+    tr[0] = VEC_FILE_CLASSID;
     tr[1] = vecrows;
     ierr = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
   }

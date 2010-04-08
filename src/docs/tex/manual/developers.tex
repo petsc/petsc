@@ -147,7 +147,7 @@ example on Solaris systems).
 
 In addition there a special types
 \begin{itemize}
-  \item PetscCookie
+  \item PetscClassId
   \item PetscErrorCode
   \item PetscLogEvent
 \end{itemize}
@@ -210,7 +210,7 @@ The variable \trl{eh} is the current error handler context and is defined in
 \begin{tabbing}
 typedef struct \_EH* EH;\\
 struct \_EH \{\\
-  int    cookie;\\
+  int    classid;\\
   int    (*handler)(int, char*,char*,char *,int,int,char*,void *);\\
   void   *ctx;\\
   EH     previous;\\
@@ -465,7 +465,7 @@ typedef struct \{ \\
 /* Data structure header common to all PETSc compatible classs */\\
 \\
 struct \_p\_$<$class$>$ \{\\
-  PetscCookie      cookie;                                  \\
+  PetscClassId     classid;                                  \\
   PetscOps         *bops;                                   \\
   $<$class$>$Ops   *ops;                                    \\
   MPI\_Comm         comm;                                    \\
@@ -533,7 +533,7 @@ struct \_VecOps \{\\
 /* Data structure header common to all PETSc vector classs */\\
 \\
 struct \_p\_Vec \{\\
-  PetscCookie            cookie;                                  \\
+  PetscClassId           classid;                                  \\
   PetscOps               *bops;                                   \\
   VecOps                 *ops;                                    \\
   MPI\_Comm               comm;\\
@@ -556,21 +556,21 @@ struct \_p\_Vec \{\\
 \};
 \end{tabbing}
 
-Each PETSc object begins with a PetscCookie which is used for error checking.
-Each different class of objects has its value for the cookie; these are used
+Each PETSc object begins with a PetscClassId which is used for error checking.
+Each different class of objects has its value for the classid; these are used
 to distinguish between classes. When a new class is created one needs to call
 \begin{tabbing}
-  ierr = PetscCookieRegister(char *classname,PetscCookie *cookie);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister(char *classname,PetscClassId *classid);CHKERRQ(ierr);
 \end{tabbing}
 For example,
 \begin{tabbing}
-  ierr = PetscCookieRegister(''index set'',\&IS\_COOKIE);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister(''index set'',\&IS\_CLASSID);CHKERRQ(ierr);
 \end{tabbing}
 {\bf Question: Why is a fundamental part of PETSc objects defined in PetscLog when PETSc Log
 is something that can be "turned off"} One can verify that an object is valid of a particular
 class with 
 \begin{tabbing}
-  PetscValidHeaderSpecific(x,VEC\_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC\_CLASSID,1);
 \end{tabbing}
 The third argument to this macro indicates the position in the calling sequence of the 
 function the object was passed in. This is generate more complete error messages.

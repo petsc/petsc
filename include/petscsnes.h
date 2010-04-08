@@ -33,7 +33,7 @@ E*/
 #define SNESTEST   "test"
 
 /* Logging support */
-extern PetscCookie PETSCSNES_DLLEXPORT SNES_COOKIE;
+extern PetscClassId PETSCSNES_DLLEXPORT SNES_CLASSID;
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESInitializePackage(const char[]);
 

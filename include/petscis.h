@@ -7,7 +7,7 @@
 #include "petscsys.h"
 PETSC_EXTERN_CXX_BEGIN
 
-extern PETSCVEC_DLLEXPORT PetscCookie IS_COOKIE;
+extern PETSCVEC_DLLEXPORT PetscClassId IS_CLASSID;
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISInitializePackage(const char[]);
 
@@ -71,7 +71,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISComplement(IS,PetscInt,PetscInt,IS*
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISAllGatherIndices(MPI_Comm,PetscInt,const PetscInt[],PetscInt*,PetscInt*[]);
 
 /* --------------------------------------------------------------------------*/
-extern PETSCVEC_DLLEXPORT PetscCookie IS_LTOGM_COOKIE;
+extern PETSCVEC_DLLEXPORT PetscClassId IS_LTOGM_CLASSID;
 
 /*S
    ISLocalToGlobalMapping - mappings from an arbitrary

@@ -30,7 +30,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawStringGetSize(PetscDraw draw,PetscReal *
   PetscTruth isnull;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   ierr = PetscTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
   if (!draw->ops->stringgetsize) SETERRQ1(PETSC_ERR_SUP,"This draw object %s does not support getting string size",((PetscObject)draw)->type_name);

@@ -49,7 +49,7 @@ E*/
 typedef enum {TS_LINEAR,TS_NONLINEAR} TSProblemType;
 
 /* Logging support */
-extern PetscCookie PETSCTS_DLLEXPORT TS_COOKIE;
+extern PetscClassId PETSCTS_DLLEXPORT TS_CLASSID;
 
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSInitializePackage(const char[]);
 

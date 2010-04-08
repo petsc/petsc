@@ -25,7 +25,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetType(Mat mat,const char pyname[])
   PetscErrorCode (*f)(Mat, const char[]) = 0;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidCharPointer(pyname,2);
   ierr = PetscObjectQueryFunction((PetscObject)mat,"MatPythonSetType_C",
 				  (PetscVoidFunction*)&f);CHKERRQ(ierr);

@@ -2,11 +2,11 @@
 #include <petscmesh_viewers.hh>
 
 /* Logging support */
-PetscCookie PETSCDM_DLLEXPORT SECTIONREAL_COOKIE;
+PetscClassId PETSCDM_DLLEXPORT SECTIONREAL_CLASSID;
 PetscLogEvent  SectionReal_View;
-PetscCookie PETSCDM_DLLEXPORT SECTIONINT_COOKIE;
+PetscClassId PETSCDM_DLLEXPORT SECTIONINT_CLASSID;
 PetscLogEvent  SectionInt_View;
-PetscCookie PETSCDM_DLLEXPORT SECTIONPAIR_COOKIE;
+PetscClassId PETSCDM_DLLEXPORT SECTIONPAIR_CLASSID;
 PetscLogEvent  SectionPair_View;
 
 #undef __FUNCT__  
@@ -86,12 +86,12 @@ PetscErrorCode SectionRealView(SectionReal section, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
   PetscValidType(section, 1);
   if (!viewer) {
     ierr = PetscViewerASCIIGetStdout(((PetscObject)section)->comm,&viewer);CHKERRQ(ierr);
   }
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE, 2);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(section, 1, viewer, 2);
 
   ierr = PetscLogEventBegin(SectionReal_View,0,0,0,0);CHKERRQ(ierr);
@@ -122,7 +122,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealDuplicate(SectionReal section, Secti
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
   PetscValidPointer(newSection, 2);
   const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& s = section->s;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type>        t = new PETSC_MESH_TYPE::real_section_type(s->comm(), s->debug());
@@ -156,7 +156,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealDuplicate(SectionReal section, Secti
 PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetSection(SectionReal section, ALE::Obj<PETSC_MESH_TYPE::real_section_type>& s)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
   s = section->s;
   PetscFunctionReturn(0);
 }
@@ -181,7 +181,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetSection(SectionReal section, cons
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
   if (!s.isNull()) {ierr = PetscObjectSetName((PetscObject) section, s->getName().c_str());CHKERRQ(ierr);}
   section->s = s;
   PetscFunctionReturn(0);
@@ -207,7 +207,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetSection(SectionReal section, cons
 PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetBundle(SectionReal section, ALE::Obj<PETSC_MESH_TYPE>& b)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
   b = section->b;
   PetscFunctionReturn(0);
 }
@@ -230,7 +230,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetBundle(SectionReal section, ALE::
 PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetBundle(SectionReal section, const ALE::Obj<PETSC_MESH_TYPE>& b)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
   section->b = b;
   PetscFunctionReturn(0);
 }
@@ -262,7 +262,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealCreate(MPI_Comm comm, SectionReal *s
   PetscValidPointer(section,2);
   *section = PETSC_NULL;
 
-  ierr = PetscHeaderCreate(s,_p_SectionReal,struct _SectionRealOps,SECTIONREAL_COOKIE,0,"SectionReal",comm,SectionRealDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(s,_p_SectionReal,struct _SectionRealOps,SECTIONREAL_CLASSID,0,"SectionReal",comm,SectionRealDestroy,0);CHKERRQ(ierr);
   s->ops->view     = SectionRealView_Sieve;
   s->ops->restrictClosure = SectionRealRestrict;
   s->ops->update   = SectionRealUpdate;
@@ -294,7 +294,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealDestroy(SectionReal section)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
   if (--((PetscObject)section)->refct > 0) PetscFunctionReturn(0);
   section->s = PETSC_NULL;
   ierr = PetscHeaderDestroy(section);CHKERRQ(ierr);
@@ -367,7 +367,7 @@ PetscErrorCode SectionRealDistribute(SectionReal serialSection, Mesh parallelMes
 PetscErrorCode PETSCDM_DLLEXPORT SectionRealRestrict(SectionReal section, PetscInt point, PetscScalar *values[])
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
   PetscValidScalarPointer(values,3);
   *values = (PetscScalar *) section->s->restrictPoint(point);
   PetscFunctionReturn(0);
@@ -393,7 +393,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealRestrict(SectionReal section, PetscI
 PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdate(SectionReal section, PetscInt point, const PetscScalar values[], InsertMode mode)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
   PetscValidScalarPointer(values,3);
 #ifdef PETSC_USE_COMPLEX
   SETERRQ(PETSC_ERR_SUP, "SectionReal does not support complex updates");
@@ -570,7 +570,7 @@ PetscErrorCode SectionRealZero(SectionReal section)
 PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetFiberDimension(SectionReal section, PetscInt point, PetscInt *size)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
   *size = section->s->getFiberDimension(point);
   PetscFunctionReturn(0);
 }
@@ -594,7 +594,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetFiberDimension(SectionReal sectio
 PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetFiberDimension(SectionReal section, PetscInt point, const PetscInt size)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
   section->s->setFiberDimension(point, size);
   PetscFunctionReturn(0);
 }
@@ -619,7 +619,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetFiberDimension(SectionReal sectio
 PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetFiberDimensionField(SectionReal section, PetscInt point, const PetscInt size, const PetscInt field)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
   section->s->setFiberDimension(point, size, field);
   PetscFunctionReturn(0);
 }
@@ -670,7 +670,7 @@ PetscErrorCode SectionRealGetSize(SectionReal section, PetscInt *size)
 PetscErrorCode PETSCDM_DLLEXPORT SectionRealAllocate(SectionReal section)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
   section->b->allocate(section->s);
   PetscFunctionReturn(0);
 }
@@ -795,7 +795,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealToVec(SectionReal section, Mesh mesh
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
   ierr = SectionRealCreateLocalVector(section, &localVec);CHKERRQ(ierr);
   ierr = MeshGetGlobalScatter(mesh, &scatter);CHKERRQ(ierr);
   if (mode == SCATTER_FORWARD) {
@@ -832,7 +832,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealToVec(SectionReal section, VecScatte
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
   ierr = SectionRealCreateLocalVector(section, &localVec);CHKERRQ(ierr);
   if (mode == SCATTER_FORWARD) {
     ierr = VecScatterBegin(scatter, localVec, vec, INSERT_VALUES, mode);CHKERRQ(ierr);
@@ -862,7 +862,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealToVec(SectionReal section, VecScatte
 PetscErrorCode PETSCDM_DLLEXPORT SectionRealClear(SectionReal section)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
   section->s->clear();
   PetscFunctionReturn(0);
 }
@@ -926,7 +926,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealNorm(SectionReal section, Mesh mesh,
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
   const ALE::Obj<PETSC_MESH_TYPE::order_type>& order = m->getFactory()->getGlobalOrder(m, s->getName(), s);
@@ -967,7 +967,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealAXPY(SectionReal section, Mesh mesh,
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
   ierr = SectionRealGetSection(X, sX);CHKERRQ(ierr);
@@ -1181,12 +1181,12 @@ PetscErrorCode SectionIntView(SectionInt section, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONINT_CLASSID, 1);
   PetscValidType(section, 1);
   if (!viewer) {
     ierr = PetscViewerASCIIGetStdout(((PetscObject)section)->comm,&viewer);CHKERRQ(ierr);
   }
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE, 2);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(section, 1, viewer, 2);
 
   ierr = PetscLogEventBegin(SectionInt_View,0,0,0,0);CHKERRQ(ierr);
@@ -1215,7 +1215,7 @@ PetscErrorCode SectionIntView(SectionInt section, PetscViewer viewer)
 PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetSection(SectionInt section, ALE::Obj<PETSC_MESH_TYPE::int_section_type>& s)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONINT_CLASSID, 1);
   s = section->s;
   PetscFunctionReturn(0);
 }
@@ -1240,7 +1240,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetSection(SectionInt section, const 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONINT_CLASSID, 1);
   if (!s.isNull()) {ierr = PetscObjectSetName((PetscObject) section, s->getName().c_str());CHKERRQ(ierr);}
   section->s = s;
   PetscFunctionReturn(0);
@@ -1266,7 +1266,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetSection(SectionInt section, const 
 PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetBundle(SectionInt section, ALE::Obj<PETSC_MESH_TYPE>& b)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONINT_CLASSID, 1);
   b = section->b;
   PetscFunctionReturn(0);
 }
@@ -1289,7 +1289,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetBundle(SectionInt section, ALE::Ob
 PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetBundle(SectionInt section, const ALE::Obj<PETSC_MESH_TYPE>& b)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONINT_CLASSID, 1);
   section->b = b;
   PetscFunctionReturn(0);
 }
@@ -1321,7 +1321,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntCreate(MPI_Comm comm, SectionInt *sec
   PetscValidPointer(section,2);
   *section = PETSC_NULL;
 
-  ierr = PetscHeaderCreate(s,_p_SectionInt,struct _SectionIntOps,SECTIONINT_COOKIE,0,"SectionInt",comm,SectionIntDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(s,_p_SectionInt,struct _SectionIntOps,SECTIONINT_CLASSID,0,"SectionInt",comm,SectionIntDestroy,0);CHKERRQ(ierr);
   s->ops->view     = SectionIntView_Sieve;
   s->ops->restrictClosure = SectionIntRestrict;
   s->ops->update   = SectionIntUpdate;
@@ -1353,7 +1353,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntDestroy(SectionInt section)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONINT_CLASSID, 1);
   if (--((PetscObject)section)->refct > 0) PetscFunctionReturn(0);
   section->s = PETSC_NULL;
   ierr = PetscHeaderDestroy(section);CHKERRQ(ierr);
@@ -1426,7 +1426,7 @@ PetscErrorCode SectionIntDistribute(SectionInt serialSection, Mesh parallelMesh,
 PetscErrorCode PETSCDM_DLLEXPORT SectionIntRestrict(SectionInt section, PetscInt point, PetscInt *values[])
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONINT_CLASSID, 1);
   PetscValidPointer(values,3);
   *values = (PetscInt *) section->b->restrictClosure(section->s, point);
   PetscFunctionReturn(0);
@@ -1452,7 +1452,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntRestrict(SectionInt section, PetscInt
 PetscErrorCode PETSCDM_DLLEXPORT SectionIntUpdate(SectionInt section, PetscInt point, const PetscInt values[], InsertMode mode)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONINT_CLASSID, 1);
   PetscValidIntPointer(values,3);
   if (mode == INSERT_VALUES) {
     section->b->update(section->s, point, values);
@@ -1617,7 +1617,7 @@ PetscErrorCode SectionIntZero(SectionInt section)
 PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetFiberDimension(SectionInt section, PetscInt point, PetscInt *size)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONINT_CLASSID, 1);
   *size = section->s->getFiberDimension(point);
   PetscFunctionReturn(0);
 }
@@ -1641,7 +1641,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetFiberDimension(SectionInt section,
 PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetFiberDimension(SectionInt section, PetscInt point, const PetscInt size)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONINT_CLASSID, 1);
   section->s->setFiberDimension(point, size);
   PetscFunctionReturn(0);
 }
@@ -1666,7 +1666,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetFiberDimension(SectionInt section,
 PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetFiberDimensionField(SectionInt section, PetscInt point, const PetscInt size, const PetscInt field)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONINT_CLASSID, 1);
   section->s->setFiberDimension(point, size, field);
   PetscFunctionReturn(0);
 }
@@ -1717,7 +1717,7 @@ PetscErrorCode SectionIntGetSize(SectionInt section, PetscInt *size)
 PetscErrorCode PETSCDM_DLLEXPORT SectionIntAllocate(SectionInt section)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONINT_CLASSID, 1);
   section->b->allocate(section->s);
   PetscFunctionReturn(0);
 }
@@ -1739,7 +1739,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntAllocate(SectionInt section)
 PetscErrorCode PETSCDM_DLLEXPORT SectionIntClear(SectionInt section)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONINT_CLASSID, 1);
   section->s->clear();
   PetscFunctionReturn(0);
 }

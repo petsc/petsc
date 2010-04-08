@@ -49,11 +49,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(const char path[])
   if (PetscPackageInitialized) PetscFunctionReturn(0);
   PetscPackageInitialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscCookieRegister("Object",&PETSC_OBJECT_COOKIE);CHKERRQ(ierr);
-  ierr = PetscCookieRegister("Container",&PETSC_CONTAINER_COOKIE);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Object",&PETSC_OBJECT_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Container",&PETSC_CONTAINER_CLASSID);CHKERRQ(ierr);
 
   /* Register Events */
-  ierr = PetscLogEventRegister("PetscBarrier", PETSC_SMALLEST_COOKIE,&PETSC_Barrier);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PetscBarrier", PETSC_SMALLEST_CLASSID,&PETSC_Barrier);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {

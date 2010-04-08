@@ -100,11 +100,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringView(MatFDColoring c,PetscViewer 
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(c,MAT_FDCOLORING_COOKIE,1);
+  PetscValidHeaderSpecific(c,MAT_FDCOLORING_CLASSID,1);
   if (!viewer) {
     ierr = PetscViewerASCIIGetStdout(((PetscObject)c)->comm,&viewer);CHKERRQ(ierr);
   }
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2); 
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2); 
   PetscCheckSameComm(c,1,viewer,2);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
@@ -169,7 +169,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringView(MatFDColoring c,PetscViewer 
 PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetParameters(MatFDColoring matfd,PetscReal error,PetscReal umin)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE,1);
+  PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_CLASSID,1);
 
   if (error != PETSC_DEFAULT) matfd->error_rel = error;
   if (umin != PETSC_DEFAULT)  matfd->umin      = umin;
@@ -202,7 +202,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetParameters(MatFDColoring matfd
 PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringGetFunction(MatFDColoring matfd,PetscErrorCode (**f)(void),void **fctx)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE,1);
+  PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_CLASSID,1);
   if (f) *f = matfd->f;
   if (fctx) *fctx = matfd->fctx;
   PetscFunctionReturn(0);
@@ -244,7 +244,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringGetFunction(MatFDColoring matfd,P
 PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetFunction(MatFDColoring matfd,PetscErrorCode (*f)(void),void *fctx)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE,1);
+  PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_CLASSID,1);
   matfd->f    = f;
   matfd->fctx = fctx;
   PetscFunctionReturn(0);
@@ -292,7 +292,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetFromOptions(MatFDColoring matf
   char           value[3];
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE,1);
+  PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_CLASSID,1);
 
   ierr = PetscOptionsBegin(((PetscObject)matfd)->comm,((PetscObject)matfd)->prefix,"Jacobian computation via finite differences option","MatFD");CHKERRQ(ierr);
     ierr = PetscOptionsReal("-mat_fd_coloring_err","Square root of relative error in function","MatFDColoringSetParameters",matfd->error_rel,&matfd->error_rel,0);CHKERRQ(ierr);
@@ -376,7 +376,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringCreate(Mat mat,ISColoring iscolor
   if (M != N) SETERRQ(PETSC_ERR_SUP,"Only for square matrices");
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(c,_p_MatFDColoring,int,MAT_FDCOLORING_COOKIE,0,"MatFDColoring",comm,MatFDColoringDestroy,MatFDColoringView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(c,_p_MatFDColoring,int,MAT_FDCOLORING_CLASSID,0,"MatFDColoring",comm,MatFDColoringDestroy,MatFDColoringView);CHKERRQ(ierr);
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   c->ctype = iscoloring->ctype;
@@ -513,9 +513,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
   PetscErrorCode ierr;
 
   PetscFunctionBegin;    
-  PetscValidHeaderSpecific(J,MAT_COOKIE,1);
-  PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_COOKIE,2);
-  PetscValidHeaderSpecific(x1,VEC_COOKIE,3);
+  PetscValidHeaderSpecific(J,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_CLASSID,2);
+  PetscValidHeaderSpecific(x1,VEC_CLASSID,3);
   if (!coloring->f) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call MatFDColoringSetFunction()");
   if (!J->ops->fdcoloringapply) SETERRQ1(PETSC_ERR_SUP,"Not supported for this matrix type %s",((PetscObject)J)->type_name);
   ierr = (*J->ops->fdcoloringapply)(J,coloring,x1,flag,sctx);CHKERRQ(ierr);
@@ -539,9 +539,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply_AIJ(Mat J,MatFDColoring col
   Vec            x1_tmp;
 
   PetscFunctionBegin;    
-  PetscValidHeaderSpecific(J,MAT_COOKIE,1);
-  PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_COOKIE,2);
-  PetscValidHeaderSpecific(x1,VEC_COOKIE,3);
+  PetscValidHeaderSpecific(J,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_CLASSID,2);
+  PetscValidHeaderSpecific(x1,VEC_CLASSID,3);
   if (!f) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call MatFDColoringSetFunction()");
 
   ierr = PetscLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
@@ -745,9 +745,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApplyTS(Mat J,MatFDColoring color
   PetscTruth     flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(J,MAT_COOKIE,1);
-  PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_COOKIE,2);
-  PetscValidHeaderSpecific(x1,VEC_COOKIE,4);
+  PetscValidHeaderSpecific(J,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_CLASSID,2);
+  PetscValidHeaderSpecific(x1,VEC_CLASSID,4);
 
   ierr = PetscLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
   if (!coloring->w3) {

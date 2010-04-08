@@ -38,7 +38,7 @@ void Store2DArray(int m,int n,PetscReal *a,char *filename,int *fdd)
 {
   int        fd = *fdd;
   int        i,j;
-  int        nz = -1,cookie = 1211216,ierr;
+  int        nz = -1,classid = 1211216,ierr;
   PetscReal *vals;
 
   if (!fd) {
@@ -49,7 +49,7 @@ void Store2DArray(int m,int n,PetscReal *a,char *filename,int *fdd)
     }
     *fdd = fd;
   }
-  ierr = write(fd,&cookie,sizeof(PetscInt));
+  ierr = write(fd,&classid,sizeof(PetscInt));
   ierr = write(fd,&m,sizeof(PetscInt));
   ierr = write(fd,&n,sizeof(PetscInt));
   ierr = write(fd,&nz,sizeof(PetscInt));
@@ -78,7 +78,7 @@ void Store1DArray(int m,PetscReal *a,char *filename,int *fdd)
 {
   int  fd = *fdd;
   int  i,j,ierr;
-  int  cookie = 1211214; /* cookie for vectors */
+  int  classid = 1211214; /* classid for vectors */
 
   if (fd == -1) {
     fd = creat(filename,0666); 
@@ -88,7 +88,7 @@ void Store1DArray(int m,PetscReal *a,char *filename,int *fdd)
     }
     *fdd = fd;
   }
-  ierr = write(fd,&cookie,sizeof(PetscInt));
+  ierr = write(fd,&classid,sizeof(PetscInt));
   ierr = write(fd,&m,sizeof(PetscInt));
   ierr = write(fd,a,m*sizeof(PetscReal));
 }

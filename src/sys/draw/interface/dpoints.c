@@ -32,7 +32,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawPointSetSize(PetscDraw draw,PetscReal wi
   PetscTruth isnull;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   ierr = PetscTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
   if (width < 0.0 || width > 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Bad size %G, should be between 0 and 1",width);

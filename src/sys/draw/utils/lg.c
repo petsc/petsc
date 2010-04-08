@@ -8,7 +8,7 @@
 
 #include "petscsys.h"         /*I "petscsys.h" I*/
 
-PetscCookie DRAWLG_COOKIE = 0;
+PetscClassId DRAWLG_CLASSID = 0;
 
 struct _p_DrawLG {
   PETSCHEADER(int);
@@ -52,14 +52,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGCreate(PetscDraw draw,int dim,PetscDra
   PetscDrawLG    lg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidPointer(outctx,2);
   ierr = PetscTypeCompare(obj,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) {
     ierr = PetscDrawOpenNull(((PetscObject)obj)->comm,(PetscDraw*)outctx);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = PetscHeaderCreate(lg,_p_DrawLG,int,DRAWLG_COOKIE,0,"PetscDrawLG",((PetscObject)obj)->comm,PetscDrawLGDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(lg,_p_DrawLG,int,DRAWLG_CLASSID,0,"PetscDrawLG",((PetscObject)obj)->comm,PetscDrawLGDestroy,0);CHKERRQ(ierr);
   lg->view    = 0;
   lg->destroy = 0;
   lg->nopts   = 0;
@@ -101,8 +101,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGSetDimension(PetscDrawLG lg,int dim)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (lg && ((PetscObject)lg)->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(lg,DRAWLG_COOKIE,1);
+  if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(lg,DRAWLG_CLASSID,1);
   if (lg->dim == dim) PetscFunctionReturn(0);
 
   ierr    = PetscFree2(lg->x,lg->y);CHKERRQ(ierr);
@@ -131,8 +131,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGSetDimension(PetscDrawLG lg,int dim)
 PetscErrorCode PETSC_DLLEXPORT PetscDrawLGReset(PetscDrawLG lg)
 {
   PetscFunctionBegin;
-  if (lg && ((PetscObject)lg)->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(lg,DRAWLG_COOKIE,1);
+  if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(lg,DRAWLG_CLASSID,1);
   lg->xmin  = 1.e20;
   lg->ymin  = 1.e20;
   lg->xmax  = -1.e20;
@@ -161,12 +161,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGDestroy(PetscDrawLG lg)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!lg || ((PetscObject)lg)->cookie != PETSC_DRAW_COOKIE) {
-    PetscValidHeaderSpecific(lg,DRAWLG_COOKIE,1);
+  if (!lg || ((PetscObject)lg)->classid != PETSC_DRAW_CLASSID) {
+    PetscValidHeaderSpecific(lg,DRAWLG_CLASSID,1);
   }
 
   if (--((PetscObject)lg)->refct > 0) PetscFunctionReturn(0);
-  if (lg && ((PetscObject)lg)->cookie == PETSC_DRAW_COOKIE) {
+  if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) {
     ierr = PetscObjectDestroy((PetscObject)lg);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -201,9 +201,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGAddPoint(PetscDrawLG lg,PetscReal *x,P
   int            i;
 
   PetscFunctionBegin;
-  if (lg && ((PetscObject)lg)->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
+  if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
 
-  PetscValidHeaderSpecific(lg,DRAWLG_COOKIE,1);
+  PetscValidHeaderSpecific(lg,DRAWLG_CLASSID,1);
   if (lg->loc+lg->dim >= lg->len) { /* allocate more space */
     PetscReal *tmpx,*tmpy;
     ierr = PetscMalloc2(lg->len+lg->dim*CHUNCKSIZE,PetscReal,&tmpx,lg->len+lg->dim*CHUNCKSIZE,PetscReal,&tmpy);CHKERRQ(ierr);
@@ -246,7 +246,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGAddPoint(PetscDrawLG lg,PetscReal *x,P
 PetscErrorCode PETSC_DLLEXPORT PetscDrawLGIndicateDataPoints(PetscDrawLG lg)
 {
   PetscFunctionBegin;
-  if (lg && ((PetscObject)lg)->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
+  if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
 
   lg->use_dots = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -280,8 +280,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGAddPoints(PetscDrawLG lg,int n,PetscRe
   PetscReal      *x,*y;
 
   PetscFunctionBegin;
-  if (lg && ((PetscObject)lg)->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(lg,DRAWLG_COOKIE,1);
+  if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(lg,DRAWLG_CLASSID,1);
   if (lg->loc+n*lg->dim >= lg->len) { /* allocate more space */
     PetscReal *tmpx,*tmpy;
     int    chunk = CHUNCKSIZE;
@@ -338,8 +338,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGDraw(PetscDrawLG lg)
   PetscDraw      draw = lg->win;
 
   PetscFunctionBegin;
-  if (lg && ((PetscObject)lg)->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(lg,DRAWLG_COOKIE,1);
+  if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(lg,DRAWLG_CLASSID,1);
 
   ierr = PetscDrawClear(draw);CHKERRQ(ierr);
   ierr = PetscDrawAxisSetLimits(lg->axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
@@ -384,8 +384,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGPrint(PetscDrawLG lg)
   int       i, j, dim = lg->dim, nopts = lg->nopts;
 
   PetscFunctionBegin;
-  if (lg && ((PetscObject)lg)->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(lg, DRAWLG_COOKIE,1);
+  if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(lg, DRAWLG_CLASSID,1);
   if (nopts < 1)                  PetscFunctionReturn(0);
   if (xmin > xmax || ymin > ymax) PetscFunctionReturn(0);
 
@@ -419,8 +419,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGPrint(PetscDrawLG lg)
 PetscErrorCode PETSC_DLLEXPORT PetscDrawLGSetLimits(PetscDrawLG lg,PetscReal x_min,PetscReal x_max,PetscReal y_min,PetscReal y_max) 
 {
   PetscFunctionBegin;
-  if (lg && ((PetscObject)lg)->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(lg,DRAWLG_COOKIE,1);
+  if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(lg,DRAWLG_CLASSID,1);
   (lg)->xmin = x_min; 
   (lg)->xmax = x_max; 
   (lg)->ymin = y_min; 
@@ -450,11 +450,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGSetLimits(PetscDrawLG lg,PetscReal x_m
 PetscErrorCode PETSC_DLLEXPORT PetscDrawLGGetAxis(PetscDrawLG lg,PetscDrawAxis *axis)
 {
   PetscFunctionBegin;
-  if (lg && ((PetscObject)lg)->cookie == PETSC_DRAW_COOKIE) {
+  if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) {
     *axis = 0;
     PetscFunctionReturn(0);
   }
-  PetscValidHeaderSpecific(lg,DRAWLG_COOKIE,1);
+  PetscValidHeaderSpecific(lg,DRAWLG_CLASSID,1);
   PetscValidPointer(axis,2);
   *axis = lg->axis;
   PetscFunctionReturn(0);
@@ -481,10 +481,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGGetDraw(PetscDrawLG lg,PetscDraw *draw
   PetscFunctionBegin;
   PetscValidHeader(lg,1);
   PetscValidPointer(draw,2);
-  if (((PetscObject)lg)->cookie == PETSC_DRAW_COOKIE) {
+  if (((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) {
     *draw = (PetscDraw)lg;
   } else {
-    PetscValidHeaderSpecific(lg,DRAWLG_COOKIE,1);
+    PetscValidHeaderSpecific(lg,DRAWLG_CLASSID,1);
     *draw = lg->win;
   }
   PetscFunctionReturn(0);
@@ -517,9 +517,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin
   PetscDraw      draw = lg->win;
 
   PetscFunctionBegin;
-  if (lg && ((PetscObject)lg)->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(lg,DRAWLG_COOKIE,1);
-  PetscValidHeaderSpecific(sp,DRAWSP_COOKIE,2); 
+  if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(lg,DRAWLG_CLASSID,1);
+  PetscValidHeaderSpecific(sp,DRAWSP_CLASSID,2); 
 
   xmin = PetscMin(lg->xmin,sp->xmin);
   ymin = PetscMin(lg->ymin,sp->ymin);

@@ -44,10 +44,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,V
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  PetscValidHeaderSpecific(vsoln,VEC_COOKIE,2);
-  PetscValidHeaderSpecific(vres,VEC_COOKIE,5);
-  PetscValidHeaderSpecific(vb,VEC_COOKIE,6);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidHeaderSpecific(vsoln,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(vres,VEC_CLASSID,5);
+  PetscValidHeaderSpecific(vb,VEC_CLASSID,6);
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   if (!ksp->guess_zero) {
@@ -106,8 +106,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPUnwindPreconditioner(KSP ksp,Vec vsoln,Vec 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  PetscValidHeaderSpecific(vsoln,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidHeaderSpecific(vsoln,VEC_CLASSID,2);
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   if (ksp->pc_side == PC_RIGHT) {
     ierr = KSP_PCApply(ksp,vsoln,vt1);CHKERRQ(ierr);

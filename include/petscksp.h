@@ -58,7 +58,7 @@ E*/
 #define KSPGCR        "gcr"
 
 /* Logging support */
-extern PetscCookie PETSCKSP_DLLEXPORT KSP_COOKIE;
+extern PetscClassId PETSCKSP_DLLEXPORT KSP_CLASSID;
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate(MPI_Comm,KSP *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetType(KSP,const KSPType);

@@ -28,7 +28,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLine(PetscDraw draw,PetscReal xl,PetscRe
   PetscTruth isdrawnull;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   ierr = PetscTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isdrawnull);CHKERRQ(ierr);
   if (isdrawnull) PetscFunctionReturn(0);
   ierr = (*draw->ops->line)(draw,xl,yl,xr,yr,cl);CHKERRQ(ierr);
@@ -57,7 +57,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawIsNull(PetscDraw draw,PetscTruth *yes)
   PetscTruth isdrawnull;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidIntPointer(yes,2);
   ierr = PetscTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isdrawnull);CHKERRQ(ierr);
   if (isdrawnull) *yes = PETSC_TRUE;

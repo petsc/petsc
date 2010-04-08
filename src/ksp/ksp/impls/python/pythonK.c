@@ -26,7 +26,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetType(KSP ksp,const char pyname[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidCharPointer(pyname,2);
   ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPPythonSetType_C",(PetscVoidFunction*)&f);CHKERRQ(ierr);
   if (f) {ierr = (*f)(ksp,pyname);CHKERRQ(ierr);}

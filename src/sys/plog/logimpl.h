@@ -12,7 +12,7 @@
 typedef struct _Action {
   int            action;        /* The type of execution */
   PetscLogEvent  event;         /* The event number */
-  PetscCookie    cookie;        /* The event class id */
+  PetscClassId   classid;        /* The event class id */
   PetscLogDouble time;          /* The time of occurence */
   PetscLogDouble flops;         /* The cumlative flops */
   PetscLogDouble mem;           /* The current memory usage */
@@ -70,15 +70,15 @@ EXTERN PetscErrorCode EventPerfLogEnsureSize(EventPerfLog, int);
 EXTERN PetscErrorCode EventPerfInfoClear(EventPerfInfo *);
 EXTERN PetscErrorCode EventPerfInfoCopy(EventPerfInfo *, EventPerfInfo *);
 /* Registration functions */
-EXTERN PetscErrorCode EventRegLogRegister(EventRegLog, const char [], PetscCookie, PetscLogEvent *);
+EXTERN PetscErrorCode EventRegLogRegister(EventRegLog, const char [], PetscClassId, PetscLogEvent *);
 /* Query functions */
 EXTERN PetscErrorCode EventPerfLogSetVisible(EventPerfLog, PetscLogEvent, PetscTruth);
 EXTERN PetscErrorCode EventPerfLogGetVisible(EventPerfLog, PetscLogEvent, PetscTruth *);
 /* Activaton functions */
 EXTERN PetscErrorCode EventPerfLogActivate(EventPerfLog, PetscLogEvent);
 EXTERN PetscErrorCode EventPerfLogDeactivate(EventPerfLog, PetscLogEvent);
-EXTERN PetscErrorCode EventPerfLogActivateClass(EventPerfLog, EventRegLog, PetscCookie);
-EXTERN PetscErrorCode EventPerfLogDeactivateClass(EventPerfLog, EventRegLog, PetscCookie);
+EXTERN PetscErrorCode EventPerfLogActivateClass(EventPerfLog, EventRegLog, PetscClassId);
+EXTERN PetscErrorCode EventPerfLogDeactivateClass(EventPerfLog, EventRegLog, PetscClassId);
 
 /* Logging functions */
 EXTERN PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
@@ -98,9 +98,9 @@ EXTERN PetscErrorCode ClassRegInfoDestroy(ClassRegInfo *);
 EXTERN PetscErrorCode ClassPerfLogEnsureSize(ClassPerfLog, int);
 EXTERN PetscErrorCode ClassPerfInfoClear(ClassPerfInfo *);
 /* Registration functions */
-EXTERN PetscErrorCode ClassRegLogRegister(ClassRegLog, const char [], PetscCookie);
+EXTERN PetscErrorCode ClassRegLogRegister(ClassRegLog, const char [], PetscClassId);
 /* Query functions */
-EXTERN PetscErrorCode ClassRegLogGetClass(ClassRegLog, PetscCookie, int *);
+EXTERN PetscErrorCode ClassRegLogGetClass(ClassRegLog, PetscClassId, int *);
 /* Logging functions */
 EXTERN PetscErrorCode PetscLogObjCreateDefault(PetscObject);
 EXTERN PetscErrorCode PetscLogObjDestroyDefault(PetscObject);

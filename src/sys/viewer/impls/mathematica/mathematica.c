@@ -329,7 +329,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaSetLinkName(PetscViewer v, 
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,1);
   PetscValidCharPointer(name,2);
   ierr = PetscStrallocpy(name, &vmath->linkname);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -354,7 +354,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaSetLinkHost(PetscViewer v, 
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,1);
   PetscValidCharPointer(host,2);
   ierr = PetscStrallocpy(host, &vmath->linkhost);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -449,7 +449,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaGetLink(PetscViewer viewer,
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID,1);
   *link = vmath->link;
   PetscFunctionReturn(0);
 }
@@ -505,7 +505,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaGetName(PetscViewer viewer,
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(name,2);
   *name = vmath->objName;
   PetscFunctionReturn(0);
@@ -530,7 +530,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaSetName(PetscViewer viewer,
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(name,2);
   vmath->objName = name;
   PetscFunctionReturn(0);
@@ -554,7 +554,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaClearName(PetscViewer viewe
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID,1);
   vmath->objName = PETSC_NULL;
   PetscFunctionReturn(0);
 }
@@ -585,8 +585,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaGetVector(PetscViewer viewe
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE,1);
-  PetscValidHeaderSpecific(v,      VEC_COOKIE,2);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID,1);
+  PetscValidHeaderSpecific(v,      VEC_CLASSID,2);
 
   /* Determine the object name */
   if (!vmath->objName) {

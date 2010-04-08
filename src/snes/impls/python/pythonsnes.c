@@ -25,7 +25,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetType(SNES snes,const char pyname
   PetscErrorCode (*f)(SNES, const char[]) = 0;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidCharPointer(pyname,2);
   ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESPythonSetType_C",
 				  (PetscVoidFunction*)&f);CHKERRQ(ierr);

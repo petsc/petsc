@@ -10,7 +10,7 @@
 
 typedef struct _EH *EH;
 struct _EH {
-  int            cookie;
+  int            classid;
   PetscErrorCode (*handler)(int,const char*,const char*,const char *,PetscErrorCode,int,const char*,void *);
   void           *ctx;
   EH             previous;
@@ -598,7 +598,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscIntView(PetscInt N,const PetscInt idx[],Pets
 
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,3);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,3);
   if (N) PetscValidIntPointer(idx,2);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
 
@@ -683,7 +683,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRealView(PetscInt N,const PetscReal idx[],Pe
 
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,3);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,3);
   PetscValidScalarPointer(idx,2);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
 

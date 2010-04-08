@@ -612,7 +612,7 @@ static PetscErrorCode MatView_MPIDense_Binary(Mat mat,PetscViewer viewer)
 
       if (!rank) {
         /* store the matrix as a dense matrix */
-        header[0] = MAT_FILE_COOKIE;
+        header[0] = MAT_FILE_CLASSID;
         header[1] = mat->rmap->N;
         header[2] = N;
         header[3] = MATRIX_BINARY_FORMAT_DENSE;
@@ -1957,7 +1957,7 @@ PetscErrorCode MatLoad_MPIDense(PetscViewer viewer,const MatType type,Mat *newma
   if (!rank) {
     ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd,(char *)header,4,PETSC_INT);CHKERRQ(ierr);
-    if (header[0] != MAT_FILE_COOKIE) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"not matrix object");
+    if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"not matrix object");
   }
 
   ierr = MPI_Bcast(header+1,3,MPIU_INT,0,comm);CHKERRQ(ierr);

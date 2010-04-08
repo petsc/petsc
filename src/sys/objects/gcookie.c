@@ -5,28 +5,28 @@
 #include "petscsys.h"  /*I   "petscsys.h"    I*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscObjectGetCookie"
+#define __FUNCT__ "PetscObjectGetClassid"
 /*@C
-   PetscObjectGetCookie - Gets the cookie for any PetscObject, 
+   PetscObjectGetClassid - Gets the classid for any PetscObject, 
 
    Not Collective
    
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
          Thus must be cast with a (PetscObject), for example, 
-         PetscObjectGetCookie((PetscObject)mat,&cookie);
+         PetscObjectGetClassid((PetscObject)mat,&classid);
 
    Output Parameter:
-.  cookie - the cookie
+.  classid - the classid
 
    Level: developer
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectGetCookie(PetscObject obj,PetscCookie *cookie)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectGetClassid(PetscObject obj,PetscClassId *classid)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  *cookie = obj->cookie;
+  *classid = obj->classid;
   PetscFunctionReturn(0);
 }
 
@@ -40,7 +40,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectGetCookie(PetscObject obj,PetscCookie 
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
          Thus must be cast with a (PetscObject), for example, 
-         PetscObjectGetCookie((PetscObject)mat,&exists);
+         PetscObjectGetClassid((PetscObject)mat,&exists);
 
    Output Parameter:
 .  exists - PETSC_FALSE if object does not exist; PETSC_TRUE if object does exist.
@@ -53,7 +53,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectExists(PetscObject obj,PetscTruth *exi
   PetscFunctionBegin;
   *exists = PETSC_FALSE;
   if (!obj) PetscFunctionReturn(0);
-  if (obj->cookie >= PETSC_SMALLEST_COOKIE && obj->cookie <= PETSC_LARGEST_COOKIE) *exists = PETSC_TRUE;
+  if (obj->classid >= PETSC_SMALLEST_CLASSID && obj->classid <= PETSC_LARGEST_CLASSID) *exists = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 

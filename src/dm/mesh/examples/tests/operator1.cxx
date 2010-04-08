@@ -36,7 +36,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "operator1.cxx", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
-  ierr = PetscLogEventRegister("Assembly", MAT_COOKIE,&options->assemblyEvent);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("Assembly", MAT_CLASSID,&options->assemblyEvent);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

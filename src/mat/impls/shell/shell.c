@@ -48,7 +48,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatShellGetContext(Mat mat,void **ctx)
   PetscTruth     flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(ctx,2); 
   ierr = PetscTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
   if (!flg) *ctx = 0; 
@@ -460,7 +460,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetContext(Mat mat,void *ctx)
   PetscTruth     flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   ierr = PetscTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
   if (flg) {
     shell->ctx = ctx;
@@ -517,7 +517,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetOperation(Mat mat,MatOperation op,v
   PetscTruth     flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   if (op == MATOP_DESTROY) {
     ierr = PetscTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
     if (flg) {
@@ -573,7 +573,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatShellGetOperation(Mat mat,MatOperation op,v
   PetscTruth     flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   if (op == MATOP_DESTROY) {
     ierr = PetscTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
     if (flg) {

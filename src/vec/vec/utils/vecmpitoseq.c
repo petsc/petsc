@@ -50,7 +50,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToAll(Vec vin,VecScatter *ctx,
   PetscTruth     tmpvout = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(vin,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(vin,VEC_CLASSID,1);
   PetscValidType(vin,1);
   PetscValidPointer(ctx,2);
   if (vout) {
@@ -123,7 +123,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToZero(Vec vin,VecScatter *ctx
   PetscTruth     tmpvout = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(vin,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(vin,VEC_CLASSID,1);
   PetscValidType(vin,1);
   PetscValidPointer(ctx,2);
   if (vout) {
