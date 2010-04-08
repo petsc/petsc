@@ -268,46 +268,6 @@ PetscErrorCode PETSC_DLLEXPORT StageLogPop(StageLog stageLog)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "StageLogGetCurrent"
-/*@
-  StageLogGetCurrent - This function returns the stage from the top of the stack.
-
-  Not Collective
-
-  Input Parameter:
-. stageLog - The StageLog
-
-  Output Parameter:
-. stage    - The current stage
-
-  Notes:
-  If no stage is currently active, stage is set to -1.
-
-  Level: intermediate
-
-.keywords: log, stage
-.seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
-@*/
-PetscErrorCode PETSC_DLLEXPORT StageLogGetCurrent(StageLog stageLog, int *stage) 
-{
-  PetscTruth     empty;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = StackEmpty(stageLog->stack, &empty);CHKERRQ(ierr);
-  if (empty) {
-    *stage = -1;
-  } else {
-    ierr = StackTop(stageLog->stack, stage);CHKERRQ(ierr);
-  }
-#ifdef PETSC_USE_DEBUG
-  if (*stage != stageLog->curStage) {
-    SETERRQ2(PETSC_ERR_PLIB, "Inconsistency in stage log: stage %d should be %d", *stage, stageLog->curStage);
-  }
-#endif
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogGetClassRegLog"
@@ -391,35 +351,6 @@ PetscErrorCode PETSC_DLLEXPORT StageLogGetClassPerfLog(StageLog stageLog, int st
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "StageLogGetEventPerfLog"
-/*@C
-  StageLogGetEventPerfLog - This function returns the EventPerfLog for the given stage.
-
-  Not Collective
-
-  Input Parameters:
-+ stageLog - The StageLog
-- stage    - The stage
-
-  Output Parameter:
-. eventLog - The EventPerfLog
-
-  Level: intermediate
-
-.keywords: log, stage
-.seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
-@*/
-PetscErrorCode PETSC_DLLEXPORT StageLogGetEventPerfLog(StageLog stageLog, int stage, EventPerfLog *eventLog)
-{
-  PetscFunctionBegin;
-  PetscValidPointer(eventLog,3);
-  if ((stage < 0) || (stage >= stageLog->numStages)) {
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d should be in [0,%d)", stage, stageLog->numStages);
-  }
-  *eventLog = stageLog->stageInfo[stage].eventLog;
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogSetActive"

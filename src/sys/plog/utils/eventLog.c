@@ -440,7 +440,7 @@ PetscErrorCode EventPerfLogDeactivateClass(EventPerfLog eventLog, EventRegLog ev
 /*------------------------------------------------ Query Functions --------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "EventRegLogGetEvent"
-/*@
+/*@C
   EventRegLogGetEvent - This function returns the event id given the event name.
 
   Not Collective

@@ -1916,32 +1916,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogObjectState(PetscObject obj, const char f
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscLogGetStageLog"
-/*@C
-  PetscLogGetStageLog - This function returns the default stage logging object.
-
-  Not collective
-
-  Output Parameter:
-. stageLog - The default StageLog
-
-  Level: beginner
-
-.keywords: log, stage
-.seealso: StageLogCreate()
-@*/
-PetscErrorCode PETSC_DLLEXPORT PetscLogGetStageLog(StageLog *stageLog)
-{
-  PetscFunctionBegin;
-  PetscValidPointer(stageLog,1);
-  if (_stageLog == PETSC_NULL) {
-    fprintf(stderr, "Logging has not been enabled.\nYou might have forgotten to call PetscInitialize().\n");
-    MPI_Abort(MPI_COMM_WORLD, PETSC_ERR_SUP);
-  }
-  *stageLog = _stageLog;
-  PetscFunctionReturn(0);
-}
 
 /*MC
    PetscLogFlops - Adds floating point operations to the global counter.
