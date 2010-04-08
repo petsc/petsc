@@ -17,6 +17,16 @@ EXTERN PetscErrorCode StackPop(IntStack, int *);
 EXTERN PetscErrorCode StackTop(IntStack, int *);
 EXTERN PetscErrorCode StackEmpty(IntStack, PetscTruth *);
 
+#ifdef PETSC_USE_LOG
+/* Stack Functions */
+EXTERN PetscErrorCode StackCreate(IntStack *);
+EXTERN PetscErrorCode StackDestroy(IntStack);
+EXTERN PetscErrorCode StackPush(IntStack, int);
+EXTERN PetscErrorCode StackPop(IntStack, int *);
+EXTERN PetscErrorCode StackEmpty(IntStack, PetscTruth *);
+EXTERN PetscErrorCode StackTop(IntStack, int *);
+#endif /* PETSC_USE_LOG */
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogGetStageLog"
 /*@C
