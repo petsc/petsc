@@ -14,7 +14,7 @@ StageLog PETSC_DLLEXPORT _stageLog = 0;
   Input Paramter:
 . stageInfo - The StageInfo
 
-  Level: beginner
+  Level: developer
 
 .keywords: log, stage, destroy
 .seealso: StageLogCreate()
@@ -32,7 +32,7 @@ PetscErrorCode PETSC_DLLEXPORT StageInfoDestroy(StageInfo *stageInfo)
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogDestroy"
-/*@
+/*@C
   StageLogDestroy - This destroys a StageLog object.
 
   Not collective
@@ -40,7 +40,7 @@ PetscErrorCode PETSC_DLLEXPORT StageInfoDestroy(StageInfo *stageInfo)
   Input Paramter:
 . stageLog - The StageLog
 
-  Level: beginner
+  Level: developer
 
 .keywords: log, stage, destroy
 .seealso: StageLogCreate()
@@ -65,7 +65,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogDestroy(StageLog stageLog)
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogRegister"
-/*@
+/*@C
   StageLogRegister - Registers a stage name for logging operations in an application code.
 
   Not Collective
@@ -77,7 +77,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogDestroy(StageLog stageLog)
   Output Parameter:
 . stage    - The stage index
 
-  Level: intermediate
+  Level: developer
 
 .keywords: log, stage, register
 .seealso: StageLogPush(), StageLogPop(), StageLogCreate()
@@ -126,7 +126,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogRegister(StageLog stageLog, const char sn
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogPush"
-/*@
+/*@C
   StageLogPush - This function pushes a stage on the stack.
 
   Not Collective
@@ -157,7 +157,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogRegister(StageLog stageLog, const char sn
   Use PetscLogStageRegister() to register a stage. All previous stages are
   accumulating time and flops, but events will only be logged in this stage.
 
-  Level: intermediate
+  Level: developer
 
 .keywords: log, push, stage
 .seealso: StageLogPop(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
@@ -203,7 +203,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogPush(StageLog stageLog, int stage)
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogPop"
-/*@
+/*@C
   StageLogPop - This function pops a stage from the stack.
 
   Not Collective
@@ -229,7 +229,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogPush(StageLog stageLog, int stage)
   Notes:
   Use StageLogRegister() to register a stage.
 
-  Level: intermediate
+  Level: developer
 
 .keywords: log, pop, stage
 .seealso: StageLogPush(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
@@ -271,7 +271,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogPop(StageLog stageLog)
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogGetClassRegLog"
-/*@C
+/*@CC
   StageLogGetClassRegLog - This function returns the ClassRegLog for the given stage.
 
   Not Collective
@@ -282,7 +282,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogPop(StageLog stageLog)
   Output Parameter:
 . classLog - The ClassRegLog
 
-  Level: intermediate
+  Level: developer
 
 .keywords: log, stage
 .seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
@@ -297,7 +297,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogGetClassRegLog(StageLog stageLog, ClassRe
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogGetEventRegLog"
-/*@C
+/*@CC
   StageLogGetEventRegLog - This function returns the EventRegLog.
 
   Not Collective
@@ -308,7 +308,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogGetClassRegLog(StageLog stageLog, ClassRe
   Output Parameter:
 . eventLog - The EventRegLog
 
-  Level: intermediate
+  Level: developer
 
 .keywords: log, stage
 .seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
@@ -323,7 +323,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogGetEventRegLog(StageLog stageLog, EventRe
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogGetClassPerfLog"
-/*@C
+/*@CC
   StageLogGetClassPerfLog - This function returns the ClassPerfLog for the given stage.
 
   Not Collective
@@ -335,7 +335,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogGetEventRegLog(StageLog stageLog, EventRe
   Output Parameter:
 . classLog - The ClassPerfLog
 
-  Level: intermediate
+  Level: developer
 
 .keywords: log, stage
 .seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
@@ -354,7 +354,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogGetClassPerfLog(StageLog stageLog, int st
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogSetActive"
-/*@
+/*@C
   StageLogSetActive - This function determines whether events will be logged during this state.
 
   Not Collective
@@ -364,7 +364,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogGetClassPerfLog(StageLog stageLog, int st
 . stage    - The stage to log
 - isActive - The activity flag, PETSC_TRUE for logging, otherwise PETSC_FALSE (default is PETSC_TRUE)
 
-  Level: intermediate
+  Level: developer
 
 .keywords: log, active, stage
 .seealso: StageLogGetActive(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
@@ -381,7 +381,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogSetActive(StageLog stageLog, int stage, P
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogGetActive"
-/*@
+/*@C
   StageLogGetActive - This function returns whether events will be logged suring this stage.
 
   Not Collective
@@ -393,7 +393,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogSetActive(StageLog stageLog, int stage, P
   Output Parameter:
 . isActive - The activity flag, PETSC_TRUE for logging, otherwise PETSC_FALSE (default is PETSC_TRUE)
 
-  Level: intermediate
+  Level: developer
 
 .keywords: log, visible, stage
 .seealso: StageLogSetActive(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
@@ -411,7 +411,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogGetActive(StageLog stageLog, int stage, P
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogSetVisible"
-/*@
+/*@C
   StageLogSetVisible - This function determines whether a stage is printed during PetscLogPrintSummary()
 
   Not Collective
@@ -424,7 +424,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogGetActive(StageLog stageLog, int stage, P
   Database Options:
 . -log_summary - Activates log summary
 
-  Level: intermediate
+  Level: developer
 
 .keywords: log, visible, stage
 .seealso: StageLogGetVisible(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
@@ -441,7 +441,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogSetVisible(StageLog stageLog, int stage, 
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogGetVisible"
-/*@
+/*@C
   StageLogGetVisible - This function returns whether a stage is printed during PetscLogPrintSummary()
 
   Not Collective
@@ -456,7 +456,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogSetVisible(StageLog stageLog, int stage, 
   Database Options:
 . -log_summary - Activates log summary
 
-  Level: intermediate
+  Level: developer
 
 .keywords: log, visible, stage
 .seealso: StageLogSetVisible(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
@@ -474,7 +474,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogGetVisible(StageLog stageLog, int stage, 
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogGetStage"
-/*@
+/*@C
   StageLogGetStage - This function returns the stage id given the stage name.
 
   Not Collective
@@ -486,7 +486,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogGetVisible(StageLog stageLog, int stage, 
   Output Parameter:
 . stage    - The stage id
 
-  Level: intermediate
+  Level: developer 
 
 .keywords: log, stage
 .seealso: StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
@@ -512,7 +512,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogGetStage(StageLog stageLog, const char na
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogCreate"
-/*@
+/*@C
   StageLogCreate - This creates a StageLog object.
 
   Not collective
@@ -520,7 +520,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogGetStage(StageLog stageLog, const char na
   Input Parameter:
 . stageLog - The StageLog
 
-  Level: beginner
+  Level: developer
 
 .keywords: log, stage, create
 .seealso: StageLogCreate()
