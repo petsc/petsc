@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include "../src/sys/plog/plog.h"  /*I    "petscsys.h"   I*/
+#include "../src/sys/plog/logimpl.h"  /*I    "petscsys.h"   I*/
 
 /* Variables for the tracing logger */
 extern FILE          *tracefile;

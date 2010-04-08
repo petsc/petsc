@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include "../src/sys/plog/plog.h" /*I    "petscsys.h"   I*/
+#include "../src/sys/plog/logimpl.h" /*I    "petscsys.h"   I*/
 
 /*----------------------------------------------- Creation Functions -------------------------------------------------*/
 /* Note: these functions do not have prototypes in a public directory, so they are considered "internal" and not exported. */

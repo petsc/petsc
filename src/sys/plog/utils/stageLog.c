@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include "../src/sys/plog/plog.h" /*I    "petscsys.h"   I*/
+#include "../src/sys/plog/logimpl.h" /*I    "petscsys.h"   I*/
 
 StageLog PETSC_DLLEXPORT _stageLog = 0;
 
