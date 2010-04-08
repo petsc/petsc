@@ -1,6 +1,12 @@
 #define PETSC_DLL
 /*
       PETSc code to log object creation and destruction and PETSc events.
+
+      This provides the public API used by the rest of PETSc and by users.
+
+      These routines use a private API that is not used elsewhere in PETSc and is not 
+      accessible to users. The private API is defined in logimpl.h and the utils directory.
+
 */
 #include "petscsys.h"        /*I    "petscsys.h"   I*/
 #include "petsctime.h"
@@ -451,9 +457,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogStageRegister(const char sname[],PetscLog
   ierr = StageLogRegister(stageLog, sname, stage);CHKERRQ(ierr);
   /* Copy events already changed in the main stage, this sucks */
   ierr = EventPerfLogEnsureSize(stageLog->stageInfo[*stage].eventLog, stageLog->eventLog->numEvents);CHKERRQ(ierr);
-  for(event = 0; event < stageLog->eventLog->numEvents; event++) {
-    ierr = EventPerfInfoCopy(&stageLog->stageInfo[0].eventLog->eventInfo[event],
-                             &stageLog->stageInfo[*stage].eventLog->eventInfo[event]);CHKERRQ(ierr);
+  for (event = 0; event < stageLog->eventLog->numEvents; event++) {
+    ierr = EventPerfInfoCopy(&stageLog->stageInfo[0].eventLog->eventInfo[event],&stageLog->stageInfo[*stage].eventLog->eventInfo[event]);CHKERRQ(ierr);
   }
   ierr = ClassPerfLogEnsureSize(stageLog->stageInfo[*stage].classLog, stageLog->classLog->numClasses);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -745,7 +750,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogEventRegister(const char name[],PetscClas
   *event = PETSC_DECIDE;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = EventRegLogRegister(stageLog->eventLog, name, classid, event);CHKERRQ(ierr);
-  for(stage = 0; stage < stageLog->numStages; stage++) {
+  for (stage = 0; stage < stageLog->numStages; stage++) {
     ierr = EventPerfLogEnsureSize(stageLog->stageInfo[stage].eventLog, stageLog->eventLog->numEvents);CHKERRQ(ierr);
     ierr = ClassPerfLogEnsureSize(stageLog->stageInfo[stage].classLog, stageLog->classLog->numClasses);CHKERRQ(ierr);
   }
@@ -2044,180 +2049,6 @@ M*/
 .seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd(), PreLoadBegin(), PreLoadEnd()
 
 M*/
-
-/*----------------------------------------------- Stack Functions ---------------------------------------------------*/
-#undef __FUNCT__  
-#define __FUNCT__ "StackDestroy"
-/*@C
-  StackDestroy - This function destroys a stack.
-
-  Not Collective
-
-  Input Parameter:
-. stack - The stack
-
-  Level: beginner
-
-.keywords: log, stack, destroy
-.seealso: StackCreate(), StackEmpty(), StackPush(), StackPop(), StackTop()
-@*/
-PetscErrorCode StackDestroy(IntStack stack)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFree(stack->stack);CHKERRQ(ierr);
-  ierr = PetscFree(stack);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "StackEmpty"
-/*@C
-  StackEmpty - This function determines whether any items have been pushed.
-
-  Not Collective
-
-  Input Parameter:
-. stack - The stack
-
-  Output Parameter:
-. empty - PETSC_TRUE if the stack is empty
-
-  Level: intermediate
-
-.keywords: log, stack, empty
-.seealso: StackCreate(), StackDestroy(), StackPush(), StackPop(), StackTop()
-@*/
-PetscErrorCode StackEmpty(IntStack stack, PetscTruth *empty)
-{
-  PetscFunctionBegin;
-  PetscValidIntPointer(empty,2);
-  if (stack->top == -1) {
-    *empty = PETSC_TRUE;
-  } else {
-    *empty = PETSC_FALSE;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "StackTop"
-/*@C
-  StackTop - This function returns the top of the stack.
-
-  Not Collective
-
-  Input Parameter:
-. stack - The stack
-
-  Output Parameter:
-. top - The integer on top of the stack
-
-  Level: intermediate
-
-.keywords: log, stack, top
-.seealso: StackCreate(), StackDestroy(), StackEmpty(), StackPush(), StackPop()
-@*/
-PetscErrorCode StackTop(IntStack stack, int *top)
-{
-  PetscFunctionBegin;
-  PetscValidIntPointer(top,2);
-  *top = stack->stack[stack->top];
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "StackPush"
-/*@C
-  StackPush - This function pushes an integer on the stack.
-
-  Not Collective
-
-  Input Parameters:
-+ stack - The stack
-- item  - The integer to push
-
-  Level: intermediate
-
-.keywords: log, stack, push
-.seealso: StackCreate(), StackDestroy(), StackEmpty(), StackPop(), StackTop()
-@*/
-PetscErrorCode StackPush(IntStack stack, int item)
-{
-  int            *array;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  stack->top++;
-  if (stack->top >= stack->max) {
-    ierr = PetscMalloc(stack->max*2 * sizeof(int), &array);CHKERRQ(ierr);
-    ierr = PetscMemcpy(array, stack->stack, stack->max * sizeof(int));CHKERRQ(ierr);
-    ierr = PetscFree(stack->stack);CHKERRQ(ierr);
-    stack->stack = array;
-    stack->max  *= 2;
-  }
-  stack->stack[stack->top] = item;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "StackPop"
-/*@C
-  StackPop - This function pops an integer from the stack.
-
-  Not Collective
-
-  Input Parameter:
-. stack - The stack
-
-  Output Parameter:
-. item  - The integer popped
-
-  Level: intermediate
-
-.keywords: log, stack, pop
-.seealso: StackCreate(), StackDestroy(), StackEmpty(), StackPush(), StackTop()
-@*/
-PetscErrorCode StackPop(IntStack stack, int *item)
-{
-  PetscFunctionBegin;
-  PetscValidPointer(item,2);
-  if (stack->top == -1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Stack is empty");
-  *item = stack->stack[stack->top--];
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "StackCreate"
-/*@C
-  StackCreate - This function creates a stack.
-
-  Not Collective
-
-  Output Parameter:
-. stack - The stack
-
-  Level: beginner
-
-.keywords: log, stack, pop
-.seealso: StackDestroy(), StackEmpty(), StackPush(), StackPop(), StackTop()
-@*/
-PetscErrorCode StackCreate(IntStack *stack)
-{
-  IntStack       s;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidPointer(stack,1);
-  ierr = PetscNew(struct _n_IntStack, &s);CHKERRQ(ierr);
-  s->top = -1;
-  s->max = 128;
-  ierr = PetscMalloc(s->max * sizeof(int), &s->stack);CHKERRQ(ierr);
-  ierr = PetscMemzero(s->stack, s->max * sizeof(int));CHKERRQ(ierr);
-  *stack = s;
-  PetscFunctionReturn(0);
-}
 
 #else /* end of -DPETSC_USE_LOG section */
 

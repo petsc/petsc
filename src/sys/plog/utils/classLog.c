@@ -1,9 +1,12 @@
 #define PETSC_DLL
+/*
+     This defines part of the private API for logging performance information. It is intended to be used only by the
+   PETSc PetscLog...() interface and not elsewhere, nor by users. Hence the prototypes for these functions are NOT
+   in the public PETSc include files.
 
+*/
 #include "../src/sys/plog/logimpl.h" /*I    "petscsys.h"   I*/
 
-/*----------------------------------------------- Creation Functions -------------------------------------------------*/
-/* Note: these functions do not have prototypes in a public directory, so they are considered "internal" and not exported. */
 #undef __FUNCT__  
 #define __FUNCT__ "ClassRegLogCreate"
 /*@C
@@ -14,14 +17,14 @@
   Input Parameter:
 . classLog - The ClassRegLog
 
-  Level: beginner
+  Level: developer
 
 .keywords: log, class, create
 .seealso: ClassRegLogDestroy(), StageLogCreate()
 @*/
 PetscErrorCode ClassRegLogCreate(ClassRegLog *classLog)
 {
-  ClassRegLog l;
+  ClassRegLog    l;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -43,14 +46,14 @@ PetscErrorCode ClassRegLogCreate(ClassRegLog *classLog)
   Input Paramter:
 . classLog - The ClassRegLog
 
-  Level: beginner
+  Level: developer
 
 .keywords: log, event, destroy
 .seealso: ClassRegLogCreate()
 @*/
-PetscErrorCode ClassRegLogDestroy(ClassRegLog classLog)\
+PetscErrorCode ClassRegLogDestroy(ClassRegLog classLog)
 {
-  int c;
+  int            c;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -72,7 +75,7 @@ PetscErrorCode ClassRegLogDestroy(ClassRegLog classLog)\
   Input Parameter:
 . c - The ClassRegInfo
 
-  Level: beginner
+  Level: developer
 
 .keywords: log, class, destroy
 .seealso: StageLogDestroy(), EventLogDestroy()
@@ -96,14 +99,14 @@ PetscErrorCode ClassRegInfoDestroy(ClassRegInfo *c)
   Input Parameter:
 . classLog - The ClassPerfLog
 
-  Level: beginner
+  Level: developer
 
 .keywords: log, class, create
 .seealso: ClassPerfLogDestroy(), StageLogCreate()
 @*/
 PetscErrorCode ClassPerfLogCreate(ClassPerfLog *classLog)
 {
-  ClassPerfLog l;
+  ClassPerfLog   l;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -125,7 +128,7 @@ PetscErrorCode ClassPerfLogCreate(ClassPerfLog *classLog)
   Input Paramter:
 . classLog - The ClassPerfLog
 
-  Level: beginner
+  Level: developer
 
 .keywords: log, event, destroy
 .seealso: ClassPerfLogCreate()
@@ -151,7 +154,7 @@ PetscErrorCode ClassPerfLogDestroy(ClassPerfLog classLog)
   Input Paramter:
 . classInfo - The ClassPerfInfo
 
-  Level: beginner
+  Level: developer
 
 .keywords: log, class, destroy
 .seealso: ClassPerfLogCreate()
@@ -178,14 +181,14 @@ PetscErrorCode ClassPerfInfoClear(ClassPerfInfo *classInfo)
 + classLog - The ClassPerfLog
 - size     - The size
 
-  Level: intermediate
+  Level: developer
 
 .keywords: log, class, size, ensure
 .seealso: ClassPerfLogCreate()
 @*/
 PetscErrorCode ClassPerfLogEnsureSize(ClassPerfLog classLog, int size) 
 {
-  ClassPerfInfo *classInfo;
+  ClassPerfInfo  *classInfo;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -224,9 +227,9 @@ PetscErrorCode ClassPerfLogEnsureSize(ClassPerfLog classLog, int size)
 @*/
 PetscErrorCode ClassRegLogRegister(ClassRegLog classLog, const char cname[], PetscClassId classid)
 {
-  ClassRegInfo *classInfo;
-  char         *str;
-  int           c;
+  ClassRegInfo   *classInfo;
+  char           *str;
+  int            c;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

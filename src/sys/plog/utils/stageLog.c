@@ -1,5 +1,10 @@
 #define PETSC_DLL
+/*
+     This defines part of the private API for logging performance information. It is intended to be used only by the
+   PETSc PetscLog...() interface and not elsewhere, nor by users. Hence the prototypes for these functions are NOT
+   in the public PETSc include files.
 
+*/
 #include "../src/sys/plog/logimpl.h" /*I    "petscsys.h"   I*/
 
 StageLog PETSC_DLLEXPORT _stageLog = 0;
@@ -84,9 +89,9 @@ PetscErrorCode PETSC_DLLEXPORT StageLogDestroy(StageLog stageLog)
 @*/
 PetscErrorCode PETSC_DLLEXPORT StageLogRegister(StageLog stageLog, const char sname[], int *stage)
 {
-  StageInfo *stageInfo;
-  char      *str;
-  int        s, st;
+  StageInfo      *stageInfo;
+  char           *str;
+  int            s, st;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -164,8 +169,8 @@ PetscErrorCode PETSC_DLLEXPORT StageLogRegister(StageLog stageLog, const char sn
 @*/
 PetscErrorCode PETSC_DLLEXPORT StageLogPush(StageLog stageLog, int stage)
 {
-  int             curStage = 0;
-  PetscTruth      empty;
+  int            curStage = 0;
+  PetscTruth     empty;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -271,7 +276,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogPop(StageLog stageLog)
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogGetClassRegLog"
-/*@CC
+/*@C
   StageLogGetClassRegLog - This function returns the ClassRegLog for the given stage.
 
   Not Collective
@@ -297,7 +302,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogGetClassRegLog(StageLog stageLog, ClassRe
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogGetEventRegLog"
-/*@CC
+/*@C
   StageLogGetEventRegLog - This function returns the EventRegLog.
 
   Not Collective
@@ -323,7 +328,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogGetEventRegLog(StageLog stageLog, EventRe
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogGetClassPerfLog"
-/*@CC
+/*@C
   StageLogGetClassPerfLog - This function returns the ClassPerfLog for the given stage.
 
   Not Collective
@@ -493,8 +498,8 @@ PetscErrorCode PETSC_DLLEXPORT StageLogGetVisible(StageLog stageLog, int stage, 
 @*/
 PetscErrorCode PETSC_DLLEXPORT StageLogGetStage(StageLog stageLog, const char name[], int *stage)
 {
-  PetscTruth match;
-  int        s;
+  PetscTruth     match;
+  int            s;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

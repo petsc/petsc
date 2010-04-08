@@ -1,5 +1,10 @@
 #define PETSC_DLL
+/*
+     This defines part of the private API for logging performance information. It is intended to be used only by the
+   PETSc PetscLog...() interface and not elsewhere, nor by users. Hence the prototypes for these functions are NOT
+   in the public PETSc include files.
 
+*/
 #include "../src/sys/plog/logimpl.h"  /*I    "petscsys.h"   I*/
 
 /* Variables for the tracing logger */
@@ -22,14 +27,14 @@ extern PetscLogDouble tracetime;
   Input Parameter:
 . eventLog - The EventRegLog
 
-  Level: beginner
+  Level: developer
 
 .keywords: log, event, create
 .seealso: EventRegLogDestroy(), StageLogCreate()
 @*/
 PetscErrorCode EventRegLogCreate(EventRegLog *eventLog) 
 {
-  EventRegLog l;
+  EventRegLog    l;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -51,14 +56,14 @@ PetscErrorCode EventRegLogCreate(EventRegLog *eventLog)
   Input Paramter:
 . eventLog - The EventRegLog
 
-  Level: beginner
+  Level: developer
 
 .keywords: log, event, destroy
 .seealso: EventRegLogCreate()
 @*/
 PetscErrorCode EventRegLogDestroy(EventRegLog eventLog) 
 {
-  int e;
+  int            e;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -80,14 +85,14 @@ PetscErrorCode EventRegLogDestroy(EventRegLog eventLog)
   Input Parameter:
 . eventLog - The EventPerfLog
 
-  Level: beginner
+  Level: developer
 
 .keywords: log, event, create
 .seealso: EventPerfLogDestroy(), StageLogCreate()
 @*/
 PetscErrorCode EventPerfLogCreate(EventPerfLog *eventLog) 
 {
-  EventPerfLog l;
+  EventPerfLog   l;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -109,7 +114,7 @@ PetscErrorCode EventPerfLogCreate(EventPerfLog *eventLog)
   Input Paramter:
 . eventLog - The EventPerfLog
 
-  Level: beginner
+  Level: developer
 
 .keywords: log, event, destroy
 .seealso: EventPerfLogCreate()
@@ -135,7 +140,7 @@ PetscErrorCode EventPerfLogDestroy(EventPerfLog eventLog)
   Input Paramter:
 . eventInfo - The EventPerfInfo
 
-  Level: beginner
+  Level: developer
 
 .keywords: log, event, destroy
 .seealso: EventPerfLogCreate()
@@ -169,7 +174,7 @@ PetscErrorCode EventPerfInfoClear(EventPerfInfo *eventInfo)
   Output Paramter:
 . outInfo   - The output EventPerfInfo
 
-  Level: beginner
+  Level: developer
 
 .keywords: log, event, copy
 .seealso: EventPerfInfoClear()
@@ -194,14 +199,14 @@ PetscErrorCode EventPerfInfoCopy(EventPerfInfo *eventInfo, EventPerfInfo *outInf
 + eventLog - The EventPerfLog
 - size     - The size
 
-  Level: intermediate
+  Level: developer
 
 .keywords: log, event, size, ensure
 .seealso: EventPerfLogCreate()
 @*/
 PetscErrorCode EventPerfLogEnsureSize(EventPerfLog eventLog, int size) 
 {
-  EventPerfInfo *eventInfo;
+  EventPerfInfo  *eventInfo;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -259,7 +264,7 @@ PetscErrorCode EventPerfLogEnsureSize(EventPerfLog eventLog, int size)
   to create a logfile, "mpe.log", which can be visualized
   Upshot/Nupshot.
 
-  Level: intermediate
+  Level: developer
 
 .keywords: log, event, register
 .seealso: PetscLogEventBegin(), PetscLogEventEnd(), PetscLogFlops(), PetscLogEventMPEActivate(), PetscLogEventMPEDeactivate(),
@@ -267,9 +272,9 @@ PetscErrorCode EventPerfLogEnsureSize(EventPerfLog eventLog, int size)
 @*/
 PetscErrorCode EventRegLogRegister(EventRegLog eventLog, const char ename[], PetscClassId classid, PetscLogEvent *event) 
 {
-  EventRegInfo *eventInfo;
-  char         *str;
-  int           e;
+  EventRegInfo   *eventInfo;
+  char           *str;
+  int            e;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -332,7 +337,7 @@ PetscErrorCode EventRegLogRegister(EventRegLog eventLog, const char ename[], Pet
   The event may be either a pre-defined PETSc event (found in 
   include/petsclog.h) or an event number obtained with EventRegLogRegister().
 
-  Level: advanced
+  Level: developer
 
 .keywords: log, event, activate
 .seealso: PetscLogEventMPEDeactivate(), PetscLogEventMPEActivate(), EventPerfLogDeactivate()
@@ -367,7 +372,7 @@ PetscErrorCode EventPerfLogActivate(EventPerfLog eventLog, PetscLogEvent event)
   The event may be either a pre-defined PETSc event (found in 
   include/petsclog.h) or an event number obtained with EventRegLogRegister().
 
-  Level: advanced
+  Level: developer
 
 .keywords: log, event, activate
 .seealso: PetscLogEventMPEDeactivate(), PetscLogEventMPEActivate(), EventPerfLogActivate()
@@ -402,7 +407,6 @@ PetscErrorCode EventPerfLogActivateClass(EventPerfLog eventLog, EventRegLog even
   PetscFunctionBegin;
   for(e = 0; e < eventLog->numEvents; e++) {
     int c = eventRegLog->eventInfo[e].classid;
-
     if (c == classid) eventLog->eventInfo[e].active = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
@@ -431,7 +435,6 @@ PetscErrorCode EventPerfLogDeactivateClass(EventPerfLog eventLog, EventRegLog ev
   PetscFunctionBegin;
   for(e = 0; e < eventLog->numEvents; e++) {
     int c = eventRegLog->eventInfo[e].classid;
-
     if (c == classid) eventLog->eventInfo[e].active = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
@@ -452,15 +455,15 @@ PetscErrorCode EventPerfLogDeactivateClass(EventPerfLog eventLog, EventRegLog ev
   Output Parameter:
 . event    - The event id
 
-  Level: intermediate
+  Level: developer
 
 .keywords: log, stage
 .seealso: EventRegLogRegister()
 @*/
 PetscErrorCode PETSC_DLLEXPORT EventRegLogGetEvent(EventRegLog eventLog, const char name[], PetscLogEvent *event)
 {
-  PetscTruth match;
-  int        e;
+  PetscTruth     match;
+  int            e;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -491,7 +494,7 @@ PetscErrorCode PETSC_DLLEXPORT EventRegLogGetEvent(EventRegLog eventLog, const c
   Database Options:
 . -log_summary - Activates log summary
 
-  Level: intermediate
+  Level: developer
 
 .keywords: log, visible, event
 .seealso: EventPerfLogGetVisible(), EventRegLogRegister(), StageLogGetEventLog()
@@ -520,7 +523,7 @@ PetscErrorCode EventPerfLogSetVisible(EventPerfLog eventLog, PetscLogEvent event
   Database Options:
 . -log_summary - Activates log summary
 
-  Level: intermediate
+  Level: developer
 
 .keywords: log, visible, event
 .seealso: EventPerfLogSetVisible(), EventRegLogRegister(), StageLogGetEventLog()
@@ -616,9 +619,9 @@ PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent event, int t, PetscObject
 #define __FUNCT__ "PetscLogEventEndDefault"
 PetscErrorCode PetscLogEventEndDefault(PetscLogEvent event, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)
 {
-  StageLog     stageLog;
-  EventPerfLog eventLog;
-  int          stage;
+  StageLog       stageLog;
+  EventPerfLog   eventLog;
+  int            stage;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

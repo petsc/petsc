@@ -39,12 +39,12 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInfoDeactivateClass(PetscClassId);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInfoActivateClass(PetscClassId);
 extern PetscTruth     PETSC_DLLEXPORT PetscLogPrintInfo;  /* if true, indicates PetscInfo() is turned on */
 
-/* We must make these structures available if we are to access the event
-   activation flags in the PetscLogEventBegin/End() macros. If we forced a
-   function call each time, we could make these private.
+/* We must make the following structures available to access the event
+     activation flags in the PetscLogEventBegin/End() macros. These are not part of the PETSc public
+     API and are not intended to be used by other parts of PETSc or by users.
+  
+     The code that manipulates these structures is in src/sys/plog/utils.
 */
-
-/* A simple stack (should replace) */
 typedef struct _n_IntStack *IntStack;
 
 /*
@@ -226,9 +226,9 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogObjectState(PetscObject, const cha
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm, const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogPrintDetailed(MPI_Comm, const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogDump(const char[]);
-/* Counter functions */
+
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetFlops(PetscLogDouble *);
-/* Stage functions */
+
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageRegister(const char[],PetscLogStage*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStagePush(PetscLogStage);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStagePop(void);
