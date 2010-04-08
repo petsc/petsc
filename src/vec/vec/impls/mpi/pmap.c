@@ -169,6 +169,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutSetUp(PetscLayout map)
     Output Parameter:
 .     out - the copy
 
+   Level: developer
+
     Notes: PetscLayoutSetUp() does not need to be called on the resulting PetscLayout
 
 .seealso: PetscLayoutCreate(), PetscLayoutDestroy(), PetscLayoutSetUp()

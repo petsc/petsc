@@ -93,11 +93,15 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetElementType(DA,DAElementType);
 /*MC
    DAGetElements - same as DMGetElements()
    uses DA instead of DM as input
+
+   Level: beginner
 M*/
 #define DAGetElements(da,a,b)      DMGetElements((DM)da,a,b)
 /*MC
    DARestoreElements - same as DMRestoreElements()
    uses DA instead of DM as input
+
+   Level: beginner
 M*/
 #define DARestoreElements(da,a,b)  DMRestoreElements((DM)da,a,b)
 
