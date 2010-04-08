@@ -43,6 +43,45 @@ extern PetscTruth     PETSC_DLLEXPORT PetscLogPrintInfo;  /* if true, indicates 
    activation flags in the PetscLogEventBegin/End() macros. If we forced a
    function call each time, we could make these private.
 */
+
+/* The class naming scheme procedes as follows:
+
+   Event:
+     Events are a class which describes certain blocks of executable
+     code. The corresponding instantiations of events are Actions.
+
+   Class:
+     Classes are the classes representing Petsc structures. The
+     corresponding instantiations are called Objects.
+
+   StageLog:
+     This type holds information about stages of computation. These
+     are understood to be chunks encompassing several events, or
+     alternatively, as a covering (possibly nested) of the timeline.
+
+   StageInfo:
+     The information about each stage. This log contains an
+     EventPerfLog and a ClassPerfLog.
+
+   EventRegLog:
+     This type holds the information generated for each event as
+     it is registered. This information does not change and thus is
+     stored separately from performance information.
+
+   EventPerfLog:
+     This type holds the performance information logged for each
+     event. Usually this information is logged for only one stage.
+
+   ClassRegLog:
+     This type holds the information generated for each class as
+     it is registered. This information does not change and thus is
+     stored separately from performance information.
+
+   ClassPerfLog:
+     This class holds information describing class/object usage during
+     a run. Usually this information is logged for only one stage.
+*/
+
 /* Default log */
 typedef struct _n_StageLog *StageLog;
 extern PETSC_DLLEXPORT StageLog _stageLog;
@@ -65,7 +104,7 @@ typedef struct {
 } EventPerfInfo;
 
 typedef struct {
-  int            id;           /* The integer identifying this class */
+  PetscCookie    id;           /* The integer identifying this class */
   int            creations;    /* The number of objects of this class created */
   int            destructions; /* The number of objects of this class destroyed */
   PetscLogDouble mem;          /* The total memory allocated by objects of this class */
