@@ -1918,7 +1918,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogObjectState(PetscObject obj, const char f
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogGetStageLog"
-/*@
+/*@C
   PetscLogGetStageLog - This function returns the default stage logging object.
 
   Not collective

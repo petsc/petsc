@@ -280,28 +280,6 @@ extern PETSC_DLLEXPORT PetscLogDouble sum_of_waits_ct;
     (*_PetscLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4)) : 0 ) || \
   PETSC_LOG_EVENT_MPE_END(e))
 
-/* Creation and destruction functions */
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogCreate(StageLog *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogDestroy(StageLog);
-/* Registration functions */
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogRegister(StageLog, const char [], int *);
-/* Runtime functions */
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogGetStageLog(StageLog *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogPush(StageLog, int);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogPop(StageLog);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetCurrent(StageLog, int *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogSetActive(StageLog, int, PetscTruth);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetActive(StageLog, int, PetscTruth *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogSetVisible(StageLog, int, PetscTruth);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetVisible(StageLog, int, PetscTruth *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetStage(StageLog, const char [], int *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetClassRegLog(StageLog, ClassRegLog *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetEventRegLog(StageLog, EventRegLog *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetClassPerfLog(StageLog, int, ClassPerfLog *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetEventPerfLog(StageLog, int, EventPerfLog *);
-
-EXTERN PetscErrorCode PETSC_DLLEXPORT EventRegLogGetEvent(EventRegLog, const char [], PetscLogEvent *);
-
 EXTERN PetscErrorCode PetscLogEventGetFlops(PetscLogEvent, PetscLogDouble*);
 EXTERN PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent);
 
@@ -444,22 +422,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogObjectState(PetscObject,const char
 #define MPI_Startall_irecv(count,number,requests) MPI_Startall(number,requests)
 #define MPI_Startall_isend(count,number,requests) MPI_Startall(number,requests)
 #define MPI_Start_isend(count,requests) MPI_Start(requests)
-
-/* Creation and destruction functions */
-#define StageLogCreate(stageLog)                     0
-#define StageLogDestroy(stageLog)                    0
-/* Registration functions */
-#define StageLogRegister(stageLog, name, stage)      0
-/* Runtime functions */
-#define PetscLogGetStageLog(stageLog)                0
-#define StageLogPush(stageLog, stage)                0
-#define StageLogPop(stageLog)                        0
-#define StageLogGetCurrent(stageLog, stage)          0
-#define StageLogSetActive(stageLog, stage, active)   0
-#define StageLogGetActive(stageLog, stage, active)   0
-#define StageLogSetVisible(stageLog, stage, visible) 0
-#define StageLogGetVisible(stageLog, stage, visible) 0
-#define StageLogGetStage(stageLog, name, stage)      0
 #define PetscLogStageGetId(a,b)                      (*(b)=0,0)
 #define PetscLogStageSetActive(a,b)                  0
 #define PetscLogStageGetActive(a,b)                  0
