@@ -144,13 +144,13 @@ extern FILE *petsc_history;
     PetscInfo - Logs informative data, which is printed to standard output
     or a file when the option -info <file> is specified.
 
-    Collective over PetscObject argument
-
    Synopsis:
        PetscErrorCode PetscInfo(void *vobj, const char message[])
        PetscErrorCode PetscInfo1(void *vobj, const char formatmessage[],arg1)
        PetscErrorCode PetscInfo2(void *vobj, const char formatmessage[],arg1,arg2)
        etc
+
+    Collective over PetscObject argument
 
     Input Parameter:
 +   vobj - object most closely associated with the logging statement or PETSC_NULL

@@ -1340,10 +1340,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArrays(const Vec x[],PetscInt n,Pets
 /*MC
    VecRestoreArray - Restores a vector after VecGetArray() has been called.
 
-   Not Collective
-
    Synopsis:
    PetscErrorCode VecRestoreArray(Vec x,PetscScalar *a[])
+
+   Not Collective
 
    Input Parameters:
 +  x - the vector
@@ -1560,6 +1560,8 @@ M*/
 
     Synopsis:
     VecDestroyVecsF90({Vec, pointer :: x(:)},integer n,integer ierr)
+
+    Collective on Vec
 
     Input Parameters:
 +   x - pointer to array of vector pointers

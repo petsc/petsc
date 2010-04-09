@@ -315,6 +315,8 @@ typedef struct {
    Synopsis:
    void  DAForEachPointBegin2d(DALocalInfo *info,PetscInt i,PetscInt j);
    
+   Not Collective
+
    Level: intermediate
 
 .seealso: DAForEachPointEnd2d(), DAVecGetArray()
@@ -330,6 +332,8 @@ M*/
    Synopsis:
    void  DAForEachPointEnd2d;
    
+   Not Collective
+
    Level: intermediate
 
 .seealso: DAForEachPointBegin2d(), DAVecGetArray()
@@ -420,11 +424,11 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA(Mat,DA);
 /*MC
        DASetLocalAdicFunction - Caches in a DA a local function computed by ADIC/ADIFOR
 
-   Collective on DA
-
    Synopsis:
    PetscErrorCode DASetLocalAdicFunction(DA da,DALocalFunction1 ad_lf)
    
+   Collective on DA
+
    Input Parameter:
 +  da - initial distributed array
 -  ad_lf - the local function as computed by ADIC/ADIFOR

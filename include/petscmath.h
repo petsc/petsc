@@ -341,13 +341,16 @@ extern  PetscScalar PETSC_DLLEXPORT PETSC_i;
 /*MC
    PetscMin - Returns minimum of two numbers
 
+   Synopsis:
+   type PetscMin(type v1,type v2)
+
+   Not Collective
+
    Input Parameter:
 +  v1 - first value to find minimum of
 -  v2 - second value to find minimum of
 
-   Synopsis:
-   type PetscMin(type v1,type v2)
-
+   
    Notes: type can be integer or floating point value
 
    Level: beginner
@@ -361,12 +364,14 @@ M*/
 /*MC
    PetscMax - Returns maxium of two numbers
 
+   Synopsis:
+   type max PetscMax(type v1,type v2)
+
+   Not Collective
+
    Input Parameter:
 +  v1 - first value to find maximum of
 -  v2 - second value to find maximum of
-
-   Synopsis:
-   type max PetscMax(type v1,type v2)
 
    Notes: type can be integer or floating point value
 
@@ -380,12 +385,13 @@ M*/
 /*MC
    PetscAbsInt - Returns the absolute value of an integer
 
-   Input Parameter:
-.   v1 - the integer
-
    Synopsis:
    int abs PetscAbsInt(int v1)
 
+   Not Collective
+
+   Input Parameter:
+.   v1 - the integer
 
    Level: beginner
 
@@ -397,11 +403,13 @@ M*/
 /*MC
    PetscAbsReal - Returns the absolute value of an real number
 
+   Synopsis:
+   Real abs PetscAbsReal(PetscReal v1)
+
+   Not Collective
+
    Input Parameter:
 .   v1 - the double 
-
-   Synopsis:
-   int abs PetscAbsReal(PetscReal v1)
 
 
    Level: beginner
@@ -414,11 +422,13 @@ M*/
 /*MC
    PetscSqr - Returns the square of a number
 
-   Input Parameter:
-.   v1 - the value
-
    Synopsis:
    type sqr PetscSqr(type v1)
+
+   Not Collective
+
+   Input Parameter:
+.   v1 - the value
 
    Notes: type can be integer or floating point value
 

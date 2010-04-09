@@ -23,11 +23,14 @@ extern PetscLogDouble PETSC_DLLEXPORT BaseTime;
 /*
    PetscTime - Returns the current time of day in seconds.  
 
+   Synopsis:
+   PetscTime(PetscLogDouble v)
+
+   Not Collective
+
    Output Parameter:
 .  v - time counter
 
-   Synopsis:
-   PetscTime(PetscLogDouble v)
 
    Usage: 
      PetscLogDouble v;
@@ -50,14 +53,17 @@ extern PetscLogDouble PETSC_DLLEXPORT BaseTime;
    PetscTimeSubtract - Subtracts the current time of day (in seconds) from
    the value v.  
 
+   Synopsis:
+   PetscTimeSubtract(PetscLogDouble v)
+
+   Not Collective
+
    Input Parameter:
 .  v - time counter
 
    Output Parameter:
 .  v - time counter (v = v - current time)
 
-   Synopsis:
-   PetscTimeSubtract(PetscLogDouble v)
 
    Notes:
    Since the PETSc libraries incorporate timing of phases and operations, 
@@ -73,14 +79,16 @@ extern PetscLogDouble PETSC_DLLEXPORT BaseTime;
 /*
    PetscTimeAdd - Adds the current time of day (in seconds) to the value v.  
 
+   Synopsis:
+   PetscTimeAdd(PetscLogDouble v)
+
+   Not Collective
+
    Input Parameter:
 .  v - time counter
 
    Output Parameter:
 .  v - time counter (v = v + current time)
-
-   Synopsis:
-   PetscTimeAdd(PetscLogDouble v)
 
    Notes:
    Since the PETSc libraries incorporate timing of phases and operations, 

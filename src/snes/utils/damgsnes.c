@@ -892,11 +892,11 @@ PetscErrorCode DMMGGetSNESLocal(DMMG *dmmg,DALocalFunction1 *function, DALocalFu
     DMMGSetSNESLocal - Sets the local user function that defines the nonlinear set of equations
     that will use the grid hierarchy and (optionally) its derivative.
 
-    Collective on DMMG
-
    Synopsis:
    PetscErrorCode DMMGSetSNESLocal(DMMG *dmmg,DALocalFunction1 function, DALocalFunction1 jacobian,
                         DALocalFunction1 ad_function, DALocalFunction1 admf_function);
+
+    Collective on DMMG
 
     Input Parameter:
 +   dmmg - the context

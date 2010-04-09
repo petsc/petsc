@@ -747,10 +747,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrreplace(MPI_Comm comm,const char aa[],cha
 /*MC
    PetscStrfree - Frees a string (if it is not null)
 
-   Not Collective
-
    Synopsis:
    PetscErrorCode PetscStrfree(char *s)
+
+   Not Collective
 
    Input Parameter:
 .  s - pointer to string

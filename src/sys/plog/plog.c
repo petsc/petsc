@@ -925,13 +925,16 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivateClass(PetscCookie cookie)
 /*MC
    PetscLogEventBegin - Logs the beginning of a user event. 
 
+   Synopsis:
+   void PetscLogEventBegin(int e,PetscObject o1,PetscObject o2,PetscObject o3,
+                       PetscObject o4)
+
+   Not Collective
+
    Input Parameters:
 +  e - integer associated with the event obtained from PetscLogEventRegister()
 -  o1,o2,o3,o4 - objects associated with the event, or 0
 
-   Synopsis:
-   void PetscLogEventBegin(int e,PetscObject o1,PetscObject o2,PetscObject o3,
-                       PetscObject o4)
 
    Fortran Synopsis:
    void PetscLogEventBegin(int e,PetscErrorCode ierr)
@@ -967,13 +970,16 @@ M*/
 /*MC
    PetscLogEventEnd - Log the end of a user event.
 
+   Synopsis:
+   void PetscLogEventEnd(int e,PetscObject o1,PetscObject o2,PetscObject o3,
+                     PetscObject o4)
+
+   Not Collective
+
    Input Parameters:
 +  e - integer associated with the event obtained with PetscLogEventRegister()
 -  o1,o2,o3,o4 - objects associated with the event, or 0
 
-   Synopsis:
-   void PetscLogEventEnd(int e,PetscObject o1,PetscObject o2,PetscObject o3,
-                     PetscObject o4)
 
    Fortran Synopsis:
    void PetscLogEventEnd(int e,PetscErrorCode ierr)
@@ -1009,14 +1015,17 @@ M*/
 /*MC
    PetscLogEventBarrierBegin - Logs the time in a barrier before an event.
 
+   Synopsis:
+   void PetscLogEventBarrierBegin(int e,PetscObject o1,PetscObject o2,PetscObject o3,
+                  PetscObject o4,MPI_Comm comm)
+
+   Not Collective
+
    Input Parameters:
 .  e - integer associated with the event obtained from PetscLogEventRegister()
 .  o1,o2,o3,o4 - objects associated with the event, or 0
 .  comm - communicator the barrier takes place over
 
-   Synopsis:
-   void PetscLogEventBarrierBegin(int e,PetscObject o1,PetscObject o2,PetscObject o3,
-                  PetscObject o4,MPI_Comm comm)
 
    Usage:
 .vb
@@ -1044,14 +1053,17 @@ M*/
 /*MC
    PetscLogEventBarrierEnd - Logs the time in a barrier before an event.
 
+   Synopsis:
+   void PetscLogEventBarrierEnd(int e,PetscObject o1,PetscObject o2,PetscObject o3,
+                  PetscObject o4,MPI_Comm comm)
+
+   Collective on MPI_Comm
+
    Input Parameters:
 .  e - integer associated with the event obtained from PetscLogEventRegister()
 .  o1,o2,o3,o4 - objects associated with the event, or 0
 .  comm - communicator the barrier takes place over
 
-   Synopsis:
-   void PetscLogEventBarrierEnd(int e,PetscObject o1,PetscObject o2,PetscObject o3,
-                  PetscObject o4,MPI_Comm comm)
 
     Usage:
 .vb
@@ -1946,11 +1958,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogGetStageLog(StageLog *stageLog)
 /*MC
    PetscLogFlops - Adds floating point operations to the global counter.
 
+   Synopsis:
+   void PetscLogFlops(PetscLogDouble f)
+
+   Not Collective
+
    Input Parameter:
 .  f - flop counter
 
-   Synopsis:
-   void PetscLogFlops(PetscLogDouble f)
 
    Usage:
 .vb
@@ -1984,14 +1999,16 @@ M*/
    PreLoadBegin - Begin a segment of code that may be preloaded (run twice)
     to get accurate timings
 
+   Synopsis:
+   void PreLoadBegin(PetscTruth flag,char *name);
+
+   Not Collective
+
    Input Parameter:
 +   flag - PETSC_TRUE to run twice, PETSC_FALSE to run once, may be overridden
            with command line option -preload true or -preload false
 -   name - name of first stage (lines of code timed separately with -log_summary) to
            be preloaded
-
-   Synopsis:
-   void PreLoadBegin(PetscTruth flag,char *name);
 
    Usage:
 .vb
@@ -2030,6 +2047,8 @@ M*/
    Synopsis:
    void PreLoadEnd(void);
 
+   Not Collective
+
    Usage:
 .vb
      PreLoadBegin(PETSC_TRUE,"first stage);
@@ -2053,6 +2072,8 @@ M*/
 
    Synopsis:
    void PreLoadStage(char *name);
+
+   Not Collective
 
    Usage:
 .vb

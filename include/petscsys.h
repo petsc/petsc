@@ -292,11 +292,11 @@ extern FILE* PETSC_ZOPEFD;
       PetscPolymorphicSubroutine - allows defining a C++ polymorphic version of 
             a PETSc function that remove certain optional arguments for a simplier user interface
 
-     Not collective
-
    Synopsis:
    PetscPolymorphicSubroutine(Functionname,(arguments of C++ function),(arguments of C function))
  
+     Not collective
+
    Level: developer
 
     Example:
@@ -312,11 +312,11 @@ M*/
       PetscPolymorphicScalar - allows defining a C++ polymorphic version of 
             a PETSc function that replaces a PetscScalar * argument with a PetscScalar argument
 
-     Not collective
-
    Synopsis:
    PetscPolymorphicScalar(Functionname,(arguments of C++ function),(arguments of C function))
  
+   Not collective
+
    Level: developer
 
     Example:
@@ -333,11 +333,11 @@ M*/
             a PETSc function that remove certain optional arguments for a simplier user interface
             and returns the computed value (istead of an error code)
 
-     Not collective
-
    Synopsis:
    PetscPolymorphicFunction(Functionname,(arguments of C++ function),(arguments of C function),return type,return variable name)
  
+     Not collective
+
    Level: developer
 
     Example:
@@ -358,10 +358,10 @@ M*/
 /*MC
     PetscUnlikely - hints the compiler that the given condition is usually FALSE
 
-    Not Collective
-
     Synopsis:
     PetscTruth PetscUnlikely(PetscTruth cond)
+
+    Not Collective
 
     Input Parameters:
 .   cond - condition or expression
@@ -377,10 +377,10 @@ M*/
 /*MC
     PetscLikely - hints the compiler that the given condition is usually TRUE
 
-    Not Collective
-
     Synopsis:
     PetscTruth PetscUnlikely(PetscTruth cond)
+
+    Not Collective
 
     Input Parameters:
 .   cond - condition or expression
@@ -580,14 +580,16 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscCommDestroy(MPI_Comm*);
 /*MC
    PetscMalloc - Allocates memory
 
+   Synopsis:
+   PetscErrorCode PetscMalloc(size_t m,void **result)
+
+   Not Collective
+
    Input Parameter:
 .  m - number of bytes to allocate
 
    Output Parameter:
 .  result - memory allocated
-
-   Synopsis:
-   PetscErrorCode PetscMalloc(size_t m,void **result)
 
    Level: beginner
 
@@ -606,11 +608,13 @@ M*/
 /*MC
    PetscAddrAlign - Returns an address with PETSC_MEMALIGN alignment
 
-   Input Parameters:
-.  addr - address to align (any pointer type)
-
    Synopsis:
    void *PetscAddrAlign(void *addr)
+
+   Not Collective
+
+   Input Parameters:
+.  addr - address to align (any pointer type)
 
    Level: developer
 
@@ -627,6 +631,11 @@ M*/
 /*MC
    PetscMalloc2 - Allocates 2 chunks of  memory
 
+   Synopsis:
+   PetscErrorCode PetscMalloc2(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2)
+
+   Not Collective
+
    Input Parameter:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
 .  t1 - type of first memory elements 
@@ -636,9 +645,6 @@ M*/
    Output Parameter:
 +  r1 - memory allocated in first chunk
 -  r2 - memory allocated in second chunk
-
-   Synopsis:
-   PetscErrorCode PetscMalloc2(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2)
 
    Level: developer
 
@@ -659,6 +665,11 @@ M*/
 /*MC
    PetscMalloc3 - Allocates 3 chunks of  memory
 
+   Synopsis:
+   PetscErrorCode PetscMalloc3(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3)
+
+   Not Collective
+
    Input Parameter:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
 .  t1 - type of first memory elements 
@@ -672,8 +683,6 @@ M*/
 .  r2 - memory allocated in second chunk
 -  r3 - memory allocated in third chunk
 
-   Synopsis:
-   PetscErrorCode PetscMalloc3(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3)
 
    Level: developer
 
@@ -694,6 +703,11 @@ M*/
 /*MC
    PetscMalloc4 - Allocates 4 chunks of  memory
 
+   Synopsis:
+   PetscErrorCode PetscMalloc4(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3,size_t m4,type t4,void **r4)
+
+   Not Collective
+
    Input Parameter:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
 .  t1 - type of first memory elements 
@@ -709,9 +723,6 @@ M*/
 .  r2 - memory allocated in second chunk
 .  r3 - memory allocated in third chunk
 -  r4 - memory allocated in fourth chunk
-
-   Synopsis:
-   PetscErrorCode PetscMalloc4(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3,size_t m4,type t4,void **r4)
 
    Level: developer
 
@@ -733,6 +744,11 @@ M*/
 /*MC
    PetscMalloc5 - Allocates 5 chunks of  memory
 
+   Synopsis:
+   PetscErrorCode PetscMalloc5(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3,size_t m4,type t4,void **r4,size_t m5,type t5,void **r5)
+
+   Not Collective
+
    Input Parameter:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
 .  t1 - type of first memory elements 
@@ -751,9 +767,6 @@ M*/
 .  r3 - memory allocated in third chunk
 .  r4 - memory allocated in fourth chunk
 -  r5 - memory allocated in fifth chunk
-
-   Synopsis:
-   PetscErrorCode PetscMalloc5(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3,size_t m4,type t4,void **r4,size_t m5,type t5,void **r5)
 
    Level: developer
 
@@ -775,6 +788,11 @@ M*/
 
 /*MC
    PetscMalloc6 - Allocates 6 chunks of  memory
+
+   Synopsis:
+   PetscErrorCode PetscMalloc6(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3,size_t m4,type t4,void **r4,size_t m5,type t5,void **r5,size_t m6,type t6,void **r6)
+
+   Not Collective
 
    Input Parameter:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
@@ -798,9 +816,6 @@ M*/
 .  r5 - memory allocated in fifth chunk
 -  r6 - memory allocated in sixth chunk
 
-   Synopsis:
-   PetscErrorCode PetscMalloc6(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3,size_t m4,type t4,void **r4,size_t m5,type t5,void **r5,size_t m6,type t6,void **r6)
-
    Level: developer
 
    Notes: Memory of first chunk is always allocated at least double aligned
@@ -820,6 +835,11 @@ M*/
 
 /*MC
    PetscMalloc7 - Allocates 7 chunks of  memory
+
+   Synopsis:
+   PetscErrorCode PetscMalloc7(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3,size_t m4,type t4,void **r4,size_t m5,type t5,void **r5,size_t m6,type t6,void **r6,size_t m7,type t7,void **r7)
+
+   Not Collective
 
    Input Parameter:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
@@ -844,10 +864,7 @@ M*/
 .  r4 - memory allocated in fourth chunk
 .  r5 - memory allocated in fifth chunk
 .  r6 - memory allocated in sixth chunk
--  r7 - memory allocated in sixth chunk
-
-   Synopsis:
-   PetscErrorCode PetscMalloc7(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3,size_t m4,type t4,void **r4,size_t m5,type t5,void **r5,size_t m6,type t6,void **r6,size_t m7,type t7,void **r7)
+-  r7 - memory allocated in seventh chunk
 
    Level: developer
 
@@ -869,14 +886,16 @@ M*/
 /*MC
    PetscNew - Allocates memory of a particular type, zeros the memory!
 
+   Synopsis:
+   PetscErrorCode PetscNew(struct type,((type *))result)
+
+   Not Collective
+
    Input Parameter:
 .  type - structure name of space to be allocated. Memory of size sizeof(type) is allocated
 
    Output Parameter:
 .  result - memory allocated
-
-   Synopsis:
-   PetscErrorCode PetscNew(struct type,((type *))result)
 
    Level: beginner
 
@@ -891,11 +910,14 @@ M*/
 /*MC
    PetscFree - Frees memory
 
+   Synopsis:
+   PetscErrorCode PetscFree(void *memory)
+
+   Not Collective
+
    Input Parameter:
 .   memory - memory to free (the pointer is ALWAYS set to 0 upon sucess)
 
-   Synopsis:
-   PetscErrorCode PetscFree(void *memory)
 
    Level: beginner
 
@@ -911,11 +933,13 @@ M*/
 /*MC
    PetscFreeVoid - Frees memory
 
-   Input Parameter:
-.   memory - memory to free
-
    Synopsis:
    void PetscFreeVoid(void *memory)
+
+   Not Collective
+
+   Input Parameter:
+.   memory - memory to free
 
    Level: beginner
 
@@ -932,13 +956,14 @@ M*/
 /*MC
    PetscFree2 - Frees 2 chunks of memory obtained with PetscMalloc2()
 
+   Synopsis:
+   PetscErrorCode PetscFree2(void *memory1,void *memory2)
+
+   Not Collective
+
    Input Parameter:
 +   memory1 - memory to free
 -   memory2 - 2nd memory to free
-
-
-   Synopsis:
-   PetscErrorCode PetscFree2(void *memory1,void *memory2)
 
    Level: developer
 
@@ -958,14 +983,15 @@ M*/
 /*MC
    PetscFree3 - Frees 3 chunks of memory obtained with PetscMalloc3()
 
+   Synopsis:
+   PetscErrorCode PetscFree3(void *memory1,void *memory2,void *memory3)
+
+   Not Collective
+
    Input Parameter:
 +   memory1 - memory to free
 .   memory2 - 2nd memory to free
 -   memory3 - 3rd memory to free
-
-
-   Synopsis:
-   PetscErrorCode PetscFree3(void *memory1,void *memory2,void *memory3)
 
    Level: developer
 
@@ -985,15 +1011,16 @@ M*/
 /*MC
    PetscFree4 - Frees 4 chunks of memory obtained with PetscMalloc4()
 
+   Synopsis:
+   PetscErrorCode PetscFree4(void *m1,void *m2,void *m3,void *m4)
+
+   Not Collective
+
    Input Parameter:
 +   m1 - memory to free
 .   m2 - 2nd memory to free
 .   m3 - 3rd memory to free
 -   m4 - 4th memory to free
-
-
-   Synopsis:
-   PetscErrorCode PetscFree4(void *m1,void *m2,void *m3,void *m4)
 
    Level: developer
 
@@ -1013,16 +1040,17 @@ M*/
 /*MC
    PetscFree5 - Frees 5 chunks of memory obtained with PetscMalloc5()
 
+   Synopsis:
+   PetscErrorCode PetscFree5(void *m1,void *m2,void *m3,void *m4,void *m5)
+
+   Not Collective
+
    Input Parameter:
 +   m1 - memory to free
 .   m2 - 2nd memory to free
 .   m3 - 3rd memory to free
 .   m4 - 4th memory to free
 -   m5 - 5th memory to free
-
-
-   Synopsis:
-   PetscErrorCode PetscFree5(void *m1,void *m2,void *m3,void *m4,void *m5)
 
    Level: developer
 
@@ -1043,6 +1071,11 @@ M*/
 /*MC
    PetscFree6 - Frees 6 chunks of memory obtained with PetscMalloc6()
 
+   Synopsis:
+   PetscErrorCode PetscFree6(void *m1,void *m2,void *m3,void *m4,void *m5,void *m6)
+
+   Not Collective
+
    Input Parameter:
 +   m1 - memory to free
 .   m2 - 2nd memory to free
@@ -1051,9 +1084,6 @@ M*/
 .   m5 - 5th memory to free
 -   m6 - 6th memory to free
 
-
-   Synopsis:
-   PetscErrorCode PetscFree6(void *m1,void *m2,void *m3,void *m4,void *m5,void *m6)
 
    Level: developer
 
@@ -1073,6 +1103,11 @@ M*/
 /*MC
    PetscFree7 - Frees 7 chunks of memory obtained with PetscMalloc7()
 
+   Synopsis:
+   PetscErrorCode PetscFree7(void *m1,void *m2,void *m3,void *m4,void *m5,void *m6,void *m7)
+
+   Not Collective
+
    Input Parameter:
 +   m1 - memory to free
 .   m2 - 2nd memory to free
@@ -1082,9 +1117,6 @@ M*/
 .   m6 - 6th memory to free
 -   m7 - 7th memory to free
 
-
-   Synopsis:
-   PetscErrorCode PetscFree7(void *m1,void *m2,void *m3,void *m4,void *m5,void *m6,void *m7)
 
    Level: developer
 
@@ -1376,6 +1408,9 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscCommGetNewTag(MPI_Comm,PetscMPIInt *)
 /*MC
    PetscObjectComposeFunctionDynamic - Associates a function with a given PETSc object. 
                        
+    Synopsis:
+    PetscErrorCode PetscObjectComposeFunctionDynamic(PetscObject obj,const char name[],const char fname[],void *ptr)
+
    Collective on PetscObject
 
    Input Parameters:
@@ -1387,8 +1422,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscCommGetNewTag(MPI_Comm,PetscMPIInt *)
 
    Level: advanced
 
-    Synopsis:
-    PetscErrorCode PetscObjectComposeFunctionDynamic(PetscObject obj,const char name[],const char fname[],void *ptr)
 
    Notes:
    To remove a registered routine, pass in a PETSC_NULL rname and fnc().
@@ -1546,10 +1579,10 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscVFPrintfDefault(FILE*,const char[],v
 /*MC
     PetscErrorPrintf - Prints error messages.
 
-    Not Collective
-
    Synopsis:
      PetscErrorCode (*PetscErrorPrintf)(const char format[],...);
+
+    Not Collective
 
     Input Parameters:
 .   format - the usual printf() format string 
@@ -1587,10 +1620,10 @@ EXTERN PETSC_DLLEXPORT PetscErrorCode (*PetscErrorPrintf)(const char[],...);
 /*MC
     PetscHelpPrintf - Prints help messages.
 
-    Not Collective
-
    Synopsis:
      PetscErrorCode (*PetscHelpPrintf)(const char format[],...);
+
+    Not Collective
 
     Input Parameters:
 .   format - the usual printf() format string 
@@ -1802,6 +1835,9 @@ PETSC_STATIC_INLINE PetscErrorCode PETSC_DLLEXPORT PetscMemzero(void *a,size_t n
 /*MC
    PetscPrefetchBlock - Prefetches a block of memory
 
+   Synopsis:
+    void PetscPrefetchBlock(const anytype *a,size_t n,int rw,int t)
+
    Not Collective
 
    Input Parameters:
@@ -1811,9 +1847,6 @@ PETSC_STATIC_INLINE PetscErrorCode PETSC_DLLEXPORT PetscMemzero(void *a,size_t n
 -  t - temporal locality (0,1,2,3), see note
 
    Level: developer
-
-   Synopsis:
-    void PetscPrefetchBlock(const anytype *a,size_t n,int rw,int t)
 
    Notes:
    The last two arguments (rw and t) must be compile-time constants.
@@ -2348,8 +2381,8 @@ typedef enum {NOT_SET_VALUES, INSERT_VALUES, ADD_VALUES, MAX_VALUES} InsertMode;
     Level: beginner
 
 .seealso: InsertMode, VecSetValues(), MatSetValues(), VecSetValue(), VecSetValuesBlocked(),
-          VecSetValuesLocal(), VecSetValuesBlockedLocal(), MatSetValuesBlocked(), ADD_VALUES, INSERT_VALUES,
-          MatSetValuesBlockedLocal(), MatSetValuesLocal(), VecScatterBegin(), VecScatterEnd()
+          VecSetValuesLocal(), VecSetValuesBlockedLocal(), MatSetValuesBlocked(), ADD_VALUES,
+          MatSetValuesBlockedLocal(), MatSetValuesLocal(), VecScatterBegin(), VecScatterEnd(), MAX_VALUES
 
 M*/
 
@@ -2360,8 +2393,8 @@ M*/
     Level: beginner
 
 .seealso: InsertMode, VecSetValues(), MatSetValues(), VecSetValue(), VecSetValuesBlocked(),
-          VecSetValuesLocal(), VecSetValuesBlockedLocal(), MatSetValuesBlocked(), ADD_VALUES, INSERT_VALUES,
-          MatSetValuesBlockedLocal(), MatSetValuesLocal(), VecScatterBegin(), VecScatterEnd()
+          VecSetValuesLocal(), VecSetValuesBlockedLocal(), MatSetValuesBlocked(), INSERT_VALUES,
+          MatSetValuesBlockedLocal(), MatSetValuesLocal(), VecScatterBegin(), VecScatterEnd(), MAX_VALUES
 
 M*/
 
