@@ -13,13 +13,21 @@ struct _n_PetscOList {
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOListAdd"
-/*
+/*@C
+     PetscOListAdd - Adds a new object to an PetscOList
 
-       Notes: Replaces item if it is already in list. Removes item if you pass in a 
-              PETSC_NULL object.    
+    Input Parameters:
++     fl - the object list
+.     name - the name to use for the object
+-     obj - the object to attach
 
-.seealso: PetscOListDestroy()
-*/
+       Notes: Replaces item if it is already in list. Removes item if you pass in a PETSC_NULL object.    
+ 
+        Use PetscOListFind() or PetscOListReverseFind() to get the object back
+
+.seealso: PetscOListDestroy(), PetscOListFind(), PetscOListDuplicate(), PetscOListReverseFind(), PetscOListDuplicate()
+
+@*/
 PetscErrorCode PETSC_DLLEXPORT PetscOListAdd(PetscOList *fl,const char name[],PetscObject obj)
 {
   PetscOList     olist,nlist,prev;
@@ -83,12 +91,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscOListAdd(PetscOList *fl,const char name[],Pe
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOListDestroy"
-/*
+/*@C
     PetscOListDestroy - Destroy a list of objects
 
     Input Parameter:
 .   fl   - pointer to list
-*/
+
+.seealso: PetscOListAdd(), PetscOListFind(), PetscOListDuplicate(), PetscOListReverseFind(), PetscOListDuplicate()
+
+@*/
 PetscErrorCode PETSC_DLLEXPORT PetscOListDestroy(PetscOList fl)
 {
   PetscOList     tmp;
@@ -107,7 +118,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOListDestroy(PetscOList fl)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOListFind"
-/*
+/*@C
     PetscOListFind - givn a name, find the matching object
 
     Input Parameters:
@@ -121,9 +132,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOListDestroy(PetscOList fl)
     The name must have been registered with the PetscOListAdd() before calling this 
     routine.
 
-.seealso: PetscOListReverseFind()
+.seealso: PetscOListDestroy(), PetscOListAdd(), PetscOListDuplicate(), PetscOListReverseFind(), PetscOListDuplicate()
 
-*/
+@*/
 PetscErrorCode PETSC_DLLEXPORT PetscOListFind(PetscOList fl,const char name[],PetscObject *obj)
 {
   PetscErrorCode ierr;
@@ -145,7 +156,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOListFind(PetscOList fl,const char name[],Pe
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOListReverseFind"
-/*
+/*@C
     PetscOListReverseFind - given a object, find the matching name if it exists
 
     Input Parameters:
@@ -159,9 +170,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOListFind(PetscOList fl,const char name[],Pe
     The name must have been registered with the PetscOListAdd() before calling this 
     routine.
 
-.seealso: PetscOListFind()
+.seealso: PetscOListDestroy(), PetscOListAdd(), PetscOListDuplicate(), PetscOListFind(), PetscOListDuplicate()
 
-*/
+@*/
 PetscErrorCode PETSC_DLLEXPORT PetscOListReverseFind(PetscOList fl,PetscObject obj,char **name)
 {
   PetscFunctionBegin;
@@ -177,10 +188,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOListReverseFind(PetscOList fl,PetscObject o
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOListDuplicate"
-/*
+/*@C
     PetscOListDuplicate - Creates a new list from a give object list.
 
     Input Parameters:
@@ -189,8 +199,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOListReverseFind(PetscOList fl,PetscObject o
     Output Parameters:
 .   nl - the new list (should point to 0 to start, otherwise appends)
 
+.seealso: PetscOListDestroy(), PetscOListAdd(), PetscOListReverseFind(), PetscOListFind(), PetscOListDuplicate()
 
-*/
+@*/
 PetscErrorCode PETSC_DLLEXPORT PetscOListDuplicate(PetscOList fl,PetscOList *nl)
 {
   PetscErrorCode ierr;

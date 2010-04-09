@@ -562,8 +562,6 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGRangeDestroy(PetscDrawLG);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPreSolve(PC,PetscErrorCode (*)(PC,KSP,Vec,Vec));
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPostSolve(PC,PetscErrorCode (*)(PC,KSP,Vec,Vec));
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatMFFDKSPMonitor(KSP,PetscInt,PetscReal,void *);
-
 /* see src/ksp/ksp/interface/iguess.c */
 typedef struct _p_KSPFischerGuess {PetscInt method,curl,maxl,refcnt;PetscTruth monitor;Mat mat; KSP ksp;}* KSPFischerGuess;
 

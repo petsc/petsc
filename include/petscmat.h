@@ -1680,7 +1680,7 @@ M*/
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDRegisterAll(const char[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDRegisterDestroy(void);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDDefaultSetUmin(Mat,PetscReal);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDDSSetUmin(Mat,PetscReal);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDWPSetComputeNormU(Mat,PetscTruth);
 
 

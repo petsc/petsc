@@ -35,8 +35,7 @@
      the Mat jac.
 
 .seealso: MatMFFDGetH(), MatCreateSNESMF(), MatCreateMFFD(), MATMFFD,
-          MatMFFDSetHHistory(),
-          MatMFFDKSPMonitor(), MatMFFDSetFunctionError(), MatMFFDCreate(), SNESSetJacobian()
+          MatMFFDSetHHistory(), MatMFFDSetFunctionError(), MatCreateMFFD(), SNESSetJacobian()
 
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT MatMFFDComputeJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
@@ -118,9 +117,9 @@ EXTERN_C_END
      automatically gets the current base vector from the SNES object and not from an
      explicit call to MatMFFDSetBase().
 
-.seealso: MatDestroy(), MatMFFDSetFunctionError(), MatMFFDDefaultSetUmin()
+.seealso: MatDestroy(), MatMFFDSetFunctionError(), MatMFFDDSSetUmin()
           MatMFFDSetHHistory(), MatMFFDResetHHistory(), MatCreateMFFD(),
-          MatMFFDGetH(),MatMFFDKSPMonitor(), MatMFFDRegisterDynamic), MatMFFDComputeJacobian()
+          MatMFFDGetH(), MatMFFDRegisterDynamic), MatMFFDComputeJacobian()
  
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT MatCreateSNESMF(SNES snes,Mat *J)

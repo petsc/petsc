@@ -152,7 +152,7 @@ static PetscErrorCode MatMFFDSetFromOptions_WP(MatMFFD ctx)
 #define __FUNCT__ "MatMFFDDestroy_WP"
 /*
    MatMFFDDestroy_WP - Frees the space allocated by 
-       MatMFFDCreate_WP(). 
+       MatCreateMFFD_WP(). 
 
   Input Parameter:
 .  ctx - the matrix free context
@@ -221,16 +221,16 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDWPSetComputeNormU(Mat A,PetscTruth flag
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatMFFDCreate_WP"
+#define __FUNCT__ "MatCreateMFFD_WP"
 /*
-     MatMFFDCreate_WP - Standard PETSc code for 
+     MatCreateMFFD_WP - Standard PETSc code for 
    computing h with matrix-free finite differences.
 
    Input Parameter:
-.  ctx - the matrix free context created by MatMFFDCreate()
+.  ctx - the matrix free context created by MatCreateMFFD()
 
 */
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDCreate_WP(MatMFFD ctx)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMFFD_WP(MatMFFD ctx)
 {
   PetscErrorCode ierr;
   MatMFFD_WP     *hctx;

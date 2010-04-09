@@ -3724,9 +3724,9 @@ see the manual page for MatMFFDSetType() and MatMFFDRegisterDynamic) \findex{Mat
 \end{tabbing}
 For the default approach there is one ``tuning'' parameter, set with 
 \begin{tabbing}
-  MatMFFDDefaultSetUmin(Mat mat,PetscReal umin);
+  MatMFFDDSSetUmin(Mat mat,PetscReal umin);
 \end{tabbing}
-\findex{MatMFFDDefaultSetUmin()}
+\findex{MatMFFDDSSetUmin()}
 This parameter, \trl{umin} (or $u_{min}$), is a bit involved; its default is 
 $ 10^{-6} $ . The Jacobian-vector product is approximated via the formula
 \[
@@ -3771,7 +3771,6 @@ via the routines
    MatMFFDSetHHistory(Mat,PetscScalar *,int);\\
    MatMFFDResetHHistory(Mat,PetscScalar *,int);\\
    MatMFFDGetH(Mat,PetscScalar *);\\
-   MatMFFDKSPMonitor(KSP,int,double,void *);
 \end{tabbing}
 
 We include an example in Figure~\ref{fig_snesexample2} that explicitly

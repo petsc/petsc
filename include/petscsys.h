@@ -1436,9 +1436,11 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRegisterFinalizeAll(void);
 /*S
      PetscOList - Linked list of PETSc objects, accessable by string name
 
-   Level: advanced
+   Level: developer
 
-.seealso:  PetscOListAdd(), PetscOListDestroy(), PetscOListFind()
+   Notes: Used by PetscObjectCompose() and PetscObjectQuery() 
+
+.seealso:  PetscOListAdd(), PetscOListDestroy(), PetscOListFind(), PetscObjectCompose(), PetscObjectQuery() 
 S*/
 typedef struct _n_PetscOList *PetscOList;
 
