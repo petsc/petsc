@@ -57,6 +57,6 @@ int main(int argc, char *argv[])
   ierr = PetscFinalize();CHKERRQ(ierr);
 
   /* Since we initialized MPI, we must call MPI_Finalize() */
-  ierr = MPI_Finalize();CHKERRQ(ierr);
+  ierr = MPI_Finalize();
   return 0;
 }

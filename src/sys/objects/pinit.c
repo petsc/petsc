@@ -349,6 +349,8 @@ char **PetscGlobalArgs = 0;
       This is usually used to pass the command line arguments into other libraries
    that are called internally deep in PETSc or the application.
 
+      The first argument contains the program name as is normal for C arguments.
+
    Concepts: command line arguments
    
 .seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArguments()
