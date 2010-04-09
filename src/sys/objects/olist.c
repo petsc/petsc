@@ -21,6 +21,8 @@ struct _n_PetscOList {
 .     name - the name to use for the object
 -     obj - the object to attach
 
+    Level: developer
+
        Notes: Replaces item if it is already in list. Removes item if you pass in a PETSC_NULL object.    
  
         Use PetscOListFind() or PetscOListReverseFind() to get the object back
@@ -97,6 +99,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOListAdd(PetscOList *fl,const char name[],Pe
     Input Parameter:
 .   fl   - pointer to list
 
+    Level: developer
+
 .seealso: PetscOListAdd(), PetscOListFind(), PetscOListDuplicate(), PetscOListReverseFind(), PetscOListDuplicate()
 
 @*/
@@ -127,6 +131,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOListDestroy(PetscOList fl)
 
     Output Parameters:
 .   ob - the PETSc object
+
+    Level: developer
 
     Notes:
     The name must have been registered with the PetscOListAdd() before calling this 
@@ -166,6 +172,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOListFind(PetscOList fl,const char name[],Pe
     Output Parameters:
 .   name - name string
 
+    Level: developer
+
     Notes:
     The name must have been registered with the PetscOListAdd() before calling this 
     routine.
@@ -198,6 +206,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOListReverseFind(PetscOList fl,PetscObject o
 
     Output Parameters:
 .   nl - the new list (should point to 0 to start, otherwise appends)
+
+    Level: developer
 
 .seealso: PetscOListDestroy(), PetscOListAdd(), PetscOListReverseFind(), PetscOListFind(), PetscOListDuplicate()
 
