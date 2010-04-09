@@ -74,7 +74,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerRegister(const char*,const char
    PetscViewerRegisterDynamic - Adds a viewer
 
    Synopsis:
-   PetscErrorCode PetscViewerRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(PetscViewer))
+   PetscErrorCode PetscViewerRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(PetscViewer))
 
    Not Collective
 
@@ -380,7 +380,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabGetArray(PetscViewer,int,
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabPutVariable(PetscViewer,const char*,void*);
 
 /*S
-     PetscViewers - Abstract collection of PetscViewers
+     PetscViewers - Abstract collection of PetscViewers. It is just an expandable array of viewers. 
 
    Level: intermediate
 

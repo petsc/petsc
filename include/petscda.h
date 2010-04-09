@@ -206,7 +206,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT DARegisterDestroy(void);
   DARegisterDynamic - Adds a new DA component implementation
 
   Synopsis:
-  PetscErrorCode DARegisterDynamic(char *name, char *path, char *func_name, PetscErrorCode (*create_func)(DA))
+  PetscErrorCode DARegisterDynamic(const char *name,const char *path,const char *func_name, PetscErrorCode (*create_func)(DA))
 
   Not Collective
 

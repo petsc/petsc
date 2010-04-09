@@ -1068,7 +1068,7 @@ PetscErrorCode VecReciprocal_Default(Vec v)
 
   Level: beginner
 
-.seealso:  VecLog(), VecAbs(), VecSqrt()
+.seealso:  VecLog(), VecAbs(), VecSqrt(), VecReciprocal()
 
 .keywords: vector, sqrt, square root
 @*/
@@ -1096,7 +1096,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecExp(Vec v)
 #undef __FUNCT__
 #define __FUNCT__ "VecLog"
 /*@
-  VecLog - Replaces each component of a vector by log(x_i)
+  VecLog - Replaces each component of a vector by log(x_i), the natural logarithm
 
   Not collective
 
@@ -1108,7 +1108,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecExp(Vec v)
 
   Level: beginner
 
-.seealso:  VecExp(), VecAbs(), VecSqrt()
+.seealso:  VecExp(), VecAbs(), VecSqrt(), VecReciprocal()
 
 .keywords: vector, sqrt, square root
 @*/
@@ -1149,6 +1149,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLog(Vec v)
   Level: beginner
 
   Note: The actual function is sqrt(|x_i|)
+
+.seealso: VecLog(), VecExp(), VecReciprocal(), VecAbs()
 
 .keywords: vector, sqrt, square root
 @*/

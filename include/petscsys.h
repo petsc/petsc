@@ -1239,7 +1239,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMaxSum(MPI_Comm,const PetscInt[],Pets
 
    Note: This is the base class from which all objects appear.
 
-.seealso:  PetscObjectDestroy(), PetscObjectView(), PetscObjectGetName(), PetscObjectSetName()
+.seealso:  PetscObjectDestroy(), PetscObjectView(), PetscObjectGetName(), PetscObjectSetName(), PetscObjectReference(), PetscObjectDereferenc()
 S*/
 typedef struct _p_PetscObject* PetscObject;
 
@@ -2213,7 +2213,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomView(PetscRandom,PetscViewer);
   PetscRandomRegisterDynamic - Adds a new PetscRandom component implementation
 
   Synopsis:
-  PetscErrorCode PetscRandomRegisterDynamic(char *name, char *path, char *func_name, PetscErrorCode (*create_func)(PetscRandom))
+  PetscErrorCode PetscRandomRegisterDynamic(const char *name, const char *path, const char *func_name, PetscErrorCode (*create_func)(PetscRandom))
 
   Not Collective
 
