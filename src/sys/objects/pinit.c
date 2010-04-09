@@ -518,10 +518,12 @@ $       call PetscInitialize(file,ierr)
    null character string; you CANNOT just use PETSC_NULL as 
    in the C version.  See the users manual for details.
 
+   If your main program is C but you call Fortran code that also uses PETSc you need to call PetscInitializeFortran() soon after 
+   calling PetscInitialize().
 
    Concepts: initializing PETSc
    
-.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs()
+.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscInitializeNoArguments()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char file[],const char help[])

@@ -23,6 +23,7 @@
 !       
        call VecSet(vec,two,ierr)
        call MPI_Comm_rank(comm,rank,ierr)
+       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
 !
 !  Now call C routine from Fortran, passing in the vector, communicator

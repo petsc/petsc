@@ -22,7 +22,7 @@ extern void PETSC_STDCALL petscsetcommonblock_(int*,int*);
 EXTERN_C_END
 
 /*@C
-   PetscInitializeFortran - Routine that should be called from C AFTER
+   PetscInitializeFortran - Routine that should be called soon AFTER
    the call to PetscInitialize() if one is using a C main program
    that calls Fortran routines that in turn call PETSc routines.
 
@@ -41,7 +41,6 @@ EXTERN_C_END
 
 .keywords: Mixing C and Fortran, passing PETSc objects to Fortran
 @*/
-
 PetscErrorCode PetscInitializeFortran(void)
 {
   PetscMPIInt c1=0,c2=0;
