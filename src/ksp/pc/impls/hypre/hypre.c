@@ -1523,8 +1523,7 @@ PetscErrorCode PCSetUp_SysPFMG(PC pc)
 
    Notes:  This is for CELL-centered descretizations
 
-           This must be used with the MATHYPRESSTRUCT matrix type
-.
+           This must be used with the MATHYPRESSTRUCT matrix type.
            This is less general than in hypre, it supports only one part, and one block per process defined by a PETSc DA.
            Also, only cell-centered variables.
 
