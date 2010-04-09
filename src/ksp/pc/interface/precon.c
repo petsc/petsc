@@ -1424,7 +1424,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCView(PC pc,PetscViewer viewer)
 {
   const PCType      cstr;
   PetscErrorCode    ierr;
-  PetscTruth        mat_exists,iascii,isstring;
+  PetscTruth        iascii,isstring;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -1455,8 +1455,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCView(PC pc,PetscViewer viewer)
       ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
-    ierr = PetscObjectExists((PetscObject)pc->mat,&mat_exists);CHKERRQ(ierr);
-    if (mat_exists) {
+    if (pc->mat) {
       ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
       if (pc->pmat == pc->mat) {
         ierr = PetscViewerASCIIPrintf(viewer,"  linear system matrix = precond matrix:\n");CHKERRQ(ierr);
@@ -1464,15 +1463,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCView(PC pc,PetscViewer viewer)
         ierr = MatView(pc->mat,viewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       } else {
-        ierr = PetscObjectExists((PetscObject)pc->pmat,&mat_exists);CHKERRQ(ierr);
-        if (mat_exists) {
+        if (pc->pmat) {
           ierr = PetscViewerASCIIPrintf(viewer,"  linear system matrix followed by preconditioner matrix:\n");CHKERRQ(ierr);
         } else {
           ierr = PetscViewerASCIIPrintf(viewer,"  linear system matrix:\n");CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = MatView(pc->mat,viewer);CHKERRQ(ierr);
-        if (mat_exists) {ierr = MatView(pc->pmat,viewer);CHKERRQ(ierr);}
+        if (pc->pmat) {ierr = MatView(pc->pmat,viewer);CHKERRQ(ierr);}
         ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       }
       ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);

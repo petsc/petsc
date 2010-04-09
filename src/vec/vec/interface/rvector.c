@@ -62,10 +62,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMaxPointwiseDivide(Vec x,Vec y,PetscReal *m
 .  val - the dot product
 
    Performance Issues:
-+    per-processor memory bandwidth
-.    interprocessor latency
--    work load inbalance that causes certain processes to arrive much earlier than
-     others
+$    per-processor memory bandwidth
+$    interprocessor latency
+$    work load inbalance that causes certain processes to arrive much earlier than others
 
    Notes for Users of Complex Numbers:
    For complex vectors, VecDot() computes 
@@ -126,10 +125,9 @@ $     NORM_INFINITY denotes max_i |x_i|
    Level: intermediate
 
    Performance Issues:
-+    per-processor memory bandwidth
-.    interprocessor latency
--    work load inbalance that causes certain processes to arrive much earlier than
-     others
+$    per-processor memory bandwidth
+$    interprocessor latency
+$    work load inbalance that causes certain processes to arrive much earlier than others
 
    Compile Option:
    PETSC_HAVE_SLOW_BLAS_NORM2 will cause a C (loop unrolled) version of the norm to be used, rather
@@ -196,10 +194,9 @@ $     NORM_INFINITY denotes max_i |x_i|
    Level: intermediate
 
    Performance Issues:
-+    per-processor memory bandwidth
-.    interprocessor latency
--    work load inbalance that causes certain processes to arrive much earlier than
-     others
+$    per-processor memory bandwidth
+$    interprocessor latency
+$    work load inbalance that causes certain processes to arrive much earlier than others
 
    Compile Option:
    PETSC_HAVE_SLOW_BLAS_NORM2 will cause a C (loop unrolled) version of the norm to be used, rather
