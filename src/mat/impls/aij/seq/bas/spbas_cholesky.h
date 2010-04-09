@@ -41,7 +41,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(
       PetscInt     *n_row_alloc_ok,   /* I/O: Number of rows which are already in their final  
 				     places in the arrays: they need not be moved any more */
       PetscInt     *n_alloc_used,     /* I/O:  */
-      PetscInt     *max_row_nnz       /*I  : Over-estimate of the number of nonzeros needed to 
+      PetscInt     *max_row_nnz       /* I  : Over-estimate of the number of nonzeros needed to 
 				    store each row */
      )
 {
