@@ -200,12 +200,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
       /* first time in so build matrix and vector data structures using DM */
       if (!ksp->vec_rhs) {ierr = DMCreateGlobalVector(ksp->dm,&ksp->vec_rhs);CHKERRQ(ierr);}
       if (!ksp->vec_sol) {ierr = DMCreateGlobalVector(ksp->dm,&ksp->vec_sol);CHKERRQ(ierr);}
-      /* How to set the matrix type ? */
-      /* How to handle different A and B matrix ? */
-      ierr = DMGetMatrix(ksp->dm,MATAIJ,&A);CHKERRQ(ierr);
-    } else {
-      ierr = KSPGetOperators(ksp,&A,&A,PETSC_NULL);CHKERRQ(ierr);
-    }     
+    }
     ierr = DMKSPHasInitialGuess(ksp->dm,&ig);CHKERRQ(ierr);
     if (ig) {
       ierr = DMKSPComputeInitialGuess(ksp->dm,ksp->vec_sol);CHKERRQ(ierr);
@@ -219,6 +214,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
     /* how do we know when to compute new matrix? Now it always does */
     ierr = DMKSPHasMat(ksp->dm,&im);CHKERRQ(ierr);
     if (im) {
+      if (!ksp->setupcalled) {
+        /* How to set the matrix type ? */
+        /* How to handle different A and B matrix ? */
+        ierr = DMGetMatrix(ksp->dm,MATAIJ,&A);CHKERRQ(ierr);
+      } else {
+        ierr = KSPGetOperators(ksp,&A,&A,PETSC_NULL);CHKERRQ(ierr);
+      }     
       ierr = DMKSPComputeMat(ksp->dm,A,A,&stflg);CHKERRQ(ierr);
       ierr = KSPSetOperators(ksp,A,A,stflg);CHKERRQ(ierr);
     }

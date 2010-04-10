@@ -458,7 +458,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
 
   if (pc->dm && !pc->setupcalled) {
     /* construct the interpolation from the DMs */
-    Mat A,p;
+    Mat p;
     ierr = PetscMalloc(n*sizeof(DM),&dms);CHKERRQ(ierr);
     dms[n-1] = pc->dm;
     for (i=n-2; i>-1; i--) {
@@ -469,11 +469,9 @@ PetscErrorCode PCSetUp_MG(PC pc)
     }
 
     if (!mg->galerkin) {
-      /* build the empty matrices for the coarser meshes */
+      /* each coarse level gets its DM */
       for (i=n-2; i>-1; i--) {
-	ierr = DMGetMatrix(dms[i],MATAIJ,&A);CHKERRQ(ierr);
-	ierr = KSPSetOperators(mglevels[i]->smoothd,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-	ierr = MatDestroy(A);CHKERRQ(ierr);
+        ierr = KSPSetDM(mglevels[i]->smoothd,dms[i]);CHKERRQ(ierr);
       }
     }
 

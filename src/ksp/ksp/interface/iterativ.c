@@ -800,10 +800,14 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
     if (!right) SETERRQ(PETSC_ERR_ARG_INCOMP,"You asked for right vectors but did not pass a pointer to hold them");
     if (ksp->vec_sol) vecr = ksp->vec_sol;
     else {
-      Mat pmat;
-      if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-      ierr = PCGetOperators(ksp->pc,PETSC_NULL,&pmat,PETSC_NULL);CHKERRQ(ierr);
-      ierr = MatGetVecs(pmat,&vecr,PETSC_NULL);CHKERRQ(ierr);
+      if (ksp->dm) {
+	ierr = DMGetGlobalVector(ksp->dm,&vecr);CHKERRQ(ierr);
+      } else {
+	Mat pmat;
+	if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
+	ierr = PCGetOperators(ksp->pc,PETSC_NULL,&pmat,PETSC_NULL);CHKERRQ(ierr);
+	ierr = MatGetVecs(pmat,&vecr,PETSC_NULL);CHKERRQ(ierr);
+      }
     }
     ierr = VecDuplicateVecs(vecr,rightn,right);CHKERRQ(ierr);
     if (!ksp->vec_sol) {
@@ -814,10 +818,14 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
     if (!left) SETERRQ(PETSC_ERR_ARG_INCOMP,"You asked for left vectors but did not pass a pointer to hold them");
     if (ksp->vec_rhs) vecl = ksp->vec_rhs;
     else {
-      Mat pmat;
-      if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-      ierr = PCGetOperators(ksp->pc,PETSC_NULL,&pmat,PETSC_NULL);CHKERRQ(ierr);
-      ierr = MatGetVecs(pmat,PETSC_NULL,&vecl);CHKERRQ(ierr);
+      if (ksp->dm) {
+	ierr = DMGetGlobalVector(ksp->dm,&vecl);CHKERRQ(ierr);
+      } else {
+	Mat pmat;
+	if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
+	ierr = PCGetOperators(ksp->pc,PETSC_NULL,&pmat,PETSC_NULL);CHKERRQ(ierr);
+	ierr = MatGetVecs(pmat,PETSC_NULL,&vecl);CHKERRQ(ierr);
+      }
     }
     ierr = VecDuplicateVecs(vecl,leftn,left);CHKERRQ(ierr);
     if (!ksp->vec_rhs) {
