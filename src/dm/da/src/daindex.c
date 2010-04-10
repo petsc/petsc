@@ -172,6 +172,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAO(DA da,AO *ao)
     Synopsis:
     DAGetGlobalIndicesF90(DA da,integer n,{integer, pointer :: idx(:)},integer ierr)
 
+    Not Collective
+
     Input Parameter:
 .   da - the distributed array
 

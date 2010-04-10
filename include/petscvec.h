@@ -273,7 +273,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecRegisterDestroy(void);
   VecRegisterDynamic - Adds a new vector component implementation
 
   Synopsis:
-  PetscErrorCode VecRegisterDynamic(char *name, char *path, char *func_name, PetscErrorCode (*create_func)(Vec))
+  PetscErrorCode VecRegisterDynamic(const char *name, const char *path, const char *func_name, PetscErrorCode (*create_func)(Vec))
 
   Not Collective
 

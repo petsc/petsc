@@ -61,7 +61,7 @@ EXTERN PetscErrorCode CharacteristicRegister(const char[],const char[],const cha
    CharacteristicRegisterDynamic - Adds a solver to the method of characteristics package.
 
    Synopsis:
-   PetscErrorCode CharacteristicRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(Characteristic))
+   PetscErrorCode CharacteristicRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(Characteristic))
 
    Not Collective
 

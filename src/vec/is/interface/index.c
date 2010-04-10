@@ -651,6 +651,8 @@ M*/
     Synopsis:
     ISBlockRestoreIndicesF90(IS x,{integer, pointer :: xx_v(:)},integer ierr)
 
+    Not Collective
+
     Input Parameters:
 +   x - index set
 -   xx_v - the Fortran90 pointer to the array

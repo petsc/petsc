@@ -62,6 +62,6 @@ int main(int argc,char **argv)
          options are chosen (e.g., -log_summary).  See PetscFinalize()
      manpage for more information.
   */
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }

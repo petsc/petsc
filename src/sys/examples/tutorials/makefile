@@ -6,7 +6,7 @@ FFLAGS	        = -I${PETSC_DIR}/include/finclude
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sys/examples/tutorials/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex5.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex5.c ex6.c
 EXAMPLESF       = ex3f.F ex4f90.F90 ex5f90.F90 
 MANSEC          = Sys
 CLEANFILES      = binaryoutput binaryoutput.info
@@ -49,6 +49,11 @@ ex5: ex5.o   chkopts
 ex5f90: ex5f90.o  chkopts
 	-${FLINKER} -o ex5f90 ex5f90.o ${PETSC_SYS_LIB}
 	${RM} ex5f90.o
+
+ex6: ex6.o   chkopts
+	-${CLINKER} -o ex6 ex6.o  ${PETSC_SYS_LIB}
+	${RM} -f ex6.o
+
 #
 # ------------------------------------------------------------------------
 #
@@ -100,8 +105,11 @@ runex5f90:
 	   else echo "Possible problem with ex5f90_1, diffs above"; fi; \
 	   ${RM} -f ex5f90_1.tmp 
 
+runex6:
+	-@${MPIEXEC} -n 1 ./ex6 
+
 TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
-                            ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm 
+                            ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm ex6.PETSc runex6 ex6.rm
 TESTEXAMPLES_C_NOCOMPLEX  = ex5.PETSc runex5 ex5.rm
 TESTEXAMPLES_C_X11_MPIUNI = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
                             ex3.PETSc runex3 ex3.rm

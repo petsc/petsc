@@ -78,7 +78,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPRegister(const char[],const char[],c
    KSPRegisterDynamic - Adds a method to the Krylov subspace solver package.
 
    Synopsis:
-   PetscErrorCode KSPRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(KSP))
+   PetscErrorCode KSPRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(KSP))
 
    Not Collective
 
@@ -292,12 +292,12 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRGetStandardErrorVec(KSP,Vec*);
    Level: advanced
 
    Each solver only supports a subset of these and some may support different ones
-   depending on left or right preconditioning, see KSPSetPCSide()
+   depending on left or right preconditioning, see KSPSetPreconditionerSide()
 
    Notes: this must match finclude/petscksp.h 
 
 .seealso: KSPSolve(), KSPGetConvergedReason(), KSPSetNormType(),
-          KSPSetConvergenceTest(), KSPSetPCSide()
+          KSPSetConvergenceTest(), KSPSetPreconditionerSide()
 E*/
 typedef enum {KSP_NORM_NO = 0,KSP_NORM_PRECONDITIONED = 1,KSP_NORM_UNPRECONDITIONED = 2,KSP_NORM_NATURAL = 3} KSPNormType;
 extern const char *KSPNormTypes[];
@@ -561,8 +561,6 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGRangeDestroy(PetscDrawLG);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPreSolve(PC,PetscErrorCode (*)(PC,KSP,Vec,Vec));
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPostSolve(PC,PetscErrorCode (*)(PC,KSP,Vec,Vec));
-
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatMFFDKSPMonitor(KSP,PetscInt,PetscReal,void *);
 
 /* see src/ksp/ksp/interface/iguess.c */
 typedef struct _p_KSPFischerGuess {PetscInt method,curl,maxl,refcnt;PetscTruth monitor;Mat mat; KSP ksp;}* KSPFischerGuess;

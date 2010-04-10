@@ -275,11 +275,11 @@ PetscErrorCode DASetLocalAdicFunction_Private(DA da,DALocalFunction1 ad_lf)
 /*MC
        DASetLocalAdicFunctioni - Caches in a DA a local functioni computed by ADIC/ADIFOR
 
-   Collective on DA
-
    Synopsis:
    PetscErrorCode DASetLocalAdicFunctioni(DA da,PetscInt (ad_lf*)(DALocalInfo*,MatStencil*,void*,void*,void*)
    
+   Collective on DA
+
    Input Parameter:
 +  da - initial distributed array
 -  ad_lfi - the local function as computed by ADIC/ADIFOR
@@ -305,11 +305,11 @@ PetscErrorCode DASetLocalAdicFunctioni_Private(DA da,PetscErrorCode (*ad_lfi)(DA
 /*MC
        DASetLocalAdicMFFunctioni - Caches in a DA a local functioni computed by ADIC/ADIFOR
 
-   Collective on DA
-
    Synopsis:
    PetscErrorCode  DASetLocalAdicFunctioni(DA da,int (ad_lf*)(DALocalInfo*,MatStencil*,void*,void*,void*)
    
+   Collective on DA
+
    Input Parameter:
 +  da - initial distributed array
 -  admf_lfi - the local matrix-free function as computed by ADIC/ADIFOR
@@ -335,11 +335,11 @@ PetscErrorCode DASetLocalAdicMFFunctioni_Private(DA da,PetscErrorCode (*admf_lfi
 /*MC
        DASetLocalAdicFunctionib - Caches in a DA a block local functioni computed by ADIC/ADIFOR
 
-   Collective on DA
-
    Synopsis:
    PetscErrorCode DASetLocalAdicFunctionib(DA da,PetscInt (ad_lf*)(DALocalInfo*,MatStencil*,void*,void*,void*)
    
+   Collective on DA
+
    Input Parameter:
 +  da - initial distributed array
 -  ad_lfi - the local function as computed by ADIC/ADIFOR
@@ -365,11 +365,11 @@ PetscErrorCode DASetLocalAdicFunctionib_Private(DA da,PetscErrorCode (*ad_lfi)(D
 /*MC
        DASetLocalAdicMFFunctionib - Caches in a DA a block local functioni computed by ADIC/ADIFOR
 
-   Collective on DA
-
    Synopsis:
    PetscErrorCode  DASetLocalAdicFunctionib(DA da,int (ad_lf*)(DALocalInfo*,MatStencil*,void*,void*,void*)
-   
+
+   Collective on DA
+
    Input Parameter:
 +  da - initial distributed array
 -  admf_lfi - the local matrix-free function as computed by ADIC/ADIFOR
@@ -395,11 +395,11 @@ PetscErrorCode DASetLocalAdicMFFunctionib_Private(DA da,PetscErrorCode (*admf_lf
 /*MC
        DASetLocalAdicMFFunction - Caches in a DA a local function computed by ADIC/ADIFOR
 
-   Collective on DA
-
    Synopsis:
    PetscErrorCode DASetLocalAdicMFFunction(DA da,DALocalFunction1 ad_lf)
-   
+
+   Collective on DA
+
    Input Parameter:
 +  da - initial distributed array
 -  ad_lf - the local function as computed by ADIC/ADIFOR

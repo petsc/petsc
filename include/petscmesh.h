@@ -55,7 +55,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalIndices(Mesh,PetscInt*[]);
    MeshRegisterDynamic - Adds a type to the Mesh package.
 
    Synopsis:
-   PetscErrorCode MeshRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(Mesh))
+   PetscErrorCode MeshRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(Mesh))
 
    Not Collective
 

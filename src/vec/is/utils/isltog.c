@@ -332,6 +332,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingApplyIS(ISLocalToGlobalM
    ISLocalToGlobalMappingApply - Takes a list of integers in a local numbering
    and converts them to the global numbering.
 
+   Synopsis:
+   PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,int N,int in[],int out[])
+
    Not collective
 
    Input Parameters:
@@ -341,9 +344,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingApplyIS(ISLocalToGlobalM
 
    Output Parameter:
 .  out - indices in global numbering
-
-   Synopsis:
-   PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,int N,int in[],int out[])
 
    Notes: 
    The in and out array parameters may be identical.

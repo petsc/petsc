@@ -778,26 +778,28 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateEmpty(MPI_Comm comm,VecScatter
 .  newctx - location to store the new scatter context
 
    Options Database Keys: (uses regular MPI_Sends by default)
-+  -vecscatter_ssend        - Uses MPI_Ssend_init() instead of MPI_Send_init() 
++  -vecscatter_view         - Prints detail of communications
+.  -vecscatter_view_info    - Print less details about communication
+.  -vecscatter_ssend        - Uses MPI_Ssend_init() instead of MPI_Send_init() 
 .  -vecscatter_rsend           - use ready receiver mode for MPI sends 
 .  -vecscatter_merge        - VecScatterBegin() handles all of the communication, VecScatterEnd() is a nop 
                               eliminates the chance for overlap of computation and communication 
 .  -vecscatter_sendfirst    - Posts sends before receives 
 .  -vecscatter_packtogether - Pack all messages before sending, receive all messages before unpacking
 .  -vecscatter_alltoall     - Uses MPI all to all communication for scatter
+.  -vecscatter_window       - Use MPI 2 window operations to move data
 -  -vecscatter_nopack       - Avoid packing to work vector when possible (if used with -vecscatter_alltoall then will use MPI_Alltoallw()
 
 $
 $                                                                                    --When packing is used--
-$                               MPI Datatypes (no packing)  sendfirst   merge        packtogether  persistent*    -vecscatter_
-$
+$                               MPI Datatypes (no packing)  sendfirst   merge        packtogether  persistent*    
+$                                _nopack                   _sendfirst    _merge      _packtogether                -vecscatter_
+$ ----------------------------------------------------------------------------------------------------------------------------
 $    Message passing    Send       p                           X            X           X         always
 $                      Ssend       p                           X            X           X         always          _ssend
 $                      Rsend       p                        nonsense        X           X         always          _rsend
 $    AlltoAll  v or w              X                        nonsense     always         X         nonsense        _alltoall
 $    MPI_Win                       p                        nonsense        p           p         nonsense        _window
-$
-$               -vecscatter_     _nopack                   _sendfirst    _merge      _packtogether  
 $                              
 $   Since persistent sends and receives require a constant memory address they can only be used when data is packed into the work vector
 $   because the in and out array may be different for each call to VecScatterBegin/End().

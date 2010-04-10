@@ -62,10 +62,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMaxPointwiseDivide(Vec x,Vec y,PetscReal *m
 .  val - the dot product
 
    Performance Issues:
-+    per-processor memory bandwidth
-.    interprocessor latency
--    work load inbalance that causes certain processes to arrive much earlier than
-     others
+$    per-processor memory bandwidth
+$    interprocessor latency
+$    work load inbalance that causes certain processes to arrive much earlier than others
 
    Notes for Users of Complex Numbers:
    For complex vectors, VecDot() computes 
@@ -126,10 +125,9 @@ $     NORM_INFINITY denotes max_i |x_i|
    Level: intermediate
 
    Performance Issues:
-+    per-processor memory bandwidth
-.    interprocessor latency
--    work load inbalance that causes certain processes to arrive much earlier than
-     others
+$    per-processor memory bandwidth
+$    interprocessor latency
+$    work load inbalance that causes certain processes to arrive much earlier than others
 
    Compile Option:
    PETSC_HAVE_SLOW_BLAS_NORM2 will cause a C (loop unrolled) version of the norm to be used, rather
@@ -196,10 +194,9 @@ $     NORM_INFINITY denotes max_i |x_i|
    Level: intermediate
 
    Performance Issues:
-+    per-processor memory bandwidth
-.    interprocessor latency
--    work load inbalance that causes certain processes to arrive much earlier than
-     others
+$    per-processor memory bandwidth
+$    interprocessor latency
+$    work load inbalance that causes certain processes to arrive much earlier than others
 
    Compile Option:
    PETSC_HAVE_SLOW_BLAS_NORM2 will cause a C (loop unrolled) version of the norm to be used, rather
@@ -1343,10 +1340,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArrays(const Vec x[],PetscInt n,Pets
 /*MC
    VecRestoreArray - Restores a vector after VecGetArray() has been called.
 
-   Not Collective
-
    Synopsis:
    PetscErrorCode VecRestoreArray(Vec x,PetscScalar *a[])
+
+   Not Collective
 
    Input Parameters:
 +  x - the vector
@@ -1563,6 +1560,8 @@ M*/
 
     Synopsis:
     VecDestroyVecsF90({Vec, pointer :: x(:)},integer n,integer ierr)
+
+    Collective on Vec
 
     Input Parameters:
 +   x - pointer to array of vector pointers

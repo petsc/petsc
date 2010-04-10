@@ -65,7 +65,7 @@ int main(int argc,char **argv)
   ierr = PetscSleep(1);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
  

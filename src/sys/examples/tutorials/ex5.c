@@ -108,6 +108,6 @@ int main(int argc,char **argv)
 
   /* clean up and exit */
   ierr = PetscBagDestroy(bag);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }
