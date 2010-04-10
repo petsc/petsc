@@ -240,7 +240,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     ierr = MatGetSize(Amat,&size1,&size2);CHKERRQ(ierr);
     if ( size1 > size2 ) tmp = size1 - size2;
     tmp = rnorm / PetscSqrtScalar(tmp);
-    ierr = VecSqrt(SE);CHKERRQ(ierr);
+    ierr = VecSqrtAbs(SE);CHKERRQ(ierr);
     ierr = VecScale(SE,tmp);CHKERRQ(ierr);
   }
 

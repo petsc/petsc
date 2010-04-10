@@ -1052,7 +1052,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoadIntoVector(PetscViewer viewer,Vec vec)
 
    Concepts: vector^reciprocal
 
-.seealso: VecLog(), VecExp(), VecSqrt()
+.seealso: VecLog(), VecExp(), VecSqrtAbs()
 
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecReciprocal(Vec vec)

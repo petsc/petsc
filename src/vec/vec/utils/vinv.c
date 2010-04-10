@@ -1068,7 +1068,7 @@ PetscErrorCode VecReciprocal_Default(Vec v)
 
   Level: beginner
 
-.seealso:  VecLog(), VecAbs(), VecSqrt(), VecReciprocal()
+.seealso:  VecLog(), VecAbs(), VecSqrtAbs(), VecReciprocal()
 
 .keywords: vector, sqrt, square root
 @*/
@@ -1108,7 +1108,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecExp(Vec v)
 
   Level: beginner
 
-.seealso:  VecExp(), VecAbs(), VecSqrt(), VecReciprocal()
+.seealso:  VecExp(), VecAbs(), VecSqrtAbs(), VecReciprocal()
 
 .keywords: vector, sqrt, square root
 @*/
@@ -1134,9 +1134,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLog(Vec v)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "VecSqrt"
+#define __FUNCT__ "VecSqrtAbs"
 /*@
-  VecSqrt - Replaces each component of a vector by the square root of its magnitude.
+  VecSqrtAbs - Replaces each component of a vector by the square root of its magnitude.
 
   Not collective
 
@@ -1154,7 +1154,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLog(Vec v)
 
 .keywords: vector, sqrt, square root
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecSqrt(Vec v)
+PetscErrorCode PETSCVEC_DLLEXPORT VecSqrtAbs(Vec v)
 {
   PetscScalar    *x;
   PetscInt       i, n;

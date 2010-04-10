@@ -190,7 +190,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMaxPointwiseDivide(Vec,Vec,PetscReal
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecShift(Vec,PetscScalar);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecReciprocal(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPermute(Vec, IS, PetscTruth);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSqrt(Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSqrtAbs(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecLog(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecExp(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecAbs(Vec);
