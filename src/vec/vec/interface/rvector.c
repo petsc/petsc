@@ -279,11 +279,12 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecNormalize(Vec x,PetscReal *val)
 
    Output Parameters:
 +  val - the maximum component
--  p - the location of val
+-  p - the location of val (pass PETSC_NULL if you don't want this)
 
    Notes:
    Returns the value PETSC_MIN and p = -1 if the vector is of length 0.
 
+   Returns the smallest index with the maximum value
    Level: intermediate
 
    Concepts: maximum^of vector
@@ -317,12 +318,14 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMax(Vec x,PetscInt *p,PetscReal *val)
 
    Output Parameter:
 +  val - the minimum component
--  p - the location of val
+-  p - the location of val (pass PETSC_NULL if you don't want this location)
 
    Level: intermediate
 
    Notes:
    Returns the value PETSC_MAX and p = -1 if the vector is of length 0.
+
+   This returns the smallest index with the minumum value
 
    Concepts: minimum^of vector
    Concepts: vector^minimum entry

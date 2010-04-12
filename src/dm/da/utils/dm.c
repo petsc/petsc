@@ -369,6 +369,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
 
   PetscFunctionBegin;
   ierr = (*dm->ops->coarsen)(dm, comm, dmc);CHKERRQ(ierr);
+  (*dmc)->ops->formkspinitialguess = dm->ops->formkspinitialguess;
+  (*dmc)->ops->formksprhs          = dm->ops->formksprhs;
+  (*dmc)->ops->formkspmat          = dm->ops->formkspmat;
   PetscFunctionReturn(0);
 }
 

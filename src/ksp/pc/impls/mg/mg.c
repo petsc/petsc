@@ -463,6 +463,8 @@ PetscErrorCode PCSetUp_MG(PC pc)
     dms[n-1] = pc->dm;
     for (i=n-2; i>-1; i--) {
       ierr = DMCoarsen(dms[i+1],PETSC_NULL,&dms[i]);CHKERRQ(ierr);
+      ierr = DMKSPSetRhs(dms[i],0);
+      ierr = DMKSPSetInitialGuess(dms[i],0);
       ierr = DMGetInterpolation(dms[i],dms[i+1],&p,PETSC_NULL);CHKERRQ(ierr);
       ierr = PCMGSetInterpolation(pc,i+1,p);CHKERRQ(ierr);
       ierr = MatDestroy(p);CHKERRQ(ierr);

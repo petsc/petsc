@@ -811,7 +811,11 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
     }
     ierr = VecDuplicateVecs(vecr,rightn,right);CHKERRQ(ierr);
     if (!ksp->vec_sol) {
-      ierr = VecDestroy(vecr);CHKERRQ(ierr);
+      if (ksp->dm) {
+        ierr = DMRestoreGlobalVector(ksp->dm,&vecr);CHKERRQ(ierr);
+      } else {
+	ierr = VecDestroy(vecr);CHKERRQ(ierr);
+      }
     }
   }
   if (leftn) {
@@ -829,7 +833,11 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
     }
     ierr = VecDuplicateVecs(vecl,leftn,left);CHKERRQ(ierr);
     if (!ksp->vec_rhs) {
-      ierr = VecDestroy(vecl);CHKERRQ(ierr);
+      if (ksp->dm) {
+        ierr = DMRestoreGlobalVector(ksp->dm,&vecl);CHKERRQ(ierr);
+      } else {
+	ierr = VecDestroy(vecl);CHKERRQ(ierr);
+      }
     }
   }
   PetscFunctionReturn(0);

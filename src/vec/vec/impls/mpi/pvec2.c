@@ -188,7 +188,7 @@ PetscErrorCode VecMax_MPI(Vec xin,PetscInt *idx,PetscReal *z)
 PetscErrorCode VecMin_MPI(Vec xin,PetscInt *idx,PetscReal *z)
 {
   PetscErrorCode ierr;
-  PetscReal work;
+  PetscReal      work;
 
   PetscFunctionBegin;
   /* Find the local Min */
@@ -199,7 +199,7 @@ PetscErrorCode VecMin_MPI(Vec xin,PetscInt *idx,PetscReal *z)
     ierr = MPI_Allreduce(&work,z,1,MPIU_REAL,MPI_MIN,((PetscObject)xin)->comm);CHKERRQ(ierr);
   } else {
     PetscReal work2[2],z2[2];
-    PetscInt       rstart;
+    PetscInt  rstart;
 
     ierr = VecGetOwnershipRange(xin,&rstart,PETSC_NULL);CHKERRQ(ierr);
     work2[0] = work;
