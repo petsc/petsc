@@ -316,15 +316,17 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateComposite(MPI_Comm,PetscInt,co
 typedef enum {MAT_COMPOSITE_ADDITIVE,MAT_COMPOSITE_MULTIPLICATIVE} MatCompositeType;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeSetType(Mat,MatCompositeType);
 
+typedef enum {MATFWK_BLOCK_COMM_DEFAULT = 0, MATFWK_BLOCK_COMM_SELF = -1, MATFWK_BLOCK_COMM_DETERMINE = -2} MatFwkBlockCommType;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkAIJSetPreallocation(Mat A,PetscInt nz,PetscInt *nnz);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkGetDefaltBlockType(Mat A, const MatType *type);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetDefaltBlockType(Mat A, const MatType type);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetPreallocation_AIJ(Mat A,PetscInt nz,PetscInt *nnz);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkAddBlock(Mat A, PetscInt rowblock, PetscInt colblock, const MatType type, Mat *block);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkAddBlock(Mat A, PetscInt rowblock, PetscInt colblock, const MatType blockmattype,  MatFwkBlockCommType blockcommtype, Mat *block);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetBlock(Mat A, PetscInt rowblock, PetscInt colblock, Mat block);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkGetBlock(Mat A, PetscInt rowblock, PetscInt colblock, Mat *block);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetScatter(Mat A, Mat S, PetscInt blockcount, PetscInt *blocksizes);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetGather(Mat A, Mat G, PetscInt blockcount, PetscInt *blocksizes);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetScatters(Mat A, PetscInt blockcount, Mat scatters[]);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetGathers(Mat A, PetscInt blockcount,  Mat gathers[]);
+
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqFFTW(MPI_Comm,PetscInt,const PetscInt[],Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateTranspose(Mat,Mat*);

@@ -4,10 +4,13 @@
 #include "private/matimpl.h"
 #include "../src/vec/vec/impls/dvecimpl.h"
 
-typedef Mat Mat_FwkBlock;
 
-#define Mat_FwkBlock_SetMat(_block, mat) 0; *_block = mat
-#define Mat_FwkBlock_GetMat(_block, _mat) 0; *_mat = *_block
+typedef struct {
+  Mat mat;
+  Vec invec, outvec;
+} Mat_FwkBlock;
+
+#define Mat_FwkBlockGetMat(A,rowblock,colblock,_block, _mat) 0; *_mat = _block->mat
 
 typedef struct {
   PetscInt          nonew;            /* 1 don't add new nonzero blocks, -1 generate error on new */
@@ -30,16 +33,14 @@ typedef struct {
 
 typedef struct {
   const MatType    default_block_type;
-  Mat scatter;
-  Mat gather;
+  Mat *scatters; /* FIX: merge into a single scatter to ammortize communication setup costs */
+  Mat *gathers;  /* FIX: merge into a single gather to ammortize communication setup costs */
   PetscInt colblockcount;
-  PetscInt *colblockoffset;
   PetscInt rowblockcount;
-  PetscInt *rowblockoffset;
-  PetscInt em; /* local expanded row dimension: dimension of the domain of gather,  or rowblockend[rowblockcount-1] */
-  PetscInt en; /* local expanded col dimension: dimension of the range  of scatter, or colblockend[colblockcount-1] */
+  Vec      *invecs, *outvecs;     /* vectors to scatter into/gather from; represent the direct sum of all vectors scattered/gathered; FIX: will be obsolete as soon as scatters/gathers are merged */
   Vec      invec, outvec;
-  Vec      binvec, boutvec; /* Local block in and out vectors */
+  PetscInt *lcolblockoffset, *gcolblockoffset; /* Cumulative local and global row dimensions of scatters. */
+  PetscInt *lrowblockoffset, *growblockoffset; /* Cumulative local and global column dimensions of gathers.  */                          
   void     *data;
 } Mat_Fwk;
 
@@ -65,15 +66,15 @@ PETSC_STATIC_INLINE PetscErrorCode MatFwkXAIJFreeAIJ(Mat AAA, Mat_FwkBlock **a,P
                                      return 0;
 }
 
-
+#define CHUNKSIZE 15
 /*
     Allocates larger a, i, and j arrays for the FwkAIJ matrix type
 */
-#define MatFwkXAIJReallocateAIJ(matrix,rowcount,blocksize,current_row_length,row,col,allocated_row_length,aa,ai,aj,j_row_pointer,a_row_pointer,allocated_row_lengths,no_new_block_flag,datatype) \
+#define MatFwkXAIJReallocateAIJ(matrix,rowcount,current_row_length,row,col,allocated_row_length,aa,ai,aj,j_row_pointer,a_row_pointer,allocated_row_lengths,no_new_block_flag) \
 {\
   Mat_Fwk *fwk = (Mat_Fwk*)matrix->data;\
   Mat_FwkAIJ *A = (Mat_FwkAIJ*)fwk->data;\
-  PetscInt AM = rowcount, BS2 = blocksize, NROW = current_row_length, ROW = row, COL = col, RMAX = allocated_row_length;\
+  PetscInt AM = rowcount, NROW = current_row_length, ROW = row, COL = col, RMAX = allocated_row_length;\
   Mat_FwkBlock *AA = aa;\
   PetscInt *AI = ai, *AJ = aj, *RP = j_row_pointer;\
   Mat_FwkBlock *AP = a_row_pointer;\
@@ -86,7 +87,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatFwkXAIJFreeAIJ(Mat AAA, Mat_FwkBlock **a,P
  \
         if (NONEW == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%D,%D) caused a malloc",ROW,COL); \
         /* malloc new storage space */ \
-        ierr = PetscMalloc3(BS2*new_nz,Mat_FwkBlock,&new_a,new_nz,PetscInt,&new_j,AM+1,PetscInt,&new_i);CHKERRQ(ierr);\
+        ierr = PetscMalloc3(new_nz,Mat_FwkBlock,&new_a,new_nz,PetscInt,&new_j,AM+1,PetscInt,&new_i);CHKERRQ(ierr);\
  \
         /* copy over old data into new slots */ \
         for (ii=0; ii<ROW+1; ii++) {new_i[ii] = AI[ii];} \
@@ -94,9 +95,9 @@ PETSC_STATIC_INLINE PetscErrorCode MatFwkXAIJFreeAIJ(Mat AAA, Mat_FwkBlock **a,P
         ierr = PetscMemcpy(new_j,AJ,(AI[ROW]+NROW)*sizeof(PetscInt));CHKERRQ(ierr); \
         len = (new_nz - CHUNKSIZE - AI[ROW] - NROW); \
         ierr = PetscMemcpy(new_j+AI[ROW]+NROW+CHUNKSIZE,AJ+AI[ROW]+NROW,len*sizeof(PetscInt));CHKERRQ(ierr); \
-        ierr = PetscMemcpy(new_a,AA,BS2*(AI[ROW]+NROW)*sizeof(datatype));CHKERRQ(ierr); \
-        ierr = PetscMemzero(new_a+BS2*(AI[ROW]+NROW),BS2*CHUNKSIZE*sizeof(datatype));CHKERRQ(ierr);\
-        ierr = PetscMemcpy(new_a+BS2*(AI[ROW]+NROW+CHUNKSIZE),AA+BS2*(AI[ROW]+NROW),BS2*len*sizeof(datatype));CHKERRQ(ierr);  \
+        ierr = PetscMemcpy(new_a,AA,(AI[ROW]+NROW)*sizeof(Mat_FwkBlock));CHKERRQ(ierr); \
+        ierr = PetscMemzero(new_a+(AI[ROW]+NROW),CHUNKSIZE*sizeof(Mat_FwkBlock));CHKERRQ(ierr);\
+        ierr = PetscMemcpy(new_a+(AI[ROW]+NROW+CHUNKSIZE),AA+(AI[ROW]+NROW),len*sizeof(Mat_FwkBlock));CHKERRQ(ierr);  \
         /* free up old matrix storage */ \
         ierr = MatFwkXAIJFreeAIJ(matrix,&A->a,&A->j,&A->i);CHKERRQ(ierr);\
         AA = new_a; \
@@ -104,21 +105,12 @@ PETSC_STATIC_INLINE PetscErrorCode MatFwkXAIJFreeAIJ(Mat AAA, Mat_FwkBlock **a,P
         AI = A->i = new_i; AJ = A->j = new_j;  \
         A->singlemalloc = PETSC_TRUE; \
  \
-        RP          = AJ + AI[ROW]; AP = AA + BS2*AI[ROW]; \
+        RP          = AJ + AI[ROW]; AP = AA + AI[ROW]; \
         RMAX        = AIMAX[ROW] = AIMAX[ROW] + CHUNKSIZE; \
         A->maxnz += CHUNKSIZE; \
         A->reallocs++; \
       } \
 } \
 
-#define MatFwk_SetUpBlockVec(blockoffsets,vec,arr,block) \
-{\
-  Vec_Seq *s = (Vec_Seq*)vec->data;\
-  s->array=arr+blockoffsets[block]; \
-  vec->map->n=blockoffsets[block+1]-blockoffsets[block]; \
-  vec->map->N=vec->map->n; \
-  vec->map->rend=vec->map->n;\
-  vec->map->range[1]=vec->map->n;\
-}\
 
 #endif
