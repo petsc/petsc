@@ -39,6 +39,7 @@ tauflags:
 	-@echo TAU_DEFS:${TAU_DEFS}
 	-@echo TAU_INCLUDE:${TAU_INCLUDE}
 	-@echo TAU_LIBS:${TAU_LIBS}
+	-@echo TAU_MPI_LIBS:${TAU_MPI_LIBS}
 	-@echo TAU_CXXLIBS:${TAU_CXXLIBS}
 '''
   os.write(fd,buf)
@@ -53,13 +54,15 @@ tauflags:
   tau_defs =''
   tau_include=''
   tau_libs=''
+  tau_mpi_libs=''
   for line in output.splitlines():
     if line.find('TAU_INSTRUMENT0R:') >= 0:  tau_instr = line.replace('TAU_INSTRUMENT0R:','')
     elif line.find('TAU_DEFS:') >= 0:  tau_defs = line.replace('TAU_DEFS:',' ')    
     elif line.find('TAU_INCLUDE:') >= 0: tau_include = line.replace('TAU_INCLUDE:',' ')
     elif line.find('TAU_LIBS:') >= 0: tau_libs = line.replace('TAU_LIBS:',' ')
+    elif line.find('TAU_MPI_LIBS:') >= 0: tau_mpi_libs = line.replace('TAU_MPI_LIBS:',' ')
     elif line.find('TAU_CXXLIBS:') >= 0: tau_cxxlibs = line.replace('TAU_CXXLIBS:',' ')
-  return tau_instr,tau_defs,tau_include,tau_libs,tau_cxxlibs
+  return tau_instr,tau_defs,tau_include,tau_libs,tau_mpi_libs,tau_cxxlibs
   
 def main():
 
@@ -113,7 +116,7 @@ def main():
   if sourcefiles == [] and compileonly:
     sys.exit('Error: no sourcefiles specified with -c')
   # obtain TAU info from TAU makefile
-  tau_instr,tau_defs,tau_include,tau_libs,tau_cxxlibs = getTauFlags(tau_lib_dir)
+  tau_instr,tau_defs,tau_include,tau_libs,tau_mpi_libs,tau_cxxlibs = getTauFlags(tau_lib_dir)
   if sourcefiles != []:
     # Now Compile the sourcefiles
     for sourcefile in sourcefiles:
@@ -147,7 +150,7 @@ def main():
     libarg=''
     for libfile in libfiles:
       libarg += ' '+libfile
-    cmd1  = cc + ' ' + objarg +' '  + arglist + libarg + tau_libs + tau_cxxlibs
+    cmd1  = cc + ' ' + objarg +' '  + arglist + libarg + tau_mpi_libs + tau_libs + tau_cxxlibs
     runcmd(cmd1,verbose)
     if not leave_tmp: # delete the objfiles created
       for objfile in objfiles:
