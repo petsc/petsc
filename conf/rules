@@ -482,8 +482,15 @@ deleteshared:
 	do \
            echo ${RM} ${INSTALL_LIB_DIR}/$${LIBNAME}.${SL_LINKER_SUFFIX}; \
            ${RM} ${INSTALL_LIB_DIR}/$${LIBNAME}.${SL_LINKER_SUFFIX}; \
+	   if [ -d ${INSTALL_LIB_DIR}/$${LIBNAME}.dylib.dSYM ]; then \
+             echo ${RM} -rf ${INSTALL_LIB_DIR}/$${LIBNAME}.dylib.dSYM; \
+	     ${RM} -rf ${INSTALL_LIB_DIR}/$${LIBNAME}.dylib.dSYM; \
+	    fi; \
 	done
-	${RM} ${INSTALL_LIB_DIR}/so_locations
+	@if [ -f ${INSTALL_LIB_DIR}/so_locations ]; then \
+          echo ${RM} ${INSTALL_LIB_DIR}/so_locations; \
+          ${RM} ${INSTALL_LIB_DIR}/so_locations; \
+	fi
 
 noshared:
 # ---------------------------------------------------------------------------------------
@@ -930,7 +937,9 @@ shared_darwin7:
         if [ "${LIBNAME}" = "libpetsccontrib" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libslepc" ]; then OTHERLIBS="${PETSC_KSP_LIB_BASIC} ${SLEPC_EXTERNAL_LIB}"  ; fi;\
         if [ "${MACOSX_DEPLOYMENT_TARGET}" = "" ]; then MACOSX_DEPLOYMENT_TARGET=10.5; export MACOSX_DEPLOYMENT_TARGET; fi;\
-        ${LD_SHARED} -g  -dynamiclib -single_module -multiply_defined suppress -undefined dynamic_lookup ${DARWIN_COMMONS_USE_DYLIBS} -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o -L${PETSC_LIB_DIR}  $$OTHERLIBS
+        ${LD_SHARED} -g  -dynamiclib -single_module -multiply_defined suppress -undefined dynamic_lookup ${DARWIN_COMMONS_USE_DYLIBS} -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o -L${PETSC_LIB_DIR}  $$OTHERLIBS; \
+	if [ -f /usr/bin/dsymutil ]; then /usr/bin/dsymutil ${INSTALL_LIB_DIR}/$$LIBNAME.dylib; fi
+	
 
 shared_cygwin:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
