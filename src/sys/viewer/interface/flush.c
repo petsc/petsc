@@ -26,7 +26,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFlush(PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   if (viewer->ops->flush) {
     ierr = (*viewer->ops->flush)(viewer);CHKERRQ(ierr);
   }

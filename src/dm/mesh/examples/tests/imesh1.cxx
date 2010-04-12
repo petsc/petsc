@@ -702,7 +702,7 @@ public:
     PetscLogEvent  closureEvent;
     PetscErrorCode ierr;
 
-    ierr = PetscLogEventRegister("Closure", PETSC_OBJECT_COOKIE,&closureEvent);
+    ierr = PetscLogEventRegister("Closure", PETSC_OBJECT_CLASSID,&closureEvent);
     ALE::LogStagePush(stage);
     ierr = PetscLogEventBegin(closureEvent,0,0,0,0);
     const ALE::Obj<mesh_type::label_sequence>& cells      = this->_mesh->heightStratum(0);

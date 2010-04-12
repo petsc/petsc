@@ -626,7 +626,7 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCKSP_DLLEXPORT KSPFGMRESSetModifyPC_FGMRES(KSP ksp,FCN1 fcn,void *ctx,FCN2 d)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   ((KSP_FGMRES *)ksp->data)->modifypc      = fcn;
   ((KSP_FGMRES *)ksp->data)->modifydestroy = d;
   ((KSP_FGMRES *)ksp->data)->modifyctx     = ctx;

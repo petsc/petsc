@@ -65,7 +65,7 @@ PetscErrorCode MatHYPRE_IJMatrixCreate(Mat A,HYPRE_IJMatrix *ij)
   int            rstart,rend,cstart,cend;
   
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   PetscValidPointer(ij,2);
   ierr = MatPreallocated(A);CHKERRQ(ierr);
@@ -167,7 +167,7 @@ PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat A,HYPRE_IJMatrix ij)
   hypre_CSRMatrix       *hdiag,*hoffd;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   PetscValidPointer(ij,2);
 
@@ -206,7 +206,7 @@ PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A,HYPRE_IJMatrix ij)
   hypre_CSRMatrix       *hdiag,*hoffd;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   PetscValidPointer(ij,2);
   pdiag = (Mat_SeqAIJ*) pA->A->data;
@@ -271,7 +271,7 @@ PetscErrorCode MatHYPRE_IJMatrixLink(Mat A,HYPRE_IJMatrix *ij)
   hypre_AuxParCSRMatrix *aux_matrix;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   PetscValidPointer(ij,2);
   ierr = PetscTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
@@ -305,6 +305,7 @@ PetscErrorCode MatHYPRE_IJMatrixLink(Mat A,HYPRE_IJMatrix *ij)
    MATHYPRESTRUCT - MATHYPRESTRUCT = "hyprestruct" - A matrix type to be used for parallel sparse matrices
           based on the hypre HYPRE_StructMatrix.
 
+   Level: intermediate
 
    Notes: Unlike the more general support for blocks in hypre this allows only one block per process and requires the block
           be defined by a DA.
@@ -612,6 +613,8 @@ EXTERN_C_END
    MATHYPRESSTRUCT - MATHYPRESSTRUCT = "hypresstruct" - A matrix type to be used for parallel sparse matrices
           based on the hypre HYPRE_SStructMatrix.
   
+
+   Level: intermediate
   
    Notes: Unlike hypre's general semi-struct object consisting of a collection of structured-grid objects and unstructured
           grid objects, we will restrict the semi-struct objects to consist of only structured-grid components.

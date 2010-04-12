@@ -33,7 +33,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetParams(SNES snes,PetscReal a
   SNES_LS *ls;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
 
   ls = (SNES_LS*)snes->data;
   if (alpha   >= 0.0) ls->alpha   = alpha;
@@ -74,7 +74,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchGetParams(SNES snes,PetscReal *
   SNES_LS *ls;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
 
   ls = (SNES_LS*)snes->data;
   if (alpha) {

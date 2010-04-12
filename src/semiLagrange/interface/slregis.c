@@ -47,26 +47,26 @@ PetscErrorCode CharacteristicInitializePackage(const char path[])
   if (CharacteristicPackageInitialized) PetscFunctionReturn(0);
   CharacteristicPackageInitialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscCookieRegister("Method of Characteristics",&CHARACTERISTIC_COOKIE);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Method of Characteristics",&CHARACTERISTIC_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = CharacteristicRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister("MOCSetUp",         CHARACTERISTIC_COOKIE,&CHARACTERISTIC_SetUp);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MOCSolve",         CHARACTERISTIC_COOKIE,&CHARACTERISTIC_Solve);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MOCQueueSetup",    CHARACTERISTIC_COOKIE,&CHARACTERISTIC_QueueSetup);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MOCDAUpdate",      CHARACTERISTIC_COOKIE,&CHARACTERISTIC_DAUpdate);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MOCHalfTimeLocal", CHARACTERISTIC_COOKIE,&CHARACTERISTIC_HalfTimeLocal);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MOCHalfTimeRemot", CHARACTERISTIC_COOKIE,&CHARACTERISTIC_HalfTimeRemote);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MOCHalfTimeExchg", CHARACTERISTIC_COOKIE,&CHARACTERISTIC_HalfTimeExchange);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MOCFullTimeLocal", CHARACTERISTIC_COOKIE,&CHARACTERISTIC_FullTimeLocal);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MOCFullTimeRemot", CHARACTERISTIC_COOKIE,&CHARACTERISTIC_FullTimeRemote);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MOCFullTimeExchg", CHARACTERISTIC_COOKIE,&CHARACTERISTIC_FullTimeExchange);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MOCSetUp",         CHARACTERISTIC_CLASSID,&CHARACTERISTIC_SetUp);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MOCSolve",         CHARACTERISTIC_CLASSID,&CHARACTERISTIC_Solve);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MOCQueueSetup",    CHARACTERISTIC_CLASSID,&CHARACTERISTIC_QueueSetup);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MOCDAUpdate",      CHARACTERISTIC_CLASSID,&CHARACTERISTIC_DAUpdate);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MOCHalfTimeLocal", CHARACTERISTIC_CLASSID,&CHARACTERISTIC_HalfTimeLocal);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MOCHalfTimeRemot", CHARACTERISTIC_CLASSID,&CHARACTERISTIC_HalfTimeRemote);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MOCHalfTimeExchg", CHARACTERISTIC_CLASSID,&CHARACTERISTIC_HalfTimeExchange);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MOCFullTimeLocal", CHARACTERISTIC_CLASSID,&CHARACTERISTIC_FullTimeLocal);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MOCFullTimeRemot", CHARACTERISTIC_CLASSID,&CHARACTERISTIC_FullTimeRemote);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MOCFullTimeExchg", CHARACTERISTIC_CLASSID,&CHARACTERISTIC_FullTimeExchange);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "characteristic", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscInfoDeactivateClass(CHARACTERISTIC_COOKIE);CHKERRQ(ierr);
+      ierr = PetscInfoDeactivateClass(CHARACTERISTIC_CLASSID);CHKERRQ(ierr);
     }
   }
   /* Process summary exclusions */
@@ -74,7 +74,7 @@ PetscErrorCode CharacteristicInitializePackage(const char path[])
   if (opt) {
     ierr = PetscStrstr(logList, "characteristic", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogEventDeactivateClass(CHARACTERISTIC_COOKIE);CHKERRQ(ierr);
+      ierr = PetscLogEventDeactivateClass(CHARACTERISTIC_CLASSID);CHKERRQ(ierr);
     }
   }
   ierr = PetscRegisterFinalize(CharacteristicFinalizePackage);CHKERRQ(ierr);

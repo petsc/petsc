@@ -29,7 +29,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecContourScale(Vec v,PetscReal vmin,PetscReal
   PetscReal      scale;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
 
   if (PetscAbsReal(vmax - vmin) < 1.e-50) {
      scale = 1.0;

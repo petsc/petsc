@@ -76,7 +76,7 @@ E*/
 #define PCREDISTRIBUTE    "redistribute"
 
 /* Logging support */
-extern PetscCookie PETSCKSP_DLLEXPORT PC_COOKIE;
+extern PetscClassId PETSCKSP_DLLEXPORT PC_CLASSID;
 
 /*E
     PCSide - If the preconditioner is to be applied to the left, right
@@ -130,7 +130,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCRegister(const char[],const char[],co
    PCRegisterDynamic - Adds a method to the preconditioner package.
 
    Synopsis:
-   PetscErrorCode PCRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(PC))
+   PetscErrorCode PCRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(PC))
 
    Not collective
 

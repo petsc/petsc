@@ -292,7 +292,7 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    if (factor->fact->factor == MAT_FACTOR_ILU || factor->fact->factor == MAT_FACTOR_ICC){
+    if (factor->factortype == MAT_FACTOR_ILU || factor->factortype == MAT_FACTOR_ICC){
       if (factor->info.dt > 0) {
         ierr = PetscViewerASCIIPrintf(viewer,"  drop tolerance %G\n",factor->info.dt);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"  max nonzeros per row %D\n",factor->info.dtcount);CHKERRQ(ierr);
@@ -332,7 +332,7 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
     }
     
   } else if (isstring) {
-    if (factor->fact->factor == MAT_FACTOR_ILU || factor->fact->factor == MAT_FACTOR_ICC){
+    if (factor->factortype == MAT_FACTOR_ILU || factor->factortype == MAT_FACTOR_ICC){
       ierr = PetscViewerStringSPrintf(viewer," lvls=%D,order=%s",(PetscInt)factor->info.levels,factor->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
     }
   } else {

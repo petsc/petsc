@@ -6,7 +6,7 @@
 #include "petscsys.h"
 PETSC_EXTERN_CXX_BEGIN
 
-extern PetscCookie PETSC_DRAW_COOKIE;
+extern PetscClassId PETSC_DRAW_CLASSID;
 
 /*E
     PetscDrawType - String with the name of a PetscDraw 
@@ -42,7 +42,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawRegister(const char*,const char*,
    PetscDrawRegisterDynamic - Adds a method to the Krylov subspace solver package.
 
    Synopsis:
-   PetscErrorCode PetscDrawRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(PetscDraw))
+   PetscErrorCode PetscDrawRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(PetscDraw))
 
    Not Collective
 
@@ -238,7 +238,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsSet(PetscDrawViewPorts*,
 S*/
 typedef struct _p_DrawAxis* PetscDrawAxis;
 
-extern PetscCookie DRAWAXIS_COOKIE;
+extern PetscClassId DRAWAXIS_CLASSID;
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawAxisCreate(PetscDraw,PetscDrawAxis *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawAxisDestroy(PetscDrawAxis);
@@ -259,7 +259,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawAxisSetLabels(PetscDrawAxis,const
 S*/
 typedef struct _p_DrawLG*   PetscDrawLG;
 
-extern PetscCookie DRAWLG_COOKIE;
+extern PetscClassId DRAWLG_CLASSID;
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawLGCreate(PetscDraw,int,PetscDrawLG *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawLGDestroy(PetscDrawLG);
@@ -285,7 +285,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawLGSetLimits(PetscDrawLG,PetscReal
 S*/
 typedef struct _p_DrawSP*   PetscDrawSP;
 
-extern PetscCookie DRAWSP_COOKIE;
+extern PetscClassId DRAWSP_CLASSID;
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawSPCreate(PetscDraw,int,PetscDrawSP *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawSPDestroy(PetscDrawSP);
@@ -310,7 +310,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawLGSPDraw(PetscDrawLG,PetscDrawSP)
 S*/
 typedef struct _p_DrawHG*   PetscDrawHG;
 
-extern PetscCookie DRAWHG_COOKIE;
+extern PetscClassId DRAWHG_CLASSID;
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawHGCreate(PetscDraw,int,PetscDrawHG *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawHGDestroy(PetscDrawHG);

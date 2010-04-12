@@ -9,7 +9,7 @@
 #include "private/vecimpl.h"             /*I "petscvec.h" I*/
 
 /* Logging support */
-PetscCookie PETSCVEC_DLLEXPORT VEC_SCATTER_COOKIE;
+PetscClassId PETSCVEC_DLLEXPORT VEC_SCATTER_CLASSID;
 
 #if defined(PETSC_USE_DEBUG)
 /*
@@ -743,7 +743,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateEmpty(MPI_Comm comm,VecScatter
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscHeaderCreate(ctx,_p_VecScatter,int,VEC_SCATTER_COOKIE,0,"VecScatter",comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(ctx,_p_VecScatter,int,VEC_SCATTER_CLASSID,0,"VecScatter",comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
   ctx->inuse               = PETSC_FALSE;
   ctx->beginandendtogether = PETSC_FALSE;
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-vecscatter_merge",&ctx->beginandendtogether,PETSC_NULL);CHKERRQ(ierr);
@@ -778,26 +778,28 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateEmpty(MPI_Comm comm,VecScatter
 .  newctx - location to store the new scatter context
 
    Options Database Keys: (uses regular MPI_Sends by default)
-+  -vecscatter_ssend        - Uses MPI_Ssend_init() instead of MPI_Send_init() 
++  -vecscatter_view         - Prints detail of communications
+.  -vecscatter_view_info    - Print less details about communication
+.  -vecscatter_ssend        - Uses MPI_Ssend_init() instead of MPI_Send_init() 
 .  -vecscatter_rsend           - use ready receiver mode for MPI sends 
 .  -vecscatter_merge        - VecScatterBegin() handles all of the communication, VecScatterEnd() is a nop 
                               eliminates the chance for overlap of computation and communication 
 .  -vecscatter_sendfirst    - Posts sends before receives 
 .  -vecscatter_packtogether - Pack all messages before sending, receive all messages before unpacking
 .  -vecscatter_alltoall     - Uses MPI all to all communication for scatter
+.  -vecscatter_window       - Use MPI 2 window operations to move data
 -  -vecscatter_nopack       - Avoid packing to work vector when possible (if used with -vecscatter_alltoall then will use MPI_Alltoallw()
 
 $
 $                                                                                    --When packing is used--
-$                               MPI Datatypes (no packing)  sendfirst   merge        packtogether  persistent*    -vecscatter_
-$
+$                               MPI Datatypes (no packing)  sendfirst   merge        packtogether  persistent*    
+$                                _nopack                   _sendfirst    _merge      _packtogether                -vecscatter_
+$ ----------------------------------------------------------------------------------------------------------------------------
 $    Message passing    Send       p                           X            X           X         always
 $                      Ssend       p                           X            X           X         always          _ssend
 $                      Rsend       p                        nonsense        X           X         always          _rsend
 $    AlltoAll  v or w              X                        nonsense     always         X         nonsense        _alltoall
 $    MPI_Win                       p                        nonsense        p           p         nonsense        _window
-$
-$               -vecscatter_     _nopack                   _sendfirst    _merge      _packtogether  
 $                              
 $   Since persistent sends and receives require a constant memory address they can only be used when data is packed into the work vector
 $   because the in and out array may be different for each call to VecScatterBegin/End().
@@ -854,7 +856,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
   if (size > 1) {comm = ycomm; yin_type = VEC_MPI_ID;}
   
   /* generate the Scatter context */
-  ierr = PetscHeaderCreate(ctx,_p_VecScatter,int,VEC_SCATTER_COOKIE,0,"VecScatter",comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(ctx,_p_VecScatter,int,VEC_SCATTER_CLASSID,0,"VecScatter",comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
   ctx->inuse               = PETSC_FALSE;
 
   ctx->beginandendtogether = PETSC_FALSE;
@@ -1462,7 +1464,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
 PetscErrorCode PETSCVEC_DLLEXPORT VecScatterGetMerged(VecScatter ctx,PetscTruth *flg)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE,1);
+  PetscValidHeaderSpecific(ctx,VEC_SCATTER_CLASSID,1);
   *flg = ctx->beginandendtogether;
   PetscFunctionReturn(0);
 }
@@ -1523,9 +1525,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterBegin(VecScatter inctx,Vec x,Vec y,I
 #endif
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(inctx,VEC_SCATTER_COOKIE,1);
-  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
-  PetscValidHeaderSpecific(y,VEC_COOKIE,3);
+  PetscValidHeaderSpecific(inctx,VEC_SCATTER_CLASSID,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   if (inctx->inuse) SETERRQ(PETSC_ERR_ARG_WRONGSTATE," Scatter ctx already in use");
   CHKMEMQ;
 
@@ -1592,9 +1594,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterEnd(VecScatter ctx,Vec x,Vec y,Inser
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE,1);
-  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
-  PetscValidHeaderSpecific(y,VEC_COOKIE,3);
+  PetscValidHeaderSpecific(ctx,VEC_SCATTER_CLASSID,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   ctx->inuse = PETSC_FALSE;
   if (!ctx->end) PetscFunctionReturn(0);
   CHKMEMQ;
@@ -1627,7 +1629,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterDestroy(VecScatter ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE,1);
+  PetscValidHeaderSpecific(ctx,VEC_SCATTER_CLASSID,1);
   if (--((PetscObject)ctx)->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
@@ -1659,10 +1661,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCopy(VecScatter sctx,VecScatter *ctx
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(sctx,VEC_SCATTER_COOKIE,1);
+  PetscValidHeaderSpecific(sctx,VEC_SCATTER_CLASSID,1);
   PetscValidPointer(ctx,2);
   if (!sctx->copy) SETERRQ(PETSC_ERR_SUP,"Cannot copy this type");
-  ierr = PetscHeaderCreate(*ctx,_p_VecScatter,int,VEC_SCATTER_COOKIE,0,"VecScatter",((PetscObject)sctx)->comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(*ctx,_p_VecScatter,int,VEC_SCATTER_CLASSID,0,"VecScatter",((PetscObject)sctx)->comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
   (*ctx)->to_n   = sctx->to_n;
   (*ctx)->from_n = sctx->from_n;
   ierr = (*sctx->copy)(sctx,*ctx);CHKERRQ(ierr);
@@ -1690,11 +1692,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterView(VecScatter ctx,PetscViewer view
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE,1);
+  PetscValidHeaderSpecific(ctx,VEC_SCATTER_CLASSID,1);
   if (!viewer) {
     ierr = PetscViewerASCIIGetStdout(((PetscObject)ctx)->comm,&viewer);CHKERRQ(ierr);
   }
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   if (ctx->view) {
     ierr = (*ctx->view)(ctx,viewer);CHKERRQ(ierr);
   }
@@ -1732,7 +1734,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterRemap(VecScatter scat,PetscInt *rto,
   PetscInt               i;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(scat,VEC_SCATTER_COOKIE,1);
+  PetscValidHeaderSpecific(scat,VEC_SCATTER_CLASSID,1);
   if (rto)   {PetscValidIntPointer(rto,2);}
   if (rfrom) {PetscValidIntPointer(rfrom,3);}
 

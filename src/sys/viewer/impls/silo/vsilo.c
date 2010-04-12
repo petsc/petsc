@@ -57,7 +57,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloGetFilePointer(PetscViewer viewer,
   Viewer_Silo *silo = (Viewer_Silo *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(fd,2);
   *fd = silo->file_pointer;
   PetscFunctionReturn(0);
@@ -98,7 +98,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloOpen(MPI_Comm comm, const char nam
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscHeaderCreate(v, _p_PetscViewer, struct _PetscViewerOps, PETSC_VIEWER_COOKIE, -1, PETSC_VIEWER_SILO, comm, PetscViewerDestroy, 0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(v, _p_PetscViewer, struct _PetscViewerOps, PETSC_VIEWER_CLASSID, -1, PETSC_VIEWER_SILO, comm, PetscViewerDestroy, 0);CHKERRQ(ierr);
   ierr            = PetscNewLog(v,Viewer_Silo,&silo); CHKPTRQ(silo);
   v->data         = (void*)silo;
   v->ops->destroy = PetscViewerDestroy_Silo;
@@ -182,7 +182,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloGetName(PetscViewer viewer, char *
   PetscViewer_Silo *vsilo = (PetscViewer_Silo *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(name,2);
   *name = vsilo->objName;
   PetscFunctionReturn(0);
@@ -207,7 +207,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloSetName(PetscViewer viewer, char *
   Viewer_Silo *vsilo = (Viewer_Silo *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(name,2);
   vsilo->objName = name;
   PetscFunctionReturn(0);
@@ -231,7 +231,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloClearName(PetscViewer viewer)
   Viewer_Silo *vsilo = (Viewer_Silo *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID,1);
   vsilo->objName = PETSC_NULL;
   PetscFunctionReturn(0);
 }
@@ -257,7 +257,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloGetMeshName(PetscViewer viewer, ch
   Viewer_Silo *vsilo = (Viewer_Silo *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(name,2);
   *name = vsilo->meshName;
   PetscFunctionReturn(0);
@@ -282,7 +282,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloSetMeshName(PetscViewer viewer, ch
   Viewer_Silo *vsilo = (Viewer_Silo *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID,1);
   PetscValidCharPointer(name,2);
   vsilo->meshName = name;
   PetscFunctionReturn(0);
@@ -306,7 +306,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloClearMeshName(PetscViewer viewer)
   Viewer_Silo *vsilo = (Viewer_Silo *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID,1);
   vsilo->meshName = PETSC_NULL;
   PetscFunctionReturn(0);
 }

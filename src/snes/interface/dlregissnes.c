@@ -49,20 +49,20 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESInitializePackage(const char path[])
   if (SNESPackageInitialized) PetscFunctionReturn(0);
   SNESPackageInitialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscCookieRegister("SNES",&SNES_COOKIE);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("SNES",&SNES_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = SNESRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister("SNESSolve",        SNES_COOKIE,&SNES_Solve);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("SNESLineSearch",   SNES_COOKIE,&SNES_LineSearch);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("SNESFunctionEval", SNES_COOKIE,&SNES_FunctionEval);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("SNESJacobianEval", SNES_COOKIE,&SNES_JacobianEval);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SNESSolve",        SNES_CLASSID,&SNES_Solve);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SNESLineSearch",   SNES_CLASSID,&SNES_LineSearch);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SNESFunctionEval", SNES_CLASSID,&SNES_FunctionEval);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SNESJacobianEval", SNES_CLASSID,&SNES_JacobianEval);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "snes", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscInfoDeactivateClass(SNES_COOKIE);CHKERRQ(ierr);
+      ierr = PetscInfoDeactivateClass(SNES_CLASSID);CHKERRQ(ierr);
     }
   }
   /* Process summary exclusions */
@@ -70,7 +70,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESInitializePackage(const char path[])
   if (opt) {
     ierr = PetscStrstr(logList, "snes", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogEventDeactivateClass(SNES_COOKIE);CHKERRQ(ierr);
+      ierr = PetscLogEventDeactivateClass(SNES_CLASSID);CHKERRQ(ierr);
     }
   }
   ierr = PetscRegisterFinalize(SNESFinalizePackage);CHKERRQ(ierr);

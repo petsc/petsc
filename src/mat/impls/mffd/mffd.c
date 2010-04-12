@@ -6,7 +6,7 @@
 PetscFList MatMFFDList        = 0;
 PetscTruth MatMFFDRegisterAllCalled = PETSC_FALSE;
 
-PetscCookie PETSCMAT_DLLEXPORT MATMFFD_COOKIE;
+PetscClassId PETSCMAT_DLLEXPORT MATMFFD_CLASSID;
 PetscLogEvent  MATMFFD_Mult;
 
 static PetscTruth MatMFFDPackageInitialized = PETSC_FALSE;
@@ -56,18 +56,18 @@ PetscErrorCode PETSCVEC_DLLEXPORT MatMFFDInitializePackage(const char path[])
   if (MatMFFDPackageInitialized) PetscFunctionReturn(0);
   MatMFFDPackageInitialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscCookieRegister("MatMFFD",&MATMFFD_COOKIE);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("MatMFFD",&MATMFFD_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = MatMFFDRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister("MatMult MF",          MATMFFD_COOKIE,&MATMFFD_Mult);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMult MF",          MATMFFD_CLASSID,&MATMFFD_Mult);CHKERRQ(ierr);
 
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "matmffd", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscInfoDeactivateClass(MATMFFD_COOKIE);CHKERRQ(ierr);
+      ierr = PetscInfoDeactivateClass(MATMFFD_CLASSID);CHKERRQ(ierr);
     }
   }
   /* Process summary exclusions */
@@ -75,7 +75,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT MatMFFDInitializePackage(const char path[])
   if (opt) {
     ierr = PetscStrstr(logList, "matmffd", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogEventDeactivateClass(MATMFFD_COOKIE);CHKERRQ(ierr);
+      ierr = PetscLogEventDeactivateClass(MATMFFD_CLASSID);CHKERRQ(ierr);
     }
   }
   ierr = PetscRegisterFinalize(MatMFFDFinalizePackage);CHKERRQ(ierr);
@@ -112,7 +112,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetType(Mat mat,const MatMFFDType ftype
   PetscTruth     match;
   
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidCharPointer(ftype,2);
 
   /* already set, so just return */
@@ -262,7 +262,7 @@ PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
    MatAssemblyEnd_MFFD - Resets the ctx->ncurrenth to zero. This 
    allows the user to indicate the beginning of a new linear solve by calling
    MatAssemblyXXX() on the matrix free matrix. This then allows the 
-   MatMFFDCreate_WP() to properly compute ||U|| only the first time
+   MatCreateMFFD_WP() to properly compute ||U|| only the first time
    in the linear solver rather than every time.
 */
 PetscErrorCode MatAssemblyEnd_MFFD(Mat J,MatAssemblyType mt)
@@ -505,8 +505,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetOptionsPrefix(Mat mat,const char pre
   MatMFFD        mfctx = mat ? (MatMFFD)mat->data : PETSC_NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
-  PetscValidHeaderSpecific(mfctx,MATMFFD_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(mfctx,MATMFFD_CLASSID,1);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)mfctx,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -531,8 +531,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetOptionsPrefix(Mat mat,const char pre
 
 .keywords: SNES, matrix-free, parameters
 
-.seealso: MatCreateSNESMF(),MatMFFDSetHHistory(), 
-          MatMFFDResetHHistory(), MatMFFDKSPMonitor()
+.seealso: MatCreateSNESMF(),MatMFFDSetHHistory(), MatMFFDResetHHistory()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFromOptions(Mat mat)
 {
@@ -542,8 +541,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFromOptions(Mat mat)
   char           ftype[256];
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
-  PetscValidHeaderSpecific(mfctx,MATMFFD_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(mfctx,MATMFFD_CLASSID,1);
   ierr = PetscOptionsBegin(((PetscObject)mfctx)->comm,((PetscObject)mfctx)->prefix,"Set matrix free computation parameters","MatMFFD");CHKERRQ(ierr);
   ierr = PetscOptionsList("-mat_mffd_type","Matrix free type","MatMFFDSetType",MatMFFDList,((PetscObject)mfctx)->type_name,ftype,256,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -585,7 +584,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MFFD(Mat A)
   ierr = MatMFFDInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(mfctx,_p_MatMFFD,struct _MFOps,MATMFFD_COOKIE,0,"MatMFFD",((PetscObject)A)->comm,MatDestroy_MFFD,MatView_MFFD);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(mfctx,_p_MatMFFD,struct _MFOps,MATMFFD_CLASSID,0,"MatMFFD",((PetscObject)A)->comm,MatDestroy_MFFD,MatView_MFFD);CHKERRQ(ierr);
   mfctx->sp              = 0;
   mfctx->error_rel       = PETSC_SQRT_MACHINE_EPSILON;
   mfctx->recomputeperiod = 1;
@@ -683,7 +682,7 @@ EXTERN_C_END
 .ve
 
    The user can set the error_rel via MatMFFDSetFunctionError() and 
-   umin via MatMFFDDefaultSetUmin(); see the nonlinear solvers chapter
+   umin via MatMFFDDSSetUmin(); see the nonlinear solvers chapter
    of the users manual for details.
 
    The user should call MatDestroy() when finished with the matrix-free
@@ -692,14 +691,13 @@ EXTERN_C_END
    Options Database Keys:
 +  -mat_mffd_err <error_rel> - Sets error_rel
 .  -mat_mffd_unim <umin> - Sets umin (for default PETSc routine that computes h only)
-.  -mat_mffd_ksp_monitor - KSP monitor routine that prints differencing h
 -  -mat_mffd_check_positivity
 
 .keywords: default, matrix-free, create, matrix
 
-.seealso: MatDestroy(), MatMFFDSetFunctionError(), MatMFFDDefaultSetUmin(), MatMFFDSetFunction()
+.seealso: MatDestroy(), MatMFFDSetFunctionError(), MatMFFDDSSetUmin(), MatMFFDSetFunction()
           MatMFFDSetHHistory(), MatMFFDResetHHistory(), MatCreateSNESMF(), 
-          MatMFFDGetH(),MatMFFDKSPMonitor(), MatMFFDRegisterDynamic),, MatMFFDComputeJacobian()
+          MatMFFDGetH(), MatMFFDRegisterDynamic), MatMFFDComputeJacobian()
  
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMFFD(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,Mat *J)
@@ -732,8 +730,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMFFD(MPI_Comm comm,PetscInt m,PetscIn
 
 .keywords: SNES, matrix-free, parameters
 
-.seealso: MatCreateSNESMF(),MatMFFDSetHHistory(), MatCreateMFFD(), MATMFFD
-          MatMFFDResetHHistory(),MatMFFDKSPMonitor()
+.seealso: MatCreateSNESMF(),MatMFFDSetHHistory(), MatCreateMFFD(), MATMFFD, MatMFFDResetHHistory()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDGetH(Mat mat,PetscScalar *h)
 {
@@ -767,9 +764,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDGetH(Mat mat,PetscScalar *h)
 
 .keywords: SNES, matrix-free, function
 
-.seealso: MatCreateSNESMF(),MatMFFDGetH(), MatCreateMFFD(), MATMFFD
-          MatMFFDSetHHistory(), MatMFFDResetHHistory(),
-          MatMFFDKSPMonitor(), SNESetFunction()
+.seealso: MatCreateSNESMF(),MatMFFDGetH(), MatCreateMFFD(), MATMFFD,
+          MatMFFDSetHHistory(), MatMFFDResetHHistory(), SNESetFunction()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunction(Mat mat,PetscErrorCode (*func)(void*,Vec,Vec),void *funcctx)
 {
@@ -801,16 +797,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunction(Mat mat,PetscErrorCode (*fu
 
 .keywords: SNES, matrix-free, function
 
-.seealso: MatCreateSNESMF(),MatMFFDGetH(),
-          MatMFFDSetHHistory(), MatMFFDResetHHistory(),
-          MatMFFDKSPMonitor(), SNESetFunction()
+.seealso: MatCreateSNESMF(),MatMFFDGetH(), MatMFFDSetHHistory(), MatMFFDResetHHistory(), SNESetFunction()
+
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctioni(Mat mat,PetscErrorCode (*funci)(void*,PetscInt,Vec,PetscScalar*))
 {
   PetscErrorCode ierr,(*f)(Mat,PetscErrorCode (*)(void*,PetscInt,Vec,PetscScalar*));
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   ierr = PetscObjectQueryFunction((PetscObject)mat,"MatMFFDSetFunctioni_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(mat,funci);CHKERRQ(ierr);
@@ -840,15 +835,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctioni(Mat mat,PetscErrorCode (*f
 .keywords: SNES, matrix-free, function
 
 .seealso: MatCreateSNESMF(),MatMFFDGetH(), MatCreateMFFD(), MATMFFD
-          MatMFFDSetHHistory(), MatMFFDResetHHistory(),
-          MatMFFDKSPMonitor(), SNESetFunction()
+          MatMFFDSetHHistory(), MatMFFDResetHHistory(), SNESetFunction()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctioniBase(Mat mat,PetscErrorCode (*func)(void*,Vec))
 {
   PetscErrorCode ierr,(*f)(Mat,PetscErrorCode (*)(void*,Vec));
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   ierr = PetscObjectQueryFunction((PetscObject)mat,"MatMFFDSetFunctioniBase_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(mat,func);CHKERRQ(ierr);
@@ -877,8 +871,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctioniBase(Mat mat,PetscErrorCode
 .keywords: SNES, matrix-free, parameters
 
 .seealso: MatCreateSNESMF(),MatMFFDGetH(),
-          MatMFFDSetHHistory(), MatMFFDResetHHistory(),
-          MatMFFDKSPMonitor()
+          MatMFFDSetHHistory(), MatMFFDResetHHistory()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetPeriod(Mat mat,PetscInt period)
 {
@@ -918,8 +911,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetPeriod(Mat mat,PetscInt period)
 .keywords: SNES, matrix-free, parameters
 
 .seealso: MatCreateSNESMF(),MatMFFDGetH(), MatCreateMFFD(), MATMFFD
-          MatMFFDSetHHistory(), MatMFFDResetHHistory(),
-          MatMFFDKSPMonitor()
+          MatMFFDSetHHistory(), MatMFFDResetHHistory()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctionError(Mat mat,PetscReal error)
 {
@@ -949,8 +941,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctionError(Mat mat,PetscReal erro
 .keywords: SNES, matrix-free, null space
 
 .seealso: MatNullSpaceCreate(), MatMFFDGetH(), MatCreateSNESMF(), MatCreateMFFD(), MATMFFD
-          MatMFFDSetHHistory(), MatMFFDResetHHistory(),
-          MatMFFDKSPMonitor(), MatMFFDErrorRel()
+          MatMFFDSetHHistory(), MatMFFDResetHHistory()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDAddNullSpace(Mat J,MatNullSpace nullsp)
 {
@@ -987,8 +978,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDAddNullSpace(Mat J,MatNullSpace nullsp)
 .keywords: SNES, matrix-free, h history, differencing history
 
 .seealso: MatMFFDGetH(), MatCreateSNESMF(),
-          MatMFFDResetHHistory(),
-          MatMFFDKSPMonitor(), MatMFFDSetFunctionError()
+          MatMFFDResetHHistory(), MatMFFDSetFunctionError()
 
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetHHistory(Mat J,PetscScalar history[],PetscInt nhistory)
@@ -1021,8 +1011,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetHHistory(Mat J,PetscScalar history[]
 .keywords: SNES, matrix-free, h history, differencing history
 
 .seealso: MatMFFDGetH(), MatCreateSNESMF(),
-          MatMFFDSetHHistory(),
-          MatMFFDKSPMonitor(), MatMFFDSetFunctionError()
+          MatMFFDSetHHistory(), MatMFFDSetFunctionError()
 
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDResetHHistory(Mat J)
@@ -1061,9 +1050,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase(Mat J,Vec U,Vec F)
   PetscErrorCode ierr,(*f)(Mat,Vec,Vec);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(J,MAT_COOKIE,1);
-  PetscValidHeaderSpecific(U,VEC_COOKIE,2);
-  if (F) PetscValidHeaderSpecific(F,VEC_COOKIE,3);
+  PetscValidHeaderSpecific(J,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(U,VEC_CLASSID,2);
+  if (F) PetscValidHeaderSpecific(F,VEC_CLASSID,3);
   ierr = PetscObjectQueryFunction((PetscObject)J,"MatMFFDSetBase_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(J,U,F);CHKERRQ(ierr);
@@ -1099,7 +1088,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetCheckh(Mat J,PetscErrorCode (*fun)(v
   PetscErrorCode ierr,(*f)(Mat,PetscErrorCode (*)(void*,Vec,Vec,PetscScalar*),void*);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(J,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(J,MAT_CLASSID,1);
   ierr = PetscObjectQueryFunction((PetscObject)J,"MatMFFDSetCheckh_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(J,fun,ctx);CHKERRQ(ierr);

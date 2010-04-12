@@ -229,7 +229,8 @@ class Configure(config.base.Configure):
     includes = []
     libs = []
     for i in self.framework.packages:
-      self.addDefine('HAVE_'+i.PACKAGE, 1)
+      if i.useddirectly:
+        self.addDefine('HAVE_'+i.PACKAGE, 1)  # ONLY list package if it is used directly by PETSc (and not only by another package)
       if not isinstance(i.lib, list):
         i.lib = [i.lib]
       libs.extend(i.lib)
@@ -493,7 +494,8 @@ class Configure(config.base.Configure):
     f.write('#!'+sys.executable+'\n')
     f.write('if __name__ == \'__main__\':\n')
     f.write('  import sys\n')
-    f.write('  sys.path.insert(0, '+repr(os.path.join(self.petscdir.dir, 'config'))+')\n')
+    f.write('  import os\n')
+    f.write('  sys.path.insert(0, os.path.abspath(\'config\'))\n')
     f.write('  import configure\n')
     # pretty print repr(args.values())
     f.write('  configure_options = [\n')

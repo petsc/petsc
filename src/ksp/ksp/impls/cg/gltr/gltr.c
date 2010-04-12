@@ -33,7 +33,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRSetRadius(KSP ksp, PetscReal radius)
   PetscErrorCode ierr, (*f)(KSP, PetscReal);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_COOKIE, 1);
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (radius < 0.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE, "Radius negative");
   ierr = PetscObjectQueryFunction((PetscObject)ksp, "KSPGLTRSetRadius_C", (void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -62,7 +62,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetNormD(KSP ksp, PetscReal *norm_d)
   PetscErrorCode ierr, (*f)(KSP, PetscReal *);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_COOKIE, 1);
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   ierr = PetscObjectQueryFunction((PetscObject)ksp, "KSPGLTRGetNormD_C", (void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp, norm_d);CHKERRQ(ierr);
@@ -90,7 +90,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetObjFcn(KSP ksp, PetscReal *o_fcn)
   PetscErrorCode ierr, (*f)(KSP, PetscReal *);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_COOKIE, 1);
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   ierr = PetscObjectQueryFunction((PetscObject)ksp, "KSPGLTRGetObjFcn_C", (void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp, o_fcn);CHKERRQ(ierr);
@@ -118,7 +118,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min)
   PetscErrorCode ierr, (*f)(KSP, PetscReal *);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_COOKIE, 1);
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   ierr = PetscObjectQueryFunction((PetscObject)ksp, "KSPGLTRGetMinEig_C", (void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp, e_min);CHKERRQ(ierr);
@@ -146,7 +146,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetLambda(KSP ksp, PetscReal *lambda)
   PetscErrorCode ierr, (*f)(KSP, PetscReal *);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_COOKIE, 1);
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   ierr = PetscObjectQueryFunction((PetscObject)ksp, "KSPGLTRGetLambda_C", (void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp, lambda);CHKERRQ(ierr);

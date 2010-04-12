@@ -104,7 +104,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideGetInfo(IS is,PetscInt *first,PetscInt
   IS_Stride *sub;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
   if (first) PetscValidIntPointer(first,2);
   if (step) PetscValidIntPointer(step,3);
 
@@ -138,7 +138,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideGetInfo(IS is,PetscInt *first,PetscInt
 PetscErrorCode PETSCVEC_DLLEXPORT ISStride(IS is,PetscTruth *flag)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(flag,2);
 
   if (((PetscObject)is)->type != IS_STRIDE) *flag = PETSC_FALSE;
@@ -335,7 +335,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateStride(MPI_Comm comm,PetscInt n,PetscI
   ierr = ISInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_STRIDE,"IS",comm,ISDestroy,ISView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_CLASSID,IS_STRIDE,"IS",comm,ISDestroy,ISView);CHKERRQ(ierr);
   ierr = PetscNewLog(Nindex,IS_Stride,&sub);CHKERRQ(ierr);
   sub->n         = n;
   ierr = MPI_Allreduce(&n,&sub->N,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);

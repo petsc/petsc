@@ -67,7 +67,7 @@
 !
 #define PetscEnum PetscFortranInt
 #define PetscErrorCode PetscFortranInt
-#define PetscCookie PetscFortranInt
+#define PetscClassId PetscFortranInt
 #define PetscLogEvent PetscFortranInt
 #define PetscLogStage PetscFortranInt
 #define PetscVoid PetscFortranAddr

@@ -355,7 +355,7 @@ static PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
   } else if (format == PETSC_VIEWER_ASCII_MATLAB) {
     Mat aij;
 
-    if (A->factor && bs>1){
+    if (A->factortype && bs>1){
       ierr = PetscPrintf(PETSC_COMM_SELF,"Warning: matrix is factored with bs>1. MatView() with PETSC_VIEWER_ASCII_MATLAB is not supported and ignored!\n");CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
@@ -393,7 +393,7 @@ static PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
   } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
      PetscFunctionReturn(0);
   } else {
-    if (A->factor && bs>1){
+    if (A->factortype && bs>1){
       ierr = PetscPrintf(PETSC_COMM_SELF,"Warning: matrix is factored. MatView_SeqSBAIJ_ASCII() may not display complete or logically correct entries!\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
@@ -1036,8 +1036,8 @@ PetscErrorCode MatICCFactor_SeqSBAIJ(Mat inA,IS row,const MatFactorInfo *info)
   if (!row_identity) SETERRQ(PETSC_ERR_SUP,"Matrix reordering is not supported");
   if (inA->rmap->bs != 1) SETERRQ1(PETSC_ERR_SUP,"Matrix block size %D is not supported",inA->rmap->bs); /* Need to replace MatCholeskyFactorSymbolic_SeqSBAIJ_MSR()! */
 
-  outA        = inA; 
-  inA->factor = MAT_FACTOR_ICC;
+  outA            = inA; 
+  inA->factortype = MAT_FACTOR_ICC;
   
   ierr = MatMarkDiagonal_SeqSBAIJ(inA);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetNumericFactorization_inplace(inA,row_identity);CHKERRQ(ierr);
@@ -1113,7 +1113,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetColumnIndices(Mat mat,PetscInt *
   PetscErrorCode ierr,(*f)(Mat,PetscInt *);
   
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(indices,2);
   ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSeqSBAIJSetColumnIndices_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -1367,11 +1367,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
 /*79*/ 0,
        0,
        0,
-#if !defined(PETSC_USE_COMPLEX)
        MatGetInertia_SeqSBAIJ,
-#else
-       0,
-#endif
        MatLoad_SeqSBAIJ,
 /*84*/ MatIsSymmetric_SeqSBAIJ,
        MatIsHermitian_SeqSBAIJ,
@@ -1715,7 +1711,7 @@ PetscErrorCode MatGetFactor_seqsbaij_petsc(Mat A,MatFactorType ftype,Mat *B)
     (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJ;
     (*B)->ops->iccfactorsymbolic      = MatICCFactorSymbolic_SeqSBAIJ;
   } else SETERRQ(PETSC_ERR_SUP,"Factor type not supported");
-  (*B)->factor = ftype;
+  (*B)->factortype = ftype;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -1999,7 +1995,7 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c    = (Mat_SeqSBAIJ*)C->data;
 
   C->preallocated       = PETSC_TRUE;
-  C->factor             = A->factor;
+  C->factortype         = A->factortype;
   c->row                = 0;
   c->icol               = 0;
   c->saved_values       = 0;
@@ -2115,7 +2111,7 @@ PetscErrorCode MatLoad_SeqSBAIJ(PetscViewer viewer, const MatType type,Mat *A)
   if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,"view must have one processor");
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,header,4,PETSC_INT);CHKERRQ(ierr);
-  if (header[0] != MAT_FILE_COOKIE) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"not Mat object");
+  if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"not Mat object");
   M = header[1]; N = header[2]; nz = header[3];
 
   if (header[3] < 0) {

@@ -15,8 +15,6 @@ typedef struct {
   PetscInt       cycles;                       /* Type of cycle to run: 1 V 2 W */
   PetscInt       level;                        /* level = 0 coarsest level */
   PetscInt       levels;                       /* number of active levels used */
-  PetscTruth     galerkin;                     /* use Galerkin process to compute coarser matrices */
-  PetscTruth     galerkinused;                 /* destroy the Mat created by the Galerkin process */
   Vec            b;                            /* Right hand side */ 
   Vec            x;                            /* Solution */
   Vec            r;                            /* Residual */
@@ -35,6 +33,8 @@ typedef struct {
   PCMGType      am;                           /* Multiplicative, additive or full */
   PetscInt      cyclesperpcapply;             /* Number of cycles to use in each PCApply(), multiplicative only*/
   PetscInt      maxlevels;                    /* total number of levels allocated */
+  PetscTruth    galerkin;                     /* use Galerkin process to compute coarser matrices */
+  PetscTruth    galerkinused;                 /* destroy the Mat created by the Galerkin process */
 
   PetscInt      nlevels;
   PC_MG_Levels  **levels;

@@ -349,6 +349,8 @@ char **PetscGlobalArgs = 0;
       This is usually used to pass the command line arguments into other libraries
    that are called internally deep in PETSc or the application.
 
+      The first argument contains the program name as is normal for C arguments.
+
    Concepts: command line arguments
    
 .seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArguments()
@@ -518,10 +520,12 @@ $       call PetscInitialize(file,ierr)
    null character string; you CANNOT just use PETSC_NULL as 
    in the C version.  See the users manual for details.
 
+   If your main program is C but you call Fortran code that also uses PETSc you need to call PetscInitializeFortran() soon after 
+   calling PetscInitialize().
 
    Concepts: initializing PETSc
    
-.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs()
+.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscInitializeNoArguments()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char file[],const char help[])

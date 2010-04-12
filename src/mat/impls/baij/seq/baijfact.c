@@ -511,7 +511,7 @@ PetscErrorCode MatGetFactor_seqbaij_petsc(Mat A,MatFactorType ftype,Mat *B)
     (*B)->ops->iccfactorsymbolic      = MatICCFactorSymbolic_SeqBAIJ;
     (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqBAIJ;
   } else SETERRQ(PETSC_ERR_SUP,"Factor type not supported");
-  (*B)->factor = ftype;
+  (*B)->factortype = ftype;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -854,10 +854,10 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFact
       b->ilen[i] = ui[i]; 
     }
     ierr = PetscFree(ui);CHKERRQ(ierr);
-    B->factor = MAT_FACTOR_NONE;
+    B->factortype = MAT_FACTOR_NONE;
     ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    B->factor = MAT_FACTOR_ICC;
+    B->factortype = MAT_FACTOR_ICC;
 
     B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering;
     PetscFunctionReturn(0);
@@ -1390,7 +1390,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   ierr = PetscLogObjectMemory(B,nnz_max*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
   b->maxnz = nnz_max/bs2;
 
-  (B)->factor                = MAT_FACTOR_ILUDT;
+  (B)->factortype            = MAT_FACTOR_ILUDT;
   (B)->info.factor_mallocs   = 0;
   (B)->info.fill_ratio_given = ((PetscReal)nnz_max)/((PetscReal)(ai[mbs]*bs2));
   CHKMEMQ;

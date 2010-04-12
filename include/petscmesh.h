@@ -35,7 +35,7 @@ E*/
 #define MESHCARTESIAN "cartesian"
 
 /* Logging support */
-extern PetscCookie PETSCDM_DLLEXPORT MESH_COOKIE;
+extern PetscClassId PETSCDM_DLLEXPORT MESH_CLASSID;
 extern PetscLogEvent  Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assembleVector,
   Mesh_assembleVectorComplete, Mesh_assembleMatrix, Mesh_updateOperator;
 
@@ -55,7 +55,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalIndices(Mesh,PetscInt*[]);
    MeshRegisterDynamic - Adds a type to the Mesh package.
 
    Synopsis:
-   PetscErrorCode MeshRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(Mesh))
+   PetscErrorCode MeshRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(Mesh))
 
    Not Collective
 
@@ -158,7 +158,7 @@ S*/
 typedef struct _p_SectionReal* SectionReal;
 
 /* Logging support */
-extern PetscCookie PETSCDM_DLLEXPORT SECTIONREAL_COOKIE;
+extern PetscClassId PETSCDM_DLLEXPORT SECTIONREAL_CLASSID;
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealCreate(MPI_Comm,SectionReal*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealDestroy(SectionReal);
@@ -227,7 +227,7 @@ S*/
 typedef struct _p_SectionInt* SectionInt;
 
 /* Logging support */
-extern PetscCookie PETSCDM_DLLEXPORT SECTIONINT_COOKIE;
+extern PetscClassId PETSCDM_DLLEXPORT SECTIONINT_CLASSID;
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntCreate(MPI_Comm,SectionInt*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntDestroy(SectionInt);
@@ -276,7 +276,7 @@ S*/
 typedef struct _p_SectionPair* SectionPair;
 
 /* Logging support */
-extern PetscCookie PETSCDM_DLLEXPORT SECTIONPAIR_COOKIE;
+extern PetscClassId PETSCDM_DLLEXPORT SECTIONPAIR_CLASSID;
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionPairCreate(MPI_Comm,SectionPair*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionPairDestroy(SectionPair);

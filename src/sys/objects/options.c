@@ -225,6 +225,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscSetProgramName(const char name[])
    Output Parameter:
 .    key - PETSC_TRUE if a valid key
 
+  Level: intermediate
+
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsValidKey(const char in_str[],PetscTruth *key)
 {

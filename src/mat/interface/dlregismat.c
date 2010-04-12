@@ -72,91 +72,91 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(const char path[])
   /* Inialize subpackage */
   ierr = MatMFFDInitializePackage(path);CHKERRQ(ierr);
   /* Register Classes */
-  ierr = PetscCookieRegister("Matrix",&MAT_COOKIE);CHKERRQ(ierr);
-  ierr = PetscCookieRegister("Matrix FD Coloring",&MAT_FDCOLORING_COOKIE);CHKERRQ(ierr);
-  ierr = PetscCookieRegister("Matrix Partitioning",&MAT_PARTITIONING_COOKIE);CHKERRQ(ierr);
-  ierr = PetscCookieRegister("Matrix Null Space",&MAT_NULLSPACE_COOKIE);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Matrix",&MAT_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Matrix FD Coloring",&MAT_FDCOLORING_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Matrix Partitioning",&MAT_PARTITIONING_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Matrix Null Space",&MAT_NULLSPACE_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = MatRegisterAll(path);CHKERRQ(ierr);
   ierr = MatOrderingRegisterAll(path);CHKERRQ(ierr);
   ierr = MatColoringRegisterAll(path);CHKERRQ(ierr);
   ierr = MatPartitioningRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister("MatMult",          MAT_COOKIE,&MAT_Mult);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatMults",         MAT_COOKIE,&MAT_Mults);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatMultConstr",    MAT_COOKIE,&MAT_MultConstrained);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatMultAdd",       MAT_COOKIE,&MAT_MultAdd);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatMultTranspose", MAT_COOKIE,&MAT_MultTranspose);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatMultTrConstr",  MAT_COOKIE,&MAT_MultTransposeConstrained);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatMultTrAdd",     MAT_COOKIE,&MAT_MultTransposeAdd);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatSolve",         MAT_COOKIE,&MAT_Solve);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatSolves",        MAT_COOKIE,&MAT_Solves);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatSolveAdd",      MAT_COOKIE,&MAT_SolveAdd);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatSolveTranspos", MAT_COOKIE,&MAT_SolveTranspose);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatSolveTrAdd",    MAT_COOKIE,&MAT_SolveTransposeAdd);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatSOR",           MAT_COOKIE,&MAT_SOR);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatForwardSolve",  MAT_COOKIE,&MAT_ForwardSolve);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatBackwardSolve", MAT_COOKIE,&MAT_BackwardSolve);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatLUFactor",      MAT_COOKIE,&MAT_LUFactor);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatLUFactorSym",   MAT_COOKIE,&MAT_LUFactorSymbolic);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatLUFactorNum",   MAT_COOKIE,&MAT_LUFactorNumeric);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatCholeskyFctr",  MAT_COOKIE,&MAT_CholeskyFactor);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatCholFctrSym",   MAT_COOKIE,&MAT_CholeskyFactorSymbolic);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatCholFctrNum",   MAT_COOKIE,&MAT_CholeskyFactorNumeric);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatILUFactor",     MAT_COOKIE,&MAT_ILUFactor);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatILUFactorSym",  MAT_COOKIE,&MAT_ILUFactorSymbolic);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatICCFactorSym",  MAT_COOKIE,&MAT_ICCFactorSymbolic);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatCopy",          MAT_COOKIE,&MAT_Copy);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatConvert",       MAT_COOKIE,&MAT_Convert);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatScale",         MAT_COOKIE,&MAT_Scale);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatAssemblyBegin", MAT_COOKIE,&MAT_AssemblyBegin);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatAssemblyEnd",   MAT_COOKIE,&MAT_AssemblyEnd);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatSetValues",     MAT_COOKIE,&MAT_SetValues);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatGetValues",     MAT_COOKIE,&MAT_GetValues);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatGetRow",        MAT_COOKIE,&MAT_GetRow);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatGetRowIJ",      MAT_COOKIE,&MAT_GetRowIJ);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatGetSubMatrice", MAT_COOKIE,&MAT_GetSubMatrices);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatGetColoring",   MAT_COOKIE,&MAT_GetColoring);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatGetOrdering",   MAT_COOKIE,&MAT_GetOrdering);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatIncreaseOvrlp", MAT_COOKIE,&MAT_IncreaseOverlap);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatPartitioning",  MAT_PARTITIONING_COOKIE,&MAT_Partitioning);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatZeroEntries",   MAT_COOKIE,&MAT_ZeroEntries);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatLoad",          MAT_COOKIE,&MAT_Load);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatView",          MAT_COOKIE,&MAT_View);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatAXPY",          MAT_COOKIE,&MAT_AXPY);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatFDColorCreate", MAT_FDCOLORING_COOKIE,&MAT_FDColoringCreate);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatFDColorApply",  MAT_FDCOLORING_COOKIE,&MAT_FDColoringApply);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatFDColorFunc",   MAT_FDCOLORING_COOKIE,&MAT_FDColoringFunction);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatTranspose",     MAT_COOKIE,&MAT_Transpose);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatMatMult",       MAT_COOKIE,&MAT_MatMult);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatMatSolve",      MAT_COOKIE,&MAT_MatSolve);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatMatMultSym",    MAT_COOKIE,&MAT_MatMultSymbolic);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatMatMultNum",    MAT_COOKIE,&MAT_MatMultNumeric);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatPtAP",          MAT_COOKIE,&MAT_PtAP);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatPtAPSymbolic",  MAT_COOKIE,&MAT_PtAPSymbolic);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatPtAPNumeric",   MAT_COOKIE,&MAT_PtAPNumeric);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatMatMultTrans",  MAT_COOKIE,&MAT_MatMultTranspose);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatMatMultTrnSym" ,MAT_COOKIE,&MAT_MatMultTransposeSymbolic);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatMatMultTrnNum", MAT_COOKIE,&MAT_MatMultTransposeNumeric);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatGetRedundant",  MAT_COOKIE,&MAT_GetRedundantMatrix);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatGetSeqNZStrct", MAT_COOKIE,&MAT_GetSequentialNonzeroStructure);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMult",          MAT_CLASSID,&MAT_Mult);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMults",         MAT_CLASSID,&MAT_Mults);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMultConstr",    MAT_CLASSID,&MAT_MultConstrained);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMultAdd",       MAT_CLASSID,&MAT_MultAdd);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMultTranspose", MAT_CLASSID,&MAT_MultTranspose);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMultTrConstr",  MAT_CLASSID,&MAT_MultTransposeConstrained);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMultTrAdd",     MAT_CLASSID,&MAT_MultTransposeAdd);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatSolve",         MAT_CLASSID,&MAT_Solve);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatSolves",        MAT_CLASSID,&MAT_Solves);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatSolveAdd",      MAT_CLASSID,&MAT_SolveAdd);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatSolveTranspos", MAT_CLASSID,&MAT_SolveTranspose);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatSolveTrAdd",    MAT_CLASSID,&MAT_SolveTransposeAdd);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatSOR",           MAT_CLASSID,&MAT_SOR);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatForwardSolve",  MAT_CLASSID,&MAT_ForwardSolve);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatBackwardSolve", MAT_CLASSID,&MAT_BackwardSolve);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatLUFactor",      MAT_CLASSID,&MAT_LUFactor);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatLUFactorSym",   MAT_CLASSID,&MAT_LUFactorSymbolic);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatLUFactorNum",   MAT_CLASSID,&MAT_LUFactorNumeric);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatCholeskyFctr",  MAT_CLASSID,&MAT_CholeskyFactor);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatCholFctrSym",   MAT_CLASSID,&MAT_CholeskyFactorSymbolic);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatCholFctrNum",   MAT_CLASSID,&MAT_CholeskyFactorNumeric);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatILUFactor",     MAT_CLASSID,&MAT_ILUFactor);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatILUFactorSym",  MAT_CLASSID,&MAT_ILUFactorSymbolic);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatICCFactorSym",  MAT_CLASSID,&MAT_ICCFactorSymbolic);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatCopy",          MAT_CLASSID,&MAT_Copy);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatConvert",       MAT_CLASSID,&MAT_Convert);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatScale",         MAT_CLASSID,&MAT_Scale);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatAssemblyBegin", MAT_CLASSID,&MAT_AssemblyBegin);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatAssemblyEnd",   MAT_CLASSID,&MAT_AssemblyEnd);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatSetValues",     MAT_CLASSID,&MAT_SetValues);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatGetValues",     MAT_CLASSID,&MAT_GetValues);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatGetRow",        MAT_CLASSID,&MAT_GetRow);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatGetRowIJ",      MAT_CLASSID,&MAT_GetRowIJ);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatGetSubMatrice", MAT_CLASSID,&MAT_GetSubMatrices);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatGetColoring",   MAT_CLASSID,&MAT_GetColoring);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatGetOrdering",   MAT_CLASSID,&MAT_GetOrdering);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatIncreaseOvrlp", MAT_CLASSID,&MAT_IncreaseOverlap);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatPartitioning",  MAT_PARTITIONING_CLASSID,&MAT_Partitioning);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatZeroEntries",   MAT_CLASSID,&MAT_ZeroEntries);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatLoad",          MAT_CLASSID,&MAT_Load);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatView",          MAT_CLASSID,&MAT_View);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatAXPY",          MAT_CLASSID,&MAT_AXPY);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatFDColorCreate", MAT_FDCOLORING_CLASSID,&MAT_FDColoringCreate);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatFDColorApply",  MAT_FDCOLORING_CLASSID,&MAT_FDColoringApply);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatFDColorFunc",   MAT_FDCOLORING_CLASSID,&MAT_FDColoringFunction);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatTranspose",     MAT_CLASSID,&MAT_Transpose);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMatMult",       MAT_CLASSID,&MAT_MatMult);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMatSolve",      MAT_CLASSID,&MAT_MatSolve);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMatMultSym",    MAT_CLASSID,&MAT_MatMultSymbolic);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMatMultNum",    MAT_CLASSID,&MAT_MatMultNumeric);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatPtAP",          MAT_CLASSID,&MAT_PtAP);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatPtAPSymbolic",  MAT_CLASSID,&MAT_PtAPSymbolic);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatPtAPNumeric",   MAT_CLASSID,&MAT_PtAPNumeric);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMatMultTrans",  MAT_CLASSID,&MAT_MatMultTranspose);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMatMultTrnSym" ,MAT_CLASSID,&MAT_MatMultTransposeSymbolic);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMatMultTrnNum", MAT_CLASSID,&MAT_MatMultTransposeNumeric);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatGetRedundant",  MAT_CLASSID,&MAT_GetRedundantMatrix);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatGetSeqNZStrct", MAT_CLASSID,&MAT_GetSequentialNonzeroStructure);CHKERRQ(ierr);
 
   /* these may be specific to MPIAIJ matrices */
-  ierr = PetscLogEventRegister("MatMerge_SeqsToMPINumeric",MAT_COOKIE,&MAT_Seqstompinum);
-  ierr = PetscLogEventRegister("MatMerge_SeqsToMPISymbolic",MAT_COOKIE,&MAT_Seqstompisym);
-  ierr = PetscLogEventRegister("MatMerge_SeqsToMPI",MAT_COOKIE,&MAT_Seqstompi);
-  ierr = PetscLogEventRegister("MatGetLocalMat",MAT_COOKIE,&MAT_Getlocalmat);
-  ierr = PetscLogEventRegister("MatGetLocalMatCondensed",MAT_COOKIE,&MAT_Getlocalmatcondensed);
-  ierr = PetscLogEventRegister("MatGetBrowsOfAcols",MAT_COOKIE,&MAT_GetBrowsOfAcols);
-  ierr = PetscLogEventRegister("MatGetBrAoCol",MAT_COOKIE,&MAT_GetBrowsOfAocols);
+  ierr = PetscLogEventRegister("MatMerge_SeqsToMPINumeric",MAT_CLASSID,&MAT_Seqstompinum);
+  ierr = PetscLogEventRegister("MatMerge_SeqsToMPISymbolic",MAT_CLASSID,&MAT_Seqstompisym);
+  ierr = PetscLogEventRegister("MatMerge_SeqsToMPI",MAT_CLASSID,&MAT_Seqstompi);
+  ierr = PetscLogEventRegister("MatGetLocalMat",MAT_CLASSID,&MAT_Getlocalmat);
+  ierr = PetscLogEventRegister("MatGetLocalMatCondensed",MAT_CLASSID,&MAT_Getlocalmatcondensed);
+  ierr = PetscLogEventRegister("MatGetBrowsOfAcols",MAT_CLASSID,&MAT_GetBrowsOfAcols);
+  ierr = PetscLogEventRegister("MatGetBrAoCol",MAT_CLASSID,&MAT_GetBrowsOfAocols);
 
-  ierr = PetscLogEventRegister("MatApplyPAPt_Symbolic",MAT_COOKIE,&MAT_Applypapt_symbolic);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatApplyPAPt_Numeric",MAT_COOKIE,&MAT_Applypapt_numeric);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatApplyPAPt",MAT_COOKIE,&MAT_Applypapt);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatApplyPAPt_Symbolic",MAT_CLASSID,&MAT_Applypapt_symbolic);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatApplyPAPt_Numeric",MAT_CLASSID,&MAT_Applypapt_numeric);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatApplyPAPt",MAT_CLASSID,&MAT_Applypapt);CHKERRQ(ierr);
 
-  ierr = PetscLogEventRegister("MatGetSymTrans",MAT_COOKIE,&MAT_Getsymtranspose);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatGetSymTransR",MAT_COOKIE,&MAT_Getsymtransreduced);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatTranspose_SeqAIJ_FAST",MAT_COOKIE,&MAT_Transpose_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatGetSymTrans",MAT_CLASSID,&MAT_Getsymtranspose);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatGetSymTransR",MAT_CLASSID,&MAT_Getsymtransreduced);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatTranspose_SeqAIJ_FAST",MAT_CLASSID,&MAT_Transpose_SeqAIJ);CHKERRQ(ierr);
 
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(MAT_SetValues, PETSC_FALSE);CHKERRQ(ierr);
@@ -165,7 +165,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(const char path[])
   if (opt) {
     ierr = PetscStrstr(logList, "mat", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscInfoDeactivateClass(MAT_COOKIE);CHKERRQ(ierr);
+      ierr = PetscInfoDeactivateClass(MAT_CLASSID);CHKERRQ(ierr);
     }
   }
   /* Process summary exclusions */
@@ -173,7 +173,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(const char path[])
   if (opt) {
     ierr = PetscStrstr(logList, "mat", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogEventDeactivateClass(MAT_COOKIE);CHKERRQ(ierr);
+      ierr = PetscLogEventDeactivateClass(MAT_CLASSID);CHKERRQ(ierr);
     }
   }
   ierr = PetscRegisterFinalize(MatFinalizePackage);CHKERRQ(ierr);

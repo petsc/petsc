@@ -28,7 +28,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawEllipse(PetscDraw draw, PetscReal x, Pet
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw, PETSC_DRAW_COOKIE,1);
+  PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID,1);
   ierr = PetscTypeCompare((PetscObject) draw, PETSC_DRAW_NULL, &isdrawnull);CHKERRQ(ierr);
   if (isdrawnull) PetscFunctionReturn(0);
   ierr = (*draw->ops->ellipse)(draw, x, y, a, b, c);CHKERRQ(ierr);

@@ -33,7 +33,7 @@ E*/
 #define SNESTEST   "test"
 
 /* Logging support */
-extern PetscCookie PETSCSNES_DLLEXPORT SNES_COOKIE;
+extern PetscClassId PETSCSNES_DLLEXPORT SNES_CLASSID;
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESInitializePackage(const char[]);
 
@@ -62,7 +62,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESRegister(const char[],const char[]
    SNESRegisterDynamic - Adds a method to the nonlinear solver package.
 
    Synopsis:
-   PetscErrorCode SNESRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(SNES))
+   PetscErrorCode SNESRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(SNES))
 
    Not collective
 

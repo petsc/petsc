@@ -398,7 +398,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultConverged(SNES snes,PetscInt it,Pe
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidPointer(reason,6);
   
   *reason = SNES_CONVERGED_ITERATING;
@@ -463,7 +463,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSkipConverged(SNES snes,PetscInt it,Petsc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidPointer(reason,6);
 
   *reason = SNES_CONVERGED_ITERATING;

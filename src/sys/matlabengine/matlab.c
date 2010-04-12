@@ -10,7 +10,7 @@ struct  _p_PetscMatlabEngine {
   char     buffer[1024];
 };
 
-PetscCookie MATLABENGINE_COOKIE = -1;
+PetscClassId MATLABENGINE_CLASSID = -1;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMatlabEngineCreate"
@@ -40,10 +40,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineCreate(MPI_Comm comm,const char 
   PetscMatlabEngine e;
 
   PetscFunctionBegin;
-  if (MATLABENGINE_COOKIE == -1) {
-    ierr = PetscCookieRegister("Matlab Engine",&MATLABENGINE_COOKIE);CHKERRQ(ierr);
+  if (MATLABENGINE_CLASSID == -1) {
+    ierr = PetscClassIdRegister("Matlab Engine",&MATLABENGINE_CLASSID);CHKERRQ(ierr);
   }
-  ierr = PetscHeaderCreate(e,_p_PetscMatlabEngine,int,MATLABENGINE_COOKIE,0,"MatlabEngine",comm,PetscMatlabEngineDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(e,_p_PetscMatlabEngine,int,MATLABENGINE_CLASSID,0,"MatlabEngine",comm,PetscMatlabEngineDestroy,0);CHKERRQ(ierr);
 
   if (!machine) machine = "\0";
   ierr = PetscInfo1(0,"Starting Matlab engine on %s\n",machine);CHKERRQ(ierr);
@@ -81,7 +81,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineDestroy(PetscMatlabEngine v)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,MATLABENGINE_COOKIE,1);
+  PetscValidHeaderSpecific(v,MATLABENGINE_CLASSID,1);
   if (--((PetscObject)v)->refct > 0) PetscFunctionReturn(0);
   ierr = PetscHeaderDestroy(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);

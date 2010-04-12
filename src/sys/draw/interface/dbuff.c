@@ -25,7 +25,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSetDoubleBuffer(PetscDraw draw)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   if (draw->ops->setdoublebuffer) {
     ierr = (*draw->ops->setdoublebuffer)(draw);CHKERRQ(ierr);
   }

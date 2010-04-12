@@ -116,7 +116,7 @@ PetscErrorCode MatGetFactor_mpisbaij_spooles(Mat A,MatFactorType ftype,Mat *F)
     lu->options.pivotingflag = SPOOLES_NO_PIVOTING; 
   } else SETERRQ(PETSC_ERR_SUP,"Only Cholesky for SBAIJ matrices, use AIJ for LU");
 
-  B->factor = ftype;
+  B->factortype = ftype;
   ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(lu->comm_spooles));CHKERRQ(ierr);
   *F = B;
   PetscFunctionReturn(0); 

@@ -22,7 +22,7 @@ struct _p_Mesh {
   void *data; // Implementation data
 };
 
-extern PetscCookie MESH_COOKIE;
+extern PetscClassId MESH_CLASSID;
 extern PetscLogEvent Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assembleVector,
                   Mesh_assembleVectorComplete, Mesh_assembleMatrix, Mesh_updateOperator;
 
@@ -39,7 +39,7 @@ struct _p_SectionReal {
   ALE::Obj<PETSC_MESH_TYPE> b;
 };
 
-extern PetscCookie SECTIONREAL_COOKIE;
+extern PetscClassId SECTIONREAL_CLASSID;
 extern PetscLogEvent SectionReal_View;
 
 typedef struct _SectionIntOps *SectionIntOps;
@@ -55,7 +55,7 @@ struct _p_SectionInt {
   ALE::Obj<PETSC_MESH_TYPE> b;
 };
 
-extern PetscCookie SECTIONINT_COOKIE;
+extern PetscClassId SECTIONINT_CLASSID;
 extern PetscLogEvent SectionInt_View;
 
 #endif

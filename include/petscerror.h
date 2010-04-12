@@ -76,20 +76,19 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_ERR_FLOP_COUNT       90
 #define PETSC_ERR_MAX_VALUE        91  /* this is always the one more than the largest error code */
 
-#if defined(PETSC_USE_ERRORCHECKING)
-
 #define PetscStringizeArg(a) #a
 #define PetscStringize(a) PetscStringizeArg(a)
 #define __SDIR__ PetscStringize(__INSDIR__)
 
+#if defined(PETSC_USE_ERRORCHECKING)
+
 /*MC
    SETERRQ - Macro that is called when an error has been detected, 
-
-   Not Collective
 
    Synopsis:
    PetscErrorCode SETERRQ(PetscErrorCode errorcode,char *message)
 
+   Not Collective
 
    Input Parameters:
 +  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
@@ -115,11 +114,10 @@ M*/
 /*MC
    SETERRQ1 - Macro that is called when an error has been detected, 
 
-   Not Collective
-
    Synopsis:
    PetscErrorCode SETERRQ1(PetscErrorCode errorcode,char *formatmessage,arg)
 
+   Not Collective
 
    Input Parameters:
 +  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
@@ -142,11 +140,10 @@ M*/
 /*MC
    SETERRQ2 - Macro that is called when an error has been detected, 
 
-   Not Collective
-
    Synopsis:
    PetscErrorCode SETERRQ2(PetscErrorCode errorcode,char *formatmessage,arg1,arg2)
 
+   Not Collective
 
    Input Parameters:
 +  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
@@ -170,11 +167,10 @@ M*/
 /*MC
    SETERRQ3 - Macro that is called when an error has been detected, 
 
-   Not Collective
-
    Synopsis:
    PetscErrorCode SETERRQ3(PetscErrorCode errorcode,char *formatmessage,arg1,arg2,arg3)
 
+   Not Collective
 
    Input Parameters:
 +  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
@@ -207,11 +203,10 @@ M*/
 /*MC
    CHKERRQ - Checks error code, if non-zero it calls the error handler and then returns
 
-   Not Collective
-
    Synopsis:
    PetscErrorCode CHKERRQ(PetscErrorCode errorcode)
 
+   Not Collective
 
    Input Parameters:
 .  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
@@ -251,11 +246,10 @@ M*/
 /*MC
    CHKERRXX - Checks error code, if non-zero it calls the C++ error handler which throws an exception
 
-   Not Collective
-
    Synopsis:
    void CHKERRXX(PetscErrorCode errorcode)
 
+   Not Collective
 
    Input Parameters:
 .  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
@@ -279,10 +273,10 @@ M*/
 /*MC
    CHKMEMQ - Checks the memory for corruption, calls error handler if any is detected
 
-   Not Collective
-
    Synopsis:
    CHKMEMQ;
+
+   Not Collective
 
   Level: beginner
 
@@ -324,10 +318,10 @@ EXTERN PetscTruth PETSC_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode);
 /*MC
    PetscExceptionCaught - Indicates if a specific exception zierr was caught.
 
-   Not Collective
-
    Synopsis:
      PetscTruth PetscExceptionCaught(PetscErrorCode xierr,PetscErrorCode zierr);
+
+   Not Collective
 
   Input Parameters:
   + xierr - error code returned from PetscExceptionTry1() or other PETSc routine
@@ -360,10 +354,10 @@ PETSC_STATIC_INLINE PetscTruth PetscExceptionCaught(PetscErrorCode xierr,PetscEr
 /*MC
    PetscExceptionValue - Indicates if the error code is one that is currently being tried
 
-   Not Collective
-
    Synopsis:
      PetscTruth PetscExceptionValue(PetscErrorCode xierr);
+
+   Not Collective
 
   Input Parameters:
   . xierr - error code 
@@ -396,10 +390,10 @@ PETSC_STATIC_INLINE PetscTruth PetscExceptionValue(PetscErrorCode zierr)
          rather than an error. That is if that error code is treated the program returns to this level,
          but does not call the error handlers
 
-   Not Collective
-
    Synopsis:
      PetscErrorCode PetscExceptionTry1(PetscErrorCode routine(....),PetscErrorCode);
+
+   Not Collective
 
   Level: advanced
 
@@ -442,10 +436,10 @@ PETSC_STATIC_INLINE PetscErrorCode PetscExceptionTrySync_Private(MPI_Comm comm,P
          rather than an error. That is if that error code is treated the program returns to this level,
          but does not call the error handlers
 
-     Collective on Comm
-
    Synopsis:
      PetscExceptionTrySyncNorm(MPI_Comm comm,PetscErrorCode routine(....),PetscErrorCode);
+
+     Collective on Comm
 
   Level: advanced
 
@@ -556,6 +550,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStackPrint(PetscStack*,FILE* fp);
    Synopsis:
    void PetscFunctionBegin;
 
+   Not Collective
+
    Usage:
 .vb
      int something;
@@ -606,6 +602,8 @@ M*/
 
    Synopsis:
    void PetscFunctionReturn(0);
+
+   Not Collective
 
    Usage:
 .vb

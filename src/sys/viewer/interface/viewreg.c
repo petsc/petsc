@@ -36,7 +36,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate(MPI_Comm comm,PetscViewer *invi
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscViewerInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscHeaderCreate(viewer,_p_PetscViewer,struct _PetscViewerOps,PETSC_VIEWER_COOKIE,-1,"PetscViewer",comm,PetscViewerDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(viewer,_p_PetscViewer,struct _PetscViewerOps,PETSC_VIEWER_CLASSID,-1,"PetscViewer",comm,PetscViewerDestroy,0);CHKERRQ(ierr);
   *inviewer           = viewer;
   viewer->data        = 0;
   PetscFunctionReturn(0);
@@ -71,7 +71,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetType(PetscViewer viewer,const Petsc
   PetscTruth     match;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidCharPointer(type,2);
   CHKMEMQ;
   ierr = PetscTypeCompare((PetscObject)viewer,type,&match);CHKERRQ(ierr);
@@ -154,7 +154,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFromOptions(PetscViewer viewer)
   PetscTruth flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
 
   if (!PetscViewerList) {
     ierr = PetscViewerRegisterAll(PETSC_NULL);CHKERRQ(ierr);

@@ -164,7 +164,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinSetRestriction(PC pc,Mat R)
   PetscErrorCode ierr,(*f)(PC,Mat);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCGalerkinSetRestriction_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,R);CHKERRQ(ierr);
@@ -198,7 +198,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinSetInterpolation(PC pc,Mat P)
   PetscErrorCode ierr,(*f)(PC,Mat);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCGalerkinSetInterpolation_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,P);CHKERRQ(ierr);
@@ -232,7 +232,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinGetKSP(PC pc,KSP *ksp)
   PetscErrorCode ierr,(*f)(PC,KSP *);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(ksp,2);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCGalerkinGetKSP_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {

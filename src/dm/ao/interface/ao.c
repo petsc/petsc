@@ -6,7 +6,7 @@
 #include "../src/dm/ao/aoimpl.h"      /*I "petscao.h" I*/
 
 /* Logging support */
-PetscCookie PETSCDM_DLLEXPORT AO_COOKIE;
+PetscClassId PETSCDM_DLLEXPORT AO_CLASSID;
 PetscLogEvent  AO_PetscToApplication, AO_ApplicationToPetsc;
 
 #undef __FUNCT__  
@@ -42,9 +42,9 @@ PetscErrorCode PETSCDM_DLLEXPORT AOView(AO ao,PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao,AO_COOKIE,1);
+  PetscValidHeaderSpecific(ao,AO_CLASSID,1);
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(((PetscObject)ao)->comm);
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = (*ao->ops->view)(ao,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -70,7 +70,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODestroy(AO ao)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao,AO_COOKIE,1);
+  PetscValidHeaderSpecific(ao,AO_CLASSID,1);
   if (--((PetscObject)ao)->refct > 0) PetscFunctionReturn(0);
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(ao);CHKERRQ(ierr);
@@ -120,8 +120,8 @@ PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplicationIS(AO ao,IS is)
   PetscTruth     flag;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao,AO_COOKIE,1);
-  PetscValidHeaderSpecific(is,IS_COOKIE,2);
+  PetscValidHeaderSpecific(ao,AO_CLASSID,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,2);
   ierr = ISBlock(is,&flag);CHKERRQ(ierr);
   if (flag) SETERRQ(PETSC_ERR_SUP,"Cannot translate block index sets");
   ierr = ISStride(is,&flag);CHKERRQ(ierr);
@@ -167,8 +167,8 @@ PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetscIS(AO ao,IS is)
   PetscTruth     flag;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao,AO_COOKIE,1);
-  PetscValidHeaderSpecific(is,IS_COOKIE,2);
+  PetscValidHeaderSpecific(ao,AO_CLASSID,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,2);
   ierr = ISBlock(is,&flag);CHKERRQ(ierr);
   if (flag) SETERRQ(PETSC_ERR_SUP,"Cannot translate block index sets");
   ierr = ISStride(is,&flag);CHKERRQ(ierr);
@@ -212,7 +212,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplication(AO ao,PetscInt n,PetscInt 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao,AO_COOKIE,1);
+  PetscValidHeaderSpecific(ao,AO_CLASSID,1);
   PetscValidIntPointer(ia,3);
   ierr = (*ao->ops->petsctoapplication)(ao,n,ia);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -248,7 +248,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetsc(AO ao,PetscInt n,PetscInt 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao,AO_COOKIE,1);
+  PetscValidHeaderSpecific(ao,AO_CLASSID,1);
   PetscValidIntPointer(ia,3);
   ierr = (*ao->ops->applicationtopetsc)(ao,n,ia);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -284,7 +284,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplicationPermuteInt(AO ao, PetscInt 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao, AO_COOKIE,1);
+  PetscValidHeaderSpecific(ao, AO_CLASSID,1);
   PetscValidIntPointer(array,3);
   ierr = (*ao->ops->petsctoapplicationpermuteint)(ao, block, array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -321,7 +321,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetscPermuteInt(AO ao, PetscInt 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao, AO_COOKIE,1);
+  PetscValidHeaderSpecific(ao, AO_CLASSID,1);
   PetscValidIntPointer(array,3);
   ierr = (*ao->ops->applicationtopetscpermuteint)(ao, block, array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -358,7 +358,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplicationPermuteReal(AO ao, PetscInt
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao, AO_COOKIE,1);
+  PetscValidHeaderSpecific(ao, AO_CLASSID,1);
   PetscValidIntPointer(array,3);
   ierr = (*ao->ops->petsctoapplicationpermutereal)(ao, block, array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -395,7 +395,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetscPermuteReal(AO ao, PetscInt
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao, AO_COOKIE,1);
+  PetscValidHeaderSpecific(ao, AO_CLASSID,1);
   PetscValidIntPointer(array,3);
   ierr = (*ao->ops->applicationtopetscpermutereal)(ao, block, array);CHKERRQ(ierr);
   PetscFunctionReturn(0);

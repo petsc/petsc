@@ -52,13 +52,13 @@ namespace PETSc {
     static std::map<std::string,LogEvent> event_registry;
     static std::map<std::string,LogStage> stage_registry;
 
-    static LogEvent& Event(const std::string& name, PetscCookie cookie = PETSC_OBJECT_COOKIE) {
+    static LogEvent& Event(const std::string& name, PetscClassId classid = PETSC_OBJECT_CLASSID) {
       if (event_registry.find(name) == event_registry.end()) {
         PetscLogEvent  id;
         PetscErrorCode ierr;
 
         /* Should check for already registered events */
-        ierr = PetscLogEventRegister(name.c_str(), cookie, &id);CHKERRXX(ierr);
+        ierr = PetscLogEventRegister(name.c_str(), classid, &id);CHKERRXX(ierr);
         event_registry[name] = LogEvent(name, id);
       }
       return event_registry[name];

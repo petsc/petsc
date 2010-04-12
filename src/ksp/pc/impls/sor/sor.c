@@ -211,7 +211,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSORSetSymmetric(PC pc,MatSORType flag)
   PetscErrorCode ierr,(*f)(PC,MatSORType);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSORSetSymmetric_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,flag);CHKERRQ(ierr);
@@ -282,7 +282,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSORSetIterations(PC pc,PetscInt its,PetscInt
   PetscErrorCode ierr,(*f)(PC,PetscInt,PetscInt);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSORSetIterations_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,its,lits);CHKERRQ(ierr);

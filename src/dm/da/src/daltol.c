@@ -23,7 +23,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DALocalToLocalCreate(DA da)
   PetscInt *idx,left,j,count,up,down,i,bottom,top,k;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
 
   if (da->ltol) PetscFunctionReturn(0);
   /* 
@@ -103,7 +103,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DALocalToLocalBegin(DA da,Vec g,InsertMode mode
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (!da->ltol) {
     ierr = DALocalToLocalCreate(da);CHKERRQ(ierr);
   }
@@ -146,9 +146,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DALocalToLocalEnd(DA da,Vec g,InsertMode mode,V
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
-  PetscValidHeaderSpecific(g,VEC_COOKIE,2);
-  PetscValidHeaderSpecific(g,VEC_COOKIE,4);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecific(g,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(g,VEC_CLASSID,4);
   ierr = VecScatterEnd(da->ltol,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -612,7 +612,7 @@ static PetscErrorCode MatView_MPIDense_Binary(Mat mat,PetscViewer viewer)
 
       if (!rank) {
         /* store the matrix as a dense matrix */
-        header[0] = MAT_FILE_COOKIE;
+        header[0] = MAT_FILE_CLASSID;
         header[1] = mat->rmap->N;
         header[2] = N;
         header[3] = MATRIX_BINARY_FORMAT_DENSE;
@@ -696,7 +696,7 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
       ierr = PetscViewerASCIIPrintf(viewer,"  Processor mesh: nprows %d, npcols %d\n",Plapack_nprows, Plapack_npcols);CHKERRQ(ierr);      
       ierr = PetscViewerASCIIPrintf(viewer,"  Error checking: %d\n",Plapack_ierror);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Algorithmic block size: %d\n",Plapack_nb_alg);CHKERRQ(ierr);
-      if (mat->factor){
+      if (mat->factortype){
         lu=(Mat_Plapack*)(mat->spptr);
         ierr = PetscViewerASCIIPrintf(viewer,"  Distr. block size nb: %d \n",lu->nb);CHKERRQ(ierr); 
       }
@@ -1171,7 +1171,7 @@ PetscErrorCode MatSolve_MPIDense(Mat A,Vec b,Vec x)
   PLA_Obj_API_close(v_pla);
   PLA_API_end(); 
 
-  if (A->factor == MAT_FACTOR_LU){
+  if (A->factortype == MAT_FACTOR_LU){
     /* Apply the permutations to the right hand sides */
     PLA_Apply_pivots_to_rows (v_pla,lu->pivots);
 
@@ -1407,7 +1407,7 @@ PetscErrorCode MatGetFactor_mpidense_plapack(Mat A,MatFactorType ftype,Mat *F)
   } else if (ftype == MAT_FACTOR_CHOLESKY) {
     (*F)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MPIDense;
   } else SETERRQ(PETSC_ERR_SUP,"No incomplete factorizations for dense matrices");
-  (*F)->factor = ftype;
+  (*F)->factortype = ftype;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)(*F),"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mpidense_plapack",MatFactorGetSolverPackage_mpidense_plapack);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1633,6 +1633,8 @@ EXTERN_C_END
 . -mat_plapack_nb_alg <n> - algorithmic block size
 - -mat_plapack_ckerror <n> - error checking flag
 
+   Level: intermediate
+
 .seealso: MatCreateMPIDense(), MATDENSE, MATSEQDENSE, PCFactorSetSolverPackage(), MatSolverPackage
 
 M*/
@@ -1842,7 +1844,7 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Ma
   ierr = MatSetType(mat,((PetscObject)A)->type_name);CHKERRQ(ierr);
   a                 = (Mat_MPIDense*)mat->data;
   ierr              = PetscMemcpy(mat->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
-  mat->factor       = A->factor;
+  mat->factortype   = A->factortype;
   mat->assembled    = PETSC_TRUE;
   mat->preallocated = PETSC_TRUE;
 
@@ -1957,7 +1959,7 @@ PetscErrorCode MatLoad_MPIDense(PetscViewer viewer,const MatType type,Mat *newma
   if (!rank) {
     ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd,(char *)header,4,PETSC_INT);CHKERRQ(ierr);
-    if (header[0] != MAT_FILE_COOKIE) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"not matrix object");
+    if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"not matrix object");
   }
 
   ierr = MPI_Bcast(header+1,3,MPIU_INT,0,comm);CHKERRQ(ierr);

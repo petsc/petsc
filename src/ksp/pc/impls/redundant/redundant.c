@@ -284,7 +284,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantSetNumber(PC pc,PetscInt nredundant
   PetscErrorCode ierr,(*f)(PC,PetscInt);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (nredundant <= 0) SETERRQ1(PETSC_ERR_ARG_WRONG, "num of redundant pc %D must be positive",nredundant);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCRedundantSetNumber_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -335,9 +335,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantSetScatter(PC pc,VecScatter in,VecS
   PetscErrorCode ierr,(*f)(PC,VecScatter,VecScatter);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  PetscValidHeaderSpecific(in,VEC_SCATTER_COOKIE,2);
-  PetscValidHeaderSpecific(out,VEC_SCATTER_COOKIE,3);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidHeaderSpecific(in,VEC_SCATTER_CLASSID,2);
+  PetscValidHeaderSpecific(out,VEC_SCATTER_CLASSID,3);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCRedundantSetScatter_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,in,out);CHKERRQ(ierr);
@@ -402,7 +402,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantGetPC(PC pc,PC *innerpc)
   PetscErrorCode ierr,(*f)(PC,PC*);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(innerpc,2);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCRedundantGetPC_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -448,7 +448,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantGetOperators(PC pc,Mat *mat,Mat *pm
   PetscErrorCode ierr,(*f)(PC,Mat*,Mat*);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (mat)  PetscValidPointer(mat,2);
   if (pmat) PetscValidPointer(pmat,3); 
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCRedundantGetOperators_C",(void (**)(void))&f);CHKERRQ(ierr);

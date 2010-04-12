@@ -35,57 +35,82 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInfo_Private(const char[],void*,const
 #define PetscInfo6(A,S,a1,a2,a3,a4,a5,a6)    0
 #define PetscInfo7(A,S,a1,a2,a3,a4,a5,a6,a7) 0
 #endif
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInfoDeactivateClass(PetscCookie);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInfoActivateClass(PetscCookie);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInfoDeactivateClass(PetscClassId);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInfoActivateClass(PetscClassId);
 extern PetscTruth     PETSC_DLLEXPORT PetscLogPrintInfo;  /* if true, indicates PetscInfo() is turned on */
 
-/* We must make these structures available if we are to access the event
-   activation flags in the PetscLogEventBegin/End() macros. If we forced a
-   function call each time, we could make these private.
+/* We must make the following structures available to access the event
+     activation flags in the PetscLogEventBegin/End() macros. These are not part of the PETSc public
+     API and are not intended to be used by other parts of PETSc or by users.
+  
+     The code that manipulates these structures is in src/sys/plog/utils.
 */
-/* Default log */
-typedef struct _n_StageLog *StageLog;
-extern PETSC_DLLEXPORT StageLog _stageLog;
-
-/* A simple stack (should replace) */
 typedef struct _n_IntStack *IntStack;
 
-/* The structures for logging performance */
-typedef struct {
-  int            id;            /* The integer identifying this section */
-  PetscTruth     active;        /* The flag to activate logging */
-  PetscTruth     visible;       /* The flag to print info in summary */
-  int            depth;         /* The nesting depth of the event call */
-  int            count;         /* The number of times this section was executed */
-  PetscLogDouble flops;         /* The flops used in this section */
-  PetscLogDouble time;          /* The time taken for this section */
-  PetscLogDouble numMessages;   /* The number of messages in this section */
-  PetscLogDouble messageLength; /* The total message lengths in this section */
-  PetscLogDouble numReductions; /* The number of reductions in this section */
-} EventPerfInfo;
+/*
+    ClassRegInfo, ClassPerfInfo - Each class has two data structures associated with it. The first has 
+       static information about it, the second collects statistics on how many objects of the class are created,
+       how much memory they use, etc.
+
+    ClassRegLog, ClassPerfLog - arrays of the ClassRegInfo and ClassPerfInfo for all classes.
+*/
+typedef struct  {
+  char           *name;   /* The class name */
+  PetscClassId   classid; /* The integer identifying this class */
+} ClassRegInfo;
 
 typedef struct {
-  int            id;           /* The integer identifying this class */
+  PetscClassId   id;           /* The integer identifying this class */
   int            creations;    /* The number of objects of this class created */
   int            destructions; /* The number of objects of this class destroyed */
   PetscLogDouble mem;          /* The total memory allocated by objects of this class */
   PetscLogDouble descMem;      /* The total memory allocated by descendents of these objects */
 } ClassPerfInfo;
 
-/* The structures for logging registration */
-typedef struct  {
-  char        *name;   /* The class name */
-  PetscCookie cookie; /* The integer identifying this class */
-} ClassRegInfo;
+typedef struct _n_ClassRegLog *ClassRegLog;
+struct _n_ClassRegLog {
+  int            numClasses; /* The number of classes registered */
+  int            maxClasses; /* The maximum number of classes */
+  ClassRegInfo * classInfo;  /* The structure for class information (classids are monotonicly increasing) */
+};
 
+typedef struct _n_ClassPerfLog *ClassPerfLog;
+struct _n_ClassPerfLog {
+  int            numClasses; /* The number of logging classes */
+  int            maxClasses; /* The maximum number of classes */
+  ClassPerfInfo *classInfo;  /* The structure for class information (classids are monotonicly increasing) */
+};
+/* -----------------------------------------------------------------------------------------------------*/
+/*
+    EventRegInfo, EventPerfInfo - Each event has two data structures associated with it. The first has 
+       static information about it, the second collects statistics on how many times the event is used, how 
+       much time it takes, etc.
+
+    EventRegLog, EventPerfLog - an array of all EventRegInfo and EventPerfInfo for all events. There is one
+      of these for each stage.
+
+*/
 typedef struct {
-  char        *name;   /* The name of this event */
-  PetscCookie cookie; /* The class id for this event (should maybe give class ID instead) */
+  char         *name;         /* The name of this event */
+  PetscClassId classid;       /* The class the event is associated with */
 #if defined (PETSC_HAVE_MPE)
-  int         mpe_id_begin; /* MPE IDs that define the event */
-  int         mpe_id_end;
+  int          mpe_id_begin; /* MPE IDs that define the event */
+  int          mpe_id_end;
 #endif
 } EventRegInfo;
+
+typedef struct {
+  int            id;            /* The integer identifying this event */
+  PetscTruth     active;        /* The flag to activate logging */
+  PetscTruth     visible;       /* The flag to print info in summary */
+  int            depth;         /* The nesting depth of the event call */
+  int            count;         /* The number of times this event was executed */
+  PetscLogDouble flops;         /* The flops used in this event */
+  PetscLogDouble time;          /* The time taken for this event */
+  PetscLogDouble numMessages;   /* The number of messages in this event */
+  PetscLogDouble messageLength; /* The total message lengths in this event */
+  PetscLogDouble numReductions; /* The number of reductions in this event */
+} EventPerfInfo;
 
 typedef struct _n_EventRegLog *EventRegLog;
 struct _n_EventRegLog {
@@ -100,23 +125,12 @@ struct _n_EventPerfLog {
   int            maxEvents; /* The maximum number of events */
   EventPerfInfo *eventInfo; /* The performance information for each event */
 };
+/* ------------------------------------------------------------------------------------------------------------*/
+/*
+   StageInfo - Contains all the information about a particular stage.
 
-/* The structure for logging class information */
-typedef struct _n_ClassRegLog *ClassRegLog;
-struct _n_ClassRegLog {
-  int           numClasses; /* The number of classes registered */
-  int           maxClasses; /* The maximum number of classes */
-  ClassRegInfo *classInfo;  /* The structure for class information (cookies are monotonicly increasing) */
-};
-
-typedef struct _n_ClassPerfLog *ClassPerfLog;
-struct _n_ClassPerfLog {
-  int            numClasses; /* The number of logging classes */
-  int            maxClasses; /* The maximum number of classes */
-  ClassPerfInfo *classInfo;  /* The structure for class information (cookies are monotonicly increasing) */
-};
-
-/* The structures for logging in stages */
+   StageLog - An array of StageInfo for each registered stage. There is a single one of these in the code.
+*/
 typedef struct _StageInfo {
   char         *name;     /* The stage name */
   PetscTruth    used;     /* The stage was pushed on this processor */
@@ -125,14 +139,13 @@ typedef struct _StageInfo {
   ClassPerfLog  classLog; /* The class information for this stage */
 } StageInfo;
 
+typedef struct _n_StageLog *StageLog;
+extern PETSC_DLLEXPORT StageLog _stageLog;
 struct _n_StageLog {
-  /* Size information */
   int         numStages; /* The number of registered stages */
   int         maxStages; /* The maximum number of stages */
-  /* Runtime information */
   IntStack    stack;     /* The stack for active stages */
   int         curStage;  /* The current stage (only used in macros so we don't call StackTop) */
-  /* Stage specific information */
   StageInfo  *stageInfo; /* The information for each stage */
   EventRegLog eventLog;  /* The registered events */
   ClassRegLog classLog;  /* The registered classes */
@@ -213,9 +226,9 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogObjectState(PetscObject, const cha
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm, const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogPrintDetailed(MPI_Comm, const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogDump(const char[]);
-/* Counter functions */
+
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetFlops(PetscLogDouble *);
-/* Stage functions */
+
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageRegister(const char[],PetscLogStage*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStagePush(PetscLogStage);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStagePop(void);
@@ -225,12 +238,12 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageSetVisible(PetscLogStage, Pet
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetVisible(PetscLogStage, PetscTruth *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetId(const char [], PetscLogStage *);
 /* Event functions */
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventRegister(const char[], PetscCookie,PetscLogEvent*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventRegister(const char[], PetscClassId,PetscLogEvent*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventActivate(PetscLogEvent);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivate(PetscLogEvent);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventSetActiveAll(PetscLogEvent, PetscTruth);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventActivateClass(PetscCookie);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivateClass(PetscCookie);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventActivateClass(PetscClassId);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivateClass(PetscClassId);
 
 
 /* Global counters */
@@ -266,28 +279,6 @@ extern PETSC_DLLEXPORT PetscLogDouble sum_of_waits_ct;
   (((_PetscLogPLE && _stageLog->stageInfo[_stageLog->curStage].perfInfo.active && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) ? \
     (*_PetscLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4)) : 0 ) || \
   PETSC_LOG_EVENT_MPE_END(e))
-
-/* Creation and destruction functions */
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogCreate(StageLog *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogDestroy(StageLog);
-/* Registration functions */
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogRegister(StageLog, const char [], int *);
-/* Runtime functions */
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogGetStageLog(StageLog *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogPush(StageLog, int);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogPop(StageLog);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetCurrent(StageLog, int *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogSetActive(StageLog, int, PetscTruth);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetActive(StageLog, int, PetscTruth *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogSetVisible(StageLog, int, PetscTruth);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetVisible(StageLog, int, PetscTruth *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetStage(StageLog, const char [], int *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetClassRegLog(StageLog, ClassRegLog *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetEventRegLog(StageLog, EventRegLog *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetClassPerfLog(StageLog, int, ClassPerfLog *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetEventPerfLog(StageLog, int, EventPerfLog *);
-
-EXTERN PetscErrorCode PETSC_DLLEXPORT EventRegLogGetEvent(EventRegLog, const char [], PetscLogEvent *);
 
 EXTERN PetscErrorCode PetscLogEventGetFlops(PetscLogEvent, PetscLogDouble*);
 EXTERN PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent);
@@ -431,22 +422,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogObjectState(PetscObject,const char
 #define MPI_Startall_irecv(count,number,requests) MPI_Startall(number,requests)
 #define MPI_Startall_isend(count,number,requests) MPI_Startall(number,requests)
 #define MPI_Start_isend(count,requests) MPI_Start(requests)
-
-/* Creation and destruction functions */
-#define StageLogCreate(stageLog)                     0
-#define StageLogDestroy(stageLog)                    0
-/* Registration functions */
-#define StageLogRegister(stageLog, name, stage)      0
-/* Runtime functions */
-#define PetscLogGetStageLog(stageLog)                0
-#define StageLogPush(stageLog, stage)                0
-#define StageLogPop(stageLog)                        0
-#define StageLogGetCurrent(stageLog, stage)          0
-#define StageLogSetActive(stageLog, stage, active)   0
-#define StageLogGetActive(stageLog, stage, active)   0
-#define StageLogSetVisible(stageLog, stage, visible) 0
-#define StageLogGetVisible(stageLog, stage, visible) 0
-#define StageLogGetStage(stageLog, name, stage)      0
 #define PetscLogStageGetId(a,b)                      (*(b)=0,0)
 #define PetscLogStageSetActive(a,b)                  0
 #define PetscLogStageGetActive(a,b)                  0

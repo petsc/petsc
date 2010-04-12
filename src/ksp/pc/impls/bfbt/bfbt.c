@@ -48,7 +48,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCBFBtSetOperators(PC pc, Mat K, Mat G, Mat M)
   PetscErrorCode ierr, (*f)(PC, Mat, Mat, Mat);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = PetscObjectQueryFunction((PetscObject) pc, "PCBFBtSetOperators_C", (void (**)(void)) &f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc, K, G, M);CHKERRQ(ierr);
@@ -74,7 +74,7 @@ PetscErrorCode PCBFBtGetKSP(PC pc, KSP *ksp)
   PC_BFBt *ctx = (PC_BFBt *) pc->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (ksp) {*ksp = ctx->ksp;}
   PetscFunctionReturn(0);
 }

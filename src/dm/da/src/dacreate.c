@@ -95,7 +95,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetFromOptions(DA da)
   PetscTruth     flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
 
   ierr = PetscOptionsBegin(((PetscObject)da)->comm,((PetscObject)da)->prefix,"DA Options","DA");CHKERRQ(ierr);
     /* Handle DA dimensions */
@@ -173,7 +173,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm, DA *da)
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(d, _p_DA, struct _DAOps, DM_COOKIE, 0, "DM", comm, DADestroy, DAView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(d, _p_DA, struct _DAOps, DM_CLASSID, 0, "DM", comm, DADestroy, DAView);CHKERRQ(ierr);
   ierr = PetscMemzero(d->ops, sizeof(struct _DAOps));CHKERRQ(ierr);
 
   d->dim        = -1;

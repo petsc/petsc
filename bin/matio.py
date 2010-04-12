@@ -1,6 +1,6 @@
 import numpy as np
 
-COOKIE     = 1211216 # from petscmat.h
+CLASSID     = 1211216 # from petscmat.h
 IntType    = '>i4'   # big-endian, 4 byte integer
 ScalarType = '>f8'   # big-endian, 8 byte real floating
 
@@ -8,7 +8,7 @@ def readmat(filename):
     fh = open(filename, 'rb')
     try:
         header = np.fromfile(fh, dtype=IntType, count=4)
-        assert header[0] == COOKIE 
+        assert header[0] == CLASSID 
         M, N, nz = header[1:]
         #
         I = np.empty(M+1, dtype=IntType)

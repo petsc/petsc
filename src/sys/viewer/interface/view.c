@@ -2,7 +2,7 @@
 
 #include "private/viewerimpl.h"  /*I "petscsys.h" I*/  
 
-PetscCookie PETSC_VIEWER_COOKIE;
+PetscClassId PETSC_VIEWER_CLASSID;
 
 static PetscTruth PetscViewerPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
@@ -48,7 +48,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerInitializePackage(const char path[])
   if (PetscViewerPackageInitialized) PetscFunctionReturn(0);
   PetscViewerPackageInitialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscCookieRegister("Viewer",&PETSC_VIEWER_COOKIE);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Viewer",&PETSC_VIEWER_CLASSID);CHKERRQ(ierr);
 
   /* Register Constructors */
   ierr = PetscViewerRegisterAll(path);CHKERRQ(ierr);
@@ -96,7 +96,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDestroy(PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   if (--((PetscObject)viewer)->refct > 0) PetscFunctionReturn(0);
 
@@ -142,7 +142,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDestroy(PetscViewer viewer)
 PetscErrorCode PETSC_DLLEXPORT PetscViewerGetType(PetscViewer viewer,const PetscViewerType *type)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(type,2);
   *type = ((PetscObject)viewer)->type_name;
   PetscFunctionReturn(0);
@@ -175,7 +175,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetOptionsPrefix(PetscViewer viewer,co
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)viewer,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -207,7 +207,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerAppendOptionsPrefix(PetscViewer viewer
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   ierr = PetscObjectAppendOptionsPrefix((PetscObject)viewer,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -240,7 +240,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerGetOptionsPrefix(PetscViewer viewer,co
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -268,7 +268,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerGetOptionsPrefix(PetscViewer viewer,co
 PetscErrorCode PETSC_DLLEXPORT PetscViewerSetUp(PetscViewer viewer)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscFunctionReturn(0);
 }
 
@@ -305,12 +305,12 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscViewerView(PetscViewer v,PetscViewer view
   PetscViewerFormat     format;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,1);
   PetscValidType(v,1);
   if (!viewer) {
     ierr = PetscViewerASCIIGetStdout(((PetscObject)v)->comm,&viewer);CHKERRQ(ierr);
   }
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(v,1,viewer,2);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);

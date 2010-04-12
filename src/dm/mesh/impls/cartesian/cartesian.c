@@ -22,7 +22,7 @@
 PetscErrorCode PETSCDM_DLLEXPORT MeshCartesianGetMesh(Mesh mesh, ALE::Obj<ALE::CartesianMesh>& m)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
+  PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
   m = *((ALE::Obj<ALE::CartesianMesh> *) mesh->data);
   PetscFunctionReturn(0);
 }
@@ -46,7 +46,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCartesianGetMesh(Mesh mesh, ALE::Obj<ALE::C
 PetscErrorCode PETSCDM_DLLEXPORT MeshCartesianSetMesh(Mesh mesh, const ALE::Obj<ALE::CartesianMesh>& m)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
+  PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
   *((ALE::Obj<ALE::CartesianMesh> *) mesh->data) = m;
   PetscFunctionReturn(0);
 }
@@ -244,7 +244,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreate_Cartesian(Mesh mesh)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh,MESH_COOKIE,1);
+  PetscValidHeaderSpecific(mesh,MESH_CLASSID,1);
 
   ierr = PetscMalloc(sizeof(ALE::Obj<ALE::CartesianMesh>), &cm);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(mesh, sizeof(ALE::Obj<ALE::CartesianMesh>));CHKERRQ(ierr);

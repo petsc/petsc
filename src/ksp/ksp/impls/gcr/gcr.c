@@ -209,7 +209,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGCRSetModifyPC_GCR(KSP ksp,PetscErrorCode (
   KSP_GCR         *ctx = (KSP_GCR *)ksp->data;
 	
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   ctx->modifypc         = function;
   ctx->modifypc_destroy = destroy;
   ctx->modifypc_ctx     = data;

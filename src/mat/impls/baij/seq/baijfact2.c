@@ -5688,7 +5688,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,con
     ierr = MatILUFactorSymbolic_SeqBAIJ_ilu0(fact,A,isrow,iscol,info);CHKERRQ(ierr);
     ierr = MatSeqBAIJSetNumericFactorization(fact,both_identity);CHKERRQ(ierr);
 
-    fact->factor = MAT_FACTOR_ILU;
+    fact->factortype               = MAT_FACTOR_ILU;
     (fact)->info.factor_mallocs    = 0;
     (fact)->info.fill_ratio_given  = info->fill;
     (fact)->info.fill_ratio_needed = 1.0;
@@ -5882,7 +5882,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact,Mat A,IS isrow,IS i
     ierr = MatDuplicateNoCreate_SeqBAIJ(fact,A,MAT_DO_NOT_COPY_VALUES,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatSeqBAIJSetNumericFactorization_inplace(fact,both_identity);CHKERRQ(ierr);
 
-    fact->factor = MAT_FACTOR_ILU;
+    fact->factortype = MAT_FACTOR_ILU;
     b            = (Mat_SeqBAIJ*)fact->data;
     b->row       = isrow;
     b->col       = iscol;

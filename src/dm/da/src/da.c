@@ -28,7 +28,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetOptionsPrefix(DA da,const char prefix[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)da,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -51,7 +51,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetOptionsPrefix(DA da,const char prefix[])
 PetscErrorCode PETSCDM_DLLEXPORT DASetDim(DA da, PetscInt dim)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da, DM_COOKIE, 1);
+  PetscValidHeaderSpecific(da, DM_CLASSID, 1);
   if (da->dim > 0 && dim != da->dim) SETERRQ2(PETSC_ERR_ARG_WRONGSTATE,"Cannot change DA dim from %D after it was set to %D",da->dim,dim);
   da->dim = dim;
   PetscFunctionReturn(0);
@@ -77,7 +77,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetDim(DA da, PetscInt dim)
 PetscErrorCode PETSCDM_DLLEXPORT DASetSizes(DA da, PetscInt M, PetscInt N, PetscInt P)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da, DM_COOKIE, 1);
+  PetscValidHeaderSpecific(da, DM_CLASSID, 1);
   da->M = M;
   da->N = N;
   da->P = P;
@@ -104,7 +104,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetSizes(DA da, PetscInt M, PetscInt N, Petsc
 PetscErrorCode PETSCDM_DLLEXPORT DASetNumProcs(DA da, PetscInt m, PetscInt n, PetscInt p)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da, DM_COOKIE, 1);
+  PetscValidHeaderSpecific(da, DM_CLASSID, 1);
   da->m = m;
   da->n = n;
   da->p = p;
@@ -130,7 +130,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetNumProcs(DA da, PetscInt m, PetscInt n, Pe
 PetscErrorCode PETSCDM_DLLEXPORT DASetPeriodicity(DA da, DAPeriodicType ptype)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   da->wrap = ptype;
   PetscFunctionReturn(0);
 }
@@ -154,7 +154,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetPeriodicity(DA da, DAPeriodicType ptype)
 PetscErrorCode PETSCDM_DLLEXPORT DASetDof(DA da, int dof)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   da->w = dof;
   PetscFunctionReturn(0);
 }
@@ -178,7 +178,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetDof(DA da, int dof)
 PetscErrorCode PETSCDM_DLLEXPORT DASetStencilType(DA da, DAStencilType stype)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   da->stencil_type = stype;
   PetscFunctionReturn(0);
 }
@@ -202,7 +202,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetStencilType(DA da, DAStencilType stype)
 PetscErrorCode PETSCDM_DLLEXPORT DASetStencilWidth(DA da, int width)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   da->s = width;
   PetscFunctionReturn(0);
 }
@@ -230,7 +230,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetVertexDivision(DA da, const PetscInt lx[],
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (lx) {
     if (da->m < 0) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot set vertex division before setting number of procs");
     if (!da->lx) {
@@ -278,7 +278,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetVertexDivision(DA da, const PetscInt lx[],
 PetscErrorCode PETSCDM_DLLEXPORT DASetInterpolationType(DA da,DAInterpolationType ctype)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   da->interptype = ctype;
   PetscFunctionReturn(0);
 }
@@ -310,7 +310,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetInterpolationType(DA da,DAInterpolationTyp
 PetscErrorCode PETSCDM_DLLEXPORT DAGetNeighbors(DA da,const PetscMPIInt *ranks[])
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   *ranks = da->neighbors;
   PetscFunctionReturn(0);
 }
@@ -338,7 +338,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetElements(DM dm,PetscInt *n,const PetscInt 
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_COOKIE,1);
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = (dm->ops->getelements)(dm,n,e);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -364,7 +364,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRestoreElements(DM dm,PetscInt *n,const Petsc
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_COOKIE,1);
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (dm->ops->restoreelements) {
     ierr = (dm->ops->restoreelements)(dm,n,e);CHKERRQ(ierr);
   }
@@ -401,7 +401,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRestoreElements(DM dm,PetscInt *n,const Petsc
 PetscErrorCode PETSCDM_DLLEXPORT DAGetOwnershipRanges(DA da,const PetscInt *lx[],const PetscInt *ly[],const PetscInt *lz[])
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (lx) *lx = da->lx;
   if (ly) *ly = da->ly;
   if (lz) *lz = da->lz;
@@ -523,7 +523,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARefine(DA da,MPI_Comm comm,DA *daref)
   DA             da2;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(daref,3);
 
   if (DAXPeriodic(da->wrap) || da->interptype == DA_Q0){
@@ -604,7 +604,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACoarsen(DA da, MPI_Comm comm,DA *daref)
   DA             da2;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(daref,3);
 
   if (DAXPeriodic(da->wrap) || da->interptype == DA_Q0){
@@ -702,7 +702,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARefineHierarchy(DA da,PetscInt nlevels,DA daf
   PetscInt i,n,*refx,*refy,*refz;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (nlevels < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"nlevels cannot be negative");
   if (nlevels == 0) PetscFunctionReturn(0);
   PetscValidPointer(daf,3);
@@ -755,7 +755,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACoarsenHierarchy(DA da,PetscInt nlevels,DA da
   PetscInt i;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (nlevels < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"nlevels cannot be negative");
   if (nlevels == 0) PetscFunctionReturn(0);
   PetscValidPointer(dac,3);

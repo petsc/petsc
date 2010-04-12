@@ -113,12 +113,12 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFactorGetSolverPackage(Mat,const Mat
 
 
 /* Logging support */
-#define    MAT_FILE_COOKIE 1211216    /* used to indicate matrices in binary files */
-extern PetscCookie PETSCMAT_DLLEXPORT MAT_COOKIE;
-extern PetscCookie PETSCMAT_DLLEXPORT MAT_FDCOLORING_COOKIE;
-extern PetscCookie PETSCMAT_DLLEXPORT MAT_PARTITIONING_COOKIE;
-extern PetscCookie PETSCMAT_DLLEXPORT MAT_NULLSPACE_COOKIE;
-extern PetscCookie PETSCMAT_DLLEXPORT MATMFFD_COOKIE;
+#define    MAT_FILE_CLASSID 1211216    /* used to indicate matrices in binary files */
+extern PetscClassId PETSCMAT_DLLEXPORT MAT_CLASSID;
+extern PetscClassId PETSCMAT_DLLEXPORT MAT_FDCOLORING_CLASSID;
+extern PetscClassId PETSCMAT_DLLEXPORT MAT_PARTITIONING_CLASSID;
+extern PetscClassId PETSCMAT_DLLEXPORT MAT_NULLSPACE_CLASSID;
+extern PetscClassId PETSCMAT_DLLEXPORT MATMFFD_CLASSID;
 
 /*E
     MatReuse - Indicates if matrices obtained from a previous call to MatGetSubMatrices()
@@ -162,7 +162,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOptionsPrefix(Mat,const char*[]);
    MatRegisterDynamic - Adds a new matrix type
 
    Synopsis:
-   PetscErrorCode MatRegisterDynamic(char *name,char *path,char *name_create,PetscErrorCode (*routine_create)(Mat))
+   PetscErrorCode MatRegisterDynamic(const char *name,const char *path,const char *name_create,PetscErrorCode (*routine_create)(Mat))
 
    Not Collective
 
@@ -1053,11 +1053,10 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrderingList(PetscFList *list);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrderingRegister(const char[],const char[],const char[],PetscErrorCode(*)(Mat,const MatOrderingType,IS*,IS*));
 
 /*MC
-   MatOrderingRegisterDynamic - Adds a new sparse matrix ordering to the 
-                               matrix package. 
+   MatOrderingRegisterDynamic - Adds a new sparse matrix ordering to the matrix package. 
 
    Synopsis:
-   PetscErrorCode MatOrderingRegisterDynamic(char *name_ordering,char *path,char *name_create,PetscErrorCode (*routine_create)(MatOrdering))
+   PetscErrorCode MatOrderingRegisterDynamic(const char *name_ordering,const char *path,const char *name_create,PetscErrorCode (*routine_create)(MatOrdering))
 
    Not Collective
 
@@ -1210,7 +1209,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatColoringRegister(const char[],const 
                                matrix package. 
 
    Synopsis:
-   PetscErrorCode MatColoringRegisterDynamic(char *name_coloring,char *path,char *name_create,PetscErrorCode (*routine_create)(MatColoring))
+   PetscErrorCode MatColoringRegisterDynamic(const char *name_coloring,const char *path,const char *name_create,PetscErrorCode (*routine_create)(MatColoring))
 
    Not Collective
 
@@ -1328,7 +1327,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningRegister(const char[],co
    matrix package. 
 
    Synopsis:
-   PetscErrorCode MatPartitioningRegisterDynamic(char *name_partitioning,char *path,char *name_create,PetscErrorCode (*routine_create)(MatPartitioning))
+   PetscErrorCode MatPartitioningRegisterDynamic(const char *name_partitioning,const char *path,const char *name_create,PetscErrorCode (*routine_create)(MatPartitioning))
 
    Not Collective
 
@@ -1638,7 +1637,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDRegister(const char[],const char
    MatMFFDRegisterDynamic - Adds a method to the MatMFFD registry.
 
    Synopsis:
-   PetscErrorCode MatMFFDRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(MatMFFD))
+   PetscErrorCode MatMFFDRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(MatMFFD))
 
    Not Collective
 
@@ -1679,7 +1678,7 @@ M*/
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDRegisterAll(const char[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDRegisterDestroy(void);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDDefaultSetUmin(Mat,PetscReal);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDDSSetUmin(Mat,PetscReal);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDWPSetComputeNormU(Mat,PetscTruth);
 
 

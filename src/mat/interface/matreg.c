@@ -42,7 +42,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat mat, const MatType matype)
   PetscTruth     sametype;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
 
   ierr = PetscTypeCompare((PetscObject)mat,matype,&sametype);CHKERRQ(ierr);
   if (sametype) PetscFunctionReturn(0);
@@ -115,7 +115,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterDestroy(void)
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetType(Mat mat,const MatType *type)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(type,2);
   *type = ((PetscObject)mat)->type_name;
   PetscFunctionReturn(0);

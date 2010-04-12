@@ -1242,7 +1242,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
       }
       /* Initial matrix as if empty */
       ierr = PetscMemzero(mat->ilen,submats[i]->rmap->n*sizeof(PetscInt));CHKERRQ(ierr);
-      submats[i]->factor = C->factor;
+      submats[i]->factortype = C->factortype;
     }
   } else {
     for (i=0; i<ismax; i++) {

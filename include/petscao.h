@@ -23,7 +23,7 @@ S*/
 typedef struct _p_AO* AO;
 
 /* Logging support */
-extern PetscCookie PETSCDM_DLLEXPORT AO_COOKIE;
+extern PetscClassId PETSCDM_DLLEXPORT AO_CLASSID;
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char[]);
 

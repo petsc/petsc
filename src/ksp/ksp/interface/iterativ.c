@@ -21,7 +21,7 @@ PetscErrorCode KSPDefaultFreeWork(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (ksp->work)  {
     ierr = VecDestroyVecs(ksp->work,ksp->nwork);CHKERRQ(ierr);
     ksp->work = PETSC_NULL;
@@ -52,7 +52,7 @@ PetscErrorCode KSPDefaultFreeWork(KSP ksp)
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidDoublePointer(rnorm,2);
   *rnorm = ksp->rnorm;
   PetscFunctionReturn(0);
@@ -84,7 +84,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGetIterationNumber(KSP ksp,PetscInt *its)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidIntPointer(its,2);
   *its = ksp->its;
   PetscFunctionReturn(0);
@@ -125,7 +125,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorSingularValue(KSP ksp,PetscInt n,Pet
   PetscViewerASCIIMonitor viewer = (PetscViewerASCIIMonitor) dummy;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (!dummy) {ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,"stdout",0,&viewer);CHKERRQ(ierr);}
   if (!ksp->calc_sings) {
     ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm %14.12e \n",n,rnorm);CHKERRQ(ierr);
@@ -417,7 +417,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefaultShort(KSP ksp,PetscInt its,Pe
 PetscErrorCode PETSCKSP_DLLEXPORT KSPSkipConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(reason,4);
   *reason = KSP_CONVERGED_ITERATING;
   if (n >= ksp->max_it) *reason = KSP_CONVERGED_ITS;
@@ -490,7 +490,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUIRNorm(KSP ksp)
   KSPDefaultConvergedCtx *ctx = (KSPDefaultConvergedCtx*) ksp->cnvP;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (ksp->converged != KSPDefaultConverged) PetscFunctionReturn(0);
   if (ctx->mininitialrtol) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot use KSPDefaultConvergedSetUIRNorm() and KSPDefaultConvergedSetUMIRNorm() together");
   ctx->initialrtol = PETSC_TRUE;
@@ -528,7 +528,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUMIRNorm(KSP ksp)
   KSPDefaultConvergedCtx *ctx = (KSPDefaultConvergedCtx*) ksp->cnvP;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (ksp->converged != KSPDefaultConverged) PetscFunctionReturn(0);
   if (ctx->initialrtol) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot use KSPDefaultConvergedSetUIRNorm() and KSPDefaultConvergedSetUMIRNorm() together");
   ctx->mininitialrtol = PETSC_TRUE;
@@ -587,7 +587,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP ksp,PetscInt n,PetscRe
   KSPNormType            normtype;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(reason,4);
   *reason = KSP_CONVERGED_ITERATING;
   
@@ -800,10 +800,14 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
     if (!right) SETERRQ(PETSC_ERR_ARG_INCOMP,"You asked for right vectors but did not pass a pointer to hold them");
     if (ksp->vec_sol) vecr = ksp->vec_sol;
     else {
-      Mat pmat;
-      if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-      ierr = PCGetOperators(ksp->pc,PETSC_NULL,&pmat,PETSC_NULL);CHKERRQ(ierr);
-      ierr = MatGetVecs(pmat,&vecr,PETSC_NULL);CHKERRQ(ierr);
+      if (ksp->dm) {
+	ierr = DMGetGlobalVector(ksp->dm,&vecr);CHKERRQ(ierr);
+      } else {
+	Mat pmat;
+	if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
+	ierr = PCGetOperators(ksp->pc,PETSC_NULL,&pmat,PETSC_NULL);CHKERRQ(ierr);
+	ierr = MatGetVecs(pmat,&vecr,PETSC_NULL);CHKERRQ(ierr);
+      }
     }
     ierr = VecDuplicateVecs(vecr,rightn,right);CHKERRQ(ierr);
     if (!ksp->vec_sol) {
@@ -814,10 +818,14 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
     if (!left) SETERRQ(PETSC_ERR_ARG_INCOMP,"You asked for left vectors but did not pass a pointer to hold them");
     if (ksp->vec_rhs) vecl = ksp->vec_rhs;
     else {
-      Mat pmat;
-      if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-      ierr = PCGetOperators(ksp->pc,PETSC_NULL,&pmat,PETSC_NULL);CHKERRQ(ierr);
-      ierr = MatGetVecs(pmat,PETSC_NULL,&vecl);CHKERRQ(ierr);
+      if (ksp->dm) {
+	ierr = DMGetGlobalVector(ksp->dm,&vecl);CHKERRQ(ierr);
+      } else {
+	Mat pmat;
+	if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
+	ierr = PCGetOperators(ksp->pc,PETSC_NULL,&pmat,PETSC_NULL);CHKERRQ(ierr);
+	ierr = MatGetVecs(pmat,PETSC_NULL,&vecl);CHKERRQ(ierr);
+      }
     }
     ierr = VecDuplicateVecs(vecl,leftn,left);CHKERRQ(ierr);
     if (!ksp->vec_rhs) {
@@ -865,7 +873,7 @@ PetscErrorCode KSPDefaultDestroy(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   /* free work vectors */
   ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
   /* free private data structure */
@@ -916,7 +924,7 @@ PetscErrorCode KSPDefaultDestroy(KSP ksp)
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(reason,2);
   *reason = ksp->reason;
   PetscFunctionReturn(0);
@@ -944,7 +952,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDM(KSP ksp,DM dm)
   PC             pc;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (ksp->dm) {ierr = DMDestroy(ksp->dm);CHKERRQ(ierr);}
   ksp->dm = dm;
   ierr = PetscObjectReference((PetscObject)ksp->dm);CHKERRQ(ierr);
@@ -974,7 +982,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDM(KSP ksp,DM dm)
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGetDM(KSP ksp,DM *dm)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   *dm = ksp->dm;
   PetscFunctionReturn(0);
 }

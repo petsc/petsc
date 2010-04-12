@@ -49,7 +49,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomInitializePackage(const char path[])
   if (PetscRandomPackageInitialized) PetscFunctionReturn(0);
   PetscRandomPackageInitialized = PETSC_TRUE;
   /* Register Class */
-  ierr = PetscCookieRegister("PetscRandom",&PETSC_RANDOM_COOKIE);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("PetscRandom",&PETSC_RANDOM_CLASSID);CHKERRQ(ierr);
   ierr = PetscRandomRegisterAll(path);CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(PetscRandomFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);

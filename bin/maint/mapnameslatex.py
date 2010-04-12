@@ -178,14 +178,13 @@ if __name__ == "__main__":
         isrelease       = re.compile(' PETSC_VERSION_RELEASE[ ]*([0-9]*)').search(buf).group(1)
         majorversion    = re.compile(' PETSC_VERSION_MAJOR[ ]*([0-9]*)').search(buf).group(1)    
         minorversion    = re.compile(' PETSC_VERSION_MINOR[ ]*([0-9]*)').search(buf).group(1)
-        subminorversion = re.compile(' PETSC_VERSION_SUBMINOR[ ]*([0-9]*)').search(buf).group(1)
     except:
         raise RuntimeError('Unable to read version information from petscversion.h')
 
     if isrelease == '0':
         version = 'dev'
     else:
-        version=str(majorversion)+'.'+str(minorversion)+'.'+str(subminorversion)
+        version=str(majorversion)+'.'+str(minorversion)
     
 #
 #  Read in mapping of names to manual pages

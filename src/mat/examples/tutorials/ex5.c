@@ -50,7 +50,7 @@ int Mat_Parallel_Load(MPI_Comm comm,const char *name,Mat *newmat)
   ierr = PetscBinaryRead(fd2,(char *)header,4,PETSC_INT);CHKERRQ(ierr);
 
   /* error checking on files */
-  if (header[0] != MAT_FILE_COOKIE) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"not matrix object");
+  if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"not matrix object");
   ierr = MPI_Allreduce(header+2,&N,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
   if (N != size*header[2]) SETERRQ(1,"All files must have matrices with the same number of total columns");
     

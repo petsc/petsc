@@ -50,7 +50,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetType(TS ts,const TSType type)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TS_COOKIE,1);
+  PetscValidHeaderSpecific(ts, TS_CLASSID,1);
   ierr = PetscTypeCompare((PetscObject) ts, type, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
@@ -93,7 +93,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetType(TS ts,const TSType type)
 PetscErrorCode PETSCTS_DLLEXPORT TSGetType(TS ts, const TSType *type)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(type,2);
   *type = ((PetscObject)ts)->type_name;
   PetscFunctionReturn(0);

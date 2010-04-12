@@ -33,7 +33,7 @@ E*/
 #define CharacteristicType char*
 
 /* Logging support */
-extern PetscCookie CHARACTERISTIC_COOKIE;
+extern PetscClassId CHARACTERISTIC_CLASSID;
 extern PetscLogEvent  CHARACTERISTIC_SetUp, CHARACTERISTIC_Solve, CHARACTERISTIC_QueueSetup, CHARACTERISTIC_DAUpdate;
 extern PetscLogEvent  CHARACTERISTIC_HalfTimeLocal, CHARACTERISTIC_HalfTimeRemote, CHARACTERISTIC_HalfTimeExchange;
 extern PetscLogEvent  CHARACTERISTIC_FullTimeLocal, CHARACTERISTIC_FullTimeRemote, CHARACTERISTIC_FullTimeExchange;
@@ -61,7 +61,7 @@ EXTERN PetscErrorCode CharacteristicRegister(const char[],const char[],const cha
    CharacteristicRegisterDynamic - Adds a solver to the method of characteristics package.
 
    Synopsis:
-   PetscErrorCode CharacteristicRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(Characteristic))
+   PetscErrorCode CharacteristicRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(Characteristic))
 
    Not Collective
 

@@ -329,6 +329,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC pc)
 
   ((PC_Factor*)ilu)->fact                    = 0;
   ierr = MatFactorInfoInitialize(&((PC_Factor*)ilu)->info);CHKERRQ(ierr);
+  ((PC_Factor*)ilu)->factortype              = MAT_FACTOR_ILU;
   ((PC_Factor*)ilu)->info.levels             = 0.;
   ((PC_Factor*)ilu)->info.fill               = 1.0; 
   ilu->col                     = 0;

@@ -70,7 +70,7 @@ ex9: ex9.o  chkopts
 
 ex10: ex10.o  chkopts
 	-${CLINKER} -o ex10 ex10.o  ${PETSC_KSP_LIB}
-#	${RM} ex10.o
+	${RM} ex10.o
 
 ex11: ex11.o  chkopts
 	-${CLINKER} -o ex11 ex11.o  ${PETSC_KSP_LIB}
@@ -224,6 +224,10 @@ ex44f: ex44f.o  chkopts
 ex45: ex45.o chkopts
 	-${CLINKER} -o ex45 ex45.o ${PETSC_KSP_LIB}
 	${RM} ex45.o
+
+ex46: ex46.o chkopts
+	-${CLINKER} -o ex46 ex46.o ${PETSC_KSP_LIB}
+	${RM} ex46.o
 
 #----------------------------------------------------------------------------
 runex1:

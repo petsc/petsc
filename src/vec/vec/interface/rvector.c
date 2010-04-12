@@ -36,8 +36,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMaxPointwiseDivide(Vec x,Vec y,PetscReal *m
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1); 
-  PetscValidHeaderSpecific(y,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1); 
+  PetscValidHeaderSpecific(y,VEC_CLASSID,2);
   PetscValidDoublePointer(max,3);
   PetscValidType(x,1);
   PetscValidType(y,2);
@@ -62,10 +62,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMaxPointwiseDivide(Vec x,Vec y,PetscReal *m
 .  val - the dot product
 
    Performance Issues:
-+    per-processor memory bandwidth
-.    interprocessor latency
--    work load inbalance that causes certain processes to arrive much earlier than
-     others
+$    per-processor memory bandwidth
+$    interprocessor latency
+$    work load inbalance that causes certain processes to arrive much earlier than others
 
    Notes for Users of Complex Numbers:
    For complex vectors, VecDot() computes 
@@ -88,8 +87,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecDot(Vec x,Vec y,PetscScalar *val)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1); 
-  PetscValidHeaderSpecific(y,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1); 
+  PetscValidHeaderSpecific(y,VEC_CLASSID,2);
   PetscValidScalarPointer(val,3);
   PetscValidType(x,1);
   PetscValidType(y,2);
@@ -126,10 +125,9 @@ $     NORM_INFINITY denotes max_i |x_i|
    Level: intermediate
 
    Performance Issues:
-+    per-processor memory bandwidth
-.    interprocessor latency
--    work load inbalance that causes certain processes to arrive much earlier than
-     others
+$    per-processor memory bandwidth
+$    interprocessor latency
+$    work load inbalance that causes certain processes to arrive much earlier than others
 
    Compile Option:
    PETSC_HAVE_SLOW_BLAS_NORM2 will cause a C (loop unrolled) version of the norm to be used, rather
@@ -149,7 +147,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecNorm(Vec x,NormType type,PetscReal *val)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidDoublePointer(val,3);
   PetscValidType(x,1);
 
@@ -196,10 +194,9 @@ $     NORM_INFINITY denotes max_i |x_i|
    Level: intermediate
 
    Performance Issues:
-+    per-processor memory bandwidth
-.    interprocessor latency
--    work load inbalance that causes certain processes to arrive much earlier than
-     others
+$    per-processor memory bandwidth
+$    interprocessor latency
+$    work load inbalance that causes certain processes to arrive much earlier than others
 
    Compile Option:
    PETSC_HAVE_SLOW_BLAS_NORM2 will cause a C (loop unrolled) version of the norm to be used, rather
@@ -218,7 +215,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecNormAvailable(Vec x,NormType type,PetscTrut
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidDoublePointer(val,3);
   PetscValidType(x,1);
 
@@ -255,7 +252,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecNormalize(Vec x,PetscReal *val)
   PetscReal      norm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
   ierr = PetscLogEventBegin(VEC_Normalize,x,0,0,0);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
@@ -299,7 +296,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMax(Vec x,PetscInt *p,PetscReal *val)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidScalarPointer(val,3);
   PetscValidType(x,1);
   ierr = PetscLogEventBegin(VEC_Max,x,0,0,0);CHKERRQ(ierr);
@@ -337,7 +334,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMin(Vec x,PetscInt *p,PetscReal *val)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidScalarPointer(val,3);
   PetscValidType(x,1);
   ierr = PetscLogEventBegin(VEC_Min,x,0,0,0);CHKERRQ(ierr);
@@ -382,8 +379,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecTDot(Vec x,Vec y,PetscScalar *val)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
-  PetscValidHeaderSpecific(y,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(y,VEC_CLASSID,2);
   PetscValidScalarPointer(val,3);
   PetscValidType(x,1);
   PetscValidType(y,2);
@@ -428,7 +425,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScale (Vec x, PetscScalar alpha)
   PetscInt       i;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
   if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
   ierr = PetscLogEventBegin(VEC_Scale,x,0,0,0);CHKERRQ(ierr);
@@ -493,7 +490,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSet(Vec x,PetscScalar alpha)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
   if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You cannot call this after you have called VecSetValues() but\n before you have called VecAssemblyBegin/End()");
 #if defined (PETSC_USE_DEBUG)
@@ -554,8 +551,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAXPY(Vec y,PetscScalar alpha,Vec x)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,3);
-  PetscValidHeaderSpecific(y,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(y,VEC_CLASSID,1);
   PetscValidType(x,3);
   PetscValidType(y,1);
   PetscCheckSameTypeAndComm(x,3,y,1);
@@ -596,8 +593,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAXPBY(Vec y,PetscScalar alpha,PetscScalar b
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,4);
-  PetscValidHeaderSpecific(y,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,4);
+  PetscValidHeaderSpecific(y,VEC_CLASSID,1);
   PetscValidType(x,4);
   PetscValidType(y,1);
   PetscCheckSameTypeAndComm(x,4,y,1);
@@ -640,9 +637,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAXPBYPCZ(Vec z,PetscScalar alpha,PetscScala
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,5);
-  PetscValidHeaderSpecific(y,VEC_COOKIE,6);
-  PetscValidHeaderSpecific(z,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,5);
+  PetscValidHeaderSpecific(y,VEC_CLASSID,6);
+  PetscValidHeaderSpecific(z,VEC_CLASSID,1);
   PetscValidType(x,5);
   PetscValidType(y,6);
   PetscValidType(z,1);
@@ -686,8 +683,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAYPX(Vec y,PetscScalar alpha,Vec x)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,3); 
-  PetscValidHeaderSpecific(y,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,3); 
+  PetscValidHeaderSpecific(y,VEC_CLASSID,1);
   PetscValidType(x,3);
   PetscValidType(y,1);
 
@@ -727,9 +724,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecWAXPY(Vec w,PetscScalar alpha,Vec x,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(w,VEC_COOKIE,1);
-  PetscValidHeaderSpecific(x,VEC_COOKIE,3); 
-  PetscValidHeaderSpecific(y,VEC_COOKIE,4);
+  PetscValidHeaderSpecific(w,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,3); 
+  PetscValidHeaderSpecific(y,VEC_CLASSID,4);
   PetscValidType(w,1);
   PetscValidType(x,3);
   PetscValidType(y,4);
@@ -794,7 +791,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetValues(Vec x,PetscInt ni,const PetscInt 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidIntPointer(ix,3);
   PetscValidScalarPointer(y,4);
   PetscValidType(x,1);
@@ -846,7 +843,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetValues(Vec x,PetscInt ni,const PetscInt 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidIntPointer(ix,3);
   PetscValidScalarPointer(y,4);
   PetscValidType(x,1);
@@ -900,7 +897,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetValuesBlocked(Vec x,PetscInt ni,const Pe
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidIntPointer(ix,3);
   PetscValidScalarPointer(y,4);
   PetscValidType(x,1);
@@ -954,7 +951,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetValuesLocal(Vec x,PetscInt ni,const Pets
   PetscInt       lixp[128],*lix = lixp;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidIntPointer(ix,3);
   PetscValidScalarPointer(y,4);
   PetscValidType(x,1);
@@ -1024,7 +1021,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetValuesBlockedLocal(Vec x,PetscInt ni,con
   PetscInt       lixp[128],*lix = lixp;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidIntPointer(ix,3);
   PetscValidScalarPointer(y,4);
   PetscValidType(x,1);
@@ -1085,9 +1082,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMTDot(Vec x,PetscInt nv,const Vec y[],Petsc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidPointer(y,3);
-  PetscValidHeaderSpecific(*y,VEC_COOKIE,3);
+  PetscValidHeaderSpecific(*y,VEC_CLASSID,3);
   PetscValidScalarPointer(val,4);
   PetscValidType(x,2);
   PetscValidType(*y,3);
@@ -1136,11 +1133,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMDot(Vec x,PetscInt nv,const Vec y[],PetscS
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1); 
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1); 
   if (!nv) PetscFunctionReturn(0);
   if (nv < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Number of vectors (given %D) cannot be negative",nv);
   PetscValidPointer(y,3);
-  PetscValidHeaderSpecific(*y,VEC_COOKIE,3);
+  PetscValidHeaderSpecific(*y,VEC_CLASSID,3);
   PetscValidScalarPointer(val,4);
   PetscValidType(x,2);
   PetscValidType(*y,3);
@@ -1177,12 +1174,12 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMAXPY(Vec y,PetscInt nv,const PetscScalar a
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(y,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(y,VEC_CLASSID,1);
   if (!nv) PetscFunctionReturn(0);
   if (nv < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Number of vectors (given %D) cannot be negative",nv);
   PetscValidScalarPointer(alpha,3);
   PetscValidPointer(x,4);
-  PetscValidHeaderSpecific(*x,VEC_COOKIE,4);
+  PetscValidHeaderSpecific(*x,VEC_CLASSID,4);
   PetscValidType(y,1);
   PetscValidType(*x,4);
   PetscCheckSameTypeAndComm(y,1,*x,4);
@@ -1246,7 +1243,7 @@ PetscErrorCode VecGetArray_Private(Vec x,PetscScalar *a[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidPointer(a,2);
   PetscValidType(x,1);
   ierr = (*x->ops->getarray)(x,a);CHKERRQ(ierr);
@@ -1285,7 +1282,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetArrays(const Vec x[],PetscInt n,PetscSca
 
   PetscFunctionBegin;
   PetscValidPointer(x,1);
-  PetscValidHeaderSpecific(*x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(*x,VEC_CLASSID,1);
   PetscValidPointer(a,3);
   if (n <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Must get at least one array n = %D",n);
   ierr = PetscMalloc(n*sizeof(PetscScalar*),&q);CHKERRQ(ierr);
@@ -1330,7 +1327,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArrays(const Vec x[],PetscInt n,Pets
 
   PetscFunctionBegin;
   PetscValidPointer(x,1);
-  PetscValidHeaderSpecific(*x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(*x,VEC_CLASSID,1);
   PetscValidPointer(a,3);
 
   for(i=0;i<n;++i) {
@@ -1343,10 +1340,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArrays(const Vec x[],PetscInt n,Pets
 /*MC
    VecRestoreArray - Restores a vector after VecGetArray() has been called.
 
-   Not Collective
-
    Synopsis:
    PetscErrorCode VecRestoreArray(Vec x,PetscScalar *a[])
+
+   Not Collective
 
    Input Parameters:
 +  x - the vector
@@ -1391,7 +1388,7 @@ PetscErrorCode VecRestoreArray_Private(Vec x,PetscScalar *a[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (a) PetscValidPointer(a,2);
   PetscValidType(x,1);
 #if defined(PETSC_USE_DEBUG)
@@ -1431,7 +1428,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPlaceArray(Vec vec,const PetscScalar array[
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(vec,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
   PetscValidType(vec,1);
   if (array) PetscValidScalarPointer(array,2);
   if (vec->ops->placearray) {
@@ -1476,7 +1473,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecReplaceArray(Vec vec,const PetscScalar arra
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(vec,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
   PetscValidType(vec,1);
   if (vec->ops->replacearray) {
     ierr = (*vec->ops->replacearray)(vec,array);CHKERRQ(ierr);
@@ -1563,6 +1560,8 @@ M*/
 
     Synopsis:
     VecDestroyVecsF90({Vec, pointer :: x(:)},integer n,integer ierr)
+
+    Collective on Vec
 
     Input Parameters:
 +   x - pointer to array of vector pointers
@@ -1656,7 +1655,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray2d(Vec x,PetscInt m,PetscInt n,Pets
   PetscScalar    *aa;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidPointer(a,6);
   PetscValidType(x,1);
   ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
@@ -1704,7 +1703,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray2d(Vec x,PetscInt m,PetscInt n,
   void           *dummy;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidPointer(a,6);
   PetscValidType(x,1);
   dummy = (void*)(*a + mstart);
@@ -1749,7 +1748,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray1d(Vec x,PetscInt m,PetscInt mstart
   PetscInt       N;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidPointer(a,4);
   PetscValidType(x,1);
   ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
@@ -1793,7 +1792,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray1d(Vec x,PetscInt m,PetscInt ms
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
   ierr = VecRestoreArray(x,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1844,7 +1843,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray3d(Vec x,PetscInt m,PetscInt n,Pets
   PetscScalar    *aa,**b;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidPointer(a,8);
   PetscValidType(x,1);
   ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
@@ -1900,7 +1899,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray3d(Vec x,PetscInt m,PetscInt n,
   void           *dummy;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidPointer(a,8);
   PetscValidType(x,1);
   dummy = (void*)(*a + mstart);
@@ -1955,7 +1954,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray4d(Vec x,PetscInt m,PetscInt n,Pets
   PetscScalar    *aa,***b,**c;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidPointer(a,10);
   PetscValidType(x,1);
   ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
@@ -2021,7 +2020,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray4d(Vec x,PetscInt m,PetscInt n,
   void           *dummy;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidPointer(a,8);
   PetscValidType(x,1);
   dummy = (void*)(*a + mstart);

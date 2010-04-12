@@ -105,10 +105,10 @@ PetscErrorCode MatLUFactorNumeric_Matlab(Mat F,Mat A,const MatFactorInfo *info)
   PetscReal      dtcol = info->dtcol;
 
   PetscFunctionBegin;
-  if (F->factor == MAT_FACTOR_ILU || info->dt > 0) {
+  if (F->factortype == MAT_FACTOR_ILU || info->dt > 0) {
     if (info->dtcol == PETSC_DEFAULT)  dtcol = .01;
     F->ops->solve           = MatSolve_Matlab;
-    F->factor               = MAT_FACTOR_LU;
+    F->factortype           = MAT_FACTOR_LU;
     ierr = PetscMatlabEnginePut(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),(PetscObject)A);CHKERRQ(ierr);
     _A   = ((PetscObject)A)->name;
     ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),"info_%s = struct('droptol',%g,'thresh',%g);",_A,info->dt,dtcol);CHKERRQ(ierr);
@@ -173,7 +173,7 @@ PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype,Mat *F)
   (*F)->ops->ilufactorsymbolic = MatLUFactorSymbolic_Matlab;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)(*F),"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqaij_matlab",MatFactorGetSolverPackage_seqaij_matlab);CHKERRQ(ierr);
 
-  (*F)->factor                = ftype;
+  (*F)->factortype             = ftype;
   PetscFunctionReturn(0);
 }
 

@@ -90,7 +90,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectCreate(MPI_Comm comm, PetscObject *obj
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscHeaderCreate(o,_p_GenericObject,-1,PETSC_OBJECT_COOKIE,0,"PetscObject",comm,PetscObjectDestroy_GenericObject,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(o,_p_GenericObject,-1,PETSC_OBJECT_CLASSID,0,"PetscObject",comm,PetscObjectDestroy_GenericObject,0);CHKERRQ(ierr);
   /* records not yet defined in PetscObject 
   o->data        = 0;
   o->setupcalled = 0;
@@ -108,7 +108,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectCreate(MPI_Comm comm, PetscObject *obj
 
    Input Parameter:
 +  comm - An MPI communicator
-.  cookie - The class cookie
+.  classid - The class classid
 -  name - The class name
 
    Output Parameter:
@@ -124,7 +124,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectCreate(MPI_Comm comm, PetscObject *obj
     Concepts: deleting object
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectCreateGeneric(MPI_Comm comm, PetscCookie cookie, const char name[], PetscObject *obj)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectCreateGeneric(MPI_Comm comm, PetscClassId classid, const char name[], PetscObject *obj)
 {
   GenericObject  o;
   PetscErrorCode ierr;
@@ -134,7 +134,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectCreateGeneric(MPI_Comm comm, PetscCook
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscHeaderCreate(o,_p_GenericObject,-1,cookie,0,name,comm,PetscObjectDestroy_GenericObject,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(o,_p_GenericObject,-1,classid,0,name,comm,PetscObjectDestroy_GenericObject,0);CHKERRQ(ierr);
   /* records not yet defined in PetscObject 
   o->data        = 0;
   o->setupcalled = 0;
@@ -201,7 +201,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectView(PetscObject obj,PetscViewer viewe
   if (!viewer) {
     ierr = PetscViewerASCIIGetStdout(obj->comm,&viewer);CHKERRQ(ierr);
   }
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
 
   if (obj->bops->view) {
     ierr = (*obj->bops->view)(obj,viewer);CHKERRQ(ierr);

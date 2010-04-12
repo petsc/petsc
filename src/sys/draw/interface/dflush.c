@@ -24,7 +24,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawFlush(PetscDraw draw)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   if (draw->ops->flush) {
     ierr = (*draw->ops->flush)(draw);CHKERRQ(ierr);
   }

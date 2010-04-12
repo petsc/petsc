@@ -484,3 +484,275 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetAggregates(DM dmc, DM dmf, Mat *rest)
   ierr = (*dmc->ops->getaggregates)(dmc, dmf, rest);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMSetContext"
+/*@
+    DMSetContext - Set a user context into a DM object
+
+    Not Collective
+
+    Input Parameters:
++   dm - the DM object 
+-   ctx - the user context
+
+    Level: intermediate
+
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMSetContext(DM dm,void *ctx)
+{
+  PetscFunctionBegin;
+  dm->ctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMGetContext"
+/*@
+    DMGetContext - Gets a user context from a DM object
+
+    Not Collective
+
+    Input Parameter:
+.   dm - the DM object 
+
+    Output Parameter:
+.   ctx - the user context
+
+    Level: intermediate
+
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMGetContext(DM dm,void **ctx)
+{
+  PetscFunctionBegin;
+  *ctx = dm->ctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMKSPSetInitialGuess"
+/*@
+    DMKSPSetInitialGuess - sets a function to compute an initial guess vector entries for the KSP solvers
+
+    Collective on DM
+
+    Input Parameter:
++   dm - the DM object to destroy
+-   f - the function to compute the initial guess
+
+    Level: intermediate
+
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMKSPSetRhs(), DMKSPSetMat()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMKSPSetInitialGuess(DM dm,PetscErrorCode (*f)(DM,Vec))
+{
+  PetscFunctionBegin;
+  dm->ops->formkspinitialguess = f;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMKSPSetRhs"
+/*@
+    DMKSPSetRhs - sets a function to compute the right hand side vector entries for the KSP solver
+
+    Collective on DM
+
+    Input Parameter:
++   dm - the DM object to destroy
+-   f - the function to compute the right hand side
+
+    Level: intermediate
+
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMKSPSetInitialGuess(),
+         DMKSPSetMat()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMKSPSetRhs(DM dm,PetscErrorCode (*f)(DM,Vec))
+{
+  PetscFunctionBegin;
+  dm->ops->formksprhs = f;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMKSPSetMat"
+/*@
+    DMKSPSetMat - sets a function to compute the matrix entries for the KSP solver
+
+    Collective on DM
+
+    Input Parameter:
++   dm - the DM object to destroy
+-   f - the function to compute the matrix entries
+
+    Level: intermediate
+
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMKSPSetInitialGuess(), 
+         DMKSPSetRhs()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMKSPSetMat(DM dm,PetscErrorCode (*f)(DM,Mat,Mat,MatStructure*))
+{
+  PetscFunctionBegin;
+  dm->ops->formkspmat = f;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMKSPComputeInitialGuess"
+/*@
+    DMKSPComputeInitialGuess - computes an initial guess vector entries for the KSP solvers
+
+    Collective on DM
+
+    Input Parameter:
++   dm - the DM object to destroy
+-   x - the vector to hold the initial guess values
+
+    Level: developer
+
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMKSPSetRhs(), DMKSPSetMat()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMKSPComputeInitialGuess(DM dm,Vec x)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (!dm->ops->formkspinitialguess) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMKSPSetInitialGuess()");
+  ierr = (*dm->ops->formkspinitialguess)(dm,x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMKSPHasInitialGuess"
+/*@
+    DMKSPHasInitialGuess - does the DM object have an initial guess function
+
+    Collective on DM
+
+    Input Parameter:
+.   dm - the DM object to destroy
+
+    Output Parameter:
+.   flg - PETSC_TRUE if function exists
+
+    Level: developer
+
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMKSPSetRhs(), DMKSPSetMat()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMKSPHasInitialGuess(DM dm,PetscTruth *flg)
+{
+  PetscFunctionBegin;
+  *flg =  (dm->ops->formkspinitialguess) ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMKSPHasRhs"
+/*@
+    DMKSPHasRhs - does the DM object have a right hand side function
+
+    Collective on DM
+
+    Input Parameter:
+.   dm - the DM object to destroy
+
+    Output Parameter:
+.   flg - PETSC_TRUE if function exists
+
+    Level: developer
+
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMKSPSetRhs(), DMKSPSetMat()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMKSPHasRhs(DM dm,PetscTruth *flg)
+{
+  PetscFunctionBegin;
+  *flg =  (dm->ops->formksprhs) ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMKSPHasMat"
+/*@
+    DMKSPHasMat - does the DM object have a matrix function
+
+    Collective on DM
+
+    Input Parameter:
+.   dm - the DM object to destroy
+
+    Output Parameter:
+.   flg - PETSC_TRUE if function exists
+
+    Level: developer
+
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMKSPSetRhs(), DMKSPSetMat()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMKSPHasMat(DM dm,PetscTruth *flg)
+{
+  PetscFunctionBegin;
+  *flg =  (dm->ops->formkspmat) ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMKSPComputeRhs"
+/*@
+    DMKSPComputeRhs - computes the right hand side vector entries for the KSP solver
+
+    Collective on DM
+
+    Input Parameter:
++   dm - the DM object to destroy
+-   b - the vector to hold the right hand side entries
+
+    Level: developer
+
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMKSPSetInitialGuess(),
+         DMKSPSetMat()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMKSPComputeRhs(DM dm,Vec b)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (!dm->ops->formksprhs) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMKSPSetRhs()");
+  ierr = (*dm->ops->formksprhs)(dm,b);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMKSPComputeMat"
+/*@
+    DMKSPComputeMat - sets a function to compute the matrix entries for the KSP solver
+
+    Collective on DM
+
+    Input Parameter:
++   dm - the DM object to destroy
+.   A - matrix that defines the operator for the linear solve
+-   B - the matrix used to construct the preconditioner
+
+    Level: developer
+
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMKSPSetInitialGuess(), 
+         DMKSPSetRhs()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMKSPComputeMat(DM dm,Mat A,Mat B,MatStructure *stflag)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (!dm->ops->formkspmat) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMKSPSetMat()");
+  ierr = (*dm->ops->formkspmat)(dm,A,B,stflag);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

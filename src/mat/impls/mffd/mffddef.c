@@ -11,7 +11,7 @@
   -------------------
       MatMFFDCompute_  - for a given point and direction computes h
 
-      MatMFFDCreate_ - fills in the MatMFFD data structure
+      MatCreateMFFD _ - fills in the MatMFFD data structure
                            for this particular implementation
 
       
@@ -168,7 +168,7 @@ static PetscErrorCode MatMFFDSetFromOptions_DS(MatMFFD ctx)
 #define __FUNCT__ "MatMFFDDestroy_DS"
 /*
    MatMFFDDestroy_DS - Frees the space allocated by 
-   MatMFFDCreate_DS(). 
+   MatCreateMFFD_DS(). 
 
    Input Parameter:
 .  ctx - the matrix free context
@@ -232,7 +232,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDDSSetUmin(Mat A,PetscReal umin)
   PetscErrorCode ierr,(*f)(Mat,PetscReal);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatMFFDDSSetUmin_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(A,umin);CHKERRQ(ierr);
@@ -268,8 +268,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDDSSetUmin(Mat A,PetscReal umin)
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatMFFDCreate_DS"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDCreate_DS(MatMFFD ctx)
+#define __FUNCT__ "MatCreateMFFD_DS"
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMFFD_DS(MatMFFD ctx)
 {
   MatMFFD_DS       *hctx;
   PetscErrorCode   ierr;

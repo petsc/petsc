@@ -37,7 +37,7 @@ PetscTruth PetscBeganMPE = PETSC_FALSE;
 PetscErrorCode PETSC_DLLEXPORT PetscLogMPEBegin(void)
 {
   PetscErrorCode ierr;
-  int        rank;
+  PetscMPIInt    rank;
     
   PetscFunctionBegin;
   /* Do MPE initialization */
@@ -66,7 +66,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogMPEBegin(void)
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscLogMPEDump(const char sname[])
 {
-  char name[PETSC_MAX_PATH_LEN];
+  char           name[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

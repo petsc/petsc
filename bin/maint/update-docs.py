@@ -84,7 +84,6 @@ def main():
         'faq.html',
         'index.html',
         'linearsolvertable.html',
-        'troubleshooting.html',
         'changes/2015.html',
         'changes/2016.html',
         'changes/2017.html',

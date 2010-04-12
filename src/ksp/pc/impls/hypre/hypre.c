@@ -957,7 +957,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHYPRESetType(PC pc,const char name[])
   PetscErrorCode ierr,(*f)(PC,const char[]);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidCharPointer(name,2);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCHYPRESetType_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -988,7 +988,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHYPREGetType(PC pc,const char *name[])
   PetscErrorCode ierr,(*f)(PC,const char*[]);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(name,2);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCHYPREGetType_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -1523,8 +1523,7 @@ PetscErrorCode PCSetUp_SysPFMG(PC pc)
 
    Notes:  This is for CELL-centered descretizations
 
-           This must be used with the MATHYPRESSTRUCT matrix type
-.
+           This must be used with the MATHYPRESSTRUCT matrix type.
            This is less general than in hypre, it supports only one part, and one block per process defined by a PETSc DA.
            Also, only cell-centered variables.
 

@@ -429,7 +429,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiSetUseTrueLocal(PC pc)
   PetscErrorCode ierr,(*f)(PC);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiSetUseTrueLocal_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
@@ -473,7 +473,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiGetSubKSP(PC pc,PetscInt *n_local,Pet
   PetscErrorCode ierr,(*f)(PC,PetscInt *,PetscInt *,KSP **);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiGetSubKSP_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,n_local,first_local,ksp);CHKERRQ(ierr);
@@ -514,7 +514,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiSetTotalBlocks(PC pc,PetscInt blocks,
   PetscErrorCode ierr,(*f)(PC,PetscInt,const PetscInt[]);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (blocks <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must have positive blocks");
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiSetTotalBlocks_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -549,7 +549,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiGetTotalBlocks(PC pc, PetscInt *block
   PetscErrorCode ierr,(*f)(PC,PetscInt*, const PetscInt *[]);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc, PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc, PC_CLASSID,1);
   PetscValidIntPointer(blocks,2);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiGetTotalBlocks_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -585,7 +585,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiSetLocalBlocks(PC pc,PetscInt blocks,
   PetscErrorCode ierr,(*f)(PC,PetscInt,const PetscInt []);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (blocks < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must have nonegative blocks");
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiSetLocalBlocks_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -621,7 +621,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiGetLocalBlocks(PC pc, PetscInt *block
   PetscErrorCode ierr,(*f)(PC,PetscInt*, const PetscInt *[]);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc, PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc, PC_CLASSID,1);
   PetscValidIntPointer(blocks,2);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiGetLocalBlocks_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {

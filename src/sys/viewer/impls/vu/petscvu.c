@@ -186,7 +186,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerVUGetPointer(PetscViewer viewer, FILE 
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(fd,2);
   *fd = vu->fd;
   PetscFunctionReturn(0);
@@ -267,7 +267,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerVUGetVecSeen(PetscViewer viewer, Petsc
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(vecSeen,2);
   *vecSeen = vu->vecSeen;
   PetscFunctionReturn(0);

@@ -257,7 +257,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseOrdering(PC pc,PetscTruth flag
   PetscErrorCode ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorSetReuseOrdering_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,flag);CHKERRQ(ierr);
@@ -308,6 +308,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Cholesky(PC pc)
   ((PC_Factor*)dir)->fact                   = 0;
   dir->inplace                = PETSC_FALSE;
   ierr = MatFactorInfoInitialize(&((PC_Factor*)dir)->info);CHKERRQ(ierr);
+  ((PC_Factor*)dir)->factortype         = MAT_FACTOR_CHOLESKY;
   ((PC_Factor*)dir)->info.fill          = 5.0;
   ((PC_Factor*)dir)->info.shifttype     = (PetscReal) MAT_SHIFT_NONE;
   ((PC_Factor*)dir)->info.shiftamount   = 0.0;

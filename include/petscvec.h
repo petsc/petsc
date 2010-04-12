@@ -50,9 +50,9 @@ E*/
 #define VECSIEVE       "sieve"
 
 /* Logging support */
-#define    VEC_FILE_COOKIE 1211214
-extern PETSCVEC_DLLEXPORT PetscCookie VEC_COOKIE;
-extern PETSCVEC_DLLEXPORT PetscCookie VEC_SCATTER_COOKIE;
+#define    VEC_FILE_CLASSID 1211214
+extern PETSCVEC_DLLEXPORT PetscClassId VEC_CLASSID;
+extern PETSCVEC_DLLEXPORT PetscClassId VEC_SCATTER_CLASSID;
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecFinalizePackage(void);
@@ -190,7 +190,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMaxPointwiseDivide(Vec,Vec,PetscReal
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecShift(Vec,PetscScalar);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecReciprocal(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPermute(Vec, IS, PetscTruth);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSqrt(Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSqrtAbs(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecLog(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecExp(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecAbs(Vec);
@@ -273,7 +273,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecRegisterDestroy(void);
   VecRegisterDynamic - Adds a new vector component implementation
 
   Synopsis:
-  PetscErrorCode VecRegisterDynamic(char *name, char *path, char *func_name, PetscErrorCode (*create_func)(Vec))
+  PetscErrorCode VecRegisterDynamic(const char *name, const char *path, const char *func_name, PetscErrorCode (*create_func)(Vec))
 
   Not Collective
 

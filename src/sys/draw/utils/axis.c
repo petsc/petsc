@@ -5,7 +5,7 @@
 
 #include "petscsys.h"              /*I "petscsys.h" I*/
 
-PetscCookie DRAWAXIS_COOKIE = 0;
+PetscClassId DRAWAXIS_CLASSID = 0;
 
 struct _p_DrawAxis {
   PETSCHEADER(int);
@@ -62,7 +62,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis 
   PetscTruth     isnull;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidPointer(axis,2);
   ierr = PetscTypeCompare(obj,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) {
@@ -70,7 +70,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis 
     (*axis)->win = draw;
     PetscFunctionReturn(0);
   }
-  ierr = PetscHeaderCreate(ad,_p_DrawAxis,int,DRAWAXIS_COOKIE,0,"PetscDrawAxis",((PetscObject)obj)->comm,PetscDrawAxisDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(ad,_p_DrawAxis,int,DRAWAXIS_CLASSID,0,"PetscDrawAxis",((PetscObject)obj)->comm,PetscDrawAxisDestroy,0);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(draw,ad);CHKERRQ(ierr);
   ad->xticks    = PetscADefTicks;
   ad->yticks    = PetscADefTicks;

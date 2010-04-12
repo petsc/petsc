@@ -7,8 +7,8 @@
 #include "private/daimpl.h"    /*I   "petscda.h"   I*/
 
 /* Logging support */
-PetscCookie PETSCDM_DLLEXPORT DM_COOKIE;
-PetscCookie PETSCDM_DLLEXPORT ADDA_COOKIE;
+PetscClassId PETSCDM_DLLEXPORT DM_CLASSID;
+PetscClassId PETSCDM_DLLEXPORT ADDA_CLASSID;
 PetscLogEvent  DA_GlobalToLocal, DA_LocalToGlobal, DA_LocalADFunction;
 
 #undef __FUNCT__  
@@ -23,7 +23,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_Private(DM dm,PetscTruth *done)
   PetscErrorCode i,cnt = 0;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_COOKIE,1);
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   *done = PETSC_FALSE;
 
   for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
@@ -74,7 +74,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DADestroy(DA da)
   PetscTruth     done;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
 
   ierr = DMDestroy_Private((DM)da,&done);CHKERRQ(ierr);
   if (!done) PetscFunctionReturn(0);
@@ -186,7 +186,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DADestroy(DA da)
 PetscErrorCode PETSCDM_DLLEXPORT DAGetISLocalToGlobalMapping(DA da,ISLocalToGlobalMapping *map)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(map,2);
   *map = da->ltogmap;
   PetscFunctionReturn(0);
@@ -222,7 +222,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetISLocalToGlobalMapping(DA da,ISLocalToGlob
 PetscErrorCode PETSCDM_DLLEXPORT DAGetISLocalToGlobalMappingBlck(DA da,ISLocalToGlobalMapping *map)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(map,2);
   *map = da->ltogmapb;
   PetscFunctionReturn(0);

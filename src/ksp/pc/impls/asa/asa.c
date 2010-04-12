@@ -74,7 +74,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASASetDM(PC pc,DM dm)
   PetscErrorCode ierr,(*f)(PC,DM);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASASetDM_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,dm);CHKERRQ(ierr);
@@ -125,7 +125,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASASetTolerances(PC pc, PetscReal rtol, Pets
   PetscErrorCode ierr,(*f)(PC,PetscReal,PetscReal,PetscReal,PetscInt);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASASetTolerances_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,rtol,abstol,dtol,maxits);CHKERRQ(ierr);
@@ -141,7 +141,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASASetTolerances_ASA(PC pc, PetscReal rtol, 
   PC_ASA         *asa = (PC_ASA *) pc->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (rtol != PETSC_DEFAULT)   asa->rtol   = rtol;
   if (abstol != PETSC_DEFAULT)   asa->abstol   = abstol;
   if (dtol != PETSC_DEFAULT)   asa->divtol = dtol;
@@ -1760,7 +1760,7 @@ PetscErrorCode PCApply_ASA(PC pc,Vec x,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (!asa->multigrid_constructed) {
     ierr = PCConstructMultigrid_ASA(pc);CHKERRQ(ierr);
   }    
@@ -1819,7 +1819,7 @@ PetscErrorCode PCApplyRichardson_ASA(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,Pets
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (! asa->multigrid_constructed) {
     ierr = PCConstructMultigrid_ASA(pc);CHKERRQ(ierr);
   }    
@@ -1909,7 +1909,7 @@ static PetscErrorCode PCDestroy_ASA(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   asa = (PC_ASA*)pc->data;
   asa_lev = asa->levellist;
 
@@ -1950,7 +1950,7 @@ static PetscErrorCode PCSetFromOptions_ASA(PC pc)
   char           type[20];
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
 
   ierr = PetscOptionsHead("ASA options");CHKERRQ(ierr);
   /* convergence parameters */
@@ -2059,7 +2059,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASA(PC pc)
   PC_ASA         *asa;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
 
   /*
       Set the pointers for the functions that are provided above.
@@ -2084,10 +2084,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASA(PC pc)
 
   /* register events */
   if (! asa_events_registered) {
-    ierr = PetscLogEventRegister("PCInitializationStage_ASA", PC_COOKIE,&PC_InitializationStage_ASA);CHKERRQ(ierr);
-    ierr = PetscLogEventRegister("PCGeneralSetupStage_ASA",   PC_COOKIE,&PC_GeneralSetupStage_ASA);CHKERRQ(ierr);
-    ierr = PetscLogEventRegister("PCCreateTransferOp_ASA",    PC_COOKIE,&PC_CreateTransferOp_ASA);CHKERRQ(ierr);
-    ierr = PetscLogEventRegister("PCCreateVcycle_ASA",        PC_COOKIE,&PC_CreateVcycle_ASA);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister("PCInitializationStage_ASA", PC_CLASSID,&PC_InitializationStage_ASA);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister("PCGeneralSetupStage_ASA",   PC_CLASSID,&PC_GeneralSetupStage_ASA);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister("PCCreateTransferOp_ASA",    PC_CLASSID,&PC_CreateTransferOp_ASA);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister("PCCreateVcycle_ASA",        PC_CLASSID,&PC_CreateVcycle_ASA);CHKERRQ(ierr);
     asa_events_registered = PETSC_TRUE;
   }
 

@@ -44,9 +44,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DALocalToGlobal(DA da,Vec l,InsertMode mode,Vec
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
-  PetscValidHeaderSpecific(g,VEC_COOKIE,2);
-  PetscValidHeaderSpecific(g,VEC_COOKIE,4);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecific(g,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(g,VEC_CLASSID,4);
   ierr = VecScatterBegin(da->ltog,l,g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(da->ltog,l,g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);

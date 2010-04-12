@@ -177,7 +177,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC pc)
   ierr = PetscStrallocpy(MATORDERING_NATURAL,&((PC_Factor*)icc)->ordering);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MAT_SOLVER_PETSC,&((PC_Factor*)icc)->solvertype);CHKERRQ(ierr);
   ierr = MatFactorInfoInitialize(&((PC_Factor*)icc)->info);CHKERRQ(ierr);
-  ((PC_Factor*)icc)->info.levels	  = 0.;
+  ((PC_Factor*)icc)->factortype         = MAT_FACTOR_ICC;
+  ((PC_Factor*)icc)->info.levels	= 0.;
   ((PC_Factor*)icc)->info.fill          = 1.0;
   icc->implctx            = 0;
 

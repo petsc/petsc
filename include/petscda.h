@@ -93,11 +93,15 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetElementType(DA,DAElementType);
 /*MC
    DAGetElements - same as DMGetElements()
    uses DA instead of DM as input
+
+   Level: beginner
 M*/
 #define DAGetElements(da,a,b)      DMGetElements((DM)da,a,b)
 /*MC
    DARestoreElements - same as DMRestoreElements()
    uses DA instead of DM as input
+
+   Level: beginner
 M*/
 #define DARestoreElements(da,a,b)  DMRestoreElements((DM)da,a,b)
 
@@ -108,7 +112,7 @@ M*/
 
 typedef enum { DA_X,DA_Y,DA_Z } DADirection;
 
-extern PetscCookie PETSCDM_DLLEXPORT DM_COOKIE;
+extern PetscClassId PETSCDM_DLLEXPORT DM_CLASSID;
 
 #define MATSEQUSFFT        "sequsfft"
 
@@ -202,7 +206,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT DARegisterDestroy(void);
   DARegisterDynamic - Adds a new DA component implementation
 
   Synopsis:
-  PetscErrorCode DARegisterDynamic(char *name, char *path, char *func_name, PetscErrorCode (*create_func)(DA))
+  PetscErrorCode DARegisterDynamic(const char *name,const char *path,const char *func_name, PetscErrorCode (*create_func)(DA))
 
   Not Collective
 
@@ -311,6 +315,8 @@ typedef struct {
    Synopsis:
    void  DAForEachPointBegin2d(DALocalInfo *info,PetscInt i,PetscInt j);
    
+   Not Collective
+
    Level: intermediate
 
 .seealso: DAForEachPointEnd2d(), DAVecGetArray()
@@ -326,6 +332,8 @@ M*/
    Synopsis:
    void  DAForEachPointEnd2d;
    
+   Not Collective
+
    Level: intermediate
 
 .seealso: DAForEachPointBegin2d(), DAVecGetArray()
@@ -416,11 +424,11 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA(Mat,DA);
 /*MC
        DASetLocalAdicFunction - Caches in a DA a local function computed by ADIC/ADIFOR
 
-   Collective on DA
-
    Synopsis:
    PetscErrorCode DASetLocalAdicFunction(DA da,DALocalFunction1 ad_lf)
    
+   Collective on DA
+
    Input Parameter:
 +  da - initial distributed array
 -  ad_lf - the local function as computed by ADIC/ADIFOR
@@ -514,6 +522,18 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGlobalToLocalEnd(DM,Vec,InsertMode,Ve
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMLocalToGlobal(DM,Vec,InsertMode,Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetElements(DM,PetscInt *,const PetscInt*[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMRestoreElements(DM,PetscInt *,const PetscInt*[]);
+
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMSetContext(DM,void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetContext(DM,void**);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPSetInitialGuess(DM,PetscErrorCode (*)(DM,Vec));
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPSetRhs(DM,PetscErrorCode (*)(DM,Vec));
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPSetMat(DM,PetscErrorCode (*)(DM,Mat,Mat,MatStructure *));
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPComputeInitialGuess(DM,Vec);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPHasInitialGuess(DM,PetscTruth*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPHasMat(DM,PetscTruth*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPHasRhs(DM,PetscTruth*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPComputeRhs(DM,Vec);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPComputeMat(DM,Mat,Mat,MatStructure *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMFinalizePackage(void);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetColoring(DA,ISColoringType,const MatType,ISColoring *);
@@ -630,7 +650,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryMatlabOutputVecDA(PetscVi
 S*/
 typedef struct _p_ADDA* ADDA;
 
-extern PetscCookie PETSCDM_DLLEXPORT ADDA_COOKIE;
+extern PetscClassId PETSCDM_DLLEXPORT ADDA_CLASSID;
 
 PetscErrorCode PETSCDM_DLLEXPORT ADDACreate(MPI_Comm,PetscInt,PetscInt*,PetscInt*,PetscInt,PetscTruth*,ADDA*);
 PetscErrorCode PETSCDM_DLLEXPORT ADDADestroy(ADDA);

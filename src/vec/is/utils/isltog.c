@@ -3,7 +3,7 @@
 #include "petscvec.h"   /*I "petscvec.h" I*/
 #include "private/isimpl.h"    /*I "petscis.h"  I*/
 
-PetscCookie PETSCVEC_DLLEXPORT IS_LTOGM_COOKIE;
+PetscClassId PETSCVEC_DLLEXPORT IS_LTOGM_CLASSID;
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISLocalToGlobalMappingGetSize"
@@ -27,7 +27,7 @@ PetscCookie PETSCVEC_DLLEXPORT IS_LTOGM_COOKIE;
 PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping,PetscInt *n)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE,1);
+  PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
   PetscValidIntPointer(n,2);
   *n = mapping->n;
   PetscFunctionReturn(0);
@@ -58,11 +58,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingView(ISLocalToGlobalMapp
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE,1);
+  PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
   if (!viewer) {
     ierr = PetscViewerASCIIGetStdout(((PetscObject)mapping)->comm,&viewer);CHKERRQ(ierr);
   }
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
 
   ierr = MPI_Comm_rank(((PetscObject)mapping)->comm,&rank);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -106,7 +106,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingCreateIS(IS is,ISLocalTo
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(mapping,2);
 
   ierr = PetscObjectGetComm((PetscObject)is,&comm);CHKERRQ(ierr);
@@ -192,7 +192,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingCreateNC(MPI_Comm cm,Pet
   ierr = ISInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(*mapping,_p_ISLocalToGlobalMapping,int,IS_LTOGM_COOKIE,0,"ISLocalToGlobalMapping",
+  ierr = PetscHeaderCreate(*mapping,_p_ISLocalToGlobalMapping,int,IS_LTOGM_CLASSID,0,"ISLocalToGlobalMapping",
 			   cm,ISLocalToGlobalMappingDestroy,ISLocalToGlobalMappingView);CHKERRQ(ierr);
 
   (*mapping)->n       = n;
@@ -235,7 +235,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingBlock(ISLocalToGlobalMap
   PetscInt       *ii,i,n;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(inmap,IS_LTOGM_COOKIE,1);
+  PetscValidHeaderSpecific(inmap,IS_LTOGM_CLASSID,1);
   PetscValidPointer(outmap,1);
   if (bs > 1) {
     n    = inmap->n/bs;
@@ -272,7 +272,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingDestroy(ISLocalToGlobalM
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE,1);
+  PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
   if (--((PetscObject)mapping)->refct > 0) PetscFunctionReturn(0);
   ierr = PetscFree(mapping->indices);CHKERRQ(ierr);
   ierr = PetscFree(mapping->globals);CHKERRQ(ierr);
@@ -310,8 +310,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingApplyIS(ISLocalToGlobalM
   const PetscInt *idxin;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE,1);
-  PetscValidHeaderSpecific(is,IS_COOKIE,2);
+  PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,2);
   PetscValidPointer(newis,3);
 
   ierr   = ISGetLocalSize(is,&n);CHKERRQ(ierr);
@@ -332,6 +332,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingApplyIS(ISLocalToGlobalM
    ISLocalToGlobalMappingApply - Takes a list of integers in a local numbering
    and converts them to the global numbering.
 
+   Synopsis:
+   PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,int N,int in[],int out[])
+
    Not collective
 
    Input Parameters:
@@ -341,9 +344,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingApplyIS(ISLocalToGlobalM
 
    Output Parameter:
 .  out - indices in global numbering
-
-   Synopsis:
-   PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,int N,int in[],int out[])
 
    Notes: 
    The in and out array parameters may be identical.
@@ -440,7 +440,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISGlobalToLocalMappingApply(ISLocalToGlobalMap
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE,1);
+  PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
   if (!mapping->globals) {
     ierr = ISGlobalToLocalMappingSetUp_Private(mapping);CHKERRQ(ierr);
   }
@@ -531,7 +531,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingGetInfo(ISLocalToGlobalM
   PetscTruth     debug = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE,1);
+  PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
   ierr   = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr   = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (size == 1) {

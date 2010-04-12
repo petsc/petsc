@@ -10,14 +10,14 @@
 PETSc files on Paragon/Dec Alpha.
 */
 
-EXTERN void Store2DArray(int,int,PetscReal*,char*,int *);
-EXTERN void Store1DArray(int,PetscReal*,char*,int *);
+void Store2DArray(int,int,double*,const char*,int *);
+void Store1DArray(int,double*,const char*,int *);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  PetscReal a[100],v[10];
+  double a[100],v[10];
   int       i,j,fd = 0;
 
   for (i=0; i<100; i++) {
@@ -34,12 +34,12 @@ int main(int argc,char **args)
 
 #undef __FUNCT__
 #define __FUNCT__ "Store2DArray"
-void Store2DArray(int m,int n,PetscReal *a,char *filename,int *fdd)
+void Store2DArray(int m,int n,double *a,const char *filename,int *fdd)
 {
   int        fd = *fdd;
   int        i,j;
-  int        nz = -1,cookie = 1211216,ierr;
-  PetscReal *vals;
+  int        nz = -1,classid = 1211216,ierr;
+  double *vals;
 
   if (!fd) {
     fd = creat(filename,0666); 
@@ -49,15 +49,15 @@ void Store2DArray(int m,int n,PetscReal *a,char *filename,int *fdd)
     }
     *fdd = fd;
   }
-  ierr = write(fd,&cookie,sizeof(PetscInt));
-  ierr = write(fd,&m,sizeof(PetscInt));
-  ierr = write(fd,&n,sizeof(PetscInt));
-  ierr = write(fd,&nz,sizeof(PetscInt));
+  ierr = write(fd,&classid,sizeof(int));
+  ierr = write(fd,&m,sizeof(int));
+  ierr = write(fd,&n,sizeof(int));
+  ierr = write(fd,&nz,sizeof(int));
 
   /*
      transpose the matrix, since it is stored by rows on the disk
    */
-  ierr = PetscMalloc(m*n*sizeof(PetscReal), &vals);CHKERRQ(ierr);
+  vals = (double*) malloc(m*n*sizeof(double));
   if (!vals) {
     fprintf(stdout,"Out of memory ");
     exit(0);
@@ -67,18 +67,17 @@ void Store2DArray(int m,int n,PetscReal *a,char *filename,int *fdd)
       vals[i+m*j] = a[j+i*n];
     }
   }
-  ierr = write(fd,vals,m*n*sizeof(PetscReal));
-  ierr = PetscFree(vals);CHKERRQ(ierr);
+  ierr = write(fd,vals,m*n*sizeof(double));
+  free(vals);
 
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "Store1DArray"
-void Store1DArray(int m,PetscReal *a,char *filename,int *fdd)
+void Store1DArray(int m,double *a,const char *filename,int *fdd)
 {
   int  fd = *fdd;
-  int  i,j,ierr;
-  int  cookie = 1211214; /* cookie for vectors */
+  int  classid = 1211214; /* classid for vectors */
 
   if (fd == -1) {
     fd = creat(filename,0666); 
@@ -88,9 +87,9 @@ void Store1DArray(int m,PetscReal *a,char *filename,int *fdd)
     }
     *fdd = fd;
   }
-  ierr = write(fd,&cookie,sizeof(PetscInt));
-  ierr = write(fd,&m,sizeof(PetscInt));
-  ierr = write(fd,a,m*sizeof(PetscReal));
+  write(fd,&classid,sizeof(int));
+  write(fd,&m,sizeof(int));
+  write(fd,a,m*sizeof(double));
 }
 
 

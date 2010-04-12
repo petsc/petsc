@@ -207,7 +207,7 @@ PetscErrorCode DAGetElements_2d_P1(DA da,PetscInt *n,const PetscInt *e[])
 PetscErrorCode PETSCDM_DLLEXPORT DASetLocalFunction(DA da,DALocalFunction1 lf)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   da->lf    = lf;
   PetscFunctionReturn(0);
 }
@@ -232,7 +232,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetLocalFunction(DA da,DALocalFunction1 lf)
 PetscErrorCode PETSCDM_DLLEXPORT DASetLocalFunctioni(DA da,PetscErrorCode (*lfi)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   da->lfi = lfi;
   PetscFunctionReturn(0);
 }
@@ -257,7 +257,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetLocalFunctioni(DA da,PetscErrorCode (*lfi)
 PetscErrorCode PETSCDM_DLLEXPORT DASetLocalFunctionib(DA da,PetscErrorCode (*lfi)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   da->lfib = lfi;
   PetscFunctionReturn(0);
 }
@@ -267,7 +267,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetLocalFunctionib(DA da,PetscErrorCode (*lfi
 PetscErrorCode DASetLocalAdicFunction_Private(DA da,DALocalFunction1 ad_lf)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   da->adic_lf = ad_lf;
   PetscFunctionReturn(0);
 }
@@ -275,11 +275,11 @@ PetscErrorCode DASetLocalAdicFunction_Private(DA da,DALocalFunction1 ad_lf)
 /*MC
        DASetLocalAdicFunctioni - Caches in a DA a local functioni computed by ADIC/ADIFOR
 
-   Collective on DA
-
    Synopsis:
    PetscErrorCode DASetLocalAdicFunctioni(DA da,PetscInt (ad_lf*)(DALocalInfo*,MatStencil*,void*,void*,void*)
    
+   Collective on DA
+
    Input Parameter:
 +  da - initial distributed array
 -  ad_lfi - the local function as computed by ADIC/ADIFOR
@@ -297,7 +297,7 @@ M*/
 PetscErrorCode DASetLocalAdicFunctioni_Private(DA da,PetscErrorCode (*ad_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   da->adic_lfi = ad_lfi;
   PetscFunctionReturn(0);
 }
@@ -305,11 +305,11 @@ PetscErrorCode DASetLocalAdicFunctioni_Private(DA da,PetscErrorCode (*ad_lfi)(DA
 /*MC
        DASetLocalAdicMFFunctioni - Caches in a DA a local functioni computed by ADIC/ADIFOR
 
-   Collective on DA
-
    Synopsis:
    PetscErrorCode  DASetLocalAdicFunctioni(DA da,int (ad_lf*)(DALocalInfo*,MatStencil*,void*,void*,void*)
    
+   Collective on DA
+
    Input Parameter:
 +  da - initial distributed array
 -  admf_lfi - the local matrix-free function as computed by ADIC/ADIFOR
@@ -327,7 +327,7 @@ M*/
 PetscErrorCode DASetLocalAdicMFFunctioni_Private(DA da,PetscErrorCode (*admf_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   da->adicmf_lfi = admf_lfi;
   PetscFunctionReturn(0);
 }
@@ -335,11 +335,11 @@ PetscErrorCode DASetLocalAdicMFFunctioni_Private(DA da,PetscErrorCode (*admf_lfi
 /*MC
        DASetLocalAdicFunctionib - Caches in a DA a block local functioni computed by ADIC/ADIFOR
 
-   Collective on DA
-
    Synopsis:
    PetscErrorCode DASetLocalAdicFunctionib(DA da,PetscInt (ad_lf*)(DALocalInfo*,MatStencil*,void*,void*,void*)
    
+   Collective on DA
+
    Input Parameter:
 +  da - initial distributed array
 -  ad_lfi - the local function as computed by ADIC/ADIFOR
@@ -357,7 +357,7 @@ M*/
 PetscErrorCode DASetLocalAdicFunctionib_Private(DA da,PetscErrorCode (*ad_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   da->adic_lfib = ad_lfi;
   PetscFunctionReturn(0);
 }
@@ -365,11 +365,11 @@ PetscErrorCode DASetLocalAdicFunctionib_Private(DA da,PetscErrorCode (*ad_lfi)(D
 /*MC
        DASetLocalAdicMFFunctionib - Caches in a DA a block local functioni computed by ADIC/ADIFOR
 
-   Collective on DA
-
    Synopsis:
    PetscErrorCode  DASetLocalAdicFunctionib(DA da,int (ad_lf*)(DALocalInfo*,MatStencil*,void*,void*,void*)
-   
+
+   Collective on DA
+
    Input Parameter:
 +  da - initial distributed array
 -  admf_lfi - the local matrix-free function as computed by ADIC/ADIFOR
@@ -387,7 +387,7 @@ M*/
 PetscErrorCode DASetLocalAdicMFFunctionib_Private(DA da,PetscErrorCode (*admf_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   da->adicmf_lfib = admf_lfi;
   PetscFunctionReturn(0);
 }
@@ -395,11 +395,11 @@ PetscErrorCode DASetLocalAdicMFFunctionib_Private(DA da,PetscErrorCode (*admf_lf
 /*MC
        DASetLocalAdicMFFunction - Caches in a DA a local function computed by ADIC/ADIFOR
 
-   Collective on DA
-
    Synopsis:
    PetscErrorCode DASetLocalAdicMFFunction(DA da,DALocalFunction1 ad_lf)
-   
+
+   Collective on DA
+
    Input Parameter:
 +  da - initial distributed array
 -  ad_lf - the local function as computed by ADIC/ADIFOR
@@ -417,7 +417,7 @@ M*/
 PetscErrorCode DASetLocalAdicMFFunction_Private(DA da,DALocalFunction1 ad_lf)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   da->adicmf_lf = ad_lf;
   PetscFunctionReturn(0);
 }
@@ -445,7 +445,7 @@ PetscErrorCode DASetLocalAdicMFFunction_Private(DA da,DALocalFunction1 ad_lf)
 PetscErrorCode PETSCDM_DLLEXPORT DASetLocalJacobian(DA da,DALocalFunction1 lj)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   da->lj    = lj;
   PetscFunctionReturn(0);
 }
@@ -472,7 +472,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetLocalJacobian(DA da,DALocalFunction1 lj)
 PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalFunction(DA da,DALocalFunction1 *lf)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (lf)       *lf = da->lf;
   PetscFunctionReturn(0);
 }
@@ -499,7 +499,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalFunction(DA da,DALocalFunction1 *lf)
 PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalJacobian(DA da,DALocalFunction1 *lj)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (lj) *lj = da->lj;
   PetscFunctionReturn(0);
 }

@@ -46,7 +46,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawCreate(MPI_Comm comm,const char display[
   ierr = PetscDrawInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
   *indraw = 0;
-  ierr = PetscHeaderCreate(draw,_p_PetscDraw,struct _PetscDrawOps,PETSC_DRAW_COOKIE,-1,"Draw",comm,PetscDrawDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(draw,_p_PetscDraw,struct _PetscDrawOps,PETSC_DRAW_CLASSID,-1,"Draw",comm,PetscDrawDestroy,0);CHKERRQ(ierr);
   draw->data    = 0;
   ierr          = PetscStrallocpy(title,&draw->title);CHKERRQ(ierr);
   ierr          = PetscStrallocpy(display,&draw->display);CHKERRQ(ierr);
@@ -106,7 +106,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSetType(PetscDraw draw,const PetscDrawTy
   PetscTruth      flg=PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidCharPointer(type,2);
 
   ierr = PetscTypeCompare((PetscObject)draw,type,&match);CHKERRQ(ierr);
@@ -191,7 +191,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawRegisterDestroy(void)
 PetscErrorCode PETSC_DLLEXPORT PetscDrawGetType(PetscDraw draw,const PetscDrawType *type)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidPointer(type,2);
   *type = ((PetscObject)draw)->type_name;
   PetscFunctionReturn(0);
@@ -248,7 +248,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSetFromOptions(PetscDraw draw)
 #endif
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
 
   if (!PetscDrawList) {
     ierr = PetscDrawRegisterAll(PETSC_NULL);CHKERRQ(ierr);

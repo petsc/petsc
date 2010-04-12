@@ -39,8 +39,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISDifference(IS is1,IS is2,IS *isout)
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is1,IS_COOKIE,1);
-  PetscValidHeaderSpecific(is2,IS_COOKIE,2);
+  PetscValidHeaderSpecific(is1,IS_CLASSID,1);
+  PetscValidHeaderSpecific(is2,IS_CLASSID,2);
   PetscValidPointer(isout,3);
 
   ierr = ISGetIndices(is1,&i1);CHKERRQ(ierr);
@@ -130,8 +130,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSum(IS is1,IS is2,IS *is3)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is1,IS_COOKIE,1);
-  PetscValidHeaderSpecific(is2,IS_COOKIE,2);
+  PetscValidHeaderSpecific(is1,IS_CLASSID,1);
+  PetscValidHeaderSpecific(is2,IS_CLASSID,2);
   ierr = PetscObjectGetComm((PetscObject)(is1),&comm); CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size>1) SETERRQ(PETSC_ERR_SUP,"Currently only for uni-processor IS");
@@ -249,8 +249,8 @@ PetscErrorCode ISExpand(IS is1,IS is2,IS *isout)
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is1,IS_COOKIE,1);
-  PetscValidHeaderSpecific(is2,IS_COOKIE,2);
+  PetscValidHeaderSpecific(is1,IS_CLASSID,1);
+  PetscValidHeaderSpecific(is2,IS_CLASSID,2);
   PetscValidPointer(isout,3);
 
   ierr = ISGetIndices(is1,&i1);CHKERRQ(ierr);

@@ -5,7 +5,7 @@
 static PetscFList TSGLAdaptList;
 static PetscTruth TSGLAdaptPackageInitialized;
 static PetscTruth TSGLAdaptRegisterAllCalled;
-static PetscCookie TSGLADAPT_COOKIE;
+static PetscClassId TSGLADAPT_CLASSID;
 
 struct _TSGLAdaptOps {
   PetscErrorCode (*choose)(TSGLAdapt,PetscInt,const PetscInt[],const PetscReal[],const PetscReal[],PetscInt,PetscReal,PetscReal,PetscInt*,PetscReal*,PetscTruth*);
@@ -107,7 +107,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptInitializePackage(const char path[])
   PetscFunctionBegin;
   if (TSGLAdaptPackageInitialized) PetscFunctionReturn(0);
   TSGLAdaptPackageInitialized = PETSC_TRUE;
-  ierr = PetscCookieRegister("TSGLAdapt",&TSGLADAPT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("TSGLAdapt",&TSGLADAPT_CLASSID);CHKERRQ(ierr);
   ierr = TSGLAdaptRegisterAll(path);CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(TSGLAdaptFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -197,7 +197,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptDestroy(TSGLAdapt adapt)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adapt,TSGLADAPT_COOKIE,1);
+  PetscValidHeaderSpecific(adapt,TSGLADAPT_CLASSID,1);
   if (--((PetscObject)adapt)->refct > 0) PetscFunctionReturn(0);
   if (adapt->ops->destroy) {ierr = (*adapt->ops->destroy)(adapt);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(adapt);CHKERRQ(ierr);
@@ -233,7 +233,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptChoose(TSGLAdapt adapt,PetscInt n,cons
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adapt,TSGLADAPT_COOKIE,1);
+  PetscValidHeaderSpecific(adapt,TSGLADAPT_CLASSID,1);
   PetscValidIntPointer(orders,3);
   PetscValidPointer(errors,4);
   PetscValidPointer(cost,5);
@@ -253,7 +253,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptCreate(MPI_Comm comm,TSGLAdapt *inadap
 
   PetscFunctionBegin;
   *inadapt = 0;
-  ierr = PetscHeaderCreate(adapt,_p_TSGLAdapt,struct _TSGLAdaptOps,TSGLADAPT_COOKIE,0,"TSGLAdapt",comm,TSGLAdaptDestroy,TSGLAdaptView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(adapt,_p_TSGLAdapt,struct _TSGLAdaptOps,TSGLADAPT_CLASSID,0,"TSGLAdapt",comm,TSGLAdaptDestroy,TSGLAdaptView);CHKERRQ(ierr);
   *inadapt = adapt;
   PetscFunctionReturn(0);
 }

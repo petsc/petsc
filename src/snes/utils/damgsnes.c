@@ -561,12 +561,12 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
 #if defined(PETSC_HAVE_ADIC)
   PetscTruth              mfadoperator,mfad,adjacobian;
 #endif
-  PetscCookie             cookie;
+  PetscClassId            classid;
 
   PetscFunctionBegin;
   if (!dmmg)     SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
   if (!jacobian) jacobian = DMMGComputeJacobianWithFD;
-  ierr = PetscObjectGetCookie((PetscObject) dmmg[0]->dm, &cookie);CHKERRQ(ierr);
+  ierr = PetscObjectGetClassid((PetscObject) dmmg[0]->dm, &classid);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(dmmg[0]->comm,dmmg[0]->prefix,"DMMG Options","SNES");CHKERRQ(ierr);
     ierr = PetscOptionsName("-dmmg_monitor","Monitor DMMG iterations","DMMG",&monitor);CHKERRQ(ierr);
@@ -678,7 +678,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
 
     dmmg[i]->computejacobian = jacobian;
     if (useFAS) {
-      if (cookie == DM_COOKIE) {
+      if (classid == DM_CLASSID) {
 #if defined(PETSC_HAVE_ADIC)
         if (fasBlock) {
           dmmg[i]->solve     = DMMGSolveFASb;
@@ -741,7 +741,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
 
     for(i = 0; i < nlevels; i++) {
       ierr = VecDuplicate(dmmg[i]->b,&dmmg[i]->w);CHKERRQ(ierr);
-      if (cookie == DM_COOKIE) {
+      if (classid == DM_CLASSID) {
 #if defined(PETSC_HAVE_ADIC)
         ierr = NLFCreate_DAAD(&dmmg[i]->nlf);CHKERRQ(ierr);
         ierr = NLFDAADSetDA_DAAD(dmmg[i]->nlf,(DA)dmmg[i]->dm);CHKERRQ(ierr);
@@ -869,12 +869,12 @@ PetscErrorCode DMMGSetSNESLocalFD(DMMG *dmmg,DALocalFunction1 function)
 @*/
 PetscErrorCode DMMGGetSNESLocal(DMMG *dmmg,DALocalFunction1 *function, DALocalFunction1 *jacobian)
 {
-  PetscCookie    cookie;
+  PetscClassId   classid;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetCookie((PetscObject) dmmg[0]->dm, &cookie);CHKERRQ(ierr);
-  if (cookie == DM_COOKIE) {
+  ierr = PetscObjectGetClassid((PetscObject) dmmg[0]->dm, &classid);CHKERRQ(ierr);
+  if (classid == DM_CLASSID) {
     ierr = DAGetLocalFunction((DA) dmmg[0]->dm, function);CHKERRQ(ierr);
     ierr = DAGetLocalJacobian((DA) dmmg[0]->dm, jacobian);CHKERRQ(ierr);
   } else {
@@ -892,11 +892,11 @@ PetscErrorCode DMMGGetSNESLocal(DMMG *dmmg,DALocalFunction1 *function, DALocalFu
     DMMGSetSNESLocal - Sets the local user function that defines the nonlinear set of equations
     that will use the grid hierarchy and (optionally) its derivative.
 
-    Collective on DMMG
-
    Synopsis:
    PetscErrorCode DMMGSetSNESLocal(DMMG *dmmg,DALocalFunction1 function, DALocalFunction1 jacobian,
                         DALocalFunction1 ad_function, DALocalFunction1 admf_function);
+
+    Collective on DMMG
 
     Input Parameter:
 +   dmmg - the context
@@ -930,7 +930,7 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DAL
 {
   PetscErrorCode ierr;
   PetscInt       i,nlevels = dmmg[0]->nlevels;
-  PetscCookie    cookie;
+  PetscClassId   classid;
   PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*) = 0;
 
 
@@ -940,8 +940,8 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DAL
   else if (ad_function) computejacobian = DMMGComputeJacobianWithAdic;
 #endif
   CHKMEMQ;
-  ierr = PetscObjectGetCookie((PetscObject) dmmg[0]->dm,&cookie);CHKERRQ(ierr);
-  if (cookie == DM_COOKIE) {
+  ierr = PetscObjectGetClassid((PetscObject) dmmg[0]->dm,&classid);CHKERRQ(ierr);
+  if (classid == DM_CLASSID) {
     PetscTruth flag;
     /* it makes no sense to use an option to decide on ghost, it depends on whether the 
        formfunctionlocal computes ghost values in F or not. */

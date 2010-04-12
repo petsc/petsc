@@ -38,7 +38,7 @@ E*/
 S*/
 typedef struct _p_PF* PF;
 
-extern PetscCookie PF_COOKIE;
+extern PetscClassId PF_CLASSID;
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFCreate(MPI_Comm,PetscInt,PetscInt,PF*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFSetType(PF,const PFType,void*);

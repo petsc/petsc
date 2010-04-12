@@ -454,7 +454,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListView(PetscFList list,PetscViewer viewer
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
   PetscValidPointer(list,1);
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (!iascii) SETERRQ(PETSC_ERR_SUP,"Only ASCII viewer supported");

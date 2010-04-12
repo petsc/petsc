@@ -11,6 +11,7 @@ typedef struct {
   MatFactorInfo     info;
   MatOrderingType   ordering;         /* matrix reordering */
   MatSolverPackage  solvertype;
+  MatFactorType     factortype;
 } PC_Factor;
 
 EXTERN_C_BEGIN

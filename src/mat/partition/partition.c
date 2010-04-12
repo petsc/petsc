@@ -3,7 +3,7 @@
 #include "private/matimpl.h"               /*I "petscmat.h" I*/
 
 /* Logging support */
-PetscCookie PETSCMAT_DLLEXPORT MAT_PARTITIONING_COOKIE;
+PetscClassId PETSCMAT_DLLEXPORT MAT_PARTITIONING_CLASSID;
 
 /*
    Simplest partitioning, keeps the current partitioning.
@@ -156,7 +156,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningRegisterDestroy(void)
 PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningGetType(MatPartitioning partitioning,const MatPartitioningType *type)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(partitioning,MAT_PARTITIONING_COOKIE,1);
+  PetscValidHeaderSpecific(partitioning,MAT_PARTITIONING_CLASSID,1);
   PetscValidPointer(type,2);
   *type = ((PetscObject)partitioning)->type_name;
   PetscFunctionReturn(0);
@@ -227,10 +227,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningApply(MatPartitioning matp,IS *
   PetscTruth     flag = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(matp,MAT_PARTITIONING_COOKIE,1);
+  PetscValidHeaderSpecific(matp,MAT_PARTITIONING_CLASSID,1);
   PetscValidPointer(partitioning,2);
   if (!matp->adj->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (matp->adj->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (matp->adj->factortype) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!matp->ops->apply) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set type with MatPartitioningSetFromOptions() or MatPartitioningSetType()");
   ierr = PetscLogEventBegin(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
   ierr = (*matp->ops->apply)(matp,partitioning);CHKERRQ(ierr);
@@ -267,8 +267,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningApply(MatPartitioning matp,IS *
 PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetAdjacency(MatPartitioning part,Mat adj)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE,1);
-  PetscValidHeaderSpecific(adj,MAT_COOKIE,2);
+  PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
+  PetscValidHeaderSpecific(adj,MAT_CLASSID,2);
   part->adj = adj;
   PetscFunctionReturn(0);
 }
@@ -294,7 +294,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningDestroy(MatPartitioning part)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE,1);
+  PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   if (--((PetscObject)part)->refct > 0) PetscFunctionReturn(0);
 
   if (part->ops->destroy) {
@@ -332,7 +332,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetVertexWeights(MatPartitionin
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE,1);
+  PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
 
   ierr = PetscFree(part->vertex_weights);CHKERRQ(ierr);
   part->vertex_weights = (PetscInt*)weights;
@@ -365,7 +365,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetPartitionWeights(MatPartitio
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE,1);
+  PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
 
   ierr = PetscFree(part->part_weights);CHKERRQ(ierr);
   part->part_weights = (PetscReal*)weights;
@@ -405,7 +405,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate(MPI_Comm comm,MatPartiti
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscHeaderCreate(part,_p_MatPartitioning,struct _MatPartitioningOps,MAT_PARTITIONING_COOKIE,-1,"MatPartitioning",comm,MatPartitioningDestroy,
+  ierr = PetscHeaderCreate(part,_p_MatPartitioning,struct _MatPartitioningOps,MAT_PARTITIONING_CLASSID,-1,"MatPartitioning",comm,MatPartitioningDestroy,
                     MatPartitioningView);CHKERRQ(ierr);
   part->vertex_weights = PETSC_NULL;
   part->part_weights   = PETSC_NULL;
@@ -451,11 +451,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningView(MatPartitioning part,Petsc
   const MatPartitioningType name;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE,1);
+  PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   if (!viewer) {
     ierr = PetscViewerASCIIGetStdout(((PetscObject)part)->comm,&viewer);CHKERRQ(ierr);
   }
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(part,1,viewer,2);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -507,7 +507,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetType(MatPartitioning part,co
   PetscTruth match;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE,1);
+  PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   PetscValidCharPointer(type,2);
 
   ierr = PetscTypeCompare((PetscObject)part,type,&match);CHKERRQ(ierr);

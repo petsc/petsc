@@ -18,8 +18,8 @@
   If PetscLogPrintInfo is zero, no info messages are printed. 
   If PetscLogPrintInfoNull is zero, no info messages associated with a null object are printed.
 
-  If PetscInfoFlags[OBJECT_COOKIE - PETSC_SMALLEST_COOKIE] is zero, no messages related
-  to that object are printed. OBJECT_COOKIE is, for example, MAT_COOKIE.
+  If PetscInfoFlags[OBJECT_CLASSID - PETSC_SMALLEST_CLASSID] is zero, no messages related
+  to that object are printed. OBJECT_CLASSID is, for example, MAT_CLASSID.
 */
 PetscTruth PETSC_DLLEXPORT PetscLogPrintInfo     = PETSC_FALSE;
 PetscTruth PETSC_DLLEXPORT PetscLogPrintInfoNull = PETSC_FALSE;
@@ -81,7 +81,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInfoAllow(PetscTruth flag, const char filena
   Not Collective
 
   Input Parameter:
-. objclass - The object class,  e.g., MAT_COOKIE, SNES_COOKIE, etc.
+. objclass - The object class,  e.g., MAT_CLASSID, SNES_CLASSID, etc.
 
   Notes:
   One can pass 0 to deactivate all messages that are not associated with an object.
@@ -98,7 +98,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInfoDeactivateClass(int objclass)
     PetscLogPrintInfoNull = PETSC_FALSE;
     PetscFunctionReturn(0); 
   }
-  PetscInfoFlags[objclass - PETSC_SMALLEST_COOKIE - 1] = 0;
+  PetscInfoFlags[objclass - PETSC_SMALLEST_CLASSID - 1] = 0;
   PetscFunctionReturn(0);
 }
 
@@ -110,7 +110,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInfoDeactivateClass(int objclass)
   Not Collective
 
   Input Parameter:
-. objclass - The object class, e.g., MAT_COOKIE, SNES_COOKIE, etc.
+. objclass - The object class, e.g., MAT_CLASSID, SNES_CLASSID, etc.
 
   Notes:
   One can pass 0 to activate all messages that are not associated with an object.
@@ -126,7 +126,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInfoActivateClass(int objclass)
   if (!objclass) {
     PetscLogPrintInfoNull = PETSC_TRUE;
   } else {
-    PetscInfoFlags[objclass - PETSC_SMALLEST_COOKIE - 1] = 1;
+    PetscInfoFlags[objclass - PETSC_SMALLEST_CLASSID - 1] = 1;
   }
   PetscFunctionReturn(0);
 }
@@ -144,13 +144,13 @@ extern FILE *petsc_history;
     PetscInfo - Logs informative data, which is printed to standard output
     or a file when the option -info <file> is specified.
 
-    Collective over PetscObject argument
-
    Synopsis:
        PetscErrorCode PetscInfo(void *vobj, const char message[])
        PetscErrorCode PetscInfo1(void *vobj, const char formatmessage[],arg1)
        PetscErrorCode PetscInfo2(void *vobj, const char formatmessage[],arg1,arg2)
        etc
+
+    Collective over PetscObject argument
 
     Input Parameter:
 +   vobj - object most closely associated with the logging statement or PETSC_NULL
@@ -191,7 +191,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInfo_Private(const char func[],void *vobj, c
   PetscValidCharPointer(message,2);
   if (!PetscLogPrintInfo) PetscFunctionReturn(0);
   if ((!PetscLogPrintInfoNull) && !vobj) PetscFunctionReturn(0);
-  if (obj && !PetscInfoFlags[obj->cookie - PETSC_SMALLEST_COOKIE - 1]) PetscFunctionReturn(0);
+  if (obj && !PetscInfoFlags[obj->classid - PETSC_SMALLEST_CLASSID - 1]) PetscFunctionReturn(0);
   if (!obj) {
     rank = 0;
   } else {

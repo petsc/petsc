@@ -31,7 +31,19 @@ typedef void* dlsymbol_t;
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDLOpen"
 /*@C
-   PetscDLOpen - 
+   PetscDLOpen - opens dynamic library
+
+   Not Collective
+
+   Input Parameters:
++    name - name of library
+-    flags - options on how to open library
+
+   Output Parameter:
+.    handle
+
+   Level: developer
+
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDLOpen(const char name[],int flags,PetscDLHandle *handle)
 {
@@ -122,7 +134,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLOpen(const char name[],int flags,PetscDLHa
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDLClose"
 /*@C
-   PetscDLClose - 
+   PetscDLClose -  closes a dynamic library
+
+   Not Collective
+
+  Input Parameter:
+.   handle - the handle for the library obtained with PetscDLOpen()
+
+  Level: developer
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDLClose(PetscDLHandle *handle)
 {
@@ -186,7 +205,19 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLClose(PetscDLHandle *handle)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDLSym"
 /*@C
-   PetscDLSym - 
+   PetscDLSym - finds a symbol in a dynamic library
+
+   Not Collective
+
+   Input Parameters:
++   handle - obtained with PetscDLOpen()
+-   symbol - name of symbol
+
+   Output Parameter:
+.   value - pointer to the function
+
+   Level: developer
+
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDLSym(PetscDLHandle handle,const char symbol[],void **value)
 {

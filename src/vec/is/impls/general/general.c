@@ -340,7 +340,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneral(MPI_Comm comm,PetscInt n,const
   ierr = ISInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr           = PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_GENERAL,"IS",comm,ISDestroy,ISView);CHKERRQ(ierr);
+  ierr           = PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_CLASSID,IS_GENERAL,"IS",comm,ISDestroy,ISView);CHKERRQ(ierr);
   ierr           = PetscNewLog(Nindex,IS_General,&sub);CHKERRQ(ierr);
   Nindex->data   = (void*)sub;
   ierr           = PetscMalloc(n*sizeof(PetscInt),&sub->idx);CHKERRQ(ierr);
@@ -409,7 +409,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneralNC(MPI_Comm comm,PetscInt n,con
   ierr = ISInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr           = PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_GENERAL,"IS",comm,ISDestroy,ISView);CHKERRQ(ierr);
+  ierr           = PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_CLASSID,IS_GENERAL,"IS",comm,ISDestroy,ISView);CHKERRQ(ierr);
   ierr           = PetscNewLog(Nindex,IS_General,&sub);CHKERRQ(ierr);
   Nindex->data   = (void*)sub;
   sub->n         = n;
@@ -472,7 +472,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneralWithArray(MPI_Comm comm,PetscIn
   ierr = ISInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr           = PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_GENERAL,"IS",comm,ISDestroy,ISView);CHKERRQ(ierr);
+  ierr           = PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_CLASSID,IS_GENERAL,"IS",comm,ISDestroy,ISView);CHKERRQ(ierr);
   ierr           = PetscNewLog(Nindex,IS_General,&sub);CHKERRQ(ierr);
   Nindex->data   = (void*)sub;
   sub->n         = n;

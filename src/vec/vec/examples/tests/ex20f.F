@@ -12,14 +12,14 @@
        PetscInt n,i,ione
        PetscErrorCode ierr
        integer fd
-       PetscInt veccookie(1)
+       PetscInt vecclassid(1)
        PetscScalar      array(5)
        Vec              x
        PetscViewer           v
 
        ione         = 1
        n            = 5
-       veccookie(1) = 1211211 + 3
+       vecclassid(1) = 1211211 + 3
 
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)                  
 
@@ -30,7 +30,7 @@
 !      Open binary file for writing
        call PetscBinaryOpen('testfile',FILE_MODE_WRITE,fd,ierr)
 !      Write the Vec header
-       call PetscBinaryWrite(fd,veccookie,ione,PETSC_INT,                    &
+       call PetscBinaryWrite(fd,vecclassid,ione,PETSC_INT,                    &
      &                       PETSC_FALSE,ierr)
 !      Write the array length
        call PetscBinaryWrite(fd,n,ione,PETSC_INT,PETSC_FALSE,ierr)
