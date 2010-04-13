@@ -173,6 +173,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryGetMPIIODescriptor(PetscViewer v
     Output Parameter:
 -   flg - PETSC_TRUE if MPI IO is being used
 
+    Options Database:
+    -viewer_binary_mpiio : Flag for using MPI-IO 
+
     Level: advanced
 
     Fortran Note:
@@ -780,6 +783,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileGetMode(PetscViewer viewer,PetscFi
 
   Input Parameters:
 .  viewer - the PetscViewer; must be a binary
+
+    Options Database:
+    -viewer_binary_mpiio : Flag for using MPI-IO 
 
    Notes: turns off the default usage of the .info file since that is not scalable
 
