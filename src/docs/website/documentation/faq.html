@@ -95,6 +95,7 @@ gnu compiler)?</a></li>
       <li><a href="faq.html#use-mpi">Why do you use MPI</a>?</li>
       <li><a href="faq.html#mpi-compilers">What do I do if my MPI
 compiler wrappers are invalid</a>?</li>
+      <li><a href="faq.html#install-petsc4py-dev">How do I install petsc4py with the development PETSc</a>?</li>
       </menu>
       <p><a href="#usage"><b>Usage</b></a></p>
       <ul>
@@ -463,6 +464,18 @@ will try to auto-detect working compilers; however, these compilers may
 be incompatible with the particular MPI build. If this fix does not
 work, run with --with-cc=c_compiler where you know c_compiler works
 with this particular MPI, and likewise for C++ and Fortran.</p>
+      <p><strong><font color="#ff0000"><a name="install-petsc4py-dev">How do I install petsc4py with the development
+      PETSc</a>?</font></p>
+      <p>You can follow these steps
+        <ol>
+          <li>grab petsc4py-dev repo [from hg]</li>
+          <li>install Cython</li>
+          <li>make cython [in petsc4py-dev]</li>
+          <li>place petsc4py-dev in PETSC_DIR/externalpackages</li>
+          <li>export ARCHFLAGS=''</li>
+          <li>install PETSc with --download-petsc4py etc..</li>
+        </ol>
+      </p>
       <p>&nbsp; </p>
       <hr>
       <h3><a name="Using">Using</a></h3>
