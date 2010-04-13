@@ -1614,7 +1614,6 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetOptionsPrefix(Mat,const char[
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFromOptions(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDCheckPositivity(void*,Vec,Vec,PetscScalar*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetCheckh(Mat,PetscErrorCode (*)(void*,Vec,Vec,PetscScalar*),void*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDDSSetUmin(Mat,PetscReal);
 
 
 typedef struct _p_MatMFFD* MatMFFD;
