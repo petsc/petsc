@@ -187,12 +187,12 @@ static PetscErrorCode MatMFFDDestroy_DS(MatMFFD ctx)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatMFFDDSSetUmin_Private"
+#define __FUNCT__ "MatMFFDDSSetUmin_DS"
 /*
    The following two routines use the PetscObjectCompose() and PetscObjectQuery()
    mechanism to allow the user to change the Umin parameter used in this method.
 */
-PetscErrorCode MatMFFDDSSetUmin_Private(Mat mat,PetscReal umin)
+PetscErrorCode MatMFFDDSSetUmin_DS(Mat mat,PetscReal umin)
 {
   MatMFFD     ctx = (MatMFFD)mat->data;
   MatMFFD_DS *hctx;
@@ -289,8 +289,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMFFD_DS(MatMFFD ctx)
   ctx->ops->setfromoptions = MatMFFDSetFromOptions_DS;  
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ctx->mat,"MatMFFDDSSetUmin_C",
-                            "MatMFFDDSSetUmin_Private",
-                             MatMFFDDSSetUmin_Private);CHKERRQ(ierr);
+                            "MatMFFDDSSetUmin_DS",
+                             MatMFFDDSSetUmin_DS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
