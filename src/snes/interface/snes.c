@@ -1019,9 +1019,13 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFunction(SNES snes,Vec r,PetscErrorCod
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidHeaderSpecific(r,VEC_CLASSID,2);
-  PetscCheckSameComm(snes,1,r,2);
-  ierr = PetscObjectReference((PetscObject)r);CHKERRQ(ierr); 
+  if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,2);
+  if (r) PetscCheckSameComm(snes,1,r,2);
+  if (!r && snes->dm) {
+    ierr = DMCreateGlobalVector(snes->dm,&r);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectReference((PetscObject)r);CHKERRQ(ierr); 
+  }
   if (snes->vec_func) { ierr = VecDestroy(snes->vec_func);CHKERRQ(ierr); }
   snes->ops->computefunction = func; 
   snes->vec_func             = r;
@@ -1366,7 +1370,18 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
   if (snes->vec_func == snes->vec_sol) {
     SETERRQ(PETSC_ERR_ARG_IDN,"Solution vector cannot be function vector");
   }
-  
+  if (!snes->ops->computejacobian && snes->dm) {
+    Mat           J;
+    ISColoring    coloring;
+    MatFDColoring fd;
+
+    ierr = DMGetMatrix(snes->dm,MATAIJ,&J);CHKERRQ(ierr);
+    ierr = DMGetColoring(snes->dm,IS_COLORING_GHOSTED,MATAIJ,&coloring);CHKERRQ(ierr);
+    ierr = MatFDColoringCreate(J,coloring,&fd);CHKERRQ(ierr);
+    ierr = MatFDColoringSetFunction(fd,(PetscErrorCode (*)(void))snes->ops->computefunction,snes->funP);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,fd);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(coloring);CHKERRQ(ierr);
+  }
   if (!snes->ksp) {ierr = SNESGetKSP(snes, &snes->ksp);CHKERRQ(ierr);}
   
   if (snes->ops->setup) {
