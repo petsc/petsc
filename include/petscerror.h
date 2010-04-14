@@ -76,11 +76,11 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_ERR_FLOP_COUNT       90
 #define PETSC_ERR_MAX_VALUE        91  /* this is always the one more than the largest error code */
 
-#if defined(PETSC_USE_ERRORCHECKING)
-
 #define PetscStringizeArg(a) #a
 #define PetscStringize(a) PetscStringizeArg(a)
 #define __SDIR__ PetscStringize(__INSDIR__)
+
+#if defined(PETSC_USE_ERRORCHECKING)
 
 /*MC
    SETERRQ - Macro that is called when an error has been detected, 

@@ -30,6 +30,7 @@ class FunctionTestIMesh : public CppUnit::TestFixture
   CPPUNIT_TEST_SUITE(FunctionTestIMesh);
 
   CPPUNIT_TEST(testRelabel);
+  CPPUNIT_TEST(testReordering);
   CPPUNIT_TEST(testSerialization);
   CPPUNIT_TEST(testStratify);
   CPPUNIT_TEST(testStratifyLine);
@@ -42,6 +43,7 @@ protected:
   ALE::Obj<mesh_type> _mesh;
   int                 _debug;        // The debugging level
   PetscInt            _iters;        // The number of test repetitions
+  PetscInt            _dim;          // The mesh dimension
   PetscInt            _size;         // The interval size
   PetscTruth          _interpolate;  // Flag for mesh interpolation
   PetscTruth          _onlyParallel; // Shut off serial tests
@@ -53,6 +55,7 @@ public:
 
     this->_debug        = 0;
     this->_iters        = 1;
+    this->_dim          = 3;
     this->_size         = 10;
     this->_interpolate  = PETSC_FALSE;
     this->_onlyParallel = PETSC_FALSE;
@@ -62,6 +65,7 @@ public:
       ierr = PetscOptionsInt("-debug", "The debugging level", "imesh.c", this->_debug, &this->_debug, PETSC_NULL);CHKERRQ(ierr);
       ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "imesh.c", this->_iters, &this->_iters, PETSC_NULL);CHKERRQ(ierr);
       ierr = PetscOptionsInt("-size", "The interval size", "imesh.c", this->_size, &this->_size, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-dim", "The mesh dimension", "imesh.c", this->_dim, &this->_dim, PETSC_NULL);CHKERRQ(ierr);
       ierr = PetscOptionsTruth("-interpolate", "Flag for mesh interpolation", "imesh.c", this->_interpolate, &this->_interpolate, PETSC_NULL);CHKERRQ(ierr);
       ierr = PetscOptionsTruth("-only_parallel", "Shut off serial tests", "isieve.c", this->_onlyParallel, &this->_onlyParallel, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -72,13 +76,24 @@ public:
   void setUp(void) {
     try {
     this->processOptions();
+    if (this->_dim == 2) {
+    double                    lower[2]    = {0.0, 0.0};
+    double                    upper[2]    = {1.0, 1.0};
+    int                       faces[2]    = {2, 2};
+    bool                      interpolate = this->_interpolate;
+    const ALE::Obj<ALE::Mesh> mB          = ALE::MeshBuilder<ALE::Mesh>::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, faces, this->_debug);
+    this->_m    = ALE::Generator<ALE::Mesh>::generateMesh(mB, interpolate);
+    } else if (this->_dim == 3) {
     double                    lower[3]    = {0.0, 0.0, 0.0};
     double                    upper[3]    = {1.0, 1.0, 1.0};
     int                       faces[3]    = {3, 3, 3};
     bool                      interpolate = this->_interpolate;
     const ALE::Obj<ALE::Mesh> mB          = ALE::MeshBuilder<ALE::Mesh>::createCubeBoundary(PETSC_COMM_WORLD, lower, upper, faces, this->_debug);
     this->_m    = ALE::Generator<ALE::Mesh>::generateMesh(mB, interpolate);
-    this->_mesh = new mesh_type(mB->comm(), 3, this->_debug);
+    } else {
+      CPPUNIT_FAIL("Invalid mesh dimension");
+    }
+    this->_mesh = new mesh_type(this->_m->comm(), this->_dim, this->_debug);
     ALE::Obj<mesh_type::sieve_type> sieve = new mesh_type::sieve_type(this->_mesh->comm(), 0, 119, this->_debug);
 
     this->_mesh->setSieve(sieve);
@@ -442,6 +457,16 @@ public:
     }
     // Check that we get the reverse
     checkMesh(*copyMesh, *this->_mesh, renumbering);
+  };
+
+  void testReordering() {
+    ALE::Obj<ALE::Ordering<>::perm_type> reordering = new ALE::Ordering<>::perm_type(this->_mesh->comm(), this->_mesh->debug());
+
+    this->_mesh->view("Original Mesh");
+    ALE::Ordering<>::calculateMeshReordering(this->_mesh, reordering);
+    reordering->view("Reordering");
+    this->_mesh->relabel(*reordering);
+    this->_mesh->view("Relabeled Mesh");
   };
 
   void testSerialization() {
