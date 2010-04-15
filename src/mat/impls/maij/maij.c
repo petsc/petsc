@@ -2998,6 +2998,8 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
 
   /* Work arrays for rows of P^T*A */
   ierr = PetscMalloc4(an,PetscInt,&ptadenserow,an,PetscInt,&ptasparserow,cn,PetscInt,&denserow,cn,PetscInt,&sparserow);CHKERRQ(ierr);
+  ierr = PetscMemzero(ptadenserow,an*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(denserow,cn*sizeof(PetscInt));CHKERRQ(ierr);
 
   /* Set initial free space to be nnz(A) scaled by aspect ratio of P. */
   /* This should be reasonable if sparsity of PtAP is similar to that of A. */
