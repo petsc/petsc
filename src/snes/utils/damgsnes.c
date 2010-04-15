@@ -566,7 +566,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
   PetscFunctionBegin;
   if (!dmmg)     SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
   if (!jacobian) jacobian = DMMGComputeJacobianWithFD;
-  ierr = PetscObjectGetClassid((PetscObject) dmmg[0]->dm, &classid);CHKERRQ(ierr);
+  ierr = PetscObjectGetClassId((PetscObject) dmmg[0]->dm, &classid);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(dmmg[0]->comm,dmmg[0]->prefix,"DMMG Options","SNES");CHKERRQ(ierr);
     ierr = PetscOptionsName("-dmmg_monitor","Monitor DMMG iterations","DMMG",&monitor);CHKERRQ(ierr);
@@ -873,7 +873,7 @@ PetscErrorCode DMMGGetSNESLocal(DMMG *dmmg,DALocalFunction1 *function, DALocalFu
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetClassid((PetscObject) dmmg[0]->dm, &classid);CHKERRQ(ierr);
+  ierr = PetscObjectGetClassId((PetscObject) dmmg[0]->dm, &classid);CHKERRQ(ierr);
   if (classid == DM_CLASSID) {
     ierr = DAGetLocalFunction((DA) dmmg[0]->dm, function);CHKERRQ(ierr);
     ierr = DAGetLocalJacobian((DA) dmmg[0]->dm, jacobian);CHKERRQ(ierr);
@@ -940,7 +940,7 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DAL
   else if (ad_function) computejacobian = DMMGComputeJacobianWithAdic;
 #endif
   CHKMEMQ;
-  ierr = PetscObjectGetClassid((PetscObject) dmmg[0]->dm,&classid);CHKERRQ(ierr);
+  ierr = PetscObjectGetClassId((PetscObject) dmmg[0]->dm,&classid);CHKERRQ(ierr);
   if (classid == DM_CLASSID) {
     PetscTruth flag;
     /* it makes no sense to use an option to decide on ghost, it depends on whether the 

@@ -1393,7 +1393,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectCreate(MPI_Comm,PetscObject*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectCreateGeneric(MPI_Comm, PetscClassId, const char [], PetscObject *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectDestroy(PetscObject);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetComm(PetscObject,MPI_Comm *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetClassid(PetscObject,PetscClassId *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetClassId(PetscObject,PetscClassId *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectSetType(PetscObject,const char []);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetType(PetscObject,const char *[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectSetName(PetscObject,const char[]);
