@@ -205,7 +205,7 @@ ranlib:
 
 # Deletes PETSc libraries
 deletelibs:
-	-${RM} -f ${PETSC_LIB_DIR}/libpetsc*.*
+	-${RM} -rf ${PETSC_LIB_DIR}/libpetsc*.*
 deletemods:
 	-${RM} -f ${PETSC_DIR}/${PETSC_ARCH}/include/petsc*.mod
 
