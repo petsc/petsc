@@ -5,16 +5,16 @@
 #include "petscsys.h"  /*I   "petscsys.h"    I*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscObjectGetClassid"
+#define __FUNCT__ "PetscObjectGetClassId"
 /*@C
-   PetscObjectGetClassid - Gets the classid for any PetscObject, 
+   PetscObjectGetClassId - Gets the classid for any PetscObject, 
 
    Not Collective
    
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
          Thus must be cast with a (PetscObject), for example, 
-         PetscObjectGetClassid((PetscObject)mat,&classid);
+         PetscObjectGetClassId((PetscObject)mat,&classid);
 
    Output Parameter:
 .  classid - the classid
@@ -22,7 +22,7 @@
    Level: developer
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectGetClassid(PetscObject obj,PetscClassId *classid)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectGetClassId(PetscObject obj,PetscClassId *classid)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
