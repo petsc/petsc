@@ -551,6 +551,16 @@ runex19_16a:
 	   if (${DIFF} output/ex19_16a.out ex19_16a.tmp) then true; \
 	   else echo "Possible problem with ex19_16a, diffs above"; fi; \
 	   ${RM} -f ex19_16a.tmp
+runex19_superlu:
+	-@${MPIEXEC} -n 1 ./ex19 -nlevels 1 -da_grid_x 20 -da_grid_y 20 -{snes,ksp}_monitor_short -pc_type lu -pc_factor_mat_solver_package superlu > ex19.tmp 2>&1; \
+	   if (${DIFF} output/ex19_superlu.out ex19.tmp) then true; \
+	   else echo "Possible problem with ex19_superlu, diffs above"; fi; \
+	   ${RM} -f ex19.tmp
+runex19_superlu_equil:
+	-@${MPIEXEC} -n 1 ./ex19 -nlevels 1 -da_grid_x 20 -da_grid_y 20 -{snes,ksp}_monitor_short -pc_type lu -pc_factor_mat_solver_package superlu -mat_superlu_equil > ex19.tmp 2>&1; \
+	   if (${DIFF} output/ex19_superlu_equil.out ex19.tmp) then true; \
+	   else echo "Possible problem with ex19_superlu_equil, diffs above"; fi; \
+	   ${RM} -f ex19.tmp
 runex21:
 	-@${MPIEXEC} -n 4 ./ex21  -snes_mf -snes_monitor_short -nox > ex21_1.tmp 2>&1; \
 	   if (${DIFF} output/ex21_1.out ex21_1.tmp) then true; \
@@ -663,6 +673,7 @@ TESTEXAMPLES_MATLAB_ENGINE     = ex5.PETSc runex5_11 runex5_13 ex5.rm
 TESTEXAMPLES_AMS	       = 
 TESTEXAMPLES_ADIFOR	       = ex5f.PETSc runex5f_2 ex5f.rm
 TESTEXAMPLES_MUMPS             = ex19.PETSc runex19_3 runex19_4 ex19.rm 
+TESTEXAMPLES_SUPERLU           = ex19.PETSc runex19_superlu runex19_superlu_equil ex19.rm 
 TESTEXAMPLES_PASTIX            = ex19.PETSc runex19_11 runex19_12 ex19.rm 
 
 include ${PETSC_DIR}/conf/test

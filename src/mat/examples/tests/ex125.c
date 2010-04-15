@@ -79,6 +79,12 @@ int main(int argc,char **args)
   
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_solver_package",&ipack,PETSC_NULL);CHKERRQ(ierr);
   switch (ipack){
+  case 0:
+#ifdef PETSC_HAVE_SUPERLU
+    if (!rank) printf(" SUPERLU LU:\n");
+    ierr = MatGetFactor(A,MAT_SOLVER_SUPERLU,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+    break;
+#endif
   case 1:
 #ifdef PETSC_HAVE_SUPERLU_DIST
     if (!rank) printf(" SUPERLU_DIST LU:\n");
@@ -144,13 +150,17 @@ int main(int argc,char **args)
 
         if (!rank) printf("   %d-the MatSolve \n",nsolve);
         ierr = MatSolve(F,b,x);CHKERRQ(ierr); 
-
+       
         /* Check the error */
         ierr = VecAXPY(u,-1.0,x);CHKERRQ(ierr);  /* u <- (-1.0)x + u */
         ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
         if (norm > tol){ 
+          ierr = MatMult(A,x,u);CHKERRQ(ierr); /* u = A*x */
+          PetscReal resi;
+          ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);  /* u <- (-1.0)b + u */
+          ierr = VecNorm(u,NORM_2,&resi);CHKERRQ(ierr);
           if (!rank){
-            ierr = PetscPrintf(PETSC_COMM_SELF,"MatSolve: Norm of error %g, LU numfact %d\n",norm,nfact);CHKERRQ(ierr);
+            ierr = PetscPrintf(PETSC_COMM_SELF,"MatSolve: Norm of error %g, resi %g, LU numfact %d\n",norm,resi,nfact);CHKERRQ(ierr);
           }
         }
       }
