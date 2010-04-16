@@ -241,15 +241,8 @@ newall:
 # All remaining actions are intended for PETSc developers only.
 # PETSc users should not generally need to use these commands.
 #
-
-# To access the tags in EMACS, type M-x visit-tags-table and specify
-# the file petsc/TAGS.	
-# 1) To move to where a PETSc function is defined, enter M-. and the
-#     function name.
-# 2) To search for a string and move to the first occurrence,
-#     use M-x tags-search and the string.
-#     To locate later occurrences, use M-,
-# Builds all etags files Also generates ctags file for Vi/Vim
+#  See the users manual for how the tags files may be used from Emacs and Vi/Vim
+#
 alletags:
 	-@bin/maint/generateetags.py
 	-@find config -type f -name "*.py" |grep -v SCCS | xargs etags -o TAGS_PYTHON
