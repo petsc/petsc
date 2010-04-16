@@ -13,7 +13,7 @@ class Configure(PETSc.package.NewPackage):
 
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
-    self.boost    = self.framework.require('config.packages.Boost',self)
+    self.boost    = self.framework.require('config.packages.boost',self)
     self.mpi      = self.framework.require('config.packages.MPI',self)
     #self.triangle = self.framework.require('PETSc.packages.Triangle',self)
     #self.tetgen   = self.framework.require('PETSc.packages.TetGen',self)
