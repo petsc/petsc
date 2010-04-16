@@ -8,25 +8,28 @@
 
 typedef PetscCookie PetscClassId;
 
-#define PETSC_OBJECT_CLASSID    PETSC_OBJECT_COOKIE
-#define PETSC_VIEWER_CLASSID    PETSC_VIEWER_COOKIE
-#define PETSC_RANDOM_CLASSID    PETSC_RANDOM_COOKIE
-#define PETSC_IS_CLASSID        IS_COOKIE
-#define PETSC_LGMAP_CLASSID     IS_LTOGM_COOKIE
-#define PETSC_VEC_CLASSID       VEC_COOKIE
-#define PETSC_SCATTER_CLASSID   VEC_SCATTER_COOKIE
-#define PETSC_MAT_CLASSID       MAT_COOKIE
-#define PETSC_NULLSPACE_CLASSID MAT_NULLSPACE_COOKIE
-#define PETSC_PC_CLASSID        PC_COOKIE
-#define PETSC_KSP_CLASSID       KSP_COOKIE
-#define PETSC_SNES_CLASSID      SNES_COOKIE
-#define PETSC_TS_CLASSID        TS_COOKIE
-#define PETSC_AO_CLASSID        AO_COOKIE
-#define PETSC_DA_CLASSID        DM_COOKIE
+#define  PETSC_OBJECT_CLASSID  	 PETSC_OBJECT_COOKIE
+#define  PETSC_VIEWER_CLASSID  	 PETSC_VIEWER_COOKIE
+#define  PETSC_RANDOM_CLASSID  	 PETSC_RANDOM_COOKIE
+#define  IS_CLASSID            	 IS_COOKIE
+#define  IS_LTOGM_CLASSID      	 IS_LTOGM_COOKIE
+#define  VEC_CLASSID           	 VEC_COOKIE
+#define  VEC_SCATTER_CLASSID   	 VEC_SCATTER_COOKIE
+#define  MAT_CLASSID           	 MAT_COOKIE
+#define  MAT_NULLSPACE_CLASSID 	 MAT_NULLSPACE_COOKIE
+#define  MAT_FDCOLORING_CLASSID  MAT_FDCOLORING_COOKIE
+#define  PC_CLASSID            	 PC_COOKIE
+#define  KSP_CLASSID           	 KSP_COOKIE
+#define  SNES_CLASSID          	 SNES_COOKIE
+#define  TS_CLASSID            	 TS_COOKIE
+#define  AO_CLASSID            	 AO_COOKIE
+#define  DM_CLASSID            	 DM_COOKIE
+
+#define PetscObjectGetClassId PetscObjectGetCookie
+#define PetscClassIdRegister  PetscCookieRegister
 
 static StageLog _v_stageLog = 0;
-#define _stageLog ((PetscLogGetStageLog(&_v_stageLog)?	\
-		  ((_v_stageLog=0),0):0),_v_stageLog)
+#define _stageLog (PetscLogGetStageLog(&_v_stageLog),_v_stageLog)
 
 #endif
 
