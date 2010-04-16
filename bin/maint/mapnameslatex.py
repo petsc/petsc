@@ -239,7 +239,7 @@ if __name__ == "__main__":
 	    text = ''
 	else:
             # \href cannot be used in many places in Latex
-	    if token.value == '\\href{' or token.value == '\\findex{'  or token.value == '\\sindex{' or token.value == '\\subsection{' or token.value == '\\chapter{' or token.value == '\\section{' or token.value == '\\caption{'  or token.value == '\\trl{':
+	    if not token.value in ['\\href{','\\findex{','\\sindex{','\\subsection{','\\chapter{','\\section{','\\caption{','\\trl{']:
 		bracket = bracket + 1;
             if bracket == 0:
 		value = token.value
