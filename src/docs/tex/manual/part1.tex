@@ -221,7 +221,7 @@ See Section \ref{sec_debugging} for more information on debugging PETSc programs
 \section{Writing PETSc Programs}
 \label{sec_writing}
 
-Most PETSc programs begin with a call to \findex{PetscInitialize()}
+Most PETSc programs begin with a call to 
 \begin{tabbing}
   PetscInitialize(int *argc,char ***argv,char *file,char *help);
 \end{tabbing} 
@@ -274,7 +274,7 @@ the Fortran version, each PETSc routine has as its final argument an
 integer error variable.  Error tracebacks are discussed in the following
 section.
 
-All PETSc programs should call PetscFinalize() \findex{PetscFinalize()}
+All PETSc programs should call PetscFinalize()
 as their final (or nearly final) statement, as given below in the C/C++
 and Fortran formats, respectively:
 \begin{tabbing}
@@ -344,7 +344,7 @@ options database may be found in Section \ref{sec_options}.
 
 One creates a new parallel or 
 sequential vector, \trl{x}, of global dimension \trl{M} with the 
-commands \findex{VecCreate()}  \findex{VecSetSizes()} \sindex{vectors}
+commands  \sindex{vectors}
 \begin{tabbing}
   VecCreate(MPI\_Comm comm,Vec *x);\\
   VecSetSizes(Vec x, int m, int M);
@@ -352,13 +352,12 @@ commands \findex{VecCreate()}  \findex{VecSetSizes()} \sindex{vectors}
 where \trl{comm} denotes the MPI communicator and \trl{m} is the optional local size
 which may be \trl{PETSC_DECIDE}. The type of storage
 for the vector may be set with either calls to 
-VecSetType() or VecSetFromOptions(). \findex{VecSetType()} \findex{VecSetFromOptions()}
+VecSetType() or VecSetFromOptions().
 Additional vectors of the same type can be formed with
-\findex{VecDuplicate()}
 \begin{tabbing}
   VecDuplicate(Vec old,Vec *new);
 \end{tabbing}
-The commands \findex{VecSet()} \findex{VecSetValues()}
+The commands 
 \begin{tabbing}
   VecSet(Vec x,PetscScalar value);\\
   VecSetValues(Vec x,int n,int *indices,PetscScalar *values,INSERT\_VALUES);
@@ -369,7 +368,7 @@ detailed information about PETSc vectors, including their basic
 operations, scattering/gathering, index sets, and distributed arrays, is
 discussed in Chapter~\ref{chapter_vectors}.
 
-\findex{PetscScalar} \sindex{complex numbers}
+\sindex{complex numbers}
 Note the use of the PETSc variable type PetscScalar in this example.
 The PetscScalar is simply defined to be \trl{double} in C/C++
 (or correspondingly \trl{double} \trl{precision} in Fortran) for versions of
@@ -385,7 +384,6 @@ use of complex numbers in PETSc programs.
 Usage of PETSc matrices and vectors is similar. \sindex{matrices} 
 The user can create a new parallel or sequential matrix, \trl{A}, which
 has \trl{M} global rows and \trl{N} global columns, with the routines
-\findex{MatCreate()} and \findex{MatSetSizes()}
 \begin{tabbing}
   MatCreate(MPI\_Comm comm,Mat *A);\\
   MatSetSizes(Mat A,int m,int n,int M,int N);
@@ -393,7 +391,7 @@ has \trl{M} global rows and \trl{N} global columns, with the routines
 where the matrix format can be specified at runtime.  The user could
 alternatively specify each processes' number of local rows and columns
 using \trl{m} and \trl{n}.
-Generally one then sets the "type" of the matrix, \findex{MatSetType()} with, for example,
+Generally one then sets the "type" of the matrix, with, for example,
 \begin{tabbing}
   MatSetType(Mat A,MATAIJ);
 \end{tabbing}
@@ -403,9 +401,8 @@ Values can then be set with the command
 \begin{tabbing}
   MatSetValues(Mat A,int m,int *im,int n,int *in,PetscScalar *values,INSERT\_VALUES);
 \end{tabbing}
-After \findex{MatSetValues()} all elements have been inserted into the
+After  all elements have been inserted into the
 matrix, it must be processed with the pair of commands
-\findex{MatAssemblyBegin()} \findex{MatAssemblyEnd()}
 \begin{tabbing}
   MatAssemblyBegin(Mat A,MAT\_FINAL\_ASSEMBLY);\\
   MatAssemblyEnd(Mat A,MAT\_FINAL\_ASSEMBLY);
@@ -418,8 +415,6 @@ well as the details of some basic matrix manipulation routines.
 After creating the matrix and vectors that define a linear system,
 \trl{Ax = b}, the user can then use KSP to solve the system 
 with the following sequence of commands: 
-\findex{KSPCreate()} \findex{KSPSetOperators()}
-\findex{KSPSetFromOptions()} \findex{KSPSolve()} \findex{KSPDestroy()}
 \begin{tabbing}
   KSPCreate(MPI\_Comm comm,KSP *ksp); \\
   KSPSetOperators(KSP ksp,Mat A,Mat PrecA,MatStructure flag);\\

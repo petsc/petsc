@@ -249,7 +249,7 @@ newall:
 # 2) To search for a string and move to the first occurrence,
 #     use M-x tags-search and the string.
 #     To locate later occurrences, use M-,
-# Builds all etags files
+# Builds all etags files Also generates ctags file for Vi/Vim
 alletags:
 	-@bin/maint/generateetags.py
 	-@find config -type f -name "*.py" |grep -v SCCS | xargs etags -o TAGS_PYTHON

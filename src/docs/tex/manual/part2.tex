@@ -37,13 +37,13 @@ sides for linear systems, etc. This chapter is organized as follows:
 PETSc currently provides two basic vector types: sequential and parallel
 (MPI based). To create a sequential vector with \trl{m} components,
 one can
-use the command \findex{VecCreateSeq()} \findex{Vec}
+use the command 
 \begin{tabbing}
   VecCreateSeq(PETSC\_COMM\_SELF,int m,Vec *x);
 \end{tabbing}
 To create a parallel vector one can either specify the number of 
 components that will be stored on each process or let PETSc decide. 
-The command \findex{VecCreateMPI()}
+The command
 \begin{tabbing}
   VecCreateMPI(MPI\_Comm comm,int m,int M,Vec *x);
 \end{tabbing}
@@ -53,8 +53,7 @@ of components to store on the local process, and \trl{M} is the
 total number of vector components.  Either the local or global 
 dimension, but not both, can be set to PETSC\_DECIDE to 
 \findex{PETSC_DECIDE} indicate that PETSc should determine it.
-More generally, one can use the routines \findex{VecCreate()} \findex{VecSetSizes()} 
-\findex{VecSetFromOptions()}
+More generally, one can use the routines 
 \begin{tabbing}
   VecCreate(MPI\_Comm comm,Vec *v);\\
   VecSetSizes(Vec v, int m, int M);\\
@@ -75,14 +74,14 @@ VecCreateXXX()} routines is used, they must be called in the same
 order on each process in the communicator.
 
 One can assign a single value to all components of a vector with the 
-command \findex{VecSet()}
+command 
 \begin{tabbing}
   VecSet(Vec x,PetscScalar value);
 \end{tabbing}
 Assigning values to individual components of the vector is more 
 complicated, in order to make it possible to write efficient parallel 
 code.  Assigning a set of components is a two-step process: one 
-first calls  \findex{VecSetValues()} \findex{INSERT_VALUES}
+first calls  
 \begin{tabbing}
   VecSetValues(Vec x,int n,int *indices,PetscScalar *values,INSERT\_VALUES);
 \end{tabbing}
@@ -97,7 +96,7 @@ one must call \sindex{assembly}
 \begin{tabbing}
   VecAssemblyBegin(Vec x);
 \end{tabbing}
-followed by \findex{VecAssemblyBegin()}\findex{VecAssemblyEnd()} 
+followed by 
 \begin{tabbing}
   VecAssemblyEnd(Vec x);
 \end{tabbing}
@@ -111,7 +110,7 @@ Example usage of VecSetValues() may be found in
 
 Often, rather than inserting elements in a vector, one may wish to 
 add values. This process \sindex{vector values, setting}
-is also done with the command \findex{VecSetValues()}
+is also done with the command 
 \begin{tabbing}
   VecSetValues(Vec x,int n,int *indices, PetscScalar *values,ADD\_VALUES);
 \end{tabbing}
@@ -136,7 +135,7 @@ an alternative method for extracting some components of a vector are
 the vector scatter routines.  See Section~\ref{sec_scatter} for details; see also
 below for VecGetArray().
 
-One can examine a vector with the command \findex{VecView()}
+One can examine a vector with the command
 \begin{tabbing}
   VecView(Vec x,PetscViewer v);
 \end{tabbing}
@@ -150,12 +149,12 @@ routine PetscViewerDrawOpen().  A variety of viewers are discussed
 further in Section \ref{sec_viewers}.
 
 To create a new vector of the same format as an existing vector, one uses
-the command \findex{VecDuplicate()}
+the command 
 \begin{tabbing}
   VecDuplicate(Vec old,Vec *new);
 \end{tabbing}
 To create several new vectors of the same format as an existing vector,
-one uses the command \findex{VecDuplicateVecs()}
+one uses the command 
 \begin{tabbing}
   VecDuplicateVecs(Vec old,int n,Vec **new);
 \end{tabbing}
@@ -168,11 +167,11 @@ Section~\ref{sec_fortvecd}, the Fortran interface for VecDuplicateVecs()
 differs slightly.
 
 When a vector is no longer needed, it should be destroyed with the 
-command \findex{VecDestroy()}
+command 
 \begin{tabbing}
   VecDestroy(Vec x);
 \end{tabbing}
-To destroy an array of vectors, use the command \findex{VecDestroyVecs()}
+To destroy an array of vectors, use the command 
 \begin{tabbing}
   VecDestroyVecs(Vec *vecs,int n);
 \end{tabbing}
@@ -187,7 +186,7 @@ Such vectors can be created with the routines
 \begin{tabbing}
   VecCreateSeqWithArray(PETSC\_COMM\_SELF,int n,PetscScalar *array,Vec *V);
 \end{tabbing}
-and  \findex{VecCreateMPIWithArray()} \findex{VecCreateSeqWithArray()}
+and  
 \begin{tabbing}
   VecCreateMPIWithArray(MPI\_Comm comm,int n,int N,PetscScalar *array,Vec *vv);
 \end{tabbing}
@@ -235,8 +234,8 @@ VecSet(Vec x,PetscScalar alpha); & $ x_i = \alpha$ \\
 As listed in Table \ref{fig_vectorops}, we have chosen certain 
 basic vector operations to support within the PETSc vector library.
 These operations were selected because they often arise in application 
-codes. The NormType argument to VecNorm() is one of \findex{VecNorm()}
-\findex{NormType} \trl{NORM_1}, \trl{NORM_2}, or \trl{NORM_INFINITY}.
+codes. The NormType argument to VecNorm() is one of 
+\trl{NORM_1}, \trl{NORM_2}, or \trl{NORM_INFINITY}.
 \findex{NORM_1} \findex{NORM_2} \findex{NORM_INFINITY} \sindex{2-norm}
 \sindex{1-norm} \sindex{infinity norm} The 1-norm is 
 $ \sum_i |x_{i}|$, the 2-norm is $( \sum_{i} x_{i}^{2})^{1/2} $ and the 
@@ -244,7 +243,7 @@ infinity norm is $ \max_{i} |x_{i}|$.
 
 
 For parallel vectors that are distributed across the processes by ranges, 
-it is possible to determine \findex{VecGetOwnershipRange()}
+it is possible to determine 
 a process's local range with the routine
 \begin{tabbing}
   VecGetOwnershipRange(Vec vec,int *low,int *high);
@@ -255,7 +254,7 @@ last owned by the local process.
 This command is useful, for instance, in assembling parallel vectors.
 
 On occasion, the user needs to access the actual elements of the vector. 
-The routine VecGetArray() \findex{VecGetArray()}
+The routine VecGetArray() 
 returns a pointer to the elements local to the process:
 \begin{tabbing}
   VecGetArray(Vec v,PetscScalar **array);
@@ -273,11 +272,10 @@ access to the vector elements. Thus, these routines require essentially
 no time to call and can be used efficiently.
 
 The number of elements stored locally can be accessed with
-\findex{VecGetLocalSize()}
 \begin{tabbing}
   VecGetLocalSize(Vec v,int *size);
 \end{tabbing}
-The global vector length can be determined by \findex{VecGetSize()}
+The global vector length can be determined by
 \begin{tabbing}
   VecGetSize(Vec v,int *size);
 \end{tabbing}
@@ -305,17 +303,15 @@ operations. Instead one can write
  VecNormEnd(Vec x,NormType NORM\_2,double *norm2);\\
  VecNormEnd(Vec x,NormType NORM\_1,double *norm1);
 \end{tabbing}
-With this code, \findex{VecDotBegin()} \findex{VecDotEnd()}  
-\findex{VecMDotBegin()} \findex{VecMDotEnd()}  \findex{VecNormBegin()} 
-the \findex{VecNormEnd()} communication is delayed until the first call to 
+With this code, 
+the communication is delayed until the first call to 
 \trl{VecxxxEnd()} at which 
 a single MPI reduction is used to communicate all the required values. It is required that the
 calls to the \trl{VecxxxEnd()} are performed in the same order as the calls to the 
 \trl{VecxxxBegin()}; however if you mistakenly make the calls in the wrong order PETSc
 will generate an error,
 informing you of this. There are additional routines VecTDotBegin() and 
-VecTDotEnd(), VecMTDotBegin(), VecMTDotEnd(). \findex{VecTDotBegin()} \findex{VecTDotEnd()}
-\findex{VecMTDotBegin()} \findex{VecMTDotEnd()}
+VecTDotEnd(), VecMTDotBegin(), VecMTDotEnd(). 
 
 Note: these routines use only MPI 1 functionality; so they do not allow you to overlap 
 computation and communication (assuming no threads are spawned within a MPI process). 
@@ -343,7 +339,7 @@ different global (cross-process) numbering schemes and the ISLocalToGlobalMappin
 % ----------------------------------------------------------------------------------
 \subsection{Application Orderings}
 \label{sec_ao}
-\sindex{orderings} \findex{AO}
+\sindex{orderings} 
 
 In many applications it is desirable to work with one or more
 ``orderings'' (or numberings) of degrees of freedom, cells, nodes,
@@ -359,7 +355,7 @@ and efficiently with the various orderings. To define a new application ordering
 \begin{tabbing}
   AOCreateBasic(MPI\_Comm comm,int n,const int apordering[],const int petscordering[],AO *ao);
 \end{tabbing}
-The \findex{AOCreateBasic()} 
+The 
 arrays \trl{apordering} and \trl{petscordering}, respectively, contain a list of integers
 in the application ordering and their corresponding mapped values in the PETSc 
 ordering. Each process can provide whatever subset of the ordering it 
@@ -395,7 +391,6 @@ with either of the commands
 Upon input, the \trl{n}-dimensional array \trl{indices} specifies 
 the indices to be mapped, while upon output, \trl{indices} contains
 the mapped values.
-\findex{AOPetscToApplication()} \findex{AOApplicationToPetsc()}
 Since we, in general, employ a parallel database for the
 AO mappings, it is crucial that all processes that
 called AOCreateBasic() also call these routines; these
@@ -406,7 +401,6 @@ An alternative routine to create the application ordering, AO, is
 \begin{tabbing}
   AOCreateBasicIS(IS apordering,IS petscordering,AO *ao);
 \end{tabbing}
-\findex{AOCreateBasicIS()}
 where index sets (see \ref{sec_indexset}) are used instead of integer arrays. 
 
 The 
@@ -415,12 +409,10 @@ mapping routines
   AOPetscToApplicationIS(AO ao,IS indices);\\
   AOApplicationToPetscIS(AO ao,IS indices);
 \end{tabbing}
-\findex{AOPetscToApplicationIS()} \findex{AOApplicationToPetscIS()}
 will map index sets (IS objects) between orderings. Both the \trl{AOXxxToYyy()} and 
 \trl{AOXxxToYyyIS()} routines can be used regardless of whether the AO was 
 created with a AOCreateBasic() or AOCreateBasicIS().
 
-\findex{AODestroy()}  \findex{AOView}
 The AO context should be destroyed with AODestroy(AO ao)
 and viewed with AOView(AO ao,PetscViewer viewer).
 
@@ -438,10 +430,10 @@ to boundary conditions, etc.
 %-------------------------------------------------------------------------
 \subsection{Local to Global Mappings}
 \label{sec_islocaltoglobalmapping}
-\sindex{orderings} \findex{ISLocalToGlobalMapping}
+\sindex{orderings} 
 
 In many applications one works with a global representation of a vector
-(usually on a vector obtained with VecCreateMPI()) \findex{VecCreateMPI()}
+(usually on a vector obtained with VecCreateMPI()) 
 and a local representation of the same vector that includes ghost points 
 required for local computation. \sindex{ghost points} \sindex{global representation}
 \sindex{local representation} \sindex{local to global mapping}
@@ -453,16 +445,14 @@ the PETSc global numbering scheme. This is done via the following routines
   ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping ctx,IS isin,IS* isout);\\
   ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping ctx);
 \end{tabbing}
-\findex{ISLocalToGlobalMappingCreate()} \findex{ISLocalToGlobalMappingApply()}
-\findex{ISLocalToGlobalMappingApplyIS()} \findex{ISLocalToGlobalMappingDestroy()}
 Here \trl{N} denotes the number of local indices, \trl{globalnum} contains the
 global number of each local number, and ISLocalToGlobalMapping is the 
 resulting PETSc object that contains the information needed to apply the mapping with 
 either ISLocalToGlobalMappingApply() or 
-ISLocalToGlobalMappingApplyIS().  \findex{ISLocalToGlobalMapping}
+ISLocalToGlobalMappingApplyIS().
 
 Note that the ISLocalToGlobalMapping routines serve a different purpose
-than the AO \findex{AO} routines. In the former case they provide a mapping 
+than the AO routines. In the former case they provide a mapping 
 from  a local numbering scheme (including ghost points) to a global numbering scheme,
 while in the latter they provide a mapping between two global numbering schemes.
 In fact, many applications may use both AO and ISLocalToGlobalMapping routines.
@@ -479,7 +469,7 @@ If one is given a list of indices in a global numbering, the routine
   ISGlobalToLocalMappingApply(ISLocalToGlobalMapping ctx,\\
                               ISGlobalToLocalMappingType type,int nin,int idxin[],int *nout,int idxout[]);
 \end{tabbing}
-\findex{ISGlobalToLocalMappingApply}  \sindex{global to local mapping} will provide
+\sindex{global to local mapping} will provide
 a new list of indices in the local numbering. Again, negative values in 
 \trl{idxin} are left unmapped.  But, in addition, if \trl{type} is set to 
 \trl{IS_GTOLM_MASK}
@@ -503,8 +493,8 @@ To set values into a vector with the local numbering, one must first call
 \begin{tabbing}
   VecSetLocalToGlobalMapping(Vec v,ISLocalToGlobalMapping ctx);
 \end{tabbing}
-\findex{VecSetLocalToGlobalMapping()} \sindex{vectors, setting values with local numbering}
-and then call \findex{VecSetValuesLocal()}
+\sindex{vectors, setting values with local numbering}
+and then call 
 \begin{tabbing}
   VecSetValuesLocal(Vec x,int n,const int indices[],const PetscScalar values[],INSERT\_VALUES);
 \end{tabbing}
@@ -557,7 +547,7 @@ in two dimensions with the command
   DACreate2d(MPI\_Comm comm,DAPeriodicType wrap,DAStencilType st,int M,\\
              int N,int m,int n,int dof,int s,int *lx,int *ly,DA *da);
 \end{tabbing}
-The \findex{DACreate2d()} \sindex{array, distributed} arguments
+The  \sindex{array, distributed} arguments
 \sindex{distributed array} \trl{M} and \trl{N} indicate the global
 numbers of grid points in each direction, while \trl{m} and \trl{n}
 denote the process partition in each direction; \trl{m*n} must equal
@@ -601,7 +591,6 @@ discretization technique).
 
 The commands for creating distributed array communication data structures
 in one and three dimensions are analogous:
-\findex{DACreate3d()} \findex{DACreate1d()} \findex{DACreate3d()}
 \begin{tabbing}
   DACreate1d(MPI\_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *inra);\\
   DACreate3d\=(MPI\_Comm comm,DAPeriodicType wrap,DAStencilType stencil\_type,\\
@@ -629,8 +618,6 @@ information with the routines
   DACreateGlobalVector(DA da,Vec *g);\\
   DACreateLocalVector(DA da,Vec *l);
 \end{tabbing}
-\findex{DACreateGlobalVector()}
-\findex{DACreateLocalVector()}
 These vectors will generally serve as the building blocks for local
 and global PDE solutions, etc.  If additional vectors with such
 layout information are needed in a code, they can be obtained by
@@ -661,17 +648,15 @@ local parts by using the two-stage commands
   DAGlobalToLocalEnd(DA da,Vec g,InsertMode iora,Vec l);
 \end{tabbing}
 which allow the overlap of communication and computation.
-\findex{DAGlobalToLocalEnd()}  \findex{DAGlobalToLocalBegin()}
 Since the global and local vectors, given by \trl{g} and \trl{l}, respectively,
 must be compatible with the distributed array, \trl{da}, they should be
 generated by DACreateGlobalVector() 
-\findex{DACreateGlobalVector()} and DACreateLocalVector()
-\findex{DACreateLocalVector()}
+and DACreateLocalVector()
 (or be duplicates of such a vector obtained via VecDuplicate()).
 The InsertMode can be either \trl{ADD_VALUES} or \trl{INSERT_VALUES}.
 
 One can scatter the local patches into the distributed vector
-with the command \findex{DALocalToGlobal()}
+with the command
 \begin{tabbing}
   DALocalToGlobal(DA da,Vec l,InsertMode mode,Vec g);
 \end{tabbing}
@@ -681,22 +666,22 @@ subdivided into beginning and ending phases, since it is purely local.
 A third type of distributed array scatter is from a local
 vector (including ghost points that contain irrelevant values) to 
 a local vector with correct ghost point values. 
-This scatter may be done by \findex{DALocalToLocalBegin()}
-commands \findex{DALocalToLocalEnd()}
+This scatter may be done by
+commands
 \begin{tabbing}
   DALocalToLocalBegin(DA da,Vec l1,InsertMode iora,Vec l2);\\
   DALocalToLocalEnd(DA da,Vec l1,InsertMode iora,Vec l2);
 \end{tabbing}
 Since both local vectors, \trl{l1} and \trl{l2},
 must be compatible with the distributed array, \trl{da}, they should be
-generated by DACreateLocalVector() \findex{DACreateLocalVector()}
+generated by DACreateLocalVector()
 (or be duplicates of such vectors obtained via VecDuplicate()).
 The InsertMode can be either \trl{ADD_VALUES} or \trl{INSERT_VALUES}.
 
 It is possible to directly access the vector scatter contexts (see below)
 used in the local-to-global (\trl{ltog}), global-to-local 
 (\trl{gtol}), and local-to-local (\trl{ltol})
-scatters with the command \findex{DAGetScatter()}
+scatters with the command
 \begin{tabbing}
   DAGetScatter(DA da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol);
 \end{tabbing}
@@ -748,14 +733,13 @@ example for a multi-component PDE.
 
 The global indices of the lower left corner of the local portion of the array 
 as well as the local array size can be obtained with the commands
-\findex{DAGetCorners()} \findex{DAGetGhostCorners()}
 \begin{tabbing}
   DAGetCorners(DA da,int *x,int *y,int *z,int *m,int *n,int *p);\\
   DAGetGhostCorners(DA da,int *x,int *y,int *z,int *m,int *n,int *p);
 \end{tabbing}
 The first version excludes any ghost points, while the second version
 includes them. 
-The routine \findex{DAGetGhostCorners()} DAGetGhostCorners()
+The routine DAGetGhostCorners()
 deals with the fact that subarrays along boundaries of the problem
 domain have ghost points only on their interior edges, but not on
 their boundary edges.
@@ -775,7 +759,7 @@ To assemble global stiffness matrices, one needs either
 \item
 the global node number of each local node 
 including the ghost nodes. This number may be determined by using the 
-command \findex{DAGetGlobalIndices()}
+command 
 \begin{tabbing}
   DAGetGlobalIndices(DA da,int *n,int *idx[]);
 \end{tabbing}
@@ -808,7 +792,6 @@ uses to parallize. This ordering context can be obtained with the command
 \begin{tabbing}
   DAGetAO(DA da,AO *ao);
 \end{tabbing}
-\findex{DAGetAO()}
 In Figure \ref{fig_daao} we indicate the orderings for a two-dimensional distributed 
 array, divided among four processes.
 
@@ -850,7 +833,7 @@ set of integer indices, is used to define scatters, gathers, and similar
 operations on vectors and matrices. 
 
 The following command creates a index set based on a list 
-of integers: \findex{ISCreateGeneral()}
+of integers: 
 \begin{tabbing}
   ISCreateGeneral(MPI\_Comm comm,int n,int *indices, IS *is);
 \end{tabbing}
@@ -867,14 +850,14 @@ stride (\trl{step}), \sindex{stride} and can be created with the command
   ISCreateStride(MPI\_Comm comm,int n,int first,int step,IS *is);
 \end{tabbing}
 
-Index sets can be destroyed with the command \findex{ISDestroy()}
+Index sets can be destroyed with the command 
 \begin{tabbing}
   ISDestroy(IS is); 
 \end{tabbing}
 
 On rare occasions the user may need to access information directly 
-from an index set. \findex{ISGetSize()} 
-Several commands \findex{ISStrideGetInfo()} \findex{ISGetIndices()}
+from an index set. 
+Several commands 
 assist in this process:
 \begin{tabbing}
   ISGetSize(IS is,int *size);\\
@@ -886,7 +869,7 @@ indices in the index set.
 For certain index sets, this may be a 
 temporary array of indices created specifically for a given routine. 
 Thus, once the user finishes using the array of indices, 
-the routine \findex{ISRestoreIndices()}
+the routine 
 \begin{tabbing}
   ISRestoreIndices(IS is, int **indices); 
 \end{tabbing}
@@ -894,7 +877,6 @@ should be called to ensure that the system can free the space it
 may have used to generate the list of indices.
 
 A blocked version of the index sets can be created with the command
-\findex{ISCreateBlock}
 \begin{tabbing}
   ISCreateBlock(MPI\_Comm comm,int bs,int n,int *indices, IS *is);
 \end{tabbing}
@@ -903,8 +885,6 @@ set refers to a block of \trl{bs} vector entries.  Related routines analogous
 to those described above exist as well, including
 ISBlockGetIndices(), ISBlockGetSize(), ISBlockGetLocalSize(), ISBlockGetBlockSize(),
 and ISBlock(). See the man pages for details.
-\findex{ISBlockGetIndices()} \findex{ISBlockGetSize()} \findex{ISBlockGetLocalSize()} \findex{ISBlockGetBlockSize()}
-\findex{ISBlock()}
 
 % -------------------------------------------------------------------------------------- 
 \subsection{Scatters and Gathers} \sindex{scatter} \sindex{gather}
@@ -916,8 +896,6 @@ insert or add to any subset of the components of another vector.
 We refer to these operations as generalized scatters, though they are 
 actually a combination of scatters and gathers. 
 
-\findex{VecScatterCreate()} \findex{VecScatterBegin()}
-\findex{VecScatterEnd()} \findex{VecScatterDestroy()}
 \findex{INSERT_VALUES} \findex{SCATTER_FORWARD}
 To copy selected components from one vector 
 to another, one uses the following set of commands:
@@ -978,10 +956,9 @@ these ``different'' vectors would have been obtained via calls to
 VecDuplicate() from the original vectors used in the call to 
 VecScatterCreate().
 
-\sindex{vector values, getting} \findex{VecGetValues()}
-There is a PETSc routine that is nearly the opposite of VecSetValues()
-\findex{VecSetValues()}, that is, VecGetValues(), but it can only get
-local values from the vector. \findex{VecGetValues()}
+\sindex{vector values, getting} 
+There is a PETSc routine that is nearly the opposite of VecSetValues(), that is, VecGetValues(), but it can only get
+local values from the vector. 
 To get off process values, the user should create a new vector where
 the components are to be stored and perform the appropriate vector 
 scatter. For example, if one desires to obtain the values of the 
@@ -1067,7 +1044,7 @@ or
   VecCreateGhostWithArray(MPI\_Comm comm,int n,int N,int nghost,int *ghosts,\\
                                   PetscScalar *array,Vec *vv)
 \end{tabbing}
-Here \findex{VecCreateGhost()} \findex{VecCreateGhostWithArray()} \trl{n} is the 
+Here  \trl{n} is the 
 number of local vector entries, \trl{N} is the number of \sindex{vectors, with ghost values}
 global entries (or \trl{PETSC_NULL}) and \trl{nghost} is the number of 
 ghost entries. The array \trl{ghosts} is of size \trl{nghost} and contains the 
@@ -1077,11 +1054,11 @@ or VecDuplicateVecs() on a ghosted vector will generate additional ghosted vecto
 In many ways a ghosted vector behaves just like any other \trl{MPI} vector created 
 by VecCreateMPI(), the difference is that the ghosted vector has an additional 
 ``local'' representation that allows one to access the ghost locations. This is done
-through the call to \findex{VecGhostGetLocalForm()} 
+through the call to 
 \begin{tabbing}
  VecGhostGetLocalForm(Vec g,Vec *l);
 \end{tabbing}
-The vector \trl{l} is a \findex{VecGhostRestoreLocalForm()}
+The vector \trl{l} is a 
 sequential representation of the parallel vector \trl{g} 
 that shares the same array space (and hence numerical values); but allows one to 
 access the ``ghost'' values past ``the end of the'' array. Note that one access the 
@@ -1089,7 +1066,6 @@ entries in \trl{l} using the local numbering of elements and ghosts, while they
 are accessed in \trl{g} using the global numbering.
 
 A common usage of a ghosted vector is given by
-\findex{VecGhostUpdateBegin()} \findex{VecGhostUpdateEnd()}
 \begin{tabbing}
   VecGhostUpdateBegin\=(Vec globalin,InsertMode INSERT\_VALUES,\\
                       \>             ScatterMode SCATTER\_FORWARD);\\
@@ -1150,8 +1126,8 @@ the particular storage formats of the matrices.
 \section{Creating and Assembling Matrices}
 \label{sec_matcreate}
 
-The simplest routine for forming a PETSc matrix, \trl{A}, is \findex{MatCreate()}
-followed by \findex{MatSetSizes()}
+The simplest routine for forming a PETSc matrix, \trl{A}, is 
+followed by
 \begin{tabbing}
   MatCreate(MPI\_Comm comm,Mat *A)
   MatSetSizes(Mat A,int m,int n,int M,int N)
@@ -1168,7 +1144,7 @@ application.  By default, MatCreate() employs the sparse AIJ
 format, which is discussed in detail Section~\ref{sec_matsparse}.  See
 the manual pages for further information about available matrix formats.
 
-To insert or add entries to a matrix, one can call a variant of MatSetValues(), either \findex{MatSetValues()}
+To insert or add entries to a matrix, one can call a variant of MatSetValues(), either
 \begin{tabbing}
   MatSetValues(\=Mat A,int m,const int idxm[],int n,const int idxn[],const PetscScalar values[],\\
             \>INSERT\_VALUES);
@@ -1189,7 +1165,6 @@ to be inserted. By default the values are given in row major order, which is the
 opposite of the Fortran convention, meaning that the value to be put in row
 \trl{idxm[i]} and column \trl{idxn[j]} is located in \trl{values[i*n+j]}. To
 allow the insertion of values in column major order, one can call the command
-\findex{MatSetOption()}
 \begin{tabbing}
   MatSetOption(Mat A,MAT\_COLUMN\_ORIENTED,PETSC\_TRUE);
 \end{tabbing}
@@ -1204,14 +1179,14 @@ MatSetValues().
 
 When using the block compressed sparse row matrix format (MATSEQBAIJ or
 MATMPIBAIJ), one can insert elements more efficiently using the block
-variant, MatSetValuesBlocked(). \findex{MatSetValuesBlocked()}
+variant, MatSetValuesBlocked().
 
 The function MatSetOption() accepts several other inputs; see
 the manual page for details.
 
 After the matrix elements have been inserted or added into the matrix, 
 they must be processed (also called assembled) before they can be used. The routines for matrix
-processing are \findex{MatAssemblyBegin()} \findex{MatAssemblyEnd()}
+processing are 
 \begin{tabbing}
   MatAssemblyBegin(Mat A,MAT\_FINAL\_ASSEMBLY);\\
   MatAssemblyEnd(Mat A,MAT\_FINAL\_ASSEMBLY);
@@ -1232,7 +1207,6 @@ reasons we usually recommend generating most entries on the
 process where they are destined to be stored.  To help the
 application programmer with this task for matrices that are
 distributed across the processes by ranges, the routine
-\findex{MatGetOwnershipRange()}
 \begin{tabbing}
   MatGetOwnershipRange(Mat A,int *first\_row,int *last\_row);
 \end{tabbing}
@@ -1287,7 +1261,7 @@ diagonal matrix entries are stored with the rest of the nonzeros (not
 separately). 
 
 To create a sequential AIJ sparse matrix, \trl{A}, 
-\findex{MatCreateSeqAIJ()} with \trl{m} rows and \trl{n} columns,
+with \trl{m} rows and \trl{n} columns,
 one uses the command
 \begin{tabbing}
   MatCreateSeqAIJ(PETSC\_COMM\_SELF,int m,int n,int nz,int *nnz,Mat *A);
@@ -1410,7 +1384,7 @@ expensive.
 \subsubsection{Parallel AIJ Sparse Matrices}
 
 Parallel sparse matrices with the AIJ 
-format can be created with the command \findex{MatCreateMPIAIJ()}
+format can be created with the command
 \begin{tabbing}
   MatCreateMPIAIJ\=(MPI\_Comm comm,int m,int n,int M,int N,int d\_nz,\\
                  \>         int *d\_nnz, int o\_nz,int *o\_nnz,Mat *A);
@@ -1565,7 +1539,7 @@ PETSc provides both sequential and parallel dense matrix formats,
 where each process stores its entries in a column-major array in the
 usual Fortran style.  To create a sequential, dense PETSc matrix,
 \trl{A} of dimensions \trl{m} by \trl{n}, the user should
-call \findex{MatCreateSeqDense()}
+call
 \begin{tabbing}
   MatCreateSeqDense(PETSC\_COMM\_SELF,int m,int n,PetscScalar *data,Mat *A);
 \end{tabbing}
@@ -1597,7 +1571,7 @@ We briefly discuss a few of these routines in more detail below.
 
 The parallel matrix can multiply a vector with \trl{n} 
 local entries, returning a vector with \trl{m} local entries. That is, 
-to form the product \findex{MatMult()}
+to form the product 
 \begin{tabbing}
   MatMult(Mat A,Vec x,Vec y);
 \end{tabbing}
@@ -1613,12 +1587,12 @@ and matrices of the same dimension are automatically compatible for
 parallel matrix-vector operations.
 
 Along with the matrix-vector multiplication routine, there is 
-a version for the transpose of the matrix, \findex{MatMultTranspose()}
+a version for the transpose of the matrix, 
 \begin{tabbing}
   MatMultTranspose(Mat A,Vec x,Vec y);
 \end{tabbing}
 There are also versions that add the result
-to another vector: \findex{MatMultAdd()} \findex{MatMultTransposeAdd()}
+to another vector: 
 \begin{tabbing}
   MatMultAdd(Mat A,Vec x,Vec y,Vec w);\\
   MatMultTransposeAdd(Mat A,Vec x,Vec y,Vec w);
@@ -1629,7 +1603,7 @@ In Fortran, this situation is forbidden by the language standard,
 but we allow it anyway.
 
 One can print a matrix (sequential or parallel) to the screen with the 
-command \findex{MatView()}
+command 
 \begin{tabbing}
   MatView(Mat mat,PETSC\_VIEWER\_STDOUT\_WORLD);
 \end{tabbing}
@@ -1639,13 +1613,12 @@ command
 \begin{tabbing}
   MatView(Mat mat,PETSC\_VIEWER\_DRAW\_WORLD);
 \end{tabbing}
-Also one can use \findex{PETSC_VIEWER_DRAW_WORLD}
+Also one can use 
 \begin{tabbing}
   MatView(Mat mat,PetscViewer viewer);
 \end{tabbing}
 where \trl{viewer} was obtained with PetscViewerDrawOpen().
-\findex{PetscViewerDrawOpen()} 
-Additional viewers \findex{MatCopy()} and options are given in the MatView() man
+Additional viewers and options are given in the MatView() man
 page and Section~\ref{sec_viewers}.
 
 \begin{table}[tb]
@@ -1673,8 +1646,8 @@ MatShift(Mat Y,PetscScalar a); & $ Y =  Y + a*I $ \\
 \caption{\hbox{PETSc Matrix Operations}}
 \label{fig_matrixops}
 \end{table}
-The NormType argument to MatNorm() is one of \findex{MatNorm()}
-\findex{NormType} \trl{NORM_1}, \trl{NORM_INFINITY}, and \trl{NORM_FROBENIUS}.
+The NormType argument to MatNorm() is one of 
+NormType \trl{NORM_1}, \trl{NORM_INFINITY}, and \trl{NORM_FROBENIUS}.
 \findex{NORM_1}  \findex{NORM_INFINITY} \findex{NORM_FROBENIUS}
 \sindex{1-norm} \sindex{infinity norm} \sindex {Frobenius norm}
 \section{Matrix-Free Matrices} \sindex{matrix-free methods}
@@ -1684,7 +1657,6 @@ explicit storage of the matrix, for the numerical solution of partial
 differential equations.  To support matrix-free methods in PETSc, one
 can use the following command to create a Mat structure without
 ever actually generating the matrix:
-\findex{MatCreateShell()}
 \begin{tabbing}
   MatCreateShell(MPI\_Comm comm,int m,int n,int M,int N,void *ctx,Mat *mat);
 \end{tabbing}
@@ -1699,14 +1671,14 @@ must write a routine with the calling sequence
   UserMult(Mat mat,Vec x,Vec y);
 \end{tabbing}
 and then associate it with the matrix, \trl{mat}, by using the 
-command \findex{MatShellSetOperation()}
+command
 \begin{tabbing}
   MatShellSetOperation\=(Mat mat,MatOperation MATOP\_MULT,\\
                       \>         (void(*)(void)) PetscErrorCode (*UserMult)(Mat,Vec,Vec));
 \end{tabbing}
 Here \trl{MATOP_MULT} is the name of the operation for matrix-vector
 multiplication. Within each user-defined routine (such as
-\trl{UserMult()}), the user should call \findex{MatShellGetContext()}
+\trl{UserMult()}), the user should call
 MatShellGetContext() to obtain the user-defined context, \trl{ctx},
 that was set by MatCreateShell().
 This shell matrix can be used with the iterative linear
@@ -1746,7 +1718,7 @@ In many iterative calculations (for instance, in a nonlinear equations
 solver), it is important for efficiency purposes to reuse the nonzero 
 structure of a matrix, rather than determining it anew every time 
 the matrix is generated.  To retain a given matrix but reinitialize
-its contents, one can employ \findex{MatZeroEntries()}
+its contents, one can employ
 \begin{tabbing}
   MatZeroEntries(Mat A);
 \end{tabbing}
@@ -1760,7 +1732,7 @@ by calling MatSetValues().
 By default, if new entries are made in locations where no nonzeros 
 previously existed, space will be allocated for the new entries. 
 To prevent the allocation of additional memory and simply discard those 
-new entries, one can use the option \findex{MatSetOption()}
+new entries, one can use the option
 \begin{tabbing}
   MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS,PETSC\_TRUE);
 \end{tabbing}
@@ -1785,7 +1757,7 @@ in terms of both time and memory.
 One simple way to deal with this difficulty is to replace those rows in the 
 matrix associated with known boundary conditions, by rows of the 
 identity matrix (or some scaling of it). This action can be done with 
-the command \findex{MatZeroRows()}
+the command
 \begin{tabbing}
   MatZeroRowsIS(Mat A,PetscInt numRows,PetscInt rows[],PetscScalar diag\_value),
 \end{tabbing}
@@ -1807,11 +1779,11 @@ the matrix in the second iteration the user should call
 \begin{tabbing}
   MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS,PETSC\_TRUE);
 \end{tabbing}
-From that point, \findex{MatSetOption()}
+From that point,
 no new values will be inserted into those (boundary) rows of 
 the matrix. \findex{MAT_NEW_NONZERO_LOCATIONS} 
 
-Another matrix routine of interest is \findex{MatConvert()}
+Another matrix routine of interest is
 \begin{tabbing}
   MatConvert(Mat mat,MatType newtype,Mat *M)
 \end{tabbing}
@@ -1836,7 +1808,6 @@ can use \trl{PETSC_NULL} for the \trl{vals} argument. Similarly,
 one can use \trl{PETSC_NULL} for the \trl{cols} argument.
 The user can only examine the values extracted with MatGetRow();
 the values {\em cannot} be altered. 
-\findex{MatGetRow()} \findex{MatRestoreRow()}
 To change the matrix entries, one must use MatSetValues().
 
 Once the user has finished using a row, he or she {\em must} call 
@@ -1864,7 +1835,7 @@ For problems that require mesh refinement, PETSc uses the ``rebuild the data str
 approach, as opposed to the ``maintain dynamic data structures that support the 
 insertion/deletion of additional vector and matrix rows and columns entries'' approach.
 
-Partitioning in PETSc is organized around the MatPartitioning object. \findex{MatPartitioning}
+Partitioning in PETSc is organized around the MatPartitioning object. 
 One first creates a parallel matrix that contains the connectivity information about the 
 grid (or other graph-type object) that is to be partitioned. This is done with the 
 command
@@ -1921,9 +1892,7 @@ renumbering required for the new partition
  MatDestroy(Mat Adj);\\
  ISPartitioningToNumbering(IS is,IS *isg);
 \end{tabbing}
-The \findex{MatPartitioningCreate()} \findex{MatPartitioningSetAdjacency()} 
-\findex{MatPartitioningSetFromOptions()} \findex{MatPartitioningApply()} 
-\findex{MatPartitioningDestroy()}  resulting \trl{isg} contains for each local node the new global
+resulting \trl{isg} contains for each local node the new global
 number of that node. The resulting \trl{is} contains the new process number
 that each local node has been assigned to.
 
@@ -1983,7 +1952,7 @@ directly, users should employ the interface of KSP.
 \label{sec_usingsles}
 
 To solve a linear system with KSP, one must first create a solver context 
-with the command \findex{KSPCreate()}
+with the command 
 \begin{tabbing}
   KSPCreate(MPI\_Comm comm,KSP *ksp); 
 \end{tabbing}
@@ -1991,7 +1960,7 @@ Here \trl{comm} is the MPI communicator, and \trl{ksp} is the newly
 formed solver context.
 Before actually solving a linear system with KSP, the user must call 
 the following routine to set the matrices associated with the linear
-system: \findex{KSPSetOperators()}
+system: 
 \begin{tabbing}
   KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag);
 \end{tabbing}
@@ -1999,7 +1968,7 @@ The argument \trl{Amat}, representing the matrix that defines the
 linear system, is a symbolic place holder for any kind of matrix.  
 In particular, KSP {\em does} support matrix-free methods. 
 \sindex{matrix-free methods}
-The routine MatCreateShell() \findex{MatCreateShell()}
+The routine MatCreateShell() 
 in Section~\ref{sec_matrixfree} provides further information regarding
 matrix-free methods. 
 Typically the {\em preconditioning matrix} (i.e., the matrix from which the
@@ -2029,18 +1998,18 @@ Much of the power of KSP can be accessed through the single routine
 \begin{tabbing}
   KSPSetFromOptions(KSP ksp);
 \end{tabbing}
-This \findex{KSPSetFromOptions()}
+This 
 routine accepts the options \trl{-h} and \trl{-help} as well as 
 any of the KSP and PC options discussed below. 
 To solve a linear system, one sets the rhs and solution vectors using
 and executes the
-command \findex{KSPSolve()}
+command
 \begin{tabbing}
   KSPSolve(KSP ksp,Vec b,Vec x);
 \end{tabbing}
 where \trl{b} and \trl{x} respectively denote the right-hand-side and
 solution vectors.  On return, the iteration number at which convergence
-was successfully reached can be obtained using \findex{KSPGetIterationNumber()}.
+was successfully reached can be obtained using 
 \begin{tabbing}
   KSPGetIterationNumber(KSP ksp, int *its);
 \end{tabbing}
@@ -2049,7 +2018,7 @@ which divergence or breakdown was detected is returned in \trl{its}.
  Section~\ref{section_convergencetests} gives more details regarding
 convergence testing. Note that multiple linear solves can be performed by
 the same KSP context. Once the KSP context is no longer needed, it should be
-destroyed with the command \findex{KSPDestroy()}
+destroyed with the command 
 \begin{tabbing}
   KSPDestroy(KSP ksp);
 \end{tabbing}
@@ -2059,7 +2028,7 @@ One additional step is required for users who wish to customize certain
 preconditioners (e.g., see Section~\ref{sec_bjacobi}) or to log certain 
 performance data using the PETSc profiling facilities (as discussed in 
 Chapter~\ref{ch_profiling}).
-In this case, the user can optionally explicitly call \findex{KSPSetUp()}
+In this case, the user can optionally explicitly call 
 \begin{tabbing}
   KSPSetUp(KSP ksp)
 \end{tabbing}
@@ -2075,7 +2044,7 @@ which is solved with ILU(0)). A variety of other solvers
 and options are also available.
 To allow application programmers to set any of the preconditioner or 
 Krylov subspace options directly within the code, we provide routines
-that extract the PC and KSP contexts, \findex{KSPGetPC()}
+that extract the PC and KSP contexts, 
 \begin{tabbing}
   KSPGetPC(KSP ksp,PC *pc);\\
 \end{tabbing}
@@ -2092,7 +2061,7 @@ By default, if a direct solver is used, the factorization is {\em not} done
 in-place. This approach prevents the user from the unexpected surprise
 of having a corrupted matrix after a linear solve. The routine 
 PCFactorSetUseInPlace(), discussed below, causes factorization to 
-be done in-place. \findex{PCFactorSetUseInPlace()} 
+be done in-place. 
 
 \section{Solving Successive Linear Systems}
 
@@ -2117,22 +2086,18 @@ KSPSetOperators() that can save work for such cases.
 
 The Krylov subspace methods accept a number of options, many of which 
 are discussed below.  First, to set the Krylov subspace method that is to 
-be used, one calls the command \findex{KSPSetType()}
+be used, one calls the command 
 \begin{tabbing}
   KSPSetType(KSP ksp,KSPType method);
 \end{tabbing}
 The type can be one of KSPRICHARDSON, KSPCHEBYCHEV, KSPCG, KSPGMRES, 
 KSPTCQMR, KSPBCGS, KSPCGS, KSPTFQMR, KSPCR, KSPLSQR, KSPBICG, or KSPPREONLY.
-\findex{KSPRICHARDSON} \findex{KSPCHEBYCHEV} \findex{KSPCG}
-\findex{KSPGMRES} \findex{KSPTCQMR} \findex{KSPBCGS} \findex{KSPTFQMR}
-\findex{KSPCR} \findex{KSPPREONLY} \findex{KSPBICG}
 The KSP method can also be set with the options database command 
 \trl{-ksp_type},
 followed by one of the options \trl{richardson}, \trl{chebychev}, \trl{cg}, \trl{gmres}, \trl{tcqmr}, 
 \trl{bcgs}, \trl{cgs}, \trl{tfqmr}, \trl{cr}, \trl{lsqr}, \trl{bicg}, or \trl{preonly.} \findex{-ksp_type}
 There are method-specific options for the Richardson, Chebychev,
-and GMRES \findex{KSPChebychevSetEigenvalues()} \findex{KSPGMRESSetRestart()}
-methods: \findex{KSPRichardsonSetScale()}  \sindex{GMRES} \sindex{CG}
+and GMRES methods: \sindex{GMRES} \sindex{CG}
 \begin{tabbing}
   KSPRichardsonSetScale(KSP ksp,double damping\_factor);\\
   KSPChebychevSetEigenvalues(KSP ksp,double emax,double emin);\\
@@ -2149,8 +2114,7 @@ The default technique for orthogonalization of the Hessenberg
 matrix in GMRES is 
 the
 unmodified (classical) Gram-Schmidt method, which can be set \sindex{Gram-Schmidt}
-with \findex{KSPGMRESSetOrthogonalization()} 
-\findex{KSPGMRESClassicalGramSchmidtOrthogonalization}
+with
 \begin{tabbing}
   KSPGMRESSetOrthogonalization(KSP ksp,KSPGMRESClassicalGramSchmidtOrthogonalization);
 \end{tabbing}
@@ -2162,7 +2126,6 @@ This can be changed with the option
 \begin{tabbing}
 KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType type)
 \end{tabbing}
-\findex{KSPGMRESSetCGSRefinementType()} \findex{KSPGMRESCGSRefinementType}
 or via the options database with 
 \begin{tabbing}
 -ksp\_gmres\_cgs\_refinement\_type none,ifneeded,always
@@ -2174,7 +2137,7 @@ The values for KSPGMRESCGSRefinementType are \trl{KSP_GMRES_CGS_REFINEMENT_NONE}
 
 One can also use 
 modifed Gram-Schmidt, 
-\findex{KSPGMRESModifiedGramSchmidtOrthogonalization} by setting the orthogonalization routine,
+by setting the orthogonalization routine,
 KSPGMRESModifiedGramSchmidtOrthogonalization(), by using the command line option 
 \trl{-ksp_gmres_modifiedgram-schmidt}. \findex{-ksp_gmres_modifiedgramschmidt}
 
@@ -2182,7 +2145,7 @@ For the conjugate gradient method with complex numbers, there are two
 slightly different algorithms depending on whether the matrix is 
 Hermitian symmetric or truly symmetric (the default is to assume that
 it is Hermitian symmetric). To indicate that it is symmetric, one uses the command
-\findex{KSPCGSetType()} \findex{KSP_CG_SYMMETRIC} \findex{KSPCGType}
+\findex{KSP_CG_SYMMETRIC}
 \sindex{Hermitian matrix} 
 \begin{tabbing}
   KSPCGSetType(KSP ksp,KSPCGType \trl{KSP_CG_SYMMETRIC});
@@ -2195,7 +2158,7 @@ set to work with the KSP object is ignored if LSQR was selected.
 By default, KSP assumes an initial guess of zero by zeroing the initial 
 value for the solution vector that is given; this zeroing is done at the
 call to KSPSolve() (or KSPSolve()). To use a nonzero 
-initial guess, the user {\em must} call \findex{KSPSetInitialGuessNonzero()}
+initial guess, the user {\em must} call
 \begin{tabbing}
   KSPSetInitialGuessNonzero(KSP ksp,PetscTruth flg);
 \end{tabbing}
@@ -2225,7 +2188,7 @@ By default, all KSP implementations use left preconditioning.
 % Not really, KSPQCG uses symmetric preconditioning.
 Right preconditioning can be activated for some methods by
 using the options database command \trl{-ksp_right_pc} or
-calling the routine \findex{-ksp_right_pc} \findex{PCSide}
+calling the routine \findex{-ksp_right_pc}
 \begin{tabbing}
   KSPSetPreconditionerSide(KSP ksp,PCSide PC\_RIGHT);
 \end{tabbing}
@@ -2278,7 +2241,7 @@ $\dagger$true - denotes true residual norm, precond - denotes preconditioned res
 Note: the bi-conjugate gradient method requires application of both the matrix and 
 its transpose plus the preconditioner and its transpose. Currently not all matrices
 and preconditioners provide this support and thus the KSPBICG cannot always 
-be used. \findex{KSPBICG} \sindex{Bi-conjugate gradient}
+be used. \sindex{Bi-conjugate gradient}
 
 \subsection{Convergence Tests}
 \label{section_convergencetests}
@@ -2293,7 +2256,7 @@ residual, \trl{dtol}.  Convergence is detected at iteration $ k $ if
 where $r_k = b - A x_k$.  Divergence is detected if
 \[  \| r_k \|_2 > dtol * \| b \|_2. \]
 These parameters, as well as the maximum number of allowable iterations, 
-can be set with the routine \findex{KSPSetTolerances()}
+can be set with the routine 
 \begin{tabbing}
   KSPSetTolerances(KSP ksp,double rtol,double atol,double dtol,int maxits);
 \end{tabbing}
@@ -2311,7 +2274,7 @@ In addition to providing an interface to a simple convergence test,
 KSP allows the application programmer the flexibility to provide 
 customized convergence-testing routines.  \sindex{convergence tests}
 The user can specify a customized 
-routine with the command \findex{KSPSetConvergenceTest()}
+routine with the command 
 \begin{tabbing}
   KSPSet\=ConvergenceTest(KSP ksp,PetscErrorCode (*test)(KSP ksp,int it,double rnorm,\\
           \>KSPConvergedReason *reason,void *ctx),void *ctx,PetscErrorCode (*destroy)(void *ctx));
@@ -2323,8 +2286,8 @@ number, \trl{it}, and the residual's $ l_2 $ norm, \trl{rnorm}.
 The routine for detecting convergence, \trl{test}, should set reason to 
 positive for convergence, 0 for no convergence, and negative for 
 failure to converge.  A list of possible KSPConvergedReason is given
-\findex{KSPConvergedReason} in \trl{include/petscksp.h}.
- You can use \findex{KSPGetConvergedReason()} after KSPSolve() to see why
+in \trl{include/petscksp.h}.
+ You can use KSPGetConvergedReason() after KSPSolve() to see why
 convergence/divergence was detected.
 
 \subsection{Convergence Monitoring}
@@ -2338,7 +2301,7 @@ To display the residual norms in a graphical window (running under X Windows),
 one should use \trl{-ksp_monitor_draw} \trl{[x,y,w,h]}, where either all or none of 
 the options must be specified. \findex{-ksp_monitor_draw}
 Application programmers can also provide their own routines to perform 
-the monitoring by using the command \findex{KSPMonitorSet()}
+the monitoring by using the command 
 \begin{tabbing}
   KSPMonitorSet(\=KSP ksp,PetscErrorCode (*mon)(KSP ksp,int it,double rnorm,void *ctx),\\
                 \>        void *ctx,PetscErrorCode (*mondestroy)(void*));
@@ -2349,12 +2312,12 @@ data for the user-defined monitoring routine, \trl{mon}.  Other
 number (\trl{it}) and the residual's $ l_2 $ norm (\trl{rnorm}).
 A helpful routine within user-defined monitors is 
 \trl{PetscObjectGetComm((PetscObject)ksp,MPI_Comm *comm)}, which returns
-in \trl{comm} \findex{PetscObjectGetComm()} \sindex{communicator} the
+in \trl{comm} \sindex{communicator} the
 MPI communicator for the KSP context.  See section ~\ref{sec_writing}
 for more discussion of the use of MPI communicators within PETSc.
 
 Several monitoring routines are supplied with PETSc, 
-including \findex{KSPMonitorDefault()} \findex{KSPMonitorSingularValue()}
+including 
 \begin{tabbing}
   KSPMonitorDefault(KSP,int,double, void *);\\
   KSPMonitorSingularValue(KSP,int,double, void *);\\
@@ -2365,7 +2328,7 @@ residual at each iteration. The routine
 KSPMonitorSingularValue() is appropriate only for use with the conjugate 
 gradient method or GMRES, since it prints estimates of the extreme singular 
 values of the preconditioned operator at each iteration. Since
-KSPMonitorTrueResidualNorm() prints \findex{KSPMonitorTrueResidualNorm()}
+KSPMonitorTrueResidualNorm() prints 
 the true residual at each iteration by 
 actually computing the residual using the formula $ r = b - Ax $, the routine
 is slow and should be used only for testing or convergence studies,
@@ -2374,7 +2337,7 @@ not for timing. These monitors may be accessed with the command line options
 \findex{-ksp_monitor} \findex{-ksp_monitor_singular_value} \findex{-ksp_monitor_true_residual}
 
 To employ the default graphical monitor, one should use the 
-commands \findex{KSPMonitorLGCreate()} \findex{KSPMonitorLGDestroy()}
+commands 
 \begin{tabbing}
    PetscDrawLG lg;\\
   KSPMonitorLGCreate(char *display,char *title,int x,int y,int w,int h,PetscDrawLG *lg);\\
@@ -2414,7 +2377,7 @@ First, before the linear solve one must call
 \begin{tabbing}
  KSPSetComputeEigenvalues(KSP ksp,PETSC\_TRUE);
 \end{tabbing}
-Then after the KSP solve one calls \findex{KSPSetComputeEigenvalues()}
+Then after the KSP solve one calls 
 \begin{tabbing}
  KSPComputeEigenvalues(KSP ksp, int n,double *realpart,double *complexpart,int *neig);
 \end{tabbing}
@@ -2422,7 +2385,6 @@ Here, \trl{n} is the size of the two arrays and the eigenvalues are
 inserted into those two arrays. \trl{Neig} is the number of eigenvalues computed;
 this number depends on the size of the Krylov space generated during the 
 linear system solution, for GMRES it is never larger than the restart parameter.
- \findex{KSPComputeEigenvalues()}
 There is an additional routine 
 \begin{tabbing}
  KSPComputeEigenvaluesExplicitly(KSP ksp, int n,double *realpart,double *complexpart);
@@ -2444,7 +2406,7 @@ Or they can be dumped to the screen in ASCII text via
 \subsection{Other KSP Options}
 
 To obtain the solution vector and right hand side from a KSP 
-context, one uses \findex{KSPGetSolution()} \findex{KSPGetRhs()}
+context, one uses 
 \begin{tabbing}
   KSPGetSolution(KSP ksp,Vec *x);\\
   KSPGetRhs(KSP ksp,Vec *rhs);
@@ -2452,7 +2414,7 @@ context, one uses \findex{KSPGetSolution()} \findex{KSPGetRhs()}
 During the iterative process
 the solution may not yet have been calculated or it may be stored in 
 a different location. To access the approximate solution during the 
-iterative process, one uses the command \findex{KSPBuildSolution()}
+iterative process, one uses the command 
 \begin{tabbing}
   KSPBuildSolution(KSP ksp,Vec w,Vec *v);
 \end{tabbing}
@@ -2464,7 +2426,7 @@ used. One should not destroy this vector. For certain KSP methods,
 others it requires not even a vector copy. 
 
 Access to the residual is done in a similar way with the 
-command \findex{KSPBuildResidual()}
+command 
 \begin{tabbing}
   KSPBuildResidual(KSP ksp,Vec t,Vec w,Vec *v);
 \end{tabbing}
@@ -2479,14 +2441,12 @@ typically used in conjunction with a preconditioner.
 To employ a particular preconditioning method, the user can either select 
 it from the options database using input of the form 
 \trl{-pc_type <methodname>} or set the method with the 
-command \findex{PCSetType()} \findex{-pc_type}
+command \findex{-pc_type}
 \begin{tabbing}
   PCSetType(PC pc,PCType method);
 \end{tabbing}
 In Table~\ref{tab_pcdefaults} we summarize the basic
-preconditioning methods supported in PETSc.\findex{PCNONE}
-\findex{PCJACOBI}\findex{PCSOR}\findex{PCICC}\findex{PCLU}
-\findex{PCILU}\findex{PCSHELL}\findex{PCASM}\findex{PCBJACOBI}
+preconditioning methods supported in PETSc.
 The PCSHELL preconditioner uses a specific,
 application-provided preconditioner.  The direct preconditioner, PCLU,
 is, in fact, a direct solver for the linear system that uses LU
@@ -2538,9 +2498,6 @@ Some of the options for ILU preconditioner are
   PCFactorSetUseInPlace(PC pc); \\
   PCFactorSetAllowDiagonalFill(PC pc);
 \end{tabbing}
-\findex{PCFactorSetLevels()} \findex{PCFactorSetReuseOrdering()}
-\findex{PCFactorSetDropTolerance()} \findex{PCFactorSetReuseFill()}
-\findex{PCFactorSetUseInPlace()} \findex{PCFactorSetAllowDiagonalFill()}
 
 When repeatedly solving linear systems with the same KSP
 context, one can reuse some information  computed
@@ -2593,13 +2550,13 @@ matrices or as the subblock preconditioner when using block Jacobi or
 ASM preconditioning (see below).
 
 The options for SOR \sindex{SSOR} \sindex{SOR} \sindex{relaxation}
-preconditioning are \findex{PCSORSetOmega()}
+preconditioning are 
 \begin{tabbing}
   PCSORSetOmega(PC pc,double omega);\\
   PCSORSetIterations(PC pc,int its,int lits);\\
   PCSORSetSymmetric(PC pc,MatSORType type);
 \end{tabbing}
-The \findex{PCSORSetIterations()} \findex{PCSORSetSymmetric()}
+The 
 first of these commands sets the relaxation factor for successive
 over (under) relaxation.  The second command sets the number of inner
 iterations \trl{its} and local iterations \trl{lits} 
@@ -2629,19 +2586,18 @@ also be set with the options \trl{-pc_sor_omega <omega>},
 \findex{-pc_sor_local_symmetric} 
 
 The Eisenstat trick \cite{eisenstat81} \sindex{Eisenstat trick} for SSOR preconditioning 
-can be employed with the method PCEISENSTAT \findex{PCEISENSTAT} 
+can be employed with the method PCEISENSTAT 
 (\trl{-pc_type} \trl{eisenstat}).  
 By using both left and right preconditioning of the linear system,
 this variant of SSOR requires about half of the floating-point operations 
-for conventional SSOR. \findex{-pc_eisenstat_no_diagonal_scaling} 
-\findex{PCEisenstatNoDiagonalScaling()} The option 
-\break \trl{-pc_eisenstat_no_diagonal_scaling}) 
+for conventional SSOR. The option 
+\trl{-pc_eisenstat_no_diagonal_scaling}) 
 (or the routine PCEisenstatNoDiagonalScaling())
 turns off diagonal scaling in conjunction with Eisenstat SSOR method, while
 the option \trl{-pc_eisenstat_omega <omega>} (or the routine
 PCEisenstatSetOmega(PC pc,double omega))
 sets the SSOR relaxation coefficient, \trl{omega}, as discussed above.
-\findex{-pc_eisenstat_omega} \findex{PCEisenstatSetOmega()} 
+\findex{-pc_eisenstat_omega}
 
 
 %------------------------------------------------------------------
@@ -2650,7 +2606,7 @@ sets the SSOR relaxation coefficient, \trl{omega}, as discussed above.
 
 The LU preconditioner provides several options.  The first, given by
 the \sindex{direct solver}
-command \findex{PCFactorSetUseInPlace()} \sindex{in-place solvers}
+command  \sindex{in-place solvers}
 \begin{tabbing}
   PCFactorSetUseInPlace(PC pc);
 \end{tabbing}
@@ -2718,7 +2674,7 @@ of the blocks within the global problem.  In addition, the routines
   PCBJacobiGetSubKSP(PC pc,int *n\_local,int *first\_local,KSP **subksp);\\
   PCASMGetSubKSP(PC pc,int *n\_local,int *first\_local,KSP **subksp);
 \end{tabbing}
-extract the \findex{PCBJacobiGetSubKSP()} KSP context for each local 
+extract the KSP context for each local 
 block.  The argument \trl{n_local} is the number of blocks on the 
 calling process, and \trl{first_local} indicates the global number 
 of the first block on the process. The blocks are numbered 
@@ -2727,7 +2683,7 @@ where $ gb $ is the number of global blocks.
 The array of KSP contexts for the local blocks is given by \trl{subksp}. 
 This mechanism enables the user to set different solvers for the 
 various blocks.  To set the appropriate data structures, the 
-user {\em must} explicitly call KSPSetUp() \findex{KSPSetUp()} 
+user {\em must} explicitly call KSPSetUp() 
 before calling PCBJacobiGetSubKSP() or
 PCASMGetSubKSP().
 For further details, see the 
@@ -2745,8 +2701,7 @@ are \sindex{block Jacobi} \sindex{block Gauss-Seidel}
   PCASMSetTotalSubdomains(PC pc,int n,IS *is);\\
   PCASMSetType(PC pc,PCASMType type);
 \end{tabbing}
-\findex{PCBJacobiSetTotalBlocks()}
-The \findex{PCASMSetTotalSubdomains()}
+The 
 optional argument \trl{size}, is an array indicating the size of
 each block. Currently, for certain parallel matrix formats, only a
 single block per process is supported. However, the MATMPIAIJ and 
@@ -2759,7 +2714,7 @@ The object PCASMType is one of \trl{PC_ASM_BASIC},
 \trl{PC_ASM_INTERPOLATE}, \trl{PC_ASM_RESTRICT}, \trl{PC_ASM_NONE}
 and may also be set with the options database 
 \trl{-pc_asm_type} \trl{[basic}, \trl{interpolate}, \trl{restrict}, \trl{none]}.
-\findex{-pc_asm_type} \findex{PCASMSetType()} \findex{PC_ASM_BASIC} 
+\findex{-pc_asm_type}  \findex{PC_ASM_BASIC} 
 \findex{PC_ASM_RESTRICT} \findex{PC_ASM_INTERPOLATE} \findex{PC_ASM_NONE}
 The type \trl{PC_ASM_BASIC} (or \trl{-pc_asm_type} \trl{basic}) corresponds to the
 standard additive Schwarz method that uses the full restriction and
@@ -2789,7 +2744,6 @@ the overlap to compute in constructing the subdomains.
 \begin{tabbing}
   PCASMSetOverlap(PC pc,int overlap);
 \end{tabbing}
-\findex{PCASMSetOverlap()}
 The overlap defaults to 1, so if one desires that no additional
 overlap be computed beyond what may have been set with a call to PCASMSetTotalSubdomains() or PCASMSetLocalSubdomains(), then
 \trl{overlap} must be set to be 0.  In particular, if one does {\em
@@ -2806,7 +2760,7 @@ merely allows PETSc to extend that overlap further if desired.
 
 The shell preconditioner simply uses an application-provided routine to 
 implement the preconditioner. To set this routine, one uses the 
-command \findex{PCShellSetApply()}
+command 
 \begin{tabbing}
   PCShellSetApply(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec));
 \end{tabbing}
@@ -2827,7 +2781,6 @@ For a preconditioner that requires some sort of ``setup'' before being used,
 that requires a new setup everytime the operator is changed, one can 
 provide a ``setup'' routine that is called everytime the operator is 
 changed (usually via KSPSetOperators()).
-\findex{PCShellSetSetUp()}
 \begin{tabbing}
   PCShellSetSetUp(PC pc,PetscErrorCode (*setup)(PC));
 \end{tabbing}
@@ -2838,7 +2791,7 @@ application-provided data structure that was set with PCShellSetContext().
 %----------------------------------------------------------------------
 \subsection{Combining Preconditioners} \sindex{combining preconditioners}
 
-The PC type PCCOMPOSITE \findex{PCCOMPOSITE} allows one to form 
+The PC type PCCOMPOSITE  allows one to form 
 new preconditioners by combining already defined preconditioners and 
 solvers. Combining preconditioners usually requires some experimentation
 to find a combination of preconditioners that works better than any
@@ -2864,8 +2817,8 @@ default behavior. An alternative can be set with the option
 \begin{tabbing}
   PCCompositeSetType(PC pc,PCCompositeType PC\_COMPOSITE\_MULTIPLICATIVE);
 \end{tabbing}
-\findex{PCCompositeSetType()} \findex{PC_COMPOSITE_MULTIPLICATIVE}
-\findex{PC_COMPOSITE_ADDITIVE} \findex{PCCompositeAddPC()} \sindex{additive preconditioners}
+\findex{PC_COMPOSITE_MULTIPLICATIVE}
+\findex{PC_COMPOSITE_ADDITIVE} \sindex{additive preconditioners}
 \sindex{multiplicative preconditioners}
 In this form the new residual is updated after the application of 
 each preconditioner and the next preconditioner applied to the next 
@@ -2887,7 +2840,7 @@ In the multiplicative version, the calculation of the residual inside the
 preconditioner can be done in two ways: using the original linear system matrix
 or using the matrix used to build the preconditioners \trl{B1}, \trl{B2}, etc.
 By default it uses the ``preconditioner matrix'', to use the true matrix use the 
-option \findex{PCCompositeSetUseTrue()}
+option 
 \begin{tabbing}
   PCCompositeSetUseTrue(PC pc);
 \end{tabbing}
@@ -2903,7 +2856,6 @@ For example, to set the first sub preconditioners to use ILU(1)
   PCCompositeGetPC(pc,0,\&subpc);\\
   PCFactorSetFill(subpc,1);
 \end{tabbing}
-\findex{PCCompositeGetPC()}
 
 These various options can also be set via the options database. For example,
 \trl{-pc_type} \trl{composite} \findex{composite} \trl{-pc_composite_pcs} \trl{jacobi,ilu}
@@ -2918,19 +2870,19 @@ For example, \trl{-sub_0_pc_ifactor_fill} \trl{0}.
 
 
 PETSc also allows a preconditioner to be a complete linear solver. This is 
-achieved with the PCKSP type. \findex{PCKSP}
+achieved with the PCKSP type. 
 \begin{tabbing}
   PCSetType(PC pc,PCKSP PCKSP);\\
   PCKSPGetKSP(pc,\&ksp);\\
    /* set any KSP/PC options */
 \end{tabbing}
-\findex{PCKSPGetKSP()} From the command line one can use 5 iterations of 
+From the command line one can use 5 iterations of 
 bi-CG-stab with ILU(0) preconditioning as the preconditioner with 
 \trl{-pc_type ksp -ksp_pc_type ilu -ksp_ksp_max_it 5 -ksp_ksp_type bcgs}. 
 
 By default the inner KSP preconditioner uses the outer preconditioner matrix 
 as the matrix to be solved in the linear system; to use the true matrix use the 
-option \findex{PCKSPSetUseTrue()}
+option 
 \begin{tabbing}
   PCKSPSetUseTrue(PC pc);
 \end{tabbing}
@@ -2960,13 +2912,12 @@ A multigrid preconditioner is created with the four commands
   PCSetType(PC pc,PCMG);\\
   PCMGSetLevels(pc,int levels,MPI\_Comm *comms);
 \end{tabbing}
-A \findex{PCMGSetLevels()} 
+A
 large number of parameters affect the multigrid behavior. The command
 \begin{tabbing}
   PCMGSetType(PC pc,PCMGType mode); 
 \end{tabbing}
 indicates which form of multigrid to apply \cite{1sbg}. 
-\findex{PCMGSetType()}
 \sindex{multigrid, multiplicative} 
 \sindex{multigrid, additive} \sindex{multigrid, full} \sindex{multigrid, Kaskade}
 
@@ -2980,7 +2931,7 @@ of full multigrid, one can
 algorithm \findex{PC_MG_KASKADE} \trl{PC_MG_KASKADE}.
 For the multiplicative and full multigrid options, one can use a
 W-cycle by \sindex{W-cycle} \sindex{V-cycle} calling
-\findex{PCMGSetCycleType()} \findex{PC_MG_CYCLE_W}
+\findex{PC_MG_CYCLE_W}
 \begin{tabbing}
   PCMGSetCycleType(PC pc,PCMGCycleType ctype);
 \end{tabbing}
@@ -2993,7 +2944,7 @@ The user can control the amount of pre- and postsmoothing
 \sindex{smoothing} \sindex{relaxation} by using
 either the options \findex{-pc_mg_smoothup} \findex{-pc_mg_smoothdown}
 \trl{-pc_mg_smoothup} \trl{m} and \trl{-pc_mg_smoothdown} \trl{n} or
-the routines \findex{PCMGSetNumberSmoothUp()} \findex{PCMGSetNumberSmoothDown()}
+the routines
 \begin{tabbing}
   PCMGSetNumberSmoothUp(PC pc,int m);\\
   PCMGSetNumberSmoothDown(PC pc,int n);
@@ -3003,12 +2954,12 @@ The multigrid routines, which determine
 the solvers and interpolation/restriction operators that are used,
 are mandatory.
 To set the coarse grid solver, one must \sindex{coarse grid solve}
-call \findex{PCMGGetCoarseSolve()}
+call
 \begin{tabbing}
   PCMGGetCoarseSolve(PC pc,KSP *ksp);
 \end{tabbing}
 and set the appropriate options in \trl{ksp}. Similarly, the 
-smoothers are set by calling \findex{PCMGGetSmoother()}
+smoothers are set by calling
 \begin{tabbing}
   PCMGGetSmoother(PC pc,int level,KSP *ksp);
 \end{tabbing}
@@ -3043,12 +2994,12 @@ the transpose of the restriction, you can pass the same \trl{mat}
 argument to both PCMGSetRestriction() and PCMGSetInterpolation().
 
 On each level except the coarsest, one must also set the routine to 
-compute the residual.  The following command suffices: \findex{PCMGSetResidual()}
+compute the residual.  The following command suffices:
 \begin{tabbing}
    PCMGSetResidual(PC pc,int level,PetscErrorCode (*residual)(Mat,Vec,Vec,Vec),Mat mat);
 \end{tabbing}
 The residual() function can be set to be PCMGDefaultResidual()
-if \findex{PCMGDefaultResidual()}
+if
 one's operator is stored in a Mat format.  In certain circumstances, 
 where it is much cheaper to calculate the residual directly, rather 
 than through the usual formula $b - Ax$,  the user may wish to provide 
@@ -3057,7 +3008,7 @@ an alternative.
 Finally, the user may provide three work vectors for each level 
 (except on the finest, where only the residual work vector is required).
 The work vectors are set with the 
-commands \findex{PCMGSetRhs()} \findex{PCMGSetX()} \findex{PCMGSetR()} 
+commands
 \begin{tabbing}
   PCMGSetRhs(PC pc,int level,Vec b);\\
   PCMGSetX(PC pc,int level,Vec x);\\
@@ -3266,7 +3217,7 @@ routines for evaluating the function of equation~(\ref{eq_F=0}) and its
 associated Jacobian matrix, as discussed in the following sections.
 
 To choose a nonlinear solution method, the user can either
-call \findex{SNESSetType()}
+call
 \begin{tabbing}
   SNESSetType(SNES snes,SNESType method);
 \end{tabbing}
@@ -3275,7 +3226,6 @@ where details regarding the available methods are presented in
 Section~\ref{sec_nlsolvers}.
 The application code can take complete control of the linear and
 nonlinear techniques used in the Newton-like method by calling
-\findex{SNESetFromOptions()}
 \begin{tabbing}
   SNESSetFromOptions(snes);
 \end{tabbing}
@@ -3288,7 +3238,7 @@ linear solver options in the KSP, and PC modules, as discussed
 in Chapter~\ref{ch_ksp}.
 
 After having set these routines and options, the user
-solves the problem by calling \findex{SNESSolve}
+solves the problem by calling
 \begin{tabbing}
   SNESSolve(SNES snes,Vec b,Vec x);
 \end{tabbing}
@@ -3311,7 +3261,7 @@ When solving a system of nonlinear equations, the user must provide
 a vector, \trl{f}, for storing the function of
 Equation~(\ref{eq_F=0}), as well as a routine that evaluates this
 function at the vector \trl{x}.  This information should be set with
-the command \findex{SNESSetFunction()}
+the command
 \begin{tabbing}
   SNESSetFunction(SNES snes,Vec f,\\
           PetscErrorCode (*FormFunction)(SNES snes,Vec x,Vec f,void *ctx),void *ctx);
@@ -3336,7 +3286,7 @@ as is typically done with
   SNESSetJacobian(SNES snes,Mat A,Mat B,PetscErrorCode (*FormJacobian)(SNES snes,\\
           Vec x,Mat *A,Mat *B,MatStructure *flag,void *ctx),void *ctx);
 \end{tabbing}
-The \findex{SNESSetJacobian()} arguments of the routine \trl{
+The arguments of the routine \trl{
 FormJacobian()} are the current iterate, \trl{x}; the Jacobian matrix,
 \trl{A}; the preconditioner matrix, \trl{B} (which is usually the same
 as \trl{A}); a \trl{flag} indicating information about the
@@ -3430,15 +3380,12 @@ The method SNESLS (\trl{-snes_type} \trl{ls}) provides a line
 search Newton method for solving systems of nonlinear equations.  By
 default, this technique employs cubic backtracking \cite{dennis:83}.
 An alternative line search routine can be set with the command
-\findex{SNESSetLineSearch()}
 \begin{tabbing}
   SNESSetLineSearch\=(SNES snes,PetscErrorCode (*ls)(SNES,Vec,Vec,Vec,Vec,double,double*,double*),\\
                    \>void *lsctx);
 \end{tabbing}
 Other line search methods provided by PETSc are 
 SNESQuadraticLineSearch(), SNESNoLineSearch(), and SNESNoLineSearchNoNorms(),
-\findex{SNESNoLineSearch()} \findex{SNESNoLineSearchNoNorms()}
-\findex{SNESQuadraticLineSearch()}
 which can be set with the option \findex{-snes_ls}
 \begin{tabbing}
   \trl{-snes_ls [cubic, quadratic, basic, basicnonorms]}
@@ -3492,7 +3439,7 @@ Convergence can also be determined based on the norm of the function
 Such a test can use either the absolute size of the
 norm, \trl{atol}, or its relative decrease, \trl{rtol}, from an initial
 guess.  The following routine sets these parameters, which are used
-in many of the default SNES convergence tests: \findex{SNESSetTolerances()}
+in many of the default SNES convergence tests: 
 \begin{tabbing}
   SNESSetTolerances(SNES snes,double atol,double rtol,double stol,\\
           int its,int fcts);
@@ -3504,7 +3451,7 @@ are \trl{-snes_atol <atol>}, \trl{-snes_rtol <rtol>}, \trl{-snes_stol <stol>},
 \findex{-snes_atol} \findex{-snes_rtol}  \findex{-snes_stol}
 \findex{-snes_max_it} \findex{-snes_max_funcs}
 \trl{-snes_max_it <its>}, and \trl{-snes_max_funcs <fcts>}.
-A related routine is SNESGetTolerances(). \findex{SNESGetTolerances()}
+A related routine is SNESGetTolerances().
 
 Convergence tests for trust regions methods often use an additional
 parameter that indicates the minimium allowable trust region radius.
@@ -3515,7 +3462,7 @@ The user can set this parameter with the option \trl{-snes_trtol <trtol>}
 \end{tabbing}
 
 Users can set their own customized convergence tests in SNES by using
-the command \findex{SNESSetConvergenceTest()}
+the command
 \begin{tabbing}
   SNESSetConvergenceTest(\=SNES snes,PetscErrorCode (*test)(SNES snes,int it,double xnorm,\\
                          \>double gnorm,double f,SNESConvergedReason reason,\\
@@ -3528,14 +3475,14 @@ solving systems of nonlinear equations, the arguments \trl{xnorm},
 norm, and function norm, respectively. 
 \trl{SNESConvergedReason} should be set positive
 for convergence and negative for divergence. See \trl{include/petscsnes.h}
-for a list of values for SNESConvergedReason. \findex{SNESConvergedReason}
+for a list of values for SNESConvergedReason.
 
 \subsection{Convergence Monitoring}
 \label{sec_snesmonitor}
 
 By default the SNES solvers run silently without displaying information
 about the iterations. The user can initiate monitoring with the
-command \findex{SNESMonitorSet()} 
+command
 \begin{tabbing}
   SNESMonitorSet(\=SNES snes,PetscErrorCode (*mon)(SNES,int its,double norm,void* mctx),\\
                  \>        void *mctx,PetscErrorCode (*monitordestroy)(void*));
@@ -3550,7 +3497,7 @@ successful step computation within the nonlinear solver.  Hence, the
 user can employ this routine for any application-specific computations
 that should be done after the solution update. The option
 \trl{-snes_monitor} \findex{-snes_monitor} activates the default
-SNES monitor routine, SNESMonitorDefault(), \findex{SNESMonitorDefault()}
+SNES monitor routine, SNESMonitorDefault(), 
 while \trl{-snes_monitor_draw} \findex{-snes_monitor_draw} draws
 a simple line graph of the residual norm's convergence.
 
@@ -3567,7 +3514,7 @@ causes PETSc to print fewer of the digits of the residual norm
 as it gets smaller; thus on most of the machines it will always
 print the same numbers making cross process testing easier.
 
-The routines \findex{SNESGetSolution()} \findex{SNESGetFunction}
+The routines
 \begin{tabbing}
   SNESGetSolution(SNES snes,Vec *x);\\
   SNESGetFunction(\=SNES snes,Vec *r,void *ctx,\\
@@ -3671,17 +3618,16 @@ in combination with no preconditioning (PCNONE or \trl{-pc_type} \trl{none}),
 a user-provided preconditioner matrix, or a user-provided preconditioner
 shell (PCSHELL, discussed in Section~\ref{sec_pc}); that is,
 obviously matrix-free methods cannot be used if a direct solver is to 
-be employed. \sindex{matrix-free Jacobians} \findex{PCSHELL}
+be employed. \sindex{matrix-free Jacobians}
 
 The user can create a matrix-free context for use within SNES with 
 the routine
 \begin{tabbing}
   MatCreateSNESMF(SNES snes,Mat *mat);
 \end{tabbing}
-\findex{MatCreateSNESMF()}
 This routine creates the data structures needed for the matrix-vector 
 products that arise within Krylov space iterative methods~\cite{brownsaad:90}
-by employing the matrix type MATSHELL, \findex{MATSHELL}
+by employing the matrix type MATSHELL, 
 discussed in Section~\ref{sec_matrixfree}.  The default SNES matrix-free
 approximations can also be invoked with the command \trl{-snes_mf}. \findex{-snes_mf}
 Or, one can retain the user-provided Jacobian preconditioner, but replace the 
@@ -3699,7 +3645,6 @@ product approximation with the command
 \begin{tabbing}
   MatMFFDSetFunctionError(Mat mat,double rerror);
 \end{tabbing}
-\findex{MatMFFDSetFunctionError()}
 The parameter \trl{rerror} should be set to the square root of the 
 relative error in the function evaluations, $e_{rel}$; the default is $ 10^{-8} $, 
 which assumes that the functions are evaluated to full double precision accuracy. 
@@ -3710,8 +3655,7 @@ This parameter can also be set from the options database with
 \findex{-snes_mf_err}
 
 In addition, SNES provides a way to register new routines to compute the differencing parameter ($h$);
-see the manual page for MatMFFDSetType() and MatMFFDRegisterDynamic) \findex{MatMFFDSetType()}
-\findex{MatMFFDRegisterDynamic)}. We currently provide two default routines accessible via
+see the manual page for MatMFFDSetType() and MatMFFDRegisterDynamic). We currently provide two default routines accessible via
 \begin{tabbing}
   -snes\_mf\_type \trl{<default or wp>}
 \end{tabbing}
@@ -3719,7 +3663,6 @@ For the default approach there is one ``tuning'' parameter, set with
 \begin{tabbing}
   MatMFFDDSSetUmin(Mat mat,PetscReal umin);
 \end{tabbing}
-\findex{MatMFFDDSSetUmin()}
 This parameter, \trl{umin} (or $u_{min}$), is a bit involved; its default is 
 $ 10^{-6} $ . The Jacobian-vector product is approximated via the formula
 \[
@@ -3832,10 +3775,10 @@ The approximation requires several steps:\sindex{coloring with SNES}
 \item First, one colors the columns of the (not yet built) Jacobian matrix, so that 
       columns of the same color do not share any common rows.
 \item Next, one creates a MatFDColoring data structure that will be used later in 
-      actually computing the Jacobian. \findex{MatFDColoring}
+      actually computing the Jacobian. 
 \item Finally, one tells the nonlinear solvers of SNES to use the
       SNESDefaultComputeJacobianColor()
-      routine to compute the Jacobians. \findex{SNESDefaultComputeJacobianColor()}
+      routine to compute the Jacobians. 
 \end{itemize}
 A code fragment that demonstrates this process is given below.
 \begin{tabbing}
@@ -3872,9 +3815,6 @@ A code fragment that demonstrates this process is given below.
 
 \end{tabbing}
 
-\findex{MatGetColoring()} \findex{MatFDColoringCreate()} 
-\findex{MatFDColoringSetFromOptions()} \findex{ISColoringDestroy()}
-
 Of course, we are cheating a bit. If we do not have an analytic
 formula for computing the Jacobian, then how do we know what its
 nonzero structure is so that it may be colored?  Determining the
@@ -3910,7 +3850,6 @@ finite difference Jacobian approximation.  These are set with the command
 \begin{tabbing}
   MatFDColoringSetParameters(MatFDColoring fdcoloring,double rerror,double umin);
 \end{tabbing}
-\findex{MatFDColoringSetParameters()}
 The parameter \trl{rerror} is the square root of 
 the relative error in the function evaluations, $e_{rel}$; the default is $ 10^{-8} $, which assumes
 that the functions are evaluated to full double-precision accuracy. The 
@@ -3937,7 +3876,7 @@ works only on sequential routines.  Extensions may be forthcoming. However,
 if one can compute the coloring \trl{iscoloring} some other way, the routine
 MatFDColoringCreate() does work in parallel. An example of this for 
 2D distributed arrays is given below that uses the utility routine
-DAGetColoring(). \findex{DAGetColoring()}
+DAGetColoring().
 
 \begin{tabbing}
    DAGetColoring(da,IS\_COLORING\_GHOSTED,\&iscoloring);\\
@@ -3955,7 +3894,6 @@ supported for the AIJ matrix format.
 \label{chapter_ts}
 \sindex{ODE solvers}
 
-\findex{TS} 
 The TS library provides a framework for the scalable solution of ODEs and DAEs
 arising from the discretization of time-dependent PDEs, and of
 steady-state problems using pseudo-timestepping.
@@ -4044,7 +3982,7 @@ The user first creates a TS object with the command
 \begin{tabbing}
   int TSCreate(MPI\_Comm comm,TSProblemType problemtype,TS *ts);
 \end{tabbing}
-\findex{TSCreate()} The TSProblemType \findex{TSProblemType}
+The TSProblemType 
 is one of \trl{TS_LINEAR} or \trl{TS_NONLINEAR},
 to indicate whether $ F(u,t) $ is given by a matrix $ A $, or $ A(t) $, or a
 function $ F(u,t). $
@@ -4053,11 +3991,10 @@ One can set the solution method with the routine
 \begin{tabbing}
  TSSetType(TS ts,TSType type);
 \end{tabbing}
-\findex{TSSetType()} Currently supported types are TSEULER, \trl{TSRUNGE_KUTTA},
+Currently supported types are TSEULER, \trl{TSRUNGE_KUTTA},
 TSBEULER, \trl{TSCRANK_NICHOLSON}, TSTHETA, TSGL, TSPSEUDO, and
 TSSUNDIALS (only if the Sundials package is installed),
-\findex{TSEULER} \findex{TSRUNGE_KUTTA} \findex{TSBEULER} \findex{TSCRANK_NICHOLSON}
-\findex{TSTHETA} \findex{TSGL} \findex{TSPSEUDO} \findex{TSSUNDIALS}
+\findex{TSRUNGE_KUTTA} \findex{TSCRANK_NICHOLSON}
 or the command line option \\
 \trl{-ts_type euler,runge-kutta,beuler,crank-nicholson,theta,gl,pseudo,sundials}.
 \findex{-ts_type} \sindex{Euler}
@@ -4068,12 +4005,11 @@ Set the initial time and timestep with the command
 \begin{tabbing}
  TSSetInitialTimeStep(TS ts,double time,double dt);
 \end{tabbing}
-One \findex{TSSetInitialTimeStep} can change the timestep with the command
+One can change the timestep with the command
 \begin{tabbing}
  TSSetTimeStep(TS ts,double dt);
 \end{tabbing}
-One \findex{TSSetTimeStep()} 
-can \findex{TSGetTimeStep()} determine the current timestep with the routine
+can determine the current timestep with the routine
 \begin{tabbing}
  TSGetTimeStep(TS ts,double* dt);
 \end{tabbing}
@@ -4081,24 +4017,24 @@ Here, ``current'' refers to the timestep being used to attempt to
 promote the solution form $ u^n $ to $ u^{n+1}. $
 
 One sets the total number of timesteps to run or the total time to run 
-(whatever is first) with the command \findex{TSSetDuration()}
+(whatever is first) with the command 
 \begin{tabbing}
  TSSetDuration(TS ts,int maxsteps,double maxtime);
 \end{tabbing}
-One performs the request number of time steps with\findex{TSSolve()}
+One performs the request number of time steps with
 \begin{tabbing}
   TSSolve(TS ts);
 \end{tabbing}
 The solve call implicitly sets up the timestep context;
-this can be done explicitly with \findex{TSSetUp()}
+this can be done explicitly with
 \begin{tabbing}
  TSSetUp(TS ts);
 \end{tabbing}
-One destroys the context with \findex{TSDestroy()}
+One destroys the context with
 \begin{tabbing}
  TSDestroy(TS ts);
 \end{tabbing}
-and views it with \findex{TSView()}
+and views it with 
 \begin{tabbing}
  TSView(TS ts,PetscViewer viewer);
 \end{tabbing}
@@ -4112,7 +4048,7 @@ To set up TS for solving an ODE, one must set the following:
  TSSetSolution(TS ts, Vec initialsolution);
 \end{tabbing}
 The vector \trl{initialsolution} should contain the ``initial conditions''
-for the ODE. \findex{TSSetSolution()}
+for the ODE. 
 
 \item Function: \\
 \subitem $ \bullet $ For linear functions (solved with implicit timestepping),
@@ -4133,7 +4069,7 @@ whenever they are called, as the final argument. The user must provide the matri
 \trl{A}. If \trl{B} is an indentity matrix, the user should pass in \trl{PETSC_NULL}. 
 If the right-hand side is provided only as a linear
 function, the user must construct a MATSHELL matrix. Note that this is 
-the same interface as that for SNESSetJacobian(). \findex{SNESSetJacobian()}
+the same interface as that for SNESSetJacobian(). 
 
 \subitem $ \bullet $  For nonlinear problems (or linear problems solved using
 explicit timestepping methods) the user  passes the function with 
@@ -4142,7 +4078,7 @@ the routine
 \begin{tabbing}
  TSSetRHSFunction(TS ts,PetscErrorCode (*f)(TS,double,Vec,Vec,void*),void *fP);
 \end{tabbing}
-The \findex{TSSetRHSFunction} arguments to the function \trl{f()} are
+The arguments to the function \trl{f()} are
 the timestep context, the current time, the input for the function,
 the output for the function, and the (optional) user-provided context
 variable \trl{fP}.
@@ -4154,20 +4090,20 @@ compute it at each Newton iteration. This is done with the command
  TSSetRHSJacobian(\=TS ts,Mat A, Mat P,PetscErrorCode (*fjac)(TS,double,Vec,Mat*,Mat*,\\
                   \>        MatStructure*,void*),void *fP);
 \end{tabbing}
-The \findex{TSSetRHSJacobian} arguments for the function \trl{fjac()} are
+The arguments for the function \trl{fjac()} are
 the timestep context, the current time, the location where the
 Jacobian is to be computed, the Jacobian matrix, an alternative
 approximate Jacobian matrix used as a preconditioner, and the optional
 user-provided context, passed in as \trl{fP}. The user must provide the 
 Jacobian as a matrix; thus, if using a matrix-free approach is used, the
 user must create a MATSHELL matrix. Again, note the similarity
-to SNESSetJacobian(). \findex{SNESSetJacobian()}
+to SNESSetJacobian().
 \end{itemize}
 
 Similar to SNESDefaultComputeJacobianColor() is the
 routine TSDefaultComputeJacobianColor() and TSDefaultComputeJacobian() that 
-corresponds to SNESDefaultComputeJacobian(). \findex{TSDefaultComputeJacobianColor()}
-\sindex{coloring with TS} \findex{TSDefaultComputeJacobian()}
+corresponds to SNESDefaultComputeJacobian().
+\sindex{coloring with TS}
 
 \subsection{Solving Differential Algebraic Equations}
 \label{sec_dae}
@@ -4194,7 +4130,7 @@ uses:
   \begin{tabbing}
     TSSetIFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,Vec,void*),void *funP);
   \end{tabbing}
-  The \findex{TSSetIFunction} arguments to the function \trl{f()} are the
+  The arguments to the function \trl{f()} are the
   timestep contex, current time, input state $u$, input time derivative
   $\dot{u}$, and the (optional) user-provided context \trl{funP}.
 
@@ -4207,7 +4143,7 @@ uses:
     TS\=SetIJacobian(TS ts,Mat A,Mat B,\\
     \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*),void *jacP);
   \end{tabbing}
-  The \findex{TSSetIJacobian} arguments for the function \trl{fjac()}
+  The arguments for the function \trl{fjac()}
   are the timestep contex, current time, input state $u$, input
   derivative $\dot{u}$, shift $a$, matrix $A$, preconditioning matrix
   $B$, flag describing structure of preconditioning matrix (see the
@@ -4230,7 +4166,7 @@ To use the Sundials integrators, call
 \begin{tabbing}
  TSSetType(TS ts,TSType TSSUNDIALS);
 \end{tabbing}
-or use the command line option \trl{-ts_type} \trl{sundials}. \findex{TSSUNDIALS}
+or use the command line option \trl{-ts_type} \trl{sundials}. 
 \sindex{Sundials} \sindex{Hindmarsh} \sindex{ODE solvers}
 
 Sundials' CVODE solver comes with two main integrator families, Adams
@@ -4239,8 +4175,8 @@ and BDF (backward differentiation formula). One can select these with
  TSSundialsSetType(TS ts,TSSundialsLmmType [SUNDIALS\_ADAMS,SUNDIALS\_BDF]);
 \end{tabbing}
 or the command line option \trl{-ts_sundials_type <adams,bdf>}. BDF is
-the default. \findex{-ts_sundials_type} \findex{TSSundialsLmmType}
-\findex{TSSundialsSetType()} \sindex{Adams} \sindex{BDF}
+the default. \findex{-ts_sundials_type}
+\sindex{Adams} \sindex{BDF}
 
 Sundials does not use the SNES library within PETSc for its nonlinear
 solvers, so one cannot change the nonlinear solver options via
@@ -4251,22 +4187,22 @@ of PETSc, which can be accessed via
 \end{tabbing}
 The user can then directly set preconditioner options; 
 alternatively, the usual runtime options can be employed
-via \trl{-pc_xxx}. \findex{TSSundialsGetPC()}
+via \trl{-pc_xxx}. 
 
 Finally, one can set the Sundials tolerances via
 \begin{tabbing}
  TSSundialsSetTolerance(TS ts,double abs,double rel);
 \end{tabbing}
 where \trl{abs} denotes the absolute tolerance and \trl{rel}
-the relative tolerance. \findex{TSSundialsSetTolerance()}
+the relative tolerance. 
 
 Other PETSc-Sundials options include
 \begin{tabbing}
   TSSundialsSetGramSchmidtType(TS ts,TSSundialsGramSchmidtType type);
 \end{tabbing}
 where \trl{type} is either \trl{SUNDIALS_MODIFIED_GS} or
-\trl{SUNDIALS_UNMODIFIED_GS}. \findex{TSSundialsSetGramSchmidtType()}
-\findex{TSSundialsGramSchmidtType} \findex{SUNDIALS_MODIFIED_GS}
+\trl{SUNDIALS_UNMODIFIED_GS}. 
+\findex{SUNDIALS_MODIFIED_GS}
 \findex{SUNDIALS_UNMODIFIED_GS} This may be set via the options data base
 with \trl{-ts_sundials_gramschmidt_type <modifed,unmodified>}.
 \findex{-ts_sundials_gramschmidt_type}
@@ -4276,7 +4212,7 @@ The routine
   TSSundialsSetGMRESRestart(TS ts,int restart);
 \end{tabbing}
 sets the number of vectors in the Krylov subpspace used by GMRES.
-\findex{TSSundialsSetGMRESRestart()} This may be set in the options 
+This may be set in the options 
 database with \trl{-ts_sundials_gmres_restart} \trl{restart}. \findex{-ts_sundials_gmres_restart}
 
 
@@ -4289,7 +4225,7 @@ as follows.
 \begin{tabbing}
  TSSetRHSFunction(TS ts,PetscErrorCode (*f)(TS,double,Vec,Vec,void*),void *fP);
 \end{tabbing}
-The \findex{TSSetRHSFunction} arguments to the function \trl{f()} are
+The  arguments to the function \trl{f()} are
 the timestep context, the current time, the input for the function,
 the output for the function and the (optional) user-provided context
 variable \trl{fP}.
@@ -4300,7 +4236,7 @@ function to compute it at each Newton iteration. This is done with the command
  TSSetRHSJacobian(\=TS ts,Mat A, Mat B,PetscErrorCode (*f)(TS,double,Vec,Mat*,Mat*,\\
                   \>        MatStructure*,void*),void *fP);
 \end{tabbing}
-The \findex{TSSetRHSJacobian} arguments for the function \trl{f()} are
+The  arguments for the function \trl{f()} are
 the timestep context, the current time, the location where the
 Jacobian is to be computed, the Jacobian matrix, an alternative
 approximate Jacobian matrix used as a preconditioner, and the optional
@@ -4333,7 +4269,7 @@ which can be set with the call
 \begin{tabbing}
  TSPseudoIncrementDtFromInitialDt(TS ts);
 \end{tabbing}
-or \findex{TSPseudoIncrementDtFromInitialDt()} 
+or 
 the option \trl{-ts_pseudo_increment_dt_from_initial_dt}. 
 \findex{-ts_pseudo_increment_dt_from_initial_dt}
 The value $ dt_{\mathrm{increment}} $ is by default $ 1.1$, but can be reset with the 
@@ -4341,7 +4277,7 @@ call
 \begin{tabbing}
  TSPseudoSetTimeStepIncrement(TS ts,double inc); 
 \end{tabbing}
-or \findex{TSPseudoSetTimeStepIncrement()} the option 
+or  the option 
 \trl{ -ts_pseudo_increment <inc>}. \findex{-ts_pseudo_increment}
 
 
@@ -4359,7 +4295,7 @@ Setting the tolerance with
 \begin{tabbing}
 TSRKSetTolerance(TS ts,double tolerance)
 \end{tabbing}
-or \trl{-ts_rk_tol} \findex{-ts_rk_tol} \findex{TSRKSetTolerance()}
+or \trl{-ts_rk_tol} \findex{-ts_rk_tol} 
 defines the global tolerance, for the whole time
 period. The tolerance for each timestep is calculated relatively to
 the size of the timestep.
@@ -4386,7 +4322,7 @@ More details about the solver and code examples can be found at
 PETSc provides an easy to use high-level interface for multigrid on a
 single structured grid using the PETSc DA object (or the DMComposite
 object) to decompose the grid across the processes.  This DMMG code
-\findex{DMMG} is built on top of the lower level PETSc multigrid
+is built on top of the lower level PETSc multigrid
 interface provided in the PCType of MG, see Section
 \ref{sec_mg}. Currently we only provide piecewise linear and piecewise
 constant interpolation, but can add more if needed. The DMMG routines
@@ -4425,7 +4361,6 @@ to guide your development. We give a short summary here.
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);\\
   ierr = DADestroy(da);CHKERRQ(ierr);\\
 \end{tabbing}
-\findex{DMMGCreate()} \findex{DMMGSolve()} \findex{DMMGGetx()} \findex{DMMGDestroy()} \findex{DMMGSetDM()} \findex{DMMGSetDA()}
 The option \trl{-ksp_monitor} \findex{-ksp_monitor} and \trl{-mg_levels_ksp_monitor} and optionally \trl{-mg_coarse_ksp_monitor} 
  causes the DMMG code to print the residual norms for each level of the solver to the screen so that
 the coarser the grid the more indented the print out. The option \trl{-dmmg_grid_sequence} \findex{-dmmg_grid_sequence} causes the 
@@ -4451,7 +4386,7 @@ or the prefered approach
   \>PetscErrorCode (*localjacobian)(DALocalInfo *,void *x,Mat J,void *appctx),\\
   \>ad\_function,ad\_mf\_function);
 \end{tabbing}
-The \trl{ad_function} and \trl{ad_mf_function} are described in the next chapter. \findex{DMMGSetSNES()} \findex{DMMGSetSNESLocal()}
+The \trl{ad_function} and \trl{ad_mf_function} are described in the next chapter. 
 See examples \trl{src/snes/examples/tutorials/ex18.c} and \trl{ex19.c} for complete details.
 
 For scalar problems (problems with one degree of freedom per node),
@@ -4590,7 +4525,7 @@ or
   MatView(B,PETSC\_VIEWER\_STDOUT\_WORLD);
 \end{tabbing}
 The name of each PETSc variable printed for Matlab may be set with
-\begin{tabbing}\sindex{PetscObjectSetName()}\findex{PetscObjectName()}
+\begin{tabbing}\sindex{PetscObjectSetName()}
 PetscObjectSetName((PetscObject)A,''name'');
 \end{tabbing}
 If no name is specified, the object is given a default name using PetscObjectName.
@@ -4788,8 +4723,6 @@ arguments, all PETSc routines that return arrays, such as
 VecGetArray(), MatGetArray(), 
 ISGetIndices(), and DAGetGlobalIndices()
 are defined slightly differently in Fortran than in C.  
-\findex{VecGetArray()} \findex{MatGetArray()} 
-\findex{ISGetIndices()} \findex{DAGetGlobalIndices()}
 Instead of returning the array itself, these routines
 accept as input a user-specified array of dimension one and return an
 integer index to the actual array used for data storage within PETSc.
@@ -4898,7 +4831,6 @@ user can employ \trl{PETSC_NULL} for all null arguments.
 \subsection{Duplicating Multiple Vectors}
 \label{sec_fortvecd}
 
-\findex{VecDuplicateVecs()}
 The Fortran interface to VecDuplicateVecs() differs slightly
 from the C/C++ variant because Fortran does not allow arrays to be
 returned in routine arguments.  To create \trl{n} vectors of the same
@@ -4907,7 +4839,7 @@ format as an existing vector, the user must declare a vector array,
 been called, \trl{v_new} will contain (pointers to) the new PETSc
 vector objects.  When finished with the vectors, the user should
 destroy them by calling VecDestroyVecs().
-\findex{VecDestroyVecs()} For example, the following code fragment
+For example, the following code fragment
 duplicates \trl{v_old} to form two new vectors, \trl{v_new(1)} and \trl{v_new(2)}.
 \begin{tabbing}
    Vec     v\_old, v\_new(2)\\
@@ -5430,7 +5362,7 @@ code fragment below:
 \end{tabbing}
 
 One must register the event by calling PetscLogEventRegister(), which assigns a unique integer to identify the
-event for profiling purposes: \findex{PetscLogEventRegister()}
+event for profiling purposes: 
 \begin{tabbing}
   PetscLogEventRegister(const char string[],PetscLogEvent *e);
 \end{tabbing}
@@ -5440,14 +5372,14 @@ one should see the manual page for details.  The argument returned in \trl{e} sh
 be passed to the PetscLogEventBegin() and PetscLogEventEnd()
 routines.
 
-Events are logged by using the pair \findex{PetscLogEventBegin()}
+Events are logged by using the pair 
 \begin{tabbing}
    PetscLogEventBegin(int event,PetscObject o1,PetscObject o2,\\
                       PetscObject o3,PetscObject o4);\\
    PetscLogEventEnd(int event,PetscObject o1,PetscObject o2,\\
                     PetscObject o3,PetscObject o4);
 \end{tabbing}
-The \findex{PetscLogEventEnd()}
+The
 four objects are the PETSc objects that are most closely associated 
 with the event.  For instance, in a matrix-vector product they 
 would be the matrix and the two vectors.  These objects can be omitted
@@ -5456,7 +5388,7 @@ two routine calls will be automatically timed and logged as part of the
 specified event.
 
 The user can log the number of floating-point operations 
-for this segment of code by calling \findex{PetscLogFlops()}
+for this segment of code by calling 
 \begin{tabbing}
     PetscLogFlops(number of flops for this code segment);
 \end{tabbing}
@@ -5472,13 +5404,12 @@ By default, the profiling produces a single set of statistics for all
 code between the PetscInitialize() and PetscFinalize()
 calls within a program.  One can independently monitor up to ten
 stages of code by switching among the various stages with the comands
-\findex{PetscLogStagePush()} \findex{PetscLogStagePop()}
 \begin{tabbing}
    PetscLogStagePush(PetscLogStage stage);\\
    PetscLogStagePop();
 \end{tabbing}
 where \trl{stage} is an integer (0-9); see the manual pages for details.
-The command  \findex{PetscLogStageRegister()}
+The command 
 \begin{tabbing}
    PetscLogStageRegister(const char *name,PetscLogStage *stage)
 \end{tabbing}
@@ -5568,7 +5499,7 @@ in MPE logging.
 
 Users can activate the printing of verbose information about
 algorithms, data structures, etc. to the screen by using the option \trl{
--info} \findex{-info} or by calling PetscInfoAllow\trl{(PETSC_TRUE)}. \findex{PetscInfoAllow()}
+-info} \findex{-info} or by calling PetscInfoAllow\trl{(PETSC_TRUE)}. 
 Such logging, which is used throughout the PETSc libraries,
 can aid the user in understanding algorithms and 
 tuning program performance.  For example, as discussed in
@@ -5577,7 +5508,7 @@ printing of information about memory allocation during
 matrix assembly.
 
 Application programmers can employ this logging as well, by
-using the routine \findex{PetscInfo()}
+using the routine 
 \begin{tabbing}
    PetscInfo(void* obj,char *message,...)
 \end{tabbing}
@@ -5593,7 +5524,7 @@ basic PETSc objects (e.g., Mat, SNES) with the command
 \begin{tabbing}
    PetscInfoDeactivateClass(int object\_classid)
 \end{tabbing}
-where \findex{PetscInfoDeactivateClass()} \findex{PetscInfoActivateClass()}
+where 
 \trl{object_classid} is one of \trl{MAT_CLASSID}, \trl{SNES_CLASSID}, etc.
 Messages can be reactivated with the command
 \begin{tabbing}
@@ -5613,7 +5544,7 @@ with the command \sindex{wall clock time}
   PetscLogDouble time;\\
   PetscGetTime(\&time);CHKERRQ(ierr);
 \end{tabbing}
-\findex{PetscGetTime()} \sindex{time}
+\sindex{time}
 which returns the current time in seconds since the epoch, and is commonly
 implemented with \trl{MPI_Wtime}. A floating point number is returned in order
 to express fractions of a second. In addition, as discussed in Section~\ref{sec_profileuser},
@@ -5629,7 +5560,6 @@ If no file name is specified, the output is stored in the file \trl{${HOME}/.pet
 \findex{.petschistory} Note that this option only saves output printed with 
 the PetscPrintf() and PetscFPrintf() commands, not the
 standard \trl{printf()} and \trl{fprintf()} statements. 
-\findex{PetscPrintf()} \findex{PetscFPrintf()}
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \section{Accurate Profiling: Overcoming the Overhead of Paging}
@@ -5676,8 +5606,7 @@ and
 can be used to easily 
 convert a regular PETSc program to one that uses preloading. The command line options
 \trl{-preload} \trl{true} and \trl{-preload} \trl{false} may be used to turn on and off
-preloading at run time for PETSc programs that use these macros. \findex{PreLoadBegin()}
-\findex{PreLoadEnd()} \findex{PreLoadStage()} \findex{-preload}
+preloading at run time for PETSc programs that use these macros. \findex{-preload}
 
 %---------------------------------------------------------------------
 \cleardoublepage
@@ -5724,7 +5653,7 @@ at a time can significantly enhance performance.
 \item Insert several (many) elements of a matrix or vector at once, rather 
    than looping and inserting a single value at a time.  In order to
    access elements in of vector repeatedly, employ {VecGetArray()} to allow 
-   direct manipulation of the vector elements. \findex{VecGetArray()}
+   direct manipulation of the vector elements. 
 
 \item When possible, use VecMDot() rather than a series of calls to VecDot().
 \end{itemize}
@@ -5750,7 +5679,7 @@ examples regarding preallocation.
 
 When symbolically factoring an AIJ matrix, PETSc has to guess
 how much fill there will be.  Careful use of the fill parameter in the 
-MatILUInfo structure \findex{MatILUInfo} 
+MatILUInfo structure 
 when calling MatLUFactorSymbolic() or MatILUFactorSymbolic()
 can reduce greatly the number of mallocs and copies required, and thus
 greatly improve the performance of the factorization.  One way to
@@ -5861,7 +5790,7 @@ allocation can be activated for optimixed-mode (configured with
 debugging is enabled.  When running timing tests, one should build
 libraries in optimized-mode.
 
-\findex{-malloc_dump} \findex{PetscMallocDump()}
+\findex{-malloc_dump} 
 \item When the PETSc memory allocation routines are used, the option 
 \trl{-malloc_dump} will print a list of unfreed memory at the conclusion of a
 program.  If all memory has been freed, only a message stating
@@ -5872,10 +5801,6 @@ option \trl{-malloc_dump} merely activates a call to PetscMallocDump() during
 in a program.
 
 \findex{-malloc_log}
-\findex{PetscMallocSetDumpLog()} \findex{PetscMallocDumpLog()}
-\findex{PetscMallocGetCurrentUsage()} \findex{PetscMallocGetMaximumUsage()}
-\findex{PetscMemoryGetCurrentUsage()} \findex{PetscMemoryGetMaximumUsage()}
-\findex{PetscMemorySetGetMaximumUsage()}
 \item Another useful option for use with PETSc memory allocation
 routines is \trl{-malloc_log}, which activates logging of all calls
 to malloc and reports memory usage, including all Fortran arrays.
@@ -5956,7 +5881,7 @@ Users who wish to employ PETSc routines on only a subset
 of processes within a larger parallel job, or who wish to use a
 ``master'' process to coordinate the work of ``slave'' PETSc
 processes, should specify an alternative communicator for \trl{
-PETSC_COMM_WORLD} by calling \findex{PetscSetCommWorld()}
+PETSC_COMM_WORLD} by calling 
 \sindex{communicator}
 \begin{tabbing}
   PetscSetCommWorld(MPI\_Comm comm);
@@ -6053,13 +5978,13 @@ following symbols in the first column of a line: \trl{#, %}, or \trl{!}.
 \subsection{User-Defined PetscOptions}
 
 Any subroutine in a PETSc program can add entries to the database with the 
-command \findex{PetscOptionsSetValue()}
+command
 \begin{tabbing}
   PetscOptionsSetValue(char *name,char *value);
 \end{tabbing}
 though this is rarely done.
 To locate options in the database, one should use the
-commands \findex{PetscOptionsHasName()} \findex{PetscOptionsGetInt()}
+commands
 \begin{tabbing}
   PetscOptionsHasName(char *pre,char *name,PetscTruth *flg);\\
   PetscOptionsGetInt(char *pre,char *name,int *value,PetscTruth *flg);\\
@@ -6069,9 +5994,8 @@ commands \findex{PetscOptionsHasName()} \findex{PetscOptionsGetInt()}
   PetscOptionsGetIntArray(char *pre,char *name,int *value,int *nmax,PetscTruth *flg);\\
   PetscOptionsGetRealArray(char *pre,char *name,double *value, int *nmax,PetscTruth *flg);
 \end{tabbing}
-All \findex{PetscOptionsGetReal()}
-of \findex{PetscOptionsGetString()} \findex{PetscOptionsGetIntArray()}
-these \findex{PetscOptionsGetRealArray()}
+All of
+these 
 routines set \trl{flg=PETSC_TRUE} if the corresponding option was found, \trl{flg=PETSC_FALSE} if it
 was not found.  The optional argument
 \trl{pre} indicates that the true name of the option is the given name
@@ -6104,7 +6028,7 @@ saving objects through commands of the form
   XXXView(XXX obj,PetscViewer viewer);
 \end{tabbing}
 Here \trl{obj} is any PETSc object of type
-\trl{XXX}, \findex{PetscViewer} where \trl{XXX} 
+\trl{XXX},  where \trl{XXX} 
 is Mat, Vec, SNES, etc. There are several
 predefined viewers:
 \begin{itemize}
@@ -6123,25 +6047,25 @@ predefined viewers:
 \item To save an object to a file in ASCII format, the user creates
       the viewer object with the command
       PetscViewerASCIIOpen\trl{(MPI_Comm comm, char* file, PetscViewer *viewer)}.  
-      This object is \findex{PetscViewerASCIIOpen()}
+      This object is 
       analogous to \trl{PETSC_VIEWER_STDOUT_SELF} (for a communicator of
       \trl{MPI_COMM_SELF}) and 
       \trl{PETSC_VIEWER_STDOUT_WORLD} (for a parallel communicator).
 \item To save an object to a file in binary format, the user creates
       the viewer object with the command
       PetscViewerBinaryOpen\trl{(MPI_Comm} comm,char* file,PetscViewerBinaryType type,
-      PetscViewer *viewer). \findex{PetscViewerBinaryOpen()}  Details of binary
+      PetscViewer *viewer). Details of binary
       I/O are discussed below.
 \item Vector and matrix objects can be passed to a running Matlab process
       with a viewer created by 
 \begin{tabbing}
-     PetscViewerSocketOpen(MPI\_Comm comm,char *machine,int port,PetscViewer *viewer). \findex{PetscViewerSocketOpen()}
+     PetscViewerSocketOpen(MPI\_Comm comm,char *machine,int port,PetscViewer *viewer). 
 \end{tabbing} 
       On the Matlab side, one must first run \trl{v = sreader(int port)}
       and then \trl{A = PetscBinaryRead(v)} to obtain the matrix or vector. Once all
       objects have been received, the port can be closed from the Matlab end
       with \trl{close(v)}. On the PETSc side, one should destroy
-      the viewer object with \findex{PetscViewerDestroy()} \trl{
+      the viewer object with  \trl{
       PetscViewerDestroy()}. The corresponding Matlab \trl{mex}
       files are located in \trl{${PETSC_DIR}/src/sys/viewer/impls/socket/matlab}.
 \end{itemize}
@@ -6152,7 +6076,7 @@ created by PetscViewerASCIIOpen() by calling
   PetscViewerSetFormat(PetscViewer viewer,int format);
 \end{tabbing}  
 \findex{PETSC_VIEWER_DEFAULT} \findex{PETSC_VIEWER_ASCII_MATLAB} 
-\findex{PETSC_VIEWER_ASCII_IMPL} \findex{PetscViewerSetFormat()}
+\findex{PETSC_VIEWER_ASCII_IMPL} 
 Possible formats include 
 \trl{PETSC_VIEWER_DEFAULT}, \trl{PETSC_VIEWER_ASCII_MATLAB}, and
 \trl{PETSC_VIEWER_ASCII_IMPL}.  The implementation-specific format, 
@@ -6165,14 +6089,13 @@ The routines
   PetscViewerPopFormat(PetscViewer viewer);
 \end{tabbing} 
 allow one to temporarily change the format of a viewer.
-\findex{PetscViewerPushFormat()} \findex{PetscViewerPopFormat()}
 
 As discussed above, one can output PETSc objects in binary format by
 first opening a binary viewer with PetscViewerBinaryOpen() and
 then using MatView(), VecView(), etc.  The corresponding
 routines for input of a binary object have the form \trl{XXXLoad()}.  In
 particular, matrix and vector binary input is handled by the
-following routines: \findex{MatLoad()} \findex{VecLoad()}
+following routines: 
 \begin{tabbing}
   MatLoad(PetscViewer viewer,MatType outtype,Mat *newmat);\\
   VecLoad(PetscViewer viewer,VecType outtype,Vec *newvec);
@@ -6236,10 +6159,10 @@ where you simply list the nodes you want the debugger to run with.
 \section{Error Handling} \sindex{errors} \sindex{debugging} 
 
 Errors are handled through the routine PetscError(). 
-\findex{PetscError()} This routine
+This routine
 checks a stack of error handlers and calls the one on the top.  
 If the stack is empty, it selects PetscTraceBackErrorHandler(), 
-which \findex{PetscTraceBackErrorHandler()} tries to print a traceback. 
+which tries to print a traceback. 
 A new error handler can be put on the stack with
 \begin{tabbing}
   PetscPushErrorHandler(PetscErrorCode (*HandlerFunction)(int line,char *dir,char *file,\\
@@ -6248,15 +6171,14 @@ A new error handler can be put on the stack with
 The arguments to \trl{HandlerFunction()} are the line number where 
 the error occurred, the file in which the error was detected, the corresponding
 directory, the error message, the error integer, and the \trl{HandlerContext.}
-The routine \findex{PetscPushErrorHandler()}
+The routine
 \begin{tabbing} 
   PetscPopErrorHandler()
 \end{tabbing}
-removes the last error handler and discards it. \findex{PetscPopErrorHandler()}
+removes the last error handler and discards it.
 
 PETSc provides two additional error handlers besides 
 PetscTraceBackErrorHandler():
-\findex{PetscAbortErrorHandler()} \findex{PetscAttachErrorHandler()}
 \begin{tabbing}
    PetscAbortErrorHandler()\\
    PetscAttachErrorHandler()
@@ -6274,16 +6196,16 @@ hanging without running in the debugger) with the option
 \end{tabbing}
 where \trl{filename} is optional. By default the traces are printed to the 
 screen.  This can also be set with the 
-command PetscLogTraceBegin(FILE*). \findex{-log_trace} \findex{PetscLogTraceBegin()}
+command PetscLogTraceBegin(FILE*). \findex{-log_trace}
 
 
 It is also possible to trap signals by using the \sindex{signals}
-command \findex{PetscPushSignalHandler()}
+command
 \begin{tabbing}
   PetscPushSignalHandler( PetscErrorCode (*Handler)(int,void *),void *ctx);
 \end{tabbing}
 The default handler PetscDefaultSignalHandler() 
-calls \findex{PetscDefaultSignalHandler()} 
+calls
 PetscError() and then terminates. In general, a signal in PETSc
 indicates a catastrophic failure.  Any error hander that the user provides
 should try to clean up only before exiting.  By default all PETSc programs
@@ -6294,7 +6216,7 @@ option \trl{-no_signal_handler} \findex{-no_signal_handler}.
 There is a separate signal handler for floating-point exceptions.
 \sindex{floating-point exceptions} \sindex{IEEE floating point} 
 The option \trl{-fp_trap} turns on the floating-point trap at runtime,
-and the routine \findex{-fp_trap} \findex{PetscSetFPTrap()} \findex{PETSC_FP_TRAP_ON}
+and the routine \findex{-fp_trap} \findex{PETSC_FP_TRAP_ON}
 \begin{tabbing}
   PetscSetFPTrap(int flag);
 \end{tabbing}
@@ -6385,7 +6307,6 @@ be used. \findex{-compare}  The user can also place the commands
    PetscCompareScalar()\\
    PetscCompareInt()
 \end{tabbing}
-\findex{PetscCompareDouble()} \findex{PetscCompareScalar()} \findex{PetscCompareInt()}
 in portions of the application code to check for consistency between
 the two versions.
  
@@ -6443,7 +6364,7 @@ files quickly and efficiently.  To use this feature, one should
 first check if the file,
 \trl{${PETSC_DIR}/TAGS} exists.  If this file is
 not present, it should be generated by
-running \trl{make} \trl{etags} from the PETSc home directory. 
+running \trl{make} \trl{alletags} from the PETSc home directory. 
 Once the file exists, from 
 Emacs the user should issue
 the command 
@@ -6457,6 +6378,25 @@ to find the file and line number where a desired PETSc function
 is defined.  Any string in any of the PETSc files can be found with the 
 command ``\trl{M-x} \trl{tags-search}''. To find repeated occurrences, 
 one can simply use ``\trl{M-,}'' to find the next occurrence.
+
+\section{Vi and Vim Users} \sindex{Vi} \sindex{Vim} \sindex{tags, in Vi/Vim}
+
+If users develop application codes  using Vi or Vim the \trl{tags} feature can be used to search PETSc 
+files quickly and efficiently.  To use this feature, one should 
+first check if the file,
+\trl{${PETSC_DIR}/CTAGS} exists.  If this file is
+not present, it should be generated by
+running \trl{make} \trl{alletags} from the PETSc home directory. 
+Once the file exists, from 
+Vi/Vim the user should issue
+the command 
+\begin{tabbing}
+:set tags=CTAGS
+\end{tabbing}
+from the \trl{PETSC_DIR} directory and enter the 
+name of the \trl{CTAGS} file. Then the command ``tag functionname'' will cause Vi/Vim
+to find the file and line number where a desired PETSc function 
+is defined.  See, for example, \href{http://www.yolinux.com/TUTORIALS/LinuxTutorialAdvanced_vi.html}{http://www.yolinux.com/TUTORIALS/LinuxTutorialAdvanced_vi.html} for additional Vi/Vim options that allow searches etc.
 
 
 \section{Parallel Communication}
@@ -6483,14 +6423,14 @@ to try to provide direct interfaces.
 \subsection{Windows as PetscViewers}
 For drawing predefined PETSc objects such as matrices and vectors, one must 
 first create a viewer using the 
-command \findex{PetscViewerDrawOpen()}
+command 
 \begin{tabbing}
   PetscViewerDrawOpen(MPI\_Comm comm,char *display,char *title,int x,\\
                        int y,int w,int h,PetscViewer *viewer);
 \end{tabbing}
 This viewer may be passed to any of the \trl{XXXView()} routines.
 To draw into the viewer, one must obtain the Draw object with the
-command \findex{PetscViewerDrawGetDraw()}
+command 
 \begin{tabbing}
   PetscViewerDrawGetDraw(PetscViewer viewer,PetscDraw *draw);
 \end{tabbing}
@@ -6516,7 +6456,7 @@ colormap can be used via the option \trl{-draw_x_shared_colormap}.
 
 One can open a window that is not associated with a viewer directly 
 under the X11 Window System with the
-command \findex{PetscDrawOpen()} \sindex{X windows}
+command \sindex{X windows}
 \begin{tabbing}
   PetscDrawOpen(MPI\_Comm comm,char *display,char *title,int x,\\
                  int y,int w,int h,PetscDraw *win);
@@ -6525,13 +6465,13 @@ All drawing routines are done relative to the windows coordinate system
 and viewport. By default the drawing coordinates are from \trl{(0,0)} to 
 \trl{(1,1)}, where \trl{(0,0)} indicates the lower left corner of the 
 window. The application program can change the window coordinates with the 
-command \findex{PetscDrawSetCoordinates()} \sindex{coordinates}
+command  \sindex{coordinates}
 \begin{tabbing}
   PetscDrawSetCoordinates(PetscDraw win,double xl,double yl,double xr,double yr);
 \end{tabbing}
 By default, graphics will be drawn in the entire window. To restrict the 
 drawing to a portion of the window, one may 
-use the command \findex{PetscDrawSetViewPort()}
+use the command 
 \begin{tabbing}
   PetscDrawSetViewPort(PetscDraw win,double xl,double yl,double xr,double yr);
 \end{tabbing}
@@ -6540,7 +6480,7 @@ drawing should be done, must satisfy
 $ 0 \leq {\tt xl} \leq {\tt xr} \leq 1 $ and $ 0 \leq {\tt yl} \leq {\tt yr} \leq 1.$ 
 
 To draw a line, one uses
- the command \findex{PetscDrawLine()} \sindex{lines, drawing}
+ the command \sindex{lines, drawing}
 \begin{tabbing}
   PetscDrawLine(PetscDraw win,double xl,double yl,double xr,double yr,int cl);
 \end{tabbing}
@@ -6550,16 +6490,16 @@ and includes \trl{PETSC_DRAW_BLACK}, \trl{PETSC_DRAW_RED}, \trl{PETSC_DRAW_BLUE}
 
 To ensure that all graphics actually have been displayed, one should use 
 \sindex{flushing, graphics} the
-command \findex{PetscDrawFlush()}
+command 
 \begin{tabbing}
   PetscDrawFlush(PetscDraw win);
 \end{tabbing}
 When displaying by using double buffering, which is set with the
-command \findex{PetscDrawSetDoubleBuffer()} \sindex{double buffer}
+command  \sindex{double buffer}
 \begin{tabbing}
   PetscDrawSetDoubleBuffer(PetscDraw win);
 \end{tabbing}
-{\em all} processes must call \findex{PetscDrawSynchronizedFlush()}
+{\em all} processes must call
 \begin{tabbing}
   PetscDrawSynchronizedFlush(PetscDraw win);
 \end{tabbing}
@@ -6569,14 +6509,14 @@ to pause \trl{n} seconds at each PetscDrawPause(). A time of \trl{-1}
 indicates that the application should pause until receiving mouse 
 input from the user.
 
-Text can be drawn with either of the two \findex{PetscDrawStringVertical()}
-commands \findex{PetscDrawString()} \sindex{text, drawing}
+Text can be drawn with either of the two 
+commands \sindex{text, drawing}
 \begin{tabbing}
   PetscDrawString(PetscDraw win,double x,double y,int color,char *text);\\
   PetscDrawStringVertical(PetscDraw win,double x,double y,int color,char *text);
 \end{tabbing}
 The user can set the text font size or determine it with the 
-commands \findex{PetscDrawStringSetSize()} \findex{PetscDrawStringGetSize()}
+commands 
 \begin{tabbing}
   PetscDrawStringSetSize(PetscDraw win,double width,double height);\\
   PetscDrawStringGetSize(PetscDraw win,double *width,double *height);
@@ -6588,52 +6528,52 @@ graphs. These routines, which begin with PetscDrawAxisDraw(), are usually
 not used directly by the application programmer.  Instead, the programmer 
 employs the line graph routines to draw simple line graphs.
 As shown in the program, within Figure~\ref{fig_plot}, line graphs 
-are created with the command \findex{PetscDrawLGCreate()} \sindex{line graphs}
+are created with the command  \sindex{line graphs}
 \begin{tabbing}
   PetscDrawLGCreate(PetscDraw win,int ncurves,PetscDrawLG *ctx);
 \end{tabbing}
 The argument \trl{ncurves} indicates how many curves are to be drawn.
 Points can be added to each of the curves with the 
-command \findex{PetscDrawLGAddPoint()}
+command 
 \begin{tabbing}
   PetscDrawLGAddPoint(PetscDrawLG ctx,double *x,double *y);
 \end{tabbing}
 The arguments \trl{x} and \trl{y} are arrays containing the next 
 point value for each curve.
-Several points for each curve may be added with \findex{PetscDrawLGAddPoints()}
+Several points for each curve may be added with 
 \begin{tabbing}
   PetscDrawLGAddPoints(PetscDrawLG ctx,int n,double **x,double **y);
 \end{tabbing}
 
-The line graph is drawn (or redrawn) with the command \findex{PetscDrawLGDraw()}
+The line graph is drawn (or redrawn) with the command 
 \begin{tabbing}
   PetscDrawLGDraw(PetscDrawLG ctx);
 \end{tabbing}
 A line graph that is no longer needed can be destroyed with the 
-command \findex{PetscDrawLGDestroy()}
+command 
 \begin{tabbing}
   PetscDrawLGDestroy(PetscDrawLG ctx);
 \end{tabbing}
 To plot new curves, one can reset a linegraph with the
-command \findex{PetscDrawLGReset()}
+command 
 \begin{tabbing}
   PetscDrawLGReset(PetscDrawLG ctx);
 \end{tabbing}
 The line graph automatically determines the range of values to 
 display on the two axes.  The user can change these defaults with the 
-command \findex{PetscDrawLGSetLimits()}
+command 
 \begin{tabbing}
   PetscDrawLGSetLimits(PetscDrawLG ctx,double xmin,double xmax,double ymin,double ymax);
 \end{tabbing}
 
 It is also possible to change the display of the axes and to label
 them. This procedure is done by first obtaining the axes context with the 
-command \findex{PetscDrawLGGetAxis()} \sindex{axis, drawing}
+command  \sindex{axis, drawing}
 \begin{tabbing}
   PetscDrawLGGetAxis(PetscDrawLG ctx,PetscDrawAxis *axis);
 \end{tabbing}
 One can set the axes' colors and labels, respectively, by using the
-commands \findex{PetscDrawAxisSetColors()} \findex{PetscDrawAxisSetLabels()}
+commands 
 \begin{tabbing}
   PetscDrawAxisSetColors(PetscDrawAxis axis,int axis\_lines,int ticks,int text);\\
   PetscDrawAxisSetLabels(PetscDrawAxis axis,char *top,char *x,char *y);
@@ -6661,8 +6601,8 @@ These are accessed via the command line with
 \findex{-snes_monitor_draw} See also Sections \ref{sec_kspmonitor} and
 \ref{sec_snesmonitor}. 
 
-The two functions used are KSPMonitorLG() \findex{KSPMonitorLG()}
-and KSPMonitorLGCreate()  \findex{KSPMonitorLGCreate()}. These 
+The two functions used are KSPMonitorLG() 
+and KSPMonitorLGCreate(). These 
 can easily be modified to serve specialized needs.
 
 
@@ -6993,7 +6933,7 @@ One can extract a (parallel) submatrix from a given (parallel) using
 This extracts the \trl{rows} and \trl{col}umns of the matrix \trl{A} into \trl{B}. If 
 call is  \trl{MAT_INITIAL_MATRIX} \findex{MAT_INITIAL_MATRIX} it will create the matrix
 \trl{B}. If call is \trl{MAT_REUSE_MATRIX} \findex{MAT_REUSE_MATRIX} it will reuse the \trl{B}
-created with a previous call. \findex{MatGetSubMatrix()} The argument \trl{csize} is ignored 
+created with a previous call. The argument \trl{csize} is ignored 
 on sequential matrices, for parallel matrices it determines the ``local columns'' if the matrix
 format supports this concept. Often one can use the default by passing in PETSC\_DECIDE.
 To create a \trl{B} matrix that may be multiplied with a vector \trl{x} one can use
@@ -7020,7 +6960,7 @@ matrix factorizations are split into \sindex{LU}
 two or three stages depending on the user's needs. The first stage is 
 to calculate an ordering for the matrix.  The ordering generally is 
 done to reduce fill in a sparse factorization; it does not make much 
-sense for a dense matrix. \findex{MatGetOrdering()} \sindex{reorder}
+sense for a dense matrix.  \sindex{reorder}
 \begin{tabbing}
   MatGetOrdering(Mat matrix,MatOrderingType type,IS* rowperm,IS* colperm); 
 \end{tabbing}
@@ -7054,7 +6994,7 @@ with the command
   MatOrderingRegisterDynamic(MatOrderingType inname,char *path,char *sname,\\
                              PetscErrorCode (*reorder)(Mat,MatOrderingType,IS*,IS*)));
 \end{tabbing}
-The \findex{MatOrderingRegisterDynamic()} \sindex{ordering} \sindex{matrix ordering}
+The \sindex{ordering} \sindex{matrix ordering}
 input argument \trl{inname} is a string of the user's choice, \trl{iname} is either 
 an ordering defined in \trl{petscmat.h} or a users string,
 to indicate one is introducing a new ordering, while the output
@@ -7077,7 +7017,6 @@ The argument \trl{info->fill > 1} is the predicted fill
 expected in the factored matrix, as a ratio of the original fill. 
 For example, \trl{info->fill=2.0} would indicate that one expects the factored
 matrix to have twice as many nonzeros as the original.
-\findex{MatCholeskyFactor()} \findex{MatLUFactor()}
 
 For sparse matrices it is very unlikely that the factorization 
 is actually done in-place. More likely, new space is allocated 
@@ -7086,9 +7025,9 @@ user it appears in-place because the factored matrix replaces
 the unfactored matrix.
 
 The \sindex{symbolic factorization}
-two \findex{MatCholeskyFactorSymbolic()} \findex{MatLUFactorSymbolic()}
+two 
 factorization 
-stages \findex{MatCholeskyFactorNumeric()} \findex{MatLUFactorNumeric()}
+stages 
 can also be performed separately, by using the out-of-place mode, first
 one obtains that matrix object that will hold the factor
 \begin{tabbing}
@@ -7140,7 +7079,7 @@ the diagonal are smaller than \trl{tol} in a absolute value. If small
 values are detected and corrected for, a nonsymmetric
 permutation of the rows and columns will result. This is not guaranteed to work, 
 but may help if one was simply unlucky in the original ordering.
-\findex{MatReorderForNonzeroDiagonal()} When using the KSP solver interface
+When using the KSP solver interface
 the option \trl{-pc_factor_nonzeros_along_diagonal <tol>} \findex{-pc_factor_nonzeros_along_diagonal}
 may be used.  Here, \trl{tol}
 is an optional tolerance to decide if a value is nonzero; by default it
@@ -7154,8 +7093,7 @@ The following four routines enable this process: \findex{MatSolve()}
   MatSolveAdd(Mat A,Vec x, Vec y, Vec w);\\
   MatSolveTransposeAdd(Mat A, Vec x, Vec y, Vec w);
 \end{tabbing}
-The \findex{MatSolveTranspose()} \findex{MatSolveAdd()}
-matrix \findex{MatSolveTransposeAdd()}
+matrix
 \trl{A} of these routines must have been obtained from a 
 factorization routine; otherwise, an error will be generated.
 In general, the user should use the KSP solvers introduced in the 
@@ -7168,26 +7106,26 @@ Again, virtually all users should use KSP through the KSP interface
 and, thus, will not need to know the details that follow. 
 
 It is possible to generate a Krylov subspace context with the 
-command \findex{KSPCreate()}
+command 
 \begin{tabbing}
   KSPCreate(MPI\_Comm comm,KSP *kps);
 \end{tabbing}
 Before using the Krylov context, one must set the matrix-vector multiplication routine and
 the preconditioner with the 
-commands \findex{PCSetOperators()} \findex{KSPSetPC()}
+commands
 \begin{tabbing}
   PCSetOperators(PC pc,Mat mat,Mat pmat,MatStructure flag);\\
   KSPSetPC(KSP ksp,PC pc);
 \end{tabbing}
-In addition, the KSP solver must be initialized with \findex{KSPSetUp()}
+In addition, the KSP solver must be initialized with
 \begin{tabbing}
   KSPSetUp(KSP ksp);
 \end{tabbing}
-Solving a linear system is done with the command \findex{KSPSolve()}
+Solving a linear system is done with the command
 \begin{tabbing}
   KSPSolve(KSP ksp,Vec b,Vec x);
 \end{tabbing}
-Finally, the KSP context should be destroyed with \findex{KSPDestroy()}
+Finally, the KSP context should be destroyed with
 \begin{tabbing}
   KSPDestroy(KSP ksp);
 \end{tabbing}
@@ -7225,28 +7163,26 @@ Most users will obtain their preconditioner contexts from the KSP
 context with the command KSPGetPC(). It is possible to create,
 manipulate, and destroy PC contexts directly, although this capability
 should rarely be needed. To create a PC context, one uses the command
-\findex{PCCreate()}
 \begin{tabbing}
   PCCreate(MPI\_Comm comm,PC *pc);
 \end{tabbing}
-The routine \findex{PCSetType()}
+The routine 
 \begin{tabbing}
   PCSetType(PC pc,PCType method);
 \end{tabbing}
 sets the preconditioner method to be used. 
-The routine \findex{PCSetOperators()}
+The routine 
 \begin{tabbing}
   PCSetOperators(PC pc,Mat mat,Mat pmat,MatStructure flag);\\
 \end{tabbing}
 set the matrices that are to be used with 
 the preconditioner.  
-The routine \findex{PCGetOperators()}
+The routine 
 \begin{tabbing}
   PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag);
 \end{tabbing}
 returns the values set with PCSetOperators().
 
-\findex{PCApply()} \findex{PCApplyTranspose()} 
 The preconditioners in PETSc can be used in several ways.  The two
 most basic routines simply apply the preconditioner or its transpose
 and are given, respectively, by
@@ -7260,8 +7196,6 @@ the routine PCApply(pc,x,y) computes $y = B^{-1} x$
 by solving the linear system $By = x$ with the specified preconditioner
 method.
 
-\findex{PCApplyBAorAB()}
-\findex{PCApplyBAorABTranspose()} \findex{PCApplyRichardson()}
 Additional preconditioner routines are
 \begin{tabbing}
   PCApply\=BAorAB(PC pc,PCSide right,Vec x,Vec y,Vec work,int its);\\
@@ -7278,7 +7212,7 @@ The last three routines are provided to improve
 efficiency for certain Krylov subspace methods.
 
 A PC context that is no longer needed can be destroyed with the 
-command \findex{PCDestroy()}
+command
 \begin{tabbing}
   PCDestroy(PC pc);
 \end{tabbing}

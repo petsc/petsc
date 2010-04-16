@@ -40,11 +40,23 @@ def addFileNameTags(filename):
   g.close()
   return
 
-def createTags(tagfile,dirname,files):
+def createTags(etagfile,ctagfile,dirname,files):
+  import glob
   # error check for each parameter?
-  (status,output) = commands.getstatusoutput('cd '+dirname+';etags -a -o '+tagfile+' '+' '.join(files))
+  (status,output) = commands.getstatusoutput('cd '+dirname+';etags -a -o '+etagfile+' '+' '.join(files))
   if status:
     raise RuntimeError("Error running etags "+output)
+
+  # run ctags in root directory because ctags need path of each file from root directory
+  files= []
+  gfiles = glob.glob(os.path.join(dirname,'*'))
+  for file in gfiles:
+    if file.endswith('.c') or file.endswith('.F') or file.endswith('.cpp') or file.endswith('.F90'):
+      files.append(file)
+  if files:
+    (status,output) = commands.getstatusoutput('ctags -a -f '+ctagfile+' '+' '.join(files))
+    if status:
+      raise RuntimeError("Error running ctags "+output)
   return
 
 def endsWithSuffix(file,suffixes):
@@ -63,7 +75,9 @@ def badWebIndex(dirname,file):
   else:
     return 1
 
-def processDir(tagfile,dirname,names):
+def processDir(tagfiles,dirname,names):
+  etagfile = tagfiles[0]
+  ctagfile = tagfiles[1]
   newls = []
   gsfx = ['.py','.c','.F','.F90','.h','.h90','.tex','.cxx','.hh','makefile']
   hsfx = ['.html']
@@ -74,7 +88,7 @@ def processDir(tagfile,dirname,names):
     elif endsWithSuffix(l,hsfx)  and not endsWithSuffix(l,bsfx) and not badWebIndex(dirname,l):
       # if html - and not bad suffix - and not badWebIndex - then add to etags-list
       newls.append(l)
-  if newls: createTags(tagfile,dirname,newls)
+  if newls: createTags(etagfile,ctagfile,dirname,newls)
 
   # exclude 'docs' but not 'src/docs'
   for exname in ['docs']:
@@ -99,7 +113,7 @@ def processDir(tagfile,dirname,names):
     names.remove(rmname)
   return
 
-def processFiles(dirname,tagfile):
+def processFiles(dirname,etagfile,ctagfile):
   # list files that can't be done with global match [as above] with complete paths
   import glob
   files= []
@@ -110,17 +124,23 @@ def processFiles(dirname,tagfile):
     for file in gfiles:
       if not (file.endswith('pyc') or file.endswith('/SCCS') or file.endswith('~')):
         files.append(file)
-  if files: createTags(tagfile,dirname,files)
+  if files: createTags(etagfile,ctagfile,dirname,files)
   return
 
 def main():
   try: os.unlink('TAGS')
   except: pass
-  tagfile = os.path.join(os.getcwd(),'ETAGS')
-  os.path.walk(os.getcwd(),processDir,tagfile)
-  processFiles(os.getcwd(),tagfile)
-  addFileNameTags(tagfile)
+  try: os.unlink('CTAGS')
+  except: pass
+  etagfile = os.path.join(os.getcwd(),'ETAGS')
+  ctagfile = os.path.join(os.getcwd(),'ECTAGS')  
+  os.path.walk(os.getcwd(),processDir,[etagfile,ctagfile])
+  processFiles(os.getcwd(),etagfile,ctagfile)
+  addFileNameTags(etagfile)
+  (status,output) = commands.getstatusoutput('sort ECTAGS > CTAGS')
   try: os.unlink('ETAGS')
+  except: pass
+  try: os.unlink('ECTAGS')
   except: pass
 #
 # The classes in this file can also be used in other python-programs by using 'import'
