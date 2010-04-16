@@ -19,7 +19,7 @@ tokens = (
     'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MOD',
     'OR', 'AND', 'NOT', 'XOR', 'LSHIFT', 'RSHIFT',
     'LOR', 'LAND', 'LNOT',
-    'LT', 'LE', 'GT', 'GE', 'EQ', 'NE',
+    'LT', 'LE', 'GT', 'GE', 'EQ', 'NE', 'HREF', 'FINDEX', 'SUBSECTION', 'CHAPTER', 'SECTION','CAPTION','SINDEX','TRL',
     
     # Assignment (=, *=, /=, %=, +=, -=, <<=, >>=, &=, ^=, |=)
     'EQUALS', 'TIMESEQUAL', 'DIVEQUAL', 'MODEQUAL', 'PLUSEQUAL', 'MINUSEQUAL',
@@ -61,6 +61,14 @@ t_ignore           = '\t\x0c'
 
     
 # Operators
+t_SUBSECTION       = r'\\subsection\{'
+t_CAPTION          = r'\\caption\{'
+t_CHAPTER          = r'\\chapter\{'
+t_SECTION          = r'\\section\{'
+t_HREF             = r'\\href\{'
+t_FINDEX           = r'\\findex\{'
+t_SINDEX           = r'\\sindex\{'
+t_TRL              = r'\\trl\{'
 t_PLUS             = r'\+'
 t_MINUS            = r'-'
 t_TIMES            = r'\*'
@@ -158,7 +166,7 @@ lexer = lex.lex(optimize=1)
 if __name__ == "__main__":
 
     #
-    # use Use LOC as PETSC_DIR [for readingin/writing relavent files]
+    # use Use LOC as PETSC_DIR [for reading/writing relavent files]
     #
     try:
         PETSC_DIR = sys.argv[1]
@@ -230,7 +238,8 @@ if __name__ == "__main__":
 	    print text
 	    text = ''
 	else:
-	    if token.value[0] == '{':
+            # \href cannot be used in many places in Latex
+	    if token.value == '\\href{' or token.value == '\\findex{'  or token.value == '\\sindex{' or token.value == '\\subsection{' or token.value == '\\chapter{' or token.value == '\\section{' or token.value == '\\caption{'  or token.value == '\\trl{':
 		bracket = bracket + 1;
             if bracket == 0:
 		value = token.value
@@ -238,7 +247,7 @@ if __name__ == "__main__":
 		    value = '\\href{'+'http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-'+version+'/docs/'+mappedlink[value]+'}{'+mappedstring[value]+'}'
             else:
 		value = token.value
-	    if token.value[0] == '}':
+	    if token.value[0] == '}' and bracket:
 		bracket = bracket - 1;
 	    text = text+value
 

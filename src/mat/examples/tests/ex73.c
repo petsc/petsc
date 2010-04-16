@@ -28,10 +28,12 @@ int main(int argc,char **args)
   PetscViewer     fd;                /* viewer */
   char            file[PETSC_MAX_PATH_LEN];         /* input file name */
   PetscTruth      flg;
-  PetscInt        ierr,*nlocal;
+  PetscInt        ierr,*nlocal,m,n;
   PetscMPIInt     rank,size;
   MatPartitioning part;
   IS              is,isn;
+  Vec             xin, xout;
+  VecScatter      scat;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -52,9 +54,10 @@ int main(int argc,char **args)
       Load the matrix and vector; then destroy the viewer.
   */
   ierr = MatLoad(fd,mtype,&A);CHKERRQ(ierr);
+  ierr = VecLoad(fd,VECMPI,&xin);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
-  ierr = MatView(A,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+  //    ierr = MatView(A,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
 
   /*
        Partition the graph of the matrix 
@@ -78,19 +81,76 @@ int main(int argc,char **args)
   ierr = MatPartitioningDestroy(part);CHKERRQ(ierr);
 
   ierr = ISSort(is);CHKERRQ(ierr);
+  /* move the matrix rows to the new processes they have been assigned to by the permutation */
   ierr = MatGetSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+  ierr = MatDestroy(A);CHKERRQ(ierr); 
+
+  /* move the vector rows to the new processes they have been assigned to */
+  ierr = MatGetLocalSize(B,&m,&n);CHKERRQ(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,m,PETSC_DECIDE,&xout);CHKERRQ(ierr);
+  ierr = VecScatterCreate(xin,PETSC_NULL,xout,is,&scat);CHKERRQ(ierr);
+  ierr = VecScatterBegin(scat,xin,xout,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(scat,xin,xout,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(scat);CHKERRQ(ierr);
   ierr = ISDestroy(is);CHKERRQ(ierr);
 
-  ierr = MatView(B,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+  
+
+  //   ierr = MatView(B,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+
+
+  {
+    PetscInt          rstart,i,*nzd,*nzo,nzl,nzmax = 0,*ncols,nrow,j;
+    Mat               J;
+    const PetscInt    *cols;
+    const PetscScalar *vals;
+    PetscScalar       *nvals;
+    
+    ierr = MatGetOwnershipRange(B,&rstart,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscMalloc(2*m*sizeof(PetscInt),&nzd);CHKERRQ(ierr);
+    ierr = PetscMemzero(nzd,2*m*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMalloc(2*m*sizeof(PetscInt),&nzo);CHKERRQ(ierr);
+    ierr = PetscMemzero(nzo,2*m*sizeof(PetscInt));CHKERRQ(ierr);
+    for (i=0; i<m; i++) {
+      ierr = MatGetRow(B,i+rstart,&nzl,&cols,PETSC_NULL);CHKERRQ(ierr);
+      for (j=0; j<nzl; j++) {
+        if (cols[j] >= rstart && cols[j] < rstart+n) {nzd[2*i] += 2; nzd[2*i+1] += 2;}
+        else {nzo[2*i] += 2; nzo[2*i+1] += 2;}
+      }
+      nzmax = PetscMax(nzmax,nzd[2*i]+nzo[2*i]);
+      ierr = MatRestoreRow(B,i+rstart,&nzl,&cols,PETSC_NULL);CHKERRQ(ierr);
+    }
+    ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,2*m,2*m,PETSC_DECIDE,PETSC_DECIDE,0,nzd,0,nzo,&J);CHKERRQ(ierr);    
+    ierr = PetscInfo(0,"Created empty Jacobian matrix\n");CHKERRQ(ierr);
+    ierr = PetscFree(nzd);CHKERRQ(ierr);
+    ierr = PetscFree(nzo);CHKERRQ(ierr);
+    ierr = PetscMalloc(nzmax*sizeof(PetscInt),&ncols);CHKERRQ(ierr);
+    ierr = PetscMalloc(nzmax*sizeof(PetscScalar),&nvals);CHKERRQ(ierr);
+    ierr = PetscMemzero(nvals,nzmax*sizeof(PetscScalar));CHKERRQ(ierr);
+    for (i=0; i<m; i++) {
+      ierr = MatGetRow(B,i+rstart,&nzl,&cols,&vals);CHKERRQ(ierr);
+      for (j=0; j<nzl; j++) {
+        ncols[2*j]   = 2*cols[j];
+        ncols[2*j+1] = 2*cols[j]+1;
+      }
+      nrow = 2*(i+rstart);
+      ierr = MatSetValues(J,1,&nrow,2*nzl,ncols,nvals,INSERT_VALUES);CHKERRQ(ierr);
+      nrow = 2*(i+rstart) + 1;
+      ierr = MatSetValues(J,1,&nrow,2*nzl,ncols,nvals,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatRestoreRow(B,i+rstart,&nzl,&cols,&vals);CHKERRQ(ierr);
+    }
+    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    //       ierr = MatView(J,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);    
+    ierr = MatDestroy(J);CHKERRQ(ierr);
+  }
+  
 
   /*
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
   */
-  ierr = MatDestroy(A);CHKERRQ(ierr); 
   ierr = MatDestroy(B);CHKERRQ(ierr); 
-
-
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

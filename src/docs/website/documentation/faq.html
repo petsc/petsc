@@ -100,8 +100,8 @@ gnu compiler)?</a></li>
 compiler wrappers are invalid</a>?</li>
       <li><a href="faq.html#64-bit-indices">When should/can I use the
 ./configure option --with-64-bit-indices</a>?</li>
-      <li><a href="faq.html#install-petsc4py-dev">How do I install petsc4py with the development PETSc</a>?</li>
-
+      <li><a href="faq.html#install-petsc4py-dev">How do I install
+petsc4py with the development PETSc</a>?</li>
       </menu>
       <p><a href="#usage"><b>Usage</b></a></p>
       <ul>
@@ -280,12 +280,18 @@ simply cannot provide the needed performance.&nbsp;</li>
         <li><span style="font-weight: bold;">high
 per-CPU memory performance</span>. Each CPU (core in dual core
 systems) needs to have its <span style="font-weight: bold;">own</span>
-memory bandwith of roughly 2 or more gigabytes. For example, standard
+memory bandwith of roughly 2 or more gigabytes/second. For example,
+standard
 dual processor "PC's" will <span style="font-weight: bold;">not</span>
 provide better performance when the second processor is used, that is,
 you will not see speed-up when you using the second processor. This is
 because the speed of sparse matrix computations is almost totally
-determined by the speed of the memory, not the speed of the CPU.</li>
+determined by the speed of the memory, not the speed of the CPU. Smart
+process to core binding may help you (for example, with mpich hydra
+mpiexec.hydra -n 4/8 --binding topo:sockets) <a
+ href="http://wiki.mcs.anl.gov/mpich2/index.php/Using_the_Hydra_Process_Manager#Process-core_Binding">http://wiki.mcs.anl.gov/mpich2/index.php/Using_the_Hydra_Process_Manager#Process-core_Binding</a>
+OpenMPI also has equivalent functionality, check its documentation.<br>
+        </li>
         <li>The software &nbsp;<a href="http://open-mx.org">http://open-mx.org</a>
 provides faster speed for ethernet systems, we have not tried it but it
 claims it can dramatically reduce latency and increase bandwidth on
@@ -400,7 +406,8 @@ works for some number of processes and does not work for others.
       <p><strong><a name="differentiterations"><font color="#ff0000">How
 come
 when
-I run the same linear solver on a different number of
+I
+run the same linear solver on a different number of
 processes it takes a different number of iterations?</font></a></strong><span
  style="font-weight: bold;"></span></p>
       <p><span style="font-weight: bold;"></span>The convergence of
@@ -428,7 +435,8 @@ not commit. You pull down and it aborts part way because you have
 "uncommitted local changes". However, you do not <strong>hg rollback</strong>.
 Instead
 you
-just <strong>hg commit</strong>, which creates another
+just
+      <strong>hg commit</strong>, which creates another
 head. This is supposed to be a feature. I think it should have a user
 disable.</p>
       <p>Fixing this is complicated. Basically, you clone the repo
@@ -532,28 +540,42 @@ crashes.
       <p>This option can be used when you are using either 32 bit or 64
 bit pointers. You do not need to use this option if you are using 64
 bit pointers unless the two conditions above hold.&nbsp; </p>
-      <p><strong><font color="#ff0000"><a name="install-petsc4py-dev">How do I install petsc4py with the development
-      PETSc</a>?</font></p>
-      <p>You can follow these steps
-        <ol>
-          <li>grab petsc4py-dev repo [from hg]</li>
-          <li>install Cython</li>
-          <li>make cython [in petsc4py-dev]</li>
-          <li>place petsc4py-dev in PETSC_DIR/externalpackages</li>
-          <li>export ARCHFLAGS=''</li>
-          <li>install PETSc with --download-petsc4py etc..</li>
-        </ol>
-      </p>
-      <p>&nbsp; </p>
-      <hr>
-      <h3><a name="Using">Using</a></h3>
-      <p>&nbsp;<strong><a name="redirectstdout"><font color="#ff0000">How
+      <p><strong><font color="#ff0000"><a name="install-petsc4py-dev">How
+do I install petsc4py with the development PETSc</a>?</font></strong></p>
+      <strong> </strong>
+      <p><strong>You can follow these steps </strong></p>
+      <ol>
+        <strong> </strong>
+        <li><strong>grab petsc4py-dev repo [from hg]</strong></li>
+        <strong> </strong>
+        <li><strong>install Cython</strong></li>
+        <strong> </strong>
+        <li><strong>make cython [in petsc4py-dev]</strong></li>
+        <strong> </strong>
+        <li><strong>place petsc4py-dev in PETSC_DIR/externalpackages</strong></li>
+        <strong> </strong>
+        <li><strong>export ARCHFLAGS=''</strong></li>
+        <strong> </strong>
+        <li><strong>install PETSc with --download-petsc4py etc..</strong></li>
+        <strong> </strong>
+      </ol>
+      <strong> </strong>
+      <p></p>
+      <strong> </strong>
+      <p><strong>&nbsp; </strong></p>
+      <strong> </strong>
+      <hr><strong> </strong>
+      <h3><strong><a name="Using">Using</a></strong></h3>
+      <strong> </strong>
+      <p><strong>&nbsp;<strong><a name="redirectstdout"><font
+ color="#ff0000">How
 can
 I
 redirect PETSc's stdout and stderr when programming with a GUI
 interface in Windows Developer Studio?&nbsp;</font></a></strong><strong></strong>
-      </p>
-These directions where supplied by a user. You just need to add this <br>
+      </strong></p>
+      <strong>These directions where supplied by a user. You just need
+to add this <br>
       <br>
 extern "C"<br>
 {<br>
@@ -618,12 +640,14 @@ way you like<br>
 &nbsp;Note: When writing a Window's console application you do not need
 to do anything, the stdout and stderr is automatically output to the
 console window.<strong><a name="nosaij"><br>
-      </a></strong>
-      <p>&nbsp;<strong><a name="hypre"><font color="#ff0000">I want to
+      </a></strong> </strong>
+      <p><strong>&nbsp;<strong><a name="hypre"><font color="#ff0000">I
+want to
 use hypre boomerAMG without GMRES but when I run -pc_type hypre
 -pc_hypre_type boomeramg -ksp_type preonly I don't get a very accurate
-answer!</font></a></strong> </p>
-You should run with -ksp_type richardson to have PETSc run several V or
+answer!</font></a></strong> </strong></p>
+      <strong>You should run with -ksp_type richardson to have PETSc
+run several V or
 W cycles. -ksp_type of preonly causes boomerAMG to use only one V/W
 cycle. You can control how many cycles are used in a single application
 of the boomerAMG preconditioner with
@@ -631,20 +655,26 @@ of the boomerAMG preconditioner with
 also control the tolerance boomerAMG uses to decide if to stop before
 max_iter with -pc_hypre_boomeramg_tol <tol> (the default is
 1.e-7). Run with -ksp_view to see all the hypre options used and -help
-| grep boomeramg to see all the command line options. </tol></it>
-      <p>&nbsp;<strong><a name="nosaij"><font color="#ff0000">You have
+| grep boomeramg to see all the command line options. </tol></it> </strong>
+      <p><strong>&nbsp;<strong><a name="nosaij"><font color="#ff0000">You
+have
 AIJ and BAIJ matrix formats, and
-SBAIJ for symmetric storage, how come no SAIJ</font></a></strong> </p>
-Just for historical reasons, the SBAIJ format with blocksize one is
-just as efficient as an SAIJ would be
+SBAIJ for symmetric storage, how come no SAIJ</font></a></strong> </strong></p>
+      <strong>Just for historical reasons, the SBAIJ format with
+blocksize one is
+just as efficient as an SAIJ would be </strong>
       <p></p>
-      <p>&nbsp;<strong><a name="long-link-time"><font color="#ff0000">How
+      <strong> </strong>
+      <p><strong>&nbsp;<strong><a name="long-link-time"><font
+ color="#ff0000">How
 do
 I
 use P</font></a></strong><strong><a name="domaindecomposition"><font
  color="#ff0000">ETSc
-for Domain Decomposition?</font></a></strong> </p>
-      <p>PETSc includes Additive Schwarz methods in the suite of
+for Domain Decomposition?</font></a></strong> </strong></p>
+      <strong> </strong>
+      <p><strong>PETSc includes Additive Schwarz methods in the suite
+of
 preconditioners. These may be activated with the runtime
 option&nbsp;<br>
       <i>-pc_type asm.</i>&nbsp;<br>
@@ -664,28 +694,39 @@ via<br>
       <i> -pc_type nn</i><br>
 The program petsc/src/contrib/oberman/laplacian_ql contains an example
 of its use.<br>
-      </p>
-      <hr>
-      <p>&nbsp;<strong><a name="blocks"><font color="#ff0000">Can I
+      </strong></p>
+      <strong> </strong>
+      <hr><strong> </strong>
+      <p><strong>&nbsp;<strong><a name="blocks"><font color="#ff0000">Can
+I
 create BAIJ matrices with different
-size blocks for different block rows?</font></a></strong></p>
-Sorry, this is not possible, the BAIJ format only supports a single
+size blocks for different block rows?</font></a></strong></strong></p>
+      <strong>Sorry, this is not possible, the BAIJ format only
+supports a single
 fixed block size on the entire matrix. But the AIJ format automatically
 searches for matching rows and thus still takes advantage of the
 natural blocks in your matrix to obtain good performance. Unfortunately
 you cannot use the MatSetValuesBlocked().<br>
       <br>
       <br>
-      <p><strong><a name="mpi-vec-to-seq-vec"><font color="#ff0000">How
+      </strong>
+      <p><strong><strong><a name="mpi-vec-to-seq-vec"><font
+ color="#ff0000">How
 do I collect all the values from a
-parallel PETSc vector into a sequential vector on each processor?</font></a></strong></p>
-      <p> </p>
+parallel PETSc vector into a sequential vector on each processor?</font></a></strong></strong></p>
+      <strong> </strong>
+      <p><strong> </strong></p>
+      <strong> </strong>
       <ul>
-        <li> Create the scatter context that will do the
-communication </li>
-        <li> <a
- href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/Vec/VecScatterCreateToAll.html"><strong>VecScatterCreateToAll</strong></a>(v,&amp;ctx,&amp;w);</li>
+        <strong> </strong>
+        <li><strong> Create the scatter context that will do the
+communication </strong></li>
+        <strong> </strong>
+        <li><strong> <a
+ href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/Vec/VecScatterCreateToAll.html"><strong>VecScatterCreateToAll</strong></a>(v,&amp;ctx,&amp;w);</strong></li>
+        <strong> </strong>
       </ul>
+      <strong> </strong>
       <table width="100%">
         <tbody>
           <tr>
@@ -839,7 +880,8 @@ retreive the information in your FormJacobian() function.<br>
             <span style="color: rgb(255, 0, 0);"><a name="invertmatrix"></a>How
 can
 I
-compute the inverse of a matrix in PETSc?<br>
+compute
+the inverse of a matrix in PETSc?<br>
             <br>
             </span>It is very expensive to compute the inverse of a
 matrix and very rarely needed in practice. We highly recommend avoiding
@@ -899,7 +941,8 @@ VecScatter to communicate the required ghost point communication. See <a
             <span style="color: rgb(255, 0, 0);"><a name="da_mpi_cart"></a>The
 PETSc
 DA
-object decomposes the domain differently than the
+object
+decomposes the domain differently than the
 MPI_Cart_create() command. How can one use them together?<br>
             <br>
             </span>The MPI_Cart_create() first divides the mesh along
@@ -939,7 +982,8 @@ PETSC_COMM_WORLD = NewComm;<br>
 When
 solving
 a
-symmetric system with Dirichlet boundary conditions I can use
+symmetric
+system with Dirichlet boundary conditions I can use
 MatZeroRows() to eliminate the Dirichlet rows but this results in a
 non-symmetric system. How come there is no MatZeroColumns() to keep the
 matrix symmetric?<br>
@@ -962,103 +1006,139 @@ symmetric methods. See its manual page.
           </tr>
         </tbody>
       </table>
-      <hr>
-      <h3><a name="Execution">Execution</a></h3>
-      <p><strong><a name="long-link-time"><font color="#ff0000">PETSc
-executables are SO big and take SO
-long to link</font>.</a></strong></p>
-      <p>We find this annoying as well. On most machines PETSc
+      <strong> </strong>
+      <hr><strong> </strong>
+      <h3><strong><a name="Execution">Execution</a></strong></h3>
+      <strong> </strong>
+      <p><strong><strong><a name="long-link-time"><font color="#ff0000">PETSc
+executables
+are SO big and take SO
+long to link</font>.</a></strong></strong></p>
+      <strong> </strong>
+      <p><strong>We find this annoying as well. On most machines PETSc
 can use
 shared libraries, so executables should be much smaller, run
 config/configure.py with the additional option --with-shared. Also, if
 you have room, compiling and linking PETSc on your machine's /tmp disk
 or similar local disk, rather than over the network will be much
-faster. </p>
-      <p><a name="petsc-options"><strong><font color="#ff0000">PETSc
-has so many options for my program
-that it is hard to keep them straight.</font></strong> </a></p>
-      <p>Running the PETSc program with the option -help will
+faster. </strong></p>
+      <strong> </strong>
+      <p><strong><a name="petsc-options"><strong><font color="#ff0000">PETSc
+has
+so many options for my program
+that it is hard to keep them straight.</font></strong> </a></strong></p>
+      <strong> </strong>
+      <p><strong>Running the PETSc program with the option -help will
 print of many of the options. To print the options that have been
 specified within a program, employ -optionsleft to print any options
 that the user specified but were not actually used by the program and
-all options used; this is helpful for detecting typo errors. </p>
-      <p><strong><a name="petsc-log-info"><font color="#ff0000">PETSc
-automatically handles many of the
+all options used; this is helpful for detecting typo errors. </strong></p>
+      <strong> </strong>
+      <p><strong><strong><a name="petsc-log-info"><font color="#ff0000">PETSc
+automatically
+handles many of the
 details in parallel PDE solvers. How can I understand what is really
-happening within my program?</font> </a></strong></p>
-      <p>You can use the option -info to get more details about
+happening within my program?</font> </a></strong></strong></p>
+      <strong> </strong>
+      <p><strong>You can use the option -info to get more details about
 the solution process. The option -log_summary provides details about
 the distribution of time spent in the various phases of the solution
 process. You can use ${PETSC_DIR}/bin/petscview, which is a Tk/Tcl
 utility that provides high-level visualization of the computations
 within a PETSc program. This tool illustrates the changing
 relationships among objects during program execution in the form of a
-dynamic icon tree.</p>
-      <p><strong><a name="efficient-assembly"><font color="#ff0000">Assembling
+dynamic icon tree.</strong></p>
+      <strong> </strong>
+      <p><strong><strong><a name="efficient-assembly"><font
+ color="#ff0000">Assembling
 large
 sparse
 matrices takes a
-long time. What can I do make this process faster?</font> </a></strong></p>
-      <p>See the Performance chapter of the users manual for many
-tips on this.</p>
-      <p>a) Preallocate enough space for the sparse matrix. For
+long time. What can I do make this process faster?</font> </a></strong></strong></p>
+      <strong> </strong>
+      <p><strong>See the Performance chapter of the users manual for
+many
+tips on this.</strong></p>
+      <strong> </strong>
+      <p><strong>a) Preallocate enough space for the sparse matrix. For
 example, rather than calling
 MatCreateSeqAIJ(comm,n,n,0,PETSC_NULL,&amp;mat); call
 MatCreateSeqAIJ(comm,n,n,rowmax,PETSC_NULL,&amp;mat); where rowmax
 is the maximum number of nonzeros expected per row. Or if you know the
 number of nonzeros per row, you can pass this information in instead of
 the PETSC_NULL argument. See the&nbsp; manual pages for each of the
-MatCreateXXX() routines.</p>
-      <p>b) Insert blocks of values into the matrix, rather than
-individual components.&nbsp;</p>
-      <p><strong><a name="log-summary"><font color="#ff0000">How can I
+MatCreateXXX() routines.</strong></p>
+      <strong> </strong>
+      <p><strong>b) Insert blocks of values into the matrix, rather
+than
+individual components.&nbsp;</strong></p>
+      <strong> </strong>
+      <p><strong><strong><a name="log-summary"><font color="#ff0000">How
+can I
 generate performance summaries
-with PETSc?</font> </a></strong></p>
-      <p>Use these options at runtime: -log_summary. See the
+with PETSc?</font> </a></strong></strong></p>
+      <strong> </strong>
+      <p><strong>Use these options at runtime: -log_summary. See the
 Performance chapter of the users manual for information on interpreting
 the summary data. If using the PETSc (non)linear solvers, one can also
 specify -snes_view or -ksp_view for a printout of solver info. Only the
-highest level PETSc object used needs to specify the view option. </p>
-      <p><strong><a name="parallel-roundoff"><font color="#ff0000">Why
+highest level PETSc object used needs to specify the view option. </strong></p>
+      <strong> </strong>
+      <p><strong><strong><a name="parallel-roundoff"><font
+ color="#ff0000">Why
 do I get different answers on a
-different numbers of processors?</font> </a></strong></p>
-      <p>Most commonly, you are using a preconditioner which
+different numbers of processors?</font> </a></strong></strong></p>
+      <strong> </strong>
+      <p><strong>Most commonly, you are using a preconditioner which
 behaves differently based upon the number of processors, such as
 Block-Jacobi which is the PETSc default. However, since computations
 are reordered in parallel, small roundoff errors will still be present
 with identical mathematical formulations. If you set a tighter linear
-solver tolerance (using -ksp_rtol), the differences will decrease.</p>
-      <p><strong><a name="mg-log"><font color="#ff0000">How do I know
+solver tolerance (using -ksp_rtol), the differences will decrease.</strong></p>
+      <strong> </strong>
+      <p><strong><strong><a name="mg-log"><font color="#ff0000">How do
+I know
 the amount of time spent on
-each level of the multigrid solver/preconditioner?</font></a></strong></p>
-      <p>Run with -log_summary and -pc_mg_log</p>
-      <p><strong></strong><font><strong><a name="datafiles"><font
+each level of the multigrid solver/preconditioner?</font></a></strong></strong></p>
+      <strong> </strong>
+      <p><strong>Run with -log_summary and -pc_mg_log</strong></p>
+      <strong> </strong>
+      <p><strong><strong></strong><font><strong><a name="datafiles"><font
  color="#ff0000">Where do I get the input matrices for the examples?<br>
-      </font></a></strong></font></p>
-      <p>Some makefiles use &nbsp;${DATAFILESPATH}/matrices/medium and
+      </font></a></strong></font></strong></p>
+      <strong> </strong>
+      <p><strong>Some makefiles use
+&nbsp;${DATAFILESPATH}/matrices/medium and
 other files. These test matrices in PETSc binary format can be found
 with anonymous ftp from <a href="http://ftp.mcs.anl.gov">ftp.mcs.anl.gov</a>
 in the directory pub/petsc/matrices. The are not included
 with the PETSc distribution in the interest of reducing the
-distribution size.</p>
-      <p><font><strong><a name="info"><font color="#ff0000">When I dump
+distribution size.</strong></p>
+      <strong> </strong>
+      <p><strong><font><strong><a name="info"><font color="#ff0000">When
+I dump
 some matrices and vectors to binary, I seem to be generating some empty
 files with .info extensions.&nbsp; What's the deal with these?<br>
-      </font></a></strong></font> </p>
-      <p>PETSc binary viewers put some additional information into
+      </font></a></strong></font> </strong></p>
+      <strong> </strong>
+      <p><strong>PETSc binary viewers put some additional information
+into
 .info files like matrix block size; it is harmless<br>
 but if you really don't like it you can use -viewer_binary_skip_info
 or&nbsp; PetscViewerBinarySkipInfo()<br>
 note you need to call PetscViewerBinarySkipInfo() before
 PetscViewerFileSetName(). In other words you<br>
 cannot use PetscViewerBinaryOpen() directly.<br>
-      </p>
-      <p><font><strong><a name="slow"><font color="#ff0000">MatSetValues()
+      </strong></p>
+      <strong> </strong>
+      <p><strong><font><strong><a name="slow"><font color="#ff0000">MatSetValues()
 is
 so
-slow, what can I do to speed it up?<br>
-      </font></a></strong></font> </p>
-Preallocation of matrix memory is crucial for good performance for
+slow,
+what can I do to speed it up?<br>
+      </font></a></strong></font> </strong></p>
+      <strong>Preallocation of matrix memory is crucial for good
+performance for
 large problems, see <br>
       <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manual.pdf#sec_matsparse">http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manual.pdf#sec_matsparse</a><br>
@@ -1074,27 +1154,39 @@ to (so they do not have to be stashed and then shipped to the owning
 process). Note: it is fine to have some entries generated on the
 "wrong" process, just not many.<br>
       <br>
-      <p><font><strong><a name="slowerparallel"><font color="#ff0000">Why
+      </strong>
+      <p><strong><font><strong><a name="slowerparallel"><font
+ color="#ff0000">Why
 is
 my
 parallel solver&nbsp;slower than my sequential solver?<br>
-      </font></a></strong></font> </p>
-This can happen for many reasons:<br>
+      </font></a></strong></font> </strong></p>
+      <strong>This can happen for many reasons:<br>
+      </strong>
       <ul>
-        <li>First make sure it is truely the time in KSPSolve() that is
+        <strong> </strong>
+        <li><strong>First make sure it is truely the time in KSPSolve()
+that is
 slower (by running the code with <a href="faq.html#log-summary">-log_summary</a>).
 Often
 the
-slower time is in <a href="faq.html#slow">generating the
-matrix</a> or some other operation.</li>
-        <li>There must be enough work for each process to overweigh the
+slower
+time is in <a href="faq.html#slow">generating the
+matrix</a> or some other operation.</strong></li>
+        <strong> </strong>
+        <li><strong>There must be enough work for each process to
+overweigh the
 communication time. We recommend an absolute minimum of about 10,000
-unknowns per process, better is 20,000 or more.</li>
-        <li>Make sure the&nbsp; <a href="faq.html#computers">communication
+unknowns per process, better is 20,000 or more.</strong></li>
+        <strong> </strong>
+        <li><strong>Make sure the&nbsp; <a href="faq.html#computers">communication
 speed
 of
-the parallel computer</a> is good enough for parallel solvers.</li>
-        <li>Check the number of solver iterates with the parallel
+the
+parallel computer</a> is good enough for parallel solvers.</strong></li>
+        <strong> </strong>
+        <li><strong>Check the number of solver iterates with the
+parallel
 solver against the sequential solver. Most preconditioners require more
 iterations when used on
 more processes, this is particularly true for block Jaccobi, the
@@ -1102,19 +1194,24 @@ default parallel preconditioner, you can try -pc_type asm (<a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCASM.html">PCASM</a>)
 its
 iterations
-scale a bit better for more processes. You may also
+scale
+a bit better for more processes. You may also
 consider multigrid preconditioners like <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCMG.html">PCMG</a>
 or BoomerAMG in <a
- href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCHYPRE.html">PCHYPRE</a>.</li>
+ href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCHYPRE.html">PCHYPRE</a>.</strong></li>
+        <strong> </strong>
       </ul>
-      <p><font><strong><a name="singleprecision"><font color="#ff0000">When
+      <strong> </strong>
+      <p><strong><font><strong><a name="singleprecision"><font
+ color="#ff0000">When
 using
 PETSc
 in single precision mode (--with-precision=single when
 running config/configure.py) are the operations done in single or
-double precision? </font></a></strong></font> </p>
-PETSc does NOT do any explicit conversion of single precision to double
+double precision? </font></a></strong></font> </strong></p>
+      <strong>PETSc does NOT do any explicit conversion of single
+precision to double
 before performing computations;
 this it depends on the hardware and compiler what happens. For example,
 the compiler could
@@ -1125,68 +1222,95 @@ instructions that work directly
 on the single precision numbers. It is a bit of a mystery what
 decisions get made sometimes.
 There may be compiler flags in some circumstances that can affect this.
+      </strong>
       <p></p>
-      <hr>
-      <h3><a name="Debugging">Debugging</a></h3>
-      <p><a name="debug-ibm"><font color="#ff0000"><strong>How
+      <strong> </strong>
+      <hr><strong> </strong>
+      <h3><strong><a name="Debugging">Debugging</a></strong></h3>
+      <strong> </strong>
+      <p><strong><a name="debug-ibm"><font color="#ff0000"><strong>How
 do I turn off PETSc signal handling so I can use the -C option on xlF?</strong>
-      </font></a></p>
-      <p>Immediately after calling PetscInitialize() call
-PetscPopSignalHandler()</p>
-      <p>Some Fortran compilers including the IBM xlf, xlF etc
+      </font></a></strong></p>
+      <strong> </strong>
+      <p><strong>Immediately after calling PetscInitialize() call
+PetscPopSignalHandler()</strong></p>
+      <strong> </strong>
+      <p><strong>Some Fortran compilers including the IBM xlf, xlF etc
 compilers have a compile option (-C for IBM's) that causes all array
 access in Fortran to be checked that they are in-bounds. This is a
 great feature but does require that the array dimensions be set
-explicitly, not with a *.</p>
-      <p><a name="debug-cray"><font color="#ff0000"><strong>How do I
+explicitly, not with a *.</strong></p>
+      <strong> </strong>
+      <p><strong><a name="debug-cray"><font color="#ff0000"><strong>How
+do I
 debug on the Cray
-T3D/T3E?</strong> </font></a></p>
-      <p>Use TotalView. First, link your program with the
+T3D/T3E?</strong> </font></a></strong></p>
+      <strong> </strong>
+      <p><strong>Use TotalView. First, link your program with the
 additional option -Xn where n is the number of processors to use when
 debugging. Then run totalview programname -a your arguments The -a is
-used to distinguish between totalview arguments and yours. </p>
-      <p><strong><a name="start_in_debugger-doesnotwork"><font
+used to distinguish between totalview arguments and yours. </strong></p>
+      <strong> </strong>
+      <p><strong><strong><a name="start_in_debugger-doesnotwork"><font
  color="#ff0000">How do I debug if -start_in_debugger does
-not work on my machine?</font> </a></strong></p>
-      <p>For a uniprocessor job, just try&nbsp;the debugger
-directly, for example: gdb ex1 </p>
-      <p><a name="debug-hang"><font color="#ff0000"><strong>How do I
+not work on my machine?</font> </a></strong></strong></p>
+      <strong> </strong>
+      <p><strong>For a uniprocessor job, just try&nbsp;the debugger
+directly, for example: gdb ex1 </strong></p>
+      <strong> </strong>
+      <p><strong><a name="debug-hang"><font color="#ff0000"><strong>How
+do I
 see where my code is
-hanging?</strong> </font></a></p>
-      <p>You can use the -start_in_debugger option to start all
+hanging?</strong> </font></a></strong></p>
+      <strong> </strong>
+      <p><strong>You can use the -start_in_debugger option to start all
 processes in the debugger (each will come up in its own xterm). Then
 use cont (for continue) in each xterm. Once you are sure that the
 program is hanging, hit control-c in each xterm and then use 'where' to
-print a stack trace for each process.</p>
-      <p><a name="debug-inspect"><font color="#ff0000"><strong>How can
+print a stack trace for each process.</strong></p>
+      <strong> </strong>
+      <p><strong><a name="debug-inspect"><font color="#ff0000"><strong>How
+can
 I inspect Vec and Mat
-values when in the debugger?</strong> </font></a></p>
-      <p>I will illustrate this with gdb, but it should be
+values when in the debugger?</strong> </font></a></strong></p>
+      <strong> </strong>
+      <p><strong>I will illustrate this with gdb, but it should be
 similar on other debuggers. You can look at local Vec values directly
-by obtaining the array. For a Vec v, we can print all local values using</p>
-      <p>(gdb) p ((Vec_Seq*)
-v-&gt;data)-&gt;array[0]@v-&gt;map.n</p>
-      <p>However, this becomes much more complicated for a
+by obtaining the array. For a Vec v, we can print all local values using</strong></p>
+      <strong> </strong>
+      <p><strong>(gdb) p ((Vec_Seq*)
+v-&gt;data)-&gt;array[0]@v-&gt;map.n</strong></p>
+      <strong> </strong>
+      <p><strong>However, this becomes much more complicated for a
 matrix. Therefore, it is advisable to use the default viewer to look at
-the object. For a Vec v and a Mat m, this would be</p>
-      <p>(gdb) call VecView(v, 0)</p>
-      <p>(gdb) call MatView(m, 0)</p>
-      <p>or with a communicator other than MPI_COMM_WORLD,</p>
-      <p>(gdb) call MatView(m,
-PETSC_VIEWER_STDOUT_(m-&gt;comm))</p>
-      <p>&nbsp;<span style="color: rgb(255, 0, 0);"><a name="libimf"></a>Error
+the object. For a Vec v and a Mat m, this would be</strong></p>
+      <strong> </strong>
+      <p><strong>(gdb) call VecView(v, 0)</strong></p>
+      <strong> </strong>
+      <p><strong>(gdb) call MatView(m, 0)</strong></p>
+      <strong> </strong>
+      <p><strong>or with a communicator other than MPI_COMM_WORLD,</strong></p>
+      <strong> </strong>
+      <p><strong>(gdb) call MatView(m,
+PETSC_VIEWER_STDOUT_(m-&gt;comm))</strong></p>
+      <strong> </strong>
+      <p><strong>&nbsp;<span style="color: rgb(255, 0, 0);"><a
+ name="libimf"></a>Error
 while
 loading
 shared libraries: libimf.so: cannot open shared object
-file: No such file or directory.</span></p>
-      <p>The Intel compilers use shared libraries (like libimf) that
+file: No such file or directory.</span></strong></p>
+      <strong> </strong>
+      <p><strong>The Intel compilers use shared libraries (like libimf)
+that
 cannot by default at run time. When using the Intel compilers (and
 running the resulting code) you must make sure that the proper Intel
 initialization scripts are run. This is usually done by putting some
 code into your .cshrc, .bashrc, .profile etc file. Sometimes on batch
 file systems that do now access your initialization files (like .cshrc)
-you must include the initialization calls in your batch file submission.</p>
-For example, on my Mac using csh I have the following in my .cshrc file<br>
+you must include the initialization calls in your batch file submission.</strong></p>
+      <strong>For example, on my Mac using csh I have the following in
+my .cshrc file<br>
       <br>
 source /opt/intel/cc/10.1.012/bin/iccvars.csh<br>
 source /opt/intel/fc/10.1.012/bin/ifortvars.csh<br>
@@ -1198,18 +1322,20 @@ source /opt/intel/cc/10.1.012/bin/iccvars.sh<br>
 source /opt/intel/fc/10.1.012/bin/ifortvars.sh<br>
 source /opt/intel/idb/10.1.012/bin/idbvars.sh<br>
       <br>
-      <p><span style="color: rgb(255, 0, 0);"><a name="objecttypenotset">What
+      </strong>
+      <p><span style="color: rgb(255, 0, 0);"><strong><a
+ name="objecttypenotset">What
 does
-Object Type not set: Argument # n mean?</a></span></p>
-Many
+Object Type not set: Argument # n mean?</a></strong></span></p>
+      <strong>Many
 operations on PETSc objects require that the specific type of the
 object be set before the operations is performed. You must call
 XXXSetType() or XXXSetFromOptions() before you make the offending call.
 For example, MatCreate(comm,&amp;A); MatSetValues(A,....); will not
 work. You must add MatSetType(A,...) or MatSetFromOptions(A,....);
-before the call to MatSetValues();
+before the call to MatSetValues(); </strong>
       <p></p>
-      <a name="split"></a><font style="color: rgb(255, 0, 0);"
+      <strong> <a name="split"></a><font style="color: rgb(255, 0, 0);"
  face="Terminal">What does </font><font style="color: rgb(255, 0, 0);"
  color="#ff0000"><strong> </strong></font><font
  style="color: rgb(255, 0, 0);" face="Terminal">Error detected&nbsp;in
@@ -1247,6 +1373,7 @@ problem.<br>
 &nbsp; <br>
 If -malloc_debug does not help: on GNU/Linux and Apple Mac OS X
 machines - you can try using&nbsp;<a href="http://valgrind.org/">http://valgrind.org
+
 
 
       </a>to look for memory corruption.</span></font>
@@ -1291,6 +1418,7 @@ that the matrix is singular. You can use -pc_factor_shift_nonzero or
  style="color: rgb(0, 0, 0);" color="#ff0000">-[level]_pc_factor_shift_postive_definite
 
 
+
       </font><font style="color: rgb(0, 0, 0);" color="#ff0000">to
 prevent the zero pivot. For lu, ilu,
 cholesky, or icc and [level] is sub is for a block in the bjacobi or
@@ -1298,14 +1426,16 @@ ASM preconditioner and -mg_levels and -mg_coarse are for inside
 multigrid
 smoothers or the coarse grid solver). See PCFactorSetShiftNonzero(),
 PCFactorSetShiftPd().</font> <font style="color: rgb(0, 0, 0);"
- color="#ff0000"> </font>
-      <p style="color: rgb(0, 0, 0);">This error can also
+ color="#ff0000"> </font> </strong>
+      <p style="color: rgb(0, 0, 0);"><strong>This error can also
 happen if your matrix
 is <strong>singular </strong>, see KSPSetNullSpace() for
 how to
-handle this.</p>
-      <font style="color: rgb(0, 0, 0);" color="#ff0000"> </font>
-      <p><font color="#ff0000"><span style="color: rgb(0, 0, 0);">If
+handle this.</strong></p>
+      <strong> <font style="color: rgb(0, 0, 0);" color="#ff0000"> </font>
+      </strong>
+      <p><strong><font color="#ff0000"><span
+ style="color: rgb(0, 0, 0);">If
 this
 error occurs in
 the </span><strong style="color: rgb(0, 0, 0);">zeroth
@@ -1314,24 +1444,28 @@ the matrix it is likely you have an error in
 the code
 that generates the matrix.</span></font><a><span
  style="font-family: Terminal;"><br>
-      </span></a></p>
-      <p><a><span style="font-family: Terminal;"></span><span
+      </span></a></strong></p>
+      <strong> </strong>
+      <p><strong><a><span style="font-family: Terminal;"></span><span
  style="color: rgb(255, 0, 0);"></span></a><a name="xwindows"></a><span
  style="color: rgb(255, 0, 0);">You
 create Draw windows or ViewerDraw windows or use options
 -ksp_monitor or_draw -snes_monitor_draw and the program seems to run OK
-but windows never open.</span></p>
-      <p>The
+but windows never open.</span></strong></p>
+      <strong> </strong>
+      <p><strong>The
 libraries were compiled without support for X windows.<font
  color="#ff0000"><strong> </strong></font>Make
 sure that ./configure was run with the option --with-x=1<br>
-      </p>
-      <p style="color: rgb(255, 0, 0);"><font face="Terminal"><a
+      </strong></p>
+      <strong> </strong>
+      <p style="color: rgb(255, 0, 0);"><strong><font face="Terminal"><a
  name="memory"></a><a>The
 program seems to use more and more memory as it runs, even
 though you don't think you are allocating more memory.<br>
-      </a></font></p>
-      <p style="color: rgb(255, 0, 0);"><a><font face="Terminal">
+      </a></font></strong></p>
+      <strong> </strong>
+      <p style="color: rgb(255, 0, 0);"><strong><a><font face="Terminal">
       <p style="color: rgb(0, 0, 0);"><strong>Problem:</strong>
 Possibly some of the following:</p>
       <ol style="color: rgb(0, 0, 0);">
@@ -1380,17 +1514,20 @@ libraries. <br>
  name="key"></a>When
 calling MatPartitioningApply() you get a message Error! Key 16615 not
 found<br>
-      </font></p>
-      <p>The
+      </font></strong></p>
+      <strong> </strong>
+      <p><strong>The
 graph of &nbsp;the matrix you are using is not symmetric. Yo<font
  color="#ff0000"><strong></strong></font>u must use symmetric matrices
 for partitioning.<br>
-      </p>
-      <p style="color: rgb(255, 0, 0);"><font face="Terminal"><a
+      </strong></p>
+      <strong> </strong>
+      <p style="color: rgb(255, 0, 0);"><strong><font face="Terminal"><a
  name="gmres"></a>With
 GMRES At restart the second residual norm printed does not
-match the first</font></p>
-      <p style="color: rgb(255, 0, 0);"><font face="Terminal"> <span
+match the first</font></strong></p>
+      <strong> </strong>
+      <p style="color: rgb(255, 0, 0);"><strong><font face="Terminal"> <span
  style="color: rgb(0, 0, 0);">26 KSP Residual norm 3.421544615851e-04 </span><br
  style="color: rgb(0, 0, 0);">
       <span style="color: rgb(0, 0, 0);">27 KSP Residual norm
@@ -1428,7 +1565,8 @@ matrix-free parameters.<br>
  face="Terminal"><span style="color: rgb(255, 0, 0);"><a name="2its"></a>Why
 do
 some
-Krylov methods seem to print two residual norms per iteration?<br>
+Krylov
+methods seem to print two residual norms per iteration?<br>
       </span></font></font></p>
       <p style="color: rgb(0, 0, 0);"><font face="Terminal"><font
  face="Terminal"><font face="Terminal">&gt; 1198 KSP Residual norm
@@ -1453,28 +1591,41 @@ as many iterations.<br>
 /home/balay/spetsc/lib/libg/linux/libpetsc <br>
       </span></font></p>
       </font></p>
-      </font></p>
-      <p>When
+      </font></strong></p>
+      <strong> </strong>
+      <p><strong>When
 using DYNAMIC libraries - the libraries cannot be moved after
 they are installed. This could also happen on clusters - where
 the paths are different on the (run) nodes - than on the
 (compile) front-end.<font color="#ff0000"><strong> </strong></font>Do
 not use dynamic libraries &amp; shared libraries. Run ./configure with
---with-shared=0 --with-dynamic=0</p>
-      <p style="color: rgb(255, 0, 0);"> </p>
-      <p style="color: rgb(255, 0, 0);"> </p>
+--with-shared=0 --with-dynamic=0</strong></p>
+      <strong> </strong>
+      <p style="color: rgb(255, 0, 0);"><strong> </strong></p>
+      <strong> </strong>
+      <p style="color: rgb(255, 0, 0);"><strong> </strong></p>
+      <strong> </strong>
       <p><span style="color: rgb(255, 0, 0);"></span></p>
+      <strong> </strong>
       <p><span style="color: rgb(255, 0, 0);"></span></p>
-      <hr>
-      <h3><a name="Shared Libraries">Shared Libraries</a></h3>
-      <p><font color="#ff0000"><strong><a name="install-shared">Can I
+      <strong> </strong>
+      <hr><strong> </strong>
+      <h3><strong><a name="Shared Libraries">Shared Libraries</a></strong></h3>
+      <strong> </strong>
+      <p><strong><font color="#ff0000"><strong><a name="install-shared">Can
+I
 install PETSc libraries as
-shared libraries</a>?</strong></font></p>
-      <p>Yes.&nbsp;Use the config/configure.py option
---with-shared</p>
-      <p><a name="why-use-shared"><strong><font color="#ff0000">Why
-should I use shared libraries?</font></strong></a></p>
-      <p>When you link to shared libraries, the function symbols
+shared libraries</a>?</strong></font></strong></p>
+      <strong> </strong>
+      <p><strong>Yes.&nbsp;Use the config/configure.py option
+--with-shared</strong></p>
+      <strong> </strong>
+      <p><strong><a name="why-use-shared"><strong><font color="#ff0000">Why
+should
+I use shared libraries?</font></strong></a></strong></p>
+      <strong> </strong>
+      <p><strong>When you link to shared libraries, the function
+symbols
 from the shared libraries are not copied in the executable. This way
 the size of the executable is considerably smaller than when using
 regular libraries. This helps in a couple of ways: <br>
@@ -1482,42 +1633,59 @@ regular libraries. This helps in a couple of ways: <br>
 executable is created, and &nbsp; <br>
 &nbsp;&nbsp;&nbsp; 2) improves the compile time immensly,
 because the compiler has to write a much smaller file (executable) to
-the disk.</p>
-      <p><font color="#ff0000"><strong><a name="link-shared">How do I
+the disk.</strong></p>
+      <strong> </strong>
+      <p><strong><font color="#ff0000"><strong><a name="link-shared">How
+do I
 link to the PETSc shared
-libraries</a>?</strong></font></p>
-      <p>By default, the compiler should pick up the shared
+libraries</a>?</strong></font></strong></p>
+      <strong> </strong>
+      <p><strong>By default, the compiler should pick up the shared
 libraries instead of the regular ones. Nothing special should be done
-for this.</p>
-      <p><font color="#ff0000"><strong><a name="link-regular-lib">What
+for this.</strong></p>
+      <strong> </strong>
+      <p><strong><font color="#ff0000"><strong><a
+ name="link-regular-lib">What
 If I want to link to the
-regular .a library files</a>?</strong></font></p>
-      <p>You must run config/configure.py without the option
+regular .a library files</a>?</strong></font></strong></p>
+      <strong> </strong>
+      <p><strong>You must run config/configure.py without the option
 --with-shared (you can use a different PETSC_ARCH for this build so you
-can easily switch between the two).</p>
-      <p><a name="move-shared-exec"><font color="#ff0000"><strong>What
-do I do if I want to move
-my executable to a different machine?</strong></font></a></p>
-      <p>You would also need to have access to the shared
+can easily switch between the two).</strong></p>
+      <strong> </strong>
+      <p><strong><a name="move-shared-exec"><font color="#ff0000"><strong>What
+do
+I do if I want to move
+my executable to a different machine?</strong></font></a></strong></p>
+      <strong> </strong>
+      <p><strong>You would also need to have access to the shared
 libraries on this new machine. The other alternative is to build the
 exeutable without shared libraries by first deleting the shared
-libraries, and then creating the executable.&nbsp;</p>
-      <p><a name="dynamic-shared"><font color="#ff0000"><strong>What is
+libraries, and then creating the executable.&nbsp;</strong></p>
+      <strong> </strong>
+      <p><strong><a name="dynamic-shared"><font color="#ff0000"><strong>What
+is
 the deal with dynamic
-libraries (and difference between shared libraries)</strong></font></a></p>
-      <p>PETSc libraries are installed as dynamic libraries when
+libraries (and difference between shared libraries)</strong></font></a></strong></p>
+      <strong> </strong>
+      <p><strong>PETSc libraries are installed as dynamic libraries
+when
 the
 config/configure.py flag --with-dynamic is used. The difference with
 this - from shared libraries - is the way the libraries are used. From
 the program the library is loaded using dlopen() - and the functions
 are searched using dlsymm(). This separates the resolution of function
 names from link-time to run-time - i.e when dlopen()/dlsymm() are
-called.</p>
-      <p>When using Dynamic libraries - PETSc libraries cannot be
-moved to a different location after they are built. </p>
-      <p>&nbsp; </p>
-      <p><!--##end--> </p>
-      </td>
+called.</strong></p>
+      <strong> </strong>
+      <p><strong>When using Dynamic libraries - PETSc libraries cannot
+be
+moved to a different location after they are built. </strong></p>
+      <strong> </strong>
+      <p><strong>&nbsp; </strong></p>
+      <strong> </strong>
+      <p><!--##end--><strong> </strong></p>
+      <strong> </strong></td>
     </tr>
     <tr>
       <td colspan="2" width="100%">

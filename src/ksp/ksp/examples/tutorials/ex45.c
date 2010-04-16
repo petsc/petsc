@@ -11,6 +11,7 @@ with boundary conditions
    This uses multigrid to solve the linear system
 
    The same as ex22.c except it does not use DMMG, it uses its replacement.
+   See src/snes/examples/tutorials/ex50.c
 
 */
 
@@ -20,8 +21,8 @@ static char help[] = "Solves 3D Laplacian using multigrid.\n\n";
 #include "petscdmmg.h"
 
 
-extern PetscErrorCode ComputeMatrix(DM,Mat,Mat,MatStructure*);
-extern PetscErrorCode ComputeRHS(DM,Vec);
+extern PetscErrorCode ComputeMatrix(DM,Vec,Mat,Mat,MatStructure*);
+extern PetscErrorCode ComputeRHS(DM,Vec,Vec);
 extern PetscErrorCode ComputeInitialGuess(DM,Vec);
 
 #undef __FUNCT__
@@ -39,9 +40,9 @@ int main(int argc,char **argv)
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,-7,-7,-7,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);  
-  ierr = DMKSPSetInitialGuess((DM)da,ComputeInitialGuess);CHKERRQ(ierr);
-  ierr = DMKSPSetRhs((DM)da,ComputeRHS);CHKERRQ(ierr);
-  ierr = DMKSPSetMat((DM)da,ComputeMatrix);CHKERRQ(ierr);
+  ierr = DMSetInitialGuess((DM)da,ComputeInitialGuess);CHKERRQ(ierr);
+  ierr = DMSetFunction((DM)da,ComputeRHS);CHKERRQ(ierr);
+  ierr = DMSetJacobian((DM)da,ComputeMatrix);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,(DM)da);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
 
@@ -68,7 +69,7 @@ int main(int argc,char **argv)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRHS"
-PetscErrorCode ComputeRHS(DM dm,Vec b)
+PetscErrorCode ComputeRHS(DM dm,Vec x,Vec b)
 {
   PetscErrorCode ierr;
   PetscInt       mx,my,mz;
@@ -94,7 +95,7 @@ PetscErrorCode ComputeInitialGuess(DM dm,Vec b)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeMatrix"
-PetscErrorCode ComputeMatrix(DM dm,Mat jac,Mat B,MatStructure *stflg)
+PetscErrorCode ComputeMatrix(DM dm,Vec x,Mat jac,Mat B,MatStructure *stflg)
 {
   DA             da = (DA)dm;
   PetscErrorCode ierr;

@@ -525,15 +525,15 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMRestoreElements(DM,PetscInt *,const P
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMSetContext(DM,void*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetContext(DM,void**);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPSetInitialGuess(DM,PetscErrorCode (*)(DM,Vec));
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPSetRhs(DM,PetscErrorCode (*)(DM,Vec));
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPSetMat(DM,PetscErrorCode (*)(DM,Mat,Mat,MatStructure *));
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPComputeInitialGuess(DM,Vec);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPHasInitialGuess(DM,PetscTruth*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPHasMat(DM,PetscTruth*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPHasRhs(DM,PetscTruth*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPComputeRhs(DM,Vec);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMKSPComputeMat(DM,Mat,Mat,MatStructure *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMSetInitialGuess(DM,PetscErrorCode (*)(DM,Vec));
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMSetFunction(DM,PetscErrorCode (*)(DM,Vec,Vec));
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMSetJacobian(DM,PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure *));
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMHasInitialGuess(DM,PetscTruth*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMHasFunction(DM,PetscTruth*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMHasJacobian(DM,PetscTruth*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMComputeInitialGuess(DM,Vec);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMComputeFunction(DM,Vec,Vec);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMComputeJacobian(DM,Vec,Mat,Mat,MatStructure *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMFinalizePackage(void);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetColoring(DA,ISColoringType,const MatType,ISColoring *);

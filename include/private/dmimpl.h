@@ -35,9 +35,9 @@
   PetscErrorCode (*getelements)(type,PetscInt*,const PetscInt*[]);   \
   PetscErrorCode (*restoreelements)(type,PetscInt*,const PetscInt*[]); \
 \
-  PetscErrorCode (*formkspinitialguess)(type,Vec); \
-  PetscErrorCode (*formksprhs)(type,Vec);\
-  PetscErrorCode (*formkspmat)(type,Mat,Mat,MatStructure*);	\
+  PetscErrorCode (*initialguess)(type,Vec); \
+  PetscErrorCode (*function)(type,Vec,Vec);			\
+  PetscErrorCode (*jacobian)(type,Vec,Mat,Mat,MatStructure*);	\
 \
   PetscErrorCode (*destroy)(type);
 
@@ -52,7 +52,8 @@ struct _DMOps {
 #define DMHEADER \
   Vec   localin[DM_MAX_WORK_VECTORS],localout[DM_MAX_WORK_VECTORS];   \
   Vec   globalin[DM_MAX_WORK_VECTORS],globalout[DM_MAX_WORK_VECTORS]; \
-  void  *ctx;
+  void  *ctx; \
+  Vec   x;
 
 
 struct _p_DM {

@@ -369,9 +369,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
 
   PetscFunctionBegin;
   ierr = (*dm->ops->coarsen)(dm, comm, dmc);CHKERRQ(ierr);
-  (*dmc)->ops->formkspinitialguess = dm->ops->formkspinitialguess;
-  (*dmc)->ops->formksprhs          = dm->ops->formksprhs;
-  (*dmc)->ops->formkspmat          = dm->ops->formkspmat;
+  (*dmc)->ops->initialguess = dm->ops->initialguess;
+  (*dmc)->ops->function     = dm->ops->function;
+  (*dmc)->ops->jacobian     = dm->ops->jacobian;
   PetscFunctionReturn(0);
 }
 
@@ -537,9 +537,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetContext(DM dm,void **ctx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMKSPSetInitialGuess"
+#define __FUNCT__ "DMSetInitialGuess"
 /*@
-    DMKSPSetInitialGuess - sets a function to compute an initial guess vector entries for the KSP solvers
+    DMSetInitialGuess - sets a function to compute an initial guess vector entries for the solvers
 
     Collective on DM
 
@@ -549,44 +549,44 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetContext(DM dm,void **ctx)
 
     Level: intermediate
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMKSPSetRhs(), DMKSPSetMat()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetFunction(), DMSetJacobian()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMKSPSetInitialGuess(DM dm,PetscErrorCode (*f)(DM,Vec))
+PetscErrorCode PETSCDM_DLLEXPORT DMSetInitialGuess(DM dm,PetscErrorCode (*f)(DM,Vec))
 {
   PetscFunctionBegin;
-  dm->ops->formkspinitialguess = f;
+  dm->ops->initialguess = f;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMKSPSetRhs"
+#define __FUNCT__ "DMSetFunction"
 /*@
-    DMKSPSetRhs - sets a function to compute the right hand side vector entries for the KSP solver
+    DMSetFunction - sets a function to compute the right hand side vector entries for the KSP solver or nonlinear function for SNES
 
     Collective on DM
 
     Input Parameter:
-+   dm - the DM object to destroy
--   f - the function to compute the right hand side
++   dm - the DM object 
+-   f - the function to compute 
 
     Level: intermediate
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMKSPSetInitialGuess(),
-         DMKSPSetMat()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetInitialGuess(),
+         DMSetJacobian()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMKSPSetRhs(DM dm,PetscErrorCode (*f)(DM,Vec))
+PetscErrorCode PETSCDM_DLLEXPORT DMSetFunction(DM dm,PetscErrorCode (*f)(DM,Vec,Vec))
 {
   PetscFunctionBegin;
-  dm->ops->formksprhs = f;
+  dm->ops->function = f;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMKSPSetMat"
+#define __FUNCT__ "DMSetJaocbian"
 /*@
-    DMKSPSetMat - sets a function to compute the matrix entries for the KSP solver
+    DMSetJacobian - sets a function to compute the matrix entries for the KSP solver or Jacobian for SNES
 
     Collective on DM
 
@@ -596,21 +596,21 @@ PetscErrorCode PETSCDM_DLLEXPORT DMKSPSetRhs(DM dm,PetscErrorCode (*f)(DM,Vec))
 
     Level: intermediate
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMKSPSetInitialGuess(), 
-         DMKSPSetRhs()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetInitialGuess(), 
+         DMSetFunction()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMKSPSetMat(DM dm,PetscErrorCode (*f)(DM,Mat,Mat,MatStructure*))
+PetscErrorCode PETSCDM_DLLEXPORT DMSetJacobian(DM dm,PetscErrorCode (*f)(DM,Vec,Mat,Mat,MatStructure*))
 {
   PetscFunctionBegin;
-  dm->ops->formkspmat = f;
+  dm->ops->jacobian = f;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMKSPComputeInitialGuess"
+#define __FUNCT__ "DMComputeInitialGuess"
 /*@
-    DMKSPComputeInitialGuess - computes an initial guess vector entries for the KSP solvers
+    DMComputeInitialGuess - computes an initial guess vector entries for the KSP solvers
 
     Collective on DM
 
@@ -620,22 +620,22 @@ PetscErrorCode PETSCDM_DLLEXPORT DMKSPSetMat(DM dm,PetscErrorCode (*f)(DM,Mat,Ma
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMKSPSetRhs(), DMKSPSetMat()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetRhs(), DMSetMat()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMKSPComputeInitialGuess(DM dm,Vec x)
+PetscErrorCode PETSCDM_DLLEXPORT DMComputeInitialGuess(DM dm,Vec x)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (!dm->ops->formkspinitialguess) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMKSPSetInitialGuess()");
-  ierr = (*dm->ops->formkspinitialguess)(dm,x);CHKERRQ(ierr);
+  if (!dm->ops->initialguess) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMSetInitialGuess()");
+  ierr = (*dm->ops->initialguess)(dm,x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMKSPHasInitialGuess"
+#define __FUNCT__ "DMHasInitialGuess"
 /*@
-    DMKSPHasInitialGuess - does the DM object have an initial guess function
+    DMHasInitialGuess - does the DM object have an initial guess function
 
     Collective on DM
 
@@ -647,20 +647,20 @@ PetscErrorCode PETSCDM_DLLEXPORT DMKSPComputeInitialGuess(DM dm,Vec x)
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMKSPSetRhs(), DMKSPSetMat()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetRhs(), DMSetMat()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMKSPHasInitialGuess(DM dm,PetscTruth *flg)
+PetscErrorCode PETSCDM_DLLEXPORT DMHasInitialGuess(DM dm,PetscTruth *flg)
 {
   PetscFunctionBegin;
-  *flg =  (dm->ops->formkspinitialguess) ? PETSC_TRUE : PETSC_FALSE;
+  *flg =  (dm->ops->initialguess) ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMKSPHasRhs"
+#define __FUNCT__ "DMHasFunction"
 /*@
-    DMKSPHasRhs - does the DM object have a right hand side function
+    DMHasFunction - does the DM object have a function
 
     Collective on DM
 
@@ -672,20 +672,20 @@ PetscErrorCode PETSCDM_DLLEXPORT DMKSPHasInitialGuess(DM dm,PetscTruth *flg)
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMKSPSetRhs(), DMKSPSetMat()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetFunction(), DMSetJacobian()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMKSPHasRhs(DM dm,PetscTruth *flg)
+PetscErrorCode PETSCDM_DLLEXPORT DMHasFunction(DM dm,PetscTruth *flg)
 {
   PetscFunctionBegin;
-  *flg =  (dm->ops->formksprhs) ? PETSC_TRUE : PETSC_FALSE;
+  *flg =  (dm->ops->function) ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMKSPHasMat"
+#define __FUNCT__ "DMHasJacobian"
 /*@
-    DMKSPHasMat - does the DM object have a matrix function
+    DMHasJacobian - does the DM object have a matrix function
 
     Collective on DM
 
@@ -697,65 +697,69 @@ PetscErrorCode PETSCDM_DLLEXPORT DMKSPHasRhs(DM dm,PetscTruth *flg)
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMKSPSetRhs(), DMKSPSetMat()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetFunction(), DMSetJacobian()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMKSPHasMat(DM dm,PetscTruth *flg)
+PetscErrorCode PETSCDM_DLLEXPORT DMHasJacobian(DM dm,PetscTruth *flg)
 {
   PetscFunctionBegin;
-  *flg =  (dm->ops->formkspmat) ? PETSC_TRUE : PETSC_FALSE;
+  *flg =  (dm->ops->jacobian) ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMKSPComputeRhs"
+#define __FUNCT__ "DMComputeFunction"
 /*@
-    DMKSPComputeRhs - computes the right hand side vector entries for the KSP solver
+    DMComputeRhs - computes the right hand side vector entries for the KSP solver or nonlinear function for SNES
 
     Collective on DM
 
     Input Parameter:
 +   dm - the DM object to destroy
+.   x - the location where the function is evaluationed, may be ignored for linear problems
 -   b - the vector to hold the right hand side entries
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMKSPSetInitialGuess(),
-         DMKSPSetMat()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetInitialGuess(),
+         DMSetJacobian()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMKSPComputeRhs(DM dm,Vec b)
+PetscErrorCode PETSCDM_DLLEXPORT DMComputeFunction(DM dm,Vec x,Vec b)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (!dm->ops->formksprhs) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMKSPSetRhs()");
-  ierr = (*dm->ops->formksprhs)(dm,b);CHKERRQ(ierr);
+  if (!dm->ops->function) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMSetRhs()");
+  if (!x) x = dm->x;
+  ierr = (*dm->ops->function)(dm,x,b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMKSPComputeMat"
+#define __FUNCT__ "DMComputeJacobian"
 /*@
-    DMKSPComputeMat - sets a function to compute the matrix entries for the KSP solver
+    DMComputeJacobian - sets a function to compute the matrix entries for the solver
 
     Collective on DM
 
     Input Parameter:
-+   dm - the DM object to destroy
++   dm - the DM object 
+.   x - location to compute Jacobian at; may be ignored for linear problems
 .   A - matrix that defines the operator for the linear solve
 -   B - the matrix used to construct the preconditioner
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMKSPSetInitialGuess(), 
-         DMKSPSetRhs()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetInitialGuess(), 
+         DMSetFunction()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMKSPComputeMat(DM dm,Mat A,Mat B,MatStructure *stflag)
+PetscErrorCode PETSCDM_DLLEXPORT DMComputeJacobian(DM dm,Vec x,Mat A,Mat B,MatStructure *stflag)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (!dm->ops->formkspmat) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMKSPSetMat()");
-  ierr = (*dm->ops->formkspmat)(dm,A,B,stflag);CHKERRQ(ierr);
+  if (!dm->ops->jacobian) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMSetMat()");
+  if (!x) x = dm->x;
+  ierr = (*dm->ops->jacobian)(dm,x,A,B,stflag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -201,18 +201,18 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
       if (!ksp->vec_rhs) {ierr = DMCreateGlobalVector(ksp->dm,&ksp->vec_rhs);CHKERRQ(ierr);}
       if (!ksp->vec_sol) {ierr = DMCreateGlobalVector(ksp->dm,&ksp->vec_sol);CHKERRQ(ierr);}
     }
-    ierr = DMKSPHasInitialGuess(ksp->dm,&ig);CHKERRQ(ierr);
+    ierr = DMHasInitialGuess(ksp->dm,&ig);CHKERRQ(ierr);
     if (ig) {
-      ierr = DMKSPComputeInitialGuess(ksp->dm,ksp->vec_sol);CHKERRQ(ierr);
+      ierr = DMComputeInitialGuess(ksp->dm,ksp->vec_sol);CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
     }
-    ierr = DMKSPHasRhs(ksp->dm,&ir);CHKERRQ(ierr);
+    ierr = DMHasFunction(ksp->dm,&ir);CHKERRQ(ierr);
     if (ir) {
-      ierr = DMKSPComputeRhs(ksp->dm,ksp->vec_rhs);CHKERRQ(ierr);
+      ierr = DMComputeFunction(ksp->dm,PETSC_NULL,ksp->vec_rhs);CHKERRQ(ierr);
     }
 
     /* how do we know when to compute new matrix? Now it always does */
-    ierr = DMKSPHasMat(ksp->dm,&im);CHKERRQ(ierr);
+    ierr = DMHasJacobian(ksp->dm,&im);CHKERRQ(ierr);
     if (im) {
       if (!ksp->setupcalled) {
         /* How to set the matrix type ? */
@@ -221,7 +221,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
       } else {
         ierr = KSPGetOperators(ksp,&A,&A,PETSC_NULL);CHKERRQ(ierr);
       }     
-      ierr = DMKSPComputeMat(ksp->dm,A,A,&stflg);CHKERRQ(ierr);
+      ierr = DMComputeJacobian(ksp->dm,PETSC_NULL,A,A,&stflg);CHKERRQ(ierr);
       ierr = KSPSetOperators(ksp,A,A,stflg);CHKERRQ(ierr);
     }
   }

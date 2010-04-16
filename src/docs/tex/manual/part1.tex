@@ -238,13 +238,13 @@ character string that will be printed if the program is run with the
 \begin{tabbing}
    call PetscInitialize(character(*) file,integer ierr)
 \end{tabbing} 
-\trl{PetscInitialize()} automatically calls \trl{MPI_Init()} if MPI
+PetscInitialize() automatically calls \trl{MPI_Init()} if MPI
 has not been not previously initialized. In certain \findex{MPI_Init()}
 circumstances in which MPI needs to be initialized directly (or is
 initialized by some other library), the user can first call 
 \trl{MPI_Init()} (or have the other library do it), and then call
-\trl{PetscInitialize()}.
-By default, \trl{PetscInitialize()} sets the PETSc ``world''
+PetscInitialize().
+By default, PetscInitialize() sets the PETSc ``world''
 communicator, given by \trl{PETSC_COMM_WORLD}, to \trl{MPI_COMM_WORLD}.
 \findex{PETSC_COMM_WORLD}
 
@@ -274,7 +274,7 @@ the Fortran version, each PETSc routine has as its final argument an
 integer error variable.  Error tracebacks are discussed in the following
 section.
 
-All PETSc programs should call \trl{PetscFinalize()} \findex{PetscFinalize()}
+All PETSc programs should call PetscFinalize() \findex{PetscFinalize()}
 as their final (or nearly final) statement, as given below in the C/C++
 and Fortran formats, respectively:
 \begin{tabbing}
@@ -283,7 +283,7 @@ and Fortran formats, respectively:
 \end{tabbing}
 This routine handles options to be called at the conclusion of
 the program, and calls \trl{MPI_Finalize()} \findex{MPI_Finalize()}
-if \trl{PetscInitialize()}
+if PetscInitialize()
 began MPI. If MPI was initiated externally from PETSc (by either
 the user or another software package), the user is
 responsible for calling \trl{MPI_Finalize()}. 
@@ -333,7 +333,7 @@ for a discussion of PETSc include files in Fortran programs.
 
 As shown in Figure~\ref{fig_example1}, the user can input control data
 at run time using the options database. In this example the command
-\trl{PetscOptionsGetInt(PETSC_NULL,"-n",&n,&flg);} checks whether the user has
+PetscOptionsGetInt\trl{(PETSC_NULL,"-n",&n,&flg);} checks whether the user has
 provided a command line option to set the value of \trl{n}, the
 problem dimension.  If so, the variable \trl{n} is set accordingly;
 otherwise, \trl{n} remains unchanged. A complete description of the
@@ -352,7 +352,7 @@ commands \findex{VecCreate()}  \findex{VecSetSizes()} \sindex{vectors}
 where \trl{comm} denotes the MPI communicator and \trl{m} is the optional local size
 which may be \trl{PETSC_DECIDE}. The type of storage
 for the vector may be set with either calls to 
-\trl{VecSetType()} or \trl{VecSetFromOptions()}. \findex{VecSetType()} \findex{VecSetFromOptions()}
+VecSetType() or VecSetFromOptions(). \findex{VecSetType()} \findex{VecSetFromOptions()}
 Additional vectors of the same type can be formed with
 \findex{VecDuplicate()}
 \begin{tabbing}
@@ -370,11 +370,11 @@ operations, scattering/gathering, index sets, and distributed arrays, is
 discussed in Chapter~\ref{chapter_vectors}.
 
 \findex{PetscScalar} \sindex{complex numbers}
-Note the use of the PETSc variable type \trl{PetscScalar} in this example.
-The \trl{PetscScalar} is simply defined to be \trl{double} in C/C++
+Note the use of the PETSc variable type PetscScalar in this example.
+The PetscScalar is simply defined to be \trl{double} in C/C++
 (or correspondingly \trl{double} \trl{precision} in Fortran) for versions of
 PETSc that have {\em not} been compiled for use with complex numbers.
-The \trl{PetscScalar} data type enables
+The PetscScalar data type enables
 identical code to be used when the PETSc libraries have been compiled
 for use with complex numbers.  Section~\ref{sec_complex} discusses the
 use of complex numbers in PETSc programs.
@@ -431,7 +431,7 @@ The user first creates the KSP context and sets the operators
 associated with the system (linear system matrix and optionally different
 preconditioning matrix).  The user then sets various options for
 customized solution, solves the linear system, and finally destroys
-the KSP context.  We emphasize the command \trl{KSPSetFromOptions()}, 
+the KSP context.  We emphasize the command KSPSetFromOptions(), 
 which enables the user to customize the linear solution
 method at runtime by using the options database, which is discussed in
 Section~\ref{sec_options}. Through this database, the user not only
