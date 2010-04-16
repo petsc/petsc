@@ -688,7 +688,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPythonGetContext(TS ts,void **ctx)
   PetscTruth     ispython;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(ctx,2);
   *ctx = NULL;
   ierr = PetscTypeCompare((PetscObject)ts,TSPYTHON,&ispython);CHKERRQ(ierr);
@@ -722,7 +722,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetContext(TS ts,void *ctx)
   PetscTruth     ispython;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ctx) PetscValidPointer(ctx,2);
   ierr = PetscTypeCompare((PetscObject)ts,TSPYTHON,&ispython);CHKERRQ(ierr);
   if (!ispython) PetscFunctionReturn(0);
@@ -775,7 +775,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetType(TS ts,const char pyname[])
   PetscErrorCode (*f)(TS, const char[]) = 0;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidCharPointer(pyname,2);
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPythonSetType_C",
                                   (PetscVoidFunction*)&f);CHKERRQ(ierr);

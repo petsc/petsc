@@ -119,7 +119,7 @@ cdef extern from "petscvec.h" nogil:
     int VecPermute(PetscVec,PetscIS,PetscTruth)
     int VecExp(PetscVec)
     int VecLog(PetscVec)
-    int VecSqrt(PetscVec)
+    int VecSqrtAbs(PetscVec)
     int VecAbs(PetscVec)
 
     int VecStrideMin(PetscVec,PetscInt,PetscInt*,PetscReal*)

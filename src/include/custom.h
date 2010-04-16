@@ -10,6 +10,17 @@
 
 /* ---------------------------------------------------------------- */
 
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0) || \
+     PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2))
+#define PetscCLASSID(stageLog,index) \
+        ((stageLog)->classLog->classInfo[(index)].cookie)
+#else
+#define PetscCLASSID(stageLog,index) \
+        ((stageLog)->classLog->classInfo[(index)].classid)
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscLogStageFindId"
 PETSC_STATIC_INLINE PetscErrorCode
@@ -23,8 +34,7 @@ PetscLogStageFindId(const char name[], PetscLogStage *stageid)
   PetscValidCharPointer(name,1);
   PetscValidIntPointer(stageid,2);
   *stageid = -1;
-  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
-  if (!stageLog) PetscFunctionReturn(0); /* logging is turned off ? */
+  if (!(stageLog=_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
   for(s = 0; s < stageLog->numStages; s++) {
     const char *sname = stageLog->stageInfo[s].name;
     ierr = PetscStrcasecmp(sname, name, &match);CHKERRQ(ierr);
@@ -36,7 +46,7 @@ PetscLogStageFindId(const char name[], PetscLogStage *stageid)
 #undef __FUNCT__
 #define __FUNCT__ "PetscLogClassFindId"
 PETSC_STATIC_INLINE PetscErrorCode
-PetscLogClassFindId(const char name[], PetscCookie *classid)
+PetscLogClassFindId(const char name[], PetscClassId *classid)
 {
   int            c;
   StageLog       stageLog = 0;
@@ -46,13 +56,12 @@ PetscLogClassFindId(const char name[], PetscCookie *classid)
   PetscValidCharPointer(name,1);
   PetscValidIntPointer(classid,2);
   *classid = -1;
-  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
-  if (!stageLog) PetscFunctionReturn(0); /* logging is turned off ? */
+  if (!(stageLog=_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
   for(c = 0; c < stageLog->classLog->numClasses; c++) {
     const char *cname = stageLog->classLog->classInfo[c].name;
-    PetscCookie cookie = stageLog->classLog->classInfo[c].cookie;
+    PetscClassId id = PetscCLASSID(stageLog,c);
     ierr = PetscStrcasecmp(cname, name, &match);CHKERRQ(ierr);
-    if (match) { *classid = cookie; break; }
+    if (match) { *classid = id; break; }
   }
   PetscFunctionReturn(0);
 }
@@ -70,8 +79,7 @@ PetscLogEventFindId(const char name[], PetscLogEvent *eventid)
   PetscValidCharPointer(name,1);
   PetscValidIntPointer(eventid,2);
   *eventid = -1;
-  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
-  if (!stageLog) PetscFunctionReturn(0); /* logging is turned off ? */
+  if (!(stageLog=_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
   for(e = 0; e < stageLog->eventLog->numEvents; e++) {
     const char *ename = stageLog->eventLog->eventInfo[e].name;
     ierr = PetscStrcasecmp(ename, name, &match);CHKERRQ(ierr);
@@ -86,13 +94,11 @@ PETSC_STATIC_INLINE PetscErrorCode
 PetscLogStageFindName(PetscLogStage stageid,
                       const char *name[])
 {
-  StageLog       stageLog = 0;
-  PetscErrorCode ierr;
+  StageLog stageLog = 0;
   PetscFunctionBegin;
   PetscValidPointer(name,3);
   *name = 0;
-  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
-  if (!stageLog) PetscFunctionReturn(0); /* logging is turned off ? */
+  if (!(stageLog=_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
   if (stageid >=0 && stageid < stageLog->numStages) {
     *name  = stageLog->stageInfo[stageid].name;
   }
@@ -102,19 +108,17 @@ PetscLogStageFindName(PetscLogStage stageid,
 #undef __FUNCT__
 #define __FUNCT__ "PetscLogClassFindName"
 PETSC_STATIC_INLINE PetscErrorCode
-PetscLogClassFindName(PetscCookie classid,
+PetscLogClassFindName(PetscClassId classid,
                       const char *name[])
 {
-  int            c;
-  StageLog       stageLog = 0;
-  PetscErrorCode ierr;
+  int      c;
+  StageLog stageLog = 0;
   PetscFunctionBegin;
   PetscValidPointer(name,3);
   *name = 0;
-  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
-  if (!stageLog) PetscFunctionReturn(0); /* logging is turned off ? */
+  if (!(stageLog=_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
   for(c = 0; c < stageLog->classLog->numClasses; c++) {
-    if (classid == stageLog->classLog->classInfo[c].cookie) {
+    if (classid == PetscCLASSID(stageLog,c)) {
       *name  = stageLog->classLog->classInfo[c].name;
       break;
     }
@@ -128,13 +132,11 @@ PETSC_STATIC_INLINE PetscErrorCode
 PetscLogEventFindName(PetscLogEvent eventid,
                       const char *name[])
 {
-  StageLog       stageLog = 0;
-  PetscErrorCode ierr;
+  StageLog stageLog = 0;
   PetscFunctionBegin;
   PetscValidPointer(name,3);
   *name = 0;
-  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
-  if (!stageLog) PetscFunctionReturn(0); /* logging is turned off ? */
+  if (!(stageLog=_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
   if (eventid >=0 && eventid < stageLog->eventLog->numEvents) {
     *name  = stageLog->eventLog->eventInfo[eventid].name;
   }
@@ -158,25 +160,12 @@ PetscObjectGetClassName(PetscObject obj, const char *class_name[])
 /* ---------------------------------------------------------------- */
 
 #undef __FUNCT__
-#define __FUNCT__ "ISValid"
-PETSC_STATIC_INLINE PetscErrorCode
-ISValid(IS is, PetscTruth *flg)
-{
-  PetscFunctionBegin;
-  PetscValidIntPointer(flg,2);
-  if (!is)                                         *flg = PETSC_FALSE;
-  else if (((PetscObject)is)->cookie != IS_COOKIE) *flg = PETSC_FALSE;
-  else                                             *flg = PETSC_TRUE;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "ISGetType"
 PETSC_STATIC_INLINE PetscErrorCode
 ISGetType(IS is, ISType *istype)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(istype,3);
   *istype = (ISType) ((PetscObject)is)->type;
   PetscFunctionReturn(0);
@@ -189,7 +178,7 @@ VecGetArrayC(Vec v, PetscScalar *a[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidType(v,1);
   PetscValidPointer(a,2);
   ierr = VecGetArray(v,a);CHKERRQ(ierr);
@@ -203,7 +192,7 @@ VecRestoreArrayC(Vec v, PetscScalar *a[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidType(v,1);
   PetscValidPointer(a,2);
   ierr = VecRestoreArray(v,a);CHKERRQ(ierr);
@@ -237,7 +226,7 @@ MatBlockSize_Check(Mat mat,PetscInt bs)
   PetscLayout rmap = 0;
   PetscLayout cmap = 0;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   rmap = PetscGetLayout(mat,rmap);
   cmap = PetscGetLayout(mat,cmap);
   if (bs < 1)
@@ -260,7 +249,7 @@ MatBlockSize_SetUp(Mat mat,PetscInt bs)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscGetLayout(mat,rmap)->bs = bs;
   PetscGetLayout(mat,cmap)->bs = bs;
   ierr = PetscSetUpLayout(mat,rmap);CHKERRQ(ierr);
@@ -278,7 +267,7 @@ MatSetBlockSize_Patch(Mat mat,PetscInt bs)
   PetscLayout cmap = mat ? PetscGetLayout(mat,cmap): 0;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
   if (bs < 1)
     SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,
@@ -306,7 +295,7 @@ PETSC_STATIC_INLINE PetscErrorCode
 MatIsPreallocated(Mat A,PetscTruth *flag)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidPointer(flag,2);
   *flag = A->preallocated;
   PetscFunctionReturn(0);
@@ -385,7 +374,7 @@ MatAnyAIJSetPreallocation(Mat A,PetscInt bs,
   PetscTruth     flag = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   if (d_nnz) PetscValidIntPointer(d_nnz,3);
   if (o_nnz) PetscValidIntPointer(o_nnz,5);
@@ -412,7 +401,7 @@ MatAnyAIJSetPreallocationCSR(Mat A,PetscInt bs, const PetscInt Ii[],
   PetscTruth     flag = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   PetscValidIntPointer(Ii,3);
   PetscValidIntPointer(Jj,4);
@@ -469,7 +458,7 @@ MatAnyDenseSetPreallocation(Mat mat, PetscInt bs, PetscScalar *data)
   PetscTruth     flag = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
   if (data) PetscValidScalarPointer(data,3);
   ierr = MatIsPreallocated(mat, &flag);CHKERRQ(ierr);
@@ -536,7 +525,7 @@ PETSC_STATIC_INLINE PetscErrorCode
 KSPSetIterationNumber(KSP ksp, PetscInt its)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (its < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
   ksp->its = its;
   PetscFunctionReturn(0);
@@ -548,7 +537,7 @@ PETSC_STATIC_INLINE PetscErrorCode
 KSPSetResidualNorm(KSP ksp, PetscReal rnorm)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (rnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"residual norm must be nonnegative");
   ksp->rnorm = rnorm;
   PetscFunctionReturn(0);
@@ -560,7 +549,7 @@ PETSC_STATIC_INLINE PetscErrorCode
 KSPLogConvergenceHistory(KSP ksp, PetscInt its, PetscReal rnorm)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (its   < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
   if (rnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"residual norm must be nonnegative");
   KSPLogResidualHistory(ksp,rnorm);
@@ -573,7 +562,7 @@ PETSC_STATIC_INLINE PetscErrorCode
 KSPMonitorCall(KSP ksp, PetscInt its, PetscReal rnorm)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (its   < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
   if (rnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"residual norm must be nonnegative");
   KSPMonitor(ksp,its,rnorm);
@@ -587,7 +576,7 @@ KSPConvergenceTestCall(KSP ksp, PetscInt its, PetscReal rnorm, KSPConvergedReaso
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(reason,4);
   if (its   < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
   if (rnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"residual norm must be nonnegative");
@@ -601,7 +590,7 @@ PETSC_STATIC_INLINE PetscErrorCode
 KSPSetConvergedReason(KSP ksp, KSPConvergedReason reason)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   ksp->reason = reason;
   PetscFunctionReturn(0);
 }
@@ -614,7 +603,7 @@ PETSC_STATIC_INLINE PetscErrorCode
 SNESSetIterationNumber(SNES snes, PetscInt its)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   if (its < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
   snes->iter = its;
   PetscFunctionReturn(0);
@@ -626,7 +615,7 @@ PETSC_STATIC_INLINE PetscErrorCode
 SNESSetFunctionNorm(SNES snes, PetscReal fnorm)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   if (fnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"function norm must be nonnegative");
   snes->norm = fnorm;
   PetscFunctionReturn(0);
@@ -638,7 +627,7 @@ PETSC_STATIC_INLINE PetscErrorCode
 SNESLogConvergenceHistory(SNES snes, PetscInt its, PetscReal fnorm, PetscInt lits)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   if (its   < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
   if (fnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"function norm must be nonnegative");
   SNESLogConvHistory(snes,fnorm,its);
@@ -651,7 +640,7 @@ PETSC_STATIC_INLINE PetscErrorCode
 SNESMonitorCall(SNES snes, PetscInt its, PetscReal rnorm)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   if (its   < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
   if (rnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"residual norm must be nonnegative");
   SNESMonitor(snes,its,rnorm);
@@ -667,7 +656,7 @@ SNESConvergenceTestCall(SNES snes, PetscInt its,
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidPointer(reason,4);
   if (its   < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
   if (xnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"solution norm must be nonnegative");
@@ -683,7 +672,7 @@ PETSC_STATIC_INLINE PetscErrorCode
 SNESSetConvergedReason(SNES snes, SNESConvergedReason reason)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   snes->reason = reason;
   PetscFunctionReturn(0);
 }
@@ -694,7 +683,7 @@ PETSC_STATIC_INLINE PetscErrorCode
 MatFDColoringSetOptionsPrefix(MatFDColoring fdc, const char prefix[]) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(fdc,MAT_FDCOLORING_COOKIE,1);
+  PetscValidHeaderSpecific(fdc,MAT_FDCOLORING_CLASSID,1);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)fdc,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -707,7 +696,7 @@ SNESGetUseMFFD(SNES snes,PetscTruth *flag)
   Mat            J = PETSC_NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidPointer(flag,2);
   *flag = PETSC_FALSE;
   ierr = SNESGetJacobian(snes,&J,0,0,0);CHKERRQ(ierr);
@@ -731,7 +720,7 @@ SNESSetUseMFFD(SNES snes,PetscTruth flag)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
 
   ierr = SNESGetUseMFFD(snes,&flg);CHKERRQ(ierr);
   if ( flg &&  flag) PetscFunctionReturn(0);
@@ -776,7 +765,7 @@ SNESGetUseFDColoring(SNES snes,PetscTruth *flag)
   MatFDColoring  fdcoloring = PETSC_NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidPointer(flag,2);
   *flag = PETSC_FALSE;
   ierr = SNESGetJacobian(snes,0,0,&jac,(void**)&fdcoloring);CHKERRQ(ierr);
@@ -801,7 +790,7 @@ SNESSetUseFDColoring(SNES snes,PetscTruth flag)
   MatFDColoring  fdcoloring = PETSC_NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
 
   ierr = SNESGetUseFDColoring(snes,&flg);CHKERRQ(ierr);
   if ( flg &&  flag) PetscFunctionReturn(0);
@@ -862,7 +851,7 @@ TSGetRHSFunction_Ex(TS ts,Vec *f,PetscErrorCode (**fun)(TS,PetscReal,Vec,Vec,voi
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (f) {ierr = PetscObjectQuery((PetscObject)ts, "__rhs_funcvec__", (PetscObject*)f);CHKERRQ(ierr); }
   if (fun) *fun = ts->ops->rhsfunction;
   if (ctx) *ctx = ts->funP;
@@ -877,7 +866,7 @@ TSGetRHSJacobian_Ex(TS ts,Mat *A,Mat *B,PetscErrorCode (**jac)(TS,PetscReal,Vec,
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ierr = TSGetRHSJacobian(ts,A,B,ctx);CHKERRQ(ierr);
   if (jac) *jac = ts->ops->rhsjacobian;
   PetscFunctionReturn(0);
@@ -894,7 +883,7 @@ TSGetUseFDColoring(TS ts,PetscTruth *flag)
   MatFDColoring  fdcoloring = PETSC_NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(flag,2);
   *flag = PETSC_FALSE;
   ierr = TSGetRHSJacobian(ts,0,0,&jac,(void**)&fdcoloring);CHKERRQ(ierr);
@@ -919,7 +908,7 @@ TSSetUseFDColoring(TS ts,PetscTruth flag)
   MatFDColoring  matfdcoloring = PETSC_NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
 
   ierr = TSGetUseFDColoring(ts,&flg);CHKERRQ(ierr);
   if ( flg &&  flag) PetscFunctionReturn(0);
@@ -965,8 +954,8 @@ TSSetSolution_Patch(TS ts, Vec u)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
-  PetscValidHeaderSpecific(u,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(u,VEC_CLASSID,2);
   ierr = PetscObjectCompose((PetscObject)ts,"__solnvec__",(PetscObject)u);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -981,7 +970,7 @@ TSSolve_Patch(TS ts, Vec x)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (x) { ierr = TSSetSolution(ts, x); CHKERRQ(ierr); }
   ierr = TSSolve(ts,x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -995,7 +984,7 @@ PETSC_STATIC_INLINE PetscErrorCode
 TSSetTimeStepNumber(TS ts, PetscInt step)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ts->steps = step;
   PetscFunctionReturn(0);
 }
@@ -1007,7 +996,7 @@ TSMonitorCall(TS ts,PetscInt step,PetscReal ptime,Vec x)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ierr = TSMonitor(ts,step,ptime,x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1020,7 +1009,7 @@ PETSC_STATIC_INLINE PetscErrorCode
 AOGetType(AO ao, AOType *aotype)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao,AO_COOKIE,1);
+  PetscValidHeaderSpecific(ao,AO_CLASSID,1);
   PetscValidPointer(aotype,3);
   *aotype = (AOType) ((PetscObject)ao)->type;
   PetscFunctionReturn(0);

@@ -1,6 +1,35 @@
 #ifndef _COMPAT_PETSC_H
 #define _COMPAT_PETSC_H
 
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0) || \
+     PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2))
+
+typedef PetscCookie PetscClassId;
+
+#define PETSC_OBJECT_CLASSID    PETSC_OBJECT_COOKIE
+#define PETSC_VIEWER_CLASSID    PETSC_VIEWER_COOKIE
+#define PETSC_RANDOM_CLASSID    PETSC_RANDOM_COOKIE
+#define PETSC_IS_CLASSID        IS_COOKIE
+#define PETSC_LGMAP_CLASSID     IS_LTOGM_COOKIE
+#define PETSC_VEC_CLASSID       VEC_COOKIE
+#define PETSC_SCATTER_CLASSID   VEC_SCATTER_COOKIE
+#define PETSC_MAT_CLASSID       MAT_COOKIE
+#define PETSC_NULLSPACE_CLASSID MAT_NULLSPACE_COOKIE
+#define PETSC_PC_CLASSID        PC_COOKIE
+#define PETSC_KSP_CLASSID       KSP_COOKIE
+#define PETSC_SNES_CLASSID      SNES_COOKIE
+#define PETSC_TS_CLASSID        TS_COOKIE
+#define PETSC_AO_CLASSID        AO_COOKIE
+#define PETSC_DA_CLASSID        DM_COOKIE
+
+static StageLog _v_stageLog = 0;
+#define _stageLog ((PetscLogGetStageLog(&_v_stageLog)?	\
+		  ((_v_stageLog=0),0):0),_v_stageLog)
+
+#endif
+
 #if (PETSC_VERSION_(2,3,3) || \
      PETSC_VERSION_(2,3,2))
 typedef struct _p_PetscObject _p_PetscObject;

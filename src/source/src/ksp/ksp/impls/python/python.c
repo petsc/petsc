@@ -305,7 +305,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonGetContext(KSP ksp,void **ctx)
   PetscTruth     ispython;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(ctx,2);
   *ctx = NULL;
   ierr = PetscTypeCompare((PetscObject)ksp,KSPPYTHON,&ispython);CHKERRQ(ierr);
@@ -339,7 +339,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetContext(KSP ksp,void *ctx)
   PetscTruth     ispython;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (ctx) PetscValidPointer(ctx,2);
   ierr = PetscTypeCompare((PetscObject)ksp,KSPPYTHON,&ispython);CHKERRQ(ierr);
   if (!ispython) PetscFunctionReturn(0);
@@ -393,7 +393,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetType(KSP ksp,const char pyname[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidCharPointer(pyname,2);
   ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPPythonSetType_C",(PetscVoidFunction*)&f);CHKERRQ(ierr);
   if (f) {ierr = (*f)(ksp,pyname);CHKERRQ(ierr);}

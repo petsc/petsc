@@ -68,59 +68,65 @@ static PyObject* Petsc_array_struct_new(PyObject* self,
 static PyObject* PetscIS_array_struct(PyObject* self, IS is)
 {
   PetscErrorCode ierr;
-  PetscTruth     valid  = PETSC_FALSE;
   PetscTruth     stride = PETSC_FALSE;
   PetscTruth     block  = PETSC_FALSE;
   PetscInt       size   = 0;
   const PetscInt *array = PETSC_NULL;
-  PyObject   *iface = NULL;
-  /* check index set handle */
-  ierr = ISValid(is,&valid);
-  if (!valid) {
-    PyErr_SetString(PyExc_ValueError, "index set is not valid");
-    return NULL;
-  }
+  PyObject       *iface = NULL;
+  /* get index set size */
+  ierr = ISGetLocalSize(is, &size); if (ierr) {goto fail;}
   /* check index set type */
-  ierr = ISStride(is, &stride);
-  ierr = ISBlock(is, &block);
+  ierr = ISStride(is,&stride); if (ierr) {goto fail;}
+  ierr = ISBlock(is,&block); if (ierr) {goto fail;}
   if (stride || block) {
     PyErr_SetString(PyExc_ValueError, "index set is not general");
     return NULL;
   }
-  /* get index set size and array */
-  ierr = ISGetLocalSize(is, &size);    /* XXX */
-  ierr = ISGetIndices(is, &array);     /* XXX */
-  iface = Petsc_array_struct_new(self, (void *)array, size,
-                                 NPY_PETSC_INT, 0);
-  ierr = ISRestoreIndices(is, &array); /* XXX */
+  ierr = ISGetIndices(is, &array); if (ierr) {goto fail;}
+  iface = Petsc_array_struct_new(self,(void *)array,size,
+				 NPY_PETSC_INT,/*READONLY*/0);
+  ierr = ISRestoreIndices(is, &array); if (ierr) {goto fail;}
   return iface;
+ fail:
+  Py_XDECREF(iface);
+  {
+    const char *text=0; char *specific=0;
+    PetscErrorMessage(ierr,&text,&specific);
+    PyErr_Format(PyExc_RuntimeError,
+		 "PETSc error [code %d]:\n%s\n%s\n",
+		 (int)ierr,text?text:"",specific?specific:"");
+  }
+  return NULL;
 }
 
 static PyObject* PetscVec_array_struct(PyObject* self, Vec vec)
 {
   PetscErrorCode ierr;
-  PetscTruth  valid  = PETSC_FALSE;
-  PetscInt    size   = 0;
-  PetscScalar *array = PETSC_NULL;
-  PyObject    *iface = NULL;
-  /* check vector handle */
-  ierr = VecValid(vec, &valid);
-  if (!valid) {
-    PyErr_SetString(PyExc_ValueError, "vector is not valid");
-    return NULL;
-  }
+  PetscInt    	 size   = 0;
+  PetscScalar 	 *array = PETSC_NULL;
+  PyObject    	 *iface = NULL;
+  /* get vector size */
+  ierr = VecGetLocalSize(vec, &size); if (ierr) goto fail;
   /* check vector is native */
   if (!vec->petscnative) {
     PyErr_SetString(PyExc_ValueError, "vector is not native");
     return NULL;
   }
-  /* get vector size and array */
-  ierr = VecGetLocalSize(vec, &size);  /* XXX */
-  ierr = VecGetArray(vec, &array);     /* XXX */
-  iface = Petsc_array_struct_new(self, (void *)array, size,
+  ierr = VecGetArray(vec, &array); if (ierr) goto fail;
+  iface = Petsc_array_struct_new(self,(void *)array,size,
                                  NPY_PETSC_SCALAR, NPY_WRITEABLE);
-  ierr = VecRestoreArray(vec, &array); /* XXX */
+  ierr = VecRestoreArray(vec, &array); if (ierr) goto fail;
   return iface;
+ fail:
+  Py_XDECREF(iface);
+  {
+    const char *text=0; char *specific=0;
+    PetscErrorMessage(ierr,&text,&specific);
+    PyErr_Format(PyExc_RuntimeError,
+		 "PETSc error [code %d]:\n%s\n%s\n",
+		 (int)ierr,text?text:"",specific?specific:"");
+  }
+  return NULL;
 }
 
 /* ---------------------------------------------------------------- */

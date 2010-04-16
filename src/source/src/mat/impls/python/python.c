@@ -729,7 +729,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Python(Mat mat)
   mat->ops->imaginarypart        = MatImaginaryPart_Python;
   mat->ops->conjugate            = MatConjugate_Python;
 
-  mat->factor       = MAT_FACTOR_NONE;
   mat->assembled    = PETSC_TRUE;
   mat->preallocated = PETSC_FALSE;
 
@@ -770,7 +769,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPythonGetContext(Mat mat,void **ctx)
   PetscTruth     ispython;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(ctx,2);
   *ctx = NULL;
   ierr = PetscTypeCompare((PetscObject)mat,MATPYTHON,&ispython);CHKERRQ(ierr);
@@ -804,7 +803,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetContext(Mat mat,void *ctx)
   PetscTruth     ispython;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   if (ctx) PetscValidPointer(ctx,2);
   ierr = PetscTypeCompare((PetscObject)mat,MATPYTHON,&ispython);CHKERRQ(ierr);
   if (!ispython) PetscFunctionReturn(0);
@@ -856,7 +855,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetType(Mat mat,const char pyname[])
   PetscErrorCode (*f)(Mat, const char[]) = 0;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidCharPointer(pyname,2);
   ierr = PetscObjectQueryFunction((PetscObject)mat,"MatPythonSetType_C",
                                   (PetscVoidFunction*)&f);CHKERRQ(ierr);

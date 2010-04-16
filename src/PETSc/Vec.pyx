@@ -428,8 +428,8 @@ cdef class Vec(Object):
     def log(self):
         CHKERR( VecLog(self.vec) )
 
-    def sqrt(self):
-        CHKERR( VecSqrt(self.vec) )
+    def sqrtabs(self):
+        CHKERR( VecSqrtAbs(self.vec) )
 
     def abs(self):
         CHKERR( VecAbs(self.vec) )

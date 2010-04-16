@@ -31,7 +31,7 @@ cdef class Log:
     @classmethod
     def Event(cls, name, klass=None):
         cdef char *cname = str2cp(name)
-        cdef PetscLogClass classid = PETSC_OBJECT_COOKIE
+        cdef PetscLogClass classid = PETSC_OBJECT_CLASSID
         cdef PetscLogEvent eventid = -1
         if not name: raise ValueError("empty name")
         if klass is not None: classid = klass
@@ -172,7 +172,7 @@ cdef class LogClass:
     cdef readonly PetscLogClass id
 
     def __cinit__(self):
-        self.id = PETSC_OBJECT_COOKIE
+        self.id = PETSC_OBJECT_CLASSID
 
     def __int__(self):
         return <int> self.id

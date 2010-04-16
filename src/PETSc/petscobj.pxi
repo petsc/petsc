@@ -2,7 +2,7 @@
 
 cdef extern from "petsc.h" nogil:
 
-    ctypedef int PetscCookie
+    ctypedef int PetscClassId
 
     int PetscObjectView(PetscObject,PetscViewer)
     int PetscObjectDestroy(PetscObject)
@@ -15,7 +15,7 @@ cdef extern from "petsc.h" nogil:
     int PetscObjectSetFromOptions(PetscObject)
 
     int PetscObjectGetComm(PetscObject,MPI_Comm*)
-    int PetscObjectGetCookie(PetscObject,PetscCookie*)
+    int PetscObjectGetClassId(PetscObject,PetscClassId*)
     int PetscObjectGetType(PetscObject,char*[])
     int PetscObjectGetClassName(PetscObject,char*[])
     int PetscObjectSetName(PetscObject,char[])

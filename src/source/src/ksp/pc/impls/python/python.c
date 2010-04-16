@@ -393,7 +393,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPythonGetContext(PC pc,void **ctx)
   PetscTruth     ispython;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(ctx,2);
   *ctx = NULL;
   ierr = PetscTypeCompare((PetscObject)pc,PCPYTHON,&ispython);CHKERRQ(ierr);
@@ -427,7 +427,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetContext(PC pc,void *ctx)
   PetscTruth     ispython;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (ctx) PetscValidPointer(ctx,2);
   ierr = PetscTypeCompare((PetscObject)pc,PCPYTHON,&ispython);CHKERRQ(ierr);
   if (!ispython) PetscFunctionReturn(0);
@@ -484,7 +484,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetType(PC pc,const char pyname[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidCharPointer(pyname,2);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCPythonSetType_C",(PetscVoidFunction*)&f);CHKERRQ(ierr);
   if (f) {ierr = (*f)(pc,pyname);CHKERRQ(ierr);}

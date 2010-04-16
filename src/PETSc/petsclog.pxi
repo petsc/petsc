@@ -19,8 +19,8 @@ cdef extern from "petsc.h" nogil:
     int PetscLogStageGetVisible(PetscLogStage,PetscTruth*)
     int PetscLogStageGetId(char[],PetscLogStage*)
 
-    ctypedef int PetscLogClass "PetscCookie"
-    int PetscLogClassRegister"PetscCookieRegister"(char[],PetscLogClass*)
+    ctypedef int PetscLogClass "PetscClassId"
+    int PetscLogClassRegister"PetscClassIdRegister"(char[],PetscLogClass*)
     int PetscLogClassActivate"PetscLogEventActivateClass"(PetscLogClass)
     int PetscLogClassDeactivate"PetscLogEventDeactivateClass"(PetscLogClass)
 

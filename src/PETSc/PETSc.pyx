@@ -288,21 +288,21 @@ cdef int initialize(object args) except -1:
     return 1 # and we are done, enjoy !!
 
 cdef extern from *:
-    PetscCookie PETSC_OBJECT_COOKIE    "PETSC_OBJECT_COOKIE"
-    PetscCookie PETSC_VIEWER_COOKIE    "PETSC_VIEWER_COOKIE"
-    PetscCookie PETSC_RANDOM_COOKIE    "PETSC_RANDOM_COOKIE"
-    PetscCookie PETSC_IS_COOKIE        "IS_COOKIE"
-    PetscCookie PETSC_LGMAP_COOKIE     "IS_LTOGM_COOKIE"
-    PetscCookie PETSC_VEC_COOKIE       "VEC_COOKIE"
-    PetscCookie PETSC_SCATTER_COOKIE   "VEC_SCATTER_COOKIE"
-    PetscCookie PETSC_MAT_COOKIE       "MAT_COOKIE"
-    PetscCookie PETSC_NULLSPACE_COOKIE "MAT_NULLSPACE_COOKIE"
-    PetscCookie PETSC_PC_COOKIE        "PC_COOKIE"
-    PetscCookie PETSC_KSP_COOKIE       "KSP_COOKIE"
-    PetscCookie PETSC_SNES_COOKIE      "SNES_COOKIE"
-    PetscCookie PETSC_TS_COOKIE        "TS_COOKIE"
-    PetscCookie PETSC_AO_COOKIE        "AO_COOKIE"
-    PetscCookie PETSC_DA_COOKIE        "DM_COOKIE"
+    PetscClassId PETSC_OBJECT_CLASSID    "PETSC_OBJECT_CLASSID"
+    PetscClassId PETSC_VIEWER_CLASSID    "PETSC_VIEWER_CLASSID"
+    PetscClassId PETSC_RANDOM_CLASSID    "PETSC_RANDOM_CLASSID"
+    PetscClassId PETSC_IS_CLASSID        "IS_CLASSID"
+    PetscClassId PETSC_LGMAP_CLASSID     "IS_LTOGM_CLASSID"
+    PetscClassId PETSC_VEC_CLASSID       "VEC_CLASSID"
+    PetscClassId PETSC_SCATTER_CLASSID   "VEC_SCATTER_CLASSID"
+    PetscClassId PETSC_MAT_CLASSID       "MAT_CLASSID"
+    PetscClassId PETSC_NULLSPACE_CLASSID "MAT_NULLSPACE_CLASSID"
+    PetscClassId PETSC_PC_CLASSID        "PC_CLASSID"
+    PetscClassId PETSC_KSP_CLASSID       "KSP_CLASSID"
+    PetscClassId PETSC_SNES_CLASSID      "SNES_CLASSID"
+    PetscClassId PETSC_TS_CLASSID        "TS_CLASSID"
+    PetscClassId PETSC_AO_CLASSID        "AO_CLASSID"
+    PetscClassId PETSC_DA_CLASSID        "DM_CLASSID"
 
 cdef int register(char path[]) except -1:
     # make sure all PETSc packages are initialized
@@ -310,21 +310,21 @@ cdef int register(char path[]) except -1:
     # register custom implementations
     CHKERR( PetscPythonRegisterAll(path) )
     # register Python types
-    TypeRegistryAdd(PETSC_OBJECT_COOKIE,    Object)
-    TypeRegistryAdd(PETSC_VIEWER_COOKIE,    Viewer)
-    TypeRegistryAdd(PETSC_RANDOM_COOKIE,    Random)
-    TypeRegistryAdd(PETSC_IS_COOKIE,        IS)
-    TypeRegistryAdd(PETSC_LGMAP_COOKIE,     LGMap)
-    TypeRegistryAdd(PETSC_VEC_COOKIE,       Vec)
-    TypeRegistryAdd(PETSC_SCATTER_COOKIE,   Scatter)
-    TypeRegistryAdd(PETSC_MAT_COOKIE,       Mat)
-    TypeRegistryAdd(PETSC_NULLSPACE_COOKIE, NullSpace)
-    TypeRegistryAdd(PETSC_PC_COOKIE,        PC)
-    TypeRegistryAdd(PETSC_KSP_COOKIE,       KSP)
-    TypeRegistryAdd(PETSC_SNES_COOKIE,      SNES)
-    TypeRegistryAdd(PETSC_TS_COOKIE,        TS)
-    TypeRegistryAdd(PETSC_AO_COOKIE,        AO)
-    TypeRegistryAdd(PETSC_DA_COOKIE,        DA)
+    TypeRegistryAdd(PETSC_OBJECT_CLASSID,    Object)
+    TypeRegistryAdd(PETSC_VIEWER_CLASSID,    Viewer)
+    TypeRegistryAdd(PETSC_RANDOM_CLASSID,    Random)
+    TypeRegistryAdd(PETSC_IS_CLASSID,        IS)
+    TypeRegistryAdd(PETSC_LGMAP_CLASSID,     LGMap)
+    TypeRegistryAdd(PETSC_VEC_CLASSID,       Vec)
+    TypeRegistryAdd(PETSC_SCATTER_CLASSID,   Scatter)
+    TypeRegistryAdd(PETSC_MAT_CLASSID,       Mat)
+    TypeRegistryAdd(PETSC_NULLSPACE_CLASSID, NullSpace)
+    TypeRegistryAdd(PETSC_PC_CLASSID,        PC)
+    TypeRegistryAdd(PETSC_KSP_CLASSID,       KSP)
+    TypeRegistryAdd(PETSC_SNES_CLASSID,      SNES)
+    TypeRegistryAdd(PETSC_TS_CLASSID,        TS)
+    TypeRegistryAdd(PETSC_AO_CLASSID,        AO)
+    TypeRegistryAdd(PETSC_DA_CLASSID,        DA)
     return 0 # and we are done, enjoy !!
 
 # --------------------------------------------------------------------

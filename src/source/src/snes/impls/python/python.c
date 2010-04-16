@@ -21,7 +21,7 @@ static PetscErrorCode SNESSkipConverged(SNES snes,PetscInt it,
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidPointer(reason,6);
   *reason = SNES_CONVERGED_ITERATING;
   if (fnorm != fnorm) {
@@ -664,7 +664,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonGetContext(SNES snes,void **ctx)
   PetscTruth     ispython;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidPointer(ctx,2);
   *ctx = NULL;
   ierr = PetscTypeCompare((PetscObject)snes,SNESPYTHON,&ispython);CHKERRQ(ierr);
@@ -698,7 +698,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetContext(SNES snes,void *ctx)
   PetscTruth     ispython;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   if (ctx) PetscValidPointer(ctx,2);
   ierr = PetscTypeCompare((PetscObject)snes,SNESPYTHON,&ispython);CHKERRQ(ierr);
   if (!ispython) PetscFunctionReturn(0);
@@ -751,7 +751,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetType(SNES snes,const char pyname
   PetscErrorCode (*f)(SNES, const char[]) = 0;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidCharPointer(pyname,2);
   ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESPythonSetType_C",
                                   (PetscVoidFunction*)&f);CHKERRQ(ierr);
