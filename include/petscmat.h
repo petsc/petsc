@@ -70,6 +70,8 @@ E*/
 
 #define MATFWK             "matfwk"
 
+#define MATIM              "matim"
+
 
 /*E
     MatSolverPackage - String with the name of a PETSc matrix solver type. 
@@ -326,6 +328,12 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetBlock(Mat A, PetscInt rowblock
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkGetBlock(Mat A, PetscInt rowblock, PetscInt colblock, Mat *block);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetScatters(Mat A, PetscInt blockcount, Mat scatters[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetGathers(Mat A, PetscInt blockcount,  Mat gathers[]);
+
+#if defined PETSC_HAVE_MATIM
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIMSetIS(Mat A, IS in, IS out);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIMGetIS(Mat A, IS *in, IS *out);
+#endif
+
 
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqFFTW(MPI_Comm,PetscInt,const PetscInt[],Mat*);

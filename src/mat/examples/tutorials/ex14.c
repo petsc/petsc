@@ -14,8 +14,8 @@ Each block is a matrix of (generally) any type.\n\n";
 
 
 #undef __FUNCT__
-#define __FUNCT__ "TestMatFwkSubstructuring"
-PetscErrorCode TestMatFwk1() {
+#define __FUNCT__ "TestMatIM"
+PetscErrorCode TestMatIM() {
   /*
     o------o-------o-------o------o
   v0|    v3|    v6|||    v9|    v9|
@@ -38,15 +38,14 @@ PetscErrorCode TestMatFwk1() {
     o------o-------o-------o------o
 
    */
-  /* Mat M; */ /* Matrix framekwork */
-
+  Mat M; /* Index Map (IM) matrix */
   PetscFunctionBegin;
 
 
 
   PetscFunctionReturn(0);
 
-}/* TestMatFwk1() */
+}/* TestMatIM() */
 
 
 #undef __FUNCT__
