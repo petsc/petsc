@@ -215,14 +215,14 @@ if __name__ == "__main__":
         else:
             tofind = fl.group(1)
 #   replace all _ in tofind with \_
-            m     = len(tofind)
-            tfind = tofind[0]
-	    for j in range(1,m):
-		if tofind[j] == '_':
-		    tfind = tfind+'\\'
-                tfind = tfind+tofind[j]
-	    mappedstring[tfind] = fl.group(2)
-	    mappedlink[tfind]   = fl.group(3)
+#            m     = len(tofind)
+#            tfind = tofind[0]
+#	    for j in range(1,m):
+#		if tofind[j] == '_':
+#		    tfind = tfind+'\\'
+#                tfind = tfind+tofind[j]
+	    mappedstring[tofind] = fl.group(2)
+	    mappedlink[tofind]   = fl.group(3)
 
 #
 #   Read in file that is to be mapped
@@ -239,12 +239,13 @@ if __name__ == "__main__":
 	    text = ''
 	else:
             # \href cannot be used in many places in Latex
-	    if not token.value in ['\\href{','\\findex{','\\sindex{','\\subsection{','\\chapter{','\\section{','\\caption{','\\trl{']:
+	    if token.value in ['\\href{','\\findex{','\\sindex{','\\subsection{','\\chapter{','\\section{','\\caption{','\\trl{']:
 		bracket = bracket + 1;
             if bracket == 0:
 		value = token.value
 		if mappedstring.has_key(value):
-		    value = '\\href{'+'http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-'+version+'/docs/'+mappedlink[value]+'}{'+mappedstring[value]+'}\\findex{'+value+'}'
+                    mvalue = mappedstring[value].replace('_','\\_')
+		    value = '\\href{'+'http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-'+version+'/docs/'+mappedlink[value]+'}{'+mvalue+'}\\findex{'+value+'}'
             else:
 		value = token.value
 	    if token.value[0] == '}' and bracket:
