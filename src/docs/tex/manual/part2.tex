@@ -3989,12 +3989,11 @@ One can set the solution method with the routine
 \begin{tabbing}
  TSSetType(TS ts,TSType type);
 \end{tabbing}
-Currently supported types are TSEULER, \trl{TSRUNGE_KUTTA},
-TSBEULER, \trl{TSCRANK_NICHOLSON}, TSTHETA, TSGL, TSPSEUDO, and
-TSSUNDIALS (only if the Sundials package is installed),
-\findex{TSRUNGE_KUTTA} \findex{TSCRANK_NICHOLSON}
+Currently supported types are TSEULER, TSRK (Runge-Kutta), \sindex{generalized linear}
+TSBEULER, TSCN (Crank-Nicolson), TSTHETA, TSGL (generalized linear), TSPSEUDO, and \sindex{Crank-Nicolson} \sindex{Runge-Kutta}
+TSSUNDIALS (only if the Sundials package is installed), \sindex{backward Euler} \sindex{Euler, backward}
 or the command line option \\
-\trl{-ts_type euler,runge-kutta,beuler,crank-nicholson,theta,gl,pseudo,sundials}.
+\trl{-ts_type euler,rk,beuler,cn,theta,gl,pseudo,sundials}.
 \findex{-ts_type} \sindex{Euler}
 \sindex{backward Euler}
 
@@ -4284,8 +4283,8 @@ or  the option
 \end{itemize}
 
 \subsection{Using the Explicit Runge-Kutta timestepper with variable timesteps}
-The Explicit Runge-Kutta timestepper with variable timesteps is an
-implementation of standard Runge-Kutta using Dormand-Prince
+The Explicit Runge-Kutta timestepper with variable timesteps is an \sindex{Runge-Kutta}
+implementation of standard Runge-Kutta using Dormand-Prince \sindex{Dorman-Prince}
 5(4). It is easy to change this table if needed. Since the time-stepper is using variable timesteps, the
 ``TSSetInitialTimeStep()'' function is not used.
 
