@@ -509,7 +509,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetUpPreallocation(Mat A)
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatFwkLocateBlock_AIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatFwkLocateBlock_AIJ(Mat M, PetscInt row, PetscInt col, PetscTruth insert, Mat_FwkBlock **__block) {
+PetscErrorCode PETSCMAT_DLLEXPORT MatFwkLocateBlock_AIJ(Mat M, PetscInt row, PetscInt col, PetscTruth insert, Mat_FwkBlock **block_pp) {
   PetscErrorCode        ierr;
   Mat_Fwk*              fwk = (Mat_Fwk*)M->data;
   Mat_FwkAIJ*           a = (Mat_FwkAIJ*)fwk->data;
@@ -519,7 +519,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFwkLocateBlock_AIJ(Mat M, PetscInt row, Pet
   Mat_FwkBlock   *ap,*aa = a->a;
   PetscFunctionBegin;
 
-  *__block = PETSC_NULL;
+  *block_pp = PETSC_NULL;
   if (row < 0) goto we_are_done;
 #if defined(PETSC_USE_DEBUG)  
   if (row >= fwk->rowblockcount) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Block row too large: row %D max %D",row,fwk->rowblockcount-1);
@@ -544,7 +544,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFwkLocateBlock_AIJ(Mat M, PetscInt row, Pet
   for (i=low; i<high; i++) {
     if (rp[i] > col) break;
     if (rp[i] == col) {
-      *__block = ap+i;  
+      *block_pp = ap+i;  
       goto we_are_done;
     }
   } 
@@ -558,7 +558,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFwkLocateBlock_AIJ(Mat M, PetscInt row, Pet
     ap[ii+1] = ap[ii];
   }
   rp[i] = col; 
-  *__block = ap+i; 
+  *block_pp = ap+i; 
   low   = i + 1;
   ailen[row] = nrow;
   M->same_nonzero = PETSC_FALSE;
@@ -814,7 +814,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd_FwkAIJ(Mat A, MatAssemblyType t
   PetscInt i,j,k;
   Mat B;
   Mat_FwkBlock *ap;
-  PetscErrorCode ierr;
+  PetscErrorCode ierr; 
   PetscFunctionBegin;
   for(i = 0; i < fwk->rowblockcount; ++i) {
     ap = aij->a + aij->i[i];
