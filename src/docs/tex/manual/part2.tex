@@ -765,7 +765,7 @@ command
 The output argument \trl{n} contains the number of 
 local nodes, including ghost nodes, while \trl{idx} contains a list of length
 \trl{n} containing the global indices that correspond to the local nodes. Either
-parameter may be omitted by passing \trl{PETSC_NULL}. Note that the Fortran
+parameter may be omitted by passing PETSC_NULL. Note that the Fortran
 interface differs slightly; see Section~\ref{sec_fortranarrays} for details.
 \item
 or to set up the vectors and matrices so that their entries may be
@@ -1045,7 +1045,7 @@ or
 \end{tabbing}
 Here  \trl{n} is the 
 number of local vector entries, \trl{N} is the number of \sindex{vectors, with ghost values}
-global entries (or \trl{PETSC_NULL}) and \trl{nghost} is the number of 
+global entries (or PETSC_NULL) and \trl{nghost} is the number of 
 ghost entries. The array \trl{ghosts} is of size \trl{nghost} and contains the 
 global vector location for each local ghost location. Using VecDuplicate()
 or VecDuplicateVecs() on a ghosted vector will generate additional ghosted vectors.
@@ -1267,7 +1267,7 @@ one uses the command
 \end{tabbing}
 where \trl{nz} or \trl{nnz} can be used to preallocate matrix memory,
 as discussed below. The user can set \trl{nz=0} and \trl{
-nnz=PETSC_NULL} for PETSc to control all matrix memory allocation.
+nnz=}PETSC_NULL for PETSc to control all matrix memory allocation.
 
 The sequential and parallel AIJ matrix storage formats by default
 employ {\em i-nodes} (identical nodes) when possible.  We search for
@@ -1408,8 +1408,8 @@ must match the local size used in the vector creation routine VecCreateMPI() for
 Likewise, the \trl{n} used must match that used as the local size in 
 VecCreateMPI() for \trl{x}. 
 
-The user must set \trl{d_nz=0}, \trl{o_nz=0}, \trl{d_nnz=PETSC_NULL}, and 
-\trl{o_nnz=PETSC_NULL} for PETSc to control dynamic allocation of matrix
+The user must set \trl{d_nz=0}, \trl{o_nz=0}, \trl{d_nnz=}PETSC_NULL, and 
+\trl{o_nnz=}PETSC_NULL for PETSc to control dynamic allocation of matrix
 memory space.  Analogous to \trl{nz} and \trl{nnz} for the routine 
 MatCreateSeqAIJ(), these arguments optionally specify 
 nonzero information for the diagonal (\trl{d_nz} and \trl{d_nnz}) and 
@@ -1646,7 +1646,7 @@ MatShift(Mat Y,PetscScalar a); & $ Y =  Y + a*I $ \\
 \label{fig_matrixops}
 \end{table}
 The NormType argument to MatNorm() is one of 
-NormType NORM_1, NORM_INFINITY, and NORM_FROBENIUS.
+NORM_1, NORM_INFINITY, and NORM_FROBENIUS.
 
 \sindex{1-norm} \sindex{infinity norm} \sindex {Frobenius norm}
 \section{Matrix-Free Matrices} \sindex{matrix-free methods}
@@ -2464,11 +2464,11 @@ SOR with Eisenstat trick             & PCEISENSTAT   & eisenstat\\
 Incomplete Cholesky                  & PCICC         & icc\\
 Incomplete LU                        & PCILU         & ilu\\
 Additive Schwarz                     & PCASM         & asm\\
-Linear solver                        & PCKSP        & ksp \\
+Linear solver                        & PCKSP         & ksp \\
 Combination of preconditioners       & PCCOMPOSITE   & composite \\
 \hline
 LU                                   & PCLU          & lu\\
-Cholesky                             & PCCholesky    & cholesky\\
+Cholesky                             & PCCHOLESKY    & cholesky\\
 No preconditioning                   & PCNONE        & none\\
 Shell for user-defined PC            & PCSHELL       & shell\\
 \hline
@@ -2661,8 +2661,7 @@ supported in parallel; however, only the uniprocess
 version of the block Gauss-Seidel method is currently in place.
 By default, the PETSc implentations of these methods
 employ ILU(0) factorization on each individual block ( that is, the default solver on each 
-subblock is \trl{PCType=PCILU,
-KSPType=KSPPREONLY}); the user can set alternative linear solvers via the options 
+subblock is PCType=PCILU, KSPType=KSPPREONLY); the user can set alternative linear solvers via the options 
 \findex{-sub_ksp_type} \findex{-sub_pc_type}
 \trl{-sub_ksp_type} and \trl{-sub_pc_type}. In fact, all of the KSP
 and PC options can be applied to the subproblems by inserting the prefix
@@ -3118,7 +3117,7 @@ capabilities by calling MatCreate() followed by MatSetType()
 specifying the desired matrix type from \ref{tab_externaloptions}.
 These matrix types inherit capabilities from their PETSc matrix
 parents: seqaij, mpiaij, etc.  As a result, the preallocation routines
-MatSeqAIJPreallocate, MatMPIAIJPreallocate, etc. and any other type
+MatSeqAIJSetPreallocation(), MatMPIAIJSetPreallocation(), etc. and any other type
 specific routines of the base class are supported.  One can also
 call MatConvert() inplace to convert the matrix to and from its base
 class without performing an expensive data copy.  MatConvert() cannot be
@@ -3267,7 +3266,7 @@ the command
 \end{tabbing}
 The argument \trl{ctx} is an optional user-defined context, which can
 store any private, application-specific data required by the
-function evaluation routine; \trl{PETSC_NULL} should be used if such information
+function evaluation routine; PETSC_NULL should be used if such information
 is not needed.  In C and C++, a user-defined context is merely a
 structure in which various objects can be stashed; in Fortran a user
 context can be an integer array that contains both parameters and
@@ -3384,7 +3383,7 @@ An alternative line search routine can be set with the command
                    \>void *lsctx);
 \end{tabbing}
 Other line search methods provided by PETSc are 
-SNESQuadraticLineSearch(), SNESNoLineSearch(), and SNESNoLineSearchNoNorms(),
+SNESSearchQuadraticLine(), SNESLineSearchNo(), and SNESLineSearchNoNorms(),
 which can be set with the option \findex{-snes_ls}
 \begin{tabbing}
   \trl{-snes_ls [cubic, quadratic, basic, basicnonorms]}
@@ -3472,7 +3471,7 @@ denotes an optional user-defined context for private data.  When
 solving systems of nonlinear equations, the arguments \trl{xnorm},
 \trl{gnorm}, and \trl{f} are the current iterate norm, current step
 norm, and function norm, respectively. 
-\trl{SNESConvergedReason} should be set positive
+SNESConvergedReason should be set positive
 for convergence and negative for divergence. See \trl{include/petscsnes.h}
 for a list of values for SNESConvergedReason.
 
@@ -3738,7 +3737,7 @@ Matrix          & routine. $ ^\dagger $                         & various matrix
 Preconditioning  & Create matrix with MatCreate(). $ ^* $ & Use SNESGetKSP() and KSPGetPC() \\
 Matrix           & Assemble matrix with user-defined & to access the PC, then use\\
                 & routine. $ ^\dagger $         & PCSetType(pc,PCSHELL);\\ 
-                &             & followed by PCSetApply(). \\
+                &             & followed by PCShellSetApply(). \\
 
 & & \\ \hline
 \end{tabular}
@@ -4317,6 +4316,8 @@ More details about the solver and code examples can be found at
 \cleardoublepage
 \chapter{High Level Support for Multigrid with DMMG}
 \label{chapter_dmmg}
+
+This infrastructure will be replaced in the next PETSc release.
 
 PETSc provides an easy to use high-level interface for multigrid on a
 single structured grid using the PETSc DA object (or the DMComposite
