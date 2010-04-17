@@ -488,6 +488,9 @@ ex129: ex129.o chkopts
 	-${CLINKER} -o ex129 ex129.o ${PETSC_DM_LIB}
 	${RM} ex129.o
 
+ex130: ex130.o chkopts
+	-${CLINKER} -o ex130 ex130.o ${PETSC_MAT_LIB}
+	${RM} ex130.o
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
@@ -1216,7 +1219,7 @@ runex122:
 	   ${RM} -f ex122.tmp
 
 runex125:
-	-@${MPIEXEC} -n 1 ./ex125 -f ${DATAFILESPATH}/matrices/small -mat_solver_package 0 > ex125.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex125 -f ${DATAFILESPATH}/matrices/small -mat_solver_package 10 > ex125.tmp 2>&1; \
 	   if (${DIFF} output/ex125.out ex125.tmp) then true; \
 	   else echo "Possible problem with ex125, diffs above"; fi; \
 	   ${RM} -f ex125.tmp

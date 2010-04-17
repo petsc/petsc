@@ -172,7 +172,6 @@ extern int        numObjectsDestroyed;
 EXTERN PetscErrorCode StageLogGetClassRegLog(StageLog, ClassRegLog *);
 EXTERN PetscErrorCode StageLogGetEventRegLog(StageLog, EventRegLog *);
 EXTERN PetscErrorCode StageLogGetClassPerfLog(StageLog, int, ClassPerfLog *);
-EXTERN PetscErrorCode StageLogGetEventPerfLog(StageLog, int, EventPerfLog *);
 
 
 /* Creation and destruction functions */
@@ -226,10 +225,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogDestroy(StageLog);
 /* Registration functions */
 EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogRegister(StageLog, const char [], int *);
 /* Runtime functions */
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogGetStageLog(StageLog *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogPush(StageLog, int);
 EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogPop(StageLog);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetCurrent(StageLog, int *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogSetActive(StageLog, int, PetscTruth);
 EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetActive(StageLog, int, PetscTruth *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogSetVisible(StageLog, int, PetscTruth);
@@ -238,7 +235,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetStage(StageLog, const char [], 
 EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetClassRegLog(StageLog, ClassRegLog *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetEventRegLog(StageLog, EventRegLog *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetClassPerfLog(StageLog, int, ClassPerfLog *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetEventPerfLog(StageLog, int, EventPerfLog *);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT EventRegLogGetEvent(EventRegLog, const char [], PetscLogEvent *);
 
