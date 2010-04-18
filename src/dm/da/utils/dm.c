@@ -647,7 +647,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMComputeInitialGuess(DM dm,Vec x)
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetRhs(), DMSetMat()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetFunction(), DMSetJacobian()
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DMHasInitialGuess(DM dm,PetscTruth *flg)
@@ -710,7 +710,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMHasJacobian(DM dm,PetscTruth *flg)
 #undef __FUNCT__  
 #define __FUNCT__ "DMComputeFunction"
 /*@
-    DMComputeRhs - computes the right hand side vector entries for the KSP solver or nonlinear function for SNES
+    DMComputeFunction - computes the right hand side vector entries for the KSP solver or nonlinear function for SNES
 
     Collective on DM
 
@@ -729,7 +729,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMComputeFunction(DM dm,Vec x,Vec b)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (!dm->ops->function) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMSetRhs()");
+  if (!dm->ops->function) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMSetFunction()");
   if (!x) x = dm->x;
   ierr = (*dm->ops->function)(dm,x,b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -758,7 +758,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMComputeJacobian(DM dm,Vec x,Mat A,Mat B,MatSt
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (!dm->ops->jacobian) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMSetMat()");
+  if (!dm->ops->jacobian) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMSetJacobian()");
   if (!x) x = dm->x;
   ierr = (*dm->ops->jacobian)(dm,x,A,B,stflag);CHKERRQ(ierr);
   PetscFunctionReturn(0);

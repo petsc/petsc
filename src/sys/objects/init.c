@@ -15,6 +15,10 @@
 #if defined(PETSC_HAVE_MALLOC_H)
 #include <malloc.h>
 #endif
+#if defined(PETSC_HAVE_VALGRIND)
+#include <valgrind/valgrind.h>
+#endif
+
 /* ------------------------Nasty global variables -------------------------------*/
 /*
      Indicates if PETSc started up MPI, or it was 
@@ -243,7 +247,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
 #if defined(PETSC_USE_DEBUG)
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-malloc",&flg1,&flg2);CHKERRQ(ierr);
   if ((!flg2 || flg1) && !petscsetmallocvisited) {
-    ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr); 
+#if defined(PETSC_HAVE_VALGRIND)
+    if (flg2 || !(RUNNING_ON_VALGRIND)) {
+      /* turn off default -malloc if valgrind is being used */
+#endif
+      ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr); 
+#if defined(PETSC_HAVE_VALGRIND)
+    }
+#endif
   }
 #else
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-malloc_dump",&flg1,PETSC_NULL);CHKERRQ(ierr);
