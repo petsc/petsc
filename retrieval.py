@@ -80,7 +80,18 @@ Unable to download package %s from: %s
       else:
         config.base.Configure.executeShellCommand('cd '+root+'; gunzip '+archiveZip, log = self.log)
     except RuntimeError, e:
-      raise RuntimeError('Error unzipping '+archiveZip+': '+str(e))
+      filename   = os.path.basename(urlparse.urlparse(url)[2])
+      if str(e).find("not in gzip format") > -1:
+        failureMessage = '''\
+Unable to unzip downloaded package %s from: %s
+* If you are behind a firewall - please fix your proxy and rerun config/configure.py
+* Alternatively, you can download the above URL manually, to /yourselectedlocation/%s
+  and use the configure option:
+  --download-%s=/yourselectedlocation/%s
+''' % (name, url, filename, name, filename)
+        raise RuntimeError(failureMessage)
+      else:
+        raise RuntimeError('Error unzipping '+archiveZip+': '+str(e))
     self.logPrint('Expanding '+localFile)
     try:
       config.base.Configure.executeShellCommand('cd '+root+'; tar -xf '+archive, log = self.log)
