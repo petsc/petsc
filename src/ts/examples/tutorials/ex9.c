@@ -1067,7 +1067,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
 
   ierr = DAVecGetArray(ctx->da,Xloc,&x);CHKERRQ(ierr);
   ierr = DAVecGetArray(ctx->da,F,&f);CHKERRQ(ierr);
-  ierr = DAGetArray(ctx->da,PETSC_TRUE,(void**)&slope);CHKERRQ(ierr);
+  ierr = DAGetArray(ctx->da,PETSC_TRUE,&slope);CHKERRQ(ierr);
 
   ierr = DAGetCorners(ctx->da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
 
@@ -1131,7 +1131,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
 
   ierr = DAVecRestoreArray(ctx->da,Xloc,&x);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(ctx->da,F,&f);CHKERRQ(ierr);
-  ierr = DARestoreArray(ctx->da,PETSC_TRUE,(void**)&slope);CHKERRQ(ierr);
+  ierr = DARestoreArray(ctx->da,PETSC_TRUE,&slope);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(ctx->da,&Xloc);CHKERRQ(ierr);
 
   ierr = PetscGlobalMax(&cfl_idt,&ctx->cfl_idt,((PetscObject)ctx->da)->comm);CHKERRQ(ierr);

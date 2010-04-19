@@ -1005,10 +1005,9 @@ static PetscErrorCode TSDestroy_GL(TS ts)
     g(x) = f(t,x,z+shift*x) = 0
 */
 #undef __FUNCT__  
-#define __FUNCT__ "TSGLFunction"
-static PetscErrorCode TSGLFunction(SNES snes,Vec x,Vec f,void *ctx)
+#define __FUNCT__ "SNESTSFormFunction_GL"
+static PetscErrorCode SNESTSFormFunction_GL(SNES snes,Vec x,Vec f,TS ts)
 {
-  TS              ts = (TS)ctx;
   TS_GL          *gl = (TS_GL*)ts->data;
   PetscErrorCode  ierr;
 
@@ -1019,15 +1018,14 @@ static PetscErrorCode TSGLFunction(SNES snes,Vec x,Vec f,void *ctx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSGLJacobian"
-static PetscErrorCode TSGLJacobian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *str,void *ctx)
+#define __FUNCT__ "SNESTSFormJacobian_GL"
+static PetscErrorCode SNESTSFormJacobian_GL(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *str,TS ts)
 {
-  TS              ts = (TS)ctx;
   TS_GL          *gl = (TS_GL*)ts->data;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  /* gl->Xdot will have already been computed in TSGLFunction */
+  /* gl->Xdot will have already been computed in SNESTSFormFunction_GL */
   ierr = TSComputeIJacobian(ts,gl->stage_time,x,gl->Ydot[gl->stage],gl->shift,A,B,str);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1056,7 +1054,7 @@ static PetscErrorCode TSSetUp_GL(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&gl->Y);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&gl->Z);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&res);CHKERRQ(ierr);
-  ierr = SNESSetFunction(ts->snes,res,&TSGLFunction,ts);CHKERRQ(ierr);
+  ierr = SNESSetFunction(ts->snes,res,SNESTSFormFunction,ts);CHKERRQ(ierr);
   ierr = VecDestroy(res);CHKERRQ(ierr); /* Give ownership to SNES */
   /* This is nasty.  SNESSetFromOptions() is usually called in TSSetFromOptions().  With -snes_mf_operator, it will
   replace A and we don't want to mess with that.  With -snes_mf, A and B will be replaced as well as the function and
@@ -1068,7 +1066,7 @@ static PetscErrorCode TSSetUp_GL(TS ts)
     PetscErrorCode (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
     void *ctx;
     ierr = SNESGetJacobian(ts->snes,&A,&B,&func,&ctx);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(ts->snes,A?A:ts->A,B?B:ts->B,func?func:&TSGLJacobian,ctx?ctx:ts);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(ts->snes,A?A:ts->A,B?B:ts->B,func?func:SNESTSFormJacobian,ctx?ctx:ts);CHKERRQ(ierr);
   }
 
   /* Default acceptance tests and adaptivity */
@@ -1421,6 +1419,8 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_GL(TS ts)
   ts->ops->setup          = TSSetUp_GL;
   ts->ops->step           = TSStep_GL;
   ts->ops->setfromoptions = TSSetFromOptions_GL;
+  ts->ops->snesfunction   = SNESTSFormFunction_GL;
+  ts->ops->snesjacobian   = SNESTSFormJacobian_GL;
 
   ts->problem_type = TS_NONLINEAR;
   ierr = SNESCreate(((PetscObject)ts)->comm,&ts->snes);CHKERRQ(ierr);

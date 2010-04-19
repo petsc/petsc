@@ -209,10 +209,9 @@ static PetscErrorCode TSDestroy_BEuler(TS ts)
       1/dt* (U^{n+1} - U^{n}) - F(U^{n+1}) 
 */
 #undef __FUNCT__  
-#define __FUNCT__ "TSBEulerFunction"
-PetscErrorCode TSBEulerFunction(SNES snes,Vec x,Vec y,void *ctx)
+#define __FUNCT__ "SNESTSFormFunction_BEuler"
+PetscErrorCode SNESTSFormFunction_BEuler(SNES snes,Vec x,Vec y,TS ts)
 {
-  TS             ts = (TS) ctx;
   PetscScalar    mdt = 1.0/ts->time_step,*unp1,*un,*Funp1;
   PetscErrorCode ierr;
   PetscInt       i,n;
@@ -241,10 +240,9 @@ PetscErrorCode TSBEulerFunction(SNES snes,Vec x,Vec y,void *ctx)
      BB - preconditioner matrix, usually the same as AA
 */
 #undef __FUNCT__  
-#define __FUNCT__ "TSBEulerJacobian"
-PetscErrorCode TSBEulerJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+#define __FUNCT__ "SNESTSFormJacobian_BEuler"
+PetscErrorCode SNESTSFormJacobian_BEuler(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,TS ts)
 {
-  TS             ts = (TS) ctx;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -302,8 +300,8 @@ static PetscErrorCode TSSetUp_BEuler_Nonlinear(TS ts)
   PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&beuler->update);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&beuler->func);CHKERRQ(ierr);  
-  ierr = SNESSetFunction(ts->snes,beuler->func,TSBEulerFunction,ts);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(ts->snes,ts->Arhs,ts->B,TSBEulerJacobian,ts);CHKERRQ(ierr);
+  ierr = SNESSetFunction(ts->snes,beuler->func,SNESTSFormFunction,ts);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(ts->snes,ts->Arhs,ts->B,SNESTSFormJacobian,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -375,6 +373,9 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_BEuler(TS ts)
     ierr = SNESCreate(((PetscObject)ts)->comm,&ts->snes);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)ts->snes,(PetscObject)ts,1);CHKERRQ(ierr);
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"No such problem");
+
+  ts->ops->snesfunction = SNESTSFormFunction_BEuler;
+  ts->ops->snesjacobian = SNESTSFormJacobian_BEuler;
 
   ierr = PetscNewLog(ts,TS_BEuler,&beuler);CHKERRQ(ierr);
   ts->data = (void*)beuler;
