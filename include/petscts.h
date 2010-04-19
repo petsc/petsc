@@ -429,5 +429,8 @@ EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsGetParameters(TS,PetscInt *,l
 
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSRKSetTolerance(TS,PetscReal);
 
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSThetaSetTheta(TS,PetscReal);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSThetaGetTheta(TS,PetscReal*);
+
 PETSC_EXTERN_CXX_END
 #endif
