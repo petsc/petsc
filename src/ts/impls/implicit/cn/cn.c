@@ -1,7 +1,7 @@
 #define PETSCTS_DLL
 
 /*
-       Code for Timestepping with implicit Crank-Nicholson method.
+       Code for Timestepping with implicit Crank-Nicolson method.
 */
 #include "private/tsimpl.h"                /*I   "petscts.h"   I*/
 
@@ -275,10 +275,9 @@ static PetscErrorCode TSDestroy_CN(TS ts)
        1/dt*Alhs*(U^{n+1} - U^{n}) - 0.5*(F(U^{n+1}) + F(U^{n}))
 */
 #undef __FUNCT__  
-#define __FUNCT__ "TSCnFunction"
-PetscErrorCode TSCnFunction(SNES snes,Vec x,Vec y,void *ctx)
+#define __FUNCT__ "SNESTSFormFunction_CN"
+PetscErrorCode SNESTSFormFunction_CN(SNES snes,Vec x,Vec y,TS ts)
 {
-  TS             ts = (TS) ctx;
   PetscScalar    mdt = 1.0/ts->time_step,*unp1,*un,*Funp1,*Fun,*yarray;
   PetscErrorCode ierr;
   PetscInt       i,n;
@@ -360,10 +359,9 @@ PetscErrorCode TSScaleShiftMatrices_CN(TS ts,Mat A,Mat B,MatStructure str)
      BB - preconditioner matrix, usually the same as AA
 */
 #undef __FUNCT__  
-#define __FUNCT__ "TSCnJacobian"
-PetscErrorCode TSCnJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+#define __FUNCT__ "SNESTSFormJacobian_CN"
+PetscErrorCode SNESTSFormJacobian_CN(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,TS ts)
 {
-  TS             ts = (TS) ctx;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -425,8 +423,8 @@ static PetscErrorCode TSSetUp_CN_Nonlinear(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&cn->func);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&cn->rhsfunc);CHKERRQ(ierr); 
   ierr = VecDuplicate(ts->vec_sol,&cn->rhsfunc_old);CHKERRQ(ierr); 
-  ierr = SNESSetFunction(ts->snes,cn->func,TSCnFunction,ts);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(ts->snes,ts->A,ts->B,TSCnJacobian,ts);CHKERRQ(ierr);
+  ierr = SNESSetFunction(ts->snes,cn->func,SNESTSFormFunction,ts);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(ts->snes,ts->A,ts->B,SNESTSFormJacobian,ts);CHKERRQ(ierr);
   cn->rhsfunc_time     = -100.0; /* cn->rhsfunc is not evaluated yet */
   cn->rhsfunc_old_time = -100.0;
   PetscFunctionReturn(0);
@@ -459,7 +457,7 @@ static PetscErrorCode TSView_CN(TS ts,PetscViewer viewer)
 
 /* ------------------------------------------------------------ */
 /*MC
-      TSCN - ODE solver using the implicit Crank-Nicholson method
+      TSCN - ODE solver using the implicit Crank-Nicolson method
 
   Level: beginner
 
@@ -500,6 +498,9 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_CN(TS ts)
     ierr = SNESCreate(((PetscObject)ts)->comm,&ts->snes);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)ts->snes,(PetscObject)ts,1);CHKERRQ(ierr);
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"No such problem");
+
+  ts->ops->snesfunction = SNESTSFormFunction_CN;
+  ts->ops->snesjacobian = SNESTSFormJacobian_CN;
 
   ierr = PetscNewLog(ts,TS_CN,&cn);CHKERRQ(ierr);
   ts->data = (void*)cn;

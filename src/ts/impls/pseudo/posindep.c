@@ -229,7 +229,7 @@ static PetscErrorCode TSPseudoGetXdot(TS ts,Vec X,Vec *Xdot)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSPseudoFunction"
+#define __FUNCT__ "SNESTSFormFunction_Pseudo"
 /*
     The transient residual is
 
@@ -247,9 +247,8 @@ static PetscErrorCode TSPseudoGetXdot(TS ts,Vec X,Vec *Xdot)
     algorithm, it only takes this one Newton step with the steady state
     residual, and then advances to the next time step.
 */
-static PetscErrorCode TSPseudoFunction(SNES snes,Vec X,Vec Y,void *ctx)
+static PetscErrorCode SNESTSFormFunction_Pseudo(SNES snes,Vec X,Vec Y,TS ts)
 {
-  TS             ts = (TS)ctx;
   Vec            Xdot;
   PetscErrorCode ierr;
 
@@ -260,7 +259,7 @@ static PetscErrorCode TSPseudoFunction(SNES snes,Vec X,Vec Y,void *ctx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSPseudoJacobian"
+#define __FUNCT__ "SNESTSFormJacobian_Pseudo"
 /*
    This constructs the Jacobian needed for SNES.  For DAE, this is
 
@@ -270,9 +269,8 @@ static PetscErrorCode TSPseudoFunction(SNES snes,Vec X,Vec Y,void *ctx)
 
        J = I/dt - J_{Frhs}   where J_{Frhs} is the given Jacobian of Frhs.
 */
-static PetscErrorCode TSPseudoJacobian(SNES snes,Vec X,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+static PetscErrorCode SNESTSFormJacobian_Pseudo(SNES snes,Vec X,Mat *AA,Mat *BB,MatStructure *str,TS ts)
 {
-  TS             ts = (TS)ctx;
   Vec            Xdot;
   PetscErrorCode ierr;
 
@@ -294,8 +292,8 @@ static PetscErrorCode TSSetUp_Pseudo(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&pseudo->update);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&pseudo->func);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&pseudo->xdot);CHKERRQ(ierr);
-  ierr = SNESSetFunction(ts->snes,pseudo->func,TSPseudoFunction,ts);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(ts->snes,ts->Arhs,ts->B,TSPseudoJacobian,ts);CHKERRQ(ierr);
+  ierr = SNESSetFunction(ts->snes,pseudo->func,SNESTSFormFunction,ts);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(ts->snes,ts->Arhs,ts->B,SNESTSFormJacobian,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -642,6 +640,8 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Pseudo(TS ts)
   ts->ops->setup           = TSSetUp_Pseudo;  
   ts->ops->step            = TSStep_Pseudo;
   ts->ops->setfromoptions  = TSSetFromOptions_Pseudo;
+  ts->ops->snesfunction    = SNESTSFormFunction_Pseudo;
+  ts->ops->snesjacobian    = SNESTSFormJacobian_Pseudo;
 
   /* create the required nonlinear solver context */
   ierr = SNESCreate(((PetscObject)ts)->comm,&ts->snes);CHKERRQ(ierr);

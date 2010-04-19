@@ -432,5 +432,8 @@ EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSRKSetTolerance(TS,PetscReal);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSSetDM(TS,DM);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGetDM(TS,DM*);
 
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT SNESTSFormFunction(SNES,Vec,Vec,void*);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT SNESTSFormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+
 PETSC_EXTERN_CXX_END
 #endif
