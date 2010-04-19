@@ -899,7 +899,7 @@ PetscErrorCode L_2Error(DA da, Vec fVec, double *error, AppCtx *user)
   ierr = DAGetLocalVector(da, &fLocalVec);CHKERRQ(ierr);
   ierr = DAGlobalToLocalBegin(da,fVec, INSERT_VALUES, fLocalVec);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da,fVec, INSERT_VALUES, fLocalVec);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da, fLocalVec, (void **) &f);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da, fLocalVec, &f);CHKERRQ(ierr);
 
   *error = 0.0;
   hx     = 1.0/(PetscReal)(info.mx-1);
@@ -946,7 +946,7 @@ PetscErrorCode L_2Error(DA da, Vec fVec, double *error, AppCtx *user)
     }
   }
 
-  ierr = DAVecRestoreArray(da, fLocalVec, (void **) &f);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da, fLocalVec, &f);CHKERRQ(ierr);
   /* ierr = DALocalToGlobalBegin(da,xLocalVec,xVec);CHKERRQ(ierr); */
   /* ierr = DALocalToGlobalEnd(da,xLocalVec,xVec);CHKERRQ(ierr); */
   ierr = DARestoreLocalVector(da, &fLocalVec);CHKERRQ(ierr);
