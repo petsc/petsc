@@ -2197,9 +2197,9 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetDM(TS ts,DM *dm)
    Collective on SNES
 
    Input Parameter:
-. snes - nonlinear solver
++ snes - nonlinear solver
 . X - the current state at which to evaluate the residual
-. ctx - user context, must be a TS
+- ctx - user context, must be a TS
 
    Output Parameter:
 . F - the nonlinear residual
