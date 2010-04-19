@@ -23,14 +23,14 @@ typedef struct {
    PetscScalar  b1[7],b2[7]; /* rk scalars */
    PetscReal    c[7]; /* rk scalars */
    PetscInt     p,s; /* variables to tell the size of the runge-kutta solver */
-} TS_Rk;
+} TS_RK;
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSRKSetTolerance_RK"
 PetscErrorCode PETSCTS_DLLEXPORT TSRKSetTolerance_RK(TS ts,PetscReal aabs)
 {
-  TS_Rk *rk = (TS_Rk*)ts->data;
+  TS_RK *rk = (TS_RK*)ts->data;
   
   PetscFunctionBegin;
   rk->tolerance = aabs;
@@ -71,10 +71,10 @@ PetscErrorCode PETSCTS_DLLEXPORT TSRKSetTolerance(TS ts,PetscReal aabs)
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSSetUp_Rk"
-static PetscErrorCode TSSetUp_Rk(TS ts)
+#define __FUNCT__ "TSSetUp_RK"
+static PetscErrorCode TSSetUp_RK(TS ts)
 {
-  TS_Rk          *rk = (TS_Rk*)ts->data;
+  TS_RK          *rk = (TS_RK*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -244,10 +244,10 @@ static PetscErrorCode TSSetUp_Rk(TS ts)
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TSRkqs"
-PetscErrorCode TSRkqs(TS ts,PetscReal t,PetscReal h)
+#define __FUNCT__ "TSRKqs"
+PetscErrorCode TSRKqs(TS ts,PetscReal t,PetscReal h)
 {
-  TS_Rk          *rk = (TS_Rk*)ts->data;
+  TS_RK          *rk = (TS_RK*)ts->data;
   PetscErrorCode ierr;
   PetscInt       j,l;
   PetscReal      tmp_t=t;
@@ -310,10 +310,10 @@ PetscErrorCode TSRkqs(TS ts,PetscReal t,PetscReal h)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSStep_Rk"
-static PetscErrorCode TSStep_Rk(TS ts,PetscInt *steps,PetscReal *ptime)
+#define __FUNCT__ "TSStep_RK"
+static PetscErrorCode TSStep_RK(TS ts,PetscInt *steps,PetscReal *ptime)
 {
-  TS_Rk          *rk = (TS_Rk*)ts->data;
+  TS_RK          *rk = (TS_RK*)ts->data;
   PetscErrorCode ierr;
   PetscReal      norm=0.0,dt_fac=0.0,fac = 0.0/*,ttmp=0.0*/;
   PetscInt       i, max_steps = ts->max_steps;
@@ -338,7 +338,7 @@ static PetscErrorCode TSStep_Rk(TS ts,PetscInt *steps,PetscReal *ptime)
        y1        - suggested solution
        y2        - check solution (runge - kutta second permutation)
      */
-     ierr = TSRkqs(ts,ts->ptime,ts->time_step);CHKERRQ(ierr);
+     ierr = TSRKqs(ts,ts->ptime,ts->time_step);CHKERRQ(ierr);
      /* counting steps */
      ts->steps++;
    /* checking for maxerror */
@@ -406,10 +406,10 @@ static PetscErrorCode TSStep_Rk(TS ts,PetscInt *steps,PetscReal *ptime)
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TSDestroy_Rk"
-static PetscErrorCode TSDestroy_Rk(TS ts)
+#define __FUNCT__ "TSDestroy_RK"
+static PetscErrorCode TSDestroy_RK(TS ts)
 {
-  TS_Rk          *rk = (TS_Rk*)ts->data;
+  TS_RK          *rk = (TS_RK*)ts->data;
   PetscErrorCode ierr;
   PetscInt       i;
 
@@ -429,10 +429,10 @@ static PetscErrorCode TSDestroy_Rk(TS ts)
 /*------------------------------------------------------------*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSSetFromOptions_Rk"
-static PetscErrorCode TSSetFromOptions_Rk(TS ts)
+#define __FUNCT__ "TSSetFromOptions_RK"
+static PetscErrorCode TSSetFromOptions_RK(TS ts)
 {
-  TS_Rk          *rk = (TS_Rk*)ts->data;
+  TS_RK          *rk = (TS_RK*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -443,10 +443,10 @@ static PetscErrorCode TSSetFromOptions_Rk(TS ts)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSView_Rk"
-static PetscErrorCode TSView_Rk(TS ts,PetscViewer viewer)
+#define __FUNCT__ "TSView_RK"
+static PetscErrorCode TSView_RK(TS ts,PetscViewer viewer)
 {
-   TS_Rk          *rk = (TS_Rk*)ts->data;
+   TS_RK          *rk = (TS_RK*)ts->data;
    PetscErrorCode ierr;
    
    PetscFunctionBegin;
@@ -472,20 +472,20 @@ M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "TSCreate_Rk"
-PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Rk(TS ts)
+#define __FUNCT__ "TSCreate_RK"
+PetscErrorCode PETSCTS_DLLEXPORT TSCreate_RK(TS ts)
 {
-  TS_Rk          *rk;
+  TS_RK          *rk;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ts->ops->setup           = TSSetUp_Rk;
-  ts->ops->step            = TSStep_Rk;
-  ts->ops->destroy         = TSDestroy_Rk;
-  ts->ops->setfromoptions  = TSSetFromOptions_Rk;
-  ts->ops->view            = TSView_Rk;
+  ts->ops->setup           = TSSetUp_RK;
+  ts->ops->step            = TSStep_RK;
+  ts->ops->destroy         = TSDestroy_RK;
+  ts->ops->setfromoptions  = TSSetFromOptions_RK;
+  ts->ops->view            = TSView_RK;
 
-  ierr = PetscNewLog(ts,TS_Rk,&rk);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,TS_RK,&rk);CHKERRQ(ierr);
   ts->data = (void*)rk;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSRKSetTolerance_C","TSRKSetTolerance_RK",TSRKSetTolerance_RK);CHKERRQ(ierr);

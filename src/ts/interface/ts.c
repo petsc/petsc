@@ -56,7 +56,7 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
 .  ts - the TS context obtained from TSCreate()
 
    Options Database Keys:
-+  -ts_type <type> - TSEULER, TSBEULER, TSSUNDIALS, TSPSEUDO, TSCRANK_NICHOLSON
++  -ts_type <type> - TSEULER, TSBEULER, TSSUNDIALS, TSPSEUDO, TSCN, TSRK, TSTHETA, TSGL, TSSSP
 .  -ts_max_steps maxsteps - maximum number of time-steps to take
 .  -ts_max_time time - maximum time to compute to
 .  -ts_dt dt - initial time step
@@ -2189,3 +2189,81 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetDM(TS ts,DM *dm)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "SNESTSFormFunction"
+/*@
+   SNESTSFormFunction - Function to evaluate nonlinear residual
+
+   Collective on SNES
+
+   Input Parameter:
++ snes - nonlinear solver
+. X - the current state at which to evaluate the residual
+- ctx - user context, must be a TS
+
+   Output Parameter:
+. F - the nonlinear residual
+
+   Notes:
+   This function is not normally called by users and is automatically registered with the SNES used by TS.
+   It is most frequently passed to MatFDColoringSetFunction().
+
+   Level: advanced
+
+.seealso: SNESSetFunction(), MatFDColoringSetFunction()
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT SNESTSFormFunction(SNES snes,Vec X,Vec F,void *ctx)
+{
+  TS ts = (TS)ctx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidHeaderSpecific(X,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(F,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,4);
+  ierr = (ts->ops->snesfunction)(snes,X,F,ts);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESTSFormJacobian"
+/*@
+   SNESTSFormJacobian - Function to evaluate the Jacobian
+
+   Collective on SNES
+
+   Input Parameter:
++ snes - nonlinear solver
+. X - the current state at which to evaluate the residual
+- ctx - user context, must be a TS
+
+   Output Parameter:
++ A - the Jacobian
+. B - the preconditioning matrix (may be the same as A)
+- flag - indicates any structure change in the matrix
+
+   Notes:
+   This function is not normally called by users and is automatically registered with the SNES used by TS.
+
+   Level: developer
+
+.seealso: SNESSetJacobian()
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT SNESTSFormJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flag,void *ctx)
+{
+  TS ts = (TS)ctx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidHeaderSpecific(X,VEC_CLASSID,2);
+  PetscValidPointer(A,3);
+  PetscValidHeaderSpecific(*A,MAT_CLASSID,3);
+  PetscValidPointer(B,4);
+  PetscValidHeaderSpecific(*B,MAT_CLASSID,4);
+  PetscValidPointer(flag,5);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,6);
+  ierr = (ts->ops->snesjacobian)(snes,X,A,B,flag,ts);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
