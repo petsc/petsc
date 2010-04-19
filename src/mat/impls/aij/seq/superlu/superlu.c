@@ -46,6 +46,8 @@ typedef struct {
   mem_usage_t       mem_usage;
   MatStructure      flg;
   SuperLUStat_t     stat;
+  Mat               A_dup;  
+  PetscScalar       *rhs_dup;
 
   /* Flag to clean up (non-global) SuperLU objects during Destroy */
   PetscTruth CleanUpSuperLU;
@@ -108,8 +110,8 @@ PetscErrorCode MatFactorInfo_SuperLU(Mat A,PetscViewer viewer)
 #define __FUNCT__ "MatLUFactorNumeric_SuperLU"
 PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
 {
-  Mat_SeqAIJ     *aa = (Mat_SeqAIJ*)(A)->data;
   Mat_SuperLU    *lu = (Mat_SuperLU*)(F)->spptr;
+  Mat_SeqAIJ     *aa;
   PetscErrorCode ierr;
   PetscInt       sinfo;
   PetscReal      ferr, berr; 
@@ -121,6 +123,9 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
     lu->options.Fact = SamePattern;
     /* Ref: ~SuperLU_3.0/EXAMPLE/dlinsolx2.c */
     Destroy_SuperMatrix_Store(&lu->A); 
+    if (lu->options.Equil){
+      ierr = MatCopy_SeqAIJ(A,lu->A_dup,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    }
     if ( lu->lwork >= 0 ) { 
       Destroy_SuperNode_Matrix(&lu->L);
       Destroy_CompCol_Matrix(&lu->U);
@@ -131,6 +136,11 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
   /* Create the SuperMatrix for lu->A=A^T:
        Since SuperLU likes column-oriented matrices,we pass it the transpose,
        and then solve A^T X = B in MatSolve(). */
+  if (lu->options.Equil){
+    aa = (Mat_SeqAIJ*)(lu->A_dup)->data;
+  } else {
+    aa = (Mat_SeqAIJ*)(A)->data;
+  }
 #if defined(PETSC_USE_COMPLEX)
   zCreate_CompCol_Matrix(&lu->A,A->cmap->n,A->rmap->n,aa->nz,(doublecomplex*)aa->a,aa->j,aa->i,
                            SLU_NC,SLU_Z,SLU_GE);
@@ -223,6 +233,8 @@ PetscErrorCode MatDestroy_SuperLU(Mat A)
     }
   }
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
+  if (lu->A_dup){ierr = MatDestroy(lu->A_dup);CHKERRQ(ierr);}
+  if (lu->rhs_dup){ierr = PetscFree(lu->rhs_dup);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -255,15 +267,28 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
   Mat_SuperLU    *lu = (Mat_SuperLU*)A->spptr;
   PetscScalar    *barray,*xarray;
   PetscErrorCode ierr;
-  PetscInt       info,i;
+  PetscInt       info,i,n=x->map->n;
   PetscReal      ferr,berr; 
-
+ 
   PetscFunctionBegin;
   if ( lu->lwork == -1 ) {
     PetscFunctionReturn(0);
   }
+
   lu->B.ncol = 1;   /* Set the number of right-hand side */
-  ierr = VecGetArray(b,&barray);CHKERRQ(ierr);
+  if (lu->options.Equil && !lu->rhs_dup){
+    /* superlu overwrites b when Equil is used, thus create rhs_dup to keep user's b unchanged */
+    ierr = PetscMalloc(n*sizeof(PetscScalar),&lu->rhs_dup);CHKERRQ(ierr); 
+  }
+  if (lu->options.Equil){
+    /* Copy b into rsh_dup */
+    ierr = VecGetArray(b,&barray);CHKERRQ(ierr);
+    ierr = PetscMemcpy(lu->rhs_dup,barray,n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = VecRestoreArray(b,&barray);CHKERRQ(ierr);
+    barray = lu->rhs_dup;
+  } else {
+    ierr = VecGetArray(b,&barray);CHKERRQ(ierr);
+  }
   ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_COMPLEX)
@@ -298,7 +323,9 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
   } else {
     SETERRQ(PETSC_ERR_SUP,"Factor type not supported");
   }
-  ierr = VecRestoreArray(b,&barray);CHKERRQ(ierr);
+  if (!lu->options.Equil){
+    ierr = VecRestoreArray(b,&barray);CHKERRQ(ierr);
+  }
   ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
 
   if ( !info || info == lu->A.ncol+1 ) {
@@ -435,6 +462,7 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
   B->preallocated          = PETSC_TRUE;
   
   ierr = PetscNewLog(B,Mat_SuperLU,&lu);CHKERRQ(ierr);
+  
   if (ftype == MAT_FACTOR_LU){
     set_default_options(&lu->options);
   } else if (ftype == MAT_FACTOR_ILU){
@@ -460,8 +488,13 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
     
     ilu_set_default_options(&lu->options);
   }
-  /* equilibration causes error in solve()(ref. [petsc-maint #42782] SuperLU troubles)
-     thus not supported here. See dgssvx.c for possible reason. */
+  /* Comments from SuperLU_4.0/SRC/dgssvx.c:
+      "Whether or not the system will be equilibrated depends on the
+       scaling of the matrix A, but if equilibration is used, A is
+       overwritten by diag(R)*A*diag(C) and B by diag(R)*B
+       (if options->Trans=NOTRANS) or diag(C)*B (if options->Trans = TRANS or CONJ)."
+     We set 'options.Equil = NO' as default because additional space is needed for it.
+  */
   lu->options.Equil     = NO;
   lu->options.PrintStat = NO;
 
@@ -471,7 +504,10 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
 
   ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"SuperLU Options","Mat");CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-mat_superlu_equil","Equil","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
-    if (flg) lu->options.Equil = YES;
+    if (flg) { /* superlu overwrites input matrix and rhs when Equil is used, thus create A_dup to keep user's A unchanged */
+      lu->options.Equil = YES;
+      ierr = MatDuplicate_SeqAIJ(A,MAT_COPY_VALUES,&lu->A_dup);CHKERRQ(ierr);
+    }
     ierr = PetscOptionsEList("-mat_superlu_colperm","ColPerm","None",colperm,4,colperm[3],&indx,&flg);CHKERRQ(ierr);
     if (flg) {lu->options.ColPerm = (colperm_t)indx;}
     ierr = PetscOptionsEList("-mat_superlu_iterrefine","IterRefine","None",iterrefine,4,iterrefine[0],&indx,&flg);CHKERRQ(ierr);

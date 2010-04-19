@@ -67,6 +67,7 @@ PetscErrorCode    KSPSetUp_LGMRES(KSP ksp)
   lgmres->aug_vv_allocated = 2* aug_dim + AUG_OFFSET;
   lgmres->augwork_alloc =  2* aug_dim + AUG_OFFSET;
   ierr = KSPGetVecs(ksp,lgmres->aug_vv_allocated,&lgmres->augvecs_user_work[0],0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscMalloc((max_k+1)*sizeof(PetscScalar),&lgmres->hwork);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,lgmres->aug_vv_allocated,lgmres->augvecs_user_work[0]);CHKERRQ(ierr);
   for (k=0; k<lgmres->aug_vv_allocated; k++) {
     lgmres->augvecs[k] = lgmres->augvecs_user_work[0][k];
@@ -310,10 +311,10 @@ PetscErrorCode LGMREScycle(PetscInt *itcount,KSP ksp)
 
  
      /* first do H+*y */
-     ierr = VecSet(AUG_TEMP,0.0);CHKERRQ(ierr);
-     ierr = VecGetArray(AUG_TEMP, &avec);CHKERRQ(ierr);
+     avec = lgmres->hwork;
+     ierr = PetscMemzero(avec,(it_total+1)*sizeof(*avec));CHKERRQ(ierr);
      for (ii=0; ii < it_total + 1; ii++) {
-        for (jj=0; jj <= ii+1; jj++) {
+        for (jj=0; jj <= ii+1 && jj < it_total+1; jj++) {
            avec[jj] += *HES(jj ,ii) * *GRS(ii);
         }
      }
@@ -321,8 +322,7 @@ PetscErrorCode LGMREScycle(PetscInt *itcount,KSP ksp)
      /*now multiply result by V+ */
      ierr = VecSet(VEC_TEMP,0.0);CHKERRQ(ierr);
      ierr = VecMAXPY(VEC_TEMP, it_total+1, avec, &VEC_VV(0));CHKERRQ(ierr); /*answer is in VEC_TEMP*/
-     ierr = VecRestoreArray(AUG_TEMP, &avec);CHKERRQ(ierr);
-  
+
      /*copy answer to aug location  and scale*/
      ierr = VecCopy(VEC_TEMP,  A_AUGVEC(spot));CHKERRQ(ierr);
      ierr = VecScale(A_AUGVEC(spot),inv_tmp_norm);CHKERRQ(ierr);
@@ -406,6 +406,7 @@ PetscErrorCode KSPDestroy_LGMRES(KSP ksp)
   }
   ierr = PetscFree(lgmres->augvecs_user_work);CHKERRQ(ierr);
   ierr = PetscFree(lgmres->aug_order);CHKERRQ(ierr);
+  ierr = PetscFree(lgmres->hwork);CHKERRQ(ierr);
   ierr = KSPDestroy_GMRES(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
