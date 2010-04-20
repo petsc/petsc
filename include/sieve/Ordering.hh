@@ -23,7 +23,6 @@ namespace ALE {
       int  numVertices;
 
       Partitioner<>::buildDualCSRV(mesh, &numVertices, &start, &adjacency, true);
-      std::cout << "  Built dual" << std::endl;
       pointPermutation->setChart(perm_type::chart_type(0, numVertices));
       for(int i = 0; i < numVertices; ++i) pointPermutation->setFiberDimension(i, 1);
       pointPermutation->allocatePoint();
@@ -36,7 +35,6 @@ namespace ALE {
       for(int i = 0; i < start[numVertices]; ++i) ++adjacency[i];
       for(int i = 0; i <= numVertices; ++i) ++start[i];
       PetscErrorCode ierr = SPARSEPACKgenrcm(&numVertices, start, adjacency, perm, mask, xls);CHKERRXX(ierr);
-      std::cout << "  Calculated numbering" << std::endl;
       for(int i = 0; i < numVertices; ++i) {alloc_type().destroy(mask+i);}
       alloc_type().deallocate(mask, numVertices);
       for(int i = 0; i < numVertices*2; ++i) {alloc_type().destroy(xls+i);}
@@ -51,48 +49,55 @@ namespace ALE {
     template<typename Mesh, typename Section>
     static void createOrderingClosureV(const Obj<Mesh>& mesh, const Obj<Section>& pointPermutation, const Obj<Section>& permutation, const int height = 0) {
       typedef ISieveVisitor::TransitiveClosureVisitor<typename Mesh::sieve_type> visitor_type;
-      const Obj<typename Mesh::sieve_type>& sieve = mesh->getSieve();
-      const typename Section::chart_type&   chart = pointPermutation->getChart();
-      typename Section::value_type          count = 0;
+      const Obj<typename Mesh::sieve_type>& sieve    = mesh->getSieve();
+      const typename Section::chart_type&   chart    = pointPermutation->getChart();
+      typename Section::value_type          maxPoint = 0;
 
       PETSc::Log::Event("PermutationClosure").begin();
       for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         typename visitor_type::visitor_type nV;
         visitor_type                        cV(*sieve, nV);
 
-	permutation->setFiberDimension(*p_iter, 1);
-	sieve->cone(*p_iter, cV);
-	if (height) {
-	  cV.setIsCone(false);
-	  sieve->support(*p_iter, cV);
-	}
-        permutation->setFiberDimension(*p_iter, 1);
-	count = std::max(count, *pointPermutation->restrictPoint(*p_iter));
+        sieve->cone(*p_iter, cV);
+        if (height) {
+          cV.setIsCone(false);
+          sieve->support(*p_iter, cV);
+        }
+        typename std::set<typename Mesh::point_type>::const_iterator begin = cV.getPoints().begin();
+        typename std::set<typename Mesh::point_type>::const_iterator end   = cV.getPoints().end();
+
+        for(typename std::set<typename Mesh::point_type>::const_iterator c_iter = begin; c_iter != end; ++c_iter) {
+          permutation->setFiberDimension(*c_iter, 1);
+        }
+        maxPoint = std::max(maxPoint, *pointPermutation->restrictPoint(*p_iter));
       }
-      std::cout << "  Sized full permutation, count " << count << std::endl;
       permutation->allocatePoint();
+      permutation->zero();
 
       for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         typename visitor_type::visitor_type nV;
         visitor_type                        cV(*sieve, nV);
 
-	sieve->cone(*p_iter, cV);
-	if (height) {
-	  cV.setIsCone(false);
-	  sieve->support(*p_iter, cV);
-	}
+        sieve->cone(*p_iter, cV);
+        if (height) {
+          cV.setIsCone(false);
+          sieve->support(*p_iter, cV);
+        }
 
-	permutation->updatePoint(*p_iter, pointPermutation->restrictPoint(*p_iter));
-	typename std::set<typename Mesh::point_type>::const_iterator begin = cV.getPoints().begin();
-	typename std::set<typename Mesh::point_type>::const_iterator end   = cV.getPoints().end();
+        permutation->updatePoint(*p_iter, pointPermutation->restrictPoint(*p_iter));
+        typename std::set<typename Mesh::point_type>::const_iterator begin = cV.getPoints().begin();
+        typename std::set<typename Mesh::point_type>::const_iterator end   = cV.getPoints().end();
 
-	++begin; // Skip cell
+        ++begin; // Skip cell
         for(typename std::set<typename Mesh::point_type>::const_iterator c_iter = begin; c_iter != end; ++c_iter) {
-	  permutation->updatePoint(*c_iter, &count);
-	  ++count;
+          const typename Section::value_type *val = permutation->restrictPoint(*c_iter);
+
+          if (!val[0]) {
+            ++maxPoint;
+            permutation->updatePoint(*c_iter, &maxPoint);
+          }
         }
       }
-      std::cout << "  Constructed full permutation" << std::endl;
       PETSc::Log::Event("PermutationClosure").end();
     };
 

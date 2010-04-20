@@ -1,6 +1,7 @@
 #define ALE_MEM_LOGGING
 
 #include <petscsys.h>
+#include <../src/sys/plog/logimpl.h>
 #include <Sieve.hh>
 #include <SieveAlgorithms.hh>
 #include <Mesh.hh>
