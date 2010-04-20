@@ -1,6 +1,7 @@
 #define ALE_MEM_LOGGING
 
 #include <petscsys.h>
+#include <../src/sys/plog/logimpl.h>
 #include <petsclog.hh>
 #include <petscmesh_formats.hh>
 #include <Mesh.hh>
@@ -462,11 +463,11 @@ public:
   void testReordering() {
     ALE::Obj<ALE::Ordering<>::perm_type> reordering = new ALE::Ordering<>::perm_type(this->_mesh->comm(), this->_mesh->debug());
 
-    this->_mesh->view("Original Mesh");
+    //this->_mesh->view("Original Mesh");
     ALE::Ordering<>::calculateMeshReordering(this->_mesh, reordering);
-    reordering->view("Reordering");
+    //reordering->view("Reordering");
     this->_mesh->relabel(*reordering);
-    this->_mesh->view("Relabeled Mesh");
+    //this->_mesh->view("Relabeled Mesh");
   };
 
   void testSerialization() {
