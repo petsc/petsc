@@ -1,6 +1,7 @@
 #define ALE_MEM_LOGGING
 
 #include <petscsys.h>
+#include <../src/sys/plog/logimpl.h>
 #include "unitTests.hh"
 
 #include <cppunit/extensions/TestFactoryRegistry.h>
