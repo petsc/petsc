@@ -315,7 +315,7 @@ EXTERN_C_END
 -    ghosted - do you want arrays for the ghosted or nonghosted patch
 
     Output Parameters:
-+    ptr - array data structured to be passed to ad_FormFunctionLocal()
++    vptr - array data structured to be passed to ad_FormFunctionLocal()
 .    array_start - actual start of 1d array of all values that adiC can access directly (may be null)
 -    tdof - total number of degrees of freedom represented in array_start (may be null)
 
@@ -331,11 +331,12 @@ EXTERN_C_END
 .seealso: DARestoreAdicArray()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicArray(DA da,PetscTruth ghosted,void *vptr,void *array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,deriv_type_size,xs,ys,xm,ym,zs,zm,itdof;
   char           *iarray_start;
+  void           **iptr = (void**)vptr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
@@ -447,7 +448,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicArray(DA da,PetscTruth ghosted,void **
   }
   if (i == DA_MAX_AD_ARRAYS+1) SETERRQ(PETSC_ERR_SUP,"Too many DA ADIC arrays obtained");
   if (tdof)        *tdof = itdof;
-  if (array_start) *array_start = iarray_start;
+  if (array_start) *(void**)array_start = iarray_start;
   PetscFunctionReturn(0);
 }
 
@@ -470,10 +471,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicArray(DA da,PetscTruth ghosted,void **
 .seealso: DAGetAdicArray()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
+PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicArray(DA da,PetscTruth ghosted,void *ptr,void *array_start,PetscInt *tdof)
 {
   PetscInt  i;
-  void      *iarray_start = 0;
+  void      **iptr = (void**)ptr,iarray_start = 0;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
@@ -517,7 +518,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicArray(DA da,PetscTruth ghosted,voi
 
 #undef __FUNCT__
 #define __FUNCT__ "ad_DAGetArray"
-PetscErrorCode PETSCDM_DLLEXPORT ad_DAGetArray(DA da,PetscTruth ghosted,void **iptr)
+PetscErrorCode PETSCDM_DLLEXPORT ad_DAGetArray(DA da,PetscTruth ghosted,void *iptr)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -527,7 +528,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ad_DAGetArray(DA da,PetscTruth ghosted,void **i
 
 #undef __FUNCT__
 #define __FUNCT__ "ad_DARestoreArray"
-PetscErrorCode PETSCDM_DLLEXPORT ad_DARestoreArray(DA da,PetscTruth ghosted,void **iptr)
+PetscErrorCode PETSCDM_DLLEXPORT ad_DARestoreArray(DA da,PetscTruth ghosted,void *iptr)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -541,13 +542,13 @@ PetscErrorCode PETSCDM_DLLEXPORT ad_DARestoreArray(DA da,PetscTruth ghosted,void
 #define __FUNCT__ "DAGetArray"
 /*@C
      DAGetArray - Gets a work array for a DA
-          
+
     Input Parameter:
 +    da - information about my local patch
 -    ghosted - do you want arrays for the ghosted or nonghosted patch
 
     Output Parameters:
-.    ptr - array data structured
+.    vptr - array data structured
 
     Note:  The vector values are NOT initialized and may have garbage in them, so you may need
            to zero them.
@@ -557,11 +558,12 @@ PetscErrorCode PETSCDM_DLLEXPORT ad_DARestoreArray(DA da,PetscTruth ghosted,void
 .seealso: DARestoreArray(), DAGetAdicArray()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetArray(DA da,PetscTruth ghosted,void **iptr)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetArray(DA da,PetscTruth ghosted,void *vptr)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,xs,ys,xm,ym,zs,zm;
   char           *iarray_start;
+  void           **iptr = (void**)vptr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
@@ -673,17 +675,17 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetArray(DA da,PetscTruth ghosted,void **iptr
     Input Parameter:
 +    da - information about my local patch
 .    ghosted - do you want arrays for the ghosted or nonghosted patch
--    ptr - array data structured to be passed to ad_FormFunctionLocal()
+-    vptr - array data structured to be passed to ad_FormFunctionLocal()
 
      Level: advanced
 
 .seealso: DAGetArray(), DAGetAdicArray()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DARestoreArray(DA da,PetscTruth ghosted,void **iptr)
+PetscErrorCode PETSCDM_DLLEXPORT DARestoreArray(DA da,PetscTruth ghosted,void *vptr)
 {
   PetscInt  i;
-  void      *iarray_start = 0;
+  void      **iptr = (void**)vptr,*iarray_start = 0;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
@@ -733,7 +735,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreArray(DA da,PetscTruth ghosted,void **
 -    ghosted - do you want arrays for the ghosted or nonghosted patch?
 
      Output Parameters:
-+    iptr - array data structured to be passed to ad_FormFunctionLocal()
++    vptr - array data structured to be passed to ad_FormFunctionLocal()
 .    array_start - actual start of 1d array of all values that adiC can access directly (may be null)
 -    tdof - total number of degrees of freedom represented in array_start (may be null)
 
@@ -749,11 +751,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreArray(DA da,PetscTruth ghosted,void **
 .seealso: DARestoreAdicMFArray(), DAGetArray(), DAGetAdicArray()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray(DA da,PetscTruth ghosted,void *vptr,void *array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
   char           *iarray_start;
+  void           **iptr = (void**)vptr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
@@ -863,17 +866,18 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray(DA da,PetscTruth ghosted,void 
   }
   if (i == DA_MAX_AD_ARRAYS+1) SETERRQ(PETSC_ERR_ARG_WRONG,"Too many DA ADIC arrays obtained");
   if (tdof)        *tdof = itdof;
-  if (array_start) *array_start = iarray_start;
+  if (array_start) *(void**)array_start = iarray_start;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "DAGetAdicMFArray4"
-PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray4(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray4(DA da,PetscTruth ghosted,void *vptr,void *array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
   char           *iarray_start;
+  void           **iptr = (void**)vptr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
@@ -955,17 +959,18 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray4(DA da,PetscTruth ghosted,void
   }
   if (i == DA_MAX_AD_ARRAYS+1) SETERRQ(PETSC_ERR_ARG_WRONG,"Too many DA ADIC arrays obtained");
   if (tdof)        *tdof = itdof;
-  if (array_start) *array_start = iarray_start;
+  if (array_start) *(void**)array_start = iarray_start;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "DAGetAdicMFArray9"
-PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray9(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray9(DA da,PetscTruth ghosted,void *vptr,void *array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
   char           *iarray_start;
+  void           **iptr = (void**)vptr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
@@ -1047,7 +1052,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray9(DA da,PetscTruth ghosted,void
   }
   if (i == DA_MAX_AD_ARRAYS+1) SETERRQ(PETSC_ERR_ARG_WRONG,"Too many DA ADIC arrays obtained");
   if (tdof)        *tdof = itdof;
-  if (array_start) *array_start = iarray_start;
+  if (array_start) *(void**)array_start = iarray_start;
   PetscFunctionReturn(0);
 }
 
@@ -1061,7 +1066,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray9(DA da,PetscTruth ghosted,void
 -    ghosted - do you want arrays for the ghosted or nonghosted patch?
 
      Output Parameters:
-+    iptr - array data structured to be passed to ad_FormFunctionLocal()
++    vptr - array data structured to be passed to ad_FormFunctionLocal()
 .    array_start - actual start of 1d array of all values that adiC can access directly (may be null)
 -    tdof - total number of degrees of freedom represented in array_start (may be null)
 
@@ -1077,11 +1082,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray9(DA da,PetscTruth ghosted,void
 .seealso: DARestoreAdicMFArray(), DAGetArray(), DAGetAdicArray()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArrayb(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArrayb(DA da,PetscTruth ghosted,void *vptr,void *array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
   char           *iarray_start;
+  void           **iptr = (void**)vptr;
   PetscInt       bs = da->w,bs1 = bs+1;
 
   PetscFunctionBegin;
@@ -1192,7 +1198,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArrayb(DA da,PetscTruth ghosted,void
   }
   if (i == DA_MAX_AD_ARRAYS+1) SETERRQ(PETSC_ERR_ARG_WRONG,"Too many DA ADIC arrays obtained");
   if (tdof)        *tdof = itdof;
-  if (array_start) *array_start = iarray_start;
+  if (array_start) *(void**)array_start = iarray_start;
   PetscFunctionReturn(0);
 }
 
@@ -1215,10 +1221,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArrayb(DA da,PetscTruth ghosted,void
 .seealso: DAGetAdicArray()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicMFArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
+PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicMFArray(DA da,PetscTruth ghosted,void *vptr,void *array_start,PetscInt *tdof)
 {
   PetscInt  i;
-  void      *iarray_start = 0;
+  void      **iptr = (void**)vptr,*iarray_start = 0;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
@@ -1262,7 +1268,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicMFArray(DA da,PetscTruth ghosted,v
 
 #undef __FUNCT__
 #define __FUNCT__ "admf_DAGetArray"
-PetscErrorCode PETSCDM_DLLEXPORT admf_DAGetArray(DA da,PetscTruth ghosted,void **iptr)
+PetscErrorCode PETSCDM_DLLEXPORT admf_DAGetArray(DA da,PetscTruth ghosted,void *iptr)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -1272,7 +1278,7 @@ PetscErrorCode PETSCDM_DLLEXPORT admf_DAGetArray(DA da,PetscTruth ghosted,void *
 
 #undef __FUNCT__
 #define __FUNCT__ "admf_DARestoreArray"
-PetscErrorCode PETSCDM_DLLEXPORT admf_DARestoreArray(DA da,PetscTruth ghosted,void **iptr)
+PetscErrorCode PETSCDM_DLLEXPORT admf_DARestoreArray(DA da,PetscTruth ghosted,void *iptr)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

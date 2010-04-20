@@ -109,7 +109,7 @@ runex1_beuler_5:
 runex1_cn:
 	-@touch ex1_cn.tmp;\
 	for np in ${NPROCS}; do \
-	  ${MPIEXEC} -n $$np ./ex1 -ts_type crank-nicholson -linear_constant_matrix -monitor -nox -time 10 >> ex1_cn.tmp 2>&1;   \
+	  ${MPIEXEC} -n $$np ./ex1 -ts_type cn -linear_constant_matrix -monitor -nox -time 10 >> ex1_cn.tmp 2>&1;   \
         done; \
         if (${DIFF} output/ex1_cn.out ex1_cn.tmp) then true; \
         else echo "Possible problem with ex1_cn, diffs above"; fi; \
@@ -117,7 +117,7 @@ runex1_cn:
 runex1_cn_2:
 	-@touch ex1_cn.tmp;\
 	for np in ${NPROCS}; do \
-	  ${MPIEXEC} -n $$np ./ex1 -ts_type crank-nicholson -linear_variable_matrix -monitor -nox -time 10 >> ex1_cn.tmp 2>&1;   \
+	  ${MPIEXEC} -n $$np ./ex1 -ts_type cn -linear_variable_matrix -monitor -nox -time 10 >> ex1_cn.tmp 2>&1;   \
 	done; \
         if (${DIFF} output/ex1_cn.out ex1_cn.tmp) then true; \
         else echo "Possible problem with ex1_cn_2, diffs above"; fi; \
@@ -125,7 +125,7 @@ runex1_cn_2:
 runex1_cn_3:
 	-@touch ex1_cn.tmp;\
 	for np in ${NPROCS}; do \
-	  ${MPIEXEC} -n $$np ./ex1 -ts_type crank-nicholson -linear_no_matrix -pc_type none -monitor -nox -time 10 >> ex1_cn.tmp 2>&1;   \
+	  ${MPIEXEC} -n $$np ./ex1 -ts_type cn -linear_no_matrix -pc_type none -monitor -nox -time 10 >> ex1_cn.tmp 2>&1;   \
 	done; \
         if (${DIFF} output/ex1_cn.out ex1_cn.tmp) then true; \
         else echo "Possible problem with ex1_cn_3, diffs above"; fi; \
@@ -133,7 +133,7 @@ runex1_cn_3:
 runex1_cn_4:
 	-@touch ex1_cn.tmp;\
 	for np in ${NPROCS}; do \
-	  ${MPIEXEC} -n $$np ./ex1 -ts_type crank-nicholson -nonlinear_jacobian -monitor -nox -time 10 >> ex1_cn.tmp 2>&1;   \
+	  ${MPIEXEC} -n $$np ./ex1 -ts_type cn -nonlinear_jacobian -monitor -nox -time 10 >> ex1_cn.tmp 2>&1;   \
 	done; \
         if (${DIFF} output/ex1_cn.out ex1_cn.tmp) then true; \
         else echo "Possible problem with ex1_cn_4, diffs above"; fi; \
@@ -141,7 +141,7 @@ runex1_cn_4:
 runex1_cn_5:
 	-@touch ex1_cn.tmp;\
 	for np in ${NPROCS}; do \
-	  ${MPIEXEC} -n $$np ./ex1 -ts_type crank-nicholson -nonlinear_no_jacobian -pc_type none -monitor -nox -time 10 >> ex1_cn.tmp 2>&1;   \
+	  ${MPIEXEC} -n $$np ./ex1 -ts_type cn -nonlinear_no_jacobian -pc_type none -monitor -nox -time 10 >> ex1_cn.tmp 2>&1;   \
 	done; \
         if (${DIFF} output/ex1_cn.out ex1_cn.tmp) then true; \
         else echo "Possible problem with ex1_cn_5, diffs above"; fi; \
@@ -187,12 +187,12 @@ runex4_2:
 	   else echo "Possible problem with ex4_2, diffs above"; fi; \
 	   ${RM} -f ex4.tmp
 runex4_3:
-	-@${MPIEXEC} -n 2 ./ex4 -ts_fd -ts_type crank-nicholson > ex4.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 2 ./ex4 -ts_fd -ts_type cn > ex4.tmp 2>&1;	  \
 	   if (${DIFF} output/ex4_3.out ex4.tmp) then true; \
 	   else echo "Possible problem with ex4_3, diffs above"; fi; \
 	   ${RM} -f ex4.tmp
 runex4_4:
-	-@${MPIEXEC} -n 2 ./ex4 -ts_fd -ts_type crank-nicholson -snes_mf_operator > ex4.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 2 ./ex4 -ts_fd -ts_type cn -snes_mf_operator > ex4.tmp 2>&1;	  \
 	   if (${DIFF} output/ex4_3.out ex4.tmp) then true; \
 	   else echo "Possible problem with ex4_4, diffs above"; fi; \
 	   ${RM} -f ex4.tmp

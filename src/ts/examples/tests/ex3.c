@@ -122,7 +122,7 @@ int main(int argc,char **argv)
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr); 
 
   /* set time-step method */
-  ierr = TSSetType(ts,TSCRANK_NICHOLSON);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSCN);CHKERRQ(ierr);
   
   /* Set optional user-defined monitoring routine */
   ierr = TSMonitorSet(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);

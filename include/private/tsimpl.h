@@ -18,6 +18,8 @@
 #define MAXTSMONITORS 5 
 
 struct _TSOps {
+  PetscErrorCode (*snesfunction)(SNES,Vec,Vec,TS);
+  PetscErrorCode (*snesjacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,TS);
   PetscErrorCode (*rhsmatrix)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*);
   PetscErrorCode (*lhsmatrix)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*);
   PetscErrorCode (*rhsfunction)(TS,PetscReal,Vec,Vec,void*);

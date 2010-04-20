@@ -932,8 +932,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,v
   PetscADResetIndep();
 
   /* get space for derivative objects.  */
-  ierr = DAGetAdicArray(da,PETSC_TRUE,(void **)&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
-  ierr = DAGetAdicArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
+  ierr = DAGetAdicArray(da,PETSC_TRUE,&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
+  ierr = DAGetAdicArray(da,PETSC_FALSE,&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
   ierr = VecGetArray(vu,&ustart);CHKERRQ(ierr);
   ierr = DAGetColoring(da,IS_COLORING_GHOSTED,MATAIJ,&iscoloring);CHKERRQ(ierr);
 
@@ -952,8 +952,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,v
   ierr = MatSetValuesAdic(J,(PetscScalar**)ad_fstart);CHKERRQ(ierr);
 
   /* return space for derivative objects.  */
-  ierr = DARestoreAdicArray(da,PETSC_TRUE,(void **)&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
-  ierr = DARestoreAdicArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
+  ierr = DARestoreAdicArray(da,PETSC_TRUE,&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
+  ierr = DARestoreAdicArray(da,PETSC_FALSE,&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -990,8 +990,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DAMultiplyByJacobian1WithAdic(DA da,Vec vu,Vec 
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
 
   /* get space for derivative objects.  */
-  ierr = DAGetAdicMFArray(da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
-  ierr = DAGetAdicMFArray(da,PETSC_FALSE,(void **)&ad_f,(void**)&ad_fstart,&tdof);CHKERRQ(ierr);
+  ierr = DAGetAdicMFArray(da,PETSC_TRUE,&ad_vu,&ad_vustart,&gtdof);CHKERRQ(ierr);
+  ierr = DAGetAdicMFArray(da,PETSC_FALSE,&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
 
   /* copy input vector into derivative object */
   ierr = VecGetArray(vu,&avu);CHKERRQ(ierr);
@@ -1017,8 +1017,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DAMultiplyByJacobian1WithAdic(DA da,Vec vu,Vec 
   ierr = VecRestoreArray(f,&af);CHKERRQ(ierr);  
 
   /* return space for derivative objects.  */
-  ierr = DARestoreAdicMFArray(da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
-  ierr = DARestoreAdicMFArray(da,PETSC_FALSE,(void **)&ad_f,(void**)&ad_fstart,&tdof);CHKERRQ(ierr);
+  ierr = DARestoreAdicMFArray(da,PETSC_TRUE,&ad_vu,&ad_vustart,&gtdof);CHKERRQ(ierr);
+  ierr = DARestoreAdicMFArray(da,PETSC_FALSE,&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif

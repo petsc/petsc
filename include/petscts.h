@@ -31,9 +31,9 @@ E*/
 #define TSEULER           "euler"
 #define TSBEULER          "beuler"
 #define TSPSEUDO          "pseudo"
-#define TSCRANK_NICHOLSON "crank-nicholson"
+#define TSCN              "cn"
 #define TSSUNDIALS        "sundials"
-#define TSRUNGE_KUTTA     "runge-kutta"
+#define TSRK              "rk"
 #define TSPYTHON          "python"
 #define TSTHETA           "theta"
 #define TSGL              "gl"
@@ -429,8 +429,14 @@ EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsGetParameters(TS,PetscInt *,l
 
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSRKSetTolerance(TS,PetscReal);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT TSSetDM(TS,DM);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT TSGetDM(TS,DM*);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSThetaSetTheta(TS,PetscReal);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSThetaGetTheta(TS,PetscReal*);
+
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSSetDM(TS,DM);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSGetDM(TS,DM*);
+
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT SNESTSFormFunction(SNES,Vec,Vec,void*);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT SNESTSFormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 PETSC_EXTERN_CXX_END
 #endif

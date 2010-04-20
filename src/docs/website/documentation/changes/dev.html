@@ -126,9 +126,15 @@ in the PETSc Development Version</font></p>
       <p><u><b>SNES:</b></u></p>
       <p><u><b>TS:</b></u></p>
       <ul>
+        <li>Rename TSCRANK_NICHOLSON to TSCN and TSRUNGE_KUTTA to TSRK for consistency.<li>
       </ul>
       <p><u><b>DA:</b></u></p>
       <ul>
+        <li>Change array argument of DAGetArray and related functions
+        from void** to void* to avoid the need for an explicit cast (the
+        argument still has the meaning of a pointer to d-dimensionally
+        indexed array of user-defined node type, old code will still
+        compile correctly but the cast is no longer necessary).</li>
       </ul>
       <p><u><b>DMMG:</b></u></p>
       <ul>
