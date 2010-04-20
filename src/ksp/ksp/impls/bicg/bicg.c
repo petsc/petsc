@@ -159,8 +159,9 @@ PetscErrorCode KSPDestroy_BiCG(KSP ksp)
 
    Level: beginner
 
-   Note: this method requires that one be apply to apply the transpose of the preconditioner and operator
+   Notes: this method requires that one be apply to apply the transpose of the preconditioner and operator
          as well as the operator and preconditioner.
+         Supports only left preconditioning
 
          See KSPCGNE for code that EXACTLY runs the preconditioned conjugate gradient method on the 
          normal equations
@@ -173,8 +174,13 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "KSPCreate_BiCG"
 PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_BiCG(KSP ksp)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   ksp->data                      = (void*)0;
+  if (ksp->pc_side != PC_LEFT) {
+    ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for BiCG to left!\n");CHKERRQ(ierr);
+  }
   ksp->pc_side                   = PC_LEFT;
   ksp->ops->setup                = KSPSetUp_BiCG;
   ksp->ops->solve                = KSPSolve_BiCG;

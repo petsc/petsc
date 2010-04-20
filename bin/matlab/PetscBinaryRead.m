@@ -67,32 +67,37 @@ for l=1:narg
     m      = header(1);
     n      = header(2);
     nz     = header(3);
-    nnz = double(read(fd,m,'int32'));  %nonzeros per row
-    sum_nz = sum(nnz);
-    if(sum_nz ~=nz)
-      str = sprintf('No-Nonzeros sum-rowlengths do not match %d %d',nz,sum_nz);
-      error(str);
-    end
-    j   = double(read(fd,nz,'int32')) + 1;
-    if strcmp(comp,'complex')
-      s   = read(fd,2*nz,'double');
-    else 
-      s   = read(fd,nz,'double');
-    end
-    i   = ones(nz,1);
-    cnt = 1;
-    for k=1:m
-      next = cnt+nnz(k)-1;
-      i(cnt:next,1) = (double(k))*ones(nnz(k),1);
-      cnt = next+1;
-    end
-    if strcmp(comp,'complex')
-      A = sparse(i,j,complex(s(1:2:2*nz),s(2:2:2*nz)),m,n,nz);
+    if (nz == -1)
+      s   = read(fd,m*n,'double');
+      A   = reshape(s,n,m)';
     else
-      A = sparse(i,j,s,m,n,nz);
+      nnz = double(read(fd,m,'int32'));  %nonzeros per row
+      sum_nz = sum(nnz);
+      if(sum_nz ~=nz)
+        str = sprintf('No-Nonzeros sum-rowlengths do not match %d %d',nz,sum_nz);
+        error(str);
+      end
+      j   = double(read(fd,nz,'int32')) + 1;
+      if strcmp(comp,'complex')
+        s   = read(fd,2*nz,'double');
+      else 
+        s   = read(fd,nz,'double');
+      end
+      i   = ones(nz,1);
+      cnt = 1;
+      for k=1:m
+        next = cnt+nnz(k)-1;
+        i(cnt:next,1) = (double(k))*ones(nnz(k),1);
+        cnt = next+1;
+      end
+      if strcmp(comp,'complex')
+        A = sparse(i,j,complex(s(1:2:2*nz),s(2:2:2*nz)),m,n,nz);
+      else
+        A = sparse(i,j,s,m,n,nz);
+      end
     end
     if strcmp(comp,'cell')
-      result{l} = A;
+        result{l} = A;
     else 
       varargout(l) = {A};
     end

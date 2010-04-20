@@ -795,6 +795,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetHapTol(KSP ksp,PetscReal tol)
 
    Level: beginner
 
+   Notes: Left and right preconditioning are supported, but not symmetric preconditioning.
+
    References:
      GMRES: A GENERALIZED MINIMAL RESIDUAL ALGORITHM FOR SOLVING NONSYMMETRIC LINEAR SYSTEMS. YOUCEF SAAD AND MARTIN H. SCHULTZ,
           SIAM J. ScI. STAT. COMPUT. Vo|. 7, No. 3, July 1986, pp. 856--869.
@@ -802,7 +804,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetHapTol(KSP ksp,PetscReal tol)
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPFGMRES, KSPLGMRES,
            KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetOrthogonalization()
            KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESModifiedGramSchmidtOrthogonalization(),
-           KSPGMRESCGSRefinementType, KSPGMRESSetCGSRefinementType(), KSPGMRESMonitorKrylov()
+           KSPGMRESCGSRefinementType, KSPGMRESSetCGSRefinementType(), KSPGMRESMonitorKrylov(), KSPSetPreconditionerSide()
 
 M*/
 
@@ -820,8 +822,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_GMRES(KSP ksp)
 
 
   ksp->normtype                          = KSP_NORM_PRECONDITIONED;
-  ksp->pc_side                           = PC_LEFT;
-
   ksp->ops->buildsolution                = KSPBuildSolution_GMRES;
   ksp->ops->setup                        = KSPSetUp_GMRES;
   ksp->ops->solve                        = KSPSolve_GMRES;

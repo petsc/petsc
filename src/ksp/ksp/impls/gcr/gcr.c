@@ -334,12 +334,13 @@ PetscErrorCode  KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
            Restarts are solves with x0 not equal to zero. When a restart occurs, the initial starting 
            solution is given by the current estimate for x which was obtained by the last restart 
            iterations of the GCR algorithm.
-           When using GCR, the solution and residual vector can be directly accessed at any iterate,
+           Unlike GMRES and FGMRES, when using GCR, the solution and residual vector can be directly accessed at any iterate,
            with zero computational cost, via a call to KSPBuildSolution() and KSPBuildResidual() respectively.
            This implementation of GCR will only apply the stopping condition test whenever ksp->its > ksp->chknorm, 
            where ksp->chknorm is specified via the command line argument -ksp_check_norm_iteration or via 
            the function KSPSetCheckNormIteration().
-           The method implemented requires the storage of 2 x restart + 1 vectors.
+           The method implemented requires the storage of 2 x restart + 1 vectors, twice as much as GMRES.
+           Support only for right preconditioning.
 
     Contributed by Dave May
  
@@ -365,6 +366,9 @@ PetscErrorCode KSPCreate_GCR(KSP ksp)
   ctx->restart                   = 30;
   ctx->n_restarts                = 0;
   ksp->data                      = (void*)ctx;
+  if (ksp->pc_side != PC_RIGHT) {
+     ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for GCR to right!\n");CHKERRQ(ierr);
+  }
   ksp->pc_side                   = PC_RIGHT;
         
   ksp->ops->setup                = KSPSetUp_GCR;

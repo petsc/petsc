@@ -229,6 +229,8 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
    as well as the operator and preconditioner. If the transpose of the preconditioner is not available then
    the preconditioner is used in its place so one ends up preconditioning A'A with B B. Seems odd?
 
+   This only supports left preconditioning.
+
    Developer Notes: How is this related to the preconditioned LSQR implementation?
 
    This object is subclassed off of KSPCG
@@ -261,6 +263,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CGNE(KSP ksp)
   cg->type                       = KSP_CG_HERMITIAN;
 #endif
   ksp->data                      = (void*)cg;
+  if (ksp->pc_side != PC_LEFT) {
+     ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for CGNE to left!\n");CHKERRQ(ierr);
+  }
   ksp->pc_side                   = PC_LEFT;
 
   /*

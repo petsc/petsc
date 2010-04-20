@@ -349,17 +349,21 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
 
    Level: beginner
 
-   Notes:  The original unpreconditioned algorithm can be found in Paige and Saunders, ACM Transactions on Mathematical Software, Vol 8, pp 43-71, 1982. 
-     In exact arithmetic the LSQR method (with no preconditioning) is identical to the KSPCG algorithm applied to the normal equations.
-     The preconditioned varient was implemented by Bas van't Hof and is essentially a left preconditioning for the Normal Equations. 
+   Notes:  
      This varient, when applied with no preconditioning is identical to the original algorithm in exact arithematic; however, in practice, with no preconditioning
      due to inexact arithematic, it can converge differently. Hence when no preconditioner is used (PCType PCNONE) it automatically reverts to the original algorithm.
 
      With the PETSc built-in preconditioners, such as ICC, one should call KSPSetOperators(ksp,A,A'*A,...) since the preconditioner needs to work 
      for the normal equations A'*A.
 
-   Developer Notes: How is this related to the KSPCGNE implementation? One difference is that KSPCGNE applies the preconditioner transpose times the preconditioner, 
-      so one does not need to pass A'*A as the third argument to KSPSetOperators().
+     Supports only left preconditioning.
+
+   References:The original unpreconditioned algorithm can be found in Paige and Saunders, ACM Transactions on Mathematical Software, Vol 8, pp 43-71, 1982. 
+     In exact arithmetic the LSQR method (with no preconditioning) is identical to the KSPCG algorithm applied to the normal equations.
+     The preconditioned varient was implemented by Bas van't Hof and is essentially a left preconditioning for the Normal Equations. 
+
+   Developer Notes: How is this related to the KSPCGNE implementation? One difference is that KSPCGNE applies
+            the preconditioner transpose times the preconditioner,  so one does not need to pass A'*A as the third argument to KSPSetOperators().
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP
 
@@ -378,6 +382,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_LSQR(KSP ksp)
   lsqr->se_flg = PETSC_FALSE;
   lsqr->arnorm = 0.0;
   ksp->data                      = (void*)lsqr;
+  if (ksp->pc_side != PC_LEFT) {
+     ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for LSQR to left!\n");CHKERRQ(ierr);
+  }
   ksp->pc_side                   = PC_LEFT;
   ksp->ops->setup                = KSPSetUp_LSQR;
   ksp->ops->solve                = KSPSolve_LSQR;

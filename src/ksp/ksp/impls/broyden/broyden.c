@@ -186,6 +186,8 @@ PetscErrorCode KSPSetFromOptions_Broyden(KSP ksp)
 
    Level: beginner
 
+   Notes: Supports only left preconditioning
+
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP
 
 M*/
@@ -203,6 +205,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Broyden(KSP ksp)
   cg->csize                      = 0;
 
   ksp->data                      = (void*)cg;
+ if (ksp->pc_side != PC_LEFT) {
+    ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for Broyden to left!\n");CHKERRQ(ierr);
+  }
   ksp->pc_side                   = PC_LEFT;
 
   /*

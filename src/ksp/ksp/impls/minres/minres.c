@@ -202,12 +202,13 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 
    Level: beginner
 
-   Contributed by: Robert Scheichl: maprs@maths.bath.ac.uk
-
    Notes: The operator and the preconditioner must be symmetric and the preconditioner must
           be positive definite for this method.
+          Supports only left preconditioning.
 
    Reference: Paige & Saunders, 1975.
+
+   Contributed by: Robert Scheichl: maprs@maths.bath.ac.uk
 
 .seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPCG, KSPCR
 M*/
@@ -221,6 +222,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_MINRES(KSP ksp)
 
   PetscFunctionBegin;
 
+  if (ksp->pc_side != PC_LEFT) {
+    ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for MINRES to left!\n");CHKERRQ(ierr);
+  }
   ksp->pc_side   = PC_LEFT;
   ierr           = PetscNewLog(ksp,KSP_MINRES,&minres);CHKERRQ(ierr);
   minres->haptol = 1.e-18;

@@ -103,10 +103,10 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
     ierr = KSP_PCApplyBAorAB(ksp,T,AUQ,U);CHKERRQ(ierr);
     ierr = VecAXPY(R,-a,AUQ);CHKERRQ(ierr);       /* r <- r - a K (u + q) */
     ierr = VecDot(R,RP,&rho);CHKERRQ(ierr);         /* rho <- (r,rp)        */
-    if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
-      ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
-    } else if (ksp->normtype == KSP_NORM_NATURAL) {
+    if (ksp->normtype == KSP_NORM_NATURAL) {
       dp = PetscAbsScalar(rho);
+    } else {
+      ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
     }
 
     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
@@ -142,9 +142,15 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
 
    Level: beginner
 
-   Notes: Reference: Sonneveld, 1989.
+   References: Sonneveld, 1989.
 
-.seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBCGS
+   Notes: Does not require a symmetric matrix. Does not apply transpose of the matrix.
+        Supports left and right preconditioning, but not symmetric.
+
+   Developer Notes: Has this weird support for doing the convergence test with the natural norm, I assume this works only with 
+      no preconditioning and symmetric positive definite operator.
+
+.seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBCGS, KSPSetPreconditionerSide()
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -153,7 +159,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CGS(KSP ksp)
 {
   PetscFunctionBegin;
   ksp->data                      = (void*)0;
-  ksp->pc_side                   = PC_LEFT;
   ksp->ops->setup                = KSPSetUp_CGS;
   ksp->ops->solve                = KSPSolve_CGS;
   ksp->ops->destroy              = KSPDefaultDestroy;
