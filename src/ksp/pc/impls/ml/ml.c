@@ -48,9 +48,9 @@ typedef struct {
   ML_Aggregate   *agg_object;
   GridCtx        *gridctx;
   FineGridCtx    *PetscMLdata;
-  PetscInt       Nlevels,MaxNlevels,MaxCoarseSize,CoarsenScheme; 
-  PetscReal      Threshold,DampingFactor; 
-  PetscTruth     SpectralNormScheme_Anorm;
+  PetscInt       Nlevels,MaxNlevels,MaxCoarseSize,CoarsenScheme,EnergyMinimization;
+  PetscReal      Threshold,DampingFactor,EnergyMinimizationDropTol;
+  PetscTruth     SpectralNormScheme_Anorm,BlockScaling,EnergyMinimizationCheap,Symmetrize,OldHierarchy,KeepAggInfo,Reusable;
   PetscMPIInt    size; /* size of communicator for pc->pmat */
 } PC_ML;
 
@@ -547,7 +547,9 @@ PetscErrorCode PCSetUp_ML(PC pc)
   ML_Init_Amatrix(ml_object,0,m,m,PetscMLdata);
   ML_Set_Amatrix_Getrow(ml_object,0,PetscML_getrow,PetscML_comm,nlocal_allcols); 
   ML_Set_Amatrix_Matvec(ml_object,0,PetscML_matvec);
-   
+
+  ML_Set_Symmetrize(ml_object,pc_ml->Symmetrize ? ML_YES : ML_NO);
+
   /* aggregation */
   ML_Aggregate_Create(&agg_object); 
   pc_ml->agg_object = agg_object;
@@ -568,8 +570,18 @@ PetscErrorCode PCSetUp_ML(PC pc)
   if (pc_ml->SpectralNormScheme_Anorm){
     ML_Set_SpectralNormScheme_Anorm(ml_object);
   }
+  agg_object->keep_agg_information      = (int)pc_ml->KeepAggInfo;
+  agg_object->keep_P_tentative          = (int)pc_ml->Reusable;
+  agg_object->block_scaled_SA           = (int)pc_ml->BlockScaling;
+  agg_object->minimizing_energy         = (int)pc_ml->EnergyMinimization;
+  agg_object->minimizing_energy_droptol = (double)pc_ml->EnergyMinimizationDropTol;
+  agg_object->cheap_minimizing_energy   = (int)pc_ml->EnergyMinimizationCheap;
 
-  Nlevels = ML_Gen_MGHierarchy_UsingAggregation(ml_object,0,ML_INCREASING,agg_object);
+  if (pc_ml->OldHierarchy) {
+    Nlevels = ML_Gen_MGHierarchy_UsingAggregation(ml_object,0,ML_INCREASING,agg_object);
+  } else {
+    Nlevels = ML_Gen_MultiLevelHierarchy_UsingAggregation(ml_object,0,ML_INCREASING,agg_object);
+  }
   if (Nlevels<=0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Nlevels %d must > 0",Nlevels);
   pc_ml->Nlevels = Nlevels;
   fine_level = Nlevels - 1;
@@ -702,8 +714,10 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
   const char      *scheme[] = {"Uncoupled","Coupled","MIS","METIS"};
   PC_MG           *mg = (PC_MG*)pc->data;
   PC_ML           *pc_ml = (PC_ML*)mg->innerctx;
+  PetscMPIInt     size;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
   ierr = PetscOptionsHead("ML options");CHKERRQ(ierr); 
   PrintLevel    = 0;
   indx          = 0; 
@@ -715,7 +729,41 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
   pc_ml->CoarsenScheme = indx;
   ierr = PetscOptionsReal("-pc_ml_DampingFactor","P damping factor","ML_Aggregate_Set_DampingFactor",pc_ml->DampingFactor,&pc_ml->DampingFactor,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-pc_ml_Threshold","Smoother drop tol","ML_Aggregate_Set_Threshold",pc_ml->Threshold,&pc_ml->Threshold,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTruth("-pc_ml_SpectralNormScheme_Anorm","Method used for estimating spectral radius","ML_Set_SpectralNormScheme_Anorm",pc_ml->SpectralNormScheme_Anorm,&pc_ml->SpectralNormScheme_Anorm,PETSC_NULL);
+  ierr = PetscOptionsTruth("-pc_ml_SpectralNormScheme_Anorm","Method used for estimating spectral radius","ML_Set_SpectralNormScheme_Anorm",pc_ml->SpectralNormScheme_Anorm,&pc_ml->SpectralNormScheme_Anorm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-pc_ml_Symmetrize","Symmetrize aggregation","ML_Set_Symmetrize",pc_ml->Symmetrize,&pc_ml->Symmetrize,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-pc_ml_BlockScaling","Scale all dofs at each node together","None",pc_ml->BlockScaling,&pc_ml->BlockScaling,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_ml_EnergyMinimization","Energy minimization norm type (0=no minimization; see ML manual for 1,2,3; -1 and 4 undocumented)","None",pc_ml->EnergyMinimization,&pc_ml->EnergyMinimization,PETSC_NULL);CHKERRQ(ierr);
+  /*
+    The following checks a number of conditions.  If we let this stuff slip by, then ML's error handling will take over.
+    This is suboptimal because it amounts to calling exit(1) so we check for the most common conditions.
+
+    We also try to set some sane defaults when energy minimization is activated, otherwise it's hard to find a working
+    combination of options and ML's exit(1) explanations don't help matters.
+  */
+  if (pc_ml->EnergyMinimization < -1 || pc_ml->EnergyMinimization > 4) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"EnergyMinimization must be in range -1..4");
+  if (pc_ml->EnergyMinimization == 4 && size > 1) SETERRQ(PETSC_ERR_SUP,"Energy minimization type 4 does not work in parallel");
+  if (pc_ml->EnergyMinimization == 4) {ierr = PetscInfo(pc,"Mandel's energy minimization scheme is experimental and broken in ML-6.2");CHKERRQ(ierr);}
+  if (pc_ml->EnergyMinimization) {
+    ierr = PetscOptionsReal("-pc_ml_EnergyMinimizationDropTol","Energy minimization drop tolerance","None",pc_ml->EnergyMinimizationDropTol,&pc_ml->EnergyMinimizationDropTol,PETSC_NULL);CHKERRQ(ierr);
+  }
+  if (pc_ml->EnergyMinimization == 2) {
+    /* According to ml_MultiLevelPreconditioner.cpp, this option is only meaningful for norm type (2) */
+    ierr = PetscOptionsTruth("-pc_ml_EnergyMinimizationCheap","Use cheaper variant of norm type 2","None",pc_ml->EnergyMinimizationCheap,&pc_ml->EnergyMinimizationCheap,PETSC_NULL);CHKERRQ(ierr);
+  }
+  /* energy minimization sometimes breaks if this is turned off, the more classical stuff should be okay without it */
+  if (pc_ml->EnergyMinimization) pc_ml->KeepAggInfo = PETSC_TRUE;
+  ierr = PetscOptionsTruth("-pc_ml_KeepAggInfo","Allows the preconditioner to be reused, or auxilliary matrices to be generated","None",pc_ml->KeepAggInfo,&pc_ml->KeepAggInfo,PETSC_NULL);CHKERRQ(ierr);
+  /* Option (-1) doesn't work at all (calls exit(1)) if the tentative restriction operator isn't stored. */
+  if (pc_ml->EnergyMinimization == -1) pc_ml->Reusable = PETSC_TRUE;
+  ierr = PetscOptionsTruth("-pc_ml_Reusable","Store intermedaiate data structures so that the multilevel hierarchy is reusable","None",pc_ml->Reusable,&pc_ml->Reusable,PETSC_NULL);CHKERRQ(ierr);
+  /*
+    ML's C API is severely underdocumented and lacks significant functionality.  The C++ API calls
+    ML_Gen_MultiLevelHierarchy_UsingAggregation() which is a modified copy (!?) of the documented function
+    ML_Gen_MGHierarchy_UsingAggregation().  This modification, however, does not provide a strict superset of the
+    functionality in the old function, so some users may still want to use it.  Note that many options are ignored in
+    this context, but ML doesn't provide a way to find out which ones.
+   */
+  ierr = PetscOptionsTruth("-pc_ml_OldHierarchy","Use old routine to generate hierarchy","None",pc_ml->OldHierarchy,&pc_ml->OldHierarchy,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
