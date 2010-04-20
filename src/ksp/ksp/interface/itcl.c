@@ -500,8 +500,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     }
 
     /* -----------------------------------------------------------------------*/
-   ierr = PetscOptionsEList("-ksp_preconditioner_side","KSP preconditioner side","KSPSetPreconditionerSide",PCSides,3,PCSides[ksp->pc_side],&indx,&flg);CHKERRQ(ierr);
-   if (flg) {ierr = KSPSetPreconditionerSide(ksp,(PCSide)indx);CHKERRQ(ierr);}
+   ierr = PetscOptionsEList("-ksp_preconditioner_side","KSP preconditioner side","KSPSetPCSide",PCSides,3,PCSides[ksp->pc_side],&indx,&flg);CHKERRQ(ierr);
+   if (flg) {ierr = KSPSetPCSide(ksp,(PCSide)indx);CHKERRQ(ierr);}
 
     flg  = PETSC_FALSE;
     ierr = PetscOptionsTruth("-ksp_compute_singularvalues","Compute singular values of preconditioned operator","KSPSetComputeSingularValues",flg,&flg,PETSC_NULL);CHKERRQ(ierr);

@@ -2186,10 +2186,10 @@ is preserved.  In contrast, the residual is altered for left
 By default, all KSP implementations use left preconditioning.  
 % Not really, KSPQCG uses symmetric preconditioning.
 Right preconditioning can be activated for some methods by
-using the options database command \trl{-ksp_right_pc} or
-calling the routine \findex{-ksp_right_pc}
+using the options database command \trl{-ksp_pc_side right} or
+calling the routine \findex{-ksp_pc_side}
 \begin{tabbing}
-  KSPSetPreconditionerSide(KSP ksp,PCSide PC\_RIGHT);
+  KSPSetPCSide(KSP ksp,PCSide PC\_RIGHT);
 \end{tabbing}
 Attempting to use right preconditioning for a method that
 does not currently support it results in an error message of the form

@@ -2933,7 +2933,7 @@ static PetscErrorCode SNESKSPEW_PostSolve(SNES snes, KSP ksp, Vec b, Vec x)
   ierr = KSPGetTolerances(ksp,&kctx->rtol_last,0,0,0);CHKERRQ(ierr);
   ierr = SNESGetFunctionNorm(snes,&kctx->norm_last);CHKERRQ(ierr);
   if (kctx->version == 1) {
-    ierr = KSPGetPreconditionerSide(ksp,&pcside);CHKERRQ(ierr);
+    ierr = KSPSetPreconditionerSide(ksp,&pcside);CHKERRQ(ierr);
     if (pcside == PC_RIGHT) { /* XXX Should we also test KSP_UNPRECONDITIONED_NORM ? */
       /* KSP residual is true linear residual */
       ierr = KSPGetResidualNorm(ksp,&kctx->lresid_last);CHKERRQ(ierr);

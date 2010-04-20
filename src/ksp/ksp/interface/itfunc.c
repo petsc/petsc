@@ -741,9 +741,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDestroy(KSP ksp)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPSetPreconditionerSide"
+#define __FUNCT__ "KSPSetPCSide"
 /*@
-    KSPSetPreconditionerSide - Sets the preconditioning side.
+    KSPSetPCSide - Sets the preconditioning side.
 
     Collective on KSP
 
@@ -759,9 +759,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDestroy(KSP ksp)
 .ve
 
     Options Database Keys:
-+   -ksp_left_pc - Sets left preconditioning
-.   -ksp_right_pc - Sets right preconditioning
--   -ksp_symmetric_pc - Sets symmetric preconditioning
+.   -ksp_pc_side <right,left,symmetric>
 
     Notes:
     Left preconditioning is used by default.  Symmetric preconditioning is
@@ -773,9 +771,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDestroy(KSP ksp)
 
 .keywords: KSP, set, right, left, symmetric, side, preconditioner, flag
 
-.seealso: KSPGetPreconditionerSide()
+.seealso: KSPSetPreconditionerSide()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPreconditionerSide(KSP ksp,PCSide side)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPCSide(KSP ksp,PCSide side)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -784,9 +782,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPreconditionerSide(KSP ksp,PCSide side)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPGetPreconditionerSide"
+#define __FUNCT__ "KSPSetPreconditionerSide"
 /*@
-    KSPGetPreconditionerSide - Gets the preconditioning side.
+    KSPSetPreconditionerSide - Gets the preconditioning side.
 
     Not Collective
 
@@ -805,9 +803,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPreconditionerSide(KSP ksp,PCSide side)
 
 .keywords: KSP, get, right, left, symmetric, side, preconditioner, flag
 
-.seealso: KSPSetPreconditionerSide()
+.seealso: KSPSetPCSide()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetPreconditionerSide(KSP ksp,PCSide *side) 
+PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPreconditionerSide(KSP ksp,PCSide *side) 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);

@@ -142,7 +142,7 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
    References: van der Vorst, SIAM J. Sci. Stat. Comput., 1992.
 
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPBCGSL, KSPSetPreconditionerSide()
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPBCGSL, KSPSetPCSide()
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  

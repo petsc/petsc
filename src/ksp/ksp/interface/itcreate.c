@@ -116,7 +116,7 @@ $                 Supported only by CG, Richardson, Bi-CG-stab, CR, and CGS meth
 $   KSP_NORM_PRECONDITIONED - the default for left preconditioned solves, uses the l2 norm
 $                 of the preconditioned residual
 $   KSP_NORM_UNPRECONDITIONED - uses the l2 norm of the true b - Ax residual, supported only by
-$                 CG, CHEBYCHEV, and RICHARDSON, automatically true for right (see KSPSetPreconditionerSide()) 
+$                 CG, CHEBYCHEV, and RICHARDSON, automatically true for right (see KSPSetPCSide()) 
 $                 preconditioning..
 $   KSP_NORM_NATURAL - supported  by KSPCG, KSPCR, KSPCGNE, KSPCGS
 

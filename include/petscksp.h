@@ -124,8 +124,8 @@ M*/
 #endif
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetType(KSP,const KSPType *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPreconditionerSide(KSP,PCSide);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetPreconditionerSide(KSP,PCSide*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPCSide(KSP,PCSide);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPreconditionerSide(KSP,PCSide*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetTolerances(KSP,PetscReal*,PetscReal*,PetscReal*,PetscInt*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetTolerances(KSP,PetscReal,PetscReal,PetscReal,PetscInt);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetInitialGuessNonzero(KSP,PetscTruth);
@@ -292,12 +292,12 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRGetStandardErrorVec(KSP,Vec*);
    Level: advanced
 
    Each solver only supports a subset of these and some may support different ones
-   depending on left or right preconditioning, see KSPSetPreconditionerSide()
+   depending on left or right preconditioning, see KSPSetPCSide()
 
    Notes: this must match finclude/petscksp.h 
 
 .seealso: KSPSolve(), KSPGetConvergedReason(), KSPSetNormType(),
-          KSPSetConvergenceTest(), KSPSetPreconditionerSide()
+          KSPSetConvergenceTest(), KSPSetPCSide()
 E*/
 typedef enum {KSP_NORM_NO = 0,KSP_NORM_PRECONDITIONED = 1,KSP_NORM_UNPRECONDITIONED = 2,KSP_NORM_NATURAL = 3} KSPNormType;
 extern const char *KSPNormTypes[];

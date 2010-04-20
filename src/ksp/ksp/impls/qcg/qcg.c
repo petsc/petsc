@@ -156,7 +156,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   B        = ksp->vec_rhs;
 
   if (pcgP->delta <= dzero) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Input error: delta <= 0");
-  ierr = KSPGetPreconditionerSide(ksp,&side);CHKERRQ(ierr);
+  ierr = KSPSetPreconditionerSide(ksp,&side);CHKERRQ(ierr);
   if (side != PC_SYMMETRIC) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Requires symmetric preconditioner!");
 
   /* Initialize variables */
