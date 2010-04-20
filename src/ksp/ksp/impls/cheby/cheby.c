@@ -11,6 +11,7 @@ PetscErrorCode KSPSetUp_Chebychev(KSP ksp)
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(PETSC_ERR_SUP,"no symmetric preconditioning for KSPCHEBYCHEV");
+  if (ksp->pc_side == PC_RIGHT) SETERRQ(PETSC_ERR_SUP,"no right preconditioning for KSPCHEBYCHEV");
   ierr = KSPDefaultGetWork(ksp,3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -247,7 +248,8 @@ PetscErrorCode KSPDestroy_Chebychev(KSP ksp)
    Level: beginner
 
    Notes: The Chebychev method requires both the matrix and preconditioner to 
-          be symmetric positive (semi) definite
+          be symmetric positive (semi) definite.
+          Only support for left preconditioning.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
            KSPChebychevSetEigenvalues(), KSPRICHARDSON, KSPCG
@@ -266,6 +268,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Chebychev(KSP ksp)
   ierr = PetscNewLog(ksp,KSP_Chebychev,&chebychevP);CHKERRQ(ierr);
 
   ksp->data                      = (void*)chebychevP;
+  if (ksp->pc_side != PC_LEFT) {
+     ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for Chebychev to left!\n");CHKERRQ(ierr);
+  }
   ksp->pc_side                   = PC_LEFT;
 
   chebychevP->emin               = 1.e-2;

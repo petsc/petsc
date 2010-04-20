@@ -814,18 +814,20 @@ EXTERN_C_END
 .   -ksp_lgmres_augment <k> - number of error approximations to augment the Krylov space with
 -   -ksp_lgmres_constant - use a constant approx. space size (only affects restart cycles < num. error approx.(k), i.e. the first k restarts)
 
-   Described in:
-    A. H. Baker, E.R. Jessup, and T.A. Manteuffel. A technique for
-    accelerating the convergence of restarted GMRES. SIAM
-    Journal on Matrix Analysis and Applications, 26 (2005), pp. 962-984.
-
     To run LGMRES(m, k) as described in the above paper, use:
        -ksp_gmres_restart <m+k>
        -ksp_lgmres_augment <k>
 
   Level: beginner
 
-  Notes:  This object is subclassed off of KSPGMRES
+   Notes: Supports both left and right preconditioning, but not symmetric.
+
+   References:
+    A. H. Baker, E.R. Jessup, and T.A. Manteuffel. A technique for
+    accelerating the convergence of restarted GMRES. SIAM
+    Journal on Matrix Analysis and Applications, 26 (2005), pp. 962-984.
+
+  Developer Notes:  This object is subclassed off of KSPGMRES
 
   Contributed by: Allison Baker
 

@@ -706,7 +706,9 @@ EXTERN_C_END
    Level: beginner
 
     Notes: See KSPFGMRESSetModifyPC() for how to vary the preconditioner between iterations
-           This object is subclassed off of KSPGMRES
+           Only right preconditioning is supported.
+
+    Developer Notes: This object is subclassed off of KSPGMRES
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPGMRES, KSPLGMRES,
            KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetOrthogonalization()
@@ -770,7 +772,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_FGMRES(KSP ksp)
         This is not great since it changes this without explicit request from the user
      but there is no left preconditioning in the FGMRES
   */
-  ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for FGMRES to right!\n");CHKERRQ(ierr);
+  if (ksp->pc_side != PC_RIGHT) {
+     ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for FGMRES to right!\n");CHKERRQ(ierr);
+  }
   ksp->pc_side  = PC_RIGHT;
   ksp->normtype = KSP_NORM_UNPRECONDITIONED;
   PetscFunctionReturn(0);

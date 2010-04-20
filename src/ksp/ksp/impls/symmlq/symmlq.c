@@ -205,6 +205,8 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
    Notes: The operator and the preconditioner must be symmetric for this method. The 
           preconditioner must be POSITIVE-DEFINITE.
 
+          Supports only left preconditioning.
+
    Reference: Paige & Saunders, 1975.
 
 .seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP
@@ -218,8 +220,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_SYMMLQ(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ksp->pc_side                   = PC_LEFT;
-
+  if (ksp->pc_side != PC_LEFT) {
+     ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for SYMMLQ to left!\n");CHKERRQ(ierr);
+  }
+  ksp->pc_side   = PC_LEFT;
   ierr           = PetscNewLog(ksp,KSP_SYMMLQ,&symmlq);CHKERRQ(ierr);
   symmlq->haptol = 1.e-18;
   ksp->data      = (void*)symmlq;

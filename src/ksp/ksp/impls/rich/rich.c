@@ -204,10 +204,6 @@ EXTERN_C_END
           This method often (usually) will not converge unless scale is very small. It
 is described in
 
-  "The Approximate Arithmetical Solution by Finite Differences of Physical Problems Involving
-   Differential Equations, with an Application to the Stresses in a Masonry Dam",
-  L. F. Richardson, Philosophical Transactions of the Royal Society of London. Series A,
-  Containing Papers of a Mathematical or Physical Character, Vol. 210, 1911 (1911), pp. 307-357.
 
    Notes: For some preconditioners, currently SOR, the convergence test is skipped to improve speed,
     thus it always iterates the maximum number of iterations you've selected. When -ksp_monitor 
@@ -217,6 +213,14 @@ is described in
          For some preconditioners, currently PCMG and PCHYPRE with BoomerAMG if -ksp_monitor (and also
     any other monitor) is not turned on then the convergence test is done by the preconditioner itself and
     so the solver may run more or fewer iterations then if -ksp_monitor is selected.
+
+    Supports only left preconditioning
+
+  References:
+  "The Approximate Arithmetical Solution by Finite Differences of Physical Problems Involving
+   Differential Equations, with an Application to the Stresses in a Masonry Dam",
+  L. F. Richardson, Philosophical Transactions of the Royal Society of London. Series A,
+  Containing Papers of a Mathematical or Physical Character, Vol. 210, 1911 (1911), pp. 307-357.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
            KSPRichardsonSetScale()
@@ -236,6 +240,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Richardson(KSP ksp)
   ksp->data                        = (void*)richardsonP;
 
   ksp->normtype                    = KSP_NORM_PRECONDITIONED;
+  if (ksp->pc_side != PC_LEFT) {
+     ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for Richardson to left!\n");CHKERRQ(ierr);
+  }
   ksp->pc_side                     = PC_LEFT;
 
   ksp->ops->setup                  = KSPSetUp_Richardson;

@@ -140,7 +140,9 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
 
    Level: beginner
 
-   Notes: Reference, Freund, 1993
+   Notes: Supports left and right preconditioning, but not both
+
+   References: Freund, 1993
 
 .seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPTCQMR
 M*/
@@ -151,7 +153,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_TFQMR(KSP ksp)
 {
   PetscFunctionBegin;
   ksp->data                      = (void*)0;
-  ksp->pc_side                   = PC_LEFT;
   ksp->ops->setup                = KSPSetUp_TFQMR;
   ksp->ops->solve                = KSPSolve_TFQMR;
   ksp->ops->destroy              = KSPDefaultDestroy;
