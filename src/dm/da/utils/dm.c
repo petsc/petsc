@@ -345,6 +345,38 @@ PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobal(DM dm,Vec g,InsertMode mode,Vec
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "DMComputeJacobianDefault"
+/*@
+    DMComputeJacobianDefault - computes the Jacobian using the DMComputeFunction() if Jacobian computer is not provided
+
+    Collective on DM
+
+    Input Parameter:
++   dm - the DM object 
+.   x - location to compute Jacobian at; may be ignored for linear problems
+.   A - matrix that defines the operator for the linear solve
+-   B - the matrix used to construct the preconditioner
+
+    Level: developer
+
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetInitialGuess(), 
+         DMSetFunction()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMComputeJacobianDefault(DM dm,Vec x,Mat A,Mat B,MatStructure *stflag)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  *stflag = SAME_NONZERO_PATTERN;
+  ierr  = MatFDColoringApply(B,dm->fd,x,stflag,dm);CHKERRQ(ierr);
+  if (A != B) {
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "DMCoarsen"
 /*@
     DMCoarsen - Coarsens a DM object
@@ -371,7 +403,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
   ierr = (*dm->ops->coarsen)(dm, comm, dmc);CHKERRQ(ierr);
   (*dmc)->ops->initialguess = dm->ops->initialguess;
   (*dmc)->ops->function     = dm->ops->function;
-  (*dmc)->ops->jacobian     = dm->ops->jacobian;
+  (*dmc)->ops->functionj    = dm->ops->functionj;
+  if (dm->ops->jacobian != DMComputeJacobianDefault) {
+    (*dmc)->ops->jacobian     = dm->ops->jacobian;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -568,9 +603,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetInitialGuess(DM dm,PetscErrorCode (*f)(DM,
 
     Input Parameter:
 +   dm - the DM object 
--   f - the function to compute 
+-   f - the function to compute (use PETSC_NULL to cancel a previous function that was set)
 
     Level: intermediate
+
+    Notes: This sets both the function for function evaluations and the function used to compute Jacobians via finite differences if no Jacobian 
+           computer is provided with DMSetJacobian(). Canceling cancels the function, but not the function used to compute the Jacobian.
 
 .seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetInitialGuess(),
          DMSetJacobian()
@@ -580,6 +618,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetFunction(DM dm,PetscErrorCode (*f)(DM,Vec,
 {
   PetscFunctionBegin;
   dm->ops->function = f;
+  if (f) {
+    dm->ops->functionj = f;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -735,10 +776,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DMComputeFunction(DM dm,Vec x,Vec b)
   PetscFunctionReturn(0);
 }
 
+
 #undef __FUNCT__  
 #define __FUNCT__ "DMComputeJacobian"
 /*@
-    DMComputeJacobian - sets a function to compute the matrix entries for the solver
+    DMComputeJacobian - compute the matrix entries for the solver
 
     Collective on DM
 
@@ -757,8 +799,23 @@ PetscErrorCode PETSCDM_DLLEXPORT DMComputeFunction(DM dm,Vec x,Vec b)
 PetscErrorCode PETSCDM_DLLEXPORT DMComputeJacobian(DM dm,Vec x,Mat A,Mat B,MatStructure *stflag)
 {
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
-  if (!dm->ops->jacobian) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMSetJacobian()");
+  if (!dm->ops->jacobian) {
+    ISColoring    coloring;
+    MatFDColoring fd;
+
+    ierr = DMGetColoring(dm,IS_COLORING_GHOSTED,MATAIJ,&coloring);CHKERRQ(ierr);
+    ierr = MatFDColoringCreate(B,coloring,&fd);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(coloring);CHKERRQ(ierr);
+    ierr = MatFDColoringSetFunction(fd,(PetscErrorCode (*)(void))dm->ops->functionj,dm);CHKERRQ(ierr);
+    dm->fd = fd;
+    dm->ops->jacobian = DMComputeJacobianDefault;
+
+    if (!dm->x) {
+      ierr = MatGetVecs(B,&dm->x,PETSC_NULL);CHKERRQ(ierr);
+    }
+  }
   if (!x) x = dm->x;
   ierr = (*dm->ops->jacobian)(dm,x,A,B,stflag);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -331,7 +331,7 @@ static PetscErrorCode BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,P
     ierr = VecCopy(vs,vdest);CHKERRQ(ierr); /* VecCopy() is smart, exists immediately if vguess == vdest */
     PetscFunctionReturn(0);
   }
-  if (*HH(it,it) == 0.0) SETERRQ2(PETSC_ERR_CONV_FAILED,"HH(it,it) is identically zero; it = %D GRS(it) = %G",it,PetscAbsScalar(*GRS(it)));
+  if (*HH(it,it) == 0.0) SETERRQ2(PETSC_ERR_CONV_FAILED,"Likley your matrix is the zero operator. HH(it,it) is identically zero; it = %D GRS(it) = %G",it,PetscAbsScalar(*GRS(it)));
   if (*HH(it,it) != 0.0) {
     nrs[it] = *GRS(it) / *HH(it,it);
   } else {
@@ -341,7 +341,7 @@ static PetscErrorCode BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,P
     k   = it - ii;
     tt  = *GRS(k);
     for (j=k+1; j<=it; j++) tt  = tt - *HH(k,j) * nrs[j];
-    if (*HH(k,k) == 0.0) SETERRQ2(PETSC_ERR_CONV_FAILED,"HH(k,k) is identically zero; it = %D k = %D",it,k);
+    if (*HH(k,k) == 0.0) SETERRQ2(PETSC_ERR_CONV_FAILED,"Likley your matrix is singular. HH(k,k) is identically zero; it = %D k = %D",it,k);
     nrs[k]   = tt / *HH(k,k);
   }
 

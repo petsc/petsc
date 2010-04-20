@@ -37,6 +37,7 @@
 \
   PetscErrorCode (*initialguess)(type,Vec); \
   PetscErrorCode (*function)(type,Vec,Vec);			\
+  PetscErrorCode (*functionj)(type,Vec,Vec);			\
   PetscErrorCode (*jacobian)(type,Vec,Mat,Mat,MatStructure*);	\
 \
   PetscErrorCode (*destroy)(type);
@@ -50,11 +51,11 @@ struct _DMOps {
 #define DM_MAX_WORK_VECTORS 100 /* work vectors available to users  via DMGetGlobalVector(), DMGetLocalVector() */
 
 #define DMHEADER \
-  Vec   localin[DM_MAX_WORK_VECTORS],localout[DM_MAX_WORK_VECTORS];   \
-  Vec   globalin[DM_MAX_WORK_VECTORS],globalout[DM_MAX_WORK_VECTORS]; \
-  void  *ctx; \
-  Vec   x;
-
+  Vec           localin[DM_MAX_WORK_VECTORS],localout[DM_MAX_WORK_VECTORS];   \
+  Vec           globalin[DM_MAX_WORK_VECTORS],globalout[DM_MAX_WORK_VECTORS]; \
+  void          *ctx;    /* a user context */  \
+  Vec           x;       /* location at which the functions/Jacobian are computed */  \
+  MatFDColoring fd;      /* used by DMComputeJacobianDefault() */
 
 struct _p_DM {
   PETSCHEADER(struct _DMOps);

@@ -212,8 +212,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
     }
 
     /* how do we know when to compute new matrix? Now it always does */
-    ierr = DMHasJacobian(ksp->dm,&im);CHKERRQ(ierr);
-    if (im) {
+    /*    ierr = DMHasJacobian(ksp->dm,&im);CHKERRQ(ierr);
+	  if (im) { */
       if (!ksp->setupcalled) {
         /* How to set the matrix type ? */
         /* How to handle different A and B matrix ? */
@@ -223,7 +223,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
       }     
       ierr = DMComputeJacobian(ksp->dm,PETSC_NULL,A,A,&stflg);CHKERRQ(ierr);
       ierr = KSPSetOperators(ksp,A,A,stflg);CHKERRQ(ierr);
-    }
+      /*    }*/
   }
 
   if (ksp->setupcalled == 2) PetscFunctionReturn(0);
