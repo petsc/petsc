@@ -116,7 +116,14 @@ in the PETSc Development Version</font></p>
       <ul>
       </ul>
       <u><b>PC:</b></u>
-      <p><u><b>KSP:</b></u></p>
+      <p><u><b>KSP:<br>
+      </b></u></p>
+      <ul>
+        <li>-ksp_right_pc -ksp_left_pc changed to
+-ksp_preconditioner_side left,right,symmetric to match
+KSPSetPreconditionerSide()<br>
+        </li>
+      </ul>
       <ul>
       </ul>
       <ul>
@@ -126,15 +133,18 @@ in the PETSc Development Version</font></p>
       <p><u><b>SNES:</b></u></p>
       <p><u><b>TS:</b></u></p>
       <ul>
-        <li>Rename TSCRANK_NICHOLSON to TSCN and TSRUNGE_KUTTA to TSRK for consistency.<li>
+        <li>Rename TSCRANK_NICHOLSON to TSCN and TSRUNGE_KUTTA to TSRK
+for consistency.</li>
+        <li> <br>
+        </li>
       </ul>
       <p><u><b>DA:</b></u></p>
       <ul>
         <li>Change array argument of DAGetArray and related functions
-        from void** to void* to avoid the need for an explicit cast (the
-        argument still has the meaning of a pointer to d-dimensionally
-        indexed array of user-defined node type, old code will still
-        compile correctly but the cast is no longer necessary).</li>
+from void** to void* to avoid the need for an explicit cast (the
+argument still has the meaning of a pointer to d-dimensionally indexed
+array of user-defined node type, old code will still compile correctly
+but the cast is no longer necessary).</li>
       </ul>
       <p><u><b>DMMG:</b></u></p>
       <ul>
