@@ -35,7 +35,7 @@ class MyPCJacobi(BaseMyPC):
         y.pointwiseMult(self.diag, x)
     def applyS(self, pc, x, y):
         self.diag.copy(y)
-        y.sqrt()
+        y.sqrtabs()
         y.pointwiseMult(y, x)
 
 class PC_PYTHON_CLASS(object):

@@ -18,14 +18,14 @@ class BaseTestObject(object):
 
     def testTypeRegistry(self):
         type_reg = PETSc.__type_registry__
-        cookie = self.obj.getCookie()
-        self.assertTrue(type_reg[cookie] is self.CLASS )
+        classid = self.obj.getClassId()
+        self.assertTrue(type_reg[classid] is self.CLASS )
 
     def testLogClass(self):
         name = self.CLASS.__name__
         logcls = PETSc.Log.Class(name)
-        cookie = self.obj.getCookie()
-        self.assertEqual(logcls.id, cookie)
+        classid = self.obj.getClassId()
+        self.assertEqual(logcls.id, classid)
 
     def testClass(self):
         self.assertTrue(isinstance(self.obj, self.CLASS))
@@ -94,7 +94,7 @@ class BaseTestObject(object):
         self.assertEqual(self.obj.query('myobj'), None)
 
     def testProperties(self):
-        self.assertEqual(self.obj.getCookie(),    self.obj.cookie)
+        self.assertEqual(self.obj.getClassId(),   self.obj.classid)
         self.assertEqual(self.obj.getClassName(), self.obj.klass)
         self.assertEqual(self.obj.getType(),      self.obj.type)
         self.assertEqual(self.obj.getName(),      self.obj.name)
