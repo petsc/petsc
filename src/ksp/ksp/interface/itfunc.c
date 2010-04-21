@@ -771,7 +771,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDestroy(KSP ksp)
 
 .keywords: KSP, set, right, left, symmetric, side, preconditioner, flag
 
-.seealso: KSPSetPreconditionerSide()
+.seealso: KSPGetPCSide()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPCSide(KSP ksp,PCSide side)
 {
@@ -782,9 +782,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPCSide(KSP ksp,PCSide side)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPSetPreconditionerSide"
+#define __FUNCT__ "KSPGetSide"
 /*@
-    KSPSetPreconditionerSide - Gets the preconditioning side.
+    KSPGetSide - Gets the preconditioning side.
 
     Not Collective
 
@@ -805,7 +805,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPCSide(KSP ksp,PCSide side)
 
 .seealso: KSPSetPCSide()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPreconditionerSide(KSP ksp,PCSide *side) 
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGetSide(KSP ksp,PCSide *side) 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);

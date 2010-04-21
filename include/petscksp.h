@@ -125,7 +125,7 @@ M*/
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetType(KSP,const KSPType *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPCSide(KSP,PCSide);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPreconditionerSide(KSP,PCSide*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetPCSide(KSP,PCSide*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetTolerances(KSP,PetscReal*,PetscReal*,PetscReal*,PetscInt*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetTolerances(KSP,PetscReal,PetscReal,PetscReal,PetscInt);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetInitialGuessNonzero(KSP,PetscTruth);

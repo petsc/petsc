@@ -377,7 +377,7 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PC pc)
 
   Concepts: Jacobi, diagonal scaling, preconditioners
 
-  Notes: By using KSPSetPCSide(ksp,PC_SYMMETRIC) or -ksp_symmetric_pc you 
+  Notes: By using KSPSetPCSide(ksp,PC_SYMMETRIC) or -ksp_pc_side symmetric 
          can scale each side of the matrix by the squareroot of the diagonal entries.
 
          Zero entries along the diagonal are replaced with the value 1.0
