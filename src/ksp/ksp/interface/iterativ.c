@@ -268,7 +268,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,
   ierr = VecNorm(work,NORM_2,&scnorm);CHKERRQ(ierr);
   ierr = VecDestroy(work);CHKERRQ(ierr);
   ierr = VecNorm(ksp->vec_rhs,NORM_2,&bnorm);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP preconditioned resid norm %14.12e true resid norm %14.12e ||Ae||/||Ax|| %14.12e\n",n,rnorm,scnorm,scnorm/bnorm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP preconditioned resid norm %14.12e true resid norm %14.12e ||r(i)||/||b|| %14.12e\n",n,rnorm,scnorm,scnorm/bnorm);CHKERRQ(ierr);
   if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
