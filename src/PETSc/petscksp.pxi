@@ -87,8 +87,8 @@ cdef extern from "petscksp.h" nogil:
     int KSPGetTolerances(PetscKSP,PetscReal*,PetscReal*,PetscReal*,PetscInt*)
     int KSPSetNormType(PetscKSP,PetscKSPNormType)
     int KSPGetNormType(PetscKSP,PetscKSPNormType*)
-    int KSPSetPreconditionerSide(PetscKSP,PetscPCSide)
-    int KSPGetPreconditionerSide(PetscKSP,PetscPCSide*)
+    int KSPSetPCSide(PetscKSP,PetscPCSide)
+    int KSPGetPCSide(PetscKSP,PetscPCSide*)
 
     int KSPSetConvergenceTest(PetscKSP,PetscKSPConvergedFunction,void*,PetscKSPCtxDel)
     int KSPSetResidualHistory(PetscKSP,PetscReal[],PetscInt,PetscTruth)

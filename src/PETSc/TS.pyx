@@ -4,8 +4,8 @@ class TSType(object):
     # native
     EULER           = TSEULER
     BEULER          = TSBEULER
-    CRANK_NICHOLSON = TSCRANK_NICHOLSON
-    RUNGE_KUTTA     = TSRUNGE_KUTTA
+    CN              = TSCN
+    RK              = TSRK
     PSEUDO          = TSPSEUDO
     SUNDIALS        = TSSUNDIALS
     THETA           = TSTHETA
@@ -16,8 +16,8 @@ class TSType(object):
     # aliases
     FE = EULER
     BE = BEULER
-    CN = CRANK_NICHOLSON
-    RK = RUNGE_KUTTA
+    CRANK_NICOLSON = CN
+    RUNGE_KUTTA    = RK
 
 class TSProblemType(object):
     LINEAR    = TS_LINEAR

@@ -3,6 +3,14 @@
 
 #include "private/kspimpl.h"
 
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0) || \
+     PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2))
+#define KSPSetPCSide KSPSetPreconditionerSide
+#define KSPGetPCSide KSPGetPreconditionerSide
+#endif
+
 #if (PETSC_VERSION_(3,0,0) || \
      PETSC_VERSION_(2,3,3) || \
      PETSC_VERSION_(2,3,2))

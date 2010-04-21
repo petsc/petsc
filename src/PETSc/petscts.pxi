@@ -4,9 +4,9 @@ cdef extern from "petscts.h" nogil:
     PetscTSType TSEULER
     PetscTSType TSBEULER
     PetscTSType TSPSEUDO
-    PetscTSType TSCRANK_NICHOLSON
+    PetscTSType TSCN
     PetscTSType TSSUNDIALS
-    PetscTSType TSRUNGE_KUTTA
+    PetscTSType TSRK
     PetscTSType TSTHETA
     PetscTSType TSGL
     PetscTSType TSSSP

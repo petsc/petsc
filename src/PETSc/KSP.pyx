@@ -167,11 +167,11 @@ cdef class KSP(Object):
         return pc
 
     def setPCSide(self, side):
-        CHKERR( KSPSetPreconditionerSide(self.ksp, side) )
+        CHKERR( KSPSetPCSide(self.ksp, side) )
 
     def getPCSide(self):
         cdef PetscPCSide side = PC_LEFT
-        CHKERR( KSPGetPreconditionerSide(self.ksp, &side) )
+        CHKERR( KSPGetPCSide(self.ksp, &side) )
         return side
 
     def setNormType(self, normtype):

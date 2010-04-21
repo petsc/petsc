@@ -3,15 +3,19 @@
 
 #include "private/tsimpl.h"
 
+#if PETSC_VERSION_(3,1,0)
+#define TSCN TSCRANK_NICHOLSON
+#define TSRK TSRUNGE_KUTTA
+#endif
 #if (PETSC_VERSION_(3,0,0) || \
      PETSC_VERSION_(2,3,3) || \
      PETSC_VERSION_(2,3,2))
 #define TSEULER           TS_EULER
 #define TSBEULER          TS_BEULER
 #define TSPSEUDO          TS_PSEUDO
-#define TSCRANK_NICHOLSON TS_CRANK_NICHOLSON
+#define TSCN              TS_CRANK_NICHOLSON
 #define TSSUNDIALS        TS_SUNDIALS
-#define TSRUNGE_KUTTA     TS_RUNGE_KUTTA
+#define TSRK              TS_RUNGE_KUTTA
 #define TSPYTHON          "python"
 #define TSTHETA           "theta"
 #define TSGL              "gl"
