@@ -180,7 +180,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUpOnBlocks(KSP ksp)
 PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
 {
   PetscErrorCode ierr;
-  PetscTruth     ir = PETSC_FALSE,ig = PETSC_FALSE,im = PETSC_FALSE;
+  PetscTruth     ir = PETSC_FALSE,ig = PETSC_FALSE;
+  /* PetscTruth     im = PETSC_FALSE; */
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
