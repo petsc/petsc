@@ -534,6 +534,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMHasJacobian(DM,PetscTruth*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMComputeInitialGuess(DM,Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMComputeFunction(DM,Vec,Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMComputeJacobian(DM,Vec,Mat,Mat,MatStructure *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMComputeJacobianDefault(DM,Vec,Mat,Mat,MatStructure *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMFinalizePackage(void);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetColoring(DA,ISColoringType,const MatType,ISColoring *);
