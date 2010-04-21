@@ -782,9 +782,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPCSide(KSP ksp,PCSide side)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPGetSide"
+#define __FUNCT__ "KSPGetPCSide"
 /*@
-    KSPGetSide - Gets the preconditioning side.
+    KSPGetPCSide - Gets the preconditioning side.
 
     Not Collective
 
@@ -805,7 +805,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPCSide(KSP ksp,PCSide side)
 
 .seealso: KSPSetPCSide()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetSide(KSP ksp,PCSide *side) 
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGetPCSide(KSP ksp,PCSide *side) 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
