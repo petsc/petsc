@@ -114,6 +114,9 @@ in the PETSc Development Version</font></p>
       </ul>
       <p><u><b>Mat:</b></u></p>
       <ul>
+        <li>It is an error to call MatSetOption() before the
+implementation has been created (after MatSetSizes() and MatSetType()).
+Formerly, options were silently ignored in this circumstance.</li>
       </ul>
       <u><b>PC:</b></u>
       <p><u><b>KSP:<br>
