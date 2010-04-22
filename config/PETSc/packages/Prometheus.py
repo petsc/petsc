@@ -83,7 +83,7 @@ class Configure(PETSc.package.NewPackage):
     if self.framework.argDB['with-'+self.package]:
       # Prometheus requires LAPACK routine dorgqr()
       if not self.blasLapack.checkForRoutine('dorgqr'):
-        raise RuntimeError('Prometheus requires the LAPACK routine dorgqr(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it\nIf you are using the IBM ESSL library, it does not contain this function. After installing a complete copy of lapack\n You can run config/configure.py with --with-blas-lib=libessl.a --with-lapack-lib=/usr/local/lib/liblapack.a')
+        raise RuntimeError('Prometheus requires the LAPACK routine dorgqr(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it\nIf you are using the IBM ESSL library, it does not contain this function. After installing a complete copy of lapack\n You can run ./configure with --with-blas-lib=libessl.a --with-lapack-lib=/usr/local/lib/liblapack.a')
       self.framework.log.write('Found dorgqr() in Lapack library as needed by Prometheus\n')
     return
 

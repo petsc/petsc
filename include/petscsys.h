@@ -16,7 +16,7 @@
 /* ========================================================================== */
 /* 
    This facilitates using C version of PETSc from C++ and 
-   C++ version from C. Use --with-c-support --with-clanguage=c++ with config/configure.py for the latter)
+   C++ version from C. Use --with-c-support --with-clanguage=c++ with ./configure for the latter)
 */
 #if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX) && !defined(__cplusplus)
 #error "PETSc configured with --with-clanguage=c++ and NOT --with-c-support - it can be used only with a C++ compiler"
@@ -86,7 +86,7 @@ M*/
 #define PETSC_FPRINTF_FORMAT_CHECK(a,b)
 
 /*
-   Fixes for config/configure.py time choices which impact our interface. Currently only
+   Fixes for ./configure time choices which impact our interface. Currently only
    calling conventions and extra compiler checking falls under this category.
 */
 #if !defined(PETSC_STDCALL)
@@ -1438,7 +1438,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscCommGetNewTag(MPI_Comm,PetscMPIInt *)
    Mat, Vec, KSP, SNES, etc.) or any user-provided object. 
 
    The composed function must be wrapped in a EXTERN_C_BEGIN/END for this to
-   work in C++/complex with dynamic link libraries (config/configure.py options --with-shared --with-dynamic)
+   work in C++/complex with dynamic link libraries (./configure options --with-shared --with-dynamic)
    enabled.
 
    Concepts: objects^composing functions
@@ -1514,7 +1514,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFListGet(PetscFList,char ***,int*);
 
    Level: advanced
 
-   --with-shared --with-dynamic must be used with config/configure.py to use dynamic libraries
+   --with-shared --with-dynamic must be used with ./configure to use dynamic libraries
 
 .seealso:  PetscDLLibraryOpen()
 S*/
@@ -1885,7 +1885,7 @@ M*/
    Fortran (rather than C) for the numerical calculations. On some machines
    and compilers (like complex numbers) the Fortran version of the routines
    is faster than the C/C++ versions. The flag --with-fortran-kernels
-   should be used with config/configure.py to turn these on.
+   should be used with ./configure to turn these on.
 */
 #if defined(PETSC_USE_FORTRAN_KERNELS)
 
@@ -2130,7 +2130,7 @@ $    4) Use Fortran modules and Fortran data types for PETSc types
 $#include "petscXXXdef.h" 
 $         use petscXXXX
 $       type(XXX) variablename
-$      To use this approach you must config/configure.py PETSc with the additional
+$      To use this approach you must ./configure PETSc with the additional
 $      option --with-fortran-datatypes You cannot use the type(XXX) declaration approach without using Fortran modules
 
     Finally if you absolutely do not want to use any #include you can use either 
@@ -2169,7 +2169,7 @@ $      call MatSetValues(mat,1,row,1,col,val,INSERT_VALUES,ierr)
      finclude/petscvec.h does NOT automatically include finclude/petscis.h
 
      The finclude/ftn-custom/petscXXXdef.h90 are not intended to be used directly in code, they define the
-     Fortran data type type(XXX) (for example type(Vec)) when PETSc is config/configure.py with the --with-fortran-datatypes option.
+     Fortran data type type(XXX) (for example type(Vec)) when PETSc is ./configure with the --with-fortran-datatypes option.
 
      The finclude/ftn-custom/petscXXX.h90 (not included directly by code) contain interface definitions for
      the PETSc Fortran stubs that have different bindings then their C version (for example VecGetArrayF90).
@@ -2177,7 +2177,7 @@ $      call MatSetValues(mat,1,row,1,col,val,INSERT_VALUES,ierr)
      The finclude/ftn-auto/petscXXX.h90 (not included directly by code) contain interface definitions generated
      automatically by "make allfortranstubs".
 
-     The finclude/petscXXX.h90 includes the custom finclude/ftn-custom/petscXXX.h90 and if config/configure.py 
+     The finclude/petscXXX.h90 includes the custom finclude/ftn-custom/petscXXX.h90 and if ./configure 
      was run with --with-fortran-interfaces it also includes the finclude/ftn-auto/petscXXX.h90 These DO NOT automatically
      include their predecessors
 
@@ -2213,7 +2213,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetDisplay(char[],size_t);
 
    Level: beginner
 
-   Notes: to use the SPRNG you must have config/configure.py PETSc
+   Notes: to use the SPRNG you must have ./configure PETSc
    with the option --download-sprng
 
 .seealso: PetscRandomSetType(), PetscRandom

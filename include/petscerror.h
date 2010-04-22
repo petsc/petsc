@@ -463,7 +463,7 @@ M*/
 #else
 
 /* 
-    These are defined to be empty for when error checking is turned off, with config/configure.py --with-errorchecking=0
+    These are defined to be empty for when error checking is turned off, with ./configure --with-errorchecking=0
 */
 
 #define SETERRQ(n,s) ;

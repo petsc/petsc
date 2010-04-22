@@ -533,7 +533,7 @@ PetscErrorCode MatView_PaStiX(Mat A,PetscViewer viewer)
      MAT_SOLVER_PASTIX  - A solver package providing direct solvers (LU) for distributed
   and sequential matrices via the external package PaStiX.
 
-  Use config/configure.py --download-pastix to have PETSc installed with PaStiX
+  Use ./configure --download-pastix to have PETSc installed with PaStiX
 
   Options Database Keys:
 + -mat_pastix_verbose   <0,1,2>   - print level

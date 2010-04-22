@@ -77,7 +77,7 @@ directory
       <div style="margin-left: 40px;"><font color="#ff0000">export
 PETSC_DIR=$PWD</font><br>
       </div>
-      <div style="margin-left: 40px;"><font color="#ff0000">./config/configure.py
+      <div style="margin-left: 40px;"><font color="#ff0000">./configure
 --with-cc=gcc
 --with-fc=gfortran --download-f-blas-lapack=1
 --download-mpich=1</font><br>
@@ -104,7 +104,7 @@ export
 PETSC_DIR</font><br>
 csh/tcsh shell:&nbsp; <font color="#ff0000">setenv
 PETSC_DIR $PWD</font></li>
-        <li><font color="#ff0000">./config/configure.py</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <li><font color="#ff0000">./configure</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 (use
 --help for options or the <a href="#ExampleUsage">example usages</a>
 below)</li>
@@ -116,10 +116,10 @@ below)</li>
       <h3>Encounter problems?</h3>
       <ul>
         <li><strong>Read the error message from
-./config/configure.py!</strong></li>
+./configure!</strong></li>
         <li>If you get the message 'No such file or
 directory'
-try <font color="#ff0000">python config/configure.py</font></li>
+try <font color="#ff0000">python ./configure</font></li>
         <li><a href="installation.html#BLAS/LAPACK"> BLAS and
 LAPACK problems</a></li>
         <li><a href="installation.html#MPI:"> MPI problems</a>.
@@ -150,7 +150,7 @@ files and run as:<span style="font-weight: bold;"><br>
  style="color: rgb(255, 0, 0);">config/examples/arch-osx-10.6.py</span><br>
         </li>
         <li>Using the bash shell, assuming BLAS,
-LAPACK, MPICH are not currently installed <font color="#551a8b">./config/configure.py</font>
+LAPACK, MPICH are not currently installed <font color="#551a8b">./configure</font>
 will download &amp;
 install BLAS, LAPACK, MPICH if they are not already installed on the
 system) :<br>
@@ -159,7 +159,7 @@ PETSC_DIR=/home/petsc/petsc-3.1-p0<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 cd $PETSC_DIR<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-./config/configure.py
+./configure
 --with-cc=gcc --with-fc=gfortran --download-f-blas-lapack=1
 --download-mpich=1<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -174,7 +174,7 @@ PETSC_DIR=/home/petsc/petsc-3.1-p0<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 cd $PETSC_DIR<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-./config/configure.py
+./configure
 --with-cc=gcc --with-fc=gfortran --with-cxx=g++
 --download-f-blas-lapack=1
 --download-mpich=1
@@ -193,7 +193,7 @@ PETSC_DIR=/home/petsc/petsc-3.1-p0<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 cd $PETSC_DIR<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-./config/configure.py
+./configure
 --with-blas-lapack-dir=/usr/local/lib --with-mpi-dir=/usr/local/mpich<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 make <br>
@@ -202,7 +202,7 @@ make test</font><font color="#ff0000"> </font></li>
         <li>Using csh shell, install 2 variants of PETSc, one with gnu,
 the other with intel compilers<font color="#ff0000"><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-./config/configure.py
+./configure
 PETSC_ARCH=linux-gnu CC=gcc FC=gfortran --download-mpich=1<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 make </font><font color="#ff0000">PETSC_ARCH=linux-gnu</font><br>
@@ -211,7 +211,7 @@ make
           </font><font color="#ff0000">PETSC_ARCH=linux-gnu test</font><font
  color="#ff0000"><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-./config/configure.py </font><font color="#ff0000">PETSC_ARCH=linux-gnu-intel
+./configure </font><font color="#ff0000">PETSC_ARCH=linux-gnu-intel
 
           </font><font color="#ff0000">CC=icc FC=ifort </font><font
  color="#ff0000">--download-mpich=1</font><font color="#ff0000">
@@ -238,7 +238,7 @@ in ~/.cshrc]<br>
           <pre><font color="#ff0000">export PETSC_DIR=/home/balay/petsc-3.1-p0<br>export PETSC_ARCH=linux-gnu-c-debug</font>        </pre>
         </li>
         <li>specify variable on commandline to configure<br>
-          <pre><font color="#ff0000">config/configure.py PETSC_DIR=/home/balay/petsc-3.1-p0 PETSC_ARCH=linux-gnu-c-debug [other configure options]</font><br></pre>
+          <pre><font color="#ff0000">./configure PETSC_DIR=/home/balay/petsc-3.1-p0 PETSC_ARCH=linux-gnu-c-debug [other configure options]</font><br></pre>
         </li>
         <li>specify variables on command line to make<br>
           <pre><font color="#ff0000">make PETSC_DIR=/home/balay/petsc-3.1-p0 PETSC_ARCH=linux-gnu-c-debug [other make options]</font></pre>
@@ -323,7 +323,7 @@ switch to using optimzed mode with the toggle option --with-debugging
 optimization flags
 with the options COPTFLAGS, FOPTFLAGS, CXXOPTFLAGS.</li>
         <ul>
-          <li><span style="color: rgb(255, 0, 0);">./config/configure.py
+          <li><span style="color: rgb(255, 0, 0);">./configure
 --with-cc=gcc
 --with-fc=gfortran --with-debugging=0 COPTFLAGS='-O3
 -march=p4
@@ -333,7 +333,7 @@ with the options COPTFLAGS, FOPTFLAGS, CXXOPTFLAGS.</li>
 of compilers. In this case one can specify additional system/compiler
 libraries using the LIBS option</li>
         <ul>
-          <li><span style="color: rgb(255, 0, 0);">./config/configure.py
+          <li><span style="color: rgb(255, 0, 0);">./configure
 LIBS='-ldl
 /usr/lib/libm.a'</span><br>
           </li>
@@ -370,7 +370,7 @@ use this package.<br>
       </ul>
       <p><span style="color: rgb(255, 0, 0);"><span
  style="color: rgb(153, 51, 153);">--download-PACKAGENAME=/PATH/TO/package.tar.gz</span></span>
-: If config/configure.py cannot automatically download the package [due
+: If ./configure cannot automatically download the package [due
 to
 network/firewall issues], one can download the package by alternaive
 means [perhaps wget or scp via some other machine]. Once the tarfile is
@@ -407,7 +407,7 @@ specify the package to configure.<br>
       <ul>
         <li>Run <span style="color: rgb(255, 0, 0);"></span><span
  style="color: rgb(255, 0, 0);"><span style="color: rgb(51, 0, 51);"><span
- style="color: rgb(255, 0, 0); font-weight: bold;">config/configure.py-help</span></span></span><span
+ style="color: rgb(255, 0, 0); font-weight: bold;">./configure-help</span></span></span><span
  style="color: rgb(255, 0, 0);"></span> to get the list of external
 packages - and corresponding additional options&nbsp; [for example <span
  style="color: rgb(255, 0, 0);">--with-mpiexec</span> for mpich]<br>
@@ -471,7 +471,7 @@ these packages provide some basic numeric kernels used by PETSc.</p>
         <li>Configure will automatically look for blas/lapack in
 certain
 standard locations, on most systems you should not need to provide any
-information about BLAS/LAPACK in the config/configure.py command, some
+information about BLAS/LAPACK in the ./configure command, some
 of the standard locations used are&nbsp;</li>
         <ul>
           <li>&nbsp;/usr/lib/libblas.a,liblapack.a</li>
@@ -562,7 +562,7 @@ be installed.&nbsp; IBM, SGI, Cray etc provide their own.<br>
           <li>If <font color="#0f0000">using MPICH which is already
 installed [perhaps using myrinet/gm] then use [without specifying
 --with-cc=gcc etc.so that configure picks up mpicc from mpi-dir]:<br>
-&nbsp; <span style="color: rgb(255, 0, 0);">./config/configure.py</span></font><span
+&nbsp; <span style="color: rgb(255, 0, 0);">./configure</span></font><span
  style="color: rgb(255, 0, 0);">
 --with-mpi-dir=/path-to-mpich-install</span></li>
         </ul>
@@ -579,7 +579,7 @@ not available - for whatever reason]. However - if there is any MPI
 code in user application, then its best to install a full MPI - even if
 the usage is currently limited to uniprocessor mode.</li>
         <ul>
-          <li><font color="#ff0000">./config/configure.py
+          <li><font color="#ff0000">./configure
 --with-mpi=0</font></li>
         </ul>
       </ul>
@@ -696,14 +696,14 @@ Use configure with VC2005 C and Intel Fortran 10 [With MPICH2
 installed].<br>
       </p>
       <p> <font color="#ff0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-./config/configure.py
+./configure
 --with-cc='win32fe
 cl' --with-fc='win32fe ifort'&nbsp;
 --with-cxx='win32fe cl'&nbsp; --download-f-blas-lapack=1</font></p>
       <p>If fortran usage is not required, use:<br>
       </p>
       <font color="#ff0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-./config/configure.py --with-cc='win32fe cl' --with-fc=0
+./configure --with-cc='win32fe cl' --with-fc=0
 --download-c-blas-lapack=1</font>
       <p><font color="#551a8b"><b>Using Compaq F90</b></font>:<br>
       </p>
@@ -711,7 +711,7 @@ cl' --with-fc='win32fe ifort'&nbsp;
 configure command to use:<br>
       </p>
       <font color="#ff0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-./config/configure.py --with-cc='win32fe cl' --with-fc='win32fe f90'
+./configure --with-cc='win32fe cl' --with-fc='win32fe f90'
 --download-f-blas-lapack=1</font><br>
       <br>
 Note:&nbsp; MPICH2 mpif.h needs a fix for it to work with Compaq F90
@@ -797,7 +797,7 @@ user</span>]. i.e<br>
         <li><span style="color: rgb(255, 0, 0);">tar -xzf
 petsc-3.1-p0.tar.gz</span></li>
         <li><span style="color: rgb(255, 0, 0);">cd petsc-3.1-p0</span></li>
-        <li><span style="color: rgb(255, 0, 0);">./config/configure.py</span></li>
+        <li><span style="color: rgb(255, 0, 0);">./configure</span></li>
         <li><span style="color: rgb(255, 0, 0);">make<br>
           </span></li>
       </ul>
@@ -809,7 +809,7 @@ prefix-install mode.<br>
 non-root regular location - say /home/username]</span></li>
         <li><span style="color: rgb(255, 0, 0);">setenv PETSC_DIR $PWD<br>
           </span></li>
-        <li><span style="color: rgb(255, 0, 0);">./config/configure.py
+        <li><span style="color: rgb(255, 0, 0);">./configure
 --prefix=/opt/petsc/petsc-3.1-p0&nbsp; [other configure options]<br>
           </span></li>
         <li><span style="color: rgb(255, 0, 0);">make</span></li>
@@ -895,7 +895,7 @@ packages need to be installed separately. PETSc provides a wrapper
 compiler for TAU. This needs to be invoked with the correct information
 for the installed TAU and PDT packages. For eg:<br>
       </p>
-      <p>&nbsp;<span style="color: rgb(255, 0, 0);">./config/configure.py
+      <p>&nbsp;<span style="color: rgb(255, 0, 0);">./configure
 --with-mpi-dir=/home/petsc/soft/linux-rh73/mpich-1.2.4
       </span><span style="color: rgb(255, 0, 0);">--with-fc=0
 --with-cxx=0

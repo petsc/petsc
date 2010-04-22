@@ -3588,7 +3588,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFactorGetSolverPackage(Mat mat, const MatSo
       Some PETSc matrix formats have alternative solvers available that are contained in alternative packages
      such as pastix, superlu, mumps, spooles etc. 
 
-      PETSc must have been config/configure.py to use the external solver, using the option --download-package
+      PETSc must have been ./configure to use the external solver, using the option --download-package
 
    Level: intermediate
 
@@ -3617,7 +3617,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat mat, const MatSolverPackage t
     if (flag) {
       SETERRQ1(PETSC_ERR_SUP,"Matrix format %s does not have a built-in PETSc direct solver",((PetscObject)mat)->type_name);
     } else {
-      SETERRQ3(PETSC_ERR_SUP,"Matrix format %s does not have a solver %s. Perhaps you must config/configure.py with --download-%s",((PetscObject)mat)->type_name,type,type);
+      SETERRQ3(PETSC_ERR_SUP,"Matrix format %s does not have a solver %s. Perhaps you must ./configure with --download-%s",((PetscObject)mat)->type_name,type,type);
     }
   }
   ierr = (*conv)(mat,ftype,f);CHKERRQ(ierr);
@@ -3643,7 +3643,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat mat, const MatSolverPackage t
       Some PETSc matrix formats have alternative solvers available that are contained in alternative packages
      such as pastix, superlu, mumps, spooles etc. 
 
-      PETSc must have been config/configure.py to use the external solver, using the option --download-package
+      PETSc must have been ./configure to use the external solver, using the option --download-package
 
    Level: intermediate
 

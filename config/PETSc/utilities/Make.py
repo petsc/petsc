@@ -29,7 +29,7 @@ class Configure(config.base.Configure):
 *** Incomplete cygwin install detected . /usr/bin/make is missing. **************
 *** Please rerun cygwin-setup and select module "make" for install.**************''')
       else:
-        raise RuntimeError('Could not locate the make utility on your system, make sure\n it is in your path or use --with-make=/fullpathnameofmake\n and run config/configure.py again')    
+        raise RuntimeError('Could not locate the make utility on your system, make sure\n it is in your path or use --with-make=/fullpathnameofmake\n and run ./configure again')    
     # Check for GNU make
     haveGNUMake = 0
     self.getExecutable('strings', getFullPath = 1)

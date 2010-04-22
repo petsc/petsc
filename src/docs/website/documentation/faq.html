@@ -186,7 +186,7 @@ faster<span style="font-weight: bold;">?</span></a></li>
 solver?<span style="font-weight: bold;"></span></a></li>
       <li><a href="faq.html#singleprecision">When using PETSc in single
 precision mode (--with-precision=single when running
-config/configure.py) are the operations done in single or double
+./configure) are the operations done in single or double
 precision?</a></li>
       </menu>
       <a href="faq.html#Debugging"><span style="font-weight: bold;"></span>Debugging</a>
@@ -373,7 +373,7 @@ users.</p>
 numbers will I get better performance with C++?</font></a></strong><span
  style="font-weight: bold;"></span></p>
       <p><span style="font-weight: bold;"></span>To use PETSc with
-complex numbers you either config/configure.py with the option
+complex numbers you either ./configure with the option
 --with-scalar-type complex and either --with-clanguage=c++ or, the
 default, --with-clanguage=c. In our experience they will deliver very
 similar performance (speed), but if one is concerned they should just
@@ -489,11 +489,11 @@ finding bugs is much easier with the debug version. </p>
       <p>e) <strong><font color="#ff0000"><a name="petsc-uni">I want
 to use PETSc only for uniprocessor
 programs. Must I still install and use a version of MPI</a>?</font> </strong></p>
-No, run config/configure.py with the option --with-mpi=0<br>
+No, run ./configure with the option --with-mpi=0<br>
       <p><strong><a name="no-x"><font color="#ff0000">Can I install
 PETSc to not use X windows
 (either under Unix or Windows with gcc, the gnu compiler)?</font></a></strong></p>
-      <p>Yes. Run config/configure.py with the additional flag
+      <p>Yes. Run ./configure with the additional flag
 --with-x=0</p>
       <p><strong><font color="#ff0000"><a name="use-mpi">Why do you use
 MPI</a>? </font></strong></p>
@@ -1018,7 +1018,7 @@ long to link</font>.</a></strong></strong></p>
       <p><strong>We find this annoying as well. On most machines PETSc
 can use
 shared libraries, so executables should be much smaller, run
-config/configure.py with the additional option --with-shared. Also, if
+./configure with the additional option --with-shared. Also, if
 you have room, compiling and linking PETSc on your machine's /tmp disk
 or similar local disk, rather than over the network will be much
 faster. </strong></p>
@@ -1208,7 +1208,7 @@ or BoomerAMG in <a
 using
 PETSc
 in single precision mode (--with-precision=single when
-running config/configure.py) are the operations done in single or
+running ./configure) are the operations done in single or
 double precision? </font></a></strong></font> </strong></p>
       <strong>PETSc does NOT do any explicit conversion of single
 precision to double
@@ -1617,7 +1617,7 @@ I
 install PETSc libraries as
 shared libraries</a>?</strong></font></strong></p>
       <strong> </strong>
-      <p><strong>Yes.&nbsp;Use the config/configure.py option
+      <p><strong>Yes.&nbsp;Use the ./configure option
 --with-shared</strong></p>
       <strong> </strong>
       <p><strong><a name="why-use-shared"><strong><font color="#ff0000">Why
@@ -1649,7 +1649,7 @@ for this.</strong></p>
 If I want to link to the
 regular .a library files</a>?</strong></font></strong></p>
       <strong> </strong>
-      <p><strong>You must run config/configure.py without the option
+      <p><strong>You must run ./configure without the option
 --with-shared (you can use a different PETSC_ARCH for this build so you
 can easily switch between the two).</strong></p>
       <strong> </strong>
@@ -1671,7 +1671,7 @@ libraries (and difference between shared libraries)</strong></font></a></strong>
       <p><strong>PETSc libraries are installed as dynamic libraries
 when
 the
-config/configure.py flag --with-dynamic is used. The difference with
+./configure flag --with-dynamic is used. The difference with
 this - from shared libraries - is the way the libraries are used. From
 the program the library is loaded using dlopen() - and the functions
 are searched using dlsymm(). This separates the resolution of function

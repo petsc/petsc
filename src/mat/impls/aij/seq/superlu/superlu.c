@@ -410,7 +410,7 @@ EXTERN_C_END
   MAT_SOLVER_SUPERLU = "superlu" - A solver package roviding direct solvers (LU) for sequential matrices 
   via the external package SuperLU.
 
-  Use config/configure.py --download-superlu to have PETSc installed with SuperLU
+  Use ./configure --download-superlu to have PETSc installed with SuperLU
 
   Options Database Keys:
 + -mat_superlu_ordering <0,1,2,3> - 0: natural ordering, 

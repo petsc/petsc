@@ -350,7 +350,7 @@ EXTERN_C_END
   MAT_SOLVER_UMFPACK = "umfpack" - A matrix type providing direct solvers (LU) for sequential matrices 
   via the external package UMFPACK.
 
-  config/configure.py --download-umfpack to install PETSc to use UMFPACK
+  ./configure --download-umfpack to install PETSc to use UMFPACK
 
   Consult UMFPACK documentation for more information about the Control parameters
   which correspond to the options database keys below.

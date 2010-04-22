@@ -3071,7 +3071,7 @@ PETSc interfaces to several external linear solvers (see Acknowledgments).
 To use these solvers, one needs to:
 
 \begin{enumerate}
-\item Run config/configure.py with the additional options \trl{--download-packagename}. 
+\item Run ./configure with the additional options \trl{--download-packagename}. 
 For eg: \trl{--download-superlu_dist} \trl{--download-parmetis} (SuperLU\_DIST needs ParMetis) or
 \trl{--download-mumps} \trl{--download-scalapack} \trl{--download-blacs} (MUMPS requires  ScaLAPACK and BLACS).
 \item Build the PETSc libraries.
@@ -6318,7 +6318,7 @@ the PETSc libraries in which the basic ``scalar'' datatype, given in
 PETSc codes by PetscScalar, is defined as \trl{complex} (or \trl{
 complex<double>} for machines using templated complex class
 libraries).  To work with complex numbers,
-the user should run config/configure.py with the additional option \trl{--with-scalar-type=complex}.
+the user should run ./configure with the additional option \trl{--with-scalar-type=complex}.
 The file \trl{${PETSC_DIR}/src/docs/website/documentation/installation.html}
 provides detailed instructions for installing PETSc. You can use \trl{--with-clanguage=c} (the default) to use the C99 complex numbers or \trl{--with-clanguage=c++} to use the C++ complex type.
 
@@ -6399,9 +6399,30 @@ is defined.  See, for example, \href{http://www.yolinux.com/TUTORIALS/LinuxTutor
 
 \section{Eclipse Users} \sindex{eclipse}
 
-If you are interested in developing code that uses PETSc from Eclipse or developing PETSc in Eclipse please contact us. 
+If you are interested in developing code that uses PETSc from Eclipse or developing PETSc in Eclipse and have knowledge of how to do indexing and build libraries in Eclipse please contact us at \trl{petsc-dev@mcs.anl.gov}.
 
-I was able to install the Mecurial plugin for Eclipse and then import the PETSc repository to Eclipse. I then selected New->Convert to C/C++ project and selected shared library. After this point I could perform seachs in the code.
+To make PETSc an Eclipse package
+\begin{itemize}
+\item Install the Mecurial plugin for Eclipse and then import the PETSc repository to Eclipse.
+\item elected New->Convert to C/C++ project and selected shared library. After this point you can perform searchs in the code.
+\end{itemize}
+
+  A PETSc user has provided the following steps to build an Eclipse index for PETSc that can be used with their own code without compiling PETSc source into their project. 
+\begin{itemize}
+\item In the user project source directory, create a symlink to the petsc/src directory. 
+\item Refresh the project explorer in Eclipse, so the new symlink is followed.
+\item Right-click on the project in the project explorer, and choose "Index -> Rebuild". The index should now be build.
+\item Right-click on the PETSc symlink in the project explorer, and choose "Exclude from build..." to make sure Eclipse does not try to compile PETSc with the project.
+\end{itemize}
+
+\section{Developers Studio Users} \sindex{developers studio}
+
+In the \trl{projects} subdirectory of PETSc are several Developers Studio projects that use PETSc.
+
+\section{XCode Users (The Apple GUI Development System} \sindex{xcode}
+
+Please let us know how you have set things up at \trl{petsc-dev@mcs.anl.gov}.
+
 
 \section{Parallel Communication}
 
@@ -6612,7 +6633,7 @@ can easily be modified to serve specialized needs.
 \subsection{Disabling Graphics at Compile Time}
 
 \sindex{graphics, disabling}
-To disable all x-window-based graphics, run config/configure.py with the
+To disable all x-window-based graphics, run ./configure with the
 additional option --with-x=0
 
 
@@ -6640,7 +6661,7 @@ The variable
 \trl{PETSC_ARCH} can also be set as environmental
 variables.  Although PETSc is written in C, it can be compiled with a 
 C++ compiler.  For many C++ users this may be the preferred route. To compile
-with the C++ compiler, one should use the config/configure.py option \trl{--with-clanguage=c++}. \sindex{C++}
+with the C++ compiler, one should use the ./configure option \trl{--with-clanguage=c++}. \sindex{C++}
 
 \subsection{Makefile Commands} \label{sec_common}
 
@@ -6682,7 +6703,7 @@ two makefiles:
 \item \trl{petscvariables} - definitions of the compilers, linkers, etc.
 \item \trl{petscrules} - some build rules specific to this machine.
 \end{itemize}
-These files are generated automatically when you run config/configure.py.
+These files are generated automatically when you run ./configure.
 
 The architecture independent makefiles, are located in
 \trl{${PETSC_DIR}/conf}, and the machine-specific

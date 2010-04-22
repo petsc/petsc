@@ -1623,7 +1623,7 @@ EXTERN_C_END
 /*MC
    MAT_SOLVER_PLAPACK = "mpidense" - Parallel LU and Cholesky factorization for MATMPIDENSE matrices
 
-  run config/configure.py with the option --download-plapack
+  run ./configure with the option --download-plapack
 
 
   Options Database Keys:

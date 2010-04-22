@@ -113,7 +113,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISPermutation(IS is,PetscTruth *perm)
   Concepts: permutation
   Concepts: index sets^permutation
 
-   The debug version of the libraries (config/configure.py --with-debugging=1) checks if the 
+   The debug version of the libraries (./configure --with-debugging=1) checks if the 
   index set is actually a permutation. The optimized version just believes you.
 
 .seealso: ISPermutation()

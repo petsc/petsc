@@ -137,7 +137,7 @@ generally not used in source code, rather it has:
   \item PetscTruth
   \item PetscBT  - bit storate of logical true and false
 \end{itemize}
-PetscInt can be set using config/configure.py to be either \trl{int} (32 bit) or \trl{long long}
+PetscInt can be set using ./configure to be either \trl{int} (32 bit) or \trl{long long}
 (64 bit)
 to allow indexing into very large arrays. PetscMPIInt are for integers passed to MPI
 as counts etc, these are always \trl{int} since that is what the MPI standard uses. Similarly

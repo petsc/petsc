@@ -766,7 +766,7 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscTruth construc
 #if !defined(PETSC_MISSING_LAPACK_ORGQR) 
        LAPACKungqr_(&b1, &b2, &b2, b_submat_tp, &b1, tau, work, &b2, &info);
 #else
-       SETERRQ(PETSC_ERR_SUP,"ORGQR - Lapack routine is unavailable\nIf linking with ESSL you MUST also link with full LAPACK, for example\nuse config/configure.py with --with-blas-lib=libessl.a --with-lapack-lib=/usr/local/lib/liblapack.a'");
+       SETERRQ(PETSC_ERR_SUP,"ORGQR - Lapack routine is unavailable\nIf linking with ESSL you MUST also link with full LAPACK, for example\nuse ./configure with --with-blas-lib=libessl.a --with-lapack-lib=/usr/local/lib/liblapack.a'");
 #endif
        if (info) SETERRQ(PETSC_ERR_LIB, "LAPACKungqr_ LAPACK routine failed");
 

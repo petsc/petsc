@@ -209,7 +209,7 @@ PetscErrorCode PetscByteSwap(void *data,PetscDataType pdtype,PetscInt count)
    PetscBinaryRead() uses byte swapping to work on all machines; the files
    are written to file ALWAYS using big-endian ordering. On small-endian machines the numbers
    are converted to the small-endian format when they are read in from the file.
-   When PETSc is config/configure.py with --with-64bit-indices the integers are written to the
+   When PETSc is ./configure with --with-64bit-indices the integers are written to the
    file as 64 bit integers, this means they can only be read back in when the option --with-64bit-indices
    is used.
 
@@ -278,7 +278,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
    PetscBinaryWrite() uses byte swapping to work on all machines; the files
    are written using big-endian ordering to the file. On small-endian machines the numbers
    are converted to the big-endian format when they are written to disk.
-   When PETSc is config/configure.py with --with-64bit-indices the integers are written to the
+   When PETSc is ./configure with --with-64bit-indices the integers are written to the
    file as 64 bit integers, this means they can only be read back in when the option --with-64bit-indices
    is used.
 
