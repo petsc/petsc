@@ -34,6 +34,59 @@ S*/
 typedef struct _p_VecScatter*  VecScatter;
 
 /*E
+  ScatterMode - Determines the direction of a scatter
+
+  Level: beginner
+
+.seealso: VecScatter, VecScatterBegin(), VecScatterEnd()
+E*/
+typedef enum {SCATTER_FORWARD=0, SCATTER_REVERSE=1, SCATTER_FORWARD_LOCAL=2, SCATTER_REVERSE_LOCAL=3, SCATTER_LOCAL=2} ScatterMode;
+
+/*MC
+    SCATTER_FORWARD - Scatters the values as dictated by the VecScatterCreate() call
+
+    Level: beginner
+
+.seealso: VecScatter, ScatterMode, VecScatterCreate(), VecScatterBegin(), VecScatterEnd(), SCATTER_REVERSE, SCATTER_FORWARD_LOCAL,
+          SCATTER_REVERSE_LOCAL
+
+M*/
+
+/*MC
+    SCATTER_REVERSE - Moves the values in the opposite direction then the directions indicated in
+         in the VecScatterCreate()
+
+    Level: beginner
+
+.seealso: VecScatter, ScatterMode, VecScatterCreate(), VecScatterBegin(), VecScatterEnd(), SCATTER_FORWARD, SCATTER_FORWARD_LOCAL,
+          SCATTER_REVERSE_LOCAL
+
+M*/
+
+/*MC
+    SCATTER_FORWARD_LOCAL - Scatters the values as dictated by the VecScatterCreate() call except NO parallel communication
+       is done. Any variables that have be moved between processes are ignored
+
+    Level: developer
+
+.seealso: VecScatter, ScatterMode, VecScatterCreate(), VecScatterBegin(), VecScatterEnd(), SCATTER_REVERSE, SCATTER_FORWARD,
+          SCATTER_REVERSE_LOCAL
+
+M*/
+
+/*MC
+    SCATTER_REVERSE_LOCAL - Moves the values in the opposite direction then the directions indicated in
+         in the VecScatterCreate()  except NO parallel communication
+       is done. Any variables that have be moved between processes are ignored
+
+    Level: developer
+
+.seealso: VecScatter, ScatterMode, VecScatterCreate(), VecScatterBegin(), VecScatterEnd(), SCATTER_FORWARD, SCATTER_FORWARD_LOCAL,
+          SCATTER_REVERSE
+
+M*/
+
+/*E
     VecType - String with the name of a PETSc vector or the creation function
        with an optional dynamic library name, for example
        http://www.mcs.anl.gov/petsc/lib.a:myveccreate()
