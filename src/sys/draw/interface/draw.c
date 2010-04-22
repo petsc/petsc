@@ -180,7 +180,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSetTitle(PetscDraw draw,const char title
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidCharPointer(title,2);
-  ierr = PetscStrfree(draw->title);CHKERRQ(ierr);
+  ierr = PetscFree(draw->title);CHKERRQ(ierr);
   ierr = PetscStrallocpy(title,&draw->title);CHKERRQ(ierr);
   if (draw->ops->settitle) {
     ierr = (*draw->ops->settitle)(draw,title);CHKERRQ(ierr);
@@ -263,8 +263,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawDestroy(PetscDraw draw)
   if (draw->ops->destroy) {
     ierr = (*draw->ops->destroy)(draw);CHKERRQ(ierr);
   }
-  ierr = PetscStrfree(draw->title);CHKERRQ(ierr);
-  ierr = PetscStrfree(draw->display);CHKERRQ(ierr);
+  ierr = PetscFree(draw->title);CHKERRQ(ierr);
+  ierr = PetscFree(draw->display);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -349,7 +349,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSetDisplay(PetscDraw draw,char *display)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr          = PetscStrfree(draw->display);CHKERRQ(ierr); 
+  ierr          = PetscFree(draw->display);CHKERRQ(ierr); 
   ierr          = PetscStrallocpy(display,&draw->display);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

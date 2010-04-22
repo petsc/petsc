@@ -781,7 +781,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Exotic(PC pc)
   PetscFunctionBegin;
   /* if type was previously mg; must manually destroy it because call to PCSetType(pc,PCMG) will not destroy it */
   if (pc->ops->destroy) { ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr); pc->data = 0;}
-  ierr = PetscStrfree(((PetscObject)pc)->type_name);CHKERRQ(ierr);
+  ierr = PetscFree(((PetscObject)pc)->type_name);CHKERRQ(ierr);
   ((PetscObject)pc)->type_name = 0;
 
   ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);

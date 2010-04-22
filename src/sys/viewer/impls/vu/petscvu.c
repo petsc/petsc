@@ -33,7 +33,7 @@ PetscErrorCode PetscViewerDestroy_VU(PetscViewer viewer)
   }
   ierr = PetscViewerVUFlushDeferred(viewer);CHKERRQ(ierr);
   ierr = PetscFClose(((PetscObject)viewer)->comm, vu->fd);CHKERRQ(ierr);
-  ierr = PetscStrfree(vu->filename);CHKERRQ(ierr);
+  ierr = PetscFree(vu->filename);CHKERRQ(ierr);
   ierr = PetscFree(vu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

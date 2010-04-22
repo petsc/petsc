@@ -162,7 +162,7 @@ typedef int PetscErrorCode;
 
 /*MC
 
-    PetscClassId - A unique id used to identify each PETSc object.
+    PetscClassId - A unique id used to identify each PETSc class.
          (internal integer in the data structure used for error
          checking). These are all defined by an offset from the lowest
          one, PETSC_SMALLEST_CLASSID. 
@@ -253,7 +253,6 @@ typedef enum { ENUM_DUMMY } PetscEnum;
 
    Level: intermediate
 
-
 .seealso: PetscScalar, PetscBLASInt, PetscMPIInt
 M*/
 #if defined(PETSC_USE_64BIT_INDICES)
@@ -264,7 +263,9 @@ typedef int PetscInt;
 #define MPIU_INT MPI_INT
 #endif
 
-/* add in MPIU type for size_t */
+/* 
+    For the rare cases when one needs to send a size_t object with MPI
+*/
 #if (PETSC_SIZEOF_SIZE_T) == (PETSC_SIZEOF_INT)
 #define MPIU_SIZE_T MPI_INT
 #elif  (PETSC_SIZEOF_SIZE_T) == (PETSC_SIZEOF_LONG)
@@ -431,7 +432,7 @@ PETSC_EXTERN_CXX_BEGIN
 */
 
 /*E
-    PetscTruth - Logical variable. Actually an integer
+    PetscTruth - Logical variable. Actually an int in C and a logical in Fortran. 
 
    Level: beginner
 
@@ -490,7 +491,7 @@ M*/
           some default
 
           This macro does not exist in Fortran; you must use PETSC_NULL_INTEGER, 
-          PETSC_NULL_DOUBLE_PRECISION etc
+          PETSC_NULL_DOUBLE_PRECISION, PETSC_NULL_FUNCTION, PETSC_NULL_OBJECT etc
 
 .seealso: PETSC_DECIDE, PETSC_DEFAULT, PETSC_IGNORE, PETSC_DETERMINE
 
@@ -566,12 +567,9 @@ M*/
 extern MPI_Comm PETSC_COMM_WORLD;
 
 /*MC
-    PETSC_COMM_SELF - a duplicate of the MPI_COMM_SELF communicator which represents
-           the current process
+    PETSC_COMM_SELF - This is always MPI_COMM_SELF
 
    Level: beginner
-
-   Notes: PETSC_COMM_SELF and MPI_COMM_SELF are equivalent.
 
 .seealso: PETSC_COMM_WORLD
 
@@ -614,7 +612,7 @@ M*/
 #define PetscMalloc(a,b)  ((a != 0) ? (*PetscTrMalloc)((a),__LINE__,__FUNCT__,__FILE__,__SDIR__,(void**)(b)) : (*(b) = 0,0) )
 
 /*MC
-   PetscAddrAlign - Returns an address with PETSC_MEMALIGN alignment
+   PetscAddrAlign - Rounds up an address to PETSC_MEMALIGN alignment
 
    Synopsis:
    void *PetscAddrAlign(void *addr)
@@ -637,7 +635,7 @@ M*/
 #endif
 
 /*MC
-   PetscMalloc2 - Allocates 2 chunks of  memory
+   PetscMalloc2 - Allocates 2 chunks of  memory both aligned to PETSC_MEMALIGN
 
    Synopsis:
    PetscErrorCode PetscMalloc2(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2)
@@ -656,8 +654,6 @@ M*/
 
    Level: developer
 
-   Notes: Memory of first chunk is always allocated at least double aligned
-
 .seealso: PetscFree(), PetscNew(), PetscMalloc()
 
   Concepts: memory allocation
@@ -671,7 +667,7 @@ M*/
 #endif
 
 /*MC
-   PetscMalloc3 - Allocates 3 chunks of  memory
+   PetscMalloc3 - Allocates 3 chunks of  memory  all aligned to PETSC_MEMALIGN
 
    Synopsis:
    PetscErrorCode PetscMalloc3(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3)
@@ -691,10 +687,7 @@ M*/
 .  r2 - memory allocated in second chunk
 -  r3 - memory allocated in third chunk
 
-
    Level: developer
-
-   Notes: Memory of first chunk is always allocated at least double aligned
 
 .seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree3()
 
@@ -709,7 +702,7 @@ M*/
 #endif
 
 /*MC
-   PetscMalloc4 - Allocates 4 chunks of  memory
+   PetscMalloc4 - Allocates 4 chunks of  memory  all aligned to PETSC_MEMALIGN
 
    Synopsis:
    PetscErrorCode PetscMalloc4(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3,size_t m4,type t4,void **r4)
@@ -734,8 +727,6 @@ M*/
 
    Level: developer
 
-   Notes: Memory of first chunk is always allocated at least double aligned
-
 .seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree3(), PetscFree4()
 
   Concepts: memory allocation
@@ -750,7 +741,7 @@ M*/
 #endif
 
 /*MC
-   PetscMalloc5 - Allocates 5 chunks of  memory
+   PetscMalloc5 - Allocates 5 chunks of  memory all aligned to PETSC_MEMALIGN
 
    Synopsis:
    PetscErrorCode PetscMalloc5(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3,size_t m4,type t4,void **r4,size_t m5,type t5,void **r5)
@@ -778,8 +769,6 @@ M*/
 
    Level: developer
 
-   Notes: Memory of first chunk is always allocated at least double aligned
-
 .seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree3(), PetscFree4(), PetscFree5()
 
   Concepts: memory allocation
@@ -795,7 +784,7 @@ M*/
 
 
 /*MC
-   PetscMalloc6 - Allocates 6 chunks of  memory
+   PetscMalloc6 - Allocates 6 chunks of  memory all aligned to PETSC_MEMALIGN
 
    Synopsis:
    PetscErrorCode PetscMalloc6(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3,size_t m4,type t4,void **r4,size_t m5,type t5,void **r5,size_t m6,type t6,void **r6)
@@ -826,8 +815,6 @@ M*/
 
    Level: developer
 
-   Notes: Memory of first chunk is always allocated at least double aligned
-
 .seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree3(), PetscFree4(), PetscFree5(), PetscFree6()
 
   Concepts: memory allocation
@@ -842,7 +829,7 @@ M*/
 #endif
 
 /*MC
-   PetscMalloc7 - Allocates 7 chunks of  memory
+   PetscMalloc7 - Allocates 7 chunks of  memory all aligned to PETSC_MEMALIGN
 
    Synopsis:
    PetscErrorCode PetscMalloc7(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3,size_t m4,type t4,void **r4,size_t m5,type t5,void **r5,size_t m6,type t6,void **r6,size_t m7,type t7,void **r7)
@@ -876,8 +863,6 @@ M*/
 
    Level: developer
 
-   Notes: Memory of first chunk is always allocated at least double aligned
-
 .seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree3(), PetscFree4(), PetscFree5(), PetscFree6(), PetscFree7()
 
   Concepts: memory allocation
@@ -892,7 +877,7 @@ M*/
 #endif
 
 /*MC
-   PetscNew - Allocates memory of a particular type, zeros the memory!
+   PetscNew - Allocates memory of a particular type, zeros the memory! Aligned to PETSC_MEMALIGN
 
    Synopsis:
    PetscErrorCode PetscNew(struct type,((type *))result)
@@ -925,7 +910,6 @@ M*/
 
    Input Parameter:
 .   memory - memory to free (the pointer is ALWAYS set to 0 upon sucess)
-
 
    Level: beginner
 
@@ -1245,8 +1229,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscStrstr(const char[],const char[],ch
 EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscStrrstr(const char[],const char[],char *[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscStrallocpy(const char[],char *[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscStrreplace(MPI_Comm,const char[],char[],size_t);
-#define      PetscStrfree(a) ((a) ? PetscFree(a) : 0) 
-
 
 /*S
     PetscToken - 'Token' used for managing tokenizing strings
@@ -1333,8 +1315,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetTime(PetscLogDouble*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetCPUTime(PetscLogDouble*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSleep(PetscReal);
 
-/*
-    Initialization of PETSc
+/* 
+   Initialization of PETSc
 */
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int*,char***,const char[],const char[]);
 PetscPolymorphicSubroutine(PetscInitialize,(int *argc,char ***args),(argc,args,PETSC_NULL,PETSC_NULL))
@@ -1374,18 +1356,32 @@ typedef PetscErrorCode (*PetscErrorCodeFunction)(void);
 /*
    PetscTryMethod - Queries an object for a method, if it exists then calls it.
               These are intended to be used only inside PETSc functions.
+
+   Level: developer
+   
+.seealso: PetscUseMethod()
 */
 #define  PetscTryMethod(obj,A,B,C) \
   0;{ PetscErrorCode (*f)B, __ierr; \
     __ierr = PetscObjectQueryFunction((PetscObject)obj,A,(PetscVoidStarFunction)&f);CHKERRQ(__ierr); \
     if (f) {__ierr = (*f)C;CHKERRQ(__ierr);}\
   }
+
+/*
+   PetscUseMethod - Queries an object for a method, if it exists then calls it, otherwise generates an error.
+              These are intended to be used only inside PETSc functions.
+
+   Level: developer
+   
+.seealso: PetscTryMethod()
+*/
 #define  PetscUseMethod(obj,A,B,C) \
   0;{ PetscErrorCode (*f)B, __ierr; \
     __ierr = PetscObjectQueryFunction((PetscObject)obj,A,(PetscVoidStarFunction)&f);CHKERRQ(__ierr); \
     if (f) {__ierr = (*f)C;CHKERRQ(__ierr);}\
     else {SETERRQ1(PETSC_ERR_SUP,"Cannot locate function %s in object",A);} \
   }
+
 /*
     Functions that can act on any PETSc object.
 */
@@ -1475,7 +1471,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRegisterFinalizeAll(void);
 #include "petscerror.h"
 
 /*S
-     PetscOList - Linked list of PETSc objects, accessable by string name
+     PetscOList - Linked list of PETSc objects, each accessable by string name
 
    Level: developer
 
@@ -1492,7 +1488,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOListAdd(PetscOList *,const char[],Pe
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOListDuplicate(PetscOList,PetscOList *);
 
 /*
-    Dynamic library lists. Lists of names of routines in dynamic 
+    Dynamic library lists. Lists of names of routines in objects or in dynamic 
   link libraries that will be loaded as needed.
 */
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFListAdd(PetscFList*,const char[],const char[],void (*)(void));
@@ -1543,9 +1539,18 @@ PetscPolymorphicSubroutine(PetscSequentialPhaseEnd,(void),(PETSC_COMM_WORLD,1))
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBarrier(PetscObject);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMPIDump(FILE*);
 
-#define PetscNot(a) ((a) ? PETSC_FALSE : PETSC_TRUE)
 /*
-    Defines basic graphics available from PETSc.
+    PetscNot - negates a logical type value and returns result as a PetscTruth
+
+    Notes: This is useful in cases like 
+$     int        *a;
+$     PetscTruth flag = PetscNot(a) 
+     where !a does not return a PetscTruth because we cannot provide a cast from int to PetscTruth in C.
+*/
+ #define PetscNot(a) ((a) ? PETSC_FALSE : PETSC_TRUE)
+
+/*
+    Defines basic graphics available from PETSc. 
 */
 #include "petscdraw.h"
 
@@ -1553,11 +1558,11 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMPIDump(FILE*);
     Defines the base data structures for all PETSc objects
 */
 #include "private/petscimpl.h"
+
 /*
      Defines PETSc profiling.
 */
 #include "petsclog.h"
-
 
 /*
           For locking, unlocking and destroying AMS memories associated with 
@@ -1687,7 +1692,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscContainerSetUserDestroy(PetscContaine
 */
 extern PETSC_DLLEXPORT PetscMPIInt PetscGlobalRank;
 extern PETSC_DLLEXPORT PetscMPIInt PetscGlobalSize;
-
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscIntView(PetscInt,const PetscInt[],PetscViewer);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRealView(PetscInt,const PetscReal[],PetscViewer);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt,const PetscScalar[],PetscViewer);
@@ -1739,6 +1743,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt,const PetscScalar
 
    Note:
    This routine is analogous to memcpy().
+
+   Developer Note: this is inlined for fastest performance
 
   Concepts: memory^copying
   Concepts: copying^memory
@@ -1802,6 +1808,8 @@ PETSC_STATIC_INLINE PetscErrorCode PETSC_DLLEXPORT PetscMemcpy(void *a,const voi
    Compile Option:
    PETSC_PREFER_BZERO - on certain machines (the IBM RS6000) the bzero() routine happens
   to be faster than the memset() routine. This flag causes the bzero() routine to be used.
+
+   Developer Note: this is inlined for fastest performance
 
    Concepts: memory^zeroing
    Concepts: zeroing^memory

@@ -430,7 +430,7 @@ PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
     err = fclose(vbinary->fdes_info);
     if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
   }
-  ierr = PetscStrfree(vbinary->filename);CHKERRQ(ierr);
+  ierr = PetscFree(vbinary->filename);CHKERRQ(ierr);
   ierr = PetscFree(vbinary);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -452,7 +452,7 @@ PetscErrorCode PetscViewerDestroy_MPIIO(PetscViewer v)
     err = fclose(vbinary->fdes_info);
     if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
   }
-  ierr = PetscStrfree(vbinary->filename);CHKERRQ(ierr);
+  ierr = PetscFree(vbinary->filename);CHKERRQ(ierr);
   ierr = PetscFree(vbinary);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

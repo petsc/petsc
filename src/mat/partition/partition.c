@@ -527,7 +527,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetType(MatPartitioning part,co
   part->ops->view         = (PetscErrorCode (*)(MatPartitioning,PetscViewer)) 0;
   ierr = (*r)(part);CHKERRQ(ierr);
 
-  ierr = PetscStrfree(((PetscObject)part)->type_name);CHKERRQ(ierr);
+  ierr = PetscFree(((PetscObject)part)->type_name);CHKERRQ(ierr);
   ierr = PetscStrallocpy(type,&((PetscObject)part)->type_name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

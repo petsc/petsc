@@ -109,9 +109,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawAxisDestroy(PetscDrawAxis axis)
   if (!axis) PetscFunctionReturn(0);
   if (--((PetscObject)axis)->refct > 0) PetscFunctionReturn(0);
 
-  ierr = PetscStrfree(axis->toplabel);CHKERRQ(ierr);
-  ierr = PetscStrfree(axis->xlabel);CHKERRQ(ierr);
-  ierr = PetscStrfree(axis->ylabel);CHKERRQ(ierr);
+  ierr = PetscFree(axis->toplabel);CHKERRQ(ierr);
+  ierr = PetscFree(axis->xlabel);CHKERRQ(ierr);
+  ierr = PetscFree(axis->ylabel);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(axis);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

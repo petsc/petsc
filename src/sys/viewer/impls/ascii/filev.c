@@ -43,7 +43,7 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
 #endif
     }
   }
-  ierr = PetscStrfree(vascii->filename);CHKERRQ(ierr);
+  ierr = PetscFree(vascii->filename);CHKERRQ(ierr);
   ierr = PetscFree(vascii);CHKERRQ(ierr);
 
   /* remove the viewer from the list in the MPI Communicator */
@@ -548,7 +548,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_ASCII(PetscViewer viewer,c
 
   PetscFunctionBegin;
   if (!name) PetscFunctionReturn(0);
-  ierr = PetscStrfree(vascii->filename);CHKERRQ(ierr);
+  ierr = PetscFree(vascii->filename);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name,&vascii->filename);CHKERRQ(ierr);
 
   /* Is this file to be compressed */

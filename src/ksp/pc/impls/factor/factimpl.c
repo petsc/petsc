@@ -93,7 +93,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType_Factor(PC pc,const 
  
   PetscFunctionBegin;
   if (!pc->setupcalled) {
-     ierr = PetscStrfree(dir->ordering);CHKERRQ(ierr);
+     ierr = PetscFree(dir->ordering);CHKERRQ(ierr);
      ierr = PetscStrallocpy(ordering,&dir->ordering);CHKERRQ(ierr);
   } else {
     ierr = PetscStrcmp(dir->ordering,ordering,&flg);CHKERRQ(ierr);
@@ -183,7 +183,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage_Factor(PC pc,const
       SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot change solver matrix package after PC has been setup or used");
     }
   }
-  ierr = PetscStrfree(lu->solvertype);CHKERRQ(ierr);
+  ierr = PetscFree(lu->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(stype,&lu->solvertype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

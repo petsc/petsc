@@ -131,7 +131,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DADestroy(DA da)
 
   if (da->fieldname) {
     for (i=0; i<da->w; i++) {
-      ierr = PetscStrfree(da->fieldname[i]);CHKERRQ(ierr);
+      ierr = PetscFree(da->fieldname[i]);CHKERRQ(ierr);
     }
     ierr = PetscFree(da->fieldname);CHKERRQ(ierr);
   }

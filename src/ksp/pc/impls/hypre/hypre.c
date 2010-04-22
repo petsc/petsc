@@ -202,7 +202,7 @@ static PetscErrorCode PCDestroy_HYPRE(PC pc)
   if (jac->b)  { ierr = HYPRE_IJVectorDestroy(jac->b);CHKERRQ(ierr);  }
   if (jac->x)  { ierr = HYPRE_IJVectorDestroy(jac->x);CHKERRQ(ierr);  }
   if (jac->destroy) { ierr = (*jac->destroy)(jac->hsolver);CHKERRQ(ierr); }
-  ierr = PetscStrfree(jac->hypre_type);CHKERRQ(ierr);
+  ierr = PetscFree(jac->hypre_type);CHKERRQ(ierr);
   if (jac->comm_hypre != MPI_COMM_NULL) { ierr = MPI_Comm_free(&(jac->comm_hypre));CHKERRQ(ierr);}
   ierr = PetscFree(jac);CHKERRQ(ierr);
 
@@ -899,7 +899,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHYPRESetType_HYPRE(PC pc,const char name[])
     ierr = HYPRE_BoomerAMGSetNumSweeps(jac->hsolver, jac->gridsweeps[0]); /*defaults coarse to 1 */
     PetscFunctionReturn(0);
   }
-  ierr = PetscStrfree(jac->hypre_type);CHKERRQ(ierr);
+  ierr = PetscFree(jac->hypre_type);CHKERRQ(ierr);
   jac->hypre_type = PETSC_NULL;
   SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown HYPRE preconditioner %s; Choices are pilut, parasails, euclid, boomeramg",name);
   PetscFunctionReturn(0);

@@ -27,7 +27,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectSetName(PetscObject obj,const char nam
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  ierr = PetscStrfree(obj->name);CHKERRQ(ierr);
+  ierr = PetscFree(obj->name);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name,&obj->name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -110,7 +110,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectChangeTypeName(PetscObject obj,const c
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   ierr = PetscObjectTakeAccess(obj);CHKERRQ(ierr);
-  ierr = PetscStrfree(obj->type_name);CHKERRQ(ierr);
+  ierr = PetscFree(obj->type_name);CHKERRQ(ierr);
   ierr = PetscStrallocpy(type_name,&obj->type_name);CHKERRQ(ierr);
   ierr = PetscObjectGrantAccess(obj);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -24,7 +24,7 @@ PetscErrorCode PetscViewerDestroy_Netcdf(PetscViewer v)
   if (vnetcdf->ncid) {
     ierr = ncmpi_close(vnetcdf->ncid);CHKERRQ(ierr);
   }
-  ierr = PetscStrfree(vnetcdf->filename);CHKERRQ(ierr);
+  ierr = PetscFree(vnetcdf->filename);CHKERRQ(ierr);
   ierr = PetscFree(vnetcdf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
