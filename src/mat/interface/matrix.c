@@ -4858,6 +4858,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetOption(Mat mat,MatOption op,PetscTruth f
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
   if (((int) op) < 0 || ((int) op) >= NUM_MAT_OPTIONS) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Options %d is out of range",(int)op);
+  if (!((PetscObject)mat)->type_name) SETERRQ(PETSC_ERR_ARG_TYPENOTSET,"Cannot set options until type and size have been set, see MatSetType() and MatSetSizes()");
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   switch (op) {
   case MAT_SYMMETRIC:
