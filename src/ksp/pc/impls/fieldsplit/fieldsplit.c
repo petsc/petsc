@@ -885,7 +885,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields(PC pc,PetscInt n, PetscI
 .   is - the index set that defines the vector elements in this field
 
 
-    Notes: Use PCFieldSplitSetFields(), for fields defined by strided types.
+    Notes:
+    Use PCFieldSplitSetFields(), for fields defined by strided types.
+
+    This function is called once per split (it creates a new split each time).
 
     Level: intermediate
 
