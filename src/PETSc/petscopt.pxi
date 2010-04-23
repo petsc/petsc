@@ -20,8 +20,6 @@ cdef extern from "petsc.h" nogil:
     int PetscOptionsGetScalar(char[],char[],PetscScalar*,PetscTruth*)
     int PetscOptionsGetString(char[],char[],char[],size_t,PetscTruth*)
 
-    int PetscStrfree(char*)
-
     ctypedef struct _p_PetscToken
     ctypedef _p_PetscToken* PetscToken
     int PetscTokenCreate(char[],char,PetscToken*)

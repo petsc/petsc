@@ -562,7 +562,7 @@ static PetscErrorCode SNESDestroy_Python(SNES snes)
     ierr = VecDestroy(snes->vec_sol_update);CHKERRQ(ierr);
     snes->vec_sol_update = PETSC_NULL;
   }
-  ierr = PetscStrfree(py->pyname);CHKERRQ(ierr);
+  ierr = PetscFree(py->pyname);CHKERRQ(ierr);
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
   snes->data = PETSC_NULL;
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESPythonSetType_C",
@@ -711,7 +711,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetContext(SNES snes,void *ctx)
   old = py->self; py->self = NULL; Py_DecRef(old);
   /* set current Python context in the SNES object  */
   py->self = (PyObject *) self; Py_IncRef(py->self);
-  ierr = PetscStrfree(py->pyname);CHKERRQ(ierr);
+  ierr = PetscFree(py->pyname);CHKERRQ(ierr);
   ierr = PetscPythonGetFullName(py->self,&py->pyname);CHKERRQ(ierr);
   SNES_PYTHON_CALL_SNESARG(snes, "create");
   if (snes->setupcalled) snes->setupcalled = PETSC_FALSE;

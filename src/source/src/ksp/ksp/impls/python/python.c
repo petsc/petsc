@@ -92,7 +92,7 @@ static PetscErrorCode KSPDestroy_Python(KSP ksp)
     KSP_PYTHON_CALL_NOARGS(ksp, "destroy");
     py->self = NULL; Py_DecRef(self);
   }
-  ierr = PetscStrfree(py->pyname);CHKERRQ(ierr);
+  ierr = PetscFree(py->pyname);CHKERRQ(ierr);
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   ksp->data = PETSC_NULL;
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPPythonSetType_C",
@@ -352,7 +352,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetContext(KSP ksp,void *ctx)
   old = py->self; py->self = NULL; Py_DecRef(old);
   /* set current Python context in the KSP object  */
   py->self = (PyObject *) self; Py_IncRef(py->self);
-  ierr = PetscStrfree(py->pyname);CHKERRQ(ierr);
+  ierr = PetscFree(py->pyname);CHKERRQ(ierr);
   ierr = PetscPythonGetFullName(py->self,&py->pyname);CHKERRQ(ierr);
   KSP_PYTHON_CALL_KSPARG(ksp, "create");
   if (ksp->setupcalled) ksp->setupcalled = 0;

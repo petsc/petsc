@@ -95,7 +95,7 @@ static PetscErrorCode PCDestroy_Python(PC pc)
     PC_PYTHON_CALL_NOARGS(pc, "destroy");
     py->self = NULL; Py_DecRef(self);
   }
-  ierr = PetscStrfree(py->pyname);CHKERRQ(ierr);
+  ierr = PetscFree(py->pyname);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   pc->data = PETSC_NULL;
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPythonSetType_C",
@@ -440,7 +440,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetContext(PC pc,void *ctx)
   old = py->self; py->self = NULL; Py_DecRef(old);
   /* set current Python context in the PC object  */
   py->self = (PyObject *) self; Py_IncRef(py->self);
-  ierr = PetscStrfree(py->pyname);CHKERRQ(ierr);
+  ierr = PetscFree(py->pyname);CHKERRQ(ierr);
   ierr = PetscPythonGetFullName(py->self,&py->pyname);CHKERRQ(ierr);
   PC_PYTHON_CALL_PCARG(pc, "create");
   if (pc->setupcalled) pc->setupcalled = 1;

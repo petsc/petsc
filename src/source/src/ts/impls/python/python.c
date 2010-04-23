@@ -156,7 +156,7 @@ static PetscErrorCode TSDestroy_Python(TS ts)
   if (py->update)   {ierr = VecDestroy(py->update);CHKERRQ(ierr);}
   if (py->vec_func) {ierr = VecDestroy(py->vec_func);CHKERRQ(ierr);}
   if (py->vec_rhs)  {ierr = VecDestroy(py->vec_rhs);CHKERRQ(ierr);}
-  ierr = PetscStrfree(py->pyname);CHKERRQ(ierr);
+  ierr = PetscFree(py->pyname);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
   ts->data = PETSC_NULL;
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPythonSetType_C",
@@ -735,7 +735,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetContext(TS ts,void *ctx)
   old = py->self; py->self = NULL; Py_DecRef(old);
   /* set current Python context in the TS object  */
   py->self = (PyObject *) self; Py_IncRef(py->self);
-  ierr = PetscStrfree(py->pyname);CHKERRQ(ierr);
+  ierr = PetscFree(py->pyname);CHKERRQ(ierr);
   ierr = PetscPythonGetFullName(py->self,&py->pyname);CHKERRQ(ierr);
   TS_PYTHON_CALL_TSARG(ts, "create");
   if (ts->setupcalled) ts->setupcalled = 0;

@@ -83,7 +83,7 @@ cdef class Options:
         cdef char *allopts = NULL
         CHKERR( PetscOptionsGetAll(&allopts) )
         options = cp2str(allopts)
-        CHKERR( PetscStrfree(allopts) )
+        CHKERR( PetscFree(allopts) )
         return parseopt(options, self.prefix)
 
 # --------------------------------------------------------------------

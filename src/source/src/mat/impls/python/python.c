@@ -120,7 +120,7 @@ static PetscErrorCode MatDestroy_Python(Mat mat)
     MAT_PYTHON_CALL_NOARGS(mat, "destroy");
     py->self = NULL; Py_DecRef(self);
   }
-  ierr = PetscStrfree(py->pyname);CHKERRQ(ierr);
+  ierr = PetscFree(py->pyname);CHKERRQ(ierr);
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatPythonSetType_C",
@@ -816,7 +816,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetContext(Mat mat,void *ctx)
   old = py->self; py->self = NULL; Py_DecRef(old);
   /* set current Python context in the Mat object  */
   py->self = self; Py_IncRef(py->self);
-  ierr = PetscStrfree(py->pyname);CHKERRQ(ierr);
+  ierr = PetscFree(py->pyname);CHKERRQ(ierr);
   ierr = PetscPythonGetFullName(py->self,&py->pyname);CHKERRQ(ierr);
   MAT_PYTHON_CALL_MATARG(mat, "create");
   PetscFunctionReturn(0);
