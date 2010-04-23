@@ -193,7 +193,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
     ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
   }
 
-  if (ksp->dm) {
+  if (ksp->dmActive) {
     Mat          A;
     MatStructure stflg;
 

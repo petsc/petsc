@@ -372,6 +372,9 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_BEuler(TS ts)
     ts->ops->setfromoptions  = TSSetFromOptions_BEuler_Nonlinear;
     ierr = SNESCreate(((PetscObject)ts)->comm,&ts->snes);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)ts->snes,(PetscObject)ts,1);CHKERRQ(ierr);
+    if (ts->dm) {
+      ierr = SNESSetDM(ts->snes,ts->dm);CHKERRQ(ierr);
+    }
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"No such problem");
 
   ts->ops->snesfunction = SNESTSFormFunction_BEuler;

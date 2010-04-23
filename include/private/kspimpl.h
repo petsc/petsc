@@ -36,6 +36,7 @@ typedef struct {PetscInt model,curl,maxl;Mat mat; KSP ksp;}* KSPGuessFischer;
 struct _p_KSP {
   PETSCHEADER(struct _KSPOps);
   DM              dm;
+  PetscTruth      dmActive;
   /*------------------------- User parameters--------------------------*/
   PetscInt        max_it;                     /* maximum number of iterations */
   KSPFischerGuess guess;

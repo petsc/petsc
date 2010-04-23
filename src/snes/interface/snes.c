@@ -2991,6 +2991,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetDM(SNES snes,DM dm)
   ierr = PetscObjectReference((PetscObject)snes->dm);CHKERRQ(ierr);
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,dm);CHKERRQ(ierr);
+  ierr = KSPSetDMActive(ksp,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

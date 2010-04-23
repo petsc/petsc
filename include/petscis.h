@@ -12,7 +12,7 @@ extern PETSCVEC_DLLEXPORT PetscClassId IS_CLASSID;
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISInitializePackage(const char[]);
 
 /*S
-     IS - Abstract PETSc object that indexing.
+     IS - Abstract PETSc object that allows indexing.
 
    Level: beginner
 

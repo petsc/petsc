@@ -330,8 +330,8 @@ typedef PetscReal MatReal;
 /* --------------------------------------------------------------------------*/
 
 /*
-   Certain objects may be created using either single
-  or double precision.
+   Certain objects may be created using either single or double precision.
+   This is currently not used.
 */
 typedef enum { PETSC_SCALAR_DOUBLE,PETSC_SCALAR_SINGLE, PETSC_SCALAR_LONG_DOUBLE, PETSC_SCALAR_QD_DD } PetscScalarPrecision;
 

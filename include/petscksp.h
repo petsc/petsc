@@ -583,6 +583,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementGetSubmatrices(Mat,Ma
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSchurComplement(Mat,IS,IS,IS,IS,MatReuse,Mat *,MatReuse,Mat *);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDM(KSP,DM);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDMActive(KSP,PetscTruth);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetDM(KSP,DM*);
 
 PETSC_EXTERN_CXX_END
