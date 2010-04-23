@@ -1617,7 +1617,18 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFromOptions(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDCheckPositivity(void*,Vec,Vec,PetscScalar*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetCheckh(Mat,PetscErrorCode (*)(void*,Vec,Vec,PetscScalar*),void*);
 
+/*S
+    MatMFFD - A data structured used to manage the computation of the h differencing parameter for matrix-free 
+              Jacobian vector products
 
+    Notes: MATMFFD is a specific MatType which uses the MatMFFD data structure
+
+           MatMFFD*() methods actually take the Mat as their first argument. Not a MatMFFD data structure
+
+    Level: developer
+
+.seealso: MATMFFD, MatCreateMFFD(), MatMFFDSetFuction(), MatMFFDSetType(), MatMFFDRegister()
+S*/
 typedef struct _p_MatMFFD* MatMFFD;
 
 /*E
