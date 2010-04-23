@@ -3,8 +3,7 @@
 
 #include "petsc.h"
 
-PetscClassId PETSC_FWK_CLASSID;
-static char PETSC_FWK_CLASS_NAME[] = "PetscFwk";
+extern PETSC_DLLEXPORT PetscClassId PETSC_FWK_CLASSID;
 
 struct _p_PetscFwk;
 typedef struct _p_PetscFwk *PetscFwk;

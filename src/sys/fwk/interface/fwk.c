@@ -3,6 +3,9 @@
 #include "petscsys.h"
 #include "petscfwk.h"
 
+PETSC_DLLEXPORT PetscClassId PETSC_FWK_CLASSID;
+static char PETSC_FWK_CLASS_NAME[] = "PetscFwk";
+
 static PetscTruth PetscFwkPackageInitialized = PETSC_FALSE;
 typedef enum{PETSC_FWK_COMPONENT_SO, PETSC_FWK_COMPONENT_PY} PetscFwkComponentType;
 
