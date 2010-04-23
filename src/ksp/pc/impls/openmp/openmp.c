@@ -63,13 +63,7 @@ static PetscErrorCode PCView_OpenMP(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#include "private/matimpl.h"        /*I "petscmat.h" I*/
-#include "private/vecimpl.h" 
-#include "../src/mat/impls/aij/mpi/mpiaij.h"   /*I "petscmat.h" I*/
-#include "../src/mat/impls/aij/seq/aij.h"      /*I "petscmat.h" I*/
-
 extern PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_OpenMP_1"

@@ -112,7 +112,7 @@ typedef enum {MAT_FACTOR_NONE, MAT_FACTOR_LU, MAT_FACTOR_CHOLESKY, MAT_FACTOR_IL
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat,const MatSolverPackage,MatFactorType,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactorAvailable(Mat,const MatSolverPackage,MatFactorType,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFactorGetSolverPackage(Mat,const MatSolverPackage*);
-
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactorType(Mat,MatFactorType*);
 
 /* Logging support */
 #define    MAT_FILE_CLASSID 1211216    /* used to indicate matrices in binary files */
@@ -1623,7 +1623,18 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFromOptions(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDCheckPositivity(void*,Vec,Vec,PetscScalar*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetCheckh(Mat,PetscErrorCode (*)(void*,Vec,Vec,PetscScalar*),void*);
 
+/*S
+    MatMFFD - A data structured used to manage the computation of the h differencing parameter for matrix-free 
+              Jacobian vector products
 
+    Notes: MATMFFD is a specific MatType which uses the MatMFFD data structure
+
+           MatMFFD*() methods actually take the Mat as their first argument. Not a MatMFFD data structure
+
+    Level: developer
+
+.seealso: MATMFFD, MatCreateMFFD(), MatMFFDSetFuction(), MatMFFDSetType(), MatMFFDRegister()
+S*/
 typedef struct _p_MatMFFD* MatMFFD;
 
 /*E

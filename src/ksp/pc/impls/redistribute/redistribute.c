@@ -43,7 +43,6 @@ static PetscErrorCode PCView_Redistribute(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#include "private/matimpl.h"        /*I "petscmat.h" I*/
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_Redistribute"
 static PetscErrorCode PCSetUp_Redistribute(PC pc)
@@ -72,6 +71,8 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     ierr = MatGetSubMatrix(pc->pmat,red->is,red->is,MAT_REUSE_MATRIX,&tmat);CHKERRQ(ierr);
     ierr = KSPSetOperators(red->ksp,tmat,tmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   } else {
+    PetscInt NN;
+
     ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -112,7 +113,8 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     ierr = PetscLayoutSetBlockSize(nmap,1);CHKERRQ(ierr);
     ierr = PetscLayoutSetUp(nmap);CHKERRQ(ierr);
 
-    ierr = PetscInfo2(pc,"Number of diagonal rows eliminated %d, percentage eliminated %g\n",pc->pmat->rmap->N-ncnt,((PetscReal)(pc->pmat->rmap->N-ncnt))/((PetscReal)(pc->pmat->rmap->N)));
+    ierr = MatGetSize(pc->pmat,&NN,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscInfo2(pc,"Number of diagonal rows eliminated %d, percentage eliminated %g\n",NN-ncnt,((PetscReal)(NN-ncnt))/((PetscReal)(NN)));
     /*  
 	this code is taken from VecScatterCreate_PtoS() 
 	Determines what rows need to be moved where to 
