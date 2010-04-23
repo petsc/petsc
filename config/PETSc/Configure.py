@@ -248,7 +248,7 @@ class Configure(config.base.Configure):
       if self.compilers.fortranIsF90:
         self.addMakeMacro('PACKAGES_MODULES_INCLUDES',self.headers.toStringModulesNoDupes(includes))    
     
-    self.addMakeMacro('INSTALL_DIR',self.installdir)
+    self.addMakeMacro('DESTDIR',self.installdir)
     self.addDefine('LIB_DIR','"'+os.path.join(self.installdir,'lib')+'"')
 
     if self.framework.argDB['with-single-library']:
