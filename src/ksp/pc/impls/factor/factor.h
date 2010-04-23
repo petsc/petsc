@@ -1,4 +1,4 @@
-g/* 
+/* 
    Private data structure for ILU/ICC/LU/Cholesky preconditioners.
 */
 #if !defined(__FACTOR_H)
