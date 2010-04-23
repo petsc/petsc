@@ -38,7 +38,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkComponentConfigureTestIB(PetscFwk fwk, Pe
     ierr = PetscPrintf(comm, "%s: registering dependence: TestIB --> TestIA\n", __FUNCT__); CHKERRQ(ierr);
     ierr = PetscFwkRegisterDependence(fwk, 
                                       "${PETSC_DIR}/${PETSC_ARCH}/lib/libtestcomponents.a:TestIB",
-                                      "${PETSC_DIR}/${PETSC_ARCH}/lib/libtestcomponents:TestIA"); CHKERRQ(ierr);
+                                      "${PETSC_DIR}/${PETSC_ARCH}/lib/libtestcomponents.a:TestIA"); CHKERRQ(ierr);
   }
   else {
     container = *((PetscContainer*)component);
