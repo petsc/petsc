@@ -47,6 +47,13 @@ class Installer(script.Script):
     self.copies = []
     return
 
+  def setupHelp(self, help):
+    import nargs
+    script.Script.setupHelp(self, help)
+    help.addArgument('Installer', '-destDir=<path>', nargs.Arg(None, None, 'Destination Directory for install'))
+    return
+
+
   def setupModules(self):
     self.setCompilers  = self.framework.require('config.setCompilers',         None)
     self.arch          = self.framework.require('PETSc.utilities.arch',        None)
@@ -63,6 +70,7 @@ class Installer(script.Script):
 
   def setupDirectories(self):
     self.rootDir    = self.petscdir.dir
+    self.destDir    = os.path.abspath(self.argDB['destDir'])
     self.installDir = self.framework.argDB['prefix']
     self.arch       = self.arch.arch
     self.rootIncludeDir    = os.path.join(self.rootDir, 'include')
@@ -72,6 +80,10 @@ class Installer(script.Script):
     self.rootBinDir        = os.path.join(self.rootDir, 'bin')
     self.archBinDir        = os.path.join(self.rootDir, self.arch, 'bin')
     self.archLibDir        = os.path.join(self.rootDir, self.arch, 'lib')
+    self.destIncludeDir    = os.path.join(self.destDir, 'include')
+    self.destConfDir       = os.path.join(self.destDir, 'conf')
+    self.destLibDir        = os.path.join(self.destDir, 'lib')
+    self.destBinDir        = os.path.join(self.destDir, 'bin')
     self.installIncludeDir = os.path.join(self.installDir, 'include')
     self.installConfDir    = os.path.join(self.installDir, 'conf')
     self.installLibDir     = os.path.join(self.installDir, 'lib')
@@ -132,8 +144,8 @@ class Installer(script.Script):
     return copies
 
   def installIncludes(self):
-    self.copies.extend(self.copytree(self.rootIncludeDir, self.installIncludeDir))
-    self.copies.extend(self.copytree(self.archIncludeDir, self.installIncludeDir))
+    self.copies.extend(self.copytree(self.rootIncludeDir, self.destIncludeDir))
+    self.copies.extend(self.copytree(self.archIncludeDir, self.destIncludeDir))
     return
 
   def copyConf(self, src, dst):
@@ -163,16 +175,16 @@ class Installer(script.Script):
 
   def installConf(self):
     # rootConfDir can have a duplicate petscvariables - so processing it first removes the appropriate duplicate file.
-    self.copies.extend(self.copytree(self.rootConfDir, self.installConfDir, copyFunc = self.copyConf))
-    self.copies.extend(self.copytree(self.archConfDir, self.installConfDir))
+    self.copies.extend(self.copytree(self.rootConfDir, self.destConfDir, copyFunc = self.copyConf))
+    self.copies.extend(self.copytree(self.archConfDir, self.destConfDir))
     # Just copyConf() a couple of files manually [as the rest of the files should not be modified]
     for file in ['petscrules', 'petscvariables']:
-      self.copyConf(os.path.join(self.archConfDir,file),os.path.join(self.installConfDir,file))
+      self.copyConf(os.path.join(self.archConfDir,file),os.path.join(self.destConfDir,file))
     return
 
   def installBin(self):
-    self.copies.extend(self.copytree(self.rootBinDir, self.installBinDir))
-    self.copies.extend(self.copytree(self.archBinDir, self.installBinDir))
+    self.copies.extend(self.copytree(self.rootBinDir, self.destBinDir))
+    self.copies.extend(self.copytree(self.archBinDir, self.destBinDir))
     return
 
   def copyLib(self, src, dst):
@@ -183,17 +195,17 @@ class Installer(script.Script):
     return
 
   def installLib(self):
-    self.copies.extend(self.copytree(self.archLibDir, self.installLibDir, copyFunc = self.copyLib))
+    self.copies.extend(self.copytree(self.archLibDir, self.destLibDir, copyFunc = self.copyLib))
     return
 
   def createUninstaller(self):
-    uninstallscript = os.path.join(self.installConfDir, 'uninstall.py')
+    uninstallscript = os.path.join(self.destConfDir, 'uninstall.py')
     f = open(uninstallscript, 'w')
     # Could use the Python AST to do this
     f.write('#!'+sys.executable+'\n')
     f.write('import os\n')
 
-    f.write('copies = '+repr(self.copies))
+    f.write('copies = '+re.sub(self.destDir,self.installDir,repr(self.copies)))
     f.write('''
 for src, dst in copies:
   if os.path.exists(dst):
@@ -216,36 +228,37 @@ make PETSC_DIR=%s test
   def run(self):
     self.setup()
     self.setupDirectories()
-    if os.path.exists(self.installDir) and os.path.samefile(self.installDir, os.path.join(self.rootDir,self.arch)):
+    if os.path.exists(self.destDir) and os.path.samefile(self.destDir, os.path.join(self.rootDir,self.arch)):
       print '********************************************************************'
       print 'Install directory is current directory; nothing needs to be done'
       print '********************************************************************'
       return
-    print '*** Installing PETSc at',self.installDir, ' ***'
-    if not os.path.exists(self.installDir):
+    print '*** Installing PETSc at',self.destDir, ' ***'
+    if not os.path.exists(self.destDir):
       try:
-        os.makedirs(self.installDir)
+        os.makedirs(self.destDir)
       except:
         print '********************************************************************'
-        print 'Unable to create', self.installDir, 'Perhaps you need to do "sudo make install"'
+        print 'Unable to create', self.destDir, 'Perhaps you need to do "sudo make install"'
         print '********************************************************************'
         return
-    if not os.path.isdir(os.path.realpath(self.installDir)):
+    if not os.path.isdir(os.path.realpath(self.destDir)):
       print '********************************************************************'
-      print 'Specified prefix', self.installDir, 'is not a directory. Cannot proceed!'
+      print 'Specified destDir', self.destDir, 'is not a directory. Cannot proceed!'
       print '********************************************************************'
       return
-    if not os.access(self.installDir, os.W_OK):
+    if not os.access(self.destDir, os.W_OK):
       print '********************************************************************'
-      print 'Unable to write to ', self.installDir, 'Perhaps you need to do "sudo make install"'
+      print 'Unable to write to ', self.destDir, 'Perhaps you need to do "sudo make install"'
       print '********************************************************************'
       return
     self.installIncludes()
     self.installConf()
     self.installBin()
     self.installLib()
-    output,err,ret = self.executeShellCommand(self.make+' PETSC_ARCH=""'+' PETSC_DIR='+self.installDir+' ARCHFLAGS= shared mpi4py petsc4py')
-    print output+err
+    if self.destDir == self.installDir: # needs rework?
+      output,err,ret = self.executeShellCommand(self.make+' PETSC_ARCH=""'+' PETSC_DIR='+self.destDir+' ARCHFLAGS= shared mpi4py petsc4py')
+      print output+err
     # this file will mess up the make test run since it resets PETSC_ARCH when PETSC_ARCH needs to be null now
     os.unlink(os.path.join(self.rootDir,'conf','petscvariables'))
     fd = file(os.path.join('conf','petscvariables'),'w')
