@@ -50,6 +50,7 @@ class Configure(config.package.Package):
     self.commf2c          = 0
     self.commc2f          = 0
     self.needBatchMPI     = 1
+    self.worksonWindows   = 1
     return
 
   def setupHelp(self, help):

@@ -9,16 +9,17 @@ class Configure(config.package.Package):
   '''FIX: This has not yet been converted to the package style'''
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.headerPrefix     = ''
-    self.substPrefix      = ''
-    self.argDB            = framework.argDB
-    self.found            = 0
-    self.f2c              = 0
-    self.fblaslapack      = 0
-    self.missingRoutines  = []
-    self.separateBlas     = 1
-    self.defaultPrecision = 'double'
-    return
+    self.headerPrefix      = ''
+    self.substPrefix       = ''
+    self.argDB             = framework.argDB
+    self.found             = 0
+    self.f2c               = 0
+    self.fblaslapack       = 0
+    self.missingRoutines   = []
+    self.separateBlas      = 1
+    self.defaultPrecision  = 'double'
+    self.worksonWindows    = 1
+    self.downloadonWindows = 1
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)

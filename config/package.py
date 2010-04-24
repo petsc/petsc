@@ -44,6 +44,8 @@ class Package(config.base.Configure):
     self.license          = None # optional license text
     self.excludedDirs     = []   # list of directory names that could be false positives, SuperLU_DIST when looking for SuperLU
     self.archIndependent  = 0    # 1 means the install directory does not incorporate the ARCH name
+    self.downloadonWindows   = 0  # 1 means that package can be used on Microsof Windows
+    self.worksonWindows      = 0  # 1 means the --download-package works on Microsoft Windows
     # Outside coupling
     self.defaultInstallDir= os.path.abspath('externalpackages')
     return
@@ -439,6 +441,10 @@ class Package(config.base.Configure):
         raise RuntimeError('Cannot use '+self.name+' without Fortran, make sure you do NOT have --with-fc=0')
       if self.noMPIUni and self.mpi.usingMPIUni:
         raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
+      if not self.worksonWindows and self.setCompilers.isCygwin():
+        raise RuntimeError('External package '+self.name+' does not work on Microsoft Windows')
+      if self.download and self.framework.argDB.has_key('download-'+self.downloadname.lower()) and self.framework.argDB['download-'+self.downloadname.lower()] and not self.downloadonWindows and self.setCompilers.isCygwin():
+        raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower()+' on Microsoft Windows')        
     return
 
   def configure(self):
