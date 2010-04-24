@@ -373,7 +373,7 @@ class Configure(config.package.Package):
         self.setCompilers.popLanguage()
       if line.startswith('FC  '):
         fc = self.compilers.FC
-        if fc.find('f90') >= 0:
+        if fc.find('f90') >= 0 or fc.find('f95') >=0:
           import commands
           output  = commands.getoutput(fc+' -v')
           if output.find('IBM') >= 0:

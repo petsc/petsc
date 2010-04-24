@@ -178,6 +178,8 @@ class CompilerOptions(config.base.Configure):
     if config.setCompilers.Configure.isGNU(compiler):
       if bopt == '':
         flags.extend(['-Wall', '-Wno-unused-variable'])
+        if config.setCompilers.Configure.isGfortran450(compiler):
+          flags.extend(['-Wno-line-truncation'])
       elif bopt == 'g':
         if self.framework.argDB['with-gcov']:
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
