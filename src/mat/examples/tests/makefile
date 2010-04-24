@@ -17,7 +17,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
                    ex101.c ex102.c ex103.c ex104.c ex106.c ex107.c ex108.c ex109.c ex110.c\
                    ex111.c ex112.c ex113.c ex114.c ex115.c ex116.c ex117.c ex118.c ex119.c ex120.c ex121.c ex122.c ex123.c \
                    ex124.c ex129.c
-EXAMPLESF	 = ex36f.F ex16f90.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F ex126f.F
+EXAMPLESF	 = ex36f.F ex16f90.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F ex126f.F ex120f.F
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
@@ -451,6 +451,10 @@ ex119: ex119.o chkopts
 ex120: ex120.o chkopts
 	-${CLINKER} -o ex120 ex120.o ${PETSC_MAT_LIB}
 	${RM} ex120.o
+
+ex120f: ex120f.o chkopts
+	-${FLINKER} -o ex120f ex120f.o ${PETSC_MAT_LIB}
+	${RM} ex120f.o
 
 ex121: ex121.o chkopts
 	-${CLINKER} -o ex121 ex121.o ${PETSC_MAT_LIB}
