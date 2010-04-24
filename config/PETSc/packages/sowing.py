@@ -3,10 +3,12 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download         = ['http://ftp.mcs.anl.gov/pub/sowing/sowing-1.1.16.tar.gz']
-    self.complex          = 1
-    self.double           = 0;
-    self.requires32bitint = 0;
+    self.download          = ['http://ftp.mcs.anl.gov/pub/sowing/sowing-1.1.16.tar.gz']
+    self.complex           = 1
+    self.double            = 0;
+    self.requires32bitint  = 0;
+    self.worksonWindows    = 1;
+    self.downloadonWindows = 1;
     return
 
   def setupHelp(self, help):
