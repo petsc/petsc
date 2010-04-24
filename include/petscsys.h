@@ -1526,6 +1526,12 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryClose(PetscDLLibrary);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryCCAAppend(MPI_Comm,PetscDLLibrary *,const char[]);
 
 /*
+  PetscFwk support.  Needs to be documented.  
+  Logically it is an extension of PetscDLLXXX, PetscObjectCompose, etc.
+*/
+#include "petscfwk.h"
+
+/*
      Useful utility routines
 */
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSplitOwnership(MPI_Comm,PetscInt*,PetscInt*);

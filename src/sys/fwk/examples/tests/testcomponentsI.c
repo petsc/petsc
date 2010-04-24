@@ -1,4 +1,4 @@
-#include "petscfwk.h"
+#include "petsc.h"
 
 EXTERN_C_BEGIN
 #undef  __FUNCT__ 
