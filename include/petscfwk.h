@@ -1,7 +1,6 @@
 #ifndef __PETSCFWK_H
 #define __PETSCFWK_H
 
-#include "petsc.h"
 
 extern PETSC_DLLEXPORT PetscClassId PETSC_FWK_CLASSID;
 
