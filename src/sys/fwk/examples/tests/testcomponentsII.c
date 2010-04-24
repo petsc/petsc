@@ -1,4 +1,4 @@
-#include "petscfwk.h"
+#include "petsc.h"
 EXTERN_C_BEGIN
 #undef  __FUNCT__ 
 #define __FUNCT__ "PetscFwkComponentConfigureTestIIA"
@@ -37,7 +37,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkComponentConfigureTestIIB(PetscFwk fwk, P
     ierr = PetscPrintf(comm, "%s: registering dependency: TestIIB --> TestIIA\n", __FUNCT__); CHKERRQ(ierr);
     ierr = PetscFwkRegisterDependence(fwk, 
                                       "${PETSC_DIR}/${PETSC_ARCH}/lib/libtestcomponents.a:TestIIB",
-                                      "${PETSC_DIR}/${PETSC_ARCH}/lib/libtestcomponents:TestIIA"); CHKERRQ(ierr);
+                                      "${PETSC_DIR}/${PETSC_ARCH}/lib/libtestcomponents.a:TestIIA"); CHKERRQ(ierr);
   }
   else {
     container = *((PetscContainer*)component);
