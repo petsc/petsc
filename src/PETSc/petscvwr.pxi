@@ -1,4 +1,4 @@
-cdef extern  from "petsc.h":
+cdef extern from "petscsys.h":
 
     ctypedef char* PetscViewerType "const char*"
     PetscViewerType PETSC_VIEWER_SOCKET

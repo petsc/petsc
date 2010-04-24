@@ -1,4 +1,4 @@
-cdef extern from "petsc.h":
+cdef extern from "petsc.h" nogil:
 
     enum: PETSC_DECIDE
     enum: PETSC_IGNORE
@@ -27,7 +27,7 @@ cdef extern from "petsc.h":
         PETSC_NORM_INFINITY   "NORM_INFINITY"
         PETSC_NORM_MAX        "NORM_MAX"
 
-cdef extern from "petsc.h":
+cdef extern from "petsc.h" nogil:
 
     enum: PETSC_ERR_MEM
     enum: PETSC_ERR_SUP

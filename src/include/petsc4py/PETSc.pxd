@@ -11,7 +11,7 @@ cdef extern from "petsc.h":
     ctypedef struct _p_PetscObject
     ctypedef _p_PetscObject* PetscObject
 
-cdef extern from "petscviewer.h":
+cdef extern from "petscsys.h":
     struct _p_PetscViewer
     ctypedef _p_PetscViewer* PetscViewer
 

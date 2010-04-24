@@ -1,6 +1,6 @@
 #---------------------------------------------------------------------
 
-cdef extern from "petsc.h":
+cdef extern from "petsc.h" nogil:
     int PyPetscINCREF"PetscObjectReference"(PetscObject)
 
 cdef int addref(void *o) except -1:

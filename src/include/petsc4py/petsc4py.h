@@ -7,6 +7,7 @@
 #include <Python.h>
 
 #include <petsc.h>
+#include <petscsys.h>
 #include <petscis.h>
 #include <petscvec.h>
 #include <petscmat.h>
