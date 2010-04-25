@@ -2429,7 +2429,6 @@ M*/
 
 M*/
 
-
 /*S
    PetscSubcomm - Context of MPI subcommunicators, used by PCREDUNDANT
 

@@ -2256,6 +2256,34 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeConstrained(Mat mat,Vec x,Vec 
 
   PetscFunctionReturn(0);
 }   
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetFactorType"
+/*@C
+   MatGetFactorType - gets the type of factorization it is
+
+   Note Collective
+   as the flag
+
+   Input Parameters:
+.  mat - the matrix
+
+   Output Parameters:
+.  t - the type, one of MAT_FACTOR_NONE, MAT_FACTOR_LU, MAT_FACTOR_CHOLESKY, MAT_FACTOR_ILU, MAT_FACTOR_ICC,MAT_FACTOR_ILUDT
+
+    Level: intermediate
+
+.seealso:    MatFactorType, MatGetFactor()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactorType(Mat mat,MatFactorType *t)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  *t = mat->factortype;
+  PetscFunctionReturn(0);
+}   
+
 /* ------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetInfo"

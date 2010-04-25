@@ -312,10 +312,13 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
   IS             is_iden;
   Vec            b;
   PetscTruth     isSeqAIJ,isSeqSBAIJ;
+  PetscTruth     isMPIAIJ;
 
   PetscFunctionBegin; 	
   ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&isSeqAIJ);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)A,MATSEQSBAIJ,&isSeqSBAIJ);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)A,MATMPIAIJ,&isMPIAIJ);CHKERRQ(ierr);
+
   if (lu->matstruc == DIFFERENT_NONZERO_PATTERN){ 
     (F)->ops->solve   = MatSolve_MUMPS;
 
@@ -424,7 +427,16 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
     } else {
       valOnly = PETSC_TRUE; /* only update mat values, not row and col index */
     }
-    ierr = MatConvertToTriples(A,1,valOnly, &nnz, &lu->irn, &lu->jcn, &lu->val);CHKERRQ(ierr);
+    if(((F)->factortype == MAT_FACTOR_CHOLESKY) && isMPIAIJ) {
+      Mat newMat;
+      /* Create an SBAIJ matrix and use this matrix to set the lu values */
+      ierr = MatConvert(A,MATMPISBAIJ,MAT_INITIAL_MATRIX,&newMat);CHKERRQ(ierr);
+      ierr = MatConvertToTriples(newMat,1,valOnly,&nnz,&lu->irn , &lu->jcn, &lu->val);CHKERRQ(ierr);
+      ierr = MatDestroy(newMat);CHKERRQ(ierr);
+    }
+    else {
+      ierr = MatConvertToTriples(A,1,valOnly, &nnz, &lu->irn, &lu->jcn, &lu->val);CHKERRQ(ierr);
+    }
     break;
   default: SETERRQ(PETSC_ERR_SUP,"Matrix input format is not supported by MUMPS.");
   }
@@ -521,7 +533,8 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
   }
 
   if (lu->size > 1){
-    if ((F)->factortype == MAT_FACTOR_LU){
+    /*  if ((F)->factortype == MAT_FACTOR_LU){ */
+    if(isMPIAIJ) {
       F_diag = ((Mat_MPIAIJ *)(F)->data)->A;
     } else {
       F_diag = ((Mat_MPISBAIJ *)(F)->data)->A;
@@ -560,14 +573,14 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SBAIJMUMPS"
 PetscErrorCode MatCholeskyFactorSymbolic_SBAIJMUMPS(Mat F,Mat A,IS r,const MatFactorInfo *info) 
 {
-  Mat_MUMPS      *lu = (Mat_MUMPS*)(F)->spptr;   
+  Mat_MUMPS      *lu = (Mat_MUMPS*)(F)->spptr;
 
   PetscFunctionBegin;
   lu->sym                          = 2;
   lu->matstruc                     = DIFFERENT_NONZERO_PATTERN;
-  (F)->ops->choleskyfactornumeric = MatFactorNumeric_MUMPS;
+  (F)->ops->choleskyfactornumeric =  MatFactorNumeric_MUMPS;
 #if !defined(PETSC_USE_COMPLEX)
-  (F)->ops->getinertia            = MatGetInertia_SBAIJMUMPS;
+  (F)->ops->getinertia            =  MatGetInertia_SBAIJMUMPS;
 #endif
   PetscFunctionReturn(0);
 }
@@ -807,47 +820,6 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetFactor_mpiaij_mumps"
-PetscErrorCode MatGetFactor_mpiaij_mumps(Mat A,MatFactorType ftype,Mat *F) 
-{
-  Mat            B;
-  PetscErrorCode ierr;
-  Mat_MUMPS      *mumps;
-
-  PetscFunctionBegin;
-  if (ftype != MAT_FACTOR_LU) {
-    SETERRQ(PETSC_ERR_SUP,"Cannot use PETSc AIJ matrices with MUMPS Cholesky, use SBAIJ matrix");
-  }
-  /* Create the factorization matrix */
-  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
-  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
-
-  B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMUMPS;
-  B->ops->view             = MatView_MUMPS;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mumps",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMumpsSetIcntl_C","MatMumpsSetIcntl",MatMumpsSetIcntl);CHKERRQ(ierr);
-  B->factortype            = MAT_FACTOR_LU;  
-
-  ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);
-  mumps->CleanUpMUMPS              = PETSC_FALSE;
-  mumps->isAIJ                     = PETSC_TRUE;
-  mumps->scat_rhs                  = PETSC_NULL;
-  mumps->scat_sol                  = PETSC_NULL;
-  mumps->nSolve                    = 0;
-  mumps->MatDestroy                = B->ops->destroy;
-  B->ops->destroy                  = MatDestroy_MUMPS;
-  B->spptr                         = (void*)mumps;
-
-  *F = B;
-  PetscFunctionReturn(0); 
-}
-EXTERN_C_END
-
-EXTERN_C_BEGIN 
-#undef __FUNCT__  
 #define __FUNCT__ "MatGetFactor_seqsbaij_mumps"
 PetscErrorCode MatGetFactor_seqsbaij_mumps(Mat A,MatFactorType ftype,Mat *F) 
 {
@@ -887,6 +859,7 @@ PetscErrorCode MatGetFactor_seqsbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
 }
 EXTERN_C_END
 
+
 EXTERN_C_BEGIN 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetFactor_mpisbaij_mumps"
@@ -915,7 +888,7 @@ PetscErrorCode MatGetFactor_mpisbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
 
   ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);
   mumps->CleanUpMUMPS              = PETSC_FALSE;
-  mumps->isAIJ                     = PETSC_TRUE;
+  mumps->isAIJ                     = PETSC_FALSE;
   mumps->scat_rhs                  = PETSC_NULL;
   mumps->scat_sol                  = PETSC_NULL;
   mumps->nSolve                    = 0;
@@ -927,6 +900,57 @@ PetscErrorCode MatGetFactor_mpisbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+EXTERN_C_BEGIN 
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetFactor_mpiaij_mumps"
+PetscErrorCode MatGetFactor_mpiaij_mumps(Mat A,MatFactorType ftype,Mat *F) 
+{
+  Mat            B;
+  PetscErrorCode ierr;
+  Mat_MUMPS      *mumps;
+
+  PetscFunctionBegin;
+  /* Create the factorization matrix */
+  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
+  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+
+  if (ftype == MAT_FACTOR_LU) {
+    B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMUMPS;
+    B->factortype = MAT_FACTOR_LU; }
+  else {
+    /* Check whether the matrix is symmetric */
+    /*    PetscReal tol=0.0;
+    PetscTruth flg;
+    ierr = MatIsSymmetric(A,tol,&flg);CHKERRQ(ierr);
+    if (flg) {
+      SETERRQ(PETSC_ERR_SUP,"Cannot perform Cholesky factorization on Unsymmetric Matrices!\n");
+      } */
+    B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SBAIJMUMPS;
+    B->factortype = MAT_FACTOR_CHOLESKY; }
+
+  B->ops->view             = MatView_MUMPS;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mumps",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMumpsSetIcntl_C","MatMumpsSetIcntl",MatMumpsSetIcntl);CHKERRQ(ierr);
+
+  ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);
+  mumps->CleanUpMUMPS              = PETSC_FALSE;
+  mumps->isAIJ                     = PETSC_TRUE;
+  mumps->scat_rhs                  = PETSC_NULL;
+  mumps->scat_sol                  = PETSC_NULL;
+  mumps->nSolve                    = 0;
+  mumps->MatDestroy                = B->ops->destroy;
+  B->ops->destroy                  = MatDestroy_MUMPS;
+  B->spptr                         = (void*)mumps;
+
+  *F = B;
+  PetscFunctionReturn(0); 
+}
+EXTERN_C_END
+
 
 /* -------------------------------------------------------------------------------------------*/
 /*@

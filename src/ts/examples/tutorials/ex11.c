@@ -13,6 +13,9 @@ static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
+
+   Compare to snes/examples/tutorials/ex50.c and ksp/examples/tutorials/ex45.c
+
 */
 #include "petscda.h"
 #include "petscts.h"
@@ -22,8 +25,6 @@ static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
    User-defined routines
 */
 extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DA,Vec);
-extern PetscErrorCode MyTSMonitor(TS,PetscInt,PetscReal,Vec,void*);
-extern PetscErrorCode MySNESMonitor(SNES,PetscInt,PetscReal,void *);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -63,6 +64,7 @@ int main(int argc,char **argv)
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
+  ierr = TSSetDM(ts,(DM)da);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,FormFunction,da);CHKERRQ(ierr);
 
@@ -87,14 +89,12 @@ int main(int argc,char **argv)
   ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
 
   ierr = TSSetDuration(ts,maxsteps,1.0);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts,MyTSMonitor,0,0);CHKERRQ(ierr);
   
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   ierr = TSGetSNES(ts,&ts_snes);
-  ierr = SNESMonitorSet(ts_snes,MySNESMonitor,PETSC_NULL,PETSC_NULL);
  
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -258,37 +258,3 @@ PetscErrorCode FormInitialSolution(DA da,Vec U)
   PetscFunctionReturn(0); 
 } 
 
-#undef __FUNCT__  
-#define __FUNCT__ "MyTSMonitor"
-PetscErrorCode MyTSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec v,void *ctx)
-{
-  PetscErrorCode ierr;
-  PetscReal      norm;
-  MPI_Comm       comm;
-
-  PetscFunctionBegin;
-  ierr = VecNorm(v,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"timestep %D time %G norm %G\n",step,ptime,norm);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MySNESMonitor"
-/*
-   MySNESMonitor - illustrate how to set user-defined monitoring routine for SNES.
-   Input Parameters:
-     snes - the SNES context
-     its - iteration number
-     fnorm - 2-norm function value (may be estimated)
-     ctx - optional user-defined context for private data for the 
-         monitor routine, as set by SNESMonitorSet()
- */
-PetscErrorCode MySNESMonitor(SNES snes,PetscInt its,PetscReal fnorm,void *ctx)
-{
-  PetscErrorCode ierr;
-  
-  PetscFunctionBegin;
-  ierr = SNESMonitorDefaultShort(snes,its,fnorm,ctx);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}

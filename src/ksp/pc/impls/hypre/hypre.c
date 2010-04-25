@@ -1063,10 +1063,10 @@ EXTERN_C_END
 
 /* ---------------------------------------------------------------------------------------------------------------------------------*/
 
-/* we know we are working with a HYPRE_StructMatrix */
+/* working with a HYPRE_StructMatrix and need access to its data */
 #include "../src/dm/da/utils/mhyp.h"
+/* this include is needed ONLY to allow access to the private data inside the Mat object specific to hypre */
 #include "private/matimpl.h"
-#include "private/pcimpl.h"
 
 typedef struct {
   MPI_Comm            hcomm;       /* does not share comm with HYPRE_StructMatrix because need to create solver before getting matrix */

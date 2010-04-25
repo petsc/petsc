@@ -1654,7 +1654,7 @@ PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,void *
   if (!ctx) {
     ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ts)->comm,"stdout",0,&viewer);CHKERRQ(ierr);
   }
-  ierr = PetscViewerASCIIMonitorPrintf(viewer,"timestep %D dt %G time %G\n",step,ts->time_step,ptime);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIMonitorPrintf(viewer,"%D TS dt %G time %G\n",step,ts->time_step,ptime);CHKERRQ(ierr);
   if (!ctx) {
     ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);
   }
@@ -1723,6 +1723,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSolve(TS ts, Vec x)
   PetscInt       steps;
   PetscReal      ptime;
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   /* set solution vector if provided */
@@ -1742,7 +1743,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSolve(TS ts, Vec x)
 PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec x)
 {
   PetscErrorCode ierr;
-  PetscInt i,n = ts->numbermonitors;
+  PetscInt       i,n = ts->numbermonitors;
 
   PetscFunctionBegin;
   for (i=0; i<n; i++) {
