@@ -22,8 +22,9 @@ PetscErrorCode main(int argc, char *argv[]) {
   ierr = PetscFwkRegisterComponent(fwk, 
                                    "${PETSC_DIR}/${PETSC_ARCH}/lib/libtestcomponents.so:TestIIC");
   CHKERRQ(ierr);
-    ierr = PetscFwkRegisterComponent(fwk, 
-                                   "./testcomponents.py:TestIIIA");
+  /*
+  ierr = PetscFwkRegisterComponent(fwk, "./testcomponents.py:TestIIIA");
+  */
   CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "Component initialization order:\n"); CHKERRQ(ierr);
   ierr = PetscFwkViewConfigurationOrder(fwk, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);

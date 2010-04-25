@@ -7,6 +7,8 @@ extern PETSC_DLLEXPORT PetscClassId PETSC_FWK_CLASSID;
 struct _p_PetscFwk;
 typedef struct _p_PetscFwk *PetscFwk;
 
+#define PETSC_FWK_DEFAULT PETSC_NULL
+
 typedef PetscErrorCode (*PetscFwkComponentConfigure)(PetscFwk fwk, PetscInt state, PetscObject *component);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFwkInitializePackage(const char path[]);
@@ -16,7 +18,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFwkCreate(MPI_Comm comm, PetscFwk *fw
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFwkDestroy(PetscFwk fwk);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFwkRegisterComponent(PetscFwk fwk, const char url[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFwkRegisterDependence(PetscFwk fwk, const char client_url[], const char server_url[]);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFwkGetComponent(PetscFwk fwk, const char url[], PetscObject *component);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFwkGetComponent(PetscFwk fwk, const char url[], PetscObject *component, PetscTruth *found);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFwkConfigure(PetscFwk fwk, PetscInt state);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFwkViewConfigurationOrder(PetscFwk fwk, PetscViewer viewerASCII);
 

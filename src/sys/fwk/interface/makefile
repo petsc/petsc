@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = fwk.o
 OBJSF    =
-LIBBASE  = libpetscII
+LIBBASE  = libpetscsys
 MANSEC   = fwk
 LOCDIR   = src/sys/fwk/interface/
 
