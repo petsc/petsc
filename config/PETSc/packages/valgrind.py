@@ -35,7 +35,8 @@ class Configure(PETSc.package.NewPackage):
         self.executeTest(self.configureLibrary)
       except:
         if self.setCompilers.isDarwin() or self.setCompilers.isLinux():
-          self.logPrintBox('It appears you do not have valgrind installed on your system.\nWe HIGHLY recommend you install it from www.valgrind.org\nThen rerun ./configure')
+          self.logPrintBox('It appears you do not have valgrind installed on your system.\nWe HIGHLY recommend you install it from www.valgrind.org\nOr install
+valgrind-devel or equivalent using your package manager.\nThen rerun ./configure')
       self.libraries.popLanguage()
     else:
       self.executeTest(self.alternateConfigureLibrary)
