@@ -343,7 +343,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
     dmumps_c(&lu->id); 
 #endif
  
-    if (isSeqAIJ || isSeqSBAIJ){
+    if (lu->size == 1){
       lu->id.ICNTL(18) = 0;   /* centralized assembled matrix input */
     } else {
       lu->id.ICNTL(18) = 3;   /* distributed assembled matrix input */
@@ -787,16 +787,20 @@ PetscErrorCode MatGetFactor_seqaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   Mat_MUMPS      *mumps;
 
   PetscFunctionBegin;
-  if (ftype != MAT_FACTOR_LU) {
-    SETERRQ(PETSC_ERR_SUP,"Cannot use PETSc AIJ matrices with MUMPS Cholesky, use SBAIJ matrix");
-  }
   /* Create the factorization matrix */
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
 
-  B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMUMPS;
+  if (ftype == MAT_FACTOR_LU) {
+    B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMUMPS;
+    B->factortype = MAT_FACTOR_LU; 
+  } else if (ftype == MAT_FACTOR_CHOLESKY) {
+    B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SBAIJMUMPS;
+    B->factortype = MAT_FACTOR_CHOLESKY; 
+  } else SETERRQ(PETSC_ERR_SUP,"Factor type not supported");
+
   B->ops->view             = MatView_MUMPS;
   B->ops->getinfo          = MatGetInfo_MUMPS;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mumps",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
@@ -920,8 +924,8 @@ PetscErrorCode MatGetFactor_mpiaij_mumps(Mat A,MatFactorType ftype,Mat *F)
 
   if (ftype == MAT_FACTOR_LU) {
     B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMUMPS;
-    B->factortype = MAT_FACTOR_LU; }
-  else {
+    B->factortype = MAT_FACTOR_LU; 
+  } else if (ftype == MAT_FACTOR_CHOLESKY) {
     /* Check whether the matrix is symmetric */
     /*    PetscReal tol=0.0;
     PetscTruth flg;
@@ -930,7 +934,8 @@ PetscErrorCode MatGetFactor_mpiaij_mumps(Mat A,MatFactorType ftype,Mat *F)
       SETERRQ(PETSC_ERR_SUP,"Cannot perform Cholesky factorization on Unsymmetric Matrices!\n");
       } */
     B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SBAIJMUMPS;
-    B->factortype = MAT_FACTOR_CHOLESKY; }
+    B->factortype = MAT_FACTOR_CHOLESKY; 
+  } else SETERRQ(PETSC_ERR_SUP,"Factor type not supported");
 
   B->ops->view             = MatView_MUMPS;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mumps",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
