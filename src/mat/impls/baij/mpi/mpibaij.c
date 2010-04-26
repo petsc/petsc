@@ -2924,6 +2924,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIBAIJ_MPIAdj(Mat B, const MatType
 }
 EXTERN_C_END
 
+EXTERN_C_BEGIN
+#if defined(PETSC_HAVE_MUMPS)
+extern PetscErrorCode MatGetFactor_mpibaij_mumps(Mat,MatFactorType,Mat*);
+#endif
+EXTERN_C_END
+
 /*MC
    MATMPIBAIJ - MATMPIBAIJ = "mpibaij" - A matrix type to be used for distributed block sparse matrices.
 
@@ -3002,6 +3008,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIBAIJ(Mat B)
     }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
+#if defined(PETSC_HAVE_MUMPS)
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mumps_C", "MatGetFactor_mpibaij_mumps",MatGetFactor_mpibaij_mumps);CHKERRQ(ierr);
+#endif
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpibaij_mpiadj_C",
                                      "MatConvert_MPIBAIJ_MPIAdj",
                                       MatConvert_MPIBAIJ_MPIAdj);CHKERRQ(ierr);
