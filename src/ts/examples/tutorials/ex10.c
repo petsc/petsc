@@ -20,6 +20,8 @@ typedef enum {JACOBIAN_ANALYTIC,JACOBIAN_MATRIXFREE,JACOBIAN_FD_COLORING,JACOBIA
 static const char *const JacobianTypes[] = {"ANALYTIC","MATRIXFREE","FD_COLORING","FD_FULL","JacobianType","FD_",0};
 typedef enum {DISCRETIZATION_FD,DISCRETIZATION_FE} DiscretizationType;
 static const char *const DiscretizationTypes[] = {"FD","FE","DiscretizationType","DISCRETIZATION_",0};
+typedef enum {QUADRATURE_GAUSS1,QUADRATURE_GAUSS2,QUADRATURE_GAUSS3,QUADRATURE_GAUSS4,QUADRATURE_LOBATTO2,QUADRATURE_LOBATTO3} QuadratureType;
+static const char *const QuadratureTypes[] = {"GAUSS1","GAUSS2","GAUSS3","GAUSS4","LOBATTO2","LOBATTO3","QuadratureType","QUADRATURE_",0};
 
 typedef struct {
   PetscScalar E;                /* radiation energy */
@@ -38,12 +40,14 @@ struct _n_RD {
   DA             da;
   PetscTruth     monitor_residual;
   DiscretizationType discretization;
+  QuadratureType quadrature;
   JacobianType   jacobian;
   PetscInt       initial;
   BCType         leftbc;
   PetscTruth     view_draw;
   char           view_binary[PETSC_MAX_PATH_LEN];
   PetscTruth     endpoint;
+  PetscTruth     bclimit;
   RDUnit         unit;
 
   /* model constants, see Table 2 and RDCreate() */
@@ -134,11 +138,11 @@ static void RDMaterialEnergy_Reduced(RD rd,const RDNode *n,const RDNode *nt,Pets
 static void RDSigma_R(RD rd,RDNode *n,PetscScalar *sigma_R)
 {*sigma_R = rd->K_R * rd->rho / PetscPowScalar(n->T,rd->gamma);}
 
-static void RDDiffusionCoefficient(RD rd,RDNode *n,RDNode *nx,PetscScalar *D_r)
+static void RDDiffusionCoefficient(RD rd,PetscTruth limit,RDNode *n,RDNode *nx,PetscScalar *D_r)
 {
   PetscScalar sigma_R;
   RDSigma_R(rd,n,&sigma_R);
-  *D_r = rd->c / (3. * rd->rho * sigma_R + PetscAbsScalar(nx->E) / n->E);
+  *D_r = rd->c / (3. * rd->rho * sigma_R + (int)limit * PetscAbsScalar(nx->E) / n->E);
 }
 
 #undef __FUNCT__  
@@ -181,15 +185,44 @@ static PetscScalar RDDiffusion(RD rd,PetscReal hx,RDNode *x,PetscInt i)
   n_L.T = 0.5*(x[i-1].T + x[i].T);
   nx_L.E = (x[i].E - x[i-1].E)/hx;
   nx_L.T = (x[i].T - x[i-1].T)/hx;
-  RDDiffusionCoefficient(rd,&n_L,&nx_L,&D_L);
+  RDDiffusionCoefficient(rd,PETSC_TRUE,&n_L,&nx_L,&D_L);
 
   n_R.E = 0.5*(x[i].E + x[i+1].E);
   n_R.T = 0.5*(x[i].T + x[i+1].T);
   nx_R.E = (x[i+1].E - x[i].E)/hx;
   nx_R.T = (x[i+1].T - x[i].T)/hx;
-  RDDiffusionCoefficient(rd,&n_R,&nx_R,&D_R);
+  RDDiffusionCoefficient(rd,PETSC_TRUE,&n_R,&nx_R,&D_R);
   return (D_R*nx_R.E - D_L*nx_L.E)/hx;
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "RDCheckDomain_Private"
+static PetscErrorCode RDCheckDomain_Private(RD rd,TS ts,Vec X,PetscTruth *in) {
+  PetscErrorCode ierr;
+  PetscInt       minloc;
+  PetscReal      min;
+
+  PetscFunctionBegin;
+  ierr = VecMin(X,&minloc,&min);CHKERRQ(ierr);
+  if (min < 0) {
+    SNES snes;
+    *in = PETSC_FALSE;
+    ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+    ierr = SNESSetFunctionDomainError(snes);CHKERRQ(ierr);
+    ierr = PetscInfo3(ts,"Domain violation at %D field %D value %g\n",minloc/2,minloc%2,min);CHKERRQ(ierr);
+  } else {
+    *in = PETSC_TRUE;
+  }
+  PetscFunctionReturn(0);
+}
+
+/* Energy and temprature must remain positive */
+#define RDCheckDomain(rd,ts,X) do {                             \
+      PetscErrorCode _ierr;                                      \
+      PetscTruth _in;                                            \
+      ierr = RDCheckDomain_Private(rd,ts,X,&_in);CHKERRQ(ierr);  \
+      if (!_in) PetscFunctionReturn(0);                          \
+    } while (0)
 
 #undef __FUNCT__  
 #define __FUNCT__ "RDIFunction_FD"
@@ -199,19 +232,13 @@ static PetscErrorCode RDIFunction_FD(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
   RD             rd = (RD)ctx;
   RDNode         *x,*x0,*xdot,*f;
   Vec            X0loc,Xloc,Xloc_t;
-  PetscReal      hx,min,Theta,dt;
+  PetscReal      hx,Theta,dt;
   PetscTruth     istheta;
   DALocalInfo    info;
   PetscInt       i;
 
   PetscFunctionBegin;
-  ierr = VecMin(X,PETSC_NULL,&min);CHKERRQ(ierr);
-  if (min < 0) {
-    SNES snes;
-    ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-    ierr = SNESSetFunctionDomainError(snes);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
+  RDCheckDomain(rd,ts,X);
 
   ierr = DAGetLocalVector(rd->da,&Xloc);CHKERRQ(ierr);
   ierr = DAGlobalToLocalBegin(rd->da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
@@ -268,14 +295,16 @@ static PetscErrorCode RDIFunction_FD(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
       step (note that the boundary conditions are not time-dependent).
     */
     if (i == 0) {               /* Left boundary condition */
-      RDNode n;
-      PetscScalar sigma_R;
-      n.E = 0.5*(x[i].E + x[i+1].E);
-      n.T = 0.5*(x[i].T + x[i+1].T);
-      RDSigma_R(rd,&n,&sigma_R);
+      RDNode n,nx;
+      PetscScalar sigma_R,D_R;
+      n.E = x[i].E;
+      n.T = x[i].T;
+      nx.E = (x[i+1].E - x[i].E)/hx;
+      nx.T = (x[i+1].T - x[i].T)/hx;
       switch (rd->leftbc) {
         case BC_ROBIN:
-          f[i].E = hx*(x[i].E - (2./(3.*rho*sigma_R) * (x[i+1].E - x[i].E)/hx) - rd->Eapplied);
+          RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D_R);
+          f[i].E = hx*(n.E - 2. * D_R * nx.E - rd->Eapplied);
           break;
         case BC_NEUMANN:
           f[i].E = x[i+1].E - x[i].E;
@@ -304,6 +333,7 @@ static PetscErrorCode RDIFunction_FD(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
   PetscFunctionReturn(0);
 }
 
+/* Evaluate interpolants and derivatives at a select quadrature point */
 void RDEvaluate(PetscReal interp[][2],PetscReal deriv[][2],PetscInt q,RDNode *x,PetscInt i,RDNode *n,RDNode *nx)
 {
   PetscInt j;
@@ -316,30 +346,76 @@ void RDEvaluate(PetscReal interp[][2],PetscReal deriv[][2],PetscInt q,RDNode *x,
   }
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "RDGetQuadrature"
+/*
+ Various quadrature rules.  The nonlinear terms are non-polynomial so no standard quadrature will be exact.
+*/
+static PetscErrorCode RDGetQuadrature(RD rd,PetscReal hx,PetscInt *nq,PetscReal weight[],PetscReal interp[][2],PetscReal deriv[][2])
+{
+  PetscInt q,j;
+  const PetscReal *refweight,(*refinterp)[2],(*refderiv)[2];
+
+  switch (rd->quadrature) {
+    case QUADRATURE_GAUSS1: {
+      static const PetscReal ww[1] = {1.},ii[1][2] = {{0.5,0.5}},dd[1][2] = {{-1.,1.}};
+      *nq = 1; refweight = ww; refinterp = ii; refderiv = dd;
+    } break;
+    case QUADRATURE_GAUSS2: {
+      static const PetscReal ii[2][2] = {{0.78867513459481287,0.21132486540518713},{0.21132486540518713,0.78867513459481287}},dd[2][2] = {{-1.,1.},{-1.,1.}},ww[2] = {0.5,0.5};
+      *nq = 2; refweight = ww; refinterp = ii; refderiv = dd;
+    } break;
+    case QUADRATURE_GAUSS3: {
+      static const PetscReal ii[3][2] = {{0.8872983346207417,0.1127016653792583},{0.5,0.5},{0.1127016653792583,0.8872983346207417}},
+        dd[3][2] = {{-1,1},{-1,1},{-1,1}},ww[3] = {5./18,8./18,5./18};
+      *nq = 3; refweight = ww; refinterp = ii; refderiv = dd;
+    } break;
+    case QUADRATURE_GAUSS4: {
+        static const PetscReal ii[][2] = {{0.93056815579702623,0.069431844202973658},
+                                          {0.66999052179242813,0.33000947820757187},
+                                          {0.33000947820757187,0.66999052179242813},
+                                          {0.069431844202973658,0.93056815579702623}},
+        dd[][2] = {{-1,1},{-1,1},{-1,1},{-1,1}},ww[] = {0.17392742256872692,0.3260725774312731,0.3260725774312731,0.17392742256872692};
+
+      *nq = 4; refweight = ww; refinterp = ii; refderiv = dd;
+    } break;
+    case QUADRATURE_LOBATTO2: {
+      static const PetscReal ii[2][2] = {{1.,0.},{0.,1.}},dd[2][2] = {{-1.,1.},{-1.,1.}},ww[2] = {0.5,0.5};
+      *nq = 2; refweight = ww; refinterp = ii; refderiv = dd;
+    } break;
+    case QUADRATURE_LOBATTO3: {
+      static const PetscReal ii[3][2] = {{1,0},{0.5,0.5},{0,1}},dd[3][2] = {{-1,1},{-1,1},{-1,1}},ww[3] = {1./6,4./6,1./6};
+      *nq = 3; refweight = ww; refinterp = ii; refderiv = dd;
+    } break;
+  }
+
+  for (q=0; q<*nq; q++) {
+    weight[q] = refweight[q] * hx;
+    for (j=0; j<2; j++) {
+      interp[q][j] = refinterp[q][j];
+      deriv[q][j] = refderiv[q][j] / hx;
+    }
+  }
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "RDIFunction_FE"
+/*
+ Finite element version
+*/
 static PetscErrorCode RDIFunction_FE(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
-  const PetscReal refinterp[2][2] = {{0.78867513459481287,0.21132486540518713},{0.21132486540518713,0.78867513459481287}},refderiv[2][2] = {{-1.,1.},{-1.,1.}};
-  const PetscInt nq = 2;
   PetscErrorCode ierr;
   RD             rd = (RD)ctx;
   RDNode         *x,*x0,*xdot,*f;
   Vec            X0loc,Xloc,Xloc_t,Floc;
-  PetscReal      hx,min,Theta,dt,weight[2],interp[2][2],deriv[2][2];
+  PetscReal      hx,Theta,dt,weight[5],interp[5][2],deriv[5][2];
   PetscTruth     istheta;
   DALocalInfo    info;
-  PetscInt       i,j,k,q;
+  PetscInt       i,j,q,nq;
 
   PetscFunctionBegin;
-  ierr = VecMin(X,PETSC_NULL,&min);CHKERRQ(ierr);
-  if (min < 0) {
-    SNES snes;
-    ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-    ierr = SNESSetFunctionDomainError(snes);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
+  RDCheckDomain(rd,ts,X);
 
   ierr = DAGetLocalVector(rd->da,&Xloc);CHKERRQ(ierr);
   ierr = DAGlobalToLocalBegin(rd->da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
@@ -376,16 +452,11 @@ static PetscErrorCode RDIFunction_FE(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
   ierr = DAVecGetArray(rd->da,Floc,&f);CHKERRQ(ierr);
   ierr = DAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
 
+  /* Set up shape functions and quadrature for elements (assumes a uniform grid) */
   hx = rd->L / (info.mx-1);
-  for (q=0; q<nq; q++) {
-    weight[q] = 0.5 * hx;
-    for (j=0; j<2; j++) {
-      interp[q][j] = refinterp[q][j];
-      deriv[q][j] = refderiv[q][j] / hx;
-    }
-  }
+  ierr = RDGetQuadrature(rd,hx,&nq,weight,interp,deriv);
 
-  for (i=info.xs; i<info.xs+info.xm-1 && i<info.mx-1; i++) {
+  for (i=info.xs; i<PetscMin(info.xs+info.xm,info.mx-1); i++) {
     for (q=0; q<nq; q++) {
       PetscReal rho = rd->rho;
       PetscScalar Em_t,rad,D_r,D0_r;
@@ -395,7 +466,6 @@ static PetscErrorCode RDIFunction_FE(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
       RDEvaluate(interp,deriv,q,xdot,i,&nt,&ntx);
 
       rad = (1.-Theta)*RDRadiation(rd,&n0) + Theta*RDRadiation(rd,&n);
-
       if (rd->endpoint) {
         PetscScalar Em0,Em1;
         RDMaterialEnergy(rd,&n0,&nt,&Em0,PETSC_NULL);
@@ -404,35 +474,33 @@ static PetscErrorCode RDIFunction_FE(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
       } else {
         RDMaterialEnergy(rd,&n,&nt,PETSC_NULL,&Em_t);
       }
-
-#if 0                           /* Need to understand boundary conditions, just Homogeneous Neumann here */
-      if (i == 0) {               /* Left boundary condition */
-        RDNode n;
-        PetscScalar sigma_R;
-        n.E = 0.5*(x[i].E + x[i+1].E);
-        n.T = 0.5*(x[i].T + x[i+1].T);
-        RDSigma_R(rd,&n,&sigma_R);
-        switch (rd->leftbc) {
-          case BC_ROBIN:
-            f[i].E = hx*(x[i].E - (2./(3.*rho*sigma_R) * (x[i+1].E - x[i].E)/hx) - rd->Eapplied);
-            break;
-          case BC_NEUMANN:
-            f[i].E = x[i+1].E - x[i].E;
-            break;
-          default: SETERRQ1(PETSC_ERR_SUP,"Case %D",rd->initial);
-        }
-      }
-#endif
-
-      RDDiffusionCoefficient(rd,&n0,&n0x,&D0_r);
-      RDDiffusionCoefficient(rd,&n,&nx,&D_r);
-      for (k=0; k<2; k++) {
-        f[i+k].E += (deriv[q][k] * weight[q] * ((1.-Theta)*D0_r*n0x.E + Theta*D_r*nx.E)
-                     + interp[q][k] * weight[q] * (nt.E - rad));
-        f[i+k].T += interp[q][k] * weight[q] * (rho * Em_t + rad);
+      RDDiffusionCoefficient(rd,PETSC_TRUE,&n0,&n0x,&D0_r);
+      RDDiffusionCoefficient(rd,PETSC_TRUE,&n,&nx,&D_r);
+      for (j=0; j<2; j++) {
+        f[i+j].E += (deriv[q][j] * weight[q] * ((1.-Theta)*D0_r*n0x.E + Theta*D_r*nx.E)
+                     + interp[q][j] * weight[q] * (nt.E - rad));
+        f[i+j].T += interp[q][j] * weight[q] * (rho * Em_t + rad);
       }
     }
   }
+  if (info.xs == 0) {
+    switch (rd->leftbc) {
+      case BC_ROBIN: {
+        PetscScalar D_R,D_R_bc,ratio;
+        RDNode n = {x[0].E,x[0].T},nx = {(x[1].E-x[0].E)/hx,(x[1].T-x[0].T)/hx};
+
+        RDDiffusionCoefficient(rd,PETSC_TRUE,&n,&nx,&D_R);
+        RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D_R_bc);
+        ratio = PetscMax(0.01,PetscMin(D_R/D_R_bc,1.0));
+        f[0].E += -ratio*0.5*(rd->Eapplied - n.E);
+      } break;
+      case BC_NEUMANN:
+        /* homogeneous Neumann is the natural condition */
+        break;
+      default: SETERRQ1(PETSC_ERR_SUP,"Case %D",rd->initial);
+    }
+  }
+
   ierr = DAVecRestoreArray(rd->da,Xloc,&x);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(rd->da,X0loc,&x0);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(rd->da,Xloc_t,&xdot);CHKERRQ(ierr);
@@ -565,6 +633,10 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
 
     ierr = PetscOptionsTruth("-rd_monitor_residual","Display residuals every time they are evaluated","",rd->monitor_residual,&rd->monitor_residual,0);CHKERRQ(ierr);
     ierr = PetscOptionsEnum("-rd_discretization","Discretization type","",DiscretizationTypes,(PetscEnum)rd->discretization,(PetscEnum*)&rd->discretization,0);CHKERRQ(ierr);
+    if (rd->discretization == DISCRETIZATION_FE) {
+      rd->quadrature = QUADRATURE_GAUSS2;
+      ierr = PetscOptionsEnum("-rd_quadrature","Finite element quadrature","",QuadratureTypes,(PetscEnum)rd->quadrature,(PetscEnum*)&rd->quadrature,0);CHKERRQ(ierr);
+    }
     ierr = PetscOptionsEnum("-rd_jacobian","Type of finite difference Jacobian","",JacobianTypes,(PetscEnum)rd->jacobian,(PetscEnum*)&rd->jacobian,0);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-rd_initial","Initial condition (1=Marshak, 2=Blast, 3=Marshak+)","",rd->initial,&rd->initial,0);CHKERRQ(ierr);
     switch (rd->initial) {
@@ -600,6 +672,7 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
     ierr = PetscOptionsReal("-rd_gamma","Thermal exponent for diffusion coefficient","",rd->gamma,&rd->gamma,0);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-rd_view_draw","Draw final solution","",rd->view_draw,&rd->view_draw,0);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-rd_endpoint","Discretize using endpoints (like trapezoid rule) instead of midpoint","",rd->endpoint,&rd->endpoint,0);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-rd_bclimit","Limit diffusion coefficient in definition of Robin boundary condition","",rd->bclimit,&rd->bclimit,0);CHKERRQ(ierr);
     ierr = PetscOptionsString("-rd_view_binary","File name to hold final solution","",rd->view_binary,rd->view_binary,sizeof(rd->view_binary),0);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);

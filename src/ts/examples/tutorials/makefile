@@ -127,9 +127,23 @@ runex7_3:
 	   else echo "Possible problem with ex7_3, diffs above"; fi; \
 	   ${RM} -f ex7_3.tmp
 
+runex10:
+	-@${MPIEXEC} -n 1 ./ex10 -da_grid_x 20 -rd_initial 1 -rd_discretization fd \
+	   -rd_jacobian fd_coloring -rd_endpoint -ts_max_time 3 -ts_dt 1e-1 -ts_theta_extrapolate 0 \
+	   -ts_monitor -snes_monitor_short -ksp_monitor_short > ex10_1.tmp 2>&1; \
+	   ${DIFF} output/ex10_1.out ex10_1.tmp || echo "Possible problem with ex10_1, diffs above"; \
+	   ${RM} -f ex10_1.tmp
+
+runex10_2:
+	-@${MPIEXEC} -n 1 ./ex10 -da_grid_x 20 -rd_initial 1 -rd_discretization fe -rd_quadrature lobatto2 \
+	   -rd_jacobian fd_coloring -rd_endpoint -ts_max_time 3 -ts_dt 1e-1 -ts_theta_extrapolate 0 \
+	   -ts_monitor -snes_monitor_short -ksp_monitor_short > ex10_2.tmp 2>&1; \
+	   ${DIFF} output/ex10_2.out ex10_2.tmp || echo "Possible problem with ex10_2, diffs above"; \
+	   ${RM} -f ex10_2.tmp
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm\
-                            ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm
+                            ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm \
+                            ex10.PETSc runex10 runex10_2 ex10.rm
 TESTEXAMPLES_C_X11	  = 
 TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm
 TESTEXAMPLES_C_X11_MPIUNI = 
