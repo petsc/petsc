@@ -9,16 +9,17 @@ class Configure(config.package.Package):
   '''FIX: This has not yet been converted to the package style'''
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.headerPrefix     = ''
-    self.substPrefix      = ''
-    self.argDB            = framework.argDB
-    self.found            = 0
-    self.f2c              = 0
-    self.fblaslapack      = 0
-    self.missingRoutines  = []
-    self.separateBlas     = 1
-    self.defaultPrecision = 'double'
-    return
+    self.headerPrefix      = ''
+    self.substPrefix       = ''
+    self.argDB             = framework.argDB
+    self.found             = 0
+    self.f2c               = 0
+    self.fblaslapack       = 0
+    self.missingRoutines   = []
+    self.separateBlas      = 1
+    self.defaultPrecision  = 'double'
+    self.worksonWindows    = 1
+    self.downloadonWindows = 1
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
@@ -308,7 +309,7 @@ class Configure(config.package.Package):
     return ''
 
   def getWindowsNonOptFlags(self,cflags):
-    for flag in ['-MT','-threads']:
+    for flag in ['-MT','-MTd','-MD','-threads']:
       if cflags.find(flag) >=0: return flag
     return ''
 
@@ -372,7 +373,7 @@ class Configure(config.package.Package):
         self.setCompilers.popLanguage()
       if line.startswith('FC  '):
         fc = self.compilers.FC
-        if fc.find('f90') >= 0:
+        if fc.find('f90') >= 0 or fc.find('f95') >=0:
           import commands
           output  = commands.getoutput(fc+' -v')
           if output.find('IBM') >= 0:
