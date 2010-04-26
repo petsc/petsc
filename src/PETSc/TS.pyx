@@ -210,22 +210,22 @@ cdef class TS(Object):
     # --- xxx ---
 
     def setTime(self, t):
-        cdef PetscReal time = asReal(t)
-        CHKERR( TSSetTime(self.ts, time) )
+        cdef PetscReal rval = asReal(t)
+        CHKERR( TSSetTime(self.ts, rval) )
 
     def getTime(self):
-        cdef PetscReal time = 0
-        CHKERR( TSGetTime(self.ts, &time) )
-        return toReal(time)
+        cdef PetscReal rval = 0
+        CHKERR( TSGetTime(self.ts, &rval) )
+        return toReal(rval)
 
     def setInitialTimeStep(self, initial_time, initial_time_step):
-        cdef PetscReal time  = asReal(initial_time)
-        cdef PetscReal tstep = asReal(initial_time_step)
-        CHKERR( TSSetInitialTimeStep(self.ts, time, tstep) )
+        cdef PetscReal rval1 = asReal(initial_time)
+        cdef PetscReal rval2 = asReal(initial_time_step)
+        CHKERR( TSSetInitialTimeStep(self.ts, rval1, rval2) )
 
     def setTimeStep(self, time_step):
-        cdef PetscReal tstep = asReal(time_step)
-        CHKERR( TSSetTimeStep(self.ts, tstep) )
+        cdef PetscReal rval = asReal(time_step)
+        CHKERR( TSSetTimeStep(self.ts, rval) )
 
     def getTimeStep(self):
         cdef PetscReal tstep = 0
@@ -233,49 +233,49 @@ cdef class TS(Object):
         return toReal(tstep)
 
     def setStepNumber(self, step_number):
-        cdef PetscInt nstep=step_number
-        CHKERR( TSSetTimeStepNumber(self.ts, nstep) )
+        cdef PetscInt ival = asInt(step_number)
+        CHKERR( TSSetTimeStepNumber(self.ts, ival) )
 
     def getStepNumber(self):
-        cdef PetscInt nstep=0
-        CHKERR( TSGetTimeStepNumber(self.ts, &nstep) )
-        return nstep
+        cdef PetscInt ival = 0
+        CHKERR( TSGetTimeStepNumber(self.ts, &ival) )
+        return toInt(ival)
 
     def setMaxTime(self, max_time):
-        cdef PetscInt  mstep = 0
-        cdef PetscReal mtime = asReal(max_time)
-        CHKERR( TSGetDuration(self.ts, &mstep, NULL) )
-        CHKERR( TSSetDuration(self.ts, mstep, mtime) )
+        cdef PetscInt  ival = 0
+        cdef PetscReal rval = asReal(max_time)
+        CHKERR( TSGetDuration(self.ts, &ival, NULL) )
+        CHKERR( TSSetDuration(self.ts, ival, rval) )
 
     def getMaxTime(self):
-        cdef PetscReal mtime = 0
-        CHKERR( TSGetDuration(self.ts, NULL, &mtime) )
-        return toReal(mtime)
+        cdef PetscReal rval = 0
+        CHKERR( TSGetDuration(self.ts, NULL, &rval) )
+        return toReal(rval)
 
     def setMaxSteps(self, max_steps):
-        cdef PetscInt  mstep = max_steps
-        cdef PetscReal mtime = 0
-        CHKERR( TSGetDuration(self.ts, NULL, &mtime) )
-        CHKERR( TSSetDuration(self.ts, mstep, mtime) )
+        cdef PetscInt  ival = asInt(max_steps)
+        cdef PetscReal rval = 0
+        CHKERR( TSGetDuration(self.ts, NULL, &rval) )
+        CHKERR( TSSetDuration(self.ts, ival, rval) )
 
     def getMaxSteps(self):
-        cdef PetscInt mstep=0
-        CHKERR( TSGetDuration(self.ts, &mstep, NULL) )
-        return mstep
+        cdef PetscInt ival = 0
+        CHKERR( TSGetDuration(self.ts, &ival, NULL) )
+        return toInt(ival)
 
     def setDuration(self, max_time, max_steps=None):
-        cdef PetscInt  mstep = 0
-        cdef PetscReal mtime = 0
-        CHKERR( TSGetDuration(self.ts, &mstep, &mtime) )
-        if max_steps is not None: mstep = max_steps
-        if max_time  is not None: mtime = asReal(max_time)
-        CHKERR( TSSetDuration(self.ts, mstep, mtime) )
+        cdef PetscInt  ival = 0
+        cdef PetscReal rval = 0
+        CHKERR( TSGetDuration(self.ts, &ival, &rval) )
+        if max_steps is not None: ival = asInt(max_steps)
+        if max_time  is not None: rval = asReal(max_time)
+        CHKERR( TSSetDuration(self.ts, ival, rval) )
 
     def getDuration(self):
-        cdef PetscInt  mstep = 0
-        cdef PetscReal mtime = 0
-        CHKERR( TSGetDuration(self.ts, &mstep, &mtime) )
-        return (toReal(mtime), mstep)
+        cdef PetscInt  ival = 0
+        cdef PetscReal rval = 0
+        CHKERR( TSGetDuration(self.ts, &ival, &rval) )
+        return (toReal(rval), toInt(ival))
 
     #
 
@@ -287,7 +287,7 @@ cdef class TS(Object):
         return TS_getMonitor(self.ts)
 
     def callMonitor(self, step, time, Vec u=None):
-        cdef PetscInt  ival = step
+        cdef PetscInt  ival = asInt(step)
         cdef PetscReal rval = asReal(time)
         cdef PetscVec  uvec = NULL
         if u is not None: uvec = u.vec

@@ -144,10 +144,10 @@ cdef class SNES(Object):
         cdef PetscReal crtol, catol, cstol
         crtol = catol = cstol = PETSC_DEFAULT
         cdef PetscInt cmaxit = PETSC_DEFAULT
-        if rtol   is not None: crtol = asReal(rtol)
-        if atol   is not None: catol = asReal(atol)
-        if stol   is not None: cstol = asReal(stol)
-        if max_it is not None: cmaxit = max_it
+        if rtol   is not None: crtol  = asReal(rtol)
+        if atol   is not None: catol  = asReal(atol)
+        if stol   is not None: cstol  = asReal(stol)
+        if max_it is not None: cmaxit = asInt(max_it)
         CHKERR( SNESSetTolerances(self.snes, catol, crtol, cstol,
                                   cmaxit, PETSC_DEFAULT) )
 
@@ -156,7 +156,7 @@ cdef class SNES(Object):
         cdef PetscInt cmaxit=0
         CHKERR( SNESGetTolerances(self.snes, &catol, &crtol, &cstol,
                                   &cmaxit, NULL) )
-        return (toReal(crtol), toReal(catol), toReal(cstol), cmaxit)
+        return (toReal(crtol), toReal(catol), toReal(cstol), toInt(cmaxit))
 
     def setConvergenceTest(self, converged, *args, **kargs):
         if converged is None: SNES_setConverged(self.snes, None)
@@ -166,7 +166,7 @@ cdef class SNES(Object):
         return SNES_getConverged(self.snes)
 
     def callConvergenceTest(self, its, xnorm, ynorm, fnorm):
-        cdef PetscInt  ival  = its
+        cdef PetscInt  ival  = asInt(its)
         cdef PetscReal rval1 = asReal(xnorm)
         cdef PetscReal rval2 = asReal(ynorm)
         cdef PetscReal rval3 = asReal(fnorm)
@@ -180,7 +180,8 @@ cdef class SNES(Object):
         cdef PetscInt  *idata = NULL
         cdef PetscInt   size = 1000
         cdef PetscTruth flag = PETSC_FALSE
-        if length is not None: size = length
+        if   length is True:     pass
+        elif length is not None: size = asInt(length)
         if size < 0: size = 1000
         if reset: flag = PETSC_TRUE
         cdef ndarray rhist = oarray_r(empty_r(size), NULL, &rdata)
@@ -198,9 +199,9 @@ cdef class SNES(Object):
         return (rhist, ihist)
 
     def logConvergenceHistory(self, its, norm, linear_its=0):
-        cdef PetscInt  ival1 = its
+        cdef PetscInt  ival1 = asInt(its)
         cdef PetscReal rval  = asReal(norm)
-        cdef PetscInt  ival2 = linear_its
+        cdef PetscInt  ival2 = asInt(linear_its)
         CHKERR( SNESLogConvergenceHistory(self.snes, ival1, rval, ival2) )
 
     def setMonitor(self, monitor, *args, **kargs):
@@ -211,7 +212,7 @@ cdef class SNES(Object):
         return SNES_getMonitor(self.snes)
 
     def callMonitor(self, its, rnorm):
-        cdef PetscInt  ival = its
+        cdef PetscInt  ival = asInt(its)
         cdef PetscReal rval = asReal(rnorm)
         CHKERR( SNESMonitorCall(self.snes, ival, rval) )
 
@@ -224,44 +225,48 @@ cdef class SNES(Object):
     def setMaxFunctionEvaluations(self, max_funcs):
         cdef PetscReal r = PETSC_DEFAULT
         cdef PetscInt  i = PETSC_DEFAULT
-        CHKERR( SNESSetTolerances(self.snes, r, r, r, i, max_funcs) )
+        cdef PetscInt ival = asInt(max_funcs)
+        CHKERR( SNESSetTolerances(self.snes, r, r, r, i, ival) )
 
     def getMaxFunctionEvaluations(self):
         cdef PetscReal *r = NULL
         cdef PetscInt  *i = NULL
-        cdef PetscInt max_funcs = 0
-        CHKERR( SNESGetTolerances(self.snes, r, r, r, i, &max_funcs) )
+        cdef PetscInt ival = 0
+        CHKERR( SNESGetTolerances(self.snes, r, r, r, i, &ival) )
+        return toInt(ival)
 
     def getFunctionEvaluations(self):
-        cdef PetscInt nfuncs = 0
-        CHKERR( SNESGetNumberFunctionEvals(self.snes, &nfuncs) )
-        return nfuncs
+        cdef PetscInt ival = 0
+        CHKERR( SNESGetNumberFunctionEvals(self.snes, &ival) )
+        return toInt(ival)
 
     def setMaxNonlinearStepFailures(self, max_fails):
-        CHKERR( SNESSetMaxNonlinearStepFailures(self.snes, max_fails) )
+        cdef PetscInt ival = asInt(max_fails)
+        CHKERR( SNESSetMaxNonlinearStepFailures(self.snes, ival) )
 
     def getMaxNonlinearStepFailures(self):
-        cdef PetscInt max_fails = 0
-        CHKERR( SNESGetMaxNonlinearStepFailures(self.snes, &max_fails) )
-        return max_fails
+        cdef PetscInt ival = 0
+        CHKERR( SNESGetMaxNonlinearStepFailures(self.snes, &ival) )
+        return toInt(ival)
 
     def getNonlinearStepFailures(self):
-        cdef PetscInt fails = 0
-        CHKERR( SNESGetNonlinearStepFailures(self.snes, &fails) )
-        return fails
+        cdef PetscInt ival = 0
+        CHKERR( SNESGetNonlinearStepFailures(self.snes, &ival) )
+        return toInt(ival)
 
     def setMaxLinearSolveFailures(self, max_fails):
-        CHKERR( SNESSetMaxLinearSolveFailures(self.snes, max_fails) )
+        cdef PetscInt ival = asInt(max_fails)
+        CHKERR( SNESSetMaxLinearSolveFailures(self.snes, ival) )
 
     def getMaxLinearSolveFailures(self):
-        cdef PetscInt max_fails = 0
-        CHKERR( SNESGetMaxLinearSolveFailures(self.snes, &max_fails) )
-        return max_fails
+        cdef PetscInt ival = 0
+        CHKERR( SNESGetMaxLinearSolveFailures(self.snes, &ival) )
+        return toInt(ival)
 
     def getLinearSolveFailures(self):
-        cdef PetscInt fails = 0
-        CHKERR( SNESGetLinearSolveFailures(self.snes, &fails) )
-        return fails
+        cdef PetscInt ival = 0
+        CHKERR( SNESGetLinearSolveFailures(self.snes, &ival) )
+        return toInt(ival)
 
     # --- xxx ---
 
@@ -283,13 +288,13 @@ cdef class SNES(Object):
         return reason
 
     def setIterationNumber(self, its):
-        cdef PetscInt ival = its
+        cdef PetscInt ival = asInt(its)
         CHKERR( SNESSetIterationNumber(self.snes, ival) )
 
     def getIterationNumber(self):
         cdef PetscInt ival = 0
         CHKERR( SNESGetIterationNumber(self.snes, &ival) )
-        return ival
+        return toInt(ival)
 
     def setFunctionNorm(self, norm):
         cdef PetscReal rval = asReal(norm)
@@ -303,7 +308,7 @@ cdef class SNES(Object):
     def getLinearSolveIterations(self):
         cdef PetscInt ival = 0
         CHKERR( SNESGetLinearSolveIterations(self.snes, &ival) )
-        return ival
+        return toInt(ival)
 
     def getRhs(self):
         cdef Vec vec = Vec()
@@ -345,7 +350,7 @@ cdef class SNES(Object):
         cdef PetscReal calpha     = PETSC_DEFAULT
         cdef PetscReal calpha2    = PETSC_DEFAULT
         cdef PetscReal cthreshold = PETSC_DEFAULT
-        if version   is not None: cversion   = version
+        if version   is not None: cversion   = asInt(version)
         if rtol_0    is not None: crtol_0    = asReal(rtol_0)
         if rtol_max  is not None: crtol_max  = asReal(rtol_max)
         if gamma     is not None: cgamma     = asReal(gamma)
@@ -364,7 +369,7 @@ cdef class SNES(Object):
         CHKERR( SNESKSPGetParametersEW(
             self.snes, &version, &rtol_0, &rtol_max,
             &gamma, &alpha, &alpha2, &threshold) )
-        return {'version'   : toReal(version),
+        return {'version'   : toInt(version),
                 'rtol_0'    : toReal(rtol_0),
                 'rtol_max'  : toReal(rtol_max),
                 'gamma'     : toReal(gamma),

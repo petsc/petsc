@@ -454,13 +454,15 @@ cdef Mat mat_rdiv(Mat self, other):
 
 # --------------------------------------------------------------------
 
-cdef inline PetscMatStructure matstructure(object structure) except <PetscMatStructure>(-1):
+cdef inline PetscMatStructure matstructure(object structure) \
+    except <PetscMatStructure>(-1):
     if   structure is None:  return MAT_DIFFERENT_NONZERO_PATTERN
     elif structure is False: return MAT_DIFFERENT_NONZERO_PATTERN
     elif structure is True:  return MAT_SAME_NONZERO_PATTERN
     else:                    return structure
 
-cdef inline PetscMatAssemblyType assemblytype(object assembly) except <PetscMatAssemblyType>(-1):
+cdef inline PetscMatAssemblyType assemblytype(object assembly) \
+    except <PetscMatAssemblyType>(-1):
     if   assembly is None:  return MAT_FINAL_ASSEMBLY
     elif assembly is False: return MAT_FINAL_ASSEMBLY
     elif assembly is True:  return MAT_FLUSH_ASSEMBLY
@@ -470,9 +472,9 @@ cdef inline PetscMatAssemblyType assemblytype(object assembly) except <PetscMatA
 
 cdef inline int Mat_BlockSize(object bsize, PetscInt *_bs) except -1:
     cdef PetscInt bs = PETSC_DECIDE
-    if bsize is not None: bs = bsize
-    if bs != PETSC_DECIDE and bs < 1: raise ValueError(
-        "block size %d must be positive" % bs)
+    if bsize is not None: bs = asInt(bsize)
+    if bs != PETSC_DECIDE and bs < 1:
+        raise ValueError("block size %d must be positive" % toInt(bs))
     _bs[0] = bs
     return 0
 
@@ -507,7 +509,8 @@ cdef inline int Mat_AllocAIJ_DEFAULT(PetscMat A,
     CHKERR( MatAnyAIJSetPreallocation(A, bs, d_nz, d_nnz, o_nz, o_nnz) )
     return 0
 
-cdef inline int Mat_AllocAIJ_NNZ(PetscMat A, PetscInt bs, object NNZ) except -1:
+cdef inline int Mat_AllocAIJ_NNZ(PetscMat A, PetscInt bs, object NNZ) \
+    except -1:
     # unpack NNZ argument
     cdef object od_nnz, oo_nnz
     try:
@@ -531,13 +534,16 @@ cdef inline int Mat_AllocAIJ_NNZ(PetscMat A, PetscInt bs, object NNZ) except -1:
     if bs == PETSC_DECIDE: b = 1
     if m != PETSC_DECIDE and (d_n > 1 or o_n > 1):
         if d_n > 1 and d_n*b != m:
-            raise ValueError("size(d_nnz) is %d, expected %d" % (d_n, m))
+            raise ValueError("size(d_nnz) is %d, expected %d" %
+                             (toInt(d_n), toInt(m)) )
         if o_n > 1 and o_n*b != m:
-            raise ValueError("size(o_nnz) is %d, expected %d" % (o_n, m))
+            raise ValueError("size(o_nnz) is %d, expected %d" %
+                             (toInt(o_n), toInt(m)) )
     # preallocate
     CHKERR( MatAnyAIJSetPreallocation(A, bs, d_nz, d_nnz, o_nz, o_nnz) )
 
-cdef inline int Mat_AllocAIJ_CSR(PetscMat A, PetscInt bs, object CSR) except -1:
+cdef inline int Mat_AllocAIJ_CSR(PetscMat A, PetscInt bs, object CSR) \
+    except -1:
     # unpack CSR argument
     cdef object oi, oj, ov
     try:
@@ -558,13 +564,17 @@ cdef inline int Mat_AllocAIJ_CSR(PetscMat A, PetscInt bs, object CSR) except -1:
     CHKERR( MatGetLocalSize(A, &m, NULL) )
     if bs == PETSC_DECIDE: b = 1
     if (m != PETSC_DECIDE) and (((ni-1)*b) != m):
-        raise ValueError("size(I) is %d, expected %d" % (ni, (m//b+1)))
+        raise ValueError("size(I) is %d, expected %d" %
+                         (toInt(ni), toInt(m//b+1)) )
     if (i[0] != 0):
-        raise ValueError("I[0] is %d, expected %d"    % (i[0], 0))
+        raise ValueError("I[0] is %d, expected %d" %
+                         (toInt(i[0]), toInt(0)) )
     if (i[ni-1] != nj):
-        raise ValueError("size(J) is %d, expected %d" % (nj, i[ni-1]))
+        raise ValueError("size(J) is %d, expected %d" %
+                         (toInt(nj), toInt(i[ni-1])) )
     if ov is not None and (nj*b*b != nv):
-        raise ValueError("size(V) is %d, expected %d" % (nv, nj*b*b))
+        raise ValueError("size(V) is %d, expected %d" %
+                         (toInt(nv), toInt(nj*b*b)) )
     # preallocate
     CHKERR( MatAnyAIJSetPreallocationCSR(A, bs, i, j, v) )
 
@@ -583,9 +593,9 @@ cdef inline int Mat_AllocDense_ARRAY(PetscMat A, PetscInt bs,
     CHKERR( MatGetLocalSize(A, &m, &n) )
     if bs == PETSC_DECIDE: b = 1
     array = ofarray_s(array, &size, &data)
-    if m*n != size:
-        raise ValueError("size(array) is %d, expected %dx%d=%d" % \
-                         (size, m, n, m*n))
+    if m*n != size: raise ValueError(
+        "size(array) is %d, expected %dx%d=%d" %
+        (toInt(size), toInt(m), toInt(n), toInt(m*n)) )
     CHKERR( MatAnyDenseSetPreallocation(A, bs, data) )
     Object_setAttr(<PetscObject>A, '__array__', array)
     return 0
@@ -620,8 +630,8 @@ cdef inline int matsetvalues(PetscMat A,
     cdef object aj = iarray_i(oj, &nj, &j)
     cdef object av = iarray_s(ov, &nv, &v)
     if ni*nj*bs*bs != nv: raise ValueError(
-        "incompatible array sizes: " \
-        "ni=%d, nj=%d, nv=%d" % (ni, nj, nv) )
+        "incompatible array sizes: ni=%d, nj=%d, nv=%d" % 
+        (toInt(ni), toInt(nj), toInt(nv)) )
     # MatSetValuesXXX function and insert mode
     cdef MatSetValuesFcn *setvalues = \
          matsetvalues_fcn(blocked, local)
@@ -632,7 +642,8 @@ cdef inline int matsetvalues(PetscMat A,
 
 cdef inline int matsetvalues_rcv(PetscMat A,
                                  object oi, object oj, object ov,
-                                 object oaddv, int blocked, int local) except -1:
+                                 object oaddv, 
+                                 int blocked, int local) except -1:
     # block size
     cdef PetscInt bs=1
     if blocked: CHKERR( MatGetBlockSize(A, &bs) )
@@ -707,13 +718,17 @@ cdef inline int matsetvalues_ijv(PetscMat A,
         nm = re - rs
     # check various sizes
     if (ni-1 != nm):
-        raise ValueError("size(I) is %d, expected %d" % (ni, nm+1))
+        raise ValueError("size(I) is %d, expected %d" %
+                         (toInt(ni), toInt(nm+1)) )
     if (i[0] != 0):
-        raise ValueError("I[0] is %d, expected %d"    % (i[0], 0))
+        raise ValueError("I[0] is %d, expected %d" %
+                         (toInt(i[0]), 0))
     if (i[ni-1] != nj):
-        raise ValueError("size(J) is %d, expected %d" % ( nj, i[ni-1]))
+        raise ValueError("size(J) is %d, expected %d" %
+                         (toInt(nj), toInt(i[ni-1])) )
     if (nj*bs2  != nv):
-        raise ValueError("size(V) is %d, expected %d" % ( nv, nj*bs2))
+        raise ValueError("size(V) is %d, expected %d" %
+                         (toInt(nv), toInt(nj*bs2)) )
     # MatSetValuesXXX function and insert mode
     cdef MatSetValuesFcn *setvalues = \
          matsetvalues_fcn(blocked, local)
@@ -729,7 +744,8 @@ cdef inline int matsetvalues_ijv(PetscMat A,
         if blocked:
             sval = v + i[k]*bs2
             for l from 0 <= l < ncol:
-                CHKERR( setvalues(A, 1, &irow, 1, &icol[l], &sval[l*bs2], addv) )
+                CHKERR( setvalues(A, 1, &irow, 1, &icol[l], 
+                                  &sval[l*bs2], addv) )
         else:
             sval = v + i[k]
             CHKERR( setvalues(A, 1, &irow, ncol, icol, sval, addv) )
@@ -742,7 +758,8 @@ cdef inline int matsetvalues_csr(PetscMat A,
     matsetvalues_ijv(A, oi, oj, ov, oaddv, None, blocked, local)
     return 0
 
-cdef inline matgetvalues(PetscMat mat, object orows, object ocols, object values):
+cdef inline matgetvalues(PetscMat mat, 
+                         object orows, object ocols, object values):
     cdef PetscInt ni=0, nj=0, nv=0
     cdef PetscInt *i=NULL, *j=NULL
     cdef PetscScalar *v=NULL
@@ -753,8 +770,8 @@ cdef inline matgetvalues(PetscMat mat, object orows, object ocols, object values
         values.shape = rows.shape + cols.shape
     values = oarray_s(values, &nv, &v)
     if (ni*nj != nv): raise ValueError(
-        "incompatible array sizes: " \
-        "ni=%d, nj=%d, nv=%d" % (ni, nj, nv))
+                "incompatible array sizes: ni=%d, nj=%d, nv=%d" %
+                (toInt(ni), toInt(nj), toInt(nv)))
     CHKERR( MatGetValues(mat, ni, i, nj, j, v) )
     return values
 
@@ -777,11 +794,11 @@ cdef object mat_getitem(Mat self, object ij):
     rows, cols = ij
     if isinstance(rows, slice):
         CHKERR( MatGetSize(self.mat, &M, NULL) )
-        start, stop, stride = rows.indices(M)
+        start, stop, stride = rows.indices(toInt(M))
         rows = arange(start, stop, stride)
     if isinstance(cols, slice):
         CHKERR( MatGetSize(self.mat, NULL, &N) )
-        start, stop, stride = cols.indices(N)
+        start, stop, stride = cols.indices(toInt(N))
         cols = arange(start, stop, stride)
     return matgetvalues(self.mat, rows, cols, None)
 
@@ -791,11 +808,11 @@ cdef int mat_setitem(Mat self, object ij, object v) except -1:
     rows, cols = ij
     if isinstance(rows, slice):
         CHKERR( MatGetSize(self.mat, &M, NULL) )
-        start, stop, stride = rows.indices(M)
+        start, stop, stride = rows.indices(toInt(M))
         rows = arange(start, stop, stride)
     if isinstance(cols, slice):
         CHKERR( MatGetSize(self.mat, NULL, &N) )
-        start, stop, stride = cols.indices(N)
+        start, stop, stride = cols.indices(toInt(N))
         cols = arange(start, stop, stride)
     matsetvalues(self.mat, rows, cols, v, None, 0, 0)
     return 0

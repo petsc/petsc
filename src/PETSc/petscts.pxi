@@ -260,7 +260,7 @@ cdef int TS_Monitor(PetscTS    ts,
     cdef TS  Ts = ref_TS(ts)
     cdef Vec Vu = ref_Vec(u)
     for (monitor, args, kargs) in monitorlist:
-        monitor(Ts, step, toReal(time), Vu, *args, **kargs)
+        monitor(Ts, toInt(step), toReal(time), Vu, *args, **kargs)
     return 0
 
 # --------------------------------------------------------------------

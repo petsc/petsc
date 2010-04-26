@@ -114,7 +114,7 @@ cdef class Object:
     def getRefCount(self):
         cdef PetscInt refcnt = 0
         CHKERR( PetscObjectGetReference(self.obj[0], &refcnt) )
-        return refcnt
+        return toInt(refcnt)
 
     # --- general support ---
 

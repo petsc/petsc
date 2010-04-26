@@ -282,7 +282,7 @@ cdef inline int vecset(PetscVec v, object o) except -1:
     CHKERR( VecGetLocalSize(v, &nv) )
     if na != nv: raise ValueError(
         "array size %d incompatible " \
-        "with vector local size %d" % (na, nv) )
+        "with vector local size %d" % (toInt(na), toInt(nv)) )
     CHKERR( VecGetArray(v, &vv) )
     CHKERR( PetscMemcpy(vv, va, nv*sizeof(PetscScalar)) )
     CHKERR( VecRestoreArray(v, &vv) )
@@ -307,7 +307,7 @@ cdef inline int vecsetvalues(PetscVec V,
     cdef object av = iarray_s(ov, &nv, &v)
     if ni*bs != nv: raise ValueError(
         "incompatible array sizes: " \
-        "ni=%d, nv=%d, bs=%d" % (ni, nv, bs) )
+        "ni=%d, nv=%d, bs=%d" % (toInt(ni), toInt(nv), toInt(bs)) )
     # insert mode
     cdef PetscInsertMode addv = insertmode(oim)
     # VecSetValuesXXX function
@@ -330,7 +330,8 @@ cdef object vecgetvalues(PetscVec vec, object oindices, object values):
         values.shape = indices.shape
     values = oarray_s(values, &nv, &v)
     if (ni != nv): raise ValueError(
-        "incompatible array sizes: ni=%d, nv=%d" % (ni, nv))
+        "incompatible array sizes: " \
+        "ni=%d, nv=%d" % (toInt(ni), toInt(nv)))
     CHKERR( VecGetValues(vec, ni, i, v) )
     return values
 
@@ -342,7 +343,7 @@ cdef object vec_getitem(Vec self, object i):
         return asarray(self)
     if isinstance(i, slice):
         CHKERR( VecGetSize(self.vec, &N) )
-        start, stop, stride = i.indices(N)
+        start, stop, stride = i.indices(toInt(N))
         i = arange(start, stop, stride)
     return vecgetvalues(self.vec, i, None)
 
@@ -356,7 +357,7 @@ cdef int vec_setitem(Vec self, object i, object v) except -1:
         return 0
     if isinstance(i, slice):
         CHKERR( VecGetSize(self.vec, &N) )
-        start, stop, stride = i.indices(N)
+        start, stop, stride = i.indices(toInt(N))
         i = arange(start, stop, stride)
     vecsetvalues(self.vec, i, v, None, 0, 0)
     return 0

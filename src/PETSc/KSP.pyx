@@ -199,8 +199,8 @@ cdef class KSP(Object):
         cdef bint L = left is not None
         cdef PetscInt i=0, nr=0, nl=0
         cdef PetscVec *vr=NULL, *vl=NULL
-        if R: nr = right
-        if L: nl = left
+        if R: nr = asInt(right)
+        if L: nl = asInt(left)
         cdef object vecsr = [] if R else None
         cdef object vecsl = [] if L else None
         CHKERR( KSPGetVecs(self.ksp, nr, &vr, nl, &vr) )
@@ -229,14 +229,14 @@ cdef class KSP(Object):
         if atol   is not None: catol   = asReal(atol)
         if divtol is not None: cdivtol = asReal(divtol)
         cdef PetscInt cmaxits = PETSC_DEFAULT
-        if max_it is not None: cmaxits = max_it
+        if max_it is not None: cmaxits = asInt(max_it)
         CHKERR( KSPSetTolerances(self.ksp, crtol, catol, cdivtol, cmaxits) )
 
     def getTolerances(self):
         cdef PetscReal crtol, catol, cdivtol
         cdef PetscInt cmaxits
         CHKERR( KSPGetTolerances(self.ksp, &crtol, &catol, &cdivtol, &cmaxits) )
-        return (toReal(crtol), toReal(catol), toReal(cdivtol), cmaxits)
+        return (toReal(crtol), toReal(catol), toReal(cdivtol), toInt(cmaxits))
 
     def setConvergenceTest(self, converged, *args, **kargs):
         if converged is None: KSP_setConverged(self.ksp, None)
@@ -246,7 +246,7 @@ cdef class KSP(Object):
         return KSP_getConverged(self.ksp)
 
     def callConvergenceTest(self, its, rnorm):
-        cdef PetscInt  ival = its
+        cdef PetscInt  ival = asInt(its)
         cdef PetscReal rval = asReal(rnorm)
         cdef PetscKSPConvergedReason reason = KSP_CONVERGED_ITERATING
         CHKERR( KSPConvergenceTestCall(self.ksp, ival, rval, &reason) )
@@ -257,7 +257,7 @@ cdef class KSP(Object):
         cdef PetscInt   size = 10000
         cdef PetscTruth flag = PETSC_FALSE
         if   length is True:     pass
-        elif length is not None: size = length
+        elif length is not None: size = asInt(length)
         if size < 0: size = 10000
         if reset: flag = PETSC_TRUE
         cdef ndarray hist = oarray_r(empty_r(size), NULL, &data)
@@ -271,9 +271,9 @@ cdef class KSP(Object):
         return array_r(size, data)
 
     def logConvergenceHistory(self, its, rnorm):
-        cdef PetscInt  ival = its
+        cdef PetscInt  ival = asInt(its)
         cdef PetscReal rval = asReal(rnorm)
-        CHKERR( KSPLogConvergenceHistory(self.ksp, its, rval) )
+        CHKERR( KSPLogConvergenceHistory(self.ksp, ival, rval) )
 
     def setMonitor(self, monitor, *args, **kargs):
         if monitor is None: KSP_setMonitor(self.ksp, None)
@@ -283,7 +283,7 @@ cdef class KSP(Object):
         return KSP_getMonitor(self.ksp)
 
     def callMonitor(self, its, rnorm):
-        cdef PetscInt  ival = its
+        cdef PetscInt  ival = asInt(its)
         cdef PetscReal rval = asReal(rnorm)
         CHKERR( KSPMonitorCall(self.ksp, ival, rval) )
 
@@ -341,13 +341,13 @@ cdef class KSP(Object):
         CHKERR( KSPSolveTranspose(self.ksp, b.vec, x.vec) )
 
     def setIterationNumber(self, its):
-        cdef PetscInt ival = its
+        cdef PetscInt ival = asInt(its)
         CHKERR( KSPSetIterationNumber(self.ksp, ival) )
 
     def getIterationNumber(self):
         cdef PetscInt ival = 0
         CHKERR( KSPGetIterationNumber(self.ksp, &ival) )
-        return ival
+        return toInt(ival)
 
     def setResidualNorm(self, rnorm):
         cdef PetscReal rval = asReal(rnorm)

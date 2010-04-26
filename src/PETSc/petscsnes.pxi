@@ -184,7 +184,7 @@ cdef int SNES_Update(PetscSNES snes,
                      PetscInt its) except PETSC_ERR_PYTHON with gil:
     cdef SNES Snes = ref_SNES(snes)
     (update, args, kargs) = SNES_getUpdate(snes)
-    update(Snes, its, *args, **kargs)
+    update(Snes, toInt(its), *args, **kargs)
     return 0
 
 # -----------------------------------------------------------------------------
@@ -241,7 +241,7 @@ cdef int SNES_Converged(PetscSNES  snes,
                         void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef SNES Snes = ref_SNES(snes)
     (converged, args, kargs) = SNES_getConverged(snes)
-    cdef object it = iters
+    cdef object it = toInt(iters)
     cdef object xn = toReal(xnorm)
     cdef object gn = toReal(gnorm)
     cdef object fn = toReal(fnorm)
@@ -277,7 +277,7 @@ cdef int SNES_Monitor(PetscSNES  snes,
     cdef object monitorlist = SNES_getMonitor(snes)
     if monitorlist is None: return 0
     cdef SNES Snes = ref_SNES(snes)
-    cdef object it = iters
+    cdef object it = toInt(iters)
     cdef object rn = toReal(rnorm)
     for (monitor, args, kargs) in monitorlist:
         monitor(Snes, it, rn, *args, **kargs)

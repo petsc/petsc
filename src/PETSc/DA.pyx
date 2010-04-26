@@ -70,32 +70,24 @@ cdef class DA(Object):
         cdef object gsizes = sizes
         if gsizes is None: gsizes = ()
         else: gsizes = tuple(gsizes)
-        cdef PetscInt gdim = len(gsizes)
+        cdef PetscInt gdim = asDims(gsizes, &M, &N, &P)
         assert gdim <= 3
-        if   gdim == 0: M = N = P = PETSC_DECIDE
-        elif gdim == 1: M, = gsizes
-        elif gdim == 2: M, N = gsizes
-        elif gdim == 3: M, N, P = gsizes
         # processor sizes
         cdef object psizes = proc_sizes
         if psizes is None: psizes = ()
         else: psizes = tuple(psizes)
-        cdef PetscInt pdim = len(psizes)
+        cdef PetscInt pdim = asDims(psizes, &m, &n, &p)
         assert pdim <= 3
-        if   pdim == 0: m = n = p = PETSC_DECIDE
-        elif pdim == 1: m, = psizes
-        elif pdim == 2: m, n = psizes
-        elif pdim == 3: m, n, p = psizes
         # vertex distribution
         lx = NULL # XXX implement!
         ly = NULL # XXX implement!
         lz = NULL # XXX implement!
         # dim and dof, periodicity, stencil type & width
-        if dim is not None: ndim = dim
-        if dof is not None: ndof = dof
+        if dim is not None: ndim = asInt(dim)
+        if dof is not None: ndof = asInt(dof)
         if periodic_type is not None: ptype = periodic_type
         if stencil_type  is not None: stype = stencil_type
-        if stencil_width is not None: swidth = stencil_width
+        if stencil_width is not None: swidth = asInt(stencil_width)
         if ndim==PETSC_DECIDE and gdim>0: ndim = gdim
         if ndof==PETSC_DECIDE: ndof = 1
         # create the DA object
@@ -123,7 +115,7 @@ cdef class DA(Object):
                           NULL, NULL, NULL,
                           NULL, NULL,
                           NULL, NULL) )
-        return dim
+        return toInt(dim)
 
     def getDof(self):
         cdef PetscInt dof = 0
@@ -133,7 +125,7 @@ cdef class DA(Object):
                           NULL, NULL, NULL,
                           &dof, NULL,
                           NULL, NULL) )
-        return dof
+        return toInt(dof)
 
     def getSizes(self):
         cdef PetscInt dim = 0
@@ -146,7 +138,7 @@ cdef class DA(Object):
                           NULL, NULL, NULL,
                           NULL, NULL,
                           NULL, NULL) )
-        return (M,N,P)[:dim]
+        return (toInt(M), toInt(N), toInt(P))[:<Py_ssize_t>dim]
 
     def getProcSizes(self):
         cdef PetscInt dim = 0
@@ -159,7 +151,7 @@ cdef class DA(Object):
                           &m, &n, &p,
                           NULL, NULL,
                           NULL, NULL) )
-        return (m,n,p)[:dim]
+        return (toInt(m), toInt(n), toInt(p))[:<Py_ssize_t>dim]
 
     def getPeriodicType(self):
         cdef PetscDAPeriodicType ptype = DA_PERIODIC_NONE
@@ -189,7 +181,7 @@ cdef class DA(Object):
                           NULL, NULL, NULL,
                           NULL, &swidth,
                           NULL, NULL) )
-        return swidth
+        return toInt(swidth)
 
     #
 
@@ -199,9 +191,9 @@ cdef class DA(Object):
         CHKERR( DAGetCorners(self.da,
                              &x, &y, &z,
                              &m, &n, &p) )
-        return ((x, x+m),
-                (y, y+n),
-                (z, z+p))[:dim]
+        return ((toInt(x), toInt(x+m)),
+                (toInt(y), toInt(y+n)),
+                (toInt(z), toInt(z+p)))[:<Py_ssize_t>dim]
 
     def getGhostRanges(self):
         cdef PetscInt dim=0, x=0, y=0, z=0, m=0, n=0, p=0
@@ -209,9 +201,9 @@ cdef class DA(Object):
         CHKERR( DAGetGhostCorners(self.da,
                                   &x, &y, &z,
                                   &m, &n, &p) )
-        return ((x, x+m),
-                (y, y+n),
-                (z, z+p))[:dim]
+        return ((toInt(x), toInt(x+m)),
+                (toInt(y), toInt(y+n)),
+                (toInt(z), toInt(z+p)))[:<Py_ssize_t>dim]
 
     def getCorners(self):
         cdef PetscInt dim=0, x=0, y=0, z=0, m=0, n=0, p=0
@@ -219,8 +211,8 @@ cdef class DA(Object):
         CHKERR( DAGetCorners(self.da,
                              &x, &y, &z,
                              &m, &n, &p) )
-        return ((x, y, z)[:dim],
-                (m, n, p)[:dim])
+        return ((toInt(x), toInt(y), toInt(z))[:<Py_ssize_t>dim],
+                (toInt(m), toInt(n), toInt(p))[:<Py_ssize_t>dim])
 
     def getGhostCorners(self):
         cdef PetscInt dim=0, x=0, y=0, z=0, m=0, n=0, p=0
@@ -228,8 +220,8 @@ cdef class DA(Object):
         CHKERR( DAGetGhostCorners(self.da,
                                   &x, &y, &z,
                                   &m, &n, &p) )
-        return ((x, y, z)[:dim],
-                (m, n, p)[:dim])
+        return ((toInt(x), toInt(y), toInt(z))[:<Py_ssize_t>dim],
+                (toInt(m), toInt(n), toInt(p))[:<Py_ssize_t>dim])
 
     #
 

@@ -120,7 +120,7 @@ cdef class Sys:
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt bs=0, n=0, N=0
         CHKERR( Sys_SplitSizes(ccomm, size, bsize, &bs, &n, &N) )
-        return (n, N)
+        return (toInt(n), toInt(N))
 
     @classmethod
     def sleep(cls, seconds=1):

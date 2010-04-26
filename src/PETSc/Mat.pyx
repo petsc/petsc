@@ -200,7 +200,7 @@ cdef class Mat(Object):
     def setSizes(self, size, bsize=None):
         cdef MPI_Comm ccomm = MPI_COMM_NULL
         CHKERR( PetscObjectGetComm(<PetscObject>self.mat, &ccomm) )
-        cdef PetscInt bs=0, m=0, n=0, M=0, N=0
+        cdef PetscInt bs = 0, m = 0, n = 0, M = 0, N = 0
         CHKERR( Mat_SplitSizes(ccomm, size, bsize, &bs, &m, &n, &M, &N) )
         CHKERR( MatSetSizes(self.mat, m, n, M, N) )
 
@@ -211,7 +211,7 @@ cdef class Mat(Object):
 
     def createAIJ(self, size, bsize=None, nnz=None, csr=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef PetscInt bs=0, m=0, n=0, M=0, N=0
+        cdef PetscInt bs = 0, m = 0, n = 0, M = 0, N = 0
         CHKERR( Mat_SplitSizes(ccomm, size, bsize, &bs, &m, &n, &M, &N) )
         # create matrix
         cdef PetscMat newmat = NULL
@@ -228,7 +228,7 @@ cdef class Mat(Object):
 
     def createCRL(self, size, bsize=None, nnz=None, csr=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef PetscInt bs=0, m=0, n=0, M=0, N=0
+        cdef PetscInt bs = 0, m = 0, n = 0, M = 0, N = 0
         CHKERR( Mat_SplitSizes(ccomm, size, bsize, &bs, &m, &n, &M, &N) )
         # create matrix
         cdef PetscMat newmat = NULL
@@ -263,7 +263,7 @@ cdef class Mat(Object):
 
     def createDense(self, size, bsize=None, array=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef PetscInt bs=0, m=0, n=0, M=0, N=0
+        cdef PetscInt bs = 0, m = 0, n = 0, M = 0, N = 0
         CHKERR( Mat_SplitSizes(ccomm, size, bsize, &bs, &m, &n, &M, &N) )
         # create matrix
         cdef PetscMat newmat = NULL
@@ -289,7 +289,7 @@ cdef class Mat(Object):
     def createIS(self, size, LGMap lgmap, comm=None):
         if comm is None: comm = lgmap.getComm()
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef PetscInt bs=0, m=0, n=0, M=0, N=0
+        cdef PetscInt bs = 0, m = 0, n = 0, M = 0, N = 0
         CHKERR( Mat_SplitSizes(ccomm, size, None, &bs, &m, &n, &M, &N) )
         cdef PetscMat newmat = NULL
         CHKERR( MatCreateIS(ccomm, m, n, M, N, lgmap.lgm, &newmat) )
@@ -344,7 +344,7 @@ cdef class Mat(Object):
 
     def createPython(self, size, context=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef PetscInt bs=0, m=0, n=0, M=0, N=0
+        cdef PetscInt bs = 0, m=0, n=0, M=0, N=0
         CHKERR( Mat_SplitSizes(ccomm, size, None, &bs, &m, &n, &M, &N) )
         cdef PetscMat newmat = NULL
         CHKERR( MatCreate(ccomm, &newmat) )
@@ -392,35 +392,35 @@ cdef class Mat(Object):
         return cp2str(mat_type)
 
     def getSize(self):
-        cdef PetscInt M=0,N=0
+        cdef PetscInt M = 0, N = 0
         CHKERR( MatGetSize(self.mat, &M, &N) )
-        return (M, N)
+        return (toInt(M), toInt(N))
 
     def getLocalSize(self):
-        cdef PetscInt m=0,n=0
+        cdef PetscInt m = 0, n = 0
         CHKERR( MatGetLocalSize(self.mat, &m, &n) )
-        return (m, n)
+        return (toInt(m), toInt(n))
 
     def getSizes(self):
-        cdef PetscInt m=0,n=0
-        cdef PetscInt M=0,N=0
+        cdef PetscInt m = 0, n = 0
+        cdef PetscInt M = 0, N = 0
         CHKERR( MatGetLocalSize(self.mat, &m, &n) )
         CHKERR( MatGetSize(self.mat, &M, &N) )
-        return ((m, n), (M, N))
+        return ((toInt(m), toInt(n)), (toInt(M), toInt(N)))
 
     def setBlockSize(self, bsize):
-        cdef PetscInt bs = bsize
+        cdef PetscInt bs = asInt(bsize)
         CHKERR( MatSetBlockSize(self.mat, bs) )
 
     def getBlockSize(self):
-        cdef PetscInt bs=0
+        cdef PetscInt bs = 0
         CHKERR( MatGetBlockSize(self.mat, &bs) )
-        return bs
+        return toInt(bs)
 
     def getOwnershipRange(self):
-        cdef PetscInt rlow=0, rhigh=0
-        CHKERR( MatGetOwnershipRange(self.mat, &rlow, &rhigh) )
-        return (rlow, rhigh)
+        cdef PetscInt ival1 = 0, ival2 = 0
+        CHKERR( MatGetOwnershipRange(self.mat, &ival1, &ival2) )
+        return (toInt(ival1), toInt(ival2))
 
     def getOwnershipRanges(self):
         cdef const_PetscInt *rowrng = NULL
@@ -432,9 +432,9 @@ cdef class Mat(Object):
         return array_i(size+1, rowrng)
 
     def getOwnershipRangeColumn(self):
-        cdef PetscInt clow=0, chigh=0
-        CHKERR( MatGetOwnershipRangeColumn(self.mat, &clow, &chigh) )
-        return (clow, chigh)
+        cdef PetscInt ival1 = 0, ival2 = 0
+        CHKERR( MatGetOwnershipRangeColumn(self.mat, &ival1, &ival2) )
+        return (toInt(ival1), toInt(ival2))
 
     def getOwnershipRangesColumn(self):
         cdef const_PetscInt *colrng = NULL
@@ -555,18 +555,18 @@ cdef class Mat(Object):
         CHKERR( MatZeroEntries(self.mat) )
 
     def getValue(self, row, col):
-        cdef PetscInt irow = row
-        cdef PetscInt icol = col
-        cdef PetscScalar sval = 0
-        CHKERR( MatGetValues(self.mat, 1, &irow, 1, &icol, &sval) )
+        cdef PetscInt    ival1 = asInt(row)
+        cdef PetscInt    ival2 = asInt(col)
+        cdef PetscScalar sval  = 0
+        CHKERR( MatGetValues(self.mat, 1, &ival1, 1, &ival2, &sval) )
         return toScalar(sval)
 
     def getValues(self, rows, cols, values=None):
         return matgetvalues(self.mat, rows, cols, values)
 
     def getRow(self, row):
-        cdef PetscInt irow = row
-        cdef PetscInt ncols=0
+        cdef PetscInt irow = asInt(row)
+        cdef PetscInt ncols = 0
         cdef const_PetscInt *icols=NULL
         cdef const_PetscScalar *svals=NULL
         CHKERR( MatGetRow(self.mat, irow, &ncols, &icols, &svals) )
@@ -601,11 +601,11 @@ cdef class Mat(Object):
         return (ai, aj)
 
     def setValue(self, row, col, value, addv=None):
-        cdef PetscInt irow = row
-        cdef PetscInt icol = col
-        cdef PetscScalar sval = asScalar(value)
+        cdef PetscInt    ival1 = asInt(row)
+        cdef PetscInt    ival2 = asInt(col)
+        cdef PetscScalar sval  = asScalar(value)
         cdef PetscInsertMode caddv = insertmode(addv)
-        CHKERR( MatSetValues(self.mat, 1, &irow, 1, &icol, &sval, caddv) )
+        CHKERR( MatSetValues(self.mat, 1, &ival1, 1, &ival2, &sval, caddv) )
 
     def setValues(self, rows, cols, values, addv=None):
         matsetvalues(self.mat, rows, cols, values, addv, 0, 0)
@@ -635,11 +635,12 @@ cdef class Mat(Object):
         CHKERR( MatSetLocalToGlobalMapping(self.mat, lgmap.lgm) )
 
     def setValueLocal(self, row, col, value, addv=None):
-        cdef PetscInt    irow = row
-        cdef PetscInt    icol = col
-        cdef PetscScalar sval = asScalar(value)
+        cdef PetscInt    ival1 = asInt(row)
+        cdef PetscInt    ival2 = asInt(col)
+        cdef PetscScalar sval  = asScalar(value)
         cdef PetscInsertMode caddv = insertmode(addv)
-        CHKERR( MatSetValuesLocal(self.mat, 1, &irow, 1, &icol, &sval, caddv) )
+        CHKERR( MatSetValuesLocal(
+                self.mat, 1, &ival1, 1, &ival2, &sval, caddv) )
 
     def setValuesLocal(self, rows, cols, values, addv=None):
         matsetvalues(self.mat, rows, cols, values, addv, 0, 1)
@@ -740,12 +741,12 @@ cdef class Mat(Object):
     #
 
     def getColumnVector(self, column, Vec result=None):
-        cdef PetscInt col = column
+        cdef PetscInt ival = asInt(column)
         if result is None:
             result = Vec()
         if result.vec == NULL:
             CHKERR( MatGetVecs(self.mat, NULL, &result.vec) )
-        CHKERR( MatGetColumnVector(self.mat, result.vec, col) )
+        CHKERR( MatGetColumnVector(self.mat, result.vec, ival) )
         return result
 
     def getDiagonal(self, Vec result=None):
@@ -804,7 +805,8 @@ cdef class Mat(Object):
         return submat
 
     def increaseOverlap(self, IS iset not None, overlap=1):
-        CHKERR( MatIncreaseOverlap(self.mat, 1, &iset.iset, overlap) )
+        cdef PetscInt ival = asInt(overlap)
+        CHKERR( MatIncreaseOverlap(self.mat, 1, &iset.iset, ival) )
 
     #
 
@@ -926,9 +928,9 @@ cdef class Mat(Object):
         ## return mat
 
     def getInertia(self):
-        cdef PetscInt nneg=0, nzero=0, npos=0
-        CHKERR( MatGetInertia(self.mat, &nneg, &nzero, &npos) )
-        return (nneg, nzero, npos)
+        cdef PetscInt ival1 = 0, ival2 = 0, ival3 = 0
+        CHKERR( MatGetInertia(self.mat, &ival1, &ival2, &ival3) )
+        return (toInt(ival1), toInt(ival2), toInt(ival3))
 
     def setUnfactored(self):
         CHKERR( MatSetUnfactored(self.mat) )
@@ -1035,7 +1037,7 @@ cdef class NullSpace(Object):
         nv = len(vectors)
         cdef object tmp = allocate(nv*sizeof(PetscVec),<void**>&v)
         for i from 0 <= i < nv:
-            v[i] = (<Vec?>(vectors[i])).vec
+            v[i] = (<Vec?>(vectors[<Py_ssize_t>i])).vec
         CHKERR( MatNullSpaceCreate(ccomm, has_const, nv, v, &newnsp) )
         PetscCLEAR(self.obj); self.nsp = newnsp
         return self

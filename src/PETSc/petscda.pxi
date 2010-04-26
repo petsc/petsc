@@ -1,3 +1,5 @@
+# --------------------------------------------------------------------
+
 cdef extern from "petscda.h" nogil:
 
     ctypedef enum PetscDAStencilType "DAStencilType":
@@ -91,6 +93,7 @@ cdef extern from "petscda.h" nogil:
     #int DASetFieldName(PetscDA,PetscInt,const_char[])
     #int DAGetFieldName(PetscDA,PetscInt,char**)
 
+# --------------------------------------------------------------------
 
 cdef inline int DAGetDim(PetscDA da, PetscInt *dim) nogil:
      return DAGetInfo(da, dim,
@@ -98,3 +101,23 @@ cdef inline int DAGetDim(PetscDA da, PetscInt *dim) nogil:
                       NULL, NULL, NULL,
                       NULL, NULL,
                       NULL, NULL)
+
+cdef inline PetscInt asDims(dims,
+                            PetscInt *_M, 
+                            PetscInt *_N, 
+                            PetscInt *_P) except -1:
+    cdef PetscInt ndim = len(dims)
+    cdef object M, N, P
+    if ndim == 1: 
+        M, = dims
+    elif ndim == 2: 
+        M, N = dims
+    elif ndim == 3: 
+        M, N, P = dims
+    _M[0] = _N[0] = _P[0] = PETSC_DECIDE
+    if ndim >= 1: _M[0] = asInt(M)
+    if ndim >= 2: _N[0] = asInt(N)
+    if ndim >= 3: _P[0] = asInt(P)
+    return ndim
+
+# --------------------------------------------------------------------
