@@ -93,6 +93,7 @@ int main(int argc,char **argv)
   ierr = VecCopy(DMMGGetx(dmmg), tmp);CHKERRQ(ierr);
   ierr = VecView(tmp, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   ierr = VecViewCenterSingle(da, DMMGGetx(dmmg), PETSC_VIEWER_DRAW_WORLD, "FD Solution", -1, -1);CHKERRQ(ierr);
+  ierr = VecViewCenterSingle(da, DMMGGetx(dmmg), PETSC_VIEWER_STDOUT_WORLD, "FD Solution", -1, -1);CHKERRQ(ierr);
   ierr = MatMult(DMMGGetJ(dmmg),DMMGGetx(dmmg),DMMGGetr(dmmg));CHKERRQ(ierr);
   ierr = VecAXPY(DMMGGetr(dmmg),-1.0,DMMGGetRHS(dmmg));CHKERRQ(ierr);
   ierr = VecNorm(DMMGGetr(dmmg),NORM_2,&norm);CHKERRQ(ierr);
@@ -101,6 +102,7 @@ int main(int argc,char **argv)
   ierr = VecCopy(phi, tmp);CHKERRQ(ierr);
   ierr = VecView(tmp, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   ierr = VecViewCenterSingle(da, phi, PETSC_VIEWER_DRAW_WORLD, "FFT Solution", -1, -1);CHKERRQ(ierr);
+  ierr = VecViewCenterSingle(da, phi, PETSC_VIEWER_STDOUT_WORLD, "FFT Solution", -1, -1);CHKERRQ(ierr);
   ierr = VecAXPY(phi,-1.0,DMMGGetx(dmmg));CHKERRQ(ierr);
   ierr = VecNorm(phi,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Error norm (FFT vs. FD) %G\n",norm);CHKERRQ(ierr);
@@ -108,6 +110,7 @@ int main(int argc,char **argv)
   ierr = VecCopy(phi, tmp);CHKERRQ(ierr);
   ierr = VecView(tmp, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   ierr = VecViewCenterSingle(da, phi, PETSC_VIEWER_DRAW_WORLD, "Error", -1, -1);CHKERRQ(ierr);
+  ierr = VecViewCenterSingle(da, phi, PETSC_VIEWER_STDOUT_WORLD, "Error", -1, -1);CHKERRQ(ierr);
   ierr = VecDestroy(tmp);CHKERRQ(ierr);
 
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
@@ -130,7 +133,8 @@ PetscErrorCode ComputeRHS(DMMG dmmg,Vec b)
   ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   sc   = 1.0/((mx-1)*(my-1)*(mz-1));
-  wallPos = (mz-1)/20;
+  //wallPos = (mz-1)/20;
+  wallPos = -1;
   bathIndex = mz/2;
   ierr = DAVecGetArray(da, b, &a);CHKERRQ(ierr);
   for(k = zs; k < zs+zm; ++k) {
@@ -262,7 +266,7 @@ PetscErrorCode Solve_FFT(DA da, Vec rhs, Vec phi)
   ierr = MatDestroy(F);CHKERRQ(ierr);
 
   // Force potential in the bath to be 0
-  PetscInt       bathIndex[3] = {P/2, 0, 0};
+  PetscInt       bathIndex[3] = {0, 0, P/2};
   PetscScalar ***phiArray;
   PetscScalar    bathPotential;
 
