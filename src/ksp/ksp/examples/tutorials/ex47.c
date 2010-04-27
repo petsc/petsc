@@ -22,6 +22,8 @@ extern PetscErrorCode ComputeMatrix(DMMG,Mat,Mat);
 extern PetscErrorCode ComputeRHS(DMMG,Vec);
 extern PetscErrorCode Solve_FFT(DA, Vec, Vec);
 
+PetscReal L[3] = {2.0, 2.0, 6.0};
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
@@ -69,13 +71,14 @@ PetscErrorCode ComputeRHS(DMMG dmmg,Vec b)
   DA             da = (DA) dmmg->dm;
   PetscScalar ***a;
   PetscScalar    sc;
-  PetscInt       mx, my, mz, xm, ym, zm, xs, ys, zs, i, j, k;
+  PetscInt       mx, my, mz, xm, ym, zm, xs, ys, zs, wallPos, i, j, k;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   sc   = 1.0/((mx-1)*(my-1)*(mz-1));
+  wallPos = (mz-1)/20;
   ierr = DAVecGetArray(da, b, &a);CHKERRQ(ierr);
   for(k = zs; k < zs+zm; ++k) {
     for(j = ys; j < ys+ym; ++j) {
@@ -83,7 +86,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg,Vec b)
         if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1) {
           a[k][j][i] = 0.0;
         } else {
-          if (k > 5) {
+          if (k > wallPos) {
             a[k][j][i] = sc;
           } else {
             a[k][j][i] = 0.0;
@@ -101,6 +104,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg,Vec b)
 PetscErrorCode ComputeMatrix(DMMG dmmg,Mat jac,Mat B)
 {
   DA             da = (DA)dmmg->dm;
+  PetscInt       bathIndex;
   PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs;
   PetscScalar    v[7],Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
@@ -110,13 +114,13 @@ PetscErrorCode ComputeMatrix(DMMG dmmg,Mat jac,Mat B)
   Hx = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
   HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
   ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
-
+  bathIndex = mz/2;
   PetscFunctionBegin;
   for (k=zs; k<zs+zm; k++){
     for (j=ys; j<ys+ym; j++){
       for(i=xs; i<xs+xm; i++){
         row.i = i; row.j = j; row.k = k;
-        if (k == 10) {
+        if (k == bathIndex) {
           v[0] = 2.0*(HxHydHz + HxHzdHy + HyHzdHx);
           ierr = MatSetValuesStencil(B,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
         } else {
@@ -142,7 +146,6 @@ PetscErrorCode ComputeMatrix(DMMG dmmg,Mat jac,Mat B)
 #define __FUNCT__ "Solve_FFT"
 PetscErrorCode Solve_FFT(DA da, Vec rhs, Vec phi)
 {
-  PetscReal      L[3] = {2.0, 2.0, 6.0};
   PetscReal      h[3];
   PetscInt       dim[3];
   PetscReal      scale, sc;
@@ -206,7 +209,7 @@ PetscErrorCode Solve_FFT(DA da, Vec rhs, Vec phi)
   ierr = MatDestroy(F);CHKERRQ(ierr);
 
   // Force potential in the bath to be 0
-  PetscInt       bathIndex[3] = {10, 0, 0};
+  PetscInt       bathIndex[3] = {P/2, 0, 0};
   PetscScalar ***phiArray;
   PetscScalar    bathPotential;
 
