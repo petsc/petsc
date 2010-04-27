@@ -77,9 +77,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscHeaderDestroy_Private(PetscObject h)
   h->classid = PETSCFREEDHEADER;
   ierr = PetscFree(h->bops);CHKERRQ(ierr);
   ierr = PetscFListDestroy(&h->qlist);CHKERRQ(ierr);
-  ierr = PetscStrfree(h->type_name);CHKERRQ(ierr);
-  ierr = PetscStrfree(h->name);CHKERRQ(ierr);
-  ierr = PetscStrfree(h->prefix);CHKERRQ(ierr);
+  ierr = PetscFree(h->type_name);CHKERRQ(ierr);
+  ierr = PetscFree(h->name);CHKERRQ(ierr);
+  ierr = PetscFree(h->prefix);CHKERRQ(ierr);
   ierr = PetscFree(h->fortran_func_pointers);CHKERRQ(ierr);
   ierr = PetscFree(h->intcomposeddata);CHKERRQ(ierr);
   ierr = PetscFree(h->intcomposedstate);CHKERRQ(ierr);

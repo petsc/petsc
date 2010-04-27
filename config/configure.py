@@ -12,7 +12,7 @@ if 'LC_LOCAL' in os.environ and os.environ['LC_LOCAL'] != '' and os.environ['LC_
 if 'LANG' in os.environ and os.environ['LANG'] != '' and os.environ['LANG'] != 'en_US' and os.environ['LANG'] != 'en_US.UTF-8': os.environ['LANG'] = 'en_US.UTF-8'
 
 if not hasattr(sys, 'version_info') or not sys.version_info[1] >= 2 or not sys.version_info[0] >= 2:
-  print '*** You must have Python version 2.2 or higher to run config/configure.py *****'
+  print '*** You must have Python version 2.2 or higher to run ./configure *****'
   print '*          Python is easy to install for end users or sys-admin.              *'
   print '*                  http://www.python.org/download/                            *'
   print '*                                                                             *'
@@ -73,7 +73,7 @@ def chkbrokencygwin():
     buf = os.popen('/usr/bin/cygcheck.exe -c cygwin').read()
     if buf.find('1.5.11-1') > -1:
       print '==============================================================================='
-      print ' *** cygwin-1.5.11-1 detected. config/configure.py fails with this version ***'
+      print ' *** cygwin-1.5.11-1 detected. ./configure fails with this version ***'
       print ' *** Please upgrade to cygwin-1.5.12-1 or newer version. This can  ***'
       print ' *** be done by running cygwin-setup, selecting "next" all the way.***'
       print '==============================================================================='
@@ -83,7 +83,7 @@ def chkbrokencygwin():
 def chkusingwindowspython():
   if os.path.exists('/usr/bin/cygcheck.exe') and sys.platform != 'cygwin':
     print '==============================================================================='
-    print ' *** Non-cygwin python detected. Please rerun config/configure.py **'
+    print ' *** Non-cygwin python detected. Please rerun ./configure **'
     print ' *** with cygwin-python. ***'
     print '==============================================================================='
     sys.exit(3)
@@ -97,7 +97,7 @@ def chkcygwinpythonver():
       extraLogs.append('''\
 ===============================================================================
 ** Cygwin-python-2.4/2.5/2.6 detected. Threads do not work correctly with this
-** version. Disabling thread usage for this run of config/configure.py *******
+** version. Disabling thread usage for this run of ./configure *******
 ===============================================================================''')
   return 0
 
@@ -115,7 +115,7 @@ def chkrhl9():
       extraLogs.append('''\
 ==============================================================================
    *** RHL9 detected. Threads do not work correctly with this distribution ***
-   ****** Disabling thread usage for this run of config/configure.py *********
+   ****** Disabling thread usage for this run of ./configure *********
 ===============================================================================''')
   return 0
 
@@ -227,7 +227,7 @@ def petsc_configure(configure_options):
       elif output.find('Cannot resolve host') >= 0:
         print '==============================================================================='
         print '''** Unable to download BuildSystem. You must be off the network.'''
-        print '''** Connect to the internet and run config/configure.py again.'''
+        print '''** Connect to the internet and run ./configure again.'''
         print '==============================================================================='
       else:
         print '==============================================================================='
@@ -275,7 +275,7 @@ def petsc_configure(configure_options):
     emsg = str(e)
     if not emsg.endswith('\n'): emsg = emsg+'\n'
     msg ='*******************************************************************************\n'\
-    +'                ERROR in COMMAND LINE ARGUMENT to config/configure.py \n' \
+    +'                ERROR in COMMAND LINE ARGUMENT to ./configure \n' \
     +'-------------------------------------------------------------------------------\n'  \
     +emsg+'*******************************************************************************\n'
     se = ''
@@ -283,7 +283,7 @@ def petsc_configure(configure_options):
     emsg = str(e)
     if not emsg.endswith('\n'): emsg = emsg+'\n'
     msg ='*******************************************************************************\n'\
-    +'                     UNABLE to FIND MODULE for config/configure.py \n' \
+    +'                     UNABLE to FIND MODULE for ./configure \n' \
     +'-------------------------------------------------------------------------------\n'  \
     +emsg+'*******************************************************************************\n'
     se = ''
@@ -291,7 +291,7 @@ def petsc_configure(configure_options):
     emsg = str(e)
     if not emsg.endswith('\n'): emsg = emsg+'\n'
     msg ='*******************************************************************************\n'\
-    +'                    UNABLE to EXECUTE BINARIES for config/configure.py \n' \
+    +'                    UNABLE to EXECUTE BINARIES for ./configure \n' \
     +'-------------------------------------------------------------------------------\n'  \
     +emsg+'*******************************************************************************\n'
     se = ''

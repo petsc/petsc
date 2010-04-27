@@ -127,7 +127,7 @@ EXTERN_C_END
   MAT_SOLVER_SPOOLES - "spooles" - a matrix type providing direct solvers (LU and Cholesky) for distributed symmetric
   and non-symmetric  matrices via the external package Spooles.
 
-  If Spooles is installed (run config/configure.py with the option --download-spooles)
+  If Spooles is installed (run ./configure with the option --download-spooles)
 
   Options Database Keys:
 + -mat_spooles_tau <tau> - upper bound on the magnitude of the largest element in L or U

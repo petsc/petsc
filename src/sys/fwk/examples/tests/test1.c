@@ -1,4 +1,4 @@
-#include "petscfwk.h"
+#include "petsc.h"
 
 #undef  __FUNCT__ 
 #define __FUNCT__ "main"
@@ -21,6 +21,10 @@ PetscErrorCode main(int argc, char *argv[]) {
   CHKERRQ(ierr);
   ierr = PetscFwkRegisterComponent(fwk, 
                                    "${PETSC_DIR}/${PETSC_ARCH}/lib/libtestcomponents.so:TestIIC");
+  CHKERRQ(ierr);
+  /*
+  ierr = PetscFwkRegisterComponent(fwk, "./testcomponents.py:TestIIIA");
+  */
   CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "Component initialization order:\n"); CHKERRQ(ierr);
   ierr = PetscFwkViewConfigurationOrder(fwk, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);

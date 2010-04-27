@@ -136,11 +136,13 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
 
    Level: beginner
 
-   Notes: Reference: van der Vorst, SIAM J. Sci. Stat. Comput., 1992.
-          See KSPBCGSL for additional stabilization
+   Notes: See KSPBCGSL for additional stabilization
+          Supports left and right preconditioning but not symmetric
+
+   References: van der Vorst, SIAM J. Sci. Stat. Comput., 1992.
 
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPBCGSL
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPBCGSL, KSPSetPCSide()
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -149,7 +151,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_BCGS(KSP ksp)
 {
   PetscFunctionBegin;
   ksp->data                 = (void*)0;
-  ksp->pc_side              = PC_LEFT;
   ksp->ops->setup           = KSPSetUp_BCGS;
   ksp->ops->solve           = KSPSolve_BCGS;
   ksp->ops->destroy         = KSPDefaultDestroy;

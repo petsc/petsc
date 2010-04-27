@@ -1,6 +1,5 @@
 #define PETSCTS_DLL
 
-#include "private/matimpl.h"      /*I  "petscmat.h"  I*/
 #include "private/tsimpl.h"        /*I  "petscts.h"  I*/
 
 #undef __FUNCT__  

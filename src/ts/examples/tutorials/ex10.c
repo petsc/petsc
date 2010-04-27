@@ -16,32 +16,40 @@ static const char help[] = "1D nonequilibrium radiation diffusion with Saha ioni
 
 typedef enum {BC_DIRICHLET,BC_NEUMANN,BC_ROBIN} BCType;
 static const char *const BCTypes[] = {"DIRICHLET","NEUMANN","ROBIN","BCType","BC_",0};
+typedef enum {JACOBIAN_ANALYTIC,JACOBIAN_MATRIXFREE,JACOBIAN_FD_COLORING,JACOBIAN_FD_FULL} JacobianType;
+static const char *const JacobianTypes[] = {"ANALYTIC","MATRIXFREE","FD_COLORING","FD_FULL","JacobianType","FD_",0};
+typedef enum {DISCRETIZATION_FD,DISCRETIZATION_FE} DiscretizationType;
+static const char *const DiscretizationTypes[] = {"FD","FE","DiscretizationType","DISCRETIZATION_",0};
 
 typedef struct {
   PetscScalar E;                /* radiation energy */
   PetscScalar T;                /* material temperature */
 } RDNode;
 
+typedef struct {
+  PetscReal meter,kilogram,second,Kelvin; /* Fundamental units */
+  PetscReal Joule,Watt;                   /* Derived units */
+} RDUnit;
+
 typedef struct _n_RD *RD;
 
 struct _n_RD {
-  void (*MaterialEnergy)(RD,const RDNode*,const RDNode*,PetscScalar*,PetscScalar*);
-  DA da;
-  PetscTruth monitor_residual;
-  PetscTruth fd_jacobian;
-  PetscInt   initial;
-  BCType     leftbc;
-  PetscTruth view_draw;
-  char       view_binary[PETSC_MAX_PATH_LEN];
-  PetscTruth endpoint;
+  void           (*MaterialEnergy)(RD,const RDNode*,const RDNode*,PetscScalar*,PetscScalar*);
+  DA             da;
+  PetscTruth     monitor_residual;
+  DiscretizationType discretization;
+  JacobianType   jacobian;
+  PetscInt       initial;
+  BCType         leftbc;
+  PetscTruth     view_draw;
+  char           view_binary[PETSC_MAX_PATH_LEN];
+  PetscTruth     endpoint;
+  RDUnit         unit;
 
-  struct {
-    PetscReal meter,kilogram,second,Kelvin; /* Fundamental units */
-    PetscReal Joule,Watt;                   /* Derived units */
-  } unit;
   /* model constants, see Table 2 and RDCreate() */
   PetscReal rho,K_R,K_p,I_H,m_p,m_e,h,k,c,sigma_b,beta,gamma;
 
+  /* Domain and boundary conditions */
   PetscReal Eapplied;           /* Radiation flux from the left */
   PetscReal L;                  /* Length of domain */
   PetscReal final_time;
@@ -184,8 +192,8 @@ static PetscScalar RDDiffusion(RD rd,PetscReal hx,RDNode *x,PetscInt i)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "RDIFunction"
-static PetscErrorCode RDIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
+#define __FUNCT__ "RDIFunction_FD"
+static PetscErrorCode RDIFunction_FD(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
   RD             rd = (RD)ctx;
@@ -237,7 +245,7 @@ static PetscErrorCode RDIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *c
   ierr = DAVecGetArray(rd->da,F,&f);CHKERRQ(ierr);
   ierr = DAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
 
-  hx = rd->L / info.mx;
+  hx = rd->L / (info.mx-1);
 
   for (i=info.xs; i<info.xs+info.xm; i++) {
     PetscReal rho = rd->rho;
@@ -291,6 +299,153 @@ static PetscErrorCode RDIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *c
   ierr = DARestoreLocalVector(rd->da,&Xloc);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(rd->da,&X0loc);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(rd->da,&Xloc_t);CHKERRQ(ierr);
+
+  if (rd->monitor_residual) {ierr = RDStateView(rd,X,Xdot,F);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+void RDEvaluate(PetscReal interp[][2],PetscReal deriv[][2],PetscInt q,RDNode *x,PetscInt i,RDNode *n,RDNode *nx)
+{
+  PetscInt j;
+  n->E = 0; n->T = 0; nx->E = 0; nx->T = 0;
+  for (j=0; j<2; j++) {
+    n->E += interp[q][j] * x[i+j].E;
+    n->T += interp[q][j] * x[i+j].T;
+    nx->E += deriv[q][j] * x[i+j].E;
+    nx->T += deriv[q][j] * x[i+j].T;
+  }
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "RDIFunction_FE"
+static PetscErrorCode RDIFunction_FE(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
+{
+  const PetscReal refinterp[2][2] = {{0.78867513459481287,0.21132486540518713},{0.21132486540518713,0.78867513459481287}},refderiv[2][2] = {{-1.,1.},{-1.,1.}};
+  const PetscInt nq = 2;
+  PetscErrorCode ierr;
+  RD             rd = (RD)ctx;
+  RDNode         *x,*x0,*xdot,*f;
+  Vec            X0loc,Xloc,Xloc_t,Floc;
+  PetscReal      hx,min,Theta,dt,weight[2],interp[2][2],deriv[2][2];
+  PetscTruth     istheta;
+  DALocalInfo    info;
+  PetscInt       i,j,k,q;
+
+  PetscFunctionBegin;
+  ierr = VecMin(X,PETSC_NULL,&min);CHKERRQ(ierr);
+  if (min < 0) {
+    SNES snes;
+    ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+    ierr = SNESSetFunctionDomainError(snes);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+  ierr = DAGetLocalVector(rd->da,&Xloc);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(rd->da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(rd->da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
+
+  ierr = DAGetLocalVector(rd->da,&Xloc_t);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(rd->da,Xdot,INSERT_VALUES,Xloc_t);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(rd->da,Xdot,INSERT_VALUES,Xloc_t);CHKERRQ(ierr);
+
+  /*
+    The following is a hack to subvert TSTHETA which is like an implicit midpoint method to behave more like a trapezoid
+    rule.  These methods have equivalent linear stability, but the nonlinear stability is somewhat different.  The
+    radiation system is inconvenient to write in explicit form because the ionization model is "on the left".
+   */
+  ierr = PetscTypeCompare((PetscObject)ts,TSTHETA,&istheta);CHKERRQ(ierr);
+  if (istheta && rd->endpoint) {
+    ierr = TSThetaGetTheta(ts,&Theta);CHKERRQ(ierr);
+  } else {
+    Theta = 1.;
+  }
+  ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
+  ierr = DAGetLocalVector(rd->da,&X0loc);CHKERRQ(ierr);
+  ierr = VecWAXPY(X0loc,-Theta*dt,Xloc_t,Xloc);CHKERRQ(ierr); /* back out the value at the start of this step */
+  if (rd->endpoint) {
+    ierr = VecWAXPY(Xloc,dt,Xloc_t,X0loc);CHKERRQ(ierr);      /* move the abscissa to the end of the step */
+  }
+
+  ierr = DAGetLocalVector(rd->da,&Floc);CHKERRQ(ierr);
+  ierr = VecZeroEntries(Floc);CHKERRQ(ierr);
+
+  ierr = DAVecGetArray(rd->da,Xloc,&x);CHKERRQ(ierr);
+  ierr = DAVecGetArray(rd->da,X0loc,&x0);CHKERRQ(ierr);
+  ierr = DAVecGetArray(rd->da,Xloc_t,&xdot);CHKERRQ(ierr);
+  ierr = DAVecGetArray(rd->da,Floc,&f);CHKERRQ(ierr);
+  ierr = DAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
+
+  hx = rd->L / (info.mx-1);
+  for (q=0; q<nq; q++) {
+    weight[q] = 0.5 * hx;
+    for (j=0; j<2; j++) {
+      interp[q][j] = refinterp[q][j];
+      deriv[q][j] = refderiv[q][j] / hx;
+    }
+  }
+
+  for (i=info.xs; i<info.xs+info.xm-1 && i<info.mx-1; i++) {
+    for (q=0; q<nq; q++) {
+      PetscReal rho = rd->rho;
+      PetscScalar Em_t,rad,D_r,D0_r;
+      RDNode n,n0,nx,n0x,nt,ntx;
+      RDEvaluate(interp,deriv,q,x,i,&n,&nx);
+      RDEvaluate(interp,deriv,q,x0,i,&n0,&n0x);
+      RDEvaluate(interp,deriv,q,xdot,i,&nt,&ntx);
+
+      rad = (1.-Theta)*RDRadiation(rd,&n0) + Theta*RDRadiation(rd,&n);
+
+      if (rd->endpoint) {
+        PetscScalar Em0,Em1;
+        RDMaterialEnergy(rd,&n0,&nt,&Em0,PETSC_NULL);
+        RDMaterialEnergy(rd,&n,&nt,&Em1,PETSC_NULL);
+        Em_t = (Em1 - Em0) / dt;
+      } else {
+        RDMaterialEnergy(rd,&n,&nt,PETSC_NULL,&Em_t);
+      }
+
+#if 0                           /* Need to understand boundary conditions, just Homogeneous Neumann here */
+      if (i == 0) {               /* Left boundary condition */
+        RDNode n;
+        PetscScalar sigma_R;
+        n.E = 0.5*(x[i].E + x[i+1].E);
+        n.T = 0.5*(x[i].T + x[i+1].T);
+        RDSigma_R(rd,&n,&sigma_R);
+        switch (rd->leftbc) {
+          case BC_ROBIN:
+            f[i].E = hx*(x[i].E - (2./(3.*rho*sigma_R) * (x[i+1].E - x[i].E)/hx) - rd->Eapplied);
+            break;
+          case BC_NEUMANN:
+            f[i].E = x[i+1].E - x[i].E;
+            break;
+          default: SETERRQ1(PETSC_ERR_SUP,"Case %D",rd->initial);
+        }
+      }
+#endif
+
+      RDDiffusionCoefficient(rd,&n0,&n0x,&D0_r);
+      RDDiffusionCoefficient(rd,&n,&nx,&D_r);
+      for (k=0; k<2; k++) {
+        f[i+k].E += (deriv[q][k] * weight[q] * ((1.-Theta)*D0_r*n0x.E + Theta*D_r*nx.E)
+                     + interp[q][k] * weight[q] * (nt.E - rad));
+        f[i+k].T += interp[q][k] * weight[q] * (rho * Em_t + rad);
+      }
+    }
+  }
+  ierr = DAVecRestoreArray(rd->da,Xloc,&x);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(rd->da,X0loc,&x0);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(rd->da,Xloc_t,&xdot);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(rd->da,Floc,&f);CHKERRQ(ierr);
+
+  ierr = VecZeroEntries(F);CHKERRQ(ierr);
+  ierr = DALocalToGlobalBegin(rd->da,Floc,F);CHKERRQ(ierr);
+  ierr = DALocalToGlobalEnd(rd->da,Floc,F);CHKERRQ(ierr);
+
+  ierr = DARestoreLocalVector(rd->da,&Xloc);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(rd->da,&X0loc);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(rd->da,&Xloc_t);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(rd->da,&Floc);CHKERRQ(ierr);
 
   if (rd->monitor_residual) {ierr = RDStateView(rd,X,Xdot,F);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -409,7 +564,8 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
     Watt     = rd->unit.Watt;
 
     ierr = PetscOptionsTruth("-rd_monitor_residual","Display residuals every time they are evaluated","",rd->monitor_residual,&rd->monitor_residual,0);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-rd_fd_jacobian","Use a finite difference Jacobian (ghosted and colored)","",rd->fd_jacobian,&rd->fd_jacobian,0);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-rd_discretization","Discretization type","",DiscretizationTypes,(PetscEnum)rd->discretization,(PetscEnum*)&rd->discretization,0);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-rd_jacobian","Type of finite difference Jacobian","",JacobianTypes,(PetscEnum)rd->jacobian,(PetscEnum*)&rd->jacobian,0);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-rd_initial","Initial condition (1=Marshak, 2=Blast, 3=Marshak+)","",rd->initial,&rd->initial,0);CHKERRQ(ierr);
     switch (rd->initial) {
       case 1:
@@ -491,11 +647,12 @@ int main(int argc, char *argv[])
   PetscErrorCode ierr;
   RD             rd;
   TS             ts;
+  SNES           snes;
   Vec            X;
   Mat            A,B;
   PetscInt       steps;
   PetscReal      ftime;
-  MatFDColoring  matfdcoloring;
+  MatFDColoring  matfdcoloring = 0;
 
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   ierr = RDCreate(PETSC_COMM_WORLD,&rd);CHKERRQ(ierr);
@@ -506,7 +663,14 @@ int main(int argc, char *argv[])
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSTHETA);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,RDIFunction,rd);CHKERRQ(ierr);
+  switch (rd->discretization) {
+    case DISCRETIZATION_FD:
+      ierr = TSSetIFunction(ts,RDIFunction_FD,rd);CHKERRQ(ierr);
+      break;
+    case DISCRETIZATION_FE:
+      ierr = TSSetIFunction(ts,RDIFunction_FE,rd);CHKERRQ(ierr);
+      break;
+  }
   ierr = TSSetIJacobian(ts,B,B,0,rd);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,10000,rd->final_time);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
@@ -514,16 +678,25 @@ int main(int argc, char *argv[])
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   A = B;
-  if (rd->fd_jacobian) {
-    SNES           snes;
-    ISColoring     iscoloring;
-    ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-    ierr = DAGetColoring(rd->da,IS_COLORING_GHOSTED,MATAIJ,&iscoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringCreate(B,iscoloring,&matfdcoloring);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode(*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,A,B,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  switch (rd->jacobian) {
+    case JACOBIAN_ANALYTIC:
+      SETERRQ(PETSC_ERR_SUP,"No analytic Jacobian yet");
+      break;
+    case JACOBIAN_MATRIXFREE:
+      break;
+    case JACOBIAN_FD_COLORING: {
+      ISColoring     iscoloring;
+      ierr = DAGetColoring(rd->da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
+      ierr = MatFDColoringCreate(B,iscoloring,&matfdcoloring);CHKERRQ(ierr);
+      ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+      ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode(*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
+      ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
+      ierr = SNESSetJacobian(snes,A,B,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
+    } break;
+    case JACOBIAN_FD_FULL:
+      ierr = SNESSetJacobian(snes,A,B,SNESDefaultComputeJacobian,ts);CHKERRQ(ierr);
+      break;
   }
 
   ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);

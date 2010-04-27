@@ -180,8 +180,8 @@ static PetscErrorCode PCDestroy_Cholesky(PC pc)
   if (!dir->inplace && ((PC_Factor*)dir)->fact) {ierr = MatDestroy(((PC_Factor*)dir)->fact);CHKERRQ(ierr);}
   if (dir->row) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
   if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
-  ierr = PetscStrfree(((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
-  ierr = PetscStrfree(((PC_Factor*)dir)->solvertype);CHKERRQ(ierr);
+  ierr = PetscFree(((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
+  ierr = PetscFree(((PC_Factor*)dir)->solvertype);CHKERRQ(ierr);
   ierr = PetscFree(dir);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

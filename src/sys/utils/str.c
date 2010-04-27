@@ -327,8 +327,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrcasecmp(const char a[],const char b[],Pet
     ierr = PetscStrtolower(aa);CHKERRQ(ierr);
     ierr = PetscStrtolower(bb);CHKERRQ(ierr);
     ierr = PetscStrcmp(aa,bb,t);CHKERRQ(ierr);
-    ierr = PetscStrfree(aa);CHKERRQ(ierr);
-    ierr = PetscStrfree(bb);CHKERRQ(ierr);
+    ierr = PetscFree(aa);CHKERRQ(ierr);
+    ierr = PetscFree(bb);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 #endif
@@ -744,21 +744,4 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrreplace(MPI_Comm comm,const char aa[],cha
   PetscFunctionReturn(0);
 }
 
-/*MC
-   PetscStrfree - Frees a string (if it is not null)
 
-   Synopsis:
-   PetscErrorCode PetscStrfree(char *s)
-
-   Not Collective
-
-   Input Parameter:
-.  s - pointer to string
-
-   Level: intermediate
-
-  Concepts: string free
-  
-.seealso: PetscStrncpy(), PetscStrcat(), PetscStrncat(), PetscStrallocpy()
-
-M*/

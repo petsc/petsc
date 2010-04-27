@@ -29,7 +29,7 @@ PetscErrorCode PFDestroy_String(void *value)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrfree(value);CHKERRQ(ierr);
+  ierr = PetscFree(value);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -62,7 +62,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFStringCreateFunction(PF pf,char *string,void
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = PetscStrfree(pf->data);CHKERRQ(ierr);
+  ierr = PetscFree(pf->data);CHKERRQ(ierr);
   ierr = PetscStrallocpy(string,(char**)&pf->data);CHKERRQ(ierr);
 
   /* create the new C function and compile it */

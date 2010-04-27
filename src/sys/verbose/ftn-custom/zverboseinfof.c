@@ -31,7 +31,7 @@ void PETSC_STDCALL petscinfo_(CHAR text PETSC_MIXED_LEN(len1),PetscErrorCode *ie
   FIXCHAR(text,len1,c1);
   *ierr = PetscFixSlashN(c1,&tmp);if (*ierr) return;
   *ierr = PetscInfo(PETSC_NULL,tmp);if (*ierr) return;
-  *ierr = PetscStrfree(tmp);if (*ierr) return;
+  *ierr = PetscFree(tmp);if (*ierr) return;
   FREECHAR(text,c1);
 }
 

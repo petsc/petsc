@@ -230,7 +230,7 @@ static PetscErrorCode PCDestroy_Shell(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrfree(shell->name);CHKERRQ(ierr);
+  ierr = PetscFree(shell->name);CHKERRQ(ierr);
   if (shell->destroy) {
     ierr  = (*shell->destroy)(pc);CHKERRQ(ierr);
   }
@@ -409,7 +409,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetName_Shell(PC pc,const char name[])
 
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
-  ierr = PetscStrfree(shell->name);CHKERRQ(ierr);    
+  ierr = PetscFree(shell->name);CHKERRQ(ierr);    
   ierr = PetscStrallocpy(name,&shell->name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

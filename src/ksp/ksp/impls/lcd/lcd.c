@@ -206,6 +206,7 @@ PetscErrorCode KSPSetFromOptions_LCD(KSP ksp)
 
    Level: beginner
 
+    Notes: Support only for left preconditioning
 
     References: 
    - J.Y. Yuan, G.H.Golub, R.J. Plemmons, and W.A.G. Cecilio. Semiconjugate
@@ -243,6 +244,9 @@ PetscErrorCode KSPCreate_LCD(KSP ksp)
   PetscFunctionBegin;
   ierr = PetscNewLog(ksp,KSP_LCD,&lcd);CHKERRQ(ierr);
   ksp->data                      = (void*)lcd;
+  if (ksp->pc_side != PC_LEFT) {
+     ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for LCD to left!\n");CHKERRQ(ierr);
+  }
   ksp->pc_side                   = PC_LEFT;
   lcd->restart                   = 30;
   lcd->haptol                    = 1.0e-30;

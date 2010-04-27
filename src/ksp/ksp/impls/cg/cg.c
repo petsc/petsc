@@ -415,8 +415,8 @@ EXTERN_C_END
 
    Level: beginner
 
-   Notes: The PCG method requires both the matrix and preconditioner to 
-          be symmetric positive (semi) definite
+   Notes: The PCG method requires both the matrix and preconditioner to be symmetric positive (semi) definite
+          Only left preconditioning is supported.
 
    References:
    Methods of Conjugate Gradients for Solving Linear Systems, Magnus R. Hestenes and Eduard Stiefel,
@@ -443,6 +443,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CG(KSP ksp)
   cg->type                       = KSP_CG_HERMITIAN;
 #endif
   ksp->data                      = (void*)cg;
+  if (ksp->pc_side != PC_LEFT) {
+    ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for CG to left!\n");CHKERRQ(ierr);
+  }
   ksp->pc_side                   = PC_LEFT;
 
   /*

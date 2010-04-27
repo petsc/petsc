@@ -276,9 +276,8 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 
    Level: beginner
 
-   Notes: Reference: The Improved BiCGStab Method for Large and Sparse Unsymmetric Linear Systems on Parallel Distributed Memory
-                     Architectures. L. T. Yand and R. Brent, Proceedings of the Fifth International Conference on Algorithms and 
-                     Architectures for Parallel Processing, 2002, IEEE.
+   Notes: Supports left and right preconditioning 
+
           See KSPBCGSL for additional stabilization
 
           Unlike the Bi-CG-stab algorithm, this requires one multiplication be the transpose of the operator
@@ -291,6 +290,10 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 
           This is not supported for complex numbers.
 
+   Reference: The Improved BiCGStab Method for Large and Sparse Unsymmetric Linear Systems on Parallel Distributed Memory
+                     Architectures. L. T. Yand and R. Brent, Proceedings of the Fifth International Conference on Algorithms and 
+                     Architectures for Parallel Processing, 2002, IEEE.
+
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPBCGSL, KSPIBCGS, KSPSetLagNorm()
 M*/
 EXTERN_C_BEGIN
@@ -300,7 +303,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_IBCGS(KSP ksp)
 {
   PetscFunctionBegin;
   ksp->data                 = (void*)0;
-  ksp->pc_side              = PC_LEFT;
   ksp->ops->setup           = KSPSetUp_IBCGS;
   ksp->ops->solve           = KSPSolve_IBCGS;
   ksp->ops->destroy         = KSPDefaultDestroy;

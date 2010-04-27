@@ -72,7 +72,7 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
 
   Level: beginner
 
-   PETSc must have been config/configure.py with the option --download-sprng to use
+   PETSc must have been ./configure with the option --download-sprng to use
    this random number generator.
 
    This is NOT currently using a parallel random number generator. Sprng does have

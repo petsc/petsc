@@ -26,7 +26,7 @@ class Configure(PETSc.package.NewPackage):
     raise RuntimeError('--download-valgrind not supported\n')
 
   def configure(self):
-    '''By default we look for valgrind, but don't stop if it is not found'''
+    '''By default we look for valgrind, but do not stop if it is not found'''
     self.consistencyChecks()
     if self.framework.argDB['with-'+self.package]:
       # If clanguage is c++, test external packages with the c++ compiler
@@ -34,7 +34,11 @@ class Configure(PETSc.package.NewPackage):
       try:
         self.executeTest(self.configureLibrary)
       except:
-        pass
+        if self.setCompilers.isDarwin() or self.setCompilers.isLinux():
+          self.logPrintBox('It appears you do not have valgrind installed on your system.\n\
+We HIGHLY recommend you install it from www.valgrind.org\n\
+Or install valgrind-devel or equivalent using your package manager.\n\
+Then rerun ./configure')
       self.libraries.popLanguage()
     else:
       self.executeTest(self.alternateConfigureLibrary)

@@ -248,7 +248,7 @@ class Configure(config.base.Configure):
       if self.compilers.fortranIsF90:
         self.addMakeMacro('PACKAGES_MODULES_INCLUDES',self.headers.toStringModulesNoDupes(includes))    
     
-    self.addMakeMacro('INSTALL_DIR',self.installdir)
+    self.addMakeMacro('DESTDIR',self.installdir)
     self.addDefine('LIB_DIR','"'+os.path.join(self.installdir,'lib')+'"')
 
     if self.framework.argDB['with-single-library']:
@@ -513,15 +513,14 @@ class Configure(config.base.Configure):
 
   def configureInstall(self):
     '''Setup the directories for installation'''
+    self.addMakeRule('shared_nomesg_noinstall','shared_nomesg')            
     if self.framework.argDB['prefix']:
       self.installdir = self.framework.argDB['prefix']
-      self.addMakeRule('shared_nomesg_noinstall','')
       self.addMakeRule('shared_install','',['-@echo "Now to install the libraries do:"',\
                                               '-@echo "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} install"',\
                                               '-@echo "========================================="'])
     else:
       self.installdir = os.path.join(self.petscdir.dir,self.arch.arch)
-      self.addMakeRule('shared_nomesg_noinstall','shared_nomesg')            
       self.addMakeRule('shared_install','',['-@echo "Now to check if the libraries are working do:"',\
                                               '-@echo "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} test"',\
                                               '-@echo "========================================="'])

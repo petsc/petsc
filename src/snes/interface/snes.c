@@ -2933,7 +2933,7 @@ static PetscErrorCode SNESKSPEW_PostSolve(SNES snes, KSP ksp, Vec b, Vec x)
   ierr = KSPGetTolerances(ksp,&kctx->rtol_last,0,0,0);CHKERRQ(ierr);
   ierr = SNESGetFunctionNorm(snes,&kctx->norm_last);CHKERRQ(ierr);
   if (kctx->version == 1) {
-    ierr = KSPGetPreconditionerSide(ksp,&pcside);CHKERRQ(ierr);
+    ierr = KSPGetPCSide(ksp,&pcside);CHKERRQ(ierr);
     if (pcside == PC_RIGHT) { /* XXX Should we also test KSP_UNPRECONDITIONED_NORM ? */
       /* KSP residual is true linear residual */
       ierr = KSPGetResidualNorm(ksp,&kctx->lresid_last);CHKERRQ(ierr);
@@ -2991,6 +2991,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetDM(SNES snes,DM dm)
   ierr = PetscObjectReference((PetscObject)snes->dm);CHKERRQ(ierr);
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,dm);CHKERRQ(ierr);
+  ierr = KSPSetDMActive(ksp,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -43,7 +43,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectGetComm(PetscObject obj,MPI_Comm *comm
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectGetTabLevel"
-/*@C
+/*@
    PetscObjectGetTabLevel - Gets the number of tabs that ASCII output for that object use
 
    Not Collective
@@ -73,7 +73,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectGetTabLevel(PetscObject obj,PetscInt *
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    PetscObjectIncrementTabLevel - Sets the number of tabs that ASCII output for that object use based on
          the tablevel of another object. This should be called immediately after the object is created.
 

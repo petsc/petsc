@@ -252,6 +252,7 @@ int main(int argc,char **args)
       ierr = VecDestroy(min);CHKERRQ(ierr);
     }
 
+    //  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                       Setup solve for system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
@@ -350,7 +351,6 @@ int main(int argc,char **args)
       }
       ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
       ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
-
       /*
        Write output (optinally using table for solver details).
         - PetscPrintf() handles output for multiprocessor jobs 

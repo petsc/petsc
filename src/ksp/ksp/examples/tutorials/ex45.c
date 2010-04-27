@@ -42,7 +42,7 @@ int main(int argc,char **argv)
   ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,-7,-7,-7,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);  
   ierr = DMSetInitialGuess((DM)da,ComputeInitialGuess);CHKERRQ(ierr);
   ierr = DMSetFunction((DM)da,ComputeRHS);CHKERRQ(ierr);
-  ierr = DMSetJacobian((DM)da,ComputeMatrix);CHKERRQ(ierr);
+  //  ierr = DMSetJacobian((DM)da,ComputeMatrix);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,(DM)da);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
 
@@ -79,6 +79,33 @@ PetscErrorCode ComputeRHS(DM dm,Vec x,Vec b)
   ierr = DAGetInfo((DA)dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
   h    = 1.0/((mx-1)*(my-1)*(mz-1));
   ierr = VecSet(b,h);CHKERRQ(ierr);
+
+  if (x) {
+    PetscScalar ***xx,***bb;
+    ierr = DAVecGetArray((DA)dm,x,&xx);CHKERRQ(ierr);
+    ierr = DAVecGetArray((DA)dm,b,&bb);CHKERRQ(ierr);
+  DA             da = (DA)dm;
+  PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs;
+  PetscScalar    Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
+
+  ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);  
+  Hx = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
+  HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
+  ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  
+  for (k=zs; k<zs+zm; k++){
+    for (j=ys; j<ys+ym; j++){
+      for(i=xs; i<xs+xm; i++){
+	if (!(i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1)){
+          bb[k][j][i] -= +HxHydHz*xx[k-1][j][i] + HxHzdHy*xx[k][j-1][i] + HyHzdHx*xx[k][j][i-1] + HyHzdHx*xx[k][j][i+1] + HxHzdHy*xx[k][j+1][i] + HxHydHz*xx[k+1][j][i];
+        }
+        bb[k][j][i] += 2.0*(HxHydHz + HxHzdHy + HyHzdHx)*xx[k][j][i];
+      }
+    }
+  }
+    ierr = DAVecRestoreArray((DA)dm,x,&xx);CHKERRQ(ierr);
+    ierr = DAVecRestoreArray((DA)dm,b,&bb);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
     

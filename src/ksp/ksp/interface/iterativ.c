@@ -268,7 +268,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,
   ierr = VecNorm(work,NORM_2,&scnorm);CHKERRQ(ierr);
   ierr = VecDestroy(work);CHKERRQ(ierr);
   ierr = VecNorm(ksp->vec_rhs,NORM_2,&bnorm);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP preconditioned resid norm %14.12e true resid norm %14.12e ||Ae||/||Ax|| %14.12e\n",n,rnorm,scnorm,scnorm/bnorm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP preconditioned resid norm %14.12e true resid norm %14.12e ||r(i)||/||b|| %14.12e\n",n,rnorm,scnorm,scnorm/bnorm);CHKERRQ(ierr);
   if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -962,10 +962,37 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDM(KSP ksp,DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (ksp->dm) {ierr = DMDestroy(ksp->dm);CHKERRQ(ierr);}
-  ksp->dm = dm;
+  ksp->dm       = dm;
+  ksp->dmActive = PETSC_TRUE;
   ierr = PetscObjectReference((PetscObject)ksp->dm);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetDM(pc,dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetDMActive"
+/*@
+   KSPSetDMActive - Indicates the DM should be used to generate the linear system matrix and right hand side
+
+   Collective on KSP
+
+   Input Parameters:
++  ksp - the preconditioner context
+-  flg - use the DM
+
+   Level: intermediate
+
+
+.seealso: KSPGetDM(), KSPSetDM(), KSPGetDM()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDMActive(KSP ksp,PetscTruth flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  ksp->dmActive = flg;
   PetscFunctionReturn(0);
 }
 

@@ -161,8 +161,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGDestroy(DMMG *dmmg)
     if (dmmg[i]->R) {ierr = MatDestroy(dmmg[i]->R);CHKERRQ(ierr);}
   }
   for (i=0; i<nlevels; i++) {
-    ierr = PetscStrfree(dmmg[i]->prefix);CHKERRQ(ierr);
-    ierr = PetscStrfree(dmmg[i]->mtype);CHKERRQ(ierr);
+    ierr = PetscFree(dmmg[i]->prefix);CHKERRQ(ierr);
+    ierr = PetscFree(dmmg[i]->mtype);CHKERRQ(ierr);
     if (dmmg[i]->dm)      {ierr = DMDestroy(dmmg[i]->dm);CHKERRQ(ierr);}
     if (dmmg[i]->x)       {ierr = VecDestroy(dmmg[i]->x);CHKERRQ(ierr);}
     if (dmmg[i]->b)       {ierr = VecDestroy(dmmg[i]->b);CHKERRQ(ierr);}

@@ -68,7 +68,7 @@ E*/
 #define MATSUBMATRIX       "submatrix"
 
 
-#define MATFWK             "matfwk"
+#define MATDD              "matdd"
 
 #define MATIM              "matim"
 
@@ -112,7 +112,7 @@ typedef enum {MAT_FACTOR_NONE, MAT_FACTOR_LU, MAT_FACTOR_CHOLESKY, MAT_FACTOR_IL
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat,const MatSolverPackage,MatFactorType,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactorAvailable(Mat,const MatSolverPackage,MatFactorType,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFactorGetSolverPackage(Mat,const MatSolverPackage*);
-
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactorType(Mat,MatFactorType*);
 
 /* Logging support */
 #define    MAT_FILE_CLASSID 1211216    /* used to indicate matrices in binary files */
@@ -318,16 +318,16 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateComposite(MPI_Comm,PetscInt,co
 typedef enum {MAT_COMPOSITE_ADDITIVE,MAT_COMPOSITE_MULTIPLICATIVE} MatCompositeType;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeSetType(Mat,MatCompositeType);
 
-typedef enum {MATFWK_BLOCK_COMM_DEFAULT = 0, MATFWK_BLOCK_COMM_SELF = -1, MATFWK_BLOCK_COMM_DETERMINE = -2} MatFwkBlockCommType;
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkAIJSetPreallocation(Mat A,PetscInt nz,PetscInt *nnz);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkGetDefaltBlockType(Mat A, const MatType *type);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetDefaltBlockType(Mat A, const MatType type);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetPreallocation_AIJ(Mat A,PetscInt nz,PetscInt *nnz);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkAddBlock(Mat A, PetscInt rowblock, PetscInt colblock, const MatType blockmattype,  MatFwkBlockCommType blockcommtype, Mat *block);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetBlock(Mat A, PetscInt rowblock, PetscInt colblock, Mat block);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkGetBlock(Mat A, PetscInt rowblock, PetscInt colblock, Mat *block);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetScatters(Mat A, PetscInt blockcount, Mat scatters[]);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFwkSetGathers(Mat A, PetscInt blockcount,  Mat gathers[]);
+typedef enum {MATDD_BLOCK_COMM_DEFAULT = 0, MATDD_BLOCK_COMM_SELF = -1, MATDD_BLOCK_COMM_DETERMINE = -2} MatDDBlockCommType;
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDAIJSetPreallocation(Mat A,PetscInt nz,PetscInt *nnz);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDGetDefaltBlockType(Mat A, const MatType *type);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetDefaltBlockType(Mat A, const MatType type);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetPreallocation_AIJ(Mat A,PetscInt nz,PetscInt *nnz);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDAddBlock(Mat A, PetscInt rowblock, PetscInt colblock, const MatType blockmattype,  MatDDBlockCommType blockcommtype, Mat *block);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetBlock(Mat A, PetscInt rowblock, PetscInt colblock, Mat block);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDGetBlock(Mat A, PetscInt rowblock, PetscInt colblock, Mat *block);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetScatters(Mat A, PetscInt blockcount, Mat scatters[]);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetGathers(Mat A, PetscInt blockcount,  Mat gathers[]);
 
 #if defined PETSC_HAVE_MATIM
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIMSetIS(Mat A, IS in, IS out);
@@ -1623,7 +1623,18 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFromOptions(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDCheckPositivity(void*,Vec,Vec,PetscScalar*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetCheckh(Mat,PetscErrorCode (*)(void*,Vec,Vec,PetscScalar*),void*);
 
+/*S
+    MatMFFD - A data structured used to manage the computation of the h differencing parameter for matrix-free 
+              Jacobian vector products
 
+    Notes: MATMFFD is a specific MatType which uses the MatMFFD data structure
+
+           MatMFFD*() methods actually take the Mat as their first argument. Not a MatMFFD data structure
+
+    Level: developer
+
+.seealso: MATMFFD, MatCreateMFFD(), MatMFFDSetFuction(), MatMFFDSetType(), MatMFFDRegister()
+S*/
 typedef struct _p_MatMFFD* MatMFFD;
 
 /*E

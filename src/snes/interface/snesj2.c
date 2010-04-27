@@ -1,6 +1,5 @@
 #define PETSCSNES_DLL
 
-#include "private/matimpl.h"      /*I  "petscmat.h"  I*/
 #include "private/snesimpl.h"    /*I  "petscsnes.h"  I*/
 
 #undef __FUNCT__  

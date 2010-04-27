@@ -2256,6 +2256,34 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeConstrained(Mat mat,Vec x,Vec 
 
   PetscFunctionReturn(0);
 }   
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetFactorType"
+/*@C
+   MatGetFactorType - gets the type of factorization it is
+
+   Note Collective
+   as the flag
+
+   Input Parameters:
+.  mat - the matrix
+
+   Output Parameters:
+.  t - the type, one of MAT_FACTOR_NONE, MAT_FACTOR_LU, MAT_FACTOR_CHOLESKY, MAT_FACTOR_ILU, MAT_FACTOR_ICC,MAT_FACTOR_ILUDT
+
+    Level: intermediate
+
+.seealso:    MatFactorType, MatGetFactor()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactorType(Mat mat,MatFactorType *t)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  *t = mat->factortype;
+  PetscFunctionReturn(0);
+}   
+
 /* ------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetInfo"
@@ -3588,7 +3616,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFactorGetSolverPackage(Mat mat, const MatSo
       Some PETSc matrix formats have alternative solvers available that are contained in alternative packages
      such as pastix, superlu, mumps, spooles etc. 
 
-      PETSc must have been config/configure.py to use the external solver, using the option --download-package
+      PETSc must have been ./configure to use the external solver, using the option --download-package
 
    Level: intermediate
 
@@ -3617,7 +3645,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat mat, const MatSolverPackage t
     if (flag) {
       SETERRQ1(PETSC_ERR_SUP,"Matrix format %s does not have a built-in PETSc direct solver",((PetscObject)mat)->type_name);
     } else {
-      SETERRQ3(PETSC_ERR_SUP,"Matrix format %s does not have a solver %s. Perhaps you must config/configure.py with --download-%s",((PetscObject)mat)->type_name,type,type);
+      SETERRQ3(PETSC_ERR_SUP,"Matrix format %s does not have a solver %s. Perhaps you must ./configure with --download-%s",((PetscObject)mat)->type_name,type,type);
     }
   }
   ierr = (*conv)(mat,ftype,f);CHKERRQ(ierr);
@@ -3643,7 +3671,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat mat, const MatSolverPackage t
       Some PETSc matrix formats have alternative solvers available that are contained in alternative packages
      such as pastix, superlu, mumps, spooles etc. 
 
-      PETSc must have been config/configure.py to use the external solver, using the option --download-package
+      PETSc must have been ./configure to use the external solver, using the option --download-package
 
    Level: intermediate
 
@@ -4858,6 +4886,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetOption(Mat mat,MatOption op,PetscTruth f
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
   if (((int) op) < 0 || ((int) op) >= NUM_MAT_OPTIONS) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Options %d is out of range",(int)op);
+  if (!((PetscObject)mat)->type_name) SETERRQ(PETSC_ERR_ARG_TYPENOTSET,"Cannot set options until type and size have been set, see MatSetType() and MatSetSizes()");
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   switch (op) {
   case MAT_SYMMETRIC:

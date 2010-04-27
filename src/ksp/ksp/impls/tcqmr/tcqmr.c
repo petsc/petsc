@@ -168,6 +168,8 @@ static PetscErrorCode KSPSetUp_TCQMR(KSP ksp)
 
    Level: beginner
 
+  Notes: Supports either left or right preconditioning, but not symmetric
+
   References:
   Transpose-free formulations of Lanczos-type methods for nonsymmetric linear systems, 
   Tony F. Chan, Lisette de Pillis, and Henk van der Vorst, Numerical Algorithms, 	
@@ -184,7 +186,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_TCQMR(KSP ksp)
 {
   PetscFunctionBegin;
   ksp->data                = (void*)0;
-  ksp->pc_side             = PC_LEFT;
   ksp->ops->buildsolution  = KSPDefaultBuildSolution;
   ksp->ops->buildresidual  = KSPDefaultBuildResidual;
   ksp->ops->setup          = KSPSetUp_TCQMR;

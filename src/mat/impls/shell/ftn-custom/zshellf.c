@@ -72,6 +72,20 @@ static PetscErrorCode ourdiagonalscale(Mat mat,Vec l,Vec r)
   return ierr;
 }
 
+static PetscErrorCode ourgetvecs(Mat mat,Vec *l,Vec *r)
+{
+  PetscErrorCode ierr = 0;
+  PetscInt none = -1;
+  if (!l) {
+    (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)mat)->fortran_func_pointers[7]))(&mat,(Vec*)&none,r,&ierr);
+  } else if (!r) {
+    (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)mat)->fortran_func_pointers[7]))(&mat,l,(Vec*)&none,&ierr);
+  } else {
+    (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)mat)->fortran_func_pointers[7]))(&mat,l,r,&ierr);
+  }
+  return ierr;
+}
+
 static PetscErrorCode ourdiagonalset(Mat mat,Vec x,InsertMode ins)
 {
   PetscErrorCode ierr = 0;
@@ -81,7 +95,7 @@ static PetscErrorCode ourdiagonalset(Mat mat,Vec x,InsertMode ins)
 
 void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,PetscErrorCode (PETSC_STDCALL *f)(Mat*,Vec*,Vec*,PetscErrorCode*),PetscErrorCode *ierr)
 {
-  PetscObjectAllocateFortranPointers(*mat,7);
+  PetscObjectAllocateFortranPointers(*mat,8);
   if (*op == MATOP_MULT) {
     *ierr = MatShellSetOperation(*mat,*op,(PetscVoidFunction)ourmult);
     ((PetscObject)*mat)->fortran_func_pointers[0] = (PetscVoidFunction)f;
@@ -103,6 +117,9 @@ void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,PetscErrorCod
   } else if (*op == MATOP_DIAGONAL_SET) {
     *ierr = MatShellSetOperation(*mat,*op,(PetscVoidFunction)ourdiagonalset);
     ((PetscObject)*mat)->fortran_func_pointers[6] = (PetscVoidFunction)f;
+  } else if (*op == MATOP_GET_VECS) {
+    *ierr = MatShellSetOperation(*mat,*op,(PetscVoidFunction)ourgetvecs);
+    ((PetscObject)*mat)->fortran_func_pointers[7] = (PetscVoidFunction)f;
   } else {
     PetscError(__LINE__,"MatShellSetOperation_Fortran",__FILE__,__SDIR__,1,0,
                "Cannot set that matrix operation");

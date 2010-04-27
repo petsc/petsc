@@ -153,7 +153,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
 
    Notes: The operator and the preconditioner must be symmetric for this method. The 
           preconditioner must be POSITIVE-DEFINITE and the operator POSITIVE-SEMIDEFINITE
-
+          Support only for left preconditioning.
 
    References:
    Methods of Conjugate Gradients for Solving Linear Systems, Magnus R. Hestenes and Eduard Stiefel,
@@ -168,7 +168,12 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "KSPCreate_CR"
 PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CR(KSP ksp)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  if (ksp->pc_side != PC_LEFT) {
+     ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for CR to left!\n");CHKERRQ(ierr);
+  }
   ksp->pc_side                   = PC_LEFT;
   ksp->ops->setup                = KSPSetUp_CR;
   ksp->ops->solve                = KSPSolve_CR;

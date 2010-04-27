@@ -29,11 +29,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectSetOptionsPrefix(PetscObject obj,const
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   if (!prefix) {
-    ierr = PetscStrfree(obj->prefix);CHKERRQ(ierr);
+    ierr = PetscFree(obj->prefix);CHKERRQ(ierr);
     obj->prefix = PETSC_NULL;
   } else {
     if (prefix[0] == '-') SETERRQ(PETSC_ERR_ARG_WRONG,"Options prefix should not begin with a hypen");
-    ierr = PetscStrfree(obj->prefix);CHKERRQ(ierr);
+    ierr = PetscFree(obj->prefix);CHKERRQ(ierr);
     ierr = PetscStrallocpy(prefix,&obj->prefix);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

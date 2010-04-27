@@ -40,8 +40,8 @@ static PetscErrorCode PCDestroy_ICC(PC pc)
 
   PetscFunctionBegin;
   if (((PC_Factor*)icc)->fact) {ierr = MatDestroy(((PC_Factor*)icc)->fact);CHKERRQ(ierr);}
-  ierr = PetscStrfree(((PC_Factor*)icc)->ordering);CHKERRQ(ierr);
-  ierr = PetscStrfree(((PC_Factor*)icc)->solvertype);CHKERRQ(ierr);
+  ierr = PetscFree(((PC_Factor*)icc)->ordering);CHKERRQ(ierr);
+  ierr = PetscFree(((PC_Factor*)icc)->solvertype);CHKERRQ(ierr);
   ierr = PetscFree(icc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

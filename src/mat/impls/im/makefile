@@ -3,15 +3,15 @@ ALL: lib
 CPPFLAGS = 
 CFLAGS   = 
 FFLAGS   =
-SOURCEC  = matfwk.c
+SOURCEC  = matim.c
 SOURCEF  = 
-SOURCEH  = matfwk.h
-OBJSC    = matfwk.o
+SOURCEH  = matim.h
+OBJSC    = matim.o
 OBJSF    =
 DIRS     = 
 LIBBASE  = libpetscmat
 MANSEC   = Mat
-LOCDIR   = src/mat/impls/fwk/
+LOCDIR   = src/mat/impls/im/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

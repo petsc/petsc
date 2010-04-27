@@ -223,8 +223,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListAdd(PetscFList *fl,const char name[],co
       ierr = PetscStrcmp(ne->name,name,&founddup);CHKERRQ(ierr);
       if (founddup) { /* found duplicate */
         ierr = PetscFListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
-        ierr = PetscStrfree(ne->path);CHKERRQ(ierr);
-        ierr = PetscStrfree(ne->rname);CHKERRQ(ierr);
+        ierr = PetscFree(ne->path);CHKERRQ(ierr);
+        ierr = PetscFree(ne->rname);CHKERRQ(ierr);
         ne->path    = fpath;
         ne->rname   = fname;
         ne->routine = fnc;
@@ -292,7 +292,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListDestroy(PetscFList *fl)
   entry = *fl;
   while (entry) {
     next = entry->next;
-    ierr = PetscStrfree(entry->path);CHKERRQ(ierr);
+    ierr = PetscFree(entry->path);CHKERRQ(ierr);
     ierr = PetscFree(entry->name);CHKERRQ(ierr);
     ierr = PetscFree(entry->rname);CHKERRQ(ierr);
     ierr = PetscFree(entry);CHKERRQ(ierr);
@@ -389,7 +389,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListFind(PetscFList fl,MPI_Comm comm,const 
 
       if (entry->routine) {
         *r   = entry->routine; 
-        ierr = PetscStrfree(path);CHKERRQ(ierr);
+        ierr = PetscFree(path);CHKERRQ(ierr);
         ierr = PetscFree(function);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       }
@@ -406,7 +406,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListFind(PetscFList fl,MPI_Comm comm,const 
       ierr = PetscDLLibrarySym(comm,&DLLibrariesLoaded,newpath,entry->rname,(void **)r);CHKERRQ(ierr);
       if (*r) {
         entry->routine = *r;
-        ierr = PetscStrfree(path);CHKERRQ(ierr);
+        ierr = PetscFree(path);CHKERRQ(ierr);
         ierr = PetscFree(function);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       } else {
@@ -422,7 +422,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListFind(PetscFList fl,MPI_Comm comm,const 
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
   /* Function never registered; try for it anyway */
   ierr = PetscDLLibrarySym(comm,&DLLibrariesLoaded,path,function,(void **)r);CHKERRQ(ierr);
-  ierr = PetscStrfree(path);CHKERRQ(ierr);
+  ierr = PetscFree(path);CHKERRQ(ierr);
   if (*r) {
     ierr = PetscFListAdd(&fl,name,name,*r);CHKERRQ(ierr);
   }

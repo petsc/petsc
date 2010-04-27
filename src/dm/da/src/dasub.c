@@ -73,6 +73,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetProcessorSubset(DA da,DADirection dir,Pets
   ierr = MPI_Comm_group(((PetscObject)da)->comm,&group);CHKERRQ(ierr);
   ierr = MPI_Group_incl(group,ict,ranks,&subgroup);CHKERRQ(ierr);
   ierr = MPI_Comm_create(((PetscObject)da)->comm,subgroup,comm);CHKERRQ(ierr);
+  ierr = MPI_Group_free(&subgroup);CHKERRQ(ierr);
+  ierr = MPI_Group_free(&group);CHKERRQ(ierr);
   ierr = PetscFree2(owners,ranks);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 

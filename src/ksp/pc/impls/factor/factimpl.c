@@ -93,7 +93,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType_Factor(PC pc,const 
  
   PetscFunctionBegin;
   if (!pc->setupcalled) {
-     ierr = PetscStrfree(dir->ordering);CHKERRQ(ierr);
+     ierr = PetscFree(dir->ordering);CHKERRQ(ierr);
      ierr = PetscStrallocpy(ordering,&dir->ordering);CHKERRQ(ierr);
   } else {
     ierr = PetscStrcmp(dir->ordering,ordering,&flg);CHKERRQ(ierr);
@@ -183,7 +183,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage_Factor(PC pc,const
       SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot change solver matrix package after PC has been setup or used");
     }
   }
-  ierr = PetscStrfree(lu->solvertype);CHKERRQ(ierr);
+  ierr = PetscFree(lu->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(stype,&lu->solvertype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -279,7 +279,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions_Factor(PC pc)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#include "private/matimpl.h"
 #undef __FUNCT__  
 #define __FUNCT__ "PCView_Factor"
 PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
@@ -318,7 +317,9 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  matrix ordering: %s\n",factor->ordering);CHKERRQ(ierr);
     
     if (factor->fact) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  factor fill ratio given %G, needed %G\n",factor->fact->info.fill_ratio_given,factor->fact->info.fill_ratio_needed);CHKERRQ(ierr);
+      MatInfo info;
+      ierr = MatGetInfo(factor->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  factor fill ratio given %G, needed %G\n",info.fill_ratio_given,info.fill_ratio_needed);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"    Factored matrix follows:\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -332,7 +333,9 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
     }
     
   } else if (isstring) {
-    if (factor->factortype == MAT_FACTOR_ILU || factor->factortype == MAT_FACTOR_ICC){
+    MatFactorType t;
+    ierr = MatGetFactorType(factor->fact,&t);CHKERRQ(ierr);
+    if (t == MAT_FACTOR_ILU || t == MAT_FACTOR_ICC){
       ierr = PetscViewerStringSPrintf(viewer," lvls=%D,order=%s",(PetscInt)factor->info.levels,factor->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
     }
   } else {

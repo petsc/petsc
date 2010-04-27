@@ -522,9 +522,11 @@ PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
 -  -ksp_bcgsl_cxpol Use a convex function of the MR and OR polynomials after the BiCG step
 -  -ksp_bcgsl_xres <res> Threshold used to decide when to refresh computed residuals
 
+   Notes: Supports left preconditioning only
+
    Level: beginner
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPFGMRES, KSPBCGS
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPFGMRES, KSPBCGS, KSPSetPCSide()
 
 M*/
 EXTERN_C_BEGIN
@@ -540,6 +542,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_BCGSL(KSP ksp)
   ierr = PetscNewLog(ksp, KSP_BCGSL, &bcgsl);CHKERRQ(ierr);
   ksp->data = (void*)bcgsl;
 
+  if (ksp->pc_side != PC_LEFT) {
+    ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for BCGSL to left!\n");CHKERRQ(ierr);
+  }
   ksp->pc_side              = PC_LEFT;
   ksp->ops->setup           = KSPSetUp_BCGSL;
   ksp->ops->solve           = KSPSolve_BCGSL;

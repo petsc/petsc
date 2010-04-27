@@ -66,20 +66,11 @@
 */
 
 /*MC
-     PCPROMETHEUS - Prometheus (i.e. diagonal scaling preconditioning)
+     PCPROMETHEUS - Prometheus preconditioner
 
-   Options Database Key:
-.    -pc_prometheus_rowmax - use the maximum absolute value in each row as the scaling factor,
-                        rather than the diagonal
+   Level: intermediate
 
-   Level: beginner
-
-  Concepts: Prometheus, diagonal scaling, preconditioners
-
-  Notes: By using KSPSetPreconditionerSide(ksp,PC_SYMMETRIC) or -ksp_symmetric_pc you 
-         can scale each side of the matrix by the squareroot of the diagonal entries.
-
-         Zero entries along the diagonal are replaced with the value 1.0
+  Concepts: Prometheus, preconditioners
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
 M*/

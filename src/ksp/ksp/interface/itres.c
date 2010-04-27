@@ -99,7 +99,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,V
 
 .keywords: KSP, unwind, preconditioner
 
-.seealso: KSPSetPreconditionerSide()
+.seealso: KSPSetPCSide()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPUnwindPreconditioner(KSP ksp,Vec vsoln,Vec vt1)
 {
