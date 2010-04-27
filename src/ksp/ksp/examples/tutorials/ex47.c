@@ -107,7 +107,7 @@ PetscErrorCode ComputeMatrix(DMMG dmmg,Mat jac,Mat B)
     for (j=ys; j<ys+ym; j++){
       for(i=xs; i<xs+xm; i++){
         row.i = i; row.j = j; row.k = k;
-        if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1){
+        if (k == 10) {
           v[0] = 2.0*(HxHydHz + HxHzdHy + HyHzdHx);
           ierr = MatSetValuesStencil(B,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
         } else {
