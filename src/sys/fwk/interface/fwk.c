@@ -284,7 +284,7 @@ struct _p_PetscFwk {
 
 static PetscFwk defaultFwk = PETSC_NULL;
 
-PetscErrorCode PetscFwkCheck(PetscFwk *_fwk);
+#define PetscFwkCheck(_fwk) 0
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkViewConfigurationOrder"
@@ -548,7 +548,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkDestroy(PetscFwk fwk)
 {
   PetscInt i;
   PetscErrorCode ierr;
-  if (fwk == PETSC_FWK_DEFAULT || --((PetscObject)fwk)->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)fwk)->refct > 0) PetscFunctionReturn(0);
   for(i = 0; i < fwk->N; ++i){
     ierr = PetscFree(fwk->record[i].url);
     ierr = PetscFree(fwk->record[i].path);
@@ -636,19 +636,36 @@ PetscErrorCode PetscFwkInitializePackage(const char path[]){
   PetscFunctionReturn(0);
 }/* PetscFwkInitializePackage() */
 
-
+/* ---------------------------------------------------------------------*/
+/*
+    The variable Petsc_Fwk_default_keyval is used to indicate an MPI attribute that
+  is attached to a communicator, in this case the attribute is a PetscFwk.
+*/
+static PetscMPIInt Petsc_Fwk_default_keyval = MPI_KEYVAL_INVALID;
 
 #undef  __FUNCT__
-#define __FUNCT__ "PetscFwkCheck"
-PetscErrorCode PetscFwkCheck(PetscFwk *_fwk) {
+#define __FUNCT__ "PETSC_FWK_DEFAULT_"
+PetscFwk PETSC_DLLEXPORT PETSC_FWK_DEFAULT_(MPI_Comm comm) {
   PetscErrorCode ierr;
+  PetscTruth     flg;
+  PetscFwk       fwk;
+
   PetscFunctionBegin;
-  if(*_fwk == PETSC_FWK_DEFAULT) {
-    if(!defaultFwk) {
-      ierr = PetscFwkCreate(PETSC_COMM_WORLD, &defaultFwk); CHKERRQ(ierr);
-    }
-    *_fwk = defaultFwk;
+  if (Petsc_Fwk_default_keyval == MPI_KEYVAL_INVALID) {
+    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Fwk_default_keyval,0);
+    if (ierr) {PetscError(__LINE__,"PETSC_FWK_DEFAULT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
   }
-  PetscFunctionReturn(0);
-}/* PetscFwkCheck() */
+  ierr = MPI_Attr_get(comm,Petsc_Fwk_default_keyval,(void **)(&fwk),(PetscMPIInt*)&flg);
+  if (ierr) {PetscError(__LINE__,"PETSC_FWK_DEFAULT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
+  if (!flg) { /* PetscFwk not yet created */
+    ierr = PetscFwkCreate(comm, &fwk);
+    if (ierr) {PetscError(__LINE__,"PETSC_FWK_DEFAULT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
+    ierr = PetscObjectRegisterDestroy((PetscObject)fwk);
+    if (ierr) {PetscError(__LINE__,"PETSC_FWK_DEFAULT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
+    ierr = MPI_Attr_put(comm,Petsc_Fwk_default_keyval,(void*)fwk);
+    if (ierr) {PetscError(__LINE__,"PETSC_FWK_DEFAULT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
+  } 
+  PetscFunctionReturn(fwk);
+}/* PETSC_FWK_DEFAULT_() */
+
 
