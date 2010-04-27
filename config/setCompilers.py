@@ -216,7 +216,7 @@ class Configure(config.base.Configure):
   def isPGI(compiler):
     '''Returns true if the compiler is a PGI compiler'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V')
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V',checkCommand = noCheck)
       output = output + error
       if output.find('The Portland Group') >= 0:
         return 1
