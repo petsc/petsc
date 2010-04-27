@@ -9,21 +9,40 @@ static char PETSC_FWK_CLASS_NAME[] = "PetscFwk";
 static PetscTruth PetscFwkPackageInitialized = PETSC_FALSE;
 typedef enum{PETSC_FWK_COMPONENT_SO, PETSC_FWK_COMPONENT_PY} PetscFwkComponentType;
 
-typedef PetscErrorCode (*PetscFwkConfigurePYComponentType)(PetscFwk fwk, const char* url, const char* path, const char* name, PetscInt state, PetscObject *component);
+typedef PetscErrorCode (*PetscFwkPythonImportConfigureFunction)(const char *url, const char *path, const char *name, void **configure);
+typedef PetscErrorCode (*PetscFwkPythonConfigureComponentFunction)(void *configure, PetscFwk fwk, PetscInt state, PetscObject *component);
+typedef PetscErrorCode (*PetscFwkPythonPrintErrorFunction)(void);
 
 EXTERN_C_BEGIN
-PetscFwkConfigurePYComponentType PetscFwkConfigurePYComponent = PETSC_NULL; 
+PetscFwkPythonImportConfigureFunction    PetscFwkPythonImportConfigure    = PETSC_NULL;
+PetscFwkPythonConfigureComponentFunction PetscFwkPythonConfigureComponent = PETSC_NULL;
+PetscFwkPythonPrintErrorFunction         PetscFwkPythonPrintError         = PETSC_NULL;
 EXTERN_C_END
 
-#define PETSC_FWK_CHECK_PYTHON                                                     \
-  if(PetscFwkConfigurePYComponent == PETSC_NULL) {                                 \
-    PetscErrorCode ierr;                                                           \
-    ierr = PetscPythonInitialize(PETSC_NULL, PETSC_NULL); CHKERRQ(ierr);           \
-    if(PetscFwkConfigurePYComponent == PETSC_NULL) {                               \
-      SETERRQ(PETSC_ERR_LIB, "Couldn't initialize Python support for PetscFwk");   \
-    }                                                                              \
-  }                                                                                \
-
+#define PETSC_FWK_CHECKINIT_PYTHON()					\
+  if(PetscFwkPythonImportConfigure == PETSC_NULL) {			\
+    PetscErrorCode ierr;						\
+    ierr = PetscPythonInitialize(PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);	\
+    if(PetscFwkPythonImportConfigure == PETSC_NULL) {			\
+      SETERRQ(PETSC_ERR_LIB,						\
+	      "Couldn't initialize Python support for PetscFwk");	\
+    }									\
+  }									
+  
+#define PETSC_FWK_CONFIGURE_PYTHON(fwk, id, state, component)		\
+  PETSC_FWK_CHECKINIT_PYTHON();						\
+  {									\
+    PetscErrorCode ierr;						\
+    const char *_url  = fwk->record[id].url;				\
+    const char *_path = fwk->record[id].path;				\
+    const char *_name = fwk->record[id].name;				\
+    void *_configure = 0;						\
+    ierr = PetscFwkPythonImportConfigure(_url, _path, _name, &_configure);	\
+    if (ierr) { PetscFwkPythonPrintError(); SETERRQ(PETSC_ERR_LIB, "Python error"); } \
+    ierr = PetscFwkPythonConfigureComponent(_configure, fwk, state, component); \
+    if (ierr) { PetscFwkPythonPrintError(); SETERRQ(PETSC_ERR_LIB, "Python error"); } \
+  }
+  
 
 struct _n_PetscFwkGraph {
   PetscInt vcount, vmax; /* actual and allocated number of vertices */
@@ -315,21 +334,7 @@ PetscErrorCode PetscFwkConfigure(PetscFwk fwk, PetscInt state){
       }
       break;
     case PETSC_FWK_COMPONENT_PY:
-      PETSC_FWK_CHECK_PYTHON;
-      /* Incref the objects being passed onto the Python side:
-         they will get wrapped as Python objects, which, eventually, will go
-         out of scope, be garbage collected, and will attempt to destroy the
-         underlying Petsc objects.
-      */
-      ierr = PetscObjectReference((PetscObject)fwk); CHKERRQ(ierr);
-      /* FIX: What about component? It's tricky: configuring it might alter the object.
-         However, component should probably always be increfed by the framework, i.e., 
-         at creation time.  Still, if configuration alters the object, it should be 
-         decrefed or, at least, the reference should be stolen by Python, or something.
-      */
-      ierr = PetscFwkConfigurePYComponent(fwk, fwk->record[id].url,fwk->record[id].path,fwk->record[id].name, state, &component); CHKERRQ(ierr);
-      /* Now decref fwk */
-      ierr = PetscObjectDereference((PetscObject)fwk); CHKERRQ(ierr);
+      PETSC_FWK_CONFIGURE_PYTHON(fwk, id, state, &component);
       break;
     }
   }
@@ -486,8 +491,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkRegisterComponentID_Private(PetscFwk fwk,
     }
     break;
   case PETSC_FWK_COMPONENT_PY:
-    PETSC_FWK_CHECK_PYTHON;
-    ierr = PetscFwkConfigurePYComponent(fwk, fwk->record[id].url, fwk->record[id].path, fwk->record[id].name, 0, &component); CHKERRQ(ierr);
+    PETSC_FWK_CONFIGURE_PYTHON(fwk, id, 0, &component);
     fwk->record[id].component = component;
     /* configure field remains NULL for a Py component */
     break;
@@ -556,7 +560,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkDestroy(PetscFwk fwk)
   ierr = PetscFree(fwk->record); CHKERRQ(ierr);
   ierr = PetscFwkGraphDestroy(fwk->dep_graph); CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(fwk);CHKERRQ(ierr);
-  fwk = PETSC_NULL;
   PetscFunctionReturn(0);
 }/* PetscFwkDestroy()*/
 
@@ -566,9 +569,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkCreate(MPI_Comm comm, PetscFwk *framework
   PetscFwk fwk;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  /*#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)*/
+  #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = PetscFwkInitializePackage(PETSC_NULL);CHKERRQ(ierr);
-  /*#endif*/
+  #endif
   PetscValidPointer(framework,2);
   ierr = PetscHeaderCreate(fwk,_p_PetscFwk,PetscInt,PETSC_FWK_CLASSID,0,"PetscFwk",comm,PetscFwkDestroy,0);CHKERRQ(ierr);
   fwk->record = PETSC_NULL;
@@ -588,8 +591,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkGetComponent(PetscFwk fwk, const char url
   PetscFunctionBegin;
   ierr = PetscFwkCheck(&fwk); CHKERRQ(ierr);
   PetscValidCharPointer(url,2);
-  if(!_found){*_found = PETSC_FALSE;}
-  if(!_component) {*_component = PETSC_NULL;}
+  if(_found) {*_found = PETSC_FALSE;}
+  if(_component) {*_component = PETSC_NULL;}
   for(i = 0; i < fwk->N; ++i) {
     ierr = PetscStrcmp(url, fwk->record[i].url, &eq); CHKERRQ(ierr);
     if(eq) {
@@ -601,6 +604,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkGetComponent(PetscFwk fwk, const char url
   PetscFunctionReturn(0);
 }/* PetscFwkGetComponent() */
 
+
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkFinalizePackage"
 PetscErrorCode PetscFwkFinalizePackage(void){
@@ -610,7 +614,7 @@ PetscErrorCode PetscFwkFinalizePackage(void){
     ierr = PetscDLLibraryClose(PetscFwkDLList); CHKERRQ(ierr);
     PetscFwkDLList = PETSC_NULL;
   }
-  if(!defaultFwk) {
+  if(defaultFwk) {
     ierr = PetscFwkDestroy(defaultFwk); CHKERRQ(ierr);
   }
   PetscFwkPackageInitialized = PETSC_FALSE;
@@ -618,17 +622,16 @@ PetscErrorCode PetscFwkFinalizePackage(void){
 }/* PetscFwkFinalizePackage() */
 
 
-
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkInitializePackage"
 PetscErrorCode PetscFwkInitializePackage(const char path[]){
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if(PetscFwkPackageInitialized) {
-    PetscFwkPackageInitialized = PETSC_TRUE;
-  }
-  /* Regster classes */
+  if(PetscFwkPackageInitialized) PetscFunctionReturn(0);
+  PetscFwkPackageInitialized = PETSC_TRUE;
+  /* Register classes */
   ierr = PetscClassIdRegister(PETSC_FWK_CLASS_NAME, &PETSC_FWK_CLASSID); CHKERRQ(ierr);
+  /* Register finalization routine */
   ierr = PetscRegisterFinalize(PetscFwkFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }/* PetscFwkInitializePackage() */

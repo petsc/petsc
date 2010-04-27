@@ -105,6 +105,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRegister_petsc(const char path[])
       If we got here then PETSc was properly loaded
   */
   ierr = PetscInitializePackage(path);CHKERRQ(ierr);
+  ierr = PetscFwkInitializePackage(path);CHKERRQ(ierr);
   ierr = PetscDrawInitializePackage(path);CHKERRQ(ierr);
   ierr = PetscViewerInitializePackage(path);CHKERRQ(ierr);
   ierr = PetscRandomInitializePackage(path);CHKERRQ(ierr);
