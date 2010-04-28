@@ -8,7 +8,10 @@ extern PETSC_DLLEXPORT PetscClassId PETSC_FWK_CLASSID;
 struct _p_PetscFwk;
 typedef struct _p_PetscFwk *PetscFwk;
 
-#define PETSC_FWK_DEFAULT PETSC_NULL
+EXTERN PetscFwk PETSC_DLLEXPORT PETSC_FWK_DEFAULT_(MPI_Comm);
+#define PETSC_FWK_DEFAULT_SELF  PETSC_FWK_DEFAULT_(PETSC_COMM_SELF)
+#define PETSC_FWK_DEFAULT_WORLD PETSC_FWK_DEFAULT_(PETSC_COMM_WORLD)
+
 
 typedef PetscErrorCode (*PetscFwkComponentConfigure)(PetscFwk fwk, PetscInt state, PetscObject *component);
 
