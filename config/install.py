@@ -188,10 +188,13 @@ class Installer(script.Script):
     return
 
   def copyLib(self, src, dst):
-    '''Run ranlib on the destination library if it is an archive'''
+    '''Run ranlib on the destination library if it is an archive. Also run install_name_tool on dylib on Mac'''
     shutil.copy2(src, dst)
     if os.path.splitext(dst)[1] == '.'+self.libSuffix:
       self.executeShellCommand(self.ranlib+' '+dst)
+    if os.path.splitext(dst)[1] == '.dylib' and os.path.isfile('/usr/bin/install_name_tool'):
+      installName = re.sub(self.destDir, self.installDir, dst)
+      self.executeShellCommand('/usr/bin/install_name_tool -id ' + installName + ' ' + dst)
     return
 
   def installLib(self):
@@ -256,9 +259,6 @@ make PETSC_DIR=%s test
     self.installConf()
     self.installBin()
     self.installLib()
-    #if self.destDir == self.installDir: # needs rework?
-    #  output,err,ret = self.executeShellCommand(self.make+' PETSC_ARCH=""'+' PETSC_DIR='+self.destDir+' ARCHFLAGS= shared mpi4py petsc4py')
-    #  print output+err
     # this file will mess up the make test run since it resets PETSC_ARCH when PETSC_ARCH needs to be null now
     os.unlink(os.path.join(self.rootDir,'conf','petscvariables'))
     fd = file(os.path.join('conf','petscvariables'),'w')
