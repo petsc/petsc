@@ -513,7 +513,6 @@ class Configure(config.base.Configure):
 
   def configureInstall(self):
     '''Setup the directories for installation'''
-    self.addMakeRule('shared_nomesg_noinstall','shared_nomesg')            
     if self.framework.argDB['prefix']:
       self.installdir = self.framework.argDB['prefix']
       self.addMakeRule('shared_install','',['-@echo "Now to install the libraries do:"',\

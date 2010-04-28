@@ -26,14 +26,8 @@ class Configure(PETSc.package.NewPackage):
       apple = ''
     self.logClearRemoveDirectory()
     self.logResetRemoveDirectory()
-    if self.framework.argDB['prefix']:
-      arch = ''
-      self.addMakeRule('petsc4py_noinstall','')
-    else:
-      arch = self.arch
-      self.addMakeRule('petsc4py_noinstall','petsc4py')      
     self.addMakeRule('petsc4py','', \
-                       ['@cd '+self.packageDir+';python setup.py clean --all; python setup.py install --install-lib='+os.path.join(self.petscconfigure.installdir,'lib'),\
+                       ['@cd '+self.packageDir+';python setup.py clean --all; python setup.py install --install-lib='+os.path.join(self.installDir,'lib'),\
                           '@echo "====================================="',\
                           '@echo "To use petsc4py, add '+os.path.join(self.petscconfigure.installdir,'lib')+' to PYTHONPATH"',\
                           '@echo "====================================="'])

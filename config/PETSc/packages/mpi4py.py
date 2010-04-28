@@ -26,14 +26,8 @@ class Configure(PETSc.package.NewPackage):
       apple = ''
     self.logClearRemoveDirectory()
     self.logResetRemoveDirectory()
-    if self.framework.argDB['prefix']:
-      arch = ''
-      self.addMakeRule('mpi4py_noinstall','')
-    else:
-      arch = self.arch
-      self.addMakeRule('mpi4py_noinstall','mpi4py')      
     self.addMakeRule('mpi4py','', \
-                       ['@MPICC=${PCC}; export MPICC; cd '+self.packageDir+';python setup.py clean --all; python setup.py install --install-lib='+os.path.join(self.petscconfigure.installdir,'lib'),\
+                       ['@MPICC=${PCC}; export MPICC; cd '+self.packageDir+';python setup.py clean --all; python setup.py install --install-lib='+os.path.join(self.installDir,'lib'),\
                           '@echo "====================================="',\
                           '@echo "To use mpi4py, add '+os.path.join(self.petscconfigure.installdir,'lib')+' to PYTHONPATH"',\
                           '@echo "====================================="'])
