@@ -187,6 +187,13 @@ class TestObjectAOMapping(BaseTestObject, unittest.TestCase):
     FACTORY = 'createMapping'
     TARGS = ([], [])
 
+class TestObjectFwk(BaseTestObject, unittest.TestCase):
+    CLASS = PETSc.Fwk
+    FACTORY = 'create'
+
+if PETSc.Sys.getVersion() <= (3,1,0):
+    del TestObjectFwk
+
 # --------------------------------------------------------------------
 
 if __name__ == '__main__':

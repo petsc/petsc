@@ -159,6 +159,33 @@ PetscObjectGetClassName(PetscObject obj, const char *class_name[])
 
 /* ---------------------------------------------------------------- */
 
+typedef PetscErrorCode (*PetscFwkPythonImportConfigureFunction)
+(const char *url, const char *path, const char *name, void **configure);
+typedef PetscErrorCode (*PetscFwkPythonConfigureComponentFunction)
+(void *configure, PetscFwk fwk, PetscInt state, PetscObject *component);
+typedef PetscErrorCode (*PetscFwkPythonPrintErrorFunction)(void);
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0) || \
+     PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2))
+EXTERN_C_BEGIN
+static PetscFwkPythonImportConfigureFunction
+       PetscFwkPythonImportConfigure = PETSC_NULL;
+static PetscFwkPythonConfigureComponentFunction
+       PetscFwkPythonConfigureComponent = PETSC_NULL;
+static PetscFwkPythonPrintErrorFunction
+       PetscFwkPythonPrintError = PETSC_NULL;
+EXTERN_C_END
+#else
+EXTERN_C_BEGIN
+PetscFwkPythonImportConfigureFunction    PetscFwkPythonImportConfigure;
+PetscFwkPythonConfigureComponentFunction PetscFwkPythonConfigureComponent;
+PetscFwkPythonPrintErrorFunction         PetscFwkPythonPrintError;
+EXTERN_C_END
+#endif
+
+/* ---------------------------------------------------------------- */
+
 #undef __FUNCT__
 #define __FUNCT__ "ISGetType"
 PETSC_STATIC_INLINE PetscErrorCode
@@ -1050,7 +1077,8 @@ DACreateND(MPI_Comm comm,
            PetscInt M,PetscInt N,PetscInt P,
            PetscInt m,PetscInt n,PetscInt p,
            const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],
-           DAPeriodicType wrap,DAStencilType stencil_type,PetscInt stencil_width,
+           DAPeriodicType wrap,
+           DAStencilType stencil_type,PetscInt stencil_width,
            DA *da)
 {
   PetscErrorCode ierr;

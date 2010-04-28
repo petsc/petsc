@@ -17,6 +17,11 @@
 #include <petscao.h>
 #include <petscda.h>
 
+#ifndef __PETSCFWK_H
+struct _p_PetscFwk;
+typedef struct _p_PetscFwk *PetscFwk;
+#endif/*__PETSCFWK_H*/
+
 #include "petsc4py.PETSc_api.h"
 
 static int import_petsc4py(void) {

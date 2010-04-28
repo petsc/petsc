@@ -26,6 +26,7 @@
 #include "compat/mpi.h"
 #include "compat/petsc.h"
 #include "compat/petscsys.h"
+#include "compat/petscfwk.h"
 #include "compat/petscviewer.h"
 #include "compat/petscis.h"
 #include "compat/petscvec.h"

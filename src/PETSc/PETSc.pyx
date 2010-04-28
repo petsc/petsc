@@ -50,12 +50,6 @@ cdef inline int CHKERR(int ierr) except -1:
 # PETSc support
 # -------------
 
-cdef extern from "compat.h":
-    pass
-
-cdef extern from "custom.h":
-    pass
-
 cdef extern from "petsc.h":
     ctypedef long   PetscInt
     ctypedef double PetscReal
@@ -63,6 +57,12 @@ cdef extern from "petsc.h":
     ctypedef PetscInt    const_PetscInt    "const PetscInt"
     ctypedef PetscReal   const_PetscReal   "const PetscReal"
     ctypedef PetscScalar const_PetscScalar "const PetscScalar"
+
+cdef extern from "compat.h":
+    pass
+
+cdef extern from "custom.h":
+    pass
 
 cdef extern from "scalar.h":
     object      PyPetscScalar_FromPetscScalar(PetscScalar)
@@ -109,6 +109,7 @@ include "petscmpi.pxi"
 include "petscsys.pxi"
 include "petsclog.pxi"
 include "petscobj.pxi"
+include "petscfwk.pxi"
 include "petscvwr.pxi"
 include "petscrand.pxi"
 include "petscis.pxi"
@@ -134,6 +135,7 @@ include "Sys.pyx"
 include "Log.pyx"
 include "Comm.pyx"
 include "Object.pyx"
+include "Fwk.pyx"
 include "Viewer.pyx"
 include "Random.pyx"
 include "IS.pyx"
@@ -289,6 +291,7 @@ cdef int initialize(object args) except -1:
 
 cdef extern from *:
     PetscClassId PETSC_OBJECT_CLASSID    "PETSC_OBJECT_CLASSID"
+    PetscClassId PETSC_FWK_CLASSID       "PETSC_FWK_CLASSID"
     PetscClassId PETSC_VIEWER_CLASSID    "PETSC_VIEWER_CLASSID"
     PetscClassId PETSC_RANDOM_CLASSID    "PETSC_RANDOM_CLASSID"
     PetscClassId PETSC_IS_CLASSID        "IS_CLASSID"
@@ -311,6 +314,7 @@ cdef int register(char path[]) except -1:
     CHKERR( PetscPythonRegisterAll(path) )
     # register Python types
     TypeRegistryAdd(PETSC_OBJECT_CLASSID,    Object)
+    TypeRegistryAdd(PETSC_FWK_CLASSID,       Fwk)
     TypeRegistryAdd(PETSC_VIEWER_CLASSID,    Viewer)
     TypeRegistryAdd(PETSC_RANDOM_CLASSID,    Random)
     TypeRegistryAdd(PETSC_IS_CLASSID,        IS)
