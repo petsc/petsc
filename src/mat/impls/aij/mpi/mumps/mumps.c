@@ -312,7 +312,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
   Mat_MUMPS      *lu =(Mat_MUMPS*)(F)->spptr;
   Mat            newMat;
   PetscErrorCode ierr;
-  PetscInt       rnz,nnz,nz=0,i,M=A->rmap->N,*ai,*aj,*adiag,jidx,icntl;
+  PetscInt       rnz,nnz,nz=0,i,M=A->rmap->N,*ai,*aj,*adiag = PETSC_NULL,jidx,icntl;
   PetscScalar   *av;
   PetscTruth     valOnly,flg;
   Mat            F_diag; 
