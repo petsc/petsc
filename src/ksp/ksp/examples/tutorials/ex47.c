@@ -19,12 +19,12 @@ static char help[] = "Solves 3D Laplacian using multigrid.\n\n";
 #include "petscdmmg.h"
 
 extern PetscErrorCode ComputeMatrix(DMMG,Mat,Mat);
-extern PetscErrorCode ComputeRHS(DMMG,Vec);
+extern PetscErrorCode ComputeRHS(DMMG,Vec, PetscTruth);
 extern PetscErrorCode Solve_FFT(DA, Vec, Vec);
 extern PetscErrorCode CalculateXYStdDev(DA, Vec, Vec *);
 extern PetscErrorCode VecViewCenterSingle(DA da, Vec v, PetscViewer viewer, const char name[], PetscInt i, PetscInt j);
 
-PetscReal L[3] = {2.0, 2.0, 6.0};
+PetscReal L[3] = {1.0, 1.0, 1.0};
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -32,9 +32,9 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   DMMG           *dmmg;
-  PetscReal      norm;
+  PetscReal      norm, normTotal;
   DA             da;
-  Vec            phi;
+  Vec            phi, phiRhs;
 
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
 
@@ -43,13 +43,16 @@ int main(int argc,char **argv)
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
 
-  ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeMatrix);CHKERRQ(ierr);
+  ierr = DMMGSetKSP(dmmg,(PetscErrorCode (*)(DMMG, Vec)) ComputeRHS,ComputeMatrix);CHKERRQ(ierr);
+  //ierr = DMMGSetNullSpace(dmmg, PETSC_TRUE, 0, PETSC_NULL);CHKERRQ(ierr);
 
   ierr = DMMGSetUp(dmmg);CHKERRQ(ierr);
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
 
   ierr = VecDuplicate(DMMGGetx(dmmg), &phi);CHKERRQ(ierr);
-  ierr = Solve_FFT(DMMGGetDA(dmmg), DMMGGetRHS(dmmg), phi);CHKERRQ(ierr);
+  ierr = VecDuplicate(DMMGGetx(dmmg), &phiRhs);CHKERRQ(ierr);
+  ierr = ComputeRHS(dmmg[0], phiRhs, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = Solve_FFT(DMMGGetDA(dmmg), phiRhs, phi);CHKERRQ(ierr);
 
   Vec       stddev;
   PetscReal s;
@@ -105,7 +108,8 @@ int main(int argc,char **argv)
   ierr = VecViewCenterSingle(da, phi, PETSC_VIEWER_STDOUT_WORLD, "FFT Solution", -1, -1);CHKERRQ(ierr);
   ierr = VecAXPY(phi,-1.0,DMMGGetx(dmmg));CHKERRQ(ierr);
   ierr = VecNorm(phi,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Error norm (FFT vs. FD) %G\n",norm);CHKERRQ(ierr);
+  ierr = VecNorm(DMMGGetx(dmmg),NORM_2,&normTotal);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Error norm (FFT vs. FD) %G %G\n",norm, norm/normTotal);CHKERRQ(ierr);
 
   ierr = VecCopy(phi, tmp);CHKERRQ(ierr);
   ierr = VecView(tmp, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
@@ -120,7 +124,7 @@ int main(int argc,char **argv)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRHS"
-PetscErrorCode ComputeRHS(DMMG dmmg,Vec b)
+PetscErrorCode ComputeRHS(DMMG dmmg,Vec b, PetscTruth withBC= PETSC_TRUE)
 {
   DA             da = (DA) dmmg->dm;
   PetscInt       bathIndex;
@@ -140,7 +144,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg,Vec b)
   for(k = zs; k < zs+zm; ++k) {
     for(j = ys; j < ys+ym; ++j) {
       for(i = xs; i < xs+xm; ++i) {
-        if (k == bathIndex) {
+        if (k == bathIndex && withBC) {
           a[k][j][i] = 0.0;
         } else {
           if (k > wallPos) {
@@ -169,7 +173,9 @@ PetscErrorCode ComputeMatrix(DMMG dmmg,Mat jac,Mat B)
 
   ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);  
   Hx = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
-  HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
+  //Hx = L[0] / (PetscReal)(mx-1); Hy = L[1] / (PetscReal)(my-1); Hz = L[2] / (PetscReal)(mz-1);
+  //HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
+  HxHydHz = 1.0/PetscSqr(Hz); HxHzdHy = 1.0/PetscSqr(Hy); HyHzdHx = 1.0/PetscSqr(Hx);
   ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   bathIndex = mz/2;
   PetscFunctionBegin;
@@ -221,8 +227,8 @@ PetscErrorCode Solve_FFT(DA da, Vec rhs, Vec phi)
   h[0] = L[0]/(M - 1);
   h[1] = L[1]/(N - 1);
   h[2] = L[2]/(P - 1);
-  sc   = 1.0/((PetscReal) (M - 1)*(N - 1)*(P - 1));
   scale = 1.0/((PetscReal) M*N*P);
+  sc    = (M-1)*(N-1)*(P-1);
   ierr = DAGetGlobalVector(da, &rhsHat);CHKERRQ(ierr);
   ierr = MatMult(F, rhs, rhsHat);CHKERRQ(ierr);
   ierr = DAGetGlobalVector(da, &phiHat);CHKERRQ(ierr);
