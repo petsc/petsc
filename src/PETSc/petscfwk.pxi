@@ -20,7 +20,11 @@ cdef inline Fwk ref_Fwk(PetscFwk fwk):
 
 # -----------------------------------------------------------------------------
 
-cdef dict Fwk_ConfigureCache = {}
+cdef dict fwk_cache = {}
+__fwk_cache__ = fwk_cache
+
+cdef extern from "Python.h":
+    object PyModule_New(char *)
 
 cdef int Fwk_ImportConfigure(
     const_char_p url_p,
@@ -28,38 +32,39 @@ cdef int Fwk_ImportConfigure(
     const_char_p name_p,
     void         **configure_p,
     ) except PETSC_ERR_PYTHON with gil:
-    configure_p[0] = NULL
-    url  = cp2str(url_p)
-    #print 'url = ' + url + ', path = ' + path + ', name = ' + name
-    if url in Fwk_ConfigureCache:
-        #print 'Found url ' + url + ' in cache'
-        configure_p[0] = <void*> Fwk_ConfigureCache[url]
-        return 0
     #
-    import sys, os
-    path = cp2str(path_p)
-    name = cp2str(name_p)
-    #print 'url ' + url + ' not in cache'
-    pathpieces = path.split('/')
-    #print 'pathpieces = ' + str(pathpieces)
-    modname = pathpieces[-1]
-    #print 'modname = ' + modname
-    #print 'new path pieces = ' + str(pathpieces[:-1])
-    path = os.path.join(*pathpieces[:-1])
-    if path[0] is not '/':
-        path = os.path.relpath(path)
-    if path not in sys.path:
-        sys.path.insert(-1,path)
-    #print 'path = ' + path
-    mod = __import__(modname)
-    confname = 'PetscFwkConfigure'+name
-    if not hasattr(mod, confname):
-        raise AttributeError("No configuration method " + confname + 
-                             " in module " + modname)
-    configure = getattr(mod, confname)
-    #print ('Found configure ' + str(configure) + ' with name ' +
-    #       confname + ' in module ' + str(mod) + ' with name ' + modname)
-    Fwk_ConfigureCache[url] = configure
+    assert url_p != NULL
+    assert path_p != NULL
+    assert name_p != NULL
+    assert configure_p != NULL
+    #
+    cdef str url  = cp2str(url_p)
+    cdef str path = cp2str(path_p) + '.py'
+    cdef str name = 'PetscFwkConfigure'+cp2str(name_p)
+    #
+    cdef module = fwk_cache.get(path)
+    if module is None:
+        module = PyModule_New("__petsc__")
+        module.__file__ = path
+        module.__package__ = None
+        fwk_cache[path] = module
+        try:
+            execfile(path, module.__dict__)
+            #Py3:# source = open(path, 'rU').read()
+            #Py3:# code = compile(source, path, 'exec')
+            #Py3:# exec(code, module.__dict__)
+        except:
+            del fwk_cache[path]
+            raise
+    #
+    cdef configure = None
+    try:
+        configure = getattr(module, name)
+    except AttributeError:
+        raise AttributeError(
+            "Cannot load configuration function %s() from file '%s'"
+            % (name, path))
+    #
     configure_p[0] = <void*>configure
     return 0
 
@@ -71,9 +76,9 @@ cdef int Fwk_ComponentConfigure(
     ) except PETSC_ERR_PYTHON with gil:
     #
     assert pconfigure != NULL
-    configure = <object> pconfigure
-    #
     assert pfwk != NULL
+    #
+    cdef configure = <object> pconfigure
     cdef Fwk fwk = ref_Fwk(pfwk)
     cdef PetscInt state = asInt(pstate)
     #
