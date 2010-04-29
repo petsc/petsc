@@ -20,7 +20,7 @@
 
 .keywords: PC, set, factorization, direct, fill
 
-.seealso: PCFactorSetShiftNonzero(), PCFactorSetShiftType(), PCFactorSetShiftAmount()
+.seealso: PCFactorSetShiftType(), PCFactorSetShiftAmount()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetZeroPivot(PC pc,PetscReal zero)
 {
