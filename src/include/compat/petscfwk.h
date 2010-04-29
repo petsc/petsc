@@ -14,7 +14,7 @@ typedef struct _p_PetscFwk *PetscFwk;
 #define PetscFwk_ERR_SUP                                                    \
   PetscFunctionBegin;                                                       \
   SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version"); \
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_ERR_SUP);
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkCreate"
@@ -43,6 +43,8 @@ static PetscErrorCode PetscFwkGetComponent(PetscFwk fwk,const char url[],PetscOb
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkConfigure"
 static PetscErrorCode PetscFwkConfigure(PetscFwk fwk,PetscInt state){PetscFwk_ERR_SUP}
+
+static PetscFwk PETSC_FWK_DEFAULT_(MPI_Comm comm) {return PETSC_NULL;}
 
 #endif
 

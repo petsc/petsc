@@ -9,6 +9,7 @@ cdef extern from "petscsys.h" nogil:
     int PetscFwkGetComponent(PetscFwk,char[],PetscObject*,PetscTruth*)
     int PetscFwkConfigure(PetscFwk,PetscInt)
     int PetscFwkViewConfigurationOrder(PetscFwk,PetscViewer)
+    PetscFwk PETSC_FWK_DEFAULT_(MPI_Comm)
 
 # -----------------------------------------------------------------------------
 

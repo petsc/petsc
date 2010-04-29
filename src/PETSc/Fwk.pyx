@@ -55,4 +55,12 @@ cdef class Fwk(Object):
         PetscIncref(cobj); newobj.obj[0] = cobj
         return newobj
 
+    @classmethod
+    def DEFAULT(cls, comm=None):
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef Fwk fwk = Fwk()
+        fwk.fwk = PETSC_FWK_DEFAULT_(ccomm)
+        PetscIncref(<PetscObject>(fwk.fwk))
+        return fwk
+
 # -----------------------------------------------------------------------------
