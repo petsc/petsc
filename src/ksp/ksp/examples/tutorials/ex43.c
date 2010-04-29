@@ -316,7 +316,7 @@ static PetscErrorCode DAGetElementOwnershipRanges2d(DA da,PetscInt **_lx,PetscIn
   ierr = VecScatterEnd(ctx,vlx,V_SEQ,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecGetArray(V_SEQ,&_a);CHKERRQ(ierr);
   for (i = 0; i < cpu_x; i++) {
-    LX[i] = (PetscInt)_a[i];
+    LX[i] = (PetscInt)PetscRealPart(_a[i]);
   }
   ierr = VecRestoreArray(V_SEQ,&_a);CHKERRQ(ierr);
   ierr = VecScatterDestroy(ctx);CHKERRQ(ierr);
@@ -327,7 +327,7 @@ static PetscErrorCode DAGetElementOwnershipRanges2d(DA da,PetscInt **_lx,PetscIn
   ierr = VecScatterEnd(ctx,vly,V_SEQ,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecGetArray(V_SEQ,&_a);CHKERRQ(ierr);
   for (i = 0; i < cpu_y; i++) {
-    LY[i] = (PetscInt)_a[i];
+    LY[i] = (PetscInt)PetscRealPart(_a[i]);
   }
   ierr = VecRestoreArray(V_SEQ,&_a);CHKERRQ(ierr);
   ierr = VecScatterDestroy(ctx);CHKERRQ(ierr);
@@ -1018,7 +1018,7 @@ static PetscErrorCode AssembleF_Stokes(Vec F,DA stokes_da,DA properties_da,Vec p
 
 #undef __FUNCT__  
 #define __FUNCT__ "DACreateSolCx"
-static PetscErrorCode DACreateSolCx(PetscScalar eta0,PetscScalar eta1,PetscScalar xc,PetscInt nz,
+static PetscErrorCode DACreateSolCx(PetscReal eta0,PetscReal eta1,PetscReal xc,PetscInt nz,
                                     PetscInt mx,PetscInt my,
                                     DA *_da,Vec *_X)
 {
@@ -1054,8 +1054,8 @@ static PetscErrorCode DACreateSolCx(PetscScalar eta0,PetscScalar eta1,PetscScala
     for (i = si; i < si+ei; i++) {
       double pos[2],pressure,vel[2],total_stress[3],strain_rate[3];
 
-      pos[0] = _coords[j][i].x;
-      pos[1] = _coords[j][i].y;
+      pos[0] = PetscRealPart(_coords[j][i].x);
+      pos[1] = PetscRealPart(_coords[j][i].y);
 
       evaluate_solCx(pos,eta0,eta1,xc,nz,vel,&pressure,total_stress,strain_rate);
 
@@ -1184,12 +1184,14 @@ static PetscErrorCode DAIntegrateErrors(DA stokes_da,Vec X,Vec X_analytic)
       u_H1 = u_H1+u_e_H1;
     }
   }
-  p_L2 = sqrt(p_L2);
-  u_L2 = sqrt(u_L2);
-  u_H1 = sqrt(u_H1);
+  ierr = PetscGlobalSum(&p_L2,&p_L2,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscGlobalSum(&u_L2,&u_L2,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscGlobalSum(&u_H1,&u_H1,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  p_L2 = PetscSqrtScalar(p_L2);
+  u_L2 = PetscSqrtScalar(u_L2);
+  u_H1 = PetscSqrtScalar(u_H1);
 
-
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%1.4e   %1.4e   %1.4e   %1.4e \n",h,p_L2,u_L2,u_H1);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%1.4e   %1.4e   %1.4e   %1.4e \n",PetscRealPart(h),PetscRealPart(p_L2),PetscRealPart(u_L2),PetscRealPart(u_H1));CHKERRQ(ierr);
 
 
   ierr = DAVecRestoreArray(cda,coords,&_coords);CHKERRQ(ierr);
@@ -1217,7 +1219,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   Vec                    f,X;
   PetscInt               prop_dof,prop_stencil_width;
   Vec                    properties,l_properties;
-  PetscScalar            dx,dy;
+  PetscReal              dx,dy;
   PetscInt               M,N;
   DACoor2d               **_prop_coords,**_vel_coords;
   GaussPointCoefficients **element_props;
@@ -1266,8 +1268,8 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
 
   /* define centroid positions */
   ierr = DAGetInfo(da_prop,0,&M,&N,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  dx   = 1.0/((PetscScalar)(M));
-  dy   = 1.0/((PetscScalar)(N));
+  dx   = 1.0/((PetscReal)(M));
+  dy   = 1.0/((PetscReal)(N));
 
   ierr = DASetUniformCoordinates(da_prop,0.0+0.5*dx,1.0-0.5*dx,0.0+0.5*dx,1.0-0.5*dx,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
@@ -1326,30 +1328,30 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
 
   for (j = sj; j < sj+ny; j++) {
     for (i = si; i < si+nx; i++) {
-      PetscScalar centroid_x = _prop_coords[j][i].x; /* centroids of cell */
-      PetscScalar centroid_y = _prop_coords[j][i].y;
-      PetscScalar coord_x,coord_y;
+      PetscReal centroid_x = PetscRealPart(_prop_coords[j][i].x); /* centroids of cell */
+      PetscReal centroid_y = PetscRealPart(_prop_coords[j][i].y);
+      PetscReal coord_x,coord_y;
 
       if (coefficient_structure == 0) {
-        PetscScalar opts_eta0,opts_eta1,opts_xc;
-        PetscInt    opts_nz;
+        PetscReal opts_eta0,opts_eta1,opts_xc;
+        PetscInt  opts_nz;
 
         opts_eta0 = 1.0;
         opts_eta1 = 1.0;
         opts_xc   = 0.5;
         opts_nz   = 1;
 
-        ierr = PetscOptionsGetScalar(PETSC_NULL,"-solcx_eta0",&opts_eta0,0);CHKERRQ(ierr);
-        ierr = PetscOptionsGetScalar(PETSC_NULL,"-solcx_eta1",&opts_eta1,0);CHKERRQ(ierr);
-        ierr = PetscOptionsGetScalar(PETSC_NULL,"-solcx_xc",&opts_xc,0);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(PETSC_NULL,"-solcx_eta0",&opts_eta0,0);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(PETSC_NULL,"-solcx_eta1",&opts_eta1,0);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(PETSC_NULL,"-solcx_xc",&opts_xc,0);CHKERRQ(ierr);
         ierr = PetscOptionsGetInt(PETSC_NULL,"-solcx_nz",&opts_nz,0);CHKERRQ(ierr);
 
         for (p = 0; p < GAUSS_POINTS; p++) {
           coord_x = centroid_x;
           coord_y = centroid_y;
           if (use_gp_coords == PETSC_TRUE) {
-            coord_x = element_props[j][i].gp_coords[2*p];
-            coord_y = element_props[j][i].gp_coords[2*p+1];
+            coord_x = PetscRealPart(element_props[j][i].gp_coords[2*p]);
+            coord_y = PetscRealPart(element_props[j][i].gp_coords[2*p+1]);
           }
 
 
@@ -1362,25 +1364,25 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
           element_props[j][i].fy[p] = sin((double)opts_nz*M_PI*coord_y)*cos(1.0*M_PI*coord_x);
         }
       } else if (coefficient_structure == 1) { /* square sinker */
-        PetscScalar opts_eta0,opts_eta1,opts_dx,opts_dy;
+        PetscReal opts_eta0,opts_eta1,opts_dx,opts_dy;
 
         opts_eta0 = 1.0;
         opts_eta1 = 1.0;
         opts_dx   = 0.50;
         opts_dy   = 0.50;
 
-        ierr = PetscOptionsGetScalar(PETSC_NULL,"-sinker_eta0",&opts_eta0,0);CHKERRQ(ierr);
-        ierr = PetscOptionsGetScalar(PETSC_NULL,"-sinker_eta1",&opts_eta1,0);CHKERRQ(ierr);
-        ierr = PetscOptionsGetScalar(PETSC_NULL,"-sinker_dx",&opts_dx,0);CHKERRQ(ierr);
-        ierr = PetscOptionsGetScalar(PETSC_NULL,"-sinker_dy",&opts_dy,0);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(PETSC_NULL,"-sinker_eta0",&opts_eta0,0);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(PETSC_NULL,"-sinker_eta1",&opts_eta1,0);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(PETSC_NULL,"-sinker_dx",&opts_dx,0);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(PETSC_NULL,"-sinker_dy",&opts_dy,0);CHKERRQ(ierr);
 
 
         for (p = 0; p < GAUSS_POINTS; p++) {
           coord_x = centroid_x;
           coord_y = centroid_y;
           if (use_gp_coords == PETSC_TRUE) {
-            coord_x = element_props[j][i].gp_coords[2*p];
-            coord_y = element_props[j][i].gp_coords[2*p+1];
+            coord_x = PetscRealPart(element_props[j][i].gp_coords[2*p]);
+            coord_y = PetscRealPart(element_props[j][i].gp_coords[2*p+1]);
           }
 
           element_props[j][i].eta[p] = opts_eta0;
@@ -1396,22 +1398,22 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
           }
         }
       } else if (coefficient_structure == 2) { /* circular sinker */
-        PetscScalar opts_eta0,opts_eta1,opts_r,radius2;
+        PetscReal opts_eta0,opts_eta1,opts_r,radius2;
 
         opts_eta0 = 1.0;
         opts_eta1 = 1.0;
         opts_r    = 0.25;
 
-        ierr = PetscOptionsGetScalar(PETSC_NULL,"-sinker_eta0",&opts_eta0,0);CHKERRQ(ierr);
-        ierr = PetscOptionsGetScalar(PETSC_NULL,"-sinker_eta1",&opts_eta1,0);CHKERRQ(ierr);
-        ierr = PetscOptionsGetScalar(PETSC_NULL,"-sinker_r",&opts_r,0);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(PETSC_NULL,"-sinker_eta0",&opts_eta0,0);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(PETSC_NULL,"-sinker_eta1",&opts_eta1,0);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(PETSC_NULL,"-sinker_r",&opts_r,0);CHKERRQ(ierr);
 
         for (p = 0; p < GAUSS_POINTS; p++) {
           coord_x = centroid_x;
           coord_y = centroid_y;
           if (use_gp_coords == PETSC_TRUE) {
-            coord_x = element_props[j][i].gp_coords[2*p];
-            coord_y = element_props[j][i].gp_coords[2*p+1];
+            coord_x = PetscRealPart(element_props[j][i].gp_coords[2*p]);
+            coord_y = PetscRealPart(element_props[j][i].gp_coords[2*p+1]);
           }
 
           element_props[j][i].eta[p] = opts_eta0;
@@ -1494,7 +1496,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   */
 
   if (coefficient_structure == 0) {
-    PetscScalar opts_eta0,opts_eta1,opts_xc;
+    PetscReal   opts_eta0,opts_eta1,opts_xc;
     PetscInt    opts_nz,N;
     DA          da_Stokes_analytic;
     Vec         X_analytic;
@@ -1505,9 +1507,9 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
     opts_xc   = 0.5;
     opts_nz   = 1;
 
-    ierr = PetscOptionsGetScalar(PETSC_NULL,"-solcx_eta0",&opts_eta0,0);CHKERRQ(ierr);
-    ierr = PetscOptionsGetScalar(PETSC_NULL,"-solcx_eta1",&opts_eta1,0);CHKERRQ(ierr);
-    ierr = PetscOptionsGetScalar(PETSC_NULL,"-solcx_xc",&opts_xc,0);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(PETSC_NULL,"-solcx_eta0",&opts_eta0,0);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(PETSC_NULL,"-solcx_eta1",&opts_eta1,0);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(PETSC_NULL,"-solcx_xc",&opts_xc,0);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(PETSC_NULL,"-solcx_nz",&opts_nz,0);CHKERRQ(ierr);
 
 
