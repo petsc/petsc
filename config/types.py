@@ -278,7 +278,8 @@ void (*signal())();
           f.close()
           os.remove(filename)
         elif not typename == 'long-long':
-          raise RuntimeError('Unable to determine size of '+typeName)
+          msg = 'Cannot run executable to determine size of '+typeName+'. If this machine uses a batch system \nto submit jobs you will need to configure using ./configure with the additional option  --with-batch.\n Otherwise there is problem with the compilers. Can you compile and run code with your C/C++ (and maybe Fortran) compilers?\n'
+          raise RuntimeError(msg)
         else:
           self.framework.log.write('Compiler does not support long long\n')
           size = 0
@@ -325,7 +326,8 @@ void (*signal())();
         f.close()
         os.remove(filename)
       else:
-        raise RuntimeError('Unable to determine bits per byte')
+         msg = 'Cannot run executable to determine bits per bit. If this machine uses a batch system \nto submit jobs you will need to configure using ./configure with the additional option  --with-batch.\n Otherwise there is problem with the compilers. Can you compile and run code with your C/C++ (and maybe Fortran) compilers?\n'
+         raise RuntimeError(msg)
     else:
       self.framework.addBatchBody(['{',
                                    '  int i = 0;',

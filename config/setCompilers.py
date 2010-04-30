@@ -348,7 +348,7 @@ class Configure(config.base.Configure):
       raise RuntimeError(msg)
     if not self.framework.argDB['with-batch']:
       if not self.checkRun():
-        msg = 'Cannot run executables created with '+language+'. If this machine uses a batch system \nto submit jobs you will need to configure using/configure.py with the additional option  --with-batch.\n Otherwise there is problem with the compilers. Can you compile and run code with your C/C++ (and maybe Fortran) compilers?\n'
+        msg = 'Cannot run executables created with '+language+'. If this machine uses a batch system \nto submit jobs you will need to configure using ./configure with the additional option  --with-batch.\n Otherwise there is problem with the compilers. Can you compile and run code with your C/C++ (and maybe Fortran) compilers?\n'
         self.popLanguage()
         raise OSError(msg)
     self.popLanguage()
