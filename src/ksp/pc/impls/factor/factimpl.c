@@ -29,6 +29,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftType_Factor(PC pc,MatFactorShi
     dir->info.shifttype = (PetscReal) MAT_SHIFT_NONE; 
   } else {
     dir->info.shifttype = (PetscReal) shifttype;
+    if (shifttype == MAT_SHIFT_NONZERO && dir->info.shiftamount == 0.0){
+      dir->info.shiftamount = 1.e-12; /* set default amount if user has not called PCFactorSetShiftAmount() yet */
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -239,7 +242,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions_Factor(PC pc)
   ierr = PetscOptionsEnum("-pc_factor_shift_type","Shift added to diagonal","PCFactorSetShiftType",
                           MatFactorShiftTypes,(PetscEnum)(int)((PC_Factor*)factor)->info.shifttype,&etmp,&flg);CHKERRQ(ierr);
   if (flg) {
-    ((PC_Factor*)factor)->info.shifttype = (PetscReal)(etmp);
+    ierr = PCFactorSetShiftType(pc,(MatFactorShiftType)etmp);CHKERRQ(ierr);
   }
   ierr = PetscOptionsReal("-pc_factor_shift_amount","Shift added to diagonal","PCFactorSetShiftAmount",((PC_Factor*)factor)->info.shiftamount,&((PC_Factor*)factor)->info.shiftamount,0);CHKERRQ(ierr);
   

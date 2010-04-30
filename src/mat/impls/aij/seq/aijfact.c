@@ -637,7 +637,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFactorInfo
   const MatScalar *v,*aa=a->a;
   PetscReal       rs=0.0;
   FactorShiftCtx  sctx;
-  PetscInt        newshif = 0t;
+  PetscInt        newshift;
   const PetscInt  *ddiag;
   PetscTruth      row_identity, col_identity;
 
