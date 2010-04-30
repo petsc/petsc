@@ -36,7 +36,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetScale(KSP ksp,PetscReal scale)
 #undef __FUNCT__  
 #define __FUNCT__ "KSPRichardsonSetSelfScale"
 /*@
-    KSPRichardsonSetSelfScale - Sets Richardson to automatically determine optimal scaling at each iteration to minimize the 2-norm of the residual
+    KSPRichardsonSetSelfScale - Sets Richardson to automatically determine optimal scaling at each iteration to minimize the 2-norm of the 
+       preconditioned residual
 
     Collective on KSP
 
@@ -45,6 +46,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetScale(KSP ksp,PetscReal scale)
 -   scale - PETSC_TRUE or the default of PETSC_FALSE
 
     Level: intermediate
+
+    Notes: Requires two extra work vectors. Uses an extra axpy() and VecDotNorm2() per iteration.
+
+    Developer Notes: Could also minimize the 2-norm of the true residual with one less work vector
+
 
 .keywords: KSP, Richardson, set, scale
 @*/
