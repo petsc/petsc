@@ -2409,8 +2409,8 @@ namespace ALE {
         Obj<real_section_type> section = new real_section_type(this->comm(), this->debug());
 
         section->setName(*n_iter);
-	ALE::Ordering<>::relabelSection(*this->getRealSection(*n_iter), labeling, *section);
-	this->setRealSection(*n_iter, section);
+        ALE::Ordering<>::relabelSection(*this->getRealSection(*n_iter), labeling, *section);
+        this->setRealSection(*n_iter, section);
       }
       Obj<std::set<std::string> > intNames = this->getIntSections();
 
@@ -2418,17 +2418,17 @@ namespace ALE {
         Obj<int_section_type> section = new int_section_type(this->comm(), this->debug());
 
         section->setName(*n_iter);
-	ALE::Ordering<>::relabelSection(*this->getIntSection(*n_iter), labeling, *section);
-	this->setIntSection(*n_iter, section);
+        ALE::Ordering<>::relabelSection(*this->getIntSection(*n_iter), labeling, *section);
+        this->setIntSection(*n_iter, section);
       }
       // Relabel labels
       const labels_type& labels = this->getLabels();
 
       for(typename labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
-	Obj<label_type> label = new label_type(this->comm(), this->debug());
+        Obj<label_type> label = new label_type(this->comm(), this->debug());
 
         l_iter->second->relabel(labeling, *label);
-	this->setLabel(l_iter->first, label);
+        this->setLabel(l_iter->first, label);
       }
       // Relabel overlap
       Obj<send_overlap_type> sendOverlap = new send_overlap_type(this->comm(), this->debug());
