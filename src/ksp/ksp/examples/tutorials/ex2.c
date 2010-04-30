@@ -106,6 +106,9 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscLogStagePop();CHKERRQ(ierr);
 
+  /* A is symmetric. Set symmetric flag to enable ICC/Cholesky preconditioner */
+  ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+
   /* 
      Create parallel vectors.
       - We form 1 vector from scratch and then duplicate as needed.
