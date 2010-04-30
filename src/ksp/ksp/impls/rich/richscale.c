@@ -32,3 +32,31 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetScale(KSP ksp,PetscReal scale)
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPRichardsonSetSelfScale"
+/*@
+    KSPRichardsonSetSelfScale - Sets Richardson to automatically determine optimal scaling at each iteration to minimize the 2-norm of the residual
+
+    Collective on KSP
+
+    Input Parameters:
++   ksp - the iterative context
+-   scale - PETSC_TRUE or the default of PETSC_FALSE
+
+    Level: intermediate
+
+.keywords: KSP, Richardson, set, scale
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetSelfScale(KSP ksp,PetscTruth scale)
+{
+  PetscErrorCode ierr,(*f)(KSP,PetscTruth);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPRichardsonSetSelfScale_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ksp,scale);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}

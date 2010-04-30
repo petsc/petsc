@@ -165,6 +165,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPBuildSolution(KSP,Vec,Vec *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPBuildResidual(KSP,Vec,Vec,Vec *);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetScale(KSP,PetscReal);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetSelfScale(KSP,PetscTruth);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPChebychevSetEigenvalues(KSP,PetscReal,PetscReal);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExtremeSingularValues(KSP,PetscReal*,PetscReal*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeEigenvalues(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt *);
