@@ -999,7 +999,9 @@ class Configure(config.base.Configure):
     if self.framework.argDB['with-batch']:
       if config.setCompilers.Configure.isPGI(self.setCompilers.FC):
         self.addDefine('HAVE_F90_2PTR_ARG', 1)
-        self.logPrint('PGI F90 compiler detected & using --with-batch', 3, 'compilers')
+        self.logPrint('PGI F90 compiler detected & using --with-batch, so use two arguments for array pointers', 3, 'compilers')
+      else:
+        self.logPrint('Using --with-batch, so guess that F90 uses a single argument for array pointers', 3, 'compilers')
       return
     # do not check on windows - as it pops up the annoying debugger
     if config.setCompilers.Configure.isCygwin():
