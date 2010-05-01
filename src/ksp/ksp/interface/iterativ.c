@@ -988,8 +988,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDM(KSP ksp,DM dm)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDMActive(KSP ksp,PetscTruth flg)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   ksp->dmActive = flg;

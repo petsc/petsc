@@ -1,4 +1,3 @@
-#requirespackage   'PETSC_HAVE_MATLAB_ENGINE'
 
 DIRS     = fun3d blopex 
 LOCDIR   = src/contrib/

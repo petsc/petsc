@@ -15,7 +15,7 @@ namespace ALE {
     typedef IUniformSection<int,int> perm_type;
   public:
     template<typename Mesh>
-    static void calculateMeshReordering(const Obj<Mesh>& mesh, Obj<perm_type>& permutation) {
+    static void calculateMeshReordering(const Obj<Mesh>& mesh, Obj<perm_type>& permutation, Obj<perm_type>& invPermutation) {
       Obj<perm_type> pointPermutation = new perm_type(permutation->comm(), permutation->debug());
       int *start     = NULL;
       int *adjacency = NULL;
@@ -43,11 +43,12 @@ namespace ALE {
       for(int i = 0; i < numVertices; ++i) --perm[i];
       // Construct closure
       permutation->setChart(mesh->getSieve()->getChart());
-      createOrderingClosureV(mesh, pointPermutation, permutation);
+      invPermutation->setChart(mesh->getSieve()->getChart());
+      createOrderingClosureV(mesh, pointPermutation, permutation, invPermutation);
      };
 
     template<typename Mesh, typename Section>
-    static void createOrderingClosureV(const Obj<Mesh>& mesh, const Obj<Section>& pointPermutation, const Obj<Section>& permutation, const int height = 0) {
+    static void createOrderingClosureV(const Obj<Mesh>& mesh, const Obj<Section>& pointPermutation, const Obj<Section>& permutation, const Obj<Section>& invPermutation, const int height = 0) {
       typedef ISieveVisitor::TransitiveClosureVisitor<typename Mesh::sieve_type> visitor_type;
       const Obj<typename Mesh::sieve_type>& sieve    = mesh->getSieve();
       const typename Section::chart_type&   chart    = pointPermutation->getChart();
@@ -68,33 +69,40 @@ namespace ALE {
 
         for(typename std::set<typename Mesh::point_type>::const_iterator c_iter = begin; c_iter != end; ++c_iter) {
           permutation->setFiberDimension(*c_iter, 1);
+          invPermutation->setFiberDimension(*c_iter, 1);
         }
         maxPoint = std::max(maxPoint, *pointPermutation->restrictPoint(*p_iter));
       }
       permutation->allocatePoint();
       permutation->zero();
+      invPermutation->allocatePoint();
+      invPermutation->zero();
 
       for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         typename visitor_type::visitor_type nV;
         visitor_type                        cV(*sieve, nV);
+        const typename Mesh::point_type     p = *p_iter;
 
-        sieve->cone(*p_iter, cV);
+        sieve->cone(p, cV);
         if (height) {
           cV.setIsCone(false);
-          sieve->support(*p_iter, cV);
+          sieve->support(p, cV);
         }
 
-        permutation->updatePoint(*p_iter, pointPermutation->restrictPoint(*p_iter));
+        permutation->updatePoint(p, pointPermutation->restrictPoint(p));
+        invPermutation->updatePoint(pointPermutation->restrictPoint(p)[0], &p);
         typename std::set<typename Mesh::point_type>::const_iterator begin = cV.getPoints().begin();
         typename std::set<typename Mesh::point_type>::const_iterator end   = cV.getPoints().end();
 
         ++begin; // Skip cell
         for(typename std::set<typename Mesh::point_type>::const_iterator c_iter = begin; c_iter != end; ++c_iter) {
           const typename Section::value_type *val = permutation->restrictPoint(*c_iter);
+          const typename Mesh::point_type     c   = *c_iter;
 
           if (!val[0]) {
             ++maxPoint;
-            permutation->updatePoint(*c_iter, &maxPoint);
+            permutation->updatePoint(c, &maxPoint);
+            invPermutation->updatePoint(maxPoint, &c);
           }
         }
       }
@@ -106,15 +114,15 @@ namespace ALE {
       newSection.setChart(section.getChart());
 
       for(typename Section::point_type p = section.getChart().min(); p < section.getChart().max(); ++p) {
-	const typename Section::point_type newP = relabeling.restrictPoint(p)[0];
+        const typename Section::point_type newP = relabeling.restrictPoint(p)[0];
 
-	newSection.setFiberDimension(newP, section.getFiberDimension(p));
+        newSection.setFiberDimension(newP, section.getFiberDimension(p));
       }
       newSection.allocatePoint();
       for(typename Section::point_type p = section.getChart().min(); p < section.getChart().max(); ++p) {
-	const typename Section::point_type newP = relabeling.restrictPoint(p)[0];
+        const typename Section::point_type newP = relabeling.restrictPoint(p)[0];
 
-	newSection.updatePoint(newP, section.restrictPoint(p));
+        newSection.updatePoint(newP, section.restrictPoint(p));
       }
     };
   };

@@ -33,11 +33,7 @@ all:
 	  ${OMAKE} shared_install PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log ;\
 	 fi
 
-#
-#  Notes: the shared_nomesg and petsc4py should NOT be built if --prefix was used
-#  the rules for shared_nomesg_noinstall petsc4py_noinstall are generated automatically 
-#  by config/PETSc/Configure.py and config/PETSc/packages/petsc4py.py based on the existance 
-all_build: chk_petsc_dir chklib_dir info info_h deletelibs deletemods build shared_nomesg_noinstall mpi4py_noinstall petsc4py_noinstall
+all_build: chk_petsc_dir chklib_dir info info_h deletelibs deletemods build shared_nomesg mpi4py petsc4py
 #
 # Prints information about the system and version of PETSc being compiled
 #

@@ -184,7 +184,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC pc)
 
   ((PC_Factor*)icc)->info.dtcol       = PETSC_DEFAULT;
   ((PC_Factor*)icc)->info.shifttype   = (PetscReal) MAT_SHIFT_POSITIVE_DEFINITE;
-  ((PC_Factor*)icc)->info.shiftamount = 0.0;
+  ((PC_Factor*)icc)->info.shiftamount = 1.e-12;
   ((PC_Factor*)icc)->info.zeropivot   = 1.e-12;
 
   pc->data	               = (void*)icc;

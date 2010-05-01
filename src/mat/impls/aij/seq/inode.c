@@ -1198,7 +1198,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
   MatScalar        d;
   PetscInt         inod,nodesz,node_max,col;
   const PetscInt   *ns;
-  PetscInt         *tmp_vec1,*tmp_vec2,*nsmap,newshift;
+  PetscInt         *tmp_vec1,*tmp_vec2,*nsmap,newshift = 0;
   PetscFunctionBegin;
   /* MatPivotSetUp(): initialize shift context sctx */
   ierr = PetscMemzero(&sctx,sizeof(FactorShiftCtx));CHKERRQ(ierr);

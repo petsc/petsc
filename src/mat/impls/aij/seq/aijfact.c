@@ -471,7 +471,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
   const PetscInt   *ddiag;
   PetscReal        rs;
   MatScalar        d;
-  PetscInt         newshift;
+  PetscInt         newshift = 0;
 
   PetscFunctionBegin;
   /* MatPivotSetUp(): initialize shift context sctx */
@@ -798,7 +798,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,const MatFa
   MatScalar      *v,*pv;
   PetscReal      rs;
   FactorShiftCtx sctx;
-  PetscInt       newshift;
+  PetscInt       newshift = 0;
 
   PetscFunctionBegin;
   if (A != B) SETERRQ(PETSC_ERR_ARG_INCOMP,"input and output matrix must have same address");
@@ -2081,7 +2081,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *
   PetscInt       k,jmin,jmax,*c2r,*il,col,nexti,ili,nz;
   MatScalar      *rtmp,*ba=b->a,*bval,*aa=a->a,dk,uikdi;
   PetscTruth     perm_identity;
-  PetscInt       newshift;
+  PetscInt       newshift = 0;
 
   FactorShiftCtx sctx;
   PetscReal      rs;
