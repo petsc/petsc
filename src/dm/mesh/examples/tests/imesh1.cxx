@@ -461,12 +461,13 @@ public:
   };
 
   void testReordering() {
-    ALE::Obj<ALE::Ordering<>::perm_type> reordering = new ALE::Ordering<>::perm_type(this->_mesh->comm(), this->_mesh->debug());
+    ALE::Obj<ALE::Ordering<>::perm_type> reordering    = new ALE::Ordering<>::perm_type(this->_mesh->comm(), this->_mesh->debug());
+    ALE::Obj<ALE::Ordering<>::perm_type> invReordering = new ALE::Ordering<>::perm_type(this->_mesh->comm(), this->_mesh->debug());
 
     this->_mesh->view("Original Mesh");
-    ALE::Ordering<>::calculateMeshReordering(this->_mesh, reordering);
-    reordering->view("Reordering");
-    this->_mesh->relabel(*reordering);
+    ALE::Ordering<>::calculateMeshReordering(this->_mesh, reordering, invReordering);
+    invReordering->view("Reordering");
+    this->_mesh->relabel(*invReordering);
     this->_mesh->view("Relabeled Mesh");
   };
 

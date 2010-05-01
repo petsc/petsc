@@ -81,33 +81,34 @@ namespace ALE {
       for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         typename visitor_type::visitor_type nV;
         visitor_type                        cV(*sieve, nV);
-        const typename Mesh::point_type     p = *p_iter;
+        const typename Mesh::point_type     newP = *p_iter;
+        const typename Mesh::point_type    *oldP = pointPermutation->restrictPoint(newP);
 
-        sieve->cone(p, cV);
+        sieve->cone(oldP[0], cV);
         if (height) {
           cV.setIsCone(false);
-          sieve->support(p, cV);
+          sieve->support(oldP[0], cV);
         }
 
-        // Maps new point p to old point q
-        permutation->updatePoint(p, pointPermutation->restrictPoint(p));
-        // Maps old point q to new point p
-        invPermutation->updatePoint(pointPermutation->restrictPoint(p)[0], &p);
+        // Maps new point to old point
+        permutation->updatePoint(newP, oldP);
+        // Maps old point to new point
+        invPermutation->updatePoint(oldP[0], &newP);
         typename std::set<typename Mesh::point_type>::const_iterator begin = cV.getPoints().begin();
         typename std::set<typename Mesh::point_type>::const_iterator end   = cV.getPoints().end();
 
         ++begin; // Skip cell
         for(typename std::set<typename Mesh::point_type>::const_iterator c_iter = begin; c_iter != end; ++c_iter) {
-          const typename Mesh::point_type     c = *c_iter;
-          const typename Section::value_type *d = invPermutation->restrictPoint(c);
+          const typename Mesh::point_type     oldC = *c_iter;
+          const typename Section::value_type *newC = invPermutation->restrictPoint(oldC);
 
           // Check if old c has been mapped to a new d
-          if (!d[0]) {
+          if (!newC[0]) {
             ++maxPoint;
-            // Maps new point d to old point c
-            permutation->updatePoint(maxPoint, &c);
-            // Maps old point c to new point d
-            invPermutation->updatePoint(c, &maxPoint);
+            // Maps new point to old point
+            permutation->updatePoint(maxPoint, &oldC);
+            // Maps old point to new point
+            invPermutation->updatePoint(oldC, &maxPoint);
           }
         }
       }
