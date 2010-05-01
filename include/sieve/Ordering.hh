@@ -89,20 +89,25 @@ namespace ALE {
           sieve->support(p, cV);
         }
 
+        // Maps new point p to old point q
         permutation->updatePoint(p, pointPermutation->restrictPoint(p));
+        // Maps old point q to new point p
         invPermutation->updatePoint(pointPermutation->restrictPoint(p)[0], &p);
         typename std::set<typename Mesh::point_type>::const_iterator begin = cV.getPoints().begin();
         typename std::set<typename Mesh::point_type>::const_iterator end   = cV.getPoints().end();
 
         ++begin; // Skip cell
         for(typename std::set<typename Mesh::point_type>::const_iterator c_iter = begin; c_iter != end; ++c_iter) {
-          const typename Section::value_type *val = permutation->restrictPoint(*c_iter);
-          const typename Mesh::point_type     c   = *c_iter;
+          const typename Mesh::point_type     c = *c_iter;
+          const typename Section::value_type *d = invPermutation->restrictPoint(c);
 
-          if (!val[0]) {
+          // Check if old c has been mapped to a new d
+          if (!d[0]) {
             ++maxPoint;
-            permutation->updatePoint(c, &maxPoint);
-            invPermutation->updatePoint(maxPoint, &c);
+            // Maps new point d to old point c
+            permutation->updatePoint(maxPoint, &c);
+            // Maps old point c to new point d
+            invPermutation->updatePoint(c, &maxPoint);
           }
         }
       }
