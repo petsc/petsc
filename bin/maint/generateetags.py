@@ -79,7 +79,7 @@ def processDir(tagfiles,dirname,names):
   etagfile = tagfiles[0]
   ctagfile = tagfiles[1]
   newls = []
-  gsfx = ['.py','.c','.F','.F90','.h','.h90','.tex','.cxx','.hh','makefile']
+  gsfx = ['.py','.c','.F','.F90','.h','.h90','.tex','.cxx','.hh','makefile','.bib']
   hsfx = ['.html']
   bsfx = ['.py.html','.c.html','.F.html','.h.html','.tex.html','.cxx.html','.hh.html','makefile.html','.gcov.html']
   for l in names:
