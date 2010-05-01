@@ -361,7 +361,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalBoundingBox(DA da,PetscReal lmin[],Pe
   dim = da->dim;
   ierr = DAGetCoordinates(da,&coords);CHKERRQ(ierr);
   ierr = VecGetArray(coords,&local_coords);CHKERRQ(ierr);
-  ierr = VecGetSize(coords,&N);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(coords,&N);CHKERRQ(ierr);
   Ni = N/dim;
   for (i=0; i<Ni; i++) {
     for (j=0; j<dim; j++) {
