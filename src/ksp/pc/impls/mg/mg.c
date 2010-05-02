@@ -465,9 +465,11 @@ PetscErrorCode PCSetUp_MG(PC pc)
       ierr = DMCoarsen(dms[i+1],PETSC_NULL,&dms[i]);CHKERRQ(ierr);
       ierr = DMSetFunction(dms[i],0);
       ierr = DMSetInitialGuess(dms[i],0);
-      ierr = DMGetInterpolation(dms[i],dms[i+1],&p,PETSC_NULL);CHKERRQ(ierr);
-      ierr = PCMGSetInterpolation(pc,i+1,p);CHKERRQ(ierr);
-      ierr = MatDestroy(p);CHKERRQ(ierr);
+      if (!mglevels[i+1]->interpolate) {
+	ierr = DMGetInterpolation(dms[i],dms[i+1],&p,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PCMGSetInterpolation(pc,i+1,p);CHKERRQ(ierr);
+        ierr = MatDestroy(p);CHKERRQ(ierr);
+      }
     }
 
     if (!mg->galerkin) {
@@ -978,13 +980,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetNumberSmoothUp(PC pc,PetscInt n)
 -  -pc_mg_dump_matlab - dumps the matrices for each level and the restriction/interpolation matrices
                         to the Socket viewer for reading from Matlab.
 
-   Notes:
+   Notes: By default this uses GMRES on the fine grid smoother so this should be used with KSPFGMRES or the smoother changed to not use GMRES
 
    Level: intermediate
 
    Concepts: multigrid/multilevel
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCMGType, 
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCMGType, PCEXOTIC
            PCMGSetLevels(), PCMGGetLevels(), PCMGSetType(), PCMGSetCycleType(), PCMGSetNumberSmoothDown(),
            PCMGSetNumberSmoothUp(), PCMGGetCoarseSolve(), PCMGSetResidual(), PCMGSetInterpolation(),
            PCMGSetRestriction(), PCMGGetSmoother(), PCMGGetSmootherUp(), PCMGGetSmootherDown(),

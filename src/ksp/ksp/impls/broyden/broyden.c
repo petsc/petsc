@@ -75,7 +75,20 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
   KSPMonitor(ksp,0,gnorm);
   ierr = (*ksp->converged)(ksp,0,gnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); 
 
-  ierr = VecAXPY(X,1.0,Pold);CHKERRQ(ierr);                    /*     x = x + p */
+  if (1) {
+    PetscScalar rdot,abr;
+    Vec         y,w;
+    ierr = VecDuplicate(P,&y);CHKERRQ(ierr);
+    ierr = VecDuplicate(P,&w);CHKERRQ(ierr);
+    ierr = MatMult(Amat,Pold,y);CHKERRQ(ierr);
+    /*ierr = KSP_PCApplyBAorAB(ksp,Pold,y,w);CHKERRQ(ierr);  */    /* y = BAp */
+    ierr  = VecDotNorm2(Pold,y,&rdot,&abr);CHKERRQ(ierr);   /*   rdot = (p)^T(BAp); abr = (BAp)^T (BAp) */
+    ierr = VecDestroy(y);CHKERRQ(ierr);
+    ierr = VecDestroy(w);CHKERRQ(ierr);
+    ierr = VecAXPY(X,rdot/abr,Pold);CHKERRQ(ierr);             /*   x  <- x + scale p */
+  } else {
+    ierr = VecAXPY(X,1.0,Pold);CHKERRQ(ierr);                    /*     x = x + p */
+  }
 
   for (k=0; k<ksp->max_it; k += cg->msize) {
     for (i=0; i<cg->msize && k+i<ksp->max_it; i++) {
@@ -93,22 +106,35 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
       ierr = (*ksp->converged)(ksp,1+k+i,gnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); 
       if (ksp->reason) PetscFunctionReturn(0);
 
-      for (j=0; j<i; j++) {                                     /* r = product_i [I+v(i)w(i)^T]* */
+      for (j=0; j<i; j++) {                                     /* p = product_{j<i} [I+v(j)w(j)^T]*p */
         ierr = VecDot(W[j],P,&gdot);CHKERRQ(ierr);
         ierr = VecAXPY(P,gdot,V[j]);CHKERRQ(ierr);
       }
-      ierr = VecCopy(Pold,W[i]);CHKERRQ(ierr);                   /* W[i] = Pold */
+      ierr = VecCopy(Pold,W[i]);CHKERRQ(ierr);                   /* w[i] = Pold */
 
-      ierr = VecAXPY(Pold,-1.0,P);CHKERRQ(ierr);                 /* V[i] =       P           */
+      ierr = VecAXPY(Pold,-1.0,P);CHKERRQ(ierr);                 /* v[i] =       p           */
       ierr = VecDot(W[i],Pold,&gdot);CHKERRQ(ierr);             /*        ----------------- */
-      ierr = VecCopy(P,V[i]);CHKERRQ(ierr);                      /*         W[i]'*(Pold - P)    */
+      ierr = VecCopy(P,V[i]);CHKERRQ(ierr);                      /*         w[i]'*(Pold - p)    */
       ierr = VecScale(V[i],1.0/gdot);CHKERRQ(ierr);
 
-      ierr = VecDot(W[i],P,&gdot);CHKERRQ(ierr);                /* P = (I + V[i]*W[i]')*P  */
+      ierr = VecDot(W[i],P,&gdot);CHKERRQ(ierr);                /* p = (I + v[i]*w[i]')*p  */
       ierr = VecAXPY(P,gdot,V[i]);CHKERRQ(ierr);
       ierr = VecCopy(P,Pold);CHKERRQ(ierr);
 
-      ierr = VecAXPY(X,1.0,P);CHKERRQ(ierr);                    /* X = X + P */
+      if (1) {
+        PetscScalar rdot,abr;
+        Vec         y,w;
+        ierr = VecDuplicate(P,&y);CHKERRQ(ierr);
+        ierr = VecDuplicate(P,&w);CHKERRQ(ierr);
+    ierr = MatMult(Amat,P,y);CHKERRQ(ierr);
+    /*ierr = KSP_PCApplyBAorAB(ksp,P,y,w);CHKERRQ(ierr); */     /* y = BAp */
+	ierr  = VecDotNorm2(P,y,&rdot,&abr);CHKERRQ(ierr);   /*   rdot = (p)^T(BAp); abr = (BAp)^T (BAp) */
+        ierr = VecDestroy(y);CHKERRQ(ierr);
+        ierr = VecDestroy(w);CHKERRQ(ierr);
+	ierr = VecAXPY(X,rdot/abr,P);CHKERRQ(ierr);             /*   x  <- x + scale p */
+      } else {
+        ierr = VecAXPY(X,1.0,P);CHKERRQ(ierr);                    /* x = x + p */
+      }
     }
   }
   ksp->reason = KSP_DIVERGED_ITS;
@@ -134,10 +160,6 @@ PetscErrorCode KSPDestroy_Broyden(KSP ksp)
 
 /*
      KSPView_Broyden - Prints information about the current Krylov method being used
-
-      Currently this only prints information to a file (or stdout) about the 
-      symmetry of the problem. If your Krylov method has special options or 
-      flags that information should be printed here.
 
 */
 #undef __FUNCT__  
@@ -182,11 +204,13 @@ PetscErrorCode KSPSetFromOptions_Broyden(KSP ksp)
     It must be wrapped in EXTERN_C_BEGIN to be dynamically linkable in C++
 */
 /*MC
-     KSPBROYDEN - The preconditioned conjugate gradient (Broyden) iterative method
+     KSPBROYDEN - Limited memory "bad" Broyden method implemented for linear problems.
 
    Level: beginner
 
    Notes: Supports only left preconditioning
+
+          Implemented for experimentation reasons, not intended to replace any of the Krylov methods
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP
 
