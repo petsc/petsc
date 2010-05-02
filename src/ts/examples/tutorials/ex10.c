@@ -46,6 +46,7 @@ struct _n_RD {
   BCType         leftbc;
   PetscTruth     view_draw;
   char           view_binary[PETSC_MAX_PATH_LEN];
+  PetscTruth     test_diff;
   PetscTruth     endpoint;
   PetscTruth     bclimit;
   RDUnit         unit;
@@ -86,12 +87,12 @@ static void RDMaterialEnergy(RD rd,const RDNode *n,PetscScalar *Em,RDNode *dEm)
 static void QuadraticSolve(PetscScalar a,PetscScalar a_t,PetscScalar b,PetscScalar b_t,PetscScalar c,PetscScalar c_t,PetscScalar *x,PetscScalar *x_t)
 {
   PetscScalar
-    disc   = b*b - 4*a*c,
-    disc_t = 2*b*b_t - 4*a_t*c - 4*a*c_t,
+    disc   = b*b - 4.*a*c,
+    disc_t = 2.*b*b_t - 4.*a_t*c - 4.*a*c_t,
     num    = -b + PetscSqrtScalar(disc), /* choose positive sign */
     num_t  = -b_t + 0.5/PetscSqrtScalar(disc)*disc_t,
-    den    = 2*a,
-    den_t  = 2*a_t;
+    den    = 2.*a,
+    den_t  = 2.*a_t;
   *x   = num/den;
   *x_t = (num_t*den - num*den_t) / PetscSqr(den);
 }
@@ -106,13 +107,13 @@ static void RDMaterialEnergy_Saha(RD rd,const RDNode *n,PetscScalar *inEm,RDNode
     chi_t = -chi / T * T_t,
     a     = 1.,
     a_t   = 0,
-    b     = 4 * rd->m_p / rd->rho * pow(2. * PETSC_PI * rd->m_e * rd->I_H / PetscSqr(rd->h),1.5) * PetscExpScalar(-chi) * PetscPowScalar(chi,1.5), /* Eq 7 */
+    b     = 4. * rd->m_p / rd->rho * pow(2. * PETSC_PI * rd->m_e * rd->I_H / PetscSqr(rd->h),1.5) * PetscExpScalar(-chi) * PetscPowScalar(chi,1.5), /* Eq 7 */
     b_t   = -b*chi_t + 1.5*b/chi*chi_t,
     c     = -b,
     c_t   = -b_t;
   QuadraticSolve(a,a_t,b,b_t,c,c_t,&alpha,&alpha_t);
-  Em   = rd->k * T / rd->m_p * (1.5*(1+alpha) + alpha*chi); /* Eq 6 */
-  if (inEm) *inEm   = Em;
+  Em = rd->k * T / rd->m_p * (1.5*(1.+alpha) + alpha*chi); /* Eq 6 */
+  if (inEm) *inEm = Em;
   if (dEm) {
     dEm->E = 0;
     dEm->T = Em / T * T_t + rd->k * T / rd->m_p * (1.5*alpha_t + alpha_t*chi + alpha*chi_t);
@@ -133,31 +134,29 @@ static void RDMaterialEnergy_Reduced(RD rd,const RDNode *n,PetscScalar *Em,RDNod
     c = -b,
     c_t = -b_t;
   QuadraticSolve(a,a_t,b,b_t,c,c_t,&alpha,&alpha_t);
-  if (Em)  *Em   = (1+alpha)*T + 0.3*alpha;
+  if (Em)  *Em   = (1.+alpha)*T + 0.3*alpha;
   if (dEm) {
     dEm->E = 0;
-    dEm->T = alpha_t*T + (1+alpha)*T_t + 0.3*alpha_t;
+    dEm->T = alpha_t*T + (1.+alpha)*T_t + 0.3*alpha_t;
   }
 }
 
 static void RDSigma_R(RD rd,RDNode *n,PetscScalar *sigma_R,RDNode *dsigma_R)
 {
   *sigma_R = rd->K_R * rd->rho * PetscPowScalar(n->T,-rd->gamma);
-  if (dsigma_R) {
-    dsigma_R->E = 0;
-    dsigma_R->T = -rd->gamma * (*sigma_R) / n->T;
-  }
+  dsigma_R->E = 0;
+  dsigma_R->T = -rd->gamma * (*sigma_R) / n->T;
 }
 
 static void RDDiffusionCoefficient(RD rd,PetscTruth limit,RDNode *n,RDNode *nx,PetscScalar *D_r,RDNode *dD_R,RDNode *dxD_R)
 {
   PetscScalar sigma_R,denom;
   RDNode dsigma_R,ddenom,dxdenom;
-  RDSigma_R(rd,n,&sigma_R,dD_R ? &dsigma_R : 0);
+  RDSigma_R(rd,n,&sigma_R,&dsigma_R);
   denom = 3. * rd->rho * sigma_R + (int)limit * PetscAbsScalar(nx->E) / n->E;
   ddenom.E = -(int)limit * PetscAbsScalar(nx->E) / PetscSqr(n->E);
   ddenom.T = 3. * rd->rho * dsigma_R.T;
-  dxdenom.E = (int)limit * (PetscRealPart(nx->E)<0 ? -1 : 1) / n->E;
+  dxdenom.E = (int)limit * (PetscRealPart(nx->E)<0 ? -1. : 1.) / n->E;
   dxdenom.T = 0;
   *D_r = rd->c / denom;
   if (dD_R) {
@@ -445,6 +444,7 @@ static PetscErrorCode RDGetQuadrature(RD rd,PetscReal hx,PetscInt *nq,PetscReal 
       static const PetscReal ii[3][2] = {{1,0},{0.5,0.5},{0,1}},dd[3][2] = {{-1,1},{-1,1},{-1,1}},ww[3] = {1./6,4./6,1./6};
       *nq = 3; refweight = ww; refinterp = ii; refderiv = dd;
     } break;
+    default: SETERRQ1(PETSC_ERR_SUP,"Unknown quadrature %d",(int)rd->quadrature);
   }
 
   for (q=0; q<*nq; q++) {
@@ -510,19 +510,20 @@ static PetscErrorCode RDIFunction_FE(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
       for (j=0; j<2; j++) {
         f[i+j].E += (deriv[q][j] * weight[q] * ((1.-Theta)*D0_r*n0x.E + Theta*D_r*nx.E)
                      + interp[q][j] * weight[q] * (nt.E - rad));
-        f[i+j].T += interp[q][j] * weight[q] * (rho * Em_t + 0*rad);
+        f[i+j].T += interp[q][j] * weight[q] * (rho * Em_t + 0.*rad);
       }
     }
   }
   if (info.xs == 0) {
     switch (rd->leftbc) {
       case BC_ROBIN: {
-        PetscScalar D_R,D_R_bc,ratio;
+        PetscScalar D_R,D_R_bc;
+        PetscReal   ratio;
         RDNode n = {(1-Theta)*x0[0].E + Theta*x[0].E,(1-Theta)*x0[0].T + Theta*x[0].T},
             nx = {(x[1].E-x[0].E)/hx,(x[1].T-x[0].T)/hx};
         RDDiffusionCoefficient(rd,PETSC_TRUE,&n,&nx,&D_R,0,0);
         RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D_R_bc,0,0);
-        ratio = D_R/D_R_bc;
+        ratio = PetscRealPart(D_R/D_R_bc);
         if (ratio > 1.) SETERRQ(1,"Limited diffusivity is greater than unlimited");
         if (ratio < 1e-2) SETERRQ(1,"Heavily limited diffusivity");
         f[0].E += -ratio*0.5*(rd->Eapplied - n.E);
@@ -583,7 +584,7 @@ static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
           K[j*2+0][k*2+1] += (+interp[q][j] * weight[q] * (-drad.T * interp[q][k])
                               + deriv[q][j] * weight[q] * (dxD_R.T * deriv[q][k] + dD_R.T * interp[q][k]) * nx.E);
           K[j*2+1][k*2+0] +=   interp[q][j] * weight[q] * drad.E * interp[q][k];
-          K[j*2+1][k*2+1] +=   interp[q][j] * weight[q] * (a * rd->rho * dEm.T + 0*drad.T) * interp[q][k];
+          K[j*2+1][k*2+1] +=   interp[q][j] * weight[q] * (a * rd->rho * dEm.T + 0.*drad.T) * interp[q][k];
         }
       }
     }
@@ -592,12 +593,13 @@ static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
   if (info.xs == 0) {
     switch (rd->leftbc) {
       case BC_ROBIN: {
-        PetscScalar D_R,D_R_bc,ratio;
+        PetscScalar D_R,D_R_bc;
+        PetscReal   ratio;
         RDNode n = {(1-Theta)*x0[0].E + Theta*x[0].E,(1-Theta)*x0[0].T + Theta*x[0].T},
             nx = {(x[1].E-x[0].E)/hx,(x[1].T-x[0].T)/hx};
         RDDiffusionCoefficient(rd,PETSC_TRUE,&n,&nx,&D_R,0,0);
         RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D_R_bc,0,0);
-        ratio = D_R/D_R_bc;
+        ratio = PetscRealPart(D_R/D_R_bc);
         ierr = MatSetValue(*B,0,0,ratio*0.5,ADD_VALUES);CHKERRQ(ierr);
       } break;
       case BC_NEUMANN:
@@ -645,7 +647,6 @@ static PetscErrorCode RDInitialState(RD rd,Vec X)
       case 3:
         x[i].E = 7.56e-2 * rd->unit.Joule / pow(rd->unit.meter,3);
         x[i].T = RDRadiationTemperature(rd,x[i].E);
-        printf("T %g  dT %g\n",x[i].T,x[i].T - 3160 * rd->unit.Kelvin);
         break;
       default: SETERRQ1(PETSC_ERR_SUP,"No initial state %d",rd->initial);
     }
@@ -696,6 +697,57 @@ static PetscErrorCode RDView(RD rd,Vec X,PetscViewer viewer)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "RDTestDifferentiation"
+static PetscErrorCode RDTestDifferentiation(RD rd)
+{
+  PetscErrorCode ierr;
+  RDNode n,nx;
+  PetscScalar epsilon;
+
+  PetscFunctionBegin;
+  epsilon = 1e-8;
+  {
+    RDNode dEm,fdEm;
+    PetscScalar T0 = 1000.,T1 = T0*(1.+epsilon),Em0,Em1;
+    n = (RDNode){1.,T0};
+    rd->MaterialEnergy(rd,&n,&Em0,&dEm);
+    n = (RDNode){1.+epsilon,T0};
+    rd->MaterialEnergy(rd,&n,&Em1,0); fdEm.E = (Em1-Em0)/epsilon;
+    n = (RDNode){1.,T1};
+    rd->MaterialEnergy(rd,&n,&Em1,0); fdEm.T = (Em1-Em0)/(T0*epsilon);
+    ierr = PetscPrintf(((PetscObject)rd->da)->comm,"dEm {%g,%g}, fdEm {%g,%g}, diff {%g,%g}\n",dEm.E,dEm.T,fdEm.E,fdEm.T,dEm.E-fdEm.E,dEm.T-fdEm.T);CHKERRQ(ierr);
+  }
+  {
+    PetscScalar D0,D;
+    RDNode dD,dxD,fdD,fdxD;
+    n = (RDNode){1.,1.}; nx = (RDNode){1.,1.};
+    RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D0,&dD,&dxD);
+    n = (RDNode){1.+epsilon,1.};
+    RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D,0,0); fdD.E = (D-D0)/epsilon;
+    n = (RDNode){1.,1.+epsilon};
+    RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D,0,0); fdD.T = (D-D0)/epsilon;
+    n = (RDNode){1.,1.}; nx = (RDNode){1.+epsilon,1.};
+    RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D,0,0); fdxD.E = (D-D0)/epsilon;
+    nx = (RDNode){1.,1.+epsilon};
+    RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D,0,0); fdxD.T = (D-D0)/epsilon;
+    ierr = PetscPrintf(((PetscObject)rd->da)->comm,"dD {%g,%g}, fdD {%g,%g}, diff {%g,%g}\n",dD.E,dD.T,fdD.E,fdD.T,dD.E-fdD.E,dD.T-fdD.T);CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)rd->da)->comm,"dxD {%g,%g}, fdxD {%g,%g}, diffx {%g,%g}\n",dxD.E,dxD.T,fdxD.E,fdxD.T,dxD.E-fdxD.E,dxD.T-fdxD.T);CHKERRQ(ierr);
+  }
+  {
+    PetscScalar rad0,rad;
+    RDNode drad,fdrad;
+    n = (RDNode){1.,1.};
+    rad0 = RDRadiation(rd,&n,&drad);
+    n = (RDNode){1.+epsilon,1.};
+    rad = RDRadiation(rd,&n,0); fdrad.E = (rad-rad0)/epsilon;
+    n = (RDNode){1.,1.+epsilon};
+    rad = RDRadiation(rd,&n,0); fdrad.T = (rad-rad0)/epsilon;
+    ierr = PetscPrintf(((PetscObject)rd->da)->comm,"drad {%g,%g}, fdrad {%g,%g}, diff {%g,%g}\n",drad.E,drad.T,fdrad.E,fdrad.T,drad.E-drad.E,drad.T-fdrad.T);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "RDCreate"
 static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
 {
@@ -709,11 +761,24 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
 
   ierr = PetscOptionsBegin(comm,PETSC_NULL,"Options for nonequilibrium radiation-diffusion with RD ionization",PETSC_NULL);CHKERRQ(ierr);
   {
+    ierr = PetscOptionsInt("-rd_initial","Initial condition (1=Marshak, 2=Blast, 3=Marshak+)","",rd->initial,&rd->initial,0);CHKERRQ(ierr);
+    switch (rd->initial) {
+    case 1:
+    case 2:
+      rd->unit.kilogram = 1.;
+      rd->unit.meter    = 1.;
+      rd->unit.second   = 1.;
+      rd->unit.Kelvin   = 1.;
+      break;
+    case 3:
+      rd->unit.kilogram = 1.e12;
+      rd->unit.meter    = 1.;
+      rd->unit.second   = 1.e9;
+      rd->unit.Kelvin   = 1.;
+      break;
+    default: SETERRQ1(PETSC_ERR_SUP,"Unknown initial condition %d",rd->initial);
+    }
     /* Fundamental units */
-    rd->unit.kilogram = 1.;
-    rd->unit.meter    = 1.;
-    rd->unit.second   = 1.;
-    rd->unit.Kelvin   = 1.;
     ierr = PetscOptionsReal("-rd_unit_meter","Length of 1 meter in nondimensional units","",rd->unit.meter,&rd->unit.meter,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-rd_unit_kilogram","Mass of 1 kilogram in nondimensional units","",rd->unit.kilogram,&rd->unit.kilogram,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-rd_unit_second","Time of a second in nondimensional units","",rd->unit.second,&rd->unit.second,0);CHKERRQ(ierr);
@@ -736,7 +801,6 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
       ierr = PetscOptionsEnum("-rd_quadrature","Finite element quadrature","",QuadratureTypes,(PetscEnum)rd->quadrature,(PetscEnum*)&rd->quadrature,0);CHKERRQ(ierr);
     }
     ierr = PetscOptionsEnum("-rd_jacobian","Type of finite difference Jacobian","",JacobianTypes,(PetscEnum)rd->jacobian,(PetscEnum*)&rd->jacobian,0);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-rd_initial","Initial condition (1=Marshak, 2=Blast, 3=Marshak+)","",rd->initial,&rd->initial,0);CHKERRQ(ierr);
     switch (rd->initial) {
       case 1:
         rd->leftbc     = BC_ROBIN;
@@ -771,6 +835,7 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
     ierr = PetscOptionsTruth("-rd_view_draw","Draw final solution","",rd->view_draw,&rd->view_draw,0);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-rd_endpoint","Discretize using endpoints (like trapezoid rule) instead of midpoint","",rd->endpoint,&rd->endpoint,0);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-rd_bclimit","Limit diffusion coefficient in definition of Robin boundary condition","",rd->bclimit,&rd->bclimit,0);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-rd_test_diff","Test differentiation in constitutive relations","",rd->test_diff,&rd->test_diff,0);CHKERRQ(ierr);
     ierr = PetscOptionsString("-rd_view_binary","File name to hold final solution","",rd->view_binary,rd->view_binary,sizeof(rd->view_binary),0);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -870,6 +935,9 @@ int main(int argc, char *argv[])
       break;
   }
 
+  if (rd->test_diff) {
+    ierr = RDTestDifferentiation(rd);CHKERRQ(ierr);
+  }
   ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Steps %D  final time %G\n",steps,ftime);CHKERRQ(ierr);
   if (rd->view_draw) {
