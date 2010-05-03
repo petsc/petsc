@@ -1,6 +1,6 @@
 #define PETSCTS_DLL
 
-#include "gl.h" /*I  "petscts.h" I*/
+#include "../src/ts/impls/implicit/gl/gl.h" /*I  "petscts.h" I*/
 
 static PetscFList TSGLAdaptList;
 static PetscTruth TSGLAdaptPackageInitialized;

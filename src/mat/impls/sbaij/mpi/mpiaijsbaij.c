@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
 
-#include "mpisbaij.h" /*I "petscmat.h" I*/
+#include "../src/mat/impls/sbaij/mpi/mpisbaij.h" /*I "petscmat.h" I*/
 #include "../src/mat/impls/aij/mpi/mpiaij.h"
 #include "private/matimpl.h"
 #include "petscmat.h"
