@@ -4,6 +4,16 @@
 *   enough slight differences we have completely separate codes for each one.
 *
 */
+
+/*
+  This feature test macro provides FE_NOMASK_ENV on GNU.  It must be defined
+  at the top of the file because other headers may pull in fenv.h even when
+  not strictly necessary.  Strictly speaking, we could include ONLY petscconf.h,
+  check PETSC_HAVE_FENV_H, and only define _GNU_SOURCE in that case, but such
+  shenanigans ought to be unnecessary.
+*/
+#define _GNU_SOURCE
+
 #include "petscsys.h"           /*I  "petscsys.h"  I*/
 #include <signal.h>
 #if defined(PETSC_HAVE_STDLIB_H)
@@ -284,6 +294,82 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap on)
     signal(SIGFPE,SIG_DFL);
     fp_disable(TRP_INVALID | TRP_DIV_BY_ZERO | TRP_OVERFLOW);
     fp_trap(FP_TRAP_OFF);
+  }
+  PetscFunctionReturn(0);
+}
+
+#elif defined PETSC_HAVE_FENV_H
+/*
+   C99 style floating point environment.
+
+   Note that C99 merely specifies how to save, restore, and clear the floating
+   point environment as well as defining an enumeration of exception codes.  In
+   particular, C99 does not specify how to make floating point exceptions raise
+   a signal.  Glibc offers this capability through FE_NOMASK_ENV (or with finer
+   granularity, feenableexcept()), xmmintrin.h offers _MM_SET_EXCEPTION_MASK().
+*/
+#include <fenv.h>
+typedef struct {int code; const char *name;} FPNode;
+static const FPNode error_codes[] = {
+    {FE_DIVBYZERO,"divide by zero"},
+    {FE_INEXACT,  "inexact floating point result"},
+    {FE_INVALID,  "invalid floating point arguments (domain error)"},
+    {FE_OVERFLOW, "floating point overflow"},
+    {FE_UNDERFLOW,"floating point underflow"},
+    {0           ,"unknown error"}
+};
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "PetscDefaultFPTrap"
+void PetscDefaultFPTrap(int sig)
+{
+  const FPNode *node;
+  int          code;
+  PetscTruth   matched = PETSC_FALSE;
+
+  PetscFunctionBegin;
+  /* Note: While it is possible for the exception state to be preserved by the
+   * kernel, this seems to be rare which makes the following flag testing almost
+   * useless.  But on a system where the flags can be preserved, it would provide
+   * more detail.  In practice, you will probably have to run in a debugger and check
+   * fetestexcept() by hand to determine exactly which exception was raised.
+   */
+  code = fetestexcept(FE_ALL_EXCEPT);
+  for (node=&error_codes[0]; node->code; node++) {
+    if (code & node->code) {
+      matched = PETSC_TRUE;
+      (*PetscErrorPrintf)("*** floating point error \"%s\" occurred ***\n",node->name);
+      code &= ~node->code; /* Unset this flag since it has been processed */
+    }
+  }
+  if (!matched || code) { /* If any remaining flags are set, or we didn't process any flags */
+    (*PetscErrorPrintf)("*** unknown floating point error occurred ***\n");
+  }
+  PetscError(0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,1,"floating point error");
+  MPI_Abort(PETSC_COMM_WORLD,0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSetFPTrap"
+PetscErrorCode PETSC_DLLEXPORT PetscSetFPTrap(PetscFPTrap on)
+{
+  PetscFunctionBegin;
+  if (on == PETSC_FP_TRAP_ON) {
+    /* Clear any flags that are currently set so that activating trapping will not immediately call the signal handler. */
+    if (feclearexcept(FE_ALL_EXCEPT)) SETERRQ(PETSC_ERR_LIB,"Cannot clear floating point exception flags\n");
+#if defined FE_NOMASK_ENV
+    /* We could use fesetenv(FE_NOMASK_ENV), but that causes spurious exceptions (like gettimeofday() -> PetscLogDouble). */
+    if (feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW) == -1) SETERRQ(PETSC_ERR_LIB,"Cannot activate floating point exceptions\n");
+#elif defined PETSC_HAVE_XMMINTRIN_H
+    _MM_SET_EXCEPTION_MASK(_MM_MASK_INEXACT);
+#else
+    /* C99 does not provide a way to modify the environment so there is no portable way to activate trapping. */
+#endif
+    if (SIG_ERR == signal(SIGFPE,PetscDefaultFPTrap)) SETERRQ(PETSC_ERR_LIB,"Can't set floating point handler\n");
+  } else {
+    if (fesetenv(FE_DFL_ENV)) SETERRQ(PETSC_ERR_LIB,"Cannot disable floating point exceptions");
+    if (SIG_ERR == signal(SIGFPE,SIG_DFL)) SETERRQ(PETSC_ERR_LIB,"Can't clear floating point handler\n");
   }
   PetscFunctionReturn(0);
 }

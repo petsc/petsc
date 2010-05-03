@@ -166,7 +166,8 @@ can I understand what is really happening within my program? </a></li>
       <li><a href="faq.html#efficient-assembly">Assembling
 large sparse matrices takes a long time. What can I do make this
 process faster? or MatSetValues() is <span style="font-weight: bold;">so
-slow, </span>what can I do to make it
+slow,
+        </span>what can I do to make it
 faster?</a></li>
       <li><a href="faq.html#log-summary">How can I
 generate performance summaries with PETSc?</a></li>
@@ -420,8 +421,7 @@ convergence.</p>
       <p></p>
       <p><a name="newremotebranches"><font color="#ff0000">How
 come I get an hg error indicating "new remote branches" might be
-created when I try to push?</font></a><span
- style="font-weight: bold;"></span></p>
+created when I try to push?</font></a><span style="font-weight: bold;"></span></p>
       <p>Here is an example:</p>
 [linux]% hg push<br>
 pushing to https://petsc.cs.iit.edu/petsc/petsc-dev<br>
@@ -435,9 +435,7 @@ not commit. You pull down and it aborts part way because you have
 "uncommitted local changes". However, you do not hg rollback.
 Instead
 you
-just
-
-      hg commit, which creates another
+just hg commit, which creates another
 head. This is supposed to be a feature. I think it should have a user
 disable.</p>
       <p>Fixing this is complicated. Basically, you clone the repo
@@ -544,39 +542,25 @@ bit pointers unless the two conditions above hold.&nbsp; </p>
       <p><font color="#ff0000"><a name="install-petsc4py-dev">How
 do
 I install petsc4py with the development PETSc</a>?</font></p>
-       
       <p>You can follow these steps </p>
       <ol>
-         
         <li>grab petsc4py-dev repo [from hg]</li>
-         
         <li>install Cython</li>
-         
         <li>make cython [in petsc4py-dev]</li>
-         
         <li>place petsc4py-dev in PETSC_DIR/externalpackages</li>
-         
         <li>export ARCHFLAGS=''</li>
-         
         <li>install PETSc with --download-petsc4py etc..</li>
-         
       </ol>
-       
       <p></p>
-       
       <p>&nbsp; </p>
-       
-      <hr> 
+      <hr>
       <h3><a name="Using">Using</a></h3>
-       
-      <p>&nbsp;<a name="redirectstdout"><font
- color="#ff0000">How
+      <p>&nbsp;<a name="redirectstdout"><font color="#ff0000">How
 can
 I
 redirect PETSc's stdout and stderr when programming with a GUI
-interface in Windows Developer Studio?&nbsp;</font></a>
-      </p>
-      These directions where supplied by a user. You just need
+interface in Windows Developer Studio?&nbsp;</font></a> </p>
+These directions where supplied by a user. You just need
 to add this <br>
       <br>
 extern "C"<br>
@@ -642,13 +626,13 @@ way you like<br>
 &nbsp;Note: When writing a Window's console application you do not need
 to do anything, the stdout and stderr is automatically output to the
 console window.<a name="nosaij"><br>
-      </a> 
+      </a>
       <p>&nbsp;<a name="hypre"><font color="#ff0000">I
 want to
 use hypre boomerAMG without GMRES but when I run -pc_type hypre
 -pc_hypre_type boomeramg -ksp_type preonly I don't get a very accurate
 answer!</font></a> </p>
-      You should run with -ksp_type richardson to have PETSc
+You should run with -ksp_type richardson to have PETSc
 run several V or
 W cycles. -ksp_type of preonly causes boomerAMG to use only one V/W
 cycle. You can control how many cycles are used in a single application
@@ -657,20 +641,18 @@ of the boomerAMG preconditioner with
 also control the tolerance boomerAMG uses to decide if to stop before
 max_iter with -pc_hypre_boomeramg_tol <tol> (the default is
 1.e-7). Run with -ksp_view to see all the hypre options used and -help
-| grep boomeramg to see all the command line options. </tol></it> 
+| grep boomeramg to see all the command line options. </tol></it>
       <p>&nbsp;<a name="nosaij"><font color="#ff0000">You
 have
 AIJ
 and BAIJ matrix formats, and
 SBAIJ for symmetric storage, how come no SAIJ</font></a> </p>
-      Just for historical reasons, the SBAIJ format with
+Just for historical reasons, the SBAIJ format with
 blocksize one is
-just as efficient as an SAIJ would be 
+just as efficient as an SAIJ would be
       <p></p>
-       
-      <p>&nbsp;<a name="domaindecomposition"><font
- color="#ff0000">How do I use PETSc for Domain Decomposition?</font></a> </p>
-       
+      <p>&nbsp;<a name="domaindecomposition"><font color="#ff0000">How
+do I use PETSc for Domain Decomposition?</font></a> </p>
       <p>PETSc includes Additive Schwarz methods in the suite
 of
 preconditioners. These may be activated with the runtime
@@ -686,14 +668,25 @@ options by using<br>
 Also, see the procedural interfaces in the manual pages, with names <b>PCASMxxxx()</b><br>
 and check the index of the users manual for <b>PCASMxxx</b>().<br>
       </p>
-       
-      <hr> 
+      <p>PETSc also contains a domain decomposition inspired wirebasket
+or face based two level method where the coarse mesh to fine mesh
+interpolation is defined by solving specific local subdomain problems.
+It currently only works for 3D scalar problems on structured grids
+created with PETSc DAs. See the manual page for PCEXOTIC and
+src/ksp/ksp/examples/tutorials/ex45.c for any example.<br>
+      </p>
+      <p>PETSc also contains a balancing Neumann-Neumann
+preconditioner, see the manual page for PCNN. This requires matrices be
+constructed with MatCreateIS() via the finite element method. There are
+currently no examples that demonstrate it use.<br>
+      </p>
+      <hr>
       <p>&nbsp;<a name="blocks"><font color="#ff0000">Can
 I
 create
 BAIJ matrices with different
 size blocks for different block rows?</font></a></p>
-      Sorry, this is not possible, the BAIJ format only
+Sorry, this is not possible, the BAIJ format only
 supports a single
 fixed block size on the entire matrix. But the AIJ format automatically
 searches for matching rows and thus still takes advantage of the
@@ -701,24 +694,16 @@ natural blocks in your matrix to obtain good performance. Unfortunately
 you cannot use the MatSetValuesBlocked().<br>
       <br>
       <br>
-      
-      <p><a name="mpi-vec-to-seq-vec"><font
- color="#ff0000">How
+      <p><a name="mpi-vec-to-seq-vec"><font color="#ff0000">How
 do I collect all the values from a
 parallel PETSc vector into a sequential vector on each processor?</font></a></p>
-       
       <p> </p>
-       
       <ul>
-         
         <li> Create the scatter context that will do the
 communication </li>
-         
         <li> <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/Vec/VecScatterCreateToAll.html">VecScatterCreateToAll</a>(v,&amp;ctx,&amp;w);</li>
-         
       </ul>
-       
       <table width="100%">
         <tbody>
           <tr>
@@ -745,8 +730,8 @@ original vector into the natural ordering in a new global vector before
 calling VecScatterBegin/End() to scatter the natural vector onto all
 processes.
             <p></p>
-            <p><a name="mpi-vec-to-mpi-vec"><font
- color="#ff0000">How do I collect all the values from a
+            <p><a name="mpi-vec-to-mpi-vec"><font color="#ff0000">How
+do I collect all the values from a
 parallel PETSc vector into a vector on the zeroth processor?</font></a></p>
             <p> </p>
             <ul>
@@ -795,8 +780,7 @@ with the sequential code to store it as ASCII.<br>
  style="color: rgb(255, 0, 0);">Does
 TSSetFromOptions(), SNESSetFromOptions() or KSPSetFromOptions() reset
 all the parameters I previously set or how come my TS/SNES/KSPSetXXX()
-does not seem to work?</span>
-            <br>
+does not seem to work?</span> <br>
             <br>
 If XXSetFromOptions() is used (with -xxx_type aaaa) to change the type
 of the object then all parameters associated with the previous type are
@@ -873,7 +857,8 @@ can
 I
 compute
 the
-inverse of a matrix in PETSc?<br>
+inverse
+of a matrix in PETSc?<br>
             <br>
             </span>It is very expensive to compute the inverse of a
 matrix and very rarely needed in practice. We highly recommend avoiding
@@ -927,7 +912,7 @@ uses a small number of abstractions to help you manage distributing the
 grid data structures and computing the elements into the matrices.<br>
 2) manage the grid data structure yourself and use PETSc IS and
 VecScatter to communicate the required ghost point communication. See <a
- href="www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/src/snes/examples/tutorials/ex10d/ex10.c.html">src/snes/examples/tutorials/ex10d/ex10.c</a><br>
+ href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/src/snes/examples/tutorials/ex10d/ex10.c.html">src/snes/examples/tutorials/ex10d/ex10.c</a><br>
             <br>
             <br>
             <span style="color: rgb(255, 0, 0);"><a name="da_mpi_cart"></a>The
@@ -935,7 +920,8 @@ PETSc
 DA
 object
 decomposes
-the domain differently than the
+the
+domain differently than the
 MPI_Cart_create() command. How can one use them together?<br>
             <br>
             </span>The MPI_Cart_create() first divides the mesh along
@@ -977,7 +963,8 @@ solving
 a
 symmetric
 system
-with Dirichlet boundary conditions I can use
+with
+Dirichlet boundary conditions I can use
 MatZeroRows() to eliminate the Dirichlet rows but this results in a
 non-symmetric system. How come there is no MatZeroColumns() to keep the
 matrix symmetric?<br>
@@ -1000,15 +987,13 @@ symmetric methods. See its manual page.
           </tr>
         </tbody>
       </table>
-       
-      <hr> 
+      <hr>
       <h3><a name="Execution">Execution</a></h3>
       <p><a name="long-link-time"><font color="#ff0000">PETSc
 executables
 are
 SO big and take SO
 long to link</font>.</a></p>
-
       <p>We find this annoying as well. On most machines PETSc
 can use
 shared libraries, so executables should be much smaller, run
@@ -1016,26 +1001,22 @@ shared libraries, so executables should be much smaller, run
 you have room, compiling and linking PETSc on your machine's /tmp disk
 or similar local disk, rather than over the network will be much
 faster. </p>
-       
       <p><a name="petsc-options"><font color="#ff0000">PETSc
 has
 so
 many options for my program
 that it is hard to keep them straight.</font> </a></p>
-       
       <p>Running the PETSc program with the option -help will
 print of many of the options. To print the options that have been
 specified within a program, employ -optionsleft to print any options
 that the user specified but were not actually used by the program and
 all options used; this is helpful for detecting typo errors. </p>
-       
       <p><a name="petsc-log-info"><font color="#ff0000">PETSc
 automatically
 handles
 many of the
 details in parallel PDE solvers. How can I understand what is really
 happening within my program?</font> </a></p>
-       
       <p>You can use the option -info to get more details about
 the solution process. The option -log_summary provides details about
 the distribution of time spent in the various phases of the solution
@@ -1044,16 +1025,15 @@ what solver options are being used. Run with -ts_monitor -snes_monitor
 or -ksp_monitor to watch convergence of the methods.
 -snes_converged_reason and -ksp_converged_reason will indicate why and
 if the solvers have converged. <br>
-      <p><a name="efficient-assembly"><font
- color="#ff0000">Assembling
+      </p>
+      <p><a name="efficient-assembly"><font color="#ff0000">Assembling
 large
 sparse
 matrices takes a
 long time. What can I do make this process faster? or MatSetValues() is
 so slow, what can I do to speed it up?</font></a><a
- name="efficient-assembly"><font><font><a name="slow"></a></font></font></a><a
- name="efficient-assembly"> </a></p>
-       
+ name="efficient-assembly"><font><font></font></font></a><font><font><a
+ name="slow"></a></font></font><a name="efficient-assembly"> </a></p>
       <p>See the Performance chapter of the users manual for
 many
 tips on this.</p>
@@ -1065,7 +1045,6 @@ is the maximum number of nonzeros expected per row. Or if you know the
 number of nonzeros per row, you can pass this information in instead of
 the PETSC_NULL argument. See the&nbsp; manual pages for each of the
 MatCreateXXX() routines.</p>
-       
       <p>b) Insert blocks of values into the matrix, rather
 than
 individual components. <br>
@@ -1086,42 +1065,33 @@ It is best to generate most matrix entries on the process they belong
 to (so they do not have to be stashed and then shipped to the owning
 process). Note: it is fine to have some entries generated on the
 "wrong" process, just not many.</p>
-       
       <p><a name="log-summary"><font color="#ff0000">How
 can
 I
 generate performance summaries
 with PETSc?</font> </a></p>
-       
       <p>Use these options at runtime: -log_summary. See the
 Performance chapter of the users manual for information on interpreting
 the summary data. If using the PETSc (non)linear solvers, one can also
 specify -snes_view or -ksp_view for a printout of solver info. Only the
 highest level PETSc object used needs to specify the view option. </p>
-       
-      <p><a name="parallel-roundoff"><font
- color="#ff0000">Why
+      <p><a name="parallel-roundoff"><font color="#ff0000">Why
 do I get different answers on a
 different numbers of processors?</font> </a></p>
-       
       <p>Most commonly, you are using a preconditioner which
 behaves differently based upon the number of processors, such as
 Block-Jacobi which is the PETSc default. However, since computations
 are reordered in parallel, small roundoff errors will still be present
 with identical mathematical formulations. If you set a tighter linear
 solver tolerance (using -ksp_rtol), the differences will decrease.</p>
-       
       <p><a name="mg-log"><font color="#ff0000">How do
 I know
 the amount of time spent on
 each level of the multigrid solver/preconditioner?</font></a></p>
-       
       <p>Run with -log_summary and -pc_mg_log</p>
-       
-      <p><font><a name="datafiles"><font
- color="#ff0000">Where do I get the input matrices for the examples?<br>
+      <p><font><a name="datafiles"><font color="#ff0000">Where do I get
+the input matrices for the examples?<br>
       </font></a></font></p>
-       
       <p>Some makefiles use
 &nbsp;${DATAFILESPATH}/matrices/medium and
 other files. These test matrices in PETSc binary format can be found
@@ -1129,14 +1099,12 @@ with anonymous ftp from <a href="http://ftp.mcs.anl.gov">ftp.mcs.anl.gov</a>
 in the directory pub/petsc/matrices. The are not included
 with the PETSc distribution in the interest of reducing the
 distribution size.</p>
-       
       <p><font><a name="info"><font color="#ff0000">When
 I
 dump
 some matrices and vectors to binary, I seem to be generating some empty
 files with .info extensions.&nbsp; What's the deal with these?<br>
       </font></a></font> </p>
-         
       <p>PETSc binary viewers put some additional information
 into
 .info files like matrix block size; it is harmless<br>
@@ -1147,17 +1115,13 @@ PetscViewerFileSetName(). In other words you<br>
 cannot use PetscViewerBinaryOpen() directly.<font><a name="slow"><font
  color="#ff0000"><br>
       </font></a></font> </p>
-       
-      <p><font><a name="slowerparallel"><font
- color="#ff0000">Why
+      <p><font><a name="slowerparallel"><font color="#ff0000">Why
 is
 my
 parallel solver&nbsp;slower than my sequential solver?<br>
       </font></a></font> </p>
-      This can happen for many reasons:<br>
-      
+This can happen for many reasons:<br>
       <ul>
-         
         <li>First make sure it is truely the time in KSPSolve()
 that is
 slower (by running the code with <a href="faq.html#log-summary">-log_summary</a>).
@@ -1165,21 +1129,19 @@ Often
 the
 slower
 time
-is in <a href="faq.html#slow">generating the
+is
+in <a href="faq.html#slow">generating the
 matrix</a> or some other operation.</li>
-         
         <li>There must be enough work for each process to
 overweigh the
 communication time. We recommend an absolute minimum of about 10,000
 unknowns per process, better is 20,000 or more.</li>
-         
         <li>Make sure the&nbsp; <a href="faq.html#computers">communication
 speed
 of
 the
 parallel
 computer</a> is good enough for parallel solvers.</li>
-         
         <li>Check the number of solver iterates with the
 parallel
 solver against the sequential solver. Most preconditioners require more
@@ -1191,22 +1153,20 @@ its
 iterations
 scale
 a
-bit better for more processes. You may also
+bit
+better for more processes. You may also
 consider multigrid preconditioners like <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCMG.html">PCMG</a>
 or BoomerAMG in <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCHYPRE.html">PCHYPRE</a>.</li>
-         
       </ul>
-       
-      <p><font><a name="singleprecision"><font
- color="#ff0000">When
+      <p><font><a name="singleprecision"><font color="#ff0000">When
 using
 PETSc
 in single precision mode (--with-precision=single when
 running ./configure) are the operations done in single or
 double precision? </font></a></font> </p>
-      PETSc does NOT do any explicit conversion of single
+PETSc does NOT do any explicit conversion of single
 precision to double
 before performing computations;
 this it depends on the hardware and compiler what happens. For example,
@@ -1218,86 +1178,64 @@ instructions that work directly
 on the single precision numbers. It is a bit of a mystery what
 decisions get made sometimes.
 There may be compiler flags in some circumstances that can affect this.
-      
       <p></p>
-       
-      <hr> 
+      <hr>
       <h3><a name="Debugging">Debugging</a></h3>
-       
       <p><a name="debug-ibm"><font color="#ff0000">How
-do I turn off PETSc signal handling so I can use the -C option on xlF?
-      </font></a></p>
-       
+do I turn off PETSc signal handling so I can use the -C option on xlF? </font></a></p>
       <p>Immediately after calling PetscInitialize() call
 PetscPopSignalHandler()</p>
-       
       <p>Some Fortran compilers including the IBM xlf, xlF etc
 compilers have a compile option (-C for IBM's) that causes all array
 access in Fortran to be checked that they are in-bounds. This is a
 great feature but does require that the array dimensions be set
 explicitly, not with a *.</p>
-       
       <p><a name="debug-cray"><font color="#ff0000">How
 do I
 debug on the Cray
 T3D/T3E? </font></a></p>
-       
       <p>Use TotalView. First, link your program with the
 additional option -Xn where n is the number of processors to use when
 debugging. Then run totalview programname -a your arguments The -a is
 used to distinguish between totalview arguments and yours. </p>
-       
-      <p><a name="start_in_debugger-doesnotwork"><font
- color="#ff0000">How do I debug if -start_in_debugger does
+      <p><a name="start_in_debugger-doesnotwork"><font color="#ff0000">How
+do I debug if -start_in_debugger does
 not work on my machine?</font> </a></p>
-       
       <p>For a uniprocessor job, just try&nbsp;the debugger
 directly, for example: gdb ex1 </p>
-       
       <p><a name="debug-hang"><font color="#ff0000">How
 do I
 see where my code is
 hanging? </font></a></p>
-       
       <p>You can use the -start_in_debugger option to start all
 processes in the debugger (each will come up in its own xterm). Then
 use cont (for continue) in each xterm. Once you are sure that the
 program is hanging, hit control-c in each xterm and then use 'where' to
 print a stack trace for each process.</p>
-       
       <p><a name="debug-inspect"><font color="#ff0000">How
 can
 I
 inspect Vec and Mat
 values when in the debugger? </font></a></p>
-       
       <p>I will illustrate this with gdb, but it should be
 similar on other debuggers. You can look at local Vec values directly
 by obtaining the array. For a Vec v, we can print all local values using</p>
-       
       <p>(gdb) p ((Vec_Seq*)
 v-&gt;data)-&gt;array[0]@v-&gt;map.n</p>
-       
       <p>However, this becomes much more complicated for a
 matrix. Therefore, it is advisable to use the default viewer to look at
 the object. For a Vec v and a Mat m, this would be</p>
-       
       <p>(gdb) call VecView(v, 0)</p>
-       
       <p>(gdb) call MatView(m, 0)</p>
-       
       <p>or with a communicator other than MPI_COMM_WORLD,</p>
-       
       <p>(gdb) call MatView(m,
 PETSC_VIEWER_STDOUT_(m-&gt;comm))</p>
-       
-      <p>&nbsp;<span style="color: rgb(255, 0, 0);"><a
- name="libimf"></a>Error
+      <p>&nbsp;<span style="color: rgb(255, 0, 0);"><a name="libimf"></a>Error
 while
 loading
-shared libraries: libimf.so: cannot open shared object
+shared
+libraries: libimf.so: cannot open shared object
 file: No such file or directory.</span></p>
-       
       <p>The Intel compilers use shared libraries (like libimf)
 that
 cannot by default at run time. When using the Intel compilers (and
@@ -1306,7 +1244,7 @@ initialization scripts are run. This is usually done by putting some
 code into your .cshrc, .bashrc, .profile etc file. Sometimes on batch
 file systems that do now access your initialization files (like .cshrc)
 you must include the initialization calls in your batch file submission.</p>
-      For example, on my Mac using csh I have the following in
+For example, on my Mac using csh I have the following in
 my .cshrc file<br>
       <br>
 source /opt/intel/cc/10.1.012/bin/iccvars.csh<br>
@@ -1319,28 +1257,27 @@ source /opt/intel/cc/10.1.012/bin/iccvars.sh<br>
 source /opt/intel/fc/10.1.012/bin/ifortvars.sh<br>
 source /opt/intel/idb/10.1.012/bin/idbvars.sh<br>
       <br>
-      
-      <p><span style="color: rgb(255, 0, 0);"><a
- name="objecttypenotset">What
+      <p><span style="color: rgb(255, 0, 0);"><a name="objecttypenotset">What
 does
-Object Type not set: Argument # n mean?</a></span></p>
-      Many
+Object
+Type not set: Argument # n mean?</a></span></p>
+Many
 operations on PETSc objects require that the specific type of the
 object be set before the operations is performed. You must call
 XXXSetType() or XXXSetFromOptions() before you make the offending call.
 For example, MatCreate(comm,&amp;A); MatSetValues(A,....); will not
 work. You must add MatSetType(A,...) or MatSetFromOptions(A,....);
-before the call to MatSetValues(); 
+before the call to MatSetValues();
       <p></p>
-       <a name="split"></a><font style="color: rgb(255, 0, 0);"
+      <a name="split"></a><font style="color: rgb(255, 0, 0);"
  face="Terminal">What does </font><font style="color: rgb(255, 0, 0);"
- color="#ff0000"> </font><font
- style="color: rgb(255, 0, 0);" face="Terminal">Error detected&nbsp;in
+ color="#ff0000"> </font><font style="color: rgb(255, 0, 0);"
+ face="Terminal">Error detected&nbsp;in
 PetscSplitOwnership() about "sum of local lengths ...": mean?<br>
       <br>
-      </font><font color="#ff0000"><span
- style="color: rgb(0, 0, 0);">In
-a previous call to VecSetSizes(), MatSetSizes(), VecCreateXXX() or
+      </font><font color="#ff0000"><span style="color: rgb(0, 0, 0);">In
+a
+previous call to VecSetSizes(), MatSetSizes(), VecCreateXXX() or
 MatCreateXXX() you passed in local and global sizes that do not make
 sense for the correct number of processors. For example if you pass in
 a local size of 2 and a global size of 100 and run on two processors,
@@ -1348,8 +1285,8 @@ this cannot work since the sum of the local sizes is 4, not 100.</span></font><b
       <br>
       <a name="valgrind"></a><font style="color: rgb(255, 0, 0);"
  face="Terminal">What does </font><font style="color: rgb(255, 0, 0);"
- color="#ff0000"></font><font
- style="color: rgb(255, 0, 0);" face="Terminal">Corrupt argument or
+ color="#ff0000"></font><font style="color: rgb(255, 0, 0);"
+ face="Terminal">Corrupt argument or
 Caught signal or SEQV or segmentation violation or bus error mean? </font><br>
       <br>
       <font color="#ff0000"><span style="color: rgb(0, 0, 0);">An
@@ -1370,6 +1307,7 @@ problem.<br>
 &nbsp; <br>
 If -malloc_debug does not help: on GNU/Linux and Apple Mac OS X
 machines - you can try using&nbsp;<a href="http://valgrind.org/">http://valgrind.org
+
 
 
 
@@ -1418,6 +1356,7 @@ that the matrix is singular. You can use -pc_factor_shift_nonzero or
 
 
 
+
       </font><font style="color: rgb(0, 0, 0);" color="#ff0000">to
 prevent the zero pivot. For lu, ilu,
 cholesky, or icc and [level] is sub is for a block in the bjacobi or
@@ -1425,42 +1364,38 @@ ASM preconditioner and -mg_levels and -mg_coarse are for inside
 multigrid
 smoothers or the coarse grid solver). See PCFactorSetShiftNonzero(),
 PCFactorSetShiftPd().</font> <font style="color: rgb(0, 0, 0);"
- color="#ff0000"> </font> 
+ color="#ff0000"> </font>
       <p style="color: rgb(0, 0, 0);">This error can also
 happen if your matrix
 is singular , see KSPSetNullSpace() for
 how to
 handle this.</p>
-      If
+If
 this
 error occurs in
-the </span>zeroth
-row  of
+the zeroth
+row of
 the matrix it is likely you have an error in
 the code
-that generates the matrix.</span></font><a><span
- style="font-family: Terminal;"><br>
-      </span></a></p>
-       
+that generates the matrix.<a><span style="font-family: Terminal;"><br>
+      </span></a>
+      <p></p>
       <p><a><span style="font-family: Terminal;"></span><span
  style="color: rgb(255, 0, 0);"></span></a><a name="xwindows"></a><span
  style="color: rgb(255, 0, 0);">You
 create Draw windows or ViewerDraw windows or use options
 -ksp_monitor or_draw -snes_monitor_draw and the program seems to run OK
 but windows never open.</span></p>
-       
       <p>The
 libraries were compiled without support for X windows.<font
  color="#ff0000"> </font>Make
 sure that ./configure was run with the option --with-x=1<br>
       </p>
-       
       <p style="color: rgb(255, 0, 0);"><font face="Terminal"><a
  name="memory"></a><a>The
 program seems to use more and more memory as it runs, even
 though you don't think you are allocating more memory.<br>
       </a></font></p>
-       
       <p style="color: rgb(255, 0, 0);"><a><font face="Terminal">
       <p style="color: rgb(0, 0, 0);">Problem:
 Possibly some of the following:</p>
@@ -1511,18 +1446,15 @@ libraries. <br>
 calling MatPartitioningApply() you get a message Error! Key 16615 not
 found<br>
       </font></p>
-       
       <p>The
 graph of &nbsp;the matrix you are using is not symmetric. Yo<font
  color="#ff0000"></font>u must use symmetric matrices
 for partitioning.<br>
       </p>
-       
       <p style="color: rgb(255, 0, 0);"><font face="Terminal"><a
  name="gmres"></a>With
 GMRES At restart the second residual norm printed does not
 match the first</font></p>
-       
       <p style="color: rgb(255, 0, 0);"><font face="Terminal"> <span
  style="color: rgb(0, 0, 0);">26 KSP Residual norm 3.421544615851e-04 </span><br
  style="color: rgb(0, 0, 0);">
@@ -1563,7 +1495,8 @@ do
 some
 Krylov
 methods
-seem to print two residual norms per iteration?<br>
+seem
+to print two residual norms per iteration?<br>
       </span></font></font></p>
       <p style="color: rgb(0, 0, 0);"><font face="Terminal"><font
  face="Terminal"><font face="Terminal">&gt; 1198 KSP Residual norm
@@ -1589,7 +1522,6 @@ as many iterations.<br>
       </span></font></p>
       </font></p>
       </font></p>
-       
       <p>When
 using DYNAMIC libraries - the libraries cannot be moved after
 they are installed. This could also happen on clusters - where
@@ -1597,32 +1529,23 @@ the paths are different on the (run) nodes - than on the
 (compile) front-end.<font color="#ff0000"> </font>Do
 not use dynamic libraries &amp; shared libraries. Run ./configure with
 --with-shared=0 --with-dynamic=0</p>
-       
       <p style="color: rgb(255, 0, 0);"> </p>
-       
       <p style="color: rgb(255, 0, 0);"> </p>
-       
       <p><span style="color: rgb(255, 0, 0);"></span></p>
-       
       <p><span style="color: rgb(255, 0, 0);"></span></p>
-       
-      <hr> 
+      <hr>
       <h3><a name="Shared Libraries">Shared Libraries</a></h3>
-       
       <p><font color="#ff0000"><a name="install-shared">Can
 I
 install
 PETSc libraries as
 shared libraries</a>?</font></p>
-       
       <p>Yes.&nbsp;Use the ./configure option
 --with-shared</p>
-       
       <p><a name="why-use-shared"><font color="#ff0000">Why
 should
 I
 use shared libraries?</font></a></p>
-       
       <p>When you link to shared libraries, the function
 symbols
 from the shared libraries are not copied in the executable. This way
@@ -1633,43 +1556,34 @@ executable is created, and &nbsp; <br>
 &nbsp;&nbsp;&nbsp; 2) improves the compile time immensly,
 because the compiler has to write a much smaller file (executable) to
 the disk.</p>
-       
       <p><font color="#ff0000"><a name="link-shared">How
 do
 I
 link to the PETSc shared
 libraries</a>?</font></p>
-       
       <p>By default, the compiler should pick up the shared
 libraries instead of the regular ones. Nothing special should be done
 for this.</p>
-       
-      <p><font color="#ff0000"><a
- name="link-regular-lib">What
+      <p><font color="#ff0000"><a name="link-regular-lib">What
 If I want to link to the
 regular .a library files</a>?</font></p>
-       
       <p>You must run ./configure without the option
 --with-shared (you can use a different PETSC_ARCH for this build so you
 can easily switch between the two).</p>
-       
       <p><a name="move-shared-exec"><font color="#ff0000">What
 do
 I
 do if I want to move
 my executable to a different machine?</font></a></p>
-       
       <p>You would also need to have access to the shared
 libraries on this new machine. The other alternative is to build the
 exeutable without shared libraries by first deleting the shared
 libraries, and then creating the executable.&nbsp;</p>
-       
       <p><a name="dynamic-shared"><font color="#ff0000">What
 is
 the
 deal with dynamic
 libraries (and difference between shared libraries)</font></a></p>
-       
       <p>PETSc libraries are installed as dynamic libraries
 when
 the
@@ -1679,15 +1593,12 @@ the program the library is loaded using dlopen() - and the functions
 are searched using dlsymm(). This separates the resolution of function
 names from link-time to run-time - i.e when dlopen()/dlsymm() are
 called.</p>
-       
       <p>When using Dynamic libraries - PETSc libraries cannot
 be
 moved to a different location after they are built. </p>
-       
       <p>&nbsp; </p>
-       
       <p><!--##end--> </p>
-       </td>
+      </td>
     </tr>
     <tr>
       <td colspan="2" width="100%">

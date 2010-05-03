@@ -97,7 +97,7 @@ class Configure(config.base.Configure):
                                             'unistd', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
                                             'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib','memory',
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',
-                                            'WindowsX', 'cxxabi','float','ieeefp','stdint'])
+                                            'WindowsX', 'cxxabi','float','ieeefp','stdint','fenv'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
                  'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'nanosleep', 'usleep', 'sleep', '_sleep', 'socket', 
@@ -295,7 +295,7 @@ class Configure(config.base.Configure):
     fd.write('\"Machine characteristics: %s\\n\"' % (platform.platform()))
     fd.write('\"Using PETSc directory: %s\\n\"' % (self.petscdir.dir))
     fd.write('\"Using PETSc arch: %s\\n\"' % (self.arch.arch))
-    fd.write('\"-----------------------------------------\\n\"\n')
+    fd.write('\"-----------------------------------------\\n\";\n')
     fd.write('static const char *petsccompilerinfo = \"\\n\"\n')
     self.setCompilers.pushLanguage(self.languages.clanguage)
     fd.write('\"Using C compiler: %s %s ${COPTFLAGS} ${CFLAGS}\\n\"' % (self.setCompilers.getCompiler(), self.setCompilers.getCompilerFlags()))
@@ -304,10 +304,10 @@ class Configure(config.base.Configure):
       self.setCompilers.pushLanguage('FC')
       fd.write('\"Using Fortran compiler: %s %s ${FOPTFLAGS} ${FFLAGS} %s\\n\"' % (self.setCompilers.getCompiler(), self.setCompilers.getCompilerFlags(), self.setCompilers.CPPFLAGS))
       self.setCompilers.popLanguage()
-    fd.write('\"-----------------------------------------\\n\"\n')
+    fd.write('\"-----------------------------------------\\n\";\n')
     fd.write('static const char *petsccompilerflagsinfo = \"\\n\"\n')
     fd.write('\"Using include paths: %s %s %s\\n\"' % ('-I'+os.path.join(self.petscdir.dir, self.arch.arch, 'include'), '-I'+os.path.join(self.petscdir.dir, 'include'), self.PACKAGES_INCLUDES))
-    fd.write('\"-----------------------------------------\\n\"\n')
+    fd.write('\"-----------------------------------------\\n\";\n')
     fd.write('static const char *petsclinkerinfo = \"\\n\"\n')
     self.setCompilers.pushLanguage(self.languages.clanguage)
     fd.write('\"Using C linker: %s\\n\"' % (self.setCompilers.getLinker()))
@@ -317,7 +317,7 @@ class Configure(config.base.Configure):
       fd.write('\"Using Fortran linker: %s\\n\"' % (self.setCompilers.getLinker()))
       self.setCompilers.popLanguage()
     fd.write('\"Using libraries: %s%s -L%s %s %s %s\\n\"' % (self.setCompilers.CSharedLinkerFlag, os.path.join(self.petscdir.dir, self.arch.arch, 'lib'), os.path.join(self.petscdir.dir, self.arch.arch, 'lib'), '-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys', self.PACKAGES_LIBS, self.libraries.toStringNoDupes(self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS))
-    fd.write('\"-----------------------------------------\\n\"\n')
+    fd.write('\"-----------------------------------------\\n\";\n')
     fd.close()
     return
 

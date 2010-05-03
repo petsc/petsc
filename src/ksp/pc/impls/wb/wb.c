@@ -733,7 +733,11 @@ PetscErrorCode PCSetFromOptions_Exotic(PC pc)
      PCEXOTIC - Two level overlapping Schwarz preconditioner with exotic (non-standard) coarse grid spaces
 
      This uses the PCMG infrastructure restricted to two levels and the face and wirebasket based coarse
-   grid spaces. These coarse grid spaces originate in the work of Bramble, Pasciak  and Schatz, "The Construction
+   grid spaces. 
+
+   Notes: By default this uses GMRES on the fine grid smoother so this should be used with KSPFGMRES or the smoother changed to not use GMRES
+
+   References: These coarse grid spaces originate in the work of Bramble, Pasciak  and Schatz, "The Construction
    of Preconditioners for Elliptic Problems by Substructing IV", Mathematics of Computation, volume 53 pages 1--24, 1989.
    They were generalized slightly in "Domain Decomposition Method for Linear Elasticity", Ph. D. thesis, Barry Smith,
    New York University, 1990. They were then explored in great detail in Dryja, Smith, Widlund, "Schwarz Analysis
@@ -748,7 +752,7 @@ PetscErrorCode PCSetFromOptions_Exotic(PC pc)
    Springer-Verlag, Lecture Notes in Computational Science and Engineering, pages 255-261, 2007.
    Clark R. Dohrmann, Axel Klawonn, and Olof B. Widlund. A family of energy min-
    imizing coarse spaces for overlapping Schwarz preconditioners. In Ulrich Langer,
-   Marco Discacciati, David Keyes, OlofWidlund, andWalter Zulehner, editors, Proceedings
+   Marco Discacciati, David Keyes, Olof Widlund, and Walter Zulehner, editors, Proceedings
    of the 17th International Conference on Domain Decomposition Methods
    in Science and Engineering, held in Strobl, Austria, July 3-7, 2006, number 60 in
    Springer-Verlag, Lecture Notes in Computational Science and Engineering, pages 247-254, 2007

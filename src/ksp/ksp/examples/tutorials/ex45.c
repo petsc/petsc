@@ -13,6 +13,8 @@ with boundary conditions
    The same as ex22.c except it does not use DMMG, it uses its replacement.
    See src/snes/examples/tutorials/ex50.c
 
+   Can also be run with -pc_type exotic -ksp_type fgmres
+
 */
 
 static char help[] = "Solves 3D Laplacian using multigrid.\n\n";
@@ -42,7 +44,7 @@ int main(int argc,char **argv)
   ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,-7,-7,-7,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);  
   ierr = DMSetInitialGuess((DM)da,ComputeInitialGuess);CHKERRQ(ierr);
   ierr = DMSetFunction((DM)da,ComputeRHS);CHKERRQ(ierr);
-  //  ierr = DMSetJacobian((DM)da,ComputeMatrix);CHKERRQ(ierr);
+  ierr = DMSetJacobian((DM)da,ComputeMatrix);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,(DM)da);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
 

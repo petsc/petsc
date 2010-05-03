@@ -1,4 +1,4 @@
-#include "slda.h"       /*I  "characteristic.h"  I*/
+#include "../src/semiLagrange/impls/da/slda.h"       /*I  "characteristic.h"  I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "CharacteristicView_DA" 
