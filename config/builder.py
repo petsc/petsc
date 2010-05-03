@@ -19,7 +19,7 @@ class PETScMaker(script.Script):
    return
 
  def setupModules(self):
-#    self.mpi           = self.framework.require('config.packages.MPI',      None)
+   self.mpi           = self.framework.require('config.packages.MPI',         None)
    self.base          = self.framework.require('config.base',                 None)
    self.setCompilers  = self.framework.require('config.setCompilers',         None)   
    self.arch          = self.framework.require('PETSc.utilities.arch',        None)
@@ -250,6 +250,10 @@ class PETScMaker(script.Script):
              return 0
          else:    
            found = 0
+           if self.mpi.usingMPIUni:
+             pname = 'PETSC_HAVE_MPIUNI'
+             pname = "'"+pname+"'"
+             if pname == rvalue: found = 1
            for i in self.framework.packages:
              pname = 'PETSC_HAVE_'+i.PACKAGE
              pname = "'"+pname+"'"
