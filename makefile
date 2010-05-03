@@ -33,7 +33,7 @@ all:
 	  ${OMAKE} shared_install PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log ;\
 	 fi
 
-all_build: chk_petsc_dir chklib_dir info info_h deletelibs deletemods build shared_nomesg mpi4py petsc4py
+all_build: chk_petsc_dir chklib_dir info deletelibs deletemods build shared_nomesg mpi4py petsc4py
 #
 # Prints information about the system and version of PETSc being compiled
 #
@@ -85,37 +85,6 @@ info:
 	-@echo "------------------------------------------"
 	-@echo "Using mpiexec: ${MPIEXEC}"
 	-@echo "=========================================="
-#
-#
-MINFO = ${PETSC_DIR}/${PETSC_ARCH}/include/petscmachineinfo.h
-info_h:
-	-@$(RM) -f ${MINFO} MINFO
-	-@echo  "static const char *petscmachineinfo = \"\__n__\"" >> MINFO
-	-@echo  "\"-----------------------------------------\__n__\"" >> MINFO
-	-@if [ -f /usr/bin/cygcheck.exe ]; then \
-	  echo  "\"Libraries compiled on `date` on `hostname|/usr/bin/dos2unix` \__n__\"" >> MINFO; \
-          else \
-	  echo  "\"Libraries compiled on `date` on `hostname` \__n__\"" >> MINFO; \
-          fi
-	-@echo  "\"Machine characteristics: `uname -a` \__n__\"" >> MINFO
-	-@echo  "\"Using PETSc directory: ${PETSC_DIR}\__n__\"" >> MINFO
-	-@echo  "\"Using PETSc arch: ${PETSC_ARCH}\__n__\"" >> MINFO
-	-@echo  "\"-----------------------------------------\"; " >> MINFO
-	-@echo  "static const char *petsccompilerinfo = \"\__n__\"" >> MINFO
-	-@echo  "\"Using C compiler: ${PCC} ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS}\__n__\"" >> MINFO
-	-@echo  "\"Using Fortran compiler: ${FC} ${FC_FLAGS} ${FFLAGS} ${FPP_FLAGS}\__n__\"" >> MINFO
-	-@echo  "\"-----------------------------------------\"; " >> MINFO
-	-@echo  "static const char *petsccompilerflagsinfo = \"\__n__\"" >> MINFO
-	-@echo  "\"Using include paths: ${PETSC_INCLUDE}\__n__\"" >> MINFO
-	-@echo  "\"------------------------------------------\"; " >> MINFO
-	-@echo  "static const char *petsclinkerinfo = \"\__n__\"" >> MINFO
-	-@echo  "\"Using C linker: ${CLINKER}\__n__\"" >> MINFO
-	-@echo  "\"Using Fortran linker: ${FLINKER}\__n__\"" >> MINFO
-	-@echo  "\"Using libraries: ${PETSC_LIB} \__n__\"" >> MINFO
-	-@echo  "\"------------------------------------------\"; " >> MINFO
-	-@cat MINFO | ${SED} -e 's/\\ /\\\\ /g' | ${SED} -e 's/__n__/n/g' > ${MINFO}
-	-@ if [ -f /usr/bin/cygcheck.exe ]; then /usr/bin/dos2unix ${MINFO} 2> /dev/null; fi
-	-@$(RM) -f MINFO
 
 #
 # Builds the PETSc libraries
