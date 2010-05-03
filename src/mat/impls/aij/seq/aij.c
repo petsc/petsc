@@ -3488,7 +3488,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat C,Mat A,MatDuplicateOption cpvalu
   c->XtoY                  = 0;
 
   c->nz                 = a->nz;
-  c->maxnz              = a->maxnz;
+  c->maxnz              = a->nz; /* Since we allocate exactly the right amount */
   C->preallocated       = PETSC_TRUE;
 
   c->compressedrow.use     = a->compressedrow.use;
