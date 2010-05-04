@@ -1,4 +1,23 @@
 #!/usr/bin/env python
+#
+#   Generates a subdirectory containing all the .c files needed for a build by Apple's Xcode GUI
+#
+#   Before using removed /usr/include/mpi.h and /Developer/SDKs/MacOSX10.5.sdk/usr/include/mpi.h or
+#      Xcode will use those instead of the MPIuni one we point to
+#
+#   Run ./configure with the options --with-valgrind=0 --with-mpi=0 --with-x=0
+#
+#   After running xcodebuilder.py
+#      In Project->Add to Project put in the directory $PETSC_DIR/PETSC_ARCH/xcode-links
+#      In Project->Edit Project Settings->Search Paths->Header Search Paths add
+#         $PETSC_DIR/include $PETSC_DIR/include/mpiuni $PETSC_DIR/$PETSC_ARCH/include  replacing the variables with their values, for example
+#         /Users/barrysmith/Src/petsc-dev/include /Users/barrysmith/Src/petsc-dev/include/mpiuni /Users/barrysmith/Src/petsc-dev/arch-uni/include
+#      In Project->Edit Project Settings->Linking->Other Linker Flags add -framework veclib
+#
+#  Notes - if you skip the --with-mpi=0 and let it use the NATIVE Apple MPI that may work, I have not tried it.
+#        - have not tried anything with Fortran or C++
+#        - if you link against the X11 libraries you can probably skip the --with-x=0
+#
 import os, sys
 
 sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config'))
@@ -44,7 +63,7 @@ class PETScMaker(script.Script):
    help = script.Script.setupHelp(self, help)
    help.addArgument('RepManager', '-rootDir', nargs.ArgDir(None, os.environ['PETSC_DIR'], 'The root directory for this build', isTemporary = 1))
    help.addArgument('RepManager', '-dryRun',  nargs.ArgBool(None, False, 'Only output what would be run', isTemporary = 1))
-   help.addArgument('RepManager', '-verbose', nargs.ArgInt(None, 1, 'The verbosity level', min = 0, isTemporary = 1))
+   help.addArgument('RepManager', '-verbose', nargs.ArgInt(None, 0, 'The verbosity level', min = 0, isTemporary = 1))
    return help
 
  def setup(self):
@@ -82,119 +101,44 @@ class PETScMaker(script.Script):
    packageIncludes = self.headers.toStringNoDupes(packageIncludes)
    return packageIncludes, packageLibs
 
- def compileC(self, source):
-   '''PETSC_INCLUDE         = -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include
-                               ${PACKAGES_INCLUDES} ${TAU_DEFS} ${TAU_INCLUDE}
-      PETSC_CC_INCLUDES     = ${PETSC_INCLUDE}
-      PETSC_CCPPFLAGS	    = ${PETSC_CC_INCLUDES} ${PETSCFLAGS} ${CPP_FLAGS} ${CPPFLAGS}  -D__SDIR__='"${LOCDIR}"'
-      CCPPFLAGS	            = ${PETSC_CCPPFLAGS}
-      PETSC_COMPILE         = ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}  ${SOURCEC} ${SSOURCE}
-      PETSC_COMPILE_SINGLE  = ${PCC} -o $*.o -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}'''
-   # PETSCFLAGS, CFLAGS and CPPFLAGS are taken from user input (or empty)
-   includes = ['-I'+inc for inc in [os.path.join(self.petscdir.dir, self.arch.arch, 'include'), os.path.join(self.petscdir.dir, 'include')]]
-   self.setCompilers.pushLanguage(self.languages.clanguage)
-   compiler = self.setCompilers.getCompiler()
-   flags = []
-   flags.append(self.setCompilers.getCompilerFlags())             # PCC_FLAGS
-   flags.extend([self.setCompilers.CPPFLAGS, self.CHUD.CPPFLAGS]) # CPP_FLAGS
-   flags.append('-D__INSDIR__='+os.getcwd().replace(self.petscdir.dir, ''))
-   packageIncludes, packageLibs = self.getPackageInfo()
-   cmd = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
-   if self.dryRun or self.verbose: print cmd
-   if not self.dryRun:
-     (output, error, status) = self.executeShellCommand(cmd,checkCommand = noCheckCommand,log=self.log)
-     if status:
-       print "ERROR IN COMPILE ******************************"
-       print output+error
-   self.setCompilers.popLanguage()
-   return
-
- def compileF(self, source):
-   '''PETSC_INCLUDE	        = -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include
-                              ${PACKAGES_INCLUDES} ${TAU_DEFS} ${TAU_INCLUDE}
-      PETSC_CC_INCLUDES     = ${PETSC_INCLUDE}
-      PETSC_CCPPFLAGS	    = ${PETSC_CC_INCLUDES} ${PETSCFLAGS} ${CPP_FLAGS} ${CPPFLAGS}  -D__SDIR__='"${LOCDIR}"'
-      CCPPFLAGS	            = ${PETSC_CCPPFLAGS}
-      PETSC_COMPILE         = ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}  ${SOURCEC} ${SSOURCE}
-      PETSC_COMPILE_SINGLE  = ${PCC} -o $*.o -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}'''
-   # PETSCFLAGS, CFLAGS and CPPFLAGS are taken from user input (or empty)
-   flags           = []
-
-   includes = ['-I'+inc for inc in [os.path.join(self.petscdir.dir, self.arch.arch, 'include'), os.path.join(self.petscdir.dir, 'include')]]
-   self.setCompilers.pushLanguage('FC')
-   compiler      = self.setCompilers.getCompiler()
-   flags.append(self.setCompilers.getCompilerFlags())             # PCC_FLAGS
-   flags.extend([self.setCompilers.CPPFLAGS, self.CHUD.CPPFLAGS]) # CPP_FLAGS
-   cmd = ' '.join([compiler]+['-c']+includes+flags+source)
-   if self.dryRun or self.verbose: print cmd
-   if not self.dryRun:
-     (output, error, status) = self.executeShellCommand(cmd,checkCommand = noCheckCommand,log=self.log)
-     if status:
-       print "ERROR IN COMPILE ******************************"
-       print output+error
-   self.setCompilers.popLanguage()
-   return
-
- def archive(self, library, objects):
-   '''${AR} ${AR_FLAGS} ${LIBNAME} $*.o'''
-   lib = os.path.splitext(library)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX
-   cmd = ' '.join([self.setCompilers.AR, self.setCompilers.FAST_AR_FLAGS, lib]+objects)
-   if self.dryRun or self.verbose: print cmd
-   if not self.dryRun:
-     (output, error, status) = self.executeShellCommand(cmd,checkCommand = noCheckCommand,log=self.log)
-     if status:
-       print "ERROR IN ARCHIVE ******************************"
-       print output+error
-   return
-
- def ranlib(self, library):
-   '''${ranlib} ${LIBNAME} '''
-   library = os.path.join(self.petscdir.dir, self.arch.arch, 'lib', library)   
-   lib = os.path.splitext(library)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX
-   cmd = ' '.join([self.setCompilers.RANLIB, lib])
-   if self.dryRun or self.verbose: print cmd
-   if not self.dryRun:
-     (output, error, status) = self.executeShellCommand(cmd,checkCommand = noCheckCommand,log=self.log)
-     if status:
-       print "ERROR IN RANLIB ******************************"
-       print output+error
-   return
- 
  def buildDir(self, libname, dirname, fnames):
    ''' This is run in a PETSc source directory'''
    if self.verbose: print 'Entering '+dirname
    os.chdir(dirname)
+   l = len(os.environ['PETSC_DIR'])
+   basedir = os.path.join(os.environ['PETSC_DIR'],os.environ['PETSC_ARCH'],'xcode-links')
+   newdirname = os.path.join(basedir,dirname[l+1:])
+   os.mkdir(newdirname)
+
 
    # Get list of source files in the directory 
    cnames = []
    onames = []
    fnames = []
+   hnames = []
    for f in os.listdir(dirname):
      ext = os.path.splitext(f)[1]
      if ext == '.c':
        cnames.append(f)
        onames.append(f.replace('.c', '.o'))
-     if hasattr(self.compilers, 'FC'):
-       if ext == '.F':
-         fnames.append(f)
-         onames.append(f.replace('.F', '.o'))
-       if self.compilers.fortranIsF90:
-         if ext == '.F90':
-           fnames.append(f)
-           onames.append(f.replace('.F90', '.o'))
+     if ext == '.h':
+       hnames.append(f)
    if cnames:
-     if self.verbose: print 'Compiling C files',cnames
-     self.compileC(cnames)
-   if fnames:
-     if self.verbose: print 'Compiling Fortran files',fnames
-     self.compileF(fnames)
-   if onames:
-     if self.verbose: print 'Archiving files',onames,'into',libname
-     self.archive(os.path.join(self.petscdir.dir, self.arch.arch, 'lib', libname), onames)
+     if self.verbose: print 'Linking C files',cnames
+     for i in cnames:
+       j = i[l+1:]
+       os.symlink(os.path.join(dirname,i),os.path.join(basedir,i))
+   # do not need to link these because xcode project points to original source code directory
+   #if hnames:
+   #  if self.verbose: print 'Linking h files',hnames
+   #  for i in hnames:
+   #    j = i[l+1:]
+   #    os.symlink(os.path.join(dirname,i),os.path.join(newdirname,i))
    return
 
  def checkDir(self, dirname):
    '''Checks whether we should recurse into this directory
+   - Excludes projects directory
    - Excludes examples directory
    - Excludes contrib directory
    - Excludes tutorials directory
@@ -204,6 +148,7 @@ class PETScMaker(script.Script):
    base = os.path.basename(dirname)
 
    if base == 'examples': return False
+   if base == 'projects': return False
    if not hasattr(self.compilers, 'FC'):
      if base.startswith('ftn-') or base.startswith('f90-'): return False
    if base == 'contrib':  return False
@@ -275,24 +220,25 @@ class PETScMaker(script.Script):
    return True
 
  def buildAll(self, rootDir = None):
+   import shutil
    self.setup()
    if rootDir is None:
      rootDir = self.argDB['rootDir']
    if not self.checkDir(rootDir):
      print 'Nothing to be done'
    if rootDir == os.environ['PETSC_DIR']:
-     library = os.path.join(self.petscdir.dir, self.arch.arch, 'lib', 'libpetsc')   
-     lib = os.path.splitext(library)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX
-     if os.path.isfile(lib):
-       if self.verbose: print 'Removing '+lib
-       os.unlink(lib)
+     basedir = os.path.join(self.petscdir.dir, self.arch.arch, 'xcode-links')
+     if os.path.isdir(basedir):
+       if self.verbose: print 'Removing '+basedir
+       shutil.rmtree(basedir)
    for root, dirs, files in os.walk(rootDir):
-     print 'Processing',root
      self.buildDir('libpetsc', root, files)
      for badDir in [d for d in dirs if not self.checkDir(os.path.join(root, d))]:
        dirs.remove(badDir)
-   self.ranlib('libpetsc')
-     
+   # manually link two generated include files
+   # do not need to link these because xcode project points to original source code directory
+   #os.symlink(os.path.join(self.petscdir.dir, self.arch.arch, 'petscconf.h'),os.path.join(self.petscdir.dir, self.arch.arch, 'xcode-links','include','petscconf.h'))
+   #os.symlink(os.path.join(self.petscdir.dir, self.arch.arch, 'petscfix.h'),os.path.join(self.petscdir.dir, self.arch.arch, 'xcode-links','include','petscfix.h'))     
    return
 
 def noCheckCommand(command, status, output, error):

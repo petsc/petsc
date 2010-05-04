@@ -16,7 +16,7 @@
   usable in the absence of a full MPI implementation. With this, we
   were able to provide PETSc on Windows, Windows64 even before any MPI
   implementation was available on these platforms. [Or with certain
-  compilers - like borland, that do not have a useable MPI
+  compilers - like borland, that do not have a usable MPI
   implementation]
 
   However - providing a seqential, standards compliant MPI
