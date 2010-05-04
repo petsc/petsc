@@ -97,13 +97,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobian(SNES snes,Vec x1,M
         dx = xx[i-start];
       }
       ierr = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
-#if !defined(PETSC_USE_COMPLEX)
-      if (dx < dx_min && dx >= 0.0) dx = dx_par;
-      else if (dx < 0.0 && dx > -dx_min) dx = -dx_par;
-#else
-      if (PetscAbsScalar(dx) < dx_min && PetscRealPart(dx) >= 0.0) dx = dx_par;
-      else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < dx_min) dx = -dx_par;
-#endif
+      if (PetscAbsScalar(dx) < dx_min) dx = (PetscRealPart(dx) < 0. ? -1. : 1.) * dx_par;
       dx *= epsilon;
       wscale = 1.0/dx;
       ierr = VecSetValues(x2,1,&i,&dx,ADD_VALUES);CHKERRQ(ierr);
