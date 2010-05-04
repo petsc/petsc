@@ -41,6 +41,12 @@ PetscErrorCode SNESSolve_Test(SNES snes)
 
     /* evaluate the function at this point because SNESDefaultComputeJacobianColor() assumes that the function has been evaluated and put into snes->vec_func */
     ierr = SNESComputeFunction(snes,x,f);CHKERRQ(ierr);
+    if (snes->domainerror) {
+      const char *const loc[] = {"user-defined state","constant state -1.0","constant state 1.0"};
+      ierr = PetscPrintf(((PetscObject)snes)->comm,"Domain error at %s\n",loc[i]);CHKERRQ(ierr);
+      snes->domainerror = PETSC_FALSE;
+      continue;
+    }
 
     /* compute both versions of Jacobian */
     ierr = SNESComputeJacobian(snes,x,&A,&A,&flg);CHKERRQ(ierr);
