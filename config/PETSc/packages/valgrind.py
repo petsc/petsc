@@ -11,6 +11,7 @@ class Configure(PETSc.package.NewPackage):
     self.needsMath = 0
     self.complex   = 1
     self.required  = 1
+    self.requires32bitint = 0
     return
 
   def setupDependencies(self, framework):
