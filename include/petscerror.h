@@ -526,7 +526,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscSetFPTrap(PetscFPTrap);
 */
 #if defined(PETSC_USE_DEBUG)
 
-#define PETSCSTACKSIZE 15
+#define PETSCSTACKSIZE 64
 
 typedef struct  {
   const char *function[PETSCSTACKSIZE];
