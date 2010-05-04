@@ -759,11 +759,16 @@ static PetscErrorCode THIFunctionLocal(DALocalInfo *info,Node ***x,Node ***f,THI
             * diagu, diagv below.  This scaling is easy to recognize by considering the finite difference operator after
             * scaling by element size.  The no-slip Dirichlet condition is scaled by this factor, and also in the
             * assembled matrix (see the similar block in THIJacobianLocal).
+            *
+            * Note that the residual at this Dirichlet node is linear in the state at this node, but also depends
+            * (nonlinearly in general) on the neighboring interior nodes through the local viscosity.  This will make
+            * a matrix-free Jacobian have extra entries in the corresponding row.  We assemble only the diagonal part,
+            * so the solution will exactly satisfy the boundary condition after the first linear iteration.
             */
             const PetscReal hz = PetscRealPart(pn[0].h)/(zm-1.);
             const PetscScalar diagu = 2*etabase/thi->rhog*(hx*hy/hz + hx*hz/hy + 4*hy*hz/hx),diagv = 2*etabase/thi->rhog*(hx*hy/hz + 4*hx*hz/hy + hy*hz/hx);
-            fn[0]->u = thi->dirichlet_scale*diagu*n[0].u;
-            fn[0]->v = thi->dirichlet_scale*diagv*n[0].v;
+            fn[0]->u = thi->dirichlet_scale*diagu*x[i][j][k].u;
+            fn[0]->v = thi->dirichlet_scale*diagv*x[i][j][k].v;
           } else {              /* Integrate over bottom face to apply boundary condition */
             for (q=0; q<4; q++) {
               const PetscReal jw = 0.25*hx*hy/thi->rhog,*phi = QuadQInterp[q];
