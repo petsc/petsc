@@ -405,8 +405,8 @@ M*/
 #  define PetscUnlikely(cond)   __builtin_expect(!!(cond),0)
 #  define PetscLikely(cond)     __builtin_expect(!!(cond),1)
 #else
-#  define PetscUnlikely(cond)   cond
-#  define PetscLikely(cond)     cond
+#  define PetscUnlikely(cond)   (cond)
+#  define PetscLikely(cond)     (cond)
 #endif
 
 /*
