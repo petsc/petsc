@@ -186,6 +186,8 @@ class Configure(config.package.Package):
       dir = self.framework.argDB['with-blas-lapack-dir']
       if not (len(dir) > 2 and dir[1] == ':') :
         dir = os.path.abspath(dir)
+      self.framework.log.write('Looking for BLAS/LAPACK in user specified directory: '+dir+'\n')
+      self.framework.log.write('Files and directorys in that directory:\n'+str(os.listdir(dir))+'\n')
       yield ('User specified installation root (HPUX)', os.path.join(dir, 'libveclib.a'),  os.path.join(dir, 'liblapack.a'), 1)
       f2cLibs = [os.path.join(dir,'libf2cblas.a')]
       if self.libraries.math:
