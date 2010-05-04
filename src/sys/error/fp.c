@@ -83,6 +83,16 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,c
    overflow, divide-by-zero, and invalid-operand (e.g., a NaN) to
    cause a message to be printed and the program to exit.
 
+   Note:
+   On many common systems including x86 and x86-64 Linux, the floating
+   point exception state is not preserved from the location where the trap
+   occurred through to the signal handler.  In this case, the signal handler
+   will just say that an unknown floating point exception occurred and which
+   function it occurred in.  If you run with -fp_trap in a debugger, it will
+   break on the line where the error occurred.  You can check which
+   exception occurred using fetestexcept(FE_ALL_EXCEPT).  See fenv.h
+   (usually at /usr/include/bits/fenv.h) for the enum values on your system.
+
    Caution:
    On certain machines, in particular the IBM rs6000, floating point 
    trapping is VERY slow!
@@ -331,8 +341,7 @@ void PetscDefaultFPTrap(int sig)
   /* Note: While it is possible for the exception state to be preserved by the
    * kernel, this seems to be rare which makes the following flag testing almost
    * useless.  But on a system where the flags can be preserved, it would provide
-   * more detail.  In practice, you will probably have to run in a debugger and check
-   * fetestexcept() by hand to determine exactly which exception was raised.
+   * more detail.
    */
   code = fetestexcept(FE_ALL_EXCEPT);
   for (node=&error_codes[0]; node->code; node++) {
@@ -344,8 +353,27 @@ void PetscDefaultFPTrap(int sig)
   }
   if (!matched || code) { /* If any remaining flags are set, or we didn't process any flags */
     (*PetscErrorPrintf)("*** unknown floating point error occurred ***\n");
+    (*PetscErrorPrintf)("The specific exception can be determined by running in a debugger.  When the\n");
+    (*PetscErrorPrintf)("debugger traps the signal, the exception can be found with fetestexcept(0x%x)\n",FE_ALL_EXCEPT);
+    (*PetscErrorPrintf)("where the result is a bitwise OR of the following flags:\n");
+    (*PetscErrorPrintf)("FE_INVALID=0x%x FE_DIVBYZERO=0x%x FE_OVERFLOW=0x%x FE_UNDERFLOW=0x%x FE_INEXACT=0x%x\n",FE_INVALID,FE_DIVBYZERO,FE_OVERFLOW,FE_UNDERFLOW,FE_INEXACT);
   }
-  PetscError(0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,1,"floating point error");
+
+  (*PetscErrorPrintf)("Try option -start_in_debugger\n");
+#if defined(PETSC_USE_DEBUG)
+  if (!PetscStackActive) {
+    (*PetscErrorPrintf)("  or try option -log_stack\n");
+  } else {
+    (*PetscErrorPrintf)("likely location of problem given in stack below\n");
+    (*PetscErrorPrintf)("---------------------  Stack Frames ------------------------------------\n");
+    PetscStackView(PETSC_VIEWER_STDOUT_SELF);
+  }
+#endif
+#if !defined(PETSC_USE_DEBUG)
+  (*PetscErrorPrintf)("configure using --with-debugging=yes, recompile, link, and run \n");
+  (*PetscErrorPrintf)("with -start_in_debugger to get more information on the crash.\n");
+#endif
+  PetscError(0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,1,"trapped floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 EXTERN_C_END
