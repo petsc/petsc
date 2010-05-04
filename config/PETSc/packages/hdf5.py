@@ -11,7 +11,8 @@ class Configure(PETSc.package.NewPackage):
     self.needsMath = 1
     self.extraLib  = ['libz.a']
     self.complex   = 1
-    self.requires32bitint = 0;    
+    self.requires32bitint = 0;
+    self.worksonWindow    = 1    
     return
 
   def setupDependencies(self, framework):
