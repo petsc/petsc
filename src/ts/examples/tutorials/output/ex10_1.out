@@ -36,7 +36,7 @@
       0 KSP Residual norm 0.0157851 
       1 KSP Residual norm < 1.e-11
    12 SNES Function norm 3.79435e-05 
-      0 KSP Residual norm 6.77373e-06 
+      0 KSP Residual norm 6.77374e-06 
       1 KSP Residual norm < 1.e-11
    13 SNES Function norm 1.77318e-09 
 1 TS dt 0.1 time 0.1
@@ -67,7 +67,7 @@
       0 KSP Residual norm 0.000256302 
       1 KSP Residual norm < 1.e-11
     3 SNES Function norm 2.52027e-07 
-      0 KSP Residual norm 5.81242e-08 
+      0 KSP Residual norm 5.81241e-08 
       1 KSP Residual norm < 1.e-11
     4 SNES Function norm < 1.e-11
 3 TS dt 0.1 time 0.3

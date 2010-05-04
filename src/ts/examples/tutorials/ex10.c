@@ -49,6 +49,7 @@ struct _n_RD {
   PetscTruth     test_diff;
   PetscTruth     endpoint;
   PetscTruth     bclimit;
+  PetscTruth     bcmidpoint;
   RDUnit         unit;
 
   /* model constants, see Table 2 and RDCreate() */
@@ -111,7 +112,7 @@ static void RDMaterialEnergy_Saha(RD rd,const RDNode *n,PetscScalar *inEm,RDNode
     b_t   = -b*chi_t + 1.5*b/chi*chi_t,
     c     = -b,
     c_t   = -b_t;
-  QuadraticSolve(a,a_t,b,b_t,c,c_t,&alpha,&alpha_t);
+  QuadraticSolve(a,a_t,b,b_t,c,c_t,&alpha,&alpha_t);       /* Solve Eq 7 for alpha */
   Em = rd->k * T / rd->m_p * (1.5*(1.+alpha) + alpha*chi); /* Eq 6 */
   if (inEm) *inEm = Em;
   if (dEm) {
@@ -141,6 +142,7 @@ static void RDMaterialEnergy_Reduced(RD rd,const RDNode *n,PetscScalar *Em,RDNod
   }
 }
 
+/* Eq 5 */
 static void RDSigma_R(RD rd,RDNode *n,PetscScalar *sigma_R,RDNode *dsigma_R)
 {
   *sigma_R = rd->K_R * rd->rho * PetscPowScalar(n->T,-rd->gamma);
@@ -148,7 +150,8 @@ static void RDSigma_R(RD rd,RDNode *n,PetscScalar *sigma_R,RDNode *dsigma_R)
   dsigma_R->T = -rd->gamma * (*sigma_R) / n->T;
 }
 
-static void RDDiffusionCoefficient(RD rd,PetscTruth limit,RDNode *n,RDNode *nx,PetscScalar *D_r,RDNode *dD_R,RDNode *dxD_R)
+/* Eq 4 */
+static void RDDiffusionCoefficient(RD rd,PetscTruth limit,RDNode *n,RDNode *nx,PetscScalar *D_R,RDNode *dD_R,RDNode *dxD_R)
 {
   PetscScalar sigma_R,denom;
   RDNode dsigma_R,ddenom,dxdenom;
@@ -158,7 +161,7 @@ static void RDDiffusionCoefficient(RD rd,PetscTruth limit,RDNode *n,RDNode *nx,P
   ddenom.T = 3. * rd->rho * dsigma_R.T;
   dxdenom.E = (int)limit * (PetscRealPart(nx->E)<0 ? -1. : 1.) / n->E;
   dxdenom.T = 0;
-  *D_r = rd->c / denom;
+  *D_R = rd->c / denom;
   if (dD_R) {
     dD_R->E = -rd->c / PetscSqr(denom) * ddenom.E;
     dD_R->T = -rd->c / PetscSqr(denom) * ddenom.T;
@@ -198,7 +201,7 @@ static PetscScalar RDRadiation(RD rd,const RDNode *n,RDNode *dn)
 {
   PetscScalar sigma_p = rd->K_p * rd->rho * PetscPowScalar(n->T,-rd->beta),
     sigma_p_T = -rd->beta * sigma_p / n->T,
-    tmp = (4. * rd->sigma_b * PetscSqr(PetscSqr(n->T)) / rd->c - n->E),
+    tmp = 4. * rd->sigma_b * PetscSqr(PetscSqr(n->T)) / rd->c - n->E,
     tmp_E = -1.,
     tmp_T = 4. * rd->sigma_b * 4 * n->T*(PetscSqr(n->T)) / rd->c,
     rad = sigma_p * rd->c * rd->rho * tmp,
@@ -211,23 +214,43 @@ static PetscScalar RDRadiation(RD rd,const RDNode *n,RDNode *dn)
   return rad;
 }
 
-static PetscScalar RDDiffusion(RD rd,PetscReal hx,RDNode *x,PetscInt i)
+static PetscScalar RDDiffusion(RD rd,PetscReal hx,const RDNode x[],PetscInt i,RDNode d[])
 {
-  RDNode n_L,nx_L,n_R,nx_R;
-  PetscScalar D_L,D_R;
+  PetscReal ihx = 1./hx;
+  RDNode n_L,nx_L,n_R,nx_R,dD_L,dxD_L,dD_R,dxD_R,dfluxL[2],dfluxR[2];
+  PetscScalar D_L,D_R,fluxL,fluxR;
 
   n_L.E = 0.5*(x[i-1].E + x[i].E);
   n_L.T = 0.5*(x[i-1].T + x[i].T);
   nx_L.E = (x[i].E - x[i-1].E)/hx;
   nx_L.T = (x[i].T - x[i-1].T)/hx;
-  RDDiffusionCoefficient(rd,PETSC_TRUE,&n_L,&nx_L,&D_L,0,0);
+  RDDiffusionCoefficient(rd,PETSC_TRUE,&n_L,&nx_L,&D_L,&dD_L,&dxD_L);
+  fluxL = D_L*nx_L.E;
+  dfluxL[0].E = -ihx*D_L + (0.5*dD_L.E - ihx*dxD_L.E)*nx_L.E;
+  dfluxL[1].E = +ihx*D_L + (0.5*dD_L.E + ihx*dxD_L.E)*nx_L.E;
+  dfluxL[0].T = (0.5*dD_L.T - ihx*dxD_L.T)*nx_L.E;
+  dfluxL[1].T = (0.5*dD_L.T + ihx*dxD_L.T)*nx_L.E;
 
   n_R.E = 0.5*(x[i].E + x[i+1].E);
   n_R.T = 0.5*(x[i].T + x[i+1].T);
   nx_R.E = (x[i+1].E - x[i].E)/hx;
   nx_R.T = (x[i+1].T - x[i].T)/hx;
-  RDDiffusionCoefficient(rd,PETSC_TRUE,&n_R,&nx_R,&D_R,0,0);
-  return (D_R*nx_R.E - D_L*nx_L.E)/hx;
+  RDDiffusionCoefficient(rd,PETSC_TRUE,&n_R,&nx_R,&D_R,&dD_R,&dxD_R);
+  fluxR = D_R*nx_R.E;
+  dfluxR[0].E = -ihx*D_R + (0.5*dD_R.E - ihx*dxD_R.E)*nx_R.E;
+  dfluxR[1].E = +ihx*D_R + (0.5*dD_R.E + ihx*dxD_R.E)*nx_R.E;
+  dfluxR[0].T = (0.5*dD_R.T - ihx*dxD_R.T)*nx_R.E;
+  dfluxR[1].T = (0.5*dD_R.T + ihx*dxD_R.T)*nx_R.E;
+
+  if (d) {
+    d[0].E = -ihx*dfluxL[0].E;
+    d[0].T = -ihx*dfluxL[0].T;
+    d[1].E =  ihx*(dfluxR[0].E - dfluxL[1].E);
+    d[1].T =  ihx*(dfluxR[0].T - dfluxL[1].T);
+    d[2].E =  ihx*dfluxR[1].E;
+    d[2].T =  ihx*dfluxR[1].T;
+  }
+  return ihx*(fluxR - fluxL);
 }
 
 #undef __FUNCT__  
@@ -307,7 +330,7 @@ static PetscErrorCode RDCheckDomain_Private(RD rd,TS ts,Vec X,PetscTruth *in) {
   PetscFunctionReturn(0);
 }
 
-/* Energy and temprature must remain positive */
+/* Energy and temperature must remain positive */
 #define RDCheckDomain(rd,ts,X) do {                                \
     PetscErrorCode _ierr;                                          \
     PetscTruth _in;                                                \
@@ -332,6 +355,7 @@ static PetscErrorCode RDIFunction_FD(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
   ierr = RDGetLocalArrays(rd,ts,X,Xdot,&Theta,&dt,&X0loc,&x0,&Xloc,&x,&Xloc_t,&xdot);CHKERRQ(ierr);
   ierr = DAVecGetArray(rd->da,F,&f);CHKERRQ(ierr);
   ierr = DAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
+  VecZeroEntries(F);
 
   hx = rd->L / (info.mx-1);
 
@@ -350,42 +374,142 @@ static PetscErrorCode RDIFunction_FD(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
       RDMaterialEnergy(rd,&x[i],PETSC_NULL,&dEm);
       Em_t = dEm.E * xdot[i].E + dEm.T * xdot[i].T;
     }
+    /* Residuals are multiplied by the volume element (hx).  */
+    /* The temperature equation does not have boundary conditions */
+    f[i].T = hx*(rho*Em_t + rad);
 
-    /*
-      In the following, residuals are multiplied by the volume element (hx).
-
-      In the "endpoint" version, the boundary conditions are enforced at the end of the
-      step (note that the boundary conditions are not time-dependent).
-    */
     if (i == 0) {               /* Left boundary condition */
-      RDNode n,nx;
-      PetscScalar D_R;
-      n.E = x[i].E;
-      n.T = x[i].T;
-      nx.E = (x[i+1].E - x[i].E)/hx;
-      nx.T = (x[i+1].T - x[i].T)/hx;
+      PetscScalar D_R,bcTheta = rd->bcmidpoint ? Theta : 1.;
+      RDNode n = {(1.-bcTheta)*x0[0].E + bcTheta*x[0].E,
+          (1.-bcTheta)*x0[0].T + bcTheta*x[0].T},
+          nx = {((1.-bcTheta)*(x0[1].E-x0[0].E) + bcTheta*(x[1].E-x[0].E))/hx,
+              ((1.-bcTheta)*(x0[1].T-x0[0].T) + bcTheta*(x[1].T-x[0].T))/hx};
       switch (rd->leftbc) {
-        case BC_ROBIN:
-          RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D_R,0,0);
-          f[i].E = hx*(n.E - 2. * D_R * nx.E - rd->Eapplied);
-          break;
-        case BC_NEUMANN:
-          f[i].E = x[i+1].E - x[i].E;
-          break;
-        default: SETERRQ1(PETSC_ERR_SUP,"Case %D",rd->initial);
+      case BC_ROBIN:
+        RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D_R,0,0);
+        f[0].E = hx*(n.E - 2. * D_R * nx.E - rd->Eapplied);
+        break;
+      case BC_NEUMANN:
+        f[0].E = x[1].E - x[0].E;
+        break;
+      default: SETERRQ1(PETSC_ERR_SUP,"Case %D",rd->initial);
       }
     } else if (i == info.mx-1) { /* Right boundary */
       f[i].E = x[i].E - x[i-1].E; /* Homogeneous Neumann */
     } else {
-      PetscScalar diff = (1.-Theta)*RDDiffusion(rd,hx,x0,i) + Theta*RDDiffusion(rd,hx,x,i);
+      PetscScalar diff = (1.-Theta)*RDDiffusion(rd,hx,x0,i,0) + Theta*RDDiffusion(rd,hx,x,i,0);
       f[i].E = hx*(xdot[i].E - diff - rad);
     }
-    /* The temperature equation does not have boundary conditions */
-    f[i].T = hx*(rho*Em_t + rad);
   }
   ierr = RDRestoreLocalArrays(rd,&X0loc,&x0,&Xloc,&x,&Xloc_t,&xdot);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(rd->da,F,&f);CHKERRQ(ierr);
   if (rd->monitor_residual) {ierr = RDStateView(rd,X,Xdot,F);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "RDIJacobian_FD"
+static PetscErrorCode RDIJacobian_FD(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
+{
+  PetscErrorCode ierr;
+  RD             rd = (RD)ctx;
+  RDNode         *x,*x0,*xdot;
+  Vec            X0loc,Xloc,Xloc_t;
+  PetscReal      hx,Theta,dt;
+  DALocalInfo    info;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  RDCheckDomain(rd,ts,X);
+  ierr = RDGetLocalArrays(rd,ts,X,Xdot,&Theta,&dt,&X0loc,&x0,&Xloc,&x,&Xloc_t,&xdot);CHKERRQ(ierr);
+  ierr = DAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
+  hx = rd->L / (info.mx-1);
+  ierr = MatZeroEntries(*B);CHKERRQ(ierr);
+
+  for (i=info.xs; i<info.xs+info.xm; i++) {
+    PetscInt col[3];
+    PetscReal rho = rd->rho;
+    PetscScalar Em_t,rad,K[2][6];
+    RDNode dEm_t,drad;
+
+    rad = (1.-Theta)*RDRadiation(rd,&x0[i],0) + Theta*RDRadiation(rd,&x[i],&drad);
+
+    if (rd->endpoint) {
+      PetscScalar Em0,Em1;
+      RDNode      dEm1;
+      RDMaterialEnergy(rd,&x0[i],&Em0,PETSC_NULL);
+      RDMaterialEnergy(rd,&x[i],&Em1,&dEm1);
+      Em_t = (Em1 - Em0) / (Theta*dt);
+      dEm_t.E = dEm1.E / (Theta*dt);
+      dEm_t.T = dEm1.T / (Theta*dt);
+    } else {
+      const PetscScalar epsilon = x[i].T * PETSC_SQRT_MACHINE_EPSILON;
+      const RDNode n1 = {x[i].E,x[i].T+epsilon};
+      RDNode dEm,dEm1;
+      PetscScalar Em_TT;
+      RDMaterialEnergy(rd,&x[i],PETSC_NULL,&dEm);
+      RDMaterialEnergy(rd,&n1,PETSC_NULL,&dEm1);
+      /* The Jacobian needs another derivative.  We finite difference here instead of
+       * propagating second derivatives through the ionization model. */
+      Em_TT = (dEm1.T - dEm.T) / epsilon;
+      Em_t = dEm.E * xdot[i].E + dEm.T * xdot[i].T;
+      dEm_t.E = dEm.E * a;
+      dEm_t.T = dEm.T * a + Em_TT * xdot[i].T;
+    }
+
+    ierr = PetscMemzero(K,sizeof(K));CHKERRQ(ierr);
+    /* Residuals are multiplied by the volume element (hx).  */
+    if (i == 0) {
+      PetscScalar D,bcTheta = rd->bcmidpoint ? Theta : 1.;
+      RDNode n = {(1.-bcTheta)*x0[0].E + bcTheta*x[0].E,
+                  (1.-bcTheta)*x0[0].T + bcTheta*x[0].T},
+            nx = {((1.-bcTheta)*(x0[1].E-x0[0].E) + bcTheta*(x[1].E-x[0].E))/hx,
+                  ((1.-bcTheta)*(x0[1].T-x0[0].T) + bcTheta*(x[1].T-x[0].T))/hx};
+      RDNode dD,dxD;
+      switch (rd->leftbc) {
+      case BC_ROBIN:
+        RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D,&dD,&dxD);
+        K[0][1*2+0] = (bcTheta/Theta)*hx*(1. -2.*D*(-1./hx) - 2.*nx.E*dD.E + 2.*nx.E*dxD.E/hx);
+        K[0][1*2+1] = (bcTheta/Theta)*hx*(-2.*nx.E*dD.T);
+        K[0][2*2+0] = (bcTheta/Theta)*hx*(-2.*D*(1./hx) - 2.*nx.E*dD.E - 2.*nx.E*dxD.E/hx);
+        break;
+      case BC_NEUMANN:
+        K[0][1*2+0] = -1./Theta;
+        K[0][2*2+0] = 1./Theta;
+        break;
+      default: SETERRQ1(PETSC_ERR_SUP,"Case %D",rd->initial);
+      }
+    } else if (i == info.mx-1) {
+      K[0][0*2+0] = -1./Theta;
+      K[0][1*2+0] = 1./Theta;
+    } else {
+      PetscScalar diff;
+      RDNode      ddiff[3];
+      diff = (1.-Theta)*RDDiffusion(rd,hx,x0,i,0) + Theta*RDDiffusion(rd,hx,x,i,ddiff);
+      K[0][0*2+0] = -hx*ddiff[0].E;
+      K[0][0*2+1] = -hx*ddiff[0].T;
+      K[0][1*2+0] = hx*(a - ddiff[1].E - drad.E);
+      K[0][1*2+1] = hx*(-ddiff[1].T - drad.T);
+      K[0][2*2+0] = -hx*ddiff[2].E;
+      K[0][2*2+1] = -hx*ddiff[2].T;
+    }
+
+    K[1][1*2+0] = hx*(rho*dEm_t.E + drad.E);
+    K[1][1*2+1] = hx*(rho*dEm_t.T + drad.T);
+
+    col[0] = i-1;
+    col[1] = i;
+    col[2] = i+1<info.mx ? i+1 : -1;
+    ierr = MatSetValuesBlocked(*B,1,&i,3,col,&K[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = RDRestoreLocalArrays(rd,&X0loc,&x0,&Xloc,&x,&Xloc_t,&xdot);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (*A != *B) {
+    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  *mstr = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -414,37 +538,37 @@ static PetscErrorCode RDGetQuadrature(RD rd,PetscReal hx,PetscInt *nq,PetscReal 
 
   PetscFunctionBegin;
   switch (rd->quadrature) {
-    case QUADRATURE_GAUSS1: {
-      static const PetscReal ww[1] = {1.},ii[1][2] = {{0.5,0.5}},dd[1][2] = {{-1.,1.}};
-      *nq = 1; refweight = ww; refinterp = ii; refderiv = dd;
-    } break;
-    case QUADRATURE_GAUSS2: {
-      static const PetscReal ii[2][2] = {{0.78867513459481287,0.21132486540518713},{0.21132486540518713,0.78867513459481287}},dd[2][2] = {{-1.,1.},{-1.,1.}},ww[2] = {0.5,0.5};
-      *nq = 2; refweight = ww; refinterp = ii; refderiv = dd;
-    } break;
-    case QUADRATURE_GAUSS3: {
-      static const PetscReal ii[3][2] = {{0.8872983346207417,0.1127016653792583},{0.5,0.5},{0.1127016653792583,0.8872983346207417}},
+  case QUADRATURE_GAUSS1: {
+    static const PetscReal ww[1] = {1.},ii[1][2] = {{0.5,0.5}},dd[1][2] = {{-1.,1.}};
+    *nq = 1; refweight = ww; refinterp = ii; refderiv = dd;
+  } break;
+  case QUADRATURE_GAUSS2: {
+    static const PetscReal ii[2][2] = {{0.78867513459481287,0.21132486540518713},{0.21132486540518713,0.78867513459481287}},dd[2][2] = {{-1.,1.},{-1.,1.}},ww[2] = {0.5,0.5};
+    *nq = 2; refweight = ww; refinterp = ii; refderiv = dd;
+  } break;
+  case QUADRATURE_GAUSS3: {
+    static const PetscReal ii[3][2] = {{0.8872983346207417,0.1127016653792583},{0.5,0.5},{0.1127016653792583,0.8872983346207417}},
         dd[3][2] = {{-1,1},{-1,1},{-1,1}},ww[3] = {5./18,8./18,5./18};
-      *nq = 3; refweight = ww; refinterp = ii; refderiv = dd;
-    } break;
-    case QUADRATURE_GAUSS4: {
-        static const PetscReal ii[][2] = {{0.93056815579702623,0.069431844202973658},
-                                          {0.66999052179242813,0.33000947820757187},
-                                          {0.33000947820757187,0.66999052179242813},
-                                          {0.069431844202973658,0.93056815579702623}},
+    *nq = 3; refweight = ww; refinterp = ii; refderiv = dd;
+  } break;
+  case QUADRATURE_GAUSS4: {
+    static const PetscReal ii[][2] = {{0.93056815579702623,0.069431844202973658},
+        {0.66999052179242813,0.33000947820757187},
+        {0.33000947820757187,0.66999052179242813},
+        {0.069431844202973658,0.93056815579702623}},
         dd[][2] = {{-1,1},{-1,1},{-1,1},{-1,1}},ww[] = {0.17392742256872692,0.3260725774312731,0.3260725774312731,0.17392742256872692};
 
-      *nq = 4; refweight = ww; refinterp = ii; refderiv = dd;
-    } break;
-    case QUADRATURE_LOBATTO2: {
-      static const PetscReal ii[2][2] = {{1.,0.},{0.,1.}},dd[2][2] = {{-1.,1.},{-1.,1.}},ww[2] = {0.5,0.5};
-      *nq = 2; refweight = ww; refinterp = ii; refderiv = dd;
-    } break;
-    case QUADRATURE_LOBATTO3: {
-      static const PetscReal ii[3][2] = {{1,0},{0.5,0.5},{0,1}},dd[3][2] = {{-1,1},{-1,1},{-1,1}},ww[3] = {1./6,4./6,1./6};
-      *nq = 3; refweight = ww; refinterp = ii; refderiv = dd;
-    } break;
-    default: SETERRQ1(PETSC_ERR_SUP,"Unknown quadrature %d",(int)rd->quadrature);
+    *nq = 4; refweight = ww; refinterp = ii; refderiv = dd;
+  } break;
+  case QUADRATURE_LOBATTO2: {
+    static const PetscReal ii[2][2] = {{1.,0.},{0.,1.}},dd[2][2] = {{-1.,1.},{-1.,1.}},ww[2] = {0.5,0.5};
+    *nq = 2; refweight = ww; refinterp = ii; refderiv = dd;
+  } break;
+  case QUADRATURE_LOBATTO3: {
+    static const PetscReal ii[3][2] = {{1,0},{0.5,0.5},{0,1}},dd[3][2] = {{-1,1},{-1,1},{-1,1}},ww[3] = {1./6,4./6,1./6};
+    *nq = 3; refweight = ww; refinterp = ii; refderiv = dd;
+  } break;
+  default: SETERRQ1(PETSC_ERR_SUP,"Unknown quadrature %d",(int)rd->quadrature);
   }
 
   for (q=0; q<*nq; q++) {
@@ -488,7 +612,7 @@ static PetscErrorCode RDIFunction_FE(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
   for (i=info.xs; i<PetscMin(info.xs+info.xm,info.mx-1); i++) {
     for (q=0; q<nq; q++) {
       PetscReal rho = rd->rho;
-      PetscScalar Em_t,rad,D_r,D0_r;
+      PetscScalar Em_t,rad,D_R,D0_R;
       RDNode n,n0,nx,n0x,nt,ntx;
       RDEvaluate(interp,deriv,q,x,i,&n,&nx);
       RDEvaluate(interp,deriv,q,x0,i,&n0,&n0x);
@@ -505,33 +629,33 @@ static PetscErrorCode RDIFunction_FE(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
         RDMaterialEnergy(rd,&n,PETSC_NULL,&dEm);
         Em_t = dEm.E * nt.E + dEm.T * nt.T;
       }
-      RDDiffusionCoefficient(rd,PETSC_TRUE,&n0,&n0x,&D0_r,0,0);
-      RDDiffusionCoefficient(rd,PETSC_TRUE,&n,&nx,&D_r,0,0);
+      RDDiffusionCoefficient(rd,PETSC_TRUE,&n0,&n0x,&D0_R,0,0);
+      RDDiffusionCoefficient(rd,PETSC_TRUE,&n,&nx,&D_R,0,0);
       for (j=0; j<2; j++) {
-        f[i+j].E += (deriv[q][j] * weight[q] * ((1.-Theta)*D0_r*n0x.E + Theta*D_r*nx.E)
+        f[i+j].E += (deriv[q][j] * weight[q] * ((1.-Theta)*D0_R*n0x.E + Theta*D_R*nx.E)
                      + interp[q][j] * weight[q] * (nt.E - rad));
-        f[i+j].T += interp[q][j] * weight[q] * (rho * Em_t + 0.*rad);
+        f[i+j].T += interp[q][j] * weight[q] * (rho * Em_t + rad);
       }
     }
   }
   if (info.xs == 0) {
     switch (rd->leftbc) {
-      case BC_ROBIN: {
-        PetscScalar D_R,D_R_bc;
-        PetscReal   ratio;
-        RDNode n = {(1-Theta)*x0[0].E + Theta*x[0].E,(1-Theta)*x0[0].T + Theta*x[0].T},
-            nx = {(x[1].E-x[0].E)/hx,(x[1].T-x[0].T)/hx};
-        RDDiffusionCoefficient(rd,PETSC_TRUE,&n,&nx,&D_R,0,0);
-        RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D_R_bc,0,0);
-        ratio = PetscRealPart(D_R/D_R_bc);
-        if (ratio > 1.) SETERRQ(1,"Limited diffusivity is greater than unlimited");
-        if (ratio < 1e-2) SETERRQ(1,"Heavily limited diffusivity");
-        f[0].E += -ratio*0.5*(rd->Eapplied - n.E);
-      } break;
-      case BC_NEUMANN:
-        /* homogeneous Neumann is the natural condition */
-        break;
-      default: SETERRQ1(PETSC_ERR_SUP,"Case %D",rd->initial);
+    case BC_ROBIN: {
+      PetscScalar D_R,D_R_bc;
+      PetscReal   ratio,bcTheta = rd->bcmidpoint ? Theta : 1.;
+      RDNode n = {(1-bcTheta)*x0[0].E + bcTheta*x[0].E,(1-bcTheta)*x0[0].T + bcTheta*x[0].T},
+          nx = {(x[1].E-x[0].E)/hx,(x[1].T-x[0].T)/hx};
+      RDDiffusionCoefficient(rd,PETSC_TRUE,&n,&nx,&D_R,0,0);
+      RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D_R_bc,0,0);
+      ratio = PetscRealPart(D_R/D_R_bc);
+      if (ratio > 1.) SETERRQ(1,"Limited diffusivity is greater than unlimited");
+      if (ratio < 1e-3) SETERRQ(1,"Heavily limited diffusivity");
+      f[0].E += -ratio*0.5*(rd->Eapplied - n.E);
+    } break;
+    case BC_NEUMANN:
+      /* homogeneous Neumann is the natural condition */
+      break;
+    default: SETERRQ1(PETSC_ERR_SUP,"Case %D",rd->initial);
     }
   }
 
@@ -551,10 +675,10 @@ static PetscErrorCode RDIFunction_FE(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
 static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
 {
   PetscErrorCode ierr;
-  RD rd = (RD)ctx;
+  RD             rd = (RD)ctx;
   RDNode         *x,*x0,*xdot;
   Vec            X0loc,Xloc,Xloc_t;
-  PetscReal hx,Theta,dt,weight[5],interp[5][2],deriv[5][2];
+  PetscReal      hx,Theta,dt,weight[5],interp[5][2],deriv[5][2];
   DALocalInfo    info;
   PetscInt       i,j,k,q,nq;
   PetscScalar    K[4][4];
@@ -584,7 +708,7 @@ static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
           K[j*2+0][k*2+1] += (+interp[q][j] * weight[q] * (-drad.T * interp[q][k])
                               + deriv[q][j] * weight[q] * (dxD_R.T * deriv[q][k] + dD_R.T * interp[q][k]) * nx.E);
           K[j*2+1][k*2+0] +=   interp[q][j] * weight[q] * drad.E * interp[q][k];
-          K[j*2+1][k*2+1] +=   interp[q][j] * weight[q] * (a * rd->rho * dEm.T + 0.*drad.T) * interp[q][k];
+          K[j*2+1][k*2+1] +=   interp[q][j] * weight[q] * (a * rd->rho * dEm.T + drad.T) * interp[q][k];
         }
       }
     }
@@ -592,20 +716,20 @@ static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
   }
   if (info.xs == 0) {
     switch (rd->leftbc) {
-      case BC_ROBIN: {
-        PetscScalar D_R,D_R_bc;
-        PetscReal   ratio;
-        RDNode n = {(1-Theta)*x0[0].E + Theta*x[0].E,(1-Theta)*x0[0].T + Theta*x[0].T},
-            nx = {(x[1].E-x[0].E)/hx,(x[1].T-x[0].T)/hx};
-        RDDiffusionCoefficient(rd,PETSC_TRUE,&n,&nx,&D_R,0,0);
-        RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D_R_bc,0,0);
-        ratio = PetscRealPart(D_R/D_R_bc);
-        ierr = MatSetValue(*B,0,0,ratio*0.5,ADD_VALUES);CHKERRQ(ierr);
-      } break;
-      case BC_NEUMANN:
-        /* homogeneous Neumann is the natural condition */
-        break;
-      default: SETERRQ1(PETSC_ERR_SUP,"Case %D",rd->initial);
+    case BC_ROBIN: {
+      PetscScalar D_R,D_R_bc;
+      PetscReal   ratio;
+      RDNode n = {(1-Theta)*x0[0].E + Theta*x[0].E,(1-Theta)*x0[0].T + Theta*x[0].T},
+          nx = {(x[1].E-x[0].E)/hx,(x[1].T-x[0].T)/hx};
+      RDDiffusionCoefficient(rd,PETSC_TRUE,&n,&nx,&D_R,0,0);
+      RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D_R_bc,0,0);
+      ratio = PetscRealPart(D_R/D_R_bc);
+      ierr = MatSetValue(*B,0,0,ratio*0.5,ADD_VALUES);CHKERRQ(ierr);
+    } break;
+    case BC_NEUMANN:
+      /* homogeneous Neumann is the natural condition */
+      break;
+    default: SETERRQ1(PETSC_ERR_SUP,"Case %D",rd->initial);
     }
   }
 
@@ -616,6 +740,7 @@ static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
     ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
+  *mstr = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -636,19 +761,19 @@ static PetscErrorCode RDInitialState(RD rd,Vec X)
   for (i=info.xs; i<info.xs+info.xm; i++) {
     PetscReal coord = i*rd->L/(info.mx-1);
     switch (rd->initial) {
-      case 1:
-        x[i].E = 0.001 + 100.*PetscExpScalar(-PetscSqr((coord-0.1)/0.1));
-        x[i].T = RDRadiationTemperature(rd,x[i].E);
-        break;
-      case 2:
-        x[i].E = 0.001 + 100.*PetscExpScalar(-PetscSqr(coord/0.1));
-        x[i].T = RDRadiationTemperature(rd,x[i].E);
-        break;
-      case 3:
-        x[i].E = 7.56e-2 * rd->unit.Joule / pow(rd->unit.meter,3);
-        x[i].T = RDRadiationTemperature(rd,x[i].E);
-        break;
-      default: SETERRQ1(PETSC_ERR_SUP,"No initial state %d",rd->initial);
+    case 1:
+      x[i].E = 0.001;
+      x[i].T = RDRadiationTemperature(rd,x[i].E);
+      break;
+    case 2:
+      x[i].E = 0.001 + 100.*PetscExpScalar(-PetscSqr(coord/0.1));
+      x[i].T = RDRadiationTemperature(rd,x[i].E);
+      break;
+    case 3:
+      x[i].E = 7.56e-2 * rd->unit.Joule / pow(rd->unit.meter,3);
+      x[i].T = RDRadiationTemperature(rd,x[i].E);
+      break;
+    default: SETERRQ1(PETSC_ERR_SUP,"No initial state %d",rd->initial);
     }
   }
   ierr = DAVecRestoreArray(rd->da,X,&x);CHKERRQ(ierr);
@@ -700,6 +825,7 @@ static PetscErrorCode RDView(RD rd,Vec X,PetscViewer viewer)
 #define __FUNCT__ "RDTestDifferentiation"
 static PetscErrorCode RDTestDifferentiation(RD rd)
 {
+  MPI_Comm comm = ((PetscObject)rd->da)->comm;
   PetscErrorCode ierr;
   RDNode n,nx;
   PetscScalar epsilon;
@@ -715,7 +841,7 @@ static PetscErrorCode RDTestDifferentiation(RD rd)
     rd->MaterialEnergy(rd,&n,&Em1,0); fdEm.E = (Em1-Em0)/epsilon;
     n = (RDNode){1.,T1};
     rd->MaterialEnergy(rd,&n,&Em1,0); fdEm.T = (Em1-Em0)/(T0*epsilon);
-    ierr = PetscPrintf(((PetscObject)rd->da)->comm,"dEm {%g,%g}, fdEm {%g,%g}, diff {%g,%g}\n",dEm.E,dEm.T,fdEm.E,fdEm.T,dEm.E-fdEm.E,dEm.T-fdEm.T);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"dEm {%g,%g}, fdEm {%g,%g}, diff {%g,%g}\n",dEm.E,dEm.T,fdEm.E,fdEm.T,dEm.E-fdEm.E,dEm.T-fdEm.T);CHKERRQ(ierr);
   }
   {
     PetscScalar D0,D;
@@ -730,8 +856,22 @@ static PetscErrorCode RDTestDifferentiation(RD rd)
     RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D,0,0); fdxD.E = (D-D0)/epsilon;
     nx = (RDNode){1.,1.+epsilon};
     RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D,0,0); fdxD.T = (D-D0)/epsilon;
-    ierr = PetscPrintf(((PetscObject)rd->da)->comm,"dD {%g,%g}, fdD {%g,%g}, diff {%g,%g}\n",dD.E,dD.T,fdD.E,fdD.T,dD.E-fdD.E,dD.T-fdD.T);CHKERRQ(ierr);
-    ierr = PetscPrintf(((PetscObject)rd->da)->comm,"dxD {%g,%g}, fdxD {%g,%g}, diffx {%g,%g}\n",dxD.E,dxD.T,fdxD.E,fdxD.T,dxD.E-fdxD.E,dxD.T-fdxD.T);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"dD {%g,%g}, fdD {%g,%g}, diff {%g,%g}\n",dD.E,dD.T,fdD.E,fdD.T,dD.E-fdD.E,dD.T-fdD.T);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"dxD {%g,%g}, fdxD {%g,%g}, diffx {%g,%g}\n",dxD.E,dxD.T,fdxD.E,fdxD.T,dxD.E-fdxD.E,dxD.T-fdxD.T);CHKERRQ(ierr);
+  }
+  {
+    PetscInt i;
+    PetscReal hx = 1.;
+    PetscScalar a0;
+    RDNode n0[3] = {{1.,1.},{5.,3.},{4.,2.}},n1[3],d[3],fd[3];
+    a0 = RDDiffusion(rd,hx,n0,1,d);
+    for (i=0; i<3; i++) {
+      ierr = PetscMemcpy(n1,n0,sizeof(n0));CHKERRQ(ierr); n1[i].E += epsilon;
+      fd[i].E = (RDDiffusion(rd,hx,n1,1,0)-a0)/epsilon;
+      ierr = PetscMemcpy(n1,n0,sizeof(n0));CHKERRQ(ierr); n1[i].T += epsilon;
+      fd[i].T = (RDDiffusion(rd,hx,n1,1,0)-a0)/epsilon;
+      ierr = PetscPrintf(comm,"ddiff[%d] {%g,%g}, fd {%g %g}, diff {%g,%g}\n",i,d[i].E,d[i].T,fd[i].E,fd[i].T,d[i].E-fd[i].E,d[i].T-fd[i].T);CHKERRQ(ierr);
+    }
   }
   {
     PetscScalar rad0,rad;
@@ -802,31 +942,31 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
     }
     ierr = PetscOptionsEnum("-rd_jacobian","Type of finite difference Jacobian","",JacobianTypes,(PetscEnum)rd->jacobian,(PetscEnum*)&rd->jacobian,0);CHKERRQ(ierr);
     switch (rd->initial) {
-      case 1:
-        rd->leftbc     = BC_ROBIN;
-        rd->Eapplied   = 4 * rd->unit.Joule / pow(rd->unit.meter,3.);
-        rd->L          = 1. * rd->unit.meter;
-        rd->beta       = 3.0;
-        rd->gamma      = 3.0;
-        rd->final_time = 3 * second;
-        break;
-      case 2:
-        rd->leftbc     = BC_NEUMANN;
-        rd->Eapplied   = 0.;
-        rd->L          = 1. * rd->unit.meter;
-        rd->beta       = 3.0;
-        rd->gamma      = 3.0;
-        rd->final_time = 1 * second;
-        break;
-      case 3:
-        rd->leftbc     = BC_ROBIN;
-        rd->Eapplied   = 7.503e6 * rd->unit.Joule / pow(rd->unit.meter,3);
-        rd->L          = 5. * rd->unit.meter;
-        rd->beta       = 3.5;
-        rd->gamma      = 3.5;
-        rd->final_time = 20e-9 * second;
-        break;
-      default: SETERRQ1(PETSC_ERR_SUP,"Initial %D",rd->initial);
+    case 1:
+      rd->leftbc     = BC_ROBIN;
+      rd->Eapplied   = 4 * rd->unit.Joule / pow(rd->unit.meter,3.);
+      rd->L          = 1. * rd->unit.meter;
+      rd->beta       = 3.0;
+      rd->gamma      = 3.0;
+      rd->final_time = 3 * second;
+      break;
+    case 2:
+      rd->leftbc     = BC_NEUMANN;
+      rd->Eapplied   = 0.;
+      rd->L          = 1. * rd->unit.meter;
+      rd->beta       = 3.0;
+      rd->gamma      = 3.0;
+      rd->final_time = 1 * second;
+      break;
+    case 3:
+      rd->leftbc     = BC_ROBIN;
+      rd->Eapplied   = 7.503e6 * rd->unit.Joule / pow(rd->unit.meter,3);
+      rd->L          = 5. * rd->unit.meter;
+      rd->beta       = 3.5;
+      rd->gamma      = 3.5;
+      rd->final_time = 20e-9 * second;
+      break;
+    default: SETERRQ1(PETSC_ERR_SUP,"Initial %D",rd->initial);
     }
     ierr = PetscOptionsEnum("-rd_leftbc","Left boundary condition","",BCTypes,(PetscEnum)rd->leftbc,(PetscEnum*)&rd->leftbc,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-rd_E_applied","Radiation flux at left end of domain","",rd->Eapplied,&rd->Eapplied,0);CHKERRQ(ierr);
@@ -834,6 +974,7 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
     ierr = PetscOptionsReal("-rd_gamma","Thermal exponent for diffusion coefficient","",rd->gamma,&rd->gamma,0);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-rd_view_draw","Draw final solution","",rd->view_draw,&rd->view_draw,0);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-rd_endpoint","Discretize using endpoints (like trapezoid rule) instead of midpoint","",rd->endpoint,&rd->endpoint,0);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-rd_bcmidpoint","Impose the boundary condition at the midpoint (Theta) of the interval","",rd->bcmidpoint,&rd->bcmidpoint,0);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-rd_bclimit","Limit diffusion coefficient in definition of Robin boundary condition","",rd->bclimit,&rd->bclimit,0);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-rd_test_diff","Test differentiation in constitutive relations","",rd->test_diff,&rd->test_diff,0);CHKERRQ(ierr);
     ierr = PetscOptionsString("-rd_view_binary","File name to hold final solution","",rd->view_binary,rd->view_binary,sizeof(rd->view_binary),0);CHKERRQ(ierr);
@@ -841,31 +982,30 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   switch (rd->initial) {
-    case 1:
-    case 2:
-      rd->rho     = 1.;
-      rd->c       = 1.;
-      rd->K_R     = 1.;
-      rd->K_p     = 1.;
-      rd->sigma_b = 0.25;
-      rd->MaterialEnergy = RDMaterialEnergy_Reduced;
-      break;
-    case 3:
-      /* Table 2 */
-      rd->rho     = 1.17e-3 * kilogram / (meter*meter*meter);                      /* density */
-      rd->K_R     = 7.44e18 * pow(meter,5.) * pow(Kelvin,3.5) * pow(kilogram,-2.); /*  */
-      rd->K_p     = 2.33e20 * pow(meter,5.) * pow(Kelvin,3.5) * pow(kilogram,-2.); /*  */
-      rd->I_H     = 2.179e-18 * Joule;                                             /* Hydrogen ionization potential */
-      rd->m_p     = 1.673e-27 * kilogram;                                          /* proton mass */
-      rd->m_e     = 9.109e-31 * kilogram;                                          /* electron mass */
-      rd->h       = 6.626e-34 * Joule * second;                                    /* Planck's constant */
-      rd->k       = 1.381e-23 * Joule / Kelvin;                                    /* Boltzman constant */
-      rd->c       = 3.00e8 * meter / second;                                       /* speed of light */
-      rd->sigma_b = 5.67e-8 * Watt * pow(meter,-2.) * pow(Kelvin,-4.);             /* Stefan-Boltzman constant */
-      rd->MaterialEnergy = RDMaterialEnergy_Saha;
-      break;
+  case 1:
+  case 2:
+    rd->rho     = 1.;
+    rd->c       = 1.;
+    rd->K_R     = 1.;
+    rd->K_p     = 1.;
+    rd->sigma_b = 0.25;
+    rd->MaterialEnergy = RDMaterialEnergy_Reduced;
+    break;
+  case 3:
+    /* Table 2 */
+    rd->rho     = 1.17e-3 * kilogram / (meter*meter*meter);                      /* density */
+    rd->K_R     = 7.44e18 * pow(meter,5.) * pow(Kelvin,3.5) * pow(kilogram,-2.); /*  */
+    rd->K_p     = 2.33e20 * pow(meter,5.) * pow(Kelvin,3.5) * pow(kilogram,-2.); /*  */
+    rd->I_H     = 2.179e-18 * Joule;                                             /* Hydrogen ionization potential */
+    rd->m_p     = 1.673e-27 * kilogram;                                          /* proton mass */
+    rd->m_e     = 9.109e-31 * kilogram;                                          /* electron mass */
+    rd->h       = 6.626e-34 * Joule * second;                                    /* Planck's constant */
+    rd->k       = 1.381e-23 * Joule / Kelvin;                                    /* Boltzman constant */
+    rd->c       = 3.00e8 * meter / second;                                       /* speed of light */
+    rd->sigma_b = 5.67e-8 * Watt * pow(meter,-2.) * pow(Kelvin,-4.);             /* Stefan-Boltzman constant */
+    rd->MaterialEnergy = RDMaterialEnergy_Saha;
+    break;
   }
-
 
   ierr = DACreate1d(comm,DA_NONPERIODIC,-20,sizeof(RDNode)/sizeof(PetscScalar),1,PETSC_NULL,&rd->da);CHKERRQ(ierr);
   ierr = DASetFieldName(rd->da,0,"E");CHKERRQ(ierr);
@@ -900,14 +1040,14 @@ int main(int argc, char *argv[])
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSTHETA);CHKERRQ(ierr);
   switch (rd->discretization) {
-    case DISCRETIZATION_FD:
-      ierr = TSSetIFunction(ts,RDIFunction_FD,rd);CHKERRQ(ierr);
-      ierr = TSSetIJacobian(ts,B,B,0,rd);CHKERRQ(ierr);
-      break;
-    case DISCRETIZATION_FE:
-      ierr = TSSetIFunction(ts,RDIFunction_FE,rd);CHKERRQ(ierr);
-      ierr = TSSetIJacobian(ts,B,B,RDIJacobian_FE,rd);CHKERRQ(ierr);
-      break;
+  case DISCRETIZATION_FD:
+    ierr = TSSetIFunction(ts,RDIFunction_FD,rd);CHKERRQ(ierr);
+    ierr = TSSetIJacobian(ts,B,B,RDIJacobian_FD,rd);CHKERRQ(ierr);
+    break;
+  case DISCRETIZATION_FE:
+    ierr = TSSetIFunction(ts,RDIFunction_FE,rd);CHKERRQ(ierr);
+    ierr = TSSetIJacobian(ts,B,B,RDIJacobian_FE,rd);CHKERRQ(ierr);
+    break;
   }
   ierr = TSSetDuration(ts,10000,rd->final_time);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
@@ -917,22 +1057,22 @@ int main(int argc, char *argv[])
   A = B;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   switch (rd->jacobian) {
-    case JACOBIAN_ANALYTIC:
-      break;
-    case JACOBIAN_MATRIXFREE:
-      break;
-    case JACOBIAN_FD_COLORING: {
-      ISColoring     iscoloring;
-      ierr = DAGetColoring(rd->da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
-      ierr = MatFDColoringCreate(B,iscoloring,&matfdcoloring);CHKERRQ(ierr);
-      ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
-      ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode(*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
-      ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
-      ierr = SNESSetJacobian(snes,A,B,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
-    } break;
-    case JACOBIAN_FD_FULL:
-      ierr = SNESSetJacobian(snes,A,B,SNESDefaultComputeJacobian,ts);CHKERRQ(ierr);
-      break;
+  case JACOBIAN_ANALYTIC:
+    break;
+  case JACOBIAN_MATRIXFREE:
+    break;
+  case JACOBIAN_FD_COLORING: {
+    ISColoring     iscoloring;
+    ierr = DAGetColoring(rd->da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringCreate(B,iscoloring,&matfdcoloring);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode(*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
+    ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,A,B,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
+  } break;
+  case JACOBIAN_FD_FULL:
+    ierr = SNESSetJacobian(snes,A,B,SNESDefaultComputeJacobian,ts);CHKERRQ(ierr);
+    break;
   }
 
   if (rd->test_diff) {
