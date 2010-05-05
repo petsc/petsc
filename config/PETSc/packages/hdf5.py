@@ -12,7 +12,7 @@ class Configure(PETSc.package.NewPackage):
     self.extraLib  = ['libz.a']
     self.complex   = 1
     self.requires32bitint = 0;
-    self.worksonWindow    = 1    
+    self.worksonWindows   = 1    
     return
 
   def setupDependencies(self, framework):
