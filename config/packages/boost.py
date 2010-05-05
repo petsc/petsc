@@ -7,6 +7,7 @@ class Configure(config.package.Package):
     self.includes        = ['boost/multi_index_container.hpp']
     self.cxx             = 1
     self.archIndependent = 1
+    self.worksonWindows  = 1
     return
 
   def Install(self):
