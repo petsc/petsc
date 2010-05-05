@@ -102,6 +102,9 @@ compiler wrappers are invalid</a>?</li>
 ./configure option --with-64-bit-indices</a>?</li>
       <li><a href="faq.html#install-petsc4py-dev">How do I install
 petsc4py with the development PETSc</a>?</li>
+      <li><a href="faq.html#gfortran">What Fortran compiler do you
+recommend for the Apple Mac OS X?</a><br>
+      </li>
       </menu>
       <p><a href="#usage"><b>Usage</b></a></p>
       <ul>
@@ -167,6 +170,7 @@ can I understand what is really happening within my program? </a></li>
 large sparse matrices takes a long time. What can I do make this
 process faster? or MatSetValues() is <span style="font-weight: bold;">so
 slow,
+
         </span>what can I do to make it
 faster?</a></li>
       <li><a href="faq.html#log-summary">How can I
@@ -553,6 +557,18 @@ I install petsc4py with the development PETSc</a>?</font></p>
       </ol>
       <p></p>
       <p>&nbsp; </p>
+      <p><font color="#ff0000"><a name="gfortran">What Fortran compiler
+do you recommend for the Apple Mac OS X?</a></font></p>
+We recommend, as of 5/5/2010, installing gfortran-4.3.2 from <a
+ href="http://r.research.att.com/tools/">http://r.research.att.com/tools/</a>.
+This seems to work with both Mac OS 10.5 and 10.6. It defaults to using
+32 bit pointers so for Mac OS X 10.6 and later you should use
+--with-fc="gfortran -m64"<br>
+      <br>
+Please contact Apple at <a href="http://www.apple.com/feedback">http://www.apple.com/feedback</a>
+and urge them to bundle gfortran with future versions of Xcode.<br>
+      <br>
+      <p>&nbsp; </p>
       <hr>
       <h3><a name="Using">Using</a></h3>
       <p>&nbsp;<a name="redirectstdout"><font color="#ff0000">How
@@ -858,7 +874,8 @@ I
 compute
 the
 inverse
-of a matrix in PETSc?<br>
+of
+a matrix in PETSc?<br>
             <br>
             </span>It is very expensive to compute the inverse of a
 matrix and very rarely needed in practice. We highly recommend avoiding
@@ -921,7 +938,8 @@ DA
 object
 decomposes
 the
-domain differently than the
+domain
+differently than the
 MPI_Cart_create() command. How can one use them together?<br>
             <br>
             </span>The MPI_Cart_create() first divides the mesh along
@@ -964,7 +982,8 @@ a
 symmetric
 system
 with
-Dirichlet boundary conditions I can use
+Dirichlet
+boundary conditions I can use
 MatZeroRows() to eliminate the Dirichlet rows but this results in a
 non-symmetric system. How come there is no MatZeroColumns() to keep the
 matrix symmetric?<br>
@@ -1130,7 +1149,8 @@ the
 slower
 time
 is
-in <a href="faq.html#slow">generating the
+in
+          <a href="faq.html#slow">generating the
 matrix</a> or some other operation.</li>
         <li>There must be enough work for each process to
 overweigh the
@@ -1154,7 +1174,8 @@ iterations
 scale
 a
 bit
-better for more processes. You may also
+better
+for more processes. You may also
 consider multigrid preconditioners like <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCMG.html">PCMG</a>
 or BoomerAMG in <a
@@ -1199,7 +1220,8 @@ additional option -Xn where n is the number of processors to use when
 debugging. Then run totalview programname -a your arguments The -a is
 used to distinguish between totalview arguments and yours. </p>
       <p><a name="start_in_debugger-doesnotwork"><font color="#ff0000">How
-do I debug if -start_in_debugger does
+do
+I debug if -start_in_debugger does
 not work on my machine?</font> </a></p>
       <p>For a uniprocessor job, just try&nbsp;the debugger
 directly, for example: gdb ex1 </p>
@@ -1234,7 +1256,8 @@ PETSC_VIEWER_STDOUT_(m-&gt;comm))</p>
 while
 loading
 shared
-libraries: libimf.so: cannot open shared object
+libraries:
+libimf.so: cannot open shared object
 file: No such file or directory.</span></p>
       <p>The Intel compilers use shared libraries (like libimf)
 that
@@ -1260,7 +1283,8 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh<br>
       <p><span style="color: rgb(255, 0, 0);"><a name="objecttypenotset">What
 does
 Object
-Type not set: Argument # n mean?</a></span></p>
+Type
+not set: Argument # n mean?</a></span></p>
 Many
 operations on PETSc objects require that the specific type of the
 object be set before the operations is performed. You must call
@@ -1277,7 +1301,8 @@ PetscSplitOwnership() about "sum of local lengths ...": mean?<br>
       <br>
       </font><font color="#ff0000"><span style="color: rgb(0, 0, 0);">In
 a
-previous call to VecSetSizes(), MatSetSizes(), VecCreateXXX() or
+previous
+call to VecSetSizes(), MatSetSizes(), VecCreateXXX() or
 MatCreateXXX() you passed in local and global sizes that do not make
 sense for the correct number of processors. For example if you pass in
 a local size of 2 and a global size of 100 and run on two processors,
@@ -1307,6 +1332,7 @@ problem.<br>
 &nbsp; <br>
 If -malloc_debug does not help: on GNU/Linux and Apple Mac OS X
 machines - you can try using&nbsp;<a href="http://valgrind.org/">http://valgrind.org
+
 
 
 
@@ -1352,6 +1378,7 @@ that the matrix is singular. You can use -pc_factor_shift_nonzero or
 -pc_factor_shift_positive_definite,
 -[level]_pc_factor_shift_nonzero,&nbsp; </span></font><font
  style="color: rgb(0, 0, 0);" color="#ff0000">-[level]_pc_factor_shift_postive_definite
+
 
 
 
@@ -1496,7 +1523,8 @@ some
 Krylov
 methods
 seem
-to print two residual norms per iteration?<br>
+to
+print two residual norms per iteration?<br>
       </span></font></font></p>
       <p style="color: rgb(0, 0, 0);"><font face="Terminal"><font
  face="Terminal"><font face="Terminal">&gt; 1198 KSP Residual norm
