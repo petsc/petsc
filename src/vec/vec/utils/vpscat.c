@@ -155,6 +155,8 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
     for (i=0; i<to->n; i++) {
       ierr = MPI_Cancel(to->rev_requests+i);CHKERRQ(ierr);
     }
+    ierr = MPI_Waitall(from->n,from->requests,to->rstatus);CHKERRQ(ierr);
+    ierr = MPI_Waitall(to->n,to->rev_requests,to->rstatus);CHKERRQ(ierr);
   }
 
 #if defined(PETSC_HAVE_MPI_ALLTOALLW) && !defined(PETSC_USE_64BIT_INDICES)
