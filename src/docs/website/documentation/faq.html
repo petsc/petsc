@@ -171,6 +171,7 @@ large sparse matrices takes a long time. What can I do make this
 process faster? or MatSetValues() is <span style="font-weight: bold;">so
 slow,
 
+
         </span>what can I do to make it
 faster?</a></li>
       <li><a href="faq.html#log-summary">How can I
@@ -192,6 +193,8 @@ solver?<span style="font-weight: bold;"></span></a></li>
 precision mode (--with-precision=single when running
 ./configure) are the operations done in single or double
 precision?</a></li>
+      <li><a href="faq.html#newton">Why is Newton's method (SNES) not
+converging?</a></li>
       </menu>
       <a href="faq.html#Debugging"><span style="font-weight: bold;"></span>Debugging</a>
       <menu>
@@ -561,7 +564,8 @@ I install petsc4py with the development PETSc</a>?</font></p>
 do you recommend for the Apple Mac OS X?</a></font></p>
 We recommend, as of 5/5/2010, installing gfortran-4.3.2 from <a
  href="http://r.research.att.com/tools/">http://r.research.att.com/tools/</a>.
-This seems to work with both Mac OS 10.5 and 10.6. It defaults to using
+This
+seems to work with both Mac OS 10.5 and 10.6. It defaults to using
 32 bit pointers so for Mac OS X 10.6 and later you should use
 --with-fc="gfortran -m64"<br>
       <br>
@@ -875,7 +879,8 @@ compute
 the
 inverse
 of
-a matrix in PETSc?<br>
+a
+matrix in PETSc?<br>
             <br>
             </span>It is very expensive to compute the inverse of a
 matrix and very rarely needed in practice. We highly recommend avoiding
@@ -939,7 +944,8 @@ object
 decomposes
 the
 domain
-differently than the
+differently
+than the
 MPI_Cart_create() command. How can one use them together?<br>
             <br>
             </span>The MPI_Cart_create() first divides the mesh along
@@ -983,7 +989,8 @@ symmetric
 system
 with
 Dirichlet
-boundary conditions I can use
+boundary
+conditions I can use
 MatZeroRows() to eliminate the Dirichlet rows but this results in a
 non-symmetric system. How come there is no MatZeroColumns() to keep the
 matrix symmetric?<br>
@@ -1150,6 +1157,7 @@ slower
 time
 is
 in
+
           <a href="faq.html#slow">generating the
 matrix</a> or some other operation.</li>
         <li>There must be enough work for each process to
@@ -1175,7 +1183,8 @@ scale
 a
 bit
 better
-for more processes. You may also
+for
+more processes. You may also
 consider multigrid preconditioners like <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCMG.html">PCMG</a>
 or BoomerAMG in <a
@@ -1198,7 +1207,41 @@ the usual double precision floating point unit. Or it could use SSE2
 instructions that work directly
 on the single precision numbers. It is a bit of a mystery what
 decisions get made sometimes.
-There may be compiler flags in some circumstances that can affect this.
+There may be compiler flags in some circumstances that can affect this.<br>
+      <br>
+      <p><font><a name="newton"><font color="#ff0000">Why is Newton's
+method (SNES) not converging?</font></a></font></p>
+Newton's method may not converge for many reasons, here are some of the
+most common.<br>
+      <ul>
+        <li>The Jacobian is wrong (or correct in sequential but not in
+parallel).</li>
+        <li>The linear system is not solved or is not solved accurately
+enough.</li>
+        <li>The Jacobian system has a singularity that the linear
+solver is not handling.</li>
+      </ul>
+Here are some of the ways to help debug lack of convergence of Newton.<br>
+      <ul>
+        <li>Run with the options -snes_monitor
+-ksp_monitor_true_residual -snes_converged_reason -ksp_converged_reason</li>
+        <li>Run with -pc_type lu to see if the problem is a poor linear
+solver</li>
+        <li>Run with -mat_view to see if the Jacobian looks reasonable<br>
+        </li>
+        <li>Run with -snes_type test -snes_test_display to see if the
+Jacobian you are using is wrong</li>
+        <li>Run with -snes_mf_operator to see if the Jacobian you are
+using is wrong</li>
+        <li>Run on one processor to see if the problem is only in
+parallel.</li>
+        <li>Run with -snes_ls_monitor to see if the line search is
+failing (this is usually a sign of a bad Jacobian) use -info in PETSc
+3.1 and older versions</li>
+        <li>Run with -info to get more detailed information on the
+solution process<br>
+        </li>
+      </ul>
       <p></p>
       <hr>
       <h3><a name="Debugging">Debugging</a></h3>
@@ -1221,7 +1264,8 @@ debugging. Then run totalview programname -a your arguments The -a is
 used to distinguish between totalview arguments and yours. </p>
       <p><a name="start_in_debugger-doesnotwork"><font color="#ff0000">How
 do
-I debug if -start_in_debugger does
+I
+debug if -start_in_debugger does
 not work on my machine?</font> </a></p>
       <p>For a uniprocessor job, just try&nbsp;the debugger
 directly, for example: gdb ex1 </p>
@@ -1257,7 +1301,8 @@ while
 loading
 shared
 libraries:
-libimf.so: cannot open shared object
+libimf.so:
+cannot open shared object
 file: No such file or directory.</span></p>
       <p>The Intel compilers use shared libraries (like libimf)
 that
@@ -1284,7 +1329,8 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh<br>
 does
 Object
 Type
-not set: Argument # n mean?</a></span></p>
+not
+set: Argument # n mean?</a></span></p>
 Many
 operations on PETSc objects require that the specific type of the
 object be set before the operations is performed. You must call
@@ -1302,7 +1348,8 @@ PetscSplitOwnership() about "sum of local lengths ...": mean?<br>
       </font><font color="#ff0000"><span style="color: rgb(0, 0, 0);">In
 a
 previous
-call to VecSetSizes(), MatSetSizes(), VecCreateXXX() or
+call
+to VecSetSizes(), MatSetSizes(), VecCreateXXX() or
 MatCreateXXX() you passed in local and global sizes that do not make
 sense for the correct number of processors. For example if you pass in
 a local size of 2 and a global size of 100 and run on two processors,
@@ -1332,6 +1379,7 @@ problem.<br>
 &nbsp; <br>
 If -malloc_debug does not help: on GNU/Linux and Apple Mac OS X
 machines - you can try using&nbsp;<a href="http://valgrind.org/">http://valgrind.org
+
 
 
 
@@ -1378,6 +1426,7 @@ that the matrix is singular. You can use -pc_factor_shift_nonzero or
 -pc_factor_shift_positive_definite,
 -[level]_pc_factor_shift_nonzero,&nbsp; </span></font><font
  style="color: rgb(0, 0, 0);" color="#ff0000">-[level]_pc_factor_shift_postive_definite
+
 
 
 
@@ -1524,7 +1573,8 @@ Krylov
 methods
 seem
 to
-print two residual norms per iteration?<br>
+print
+two residual norms per iteration?<br>
       </span></font></font></p>
       <p style="color: rgb(0, 0, 0);"><font face="Terminal"><font
  face="Terminal"><font face="Terminal">&gt; 1198 KSP Residual norm
