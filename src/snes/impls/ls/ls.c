@@ -1234,7 +1234,9 @@ static PetscErrorCode SNESSetFromOptions_LS(SNES snes)
 +   -snes_ls [cubic,quadratic,basic,basicnonorms] - Selects line search
 .   -snes_ls_alpha <alpha> - Sets alpha
 .   -snes_ls_maxstep <maxstep> - Sets the maximum stepsize the line search will use (if the 2-norm(y) > maxstep then scale y to be y = (maxstep/2-norm(y)) *y)
--   -snes_ls_minlambda <minlambda>  - Sets the minimum lambda the line search will use  minlambda / max_i ( y[i]/x[i] )
+.   -snes_ls_minlambda <minlambda>  - Sets the minimum lambda the line search will use  minlambda / max_i ( y[i]/x[i] )
+-   -snes_ls_monitor - print information about progress of line searches 
+
 
     Notes: This is the default nonlinear solver in SNES
 
