@@ -3234,7 +3234,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C,Mat A,MatDuplicateOption cpval
     }
   } else c->diag        = 0;
   c->nz                 = a->nz;
-  c->maxnz              = a->nz; /* Since we allocate exactly the right amount */
+  c->maxnz              = bs2*a->nz; /* Since we allocate exactly the right amount */
   c->solve_work         = 0;
   c->mult_work          = 0;
   c->free_a             = PETSC_TRUE;
