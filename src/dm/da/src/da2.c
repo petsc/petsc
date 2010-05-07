@@ -1279,27 +1279,27 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
   PetscInt            *lx           = da->lx;
   PetscInt            *ly           = da->ly;
   MPI_Comm             comm;
-  PetscMPIInt    rank,size;
-  PetscInt       xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,start,end;
-  PetscInt       up,down,left,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn;
-  PetscInt       xbase,*bases,*ldims,j,x_t,y_t,s_t,base,count;
-  PetscInt       s_x,s_y; /* s proportionalized to w */
-  PetscInt       sn0 = 0,sn2 = 0,sn6 = 0,sn8 = 0;
-  Vec            local,global;
-  VecScatter     ltog,gtol;
-  IS             to,from;
-  PetscErrorCode ierr;
+  PetscMPIInt          rank,size;
+  PetscInt             xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,start,end;
+  PetscInt             up,down,left,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn;
+  PetscInt             xbase,*bases,*ldims,j,x_t,y_t,s_t,base,count;
+  PetscInt             s_x,s_y; /* s proportionalized to w */
+  PetscInt             sn0 = 0,sn2 = 0,sn6 = 0,sn8 = 0;
+  Vec                  local,global;
+  VecScatter           ltog,gtol;
+  IS                   to,from;
+  PetscErrorCode       ierr;
 
   PetscFunctionBegin;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
+  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
-  if (dim != PETSC_DECIDE && dim != 2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Dimension should be 2: %D",dim);
-  if (dof < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %D",dof);
-  if (s < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %D",s);
+  if (dim != PETSC_DECIDE && dim != 2) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Dimension should be 2: %D",dim);
+  if (dof < 1) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %D",dof);
+  if (s < 0) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %D",s);
 
-  ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
 
@@ -1311,12 +1311,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
   ierr = PetscMemzero(da->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
 
   if (m != PETSC_DECIDE) {
-    if (m < 1) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in X direction: %D",m);}
-    else if (m > size) {SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in X direction: %D %d",m,size);}
+    if (m < 1) {SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in X direction: %D",m);}
+    else if (m > size) {SETERRQ2(comm,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in X direction: %D %d",m,size);}
   }
   if (n != PETSC_DECIDE) {
-    if (n < 1) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Y direction: %D",n);}
-    else if (n > size) {SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Y direction: %D %d",n,size);}
+    if (n < 1) {SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Y direction: %D",n);}
+    else if (n > size) {SETERRQ2(comm,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Y direction: %D %d",n,size);}
   }
 
   if (m == PETSC_DECIDE || n == PETSC_DECIDE) {
@@ -1335,11 +1335,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
       }
       if (M > N && m < n) {PetscInt _m = m; m = n; n = _m;}
     }
-    if (m*n != size) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to create partition, check the size of the communicator and input m and n ");
-  } else if (m*n != size) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Given Bad partition"); 
+    if (m*n != size) SETERRQ(comm,PETSC_ERR_PLIB,"Unable to create partition, check the size of the communicator and input m and n ");
+  } else if (m*n != size) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"Given Bad partition"); 
 
-  if (M < m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Partition in x direction is too fine! %D %D",M,m);
-  if (N < n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Partition in y direction is too fine! %D %D",N,n);
+  if (M < m) SETERRQ2(comm,PETSC_ERR_ARG_OUTOFRANGE,"Partition in x direction is too fine! %D %D",M,m);
+  if (N < n) SETERRQ2(comm,PETSC_ERR_ARG_OUTOFRANGE,"Partition in y direction is too fine! %D %D",N,n);
 
   /* 
      Determine locally owned region 

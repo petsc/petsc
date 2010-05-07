@@ -171,57 +171,62 @@ PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(MPI_Comm comm,int line
 {
   PetscLogDouble    mem,rss;
   PetscTruth        flg1 = PETSC_FALSE,flg2 = PETSC_FALSE;
+  PetscMPIInt       rank = 0;
 
   PetscFunctionBegin;
-
-  if (p == 1) {
-    (*PetscErrorPrintf)("--------------------- Error Message ------------------------------------\n");
-    if (n == PETSC_ERR_MEM) {
-      (*PetscErrorPrintf)("Out of memory. This could be due to allocating\n");
-      (*PetscErrorPrintf)("too large an object or bleeding by not properly\n");
-      (*PetscErrorPrintf)("destroying unneeded objects.\n");
-      PetscMallocGetCurrentUsage(&mem);
-      PetscMemoryGetCurrentUsage(&rss);
-      PetscOptionsGetTruth(PETSC_NULL,"-malloc_dump",&flg1,PETSC_NULL);
-      PetscOptionsGetTruth(PETSC_NULL,"-malloc_log",&flg2,PETSC_NULL);
-      if (flg2) {
-        PetscMallocDumpLog(stdout);
+  if (comm != PETSC_COMM_SELF) {
+    MPI_Comm_rank(comm,&rank);
+  }
+  if (!rank) {
+    if (p == 1) {
+      (*PetscErrorPrintf)("--------------------- Error Message ------------------------------------\n");
+      if (n == PETSC_ERR_MEM) {
+	(*PetscErrorPrintf)("Out of memory. This could be due to allocating\n");
+	(*PetscErrorPrintf)("too large an object or bleeding by not properly\n");
+	(*PetscErrorPrintf)("destroying unneeded objects.\n");
+	PetscMallocGetCurrentUsage(&mem);
+	PetscMemoryGetCurrentUsage(&rss);
+	PetscOptionsGetTruth(PETSC_NULL,"-malloc_dump",&flg1,PETSC_NULL);
+	PetscOptionsGetTruth(PETSC_NULL,"-malloc_log",&flg2,PETSC_NULL);
+	if (flg2) {
+	  PetscMallocDumpLog(stdout);
+	} else {
+	  (*PetscErrorPrintf)("Memory allocated %D Memory used by process %D\n",(PetscInt)mem,(PetscInt)rss);
+	  if (flg1) {
+	    PetscMallocDump(stdout);
+	  } else {
+	    (*PetscErrorPrintf)("Try running with -malloc_dump or -malloc_log for info.\n");
+	  }
+	}
       } else {
-        (*PetscErrorPrintf)("Memory allocated %D Memory used by process %D\n",(PetscInt)mem,(PetscInt)rss);
-        if (flg1) {
-          PetscMallocDump(stdout);
-        } else {
-          (*PetscErrorPrintf)("Try running with -malloc_dump or -malloc_log for info.\n");
-        }
-      }
-    } else {
         const char *text;
         PetscErrorMessage(n,&text,PETSC_NULL);
         if (text) (*PetscErrorPrintf)("%s!\n",text);
+      }
+      if (mess) {
+	(*PetscErrorPrintf)("%s!\n",mess);
+      }
+      (*PetscErrorPrintf)("------------------------------------------------------------------------\n");
+      (*PetscErrorPrintf)("%s\n",version);
+      (*PetscErrorPrintf)("See docs/changes/index.html for recent updates.\n");
+      (*PetscErrorPrintf)("See docs/faq.html for hints about trouble shooting.\n");
+      (*PetscErrorPrintf)("See docs/index.html for manual pages.\n");
+      (*PetscErrorPrintf)("------------------------------------------------------------------------\n");
+      if (PetscErrorPrintfInitializeCalled) {
+	(*PetscErrorPrintf)("%s on a %s named %s by %s %s\n",pname,arch,hostname,username,date);
+      }
+      (*PetscErrorPrintf)("Libraries linked from %s\n",PETSC_LIB_DIR);
+      (*PetscErrorPrintf)("Configure run at %s\n",petscconfigureruntime);
+      (*PetscErrorPrintf)("Configure options %s\n",petscconfigureoptions);
+      (*PetscErrorPrintf)("------------------------------------------------------------------------\n");
     }
-    if (mess) {
-      (*PetscErrorPrintf)("%s!\n",mess);
-    }
-    (*PetscErrorPrintf)("------------------------------------------------------------------------\n");
-    (*PetscErrorPrintf)("%s\n",version);
-    (*PetscErrorPrintf)("See docs/changes/index.html for recent updates.\n");
-    (*PetscErrorPrintf)("See docs/faq.html for hints about trouble shooting.\n");
-    (*PetscErrorPrintf)("See docs/index.html for manual pages.\n");
-    (*PetscErrorPrintf)("------------------------------------------------------------------------\n");
-    if (PetscErrorPrintfInitializeCalled) {
-      (*PetscErrorPrintf)("%s on a %s named %s by %s %s\n",pname,arch,hostname,username,date);
-    }
-    (*PetscErrorPrintf)("Libraries linked from %s\n",PETSC_LIB_DIR);
-    (*PetscErrorPrintf)("Configure run at %s\n",petscconfigureruntime);
-    (*PetscErrorPrintf)("Configure options %s\n",petscconfigureoptions);
-    (*PetscErrorPrintf)("------------------------------------------------------------------------\n");
+    /* print line of stack trace */
+    (*PetscErrorPrintf)("%s() line %d in %s%s\n",fun,line,dir,file);
+  } else {
+    /* do not print error messages since process 0 will print them, sleep before aborting so will not accidently kill process 0*/
+    PetscSleep(10.0);
+    abort();
   }
-
-
-  /* first line in stack trace? */
-  (*PetscErrorPrintf)("%s() line %d in %s%s\n",fun,line,dir,file);
-
-
   PetscFunctionReturn(n);
 }
 
