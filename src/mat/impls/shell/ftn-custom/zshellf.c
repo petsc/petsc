@@ -95,6 +95,9 @@ static PetscErrorCode ourdiagonalset(Mat mat,Vec x,InsertMode ins)
 
 void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,PetscErrorCode (PETSC_STDCALL *f)(Mat*,Vec*,Vec*,PetscErrorCode*),PetscErrorCode *ierr)
 {
+  MPI_Comm comm;
+
+  *ierr = PetscObjectGetComm((PetscObject)*mat,&comm);if (*ierr) return;
   PetscObjectAllocateFortranPointers(*mat,8);
   if (*op == MATOP_MULT) {
     *ierr = MatShellSetOperation(*mat,*op,(PetscVoidFunction)ourmult);
@@ -121,7 +124,7 @@ void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,PetscErrorCod
     *ierr = MatShellSetOperation(*mat,*op,(PetscVoidFunction)ourgetvecs);
     ((PetscObject)*mat)->fortran_func_pointers[7] = (PetscVoidFunction)f;
   } else {
-    PetscError(__LINE__,"MatShellSetOperation_Fortran",__FILE__,__SDIR__,1,0,
+    PetscError(comm,__LINE__,"MatShellSetOperation_Fortran",__FILE__,__SDIR__,1,0,
                "Cannot set that matrix operation");
     *ierr = 1;
   }

@@ -151,7 +151,7 @@ int main(int argc,char **args)
   if (!user_subdomains) { /* basic version */
     ierr = PCASMSetOverlap(pc,overlap);CHKERRQ(ierr);
   } else { /* advanced version */
-    if (size != 1) SETERRQ(1,"PCASMCreateSubdomains() is currently a uniprocessor routine only!");
+    if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"PCASMCreateSubdomains() is currently a uniprocessor routine only!");
     ierr = PCASMCreateSubdomains2D(m,n,M,N,1,overlap,&Nsub,&is);CHKERRQ(ierr);
     ierr = PCASMSetLocalSubdomains(pc,Nsub,is,PETSC_NULL);CHKERRQ(ierr);
   }
@@ -204,7 +204,7 @@ int main(int argc,char **args)
      */
     ierr = PetscTypeCompare((PetscObject)pc,PCASM,&isasm);CHKERRQ(ierr);
     if (isasm) {
-      SETERRQ(1,"Cannot Change the PCTYPE when manually changing the subdomain solver settings");
+      SETERRQ(PETSC_COMM_SELF,1,"Cannot Change the PCTYPE when manually changing the subdomain solver settings");
     }
     /* 
        Call KSPSetUp() to set the block Jacobi data structures (including

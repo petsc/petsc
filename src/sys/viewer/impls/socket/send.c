@@ -77,7 +77,7 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
 #else
     ierr = close(vmatlab->port);
 #endif
-    if (ierr) SETERRQ(PETSC_ERR_SYS,"System error closing socket");
+    if (ierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"System error closing socket");
   }
   ierr = PetscFree(vmatlab);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -102,7 +102,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenSocket(char *hostname,int portnum,int *t
   PetscFunctionBegin;
   if (!(hp=gethostbyname(hostname))) {
     perror("SEND: error gethostbyname: ");   
-    SETERRQ1(PETSC_ERR_SYS,"system error open connection to %s",hostname);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"system error open connection to %s",hostname);
   }
   ierr = PetscMemzero(&sa,sizeof(sa));CHKERRQ(ierr);
   ierr = PetscMemcpy(&sa.sin_addr,hp->h_addr,hp->h_length);CHKERRQ(ierr);
@@ -111,7 +111,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenSocket(char *hostname,int portnum,int *t
   sa.sin_port = htons((u_short) portnum);
   while (flg) {
     if ((s=socket(hp->h_addrtype,SOCK_STREAM,0)) < 0) {
-      perror("SEND: error socket");  SETERRQ(PETSC_ERR_SYS,"system error");
+      perror("SEND: error socket");  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"system error");
     }
     if (connect(s,(struct sockaddr*)&sa,sizeof(sa)) < 0) {
 #if defined(PETSC_HAVE_WSAGETLASTERROR)
@@ -127,7 +127,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenSocket(char *hostname,int portnum,int *t
         /* (*PetscErrorPrintf)("SEND: forcefully rejected\n"); */
         Sleep((unsigned) 1);
       } else {
-        perror(NULL); SETERRQ(PETSC_ERR_SYS,"system error");
+        perror(NULL); SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"system error");
       }
 #else
       if (errno == EADDRINUSE) {
@@ -142,7 +142,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenSocket(char *hostname,int portnum,int *t
         ierr = PetscInfo(0,"Connection refused in attaching socket, trying again");CHKERRQ(ierr);
         sleep((unsigned) 1);
       } else {
-        perror(NULL); SETERRQ(PETSC_ERR_SYS,"system error");
+        perror(NULL); SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"system error");
       }
 #endif
       flg = PETSC_TRUE;
@@ -184,13 +184,13 @@ static PetscErrorCode SOCKEstablish_Private(u_short portnum,int *ss)
   ierr = PetscMemzero(&sa,sizeof(struct sockaddr_in));CHKERRQ(ierr);
 
   hp = gethostbyname(myname);
-  if (!hp) SETERRQ(PETSC_ERR_SYS,"Unable to get hostent information from system");
+  if (!hp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to get hostent information from system");
 
   sa.sin_family = hp->h_addrtype; 
   sa.sin_port = htons(portnum); 
 
   if ((s = socket(AF_INET,SOCK_STREAM,0)) < 0) {
-    SETERRQ(PETSC_ERR_SYS,"Error running socket() command");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Error running socket() command");
   }
   ierr = setsockopt(s,SOL_SOCKET,SO_REUSEADDR,(char *)&optval,sizeof(optval));CHKERRQ(ierr);
 
@@ -202,7 +202,7 @@ static PetscErrorCode SOCKEstablish_Private(u_short portnum,int *ss)
     if (errno != EADDRINUSE) { 
 #endif
       close(s);
-      SETERRQ(PETSC_ERR_SYS,"Error from bind()");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Error from bind()");
     }
     close(listenport); 
   }
@@ -230,7 +230,7 @@ static PetscErrorCode SOCKAnswer_Private(int portnumber,int *t)
 /* wait for someone to try to connect */
   i = sizeof(struct sockaddr_in);
   if ((*t = accept(listenport,(struct sockaddr *)&isa,(socklen_t *)&i)) < 0) {
-    SETERRQ(PETSC_ERR_SYS,"error from accept()\n");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"error from accept()\n");
   }
   close(listenport);  
   PetscFunctionReturn(0);
@@ -471,17 +471,17 @@ PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_SOCKET_(MPI_Comm comm)
   PetscFunctionBegin;
   if (Petsc_Viewer_Socket_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Socket_keyval,0);
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
   }
   ierr = MPI_Attr_get(comm,Petsc_Viewer_Socket_keyval,(void **)&viewer,(int*)&flg);
-  if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
+  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
   if (!flg) { /* PetscViewer not yet created */
     ierr = PetscViewerSocketOpen(comm,0,0,&viewer); 
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
     ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
     ierr = MPI_Attr_put(comm,Petsc_Viewer_Socket_keyval,(void*)viewer);
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
   } 
   PetscFunctionReturn(viewer);
 }

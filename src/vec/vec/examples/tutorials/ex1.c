@@ -166,7 +166,7 @@ int main(int argc,char **argv)
      routine) not needed in most application codes.
   */
   ierr = VecValid(x,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(1,"Corrupted vector.");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"Corrupted vector.");
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they

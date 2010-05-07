@@ -52,7 +52,7 @@ PetscErrorCode DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatSt
   MatStructure   flg;
 
   PetscFunctionBegin;
-  if (!dmmg) SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as user context which should contain DMMG");
+  if (!dmmg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Passing null as user context which should contain DMMG");
   ierr = SNESGetIterationNumber(snes,&it);CHKERRQ(ierr);
 
   /* compute Jacobian on finest grid */
@@ -316,7 +316,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDAFormFunction(SNES snes,Vec X,Vec F,void
   PetscInt       N,n;
   
   PetscFunctionBegin;
-  if (!da) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Looks like you called SNESSetFromFuntion(snes,SNESDAFormFunction,) without the DA context");
+  if (!da) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Looks like you called SNESSetFromFuntion(snes,SNESDAFormFunction,) without the DA context");
 
   /* determine whether X=localX */
   ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
@@ -564,7 +564,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
   PetscClassId            classid;
 
   PetscFunctionBegin;
-  if (!dmmg)     SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
+  if (!dmmg)     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Passing null as DMMG");
   if (!jacobian) jacobian = DMMGComputeJacobianWithFD;
   ierr = PetscObjectGetClassId((PetscObject) dmmg[0]->dm, &classid);CHKERRQ(ierr);
 
@@ -688,7 +688,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
           dmmg[i]->solve     = DMMGSolveFAS4;
         }
 #else
-        SETERRQ(PETSC_ERR_SUP, "Must use ADIC for structured FAS.");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Must use ADIC for structured FAS.");
 #endif
       } else {
 #if defined(PETSC_HAVE_SIEVE)
@@ -812,7 +812,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetFromOptions(DMMG *dmmg)
   PetscInt                i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
-  if (!dmmg)     SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
+  if (!dmmg)     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Passing null as DMMG");
 
   for (i=0; i<nlevels; i++) {
     ierr = SNESSetFromOptions(dmmg[i]->snes);CHKERRQ(ierr);
@@ -882,7 +882,7 @@ PetscErrorCode DMMGGetSNESLocal(DMMG *dmmg,DALocalFunction1 *function, DALocalFu
     ierr = MeshGetLocalFunction((Mesh) dmmg[0]->dm, (PetscErrorCode (**)(Mesh,SectionReal,SectionReal,void*)) function);CHKERRQ(ierr);
     ierr = MeshGetLocalJacobian((Mesh) dmmg[0]->dm, (PetscErrorCode (**)(Mesh,SectionReal,Mat,void*)) jacobian);CHKERRQ(ierr);
 #else
-    SETERRQ(PETSC_ERR_SUP, "Unstructured grids only supported when Sieve is enabled.\nReconfigure with --with-sieve.");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Unstructured grids only supported when Sieve is enabled.\nReconfigure with --with-sieve.");
 #endif
   }
   PetscFunctionReturn(0);
@@ -982,7 +982,7 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DAL
     }
     CHKMEMQ;
 #else
-    SETERRQ(PETSC_ERR_SUP, "Unstructured grids only supported when Sieve is enabled.\nReconfigure with --with-sieve.");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Unstructured grids only supported when Sieve is enabled.\nReconfigure with --with-sieve.");
 #endif
   }
   CHKMEMQ;

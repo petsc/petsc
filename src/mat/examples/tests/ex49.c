@@ -44,7 +44,7 @@ int main(int argc,char **argv)
   /* Test whether matrix has been corrupted (just to demonstrate this
      routine) not needed in most application codes. */
   ierr = MatValid(mat,(PetscTruth*)&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(1,"Corrupted matrix.");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"Corrupted matrix.");
 
   /* Print info about original matrix */
   ierr = MatGetInfo(mat,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);

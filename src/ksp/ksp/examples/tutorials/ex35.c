@@ -1005,7 +1005,7 @@ PetscErrorCode ElementGeometry(ALE::Obj<ALE::Two::Mesh> mesh, const ALE::Two::Me
     }
     invDet = 1.0/det;
     if (detJ) {
-      if (det < 0) {SETERRQ(PETSC_ERR_ARG_WRONG, "Negative Matrix determinant");}
+      if (det < 0) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Negative Matrix determinant");}
       *detJ = det;
     }
     if (invJ) {

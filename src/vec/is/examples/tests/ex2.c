@@ -24,12 +24,12 @@ int main(int argc,char **argv)
   */
   ierr = ISCreateStride(PETSC_COMM_SELF,0,0,2,&is);CHKERRQ(ierr);
   ierr = ISGetSize(is,&n);CHKERRQ(ierr);
-  if (n != 0) SETERRQ(1,"ISCreateStride");
+  if (n != 0) SETERRQ(PETSC_COMM_SELF,1,"ISCreateStride");
   ierr = ISStrideGetInfo(is,&start,&stride);CHKERRQ(ierr);
-  if (start != 0) SETERRQ(1,"ISStrideGetInfo");
-  if (stride != 2) SETERRQ(1,"ISStrideGetInfo");
+  if (start != 0) SETERRQ(PETSC_COMM_SELF,1,"ISStrideGetInfo");
+  if (stride != 2) SETERRQ(PETSC_COMM_SELF,1,"ISStrideGetInfo");
   ierr = ISStride(is,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(1,"ISStride");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"ISStride");
   ierr = ISGetIndices(is,&ii);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&ii);CHKERRQ(ierr);
   ierr = ISDestroy(is);CHKERRQ(ierr);
@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&ii);CHKERRQ(ierr);
   for (i=0; i<10000; i++) {
-    if (ii[i] != -8 + 3*i) SETERRQ(1,"ISGetIndices");
+    if (ii[i] != -8 + 3*i) SETERRQ(PETSC_COMM_SELF,1,"ISGetIndices");
   }
   ierr = ISRestoreIndices(is,&ii);CHKERRQ(ierr);
   ierr = ISDestroy(is);CHKERRQ(ierr);

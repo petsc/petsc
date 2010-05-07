@@ -191,7 +191,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetColoring(DA da,ISColoringType ctype,const 
       ctype = IS_COLORING_GLOBAL;
     } else if (dim > 1){
       if ((m==1 && DAXPeriodic(wrap)) || (n==1 && DAYPeriodic(wrap)) || (p==1 && DAZPeriodic(wrap))){
-        SETERRQ(PETSC_ERR_SUP,"IS_COLORING_GHOSTED cannot be used for periodic boundary condition having both ends of the domain  on the same process");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"IS_COLORING_GHOSTED cannot be used for periodic boundary condition having both ends of the domain  on the same process");
       }
     }
   }
@@ -221,7 +221,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetColoring(DA da,ISColoringType ctype,const 
   } else if (dim == 3) {
     ierr =  DAGetColoring3d_MPIAIJ(da,ctype,coloring);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Not done for %D dimension, send us mail petsc-maint@mcs.anl.gov for code",dim);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not done for %D dimension, send us mail petsc-maint@mcs.anl.gov for code",dim);
   }
   if (isBAIJ) {
     da->w = nc;
@@ -265,11 +265,11 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
   } else {
 
     if (DAXPeriodic(wrap) && (m % col)){ 
-      SETERRQ2(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X (%d) is divisible\n\
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X (%d) is divisible\n\
                  by 2*stencil_width + 1 (%d)\n", m, col);
     }
     if (DAYPeriodic(wrap) && (n % col)){ 
-      SETERRQ2(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y (%d) is divisible\n\
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y (%d) is divisible\n\
                  by 2*stencil_width + 1 (%d)\n", n, col);
     }
     if (ctype == IS_COLORING_GLOBAL) {
@@ -306,7 +306,7 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 	ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
       }
       *coloring = da->ghostedcoloring;
-    } else SETERRQ1(PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
+    } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
   }
   ierr = ISColoringReference(*coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -335,15 +335,15 @@ PetscErrorCode DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
   ierr = DAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&nc,&s,&wrap,&st);CHKERRQ(ierr);
   col    = 2*s + 1;
   if (DAXPeriodic(wrap) && (m % col)){ 
-    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
                  by 2*stencil_width + 1\n");
   }
   if (DAYPeriodic(wrap) && (n % col)){ 
-    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
                  by 2*stencil_width + 1\n");
   }
   if (DAZPeriodic(wrap) && (p % col)){ 
-    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Z is divisible\n\
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Z is divisible\n\
                  by 2*stencil_width + 1\n");
   }
 
@@ -388,7 +388,7 @@ PetscErrorCode DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
       ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     }
     *coloring = da->ghostedcoloring;
-  } else SETERRQ1(PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
   ierr = ISColoringReference(*coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -416,7 +416,7 @@ PetscErrorCode DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
   col    = 2*s + 1;
 
   if (DAXPeriodic(wrap) && (m % col)) {
-    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points is divisible\n\
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points is divisible\n\
                  by 2*stencil_width + 1\n");
   }
 
@@ -453,7 +453,7 @@ PetscErrorCode DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
       ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     }
     *coloring = da->ghostedcoloring;
-  } else SETERRQ1(PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
   ierr = ISColoringReference(*coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -481,11 +481,11 @@ PetscErrorCode DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring 
   ierr   = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
   if (DAXPeriodic(wrap) && (m % 5)){ 
-    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
                  by 5\n");
   }
   if (DAYPeriodic(wrap) && (n % 5)){ 
-    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
                  by 5\n");
   }
 
@@ -521,7 +521,7 @@ PetscErrorCode DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring 
       ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     }
     *coloring = da->ghostedcoloring;
-  } else SETERRQ1(PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
   PetscFunctionReturn(0);
 }
 
@@ -672,7 +672,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, const MatType mtype,Mat *J)
         PetscTruth flg, flg2;
         ierr = PetscTypeCompare((PetscObject)A,MATHYPRESTRUCT,&flg);CHKERRQ(ierr);
         ierr = PetscTypeCompare((PetscObject)A,MATHYPRESSTRUCT,&flg2);CHKERRQ(ierr);
-        if (!flg && !flg2) SETERRQ2(PETSC_ERR_SUP,"Not implemented for the matrix type: %s in %D dimension!\n" \
+        if (!flg && !flg2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented for the matrix type: %s in %D dimension!\n" \
                            "Send mail to petsc-maint@mcs.anl.gov for code",Atype,dim);
       }
     }
@@ -699,7 +699,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, const MatType mtype,Mat *J)
     } else if (dim == 3) {
       ierr = DAGetMatrix3d_MPIBAIJ(da,A);CHKERRQ(ierr);
     } else {
-      SETERRQ2(PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension!\n" \
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension!\n" \
 	       "Send mail to petsc-maint@mcs.anl.gov for code",Atype,dim);
     }
   } else if (sbaij) {
@@ -708,7 +708,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, const MatType mtype,Mat *J)
     } else if (dim == 3) {
       ierr = DAGetMatrix3d_MPISBAIJ(da,A);CHKERRQ(ierr);
     } else {
-      SETERRQ2(PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension!\n" \
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension!\n" \
 	       "Send mail to petsc-maint@mcs.anl.gov for code",Atype,dim);
     }
   } 
@@ -1594,15 +1594,15 @@ PetscErrorCode DAGetMatrix3d_MPIAIJ_Fill(DA da,Mat J)
   ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,&wrap,&st);CHKERRQ(ierr);
   col    = 2*s + 1;
   if (DAXPeriodic(wrap) && (m % col)){ 
-    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
                  by 2*stencil_width + 1\n");
   }
   if (DAYPeriodic(wrap) && (n % col)){ 
-    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
                  by 2*stencil_width + 1\n");
   }
   if (DAZPeriodic(wrap) && (p % col)){ 
-    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Z is divisible\n\
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Z is divisible\n\
                  by 2*stencil_width + 1\n");
   }
 

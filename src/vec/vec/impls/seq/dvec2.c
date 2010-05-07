@@ -935,7 +935,7 @@ PetscErrorCode VecGetArray_Seq(Vec vin,PetscScalar *a[])
 
   PetscFunctionBegin;
   if (vin->array_gotten) {
-    SETERRQ(PETSC_ERR_ORDER,"Array has already been gotten for this vector,you may\n\
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Array has already been gotten for this vector,you may\n\
     have forgotten a call to VecRestoreArray()");
   }
   vin->array_gotten = PETSC_TRUE;
@@ -953,7 +953,7 @@ PetscErrorCode VecRestoreArray_Seq(Vec vin,PetscScalar *a[])
 
   PetscFunctionBegin;
   if (!vin->array_gotten) {
-    SETERRQ(PETSC_ERR_ORDER,"Array has not been gotten for this vector, you may\n\
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Array has not been gotten for this vector, you may\n\
     have forgotten a call to VecGetArray()");
   }
   vin->array_gotten = PETSC_FALSE;
@@ -982,7 +982,7 @@ PetscErrorCode VecPlaceArray_Seq(Vec vin,const PetscScalar *a)
   Vec_Seq *v = (Vec_Seq *)vin->data;
 
   PetscFunctionBegin;
-  if (v->unplacedarray) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"VecPlaceArray() was already called on this vector, without a call to VecResetArray()");
+  if (v->unplacedarray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"VecPlaceArray() was already called on this vector, without a call to VecResetArray()");
   v->unplacedarray = v->array;  /* save previous array so reset can bring it back */
   v->array = (PetscScalar *)a;
   PetscFunctionReturn(0);

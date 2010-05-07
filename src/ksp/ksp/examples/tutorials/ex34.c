@@ -194,7 +194,7 @@ PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J,Mat jac)
 		{
 		  if (user->bcType == DIRICHLET) 
 		    {
-		      SETERRQ(PETSC_ERR_SUP,"Dirichlet boundary conditions not supported !\n");
+		      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dirichlet boundary conditions not supported !\n");
 		      v[0] = 2.0*(HyHzdHx + HxHzdHy + HxHydHz);
 		      ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
 		    } 

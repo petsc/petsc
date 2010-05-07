@@ -40,7 +40,7 @@ static PetscErrorCode PCSetUp_Galerkin(PC pc)
   PetscFunctionBegin;
   if (!jac->x) {
     ierr = KSPGetOperatorsSet(jac->ksp,&a,PETSC_NULL);CHKERRQ(ierr);
-    if (!a) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set operator of PCGALERKIN KSP with PCGalerkinGetKSP()/KSPSetOperators()");
+    if (!a) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must set operator of PCGALERKIN KSP with PCGalerkinGetKSP()/KSPSetOperators()");
     ierr   = KSPGetVecs(jac->ksp,1,&xx,1,&yy);CHKERRQ(ierr);    
     jac->x = *xx;
     jac->b = *yy;
@@ -48,7 +48,7 @@ static PetscErrorCode PCSetUp_Galerkin(PC pc)
     ierr   = PetscFree(yy);CHKERRQ(ierr);
   }
   if (!jac->R && !jac->P) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set restriction or interpolation of PCGALERKIN with PCGalerkinSetRestriction/Interpolation()");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must set restriction or interpolation of PCGALERKIN with PCGalerkinSetRestriction/Interpolation()");
   }
   /* should check here that sizes of R/P match size of a */
   PetscFunctionReturn(0);
@@ -86,7 +86,7 @@ static PetscErrorCode PCView_Galerkin(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"KSP on Galerkin follow\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for PCGalerkin",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for PCGalerkin",((PetscObject)viewer)->type_name);
   }
   ierr = KSPView(jac->ksp,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -238,7 +238,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinGetKSP(PC pc,KSP *ksp)
   if (f) {
     ierr = (*f)(pc,ksp);CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot get KSP, not Galerkin type");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot get KSP, not Galerkin type");
   }
   PetscFunctionReturn(0);
 }

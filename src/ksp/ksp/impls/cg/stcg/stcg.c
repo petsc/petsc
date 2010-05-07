@@ -33,7 +33,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGSetRadius(KSP ksp, PetscReal radius)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  if (radius < 0.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE, "Radius negative");
+  if (radius < 0.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Radius negative");
   ierr = PetscObjectQueryFunction((PetscObject)ksp, "KSPSTCGSetRadius_C", (void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp, radius);CHKERRQ(ierr);
@@ -102,7 +102,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetObjFcn(KSP ksp, PetscReal *o_fcn)
 PetscErrorCode KSPSolve_STCG(KSP ksp)
 {
 #ifdef PETSC_USE_COMPLEX
-  SETERRQ(PETSC_ERR_SUP, "STCG is not available for complex systems");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "STCG is not available for complex systems");
 #else
   KSP_STCG       *cg = (KSP_STCG *)ksp->data;
 
@@ -127,11 +127,11 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 
   ierr = PCDiagonalScale(ksp->pc, &diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) {
-    SETERRQ1(PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
   }
 
   if (cg->radius < 0.0) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE, "Input error: radius < 0");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Input error: radius < 0");
   }
 
   /***************************************************************************/
@@ -651,9 +651,9 @@ PetscErrorCode KSPSetUp_STCG(KSP ksp)
   /***************************************************************************/
 
   if (ksp->pc_side == PC_RIGHT) {
-    SETERRQ(PETSC_ERR_SUP, "No right preconditioning for KSPSTCG");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "No right preconditioning for KSPSTCG");
   } else if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(PETSC_ERR_SUP, "No symmetric preconditioning for KSPSTCG");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "No symmetric preconditioning for KSPSTCG");
   }
 
   /***************************************************************************/

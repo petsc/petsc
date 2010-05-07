@@ -77,7 +77,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringView(ISColoring iscoloring,PetscView
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of colors %d\n",rank,iscoloring->n);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for ISColoring",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for ISColoring",((PetscObject)viewer)->type_name);
   }
 
   ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&is);CHKERRQ(ierr);
@@ -123,7 +123,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringGetIS(ISColoring iscoloring,PetscInt
 #if defined(PETSC_USE_DEBUG)
       for (i=0; i<n; i++) {
         if (((PetscInt)colors[i]) >= nc) {
-          SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Coloring is our of range index %d value %d number colors %d",(int)i,(int)colors[i],(int)nc);
+          SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coloring is our of range index %d value %d number colors %d",(int)i,(int)colors[i],(int)nc);
         }
       }
 #endif
@@ -153,7 +153,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringGetIS(ISColoring iscoloring,PetscInt
           ii[colors[i]][mcolors[colors[i]]++] = i;   /* local idx */
         }
       } else {
-        SETERRQ(PETSC_ERR_SUP,"Not provided for this ISColoringType type");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not provided for this ISColoringType type");
       }
      
       ierr = PetscMalloc(nc*sizeof(IS),&is);CHKERRQ(ierr);
@@ -238,9 +238,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringCreate(MPI_Comm comm,PetscInt ncolor
   PetscFunctionBegin;
   if (ncolors != PETSC_DECIDE && ncolors > IS_COLORING_MAX) {
     if (ncolors > 65535) {
-      SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Max color value exeeds 65535 limit. This number is unrealistic. Perhaps a bug in code?\nCurrent max: %d user rewuested: %d",IS_COLORING_MAX,ncolors);
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Max color value exeeds 65535 limit. This number is unrealistic. Perhaps a bug in code?\nCurrent max: %d user rewuested: %d",IS_COLORING_MAX,ncolors);
     } else {
-      SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Max color value exeeds limit. Perhaps reconfigure PETSc with --with-is-color-value-type=short?\n Current max: %d user rewuested: %d",IS_COLORING_MAX,ncolors);
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Max color value exeeds limit. Perhaps reconfigure PETSc with --with-is-color-value-type=short?\n Current max: %d user rewuested: %d",IS_COLORING_MAX,ncolors);
     }
   }
   ierr = PetscNew(struct _n_ISColoring,iscoloring);CHKERRQ(ierr);
@@ -270,7 +270,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringCreate(MPI_Comm comm,PetscInt ncolor
   }
   ncwork++;
   ierr = MPI_Allreduce(&ncwork,&nc,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
-  if (nc > ncolors) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Number of colors passed in %D is less then the actual number of colors in array %D",ncolors,nc);
+  if (nc > ncolors) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of colors passed in %D is less then the actual number of colors in array %D",ncolors,nc);
   (*iscoloring)->n      = nc;
   (*iscoloring)->is     = 0;
   (*iscoloring)->colors = (ISColoringValue *)colors;
@@ -423,7 +423,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningCount(IS part,PetscInt len,Petsc
     }    
     ierr = MPI_Allreduce(&np,&npt,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
     np = npt+1; /* so that it looks like a MPI_Comm_size output */
-    if (np > len) SETERRQ2(PETSC_ERR_ARG_SIZ,"Length of count array %D is less than number of partitions %D",len,np);
+    if (np > len) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Length of count array %D is less than number of partitions %D",len,np);
   }
 #endif
 
@@ -670,17 +670,17 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISComplement(IS is,PetscInt nmin,PetscInt nmax
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(isout,3);
-  if (nmin < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"nmin %D cannot be negative",nmin);
-  if (nmin > nmax) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"nmin %D cannot be greater than nmax %D",nmin,nmax);
+  if (nmin < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nmin %D cannot be negative",nmin);
+  if (nmin > nmax) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nmin %D cannot be greater than nmax %D",nmin,nmax);
   ierr = ISSorted(is,&sorted);CHKERRQ(ierr);
-  if (!sorted) SETERRQ(PETSC_ERR_ARG_WRONG,"Index set must be sorted");
+  if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Index set must be sorted");
 
   ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
   for (i=0; i<n; i++) {
-    if (indices[i] <  nmin) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Index %D's value %D is smaller than minimum given %D",i,indices[i],nmin);
-    if (indices[i] >= nmax) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Index %D's value %D is larger than maximum given %D",i,indices[i],nmax);
+    if (indices[i] <  nmin) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %D's value %D is smaller than minimum given %D",i,indices[i],nmin);
+    if (indices[i] >= nmax) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %D's value %D is larger than maximum given %D",i,indices[i],nmax);
   }
 #endif
   ierr = PetscMalloc((nmax - n)*sizeof(PetscInt),&nindices);CHKERRQ(ierr);
@@ -695,7 +695,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISComplement(IS is,PetscInt nmin,PetscInt nmax
   for (; j<nmax; j++) {
     nindices[cnt++] = j;
   }
-  if (cnt != nmax-nmin - n) SETERRQ2(PETSC_ERR_PLIB,"Number entries found in complement %D does not match expected %D",cnt,nmax-n);
+  if (cnt != nmax-nmin - n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number entries found in complement %D does not match expected %D",cnt,nmax-n);
   ierr = ISCreateGeneral(((PetscObject)is)->comm,nmax-nmin-n,nindices,isout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
   ierr = PetscFree(nindices);CHKERRQ(ierr);

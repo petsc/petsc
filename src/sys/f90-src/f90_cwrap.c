@@ -59,7 +59,7 @@ PetscErrorCode F90Array1dCreate(void *array,PetscDataType type,PetscInt start,Pe
   } else if (type == PETSC_FORTRANADDR) {
     f90array1dcreatefortranaddr_(array,&start,&len,ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"unsupported PetscDataType: %d",(PetscInt)type);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unsupported PetscDataType: %d",(PetscInt)type);
   }
   PetscFunctionReturn(0);
 }
@@ -78,7 +78,7 @@ PetscErrorCode PETSC_DLLEXPORT F90Array1dAccess(F90Array1d *ptr,PetscDataType ty
   } else if (type == PETSC_FORTRANADDR) {
     f90array1daccessfortranaddr_(ptr,array PETSC_F90_2PTR_PARAM(ptrd));
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"unsupported PetscDataType: %d",(PetscInt)type);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unsupported PetscDataType: %d",(PetscInt)type);
   }
   PetscFunctionReturn(0);
 }
@@ -97,7 +97,7 @@ PetscErrorCode PETSC_DLLEXPORT F90Array1dDestroy(F90Array1d *ptr,PetscDataType t
   } else if (type == PETSC_FORTRANADDR) {
     f90array1ddestroyfortranaddr_(ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"unsupported PetscDataType: %d",(PetscInt)type);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unsupported PetscDataType: %d",(PetscInt)type);
   }
   PetscFunctionReturn(0);
 }
@@ -161,7 +161,7 @@ PetscErrorCode F90Array2dCreate(void *array,PetscDataType type,PetscInt start1,P
   } else if (type == PETSC_FORTRANADDR) {
     f90array2dcreatefortranaddr_(array,&start1,&len1,&start2,&len2,ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"unsupported PetscDataType: %d",(PetscInt)type);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unsupported PetscDataType: %d",(PetscInt)type);
   }
   PetscFunctionReturn(0);
 }
@@ -180,7 +180,7 @@ PetscErrorCode PETSC_DLLEXPORT F90Array2dAccess(F90Array2d *ptr,PetscDataType ty
   } else if (type == PETSC_FORTRANADDR) {
     f90array2daccessfortranaddr_(ptr,array PETSC_F90_2PTR_PARAM(ptrd));
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"unsupported PetscDataType: %d",(PetscInt)type);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unsupported PetscDataType: %d",(PetscInt)type);
   }
   PetscFunctionReturn(0);
 }
@@ -199,7 +199,7 @@ PetscErrorCode PETSC_DLLEXPORT F90Array2dDestroy(F90Array2d *ptr,PetscDataType t
   } else if (type == PETSC_FORTRANADDR) {
     f90array2ddestroyfortranaddr_(ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"unsupported PetscDataType: %d",(PetscInt)type);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unsupported PetscDataType: %d",(PetscInt)type);
   }
   PetscFunctionReturn(0);
 }

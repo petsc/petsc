@@ -28,7 +28,7 @@ int main(int argc,char *argv[])
     ierr = PetscOptionsInt("-n","Global number of nodes","",N,&N,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-bs","Block size (1 or 2)","",bs,&bs,PETSC_NULL);CHKERRQ(ierr);
     if (bs != 1) {
-      if (bs != 2) SETERRQ(1,"Block size must be 1 or 2");
+      if (bs != 2) SETERRQ(PETSC_COMM_SELF,1,"Block size must be 1 or 2");
       ierr = PetscOptionsReal("-alpha","Inverse time step for wave operator","",alpha,&alpha,PETSC_NULL);CHKERRQ(ierr);
       ierr = PetscOptionsReal("-K","Bulk modulus of compressibility","",K,&K,PETSC_NULL);CHKERRQ(ierr);
       ierr = PetscOptionsReal("-rho0","Reference density","",rho0,&rho0,PETSC_NULL);CHKERRQ(ierr);
@@ -73,7 +73,7 @@ int main(int argc,char *argv[])
 
   ierr = VecGhostGetLocalForm(x,&lf);CHKERRQ(ierr);
   ierr = VecGetSize(lf,&m);CHKERRQ(ierr);
-  if (m != (n+2)*bs) SETERRQ2(1,"size of local form %D, expected %D",m,(n+2)*bs);
+  if (m != (n+2)*bs) SETERRQ2(PETSC_COMM_SELF,1,"size of local form %D, expected %D",m,(n+2)*bs);
   ierr = VecGetArray(lf,&xx);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     PetscInt row[2],col[9],im,ip;
@@ -108,7 +108,7 @@ int main(int argc,char *argv[])
         xx[2*i] = 0.2*exp(-PetscSqr(xref)/(2*PetscSqr(sigma)));
         xx[2*i+1] = 0;
         break;
-      default: SETERRQ1(1,"not implemented for block size %D",bs);
+      default: SETERRQ1(PETSC_COMM_SELF,1,"not implemented for block size %D",bs);
     }
   }
   ierr = VecRestoreArray(lf,&xx);CHKERRQ(ierr);

@@ -22,7 +22,7 @@ PetscErrorCode MatIncreaseOverlap_SeqBAIJ(Mat A,PetscInt is_max,IS is[],PetscInt
   aj    = a->j;
   bs    = A->rmap->bs;
 
-  if (ov < 0)  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
+  if (ov < 0)  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
 
   ierr = PetscBTCreate(m,table);CHKERRQ(ierr);
   ierr = PetscMalloc((m+1)*sizeof(PetscInt),&nidx);CHKERRQ(ierr); 
@@ -40,7 +40,7 @@ PetscErrorCode MatIncreaseOverlap_SeqBAIJ(Mat A,PetscInt is_max,IS is[],PetscInt
     /* Enter these into the temp arrays i.e mark table[row], enter row into new index */
     for (j=0; j<n ; ++j){
       ival = idx[j]/bs; /* convert the indices into block indices */
-      if (ival>=m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"index greater than mat-dim");
+      if (ival>=m) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"index greater than mat-dim");
       if(!PetscBTLookupSet(table,ival)) { nidx[isz++] = ival;}
     }
     ierr = ISRestoreIndices(is[i],&idx);CHKERRQ(ierr);
@@ -89,7 +89,7 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse 
 
   PetscFunctionBegin;
   ierr = ISSorted(iscol,&sorted);CHKERRQ(ierr);
-  if (!sorted) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"IS is not sorted");
+  if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"IS is not sorted");
 
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetIndices(iscol,&icol);CHKERRQ(ierr);
@@ -116,10 +116,10 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse 
   if (scall == MAT_REUSE_MATRIX) {
     c = (Mat_SeqBAIJ *)((*B)->data);
 
-    if (c->mbs!=nrows || c->nbs!=ncols || (*B)->rmap->bs!=bs) SETERRQ(PETSC_ERR_ARG_SIZ,"Submatrix wrong size");
+    if (c->mbs!=nrows || c->nbs!=ncols || (*B)->rmap->bs!=bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Submatrix wrong size");
     ierr = PetscMemcmp(c->ilen,lens,c->mbs *sizeof(PetscInt),&flag);CHKERRQ(ierr);
     if (!flag) {
-      SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong no of nonzeros");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong no of nonzeros");
     }
     ierr = PetscMemzero(c->ilen,c->mbs*sizeof(PetscInt));CHKERRQ(ierr);
     C = *B;
@@ -183,7 +183,7 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,Ma
   for (i=0; i<nrows; i++) vary[irow[i]/bs]++;
   count = 0;
   for (i=0; i<a->mbs; i++) {
-    if (vary[i]!=0 && vary[i]!=bs) SETERRQ(PETSC_ERR_ARG_SIZ,"Index set does not match blocks");
+    if (vary[i]!=0 && vary[i]!=bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Index set does not match blocks");
     if (vary[i]==bs) iary[count++] = i;
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,&is1);CHKERRQ(ierr);
@@ -192,7 +192,7 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,Ma
   for (i=0; i<ncols; i++) vary[icol[i]/bs]++;
   count = 0;
   for (i=0; i<a->mbs; i++) {
-    if (vary[i]!=0 && vary[i]!=bs) SETERRQ(PETSC_ERR_PLIB,"Internal error in PETSc");
+    if (vary[i]!=0 && vary[i]!=bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error in PETSc");
     if (vary[i]==bs) iary[count++] = i;
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,&is2);CHKERRQ(ierr);
@@ -1680,7 +1680,7 @@ PetscErrorCode MatMultHermitianTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
       PetscInt     ncols,k; 
       PetscScalar  *work,*workt,*xtmp;
 
-      SETERRQ(PETSC_ERR_SUP,"block size larger than 5 is not supported yet");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"block size larger than 5 is not supported yet");
       if (!a->mult_work) {
         k = PetscMax(A->rmap->n,A->cmap->n);
         ierr = PetscMalloc((k+1)*sizeof(PetscScalar),&a->mult_work);CHKERRQ(ierr);
@@ -1931,7 +1931,7 @@ PetscErrorCode MatNorm_SeqBAIJ(Mat A,NormType type,PetscReal *norm)
       }
     }
   } else {
-    SETERRQ(PETSC_ERR_SUP,"No support for this norm yet");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for this norm yet");
   }
   PetscFunctionReturn(0);
 }
@@ -1979,7 +1979,7 @@ PetscErrorCode MatGetDiagonal_SeqBAIJ(Mat A,Vec v)
   MatScalar      *aa,*aa_j;
 
   PetscFunctionBegin;
-  if (A->factortype) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
+  if (A->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
   bs   = A->rmap->bs;
   aa   = a->a;
   ai   = a->i;
@@ -1990,7 +1990,7 @@ PetscErrorCode MatGetDiagonal_SeqBAIJ(Mat A,Vec v)
   ierr = VecSet(v,zero);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  if (n != A->rmap->N) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
+  if (n != A->rmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
   for (i=0; i<ambs; i++) {
     for (j=ai[i]; j<ai[i+1]; j++) {
       if (aj[j] == i) {
@@ -2027,7 +2027,7 @@ PetscErrorCode MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
   if (ll) {
     ierr = VecGetArray(ll,&l);CHKERRQ(ierr);
     ierr = VecGetLocalSize(ll,&lm);CHKERRQ(ierr);
-    if (lm != m) SETERRQ(PETSC_ERR_ARG_SIZ,"Left scaling vector wrong length");
+    if (lm != m) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Left scaling vector wrong length");
     for (i=0; i<mbs; i++) { /* for each block row */
       M  = ai[i+1] - ai[i];
       li = l + i*bs;
@@ -2045,7 +2045,7 @@ PetscErrorCode MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
   if (rr) {
     ierr = VecGetArray(rr,&r);CHKERRQ(ierr);
     ierr = VecGetLocalSize(rr,&rn);CHKERRQ(ierr);
-    if (rn != n) SETERRQ(PETSC_ERR_ARG_SIZ,"Right scaling vector wrong length");
+    if (rn != n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Right scaling vector wrong length");
     for (i=0; i<mbs; i++) { /* for each block row */
       M  = ai[i+1] - ai[i];
       v  = aa + bs2*ai[i];

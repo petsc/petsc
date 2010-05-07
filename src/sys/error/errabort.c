@@ -18,7 +18,8 @@
    Not Collective
 
    Input Parameters:
-+  line - the line number of the error (indicated by __LINE__)
++  comm - communicator over which error occurred
+.  line - the line number of the error (indicated by __LINE__)
 .  func - function where error occured (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __SDIR__)
@@ -39,7 +40,7 @@
    Most users need not directly employ this routine and the other error 
    handlers, but can instead use the simplified interface SETERRQ, which
    has the calling sequence
-$     SETERRQ(number,mess)
+$     SETERRQ(comm,number,mess)
    or its variants, SETERRQ1(number,formatstring,arg1), SETERRQ2(), ... that
    allow including arguments in the message.
 
@@ -54,7 +55,7 @@ $     SETERRQ(number,mess)
 .seealso: PetscPushErrorHandler(), PetscTraceBackErrorHandler(), 
           PetscAttachDebuggerErrorHandler()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscAbortErrorHandler(int line,const char *fun,const char *file,const char* dir,PetscErrorCode n,int p,const char *mess,void *ctx)
+PetscErrorCode PETSC_DLLEXPORT PetscAbortErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,const char* dir,PetscErrorCode n,int p,const char *mess,void *ctx)
 {
   PetscFunctionBegin;
   (*PetscErrorPrintf)("%s() line %d in %s%s %s\n",fun,line,dir,file,mess);

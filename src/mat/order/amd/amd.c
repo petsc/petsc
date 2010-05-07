@@ -38,7 +38,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_AMD(Mat mat,const MatOrderingType 
      at least in so far as computing orderings for A+A^T.
   */
   ierr = MatGetRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
-  if (!done) SETERRQ1(PETSC_ERR_SUP,"Cannot get rows for matrix type %s",((PetscObject)mat)->type_name);
+  if (!done) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get rows for matrix type %s",((PetscObject)mat)->type_name);
 
   amd_AMD_defaults(Control);
   ierr = PetscOptionsBegin(((PetscObject)mat)->comm,((PetscObject)mat)->prefix,"AMD Options","Mat");CHKERRQ(ierr);
@@ -62,14 +62,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_AMD(Mat mat,const MatOrderingType 
       /* The result is fine, but PETSc matrices are supposed to satisfy stricter preconditions, so PETSc considers a
       * matrix that triggers this error condition to be invalid.
       */
-      SETERRQ(PETSC_ERR_PLIB,"According to AMD, the matrix has unsorted and/or duplicate row indices");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"According to AMD, the matrix has unsorted and/or duplicate row indices");
     case AMD_INVALID:
       amd_info(Info);
-      SETERRQ(PETSC_ERR_PLIB,"According to AMD, the matrix is invalid");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"According to AMD, the matrix is invalid");
     case AMD_OUT_OF_MEMORY:
-      SETERRQ(PETSC_ERR_MEM,"AMD could not compute ordering");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"AMD could not compute ordering");
     default:
-      SETERRQ(PETSC_ERR_LIB,"Unexpected return value");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unexpected return value");
   }
   ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
 

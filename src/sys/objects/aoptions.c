@@ -183,12 +183,12 @@ PetscErrorCode PetscOptionsGetFromTextInput()
 	    else i=1;
 	    for (;i<len; i++) {
 	      if (value[i] == '-') {
-		if (i == len-1) SETERRQ2(PETSC_ERR_USER,"Error in %D-th array entry %s\n",n,value);
+		if (i == len-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry %s\n",n,value);
 		value[i] = 0;
 		ierr     = PetscOptionsAtoi(value,&start);CHKERRQ(ierr);        
 		ierr     = PetscOptionsAtoi(value+i+1,&end);CHKERRQ(ierr);        
-		if (end <= start) SETERRQ3(PETSC_ERR_USER,"Error in %D-th array entry, %s-%s cannot have decreasing list",n,value,value+i+1);
-		if (n + end - start - 1 >= nmax) SETERRQ4(PETSC_ERR_USER,"Error in %D-th array entry, not enough space in left in array (%D) to contain entire range from %D to %D",n,nmax-n,start,end);
+		if (end <= start) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry, %s-%s cannot have decreasing list",n,value,value+i+1);
+		if (n + end - start - 1 >= nmax) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry, not enough space in left in array (%D) to contain entire range from %D to %D",n,nmax-n,start,end);
 		for (;start<end; start++) {
 		  *dvalue = start; dvalue++;n++;
 		}
@@ -416,9 +416,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsEnum(const char opt[],const char text
 
   PetscFunctionBegin;
   while (list[ntext++]) {
-    if (ntext > 50) SETERRQ(PETSC_ERR_ARG_WRONG,"List argument appears to be wrong or have more than 50 entries");
+    if (ntext > 50) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"List argument appears to be wrong or have more than 50 entries");
   }
-  if (ntext < 3) SETERRQ(PETSC_ERR_ARG_WRONG,"List argument must have at least two entries: typename and type prefix");
+  if (ntext < 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"List argument must have at least two entries: typename and type prefix");
   ntext -= 3;
   ierr = PetscOptionsEList(opt,text,man,list,ntext,list[defaultv],&tval,&tflg);CHKERRQ(ierr);
   /* with PETSC_USE_64BIT_INDICES sizeof(PetscInt) != sizeof(PetscEnum) */

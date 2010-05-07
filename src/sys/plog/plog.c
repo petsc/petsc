@@ -234,12 +234,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogBegin_Private(void)
   ierr = chudSetPMCMode(chudCPU1Dev,PMC_1,chudCounter);CHKERRQ(ierr);
   ierr = chudSetPrivilegeFilter(chudCPU1Dev,PMC_1,chudCountUserEvents);CHKERRQ(ierr);
   ierr = chudSetPMCEventMask(chudCPU1Dev,PMC_1,0xFE);CHKERRQ(ierr);
-  if (!chudIsEventValid(chudCPU1Dev,PMC_1,193)) SETERRQ1(PETSC_ERR_SUP,"Event is not valid %d",193);
+  if (!chudIsEventValid(chudCPU1Dev,PMC_1,193)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Event is not valid %d",193);
   ierr = chudStartPMCs();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PAPI)
   ierr = PAPI_library_init(PAPI_VER_CURRENT);
-  if (ierr != PAPI_VER_CURRENT) SETERRQ(PETSC_ERR_LIB,"Cannot initialize PAPI");
+  if (ierr != PAPI_VER_CURRENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot initialize PAPI");
   ierr = PAPI_query_event(PAPI_FP_INS);CHKERRQ(ierr);
   ierr = PAPI_create_eventset(&PAPIEventSet);CHKERRQ(ierr);
   ierr = PAPI_add_event(PAPIEventSet,PAPI_FP_INS);CHKERRQ(ierr);
@@ -1184,7 +1184,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogDump(const char sname[])
   }
   ierr = PetscFixFilename(file, fname);CHKERRQ(ierr);
   ierr = PetscFOpen(PETSC_COMM_WORLD, fname, "w", &fd);CHKERRQ(ierr);
-  if ((!rank) && (!fd)) SETERRQ1(PETSC_ERR_FILE_OPEN, "Cannot open file: %s", fname);
+  if ((!rank) && (!fd)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN, "Cannot open file: %s", fname);
   /* Output totals */
   ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Total Flops %14e %16.8e\n", _TotalFlops, _TotalTime);
   ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Clock Resolution %g\n", 0.0);
@@ -1596,7 +1596,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
         ierr = PetscFPrintf(comm, fd, "WARNING!!! Minimum time %g over all processors for %s is negative! This happens\n on some machines whose times cannot handle too rapid calls.!\n artificially changing minimum to zero.\n",mint,name);
         mint = 0;
       }
-      if (minf < 0.0) SETERRQ2(PETSC_ERR_PLIB,"Minimum flops %g over all processors for %s is negative! Not possible!",minf,name);
+      if (minf < 0.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Minimum flops %g over all processors for %s is negative! Not possible!",minf,name);
       totm *= 0.5; totml *= 0.5; totr /= size;
      
       if (maxCt != 0) {

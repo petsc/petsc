@@ -100,7 +100,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, const VecType outt
 #endif
 #if defined(PETSC_HAVE_HDF5)
   if (ishdf5) {
-    SETERRQ(PETSC_ERR_SUP,"Since HDF5 format gives ASCII name for each object in file; must use VecLoadIntoVector() after setting name of Vec with PetscObjectSetName()");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Since HDF5 format gives ASCII name for each object in file; must use VecLoadIntoVector() after setting name of Vec with PetscObjectSetName()");
   } else 
 #endif
   {
@@ -129,7 +129,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, const VecType outt
     ierr = VecSetType(factory,outtype);CHKERRQ(ierr);
     r = factory->ops->load;
     ierr = VecDestroy(factory);
-    if (!r) SETERRQ1(PETSC_ERR_SUP,"VecLoad is not supported for type: %s",outtype);
+    if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"VecLoad is not supported for type: %s",outtype);
     ierr = (*r)(viewer,outtype,newvec);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
@@ -213,9 +213,9 @@ PetscErrorCode VecLoad_Binary(PetscViewer viewer, const VecType itype,Vec *newve
   if (type != VEC_FILE_CLASSID) {
       ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
       if (type == MAT_FILE_CLASSID) {
-        SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix is next in file, not a vector as you requested");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix is next in file, not a vector as you requested");
       } else {
-        SETERRQ(PETSC_ERR_ARG_WRONG,"Not a vector next in file");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a vector next in file");
       }
   }
   ierr = VecCreate(comm,&vec);CHKERRQ(ierr);
@@ -308,7 +308,7 @@ PetscErrorCode VecLoadIntoVector_Netcdf(PetscViewer viewer,Vec vec)
   ierr = ncmpi_inq_dim(ncid,0,name,(MPI_Offset*)&N);CHKERRQ(ierr); /* N gets the global vector size */
   if (!rank) {
     ierr = VecGetSize(vec,&rows);CHKERRQ(ierr);
-    if (N != rows) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Vector in file different length then input vector");
+    if (N != rows) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Vector in file different length then input vector");
     ierr = PetscOptionsGetInt(PETSC_NULL,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
     if (flag) {
       ierr = VecSetBlockSize(vec,bs);CHKERRQ(ierr);
@@ -361,19 +361,19 @@ PetscErrorCode VecLoadIntoVector_HDF5(PetscViewer viewer, Vec xin)
 #else
   dset_id = H5Dopen(file_id, vecname);
 #endif
-  if (dset_id == -1) SETERRQ1(PETSC_ERR_LIB,"Could not H5Dopen() with Vec named %s",vecname);
+  if (dset_id == -1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Could not H5Dopen() with Vec named %s",vecname);
 
   /* Retrieve the dataspace for the dataset */
   ierr = VecGetSize(xin, &N);CHKERRQ(ierr);
   filespace = H5Dget_space(dset_id);
-  if (filespace == -1) SETERRQ(PETSC_ERR_LIB,"Could not H5Dget_space()");
+  if (filespace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Could not H5Dget_space()");
   rdim = H5Sget_simple_extent_dims(filespace, dims, PETSC_NULL);
 #if defined(PETSC_USE_COMPLEX)
-  if (rdim != 2) SETERRQ1(PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not 2 (complex numbers) as expected",rdim);
+  if (rdim != 2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not 2 (complex numbers) as expected",rdim);
 #else
-  if (rdim != 1) SETERRQ1(PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not 1 as expected",rdim);
+  if (rdim != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not 1 as expected",rdim);
 #endif
-  if (N != (int) dims[0]) SETERRQ2(PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length (%d) then input vector (%d)", (int) dims[0], N);
+  if (N != (int) dims[0]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length (%d) then input vector (%d)", (int) dims[0], N);
 
   /* Each process defines a dataset and reads it from the hyperslab in the file */
   ierr = VecGetLocalSize(xin, &n);CHKERRQ(ierr);
@@ -383,7 +383,7 @@ PetscErrorCode VecLoadIntoVector_HDF5(PetscViewer viewer, Vec xin)
   dim++;
 #endif
   memspace = H5Screate_simple(dim, count, NULL);
-  if (memspace == -1) SETERRQ(PETSC_ERR_LIB,"Could not H5Screate_simple()");
+  if (memspace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Could not H5Screate_simple()");
 
   /* Select hyperslab in the file */
   ierr = VecGetOwnershipRange(xin, &low, PETSC_NULL);CHKERRQ(ierr);
@@ -395,7 +395,7 @@ PetscErrorCode VecLoadIntoVector_HDF5(PetscViewer viewer, Vec xin)
 
   /* Create property list for collective dataset read */
   plist_id = H5Pcreate(H5P_DATASET_XFER);
-  if (plist_id == -1) SETERRQ(PETSC_ERR_LIB,"Could not H5Pcreate()");
+  if (plist_id == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Could not H5Pcreate()");
 #if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
   status = H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_COLLECTIVE);CHKERRQ(status);
   /* To write dataset independently use H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_INDEPENDENT) */
@@ -442,10 +442,10 @@ PetscErrorCode VecLoadIntoVector_Binary(PetscViewer viewer,Vec vec)
   if (!rank) {
     /* Read vector header. */
     ierr = PetscBinaryRead(fd,&type,1,PETSC_INT);CHKERRQ(ierr);
-    if (type != VEC_FILE_CLASSID) SETERRQ(PETSC_ERR_ARG_WRONG,"Non-vector object");
+    if (type != VEC_FILE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Non-vector object");
     ierr = PetscBinaryRead(fd,&rows,1,PETSC_INT);CHKERRQ(ierr);
     ierr = VecGetSize(vec,&n);CHKERRQ(ierr);
-    if (n != rows) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Vector in file different length then input vector");
+    if (n != rows) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Vector in file different length then input vector");
     ierr = MPI_Bcast(&rows,1,MPIU_INT,0,comm);CHKERRQ(ierr);
 
     ierr = VecSetFromOptions(vec);CHKERRQ(ierr);
@@ -520,7 +520,7 @@ PetscErrorCode VecLoadIntoVector_Default(PetscViewer viewer,Vec vec)
     ierr = VecLoadIntoVector_HDF5(viewer,vec);CHKERRQ(ierr);
 #endif
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for vector loading", ((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for vector loading", ((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

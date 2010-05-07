@@ -25,7 +25,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size != 1) SETERRQ(1,"This is a uniprocessor example only!");
+  if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only!");
   ierr = PetscOptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-reorder",&reorder,PETSC_NULL);CHKERRQ(ierr);
@@ -60,7 +60,7 @@ int main(int argc,char **args)
       ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
     } else if (prob ==2){ /* matrix for the five point stencil */
       n1 = (int) (sqrt((PetscReal)n) + 0.001); 
-      if (n1*n1 - n) SETERRQ(PETSC_ERR_ARG_WRONG,"sqrt(n) must be a positive interger!"); 
+      if (n1*n1 - n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"sqrt(n) must be a positive interger!"); 
       for (i=0; i<n1; i++) {
         for (j=0; j<n1; j++) {
           Ii = j + n1*i;
@@ -124,7 +124,7 @@ int main(int argc,char **args)
   /* Test MatConvert */
   ierr = MatConvert(A,MATSEQSBAIJ,MAT_INITIAL_MATRIX,&sA);CHKERRQ(ierr); 
   ierr = MatMultEqual(A,sA,20,&equal);CHKERRQ(ierr);
-  if (!equal) SETERRQ(PETSC_ERR_USER,"A != sA");
+  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"A != sA");
 
   /* Test MatGetOwnershipRange() */
   ierr = MatGetOwnershipRange(A,&Ii,&J);CHKERRQ(ierr);
@@ -241,7 +241,7 @@ int main(int argc,char **args)
         ierr = MatICCFactor(B,perm,&factinfo);CHKERRQ(ierr);
         ierr = MatEqual(sC,B,&equal);CHKERRQ(ierr);
         if (!equal){
-          SETERRQ(PETSC_ERR_USER,"in-place Cholesky factor != out-place Cholesky factor");
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"in-place Cholesky factor != out-place Cholesky factor");
         }
         ierr = MatDestroy(B);CHKERRQ(ierr);
       */
@@ -267,7 +267,7 @@ int main(int argc,char **args)
     ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
     if (displ>0){ierr = PetscPrintf(PETSC_COMM_SELF,"  lvl: %d, error: %G\n", lvl,norm2); }
     err[i] -= norm2;
-    if (err[i] > tol) SETERRQ2(PETSC_ERR_USER," level: %d, err: %G\n", lvl,err[i]); 
+    if (err[i] > tol) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER," level: %d, err: %G\n", lvl,err[i]); 
   } 
 
   ierr = ISDestroy(perm);CHKERRQ(ierr);

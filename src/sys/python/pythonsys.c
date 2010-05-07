@@ -50,12 +50,12 @@ static PetscErrorCode PetscPythonFindLibrary(char pythonexe[PETSC_MAX_PATH_LEN],
 #if defined(PETSC_HAVE_POPEN)
   ierr = PetscPOpen(PETSC_COMM_SELF,PETSC_NULL,command,"r",&fp);CHKERRQ(ierr);
   if (!fgets(prefix,sizeof(prefix),fp))
-    { SETERRQ1(PETSC_ERR_PLIB,"Python: bad output from executable: %s",pythonexe); }
+    { SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Python: bad output from executable: %s",pythonexe); }
   if (!fgets(version,sizeof(version),fp))
-    { SETERRQ1(PETSC_ERR_PLIB,"Python: bad output from executable: %s",pythonexe); }
+    { SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Python: bad output from executable: %s",pythonexe); }
   ierr = PetscPClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
 #else
-  SETERRQ(1,"Python: Aborted due to missing popen()");
+  SETERRQ(PETSC_COMM_SELF,1,"Python: Aborted due to missing popen()");
 #endif
   /* remove newlines */
   ierr = PetscStrchr(prefix,'\n',&eol);CHKERRQ(ierr);
@@ -142,9 +142,9 @@ static PetscErrorCode PetscPythonLoadLibrary(const char pythonlib[])
   ierr = PetscDLPyLibSym("PyErr_Clear"           , &PyErr_Clear           );CHKERRQ(ierr);
   ierr = PetscDLPyLibSym("PyErr_Occurred"        , &PyErr_Occurred        );CHKERRQ(ierr);
   /* XXX TODO: check that ALL symbols were there !!! */
-  if (!Py_IsInitialized) {SETERRQ(1,"Python: failed to load symbols from dynamic library");}
-  if (!Py_InitializeEx)  {SETERRQ(1,"Python: failed to load symbols from dynamic library");}
-  if (!Py_Finalize)      {SETERRQ(1,"Python: failed to load symbols from dynamic library");}
+  if (!Py_IsInitialized) {SETERRQ(PETSC_COMM_SELF,1,"Python: failed to load symbols from dynamic library");}
+  if (!Py_InitializeEx)  {SETERRQ(PETSC_COMM_SELF,1,"Python: failed to load symbols from dynamic library");}
+  if (!Py_Finalize)      {SETERRQ(PETSC_COMM_SELF,1,"Python: failed to load symbols from dynamic library");}
   ierr = PetscInfo(0,"Python: all required symbols loaded from Python dynamic library\n");CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -231,7 +231,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPythonInitialize(const char pyexe[],const ch
     ierr = PetscInfo(0,"Python: successfully imported  module 'petsc4py.PETSc'\n");CHKERRQ(ierr);
     Py_DecRef(module); module = 0;
   } else {
-    SETERRQ(PETSC_ERR_PLIB,"Python: could not import module 'petsc4py.PETSc', perhaps your PYTHONPATH does not contain it\n"); 
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Python: could not import module 'petsc4py.PETSc', perhaps your PYTHONPATH does not contain it\n"); 
   }
   PetscFunctionReturn(0);
 }

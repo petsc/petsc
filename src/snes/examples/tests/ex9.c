@@ -68,7 +68,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Nz",&Nz,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
-    SETERRQ(1,"Lambda is out of range");
+    SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
   }
   
   /* Set up distributed array */

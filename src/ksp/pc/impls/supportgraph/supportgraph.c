@@ -84,7 +84,7 @@ static PetscErrorCode PCView_SupportGraph(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);  
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for PCSupportGraph",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for PCSupportGraph",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -120,7 +120,7 @@ static PetscErrorCode PCSetUp_SupportGraph(PC pc)
 
   PetscFunctionBegin;
   if(!pc->setupcalled) {
-    if (!MatIsSymmetric(pc->pmat, 1.0e-9)) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be symmetric");
+    if (!MatIsSymmetric(pc->pmat, 1.0e-9)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"matrix must be symmetric");
     // note that maxCong is being updated
     ierr = AugmentedLowStretchSpanningTree(pc->pmat, &sg->pre, sg->augment, sg->tol, sg->maxCong);CHKERRQ(ierr);
   }

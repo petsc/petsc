@@ -147,7 +147,7 @@ PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
     ierr = PetscObjectGetName((PetscObject) xin, &name);CHKERRQ(ierr);
     ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
     if ((bs < 1) || (bs > 3)) {
-      SETERRQ1(PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %d", bs);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %d", bs);
     }
     if (format == PETSC_VIEWER_ASCII_VTK) {
       if (outputState == 0) {
@@ -161,7 +161,7 @@ PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
       } else if (outputState == 3) {
         doOutput = 0;
       } else if (outputState == 4) {
-        SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
       }
       if (doOutput) {
         ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", n);CHKERRQ(ierr);
@@ -176,7 +176,7 @@ PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
       } else if (outputState == 2) {
         doOutput = 0;
       } else if (outputState == 3) {
-        SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
       } else if (outputState == 4) {
         doOutput = 0;
       }
@@ -207,7 +207,7 @@ PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
 
     ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
     if ((bs < 1) || (bs > 3)) {
-      SETERRQ1(PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %d", bs);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %d", bs);
     }
     for (i=0; i<n/bs; i++) {
       for (b=0; b<bs; b++) {
@@ -228,7 +228,7 @@ PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
 
     ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
     if ((bs < 1) || (bs > 3)) {
-      SETERRQ1(PETSC_ERR_ARG_WRONGSTATE, "PCICE can only handle up to 3D objects, but vector dimension is %d", bs);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "PCICE can only handle up to 3D objects, but vector dimension is %d", bs);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"%D\n", xin->map->N/bs);CHKERRQ(ierr);
     for (i=0; i<n/bs; i++) {
@@ -248,7 +248,7 @@ PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
 
     ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
     if (bs != 3) {
-      SETERRQ1(PETSC_ERR_ARG_WRONGSTATE, "PyLith can only handle 3D objects, but vector dimension is %d", bs);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "PyLith can only handle 3D objects, but vector dimension is %d", bs);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"#  Node      X-coord           Y-coord           Z-coord\n");CHKERRQ(ierr);
@@ -424,7 +424,7 @@ PetscErrorCode VecView_Seq_Netcdf(Vec xin,PetscViewer v)
 #if !defined(PETSC_USE_COMPLEX)
   ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
   ierr = PetscViewerNetcdfGetID(v,&ncid);CHKERRQ(ierr);
-  if (ncid < 0) SETERRQ(PETSC_ERR_ORDER,"First call PetscViewerNetcdfOpen to create NetCDF dataset");
+  if (ncid < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"First call PetscViewerNetcdfOpen to create NetCDF dataset");
   /* define dimensions */
   ierr = ncmpi_def_dim(ncid,"PETSc_Vector_Global_Size",n,&xdim);CHKERRQ(ierr);
   /* define variables */
@@ -513,7 +513,7 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
     ierr = VecView_Seq_Matlab(xin,viewer);CHKERRQ(ierr);
 #endif
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by this vector object",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by this vector object",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -530,8 +530,8 @@ PetscErrorCode VecGetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],PetscSca
   for (i=0; i<ni; i++) {
     if (xin->stash.ignorenegidx && ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
-    if (ix[i] < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
-    if (ix[i] >= xin->map->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D to large maximum allowed %D",ix[i],xin->map->n);
+    if (ix[i] < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
+    if (ix[i] >= xin->map->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D to large maximum allowed %D",ix[i],xin->map->n);
 #endif
     y[i] = xx[ix[i]];
   }
@@ -551,8 +551,8 @@ PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
     for (i=0; i<ni; i++) {
       if (xin->stash.ignorenegidx && ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
-      if (ix[i] < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
-      if (ix[i] >= xin->map->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->map->n);
+      if (ix[i] < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
+      if (ix[i] >= xin->map->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->map->n);
 #endif
       xx[ix[i]] = y[i];
     }
@@ -560,8 +560,8 @@ PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
     for (i=0; i<ni; i++) {
       if (xin->stash.ignorenegidx && ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
-      if (ix[i] < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
-      if (ix[i] >= xin->map->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->map->n);
+      if (ix[i] < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
+      if (ix[i] >= xin->map->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->map->n);
 #endif
       xx[ix[i]] += y[i];
     }  
@@ -586,7 +586,7 @@ PetscErrorCode VecSetValuesBlocked_Seq(Vec xin,PetscInt ni,const PetscInt ix[],c
       start = bs*ix[i];
       if (start < 0) continue;
 #if defined(PETSC_USE_DEBUG)
-      if (start >= xin->map->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",start,xin->map->n);
+      if (start >= xin->map->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",start,xin->map->n);
 #endif
       for (j=0; j<bs; j++) {
         xx[start+j] = y[j];
@@ -598,7 +598,7 @@ PetscErrorCode VecSetValuesBlocked_Seq(Vec xin,PetscInt ni,const PetscInt ix[],c
       start = bs*ix[i];
       if (start < 0) continue;
 #if defined(PETSC_USE_DEBUG)
-      if (start >= xin->map->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",start,xin->map->n);
+      if (start >= xin->map->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",start,xin->map->n);
 #endif
       for (j=0; j<bs; j++) {
         xx[start+j] += y[j];
@@ -773,7 +773,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateSeqWithArray(MPI_Comm comm,PetscInt n
   ierr = VecSetSizes(*V,n,n);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot create VECSEQ on more than one process");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQ on more than one process");
   }
   ierr = VecCreate_Seq_Private(*V,array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -804,7 +804,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Seq(Vec V)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)V)->comm,&size);CHKERRQ(ierr);
   if (size > 1) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot create VECSEQ on more than one process");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQ on more than one process");
   }
   ierr = PetscMalloc(n*sizeof(PetscScalar),&array);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(V, n*sizeof(PetscScalar));CHKERRQ(ierr);

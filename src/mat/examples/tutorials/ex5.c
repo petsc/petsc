@@ -50,9 +50,9 @@ int Mat_Parallel_Load(MPI_Comm comm,const char *name,Mat *newmat)
   ierr = PetscBinaryRead(fd2,(char *)header,4,PETSC_INT);CHKERRQ(ierr);
 
   /* error checking on files */
-  if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"not matrix object");
+  if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"not matrix object");
   ierr = MPI_Allreduce(header+2,&N,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-  if (N != size*header[2]) SETERRQ(1,"All files must have matrices with the same number of total columns");
+  if (N != size*header[2]) SETERRQ(PETSC_COMM_SELF,1,"All files must have matrices with the same number of total columns");
     
   /* number of rows in matrix is sum of rows in all files */
   m = header[1]; N = header[2];
@@ -152,7 +152,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,0,0);
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",name,1024,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(1,"Must pass in filename with -f option");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"Must pass in filename with -f option");
   ierr = Mat_Parallel_Load(PETSC_COMM_WORLD,name,&A);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);
   PetscFinalize();

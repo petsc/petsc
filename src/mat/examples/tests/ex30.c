@@ -30,7 +30,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size != 1) SETERRQ(PETSC_ERR_SUP,"This is a uniprocessor example only!");
+  if (size != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This is a uniprocessor example only!");
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-lf",&lf,PETSC_NULL);CHKERRQ(ierr);
@@ -57,7 +57,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = MatIsSymmetric(C,0.0,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(1,"C is non-symmetric");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"C is non-symmetric");
 
   /* Create vectors for error checking */
   ierr = MatGetVecs(C,&x,&b);CHKERRQ(ierr);
@@ -145,7 +145,7 @@ int main(int argc,char **args)
     ierr = MatSolve(A,b,y);CHKERRQ(ierr);
     ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&norm2_inplace);CHKERRQ(ierr);
-    if (PetscAbs(norm2 - norm2_inplace) > 1.e-16) SETERRQ2(1,"ILU(0) %G and in-place ILU(0) %G give different residuals",norm2,norm2_inplace);
+    if (PetscAbs(norm2 - norm2_inplace) > 1.e-16) SETERRQ2(PETSC_COMM_SELF,1,"ILU(0) %G and in-place ILU(0) %G give different residuals",norm2,norm2_inplace);
     ierr = MatDestroy(A);CHKERRQ(ierr);
   }
 

@@ -75,7 +75,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqBAIJ(Mat A,const MatType 
   PetscInt       *ai=a->i,m=A->rmap->N,n=A->cmap->N,i,*rowlengths;
 
   PetscFunctionBegin;
-  if (n != m) SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix must be square");
+  if (n != m) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix must be square");
 
   ierr = PetscMalloc(m*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
   for (i=0; i<m; i++) {

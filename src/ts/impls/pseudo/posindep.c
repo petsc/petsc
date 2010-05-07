@@ -642,7 +642,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Pseudo(TS ts)
   ts->ops->view            = TSView_Pseudo;
 
   if (ts->problem_type == TS_LINEAR) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Only for nonlinear problems");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Only for nonlinear problems");
   }
 
   ts->ops->setup           = TSSetUp_Pseudo;  

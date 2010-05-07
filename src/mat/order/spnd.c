@@ -17,7 +17,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_ND(Mat mat,const MatOrderingType t
 
   PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
-  if (!done) SETERRQ1(PETSC_ERR_SUP,"Cannot get rows for matrix type %s",((PetscObject)mat)->type_name);
+  if (!done) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get rows for matrix type %s",((PetscObject)mat)->type_name);
 
   ierr = PetscMalloc4(nrow,PetscInt,&mask,nrow,PetscInt,&perm,nrow+1,PetscInt,&xls,nrow,PetscInt,&ls);CHKERRQ(ierr);
   SPARSEPACKgennd(&nrow,ia,ja,mask,perm,xls,ls);

@@ -69,7 +69,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
         Mat *A;
 
         if (flg) {
-            SETERRQ(0, "Distributed matrix format MPIAdj is not supported for sequential partitioners");
+            SETERRQ(PETSC_COMM_SELF,0, "Distributed matrix format MPIAdj is not supported for sequential partitioners");
         }
         PetscPrintf(((PetscObject)part)->comm, "Converting distributed matrix to sequential: this could be a performance loss\n");CHKERRQ(ierr);
 
@@ -139,7 +139,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
 				 (const SCOTCH_Num *)baseval, 
 				 (const SCOTCH_Num *)flagval);CHKERRQ(ierr);
 #else
-        SETERRQ(PETSC_ERR_SUP,"Scotch interface currently broken");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Scotch interface currently broken");
 #endif
         ierr = SCOTCH_graphCheck(&grafptr);CHKERRQ(ierr);
 
@@ -217,7 +217,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
 				  (const SCOTCH_Strat *)&tmp,        /* The Argument changed from scotch 3.04 it was part->n, */ 
 				  (SCOTCH_Num *)        parttab);CHKERRQ(ierr);
 #else
-        SETERRQ(PETSC_ERR_SUP,"Scotch interface currently broken");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Scotch interface currently broken");
 #endif
             ierr = PetscPrintf(PETSC_COMM_SELF, "Partition simple without mapping\n");
         } else {
@@ -234,7 +234,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
 
             /* generate the graph that represents the arch */
             file1 = fopen(scotch->arch, "r");
-            if (!file1) SETERRQ1(PETSC_ERR_FILE_OPEN, "Scotch: unable to open architecture file %s", scotch->arch);
+            if (!file1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN, "Scotch: unable to open architecture file %s", scotch->arch);
 
             ierr = SCOTCH_graphInit(&grafarch);CHKERRQ(ierr);
             ierr = SCOTCH_graphLoad(&grafarch, file1, baseval, 3);CHKERRQ(ierr);
@@ -243,7 +243,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
             SCOTCH_graphSize(&grafarch, &arch_total_size, &cpt);
 
             err = fclose(file1);
-            if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
+            if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
 
             printf("total size = %d\n", arch_total_size);
 
@@ -252,7 +252,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
             ierr = PetscStrlen(host_buf, &j);CHKERRQ(ierr);
 
             file2 = fopen(scotch->host_list, "r");
-            if (!file2) SETERRQ1(PETSC_ERR_FILE_OPEN, "Scotch: unable to open host list file %s", scotch->host_list);
+            if (!file2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN, "Scotch: unable to open host list file %s", scotch->host_list);
 
             i = -1;
             flg = PETSC_FALSE;
@@ -262,8 +262,8 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
                 PetscStrncmp(buf, host_buf, j, &flg);
             }
             err = fclose(file2);
-            if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
-            if (!flg) SETERRQ1(PETSC_ERR_LIB, "Scotch: unable to find '%s' in host list file", host_buf);
+            if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
+            if (!flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, "Scotch: unable to find '%s' in host list file", host_buf);
 
             listnbr = size;
             ierr = PetscMalloc(sizeof(SCOTCH_Num) * listnbr, &listtab);CHKERRQ(ierr);
@@ -276,7 +276,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
 
             printf("\n");
             err = fflush(stdout);
-            if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
+            if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");    
 
             ierr = SCOTCH_stratInit(&archstrat);CHKERRQ(ierr);
 	    /**************************************************************
@@ -325,7 +325,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
         /* dump to mesg_log... */
 #ifdef PETSC_HAVE_UNISTD_H
         err = fflush(stdout);
-        if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on stdout");    
+        if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on stdout");    
 
         count = read(fd_pipe[0], scotch->mesg_log, (SIZE_LOG - 1) * sizeof(char));
         if (count < 0)
@@ -343,7 +343,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
     }
 
     if (ierr)
-        SETERRQ(PETSC_ERR_LIB, scotch->mesg_log);
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, scotch->mesg_log);
 
     /* Creation of the index set */
 
@@ -388,7 +388,7 @@ PetscErrorCode MatPartitioningView_Scotch(MatPartitioning part, PetscViewer view
       ierr = PetscViewerASCIIPrintf(viewer, "%s\n", scotch->mesg_log);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(PETSC_ERR_SUP, "Viewer type %s not supported for this Scotch partitioner",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Viewer type %s not supported for this Scotch partitioner",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -418,7 +418,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningScotchSetGlobal(MatPartitioning
         scotch->global_method = global;
         break;
     default:
-        SETERRQ(PETSC_ERR_SUP, "Scotch: Unknown or unsupported option");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Scotch: Unknown or unsupported option");
     }
 
     PetscFunctionReturn(0);
@@ -443,7 +443,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningScotchSetCoarseLevel(MatPartiti
     PetscFunctionBegin;
 
     if (level < 0 || level > 1.0) {
-        SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
             "Scocth: level of coarsening out of range [0.0-1.0]");
     } else {
       /* ********************************************
@@ -515,7 +515,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningScotchSetLocal(MatPartitioning 
         scotch->local_method = local;
         break;
     default:
-        SETERRQ(PETSC_ERR_ARG_CORRUPT, "Scotch: Unknown or unsupported option");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT, "Scotch: Unknown or unsupported option");
     }
 
     PetscFunctionReturn(0);
@@ -751,7 +751,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Scotch(MatPartitioning p
     MatPartitioning_Scotch *scotch;
 
     PetscFunctionBegin;
-    SETERRQ(PETSC_ERR_SUP,"Sorry, the PETSc interface to scotch has not been updated to the latest Scotch version");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, the PETSc interface to scotch has not been updated to the latest Scotch version");
     ierr = PetscNewLog(part,MatPartitioning_Scotch, &scotch);CHKERRQ(ierr);
     part->data = (void*) scotch;
 

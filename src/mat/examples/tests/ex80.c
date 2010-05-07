@@ -29,7 +29,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size != 4) SETERRQ(1,"Must run with 4 processors");
+  if (size != 4) SETERRQ(PETSC_COMM_SELF,1,"Must run with 4 processors");
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   ierr = PetscMalloc(5*sizeof(PetscInt),&ia);CHKERRQ(ierr);

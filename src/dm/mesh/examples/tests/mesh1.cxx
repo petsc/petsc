@@ -79,7 +79,7 @@ PetscErrorCode GeometryTest(const Obj<ALE::Mesh>& mesh, const Obj<section_type>&
       ierr = PrintMatrix(comm, rank, "J",    dim, dim, J);CHKERRQ(ierr);
       ierr = PrintMatrix(comm, rank, "invJ", dim, dim, invJ);CHKERRQ(ierr);
     }
-    if (detJ < 0) {SETERRQ(PETSC_ERR_ARG_WRONG, "Negative Jacobian determinant");}
+    if (detJ < 0) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Negative Jacobian determinant");}
   }
   delete [] v0;
   delete [] J;
@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
 
       boundary = ALE::MeshBuilder::createCubeBoundary(comm, lower, upper, faces, options.debug);
     } else {
-      SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options.dim);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options.dim);
     }
     Obj<ALE::Mesh> mesh = ALE::Generator::generateMesh(boundary, options.interpolate);
 

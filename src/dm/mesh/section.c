@@ -31,11 +31,11 @@ PetscErrorCode SectionRealView_Sieve(SectionReal section, PetscViewer viewer)
     ierr = PetscObjectGetName((PetscObject) section, &name);CHKERRQ(ierr);
     ierr = SectionView_Sieve_Ascii(b, s, name, viewer);CHKERRQ(ierr);
   } else if (isbinary) {
-    SETERRQ(PETSC_ERR_SUP, "Binary viewer not implemented for Section");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Binary viewer not implemented for Section");
   } else if (isdraw){ 
-    SETERRQ(PETSC_ERR_SUP, "Draw viewer not implemented for Section");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Draw viewer not implemented for Section");
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by this section object", ((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by this section object", ((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -338,7 +338,7 @@ PetscErrorCode SectionRealDistribute(SectionReal serialSection, Mesh parallelMes
   newSection->setChart(m->getSieve()->getChart());
   //distributeSection(oldSection, partition, m->getRenumbering(), m->getDistSendOverlap(), m->getDistRecvOverlap(), newSection);
   ierr = SectionRealSetSection(*parallelSection, newSection);CHKERRQ(ierr);
-  SETERRQ(PETSC_ERR_SUP, "Not working because the partition is unavailable");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Not working because the partition is unavailable");
 #else
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> newSection = ALE::Distribution<PETSC_MESH_TYPE>::distributeSection(oldSection, m, m->getDistSendOverlap(), m->getDistRecvOverlap());
   ierr = SectionRealSetSection(*parallelSection, newSection);CHKERRQ(ierr);
@@ -396,14 +396,14 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdate(SectionReal section, PetscInt
   PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
   PetscValidScalarPointer(values,3);
 #ifdef PETSC_USE_COMPLEX
-  SETERRQ(PETSC_ERR_SUP, "SectionReal does not support complex updates");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "SectionReal does not support complex updates");
 #else
   if (mode == INSERT_VALUES) {
     section->b->update(section->s, point, values);
   } else if (mode == ADD_VALUES) {
     section->b->updateAdd(section->s, point, values);
   } else {
-    SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid insertion mode: %d", mode);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid insertion mode: %d", mode);
   }
 #endif
   PetscFunctionReturn(0);
@@ -441,7 +441,7 @@ PetscErrorCode SectionRealRestrictClosure(SectionReal section, Mesh mesh, PetscI
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
 #ifdef PETSC_USE_COMPLEX
-  SETERRQ(PETSC_ERR_SUP, "SectionReal does not support complex restriction");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "SectionReal does not support complex restriction");
 #else
   m->restrictClosure(s, point, values, n);
 #endif
@@ -480,14 +480,14 @@ PetscErrorCode SectionRealUpdateClosure(SectionReal section, Mesh mesh, PetscInt
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
 #ifdef PETSC_USE_COMPLEX
-  SETERRQ(PETSC_ERR_SUP, "SectionReal does not support complex update");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "SectionReal does not support complex update");
 #else
   if (mode == INSERT_VALUES) {
     m->update(s, point, values);
   } else if (mode == ADD_VALUES) {
     m->updateAdd(s, point, values);
   } else {
-    SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid insertion mode: %d", mode);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid insertion mode: %d", mode);
   }
 #endif
   PetscFunctionReturn(0);
@@ -700,7 +700,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealCreateLocalVector(SectionReal sectio
 
   PetscFunctionBegin;
 #ifdef PETSC_USE_COMPLEX
-  SETERRQ(PETSC_ERR_SUP, "SectionReal does not support complex Vec");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "SectionReal does not support complex Vec");
 #else
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, s->getStorageSize(), s->restrictSpace(), localVec);CHKERRQ(ierr);
@@ -1126,11 +1126,11 @@ PetscErrorCode SectionIntView_Sieve(SectionInt section, PetscViewer viewer)
     ierr = PetscObjectGetName((PetscObject) section, &name);CHKERRQ(ierr);
     ierr = SectionView_Sieve_Ascii(b, s, name, viewer);CHKERRQ(ierr);
   } else if (isbinary) {
-    SETERRQ(PETSC_ERR_SUP, "Binary viewer not implemented for Section");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Binary viewer not implemented for Section");
   } else if (isdraw){ 
-    SETERRQ(PETSC_ERR_SUP, "Draw viewer not implemented for Section");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Draw viewer not implemented for Section");
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by this section object", ((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by this section object", ((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -1397,7 +1397,7 @@ PetscErrorCode SectionIntDistribute(SectionInt serialSection, Mesh parallelMesh,
   newSection->setChart(m->getSieve()->getChart());
   //distributeSection(oldSection, partition, m->getRenumbering(), m->getDistSendOverlap(), m->getDistRecvOverlap(), newSection);
   ierr = SectionIntSetSection(*parallelSection, newSection);CHKERRQ(ierr);
-  SETERRQ(PETSC_ERR_SUP, "Not working because the partition is unavailable");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Not working because the partition is unavailable");
 #else
   ALE::Obj<PETSC_MESH_TYPE::int_section_type> newSection = ALE::Distribution<PETSC_MESH_TYPE>::distributeSection(oldSection, m, m->getDistSendOverlap(), m->getDistRecvOverlap());
   ierr = SectionIntSetSection(*parallelSection, newSection);CHKERRQ(ierr);
@@ -1459,7 +1459,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntUpdate(SectionInt section, PetscInt p
   } else if (mode == ADD_VALUES) {
     section->b->updateAdd(section->s, point, values);
   } else {
-    SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid insertion mode: %d", mode);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid insertion mode: %d", mode);
   }
   PetscFunctionReturn(0);
 }
@@ -1535,7 +1535,7 @@ PetscErrorCode SectionIntUpdateClosure(SectionInt section, Mesh mesh, PetscInt p
   } else if (mode == ADD_VALUES) {
     m->updateAdd(s, point, values);
   } else {
-    SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid insertion mode: %d", mode);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid insertion mode: %d", mode);
   }
   PetscFunctionReturn(0);
 }

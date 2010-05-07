@@ -360,7 +360,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetArgs(int *argc,char ***args)
 {
   PetscFunctionBegin;
   if (!PetscInitializeCalled && PetscFinalizeCalled) {
-    SETERRQ(PETSC_ERR_ORDER,"You must call after PetscInitialize() but before PetscFinalize()");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"You must call after PetscInitialize() but before PetscFinalize()");
   }
   *argc = PetscGlobalArgc;
   *args = PetscGlobalArgs;
@@ -395,7 +395,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetArguments(char ***args)
 
   PetscFunctionBegin;
   if (!PetscInitializeCalled && PetscFinalizeCalled) {
-    SETERRQ(PETSC_ERR_ORDER,"You must call after PetscInitialize() but before PetscFinalize()");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"You must call after PetscInitialize() but before PetscFinalize()");
   }
   if (!argc) {*args = 0; PetscFunctionReturn(0);}
   ierr = PetscMalloc(argc*sizeof(char*),args);CHKERRQ(ierr);
@@ -557,7 +557,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
 
   ierr = MPI_Initialized(&flag);CHKERRQ(ierr);
   if (!flag) {
-    if (PETSC_COMM_WORLD != MPI_COMM_NULL) SETERRQ(PETSC_ERR_SUP,"You cannot set PETSC_COMM_WORLD if you have not initialized MPI first");
+    if (PETSC_COMM_WORLD != MPI_COMM_NULL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"You cannot set PETSC_COMM_WORLD if you have not initialized MPI first");
     ierr          = MPI_Init(argc,args);CHKERRQ(ierr);
     PetscBeganMPI = PETSC_TRUE;
   }
@@ -674,7 +674,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
 #if defined(PETSC_HAVE_MPI_COMM_SPAWN)
     ierr = PetscOpenMPSpawn((PetscMPIInt) nodesize);CHKERRQ(ierr); /* worker nodes never return from here; they go directly to PetscEnd() */
 #else
-    SETERRQ(PETSC_ERR_SUP,"PETSc built without MPI 2 (MPI_Comm_spawn) support, use -openmp_merge_size instead");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"PETSc built without MPI 2 (MPI_Comm_spawn) support, use -openmp_merge_size instead");
 #endif
   } else {
     ierr = PetscOptionsGetInt(PETSC_NULL,"-openmp_merge_size",&nodesize,&flg);CHKERRQ(ierr);
@@ -907,10 +907,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
       char sname[PETSC_MAX_PATH_LEN];
 
       sprintf(sname,"%s_%d",fname,rank);
-      fd   = fopen(sname,"w"); if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",sname);
+      fd   = fopen(sname,"w"); if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",sname);
       ierr = PetscMallocDump(fd);CHKERRQ(ierr);
       err = fclose(fd);
-      if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
+      if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
     } else {
       MPI_Comm local_comm;
 
@@ -932,10 +932,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
       int  err;
 
       sprintf(sname,"%s_%d",fname,rank);
-      fd   = fopen(sname,"w"); if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",sname);
+      fd   = fopen(sname,"w"); if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",sname);
       ierr = PetscMallocDumpLog(fd);CHKERRQ(ierr); 
       err = fclose(fd);
-      if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
+      if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
     } else {
       ierr = PetscMallocDumpLog(stdout);CHKERRQ(ierr); 
     }
@@ -968,7 +968,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
 #if defined(PETSC_HAVE_MPI_FINALIZED)
     PetscMPIInt flag;
     ierr = MPI_Finalized(&flag);CHKERRQ(ierr);
-    if (flag) SETERRQ(PETSC_ERR_LIB,"MPI_Finalize() has already been called, even though MPI_Init() was called by PetscInitialize()");
+    if (flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"MPI_Finalize() has already been called, even though MPI_Init() was called by PetscInitialize()");
 #endif
     ierr = MPI_Finalize();CHKERRQ(ierr);
   }

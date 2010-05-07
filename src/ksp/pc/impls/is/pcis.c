@@ -19,7 +19,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCISSetUp(PC pc)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)pc->mat,MATIS,&flg);CHKERRQ(ierr);
   if (!flg){
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Preconditioner type of Neumann Neumman requires matrix of type MATIS");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Preconditioner type of Neumann Neumman requires matrix of type MATIS");
   }
 
   pcis->pure_neumann = matis->pure_neumann;

@@ -10,7 +10,7 @@ static PetscErrorCode KSPSetUp_IBCGS(KSP ksp)
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(PETSC_ERR_SUP,"no symmetric preconditioning for KSPIBCGS");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"no symmetric preconditioning for KSPIBCGS");
   }
   ierr = KSPDefaultGetWork(ksp,9);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -68,9 +68,9 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
   Mat            A;
 
   PetscFunctionBegin;
-  if (ksp->normtype == KSP_NORM_PRECONDITIONED && ksp->pc_side != PC_LEFT) SETERRQ(PETSC_ERR_SUP,"Use -ksp_norm_type unpreconditioned for right preconditioning and KSPIBCGS");
-  if (ksp->normtype == KSP_NORM_UNPRECONDITIONED && ksp->pc_side != PC_RIGHT) SETERRQ(PETSC_ERR_SUP,"Use -ksp_norm_type preconditioned for left preconditioning and KSPIBCGS");
-  if (!ksp->vec_rhs->petscnative) SETERRQ(PETSC_ERR_SUP,"Only coded for PETSc vectors");
+  if (ksp->normtype == KSP_NORM_PRECONDITIONED && ksp->pc_side != PC_LEFT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Use -ksp_norm_type unpreconditioned for right preconditioning and KSPIBCGS");
+  if (ksp->normtype == KSP_NORM_UNPRECONDITIONED && ksp->pc_side != PC_RIGHT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Use -ksp_norm_type preconditioned for left preconditioning and KSPIBCGS");
+  if (!ksp->vec_rhs->petscnative) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only coded for PETSc vectors");
 
   ierr = PCGetOperators(ksp->pc,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecGetLocalSize(ksp->vec_sol,&N);CHKERRQ(ierr);
@@ -127,12 +127,12 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 
   for (ksp->its = 1; ksp->its<ksp->max_it+1; ksp->its++) {
     rhon   = phin_1 - omegan_1*sigman_2 + omegan_1*alphan_1*pin_1;
-    /*    if (rhon == 0.0) SETERRQ1(PETSC_ERR_CONV_FAILED,"rhon is zero, iteration %D",n); */
+    /*    if (rhon == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"rhon is zero, iteration %D",n); */
     if (ksp->its == 1) deltan = rhon;
     else deltan = rhon/taun_1;
     betan  = deltan/omegan_1;
     taun   = sigman_1 + betan*taun_1  - deltan*pin_1;
-    if (taun == 0.0) SETERRQ1(PETSC_ERR_CONV_FAILED,"taun is zero, iteration %D",ksp->its);
+    if (taun == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"taun is zero, iteration %D",ksp->its);
     alphan = rhon/taun;
     ierr = PetscLogFlops(15.0);
 
@@ -215,8 +215,8 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     kappan   = outsums[5];
     if (ksp->lagnorm && ksp->its > 1) rnorm = sqrt(PetscRealPart(outsums[6]));
 
-    if (kappan == 0.0) SETERRQ1(PETSC_ERR_CONV_FAILED,"kappan is zero, iteration %D",ksp->its);
-    if (thetan == 0.0) SETERRQ1(PETSC_ERR_CONV_FAILED,"thetan is zero, iteration %D",ksp->its);
+    if (kappan == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"kappan is zero, iteration %D",ksp->its);
+    if (thetan == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"thetan is zero, iteration %D",ksp->its);
     omegan = thetan/kappan;
     sigman = gamman - omegan*etan;
 
@@ -311,7 +311,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_IBCGS(KSP ksp)
   ksp->ops->setfromoptions  = 0;
   ksp->ops->view            = 0;
 #if defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_ERR_SUP,"This is not supported for complex numbers");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This is not supported for complex numbers");
 #endif
   PetscFunctionReturn(0);
 }

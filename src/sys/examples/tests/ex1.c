@@ -9,7 +9,7 @@
 int CreateError(int n)
 {
   PetscErrorCode ierr;
-  if (!n) SETERRQ(1,"Error Created");
+  if (!n) SETERRQ(PETSC_COMM_SELF,1,"Error Created");
   ierr = CreateError(n-1);CHKERRQ(ierr);
   return 0;
 }

@@ -24,12 +24,12 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 #if defined(PETSC_USE_COMPLEX)
-  SETERRQ(1,"This example does not work with complex numbers");
+  SETERRQ(PETSC_COMM_SELF,1,"This example does not work with complex numbers");
 #else
   
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(1,"Must use -f filename to indicate a file containing a PETSc binary matrix");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"Must use -f filename to indicate a file containing a PETSc binary matrix");
   ierr = PetscOptionsGetInt(PETSC_NULL,"-nd",&nd,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-ov",&ov,PETSC_NULL);CHKERRQ(ierr);
 

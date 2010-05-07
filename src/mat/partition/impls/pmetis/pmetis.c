@@ -59,7 +59,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
   ierr    = MPI_Comm_rank(((PetscObject)part)->comm,&rank);CHKERRQ(ierr);
 #if 0
   if (!(vtxdist[rank+1] - vtxdist[rank])) {
-    SETERRQ(PETSC_ERR_LIB,"Does not support any processor with no entries");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Does not support any processor with no entries");
   }
 #endif
 #if defined(PETSC_USE_DEBUG)
@@ -69,7 +69,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
     ierr = MatGetOwnershipRange(mat,&rstart,PETSC_NULL);CHKERRQ(ierr);
     for (i=0; i<mat->rmap->n; i++) {
       for (j=xadj[i]; j<xadj[i+1]; j++) {
-        if (adjncy[j] == i+rstart) SETERRQ1(PETSC_ERR_ARG_WRONG,"Row %d has diagonal entry; Parmetis forbids diagonal entry",i+rstart);
+        if (adjncy[j] == i+rstart) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Row %d has diagonal entry; Parmetis forbids diagonal entry",i+rstart);
       }
     }
   }
@@ -143,7 +143,7 @@ PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part,PetscViewer vie
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d]Number of cuts found %d\n",rank,parmetis->cuts);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for this Parmetis partitioner",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this Parmetis partitioner",((PetscObject)viewer)->type_name);
   }
 
   PetscFunctionReturn(0);
@@ -308,7 +308,7 @@ EXTERN_C_END
 PetscErrorCode MatMeshToVertexGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
 {
   PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP,"ParMETIS does not provide this functionality");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"ParMETIS does not provide this functionality");
   PetscFunctionReturn(0);
 }
 
@@ -352,7 +352,7 @@ PetscErrorCode MatMeshToCellGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)mesh,MATMPIADJ,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_ERR_SUP,"Must use MPIAdj matrix type");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use MPIAdj matrix type");
 
   /* ParMETIS has no error conditions ??? */
   CHKMEMQ;

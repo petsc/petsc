@@ -32,9 +32,9 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)ksp->pc,PCNONE,&nopreconditioner);CHKERRQ(ierr);
   if (ksp->pc_side == PC_SYMMETRIC){
-    SETERRQ(PETSC_ERR_SUP,"no symmetric preconditioning for KSPLSQR");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"no symmetric preconditioning for KSPLSQR");
   } else if (ksp->pc_side == PC_RIGHT){
-    SETERRQ(PETSC_ERR_SUP,"no right preconditioning for KSPLSQR");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"no right preconditioning for KSPLSQR");
   }
   /*  nopreconditioner =PETSC_FALSE; */
 
@@ -77,7 +77,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  if (diagonalscale) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   ierr     = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)ksp->pc,PCNONE,&nopreconditioner);CHKERRQ(ierr);
@@ -109,7 +109,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   if (SE){
     ierr = VecGetSize(SE,&size1);CHKERRQ(ierr);
     ierr = VecGetSize(X ,&size2);CHKERRQ(ierr);
-    if (size1 != size2) SETERRQ2(PETSC_ERR_ARG_SIZ,"Standard error vector (size %d) does not match solution vector (size %d)",size1,size2);
+    if (size1 != size2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Standard error vector (size %d) does not match solution vector (size %d)",size1,size2);
     ierr = VecSet(SE,0.0);CHKERRQ(ierr); 
   }
 

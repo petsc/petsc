@@ -333,7 +333,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Shell(Mat A)
   A->data = (void*)b;
 
   if (A->rmap->n == PETSC_DECIDE || A->cmap->n == PETSC_DECIDE) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Must give local row and column count for matrix");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must give local row and column count for matrix");
   }
 
   ierr = PetscLayoutSetBlockSize(A->rmap,1);CHKERRQ(ierr);

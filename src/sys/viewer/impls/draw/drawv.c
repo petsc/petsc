@@ -12,7 +12,7 @@ PetscErrorCode PetscViewerDestroy_Draw(PetscViewer v)
 
   PetscFunctionBegin;
   if (vdraw->singleton_made) {
-    SETERRQ(PETSC_ERR_ORDER,"Destroying PetscViewer without first restoring singleton");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Destroying PetscViewer without first restoring singleton");
   }
   for (i=0; i<vdraw->draw_max; i++) {
     if (vdraw->drawaxis[i]) {ierr = PetscDrawAxisDestroy(vdraw->drawaxis[i]);CHKERRQ(ierr);}
@@ -77,10 +77,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDraw(PetscViewer viewer,PetscIn
   if (draw) PetscValidPointer(draw,3);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (!isdraw) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
   }
   if (windownumber < 0) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
   }
   windownumber += vdraw->draw_base;
   if (windownumber >= vdraw->draw_max) {
@@ -146,10 +146,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawBaseAdd(PetscViewer viewer,PetscIn
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (!isdraw) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
   }
   if (windownumber + vdraw->draw_base < 0) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Resulting base %D cannot be negative",windownumber+vdraw->draw_base);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Resulting base %D cannot be negative",windownumber+vdraw->draw_base);
   }
   vdraw->draw_base += windownumber;
   PetscFunctionReturn(0);
@@ -183,10 +183,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawBaseSet(PetscViewer viewer,PetscIn
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (!isdraw) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
   }
   if (windownumber < 0) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Resulting base %D cannot be negative",windownumber);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Resulting base %D cannot be negative",windownumber);
   }
   vdraw->draw_base = windownumber;
   PetscFunctionReturn(0);
@@ -225,10 +225,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDrawLG(PetscViewer viewer,Petsc
   PetscValidPointer(drawlg,3);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (!isdraw) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
   }
   if (windownumber < 0) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
   }
 
   if (windownumber+vdraw->draw_base >= vdraw->draw_max || !vdraw->draw[windownumber+vdraw->draw_base]) {
@@ -275,10 +275,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDrawAxis(PetscViewer viewer,Pet
   PetscValidPointer(drawaxis,3);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (!isdraw) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
   }
   if (windownumber < 0) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
   }
 
   if (windownumber+vdraw->draw_base >= vdraw->draw_max || !vdraw->draw[windownumber+vdraw->draw_base]) {
@@ -379,7 +379,7 @@ PetscErrorCode PetscViewerGetSingleton_Draw(PetscViewer viewer,PetscViewer *svie
 
   PetscFunctionBegin;
   if (vdraw->singleton_made) {
-    SETERRQ(PETSC_ERR_ORDER,"Trying to get singleton without first restoring previous");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Trying to get singleton without first restoring previous");
   }
 
   /* only processor zero can use the PetscViewer draw singleton */
@@ -409,7 +409,7 @@ PetscErrorCode PetscViewerRestoreSingleton_Draw(PetscViewer viewer,PetscViewer *
 
   PetscFunctionBegin;
   if (!vdraw->singleton_made) {
-    SETERRQ(PETSC_ERR_ORDER,"Trying to restore a singleton that was not gotten");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Trying to restore a singleton that was not gotten");
   }
   ierr = MPI_Comm_rank(((PetscObject)viewer)->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
@@ -532,17 +532,17 @@ PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_DRAW_(MPI_Comm comm)
   PetscFunctionBegin;
   if (Petsc_Viewer_Draw_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Draw_keyval,0);
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_DRAW_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_DRAW_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
   }
   ierr = MPI_Attr_get(comm,Petsc_Viewer_Draw_keyval,(void **)&viewer,&flag);
-  if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_DRAW_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
+  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_DRAW_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
   if (!flag) { /* PetscViewer not yet created */
     ierr = PetscViewerDrawOpen(comm,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&viewer); 
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_DRAW_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_DRAW_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
     ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_DRAW_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_DRAW_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
     ierr = MPI_Attr_put(comm,Petsc_Viewer_Draw_keyval,(void*)viewer);
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_DRAW_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_DRAW_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
   } 
   PetscFunctionReturn(viewer);
 }

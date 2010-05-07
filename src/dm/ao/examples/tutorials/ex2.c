@@ -197,7 +197,7 @@ PetscErrorCode DataRead(GridData *gdata)
 
   if (!rank) {
     FILE *fd;
-    fd = fopen("usgdata","r"); if (!fd) SETERRQ(1,"Cannot open grid file");
+    fd = fopen("usgdata","r"); if (!fd) SETERRQ(PETSC_COMM_SELF,1,"Cannot open grid file");
 
     /* read in number of vertices */
     fgets(msg,128,fd);

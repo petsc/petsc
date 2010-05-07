@@ -61,7 +61,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesGeneral(PetscInt n,PetscInt b
         isz++;
       }
 #else
-      if (ival>Nbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"index greater than mat-dim");
+      if (ival>Nbs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"index greater than mat-dim");
       if(!PetscBTLookupSet(table,ival)) { nidx[isz++] = ival;}
 #endif
     }
@@ -72,11 +72,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesGeneral(PetscInt n,PetscInt b
     j = 0;
     while (tpos) {  
       ierr = PetscTableGetNext(gid1_lid1,&tpos,&gid1,&tt);CHKERRQ(ierr);
-      if (tt-- > isz) { SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"index greater than array-dim"); }
+      if (tt-- > isz) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"index greater than array-dim"); }
       nidx[tt] = gid1 - 1;
       j++;
     }
-    if (j != isz) { SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"table error: jj != isz"); }
+    if (j != isz) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"table error: jj != isz"); }
     ierr = ISCreateGeneral(PETSC_COMM_SELF,isz,nidx,(is_out+i));CHKERRQ(ierr);
     ierr = PetscFree(nidx);CHKERRQ(ierr);
 #else
@@ -109,14 +109,14 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesSorted(PetscInt n,PetscInt bs
   PetscFunctionBegin;
   for (i=0; i<imax; i++) {
     ierr = ISSorted(is_in[i],&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Indices are not sorted");
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Indices are not sorted");
   }
 
 #if defined (PETSC_USE_CTABLE)
   /* Now check max size */
   for (i=0,maxsz=0; i<imax; i++) {
     ierr = ISGetLocalSize(is_in[i],&len);CHKERRQ(ierr);
-    if (len%bs !=0) SETERRQ(PETSC_ERR_ARG_INCOMP,"Indices are not block ordered");
+    if (len%bs !=0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Indices are not block ordered");
     len = len/bs; /* The reduced index size */
     if (len > maxsz) maxsz = len;
   }
@@ -142,15 +142,15 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesSorted(PetscInt n,PetscInt bs
       }
     }
     ierr = ISGetIndices(is_in[i],&idx);CHKERRQ(ierr);
-    if (len%bs !=0) SETERRQ(PETSC_ERR_ARG_INCOMP,"Indices are not block ordered");
+    if (len%bs !=0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Indices are not block ordered");
 
     len = len/bs; /* The reduced index size */
     idx_local = idx;
     for (j=0; j<len ; j++) {
       val = idx_local[0];
-      if (val%bs != 0) SETERRQ(PETSC_ERR_ARG_INCOMP,"Indices are not block ordered");
+      if (val%bs != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Indices are not block ordered");
       for (k=0; k<bs; k++) {
-        if (val+k != idx_local[k]) SETERRQ(PETSC_ERR_ARG_INCOMP,"Indices are not block ordered");
+        if (val+k != idx_local[k]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Indices are not block ordered");
       }
       nidx[j] = val/bs;
       idx_local +=bs;

@@ -165,7 +165,7 @@ PetscErrorCode SNESSolve_LS(SNES snes)
   ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);	/* xnorm <- ||x||  */
   ierr = VecNormEnd(F,NORM_2,&fnorm);CHKERRQ(ierr);
   ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
-  if PetscIsInfOrNanReal(fnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+  if PetscIsInfOrNanReal(fnorm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = fnorm;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
@@ -384,7 +384,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchNo(SNES snes,void *lsctx,Vec x,
   ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
   if (!snes->domainerror) {
     ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);  /* gnorm = || g || */
-    if PetscIsInfOrNanReal(*gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+    if PetscIsInfOrNanReal(*gnorm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   }
   ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -580,7 +580,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchCubic(SNES snes,void *lsctx,Vec
     PetscFunctionReturn(0);
   }
   ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
-  if PetscIsInfOrNanReal(*gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+  if PetscIsInfOrNanReal(*gnorm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   ierr = PetscInfo2(snes,"Initial fnorm %G gnorm %G\n",fnorm,*gnorm);CHKERRQ(ierr);
   if (.5*(*gnorm)*(*gnorm) <= .5*fnorm*fnorm + neP->alpha*initslope) { /* Sufficient reduction */
     if (neP->monitor) {
@@ -611,7 +611,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchCubic(SNES snes,void *lsctx,Vec
     PetscFunctionReturn(0);
   }
   ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
-  if PetscIsInfOrNanReal(*gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+  if PetscIsInfOrNanReal(*gnorm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   if (neP->monitor) {
     ierr = PetscViewerASCIIMonitorPrintf(neP->monitor,"    Line search: gnorm after quadratic fit %G\n",*gnorm);CHKERRQ(ierr);
   }
@@ -663,7 +663,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchCubic(SNES snes,void *lsctx,Vec
       PetscFunctionReturn(0);
     }
     ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
-    if PetscIsInfOrNanReal(*gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+    if PetscIsInfOrNanReal(*gnorm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
     if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*neP->alpha*initslope) { /* is reduction enough? */
       if (neP->monitor) {
 	ierr = PetscPrintf(comm,"    Line search: Cubically determined step, current gnorm %G lambda=%18.16e\n",*gnorm,lambda);CHKERRQ(ierr);
@@ -690,7 +690,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchCubic(SNES snes,void *lsctx,Vec
         PetscFunctionReturn(0);
       }
       ierr = VecNormBegin(g,NORM_2,gnorm);CHKERRQ(ierr);
-      if PetscIsInfOrNanReal(*gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+      if PetscIsInfOrNanReal(*gnorm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
       ierr = VecNormBegin(y,NORM_2,ynorm);CHKERRQ(ierr);
       ierr = VecNormEnd(g,NORM_2,gnorm);CHKERRQ(ierr);
       ierr = VecNormEnd(y,NORM_2,ynorm);CHKERRQ(ierr);
@@ -801,7 +801,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchQuadratic(SNES snes,void *lsctx
     PetscFunctionReturn(0);
   }
   ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
-  if PetscIsInfOrNanReal(*gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+  if PetscIsInfOrNanReal(*gnorm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   if (.5*(*gnorm)*(*gnorm) <= .5*fnorm*fnorm + neP->alpha*initslope) { /* Sufficient reduction */
     if (neP->monitor) {
       ierr = PetscViewerASCIIMonitorPrintf(neP->monitor,"    Line Search: Using full step\n");CHKERRQ(ierr);
@@ -841,7 +841,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchQuadratic(SNES snes,void *lsctx
       PetscFunctionReturn(0);
     }
     ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
-    if PetscIsInfOrNanReal(*gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+    if PetscIsInfOrNanReal(*gnorm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
     if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*neP->alpha*initslope) { /* sufficient reduction */
       if (neP->monitor) {
         ierr = PetscViewerASCIIMonitorPrintf(neP->monitor,"    Line Search: Quadratically determined step, lambda=%G\n",lambda);CHKERRQ(ierr);
@@ -867,7 +867,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchQuadratic(SNES snes,void *lsctx
       ierr = VecNormBegin(y,NORM_2,ynorm);CHKERRQ(ierr);
       ierr = VecNormEnd(g,NORM_2,gnorm);CHKERRQ(ierr);
       ierr = VecNormEnd(y,NORM_2,ynorm);CHKERRQ(ierr);
-      if PetscIsInfOrNanReal(*gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+      if PetscIsInfOrNanReal(*gnorm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
     }
   }
   ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
@@ -1175,7 +1175,7 @@ static PetscErrorCode SNESView_LS(SNES snes,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  line search variant: %s\n",cstr);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  alpha=%G, maxstep=%G, minlambda=%G\n",ls->alpha,ls->maxstep,ls->minlambda);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for SNES EQ LS",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for SNES EQ LS",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

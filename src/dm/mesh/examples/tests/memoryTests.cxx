@@ -116,16 +116,16 @@ PetscErrorCode LabelTest(const Options *options)
   }
   logger.stagePop();
   if (logger.getNumAllocations("Label") != numAlloc) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of allocations %d should be %d", logger.getNumAllocations("Label"), numAlloc);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of allocations %d should be %d", logger.getNumAllocations("Label"), numAlloc);
   }
   if (logger.getNumDeallocations("Label") != numAlloc) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of deallocations %d should be %d", logger.getNumDeallocations("Label"), numAlloc);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of deallocations %d should be %d", logger.getNumDeallocations("Label"), numAlloc);
   }
   if (logger.getAllocationTotal("Label") != numBytes) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes allocated %d should be %d", logger.getAllocationTotal("Label"), numBytes);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of bytes allocated %d should be %d", logger.getAllocationTotal("Label"), numBytes);
   }
   if (logger.getDeallocationTotal("Label") != numBytes) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal("Label"), numBytes);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal("Label"), numBytes);
   }
   PetscFunctionReturn(0);
 }
@@ -169,16 +169,16 @@ PetscErrorCode SectionTest(const Options *options)
   ierr = PetscFree(values);CHKERRQ(ierr);
   logger.stagePop();
   if (logger.getNumAllocations("Section") != numAlloc) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of allocations %d should be %d", logger.getNumAllocations("Section"), numAlloc);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of allocations %d should be %d", logger.getNumAllocations("Section"), numAlloc);
   }
   if (logger.getNumDeallocations("Section") != numAlloc) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of deallocations %d should be %d", logger.getNumDeallocations("Section"), numAlloc);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of deallocations %d should be %d", logger.getNumDeallocations("Section"), numAlloc);
   }
   if (logger.getAllocationTotal("Section") != numBytes) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes allocated %d should be %d", logger.getAllocationTotal("Section"), numBytes);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of bytes allocated %d should be %d", logger.getAllocationTotal("Section"), numBytes);
   }
   if (logger.getDeallocationTotal("Section") != numBytes) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal("Section"), numBytes);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal("Section"), numBytes);
   }
   PetscFunctionReturn(0);
 }
@@ -224,16 +224,16 @@ PetscErrorCode ISectionTest(const Options *options)
   ierr = PetscFree(values);CHKERRQ(ierr);
   logger.stagePop();
   if (logger.getNumAllocations("ISection") != numAlloc) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of allocations %d should be %d", logger.getNumAllocations("ISection"), numAlloc);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of allocations %d should be %d", logger.getNumAllocations("ISection"), numAlloc);
   }
   if (logger.getNumDeallocations("ISection") != numAlloc) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of deallocations %d should be %d", logger.getNumDeallocations("ISection"), numAlloc);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of deallocations %d should be %d", logger.getNumDeallocations("ISection"), numAlloc);
   }
   if (logger.getAllocationTotal("ISection") != numBytes) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes allocated %d should be %d", logger.getAllocationTotal("ISection"), numBytes);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of bytes allocated %d should be %d", logger.getAllocationTotal("ISection"), numBytes);
   }
   if (logger.getDeallocationTotal("ISection") != numBytes) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal("ISection"), numBytes);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal("ISection"), numBytes);
   }
   PetscFunctionReturn(0);
 }
@@ -515,28 +515,28 @@ PetscErrorCode SectionDistributionTest(const Options *options)
   logger.stagePop();
   ierr = PetscFree(values);CHKERRQ(ierr);
   if (logger.getNumAllocations("SectionII") != numAlloc) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of allocations %d should be %d", logger.getNumAllocations("SectionII"), numAlloc);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of allocations %d should be %d", logger.getNumAllocations("SectionII"), numAlloc);
   }
   if (logger.getNumDeallocations("SectionII") != numAlloc) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of deallocations %d should be %d", logger.getNumDeallocations("SectionII"), numAlloc);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of deallocations %d should be %d", logger.getNumDeallocations("SectionII"), numAlloc);
   }
   if (logger.getAllocationTotal("SectionII") != numBytes) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes allocated %d should be %d", logger.getAllocationTotal("SectionII"), numBytes);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of bytes allocated %d should be %d", logger.getAllocationTotal("SectionII"), numBytes);
   }
   if (logger.getDeallocationTotal("SectionII") != numBytes) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal("SectionII"), numBytes);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal("SectionII"), numBytes);
   }
   if (logger.getNumAllocations("Distribution") != numDistAlloc) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of allocations %d should be %d", logger.getNumAllocations("Distribution"), numDistAlloc);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of allocations %d should be %d", logger.getNumAllocations("Distribution"), numDistAlloc);
   }
   if (logger.getNumDeallocations("Distribution") != numDistAlloc-options->number-1) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of deallocations %d should be %d", logger.getNumDeallocations("Distribution"), numDistAlloc);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of deallocations %d should be %d", logger.getNumDeallocations("Distribution"), numDistAlloc);
   }
   if (logger.getAllocationTotal("Distribution") != numDistBytes) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes allocated %d should be %d", logger.getAllocationTotal("Distribution"), numDistBytes);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of bytes allocated %d should be %d", logger.getAllocationTotal("Distribution"), numDistBytes);
   }
   if (logger.getDeallocationTotal("Distribution") != numDistBytes-4*options->number-4) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal("Distribution"), numDistBytes);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal("Distribution"), numDistBytes);
   }
   PetscFunctionReturn(0);
 }
@@ -807,16 +807,16 @@ PetscErrorCode ISectionDistributionTest(const Options *options)
   logger.stagePop();
   ierr = PetscFree(values);CHKERRQ(ierr);
   if (logger.getNumAllocations("Distribution") != numAlloc) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of allocations %d should be %d", logger.getNumAllocations("Distribution"), numAlloc);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of allocations %d should be %d", logger.getNumAllocations("Distribution"), numAlloc);
   }
   if (logger.getNumDeallocations("Distribution") != numAlloc) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of deallocations %d should be %d", logger.getNumDeallocations("Distribution"), numAlloc);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of deallocations %d should be %d", logger.getNumDeallocations("Distribution"), numAlloc);
   }
   if (logger.getAllocationTotal("Distribution") != numBytes) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes allocated %d should be %d", logger.getAllocationTotal("Distribution"), numBytes);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of bytes allocated %d should be %d", logger.getAllocationTotal("Distribution"), numBytes);
   }
   if (logger.getDeallocationTotal("Distribution") != numBytes) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal("Distribution"), numBytes);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal("Distribution"), numBytes);
   }
   PetscFunctionReturn(0);
 }

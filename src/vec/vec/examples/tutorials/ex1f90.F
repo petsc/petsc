@@ -212,7 +212,7 @@
          if (rank .eq. 0) then
             write(6,*) 'Corrupted vector!'
          endif
-         SETERRQ(1,' ',ierr)
+         SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
       endif
 
 !  Free work space.  All PETSc objects should be destroyed when they

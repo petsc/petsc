@@ -133,7 +133,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringView(MatFDColoring c,PetscViewer 
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for MatFDColoring",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for MatFDColoring",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -301,7 +301,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetFromOptions(MatFDColoring matf
     if (flg) {
       if (value[0] == 'w' && value[1] == 'p') matfd->htype = "wp";
       else if (value[0] == 'd' && value[1] == 's') matfd->htype = "ds";
-      else SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown finite differencing type %s",value);
+      else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown finite differencing type %s",value);
     }
     /* not used here; but so they are presented in the GUI */
     ierr = PetscOptionsName("-mat_fd_coloring_view","Print entire datastructure used for Jacobian","None",0);CHKERRQ(ierr);
@@ -373,7 +373,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringCreate(Mat mat,ISColoring iscolor
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(MAT_FDColoringCreate,mat,0,0,0);CHKERRQ(ierr);
   ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
-  if (M != N) SETERRQ(PETSC_ERR_SUP,"Only for square matrices");
+  if (M != N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only for square matrices");
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = PetscHeaderCreate(c,_p_MatFDColoring,int,MAT_FDCOLORING_CLASSID,0,"MatFDColoring",comm,MatFDColoringDestroy,MatFDColoringView);CHKERRQ(ierr);
@@ -384,7 +384,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringCreate(Mat mat,ISColoring iscolor
   if (mat->ops->fdcoloringcreate) {
     ierr = (*mat->ops->fdcoloringcreate)(mat,iscoloring,c);CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_ERR_SUP,"Code not yet written for this matrix type");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Code not yet written for this matrix type");
   }
 
   ierr = MatGetVecs(mat,PETSC_NULL,&c->w1);CHKERRQ(ierr);
@@ -516,8 +516,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
   PetscValidHeaderSpecific(J,MAT_CLASSID,1);
   PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_CLASSID,2);
   PetscValidHeaderSpecific(x1,VEC_CLASSID,3);
-  if (!coloring->f) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call MatFDColoringSetFunction()");
-  if (!J->ops->fdcoloringapply) SETERRQ1(PETSC_ERR_SUP,"Not supported for this matrix type %s",((PetscObject)J)->type_name);
+  if (!coloring->f) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatFDColoringSetFunction()");
+  if (!J->ops->fdcoloringapply) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported for this matrix type %s",((PetscObject)J)->type_name);
   ierr = (*J->ops->fdcoloringapply)(J,coloring,x1,flag,sctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -542,7 +542,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply_AIJ(Mat J,MatFDColoring col
   PetscValidHeaderSpecific(J,MAT_CLASSID,1);
   PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_CLASSID,2);
   PetscValidHeaderSpecific(x1,VEC_CLASSID,3);
-  if (!f) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call MatFDColoringSetFunction()");
+  if (!f) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatFDColoringSetFunction()");
 
   ierr = PetscLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
   ierr = MatSetUnfactored(J);CHKERRQ(ierr);
@@ -634,7 +634,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply_AIJ(Mat J,MatFDColoring col
   if (coloring->vscaleforrow) {
     vscaleforrow = coloring->vscaleforrow;
   } else {                     
-    SETERRQ(PETSC_ERR_ARG_NULL,"Null Object: coloring->vscaleforrow");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Object: coloring->vscaleforrow");
   }
 
   /*
@@ -666,7 +666,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply_AIJ(Mat J,MatFDColoring col
       else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
 #endif
       dx            *= epsilon;
-      if (!PetscAbsScalar(dx)) SETERRQ(PETSC_ERR_PLIB,"Computed 0 differencing parameter");
+      if (!PetscAbsScalar(dx)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Computed 0 differencing parameter");
       w3_array[col] += dx;
     } 
     if (ctype == IS_COLORING_GLOBAL) w3_array = w3_array + start;

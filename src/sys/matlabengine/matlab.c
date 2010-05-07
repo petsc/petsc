@@ -48,7 +48,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineCreate(MPI_Comm comm,const char 
   if (!machine) machine = "\0";
   ierr = PetscInfo1(0,"Starting Matlab engine on %s\n",machine);CHKERRQ(ierr);
   e->ep = engOpen("matlab -nodisplay -nojvm");
-  if (!e->ep) SETERRQ1(PETSC_ERR_LIB,"Unable to start Matlab engine on %s\n",machine);
+  if (!e->ep) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to start Matlab engine on %s\n",machine);
   engOutputBuffer(e->ep,e->buffer,1024);
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -124,7 +124,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineEvaluate(PetscMatlabEngine mengi
      Check for error in Matlab: indicated by ? as first character in engine->buffer
   */
   if (mengine->buffer[4] == '?') {
-    SETERRQ2(PETSC_ERR_LIB,"Error in evaluating Matlab command:%s\n%s",string,mengine->buffer);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in evaluating Matlab command:%s\n%s",string,mengine->buffer);
   }
 
   ierr = PetscInfo1(0,"Done evaluating Matlab string: %s\n",buffer);CHKERRQ(ierr);
@@ -211,7 +211,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEnginePut(PetscMatlabEngine mengine,Pe
   PetscFunctionBegin;  
   ierr = PetscObjectQueryFunction(obj,"PetscMatlabEnginePut_C",(void (**)(void))&put);CHKERRQ(ierr);
   if (!put) {
-    SETERRQ1(PETSC_ERR_SUP,"Object %s cannot be put into Matlab engine",obj->class_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Object %s cannot be put into Matlab engine",obj->class_name);
   }
   ierr = PetscInfo(0,"Putting Matlab object\n");CHKERRQ(ierr);
   ierr = (*put)(obj,mengine->ep);CHKERRQ(ierr);
@@ -242,11 +242,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineGet(PetscMatlabEngine mengine,Pe
   
   PetscFunctionBegin;  
   if (!obj->name) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot get object that has no name");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot get object that has no name");
   }
   ierr = PetscObjectQueryFunction(obj,"PetscMatlabEngineGet_C",(void (**)(void))&get);CHKERRQ(ierr);
   if (!get) {
-    SETERRQ1(PETSC_ERR_SUP,"Object %s cannot be gotten from Matlab engine",obj->class_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Object %s cannot be gotten from Matlab engine",obj->class_name);
   }
   ierr = PetscInfo(0,"Getting Matlab object\n");CHKERRQ(ierr);
   ierr = (*get)(obj,mengine->ep);CHKERRQ(ierr);
@@ -294,22 +294,22 @@ PetscMatlabEngine PETSC_DLLEXPORT PETSC_MATLAB_ENGINE_(MPI_Comm comm)
   PetscFunctionBegin;
   if (Petsc_Matlab_Engine_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Matlab_Engine_keyval,0);
-    if (ierr) {PetscError(__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1," "); mengine = 0;}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1," "); mengine = 0;}
   }
   ierr = MPI_Attr_get(comm,Petsc_Matlab_Engine_keyval,(void **)&mengine,(int*)&flg);
-  if (ierr) {PetscError(__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1," "); mengine = 0;}
+  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1," "); mengine = 0;}
   if (!flg) { /* viewer not yet created */
     char *machinename = 0,machine[64];
 
     ierr = PetscOptionsGetString(PETSC_NULL,"-matlab_engine_machine",machine,64,&flg);
-    if (ierr) {PetscError(__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1," "); mengine = 0;}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1," "); mengine = 0;}
     if (flg) machinename = machine;
     ierr = PetscMatlabEngineCreate(comm,machinename,&mengine);
-    if (ierr) {PetscError(__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1," "); mengine = 0;}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1," "); mengine = 0;}
     ierr = PetscObjectRegisterDestroy((PetscObject)mengine);
-    if (ierr) {PetscError(__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1," "); mengine = 0;}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1," "); mengine = 0;}
     ierr = MPI_Attr_put(comm,Petsc_Matlab_Engine_keyval,mengine);
-    if (ierr) {PetscError(__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1," "); mengine = 0;}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1," "); mengine = 0;}
   } 
   PetscFunctionReturn(mengine);
 }
@@ -380,7 +380,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineGetArray(PetscMatlabEngine mengi
   PetscFunctionBegin;  
   ierr = PetscInfo1(0,"Getting Matlab array %s\n",name);CHKERRQ(ierr);
   mat  = engGetVariable(mengine->ep,name);
-  if (!mat) SETERRQ1(PETSC_ERR_LIB,"Unable to get array %s from matlab",name);
+  if (!mat) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to get array %s from matlab",name);
   ierr = PetscMemcpy(array,mxGetPr(mat),m*n*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscInfo1(0,"Got Matlab array %s\n",name);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -98,7 +98,7 @@ PetscErrorCode MatGetFactor_seqaij_spooles(Mat A,MatFactorType ftype,Mat *F)
   } else if (ftype == MAT_FACTOR_CHOLESKY) {
     B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJSpooles;
     lu->options.symflag            = SPOOLES_SYMMETRIC;   /* default */
-  } else SETERRQ(PETSC_ERR_SUP,"Spooles only supports LU and Cholesky factorizations");
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Spooles only supports LU and Cholesky factorizations");
   B->ops->view    = MatView_Spooles;
   B->ops->destroy = MatDestroy_SeqAIJSpooles;  
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqaij_spooles",MatFactorGetSolverPackage_seqaij_spooles);CHKERRQ(ierr);

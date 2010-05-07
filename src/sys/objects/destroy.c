@@ -171,7 +171,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectDestroy(PetscObject obj)
   if (obj->bops->destroy) {
     ierr = (*obj->bops->destroy)(obj);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_PLIB,"This PETSc object of class %s does not have a generic destroy routine",obj->class_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This PETSc object of class %s does not have a generic destroy routine",obj->class_name);
   }
   PetscFunctionReturn(0);
 }
@@ -206,7 +206,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectView(PetscObject obj,PetscViewer viewe
   if (obj->bops->view) {
     ierr = (*obj->bops->view)(obj,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_ERR_SUP,"This PETSc object does not have a generic viewer routine");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This PETSc object does not have a generic viewer routine");
   }
   PetscFunctionReturn(0);
 }
@@ -288,7 +288,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectRegisterDestroy(PetscObject obj)
   if (PetscObjectRegisterDestroy_Count < MAXREGDESOBJS) {
     PetscObjectRegisterDestroy_Objects[PetscObjectRegisterDestroy_Count++] = obj;
   } else {
-    SETERRQ1(PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGDESOBJS\n",MAXREGDESOBJS);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGDESOBJS\n",MAXREGDESOBJS);
     
   }
   PetscFunctionReturn(0);
@@ -348,7 +348,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRegisterFinalize(PetscErrorCode (*f)(void))
   if (PetscRegisterFinalize_Count < MAXREGFIN) {
     PetscRegisterFinalize_Functions[PetscRegisterFinalize_Count++] = f;
   } else {
-    SETERRQ1(PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGFIN\n",MAXREGFIN);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGFIN\n",MAXREGFIN);
     
   }
   PetscFunctionReturn(0);

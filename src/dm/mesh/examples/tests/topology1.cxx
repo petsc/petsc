@@ -28,10 +28,10 @@ PetscErrorCode StratificationTest(const Obj<topology_type>& topology, Options *o
     int eulerChi, d, h;
 
     if (options->dim != topology->depth()) {
-      SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid topology depth %d, should be %d", topology->depth(), options->dim);
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid topology depth %d, should be %d", topology->depth(), options->dim);
     }
     if (options->dim != topology->height()) {
-      SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid topology height %d, should be %d", topology->height(), options->dim);
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid topology height %d, should be %d", topology->height(), options->dim);
     }
     if (options->debug) {topology->getLabel(patch, "height")->view("height");}
     // Calculate the Euler characteristic
@@ -43,7 +43,7 @@ PetscErrorCode StratificationTest(const Obj<topology_type>& topology, Options *o
       }
     }
     if (eulerChi != 1) {
-      SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid Euler characteristic %d, should be %d", eulerChi, 0);
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid Euler characteristic %d, should be %d", eulerChi, 0);
     }
     if (options->debug) {topology->getLabel(patch, "depth")->view("depth");}
     for(d = 0, eulerChi = 0; d <= topology->depth(); d++) {
@@ -54,7 +54,7 @@ PetscErrorCode StratificationTest(const Obj<topology_type>& topology, Options *o
       }
     }
     if (eulerChi != 1) {
-      SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid Euler characteristic %d, should be %d", eulerChi, 0);
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid Euler characteristic %d, should be %d", eulerChi, 0);
     }
   }
   PetscFunctionReturn(0);

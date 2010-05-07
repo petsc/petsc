@@ -173,7 +173,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
           &lu->mem_usage, &lu->stat, &sinfo);
 #endif
   } else {
-    SETERRQ(PETSC_ERR_SUP,"Factor type not supported");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
   }
   if ( !sinfo || sinfo == lu->A.ncol+1 ) {
     if ( lu->options.PivotGrowth ) 
@@ -187,7 +187,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Warning: gssvx() returns info %D\n",sinfo);
     }
   } else { /* sinfo < 0 */
-    SETERRQ2(PETSC_ERR_LIB, "info = %D, the %D-th argument in gssvx() had an illegal value", sinfo,-sinfo); 
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB, "info = %D, the %D-th argument in gssvx() had an illegal value", sinfo,-sinfo); 
   }
 
   if ( lu->options.PrintStat ) {
@@ -321,7 +321,7 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
            &lu->mem_usage, &lu->stat, &info);
 #endif
   } else {
-    SETERRQ(PETSC_ERR_SUP,"Factor type not supported");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
   }
   if (!lu->options.Equil){
     ierr = VecRestoreArray(b,&barray);CHKERRQ(ierr);
@@ -342,7 +342,7 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Warning: gssvx() returns info %D\n",info);
     }
   } else if (info < 0){
-    SETERRQ2(PETSC_ERR_LIB, "info = %D, the %D-th argument in gssvx() had an illegal value", info,-info);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB, "info = %D, the %D-th argument in gssvx() had an illegal value", info,-info);
   }
 
   if ( lu->options.PrintStat ) {
@@ -452,7 +452,7 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
     B->ops->lufactorsymbolic  = MatLUFactorSymbolic_SuperLU;
     B->ops->ilufactorsymbolic = MatLUFactorSymbolic_SuperLU; 
   } else {
-    SETERRQ(PETSC_ERR_SUP,"Factor type not supported");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
   }
 
   B->ops->destroy          = MatDestroy_SuperLU;

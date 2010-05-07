@@ -123,7 +123,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabGetArray(PetscViewer mfile,int m
   if (!ml->rank) {
     ierr = PetscInfo1(mfile,"Getting Matlab array %s\n",name);CHKERRQ(ierr);
     mat  = matGetVariable(ml->ep,name);
-    if (!mat) SETERRQ1(PETSC_ERR_LIB,"Unable to get array %s from matlab",name);
+    if (!mat) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to get array %s from matlab",name);
     ierr = PetscMemcpy(array,mxGetPr(mat),m*n*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = PetscInfo1(mfile,"Got Matlab array %s\n",name);CHKERRQ(ierr);
   }
@@ -156,7 +156,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Matlab(PetscViewer viewer,
 
   PetscFunctionBegin;
   if (type == (PetscFileMode) -1) {
-    SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
   }
 
   /* only first processor opens file */
@@ -166,7 +166,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Matlab(PetscViewer viewer,
     } else if (type == FILE_MODE_WRITE || type == FILE_MODE_WRITE) {
       vmatlab->ep = matOpen(name,"w");
     } else {
-      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown file type");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown file type");
     }
   }
   PetscFunctionReturn(0);
@@ -295,23 +295,23 @@ PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_MATLAB_(MPI_Comm comm)
   PetscFunctionBegin;
   if (Petsc_Viewer_Matlab_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Matlab_keyval,0);
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
   }
   ierr = MPI_Attr_get(comm,Petsc_Viewer_Matlab_keyval,(void **)&viewer,(int*)&flg);
-  if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
+  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
   if (!flg) { /* PetscViewer not yet created */
     ierr = PetscOptionsGetenv(comm,"PETSC_VIEWER_MATLAB_FILENAME",fname,PETSC_MAX_PATH_LEN,&flg);
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
     if (!flg) {
       ierr = PetscStrcpy(fname,"matlaboutput.mat");
-      if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
+      if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
     }
     ierr = PetscViewerMatlabOpen(comm,fname,FILE_MODE_WRITE,&viewer); 
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
     ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
     ierr = MPI_Attr_put(comm,Petsc_Viewer_Matlab_keyval,(void*)viewer);
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
   } 
   PetscFunctionReturn(viewer);
 }

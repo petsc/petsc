@@ -23,9 +23,9 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 
   PetscFunctionBegin;
   if (!mat->assembled) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Matrix must be assembled first; MatAssemblyBegin/End();");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix must be assembled first; MatAssemblyBegin/End();");
   }
-  if (ctype == IS_COLORING_GHOSTED && !map) SETERRQ(PETSC_ERR_ARG_INCOMP,"When using ghosted differencing matrix must have local to global mapping provided with MatSetLocalToGlobalMapping");
+  if (ctype == IS_COLORING_GHOSTED && !map) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"When using ghosted differencing matrix must have local to global mapping provided with MatSetLocalToGlobalMapping");
 
   ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&isa);CHKERRQ(ierr);
 
@@ -94,7 +94,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       ierr = PetscMalloc((nctot+1)*sizeof(PetscInt),&cols);CHKERRQ(ierr);
       ierr = PetscMemcpy(cols,is,n*sizeof(PetscInt));CHKERRQ(ierr);
     } else {
-      SETERRQ(PETSC_ERR_SUP,"Not provided for this MatFDColoring type");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not provided for this MatFDColoring type");
     }
 
     /*
@@ -204,7 +204,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
             fm                        = currentcol; 
             /* fm points to present position in list since we know the columns are sorted */
           } else {
-            SETERRQ(PETSC_ERR_PLIB,"Invalid coloring of matrix detected");
+            SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid coloring of matrix detected");
           }
         }
       }

@@ -30,7 +30,7 @@ static PetscErrorCode SSPGetWorkVectors(TS ts,PetscInt n,Vec **work)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ssp->workout) SETERRQ(PETSC_ERR_PLIB,"Work vectors already gotten");
+  if (ssp->workout) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Work vectors already gotten");
   if (ssp->nwork < n) {
     if (ssp->nwork > 0) {
       ierr = VecDestroyVecs(ssp->work,ssp->nwork);CHKERRQ(ierr);
@@ -50,8 +50,8 @@ static PetscErrorCode SSPRestoreWorkVectors(TS ts,PetscInt n,Vec **work)
   TS_SSP *ssp = (TS_SSP*)ts->data;
 
   PetscFunctionBegin;
-  if (!ssp->workout) SETERRQ(PETSC_ERR_ORDER,"Work vectors have not been gotten");
-  if (*work != ssp->work) SETERRQ(PETSC_ERR_PLIB,"Wrong work vectors checked out");
+  if (!ssp->workout) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Work vectors have not been gotten");
+  if (*work != ssp->work) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong work vectors checked out");
   ssp->workout = PETSC_FALSE;
   *work = PETSC_NULL;
   PetscFunctionReturn(0);
@@ -100,7 +100,7 @@ static PetscErrorCode SSPStep_RK_3(TS ts,PetscReal t0,PetscReal dt,Vec sol)
   s = ssp->nstages;
   n = (PetscInt)(sqrt((PetscReal)s)+0.001);
   r = s-n;
-  if (n*n != s) SETERRQ1(PETSC_ERR_SUP,"No support for optimal third order schemes with %d stages, must be a square number at least 4",s);
+  if (n*n != s) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for optimal third order schemes with %d stages, must be a square number at least 4",s);
   ierr = SSPGetWorkVectors(ts,3,&work);CHKERRQ(ierr);
   F = work[2];
   ierr = VecCopy(sol,work[0]);CHKERRQ(ierr);
@@ -230,7 +230,7 @@ static PetscErrorCode TSSSPSetType(TS ts,const TSSSPType type)
 
   PetscFunctionBegin;
   ierr = PetscFListFind(TSSSPList,((PetscObject)ts)->comm,type,(void(**)(void))&r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TS_SSP type %s given",type);
+  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TS_SSP type %s given",type);
   ssp->onestep = r;
   PetscFunctionReturn(0);
 }

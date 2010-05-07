@@ -291,7 +291,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeSetUp(DMComposite packer)
   PetscLayout            map;
 
   PetscFunctionBegin;
-  if (packer->setup) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Packer has already been setup");
+  if (packer->setup) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Packer has already been setup");
   ierr = PetscLayoutCreate(((PetscObject)packer)->comm,&map);CHKERRQ(ierr);
   ierr = PetscLayoutSetLocalSize(map,packer->n);CHKERRQ(ierr);
   ierr = PetscLayoutSetSize(map,PETSC_DETERMINE);CHKERRQ(ierr);
@@ -433,7 +433,7 @@ PetscErrorCode DMCompositeGather_Array(DMComposite packer,struct DMCompositeLink
   ierr = MPI_Comm_rank(((PetscObject)packer)->comm,&rank);CHKERRQ(ierr);
   if (rank == mine->rank) {
     ierr    = VecGetArray(vec,&varray);CHKERRQ(ierr);
-    if (varray+mine->rstart == array) SETERRQ(PETSC_ERR_ARG_WRONG,"You need not DMCompositeGather() into objects obtained via DMCompositeGetAccess()");
+    if (varray+mine->rstart == array) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"You need not DMCompositeGather() into objects obtained via DMCompositeGetAccess()");
     ierr    = PetscMemcpy(varray+mine->rstart,array,mine->n*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr    = VecRestoreArray(vec,&varray);CHKERRQ(ierr);
   }
@@ -543,7 +543,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetAccess(DMComposite packer,Vec gve
       vec  = va_arg(Argp, Vec*);
       ierr = DMCompositeGetAccess_DM(packer,next,gvec,vec);CHKERRQ(ierr);
     } else {
-      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     next = next->next;
   }
@@ -597,7 +597,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeRestoreAccess(DMComposite packer,Vec
       vec  = va_arg(Argp, Vec*);
       ierr = DMCompositeRestoreAccess_DM(packer,next,gvec,vec);CHKERRQ(ierr);
     } else {
-      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     next = next->next;
   }
@@ -652,7 +652,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeScatter(DMComposite packer,Vec gvec,
       PetscValidHeaderSpecific(vec,VEC_CLASSID,cnt);
       ierr = DMCompositeScatter_DM(packer,next,gvec,vec);CHKERRQ(ierr);
     } else {
-      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     cnt++;
     next = next->next;
@@ -707,7 +707,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGather(DMComposite packer,Vec gvec,.
       PetscValidHeaderSpecific(vec,VEC_CLASSID,3);
       ierr = DMCompositeGather_DM(packer,next,gvec,vec);CHKERRQ(ierr);
     } else {
-      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     next = next->next;
   }
@@ -746,13 +746,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeAddArray(DMComposite packer,PetscMPI
   PetscValidHeaderSpecific(packer,DM_CLASSID,1);
   next = packer->next;
   if (packer->setup) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot add an array once you have used the DMComposite");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot add an array once you have used the DMComposite");
   }
 #if defined(PETSC_USE_DEBUG)
   {
     PetscMPIInt        orankmax;
     ierr = MPI_Allreduce(&orank,&orankmax,1,MPI_INT,MPI_MAX,((PetscObject)packer)->comm);CHKERRQ(ierr);
-    if (orank != orankmax) SETERRQ2(PETSC_ERR_ARG_INCOMP,"orank %d must be equal on all processes, another process has value %d",orank,orankmax);
+    if (orank != orankmax) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"orank %d must be equal on all processes, another process has value %d",orank,orankmax);
   }
 #endif
 
@@ -807,7 +807,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeAddDM(DMComposite packer,DM dm)
   PetscValidHeaderSpecific(dm,DM_CLASSID,2);
   next = packer->next;
   if (packer->setup) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot add a DA once you have used the DMComposite");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot add a DA once you have used the DMComposite");
   }
 
   /* create new link */
@@ -847,7 +847,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecView_DMComposite(Vec gvec,PetscViewer viewer
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)gvec,"DMComposite",(PetscObject*)&packer);CHKERRQ(ierr);
-  if (!packer) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DMComposite");
+  if (!packer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMComposite");
   next = packer->next;
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
@@ -875,7 +875,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecView_DMComposite(Vec gvec,PetscViewer viewer
         ierr = PetscViewerDrawBaseAdd(viewer,bs);CHKERRQ(ierr);
         cnt += bs;
       } else {
-	SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+	SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that object type yet");
       }
       next = next->next;
     }
@@ -1055,7 +1055,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetGlobalIndices(DMComposite packer,
       ierr    = PetscFree(idx);CHKERRQ(ierr);
 
     } else {
-      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     next = next->next;
     cnt++;
@@ -1122,7 +1122,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetGlobalISs(DMComposite packer,IS *
       cnt++;
 
     } else {
-      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     next = next->next;
   }
@@ -1220,7 +1220,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetLocalVectors(DMComposite packer,.
       vec = va_arg(Argp, Vec*);
       ierr = DMCompositeGetLocalVectors_DM(packer,next,vec);CHKERRQ(ierr);
     } else {
-      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     next = next->next;
   }
@@ -1270,7 +1270,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeRestoreLocalVectors(DMComposite pack
       vec = va_arg(Argp, Vec*);
       ierr = DMCompositeRestoreLocalVectors_DM(packer,next,vec);CHKERRQ(ierr);
     } else {
-      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     next = next->next;
   }
@@ -1339,7 +1339,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetEntries(DMComposite packer,...)
       dm = va_arg(Argp, DM*);
       ierr = DMCompositeGetEntries_DM(packer,next,dm);CHKERRQ(ierr);
     } else {
-      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     next = next->next;
   }
@@ -1389,7 +1389,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeRefine(DMComposite packer,MPI_Comm c
       ierr = DMCompositeAddDM(*fine,dm);CHKERRQ(ierr);
       ierr = PetscObjectDereference((PetscObject)dm);CHKERRQ(ierr);
     } else {
-      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     next = next->next;
   }
@@ -1463,7 +1463,7 @@ PetscErrorCode MatMultBoth_Shell_Pack(Mat A,Vec x,Vec y,PetscTruth add)
       ierr  = DMRestoreGlobalVector(ynext->dm,&yglobal);CHKERRQ(ierr);
       anext = anext->next;
     } else {
-      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     xnext = xnext->next;
     ynext = ynext->next;
@@ -1477,7 +1477,7 @@ PetscErrorCode MatMultAdd_Shell_Pack(Mat A,Vec x,Vec y,Vec z)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (z != y) SETERRQ(PETSC_ERR_SUP,"Handles y == z only");
+  if (z != y) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Handles y == z only");
   ierr = MatMultBoth_Shell_Pack(A,x,y,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1536,7 +1536,7 @@ PetscErrorCode MatMultTranspose_Shell_Pack(Mat A,Vec x,Vec y)
       ierr  = DMRestoreGlobalVector(ynext->dm,&yglobal);CHKERRQ(ierr);
       anext = anext->next;
     } else {
-      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     xnext = xnext->next;
     ynext = ynext->next;
@@ -1628,7 +1628,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetInterpolation(DMComposite coarse,
 
   /* loop over packed objects, handling one at at time */
   while (nextc) {
-    if (nextc->type != nextf->type) SETERRQ(PETSC_ERR_ARG_INCOMP,"Two DMComposite have different layout");
+    if (nextc->type != nextf->type) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Two DMComposite have different layout");
 
     if (nextc->type == DMCOMPOSITE_ARRAY) {
       ;
@@ -1644,7 +1644,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetInterpolation(DMComposite coarse,
       }
       ierr = DMGetInterpolation(nextc->dm,nextf->dm,&nextmat->A,PETSC_NULL);CHKERRQ(ierr);
     } else {
-      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     nextc = nextc->next;
     nextf = nextf->next;
@@ -1765,7 +1765,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetMatrix(DMComposite packer, const 
       ierr = PetscFree(ccols);CHKERRQ(ierr);
       ierr = MatDestroy(Atmp);CHKERRQ(ierr);
     } else {
-      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     next = next->next;
   }
@@ -1817,7 +1817,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetMatrix(DMComposite packer, const 
       ierr = PetscFree(ccols);CHKERRQ(ierr);
       ierr = MatDestroy(Atmp);CHKERRQ(ierr);
     } else {
-      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     next = next->next;
   }
@@ -1874,10 +1874,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetColoring(DMComposite dmcomposite,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dmcomposite,DM_CLASSID,1);
   if (ctype == IS_COLORING_GHOSTED) {
-    SETERRQ(PETSC_ERR_SUP,"Currently you must use -dmmg_iscoloring_type global" );
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently you must use -dmmg_iscoloring_type global" );
   } else if (ctype == IS_COLORING_GLOBAL) {
     n = dmcomposite->n;
-  } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown ISColoringType");
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown ISColoringType");
   ierr = PetscMalloc(n*sizeof(ISColoringValue),&colors);CHKERRQ(ierr); /* freed in ISColoringDestroy() */
 
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-dmcomposite_dense_jacobian",&dense,PETSC_NULL);CHKERRQ(ierr);
@@ -1910,7 +1910,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetColoring(DMComposite dmcomposite,
         maxcol += lcoloring->n;
         ierr = ISColoringDestroy(lcoloring);CHKERRQ(ierr);
       } else {
-        SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that object type yet");
       }
       next = next->next;
     }
@@ -1984,7 +1984,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGlobalToLocalBegin(DMComposite packe
       ierr = DMRestoreGlobalVector(next->dm,&local);CHKERRQ(ierr);
       larray += next->n;
     } else {
-      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     cnt++;
     next = next->next;

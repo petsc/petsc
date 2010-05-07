@@ -174,7 +174,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscVFPrintfDefault(FILE *fd,const char *format,
 #elif defined(PETSC_HAVE___VA_COPY)
     __va_copy(s, Argp);
 #else
-    SETERRQ(PETSC_ERR_SUP_SYS,"Zope not supported due to missing va_copy()");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Zope not supported due to missing va_copy()");
 #endif
 
 #if defined(PETSC_HAVE_VA_COPY) || defined(PETSC_HAVE___VA_COPY)
@@ -524,7 +524,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPrintf(MPI_Comm comm,const char format[],...
     ierr = PetscStrstr(format,"%A",&sub1);CHKERRQ(ierr);
     if (sub1) {
       ierr = PetscStrstr(format,"%",&sub2);CHKERRQ(ierr);
-      if (sub1 != sub2) SETERRQ(PETSC_ERR_ARG_WRONG,"%%A format must be first in format string");
+      if (sub1 != sub2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"%%A format must be first in format string");
       ierr    = PetscStrlen(format,&len);CHKERRQ(ierr);
       ierr    = PetscMalloc((len+16)*sizeof(char),&nformat);CHKERRQ(ierr);
       ierr    = PetscStrcpy(nformat,format);CHKERRQ(ierr);

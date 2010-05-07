@@ -37,7 +37,7 @@ PetscErrorCode AOView_Basic(AO ao,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"%3D  %3D    %3D  %3D\n",i,aodebug->app[i],i,aodebug->petsc[i]);CHKERRQ(ierr);
       }
     } else {
-      SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for AO basic",((PetscObject)viewer)->type_name);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for AO basic",((PetscObject)viewer)->type_name);
     }
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
@@ -273,13 +273,13 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateBasic(MPI_Comm comm,PetscInt napp,const
     ierr = PetscMemcpy(sorted,allapp,N*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscSortInt(N,sorted);CHKERRQ(ierr);
     for (i=0; i<N; i++) {
-      if (sorted[i] != i) SETERRQ2(PETSC_ERR_ARG_WRONG,"PETSc ordering requires a permutation of numbers 0 to N-1\n it is missing %D has %D",i,sorted[i]);
+      if (sorted[i] != i) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"PETSc ordering requires a permutation of numbers 0 to N-1\n it is missing %D has %D",i,sorted[i]);
     }
 
     ierr = PetscMemcpy(sorted,allapp,N*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscSortInt(N,sorted);CHKERRQ(ierr);
     for (i=0; i<N; i++) {
-      if (sorted[i] != i) SETERRQ2(PETSC_ERR_ARG_WRONG,"Application ordering requires a permutation of numbers 0 to N-1\n it is missing %D has %D",i,sorted[i]);
+      if (sorted[i] != i) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Application ordering requires a permutation of numbers 0 to N-1\n it is missing %D has %D",i,sorted[i]);
     }
 
     ierr = PetscFree(sorted);CHKERRQ(ierr);
@@ -295,9 +295,9 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateBasic(MPI_Comm comm,PetscInt napp,const
     ip = allpetsc[i];
     ia = allapp[i];
     /* check there are no duplicates */
-    if (aobasic->app[ip]) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Duplicate in PETSc ordering at position %d. Already mapped to %d, not %d.", i, aobasic->app[ip]-1, ia);
+    if (aobasic->app[ip]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Duplicate in PETSc ordering at position %d. Already mapped to %d, not %d.", i, aobasic->app[ip]-1, ia);
     aobasic->app[ip] = ia + 1;
-    if (aobasic->petsc[ia]) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Duplicate in Application ordering at position %d. Already mapped to %d, not %d.", i, aobasic->petsc[ia]-1, ip);
+    if (aobasic->petsc[ia]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Duplicate in Application ordering at position %d. Already mapped to %d, not %d.", i, aobasic->petsc[ia]-1, ip);
     aobasic->petsc[ia] = ip + 1;
   }
   if (!mypetsc) {
@@ -359,7 +359,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateBasicIS(IS isapp,IS ispetsc,AO *aoout)
   ierr = ISGetLocalSize(isapp,&napp);CHKERRQ(ierr);
   if (ispetsc) {
     ierr = ISGetLocalSize(ispetsc,&npetsc);CHKERRQ(ierr);
-    if (napp != npetsc) SETERRQ(PETSC_ERR_ARG_SIZ,"Local IS lengths must match");
+    if (napp != npetsc) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local IS lengths must match");
     ierr = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
   }
   ierr = ISGetIndices(isapp,&myapp);CHKERRQ(ierr);

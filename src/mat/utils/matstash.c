@@ -627,7 +627,7 @@ PetscErrorCode MatStashScatterGetMesg_Private(MatStash *stash,PetscMPIInt *nvals
     CHKMEMQ;
     ierr = MPI_Waitany(2*stash->nrecvs,stash->recv_waits,&i,&recv_status);CHKERRQ(ierr);
     CHKMEMQ;
-    if (recv_status.MPI_SOURCE < 0) SETERRQ(PETSC_ERR_PLIB,"Negative MPI source!");
+    if (recv_status.MPI_SOURCE < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Negative MPI source!");
 
     /* Now pack the received message into a structure which is useable by others */
     if (i % 2) { 

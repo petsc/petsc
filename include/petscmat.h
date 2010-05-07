@@ -867,8 +867,8 @@ M*/
 M*/
 #define MatPreallocateSet(row,nc,cols,dnz,onz) 0;\
 { PetscInt __i; \
-  if (row < __rstart) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Trying to set preallocation for row %D less than first local row %D",row,__rstart);\
-  if (row >= __rstart+__nrows) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Trying to set preallocation for row %D greater than last local row %D",row,__rstart+__nrows-1);\
+  if (row < __rstart) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to set preallocation for row %D less than first local row %D",row,__rstart);\
+  if (row >= __rstart+__nrows) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to set preallocation for row %D greater than last local row %D",row,__rstart+__nrows-1);\
   for (__i=0; __i<nc; __i++) {\
     if ((cols)[__i] < __start || (cols)[__i] >= __end) onz[row - __rstart]++; \
     else dnz[row - __rstart]++;\

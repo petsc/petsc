@@ -30,7 +30,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   if (xl < 0.0 || xr > 1.0 || yl < 0.0 || yr > 1.0 || xr <= xl || yr <= yl) {
-    SETERRQ4(PETSC_ERR_ARG_OUTOFRANGE,"ViewPort values must be >= 0 and <= 1: Instead %G %G %G %G",xl,yl,xr,yr); 
+    SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ViewPort values must be >= 0 and <= 1: Instead %G %G %G %G",xl,yl,xr,yr); 
   }
   draw->port_xl = xl; draw->port_yl = yl;
   draw->port_xr = xr; draw->port_yr = yr;
@@ -209,7 +209,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsCreateRect(PetscDraw draw,Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   if ((nx < 1) || (ny < 1)) {
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Number of divisions must be positive: %d x %d", nx, ny);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Number of divisions must be positive: %d x %d", nx, ny);
   }
   ierr = PetscTypeCompare((PetscObject) draw, PETSC_DRAW_NULL, &isnull);CHKERRQ(ierr);
   if (isnull) {
@@ -308,7 +308,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsSet(PetscDrawViewPorts *ports,i
   PetscFunctionBegin;
   if (ports) { 
     if (port < 0 || port > ports->nports-1) {
-      SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Port is out of range requested %d from 0 to %d\n",port,ports->nports);
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Port is out of range requested %d from 0 to %d\n",port,ports->nports);
     }
     ierr = PetscDrawSetViewPort(ports->draw,ports->xl[port],ports->yl[port],ports->xr[port],ports->yr[port]);CHKERRQ(ierr);
   }

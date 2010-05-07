@@ -353,7 +353,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_BEuler(TS ts)
 
   if (ts->problem_type == TS_LINEAR) {
     if (!ts->Arhs) {
-      SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set rhs matrix for linear problem");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must set rhs matrix for linear problem");
     }
     if (!ts->ops->rhsmatrix) {
       ts->ops->setup  = TSSetUp_BEuler_Linear_Constant_Matrix;
@@ -375,7 +375,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_BEuler(TS ts)
     if (ts->dm) {
       ierr = SNESSetDM(ts->snes,ts->dm);CHKERRQ(ierr);
     }
-  } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"No such problem");
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No such problem");
 
   ts->ops->snesfunction = SNESTSFormFunction_BEuler;
   ts->ops->snesjacobian = SNESTSFormJacobian_BEuler;

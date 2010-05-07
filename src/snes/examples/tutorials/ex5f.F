@@ -93,7 +93,7 @@
      &                           flg,ierr)
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
          if (rank .eq. 0) write(6,*) 'Lambda is out of range'
-         SETERRQ(1,' ',ierr)
+         SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
       endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

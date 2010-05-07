@@ -55,7 +55,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
         IS isrow, iscol;
         Mat *A;
 
-        if (flg) SETERRQ(PETSC_ERR_SUP,"Distributed matrix format MPIAdj is not supported for sequential partitioners");
+        if (flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Distributed matrix format MPIAdj is not supported for sequential partitioners");
         ierr = PetscPrintf(((PetscObject)part)->comm,"Converting distributed matrix to sequential: this could be a performance loss\n");CHKERRQ(ierr);
         ierr = MatGetSize(mat, &M, &N);CHKERRQ(ierr);
         ierr = ISCreateStride(PETSC_COMM_SELF, M, 0, 1, &isrow);CHKERRQ(ierr);
@@ -119,7 +119,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
 
 #ifdef PETSC_HAVE_UNISTD_H
         err = fflush(stdout);
-        if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on stdout");    
+        if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on stdout");    
         count =
             read(fd_pipe[0], party->mesg_log, (SIZE_LOG - 1) * sizeof(char));
         if (count < 0)
@@ -132,7 +132,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
         close(fd_pipe[1]);
 #endif
         /* if in the call we got an error, we say it */
-        if (ierr) SETERRQ(PETSC_ERR_LIB, party->mesg_log);
+        if (ierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, party->mesg_log);
         parttab = part_party;
     }
 
@@ -177,7 +177,7 @@ PetscErrorCode MatPartitioningView_Party(MatPartitioning part, PetscViewer viewe
       ierr = PetscViewerASCIIPrintf(viewer, "%s\n", party->mesg_log);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(PETSC_ERR_SUP, "Viewer type %s not supported for this Party partitioner",((PetscObject) viewer)((PetscObject))->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Viewer type %s not supported for this Party partitioner",((PetscObject) viewer)((PetscObject))->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -246,7 +246,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningPartySetCoarseLevel(MatPartitio
 
     PetscFunctionBegin;
     if (level < 0 || level > 1.0) {
-        SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Party: level of coarsening out of range [0.01-1.0]");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Party: level of coarsening out of range [0.01-1.0]");
     } else {
         party->nbvtxcoarsed = (int)(part->adj->cmap->N * level);
     }

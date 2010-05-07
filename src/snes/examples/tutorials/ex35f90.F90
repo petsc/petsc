@@ -6,7 +6,7 @@
       use mex35f90
       use mex35f90interfaces
 
-      call PetscError(ierr,line,0,'',ierr)
+      call PetscError(PETSC_COMM_SELF,ierr,line,0,'',ierr)
       call MPI_Abort(PETSC_COMM_WORLD,ierr,ierr)
       return
       end      
@@ -18,7 +18,7 @@
       use mex35f90
       use mex35f90interfaces
 
-      call PetscError(ierr,line,0,'',ierr)
+      call PetscError(PETSC_COMM_SELF,ierr,line,0,'',ierr)
       return
       end      
 #define CHKR(n) if(n .ne. 0)then;call HE2(n,__LINE__);return;endif

@@ -116,7 +116,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
       ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
       /* check if dir->row == dir->col */
       ierr = ISEqual(dir->row,dir->col,&flg);CHKERRQ(ierr);
-      if (!flg) SETERRQ(PETSC_ERR_ARG_INCOMP,"row and column permutations must equal");
+      if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"row and column permutations must equal");
       ierr = ISDestroy(dir->col);CHKERRQ(ierr); /* only pass one ordering into CholeskyFactor */
       dir->col=0; 
 

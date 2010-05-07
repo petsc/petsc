@@ -125,7 +125,7 @@ void PETSC_STDCALL matgetrow_(Mat *mat,PetscInt *row,PetscInt *ncols,PetscInt *c
   const PetscScalar **oovals = &my_ovals;
 
   if (matgetrowactive) {
-     PetscError(__LINE__,"MatGetRow_Fortran",__FILE__,__SDIR__,1,0,
+    PetscError(PETSC_COMM_SELF,__LINE__,"MatGetRow_Fortran",__FILE__,__SDIR__,1,0,
                "Cannot have two MatGetRow() active simultaneously\n\
                call MatRestoreRow() before calling MatGetRow() a second time");
      *ierr = 1;
@@ -148,7 +148,7 @@ void PETSC_STDCALL matrestorerow_(Mat *mat,PetscInt *row,PetscInt *ncols,PetscIn
   const PetscInt         **oocols = &my_ocols;
   const PetscScalar **oovals = &my_ovals;
   if (!matgetrowactive) {
-     PetscError(__LINE__,"MatRestoreRow_Fortran",__FILE__,__SDIR__,1,0,
+    PetscError(PETSC_COMM_SELF,__LINE__,"MatRestoreRow_Fortran",__FILE__,__SDIR__,1,0,
                "Must call MatGetRow() first");
      *ierr = 1;
      return;

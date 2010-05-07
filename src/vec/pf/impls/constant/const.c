@@ -160,7 +160,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_Identity(PF pf,void *value)
 
   PetscFunctionBegin;
   if (pf->dimout != pf->dimin) {
-    SETERRQ2(PETSC_ERR_ARG_SIZ,"Input dimension must match output dimension for Identity function, dimin = %D dimout = %D\n",pf->dimin,pf->dimout);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Input dimension must match output dimension for Identity function, dimin = %D dimout = %D\n",pf->dimin,pf->dimout);
   }
   ierr = PetscMalloc(sizeof(PetscInt),&loc);CHKERRQ(ierr);
   loc[0] = pf->dimout;

@@ -164,7 +164,7 @@ class VTKViewer {
         }
       }
       if (k != size) {
-        SETERRQ2(PETSC_ERR_PLIB, "Invalid number of values to send for field, %d should be %d", k, size);
+        SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of values to send for field, %d should be %d", k, size);
       }
       int numLocalElementsAndFiberDim[2] = {numLocalElements, fiberDim+verify};
       ierr = MPI_Send(numLocalElementsAndFiberDim, 2, MPI_INT, 0, 1, field->comm());CHKERRQ(ierr);
@@ -230,12 +230,12 @@ class VTKViewer {
       elements   = mesh->getLabelStratum(cLabelName, cLabelValue);
       cNumbering = mesh->getFactory()->getNumbering(mesh, cLabelName, cLabelValue);
     } else {
-      SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid label name: %s", cLabelName.c_str());
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid label name: %s", cLabelName.c_str());
     }
     if (mesh->hasLabel(vLabelName)) {
       vNumbering = mesh->getFactory()->getNumbering(mesh, vLabelName, vLabelValue);
     } else {
-      SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid label name: %s", vLabelName.c_str());
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid label name: %s", vLabelName.c_str());
     }
     return writeElements(mesh, elements, cNumbering, vNumbering, viewer);
   };
@@ -306,7 +306,7 @@ class VTKViewer {
         }
       }
       if (k != numLocalElements*corners) {
-        SETERRQ2(PETSC_ERR_PLIB, "Invalid number of vertices to send %d should be %d", k, numLocalElements*corners);
+        SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of vertices to send %d should be %d", k, numLocalElements*corners);
       }
       int numLocalElementsAndCorners[2] = {numLocalElements, corners};
       ierr = MPI_Send(numLocalElementsAndCorners, 2, MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
@@ -410,7 +410,7 @@ class VTKViewer {
 #endif
       }
       if (k != numLocalElements*corners) {
-        SETERRQ2(PETSC_ERR_PLIB, "Invalid number of vertices to send %d should be %d", k, numLocalElements*corners);
+        SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of vertices to send %d should be %d", k, numLocalElements*corners);
       }
       int numLocalElementsAndCorners[2] = {numLocalElements, corners};
       ierr = MPI_Send(numLocalElementsAndCorners, 2, MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
@@ -569,7 +569,7 @@ template<typename Bundle, typename Section>
       } else if (outputState == 3) {
         doOutput = 0;
       } else if (outputState == 4) {
-        SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
       }
       const ALE::Obj<PETSC_MESH_TYPE::numbering_type>& numbering = bundle->getFactory()->getNumbering(bundle, 0);
       PetscInt fiberDim = std::abs(s->getFiberDimension(*bundle->depthStratum(0)->begin()));
@@ -588,7 +588,7 @@ template<typename Bundle, typename Section>
       } else if (outputState == 2) {
         doOutput = 0;
       } else if (outputState == 3) {
-        SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
       } else if (outputState == 4) {
         doOutput = 0;
       }

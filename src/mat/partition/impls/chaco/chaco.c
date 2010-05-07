@@ -90,7 +90,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
         Mat *A;
 
         if (flg) {
-            SETERRQ(0, "Distributed matrix format MPIAdj is not supported for sequential partitioners");
+            SETERRQ(PETSC_COMM_SELF,0, "Distributed matrix format MPIAdj is not supported for sequential partitioners");
         }
         PetscPrintf(((PetscObject)part)->comm, "Converting distributed matrix to sequential: this could be a performance loss\n");CHKERRQ(ierr);
 
@@ -162,7 +162,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
 
 #ifdef PETSC_HAVE_UNISTD_H
         err = fflush(stdout);
-        if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on stdout");    
+        if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on stdout");    
         count =  read(fd_pipe[0], chaco->mesg_log, (SIZE_LOG - 1) * sizeof(char));
         if (count < 0)
             count = 0;
@@ -174,7 +174,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
         close(fd_pipe[1]);
 #endif
 
-        if (ierr) { SETERRQ(PETSC_ERR_LIB, chaco->mesg_log); }
+        if (ierr) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, chaco->mesg_log); }
 
         ierr = PetscFree(adjacency);CHKERRQ(ierr);
 
@@ -227,7 +227,7 @@ PetscErrorCode MatPartitioningView_Chaco(MatPartitioning part, PetscViewer viewe
         ierr = PetscViewerASCIIPrintf(viewer, "%s\n", chaco->mesg_log);CHKERRQ(ierr);
       }
     } else {
-      SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for this Chaco partitioner",((PetscObject) viewer)->type_name);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this Chaco partitioner",((PetscObject) viewer)->type_name);
     }
     PetscFunctionReturn(0);
 }
@@ -268,7 +268,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningChacoSetGlobal(MatPartitioning 
         chaco->global_method = 6;
         break;
     default:
-        SETERRQ(PETSC_ERR_SUP, "Chaco: Unknown or unsupported option");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Chaco: Unknown or unsupported option");
     }
     PetscFunctionReturn(0);
 }
@@ -299,7 +299,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningChacoSetLocal(MatPartitioning p
         chaco->local_method = 2;
         break;
     default:
-        SETERRQ(PETSC_ERR_ARG_CORRUPT, "Chaco: Unknown or unsupported option");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT, "Chaco: Unknown or unsupported option");
     }
 
     PetscFunctionReturn(0);
@@ -324,7 +324,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningChacoSetCoarseLevel(MatPartitio
     PetscFunctionBegin;
 
     if (level < 0 || level > 1.0) {
-        SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
             "Chaco: level of coarsening out of range [0.01-1.0]");
     } else
         chaco->nbvtxcoarsed = (int)(part->adj->cmap->N * level);
@@ -361,7 +361,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningChacoSetEigenSolver(MatPartitio
         chaco->rqi_flag = 1;
         break;
     default:
-        SETERRQ(PETSC_ERR_ARG_CORRUPT, "Chaco: Unknown or unsupported option");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT, "Chaco: Unknown or unsupported option");
     }
 
     PetscFunctionReturn(0);
@@ -385,7 +385,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningChacoSetEigenTol(MatPartitionin
     PetscFunctionBegin;
 
     if (tol <= 0.0) {
-        SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
             "Chaco: Eigensolver tolerance out of range");
     } else
         chaco->eigtol = tol;
@@ -412,7 +412,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningChacoSetEigenNumber(MatPartitio
     PetscFunctionBegin;
 
     if (num > 3 || num < 1) {
-        SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
             "Chaco: number of eigenvectors out of range");
     } else
         chaco->numbereigen = num;

@@ -419,7 +419,7 @@ PetscErrorCode LabelTests(const Options *options)
     }
     label = ((int) value)%base;
     if (label != newMesh->getValue(newTestLabel, *v_iter)) {
-      SETERRQ3(PETSC_ERR_ARG_WRONG, "SieveTests: Invalid label value for vertex %d: %d should be %d", *v_iter, newMesh->getValue(newTestLabel, *v_iter), label);
+      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "SieveTests: Invalid label value for vertex %d: %d should be %d", *v_iter, newMesh->getValue(newTestLabel, *v_iter), label);
     }
   }
   PetscFunctionReturn(0);
@@ -451,7 +451,7 @@ int main(int argc, char *argv[])
   try {
     ierr = RunUnitTests(&options);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
-    SETERRQ(PETSC_ERR_PLIB, e.message());
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB, e.message());
   }
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);

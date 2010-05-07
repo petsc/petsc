@@ -5548,7 +5548,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,const MatFactorInfo *inf
     /* Mark diagonal and invert diagonal for simplier triangular solves */
     pv  = b->a + bs2*bdiag[i];
     pj  = b->j + bdiag[i];
-    /* if (*pj != i)SETERRQ2(PETSC_ERR_SUP,"row %d != *pj %d",i,*pj); */
+    /* if (*pj != i)SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"row %d != *pj %d",i,*pj); */
     ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);   
     ierr = Kernel_A_gets_inverse_A(bs,pv,v_pivots,v_work);CHKERRQ(ierr);
       
@@ -5670,9 +5670,9 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,con
   PetscInt           bs=A->rmap->bs,bs2=a->bs2;
 
   PetscFunctionBegin;
-  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
+  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
   ierr = MatMissingDiagonal(A,&missing,&d);CHKERRQ(ierr);
-  if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",d);
+  if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",d);
 
   f             = info->fill;
   levels        = (PetscInt)info->levels;
@@ -5729,7 +5729,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,con
     nzi = 0;
     /* copy current row into linked list */
     nnz  = ai[r[i]+1] - ai[r[i]];
-    if (!nnz) SETERRQ2(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
+    if (!nnz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
     cols = aj + ai[r[i]];
     lnk[i] = -1; /* marker to indicate if diagonal exists */
     ierr = PetscIncompleteLLInit(nnz,cols,n,ic,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr);
@@ -5776,7 +5776,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,con
 
     /* make sure the active row i has diagonal entry */
     if (*(bj_ptr[i]+bdiag[i]) != i) {
-      SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Row %D has missing diagonal in factored matrix\n\
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Row %D has missing diagonal in factored matrix\n\
     try running with -pc_factor_nonzeros_along_diagonal or -pc_factor_diagonal_fill",i);
     }
 
@@ -5867,7 +5867,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact,Mat A,IS isrow,IS i
 
   PetscFunctionBegin;
   ierr = MatMissingDiagonal_SeqBAIJ(A,&flg,&dd);CHKERRQ(ierr);
-  if (flg) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix A is missing diagonal entry in row %D",dd);
+  if (flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix A is missing diagonal entry in row %D",dd);
   
   f             = info->fill;
   levels        = (PetscInt)info->levels;
@@ -5917,7 +5917,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact,Mat A,IS isrow,IS i
 
       /* copy prow into linked list */
       nzf        = nz  = ai[r[prow]+1] - ai[r[prow]];
-      if (!nz) SETERRQ2(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[prow],prow);
+      if (!nz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[prow],prow);
       xi         = aj + ai[r[prow]];
       fill[n]    = n;
       fill[prow] = -1; /* marker for diagonal entry */
@@ -6011,7 +6011,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact,Mat A,IS isrow,IS i
       }
       /* make sure row has diagonal entry */
       if (ajnew[ainew[prow]+dloc[prow]] != prow) {
-	SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Row %D has missing diagonal in factored matrix\n\
+	SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Row %D has missing diagonal in factored matrix\n\
     try running with -pc_factor_nonzeros_along_diagonal or -pc_factor_diagonal_fill",prow);
       }
     }

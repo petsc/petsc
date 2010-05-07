@@ -60,7 +60,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFOpen(MPI_Comm comm,const char name[],const 
       ierr = PetscFixFilename(tname,fname);CHKERRQ(ierr);
       ierr = PetscInfo1(0,"Opening file %s\n",fname);CHKERRQ(ierr);
       fd   = fopen(fname,mode);
-      if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to open file %s\n",fname);
+      if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open file %s\n",fname);
     }
   } else fd = 0;
   *fp = fd;
@@ -99,7 +99,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFClose(MPI_Comm comm,FILE *fd)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank && fd != PETSC_STDOUT && fd != PETSC_STDERR) {
     err = fclose(fd);
-    if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
+    if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
   }
   PetscFunctionReturn(0);
 }
@@ -137,7 +137,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPClose(MPI_Comm comm,FILE *fd)
     char buf[1024];
     while (fgets(buf,1024,fd)) {;} /* wait till it prints everything */
     err = pclose(fd);
-    if (err) SETERRQ1(PETSC_ERR_SYS,"pclose() failed on process %D",err);    
+    if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"pclose() failed on process %D",err);    
   }
   PetscFunctionReturn(0);
 }
@@ -210,7 +210,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPOpen(MPI_Comm comm,const char machine[],con
   if (!rank) {
     ierr = PetscInfo1(0,"Running command :%s\n",commandt);CHKERRQ(ierr);
     if (!(fd = popen(commandt,mode))) {
-       SETERRQ1(PETSC_ERR_LIB,"Cannot run command %s",commandt);
+       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot run command %s",commandt);
     }
     if (fp) *fp = fd;
   }

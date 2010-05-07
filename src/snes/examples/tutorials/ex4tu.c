@@ -91,7 +91,7 @@ comm = PETSC_COMM_WORLD;
   ierr = PetscOptionsGetReal(PETSC_NULL,"-alpha",&user.alpha,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-lambda",&user.lambda,PETSC_NULL);CHKERRQ(ierr);
   if (user.lambda > lambda_max || user.lambda < lambda_min) {
-    SETERRQ3(1,"Lambda %g is out of range [%g, %g]", user.lambda, lambda_min, lambda_max);
+    SETERRQ3(PETSC_COMM_SELF,1,"Lambda %g is out of range [%g, %g]", user.lambda, lambda_min, lambda_max);
   }
 
 

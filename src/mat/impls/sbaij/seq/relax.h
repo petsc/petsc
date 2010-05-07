@@ -128,12 +128,12 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
   PetscInt             nz,nz1,i;
 
   PetscFunctionBegin;
-  if (flag & SOR_EISENSTAT) SETERRQ(PETSC_ERR_SUP,"No support yet for Eisenstat");
+  if (flag & SOR_EISENSTAT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for Eisenstat");
 
   its = its*lits;
-  if (its <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D and local its %D both positive",its,lits);
+  if (its <= 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D and local its %D both positive",its,lits);
 
-  if (bs > 1) SETERRQ(PETSC_ERR_SUP,"SSOR for block size > 1 is not yet implemented");
+  if (bs > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"SSOR for block size > 1 is not yet implemented");
 
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   if (xx != bb) { 

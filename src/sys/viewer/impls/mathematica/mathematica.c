@@ -215,7 +215,7 @@ PetscErrorCode PetscViewerMathematicaParseLinkMode_Private(char *modename, LinkM
   } else if (isLaunch) {
     *mode = MATHEMATICA_LINK_LAUNCH;
   } else {
-    SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid Mathematica link mode: %s", modename);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid Mathematica link mode: %s", modename);
   }
   PetscFunctionReturn(0);
 }
@@ -479,7 +479,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaSkipPackets(PetscViewer vie
     MLNewPacket(link);
   if (!pkt) {
     MLClearError(link);
-    SETERRQ(PETSC_ERR_LIB, (char *) MLErrorMessage(link));
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, (char *) MLErrorMessage(link));
   }
   PetscFunctionReturn(0);
 }
@@ -603,7 +603,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaGetVector(PetscViewer viewe
   MLEndPacket(link);
   ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);CHKERRQ(ierr);
   MLGetRealList(link, &mArray, &mSize);
-  if (n != mSize) SETERRQ2(PETSC_ERR_ARG_WRONG, "Incompatible vector sizes %d %d",n,mSize);
+  if (n != mSize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Incompatible vector sizes %d %d",n,mSize);
   ierr = PetscMemcpy(array, mArray, mSize * sizeof(double));CHKERRQ(ierr);
   MLDisownRealList(link, mArray, mSize);
   ierr = VecRestoreArray(v, &array);CHKERRQ(ierr);
@@ -748,7 +748,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaPutCSRMatrix(PetscViewer vi
   ierr = PetscStrcmp("True", (char *) symbol, &match);CHKERRQ(ierr);
   if (!match) {
     MLDisownSymbol(link, symbol);
-    SETERRQ(PETSC_ERR_PLIB, "Invalid CSR matrix in Mathematica");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid CSR matrix in Mathematica");
   }
   MLDisownSymbol(link, symbol);
   /* Skip ReturnPacket */

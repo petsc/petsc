@@ -98,11 +98,11 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-lambda",&user.param,PETSC_NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
-    SETERRQ(1,"Lambda is out of range");
+    SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
   }
   ierr = PetscOptionsGetReal(PETSC_NULL,"-kappa",&user.param2,PETSC_NULL);CHKERRQ(ierr);
   if (user.param2 >= bratu_kappa_max || user.param2 < bratu_kappa_min) {
-    SETERRQ(1,"Kappa is out of range");
+    SETERRQ(PETSC_COMM_SELF,1,"Kappa is out of range");
   }
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Solving the Bratu problem with lambda=%G, kappa=%G\n",user.param,user.param2);CHKERRQ(ierr);
 
@@ -126,7 +126,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
-    SETERRQ(1,"Incompatible number of processors:  Nx * Ny != size");
+    SETERRQ(PETSC_COMM_SELF,1,"Incompatible number of processors:  Nx * Ny != size");
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
 
   /*

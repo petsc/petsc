@@ -240,14 +240,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
   else if (type == PETSC_ENUM)    m *= sizeof(PetscEnum);
   else if (type == PETSC_TRUTH)   m *= sizeof(PetscTruth);
   else if (type == PETSC_LOGICAL) m  = PetscBTLength(m)*sizeof(char);
-  else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
+  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
   
   while (m) {
     wsize = (m < maxblock) ? m : maxblock;
     err = read(fd,pp,wsize);
     if (err < 0 && errno == EINTR) continue;
-    if (!err && wsize > 0) SETERRQ(PETSC_ERR_FILE_READ,"Read past end of file");
-    if (err < 0) SETERRQ1(PETSC_ERR_FILE_READ,"Error reading from file, errno %d",errno);
+    if (!err && wsize > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Read past end of file");
+    if (err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Error reading from file, errno %d",errno);
     m  -= err;
     pp += err;
   }
@@ -311,7 +311,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
 #endif
 
   PetscFunctionBegin;
-  if (n < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %D",n);
+  if (n < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %D",n);
   if (!n) PetscFunctionReturn(0);
 
   if (type == PETSC_INT)          m *= sizeof(PetscInt);
@@ -322,7 +322,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
   else if (type == PETSC_ENUM)    m *= sizeof(PetscEnum);
   else if (type == PETSC_TRUTH)   m *= sizeof(PetscTruth);
   else if (type == PETSC_LOGICAL) m = PetscBTLength(m)*sizeof(char);
-  else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
+  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
 
 #if !defined(PETSC_WORDS_BIGENDIAN)
   ierr = PetscByteSwap(ptmp,type,n);CHKERRQ(ierr);
@@ -332,7 +332,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
     wsize = (m < maxblock) ? m : maxblock;
     err = write(fd,pp,wsize);
     if (err < 0 && errno == EINTR) continue;
-    if (err != wsize) SETERRQ(PETSC_ERR_FILE_WRITE,"Error writing to file.");
+    if (err != wsize) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Error writing to file.");
     m -= wsize;
     pp += wsize;
   }
@@ -378,32 +378,32 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryOpen(const char name[],PetscFileMode m
 #if defined(PETSC_HAVE_O_BINARY) 
   if (mode == FILE_MODE_WRITE) {
     if ((*fd = open(name,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666)) == -1) {
-      SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot create file for writing: %s",name);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot create file for writing: %s",name);
     }
   } else if (mode == FILE_MODE_READ) {
     if ((*fd = open(name,O_RDONLY|O_BINARY,0)) == -1) {
-      SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file for reading: %s",name);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file for reading: %s",name);
     }
   } else if (mode == FILE_MODE_APPEND) {
     if ((*fd = open(name,O_WRONLY|O_BINARY,0)) == -1) {
-      SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file for writing: %s",name);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file for writing: %s",name);
     }
 #else
   if (mode == FILE_MODE_WRITE) {
     if ((*fd = creat(name,0666)) == -1) {
-      SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot create file for writing: %s",name);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot create file for writing: %s",name);
     }
   } else if (mode == FILE_MODE_READ) {
     if ((*fd = open(name,O_RDONLY,0)) == -1) {
-      SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file for reading: %s",name);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file for reading: %s",name);
     }
   }
   else if (mode == FILE_MODE_APPEND) {
     if ((*fd = open(name,O_WRONLY,0)) == -1) {
-      SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file for writing: %s",name);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file for writing: %s",name);
     }
 #endif
-  } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown file mode");
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown file mode");
   PetscFunctionReturn(0);
 }
 
@@ -474,14 +474,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinarySeek(int fd,off_t off,PetscBinarySeekT
   } else if (whence == PETSC_BINARY_SEEK_END) {
     iwhence = SEEK_END;
   } else {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown seek location");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown seek location");
   }
 #if defined(PETSC_HAVE_LSEEK)
   *offset = lseek(fd,off,iwhence);
 #elif defined(PETSC_HAVE__LSEEK)
   *offset = _lseek(fd,(long)off,iwhence);
 #else
-  SETERRQ(PETSC_ERR_SUP_SYS,"System does not have a way of seeking on a file");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"System does not have a way of seeking on a file");
 #endif
   PetscFunctionReturn(0);
 }

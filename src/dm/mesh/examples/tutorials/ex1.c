@@ -261,7 +261,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Options *options, Mesh *mesh)
   } else if (options->inputFileType == PYLITH) {
     m = ALE::PyLith::Builder::readMesh(comm, options->dim, options->baseFilename, options->useZeroBase, options->interpolate, options->debug);
   } else {
-    SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid mesh input type: %d", options->inputFileType);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid mesh input type: %d", options->inputFileType);
   }
   ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
   ALE::LogStagePop(stage);

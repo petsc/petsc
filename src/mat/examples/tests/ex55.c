@@ -61,7 +61,7 @@ int main(int argc,char **args)
     bs = 2; mbs=8;
     ierr = PetscOptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRQ(ierr);
-    if (bs <= 1) SETERRQ(PETSC_ERR_ARG_WRONG," bs must be >1 in this case");
+    if (bs <= 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG," bs must be >1 in this case");
     m = mbs*bs;
     if (size == 1){
       ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,m,m,d_nz,PETSC_NULL,&C);CHKERRQ(ierr); 
@@ -99,7 +99,7 @@ int main(int argc,char **args)
   for (i=0; i<ntypes; i++) {
     ierr = MatConvert(C,type[i],MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
     ierr = MatMultEqual(A,C,10,&equal);CHKERRQ(ierr);
-    if (!equal) SETERRQ1(PETSC_ERR_ARG_NOTSAMETYPE,"Error in conversion from BAIJ to %s",type[i]);
+    if (!equal) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in conversion from BAIJ to %s",type[i]);
     for (j=i+1; j<ntypes; j++) { 
       if (displ>0) {
         ierr = PetscPrintf(PETSC_COMM_WORLD," [%d] test conversion between %s and %s\n",rank,type[i],type[j]);CHKERRQ(ierr);
@@ -117,11 +117,11 @@ int main(int argc,char **args)
           MatView(B,PETSC_VIEWER_STDOUT_WORLD);
           ierr = PetscPrintf(PETSC_COMM_SELF," D: %s\n",type[i]);
           MatView(D,PETSC_VIEWER_STDOUT_WORLD);
-          SETERRQ2(1,"Error in conversion from %s to %s",type[i],type[j]);
+          SETERRQ2(PETSC_COMM_SELF,1,"Error in conversion from %s to %s",type[i],type[j]);
         }
       } else { /* bs > 1 */
         ierr = MatMultEqual(A,B,10,&equal);CHKERRQ(ierr);
-        if (!equal) SETERRQ2(PETSC_ERR_PLIB,"Error in conversion from %s to %s",type[i],type[j]);
+        if (!equal) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in conversion from %s to %s",type[i],type[j]);
       }
       ierr = MatDestroy(B);CHKERRQ(ierr);
       ierr = MatDestroy(D);CHKERRQ(ierr);

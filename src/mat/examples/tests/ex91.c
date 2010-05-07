@@ -76,7 +76,7 @@ int main(int argc,char **args)
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Atrans);
   ierr = MatEqual(A, Atrans, &flg);
   if (!flg) {
-    SETERRQ(1,"A+A^T is non-symmetric");
+    SETERRQ(PETSC_COMM_SELF,1,"A+A^T is non-symmetric");
   }
   ierr = MatDestroy(Atrans);CHKERRQ(ierr);
 
@@ -140,7 +140,7 @@ int main(int argc,char **args)
     if (!flg){
       /* ISView(is1[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
          ISView(is2[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); */
-      SETERRQ1(1,"i=%d, is1 != is2",i);
+      SETERRQ1(PETSC_COMM_SELF,1,"i=%d, is1 != is2",i);
     }
   }
   

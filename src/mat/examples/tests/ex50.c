@@ -24,13 +24,13 @@ int main(int argc,char **args)
 
   /* Read in matrix and RHS */
   ierr = PetscOptionsGetString(PETSC_NULL,"-fin",filein,255,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(1,"Must indicate file for reading");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"Must indicate file for reading");
   ierr = PetscOptionsGetString(PETSC_NULL,"-fout",fileout,255,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(1,"Must indicate file for writing");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"Must indicate file for writing");
 
   ierr = PetscFixFilename(filein,finname);CHKERRQ(ierr);
   if (!(file = fopen(finname,"r"))) {
-    SETERRQ(1,"cannot open input file\n");
+    SETERRQ(PETSC_COMM_SELF,1,"cannot open input file\n");
   }
   fscanf(file,"%d\n",&n);
 
@@ -43,7 +43,7 @@ int main(int argc,char **args)
 
   for (row=0; row<n; row++) {
     fscanf(file,"row %d:",&rowin);
-    if (rowin != row) SETERRQ(1,"Bad file");
+    if (rowin != row) SETERRQ(PETSC_COMM_SELF,1,"Bad file");
     while (fscanf(file," %d %le",&col,(double*)&val)) {
       ierr = MatSetValues(A,1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
     }  

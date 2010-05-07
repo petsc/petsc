@@ -130,7 +130,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRQ(ierr);
 
   /* The current input file options.inf is for 2 proc run only */
-  if (size != 2) SETERRQ(1,"This Example currently runs on 2 procs only.");
+  if (size != 2) SETERRQ(PETSC_COMM_SELF,1,"This Example currently runs on 2 procs only.");
 
   /*
      Initialize problem parameters
@@ -167,7 +167,7 @@ int main(int argc,char **argv)
    */
   fptr = fopen("adj.in","r"); 
   if (!fptr) {
-      SETERRQ(0,"Could not open adj.in")
+      SETERRQ(PETSC_COMM_SELF,0,"Could not open adj.in")
   }
   
   /*
@@ -177,7 +177,7 @@ int main(int argc,char **argv)
   sprintf(part_name,"output.%d",rank);
   fptr1 = fopen(part_name,"w"); 
   if (!fptr1) {
-      SETERRQ(0,"Could no open output file");
+      SETERRQ(PETSC_COMM_SELF,0,"Could no open output file");
   }
   ierr = PetscMalloc(user.Nvglobal*sizeof(PetscInt),&user.gloInd);
   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"Rank is %D\n",rank);CHKERRQ(ierr);

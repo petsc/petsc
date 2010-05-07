@@ -56,7 +56,7 @@ int main(int argc,char **args)
   if (flg) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Matrices are equal\n");CHKERRQ(ierr);
   } else {
-    SETERRQ(1,"Matrices are NOT equal");
+    SETERRQ(PETSC_COMM_SELF,1,"Matrices are NOT equal");
   }
 
   ierr = MatStoreValues(A);CHKERRQ(ierr);
@@ -66,7 +66,7 @@ int main(int argc,char **args)
   if (flg) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Matrices are equal\n");CHKERRQ(ierr);
   } else {
-    SETERRQ(1,"Matrices are NOT equal");
+    SETERRQ(PETSC_COMM_SELF,1,"Matrices are NOT equal");
   }
 
   ierr = MatDestroy(C);CHKERRQ(ierr);

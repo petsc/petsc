@@ -130,7 +130,7 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
 
   PetscFunctionBegin;
   if (ts->problem_type == TS_LINEAR) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Only for nonlinear problems");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Only for nonlinear problems");
   }
   ierr = VecDuplicate(ts->vec_sol,&th->X);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&th->Xdot);CHKERRQ(ierr);
@@ -183,7 +183,7 @@ static PetscErrorCode TSView_Theta(TS ts,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  Theta=%G\n",th->Theta);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Extrapolation=%s\n",th->extrapolate?"yes":"no");CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for TS_Theta",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for TS_Theta",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -312,7 +312,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSThetaSetTheta(TS ts,PetscReal theta)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(theta,2);
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSThetaSetTheta_C",(void(**)(void))&f);CHKERRQ(ierr);
-  if (!f) SETERRQ1(PETSC_ERR_SUP,"TS type %s",((PetscObject)ts)->type_name);
+  if (!f) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"TS type %s",((PetscObject)ts)->type_name);
   ierr = (*f)(ts,theta);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

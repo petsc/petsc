@@ -143,7 +143,7 @@ PetscErrorCode DAView_3d(DA da,PetscViewer viewer)
     ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for DA 3d",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for DA 3d",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -187,9 +187,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  if (dim != PETSC_DECIDE && dim != 3) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Dimension should be 3: %D",dim);
-  if (dof < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %D",dof);
-  if (s < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %D",s);
+  if (dim != PETSC_DECIDE && dim != 3) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Dimension should be 3: %D",dim);
+  if (dof < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %D",dof);
+  if (s < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %D",s);
 
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
@@ -200,16 +200,16 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
   ierr = PetscMemzero(da->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
 
   if (m != PETSC_DECIDE) {
-    if (m < 1) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in X direction: %D",m);}
-    else if (m > size) {SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in X direction: %D %d",m,size);}
+    if (m < 1) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in X direction: %D",m);}
+    else if (m > size) {SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in X direction: %D %d",m,size);}
   }
   if (n != PETSC_DECIDE) {
-    if (n < 1) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Y direction: %D",n);}
-    else if (n > size) {SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Y direction: %D %d",n,size);}
+    if (n < 1) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Y direction: %D",n);}
+    else if (n > size) {SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Y direction: %D %d",n,size);}
   }
   if (p != PETSC_DECIDE) {
-    if (p < 1) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Z direction: %D",p);}
-    else if (p > size) {SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Z direction: %D %d",p,size);}
+    if (p < 1) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Z direction: %D",p);}
+    else if (p > size) {SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Z direction: %D %d",p,size);}
   }
 
   /* Partition the array among the processors */
@@ -228,7 +228,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
       if (m*n*p == size) break;
       m--;
     }
-    if (!m) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"bad p value: p = %D",p);
+    if (!m) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"bad p value: p = %D",p);
     if (M > N && m < n) {PetscInt _m = m; m = n; n = _m;}
   } else if (m == PETSC_DECIDE && n != PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
@@ -239,7 +239,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
       if (m*n*p == size) break;
       m--;
     }
-    if (!m) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"bad n value: n = %D",n);
+    if (!m) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"bad n value: n = %D",n);
     if (M > P && m < p) {PetscInt _m = m; m = p; p = _m;}
   } else if (m != PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
@@ -250,7 +250,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
       if (m*n*p == size) break;
       n--;
     }
-    if (!n) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"bad m value: m = %D",n);
+    if (!n) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"bad m value: m = %D",n);
     if (N > P && n < p) {PetscInt _n = n; n = p; p = _n;}
   } else if (m == PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
@@ -270,12 +270,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
       m--;
     }
     if (M > P && m < p) {PetscInt _m = m; m = p; p = _m;}
-  } else if (m*n*p != size) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Given Bad partition"); 
+  } else if (m*n*p != size) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Given Bad partition"); 
 
-  if (m*n*p != size) SETERRQ(PETSC_ERR_PLIB,"Could not find good partition");  
-  if (M < m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Partition in x direction is too fine! %D %D",M,m);
-  if (N < n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Partition in y direction is too fine! %D %D",N,n);
-  if (P < p) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Partition in z direction is too fine! %D %D",P,p);
+  if (m*n*p != size) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Could not find good partition");  
+  if (M < m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Partition in x direction is too fine! %D %D",M,m);
+  if (N < n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Partition in y direction is too fine! %D %D",N,n);
+  if (P < p) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Partition in z direction is too fine! %D %D",P,p);
 
   /* 
      Determine locally owned region 
@@ -292,7 +292,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
   x  = lx[rank % m];
   xs = 0;
   for (i=0; i<(rank%m); i++) { xs += lx[i];}
-  if (m > 1 && x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column width is too thin for stencil! %D %D",x,s);
+  if (m > 1 && x < s) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column width is too thin for stencil! %D %D",x,s);
 
   if (!ly) {
     ierr = PetscMalloc(n*sizeof(PetscInt), &da->ly);CHKERRQ(ierr);
@@ -302,7 +302,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
     }
   }
   y  = ly[(rank % (m*n))/m];
-  if (n > 1 && y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row width is too thin for stencil! %D %D",y,s);      
+  if (n > 1 && y < s) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row width is too thin for stencil! %D %D",y,s);      
   ys = 0;
   for (i=0; i<(rank % (m*n))/m; i++) { ys += ly[i];}
 
@@ -314,7 +314,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_3D(DA da)
     }
   }
   z  = lz[rank/(m*n)];
-  if (p > 1 && z < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Plane width is too thin for stencil! %D %D",z,s);      
+  if (p > 1 && z < s) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Plane width is too thin for stencil! %D %D",z,s);      
   zs = 0;
   for (i=0; i<(rank/(m*n)); i++) { zs += lz[i];}
   ye = ys + y;

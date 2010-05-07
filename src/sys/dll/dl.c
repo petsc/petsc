@@ -145,12 +145,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryOpen(MPI_Comm comm,const char path[
   /* retrieve the library */
   ierr = PetscInfo1(0,"Retrieving %s\n",path);CHKERRQ(ierr);
   ierr = PetscDLLibraryRetrieve(comm,path,par2,PETSC_MAX_PATH_LEN,&foundlibrary);CHKERRQ(ierr);
-  if (!foundlibrary) SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to locate dynamic library:\n  %s\n",path);
+  if (!foundlibrary) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate dynamic library:\n  %s\n",path);
   /* Eventually ./configure should determine if the system needs an executable dynamic library */
 #define PETSC_USE_NONEXECUTABLE_SO
 #if !defined(PETSC_USE_NONEXECUTABLE_SO)
   ierr  = PetscTestFile(par2,'x',&foundlibrary);CHKERRQ(ierr);
-  if (!foundlibrary) SETERRQ2(PETSC_ERR_FILE_OPEN,"Dynamic library is not executable:\n  %s\n  %s\n",path,par2);
+  if (!foundlibrary) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Dynamic library is not executable:\n  %s\n  %s\n",path,par2);
 #endif
 
   /* copy path and setup shared library suffix  */
@@ -276,7 +276,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibrarySym(MPI_Comm comm,PetscDLLibrary *o
   done:;
     ierr = PetscDLSym(nlist->handle,symbol,value);CHKERRQ(ierr);
     if (!*value) {
-      SETERRQ2(PETSC_ERR_PLIB,"Unable to locate function %s in dynamic library %s",insymbol,path);
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to locate function %s in dynamic library %s",insymbol,path);
     }
     ierr = PetscInfo2(0,"Loading function %s from dynamic library %s\n",insymbol,path);CHKERRQ(ierr);
 
@@ -605,7 +605,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryCCAAppend(MPI_Comm comm,PetscDLLibr
       }
     }
     err = fclose(fp);
-    if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
+    if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
     ierr = PetscTokenFind(token1,&libname1);CHKERRQ(ierr);
   }
   ierr = PetscTokenDestroy(token1);CHKERRQ(ierr);

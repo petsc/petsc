@@ -424,7 +424,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscAttachDebugger(void)
    Not Collective
 
    Input Parameters:
-+  line - the line number of the error (indicated by __LINE__)
++  comm - communicator over which error occurred
+.  line - the line number of the error (indicated by __LINE__)
 .  fun - function where error occured (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __SDIR__)
@@ -446,7 +447,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscAttachDebugger(void)
    Most users need not directly employ this routine and the other error 
    handlers, but can instead use the simplified interface SETERR, which has 
    the calling sequence
-$     SETERRQ(number,p,message)
+$     SETERRQ(PETSC_COMM_SELF,number,p,message)
 
    Notes for experienced users:
    Use PetscPushErrorHandler() to set the desired error handler.  The
@@ -462,7 +463,7 @@ $    PetscAbortErrorHandler()
 .seealso:  PetscPushErrorHandler(), PetscTraceBackErrorHandler(), 
            PetscAbortErrorHandler()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscAttachDebuggerErrorHandler(int line,const char* fun,const char *file,const char* dir,int num,int p,const char* mess,void *ctx)
+PetscErrorCode PETSC_DLLEXPORT PetscAttachDebuggerErrorHandler(MPI_Comm comm,int line,const char* fun,const char *file,const char* dir,int num,int p,const char* mess,void *ctx)
 {
   PetscErrorCode ierr;
 
@@ -571,7 +572,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStopForDebugger(void)
 #endif /* PETSC_CANNOT_START_DEBUGGER */
 
   err = fflush(stdout);
-  if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on stdout");    
+  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on stdout");    
 
   sleeptime = 25; /* default to sleep waiting for debugger */
   ierr = PetscOptionsGetInt(PETSC_NULL,"-debugger_pause",&sleeptime,PETSC_NULL);CHKERRQ(ierr);

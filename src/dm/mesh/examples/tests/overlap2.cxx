@@ -36,7 +36,7 @@ PetscErrorCode DoubletTest(MPI_Comm comm, Options *options)
   std::map<sieve_type::point_type, int> globalOrder;
 
   PetscFunctionBegin;
-  if (sendSection->commSize() != 2) SETERRQ(PETSC_ERR_SUP, "DoubletTest can only be run with 2 processes");
+  if (sendSection->commSize() != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "DoubletTest can only be run with 2 processes");
   // Make the sieve and topology
   ALE::Test::OverlapTest::constructDoublet(topology);
   Obj<sieve_type> sieve = topology->getPatch(0);
@@ -139,7 +139,7 @@ PetscErrorCode DoubletTest(MPI_Comm comm, Options *options)
         }
       }
       if (values[0] >= 0) {
-        if (globalOrder[*r_iter] >= 0) SETERRQ1(PETSC_ERR_PLIB, "Multiple indices for point %d", *r_iter);
+        if (globalOrder[*r_iter] >= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Multiple indices for point %d", *r_iter);
         globalOrder[*r_iter] = values[0];
       }
     }

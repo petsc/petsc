@@ -89,7 +89,7 @@ PetscInt XXT_factor(xxt_ADT xxt_handle, /* prev. allocated xxt  handle */
 
   /* only 2^k for now and all nodes participating */
   if ((1<<(xxt_handle->level=i_log2_num_nodes))!=num_nodes)
-    {SETERRQ2(PETSC_ERR_PLIB,"only 2^k for now and MPI_COMM_WORLD!!! %D != %D\n",1<<i_log2_num_nodes,num_nodes);}
+    {SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"only 2^k for now and MPI_COMM_WORLD!!! %D != %D\n",1<<i_log2_num_nodes,num_nodes);}
 
   /* space for X info */
   xxt_handle->info = (xxt_info*)malloc(sizeof(xxt_info));
@@ -314,7 +314,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
     {
       /* time to move to the next level? */
       while (i==segs[dim]) {
-        if (dim==level) SETERRQ(PETSC_ERR_PLIB,"dim about to exceed level\n"); 
+        if (dim==level) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"dim about to exceed level\n"); 
         stages[dim++]=i;
         end+=lnsep[dim];
       }
@@ -342,7 +342,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
 	  if (idex!=-1)
 	    {v[idex] = 1.0; j++;}
 	  else
-	    {SETERRQ(PETSC_ERR_PLIB,"NOT FOUND!\n");}
+	    {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"NOT FOUND!\n");}
 	}
       else
 	{
@@ -409,7 +409,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
       /* check for small alpha                             */
       /* LATER use this to detect and determine null space */
       if (fabs(alpha)<1.0e-14)
-	{SETERRQ1(PETSC_ERR_PLIB,"bad alpha! %g\n",alpha);}
+	{SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"bad alpha! %g\n",alpha);}
 
       /* compute v_l = v_l/sqrt(alpha) */
       rvec_scale(v,1.0/alpha,n);
@@ -556,13 +556,11 @@ static PetscErrorCode check_handle(xxt_ADT xxt_handle)
   PetscInt vals[2], work[2], op[] = {NON_UNIFORM,GL_MIN,GL_MAX};
 
   PetscFunctionBegin;
-  if (xxt_handle==NULL)
-    {SETERRQ1(PETSC_ERR_PLIB,"check_handle() :: bad handle :: NULL %D\n",xxt_handle);}
+  if (!xxt_handle) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"check_handle() :: bad handle :: NULL %D\n",xxt_handle);
 
   vals[0]=vals[1]=xxt_handle->id;
   giop(vals,work,sizeof(op)/sizeof(op[0])-1,op);
-  if ((vals[0]!=vals[1])||(xxt_handle->id<=0))
-    {SETERRQ3(PETSC_ERR_PLIB,"check_handle() :: bad handle :: id mismatch min/max %D/%D %D\n",vals[0],vals[1], xxt_handle->id);}
+  if ((vals[0]!=vals[1])||(xxt_handle->id<=0)) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"check_handle() :: bad handle :: id mismatch min/max %D/%D %D\n",vals[0],vals[1], xxt_handle->id);
   PetscFunctionReturn(0);
 }
 
@@ -692,7 +690,7 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
 		      ct++; nfo++;
 
 		      if (nfo>n)
-			{SETERRQ(PETSC_ERR_PLIB,"nfo about to exceed n\n");}
+			{SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nfo about to exceed n\n");}
 
 		      *--iptr = local2global[i];
 		      used[i]=edge;
@@ -715,7 +713,7 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
 		      ct++; nfo++;
 
 		      if (nfo>n)
-			{SETERRQ(PETSC_ERR_PLIB,"nfo about to exceed n\n");}
+			{SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nfo about to exceed n\n");}
 
 		      *--iptr = local2global[i];
 		      used[i]=edge;

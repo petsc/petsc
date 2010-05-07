@@ -102,7 +102,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
+  if (!da) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
 
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -281,7 +281,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
+  if (!da) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
 
   /* Create the dataspace for the dataset */
   dim       = PetscHDF5IntCast(da->dim + ((da->w == 1) ? 0 : 1));
@@ -294,7 +294,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   dims[cnt++] = 2;
 #endif
   filespace = H5Screate_simple(dim, dims, NULL); 
-  if (filespace == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Screate_simple()");
+  if (filespace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Screate_simple()");
 
   /* Create the dataset with default properties and close filespace */
   ierr = PetscObjectGetName((PetscObject)xin,&vecname);CHKERRQ(ierr);
@@ -303,7 +303,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
 #else
   dset_id = H5Dcreate(file_id, vecname, H5T_NATIVE_DOUBLE, filespace, H5P_DEFAULT);
 #endif
-  if (dset_id == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Dcreate2()");
+  if (dset_id == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Dcreate2()");
   status = H5Sclose(filespace);CHKERRQ(status);
 
   /* Each process defines a dataset and writes it to the hyperslab in the file */
@@ -324,16 +324,16 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   count[cnt++] = 2;
 #endif
   memspace = H5Screate_simple(dim, count, NULL);
-  if (memspace == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Screate_simple()");
+  if (memspace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Screate_simple()");
 
 
   filespace = H5Dget_space(dset_id);
-  if (filespace == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Dget_space()");
+  if (filespace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Dget_space()");
   status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offset, NULL, count, NULL);CHKERRQ(status);
 
   /* Create property list for collective dataset write */
   plist_id = H5Pcreate(H5P_DATASET_XFER);
-  if (plist_id == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Pcreate()");
+  if (plist_id == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Pcreate()");
 #if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
   status = H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_COLLECTIVE);CHKERRQ(status);
 #endif
@@ -374,7 +374,7 @@ PetscErrorCode VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
+  if (!da) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
   ierr = DAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&dof,&swidth,&periodic,&stencil);CHKERRQ(ierr);
 
   /* create the appropriate DA to map the coordinates to natural ordering */
@@ -386,7 +386,7 @@ PetscErrorCode VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
   } else if (dim == 3) {
     ierr = DACreate3d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,m,n,p,M,N,P,dim,0,lx,ly,lz,&dac);CHKERRQ(ierr); 
   } else {
-    SETERRQ1(PETSC_ERR_ARG_CORRUPT,"Dimension is not 1 2 or 3: %D\n",dim);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Dimension is not 1 2 or 3: %D\n",dim);
   }
   ierr = DACreateNaturalVector(dac,&xyz);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)xyz,"coor_");CHKERRQ(ierr);
@@ -398,7 +398,7 @@ PetscErrorCode VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
   ierr = DAGlobalToNaturalEnd(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
   /* Write the netCDF dataset */
   ierr = PetscViewerNetcdfGetID(viewer,&ncid);CHKERRQ(ierr);
-  if (ncid < 0) SETERRQ(PETSC_ERR_ORDER,"First call PetscViewerNetcdfOpen to create NetCDF dataset");
+  if (ncid < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"First call PetscViewerNetcdfOpen to create NetCDF dataset");
   /* define dimensions */
   ierr = VecGetSize(xin,&xin_N);CHKERRQ(ierr);
   ierr = VecGetLocalSize(xin,&xin_n);CHKERRQ(ierr);
@@ -453,9 +453,9 @@ static PetscErrorCode DAArrayMPIIO(DA da,PetscViewer viewer,Vec xin,PetscTruth w
     type = tr[0];
     rows = tr[1];
     if (type != VEC_FILE_CLASSID) {
-      SETERRQ(PETSC_ERR_ARG_WRONG,"Not vector next in file");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not vector next in file");
     }
-    if (rows != vecrows) SETERRQ(PETSC_ERR_ARG_SIZ,"Vector in file not same size as DA vector");
+    if (rows != vecrows) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vector in file not same size as DA vector");
   } else {
     tr[0] = VEC_FILE_CLASSID;
     tr[1] = vecrows;
@@ -507,7 +507,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec xin,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
+  if (!da) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HDF5)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_HDF5,&ishdf5);CHKERRQ(ierr);
@@ -522,7 +522,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec xin,PetscViewer viewer)
     } else if (dim == 2) {
       ierr = VecView_MPI_Draw_DA2d(xin,viewer);CHKERRQ(ierr);
     } else {
-      SETERRQ1(PETSC_ERR_SUP,"Cannot graphically view vector associated with this dimensional DA %D",dim);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot graphically view vector associated with this dimensional DA %D",dim);
     }
 #if defined(PETSC_HAVE_HDF5)
   } else if (ishdf5) {
@@ -585,7 +585,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_HDF5_DA(PetscViewer viewer,Ve
   PetscFunctionBegin;
   ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
+  if (!da) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
 
   /* Create the dataspace for the dataset */
   dim       = PetscHDF5IntCast(da->dim + ((da->w == 1) ? 0 : 1));
@@ -605,7 +605,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_HDF5_DA(PetscViewer viewer,Ve
 #else
   dset_id = H5Dopen(file_id, vecname);
 #endif
-  if (dset_id == -1) SETERRQ1(PETSC_ERR_LIB,"Cannot H5Dopen2() with Vec named %s",vecname);
+  if (dset_id == -1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Dopen2() with Vec named %s",vecname);
   filespace = H5Dget_space(dset_id);
 
   /* Each process defines a dataset and reads it from the hyperslab in the file */
@@ -626,13 +626,13 @@ PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_HDF5_DA(PetscViewer viewer,Ve
   count[cnt++] = 2;
 #endif
   memspace = H5Screate_simple(dim, count, NULL);
-  if (memspace == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Screate_simple()");
+  if (memspace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Screate_simple()");
 
   status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offset, NULL, count, NULL);CHKERRQ(status);
 
   /* Create property list for collective dataset write */
   plist_id = H5Pcreate(H5P_DATASET_XFER);
-  if (plist_id == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Pcreate()");
+  if (plist_id == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Pcreate()");
 #if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
   status = H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_COLLECTIVE);CHKERRQ(status);
 #endif
@@ -673,7 +673,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_Binary_DA(PetscViewer viewer,
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
+  if (!da) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
 
 #if defined(PETSC_HAVE_HDF5)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_HDF5,&ishdf5);CHKERRQ(ierr);

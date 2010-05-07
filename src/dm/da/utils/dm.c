@@ -198,7 +198,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetColoring(DM dm,ISColoringType ctype,const 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!dm->ops->getcoloring) SETERRQ(PETSC_ERR_SUP,"No coloring for this type of DM yet");
+  if (!dm->ops->getcoloring) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No coloring for this type of DM yet");
   ierr = (*dm->ops->getcoloring)(dm,ctype,mtype,coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -434,7 +434,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRefineHierarchy(DM dm,PetscInt nlevels,DM dmf
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (nlevels < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"nlevels cannot be negative");
+  if (nlevels < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nlevels cannot be negative");
   if (nlevels == 0) PetscFunctionReturn(0);
   if (dm->ops->refinehierarchy) {
     ierr = (*dm->ops->refinehierarchy)(dm,nlevels,dmf);CHKERRQ(ierr);
@@ -446,7 +446,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRefineHierarchy(DM dm,PetscInt nlevels,DM dmf
       ierr = DMRefine(dmf[i-1],((PetscObject)dm)->comm,&dmf[i]);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ(PETSC_ERR_SUP,"No RefineHierarchy for this DM yet");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No RefineHierarchy for this DM yet");
   }
   PetscFunctionReturn(0);
 }
@@ -475,7 +475,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCoarsenHierarchy(DM dm, PetscInt nlevels, DM 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (nlevels < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"nlevels cannot be negative");
+  if (nlevels < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nlevels cannot be negative");
   if (nlevels == 0) PetscFunctionReturn(0);
   PetscValidPointer(dmc,3);
   if (dm->ops->coarsenhierarchy) {
@@ -488,7 +488,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCoarsenHierarchy(DM dm, PetscInt nlevels, DM 
       ierr = DMCoarsen(dmc[i-1],((PetscObject)dm)->comm,&dmc[i]);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ(PETSC_ERR_SUP,"No CoarsenHierarchy for this DM yet");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No CoarsenHierarchy for this DM yet");
   }
   PetscFunctionReturn(0);
 }
@@ -668,7 +668,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMComputeInitialGuess(DM dm,Vec x)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (!dm->ops->initialguess) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMSetInitialGuess()");
+  if (!dm->ops->initialguess) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMSetInitialGuess()");
   ierr = (*dm->ops->initialguess)(dm,x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -770,7 +770,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMComputeFunction(DM dm,Vec x,Vec b)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (!dm->ops->function) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMSetFunction()");
+  if (!dm->ops->function) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMSetFunction()");
   if (!x) x = dm->x;
   ierr = (*dm->ops->function)(dm,x,b);CHKERRQ(ierr);
   PetscFunctionReturn(0);

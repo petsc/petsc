@@ -444,7 +444,7 @@ PetscErrorCode Initialize(DMMG *dmmg)
     }
   }
 #else
-  SETERRQ(1,"erf() not available on this machine");
+  SETERRQ(PETSC_COMM_SELF,1,"erf() not available on this machine");
 #endif
 
   /*
@@ -683,7 +683,7 @@ PetscErrorCode Update(DMMG *dmmg)
       ierr = MatView(mat, viewer);CHKERRQ(ierr);
 
       ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-      SETERRQ(1,"Done saving Jacobian");
+      SETERRQ(PETSC_COMM_SELF,1,"Done saving Jacobian");
     }
 
 
@@ -693,7 +693,7 @@ PetscErrorCode Update(DMMG *dmmg)
     if (tsCtx->dump_time > 0.0 && tsCtx->t >= tsCtx->dump_time) {
       Vec v = DMMGGetx(dmmg);
       ierr = VecView(v,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
-      SETERRQ1(1,"Saved solution at time %G",tsCtx->t);
+      SETERRQ1(PETSC_COMM_SELF,1,"Saved solution at time %G",tsCtx->t);
     }
 
     if (ts_monitor)
@@ -705,7 +705,7 @@ PetscErrorCode Update(DMMG *dmmg)
 
       nfailsCum += nfails;
       if (nfailsCum >= 2)
-        SETERRQ(1, "unable to find a newton step");
+        SETERRQ(PETSC_COMM_SELF,1, "unable to find a newton step");
 
       ierr = PetscPrintf(PETSC_COMM_WORLD,
                          "time step = %D, time = %G, number of nonlinear steps = %D, "

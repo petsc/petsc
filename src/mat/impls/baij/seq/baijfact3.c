@@ -112,7 +112,7 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat inA,PetscTruth natu
           }
 #  else
         /* This should never be reached.  If so, problem in PetscSSEIsEnabled. */
-          SETERRQ(PETSC_ERR_SUP,"SSE Hardware unavailable");
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"SSE Hardware unavailable");
 #  endif
         } else {
           inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace;
@@ -193,7 +193,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
   PetscBT            lnkbt;
 
   PetscFunctionBegin;
-  if (A->rmap->N != A->cmap->N) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be square");
+  if (A->rmap->N != A->cmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"matrix must be square");
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
@@ -218,7 +218,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
     /* copy previous fill into linked list */
     nzi = 0;
     nnz = ai[r[i]+1] - ai[r[i]];
-    if (!nnz) SETERRQ2(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
+    if (!nnz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
     ajtmp = aj + ai[r[i]]; 
     ierr = PetscLLAddPerm(nnz,ajtmp,ic,n,nlnk,lnk,lnkbt);CHKERRQ(ierr);
     nzi += nlnk;
@@ -340,7 +340,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol
   PetscBT            lnkbt;
 
   PetscFunctionBegin;
-  if (A->rmap->N != A->cmap->N) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be square");
+  if (A->rmap->N != A->cmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"matrix must be square");
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
@@ -366,7 +366,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol
     /* copy previous fill into linked list */
     nzi = 0;
     nnz = ai[r[i]+1] - ai[r[i]];
-    if (!nnz) SETERRQ2(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
+    if (!nnz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
     ajtmp = aj + ai[r[i]]; 
     ierr = PetscLLAddPerm(nnz,ajtmp,ic,n,nlnk,lnk,lnkbt);CHKERRQ(ierr);
     nzi += nlnk;

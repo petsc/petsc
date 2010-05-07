@@ -38,7 +38,7 @@ static PetscErrorCode PCView_Redistribute(PC pc,PetscViewer viewer)
     ierr = PetscViewerStringSPrintf(viewer," Redistribute preconditioner");CHKERRQ(ierr);
     ierr = KSPView(red->ksp,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for PC redistribute",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for PC redistribute",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -183,7 +183,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
       slen += n;
       count--;
     }
-    if (slen != recvtotal) SETERRQ2(PETSC_ERR_PLIB,"Total message lengths %D not expected %D",slen,recvtotal);
+    if (slen != recvtotal) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Total message lengths %D not expected %D",slen,recvtotal);
     
     ierr = ISCreateGeneral(comm,slen,rvalues,&red->is);CHKERRQ(ierr);
     

@@ -26,7 +26,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecMatlabEnginePut_DA2d(PetscObject obj,void *m
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)vec,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Vector not associated with a DA");
+  if (!da) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Vector not associated with a DA");
   ierr = DAGetGhostCorners(da,0,0,0,&m,&n,0);CHKERRQ(ierr);
 
   ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
@@ -422,7 +422,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicArray(DA da,PetscTruth ghosted,void *v
       *iptr = (void*)ptr; 
       break;}
     default:
-      SETERRQ1(PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
   }
 
   done:
@@ -446,7 +446,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicArray(DA da,PetscTruth ghosted,void *v
       }
     }
   }
-  if (i == DA_MAX_AD_ARRAYS+1) SETERRQ(PETSC_ERR_SUP,"Too many DA ADIC arrays obtained");
+  if (i == DA_MAX_AD_ARRAYS+1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Too many DA ADIC arrays obtained");
   if (tdof)        *tdof = itdof;
   if (array_start) *(void**)array_start = iarray_start;
   PetscFunctionReturn(0);
@@ -487,7 +487,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicArray(DA da,PetscTruth ghosted,voi
         break;
       }
     }
-    if (!iarray_start) SETERRQ(PETSC_ERR_ARG_WRONG,"Could not find array in checkout list");
+    if (!iarray_start) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Could not find array in checkout list");
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
       if (!da->adarrayghostedin[i]){
         da->adarrayghostedin[i] = *iptr;
@@ -504,7 +504,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicArray(DA da,PetscTruth ghosted,voi
         break;
       }
     }
-    if (!iarray_start) SETERRQ(PETSC_ERR_ARG_WRONG,"Could not find array in checkout list");
+    if (!iarray_start) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Could not find array in checkout list");
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
       if (!da->adarrayin[i]){
         da->adarrayin[i]   = *iptr;
@@ -642,7 +642,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetArray(DA da,PetscTruth ghosted,void *vptr)
       *iptr = (void*)ptr; 
       break;}
     default:
-      SETERRQ1(PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
   }
 
   done:
@@ -840,7 +840,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray(DA da,PetscTruth ghosted,void 
       *iptr = (void*)ptr; 
       break;}
     default:
-      SETERRQ1(PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
   }
 
   done:
@@ -864,7 +864,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray(DA da,PetscTruth ghosted,void 
       }
     }
   }
-  if (i == DA_MAX_AD_ARRAYS+1) SETERRQ(PETSC_ERR_ARG_WRONG,"Too many DA ADIC arrays obtained");
+  if (i == DA_MAX_AD_ARRAYS+1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Too many DA ADIC arrays obtained");
   if (tdof)        *tdof = itdof;
   if (array_start) *(void**)array_start = iarray_start;
   PetscFunctionReturn(0);
@@ -933,7 +933,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray4(DA da,PetscTruth ghosted,void
       *iptr = (void*)ptr; 
       break;}
     default:
-      SETERRQ1(PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
   }
 
   done:
@@ -957,7 +957,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray4(DA da,PetscTruth ghosted,void
       }
     }
   }
-  if (i == DA_MAX_AD_ARRAYS+1) SETERRQ(PETSC_ERR_ARG_WRONG,"Too many DA ADIC arrays obtained");
+  if (i == DA_MAX_AD_ARRAYS+1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Too many DA ADIC arrays obtained");
   if (tdof)        *tdof = itdof;
   if (array_start) *(void**)array_start = iarray_start;
   PetscFunctionReturn(0);
@@ -1026,7 +1026,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray9(DA da,PetscTruth ghosted,void
       *iptr = (void*)ptr; 
       break;}
     default:
-      SETERRQ1(PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
   }
 
   done:
@@ -1050,7 +1050,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray9(DA da,PetscTruth ghosted,void
       }
     }
   }
-  if (i == DA_MAX_AD_ARRAYS+1) SETERRQ(PETSC_ERR_ARG_WRONG,"Too many DA ADIC arrays obtained");
+  if (i == DA_MAX_AD_ARRAYS+1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Too many DA ADIC arrays obtained");
   if (tdof)        *tdof = itdof;
   if (array_start) *(void**)array_start = iarray_start;
   PetscFunctionReturn(0);
@@ -1172,7 +1172,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArrayb(DA da,PetscTruth ghosted,void
       *iptr = (void*)ptr; 
       break;}
     default:
-      SETERRQ1(PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
   }
 
   done:
@@ -1196,7 +1196,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArrayb(DA da,PetscTruth ghosted,void
       }
     }
   }
-  if (i == DA_MAX_AD_ARRAYS+1) SETERRQ(PETSC_ERR_ARG_WRONG,"Too many DA ADIC arrays obtained");
+  if (i == DA_MAX_AD_ARRAYS+1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Too many DA ADIC arrays obtained");
   if (tdof)        *tdof = itdof;
   if (array_start) *(void**)array_start = iarray_start;
   PetscFunctionReturn(0);
@@ -1237,7 +1237,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicMFArray(DA da,PetscTruth ghosted,v
         break;
       }
     }
-    if (!iarray_start) SETERRQ(PETSC_ERR_ARG_WRONG,"Could not find array in checkout list");
+    if (!iarray_start) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Could not find array in checkout list");
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
       if (!da->admfarrayghostedin[i]){
         da->admfarrayghostedin[i] = *iptr;
@@ -1254,7 +1254,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicMFArray(DA da,PetscTruth ghosted,v
         break;
       }
     }
-    if (!iarray_start) SETERRQ(PETSC_ERR_ARG_WRONG,"Could not find array in checkout list");
+    if (!iarray_start) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Could not find array in checkout list");
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
       if (!da->admfarrayin[i]){
         da->admfarrayin[i] = *iptr;

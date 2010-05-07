@@ -24,7 +24,7 @@ PetscErrorCode PETSCDM_DLLEXPORT PCICERenumberBoundary(Mesh mesh)
   try {
     ALE::PCICE::fuseBoundary(m);
   } catch(ALE::Exception e) {
-    SETERRQ(100, e.msg().c_str());
+    SETERRQ(PETSC_COMM_SELF,100, e.msg().c_str());
   }
   PetscFunctionReturn(0);
 }
@@ -744,7 +744,7 @@ namespace ALE {
           }
         }
         if (k != numLocalVertices*embedDim) {
-          SETERRQ2(PETSC_ERR_PLIB, "Invalid number of coordinates to send %d should be %d", k, numLocalVertices*embedDim);
+          SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of coordinates to send %d should be %d", k, numLocalVertices*embedDim);
         }
         ierr = MPI_Send(&numLocalVertices, 1, MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
         ierr = MPI_Send(localCoords, numLocalVertices*embedDim, MPI_DOUBLE, 0, 1, mesh->comm());CHKERRQ(ierr);
@@ -771,7 +771,7 @@ namespace ALE {
 
       PetscFunctionBegin;
       if (corners != dim+1) {
-        SETERRQ(PETSC_ERR_SUP, "PCICE only supports simplicies");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "PCICE only supports simplicies");
       }
       if (!globalVertex) {
         globalVertex = vertexBundle;
@@ -828,7 +828,7 @@ namespace ALE {
           }
         }
         if (k != numLocalElements*corners) {
-          SETERRQ2(PETSC_ERR_PLIB, "Invalid number of vertices to send %d should be %d", k, numLocalElements*corners);
+          SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of vertices to send %d should be %d", k, numLocalElements*corners);
         }
         ierr = MPI_Send(&numLocalElements, 1, MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
         ierr = MPI_Send(localVertices, numLocalElements*corners, MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
@@ -928,7 +928,7 @@ namespace ALE {
           }
         }
         if (k != numLocalElements) {
-          SETERRQ2(PETSC_ERR_PLIB, "Invalid number of values to send for field, %d should be %d", k, numLocalElements);
+          SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of values to send for field, %d should be %d", k, numLocalElements);
         }
         ierr = MPI_Send(&numLocalElements, 1, MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
         ierr = MPI_Send(localValues, numLocalElements, newtype, 0, 1, mesh->comm());CHKERRQ(ierr);

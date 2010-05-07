@@ -137,11 +137,11 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc)
   ierr = PetscTypeCompare((PetscObject)pc->pmat,MATMPIBAIJ,&mpibaij);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)pc->pmat,MATBAIJ,&baij);CHKERRQ(ierr);
   if (!seqbaij && !mpibaij && !baij) {
-    SETERRQ(PETSC_ERR_SUP,"Currently only supports BAIJ matrices");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently only supports BAIJ matrices");
   }
   ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
   if (mpibaij || (baij && (size > 1))) A = ((Mat_MPIBAIJ*)A->data)->A;
-  if (A->rmap->n != A->cmap->n) SETERRQ(PETSC_ERR_SUP,"Supported only for square matrices and square storage");
+  if (A->rmap->n != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Supported only for square matrices and square storage");
 
   ierr        =  MatSeqBAIJInvertBlockDiagonal(A);CHKERRQ(ierr);
   a           = (Mat_SeqBAIJ*)A->data;
@@ -162,7 +162,7 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc)
       pc->ops->apply = PCApply_PBJacobi_5;
       break;
     default: 
-      SETERRQ1(PETSC_ERR_SUP,"not supported for block size %D",jac->bs);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"not supported for block size %D",jac->bs);
   }
 
   PetscFunctionReturn(0);

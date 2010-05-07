@@ -31,7 +31,7 @@ int main(int argc,char **args)
   ierr = MatSetFromOptions(C);CHKERRQ(ierr); 
   
   ierr = MatGetLocalSize(C,&m,&n);CHKERRQ(ierr);
-  if (m != n) SETERRQ2(PETSC_ERR_ARG_WRONG,"Matrix local size m %d must equal n %d",m,n);
+  if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix local size m %d must equal n %d",m,n);
 
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
@@ -57,7 +57,7 @@ int main(int argc,char **args)
   ierr = MatDuplicate(C,MAT_COPY_VALUES,&C1);CHKERRQ(ierr); 
   ierr = MatEqual(C,C1,&flg);CHKERRQ(ierr);
   if (!flg){
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Duplicate C1 != C");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Duplicate C1 != C");
   }
 
   /* Test LU Factorization */

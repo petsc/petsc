@@ -104,7 +104,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Obj<ALE::Mesh>& m, Options *options)
 
     mB = ALE::MeshBuilder::createCubeBoundary(comm, lower, upper, faces, options->debug);
   } else {
-    SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
   }
   if (view) {mB->view("Boundary");}
   m = ALE::Generator::generateMesh(mB, options->interpolate);
@@ -140,7 +140,7 @@ PetscErrorCode CreateProblem(const Obj<ALE::Mesh>& m, Options *options)
   } else if (options->dim == 3) {
     ierr = CreateProblem_gen_2((DM) mesh, "u", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
   }
   ierr = MeshDestroy(mesh);CHKERRQ(ierr);
   const ALE::Obj<ALE::Mesh::real_section_type> s = m->getRealSection("default");
@@ -159,7 +159,7 @@ PetscErrorCode CreateMatrix(Mesh mesh, MatType mtype, Mat *A)
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  if (!m->hasRealSection("default")) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
+  if (!m->hasRealSection("default")) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
   ierr = MeshCreateMatrix(m, m->getRealSection("default"), mtype, A);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject) *A, "mesh", (PetscObject) mesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);

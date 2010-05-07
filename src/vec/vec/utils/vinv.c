@@ -47,9 +47,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScale(Vec v,PetscInt start,PetscScala
 
   bs   = v->map->bs;
   if (start < 0) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
   } else if (start >= bs) {
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n\
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n\
             Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   }
   x += start;
@@ -115,9 +115,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideNorm(Vec v,PetscInt start,NormType nt
 
   bs   = v->map->bs;
   if (start < 0) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
   } else if (start >= bs) {
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n\
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n\
             Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   }
   x += start;
@@ -147,7 +147,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideNorm(Vec v,PetscInt start,NormType nt
     } 
     ierr   = MPI_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPI_MAX,comm);CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown norm type");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown norm type");
   }
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
@@ -206,9 +206,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMax(Vec v,PetscInt start,PetscInt *id
 
   bs   = v->map->bs;
   if (start < 0) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
   } else if (start >= bs) {
-    SETERRQ2(PETSC_ERR_ARG_WRONG,"Start of stride subvector (%D) is too large for stride\n\
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Start of stride subvector (%D) is too large for stride\n\
             Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   }
   x += start;
@@ -302,9 +302,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMin(Vec v,PetscInt start,PetscInt *id
 
   bs   = v->map->bs;
   if (start < 0) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
   } else if (start >= bs) {
-    SETERRQ2(PETSC_ERR_ARG_WRONG,"Start of stride subvector (%D) is too large for stride\n\
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Start of stride subvector (%D) is too large for stride\n\
             Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   }
   x += start;
@@ -444,7 +444,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideNormAll(Vec v,NormType ntype,PetscRea
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   bs   = v->map->bs;
-  if (bs > 128) SETERRQ(PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
+  if (bs > 128) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
 
   if (ntype == NORM_2) {
     PetscScalar sum[128];
@@ -486,7 +486,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideNormAll(Vec v,NormType ntype,PetscRea
     } 
     ierr   = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPI_MAX,comm);CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown norm type");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown norm type");
   }
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
@@ -536,14 +536,14 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMaxAll(Vec v,PetscInt idex[],PetscRea
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidDoublePointer(nrm,3);
   if (idex) {
-    SETERRQ(PETSC_ERR_SUP,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   }
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   bs   = v->map->bs;
-  if (bs > 128) SETERRQ(PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
+  if (bs > 128) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
 
   if (!n) {
     for (j=0; j<bs; j++) {
@@ -616,14 +616,14 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMinAll(Vec v,PetscInt idex[],PetscRea
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidDoublePointer(nrm,3);
   if (idex) {
-    SETERRQ(PETSC_ERR_SUP,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   }
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   bs   = v->map->bs;
-  if (bs > 128) SETERRQ(PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
+  if (bs > 128) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
 
   if (!n) {
     for (j=0; j<bs; j++) {
@@ -703,7 +703,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGatherAll(Vec v,Vec s[],InsertMode ad
   ierr = VecGetLocalSize(s[0],&n2);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   bs   = v->map->bs;
-  if (bs < 0) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Input vector does not have a valid blocksize set");
+  if (bs < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Input vector does not have a valid blocksize set");
 
   ierr = PetscMalloc2(bs,PetscReal*,&y,bs,PetscInt,&bss);CHKERRQ(ierr);
   nv   = 0;
@@ -714,7 +714,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGatherAll(Vec v,Vec s[],InsertMode ad
     ierr = VecGetArray(s[i],&y[i]);CHKERRQ(ierr);
     nvc  += bss[i];
     nv++;
-    if (nvc > bs)  SETERRQ(PETSC_ERR_ARG_INCOMP,"Number of subvectors in subvectors > number of vectors in main vector");
+    if (nvc > bs)  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of subvectors in subvectors > number of vectors in main vector");
     if (nvc == bs) break;
   }
 
@@ -751,7 +751,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGatherAll(Vec v,Vec s[],InsertMode ad
     }
 #endif
   } else {
-    SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
   }
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
@@ -808,7 +808,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScatterAll(Vec s[],Vec v,InsertMode a
   ierr = VecGetLocalSize(s[0],&n2);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   bs   = v->map->bs;
-  if (bs < 0) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Input vector does not have a valid blocksize set");
+  if (bs < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Input vector does not have a valid blocksize set");
 
   ierr = PetscMalloc2(bs,PetscScalar**,&y,bs,PetscInt,&bss);CHKERRQ(ierr);
   nv  = 0;
@@ -819,7 +819,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScatterAll(Vec s[],Vec v,InsertMode a
     ierr = VecGetArray(s[i],&y[i]);CHKERRQ(ierr);
     nvc  += bss[i];
     nv++;
-    if (nvc > bs)  SETERRQ(PETSC_ERR_ARG_INCOMP,"Number of subvectors in subvectors > number of vectors in main vector");
+    if (nvc > bs)  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of subvectors in subvectors > number of vectors in main vector");
     if (nvc == bs) break;
   }
 
@@ -856,7 +856,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScatterAll(Vec s[],Vec v,InsertMode a
     }
 #endif
   } else {
-    SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
   }
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
@@ -918,13 +918,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGather(Vec v,PetscInt start,Vec s,Ins
 
   bs   = v->map->bs;
   if (start < 0) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
   } else if (start >= bs) {
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n\
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n\
             Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   }
   if (n != ns*bs) {
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Subvector length * blocksize %D not correct for gather from original vector %D",ns*bs,n);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Subvector length * blocksize %D not correct for gather from original vector %D",ns*bs,n);
   }
   x += start;
   n =  n/bs;
@@ -944,7 +944,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGather(Vec v,PetscInt start,Vec s,Ins
     }
 #endif
   } else {
-    SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
   }
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
@@ -999,13 +999,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScatter(Vec s,PetscInt start,Vec v,In
 
   bs   = v->map->bs;
   if (start < 0) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
   } else if (start >= bs) {
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n\
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n\
             Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   }
   if (n != ns*bs) {
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Subvector length * blocksize %D not correct for scatter to multicomponent vector %D",ns*bs,n);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Subvector length * blocksize %D not correct for scatter to multicomponent vector %D",ns*bs,n);
   }
   x += start;
   n =  n/bs;
@@ -1026,7 +1026,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScatter(Vec s,PetscInt start,Vec v,In
     }
 #endif
   } else {
-    SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
   }
 
 
@@ -1374,7 +1374,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPermute(Vec x, IS row, PetscTruth inv)
 #ifdef PETSC_USE_DEBUG
   for(i = 0; i < x->map->n; i++) {
     if ((idx[i] < 0) || (idx[i] >= x->map->n)) {
-      SETERRQ2(PETSC_ERR_ARG_CORRUPT, "Permutation index %D is out of bounds: %D", i, idx[i]);
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT, "Permutation index %D is out of bounds: %D", i, idx[i]);
     }
   }
 #endif

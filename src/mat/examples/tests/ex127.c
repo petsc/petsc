@@ -24,7 +24,7 @@ PetscInt main(PetscInt argc,char **args)
   
   PetscInitialize(&argc,&args,(char *)0,help);
 #if !defined(PETSC_USE_COMPLEX)
-  SETERRQ(1,"This example requires complex numbers");
+  SETERRQ(PETSC_COMM_SELF,1,"This example requires complex numbers");
 #endif
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -76,7 +76,7 @@ PetscInt main(PetscInt argc,char **args)
     Mat Trans;
     ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Trans);
     ierr = MatEqual(A, Trans, &flg);
-    if (!flg) SETERRQ(PETSC_ERR_USER,"A is not symmetric");
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"A is not symmetric");
     ierr = MatDestroy(Trans);CHKERRQ(ierr);
   } 
   ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
@@ -115,7 +115,7 @@ PetscInt main(PetscInt argc,char **args)
       ierr = MatView(Hermit,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
     ierr = MatEqual(A, Hermit, &flg);
-    if (!flg) SETERRQ(PETSC_ERR_USER,"A is not Hermitian");
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"A is not Hermitian");
     ierr = MatDestroy(Hermit);CHKERRQ(ierr);
   }
   ierr = MatSetOption(A,MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);

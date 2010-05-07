@@ -66,7 +66,7 @@ PetscErrorCode MatGetRow_MPIDense(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx
   PetscInt       lrow,rstart = A->rmap->rstart,rend = A->rmap->rend;
 
   PetscFunctionBegin;
-  if (row < rstart || row >= rend) SETERRQ(PETSC_ERR_SUP,"only local rows")
+  if (row < rstart || row >= rend) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"only local rows")
   lrow = row - rstart;
   ierr = MatGetRow(mat->A,lrow,nz,(const PetscInt **)idx,(const PetscScalar **)v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -96,7 +96,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonalBlock_MPIDense(Mat A,PetscTruth 
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  if (A->rmap->N != A->cmap->N) SETERRQ(PETSC_ERR_SUP,"Only square matrices supported.");
+  if (A->rmap->N != A->cmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only square matrices supported.");
 
   /* The reuse aspect is not implemented efficiently */
   if (reuse) { ierr = MatDestroy(*B);CHKERRQ(ierr);}
@@ -129,7 +129,7 @@ PetscErrorCode MatSetValues_MPIDense(Mat mat,PetscInt m,const PetscInt idxm[],Pe
   if (v) PetscValidScalarPointer(v,6);
   for (i=0; i<m; i++) {
     if (idxm[i] < 0) continue;
-    if (idxm[i] >= mat->rmap->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
+    if (idxm[i] >= mat->rmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       if (roworiented) {
@@ -137,7 +137,7 @@ PetscErrorCode MatSetValues_MPIDense(Mat mat,PetscInt m,const PetscInt idxm[],Pe
       } else {
         for (j=0; j<n; j++) {
           if (idxn[j] < 0) continue;
-          if (idxn[j] >= mat->cmap->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
+          if (idxn[j] >= mat->cmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
           ierr = MatSetValues(A->A,1,&row,1,&idxn[j],v+i+j*m,addv);CHKERRQ(ierr);
         }
       }
@@ -164,19 +164,19 @@ PetscErrorCode MatGetValues_MPIDense(Mat mat,PetscInt m,const PetscInt idxm[],Pe
 
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
-    if (idxm[i] < 0) continue; /* SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative row"); */
-    if (idxm[i] >= mat->rmap->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
+    if (idxm[i] < 0) continue; /* SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative row"); */
+    if (idxm[i] >= mat->rmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       for (j=0; j<n; j++) {
-        if (idxn[j] < 0) continue; /* SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative column"); */
+        if (idxn[j] < 0) continue; /* SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative column"); */
         if (idxn[j] >= mat->cmap->N) {
-          SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
         }
         ierr = MatGetValues(mdn->A,1,&row,1,&idxn[j],v+i*n+j);CHKERRQ(ierr);
       }
     } else {
-      SETERRQ(PETSC_ERR_SUP,"Only local values currently supported");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only local values currently supported");
     }
   }
   PetscFunctionReturn(0);
@@ -224,7 +224,7 @@ static PetscErrorCode MatGetSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,MatReuse 
   
   /* Check submatrix call */
   if (scall == MAT_REUSE_MATRIX) {
-    /* SETERRQ(PETSC_ERR_ARG_SIZ,"Reused submatrix wrong size"); */
+    /* SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Reused submatrix wrong size"); */
     /* Really need to test rows and column sizes! */
     newmat = *B;
   } else {
@@ -279,7 +279,7 @@ PetscErrorCode MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
   /* make sure all processors are either in INSERTMODE or ADDMODE */
   ierr = MPI_Allreduce(&mat->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);CHKERRQ(ierr);
   if (addv == (ADD_VALUES|INSERT_VALUES)) { 
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot mix adds/inserts on different procs");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot mix adds/inserts on different procs");
   }
   mat->insertmode = addv; /* in case this processor had no cache */
 
@@ -375,7 +375,7 @@ PetscErrorCode MatZeroRows_MPIDense(Mat A,PetscInt N,const PetscInt rows[],Petsc
         nprocs[2*j]++; nprocs[2*j+1] = 1; owner[i] = j; found = PETSC_TRUE; break;
       }
     }
-    if (!found) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Index out of range");
+    if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index out of range");
   }
   nsends = 0;  for (i=0; i<size; i++) { nsends += nprocs[2*i+1];} 
 
@@ -532,7 +532,7 @@ PetscErrorCode MatGetDiagonal_MPIDense(Mat A,Vec v)
   ierr = VecSet(v,zero);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetSize(v,&n);CHKERRQ(ierr);
-  if (n != A->rmap->N) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming mat and vec");
+  if (n != A->rmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Nonconforming mat and vec");
   len  = PetscMin(a->A->rmap->n,a->A->cmap->n);
   radd = A->rmap->rstart*m;
   for (i=0; i<len; i++) {
@@ -658,7 +658,7 @@ static PetscErrorCode MatView_MPIDense_Binary(Mat mat,PetscViewer viewer)
         ierr = MPI_Send(a->v,mat->rmap->n*mat->cmap->N,MPIU_SCALAR,0,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
       }
     } else {
-      SETERRQ(PETSC_ERR_SUP,"To store a parallel dense matrix you must first call PetscViewerSetFormat(viewer,PETSC_VIEWER_NATIVE");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"To store a parallel dense matrix you must first call PetscViewerSetFormat(viewer,PETSC_VIEWER_NATIVE");
     }
   }
   PetscFunctionReturn(0);
@@ -779,7 +779,7 @@ PetscErrorCode MatView_MPIDense(Mat mat,PetscViewer viewer)
   } else if (isbinary) {
     ierr = MatView_MPIDense_Binary(mat,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by MPI dense matrix",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by MPI dense matrix",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -858,7 +858,7 @@ PetscErrorCode MatSetOption_MPIDense(Mat A,MatOption op,PetscTruth flg)
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   default:
-    SETERRQ1(PETSC_ERR_SUP,"unknown option %s",MatOptions[op]);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unknown option %s",MatOptions[op]);
   }
   PetscFunctionReturn(0);
 }
@@ -878,7 +878,7 @@ PetscErrorCode MatDiagonalScale_MPIDense(Mat A,Vec ll,Vec rr)
   ierr = MatGetLocalSize(A,&s2,&s3);CHKERRQ(ierr);
   if (ll) {
     ierr = VecGetLocalSize(ll,&s2a);CHKERRQ(ierr);
-    if (s2a != s2) SETERRQ2(PETSC_ERR_ARG_SIZ,"Left scaling vector non-conforming local size, %d != %d.", s2a, s2);
+    if (s2a != s2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Left scaling vector non-conforming local size, %d != %d.", s2a, s2);
     ierr = VecGetArray(ll,&l);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       x = l[i];
@@ -890,7 +890,7 @@ PetscErrorCode MatDiagonalScale_MPIDense(Mat A,Vec ll,Vec rr)
   }
   if (rr) {
     ierr = VecGetLocalSize(rr,&s3a);CHKERRQ(ierr);
-    if (s3a != s3) SETERRQ2(PETSC_ERR_ARG_SIZ,"Right scaling vec non-conforming local size, %d != %d.", s3a, s3);
+    if (s3a != s3) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Right scaling vec non-conforming local size, %d != %d.", s3a, s3);
     ierr = VecScatterBegin(mdn->Mvctx,rr,mdn->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(mdn->Mvctx,rr,mdn->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecGetArray(mdn->lvec,&r);CHKERRQ(ierr);
@@ -954,7 +954,7 @@ PetscErrorCode MatNorm_MPIDense(Mat A,NormType type,PetscReal *nrm)
       ierr = MatNorm(mdn->A,type,&ntemp);CHKERRQ(ierr);
       ierr = MPI_Allreduce(&ntemp,nrm,1,MPIU_REAL,MPI_MAX,((PetscObject)A)->comm);CHKERRQ(ierr);
     } else {
-      SETERRQ(PETSC_ERR_SUP,"No support for two norm");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for two norm");
     }
   }
   PetscFunctionReturn(0); 
@@ -973,7 +973,7 @@ PetscErrorCode MatTranspose_MPIDense(Mat A,MatReuse reuse,Mat *matout)
   PetscScalar    *v;
 
   PetscFunctionBegin;
-  if (reuse == MAT_REUSE_MATRIX && A == *matout && M != N) SETERRQ(PETSC_ERR_SUP,"Supports square matrix only in-place");
+  if (reuse == MAT_REUSE_MATRIX && A == *matout && M != N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Supports square matrix only in-place");
   if (reuse == MAT_INITIAL_MATRIX || A == *matout) {
     ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,A->cmap->n,A->rmap->n,N,M);CHKERRQ(ierr);
@@ -1113,8 +1113,8 @@ PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,PetscReal fill,M
   Mat            Cmat;
 
   PetscFunctionBegin;
-  if (A->cmap->n != B->rmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"A->cmap->n %d != B->rmap->n %d\n",A->cmap->n,B->rmap->n);
-  SETERRQ(PETSC_ERR_LIB,"Due to apparent bugs in PLAPACK,this is not currently supported");
+  if (A->cmap->n != B->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"A->cmap->n %d != B->rmap->n %d\n",A->cmap->n,B->rmap->n);
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Due to apparent bugs in PLAPACK,this is not currently supported");
   ierr = MatCreate(((PetscObject)B)->comm,&Cmat);CHKERRQ(ierr);
   ierr = MatSetSizes(Cmat,m,n,A->rmap->N,B->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(Cmat,MATMPIDENSE);CHKERRQ(ierr);
@@ -1265,7 +1265,7 @@ PetscErrorCode MatLUFactorNumeric_MPIDense(Mat F,Mat A,const MatFactorInfo *info
   /* Factor P A -> L U overwriting lower triangular portion of A with L, upper, U */
   info_pla = PLA_LU(lu->A,lu->pivots);
   if (info_pla != 0) 
-    SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot encountered at row %d from PLA_LU()",info_pla);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot encountered at row %d from PLA_LU()",info_pla);
 
   lu->rstart         = rstart;
   lu->mstruct        = SAME_NONZERO_PATTERN;
@@ -1325,7 +1325,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_MPIDense(Mat F,Mat A,IS perm,const MatF
 
   PetscFunctionBegin;
   ierr = MatIsSymmetricKnown(A,&set,&issymmetric);CHKERRQ(ierr);
-  if (!set || !issymmetric) SETERRQ(PETSC_ERR_USER,"Matrix must be set as MAT_SYMMETRIC for CholeskyFactor()");
+  if (!set || !issymmetric) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Matrix must be set as MAT_SYMMETRIC for CholeskyFactor()");
   F->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_MPIDense;
   PetscFunctionReturn(0);
 }
@@ -1406,7 +1406,7 @@ PetscErrorCode MatGetFactor_mpidense_plapack(Mat A,MatFactorType ftype,Mat *F)
     (*F)->ops->lufactorsymbolic = MatLUFactorSymbolic_MPIDense;
   } else if (ftype == MAT_FACTOR_CHOLESKY) {
     (*F)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MPIDense;
-  } else SETERRQ(PETSC_ERR_SUP,"No incomplete factorizations for dense matrices");
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No incomplete factorizations for dense matrices");
   (*F)->factortype = ftype;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)(*F),"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mpidense_plapack",MatFactorGetSolverPackage_mpidense_plapack);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1426,7 +1426,7 @@ PetscErrorCode MatGetFactor_mpidense_petsc(Mat A,MatFactorType ftype,Mat *F)
 #if defined(PETSC_HAVE_PLAPACK)
   ierr = MatGetFactor_mpidense_plapack(A,ftype,F);CHKERRQ(ierr);
 #else
-  SETERRQ1(PETSC_ERR_SUP,"Matrix format %s uses PLAPACK direct solver. Install PLAPACK",((PetscObject)A)->type_name);
+  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix format %s uses PLAPACK direct solver. Install PLAPACK",((PetscObject)A)->type_name);
 #endif
   PetscFunctionReturn(0);
 }
@@ -1959,7 +1959,7 @@ PetscErrorCode MatLoad_MPIDense(PetscViewer viewer,const MatType type,Mat *newma
   if (!rank) {
     ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd,(char *)header,4,PETSC_INT);CHKERRQ(ierr);
-    if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"not matrix object");
+    if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"not matrix object");
   }
 
   ierr = MPI_Bcast(header+1,3,MPIU_INT,0,comm);CHKERRQ(ierr);
@@ -2038,7 +2038,7 @@ PetscErrorCode MatLoad_MPIDense(PetscViewer viewer,const MatType type,Mat *newma
     /* receive message of column indices*/
     ierr = MPI_Recv(mycols,nz,MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
     ierr = MPI_Get_count(&status,MPIU_INT,&maxnz);CHKERRQ(ierr);
-    if (maxnz != nz) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"something is wrong with file");
+    if (maxnz != nz) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"something is wrong with file");
   }
 
   /* loop over local rows, determining number of off diagonal entries */
@@ -2096,7 +2096,7 @@ PetscErrorCode MatLoad_MPIDense(PetscViewer viewer,const MatType type,Mat *newma
     /* receive message of values*/
     ierr = MPI_Recv(vals,nz,MPIU_SCALAR,0,((PetscObject)A)->tag,comm,&status);CHKERRQ(ierr);
     ierr = MPI_Get_count(&status,MPIU_SCALAR,&maxnz);CHKERRQ(ierr);
-    if (maxnz != nz) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"something is wrong with file");
+    if (maxnz != nz) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"something is wrong with file");
 
     /* insert into matrix */
     jj      = rstart;

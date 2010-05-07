@@ -134,7 +134,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetReal(PETSC_NULL,"-alpha",&user->alpha,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-lambda",&user->lambda,PETSC_NULL);CHKERRQ(ierr);
   if (user->lambda > lambda_max || user->lambda < lambda_min) {
-    SETERRQ3(1,"Lambda %G is out of range [%G, %G]", user->lambda, lambda_min, lambda_max);
+    SETERRQ3(PETSC_COMM_SELF,1,"Lambda %G is out of range [%G, %G]", user->lambda, lambda_min, lambda_max);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

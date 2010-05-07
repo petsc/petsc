@@ -68,7 +68,7 @@ PetscErrorCode VecPlaceArray_MPI(Vec vin,const PetscScalar *a)
   Vec_MPI        *v = (Vec_MPI *)vin->data;
 
   PetscFunctionBegin;
-  if (v->unplacedarray) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"VecPlaceArray() was already called on this vector, without a call to VecResetArray()");
+  if (v->unplacedarray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"VecPlaceArray() was already called on this vector, without a call to VecResetArray()");
   v->unplacedarray = v->array;  /* save previous array so reset can bring it back */
   v->array = (PetscScalar *)a;
   if (v->localrep) {
@@ -275,7 +275,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateMPIWithArray(MPI_Comm comm,PetscInt n
 
   PetscFunctionBegin;
   if (n == PETSC_DECIDE) { 
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must set local size of vector");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local size of vector");
   }
   ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
   ierr = VecCreate(comm,vv);CHKERRQ(ierr);
@@ -357,12 +357,12 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGhostGetLocalForm(Vec g,Vec *l)
   ierr = PetscTypeCompare((PetscObject)g,VECMPI,&ismpi);CHKERRQ(ierr);
   if (ismpi) {
     Vec_MPI *v  = (Vec_MPI*)g->data;
-    if (!v->localrep) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector is not ghosted");
+    if (!v->localrep) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector is not ghosted");
     *l = v->localrep;
   } else if (isseq) {
     *l = g;
   } else {
-    SETERRQ1(PETSC_ERR_ARG_WRONG,"Vector type %s does not have local representation",((PetscObject)g)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector type %s does not have local representation",((PetscObject)g)->type_name);
   }
   ierr = VecGhostStateSync_Private(g,*l);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)*l);CHKERRQ(ierr);
@@ -450,7 +450,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGhostUpdateBegin(Vec g,InsertMode insertmod
   PetscValidHeaderSpecific(g,VEC_CLASSID,1);
 
   v  = (Vec_MPI*)g->data;
-  if (!v->localrep) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector is not ghosted");
+  if (!v->localrep) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector is not ghosted");
   if (!v->localupdate) PetscFunctionReturn(0);
  
   if (scattermode == SCATTER_REVERSE) {
@@ -512,7 +512,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGhostUpdateEnd(Vec g,InsertMode insertmode,
   PetscValidHeaderSpecific(g,VEC_CLASSID,1);
 
   v  = (Vec_MPI*)g->data;
-  if (!v->localrep) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector is not ghosted");
+  if (!v->localrep) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector is not ghosted");
   if (!v->localupdate) PetscFunctionReturn(0);
 
   if (scattermode == SCATTER_REVERSE) {
@@ -570,9 +570,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostWithArray(MPI_Comm comm,PetscInt
   PetscFunctionBegin;
   *vv = 0;
 
-  if (n == PETSC_DECIDE)      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must set local size");
-  if (nghost == PETSC_DECIDE) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must set local ghost size");
-  if (nghost < 0)             SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Ghost length must be >= 0");
+  if (n == PETSC_DECIDE)      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local size");
+  if (nghost == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local ghost size");
+  if (nghost < 0)             SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Ghost length must be >= 0");
   ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
   /* Create global representation */
   ierr = VecCreate(comm,vv);CHKERRQ(ierr);
@@ -758,10 +758,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostBlockWithArray(MPI_Comm comm,Pet
   PetscFunctionBegin;
   *vv = 0;
 
-  if (n == PETSC_DECIDE)      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must set local size");
-  if (nghost == PETSC_DECIDE) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must set local ghost size");
-  if (nghost < 0)             SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Ghost length must be >= 0");
-  if (n % bs)                 SETERRQ(PETSC_ERR_ARG_INCOMP,"Local size must be a multiple of block size");
+  if (n == PETSC_DECIDE)      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local size");
+  if (nghost == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must set local ghost size");
+  if (nghost < 0)             SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Ghost length must be >= 0");
+  if (n % bs)                 SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local size must be a multiple of block size");
   ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
   /* Create global representation */
   ierr = VecCreate(comm,vv);CHKERRQ(ierr);

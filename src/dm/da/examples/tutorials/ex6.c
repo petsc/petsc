@@ -223,8 +223,8 @@ PetscErrorCode FACreate(FA *infa)
     fa->comm[2] = PETSC_COMM_SELF;
   } */
 
-  if (fa->p2 > fa->p1 - 3)   SETERRQ(1,"Width of region fa->p2 must be at least 3 less then width of region 1");
-  if (!((fa->p2 - fa->p1) % 2)) SETERRQ(1,"width of region 3 must NOT be divisible by 2");
+  if (fa->p2 > fa->p1 - 3)   SETERRQ(PETSC_COMM_SELF,1,"Width of region fa->p2 must be at least 3 less then width of region 1");
+  if (!((fa->p2 - fa->p1) % 2)) SETERRQ(PETSC_COMM_SELF,1,"width of region 3 must NOT be divisible by 2");
 
   if (fa->comm[1]) {
     ierr = DACreate2d(fa->comm[1],DA_XPERIODIC,DA_STENCIL_BOX,fa->p2,fa->r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,PETSC_NULL,PETSC_NULL,&da2);CHKERRQ(ierr);

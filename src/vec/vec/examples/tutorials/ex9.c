@@ -35,7 +35,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size != 2) SETERRQ(1,"Must run example with two processors\n");
+  if (size != 2) SETERRQ(PETSC_COMM_SELF,1,"Must run example with two processors\n");
 
   /*
      Construct a two dimensional graph connecting nlocal degrees of 

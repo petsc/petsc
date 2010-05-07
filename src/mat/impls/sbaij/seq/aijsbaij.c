@@ -60,7 +60,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newt
     }
     bi[i+1]     = bi[i] + rowlengths[i*bs]/bs; 
   }
-  if (bi[mbs] != 2*a->nz - mbs) SETERRQ2(PETSC_ERR_PLIB,"bi[mbs]: %D != 2*a->nz-mbs: %D\n",bi[mbs],2*a->nz - mbs);
+  if (bi[mbs] != 2*a->nz - mbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"bi[mbs]: %D != 2*a->nz-mbs: %D\n",bi[mbs],2*a->nz - mbs);
 
   /* set b->j and b->a */
   aj = a->j; av = a->a;
@@ -124,7 +124,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqSBAIJ(Mat A,const MatType
   MatScalar      *av,*bv;
 
   PetscFunctionBegin;
-  if (n != m) SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix must be square");
+  if (n != m) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix must be square");
 
   ierr = PetscMalloc(m*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
@@ -215,7 +215,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType new
     bi[i+1]       = bi[i] + browlengths[i]; 
     browstart[i]  = bi[i];
   }
-  if (bi[mbs] != 2*a->nz - mbs) SETERRQ2(PETSC_ERR_PLIB,"bi[mbs]: %D != 2*a->nz - mbs: %D\n",bi[mbs],2*a->nz - mbs);
+  if (bi[mbs] != 2*a->nz - mbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"bi[mbs]: %D != 2*a->nz - mbs: %D\n",bi[mbs],2*a->nz - mbs);
   
   /* set b->j and b->a */
   aj = a->j; av = a->a;
@@ -275,9 +275,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType new
   PetscTruth     flg;
 
   PetscFunctionBegin;
-  if (n != m) SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix must be square");
+  if (n != m) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix must be square");
   ierr = MatMissingDiagonal_SeqBAIJ(A,&flg,&dd);CHKERRQ(ierr); /* check for missing diagonals, then mark diag */
-  if (flg) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal %D",dd);
+  if (flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal %D",dd);
   
   ierr = PetscMalloc(mbs*sizeof(PetscInt),&browlengths);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {

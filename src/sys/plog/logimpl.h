@@ -93,7 +93,7 @@ PETSC_STATIC_INLINE PetscErrorCode PETSC_DLLEXPORT StageLogGetCurrent(StageLog s
   }
 #ifdef PETSC_USE_DEBUG
   if (*stage != stageLog->curStage) {
-    SETERRQ2(PETSC_ERR_PLIB, "Inconsistency in stage log: stage %d should be %d", *stage, stageLog->curStage);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Inconsistency in stage log: stage %d should be %d", *stage, stageLog->curStage);
   }
 #endif
   PetscFunctionReturn(0);
@@ -125,7 +125,7 @@ PETSC_STATIC_INLINE PetscErrorCode PETSC_DLLEXPORT StageLogGetEventPerfLog(Stage
   PetscFunctionBegin;
   PetscValidPointer(eventLog,3);
   if ((stage < 0) || (stage >= stageLog->numStages)) {
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d should be in [0,%d)", stage, stageLog->numStages);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d should be in [0,%d)", stage, stageLog->numStages);
   }
   *eventLog = stageLog->stageInfo[stage].eventLog;
   PetscFunctionReturn(0);

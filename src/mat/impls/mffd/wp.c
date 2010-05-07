@@ -111,7 +111,7 @@ static PetscErrorCode MatMFFDView_WP(MatMFFD ctx,PetscViewer viewer)
     if (hctx->computenormU){ierr =  PetscViewerASCIIPrintf(viewer,"    Computes normU\n");CHKERRQ(ierr);}  
     else                   {ierr =  PetscViewerASCIIPrintf(viewer,"    Does not compute normU\n");CHKERRQ(ierr);}  
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for SNES matrix-free WP",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for SNES matrix-free WP",((PetscObject)viewer)->type_name);
   }    
   PetscFunctionReturn(0);
 }

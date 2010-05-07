@@ -190,10 +190,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
       if (rank == i) {
         fd = fopen(filename,"w");
         if (!fd) {
-          SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to open test file %s",filename);
+          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open test file %s",filename);
         }
         err = fclose(fd);
-        if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
+        if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
       }
       ierr = MPI_Barrier(comm);CHKERRQ(ierr);
       if (rank >= i) {
@@ -201,7 +201,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
         if (fd) cnt = 1; else cnt = 0;
         if (fd) {
           err = fclose(fd);
-          if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
+          if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
         }
       } else {
         cnt = 0;
@@ -215,7 +215,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
         *shared = PETSC_TRUE;
         break;
       } else if (sum != 1) {
-        SETERRQ(PETSC_ERR_SUP_SYS,"Subset of processes share /tmp ");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Subset of processes share /tmp ");
       }
     }
     *tagvalp = (int)*shared;
@@ -314,9 +314,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscSharedWorkingDirectory(MPI_Comm comm,PetscTr
     for (i=0; i<size-1; i++) {
       if (rank == i) {
         fd = fopen(filename,"w");
-        if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to open test file %s",filename);
+        if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open test file %s",filename);
         err = fclose(fd);
-        if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
+        if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
       }
       ierr = MPI_Barrier(comm);CHKERRQ(ierr);
       if (rank >= i) {
@@ -324,7 +324,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSharedWorkingDirectory(MPI_Comm comm,PetscTr
         if (fd) cnt = 1; else cnt = 0;
         if (fd) {
           err = fclose(fd);
-          if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
+          if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
         }
       } else {
         cnt = 0;
@@ -338,7 +338,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSharedWorkingDirectory(MPI_Comm comm,PetscTr
         *shared = PETSC_TRUE;
         break;
       } else if (sum != 1) {
-        SETERRQ(PETSC_ERR_SUP_SYS,"Subset of processes share working directory");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Subset of processes share working directory");
       }
     }
     *tagvalp = (int)*shared;
@@ -417,7 +417,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFileRetrieve(MPI_Comm comm,const char libnam
     if (!exists) {
       ierr = PetscTestFile("urlget",'r',&exists);CHKERRQ(ierr);
       if (!exists) {
-        SETERRQ1(PETSC_ERR_PLIB,"Cannot locate PETSc script urlget in %s or current directory",urlget);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot locate PETSc script urlget in %s or current directory",urlget);
       }
       ierr = PetscStrcpy(urlget,"urlget");CHKERRQ(ierr);
     }
@@ -436,10 +436,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscFileRetrieve(MPI_Comm comm,const char libnam
 #if defined(PETSC_HAVE_POPEN)
     ierr = PetscPOpen(PETSC_COMM_SELF,PETSC_NULL,urlget,"r",&fp);CHKERRQ(ierr);
 #else
-    SETERRQ(PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif
     if (!fgets(buf,1024,fp)) {
-      SETERRQ1(PETSC_ERR_PLIB,"No output from ${PETSC_DIR}/bin/urlget in getting file %s",libname);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No output from ${PETSC_DIR}/bin/urlget in getting file %s",libname);
     }
     ierr = PetscInfo1(0,"Message back from urlget: %s\n",buf);CHKERRQ(ierr);
 

@@ -35,9 +35,9 @@ PetscInt main(PetscInt argc,char **args)
 
   /* read the two matrices, A (square) and P (projection) */
   ierr = PetscOptionsGetString(PETSC_NULL,"-fA",file[0],PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_ERR_USER,"Must indicate binary file with the -fA options");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Must indicate binary file with the -fA options");
   ierr = PetscOptionsGetString(PETSC_NULL,"-fP",file[1],PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_ERR_USER,"Must indicate binary file with the -fP options");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Must indicate binary file with the -fP options");
    
   /* Load matrices */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&fd);CHKERRQ(ierr);

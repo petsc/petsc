@@ -35,7 +35,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultEqual(Mat A,Mat B,PetscInt n,PetscTruth
   PetscValidHeaderSpecific(B,MAT_CLASSID,2);
   ierr = MatGetLocalSize(A,&am,&an);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B,&bm,&bn);CHKERRQ(ierr);
-  if (am != bm || an != bn) SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat A,Mat B: local dim %D %D %D %D",am,bm,an,bn);
+  if (am != bm || an != bn) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat A,Mat B: local dim %D %D %D %D",am,bm,an,bn);
   PetscCheckSameComm(A,1,B,2);
 
 #if defined(PETSC_USE_SCALAR_SINGLE)
@@ -109,7 +109,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscTr
   PetscFunctionBegin;
   ierr = MatGetLocalSize(A,&am,&an);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B,&bm,&bn);CHKERRQ(ierr);
-  if (am != bm || an != bn) SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat A,Mat B: local dim %D %D %D %D",am,bm,an,bn);
+  if (am != bm || an != bn) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat A,Mat B: local dim %D %D %D %D",am,bm,an,bn);
   PetscCheckSameComm(A,1,B,2);
   ierr = PetscRandomCreate(((PetscObject)A)->comm,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
@@ -182,7 +182,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeEqual(Mat A,Mat B,PetscInt n,P
   PetscFunctionBegin;
   ierr = MatGetLocalSize(A,&am,&an);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B,&bm,&bn);CHKERRQ(ierr);
-  if (am != bm || an != bn) SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat A,Mat B: local dim %D %D %D %D",am,bm,an,bn);
+  if (am != bm || an != bn) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat A,Mat B: local dim %D %D %D %D",am,bm,an,bn);
   PetscCheckSameComm(A,1,B,2);
   ierr = PetscRandomCreate(((PetscObject)A)->comm,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
@@ -252,7 +252,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeAddEqual(Mat A,Mat B,PetscInt 
   PetscFunctionBegin;
   ierr = MatGetLocalSize(A,&am,&an);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B,&bm,&bn);CHKERRQ(ierr);
-  if (am != bm || an != bn) SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat A,Mat B: local dim %D %D %D %D",am,bm,an,bn);
+  if (am != bm || an != bn) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat A,Mat B: local dim %D %D %D %D",am,bm,an,bn);
   PetscCheckSameComm(A,1,B,2);
   ierr = PetscRandomCreate(((PetscObject)A)->comm,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);

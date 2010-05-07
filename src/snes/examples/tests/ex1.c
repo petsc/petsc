@@ -80,7 +80,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size != 1) SETERRQ(1,"This is a uniprocessor example only!");
+  if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only!");
 
   /*
      Initialize problem parameters
@@ -90,7 +90,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
-    SETERRQ(1,"Lambda is out of range");
+    SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
   }
   N = user.mx*user.my;
   
@@ -144,7 +144,7 @@ int main(int argc,char **argv)
   */
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-snes_fd_coloring",&fd_coloring,PETSC_NULL);CHKERRQ(ierr);
 
-  if (matrix_free && fd_coloring)  SETERRQ(1,"Use only one of -snes_mf, -snes_fd_coloring options!\n\
+  if (matrix_free && fd_coloring)  SETERRQ(PETSC_COMM_SELF,1,"Use only one of -snes_mf, -snes_fd_coloring options!\n\
                                                 You can do -snes_mf_operator -snes_fd_coloring");
 
   if (fd_coloring) {

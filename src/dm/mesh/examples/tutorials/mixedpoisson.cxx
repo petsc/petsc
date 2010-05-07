@@ -234,7 +234,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
       Obj<ALE::Mesh> mB = ALE::MeshBuilder::createCubeBoundary(comm, lower, upper, faces, options->debug);
       ierr = MeshSetMesh(boundary, mB);CHKERRQ(ierr);
     } else {
-      SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }
     ierr = MeshGenerate(boundary, options->interpolate, &mesh);CHKERRQ(ierr);
     ierr = MeshDestroy(boundary);CHKERRQ(ierr);
@@ -338,7 +338,7 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
       ierr = SectionRealGetSection(X, sX);CHKERRQ(ierr);
       x = (PetscScalar *) m->restrictNew(sX, *c_iter);
     }
-    if (detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
+    if (detJ < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
     ierr = PetscMemzero(elemVec, totBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++field) {
       const Obj<ALE::Discretization>& disc          = m->getDiscretization(*f_iter);
@@ -554,7 +554,7 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
 
     x = (PetscScalar *) m->restrictNew(s, *c_iter);
     m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
-    if (detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
+    if (detJ < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
     ierr = PetscMemzero(elemMat, totBasisFuncs*totBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++field) {
       const Obj<ALE::Discretization>& disc          = m->getDiscretization(*f_iter);
@@ -644,7 +644,7 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
       options->funcs[2]  = zero;
       options->funcs[3]  = zero;
   } else {
-    SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
   }
   Mesh mesh = (Mesh) dm;
   Obj<ALE::Mesh> m;
@@ -663,7 +663,7 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
     ierr = CreateProblem_gen_5(dm, "sigma_y", 0, PETSC_NULL, PETSC_NULL, linear_3d_sigma_y);CHKERRQ(ierr);
     ierr = CreateProblem_gen_5(dm, "sigma_z", 0, PETSC_NULL, PETSC_NULL, linear_3d_sigma_z);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
   }
   const ALE::Obj<ALE::Mesh::real_section_type> s = m->getRealSection("default");
   s->setDebug(options->debug);

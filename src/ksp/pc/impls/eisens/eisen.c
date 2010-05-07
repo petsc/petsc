@@ -60,7 +60,7 @@ static PetscErrorCode PCPreSolve_Eisenstat(PC pc,KSP ksp,Vec b,Vec x)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (pc->mat != pc->pmat) SETERRQ(PETSC_ERR_SUP,"Cannot have different mat and pmat"); 
+  if (pc->mat != pc->pmat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot have different mat and pmat"); 
  
   /* swap shell matrix and true matrix */
   eis->A    = pc->mat;
@@ -153,7 +153,7 @@ static PetscErrorCode PCView_Eisenstat(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"Eisenstat: Not using diagonal scaling\n");CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for Eisenstat PC",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for Eisenstat PC",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -196,7 +196,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCEisenstatSetOmega_Eisenstat(PC pc,PetscReal 
   PC_Eisenstat  *eis;
 
   PetscFunctionBegin;
-  if (omega >= 2.0 || omega <= 0.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Relaxation out of range");
+  if (omega >= 2.0 || omega <= 0.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Relaxation out of range");
   eis = (PC_Eisenstat*)pc->data;
   eis->omega = omega;
   PetscFunctionReturn(0);

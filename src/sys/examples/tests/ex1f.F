@@ -6,7 +6,7 @@
       PetscErrorCode  ierr
       PetscInt line
 
-      call PetscError(1,line,1,'Error message',ierr)
+      call PetscError(PETSC_COMM_SELF,1,line,1,'Error message',ierr)
 
       return
       end

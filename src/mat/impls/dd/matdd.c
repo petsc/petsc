@@ -80,11 +80,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT Mat_DDBlockSetMat(Mat A, PetscInt rowblock, Pe
     ierr = MPI_Allreduce(&n, &actualN, 1, MPI_INT, MPI_SUM, subcomm); CHKERRQ(ierr);
   }
   if(actualM != M) {
-    SETERRQ4(PETSC_ERR_USER, "Block[%d,%d]'s actual global row size %d doesn't match declared size %d", rowblock, colblock, actualM, M);
+    SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER, "Block[%d,%d]'s actual global row size %d doesn't match declared size %d", rowblock, colblock, actualM, M);
   }
   
   if(actualN != N) {
-    SETERRQ4(PETSC_ERR_USER, "Block[%d,%d]'s actual global row size %d doesn't match declared size %d", rowblock, colblock, actualN, N);
+    SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER, "Block[%d,%d]'s actual global row size %d doesn't match declared size %d", rowblock, colblock, actualN, N);
   }
 #endif
 
@@ -141,7 +141,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT Mat_DDBlockInit(Mat A, PetscInt rowblock, Pets
     ierr = MPI_Comm_size(subcomm, &subcommsize);            CHKERRQ(ierr);
     break;
   default:
-    SETERRQ1(PETSC_ERR_USER, "Unknown block comm type: %d", commsize);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER, "Unknown block comm type: %d", commsize);
     break;
   }/* switch(subcommtype) */
   if(subcomm != MPI_COMM_NULL) {
@@ -211,7 +211,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetScatters(Mat A, PetscInt blockcount, M
 
   /* check validity of block parameters */
   if(blockcount <= 0) {
-    SETERRQ1(PETSC_ERR_USER, "Invalid number of blocks: %d; must be > 0", blockcount);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER, "Invalid number of blocks: %d; must be > 0", blockcount);
   }
   if(dd->scatters) {
     for(k = 0; k < dd->colblockcount; ++k) {
@@ -235,10 +235,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetScatters(Mat A, PetscInt blockcount, M
     ierr = PetscObjectReference((PetscObject)scatters[k]); CHKERRQ(ierr);
     /* make sure the scatter column dimension matches that of MatDD */
     if(scatters[k]->cmap->N != A->cmap->N){
-      SETERRQ3(PETSC_ERR_USER, "Scatter # %d has global column dimension %d, which doesn't match MatDD's %d", k, scatters[k]->cmap->N, A->cmap->N);
+      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER, "Scatter # %d has global column dimension %d, which doesn't match MatDD's %d", k, scatters[k]->cmap->N, A->cmap->N);
     }
     if(scatters[k]->cmap->n != A->cmap->n) {
-      SETERRQ3(PETSC_ERR_USER, "Scatter # %d has local column dimension %d, which doesn't match MatDD's %d", k, scatters[k]->cmap->n, A->cmap->n);
+      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER, "Scatter # %d has local column dimension %d, which doesn't match MatDD's %d", k, scatters[k]->cmap->n, A->cmap->n);
     }
     n += scatters[k]->rmap->n;
     N += scatters[k]->rmap->N;
@@ -275,7 +275,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetGathers(Mat A, PetscInt blockcount, Ma
 
   /* check validity of block parameters */
   if(blockcount <= 0) {
-    SETERRQ1(PETSC_ERR_USER, "Invalid number of blocks: %d; must be > 0", blockcount);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER, "Invalid number of blocks: %d; must be > 0", blockcount);
   }
   if(dd->gathers) {
     for(k = 0; k < dd->rowblockcount; ++k) {
@@ -299,10 +299,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetGathers(Mat A, PetscInt blockcount, Ma
     ierr = PetscObjectReference((PetscObject)gathers[k]); CHKERRQ(ierr);
     /* make sure the gather row dimension matches that of MatDD */
     if(gathers[k] && gathers[k]->rmap->N != A->rmap->N){
-      SETERRQ3(PETSC_ERR_USER, "Gather # %d has global row dimension %d, which doesn't match MatDD's %d", k, gathers[k]->rmap->N, A->rmap->N);
+      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER, "Gather # %d has global row dimension %d, which doesn't match MatDD's %d", k, gathers[k]->rmap->N, A->rmap->N);
     }
     if(gathers[k] && gathers[k]->rmap->n != A->rmap->n) {
-      SETERRQ3(PETSC_ERR_USER, "Gather # %d has local row dimension %d, which doesn't match MatDD's %d", k, gathers[k]->rmap->n, A->rmap->n);
+      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER, "Gather # %d has local row dimension %d, which doesn't match MatDD's %d", k, gathers[k]->rmap->n, A->rmap->n);
     }
     m += gathers[k]->cmap->n;
     M += gathers[k]->cmap->N;
@@ -333,7 +333,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetDefaltBlockType(Mat A, const MatType t
   Mat_DD  *dd = (Mat_DD*)A->data;
   PetscFunctionBegin;
   if(!type){
-    SETERRQ(PETSC_ERR_USER, "Unknown default block type");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER, "Unknown default block type");
   }
   dd->default_block_type = type;
   PetscFunctionReturn(0);
@@ -368,11 +368,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetPreallocation_AIJ(Mat A,PetscInt nz, P
   }
 
   if (nz == PETSC_DEFAULT || nz == PETSC_DECIDE) nz = 5;
-  if (nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"nz cannot be less than 0: value %d",nz);
+  if (nz < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nz cannot be less than 0: value %d",nz);
   if (nnz) {
     for (i=0; i<dd->rowblockcount; ++i) {
-      if (nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"nnz cannot be less than 0: block %d value %d",i,nnz[i]);
-      if (nnz[i] > dd->colblockcount) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"nnz cannot be greater than the number of column blocks: block %d value %d column block count %d",i,nnz[i],dd->colblockcount);
+      if (nnz[i] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nnz cannot be less than 0: block %d value %d",i,nnz[i]);
+      if (nnz[i] > dd->colblockcount) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nnz cannot be greater than the number of column blocks: block %d value %d column block count %d",i,nnz[i],dd->colblockcount);
     }
   }
 
@@ -464,7 +464,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDLocateBlock_AIJ(Mat M, PetscInt row, Pets
   *block_pp = PETSC_NULL;
   if (row < 0) goto we_are_done;
 #if defined(PETSC_USE_DEBUG)  
-  if (row >= dd->rowblockcount) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Block row too large: row %D max %D",row,dd->rowblockcount-1);
+  if (row >= dd->rowblockcount) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block row too large: row %D max %D",row,dd->rowblockcount-1);
 #endif
   rp   = aj + ai[row]; ap = aa + ai[row];
   rmax = imax[row]; nrow = ailen[row]; 
@@ -473,7 +473,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDLocateBlock_AIJ(Mat M, PetscInt row, Pets
   
   if (col < 0) goto we_are_done;
 #if defined(PETSC_USE_DEBUG)  
-  if (col >= dd->colblockcount) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Block columnt too large: col %D max %D",col,dd->colblockcount-1);
+  if (col >= dd->colblockcount) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block columnt too large: col %D max %D",col,dd->colblockcount-1);
 #endif
 
   if (col <= lastcol) low = 0; else high = nrow;
@@ -491,7 +491,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDLocateBlock_AIJ(Mat M, PetscInt row, Pets
     }
   } 
   if (!insert || nonew == 1) goto we_are_done;
-  if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new block at (%D,%D) in the matrix",row,col);
+  if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new block at (%D,%D) in the matrix",row,col);
   MatDDXAIJReallocateAIJ(M,dd->rowblockcount,nrow,row,col,rmax,aa,ai,aj,rp,ap,imax,nonew);
   N = nrow++ - 1; a->nz++; high++;
   /* shift up all the later entries in this row */
@@ -524,10 +524,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDAddBlock(Mat A, PetscInt rowblock, PetscI
   PetscFunctionBegin;
   ierr = MatPreallocated(A); CHKERRQ(ierr);
   if(rowblock < 0 || rowblock > dd->rowblockcount){
-    SETERRQ2(PETSC_ERR_USER, "row block id %d is invalid; must be >= 0 and < %d", rowblock, dd->rowblockcount);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER, "row block id %d is invalid; must be >= 0 and < %d", rowblock, dd->rowblockcount);
   }
   if(colblock < 0 || colblock > dd->colblockcount){
-    SETERRQ2(PETSC_ERR_USER, "col block id %d is invalid; must be >= 0 and < %d", colblock, dd->colblockcount);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER, "col block id %d is invalid; must be >= 0 and < %d", colblock, dd->colblockcount);
   }
   ierr = MatDDLocateBlock_AIJ(A,rowblock, colblock, PETSC_TRUE, &_block); CHKERRQ(ierr);
   ierr = Mat_DDBlockInit(A,rowblock,colblock,blockmattype, blockcommtype, _block); CHKERRQ(ierr);
@@ -549,10 +549,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetBlock(Mat A, PetscInt rowblock, PetscI
   PetscFunctionBegin;
   ierr = MatPreallocated(A); CHKERRQ(ierr);
   if(rowblock < 0 || rowblock > dd->rowblockcount){
-    SETERRQ2(PETSC_ERR_USER, "row block id %d is invalid; must be >= 0 and < %d", rowblock, dd->rowblockcount);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER, "row block id %d is invalid; must be >= 0 and < %d", rowblock, dd->rowblockcount);
   }
   if(colblock < 0 || colblock > dd->colblockcount){
-    SETERRQ2(PETSC_ERR_USER, "col block id %d is invalid; must be >= 0 and < %d", colblock, dd->colblockcount);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER, "col block id %d is invalid; must be >= 0 and < %d", colblock, dd->colblockcount);
   }
   ierr = MatDDLocateBlock_AIJ(A,rowblock, colblock, PETSC_TRUE, &_block); CHKERRQ(ierr);
   ierr = Mat_DDBlockSetMat(A,rowblock,colblock,_block, B); CHKERRQ(ierr);
@@ -571,14 +571,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDGetBlock(Mat A, PetscInt rowblock, PetscI
   
   PetscFunctionBegin;
   if(rowblock < 0 || rowblock > dd->rowblockcount){
-    SETERRQ2(PETSC_ERR_USER, "row block id %d is invalid; must be >= 0 and < %d", rowblock, dd->rowblockcount);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER, "row block id %d is invalid; must be >= 0 and < %d", rowblock, dd->rowblockcount);
   }
   if(colblock < 0 || colblock > dd->colblockcount){
-    SETERRQ2(PETSC_ERR_USER, "col block id %d is invalid; must be >= 0 and < %d", colblock, dd->colblockcount);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER, "col block id %d is invalid; must be >= 0 and < %d", colblock, dd->colblockcount);
   }
   ierr = MatDDLocateBlock_AIJ(A, rowblock, colblock, PETSC_FALSE, &_block); CHKERRQ(ierr);
   if(_block == PETSC_NULL) {
-    SETERRQ2(PETSC_ERR_USER, "Block not found: row %d col %d", rowblock, colblock);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER, "Block not found: row %d col %d", rowblock, colblock);
   }
   ierr = Mat_DDBlockGetMat(A,rowblock,colblock,_block, _B); CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)(*_B)); CHKERRQ(ierr);

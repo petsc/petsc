@@ -16,7 +16,7 @@ int main(int argc,char **argv) {
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size != 1) SETERRQ(PETSC_ERR_SUP,"This is a uniprocessor example only!");
+  if (size != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   /* Create a aij matrix for checking */
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,5,5,2,PETSC_NULL,&A);CHKERRQ(ierr); 
@@ -46,12 +46,12 @@ int main(int argc,char **argv) {
   ierr = MatRestoreArray(A,&aa);CHKERRQ(ierr);
   ierr = MatRestoreRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&n,&ai,&aj,&flg);CHKERRQ(ierr);
   ierr = MatMultEqual(A,B,10,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_ERR_ARG_NOTSAMETYPE,"MatMult(A,B) are NOT equal"); 
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"MatMult(A,B) are NOT equal"); 
 
   /* Create a sbaij matrix using MatCreateSeqSBAIJWithArrays() */
   ierr = MatCreateSeqSBAIJWithArrays(PETSC_COMM_SELF,1,5,5,asi,asj,asa,&As);CHKERRQ(ierr); 
   ierr = MatMultEqual(A,As,10,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_ERR_ARG_NOTSAMETYPE,"MatMult(A,As) are NOT equal"); 
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"MatMult(A,As) are NOT equal"); 
   
   /* Free spaces */
   ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);

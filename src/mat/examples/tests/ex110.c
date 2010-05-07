@@ -19,7 +19,7 @@ int main(int argc,char **argv) {
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size == 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must run with 2 or more processes");CHKERRQ(ierr);
+  if (size == 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must run with 2 or more processes");CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* Create a mpiaij matrix for checking */
@@ -59,7 +59,7 @@ int main(int argc,char **argv) {
 
   ierr = MatEqual(A,B,&equal);CHKERRQ(ierr);
 
-  if (!equal) SETERRQ(PETSC_ERR_PLIB,"Likely a bug in MatCreateMPIAIJWithSplitArrays()");
+  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Likely a bug in MatCreateMPIAIJWithSplitArrays()");
 
   /* Free spaces */
   ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);

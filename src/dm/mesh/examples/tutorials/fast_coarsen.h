@@ -522,7 +522,7 @@ namespace ALE { namespace Coarsener {
         coarsen_stats.maxAngle[curLevel] = tmp_stats[1];
       }
 #else
-      SETERRQ(PETSC_ERR_SUP, "No mesh generator available.");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "No mesh generator available.");
 #endif
     }  //end of for over the number of coarsening levels.
     if (coarsen_stats.displayStats)coarsen_DisplayStats();

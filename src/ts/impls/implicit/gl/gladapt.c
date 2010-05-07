@@ -144,7 +144,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptSetType(TSGLAdapt adapt,const TSGLAdap
 
   PetscFunctionBegin;
   ierr = PetscFListFind(TSGLAdaptList,((PetscObject)adapt)->comm,type,(void(**)(void))&r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGLAdapt type \"%s\" given",type);
+  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGLAdapt type \"%s\" given",type);
   if (((PetscObject)adapt)->type_name) {ierr = (*adapt->ops->destroy)(adapt);CHKERRQ(ierr);}
   ierr = (*r)(adapt);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)adapt,type);CHKERRQ(ierr);
@@ -184,7 +184,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptView(TSGLAdapt adapt,PetscViewer viewe
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for TS_GL",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for TS_GL",((PetscObject)viewer)->type_name);
   }
 
   PetscFunctionReturn(0);

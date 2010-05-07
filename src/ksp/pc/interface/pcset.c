@@ -64,7 +64,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetType(PC pc,const PCType type)
   if (match) PetscFunctionReturn(0);
 
   ierr =  PetscFListFind(PCList,((PetscObject)pc)->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PC type %s",type);
+  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PC type %s",type);
   /* Destroy the previous private PC context */
   if (pc->ops->destroy) { ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr); pc->data = 0;}
   ierr = PetscFListDestroy(&((PetscObject)pc)->qlist);CHKERRQ(ierr);

@@ -17,7 +17,7 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
   PetscBT        table,table0; 
 
   PetscFunctionBegin;
-  if (ov < 0)  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
+  if (ov < 0)  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
   mbs = a->mbs;
   ai  = a->i;
   aj  = a->j;
@@ -39,7 +39,7 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
     bcol_max = 0;
     for (j=0; j<n ; ++j){
       brow = idx[j]/bs; /* convert the indices into block indices */
-      if (brow >= mbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"index greater than mat-dim");
+      if (brow >= mbs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"index greater than mat-dim");
       if(!PetscBTLookupSet(table,brow)) { 
         nidx[isz++] = brow;
         if (bcol_max < brow) bcol_max = brow;
@@ -106,9 +106,9 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse
   PetscTruth     flag,sorted;
 
   PetscFunctionBegin;
-  if (isrow != iscol) SETERRQ(PETSC_ERR_ARG_INCOMP,"For symmetric format, iscol must equal isro"); 
+  if (isrow != iscol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"For symmetric format, iscol must equal isro"); 
   ierr = ISSorted(iscol,&sorted);CHKERRQ(ierr);
-  if (!sorted) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"IS is not sorted");
+  if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"IS is not sorted");
 
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&nrows);CHKERRQ(ierr);
@@ -133,10 +133,10 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse
   if (scall == MAT_REUSE_MATRIX) {
     c = (Mat_SeqSBAIJ *)((*B)->data);
 
-    if (c->mbs!=nrows || (*B)->rmap->bs!=bs) SETERRQ(PETSC_ERR_ARG_SIZ,"Submatrix wrong size");
+    if (c->mbs!=nrows || (*B)->rmap->bs!=bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Submatrix wrong size");
     ierr = PetscMemcmp(c->ilen,lens,c->mbs *sizeof(PetscInt),&flag);CHKERRQ(ierr);
     if (!flag) {
-      SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong no of nonzeros");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong no of nonzeros");
     }
     ierr = PetscMemzero(c->ilen,c->mbs*sizeof(PetscInt));CHKERRQ(ierr);
     C = *B;
@@ -187,7 +187,7 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,M
   const PetscInt *irow;
 
   PetscFunctionBegin;
-  if (isrow != iscol) SETERRQ(PETSC_ERR_ARG_INCOMP,"For symmetric format, iscol must equal isro"); 
+  if (isrow != iscol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"For symmetric format, iscol must equal isro"); 
  
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&nrows);CHKERRQ(ierr);
@@ -200,7 +200,7 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,M
  
   count = 0;
   for (i=0; i<a->mbs; i++) {
-    if (vary[i]!=0 && vary[i]!=bs) SETERRQ(PETSC_ERR_ARG_INCOMP,"Index set does not match blocks");
+    if (vary[i]!=0 && vary[i]!=bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Index set does not match blocks");
     if (vary[i]==bs) iary[count++] = i;
   }
   ierr = ISRestoreIndices(isrow,&irow);CHKERRQ(ierr);
@@ -1197,7 +1197,7 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
     }
     ierr = PetscFree3(sum,il,jl);CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_ERR_SUP,"No support for this norm yet");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for this norm yet");
   }
   PetscFunctionReturn(0);
 }
@@ -1245,7 +1245,7 @@ PetscErrorCode MatGetDiagonal_SeqSBAIJ(Mat A,Vec v)
 
   PetscFunctionBegin;
   bs   = A->rmap->bs;
-  if (A->factortype && bs>1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix with bs>1");   
+  if (A->factortype && bs>1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix with bs>1");   
   
   aa   = a->a;
   ai   = a->i;
@@ -1256,7 +1256,7 @@ PetscErrorCode MatGetDiagonal_SeqSBAIJ(Mat A,Vec v)
   ierr = VecSet(v,zero);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  if (n != A->rmap->N) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
+  if (n != A->rmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
   for (i=0; i<ambs; i++) {
     j=ai[i];              
     if (aj[j] == i) {             /* if this is a diagonal element */
@@ -1289,7 +1289,7 @@ PetscErrorCode MatDiagonalScale_SeqSBAIJ(Mat A,Vec ll,Vec rr)
   if (ll != rr){
     ierr = VecEqual(ll,rr,&flg);CHKERRQ(ierr);
     if (!flg) 
-      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"For symmetric format, left and right scaling vectors must be same\n");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"For symmetric format, left and right scaling vectors must be same\n");
   }
   if (!ll) PetscFunctionReturn(0);
   ai  = a->i;
@@ -1302,7 +1302,7 @@ PetscErrorCode MatDiagonalScale_SeqSBAIJ(Mat A,Vec ll,Vec rr)
 
   ierr = VecGetArray(ll,&l);CHKERRQ(ierr);
   ierr = VecGetLocalSize(ll,&lm);CHKERRQ(ierr);
-  if (lm != m) SETERRQ(PETSC_ERR_ARG_SIZ,"Left scaling vector wrong length");
+  if (lm != m) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Left scaling vector wrong length");
   for (i=0; i<mbs; i++) { /* for each block row */
     M  = ai[i+1] - ai[i];
     li = l + i*bs;      
@@ -1376,8 +1376,8 @@ PetscErrorCode MatGetRowMaxAbs_SeqSBAIJ(Mat A,Vec v,PetscInt idx[])
   PetscInt       ncols,brow,bcol,krow,kcol; 
 
   PetscFunctionBegin;
-  if (idx) SETERRQ(PETSC_ERR_SUP,"Send email to petsc-maint@mcs.anl.gov");
-  if (A->factortype) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
+  if (idx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Send email to petsc-maint@mcs.anl.gov");
+  if (A->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
   bs   = A->rmap->bs;
   aa   = a->a;
   ai   = a->i;
@@ -1387,7 +1387,7 @@ PetscErrorCode MatGetRowMaxAbs_SeqSBAIJ(Mat A,Vec v,PetscInt idx[])
   ierr = VecSet(v,0.0);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  if (n != A->rmap->N) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
+  if (n != A->rmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
   for (i=0; i<mbs; i++) {
     ncols = ai[1] - ai[0]; ai++;
     brow  = bs*i;

@@ -79,7 +79,7 @@ PetscErrorCode MatOrdering_Flow_SeqAIJ(Mat mat,const MatOrderingType type,IS *ir
         }
       }
     }
-    if (current == newcurrent) SETERRQ(PETSC_ERR_PLIB,"newcurrent cannot be current");
+    if (current == newcurrent) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"newcurrent cannot be current");
     current = newcurrent;
     order[i+1] = current;
   }
@@ -123,7 +123,7 @@ PetscErrorCode MatGetFactor_seqaij_petsc(Mat A,MatFactorType ftype,Mat *B)
     ierr = MatSeqSBAIJSetPreallocation(*B,1,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
     (*B)->ops->iccfactorsymbolic      = MatICCFactorSymbolic_SeqAIJ;
     (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJ;
-  } else SETERRQ(PETSC_ERR_SUP,"Factor type not supported");
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
   (*B)->factortype = ftype;
   PetscFunctionReturn(0);
 }
@@ -146,7 +146,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol,
   PetscBT            lnkbt;
   
   PetscFunctionBegin;
-  if (A->rmap->N != A->cmap->N) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be square");
+  if (A->rmap->N != A->cmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"matrix must be square");
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
@@ -174,7 +174,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol,
     /* copy previous fill into linked list */
     nzi = 0;
     nnz = ai[r[i]+1] - ai[r[i]];
-    if (!nnz) SETERRQ2(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
+    if (!nnz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
     ajtmp = aj + ai[r[i]]; 
     ierr = PetscLLAddPerm(nnz,ajtmp,ic,n,nlnk,lnk,lnkbt);CHKERRQ(ierr);
     nzi += nlnk;
@@ -302,7 +302,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const Ma
   }
   
 
-  if (A->rmap->N != A->cmap->N) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be square");
+  if (A->rmap->N != A->cmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"matrix must be square");
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
@@ -327,7 +327,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const Ma
     /* copy previous fill into linked list */
     nzi = 0;
     nnz = ai[r[i]+1] - ai[r[i]];
-    if (!nnz) SETERRQ2(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
+    if (!nnz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
     ajtmp = aj + ai[r[i]]; 
     ierr = PetscLLAddPerm(nnz,ajtmp,ic,n,nlnk,lnk,lnkbt);CHKERRQ(ierr);
     nzi += nlnk;
@@ -801,7 +801,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,const MatFa
   PetscInt       newshift = 0;
 
   PetscFunctionBegin;
-  if (A != B) SETERRQ(PETSC_ERR_ARG_INCOMP,"input and output matrix must have same address");
+  if (A != B) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"input and output matrix must have same address");
   ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   ierr  = PetscMalloc((n+1)*sizeof(PetscScalar),&rtmp);CHKERRQ(ierr);
@@ -1018,9 +1018,9 @@ PetscErrorCode MatMatSolve_SeqAIJ_inplace(Mat A,Mat B,Mat X)
   if (!n) PetscFunctionReturn(0);
 
   ierr = PetscTypeCompare((PetscObject)B,MATSEQDENSE,&bisdense);CHKERRQ(ierr);
-  if (!bisdense) SETERRQ(PETSC_ERR_ARG_INCOMP,"B matrix must be a SeqDense matrix");
+  if (!bisdense) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"B matrix must be a SeqDense matrix");
   ierr = PetscTypeCompare((PetscObject)X,MATSEQDENSE,&xisdense);CHKERRQ(ierr);
-  if (!xisdense) SETERRQ(PETSC_ERR_ARG_INCOMP,"X matrix must be a SeqDense matrix");
+  if (!xisdense) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"X matrix must be a SeqDense matrix");
 
   ierr = MatGetArray(B,&b);CHKERRQ(ierr); 
   ierr = MatGetArray(X,&x);CHKERRQ(ierr);
@@ -1080,9 +1080,9 @@ PetscErrorCode MatMatSolve_SeqAIJ(Mat A,Mat B,Mat X)
   if (!n) PetscFunctionReturn(0);
 
   ierr = PetscTypeCompare((PetscObject)B,MATSEQDENSE,&bisdense);CHKERRQ(ierr);
-  if (!bisdense) SETERRQ(PETSC_ERR_ARG_INCOMP,"B matrix must be a SeqDense matrix");
+  if (!bisdense) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"B matrix must be a SeqDense matrix");
   ierr = PetscTypeCompare((PetscObject)X,MATSEQDENSE,&xisdense);CHKERRQ(ierr);
-  if (!xisdense) SETERRQ(PETSC_ERR_ARG_INCOMP,"X matrix must be a SeqDense matrix");
+  if (!xisdense) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"X matrix must be a SeqDense matrix");
 
   ierr = MatGetArray(B,&b);CHKERRQ(ierr); 
   ierr = MatGetArray(X,&x);CHKERRQ(ierr);
@@ -1615,9 +1615,9 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0(Mat fact,Mat A,IS isrow,IS iscol
   IS                 isicol;
 
   PetscFunctionBegin;
-  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
+  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
   ierr = MatMissingDiagonal(A,&missing,&i);CHKERRQ(ierr);
-  if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",i);
+  if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",i);
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
 
   ierr = MatDuplicateNoCreate_SeqAIJ(fact,A,MAT_DO_NOT_COPY_VALUES,PETSC_FALSE);CHKERRQ(ierr);
@@ -1728,7 +1728,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
     PetscFunctionReturn(0);
   }
 
-  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
+  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
@@ -1756,7 +1756,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
     nzi = 0;
     /* copy current row into linked list */
     nnz  = ai[r[i]+1] - ai[r[i]];
-    if (!nnz) SETERRQ2(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
+    if (!nnz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
     cols = aj + ai[r[i]];
     lnk[i] = -1; /* marker to indicate if diagonal exists */
     ierr = PetscIncompleteLLInit(nnz,cols,n,ic,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr);
@@ -1803,7 +1803,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
 
     /* make sure the active row i has diagonal entry */
     if (*(bj_ptr[i]+bdiag[i]) != i) {
-      SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Row %D has missing diagonal in factored matrix\n\
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Row %D has missing diagonal in factored matrix\n\
     try running with -pc_factor_nonzeros_along_diagonal or -pc_factor_diagonal_fill",i);
     }
 
@@ -1896,7 +1896,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS isrow,IS is
   PetscTruth         missing;
   
   PetscFunctionBegin;
-  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
+  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
   f             = info->fill;
   levels        = (PetscInt)info->levels;
   diagonal_fill = (PetscInt)info->diagonal_fill;
@@ -1916,7 +1916,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS isrow,IS is
     (fact)->info.fill_ratio_needed = 1.0;
     b               = (Mat_SeqAIJ*)(fact)->data;
     ierr = MatMissingDiagonal(A,&missing,&d);CHKERRQ(ierr);
-    if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",d);
+    if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",d);
     b->row              = isrow;
     b->col              = iscol;
     b->icol             = isicol;
@@ -1950,7 +1950,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS isrow,IS is
     nzi = 0;
     /* copy current row into linked list */
     nnz  = ai[r[i]+1] - ai[r[i]];
-    if (!nnz) SETERRQ2(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
+    if (!nnz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
     cols = aj + ai[r[i]];
     lnk[i] = -1; /* marker to indicate if diagonal exists */
     ierr = PetscIncompleteLLInit(nnz,cols,n,ic,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr);
@@ -1997,7 +1997,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS isrow,IS is
 
     /* make sure the active row i has diagonal entry */
     if (*(bj_ptr[i]+bdiag[i]) != i) {
-      SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Row %D has missing diagonal in factored matrix\n\
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Row %D has missing diagonal in factored matrix\n\
     try running with -pc_factor_nonzeros_along_diagonal or -pc_factor_diagonal_fill",i);
     }
 
@@ -2402,9 +2402,9 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const MatFacto
   IS                 iperm;  
   
   PetscFunctionBegin; 
-  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
+  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
   ierr = MatMissingDiagonal(A,&missing,&d);CHKERRQ(ierr);
-  if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",d);
+  if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",d);
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
   ierr = ISInvertPermutation(perm,PETSC_DECIDE,&iperm);CHKERRQ(ierr);
 
@@ -2455,7 +2455,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const MatFacto
       /* initialize lnk by the column indices of row rip[k] of A */
       nzk   = 0;
       ncols = ai[rip[k]+1] - ai[rip[k]]; 
-      if (!ncols) SETERRQ2(PETSC_ERR_MAT_CH_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",rip[k],k);
+      if (!ncols) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",rip[k],k);
       ncols_upper = 0;
       for (j=0; j<ncols; j++){
         i = *(aj + ai[rip[k]] + j); /* unpermuted column index */
@@ -2502,7 +2502,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const MatFacto
       }
 
       /* copy data into free_space and free_space_lvl, then initialize lnk */
-      if (nzk == 0) SETERRQ1(PETSC_ERR_ARG_WRONG,"Empty row %D in ICC matrix factor",k);
+      if (nzk == 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Empty row %D in ICC matrix factor",k);
       ierr = PetscIncompleteLLClean(am,am,nzk,lnk,lnk_lvl,current_space->array,current_space_lvl->array,lnkbt);CHKERRQ(ierr);
 
       /* add the k-th row into il and jl */
@@ -2602,9 +2602,9 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS perm,const 
   IS                 iperm;  
   
   PetscFunctionBegin;    
-  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
+  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
   ierr = MatMissingDiagonal(A,&missing,&d);CHKERRQ(ierr);
-  if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",d);
+  if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",d);
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
   ierr = ISInvertPermutation(perm,PETSC_DECIDE,&iperm);CHKERRQ(ierr);
 
@@ -2654,7 +2654,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS perm,const 
       /* initialize lnk by the column indices of row rip[k] of A */
       nzk   = 0;
       ncols = ai[rip[k]+1] - ai[rip[k]]; 
-      if (!ncols) SETERRQ2(PETSC_ERR_MAT_CH_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",rip[k],k);
+      if (!ncols) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",rip[k],k);
       ncols_upper = 0;
       for (j=0; j<ncols; j++){
         i = *(aj + ai[rip[k]] + j); /* unpermuted column index */
@@ -2701,7 +2701,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS perm,const 
       }
 
       /* copy data into free_space and free_space_lvl, then initialize lnk */
-      if (nzk == 0) SETERRQ1(PETSC_ERR_ARG_WRONG,"Empty row %D in ICC matrix factor",k);
+      if (nzk == 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Empty row %D in ICC matrix factor",k);
       ierr = PetscIncompleteLLClean(am,am,nzk,lnk,lnk_lvl,current_space->array,current_space_lvl->array,lnkbt);CHKERRQ(ierr);
 
       /* add the k-th row into il and jl */
@@ -2798,7 +2798,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const Mat
   IS                 iperm;  
 
   PetscFunctionBegin;
-  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
+  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
   /* check whether perm is the identity mapping */
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);  
   ierr = ISInvertPermutation(perm,PETSC_DECIDE,&iperm);CHKERRQ(ierr);
@@ -2829,7 +2829,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const Mat
     /* initialize lnk by the column indices of row rip[k] of A */
     nzk   = 0;
     ncols = ai[rip[k]+1] - ai[rip[k]]; 
-    if (!ncols) SETERRQ2(PETSC_ERR_MAT_CH_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",rip[k],k);
+    if (!ncols) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",rip[k],k);
     ncols_upper = 0;
     for (j=0; j<ncols; j++){
       i = riip[*(aj + ai[rip[k]] + j)];  
@@ -2959,7 +2959,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS perm,c
   IS                 iperm;  
 
   PetscFunctionBegin;  
-  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
+  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
   /* check whether perm is the identity mapping */
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);  
   ierr = ISInvertPermutation(perm,PETSC_DECIDE,&iperm);CHKERRQ(ierr);
@@ -2989,7 +2989,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS perm,c
     /* initialize lnk by the column indices of row rip[k] of A */
     nzk   = 0;
     ncols = ai[rip[k]+1] - ai[rip[k]]; 
-    if (!ncols) SETERRQ2(PETSC_ERR_MAT_CH_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",rip[k],k);
+    if (!ncols) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",rip[k],k);
     ncols_upper = 0;
     for (j=0; j<ncols; j++){
       i = riip[*(aj + ai[rip[k]] + j)];  
@@ -3234,7 +3234,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
 
   /* ------- symbolic factorization, can be reused ---------*/
   ierr = MatMissingDiagonal(A,&missing,&i);CHKERRQ(ierr);
-  if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",i);
+  if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",i);
   adiag=a->diag;
 
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
@@ -3304,7 +3304,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
     /* copy initial fill into linked list */
     nzi = 0; /* nonzeros for active row i */
     nzi = ai[r[i]+1] - ai[r[i]];
-    if (!nzi) SETERRQ2(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
+    if (!nzi) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
     nzi_al = adiag[r[i]] - ai[r[i]];
     nzi_au = ai[r[i]+1] - adiag[r[i]] -1;
     ajtmp = aj + ai[r[i]]; 
@@ -3420,7 +3420,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
     */
   } /* for (i=0; i<n; i++) */
   /* printf("end of L %d, beginning of U %d\n",bi[n],bdiag[n]); */
-  if (bi[n] >= bdiag[n]) SETERRQ2(PETSC_ERR_ARG_SIZ,"end of L array %d cannot >= the beginning of U array %d",bi[n],bdiag[n]);
+  if (bi[n] >= bdiag[n]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"end of L array %d cannot >= the beginning of U array %d",bi[n],bdiag[n]);
 
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);

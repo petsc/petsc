@@ -57,12 +57,12 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size != 1) SETERRQ(PETSC_ERR_SUP,"This is a uniprocessor example only");
+  if (size != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This is a uniprocessor example only");
   
   ierr = PetscOptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-useAlhs",&appctx.useAlhs);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-nphase",&nphase,PETSC_NULL);CHKERRQ(ierr);
-  if (nphase > 3) SETERRQ(PETSC_ERR_SUP,"nphase must be an integer between 1 and 3");
+  if (nphase > 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"nphase must be an integer between 1 and 3");
 
   /* initializations */
   zInitial       = 0.0;
@@ -148,7 +148,7 @@ int main(int argc,char **argv)
     ierr = TSGetType(ts,&type);CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject)ts,TSSUNDIALS,&sundialstype);CHKERRQ(ierr);
     if (sundialstype && appctx.useAlhs){
-      SETERRQ(PETSC_ERR_SUP,"Cannot use Alhs formulation for TSSUNDIALS type");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot use Alhs formulation for TSSUNDIALS type");
     }
   }
 #endif

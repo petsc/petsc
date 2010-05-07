@@ -69,7 +69,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(dmmg[0]->prefix, "-dmmg_fas_debug", &fasDebug);CHKERRQ(ierr);
   if (fasDebug) {ierr = PetscPrintf(dmmg[0]->comm, "  FAS mesh relaxation\n");CHKERRQ(ierr);}
-  if (its <= 0) SETERRQ1(PETSC_ERR_ARG_WRONG, "Relaxation requires global its %D positive", its);
+  if (its <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Relaxation requires global its %D positive", its);
   ierr = MeshCreate(PETSC_COMM_SELF, &smallMesh);CHKERRQ(ierr);
   ierr = DMMGCreate(PETSC_COMM_SELF, -1, PETSC_NULL, &smallDmmg);CHKERRQ(ierr);
   //ierr = DMMGSetMatType(smallDmmg, MATSEQDENSE);CHKERRQ(ierr);
@@ -91,7 +91,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
   //const int                                  cellDof = m->sizeWithBC(sX, *cells->begin());
 
 #ifdef PETSC_OPT_SIEVE
-  SETERRQ(PETSC_ERR_SUP, "I am being lazy, bug me.");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "I am being lazy, bug me.");
 #else
   ALE::Obj<PETSC_MESH_TYPE::names_type> fields = m->getDiscretizations();
   std::map<std::string, ALE::Obj<ALE::Discretization> > sDiscs;

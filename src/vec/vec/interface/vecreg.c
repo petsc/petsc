@@ -43,7 +43,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetType(Vec vec, const VecType method)
 
   if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscFListFind(VecList, ((PetscObject)vec)->comm, method,(void (**)(void)) &r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown vector type: %s", method);
+  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown vector type: %s", method);
 
   if (vec->ops->destroy) {
     ierr = (*vec->ops->destroy)(vec);CHKERRQ(ierr);

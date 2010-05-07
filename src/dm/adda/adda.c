@@ -111,12 +111,12 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDACreate(MPI_Comm comm, PetscInt dim, PetscIn
   procsleft = 1;
   for(i=0; i<dim; i++) {
     if (nodes[i] < procs[i]) {
-      SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Partition in direction %d is too fine! %D nodes, %D processors", i, nodes[i], procs[i]);
+      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Partition in direction %d is too fine! %D nodes, %D processors", i, nodes[i], procs[i]);
     }
     procsleft *= procs[i];
   }
   if(procsleft != size) {
-    SETERRQ(1, "Created or was provided with inconsistent distribution of processors");
+    SETERRQ(PETSC_COMM_SELF,1, "Created or was provided with inconsistent distribution of processors");
   }
 
   /* periodicity */
@@ -244,7 +244,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDADestroy(ADDA adda)
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT ADDAView(ADDA adda, PetscViewer v) {
   PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP, "Not implemented yet");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Not implemented yet");
   PetscFunctionReturn(0);
 }
 
@@ -298,7 +298,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDACreateGlobalVector(ADDA adda, Vec *vec) {
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT ADDAGetColoring(ADDA adda, ISColoringType ctype,const MatType mtype,ISColoring *coloring) {
   PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP, "Not implemented yet");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Not implemented yet");
   PetscFunctionReturn(0);
 }
 
@@ -390,7 +390,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrixNS(ADDA addar, ADDA addac, const M
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT ADDAGetInterpolation(ADDA adda1,ADDA adda2,Mat *mat,Vec *vec) {
   PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP, "Not implemented yet");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Not implemented yet");
   PetscFunctionReturn(0);
 }
 
@@ -416,7 +416,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetInterpolation(ADDA adda1,ADDA adda2,Mat 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT ADDARefine(ADDA adda, MPI_Comm comm, ADDA *addaf) {
   PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP, "Not implemented yet");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Not implemented yet");
   PetscFunctionReturn(0);
 }
 
@@ -482,7 +482,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDACoarsen(ADDA adda, MPI_Comm comm,ADDA *adda
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT ADDAGetInjection(ADDA adda1, ADDA adda2, VecScatter *ctx) {
   PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP, "Not implemented yet");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Not implemented yet");
   PetscFunctionReturn(0);
 }
 
@@ -501,6 +501,8 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetInjection(ADDA adda1, ADDA adda2, VecSca
   Output Parameters:
 . idx - the index that this function increases
 
+  Developer Notes: This code is crap! You cannot return a value and NO ERROR code in PETSc!
+
   Level: developer
 @*/
 PetscTruth ADDAHCiterStartup(const PetscInt dim, const PetscInt *const lc, const PetscInt *const uc, PetscInt *const idx) {
@@ -509,7 +511,7 @@ PetscTruth ADDAHCiterStartup(const PetscInt dim, const PetscInt *const lc, const
 
   ierr = PetscMemcpy(idx, lc, sizeof(PetscInt)*dim);
   if(ierr) {
-    PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,ierr,0," ");
+    PetscError(PETSC_COMM_SELF,__LINE__,__FUNCT__,__FILE__,__SDIR__,ierr,0," ");
     return PETSC_FALSE;
   }
   for(i=0; i<dim; i++) {
@@ -599,8 +601,8 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetAggregates(ADDA addac,ADDA addaf,Mat *re
   PetscValidHeaderSpecific(addac, ADDA_CLASSID, 1);
   PetscValidHeaderSpecific(addaf, ADDA_CLASSID, 2);
   PetscValidPointer(rest,3);
-  if (addac->dim != addaf->dim) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Dimensions of ADDA do not match %D %D", addac->dim, addaf->dim);CHKERRQ(ierr);
-/*   if (addac->dof != addaf->dof) SETERRQ2(PETSC_ERR_ARG_INCOMP,"DOF of ADDA do not match %D %D", addac->dof, addaf->dof);CHKERRQ(ierr); */
+  if (addac->dim != addaf->dim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Dimensions of ADDA do not match %D %D", addac->dim, addaf->dim);CHKERRQ(ierr);
+/*   if (addac->dof != addaf->dof) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"DOF of ADDA do not match %D %D", addac->dof, addaf->dof);CHKERRQ(ierr); */
   dim = addac->dim;
   dofc = addac->dof;
   doff = addaf->dof;

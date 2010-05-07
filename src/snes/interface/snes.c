@@ -160,7 +160,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESAddOptionsChecker(PetscErrorCode (*snesch
 {
   PetscFunctionBegin;
   if (numberofsetfromoptions >= MAXSETFROMOPTIONS) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Too many options checkers, only %D allowed", MAXSETFROMOPTIONS);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Too many options checkers, only %D allowed", MAXSETFROMOPTIONS);
   }
   othersetfromoptions[numberofsetfromoptions++] = snescheck;
   PetscFunctionReturn(0);
@@ -191,14 +191,14 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscTruth hasOpera
     ierr = MatMFFDSetOptionsPrefix(J,((PetscObject)snes)->prefix);CHKERRQ(ierr);
     ierr = MatMFFDSetFromOptions(J);CHKERRQ(ierr);
   } else if (version == 2) {
-    if (!snes->vec_func) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"SNESSetFunction() must be called first");
+    if (!snes->vec_func) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"SNESSetFunction() must be called first");
 #if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SCALAR_SINGLE) && !defined(PETSC_USE_SCALAR_MAT_SINGLE) && !defined(PETSC_USE_SCALAR_LONG_DOUBLE) && !defined(PETSC_USE_SCALAR_INT)
     ierr = SNESDefaultMatrixFreeCreate2(snes,snes->vec_func,&J);CHKERRQ(ierr);
 #else
-    SETERRQ(PETSC_ERR_SUP, "matrix-free operator rutines (version 2)");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "matrix-free operator rutines (version 2)");
 #endif
   } else {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE, "matrix-free operator rutines, only version 1 and 2");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "matrix-free operator rutines, only version 1 and 2");
   }
   
   ierr = PetscInfo1(snes,"Setting default matrix-free operator routines (version %D)\n", version);CHKERRQ(ierr);
@@ -1114,7 +1114,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeFunction(SNES snes,Vec x,Vec y)
   } else if (snes->vec_rhs) {
     ierr = MatMult(snes->jacobian, x, y);CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetFunction() before SNESComputeFunction(), likely called from SNESSolve().");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetFunction() before SNESComputeFunction(), likely called from SNESSolve().");
   }
   if (snes->vec_rhs) {
     ierr = VecAXPY(y,-1.0,snes->vec_rhs);CHKERRQ(ierr);
@@ -1362,13 +1362,13 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
   }
 
   if (!snes->vec_func && !snes->vec_rhs) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
   }
   if (!snes->ops->computefunction && !snes->vec_rhs) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
   }
   if (snes->vec_func == snes->vec_sol) {
-    SETERRQ(PETSC_ERR_ARG_IDN,"Solution vector cannot be function vector");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"Solution vector cannot be function vector");
   }
   if (!snes->ops->computejacobian && snes->dm) {
     Mat           J;
@@ -1469,8 +1469,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetLagPreconditioner(SNES snes,PetscInt l
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  if (lag < -2) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Lag must be -2, -1, 1 or greater");
-  if (!lag) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Lag cannot be 0");
+  if (lag < -2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Lag must be -2, -1, 1 or greater");
+  if (!lag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Lag cannot be 0");
   snes->lagpreconditioner = lag;
   PetscFunctionReturn(0);
 }
@@ -1544,8 +1544,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetLagJacobian(SNES snes,PetscInt lag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  if (lag < -2) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Lag must be -2, -1, 1 or greater");
-  if (!lag) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Lag cannot be 0");
+  if (lag < -2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Lag must be -2, -1, 1 or greater");
+  if (!lag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Lag cannot be 0");
   snes->lagjacobian = lag;
   PetscFunctionReturn(0);
 }
@@ -1882,7 +1882,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSet(SNES snes,PetscErrorCode (*mon
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   if (snes->numbermonitors >= MAXSNESMONITORS) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Too many monitors set");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many monitors set");
   }
   for (i=0; i<snes->numbermonitors;i++) {
     if (monitor == snes->monitor[i] && monitordestroy == snes->monitordestroy[i] && mctx == snes->monitorcontext[i]) PetscFunctionReturn(0);
@@ -2277,7 +2277,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES snes,Vec b,Vec x)
   } 
 
   if (!snes->reason) {
-    SETERRQ(PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
   }
   
   ierr = PetscOptionsGetString(((PetscObject)snes)->prefix,"-snes_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -2356,7 +2356,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetType(SNES snes,const SNESType type)
   if (match) PetscFunctionReturn(0);
 
   ierr =  PetscFListFind(SNESList,((PetscObject)snes)->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested SNES type %s",type);
+  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested SNES type %s",type);
   /* Destroy the previous private SNES context */
   if (snes->ops->destroy) { ierr = (*(snes)->ops->destroy)(snes);CHKERRQ(ierr); }
   /* Reinitialize function pointers in SNESOps structure */
@@ -2801,7 +2801,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESKSPSetParametersEW(SNES snes,PetscInt ver
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   kctx = (SNESKSPEW*)snes->kspconvctx;
-  if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"No Eisenstat-Walker context existing");
+  if (!kctx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"No Eisenstat-Walker context existing");
 
   if (version != PETSC_DEFAULT)   kctx->version   = version;
   if (rtol_0 != PETSC_DEFAULT)    kctx->rtol_0    = rtol_0;
@@ -2812,22 +2812,22 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESKSPSetParametersEW(SNES snes,PetscInt ver
   if (threshold != PETSC_DEFAULT) kctx->threshold = threshold;
   
   if (kctx->version < 1 || kctx->version > 3) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Only versions 1, 2 and 3 are supported: %D",kctx->version);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Only versions 1, 2 and 3 are supported: %D",kctx->version);
   }
   if (kctx->rtol_0 < 0.0 || kctx->rtol_0 >= 1.0) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"0.0 <= rtol_0 < 1.0: %G",kctx->rtol_0);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"0.0 <= rtol_0 < 1.0: %G",kctx->rtol_0);
   }
   if (kctx->rtol_max < 0.0 || kctx->rtol_max >= 1.0) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"0.0 <= rtol_max (%G) < 1.0\n",kctx->rtol_max);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"0.0 <= rtol_max (%G) < 1.0\n",kctx->rtol_max);
   }
   if (kctx->gamma < 0.0 || kctx->gamma > 1.0) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"0.0 <= gamma (%G) <= 1.0\n",kctx->gamma);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"0.0 <= gamma (%G) <= 1.0\n",kctx->gamma);
   }
   if (kctx->alpha <= 1.0 || kctx->alpha > 2.0) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"1.0 < alpha (%G) <= 2.0\n",kctx->alpha);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"1.0 < alpha (%G) <= 2.0\n",kctx->alpha);
   }
   if (kctx->threshold <= 0.0 || kctx->threshold >= 1.0) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"0.0 < threshold (%G) < 1.0\n",kctx->threshold);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"0.0 < threshold (%G) < 1.0\n",kctx->threshold);
   }
   PetscFunctionReturn(0);
 }
@@ -2867,7 +2867,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESKSPGetParametersEW(SNES snes,PetscInt *ve
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   kctx = (SNESKSPEW*)snes->kspconvctx;
-  if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"No Eisenstat-Walker context existing");
+  if (!kctx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"No Eisenstat-Walker context existing");
   if(version)   *version   = kctx->version;
   if(rtol_0)    *rtol_0    = kctx->rtol_0;
   if(rtol_max)  *rtol_max  = kctx->rtol_max;
@@ -2887,7 +2887,7 @@ static PetscErrorCode SNESKSPEW_PreSolve(SNES snes, KSP ksp, Vec b, Vec x)
   PetscReal      rtol=PETSC_DEFAULT,stol;
 
   PetscFunctionBegin;
-  if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"No Eisenstat-Walker context exists");
+  if (!kctx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"No Eisenstat-Walker context exists");
   if (!snes->iter) { /* first time in, so use the original user rtol */
     rtol = kctx->rtol_0;
   } else {
@@ -2910,7 +2910,7 @@ static PetscErrorCode SNESKSPEW_PreSolve(SNES snes, KSP ksp, Vec b, Vec x)
       stol = kctx->gamma*(snes->ttol)/snes->norm;
       stol = PetscMax(rtol,stol);
       rtol = PetscMin(kctx->rtol_0,stol);
-    } else SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Only versions 1, 2 or 3 are supported: %D",kctx->version);
+    } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Only versions 1, 2 or 3 are supported: %D",kctx->version);
   }
   /* safeguard: avoid rtol greater than one */
   rtol = PetscMin(rtol,kctx->rtol_max);
@@ -2929,7 +2929,7 @@ static PetscErrorCode SNESKSPEW_PostSolve(SNES snes, KSP ksp, Vec b, Vec x)
   Vec            lres;
 
   PetscFunctionBegin;
-  if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"No Eisenstat-Walker context exists");
+  if (!kctx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"No Eisenstat-Walker context exists");
   ierr = KSPGetTolerances(ksp,&kctx->rtol_last,0,0,0);CHKERRQ(ierr);
   ierr = SNESGetFunctionNorm(snes,&kctx->norm_last);CHKERRQ(ierr);
   if (kctx->version == 1) {

@@ -11,7 +11,7 @@
 typedef struct _EH *EH;
 struct _EH {
   int            classid;
-  PetscErrorCode (*handler)(int,const char*,const char*,const char *,PetscErrorCode,int,const char*,void *);
+  PetscErrorCode (*handler)(MPI_Comm,int,const char*,const char*,const char *,PetscErrorCode,int,const char*,void *);
   void           *ctx;
   EH             previous;
 };
@@ -27,7 +27,8 @@ static EH eh = 0;
    Not Collective
 
    Input Parameters:
-+  line - the line number of the error (indicated by __LINE__)
++  comm - communicator over which error occured
+.  line - the line number of the error (indicated by __LINE__)
 .  func - the function where error is detected (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __SDIR__)
@@ -47,7 +48,7 @@ static EH eh = 0;
    Most users need not directly employ this routine and the other error 
    handlers, but can instead use the simplified interface SETERRQ, which has 
    the calling sequence
-$     SETERRQ(number,p,mess)
+$     SETERRQ(PETSC_COMM_SELF,number,p,mess)
 
    Notes for experienced users:
    Use PetscPushErrorHandler() to set the desired error handler.
@@ -58,7 +59,7 @@ $     SETERRQ(number,p,mess)
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
           PetscAbortErrorHandler()
  @*/
-PetscErrorCode PETSC_DLLEXPORT PetscEmacsClientErrorHandler(int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,int p,const char *mess,void *ctx)
+PetscErrorCode PETSC_DLLEXPORT PetscEmacsClientErrorHandler(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,int p,const char *mess,void *ctx)
 {
   PetscErrorCode ierr;
   char        command[PETSC_MAX_PATH_LEN];
@@ -73,11 +74,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscEmacsClientErrorHandler(int line,const char 
   ierr = PetscPOpen(MPI_COMM_WORLD,(char*)ctx,command,"r",&fp);
   ierr = PetscPClose(MPI_COMM_WORLD,fp);
 #else
-  SETERRQ(PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif
   ierr = PetscPopErrorHandler(); /* remove this handler from the stack of handlers */
-  if (!eh)     ierr = PetscTraceBackErrorHandler(line,fun,file,dir,n,p,mess,0);
-  else         ierr = (*eh->handler)(line,fun,file,dir,n,p,mess,eh->ctx);
+  if (!eh)     ierr = PetscTraceBackErrorHandler(comm,line,fun,file,dir,n,p,mess,0);
+  else         ierr = (*eh->handler)(comm,line,fun,file,dir,n,p,mess,eh->ctx);
   PetscFunctionReturn(ierr);
 }
 
@@ -94,9 +95,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscEmacsClientErrorHandler(int line,const char 
          example file pointers for error messages etc.)
 
    Calling sequence of handler:
-$    int handler(int line,char *func,char *file,char *dir,PetscErrorCode n,int p,char *mess,void *ctx);
+$    int handler(MPI_Comm comm,int line,char *func,char *file,char *dir,PetscErrorCode n,int p,char *mess,void *ctx);
 
-+  func - the function where the error occured (indicated by __FUNCT__)
++  comm - communicator over which error occured
+.  func - the function where the error occured (indicated by __FUNCT__)
 .  line - the line number of the error (indicated by __LINE__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __SDIR__)
@@ -120,9 +122,9 @@ $    int handler(int line,char *func,char *file,char *dir,PetscErrorCode n,int p
 .seealso: PetscPopErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscPushErrorHandler(PetscErrorCode (*handler)(int,const char *,const char*,const char*,PetscErrorCode,int,const char*,void*),void *ctx)
+PetscErrorCode PETSC_DLLEXPORT PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm comm,int,const char *,const char*,const char*,PetscErrorCode,int,const char*,void*),void *ctx)
 {
-  EH  neweh;
+  EH             neweh;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -151,7 +153,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPushErrorHandler(PetscErrorCode (*handler)(i
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscPopErrorHandler(void)
 {
-  EH  tmp;
+  EH             tmp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -172,7 +174,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscPopErrorHandler(void)
    Not Collective
 
    Input Parameters:
-+  line - the line number of the error (indicated by __LINE__)
++  comm - communicator over which error occurred
+.  line - the line number of the error (indicated by __LINE__)
 .  func - the function where error is detected (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __SDIR__)
@@ -187,7 +190,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPopErrorHandler(void)
    Most users need not directly employ this routine and the other error 
    handlers, but can instead use the simplified interface SETERRQ, which has 
    the calling sequence
-$     SETERRQ(number,p,mess)
+$     SETERRQ(comm,number,mess)
 
    Notes for experienced users:
    This routine is good for catching errors such as zero pivots in preconditioners
@@ -203,7 +206,7 @@ $     SETERRQ(number,p,mess)
 .seealso:  PetscPushErrorHandler(), PetscPopErrorHandler().
  @*/
 
-PetscErrorCode PETSC_DLLEXPORT PetscReturnErrorHandler(int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,int p,const char *mess,void *ctx)
+PetscErrorCode PETSC_DLLEXPORT PetscReturnErrorHandler(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,int p,const char *mess,void *ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(n);
@@ -340,7 +343,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode err,PetscTr
   PetscFunctionBegin;
   if (!flg && PetscErrorIsCatchable(err)) {
     /* add to list of uncatchable */
-    if (PetscErrorUncatchableCount >= PETSC_EXCEPTIONS_MAX) SETERRQ(PETSC_ERR_PLIB,"Stack for PetscErrorUncatchable is overflowed, recompile \nsrc/sysd/error/err.c with a larger value for PETSC_EXCEPTIONS_MAX");
+    if (PetscErrorUncatchableCount >= PETSC_EXCEPTIONS_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Stack for PetscErrorUncatchable is overflowed, recompile \nsrc/sysd/error/err.c with a larger value for PETSC_EXCEPTIONS_MAX");
     PetscErrorUncatchable[PetscErrorUncatchableCount++] = err;
   } else if (flg && !PetscErrorIsCatchable(err)) {
     /* remove from list of uncatchable */
@@ -379,7 +382,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode err,PetscTr
 PetscErrorCode PETSC_DLLEXPORT PetscExceptionPush(PetscErrorCode err) 
 {
   PetscFunctionBegin;
-  if (PetscExceptionsCount >= PETSC_EXCEPTIONS_MAX) SETERRQ(PETSC_ERR_PLIB,"Stack for PetscExceptions is overflowed, recompile \nsrc/sysd/error/err.c with a larger value for PETSC_EXCEPTIONS_MAX");
+  if (PetscExceptionsCount >= PETSC_EXCEPTIONS_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Stack for PetscExceptions is overflowed, recompile \nsrc/sysd/error/err.c with a larger value for PETSC_EXCEPTIONS_MAX");
   if (PetscErrorIsCatchable(err)) PetscExceptions[PetscExceptionsCount++] = err;
   PetscFunctionReturn(0);   
 }
@@ -404,7 +407,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscExceptionPush(PetscErrorCode err)
 PetscErrorCode PETSC_DLLEXPORT PetscExceptionPop(PetscErrorCode err)
 {
   PetscFunctionBegin;
-  if (PetscExceptionsCount <= 0)SETERRQ(PETSC_ERR_PLIB,"Stack for PetscExceptions is empty");
+  if (PetscExceptionsCount <= 0)SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Stack for PetscExceptions is empty");
   if (PetscErrorIsCatchable(err)) PetscExceptionsCount--;
   PetscFunctionReturn(0);
 }
@@ -414,12 +417,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscExceptionPop(PetscErrorCode err)
 #define __FUNCT__ "PetscError" 
 /*@C
    PetscError - Routine that is called when an error has been detected, 
-   usually called through the macro SETERRQ().
+   usually called through the macro SETERRQ(PETSC_COMM_SELF,).
 
    Not Collective
 
    Input Parameters:
-+  line - the line number of the error (indicated by __LINE__)
++  comm - communicator over which error occurred.  ALL ranks of this communicator MUST call this routine
+.  line - the line number of the error (indicated by __LINE__)
 .  func - the function where the error occured (indicated by __FUNCT__)
 .  dir - the directory of file (indicated by __SDIR__)
 .  file - the file in which the error was detected (indicated by __FILE__)
@@ -435,7 +439,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscExceptionPop(PetscErrorCode err)
    Most users need not directly use this routine and the error handlers, but
    can instead use the simplified interface SETERRQ, which has the calling 
    sequence
-$     SETERRQ(n,mess)
+$     SETERRQ(comm,n,mess)
 
    Experienced users can set the error handler with PetscPushErrorHandler().
 
@@ -443,7 +447,7 @@ $     SETERRQ(n,mess)
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), SETERRQ(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscError(int line,const char *func,const char* file,const char *dir,PetscErrorCode n,int p,const char *mess,...)
+PetscErrorCode PETSC_DLLEXPORT PetscError(MPI_Comm comm,int line,const char *func,const char* file,const char *dir,PetscErrorCode n,int p,const char *mess,...)
 {
   va_list        Argp;
   int            fullLength;
@@ -477,8 +481,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscError(int line,const char *func,const char* 
   }
 #endif
 
-  if (!eh)     ierr = PetscTraceBackErrorHandler(line,func,file,dir,n,p,lbuf,0);
-  else         ierr = (*eh->handler)(line,func,file,dir,n,p,lbuf,eh->ctx);
+  if (!eh)     ierr = PetscTraceBackErrorHandler(comm,line,func,file,dir,n,p,lbuf,0);
+  else         ierr = (*eh->handler)(comm,line,func,file,dir,n,p,lbuf,eh->ctx);
 
   /* 
       If this is called from the main() routine we call MPI_Abort() instead of 
@@ -505,7 +509,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscError(int line,const char *func,const char* 
    Not Collective
 
    Input Parameters:
-+  line - the line number of the error (indicated by __LINE__)
++  comm - communicator over which the error occurred
+.  line - the line number of the error (indicated by __LINE__)
 .  func - the function where the error occured (indicated by __FUNCT__)
 .  dir - the directory of file (indicated by __SDIR__)
 .  file - the file in which the error was detected (indicated by __FILE__)
@@ -519,7 +524,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscError(int line,const char *func,const char* 
    Most users need not directly use this routine and the error handlers, but
    can instead use the simplified interface SETERRQ, which has the calling 
    sequence
-$     SETERRQ(n,mess)
+$     SETERRQ(comm,n,mess)
 
    Experienced users can set the error handler with PetscPushErrorHandler().
 
@@ -527,7 +532,7 @@ $     SETERRQ(n,mess)
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), SETERRQ(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 @*/
-void PETSC_DLLEXPORT PetscErrorCxx(int line,const char *func,const char* file,const char *dir,PetscErrorCode n,int p)
+void PETSC_DLLEXPORT PetscErrorCxx(MPI_Comm comm,int line,const char *func,const char* file,const char *dir,PetscErrorCode n,int p)
 {
   PetscTruth ismain, isunknown;
 #if 0
@@ -651,7 +656,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscIntView(PetscInt N,const PetscInt idx[],Pets
   } else {
     const char *tname;
     ierr = PetscObjectGetName((PetscObject)viewer,&tname);CHKERRQ(ierr);
-    SETERRQ1(PETSC_ERR_SUP,"Cannot handle that PetscViewer of type %s",tname);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that PetscViewer of type %s",tname);
   }
   PetscFunctionReturn(0);
 }
@@ -737,7 +742,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRealView(PetscInt N,const PetscReal idx[],Pe
   } else {
     const char *tname;
     ierr = PetscObjectGetName((PetscObject)viewer,&tname);CHKERRQ(ierr);
-    SETERRQ1(PETSC_ERR_SUP,"Cannot handle that PetscViewer of type %s",tname);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that PetscViewer of type %s",tname);
   }
   PetscFunctionReturn(0);
 }
@@ -835,7 +840,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt N,const PetscScalar idx[
   } else {
     const char *tname;
     ierr = PetscObjectGetName((PetscObject)viewer,&tname);CHKERRQ(ierr);
-    SETERRQ1(PETSC_ERR_SUP,"Cannot handle that PetscViewer of type %s",tname);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle that PetscViewer of type %s",tname);
   }
   PetscFunctionReturn(0);
 }

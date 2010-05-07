@@ -54,7 +54,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDataTypeToMPIDataType(PetscDataType ptype,MP
   } else if (ptype == PETSC_LONG_DOUBLE) {
     *mtype = MPI_LONG_DOUBLE;
   } else {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown PETSc datatype");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown PETSc datatype");
   }
   PetscFunctionReturn(0);
 }
@@ -105,7 +105,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMPIDataTypeToPetscDataType(MPI_Datatype mtyp
   } else if (mtype == MPI_LONG_DOUBLE) {
     *ptype = PETSC_LONG_DOUBLE;
   } else {
-    SETERRQ(PETSC_ERR_SUP,"Unhandled MPI datatype");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled MPI datatype");
   }
   PetscFunctionReturn(0);
 }
@@ -183,7 +183,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDataTypeGetSize(PetscDataType ptype,size_t *
   } else if (ptype == PETSC_LONG_DOUBLE) {
     *size = PETSC_LONG_DOUBLE_SIZE;
   } else {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown PETSc datatype");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown PETSc datatype");
   }
   PetscFunctionReturn(0);
 }

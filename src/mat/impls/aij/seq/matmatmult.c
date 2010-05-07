@@ -290,9 +290,9 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
 
   PetscFunctionBegin;
   if (!cm || !cn) PetscFunctionReturn(0);
-  if (bm != A->cmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Number columns in A %D not equal rows in B %D\n",A->cmap->n,bm);
-  if (A->rmap->n != C->rmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Number rows in C %D not equal rows in A %D\n",C->rmap->n,A->rmap->n);
-  if (B->cmap->n != C->cmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Number columns in B %D not equal columns in C %D\n",B->cmap->n,C->cmap->n);
+  if (bm != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in A %D not equal rows in B %D\n",A->cmap->n,bm);
+  if (A->rmap->n != C->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number rows in C %D not equal rows in A %D\n",C->rmap->n,A->rmap->n);
+  if (B->cmap->n != C->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in B %D not equal columns in C %D\n",B->cmap->n,C->cmap->n);
   ierr = MatGetArray(B,&b);CHKERRQ(ierr);
   ierr = MatGetArray(C,&c);CHKERRQ(ierr);
   b1 = b; b2 = b1 + bm; b3 = b2 + bm; b4 = b3 + bm;

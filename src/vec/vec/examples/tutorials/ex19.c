@@ -55,7 +55,7 @@ int main(int argc,char **argv)
   if (!equal) {
     ierr = VecView(x, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = VecView(y, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    SETERRQ(PETSC_ERR_PLIB, "Error in HDF5 viewer");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Error in HDF5 viewer");
   }
 
   ierr = VecDestroy(x);CHKERRQ(ierr);

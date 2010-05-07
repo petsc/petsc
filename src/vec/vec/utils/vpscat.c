@@ -77,7 +77,7 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for this scatter",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this scatter",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }  
@@ -1519,7 +1519,7 @@ PetscErrorCode VecScatterCreateLocal(VecScatter ctx,PetscInt nsends,const PetscI
   ierr = PetscMalloc2(PetscMax(to->n,nrecvs),MPI_Status,&to->sstatus,PetscMax(to->n,nrecvs),MPI_Status,&to->rstatus);CHKERRQ(ierr);
   to->starts[0] = 0;
   for(n = 0; n < to->n; n++) {
-    if (sendSizes[n] <=0 ) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"sendSizes[n=%D] = %D cannot be less than 1",n,sendSizes[n]);
+    if (sendSizes[n] <=0 ) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"sendSizes[n=%D] = %D cannot be less than 1",n,sendSizes[n]);
     to->starts[n+1] = to->starts[n] + sendSizes[n];
     to->procs[n] = sendProcs[n];
     for(i = to->starts[n]; i < to->starts[n]+sendSizes[n]; i++) {
@@ -1536,7 +1536,7 @@ PetscErrorCode VecScatterCreateLocal(VecScatter ctx,PetscInt nsends,const PetscI
   ierr = PetscMalloc4(bs*recvSize,PetscScalar,&from->values,recvSize,PetscInt,&from->indices,from->n+1,PetscInt,&from->starts,from->n,PetscMPIInt,&from->procs);CHKERRQ(ierr);
   from->starts[0] = 0;
   for(n = 0; n < from->n; n++) {
-    if (recvSizes[n] <=0 ) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"recvSizes[n=%D] = %D cannot be less than 1",n,recvSizes[n]);
+    if (recvSizes[n] <=0 ) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"recvSizes[n=%D] = %D cannot be less than 1",n,recvSizes[n]);
     from->starts[n+1] = from->starts[n] + recvSizes[n];
     from->procs[n] = recvProcs[n];
     for(i = from->starts[n]; i < from->starts[n]+recvSizes[n]; i++) {
@@ -1663,7 +1663,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
     count--;
   }
 
-  if (slen != recvtotal) SETERRQ2(PETSC_ERR_PLIB,"Total message lengths %D not expected %D",slen,recvtotal);
+  if (slen != recvtotal) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Total message lengths %D not expected %D",slen,recvtotal);
  
   /* allocate entire send scatter context */
   ierr  = PetscNewLog(ctx,VecScatter_MPI_General,&to);CHKERRQ(ierr);
@@ -1715,7 +1715,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   for (i=0; i<nx; i++) {
     if (owner[i] != rank) {
       from->indices[start[lowner[owner[i]]]++] = inidy[i];
-      if (inidy[i] >= lengthy) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Scattering past end of TO vector");
+      if (inidy[i] >= lengthy) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Scattering past end of TO vector");
     }
   }
   ierr = PetscFree2(lowner,start);CHKERRQ(ierr);
@@ -1740,7 +1740,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
       if (idx >= owners[rank] && idx < owners[rank+1]) {
         to->local.vslots[nt]     = idx - owners[rank];        
         from->local.vslots[nt++] = inidy[i];        
-        if (inidy[i] >= lengthy) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Scattering past end of TO vector");
+        if (inidy[i] >= lengthy) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Scattering past end of TO vector");
       }
     }
   } else { 
@@ -2024,7 +2024,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
     ctx->end       = VecScatterEnd_1; 
     break;
   default:
-    SETERRQ(PETSC_ERR_SUP,"Blocksize not supported");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Blocksize not supported");
   }
   ctx->view      = VecScatterView_MPI;
   /* Check if the local scatter is actually a copy; important special case */
@@ -2127,7 +2127,7 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt 
       }
     }
 #if defined(PETSC_USE_DEBUG)
-    if (!found) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Index %D out of range",idx);
+    if (!found) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %D out of range",idx);
     found = PETSC_FALSE;
 #endif
   }
@@ -2181,7 +2181,7 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt 
     slen += n/2;
     count--;
   }
-  if (slen != recvtotal) SETERRQ2(PETSC_ERR_PLIB,"Total message lengths %D not as expected %D",slen,recvtotal);
+  if (slen != recvtotal) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Total message lengths %D not as expected %D",slen,recvtotal);
   
   ierr  = PetscMalloc2(slen,PetscInt,&local_inidx,slen,PetscInt,&local_inidy);CHKERRQ(ierr);
   base  = owners[rank];

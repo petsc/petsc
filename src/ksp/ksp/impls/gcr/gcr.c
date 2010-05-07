@@ -153,8 +153,8 @@ PetscErrorCode KSPSetUp_GCR( KSP ksp )
   Mat            A;
         
   PetscFunctionBegin;
-  if (ksp->pc_side == PC_LEFT) {SETERRQ(PETSC_ERR_SUP,"No left preconditioning for GCR");}
-  else if (ksp->pc_side == PC_SYMMETRIC) {SETERRQ(PETSC_ERR_SUP,"No symmetric preconditioning for GCR");}
+  if (ksp->pc_side == PC_LEFT) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No left preconditioning for GCR");}
+  else if (ksp->pc_side == PC_SYMMETRIC) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No symmetric preconditioning for GCR");}
 
   ierr = KSPGetOperators( ksp, &A, 0, 0 );CHKERRQ(ierr);
   ierr = MatGetVecs( A, &ctx->R, PETSC_NULL );CHKERRQ(ierr);

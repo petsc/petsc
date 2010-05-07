@@ -165,7 +165,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDefaultSignalHandler(int sig,void *ptr)
   (*PetscErrorPrintf)("configure using --with-debugging=yes, recompile, link, and run \n");
   (*PetscErrorPrintf)("to get more information on the crash.\n");
 #endif
-  ierr =  PetscError(0,"User provided function"," unknown file","unknown directory",PETSC_ERR_SIG,1,PETSC_NULL);
+  ierr =  PetscError(PETSC_COMM_SELF,0,"User provided function"," unknown file","unknown directory",PETSC_ERR_SIG,1,PETSC_NULL);
   MPI_Abort(PETSC_COMM_WORLD,(int)ierr);
   PetscFunctionReturn(0);
 }
@@ -314,7 +314,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPushSignalHandler(PetscErrorCode (*routine)(
   }
   ierr = PetscNew(struct SH,&newsh);CHKERRQ(ierr);
   if (sh) {
-    if (sh->classid != SIGNAL_CLASSID) SETERRQ(PETSC_ERR_COR,"Signal object has been corrupted");
+    if (sh->classid != SIGNAL_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Signal object has been corrupted");
     newsh->previous = sh;
   } 
   else {newsh->previous = 0;}
@@ -347,7 +347,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPopSignalHandler(void)
 
   PetscFunctionBegin;
   if (!sh) PetscFunctionReturn(0);
-  if (sh->classid != SIGNAL_CLASSID) SETERRQ(PETSC_ERR_COR,"Signal object has been corrupted");
+  if (sh->classid != SIGNAL_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Signal object has been corrupted");
 
   tmp = sh;
   sh  = sh->previous;

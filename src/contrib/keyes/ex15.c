@@ -858,10 +858,10 @@ int FormInterpolation(AppCtx *user,GridCtx *g_f,GridCtx *g_c)
       nc = 0;
       /* one left and below; or we are right on it */
       if (j_c < j_start_ghost_c || j_c > j_start_ghost_c+n_ghost_c) {
-        SETERRQ3(1,1,"Sorry j %d %d %d",j_c,j_start_ghost_c,j_start_ghost_c+n_ghost_c);
+        SETERRQ3(PETSC_COMM_SELF,1,1,"Sorry j %d %d %d",j_c,j_start_ghost_c,j_start_ghost_c+n_ghost_c);
       }
       if (i_c < i_start_ghost_c || i_c > i_start_ghost_c+m_ghost_c) {
-        SETERRQ3(1,1,"Sorry i %d %d %d",i_c,i_start_ghost_c,i_start_ghost_c+m_ghost_c);
+        SETERRQ3(PETSC_COMM_SELF,1,1,"Sorry i %d %d %d",i_c,i_start_ghost_c,i_start_ghost_c+m_ghost_c);
       }
       col      = m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c);
       cols[nc] = idx_c[col]; 

@@ -37,11 +37,11 @@ PetscErrorCode ConstantSectionTest(const Obj<topology_type>& topology, Options *
 
     section->setFiberDimensionByDepth(patch, 0, 1);
     if (section->size(patch) != (int) stratum->size()) {
-      SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid section patch size %d should be %d", section->size(patch), stratum->size());
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid section patch size %d should be %d", section->size(patch), stratum->size());
     }
     for(topology_type::label_sequence::iterator d_iter = stratum->begin(); d_iter != stratum->end(); ++d_iter) {
-      if (section->size(patch, *d_iter) != 1) SETERRQ(PETSC_ERR_ARG_SIZ, "Invalid section point size");
-      if (section->restrict(patch, *d_iter)[0] != value) SETERRQ(PETSC_ERR_ARG_SIZ, "Invalid section point value");
+      if (section->size(patch, *d_iter) != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid section point size");
+      if (section->restrict(patch, *d_iter)[0] != value) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid section point value");
     }
   }
   if (options->debug) {section->view("Constant Section");}
@@ -65,19 +65,19 @@ PetscErrorCode UniformSectionTest(const Obj<topology_type>& topology, Options *o
 
     section->setFiberDimensionByDepth(patch, 0, 2);
     if (section->size(patch) != (int) stratum->size()*2) {
-      SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid section patch size %d should be %d", section->size(patch), stratum->size());
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid section patch size %d should be %d", section->size(patch), stratum->size());
     }
     for(topology_type::label_sequence::iterator d_iter = stratum->begin(); d_iter != stratum->end(); ++d_iter) {
       if (section->size(patch, *d_iter) != 2) {
-        SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid section point size %d should be %d", section->size(patch, *d_iter), 2);
+        SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid section point size %d should be %d", section->size(patch, *d_iter), 2);
       }
       section->update(patch, *d_iter, value);
       value[0]++;
     }
     value[0] = 0;
     for(topology_type::label_sequence::iterator d_iter = stratum->begin(); d_iter != stratum->end(); ++d_iter) {
-      if (section->restrict(patch, *d_iter)[0] != value[0]) SETERRQ(PETSC_ERR_PLIB, "Invalid uniform section point value");
-      if (section->restrict(patch, *d_iter)[1] != value[1]) SETERRQ(PETSC_ERR_PLIB, "Invalid uniform section point value");
+      if (section->restrict(patch, *d_iter)[0] != value[0]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid uniform section point value");
+      if (section->restrict(patch, *d_iter)[1] != value[1]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid uniform section point value");
       value[0]++;
     }
   }
@@ -111,11 +111,11 @@ PetscErrorCode LinearTest(const Obj<section_type>& section, Options *options)
   }
   // Verification
   if (section->size(patch) != numVertices) {
-    SETERRQ2(PETSC_ERR_ARG_SIZ, "Linear Test: Invalid patch size %d should be %d", section->size(patch), numVertices);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Linear Test: Invalid patch size %d should be %d", section->size(patch), numVertices);
   }
   for(topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
     if (section->size(patch, *e_iter) != numCorners) {
-      SETERRQ2(PETSC_ERR_ARG_SIZ, "Linear Test: Invalid element size %d should be %d", section->size(patch, *e_iter), numCorners);
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Linear Test: Invalid element size %d should be %d", section->size(patch, *e_iter), numCorners);
     }
   }
   for(topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
@@ -123,7 +123,7 @@ PetscErrorCode LinearTest(const Obj<section_type>& section, Options *options)
     int neighbors = topology->getPatch(patch)->nSupport(*v_iter, depth)->size();
 
     if (values[0] != neighbors*3.0) {
-      SETERRQ2(PETSC_ERR_PLIB, "Linear Test: Invalid vertex value %g should be %g", values[0], neighbors*3.0);
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Linear Test: Invalid vertex value %g should be %g", values[0], neighbors*3.0);
     }
   }
   PetscFunctionReturn(0);
@@ -164,16 +164,16 @@ PetscErrorCode CubicTest(const Obj<section_type>& section, Options *options)
   section->view("Cubic");
   // Verification
   if (atlas->size(patch) != numVertices + numEdges*2 + numFaces) {
-    SETERRQ2(PETSC_ERR_ARG_SIZ, "Cubic Test: Invalid patch size %d should be %d", atlas->size(patch), numVertices + numEdges*2 + numFaces);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Cubic Test: Invalid patch size %d should be %d", atlas->size(patch), numVertices + numEdges*2 + numFaces);
   }
   for(topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
     const section_type::value_type *values = section->restrictPoint(patch, *e_iter);
 
     if (atlas->size(patch, *e_iter) != 3 + 3*2 + 1) {
-      SETERRQ2(PETSC_ERR_ARG_SIZ, "Cubic Test: Invalid element size %d should be %d", atlas->size(patch, *e_iter), 3 + 3*2 + 1);
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Cubic Test: Invalid element size %d should be %d", atlas->size(patch, *e_iter), 3 + 3*2 + 1);
     }
     if (values[0] != 3.0) {
-      SETERRQ2(PETSC_ERR_ARG_SIZ, "Cubic Test: Invalid cell value %g should be %g", values[0], 3.0);
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Cubic Test: Invalid cell value %g should be %g", values[0], 3.0);
     }
   }
   for(topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
@@ -181,7 +181,7 @@ PetscErrorCode CubicTest(const Obj<section_type>& section, Options *options)
     int neighbors = topology->getPatch(patch)->nSupport(*v_iter, depth)->size();
 
     if (values[0] != neighbors*1.0) {
-      SETERRQ2(PETSC_ERR_ARG_SIZ, "Cubic Test: Invalid vertex value %g should be %g", values[0], neighbors*1.0);
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Cubic Test: Invalid vertex value %g should be %g", values[0], neighbors*1.0);
     }
   }
   const Obj<topology_type::label_sequence>& edges = topology->heightStratum(patch, 1);
@@ -191,10 +191,10 @@ PetscErrorCode CubicTest(const Obj<section_type>& section, Options *options)
     int neighbors = topology->getPatch(patch)->nSupport(*e_iter, depth-1)->size();
 
     if (values[0] != neighbors*2.0) {
-      SETERRQ2(PETSC_ERR_ARG_SIZ, "Cubic Test: Invalid first edge value %g should be %g", values[0], neighbors*2.0);
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Cubic Test: Invalid first edge value %g should be %g", values[0], neighbors*2.0);
     }
     if (values[1] != neighbors*2.0) {
-      SETERRQ2(PETSC_ERR_ARG_SIZ, "Cubic Test: Invalid second edge value %g should be %g", values[1], neighbors*2.0);
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Cubic Test: Invalid second edge value %g should be %g", values[1], neighbors*2.0);
     }
   }
   PetscFunctionReturn(0);

@@ -371,7 +371,7 @@ PetscErrorCode PCSetRichardsonScale_ASA(KSP ksp, PetscReal spec_rad, PetscReal r
       spec_rad_inv = 1.0/spec_rad;
       ierr = KSPRichardsonSetScale(ksp, spec_rad_inv);CHKERRQ(ierr);
     } else {
-      SETERRQ(PETSC_ERR_SUP, "Unknown PC type for smoother. Please specify scaling factor with -pc_asa_richardson_scale\n");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Unknown PC type for smoother. Please specify scaling factor with -pc_asa_richardson_scale\n");
     }
   }
   PetscFunctionReturn(0);
@@ -532,7 +532,7 @@ PetscErrorCode PCCreateAggregates_ASA(PC_ASA_level *asa_lev)
     ierr = DMGetAggregates(asa_lev->next->dm, asa_lev->dm, &(asa_lev->agg));CHKERRQ(ierr);
     ierr = MatGetSize(asa_lev->agg, &m, &n);CHKERRQ(ierr);
     ierr = MatGetLocalSize(asa_lev->agg, &m_loc, &n_loc);CHKERRQ(ierr);
-    if (n!=asa_lev->size) SETERRQ(PETSC_ERR_ARG_SIZ,"DM interpolation matrix has incorrect size!\n");
+    if (n!=asa_lev->size) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"DM interpolation matrix has incorrect size!\n");
     asa_lev->next->size = m;
     asa_lev->aggnum     = m;
     /* create the correlators, right now just identity matrices */
@@ -547,7 +547,7 @@ PetscErrorCode PCCreateAggregates_ASA(PC_ASA_level *asa_lev)
   } else {
     /* somehow define the aggregates without knowing the geometry */
     /* future WORK */
-    SETERRQ(PETSC_ERR_SUP, "Currently pure algebraic coarsening is not supported!");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Currently pure algebraic coarsening is not supported!");
   }
   PetscFunctionReturn(0);
 }
@@ -762,13 +762,13 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscTruth construc
        b1 = PetscBLASIntCast(*(cand_vec_length+a));
        b2 = PetscBLASIntCast(*(new_loc_agg_dofs+a));
        LAPACKgeqrf_(&b1, &b2, b_submat_tp, &b1, tau, work, &b2, &info);
-       if (info) SETERRQ(PETSC_ERR_LIB, "LAPACKgeqrf_ LAPACK routine failed");
+       if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, "LAPACKgeqrf_ LAPACK routine failed");
 #if !defined(PETSC_MISSING_LAPACK_ORGQR) 
        LAPACKungqr_(&b1, &b2, &b2, b_submat_tp, &b1, tau, work, &b2, &info);
 #else
-       SETERRQ(PETSC_ERR_SUP,"ORGQR - Lapack routine is unavailable\nIf linking with ESSL you MUST also link with full LAPACK, for example\nuse ./configure with --with-blas-lib=libessl.a --with-lapack-lib=/usr/local/lib/liblapack.a'");
+       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"ORGQR - Lapack routine is unavailable\nIf linking with ESSL you MUST also link with full LAPACK, for example\nuse ./configure with --with-blas-lib=libessl.a --with-lapack-lib=/usr/local/lib/liblapack.a'");
 #endif
-       if (info) SETERRQ(PETSC_ERR_LIB, "LAPACKungqr_ LAPACK routine failed");
+       if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, "LAPACKungqr_ LAPACK routine failed");
 
        /* Transpose b_submat_tp and store it in b_orth_arr[a]. If we are constructing a
 	  bridging restriction/interpolation operator, we could end up with less dofs than
@@ -826,7 +826,7 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscTruth construc
   }
   mat_loc_col_end = mat_loc_col_start + loc_cols[i];
   mat_loc_col_size = mat_loc_col_end-mat_loc_col_start;
-  if (mat_loc_col_size != total_loc_cols) SETERRQ(PETSC_ERR_COR, "Local size does not match matrix size");
+  if (mat_loc_col_size != total_loc_cols) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR, "Local size does not match matrix size");
   ierr = PetscFree(loc_cols);CHKERRQ(ierr);
 
   /* we now have enough information to create asa_lev->P */
@@ -847,7 +847,7 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscTruth construc
   /* this is my own hack, but it should give the columns that we should write to */
   ierr = MatGetOwnershipRangeColumn(asa_lev->P, &mat_loc_col_start, &mat_loc_col_end);CHKERRQ(ierr);
   mat_loc_col_size = mat_loc_col_end-mat_loc_col_start;
-  if (mat_loc_col_size != total_loc_cols) SETERRQ(PETSC_ERR_ARG_SIZ, "The number of local columns in asa_lev->P assigned to this processor does not match the local vector size");
+  if (mat_loc_col_size != total_loc_cols) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "The number of local columns in asa_lev->P assigned to this processor does not match the local vector size");
 
   loc_agg_dofs_sum = 0;
   /* construct P, Pt, agg_corr, bridge_corr */
@@ -965,8 +965,8 @@ PetscErrorCode PCCreateVcycle_ASA(PC_ASA *asa)
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(PC_CreateVcycle_ASA, 0,0,0,0);CHKERRQ(ierr);
 
-  if (!asa) SETERRQ(PETSC_ERR_ARG_NULL, "asa pointer is NULL");
-  if (!(asa->levellist)) SETERRQ(PETSC_ERR_ARG_NULL, "no levels found");
+  if (!asa) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL, "asa pointer is NULL");
+  if (!(asa->levellist)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL, "no levels found");
   asa_lev = asa->levellist;
   ierr = PCComputeSpectralRadius_ASA(asa_lev);CHKERRQ(ierr);
   ierr = PCSetupSmoothersOnLevel_ASA(asa, asa_lev, asa->nu);CHKERRQ(ierr);
@@ -1154,7 +1154,7 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
   /* Check if it already converges by itself */
   if (norm/prevnorm <= pow(asa->epsilon, asa->mu_initial)) {
     /* converges by relaxation alone */ 
-    SETERRQ(PETSC_ERR_SUP, "Relaxation should be sufficient to treat this problem. "
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Relaxation should be sufficient to treat this problem. "
 	    "Use relaxation or decrease epsilon with -pc_asa_epsilon");
   } else {
     /* set the number of relaxations to asa->mu from asa->mu_initial */
@@ -1327,7 +1327,7 @@ PetscErrorCode PCApplyVcycleOnLevel_ASA(PC_ASA_level *asa_lev, PetscInt gamma)
   PetscInt       g;
 
   PetscFunctionBegin;
-  if (!asa_lev) SETERRQ(PETSC_ERR_ARG_NULL, "Level is empty in PCApplyVcycleOnLevel_ASA");
+  if (!asa_lev) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL, "Level is empty in PCApplyVcycleOnLevel_ASA");
   asa_next_lev = asa_lev->next;
 
   if (asa_next_lev) {
@@ -1410,9 +1410,9 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscTruth *cand_a
   *cand_added = PETSC_FALSE;
   
   asa_lev = asa->levellist;
-  if (asa_lev == 0) SETERRQ(PETSC_ERR_ARG_NULL, "No levels found in PCGeneralSetupStage_ASA");
+  if (asa_lev == 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL, "No levels found in PCGeneralSetupStage_ASA");
   asa_next_lev = asa_lev->next;
-  if (asa_next_lev == 0) SETERRQ(PETSC_ERR_ARG_NULL, "Just one level, not implemented yet");
+  if (asa_next_lev == 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL, "Just one level, not implemented yet");
   
   ierr = PetscPrintf(asa_lev->comm, "General setup stage\n");CHKERRQ(ierr);
 
@@ -1482,7 +1482,7 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscTruth *cand_a
 
   /* 5. Update B_1, by adding new column x_1 */
   if (asa_lev->cand_vecs >= asa->max_cand_vecs) {
-    SETERRQ(PETSC_ERR_MEM, "Number of candidate vectors will exceed allocated storage space");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM, "Number of candidate vectors will exceed allocated storage space");
   } else {
     ierr = PetscPrintf(asa_lev->comm, "Adding candidate vector %D\n", asa_lev->cand_vecs+1);CHKERRQ(ierr);
   }
@@ -2034,7 +2034,7 @@ static PetscErrorCode PCView_ASA(PC pc,PetscViewer viewer)
       asa_lev = asa_lev->next;
     }
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for PCASA",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for PCASA",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

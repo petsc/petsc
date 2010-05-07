@@ -79,7 +79,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetLocalToGlobalMapping(Vec x,ISLocalToGlob
   PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,2);
 
   if (x->mapping) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for vector");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for vector");
   }
 
   if (x->ops->setlocaltoglobalmapping) {
@@ -124,7 +124,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetLocalToGlobalMappingBlock(Vec x,ISLocalT
   PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,2);
 
   if (x->bmapping) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for vector");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for vector");
   }
   ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
   if (x->bmapping) { ierr = ISLocalToGlobalMappingDestroy(x->bmapping);CHKERRQ(ierr); }
@@ -320,8 +320,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMax(Vec w,Vec x,Vec y)
   PetscValidType(y,3);
   PetscCheckSameTypeAndComm(x,2,y,3);
   PetscCheckSameTypeAndComm(y,3,w,1);
-  if (x->map->N != y->map->N || x->map->N != w->map->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
-  if (x->map->n != y->map->n || x->map->n != w->map->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+  if (x->map->N != y->map->N || x->map->N != w->map->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->map->n != y->map->n || x->map->n != w->map->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = (*w->ops->pointwisemax)(w,x,y);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)w);CHKERRQ(ierr);
@@ -364,8 +364,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMin(Vec w,Vec x,Vec y)
   PetscValidType(y,3);
   PetscCheckSameTypeAndComm(x,2,y,3);
   PetscCheckSameTypeAndComm(y,3,w,1);
-  if (x->map->N != y->map->N || x->map->N != w->map->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
-  if (x->map->n != y->map->n || x->map->n != w->map->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+  if (x->map->N != y->map->N || x->map->N != w->map->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->map->n != y->map->n || x->map->n != w->map->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = (*w->ops->pointwisemin)(w,x,y);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)w);CHKERRQ(ierr);
@@ -406,8 +406,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMaxAbs(Vec w,Vec x,Vec y)
   PetscValidType(y,3);
   PetscCheckSameTypeAndComm(x,2,y,3);
   PetscCheckSameTypeAndComm(y,3,w,1);
-  if (x->map->N != y->map->N || x->map->N != w->map->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
-  if (x->map->n != y->map->n || x->map->n != w->map->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+  if (x->map->N != y->map->N || x->map->N != w->map->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->map->n != y->map->n || x->map->n != w->map->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = (*w->ops->pointwisemaxabs)(w,x,y);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)w);CHKERRQ(ierr);
@@ -448,8 +448,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseDivide(Vec w,Vec x,Vec y)
   PetscValidType(y,3);
   PetscCheckSameTypeAndComm(x,2,y,3);
   PetscCheckSameTypeAndComm(y,3,w,1);
-  if (x->map->N != y->map->N || x->map->N != w->map->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
-  if (x->map->n != y->map->n || x->map->n != w->map->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+  if (x->map->N != y->map->N || x->map->N != w->map->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->map->n != y->map->n || x->map->n != w->map->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = (*w->ops->pointwisedivide)(w,x,y);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)w);CHKERRQ(ierr);
@@ -695,7 +695,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecView(Vec vec,PetscViewer viewer)
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(vec,1,viewer,2);
-  if (vec->stash.n || vec->bstash.n) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call VecAssemblyBegin/End() before viewing this vector");
+  if (vec->stash.n || vec->bstash.n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call VecAssemblyBegin/End() before viewing this vector");
 
   ierr = PetscLogEventBegin(VEC_View,vec,viewer,0,0);CHKERRQ(ierr);
   /*
@@ -908,7 +908,7 @@ PetscErrorCode VecDuplicateVecs_Default(Vec w,PetscInt m,Vec *V[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(w,VEC_CLASSID,1);
   PetscValidPointer(V,3);
-  if (m <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"m must be > 0: m = %D",m);
+  if (m <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m must be > 0: m = %D",m);
   ierr = PetscMalloc(m*sizeof(Vec*),V);CHKERRQ(ierr);
   for (i=0; i<m; i++) {ierr = VecDuplicate(w,*V+i);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -923,7 +923,7 @@ PetscErrorCode VecDestroyVecs_Default(Vec v[], PetscInt m)
 
   PetscFunctionBegin;
   PetscValidPointer(v,1);
-  if (m <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"m must be > 0: m = %D",m);
+  if (m <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m must be > 0: m = %D",m);
   for (i=0; i<m; i++) {ierr = VecDestroy(v[i]);CHKERRQ(ierr);}
   ierr = PetscFree(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -955,7 +955,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecResetArray(Vec vec)
   if (vec->ops->resetarray) {
     ierr = (*vec->ops->resetarray)(vec);CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_ERR_SUP,"Cannot reset array in this type of vector");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot reset array in this type of vector");
   }
   ierr = PetscObjectStateIncrease((PetscObject)vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1016,7 +1016,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoadIntoVector(PetscViewer viewer,Vec vec)
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
   PetscValidType(vec,2);
   if (!vec->ops->loadintovector) {
-    SETERRQ(PETSC_ERR_SUP,"Vector does not support load");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support load");
   }
   ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   /*
@@ -1062,9 +1062,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecReciprocal(Vec vec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
   PetscValidType(vec,1);
-  if (vec->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
+  if (vec->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
   if (!vec->ops->reciprocal) {
-    SETERRQ(PETSC_ERR_SUP,"Vector does not support reciprocal operation");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support reciprocal operation");
   }
   ierr = (*vec->ops->reciprocal)(vec);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)vec);CHKERRQ(ierr);
@@ -1158,7 +1158,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecConjugate(Vec x)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
-  if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
+  if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
   ierr = (*x->ops->conjugate)(x);CHKERRQ(ierr);
   /* we need to copy norms here */
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
@@ -1202,7 +1202,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMult(Vec w, Vec x,Vec y)
   PetscValidType(y,3);
   PetscCheckSameTypeAndComm(x,2,y,3);
   PetscCheckSameTypeAndComm(y,3,w,1);
-  if (x->map->n != y->map->n || x->map->n != w->map->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+  if (x->map->n != y->map->n || x->map->n != w->map->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PetscLogEventBegin(VEC_PointwiseMult,x,y,w,0);CHKERRQ(ierr);
   ierr = (*w->ops->pointwisemult)(w,x,y);CHKERRQ(ierr);
@@ -1249,7 +1249,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetRandom(Vec x,PetscRandom rctx)
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (rctx) PetscValidHeaderSpecific(rctx,PETSC_RANDOM_CLASSID,2);
   PetscValidType(x,1);
-  if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
+  if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
 
   if (!rctx) {
     MPI_Comm    comm;
@@ -1407,8 +1407,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetSizes(Vec v, PetscInt n, PetscInt N)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID,1);
-  if (N > 0 && n > N) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Local size %D cannot be larger than global size %D",n,N);
-  if ((v->map->n >= 0 || v->map->N >= 0) && (v->map->n != n || v->map->N != N)) SETERRQ4(PETSC_ERR_SUP,"Cannot change/reset vector sizes to %D local %D global after previously setting them to %D local %D global",n,N,v->map->n,v->map->N);
+  if (N > 0 && n > N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local size %D cannot be larger than global size %D",n,N);
+  if ((v->map->n >= 0 || v->map->N >= 0) && (v->map->n != n || v->map->N != N)) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset vector sizes to %D local %D global after previously setting them to %D local %D global",n,N,v->map->n,v->map->N);
   v->map->n = n;
   v->map->N = N;
   if (v->ops->create) {
@@ -1445,8 +1445,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetBlockSize(Vec v,PetscInt bs)
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   if (bs <= 0) bs = 1;
   if (bs == v->map->bs) PetscFunctionReturn(0);
-  if (v->map->N != -1 && v->map->N % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Vector length not divisible by blocksize %D %D",v->map->N,bs);
-  if (v->map->n != -1 && v->map->n % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local vector length not divisible by blocksize %D %D\n\
+  if (v->map->N != -1 && v->map->N % bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Vector length not divisible by blocksize %D %D",v->map->N,bs);
+  if (v->map->n != -1 && v->map->n % bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local vector length not divisible by blocksize %D %D\n\
    Try setting blocksize before setting the vector type",v->map->n,bs);
 
   v->map->bs   = bs;
@@ -1690,8 +1690,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCopy(Vec x,Vec y)
   PetscValidType(x,1);
   PetscValidType(y,2);
   if (x == y) PetscFunctionReturn(0);
-  if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
-  if (x->map->n != y->map->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+  if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
+  if (x->map->n != y->map->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PetscLogEventBegin(VEC_Copy,x,y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->copy)(x,y);CHKERRQ(ierr);
@@ -1744,10 +1744,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSwap(Vec x,Vec y)
   PetscValidType(x,1);
   PetscValidType(y,2);
   PetscCheckSameTypeAndComm(x,1,y,2);
-  if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
-  if (y->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
-  if (x->map->N != y->map->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
-  if (x->map->n != y->map->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+  if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
+  if (y->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
+  if (x->map->N != y->map->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->map->n != y->map->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PetscLogEventBegin(VEC_Swap,x,y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->swap)(x,y);CHKERRQ(ierr);
@@ -1803,7 +1803,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStashView(Vec v,PetscViewer viewer)
   PetscCheckSameComm(v,1,viewer,2);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&match);CHKERRQ(ierr);
-  if (!match) SETERRQ1(PETSC_ERR_SUP,"Stash viewer only works with ASCII viewer not %s\n",((PetscObject)v)->type_name);
+  if (!match) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Stash viewer only works with ASCII viewer not %s\n",((PetscObject)v)->type_name);
   ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(((PetscObject)v)->comm,&rank);CHKERRQ(ierr);
   s = &v->bstash;

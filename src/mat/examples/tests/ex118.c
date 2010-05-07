@@ -26,10 +26,10 @@ int main(int argc,char **args)
   
   PetscInitialize(&argc,&args,(char *)0,help);
 #if defined(PETSC_USE_COMPLEX)
-  SETERRQ(1,"This example does not work with complex numbers");
+  SETERRQ(PETSC_COMM_SELF,1,"This example does not work with complex numbers");
 #else
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size != 1) SETERRQ(PETSC_ERR_SUP,"This is a uniprocessor example only!");
+  if (size != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   n    = 100;
   nevs = iu - il;
@@ -49,21 +49,21 @@ int main(int argc,char **args)
 
   /* Solve eigenvalue problem: A*evec = eval*evec */
 #if defined(PETSC_MISSING_LAPACK_STEBZ)
-  SETERRQ(PETSC_ERR_SUP,"STEBZ - Lapack routine is unavailable.");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"STEBZ - Lapack routine is unavailable.");
 #else
   printf(" LAPACKstebz_: compute %d eigenvalues...\n",nevs);    
   LAPACKstebz_("I","E",&n,&vl,&vu,&il,&iu,&tol,(PetscReal*)D,(PetscReal*)E,&nevs,&nsplit,(PetscReal*)evals,iblock,isplit,work,iwork,&info);
-  if (info) SETERRQ1(PETSC_ERR_USER,"LAPACKstebz_ fails. info %d",info); 
+  if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"LAPACKstebz_ fails. info %d",info); 
 #endif
 
   printf(" LAPACKstein_: compute %d found eigenvectors...\n",nevs); 
   ierr = PetscMalloc(n*nevs*sizeof(PetscScalar),&evecs_array);CHKERRQ(ierr);
   ierr = PetscMalloc(nevs*sizeof(PetscInt),&ifail);CHKERRQ(ierr);
 #if defined(PETSC_MISSING_LAPACK_STEIN)
-  SETERRQ(PETSC_ERR_SUP,"STEIN - Lapack routine is unavailable.");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"STEIN - Lapack routine is unavailable.");
 #else
   LAPACKstein_(&n,(PetscReal*)D,(PetscReal*)E,&nevs,(PetscReal*)evals,iblock,isplit,evecs_array,&n,work,iwork,ifail,&info);
-  if (info) SETERRQ1(PETSC_ERR_USER,"LAPACKstein_ fails. info %d",info); 
+  if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"LAPACKstein_ fails. info %d",info); 
 #endif
   /* View evals */
   ierr = PetscOptionsHasName(PETSC_NULL, "-eig_view", &flg);CHKERRQ(ierr);

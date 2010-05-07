@@ -31,10 +31,10 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
 #if defined(PETSC_USE_COMPLEX)
-  SETERRQ(1,"This example does not work with complex numbers");
+  SETERRQ(PETSC_COMM_SELF,1,"This example does not work with complex numbers");
 #endif
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(1,"Only runs on one processor");
+  if (size > 1) SETERRQ(PETSC_COMM_SELF,1,"Only runs on one processor");
 
   ierr = PetscOptionsGetString(PETSC_NULL,"-fin",bfile,PETSC_MAX_PATH_LEN-1,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL,"-fout",hbfile,PETSC_MAX_PATH_LEN-1,PETSC_NULL);CHKERRQ(ierr);
@@ -50,12 +50,12 @@ int main(int argc,char **args)
 
   m = A->m;
   n = A->n;
-  if (n != m) SETERRQ(1,"Only for square matrices");
+  if (n != m) SETERRQ(PETSC_COMM_SELF,1,"Only for square matrices");
 
   /* charrage returns \n may not belong below
     depends on what 80 character fixed format means to Fortran */
 
-  file = fopen(hbfile,"w"); if (!file) SETERRQ(1,"Cannot open HB file");
+  file = fopen(hbfile,"w"); if (!file) SETERRQ(PETSC_COMM_SELF,1,"Cannot open HB file");
   sprintf(head,"%-72s%-8s\n","Title","Key");
   fprintf(file,head);
   a  = (Mat_SeqAIJ*)A->data;

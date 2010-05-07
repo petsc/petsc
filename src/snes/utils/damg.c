@@ -55,7 +55,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGCreate(MPI_Comm comm,PetscInt nlevels,voi
   } else {
     ierr = PetscOptionsGetInt(0,"-dmmg_nlevels",&nlevels,PETSC_IGNORE);CHKERRQ(ierr);
   }
-  if (nlevels < 1) SETERRQ(PETSC_ERR_USER,"Cannot set levels less than 1");
+  if (nlevels < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot set levels less than 1");
 
   ierr = PetscMalloc(nlevels*sizeof(DMMG),&p);CHKERRQ(ierr);
   for (i=0; i<nlevels; i++) {
@@ -155,7 +155,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGDestroy(DMMG *dmmg)
   PetscInt       i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
-  if (!dmmg) SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
+  if (!dmmg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Passing null as DMMG");
 
   for (i=1; i<nlevels; i++) {
     if (dmmg[i]->R) {ierr = MatDestroy(dmmg[i]->R);CHKERRQ(ierr);}
@@ -212,7 +212,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetDM(DMMG *dmmg, DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!dmmg) SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
+  if (!dmmg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Passing null as DMMG");
 
   /* Create DM data structure for all the levels */
   ierr = PetscOptionsGetTruth(PETSC_NULL, "-dmmg_refine", &doRefine, PETSC_IGNORE);CHKERRQ(ierr);
@@ -366,7 +366,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
   MPI_Comm                *comms;
 
   PetscFunctionBegin;
-  if (!dmmg) SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
+  if (!dmmg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Passing null as DMMG");
 
   /* use fgmres on outer iteration by default */
   ierr  = KSPSetType(ksp,KSPFGMRES);CHKERRQ(ierr);
@@ -445,7 +445,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
   KSP            lksp;
   
   PetscFunctionBegin;
-  if (!dmmg) SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
+  if (!dmmg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Passing null as DMMG");
 
   if (!dmmg[0]->ksp) {
     /* create solvers for each level if they don't already exist*/
@@ -538,7 +538,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGView(DMMG *dmmg,PetscViewer viewer)
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_compare(comm,dmmg[0]->comm,&flag);CHKERRQ(ierr);
   if (flag != MPI_CONGRUENT && flag != MPI_IDENT) {
-    SETERRQ(PETSC_ERR_ARG_NOTSAMECOMM,"Different communicators in the DMMG and the PetscViewer");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"Different communicators in the DMMG and the PetscViewer");
   }
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -607,10 +607,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetNullSpace(DMMG *dmmg,PetscTruth has_cn
   PetscTruth     ismg,isred;
 
   PetscFunctionBegin;
-  if (!dmmg) SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
-  if (!dmmg[0]->ksp) SETERRQ(PETSC_ERR_ORDER,"Must call AFTER DMMGSetKSP() or DMMGSetSNES()");
-  if ((n && !func) || (!n && func)) SETERRQ(PETSC_ERR_ARG_INCOMP,"Both n and func() must be set together");
-  if (n < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Cannot have negative number of vectors in null space n = %D",n)
+  if (!dmmg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Passing null as DMMG");
+  if (!dmmg[0]->ksp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call AFTER DMMGSetKSP() or DMMGSetSNES()");
+  if ((n && !func) || (!n && func)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Both n and func() must be set together");
+  if (n < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Cannot have negative number of vectors in null space n = %D",n)
 
   for (i=0; i<nlevels; i++) {
     if (n) {

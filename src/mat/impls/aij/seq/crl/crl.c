@@ -32,7 +32,7 @@ PetscErrorCode MatDestroy_SeqCRL(Mat A)
 PetscErrorCode MatDuplicate_CRL(Mat A, MatDuplicateOption op, Mat *M) 
 {
   PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP,"Cannot duplicate CRL matrices yet");    
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot duplicate CRL matrices yet");    
   PetscFunctionReturn(0);
 }
 

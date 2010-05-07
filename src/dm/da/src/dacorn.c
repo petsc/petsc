@@ -199,7 +199,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetGhostedCoordinates(DA da,Vec *c)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(c,2);
-  if (!da->coordinates) SETERRQ(PETSC_ERR_ORDER,"You must call DASetCoordinates() before this call");
+  if (!da->coordinates) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"You must call DASetCoordinates() before this call");
   if (!da->ghosted_coordinates) {
     DA dac;
     ierr = DAGetCoordinateDA(da,&dac);CHKERRQ(ierr);
@@ -241,7 +241,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetFieldName(DA da,PetscInt nf,const char nam
   PetscFunctionBegin;
  
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (nf < 0 || nf >= da->w) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
+  if (nf < 0 || nf >= da->w) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
   if (da->fieldname[nf]) {ierr = PetscFree(da->fieldname[nf]);CHKERRQ(ierr);}
   
   ierr = PetscStrallocpy(name,&da->fieldname[nf]);CHKERRQ(ierr);
@@ -276,7 +276,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetFieldName(DA da,PetscInt nf,char **name)
  
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(name,3);
-  if (nf < 0 || nf >= da->w) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
+  if (nf < 0 || nf >= da->w) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
   *name = da->fieldname[nf];
   PetscFunctionReturn(0);
 }

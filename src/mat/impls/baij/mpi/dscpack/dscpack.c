@@ -141,7 +141,7 @@ PetscErrorCode  BAIJtoMyANonz( PetscInt *AIndex, PetscInt *AStruct, PetscInt bs,
   } /* end outer loop for i */
 
   ierr = PetscFree2(NewColNum); 
-  if (MyANonz_last != NumLocalNonz) SETERRQ2(PETSC_ERR_PLIB,"MyANonz_last %d != NumLocalNonz %d\n",MyANonz_last, NumLocalNonz);
+  if (MyANonz_last != NumLocalNonz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MyANonz_last %d != NumLocalNonz %d\n",MyANonz_last, NumLocalNonz);
   PetscFunctionReturn(0);
 }
 
@@ -203,7 +203,7 @@ PetscErrorCode MatSolve_DSCPACK(Mat A,Vec b,Vec x)
     ierr = DSC_Solve(lu->My_DSC_Solver);
     if (ierr !=  DSC_NO_ERROR) {
       DSC_ErrorDisplay(lu->My_DSC_Solver);
-      SETERRQ(PETSC_ERR_LIB,"Error in calling DSC_Solve");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in calling DSC_Solve");
     }
 
     /* get the permuted local solution */
@@ -273,14 +273,14 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat F,Mat A,const MatFactorInfo 
                    &lu->local_struc_old_num);
       if (ierr !=  DSC_NO_ERROR) {
         DSC_ErrorDisplay(lu->My_DSC_Solver);
-        SETERRQ(PETSC_ERR_LIB,"Error when use DSC_Order()");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error when use DSC_Order()");
       }
 
       ierr = DSC_SFactor(lu->My_DSC_Solver,&max_mem_estimate,&max_single_malloc_blk,
                      lu->max_mem_allowed, lu->LBLASLevel, lu->DBLASLevel);
       if (ierr !=  DSC_NO_ERROR) {
         DSC_ErrorDisplay(lu->My_DSC_Solver);
-        SETERRQ(PETSC_ERR_LIB,"Error when use DSC_Order"); 
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error when use DSC_Order"); 
       }
 
       ierr = BAIJtoMyANonz(a_seq->i, a_seq->j, lu->bs, a_seq->a,
@@ -291,7 +291,7 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat F,Mat A,const MatFactorInfo 
                        &my_a_nonz);
       if (ierr <0) {
           DSC_ErrorDisplay(lu->My_DSC_Solver);
-          SETERRQ1(PETSC_ERR_LIB,"Error setting local nonzeroes at processor %d \n", lu->dsc_id);
+          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error setting local nonzeroes at processor %d \n", lu->dsc_id);
       }
 
       /* get local_cols_old_num and IS my_cols to be used later */
@@ -353,7 +353,7 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat F,Mat A,const MatFactorInfo 
                        &my_a_nonz);
         if (ierr <0) {
           DSC_ErrorDisplay(lu->My_DSC_Solver);
-          SETERRQ1(PETSC_ERR_LIB,"Error setting local nonzeroes at processor %d \n", lu->dsc_id);
+          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error setting local nonzeroes at processor %d \n", lu->dsc_id);
         }
         ierr = PetscFree2(idx,iidex);CHKERRQ(ierr);
         ierr = PetscFree(itmp);CHKERRQ(ierr);
@@ -369,7 +369,7 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat F,Mat A,const MatFactorInfo 
                        &my_a_nonz);
       if (ierr <0) {
         DSC_ErrorDisplay(lu->My_DSC_Solver);
-        SETERRQ1(PETSC_ERR_LIB,"Error setting local nonzeroes at processor %d \n", lu->dsc_id);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error setting local nonzeroes at processor %d \n", lu->dsc_id);
       }
     }
     if ( size>1 ) {ierr = MatDestroyMatrices(1,&tseq);CHKERRQ(ierr); }   
@@ -553,7 +553,7 @@ PetscErrorCode MatFactorInfo_DSCPACK(Mat A,PetscViewer viewer)
   } else if (lu->factor_type == 0) {
     s = "None";
   } else {
-    SETERRQ(PETSC_ERR_PLIB,"Unknown factor type");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unknown factor type");
   }
   ierr = PetscViewerASCIIPrintf(viewer,"  factor type: %s \n",s);CHKERRQ(ierr);
 
@@ -566,7 +566,7 @@ PetscErrorCode MatFactorInfo_DSCPACK(Mat A,PetscViewer viewer)
   } else if (lu->LBLASLevel == 0) {
     s = "None";
   } else {
-    SETERRQ(PETSC_ERR_PLIB,"Unknown local phase BLAS level");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unknown local phase BLAS level");
   }
   ierr = PetscViewerASCIIPrintf(viewer,"  local phase BLAS level: %s \n",s);CHKERRQ(ierr);
   
@@ -577,7 +577,7 @@ PetscErrorCode MatFactorInfo_DSCPACK(Mat A,PetscViewer viewer)
   } else if (lu->DBLASLevel == 0) {
     s = "None";
   } else {
-    SETERRQ(PETSC_ERR_PLIB,"Unknown distributed phase BLAS level");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unknown distributed phase BLAS level");
   }
   ierr = PetscViewerASCIIPrintf(viewer,"  distributed phase BLAS level: %s \n",s);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -42,9 +42,9 @@ PetscErrorCode    KSPSetUp_FGMRES(KSP ksp)
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(PETSC_ERR_SUP,"no symmetric preconditioning for KSPFGMRES");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"no symmetric preconditioning for KSPFGMRES");
   } else if (ksp->pc_side == PC_LEFT) {
-    SETERRQ(PETSC_ERR_SUP,"no left preconditioning for KSPFGMRES");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"no left preconditioning for KSPFGMRES");
   }
   max_k         = fgmres->max_k;
 
@@ -229,7 +229,7 @@ PetscErrorCode FGMREScycle(PetscInt *itcount,KSP ksp)
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
       if (!ksp->reason) {
-        SETERRQ(0,"You reached the happy break down,but convergence was not indicated.");
+        SETERRQ(PETSC_COMM_SELF,0,"You reached the happy break down,but convergence was not indicated.");
       }
       break;
     }
@@ -284,8 +284,8 @@ PetscErrorCode KSPSolve_FGMRES(KSP ksp)
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
-  if (ksp->normtype != KSP_NORM_UNPRECONDITIONED) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Can only use FGMRES with unpreconditioned residual (it is coded with right preconditioning)");
+  if (diagonalscale) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  if (ksp->normtype != KSP_NORM_UNPRECONDITIONED) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Can only use FGMRES with unpreconditioned residual (it is coded with right preconditioning)");
 
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its = 0;
@@ -668,7 +668,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart_FGMRES(KSP ksp,PetscInt max
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (max_k < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Restart must be positive");
+  if (max_k < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Restart must be positive");
   if (!ksp->setupcalled) {
     gmres->max_k = max_k;
   } else if (gmres->max_k != max_k) {

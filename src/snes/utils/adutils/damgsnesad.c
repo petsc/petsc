@@ -1280,7 +1280,7 @@ PetscErrorCode DMMGSolveFAS_NCG(DMMG *dmmg, PetscInt level)
   ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
   
   ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);	/* fnorm <- ||F||  */
-  if (fnorm != fnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+  if (fnorm != fnorm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = fnorm;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);

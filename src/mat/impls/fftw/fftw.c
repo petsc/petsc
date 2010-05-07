@@ -140,11 +140,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqFFTW(MPI_Comm comm,PetscInt ndim,c
   PetscInt       p_flag;
 
   PetscFunctionBegin;
-  if (ndim < 0) SETERRQ1(PETSC_ERR_USER,"ndim %d must be > 0",ndim);
+  if (ndim < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"ndim %d must be > 0",ndim);
   ierr = MatCreate(comm,A);CHKERRQ(ierr);
   m = 1;
   for (i=0; i<ndim; i++){
-    if (dim[i] < 0) SETERRQ2(PETSC_ERR_USER,"dim[%d]=%d must be > 0",i,dim[i]);
+    if (dim[i] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"dim[%d]=%d must be > 0",i,dim[i]);
     m *= dim[i];
   }
   ierr = MatSetSizes(*A,m,m,m,m);CHKERRQ(ierr);  

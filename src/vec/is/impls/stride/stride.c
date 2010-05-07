@@ -246,7 +246,7 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -330,7 +330,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateStride(MPI_Comm comm,PetscInt n,PetscI
   PetscFunctionBegin;
   PetscValidPointer(is,5);
   *is = PETSC_NULL;
-  if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Number of indices < 0");
+  if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of indices < 0");
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = ISInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif

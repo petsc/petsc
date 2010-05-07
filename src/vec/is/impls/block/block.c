@@ -63,7 +63,7 @@ PetscErrorCode ISRestoreIndices_Block(IS in,const PetscInt *idx[])
     ierr = PetscFree(*(void**)idx);CHKERRQ(ierr);
   } else {
     if (*idx !=  sub->idx) {
-      SETERRQ(PETSC_ERR_ARG_WRONG,"Must restore with value from ISGetIndices()");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must restore with value from ISGetIndices()");
     }
   }
   PetscFunctionReturn(0);
@@ -111,7 +111,7 @@ PetscErrorCode ISInvertPermutation_Block(IS is,PetscInt nlocal,IS *isout)
     ierr = ISSetPermutation(*isout);CHKERRQ(ierr);
     ierr = PetscFree(ii);CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_ERR_SUP,"No inversion written yet for block IS");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No inversion written yet for block IS");
   }
   PetscFunctionReturn(0);
 }
@@ -139,7 +139,7 @@ PetscErrorCode ISView_Block(IS is, PetscViewer viewer)
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -209,7 +209,7 @@ static PetscErrorCode ISCopy_Block(IS is,IS isy)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (is_block->n != isy_block->n || is_block->N != isy_block->N || is_block->bs != isy_block->bs) SETERRQ(PETSC_ERR_ARG_INCOMP,"Index sets incompatible");
+  if (is_block->n != isy_block->n || is_block->N != isy_block->N || is_block->bs != isy_block->bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Index sets incompatible");
   isy_block->sorted = is_block->sorted;
   ierr = PetscMemcpy(isy_block->idx,is_block->idx,is_block->n*sizeof(PetscInt));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -272,7 +272,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscI
 
   PetscFunctionBegin;
   PetscValidPointer(is,5);
-  if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
+  if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
   if (n) {PetscValidIntPointer(idx,4);}
   *is = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
@@ -333,7 +333,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetIndices(IS in,const PetscInt *idx[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(in,IS_CLASSID,1);
   PetscValidPointer(idx,2);
-  if (((PetscObject)in)->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,"Not a block index set");
+  if (((PetscObject)in)->type != IS_BLOCK) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a block index set");
 
   sub = (IS_Block*)in->data;
   *idx = sub->idx; 
@@ -366,7 +366,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockRestoreIndices(IS is,const PetscInt *id
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(idx,2);
-  if (((PetscObject)is)->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,"Not a block index set");
+  if (((PetscObject)is)->type != IS_BLOCK) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a block index set");
   PetscFunctionReturn(0);
 }
 
@@ -397,7 +397,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetBlockSize(IS is,PetscInt *size)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(size,2);
-  if (((PetscObject)is)->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,"Not a block index set");
+  if (((PetscObject)is)->type != IS_BLOCK) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a block index set");
 
   sub = (IS_Block *)is->data;
   *size = sub->bs; 
@@ -461,7 +461,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetLocalSize(IS is,PetscInt *size)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(size,2);
-  if (((PetscObject)is)->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,"Not a block index set");
+  if (((PetscObject)is)->type != IS_BLOCK) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a block index set");
 
   sub = (IS_Block *)is->data;
   *size = sub->n; 
@@ -495,7 +495,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetSize(IS is,PetscInt *size)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidIntPointer(size,2);
-  if (((PetscObject)is)->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,"Not a block index set");
+  if (((PetscObject)is)->type != IS_BLOCK) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a block index set");
 
   sub = (IS_Block *)is->data;
   *size = sub->N;

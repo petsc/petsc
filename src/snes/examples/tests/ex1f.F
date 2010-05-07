@@ -112,7 +112,7 @@
          if (rank .eq. 0) then
             write(6,*) 'This is a uniprocessor example only!'
          endif
-         SETERRQ(1,' ',ierr)
+         SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
       endif
 
 !  Initialize problem parameters
@@ -128,7 +128,7 @@
      &     flg,ierr)
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
          if (rank .eq. 0) write(6,*) 'Lambda is out of range'
-         SETERRQ(1,' ',ierr)
+         SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
       endif
       N       = mx*my
 

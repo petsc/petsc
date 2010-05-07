@@ -115,7 +115,7 @@ PetscErrorCode PCView_SOR(PC pc,PetscViewer viewer)
     else                                     sortype = "unknown";
     ierr = PetscViewerASCIIPrintf(viewer,"  SOR: type = %s, iterations = %D, local iterations = %D, omega = %G\n",sortype,jac->its,jac->lits,jac->omega);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for PCSOR",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for PCSOR",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -144,7 +144,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSORSetOmega_SOR(PC pc,PetscReal omega)
   PC_SOR *jac;
 
   PetscFunctionBegin;
-  if (omega >= 2.0 || omega <= 0.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Relaxation out of range");
+  if (omega >= 2.0 || omega <= 0.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Relaxation out of range");
   jac        = (PC_SOR*)pc->data; 
   jac->omega = omega;
   PetscFunctionReturn(0);

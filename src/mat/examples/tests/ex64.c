@@ -17,7 +17,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(1,"Can only run on one processor");
+  if (size > 1) SETERRQ(PETSC_COMM_SELF,1,"Can only run on one processor");
 
   /* 
      Open binary file.  Note that we use FILE_MODE_WRITE to indicate

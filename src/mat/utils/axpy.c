@@ -36,7 +36,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure
 
   ierr = MatGetSize(X,&m1,&n1);CHKERRQ(ierr);
   ierr = MatGetSize(Y,&m2,&n2);CHKERRQ(ierr);
-  if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_ERR_ARG_SIZ,"Non conforming matrix add: %D %D %D %D",m1,m2,n1,n2);
+  if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Non conforming matrix add: %D %D %D %D",m1,m2,n1,n2);
 
   if (Y->ops->axpy) {
     ierr = (*Y->ops->axpy)(Y,a,X,str);CHKERRQ(ierr);
@@ -107,8 +107,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatShift(Mat Y,PetscScalar a)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Y,MAT_CLASSID,1);
-  if (!Y->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (Y->factortype) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (!Y->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (Y->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   ierr = MatPreallocated(Y);CHKERRQ(ierr);
 
   if (Y->ops->shift) {
@@ -137,7 +137,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalSet_Default(Mat Y,Vec D,InsertMode 
   ierr = VecGetOwnershipRange(D,&vstart,&vend);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Y,&start,&end);CHKERRQ(ierr);
   if (vstart != start || vend != end) {
-    SETERRQ4(PETSC_ERR_ARG_SIZ,"Vector ownership range not compatible with matrix: %D %D vec %D %D mat",vstart,vend,start,end);
+    SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vector ownership range not compatible with matrix: %D %D vec %D %D mat",vstart,vend,start,end);
   }
   ierr = VecGetArray(D,&v);CHKERRQ(ierr);
   for (i=start; i<end; i++) {
@@ -218,7 +218,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAYPX(Mat Y,PetscScalar a,Mat X,MatStructure
 
   ierr = MatGetSize(X,&mX,&nX);CHKERRQ(ierr);
   ierr = MatGetSize(X,&mY,&nY);CHKERRQ(ierr);
-  if (mX != mY || nX != nY) SETERRQ4(PETSC_ERR_ARG_SIZ,"Non conforming matrices: %D %D first %D %D second",mX,mY,nX,nY);
+  if (mX != mY || nX != nY) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Non conforming matrices: %D %D first %D %D second",mX,mY,nX,nY);
 
   ierr = MatScale(Y,a);CHKERRQ(ierr);
   ierr = MatAXPY(Y,one,X,str);CHKERRQ(ierr)
@@ -337,7 +337,7 @@ PetscErrorCode MatAXPYGetxtoy_Private(PetscInt m,PetscInt *xi,PetscInt *xj,Petsc
           ycol = yj[*yi + jy]; 
         }
       }
-      if (xcol != ycol) SETERRQ2(PETSC_ERR_ARG_WRONG,"X matrix entry (%D,%D) is not in Y matrix",row,ycol);
+      if (xcol != ycol) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"X matrix entry (%D,%D) is not in Y matrix",row,ycol);
       x2y[i++] = *yi + jy;
     }
     xi++; yi++;

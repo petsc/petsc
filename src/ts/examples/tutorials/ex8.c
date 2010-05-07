@@ -91,7 +91,7 @@ static PetscErrorCode RoberSolution(PetscReal t,Vec X,void *ctx)
   PetscScalar *x;
 
   PetscFunctionBegin;
-  if (t != 0) SETERRQ(1,"not implemented");
+  if (t != 0) SETERRQ(PETSC_COMM_SELF,1,"not implemented");
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   x[0] = 1;
   x[1] = 0;
@@ -301,7 +301,7 @@ int main(int argc,char **argv)
     PetscErrorCode (*pcreate)(Problem);
 
     ierr = PetscFListFind(plist,MPI_COMM_WORLD,pname,(void(**)(void))&pcreate);CHKERRQ(ierr);
-    if (!pcreate) SETERRQ1(1,"No problem '%s'",pname);
+    if (!pcreate) SETERRQ1(PETSC_COMM_SELF,1,"No problem '%s'",pname);
     ierr = (*pcreate)(problem);CHKERRQ(ierr);
   }
 

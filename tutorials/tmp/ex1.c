@@ -110,7 +110,7 @@ int main(int argc, char *args[])
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &args, (char *) 0, help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(PETSC_ERR_SUP,"This preprocessor runs only on one process");
+  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This preprocessor runs only on one process");
 
   /* Open Glenn's file */
   ierr = PetscViewerCreate(PETSC_COMM_SELF, &hdf5viewer);CHKERRQ(ierr);
@@ -122,12 +122,12 @@ int main(int argc, char *args[])
   /* get number of cells and then number of edges */
   dataset_id = H5Dopen(file_id, "/Cells/Natural IDs");
   dataspace_id = H5Dget_space(dataset_id);
-  status = H5Sget_simple_extent_dims(dataspace_id, &data.numCells, NULL);if (status < 0) SETERRQ(PETSC_ERR_LIB,"Bad dimension");
+  status = H5Sget_simple_extent_dims(dataspace_id, &data.numCells, NULL);if (status < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad dimension");
   status = H5Sclose(dataspace_id);CHKERRQ(status);
   status = H5Dclose(dataset_id);CHKERRQ(status);
   dataset_id = H5Dopen(file_id, "/Connections/Areas");
   dataspace_id = H5Dget_space(dataset_id);
-  status = H5Sget_simple_extent_dims(dataspace_id, &data.numFaces, NULL);if (status < 0) SETERRQ(PETSC_ERR_LIB,"Bad dimension");
+  status = H5Sget_simple_extent_dims(dataspace_id, &data.numFaces, NULL);if (status < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad dimension");
   status = H5Sclose(dataspace_id);CHKERRQ(status);
   status = H5Dclose(dataset_id);CHKERRQ(status);
   ierr = PetscPrintf(PETSC_COMM_SELF, "Number of cells %D Number of faces %D \n",(PetscInt)data.numCells,(PetscInt)data.numFaces);CHKERRQ(ierr);

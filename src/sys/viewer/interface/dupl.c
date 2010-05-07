@@ -43,7 +43,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerGetSingleton(PetscViewer viewer,PetscV
   } else if (viewer->ops->getsingleton) {
     ierr = (*viewer->ops->getsingleton)(viewer,outviewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Cannot get singleton PetscViewer for type %s",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get singleton PetscViewer for type %s",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -125,7 +125,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerGetSubcomm(PetscViewer viewer,MPI_Comm
   } else if (viewer->ops->getsubcomm) {
     ierr = (*viewer->ops->getsubcomm)(viewer,subcomm,outviewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Cannot get subcommunicator PetscViewer for type %s",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get subcommunicator PetscViewer for type %s",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

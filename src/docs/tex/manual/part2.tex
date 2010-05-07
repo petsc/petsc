@@ -4695,7 +4695,7 @@ Fortran programmers
 can check these error codes with
 \trl{CHKERRQ(ierr)}, which terminates all processes when an error is
 encountered.  Likewise, one can set error codes within Fortran programs by
-using \trl{SETERRQ(ierr,p,' ')}, which again terminates all processes
+using \trl{SETERRQ(comm,ierr,p,' ')}, which again terminates all processes
 upon detection of an error.  
 Note that complete error tracebacks with
 \trl{CHKERRQ()} and \trl{SETERRQ()}, as described in Section
@@ -4890,7 +4890,7 @@ The following Fortran routines differ slightly from their C counterparts; see th
 manual pages and previous discussion in this chapter for details:
 \begin{tabbing}
  PetscInitialize(char *filename,int \trl{ierr)}\\
- PetscError(int err,char *message,int \trl{ierr)}\\
+ PetscError(MPI_COMM,int err,char *message,int \trl{ierr)}\\
  VecGetArray(), MatGetArray()\\
  ISGetIndices(), DAGetGlobalIndices()\\
  VecDuplicateVecs(), VecDestroyVecs()\\
@@ -6232,7 +6232,7 @@ by the application  \findex{SETERRQ()} \findex{CHKERRQ()}
 programmer as well.  When an error is first detected, 
 one should set it by calling
 \begin{tabbing}
-   SETERRQ(int flag,int pflag,char *message);
+   SETERRQ(MPI_Comm comm,PetscErrorCode flag,,char *message);
 \end{tabbing}
 The user should check the return codes for all PETSc routines (and
 possibly user-defined routines as well) with 

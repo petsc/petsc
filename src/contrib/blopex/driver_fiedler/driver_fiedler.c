@@ -124,7 +124,7 @@ int main(int argc,char **args)
    ierr = PetscOptionsGetReal(PETSC_NULL,"-tol", &tol,PETSC_NULL);CHKERRQ(ierr);
    ierr = PetscOptionsGetString(PETSC_NULL,"-matrix",filename,PETSC_MAX_PATH_LEN-1,&matrix_present);CHKERRQ(ierr);
    if (!matrix_present) 
-    SETERRQ(1,"Must indicate binary file to read matrix from with the "
+    SETERRQ(PETSC_COMM_SELF,1,"Must indicate binary file to read matrix from with the "
             "'-matrix' option");
    ierr = PetscOptionsGetString(PETSC_NULL,"-mass_matrix",mass_filename,
            PETSC_MAX_PATH_LEN-1,&mass_matrix_present);CHKERRQ(ierr);

@@ -362,7 +362,7 @@ static PetscErrorCode DACoordViewGnuplot2d(DA da,const char prefix[])
   ierr = PetscSNPrintf(fname,sizeof fname,"%s-p%1.4d.dat",prefix,rank);CHKERRQ(ierr);
   ierr = PetscFOpen(PETSC_COMM_SELF,fname,"w",&fp);CHKERRQ(ierr);
   if (fp == PETSC_NULL) {
-    SETERRQ(PETSC_ERR_USER,"Cannot open file");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
   }
 
   ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"### Element geometry for processor %1.4d ### \n",rank);CHKERRQ(ierr);
@@ -409,7 +409,7 @@ static PetscErrorCode DAViewGnuplot2d(DA da,Vec fields,const char comment[],cons
   ierr = PetscSNPrintf(fname,sizeof fname,"%s-p%1.4d.dat",prefix,rank);CHKERRQ(ierr);
   ierr = PetscFOpen(PETSC_COMM_SELF,fname,"w",&fp);CHKERRQ(ierr);
   if (fp == PETSC_NULL) {
-    SETERRQ(PETSC_ERR_USER,"Cannot open file");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
   }
 
   ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"### %s (processor %1.4d) ### \n",comment,rank);CHKERRQ(ierr);
@@ -479,7 +479,7 @@ static PetscErrorCode DAViewCoefficientsGnuplot2d(DA da,Vec fields,const char co
   ierr = PetscSNPrintf(fname,sizeof fname,"%s-p%1.4d.dat",prefix,rank);CHKERRQ(ierr);
   ierr = PetscFOpen(PETSC_COMM_SELF,fname,"w",&fp);CHKERRQ(ierr);
   if (fp == PETSC_NULL) {
-    SETERRQ(PETSC_ERR_USER,"Cannot open file");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
   }
 
   ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"### %s (processor %1.4d) ### \n",comment,rank);CHKERRQ(ierr);
@@ -1428,7 +1428,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
           }
         }
       } else {
-        SETERRQ(PETSC_ERR_USER,"Unknown coefficient_structure");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Unknown coefficient_structure");
       }
     }
   }

@@ -26,7 +26,7 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat C,PetscInt imax,IS is[],PetscInt o
   ierr = PetscMalloc(imax*sizeof(IS),&is_new);CHKERRQ(ierr);
   /* Convert the indices into block format */
   ierr = ISCompressIndicesGeneral(N,bs,imax,is,is_new);CHKERRQ(ierr);
-  if (ov < 0){ SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified\n");}
+  if (ov < 0){ SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified\n");}
   for (i=0; i<ov; ++i) {
     ierr = MatIncreaseOverlap_MPIBAIJ_Once(C,imax,is_new);CHKERRQ(ierr);
   }
@@ -113,7 +113,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[
     for (j=0; j<len; j++) {
       row  = idx_i[j];
       if (row < 0) {
-        SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Index set cannot have negative entries");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index set cannot have negative entries");
       }
       proc = rtable[row];
       w4[proc]++;
@@ -276,7 +276,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[
 
     for (i=0; i<nrqr; ++i) {
       proc      = recv_status[i].MPI_SOURCE;
-      if (proc != onodes1[i]) SETERRQ(PETSC_ERR_PLIB,"MPI_SOURCE mismatch");
+      if (proc != onodes1[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MPI_SOURCE mismatch");
       rw1[proc] = isz1[i];
     }
       
@@ -1099,7 +1099,7 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
 #if defined (PETSC_USE_CTABLE)
 	  ierr = PetscTableFind(lrow1_grow1,sbuf1_i[ct1]+1,&row);CHKERRQ(ierr); 
           row--; 
-          if (row < 0) { SETERRQ(PETSC_ERR_PLIB,"row not found in table"); }
+          if (row < 0) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"row not found in table"); }
 #else
           row  = rmap_i[sbuf1_i[ct1]]; /* the val in the new matrix to be */
 #endif
@@ -1134,11 +1134,11 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
     for (i=0; i<ismax; i++) {
       mat = (Mat_SeqBAIJ *)(submats[i]->data);
       if ((mat->mbs != nrow[i]) || (mat->nbs != ncol[i] || C->rmap->bs != bs)) {
-        SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong size");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong size");
       }
       ierr = PetscMemcmp(mat->ilen,lens[i],mat->mbs *sizeof(PetscInt),&flag);CHKERRQ(ierr);
       if (!flag) {
-        SETERRQ(PETSC_ERR_ARG_INCOMP,"Cannot reuse matrix. wrong no of nonzeros");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot reuse matrix. wrong no of nonzeros");
       }
       /* Initial matrix as if empty */
       ierr = PetscMemzero(mat->ilen,mat->mbs*sizeof(PetscInt));CHKERRQ(ierr);
@@ -1194,7 +1194,7 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
 #if defined (PETSC_USE_CTABLE)
 	  ierr = PetscTableFind(lrow1_grow1,row+rstart+1,&row);CHKERRQ(ierr); 
           row--; 
-          if (row < 0) { SETERRQ(PETSC_ERR_PLIB,"row not found in table"); }
+          if (row < 0) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"row not found in table"); }
 #else
           row      = rmap_i[row + rstart];
 #endif
@@ -1290,7 +1290,7 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
 #if defined (PETSC_USE_CTABLE)
 	  ierr = PetscTableFind(lrow1_grow1,row+1,&row);CHKERRQ(ierr); 
           row--; 
-          if(row < 0) { SETERRQ(PETSC_ERR_PLIB,"row not found in table"); }
+          if(row < 0) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"row not found in table"); }
 #else
           row   = rmap_i[row];
 #endif

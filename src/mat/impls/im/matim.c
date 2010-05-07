@@ -21,27 +21,27 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIMSetIS(Mat A, IS in, IS out) {
   if(flag == MPI_IDENT) {
     ierr = MPI_Comm_compare(((PetscObject)A)->comm, ((PetscObject)out)->comm, &flag); CHKERRQ(ierr);
     if(flag != MPI_IDENT) {
-      SETERRQ(PETSC_ERR_USER, "Communicators differ between MatIM and the output IS");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER, "Communicators differ between MatIM and the output IS");
     }
   }
   else {
-    SETERRQ(PETSC_ERR_USER, "Communicators differ between MatIM and the input IS");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER, "Communicators differ between MatIM and the input IS");
   }
   if(!in && !out) {
-    SETERRQ(PETSC_ERR_USER, "Cannot have both input and output IS be NULL");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER, "Cannot have both input and output IS be NULL");
   }
   /* Check that IS's min and max are within the A's size limits */
   if(in && (in->min < 0 || in->max >= A->rmap->N)) {
-    SETERRQ3(PETSC_ERR_USER, "Input IS min or max values out of range: min = %d, max %d, must be between 0 and %d", in->min, in->max, A->rmap->N);
+    SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER, "Input IS min or max values out of range: min = %d, max %d, must be between 0 and %d", in->min, in->max, A->rmap->N);
   }
   if(out && (out->min < 0 || out->max >= A->cmap->N)) {
-    SETERRQ3(PETSC_ERR_USER, "Output IS min or max values out of range: min = %d, max %d, must be between 0 and %d", out->min, out->max, A->cmap->N);
+    SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER, "Output IS min or max values out of range: min = %d, max %d, must be between 0 and %d", out->min, out->max, A->cmap->N);
   }
   if(in && out) {
     ierr = ISGetLocalSize(in,  &in_size); CHKERRQ(ierr);
     ierr = ISGetLocalSize(out, &out_size); CHKERRQ(ierr);
     if(in_size != out_size) {
-      SETERRQ2(PETSC_ERR_USER, "IS local size mismatch: input %d and output %d", in_size, out_size);
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER, "IS local size mismatch: input %d and output %d", in_size, out_size);
     }
   }
   im->in = in; 
@@ -56,7 +56,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIMSetIS(Mat A, IS in, IS out) {
     */
     ierr = ISGetLocalSize(im->out, &out_size); CHKERRQ(ierr);
     if(out_size > A->rmap->n) {
-      SETERRQ2(PETSC_ERR_USER, "Output IS local size %d exceeds the local row count %d and input IS is NULL", out_size, A->rmap->n);
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER, "Output IS local size %d exceeds the local row count %d and input IS is NULL", out_size, A->rmap->n);
     }
     ierr = ISCreateStride(((PetscObject)A)->comm, out_size, A->rmap->rstart, 1, &(im->in)); CHKERRQ(ierr);
   }
@@ -70,7 +70,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIMSetIS(Mat A, IS in, IS out) {
     */
     ierr = ISGetLocalSize(im->in, &in_size); CHKERRQ(ierr);
     if(in_size > A->cmap->n) {
-      SETERRQ2(PETSC_ERR_USER, "Input IS local size %d exceeds the local column count %d and output IS is NULL", in_size, A->cmap->n);
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER, "Input IS local size %d exceeds the local column count %d and output IS is NULL", in_size, A->cmap->n);
     }
     ierr = ISCreateStride(((PetscObject)A)->comm, in_size, A->cmap->rstart, 1, &(im->out)); CHKERRQ(ierr);
   }

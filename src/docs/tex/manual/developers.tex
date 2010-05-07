@@ -167,22 +167,22 @@ source code for the PETSc error handling is in
 
 The simplified C/C++ macro-based interface consists of the following three calls
 \begin{itemize}
-\item SETERRQ(error code,''Error message'');
+\item SETERRQ(comm,error code,''Error message'');
 \item CHKERRQ(ierr);
 \end{itemize}
 
 The macro SETERRQ() is given by 
 \begin{tabbing}
-return PetscError(\_\_LINE\_\_,\_\_FUNC\_\_,\_\_FILE\_\_,\_\_SDIR\_\_,specific,''Error message'');
+return PetscError(comm,\_\_LINE\_\_,\_\_FUNC\_\_,\_\_FILE\_\_,\_\_SDIR\_\_,specific,''Error message'');
 \end{tabbing}
 It calls the error handler with the current function name and location: line number,
 file and directory, plus an error codes and an error message.
 The macro CHKERRQ() is defined by
 \begin{tabbing}
-  if (ierr) SETERRQ(ierr,(char *)0);
+  if (ierr) SETERRQ(PETSC_COMM_SELF,ierr,(char *)0);
 \end{tabbing}
 
-In addition to SETERRQ() are the macros SETERRQ1(), SETERRQ2(), SETERRQ3()
+In addition to SETERRQ() are the macros SETERRQ1(PETSC_COMM_SELF,), SETERRQ2(), SETERRQ3()
 and SETERRQ4() that allow one to include additional arguments that the message
 string is formated. For example,
 \begin{tabbing}
@@ -195,7 +195,7 @@ of arguments.
 The error handling function PetscError() calls the ``current'' error handler
 with the code
 \begin{tabbing}
-PetscErrorCode PetscError(int line,char *func,char* file,char *dir,PetscErrorCode n,int p,char *mess)\\
+PetscErrorCode PetscError(MPI_Comm,int line,char *func,char* file,char *dir,PetscErrorCode n,int p,char *mess)\\
 \{ \\
   PetscErrorCode ierr;\\
 \\

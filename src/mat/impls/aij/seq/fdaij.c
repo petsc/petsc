@@ -20,7 +20,7 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 
   PetscFunctionBegin;
   if (!mat->assembled) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Matrix must be assembled by calls to MatAssemblyBegin/End();");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix must be assembled by calls to MatAssemblyBegin/End();");
   }
 
   ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&isa);CHKERRQ(ierr);
@@ -45,7 +45,7 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   ierr       = PetscMalloc(nis*sizeof(PetscInt*),&c->columnsforrow);CHKERRQ(ierr);
 
   ierr = MatGetColumnIJ(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&done);CHKERRQ(ierr);
-  if (!done) SETERRQ1(PETSC_ERR_SUP,"MatGetColumnIJ() not supported for matrix type %s",((PetscObject)mat)->type_name);
+  if (!done) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatGetColumnIJ() not supported for matrix type %s",((PetscObject)mat)->type_name);
 
   /*
      Temporary option to allow for debugging/testing
@@ -124,7 +124,7 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDCol
             fm                        = currentcol; 
             /* fm points to present position in list since we know the columns are sorted */
           } else {
-            SETERRQ(PETSC_ERR_PLIB,"Detected invalid coloring");
+            SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Detected invalid coloring");
           }
 
         }

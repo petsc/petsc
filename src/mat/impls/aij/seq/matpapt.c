@@ -33,8 +33,8 @@ PetscErrorCode MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C)
 
   PetscFunctionBegin;
   /* some error checking which could be moved into interface layer */
-  if (pn!=am) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",pn,am);
-  if (am!=an) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix 'A' must be square, %D != %D",am, an);
+  if (pn!=am) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",pn,am);
+  if (am!=an) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix 'A' must be square, %D != %D",am, an);
 
   /* Set up timers */
   ierr = PetscLogEventBegin(MAT_Applypapt_symbolic,A,P,0,0);CHKERRQ(ierr);
@@ -162,10 +162,10 @@ PetscErrorCode MatApplyPAPt_Numeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
 
   PetscFunctionBegin;
   /* This error checking should be unnecessary if the symbolic was performed */ 
-  if (pm!=cm) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",pm,cm);
-  if (pn!=am) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",pn,am);
-  if (am!=an) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix 'A' must be square, %D != %D",am, an);
-  if (pm!=cn) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",pm, cn);
+  if (pm!=cm) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",pm,cm);
+  if (pn!=am) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",pn,am);
+  if (am!=an) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix 'A' must be square, %D != %D",am, an);
+  if (pm!=cn) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",pm, cn);
 
   /* Set up timers */
   ierr = PetscLogEventBegin(MAT_Applypapt_numeric,A,P,C,0);CHKERRQ(ierr);

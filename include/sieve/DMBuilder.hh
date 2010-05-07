@@ -18,7 +18,7 @@ namespace ALE {
 
       PetscFunctionBegin;
       if (structured) {
-        SETERRQ(PETSC_ERR_SUP, "Structured grids cannot handle boundary meshes");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Structured grids cannot handle boundary meshes");
       } else {
         typedef PETSC_MESH_TYPE::point_type point_type;
         ::Mesh boundary;
@@ -43,7 +43,7 @@ namespace ALE {
                 
           mB = ALE::MeshBuilder<ALE::Mesh>::createCubeBoundary(comm, lower, upper, faces, debug);
         } else {
-          SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", dim);
+          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim);
         }
         ALE::ISieveConverter::convertMesh(*mB, *meshBd, renumbering, false);
         ierr = MeshSetMesh(boundary, meshBd);CHKERRQ(ierr);
@@ -67,7 +67,7 @@ namespace ALE {
         } else if (dim == 3) {
           ierr = DACreate3d(comm, DA_NONPERIODIC, DA_STENCIL_BOX, -3, -3, -3, pd, pd, pd, dof, 1, PETSC_NULL, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
         } else {
-          SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", dim);
+          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim);
         }
         ierr = DASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
         *dm = (DM) da;
@@ -96,7 +96,7 @@ namespace ALE {
                 
           mB = ALE::MeshBuilder<ALE::Mesh>::createCubeBoundary(comm, lower, upper, faces, debug);
         } else {
-          SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", dim);
+          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim);
         }
         ALE::ISieveConverter::convertMesh(*mB, *meshBd, renumbering, false);
         ierr = MeshSetMesh(boundary, meshBd);CHKERRQ(ierr);
@@ -135,7 +135,7 @@ namespace ALE {
 
         mB = ALE::MeshBuilder<ALE::Mesh>::createFicheraCornerBoundary(comm, lower, upper, offset, debug);
       } else {
-        SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", dim);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim);
       }
       ALE::ISieveConverter::convertMesh(*mB, *meshBd, renumbering, false);
       ierr = MeshSetMesh(boundary, meshBd);CHKERRQ(ierr);
@@ -163,7 +163,7 @@ namespace ALE {
       if (dim == 2) {
         mB = ALE::MeshBuilder<ALE::Mesh>::createCircularReentrantBoundary(comm, 100, 1.0, 1.0, debug);
       } else {
-        SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", dim);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim);
       }
       ALE::ISieveConverter::convertMesh(*mB, *meshBd, renumbering, false);
       ierr = MeshSetMesh(boundary, meshBd);CHKERRQ(ierr);
@@ -191,7 +191,7 @@ namespace ALE {
       if (dim == 2) {
         mB = ALE::MeshBuilder<ALE::Mesh>::createCircularReentrantBoundary(comm, 100, 1.0, 0.9, debug);
       } else {
-        SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", dim);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim);
       }
       ALE::ISieveConverter::convertMesh(*mB, *meshBd, renumbering, false);
       ierr = MeshSetMesh(boundary, meshBd);CHKERRQ(ierr);

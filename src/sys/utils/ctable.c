@@ -22,7 +22,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTableCreate(const PetscInt n,PetscTable *rta
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"n < 0"); 
+  if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"n < 0"); 
   ierr          = PetscNew(struct _n_PetscTable,&ta);CHKERRQ(ierr);
   ta->tablesize = (3*n)/2 + 17;
   if (ta->tablesize < n) ta->tablesize = INT_MAX/4; /* overflow */
@@ -57,7 +57,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTableCreateCopy(const PetscTable intable,Pet
     ta->keytable[i] = intable->keytable[i]; 
     ta->table[i]    = intable->table[i];
 #if defined(PETSC_USE_DEBUG)    
-    if (ta->keytable[i] < 0) SETERRQ(PETSC_ERR_COR,"ta->keytable[i] < 0"); 
+    if (ta->keytable[i] < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"ta->keytable[i] < 0"); 
 #endif  
  }
   ta->head  = 0;
@@ -116,8 +116,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscTableAdd(PetscTable ta,const PetscInt key,co
   const PetscInt tsize = ta->tablesize,tcount = ta->count; 
   
   PetscFunctionBegin;
-  if (key <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"key <= 0");
-  if (!data) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Null data");
+  if (key <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"key <= 0");
+  if (!data) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Null data");
   
   if (ta->count < 5*(ta->tablesize/6) - 1) {
     while (ii++ < ta->tablesize){
@@ -131,12 +131,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscTableAdd(PetscTable ta,const PetscInt key,co
       }
       hash = (hash == (ta->tablesize-1)) ? 0 : hash+1; 
     }  
-    SETERRQ(PETSC_ERR_COR,"Full table");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Full table");
   } else {
     PetscInt *oldtab = ta->table,*oldkt = ta->keytable,newk,ndata;
 
     /* alloc new (bigger) table */
-    if (ta->tablesize == INT_MAX/4) SETERRQ(PETSC_ERR_COR,"ta->tablesize < 0");
+    if (ta->tablesize == INT_MAX/4) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"ta->tablesize < 0");
     ta->tablesize = 2*tsize; 
     if (ta->tablesize <= tsize) ta->tablesize = INT_MAX/4;
 
@@ -156,7 +156,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTableAdd(PetscTable ta,const PetscInt key,co
 	ierr  = PetscTableAdd(ta,newk,ndata);CHKERRQ(ierr); 
       }
     }
-    if (ta->count != tcount + 1) SETERRQ(PETSC_ERR_COR,"corrupted ta->count");
+    if (ta->count != tcount + 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"corrupted ta->count");
     
     ierr = PetscFree(oldtab);CHKERRQ(ierr);
     ierr = PetscFree(oldkt);CHKERRQ(ierr);
@@ -195,7 +195,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTableFind(PetscTable ta,const PetscInt key,P
   PetscInt hash,ii = 0;
 
   PetscFunctionBegin;
-  if (!key) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Null key");
+  if (!key) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Null key");
   hash  = HASHT(ta,key);
   *data = 0;
   while (ii++ < ta->tablesize) {
@@ -229,7 +229,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTableGetHeadPosition(PetscTable ta,PetscTabl
       break;
     }
   } while (i++ < ta->tablesize);
-  if (!*ppos) SETERRQ(PETSC_ERR_COR,"No head");
+  if (!*ppos) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"No head");
   PetscFunctionReturn(0);
 }
 
@@ -247,12 +247,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscTableGetNext(PetscTable ta,PetscTablePositio
 
   PetscFunctionBegin;
   pos = *rPosition;
-  if (!pos) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Null position"); 
+  if (!pos) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Null position"); 
   *data = *pos; 
-  if (!*data) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Null data"); 
+  if (!*data) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Null data"); 
   idex = pos - ta->table;
   *pkey = ta->keytable[idex]; 
-  if (!*pkey) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Null key");  
+  if (!*pkey) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Null key");  
 
   /* get next */
   do {
@@ -284,7 +284,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTableAddCount(PetscTable ta,const PetscInt k
   const PetscInt tsize = ta->tablesize,tcount = ta->count; 
   
   PetscFunctionBegin;
-  if (key <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"key <= 0");
+  if (key <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"key <= 0");
   
   if (ta->count < 5*(ta->tablesize/6) - 1) {
     while (ii++ < ta->tablesize){
@@ -297,7 +297,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTableAddCount(PetscTable ta,const PetscInt k
       }
       hash = (hash == (ta->tablesize-1)) ? 0 : hash+1; 
     }  
-    SETERRQ(PETSC_ERR_COR,"Full table");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Full table");
   } else {
     PetscInt *oldtab = ta->table,*oldkt = ta->keytable,newk,ndata;
 
@@ -308,7 +308,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTableAddCount(PetscTable ta,const PetscInt k
     }  
 
     /* alloc new (bigger) table */
-    if (ta->tablesize == INT_MAX/4) SETERRQ(PETSC_ERR_COR,"ta->tablesize < 0");
+    if (ta->tablesize == INT_MAX/4) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"ta->tablesize < 0");
     ta->tablesize = 2*tsize; 
     if (ta->tablesize <= tsize) ta->tablesize = INT_MAX/4;
 
@@ -328,7 +328,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTableAddCount(PetscTable ta,const PetscInt k
       }
     }
     ierr = PetscTableAddCount(ta,key);CHKERRQ(ierr); 
-    if (ta->count != tcount + 1) SETERRQ(PETSC_ERR_COR,"corrupted ta->count");
+    if (ta->count != tcount + 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"corrupted ta->count");
     
     ierr = PetscFree(oldtab);CHKERRQ(ierr);
     ierr = PetscFree(oldkt);CHKERRQ(ierr);

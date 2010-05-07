@@ -3213,7 +3213,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
 PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIMAIJ(Mat A,Mat PP,Mat C) 
 {
   PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP,"MatPtAPNumeric is not implemented for MPIMAIJ matrix yet");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatPtAPNumeric is not implemented for MPIMAIJ matrix yet");
   PetscFunctionReturn(0);
 }
 

@@ -38,7 +38,7 @@ int main(int argc,char **args)
 
   /* Determine file from which we read the matrix.*/
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(1,"Must indicate binary file with the -f option");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"Must indicate binary file with the -f option");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - -
                            Load system
@@ -48,7 +48,7 @@ int main(int argc,char **args)
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   if (m != n) {
-    SETERRQ2(PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
   }
 
   /* Create rhs vector of all ones */

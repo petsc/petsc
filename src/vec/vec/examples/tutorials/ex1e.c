@@ -174,7 +174,7 @@ _ PetscPrintf(PETSC_COMM_WORLD,"VecMAXPY %G %G %G \n",v,v1,v2);___
      routine) not needed in most application codes.
   */
 _ VecValid(x,&flg);___
-  if (!flg) SETERRQ(1,"Corrupted vector.");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"Corrupted vector.");
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they

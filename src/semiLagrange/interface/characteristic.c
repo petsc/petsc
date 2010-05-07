@@ -184,7 +184,7 @@ PetscErrorCode CharacteristicSetType(Characteristic c, const CharacteristicType 
   }
 
   ierr =  PetscFListFind(CharacteristicList, ((PetscObject)c)->comm,type, (void (**)(void)) &r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown Characteristic type given: %s", type);
+  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown Characteristic type given: %s", type);
   c->setupcalled = 0;
   ierr = (*r)(c);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject) c, type);CHKERRQ(ierr);
@@ -285,7 +285,7 @@ PetscErrorCode CharacteristicSetFieldInterpolation(Characteristic c, DA da, Vec 
   PetscFunctionBegin;
 #if 0
   if (numComponents > 2) {
-    SETERRQ(PETSC_ERR_SUP, "Fields with more than 2 components are not supported. Send mail to petsc-maint@mcs.anl.gov.");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Fields with more than 2 components are not supported. Send mail to petsc-maint@mcs.anl.gov.");
   }
 #endif
   c->fieldDA      = da;
@@ -304,7 +304,7 @@ PetscErrorCode CharacteristicSetFieldInterpolationLocal(Characteristic c, DA da,
   PetscFunctionBegin;
 #if 0
   if (numComponents > 2) {
-    SETERRQ(PETSC_ERR_SUP, "Fields with more than 2 components are not supported. Send mail to petsc-maint@mcs.anl.gov.");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Fields with more than 2 components are not supported. Send mail to petsc-maint@mcs.anl.gov.");
   }
 #endif
   c->fieldDA          = da;
@@ -537,7 +537,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
 
       if (( im < (PetscScalar) is - 1.) || (im > (PetscScalar) ie) || (jm < (PetscScalar)  js - 1.) || (jm > (PetscScalar) je)) {
         printf("[%d]Bounds: I (%d, %d) J (%d, %d)\n", rank, (int)is, (int)ie, (int)js, (int)je);
-        SETERRQ2(PETSC_ERR_LIB, "Nonlocal point: (%g,%g)", im, jm);
+        SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB, "Nonlocal point: (%g,%g)", im, jm);
       }
     }
 
@@ -602,7 +602,7 @@ PetscErrorCode CharacteristicAddPoint(Characteristic c, CharacteristicPointDA2D 
 {
   PetscFunctionBegin;
   if (c->queueSize >= c->queueMax) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Exceeeded maximum queue size %d", c->queueMax);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Exceeeded maximum queue size %d", c->queueMax);
   }
   c->queue[c->queueSize++] = *point;
   PetscFunctionReturn(0);
@@ -681,7 +681,7 @@ PetscErrorCode CharacteristicSendCoordinatesEnd(Characteristic c)
   ierr = MPI_Comm_rank(((PetscObject)c)->comm, &rank);CHKERRQ(ierr);
   for(n = 0; n < c->queueRemoteSize; n++) {
     if (c->neighbors[c->queueRemote[n].proc] == rank) {
-      SETERRQ2(PETSC_ERR_PLIB, "This is fucked up, n = %d proc = %d", n, c->queueRemote[n].proc);
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "This is fucked up, n = %d proc = %d", n, c->queueRemote[n].proc);
     }
   }
 #endif

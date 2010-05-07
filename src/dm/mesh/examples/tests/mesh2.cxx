@@ -96,7 +96,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Obj<ALE::Mesh>& m, Options *options)
 
     mB = ALE::MeshBuilder::createCubeBoundary(comm, lower, upper, faces, options->debug);
   } else {
-    SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
   }
   if (view) {mB->view("Boundary");}
   m = ALE::Generator::generateMesh(mB, options->interpolate);

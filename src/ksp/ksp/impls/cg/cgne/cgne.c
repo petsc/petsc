@@ -29,9 +29,9 @@ PetscErrorCode KSPSetUp_CGNE(KSP ksp)
      so generate an error otherwise.
   */
   if (ksp->pc_side == PC_RIGHT) {
-    SETERRQ(PETSC_ERR_SUP,"No right preconditioning for KSPCGNE");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No right preconditioning for KSPCGNE");
   } else if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(PETSC_ERR_SUP,"No symmetric preconditioning for KSPCGNE");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No symmetric preconditioning for KSPCGNE");
   }
 
   /* get work vectors needed by CGNE */
@@ -77,7 +77,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  if (diagonalscale) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
   ierr = PCApplyTransposeExists(ksp->pc,&transpose_pc);CHKERRQ(ierr);
 
   cg            = (KSP_CG*)ksp->data;
@@ -151,7 +151,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
        b = beta/betaold;
        if (eigs) {
 	 if (ksp->max_it != stored_max_it) {
-	   SETERRQ(PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
+	   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
 	 }
 	 e[i] = sqrt(PetscAbsScalar(b))/a;  
        }

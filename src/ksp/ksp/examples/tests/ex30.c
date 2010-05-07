@@ -60,7 +60,7 @@ int main(int argc,char **args)
     preload = PETSC_FALSE;
   } else {
     ierr = PetscOptionsGetString(PETSC_NULL,"-f0",file[0],PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(1,"Must indicate binary file with the -f0 or -f option");
+    if (!flg) SETERRQ(PETSC_COMM_SELF,1,"Must indicate binary file with the -f0 or -f option");
     ierr = PetscOptionsGetString(PETSC_NULL,"-f1",file[1],PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
     if (!flg) {preload = PETSC_FALSE;} /* don't bother with second system */
   }
@@ -186,7 +186,7 @@ int main(int argc,char **args)
     
     ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
     if (m != n) {
-      SETERRQ2(PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
     }
     ierr = MatGetSize(A,&M,PETSC_NULL);CHKERRQ(ierr);
     ierr = VecGetSize(b,&m);CHKERRQ(ierr);

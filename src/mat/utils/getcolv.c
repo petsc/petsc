@@ -42,12 +42,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColumnVector(Mat A,Vec yy,PetscInt col)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1); 
   PetscValidHeaderSpecific(yy,VEC_CLASSID,2); 
-  if (col < 0)  SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Requested negative column: %D",col);
+  if (col < 0)  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Requested negative column: %D",col);
   ierr = MatGetSize(A,PETSC_NULL,&N);CHKERRQ(ierr);
-  if (col >= N)  SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Requested column %D larger than number columns in matrix %D",col,N);
+  if (col >= N)  SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Requested column %D larger than number columns in matrix %D",col,N);
   ierr = MatGetOwnershipRange(A,&Rs,&Re);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(yy,&rs,&re);CHKERRQ(ierr);
-  if (Rs != rs || Re != re) SETERRQ4(PETSC_ERR_ARG_INCOMP,"Matrix %D %D does not have same ownership range (size) as vector %D %D",Rs,Re,rs,re);
+  if (Rs != rs || Re != re) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Matrix %D %D does not have same ownership range (size) as vector %D %D",Rs,Re,rs,re);
 
   if (A->ops->getcolumnvector) {
     ierr = (*A->ops->getcolumnvector)(A,yy,col);CHKERRQ(ierr);
@@ -100,7 +100,7 @@ PetscErrorCode MatGetColumnNorms_SeqAIJ(Mat A,NormType type,PetscReal *norms)
     for (i=0; i<aij->i[m]; i++) {
       norms[aij->j[i]] = PetscMax(PetscAbsScalar(aij->a[i]),norms[aij->j[i]]);
     }
-  } else SETERRQ(PETSC_ERR_ARG_WRONG,"Unknown NormType");
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown NormType");
 
   if (type == NORM_2) {
     for (i=0; i<n; i++) norms[i] = sqrt(norms[i]);
@@ -147,7 +147,7 @@ PetscErrorCode MatGetColumnNorms_MPIAIJ(Mat A,NormType type,PetscReal *norms)
       work[garray[b_aij->j[i]]] = PetscMax(PetscAbsScalar(b_aij->a[i]),work[garray[b_aij->j[i]]]);
     }
 
-  } else SETERRQ(PETSC_ERR_ARG_WRONG,"Unknown NormType");
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown NormType");
   if (type == NORM_INFINITY) {
     ierr = MPI_Allreduce(work,norms,n,MPIU_REAL,MPI_MAX,A->hdr.comm);CHKERRQ(ierr);
   } else {
@@ -193,7 +193,7 @@ PetscErrorCode MatGetColumnNorms_SeqDense(Mat A,NormType type,PetscReal *norms)
       }
       a += m;
     }
-  } else SETERRQ(PETSC_ERR_ARG_WRONG,"Unknown NormType");
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown NormType");
   if (type == NORM_2) {
     for (i=0; i<n; i++) norms[i] = sqrt(norms[i]);
   }
@@ -270,7 +270,7 @@ PetscErrorCode MatGetColumnNorms(Mat A,NormType type,PetscReal *norms)
         ierr = PetscTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
         if (flg) {
           ierr = MatGetColumnNorms_MPIAIJ(A,type,norms);CHKERRQ(ierr);
-        } else SETERRQ(PETSC_ERR_SUP,"Not coded for this matrix type");
+        } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not coded for this matrix type");
       }
     } 
   }

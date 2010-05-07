@@ -140,7 +140,7 @@ PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
     ierr = VecGetArray(x,&bptr);CHKERRQ(ierr);
   }
  
-  if (lu->options.Fact != FACTORED) SETERRQ(PETSC_ERR_ARG_WRONG,"SuperLU_DIST options.Fact mush equal FACTORED");
+  if (lu->options.Fact != FACTORED) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"SuperLU_DIST options.Fact mush equal FACTORED");
 
   PStatInit(&stat);        /* Initialize the statistics variables. */
   if (lu->MatInputMode == GLOBAL) { 
@@ -160,7 +160,7 @@ PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
 	    &lu->LUstruct,&lu->SOLVEstruct,berr,&stat,&info);
 #endif
   }
-  if (info) SETERRQ1(PETSC_ERR_LIB,"pdgssvx fails, info: %d\n",info);
+  if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"pdgssvx fails, info: %d\n",info);
 
   if (lu->options.PrintStat) {
      PStatPrint(&lu->options, &stat, &lu->grid);     /* Print the statistics. */
@@ -196,11 +196,11 @@ PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A,Mat B_mpi,Mat X)
   int              info; /* SuperLU_Dist info code is ALWAYS an int, even with long long indices */
 
   PetscFunctionBegin;
-  if (lu->options.Fact != FACTORED) SETERRQ(PETSC_ERR_ARG_WRONG,"SuperLU_DIST options.Fact mush equal FACTORED");
+  if (lu->options.Fact != FACTORED) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"SuperLU_DIST options.Fact mush equal FACTORED");
   
   ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   if (size > 1 && lu->MatInputMode == GLOBAL) {  
-    SETERRQ1(PETSC_ERR_SUP,"MatInputMode=GLOBAL for nproc %d>1 is not supported",size);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatInputMode=GLOBAL for nproc %d>1 is not supported",size);
   } 
   /* size==1 or distributed mat input */
   if (lu->options.SolveInitialized && !lu->matmatsolve_iscalled){
@@ -238,7 +238,7 @@ PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A,Mat B_mpi,Mat X)
 	    &lu->LUstruct,&lu->SOLVEstruct,berr,&stat,&info);
 #endif
   }
-  if (info) SETERRQ1(PETSC_ERR_LIB,"pdgssvx fails, info: %d\n",info);
+  if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"pdgssvx fails, info: %d\n",info);
   ierr = MatRestoreArray(X,&bptr);CHKERRQ(ierr);
 
   if (lu->options.PrintStat) {
@@ -421,11 +421,11 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
 #if defined(PETSC_USE_COMPLEX)
     pzgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, 0, m, 0, &lu->grid,
 	    &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &sinfo);
-    if (sinfo) SETERRQ1(PETSC_ERR_LIB,"pzgssvx fails, info: %d\n",sinfo);
+    if (sinfo) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"pzgssvx fails, info: %d\n",sinfo);
 #else
     pdgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, 0, m, 0, &lu->grid,
 	    &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &sinfo);
-    if (sinfo) SETERRQ1(PETSC_ERR_LIB,"pdgssvx fails, info: %d\n",sinfo);
+    if (sinfo) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"pdgssvx fails, info: %d\n",sinfo);
 #endif
   }
 
@@ -552,7 +552,7 @@ PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
     ierr = PetscOptionsInt("-mat_superlu_dist_r","Number rows in processor partition","None",lu->nprow,&lu->nprow,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_superlu_dist_c","Number columns in processor partition","None",lu->npcol,&lu->npcol,PETSC_NULL);CHKERRQ(ierr);
     if (size != lu->nprow * lu->npcol) 
-      SETERRQ3(PETSC_ERR_ARG_SIZ,"Number of processes %d must equal to nprow %d * npcol %d",size,lu->nprow,lu->npcol);
+      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number of processes %d must equal to nprow %d * npcol %d",size,lu->nprow,lu->npcol);
   
     lu->MatInputMode = DISTRIBUTED;
     ierr = PetscOptionsEnum("-mat_superlu_dist_matinput","Matrix input mode (global or distributed)","None",SuperLU_MatInputModes,(PetscEnum)lu->MatInputMode,(PetscEnum*)&lu->MatInputMode,PETSC_NULL);CHKERRQ(ierr);
@@ -702,7 +702,7 @@ PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
   } else if (options.ColPerm == PARMETIS) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Column permutation PARMETIS\n");CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Unknown column permutation");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown column permutation");
   }
 
   ierr = PetscViewerASCIIPrintf(viewer,"  Parallel symbolic factorization %s \n",PetscTruths[options.ParSymbFact != NO]);CHKERRQ(ierr);

@@ -148,7 +148,7 @@ PetscErrorCode CreateMeshBoundary(MPI_Comm comm, Mesh *meshBoundary, Options *op
   PetscInt numVertices = 0;
 
   PetscFunctionBegin;
-  if (botWidth <= 0.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE, "Slab dip is too shallow for slab depth.");
+  if (botWidth <= 0.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Slab dip is too shallow for slab depth.");
   if (m->commRank() == 0) {
     // Determine sizes
     numVertices += (PetscInt) (slabLidLen/h) + 1;
@@ -243,7 +243,7 @@ PetscErrorCode CreateMeshBoundary(MPI_Comm comm, Mesh *meshBoundary, Options *op
     }
     sieve->addArrow(v+numVertices-1, e, 0);
     sieve->addArrow(lidEnd,          e, 1);
-    if (numVertices != v) SETERRQ2(PETSC_ERR_PLIB, "Mismatch in number of vertices %d should be %d", v, numVertices);
+    if (numVertices != v) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Mismatch in number of vertices %d should be %d", v, numVertices);
   }
   m->setSieve(sieve);
   m->stratify();
@@ -653,7 +653,7 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
       ierr = SectionRealGetSection(X, sX);CHKERRQ(ierr);
       x = (PetscScalar *) m->restrictNew(sX, *c_iter);
     }
-    if (detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
+    if (detJ < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
     ierr = PetscMemzero(elemVec, totBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++field) {
       const Obj<ALE::Discretization>& disc          = m->getDiscretization(*f_iter);
@@ -857,7 +857,7 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
 
     x = (PetscScalar *) m->restrictNew(s, *c_iter);
     m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
-    if (detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
+    if (detJ < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
     ierr = PetscMemzero(elemMat, totBasisFuncs*totBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++field) {
       const Obj<ALE::Discretization>& disc          = m->getDiscretization(*f_iter);

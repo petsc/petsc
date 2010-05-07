@@ -17,7 +17,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   PetscFunctionBegin;
   if (!P->ops->ptapsymbolic_seqaij) {
-    SETERRQ2(PETSC_ERR_SUP,"Not implemented for A=%s and P=%s",((PetscObject)A)->type_name,((PetscObject)P)->type_name);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented for A=%s and P=%s",((PetscObject)A)->type_name,((PetscObject)P)->type_name);
   }
   ierr = (*P->ops->ptapsymbolic_seqaij)(A,P,fill,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -31,7 +31,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ(Mat A,Mat P,Mat C)
 
   PetscFunctionBegin;
   if (!P->ops->ptapnumeric_seqaij) {
-    SETERRQ2(PETSC_ERR_SUP,"Not implemented for A=%s and P=%s",((PetscObject)A)->type_name,((PetscObject)P)->type_name);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented for A=%s and P=%s",((PetscObject)A)->type_name,((PetscObject)P)->type_name);
   }
   ierr = (*P->ops->ptapnumeric_seqaij)(A,P,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -220,7 +220,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
       for (k=0;nextap<apnzj;k++) {
 #if defined(PETSC_USE_DEBUG)  
         if (k >= ci[crow+1] - ci[crow]) {
-          SETERRQ2(PETSC_ERR_PLIB,"k too large k %d, crow %d",k,crow);
+          SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"k too large k %d, crow %d",k,crow);
         }
 #endif
         if (cjj[k]==apj[nextap]) {

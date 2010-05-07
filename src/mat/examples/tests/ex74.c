@@ -24,7 +24,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size != 1) SETERRQ(PETSC_ERR_SUP,"This is a uniprocessor example only!");
+  if (size != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This is a uniprocessor example only!");
   ierr = PetscOptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRQ(ierr);
 
@@ -69,7 +69,7 @@ int main(int argc,char **args)
     }
     else if (prob ==2){ /* matrix for the five point stencil */
       n1 = (int) (sqrt((PetscReal)n) + 0.001); 
-      if (n1*n1 - n) SETERRQ(PETSC_ERR_ARG_WRONG,"sqrt(n) must be a positive interger!"); 
+      if (n1*n1 - n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"sqrt(n) must be a positive interger!"); 
       for (i=0; i<n1; i++) {
         for (j=0; j<n1; j++) {
           Ii = j + n1*i;
@@ -146,7 +146,7 @@ int main(int argc,char **args)
   ierr = MatNorm(A,NORM_FROBENIUS,&norm1);CHKERRQ(ierr); 
   ierr = MatDuplicate(sA,MAT_COPY_VALUES,&sB);CHKERRQ(ierr);
   ierr = MatEqual(sA,sB,&equal);CHKERRQ(ierr);
-  if (!equal) SETERRQ(PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDuplicate()");
+  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDuplicate()");
 
   /* Test MatNorm() */
   ierr = MatNorm(A,NORM_FROBENIUS,&norm1);CHKERRQ(ierr); 
@@ -209,7 +209,7 @@ int main(int argc,char **args)
   ierr = MatDiagonalScale(A,x,x);CHKERRQ(ierr);
   ierr = MatDiagonalScale(sB,x,x);CHKERRQ(ierr); 
   ierr = MatMultEqual(A,sB,10,&equal);CHKERRQ(ierr);
-  if (!equal) SETERRQ(PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDiagonalScale");
+  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDiagonalScale");
 
   ierr = MatGetDiagonal(A,s1);CHKERRQ(ierr);  
   ierr = MatGetDiagonal(sB,s2);CHKERRQ(ierr);  

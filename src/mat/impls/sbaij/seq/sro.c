@@ -44,14 +44,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatReorderingSeqSBAIJ(Mat A,IS perm)
 
   PetscFunctionBegin;
   if (!mbs) PetscFunctionReturn(0); 
-  SETERRQ(PETSC_ERR_SUP,"Matrix reordering is not supported for sbaij matrix. Use aij format");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix reordering is not supported for sbaij matrix. Use aij format");
   ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);
 
   ierr = ISInvertPermutation(perm,PETSC_DECIDE,&iperm);CHKERRQ(ierr);  
   ierr = ISGetIndices(iperm,&riip);CHKERRQ(ierr);
 
   for (i=0; i<mbs; i++) {
-    if (rip[i] != riip[i]) SETERRQ(PETSC_ERR_ARG_INCOMP,"Non-symmetric permutation, use symmetric permutation for symmetric matrices");
+    if (rip[i] != riip[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Non-symmetric permutation, use symmetric permutation for symmetric matrices");
   }
   ierr = ISRestoreIndices(iperm,&riip);CHKERRQ(ierr);
   ierr = ISDestroy(iperm);CHKERRQ(ierr);

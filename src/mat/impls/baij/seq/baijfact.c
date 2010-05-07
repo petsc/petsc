@@ -468,7 +468,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1_inplace(Mat C,Mat A,const MatFactorI
     diag = diag_offset[i] - bi[i];
     /* check pivot entry for current row */
     if (pv[diag] == 0.0) {
-      SETERRQ2(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot: row in original ordering %D in permuted ordering %D",r[i],i);
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot: row in original ordering %D in permuted ordering %D",r[i],i);
     }
     pv[diag] = 1.0/pv[diag];
   }
@@ -510,7 +510,7 @@ PetscErrorCode MatGetFactor_seqbaij_petsc(Mat A,MatFactorType ftype,Mat *B)
     ierr = MatSeqSBAIJSetPreallocation(*B,1,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
     (*B)->ops->iccfactorsymbolic      = MatICCFactorSymbolic_SeqBAIJ;
     (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqBAIJ;
-  } else SETERRQ(PETSC_ERR_SUP,"Factor type not supported");
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
   (*B)->factortype = ftype;
   PetscFunctionReturn(0);
 }
@@ -1048,7 +1048,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
 
   /* check whether perm is the identity mapping */
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
-  if (!perm_identity) SETERRQ(PETSC_ERR_SUP,"Matrix reordering is not supported");
+  if (!perm_identity) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix reordering is not supported");
   ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);
 
   /* initialization */
@@ -1347,7 +1347,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   PetscFunctionBegin;
   /* ------- symbolic factorization, can be reused ---------*/
   ierr = MatMissingDiagonal(A,&missing,&i);CHKERRQ(ierr);
-  if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",i);
+  if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",i);
   adiag=a->diag;
 
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
@@ -1417,7 +1417,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
     /* copy initial fill into linked list */
     nzi = 0; /* nonzeros for active row i */
     nzi = ai[r[i]+1] - ai[r[i]];
-    if (!nzi) SETERRQ2(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
+    if (!nzi) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
     nzi_al = adiag[r[i]] - ai[r[i]];
     nzi_au = ai[r[i]+1] - adiag[r[i]] -1;
     /* printf("row %d, nzi_al/au %d %d\n",i,nzi_al,nzi_au); */
@@ -1559,7 +1559,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   ierr = PetscFree3(v_work,multiplier,v_pivots);CHKERRQ(ierr);
 
   /* printf("end of L %d, beginning of U %d\n",bi[mbs],bdiag[mbs]); */
-  if (bi[mbs] >= bdiag[mbs]) SETERRQ2(PETSC_ERR_ARG_SIZ,"end of L array %d cannot >= the beginning of U array %d",bi[mbs],bdiag[mbs]);
+  if (bi[mbs] >= bdiag[mbs]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"end of L array %d cannot >= the beginning of U array %d",bi[mbs],bdiag[mbs]);
 
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);

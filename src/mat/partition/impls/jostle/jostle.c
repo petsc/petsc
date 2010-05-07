@@ -46,7 +46,7 @@ static PetscErrorCode MatPartitioningApply_Jostle(MatPartitioning part, IS * par
     /* check that the number of partitions is equal to the number of processors */
     ierr = MPI_Comm_rank(((PetscObject)mat)->comm, &rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(((PetscObject)mat)->comm, &size);CHKERRQ(ierr);
-    if (part->n != size) SETERRQ(PETSC_ERR_SUP, "Supports exactly one domain per processor");
+    if (part->n != size) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Supports exactly one domain per processor");
 
     /* convert adjacency matrix to MPIAdj if needed*/
     ierr = PetscTypeCompare((PetscObject) mat, MATMPIADJ, &flg);CHKERRQ(ierr);
@@ -125,7 +125,7 @@ static PetscErrorCode MatPartitioningApply_Jostle(MatPartitioning part, IS * par
 #ifdef PETSC_HAVE_UNISTD_H
         ierr = PetscMalloc(SIZE_LOG * sizeof(char), &(jostle_struct->mesg_log));CHKERRQ(ierr);
         err = fflush(stdout);
-        if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on stdout");    
+        if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on stdout");    
         count = read(fd_pipe[0], jostle_struct->mesg_log, (SIZE_LOG - 1) * sizeof(char));
         if (count < 0)
             count = 0;
@@ -170,7 +170,7 @@ PetscErrorCode MatPartitioningView_Jostle(MatPartitioning part, PetscViewer view
       ierr = PetscViewerASCIIPrintf(viewer, "%s\n", jostle_struct->mesg_log);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(PETSC_ERR_SUP, "Viewer type %s not supported for this Jostle partitioner",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Viewer type %s not supported for this Jostle partitioner",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -194,7 +194,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningJostleSetCoarseLevel(MatPartiti
     PetscFunctionBegin;
 
     if (level < 0.0 || level > 1.0) {
-        SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
             "Jostle: level of coarsening out of range [0.0-1.0]");
     } else
         jostle_struct->nbvtxcoarsed = (int)(part->adj->N * level);

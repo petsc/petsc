@@ -22,9 +22,9 @@ PetscErrorCode KSPSetUp_Broyden(KSP ksp)
      so generate an error otherwise.
   */
   if (ksp->pc_side == PC_RIGHT) {
-    SETERRQ(PETSC_ERR_SUP,"No right preconditioning for KSPBroyden");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No right preconditioning for KSPBroyden");
   } else if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(PETSC_ERR_SUP,"No symmetric preconditioning for KSPBroyden");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No symmetric preconditioning for KSPBroyden");
   }
   ierr = KSPGetVecs(ksp,cgP->msize,&cgP->v,cgP->msize,&cgP->w);CHKERRQ(ierr);
   ierr = KSPDefaultGetWork(ksp,3);CHKERRQ(ierr);
@@ -70,7 +70,7 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
     ierr = VecNorm(R,NORM_2,&gnorm);CHKERRQ(ierr);          
   } else if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
     ierr = VecNorm(Pold,NORM_2,&gnorm);CHKERRQ(ierr);          
-  } else SETERRQ(PETSC_ERR_SUP,"NormType not supported");
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"NormType not supported");
   KSPLogResidualHistory(ksp,gnorm);
   KSPMonitor(ksp,0,gnorm);
   ierr = (*ksp->converged)(ksp,0,gnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); 
@@ -101,7 +101,7 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
         ierr = VecNorm(R,NORM_2,&gnorm);CHKERRQ(ierr);          
       } else if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
         ierr = VecNorm(P,NORM_2,&gnorm);CHKERRQ(ierr);          
-      } else SETERRQ(PETSC_ERR_SUP,"NormType not supported");
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"NormType not supported");
       KSPLogResidualHistory(ksp,gnorm);
       KSPMonitor(ksp,(1+k+i),gnorm);
       ierr = (*ksp->converged)(ksp,1+k+i,gnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); 
@@ -177,7 +177,7 @@ PetscErrorCode KSPView_Broyden(KSP ksp,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Size of space %d\n",cg->msize);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for KSP cg",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for KSP cg",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

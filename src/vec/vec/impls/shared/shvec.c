@@ -155,19 +155,19 @@ PetscErrorCode PetscSharedMalloc(MPI_Comm comm,PetscInt llen,PetscInt len,void *
     id = shmget(key,len, 0666 |IPC_CREAT);
     if (id == -1) {
       perror("Unable to malloc shared memory");
-      SETERRQ(PETSC_ERR_LIB,"Unable to malloc shared memory");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to malloc shared memory");
     }
   } else {
     id = shmget(key,len, 0666);
     if (id == -1) {
       perror("Unable to malloc shared memory");
-      SETERRQ(PETSC_ERR_LIB,"Unable to malloc shared memory");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to malloc shared memory");
     }
   }
   value = shmat(id,(void*)0,0);
   if (value == (char*)-1) {
     perror("Unable to access shared memory allocated");
-    SETERRQ(PETSC_ERR_LIB,"Unable to access shared memory allocated");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to access shared memory allocated");
   }
   *result = (void*) (value + shift);
 
@@ -191,7 +191,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Shared(Vec vv)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)vv)->comm,&size);CHKERRQ(ierr);
   if (size > 1) {
-    SETERRQ(PETSC_ERR_SUP_SYS,"No supported for shared memory vector objects on this machine");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"No supported for shared memory vector objects on this machine");
   }
   ierr = VecCreate_Seq(vv);CHKERRQ(ierr);
   PetscFunctionReturn(0);

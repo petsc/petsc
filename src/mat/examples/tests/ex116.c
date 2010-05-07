@@ -34,7 +34,7 @@ PetscInt main(PetscInt argc,char **args)
   
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size != 1) SETERRQ(PETSC_ERR_SUP,"This is a uniprocessor example only!");
+  if (size != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   ierr = PetscOptionsHasName(PETSC_NULL, "-test_syev", &flg);CHKERRQ(ierr);
   if (flg){
@@ -56,7 +56,7 @@ PetscInt main(PetscInt argc,char **args)
     Mat Trans;
     ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Trans);
     ierr = MatEqual(A, Trans, &isSymmetric);
-    if (!isSymmetric) SETERRQ(PETSC_ERR_USER,"A must be symmetric");
+    if (!isSymmetric) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"A must be symmetric");
     ierr = MatDestroy(Trans);CHKERRQ(ierr);
   }
 
@@ -93,7 +93,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = PetscFree(iwork);CHKERRQ(ierr);
   }
   ierr = MatRestoreArray(A,&arrayA);CHKERRQ(ierr);
-  if (nevs <= 0 ) SETERRQ1(PETSC_ERR_CONV_FAILED, "nev=%d, no eigensolution has found", nevs);
+  if (nevs <= 0 ) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED, "nev=%d, no eigensolution has found", nevs);
 
   /* View evals */
   ierr = PetscOptionsHasName(PETSC_NULL, "-eig_view", &flg);CHKERRQ(ierr);

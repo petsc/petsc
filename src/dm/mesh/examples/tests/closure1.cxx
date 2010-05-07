@@ -57,7 +57,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
     ALE::Obj<ALE::Mesh> mB = ALE::MeshBuilder::createCubeBoundary(comm, lower, upper, faces, options->debug);
     ierr = MeshSetMesh(boundary, mB);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
   }
   ierr = MeshGenerate(boundary, options->interpolate, &mesh);CHKERRQ(ierr);
   if (size > 1) {

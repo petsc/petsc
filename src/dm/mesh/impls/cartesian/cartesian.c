@@ -106,11 +106,11 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshView_Cartesian(Mesh mesh, PetscViewer viewe
   if (iascii){
     ierr = MeshView_Cartesian_Ascii(*((ALE::Obj<ALE::CartesianMesh> *) mesh->data), viewer);CHKERRQ(ierr);
   } else if (isbinary) {
-    SETERRQ(PETSC_ERR_SUP, "Binary viewer not implemented for Cartesian Mesh");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Binary viewer not implemented for Cartesian Mesh");
   } else if (isdraw){ 
-    SETERRQ(PETSC_ERR_SUP, "Draw viewer not implemented for Cartesian Mesh");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Draw viewer not implemented for Cartesian Mesh");
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", ((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", ((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -188,7 +188,7 @@ PetscErrorCode MeshRefine_Cartesian(Mesh mesh, MPI_Comm comm, Mesh *refinedMesh)
   newMesh->setBoundaryCondition(oldMesh->getBoundaryCondition());
   newMesh->setupField(s);
 #else
-  SETERRQ(PETSC_ERR_SUP, "Not yet implemented");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Not yet implemented");
 #endif
   PetscFunctionReturn(0);
 }
@@ -212,7 +212,7 @@ PetscErrorCode MeshCoarsen_Cartesian(Mesh mesh, MPI_Comm comm, Mesh *coarseMesh)
   newMesh->setBoundaryCondition(oldMesh->getBoundaryCondition());
   newMesh->setupField(s);
 #else
-  SETERRQ(PETSC_ERR_SUP, "Not yet implemented");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Not yet implemented");
 #endif
   PetscFunctionReturn(0);
 }

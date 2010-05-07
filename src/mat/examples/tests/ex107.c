@@ -35,7 +35,7 @@ int main(int argc,char **args)
 
   /* Create vectors */
   ierr = MatGetLocalSize(C,&m,&n);CHKERRQ(ierr);
-  if (m != n) SETERRQ2(PETSC_ERR_ARG_WRONG,"Matrix local size m %d must equal n %d",m,n);
+  if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix local size m %d must equal n %d",m,n);
   /* printf("[%d] C - local size m: %d\n",rank,m); */
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,m,PETSC_DECIDE);CHKERRQ(ierr);

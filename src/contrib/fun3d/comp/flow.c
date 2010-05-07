@@ -534,7 +534,7 @@ int Update(SNES snes, void *ctx)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-e1",&event1,&flg);CHKERRQ(ierr);
   ierr = PetscGetTime(&time_start_counters);CHKERRQ(ierr);
   if ((gen_start = start_counters(event0,event1)) < 0)
-   SETERRQ(1,1,"Error in start_counters\n"); 
+   SETERRQ(PETSC_COMM_SELF,1,1,"Error in start_counters\n"); 
  }*/
 #endif
  /*cpu_ini = PetscGetCPUTime();*/
@@ -582,7 +582,7 @@ int Update(SNES snes, void *ctx)
   ierr = SNESGetNonlinearStepFailures(snes, &nfails);CHKERRQ(ierr);
   nfailsCum += nfails; nfails = 0;
   if (nfailsCum >= 2) 
-    SETERRQ(1,"Unable to find a Newton Step");
+    SETERRQ(PETSC_COMM_SELF,1,"Unable to find a Newton Step");
   if (print_flag)
    PetscPrintf(MPI_COMM_WORLD,"At Time Step %d cfl = %g and fnorm = %g\n", i,
               tsCtx->cfl, tsCtx->fnorm); 
@@ -649,10 +649,10 @@ int Update(SNES snes, void *ctx)
   FILE *cfp0, *cfp1;
   char str[256];
   /*if ((gen_read = read_counters(event0,&counter0,event1,&counter1)) < 0)
-   SETERRQ(1,"Error in read_counter\n");
+   SETERRQ(PETSC_COMM_SELF,1,"Error in read_counter\n");
   ierr = PetscGetTime(&time_read_counters);CHKERRQ(ierr);
   if (gen_read != gen_start) {
-   SETERRQ(1,"Lost Counters!! Aborting ...\n");
+   SETERRQ(PETSC_COMM_SELF,1,"Lost Counters!! Aborting ...\n");
   }*/
   /*sprintf(str,"counters%d_and_%d",event0,event1);
   cfp0 = fopen(str,"a");*/
@@ -840,7 +840,7 @@ int GetLocalOrdering(GRID *grid)
 	ierr = PetscStrcpy(spart_file,part_file);CHKERRQ(ierr);
       }
       fptr = fopen(spart_file,"r");
-      if (!fptr) SETERRQ1(1,"Cannot open file %s\n",part_file);
+      if (!fptr) SETERRQ1(PETSC_COMM_SELF,1,"Cannot open file %s\n",part_file);
       for (inode = 0; inode < nnodes; inode++) {
 	fscanf(fptr,"%d\n",&node1); 
 	v2p[inode] = node1;
@@ -1906,7 +1906,7 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
 
 #else
    if (CommSize > 1 ) 
-     SETERRQ(1,"Parallel case not supported in non-interlaced case\n");
+     SETERRQ(PETSC_COMM_SELF,1,"Parallel case not supported in non-interlaced case\n");
    ICALLOC(nnodes*bs, &val_diag);
    ICALLOC(nnodes*bs, &val_offd);
    for (j = 0; j < bs; j++) {
@@ -2802,7 +2802,7 @@ int write_fine_grid(GRID *grid)
 /* call the output frame.out */
 
    if (!(output = fopen("frame.out","a"))){
-      SETERRQ(1,"can't open frame.out");
+      SETERRQ(PETSC_COMM_SELF,1,"can't open frame.out");
    }
    fprintf(output,"information for fine grid\n"); 
    fprintf(output,"\n");
@@ -2863,7 +2863,7 @@ int EventCountersBegin(int *gen_start, PetscScalar* time_start_counters)
 {
  int ierr;
  if ((*gen_start = start_counters(event0,event1)) < 0)
-   SETERRQ(1,"Error in start_counters\n");
+   SETERRQ(PETSC_COMM_SELF,1,"Error in start_counters\n");
  ierr = PetscGetTime(time_start_counters);CHKERRQ(ierr);
  return 0;
 }
@@ -2875,10 +2875,10 @@ int EventCountersEnd(int gen_start, PetscScalar time_start_counters)
  long long _counter0, _counter1;
 
  if ((gen_read = read_counters(event0,&_counter0,event1,&_counter1)) < 0)
-   SETERRQ(1,"Error in read_counter\n");
+   SETERRQ(PETSC_COMM_SELF,1,"Error in read_counter\n");
  ierr = PetscGetTime(&time_read_counters);CHKERRQ(ierr);
  if (gen_read != gen_start) {
-   SETERRQ(1,"Lost Counters!! Aborting ...\n");
+   SETERRQ(PETSC_COMM_SELF,1,"Lost Counters!! Aborting ...\n");
  }
  counter0 += _counter0;
  counter1 += _counter1;

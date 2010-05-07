@@ -7,8 +7,8 @@
 #include "private/vecimpl.h"    /*I "petscvec.h" I*/
 
 #define PetscCheckSameSizeVec(x,y) \
-  if ((x)->map->N != (y)->map->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths"); \
-  if ((x)->map->n != (y)->map->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+  if ((x)->map->N != (y)->map->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths"); \
+  if ((x)->map->n != (y)->map->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
 
 #undef __FUNCT__  
@@ -430,7 +430,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScale (Vec x, PetscScalar alpha)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
-  if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
+  if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
   ierr = PetscLogEventBegin(VEC_Scale,x,0,0,0);CHKERRQ(ierr);
   if (alpha != 1.0) {
     ierr = (*x->ops->scale)(x,alpha);CHKERRQ(ierr);
@@ -495,13 +495,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSet(Vec x,PetscScalar alpha)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
-  if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You cannot call this after you have called VecSetValues() but\n before you have called VecAssemblyBegin/End()");
+  if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You cannot call this after you have called VecSetValues() but\n before you have called VecAssemblyBegin/End()");
 #if defined (PETSC_USE_DEBUG)
  {
    PetscReal alpha_local,alpha_max;
    alpha_local = PetscAbsScalar(alpha);
    ierr = MPI_Allreduce(&alpha_local,&alpha_max,1,MPIU_REAL,MPI_MAX,((PetscObject)x)->comm);CHKERRQ(ierr);
-   if (alpha_local != alpha_max) SETERRQ(PETSC_ERR_ARG_WRONG,"Same value should be used across all processors");
+   if (alpha_local != alpha_max) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Same value should be used across all processors");
  }
 #endif
 
@@ -737,8 +737,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecWAXPY(Vec w,PetscScalar alpha,Vec x,Vec y)
   PetscCheckSameTypeAndComm(y,4,w,1);
   PetscCheckSameSizeVec(x,y);
   PetscCheckSameSizeVec(x,w);
-  if (w == y) SETERRQ(PETSC_ERR_SUP,"Result vector w cannot be same as input vector y, suggest VecAXPY()");
-  if (w == x) SETERRQ(PETSC_ERR_SUP,"Result vector w cannot be same as input vector x, suggest VecAYPX()");
+  if (w == y) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Result vector w cannot be same as input vector y, suggest VecAXPY()");
+  if (w == x) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Result vector w cannot be same as input vector x, suggest VecAYPX()");
 
   ierr = PetscLogEventBegin(VEC_WAXPY,x,y,w,0);CHKERRQ(ierr);
   ierr =  (*w->ops->waxpy)(w,alpha,x,y);CHKERRQ(ierr);
@@ -962,7 +962,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetValuesLocal(Vec x,PetscInt ni,const Pets
   ierr = PetscLogEventBegin(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
   if (!x->ops->setvalueslocal) {
     if (!x->mapping) {
-      SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Local to global never set with VecSetLocalToGlobalMapping()");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Local to global never set with VecSetLocalToGlobalMapping()");
     }
     if (ni > 128) {
       ierr = PetscMalloc(ni*sizeof(PetscInt),&lix);CHKERRQ(ierr);
@@ -1029,7 +1029,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetValuesBlockedLocal(Vec x,PetscInt ni,con
   PetscValidScalarPointer(y,4);
   PetscValidType(x,1);
   if (!x->bmapping) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Local to global never set with VecSetLocalToGlobalMappingBlock()");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Local to global never set with VecSetLocalToGlobalMappingBlock()");
   }
   if (ni > 128) {
     ierr = PetscMalloc(ni*sizeof(PetscInt),&lix);CHKERRQ(ierr);
@@ -1138,7 +1138,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMDot(Vec x,PetscInt nv,const Vec y[],PetscS
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1); 
   if (!nv) PetscFunctionReturn(0);
-  if (nv < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Number of vectors (given %D) cannot be negative",nv);
+  if (nv < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of vectors (given %D) cannot be negative",nv);
   PetscValidPointer(y,3);
   PetscValidHeaderSpecific(*y,VEC_CLASSID,3);
   PetscValidScalarPointer(val,4);
@@ -1179,7 +1179,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMAXPY(Vec y,PetscInt nv,const PetscScalar a
   PetscFunctionBegin;
   PetscValidHeaderSpecific(y,VEC_CLASSID,1);
   if (!nv) PetscFunctionReturn(0);
-  if (nv < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Number of vectors (given %D) cannot be negative",nv);
+  if (nv < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of vectors (given %D) cannot be negative",nv);
   PetscValidScalarPointer(alpha,3);
   PetscValidPointer(x,4);
   PetscValidHeaderSpecific(*x,VEC_CLASSID,4);
@@ -1287,7 +1287,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetArrays(const Vec x[],PetscInt n,PetscSca
   PetscValidPointer(x,1);
   PetscValidHeaderSpecific(*x,VEC_CLASSID,1);
   PetscValidPointer(a,3);
-  if (n <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Must get at least one array n = %D",n);
+  if (n <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must get at least one array n = %D",n);
   ierr = PetscMalloc(n*sizeof(PetscScalar*),&q);CHKERRQ(ierr);
   for (i=0; i<n; ++i) {
     ierr = VecGetArray(x[i],&q[i]);CHKERRQ(ierr);
@@ -1437,7 +1437,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPlaceArray(Vec vec,const PetscScalar array[
   if (vec->ops->placearray) {
     ierr = (*vec->ops->placearray)(vec,array);CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_ERR_SUP,"Cannot place array in this type of vector");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot place array in this type of vector");
   }
   ierr = PetscObjectStateIncrease((PetscObject)vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1481,7 +1481,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecReplaceArray(Vec vec,const PetscScalar arra
   if (vec->ops->replacearray) {
     ierr = (*vec->ops->replacearray)(vec,array);CHKERRQ(ierr);
  } else {
-    SETERRQ(PETSC_ERR_SUP,"Cannot replace array in this type of vector");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot replace array in this type of vector");
   }
   ierr = PetscObjectStateIncrease((PetscObject)vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1662,7 +1662,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray2d(Vec x,PetscInt m,PetscInt n,Pets
   PetscValidPointer(a,6);
   PetscValidType(x,1);
   ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
-  if (m*n != N) SETERRQ3(PETSC_ERR_ARG_INCOMP,"Local array size %D does not match 2d array dimensions %D by %D",N,m,n);
+  if (m*n != N) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local array size %D does not match 2d array dimensions %D by %D",N,m,n);
   ierr = VecGetArray(x,&aa);CHKERRQ(ierr);
 
   ierr = PetscMalloc(m*sizeof(PetscScalar*),a);CHKERRQ(ierr);
@@ -1755,7 +1755,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray1d(Vec x,PetscInt m,PetscInt mstart
   PetscValidPointer(a,4);
   PetscValidType(x,1);
   ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
-  if (m != N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local array size %D does not match 1d array dimensions %D",N,m);
+  if (m != N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local array size %D does not match 1d array dimensions %D",N,m);
   ierr = VecGetArray(x,a);CHKERRQ(ierr);
   *a  -= mstart;
   PetscFunctionReturn(0);
@@ -1850,7 +1850,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray3d(Vec x,PetscInt m,PetscInt n,Pets
   PetscValidPointer(a,8);
   PetscValidType(x,1);
   ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
-  if (m*n*p != N) SETERRQ4(PETSC_ERR_ARG_INCOMP,"Local array size %D does not match 3d array dimensions %D by %D by %D",N,m,n,p);
+  if (m*n*p != N) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local array size %D does not match 3d array dimensions %D by %D by %D",N,m,n,p);
   ierr = VecGetArray(x,&aa);CHKERRQ(ierr);
 
   ierr = PetscMalloc(m*sizeof(PetscScalar**)+m*n*sizeof(PetscScalar*),a);CHKERRQ(ierr);
@@ -1961,7 +1961,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray4d(Vec x,PetscInt m,PetscInt n,Pets
   PetscValidPointer(a,10);
   PetscValidType(x,1);
   ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
-  if (m*n*p*q != N) SETERRQ5(PETSC_ERR_ARG_INCOMP,"Local array size %D does not match 4d array dimensions %D by %D by %D by %D",N,m,n,p,q);
+  if (m*n*p*q != N) SETERRQ5(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local array size %D does not match 4d array dimensions %D by %D by %D by %D",N,m,n,p,q);
   ierr = VecGetArray(x,&aa);CHKERRQ(ierr);
 
   ierr = PetscMalloc(m*sizeof(PetscScalar***)+m*n*sizeof(PetscScalar**)+m*n*p*sizeof(PetscScalar*),a);CHKERRQ(ierr);

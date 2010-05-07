@@ -10,7 +10,8 @@
    Not Collective
 
    Input Parameters:
-+  line - the line number of the error (indicated by __LINE__)
++  comm - communicator over which error occurred
+.  line - the line number of the error (indicated by __LINE__)
 .  fun - the function where the error occurred (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __SDIR__)
@@ -25,7 +26,7 @@
    Most users need not directly employ this routine and the other error 
    handlers, but can instead use the simplified interface SETERRQ, which has 
    the calling sequence
-$     SETERRQ(n,p,mess)
+$     SETERRQ(comm,n,p,mess)
 
    Notes for experienced users:
    Use PetscPushErrorHandler() to set the desired error handler.  The
@@ -37,7 +38,7 @@ $     SETERRQ(n,p,mess)
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
            PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
  @*/
-PetscErrorCode PETSC_DLLEXPORT PetscMPIAbortErrorHandler(int line,const char *fun,const char *file,const char *dir,PetscErrorCode n,int p,const char *mess,void *ctx)
+PetscErrorCode PETSC_DLLEXPORT PetscMPIAbortErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,const char *dir,PetscErrorCode n,int p,const char *mess,void *ctx)
 {
   PetscTruth     flg1 = PETSC_FALSE,flg2 = PETSC_FALSE;
   PetscLogDouble mem,rss;

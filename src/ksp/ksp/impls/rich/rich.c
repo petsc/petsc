@@ -14,8 +14,8 @@ PetscErrorCode KSPSetUp_Richardson(KSP ksp)
   KSP_Richardson *richardsonP = (KSP_Richardson*)ksp->data;
 
   PetscFunctionBegin;
-  if (ksp->pc_side == PC_RIGHT) {SETERRQ(PETSC_ERR_SUP,"no right preconditioning for KSPRICHARDSON");}
-  else if (ksp->pc_side == PC_SYMMETRIC) {SETERRQ(PETSC_ERR_SUP,"no symmetric preconditioning for KSPRICHARDSON");}
+  if (ksp->pc_side == PC_RIGHT) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"no right preconditioning for KSPRICHARDSON");}
+  else if (ksp->pc_side == PC_SYMMETRIC) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"no symmetric preconditioning for KSPRICHARDSON");}
   if (richardsonP->selfscale) {
     ierr  = KSPDefaultGetWork(ksp,4);CHKERRQ(ierr);
   } else {
@@ -40,10 +40,10 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   PetscTruth     exists,diagonalscale;
 
   PetscFunctionBegin;
-  if (ksp->normtype == KSP_NORM_NATURAL) SETERRQ(PETSC_ERR_SUP,"Cannot use natural residual norm for KSPRICHARDSON");
+  if (ksp->normtype == KSP_NORM_NATURAL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot use natural residual norm for KSPRICHARDSON");
 
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  if (diagonalscale) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   ksp->its = 0;
 
@@ -182,7 +182,7 @@ PetscErrorCode KSPView_Richardson(KSP ksp,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Richardson: damping factor=%G\n",richardsonP->scale);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for KSP Richardson",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for KSP Richardson",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

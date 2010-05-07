@@ -153,7 +153,7 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
     } else {
       flag = CVode(mem,tout,cvode->y,&t,CV_NORMAL);
     }
-    if (flag)SETERRQ1(PETSC_ERR_LIB,"CVode() fails, flag %d",flag);
+    if (flag)SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, flag %d",flag);
     if (t > ts->max_time && cvode->exact_final_time) { 
       /* interpolate to final requested time */
       ierr = CVodeGetDky(mem,tout,0,cvode->y);CHKERRQ(ierr);
@@ -222,7 +222,7 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
 
   /* allocate the memory for N_Vec y */
   cvode->y = N_VNew_Parallel(cvode->comm_sundials,locsize,glosize);
-  if (!cvode->y) SETERRQ(1,"cvode->y is not allocated");
+  if (!cvode->y) SETERRQ(PETSC_COMM_SELF,1,"cvode->y is not allocated");
 
   /* initialize N_Vec y: copy ts->vec_sol to cvode->y */
   ierr = VecGetArray(ts->vec_sol,&parray);CHKERRQ(ierr);
@@ -247,24 +247,24 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
 
   /* Call CVodeCreate to create the solver memory and the use of a Newton iteration */
   mem = CVodeCreate(cvode->cvode_type, CV_NEWTON); 
-  if (!mem) SETERRQ(PETSC_ERR_MEM,"CVodeCreate() fails");
+  if (!mem) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"CVodeCreate() fails");
   cvode->mem = mem;
 
   /* Set the pointer to user-defined data */
   flag = CVodeSetUserData(mem, ts);
-  if (flag) SETERRQ(PETSC_ERR_LIB,"CVodeSetUserData() fails");
+  if (flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeSetUserData() fails");
 
   /* Call CVodeInit to initialize the integrator memory and specify the
    * user's right hand side function in u'=f(t,u), the inital time T0, and
    * the initial dependent variable vector cvode->y */
   flag = CVodeInit(mem,TSFunction_Sundials,ts->ptime,cvode->y);
   if (flag){
-    SETERRQ1(PETSC_ERR_LIB,"CVodeInit() fails, flag %d",flag);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeInit() fails, flag %d",flag);
   }
 
   flag = CVodeSStolerances(mem,cvode->reltol,cvode->abstol);
   if (flag){
-    SETERRQ1(PETSC_ERR_LIB,"CVodeSStolerances() fails, flag %d",flag);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeSStolerances() fails, flag %d",flag);
   }
 
   /* initialize the number of steps */
@@ -276,19 +276,19 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
   ierr = PetscTypeCompare((PetscObject)cvode->pc,PCNONE,&pcnone);CHKERRQ(ierr);
   if (pcnone){
     flag  = CVSpgmr(mem,PREC_NONE,0);
-    if (flag) SETERRQ1(PETSC_ERR_LIB,"CVSpgmr() fails, flag %d",flag);
+    if (flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVSpgmr() fails, flag %d",flag);
   } else {
     flag  = CVSpgmr(mem,PREC_LEFT,0);
-    if (flag) SETERRQ1(PETSC_ERR_LIB,"CVSpgmr() fails, flag %d",flag);
+    if (flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVSpgmr() fails, flag %d",flag);
 
     /* Set preconditioner and solve routines Precond and PSolve, 
      and the pointer to the user-defined block data */
     flag = CVSpilsSetPreconditioner(mem,TSPrecond_Sundials,TSPSolve_Sundials);
-    if (flag) SETERRQ1(PETSC_ERR_LIB,"CVSpilsSetPreconditioner() fails, flag %d", flag);
+    if (flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVSpilsSetPreconditioner() fails, flag %d", flag);
   }
 
   flag = CVSpilsSetGSType(mem, MODIFIED_GS);
-  if (flag) SETERRQ1(PETSC_ERR_LIB,"CVSpgmrSetGSType() fails, flag %d",flag);
+  if (flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVSpgmrSetGSType() fails, flag %d",flag);
   PetscFunctionReturn(0);
 }
 
@@ -388,7 +388,7 @@ PetscErrorCode TSView_Sundials(TS ts,PetscViewer viewer)
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer,"Sundials type %s",type);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by TS Sundials",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by TS Sundials",((PetscObject)viewer)->type_name);
   }
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = PCView(cvode->pc,viewer);CHKERRQ(ierr);
@@ -762,7 +762,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsGetPC(TS ts,PC *pc)
   if (f) {
     ierr = (*f)(ts,pc);CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"TS must be of Sundials type to extract the PC");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TS must be of Sundials type to extract the PC");
   }
 
   PetscFunctionReturn(0);
@@ -859,7 +859,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Sundials(TS ts)
 
   PetscFunctionBegin;
   if (ts->problem_type != TS_NONLINEAR) {
-    SETERRQ(PETSC_ERR_SUP,"Only support for nonlinear problems");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only support for nonlinear problems");
   }
   ts->ops->destroy        = TSDestroy_Sundials;
   ts->ops->view           = TSView_Sundials;

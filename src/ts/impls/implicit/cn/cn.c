@@ -346,7 +346,7 @@ PetscErrorCode TSScaleShiftMatrices_CN(TS ts,Mat A,Mat B,MatStructure str)
       ierr = MatShift(B,mdt);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ(PETSC_ERR_SUP,"Matrix type MATMFFD is not supported yet"); /* ref TSScaleShiftMatrices() */
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix type MATMFFD is not supported yet"); /* ref TSScaleShiftMatrices() */
   }
   PetscFunctionReturn(0);
 }
@@ -478,7 +478,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_CN(TS ts)
 
   if (ts->problem_type == TS_LINEAR) {
     if (!ts->Arhs) {
-      SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set rhs matrix for linear problem");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must set rhs matrix for linear problem");
     }    
     if (!ts->ops->rhsmatrix) {     
       ts->ops->setup = TSSetUp_CN_Linear_Constant_Matrix;
@@ -497,7 +497,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_CN(TS ts)
     ts->ops->setfromoptions = TSSetFromOptions_CN_Nonlinear;
     ierr = SNESCreate(((PetscObject)ts)->comm,&ts->snes);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)ts->snes,(PetscObject)ts,1);CHKERRQ(ierr);
-  } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"No such problem");
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No such problem");
 
   ts->ops->snesfunction = SNESTSFormFunction_CN;
   ts->ops->snesjacobian = SNESTSFormJacobian_CN;

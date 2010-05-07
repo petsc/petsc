@@ -75,7 +75,7 @@ int main(int argc,char **argv)
   PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);
   PetscOptionsGetReal(PETSC_NULL,"-param",&user.param,PETSC_NULL);
   if (user.param >= param_max || user.param <= param_min) {
-    SETERRQ(1,"Parameter is out of range");
+    SETERRQ(PETSC_COMM_SELF,1,"Parameter is out of range");
   }
   dt = .5/PetscMax(user.mx,user.my);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-dt",&dt,PETSC_NULL);CHKERRQ(ierr);

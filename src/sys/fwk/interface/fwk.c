@@ -24,7 +24,7 @@ EXTERN_C_END
     PetscErrorCode ierr;						\
     ierr = PetscPythonInitialize(PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);	\
     if(PetscFwkPythonImportConfigure == PETSC_NULL) {			\
-      SETERRQ(PETSC_ERR_LIB,						\
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,						\
 	      "Couldn't initialize Python support for PetscFwk");	\
     }									\
   }									
@@ -38,9 +38,9 @@ EXTERN_C_END
     const char *_name = fwk->record[id].name;				\
     void *_configure = 0;						\
     ierr = PetscFwkPythonImportConfigure(_url, _path, _name, &_configure);	\
-    if (ierr) { PetscFwkPythonPrintError(); SETERRQ(PETSC_ERR_LIB, "Python error"); } \
+    if (ierr) { PetscFwkPythonPrintError(); SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, "Python error"); } \
     ierr = PetscFwkPythonConfigureComponent(_configure, fwk, state, component); \
-    if (ierr) { PetscFwkPythonPrintError(); SETERRQ(PETSC_ERR_LIB, "Python error"); } \
+    if (ierr) { PetscFwkPythonPrintError(); SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, "Python error"); } \
   }
   
 
@@ -146,10 +146,10 @@ PetscErrorCode PetscFwkGraphAddEdge(PetscFwkGraph graph, PetscInt row, PetscInt 
   PetscFunctionBegin;
 
   if(row < 0 || row >= graph->vcount) {
-    SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Source vertex %D out of range: min %D max %D",row, 0, graph->vcount);
+    SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Source vertex %D out of range: min %D max %D",row, 0, graph->vcount);
   }
   if(col < 0 || col >= graph->vcount) {
-    SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Target vertex %D out of range: min %D max %D",col, 0, graph->vcount);
+    SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Target vertex %D out of range: min %D max %D",col, 0, graph->vcount);
   }
   rp   = graph->j + graph->i[row];
   low  = 0;
@@ -195,7 +195,7 @@ PetscErrorCode PetscFwkGraphTopologicalSort(PetscFwkGraph graph, PetscInt *n, Pe
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if(!n || !queue) {
-    SETERRQ(PETSC_ERR_ARG_WRONG, "Invalid return argument pointers n or vertices");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid return argument pointers n or vertices");
   }
   *n = graph->vcount;
   ierr = PetscMalloc(sizeof(PetscInt)*graph->vcount, queue); CHKERRQ(ierr);
@@ -228,7 +228,7 @@ PetscErrorCode PetscFwkGraphTopologicalSort(PetscFwkGraph graph, PetscInt *n, Pe
     }/* for(ii) */
     /* If no progress was made during this iteration, the graph must have a cycle */
     if(!progress) {
-      SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Cycle detected in the dependency graph");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Cycle detected in the dependency graph");
     }
   }/* while(Nqueued) */
   ierr = PetscFree(queued); CHKERRQ(ierr);
@@ -366,7 +366,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkParseURL_Private(PetscFwk fwk, const char
   ierr = PetscStrrchr(path,':',&n); CHKERRQ(ierr);
   /* Make sure it's not the ":/" of the "://" separator */
   if(!n[0] || n[0] == '/') {
-    SETERRQ2(PETSC_ERR_ARG_WRONG, 
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, 
            "Could not locate component name within the URL.\n"
            "Must have url = [<path/><library>:]<name>.\n"
            "Instead got %s\n"
@@ -391,7 +391,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkParseURL_Private(PetscFwk fwk, const char
       *type = PETSC_FWK_COMPONENT_PY;
     }
     else {
-      SETERRQ3(PETSC_ERR_ARG_WRONG, 
+      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, 
            "Unknown library suffix within the URL.\n"
            "Must have url = [<path/><library>:]<name>,\n"
            "where library = <libname>.<suffix>, suffix = .a || .so || .py.\n"
@@ -403,7 +403,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkParseURL_Private(PetscFwk fwk, const char
     s[-1] = '\0';  
   }
   else {
-    SETERRQ2(PETSC_ERR_ARG_WRONG, 
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, 
              "Could not locate library within the URL.\n"
              "Must have url = [<path/><library>:]<name>.\n"
              "Instead got %s\n"
@@ -472,7 +472,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkRegisterComponentID_Private(PetscFwk fwk,
   ierr = PetscFwkGraphAddVertex(fwk->dep_graph, &v); CHKERRQ(ierr);
   /* v must equal id */
   if(v != id) {
-    SETERRQ2(PETSC_ERR_ARG_CORRUPT, "New dependence graph vertex %d not the same as component id %d", v, id); 
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT, "New dependence graph vertex %d not the same as component id %d", v, id); 
   }
   switch(type) {
   case PETSC_FWK_COMPONENT_SO:
@@ -496,7 +496,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFwkRegisterComponentID_Private(PetscFwk fwk,
     /* configure field remains NULL for a Py component */
     break;
   default:
-    SETERRQ2(PETSC_ERR_ARG_WRONG, 
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, 
              "Could not determine type of component with url %s.\n"
              "Remember: URL was truncated past the max allowed length of %d", 
              inurl, PETSC_FWK_MAX_URL_LENGTH);    
@@ -653,17 +653,17 @@ PetscFwk PETSC_DLLEXPORT PETSC_FWK_DEFAULT_(MPI_Comm comm) {
   PetscFunctionBegin;
   if (Petsc_Fwk_default_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Fwk_default_keyval,0);
-    if (ierr) {PetscError(__LINE__,"PETSC_FWK_DEFAULT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_FWK_DEFAULT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
   }
   ierr = MPI_Attr_get(comm,Petsc_Fwk_default_keyval,(void **)(&fwk),(PetscMPIInt*)&flg);
-  if (ierr) {PetscError(__LINE__,"PETSC_FWK_DEFAULT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
+  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_FWK_DEFAULT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
   if (!flg) { /* PetscFwk not yet created */
     ierr = PetscFwkCreate(comm, &fwk);
-    if (ierr) {PetscError(__LINE__,"PETSC_FWK_DEFAULT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_FWK_DEFAULT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
     ierr = PetscObjectRegisterDestroy((PetscObject)fwk);
-    if (ierr) {PetscError(__LINE__,"PETSC_FWK_DEFAULT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_FWK_DEFAULT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
     ierr = MPI_Attr_put(comm,Petsc_Fwk_default_keyval,(void*)fwk);
-    if (ierr) {PetscError(__LINE__,"PETSC_FWK_DEFAULT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_FWK_DEFAULT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
   } 
   PetscFunctionReturn(fwk);
 }/* PETSC_FWK_DEFAULT_() */

@@ -49,7 +49,7 @@ PetscErrorCode PFApply_Matlab(void *value,PetscInt n,PetscScalar *in,PetscScalar
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!value) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to set string for Matlab function, via -pf_matlab string");
+  if (!value) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Need to set string for Matlab function, via -pf_matlab string");
   ierr = PetscMatlabEnginePutArray(matlab->mengine,matlab->dimin,n,in,"x");CHKERRQ(ierr);
   ierr = PetscMatlabEngineEvaluate(matlab->mengine,matlab->string);CHKERRQ(ierr);
   ierr = PetscMatlabEngineGetArray(matlab->mengine,matlab->dimout,n,out,"f");CHKERRQ(ierr);

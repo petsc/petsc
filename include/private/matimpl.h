@@ -434,7 +434,7 @@ EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
     /* force matfactor to be diagonally dominant */\
     if (sctx.nshift > sctx.nshift_max) {\
       ierr = MatFactorDumpMatrix(A);CHKERRQ(ierr);\
-      SETERRQ1(PETSC_ERR_CONV_FAILED,"Unable to determine shift to enforce positive definite preconditioner after %d tries",sctx.nshift);\
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"Unable to determine shift to enforce positive definite preconditioner after %d tries",sctx.nshift);\
     } else if (sctx.nshift == sctx.nshift_max) {\
       sctx.shift_fraction = sctx.shift_hi;\
       sctx.useshift        = PETSC_TRUE;\
@@ -448,7 +448,7 @@ EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
     _newshift = 1;\
   } else if (PetscAbsScalar(sctx.pv) <= _zero){\
     ierr = MatFactorDumpMatrix(A);CHKERRQ(ierr);\
-    SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rowsum %G",row,PetscAbsScalar(sctx.pv),_zero,_rs); \
+    SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rowsum %G",row,PetscAbsScalar(sctx.pv),_zero,_rs); \
   } else {\
     _newshift = 0;\
   }\
@@ -526,7 +526,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(const MatFactorInfo *info,
   PetscReal _zero = info->zeropivot;
 
   if (PetscAbsScalar(sctx->pv) <= _zero){
-    SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G",row,PetscAbsScalar(sctx->pv),_zero);
+    SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G",row,PetscAbsScalar(sctx->pv),_zero);
   }
   return 0;
 }
@@ -604,7 +604,7 @@ typedef struct {
     sctx.nshift++;\
     _newshift = 1;\
   } else if (PetscAbsScalar(sctx.pv) <= _zero){\
-    SETERRQ4(PETSC_ERR_MAT_CH_ZRPVT,"Zero pivot row %D value %G tolerance %G * rowsum %G",row,PetscAbsScalar(sctx.pv),_zero,_rs); \
+    SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Zero pivot row %D value %G tolerance %G * rowsum %G",row,PetscAbsScalar(sctx.pv),_zero,_rs); \
   } else {\
     _newshift = 0; \
   }\

@@ -162,56 +162,56 @@ valid
 
 */
 #define PetscValidHeaderSpecific(h,ck,arg)                                            \
-  {if (!h) {SETERRQ1(PETSC_ERR_ARG_NULL,"Null Object: Parameter # %d",arg);}          \
+  {if (!h) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Object: Parameter # %d",arg);}          \
    if ((unsigned long)(h) & (unsigned long)3) {			\
-    SETERRQ1(PETSC_ERR_ARG_CORRUPT,"Invalid Pointer to Object: Parameter # %d",arg);   \
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Invalid Pointer to Object: Parameter # %d",arg);   \
   }                                                                                   \
   if (((PetscObject)(h))->classid != ck) {                                             \
     if (((PetscObject)(h))->classid == PETSCFREEDHEADER) {                             \
-      SETERRQ1(PETSC_ERR_ARG_CORRUPT,"Object already free: Parameter # %d",arg);       \
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Object already free: Parameter # %d",arg);       \
     } else {                                                                          \
-      SETERRQ1(PETSC_ERR_ARG_WRONG,"Wrong type of object: Parameter # %d",arg);       \
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong type of object: Parameter # %d",arg);       \
     }                                                                                 \
   }} 
 
 #define PetscValidHeader(h,arg)                                                              \
-  {if (!h) {SETERRQ1(PETSC_ERR_ARG_NULL,"Null Object: Parameter # %d",arg);}             \
+  {if (!h) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Object: Parameter # %d",arg);}             \
    if ((unsigned long)(h) & (unsigned long)3) {			\
-    SETERRQ1(PETSC_ERR_ARG_CORRUPT,"Invalid Pointer to Object: Parameter # %d",arg);     \
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Invalid Pointer to Object: Parameter # %d",arg);     \
   } else if (((PetscObject)(h))->classid == PETSCFREEDHEADER) {                           \
-      SETERRQ1(PETSC_ERR_ARG_CORRUPT,"Object already free: Parameter # %d",arg);         \
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Object already free: Parameter # %d",arg);         \
   } else if (((PetscObject)(h))->classid < PETSC_SMALLEST_CLASSID ||                                \
       ((PetscObject)(h))->classid > PETSC_LARGEST_CLASSID) {                               \
-      SETERRQ1(PETSC_ERR_ARG_CORRUPT,"Invalid type of object: Parameter # %d",arg);      \
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Invalid type of object: Parameter # %d",arg);      \
   }}
 
 #define PetscValidPointer(h,arg)                                                              \
-  {if (!h) {SETERRQ1(PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg);}             \
+  {if (!h) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg);}             \
    if ((unsigned long)(h) & (unsigned long)3){				\
-    SETERRQ1(PETSC_ERR_ARG_BADPTR,"Invalid Pointer: Parameter # %d",arg);                 \
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer: Parameter # %d",arg);                 \
   }}
 
 #define PetscValidCharPointer(h,arg)                                                           \
-  {if (!h) {SETERRQ1(PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg);}              \
+  {if (!h) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg);}              \
   }
 
 #define PetscValidIntPointer(h,arg)                                                            \
-  {if (!h) {SETERRQ1(PETSC_ERR_ARG_BADPTR,"Null Pointer: Parameter # %d",arg);}            \
+  {if (!h) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Null Pointer: Parameter # %d",arg);}            \
   if ((unsigned long)(h) & (unsigned long)3){				\
-    SETERRQ1(PETSC_ERR_ARG_BADPTR,"Invalid Pointer to Int: Parameter # %d",arg);           \
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer to Int: Parameter # %d",arg);           \
   }}
 
 #if !defined(PETSC_HAVE_DOUBLES_ALIGNED) 
 #define PetscValidScalarPointer(h,arg)                                                          \
-  {if (!h) {SETERRQ1(PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg);}               \
+  {if (!h) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg);}               \
   if ((unsigned long)(h) & (unsigned long)3) {			\
-    SETERRQ1(PETSC_ERR_ARG_BADPTR,"Invalid Pointer to PetscScalar: Parameter # %d",arg);    \
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer to PetscScalar: Parameter # %d",arg);    \
   }}
 #else
 #define PetscValidScalarPointer(h,arg)                                                          \
-  {if (!h) {SETERRQ1(PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg);}               \
+  {if (!h) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg);}               \
   if ((unsigned long)(h) & (unsigned long)7) {			\
-    SETERRQ1(PETSC_ERR_ARG_BADPTR,"Invalid Pointer to PetscScalar: Parameter # %d",arg);    \
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer to PetscScalar: Parameter # %d",arg);    \
   }}
 #endif
 
@@ -220,43 +220,43 @@ valid
      Version where pointers don't have any particular alignment
 */
 #define PetscValidHeaderSpecific(h,ck,arg)                              \
-  {if (!h) {SETERRQ(PETSC_ERR_ARG_NULL,"Null Object");}        \
+  {if (!h) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Object");}        \
   if (((PetscObject)(h))->classid != ck) {                           \
     if (((PetscObject)(h))->classid == PETSCFREEDHEADER) {           \
-      SETERRQ(PETSC_ERR_ARG_CORRUPT,"Object already free");       \
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Object already free");       \
     } else {                                                        \
-      SETERRQ(PETSC_ERR_ARG_WRONG,"Wrong Object");                \
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong Object");                \
     }                                                               \
   }} 
 
 #define PetscValidHeader(h,arg)                                         \
-  {if (!h) {SETERRQ(PETSC_ERR_ARG_NULL,"Null Object");}        \
+  {if (!h) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Object");}        \
   if (((PetscObject)(h))->classid == PETSCFREEDHEADER) {      \
-      SETERRQ(PETSC_ERR_ARG_CORRUPT,"Object already free");       \
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Object already free");       \
   } else if (((PetscObject)(h))->classid < PETSC_SMALLEST_CLASSID ||           \
       ((PetscObject)(h))->classid > PETSC_LARGEST_CLASSID) {          \
-      SETERRQ(PETSC_ERR_ARG_CORRUPT,"Invalid type of object");            \
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Invalid type of object");            \
   }}
 
 #define PetscValidPointer(h,arg)                                        \
-  {if (!h) {SETERRQ(PETSC_ERR_ARG_NULL,"Null Pointer");}        \
+  {if (!h) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer");}        \
   }
 
 #define PetscValidCharPointer(h,arg)                                    \
-  {if (!h) {SETERRQ(PETSC_ERR_ARG_NULL,"Null Pointer");}        \
+  {if (!h) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer");}        \
   }
 
 #define PetscValidIntPointer(h,arg)                                     \
-  {if (!h) {SETERRQ(PETSC_ERR_ARG_NULL,"Null Pointer");}        \
+  {if (!h) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer");}        \
   }
 
 #if !defined(PETSC_HAVE_DOUBLES_ALIGNED)
 #define PetscValidScalarPointer(h,arg)                                  \
-  {if (!h) {SETERRQ(PETSC_ERR_ARG_NULL,"Null Pointer");}        \
+  {if (!h) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer");}        \
   }
 #else
 #define PetscValidScalarPointer(h,arg)                                  \
-  {if (!h) {SETERRQ(PETSC_ERR_ARG_NULL,"Null Pointer");}        \
+  {if (!h) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer");}        \
   }
 #endif
 
@@ -277,12 +277,12 @@ valid
   both vectors must be either Seq or MPI, not one of each 
 */
 #define PetscCheckSameType(a,arga,b,argb) \
-  if (((PetscObject)a)->type != ((PetscObject)b)->type) SETERRQ2(PETSC_ERR_ARG_NOTSAMETYPE,"Objects not of same type: Argument # %d and %d",arga,argb);
+  if (((PetscObject)a)->type != ((PetscObject)b)->type) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Objects not of same type: Argument # %d and %d",arga,argb);
 /* 
    Use this macro to check if the type is set
 */
 #define PetscValidType(a,arg) \
-  if (!((PetscObject)a)->type_name) SETERRQ2(PETSC_ERR_ARG_WRONGSTATE,"%s object's type is not set: Argument # %d",((PetscObject)a)->class_name,arg);
+  if (!((PetscObject)a)->type_name) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"%s object's type is not set: Argument # %d",((PetscObject)a)->class_name,arg);
 /*
    Sometimes object must live on same communicator to inter-operate
 */
@@ -290,7 +290,7 @@ valid
   {PetscErrorCode _6_ierr,__flag; _6_ierr = MPI_Comm_compare(((PetscObject)a)->comm,((PetscObject)b)->comm,&__flag);\
   CHKERRQ(_6_ierr); \
   if (__flag != MPI_CONGRUENT && __flag != MPI_IDENT) \
-  SETERRQ2(PETSC_ERR_ARG_NOTSAMECOMM,"Different communicators in the two objects: Argument # %d and %d",arga,argb);}
+  SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"Different communicators in the two objects: Argument # %d and %d",arga,argb);}
 
 #define PetscCheckSameTypeAndComm(a,arga,b,argb) {\
   PetscCheckSameType(a,arga,b,argb);\

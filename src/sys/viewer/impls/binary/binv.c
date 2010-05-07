@@ -418,17 +418,17 @@ PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
 #if defined(PETSC_HAVE_POPEN)
       ierr = PetscPOpen(PETSC_COMM_SELF,PETSC_NULL,par,"r",&fp);CHKERRQ(ierr);
       if (fgets(buf,1024,fp)) {
-        SETERRQ2(PETSC_ERR_LIB,"Error from command %s\n%s",par,buf);
+        SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error from command %s\n%s",par,buf);
       }
       ierr = PetscPClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
 #else
-      SETERRQ(PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif
     }
   }
   if (vbinary->fdes_info) {
     err = fclose(vbinary->fdes_info);
-    if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
+    if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
   }
   ierr = PetscFree(vbinary->filename);CHKERRQ(ierr);
   ierr = PetscFree(vbinary);CHKERRQ(ierr);
@@ -450,7 +450,7 @@ PetscErrorCode PetscViewerDestroy_MPIIO(PetscViewer v)
   }
   if (vbinary->fdes_info) {
     err = fclose(vbinary->fdes_info);
-    if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
+    if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
   }
   ierr = PetscFree(vbinary->filename);CHKERRQ(ierr);
   ierr = PetscFree(vbinary);CHKERRQ(ierr);
@@ -883,7 +883,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Binary(PetscViewer viewer,
 
   PetscFunctionBegin;
   if (type == (PetscFileMode) -1) {
-    SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerBinarySetFileType() before PetscViewerFileSetName()");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerBinarySetFileType() before PetscViewerFileSetName()");
   }
   ierr = PetscOptionsGetTruth(((PetscObject)viewer)->prefix,"-viewer_binary_skip_info",&vbinary->skipinfo,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(((PetscObject)viewer)->prefix,"-viewer_binary_skip_options",&vbinary->skipoptions,PETSC_NULL);CHKERRQ(ierr);
@@ -915,7 +915,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Binary(PetscViewer viewer,
       ierr  = PetscFileRetrieve(((PetscObject)viewer)->comm,vbinary->filename,bname,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
       fname = bname;
       if (!rank && !found) {
-        SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot locate file: %s on node zero",vbinary->filename);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot locate file: %s on node zero",vbinary->filename);
       } else if (!found) {
         ierr = PetscInfo(viewer,"Nonzero processor did not locate readonly file\n");CHKERRQ(ierr);
         fname = 0;
@@ -927,34 +927,34 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Binary(PetscViewer viewer,
 #if defined(PETSC_HAVE_O_BINARY)
     if (type == FILE_MODE_WRITE) {
       if ((vbinary->fdes = open(fname,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666)) == -1) {
-        SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot create file %s for writing",fname);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot create file %s for writing",fname);
       }
     } else if (type == FILE_MODE_READ && fname) {
       if ((vbinary->fdes = open(fname,O_RDONLY|O_BINARY,0)) == -1) {
-        SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file %s for reading",fname);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s for reading",fname);
       }
     } else if (type == FILE_MODE_APPEND) {
       if ((vbinary->fdes = open(fname,O_WRONLY|O_APPEND|O_BINARY,0)) == -1) {
-        SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file %s for writing",fname);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s for writing",fname);
       }
     } else if (fname) {
-      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown file type");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown file type");
     }
 #else
     if (type == FILE_MODE_WRITE) {
       if ((vbinary->fdes = creat(fname,0666)) == -1) {
-        SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot create file %s for writing",fname);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot create file %s for writing",fname);
       }
     } else if (type == FILE_MODE_READ && fname) {
       if ((vbinary->fdes = open(fname,O_RDONLY,0)) == -1) {
-        SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file %s for reading",fname);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s for reading",fname);
       }
     } else if (type == FILE_MODE_APPEND) {
       if ((vbinary->fdes = open(fname,O_WRONLY|O_APPEND,0)) == -1) {
-        SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file %s for writing",fname);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s for writing",fname);
       }
     } else if (fname) {
-      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown file type");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown file type");
     }
 #endif
   } else vbinary->fdes = -1;
@@ -984,7 +984,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Binary(PetscViewer viewer,
     } else {
       vbinary->fdes_info = fopen(infoname,"w");
       if (!vbinary->fdes_info) {
-        SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open .info file %s for writing",infoname);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open .info file %s for writing",infoname);
       }
     }
   }
@@ -1012,7 +1012,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_MPIIO(PetscViewer viewer,c
 
   PetscFunctionBegin;
   if (type == (PetscFileMode) -1) {
-    SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerBinarySetFileType() before PetscViewerFileSetName()");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerBinarySetFileType() before PetscViewerFileSetName()");
   }
   ierr = PetscOptionsGetTruth(((PetscObject)viewer)->prefix,"-viewer_binary_skip_info",&vbinary->skipinfo,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(((PetscObject)viewer)->prefix,"-viewer_binary_skip_options",&vbinary->skipoptions,PETSC_NULL);CHKERRQ(ierr);
@@ -1056,7 +1056,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_MPIIO(PetscViewer viewer,c
     } else {
       vbinary->fdes_info = fopen(infoname,"w");
       if (!vbinary->fdes_info) {
-        SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open .info file %s for writing",infoname);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open .info file %s for writing",infoname);
       }
     }
   }
@@ -1077,7 +1077,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinarySetMPIIO_Binary(PetscViewer view
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  if (vbinary->filename) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call before calling PetscViewerFileSetName()");
+  if (vbinary->filename) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call before calling PetscViewerFileSetName()");
   viewer->ops->destroy = PetscViewerDestroy_MPIIO;
   vbinary->MPIIO       = PETSC_TRUE;
   /*  vbinary->skipinfo    = PETSC_TRUE; */
@@ -1185,23 +1185,23 @@ PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_BINARY_(MPI_Comm comm)
   PetscFunctionBegin;
   if (Petsc_Viewer_Binary_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Binary_keyval,0);
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
   }
   ierr = MPI_Attr_get(comm,Petsc_Viewer_Binary_keyval,(void **)&viewer,(int*)&flg);
-  if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
+  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
   if (!flg) { /* PetscViewer not yet created */
     ierr = PetscOptionsGetenv(comm,"PETSC_VIEWER_BINARY_FILENAME",fname,PETSC_MAX_PATH_LEN,&flg);
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
     if (!flg) {
       ierr = PetscStrcpy(fname,"binaryoutput");
-      if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
+      if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
     }
     ierr = PetscViewerBinaryOpen(comm,fname,FILE_MODE_WRITE,&viewer); 
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
     ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
     ierr = MPI_Attr_put(comm,Petsc_Viewer_Binary_keyval,(void*)viewer);
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
   } 
   PetscFunctionReturn(viewer);
 }

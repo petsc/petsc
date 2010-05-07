@@ -93,7 +93,7 @@ PetscErrorCode AOPetscToApplication_Mapping(AO ao, PetscInt n, PetscInt *ia)
         low  = mid + 1;
       }
     }
-    if (low > high) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Invalid input index %D", idex);
+    if (low > high) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid input index %D", idex);
     ia[i] = app[perm[mid]];
   }
   PetscFunctionReturn(0);
@@ -134,7 +134,7 @@ PetscErrorCode AOApplicationToPetsc_Mapping(AO ao, PetscInt n, PetscInt *ia)
         low  = mid + 1;
       }
     }
-    if (low > high) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Invalid input index %D", idex);
+    if (low > high) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid input index %D", idex);
     ia[i] = petsc[perm[mid]];
   }
   PetscFunctionReturn(0);
@@ -363,7 +363,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateMapping(MPI_Comm comm,PetscInt napp,con
   /* Check that the permutations are complementary */
   for(i = 0; i < N; i++) {
     if (i != aomap->appPerm[aomap->petscPerm[i]])
-      SETERRQ(PETSC_ERR_PLIB, "Invalid ordering");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid ordering");
   }
 #endif
   /* Cleanup */
@@ -418,7 +418,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoo
   ierr = ISGetLocalSize(isapp, &napp);CHKERRQ(ierr);
   if (ispetsc) {
     ierr = ISGetLocalSize(ispetsc, &npetsc);CHKERRQ(ierr);
-    if (napp != npetsc) SETERRQ(PETSC_ERR_ARG_SIZ, "Local IS lengths must match");
+    if (napp != npetsc) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Local IS lengths must match");
     ierr = ISGetIndices(ispetsc, &mypetsc);CHKERRQ(ierr);
   } else {
     mypetsc = NULL;

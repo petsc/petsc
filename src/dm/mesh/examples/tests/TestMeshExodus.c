@@ -65,7 +65,7 @@ PetscErrorCode MeshCreateExodus(MPI_Comm comm, const char filename[], Mesh *mesh
 #ifdef PETSC_HAVE_EXODUSII
   ierr = MyPetscReadExodusII(comm, filename, m);CHKERRQ(ierr);
 #else
-  SETERRQ(PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --with-exodusii-dir=/path/to/exodus");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --with-exodusii-dir=/path/to/exodus");
 #endif
   if (debug) {m->view("Mesh");}
   ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
@@ -135,7 +135,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Ob
         ierr = PetscStrcasecmp(block_elem_sig[eb], "hex", &is_known_elem_type);CHKERRQ(ierr);
       }
       if (!is_known_elem_type){
-        SETERRQ3(PETSC_ERR_SUP, "Unsupported element type: %s / %s in block %i\n", block_elem_sig[eb], elem_type, eb);
+        SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_SUP, "Unsupported element type: %s / %s in block %i\n", block_elem_sig[eb], elem_type, eb);
       }
       // I could simply search block_elem_sig[eb] in "tri|tet|qua|she|hex"
     }

@@ -301,7 +301,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
     } else if (dim == 3) {
       ierr = DACreate3d(comm, DA_NONPERIODIC, DA_STENCIL_BOX, -3, -3, -3, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, 1, PETSC_NULL, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
     } else {
-      SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", dim);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim);
     }
     ierr = DASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
     *dm = (DM) da;
@@ -327,7 +327,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
         Obj<ALE::Mesh> mB = ALE::MeshBuilder::createParticleInCubeBoundary(comm, lower, upper, faces, options->particleRadius, options->particleEdges, options->particleEdges, options->debug);
         ierr = MeshSetMesh(options->bdMesh, mB);CHKERRQ(ierr);
       } else {
-        SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", dim);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim);
       }
       ierr = MeshGenerate(options->bdMesh, options->interpolate, &mesh);CHKERRQ(ierr);
     } else {
@@ -807,7 +807,7 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
     PetscScalar *x;
 
     m->computeElementGeometry(coordinates, *c_iter, options->v0, options->J, options->invJ, options->detJ);
-    if (options->detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", options->detJ, *c_iter);
+    if (options->detJ < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", options->detJ, *c_iter);
     ierr = SectionRealRestrict(X, *c_iter, &x);CHKERRQ(ierr);
     ierr = cellResidual(disc, x, t_der, b_der, elemVec, elemMat, options->waterEpsilon, options);CHKERRQ(ierr);
     ierr = SectionRealUpdateAdd(section, *c_iter, elemVec);CHKERRQ(ierr);
@@ -827,7 +827,7 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
     PetscScalar *x;
 
     m->computeElementGeometry(coordinates, *c_iter, options->v0, options->J, options->invJ, options->detJ);
-    if (options->detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", options->detJ, *c_iter);
+    if (options->detJ < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", options->detJ, *c_iter);
     ierr = SectionRealRestrict(X, *c_iter, &x);CHKERRQ(ierr);
     ierr = cellResidual(disc, x, t_der, b_der, elemVec, elemMat, options->particleEpsilon, options);CHKERRQ(ierr);
     ierr = SectionRealUpdateAdd(section, *c_iter, elemVec);CHKERRQ(ierr);
@@ -851,7 +851,7 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
     int                                                         f      = 0;
 
     m->computeElementGeometry(coordinates, *c_iter, options->v0, options->J, options->invJ, options->detJ);
-    if (options->detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for face %d", options->detJ, *c_iter);
+    if (options->detJ < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for face %d", options->detJ, *c_iter);
     for(ALE::Mesh::sieve_type::traits::coneSequence::iterator f_iter = cBegin; f_iter != cEnd; ++f_iter, ++f) {
       if (m->getValue(particleBd, *f_iter)) {
         PetscScalar *x;
@@ -882,7 +882,7 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
     PetscScalar *x;
 
     m->computeElementGeometry(coordinates, *c_iter, options->v0, options->J, options->invJ, options->detJ);
-    if (options->detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for face %d", options->detJ, *c_iter);
+    if (options->detJ < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for face %d", options->detJ, *c_iter);
     for(ALE::Mesh::sieve_type::traits::coneSequence::iterator f_iter = cBegin; f_iter != cEnd; ++f_iter, ++f) {
       if (m->getValue(particleBd, *f_iter)) {
         m->computeFaceGeometry(*c_iter, *f_iter, f, options->invJ, options->fInvJ, options->fDetJ, options->normal, options->tangent);
@@ -1429,7 +1429,7 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
     PetscScalar *x;
 
     m->computeElementGeometry(coordinates, *c_iter, options->v0, options->J, options->invJ, options->detJ);
-    if (options->detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", options->detJ, *c_iter);
+    if (options->detJ < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", options->detJ, *c_iter);
     ierr = SectionRealRestrict(section, *c_iter, &x);CHKERRQ(ierr);
     ierr = cellJacobian(disc, x, t_der, b_der, elemMat, options->waterEpsilon, options);CHKERRQ(ierr);
     ierr = updateOperator(A, m, s, order, *c_iter, elemMat, ADD_VALUES);CHKERRQ(ierr);
@@ -1443,7 +1443,7 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
     PetscScalar *x;
 
     m->computeElementGeometry(coordinates, *c_iter, options->v0, options->J, options->invJ, options->detJ);
-    if (options->detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", options->detJ, *c_iter);
+    if (options->detJ < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", options->detJ, *c_iter);
     ierr = SectionRealRestrict(section, *c_iter, &x);CHKERRQ(ierr);
     ierr = cellJacobian(disc, x, t_der, b_der, elemMat, options->particleEpsilon, options);CHKERRQ(ierr);
     ierr = updateOperator(A, m, s, order, *c_iter, elemMat, ADD_VALUES);CHKERRQ(ierr);
@@ -1461,7 +1461,7 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
     int                                                         f      = 0;
 
     m->computeElementGeometry(coordinates, *c_iter, options->v0, options->J, options->invJ, options->detJ);
-    if (options->detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for face %d", options->detJ, *c_iter);
+    if (options->detJ < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for face %d", options->detJ, *c_iter);
     for(ALE::Mesh::sieve_type::traits::coneSequence::iterator f_iter = cBegin; f_iter != cEnd; ++f_iter, ++f) {
       if (m->getValue(particleBd, *f_iter)) {
         m->computeFaceGeometry(*c_iter, *f_iter, f, options->invJ, options->fInvJ, options->fDetJ, options->normal, options->tangent);
@@ -1482,7 +1482,7 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
     int                                                         f      = 0;
 
     m->computeElementGeometry(coordinates, *c_iter, options->v0, options->J, options->invJ, options->detJ);
-    if (options->detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for face %d", options->detJ, *c_iter);
+    if (options->detJ < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for face %d", options->detJ, *c_iter);
     for(ALE::Mesh::sieve_type::traits::coneSequence::iterator f_iter = cBegin; f_iter != cEnd; ++f_iter, ++f) {
       if (m->getValue(particleBd, *f_iter)) {
         m->computeFaceGeometry(*c_iter, *f_iter, f, options->invJ, options->fInvJ, options->fDetJ, options->normal, options->tangent);
@@ -1608,7 +1608,7 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
       options->exactFunc = cubic_3d;
     }
   } else {
-    SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
   }
   if (options->structured) {
     // The DA defines most of the problem during creation
@@ -1630,7 +1630,7 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
       ierr = CreateProblem_gen_2(dm, "u", numBC, markers, funcs, options->exactFunc);CHKERRQ(ierr);
       ierr = CreateProblem_gen_1((DM) options->bdMesh, "u", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
     } else {
-      SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }
     ierr = CreateParticleLabel(mesh, options);CHKERRQ(ierr);
     radius  = options->particleRadius;
@@ -1686,7 +1686,7 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
     } else if (dim == 3) {
       ierr = DAFormFunctionLocal(da, (DALocalFunction1) Function_Structured_3d, X, U, (void *) options);CHKERRQ(ierr);
     } else {
-      SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", dim);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim);
     }
     ierr = DARestoreGlobalVector(da, &X);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
@@ -1796,7 +1796,7 @@ PetscErrorCode CheckResidual(DM dm, ExactSolType sol, Options *options)
     } else if (options->dim == 3) {
       ierr = DAFormFunctionLocal(da, (DALocalFunction1) Rhs_Structured_3d_FD, sol.vec, residual, (void *) options);CHKERRQ(ierr);
     } else {
-      SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }
     ierr = VecNorm(residual, NORM_2, &norm);CHKERRQ(ierr);
     if (flag) {ierr = VecView(residual, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
@@ -1881,7 +1881,7 @@ PetscErrorCode CreateSolver(DM dm, DMMG **dmmg, Options *options)
     } else if (options->dim == 3) {
       ierr = DMMGSetSNESLocal(*dmmg, Rhs_Structured_3d_FD, Jac_Structured_3d_FD, 0, 0);CHKERRQ(ierr);
     } else {
-      SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }
     ierr = DMMGSetFromOptions(*dmmg);CHKERRQ(ierr);
     for(int l = 0; l < DMMGGetLevels(*dmmg); l++) {
@@ -1897,7 +1897,7 @@ PetscErrorCode CreateSolver(DM dm, DMMG **dmmg, Options *options)
       ierr = DMMGSetMatType(*dmmg, MATSHELL);CHKERRQ(ierr);
       ierr = DMMGSetSNESLocal(*dmmg, Rhs_Unstructured, Jac_Unstructured_Stored, 0, 0);CHKERRQ(ierr);
     } else {
-      SETERRQ1(PETSC_ERR_ARG_WRONG, "Assembly type not supported: %d", options->operatorAssembly);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Assembly type not supported: %d", options->operatorAssembly);
     }
     ierr = DMMGSetFromOptions(*dmmg);CHKERRQ(ierr);
   }

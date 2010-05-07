@@ -30,7 +30,7 @@ static int MatMult_SeqAIJ_DXML(Mat A,Vec x,Vec y)
 int MatUseDXML_SeqAIJ(Mat A)
 {
   PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP,"Presently not being supported");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Presently not being supported");
   A->ops->mult = MatMult_SeqAIJ_DXML;
   PetscFunctionReturn(0);
 }
@@ -41,7 +41,7 @@ EXTERN_C_BEGIN
 int PETSCMAT_DLLEXPORT MatCreate_SeqAIJ_DXML(Mat A) {
   int ierr;
   PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP,"Presently not being supported");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Presently not being supported");
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatUseDXML_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

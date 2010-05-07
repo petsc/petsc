@@ -420,15 +420,15 @@ PetscErrorCode WriteVTK(ALE::Obj<Mesh_>& mesh) {
   } catch (const std::exception& err) {
     std::ostringstream msg;
     msg << "Error while preparing for writing data to VTK file " << filename << ".\n" << err.what();
-    SETERRQ(PETSC_ERR_PLIB, msg.str().c_str());
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB, msg.str().c_str());
   } catch (const ALE::Exception& err) {
     std::ostringstream msg;
     msg << "Error while preparing for writing data to VTK file " << filename << ".\n" << err.msg();
-    SETERRQ(PETSC_ERR_PLIB, msg.str().c_str());
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB, msg.str().c_str());
   } catch (...) { 
     std::ostringstream msg;
     msg << "Unknown error while preparing for writing data to VTK file " << filename << ".\n";
-    SETERRQ(PETSC_ERR_PLIB, msg.str().c_str());
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB, msg.str().c_str());
   }
   PetscFunctionReturn(0);
 }

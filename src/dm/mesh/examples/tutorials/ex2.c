@@ -375,7 +375,7 @@ PetscErrorCode CreateMeshBoundary(MPI_Comm comm, Mesh *meshBoundary, Options *op
       m = new ALE::Mesh(comm, options->dim-1, options->debug);
       ierr = CreateCubeBoundary(m);CHKERRQ(ierr);
     } else {
-      SETERRQ1(PETSC_ERR_SUP, "Cannot construct a boundary of dimension %d", options->dim);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Cannot construct a boundary of dimension %d", options->dim);
     }
   }
   if (options->debug) {

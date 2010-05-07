@@ -155,7 +155,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPMerge(PetscMPIInt nodesize,PetscErrorC
   saved_PETSC_COMM_WORLD = PETSC_COMM_WORLD;
 
   ierr = MPI_Comm_size(saved_PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size % nodesize) SETERRQ2(PETSC_ERR_ARG_SIZ,"Total number of process nodes %d is not divisible by number of processes per node %d",size,nodesize);
+  if (size % nodesize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Total number of process nodes %d is not divisible by number of processes per node %d",size,nodesize);
   ierr = MPI_Comm_rank(saved_PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
 
@@ -292,7 +292,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPHandle(MPI_Comm comm)
       break;
     }
     default:
-      SETERRQ1(PETSC_ERR_PLIB,"Unknown OpenMP command %D",command);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unknown OpenMP command %D",command);
     }
   }
   PetscFunctionReturn(0);
@@ -322,7 +322,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPMalloc(MPI_Comm comm,size_t n,void **p
   PetscInt       command = 0;
 
   PetscFunctionBegin;
-  if (PetscOpenMPWorker) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not using OpenMP feature of PETSc");
+  if (PetscOpenMPWorker) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not using OpenMP feature of PETSc");
 
   ierr = MPI_Bcast(&command,1,MPIU_INT,0,comm);CHKERRQ(ierr);
   ierr = MPI_Bcast(&n,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr); 
@@ -357,7 +357,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPFree(MPI_Comm comm,void *ptr)
   PetscInt       command = 1,i;
 
   PetscFunctionBegin;
-  if (PetscOpenMPWorker) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not using OpenMP feature of PETSc");
+  if (PetscOpenMPWorker) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not using OpenMP feature of PETSc");
 
   ierr = MPI_Bcast(&command,1,MPIU_INT,0,comm);CHKERRQ(ierr);
   for (i=0; i<numberobjects; i++) {
@@ -368,7 +368,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPFree(MPI_Comm comm,void *ptr)
       PetscFunctionReturn(0);
     }
   }
-  SETERRQ(PETSC_ERR_ARG_WRONG,"Pointer does not appear to have been created with PetscOpenMPMalloc()");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Pointer does not appear to have been created with PetscOpenMPMalloc()");
   PetscFunctionReturn(ierr);
 }
 
@@ -397,7 +397,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPRun(MPI_Comm comm,PetscErrorCode (*f)(
   PetscInt       command = 2,i;
 
   PetscFunctionBegin;
-  if (PetscOpenMPWorker) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not using OpenMP feature of PETSc");
+  if (PetscOpenMPWorker) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not using OpenMP feature of PETSc");
 
   ierr = MPI_Bcast(&command,1,MPIU_INT,0,comm);CHKERRQ(ierr);
   for (i=0; i<numberobjects; i++) {
@@ -408,7 +408,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPRun(MPI_Comm comm,PetscErrorCode (*f)(
       PetscFunctionReturn(0);
     }
   }
-  SETERRQ(PETSC_ERR_ARG_WRONG,"Pointer does not appear to have been created with PetscOpenMPMalloc()");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Pointer does not appear to have been created with PetscOpenMPMalloc()");
   PetscFunctionReturn(ierr);
 }
 
@@ -438,7 +438,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPRunCtx(MPI_Comm comm,PetscErrorCode (*
   PetscInt       command = 4,i;
 
   PetscFunctionBegin;
-  if (PetscOpenMPWorker) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not using OpenMP feature of PETSc");
+  if (PetscOpenMPWorker) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not using OpenMP feature of PETSc");
 
   ierr = MPI_Bcast(&command,1,MPIU_INT,0,comm);CHKERRQ(ierr);
   for (i=0; i<numberobjects; i++) {
@@ -449,6 +449,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPRunCtx(MPI_Comm comm,PetscErrorCode (*
       PetscFunctionReturn(0);
     }
   }
-  SETERRQ(PETSC_ERR_ARG_WRONG,"Pointer does not appear to have been created with PetscOpenMPMalloc()");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Pointer does not appear to have been created with PetscOpenMPMalloc()");
   PetscFunctionReturn(ierr);
 }

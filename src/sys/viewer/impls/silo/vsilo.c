@@ -110,7 +110,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloOpen(MPI_Comm comm, const char nam
   ierr = PetscFixFilename(filetemp, filename);CHKERRQ(ierr);
 
   silo->file_pointer = DBCreate(filename, DB_CLOBBER, DB_LOCAL, NULL, DB_PDB);
-  if (!silo->file_pointer) SETERRQ(PETSC_ERR_FILE_OPEN,"Cannot open Silo viewer file");
+  if (!silo->file_pointer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open Silo viewer file");
 #if defined(PETSC_USE_LOG)
   PLogObjectState((PetscObject) v, "Silo File: %s", name);
 #endif

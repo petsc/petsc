@@ -683,7 +683,7 @@ PetscErrorCode Update(DMMG *dmmg)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %D\n", its);CHKERRQ(ierr);
     ierr = SNESGetNonlinearStepFailures(snes,&nfails);CHKERRQ(ierr);
     nfailsCum += nfails; nfails = 0;
-    if (nfailsCum >= 2) SETERRQ(1,"Unable to find a Newton Step");
+    if (nfailsCum >= 2) SETERRQ(PETSC_COMM_SELF,1,"Unable to find a Newton Step");
     /*tsCtx->qcur = DMMGGetx(dmmg);
       ierr = VecCopy(tsCtx->qcur,tsCtx->qold);CHKERRQ(ierr);*/
    

@@ -59,7 +59,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetWorkingDirectory(char path[],size_t len)
   getwd(path);
   PetscFunctionReturn(0);
 #else
-  SETERRQ(PETSC_ERR_SUP_SYS, "Could not find getcwd() or getwd()");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS, "Could not find getcwd() or getwd()");
 #endif
 }
 

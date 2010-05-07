@@ -231,7 +231,7 @@ PetscErrorCode MatSolve_LUSOL(Mat A,Vec b,Vec x)
          lusol->indc, lusol->indr, lusol->ip, lusol->iq, 
          lusol->lenc, lusol->lenr, lusol->locc, lusol->locr, &status);
 
-  if (status != 0) SETERRQ1(PETSC_ERR_ARG_SIZ,"solve failed, error code %d",status); 
+  if (status != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"solve failed, error code %d",status); 
 
   ierr = VecRestoreArray(x, &xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(b, &bb);CHKERRQ(ierr);
@@ -253,7 +253,7 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F,Mat A,const MatFactorInfo *info)
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);CHKERRQ(ierr);
   a = (Mat_SeqAIJ *)A->data;
 
-  if (m != lusol->n) SETERRQ(PETSC_ERR_ARG_SIZ,"factorization struct inconsistent");
+  if (m != lusol->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"factorization struct inconsistent");
 
   factorizations = 0;
   do
@@ -324,14 +324,14 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F,Mat A,const MatFactorInfo *info)
 
         case 1:
         case -1:		/* singular */
-          SETERRQ(PETSC_ERR_LIB,"Singular matrix"); 
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Singular matrix"); 
 
         case 3:
         case 4:		/* error conditions */
-          SETERRQ(PETSC_ERR_LIB,"matrix error"); 
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"matrix error"); 
 
         default:		/* unknown condition */
-          SETERRQ(PETSC_ERR_LIB,"matrix unknown return code"); 
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"matrix unknown return code"); 
         }
 
       factorizations++;

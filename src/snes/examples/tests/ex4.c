@@ -78,7 +78,7 @@ int main(int argc, char **argv)
   else        user.param = 6.0;
   ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
   if (!cavity && (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min)) {
-    SETERRQ(1,"Lambda is out of range");
+    SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
   }
   N = user.mx*user.my;
   
@@ -273,7 +273,7 @@ PetscErrorCode  FormInitialGuess2(AppCtx *user,Vec X)
   my	 = user->my;
 
   /* Test for invalid input parameters */
-  if ((mx <= 0) || (my <= 0)) SETERRQ(1,0);
+  if ((mx <= 0) || (my <= 0)) SETERRQ(PETSC_COMM_SELF,1,0);
 
   hx    = 1.0 / (PetscReal)(mx-1);
   hy    = 1.0 / (PetscReal)(my-1);

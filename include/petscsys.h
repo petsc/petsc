@@ -1379,7 +1379,7 @@ typedef PetscErrorCode (*PetscErrorCodeFunction)(void);
   0;{ PetscErrorCode (*f)B, __ierr; \
     __ierr = PetscObjectQueryFunction((PetscObject)obj,A,(PetscVoidStarFunction)&f);CHKERRQ(__ierr); \
     if (f) {__ierr = (*f)C;CHKERRQ(__ierr);}\
-    else {SETERRQ1(PETSC_ERR_SUP,"Cannot locate function %s in object",A);} \
+    else {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot locate function %s in object",A);} \
   }
 
 /*
@@ -1763,14 +1763,14 @@ PETSC_STATIC_INLINE PetscErrorCode PETSC_DLLEXPORT PetscMemcpy(void *a,const voi
 #if defined(PETSC_USE_DEBUG)
   unsigned long al = (unsigned long) a,bl = (unsigned long) b;
   unsigned long nl = (unsigned long) n;
-  if (n > 0 && !b) SETERRQ(PETSC_ERR_ARG_NULL,"Trying to copy from a null pointer");
-  if (n > 0 && !a) SETERRQ(PETSC_ERR_ARG_NULL,"Trying to copy to a null pointer");
+  if (n > 0 && !b) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy from a null pointer");
+  if (n > 0 && !a) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy to a null pointer");
 #endif
   PetscFunctionBegin;
   if (a != b) {
 #if defined(PETSC_USE_DEBUG)
     if ((al > bl && (al - bl) < nl) || (bl - al) < nl) {
-      SETERRQ3(PETSC_ERR_ARG_INCOMP,"Memory regions overlap: either use PetscMemmov()\n\
+      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Memory regions overlap: either use PetscMemmov()\n\
               or make sure your copy regions and lengths are correct. \n\
               Length (bytes) %ld first address %ld second address %ld",nl,al,bl);
     }
@@ -1826,7 +1826,7 @@ PETSC_STATIC_INLINE PetscErrorCode PETSC_DLLEXPORT PetscMemzero(void *a,size_t n
 {
   if (n > 0) {
 #if defined(PETSC_USE_DEBUG)
-    if (!a) SETERRQ(PETSC_ERR_ARG_NULL,"Trying to zero at a null pointer");
+    if (!a) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to zero at a null pointer");
 #endif
 #if defined(PETSC_PREFER_ZERO_FOR_MEMZERO)
     if (!(((long) a) % sizeof(PetscScalar)) && !(n % sizeof(PetscScalar))) {
@@ -2063,13 +2063,13 @@ extern PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Datatype
 #define PETSC_HDF5_INT_MIN -2147483647
 
 #if defined(PETSC_USE_64BIT_INDICES)
-#define PetscMPIIntCheck(a)  if ((a) > PETSC_MPI_INT_MAX) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Message too long for MPI")
-#define PetscBLASIntCheck(a)  if ((a) > PETSC_BLAS_INT_MAX) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Array too long for BLAS/LAPACK")
+#define PetscMPIIntCheck(a)  if ((a) > PETSC_MPI_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Message too long for MPI")
+#define PetscBLASIntCheck(a)  if ((a) > PETSC_BLAS_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array too long for BLAS/LAPACK")
 #define PetscMPIIntCast(a) (a);PetscMPIIntCheck(a)
 #define PetscBLASIntCast(a) (a);PetscBLASIntCheck(a)
 
 #if (PETSC_SIZEOF_SIZE_T == 4)
-#define PetscHDF5IntCheck(a)  if ((a) > PETSC_HDF5_INT_MAX) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Array too long for HDF5")
+#define PetscHDF5IntCheck(a)  if ((a) > PETSC_HDF5_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array too long for HDF5")
 #define PetscHDF5IntCast(a) (a);PetscHDF5IntCheck(a)
 #else
 #define PetscHDF5IntCheck(a)

@@ -50,7 +50,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideToGeneral(IS inis)
 
   PetscFunctionBegin;
   ierr = ISStride(inis,&stride);CHKERRQ(ierr);
-  if (!stride) SETERRQ(PETSC_ERR_SUP,"Can only convert stride index sets");
+  if (!stride) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can only convert stride index sets");
 
   ierr = PetscNewLog(inis,IS_General,&sub);CHKERRQ(ierr);
   

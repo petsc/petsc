@@ -58,7 +58,7 @@ PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP(Mat A, MatDuplicateOption op, Mat *M)
   if (container) {
     ierr  = PetscContainerGetPointer(container,(void **)&merge);CHKERRQ(ierr); 
   } else {
-    SETERRQ(PETSC_ERR_PLIB,"Container does not exit");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
   }
   ierr = (*merge->MatDuplicate)(A,op,M);CHKERRQ(ierr);
   (*M)->ops->destroy   = merge->MatDestroy;   /* =MatDestroy_MPIAIJ, *M doesn't duplicate A's container! */
@@ -74,7 +74,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   PetscFunctionBegin;
   if (!P->ops->ptapsymbolic_mpiaij) {
-    SETERRQ2(PETSC_ERR_SUP,"Not implemented for A=%s and P=%s",((PetscObject)A)->type_name,((PetscObject)P)->type_name);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented for A=%s and P=%s",((PetscObject)A)->type_name,((PetscObject)P)->type_name);
   }
   ierr = (*P->ops->ptapsymbolic_mpiaij)(A,P,fill,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -88,7 +88,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ(Mat A,Mat P,Mat C)
 
   PetscFunctionBegin;
   if (!P->ops->ptapnumeric_mpiaij) {
-    SETERRQ2(PETSC_ERR_SUP,"Not implemented for A=%s and P=%s",((PetscObject)A)->type_name,((PetscObject)P)->type_name);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented for A=%s and P=%s",((PetscObject)A)->type_name,((PetscObject)P)->type_name);
   }
   ierr = (*P->ops->ptapnumeric_mpiaij)(A,P,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -519,7 +519,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   if (cont_merge) { 
     ierr  = PetscContainerGetPointer(cont_merge,(void **)&merge);CHKERRQ(ierr); 
   } else {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Matrix C does not posses an object container");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Matrix C does not posses an object container");
   } 
 
   ierr = PetscObjectQuery((PetscObject)P,"Mat_MatMatMultMPI",(PetscObject *)&cont_ptap);CHKERRQ(ierr);
@@ -532,7 +532,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       ierr = MatGetLocalMat(P,MAT_REUSE_MATRIX,&ap->B_loc);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Matrix P does not posses an object container");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Matrix P does not posses an object container");
   } 
 
   /* get data from symbolic products */

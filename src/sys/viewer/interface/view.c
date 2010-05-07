@@ -328,7 +328,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscViewerView(PetscViewer v,PetscViewer view
     }
   }
   if (!iascii) {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported",((PetscObject)viewer)->type_name);
   } else {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {

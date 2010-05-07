@@ -125,7 +125,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetType(Mat mat,const MatMFFDType ftype
   }
 
   ierr =  PetscFListFind(MatMFFDList,((PetscObject)ctx)->comm,ftype,(void (**)(void)) &r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown MatMFFD type %s given",ftype);
+  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown MatMFFD type %s given",ftype);
   ierr = (*r)(ctx);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)ctx,ftype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -251,7 +251,7 @@ PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
        ierr = (*ctx->ops->view)(ctx,viewer);CHKERRQ(ierr);
      }
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for matrix-free matrix",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for matrix-free matrix",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -318,7 +318,7 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
     PetscFunctionReturn(0);
   }
 
-  if (PetscIsInfOrNanScalar(h)) SETERRQ(PETSC_ERR_PLIB,"Computed Nan differencing parameter h");
+  if (PetscIsInfOrNanScalar(h)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Computed Nan differencing parameter h");
   if (ctx->checkh) {
     ierr = (*ctx->checkh)(ctx->checkhctx,U,a,&h);CHKERRQ(ierr);
   }
@@ -376,7 +376,7 @@ PetscErrorCode MatGetDiagonal_MFFD(Mat mat,Vec a)
 
   PetscFunctionBegin;
   if (!ctx->funci) {
-    SETERRQ(PETSC_ERR_ORDER,"Requires calling MatMFFDSetFunctioni() first");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Requires calling MatMFFDSetFunctioni() first");
   }
 
   w    = ctx->w;

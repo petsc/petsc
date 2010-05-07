@@ -474,7 +474,7 @@ PetscErrorCode PETSC_DLLEXPORT EventRegLogGetEvent(EventRegLog eventLog, const c
     ierr = PetscStrcasecmp(eventLog->eventInfo[e].name, name, &match);CHKERRQ(ierr);
     if (match) break;
   }
-  if (e == eventLog->numEvents) SETERRQ1(PETSC_ERR_ARG_WRONG, "No event named %s", name);
+  if (e == eventLog->numEvents) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "No event named %s", name);
   *event = e;
   PetscFunctionReturn(0);
 }
@@ -633,7 +633,7 @@ PetscErrorCode PetscLogEventEndDefault(PetscLogEvent event, int t, PetscObject o
   if (eventLog->eventInfo[event].depth > 0) {
     PetscFunctionReturn(0);
   } else if (eventLog->eventInfo[event].depth < 0) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Logging event had unbalanced begin/end pairs");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Logging event had unbalanced begin/end pairs");
   }
   /* Log performance info */
   PetscTimeAdd(eventLog->eventInfo[event].time);
@@ -760,7 +760,7 @@ PetscErrorCode PetscLogEventEndComplete(PetscLogEvent event, int t, PetscObject 
   if (eventPerfLog->eventInfo[event].depth > 0) {
     PetscFunctionReturn(0);
   } else if (eventPerfLog->eventInfo[event].depth < 0) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Logging event had unbalanced begin/end pairs");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Logging event had unbalanced begin/end pairs");
   }
   /* Log the performance info */
   eventPerfLog->eventInfo[event].count++;
@@ -802,7 +802,7 @@ PetscErrorCode PetscLogEventBeginTrace(PetscLogEvent event, int t, PetscObject o
   PetscTime(cur_time);
   ierr = PetscFPrintf(PETSC_COMM_SELF,tracefile, "%s[%d] %g Event begin: %s\n", tracespace, rank, cur_time-tracetime, eventRegLog->eventInfo[event].name);CHKERRQ(ierr);
   err = fflush(tracefile);
-  if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");        
+  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");        
 
   PetscFunctionReturn(0);
 }
@@ -831,7 +831,7 @@ PetscErrorCode PetscLogEventEndTrace(PetscLogEvent event,int t,PetscObject o1,Pe
   if (eventPerfLog->eventInfo[event].depth > 0) {
     PetscFunctionReturn(0);
   } else if (eventPerfLog->eventInfo[event].depth < 0 || tracelevel < 0) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Logging event had unbalanced begin/end pairs");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Logging event had unbalanced begin/end pairs");
   }
   /* Log performance info */
   ierr = PetscStrncpy(tracespace, traceblanks, 2*tracelevel);CHKERRQ(ierr);
@@ -839,6 +839,6 @@ PetscErrorCode PetscLogEventEndTrace(PetscLogEvent event,int t,PetscObject o1,Pe
   PetscTime(cur_time);
   ierr = PetscFPrintf(PETSC_COMM_SELF,tracefile, "%s[%d] %g Event end: %s\n", tracespace, rank, cur_time-tracetime, eventRegLog->eventInfo[event].name);CHKERRQ(ierr);
   err = fflush(tracefile);
-  if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");        
+  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");        
   PetscFunctionReturn(0);
 }

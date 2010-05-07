@@ -93,7 +93,7 @@ PetscErrorCode DAView_2d(DA da,PetscViewer viewer)
     ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for DA2d",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for DA2d",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -117,7 +117,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASplitComm2d(MPI_Comm comm,PetscInt M,PetscInt
 
   csize = 4*size;
   do {
-    if (csize % 4) SETERRQ4(PETSC_ERR_ARG_INCOMP,"Cannot split communicator of size %d tried %d %D %D",size,csize,x,y);
+    if (csize % 4) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot split communicator of size %d tried %d %D %D",size,csize,x,y);
     csize   = csize/4;
   
     m = (PetscInt)(0.5 + sqrt(((double)M)*((double)csize)/((double)N)));
@@ -830,7 +830,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAFormFunctionib1(DA da,PetscInt i,Vec vu,Petsc
 
   /* figure out stencil value from i */
   stencil.c = i % info.dof;
-  if (stencil.c) SETERRQ(PETSC_ERR_ARG_WRONG,"Point-block functions can only be called for the entire block");
+  if (stencil.c) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Point-block functions can only be called for the entire block");
   stencil.i = (i % (info.xm*info.dof))/info.dof;
   stencil.j = (i % (info.xm*info.ym*info.dof))/(info.xm*info.dof);
   stencil.k = i/(info.xm*info.ym*info.dof);
@@ -1204,12 +1204,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DAMultiplyByJacobian1WithAD(DA da,Vec u,Vec v,V
 #if defined(PETSC_HAVE_ADIC)
     ierr = DAMultiplyByJacobian1WithAdic(da,u,v,f,w);CHKERRQ(ierr);
 #else
-    SETERRQ(PETSC_ERR_SUP_SYS,"Requires ADIC to be installed and cannot use complex numbers");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Requires ADIC to be installed and cannot use complex numbers");
 #endif
   } else if (da->adiformf_lf) {
     ierr = DAMultiplyByJacobian1WithAdifor(da,u,v,f,w);CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_ERR_ORDER,"Must call DASetLocalAdiforMFFunction() or DASetLocalAdicMFFunction() before using");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call DASetLocalAdiforMFFunction() or DASetLocalAdicMFFunction() before using");
   }
   PetscFunctionReturn(0);
 }
@@ -1295,9 +1295,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  if (dim != PETSC_DECIDE && dim != 2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Dimension should be 2: %D",dim);
-  if (dof < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %D",dof);
-  if (s < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %D",s);
+  if (dim != PETSC_DECIDE && dim != 2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Dimension should be 2: %D",dim);
+  if (dof < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %D",dof);
+  if (s < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %D",s);
 
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
@@ -1311,12 +1311,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
   ierr = PetscMemzero(da->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
 
   if (m != PETSC_DECIDE) {
-    if (m < 1) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in X direction: %D",m);}
-    else if (m > size) {SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in X direction: %D %d",m,size);}
+    if (m < 1) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in X direction: %D",m);}
+    else if (m > size) {SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in X direction: %D %d",m,size);}
   }
   if (n != PETSC_DECIDE) {
-    if (n < 1) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Y direction: %D",n);}
-    else if (n > size) {SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Y direction: %D %d",n,size);}
+    if (n < 1) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Y direction: %D",n);}
+    else if (n > size) {SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Y direction: %D %d",n,size);}
   }
 
   if (m == PETSC_DECIDE || n == PETSC_DECIDE) {
@@ -1335,11 +1335,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
       }
       if (M > N && m < n) {PetscInt _m = m; m = n; n = _m;}
     }
-    if (m*n != size) SETERRQ(PETSC_ERR_PLIB,"Unable to create partition, check the size of the communicator and input m and n ");
-  } else if (m*n != size) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Given Bad partition"); 
+    if (m*n != size) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to create partition, check the size of the communicator and input m and n ");
+  } else if (m*n != size) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Given Bad partition"); 
 
-  if (M < m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Partition in x direction is too fine! %D %D",M,m);
-  if (N < n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Partition in y direction is too fine! %D %D",N,n);
+  if (M < m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Partition in x direction is too fine! %D %D",M,m);
+  if (N < n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Partition in y direction is too fine! %D %D",N,n);
 
   /* 
      Determine locally owned region 
@@ -1363,7 +1363,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
     left += lx[i];
   }
   if (left != M) {
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Sum of lx across processors not equal to M: %D %D",left,M);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of lx across processors not equal to M: %D %D",left,M);
   }
 #endif
 
@@ -1389,12 +1389,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
     left += ly[i];
   }
   if (left != N) {
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Sum of ly across processors not equal to N: %D %D",left,N);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of ly across processors not equal to N: %D %D",left,N);
   }
 #endif
 
-  if (x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s);
-  if (y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local y-width of domain y %D is smaller than stencil width s %D",y,s);
+  if (x < s) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s);
+  if (y < s) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local y-width of domain y %D is smaller than stencil width s %D",y,s);
   xe = xs + x;
   ye = ys + y;
 

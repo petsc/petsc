@@ -54,7 +54,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size != 1) SETERRQ(PETSC_ERR_SUP,"This is a uniprocessor example only!");
+  if (size != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   /* Read in matrix, rhs and exact solution from ascii files */
   ierr = PetscOptionsGetString(PETSC_NULL,"-Ain",Ain,PETSC_MAX_PATH_LEN-1,&flg_A);CHKERRQ(ierr);
@@ -66,7 +66,7 @@ int main(int argc,char **args)
     nsizes = 3;
     ierr = PetscOptionsGetIntArray(PETSC_NULL,"-nosizesinfile",sizes,&nsizes,&flg);CHKERRQ(ierr);
     if (flg) {
-      if (nsizes != 3) SETERRQ(1,"Must pass in three m,n,nz as arguments for -nosizesinfile");
+      if (nsizes != 3) SETERRQ(PETSC_COMM_SELF,1,"Must pass in three m,n,nz as arguments for -nosizesinfile");
       m = sizes[0];
       n = sizes[1];
       nz = sizes[2];
@@ -74,7 +74,7 @@ int main(int argc,char **args)
       fscanf(Afile,"%d %d %d\n",&m,&n,&nz);
     }
     printf("m: %d, n: %d, nz: %d \n", m,n,nz);
-    if (m != n) SETERRQ(PETSC_ERR_ARG_SIZ, "Number of rows, cols must be same for this example\n");
+    if (m != n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Number of rows, cols must be same for this example\n");
     ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
     ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
     ierr = MatSetFromOptions(A);CHKERRQ(ierr);

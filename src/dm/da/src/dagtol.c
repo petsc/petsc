@@ -210,7 +210,7 @@ PetscErrorCode DAGlobalToNatural_Create(DA da)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (!da->natural) {
-    SETERRQ(PETSC_ERR_ORDER,"Natural layout vector not yet created; cannot scatter into it");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Natural layout vector not yet created; cannot scatter into it");
   }
 
   /* create the scatter context */
@@ -218,7 +218,7 @@ PetscErrorCode DAGlobalToNatural_Create(DA da)
   ierr = VecGetOwnershipRange(da->natural,&start,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = DAGetNatural_Private(da,&Nlocal,&to);CHKERRQ(ierr);
-  if (Nlocal != m) SETERRQ2(PETSC_ERR_PLIB,"Internal error: Nlocal %D local vector size %D",Nlocal,m);
+  if (Nlocal != m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error: Nlocal %D local vector size %D",Nlocal,m);
   ierr = ISCreateStride(((PetscObject)da)->comm,m,start,1,&from);CHKERRQ(ierr);
   ierr = VecCreateMPIWithArray(((PetscObject)da)->comm,da->Nlocal,PETSC_DETERMINE,0,&global);
   ierr = VecSetBlockSize(global,da->w);CHKERRQ(ierr);

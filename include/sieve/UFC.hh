@@ -616,7 +616,7 @@ PetscErrorCode Assemble_RHS_UFC(Mesh mesh, ufc::form * bform, ufc::form * lform,
     ierr = PetscMemzero(elemMat, numBasisFuncs*numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     //m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
     Map_SieveCell_UFCCell(m, *c_iter, bform, &cell);
-    //if (detJ <= 0.0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
+    //if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
 
     PetscScalar *x;
 

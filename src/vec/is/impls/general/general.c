@@ -60,7 +60,7 @@ static PetscErrorCode ISCopy_General(IS is,IS isy)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (is_general->n != isy_general->n || is_general->N != isy_general->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Index sets incompatible");
+  if (is_general->n != isy_general->n || is_general->N != isy_general->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Index sets incompatible");
   isy_general->sorted = is_general->sorted;
   ierr = PetscMemcpy(isy_general->idx,is_general->idx,is_general->n*sizeof(PetscInt));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -85,7 +85,7 @@ PetscErrorCode ISRestoreIndices_General(IS in,const PetscInt *idx[])
 
   PetscFunctionBegin;
   if (*idx != sub->idx) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Must restore with value from ISGetIndices()");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must restore with value from ISGetIndices()");
   }
   PetscFunctionReturn(0);
 }
@@ -135,7 +135,7 @@ PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isout)
     ierr = PetscFree(ii);CHKERRQ(ierr);
   } else {
     /* crude, nonscalable get entire IS on each processor */
-    if (nlocal == PETSC_DECIDE) SETERRQ(PETSC_ERR_SUP,"Do not yet support nlocal of PETSC_DECIDE");
+    if (nlocal == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Do not yet support nlocal of PETSC_DECIDE");
     ierr = ISAllGather(is,&istmp);CHKERRQ(ierr);
     ierr = ISSetPermutation(istmp);CHKERRQ(ierr);
     ierr = ISInvertPermutation(istmp,PETSC_DECIDE,&nistmp);CHKERRQ(ierr);
@@ -147,7 +147,7 @@ PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isout)
       PetscMPIInt rank;
       ierr = MPI_Comm_rank(((PetscObject)is)->comm,&rank);CHKERRQ(ierr);
       if (rank == size-1) {
-        if (nstart != sub->N) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Sum of nlocal lengths %d != total IS length %d",nstart,sub->N);
+        if (nstart != sub->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Sum of nlocal lengths %d != total IS length %d",nstart,sub->N);
       }
     }
 #endif
@@ -198,7 +198,7 @@ PetscErrorCode ISView_General(IS is,PetscViewer viewer)
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -255,7 +255,7 @@ PetscErrorCode ISCreateGeneral_Private(MPI_Comm comm,IS *is)
 
   PetscFunctionBegin;
   PetscValidPointer(is,4);
-  if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
+  if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
   if (n) {PetscValidIntPointer(idx,3);}
   *is = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
@@ -333,7 +333,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneral(MPI_Comm comm,PetscInt n,const
 
   PetscFunctionBegin;
   PetscValidPointer(is,4);
-  if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
+  if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
   if (n) {PetscValidIntPointer(idx,3);}
   *is = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
@@ -402,7 +402,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneralNC(MPI_Comm comm,PetscInt n,con
 
   PetscFunctionBegin;
   PetscValidPointer(is,4);
-  if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
+  if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
   if (n) {PetscValidIntPointer(idx,3);}
   *is = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
@@ -465,7 +465,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneralWithArray(MPI_Comm comm,PetscIn
 
   PetscFunctionBegin;
   PetscValidPointer(is,4);
-  if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
+  if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
   if (n) {PetscValidIntPointer(idx,3);}
   *is = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES

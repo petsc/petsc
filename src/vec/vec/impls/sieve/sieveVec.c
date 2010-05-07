@@ -338,7 +338,7 @@ PetscErrorCode VecGetArray_Sieve(Vec v, PetscScalar *a[])
 
   PetscFunctionBegin;
   if (v->array_gotten) {
-    SETERRQ(PETSC_ERR_ORDER,"Array has already been gotten for this vector,you may\n\
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Array has already been gotten for this vector,you may\n\
     have forgotten a call to VecRestoreArray()");
   }
   v->array_gotten = PETSC_TRUE;
@@ -355,7 +355,7 @@ PetscErrorCode VecRestoreArray_Sieve(Vec v, PetscScalar *a[])
 
   PetscFunctionBegin;
   if (!v->array_gotten) {
-    SETERRQ(PETSC_ERR_ORDER,"Array has not been gotten for this vector, you may\n\
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Array has not been gotten for this vector, you may\n\
     have forgotten a call to VecGetArray()");
   }
   v->array_gotten = PETSC_FALSE;

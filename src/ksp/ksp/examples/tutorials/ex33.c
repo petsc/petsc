@@ -494,7 +494,7 @@ PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
   } else if (dim == 2) {
     ierr = CreateCubeBoundary(mesh);
   } else {
-    SETERRQ1(PETSC_ERR_SUP, "Cannot construct a boundary of dimension %d", dim);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Cannot construct a boundary of dimension %d", dim);
   }
   PetscFunctionReturn(0);
 }
@@ -1254,7 +1254,7 @@ PetscErrorCode ElementGeometry(ALE::Obj<ALE::Two::Mesh> mesh, const ALE::Two::Me
     }
     invDet = 1.0/det;
     if (detJ) {
-      if (det < 0) {SETERRQ(PETSC_ERR_ARG_WRONG, "Negative Matrix determinant");}
+      if (det < 0) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Negative Matrix determinant");}
       *detJ = det;
     }
     if (invJ) {

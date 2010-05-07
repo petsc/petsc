@@ -93,20 +93,20 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize_DynamicLibraries(void)
   ierr = PetscInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #else
   ierr = PetscLoadDynamicLibrary("",&found);CHKERRQ(ierr);
-  if (!found) SETERRQ(PETSC_ERR_FILE_OPEN,"Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
+  if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
 #if !defined(PETSC_USE_SINGLE_LIBRARY)
   ierr = PetscLoadDynamicLibrary("vec",&found);CHKERRQ(ierr);
-  if (!found) SETERRQ(PETSC_ERR_FILE_OPEN,"Unable to locate PETSc Vec dynamic library \n You cannot move the dynamic libraries!");
+  if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc Vec dynamic library \n You cannot move the dynamic libraries!");
   ierr = PetscLoadDynamicLibrary("mat",&found);CHKERRQ(ierr);
-  if (!found) SETERRQ(PETSC_ERR_FILE_OPEN,"Unable to locate PETSc Mat dynamic library \n You cannot move the dynamic libraries!");
+  if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc Mat dynamic library \n You cannot move the dynamic libraries!");
   ierr = PetscLoadDynamicLibrary("dm",&found);CHKERRQ(ierr);
-  if (!found) SETERRQ(PETSC_ERR_FILE_OPEN,"Unable to locate PETSc DM dynamic library \n You cannot move the dynamic libraries!");
+  if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc DM dynamic library \n You cannot move the dynamic libraries!");
   ierr = PetscLoadDynamicLibrary("ksp",&found);CHKERRQ(ierr);
-  if (!found) SETERRQ(PETSC_ERR_FILE_OPEN,"Unable to locate PETSc KSP dynamic library \n You cannot move the dynamic libraries!");
+  if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc KSP dynamic library \n You cannot move the dynamic libraries!");
   ierr = PetscLoadDynamicLibrary("snes",&found);CHKERRQ(ierr);
-  if (!found) SETERRQ(PETSC_ERR_FILE_OPEN,"Unable to locate PETSc SNES dynamic library \n You cannot move the dynamic libraries!");
+  if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc SNES dynamic library \n You cannot move the dynamic libraries!");
   ierr = PetscLoadDynamicLibrary("ts",&found);CHKERRQ(ierr);
-  if (!found) SETERRQ(PETSC_ERR_FILE_OPEN,"Unable to locate PETSc TS dynamic library \n You cannot move the dynamic libraries!");
+  if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc TS dynamic library \n You cannot move the dynamic libraries!");
 #endif
 
   ierr = PetscLoadDynamicLibrary("mesh",&found);CHKERRQ(ierr);
@@ -350,7 +350,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListFind(PetscFList fl,MPI_Comm comm,const 
   PetscTruth   flg,f1,f2,f3;
  
   PetscFunctionBegin;
-  if (!name) SETERRQ(PETSC_ERR_ARG_NULL,"Trying to find routine with null name");
+  if (!name) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to find routine with null name");
 
   *r = 0;
   ierr = PetscFListGetPathAndFunction(name,&path,&function);CHKERRQ(ierr);
@@ -412,7 +412,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListFind(PetscFList fl,MPI_Comm comm,const 
       } else {
         PetscErrorPrintf("Unable to find function. Search path:\n");
         ierr = PetscDLLibraryPrintPath(DLLibrariesLoaded);CHKERRQ(ierr);
-        SETERRQ1(PETSC_ERR_PLIB,"Unable to find function:%s: either it is mis-spelled or dynamic library is not in path",entry->rname);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to find function:%s: either it is mis-spelled or dynamic library is not in path",entry->rname);
       }
 #endif
     }
@@ -457,7 +457,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListView(PetscFList list,PetscViewer viewer
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
-  if (!iascii) SETERRQ(PETSC_ERR_SUP,"Only ASCII viewer supported");
+  if (!iascii) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ASCII viewer supported");
 
   while (list) {
     if (list->path) {

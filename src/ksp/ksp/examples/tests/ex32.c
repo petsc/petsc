@@ -133,7 +133,7 @@ PetscErrorCode ComputeMatrix(DA da,Mat B)
   PetscFunctionBegin;
   ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);CHKERRQ(ierr); 
   /* For simplicity, this example only works on mx=my=mz */
-  if ( mx != my || mx != mz) SETERRQ3(1,"This example only works with mx %d = my %d = mz %d\n",mx,my,mz);
+  if ( mx != my || mx != mz) SETERRQ3(PETSC_COMM_SELF,1,"This example only works with mx %d = my %d = mz %d\n",mx,my,mz);
 
   Hx = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
   HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;

@@ -10,7 +10,7 @@ static PetscErrorCode KSPSetUp_BCGS(KSP ksp)
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(PETSC_ERR_SUP,"no symmetric preconditioning for KSPBCGS");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"no symmetric preconditioning for KSPBCGS");
   }
   ierr = KSPDefaultGetWork(ksp,6);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -27,9 +27,9 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
   PetscReal      dp = 0.0;
 
   PetscFunctionBegin;
-  if (ksp->normtype == KSP_NORM_NATURAL) SETERRQ(PETSC_ERR_SUP,"Cannot use natural residual norm with KSPBCGS");
-  if (ksp->normtype == KSP_NORM_PRECONDITIONED && ksp->pc_side != PC_LEFT) SETERRQ(PETSC_ERR_SUP,"Use -ksp_norm_type unpreconditioned for right preconditioning and KSPBCGS");
-  if (ksp->normtype == KSP_NORM_UNPRECONDITIONED && ksp->pc_side != PC_RIGHT) SETERRQ(PETSC_ERR_SUP,"Use -ksp_norm_type preconditioned for left preconditioning and KSPBCGS");
+  if (ksp->normtype == KSP_NORM_NATURAL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot use natural residual norm with KSPBCGS");
+  if (ksp->normtype == KSP_NORM_PRECONDITIONED && ksp->pc_side != PC_LEFT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Use -ksp_norm_type unpreconditioned for right preconditioning and KSPBCGS");
+  if (ksp->normtype == KSP_NORM_UNPRECONDITIONED && ksp->pc_side != PC_RIGHT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Use -ksp_norm_type preconditioned for left preconditioning and KSPBCGS");
 
   X       = ksp->vec_sol;
   B       = ksp->vec_rhs;
@@ -72,7 +72,7 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
     ierr = VecAXPBYPCZ(P,1.0,-omegaold*beta,beta,R,V);CHKERRQ(ierr);  /* p <- r - omega * beta* v + beta * p */
     ierr = KSP_PCApplyBAorAB(ksp,P,V,T);CHKERRQ(ierr);  /*   v <- K p           */
     ierr = VecDot(V,RP,&d1);CHKERRQ(ierr);
-    if (d1 == 0.0) SETERRQ(PETSC_ERR_PLIB,"Divide by zero");
+    if (d1 == 0.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Divide by zero");
     alpha = rho / d1;                 /*   a <- rho / (v,rp)  */
     ierr = VecWAXPY(S,-alpha,V,R);CHKERRQ(ierr);      /*   s <- r - a v       */
     ierr = KSP_PCApplyBAorAB(ksp,S,T,R);CHKERRQ(ierr);/*   t <- K s    */

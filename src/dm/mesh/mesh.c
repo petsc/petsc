@@ -133,7 +133,7 @@ PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<PETSC_MESH_TYPE>& mesh, Petsc
     ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
     ierr = PetscStrcmp(&(filename[len-5]), ".lcon", &isConnect);CHKERRQ(ierr);
     if (!isConnect) {
-      SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid element connectivity filename: %s", filename);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid element connectivity filename: %s", filename);
     }
     ierr = ALE::PCICE::Viewer::writeElements(mesh, viewer);CHKERRQ(ierr);
     ierr = PetscStrncpy(coordFilename, filename, len-5);CHKERRQ(ierr);
@@ -187,9 +187,9 @@ PetscErrorCode MeshView_Sieve(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscViewer
   } else if (isbinary) {
     ierr = MeshView_Sieve_Binary(mesh, viewer);CHKERRQ(ierr);
   } else if (isdraw){ 
-    SETERRQ(PETSC_ERR_SUP, "Draw viewer not implemented for Mesh");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Draw viewer not implemented for Mesh");
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", ((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", ((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -396,7 +396,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh mesh, SectionReal section
   try {
     ierr = MeshCreateMatrix(m, s, mtype, J);CHKERRQ(ierr);
   } catch(ALE::Exception e) {
-    SETERRQ(PETSC_ERR_LIB, e.message());
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, e.message());
   }
   ierr = PetscObjectCompose((PetscObject) *J, "mesh", (PetscObject) mesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -449,7 +449,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh mesh, const MatType mtype, M
 
   PetscFunctionBegin;
   ierr = MeshHasSectionReal(mesh, "default", &flag);CHKERRQ(ierr);
-  if (!flag) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
+  if (!flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = MeshCreateMatrix(m, m->getRealSection("default"), mtype, J);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject) *J, "mesh", (PetscObject) mesh);CHKERRQ(ierr);
@@ -577,7 +577,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetType(Mesh mesh, const MeshType type)
   if (match) PetscFunctionReturn(0);
 
   ierr =  PetscFListFind(MeshList,((PetscObject)mesh)->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested Mesh type %s",type);
+  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested Mesh type %s",type);
   /* Destroy the previous private Mesh context */
   if (mesh->ops->destroy) { ierr = (*mesh->ops->destroy)(mesh);CHKERRQ(ierr); }
   /* Reinitialize function pointers in MeshOps structure */
@@ -712,7 +712,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh, Vec *gvec)
 
   PetscFunctionBegin;
   ierr = MeshHasSectionReal(mesh, "default", &flag);CHKERRQ(ierr);
-  if (!flag) {SETERRQ1(PETSC_ERR_ARG_WRONGSTATE, "Must set default section for mesh %p", m.objPtr);}
+  if (!flag) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must set default section for mesh %p", m.objPtr);}
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   const ALE::Obj<PETSC_MESH_TYPE::order_type>& order = m->getFactory()->getGlobalOrder(m, "default", m->getRealSection("default"));
 
@@ -786,7 +786,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateLocalVector(Mesh mesh, Vec *lvec)
 
   PetscFunctionBegin;
   ierr = MeshHasSectionReal(mesh, "default", &flag);CHKERRQ(ierr);
-  if (!flag) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
+  if (!flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   const int size = m->getRealSection("default")->getStorageSize();
 
@@ -819,7 +819,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateLocalVector(Mesh mesh, Vec *lvec)
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalIndices(Mesh mesh,PetscInt *idx[])
 {
-  SETERRQ(PETSC_ERR_SUP, "");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "");
 }
 
 #undef __FUNCT__
@@ -1152,7 +1152,7 @@ PetscErrorCode assembleVector(Vec b, Mesh mesh, SectionReal section, PetscInt e,
   //firstElement = elementBundle->getLocalSizes()[bundle->getCommRank()];
   firstElement = 0;
 #ifdef PETSC_USE_COMPLEX
-  SETERRQ(PETSC_ERR_SUP, "SectionReal does not support complex update");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "SectionReal does not support complex update");
 #else
   if (mode == INSERT_VALUES) {
     m->update(s, PETSC_MESH_TYPE::point_type(e + firstElement), v);
@@ -1212,7 +1212,7 @@ PetscErrorCode updateOperator(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& m, const A
 PetscErrorCode updateOperator(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& m, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& section, const ALE::Obj<PETSC_MESH_TYPE::order_type>& globalOrder, int tag, int p, PetscScalar array[], InsertMode mode)
 {
 #ifdef PETSC_OPT_SIEVE
-  SETERRQ(PETSC_ERR_SUP, "This is not applicable for optimized sieves");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "This is not applicable for optimized sieves");
 #else
   const int *offsets, *indices;
   PetscErrorCode ierr;
@@ -1382,7 +1382,7 @@ PetscErrorCode assembleMatrix(Mat A, Mesh mesh, SectionReal section, PetscInt e,
 PetscErrorCode preallocateMatrix(const ALE::Obj<PETSC_MESH_TYPE>& mesh, const int bs, const ALE::Obj<PETSC_MESH_TYPE::real_section_type::atlas_type>& atlas, const ALE::Obj<PETSC_MESH_TYPE::order_type>& globalOrder, Mat A)
 {
 #ifdef PETSC_OPT_SIEVE
-  SETERRQ(PETSC_ERR_SUP, "This is not applicable for optimized sieves");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "This is not applicable for optimized sieves");
 #else
   PetscInt       localSize = globalOrder->getLocalSize();
   PetscInt      *dnz, *onz;
@@ -1498,7 +1498,7 @@ PetscErrorCode MeshCreatePCICE(MPI_Comm comm, const int dim, const char coordFil
     m  = ALE::PCICE::Builder::readMesh(comm, dim, std::string(coordFilename), std::string(adjFilename), false, interpolate, debug);
     if (debug) {m->view("Mesh");}
   } catch(ALE::Exception e) {
-    SETERRQ(PETSC_ERR_FILE_OPEN, e.message());
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN, e.message());
   }
   if (bcFilename) {
     ALE::PCICE::Builder::readBoundary(m, std::string(bcFilename));
@@ -1541,7 +1541,7 @@ PetscErrorCode MeshCreatePyLith(MPI_Comm comm, const int dim, const char baseFil
   try {
     m  = ALE::PyLith::Builder::readMesh(comm, dim, std::string(baseFilename), zeroBase, interpolate, debug);
   } catch(ALE::Exception e) {
-    SETERRQ(PETSC_ERR_FILE_OPEN, e.message());
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN, e.message());
   }
   ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1724,7 +1724,7 @@ PetscErrorCode MeshDistributeByFace(Mesh serialMesh, const char partitioner[], M
   ierr = MeshGetMesh(serialMesh, oldMesh);CHKERRQ(ierr);
   ierr = MeshCreate(oldMesh->comm(), parallelMesh);CHKERRQ(ierr);
 #ifdef PETSC_OPT_SIEVE
-  SETERRQ(PETSC_ERR_SUP, "I am being lazy, bug me.");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "I am being lazy, bug me.");
 #else
   if (partitioner == NULL) {
     ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Distribution<PETSC_MESH_TYPE>::distributeMesh(oldMesh, 1);
@@ -1889,7 +1889,7 @@ PetscErrorCode MeshCoarsenHierarchy(Mesh mesh, int numLevels, double coarseningF
   ierr = MeshCreateHierarchyLabel_Link(mesh, coarseningFactor, numLevels+1, coarseHierarchy);
   
 #if 0
-  if (oldMesh->getDimension() != 2) SETERRQ(PETSC_ERR_SUP, "Coarsening only works in two dimensions right now");
+  if (oldMesh->getDimension() != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Coarsening only works in two dimensions right now");
   ierr = ALE::Coarsener::IdentifyBoundary(oldMesh, 2);CHKERRQ(ierr);
   ierr = ALE::Coarsener::make_coarsest_boundary(oldMesh, 2, numLevels+1);CHKERRQ(ierr);
   ierr = ALE::Coarsener::CreateSpacingFunction(oldMesh, 2);CHKERRQ(ierr);
@@ -1919,7 +1919,7 @@ PetscErrorCode MeshCoarsenHierarchy_Mesh(Mesh mesh, int numLevels, Mesh *coarseH
   PetscFunctionBegin;
   ierr = PetscOptionsReal("-dmmg_coarsen_factor", "The coarsening factor", PETSC_NULL, cfactor, &cfactor, PETSC_NULL);CHKERRQ(ierr);
 #ifdef PETSC_OPT_SIEVE
-  SETERRQ(PETSC_ERR_SUP, "This needs to be rewritten for optimized meshes.");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "This needs to be rewritten for optimized meshes.");
 #else
   ierr = MeshCoarsenHierarchy(mesh, numLevels, cfactor, PETSC_FALSE, coarseHierarchy);CHKERRQ(ierr);
 #endif
@@ -2011,7 +2011,7 @@ PetscErrorCode MeshGetInterpolation_Mesh_General(Mesh coarse_mesh, Mesh fine_mes
 PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *interpolation, Vec *scaling) {
 
 #ifdef PETSC_OPT_SIEVE
-  SETERRQ(PETSC_ERR_SUP, "This needs to be rewritten for optimized meshes.");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "This needs to be rewritten for optimized meshes.");
 #else
   ALE::Obj<PETSC_MESH_TYPE> fm, cm;
   Mat                 P;
@@ -2237,7 +2237,7 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
 PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmCoarse, Mesh dmFine, Mat *interpolation, Vec *scaling)
 {
 #ifdef PETSC_OPT_SIEVE
-  SETERRQ(PETSC_ERR_SUP, "This has been superceded.");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "This has been superceded.");
 #else
   ALE::Obj<PETSC_MESH_TYPE> coarse;
   ALE::Obj<PETSC_MESH_TYPE> fine;

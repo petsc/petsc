@@ -77,7 +77,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceCreate(MPI_Comm comm,PetscTruth ha
   PetscInt       i;
 
   PetscFunctionBegin;
-  if (n < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Number of vectors (given %D) cannot be negative",n);
+  if (n < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of vectors (given %D) cannot be negative",n);
   if (n) PetscValidPointer(vecs,4);
   for (i=0; i<n; i++) PetscValidHeaderSpecific(vecs[i],VEC_CLASSID,4);
   PetscValidPointer(SP,5); 
@@ -287,7 +287,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceTest(MatNullSpace sp,Mat mat,Petsc
   }
 
   if (sp->remove){
-    SETERRQ(PETSC_ERR_SUP,"Cannot test a null space provided as a function with MatNullSpaceSetFunction()");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot test a null space provided as a function with MatNullSpaceSetFunction()");
   }
   *isNull = consistent;
   PetscFunctionReturn(0);

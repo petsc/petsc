@@ -88,7 +88,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Netcdf(PetscViewer viewer,
     ierr = PetscStrallocpy(name,&vnetcdf->filename);CHKERRQ(ierr);
   }
   if (type == (PetscFileMode) -1) {
-    SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
   } else if (type == FILE_MODE_READ) {
     ierr = ncmpi_open(comm,vnetcdf->filename,0,MPI_INFO_NULL,&vnetcdf->ncid);CHKERRQ(ierr);
   } else if (type == FILE_MODE_WRITE) {

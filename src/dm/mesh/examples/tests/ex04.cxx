@@ -55,7 +55,7 @@ PetscErrorCode testPointConeArraySequence() {
   int n = 10;
   ierr = PetscOptionsGetInt(PETSC_NULL, "-sequenceSize", &n, &flag);CHKERRQ(ierr);
   if(n < 0) {
-    SETERRQ1(1, "Invalid PointConeArraySequence size: %d", n);
+    SETERRQ1(PETSC_COMM_SELF,1, "Invalid PointConeArraySequence size: %d", n);
   }
   
   PointConeArrow *aa = (PointConeArrow*) malloc(sizeof(PointConeArrow)*n);

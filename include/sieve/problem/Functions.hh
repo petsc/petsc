@@ -381,7 +381,7 @@ namespace ALE {
           ierr = PetscMemzero(elemVec, numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
           ierr = PetscMemzero(elemMat, numBasisFuncs*numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
           m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
-          if (detJ <= 0.0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
+          if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
 
           ierr = SectionRealRestrictClosure(X, mesh, *c_iter, closureSize, x);CHKERRQ(ierr);
           // Loop over quadrature points
@@ -551,7 +551,7 @@ namespace ALE {
 
         for(PETSC_MESH_TYPE::label_sequence::iterator d_iter = cells->begin(); d_iter != cEnd; ++d_iter) {
           m->computeBdElementGeometry(coordinates, *d_iter, v0y, Jy, invJy, detJy);
-          if (detJy <= 0.0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJy, *d_iter);
+          if (detJy <= 0.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJy, *d_iter);
           detJy = sqrt(detJy);
           ierr = PetscMemzero(fMat, matSize * sizeof(PetscScalar));CHKERRQ(ierr);
           ierr = PetscMemzero(gMat, matSize * sizeof(PetscScalar));CHKERRQ(ierr);
@@ -656,7 +656,7 @@ namespace ALE {
         CHKMEMQ;
         for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter) {
           m->computeBdElementGeometry(coordinates, *c_iter, v0x, Jx, invJx, detJx);
-          if (detJx <= 0.0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJx, *c_iter);
+          if (detJx <= 0.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJx, *c_iter);
           detJx = sqrt(detJx);
           ierr = PetscMemzero(elemVec, numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
           ierr = PetscMemzero(iMat, matSize * sizeof(PetscScalar));CHKERRQ(ierr);
@@ -694,7 +694,7 @@ namespace ALE {
 
             for(PETSC_MESH_TYPE::label_sequence::iterator d_iter = cells->begin(); d_iter != cEnd; ++d_iter) {
               m->computeBdElementGeometry(coordinates, *d_iter, v0y, Jy, invJy, detJy);
-              if (detJy <= 0.0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJy, *d_iter);
+              if (detJy <= 0.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJy, *d_iter);
               detJy = sqrt(detJy);
               ierr = PetscMemzero(fMat, matSize * sizeof(PetscScalar));CHKERRQ(ierr);
               ierr = PetscMemzero(gMat, matSize * sizeof(PetscScalar));CHKERRQ(ierr);
@@ -864,7 +864,7 @@ namespace ALE {
         for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter) {
           ierr = PetscMemzero(elemMat, matSize * sizeof(PetscScalar));CHKERRQ(ierr);
           m->computeBdElementGeometry(coordinates, *c_iter, v0x, Jx, invJx, detJx);
-          if (detJx <= 0.0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJx, *c_iter);
+          if (detJx <= 0.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJx, *c_iter);
           detJx = sqrt(detJx);
 
           // Loop over x quadrature points
@@ -879,7 +879,7 @@ namespace ALE {
             for(PETSC_MESH_TYPE::label_sequence::iterator d_iter = cells->begin(); d_iter != cEnd; ++d_iter) {
               ierr = PetscMemzero(elemMat, matSize * sizeof(PetscScalar));CHKERRQ(ierr);
               m->computeBdElementGeometry(coordinates, *d_iter, v0y, Jy, invJy, detJy);
-              if (detJy <= 0.0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJy, *d_iter);
+              if (detJy <= 0.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJy, *d_iter);
               detJy = sqrt(detJy);
               
               ierr = SectionRealRestrictClosure(normals, mesh, *d_iter, embedDim, normal);CHKERRQ(ierr);

@@ -426,7 +426,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
     } else if (options->dim == 3) {
       ierr = DACreate3d(comm, DA_NONPERIODIC, DA_STENCIL_BOX, -3, -3, -3, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, 1, PETSC_NULL, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
     } else {
-      SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }
     ierr = DASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
     *dm = (DM) da;
@@ -478,7 +478,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
         }
         ierr = MeshSetMesh(boundary, mB);CHKERRQ(ierr);
       } else {
-        SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
       }
       ierr = MeshGenerate(boundary, options->interpolate, &mesh);CHKERRQ(ierr);
       ierr = MeshDestroy(boundary);CHKERRQ(ierr);
@@ -864,7 +864,7 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
     ierr = PetscMemzero(elemVec, numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = PetscMemzero(elemMat, numBasisFuncs*numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
-    if (detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
+    if (detJ < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
 #ifdef FASTER
     const PetscScalar *x = m->restrictClosure(xSection, xTag, c);
 #else
@@ -1036,7 +1036,7 @@ PetscErrorCode FormWeakForms(DM dm, Options *options)
       ierr = DAFormFunctionLocalGhost(da, (DALocalFunction1) Rhs_Structured_3d_FD, X, F, (void *) options);CHKERRQ(ierr);
       if (flag) {ierr = VecView(F, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
     } else {
-      SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }
     ierr = DARestoreGlobalVector(da, &X);CHKERRQ(ierr);
     ierr = DARestoreGlobalVector(da, &F);CHKERRQ(ierr);
@@ -1430,7 +1430,7 @@ PetscErrorCode FormOperator(DM dm, Options *options)
     } else if (options->dim == 3) {
       ierr = DAFormJacobianLocal(da, (DALocalFunction1) Jac_Structured_3d_FD, X, J, options);CHKERRQ(ierr);
     } else {
-      SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }
     ierr = DARestoreGlobalVector(da, &X);CHKERRQ(ierr);
     ierr = MatDestroy(J);CHKERRQ(ierr);
@@ -1508,7 +1508,7 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
       options->exactFunc = cubic_3d;
     }
   } else {
-    SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
   }
   if (options->structured) {
     // The DA defines most of the problem during creation
@@ -1551,7 +1551,7 @@ replace this part by setting up the form and setting the discretizations.
       ierr = CreateProblem_gen_2(dm, "u", numBC, markers, funcs, options->exactFunc);CHKERRQ(ierr);
       options->integrate = IntegrateDualBasis_gen_2;
     } else {
-      SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }
     */
     const ALE::Obj<ALE::Mesh::real_section_type> s = m->getRealSection("default");
@@ -1585,7 +1585,7 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
     } else if (dim == 3) {
       ierr = DAFormFunctionLocal(da, (DALocalFunction1) Function_Structured_3d, X, U, (void *) options);CHKERRQ(ierr);
     } else {
-      SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", dim);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim);
     }
     ierr = DARestoreGlobalVector(da, &X);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
@@ -1671,7 +1671,7 @@ PetscErrorCode CheckResidual(DM dm, ExactSolType sol, Options *options)
     } else if (options->dim == 3) {
       ierr = DAFormFunctionLocal(da, (DALocalFunction1) Rhs_Structured_3d_FD, sol.vec, residual, (void *) options);CHKERRQ(ierr);
     } else {
-      SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }
     ierr = VecNorm(residual, NORM_2, &norm);CHKERRQ(ierr);
     if (flag) {ierr = VecView(residual, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
@@ -1712,7 +1712,7 @@ PetscErrorCode CreateSolver(DM dm, DMMG **dmmg, Options *options)
     } else if (options->dim == 3) {
       ierr = DMMGSetSNESLocal(*dmmg, Rhs_Structured_3d_FD, Jac_Structured_3d_FD, 0, 0);CHKERRQ(ierr);
     } else {
-      SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }
     ierr = DMMGSetFromOptions(*dmmg);CHKERRQ(ierr);
     for(int l = 0; l < DMMGGetLevels(*dmmg); l++) {
@@ -1729,7 +1729,7 @@ PetscErrorCode CreateSolver(DM dm, DMMG **dmmg, Options *options)
       ierr = DMMGSetMatType(*dmmg, MATSHELL);CHKERRQ(ierr);
       ierr = DMMGSetSNESLocal(*dmmg, Rhs_Unstructured, Jac_Unstructured, 0, 0);CHKERRQ(ierr);
     } else {
-      SETERRQ1(PETSC_ERR_ARG_WRONG, "Assembly type not supported: %d", options->operatorAssembly);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Assembly type not supported: %d", options->operatorAssembly);
     }
     ierr = DMMGSetFromOptions(*dmmg);CHKERRQ(ierr);
   }

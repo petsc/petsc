@@ -337,7 +337,7 @@ PetscErrorCode paulsetup20(void)
 		w[3] = 0.347854845137454;
   }
   else {
-    SETERRQ(1,"Unknown value for n_int");
+    SETERRQ(PETSC_COMM_SELF,1,"Unknown value for n_int");
   }
 
   /* rst[][i] contains the location of the i-th integration point

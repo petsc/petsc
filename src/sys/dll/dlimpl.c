@@ -72,12 +72,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLOpen(const char name[],int flags,PetscDLHa
     erc = GetLastError();
     FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
 		  NULL,erc,MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),(LPSTR)&buff,0,NULL);
-    ierr = PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,PETSC_ERR_FILE_OPEN,1,
+    ierr = PetscError(PETSC_COMM_SELF,__LINE__,__FUNCT__,__FILE__,__SDIR__,PETSC_ERR_FILE_OPEN,1,
 		      "Unable to open dynamic library:\n  %s\n  Error message from LoadLibrary() %s\n",name,buff);
     LocalFree(buff);
     PetscFunctionReturn(ierr);
 #else
-    SETERRQ2(PETSC_ERR_FILE_OPEN,"Unable to open dynamic library:\n  %s\n  Error message from LoadLibrary() %s\n",name,"unavailable");
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open dynamic library:\n  %s\n  Error message from LoadLibrary() %s\n",name,"unavailable");
 #endif
   }
 
@@ -115,14 +115,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLOpen(const char name[],int flags,PetscDLHa
 #else
     const char *errmsg = "unavailable";
 #endif
-    SETERRQ2(PETSC_ERR_FILE_OPEN,"Unable to open dynamic library:\n  %s\n  Error message from dlopen() %s\n",name,errmsg)
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open dynamic library:\n  %s\n  Error message from dlopen() %s\n",name,errmsg)
   }
 
   /* 
      --- unimplemented ---
   */  
 #else
-  SETERRQ(PETSC_ERR_SUP_SYS, "Cannot use dynamic libraries on this platform");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS, "Cannot use dynamic libraries on this platform");
 #endif
 
   *handle = (PetscDLHandle) dlhandle;
@@ -193,7 +193,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLClose(PetscDLHandle *handle)
      --- unimplemented --- 
   */  
 #else
-  SETERRQ(PETSC_ERR_SUP_SYS, "Cannot use dynamic libraries on this platform");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS, "Cannot use dynamic libraries on this platform");
 #endif
 
   *handle = PETSC_NULL;
@@ -270,7 +270,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLSym(PetscDLHandle handle,const char symbol
      --- unimplemented --- 
   */  
 #else
-  SETERRQ(PETSC_ERR_SUP_SYS, "Cannot use dynamic libraries on this platform");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS, "Cannot use dynamic libraries on this platform");
 #endif
 
   *value = *((void**)&dlsymbol);

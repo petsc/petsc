@@ -79,7 +79,7 @@ int main(int argc,char **argv)
     ierr = MatMatMultNumeric(B,A,D);CHKERRQ(ierr);
   }  
   ierr = MatEqual(C,D,&equal);CHKERRQ(ierr);
-  if (!equal) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"C != D");
+  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"C != D");
 
   ierr = MatDestroy(D);CHKERRQ(ierr); 
   ierr = MatDestroy(C);CHKERRQ(ierr);

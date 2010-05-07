@@ -81,7 +81,7 @@ PetscErrorCode PetscBagRegisterEnum(PetscBag bag,void *addr,const char **list,Pe
   ierr = PetscNew(struct _n_PetscBagItem,&item);CHKERRQ(ierr);
   item->dtype  = PETSC_ENUM;
   item->offset = ((char*)addr) - ((char*)bag);
-  if (item->offset > bag->bagsize) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
+  if (item->offset > bag->bagsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
   item->next   = 0;
   item->msize  = 1;
   item->list   = list;
@@ -133,7 +133,7 @@ PetscErrorCode PetscBagRegisterInt(PetscBag bag,void *addr,PetscInt mdefault, co
   ierr = PetscNew(struct _n_PetscBagItem,&item);CHKERRQ(ierr);
   item->dtype  = PETSC_INT;
   item->offset = ((char*)addr) - ((char*)bag);
-  if (item->offset > bag->bagsize) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
+  if (item->offset > bag->bagsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
   item->next   = 0;
   item->msize  = 1;
   *(PetscInt*)addr = mdefault;
@@ -186,7 +186,7 @@ PetscErrorCode PetscBagRegisterString(PetscBag bag,void *addr,PetscInt msize,con
   ierr = PetscNew(struct _n_PetscBagItem,&item);CHKERRQ(ierr);
   item->dtype  = PETSC_CHAR;
   item->offset = ((char*)addr) - ((char*)bag);
-  if (item->offset > bag->bagsize) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
+  if (item->offset > bag->bagsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
   item->next   = 0;
   item->msize  = msize;
   if (mdefault != (char*)addr) {
@@ -242,7 +242,7 @@ PetscErrorCode PetscBagRegisterReal(PetscBag bag,void *addr,PetscReal mdefault, 
   ierr = PetscNew(struct _n_PetscBagItem,&item);CHKERRQ(ierr);
   item->dtype  = PETSC_REAL;
   item->offset = ((char*)addr) - ((char*)bag);
-  if (item->offset > bag->bagsize) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
+  if (item->offset > bag->bagsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
   item->next   = 0;
   item->msize  = 1;
   *(PetscReal*)addr = mdefault;
@@ -294,7 +294,7 @@ PetscErrorCode PetscBagRegisterScalar(PetscBag bag,void *addr,PetscScalar mdefau
   ierr = PetscNew(struct _n_PetscBagItem,&item);CHKERRQ(ierr);
   item->dtype  = PETSC_SCALAR;
   item->offset = ((char*)addr) - ((char*)bag);
-  if (item->offset > bag->bagsize) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
+  if (item->offset > bag->bagsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
   item->next   = 0;
   item->msize  = 1;
   *(PetscScalar*)addr = mdefault;
@@ -333,7 +333,7 @@ PetscErrorCode PetscBagRegisterTruth(PetscBag bag,void *addr,PetscTruth mdefault
 
   PetscFunctionBegin;
   /* the checks here with != PETSC_FALSE and PETSC_TRUE is a special case; here we truly demand that the value be 0 or 1 */
-  if (mdefault != PETSC_FALSE && mdefault != PETSC_TRUE) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Boolean %s %s must be boolean; integer value %d",name,help,(int)mdefault);
+  if (mdefault != PETSC_FALSE && mdefault != PETSC_TRUE) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Boolean %s %s must be boolean; integer value %d",name,help,(int)mdefault);
   if (!PetscBagInLoad) {
     nname[0] = '-';
     nname[1] = 0;
@@ -348,7 +348,7 @@ PetscErrorCode PetscBagRegisterTruth(PetscBag bag,void *addr,PetscTruth mdefault
   ierr = PetscNew(struct _n_PetscBagItem,&item);CHKERRQ(ierr);
   item->dtype  = PETSC_TRUTH;
   item->offset = ((char*)addr) - ((char*)bag);
-  if (item->offset > bag->bagsize) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
+  if (item->offset > bag->bagsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
   item->next   = 0;
   item->msize  = 1;
   *(PetscTruth*)addr = mdefault;
@@ -509,7 +509,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagView(PetscBag bag,PetscViewer view)
         /* some Fortran compilers use -1 as boolean */
         if (((int) value) == -1) value = PETSC_TRUE;
         /* the checks here with != PETSC_FALSE and PETSC_TRUE is a special case; here we truly demand that the value be 0 or 1 */
-        if (value != PETSC_FALSE && value != PETSC_TRUE) SETERRQ3(PETSC_ERR_PLIB,"Boolean value for %s %s is corrupt; integer value %d",nitem->name,nitem->help,value);
+        if (value != PETSC_FALSE && value != PETSC_TRUE) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Boolean value for %s %s is corrupt; integer value %d",nitem->name,nitem->help,value);
         ierr = PetscViewerASCIIPrintf(view,"  %s = %s; %s\n",nitem->name,PetscTruths[value],nitem->help);CHKERRQ(ierr);
       } else if (nitem->dtype == PETSC_ENUM) {
         PetscEnum value = *(PetscEnum*)(((char*)bag) + nitem->offset);
@@ -543,7 +543,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagView(PetscBag bag,PetscViewer view)
       nitem = nitem->next;
     }
   } else {
-    SETERRQ(PETSC_ERR_SUP,"No support for this viewer type");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for this viewer type");
   }
   PetscFunctionReturn(0);
 }
@@ -578,10 +578,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagLoad(PetscViewer view,PetscBag *bag)
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)view,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
-  if (!isbinary) SETERRQ(PETSC_ERR_SUP,"No support for this viewer type");
+  if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for this viewer type");
 
   ierr = PetscViewerBinaryRead(view,&classid,1,PETSC_INT);CHKERRQ(ierr);
-  if (classid != PETSC_BAG_FILE_CLASSID) SETERRQ(PETSC_ERR_ARG_WRONG,"Not PetscBag next in binary file");
+  if (classid != PETSC_BAG_FILE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not PetscBag next in binary file");
   ierr = PetscViewerBinaryRead(view,bagsizecount,2,PETSC_INT);CHKERRQ(ierr);
   ierr = PetscMalloc(bagsizecount[0],bag);CHKERRQ(ierr);
   ierr = PetscMemzero(*bag,bagsizecount[0]);CHKERRQ(ierr);

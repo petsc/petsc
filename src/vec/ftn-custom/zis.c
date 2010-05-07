@@ -19,7 +19,7 @@ void PETSC_STDCALL islocaltoglobalmappingapply_(ISLocalToGlobalMapping *mapping,
   for (i=0; i<(*N); i++) {
     if (in[i] < 0) {out[i] = in[i]; continue;}
     if (in[i] >= Nmax) {
-      *ierr = PetscError(__LINE__,"ISLocalToGlobalMappingApply_Fortran",__FILE__,__SDIR__,1,1,"Index out of range");
+      *ierr = PetscError(PETSC_COMM_SELF,__LINE__,"ISLocalToGlobalMappingApply_Fortran",__FILE__,__SDIR__,1,1,"Index out of range");
       return;
     }
     out[i] = idx[in[i]];

@@ -301,7 +301,7 @@ PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>& mesh, int dim, ALE::Mesh::real_secti
   delete input;
   delete output;
 #else
-  SETERRQ(PETSC_ERR_SUP, "No mesh generator available!");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "No mesh generator available!");
 #endif
   PetscFunctionReturn(0);
 }

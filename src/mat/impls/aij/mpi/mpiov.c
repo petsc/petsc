@@ -22,7 +22,7 @@ PetscErrorCode MatIncreaseOverlap_MPIAIJ(Mat C,PetscInt imax,IS is[],PetscInt ov
   PetscInt       i;
 
   PetscFunctionBegin;
-  if (ov < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
+  if (ov < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
   for (i=0; i<ov; ++i) {
     ierr = MatIncreaseOverlap_MPIAIJ_Once(C,imax,is);CHKERRQ(ierr);
   }
@@ -106,7 +106,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
     for (j=0; j<len; j++) {
       row  = idx_i[j];
       if (row < 0) {
-        SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Index set cannot have negative entries");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index set cannot have negative entries");
       }
       proc = rtable[row];
       w4[proc]++;
@@ -271,7 +271,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
 
     for (i=0; i<nrqr; ++i) {
       proc      = recv_status[i].MPI_SOURCE;
-      if (proc != onodes1[i]) SETERRQ(PETSC_ERR_PLIB,"MPI_SOURCE mismatch");
+      if (proc != onodes1[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MPI_SOURCE mismatch");
       rw1[proc] = isz1[i];
     }
     ierr = PetscFree(onodes1);CHKERRQ(ierr);
@@ -627,7 +627,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatGetSubMatrixOption flag,MatRe
         jsendbuf[cnt++] = garray[*b_jsendbuf++];
       }
     }
-    if (cnt != sendcount) SETERRQ2(PETSC_ERR_PLIB,"Corrupted PETSc matrix: nz given %D actual nz %D",sendcount,cnt);
+    if (cnt != sendcount) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Corrupted PETSc matrix: nz given %D actual nz %D",sendcount,cnt);
 
     /*--------------------------------------------------------------------
        Gather all column indices to all processors
@@ -700,7 +700,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatGetSubMatrixOption flag,MatRe
         b_sendj++;
       }
     }
-    if (cnt != sendcount) SETERRQ2(PETSC_ERR_PLIB,"Corrupted PETSc matrix: nz given %D actual nz %D",sendcount,cnt);
+    if (cnt != sendcount) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Corrupted PETSc matrix: nz given %D actual nz %D",sendcount,cnt);
    
     /* ----------------------------------------------------------------- 
        Gather all numerical values to all processors 
@@ -827,9 +827,9 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
     /* Check if the col indices are sorted */
   for (i=0; i<ismax; i++) {
     ierr = ISSorted(isrow[i],&sorted);CHKERRQ(ierr);
-    /*if (!sorted) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"isrow is not sorted");*/
+    /*if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"isrow is not sorted");*/
     ierr = ISSorted(iscol[i],&sorted);CHKERRQ(ierr);
-    /*    if (!sorted) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"iscol is not sorted"); */
+    /*    if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"iscol is not sorted"); */
   }
   ierr = PetscMalloc4(ismax,const PetscInt*,&irow,ismax,const PetscInt*,&icol,ismax,PetscInt,&nrow,ismax,PetscInt,&ncol);CHKERRQ(ierr);
 
@@ -1234,11 +1234,11 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
     for (i=0; i<ismax; i++) {
       mat = (Mat_SeqAIJ *)(submats[i]->data);
       if ((submats[i]->rmap->n != nrow[i]) || (submats[i]->cmap->n != ncol[i])) {
-        SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong size");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong size");
       }
       ierr = PetscMemcmp(mat->ilen,lens[i],submats[i]->rmap->n*sizeof(PetscInt),&flag);CHKERRQ(ierr);
       if (!flag) {
-        SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong no of nonzeros");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong no of nonzeros");
       }
       /* Initial matrix as if empty */
       ierr = PetscMemzero(mat->ilen,submats[i]->rmap->n*sizeof(PetscInt));CHKERRQ(ierr);

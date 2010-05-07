@@ -53,7 +53,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
       if (numLimits == 1) {
 	for(int p = 1; p < size; ++p) options->refinementLimit[p] = options->refinementLimit[0];
       } else if (numLimits != size) {
-        SETERRQ1(PETSC_ERR_ARG_WRONG, "Cannot specify refinement limits on a subset (%d) of processes", numLimits);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Cannot specify refinement limits on a subset (%d) of processes", numLimits);
       }
     }
     filename << "data/refinement_" << options->dim <<"d";
@@ -182,7 +182,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
       Obj<ALE::Mesh> mB = ALE::MeshBuilder::createCubeBoundary(comm, lower, upper, faces, options->debug);
       ierr = MeshSetMesh(boundary, mB);CHKERRQ(ierr);
     } else {
-      SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }
     ierr = MeshGenerate(boundary, options->interpolate, &mesh);CHKERRQ(ierr);
     ierr = MeshDestroy(boundary);CHKERRQ(ierr);

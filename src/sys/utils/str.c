@@ -112,7 +112,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrcpy(char s[],const char t[])
 {
   PetscFunctionBegin;
   if (t && !s) {
-    SETERRQ(PETSC_ERR_ARG_NULL,"Trying to copy string into null pointer");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy string into null pointer");
   }
   if (t) {strcpy(s,t);}
   else if (s) {s[0] = 0;}
@@ -147,7 +147,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrncpy(char s[],const char t[],size_t n)
 {
   PetscFunctionBegin;
   if (t && !s) {
-    SETERRQ(PETSC_ERR_ARG_NULL,"Trying to copy string into null pointer");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy string into null pointer");
   }
   if (t) {strncpy(s,t,n);}
   else if (s) {s[0] = 0;}
@@ -664,7 +664,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrreplace(MPI_Comm comm,const char aa[],cha
   PetscTruth     flag;
 
   PetscFunctionBegin;
-  if (!a || !b) SETERRQ(PETSC_ERR_ARG_NULL,"a and b strings must be nonnull");
+  if (!a || !b) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"a and b strings must be nonnull");
   if (aa == b) {
     ierr    = PetscStrallocpy(aa,(char **)&a);CHKERRQ(ierr);
   }
@@ -702,7 +702,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrreplace(MPI_Comm comm,const char aa[],cha
       ierr = PetscStrlen(r[i],&l2);CHKERRQ(ierr);
       ierr = PetscStrlen(par,&l3);CHKERRQ(ierr);
       if (l1 + l2 + l3 >= len) {
-        SETERRQ(PETSC_ERR_ARG_SIZ,"b len is not long enough to hold new values");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"b len is not long enough to hold new values");
       }
       ierr  = PetscStrcpy(work,b);CHKERRQ(ierr);
       ierr  = PetscStrcat(work,r[i]);CHKERRQ(ierr);
@@ -730,7 +730,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrreplace(MPI_Comm comm,const char aa[],cha
     epar += 1;
     ierr = PetscOptionsGetenv(comm,par,env,256,&flag);CHKERRQ(ierr);
     if (!flag) {
-      SETERRQ1(PETSC_ERR_ARG_WRONG,"Substitution string ${%s} not found as environmental variable",par);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Substitution string ${%s} not found as environmental variable",par);
     }
     ierr = PetscStrcat(work,env);CHKERRQ(ierr);
     ierr = PetscStrcat(work,epar);CHKERRQ(ierr);

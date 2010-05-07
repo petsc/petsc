@@ -21,7 +21,7 @@ PetscErrorCode MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
   if (format == PETSC_VIEWER_ASCII_INFO) {
     PetscFunctionReturn(0);
   } else if (format == PETSC_VIEWER_ASCII_MATLAB) {
-    SETERRQ(PETSC_ERR_SUP,"Matlab format not supported");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matlab format not supported");
   } else {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
@@ -49,7 +49,7 @@ PetscErrorCode MatView_MPIAdj(Mat A,PetscViewer viewer)
   if (iascii) {
     ierr = MatView_MPIAdj_ASCII(A,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by MPIAdj",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by MPIAdj",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -142,7 +142,7 @@ PetscErrorCode MatGetRow_MPIAdj(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,P
   PetscFunctionBegin;
   row -= A->rmap->rstart;
 
-  if (row < 0 || row >= A->rmap->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row out of range");
+  if (row < 0 || row >= A->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row out of range");
 
   *nz = a->i[row+1] - a->i[row];
   if (v) *v = PETSC_NULL;
@@ -217,8 +217,8 @@ PetscErrorCode MatRestoreRowIJ_MPIAdj(Mat A,PetscInt oshift,PetscTruth symmetric
   Mat_MPIAdj *a = (Mat_MPIAdj *)A->data;
 
   PetscFunctionBegin;
-  if (ia && a->i != *ia) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"ia passed back is not one obtained with MatGetRowIJ()");
-  if (ja && a->j != *ja) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"ja passed back is not one obtained with MatGetRowIJ()");
+  if (ia && a->i != *ia) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"ia passed back is not one obtained with MatGetRowIJ()");
+  if (ja && a->j != *ja) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"ja passed back is not one obtained with MatGetRowIJ()");
   if (oshift) {
     for (i=0; i<=(*m); i++) (*ia)[i]--;
     for (i=0; i<(*ia)[*m]; i++) {
@@ -407,15 +407,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscIn
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG)
-  if (i[0] != 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"First i[] index must be zero, instead it is %D\n",i[0]);
+  if (i[0] != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"First i[] index must be zero, instead it is %D\n",i[0]);
   for (ii=1; ii<B->rmap->n; ii++) {
     if (i[ii] < 0 || i[ii] < i[ii-1]) {
-      SETERRQ4(PETSC_ERR_ARG_OUTOFRANGE,"i[%D]=%D index is out of range: i[%D]=%D",ii,i[ii],ii-1,i[ii-1]);
+      SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i[%D]=%D index is out of range: i[%D]=%D",ii,i[ii],ii-1,i[ii-1]);
     }
   }
   for (ii=0; ii<i[B->rmap->n]; ii++) {
     if (j[ii] < 0 || j[ii] >= B->cmap->N) {
-      SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column index %D out of range %D\n",ii,j[ii]);
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column index %D out of range %D\n",ii,j[ii]);
     }
   } 
 #endif

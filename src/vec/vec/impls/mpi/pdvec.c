@@ -153,7 +153,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         } else if (outputState == 3) {
           doOutput = 0;
         } else if (outputState == 4) {
-          SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
         }
         if (doOutput) {
           ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", xin->map->N/bs);CHKERRQ(ierr);
@@ -168,7 +168,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         } else if (outputState == 2) {
           doOutput = 0;
         } else if (outputState == 3) {
-          SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
         } else if (outputState == 4) {
           doOutput = 0;
         }
@@ -212,7 +212,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       n    = PetscMPIIntCast(nLen);
       ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
       if ((bs < 1) || (bs > 3)) {
-        SETERRQ1(PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %d", bs);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %d", bs);
       }
       for (i=0; i<n/bs; i++) {
         for (b=0; b<bs; b++) {
@@ -249,7 +249,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       n    = PetscMPIIntCast(nLen);
       ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
       if ((bs < 1) || (bs > 3)) {
-        SETERRQ1(PETSC_ERR_ARG_WRONGSTATE, "PCICE can only handle up to 3D objects, but vector dimension is %d", bs);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "PCICE can only handle up to 3D objects, but vector dimension is %d", bs);
       }
       ierr = PetscViewerASCIIPrintf(viewer,"%D\n", xin->map->N/bs);CHKERRQ(ierr);
       for (i=0; i<n/bs; i++) {
@@ -287,7 +287,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       n    = PetscMPIIntCast(nLen);
       ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
       if (bs != 3) {
-        SETERRQ1(PETSC_ERR_ARG_WRONGSTATE, "PyLith can only handle 3D objects, but vector dimension is %d", bs);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "PyLith can only handle 3D objects, but vector dimension is %d", bs);
       }
       ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"#  Node      X-coord           Y-coord           Z-coord\n");CHKERRQ(ierr);
@@ -489,7 +489,7 @@ PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
   ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
-  SETERRQ(PETSC_ERR_SUP,"Not supported with 64 bit integers");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported with 64 bit integers");
 #else
   PetscMPIInt    size,rank;
   int            i,N = xin->map->N,*lens;
@@ -682,7 +682,7 @@ PetscErrorCode VecView_MPI_Netcdf(Vec xin,PetscViewer v)
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
   ierr = PetscViewerNetcdfGetID(v,&ncid);CHKERRQ(ierr);
-  if (ncid < 0) SETERRQ(PETSC_ERR_ORDER,"First call PetscViewerNetcdfOpen to create NetCDF dataset");
+  if (ncid < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"First call PetscViewerNetcdfOpen to create NetCDF dataset");
   /* define dimensions */
   ierr = ncmpi_def_dim(ncid,"PETSc_Vector_Global_Size",xin->map->N,&xdim);CHKERRQ(ierr);
   /* define variables */
@@ -727,7 +727,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   dims[1] = 2;
 #endif
   filespace = H5Screate_simple(dim, dims, NULL); 
-  if (filespace == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Screate_simple()");
+  if (filespace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Screate_simple()");
 
   /* Create the dataset with default properties and close filespace */
   ierr = PetscObjectGetName((PetscObject)xin,&vecname);CHKERRQ(ierr);
@@ -736,7 +736,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
 #else
   dset_id = H5Dcreate(file_id, vecname, H5T_NATIVE_DOUBLE, filespace, H5P_DEFAULT);
 #endif
-  if (dset_id == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Dcreate2()");
+  if (dset_id == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Dcreate2()");
   status = H5Sclose(filespace);CHKERRQ(status);
 
   /* Each process defines a dataset and writes it to the hyperslab in the file */
@@ -745,7 +745,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   count[1] = 2;
 #endif
   memspace = H5Screate_simple(dim, count, NULL);
-  if (memspace == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Screate_simple()");
+  if (memspace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Screate_simple()");
 
   /* Select hyperslab in the file */
   ierr = VecGetOwnershipRange(xin, &low, PETSC_NULL);CHKERRQ(ierr);
@@ -754,12 +754,12 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   offset[1] = 0;
 #endif
   filespace = H5Dget_space(dset_id);
-  if (filespace == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Dget_space()");
+  if (filespace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Dget_space()");
   status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offset, NULL, count, NULL);CHKERRQ(status);
 
   /* Create property list for collective dataset write */
   plist_id = H5Pcreate(H5P_DATASET_XFER);
-  if (plist_id == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Pcreate()");
+  if (plist_id == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Pcreate()");
 #if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
   status = H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_COLLECTIVE);CHKERRQ(status);
 #endif
@@ -844,7 +844,7 @@ PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
     ierr = VecView_MPI_Matlab(xin,viewer);CHKERRQ(ierr);
 #endif
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -871,7 +871,7 @@ PetscErrorCode VecGetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],PetscSca
     if (xin->stash.ignorenegidx && ix[i] < 0) continue;
     tmp = ix[i] - start;
 #if defined(PETSC_USE_DEBUG)
-    if (tmp < 0 || tmp >= xin->map->n) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Can only get local values, trying %D",ix[i]);
+    if (tmp < 0 || tmp >= xin->map->n) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Can only get local values, trying %D",ix[i]);
 #endif
     y[i] = xx[tmp];
   }
@@ -891,9 +891,9 @@ PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
   PetscFunctionBegin;
 #if defined(PETSC_USE_DEBUG)
   if (xin->stash.insertmode == INSERT_VALUES && addv == ADD_VALUES) { 
-   SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You have already inserted values; you cannot now add");
+   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You have already inserted values; you cannot now add");
   } else if (xin->stash.insertmode == ADD_VALUES && addv == INSERT_VALUES) { 
-   SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You have already added values; you cannot now insert");
+   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You have already added values; you cannot now insert");
   }
 #endif
   ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
@@ -904,14 +904,14 @@ PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
       if (xin->stash.ignorenegidx && ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
       if (ix[i] < 0) {
-        SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
       }
 #endif 
       if ((row = ix[i]) >= start && row < end) {
         xx[row-start] = y[i];
       } else if (!xin->stash.donotstash) {
 #if defined(PETSC_USE_DEBUG)
-        if (ix[i] >= xin->map->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->map->N);
+        if (ix[i] >= xin->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->map->N);
 #endif
         ierr = VecStashValue_Private(&xin->stash,row,y[i]);CHKERRQ(ierr);
       }
@@ -921,14 +921,14 @@ PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
       if (xin->stash.ignorenegidx && ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
       if (ix[i] < 0) {
-        SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
       }
 #endif 
       if ((row = ix[i]) >= start && row < end) {
         xx[row-start] += y[i];
       } else if (!xin->stash.donotstash) {
 #if defined(PETSC_USE_DEBUG)
-        if (ix[i] > xin->map->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->map->N);
+        if (ix[i] > xin->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->map->N);
 #endif        
         ierr = VecStashValue_Private(&xin->stash,row,y[i]);CHKERRQ(ierr);
       }
@@ -952,10 +952,10 @@ PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],c
   ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
   if (xin->stash.insertmode == INSERT_VALUES && addv == ADD_VALUES) { 
-   SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You have already inserted values; you cannot now add");
+   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You have already inserted values; you cannot now add");
   }
   else if (xin->stash.insertmode == ADD_VALUES && addv == INSERT_VALUES) { 
-   SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You have already added values; you cannot now insert");
+   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You have already added values; you cannot now insert");
   }
 #endif
   xin->stash.insertmode = addv;
@@ -969,7 +969,7 @@ PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],c
       } else if (!xin->stash.donotstash) {
         if (ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
-        if (ix[i] >= xin->map->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D max %D",ix[i],xin->map->N);
+        if (ix[i] >= xin->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D max %D",ix[i],xin->map->N);
 #endif
         ierr = VecStashValuesBlocked_Private(&xin->bstash,ix[i],y);CHKERRQ(ierr);
       }
@@ -984,7 +984,7 @@ PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],c
       } else if (!xin->stash.donotstash) {
         if (ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
-        if (ix[i] > xin->map->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D max %D",ix[i],xin->map->N);
+        if (ix[i] > xin->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D max %D",ix[i],xin->map->N);
 #endif
         ierr = VecStashValuesBlocked_Private(&xin->bstash,ix[i],y);CHKERRQ(ierr);
       }
@@ -1016,7 +1016,7 @@ PetscErrorCode VecAssemblyBegin_MPI(Vec xin)
 
   ierr = MPI_Allreduce(&xin->stash.insertmode,&addv,1,MPI_INT,MPI_BOR,comm);CHKERRQ(ierr);
   if (addv == (ADD_VALUES|INSERT_VALUES)) { 
-    SETERRQ(PETSC_ERR_ARG_NOTSAMETYPE,"Some processors inserted values while others added");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Some processors inserted values while others added");
   }
   xin->stash.insertmode = addv; /* in case this processor had no cache */
   
@@ -1063,7 +1063,7 @@ PetscErrorCode VecAssemblyEnd_MPI(Vec vec)
       } else if (vec->stash.insertmode == INSERT_VALUES) {
         for (i=0; i<n; i++) { xarray[row[i] - base] = val[i]; }
       } else {
-        SETERRQ(PETSC_ERR_ARG_CORRUPT,"Insert mode is not set correctly; corrupted vector");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Insert mode is not set correctly; corrupted vector");
       }
     }
     ierr = VecStashScatterEnd_Private(&vec->stash);CHKERRQ(ierr);
@@ -1080,7 +1080,7 @@ PetscErrorCode VecAssemblyEnd_MPI(Vec vec)
         } else if (vec->stash.insertmode == INSERT_VALUES) {
           for (j=0; j<bs; j++) { array[j] = vv[j]; }
         } else {
-          SETERRQ(PETSC_ERR_ARG_CORRUPT,"Insert mode is not set correctly; corrupted vector");
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Insert mode is not set correctly; corrupted vector");
         }
       }
     }

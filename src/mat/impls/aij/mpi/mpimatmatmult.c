@@ -22,7 +22,7 @@ PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal fil
   } else if (scall == MAT_REUSE_MATRIX){
     ierr = MatMatMultNumeric_MPIAIJ_MPIAIJ(A,B,*C);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",(int)scall);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",(int)scall);
   }
   PetscFunctionReturn(0);
 }
@@ -65,7 +65,7 @@ PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat A)
   if (container) {
     ierr = PetscContainerGetPointer(container,(void **)&mult);CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_ERR_PLIB,"Container does not exit");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
   }
   A->ops->destroy = mult->MatDestroy;
   ierr = PetscObjectCompose((PetscObject)A,"Mat_MatMatMultMPI",0);CHKERRQ(ierr);
@@ -87,7 +87,7 @@ PetscErrorCode MatDuplicate_MPIAIJ_MatMatMult(Mat A, MatDuplicateOption op, Mat 
   if (container) {
     ierr  = PetscContainerGetPointer(container,(void **)&mult);CHKERRQ(ierr); 
   } else {
-    SETERRQ(PETSC_ERR_PLIB,"Container does not exit");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
   }
   /* Note: the container is not duplicated, because it requires deep copying of
      several large data sets (see PetscContainerDestroy_Mat_MatMatMultMPI()).
@@ -110,7 +110,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *
  
   PetscFunctionBegin;
   if (A->cmap->rstart != B->rmap->rstart || A->cmap->rend != B->rmap->rend){
-    SETERRQ4(PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%D, %D) != (%D,%D)",A->cmap->rstart,A->cmap->rend,B->rmap->rstart,B->rmap->rend);
+    SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%D, %D) != (%D,%D)",A->cmap->rstart,A->cmap->rend,B->rmap->rstart,B->rmap->rend);
   }
   ierr = PetscNew(Mat_MatMatMultMPI,&mult);CHKERRQ(ierr);
 
@@ -157,7 +157,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C)
   if (container) {
     ierr  = PetscContainerGetPointer(container,(void **)&mult);CHKERRQ(ierr); 
   } else {
-    SETERRQ(PETSC_ERR_PLIB,"Container does not exit");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
   }
 
   seq = &mult->B_seq;
@@ -275,7 +275,7 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,Mat C,Mat *outworkB)
   ierr = PetscContainerGetPointer(cont,(void**)&contents);CHKERRQ(ierr);
 
   workB = *outworkB = contents->workB;
-  if (nrows != workB->rmap->n) SETERRQ2(PETSC_ERR_PLIB,"Number of rows of workB %D not equal to columns of aij->B %D",nrows,workB->cmap->n);
+  if (nrows != workB->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of rows of workB %D not equal to columns of aij->B %D",nrows,workB->cmap->n);
   sindices  = to->indices;
   sstarts   = to->starts;
   sprocs    = to->procs;

@@ -297,7 +297,7 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
 
    if (droptol<1e-10) {droptol=1e-10;}
 
-   if ( (nrows != pattern.nrows) || (ncols != pattern.ncols) || (ncols != nrows) ) SETERRQ( PETSC_ERR_ARG_INCOMP,"Dimension error in spbas_incomplete_cholesky\n");
+   if ( (nrows != pattern.nrows) || (ncols != pattern.ncols) || (ncols != nrows) ) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP,"Dimension error in spbas_incomplete_cholesky\n");
 
    retval.nrows = nrows;
    retval.ncols = nrows;
@@ -314,14 +314,14 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
    ierr = PetscMalloc(nrows*sizeof(PetscScalar), &val);CHKERRQ(ierr);
    ierr = PetscMalloc(nrows*sizeof(PetscScalar), &lvec);CHKERRQ(ierr);
    ierr = PetscMalloc(nrows*sizeof(int), &max_row_nnz);CHKERRQ(ierr);
-   if (!(diag && val && lvec && max_row_nnz))  SETERRQ( PETSC_ERR_MEM, "Allocation error in spbas_incomplete_cholesky\n"); 
+   if (!(diag && val && lvec && max_row_nnz))  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_MEM, "Allocation error in spbas_incomplete_cholesky\n"); 
 
    ierr = PetscMemzero((void*) val, nrows*sizeof(PetscScalar));CHKERRQ(ierr);
    ierr = PetscMemzero((void*) lvec, nrows*sizeof(PetscScalar));CHKERRQ(ierr);
    ierr = PetscMemzero((void*) max_row_nnz, nrows*sizeof(int));CHKERRQ(ierr);
 
    /* Check correct format of sparseness pattern */
-   if (pattern.col_idx_type != SPBAS_DIAGONAL_OFFSETS)  SETERRQ( PETSC_ERR_SUP_SYS, "Error in spbas_incomplete_cholesky: must have diagonal offsets in pattern\n");
+   if (pattern.col_idx_type != SPBAS_DIAGONAL_OFFSETS)  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "Error in spbas_incomplete_cholesky: must have diagonal offsets in pattern\n");
 
    /* Count the nonzeros on transpose of pattern */
    for (i = 0; i<nrows; i++)  {

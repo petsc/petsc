@@ -275,7 +275,7 @@ PetscErrorCode MatHYPRE_IJMatrixLink(Mat A,HYPRE_IJMatrix *ij)
   PetscValidType(A,1);
   PetscValidPointer(ij,2);
   ierr = PetscTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_ERR_SUP,"Can only use with PETSc MPIAIJ matrices");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can only use with PETSc MPIAIJ matrices");
   ierr = MatPreallocated(A);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(MAT_Convert,A,0,0,0);CHKERRQ(ierr);
@@ -345,7 +345,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPREStruct_3d(Mat mat,Petsc
         entries[j] = 0;
       } else if (stencil == ex->gnxgny) {
         entries[j] = 6;
-      } else SETERRQ3(PETSC_ERR_ARG_WRONG,"Local row %D local column %D have bad stencil %D",irow[i],icol[j],stencil);
+      } else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Local row %D local column %D have bad stencil %D",irow[i],icol[j],stencil);
     }
     row = ex->gindices[irow[i]] - ex->rstart;
     index[0] = ex->xs + (row % ex->nx);
@@ -429,8 +429,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA_HYPREStruct(Mat mat,DA da)
   ex->hbox.imax[2] = iupper[2];
 
   /* create the hypre grid object and set its information */
-  if (dof > 1) SETERRQ(PETSC_ERR_SUP,"Currently only support for scalar problems");
-  if (p) SETERRQ(PETSC_ERR_SUP,"Ask us to add periodic support by calling HYPRE_StructGridSetPeriodic()");
+  if (dof > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently only support for scalar problems");
+  if (p) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Ask us to add periodic support by calling HYPRE_StructGridSetPeriodic()");
   ierr = HYPRE_StructGridCreate(ex->hcomm,dim,&ex->hgrid);CHKERRQ(ierr);
 
   ierr = HYPRE_StructGridSetExtents(ex->hgrid,ilower,iupper);CHKERRQ(ierr);
@@ -441,8 +441,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA_HYPREStruct(Mat mat,DA da)
   ierr = HYPRE_StructGridSetNumGhost(ex->hgrid,sw);CHKERRQ(ierr);
 
   /* create the hypre stencil object and set its information */
-  if (sw[0] > 1) SETERRQ(PETSC_ERR_SUP,"Ask us to add support for wider stencils"); 
-  if (st == DA_STENCIL_BOX) SETERRQ(PETSC_ERR_SUP,"Ask us to add support for box stencils"); 
+  if (sw[0] > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Ask us to add support for wider stencils"); 
+  if (st == DA_STENCIL_BOX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Ask us to add support for box stencils"); 
   if (dim == 1) {
     int offsets[3][1] = {{-1},{0},{1}};
     ssize = 3;
@@ -496,7 +496,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA_HYPREStruct(Mat mat,DA da)
     mat->ops->zerorowslocal  = MatZeroRowsLocal_HYPREStruct_3d;
     mat->ops->zeroentries    = MatZeroEntries_HYPREStruct_3d;
     ierr = MatZeroEntries_HYPREStruct_3d(mat);CHKERRQ(ierr);
-  } else SETERRQ(PETSC_ERR_SUP,"Only support for 3d DA currently");
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only support for 3d DA currently");
 
   /* get values that will be used repeatedly in MatSetValuesLocal() and MatZeroRowsLocal() repeatedly */
   ierr = MatGetOwnershipRange(mat,&ex->rstart,PETSC_NULL);CHKERRQ(ierr);
@@ -679,7 +679,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPRESStruct_3d(Mat mat,Pets
           entries[j] += 0;
         } else if (stencil == ex->gnxgny) {
           entries[j] += 6;
-        } else SETERRQ3(PETSC_ERR_ARG_WRONG,"Local row %D local column %D have bad stencil %D",irow[i],icol[j],stencil);
+        } else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Local row %D local column %D have bad stencil %D",irow[i],icol[j],stencil);
       }
 
       row = ex->gindices[grid_rank] - ex->rstart;
@@ -724,7 +724,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal_HYPRESStruct_3d(Mat mat,Pets
           entries[j] += 0;
         } else if (stencil == ex->gnxgny) {
           entries[j] += 6;
-        } else SETERRQ3(PETSC_ERR_ARG_WRONG,"Local row %D local column %D have bad stencil %D",irow[i],icol[j],stencil);
+        } else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Local row %D local column %D have bad stencil %D",irow[i],icol[j],stencil);
       }
 
       row = ex->gindices[grid_rank] - ex->rstart;
@@ -893,7 +893,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA_HYPRESStruct(Mat mat,DA da)
   ex->nvars= dof;
 
   /* create the hypre grid object and set its information */
-  if (p) SETERRQ(PETSC_ERR_SUP,"Ask us to add periodic support by calling HYPRE_SStructGridSetPeriodic()");
+  if (p) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Ask us to add periodic support by calling HYPRE_SStructGridSetPeriodic()");
   ierr = HYPRE_SStructGridCreate(ex->hcomm,dim,nparts,&ex->ss_grid);CHKERRQ(ierr);
 
   ierr = HYPRE_SStructGridSetExtents(ex->ss_grid,part,ex->hbox.imin,ex->hbox.imax);CHKERRQ(ierr);
@@ -915,8 +915,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA_HYPRESStruct(Mat mat,DA da)
 //  ierr = HYPRE_SStructGridSetNumGhost(ex->ss_grid,sw);CHKERRQ(ierr);
 
   /* create the hypre stencil object and set its information */
-  if (sw[0] > 1) SETERRQ(PETSC_ERR_SUP,"Ask us to add support for wider stencils");
-  if (st == DA_STENCIL_BOX) SETERRQ(PETSC_ERR_SUP,"Ask us to add support for box stencils");
+  if (sw[0] > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Ask us to add support for wider stencils");
+  if (st == DA_STENCIL_BOX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Ask us to add support for box stencils");
 
   if (dim == 1) {
     int offsets[3][1] = {{-1},{0},{1}};
@@ -1001,7 +1001,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA_HYPRESStruct(Mat mat,DA da)
     mat->ops->zerorowslocal  = MatZeroRowsLocal_HYPRESStruct_3d;
     mat->ops->zeroentries    = MatZeroEntries_HYPRESStruct_3d;
     ierr = MatZeroEntries_HYPRESStruct_3d(mat);CHKERRQ(ierr);
-  } else SETERRQ(PETSC_ERR_SUP,"Only support for 3d DA currently");
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only support for 3d DA currently");
   
   /* get values that will be used repeatedly in MatSetValuesLocal() and MatZeroRowsLocal() repeatedly */
   ierr = MatGetOwnershipRange(mat,&ex->rstart,PETSC_NULL);CHKERRQ(ierr);

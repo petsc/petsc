@@ -47,7 +47,7 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(PETSC_ERR_SUP,"no symmetric preconditioning for KSPGMRES");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"no symmetric preconditioning for KSPGMRES");
   } 
 
   max_k         = gmres->max_k;  /* restart size */
@@ -189,7 +189,7 @@ PetscErrorCode GMREScycle(PetscInt *itcount,KSP ksp)
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
       if (!ksp->reason) {
-        SETERRQ1(0,"You reached the happy break down, but convergence was not indicated. Residual norm = %G",res);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"You reached the happy break down, but convergence was not indicated. Residual norm = %G",res);
       }
       break;
     }
@@ -226,9 +226,9 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp)
 
   PetscFunctionBegin;
   if (ksp->calc_sings && !gmres->Rsvd) {
-    SETERRQ(PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
   }
-  if (ksp->normtype != KSP_NORM_PRECONDITIONED && ksp->pc_side != PC_RIGHT) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Use right preconditioning -ksp_pc_side right if want unpreconditioned norm)");
+  if (ksp->normtype != KSP_NORM_PRECONDITIONED && ksp->pc_side != PC_RIGHT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Use right preconditioning -ksp_pc_side right if want unpreconditioned norm)");
 
   ierr     = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its = 0;
@@ -331,7 +331,7 @@ static PetscErrorCode BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,P
     ierr = VecCopy(vs,vdest);CHKERRQ(ierr); /* VecCopy() is smart, exists immediately if vguess == vdest */
     PetscFunctionReturn(0);
   }
-  if (*HH(it,it) == 0.0) SETERRQ2(PETSC_ERR_CONV_FAILED,"Likley your matrix is the zero operator. HH(it,it) is identically zero; it = %D GRS(it) = %G",it,PetscAbsScalar(*GRS(it)));
+  if (*HH(it,it) == 0.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"Likley your matrix is the zero operator. HH(it,it) is identically zero; it = %D GRS(it) = %G",it,PetscAbsScalar(*GRS(it)));
   if (*HH(it,it) != 0.0) {
     nrs[it] = *GRS(it) / *HH(it,it);
   } else {
@@ -341,7 +341,7 @@ static PetscErrorCode BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,P
     k   = it - ii;
     tt  = *GRS(k);
     for (j=k+1; j<=it; j++) tt  = tt - *HH(k,j) * nrs[j];
-    if (*HH(k,k) == 0.0) SETERRQ2(PETSC_ERR_CONV_FAILED,"Likley your matrix is singular. HH(k,k) is identically zero; it = %D k = %D",it,k);
+    if (*HH(k,k) == 0.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"Likley your matrix is singular. HH(k,k) is identically zero; it = %D k = %D",it,k);
     nrs[k]   = tt / *HH(k,k);
   }
 
@@ -506,7 +506,7 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
         cstr = "Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement when needed";
         break;
       default:
-	SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown orthogonalization");
+	SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown orthogonalization");
     }
   } else if (gmres->orthog == KSPGMRESModifiedGramSchmidtOrthogonalization) {
     cstr = "Modified Gram-Schmidt Orthogonalization";
@@ -519,7 +519,7 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer,"%s restart %D",cstr,gmres->max_k);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for KSP GMRES",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for KSP GMRES",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -610,7 +610,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetHapTol_GMRES(KSP ksp,PetscReal tol)
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
-  if (tol < 0.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Tolerance must be non-negative");
+  if (tol < 0.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Tolerance must be non-negative");
   gmres->haptol = tol;
   PetscFunctionReturn(0);
 }
@@ -625,7 +625,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart_GMRES(KSP ksp,PetscInt max_
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (max_k < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Restart must be positive");
+  if (max_k < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Restart must be positive");
   if (!ksp->setupcalled) {
     gmres->max_k = max_k;
   } else if (gmres->max_k != max_k) {

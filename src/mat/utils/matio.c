@@ -99,7 +99,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer viewer, const MatType outt
   ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,(const char **)&prefix);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
   }
 
   ierr = PetscOptionsGetString(prefix,"-mat_type",mtype,256,&flg);CHKERRQ(ierr);
@@ -118,7 +118,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer viewer, const MatType outt
   ierr = MatSetType(factory,outtype);CHKERRQ(ierr);
   r = factory->ops->load;
   ierr = MatDestroy(factory);
-  if (!r) SETERRQ1(PETSC_ERR_SUP,"MatLoad is not supported for type: %s",outtype);
+  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatLoad is not supported for type: %s",outtype);
 
   ierr = PetscLogEventBegin(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
   ierr = (*r)(viewer,outtype,newmat);CHKERRQ(ierr);

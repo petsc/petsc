@@ -32,7 +32,7 @@ PetscErrorCode DAView_Matlab(DA da,PetscViewer viewer)
   if (!rank) {
     ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&dof,&swidth,&periodic,&stencil);CHKERRQ(ierr);
     mx = mxCreateStructMatrix(1,1,8,(const char **)fnames);
-    if (!mx) SETERRQ(PETSC_ERR_LIB,"Unable to generate Matlab struct array to hold DA informations");
+    if (!mx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to generate Matlab struct array to hold DA informations");
     mxSetFieldByNumber(mx,0,0,mxCreateDoubleScalar((double)dim));
     mxSetFieldByNumber(mx,0,1,mxCreateDoubleScalar((double)m));
     mxSetFieldByNumber(mx,0,2,mxCreateDoubleScalar((double)n));
@@ -105,7 +105,7 @@ PetscErrorCode DAView_Binary(DA da,PetscViewer viewer)
     } else if (dim == 3) {
       ierr = DACreate3d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,m,n,p,M,N,P,dim,0,lx,ly,lz,&dac);CHKERRQ(ierr); 
     } else {
-      SETERRQ1(PETSC_ERR_ARG_CORRUPT,"Dimension is not 1 2 or 3: %D\n",dim);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Dimension is not 1 2 or 3: %D\n",dim);
     }
     ierr = DACreateNaturalVector(dac,&natural);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,"coor_");CHKERRQ(ierr);
@@ -128,8 +128,8 @@ PetscErrorCode DAView_VTK(DA da, PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = DAGetInfo(da, &dim, &M, &N, &P, PETSC_NULL, PETSC_NULL, PETSC_NULL, &dof, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-  /* if (dim != 3) {SETERRQ(PETSC_ERR_SUP, "VTK output only works for three dimensional DAs.");} */
-  if (!da->coordinates) {SETERRQ(PETSC_ERR_SUP, "VTK output requires DA coordinates.");}
+  /* if (dim != 3) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "VTK output only works for three dimensional DAs.");} */
+  if (!da->coordinates) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "VTK output requires DA coordinates.");}
   /* Write Header */
   ierr = PetscViewerASCIIPrintf(viewer,"# vtk DataFile Version 2.0\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Structured Mesh Example\n");CHKERRQ(ierr);

@@ -81,7 +81,7 @@ PetscErrorCode MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,i
     Mat_MPISBAIJ  *mat =  (Mat_MPISBAIJ*)A->data;
     Mat_SeqSBAIJ  *aa=(Mat_SeqSBAIJ*)(mat->A)->data;
     Mat_SeqBAIJ    *bb=(Mat_SeqBAIJ*)(mat->B)->data;
-    if (A->rmap->bs > 1) SETERRQ1(PETSC_ERR_SUP," bs=%d is not supported yet\n", A->rmap->bs);
+    if (A->rmap->bs > 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP," bs=%d is not supported yet\n", A->rmap->bs);
     nz = aa->nz + bb->nz;
     ai=aa->i; aj=aa->j; bi=bb->i; bj=bb->j; rstart= A->rmap->rstart;
     garray = mat->garray;
@@ -248,7 +248,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
   dmumps_c(&lu->id); 
 #endif
   if (lu->id.INFOG(1) < 0) {   
-    SETERRQ1(PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d\n",lu->id.INFOG(1));
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d\n",lu->id.INFOG(1));
   }
 
   if (lu->size > 1) { /* convert mumps distributed solution to petsc mpi x */
@@ -291,7 +291,7 @@ PetscErrorCode MatGetInertia_SBAIJMUMPS(Mat F,int *nneg,int *nzero,int *npos)
   ierr = MPI_Comm_size(((PetscObject)F)->comm,&size);CHKERRQ(ierr);
   /* MUMPS 4.3.1 calls ScaLAPACK when ICNTL(13)=0 (default), which does not offer the possibility to compute the inertia of a dense matrix. Set ICNTL(13)=1 to skip ScaLAPACK */
   if (size > 1 && lu->id.ICNTL(13) != 1){
-    SETERRQ1(PETSC_ERR_ARG_WRONG,"ICNTL(13)=%d. -mat_mumps_icntl_13 must be set as 1 for correct global matrix inertia\n",lu->id.INFOG(13));
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"ICNTL(13)=%d. -mat_mumps_icntl_13 must be set as 1 for correct global matrix inertia\n",lu->id.INFOG(13));
   }
   if (nneg){  
     if (!lu->myid){
@@ -338,7 +338,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
         nz                  =  aa->nz;
         ai = aa->i; aj = aa->j; av  = aa->a;
       } else {
-        SETERRQ(PETSC_ERR_SUP,"No mumps factorization for this matrix type");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No mumps factorization for this matrix type");
       }
       if ((F)->factortype == MAT_FACTOR_CHOLESKY && isSeqAIJ) {
 	nz = 0;
@@ -367,7 +367,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
       ierr = MatConvertToTriples(A,1,valOnly, &nnz, &lu->irn, &lu->jcn, &lu->val);CHKERRQ(ierr);
     }
     break;
-  default: SETERRQ(PETSC_ERR_SUP,"Matrix input format is not supported by MUMPS.");
+  default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix input format is not supported by MUMPS.");
   }
 
   /* analysis phase */
@@ -422,7 +422,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
     dmumps_c(&lu->id); 
 #endif
     if (lu->id.INFOG(1) < 0) { 
-      SETERRQ1(PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",lu->id.INFOG(1)); 
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",lu->id.INFOG(1)); 
     }
   }
 
@@ -451,14 +451,14 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
 #endif
   if (lu->id.INFOG(1) < 0) {
     if (lu->id.INFO(1) == -13) {
-      SETERRQ1(PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: Cannot allocate required memory %d megabytes\n",lu->id.INFO(2)); 
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: Cannot allocate required memory %d megabytes\n",lu->id.INFO(2)); 
     } else {
-      SETERRQ2(PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: INFO(1)=%d, INFO(2)=%d\n",lu->id.INFO(1),lu->id.INFO(2)); 
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: INFO(1)=%d, INFO(2)=%d\n",lu->id.INFO(1),lu->id.INFO(2)); 
     }
   }
 
   if (!lu->myid && lu->id.ICNTL(16) > 0){
-    SETERRQ1(PETSC_ERR_LIB,"  lu->id.ICNTL(16):=%d\n",lu->id.INFOG(16)); 
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"  lu->id.ICNTL(16):=%d\n",lu->id.INFOG(16)); 
   }
 
   if (lu->size > 1){
@@ -514,7 +514,7 @@ PetscErrorCode PetscSetMUMPSOptions(Mat F, Mat A)
   ierr = PetscOptionsInt("-mat_mumps_icntl_7","ICNTL(7): matrix ordering (0 to 7)","None",lu->id.ICNTL(7),&icntl,&flg);CHKERRQ(ierr);
   if (flg) {
     if (icntl== 1){
-      SETERRQ(PETSC_ERR_SUP,"pivot order be set by the user in PERM_IN -- not supported by the PETSc/MUMPS interface\n");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"pivot order be set by the user in PERM_IN -- not supported by the PETSc/MUMPS interface\n");
     } else {
       lu->id.ICNTL(7) = icntl;
     }
@@ -618,7 +618,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
     valOnly = PETSC_FALSE; 
     ierr = MatConvertToTriples(A,1,valOnly, &nnz, &lu->irn, &lu->jcn, &lu->val);CHKERRQ(ierr);
     break;
-  default: SETERRQ(PETSC_ERR_SUP,"Matrix input format is not supported by MUMPS.");
+  default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix input format is not supported by MUMPS.");
   }
 
   F->ops->lufactornumeric  = MatFactorNumeric_MUMPS;
@@ -733,7 +733,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SBAIJMUMPS(Mat F,Mat A,IS r,const MatFa
       ierr = MatConvertToTriples(A,1,valOnly, &nnz, &lu->irn, &lu->jcn, &lu->val);CHKERRQ(ierr);
     }
     break;
-  default: SETERRQ(PETSC_ERR_SUP,"Matrix input format is not supported by MUMPS.");
+  default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix input format is not supported by MUMPS.");
   }
    
   F->ops->choleskyfactornumeric =  MatFactorNumeric_MUMPS;
@@ -993,7 +993,7 @@ PetscErrorCode MatGetFactor_seqsbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
 
   PetscFunctionBegin;
   if (ftype != MAT_FACTOR_CHOLESKY) {
-    SETERRQ(PETSC_ERR_SUP,"Cannot use PETSc SBAIJ matrices with MUMPS LU, use AIJ matrix");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot use PETSc SBAIJ matrices with MUMPS LU, use AIJ matrix");
   }
   /* Create the factorization matrix */ 
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
@@ -1034,7 +1034,7 @@ PetscErrorCode MatGetFactor_mpisbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
 
   PetscFunctionBegin;
   if (ftype != MAT_FACTOR_CHOLESKY) {
-    SETERRQ(PETSC_ERR_SUP,"Cannot use PETSc SBAIJ matrices with MUMPS LU, use AIJ matrix");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot use PETSc SBAIJ matrices with MUMPS LU, use AIJ matrix");
   }
   /* Create the factorization matrix */ 
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
@@ -1130,7 +1130,7 @@ PetscErrorCode MatGetFactor_mpibaij_mumps(Mat A,MatFactorType ftype,Mat *F)
     B->factortype = MAT_FACTOR_LU;
   }
   else {
-    SETERRQ(PETSC_ERR_SUP,"Cholesky factorization for Petsc BAIJ matrices not supported yet\n");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cholesky factorization for Petsc BAIJ matrices not supported yet\n");
   }
   B->ops->view             = MatView_MUMPS;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mumps",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);

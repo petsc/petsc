@@ -165,7 +165,7 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping mappin
 
   PetscFunctionBegin;
   if (is->mapping) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for matrix");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for matrix");
   }
   PetscCheckSameComm(A,1,mapping,2);
   ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
@@ -219,7 +219,7 @@ PetscErrorCode MatSetValues_IS(Mat mat, PetscInt m,const PetscInt *rows, PetscIn
   PetscFunctionBegin;
 #if defined(PETSC_USE_DEBUG) 
   if (m > 2048 || n > 2048) {
-    SETERRQ2(PETSC_ERR_SUP,"Number of row/column indices must be <= 2048: they are %D %D",m,n);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Number of row/column indices must be <= 2048: they are %D %D",m,n);
   }
 #endif
   ierr = ISG2LMapApply(is->mapping,m,rows,rows_l);CHKERRQ(ierr);

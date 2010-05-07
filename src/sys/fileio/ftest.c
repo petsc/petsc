@@ -35,11 +35,11 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
   if (mode == 'r') m = R_OK;
   else if (mode == 'w') m = W_OK;
   else if (mode == 'x') m = X_OK;
-  else SETERRQ(PETSC_ERR_ARG_WRONG, "Mode must be one of r, w, or x");
+  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Mode must be one of r, w, or x");
 #if defined(PETSC_HAVE_ACCESS)
   if(!access(fname, m))  *flg = PETSC_TRUE;
 #else
-  if (m == X_OK) SETERRQ1(PETSC_ERR_SUP, "Unable to check execute permission for file %s", fname);
+  if (m == X_OK) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Unable to check execute permission for file %s", fname);
   if(!_access(fname, m)) *flg = PETSC_TRUE;
 #endif
   PetscFunctionReturn(0);
@@ -62,7 +62,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
   PetscFunctionBegin;
   /* Get the number of supplementary group IDs */
 #if !defined(PETSC_MISSING_GETGROUPS)
-  numGroups = getgroups(0, gid); if (numGroups < 0) {SETERRQ(numGroups, "Unable to count supplementary group IDs");}
+  numGroups = getgroups(0, gid); if (numGroups < 0) {SETERRQ(PETSC_COMM_SELF,numGroups, "Unable to count supplementary group IDs");}
   ierr = PetscMalloc((numGroups+1) * sizeof(gid_t), &gid);CHKERRQ(ierr);
 #else
   numGroups = 0;
@@ -74,7 +74,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
 
   /* Get supplementary group IDs */
 #if !defined(PETSC_MISSING_GETGROUPS)
-  ierr = getgroups(numGroups, gid+1); if (ierr < 0) {SETERRQ(ierr, "Unable to obtain supplementary group IDs");}
+  ierr = getgroups(numGroups, gid+1); if (ierr < 0) {SETERRQ(PETSC_COMM_SELF,ierr, "Unable to obtain supplementary group IDs");}
 #endif
 
   /* Test for accessibility */
@@ -195,7 +195,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLs(MPI_Comm comm,const char libname[],char f
 #if defined(PETSC_HAVE_POPEN)
   ierr   = PetscPOpen(comm,PETSC_NULL,program,"r",&fp);CHKERRQ(ierr);
 #else
-  SETERRQ(PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif
   f      = fgets(found,tlen,fp);
   if (f) *flg = PETSC_TRUE; else *flg = PETSC_FALSE;
@@ -207,7 +207,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLs(MPI_Comm comm,const char libname[],char f
 #if defined(PETSC_HAVE_POPEN)
   ierr   = PetscPClose(comm,fp);CHKERRQ(ierr);
 #else
-  SETERRQ(PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif
   PetscFunctionReturn(0);
 }

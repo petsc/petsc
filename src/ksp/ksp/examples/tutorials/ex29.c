@@ -234,7 +234,7 @@ PetscErrorCode VecView_VTK(Vec x, const char filename[], const char bcName[])
   ierr = VecGetSize(x, &N);CHKERRQ(ierr);
   ierr = VecGetLocalSize(x, &n);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) x, "DA", (PetscObject *) &da);CHKERRQ(ierr);
-  if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
+  if (!da) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
 
   ierr = DAGetInfo(da, 0, &mx, &my, 0,0,0,0, &dof,0,0,0);CHKERRQ(ierr);
 

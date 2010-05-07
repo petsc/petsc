@@ -33,7 +33,7 @@ int main(int argc,char **args)
 
   */
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(1,"Must indicate binary file with the -f option");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"Must indicate binary file with the -f option");
 
 
   /* 
@@ -52,8 +52,8 @@ int main(int argc,char **args)
 
   ierr = MatGetLocalSize(U,&N,&n);CHKERRQ(ierr);
   ierr = MatGetLocalSize(V,&M,&m);CHKERRQ(ierr);
-  if (N != M) SETERRQ2(1,"U and V matrices must have same number of local rows %D %D",N,M);
-  if (n != m) SETERRQ2(1,"U and V matrices must have same number of local columns %D %D",n,m);
+  if (N != M) SETERRQ2(PETSC_COMM_SELF,1,"U and V matrices must have same number of local rows %D %D",N,M);
+  if (n != m) SETERRQ2(PETSC_COMM_SELF,1,"U and V matrices must have same number of local columns %D %D",n,m);
 
   ierr = VecCreateMPI(PETSC_COMM_WORLD,N,PETSC_DETERMINE,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);

@@ -56,7 +56,7 @@ int main(int argc,char **args)
     else if (prob ==2){ /* matrix for the five point stencil */
       n1 =  (int) sqrt((double)n); 
       if (n1*n1 != n){
-        SETERRQ(PETSC_ERR_ARG_SIZ,"n must be a perfect square of n1");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"n must be a perfect square of n1");
       }
         
       for (i=0; i<n1; i++) {
@@ -228,7 +228,7 @@ int main(int argc,char **args)
   ierr = MatDiagonalScale(A,x,x);CHKERRQ(ierr);
   ierr = MatDiagonalScale(sA,x,x);CHKERRQ(ierr);
   ierr = MatMultEqual(A,sA,10,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDiagonalScale");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDiagonalScale");
   
   /* Test MatGetDiagonal(), MatScale() */
   ierr = MatGetDiagonal(A,s1);CHKERRQ(ierr);  

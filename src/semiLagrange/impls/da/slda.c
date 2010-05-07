@@ -17,7 +17,7 @@ PetscErrorCode CharacteristicView_DA(Characteristic c, PetscViewer viewer)
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer,"dummy %D", da->dummy);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP, "Viewer type %s not supported for Characteristic DA", ((PetscObject) viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Viewer type %s not supported for Characteristic DA", ((PetscObject) viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -51,7 +51,7 @@ PetscErrorCode CharacteristicSetUp_DA(Characteristic c)
     c->numIds = 3;
   }
   if (c->numFieldComp > MAX_COMPONENTS) {
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "The maximum number of fields allowed is %d, you have %d. You can recompile after increasing MAX_COMPONENTS.", MAX_COMPONENTS, c->numFieldComp);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "The maximum number of fields allowed is %d, you have %d. You can recompile after increasing MAX_COMPONENTS.", MAX_COMPONENTS, c->numFieldComp);
   }
   numValues = 4 + MAX_COMPONENTS;
 
@@ -68,7 +68,7 @@ PetscErrorCode CharacteristicSetUp_DA(Characteristic c)
 
   /* Allocate communication structures */
   if (c->numNeighbors <= 0) {
-    SETERRQ1(PETSC_ERR_ARG_WRONGSTATE, "Invalid number of neighbors %d. Call CharactersiticSetNeighbors() before setup.", c->numNeighbors);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Invalid number of neighbors %d. Call CharactersiticSetNeighbors() before setup.", c->numNeighbors);
   }
   ierr = PetscMalloc(c->numNeighbors * sizeof(PetscInt), &c->needCount);CHKERRQ(ierr);
   ierr = PetscMalloc(c->numNeighbors * sizeof(PetscInt), &c->localOffsets);CHKERRQ(ierr);

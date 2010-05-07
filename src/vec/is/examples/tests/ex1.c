@@ -26,7 +26,7 @@ int main(int argc,char **argv)
   */
   ierr = ISCreateGeneral(PETSC_COMM_SELF,0,&n,&is);CHKERRQ(ierr);
   ierr = ISGetSize(is,&n);CHKERRQ(ierr);
-  if (n != 0) SETERRQ(1,"ISGetSize");
+  if (n != 0) SETERRQ(PETSC_COMM_SELF,1,"ISGetSize");
   ierr = ISDestroy(is);CHKERRQ(ierr);
 
   /*
@@ -40,7 +40,7 @@ int main(int argc,char **argv)
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,indices,&is);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&ii);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    if (ii[i] != indices[i]) SETERRQ(1,"ISGetIndices");
+    if (ii[i] != indices[i]) SETERRQ(PETSC_COMM_SELF,1,"ISGetIndices");
   }
   ierr = ISRestoreIndices(is,&ii);CHKERRQ(ierr);
 
@@ -48,36 +48,36 @@ int main(int argc,char **argv)
      Check identity and permutation 
   */
   ierr = ISPermutation(is,&flg);CHKERRQ(ierr);
-  if (flg) SETERRQ(1,"ISPermutation");
+  if (flg) SETERRQ(PETSC_COMM_SELF,1,"ISPermutation");
   ierr = ISIdentity(is,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(1,"ISIdentity");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"ISIdentity");
   ierr = ISSetPermutation(is);CHKERRQ(ierr);
   ierr = ISSetIdentity(is);CHKERRQ(ierr);
   ierr = ISPermutation(is,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(1,"ISPermutation");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"ISPermutation");
   ierr = ISIdentity(is,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(1,"ISIdentity");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"ISIdentity");
 
   /*
      Check equality of index sets 
   */
   ierr = ISEqual(is,is,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(1,"ISEqual");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"ISEqual");
 
   /*
      Sorting 
   */
   ierr = ISSort(is);CHKERRQ(ierr);
   ierr = ISSorted(is,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(1,"ISSort");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"ISSort");
 
   /*
      Thinks it is a different type?
   */
   ierr = ISStride(is,&flg);CHKERRQ(ierr);
-  if (flg) SETERRQ(1,"ISStride");
+  if (flg) SETERRQ(PETSC_COMM_SELF,1,"ISStride");
   ierr = ISBlock(is,&flg);CHKERRQ(ierr);
-  if (flg) SETERRQ(1,"ISBlock");
+  if (flg) SETERRQ(PETSC_COMM_SELF,1,"ISBlock");
 
   ierr = ISDestroy(is);CHKERRQ(ierr);
 
@@ -93,7 +93,7 @@ int main(int argc,char **argv)
   ierr = ISInvertPermutation(is,PETSC_DECIDE,&newis);CHKERRQ(ierr);
   ierr = ISGetIndices(newis,&ii);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    if (ii[i] != n - i - 1) SETERRQ(1,"ISInvertPermutation");
+    if (ii[i] != n - i - 1) SETERRQ(PETSC_COMM_SELF,1,"ISInvertPermutation");
   }
   ierr = ISRestoreIndices(newis,&ii);CHKERRQ(ierr);
   ierr = ISDestroy(newis);CHKERRQ(ierr);

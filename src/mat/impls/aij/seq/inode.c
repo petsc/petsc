@@ -70,7 +70,7 @@ static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode_Symmetric(Mat A,PetscInt *iia[],P
   nslim_row = a->inode.node_count;
   m         = A->rmap->n;
   n         = A->cmap->n;
-  if (m != n) SETERRQ(PETSC_ERR_SUP,"MatGetRowIJ_SeqAIJ_Inode_Symmetric: Matrix should be square");
+  if (m != n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatGetRowIJ_SeqAIJ_Inode_Symmetric: Matrix should be square");
   
   /* Use the row_inode as column_inode */
   nslim_col = nslim_row;
@@ -409,7 +409,7 @@ static PetscErrorCode MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
 #endif
 
   PetscFunctionBegin;  
-  if (!a->inode.size) SETERRQ(PETSC_ERR_COR,"Missing Inode Structure");
+  if (!a->inode.size) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
   node_max = a->inode.node_count;                
   ns       = a->inode.size;     /* Node Size array */
   ierr = VecGetArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
@@ -573,7 +573,7 @@ static PetscErrorCode MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
       idx    +=4*sz;
       break;
     default :
-      SETERRQ(PETSC_ERR_COR,"Node size not yet supported");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Node size not yet supported");
     }
   }
   ierr = VecRestoreArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
@@ -595,7 +595,7 @@ static PetscErrorCode MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
   PetscInt       *idx,i1,i2,n,i,row,node_max,*ns,*ii,nsz,sz;
   
   PetscFunctionBegin;  
-  if (!a->inode.size) SETERRQ(PETSC_ERR_COR,"Missing Inode Structure");
+  if (!a->inode.size) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
   node_max = a->inode.node_count;                
   ns       = a->inode.size;     /* Node Size array */
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -763,7 +763,7 @@ static PetscErrorCode MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
       idx    +=4*sz;
       break;
     default :
-      SETERRQ(PETSC_ERR_COR,"Node size not yet supported");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Node size not yet supported");
     }
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
@@ -792,7 +792,7 @@ PetscErrorCode MatSolve_SeqAIJ_Inode_inplace(Mat A,Vec bb,Vec xx)
   const PetscScalar *b;
 
   PetscFunctionBegin;  
-  if (!a->inode.size) SETERRQ(PETSC_ERR_COR,"Missing Inode Structure");
+  if (!a->inode.size) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
   node_max = a->inode.node_count;   
   ns       = a->inode.size;     /* Node Size array */
 
@@ -984,7 +984,7 @@ PetscErrorCode MatSolve_SeqAIJ_Inode_inplace(Mat A,Vec bb,Vec xx)
       tmp[row ++]=sum5;
       break;
     default:
-      SETERRQ(PETSC_ERR_COR,"Node size not yet supported \n");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Node size not yet supported \n");
     }
   }
   /* backward solve the upper triangular */
@@ -1167,7 +1167,7 @@ PetscErrorCode MatSolve_SeqAIJ_Inode_inplace(Mat A,Vec bb,Vec xx)
       x[*c--] = tmp[row] = sum5*a_a[ad[row]]; row--;
       break;
     default:
-      SETERRQ(PETSC_ERR_COR,"Node size not yet supported \n");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Node size not yet supported \n");
     }
   }
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
@@ -1235,7 +1235,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
   node_max = a->inode.node_count; 
   ns       = a->inode.size;
   if (!ns){                   
-    SETERRQ(PETSC_ERR_PLIB,"Matrix without inode information");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Matrix without inode information");
   }
 
   /* If max inode size > 4, split it into two inodes.*/
@@ -1851,7 +1851,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
          break;
 
       default:
-        SETERRQ(PETSC_ERR_SUP,"Node size not yet supported \n");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Node size not yet supported \n");
       }
       i += nodesz;                 /* Update the row */
     } 
@@ -1965,7 +1965,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
   node_max = a->inode.node_count; 
   ns       = a->inode.size;
   if (!ns){                   
-    SETERRQ(PETSC_ERR_PLIB,"Matrix without inode information");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Matrix without inode information");
   }
 
   /* If max inode size > 3, split it into two inodes.*/
@@ -2299,7 +2299,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
         break;
 
       default:
-        SETERRQ(PETSC_ERR_SUP,"Node size not yet supported \n");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Node size not yet supported \n");
       }
       row += nodesz;                 /* Update the row */
     } 
@@ -2346,7 +2346,7 @@ PetscErrorCode MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
   const PetscScalar *b;
 
   PetscFunctionBegin;  
-  if (!a->inode.size) SETERRQ(PETSC_ERR_COR,"Missing Inode Structure");
+  if (!a->inode.size) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
   node_max = a->inode.node_count;   
   ns       = a->inode.size;     /* Node Size array */
 
@@ -2532,7 +2532,7 @@ PetscErrorCode MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
       tmp[row ++]=sum5;
       break;
     default:
-      SETERRQ(PETSC_ERR_COR,"Node size not yet supported \n");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Node size not yet supported \n");
     }
   }
   /* backward solve the upper triangular */
@@ -2703,7 +2703,7 @@ PetscErrorCode MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
       x[c[row]] = tmp[row] = sum5*v5[nz+4]; row--;
       break;
     default:
-      SETERRQ(PETSC_ERR_COR,"Node size not yet supported \n");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Node size not yet supported \n");
     }
   }
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
@@ -2775,8 +2775,8 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
   PetscInt           *idx,*diag = a->diag,*ii = a->i,sz,k,ipvt[5];
 
   PetscFunctionBegin;
-  if (omega != 1.0) SETERRQ(PETSC_ERR_SUP,"No support for omega != 1.0; use -mat_no_inode");
-  if (fshift != 0.0) SETERRQ(PETSC_ERR_SUP,"No support for fshift != 0.0; use -mat_no_inode");
+  if (omega != 1.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for omega != 1.0; use -mat_no_inode");
+  if (fshift != 0.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for fshift != 0.0; use -mat_no_inode");
   if (its > 1) {
     /* switch to non-inode version */
     ierr = MatSOR_SeqAIJ(A,bb,omega,flag,fshift,its,lits,xx);CHKERRQ(ierr);
@@ -2808,7 +2808,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
       switch(sizes[i]) {
         case 1:
           /* Create matrix data structure */
-          if (PetscAbsScalar(ibdiag[cnt]) < zeropivot) SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot on row %D",row);
+          if (PetscAbsScalar(ibdiag[cnt]) < zeropivot) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot on row %D",row);
           ibdiag[cnt] = 1.0/ibdiag[cnt];
           break;
         case 2:
@@ -2824,7 +2824,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
           ierr = Kernel_A_gets_inverse_A_5(ibdiag+cnt,ipvt,work,shift);CHKERRQ(ierr);
           break;
        default:
-	 SETERRQ1(PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
+	 SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
       }
       cnt += sizes[i]*sizes[i];
       row += sizes[i];
@@ -2994,7 +2994,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
             ibdiag  += 25;
             break;
 	  default:
-   	    SETERRQ1(PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
+   	    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
         }
       }
 
@@ -3055,7 +3055,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
             cnt += 25;
             break;
 	  default:
-   	    SETERRQ1(PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
+   	    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
         }
       }
       ierr = PetscLogFlops(m);CHKERRQ(ierr);
@@ -3214,7 +3214,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
             x[row--] = sum5*ibdiag[0] + sum4*ibdiag[5] + sum3*ibdiag[10] + sum2*ibdiag[15] + sum1*ibdiag[20];
             break;
 	  default:
-   	    SETERRQ1(PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
+   	    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
         }
       }
 
@@ -3389,7 +3389,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
           row -= 5;
 	  break;
         default:
-	  SETERRQ1(PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
+	  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
       }
       CHKMEMQ;
     }
@@ -3450,7 +3450,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
 	  cnt += 25;
 	  break;
         default:
-	  SETERRQ1(PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
+	  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
       }
       CHKMEMQ;
     }
@@ -3609,7 +3609,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
 	  ibdiag  += 25; row += 5;
 	  break;
         default:
-	  SETERRQ1(PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
+	  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
       }
       CHKMEMQ;
     }
@@ -3686,7 +3686,7 @@ PetscErrorCode MatMultDiagonalBlock_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
 	cnt += 25;
 	break;
       default:
-	SETERRQ1(PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
+	SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
     }
   }
   ierr = PetscLogFlops(2*cnt);CHKERRQ(ierr);
@@ -3964,7 +3964,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInodeGetInodeSizes(Mat A,PetscInt *node_cou
   PetscErrorCode ierr,(*f)(Mat,PetscInt*,PetscInt*[],PetscInt*);
 
   PetscFunctionBegin;
-  if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (!A->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatInodeGetInodeSizes_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(A,node_count,sizes,limit);CHKERRQ(ierr);

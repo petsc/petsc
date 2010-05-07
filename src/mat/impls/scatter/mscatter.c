@@ -63,7 +63,7 @@ PetscErrorCode MatMult_Scatter(Mat A,Vec x,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!scatter->scatter) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
+  if (!scatter->scatter) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
   ierr = VecZeroEntries(y);CHKERRQ(ierr);
   ierr = VecScatterBegin(scatter->scatter,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter->scatter,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -78,7 +78,7 @@ PetscErrorCode MatMultAdd_Scatter(Mat A,Vec x,Vec y,Vec z)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!scatter->scatter) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
+  if (!scatter->scatter) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
   if (z != y) {ierr = VecCopy(y,z);CHKERRQ(ierr);}
   ierr = VecScatterBegin(scatter->scatter,x,z,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter->scatter,x,z,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -93,7 +93,7 @@ PetscErrorCode MatMultTranspose_Scatter(Mat A,Vec x,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!scatter->scatter) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
+  if (!scatter->scatter) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
   ierr = VecZeroEntries(y);CHKERRQ(ierr);
   ierr = VecScatterBegin(scatter->scatter,x,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter->scatter,x,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -108,7 +108,7 @@ PetscErrorCode MatMultTransposeAdd_Scatter(Mat A,Vec x,Vec y,Vec z)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!scatter->scatter) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
+  if (!scatter->scatter) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
   if (z != y) {ierr = VecCopy(y,z);CHKERRQ(ierr);}
   ierr = VecScatterBegin(scatter->scatter,x,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter->scatter,x,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -317,8 +317,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatScatterSetVecScatter(Mat mat,VecScatter sca
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidHeaderSpecific(scatter,VEC_SCATTER_CLASSID,2);
   PetscCheckSameComm((PetscObject)scatter,1,(PetscObject)mat,2);
-  if (mat->rmap->n != scatter->to_n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Number of local rows in matrix %D not equal local scatter size %D",mat->rmap->n,scatter->to_n);
-  if (mat->cmap->n != scatter->from_n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Number of local columns in matrix %D not equal local scatter size %D",mat->cmap->n,scatter->from_n);
+  if (mat->rmap->n != scatter->to_n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number of local rows in matrix %D not equal local scatter size %D",mat->rmap->n,scatter->to_n);
+  if (mat->cmap->n != scatter->from_n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number of local columns in matrix %D not equal local scatter size %D",mat->cmap->n,scatter->from_n);
 
   ierr = PetscObjectReference((PetscObject)scatter);CHKERRQ(ierr);
   if (mscatter->scatter) {ierr = VecScatterDestroy(mscatter->scatter);CHKERRQ(ierr);}

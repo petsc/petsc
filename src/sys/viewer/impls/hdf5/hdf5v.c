@@ -65,9 +65,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_HDF5(PetscViewer viewer, c
       hdf5->file_id = H5Fcreate(name, H5F_ACC_TRUNC, H5P_DEFAULT, plist_id);
       break;
     default:
-      SETERRQ(PETSC_ERR_ORDER, "Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER, "Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
   }
-  if (hdf5->file_id < 0) SETERRQ1(PETSC_ERR_LIB, "H5Fcreate failed for %s", name);
+  if (hdf5->file_id < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, "H5Fcreate failed for %s", name);
   viewer->format = PETSC_VIEWER_NOFORMAT;
   H5Pclose(plist_id);
   PetscFunctionReturn(0);
@@ -186,7 +186,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF5WriteSDS(PetscViewer viewer, float
  }
  sds_id = SDcreate(vhdf5->sd_id, "Vec", DFNT_FLOAT32, d, dims32);
  if (sds_id < 0) {
-   SETERRQ(PETSC_ERR_LIB,"SDcreate failed");
+   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"SDcreate failed");
  }
  SDwritedata(sds_id, zero32, 0, dims32, xf);
  SDendaccess(sds_id);

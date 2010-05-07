@@ -49,7 +49,7 @@ PetscErrorCode    KSPSetUp_LGMRES(KSP ksp)
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(PETSC_ERR_SUP,"no symmetric preconditioning for KSPLGMRES");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"no symmetric preconditioning for KSPLGMRES");
   }
   max_k         = lgmres->max_k;
   aug_dim       = lgmres->aug_dim;
@@ -243,7 +243,7 @@ PetscErrorCode LGMREScycle(PetscInt *itcount,KSP ksp)
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
       if (!ksp->reason) {
-        SETERRQ1(0,"You reached the happy break down,but convergence was not indicated. Residual norm = %G",res);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"You reached the happy break down,but convergence was not indicated. Residual norm = %G",res);
       }
       break;
     }
@@ -355,7 +355,7 @@ PetscErrorCode KSPSolve_LGMRES(KSP ksp)
 
   PetscFunctionBegin;
   if (ksp->calc_sings && !lgmres->Rsvd) {
-     SETERRQ(PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
+     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
   }
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its        = 0;
@@ -467,7 +467,7 @@ static PetscErrorCode BuildLgmresSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP 
  
   /* solve the upper triangular system - GRS is the right side and HH is 
      the upper triangular matrix  - put soln in nrs */
-  if (*HH(it,it) == 0.0) SETERRQ2(PETSC_ERR_CONV_FAILED,"HH(it,it) is identically zero; it = %D GRS(it) = %G",it,PetscAbsScalar(*GRS(it)));
+  if (*HH(it,it) == 0.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"HH(it,it) is identically zero; it = %D GRS(it) = %G",it,PetscAbsScalar(*GRS(it)));
   if (*HH(it,it) != 0.0) {
      nrs[it] = *GRS(it) / *HH(it,it);
   } else {
@@ -725,7 +725,7 @@ PetscErrorCode KSPView_LGMRES(KSP ksp,PetscViewer viewer)
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  LGMRES: number of matvecs=%D\n",lgmres->matvecs);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for KSP LGMRES",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for KSP LGMRES",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -777,8 +777,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMRESSetAugDim_LGMRES(KSP ksp,PetscInt aug
   KSP_LGMRES *lgmres = (KSP_LGMRES *)ksp->data;
 
   PetscFunctionBegin;
-  if (aug_dim < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Augmentation dimension must be positive");
-  if (aug_dim > (lgmres->max_k -1))  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Augmentation dimension must be <= (restart size-1)");
+  if (aug_dim < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Augmentation dimension must be positive");
+  if (aug_dim > (lgmres->max_k -1))  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Augmentation dimension must be <= (restart size-1)");
   lgmres->aug_dim = aug_dim;
   PetscFunctionReturn(0);
 }

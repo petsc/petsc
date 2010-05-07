@@ -104,7 +104,7 @@ static PetscErrorCode MatMFFDCompute_DS(MatMFFD ctx,Vec U,Vec a,PetscScalar *h,P
   } else {
     *h = ctx->currenth;
   }
-  if (*h != *h) SETERRQ3(PETSC_ERR_PLIB,"Differencing parameter is not a number sum = %G dot = %G norm = %G",sum,PetscRealPart(dot),nrm);
+  if (*h != *h) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Differencing parameter is not a number sum = %G dot = %G norm = %G",sum,PetscRealPart(dot),nrm);
   ctx->count++;
   PetscFunctionReturn(0);
 } 
@@ -137,7 +137,7 @@ static PetscErrorCode MatMFFDView_DS(MatMFFD ctx,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"    umin=%G (minimum iterate parameter)\n",hctx->umin);CHKERRQ(ierr); 
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for this SNES matrix free matrix",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this SNES matrix free matrix",((PetscObject)viewer)->type_name);
   }    
   PetscFunctionReturn(0);
 }
@@ -199,7 +199,7 @@ PetscErrorCode MatMFFDDSSetUmin_DS(Mat mat,PetscReal umin)
 
   PetscFunctionBegin;
   if (!ctx) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"MatMFFDDSSetUmin() attached to non-shell matrix");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MatMFFDDSSetUmin() attached to non-shell matrix");
   }
   hctx = (MatMFFD_DS*)ctx->hctx;
   hctx->umin = umin;

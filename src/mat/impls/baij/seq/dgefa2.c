@@ -47,7 +47,7 @@ PetscErrorCode Kernel_A_gets_inverse_A_2(MatScalar *a,PetscReal shift)
 	ipvt[k-1] = l;
 
 	if (a[l + k3] == 0.0) {
-	  SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",k-1);
+	  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",k-1);
 	}
 
 /*           interchange if necessary */
@@ -87,7 +87,7 @@ PetscErrorCode Kernel_A_gets_inverse_A_2(MatScalar *a,PetscReal shift)
     /*}*/
     ipvt[1] = 2;
     if (a[6] == 0.0) {
-      SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",1);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",1);
     }
 
     /*
@@ -181,7 +181,7 @@ PetscErrorCode Kernel_A_gets_inverse_A_9(MatScalar *a,PetscReal shift)
 	ipvt[k-1] = l;
 
 	if (a[l + k3] == 0.0) {
-	  SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",k-1);
+	  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",k-1);
 	}
 
 /*           interchange if necessary */
@@ -221,7 +221,7 @@ PetscErrorCode Kernel_A_gets_inverse_A_9(MatScalar *a,PetscReal shift)
     }
     ipvt[8] = 9;
     if (a[90] == 0.0) {
-      SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",6);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",6);
     }
 
     /*
@@ -340,7 +340,7 @@ PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *a,PetscInt *ipvt,MatScalar 
 	ipvt[k-1] = l;
 
 	if (a[l + k3] == 0.0) {
-	  SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",k-1);
+	  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",k-1);
 	}
 
 /*           interchange if necessary */
@@ -380,7 +380,7 @@ PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *a,PetscInt *ipvt,MatScalar 
     }
     ipvt[14] = 15;
     if (a[240] == 0.0) {
-      SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",6);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",6);
     }
 
     /*

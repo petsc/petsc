@@ -169,7 +169,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectDereference(PetscObject obj)
   if (obj->bops->destroy) {
     ierr = (*obj->bops->destroy)(obj);CHKERRQ(ierr);
   } else if (!--obj->refct) {
-    SETERRQ(PETSC_ERR_SUP,"This PETSc object does not have a generic destroy routine");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This PETSc object does not have a generic destroy routine");
   }
   PetscFunctionReturn(0);
 }
@@ -199,7 +199,7 @@ PetscErrorCode PetscObjectCompose_Petsc(PetscObject obj,const char name[],PetscO
   if (ptr) {
     ierr = PetscOListReverseFind(ptr->olist,obj,&tname);CHKERRQ(ierr);
     if (tname){
-      SETERRQ(PETSC_ERR_ARG_INCOMP,"An object cannot be composed with an object that was compose with it");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"An object cannot be composed with an object that was compose with it");
     }
   }
   ierr = PetscOListAdd(&obj->olist,name,ptr);CHKERRQ(ierr);

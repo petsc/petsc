@@ -144,7 +144,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSetType(PetscDraw draw,const PetscDrawTy
   }
 
   ierr =  PetscFListFind(PetscDrawList,((PetscObject)draw)->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscDraw type given: %s",type);
+  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscDraw type given: %s",type);
   ierr = PetscObjectChangeTypeName((PetscObject)draw,type);CHKERRQ(ierr);
   draw->data        = 0;
   ierr = (*r)(draw);CHKERRQ(ierr);

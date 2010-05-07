@@ -131,7 +131,7 @@ namespace ALE {
           } else if (dim() == 3) {
             ierr = DACreate3d(comm(), DA_NONPERIODIC, DA_STENCIL_BOX, -3, -3, -3, pd, pd, pd, dof, 1, PETSC_NULL, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
           } else {
-            SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", dim());
+            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim());
           }
           ierr = DASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
           this->_dm = (DM) da;
@@ -270,7 +270,7 @@ namespace ALE {
             this->_options.exactDirichletFunc = ALE::Problem::Functions::cubic_3d;
           }
         } else {
-          SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", dim());
+          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim());
         }
         if (!structured()) {
           // Should pass bcType()
@@ -286,7 +286,7 @@ namespace ALE {
             ierr = CreateProblem_gen_1(this->_dm, "u", numBC, markers, funcs, this->_options.exactDirichletFunc);CHKERRQ(ierr);
             this->_options.integrate = IntegrateDualBasis_gen_1;
           } else {
-            SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", dim());
+            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim());
           }
           const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& s = this->_mesh->getRealSection("default");
           s->setDebug(debug());
@@ -357,7 +357,7 @@ namespace ALE {
 
         PetscFunctionBegin;
         if (structured()) {
-          SETERRQ(PETSC_ERR_SUP, "Structured meshes not supported");
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Structured meshes not supported");
         } else {
           ::Mesh mesh = (::Mesh) this->_dm;
 
@@ -449,7 +449,7 @@ namespace ALE {
         ierr = DMMGCreate(this->comm(), 1, &this->_options, &this->_dmmg);CHKERRQ(ierr);
         ierr = DMMGSetDM(this->_dmmg, this->_dm);CHKERRQ(ierr);
         if (structured()) {
-          SETERRQ(PETSC_ERR_SUP, "Structured meshes not supported");
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Structured meshes not supported");
         } else {
           if (opAssembly() == ALE::Problem::ASSEMBLY_FULL) {
             ierr = DMMGSetSNESLocal(this->_dmmg, ALE::Problem::Functions::RhsBd_Unstructured, ALE::Problem::Functions::JacBd_Unstructured, 0, 0);CHKERRQ(ierr);
@@ -462,7 +462,7 @@ namespace ALE {
             ierr = DMMGSetSNESLocal(this->_dmmg, ALE::Problem::Functions::RhsBd_Unstructured, ALE::Problem::Functions::JacBd_Unstructured_Stored, 0, 0);CHKERRQ(ierr);
 #endif
           } else {
-            SETERRQ1(PETSC_ERR_ARG_WRONG, "Assembly type not supported: %d", opAssembly());
+            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Assembly type not supported: %d", opAssembly());
           }
           ierr = DMMGSetFromOptions(this->_dmmg);CHKERRQ(ierr);
         }
@@ -663,7 +663,7 @@ namespace ALE {
         PetscFunctionBegin;
         ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
         if (structured()) {
-          SETERRQ(PETSC_ERR_SUP, "Structured meshes not supported");
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Structured meshes not supported");
         } else {
           ::Mesh      mesh = (::Mesh) this->_dm;
           SectionReal residual;

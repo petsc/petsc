@@ -50,7 +50,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 #if !defined(PETSC_USE_COMPLEX)
-  SETERRQ(1,"This example requires complex numbers");
+  SETERRQ(PETSC_COMM_SELF,1,"This example requires complex numbers");
 #endif
 
   ierr = PetscOptionsGetReal(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRQ(ierr);

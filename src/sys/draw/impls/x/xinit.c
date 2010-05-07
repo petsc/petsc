@@ -30,7 +30,7 @@ PetscErrorCode XiOpenDisplay(PetscDraw_X* XiWin,char *display_name)
   PetscFunctionBegin;
   XiWin->disp = XOpenDisplay(display_name);
   if (!XiWin->disp) {
-    SETERRQ1(PETSC_ERR_LIB,"Unable to open display on %s\n.  Make sure your COMPUTE NODES are authorized to connect \n\
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to open display on %s\n.  Make sure your COMPUTE NODES are authorized to connect \n\
     to this X server and either your DISPLAY variable\n\
     is set or you use the -display name option\n",display_name);
   }

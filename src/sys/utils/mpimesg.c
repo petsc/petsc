@@ -48,7 +48,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscGatherNumberOfMessages(MPI_Comm comm,const P
 
   /* If iflags not provided, compute iflags from ilengths */
   if (!iflags) {
-    if (!ilengths) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Either iflags or ilengths should be provided");
+    if (!ilengths) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Either iflags or ilengths should be provided");
     iflags_local = iflags_localm;
     for (i=0; i<size; i++) { 
       if (ilengths[i])  iflags_local[i] = 1;

@@ -89,8 +89,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<Mesh>& m
     //numConstraints += s->getConstraintDimension(*p_iter);
   }
   // Local arrays also have constraints, which are not mapped
-  if (localIndx  != localSize) SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid number of local indices %d, should be %d", localIndx, localSize);
-  if (globalIndx != localSize) SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid number of global indices %d, should be %d", globalIndx, localSize);
+  if (localIndx  != localSize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid number of local indices %d, should be %d", localIndx, localSize);
+  if (globalIndx != localSize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid number of global indices %d, should be %d", globalIndx, localSize);
   if (m->debug()) {
     globalOrder->view("Global Order");
     for(int i = 0; i < localSize; ++i) {

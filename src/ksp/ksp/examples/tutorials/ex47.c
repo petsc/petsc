@@ -61,7 +61,7 @@ int main(int argc,char **argv)
   ierr = CalculateXYStdDev(da, DMMGGetRHS(dmmg), &stddev);CHKERRQ(ierr);
   ierr = VecMax(stddev, &p, &s);CHKERRQ(ierr);
   if (s > 1.0e-10) {
-    SETERRQ2(PETSC_ERR_PLIB, "RHS Homogeneity violation, std deviation %g z %d", s, p);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "RHS Homogeneity violation, std deviation %g z %d", s, p);
   } else {
     PetscPrintf(PETSC_COMM_WORLD, "FD RHS Homogeneity verification\n");
     PetscPrintf(PETSC_COMM_WORLD, "    std deviation   %g\n", s);
@@ -70,7 +70,7 @@ int main(int argc,char **argv)
   ierr = CalculateXYStdDev(da, DMMGGetx(dmmg), &stddev);CHKERRQ(ierr);
   ierr = VecMax(stddev, &p, &s);CHKERRQ(ierr);
   if (s > 1.0e-5) {
-    SETERRQ2(PETSC_ERR_PLIB, "FD Homogeneity violation, std deviation %g z %d", s, p);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "FD Homogeneity violation, std deviation %g z %d", s, p);
   } else {
     PetscPrintf(PETSC_COMM_WORLD, "FD Solution Homogeneity verification\n");
     PetscPrintf(PETSC_COMM_WORLD, "    std deviation   %g\n", s);
@@ -79,7 +79,7 @@ int main(int argc,char **argv)
   ierr = CalculateXYStdDev(da, phi, &stddev);CHKERRQ(ierr);
   ierr = VecMax(stddev, &p, &s);CHKERRQ(ierr);
   if (s > 1.0e-10) {
-    SETERRQ2(PETSC_ERR_PLIB, "FFT Homogeneity violation, std deviation %g z %d", s, p);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "FFT Homogeneity violation, std deviation %g z %d", s, p);
   } else {
     PetscPrintf(PETSC_COMM_WORLD, "FFT Solution Homogeneity verification\n");
     PetscPrintf(PETSC_COMM_WORLD, "    std deviation   %g\n", s);
@@ -259,7 +259,7 @@ PetscErrorCode Solve_FFT(DA da, Vec rhs, Vec phi)
           phiHatArray[k][j][i] = charge/denom; // Changed units by scaling by e
         }
         if (PetscIsInfOrNanScalar(phiHatArray[k][j][i])) {
-          SETERRQ4(PETSC_ERR_FP, "Nan or inf at phiHat[%d][%d][%d]: %g ", k, j, i, PetscRealPart(phiHatArray[k][j][i]));
+          SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_FP, "Nan or inf at phiHat[%d][%d][%d]: %g ", k, j, i, PetscRealPart(phiHatArray[k][j][i]));
         }
       }
     }

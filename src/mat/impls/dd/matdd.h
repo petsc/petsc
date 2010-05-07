@@ -85,7 +85,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatDDXAIJFreeAIJ(Mat AAA, Mat_DDBlock **a,Pet
         PetscInt   new_nz = AI[AM] + CHUNKSIZE,len,*new_i=0,*new_j=0; \
         Mat_DDBlock *new_a; \
  \
-        if (NONEW == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%D,%D) caused a malloc",ROW,COL); \
+        if (NONEW == -2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%D,%D) caused a malloc",ROW,COL); \
         /* malloc new storage space */ \
         ierr = PetscMalloc3(new_nz,Mat_DDBlock,&new_a,new_nz,PetscInt,&new_j,AM+1,PetscInt,&new_i);CHKERRQ(ierr);\
  \

@@ -42,9 +42,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_Private(DM dm,PetscTruth *done)
   ((PetscObject)dm)->refct = 0;
 
   for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
-    if (dm->localout[i]) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Destroying a DM that has a local vector obtained with DMGetLocalVector()");
+    if (dm->localout[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Destroying a DM that has a local vector obtained with DMGetLocalVector()");
     if (dm->localin[i]) {ierr = VecDestroy(dm->localin[i]);CHKERRQ(ierr);}
-    if (dm->globalout[i]) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Destroying a DM that has a global vector obtained with DMGetGlobalVector()");
+    if (dm->globalout[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Destroying a DM that has a global vector obtained with DMGetGlobalVector()");
     if (dm->globalin[i]) {ierr = VecDestroy(dm->globalin[i]);CHKERRQ(ierr);}
   }
   *done = PETSC_TRUE;

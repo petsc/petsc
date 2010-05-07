@@ -58,7 +58,7 @@ int main(int Argc,char **Args)
   N[0] = x_mesh;
   for (i=1; i<levels; i++) {
     N[i] = N[i-1]/2;
-    if (N[i] < 1) {SETERRQ(1,"Too many levels");}
+    if (N[i] < 1) {SETERRQ(PETSC_COMM_SELF,1,"Too many levels");}
   }
 
   ierr = Create1dLaplacian(N[levels-1],&cmat);CHKERRQ(ierr);

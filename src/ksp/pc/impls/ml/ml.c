@@ -194,7 +194,7 @@ static PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,MatType newtype,MatReuse scall,
   PetscInt        *ci,*cj,ncols;
 
   PetscFunctionBegin;
-  if (am != an) SETERRQ2(PETSC_ERR_ARG_WRONG,"A must have a square diagonal portion, am: %d != an: %d",am,an);
+  if (am != an) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"A must have a square diagonal portion, am: %d != an: %d",am,an);
 
   if (scall == MAT_INITIAL_MATRIX){
     ierr = PetscMalloc((1+am)*sizeof(PetscInt),&ci);CHKERRQ(ierr);
@@ -220,7 +220,7 @@ static PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,MatType newtype,MatReuse scall,
         ca[k++] = *ba++; 
       }
     }
-    if (k != ci[am]) SETERRQ2(PETSC_ERR_ARG_WRONG,"k: %d != ci[am]: %d",k,ci[am]);
+    if (k != ci[am]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"k: %d != ci[am]: %d",k,ci[am]);
 
     /* put together the new matrix */
     an = mpimat->A->cmap->n+mpimat->B->cmap->n;
@@ -245,7 +245,7 @@ static PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,MatType newtype,MatReuse scall,
       for (j=0; j<ncols; j++) *ca++ = *ba++; 
     }
   } else {
-    SETERRQ1(PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",(int)scall);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",(int)scall);
   }
   PetscFunctionReturn(0);
 }
@@ -278,7 +278,7 @@ static PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
   PetscScalar           *ml_vals=matdata->values,*aa;
   
   PetscFunctionBegin;
-  if ( mlmat->getrow == NULL) SETERRQ(PETSC_ERR_ARG_NULL,"mlmat->getrow = NULL");
+  if ( mlmat->getrow == NULL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"mlmat->getrow = NULL");
   if (m != n){ /* ML Pmat and Rmat are in CSR format. Pass array pointers into SeqAIJ matrix */
     if (reuse){
       Mat_SeqAIJ  *aij= (Mat_SeqAIJ*)(*newmat)->data;
@@ -386,9 +386,9 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,Mat *newmat)
   Mat                   A;
 
   PetscFunctionBegin;
-  if (mlmat->getrow == NULL) SETERRQ(PETSC_ERR_ARG_NULL,"mlmat->getrow = NULL");
+  if (mlmat->getrow == NULL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"mlmat->getrow = NULL");
   n = mlmat->invec_leng;
-  if (m != n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"m %d must equal to n %d",m,n);
+  if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m %d must equal to n %d",m,n);
 
   ierr = MatCreate(mlmat->comm->USR_comm,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
@@ -520,7 +520,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   } else if (isSeq) {
     Aloc = A;
   } else {
-    SETERRQ(PETSC_ERR_ARG_WRONG, "Invalid matrix type for ML. ML can only handle AIJ matrices.");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid matrix type for ML. ML can only handle AIJ matrices.");
   }
 
   /* create and initialize struct 'PetscMLdata' */
@@ -582,7 +582,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   } else {
     Nlevels = ML_Gen_MultiLevelHierarchy_UsingAggregation(ml_object,0,ML_INCREASING,agg_object);
   }
-  if (Nlevels<=0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Nlevels %d must > 0",Nlevels);
+  if (Nlevels<=0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Nlevels %d must > 0",Nlevels);
   pc_ml->Nlevels = Nlevels;
   fine_level = Nlevels - 1;
 

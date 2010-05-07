@@ -36,7 +36,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if(size != 1) SETERRQ(1,"This is a uniprocessor example only\n");
+  if(size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only\n");
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
 
@@ -200,7 +200,7 @@ PetscErrorCode ComputeMatrix(DA da,Mat B)
 
   ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);CHKERRQ(ierr); 
   /* For simplicity, this example only works on mx=my=mz */
-  if ( mx != my || mx != mz) SETERRQ3(1,"This example only works with mx %d = my %d = mz %d\n",mx,my,mz);
+  if ( mx != my || mx != mz) SETERRQ3(PETSC_COMM_SELF,1,"This example only works with mx %d = my %d = mz %d\n",mx,my,mz);
 
   Hx = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
   HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;

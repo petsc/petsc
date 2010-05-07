@@ -150,7 +150,7 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
     mesh->stratify();
   }
   } catch (ALE::Exception e) {
-    SETERRQ(PETSC_ERR_LIB, e.msg().c_str());
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, e.msg().c_str());
   }
   ierr = PetscFree(cells);CHKERRQ(ierr);
 
@@ -244,7 +244,7 @@ PetscErrorCode MeshCreateExodus(MPI_Comm comm, const char filename[], Mesh *mesh
 #ifdef PETSC_HAVE_EXODUSII
   ierr = PetscReadExodusII(comm, filename, m);CHKERRQ(ierr);
 #else
-  SETERRQ(PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --with-exodus-dir=/path/to/exodus");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --with-exodus-dir=/path/to/exodus");
 #endif
   if (debug) {m->view("Mesh");}
   ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);

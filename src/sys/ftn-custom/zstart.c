@@ -184,7 +184,7 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
       #elif defined(PETSC_HAVE_GETARG) 
       getarg_(&i,(*argv)[i],warg);
       #else
-         SETERRQ(PETSC_ERR_SUP,"Cannot get Fortran command line arguments");
+         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get Fortran command line arguments");
       */
       getarg_(&i,(*argv)[i],warg);
 #endif

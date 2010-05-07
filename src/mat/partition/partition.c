@@ -19,7 +19,7 @@ static PetscErrorCode MatPartitioningApply_Current(MatPartitioning part,IS *part
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)part)->comm,&size);CHKERRQ(ierr);
   if (part->n != size) {
-    SETERRQ(PETSC_ERR_SUP,"This is the DEFAULT NO-OP partitioner, it currently only supports one domain per processor\nuse -matpartitioning_type parmetis or chaco or scotch for more than one subdomain per processor");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This is the DEFAULT NO-OP partitioner, it currently only supports one domain per processor\nuse -matpartitioning_type parmetis or chaco or scotch for more than one subdomain per processor");
   }
   ierr = MPI_Comm_rank(((PetscObject)part)->comm,&rank);CHKERRQ(ierr);
 
@@ -39,19 +39,19 @@ static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part,IS *parti
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)part)->comm,&size);CHKERRQ(ierr);
   if (part->n != size) {
-    SETERRQ(PETSC_ERR_SUP,"Currently only supports one domain per processor");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently only supports one domain per processor");
   }
   p = (PetscInt)sqrt((double)part->n);
   if (p*p != part->n) {
-    SETERRQ(PETSC_ERR_SUP,"Square partitioning requires \"perfect square\" number of domains");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Square partitioning requires \"perfect square\" number of domains");
   }
   ierr = MatGetSize(part->adj,&N,PETSC_NULL);CHKERRQ(ierr);
   n = (PetscInt)sqrt((double)N);
   if (n*n != N) {  /* This condition is NECESSARY, but NOT SUFFICIENT in order to the domain be square */
-    SETERRQ(PETSC_ERR_SUP,"Square partitioning requires square domain");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Square partitioning requires square domain");
   }
   if (n%p != 0) {
-    SETERRQ(PETSC_ERR_SUP,"Square partitioning requires p to divide n"); 
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Square partitioning requires p to divide n"); 
   }
   ierr = MatGetOwnershipRange(part->adj,&rstart,&rend);CHKERRQ(ierr);
   ierr = PetscMalloc((rend-rstart)*sizeof(PetscInt),&color);CHKERRQ(ierr);
@@ -229,9 +229,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningApply(MatPartitioning matp,IS *
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matp,MAT_PARTITIONING_CLASSID,1);
   PetscValidPointer(partitioning,2);
-  if (!matp->adj->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (matp->adj->factortype) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!matp->ops->apply) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set type with MatPartitioningSetFromOptions() or MatPartitioningSetType()");
+  if (!matp->adj->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (matp->adj->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (!matp->ops->apply) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must set type with MatPartitioningSetFromOptions() or MatPartitioningSetType()");
   ierr = PetscLogEventBegin(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
   ierr = (*matp->ops->apply)(matp,partitioning);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
@@ -466,7 +466,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningView(MatPartitioning part,Petsc
       ierr = PetscViewerASCIIPrintf(viewer,"  Using vertex weights\n");CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for this MatParitioning",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this MatParitioning",((PetscObject)viewer)->type_name);
   }
 
   if (part->ops->view) {
@@ -521,7 +521,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetType(MatPartitioning part,co
 
   ierr =  PetscFListFind(MatPartitioningList,((PetscObject)part)->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
 
-  if (!r) {SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown partitioning type %s",type);}
+  if (!r) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown partitioning type %s",type);}
 
   part->ops->destroy      = (PetscErrorCode (*)(MatPartitioning)) 0;
   part->ops->view         = (PetscErrorCode (*)(MatPartitioning,PetscViewer)) 0;

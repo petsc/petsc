@@ -35,10 +35,10 @@ PetscInt main(PetscInt argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char *)0,help);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_ERR_SUP, "This example requires complex numbers");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "This example requires complex numbers");
 #endif
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
-  if (size != 1) SETERRQ(PETSC_ERR_SUP, "This is a uniprocessor example only!");
+  if (size != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "This is a uniprocessor example only!");
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, PETSC_NULL, "USFFT Options", "ex27");CHKERRQ(ierr);
     ierr = PetscOptionsEList("-function", "Function type", "ex27", funcNames, NUM_FUNCS, funcNames[function], &func, PETSC_NULL);CHKERRQ(ierr);
     function = (FuncType) func;

@@ -89,7 +89,7 @@
          if (rank .eq. 0) then
             write(6,*) 'This is a uniprocessor example only!'
          endif
-         SETERRQ(1,' ',ierr)
+         SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
       endif
 
       i2  = 2

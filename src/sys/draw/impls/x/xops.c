@@ -334,7 +334,7 @@ static PetscErrorCode PetscDrawGetMouseButton_X(PetscDraw draw,PetscDrawButton *
   /* change cursor to indicate input */
   if (!cursor) {
     cursor = XCreateFontCursor(win->disp,XC_hand2); 
-    if (!cursor) SETERRQ(PETSC_ERR_LIB,"Unable to create X cursor");
+    if (!cursor) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to create X cursor");
   }
   XDefineCursor(win->disp,win->win,cursor);
   XSelectInput(win->disp,win->win,ButtonPressMask | ButtonReleaseMask);
@@ -609,7 +609,7 @@ PetscErrorCode PetscDrawXGetDisplaySize_Private(const char name[],int *width,int
   if (!display) {
     *width  = 0; 
     *height = 0; 
-    SETERRQ1(PETSC_ERR_LIB,"Unable to open display on %s\n.  Make sure your COMPUTE NODES are authorized to connect \n\
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to open display on %s\n.  Make sure your COMPUTE NODES are authorized to connect \n\
     to this X server and either your DISPLAY variable\n\
     is set or you use the -display name option\n",name);
   }
@@ -729,8 +729,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawCreate_X(PetscDraw draw)
   ierr = MPI_Comm_rank(((PetscObject)draw)->comm,&rank);CHKERRQ(ierr);
 
   if (!rank) {
-    if (x < 0 || y < 0)   SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative corner of window");
-    if (w <= 0 || h <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative window width or height");
+    if (x < 0 || y < 0)   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative corner of window");
+    if (w <= 0 || h <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative window width or height");
     ierr = XiQuickWindow(Xwin,draw->display,draw->title,x,y,w,h);CHKERRQ(ierr);
     ierr = MPI_Bcast(&Xwin->win,1,MPI_UNSIGNED_LONG,0,((PetscObject)draw)->comm);CHKERRQ(ierr);
   } else {

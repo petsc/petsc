@@ -156,10 +156,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawTensorContour(PetscDraw win,int m,int n,
   ierr = PetscDrawIsNull(win,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
   ierr = PetscObjectGetComm((PetscObject)win,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,"May only be used with single processor PetscDraw");
+  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"May only be used with single processor PetscDraw");
 
   if (N <= 0) {
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"n %d and m %d must be positive",m,n);
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"n %d and m %d must be positive",m,n);
   }
 
   /* create scale window */

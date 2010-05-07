@@ -72,7 +72,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingView(ISLocalToGlobalMapp
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for ISLocalToGlobalMapping",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for ISLocalToGlobalMapping",((PetscObject)viewer)->type_name);
   }
 
   PetscFunctionReturn(0);
@@ -239,7 +239,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingBlock(ISLocalToGlobalMap
   PetscValidPointer(outmap,1);
   if (bs > 1) {
     n    = inmap->n/bs;
-    if (n*bs != inmap->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Pointwise mapping length is not divisible by block size");
+    if (n*bs != inmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Pointwise mapping length is not divisible by block size");
     ierr = PetscMalloc(n*sizeof(PetscInt),&ii);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       ii[i] = inmap->indices[bs*i]/bs;
@@ -320,7 +320,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingApplyIS(ISLocalToGlobalM
   
   ierr = PetscMalloc(n*sizeof(PetscInt),&idxout);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    if (idxin[i] >= Nmax) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Local index %d too large %d (max) at %d",idxin[i],Nmax-1,i);
+    if (idxin[i] >= Nmax) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local index %d too large %d (max) at %d",idxin[i],Nmax-1,i);
     idxout[i] = idxmap[idxin[i]];
   }
   ierr = ISRestoreIndices(is,&idxin);CHKERRQ(ierr);

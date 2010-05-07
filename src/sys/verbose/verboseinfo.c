@@ -64,7 +64,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInfoAllow(PetscTruth flag, const char filena
     sprintf(tname, ".%d", rank);
     ierr = PetscStrcat(fname, tname);CHKERRQ(ierr);
     ierr = PetscFOpen(MPI_COMM_SELF, fname, "w", &PetscInfoFile);CHKERRQ(ierr);
-    if (!PetscInfoFile) SETERRQ1(PETSC_ERR_FILE_OPEN, "Cannot open requested file for writing: %s",fname);
+    if (!PetscInfoFile) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN, "Cannot open requested file for writing: %s",fname);
   } else if (flag) {
     PetscInfoFile = PETSC_STDOUT;
   }
@@ -206,7 +206,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInfo_Private(const char func[],void *vobj, c
   ierr = PetscVSNPrintf(string+len, 8*1024-len,message,&fullLength, Argp);
   ierr = PetscFPrintf(PETSC_COMM_SELF,PetscInfoFile, "%s", string);CHKERRQ(ierr);
   err = fflush(PetscInfoFile);
-  if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");        
+  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");        
   if (petsc_history) {
     (*PetscVFPrintf)(petsc_history, message, Argp);CHKERRQ(ierr);
   }

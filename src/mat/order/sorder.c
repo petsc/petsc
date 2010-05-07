@@ -17,7 +17,7 @@ EXTERN PetscErrorCode MatOrdering_Flow_SeqAIJ(Mat,const MatOrderingType,IS *,IS 
 PetscErrorCode MatOrdering_Flow(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
 {
   PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP,"Cannot do default flow ordering for matrix type");
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot do default flow ordering for matrix type");
 #if !defined(PETSC_USE_DEBUG)
   PetscFunctionReturn(0);
 #endif
@@ -78,7 +78,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_RowLength(Mat mat,const MatOrderin
 
   PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,&ia,&ja,&done);CHKERRQ(ierr);
-  if (!done) SETERRQ(PETSC_ERR_SUP,"Cannot get rows for matrix");
+  if (!done) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get rows for matrix");
 
   ierr  = PetscMalloc2(n,PetscInt,&lens,n,PetscInt,&permr);CHKERRQ(ierr);
   for (i=0; i<n; i++) { 
@@ -185,8 +185,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat mat,const MatOrderingType t
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(rperm,2);
   PetscValidPointer(cperm,3);
-  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (mat->factortype) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
   /* this chunk of code is REALLY bad, should maybe get the ordering from the factor matrix,
      then those that don't support orderings will handle their cases themselfs. */
@@ -220,11 +220,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat mat,const MatOrderingType t
   }
   
   ierr = MatGetLocalSize(mat,&mmat,&nmat);CHKERRQ(ierr);
-  if (mmat != nmat) SETERRQ2(PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",mmat,nmat);
+  if (mmat != nmat) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",mmat,nmat);
 
   if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscFListFind(MatOrderingList,((PetscObject)mat)->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
-  if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);}
+  if (!r) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);}
 
   ierr = PetscLogEventBegin(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*r)(mat,type,rperm,cperm);CHKERRQ(ierr);

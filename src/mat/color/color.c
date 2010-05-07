@@ -85,7 +85,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_SL_Minpack(Mat mat,MatColoringT
 
   ierr = MatGetRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done);CHKERRQ(ierr);
   ierr = MatGetColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done);CHKERRQ(ierr);
-  if (!done) SETERRQ(PETSC_ERR_SUP,"Ordering requires IJ");
+  if (!done) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
 
   ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
 
@@ -102,7 +102,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_SL_Minpack(Mat mat,MatColoringT
   ierr = MatRestoreColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done);CHKERRQ(ierr);
 
   /* shift coloring numbers to start at zero and shorten */
-  if (ncolors > IS_COLORING_MAX-1) SETERRQ(PETSC_ERR_SUP,"Maximum color size exceeded");
+  if (ncolors > IS_COLORING_MAX-1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
   { 
     ISColoringValue *s = (ISColoringValue*) coloring;
     for (i=0; i<n; i++) {
@@ -172,7 +172,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_LF_Minpack(Mat mat,MatColoringT
 
   ierr = MatGetRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done);CHKERRQ(ierr);
   ierr = MatGetColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done);CHKERRQ(ierr);
-  if (!done) SETERRQ(PETSC_ERR_SUP,"Ordering requires IJ");
+  if (!done) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
 
   ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
 
@@ -191,7 +191,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_LF_Minpack(Mat mat,MatColoringT
   ierr = MatRestoreColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done);CHKERRQ(ierr);
 
   /* shift coloring numbers to start at zero and shorten */
-  if (ncolors > IS_COLORING_MAX-1) SETERRQ(PETSC_ERR_SUP,"Maximum color size exceeded");
+  if (ncolors > IS_COLORING_MAX-1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
   { 
     ISColoringValue *s = (ISColoringValue*) coloring;
     for (i=0; i<n; i++) {
@@ -261,7 +261,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_ID_Minpack(Mat mat,MatColoringT
 
   ierr = MatGetRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done);CHKERRQ(ierr);
   ierr = MatGetColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done);CHKERRQ(ierr);
-  if (!done) SETERRQ(PETSC_ERR_SUP,"Ordering requires IJ");
+  if (!done) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
 
   ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
 
@@ -279,7 +279,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_ID_Minpack(Mat mat,MatColoringT
   ierr = MatRestoreColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done);CHKERRQ(ierr);
 
   /* shift coloring numbers to start at zero and shorten */
-  if (ncolors > IS_COLORING_MAX-1) SETERRQ(PETSC_ERR_SUP,"Maximum color size exceeded");
+  if (ncolors > IS_COLORING_MAX-1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
   { 
     ISColoringValue *s = (ISColoringValue*) coloring;
     for (i=0; i<n; i++) {
@@ -348,7 +348,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_Natural(Mat mat,MatColoringType
   ierr  = MatGetSize(mat_seq,PETSC_NULL,&n);CHKERRQ(ierr);
   ierr  = MatGetOwnershipRange(mat_seq,&start,&end);CHKERRQ(ierr);
   n     = n/bs;
-  if (n > IS_COLORING_MAX-1) SETERRQ(PETSC_ERR_SUP,"Maximum color size exceeded");
+  if (n > IS_COLORING_MAX-1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
 
   start = start/bs;
   end   = end/bs;
@@ -488,8 +488,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring(Mat mat,const MatColoringType t
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(iscoloring,3);
-  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (mat->factortype) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
   /* look for type on command line */
   if (!MatColoringRegisterAllCalled) {ierr = MatColoringRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
@@ -498,7 +498,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring(Mat mat,const MatColoringType t
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr); 
   ierr = PetscFListFind(MatColoringList,comm, type,(void (**)(void)) &r);CHKERRQ(ierr);
-  if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);}
+  if (!r) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);}
 
   ierr = PetscLogEventBegin(MAT_GetColoring,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*r)(mat,type,iscoloring);CHKERRQ(ierr);

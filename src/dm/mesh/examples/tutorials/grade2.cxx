@@ -370,7 +370,7 @@ PetscErrorCode DivNorm_L2(Mesh mesh, SectionReal X, PetscReal *norm, Options *op
     const PetscScalar *x = m->restrictNew(sX, *c_iter);
     double elemNorm = 0.0;
 
-    if (detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
+    if (detJ < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
     // Loop over quadrature points
     for(int q = 0; q < numQuadPoints; ++q) {
       PetscScalar divU  = 0.0;
@@ -890,7 +890,7 @@ PetscErrorCode CreateProblem(DM stokesDM, DM paramDM, DM transportDM, Options *o
   } else if (options->viscosityModel == VISC_VARIABLE) {
     options->viscosity = linearViscosity;
   } else {
-    SETERRQ(PETSC_ERR_ARG_WRONG, "Unrecognized viscosity model");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Unrecognized viscosity model");
   }
   // Create the default Stokes section
   Obj<ALE::Mesh> m;
@@ -1171,7 +1171,7 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
     const PetscScalar *w     = pM->restrictNew(sW, *c_iter, values, localDof);
     int                field = 0;
 
-    if (detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
+    if (detJ < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
     ierr = PetscMemzero(elemVec, totBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++field) {
       const Obj<ALE::Discretization>& disc          = m->getDiscretization(*f_iter);
@@ -1326,7 +1326,7 @@ PetscErrorCode Stokes_Jac_Unstructured(Mesh mesh, SectionReal X, Mat A, void *ct
     int field = 0;
 
     m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
-    if (detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
+    if (detJ < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
     ierr = PetscMemzero(elemMat, totBasisFuncs*totBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++field) {
       const Obj<ALE::Discretization>& disc          = m->getDiscretization(*f_iter);

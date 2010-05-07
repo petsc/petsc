@@ -131,7 +131,7 @@ static PetscErrorCode SNESView_Picard(SNES snes, PetscViewer viewer)
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  picard variant: %s\n", cstr);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP, "Viewer type %s not supported for SNES Picard", ((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Viewer type %s not supported for SNES Picard", ((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -233,7 +233,7 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
     PetscFunctionReturn(0);
   }
   ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
-  if PetscIsInfOrNanReal(fnorm) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+  if PetscIsInfOrNanReal(fnorm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = fnorm;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
@@ -262,7 +262,7 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
       /* Compute F(X^{new}) */
       ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
       ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
-      if PetscIsInfOrNanReal(fnorm) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated norm");
+      if PetscIsInfOrNanReal(fnorm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated norm");
     } else {
       PetscReal dummyNorm;
       /* Compute a (scaled) negative update in the line search routine: 

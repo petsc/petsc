@@ -9,8 +9,8 @@ static PetscErrorCode KSPSetUp_CR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ksp->pc_side == PC_RIGHT) {SETERRQ(PETSC_ERR_SUP,"no right preconditioning for KSPCR");}
-  else if (ksp->pc_side == PC_SYMMETRIC) {SETERRQ(PETSC_ERR_SUP,"no symmetric preconditioning for KSPCR");}
+  if (ksp->pc_side == PC_RIGHT) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"no right preconditioning for KSPCR");}
+  else if (ksp->pc_side == PC_SYMMETRIC) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"no symmetric preconditioning for KSPCR");}
   ierr = KSPDefaultGetWork(ksp,6);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -113,7 +113,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
       ierr = VecDotEnd   (RT,ART,&btop);CHKERRQ(ierr);
       ierr = VecNormEnd  (R,NORM_2,&dp);CHKERRQ(ierr);       /*   dp <- R'*R          */
     } else {
-      SETERRQ1(PETSC_ERR_SUP,"KSPNormType of %d not supported",(int)ksp->normtype);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"KSPNormType of %d not supported",(int)ksp->normtype);
     }
     if (PetscAbsScalar(btop) < 0.0) {
       ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;

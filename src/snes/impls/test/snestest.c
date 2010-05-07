@@ -25,7 +25,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
   PetscFunctionBegin;
 
   if (A != snes->jacobian_pre) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot test with alternative preconditioner");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot test with alternative preconditioner");
   }
 
   ierr = PetscPrintf(((PetscObject)snes)->comm,"Testing hand-coded Jacobian, if the ratio is\n");CHKERRQ(ierr);

@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
-  if (size != 1) SETERRQ(1,"Must be run with one processor");
+  if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"Must be run with one processor");
 
   /* create vector */
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);

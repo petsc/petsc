@@ -17,7 +17,7 @@ int PETSC_dpotrf_interface (char *uplo,PetscInt *n, double *a,PetscInt * lda,Pet
    compiled for complex */   
 
    #ifdef PETSC_USE_COMPLEX
-     SETERRQ(1,"dpotrf_interface: PETSC must be compiled without support for complex numbers");
+     SETERRQ(PETSC_COMM_SELF,1,"dpotrf_interface: PETSC must be compiled without support for complex numbers");
    #endif
 
    /* type conversion */
@@ -39,7 +39,7 @@ int PETSC_dsygv_interface (int *itype, char *jobz, char *uplo,PetscInt *
    PetscBLASInt itype_, n_, lda_, ldb_, lwork_, info_;
 
    #ifdef PETSC_USE_COMPLEX
-     SETERRQ(1,"dsygv_interface: PETSC must be compiled without support for complex numbers");
+     SETERRQ(PETSC_COMM_SELF,1,"dsygv_interface: PETSC must be compiled without support for complex numbers");
    #endif
 
    itype_ = PetscBLASIntCast(*itype);

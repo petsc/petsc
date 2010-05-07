@@ -1376,7 +1376,7 @@ PassiveScalar PlateModel(PetscInt j, PetscInt plate, AppCtx *user)
 #if defined (PETSC_HAVE_ERF)
   return erf(z*param->L/2.0/param->skt);
 #else
-  SETERRQ(1,"erf() not available on this machine");
+  SETERRQ(PETSC_COMM_SELF,1,"erf() not available on this machine");
 #endif
 }
 

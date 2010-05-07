@@ -42,7 +42,7 @@ PetscInt main(PetscInt argc,char **args)
   
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size != 1) SETERRQ(PETSC_ERR_SUP,"This is a uniprocessor example only!");
+  if (size != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This is a uniprocessor example only!");
   ierr = PetscLogStageRegister("EigSolve",&stages[0]);
   ierr = PetscLogStageRegister("EigCheck",&stages[1]);
 
@@ -50,7 +50,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscOptionsGetString(PETSC_NULL,"-f0",file[0],PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
   if (!flg) {
     ierr = PetscOptionsGetString(PETSC_NULL,"-fA",file[0],PETSC_MAX_PATH_LEN-1,&flgA);CHKERRQ(ierr);
-    if (!flgA) SETERRQ(PETSC_ERR_USER,"Must indicate binary file with the -fA or -fB options");
+    if (!flgA) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Must indicate binary file with the -fA or -fB options");
     ierr = PetscOptionsGetString(PETSC_NULL,"-fB",file[1],PETSC_MAX_PATH_LEN-1,&flgB);CHKERRQ(ierr);
     preload = PETSC_FALSE;
   } else {
@@ -93,12 +93,12 @@ PetscInt main(PetscInt argc,char **args)
       Mat Trans;
       ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Trans);
       ierr = MatEqual(A, Trans, &isSymmetric);
-      if (!isSymmetric) SETERRQ(PETSC_ERR_USER,"A must be symmetric");
+      if (!isSymmetric) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"A must be symmetric");
       ierr = MatDestroy(Trans);CHKERRQ(ierr);
       if (flgB && PreLoadIt){
         ierr = MatTranspose(B,MAT_INITIAL_MATRIX, &Trans);
         ierr = MatEqual(B, Trans, &isSymmetric);
-        if (!isSymmetric) SETERRQ(PETSC_ERR_USER,"B must be symmetric");
+        if (!isSymmetric) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"B must be symmetric");
         ierr = MatDestroy(Trans);CHKERRQ(ierr);
       }
     }
@@ -173,7 +173,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = MatRestoreArray(A,&arrayA);CHKERRQ(ierr);
     ierr = MatRestoreArray(B,&arrayB);CHKERRQ(ierr);
 
-    if (nevs <= 0 ) SETERRQ1(PETSC_ERR_CONV_FAILED, "nev=%d, no eigensolution has found", nevs);
+    if (nevs <= 0 ) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED, "nev=%d, no eigensolution has found", nevs);
     /* View evals */
     ierr = PetscOptionsHasName(PETSC_NULL, "-eig_view", &flg);CHKERRQ(ierr);
     if (flg){

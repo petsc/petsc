@@ -57,19 +57,19 @@ int main(int argc,char **argv)
     Check if this is really a block index set
   */
   ierr = ISBlock(set,&isblock);CHKERRQ(ierr);
-  if (!isblock) SETERRQ(1,"Index set is not blocked!");
+  if (!isblock) SETERRQ(PETSC_COMM_SELF,1,"Index set is not blocked!");
 
   /*
     Determine the block size of the index set
   */
   ierr = ISBlockGetBlockSize(set,&bs);CHKERRQ(ierr);
-  if (bs != 3) SETERRQ(1,"Block size is not 3!");
+  if (bs != 3) SETERRQ(PETSC_COMM_SELF,1,"Block size is not 3!");
 
   /*
     Get the number of blocks
   */
   ierr = ISBlockGetLocalSize(set,&n);CHKERRQ(ierr);
-  if (n != 4) SETERRQ(1,"Number of blocks not 4!");
+  if (n != 4) SETERRQ(PETSC_COMM_SELF,1,"Number of blocks not 4!");
 
   ierr = ISDestroy(set);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);

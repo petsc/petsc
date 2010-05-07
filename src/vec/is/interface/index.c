@@ -138,7 +138,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSetPermutation(IS is)
       ierr = PetscMemcpy(idx,iidx,n*sizeof(PetscInt));CHKERRQ(ierr);
       ierr = PetscSortInt(n,idx);CHKERRQ(ierr);
       for (i=0; i<n; i++) {
-        if (idx[i] != i) SETERRQ(PETSC_ERR_ARG_WRONG,"Index set is not a permutation");
+        if (idx[i] != i) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Index set is not a permutation");
       }
       ierr = PetscFree(idx);CHKERRQ(ierr);
     }
@@ -208,7 +208,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISInvertPermutation(IS is,PetscInt nlocal,IS *
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(isout,3);
-  if (!is->isperm) SETERRQ(PETSC_ERR_ARG_WRONG,"Not a permutation, must call ISSetPermutation() on the IS first");
+  if (!is->isperm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a permutation, must call ISSetPermutation() on the IS first");
   ierr = (*is->ops->invertpermutation)(is,nlocal,isout);CHKERRQ(ierr);
   ierr = ISSetPermutation(*isout);CHKERRQ(ierr);
   PetscFunctionReturn(0);

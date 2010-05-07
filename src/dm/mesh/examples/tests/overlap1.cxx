@@ -32,7 +32,7 @@ PetscErrorCode DoubletTest(const Obj<send_section_type>& sendSection, const Obj<
   int                    debug       = options->debug;
 
   PetscFunctionBegin;
-  if (sendSection->commSize() != 2) SETERRQ(PETSC_ERR_SUP, "DoubletTest can only be run with 2 processes");
+  if (sendSection->commSize() != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "DoubletTest can only be run with 2 processes");
   // Make the sieve
   ALE::Test::OverlapTest::constructDoublet(topology);
   Obj<sieve_type>   sieve = topology->getPatch(0);
@@ -106,15 +106,15 @@ PetscErrorCode DoubletTest(const Obj<send_section_type>& sendSection, const Obj<
       }
       if (recvOverlap->commRank() == 0) {
         if (*r_iter == 1) {
-          if ((values[0] != 3) || (values[1] != 5)) SETERRQ1(PETSC_ERR_PLIB, "Invalid received value for point %d", *r_iter);
+          if ((values[0] != 3) || (values[1] != 5)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid received value for point %d", *r_iter);
         } else {
-          if ((values[0] != 4) || (values[1] != 5)) SETERRQ1(PETSC_ERR_PLIB, "Invalid received value for point %d", *r_iter);
+          if ((values[0] != 4) || (values[1] != 5)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid received value for point %d", *r_iter);
         }
       } else {
         if (*r_iter == 0) {
-          if ((values[0] != 3) || (values[1] != 4)) SETERRQ1(PETSC_ERR_PLIB, "Invalid received value for point %d", *r_iter);
+          if ((values[0] != 3) || (values[1] != 4)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid received value for point %d", *r_iter);
         } else {
-          if ((values[0] != 4) || (values[1] != 5)) SETERRQ1(PETSC_ERR_PLIB, "Invalid received value for point %d", *r_iter);
+          if ((values[0] != 4) || (values[1] != 5)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid received value for point %d", *r_iter);
         }
       }
     }

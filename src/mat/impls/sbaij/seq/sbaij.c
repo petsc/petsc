@@ -190,17 +190,17 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op,PetscTruth flg)
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   case MAT_HERMITIAN:
-    if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call MatAssemblyEnd() first");
+    if (!A->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatAssemblyEnd() first");
     if (A->cmap->n < 65536 && A->cmap->bs == 1) {
       A->ops->mult = MatMult_SeqSBAIJ_1_Hermitian_ushort;
     } else if (A->cmap->bs == 1) {
       A->ops->mult = MatMult_SeqSBAIJ_1_Hermitian;
-    } else SETERRQ(PETSC_ERR_SUP,"No support for Hermitian with block size greater than 1");
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for Hermitian with block size greater than 1");
     break;
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
   case MAT_SYMMETRY_ETERNAL:
-    if (!flg) SETERRQ(PETSC_ERR_SUP,"Matrix must be symmetric");
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix must be symmetric");
     ierr = PetscInfo1(A,"Option %s not relevent\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   case MAT_IGNORE_LOWER_TRIANGULAR:
@@ -213,7 +213,7 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op,PetscTruth flg)
     a->getrow_utriangular = flg;
     break;
   default:
-    SETERRQ1(PETSC_ERR_SUP,"unknown option %d",op);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unknown option %d",op);
   }
   PetscFunctionReturn(0);
 }
@@ -229,7 +229,7 @@ PetscErrorCode MatGetRow_SeqSBAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **
   PetscScalar    *v_i;
 
   PetscFunctionBegin;
-  if (A && !a->getrow_utriangular) SETERRQ(PETSC_ERR_SUP,"MatGetRow is not supported for SBAIJ matrix format. Getting the upper triangular part of row, run with -mat_getrow_uppertriangular, call MatSetOption(mat,MAT_GETROW_UPPERTRIANGULAR,PETSC_TRUE) or MatGetRowUpperTriangular()");
+  if (A && !a->getrow_utriangular) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatGetRow is not supported for SBAIJ matrix format. Getting the upper triangular part of row, run with -mat_getrow_uppertriangular, call MatSetOption(mat,MAT_GETROW_UPPERTRIANGULAR,PETSC_TRUE) or MatGetRowUpperTriangular()");
   /* Get the upper triangular part of the row */
   bs  = A->rmap->bs;
   ai  = a->i;
@@ -237,7 +237,7 @@ PetscErrorCode MatGetRow_SeqSBAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **
   aa  = a->a;
   bs2 = a->bs2;
   
-  if (row < 0 || row >= A->rmap->N) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Row %D out of range", row);
+  if (row < 0 || row >= A->rmap->N) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Row %D out of range", row);
   
   bn  = row/bs;   /* Block number */
   bp  = row % bs; /* Block position */
@@ -566,13 +566,13 @@ PetscErrorCode MatGetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
   PetscFunctionBegin;
   for (k=0; k<m; k++) { /* loop over rows */
     row  = im[k]; brow = row/bs;  
-    if (row < 0) {v += n; continue;} /* SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative row: %D",row); */
-    if (row >= A->rmap->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,A->rmap->N-1);
+    if (row < 0) {v += n; continue;} /* SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative row: %D",row); */
+    if (row >= A->rmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,A->rmap->N-1);
     rp   = aj + ai[brow] ; ap = aa + bs2*ai[brow] ;
     nrow = ailen[brow]; 
     for (l=0; l<n; l++) { /* loop over columns */
-      if (in[l] < 0) {v++; continue;} /* SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative column: %D",in[l]); */
-      if (in[l] >= A->cmap->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[l],A->cmap->n-1);
+      if (in[l] < 0) {v++; continue;} /* SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative column: %D",in[l]); */
+      if (in[l] >= A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[l],A->cmap->n-1);
       col  = in[l] ; 
       bcol = col/bs;
       cidx = col%bs; 
@@ -622,7 +622,7 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[]
     row  = im[k]; 
     if (row < 0) continue;
 #if defined(PETSC_USE_DEBUG)  
-    if (row >= a->mbs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,a->mbs-1);
+    if (row >= a->mbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,a->mbs-1);
 #endif
     rp   = aj + ai[row]; 
     ap   = aa + bs2*ai[row];
@@ -634,13 +634,13 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[]
       if (in[l] < 0) continue;
       col = in[l]; 
 #if defined(PETSC_USE_DEBUG)  
-      if (col >= a->nbs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",col,a->nbs-1);
+      if (col >= a->nbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",col,a->nbs-1);
 #endif
       if (col < row) {
         if (a->ignore_ltriangular) {
           continue; /* ignore lower triangular block */
         } else {
-          SETERRQ(PETSC_ERR_USER,"Lower triangular value cannot be set for sbaij format. Ignoring these values, run with -mat_ignore_lower_triangular or call MatSetOption(mat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE)");
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Lower triangular value cannot be set for sbaij format. Ignoring these values, run with -mat_ignore_lower_triangular or call MatSetOption(mat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE)");
         }
       }
       if (roworiented) { 
@@ -692,7 +692,7 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[]
         }
       } 
       if (nonew == 1) goto noinsert2;
-      if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col);
+      if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col);
       MatSeqXAIJReallocateAIJ(A,a->mbs,bs2,nrow,row,col,rmax,aa,ai,aj,rp,ap,imax,nonew,MatScalar);
       N = nrow++ - 1; high++;
       /* shift up all the later entries in this row */
@@ -851,7 +851,7 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
     ierr = PetscMemcpy(a->diag,ai,mbs*sizeof(PetscInt));CHKERRQ(ierr);
   } 
   if (fshift && a->nounused == -1) {
-    SETERRQ4(PETSC_ERR_PLIB, "Unused space detected in matrix: %D X %D block size %D, %D unneeded", m, A->cmap->n, A->rmap->bs, fshift*bs2);
+    SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Unused space detected in matrix: %D X %D block size %D, %D unneeded", m, A->cmap->n, A->rmap->bs, fshift*bs2);
   }
   ierr = PetscInfo5(A,"Matrix size: %D X %D, block size %D; storage space: %D unneeded, %D used\n",m,A->rmap->N,A->rmap->bs,fshift*bs2,a->nz*bs2);CHKERRQ(ierr);
   ierr = PetscInfo1(A,"Number of mallocs during MatSetValues is %D\n",a->reallocs);CHKERRQ(ierr);
@@ -940,7 +940,7 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
     brow = row/bs;      /* block row number */ 
     if (row < 0) continue;
 #if defined(PETSC_USE_DEBUG)  
-    if (row >= A->rmap->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,A->rmap->N-1);
+    if (row >= A->rmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,A->rmap->N-1);
 #endif
     rp   = aj + ai[brow]; /*ptr to beginning of column value of the row block*/
     ap   = aa + bs2*ai[brow]; /*ptr to beginning of element value of the row block*/
@@ -951,7 +951,7 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
     for (l=0; l<n; l++) { /* loop over added columns */
       if (in[l] < 0) continue;
 #if defined(PETSC_USE_DEBUG)  
-      if (in[l] >= A->rmap->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[l],A->rmap->N-1);
+      if (in[l] >= A->rmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[l],A->rmap->N-1);
 #endif
       col = in[l]; 
       bcol = col/bs;              /* block col number */
@@ -960,7 +960,7 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
         if (a->ignore_ltriangular){
           continue; /* ignore lower triangular values */
         } else {
-          SETERRQ(PETSC_ERR_USER,"Lower triangular value cannot be set for sbaij format. Ignoring these values, run with -mat_ignore_lower_triangular or call MatSetOption(mat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE)");
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Lower triangular value cannot be set for sbaij format. Ignoring these values, run with -mat_ignore_lower_triangular or call MatSetOption(mat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE)");
         }
       }
       
@@ -998,7 +998,7 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
         }      
         
         if (nonew == 1) goto noinsert1;
-        if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col);
+        if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col);
         MatSeqXAIJReallocateAIJ(A,a->mbs,bs2,nrow,brow,bcol,rmax,aa,ai,aj,rp,ap,imax,nonew,MatScalar);
         
         N = nrow++ - 1; high++;
@@ -1031,10 +1031,10 @@ PetscErrorCode MatICCFactor_SeqSBAIJ(Mat inA,IS row,const MatFactorInfo *info)
   PetscTruth     row_identity;
   
   PetscFunctionBegin;
-  if (info->levels != 0) SETERRQ(PETSC_ERR_SUP,"Only levels=0 is supported for in-place icc");
+  if (info->levels != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only levels=0 is supported for in-place icc");
   ierr = ISIdentity(row,&row_identity);CHKERRQ(ierr);
-  if (!row_identity) SETERRQ(PETSC_ERR_SUP,"Matrix reordering is not supported");
-  if (inA->rmap->bs != 1) SETERRQ1(PETSC_ERR_SUP,"Matrix block size %D is not supported",inA->rmap->bs); /* Need to replace MatCholeskyFactorSymbolic_SeqSBAIJ_MSR()! */
+  if (!row_identity) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix reordering is not supported");
+  if (inA->rmap->bs != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix block size %D is not supported",inA->rmap->bs); /* Need to replace MatCholeskyFactorSymbolic_SeqSBAIJ_MSR()! */
 
   outA            = inA; 
   inA->factortype = MAT_FACTOR_ICC;
@@ -1119,7 +1119,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetColumnIndices(Mat mat,PetscInt *
   if (f) {
     ierr = (*f)(mat,indices);CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_ERR_SUP,"Wrong type of matrix to set column indices");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Wrong type of matrix to set column indices");
   }
   PetscFunctionReturn(0);
 }
@@ -1137,7 +1137,7 @@ PetscErrorCode MatCopy_SeqSBAIJ(Mat A,Mat B,MatStructure str)
     Mat_SeqSBAIJ *b = (Mat_SeqSBAIJ*)B->data; 
 
     if (a->i[A->rmap->N] != b->i[B->rmap->N]) {
-      SETERRQ(PETSC_ERR_ARG_INCOMP,"Number of nonzeros in two matrices are different");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of nonzeros in two matrices are different");
     }
     ierr = PetscMemcpy(b->a,a->a,(a->i[A->rmap->N])*sizeof(PetscScalar));CHKERRQ(ierr);
   } else {
@@ -1226,8 +1226,8 @@ PetscErrorCode MatSetBlockSize_SeqSBAIJ(Mat A,PetscInt bs)
   PetscFunctionBegin;
   ierr = PetscLayoutGetBlockSize(A->rmap,&rbs);CHKERRQ(ierr);
   ierr = PetscLayoutGetBlockSize(A->cmap,&cbs);CHKERRQ(ierr);
-  if (rbs != bs) SETERRQ2(PETSC_ERR_ARG_SIZ,"Attempt to set block size %d with SBAIJ %d",bs,rbs);
-  if (cbs != bs) SETERRQ2(PETSC_ERR_ARG_SIZ,"Attempt to set block size %d with SBAIJ %d",bs,cbs);
+  if (rbs != bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Attempt to set block size %d with SBAIJ %d",bs,rbs);
+  if (cbs != bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Attempt to set block size %d with SBAIJ %d",bs,cbs);
   PetscFunctionReturn(0);
 }
 
@@ -1420,7 +1420,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatStoreValues_SeqSBAIJ(Mat mat)
   
   PetscFunctionBegin;
   if (aij->nonew != 1) {
-    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
   }
   
   /* allocate space for values if not already there */
@@ -1445,10 +1445,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRetrieveValues_SeqSBAIJ(Mat mat)
   
   PetscFunctionBegin;
   if (aij->nonew != 1) {
-    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
   }
   if (!aij->saved_values) {
-    SETERRQ(PETSC_ERR_ORDER,"Must call MatStoreValues(A);first");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatStoreValues(A);first");
   }
   
   /* copy values over */
@@ -1476,7 +1476,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,Pet
     bs   = PetscAbs(bs);
   }
   if (nnz && newbs != bs) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot change blocksize from command line if setting nnz");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot change blocksize from command line if setting nnz");
   }
   bs = newbs;
 
@@ -1489,7 +1489,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,Pet
   bs2  = bs*bs;
   
   if (mbs*bs != B->rmap->N) {
-    SETERRQ(PETSC_ERR_ARG_SIZ,"Number rows, cols must be divisible by blocksize");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number rows, cols must be divisible by blocksize");
   }
   
   if (nz == MAT_SKIP_ALLOCATION) {
@@ -1498,11 +1498,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,Pet
   }
 
   if (nz == PETSC_DEFAULT || nz == PETSC_DECIDE) nz = 3;
-  if (nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"nz cannot be less than 0: value %D",nz);
+  if (nz < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nz cannot be less than 0: value %D",nz);
   if (nnz) {
     for (i=0; i<mbs; i++) {
-      if (nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"nnz cannot be less than 0: local row %D value %D",i,nnz[i]);
-      if (nnz[i] > mbs) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"nnz cannot be greater than block row length: local row %D value %D rowlength %D",i,nnz[i],mbs);
+      if (nnz[i] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nnz cannot be less than 0: local row %D value %D",i,nnz[i]);
+      if (nnz[i] > mbs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nnz cannot be greater than block row length: local row %D value %D rowlength %D",i,nnz[i],mbs);
     }
   }
   
@@ -1710,7 +1710,7 @@ PetscErrorCode MatGetFactor_seqsbaij_petsc(Mat A,MatFactorType ftype,Mat *B)
     ierr = MatSeqSBAIJSetPreallocation(*B,1,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
     (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJ;
     (*B)->ops->iccfactorsymbolic      = MatICCFactorSymbolic_SeqSBAIJ;
-  } else SETERRQ(PETSC_ERR_SUP,"Factor type not supported");
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
   (*B)->factortype = ftype;
   PetscFunctionReturn(0);
 }
@@ -1767,7 +1767,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)B)->comm,&size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,"Comm must be of size 1");
+  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Comm must be of size 1");
   
   ierr    = PetscNewLog(B,Mat_SeqSBAIJ,&b);CHKERRQ(ierr);
   B->data = (void*)b;
@@ -1985,7 +1985,7 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   PetscInt       i,mbs = a->mbs,nz = a->nz,bs2 =a->bs2;
 
   PetscFunctionBegin;
-  if (a->i[mbs] != nz) SETERRQ(PETSC_ERR_PLIB,"Corrupt matrix");
+  if (a->i[mbs] != nz) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Corrupt matrix");
 
   *B = 0;
   ierr = MatCreate(((PetscObject)A)->comm,&C);CHKERRQ(ierr);
@@ -2108,17 +2108,17 @@ PetscErrorCode MatLoad_SeqSBAIJ(PetscViewer viewer, const MatType type,Mat *A)
   bs2  = bs*bs;
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,"view must have one processor");
+  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"view must have one processor");
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,header,4,PETSC_INT);CHKERRQ(ierr);
-  if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"not Mat object");
+  if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"not Mat object");
   M = header[1]; N = header[2]; nz = header[3];
 
   if (header[3] < 0) {
-    SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Matrix stored in special format, cannot load as SeqSBAIJ");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Matrix stored in special format, cannot load as SeqSBAIJ");
   }
 
-  if (M != N) SETERRQ(PETSC_ERR_SUP,"Can only do square matrices");
+  if (M != N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can only do square matrices");
 
   /* 
      This code adds extra rows to make sure the number of rows is 
@@ -2225,7 +2225,7 @@ PetscErrorCode MatLoad_SeqSBAIJ(PetscViewer viewer, const MatType type,Mat *A)
     /* zero out the mask elements we set */
     for (j=0; j<nmask; j++) mask[masked[j]] = 0;
   }
-  if (jcount != a->nz) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Bad binary matrix");
+  if (jcount != a->nz) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Bad binary matrix");
 
   ierr = PetscFree(rowlengths);CHKERRQ(ierr);
   ierr = PetscFree(s_browlengths);CHKERRQ(ierr);
@@ -2280,8 +2280,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqSBAIJWithArrays(MPI_Comm comm,Pets
   Mat_SeqSBAIJ   *sbaij;
 
   PetscFunctionBegin;
-  if (bs != 1) SETERRQ1(PETSC_ERR_SUP,"block size %D > 1 is not supported yet",bs);
-  if (i[0]) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
+  if (bs != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"block size %D > 1 is not supported yet",bs);
+  if (i[0]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
   
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat,m,n,m,n);CHKERRQ(ierr);
@@ -2302,13 +2302,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqSBAIJWithArrays(MPI_Comm comm,Pets
   for (ii=0; ii<m; ii++) {
     sbaij->ilen[ii] = sbaij->imax[ii] = i[ii+1] - i[ii];
 #if defined(PETSC_USE_DEBUG)
-    if (i[ii+1] - i[ii] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Negative row length in i (row indices) row = %d length = %d",ii,i[ii+1] - i[ii]);
+    if (i[ii+1] - i[ii] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative row length in i (row indices) row = %d length = %d",ii,i[ii+1] - i[ii]);
 #endif    
   }
 #if defined(PETSC_USE_DEBUG)
   for (ii=0; ii<sbaij->i[m]; ii++) {
-    if (j[ii] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Negative column index at location = %d index = %d",ii,j[ii]);
-    if (j[ii] > n - 1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column index to large at location = %d index = %d",ii,j[ii]);
+    if (j[ii] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative column index at location = %d index = %d",ii,j[ii]);
+    if (j[ii] > n - 1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column index to large at location = %d index = %d",ii,j[ii]);
   }
 #endif    
 

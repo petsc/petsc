@@ -57,7 +57,7 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,c
   } else {
     (*PetscErrorPrintf)("*** floating point error 0x%x occurred at pc=%X ***\n",code,SIGPC(scp));
   }
-  ierr = PetscError(PETSC_ERR_FP,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,1,"floating point error");
+  ierr = PetscError(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,1,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
   PetscFunctionReturn(0);
 }
@@ -159,7 +159,7 @@ void PetscDefaultFPTrap(int sig,siginfo_t *scp,ucontext_t *uap)
   } else {
     (*PetscErrorPrintf)("*** floating point error 0x%x occurred at pc=%X ***\n",code,SIGPC(scp));
   }
-  ierr = PetscError(0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,1,"floating point error");
+  ierr = PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,1,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 
@@ -212,7 +212,7 @@ void PetscDefaultFPTrap(unsigned exception[],int val[])
   } else{
     (*PetscErrorPrintf)("*** floating point error 0x%x occurred ***\n",code);  
   }
-  PetscError(0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,1,"floating point error");
+  PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,1,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 
@@ -278,7 +278,7 @@ void PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp)
   } else{
     (*PetscErrorPrintf)("*** floating point error 0x%x occurred ***\n",flt_context.trap);
   }
-  ierr = PetscError(0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,1,"floating point error");
+  ierr = PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,1,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 
@@ -373,7 +373,7 @@ void PetscDefaultFPTrap(int sig)
   (*PetscErrorPrintf)("configure using --with-debugging=yes, recompile, link, and run \n");
   (*PetscErrorPrintf)("with -start_in_debugger to get more information on the crash.\n");
 #endif
-  PetscError(0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,1,"trapped floating point error");
+  PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,1,"trapped floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 EXTERN_C_END
@@ -385,19 +385,19 @@ PetscErrorCode PETSC_DLLEXPORT PetscSetFPTrap(PetscFPTrap on)
   PetscFunctionBegin;
   if (on == PETSC_FP_TRAP_ON) {
     /* Clear any flags that are currently set so that activating trapping will not immediately call the signal handler. */
-    if (feclearexcept(FE_ALL_EXCEPT)) SETERRQ(PETSC_ERR_LIB,"Cannot clear floating point exception flags\n");
+    if (feclearexcept(FE_ALL_EXCEPT)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot clear floating point exception flags\n");
 #if defined FE_NOMASK_ENV
     /* We could use fesetenv(FE_NOMASK_ENV), but that causes spurious exceptions (like gettimeofday() -> PetscLogDouble). */
-    if (feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW) == -1) SETERRQ(PETSC_ERR_LIB,"Cannot activate floating point exceptions\n");
+    if (feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW) == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot activate floating point exceptions\n");
 #elif defined PETSC_HAVE_XMMINTRIN_H
     _MM_SET_EXCEPTION_MASK(_MM_MASK_INEXACT);
 #else
     /* C99 does not provide a way to modify the environment so there is no portable way to activate trapping. */
 #endif
-    if (SIG_ERR == signal(SIGFPE,PetscDefaultFPTrap)) SETERRQ(PETSC_ERR_LIB,"Can't set floating point handler\n");
+    if (SIG_ERR == signal(SIGFPE,PetscDefaultFPTrap)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Can't set floating point handler\n");
   } else {
-    if (fesetenv(FE_DFL_ENV)) SETERRQ(PETSC_ERR_LIB,"Cannot disable floating point exceptions");
-    if (SIG_ERR == signal(SIGFPE,SIG_DFL)) SETERRQ(PETSC_ERR_LIB,"Can't clear floating point handler\n");
+    if (fesetenv(FE_DFL_ENV)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot disable floating point exceptions");
+    if (SIG_ERR == signal(SIGFPE,SIG_DFL)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Can't clear floating point handler\n");
   }
   PetscFunctionReturn(0);
 }
@@ -411,7 +411,7 @@ void PetscDefaultFPTrap(int sig)
 {
   PetscFunctionBegin;
   (*PetscErrorPrintf)("*** floating point error occurred ***\n");
-  PetscError(0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,1,"floating point error");
+  PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,1,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 EXTERN_C_END

@@ -667,7 +667,7 @@ PetscErrorCode spbas_apply_reordering_rows(spbas_matrix *matrix_A, const PetscIn
    PetscErrorCode ierr;
 
    PetscFunctionBegin;
-   if (matrix_A->col_idx_type != SPBAS_DIAGONAL_OFFSETS) SETERRQ( PETSC_ERR_SUP_SYS,"must have diagonal offsets in pattern\n");
+   if (matrix_A->col_idx_type != SPBAS_DIAGONAL_OFFSETS) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS,"must have diagonal offsets in pattern\n");
 
    if (do_values)  {
      ierr = PetscMalloc( sizeof(PetscScalar*)*nrows, &vals);CHKERRQ(ierr);
@@ -712,7 +712,7 @@ PetscErrorCode spbas_apply_reordering_cols( spbas_matrix *matrix_A,const PetscIn
    PetscErrorCode ierr;
 
    PetscFunctionBegin;
-   if (matrix_A->col_idx_type != SPBAS_DIAGONAL_OFFSETS) SETERRQ( PETSC_ERR_SUP_SYS, "must have diagonal offsets in pattern\n");
+   if (matrix_A->col_idx_type != SPBAS_DIAGONAL_OFFSETS) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "must have diagonal offsets in pattern\n");
 
    for (i=0; i<nrows;i++) {
       icols   = matrix_A->icols[i];
@@ -841,10 +841,10 @@ PetscErrorCode spbas_power (spbas_matrix in_matrix,PetscInt power, spbas_matrix 
    PetscErrorCode ierr;
 
    PetscFunctionBegin;
-   if (in_matrix.col_idx_type != SPBAS_DIAGONAL_OFFSETS) SETERRQ( PETSC_ERR_SUP_SYS,"must have diagonal offsets in pattern\n");
-   if (ncols != nrows) SETERRQ( PETSC_ERR_ARG_INCOMP, "Dimension error\n");
-   if (in_matrix.values) SETERRQ( PETSC_ERR_ARG_INCOMP, "Input array must be sparseness pattern (no values)");
-   if (power<=0) SETERRQ( PETSC_ERR_SUP_SYS, "Power must be 1 or up");
+   if (in_matrix.col_idx_type != SPBAS_DIAGONAL_OFFSETS) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS,"must have diagonal offsets in pattern\n");
+   if (ncols != nrows) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Dimension error\n");
+   if (in_matrix.values) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Input array must be sparseness pattern (no values)");
+   if (power<=0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "Power must be 1 or up");
 
    /* Copy input values*/
    retval.nrows = ncols;
@@ -911,7 +911,7 @@ PetscErrorCode spbas_keep_upper( spbas_matrix * inout_matrix)
    PetscInt jstart;
 
    PetscFunctionBegin;
-   if (inout_matrix->block_data) SETERRQ( PETSC_ERR_SUP_SYS, "Not yet for block data matrices\n");
+   if (inout_matrix->block_data) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "Not yet for block data matrices\n");
    for (i=0; i<inout_matrix->nrows; i++)  {
        for (jstart=0; (jstart<inout_matrix->row_nnz[i]) && (inout_matrix->icols[i][jstart]<0); jstart++){}
        if (jstart>0) {

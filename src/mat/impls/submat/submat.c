@@ -342,13 +342,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSubMatrixUpdate(Mat N,Mat A,IS isrow,IS isc
   PetscValidHeaderSpecific(isrow,IS_CLASSID,3);
   PetscValidHeaderSpecific(iscol,IS_CLASSID,4);
   ierr = PetscTypeCompare((PetscObject)N,MATSUBMATRIX,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix has wrong type");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix has wrong type");
 
   Na = (Mat_SubMatrix*)N->data;
   ierr = ISEqual(isrow,Na->isrow,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_ERR_ARG_INCOMP,"Cannot update submatrix with different row indices");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot update submatrix with different row indices");
   ierr = ISEqual(iscol,Na->iscol,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_ERR_ARG_INCOMP,"Cannot update submatrix with different column indices");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot update submatrix with different column indices");
 
   ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
   ierr = MatDestroy(Na->A);CHKERRQ(ierr);

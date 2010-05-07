@@ -447,7 +447,7 @@ static PetscErrorCode gsi_via_bit_mask(gs_id *gs)
               ivec_binary_search(**reduce,gs->tree_map_in,gs->tree_map_sz)>=0)
             {
               t1++; 
-              if (gs->num_local_reduce[i]<=0) SETERRQ(PETSC_ERR_PLIB,"nobody in list?");
+              if (gs->num_local_reduce[i]<=0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nobody in list?");
               gs->num_local_reduce[i] *= -1;
             }
            **reduce=map[**reduce];
@@ -473,7 +473,7 @@ static PetscErrorCode gsi_via_bit_mask(gs_id *gs)
 
           for (i=0; i<t1; i++)
             {
-              if (gs->num_gop_local_reduce[i]>=0) SETERRQ(PETSC_ERR_PLIB,"they aren't negative?");
+              if (gs->num_gop_local_reduce[i]>=0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"they aren't negative?");
               gs->num_gop_local_reduce[i] *= -1;
               gs->local_reduce++;
               gs->num_local_reduce++;
@@ -575,7 +575,7 @@ static PetscErrorCode get_ngh_buf(gs_id *gs)
   buf_size = PetscMin(msg_buf,i);
 
   /* can we do it? */
-  if (p_mask_size>buf_size) SETERRQ2(PETSC_ERR_PLIB,"get_ngh_buf() :: buf<pms :: %d>%d\n",p_mask_size,buf_size);
+  if (p_mask_size>buf_size) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"get_ngh_buf() :: buf<pms :: %d>%d\n",p_mask_size,buf_size);
 
   /* get giop buf space ... make *only* one malloc */
   buf1 = (PetscInt*) malloc(buf_size<<1);
@@ -1090,7 +1090,7 @@ PetscErrorCode gs_gop_vec( gs_id *gs,  PetscScalar *vals,  const char *op,  Pets
 static PetscErrorCode gs_gop_vec_plus( gs_id *gs,  PetscScalar *vals,  PetscInt step)
 {
   PetscFunctionBegin;
-  if (!gs) {SETERRQ(PETSC_ERR_PLIB,"gs_gop_vec() passed NULL gs handle!!!");}
+  if (!gs) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"gs_gop_vec() passed NULL gs handle!!!");}
 
   /* local only operations!!! */
   if (gs->num_local)

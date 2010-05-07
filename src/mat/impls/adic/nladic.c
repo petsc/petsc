@@ -41,7 +41,7 @@ PetscErrorCode NLFNewton_DAAD(NLF A,DALocalInfo *info,MatStencil *stencil,void *
     ierr = (*A->da->adicmf_lfi)(info,stencil,ad_vu,ad_f,A->ctx);CHKERRQ(ierr);
     J    = -ad_f[1];
     f    = -ad_f[0] + residual;
-    if (f != f) SETERRQ(1,"nan");
+    if (f != f) SETERRQ(PETSC_COMM_SELF,1,"nan");
     ad_vustart[2*gI] =  ad_vustart[2*gI] - f/J;
   } while (--cnt > 0 && PetscAbsScalar(f) > 1.e-14);
 
@@ -258,7 +258,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD(NLF A,MatSORType flag,int its,Ve
   void*          *ad_vu;
 
   PetscFunctionBegin;
-  if (its <= 0) SETERRQ1(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D positive",its);
+  if (its <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D positive",its);
 
   ierr = DAGetLocalVector(A->da,&localxx);CHKERRQ(ierr);
   /* get space for derivative object.  */
@@ -348,7 +348,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD4(NLF A,MatSORType flag,int its,V
   void*          *ad_vu;
 
   PetscFunctionBegin;
-  if (its <= 0) SETERRQ1(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D positive",its);
+  if (its <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D positive",its);
   
   ierr = DAGetLocalVector(A->da,&localxx);CHKERRQ(ierr);
   /* get space for derivative object.  */
@@ -440,7 +440,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD9(NLF A,MatSORType flag,int its,V
   void*          *ad_vu;
 
   PetscFunctionBegin;
-  if (its <= 0) SETERRQ1(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D positive",its);
+  if (its <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D positive",its);
   
   ierr = DAGetLocalVector(A->da,&localxx);CHKERRQ(ierr);
   /* get space for derivative object.  */
@@ -540,11 +540,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAADb(NLF A,MatSORType flag,int its,V
   PetscErrorCode (*NLFNewton_DAADb)(NLF,DALocalInfo*,MatStencil*,void*,PetscScalar*,int,int,PetscScalar*);
 
   PetscFunctionBegin;
-  if (its <= 0) SETERRQ1(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D positive",its);
+  if (its <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D positive",its);
   if (bs == 4) {
     NLFNewton_DAADb       = NLFNewton_DAAD4;
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Point block nonlinear relaxation currently not for this block size",bs);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Point block nonlinear relaxation currently not for this block size",bs);
   }
 
   ierr = DAGetLocalVector(A->da,&localxx);CHKERRQ(ierr);

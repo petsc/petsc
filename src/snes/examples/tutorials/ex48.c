@@ -466,7 +466,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
         thi->alpha = 0.5;
         break;
       default:
-        SETERRQ1(PETSC_ERR_SUP,"HOM experiment '%c' not implemented",homexp[0]);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"HOM experiment '%c' not implemented",homexp[0]);
     }
     ierr = PetscOptionsEnum("-thi_quadrature","Quadrature to use for 3D elements","",QuadratureTypes,(PetscEnum)quad,(PetscEnum*)&quad,NULL);CHKERRQ(ierr);
     switch (quad) {
@@ -553,7 +553,7 @@ static PetscErrorCode THISetDMMG(THI thi,DMMG *dmmg)
   PetscInt i;
 
   PetscFunctionBegin;
-  if (DMMGGetLevels(dmmg) != thi->nlevels) SETERRQ(PETSC_ERR_ARG_CORRUPT,"DMMG nlevels does not agree with THI");
+  if (DMMGGetLevels(dmmg) != thi->nlevels) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMMG nlevels does not agree with THI");
   for (i=0; i<thi->nlevels; i++) {
     PetscInt Mx,My,Mz,mx,my,s,dim;
     DAStencilType  st;
@@ -592,9 +592,9 @@ static PetscErrorCode THIDAGetPrm(DA da,PrmNode ***prm)
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)da,"DA2Prm",(PetscObject*)&da2prm);CHKERRQ(ierr);
-  if (!da2prm) SETERRQ(PETSC_ERR_ARG_WRONG,"No DA2Prm composed with given DA");
+  if (!da2prm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No DA2Prm composed with given DA");
   ierr = PetscObjectQuery((PetscObject)da,"DA2Prm_Vec",(PetscObject*)&X);CHKERRQ(ierr);
-  if (!X) SETERRQ(PETSC_ERR_ARG_WRONG,"No DA2Prm_Vec composed with given DA");
+  if (!X) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No DA2Prm_Vec composed with given DA");
   ierr = DAVecGetArray(da2prm,X,prm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -609,9 +609,9 @@ static PetscErrorCode THIDARestorePrm(DA da,PrmNode ***prm)
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)da,"DA2Prm",(PetscObject*)&da2prm);CHKERRQ(ierr);
-  if (!da2prm) SETERRQ(PETSC_ERR_ARG_WRONG,"No DA2Prm composed with given DA");
+  if (!da2prm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No DA2Prm composed with given DA");
   ierr = PetscObjectQuery((PetscObject)da,"DA2Prm_Vec",(PetscObject*)&X);CHKERRQ(ierr);
-  if (!X) SETERRQ(PETSC_ERR_ARG_WRONG,"No DA2Prm_Vec composed with given DA");
+  if (!X) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No DA2Prm_Vec composed with given DA");
   ierr = DAVecRestoreArray(da2prm,X,prm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -836,7 +836,7 @@ static PetscErrorCode THISurfaceStatistics(DA da,Vec X,PetscReal *min,PetscReal 
   *min = *max = *mean = 0;
   ierr = DAGetInfo(da,0, &mz,&my,&mx, 0,0,0, 0,0,0,0);CHKERRQ(ierr);
   ierr = DAGetCorners(da,&zs,&ys,&xs,&zm,&ym,&xm);CHKERRQ(ierr);
-  if (zs != 0 || zm != mz) SETERRQ(1,"Unexpected decomposition");
+  if (zs != 0 || zm != mz) SETERRQ(PETSC_COMM_SELF,1,"Unexpected decomposition");
   ierr = DAVecGetArray(da,X,&x);CHKERRQ(ierr);
   for (i=xs; i<xs+xm; i++) {
     for (j=ys; j<ys+ym; j++) {
@@ -1224,7 +1224,7 @@ static PetscErrorCode DARefineHierarchy_THI(DA dac0,PetscInt nlevels,DA hierarch
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)dac0,"THI",(PetscObject*)&thi);CHKERRQ(ierr);
-  if (!thi) SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot refine this DA, missing composed THI instance");
+  if (!thi) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot refine this DA, missing composed THI instance");
   if (nlevels > 1) {
     ierr = DARefineHierarchy(dac0,nlevels-1,hierarchy);CHKERRQ(ierr);
     dac = hierarchy[nlevels-2];
@@ -1232,7 +1232,7 @@ static PetscErrorCode DARefineHierarchy_THI(DA dac0,PetscInt nlevels,DA hierarch
     dac = dac0;
   }
   ierr = DAGetInfo(dac,&dim, &N,&M,0, &n,&m,0, &dof,&s,0,&st);CHKERRQ(ierr);
-  if (dim != 2) SETERRQ(PETSC_ERR_ARG_WRONG,"This function can only refine 2D DAs");
+  if (dim != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"This function can only refine 2D DAs");
   /* Creates a 3D DA with the same map-plane layout as the 2D one, with contiguous columns */
   ierr = DACreate3d(((PetscObject)dac)->comm,DA_YZPERIODIC,st,thi->zlevels,N,M,1,n,m,dof,s,NULL,NULL,NULL,&daf);CHKERRQ(ierr);
   daf->ops->getmatrix        = dac->ops->getmatrix;
@@ -1259,7 +1259,7 @@ static PetscErrorCode DAGetInterpolation_THI(DA dac,DA daf,Mat *A,Vec *scale)
   PetscValidPointer(A,3);
   if (scale) PetscValidPointer(scale,4);
   ierr = PetscTypeCompare((PetscObject)dac,DA2D,&flg);
-  if (!flg) SETERRQ(PETSC_ERR_ARG_WRONG,"Expected coarse DA to be 2D");
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected coarse DA to be 2D");
   ierr = PetscTypeCompare((PetscObject)daf,DA2D,&isda2);CHKERRQ(ierr);
   if (isda2) {
     /* We are in the 2D problem and use normal DA interpolation */
@@ -1270,7 +1270,7 @@ static PetscErrorCode DAGetInterpolation_THI(DA dac,DA daf,Mat *A,Vec *scale)
 
     ierr = DAGetInfo(daf,0, &mz,&my,&mx, 0,0,0, 0,0,0,0);CHKERRQ(ierr);
     ierr = DAGetCorners(daf,&zs,&ys,&xs,&zm,&ym,&xm);CHKERRQ(ierr);
-    if (zs != 0) SETERRQ(1,"unexpected");
+    if (zs != 0) SETERRQ(PETSC_COMM_SELF,1,"unexpected");
     ierr = MatCreate(((PetscObject)daf)->comm,&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,xm*ym*zm,xm*ym,mx*my*mz,mx*my);CHKERRQ(ierr);
     
@@ -1307,7 +1307,7 @@ static PetscErrorCode DAGetMatrix_THI_Tridiagonal(DA da,const MatType mtype,Mat 
 
   PetscFunctionBegin;
   ierr = DAGetInfo(da,&dim, 0,0,0, 0,0,0, 0,0,0,0);CHKERRQ(ierr);
-  if (dim != 3) SETERRQ(PETSC_ERR_ARG_WRONG,"Expected DA to be 3D");
+  if (dim != 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected DA to be 3D");
   ierr = DAGetCorners(da,0,0,0,&zm,&ym,&xm);CHKERRQ(ierr);
   ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
   ierr = DAGetISLocalToGlobalMappingBlck(da,&ltogb);CHKERRQ(ierr);
@@ -1368,11 +1368,11 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DA da,Vec X,const char filena
         ierr = MPI_Recv(range,6,MPIU_INT,r,tag,comm,MPI_STATUS_IGNORE);CHKERRQ(ierr);
       }
       zs = range[0];ys = range[1];xs = range[2];zm = range[3];ym = range[4];xm = range[5];
-      if (xm*ym*zm*dof > nmax) SETERRQ(1,"should not happen");
+      if (xm*ym*zm*dof > nmax) SETERRQ(PETSC_COMM_SELF,1,"should not happen");
       if (r) {
         ierr = MPI_Recv(array,nmax,MPIU_SCALAR,r,tag,comm,&status);CHKERRQ(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRQ(ierr);
-        if (nn != xm*ym*zm*dof) SETERRQ(1,"should not happen");
+        if (nn != xm*ym*zm*dof) SETERRQ(PETSC_COMM_SELF,1,"should not happen");
         ptr = array;
       } else ptr = x;
       ierr = PetscViewerASCIIPrintf(viewer,"    <Piece Extent=\"%d %d %d %d %d %d\">\n",zs,zs+zm-1,ys,ys+ym-1,xs,xs+xm-1);CHKERRQ(ierr);

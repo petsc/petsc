@@ -33,7 +33,7 @@ static PetscErrorCode PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   if (!next) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC() or -pc_composite_pcs");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC() or -pc_composite_pcs");
   }
   if (next->next && !jac->work2) { /* allocate second work vector */
     ierr = VecDuplicate(jac->work1,&jac->work2);CHKERRQ(ierr);
@@ -76,10 +76,10 @@ static PetscErrorCode PCApply_Composite_Special(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   if (!next) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC() or -pc_composite_pcs");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC() or -pc_composite_pcs");
   }
   if (!next->next || next->next->next) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Special composite preconditioners requires exactly two PCs");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Special composite preconditioners requires exactly two PCs");
   }
 
   ierr = PCApply(next->pc,x,jac->work1);CHKERRQ(ierr);
@@ -97,7 +97,7 @@ static PetscErrorCode PCApply_Composite_Additive(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   if (!next) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC() or -pc_composite_pcs");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC() or -pc_composite_pcs");
   }
   ierr = PCApply(next->pc,x,y);CHKERRQ(ierr);
   while (next->next) {
@@ -202,7 +202,7 @@ static PetscErrorCode PCView_Composite(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"PCs on composite preconditioner follow\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for PCComposite",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for PCComposite",((PetscObject)viewer)->type_name);
   }
   if (iascii) {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -245,7 +245,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeSetType_Composite(PC pc,PCComposite
   } else if (type ==  PC_COMPOSITE_SPECIAL) {
     pc->ops->apply = PCApply_Composite_Special;
   } else {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Unkown composite preconditioner type");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unkown composite preconditioner type");
   }
   PetscFunctionReturn(0);
 }
@@ -306,7 +306,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeGetPC_Composite(PC pc,PetscInt n,PC
   next = jac->head;
   for (i=0; i<n; i++) {
     if (!next->next) {
-      SETERRQ(PETSC_ERR_ARG_INCOMP,"Not enough PCs in composite preconditioner");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Not enough PCs in composite preconditioner");
     }
     next = next->next;
   }
@@ -449,7 +449,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
   if (f) {
     ierr = (*f)(pc,n,subpc);CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot get pc, not composite type");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot get pc, not composite type");
   }
   PetscFunctionReturn(0);
 }

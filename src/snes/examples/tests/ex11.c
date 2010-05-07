@@ -110,7 +110,7 @@ int main( int argc, char **argv )
 
   ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param < bratu_lambda_min) {
-    SETERRQ(1,"Lambda is out of range");
+    SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
   }
   n = user.fine.mx*user.fine.my; N = user.coarse.mx*user.coarse.my;
 
@@ -524,10 +524,10 @@ PetscErrorCode FormInterpolation(AppCtx *user)
       nc = 0;
       /* one left and below; or we are right on it */
       if (j_c < j_start_ghost_c || j_c > j_start_ghost_c+n_ghost_c) {
-        SETERRQ3(1,"Sorry j %D %D %D",j_c,j_start_ghost_c,j_start_ghost_c+n_ghost_c);
+        SETERRQ3(PETSC_COMM_SELF,1,"Sorry j %D %D %D",j_c,j_start_ghost_c,j_start_ghost_c+n_ghost_c);
       }
       if (i_c < i_start_ghost_c || i_c > i_start_ghost_c+m_ghost_c) {
-        SETERRQ3(1,"Sorry i %D %D %D",i_c,i_start_ghost_c,i_start_ghost_c+m_ghost_c);
+        SETERRQ3(PETSC_COMM_SELF,1,"Sorry i %D %D %D",i_c,i_start_ghost_c,i_start_ghost_c+m_ghost_c);
       }
       col      = m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c);
       cols[nc] = idx_c[col];

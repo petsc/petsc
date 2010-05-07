@@ -36,8 +36,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscMemcmp(const void *str1,const void *str2,siz
   int r;
 
   PetscFunctionBegin;
-  if (len > 0 && !str1) SETERRQ(PETSC_ERR_ARG_NULL,"Trying to compare at a null pointer");
-  if (len > 0 && !str2) SETERRQ(PETSC_ERR_ARG_NULL,"Trying to compare at a null pointer");
+  if (len > 0 && !str1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to compare at a null pointer");
+  if (len > 0 && !str2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to compare at a null pointer");
   r = memcmp((char *)str1,(char *)str2,len);
   if (!r) *e = PETSC_TRUE;
   else    *e = PETSC_FALSE;
@@ -75,8 +75,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscMemcmp(const void *str1,const void *str2,siz
 PetscErrorCode PETSC_DLLEXPORT PetscMemmove(void *a,void *b,size_t n)
 {
   PetscFunctionBegin;
-  if (n > 0 && !a) SETERRQ(PETSC_ERR_ARG_NULL,"Trying to copy to null pointer");
-  if (n > 0 && !b) SETERRQ(PETSC_ERR_ARG_NULL,"Trying to copy from a null pointer");
+  if (n > 0 && !a) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy to null pointer");
+  if (n > 0 && !b) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy from a null pointer");
 #if !defined(PETSC_HAVE_MEMMOVE)
   if (a < b) {
     if (a <= b - n) {

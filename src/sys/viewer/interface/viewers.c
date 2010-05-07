@@ -96,7 +96,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewersGetViewer(PetscViewers viewers,PetscI
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (n < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Cannot access using a negative index - %d\n",n);
+  if (n < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Cannot access using a negative index - %d\n",n);
   if (n >= viewers->n) {
     PetscViewer *v;
     int    newn = n + 64; /* add 64 new ones at a time */

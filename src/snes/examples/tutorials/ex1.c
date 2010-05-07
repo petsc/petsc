@@ -97,7 +97,7 @@ int main(int argc,char **argv)
     */
     ierr = SNESSetJacobian(snes,J,J,FormJacobian1,PETSC_NULL);CHKERRQ(ierr);
   } else {
-    if (size != 1) SETERRQ(1,"This case is a uniprocessor example only!");
+    if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This case is a uniprocessor example only!");
     ierr = SNESSetFunction(snes,r,FormFunction2,PETSC_NULL);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,FormJacobian2,PETSC_NULL);CHKERRQ(ierr);
   }

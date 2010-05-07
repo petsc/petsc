@@ -140,7 +140,7 @@ PetscErrorCode MatLUFactorNumeric_Matlab(Mat F,Mat A,const MatFactorInfo *info)
 PetscErrorCode MatLUFactorSymbolic_Matlab(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   PetscFunctionBegin;
-  if (A->cmap->N != A->rmap->N) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
+  if (A->cmap->N != A->rmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"matrix must be square"); 
   F->ops->lufactornumeric    = MatLUFactorNumeric_Matlab;
   F->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -164,7 +164,7 @@ PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype,Mat *F)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (A->cmap->N != A->rmap->N) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
+  if (A->cmap->N != A->rmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"matrix must be square"); 
   ierr                         = MatCreate(((PetscObject)A)->comm,F);CHKERRQ(ierr);
   ierr                         = MatSetSizes(*F,A->rmap->n,A->cmap->n,A->rmap->n,A->cmap->n);CHKERRQ(ierr);
   ierr                         = MatSetType(*F,((PetscObject)A)->type_name);CHKERRQ(ierr);

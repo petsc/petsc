@@ -46,7 +46,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocAlign(size_t mem,int line,const char f
     }
   }
 #endif
-  if (!*result)  SETERRQ1(PETSC_ERR_MEM,"Memory requested %.0f",(PetscLogDouble)mem); 
+  if (!*result)  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MEM,"Memory requested %.0f",(PetscLogDouble)mem); 
   return 0;
 }
 
@@ -61,15 +61,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscFreeAlign(void *ptr,int line,const char func
     the original address provided by the system malloc().
   */
   shift = *(((int*)ptr)-1) - SHIFT_CLASSID;   
-  if (shift > PETSC_MEMALIGN-1) return PetscError(line,func,file,dir,1,1,"Likely memory corruption in heap");
-  if (shift < 0) return PetscError(line,func,file,dir,1,1,"Likely memory corruption in heap");
+  if (shift > PETSC_MEMALIGN-1) return PetscError(PETSC_COMM_SELF,line,func,file,dir,1,1,"Likely memory corruption in heap");
+  if (shift < 0) return PetscError(PETSC_COMM_SELF,line,func,file,dir,1,1,"Likely memory corruption in heap");
   ptr   = (void*)(((int*)ptr) - shift);
 #endif
 
 #if defined(PETSC_HAVE_FREE_RETURN_INT)
   int err = free(ptr); 
   if (err) {
-    return PetscError(line,func,file,dir,1,1,"System free returned error %d\n",err);
+    return PetscError(PETSC_COMM_SELF,line,func,file,dir,1,1,"System free returned error %d\n",err);
   }
 #else 
   free(ptr);
@@ -88,7 +88,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFreeDefault(void *ptr,int line,char *func,ch
 #if defined(PETSC_HAVE_FREE_RETURN_INT)
   int err = free(ptr); 
   if (err) {
-    return PetscError(line,func,file,dir,1,1,"System free returned error %d\n",err);
+    return PetscError(PETSC_COMM_SELF,line,func,file,dir,1,1,"System free returned error %d\n",err);
   }
 #else 
   free(ptr);
@@ -124,7 +124,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocSet(PetscErrorCode (*imalloc)(size_t,i
                                               PetscErrorCode (*ifree)(void*,int,const char[],const char[],const char[]))
 {
   PetscFunctionBegin;
-  if (petscsetmallocvisited && (imalloc != PetscTrMalloc || ifree != PetscTrFree)) SETERRQ(PETSC_ERR_SUP,"cannot call multiple times");
+  if (petscsetmallocvisited && (imalloc != PetscTrMalloc || ifree != PetscTrFree)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"cannot call multiple times");
   PetscTrMalloc               = imalloc;
   PetscTrFree                 = ifree;
   petscsetmallocvisited       = PETSC_TRUE;

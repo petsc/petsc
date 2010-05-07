@@ -668,7 +668,7 @@ namespace ALE {
           }
         }
         if (k != numLocalVertices*dim) {
-          SETERRQ2(PETSC_ERR_PLIB, "Invalid number of coordinates to send %d should be %d", k, numLocalVertices*dim);
+          SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of coordinates to send %d should be %d", k, numLocalVertices*dim);
         }
         ierr = MPI_Send(&numLocalVertices, 1, MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
         ierr = MPI_Send(localCoords, numLocalVertices*dim, MPI_DOUBLE, 0, 1, mesh->comm());CHKERRQ(ierr);
@@ -696,7 +696,7 @@ namespace ALE {
 
       PetscFunctionBegin;
       if (dim != 3) {
-        SETERRQ(PETSC_ERR_SUP, "PyLith only supports 3D meshes.");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "PyLith only supports 3D meshes.");
       }
       if (corners == 4) {
         // Linear tetrahedron
@@ -705,7 +705,7 @@ namespace ALE {
         // Linear hexahedron
         elementType = 1;
       } else {
-        SETERRQ1(PETSC_ERR_SUP, "PyLith Error: Unsupported number of elements vertices: %d", corners);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "PyLith Error: Unsupported number of elements vertices: %d", corners);
       }
       ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"#     N ETP MAT INF     N1     N2     N3     N4     N5     N6     N7     N8\n");CHKERRQ(ierr);
@@ -771,7 +771,7 @@ namespace ALE {
           }
         }
         if (k != numLocalElements*corners) {
-          SETERRQ2(PETSC_ERR_PLIB, "Invalid number of vertices to send %d should be %d", k, numLocalElements*corners);
+          SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of vertices to send %d should be %d", k, numLocalElements*corners);
         }
         ierr = MPI_Send(&numLocalElements, 1, MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
         ierr = MPI_Send(localVertices, numLocalElements*(corners+1), MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
@@ -827,7 +827,7 @@ namespace ALE {
 
       PetscFunctionBegin;
       if (dim != 3) {
-        SETERRQ(PETSC_ERR_SUP, "PyLith only supports 3D meshes.");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "PyLith only supports 3D meshes.");
       }
       if (corners == 4) {
         // Linear tetrahedron
@@ -836,7 +836,7 @@ namespace ALE {
         // Linear hexahedron
         elementType = 1;
       } else {
-        SETERRQ1(PETSC_ERR_SUP, "PyLith Error: Unsupported number of elements vertices: %d", corners);
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "PyLith Error: Unsupported number of elements vertices: %d", corners);
       }
       ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"#     N ETP MAT INF     N1     N2     N3     N4     N5     N6     N7     N8\n");CHKERRQ(ierr);

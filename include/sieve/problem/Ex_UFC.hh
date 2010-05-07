@@ -835,7 +835,7 @@ namespace ALE {
 	  ierr = DMMGSetSNESLocal(this->_dmmg, ALE::Problem::UFCFunctions::Rhs_Unstructured, ALE::Problem::UFCFunctions::Jac_Unstructured_Stored, 0, 0);CHKERRQ(ierr);
 #endif
 	} else {
-	  SETERRQ1(PETSC_ERR_ARG_WRONG, "Assembly type not supported: %d", opAssembly());
+	  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Assembly type not supported: %d", opAssembly());
 	}
 	ierr = DMMGSetFromOptions(this->_dmmg);CHKERRQ(ierr);
 	if (bcType() == ALE::Problem::NEUMANN) {
