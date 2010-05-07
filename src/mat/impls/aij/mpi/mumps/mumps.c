@@ -39,7 +39,7 @@ typedef struct {
   PetscScalar    *val;
   MPI_Comm       comm_mumps;
   VecScatter     scat_rhs, scat_sol;
-  PetscTruth     isAIJ,CleanUpMUMPS;
+  PetscTruth     isAIJ,CleanUpMUMPS,mumpsview;
   Vec            b_seq,x_seq;
   PetscErrorCode (*MatDestroy)(Mat);
 } Mat_MUMPS;
@@ -475,9 +475,9 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
     }
   }
   (F)->assembled   = PETSC_TRUE;
-  lu->matstruc      = SAME_NONZERO_PATTERN;
-  lu->CleanUpMUMPS  = PETSC_TRUE;
-  lu->nSolve        = 0;
+  lu->matstruc     = SAME_NONZERO_PATTERN;
+  lu->CleanUpMUMPS = PETSC_TRUE;
+  lu->nSolve       = 0;
   PetscFunctionReturn(0);
 }
 
@@ -492,6 +492,7 @@ PetscErrorCode PetscSetMUMPSOptions(Mat F, Mat A)
 
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"MUMPS Options","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-mat_mumps_view","View MUMPS parameters","None",lu->mumpsview,&lu->mumpsview,PETSC_NULL);CHKERRQ(ierr);
   if (lu->size == 1){
     lu->id.ICNTL(18) = 0;   /* centralized assembled matrix input */
   } else {
@@ -738,7 +739,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SBAIJMUMPS(Mat F,Mat A,IS r,const MatFa
   F->ops->choleskyfactornumeric =  MatFactorNumeric_MUMPS;
   F->ops->solve                 =  MatSolve_MUMPS;
 #if !defined(PETSC_USE_COMPLEX)
-  (F)->ops->getinertia            =  MatGetInertia_SBAIJMUMPS;
+  (F)->ops->getinertia          =  MatGetInertia_SBAIJMUMPS;
 #endif
   PetscFunctionReturn(0);
 }
@@ -751,12 +752,6 @@ PetscErrorCode MatFactorInfo_MUMPS(Mat A,PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* check if matrix is mumps type */
-  if (A->ops->solve != MatSolve_MUMPS) PetscFunctionReturn(0);
-
-  ierr = PetscViewerASCIIPrintf(viewer,"MUMPS run parameters:\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  SYM (matrix type):                  %d \n",lu->id.sym);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  PAR (host participation):           %d \n",lu->id.par);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(1) (output for error):        %d \n",lu->id.ICNTL(1));CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(2) (output of diagnostic msg):%d \n",lu->id.ICNTL(2));CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(3) (output for global info):  %d \n",lu->id.ICNTL(3));CHKERRQ(ierr);
@@ -800,26 +795,26 @@ PetscErrorCode MatFactorInfo_MUMPS(Mat A,PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(5) (fixation for null pivots):         %g \n",lu->id.CNTL(5));CHKERRQ(ierr);
 
   /* infomation local to each processor */
-  if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "      RINFO(1) (local estimated flops for the elimination after analysis): \n");CHKERRQ(ierr);}
-  ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"             [%d] %g \n",lu->myid,lu->id.RINFO(1));CHKERRQ(ierr);
+  if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "              RINFO(1) (local estimated flops for the elimination after analysis): \n");CHKERRQ(ierr);}
+  ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"              [%d] %g \n",lu->myid,lu->id.RINFO(1));CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(((PetscObject)A)->comm);
-  if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "      RINFO(2) (local estimated flops for the assembly after factorization): \n");CHKERRQ(ierr);}
-  ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"             [%d]  %g \n",lu->myid,lu->id.RINFO(2));CHKERRQ(ierr);
+  if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "              RINFO(2) (local estimated flops for the assembly after factorization): \n");CHKERRQ(ierr);}
+  ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"              [%d]  %g \n",lu->myid,lu->id.RINFO(2));CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(((PetscObject)A)->comm);
-  if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "      RINFO(3) (local estimated flops for the elimination after factorization): \n");CHKERRQ(ierr);}
-  ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"             [%d]  %g \n",lu->myid,lu->id.RINFO(3));CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(((PetscObject)A)->comm);
-
-  if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "      INFO(15) (estimated size of (in MB) MUMPS internal data for running numerical factorization): \n");CHKERRQ(ierr);}
-  ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"             [%d] %d \n",lu->myid,lu->id.INFO(15));CHKERRQ(ierr);
+  if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "              RINFO(3) (local estimated flops for the elimination after factorization): \n");CHKERRQ(ierr);}
+  ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"              [%d]  %g \n",lu->myid,lu->id.RINFO(3));CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(((PetscObject)A)->comm);
 
-  if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "      INFO(16) (size of (in MB) MUMPS internal data used during numerical factorization): \n");CHKERRQ(ierr);}
-  ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"             [%d] %d \n",lu->myid,lu->id.INFO(16));CHKERRQ(ierr);
+  if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "              INFO(15) (estimated size of (in MB) MUMPS internal data for running numerical factorization): \n");CHKERRQ(ierr);}
+  ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"              [%d] %d \n",lu->myid,lu->id.INFO(15));CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(((PetscObject)A)->comm);
 
-  if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "      INFO(23) (num of pivots eliminated on this processor after factorization): \n");CHKERRQ(ierr);}
-  ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"             [%d] %d \n",lu->myid,lu->id.INFO(23));CHKERRQ(ierr);
+  if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "              INFO(16) (size of (in MB) MUMPS internal data used during numerical factorization): \n");CHKERRQ(ierr);}
+  ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"              [%d] %d \n",lu->myid,lu->id.INFO(16));CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(((PetscObject)A)->comm);
+
+  if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "              INFO(23) (num of pivots eliminated on this processor after factorization): \n");CHKERRQ(ierr);}
+  ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"              [%d] %d \n",lu->myid,lu->id.INFO(23));CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(((PetscObject)A)->comm);
 
   if (!lu->myid){ /* information from the host */
@@ -861,13 +856,22 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscTruth        iascii;
   PetscViewerFormat format;
+  Mat_MUMPS         *mumps=(Mat_MUMPS*)A->spptr;
 
   PetscFunctionBegin;
+  /* check if matrix is mumps type */
+  if (A->ops->solve != MatSolve_MUMPS) PetscFunctionReturn(0);
+
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    if (format == PETSC_VIEWER_ASCII_INFO){
-      ierr = MatFactorInfo_MUMPS(A,viewer);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_ASCII_INFO || mumps->mumpsview){
+      ierr = PetscViewerASCIIPrintf(viewer,"MUMPS run parameters:\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  SYM (matrix type):                  %d \n",mumps->id.sym);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  PAR (host participation):           %d \n",mumps->id.par);CHKERRQ(ierr);
+      if (mumps->mumpsview){ /* View all MUMPS parameters */
+        ierr = MatFactorInfo_MUMPS(A,viewer);CHKERRQ(ierr);
+      }
     }
   }
   PetscFunctionReturn(0);
@@ -877,12 +881,12 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
 #define __FUNCT__ "MatGetInfo_MUMPS"
 PetscErrorCode MatGetInfo_MUMPS(Mat A,MatInfoType flag,MatInfo *info)
 {
-  Mat_MUMPS  *lu =(Mat_MUMPS*)A->spptr;
+  Mat_MUMPS  *mumps =(Mat_MUMPS*)A->spptr;
 
   PetscFunctionBegin;
   info->block_size        = 1.0;
-  info->nz_allocated      = lu->id.INFOG(20);
-  info->nz_used           = lu->id.INFOG(20);
+  info->nz_allocated      = mumps->id.INFOG(20);
+  info->nz_used           = mumps->id.INFOG(20);
   info->nz_unneeded       = 0.0;
   info->assemblies        = 0.0;
   info->mallocs           = 0.0;
