@@ -48,7 +48,7 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
   KSP_Broyden    *cg = (KSP_Broyden*)ksp->data;
   Mat            Amat;
   Vec            X,B,R,Pold,P,*V = cg->v,*W = cg->w;
-  PetscScalar    gdot;
+  PetscScalar    gdot,A0;
   PetscReal      gnorm;
 
   PetscFunctionBegin;
@@ -85,7 +85,8 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
     ierr  = VecDotNorm2(Pold,y,&rdot,&abr);CHKERRQ(ierr);   /*   rdot = (p)^T(BAp); abr = (BAp)^T (BAp) */
     ierr = VecDestroy(y);CHKERRQ(ierr);
     ierr = VecDestroy(w);CHKERRQ(ierr);
-    ierr = VecAXPY(X,rdot/abr,Pold);CHKERRQ(ierr);             /*   x  <- x + scale p */
+    A0 = rdot/abr;
+    ierr = VecAXPY(X,A0,Pold);CHKERRQ(ierr);             /*   x  <- x + scale p */
   } else {
     ierr = VecAXPY(X,1.0,Pold);CHKERRQ(ierr);                    /*     x = x + p */
   }
@@ -106,6 +107,7 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
       ierr = (*ksp->converged)(ksp,1+k+i,gnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); 
       if (ksp->reason) PetscFunctionReturn(0);
 
+      ierr = VecScale(P,A0);CHKERRQ(ierr);
       for (j=0; j<i; j++) {                                     /* p = product_{j<i} [I+v(j)w(j)^T]*p */
         ierr = VecDot(W[j],P,&gdot);CHKERRQ(ierr);
         ierr = VecAXPY(P,gdot,V[j]);CHKERRQ(ierr);

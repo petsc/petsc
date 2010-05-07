@@ -32,6 +32,8 @@ PetscInt    PETSCMAT_DLLEXPORT MatSetValue_Row = 0;
 PetscInt    PETSCMAT_DLLEXPORT MatSetValue_Column = 0;
 PetscScalar PETSCMAT_DLLEXPORT MatSetValue_Value = 0.0;
 
+const char *MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT","MatFactorType","MAT_FACTOR_",0};
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetDiagonalBlock"
 /*@
@@ -3643,9 +3645,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat mat, const MatSolverPackage t
     PetscTruth flag;
     ierr = PetscStrcasecmp(MAT_SOLVER_PETSC,type,&flag);CHKERRQ(ierr);
     if (flag) {
-      SETERRQ1(PETSC_ERR_SUP,"Matrix format %s does not have a built-in PETSc direct solver",((PetscObject)mat)->type_name);
+      SETERRQ2(PETSC_ERR_SUP,"Matrix format %s does not have a built-in PETSc %s",((PetscObject)mat)->type_name,MatFactorTypes[ftype]);
     } else {
-      SETERRQ3(PETSC_ERR_SUP,"Matrix format %s does not have a solver %s. Perhaps you must ./configure with --download-%s",((PetscObject)mat)->type_name,type,type);
+      SETERRQ4(PETSC_ERR_SUP,"Matrix format %s does not have a solver package %s for %s. Perhaps you must ./configure with --download-%s",((PetscObject)mat)->type_name,type,MatFactorTypes[ftype],type);
     }
   }
   ierr = (*conv)(mat,ftype,f);CHKERRQ(ierr);
