@@ -10,9 +10,9 @@ int main(int argc,char **args)
   PetscMPIInt        size;
   PetscErrorCode     ierr;
   Vec                x,y,b,s1,s2;      
-  Mat                A;             /* linear system matrix */ 
+  Mat                A;                /* linear system matrix */ 
   Mat                sA,sB,sC;         /* symmetric part of the matrices */ 
-  PetscInt           n,mbs=16,bs=1,nz=3,prob=1,i,j,col[3],lf,block, row,Ii,J,n1,inc; 
+  PetscInt           n,mbs=16,bs=1,nz=3,prob=1,i,j,k1,k2,col[3],lf,block, row,Ii,J,n1,inc; 
   PetscReal          norm1,norm2,rnorm,tol=1.e-10;
   PetscScalar        neg_one = -1.0,four=4.0,value[3];  
   IS                 perm, iscol;
@@ -29,7 +29,12 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRQ(ierr);
 
   n = mbs*bs;
-  ierr=MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,n,n,nz,PETSC_NULL, &A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,n,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATSEQBAIJ);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr); 
+  ierr = MatSeqBAIJSetPreallocation(A,bs,nz,PETSC_NULL);CHKERRQ(ierr);
+
   ierr = MatCreate(PETSC_COMM_SELF,&sA);CHKERRQ(ierr);
   ierr = MatSetSizes(sA,n,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(sA,MATSEQSBAIJ);CHKERRQ(ierr);
@@ -66,8 +71,8 @@ int main(int argc,char **args)
       value[0] = 0.1; value[1] = -1.0; value[2]=2;
       ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
       ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
-    }
-    else if (prob ==2){ /* matrix for the five point stencil */
+
+    } else if (prob ==2){ /* matrix for the five point stencil */
       n1 = (int) (sqrt((PetscReal)n) + 0.001); 
       if (n1*n1 - n) SETERRQ(PETSC_ERR_ARG_WRONG,"sqrt(n) must be a positive interger!"); 
       for (i=0; i<n1; i++) {
@@ -98,8 +103,8 @@ int main(int argc,char **args)
         }
       }                   
     }
-  } 
-  else { /* bs > 1 */
+
+  } else { /* bs > 1 */
     for (block=0; block<n/bs; block++){
       /* diagonal blocks */
       value[0] = -1.0; value[1] = 4.0; value[2] = -1.0;
@@ -131,16 +136,24 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  /* PetscPrintf(PETSC_COMM_SELF,"\n The Matrix: \n");
-  MatView(A, PETSC_VIEWER_DRAW_WORLD);
-  MatView(A, PETSC_VIEWER_STDOUT_WORLD); */ 
-
+ 
   ierr = MatAssemblyBegin(sA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(sA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
-  /* PetscPrintf(PETSC_COMM_SELF,"\n Symmetric Part of Matrix: \n");
-  MatView(sA, PETSC_VIEWER_DRAW_WORLD); 
-  MatView(sA, PETSC_VIEWER_STDOUT_WORLD); 
+
+  /* Test MatGetInfo() of A and sA */
+  ierr = MatGetInfo(A,MAT_LOCAL,&minfo1);CHKERRQ(ierr);
+  ierr = MatGetInfo(sA,MAT_LOCAL,&minfo2);CHKERRQ(ierr);
+  /*
+  printf("A matrix nonzeros (BAIJ format) = %d, allocated nonzeros= %d\n", (int)minfo1.nz_used,(int)minfo1.nz_allocated); 
+  printf("sA matrix nonzeros(SBAIJ format) = %d, allocated nonzeros= %d\n", (int)minfo2.nz_used,(int)minfo2.nz_allocated); 
   */
+  i = (int) (minfo1.nz_used - minfo2.nz_used); 
+  j = (int) (minfo1.nz_allocated - minfo2.nz_allocated);
+  k1 = (int) (minfo1.nz_allocated - minfo1.nz_used);
+  k2 = (int) (minfo2.nz_allocated - minfo2.nz_used);
+  if (i < 0 || j < 0 || k1 < 0 || k2 < 0) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error (compare A and sA): MatGetInfo()\n");CHKERRQ(ierr);
+  }
 
   /* Test MatDuplicate() */
   ierr = MatNorm(A,NORM_FROBENIUS,&norm1);CHKERRQ(ierr); 
@@ -176,9 +189,11 @@ int main(int argc,char **args)
   printf("matrix nonzeros(SBAIJ format) = %d, allocated nonzeros= %d\n", (int)minfo2.nz_used,(int)minfo2.nz_allocated); 
   */
   i = (int) (minfo1.nz_used - minfo2.nz_used); 
-  j = (int) (minfo2.nz_allocated - minfo2.nz_used);
-  if (i<0 || j<0) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetInfo()\n");CHKERRQ(ierr);
+  j = (int) (minfo1.nz_allocated - minfo2.nz_allocated);
+  k1 = (int) (minfo1.nz_allocated - minfo1.nz_used);
+  k2 = (int) (minfo2.nz_allocated - minfo2.nz_used);
+  if (i < 0 || j < 0 || k1 < 0 || k2 < 0) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error(compare A and sB): MatGetInfo()\n");CHKERRQ(ierr);
   }
 
   ierr = MatGetSize(A,&Ii,&J);CHKERRQ(ierr);
