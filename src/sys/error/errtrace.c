@@ -241,7 +241,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(MPI_Comm comm,int line
    Not Collective
 
    Input Parameters:
-+  line - the line number of the error (indicated by __LINE__)
++  comm - communicator over which error occurred
+.  line - the line number of the error (indicated by __LINE__)
 .  func - the function where error is detected (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __SDIR__)
@@ -262,7 +263,7 @@ $     SETERROR(number,p,mess)
 
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler()
  @*/
-void PETSC_DLLEXPORT PetscTraceBackErrorHandlerCxx(int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,int p, std::ostringstream& msg)
+void PETSC_DLLEXPORT PetscTraceBackErrorHandlerCxx(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,int p, std::ostringstream& msg)
 {
   if (p == 1) {
     PetscLogDouble mem, rss;

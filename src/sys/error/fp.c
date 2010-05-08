@@ -12,7 +12,9 @@
   check PETSC_HAVE_FENV_H, and only define _GNU_SOURCE in that case, but such
   shenanigans ought to be unnecessary.
 */
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 #include "petscsys.h"           /*I  "petscsys.h"  I*/
 #include <signal.h>

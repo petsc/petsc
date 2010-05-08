@@ -95,17 +95,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonalBlock(Mat A,PetscTruth *iscopy,M
    Level: advanced
 
 @*/
-PetscErrorCode  MatGetTrace(Mat mat, PetscScalar * trace)
+PetscErrorCode  MatGetTrace(Mat mat,PetscScalar *trace)
 {
    PetscErrorCode ierr;
-   PetscInt       ncols, nrows;
    Vec            diag;
 
    PetscFunctionBegin;
-   ierr = MatGetSize(mat, &nrows, &ncols);CHKERRQ(ierr);
-   ierr = VecCreateSeq(PETSC_COMM_WORLD, ncols, &diag);CHKERRQ(ierr);
+   ierr = MatGetVecs(mat,&diag,PETSC_NULL);CHKERRQ(ierr);
    ierr = MatGetDiagonal(mat,diag);CHKERRQ(ierr);
-   ierr = VecSum(diag, trace);CHKERRQ(ierr);
+   ierr = VecSum(diag,trace);CHKERRQ(ierr);
    ierr = VecDestroy(diag);CHKERRQ(ierr);
    PetscFunctionReturn(0);
 }

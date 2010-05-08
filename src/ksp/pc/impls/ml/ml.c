@@ -713,9 +713,10 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
   PC_MG           *mg = (PC_MG*)pc->data;
   PC_ML           *pc_ml = (PC_ML*)mg->innerctx;
   PetscMPIInt     size;
+  MPI_Comm        comm = ((PetscObject)pc)->comm;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscOptionsHead("ML options");CHKERRQ(ierr); 
   PrintLevel    = 0;
   indx          = 0; 
@@ -738,8 +739,8 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
     We also try to set some sane defaults when energy minimization is activated, otherwise it's hard to find a working
     combination of options and ML's exit(1) explanations don't help matters.
   */
-  if (pc_ml->EnergyMinimization < -1 || pc_ml->EnergyMinimization > 4) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"EnergyMinimization must be in range -1..4");
-  if (pc_ml->EnergyMinimization == 4 && size > 1) SETERRQ(PETSC_ERR_SUP,"Energy minimization type 4 does not work in parallel");
+  if (pc_ml->EnergyMinimization < -1 || pc_ml->EnergyMinimization > 4) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"EnergyMinimization must be in range -1..4");
+  if (pc_ml->EnergyMinimization == 4 && size > 1) SETERRQ(comm,PETSC_ERR_SUP,"Energy minimization type 4 does not work in parallel");
   if (pc_ml->EnergyMinimization == 4) {ierr = PetscInfo(pc,"Mandel's energy minimization scheme is experimental and broken in ML-6.2");CHKERRQ(ierr);}
   if (pc_ml->EnergyMinimization) {
     ierr = PetscOptionsReal("-pc_ml_EnergyMinimizationDropTol","Energy minimization drop tolerance","None",pc_ml->EnergyMinimizationDropTol,&pc_ml->EnergyMinimizationDropTol,PETSC_NULL);CHKERRQ(ierr);
