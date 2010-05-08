@@ -556,7 +556,7 @@ void PETSC_DLLEXPORT PetscErrorCxx(MPI_Comm comm,int line,const char *func,const
 
   std::ostringstream msg;
 
-  PetscTraceBackErrorHandlerCxx(line, func, file, dir, n, p, msg);
+  PetscTraceBackErrorHandlerCxx(PETSC_COMM_SELF,line, func, file, dir, n, p, msg);
 
   /* 
       If this is called from the main() routine we call MPI_Abort() instead of 
