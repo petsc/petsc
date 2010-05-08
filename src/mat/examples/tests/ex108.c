@@ -16,7 +16,7 @@ int main(int argc,char **argv) {
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This is a uniprocessor example only!");
+  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   /* Create a aij matrix for checking */
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,5,5,2,PETSC_NULL,&A);CHKERRQ(ierr); 

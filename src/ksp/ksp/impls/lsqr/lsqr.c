@@ -31,11 +31,9 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)ksp->pc,PCNONE,&nopreconditioner);CHKERRQ(ierr);
-  if (ksp->pc_side == PC_SYMMETRIC){
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"no symmetric preconditioning for KSPLSQR");
-  } else if (ksp->pc_side == PC_RIGHT){
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"no right preconditioning for KSPLSQR");
-  }
+  if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"no symmetric preconditioning for KSPLSQR");
+  else if (ksp->pc_side == PC_RIGHT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"no right preconditioning for KSPLSQR");
+ 
   /*  nopreconditioner =PETSC_FALSE; */
 
   lsqr->nwork_m = 2;

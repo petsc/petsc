@@ -48,9 +48,8 @@ PetscErrorCode    KSPSetUp_LGMRES(KSP ksp)
   KSP_LGMRES     *lgmres = (KSP_LGMRES *)ksp->data;
 
   PetscFunctionBegin;
-  if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"no symmetric preconditioning for KSPLGMRES");
-  }
+  if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"no symmetric preconditioning for KSPLGMRES");
+
   max_k         = lgmres->max_k;
   aug_dim       = lgmres->aug_dim;
   ierr          = KSPSetUp_GMRES(ksp);CHKERRQ(ierr);
@@ -354,9 +353,8 @@ PetscErrorCode KSPSolve_LGMRES(KSP ksp)
   PetscInt       ii;        /*LGMRES_MOD variable */
 
   PetscFunctionBegin;
-  if (ksp->calc_sings && !lgmres->Rsvd) {
-     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
-  }
+  if (ksp->calc_sings && !lgmres->Rsvd) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
+ 
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its        = 0;
   lgmres->aug_ct  = 0;
@@ -777,8 +775,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMRESSetAugDim_LGMRES(KSP ksp,PetscInt aug
   KSP_LGMRES *lgmres = (KSP_LGMRES *)ksp->data;
 
   PetscFunctionBegin;
-  if (aug_dim < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Augmentation dimension must be positive");
-  if (aug_dim > (lgmres->max_k -1))  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Augmentation dimension must be <= (restart size-1)");
+  if (aug_dim < 0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Augmentation dimension must be positive");
+  if (aug_dim > (lgmres->max_k -1))  SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Augmentation dimension must be <= (restart size-1)");
   lgmres->aug_dim = aug_dim;
   PetscFunctionReturn(0);
 }

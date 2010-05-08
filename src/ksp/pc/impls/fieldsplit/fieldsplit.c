@@ -1,8 +1,5 @@
 #define PETSCKSP_DLL
 
-/*
-
-*/
 #include "private/pcimpl.h"     /*I "petscpc.h" I*/
 
 const char *PCFieldSplitSchurPreTypes[] = {"self","diag","user","PCFieldSplitSchurPreType","PC_FIELDSPLIT_SCHUR_PRE_",0};
@@ -227,13 +224,9 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       ierr = ISComplement(ilink->is,nmin,nmax,&is2);CHKERRQ(ierr);
       ierr = PCFieldSplitSetIS(pc,is2);CHKERRQ(ierr);
       ierr = ISDestroy(is2);CHKERRQ(ierr);
-    } else {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must provide at least two sets of fields to PCFieldSplit()");
-    }
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must provide at least two sets of fields to PCFieldSplit()");
   }
-  if (jac->nsplits < 2) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unhandled case, must have at least two fields");
-  }
+  if (jac->nsplits < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unhandled case, must have at least two fields");
   PetscFunctionReturn(0);
 }
 
@@ -340,7 +333,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
   if (jac->type == PC_COMPOSITE_SCHUR) {
     IS       ccis;
     PetscInt rstart,rend;
-    if (nsplit != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"To use Schur complement preconditioner you must have exactly 2 fields");
+    if (nsplit != 2) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_INCOMP,"To use Schur complement preconditioner you must have exactly 2 fields");
 
     /* When extracting off-diagonal submatrices, we take complements from this range */
     ierr  = MatGetOwnershipRangeColumn(pc->mat,&rstart,&rend);CHKERRQ(ierr);
@@ -719,7 +712,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields_FieldSplit(PC pc,PetscIn
   PetscInt          i;
 
   PetscFunctionBegin;
-  if (n <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative number of fields requested");
+  if (n <= 0) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Negative number of fields requested");
   for (i=0; i<n; i++) {
     if (fields[i] >= jac->bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Field %D requested but only %D exist",fields[i],jac->bs);
     if (fields[i] < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative field %D requested",fields[i]);
@@ -973,9 +966,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitGetSubKSP(PC pc,PetscInt *n,KSP *s
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFieldSplitGetSubKSP_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,n,subksp);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot get subksp for this type of PC");
-  }
+  } else SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG,"Cannot get subksp for this type of PC");
   PetscFunctionReturn(0);
 }
 
@@ -1063,7 +1054,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitGetSchurBlocks(PC pc,Mat *A,Mat *B
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  if (jac->type != PC_COMPOSITE_SCHUR) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "FieldSplit is not using a Schur complement approach.");}
+  if (jac->type != PC_COMPOSITE_SCHUR) {SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG, "FieldSplit is not using a Schur complement approach.");}
   if (A) *A = jac->pmat[0];
   if (B) *B = jac->B;
   if (C) *C = jac->C;

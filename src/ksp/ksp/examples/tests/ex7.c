@@ -40,7 +40,7 @@ int main(int argc,char **args)
      (matrix and right-hand-side vector).
   */
   ierr = PetscOptionsGetString(PETSC_NULL,"-f0",file[0],PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"Must indicate binary file with the -f0 option");
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f0 option");
 
 
   /* 

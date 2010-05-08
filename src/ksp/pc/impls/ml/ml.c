@@ -278,7 +278,7 @@ static PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
   PetscScalar           *ml_vals=matdata->values,*aa;
   
   PetscFunctionBegin;
-  if ( mlmat->getrow == NULL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"mlmat->getrow = NULL");
+  if (!mlmat->getrow) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"mlmat->getrow = NULL");
   if (m != n){ /* ML Pmat and Rmat are in CSR format. Pass array pointers into SeqAIJ matrix */
     if (reuse){
       Mat_SeqAIJ  *aij= (Mat_SeqAIJ*)(*newmat)->data;
@@ -386,7 +386,7 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,Mat *newmat)
   Mat                   A;
 
   PetscFunctionBegin;
-  if (mlmat->getrow == NULL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"mlmat->getrow = NULL");
+  if (!mlmat->getrow) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"mlmat->getrow = NULL");
   n = mlmat->invec_leng;
   if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m %d must equal to n %d",m,n);
 
@@ -519,9 +519,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
     ierr = MatConvert_MPIAIJ_ML(A,PETSC_NULL,MAT_INITIAL_MATRIX,&Aloc);CHKERRQ(ierr);
   } else if (isSeq) {
     Aloc = A;
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid matrix type for ML. ML can only handle AIJ matrices.");
-  }
+  } else SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG, "Invalid matrix type for ML. ML can only handle AIJ matrices.");
 
   /* create and initialize struct 'PetscMLdata' */
   ierr = PetscNewLog(pc,FineGridCtx,&PetscMLdata);CHKERRQ(ierr); 

@@ -26,7 +26,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 #if defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_SELF,1,"This example does not work with complex numbers");
+  SETERRQ(PETSC_COMM_WORLD,1,"This example does not work with complex numbers");
 #else
   
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,PETSC_NULL);CHKERRQ(ierr);

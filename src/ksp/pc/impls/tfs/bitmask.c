@@ -117,11 +117,9 @@ PetscErrorCode set_bit_mask( PetscInt *bm, PetscInt len, PetscInt val)
 {
    PetscInt i, offset;
    char mask = 1;
-  char *cptr;
+   char *cptr;
 
-
-  if (len_bit_mask(val)>len)
-    {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"The Bit Mask Isn't That Large!");}
+  if (len_bit_mask(val)>len) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"The Bit Mask Isn't That Large!");
 
   cptr = (char *) bm;
 

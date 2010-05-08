@@ -46,13 +46,13 @@
      &     fd,ierr)
       if (ierr .ne. 0) then
         print*, 'Unable to open file ',f
-        SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
+        SETERRQ(PETSC_COMM_WORLD,1,' ',ierr)
       endif
 
       call MatLoad(fd,MATSEQAIJ,A,ierr)
       if (ierr .ne. 0) then
         print*, 'Unable to load matrix '
-        SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
+        SETERRQ(PETSC_COMM_WORLD,1,' ',ierr)
       endif
 
       call VecLoad(fd,PETSC_NULL_CHARACTER,b,ierr)

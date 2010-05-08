@@ -28,7 +28,7 @@ int main(int argc,char *argv[])
     ierr = PetscOptionsInt("-n","Global number of nodes","",N,&N,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-bs","Block size (1 or 2)","",bs,&bs,PETSC_NULL);CHKERRQ(ierr);
     if (bs != 1) {
-      if (bs != 2) SETERRQ(PETSC_COMM_SELF,1,"Block size must be 1 or 2");
+      if (bs != 2) SETERRQ(PETSC_COMM_WORLD,1,"Block size must be 1 or 2");
       ierr = PetscOptionsReal("-alpha","Inverse time step for wave operator","",alpha,&alpha,PETSC_NULL);CHKERRQ(ierr);
       ierr = PetscOptionsReal("-K","Bulk modulus of compressibility","",K,&K,PETSC_NULL);CHKERRQ(ierr);
       ierr = PetscOptionsReal("-rho0","Reference density","",rho0,&rho0,PETSC_NULL);CHKERRQ(ierr);

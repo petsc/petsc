@@ -123,7 +123,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplicationIS(AO ao,IS is)
   PetscValidHeaderSpecific(ao,AO_CLASSID,1);
   PetscValidHeaderSpecific(is,IS_CLASSID,2);
   ierr = ISBlock(is,&flag);CHKERRQ(ierr);
-  if (flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot translate block index sets");
+  if (flag) SETERRQ(((PetscObject)ao)->comm,PETSC_ERR_SUP,"Cannot translate block index sets");
   ierr = ISStride(is,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = ISStrideToGeneral(is);CHKERRQ(ierr);
@@ -170,7 +170,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetscIS(AO ao,IS is)
   PetscValidHeaderSpecific(ao,AO_CLASSID,1);
   PetscValidHeaderSpecific(is,IS_CLASSID,2);
   ierr = ISBlock(is,&flag);CHKERRQ(ierr);
-  if (flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot translate block index sets");
+  if (flag) SETERRQ(((PetscObject)ao)->comm,PETSC_ERR_SUP,"Cannot translate block index sets");
   ierr = ISStride(is,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = ISStrideToGeneral(is);CHKERRQ(ierr);

@@ -232,21 +232,21 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetVertexDivision(DA da, const PetscInt lx[],
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (lx) {
-    if (da->m < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot set vertex division before setting number of procs");
+    if (da->m < 0) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot set vertex division before setting number of procs");
     if (!da->lx) {
       ierr = PetscMalloc(da->m*sizeof(PetscInt), &da->lx);CHKERRQ(ierr);
     }
     ierr = PetscMemcpy(da->lx, lx, da->m*sizeof(PetscInt));CHKERRQ(ierr);
   }
   if (ly) {
-    if (da->n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot set vertex division before setting number of procs");
+    if (da->n < 0) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot set vertex division before setting number of procs");
     if (!da->ly) {
       ierr = PetscMalloc(da->n*sizeof(PetscInt), &da->ly);CHKERRQ(ierr);
     }
     ierr = PetscMemcpy(da->ly, ly, da->n*sizeof(PetscInt));CHKERRQ(ierr);
   }
   if (lz) {
-    if (da->p < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot set vertex division before setting number of procs");
+    if (da->p < 0) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot set vertex division before setting number of procs");
     if (!da->lz) {
       ierr = PetscMalloc(da->p*sizeof(PetscInt), &da->lz);CHKERRQ(ierr);
     }
@@ -703,7 +703,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARefineHierarchy(DA da,PetscInt nlevels,DA daf
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (nlevels < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nlevels cannot be negative");
+  if (nlevels < 0) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"nlevels cannot be negative");
   if (nlevels == 0) PetscFunctionReturn(0);
   PetscValidPointer(daf,3);
 
@@ -756,7 +756,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACoarsenHierarchy(DA da,PetscInt nlevels,DA da
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (nlevels < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nlevels cannot be negative");
+  if (nlevels < 0) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"nlevels cannot be negative");
   if (nlevels == 0) PetscFunctionReturn(0);
   PetscValidPointer(dac,3);
   ierr = DACoarsen(da,((PetscObject)da)->comm,&dac[0]);CHKERRQ(ierr);

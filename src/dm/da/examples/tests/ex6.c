@@ -42,15 +42,15 @@ int main(int argc,char **argv)
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-distribute",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
-    if (m == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,1,"Must set -m option with -distribute option");
+    if (m == PETSC_DECIDE) SETERRQ(PETSC_COMM_WORLD,1,"Must set -m option with -distribute option");
     ierr = PetscMalloc(m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
     for (i=0; i<m-1; i++) { lx[i] = 4;}
     lx[m-1] = M - 4*(m-1);
-    if (n == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,1,"Must set -n option with -distribute option");
+    if (n == PETSC_DECIDE) SETERRQ(PETSC_COMM_WORLD,1,"Must set -n option with -distribute option");
     ierr = PetscMalloc(n*sizeof(PetscInt),&ly);CHKERRQ(ierr);
     for (i=0; i<n-1; i++) { ly[i] = 2;}
     ly[n-1] = N - 2*(n-1);
-    if (p == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,1,"Must set -p option with -distribute option");
+    if (p == PETSC_DECIDE) SETERRQ(PETSC_COMM_WORLD,1,"Must set -p option with -distribute option");
     ierr = PetscMalloc(p*sizeof(PetscInt),&lz);CHKERRQ(ierr);
     for (i=0; i<p-1; i++) { lz[i] = 2;}
     lz[p-1] = P - 2*(p-1);

@@ -81,7 +81,7 @@ int main(int argc,char **args)
      (matrix and right-hand-side vector).
   */
   ierr = PetscOptionsGetString(PETSC_NULL,"-f0",file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"Must indicate binary file with the -f0 option");
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f0 option");
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
 

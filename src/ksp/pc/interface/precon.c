@@ -349,11 +349,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApply(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
-  if (x == y) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"x and y must be different vectors");
+  if (x == y) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
-  if (!pc->ops->apply) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"PC does not have apply");
+  if (!pc->ops->apply) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"PC does not have apply");
   ierr = PetscLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->apply)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
@@ -391,11 +391,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplySymmetricLeft(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
-  if (x == y) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"x and y must be different vectors");
+  if (x == y) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
-  if (!pc->ops->applysymmetricleft) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"PC does not have left symmetric apply");
+  if (!pc->ops->applysymmetricleft) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"PC does not have left symmetric apply");
   ierr = PetscLogEventBegin(PC_ApplySymmetricLeft,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applysymmetricleft)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_ApplySymmetricLeft,pc,x,y,0);CHKERRQ(ierr);
@@ -433,11 +433,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplySymmetricRight(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
-  if (x == y) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"x and y must be different vectors");
+  if (x == y) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
-  if (!pc->ops->applysymmetricright) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"PC does not have left symmetric apply");
+  if (!pc->ops->applysymmetricright) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"PC does not have left symmetric apply");
   ierr = PetscLogEventBegin(PC_ApplySymmetricRight,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applysymmetricright)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_ApplySymmetricRight,pc,x,y,0);CHKERRQ(ierr);
@@ -472,11 +472,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplyTranspose(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
-  if (x == y) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"x and y must be different vectors");
+  if (x == y) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
-  if (!pc->ops->applytranspose) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"PC does not have apply transpose");
+  if (!pc->ops->applytranspose) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"PC does not have apply transpose");
   ierr = PetscLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applytranspose)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
@@ -543,13 +543,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Ve
   PetscValidHeaderSpecific(x,VEC_CLASSID,3);
   PetscValidHeaderSpecific(y,VEC_CLASSID,4);
   PetscValidHeaderSpecific(work,VEC_CLASSID,5);
-  if (x == y) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"x and y must be different vectors");
-  if (side != PC_LEFT && side != PC_SYMMETRIC && side != PC_RIGHT) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Side must be right, left, or symmetric");
-  }
-  if (pc->diagonalscale && side == PC_SYMMETRIC) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot include diagonal scaling with symmetric preconditioner application");
-  }
+  if (x == y) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_IDN,"x and y must be different vectors");
+  if (side != PC_LEFT && side != PC_SYMMETRIC && side != PC_RIGHT) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Side must be right, left, or symmetric");
+  if (pc->diagonalscale && side == PC_SYMMETRIC) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Cannot include diagonal scaling with symmetric preconditioner application");
 
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
@@ -573,9 +569,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Ve
       ierr = MatMult(pc->mat,y,work);CHKERRQ(ierr);
       ierr = PCApply(pc,work,y);CHKERRQ(ierr);
       ierr = PCDiagonalScaleLeft(pc,y,y);CHKERRQ(ierr);
-    } else if (side == PC_SYMMETRIC) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot provide diagonal scaling with symmetric application of preconditioner");
-    }
+    } else if (side == PC_SYMMETRIC) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Cannot provide diagonal scaling with symmetric application of preconditioner");
   } else {
     if (pc->ops->applyBA) {
       ierr = (*pc->ops->applyBA)(pc,side,x,y,work);CHKERRQ(ierr);
@@ -633,14 +627,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplyBAorABTranspose(PC pc,PCSide side,Vec x
   PetscValidHeaderSpecific(x,VEC_CLASSID,3);
   PetscValidHeaderSpecific(y,VEC_CLASSID,4);
   PetscValidHeaderSpecific(work,VEC_CLASSID,5);
-  if (x == y) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"x and y must be different vectors");
+  if (x == y) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->ops->applyBAtranspose) {
     ierr = (*pc->ops->applyBAtranspose)(pc,side,x,y,work);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  if (side != PC_LEFT && side != PC_RIGHT) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Side must be right or left");
-  }
+  if (side != PC_LEFT && side != PC_RIGHT) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Side must be right or left");
 
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
@@ -735,11 +727,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,Pets
   PetscValidHeaderSpecific(b,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   PetscValidHeaderSpecific(w,VEC_CLASSID,4);
-  if (b == y) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"b and y must be different vectors");
+  if (b == y) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_IDN,"b and y must be different vectors");
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
-  if (!pc->ops->applyrichardson) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"PC does not have apply richardson");
+  if (!pc->ops->applyrichardson) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"PC does not have apply richardson");
   ierr = (*pc->ops->applyrichardson)(pc,b,y,w,rtol,abstol,dtol,its,guesszero,outits,reason);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -772,8 +764,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetUp(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-
-  if (!pc->mat) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix must be set first");}
+  if (!pc->mat) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Matrix must be set first");
 
   if (pc->setupcalled > 1) {
     ierr = PetscInfo(pc,"Setting PC with identical preconditioner\n");CHKERRQ(ierr);
@@ -1583,7 +1574,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCComputeExplicitOperator(PC pc,Mat *mat)
   comm = ((PetscObject)pc)->comm;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
-  if (!pc->pmat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"You must call KSPSetOperators() or PCSetOperators() before this call");
+  if (!pc->pmat) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ORDER,"You must call KSPSetOperators() or PCSetOperators() before this call");
   ierr = MatGetVecs(pc->pmat,&in,0);CHKERRQ(ierr);
   ierr = VecDuplicate(in,&out);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(in,&start,&end);CHKERRQ(ierr);

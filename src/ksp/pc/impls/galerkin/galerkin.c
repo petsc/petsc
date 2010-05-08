@@ -40,7 +40,7 @@ static PetscErrorCode PCSetUp_Galerkin(PC pc)
   PetscFunctionBegin;
   if (!jac->x) {
     ierr = KSPGetOperatorsSet(jac->ksp,&a,PETSC_NULL);CHKERRQ(ierr);
-    if (!a) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must set operator of PCGALERKIN KSP with PCGalerkinGetKSP()/KSPSetOperators()");
+    if (!a) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set operator of PCGALERKIN KSP with PCGalerkinGetKSP()/KSPSetOperators()");
     ierr   = KSPGetVecs(jac->ksp,1,&xx,1,&yy);CHKERRQ(ierr);    
     jac->x = *xx;
     jac->b = *yy;
@@ -48,7 +48,7 @@ static PetscErrorCode PCSetUp_Galerkin(PC pc)
     ierr   = PetscFree(yy);CHKERRQ(ierr);
   }
   if (!jac->R && !jac->P) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must set restriction or interpolation of PCGALERKIN with PCGalerkinSetRestriction/Interpolation()");
+    SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set restriction or interpolation of PCGALERKIN with PCGalerkinSetRestriction/Interpolation()");
   }
   /* should check here that sizes of R/P match size of a */
   PetscFunctionReturn(0);
@@ -237,9 +237,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinGetKSP(PC pc,KSP *ksp)
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCGalerkinGetKSP_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,ksp);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot get KSP, not Galerkin type");
-  }
+  } else SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG,"Cannot get KSP, not Galerkin type");
   PetscFunctionReturn(0);
 }
 

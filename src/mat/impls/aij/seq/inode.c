@@ -1234,9 +1234,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
 
   node_max = a->inode.node_count; 
   ns       = a->inode.size;
-  if (!ns){                   
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Matrix without inode information");
-  }
+  if (!ns) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Matrix without inode information");
 
   /* If max inode size > 4, split it into two inodes.*/
   /* also map the inode sizes according to the ordering */
@@ -1964,9 +1962,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
   
   node_max = a->inode.node_count; 
   ns       = a->inode.size;
-  if (!ns){                   
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Matrix without inode information");
-  }
+  if (!ns) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Matrix without inode information");
 
   /* If max inode size > 3, split it into two inodes.*/
   /* also map the inode sizes according to the ordering */

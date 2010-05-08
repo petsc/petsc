@@ -329,19 +329,19 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetGathers(Mat A, PetscInt blockcount, Ma
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatDDSetDefaultBlockType"
-PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetDefaltBlockType(Mat A, const MatType type) {
+PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetDefaltBlockType(Mat A, const MatType type) 
+{
   Mat_DD  *dd = (Mat_DD*)A->data;
   PetscFunctionBegin;
-  if(!type){
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER, "Unknown default block type");
-  }
+  if (!type) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER, "Unknown default block type");
   dd->default_block_type = type;
   PetscFunctionReturn(0);
 }/* MatDDSetDefaultBlockType()*/
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatDDGetDefaultBlockType"
-PetscErrorCode PETSCMAT_DLLEXPORT MatDDGetDefaltBlockType(Mat A, const MatType *type) {
+PetscErrorCode PETSCMAT_DLLEXPORT MatDDGetDefaltBlockType(Mat A, const MatType *type) 
+{
   Mat_DD  *dd = (Mat_DD*)A->data;
   PetscFunctionBegin;
   *type = dd->default_block_type;

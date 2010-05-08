@@ -26,7 +26,7 @@ int main(int argc,char **args)
   /* Read in matrix and RHS */
   ierr = PetscOptionsGetString(PETSC_NULL,"-fin",filein,PETSC_MAX_PATH_LEN-1,&opt);CHKERRQ(ierr);
   if (!opt) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "No filename was specified for this test");
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG, "No filename was specified for this test");
   }
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

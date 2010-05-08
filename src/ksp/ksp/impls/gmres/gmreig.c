@@ -13,7 +13,7 @@ PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,Pet
       The Cray math libraries on T3D/T3E, and early versions of Intel Math Kernel Libraries (MKL)
       for PCs do not seem to have the DGESVD() lapack routines
   */
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"GESVD - Lapack routine is unavailable\nNot able to provide singular value estimates.");
+  SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"GESVD - Lapack routine is unavailable\nNot able to provide singular value estimates.");
 #else
   KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
   PetscErrorCode ierr;
@@ -70,7 +70,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
   PetscBLASInt   zero = 0,idummy = PetscBLASIntCast(N);
 
   PetscFunctionBegin;
-  if (nmax < n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
+  if (nmax < n) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
   *neig = n;
 
   if (!n) {
@@ -116,7 +116,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
   ierr = PetscFree(perm);CHKERRQ(ierr);
 #elif defined(PETSC_MISSING_LAPACK_GEEV) 
   PetscFunctionBegin;
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
+  SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
 #elif !defined(PETSC_USE_COMPLEX)
   KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
   PetscErrorCode ierr;
@@ -130,7 +130,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
   bN = PetscBLASIntCast(N);
   lwork = PetscBLASIntCast(5*N);
   idummy = PetscBLASIntCast(N);
-  if (nmax < n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
+  if (nmax < n) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
   *neig = n;
 
   if (!n) {
@@ -163,7 +163,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
   bN = PetscBLASIntCast(N);
   lwork = PetscBLASIntCast(5*N);
   idummy = PetscBLASIntCast(N);
-  if (nmax < n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
+  if (nmax < n) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
   *neig = n;
 
   if (!n) {

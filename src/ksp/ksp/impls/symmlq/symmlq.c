@@ -13,11 +13,8 @@ PetscErrorCode KSPSetUp_SYMMLQ(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ksp->pc_side == PC_RIGHT) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No right preconditioning for KSPSYMMLQ");
-  } else if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No symmetric preconditioning for KSPSYMMLQ");
-  }
+  if (ksp->pc_side == PC_RIGHT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"No right preconditioning for KSPSYMMLQ");
+  else if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"No symmetric preconditioning for KSPSYMMLQ");
   ierr = KSPDefaultGetWork(ksp,9);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

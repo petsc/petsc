@@ -187,9 +187,9 @@ PetscErrorCode MeshView_Sieve(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscViewer
   } else if (isbinary) {
     ierr = MeshView_Sieve_Binary(mesh, viewer);CHKERRQ(ierr);
   } else if (isdraw){ 
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Draw viewer not implemented for Mesh");
+    SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP, "Draw viewer not implemented for Mesh");
   } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", ((PetscObject)viewer)->type_name);
+    SETERRQ1(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", ((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -449,7 +449,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh mesh, const MatType mtype, M
 
   PetscFunctionBegin;
   ierr = MeshHasSectionReal(mesh, "default", &flag);CHKERRQ(ierr);
-  if (!flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
+  if (!flag) SETERRQ(((PetscObject)mesh)->comm,PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = MeshCreateMatrix(m, m->getRealSection("default"), mtype, J);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject) *J, "mesh", (PetscObject) mesh);CHKERRQ(ierr);
@@ -786,7 +786,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateLocalVector(Mesh mesh, Vec *lvec)
 
   PetscFunctionBegin;
   ierr = MeshHasSectionReal(mesh, "default", &flag);CHKERRQ(ierr);
-  if (!flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
+  if (!flag) SETERRQ(((PetscObject)mesh)->comm,PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   const int size = m->getRealSection("default")->getStorageSize();
 
@@ -819,7 +819,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateLocalVector(Mesh mesh, Vec *lvec)
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalIndices(Mesh mesh,PetscInt *idx[])
 {
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "");
+  SETERRQ(((PetscObject)mesh)->comm,PETSC_ERR_SUP, "");
 }
 
 #undef __FUNCT__
@@ -1152,7 +1152,7 @@ PetscErrorCode assembleVector(Vec b, Mesh mesh, SectionReal section, PetscInt e,
   //firstElement = elementBundle->getLocalSizes()[bundle->getCommRank()];
   firstElement = 0;
 #ifdef PETSC_USE_COMPLEX
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "SectionReal does not support complex update");
+  SETERRQ(((PetscObject)mesh)->comm,PETSC_ERR_SUP, "SectionReal does not support complex update");
 #else
   if (mode == INSERT_VALUES) {
     m->update(s, PETSC_MESH_TYPE::point_type(e + firstElement), v);
@@ -1212,7 +1212,7 @@ PetscErrorCode updateOperator(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& m, const A
 PetscErrorCode updateOperator(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& m, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& section, const ALE::Obj<PETSC_MESH_TYPE::order_type>& globalOrder, int tag, int p, PetscScalar array[], InsertMode mode)
 {
 #ifdef PETSC_OPT_SIEVE
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "This is not applicable for optimized sieves");
+  SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP, "This is not applicable for optimized sieves");
 #else
   const int *offsets, *indices;
   PetscErrorCode ierr;
@@ -1382,7 +1382,7 @@ PetscErrorCode assembleMatrix(Mat A, Mesh mesh, SectionReal section, PetscInt e,
 PetscErrorCode preallocateMatrix(const ALE::Obj<PETSC_MESH_TYPE>& mesh, const int bs, const ALE::Obj<PETSC_MESH_TYPE::real_section_type::atlas_type>& atlas, const ALE::Obj<PETSC_MESH_TYPE::order_type>& globalOrder, Mat A)
 {
 #ifdef PETSC_OPT_SIEVE
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "This is not applicable for optimized sieves");
+  SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP, "This is not applicable for optimized sieves");
 #else
   PetscInt       localSize = globalOrder->getLocalSize();
   PetscInt      *dnz, *onz;

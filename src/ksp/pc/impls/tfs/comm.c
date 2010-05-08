@@ -39,8 +39,7 @@ PetscErrorCode comm_init (void)
   MPI_Comm_size(MPI_COMM_WORLD,&num_nodes);
   MPI_Comm_rank(MPI_COMM_WORLD,&my_id);
 
-  if (num_nodes> (INT_MAX >> 1))
-  {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Can't have more then MAX_INT/2 nodes!!!");}
+  if (num_nodes> (INT_MAX >> 1)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Can't have more then MAX_INT/2 nodes!!!");
 
   ivec_zero((PetscInt*)edge_node,sizeof(PetscInt)*32);
 
@@ -82,8 +81,7 @@ PetscErrorCode giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs)
     {SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"giop() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
 
   /* non-uniform should have at least two entries */
-  if ((oprs[0] == NON_UNIFORM)&&(n<2))
-    {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"giop() :: non_uniform and n=0,1?");}    
+  if ((oprs[0] == NON_UNIFORM)&&(n<2)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"giop() :: non_uniform and n=0,1?");
 
   /* check to make sure comm package has been initialized */
   if (!p_init)
@@ -182,8 +180,7 @@ PetscErrorCode grop(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *
     {SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"grop() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
 
   /* non-uniform should have at least two entries */
-  if ((oprs[0] == NON_UNIFORM)&&(n<2))
-    {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"grop() :: non_uniform and n=0,1?");}    
+  if ((oprs[0] == NON_UNIFORM)&&(n<2)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"grop() :: non_uniform and n=0,1?");
 
   /* check to make sure comm package has been initialized */
   if (!p_init)
@@ -278,8 +275,7 @@ PetscErrorCode grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscIn
     {SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"grop_hc() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
 
   /* non-uniform should have at least two entries */
-  if ((oprs[0] == NON_UNIFORM)&&(n<2))
-    {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"grop_hc() :: non_uniform and n=0,1?");}    
+  if ((oprs[0] == NON_UNIFORM)&&(n<2)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"grop_hc() :: non_uniform and n=0,1?");
 
   /* check to make sure comm package has been initialized */
   if (!p_init)
@@ -290,8 +286,7 @@ PetscErrorCode grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscIn
     {PetscFunctionReturn(0);}
 
   /* the error msg says it all!!! */
-  if (modfl_num_nodes)
-    {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"grop_hc() :: num_nodes not a power of 2!?!");}
+  if (modfl_num_nodes) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"grop_hc() :: num_nodes not a power of 2!?!");
 
   /* a negative number of items to send ==> fatal */
   if (n<0)
@@ -466,8 +461,7 @@ PetscErrorCode giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *opr
     {SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"giop_hc() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
 
   /* non-uniform should have at least two entries */
-  if ((oprs[0] == NON_UNIFORM)&&(n<2))
-    {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"giop_hc() :: non_uniform and n=0,1?");}    
+  if ((oprs[0] == NON_UNIFORM)&&(n<2)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"giop_hc() :: non_uniform and n=0,1?");
 
   /* check to make sure comm package has been initialized */
   if (!p_init)
@@ -478,8 +472,7 @@ PetscErrorCode giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *opr
     {  PetscFunctionReturn(0);}
 
   /* the error msg says it all!!! */
-  if (modfl_num_nodes)
-    {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"giop_hc() :: num_nodes not a power of 2!?!");}
+  if (modfl_num_nodes) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"giop_hc() :: num_nodes not a power of 2!?!");
 
   /* a negative number of items to send ==> fatal */
   if (n<0)

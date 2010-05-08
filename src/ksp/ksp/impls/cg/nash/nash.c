@@ -33,7 +33,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPNASHSetRadius(KSP ksp, PetscReal radius)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  if (radius < 0.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Radius negative");
+  if (radius < 0.0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE, "Radius negative");
   ierr = PetscObjectQueryFunction((PetscObject)ksp, "KSPNASHSetRadius_C", (void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp, radius);CHKERRQ(ierr);
@@ -103,7 +103,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPNASHGetObjFcn(KSP ksp, PetscReal *o_fcn)
 PetscErrorCode KSPSolve_NASH(KSP ksp)
 {
 #ifdef PETSC_USE_COMPLEX
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "NASH is not available for complex systems");
+  SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP, "NASH is not available for complex systems");
 #else
   KSP_NASH       *cg = (KSP_NASH *)ksp->data;
   PetscErrorCode ierr;
@@ -126,13 +126,8 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
   /***************************************************************************/
 
   ierr = PCDiagonalScale(ksp->pc, &diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
-  }
-
-  if (cg->radius < 0.0) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Input error: radius < 0");
-  }
+  if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
+  if (cg->radius < 0.0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE, "Input error: radius < 0");
 
   /***************************************************************************/
   /* Get the workspace vectors and initialize variables                      */
@@ -627,11 +622,8 @@ PetscErrorCode KSPSetUp_NASH(KSP ksp)
   /* an error otherwise.                                                     */
   /***************************************************************************/
 
-  if (ksp->pc_side == PC_RIGHT) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "No right preconditioning for KSPNASH");
-  } else if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "No symmetric preconditioning for KSPNASH");
-  }
+  if (ksp->pc_side == PC_RIGHT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP, "No right preconditioning for KSPNASH");
+  else if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP, "No symmetric preconditioning for KSPNASH");
 
   /***************************************************************************/
   /* Set work vectors needed by conjugate gradient method and allocate       */

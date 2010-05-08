@@ -36,7 +36,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if(size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only\n");
+  if(size != 1) SETERRQ(PETSC_COMM_WORLD,1,"This is a uniprocessor example only\n");
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
 

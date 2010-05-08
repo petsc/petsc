@@ -64,9 +64,7 @@ PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat A)
   ierr = PetscObjectQuery((PetscObject)A,"Mat_MatMatMultMPI",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
     ierr = PetscContainerGetPointer(container,(void **)&mult);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
   A->ops->destroy = mult->MatDestroy;
   ierr = PetscObjectCompose((PetscObject)A,"Mat_MatMatMultMPI",0);CHKERRQ(ierr);
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
@@ -86,9 +84,7 @@ PetscErrorCode MatDuplicate_MPIAIJ_MatMatMult(Mat A, MatDuplicateOption op, Mat 
   ierr = PetscObjectQuery((PetscObject)A,"Mat_MatMatMultMPI",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
     ierr  = PetscContainerGetPointer(container,(void **)&mult);CHKERRQ(ierr); 
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
   /* Note: the container is not duplicated, because it requires deep copying of
      several large data sets (see PetscContainerDestroy_Mat_MatMatMultMPI()).
      These data sets are only used for repeated calling of MatMatMultNumeric(). 
@@ -156,9 +152,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C)
   ierr = PetscObjectQuery((PetscObject)C,"Mat_MatMatMultMPI",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
     ierr  = PetscContainerGetPointer(container,(void **)&mult);CHKERRQ(ierr); 
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
 
   seq = &mult->B_seq;
   ierr = MatGetSubMatrices(B,1,&mult->isrowb,&mult->iscolb,MAT_REUSE_MATRIX,&seq);CHKERRQ(ierr);

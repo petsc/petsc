@@ -183,10 +183,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqUSFFT(Vec sampleCoords, DA freqDA,
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)inda, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER, "Parallel DA (in) not yet supported by USFFT"); 
+  if (size > 1) SETERRQ(comm,PETSC_ERR_USER, "Parallel DA (in) not yet supported by USFFT"); 
   ierr = PetscObjectGetComm((PetscObject)outda, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER, "Parallel DA (out) not yet supported by USFFT"); 
+  if (size > 1) SETERRQ(comm,PETSC_ERR_USER, "Parallel DA (out) not yet supported by USFFT"); 
   ierr = MatCreate(comm,A);CHKERRQ(ierr);
   ierr = PetscNewLog(*A,Mat_USFFT,&usfft);CHKERRQ(ierr);
   (*A)->data = (void*)usfft;

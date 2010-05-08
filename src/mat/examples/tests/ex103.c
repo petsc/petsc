@@ -56,9 +56,7 @@ int main(int argc,char **args)
   /* Test MatDuplicate() */
   ierr = MatDuplicate(C,MAT_COPY_VALUES,&C1);CHKERRQ(ierr); 
   ierr = MatEqual(C,C1,&flg);CHKERRQ(ierr);
-  if (!flg){
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Duplicate C1 != C");
-  }
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Duplicate C1 != C");
 
   /* Test LU Factorization */
   ierr = MatGetOrdering(C1,MATORDERING_NATURAL,&perm,&iperm);CHKERRQ(ierr);

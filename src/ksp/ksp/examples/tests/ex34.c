@@ -74,7 +74,7 @@ int main(int argc,char **args)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-nodesize",&nodesize,PETSC_NULL);CHKERRQ(ierr);
-  if (size % nodesize) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MPI_COMM_WORLD size must be divisible by nodesize");
+  if (size % nodesize) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MPI_COMM_WORLD size must be divisible by nodesize");
 
   /* Read matrix */
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,PETSC_NULL);CHKERRQ(ierr);

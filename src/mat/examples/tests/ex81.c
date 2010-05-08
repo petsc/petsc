@@ -31,10 +31,10 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
 #if defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_SELF,1,"This example does not work with complex numbers");
+  SETERRQ(PETSC_COMM_WORLD,1,"This example does not work with complex numbers");
 #endif
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_SELF,1,"Only runs on one processor");
+  if (size > 1) SETERRQ(PETSC_COMM_WORLD,1,"Only runs on one processor");
 
   ierr = PetscOptionsGetString(PETSC_NULL,"-fin",bfile,PETSC_MAX_PATH_LEN-1,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL,"-fout",hbfile,PETSC_MAX_PATH_LEN-1,PETSC_NULL);CHKERRQ(ierr);

@@ -362,8 +362,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateMapping(MPI_Comm comm,PetscInt napp,con
 #ifdef PETSC_USE_DEBUG
   /* Check that the permutations are complementary */
   for(i = 0; i < N; i++) {
-    if (i != aomap->appPerm[aomap->petscPerm[i]])
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid ordering");
+    if (i != aomap->appPerm[aomap->petscPerm[i]]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid ordering");
   }
 #endif
   /* Cleanup */

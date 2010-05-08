@@ -56,5 +56,5 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectSetType(PetscObject obj, const char ty
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   PetscValidCharPointer(type,2);
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Cannot set the type of a generic PetscObject")
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Cannot set the type of a generic PetscObject");
 }

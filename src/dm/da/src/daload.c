@@ -32,16 +32,16 @@ PetscErrorCode PETSCDM_DLLEXPORT DALoad(PetscViewer viewer,PetscInt M,PetscInt N
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(da,5);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
-  if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be binary viewer");
+  if (!isbinary) SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_ARG_WRONG,"Must be binary viewer");
 
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetIntArray(PETSC_NULL,"-daload_info",info,&nmax,&flag);CHKERRQ(ierr);
   if (!flag) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"No DA information in file");
+    SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_FILE_UNEXPECTED,"No DA information in file");
   }
   if (nmax != 8) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Wrong number of items in DA information in file: %D",nmax);
+    SETERRQ1(((PetscObject)viewer)->comm,PETSC_ERR_FILE_UNEXPECTED,"Wrong number of items in DA information in file: %D",nmax);
   }
   if (info[0] == 1) {
     ierr = DACreate1d(comm,(DAPeriodicType) info[7],info[1],info[4],info[5],0,da);CHKERRQ(ierr);

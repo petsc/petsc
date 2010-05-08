@@ -20,16 +20,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIMSetIS(Mat A, IS in, IS out) {
   ierr = MPI_Comm_compare(((PetscObject)A)->comm, ((PetscObject)in)->comm, &flag); CHKERRQ(ierr);
   if(flag == MPI_IDENT) {
     ierr = MPI_Comm_compare(((PetscObject)A)->comm, ((PetscObject)out)->comm, &flag); CHKERRQ(ierr);
-    if(flag != MPI_IDENT) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER, "Communicators differ between MatIM and the output IS");
-    }
+    if(flag != MPI_IDENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER, "Communicators differ between MatIM and the output IS");
   }
-  else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER, "Communicators differ between MatIM and the input IS");
-  }
-  if(!in && !out) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER, "Cannot have both input and output IS be NULL");
-  }
+  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER, "Communicators differ between MatIM and the input IS");
+  if(!in && !out) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER, "Cannot have both input and output IS be NULL");
   /* Check that IS's min and max are within the A's size limits */
   if(in && (in->min < 0 || in->max >= A->rmap->N)) {
     SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER, "Input IS min or max values out of range: min = %d, max %d, must be between 0 and %d", in->min, in->max, A->rmap->N);
@@ -40,9 +34,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIMSetIS(Mat A, IS in, IS out) {
   if(in && out) {
     ierr = ISGetLocalSize(in,  &in_size); CHKERRQ(ierr);
     ierr = ISGetLocalSize(out, &out_size); CHKERRQ(ierr);
-    if(in_size != out_size) {
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER, "IS local size mismatch: input %d and output %d", in_size, out_size);
-    }
+    if(in_size != out_size) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER, "IS local size mismatch: input %d and output %d", in_size, out_size);
   }
   im->in = in; 
   im->out = out; 

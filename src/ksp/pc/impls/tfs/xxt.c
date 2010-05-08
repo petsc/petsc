@@ -339,10 +339,9 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
 	{
 	  start++;
 	  idex=ivec_linear_search(col, a_local2global, a_n);
-	  if (idex!=-1)
-	    {v[idex] = 1.0; j++;}
-	  else
-	    {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"NOT FOUND!\n");}
+	  if (idex!=-1){
+            v[idex] = 1.0; j++;
+          } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"NOT FOUND!\n");
 	}
       else
 	{

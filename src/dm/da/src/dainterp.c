@@ -401,14 +401,14 @@ PetscErrorCode DAGetInterpolation_2D_Q0(DA dac,DA daf,Mat *A)
   PetscFunctionBegin;
   ierr = DAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
   ierr = DAGetInfo(daf,0,&mx,&my,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
-  if (DAXPeriodic(pt)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in x");
-  if (DAYPeriodic(pt)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in y");
+  if (DAXPeriodic(pt)) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in x");
+  if (DAYPeriodic(pt)) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in y");
   ratioi = mx/Mx;
   ratioj = my/My;
-  if (ratioi*Mx != mx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in x");
-  if (ratioj*My != my) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in y");
-  if (ratioi != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Coarsening factor in x must be 2");
-  if (ratioj != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Coarsening factor in y must be 2");
+  if (ratioi*Mx != mx) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in x");
+  if (ratioj*My != my) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in y");
+  if (ratioi != 2) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Coarsening factor in x must be 2");
+  if (ratioj != 2) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Coarsening factor in y must be 2");
 
   ierr = DAGetCorners(daf,&i_start,&j_start,0,&m_f,&n_f,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
@@ -512,18 +512,18 @@ PetscErrorCode DAGetInterpolation_3D_Q0(DA dac,DA daf,Mat *A)
   PetscFunctionBegin;
   ierr = DAGetInfo(dac,0,&Mx,&My,&Mz,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
   ierr = DAGetInfo(daf,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
-  if (DAXPeriodic(pt)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in x");
-  if (DAYPeriodic(pt)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in y");
-  if (DAZPeriodic(pt)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in z");
+  if (DAXPeriodic(pt)) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in x");
+  if (DAYPeriodic(pt)) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in y");
+  if (DAZPeriodic(pt)) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in z");
   ratioi = mx/Mx;
   ratioj = my/My;
   ratiol = mz/Mz;
-  if (ratioi*Mx != mx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in x");
-  if (ratioj*My != my) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in y");
-  if (ratiol*Mz != mz) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in z");
-  if (ratioi != 2 && ratioi != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Coarsening factor in x must be 1 or 2");
-  if (ratioj != 2 && ratioj != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Coarsening factor in y must be 1 or 2");
-  if (ratiol != 2 && ratiol != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Coarsening factor in z must be 1 or 2");
+  if (ratioi*Mx != mx) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in x");
+  if (ratioj*My != my) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in y");
+  if (ratiol*Mz != mz) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in z");
+  if (ratioi != 2 && ratioi != 1) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Coarsening factor in x must be 1 or 2");
+  if (ratioj != 2 && ratioj != 1) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Coarsening factor in y must be 1 or 2");
+  if (ratiol != 2 && ratiol != 1) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Coarsening factor in z must be 1 or 2");
 
   ierr = DAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost);CHKERRQ(ierr);
@@ -866,8 +866,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *sc
   if (dimc != dimf) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Dimensions of DA do not match %D %D",dimc,dimf);CHKERRQ(ierr);
   if (dofc != doff) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"DOF of DA do not match %D %D",dofc,doff);CHKERRQ(ierr);
   if (sc != sf) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Stencil width of DA do not match %D %D",sc,sf);CHKERRQ(ierr);
-  if (wrapc != wrapf) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Periodic type different in two DAs");CHKERRQ(ierr);
-  if (stc != stf) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Stencil type different in two DAs");CHKERRQ(ierr);
+  if (wrapc != wrapf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Periodic type different in two DAs");CHKERRQ(ierr);
+  if (stc != stf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil type different in two DAs");CHKERRQ(ierr);
   if (Mc < 2 && Mf > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in x direction");
   if (dimc > 1 && Nc < 2 && Nf > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in y direction");
   if (dimc > 2 && Pc < 2 && Pf > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in z direction");
@@ -1013,8 +1013,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetInjection(DA dac,DA daf,VecScatter *inject
   if (dimc != dimf) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Dimensions of DA do not match %D %D",dimc,dimf);CHKERRQ(ierr);
   if (dofc != doff) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"DOF of DA do not match %D %D",dofc,doff);CHKERRQ(ierr);
   if (sc != sf) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Stencil width of DA do not match %D %D",sc,sf);CHKERRQ(ierr);
-  if (wrapc != wrapf) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Periodic type different in two DAs");CHKERRQ(ierr);
-  if (stc != stf) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Stencil type different in two DAs");CHKERRQ(ierr);
+  if (wrapc != wrapf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Periodic type different in two DAs");CHKERRQ(ierr);
+  if (stc != stf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil type different in two DAs");CHKERRQ(ierr);
   if (Mc < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in x direction");
   if (dimc > 1 && Nc < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in y direction");
   if (dimc > 2 && Pc < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in z direction");
@@ -1082,8 +1082,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAggregates(DA dac,DA daf,Mat *rest)
   if (dimc != dimf) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Dimensions of DA do not match %D %D",dimc,dimf);CHKERRQ(ierr);
   if (dofc != doff) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"DOF of DA do not match %D %D",dofc,doff);CHKERRQ(ierr);
   if (sc != sf) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Stencil width of DA do not match %D %D",sc,sf);CHKERRQ(ierr);
-  if (wrapc != wrapf) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Periodic type different in two DAs");CHKERRQ(ierr);
-  if (stc != stf) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Stencil type different in two DAs");CHKERRQ(ierr);
+  if (wrapc != wrapf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Periodic type different in two DAs");CHKERRQ(ierr);
+  if (stc != stf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil type different in two DAs");CHKERRQ(ierr);
 
   if( Mf < Mc ) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Mc %D, Mf %D", Mc, Mf);
   if( Nf < Nc ) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Nc %D, Nf %D", Nc, Nf);

@@ -285,7 +285,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessCreate(KSP ksp,PetscInt method,
     ierr = KSPFischerGuessCreate_Method1(ksp,maxl,(KSPFischerGuess_Method1 **)itg);CHKERRQ(ierr);
   } else if (method == 2) {
     ierr = KSPFischerGuessCreate_Method2(ksp,maxl,(KSPFischerGuess_Method2 **)itg);CHKERRQ(ierr);
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Method can only be 1 or 2");
+  } else SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Method can only be 1 or 2");
   (*itg)->method  = method;
   (*itg)->curl    = 0;
   (*itg)->maxl    = maxl;
@@ -319,7 +319,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessDestroy(KSPFischerGuess ITG)
     ierr = KSPFischerGuessDestroy_Method1((KSPFischerGuess_Method1 *)ITG);CHKERRQ(ierr);
   } else if (ITG->method == 2) {
     ierr = KSPFischerGuessDestroy_Method2((KSPFischerGuess_Method2 *)ITG);CHKERRQ(ierr);
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Method can only be 1 or 2");
+  } else SETERRQ(((PetscObject)ITG->ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Method can only be 1 or 2");
   PetscFunctionReturn(0);
 }
 
@@ -334,7 +334,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessUpdate(KSPFischerGuess itg,Vec 
     ierr = KSPFischerGuessUpdate_Method1((KSPFischerGuess_Method1 *)itg,x);CHKERRQ(ierr);
   } else if (itg->method == 2) {
     ierr = KSPFischerGuessUpdate_Method2((KSPFischerGuess_Method2 *)itg,x);CHKERRQ(ierr);
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Method can only be 1 or 2");
+  } else SETERRQ(((PetscObject)itg->ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Method can only be 1 or 2");
   PetscFunctionReturn(0);
 }
 
@@ -349,7 +349,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessFormGuess(KSPFischerGuess itg,V
     ierr = KSPFischerGuessFormGuess_Method1((KSPFischerGuess_Method1 *)itg,b,x);CHKERRQ(ierr);
   } else if (itg->method == 2) {
     ierr = KSPFischerGuessFormGuess_Method2((KSPFischerGuess_Method2 *)itg,b,x);CHKERRQ(ierr);
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Method can only be 1 or 2");
+  } else SETERRQ(((PetscObject)itg->ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Method can only be 1 or 2");
   PetscFunctionReturn(0);
 }
 

@@ -61,7 +61,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetDropTolerance_Factor(PC pc,PetscRea
 
   PetscFunctionBegin;
   if (pc->setupcalled && (!ilu->info.usedt || ((PC_Factor*)ilu)->info.dt != dt || ((PC_Factor*)ilu)->info.dtcol != dtcol || ((PC_Factor*)ilu)->info.dtcount != dtcount)) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot change tolerance after use");
+    SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot change tolerance after use");
   }
   ilu->info.usedt   = PETSC_TRUE;
   ilu->info.dt      = dt;
@@ -100,9 +100,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType_Factor(PC pc,const 
      ierr = PetscStrallocpy(ordering,&dir->ordering);CHKERRQ(ierr);
   } else {
     ierr = PetscStrcmp(dir->ordering,ordering,&flg);CHKERRQ(ierr);
-    if (!flg) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot change ordering after use");
-    }
+    if (!flg) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot change ordering after use");
   }
   PetscFunctionReturn(0);
 }
@@ -118,9 +116,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetLevels_Factor(PC pc,PetscInt levels
   PetscFunctionBegin;
   if (!pc->setupcalled) {
     ilu->info.levels = levels;
-  } else if (ilu->info.usedt || ilu->info.levels != levels) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot change levels after use");
-  }
+  } else if (ilu->info.usedt || ilu->info.levels != levels) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot change levels after use");
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -162,7 +158,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatrix_Factor(PC pc,Mat *mat)
   PC_Factor *ilu = (PC_Factor*)pc->data;
 
   PetscFunctionBegin;
-  if (!ilu->fact) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Matrix not yet factored; call after KSPSetUp() or PCSetUp()");
+  if (!ilu->fact) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ORDER,"Matrix not yet factored; call after KSPSetUp() or PCSetUp()");
   *mat = ilu->fact;
   PetscFunctionReturn(0);
 }
@@ -182,9 +178,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage_Factor(PC pc,const
     PetscTruth             flg;
     ierr = MatFactorGetSolverPackage(lu->fact,&ltype);CHKERRQ(ierr);
     ierr = PetscStrcmp(stype,ltype,&flg);CHKERRQ(ierr);
-    if (!flg) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot change solver matrix package after PC has been setup or used");
-    }
+    if (!flg) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot change solver matrix package after PC has been setup or used");
   }
   ierr = PetscFree(lu->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(stype,&lu->solvertype);CHKERRQ(ierr);

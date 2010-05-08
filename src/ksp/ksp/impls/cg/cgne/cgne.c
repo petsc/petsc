@@ -28,11 +28,8 @@ PetscErrorCode KSPSetUp_CGNE(KSP ksp)
        This implementation of CGNE only handles left preconditioning
      so generate an error otherwise.
   */
-  if (ksp->pc_side == PC_RIGHT) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No right preconditioning for KSPCGNE");
-  } else if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No symmetric preconditioning for KSPCGNE");
-  }
+  if (ksp->pc_side == PC_RIGHT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"No right preconditioning for KSPCGNE");
+  else if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"No symmetric preconditioning for KSPCGNE");
 
   /* get work vectors needed by CGNE */
   ierr = KSPDefaultGetWork(ksp,4);CHKERRQ(ierr);
@@ -151,7 +148,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
        b = beta/betaold;
        if (eigs) {
 	 if (ksp->max_it != stored_max_it) {
-	   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
+	   SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
 	 }
 	 e[i] = sqrt(PetscAbsScalar(b))/a;  
        }

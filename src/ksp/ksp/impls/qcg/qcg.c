@@ -29,7 +29,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGSetTrustRegionRadius(KSP ksp,PetscReal d
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (delta < 0.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Tolerance must be non-negative");
+  if (delta < 0.0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Tolerance must be non-negative");
   ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPQCGSetTrustRegionRadius_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,delta);CHKERRQ(ierr);
@@ -138,10 +138,8 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
-  if (ksp->transpose_solve) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently does not support transpose solve");
-  }
+  if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  if (ksp->transpose_solve) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Currently does not support transpose solve");
 
   ksp->its = 0;
   maxit    = ksp->max_it;
@@ -155,9 +153,9 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   X        = ksp->vec_sol;
   B        = ksp->vec_rhs;
 
-  if (pcgP->delta <= dzero) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input error: delta <= 0");
+  if (pcgP->delta <= dzero) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Input error: delta <= 0");
   ierr = KSPGetPCSide(ksp,&side);CHKERRQ(ierr);
-  if (side != PC_SYMMETRIC) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Requires symmetric preconditioner!");
+  if (side != PC_SYMMETRIC) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Requires symmetric preconditioner!");
 
   /* Initialize variables */
   ierr = VecSet(W,0.0);CHKERRQ(ierr);	/* W = 0 */
@@ -345,11 +343,8 @@ PetscErrorCode KSPSetUp_QCG(KSP ksp)
 
   PetscFunctionBegin;
   /* Check user parameters and functions */
-  if (ksp->pc_side == PC_RIGHT) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"no right preconditioning for QCG");
-  } else if (ksp->pc_side == PC_LEFT) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"no left preconditioning for QCG");
-  }
+  if (ksp->pc_side == PC_RIGHT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"no right preconditioning for QCG");
+  else if (ksp->pc_side == PC_LEFT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"no left preconditioning for QCG");
 
   /* Get work vectors from user code */
   ierr = KSPDefaultGetWork(ksp,7);CHKERRQ(ierr);

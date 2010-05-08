@@ -86,7 +86,7 @@ PETSC_EXTERN_CXX_BEGIN
    SETERRQ - Macro that is called when an error has been detected, 
 
    Synopsis:
-   PetscErrorCode SETERRQ(PETSC_COMM_SELF,PetscErrorCode errorcode,char *message)
+   PetscErrorCode SETERRQ(MPI_Comm comm,PetscErrorCode errorcode,char *message)
 
    Not Collective
 
@@ -109,7 +109,7 @@ PETSC_EXTERN_CXX_BEGIN
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3()
 M*/
-#define SETERRQ(comm,n,s)              {return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s);}
+#define SETERRQ(comm,n,s)              return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s)
 
 /*MC
    SETERRQ1 - Macro that is called when an error has been detected, 

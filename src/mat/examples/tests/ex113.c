@@ -21,7 +21,7 @@ int main(int argc,char **args)
   
   /*  Load the matrix A */
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"Must indicate a file name for matrix A with the -f option.");
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate a file name for matrix A with the -f option.");
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = MatLoad(viewer,MATAIJ,&A);CHKERRQ(ierr); 

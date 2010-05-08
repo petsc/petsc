@@ -105,7 +105,7 @@ static PetscErrorCode PCSetUp_Shell(PC pc)
 
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
-  if (!shell->setup) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No setup() routine provided to Shell PC");
+  if (!shell->setup) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"No setup() routine provided to Shell PC");
   PetscStackPush("PCSHELL user function setup()");
   CHKMEMQ;
   ierr  = (*shell->setup)(pc);CHKERRQ(ierr);
@@ -123,7 +123,7 @@ static PetscErrorCode PCApply_Shell(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
-  if (!shell->apply) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No apply() routine provided to Shell PC");
+  if (!shell->apply) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"No apply() routine provided to Shell PC");
   PetscStackPush("PCSHELL user function apply()");
   CHKMEMQ;
   ierr  = (*shell->apply)(pc,x,y);CHKERRQ(ierr);
@@ -141,7 +141,7 @@ static PetscErrorCode PCApplyBA_Shell(PC pc,PCSide side,Vec x,Vec y,Vec w)
 
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
-  if (!shell->applyBA) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No applyBA() routine provided to Shell PC");
+  if (!shell->applyBA) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"No applyBA() routine provided to Shell PC");
   PetscStackPush("PCSHELL user function applyBA()");
   CHKMEMQ;
   ierr  = (*shell->applyBA)(pc,side,x,y,w);CHKERRQ(ierr);
@@ -159,7 +159,7 @@ static PetscErrorCode PCPreSolve_Shell(PC pc,KSP ksp,Vec b,Vec x)
 
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
-  if (!shell->presolve) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No presolve() routine provided to Shell PC");
+  if (!shell->presolve) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"No presolve() routine provided to Shell PC");
   PetscStackPush("PCSHELL user function presolve()");
   CHKMEMQ;
   ierr  = (*shell->presolve)(pc,ksp,b,x);CHKERRQ(ierr);
@@ -177,7 +177,7 @@ static PetscErrorCode PCPostSolve_Shell(PC pc,KSP ksp,Vec b,Vec x)
 
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
-  if (!shell->postsolve) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No postsolve() routine provided to Shell PC");
+  if (!shell->postsolve) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"No postsolve() routine provided to Shell PC");
   PetscStackPush("PCSHELL user function postsolve()");
   CHKMEMQ;
   ierr  = (*shell->postsolve)(pc,ksp,b,x);CHKERRQ(ierr);
@@ -195,7 +195,7 @@ static PetscErrorCode PCApplyTranspose_Shell(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
-  if (!shell->applytranspose) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No applytranspose() routine provided to Shell PC");
+  if (!shell->applytranspose) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"No applytranspose() routine provided to Shell PC");
   PetscStackPush("PCSHELL user function applytranspose()");
   CHKMEMQ;
   ierr  = (*shell->applytranspose)(pc,x,y);CHKERRQ(ierr);
@@ -213,7 +213,7 @@ static PetscErrorCode PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,PetscReal 
 
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
-  if (!shell->applyrich) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No applyrichardson() routine provided to Shell PC");
+  if (!shell->applyrich) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"No applyrichardson() routine provided to Shell PC");
   PetscStackPush("PCSHELL user function applyrichardson()");
   CHKMEMQ;
   ierr  = (*shell->applyrich)(pc,x,y,w,rtol,abstol,dtol,it,guesszero,outits,reason);CHKERRQ(ierr);
@@ -826,9 +826,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellGetName(PC pc,char *name[])
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellGetName_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,name);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not shell preconditioner, cannot get name");
-  }
+  } else  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not shell preconditioner, cannot get name");
   PetscFunctionReturn(0);
 }
 

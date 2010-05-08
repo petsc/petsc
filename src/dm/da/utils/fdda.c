@@ -191,7 +191,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetColoring(DA da,ISColoringType ctype,const 
       ctype = IS_COLORING_GLOBAL;
     } else if (dim > 1){
       if ((m==1 && DAXPeriodic(wrap)) || (n==1 && DAYPeriodic(wrap)) || (p==1 && DAZPeriodic(wrap))){
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"IS_COLORING_GHOSTED cannot be used for periodic boundary condition having both ends of the domain  on the same process");
+        SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"IS_COLORING_GHOSTED cannot be used for periodic boundary condition having both ends of the domain  on the same process");
       }
     }
   }
@@ -335,15 +335,15 @@ PetscErrorCode DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
   ierr = DAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&nc,&s,&wrap,&st);CHKERRQ(ierr);
   col    = 2*s + 1;
   if (DAXPeriodic(wrap) && (m % col)){ 
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
+    SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
                  by 2*stencil_width + 1\n");
   }
   if (DAYPeriodic(wrap) && (n % col)){ 
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
+    SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
                  by 2*stencil_width + 1\n");
   }
   if (DAZPeriodic(wrap) && (p % col)){ 
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Z is divisible\n\
+    SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Z is divisible\n\
                  by 2*stencil_width + 1\n");
   }
 
@@ -416,7 +416,7 @@ PetscErrorCode DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
   col    = 2*s + 1;
 
   if (DAXPeriodic(wrap) && (m % col)) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points is divisible\n\
+    SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points is divisible\n\
                  by 2*stencil_width + 1\n");
   }
 
@@ -481,11 +481,11 @@ PetscErrorCode DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring 
   ierr   = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
   if (DAXPeriodic(wrap) && (m % 5)){ 
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
+    SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
                  by 5\n");
   }
   if (DAYPeriodic(wrap) && (n % 5)){ 
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
+    SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
                  by 5\n");
   }
 
@@ -1594,15 +1594,15 @@ PetscErrorCode DAGetMatrix3d_MPIAIJ_Fill(DA da,Mat J)
   ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,&wrap,&st);CHKERRQ(ierr);
   col    = 2*s + 1;
   if (DAXPeriodic(wrap) && (m % col)){ 
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
+    SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
                  by 2*stencil_width + 1\n");
   }
   if (DAYPeriodic(wrap) && (n % col)){ 
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
+    SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
                  by 2*stencil_width + 1\n");
   }
   if (DAZPeriodic(wrap) && (p % col)){ 
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Z is divisible\n\
+    SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Z is divisible\n\
                  by 2*stencil_width + 1\n");
   }
 

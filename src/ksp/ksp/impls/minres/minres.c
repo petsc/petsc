@@ -13,11 +13,8 @@ PetscErrorCode KSPSetUp_MINRES(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ksp->pc_side == PC_RIGHT) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No right preconditioning for KSPMINRES");
-  } else if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No symmetric preconditioning for KSPMINRES");
-  }
+  if (ksp->pc_side == PC_RIGHT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"No right preconditioning for KSPMINRES");
+  else if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"No symmetric preconditioning for KSPMINRES");
   ierr = KSPDefaultGetWork(ksp,9);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -39,7 +36,7 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
   PetscTruth     diagonalscale;
 
   PetscFunctionBegin;
-  if (ksp->normtype != KSP_NORM_PRECONDITIONED) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only supports preconditioned residual norm for KSPMINRES");
+  if (ksp->normtype != KSP_NORM_PRECONDITIONED) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Only supports preconditioned residual norm for KSPMINRES");
 
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);

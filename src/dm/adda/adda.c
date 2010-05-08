@@ -31,8 +31,7 @@
   Level: intermediate
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDACreate(MPI_Comm comm, PetscInt dim, PetscInt *nodes,PetscInt *procs,
-                                           PetscInt dof, PetscTruth *periodic,ADDA *adda_p)
+PetscErrorCode PETSCDM_DLLEXPORT ADDACreate(MPI_Comm comm, PetscInt dim, PetscInt *nodes,PetscInt *procs,PetscInt dof, PetscTruth *periodic,ADDA *adda_p)
 {
   PetscErrorCode ierr;
   ADDA           adda;
@@ -111,13 +110,11 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDACreate(MPI_Comm comm, PetscInt dim, PetscIn
   procsleft = 1;
   for(i=0; i<dim; i++) {
     if (nodes[i] < procs[i]) {
-      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Partition in direction %d is too fine! %D nodes, %D processors", i, nodes[i], procs[i]);
+      SETERRQ3(comm,PETSC_ERR_ARG_OUTOFRANGE,"Partition in direction %d is too fine! %D nodes, %D processors", i, nodes[i], procs[i]);
     }
     procsleft *= procs[i];
   }
-  if(procsleft != size) {
-    SETERRQ(PETSC_COMM_SELF,1, "Created or was provided with inconsistent distribution of processors");
-  }
+  if (procsleft != size) SETERRQ(comm,PETSC_ERR_PLIB, "Created or was provided with inconsistent distribution of processors");
 
   /* periodicity */
   adda->periodic = periodic;
@@ -242,9 +239,10 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDADestroy(ADDA adda)
 
 .seealso: DMView()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDAView(ADDA adda, PetscViewer v) {
+PetscErrorCode PETSCDM_DLLEXPORT ADDAView(ADDA adda, PetscViewer v) 
+{
   PetscFunctionBegin;
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Not implemented yet");
+  SETERRQ(((PetscObject)adda)->comm,PETSC_ERR_SUP, "Not implemented yet");
   PetscFunctionReturn(0);
 }
 
@@ -267,7 +265,8 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAView(ADDA adda, PetscViewer v) {
 
 .seealso: DMCreateGlobalVector()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDACreateGlobalVector(ADDA adda, Vec *vec) {
+PetscErrorCode PETSCDM_DLLEXPORT ADDACreateGlobalVector(ADDA adda, Vec *vec) 
+{
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adda,ADDA_CLASSID,1);
@@ -296,9 +295,10 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDACreateGlobalVector(ADDA adda, Vec *vec) {
 
 .seealso: DMGetColoring()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDAGetColoring(ADDA adda, ISColoringType ctype,const MatType mtype,ISColoring *coloring) {
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetColoring(ADDA adda, ISColoringType ctype,const MatType mtype,ISColoring *coloring) 
+{
   PetscFunctionBegin;
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Not implemented yet");
+  SETERRQ(((PetscObject)adda)->comm,PETSC_ERR_SUP, "Not implemented yet");
   PetscFunctionReturn(0);
 }
 
@@ -323,7 +323,8 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetColoring(ADDA adda, ISColoringType ctype
 
 .seealso: DMGetMatrix()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrix(ADDA adda, const MatType mtype, Mat *mat) {
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrix(ADDA adda, const MatType mtype, Mat *mat) 
+{
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adda, ADDA_CLASSID, 1);
@@ -388,9 +389,10 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrixNS(ADDA addar, ADDA addac, const M
 
 .seealso: DMGetInterpolation()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDAGetInterpolation(ADDA adda1,ADDA adda2,Mat *mat,Vec *vec) {
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetInterpolation(ADDA adda1,ADDA adda2,Mat *mat,Vec *vec) 
+{
   PetscFunctionBegin;
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Not implemented yet");
+  SETERRQ(((PetscObject)adda1)->comm,PETSC_ERR_SUP, "Not implemented yet");
   PetscFunctionReturn(0);
 }
 
@@ -414,9 +416,10 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetInterpolation(ADDA adda1,ADDA adda2,Mat 
 
 .seealso: DMRefine()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDARefine(ADDA adda, MPI_Comm comm, ADDA *addaf) {
+PetscErrorCode PETSCDM_DLLEXPORT ADDARefine(ADDA adda, MPI_Comm comm, ADDA *addaf) 
+{
   PetscFunctionBegin;
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Not implemented yet");
+  SETERRQ(((PetscObject)adda)->comm,PETSC_ERR_SUP, "Not implemented yet");
   PetscFunctionReturn(0);
 }
 
@@ -480,9 +483,10 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDACoarsen(ADDA adda, MPI_Comm comm,ADDA *adda
 
 .seealso: DMGetInjection()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDAGetInjection(ADDA adda1, ADDA adda2, VecScatter *ctx) {
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetInjection(ADDA adda1, ADDA adda2, VecScatter *ctx)
+{
   PetscFunctionBegin;
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Not implemented yet");
+  SETERRQ(((PetscObject)adda1)->comm,PETSC_ERR_SUP, "Not implemented yet");
   PetscFunctionReturn(0);
 }
 

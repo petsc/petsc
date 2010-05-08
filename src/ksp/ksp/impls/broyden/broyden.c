@@ -21,11 +21,8 @@ PetscErrorCode KSPSetUp_Broyden(KSP ksp)
        This implementation of Broyden only handles left preconditioning
      so generate an error otherwise.
   */
-  if (ksp->pc_side == PC_RIGHT) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No right preconditioning for KSPBroyden");
-  } else if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No symmetric preconditioning for KSPBroyden");
-  }
+  if (ksp->pc_side == PC_RIGHT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"No right preconditioning for KSPBroyden");
+  else if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"No symmetric preconditioning for KSPBroyden");
   ierr = KSPGetVecs(ksp,cgP->msize,&cgP->v,cgP->msize,&cgP->w);CHKERRQ(ierr);
   ierr = KSPDefaultGetWork(ksp,3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -70,7 +67,7 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
     ierr = VecNorm(R,NORM_2,&gnorm);CHKERRQ(ierr);          
   } else if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
     ierr = VecNorm(Pold,NORM_2,&gnorm);CHKERRQ(ierr);          
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"NormType not supported");
+  } else SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"NormType not supported");
   KSPLogResidualHistory(ksp,gnorm);
   KSPMonitor(ksp,0,gnorm);
   ierr = (*ksp->converged)(ksp,0,gnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); 
@@ -101,7 +98,7 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
         ierr = VecNorm(R,NORM_2,&gnorm);CHKERRQ(ierr);          
       } else if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
         ierr = VecNorm(P,NORM_2,&gnorm);CHKERRQ(ierr);          
-      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"NormType not supported");
+      } else SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"NormType not supported");
       KSPLogResidualHistory(ksp,gnorm);
       KSPMonitor(ksp,(1+k+i),gnorm);
       ierr = (*ksp->converged)(ksp,1+k+i,gnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); 

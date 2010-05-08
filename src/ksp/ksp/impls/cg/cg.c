@@ -65,11 +65,8 @@ PetscErrorCode KSPSetUp_CG(KSP ksp)
        This implementation of CG only handles left preconditioning
      so generate an error otherwise.
   */
-  if (ksp->pc_side == PC_RIGHT) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No right preconditioning for KSPCG");
-  } else if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No symmetric preconditioning for KSPCG");
-  }
+  if (ksp->pc_side == PC_RIGHT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"No right preconditioning for KSPCG");
+  else if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"No symmetric preconditioning for KSPCG");
 
   /* get work vectors needed by CG */
   if (cgP->singlereduction) nwork += 2;
@@ -161,7 +158,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
       ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);
     }
     ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);                     /*  beta <- z'*r       */
-    if PetscIsInfOrNanScalar(beta) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
+    if PetscIsInfOrNanScalar(beta) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
     dp = sqrt(PetscAbsScalar(beta));                           /*    dp <- r'*z = r'*B*r = e'*A'*B*A*e */
   } else dp = 0.0;
   KSPLogResidualHistory(ksp,dp);
@@ -180,7 +177,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
       ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);
     }
     ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);         /*  beta <- z'*r       */
-    if PetscIsInfOrNanScalar(beta) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
+    if PetscIsInfOrNanScalar(beta) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
   }
   
   i = 0;
@@ -203,9 +200,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
      } else {
        b = beta/betaold;
        if (eigs) {
-         if (ksp->max_it != stored_max_it) {
-           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
-         }
+         if (ksp->max_it != stored_max_it) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
          e[i] = sqrt(PetscAbsScalar(b))/a;  
        }
        ierr = VecAYPX(P,b,Z);CHKERRQ(ierr);    /*     p <- z + b* p   */
@@ -219,7 +214,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
         dpi = delta - beta*beta*dpiold/(betaold*betaold);              /*     dpi <- p'w     */
      }
      betaold = beta;
-     if PetscIsInfOrNanScalar(dpi) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
+     if PetscIsInfOrNanScalar(dpi) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
 
      if (PetscRealPart(dpi) <= 0.0) {
        ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
@@ -254,7 +249,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
        } else {
          ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);     /*  beta <- r'*z       */
        }
-       if PetscIsInfOrNanScalar(beta) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
+       if PetscIsInfOrNanScalar(beta) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
        dp = sqrt(PetscAbsScalar(beta));
      } else {
        dp = 0.0;
@@ -283,7 +278,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
        } else {
 	 ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);        /*  beta <- z'*r       */
        }
-       if PetscIsInfOrNanScalar(beta) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
+       if PetscIsInfOrNanScalar(beta) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
      }
 
      i++;

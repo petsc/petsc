@@ -371,7 +371,7 @@ PetscErrorCode PCSetRichardsonScale_ASA(KSP ksp, PetscReal spec_rad, PetscReal r
       spec_rad_inv = 1.0/spec_rad;
       ierr = KSPRichardsonSetScale(ksp, spec_rad_inv);CHKERRQ(ierr);
     } else {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Unknown PC type for smoother. Please specify scaling factor with -pc_asa_richardson_scale\n");
+      SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP, "Unknown PC type for smoother. Please specify scaling factor with -pc_asa_richardson_scale\n");
     }
   }
   PetscFunctionReturn(0);

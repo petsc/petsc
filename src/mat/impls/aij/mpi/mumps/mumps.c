@@ -337,9 +337,8 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
         Mat_SeqSBAIJ *aa = (Mat_SeqSBAIJ*)A->data;
         nz                  =  aa->nz;
         ai = aa->i; aj = aa->j; av  = aa->a;
-      } else {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No mumps factorization for this matrix type");
-      }
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No mumps factorization for this matrix type");
+   
       if ((F)->factortype == MAT_FACTOR_CHOLESKY && isSeqAIJ) {
 	nz = 0;
 	for (i=0; i<M; i++){
@@ -992,9 +991,7 @@ PetscErrorCode MatGetFactor_seqsbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   Mat_MUMPS      *mumps;
 
   PetscFunctionBegin;
-  if (ftype != MAT_FACTOR_CHOLESKY) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot use PETSc SBAIJ matrices with MUMPS LU, use AIJ matrix");
-  }
+  if (ftype != MAT_FACTOR_CHOLESKY) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Cannot use PETSc SBAIJ matrices with MUMPS LU, use AIJ matrix");
   /* Create the factorization matrix */ 
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
@@ -1033,9 +1030,7 @@ PetscErrorCode MatGetFactor_mpisbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   Mat_MUMPS      *mumps;
 
   PetscFunctionBegin;
-  if (ftype != MAT_FACTOR_CHOLESKY) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot use PETSc SBAIJ matrices with MUMPS LU, use AIJ matrix");
-  }
+  if (ftype != MAT_FACTOR_CHOLESKY) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Cannot use PETSc SBAIJ matrices with MUMPS LU, use AIJ matrix");
   /* Create the factorization matrix */ 
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
@@ -1129,9 +1124,7 @@ PetscErrorCode MatGetFactor_mpibaij_mumps(Mat A,MatFactorType ftype,Mat *F)
     B->ops->lufactorsymbolic = MatLUFactorSymbolic_BAIJMUMPS;
     B->factortype = MAT_FACTOR_LU;
   }
-  else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cholesky factorization for Petsc BAIJ matrices not supported yet\n");
-  }
+  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cholesky factorization for Petsc BAIJ matrices not supported yet\n");
   B->ops->view             = MatView_MUMPS;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mumps",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMumpsSetIcntl_C","MatMumpsSetIcntl",MatMumpsSetIcntl);CHKERRQ(ierr);

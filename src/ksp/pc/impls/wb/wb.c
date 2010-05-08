@@ -41,8 +41,8 @@ PetscErrorCode DAGetWireBasketInterpolation(DA da,PC_Exotic *exotic,Mat Aglobal,
 
   PetscFunctionBegin;
   ierr = DAGetInfo(da,&dim,0,0,0,&mp,&np,&pp,&dof,0,0,0);CHKERRQ(ierr);
-  if (dof != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only for single field problems");
-  if (dim != 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only coded for 3d problems");
+  if (dof != 1) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Only for single field problems");
+  if (dim != 3) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Only coded for 3d problems");
   ierr = DAGetCorners(da,0,0,0,&m,&n,&p);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&istart,&jstart,&kstart,&mwidth,&nwidth,&pwidth);CHKERRQ(ierr);
   istart = istart ? -1 : 0;
@@ -319,8 +319,8 @@ PetscErrorCode DAGetFaceInterpolation(DA da,PC_Exotic *exotic,Mat Aglobal,MatReu
 
   PetscFunctionBegin;
   ierr = DAGetInfo(da,&dim,0,0,0,&mp,&np,&pp,&dof,0,0,0);CHKERRQ(ierr);
-  if (dof != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only for single field problems");
-  if (dim != 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only coded for 3d problems");
+  if (dof != 1) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Only for single field problems");
+  if (dim != 3) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Only coded for 3d problems");
   ierr = DAGetCorners(da,0,0,0,&m,&n,&p);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&istart,&jstart,&kstart,&mwidth,&nwidth,&pwidth);CHKERRQ(ierr);
   istart = istart ? -1 : 0;
@@ -631,7 +631,7 @@ PetscErrorCode PCSetUp_Exotic(PC pc)
   MatReuse       reuse = (ex->P) ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX;
 
   PetscFunctionBegin;
-  if (!pc->dm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Need to call PCSetDM() before using this PC");
+  if (!pc->dm) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Need to call PCSetDM() before using this PC");
   ierr = PCGetOperators(pc,PETSC_NULL,&A,PETSC_NULL);CHKERRQ(ierr);
   if (ex->type == PC_EXOTIC_FACE) {
     ierr = DAGetFaceInterpolation((DA)pc->dm,ex,A,reuse,&ex->P);CHKERRQ(ierr);

@@ -830,7 +830,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAFormFunctionib1(DA da,PetscInt i,Vec vu,Petsc
 
   /* figure out stencil value from i */
   stencil.c = i % info.dof;
-  if (stencil.c) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Point-block functions can only be called for the entire block");
+  if (stencil.c) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONG,"Point-block functions can only be called for the entire block");
   stencil.i = (i % (info.xm*info.dof))/info.dof;
   stencil.j = (i % (info.xm*info.ym*info.dof))/(info.xm*info.dof);
   stencil.k = i/(info.xm*info.ym*info.dof);
@@ -1204,12 +1204,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DAMultiplyByJacobian1WithAD(DA da,Vec u,Vec v,V
 #if defined(PETSC_HAVE_ADIC)
     ierr = DAMultiplyByJacobian1WithAdic(da,u,v,f,w);CHKERRQ(ierr);
 #else
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Requires ADIC to be installed and cannot use complex numbers");
+    SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP_SYS,"Requires ADIC to be installed and cannot use complex numbers");
 #endif
   } else if (da->adiformf_lf) {
     ierr = DAMultiplyByJacobian1WithAdifor(da,u,v,f,w);CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call DASetLocalAdiforMFFunction() or DASetLocalAdicMFFunction() before using");
+    SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ORDER,"Must call DASetLocalAdiforMFFunction() or DASetLocalAdicMFFunction() before using");
   }
   PetscFunctionReturn(0);
 }

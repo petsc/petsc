@@ -351,7 +351,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetSchurComplement(Mat mat,IS isrow0,IS isc
   if (mreuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*newmat,MAT_CLASSID,7);
   if (preuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*newpmat,MAT_CLASSID,9);
   PetscValidType(mat,1);
-  if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  if (mat->factortype) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
   ierr = PetscObjectQueryFunction((PetscObject)mat,"MatGetSchurComplement_C",(void(**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -362,8 +362,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetSchurComplement(Mat mat,IS isrow0,IS isc
       /* Use MatSchurComplement */
       if (mreuse == MAT_REUSE_MATRIX) {
         ierr = MatSchurComplementGetSubmatrices(*newmat,&A,&Ap,&B,&C,&D);CHKERRQ(ierr);
-        if (!A || !Ap || !B || !C) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Attempting to reuse matrix but Schur complement matrices unset");
-        if (A != Ap) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Preconditioning matrix does not match operator");
+        if (!A || !Ap || !B || !C) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Attempting to reuse matrix but Schur complement matrices unset");
+        if (A != Ap) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Preconditioning matrix does not match operator");
         ierr = MatDestroy(Ap);CHKERRQ(ierr); /* get rid of extra reference */
       }
       ierr = MatGetSubMatrix(mat,isrow0,iscol0,mreuse,&A);CHKERRQ(ierr);
@@ -378,7 +378,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetSchurComplement(Mat mat,IS isrow0,IS isc
           ierr = MatSchurComplementUpdate(*newmat,A,A,B,C,D,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
           break;
         default:
-          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unrecognized value of mreuse");
+          SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Unrecognized value of mreuse");
       }
     }
     if (preuse != MAT_IGNORE_MATRIX) {

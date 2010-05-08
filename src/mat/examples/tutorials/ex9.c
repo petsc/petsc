@@ -35,7 +35,7 @@ int main(int argc,char **args)
      (matrix and right-hand-side vector).
   */
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"Must indicate binary file with the -f option");
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
 
     /* 
        Open binary file.  Note that we use FILE_MODE_READ to indicate

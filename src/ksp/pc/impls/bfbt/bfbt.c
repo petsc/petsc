@@ -281,8 +281,8 @@ PetscErrorCode PCSetUp_BFBt(PC pc)
       ierr = MatSchurComplementGetSubmatrices(pmat, &ctx->K, PETSC_NULL, &ctx->G, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
     }
   }
-  if (ctx->K == PETSC_NULL) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "bfbt: K matrix not set");}
-  if (ctx->G == PETSC_NULL) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "bfbt: G matrix not set");}
+  if (!ctx->K) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP, "bfbt: K matrix not set");
+  if (!ctx->G) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP, "bfbt: G matrix not set");
 
   /* Check for existence of objects and trash any which exist */
   if (ctx->form_GtG && ctx->GtG != PETSC_NULL) {

@@ -37,9 +37,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
     if (jac->l_lens) { /* check that user set these correctly */
       sum = 0;
       for (i=0; i<jac->n_local; i++) {
-        if (jac->l_lens[i]/bs*bs !=jac->l_lens[i]) {
-          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat blocksize doesn't match block Jacobi layout");
-        }
+        if (jac->l_lens[i]/bs*bs !=jac->l_lens[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat blocksize doesn't match block Jacobi layout");
         sum += jac->l_lens[i];
       }
       if (sum != M) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local lens sent incorrectly");
@@ -55,9 +53,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
       /* check if the g_lens is has valid entries */
       for (i=0; i<jac->n; i++) {
         if (!jac->g_lens[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Zero block not allowed");
-        if (jac->g_lens[i]/bs*bs != jac->g_lens[i]) {
-          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat blocksize doesn't match block Jacobi layout");
-        }
+        if (jac->g_lens[i]/bs*bs != jac->g_lens[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat blocksize doesn't match block Jacobi layout");
       }
       if (size == 1) {
         jac->n_local = jac->n;
@@ -75,17 +71,13 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
           if (sum == start) { i_start = i; goto start_1;}
           if (i < jac->n) sum += jac->g_lens[i];
         }
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Block sizes\n\
-                   used in PCBJacobiSetTotalBlocks()\n\
-                   are not compatible with parallel matrix layout");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Block sizes used in PCBJacobiSetTotalBlocks()\nare not compatible with parallel matrix layout");
  start_1: 
         for (i=i_start; i<jac->n+1; i++) {
           if (sum == end) { i_end = i; goto end_1; }
           if (i < jac->n) sum += jac->g_lens[i];
         }          
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Block sizes\n\
-                      used in PCBJacobiSetTotalBlocks()\n\
-                      are not compatible with parallel matrix layout");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Block sizes used in PCBJacobiSetTotalBlocks()\nare not compatible with parallel matrix layout");
  end_1: 
         jac->n_local = i_end - i_start;
         ierr         = PetscMalloc(jac->n_local*sizeof(PetscInt),&jac->l_lens);CHKERRQ(ierr); 
@@ -130,9 +122,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
           }
         }
       }
-      if (!f) {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This matrix does not support getting diagonal block");
-      }
+      if (!f) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"This matrix does not support getting diagonal block");
       ierr = (*f)(pc->mat,&iscopy,scall,&mat);CHKERRQ(ierr);
       /* make submatrix have same prefix as entire matrix */
       ierr = PetscObjectGetOptionsPrefix((PetscObject)pc->mat,&mprefix);CHKERRQ(ierr);
@@ -307,7 +297,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiGetSubKSP_BJacobi(PC pc,PetscInt *n_l
   PC_BJacobi   *jac = (PC_BJacobi*)pc->data;;
 
   PetscFunctionBegin;
-  if (!pc->setupcalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call KSPSetUp() or PCSetUp() first");
+  if (!pc->setupcalled) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must call KSPSetUp() or PCSetUp() first");
 
   if (n_local)     *n_local     = jac->n_local;
   if (first_local) *first_local = jac->first_local;
@@ -329,7 +319,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiSetTotalBlocks_BJacobi(PC pc,PetscInt
 
   PetscFunctionBegin;
 
-  if (pc->setupcalled > 0 && jac->n!=blocks) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Cannot alter number of blocks after PCSetUp()/KSPSetUp() has been called"); 
+  if (pc->setupcalled > 0 && jac->n!=blocks) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ORDER,"Cannot alter number of blocks after PCSetUp()/KSPSetUp() has been called"); 
   jac->n = blocks;
   if (!lens) {
     jac->g_lens = 0;
@@ -476,9 +466,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiGetSubKSP(PC pc,PetscInt *n_local,Pet
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiGetSubKSP_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,n_local,first_local,ksp);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot get subsolvers for this preconditioner");
-  }
+  } else SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG,"Cannot get subsolvers for this preconditioner");
   PetscFunctionReturn(0);
 }
 
@@ -514,7 +502,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiSetTotalBlocks(PC pc,PetscInt blocks,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  if (blocks <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must have positive blocks");
+  if (blocks <= 0) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Must have positive blocks");
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiSetTotalBlocks_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,blocks,lens);CHKERRQ(ierr);
@@ -1100,7 +1088,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
   if (jac->use_true_local) {
     PetscTruth same;
     ierr = PetscTypeCompare((PetscObject)mat,((PetscObject)pmat)->type_name,&same);CHKERRQ(ierr);
-    if (!same) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Matrices not of same type");
+    if (!same) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_INCOMP,"Matrices not of same type");
   }
 
   if (!pc->setupcalled) {

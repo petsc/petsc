@@ -24,9 +24,9 @@ int main(int argc,char **args)
 
   /* Read in matrix and RHS */
   ierr = PetscOptionsGetString(PETSC_NULL,"-fin",filein,255,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"Must indicate file for reading");
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate file for reading");
   ierr = PetscOptionsGetString(PETSC_NULL,"-fout",fileout,255,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"Must indicate file for writing");
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate file for writing");
 
   ierr = PetscFixFilename(filein,finname);CHKERRQ(ierr);
   if (!(file = fopen(finname,"r"))) {

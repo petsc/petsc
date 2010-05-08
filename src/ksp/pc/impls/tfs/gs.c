@@ -1090,7 +1090,7 @@ PetscErrorCode gs_gop_vec( gs_id *gs,  PetscScalar *vals,  const char *op,  Pets
 static PetscErrorCode gs_gop_vec_plus( gs_id *gs,  PetscScalar *vals,  PetscInt step)
 {
   PetscFunctionBegin;
-  if (!gs) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"gs_gop_vec() passed NULL gs handle!!!");}
+  if (!gs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"gs_gop_vec() passed NULL gs handle!!!");
 
   /* local only operations!!! */
   if (gs->num_local)

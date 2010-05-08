@@ -438,9 +438,7 @@ int UserDetermineMatrixNonzeros(Atassi *user,MatType mtype,int **nz_d,int **nz_o
     nnz_o = nnz_d + m_ldim;
     /* Note: vector and matrix distribution is identical */
     ierr = VecGetOwnershipRange(user->phi,&istart,&iend);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,1,0,"UserDetermineMatrixNonzeros: Code not yet written for this type");
-  }
+  } SETERRQ(PETSC_COMM_SELF,1,0,"UserDetermineMatrixNonzeros: Code not yet written for this type");
   ierr = DAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
   *nz_o = nnz_o; *nz_d = nnz_d;
 
@@ -562,9 +560,7 @@ int UserDetermineMatrixNonzeros(Atassi *user,MatType mtype,int **nz_d,int **nz_o
         }
       }
     }
-  } else {
-    SETERRQ(PETSC_COMM_SELF,1,0,"UserDetermineMatrixNonzeros: Only problem 1 has been coded so far!");
-  }  
+  } else SETERRQ(PETSC_COMM_SELF,1,0,"UserDetermineMatrixNonzeros: Only problem 1 has been coded so far!");
 
   return 0;
   }

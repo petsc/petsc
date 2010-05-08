@@ -1112,9 +1112,8 @@ PetscErrorCode MatTranspose_SeqDense(Mat A,MatReuse reuse,Mat *matout)
   PetscFunctionBegin;
   v = mat->v; m = A->rmap->n; M = mat->lda; n = A->cmap->n;
   if (reuse == MAT_REUSE_MATRIX && *matout == A) { /* in place transpose */
-    if (m != n) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can not transpose non-square matrix in place");
-    } else {
+    if (m != n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can not transpose non-square matrix in place");
+    else {
       for (j=0; j<m; j++) {
         for (k=0; k<j; k++) {
           tmp = v[j + k*M];
@@ -1286,9 +1285,7 @@ PetscErrorCode MatNorm_SeqDense(Mat A,NormType type,PetscReal *nrm)
       if (sum > *nrm) *nrm = sum;
     }
     ierr = PetscLogFlops(A->cmap->n*A->rmap->n);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No two norm");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No two norm");
   PetscFunctionReturn(0);
 }
 
