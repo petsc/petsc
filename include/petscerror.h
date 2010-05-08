@@ -266,7 +266,7 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKERRQ(), CHKMEMQ
 M*/
-#define CHKERRXX(n)            if (PetscUnlikely(n)) {PetscErrorCxx(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0);}
+#define CHKERRXX(n)            if (PetscUnlikely(n)) {PetscErrorCxx(PETSC_COMM_SELF,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0);}
 
 #endif
 
