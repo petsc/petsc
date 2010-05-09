@@ -286,9 +286,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceTest(MatNullSpace sp,Mat mat,Petsc
     if (nrm > 1.e-7 && flg2) {ierr = VecView(l,viewer);CHKERRQ(ierr);}
   }
 
-  if (sp->remove){
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot test a null space provided as a function with MatNullSpaceSetFunction()");
-  }
+  if (sp->remove) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Cannot test a null space provided as a function with MatNullSpaceSetFunction()");
   *isNull = consistent;
   PetscFunctionReturn(0);
 }
