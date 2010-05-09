@@ -637,6 +637,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryWrite(PetscViewer viewer,void *d
   PetscErrorCode     ierr;
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
+  PetscFunctionBegin;
 #if defined(PETSC_HAVE_MPIIO)
   if (vbinary->MPIIO) {
     ierr = PetscViewerBinaryMPIIO(viewer,data,count,dtype,PETSC_TRUE);CHKERRQ(ierr);
