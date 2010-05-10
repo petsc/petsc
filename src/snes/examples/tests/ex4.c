@@ -77,9 +77,7 @@ int main(int argc, char **argv)
   if (cavity) user.param = 100.0;
   else        user.param = 6.0;
   ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
-  if (!cavity && (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min)) {
-    SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
-  }
+  if (!cavity && (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min)) SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
   N = user.mx*user.my;
   
   /* Set up data structures */

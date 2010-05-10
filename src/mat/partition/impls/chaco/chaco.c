@@ -89,10 +89,8 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
         IS isrow, iscol;
         Mat *A;
 
-        if (flg) {
-            SETERRQ(PETSC_COMM_SELF,0, "Distributed matrix format MPIAdj is not supported for sequential partitioners");
-        }
-        PetscPrintf(((PetscObject)part)->comm, "Converting distributed matrix to sequential: this could be a performance loss\n");CHKERRQ(ierr);
+        if (flg) SETERRQ(((PetscObject)A)->comm,0, "Distributed matrix format MPIAdj is not supported for sequential partitioners");
+        ierr = PetscPrintf(((PetscObject)part)->comm, "Converting distributed matrix to sequential: this could be a performance loss\n");CHKERRQ(ierr);
 
         ierr = MatGetSize(mat, &M, &N);CHKERRQ(ierr);
         ierr = ISCreateStride(PETSC_COMM_SELF, M, 0, 1, &isrow);CHKERRQ(ierr);
@@ -322,16 +320,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningChacoSetCoarseLevel(MatPartitio
     MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *) part->data;
 
     PetscFunctionBegin;
-
-    if (level < 0 || level > 1.0) {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
-            "Chaco: level of coarsening out of range [0.01-1.0]");
-    } else
-        chaco->nbvtxcoarsed = (int)(part->adj->cmap->N * level);
-
-    if (chaco->nbvtxcoarsed < 20)
-        chaco->nbvtxcoarsed = 20;
-
+    if (level < 0 || level > 1.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Chaco: level of coarsening out of range [0.01-1.0]");
+    else chaco->nbvtxcoarsed = (int)(part->adj->cmap->N * level);
+    if (chaco->nbvtxcoarsed < 20)  chaco->nbvtxcoarsed = 20;
     PetscFunctionReturn(0);
 }
 
@@ -383,13 +374,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningChacoSetEigenTol(MatPartitionin
     MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *) part->data;
 
     PetscFunctionBegin;
-
-    if (tol <= 0.0) {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
-            "Chaco: Eigensolver tolerance out of range");
-    } else
-        chaco->eigtol = tol;
-
+    if (tol <= 0.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Chaco: Eigensolver tolerance out of range");
+    chaco->eigtol = tol;
     PetscFunctionReturn(0);
 }
 
@@ -410,13 +396,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningChacoSetEigenNumber(MatPartitio
     MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *) part->data;
 
     PetscFunctionBegin;
-
-    if (num > 3 || num < 1) {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
-            "Chaco: number of eigenvectors out of range");
-    } else
-        chaco->numbereigen = num;
-
+    if (num > 3 || num < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Chaco: number of eigenvectors out of range");
+    chaco->numbereigen = num;
     PetscFunctionReturn(0);
 }
 

@@ -284,9 +284,7 @@ PetscErrorCode CharacteristicSetFieldInterpolation(Characteristic c, DA da, Vec 
 {
   PetscFunctionBegin;
 #if 0
-  if (numComponents > 2) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Fields with more than 2 components are not supported. Send mail to petsc-maint@mcs.anl.gov.");
-  }
+  if (numComponents > 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Fields with more than 2 components are not supported. Send mail to petsc-maint@mcs.anl.gov.");
 #endif
   c->fieldDA      = da;
   c->field        = v;
@@ -303,9 +301,7 @@ PetscErrorCode CharacteristicSetFieldInterpolationLocal(Characteristic c, DA da,
 {
   PetscFunctionBegin;
 #if 0
-  if (numComponents > 2) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Fields with more than 2 components are not supported. Send mail to petsc-maint@mcs.anl.gov.");
-  }
+  if (numComponents > 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Fields with more than 2 components are not supported. Send mail to petsc-maint@mcs.anl.gov.");
 #endif
   c->fieldDA          = da;
   c->field            = v;

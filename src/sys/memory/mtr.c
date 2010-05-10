@@ -180,9 +180,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTrMallocDefault(size_t a,int lineno,const ch
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!a) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to malloc zero size array");
-  }
+  if (!a) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to malloc zero size array");
 
   if (TRdebugLevel) {
     ierr = PetscMallocValidate(lineno,function,filename,dir); if (ierr) PetscFunctionReturn(ierr);

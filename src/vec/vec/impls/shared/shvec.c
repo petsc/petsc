@@ -190,9 +190,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Shared(Vec vv)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)vv)->comm,&size);CHKERRQ(ierr);
-  if (size > 1) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"No supported for shared memory vector objects on this machine");
-  }
+  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"No supported for shared memory vector objects on this machine");
   ierr = VecCreate_Seq(vv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

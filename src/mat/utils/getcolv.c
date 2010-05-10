@@ -147,7 +147,7 @@ PetscErrorCode MatGetColumnNorms_MPIAIJ(Mat A,NormType type,PetscReal *norms)
       work[garray[b_aij->j[i]]] = PetscMax(PetscAbsScalar(b_aij->a[i]),work[garray[b_aij->j[i]]]);
     }
 
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown NormType");
+  } else SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Unknown NormType");
   if (type == NORM_INFINITY) {
     ierr = MPI_Allreduce(work,norms,n,MPIU_REAL,MPI_MAX,A->hdr.comm);CHKERRQ(ierr);
   } else {
@@ -193,7 +193,7 @@ PetscErrorCode MatGetColumnNorms_SeqDense(Mat A,NormType type,PetscReal *norms)
       }
       a += m;
     }
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown NormType");
+  } else SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Unknown NormType");
   if (type == NORM_2) {
     for (i=0; i<n; i++) norms[i] = sqrt(norms[i]);
   }
@@ -270,7 +270,7 @@ PetscErrorCode MatGetColumnNorms(Mat A,NormType type,PetscReal *norms)
         ierr = PetscTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
         if (flg) {
           ierr = MatGetColumnNorms_MPIAIJ(A,type,norms);CHKERRQ(ierr);
-        } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not coded for this matrix type");
+        } else SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Not coded for this matrix type");
       }
     } 
   }

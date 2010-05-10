@@ -934,12 +934,8 @@ PetscErrorCode VecGetArray_Seq(Vec vin,PetscScalar *a[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (vin->array_gotten) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Array has already been gotten for this vector,you may\n\
-    have forgotten a call to VecRestoreArray()");
-  }
+  if (vin->array_gotten) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Array has already been gotten for this vector,you may\nhave forgotten a call to VecRestoreArray()");
   vin->array_gotten = PETSC_TRUE;
-
   *a =  v->array;
   ierr = PetscObjectTakeAccess(vin);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -952,13 +948,9 @@ PetscErrorCode VecRestoreArray_Seq(Vec vin,PetscScalar *a[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!vin->array_gotten) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Array has not been gotten for this vector, you may\n\
-    have forgotten a call to VecGetArray()");
-  }
+  if (!vin->array_gotten) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Array has not been gotten for this vector, you may\nhave forgotten a call to VecGetArray()");
   vin->array_gotten = PETSC_FALSE;
   if (a) *a         = 0; /* now user cannot accidently use it again */
-
   ierr = PetscObjectGrantAccess(vin);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

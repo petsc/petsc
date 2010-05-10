@@ -66,7 +66,7 @@ int main(int argc,char **args)
     nsizes = 3;
     ierr = PetscOptionsGetIntArray(PETSC_NULL,"-nosizesinfile",sizes,&nsizes,&flg);CHKERRQ(ierr);
     if (flg) {
-      if (nsizes != 3) SETERRQ(PETSC_COMM_OWRLD,1,"Must pass in three m,n,nz as arguments for -nosizesinfile");
+      if (nsizes != 3) SETERRQ(PETSC_COMM_WORLD,1,"Must pass in three m,n,nz as arguments for -nosizesinfile");
       m = sizes[0];
       n = sizes[1];
       nz = sizes[2];

@@ -477,9 +477,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_CN(TS ts)
   ts->ops->view    = TSView_CN;
 
   if (ts->problem_type == TS_LINEAR) {
-    if (!ts->Arhs) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must set rhs matrix for linear problem");
-    }    
+    if (!ts->Arhs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must set rhs matrix for linear problem");
     if (!ts->ops->rhsmatrix) {     
       ts->ops->setup = TSSetUp_CN_Linear_Constant_Matrix;
       ts->ops->step  = TSStep_CN_Linear_Constant_Matrix;

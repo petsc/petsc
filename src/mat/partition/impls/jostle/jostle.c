@@ -192,16 +192,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningJostleSetCoarseLevel(MatPartiti
     MatPartitioning_Jostle *jostle_struct = (MatPartitioning_Jostle *) part->data;
 
     PetscFunctionBegin;
-
-    if (level < 0.0 || level > 1.0) {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
-            "Jostle: level of coarsening out of range [0.0-1.0]");
-    } else
-        jostle_struct->nbvtxcoarsed = (int)(part->adj->N * level);
-
-    if (jostle_struct->nbvtxcoarsed < 20)
-        jostle_struct->nbvtxcoarsed = 20;
-
+    if (level < 0.0 || level > 1.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Jostle: level of coarsening out of range [0.0-1.0]");
+    jostle_struct->nbvtxcoarsed = (int)(part->adj->N * level);
+    if (jostle_struct->nbvtxcoarsed < 20) jostle_struct->nbvtxcoarsed = 20;
     PetscFunctionReturn(0);
 }
 

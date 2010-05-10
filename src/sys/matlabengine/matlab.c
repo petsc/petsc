@@ -241,13 +241,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineGet(PetscMatlabEngine mengine,Pe
   PetscErrorCode ierr,(*get)(PetscObject,void*);
   
   PetscFunctionBegin;  
-  if (!obj->name) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot get object that has no name");
-  }
+  if (!obj->name) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot get object that has no name");
   ierr = PetscObjectQueryFunction(obj,"PetscMatlabEngineGet_C",(void (**)(void))&get);CHKERRQ(ierr);
-  if (!get) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Object %s cannot be gotten from Matlab engine",obj->class_name);
-  }
+  if (!get) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Object %s cannot be gotten from Matlab engine",obj->class_name);
   ierr = PetscInfo(0,"Getting Matlab object\n");CHKERRQ(ierr);
   ierr = (*get)(obj,mengine->ep);CHKERRQ(ierr);
   ierr = PetscInfo1(0,"Got Matlab object: %s\n",obj->name);CHKERRQ(ierr);

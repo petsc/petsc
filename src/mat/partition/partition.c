@@ -19,7 +19,7 @@ static PetscErrorCode MatPartitioningApply_Current(MatPartitioning part,IS *part
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)part)->comm,&size);CHKERRQ(ierr);
   if (part->n != size) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This is the DEFAULT NO-OP partitioner, it currently only supports one domain per processor\nuse -matpartitioning_type parmetis or chaco or scotch for more than one subdomain per processor");
+    SETERRQ(((PetscObject)part)->comm,PETSC_ERR_SUP,"This is the DEFAULT NO-OP partitioner, it currently only supports one domain per processor\nuse -matpartitioning_type parmetis or chaco or scotch for more than one subdomain per processor");
   }
   ierr = MPI_Comm_rank(((PetscObject)part)->comm,&rank);CHKERRQ(ierr);
 
@@ -38,21 +38,14 @@ static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part,IS *parti
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)part)->comm,&size);CHKERRQ(ierr);
-  if (part->n != size) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently only supports one domain per processor");
-  }
+  if (part->n != size) SETERRQ(((PetscObject)part)->comm,PETSC_ERR_SUP,"Currently only supports one domain per processor");
   p = (PetscInt)sqrt((double)part->n);
-  if (p*p != part->n) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Square partitioning requires \"perfect square\" number of domains");
-  }
+  if (p*p != part->n) SETERRQ(((PetscObject)part)->comm,PETSC_ERR_SUP,"Square partitioning requires \"perfect square\" number of domains");
+
   ierr = MatGetSize(part->adj,&N,PETSC_NULL);CHKERRQ(ierr);
   n = (PetscInt)sqrt((double)N);
-  if (n*n != N) {  /* This condition is NECESSARY, but NOT SUFFICIENT in order to the domain be square */
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Square partitioning requires square domain");
-  }
-  if (n%p != 0) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Square partitioning requires p to divide n"); 
-  }
+  if (n*n != N) SETERRQ(((PetscObject)part)->comm,PETSC_ERR_SUP,"Square partitioning requires square domain");
+  if (n%p != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Square partitioning requires p to divide n");
   ierr = MatGetOwnershipRange(part->adj,&rstart,&rend);CHKERRQ(ierr);
   ierr = PetscMalloc((rend-rstart)*sizeof(PetscInt),&color);CHKERRQ(ierr);
   /* for (int cell=rstart; cell<rend; cell++) { color[cell-rstart] = ((cell%n) < (n/2)) + 2 * ((cell/n) < (n/2)); } */
@@ -229,9 +222,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningApply(MatPartitioning matp,IS *
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matp,MAT_PARTITIONING_CLASSID,1);
   PetscValidPointer(partitioning,2);
-  if (!matp->adj->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (matp->adj->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!matp->ops->apply) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must set type with MatPartitioningSetFromOptions() or MatPartitioningSetType()");
+  if (!matp->adj->assembled) SETERRQ(((PetscObject)matp)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (matp->adj->factortype) SETERRQ(((PetscObject)matp)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (!matp->ops->apply) SETERRQ(((PetscObject)matp)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set type with MatPartitioningSetFromOptions() or MatPartitioningSetType()");
   ierr = PetscLogEventBegin(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
   ierr = (*matp->ops->apply)(matp,partitioning);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);

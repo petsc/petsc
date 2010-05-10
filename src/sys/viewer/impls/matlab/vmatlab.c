@@ -155,9 +155,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Matlab(PetscViewer viewer,
   PetscFileMode       type = vmatlab->btype;
 
   PetscFunctionBegin;
-  if (type == (PetscFileMode) -1) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
-  }
+  if (type == (PetscFileMode) -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
 
   /* only first processor opens file */
   if (!vmatlab->rank){

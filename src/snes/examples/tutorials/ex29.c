@@ -704,8 +704,7 @@ PetscErrorCode Update(DMMG *dmmg)
       ierr = SNESGetFunctionNorm(snes, &tsCtx->fnorm);CHKERRQ(ierr);
 
       nfailsCum += nfails;
-      if (nfailsCum >= 2)
-        SETERRQ(PETSC_COMM_SELF,1, "unable to find a newton step");
+      if (nfailsCum >= 2) SETERRQ(PETSC_COMM_SELF,1, "unable to find a newton step");
 
       ierr = PetscPrintf(PETSC_COMM_WORLD,
                          "time step = %D, time = %G, number of nonlinear steps = %D, "

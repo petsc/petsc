@@ -107,8 +107,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatShift(Mat Y,PetscScalar a)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Y,MAT_CLASSID,1);
-  if (!Y->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (Y->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (!Y->assembled) SETERRQ(((PetscObject)Y)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (Y->factortype) SETERRQ(((PetscObject)Y)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   ierr = MatPreallocated(Y);CHKERRQ(ierr);
 
   if (Y->ops->shift) {

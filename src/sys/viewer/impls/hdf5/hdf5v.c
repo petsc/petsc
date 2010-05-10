@@ -185,9 +185,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF5WriteSDS(PetscViewer viewer, float
    dims32[i] = dims[i];
  }
  sds_id = SDcreate(vhdf5->sd_id, "Vec", DFNT_FLOAT32, d, dims32);
- if (sds_id < 0) {
-   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"SDcreate failed");
- }
+ if (sds_id < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"SDcreate failed");
  SDwritedata(sds_id, zero32, 0, dims32, xf);
  SDendaccess(sds_id);
  PetscFunctionReturn(0);

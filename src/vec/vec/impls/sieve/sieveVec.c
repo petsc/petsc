@@ -337,10 +337,7 @@ PetscErrorCode VecGetArray_Sieve(Vec v, PetscScalar *a[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (v->array_gotten) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Array has already been gotten for this vector,you may\n\
-    have forgotten a call to VecRestoreArray()");
-  }
+  if (v->array_gotten) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Array has already been gotten for this vector,you may\nhave forgotten a call to VecRestoreArray()");
   v->array_gotten = PETSC_TRUE;
   *a = (PetscScalar *) field->restrict(*field->getPatches()->begin());
   ierr = PetscObjectTakeAccess(v);CHKERRQ(ierr);
@@ -354,10 +351,7 @@ PetscErrorCode VecRestoreArray_Sieve(Vec v, PetscScalar *a[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!v->array_gotten) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Array has not been gotten for this vector, you may\n\
-    have forgotten a call to VecGetArray()");
-  }
+  if (!v->array_gotten) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Array has not been gotten for this vector, you may\nhave forgotten a call to VecGetArray()");
   v->array_gotten = PETSC_FALSE;
   if (a) *a = PETSC_NULL; /* now user cannot accidently use it again */
   ierr = PetscObjectGrantAccess(v);CHKERRQ(ierr);

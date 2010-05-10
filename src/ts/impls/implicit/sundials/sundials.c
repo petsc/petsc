@@ -858,9 +858,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Sundials(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ts->problem_type != TS_NONLINEAR) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only support for nonlinear problems");
-  }
+  if (ts->problem_type != TS_NONLINEAR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only support for nonlinear problems");
   ts->ops->destroy        = TSDestroy_Sundials;
   ts->ops->view           = TSView_Sundials;
   ts->ops->setup          = TSSetUp_Sundials_Nonlinear;  

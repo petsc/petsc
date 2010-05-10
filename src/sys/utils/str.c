@@ -111,9 +111,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrallocpy(const char s[],char *t[])
 PetscErrorCode PETSC_DLLEXPORT PetscStrcpy(char s[],const char t[])
 {
   PetscFunctionBegin;
-  if (t && !s) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy string into null pointer");
-  }
+  if (t && !s) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy string into null pointer");
   if (t) {strcpy(s,t);}
   else if (s) {s[0] = 0;}
   PetscFunctionReturn(0);
@@ -146,9 +144,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrcpy(char s[],const char t[])
 PetscErrorCode PETSC_DLLEXPORT PetscStrncpy(char s[],const char t[],size_t n)
 {
   PetscFunctionBegin;
-  if (t && !s) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy string into null pointer");
-  }
+  if (t && !s) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy string into null pointer");
   if (t) {strncpy(s,t,n);}
   else if (s) {s[0] = 0;}
   PetscFunctionReturn(0);
@@ -701,9 +697,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrreplace(MPI_Comm comm,const char aa[],cha
       ierr = PetscStrlen(b,&l1);CHKERRQ(ierr);
       ierr = PetscStrlen(r[i],&l2);CHKERRQ(ierr);
       ierr = PetscStrlen(par,&l3);CHKERRQ(ierr);
-      if (l1 + l2 + l3 >= len) {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"b len is not long enough to hold new values");
-      }
+      if (l1 + l2 + l3 >= len) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"b len is not long enough to hold new values");
       ierr  = PetscStrcpy(work,b);CHKERRQ(ierr);
       ierr  = PetscStrcat(work,r[i]);CHKERRQ(ierr);
       ierr  = PetscStrcat(work,par);CHKERRQ(ierr);

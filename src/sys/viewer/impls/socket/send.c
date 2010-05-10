@@ -189,9 +189,7 @@ static PetscErrorCode SOCKEstablish_Private(u_short portnum,int *ss)
   sa.sin_family = hp->h_addrtype; 
   sa.sin_port = htons(portnum); 
 
-  if ((s = socket(AF_INET,SOCK_STREAM,0)) < 0) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Error running socket() command");
-  }
+  if ((s = socket(AF_INET,SOCK_STREAM,0)) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Error running socket() command");
   ierr = setsockopt(s,SOL_SOCKET,SO_REUSEADDR,(char *)&optval,sizeof(optval));CHKERRQ(ierr);
 
   while (bind(s,(struct sockaddr*)&sa,sizeof(sa)) < 0) {
@@ -229,9 +227,7 @@ static PetscErrorCode SOCKAnswer_Private(int portnumber,int *t)
 
 /* wait for someone to try to connect */
   i = sizeof(struct sockaddr_in);
-  if ((*t = accept(listenport,(struct sockaddr *)&isa,(socklen_t *)&i)) < 0) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"error from accept()\n");
-  }
+  if ((*t = accept(listenport,(struct sockaddr *)&isa,(socklen_t *)&i)) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"error from accept()\n");
   close(listenport);  
   PetscFunctionReturn(0);
 }

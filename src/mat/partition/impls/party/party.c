@@ -245,11 +245,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningPartySetCoarseLevel(MatPartitio
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
 
     PetscFunctionBegin;
-    if (level < 0 || level > 1.0) {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Party: level of coarsening out of range [0.01-1.0]");
-    } else {
-        party->nbvtxcoarsed = (int)(part->adj->cmap->N * level);
-    }
+    if (level < 0 || level > 1.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Party: level of coarsening out of range [0.01-1.0]");
+    party->nbvtxcoarsed = (int)(part->adj->cmap->N * level);
     if (party->nbvtxcoarsed < 20) party->nbvtxcoarsed = 20;
     PetscFunctionReturn(0);
 }

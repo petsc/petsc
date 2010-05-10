@@ -65,13 +65,11 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
     ierr = PetscTypeCompare((PetscObject) mat, MATMPIADJ, &flg);CHKERRQ(ierr);
     if (size > 1) {
         int M, N;
-        IS isrow, iscol;
+        IS  isrow, iscol;
         Mat *A;
 
-        if (flg) {
-            SETERRQ(PETSC_COMM_SELF,0, "Distributed matrix format MPIAdj is not supported for sequential partitioners");
-        }
-        PetscPrintf(((PetscObject)part)->comm, "Converting distributed matrix to sequential: this could be a performance loss\n");CHKERRQ(ierr);
+        if (flg) SETERRQ(PETSC_COMM_SELF,0, "Distributed matrix format MPIAdj is not supported for sequential partitioners");
+        ierr = PetscPrintf(((PetscObject)part)->comm, "Converting distributed matrix to sequential: this could be a performance loss\n");CHKERRQ(ierr);
 
         ierr = MatGetSize(mat, &M, &N);CHKERRQ(ierr);
         ierr = ISCreateStride(PETSC_COMM_SELF, M, 0, 1, &isrow);CHKERRQ(ierr);
@@ -341,9 +339,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
         SCOTCH_graphExit(&grafptr);
         SCOTCH_stratExit(&stratptr);
     }
-
-    if (ierr)
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, scotch->mesg_log);
+    if (ierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, scotch->mesg_log);
 
     /* Creation of the index set */
 
@@ -441,11 +437,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningScotchSetCoarseLevel(MatPartiti
     MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
 
     PetscFunctionBegin;
-
-    if (level < 0 || level > 1.0) {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
-            "Scocth: level of coarsening out of range [0.0-1.0]");
-    } else {
+    if (level < 0 || level > 1.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Scotcth: level of coarsening out of range [0.0-1.0]");
       /* ********************************************
        *					    *
        *        TODO: Correct this part		    *
@@ -456,12 +448,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningScotchSetCoarseLevel(MatPartiti
        * to be able to use PaStiX...		    *
        *					    *
        **********************************************/
-      scotch->nbvtxcoarsed = 0;
-      /* with scotch 3.0.4 it was : scotch->nbvtxcoarsed = (int)(part->adj->N * level); */
-    }
-    if (scotch->nbvtxcoarsed < 20)
-        scotch->nbvtxcoarsed = 20;
-
+    scotch->nbvtxcoarsed = 0;
+    /* with scotch 3.0.4 it was : scotch->nbvtxcoarsed = (int)(part->adj->N * level); */
+    if (scotch->nbvtxcoarsed < 20) scotch->nbvtxcoarsed = 20;
     PetscFunctionReturn(0);
 }
 

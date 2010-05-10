@@ -109,9 +109,7 @@ int main( int argc, char **argv )
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %D by %D\n",user.fine.mx,user.fine.my);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
-  if (user.param >= bratu_lambda_max || user.param < bratu_lambda_min) {
-    SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
-  }
+  if (user.param >= bratu_lambda_max || user.param < bratu_lambda_min) SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
   n = user.fine.mx*user.fine.my; N = user.coarse.mx*user.coarse.my;
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

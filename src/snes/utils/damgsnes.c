@@ -812,7 +812,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetFromOptions(DMMG *dmmg)
   PetscInt                i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
-  if (!dmmg)     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Passing null as DMMG");
+  if (!dmmg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Passing null as DMMG");
 
   for (i=0; i<nlevels; i++) {
     ierr = SNESSetFromOptions(dmmg[i]->snes);CHKERRQ(ierr);

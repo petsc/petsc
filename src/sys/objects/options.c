@@ -1979,9 +1979,7 @@ $     monitor (const char name[], const char value[], void *mctx)
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsMonitorSet(PetscErrorCode (*monitor)(const char name[], const char value[], void*),void *mctx,PetscErrorCode (*monitordestroy)(void*))
 {
   PetscFunctionBegin;
-  if (options->numbermonitors >= MAXOPTIONSMONITORS) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscOptions monitors set");
-  }
+  if (options->numbermonitors >= MAXOPTIONSMONITORS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscOptions monitors set");
   options->monitor[options->numbermonitors]           = monitor;
   options->monitordestroy[options->numbermonitors]    = monitordestroy;
   options->monitorcontext[options->numbermonitors++]  = (void*)mctx;

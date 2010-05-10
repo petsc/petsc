@@ -233,9 +233,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSComputeRHSJacobian(TS ts,PetscReal t,Vec X,Ma
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,3);
   PetscCheckSameComm(ts,1,X,3);
-  if (ts->problem_type != TS_NONLINEAR) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"For TS_NONLINEAR only");
-  }
+  if (ts->problem_type != TS_NONLINEAR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"For TS_NONLINEAR only");
   if (ts->ops->rhsjacobian) {
     ierr = PetscLogEventBegin(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
     *flg = DIFFERENT_NONZERO_PATTERN;
@@ -517,9 +515,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetRHSFunction(TS ts,PetscErrorCode (*f)(TS,P
   PetscFunctionBegin;
 
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (ts->problem_type == TS_LINEAR) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot set function for linear problem");
-  }
+  if (ts->problem_type == TS_LINEAR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot set function for linear problem");
   ts->ops->rhsfunction = f;
   ts->funP             = ctx;
   PetscFunctionReturn(0);
@@ -685,9 +681,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetRHSJacobian(TS ts,Mat A,Mat B,PetscErrorCo
   PetscValidHeaderSpecific(B,MAT_CLASSID,3);
   PetscCheckSameComm(ts,1,A,2);
   PetscCheckSameComm(ts,1,B,3);
-  if (ts->problem_type != TS_NONLINEAR) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not for linear problems; use TSSetMatrices()");
-  }
+  if (ts->problem_type != TS_NONLINEAR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not for linear problems; use TSSetMatrices()");
 
   ts->ops->rhsjacobian = f;
   ts->jacP             = ctx;
@@ -1248,8 +1242,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetSNES(TS ts,SNES *snes)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(snes,2);
-  if (((PetscObject)ts)->type_name == PETSC_NULL) 
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"SNES is not created yet. Call TSSetType() first");
+  if (!((PetscObject)ts)->type_name) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"SNES is not created yet. Call TSSetType() first");
   if (ts->problem_type == TS_LINEAR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Nonlinear only; use TSGetKSP()");
   *snes = ts->snes;
   PetscFunctionReturn(0);
@@ -1286,8 +1279,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetKSP(TS ts,KSP *ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(ksp,2);
-  if (((PetscObject)ts)->type_name == PETSC_NULL) 
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"KSP is not created yet. Call TSSetType() first");
+  if (!((PetscObject)ts)->type_name) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"KSP is not created yet. Call TSSetType() first");
   if (ts->problem_type != TS_LINEAR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Linear only; use TSGetSNES()");
   *ksp = ts->ksp;
   PetscFunctionReturn(0);
@@ -1590,9 +1582,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSMonitorSet(TS ts,PetscErrorCode (*monitor)(TS
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (ts->numbermonitors >= MAXTSMONITORS) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many monitors set");
-  }
+  if (ts->numbermonitors >= MAXTSMONITORS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many monitors set");
   ts->monitor[ts->numbermonitors]           = monitor;
   ts->mdestroy[ts->numbermonitors]          = mdestroy;
   ts->monitorcontext[ts->numbermonitors++]  = (void*)mctx;

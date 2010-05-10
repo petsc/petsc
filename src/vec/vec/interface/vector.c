@@ -78,10 +78,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetLocalToGlobalMapping(Vec x,ISLocalToGlob
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,2);
 
-  if (x->mapping) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for vector");
-  }
-
+  if (x->mapping) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for vector");
   if (x->ops->setlocaltoglobalmapping) {
     ierr = (*x->ops->setlocaltoglobalmapping)(x,mapping);CHKERRQ(ierr);
   } else {
@@ -123,9 +120,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetLocalToGlobalMappingBlock(Vec x,ISLocalT
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,2);
 
-  if (x->bmapping) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for vector");
-  }
+  if (x->bmapping) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for vector");
   ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
   if (x->bmapping) { ierr = ISLocalToGlobalMappingDestroy(x->bmapping);CHKERRQ(ierr); }
   x->bmapping = mapping;
@@ -1015,9 +1010,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoadIntoVector(PetscViewer viewer,Vec vec)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
   PetscValidType(vec,2);
-  if (!vec->ops->loadintovector) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support load");
-  }
+  if (!vec->ops->loadintovector) SETERRQ(((PetscObject)vec)->comm,PETSC_ERR_SUP,"Vector does not support load");
   ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   /*
      Check if default loader has been overridden, but user request it anyways
@@ -1063,9 +1056,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecReciprocal(Vec vec)
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
   PetscValidType(vec,1);
   if (vec->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
-  if (!vec->ops->reciprocal) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support reciprocal operation");
-  }
+  if (!vec->ops->reciprocal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support reciprocal operation");
   ierr = (*vec->ops->reciprocal)(vec);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -62,9 +62,7 @@ PetscErrorCode ISRestoreIndices_Block(IS in,const PetscInt *idx[])
   if (sub->bs != 1) {
     ierr = PetscFree(*(void**)idx);CHKERRQ(ierr);
   } else {
-    if (*idx !=  sub->idx) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must restore with value from ISGetIndices()");
-    }
+    if (*idx !=  sub->idx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must restore with value from ISGetIndices()");
   }
   PetscFunctionReturn(0);
 }

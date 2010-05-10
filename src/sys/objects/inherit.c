@@ -198,9 +198,7 @@ PetscErrorCode PetscObjectCompose_Petsc(PetscObject obj,const char name[],PetscO
   PetscFunctionBegin;
   if (ptr) {
     ierr = PetscOListReverseFind(ptr->olist,obj,&tname);CHKERRQ(ierr);
-    if (tname){
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"An object cannot be composed with an object that was compose with it");
-    }
+    if (tname) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"An object cannot be composed with an object that was compose with it");
   }
   ierr = PetscOListAdd(&obj->olist,name,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);

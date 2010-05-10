@@ -84,9 +84,7 @@ PetscErrorCode ISRestoreIndices_General(IS in,const PetscInt *idx[])
   IS_General *sub = (IS_General*)in->data;
 
   PetscFunctionBegin;
-  if (*idx != sub->idx) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must restore with value from ISGetIndices()");
-  }
+  if (*idx != sub->idx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must restore with value from ISGetIndices()");
   PetscFunctionReturn(0);
 }
 
