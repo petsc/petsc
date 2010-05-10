@@ -651,9 +651,7 @@ static PetscErrorCode MatView_MPIDense_Binary(Mat mat,PetscViewer viewer)
       } else {
         ierr = MPI_Send(a->v,mat->rmap->n*mat->cmap->N,MPIU_SCALAR,0,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
       }
-    } else {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"To store a parallel dense matrix you must first call PetscViewerSetFormat(viewer,PETSC_VIEWER_NATIVE");
-    }
+    } SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"To store a parallel dense matrix you must first call PetscViewerSetFormat(viewer,PETSC_VIEWER_NATIVE");
   }
   PetscFunctionReturn(0);
 }
@@ -1256,8 +1254,7 @@ PetscErrorCode MatLUFactorNumeric_MPIDense(Mat F,Mat A,const MatFactorInfo *info
 
   /* Factor P A -> L U overwriting lower triangular portion of A with L, upper, U */
   info_pla = PLA_LU(lu->A,lu->pivots);
-  if (info_pla != 0) 
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot encountered at row %d from PLA_LU()",info_pla);
+  if (info_pla != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot encountered at row %d from PLA_LU()",info_pla);
 
   lu->rstart         = rstart;
   lu->mstruct        = SAME_NONZERO_PATTERN;
@@ -1297,8 +1294,7 @@ PetscErrorCode MatCholeskyFactorNumeric_MPIDense(Mat F,Mat A,const MatFactorInfo
 
   /* Factor P A -> Chol */
   info_pla = PLA_Chol(PLA_LOWER_TRIANGULAR,lu->A);
-  if (info_pla != 0) 
-    SETERRQ1( PETSC_ERR_MAT_CH_ZRPVT,"Nonpositive definite matrix detected at row %d from PLA_Chol()",info_pla);
+  if (info_pla != 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_MAT_CH_ZRPVT,"Nonpositive definite matrix detected at row %d from PLA_Chol()",info_pla);
 
   lu->rstart         = rstart;
   lu->mstruct        = SAME_NONZERO_PATTERN;
