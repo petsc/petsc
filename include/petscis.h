@@ -128,6 +128,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingBlock(ISLocalToGl
 PETSC_STATIC_INLINE PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,PetscInt N,const PetscInt in[],PetscInt out[])
 {
   PetscInt i,*idx = mapping->indices,Nmax = mapping->n;
+  PetscFunctionBegin;
   for (i=0; i<N; i++) {
     if (in[i] < 0) {out[i] = in[i]; continue;}
     if (in[i] >= Nmax) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local index %D too large %D (max) at %D",in[i],Nmax,i);
