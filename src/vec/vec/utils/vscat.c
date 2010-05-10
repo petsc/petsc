@@ -97,7 +97,7 @@ PetscErrorCode VecScatterBegin_MPI_ToAll(VecScatter ctx,Vec x,Vec y,InsertMode a
 	    xvt[i] = PetscMax(xvt[i],xvt2[i]);
 	  }
 #endif
-        } else {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
+        } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
         ierr = MPI_Scatterv(xvt,scat->count,disply,MPIU_SCALAR,yv,yy_n,MPIU_SCALAR,0,((PetscObject)ctx)->comm);CHKERRQ(ierr);
       } else {
         ierr = MPI_Gatherv(yv,yy_n,MPIU_SCALAR,0, 0,0,MPIU_SCALAR,0,((PetscObject)ctx)->comm);CHKERRQ(ierr);
@@ -134,7 +134,7 @@ PetscErrorCode VecScatterBegin_MPI_ToAll(VecScatter ctx,Vec x,Vec y,InsertMode a
           yv[i] = PetscMax(yv[i],yvt[i]);
 	}
 #endif
-      } else {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
     }
   }
   ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);

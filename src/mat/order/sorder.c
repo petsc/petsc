@@ -224,7 +224,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat mat,const MatOrderingType t
 
   if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscFListFind(MatOrderingList,((PetscObject)mat)->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
-  if (!r) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);}
+  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);
 
   ierr = PetscLogEventBegin(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*r)(mat,type,rperm,cperm);CHKERRQ(ierr);

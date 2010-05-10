@@ -237,11 +237,8 @@ static gs_id * gsi_check_args(PetscInt *in_elms, PetscInt nel, PetscInt level)
   PetscErrorCode ierr;
 
 
-  if (!in_elms)
-    {SETERRABORT(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"elms point to nothing!!!\n");}
-
-  if (nel<0)
-    {SETERRABORT(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"can't have fewer than 0 elms!!!\n");}
+  if (!in_elms) SETERRABORT(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"elms point to nothing!!!\n");
+  if (nel<0) SETERRABORT(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"can't have fewer than 0 elms!!!\n");
 
   if (nel==0)
     {ierr = PetscInfo(0,"I don't have any elements!!!\n");CHKERRABORT(PETSC_COMM_WORLD,ierr);}
@@ -269,8 +266,7 @@ static gs_id * gsi_check_args(PetscInt *in_elms, PetscInt nel, PetscInt level)
         {elms[j] = in_elms[i]; companion[j++] = i;}
     }
 
-  if (j!=nel)
-    {SETERRABORT(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"nel j mismatch!\n");}
+  if (j!=nel) SETERRABORT(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"nel j mismatch!\n");
 
   /* pre-pass ... check to see if sorted */
   elms[nel] = INT_MAX;
@@ -380,11 +376,8 @@ static gs_id * gsi_check_args(PetscInt *in_elms, PetscInt nel, PetscInt level)
 
   /* must be semi-pos def - only pairwise depends on this */
   /* LATER - remove this restriction */
-  if (vals[3]<0)
-    {SETERRABORT(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"gsi_check_args() :: system not semi-pos def \n");}
-
-  if (vals[4]==INT_MAX)
-    {SETERRABORT(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"gsi_check_args() :: system ub too large !\n");}
+  if (vals[3]<0) SETERRABORT(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"gsi_check_args() :: system not semi-pos def \n");
+  if (vals[4]==INT_MAX) SETERRABORT(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"gsi_check_args() :: system ub too large !\n");
 
   gs->nel_min = vals[0];
   gs->nel_max = vals[1];
@@ -393,8 +386,7 @@ static gs_id * gsi_check_args(PetscInt *in_elms, PetscInt nel, PetscInt level)
   gs->gl_max  = vals[4];
   gs->negl    = vals[4]-vals[3]+1;
 
-  if (gs->negl<=0)
-    {SETERRABORT(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"gsi_check_args() :: system empty or neg :: %d\n");}
+  if (gs->negl<=0) SETERRABORT(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"gsi_check_args() :: system empty or neg :: %d\n");
   
   /* LATER :: add level == -1 -> program selects level */
   if (vals[5]<0)

@@ -79,7 +79,7 @@ PetscErrorCode GeometryTest(const Obj<ALE::Mesh>& mesh, const Obj<section_type>&
       ierr = PrintMatrix(comm, rank, "J",    dim, dim, J);CHKERRQ(ierr);
       ierr = PrintMatrix(comm, rank, "invJ", dim, dim, invJ);CHKERRQ(ierr);
     }
-    if (detJ < 0) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Negative Jacobian determinant");}
+    if (detJ < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Negative Jacobian determinant");
   }
   delete [] v0;
   delete [] J;

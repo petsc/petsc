@@ -1065,7 +1065,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMCreateSubdomains(Mat A, PetscInt n, IS* o
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidPointer(outis,3);
-  if (n < 1) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"number of local blocks must be > 0, n = %D",n);}
+  if (n < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"number of local blocks must be > 0, n = %D",n);
   
   /* Get prefix, row distribution, and block size */
   ierr = MatGetOptionsPrefix(A,&prefix);CHKERRQ(ierr);

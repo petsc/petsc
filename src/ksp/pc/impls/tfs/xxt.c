@@ -88,8 +88,7 @@ PetscInt XXT_factor(xxt_ADT xxt_handle, /* prev. allocated xxt  handle */
   check_handle(xxt_handle);
 
   /* only 2^k for now and all nodes participating */
-  if ((1<<(xxt_handle->level=i_log2_num_nodes))!=num_nodes)
-    {SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"only 2^k for now and MPI_COMM_WORLD!!! %D != %D\n",1<<i_log2_num_nodes,num_nodes);}
+  if ((1<<(xxt_handle->level=i_log2_num_nodes))!=num_nodes) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"only 2^k for now and MPI_COMM_WORLD!!! %D != %D\n",1<<i_log2_num_nodes,num_nodes);
 
   /* space for X info */
   xxt_handle->info = (xxt_info*)malloc(sizeof(xxt_info));
@@ -407,8 +406,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
 
       /* check for small alpha                             */
       /* LATER use this to detect and determine null space */
-      if (fabs(alpha)<1.0e-14)
-	{SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"bad alpha! %g\n",alpha);}
+      if (fabs(alpha)<1.0e-14) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"bad alpha! %g\n",alpha);
 
       /* compute v_l = v_l/sqrt(alpha) */
       rvec_scale(v,1.0/alpha,n);
@@ -688,8 +686,7 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
 		    {
 		      ct++; nfo++;
 
-		      if (nfo>n)
-			{SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nfo about to exceed n\n");}
+		      if (nfo>n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nfo about to exceed n\n");
 
 		      *--iptr = local2global[i];
 		      used[i]=edge;
@@ -711,8 +708,7 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
 		    {
 		      ct++; nfo++;
 
-		      if (nfo>n)
-			{SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nfo about to exceed n\n");}
+		      if (nfo>n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nfo about to exceed n\n");
 
 		      *--iptr = local2global[i];
 		      used[i]=edge;

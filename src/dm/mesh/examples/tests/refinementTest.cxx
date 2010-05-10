@@ -74,7 +74,7 @@ PetscErrorCode SerialTetrahedronTest(const Options *options)
   mesh->stratify();
   ALE::SieveBuilder<mesh_type>::buildCoordinates(mesh, mesh->getDimension(), coords);
   mesh->computeElementGeometry(mesh->getRealSection("coordinates"), 0, v0, J, invJ, detJ);
-  if (detJ <= 0.0) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, "Inverted element, detJ %g", detJ);}
+  if (detJ <= 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, "Inverted element, detJ %g", detJ);
 
   for(int l = 0; l < options->numLevels; ++l) {
     Obj<mesh_type>  newMesh  = new mesh_type(mesh->comm(), 3, options->debug);
@@ -97,7 +97,7 @@ PetscErrorCode SerialTetrahedronTest(const Options *options)
     }
     for(int c = 0; c < pow(8, l+1); ++c) {
       newMesh->computeElementGeometry(newMesh->getRealSection("coordinates"), c, v0, J, invJ, detJ);
-      if (detJ <= 0.0) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, "Inverted element, detJ %g", detJ);}
+      if (detJ <= 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, "Inverted element, detJ %g", detJ);
     }
     mesh = newMesh;
     newMesh = PETSC_NULL;
@@ -153,7 +153,7 @@ PetscErrorCode ParallelTetrahedronTest(const Options *options)
   ALE::SieveBuilder<mesh_type>::buildCoordinates(serialMesh, serialMesh->getDimension(), coords);
   for(int c = 0; c < (int) serialMesh->heightStratum(0)->size(); ++c) {
     serialMesh->computeElementGeometry(serialMesh->getRealSection("coordinates"), c, v0, J, invJ, detJ);
-    if (detJ <= 0.0) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, "Inverted element, detJ %g", detJ);}
+    if (detJ <= 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, "Inverted element, detJ %g", detJ);
   }
   Obj<mesh_type>  mesh  = new mesh_type(serialMesh->comm(), serialMesh->getDimension(), options->debug);
   Obj<sieve_type> sieve = new sieve_type(mesh->comm(), options->debug);
@@ -163,7 +163,7 @@ PetscErrorCode ParallelTetrahedronTest(const Options *options)
   if (debug) {mesh->view("Parallel Mesh");}
   for(int c = 0; c < (int) mesh->heightStratum(0)->size(); ++c) {
     mesh->computeElementGeometry(mesh->getRealSection("coordinates"), c, v0, J, invJ, detJ);
-    if (detJ <= 0.0) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, "Inverted element, detJ %g", detJ);}
+    if (detJ <= 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, "Inverted element, detJ %g", detJ);
   }
 
   for(int l = 0; l < options->numLevels; ++l) {
@@ -188,7 +188,7 @@ PetscErrorCode ParallelTetrahedronTest(const Options *options)
     }
     for(int c = 0; c < pow(8, l+1); ++c) {
       newMesh->computeElementGeometry(newMesh->getRealSection("coordinates"), c, v0, J, invJ, detJ);
-      if (detJ <= 0.0) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, "Inverted element, detJ %g", detJ);}
+      if (detJ <= 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, "Inverted element, detJ %g", detJ);
     }
     mesh = newMesh;
     newMesh = PETSC_NULL;

@@ -142,9 +142,9 @@ static PetscErrorCode PetscPythonLoadLibrary(const char pythonlib[])
   ierr = PetscDLPyLibSym("PyErr_Clear"           , &PyErr_Clear           );CHKERRQ(ierr);
   ierr = PetscDLPyLibSym("PyErr_Occurred"        , &PyErr_Occurred        );CHKERRQ(ierr);
   /* XXX TODO: check that ALL symbols were there !!! */
-  if (!Py_IsInitialized) {SETERRQ(PETSC_COMM_SELF,1,"Python: failed to load symbols from dynamic library");}
-  if (!Py_InitializeEx)  {SETERRQ(PETSC_COMM_SELF,1,"Python: failed to load symbols from dynamic library");}
-  if (!Py_Finalize)      {SETERRQ(PETSC_COMM_SELF,1,"Python: failed to load symbols from dynamic library");}
+  if (!Py_IsInitialized) SETERRQ(PETSC_COMM_SELF,1,"Python: failed to load symbols from dynamic library");
+  if (!Py_InitializeEx)  SETERRQ(PETSC_COMM_SELF,1,"Python: failed to load symbols from dynamic library");
+  if (!Py_Finalize)      SETERRQ(PETSC_COMM_SELF,1,"Python: failed to load symbols from dynamic library");
   ierr = PetscInfo(0,"Python: all required symbols loaded from Python dynamic library\n");CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

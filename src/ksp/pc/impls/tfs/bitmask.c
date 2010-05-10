@@ -80,8 +80,7 @@ div_ceil( PetscInt numer,  PetscInt denom)
 {
    PetscInt rt_val;
 
-  if ((numer<0)||(denom<=0))
-    {SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"div_ceil() :: numer=%D ! >=0, denom=%D ! >0",numer,denom);}
+  if ((numer<0)||(denom<=0)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"div_ceil() :: numer=%D ! >=0, denom=%D ! >0",numer,denom);
 
   /* if integer division remainder then increment */
   rt_val = numer/denom;
@@ -97,8 +96,7 @@ len_bit_mask( PetscInt num_items)
 {
    PetscInt rt_val, tmp;
 
-  if (num_items<0)
-    {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Value Sent To len_bit_mask() Must be >= 0!");}
+  if (num_items<0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Value Sent To len_bit_mask() Must be >= 0!");
 
   /* mod BYTE ceiling function */
   rt_val = num_items/BYTE;

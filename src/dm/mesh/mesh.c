@@ -712,7 +712,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh, Vec *gvec)
 
   PetscFunctionBegin;
   ierr = MeshHasSectionReal(mesh, "default", &flag);CHKERRQ(ierr);
-  if (!flag) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must set default section for mesh %p", m.objPtr);}
+  if (!flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must set default section for mesh %p", m.objPtr);
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   const ALE::Obj<PETSC_MESH_TYPE::order_type>& order = m->getFactory()->getGlobalOrder(m, "default", m->getRealSection("default"));
 

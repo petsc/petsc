@@ -122,7 +122,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutSetUp(PetscLayout map)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (map->bs <=0) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"BlockSize not yet set");}
+  if (map->bs <=0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"BlockSize not yet set");
   if ((map->n >= 0) && (map->N >= 0) && (map->range)) PetscFunctionReturn(0);
 
   ierr = MPI_Comm_size(map->comm, &size);CHKERRQ(ierr);

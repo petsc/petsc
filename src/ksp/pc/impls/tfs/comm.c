@@ -77,8 +77,7 @@ PetscErrorCode giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs)
 
    PetscFunctionBegin;
   /* ok ... should have some data, work, and operator(s) */
-  if (!vals||!work||!oprs)
-    {SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"giop() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
+  if (!vals||!work||!oprs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"giop() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);
 
   /* non-uniform should have at least two entries */
   if ((oprs[0] == NON_UNIFORM)&&(n<2)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"giop() :: non_uniform and n=0,1?");
@@ -95,8 +94,7 @@ PetscErrorCode giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs)
 
 
   /* a negative number if items to send ==> fatal */
-  if (n<0)
-    {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"giop() :: n=%D<0?",n);}
+  if (n<0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"giop() :: n=%D<0?",n);
 
   /* advance to list of n operations for custom */
   if ((type=oprs[0])==NON_UNIFORM)
@@ -176,8 +174,7 @@ PetscErrorCode grop(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *
 
    PetscFunctionBegin;
   /* ok ... should have some data, work, and operator(s) */
-  if (!vals||!work||!oprs)
-    {SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"grop() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
+  if (!vals||!work||!oprs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"grop() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);
 
   /* non-uniform should have at least two entries */
   if ((oprs[0] == NON_UNIFORM)&&(n<2)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"grop() :: non_uniform and n=0,1?");
@@ -191,8 +188,7 @@ PetscErrorCode grop(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *
     {        PetscFunctionReturn(0);}
 
   /* a negative number of items to send ==> fatal */
-  if (n<0)
-    {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"gdop() :: n=%D<0?",n);}
+  if (n<0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"gdop() :: n=%D<0?",n);
 
   /* advance to list of n operations for custom */
   if ((type=oprs[0])==NON_UNIFORM)
@@ -271,8 +267,7 @@ PetscErrorCode grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscIn
 
    PetscFunctionBegin;
   /* ok ... should have some data, work, and operator(s) */
-  if (!vals||!work||!oprs)
-    {SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"grop_hc() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
+  if (!vals||!work||!oprs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"grop_hc() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);
 
   /* non-uniform should have at least two entries */
   if ((oprs[0] == NON_UNIFORM)&&(n<2)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"grop_hc() :: non_uniform and n=0,1?");
@@ -289,8 +284,7 @@ PetscErrorCode grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscIn
   if (modfl_num_nodes) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"grop_hc() :: num_nodes not a power of 2!?!");
 
   /* a negative number of items to send ==> fatal */
-  if (n<0)
-    {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"grop_hc() :: n=%D<0?",n);}
+  if (n<0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"grop_hc() :: n=%D<0?",n);
 
   /* can't do more dimensions then exist */
   dim = PetscMin(dim,i_log2_num_nodes);
@@ -457,8 +451,7 @@ PetscErrorCode giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *opr
 
    PetscFunctionBegin;
   /* ok ... should have some data, work, and operator(s) */
-  if (!vals||!work||!oprs)
-    {SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"giop_hc() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
+  if (!vals||!work||!oprs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"giop_hc() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);
 
   /* non-uniform should have at least two entries */
   if ((oprs[0] == NON_UNIFORM)&&(n<2)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"giop_hc() :: non_uniform and n=0,1?");
@@ -475,8 +468,7 @@ PetscErrorCode giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *opr
   if (modfl_num_nodes) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"giop_hc() :: num_nodes not a power of 2!?!");
 
   /* a negative number of items to send ==> fatal */
-  if (n<0)
-    {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"giop_hc() :: n=%D<0?",n);}
+  if (n<0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"giop_hc() :: n=%D<0?",n);
 
   /* can't do more dimensions then exist */
   dim = PetscMin(dim,i_log2_num_nodes);

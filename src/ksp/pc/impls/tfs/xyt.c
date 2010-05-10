@@ -93,8 +93,7 @@ PetscInt XYT_factor(xyt_ADT xyt_handle, /* prev. allocated xyt  handle */
   check_handle(xyt_handle);
 
   /* only 2^k for now and all nodes participating */
-  if ((1<<(xyt_handle->level=i_log2_num_nodes))!=num_nodes)
-    {SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"only 2^k for now and MPI_COMM_WORLD!!! %D != %D\n",1<<i_log2_num_nodes,num_nodes);}
+  if ((1<<(xyt_handle->level=i_log2_num_nodes))!=num_nodes) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"only 2^k for now and MPI_COMM_WORLD!!! %D != %D\n",1<<i_log2_num_nodes,num_nodes);
 
   /* space for X info */
   xyt_handle->info = (xyt_info*)malloc(sizeof(xyt_info));
@@ -369,8 +368,7 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
 	  idx=ivec_linear_search(col, a_local2global, a_n);
 	  if (idx!=-1)
 	    {v[idx] = 1.0; j++;}
-	  else
-	    {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"NOT FOUND!\n");}
+	  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"NOT FOUND!\n");
 	}
       else
 	{
@@ -789,8 +787,7 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
 		    {
 		      ct++; nfo++;
 
-		      if (nfo>n)
-			{SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nfo about to exceed n\n");}
+		      if (nfo>n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nfo about to exceed n\n");
 
 		      *--iptr = local2global[i];
 		      used[i]=edge;
@@ -812,8 +809,7 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
 		    {
 		      ct++; nfo++;
 
-		      if (nfo>n)
-			{SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nfo about to exceed n\n");}
+		      if (nfo>n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nfo about to exceed n\n");
 
 		      *--iptr = local2global[i];
 		      used[i]=edge;

@@ -101,7 +101,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogRegister(StageLog stageLog, const char sn
     PetscTruth same;
 
     ierr = PetscStrcmp(stageLog->stageInfo[st].name, sname, &same);CHKERRQ(ierr);
-    if (same) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Duplicate stage name given: %s", sname);}
+    if (same) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Duplicate stage name given: %s", sname);
   }
   s = stageLog->numStages++;
   if (stageLog->numStages > stageLog->maxStages) {
