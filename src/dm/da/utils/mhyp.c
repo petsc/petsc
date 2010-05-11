@@ -477,7 +477,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA_HYPREStruct(Mat mat,DA da)
   /* create the hypre matrix object and set its information */
   ierr = HYPRE_StructMatrixCreate(ex->hcomm,ex->hgrid,ex->hstencil,&ex->hmat);CHKERRQ(ierr);
   ierr = HYPRE_StructGridDestroy(ex->hgrid);CHKERRQ(ierr);
-  ierr = HYPRE_StructStencilDestroy(ex->hstencil);CHKERRQ(ierr)
+  ierr = HYPRE_StructStencilDestroy(ex->hstencil);CHKERRQ(ierr);
   if (ex->needsinitialization) {
     ierr = HYPRE_StructMatrixInitialize(ex->hmat);CHKERRQ(ierr);
     ex->needsinitialization = PETSC_FALSE;
@@ -981,7 +981,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA_HYPRESStruct(Mat mat,DA da)
   /* create the hypre matrix object and set its information */
   ierr = HYPRE_SStructMatrixCreate(ex->hcomm,ex->ss_graph,&ex->ss_mat);CHKERRQ(ierr);
   ierr = HYPRE_SStructGridDestroy(ex->ss_grid);CHKERRQ(ierr);
-  ierr = HYPRE_SStructStencilDestroy(ex->ss_stencil);CHKERRQ(ierr)
+  ierr = HYPRE_SStructStencilDestroy(ex->ss_stencil);CHKERRQ(ierr);
   if (ex->needsinitialization) {
     ierr = HYPRE_SStructMatrixInitialize(ex->ss_mat);CHKERRQ(ierr);
     ex->needsinitialization = PETSC_FALSE;

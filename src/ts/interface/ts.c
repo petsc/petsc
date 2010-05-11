@@ -1202,7 +1202,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSDestroy(TS ts)
   ierr = PetscObjectDepublish(ts);CHKERRQ(ierr);
 
   if (ts->dm) {ierr = DMDestroy(ts->dm);CHKERRQ(ierr);}
-  if (ts->A) {ierr = MatDestroy(ts->A);CHKERRQ(ierr)}
+  if (ts->A) {ierr = MatDestroy(ts->A);CHKERRQ(ierr);}
   if (ts->ksp) {ierr = KSPDestroy(ts->ksp);CHKERRQ(ierr);}
   if (ts->snes) {ierr = SNESDestroy(ts->snes);CHKERRQ(ierr);}
   if (ts->ops->destroy) {ierr = (*(ts)->ops->destroy)(ts);CHKERRQ(ierr);}

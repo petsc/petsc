@@ -1980,7 +1980,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGlobalToLocalBegin(DMComposite packe
       ierr = DMGlobalToLocalEnd(next->dm,global,mode,local);CHKERRQ(ierr);
       ierr = VecResetArray(global);CHKERRQ(ierr);
       ierr = VecResetArray(local);CHKERRQ(ierr);
-      ierr = DMRestoreGlobalVector(next->dm,&global);CHKERRQ(ierr)
+      ierr = DMRestoreGlobalVector(next->dm,&global);CHKERRQ(ierr);
       ierr = DMRestoreGlobalVector(next->dm,&local);CHKERRQ(ierr);
       larray += next->n;
     } else {
