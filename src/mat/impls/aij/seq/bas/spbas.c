@@ -378,7 +378,7 @@ PetscErrorCode spbas_delete(spbas_matrix matrix)
 
    PetscFunctionBegin;
    if (matrix.block_data) {
-      ierr=PetscFree(matrix.alloc_icol);CHKERRQ(ierr)
+      ierr=PetscFree(matrix.alloc_icol);CHKERRQ(ierr);
       if (matrix.values){ierr=PetscFree(matrix.alloc_val);CHKERRQ(ierr);}
    } else  {
      for (i=0; i<matrix.nrows; i++) { ierr=PetscFree(matrix.icols[i]);CHKERRQ(ierr);}

@@ -847,8 +847,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   }
 
   /* to prevent PETSc -options_left from warning */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-nox",&flg1);CHKERRQ(ierr)
-  ierr = PetscOptionsHasName(PETSC_NULL,"-nox_warning",&flg1);CHKERRQ(ierr)
+  ierr = PetscOptionsHasName(PETSC_NULL,"-nox",&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-nox_warning",&flg1);CHKERRQ(ierr);
 
   if (!PetscOpenMPWorker) { /* worker processes skip this because they do not usually process options */
     flg3 = PETSC_FALSE; /* default value is required */

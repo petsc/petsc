@@ -314,7 +314,7 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,Mat C,Mat *outworkB)
     }
     CHKMEMQ;
   }
-  if (to->n) {ierr = MPI_Waitall(to->n,swaits,to->sstatus);CHKERRQ(ierr)}
+  if (to->n) {ierr = MPI_Waitall(to->n,swaits,to->sstatus);CHKERRQ(ierr);}
 
   ierr = MatRestoreArray(B,&b);CHKERRQ(ierr);
   ierr = MatRestoreArray(workB,&w);CHKERRQ(ierr);

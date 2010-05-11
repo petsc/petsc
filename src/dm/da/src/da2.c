@@ -1311,18 +1311,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
   ierr = PetscMemzero(da->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
 
   if (m != PETSC_DECIDE) {
-    if (m < 1) {
-      SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in X direction: %D",m);
-    } else if (m > size) {
-      SETERRQ2(comm,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in X direction: %D %d",m,size);
-    }
+    if (m < 1) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in X direction: %D",m);
+    else if (m > size) SETERRQ2(comm,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in X direction: %D %d",m,size);
   }
   if (n != PETSC_DECIDE) {
-    if (n < 1) {
-      SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Y direction: %D",n);
-    } else if (n > size) {
-      SETERRQ2(comm,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Y direction: %D %d",n,size);
-    }
+    if (n < 1) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Y direction: %D",n);
+    else if (n > size) SETERRQ2(comm,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Y direction: %D %d",n,size);
   }
 
   if (m == PETSC_DECIDE || n == PETSC_DECIDE) {

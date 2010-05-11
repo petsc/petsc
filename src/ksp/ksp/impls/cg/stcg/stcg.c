@@ -207,7 +207,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
       /* Compute objective function.                                         */
       /***********************************************************************/
 
-      ierr = KSP_MatMult(ksp, Qmat, d, z);CHKERRQ(ierr)
+      ierr = KSP_MatMult(ksp, Qmat, d, z);CHKERRQ(ierr);
       ierr = VecAYPX(z, -0.5, ksp->vec_rhs);CHKERRQ(ierr);
       ierr = VecDot(d, z, &cg->o_fcn);CHKERRQ(ierr);
       cg->o_fcn = -cg->o_fcn;
@@ -243,7 +243,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
       /* Compute objective function.                                         */
       /***********************************************************************/
 
-      ierr = KSP_MatMult(ksp, Qmat, d, z);CHKERRQ(ierr)
+      ierr = KSP_MatMult(ksp, Qmat, d, z);CHKERRQ(ierr);
       ierr = VecAYPX(z, -0.5, ksp->vec_rhs);CHKERRQ(ierr);
       ierr = VecDot(d, z, &cg->o_fcn);CHKERRQ(ierr);
       cg->o_fcn = -cg->o_fcn;
@@ -322,7 +322,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
       /* Compute objective function.                                         */
       /***********************************************************************/
 
-      ierr = KSP_MatMult(ksp, Qmat, d, z);CHKERRQ(ierr)
+      ierr = KSP_MatMult(ksp, Qmat, d, z);CHKERRQ(ierr);
       ierr = VecAYPX(z, -0.5, ksp->vec_rhs);CHKERRQ(ierr);
       ierr = VecDot(d, z, &cg->o_fcn);CHKERRQ(ierr);
       cg->o_fcn = -cg->o_fcn;
@@ -399,7 +399,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
       /* Compute objective function.                                         */
       /***********************************************************************/
 
-      ierr = KSP_MatMult(ksp, Qmat, d, z);CHKERRQ(ierr)
+      ierr = KSP_MatMult(ksp, Qmat, d, z);CHKERRQ(ierr);
       ierr = VecAYPX(z, -0.5, ksp->vec_rhs);CHKERRQ(ierr);
       ierr = VecDot(d, z, &cg->o_fcn);CHKERRQ(ierr);
       cg->o_fcn = -cg->o_fcn;

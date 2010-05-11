@@ -232,7 +232,7 @@ PetscErrorCode MatSetValues_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[],Petsc
           /* ierr = MatSetValues_SeqBAIJ(baij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         } else if (in[j] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
-        else if (in[j] >= mat->cmap->N) {SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[i],mat->cmap->N-1);}
+        else if (in[j] >= mat->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[i],mat->cmap->N-1);
 #endif
         else {
           if (mat->was_assembled) {
@@ -330,7 +330,7 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[
         }
         else if (in[j] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
-        else if (in[j] >= baij->Nbs) {SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large, col %D max %D",in[j],baij->Nbs-1);}
+        else if (in[j] >= baij->Nbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large, col %D max %D",in[j],baij->Nbs-1);
 #endif
         else {
           if (mat->was_assembled) {
@@ -690,7 +690,7 @@ PetscErrorCode MatNorm_MPIBAIJ(Mat mat,NormType type,PetscReal *nrm)
       ierr = PetscFree2(tmp,tmp2);CHKERRQ(ierr);
     } else if (type == NORM_INFINITY) { /* max row sum */
       PetscReal *sums;
-      ierr = PetscMalloc(bs*sizeof(PetscReal),&sums);CHKERRQ(ierr)
+      ierr = PetscMalloc(bs*sizeof(PetscReal),&sums);CHKERRQ(ierr);
       sum = 0.0;
       for (j=0; j<amat->mbs; j++) {
         for (row=0; row<bs; row++) sums[row] = 0.0;
@@ -2170,7 +2170,7 @@ PetscErrorCode MatFDColoringCreate_MPIBAIJ(Mat mat,ISColoring iscoloring,MatFDCo
           m    = A_ci[col-cstart+1] - A_ci[col-cstart];
         } else {
 #if defined (PETSC_USE_CTABLE)
-          ierr = PetscTableFind(baij->colmap,col+1,&colb);CHKERRQ(ierr)
+          ierr = PetscTableFind(baij->colmap,col+1,&colb);CHKERRQ(ierr);
 	  colb --;
 #else
           colb = baij->colmap[col] - 1;
@@ -3528,7 +3528,7 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer, const MatType type,Mat *newma
   /* create our matrix */
   ierr = MatCreate(comm,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,m,m,M+extra_rows,N+extra_rows);CHKERRQ(ierr);
-  ierr = MatSetType(A,type);CHKERRQ(ierr)
+  ierr = MatSetType(A,type);CHKERRQ(ierr);
   ierr = MatMPIBAIJSetPreallocation(A,bs,0,dlens,0,odlens);CHKERRQ(ierr);
 
   if (!rank) {
@@ -3762,7 +3762,7 @@ PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin,PetscInt *min,const PetscI
         }
         else if (in[j] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
-        else if (in[j] >= baij->Nbs) {SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large, col %D max %D",in[j],baij->Nbs-1);}
+        else if (in[j] >= baij->Nbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large, col %D max %D",in[j],baij->Nbs-1);
 #endif
         else {
           if (mat->was_assembled) {
