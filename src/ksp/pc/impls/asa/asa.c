@@ -2034,7 +2034,7 @@ static PetscErrorCode PCView_ASA(PC pc,PetscViewer viewer)
       asa_lev = asa_lev->next;
     }
   } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for PCASA",((PetscObject)viewer)->type_name);
+    SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for PCASA",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

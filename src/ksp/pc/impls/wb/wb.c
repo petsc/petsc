@@ -637,7 +637,7 @@ PetscErrorCode PCSetUp_Exotic(PC pc)
     ierr = DAGetFaceInterpolation((DA)pc->dm,ex,A,reuse,&ex->P);CHKERRQ(ierr);
   } else if (ex->type == PC_EXOTIC_WIREBASKET) {
     ierr = DAGetWireBasketInterpolation((DA)pc->dm,ex,A,reuse,&ex->P);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unknown exotic coarse space %d",ex->type);
+  } else SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_PLIB,"Unknown exotic coarse space %d",ex->type);
   ierr = PCMGSetInterpolation(pc,1,ex->P);CHKERRQ(ierr);
   ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -149,7 +149,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
       if (!f) {
         const char *type;
         ierr = PetscObjectGetType((PetscObject) pc->pmat,&type);CHKERRQ(ierr);
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"This matrix type, %s, does not support getting diagonal block", type);
+        SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"This matrix type, %s, does not support getting diagonal block", type);
       }
       ierr = (*f)(pc->pmat,&iscopy,scall,&pmat);CHKERRQ(ierr);
       /* make submatrix have same prefix as entire matrix */
@@ -268,7 +268,7 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
     if (jac->ksp) {ierr = KSPView(jac->ksp[0],sviewer);CHKERRQ(ierr);}
     ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for block Jacobi",((PetscObject)viewer)->type_name);
+    SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for block Jacobi",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

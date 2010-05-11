@@ -207,12 +207,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetScatters(Mat A, PetscInt blockcount, M
   PetscScalar *inarr;
   
   PetscFunctionBegin;
-
-
   /* check validity of block parameters */
-  if(blockcount <= 0) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER, "Invalid number of blocks: %d; must be > 0", blockcount);
-  }
+  if(blockcount <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER, "Invalid number of blocks: %d; must be > 0", blockcount);
   if(dd->scatters) {
     for(k = 0; k < dd->colblockcount; ++k) {
       if(dd->scatters[k]) {
@@ -274,9 +270,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetGathers(Mat A, PetscInt blockcount, Ma
   PetscFunctionBegin;
 
   /* check validity of block parameters */
-  if(blockcount <= 0) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER, "Invalid number of blocks: %d; must be > 0", blockcount);
-  }
+  if(blockcount <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER, "Invalid number of blocks: %d; must be > 0", blockcount);
   if(dd->gathers) {
     for(k = 0; k < dd->rowblockcount; ++k) {
       if(dd->gathers[k]) {

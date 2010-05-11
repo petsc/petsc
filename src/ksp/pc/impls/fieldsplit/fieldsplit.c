@@ -92,7 +92,7 @@ static PetscErrorCode PCView_FieldSplit(PC pc,PetscViewer viewer)
     }
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for PCFieldSplit",((PetscObject)viewer)->type_name);
+    SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for PCFieldSplit",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -150,7 +150,7 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for PCFieldSplit",((PetscObject)viewer)->type_name);
+    SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for PCFieldSplit",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -542,7 +542,7 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
         ierr = VecScatterEnd(ilink->sctx,ilink->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       }
     }
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported or unknown composition",(int) jac->type);
+  } else SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Unsupported or unknown composition",(int) jac->type);
   CHKMEMQ;
   PetscFunctionReturn(0);
 }
@@ -1096,8 +1096,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetBlockSize_FieldSplit(PC pc,Pets
   PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
 
   PetscFunctionBegin;
-  if (bs < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Blocksize must be positive, you gave %D",bs);
-  if (jac->bs > 0 && jac->bs != bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot change fieldsplit blocksize from %D to %D after it has been set",jac->bs,bs);
+  if (bs < 1) SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Blocksize must be positive, you gave %D",bs);
+  if (jac->bs > 0 && jac->bs != bs) SETERRQ2(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot change fieldsplit blocksize from %D to %D after it has been set",jac->bs,bs);
   jac->bs = bs;
   PetscFunctionReturn(0);
 }

@@ -5775,10 +5775,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,con
     bjlvl_ptr[i] = current_space_lvl->array;
 
     /* make sure the active row i has diagonal entry */
-    if (*(bj_ptr[i]+bdiag[i]) != i) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Row %D has missing diagonal in factored matrix\n\
-    try running with -pc_factor_nonzeros_along_diagonal or -pc_factor_diagonal_fill",i);
-    }
+    if (*(bj_ptr[i]+bdiag[i]) != i) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Row %D has missing diagonal in factored matrix\ntry running with -pc_factor_nonzeros_along_diagonal or -pc_factor_diagonal_fill",i);
 
     current_space->array           += nzi;
     current_space->local_used      += nzi;

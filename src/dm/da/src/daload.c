@@ -46,11 +46,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DALoad(PetscViewer viewer,PetscInt M,PetscInt N
   if (info[0] == 1) {
     ierr = DACreate1d(comm,(DAPeriodicType) info[7],info[1],info[4],info[5],0,da);CHKERRQ(ierr);
   } else if (info[0] == 2) {
-    ierr = DACreate2d(comm,(DAPeriodicType) info[7],(DAStencilType) info[6],info[1],info[2],M,N,info[4],
-                      info[5],0,0,da);CHKERRQ(ierr);
+    ierr = DACreate2d(comm,(DAPeriodicType) info[7],(DAStencilType) info[6],info[1],info[2],M,N,info[4],info[5],0,0,da);CHKERRQ(ierr);
   } else if (info[0] == 3) {
-    ierr = DACreate3d(comm,(DAPeriodicType) info[7],(DAStencilType) info[6],info[1],info[2],info[3],M,N,P,
-                      info[4],info[5],0,0,0,da);CHKERRQ(ierr);
+    ierr = DACreate3d(comm,(DAPeriodicType) info[7],(DAStencilType) info[6],info[1],info[2],info[3],M,N,P,info[4],info[5],0,0,0,da);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Dimension in info file is not 1, 2, or 3 it is %D",info[0]);
   }

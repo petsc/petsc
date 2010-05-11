@@ -247,9 +247,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
 #else
   dmumps_c(&lu->id); 
 #endif
-  if (lu->id.INFOG(1) < 0) {   
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d\n",lu->id.INFOG(1));
-  }
+  if (lu->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d\n",lu->id.INFOG(1));
 
   if (lu->size > 1) { /* convert mumps distributed solution to petsc mpi x */
     if (!lu->nSolve){ /* create scatter scat_sol */
@@ -290,9 +288,7 @@ PetscErrorCode MatGetInertia_SBAIJMUMPS(Mat F,int *nneg,int *nzero,int *npos)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)F)->comm,&size);CHKERRQ(ierr);
   /* MUMPS 4.3.1 calls ScaLAPACK when ICNTL(13)=0 (default), which does not offer the possibility to compute the inertia of a dense matrix. Set ICNTL(13)=1 to skip ScaLAPACK */
-  if (size > 1 && lu->id.ICNTL(13) != 1){
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"ICNTL(13)=%d. -mat_mumps_icntl_13 must be set as 1 for correct global matrix inertia\n",lu->id.INFOG(13));
-  }
+  if (size > 1 && lu->id.ICNTL(13) != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"ICNTL(13)=%d. -mat_mumps_icntl_13 must be set as 1 for correct global matrix inertia\n",lu->id.INFOG(13));
   if (nneg){  
     if (!lu->myid){
       *nneg = lu->id.INFOG(12);
@@ -420,9 +416,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
 #else
     dmumps_c(&lu->id); 
 #endif
-    if (lu->id.INFOG(1) < 0) { 
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",lu->id.INFOG(1)); 
-    }
+    if (lu->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",lu->id.INFOG(1)); 
   }
 
   /* numerical factorization phase */
@@ -449,16 +443,10 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
   dmumps_c(&lu->id); 
 #endif
   if (lu->id.INFOG(1) < 0) {
-    if (lu->id.INFO(1) == -13) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: Cannot allocate required memory %d megabytes\n",lu->id.INFO(2)); 
-    } else {
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: INFO(1)=%d, INFO(2)=%d\n",lu->id.INFO(1),lu->id.INFO(2)); 
-    }
+    if (lu->id.INFO(1) == -13) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: Cannot allocate required memory %d megabytes\n",lu->id.INFO(2)); 
+    else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: INFO(1)=%d, INFO(2)=%d\n",lu->id.INFO(1),lu->id.INFO(2)); 
   }
-
-  if (!lu->myid && lu->id.ICNTL(16) > 0){
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"  lu->id.ICNTL(16):=%d\n",lu->id.INFOG(16)); 
-  }
+  if (!lu->myid && lu->id.ICNTL(16) > 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"  lu->id.ICNTL(16):=%d\n",lu->id.INFOG(16)); 
 
   if (lu->size > 1){
     if(isMPIAIJ) {

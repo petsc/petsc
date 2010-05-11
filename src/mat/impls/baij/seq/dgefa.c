@@ -49,9 +49,7 @@ PetscErrorCode LINPACKdgefa(MatScalar *a,PetscInt n,PetscInt *ipvt)
         l += k - 1;
 	ipvt[k] = l;
 
-	if (a[l + kn] == 0.0) {
-	  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",k-1);
-	}
+	if (a[l + kn] == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",k-1);
 
 /*           interchange if necessary */
 
@@ -89,9 +87,7 @@ PetscErrorCode LINPACKdgefa(MatScalar *a,PetscInt n,PetscInt *ipvt)
 	}
     }
     ipvt[n] = n;
-    if (a[n + n * n] == 0.0) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",n-1);
-    }
+    if (a[n + n * n] == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",n-1);
     PetscFunctionReturn(0);
 } 
 

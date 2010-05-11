@@ -113,7 +113,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
       ierr = VecDotEnd   (RT,ART,&btop);CHKERRQ(ierr);
       ierr = VecNormEnd  (R,NORM_2,&dp);CHKERRQ(ierr);       /*   dp <- R'*R          */
     } else {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"KSPNormType of %d not supported",(int)ksp->normtype);
+      SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"KSPNormType of %d not supported",(int)ksp->normtype);
     }
     if (PetscAbsScalar(btop) < 0.0) {
       ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;

@@ -183,9 +183,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_1D(DA da)
     for (i=rank; i<size; i++) {
       left += lx[i];
     }
-    if (left != M) {
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of lx across processors not equal to M %D %D",left,M);
-    }
+    if (left != M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of lx across processors not equal to M %D %D",left,M);
   }
 
   /* From now on x,xs,xe,Xs,Xe are the exact location in the array */

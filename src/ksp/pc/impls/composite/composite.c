@@ -194,7 +194,7 @@ static PetscErrorCode PCView_Composite(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"PCs on composite preconditioner follow\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for PCComposite",((PetscObject)viewer)->type_name);
+    SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for PCComposite",((PetscObject)viewer)->type_name);
   }
   if (iascii) {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);

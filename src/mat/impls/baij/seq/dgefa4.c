@@ -90,9 +90,7 @@ PetscErrorCode Kernel_A_gets_inverse_A_4(MatScalar *a,PetscReal shift)
         }
     }
     ipvt[3] = 4;
-    if (a[20] == 0.0) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",3);
-    }
+    if (a[20] == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",3);
 
     /*
          Now form the inverse 

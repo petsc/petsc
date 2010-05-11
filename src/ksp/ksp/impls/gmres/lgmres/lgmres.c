@@ -242,7 +242,7 @@ PetscErrorCode LGMREScycle(PetscInt *itcount,KSP ksp)
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
       if (!ksp->reason) {
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"You reached the happy break down,but convergence was not indicated. Residual norm = %G",res);
+        SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_PLIB,"You reached the happy break down,but convergence was not indicated. Residual norm = %G",res);
       }
       break;
     }
@@ -723,7 +723,7 @@ PetscErrorCode KSPView_LGMRES(KSP ksp,PetscViewer viewer)
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  LGMRES: number of matvecs=%D\n",lgmres->matvecs);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for KSP LGMRES",((PetscObject)viewer)->type_name);
+    SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for KSP LGMRES",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

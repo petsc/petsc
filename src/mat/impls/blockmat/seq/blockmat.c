@@ -913,7 +913,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatBlockMatSetPreallocation_BlockMat(Mat A,Pet
   PetscInt       i;
 
   PetscFunctionBegin;
-  if (bs < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block size given %D must be great than zero",bs);
+  if (bs < 1) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Block size given %D must be great than zero",bs);
   if (A->rmap->n % bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Blocksize %D does not divide number of rows %D",bs,A->rmap->n);
   if (A->cmap->n % bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Blocksize %D does not divide number of columns %D",bs,A->cmap->n);
   if (nz == PETSC_DEFAULT || nz == PETSC_DECIDE) nz = 5;

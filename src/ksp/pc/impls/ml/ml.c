@@ -245,7 +245,7 @@ static PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,MatType newtype,MatReuse scall,
       for (j=0; j<ncols; j++) *ca++ = *ba++; 
     }
   } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",(int)scall);
+    SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",(int)scall);
   }
   PetscFunctionReturn(0);
 }
@@ -581,7 +581,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   } else {
     Nlevels = ML_Gen_MultiLevelHierarchy_UsingAggregation(ml_object,0,ML_INCREASING,agg_object);
   }
-  if (Nlevels<=0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Nlevels %d must > 0",Nlevels);
+  if (Nlevels<=0) SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Nlevels %d must > 0",Nlevels);
   pc_ml->Nlevels = Nlevels;
   fine_level = Nlevels - 1;
 

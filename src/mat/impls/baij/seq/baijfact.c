@@ -467,9 +467,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1_inplace(Mat C,Mat A,const MatFactorI
     for (j=0; j<nz; j++) {pv[j] = rtmp[pj[j]];}
     diag = diag_offset[i] - bi[i];
     /* check pivot entry for current row */
-    if (pv[diag] == 0.0) {
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot: row in original ordering %D in permuted ordering %D",r[i],i);
-    }
+    if (pv[diag] == 0.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot: row in original ordering %D in permuted ordering %D",r[i],i);
     pv[diag] = 1.0/pv[diag];
   }
 

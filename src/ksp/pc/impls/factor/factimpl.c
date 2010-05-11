@@ -207,7 +207,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetColumnPivot_Factor(PC pc,PetscReal 
   PC_Factor       *dir = (PC_Factor*)pc->data;
 
   PetscFunctionBegin;
-  if (dtcol < 0.0 || dtcol > 1.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column pivot tolerance is %G must be between 0 and 1",dtcol);
+  if (dtcol < 0.0 || dtcol > 1.0) SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Column pivot tolerance is %G must be between 0 and 1",dtcol);
   dir->info.dtcol = dtcol;
   PetscFunctionReturn(0);
 }
@@ -336,7 +336,7 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
       ierr = PetscViewerStringSPrintf(viewer," lvls=%D,order=%s",(PetscInt)factor->info.levels,factor->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for PC_Factor",((PetscObject)viewer)->type_name);
+    SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for PC_Factor",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

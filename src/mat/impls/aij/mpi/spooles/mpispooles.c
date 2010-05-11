@@ -509,10 +509,7 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat F,Mat A,const MatFactorInfo *info
 
   tagbound = maxTagMPI(lu->comm_spooles);
   lasttag  = lu->firsttag + 3*lu->frontETree->nfront + 2;
-  if ( lasttag > tagbound ) {
-      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"fatal error in FrontMtx_MPI_factorInpMtx(), tag range is [%d,%d], tag_bound = %d",\
-               lu->firsttag, lasttag, tagbound); 
-  }
+  if ( lasttag > tagbound ) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"fatal error in FrontMtx_MPI_factorInpMtx(), tag range is [%d,%d], tag_bound = %d",lu->firsttag, lasttag, tagbound); 
   rootchv = FrontMtx_MPI_factorInpMtx(lu->frontmtx, lu->mtxA, lu->options.tau, droptol,
                      chvmanager, lu->ownersIV, lookahead, &sierr, lu->cpus, 
                      lu->stats, lu->options.msglvl, lu->options.msgFile, lu->firsttag,lu->comm_spooles);
@@ -554,10 +551,7 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat F,Mat A,const MatFactorInfo *info
   /*  post-process the factorization and split 
       the factor matrices into submatrices */
   lasttag  = lu->firsttag + 5*size;
-  if ( lasttag > tagbound ) {
-      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"fatal error in FrontMtx_MPI_postProcess(), tag range is [%d,%d], tag_bound = %d",\
-               lu->firsttag, lasttag, tagbound); 
-  }
+  if ( lasttag > tagbound ) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"fatal error in FrontMtx_MPI_postProcess(), tag range is [%d,%d], tag_bound = %d",lu->firsttag, lasttag, tagbound); 
   FrontMtx_MPI_postProcess(lu->frontmtx, lu->ownersIV, lu->stats, lu->options.msglvl,
                          lu->options.msgFile, lu->firsttag, lu->comm_spooles);
   lu->firsttag += 5*size ;

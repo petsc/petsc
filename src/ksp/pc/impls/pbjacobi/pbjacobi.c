@@ -160,7 +160,7 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc)
       pc->ops->apply = PCApply_PBJacobi_5;
       break;
     default: 
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"not supported for block size %D",jac->bs);
+      SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"not supported for block size %D",jac->bs);
   }
 
   PetscFunctionReturn(0);

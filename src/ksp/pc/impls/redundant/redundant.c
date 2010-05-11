@@ -48,7 +48,7 @@ static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
   } else if (isstring) { 
     ierr = PetscViewerStringSPrintf(viewer," Redundant solver preconditioner");CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for PC redundant",((PetscObject)viewer)->type_name);
+    SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for PC redundant",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -286,7 +286,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantSetNumber(PC pc,PetscInt nredundant
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  if (nredundant <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "num of redundant pc %D must be positive",nredundant);
+  if (nredundant <= 0) SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG, "num of redundant pc %D must be positive",nredundant);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCRedundantSetNumber_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,nredundant);CHKERRQ(ierr);

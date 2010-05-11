@@ -16,9 +16,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!P->ops->ptapsymbolic_seqaij) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented for A=%s and P=%s",((PetscObject)A)->type_name,((PetscObject)P)->type_name);
-  }
+  if (!P->ops->ptapsymbolic_seqaij) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_SUP,"Not implemented for A=%s and P=%s",((PetscObject)A)->type_name,((PetscObject)P)->type_name);
   ierr = (*P->ops->ptapsymbolic_seqaij)(A,P,fill,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -30,9 +28,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ(Mat A,Mat P,Mat C)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!P->ops->ptapnumeric_seqaij) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented for A=%s and P=%s",((PetscObject)A)->type_name,((PetscObject)P)->type_name);
-  }
+  if (!P->ops->ptapnumeric_seqaij) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_SUP,"Not implemented for A=%s and P=%s",((PetscObject)A)->type_name,((PetscObject)P)->type_name);
   ierr = (*P->ops->ptapnumeric_seqaij)(A,P,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

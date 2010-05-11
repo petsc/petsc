@@ -115,7 +115,7 @@ PetscErrorCode PCView_SOR(PC pc,PetscViewer viewer)
     else                                     sortype = "unknown";
     ierr = PetscViewerASCIIPrintf(viewer,"  SOR: type = %s, iterations = %D, local iterations = %D, omega = %G\n",sortype,jac->its,jac->lits,jac->omega);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for PCSOR",((PetscObject)viewer)->type_name);
+    SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for PCSOR",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

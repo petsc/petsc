@@ -49,9 +49,8 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
   PetscTruth     diagonalscale;
 
   PetscFunctionBegin;
-  
   ierr = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   lcd            = (KSP_LCD*)ksp->data;
   X              = ksp->vec_sol;
@@ -168,7 +167,7 @@ PetscErrorCode KSPView_LCD(KSP ksp,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  LCD: restart=%d\n",lcd->restart);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  LCD: happy breakdown tolerance %g\n",lcd->haptol);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for KSP LCD",((PetscObject)viewer)->type_name);
+    SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for KSP LCD",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
