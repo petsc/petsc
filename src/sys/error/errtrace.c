@@ -247,7 +247,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(MPI_Comm comm,int line
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __SDIR__)
 .  n - the generic error number
-.  p - specific error number
+.  p - PETSC_ERROR_INITIAL or PETSC_ERROR_REPEAT
 -  msg - The message stream
 
    Level: developer
@@ -263,9 +263,9 @@ $     SETERROR(number,p,mess)
 
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler()
  @*/
-void PETSC_DLLEXPORT PetscTraceBackErrorHandlerCxx(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,int p, std::ostringstream& msg)
+void PETSC_DLLEXPORT PetscTraceBackErrorHandlerCxx(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p, std::ostringstream& msg)
 {
-  if (p == 1) {
+  if (p == PETSC_ERROR_INITIAL) {
     PetscLogDouble mem, rss;
     PetscTruth     flg1 = PETSC_FALSE, flg2 = PETSC_FALSE;
 
