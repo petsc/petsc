@@ -386,7 +386,7 @@ PetscErrorCode VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
   } else if (dim == 3) {
     ierr = DACreate3d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,m,n,p,M,N,P,dim,0,lx,ly,lz,&dac);CHKERRQ(ierr); 
   } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Dimension is not 1 2 or 3: %D\n",dim);
+    SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_CORRUPT,"Dimension is not 1 2 or 3: %D\n",dim);
   }
   ierr = DACreateNaturalVector(dac,&xyz);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)xyz,"coor_");CHKERRQ(ierr);
@@ -522,7 +522,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec xin,PetscViewer viewer)
     } else if (dim == 2) {
       ierr = VecView_MPI_Draw_DA2d(xin,viewer);CHKERRQ(ierr);
     } else {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot graphically view vector associated with this dimensional DA %D",dim);
+      SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Cannot graphically view vector associated with this dimensional DA %D",dim);
     }
 #if defined(PETSC_HAVE_HDF5)
   } else if (ishdf5) {

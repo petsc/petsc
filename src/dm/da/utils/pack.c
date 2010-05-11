@@ -750,7 +750,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeAddArray(DMComposite packer,PetscMPI
   }
 #if defined(PETSC_USE_DEBUG)
   {
-    PetscMPIInt        orankmax;
+    PetscMPIInt orankmax;
     ierr = MPI_Allreduce(&orank,&orankmax,1,MPI_INT,MPI_MAX,((PetscObject)packer)->comm);CHKERRQ(ierr);
     if (orank != orankmax) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"orank %d must be equal on all processes, another process has value %d",orank,orankmax);
   }

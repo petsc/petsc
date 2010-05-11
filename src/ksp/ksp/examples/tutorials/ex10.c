@@ -175,9 +175,7 @@ int main(int argc,char **args)
     */
     
     ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-    if (m != n) {
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
-    }
+    if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
     ierr = MatGetSize(A,&M,PETSC_NULL);CHKERRQ(ierr);
     ierr = VecGetSize(b,&m);CHKERRQ(ierr);
     if (M != m) { /* Create a new vector b by padding the old one */

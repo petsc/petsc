@@ -863,9 +863,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *sc
 
   ierr = DAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&wrapc,&stc);CHKERRQ(ierr);
   ierr = DAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&wrapf,&stf);CHKERRQ(ierr);
-  if (dimc != dimf) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Dimensions of DA do not match %D %D",dimc,dimf);CHKERRQ(ierr);
-  if (dofc != doff) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"DOF of DA do not match %D %D",dofc,doff);CHKERRQ(ierr);
-  if (sc != sf) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Stencil width of DA do not match %D %D",sc,sf);CHKERRQ(ierr);
+  if (dimc != dimf) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Dimensions of DA do not match %D %D",dimc,dimf);CHKERRQ(ierr);
+  if (dofc != doff) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"DOF of DA do not match %D %D",dofc,doff);CHKERRQ(ierr);
+  if (sc != sf) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil width of DA do not match %D %D",sc,sf);CHKERRQ(ierr);
   if (wrapc != wrapf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Periodic type different in two DAs");CHKERRQ(ierr);
   if (stc != stf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil type different in two DAs");CHKERRQ(ierr);
   if (Mc < 2 && Mf > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in x direction");
@@ -880,7 +880,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *sc
     } else if (dimc == 3){
       ierr = DAGetInterpolation_3D_Q1(dac,daf,A);CHKERRQ(ierr);
     } else {
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for this DA dimension %D for interpolation type %d",dimc,(int)dac->interptype);
+      SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_SUP,"No support for this DA dimension %D for interpolation type %d",dimc,(int)dac->interptype);
     }
   } else if (dac->interptype == DA_Q0){
     if (dimc == 1){
@@ -890,7 +890,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *sc
     } else if (dimc == 3){
        ierr = DAGetInterpolation_3D_Q0(dac,daf,A);CHKERRQ(ierr);
     } else {
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for this DA dimension %D for interpolation type %d",dimc,(int)dac->interptype);
+      SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_SUP,"No support for this DA dimension %D for interpolation type %d",dimc,(int)dac->interptype);
     }
   }
   if (scale) {
@@ -1010,9 +1010,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetInjection(DA dac,DA daf,VecScatter *inject
 
   ierr = DAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&wrapc,&stc);CHKERRQ(ierr);
   ierr = DAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&wrapf,&stf);CHKERRQ(ierr);
-  if (dimc != dimf) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Dimensions of DA do not match %D %D",dimc,dimf);CHKERRQ(ierr);
-  if (dofc != doff) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"DOF of DA do not match %D %D",dofc,doff);CHKERRQ(ierr);
-  if (sc != sf) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Stencil width of DA do not match %D %D",sc,sf);CHKERRQ(ierr);
+  if (dimc != dimf) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Dimensions of DA do not match %D %D",dimc,dimf);CHKERRQ(ierr);
+  if (dofc != doff) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"DOF of DA do not match %D %D",dofc,doff);CHKERRQ(ierr);
+  if (sc != sf) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil width of DA do not match %D %D",sc,sf);CHKERRQ(ierr);
   if (wrapc != wrapf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Periodic type different in two DAs");CHKERRQ(ierr);
   if (stc != stf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil type different in two DAs");CHKERRQ(ierr);
   if (Mc < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in x direction");
@@ -1022,7 +1022,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetInjection(DA dac,DA daf,VecScatter *inject
   if (dimc == 2){
     ierr = DAGetInjection_2D(dac,daf,inject);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for this DA dimension %D",dimc);
+    SETERRQ1(((PetscObject)daf)->comm,PETSC_ERR_SUP,"No support for this DA dimension %D",dimc);
   }
   PetscFunctionReturn(0);
 } 
@@ -1079,9 +1079,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAggregates(DA dac,DA daf,Mat *rest)
 
   ierr = DAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&wrapc,&stc);CHKERRQ(ierr);
   ierr = DAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&wrapf,&stf);CHKERRQ(ierr);
-  if (dimc != dimf) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Dimensions of DA do not match %D %D",dimc,dimf);CHKERRQ(ierr);
-  if (dofc != doff) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"DOF of DA do not match %D %D",dofc,doff);CHKERRQ(ierr);
-  if (sc != sf) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Stencil width of DA do not match %D %D",sc,sf);CHKERRQ(ierr);
+  if (dimc != dimf) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Dimensions of DA do not match %D %D",dimc,dimf);CHKERRQ(ierr);
+  if (dofc != doff) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"DOF of DA do not match %D %D",dofc,doff);CHKERRQ(ierr);
+  if (sc != sf) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil width of DA do not match %D %D",sc,sf);CHKERRQ(ierr);
   if (wrapc != wrapf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Periodic type different in two DAs");CHKERRQ(ierr);
   if (stc != stf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil type different in two DAs");CHKERRQ(ierr);
 

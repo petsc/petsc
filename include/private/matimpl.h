@@ -462,6 +462,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_nz(const MatFactorInfo *info,Fa
   PetscReal _rs   = sctx->rs;
   PetscReal _zero = info->zeropivot*_rs;
 
+  PetscFunctionBegin;
   if (PetscAbsScalar(sctx->pv) <= _zero){
     /* force |diag| > zeropivot*rs */
     if (!sctx->nshift) { 
@@ -476,7 +477,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_nz(const MatFactorInfo *info,Fa
     return 0;
   }
   *newshift = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -486,6 +487,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_pd(const MatFactorInfo *info,Fa
   PetscReal _rs   = sctx->rs;
   PetscReal _zero = info->zeropivot*_rs;
 
+  PetscFunctionBegin;
   if (PetscRealPart(sctx->pv) <= _zero){
     /* force matfactor to be diagonally dominant */
     if (sctx->nshift == sctx->nshift_max) {
@@ -502,7 +504,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_pd(const MatFactorInfo *info,Fa
     return 0;
   }
   *newshift = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -511,12 +513,13 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_inblocks(const MatFactorInfo *i
 {
   PetscReal _zero = info->zeropivot;
 
+  PetscFunctionBegin;
   if (PetscAbsScalar(sctx->pv) <= _zero){
     sctx->pv          += info->shiftamount;
     sctx->shift_amount = 0.0;
     sctx->nshift++;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -525,10 +528,9 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(const MatFactorInfo *info,
 {
   PetscReal _zero = info->zeropivot;
 
-  if (PetscAbsScalar(sctx->pv) <= _zero){
-    SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G",row,PetscAbsScalar(sctx->pv),_zero);
-  }
-  return 0;
+  PetscFunctionBegin;
+  if (PetscAbsScalar(sctx->pv) <= _zero) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G",row,PetscAbsScalar(sctx->pv),_zero);
+  PetscFunctionReturn(0);
 }
 
 
@@ -538,6 +540,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(const MatFactorInfo *info,Facto
 {
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   if (info->shifttype == (PetscReal) MAT_SHIFT_NONZERO){
     ierr = MatPivotCheck_nz(info,sctx,row,newshift_ptr);CHKERRQ(ierr);
   } else if (info->shifttype == (PetscReal) MAT_SHIFT_POSITIVE_DEFINITE){
@@ -549,7 +552,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(const MatFactorInfo *info,Facto
     ierr = MatPivotCheck_none(info,sctx,row);CHKERRQ(ierr);
     *newshift_ptr = 0;
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* 

@@ -422,7 +422,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicArray(DA da,PetscTruth ghosted,void *v
       *iptr = (void*)ptr; 
       break;}
     default:
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
+      SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
   }
 
   done:
@@ -642,7 +642,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetArray(DA da,PetscTruth ghosted,void *vptr)
       *iptr = (void*)ptr; 
       break;}
     default:
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
+      SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
   }
 
   done:
@@ -840,7 +840,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray(DA da,PetscTruth ghosted,void 
       *iptr = (void*)ptr; 
       break;}
     default:
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
+      SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
   }
 
   done:
@@ -864,7 +864,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray(DA da,PetscTruth ghosted,void 
       }
     }
   }
-  if (i == DA_MAX_AD_ARRAYS+1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Too many DA ADIC arrays obtained");
+  if (i == DA_MAX_AD_ARRAYS+1) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONG,"Too many DA ADIC arrays obtained");
   if (tdof)        *tdof = itdof;
   if (array_start) *(void**)array_start = iarray_start;
   PetscFunctionReturn(0);
@@ -933,7 +933,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray4(DA da,PetscTruth ghosted,void
       *iptr = (void*)ptr; 
       break;}
     default:
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
+      SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
   }
 
   done:
@@ -1026,7 +1026,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray9(DA da,PetscTruth ghosted,void
       *iptr = (void*)ptr; 
       break;}
     default:
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
+      SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
   }
 
   done:
@@ -1172,7 +1172,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArrayb(DA da,PetscTruth ghosted,void
       *iptr = (void*)ptr; 
       break;}
     default:
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
+      SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
   }
 
   done:

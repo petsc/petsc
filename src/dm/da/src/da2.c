@@ -93,7 +93,7 @@ PetscErrorCode DAView_2d(DA da,PetscViewer viewer)
     ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for DA2d",((PetscObject)viewer)->type_name);
+    SETERRQ1(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for DA2d",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -1368,9 +1368,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
   for (i=(rank % m); i<m; i++) {
     left += lx[i];
   }
-  if (left != M) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of lx across processors not equal to M: %D %D",left,M);
-  }
+  if (left != M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of lx across processors not equal to M: %D %D",left,M);
 #endif
 
   /* 
@@ -1394,9 +1392,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_2D(DA da)
   for (i=(rank/m); i<n; i++) {
     left += ly[i];
   }
-  if (left != N) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of ly across processors not equal to N: %D %D",left,N);
-  }
+  if (left != N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of ly across processors not equal to N: %D %D",left,N);
 #endif
 
   if (x < s) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s);

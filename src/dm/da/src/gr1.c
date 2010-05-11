@@ -36,7 +36,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetUniformCoordinates(DA da,PetscReal xmin,Pe
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (xmax <= xmin) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"xmax must be larger than xmin %G %G",xmin,xmax);
+  if (xmax <= xmin) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"xmax must be larger than xmin %G %G",xmin,xmax);
 
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = DAGetInfo(da,&dim,&M,&N,&P,0,0,0,0,0,&periodic,0);CHKERRQ(ierr);
@@ -52,7 +52,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetUniformCoordinates(DA da,PetscReal xmin,Pe
     }
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
   } else if (dim == 2) {
-    if (ymax <= ymin) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"ymax must be larger than ymin %G %G",ymin,ymax);
+    if (ymax <= ymin) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"ymax must be larger than ymin %G %G",ymin,ymax);
     if (DAXPeriodic(periodic)) hx = (xmax-xmin)/(M);
     else                       hx = (xmax-xmin)/(M-1);
     if (DAYPeriodic(periodic)) hy = (ymax-ymin)/(N);
@@ -67,8 +67,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetUniformCoordinates(DA da,PetscReal xmin,Pe
     }
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
   } else if (dim == 3) {
-    if (ymax <= ymin) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"ymax must be larger than ymin %G %G",ymin,ymax);
-    if (zmax <= zmin) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"zmax must be larger than zmin %G %G",zmin,zmax);
+    if (ymax <= ymin) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"ymax must be larger than ymin %G %G",ymin,ymax);
+    if (zmax <= zmin) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"zmax must be larger than zmin %G %G",zmin,zmax);
     if (DAXPeriodic(periodic)) hx = (xmax-xmin)/(M);
     else                       hx = (xmax-xmin)/(M-1);
     if (DAYPeriodic(periodic)) hy = (ymax-ymin)/(N);
@@ -88,7 +88,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetUniformCoordinates(DA da,PetscReal xmin,Pe
     }
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot create uniform coordinates for this dimension %D\n",dim);
+    SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Cannot create uniform coordinates for this dimension %D\n",dim);
   }
   ierr = DASetCoordinates(da,xcoor);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,xcoor);CHKERRQ(ierr);

@@ -221,7 +221,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetColoring(DA da,ISColoringType ctype,const 
   } else if (dim == 3) {
     ierr =  DAGetColoring3d_MPIAIJ(da,ctype,coloring);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not done for %D dimension, send us mail petsc-maint@mcs.anl.gov for code",dim);
+    SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Not done for %D dimension, send us mail petsc-maint@mcs.anl.gov for code",dim);
   }
   if (isBAIJ) {
     da->w = nc;
@@ -265,11 +265,11 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
   } else {
 
     if (DAXPeriodic(wrap) && (m % col)){ 
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X (%d) is divisible\n\
+      SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X (%d) is divisible\n\
                  by 2*stencil_width + 1 (%d)\n", m, col);
     }
     if (DAYPeriodic(wrap) && (n % col)){ 
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y (%d) is divisible\n\
+      SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y (%d) is divisible\n\
                  by 2*stencil_width + 1 (%d)\n", n, col);
     }
     if (ctype == IS_COLORING_GLOBAL) {
@@ -306,7 +306,7 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 	ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
       }
       *coloring = da->ghostedcoloring;
-    } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
+    } else SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
   }
   ierr = ISColoringReference(*coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -388,7 +388,7 @@ PetscErrorCode DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
       ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     }
     *coloring = da->ghostedcoloring;
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
+  } else SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
   ierr = ISColoringReference(*coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -453,7 +453,7 @@ PetscErrorCode DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
       ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     }
     *coloring = da->ghostedcoloring;
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
+  } else SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
   ierr = ISColoringReference(*coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -521,7 +521,7 @@ PetscErrorCode DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring 
       ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     }
     *coloring = da->ghostedcoloring;
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
+  } else SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
   PetscFunctionReturn(0);
 }
 
@@ -672,7 +672,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, const MatType mtype,Mat *J)
         PetscTruth flg, flg2;
         ierr = PetscTypeCompare((PetscObject)A,MATHYPRESTRUCT,&flg);CHKERRQ(ierr);
         ierr = PetscTypeCompare((PetscObject)A,MATHYPRESSTRUCT,&flg2);CHKERRQ(ierr);
-        if (!flg && !flg2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented for the matrix type: %s in %D dimension!\n" \
+        if (!flg && !flg2) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_SUP,"Not implemented for the matrix type: %s in %D dimension!\n" \
                            "Send mail to petsc-maint@mcs.anl.gov for code",Atype,dim);
       }
     }
@@ -699,7 +699,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, const MatType mtype,Mat *J)
     } else if (dim == 3) {
       ierr = DAGetMatrix3d_MPIBAIJ(da,A);CHKERRQ(ierr);
     } else {
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension!\n" \
+      SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension!\n" \
 	       "Send mail to petsc-maint@mcs.anl.gov for code",Atype,dim);
     }
   } else if (sbaij) {
@@ -708,7 +708,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, const MatType mtype,Mat *J)
     } else if (dim == 3) {
       ierr = DAGetMatrix3d_MPISBAIJ(da,A);CHKERRQ(ierr);
     } else {
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension!\n" \
+      SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension!\n" \
 	       "Send mail to petsc-maint@mcs.anl.gov for code",Atype,dim);
     }
   } 

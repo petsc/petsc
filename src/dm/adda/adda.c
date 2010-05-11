@@ -605,7 +605,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetAggregates(ADDA addac,ADDA addaf,Mat *re
   PetscValidHeaderSpecific(addac, ADDA_CLASSID, 1);
   PetscValidHeaderSpecific(addaf, ADDA_CLASSID, 2);
   PetscValidPointer(rest,3);
-  if (addac->dim != addaf->dim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Dimensions of ADDA do not match %D %D", addac->dim, addaf->dim);CHKERRQ(ierr);
+  if (addac->dim != addaf->dim) SETERRQ2(((PetscObject)addaf)->comm,PETSC_ERR_ARG_INCOMP,"Dimensions of ADDA do not match %D %D", addac->dim, addaf->dim);CHKERRQ(ierr);
 /*   if (addac->dof != addaf->dof) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"DOF of ADDA do not match %D %D", addac->dof, addaf->dof);CHKERRQ(ierr); */
   dim = addac->dim;
   dofc = addac->dof;

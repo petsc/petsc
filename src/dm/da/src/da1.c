@@ -82,7 +82,7 @@ PetscErrorCode DAView_1d(DA da,PetscViewer viewer)
     ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for DA 1d",((PetscObject)viewer)->type_name);
+    SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for DA 1d",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -135,9 +135,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate_1D(DA da)
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-  if (dim != PETSC_DECIDE && dim != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Dimension should be 1: %D",dim);
-  if (dof < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %D",dof);
-  if (s < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %D",s);
+  if (dim != PETSC_DECIDE && dim != 1) SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Dimension should be 1: %D",dim);
+  if (dof < 1) SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %D",dof);
+  if (s < 0) SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %D",s);
 
   da->dim = 1;
   ierr = PetscMalloc(dof*sizeof(char*),&da->fieldname);CHKERRQ(ierr);

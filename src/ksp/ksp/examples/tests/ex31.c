@@ -47,9 +47,7 @@ int main(int argc,char **args)
   ierr = MatLoad(fd,MATAIJ,&A);CHKERRQ(ierr);  
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  if (m != n) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
-  }
+  if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
 
   /* Create rhs vector of all ones */
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);

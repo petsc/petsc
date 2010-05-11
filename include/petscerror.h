@@ -135,7 +135,7 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ(), SETERRQ2(), SETERRQ3()
 M*/
-#define SETERRQ1(comm,n,s,a1)          {return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1);}
+#define SETERRQ1(comm,n,s,a1)          return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1)
 
 /*MC
    SETERRQ2 - Macro that is called when an error has been detected, 
@@ -162,7 +162,7 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ3()
 M*/
-#define SETERRQ2(comm,n,s,a1,a2)       {return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2);}
+#define SETERRQ2(comm,n,s,a1,a2)       return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2)
 
 /*MC
    SETERRQ3 - Macro that is called when an error has been detected, 
@@ -192,13 +192,13 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 M*/
-#define SETERRQ3(comm,n,s,a1,a2,a3)    {return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2,a3);}
+#define SETERRQ3(comm,n,s,a1,a2,a3)    return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2,a3)
 
-#define SETERRQ4(comm,n,s,a1,a2,a3,a4) {return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2,a3,a4);}
-#define SETERRQ5(comm,n,s,a1,a2,a3,a4,a5)       {return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2,a3,a4,a5);}
-#define SETERRQ6(comm,n,s,a1,a2,a3,a4,a5,a6)    {return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2,a3,a4,a5,a6);}
-#define SETERRQ7(comm,n,s,a1,a2,a3,a4,a5,a6,a7) {return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2,a3,a4,a5,a6,a7);}
-#define SETERRABORT(comm,n,s)     {PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s);MPI_Abort(comm,n);}
+#define SETERRQ4(comm,n,s,a1,a2,a3,a4) return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2,a3,a4)
+#define SETERRQ5(comm,n,s,a1,a2,a3,a4,a5)       return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2,a3,a4,a5)
+#define SETERRQ6(comm,n,s,a1,a2,a3,a4,a5,a6)    return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2,a3,a4,a5,a6)
+#define SETERRQ7(comm,n,s,a1,a2,a3,a4,a5,a6,a7) return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2,a3,a4,a5,a6,a7)
+#define SETERRABORT(comm,n,s)     PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s);MPI_Abort(comm,n)
 
 /*MC
    CHKERRQ - Checks error code, if non-zero it calls the error handler and then returns
