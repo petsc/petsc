@@ -221,7 +221,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAYPX(Mat Y,PetscScalar a,Mat X,MatStructure
   if (mX != mY || nX != nY) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Non conforming matrices: %D %D first %D %D second",mX,mY,nX,nY);
 
   ierr = MatScale(Y,a);CHKERRQ(ierr);
-  ierr = MatAXPY(Y,one,X,str);CHKERRQ(ierr)
+  ierr = MatAXPY(Y,one,X,str);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

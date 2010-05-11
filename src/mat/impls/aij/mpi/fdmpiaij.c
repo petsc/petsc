@@ -117,7 +117,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
           m    = A_ci[col-cstart+1] - A_ci[col-cstart];
         } else {
 #if defined (PETSC_USE_CTABLE)
-          ierr = PetscTableFind(aij->colmap,col+1,&colb);CHKERRQ(ierr)
+          ierr = PetscTableFind(aij->colmap,col+1,&colb);CHKERRQ(ierr);
 	  colb --;
 #else
           colb = aij->colmap[col] - 1;

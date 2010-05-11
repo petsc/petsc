@@ -16,12 +16,12 @@ void constructFieldSplit(const Obj<Section>& section, const Obj<Order>& globalOr
   for(typename std::vector<Obj<typename Section::atlas_type> >::const_iterator s_iter = section->getSpaces().begin(); s_iter != section->getSpaces().end(); ++s_iter, ++space) {
     PetscInt n = section->size(space);
 
-    std::cout << "Space " << space << ": size " << n << std::endl;
+    //std::cout << "Space " << space << ": size " << n << std::endl;
     total += n;
   }
   PetscInt localSize;
   VecGetLocalSize(v, &localSize);
-  std::cout << "Vector local size " << localSize << std::endl;
+  //std::cout << "Vector local size " << localSize << std::endl;
   assert(localSize == total);
   space = 0;
   for(typename std::vector<Obj<typename Section::atlas_type> >::const_iterator s_iter = section->getSpaces().begin(); s_iter != section->getSpaces().end(); ++s_iter, ++space) {
@@ -48,18 +48,18 @@ void constructFieldSplit(const Obj<Section>& section, const Obj<Order>& globalOr
 
           for(int d = 0, c = 0, k = 0; d < dim; ++d) {
             if ((c < cDim) && (cDofs[c] == d)) {
-              std::cout << "  Ignored " << (off+k) << " at local pos " << d << " for point " << (*c_iter) << std::endl;
+              //std::cout << "  Ignored " << (off+k) << " at local pos " << d << " for point " << (*c_iter) << std::endl;
               ++c;
               continue;
             }
             idx[++i] = off+k;
-            std::cout << "Added " << (off+k) << " at pos " << i << " for point " << (*c_iter) << std::endl;
+            //std::cout << "Added " << (off+k) << " at pos " << i << " for point " << (*c_iter) << std::endl;
             ++k;
           }
         } else {
           for(int d = 0; d < dim; ++d) {
             idx[++i] = off+d;
-            std::cout << "Added " << (off+d) << " at pos " << i << " for point " << (*c_iter) << std::endl;
+            //std::cout << "Added " << (off+d) << " at pos " << i << " for point " << (*c_iter) << std::endl;
           }
         }
       }

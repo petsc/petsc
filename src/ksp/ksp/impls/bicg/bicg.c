@@ -98,7 +98,7 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
      a = beta/dpi;                                 /*     a = beta/p'z    */
      ierr = VecAXPY(X,a,Pr);CHKERRQ(ierr);       /*     x <- x + ap     */
      ma = -a;
-     ierr = VecAXPY(Rr,ma,Zr);CHKERRQ(ierr)
+     ierr = VecAXPY(Rr,ma,Zr);CHKERRQ(ierr);
      ma = PetscConj(ma);
      ierr = VecAXPY(Rl,ma,Zl);CHKERRQ(ierr);
      if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
