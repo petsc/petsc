@@ -466,14 +466,14 @@ M*/
     These are defined to be empty for when error checking is turned off, with ./configure --with-errorchecking=0
 */
 
-#define SETERRQ(c,n,s) ;
-#define SETERRQ1(c,n,s,a1) ;
-#define SETERRQ2(c,n,s,a1,a2) ;
-#define SETERRQ3(c,n,s,a1,a2,a3) ;
-#define SETERRQ4(c,n,s,a1,a2,a3,a4) ;
-#define SETERRQ5(c,n,s,a1,a2,a3,a4,a5) ;
-#define SETERRQ6(c,n,s,a1,a2,a3,a4,a5,a6) ;
-#define SETERRABORT(comm,n,s) ;
+#define SETERRQ(c,n,s) 
+#define SETERRQ1(c,n,s,a1) 
+#define SETERRQ2(c,n,s,a1,a2) 
+#define SETERRQ3(c,n,s,a1,a2,a3) 
+#define SETERRQ4(c,n,s,a1,a2,a3,a4) 
+#define SETERRQ5(c,n,s,a1,a2,a3,a4,a5) 
+#define SETERRQ6(c,n,s,a1,a2,a3,a4,a5,a6) 
+#define SETERRABORT(comm,n,s) 
 
 #define CHKERRQ(n)     ;
 #define CHKERRABORT(comm,n) ;
@@ -496,6 +496,8 @@ M*/
 #define PetscExceptionTrySyncNorm(comm,a,b)  a
 
 #endif
+
+typedef enum {PETSC_ERROR_INITIAL=0,PETSC_ERROR_REPEAT=1} PetscErrorType;
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfInitialize(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorMessage(int,const char*[],char **);
