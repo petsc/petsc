@@ -375,7 +375,7 @@ void PetscDefaultFPTrap(int sig)
   (*PetscErrorPrintf)("configure using --with-debugging=yes, recompile, link, and run \n");
   (*PetscErrorPrintf)("with -start_in_debugger to get more information on the crash.\n");
 #endif
-  PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,1,"trapped floating point error");
+  PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,PETSC_ERROR_INITIAL,"trapped floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 EXTERN_C_END

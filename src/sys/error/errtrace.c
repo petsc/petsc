@@ -40,7 +40,7 @@ $     SETERRQ(comm,number,p,mess)
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
           PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
  @*/
-PetscErrorCode PETSC_DLLEXPORT PetscIgnoreErrorHandler(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,int p,const char *mess,void *ctx)
+PetscErrorCode PETSC_DLLEXPORT PetscIgnoreErrorHandler(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(n);
@@ -167,7 +167,7 @@ $     SETERRQ(comm,number,p,mess)
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
           PetscAbortErrorHandler()
  @*/
-PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,int p,const char *mess,void *ctx)
+PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
   PetscLogDouble    mem,rss;
   PetscTruth        flg1 = PETSC_FALSE,flg2 = PETSC_FALSE;
@@ -178,7 +178,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(MPI_Comm comm,int line
     MPI_Comm_rank(comm,&rank);
   }
   if (!rank) {
-    if (p == 1) {
+    if (p == PETSC_ERROR_INITIAL) {
       (*PetscErrorPrintf)("--------------------- Error Message ------------------------------------\n");
       if (n == PETSC_ERR_MEM) {
 	(*PetscErrorPrintf)("Out of memory. This could be due to allocating\n");

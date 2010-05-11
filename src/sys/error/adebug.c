@@ -431,7 +431,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscAttachDebugger(void)
 .  dir - the directory of the file (indicated by __SDIR__)
 .  message - an error text string, usually just printed to the screen
 .  number - the generic error number
-.  p - the specific error number
+.  p - PETSC_ERROR_INITIAL if error just detected, otherwise PETSC_ERROR_REPEAT
 -  ctx - error handler context
 
    Options Database Keys:
@@ -463,7 +463,7 @@ $    PetscAbortErrorHandler()
 .seealso:  PetscPushErrorHandler(), PetscTraceBackErrorHandler(), 
            PetscAbortErrorHandler()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscAttachDebuggerErrorHandler(MPI_Comm comm,int line,const char* fun,const char *file,const char* dir,int num,int p,const char* mess,void *ctx)
+PetscErrorCode PETSC_DLLEXPORT PetscAttachDebuggerErrorHandler(MPI_Comm comm,int line,const char* fun,const char *file,const char* dir,int num,PetscErrorType p,const char* mess,void *ctx)
 {
   PetscErrorCode ierr;
 
