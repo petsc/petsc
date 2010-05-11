@@ -76,7 +76,7 @@ PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_STDOUT_(MPI_Comm comm)
 
   PetscFunctionBegin;
   ierr = PetscViewerASCIIGetStdout(comm,&viewer);
-  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_STDOUT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
+  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_STDOUT_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); PetscFunctionReturn(0);}
   PetscFunctionReturn(viewer);
 }
 
@@ -153,7 +153,7 @@ PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_STDERR_(MPI_Comm comm)
 
   PetscFunctionBegin;
   ierr = PetscViewerASCIIGetStderr(comm,&viewer);
-  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_STDERR_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
+  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_STDERR_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); PetscFunctionReturn(0);}
   PetscFunctionReturn(viewer);
 }
 

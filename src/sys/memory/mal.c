@@ -61,15 +61,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscFreeAlign(void *ptr,int line,const char func
     the original address provided by the system malloc().
   */
   shift = *(((int*)ptr)-1) - SHIFT_CLASSID;   
-  if (shift > PETSC_MEMALIGN-1) return PetscError(PETSC_COMM_SELF,line,func,file,dir,1,1,"Likely memory corruption in heap");
-  if (shift < 0) return PetscError(PETSC_COMM_SELF,line,func,file,dir,1,1,"Likely memory corruption in heap");
+  if (shift > PETSC_MEMALIGN-1) return PetscError(PETSC_COMM_SELF,line,func,file,dir,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"Likely memory corruption in heap");
+  if (shift < 0) return PetscError(PETSC_COMM_SELF,line,func,file,dir,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"Likely memory corruption in heap");
   ptr   = (void*)(((int*)ptr) - shift);
 #endif
 
 #if defined(PETSC_HAVE_FREE_RETURN_INT)
   int err = free(ptr); 
   if (err) {
-    return PetscError(PETSC_COMM_SELF,line,func,file,dir,1,1,"System free returned error %d\n",err);
+    return PetscError(PETSC_COMM_SELF,line,func,file,dir,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"System free returned error %d\n",err);
   }
 #else 
   free(ptr);
@@ -88,7 +88,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFreeDefault(void *ptr,int line,char *func,ch
 #if defined(PETSC_HAVE_FREE_RETURN_INT)
   int err = free(ptr); 
   if (err) {
-    return PetscError(PETSC_COMM_SELF,line,func,file,dir,1,1,"System free returned error %d\n",err);
+    return PetscError(PETSC_COMM_SELF,line,func,file,dir,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"System free returned error %d\n",err);
   }
 #else 
   free(ptr);

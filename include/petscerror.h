@@ -266,7 +266,7 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKERRQ(), CHKMEMQ
 M*/
-#define CHKERRXX(n)            do {if (PetscUnlikely(n)) {PetscErrorCxx(PETSC_COMM_SELF,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_REPEAT);}} while(0)
+#define CHKERRXX(n)            do {if (PetscUnlikely(n)) {PetscError(PETSC_COMM_SELF,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,PETSC_ERROR_IN_CXX,0);}} while(0)
 
 #endif
 
@@ -502,18 +502,20 @@ M*/
 
   Level: advanced
 
+  PETSC_ERROR_IN_CXX indicates the error was detected in C++ and an exception should be generated
+
   Developer Notes: This is currently used to decide when to print the detailed information about the run in PetscTraceBackErrorHandling()
 
-.seealso: PetscError()
+.seealso: PetscError(), SETERRXX()
 E*/
-typedef enum {PETSC_ERROR_INITIAL=0,PETSC_ERROR_REPEAT=1} PetscErrorType;
+typedef enum {PETSC_ERROR_INITIAL=0,PETSC_ERROR_REPEAT=1,PETSC_ERROR_IN_CXX = 2} PetscErrorType;
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfInitialize(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorMessage(int,const char*[],char **);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
 #if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX)
 #include <sstream>
-EXTERN void           PETSC_DLLEXPORT PetscTraceBackErrorHandlerCxx(MPI_Comm,int,const char *,const char *,const char *,PetscErrorCode,PetscErrorType, std::ostringstream&);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandlerCxx(MPI_Comm,int,const char *,const char *,const char *,PetscErrorCode,PetscErrorType,const char*,void*);
 #endif
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscIgnoreErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscEmacsClientErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
@@ -522,7 +524,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscAbortErrorHandler(MPI_Comm,int,const 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscAttachDebuggerErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscReturnErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscError(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,...) PETSC_PRINTF_FORMAT_CHECK(7,8);
-EXTERN void           PETSC_DLLEXPORT PetscErrorCxx(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,int);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*),void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPopErrorHandler(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDefaultSignalHandler(int,void*);

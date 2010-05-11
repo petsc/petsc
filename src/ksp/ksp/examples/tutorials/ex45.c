@@ -159,7 +159,7 @@ PetscErrorCode ComputeMatrix(DM dm,Vec x,Mat jac,Mat B,MatStructure *stflg)
   }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  stflg = SAME_NONZERO_PATTERN;
+  *stflg = SAME_NONZERO_PATTERN;
   return 0;
 }
 

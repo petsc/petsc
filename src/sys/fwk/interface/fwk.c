@@ -653,17 +653,17 @@ PetscFwk PETSC_DLLEXPORT PETSC_FWK_DEFAULT_(MPI_Comm comm) {
   PetscFunctionBegin;
   if (Petsc_Fwk_default_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Fwk_default_keyval,0);
-    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_FWK_DEFAULT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_FWK_DEFAULT_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); PetscFunctionReturn(0);}
   }
   ierr = MPI_Attr_get(comm,Petsc_Fwk_default_keyval,(void **)(&fwk),(PetscMPIInt*)&flg);
-  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_FWK_DEFAULT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
+  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_FWK_DEFAULT_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); PetscFunctionReturn(0);}
   if (!flg) { /* PetscFwk not yet created */
     ierr = PetscFwkCreate(comm, &fwk);
-    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_FWK_DEFAULT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_FWK_DEFAULT_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); PetscFunctionReturn(0);}
     ierr = PetscObjectRegisterDestroy((PetscObject)fwk);
-    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_FWK_DEFAULT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_FWK_DEFAULT_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); PetscFunctionReturn(0);}
     ierr = MPI_Attr_put(comm,Petsc_Fwk_default_keyval,(void*)fwk);
-    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_FWK_DEFAULT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_FWK_DEFAULT_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); PetscFunctionReturn(0);}
   } 
   PetscFunctionReturn(fwk);
 }/* PETSC_FWK_DEFAULT_() */

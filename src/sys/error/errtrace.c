@@ -145,7 +145,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfDefault(const char format[],...)
 .  dir - the directory of the file (indicated by __SDIR__)
 .  mess - an error text string, usually just printed to the screen
 .  n - the generic error number
-.  p - specific error number
+.  p - PETSC_ERROR_INITIAL if this is the first call the the error handler, otherwise PETSC_ERROR_REPEAT
 -  ctx - error handler context
 
    Level: developer
@@ -154,7 +154,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfDefault(const char format[],...)
    Most users need not directly employ this routine and the other error 
    handlers, but can instead use the simplified interface SETERRQ, which has 
    the calling sequence
-$     SETERRQ(comm,number,p,mess)
+$     SETERRQ(comm,number,n,mess)
 
    Notes for experienced users:
    Use PetscPushErrorHandler() to set the desired error handler.  The
@@ -235,8 +235,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(MPI_Comm comm,int line
 #define __FUNCT__ "PetscTraceBackErrorHandlerCxx"
 /*@C
 
-   PetscTraceBackErrorHandlerCxx - Default error handler routine that generates
-   a traceback on error detection.
+   PetscTraceBackErrorHandlerCxx - Error handler routine that generate a traceback in a C++ stream.
 
    Not Collective
 
@@ -248,7 +247,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(MPI_Comm comm,int line
 .  dir - the directory of the file (indicated by __SDIR__)
 .  n - the generic error number
 .  p - PETSC_ERROR_INITIAL or PETSC_ERROR_REPEAT
--  msg - The message stream
+.  mess - the error message
++  ctx - error handling context, in this case the C++ stream.
 
    Level: developer
 
@@ -256,61 +256,64 @@ PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(MPI_Comm comm,int line
    Most users need not directly employ this routine and the other error 
    handlers, but can instead use the simplified interface SETERROR, which has 
    the calling sequence
-$     SETERROR(number,p,mess)
+$     SETERROR(number,n,mess)
 
    Concepts: error handler^traceback
    Concepts: traceback^generating
 
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler()
  @*/
-void PETSC_DLLEXPORT PetscTraceBackErrorHandlerCxx(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p, std::ostringstream& msg)
+PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandlerCxx(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p, const char *mess,void *ctx)
 {
+  std::ostringstream *msg = (std::ostringstream*) ctx;
+
   if (p == PETSC_ERROR_INITIAL) {
     PetscLogDouble mem, rss;
     PetscTruth     flg1 = PETSC_FALSE, flg2 = PETSC_FALSE;
 
-    msg << "--------------------- Error Message ------------------------------------" << std::endl;
+    (*msg) << "--------------------- Error Message ------------------------------------" << std::endl;
     if (n == PETSC_ERR_MEM) {
-      msg << "Out of memory. This could be due to allocating" << std::endl;
-      msg << "too large an object or bleeding by not properly" << std::endl;
-      msg << "destroying unneeded objects." << std::endl;
+      (*msg) << "Out of memory. This could be due to allocating" << std::endl;
+      (*msg) << "too large an object or bleeding by not properly" << std::endl;
+      (*msg) << "destroying unneeded objects." << std::endl;
       PetscMallocGetCurrentUsage(&mem);
       PetscMemoryGetCurrentUsage(&rss);
       PetscOptionsGetTruth(PETSC_NULL,"-malloc_dump",&flg1,PETSC_NULL);
       PetscOptionsGetTruth(PETSC_NULL,"-malloc_log",&flg2,PETSC_NULL);
       if (flg2) {
         //PetscMallocDumpLog(stdout);
-        msg << "Option -malloc_log does not work in C++." << std::endl;
+        (*msg) << "Option -malloc_log does not work in C++." << std::endl;
       } else {
-        msg << "Memory allocated " << mem << " Memory used by process " << rss << std::endl;
+        (*msg) << "Memory allocated " << mem << " Memory used by process " << rss << std::endl;
         if (flg1) {
           //PetscMallocDump(stdout);
-          msg << "Option -malloc_dump does not work in C++." << std::endl;
+          (*msg) << "Option -malloc_dump does not work in C++." << std::endl;
         } else {
-          msg << "Try running with -malloc_dump or -malloc_log for info." << std::endl;
+          (*msg) << "Try running with -malloc_dump or -malloc_log for info." << std::endl;
         }
       }
     } else {
       const char *text;
 
       PetscErrorMessage(n,&text,PETSC_NULL);
-      if (text) {msg << text << "!" << std::endl;}
+      if (text) {(*msg) << text << "!" << std::endl;}
     }
-    msg << "------------------------------------------------------------------------" << std::endl;
-    msg << version << std::endl;
-    msg << "See docs/changes/index.html for recent updates." << std::endl;
-    msg << "See docs/faq.html for hints about trouble shooting." << std::endl;
-    msg << "See docs/index.html for manual pages." << std::endl;
-    msg << "------------------------------------------------------------------------" << std::endl;
+    if (mess) {(*msg) << mess << "!" << std::endl;}
+    (*msg) << "------------------------------------------------------------------------" << std::endl;
+    (*msg) << version << std::endl;
+    (*msg) << "See docs/changes/index.html for recent updates." << std::endl;
+    (*msg) << "See docs/faq.html for hints about trouble shooting." << std::endl;
+    (*msg) << "See docs/index.html for manual pages." << std::endl;
+    (*msg) << "------------------------------------------------------------------------" << std::endl;
     if (PetscErrorPrintfInitializeCalled) {
-      msg << pname << " on a " << arch << " named " << hostname << " by " << username << " " << date << std::endl;
+      (*msg) << pname << " on a " << arch << " named " << hostname << " by " << username << " " << date << std::endl;
     }
-    msg << "Libraries linked from " << PETSC_LIB_DIR << std::endl;
-    msg << "Configure run at " << petscconfigureruntime << std::endl;
-    msg << "Configure options " << petscconfigureoptions << std::endl;
-    msg << "------------------------------------------------------------------------" << std::endl;
-  } else {
-    msg << fun<<"() line " << line << " in " << dir << file << std::endl;
+    (*msg) << "Libraries linked from " << PETSC_LIB_DIR << std::endl;
+    (*msg) << "Configure run at " << petscconfigureruntime << std::endl;
+    (*msg) << "Configure options " << petscconfigureoptions << std::endl;
+    (*msg) << "------------------------------------------------------------------------" << std::endl;
   }
+  (*msg) << fun<<"() line " << line << " in " << dir << file << std::endl;
+  return 0;
 }
 #endif

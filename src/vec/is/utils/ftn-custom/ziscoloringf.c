@@ -29,11 +29,11 @@ void PETSC_STDCALL iscoloringcreate_(MPI_Comm *comm,PetscInt *n,PetscInt *ncolor
   *ierr = PetscMalloc((*n+1)*sizeof(ISColoringValue),&color);if (*ierr) return;
   for (i=0; i<(*n); i++) {
     if (colors[i] > IS_COLORING_MAX) {
-      *ierr = PetscError(PETSC_COMM_SELF,__LINE__,"ISColoringCreate_Fortran",__FILE__,__SDIR__,1,1,"Color too large");
+      *ierr = PetscError(PETSC_COMM_SELF,__LINE__,"ISColoringCreate_Fortran",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"Color too large");
       return;
     }
     if (colors[i] < 0) {
-      *ierr = PetscError(PETSC_COMM_SELF,__LINE__,"ISColoringCreate_Fortran",__FILE__,__SDIR__,1,1,"Color cannot be negative");
+      *ierr = PetscError(PETSC_COMM_SELF,__LINE__,"ISColoringCreate_Fortran",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"Color cannot be negative");
       return;
     }
     color[i] = (ISColoringValue)colors[i];
