@@ -89,6 +89,7 @@ class VTKViewer {
     PetscFunctionBegin;
     if (verify) enforceDim = 3;
     if (field->commRank() == 0) {
+      // Hoist 'line' up and preallocate it
       for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         if (!numbering->hasPoint(*p_iter)) continue;
         const value_type *array = field->restrictPoint(*p_iter);
