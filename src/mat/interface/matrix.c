@@ -73,7 +73,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonalBlock(Mat A,PetscTruth *iscopy,M
   } else if (size == 1) {
     *a = A;
     *iscopy = PETSC_FALSE;
-  } SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Cannot get diagonal part for this matrix");
+  } else SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Cannot get diagonal part for this matrix");
   PetscFunctionReturn(0);
 }
 
