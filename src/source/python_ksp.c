@@ -1,6 +1,6 @@
 /* -------------------------------------------------------------------------- */
 
-#include "src/inline/python.h"
+#include "python_core.h"
 #include "private/kspimpl.h"
 
 /* -------------------------------------------------------------------------- */
@@ -251,7 +251,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Python(KSP ksp)
   PetscErrorCode ierr;
   PetscFunctionBegin;
 
-  ierr = Petsc4PyInitialize();CHKERRQ(ierr);
+  ierr = PetscPythonImportPetsc4Py();CHKERRQ(ierr);
 
   ierr = PetscNew(KSP_Py,&py);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(ksp,sizeof(KSP_Py));CHKERRQ(ierr);

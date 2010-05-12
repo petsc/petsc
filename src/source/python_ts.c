@@ -11,7 +11,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-#include "src/inline/python.h"
+#include "python_core.h"
 #include "private/tsimpl.h"
 
 /* -------------------------------------------------------------------------- */
@@ -605,7 +605,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Python(TS ts)
   PetscErrorCode ierr;
   PetscFunctionBegin;
 
-  ierr = Petsc4PyInitialize();CHKERRQ(ierr);
+  ierr = PetscPythonImportPetsc4Py();CHKERRQ(ierr);
 
   ierr = PetscNew(TS_Py,&py);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(ts,sizeof(TS_Py));CHKERRQ(ierr);

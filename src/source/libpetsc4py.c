@@ -25,36 +25,37 @@
      PETSC_VERSION_(3,0,0) || \
      PETSC_VERSION_(2,3,3) || \
      PETSC_VERSION_(2,3,2))
+#define IS_CLASSID    IS_COOKIE
 #define VEC_CLASSID   VEC_COOKIE
 #define MAT_CLASSID   MAT_COOKIE
-#define PC_CLASSID    PC_COOKIE
 #define KSP_CLASSID   KSP_COOKIE
+#define PC_CLASSID    PC_COOKIE
 #define SNES_CLASSID  SNES_COOKIE
 #define TS_CLASSID    TS_COOKIE
 #endif
 
 /* ---------------------------------------------------------------- */
 
-#include "src/inline/python.h"
+#include "python_core.h"
 
 #define PETSCMAT_DLL
-#include "src/mat/impls/python/python.c"
+#include "python_mat.c"
 #undef  PETSCMAT_DLL
 
 #define PETSCKSP_DLL
-#include "src/ksp/pc/impls/python/python.c"
+#include "python_ksp.c"
 #undef PETSCKSP_DLL
 
 #define PETSCKSP_DLL
-#include "src/ksp/ksp/impls/python/python.c"
+#include "python_pc.c"
 #undef PETSCKSP_DLL
 
 #define PETSCSNES_DLL
-#include "src/snes/impls/python/python.c"
+#include "python_snes.c"
 #undef PETSCSNES_DLL
 
 #define PETSCTS_DLL
-#include "src/ts/impls/python/python.c"
+#include "python_ts.c"
 #undef PETSCTS_DLL
 
 /* ---------------------------------------------------------------- */

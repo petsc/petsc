@@ -1,6 +1,6 @@
 /*  -------------------------------------------------------------------- */
 
-#include "src/inline/python.h"
+#include "python_core.h"
 #include "private/snesimpl.h"
 
 /*  -------------------------------------------------------------------- */
@@ -593,7 +593,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Python(SNES snes)
   PetscErrorCode ierr;
   PetscFunctionBegin;
 
-  ierr = Petsc4PyInitialize();CHKERRQ(ierr);
+  ierr = PetscPythonImportPetsc4Py();CHKERRQ(ierr);
 
   ierr       = PetscNew(SNES_Py,&py);CHKERRQ(ierr);
   ierr       = PetscLogObjectMemory(snes, sizeof(SNES_Py));CHKERRQ(ierr);

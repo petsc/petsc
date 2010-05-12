@@ -2,7 +2,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-#include "src/inline/python.h"
+#include "python_core.h"
 #include "private/pcimpl.h"
 
 /* -------------------------------------------------------------------------- */
@@ -337,7 +337,7 @@ PetscErrorCode PETSCTS_DLLEXPORT PCCreate_Python(PC pc)
   PetscErrorCode ierr;
   PetscFunctionBegin;
 
-  ierr = Petsc4PyInitialize();CHKERRQ(ierr);
+  ierr = PetscPythonImportPetsc4Py();CHKERRQ(ierr);
 
   ierr = PetscNew(PC_Py,&py);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(pc,sizeof(PC_Py));CHKERRQ(ierr);

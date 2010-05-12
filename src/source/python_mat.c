@@ -1,7 +1,7 @@
 /* -------------------------------------------------------------------------- */
 
+#include "python_core.h"
 #include "private/matimpl.h"
-#include "src/inline/python.h"
 
 /* -------------------------------------------------------------------------- */
 
@@ -683,7 +683,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Python(Mat mat)
   PetscErrorCode ierr;
   PetscFunctionBegin;
 
-  ierr = Petsc4PyInitialize();CHKERRQ(ierr);
+  ierr = PetscPythonImportPetsc4Py();CHKERRQ(ierr);
 
   ierr = PetscNew(Mat_Py,&py);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(mat,sizeof(Mat_Py));CHKERRQ(ierr);
