@@ -33,7 +33,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   MatStructure   pflag;
   PetscReal      rnorm = 0.0;
   PetscScalar    scale,abr,rdot;
-  Vec            x,b,r,z,w,y;
+  Vec            x,b,r,z,w = PETSC_NULL,y = PETSC_NULL;
   PetscInt       xs, ws;
   Mat            Amat,Pmat;
   KSP_Richardson *richardsonP = (KSP_Richardson*)ksp->data;

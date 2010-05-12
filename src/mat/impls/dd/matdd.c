@@ -69,8 +69,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT Mat_DDBlockSetMat(Mat A, PetscInt rowblock, Pe
   M = dd->growblockoffset[rowblock+1]-dd->growblockoffset[rowblock];
   N = dd->gcolblockoffset[colblock+1]-dd->gcolblockoffset[colblock];
 
-#if defined PETSC_USE_DEBUG
   ierr = MPI_Comm_size(subcomm, &subcommsize); CHKERRQ(ierr);
+#if defined PETSC_USE_DEBUG
   /**/
   if(subcommsize == 1) {
     actualM = M; actualN = N;
