@@ -159,25 +159,15 @@ cdef extern from "Python.h":
 
 cdef object tracebacklist = []
 
-cdef int tracebackfunc(int line,
-                   const_char_p cfun,
-                   const_char_p cfile,
-                   const_char_p cdir,
-                   int n, int p,
-                   const_char_p mess,
-                   void *ctx) nogil:
-    if Py_IsInitialized() and (<void*>tracebacklist) != NULL:
-        return traceback(line, cfun, cfile, cdir, n, p, mess, ctx)
-    else:
-        return PetscTBEH(line, cfun, cfile, cdir, n, p, mess, ctx)
-
-cdef int traceback(int line,
-                   const_char_p cfun,
-                   const_char_p cfile,
-                   const_char_p cdir,
-                   int n, int p,
-                   const_char_p mess,
-                   void *ctx) with gil:
+cdef int traceback(MPI_Comm       comm,
+                   int            line,
+                   const_char_p   cfun,
+                   const_char_p   cfile,
+                   const_char_p   cdir,
+                   int            n,
+                   PetscErrorType p,
+                   const_char_p   mess,
+                   void           *ctx) with gil:
     cdef PetscLogDouble mem=0
     cdef PetscLogDouble rss=0
     cdef const_char_p text=NULL
@@ -187,21 +177,36 @@ cdef int traceback(int line,
     dnm = cp2str(cdir)
     m = "%s() line %d in %s%s" % (fun, line, dnm, fnm)
     tbl.insert(0, m)
-    if p != 1: return n
+    if p != PETSC_ERROR_INITIAL: 
+        return n
     #
     del tbl[1:] # clear any previous stuff
     if n == PETSC_ERR_MEM: # special case
         PetscMallocGetCurrentUsage(&mem)
         PetscMemoryGetCurrentUsage(&rss)
-        m = "Out of memory. " \
-            "Allocated: %d, " \
-            "Used by process: %d" % (mem, rss)
+        m = ("Out of memory. "
+             "Allocated: %d, "
+             "Used by process: %d") % (mem, rss)
         tbl.append(m)
     else:
         PetscErrorMessage(n, &text, NULL)
     if text != NULL: tbl.append(cp2str(text))
     if mess != NULL: tbl.append(cp2str(mess))
     return n
+
+cdef int tracebackfunc(MPI_Comm       comm,
+                       int            line,
+                       const_char_p   cfun,
+                       const_char_p   cfile,
+                       const_char_p   cdir,
+                       int            n, 
+                       PetscErrorType p,
+                       const_char_p   mess,
+                       void           *ctx) nogil:
+    if Py_IsInitialized() and (<void*>tracebacklist) != NULL:
+        return traceback(comm, line, cfun, cfile, cdir, n, p, mess, ctx)
+    else:
+        return PetscTBEH(comm, line, cfun, cfile, cdir, n, p, mess, ctx)
 
 # --------------------------------------------------------------------
 

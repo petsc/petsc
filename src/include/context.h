@@ -1,4 +1,3 @@
-
 #undef  __FUNCT__
 #define __FUNCT__ "PetscPyObjDestroy"
 static
@@ -84,14 +83,16 @@ PetscErrorCode PetscObjectGetPyDict(PetscObject obj, PetscTruth create, void **d
   if (obj->python_context != NULL) {
     pydict = (PyObject *) obj->python_context;
     if (!PyDict_CheckExact(pydict)) {
-      SETERRQ(PETSC_ERR_LIB, "internal Python object is not a Python dictionary");
-      PetscFunctionReturn(PETSC_ERR_LIB);
+      SETERRQQ(PETSC_COMM_SELF,
+               PETSC_ERR_LIB,
+               "internal Python object is not a Python dictionary");
     }
   } else if (create) {
     pydict = PyDict_New();
     if (pydict == NULL) {
-      SETERRQ(PETSC_ERR_LIB, "failed to create internal Python dictionary");
-      PetscFunctionReturn(PETSC_ERR_LIB);
+      SETERRQQ(PETSC_COMM_SELF,
+               PETSC_ERR_LIB,
+              "failed to create internal Python dictionary");
     }
     obj->python_context = (void *) pydict;
     obj->python_destroy = PetscPyObjDestroy;
@@ -122,21 +123,34 @@ PetscErrorCode PetscObjectSetPyObj(PetscObject obj, const char name[], void *op)
 #else
   pykey = PyUnicode_InternFromString(name);
 #endif
-  if (pykey == NULL) { SETERRQ(1, "failed to create Python string"); }
+  if (pykey == NULL) {
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_LIB,
+             "failed to create Python string");
+  }
   pyobj = (PyObject *) op;
-  if (pyobj == NULL || pyobj == Py_None) {
+  if (pyobj == Py_None) pyobj = NULL;
+  if (pyobj == NULL) {
     ierr = PetscObjectGetPyDict(obj, PETSC_FALSE, (void**)&pydct);CHKERRQ(ierr);
     if (pydct != NULL && pydct != Py_None && PyDict_CheckExact(pydct)) {
       int ret = PyDict_DelItem(pydct, pykey);
       Py_DecRef(pykey); pykey = NULL;
-      if (ret < 0) SETERRQ(1, "failed to remove object from internal Python dictionary");
+      if (ret < 0) {
+        SETERRQQ(PETSC_COMM_SELF,
+                 PETSC_ERR_LIB,
+                 "failed to remove object from internal Python dictionary");
+      }
     }
   } else {
     ierr = PetscObjectGetPyDict(obj, PETSC_TRUE, (void**)&pydct);CHKERRQ(ierr);
     if (pydct != NULL && pydct != Py_None && PyDict_CheckExact(pydct)) {
       int ret = PyDict_SetItem(pydct, pykey, pyobj);
       Py_DecRef(pykey); pykey = NULL;
-      if (ret < 0) SETERRQ(1, "failed to set object in internal Python dictionary");
+      if (ret < 0) {
+        SETERRQQ(PETSC_COMM_SELF,
+                 PETSC_ERR_LIB,
+                 "failed to set object in internal Python dictionary");
+      }
     }
   }
   PetscFunctionReturn(0);
@@ -164,7 +178,11 @@ PetscErrorCode PetscObjectGetPyObj(PetscObject obj, const char name[], void **op
 #else
     pykey = PyUnicode_InternFromString(name);
 #endif
-    if (pykey == NULL) { SETERRQ(1, "failed to create Python string"); }
+    if (pykey == NULL) {
+      SETERRQQ(PETSC_COMM_SELF,
+               PETSC_ERR_LIB,
+               "failed to create Python string");
+    }
     pyobj = PyDict_GetItem(pydct, pykey);
     Py_DecRef(pykey); pykey = NULL;
     if (pyobj == NULL) pyobj = Py_None;
@@ -172,3 +190,10 @@ PetscErrorCode PetscObjectGetPyObj(PetscObject obj, const char name[], void **op
   }
   PetscFunctionReturn(0);
 }
+
+/*
+  Local variables:
+  c-basic-offset: 2
+  indent-tabs-mode: nil
+  End:
+*/

@@ -57,9 +57,9 @@ typedef struct {
   KSP_PYTHON_CALL_TAIL(ksp, PyMethod)                     \
 /**/
 
-#define KSP_PYTHON_SETERRSUP(ksp, PyMethod)                       \
-  SETERRQ1(PETSC_ERR_SUP,"method %s() not implemented",PyMethod); \
-  PetscFunctionReturn(PETSC_ERR_SUP)                              \
+#define KSP_PYTHON_SETERRSUP(ksp, PyMethod)   \
+  PETSC_PYTHON_NOTIMPLEMENTED(ksp, PyMethod); \
+  PetscFunctionReturn(PETSC_ERR_SUP)          \
 /**/
 
 /* -------------------------------------------------------------------------- */
@@ -153,9 +153,10 @@ static PetscErrorCode KSPSetUp_Python(KSP ksp)
   KSP_Py *py = (KSP_Py*)ksp->data;
   PetscFunctionBegin;
   if (!py->self) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Python context not set, call one of \n"
-            " * KSPPythonSetType(ksp,\"[package.]module.class\")\n"
-            " * KSPSetFromOptions(ksp) and pass option -ksp_python_type [package.]module.class");
+    SETERRQQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,
+             "Python context not set, call one of \n"
+             " * KSPPythonSetType(ksp,\"[package.]module.class\")\n"
+             " * KSPSetFromOptions(ksp) and pass option -ksp_python_type [package.]module.class");
   }
   KSP_PYTHON_CALL_KSPARG(ksp, "setUp");
   PetscFunctionReturn(0);

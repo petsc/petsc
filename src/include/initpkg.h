@@ -76,3 +76,10 @@ static PetscErrorCode PetscInitializeAllPackages(const char path[])
 }
 
 /* ------------------------------------------------------------------------- */
+
+/*
+  Local variables:
+  c-basic-offset: 2
+  indent-tabs-mode: nil
+  End:
+*/

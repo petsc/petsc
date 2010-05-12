@@ -60,9 +60,9 @@ typedef struct {
   PC_PYTHON_CALL_TAIL(pc, PyMethod)                             \
 /**/
 
-#define PC_PYTHON_SETERRSUP(pc, PyMethod)                               \
-  SETERRQ1(PETSC_ERR_SUP,"method %s() not implemented",PyMethod);       \
-  PetscFunctionReturn(PETSC_ERR_SUP)                                    \
+#define PC_PYTHON_SETERRSUP(pc, PyMethod)    \
+  PETSC_PYTHON_NOTIMPLEMENTED(pd, PyMethod); \
+  PetscFunctionReturn(PETSC_ERR_SUP)         \
 /**/
 
 /* -------------------------------------------------------------------------- */
@@ -308,9 +308,10 @@ static PetscErrorCode PCSetUp_Python(PC pc)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if (!py->self) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Python context not set, call one of \n"
-            " * PCPythonSetType(pc,\"[package.]module.class\")\n"
-            " * PCSetFromOptions(pc) and pass option -pc_python_type [package.]module.class");
+    SETERRQQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,
+             "Python context not set, call one of \n"
+             " * PCPythonSetType(pc,\"[package.]module.class\")\n"
+             " * PCSetFromOptions(pc) and pass option -pc_python_type [package.]module.class");
   }
   PC_PYTHON_CALL_PCARG(pc, "setUp");
   ierr = PCPythonFillOperations(pc);CHKERRQ(ierr);

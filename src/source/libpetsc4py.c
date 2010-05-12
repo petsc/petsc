@@ -35,6 +35,8 @@
 
 /* ---------------------------------------------------------------- */
 
+#include "src/inline/python.h"
+
 #define PETSCMAT_DLL
 #include "src/mat/impls/python/python.c"
 #undef  PETSCMAT_DLL

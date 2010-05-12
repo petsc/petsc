@@ -15,11 +15,16 @@ cdef extern from "petscsys.h" nogil:
     PetscTruth PetscInitializeCalled
     PetscTruth PetscFinalizeCalled
 
-    int PetscErrorMessage(int,char*[],char**)
-    ctypedef int PetscTBF(int,char*,char*,char*,int,int,char*,void*)
+    ctypedef enum PetscErrorType:
+        PETSC_ERROR_INITIAL
+        PETSC_ERROR_REPEAT
+    ctypedef int PetscTBF(MPI_Comm,
+                          int,char*,char*,char*,
+                          int,PetscErrorType,char*,void*)
     PetscTBF PetscTBEH "PetscTraceBackErrorHandler"
     int PetscPushErrorHandler(PetscTBF*,void*)
     int PetscPopErrorHandler()
+    int PetscErrorMessage(int,char*[],char**)
 
     int PetscSplitOwnership(MPI_Comm,PetscInt*,PetscInt*)
     int PetscSplitOwnershipBlock(MPI_Comm,PetscInt,PetscInt*,PetscInt*)

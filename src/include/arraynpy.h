@@ -84,7 +84,7 @@ static PyObject* PetscIS_array_struct(PyObject* self, IS is)
   }
   ierr = ISGetIndices(is, &array); if (ierr) {goto fail;}
   iface = Petsc_array_struct_new(self,(void *)array,size,
-				 NPY_PETSC_INT,/*READONLY*/0);
+                                 NPY_PETSC_INT,/*READONLY*/0);
   ierr = ISRestoreIndices(is, &array); if (ierr) {goto fail;}
   return iface;
  fail:
@@ -93,8 +93,8 @@ static PyObject* PetscIS_array_struct(PyObject* self, IS is)
     const char *text=0; char *specific=0;
     PetscErrorMessage(ierr,&text,&specific);
     PyErr_Format(PyExc_RuntimeError,
-		 "PETSc error [code %d]:\n%s\n%s\n",
-		 (int)ierr,text?text:"",specific?specific:"");
+                 "PETSc error [code %d]:\n%s\n%s\n",
+                 (int)ierr,text?text:"",specific?specific:"");
   }
   return NULL;
 }
@@ -102,9 +102,9 @@ static PyObject* PetscIS_array_struct(PyObject* self, IS is)
 static PyObject* PetscVec_array_struct(PyObject* self, Vec vec)
 {
   PetscErrorCode ierr;
-  PetscInt    	 size   = 0;
-  PetscScalar 	 *array = PETSC_NULL;
-  PyObject    	 *iface = NULL;
+  PetscInt       size   = 0;
+  PetscScalar    *array = PETSC_NULL;
+  PyObject       *iface = NULL;
   /* get vector size */
   ierr = VecGetLocalSize(vec, &size); if (ierr) goto fail;
   /* check vector is native */
@@ -123,10 +123,17 @@ static PyObject* PetscVec_array_struct(PyObject* self, Vec vec)
     const char *text=0; char *specific=0;
     PetscErrorMessage(ierr,&text,&specific);
     PyErr_Format(PyExc_RuntimeError,
-		 "PETSc error [code %d]:\n%s\n%s\n",
-		 (int)ierr,text?text:"",specific?specific:"");
+                 "PETSc error [code %d]:\n%s\n%s\n",
+                 (int)ierr,text?text:"",specific?specific:"");
   }
   return NULL;
 }
 
 /* ---------------------------------------------------------------- */
+
+/*
+  Local variables:
+  c-basic-offset: 2
+  indent-tabs-mode: nil
+  End:
+*/

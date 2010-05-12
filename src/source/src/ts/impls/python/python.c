@@ -384,7 +384,7 @@ static PetscErrorCode TSStep_Python(TS ts,PetscReal t,Vec u)
     ierr = SNESSolve(ts->snes,py->vec_rhs,u);CHKERRQ(ierr);
   } if (ts->problem_type == TS_LINEAR) {
     MatStructure flag = DIFFERENT_NONZERO_PATTERN;
-    SETERRQ(1, "not yet implemented"); PetscFunctionReturn(1);
+    SETERRQQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"not yet implemented");
     ierr = KSPSetOperators(ts->ksp,ts->A,ts->B,flag);CHKERRQ(ierr);
     ierr = KSPSolve(ts->ksp,py->vec_rhs,u);CHKERRQ(ierr);
   }
@@ -481,9 +481,9 @@ static PetscErrorCode TSSetUp_Python(TS ts)
   if (ts->problem_type == TS_NONLINEAR) { /* setup nonlinear problem */
     /* nothing to do at this point yet */
   } else if (ts->problem_type == TS_LINEAR) { /* setup linear problem */
-    SETERRQ(PETSC_ERR_SUP,"Only for nonlinear problems");
+    SETERRQQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only for nonlinear problems");
   } else {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"No such problem type");
+    SETERRQQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No such problem type");
   }
   /* create work vector for solution */
   if (py->update == PETSC_NULL) {
@@ -504,7 +504,7 @@ static PetscErrorCode TSSetUp_Python(TS ts)
     ierr = SNESSetFunction(ts->snes,py->vec_func,TSPyFunction,ts);CHKERRQ(ierr);
     ierr = SNESSetJacobian(ts->snes,ts->A,ts->B,TSPyJacobian,ts);CHKERRQ(ierr);
   } else if (ts->problem_type == TS_LINEAR) {  /* setup linear problem */
-    SETERRQ(PETSC_ERR_SUP,"Only for nonlinear problems");
+    SETERRQQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only for nonlinear problems");
   }
   /* call user-provided setup function */
   TS_PYTHON_CALL_TSARG(ts, "setUp");
@@ -654,7 +654,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Python(TS ts)
     ierr = PetscLogObjectParent(ts,ts->ksp);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)ts->ksp,(PetscObject)ts,1);CHKERRQ(ierr);
     ierr = KSPSetInitialGuessNonzero(ts->ksp,PETSC_TRUE);CHKERRQ(ierr);
-  } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"No such problem type");
+  } else SETERRQQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No such problem type");
 
   PetscFunctionReturn(0);
 }

@@ -367,7 +367,8 @@ static PetscErrorCode SNESSolve_Python(SNES snes)
   ierr = (*py->ops->computefunction)(snes,X,F);CHKERRQ(ierr); /* F <- function(X) */
   ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);              /* fnorm <- ||F||   */
   /* Check function norm */
-  if (fnorm != fnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+  if (fnorm != fnorm)
+    SETERRQQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   snes->norm = fnorm;
   /* Set parameter for default relative tolerance convergence test */
   snes->ttol = fnorm*snes->rtol;
@@ -398,9 +399,12 @@ static PetscErrorCode SNESSolve_Python(SNES snes)
     ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);  /* xnorm <- || X || */
     ierr = VecNorm(Y,NORM_2,&ynorm);CHKERRQ(ierr);  /* ynorm <- || Y || */
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);  /* fnorm <- || F || */
-    if (xnorm != xnorm) SETERRQ(PETSC_ERR_FP,"User provided routine generated a Not-a-Number");
-    if (fnorm != fnorm) SETERRQ(PETSC_ERR_FP,"User provided routine generated a Not-a-Number");
-    if (ynorm != ynorm) SETERRQ(PETSC_ERR_FP,"User provided routine generated a Not-a-Number");
+    if (xnorm != xnorm)
+      SETERRQQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided routine generated a Not-a-Number");
+    if (fnorm != fnorm)
+      SETERRQQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided routine generated a Not-a-Number");
+    if (ynorm != ynorm)
+      SETERRQQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided routine generated a Not-a-Number");
     ierr = PetscInfo4(snes,"iter=%D, xnorm=%18.16e, ynorm=%18.16e, fnorm=%18.16e\n",i,xnorm,ynorm,fnorm);CHKERRQ(ierr);
     snes->norm = fnorm;
 

@@ -1,7 +1,7 @@
 /* -------------------------------------------------------------------------- */
 
-#include "src/inline/python.h"
 #include "private/matimpl.h"
+#include "src/inline/python.h"
 
 /* -------------------------------------------------------------------------- */
 
@@ -62,7 +62,7 @@ typedef struct {
 /**/
 
 #define MAT_PYTHON_SETERRSUP(mat, PyMethod)                             \
-  SETERRQ1(PETSC_ERR_SUP,"method %s() not implemented",PyMethod);       \
+  PETSC_PYTHON_NOTIMPLEMENTED(mat, PyMethod);                           \
   PetscFunctionReturn(PETSC_ERR_SUP)                                    \
 /**/
 
@@ -255,9 +255,10 @@ static PetscErrorCode MatSetUpPreallocation_Python(Mat mat)
     if (flag) { ierr = MatPythonSetType_PYTHON(mat,pyname);CHKERRQ(ierr); }
   }
   if (!py->self) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Python context not set, call one of \n"
-            " * MatPythonSetType(mat,\"[package.]module.class\")\n"
-            " * MatSetFromOptions(mat) and pass option -mat_python_type [package.]module.class");
+    SETERRQQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,
+             "Python context not set, call one of \n"
+             " * MatPythonSetType(mat,\"[package.]module.class\")\n"
+             " * MatSetFromOptions(mat) and pass option -mat_python_type [package.]module.class");
   }
   /* */
   MAT_PYTHON_CALL_MATARG(mat, "setUp");

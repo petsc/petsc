@@ -10,6 +10,30 @@
 
 /* ---------------------------------------------------------------- */
 
+#define SETERRQQ(comm,n,s) \
+  return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s)
+#define SETERRQQ1(comm,n,s,a1) \
+  return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1)
+#define SETERRQQ2(comm,n,s,a1,a2) \
+  return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2)
+
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0) || \
+     PETSC_VERSION_(2,3,3) || \
+     PETSC_VERSION_(2,3,2))
+#undef SETERRQQ
+#define SETERRQQ(comm,n,s) \
+  return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s)
+#undef SETERRQQ1
+#define SETERRQQ1(comm,n,s,a1) \
+  return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1)
+#undef SETERRQQ2
+#define SETERRQQ2(comm,n,s,a1,a2) \
+  return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2)
+#endif
+
+/* ---------------------------------------------------------------- */
+
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0) || \
      PETSC_VERSION_(2,3,3) || \
@@ -256,16 +280,26 @@ MatBlockSize_Check(Mat mat,PetscInt bs)
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   rmap = PetscGetLayout(mat,rmap);
   cmap = PetscGetLayout(mat,cmap);
-  if (bs < 1)
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size specified, must be positive but it is %D",bs);
-  if (rmap->n != -1 && rmap->n % bs)
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local row length %D not divisible by block size %D",rmap->n,bs);
-  if (rmap->N != -1 && rmap->N % bs)
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Global row length %D not divisible by block size %D",rmap->N,bs);
-  if (cmap->n != -1 && cmap->n % bs)
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local column length %D not divisible by block size %D",cmap->n,bs);
-  if (cmap->N != -1 && cmap->N % bs)
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Global column length %D not divisible by block size %D",cmap->N,bs);
+  if (bs < 1) {
+    SETERRQQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
+              "Invalid block size specified, must be positive but it is %D",bs);
+  }
+  if (rmap->n != -1 && rmap->n % bs) {
+    SETERRQQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
+              "Local row length %D not divisible by block size %D",rmap->n,bs);
+  }
+  if (rmap->N != -1 && rmap->N % bs) {
+    SETERRQQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
+              "Global row length %D not divisible by block size %D",rmap->N,bs);
+  }
+  if (cmap->n != -1 && cmap->n % bs) {
+    SETERRQQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
+              "Local column length %D not divisible by block size %D",cmap->n,bs);
+  }
+  if (cmap->N != -1 && cmap->N % bs) {
+    SETERRQQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
+              "Global column length %D not divisible by block size %D",cmap->N,bs);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -296,9 +330,10 @@ MatSetBlockSize_Patch(Mat mat,PetscInt bs)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  if (bs < 1)
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,
-             "Invalid block size specified, must be positive but it is %D",bs);
+  if (bs < 1) {
+    SETERRQQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
+              "Invalid block size specified, must be positive but it is %D",bs);
+  }
   if (mat->ops->setblocksize) {
     ierr = MatBlockSize_Check(mat,bs);CHKERRQ(ierr);
     ierr = (*mat->ops->setblocksize)(mat,bs);CHKERRQ(ierr);
@@ -307,9 +342,9 @@ MatSetBlockSize_Patch(Mat mat,PetscInt bs)
     ierr = MatBlockSize_Check(mat,bs);CHKERRQ(ierr);
     ierr = MatBlockSize_SetUp(mat,bs);CHKERRQ(ierr);
   } else if (rmap->bs != bs || cmap->bs != bs) {
-    SETERRQ1(PETSC_ERR_ARG_INCOMP,
-             "Cannot set/change the block size for matrix type %s",
-             ((PetscObject)mat)->type_name);
+    SETERRQQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,
+              "Cannot set/change the block size for matrix type %s",
+              ((PetscObject)mat)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -406,7 +441,11 @@ MatAnyAIJSetPreallocation(Mat A,PetscInt bs,
   if (d_nnz) PetscValidIntPointer(d_nnz,3);
   if (o_nnz) PetscValidIntPointer(o_nnz,5);
   ierr = MatIsPreallocated(A,&flag);CHKERRQ(ierr);
-  if (flag) { SETERRQ(PETSC_ERR_ORDER, "matrix is already preallocated"); }
+  if (flag) {
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ORDER,
+             "matrix is already preallocated");
+  }
   if (bs == PETSC_DECIDE) {
     ierr = MatSeqAIJSetPreallocation(A,d_nz,d_nnz);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(A,d_nz,d_nnz,o_nz,o_nnz);CHKERRQ(ierr);
@@ -434,7 +473,11 @@ MatAnyAIJSetPreallocationCSR(Mat A,PetscInt bs, const PetscInt Ii[],
   PetscValidIntPointer(Jj,4);
   if (V) PetscValidScalarPointer(V,5);
   ierr = MatIsPreallocated(A,&flag);CHKERRQ(ierr);
-  if (flag) { SETERRQ(PETSC_ERR_ORDER, "matrix is already preallocated"); }
+  if (flag) {
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ORDER,
+            "matrix is already preallocated");
+  }
   if (bs == PETSC_DECIDE) {
     ierr = MatSeqAIJSetPreallocationCSR(A,Ii,Jj,V);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocationCSR(A,Ii,Jj,V);CHKERRQ(ierr);
@@ -489,7 +532,11 @@ MatAnyDenseSetPreallocation(Mat mat, PetscInt bs, PetscScalar *data)
   PetscValidType(mat,1);
   if (data) PetscValidScalarPointer(data,3);
   ierr = MatIsPreallocated(mat, &flag);CHKERRQ(ierr);
-  if (flag) { SETERRQ(PETSC_ERR_ORDER, "matrix is already preallocated"); }
+  if (flag) {
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ORDER,
+             "matrix is already preallocated");
+  }
   ierr = MatSeqDenseSetPreallocation(mat,data);CHKERRQ(ierr);
   ierr = MatMPIDenseSetPreallocation(mat,data);CHKERRQ(ierr);
   if (bs != PETSC_DECIDE) {
@@ -553,7 +600,11 @@ KSPSetIterationNumber(KSP ksp, PetscInt its)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (its < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
+  if (its < 0) {
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ARG_OUTOFRANGE,
+             "iteration number must be nonnegative");
+  }
   ksp->its = its;
   PetscFunctionReturn(0);
 }
@@ -565,7 +616,11 @@ KSPSetResidualNorm(KSP ksp, PetscReal rnorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (rnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"residual norm must be nonnegative");
+  if (rnorm < 0) {
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ARG_OUTOFRANGE,
+             "residual norm must be nonnegative");
+  }
   ksp->rnorm = rnorm;
   PetscFunctionReturn(0);
 }
@@ -577,8 +632,16 @@ KSPLogConvergenceHistory(KSP ksp, PetscInt its, PetscReal rnorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (its   < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
-  if (rnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"residual norm must be nonnegative");
+  if (its   < 0) {
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ARG_OUTOFRANGE,
+             "iteration number must be nonnegative");
+  }
+  if (rnorm < 0) {
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ARG_OUTOFRANGE,
+             "residual norm must be nonnegative");
+  }
   KSPLogResidualHistory(ksp,rnorm);
   PetscFunctionReturn(0);
 }
@@ -590,8 +653,16 @@ KSPMonitorCall(KSP ksp, PetscInt its, PetscReal rnorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (its   < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
-  if (rnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"residual norm must be nonnegative");
+  if (its   < 0) {
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ARG_OUTOFRANGE,
+             "iteration number must be nonnegative");
+  }
+  if (rnorm < 0) {
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ARG_OUTOFRANGE,
+             "residual norm must be nonnegative");
+  }
   KSPMonitor(ksp,its,rnorm);
   PetscFunctionReturn(0);
 }
@@ -605,8 +676,16 @@ KSPConvergenceTestCall(KSP ksp, PetscInt its, PetscReal rnorm, KSPConvergedReaso
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(reason,4);
-  if (its   < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
-  if (rnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"residual norm must be nonnegative");
+  if (its < 0) {
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ARG_OUTOFRANGE,
+             "iteration number must be nonnegative");
+  }
+  if (rnorm < 0) {
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ARG_OUTOFRANGE,
+             "residual norm must be nonnegative");
+  }
   ierr = (*ksp->converged)(ksp,its,rnorm,reason,ksp->cnvP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -631,7 +710,11 @@ SNESSetIterationNumber(SNES snes, PetscInt its)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  if (its < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
+  if (its < 0) {
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ARG_OUTOFRANGE,
+             "iteration number must be nonnegative");
+  }
   snes->iter = its;
   PetscFunctionReturn(0);
 }
@@ -643,7 +726,11 @@ SNESSetFunctionNorm(SNES snes, PetscReal fnorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  if (fnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"function norm must be nonnegative");
+  if (fnorm < 0) {
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ARG_OUTOFRANGE,
+             "function norm must be nonnegative");
+  }
   snes->norm = fnorm;
   PetscFunctionReturn(0);
 }
@@ -655,8 +742,16 @@ SNESLogConvergenceHistory(SNES snes, PetscInt its, PetscReal fnorm, PetscInt lit
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  if (its   < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
-  if (fnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"function norm must be nonnegative");
+  if (its < 0) {
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ARG_OUTOFRANGE,
+             "iteration number must be nonnegative");
+  }
+  if (fnorm < 0) {
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ARG_OUTOFRANGE,
+             "function norm must be nonnegative");
+  }
   SNESLogConvHistory(snes,fnorm,its);
   PetscFunctionReturn(0);
 }
@@ -668,8 +763,16 @@ SNESMonitorCall(SNES snes, PetscInt its, PetscReal rnorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  if (its   < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
-  if (rnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"residual norm must be nonnegative");
+  if (its < 0) {
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ARG_OUTOFRANGE,
+             "iteration number must be nonnegative");
+  }
+  if (rnorm < 0) {
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ARG_OUTOFRANGE,
+             "residual norm must be nonnegative");
+  }
   SNESMonitor(snes,its,rnorm);
   PetscFunctionReturn(0);
 }
@@ -685,10 +788,25 @@ SNESConvergenceTestCall(SNES snes, PetscInt its,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidPointer(reason,4);
-  if (its   < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
-  if (xnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"solution norm must be nonnegative");
-  if (ynorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"step norm must be nonnegative");
-  if (fnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"function norm must be nonnegative");
+  if (its < 0) {
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ARG_OUTOFRANGE,
+             "iteration number must be nonnegative");
+  }
+  if (xnorm < 0) {
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ARG_OUTOFRANGE,
+             "solution norm must be nonnegative");
+  }
+  if (ynorm < 0)
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ARG_OUTOFRANGE,
+             "step norm must be nonnegative");
+  if (fnorm < 0) {
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ARG_OUTOFRANGE,
+             "function norm must be nonnegative");
+  }
   ierr = (*snes->ops->converged)(snes,its,xnorm,ynorm,fnorm,reason,snes->cnvP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -753,14 +871,18 @@ SNESSetUseMFFD(SNES snes,PetscTruth flag)
   if ( flg &&  flag) PetscFunctionReturn(0);
   if (!flg && !flag) PetscFunctionReturn(0);
   if ( flg && !flag) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"cannot change matrix-free once it is set");
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ARG_WRONGSTATE,
+             "cannot change matrix-free once it is set");
     PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
   }
 
   ierr = SNESGetFunction(snes,&r,0,&funP);CHKERRQ(ierr);
   ierr = SNESGetJacobian(snes,&A,&B,0,&jacP);CHKERRQ(ierr);
   if (r == PETSC_NULL) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"SNESSetFunction() must be called first");
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ARG_WRONGSTATE,
+             "SNESSetFunction() must be called first");
     PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
   }
   ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
@@ -823,18 +945,24 @@ SNESSetUseFDColoring(SNES snes,PetscTruth flag)
   if ( flg &&  flag) PetscFunctionReturn(0);
   if (!flg && !flag) PetscFunctionReturn(0);
   if ( flg && !flag) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "cannot change colored finite diferences once it is set");
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ARG_WRONGSTATE,
+             "cannot change colored finite diferences once it is set");
     PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
   }
 
   ierr = SNESGetFunction(snes,&f,&fun,&funP);CHKERRQ(ierr);
   ierr = SNESGetJacobian(snes,&A,&B,&jac,&jacP);CHKERRQ(ierr);
   if (f == PETSC_NULL) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"SNESSetFunction() must be called first");
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ARG_WRONGSTATE,
+             "SNESSetFunction() must be called first");
     PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
   }
   if (A == PETSC_NULL && B == PETSC_NULL) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"SNESSetJacobian() must be called first");
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ARG_WRONGSTATE,
+             "SNESSetJacobian() must be called first");
     PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
   }
 
@@ -941,17 +1069,23 @@ TSSetUseFDColoring(TS ts,PetscTruth flag)
   if ( flg &&  flag) PetscFunctionReturn(0);
   if (!flg && !flag) PetscFunctionReturn(0);
   if ( flg && !flag) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"cannot change colored finite deferences once it is set");
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ARG_WRONGSTATE,
+             "cannot change colored finite deferences once it is set");
     PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
   }
   ierr = TSGetRHSFunction(ts,&f,&fun,&funP);CHKERRQ(ierr);
   ierr = TSGetRHSJacobian(ts,&A,&B,&jac,&jacP);CHKERRQ(ierr);
   if (fun == PETSC_NULL) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"TSSetRHSFunction() must be called first");
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ARG_WRONGSTATE,
+             "TSSetRHSFunction() must be called first");
     PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
   }
   if (A == PETSC_NULL && B == PETSC_NULL) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"TSSetRHSJacobian() must be called first");
+    SETERRQQ(PETSC_COMM_SELF,
+             PETSC_ERR_ARG_WRONGSTATE,
+             "TSSetRHSJacobian() must be called first");
     PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
   }
 
@@ -1107,3 +1241,10 @@ DACreateND(MPI_Comm comm,
 #endif
 
 /* ---------------------------------------------------------------- */
+
+/*
+  Local variables:
+  c-basic-offset: 2
+  indent-tabs-mode: nil
+  End:
+*/
