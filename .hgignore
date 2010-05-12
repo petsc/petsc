@@ -77,3 +77,4 @@ src/dm/mesh/examples/tutorials/*.vtk
 valgrind*
 .DS_Store
 session_*
+CTAGS
