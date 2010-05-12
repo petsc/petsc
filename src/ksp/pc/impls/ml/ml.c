@@ -245,7 +245,7 @@ static PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,MatType newtype,MatReuse scall,
       for (j=0; j<ncols; j++) *ca++ = *ba++; 
     }
   } else {
-    SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",(int)scall);
+    SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",(int)scall);
   }
   PetscFunctionReturn(0);
 }
