@@ -641,6 +641,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFactorInfo
   PetscTruth      row_identity, col_identity;
 
   PetscFunctionBegin;
+  printf("MatLUFactorNumeric_SeqAIJ_inplace ...\n");
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = PetscMalloc((n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
