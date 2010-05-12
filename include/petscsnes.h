@@ -31,6 +31,7 @@ E*/
 #define SNESTR     "tr"
 #define SNESPYTHON "python"
 #define SNESTEST   "test"
+#define SNESPICARD "picard"
 
 /* Logging support */
 extern PetscClassId PETSCSNES_DLLEXPORT SNES_CLASSID;
