@@ -49,7 +49,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrToArray(const char s[],int *argc,char ***
     else if (s[i] != ' ') {flg = PETSC_FALSE;}
   }
   (*args) = (char **) malloc((*argc)*sizeof(char**)); if (!*args) return PETSC_ERR_MEM;
-  lens  = malloc((*argc)*sizeof(int)); if (!lens) return PETSC_ERR_MEM;
+  lens    = (int*) malloc((*argc)*sizeof(int)); if (!lens) return PETSC_ERR_MEM;
   for (i=0; i<*argc; i++) lens[i] = 0;
 
   *argc = 0;
@@ -62,7 +62,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrToArray(const char s[],int *argc,char ***
   }
 
   for (i=0; i<*argc; i++) {
-    (*args)[i] = malloc((lens[i]+1)*sizeof(char)); if (!(*args)[i]) return PETSC_ERR_MEM;
+    (*args)[i] = (char*) malloc((lens[i]+1)*sizeof(char)); if (!(*args)[i]) return PETSC_ERR_MEM;
   }
 
   *argc = 0;
