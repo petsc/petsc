@@ -140,7 +140,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogCloseHistoryFile(FILE **fd)
   be able to put a true MPI abort error handler with command line args.
 
     This is so MPI errors in the debugger will leave all the stack 
-  frames. The default abort cleans up and exits.
+  frames. The default MP_Abort() cleans up and exits thus providing no useful information
+  in the debugger hence we call abort() instead of MPI_Abort().
 */
 
 #undef __FUNCT__  
@@ -148,7 +149,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogCloseHistoryFile(FILE **fd)
 void Petsc_MPI_AbortOnError(MPI_Comm *comm,PetscMPIInt *flag) 
 {
   PetscFunctionBegin;
-  (*PetscErrorPrintf)("MPI error %d\n",(int)*flag);
+  (*PetscErrorPrintf)("MPI error %d\n",*flag);
   abort();
 }
 
@@ -159,11 +160,10 @@ void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,PetscMPIInt *flag)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  (*PetscErrorPrintf)("MPI error %d\n",(int)*flag);
+  (*PetscErrorPrintf)("MPI error %d\n",*flag);
   ierr = PetscAttachDebugger();
   if (ierr) { /* hopeless so get out */
-    MPI_Finalize();
-    exit(*flag);
+    MPI_Abort(*comm,*flag);
   }
 }
 

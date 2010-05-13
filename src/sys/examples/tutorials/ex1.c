@@ -24,7 +24,15 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
+  int argcc = 2;
+  char **args;
+  PetscStrToArray("iphone -info -joe",&argcc,&args);
+  /*  PetscMalloc(2*sizeof(char**),&args); */
+  /*PetscMalloc(sizeof(char*),&args[0]);
+    PetscMalloc(sizeof(char*),&args[1]); */
+  /*  args[0] = "iphone";
+      args[1] = "-info"; */
+  ierr = PetscInitialize(&argcc,&args,(char *)0,help);CHKERRQ(ierr);
 
   /* 
      The following MPI calls return the number of processes

@@ -5,14 +5,14 @@
 #   Before using removed /usr/include/mpi.h and /Developer/SDKs/MacOSX10.5.sdk/usr/include/mpi.h or
 #      Xcode will use those instead of the MPIuni one we point to
 #
-#   Run ./configure with the options --with-valgrind=0 --with-mpi=0 --with-x=0
+#   Run ./configure with the options --with-valgrind=0 --with-mpi=0 --with-x=0 --with-cc="gcc -m32"
 #
 #   After running xcodebuilder.py
 #      In Project->Add to Project put in the directory $PETSC_DIR/PETSC_ARCH/xcode-links
 #      In Project->Edit Project Settings->Search Paths->Header Search Paths add
 #         $PETSC_DIR/include $PETSC_DIR/include/mpiuni $PETSC_DIR/$PETSC_ARCH/include  replacing the variables with their values, for example
 #         /Users/barrysmith/Src/petsc-dev/include /Users/barrysmith/Src/petsc-dev/include/mpiuni /Users/barrysmith/Src/petsc-dev/arch-uni/include
-#      In Project->Edit Project Settings->Linking->Other Linker Flags add -framework veclib
+#      Press control mouse on Frameworks bullet->Add Existing Frameworks then select libblas and liblapack
 #
 #  Notes - if you skip the --with-mpi=0 and let it use the NATIVE Apple MPI that may work, I have not tried it.
 #        - have not tried anything with Fortran or C++

@@ -14,6 +14,69 @@
 #endif
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscStrToArray"
+/*@C
+   PetscStrToArray - Seperates a string by its spaces and creates and array of strings
+
+   Not Collective
+
+   Input Parameters:
+.  s - pointer to string
+
+   Output Parameter:
++   argc - the number of entries in the array
+-   args - an array of the entries with a null at the end
+
+   Level: intermediate
+
+   Notes: this may be called before PetscInitialize()
+
+   Developer Notes: Using raw malloc()
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscStrToArray(const char s[],int *argc,char ***args)
+{
+  int        i,n,*lens,cnt = 0;
+  PetscTruth flg = PETSC_FALSE;
+
+  n = strlen(s);
+  *argc = 0;
+  for (i=0; i<n; i++) {
+    if (s[i] != ' ') break;
+  }
+  for (;i<n+1; i++) {
+    if ((s[i] == ' ' || s[i] == 0) && !flg) {flg = PETSC_TRUE; (*argc)++;}
+    else if (s[i] != ' ') {flg = PETSC_FALSE;}
+  }
+  (*args) = (char **) malloc((*argc)*sizeof(char**)); if (!*args) return PETSC_ERR_MEM;
+  lens  = malloc((*argc)*sizeof(int)); if (!lens) return PETSC_ERR_MEM;
+  for (i=0; i<*argc; i++) lens[i] = 0;
+
+  *argc = 0;
+  for (i=0; i<n; i++) {
+    if (s[i] != ' ') break;
+  }
+  for (;i<n+1; i++) {
+    if ((s[i] == ' ' || s[i] == 0) && !flg) {flg = PETSC_TRUE; (*argc)++;}
+    else if (s[i] != ' ') {lens[*argc]++;flg = PETSC_FALSE;}
+  }
+
+  for (i=0; i<*argc; i++) {
+    (*args)[i] = malloc((lens[i]+1)*sizeof(char)); if (!(*args)[i]) return PETSC_ERR_MEM;
+  }
+
+  *argc = 0;
+  for (i=0; i<n; i++) {
+    if (s[i] != ' ') break;
+  }
+  for (;i<n+1; i++) {
+    if ((s[i] == ' ' || s[i] == 0) && !flg) {flg = PETSC_TRUE; (*args)[*argc][cnt++] = 0; (*argc)++; cnt = 0;}
+    else if (s[i] != ' ') {(*args)[*argc][cnt++] = s[i]; flg = PETSC_FALSE;}
+  }
+  return 0;
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscStrlen"
 /*@C
    PetscStrlen - Gets length of a string

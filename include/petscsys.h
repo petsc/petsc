@@ -1214,6 +1214,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscBitMemcpy(void*,PetscInt,const void
 EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscMemmove(void*,void *,size_t);
 EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscMemcmp(const void*,const void*,size_t,PetscTruth *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscStrlen(const char[],size_t*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscStrToArray(const char[],int*,char ***);
 EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscStrcmp(const char[],const char[],PetscTruth *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscStrgrt(const char[],const char[],PetscTruth *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscStrcasecmp(const char[],const char[],PetscTruth*);
