@@ -44,6 +44,8 @@ Warning: Using from command-line: %s, ignoring environment: %s''' % (str(self.fr
       self.arch = self.framework.argDB['PETSC_ARCH']
     else:
       if 'PETSC_ARCH' in os.environ:
+        if not len(os.environ['PETSC_ARCH']):
+          raise RuntimeError('PETSC_ARCH is the empty string in your environment. It must either be a valid string, or not be defined in the environment at all.')
         self.arch = os.environ['PETSC_ARCH']
       else:
         self.arch = self.framework.host_os

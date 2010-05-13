@@ -30,6 +30,12 @@ class Configure(config.base.Configure):
       self.getExecutable('gdb', getFullPath = 1)
       self.getExecutable('dbx', getFullPath = 1)
       self.getExecutable('xdb', getFullPath = 1)
+    self.getExecutable('dsymutil', getFullPath = 1)
+
+    if hasattr(self, 'dsymutil'):
+      self.addMakeMacro('DSYMUTIL', self.dsymutil)
+    else:
+      self.addMakeMacro('DSYMUTIL', 'true')
       
     if hasattr(self, 'gdb'):
       self.addDefine('USE_GDB_DEBUGGER', 1)
