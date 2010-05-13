@@ -89,8 +89,9 @@ class VTKViewer {
     PetscFunctionBegin;
     if (verify) enforceDim = 3;
     if (field->commRank() == 0) {
-      // Hoist 'line' up and preallocate it
-      for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+      const typename Section::chart_type::const_iterator cEnd = chart.end();
+
+      for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != cEnd; ++p_iter) {
         if (!numbering->hasPoint(*p_iter)) continue;
         const value_type *array = field->restrictPoint(*p_iter);
         const int&        dim   = field->getFiberDimension(*p_iter);
@@ -146,13 +147,14 @@ class VTKViewer {
         ierr = PetscFree(remoteValues);CHKERRQ(ierr);
       }
     } else {
-      value_type *localValues;
+      const typename Section::chart_type::const_iterator cEnd = chart.end();
       int         numLocalElements = numbering->getLocalSize();
       const int   size = numLocalElements*(fiberDim+verify);
       int         k = 0;
+      value_type *localValues;
 
       ierr = PetscMalloc(size * sizeof(value_type), &localValues);CHKERRQ(ierr);
-      for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+      for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != cEnd; ++p_iter) {
         if (!numbering->hasPoint(*p_iter)) continue;
         if (numbering->isLocal(*p_iter)) {
           const value_type *array = field->restrictPoint(*p_iter);
@@ -261,7 +263,9 @@ class VTKViewer {
     ierr = MPI_Reduce(&localCorners, &corners, 1, MPI_INT, MPI_MAX, 0, mesh->comm());CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
     if (mesh->commRank() == 0) {
-      for(typename Mesh::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+      const typename Mesh::label_sequence::iterator eEnd = elements->end();
+
+      for(typename Mesh::label_sequence::iterator e_iter = elements->begin(); e_iter != eEnd; ++e_iter) {
         ALE::ISieveTraversal<sieve_type>::orientedClosure(*sieve, *e_iter, ncV);
         const typename visitor_type::oriented_point_type *cone = ncV.getOrientedPoints();
 
@@ -290,12 +294,13 @@ class VTKViewer {
         ierr = PetscFree(remoteVertices);CHKERRQ(ierr);
       }
     } else {
+      const typename Mesh::label_sequence::iterator eEnd = elements->end();
       int  numLocalElements = cNumbering->getLocalSize();
       int *localVertices;
       int  k = 0;
 
       ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &localVertices);CHKERRQ(ierr);
-      for(typename Mesh::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+      for(typename Mesh::label_sequence::iterator e_iter = elements->begin(); e_iter != eEnd; ++e_iter) {
         if (cNumbering->isLocal(*e_iter)) {
           ALE::ISieveTraversal<sieve_type>::orientedClosure(*sieve, *e_iter, ncV);
           const typename visitor_type::oriented_point_type *cone = ncV.getOrientedPoints();
@@ -340,9 +345,10 @@ class VTKViewer {
     if (mesh->commRank() == 0) {
 #ifdef PETSC_OPT_SIEVE
       ALE::ISieveVisitor::NConeRetriever<PETSC_MESH_TYPE::sieve_type> ncV(*sieve, (size_t) pow((double) sieve->getMaxConeSize(), std::max(0, depth)));
-
 #endif
-      for(PETSC_MESH_TYPE::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+      const PETSC_MESH_TYPE::label_sequence::iterator eEnd = elements->end();
+
+      for(PETSC_MESH_TYPE::label_sequence::iterator e_iter = elements->begin(); e_iter != eEnd; ++e_iter) {
         ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
 #ifdef PETSC_OPT_SIEVE
         ALE::ISieveTraversal<PETSC_MESH_TYPE::sieve_type>::orientedClosure(*sieve, *e_iter, ncV);
@@ -355,8 +361,9 @@ class VTKViewer {
         ncV.clear();
 #else
         const Obj<sieve_alg_type::coneArray>& cone = sieve_alg_type::nCone(mesh, *e_iter, depth);
+        const sieve_alg_type::coneArray::iterator cEnd = cone->end();
 
-        for(sieve_alg_type::coneArray::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+        for(sieve_alg_type::coneArray::iterator c_iter = cone->begin(); c_iter != cEnd; ++c_iter) {
           ierr = PetscViewerASCIIPrintf(viewer, " %d", vNumbering->getIndex(*c_iter));CHKERRQ(ierr);
         }
 #endif
@@ -386,9 +393,10 @@ class VTKViewer {
 #ifdef PETSC_OPT_SIEVE
       ALE::ISieveVisitor::NConeRetriever<PETSC_MESH_TYPE::sieve_type> ncV(*sieve, (size_t) pow((double) sieve->getMaxConeSize(), std::max(0, depth)));
 #endif
+      const PETSC_MESH_TYPE::label_sequence::iterator eEnd = elements->end();
 
       ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &localVertices);CHKERRQ(ierr);
-      for(PETSC_MESH_TYPE::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+      for(PETSC_MESH_TYPE::label_sequence::iterator e_iter = elements->begin(); e_iter != eEnd; ++e_iter) {
 #ifdef PETSC_OPT_SIEVE
         ALE::ISieveTraversal<PETSC_MESH_TYPE::sieve_type>::orientedClosure(*sieve, *e_iter, ncV);
         const int                          coneSize = ncV.getSize();
@@ -404,7 +412,9 @@ class VTKViewer {
         const Obj<sieve_alg_type::coneArray>& cone = sieve_alg_type::nCone(mesh, *e_iter, depth);
 
         if (cNumbering->isLocal(*e_iter)) {
-          for(PETSC_MESH_TYPE::sieve_type::coneArray::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+          const PETSC_MESH_TYPE::sieve_type::coneArray::iterator cEnd = cone->end();
+
+          for(PETSC_MESH_TYPE::sieve_type::coneArray::iterator c_iter = cone->begin(); c_iter != cEnd; ++c_iter) {
             localVertices[k++] = vNumbering->getIndex(*c_iter);
           }
         }
