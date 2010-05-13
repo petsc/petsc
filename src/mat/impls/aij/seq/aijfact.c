@@ -641,22 +641,10 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFactorInfo
   PetscTruth      row_identity, col_identity;
 
   PetscFunctionBegin;
-  printf("MatLUFactorNumeric_SeqAIJ_inplace ...\n");
-  ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
-  ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
-  ierr = PetscMalloc((n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
-  ics  = ic;
+  /* MatPivotSetUp(): initialize shift context sctx */
+  ierr = PetscMemzero(&sctx,sizeof(FactorShiftCtx));CHKERRQ(ierr);
 
-  /* initialize shift context sctx */
-  sctx.nshift         = 0;
-  sctx.nshift_max     = 0;
-  sctx.shift_top      = 0.0;
-  sctx.shift_lo       = 0.0;
-  sctx.shift_hi       = 0.0;
-  sctx.shift_fraction = 0.0;
-  sctx.shift_amount   = 0.0;
-
-  if (info->shifttype == (PetscReal)MAT_SHIFT_POSITIVE_DEFINITE) { /* set sctx.shift_top=max{rs} */
+  if (info->shifttype == (PetscReal) MAT_SHIFT_POSITIVE_DEFINITE) { /* set sctx.shift_top=max{rs} */
     ddiag          = a->diag;
     sctx.shift_top = info->zeropivot;
     for (i=0; i<n; i++) {
@@ -673,7 +661,12 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFactorInfo
     sctx.nshift_max   = 5;
     sctx.shift_lo     = 0.;
     sctx.shift_hi     = 1.;
-  }
+  } 
+
+  ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
+  ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
+  ierr = PetscMalloc((n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
+  ics  = ic;
 
   do {
     sctx.useshift = PETSC_FALSE;
@@ -690,7 +683,6 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFactorInfo
         rtmp[ics[ajtmp[j]]] = v[j];
       }
       rtmp[ics[r[i]]] += sctx.shift_amount; /* shift the diagonal of the matrix */
-      /* if (sctx.shift_amount > 0.0) printf("row %d, shift %g\n",i,sctx.shift_amount); */
 
       row = *bjtmp++;
       while  (row < i) {
@@ -718,11 +710,11 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFactorInfo
       }
       rs   -= PetscAbsScalar(pv[diag]);
 
-      /* 9/13/02 Victor Eijkhout suggested scaling zeropivot by rs for matrices with funny scalings */
       sctx.rs  = rs;
       sctx.pv  = pv[diag];
-      ierr = MatLUCheckShift_inline(info,sctx,i,newshift);CHKERRQ(ierr);
+      ierr = MatPivotCheck(info,&sctx,i,&newshift);CHKERRQ(ierr);
       if (newshift == 1) break;
+      pv[diag] = sctx.pv;
     } 
 
     if (info->shifttype == (PetscReal)MAT_SHIFT_POSITIVE_DEFINITE && !sctx.useshift && sctx.shift_fraction>0 && sctx.nshift<sctx.nshift_max) {
@@ -795,19 +787,44 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,const MatFa
   PetscInt       *ajtmp,nz,row;
   PetscInt       *diag = a->diag,nbdiag,*pj;
   PetscScalar    *rtmp,*pc,multiplier,d;
-  MatScalar      *v,*pv;
+  MatScalar      *pv,*v;
   PetscReal      rs;
   FactorShiftCtx sctx;
   PetscInt       newshift = 0;
+  const  MatScalar *aa=a->a,*vtmp;
 
   PetscFunctionBegin;
   if (A != B) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"input and output matrix must have same address");
+
+  /* MatPivotSetUp(): initialize shift context sctx */
+  ierr = PetscMemzero(&sctx,sizeof(FactorShiftCtx));CHKERRQ(ierr);
+
+  if (info->shifttype == (PetscReal) MAT_SHIFT_POSITIVE_DEFINITE) { /* set sctx.shift_top=max{rs} */
+    const PetscInt   *ddiag = a->diag;
+    sctx.shift_top = info->zeropivot;
+    for (i=0; i<n; i++) {
+      /* calculate sum(|aij|)-RealPart(aii), amt of shift needed for this row */
+      d  = (aa)[ddiag[i]];
+      rs = -PetscAbsScalar(d) - PetscRealPart(d);
+      vtmp  = aa+ai[i];
+      nz = ai[i+1] - ai[i];
+      for (j=0; j<nz; j++) 
+	rs += PetscAbsScalar(vtmp[j]);
+      if (rs>sctx.shift_top) sctx.shift_top = rs;
+    }
+    sctx.shift_top   *= 1.1;
+    sctx.nshift_max   = 5;
+    sctx.shift_lo     = 0.;
+    sctx.shift_hi     = 1.;
+  } 
+
   ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   ierr  = PetscMalloc((n+1)*sizeof(PetscScalar),&rtmp);CHKERRQ(ierr);
   ierr  = PetscMemzero(rtmp,(n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   ics = ic;
 
+#if defined(MV)
   sctx.shift_top      = 0.;
   sctx.nshift_max     = 0;
   sctx.shift_lo       = 0.;
@@ -835,6 +852,8 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,const MatFa
 
   sctx.shift_amount = 0.;
   sctx.nshift       = 0;
+#endif
+
   do {
     sctx.useshift = PETSC_FALSE;
     for (i=0; i<n; i++){
@@ -880,11 +899,11 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,const MatFa
         if (j != nbdiag) rs += PetscAbsScalar(pv[j]);
       }
 
-      /* 9/13/02 Victor Eijkhout suggested scaling zeropivot by rs for matrices with funny scalings */
       sctx.rs  = rs;
       sctx.pv  = pv[nbdiag];
-      ierr = MatLUCheckShift_inline(info,sctx,i,newshift);CHKERRQ(ierr);
+      ierr = MatPivotCheck(info,&sctx,i,&newshift);CHKERRQ(ierr);
       if (newshift == 1) break;
+      pv[nbdiag] = sctx.pv;
     } 
 
     if (info->shifttype == (PetscReal)MAT_SHIFT_POSITIVE_DEFINITE && !sctx.useshift && sctx.shift_fraction>0 && sctx.nshift<sctx.nshift_max) {
