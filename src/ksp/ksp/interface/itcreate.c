@@ -290,6 +290,8 @@ $      successive linear solves.
 $    DIFFERENT_NONZERO_PATTERN -
 $      Pmat does not have the same nonzero structure.
 
+    All future calls to KSPSetOperators() must use the same size matrices!
+
     Passing a PETSC_NULL for Amat or Pmat removes the matrix that is currently used.
 
     If you wish to replace either Amat or Pmat but leave the other one untouched then
