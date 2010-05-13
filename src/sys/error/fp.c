@@ -413,7 +413,7 @@ void PetscDefaultFPTrap(int sig)
 {
   PetscFunctionBegin;
   (*PetscErrorPrintf)("*** floating point error occurred ***\n");
-  PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,PETSC_ERROR_INITIAL,"floating point error");
+  PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,PETSC_ERROR_REPEAT,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 EXTERN_C_END

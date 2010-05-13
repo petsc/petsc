@@ -581,32 +581,32 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStackPrint(PetscStack*,FILE* fp);
 .keywords: traceback, error handling
 M*/
 #define PetscFunctionBegin \
-  {\
+  do {\
    if (petscstack && (petscstack->currentsize < PETSCSTACKSIZE)) {    \
     petscstack->function[petscstack->currentsize]  = __FUNCT__; \
     petscstack->file[petscstack->currentsize]      = __FILE__; \
     petscstack->directory[petscstack->currentsize] = __SDIR__; \
     petscstack->line[petscstack->currentsize]      = __LINE__; \
     petscstack->currentsize++; \
-  }}
+  }} while (0)
 
 #define PetscStackPush(n) \
-  {if (petscstack && (petscstack->currentsize < PETSCSTACKSIZE)) {    \
+  do {if (petscstack && (petscstack->currentsize < PETSCSTACKSIZE)) {    \
     petscstack->function[petscstack->currentsize]  = n; \
     petscstack->file[petscstack->currentsize]      = "unknown"; \
     petscstack->directory[petscstack->currentsize] = "unknown"; \
     petscstack->line[petscstack->currentsize]      = 0; \
     petscstack->currentsize++; \
-  }}
+  }} while (0)
 
 #define PetscStackPop \
-  {if (petscstack && petscstack->currentsize > 0) {     \
+  do {if (petscstack && petscstack->currentsize > 0) {     \
     petscstack->currentsize--; \
     petscstack->function[petscstack->currentsize]  = 0; \
     petscstack->file[petscstack->currentsize]      = 0; \
     petscstack->directory[petscstack->currentsize] = 0; \
     petscstack->line[petscstack->currentsize]      = 0; \
-  }};
+  }} while (0)
 
 /*MC
    PetscFunctionReturn - Last executable line of each PETSc function
@@ -634,14 +634,14 @@ M*/
 .keywords: traceback, error handling
 M*/
 #define PetscFunctionReturn(a) \
-  {\
+  do {\
   PetscStackPop; \
-  return(a);}
+  return(a);} while (0)
 
 #define PetscFunctionReturnVoid() \
-  {\
+  do {\
   PetscStackPop; \
-  return;}
+  return;} while (0)
 
 
 #else
