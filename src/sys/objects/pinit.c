@@ -561,7 +561,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
     PetscGlobalArgc = *argc;
     PetscGlobalArgs = *args;
   }
-  PetscInitializeCalled = PETSC_TRUE;
   PetscFinalizeCalled   = PETSC_FALSE;
 
   if (PETSC_COMM_WORLD == MPI_COMM_NULL) {
@@ -685,7 +684,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-python",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {ierr = PetscPythonInitialize(PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);}
 
-  PetscFunctionReturn(ierr);
+  /*
+      Once we are completedly initialized then we can set this variables
+  */
+  PetscInitializeCalled = PETSC_TRUE;
+  PetscFunctionReturn(0);
 }
 
 
