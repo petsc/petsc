@@ -17,7 +17,7 @@ int main(int argc,char **args)
   Mat            C,A;
   PetscInt       i,j,m = 5,n = 5,Ii,J,lf = 0;
   PetscErrorCode ierr;
-  PetscTruth     LU=PETSC_FALSE,CHOLESKY,TRIANGULAR=PETSC_FALSE,MATDSPL=PETSC_FALSE,flg;
+  PetscTruth     LU=PETSC_FALSE,CHOLESKY,TRIANGULAR=PETSC_FALSE,MATDSPL=PETSC_FALSE,flg,matordering;
   PetscScalar    v;
   IS             row,col;
   PetscViewer    viewer1,viewer2;
@@ -25,7 +25,6 @@ int main(int argc,char **args)
   Vec            x,y,b,ytmp;
   PetscReal      norm2,norm2_inplace;
   PetscRandom    rdm;
-  PetscInt       *ii;
   PetscMPIInt    size;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -68,27 +67,11 @@ int main(int argc,char **args)
   ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
   ierr = MatMult(C,x,b);CHKERRQ(ierr);
 
-  ierr = MatGetOrdering(C,MATORDERING_RCM,&row,&col);CHKERRQ(ierr);
-  /* replace row or col with natural ordering for testing */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-no_rowperm",&flg);CHKERRQ(ierr);
-  if (flg){
-    ierr = ISDestroy(row);CHKERRQ(ierr);
-    ierr = PetscMalloc(m*n*sizeof(PetscInt),&ii);CHKERRQ(ierr);
-    for (i=0; i<m*n; i++) ii[i] = i;
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,m*n,ii,&row);CHKERRQ(ierr);
-    ierr = PetscFree(ii);CHKERRQ(ierr);
-    ierr = ISSetIdentity(row);CHKERRQ(ierr);
-    ierr = ISSetPermutation(row);CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsHasName(PETSC_NULL,"-no_colperm",&flg);CHKERRQ(ierr);
-  if (flg){
-    ierr = ISDestroy(col);CHKERRQ(ierr);
-    ierr = PetscMalloc(m*n*sizeof(PetscInt),&ii);CHKERRQ(ierr);
-    for (i=0; i<m*n; i++) ii[i] = i;
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,m*n,ii,&col);CHKERRQ(ierr);
-    ierr = PetscFree(ii);CHKERRQ(ierr);
-    ierr = ISSetIdentity(col);CHKERRQ(ierr);
-    ierr = ISSetPermutation(col);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_ordering",&matordering);CHKERRQ(ierr);
+  if (matordering){
+    ierr = MatGetOrdering(C,MATORDERING_RCM,&row,&col);CHKERRQ(ierr);
+  } else {
+    ierr = MatGetOrdering(C,MATORDERING_NATURAL,&row,&col);CHKERRQ(ierr);
   }
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-display_matrices",&MATDSPL);CHKERRQ(ierr);
@@ -190,10 +173,25 @@ int main(int argc,char **args)
   if (lf == -1 && norm2 > 1.e-14){
     PetscPrintf(PETSC_COMM_SELF, " reordered SEQAIJ:   Cholesky/ICC levels %d, residual %g\n",lf,norm2);CHKERRQ(ierr);
   }
-  ierr = ISDestroy(row);CHKERRQ(ierr);
-  ierr = ISDestroy(col);CHKERRQ(ierr);
+
+  /* Test in-place ICC(0) and compare it with the out-place ICC(0) */
+  if (!CHOLESKY && lf==0 && !matordering){
+    ierr = MatConvert(C,MATSBAIJ,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
+    ierr = MatICCFactor(A,row,&info);CHKERRQ(ierr);
+    /*
+    printf("In-place factored matrix:\n");
+    ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    */
+    ierr = MatSolve(A,b,y);CHKERRQ(ierr);
+    ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
+    ierr = VecNorm(y,NORM_2,&norm2_inplace);CHKERRQ(ierr);
+    if (PetscAbs(norm2 - norm2_inplace) > 1.e-16) SETERRQ2(PETSC_COMM_SELF,1,"ICC(0) %G and in-place ICC(0) %G give different residuals",norm2,norm2_inplace);
+    ierr = MatDestroy(A);CHKERRQ(ierr);
+  }
 
   /* Free data structures */
+  ierr = ISDestroy(row);CHKERRQ(ierr);
+  ierr = ISDestroy(col);CHKERRQ(ierr);
   ierr = MatDestroy(C);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer1);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer2);CHKERRQ(ierr);

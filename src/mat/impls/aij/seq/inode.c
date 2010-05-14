@@ -1199,6 +1199,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
   PetscInt         inod,nodesz,node_max,col;
   const PetscInt   *ns;
   PetscInt         *tmp_vec1,*tmp_vec2,*nsmap,newshift = 0;
+
   PetscFunctionBegin;
   /* MatPivotSetUp(): initialize shift context sctx */
   ierr = PetscMemzero(&sctx,sizeof(FactorShiftCtx));CHKERRQ(ierr);
@@ -2057,7 +2058,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
           if (idx != row) rs += PetscAbsScalar(pc1[j]);
         }
         sctx.rs  = rs; 
-        ierr = MatLUCheckShift_inline(info,sctx,row,newshift);CHKERRQ(ierr);
+        ierr = MatPivotCheck(info,&sctx,row,&newshift);CHKERRQ(ierr);
         if (newshift == 1) goto endofwhile;
         break;
       
@@ -2119,7 +2120,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
           if (idx != prow) rs += PetscAbsScalar(rtmp11[idx]);
         }
         sctx.rs = rs;  
-        ierr = MatLUCheckShift_inline(info,sctx,row,newshift);CHKERRQ(ierr);
+        ierr = MatPivotCheck(info,&sctx,row,&newshift);CHKERRQ(ierr);
         if (newshift == 1) goto endofwhile;
 
         if (*pc2 != 0.0){
@@ -2151,7 +2152,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
           if (idx != row+1) rs += PetscAbsScalar(pc2[j]);
         }
         sctx.rs = rs;
-        ierr = MatLUCheckShift_inline(info,sctx,row+1,newshift);CHKERRQ(ierr);
+        ierr = MatPivotCheck(info,&sctx,row+1,&newshift);CHKERRQ(ierr);
         if (newshift == 1) goto endofwhile;
         break;
 
@@ -2224,7 +2225,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
           if (idx != row) rs += PetscAbsScalar(rtmp11[idx]);
         }
         sctx.rs = rs;    
-        ierr = MatLUCheckShift_inline(info,sctx,row,newshift);CHKERRQ(ierr);
+        ierr = MatPivotCheck(info,&sctx,row,&newshift);CHKERRQ(ierr);
         if (newshift == 1) goto endofwhile;
 
         if (*pc2 != 0.0 || *pc3 != 0.0){     
@@ -2254,7 +2255,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
           if (idx != prow) rs += PetscAbsScalar(rtmp22[idx]);
         }
         sctx.rs = rs;    
-        ierr = MatLUCheckShift_inline(info,sctx,row+1,newshift);CHKERRQ(ierr);
+        ierr = MatPivotCheck(info,&sctx,row+1,&newshift);CHKERRQ(ierr);
         if (newshift == 1) goto endofwhile;
 
         if (*pc3 != 0.0){
@@ -2290,7 +2291,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
         }
 
         sctx.rs = rs;
-        ierr = MatLUCheckShift_inline(info,sctx,row+2,newshift);CHKERRQ(ierr);
+        ierr = MatPivotCheck(info,&sctx,row+2,&newshift);CHKERRQ(ierr);
         if (newshift == 1) goto endofwhile;
         break;
 

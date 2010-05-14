@@ -398,63 +398,6 @@ typedef struct {
 
 EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatLUCheckShift_inline"
-/*@C
-   MatLUCheckShift_inline - shift the diagonals when zero pivot is detected on LU factor
-
-   Collective on Mat
-
-   Input Parameters:
-+  info - information about the matrix factorization 
-.  sctx - pointer to the struct FactorShiftCtx
--  row  - active row index
-
-   Output  Parameter:
-+  newshift - 0: shift is unchanged; 1: shft is updated; -1: zeropivot  
-
-   Level: developer
-@*/
-#define MatLUCheckShift_inline(info,sctx,row,newshift) 0;\
-{\
-  PetscInt  _newshift;\
-  PetscReal _rs   = sctx.rs;\
-  PetscReal _zero = info->zeropivot*_rs;\
-  if (info->shifttype == (PetscReal)MAT_SHIFT_NONZERO && PetscAbsScalar(sctx.pv) <= _zero){\
-    /* force |diag| > zeropivot*rs */\
-    if (!sctx.nshift){\
-      sctx.shift_amount = info->shiftamount;\
-    } else {\
-      sctx.shift_amount *= 2.0;\
-    }\
-    sctx.useshift = PETSC_TRUE;\
-    (sctx.nshift)++;\
-    _newshift = 1;\
-  } else if (info->shifttype == (PetscReal)MAT_SHIFT_POSITIVE_DEFINITE && PetscRealPart(sctx.pv) <= _zero){\
-    /* force matfactor to be diagonally dominant */\
-    if (sctx.nshift > sctx.nshift_max) {\
-      ierr = MatFactorDumpMatrix(A);CHKERRQ(ierr);\
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"Unable to determine shift to enforce positive definite preconditioner after %d tries",sctx.nshift);\
-    } else if (sctx.nshift == sctx.nshift_max) {\
-      sctx.shift_fraction = sctx.shift_hi;\
-      sctx.useshift        = PETSC_TRUE;\
-    } else {\
-      sctx.shift_lo = sctx.shift_fraction;\
-      sctx.shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;\
-      sctx.useshift  = PETSC_TRUE;\
-    }\
-    sctx.shift_amount = sctx.shift_fraction * sctx.shift_top;\
-    sctx.nshift++;\
-    _newshift = 1;\
-  } else if (PetscAbsScalar(sctx.pv) <= _zero){\
-    ierr = MatFactorDumpMatrix(A);CHKERRQ(ierr);\
-    SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rowsum %G",row,PetscAbsScalar(sctx.pv),_zero,_rs); \
-  } else {\
-    _newshift = 0;\
-  }\
-  newshift = _newshift;\
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "MatPivotCheck_nz"
 PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_nz(const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row,PetscInt *newshift)
@@ -553,65 +496,6 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(const MatFactorInfo *info,Facto
     *newshift_ptr = 0;
   }
   PetscFunctionReturn(0);
-}
-
-/* 
-   Checking zero pivot for Cholesky, ICC preconditioners.
-*/
-typedef struct {
-  PetscInt       nshift;
-  PetscReal      shift_amount;
-  PetscTruth     chshift;
-  PetscReal      rs;  /* active row sum of abs(offdiagonals) */
-  PetscScalar    pv;  /* pivot of the active row */
-} ChShift_Ctx;
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatCholeskyCheckShift_inline"
-/*@C
-   MatCholeskyCheckShift_inline -  shift the diagonals when zero pivot is detected on Cholesky factor
-
-   Collective on Mat
-
-   Input Parameters:
-+  info - information about the matrix factorization 
-.  sctx - pointer to the struct CholeskyShift_Ctx
-.  row  - pivot row
--  newshift - 0: shift is unchanged; 1: shft is updated; -1: zeropivot  
-
-   Level: developer
-   Note: Unlike in the ILU case there is no exit condition on nshift:
-       we increase the shift until it converges. There is no guarantee that
-       this algorithm converges faster or slower, or is better or worse
-       than the ILU algorithm. 
-@*/
-#define MatCholeskyCheckShift_inline(info,sctx,row,newshift) 0;	\
-{\
-  PetscInt  _newshift;\
-  PetscReal _rs   = sctx.rs;\
-  PetscReal _zero = info->zeropivot*_rs;\
-  if (info->shifttype == (PetscReal)MAT_SHIFT_NONZERO && PetscAbsScalar(sctx.pv) <= _zero){\
-    /* force |diag| > zeropivot*sctx.rs */\
-    if (!sctx.nshift){\
-      sctx.shift_amount = info->shiftamount;\
-    } else {\
-      sctx.shift_amount *= 2.0;\
-    }\
-    sctx.chshift = PETSC_TRUE;\
-    sctx.nshift++;\
-    _newshift = 1;\
-  } else if (info->shifttype == (PetscReal)MAT_SHIFT_POSITIVE_DEFINITE && PetscRealPart(sctx.pv) <= _zero){\
-    /* calculate a shift that would make this row diagonally dominant */\
-    sctx.shift_amount = PetscMax(_rs+PetscAbs(PetscRealPart(sctx.pv)),1.1*sctx.shift_amount);\
-    sctx.chshift      = PETSC_TRUE;\
-    sctx.nshift++;\
-    _newshift = 1;\
-  } else if (PetscAbsScalar(sctx.pv) <= _zero){\
-    SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Zero pivot row %D value %G tolerance %G * rowsum %G",row,PetscAbsScalar(sctx.pv),_zero,_rs); \
-  } else {\
-    _newshift = 0; \
-  }\
-  newshift = _newshift;\
 }
 
 /* 
