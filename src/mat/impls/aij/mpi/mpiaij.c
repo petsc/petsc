@@ -4985,7 +4985,7 @@ PetscErrorCode MatMatMult_MPIDense_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal f
 
 EXTERN_C_BEGIN
 #if defined(PETSC_HAVE_MUMPS)
-extern PetscErrorCode MatGetFactor_mpiaij_mumps(Mat,MatFactorType,Mat*);
+extern PetscErrorCode MatGetFactor_aij_mumps(Mat,MatFactorType,Mat*);
 #endif
 #if defined(PETSC_HAVE_PASTIX)
 extern PetscErrorCode MatGetFactor_mpiaij_pastix(Mat,MatFactorType,Mat*);
@@ -5055,8 +5055,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJ(Mat B)
 #endif
 #if defined(PETSC_HAVE_MUMPS)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mumps_C",
-                                     "MatGetFactor_mpiaij_mumps",
-                                     MatGetFactor_mpiaij_mumps);CHKERRQ(ierr);
+                                     "MatGetFactor_aij_mumps",
+                                     MatGetFactor_aij_mumps);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PASTIX)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_pastix_C",
