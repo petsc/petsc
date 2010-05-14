@@ -2251,23 +2251,43 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFact
   PetscInt       *ai=a->i,*aj=a->j;
   PetscInt       k,jmin,jmax,*jl,*il,col,nexti,ili,nz;
   MatScalar      *rtmp,*ba=b->a,*bval,*aa=a->a,dk,uikdi;
-  PetscReal      zeropivot,rs;
-  ChShift_Ctx    sctx;
   PetscInt       newshift;
   PetscTruth     perm_identity;
+  FactorShiftCtx sctx;
+  PetscReal      rs;
+  MatScalar      d,*v;
 
   PetscFunctionBegin;
-  zeropivot = info->zeropivot; 
+  /* MatPivotSetUp(): initialize shift context sctx */
+  ierr = PetscMemzero(&sctx,sizeof(FactorShiftCtx));CHKERRQ(ierr);
+
+  if (info->shifttype == (PetscReal)MAT_SHIFT_POSITIVE_DEFINITE) { /* set sctx.shift_top=max{rs} */
+    sctx.shift_top = info->zeropivot;
+    for (i=0; i<mbs; i++) {
+      /* calculate sum(|aij|)-RealPart(aii), amt of shift needed for this row */
+      d  = (aa)[a->diag[i]];
+      rs = -PetscAbsScalar(d) - PetscRealPart(d);
+      v  = aa+ai[i];
+      nz = ai[i+1] - ai[i];
+      for (j=0; j<nz; j++) 
+	rs += PetscAbsScalar(v[j]);
+      if (rs>sctx.shift_top) sctx.shift_top = rs;
+    }
+    sctx.shift_top   *= 1.1;
+    sctx.nshift_max   = 5;
+    sctx.shift_lo     = 0.;
+    sctx.shift_hi     = 1.;
+  } 
 
   ierr  = ISGetIndices(ip,&rip);CHKERRQ(ierr);
   ierr  = ISGetIndices(iip,&riip);CHKERRQ(ierr);
   
   /* initialization */
   ierr = PetscMalloc3(mbs,MatScalar,&rtmp,mbs,PetscInt,&il,mbs,PetscInt,&jl);CHKERRQ(ierr);
-  sctx.shift_amount = 0;
-  sctx.nshift       = 0;
+  
   do {
-    sctx.chshift = PETSC_FALSE;
+    sctx.useshift = PETSC_FALSE;
+
     for (i=0; i<mbs; i++) jl[i] = mbs; 
     il[0] = 0;
  
@@ -2326,14 +2346,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFact
 
       sctx.rs = rs;
       sctx.pv = dk;
-      ierr = MatCholeskyCheckShift_inline(info,sctx,k,newshift);CHKERRQ(ierr); 
-
-      if (newshift == 1) {
-        if (!sctx.shift_amount) {
-          sctx.shift_amount = 1e-5;
-        }
-        break;
-      }
+      ierr = MatPivotCheck(info,&sctx,k,&newshift);CHKERRQ(ierr);
+      if (newshift == 1) break;
+      dk = sctx.pv;
    
       /* copy data into U(k,:) */
       ba[bi[k]] = 1.0/dk; /* U(k,k) */
@@ -2347,7 +2362,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFact
         i = bj[jmin]; jl[k] = jl[i]; jl[i] = k;
       }        
     } 
-  } while (sctx.chshift);
+  } while (sctx.useshift);
+
   ierr = PetscFree3(rtmp,il,jl);CHKERRQ(ierr);
   ierr = ISRestoreIndices(ip,&rip);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iip,&riip);CHKERRQ(ierr);

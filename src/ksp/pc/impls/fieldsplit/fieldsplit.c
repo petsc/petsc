@@ -8,6 +8,7 @@ typedef struct _PC_FieldSplitLink *PC_FieldSplitLink;
 struct _PC_FieldSplitLink {
   KSP               ksp;
   Vec               x,y;
+  char              *splitname;
   PetscInt          nfields;
   PetscInt          *fields;
   VecScatter        sctx;
@@ -163,8 +164,8 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
   PetscErrorCode    ierr;
   PC_FieldSplitLink ilink = jac->head;
   PetscInt          i = 0,*ifields,nfields;
-  PetscTruth        flg = PETSC_FALSE,*fields,flg2;
-  char              optionname[128];
+  PetscTruth        flg = PETSC_FALSE,flg2;
+  char              optionname[128],splitname[8];
 
   PetscFunctionBegin;
   if (!ilink) { 
@@ -184,36 +185,25 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       flg = PETSC_TRUE; /* switched off automatically if user sets fields manually here */
       ierr = PetscMalloc(jac->bs*sizeof(PetscInt),&ifields);CHKERRQ(ierr);
       while (PETSC_TRUE) {
+        sprintf(splitname,"%d_",(int)i);
         sprintf(optionname,"-pc_fieldsplit_%d_fields",(int)i++);
         nfields = jac->bs;
         ierr    = PetscOptionsGetIntArray(((PetscObject)pc)->prefix,optionname,ifields,&nfields,&flg2);CHKERRQ(ierr);
         if (!flg2) break;
         if (!nfields) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot list zero fields");
         flg = PETSC_FALSE;
-        ierr = PCFieldSplitSetFields(pc,nfields,ifields);CHKERRQ(ierr);
+        ierr = PCFieldSplitSetFields(pc,splitname,nfields,ifields);CHKERRQ(ierr);
       }
       ierr = PetscFree(ifields);CHKERRQ(ierr);
     }
     
     if (flg) {
       ierr = PetscInfo(pc,"Using default splitting of fields\n");CHKERRQ(ierr);
-      ierr = PetscMalloc(jac->bs*sizeof(PetscTruth),&fields);CHKERRQ(ierr);
-      ierr = PetscMemzero(fields,jac->bs*sizeof(PetscTruth));CHKERRQ(ierr);
-      while (ilink) {
-	for (i=0; i<ilink->nfields; i++) {
-	  fields[ilink->fields[i]] = PETSC_TRUE;
-	}
-	ilink = ilink->next;
+      for (i=0; i<jac->bs; i++) {
+        sprintf(splitname,"%d",(int)i);
+        ierr = PCFieldSplitSetFields(pc,splitname,1,&i);CHKERRQ(ierr);
       }
       jac->defaultsplit = PETSC_TRUE;
-      for (i=0; i<jac->bs; i++) {
-	if (!fields[i]) {
-	  ierr = PCFieldSplitSetFields(pc,1,&i);CHKERRQ(ierr);
-	} else {
-	  jac->defaultsplit = PETSC_FALSE;
-	}
-      }
-      ierr = PetscFree(fields);CHKERRQ(ierr);
     }
   } else if (jac->nsplits == 1) {
     if (ilink->is) {
@@ -222,7 +212,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
 
       ierr = MatGetOwnershipRange(pc->mat,&nmin,&nmax);CHKERRQ(ierr);
       ierr = ISComplement(ilink->is,nmin,nmax,&is2);CHKERRQ(ierr);
-      ierr = PCFieldSplitSetIS(pc,is2);CHKERRQ(ierr);
+      ierr = PCFieldSplitSetIS(pc,"1",is2);CHKERRQ(ierr);
       ierr = ISDestroy(is2);CHKERRQ(ierr);
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must provide at least two sets of fields to PCFieldSplit()");
   }
@@ -661,7 +651,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
   PetscErrorCode  ierr;
   PetscInt        i = 0,nfields,*fields,bs;
   PetscTruth      flg;
-  char            optionname[128];
+  char            optionname[128],splitname[8];
   PC_FieldSplit   *jac = (PC_FieldSplit*)pc->data;
   PCCompositeType ctype;
 
@@ -684,12 +674,13 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
        otherwise user can set them in PCFieldSplitSetDefaults() */
     ierr = PetscMalloc(jac->bs*sizeof(PetscInt),&fields);CHKERRQ(ierr);
     while (PETSC_TRUE) {
+      sprintf(splitname,"%d",(int)i);
       sprintf(optionname,"-pc_fieldsplit_%d_fields",(int)i++);
       nfields = jac->bs;
       ierr    = PetscOptionsIntArray(optionname,"Fields in this split","PCFieldSplitSetFields",fields,&nfields,&flg);CHKERRQ(ierr);
       if (!flg) break;
       if (!nfields) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot list zero fields");
-      ierr = PCFieldSplitSetFields(pc,nfields,fields);CHKERRQ(ierr);
+      ierr = PCFieldSplitSetFields(pc,splitname,nfields,fields);CHKERRQ(ierr);
     }
     ierr = PetscFree(fields);CHKERRQ(ierr);
   }
@@ -703,7 +694,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFieldSplitSetFields_FieldSplit"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields_FieldSplit(PC pc,PetscInt n,PetscInt *fields)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields_FieldSplit(PC pc,const char splitname[],PetscInt n,PetscInt *fields)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
@@ -712,12 +703,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields_FieldSplit(PC pc,PetscIn
   PetscInt          i;
 
   PetscFunctionBegin;
-  if (n <= 0) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Negative number of fields requested");
   for (i=0; i<n; i++) {
     if (fields[i] >= jac->bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Field %D requested but only %D exist",fields[i],jac->bs);
     if (fields[i] < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative field %D requested",fields[i]);
   }
   ierr = PetscNew(struct _PC_FieldSplitLink,&ilink);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(splitname,&ilink->splitname);CHKERRQ(ierr);
   ierr = PetscMalloc(n*sizeof(PetscInt),&ilink->fields);CHKERRQ(ierr);
   ierr = PetscMemcpy(ilink->fields,fields,n*sizeof(PetscInt));CHKERRQ(ierr);
   ilink->nfields = n;
@@ -727,9 +718,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields_FieldSplit(PC pc,PetscIn
   ierr           = KSPSetType(ilink->ksp,KSPPREONLY);CHKERRQ(ierr);
 
   if (((PetscObject)pc)->prefix) {
-    sprintf(prefix,"%sfieldsplit_%d_",((PetscObject)pc)->prefix,(int)jac->nsplits);
+    sprintf(prefix,"%sfieldsplit_%s_",((PetscObject)pc)->prefix,splitname);
   } else {
-    sprintf(prefix,"fieldsplit_%d_",(int)jac->nsplits);
+    sprintf(prefix,"fieldsplit_%s_",splitname);
   }
   ierr = KSPSetOptionsPrefix(ilink->ksp,prefix);CHKERRQ(ierr);
 
@@ -790,7 +781,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFieldSplitSetIS_FieldSplit"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetIS_FieldSplit(PC pc,IS is)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetIS_FieldSplit(PC pc,const char splitname[],IS is)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
@@ -799,6 +790,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetIS_FieldSplit(PC pc,IS is)
 
   PetscFunctionBegin;
   ierr = PetscNew(struct _PC_FieldSplitLink,&ilink);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(splitname,&ilink->splitname);CHKERRQ(ierr);
   ilink->is      = is;
   ierr           = PetscObjectReference((PetscObject)is);CHKERRQ(ierr);
   ilink->next    = PETSC_NULL;
@@ -807,9 +799,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetIS_FieldSplit(PC pc,IS is)
   ierr           = KSPSetType(ilink->ksp,KSPPREONLY);CHKERRQ(ierr);
 
   if (((PetscObject)pc)->prefix) {
-    sprintf(prefix,"%sfieldsplit_%d_",((PetscObject)pc)->prefix,(int)jac->nsplits);
+    sprintf(prefix,"%sfieldsplit_%s_",((PetscObject)pc)->prefix,splitname);
   } else {
-    sprintf(prefix,"fieldsplit_%d_",(int)jac->nsplits);
+    sprintf(prefix,"fieldsplit_%s_",splitname);
   }
   ierr = KSPSetOptionsPrefix(ilink->ksp,prefix);CHKERRQ(ierr);
 
@@ -838,8 +830,9 @@ EXTERN_C_END
 
     Input Parameters:
 +   pc  - the preconditioner context
+.   splitname - name of this split
 .   n - the number of fields in this split
-.   fields - the fields in this split
+-   fields - the fields in this split
 
     Level: intermediate
 
@@ -850,18 +843,24 @@ EXTERN_C_END
      0xx3xx6xx9xx12 ... x1xx4xx7xx ... xx2xx5xx8xx.. 01x34x67x... 0x1x3x5x7.. x12x45x78x....
      where the numbered entries indicate what is in the field. 
 
+     This function is called once per split (it creates a new split each time).  Solve options
+     for this split will be available under the prefix -fieldsplit_SPLITNAME_.
+
 .seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetBlockSize(), PCFieldSplitSetIS()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields(PC pc,PetscInt n, PetscInt *fields)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields(PC pc,const char splitname[],PetscInt n, PetscInt *fields)
 {
-  PetscErrorCode ierr,(*f)(PC,PetscInt,PetscInt *);
+  PetscErrorCode ierr,(*f)(PC,const char[],PetscInt,PetscInt *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidCharPointer(splitname,2);
+  if (n < 1) SETERRQ2(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Provided number of fields %D in split \"%s\" not positive",n,splitname);
+  PetscValidIntPointer(fields,3);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFieldSplitSetFields_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
-    ierr = (*f)(pc,n,fields);CHKERRQ(ierr);
+    ierr = (*f)(pc,splitname,n,fields);CHKERRQ(ierr);
   } 
   PetscFunctionReturn(0);
 }
@@ -875,29 +874,32 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields(PC pc,PetscInt n, PetscI
 
     Input Parameters:
 +   pc  - the preconditioner context
-.   is - the index set that defines the vector elements in this field
+.   splitname - name of this split
+-   is - the index set that defines the vector elements in this field
 
 
     Notes:
     Use PCFieldSplitSetFields(), for fields defined by strided types.
 
-    This function is called once per split (it creates a new split each time).
+    This function is called once per split (it creates a new split each time).  Solve options
+    for this split will be available under the prefix -fieldsplit_SPLITNAME_.
 
     Level: intermediate
 
 .seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetBlockSize()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetIS(PC pc,IS is)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetIS(PC pc,const char splitname[],IS is)
 {
-  PetscErrorCode ierr,(*f)(PC,IS);
+  PetscErrorCode ierr,(*f)(PC,const char[],IS);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  PetscValidCharPointer(splitname,2);
+  PetscValidHeaderSpecific(is,IS_CLASSID,3);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFieldSplitSetIS_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
-    ierr = (*f)(pc,is);CHKERRQ(ierr);
+    ierr = (*f)(pc,splitname,is);CHKERRQ(ierr);
   } 
   PetscFunctionReturn(0);
 }

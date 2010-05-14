@@ -64,7 +64,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrToArray(const char s[],int *argc,char ***
   }
 
   for (i=0; i<*argc; i++) {
-    (*args)[i] = malloc((lens[i]+1)*sizeof(char)); if (!(*args)[i]) return PETSC_ERR_MEM;
+    (*args)[i] = (char*) malloc((lens[i]+1)*sizeof(char)); if (!(*args)[i]) return PETSC_ERR_MEM;
   }
   (*args)[*argc] = 0;
 

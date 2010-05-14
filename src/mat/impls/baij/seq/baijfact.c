@@ -559,7 +559,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat C,Mat A,const MatFactorInf
   PetscInt       k,jmin,jmax,*jl,*il,col,nexti,ili,nz;
   MatScalar      *rtmp,*ba=b->a,*bval,*aa=a->a,dk,uikdi;
   PetscReal      zeropivot,rs;
-  ChShift_Ctx    sctx;
+  FactorShiftCtx sctx;
   PetscInt       newshift;
 
   PetscFunctionBegin;
@@ -582,7 +582,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat C,Mat A,const MatFactorInf
   sctx.shift_amount = 0.;
   sctx.nshift       = 0;
   do {
-    sctx.chshift = PETSC_FALSE;
+    sctx.useshift = PETSC_FALSE;
     for (i=0; i<mbs; i++) {
       rtmp[i] = 0.0; jl[i] = mbs; il[0] = 0;
     } 
@@ -641,8 +641,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat C,Mat A,const MatFactorInf
 
       sctx.rs = rs;
       sctx.pv = dk;
-      ierr = MatCholeskyCheckShift_inline(info,sctx,k,newshift);CHKERRQ(ierr); 
+      ierr = MatPivotCheck(info,&sctx,k,&newshift);CHKERRQ(ierr);
       if (newshift == 1) break;    
+      dk = sctx.pv;
 
       /* copy data into U(k,:) */
       ba[bi[k]] = 1.0/dk; /* U(k,k) */
@@ -656,7 +657,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat C,Mat A,const MatFactorInf
         i = bj[jmin]; jl[k] = jl[i]; jl[i] = k;
       }        
     } 
-  } while (sctx.chshift);
+  } while (sctx.useshift);
   ierr = PetscFree3(rtmp,il,jl);CHKERRQ(ierr);
 
   ierr = ISRestoreIndices(ip,&rip);CHKERRQ(ierr);
@@ -684,20 +685,18 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat C,Mat A,co
   PetscInt       *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
   PetscInt       k,jmin,*jl,*il,nexti,ili,*acol,*bcol,nz;
   MatScalar      *rtmp,*ba=b->a,*aa=a->a,dk,uikdi,*aval,*bval;
-  PetscReal      zeropivot,rs;
-  ChShift_Ctx    sctx;
+  PetscReal      rs;
+  FactorShiftCtx sctx;
   PetscInt       newshift;
 
   PetscFunctionBegin;
-  /* initialization */
-  zeropivot = info->zeropivot;
-
+  /* MatPivotSetUp(): initialize shift context sctx */
+  ierr = PetscMemzero(&sctx,sizeof(FactorShiftCtx));CHKERRQ(ierr);
+ 
   ierr = PetscMalloc3(am,MatScalar,&rtmp,am,PetscInt,&il,am,PetscInt,&jl);CHKERRQ(ierr);
 
-  sctx.shift_amount = 0.;
-  sctx.nshift       = 0;
   do {
-    sctx.chshift = PETSC_FALSE;
+    sctx.useshift = PETSC_FALSE;
     for (i=0; i<am; i++) {
       rtmp[i] = 0.0; jl[i] = am; il[0] = 0;
     }
@@ -761,8 +760,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat C,Mat A,co
 
       sctx.rs = rs;
       sctx.pv = dk;
-      ierr = MatCholeskyCheckShift_inline(info,sctx,k,newshift);CHKERRQ(ierr); 
+      ierr = MatPivotCheck(info,&sctx,k,&newshift);CHKERRQ(ierr);
       if (newshift == 1) break;    /* sctx.shift_amount is updated */
+      dk = sctx.pv;
 
       /* copy data into U(k,:) */
       ba[bi[k]] = 1.0/dk;
@@ -780,7 +780,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat C,Mat A,co
         i = bj[jmin]; jl[k] = jl[i]; jl[i] = k;
       }        
     } 
-  } while (sctx.chshift);
+  } while (sctx.useshift);
   ierr = PetscFree3(rtmp,il,jl);CHKERRQ(ierr);
   
   C->ops->solve                 = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;  
