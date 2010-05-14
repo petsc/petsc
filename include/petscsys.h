@@ -38,18 +38,14 @@
     src/docs/website/index.html.
 */
 #include "petscversion.h"
-#define PETSC_AUTHOR_INFO        "\
-       The PETSc Team\n\
-    petsc-maint@mcs.anl.gov\n\
- http://www.mcs.anl.gov/petsc/\n"
+#define PETSC_AUTHOR_INFO        "       The PETSc Team\n    petsc-maint@mcs.anl.gov\n http://www.mcs.anl.gov/petsc/\n"
 #if (PETSC_VERSION_RELEASE == 1)
-#define PetscGetVersion(version,len) (PetscSNPrintf(version,len,"Petsc Release Version %d.%d.%d, Patch %d, ", \
+#define PetscGetVersion(version,len) PetscSNPrintf(version,len,"Petsc Release Version %d.%d.%d, Patch %d, %s ", \
                                          PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR, \
-                                         PETSC_VERSION_PATCH),PetscStrcat(version,PETSC_VERSION_PATCH_DATE))
+					 PETSC_VERSION_PATCH,PETSC_VERSION_PATCH_DATE)
 #else
-#define PetscGetVersion(version,len) (PetscSNPrintf(version,len,"Petsc Development"), \
-                                         PetscStrcat(version," HG revision: "),PetscStrcat(version,PETSC_VERSION_HG), \
-                                         PetscStrcat(version," HG Date: "),PetscStrcat(version,PETSC_VERSION_DATE_HG))
+#define PetscGetVersion(version,len) PetscSNPrintf(version,len,"Petsc Development HG revision: %s  HG Date: %s", \
+                                        PETSC_VERSION_HG, PETSC_VERSION_DATE_HG)
 #endif
 
 /*MC
@@ -1215,6 +1211,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscMemmove(void*,void *,size_t);
 EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscMemcmp(const void*,const void*,size_t,PetscTruth *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscStrlen(const char[],size_t*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscStrToArray(const char[],int*,char ***);
+EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscStrToArrayDestroy(int,char **);
 EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscStrcmp(const char[],const char[],PetscTruth *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscStrgrt(const char[],const char[],PetscTruth *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscStrcasecmp(const char[],const char[],PetscTruth*);

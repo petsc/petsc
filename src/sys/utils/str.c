@@ -29,9 +29,11 @@
 
    Level: intermediate
 
-   Notes: this may be called before PetscInitialize()
+   Notes: this may be called before PetscInitialize() or after PetscFinalize()
 
-   Developer Notes: Using raw malloc()
+   Developer Notes: Using raw malloc() since this may be used before PETSc is initialized
+
+.seealso: PetscStrToArrayDestroy()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscStrToArray(const char s[],int *argc,char ***args)
@@ -48,8 +50,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrToArray(const char s[],int *argc,char ***
     if ((s[i] == ' ' || s[i] == 0) && !flg) {flg = PETSC_TRUE; (*argc)++;}
     else if (s[i] != ' ') {flg = PETSC_FALSE;}
   }
-  (*args) = (char **) malloc((*argc)*sizeof(char**)); if (!*args) return PETSC_ERR_MEM;
-  lens    = (int*) malloc((*argc)*sizeof(int)); if (!lens) return PETSC_ERR_MEM;
+  (*args) = (char **) malloc(((*argc)+1)*sizeof(char**)); if (!*args) return PETSC_ERR_MEM;
+  lens  = malloc((*argc)*sizeof(int)); if (!lens) return PETSC_ERR_MEM;
   for (i=0; i<*argc; i++) lens[i] = 0;
 
   *argc = 0;
@@ -64,6 +66,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrToArray(const char s[],int *argc,char ***
   for (i=0; i<*argc; i++) {
     (*args)[i] = (char*) malloc((lens[i]+1)*sizeof(char)); if (!(*args)[i]) return PETSC_ERR_MEM;
   }
+  (*args)[*argc] = 0;
 
   *argc = 0;
   for (i=0; i<n; i++) {
@@ -71,8 +74,39 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrToArray(const char s[],int *argc,char ***
   }
   for (;i<n+1; i++) {
     if ((s[i] == ' ' || s[i] == 0) && !flg) {flg = PETSC_TRUE; (*args)[*argc][cnt++] = 0; (*argc)++; cnt = 0;}
-    else if (s[i] != ' ') {(*args)[*argc][cnt++] = s[i]; flg = PETSC_FALSE;}
+    else if (s[i] != ' ' && s[i] != 0) {(*args)[*argc][cnt++] = s[i]; flg = PETSC_FALSE;}
   }
+  return 0;
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStrToArrayDestroy"
+/*@C
+   PetscStrToArrayDestroy - Frees array created with PetscStrToArray().
+
+   Not Collective
+
+   Output Parameters:
++  argc - the number of arguments
+-  args - the array of arguments
+
+   Level: intermediate
+
+   Concepts: command line arguments
+   
+   Notes: This may be called before PetscInitialize() or after PetscFinalize()
+
+.seealso: PetscStrToArray()
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscStrToArrayDestroy(int argc,char **args)
+{
+  PetscInt i;
+
+  for (i=0; i<argc; i++) {
+    free(args[i]);
+  }
+  free(args);
   return 0;
 }
 
