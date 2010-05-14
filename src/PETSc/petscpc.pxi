@@ -49,6 +49,13 @@ cdef extern from "petscpc.h" nogil:
         PC_ASM_INTERPOLATE
         PC_ASM_NONE
 
+    ctypedef enum PetscPCCompositeType "PCCompositeType":
+        PC_COMPOSITE_ADDITIVE
+        PC_COMPOSITE_MULTIPLICATIVE
+        PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE
+        PC_COMPOSITE_SPECIAL
+        PC_COMPOSITE_SCHUR
+
     int PCCreate(MPI_Comm,PetscPC*)
     int PCDestroy(PetscPC)
     int PCView(PetscPC,PetscViewer)
@@ -85,6 +92,19 @@ cdef extern from "petscpc.h" nogil:
     int PCDiagonalScaleLeft(PetscPC,PetscVec,PetscVec)
     int PCDiagonalScaleRight(PetscPC,PetscVec,PetscVec)
     int PCDiagonalScaleSet(PetscPC,PetscVec)
+
+    int PCASMSetType(PetscPC,PetscPCASMType)
+    int PCASMSetOverlap(PetscPC,PetscInt)
+    #int PCASMSetLocalSubdomains(PetscPC,PetscInt,PetscIS[],PetscIS[]);
+    #int PCASMSetTotalSubdomains(PetscPC,PetscInt,PetscIS[],PetscIS[]);
+
+    int PCFieldSplitSetType(PetscPC,PetscPCCompositeType)
+    int PCFieldSplitSetBlockSize(PetscPC,PetscInt)
+    int PCFieldSplitSetFields(PetscPC,PetscInt,PetscInt*)
+    int PCFieldSplitSetIS(PetscPC,PetscIS)
+    int PCFieldSplitGetSubKSP(PetscPC,PetscInt*,PetscKSP*[])
+    #int PCFieldSplitSchurPrecondition(PetscPC,PCFieldSplitSchurPreType,PetscMat)
+    #int PCFieldSplitGetSchurBlocks(PetscPC,PetscMat*,PetscMat*,PetscMat*,PetscMat*)
 
 # --------------------------------------------------------------------
 
