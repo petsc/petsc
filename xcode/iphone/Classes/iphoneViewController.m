@@ -68,39 +68,45 @@
 
 UITextView *globalTextView;
 
+/*
+   This is called by PETSc for all print calls.
+
+   Simply addeds to the NSString in globalTextView and it gets displayed in the UITextView in the display
+*/
 PetscErrorCode PetscVFPrintfiPhone(FILE *fd,const char *format,va_list Argp)
 {
   int len;
   char str[1024];
   
   PetscVSNPrintf(str,1024,format,&len,Argp);
-  NSLog(@"%s",str);
   globalTextView.text = [NSString stringWithFormat:@"%@%s", globalTextView.text,str];
-  
   return 0;
 }
 
+/*
+    This is called each time one hits return in the TextField.
+
+    Converts the string to a collection of arguments that are then passed on to PETSc
+*/
 - (BOOL) textFieldShouldReturn: (UITextField*) theTextField {
-  [theTextField resignFirstResponder];
-  globalTextView = textView;
-  char **args;
-  int argc;
-  // Override point for customization after app launch    
+  [theTextField resignFirstResponder]; /* makes the keyboard disappear */
+  textView.text = @"";   /* clears the UITextView */
+  globalTextView = textView;   /* we make this class member a global so in PetscVFPrintfiPhone() */
+  textView.font = [UIFont systemFontOfSize: 10.0f]; /* make the font size in the UITextView a more reasonable size */
  
   const char *str = [textField.text UTF8String];
+  char **args;
+  int argc;
   PetscErrorCode ierr = PetscStrToArray(str,&argc,&args);
-textView.text = @"";
-  textView.font = [UIFont systemFontOfSize: 10.0f];
 
   ierr = PetscInitialize(&argc,&args,0,0); 
   if (ierr) {
-    NSLog(@"Failed to initialize, likely command line mistake");
+    textView.text =@"Failed to initialize PETSc, likely command line mistake";
     return YES;
   }
   ierr = PetscFinalize();
   ierr = PetscStrToArrayDestroy(argc,args);
-  
-    return YES;
+  return YES;
 }
 
 @end
