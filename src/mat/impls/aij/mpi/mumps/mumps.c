@@ -76,8 +76,7 @@ PetscErrorCode MatConvertToTriples_seqaij_seqaij(Mat A,int shift,MatReuse reuse,
   if (reuse == MAT_INITIAL_MATRIX){
     nz = aa->nz; ai = aa->i; aj = aa->j;
     *nnz = nz;
-    ierr = PetscMalloc(nz*sizeof(PetscInt), &row);CHKERRQ(ierr);
-    ierr = PetscMalloc(nz*sizeof(PetscInt), &col);CHKERRQ(ierr);
+    ierr = PetscMalloc2(nz,PetscInt, &row,nz,PetscInt,&col);CHKERRQ(ierr);
     nz = 0;
     for(i=0; i<M; i++) {
       rnz = ai[i+1] - ai[i];
@@ -97,51 +96,32 @@ PetscErrorCode MatConvertToTriples_seqbaij_seqaij(Mat A,int shift,MatReuse reuse
 {
   Mat_SeqBAIJ        *aa=(Mat_SeqBAIJ*)A->data;
   const PetscInt     *ai,*aj,*ajj,bs=A->rmap->bs,bs2=aa->bs2,M=A->rmap->N/bs;
-  const PetscScalar  *av,*v1;
-  PetscScalar        *val;
   PetscInt           nz,idx=0,rnz,i,j,k,m,ii;
   PetscErrorCode     ierr;
   PetscInt           *row,*col;
 
   PetscFunctionBegin;
-  ai = aa->i; aj = aa->j; av = aa->a;
+  *v = aa->a;
   if (reuse == MAT_INITIAL_MATRIX){
+    ai = aa->i; aj = aa->j;
     nz = bs2*aa->nz;
     *nnz = nz;
-    ierr = PetscMalloc(nz*sizeof(PetscInt), &row);CHKERRQ(ierr);
-    ierr = PetscMalloc(nz*sizeof(PetscInt), &col);CHKERRQ(ierr);
-    ierr = PetscMalloc(nz*sizeof(PetscScalar),&val);CHKERRQ(ierr);
+    ierr = PetscMalloc2(nz,PetscInt, &row,nz,PetscInt,&col);CHKERRQ(ierr);
     for(i=0; i<M; i++) {
       ii = 0;
       ajj = aj + ai[i];
-      v1  = av + bs2*ai[i];
       rnz = ai[i+1] - ai[i];
       for(k=0; k<rnz; k++) {
 	for(j=0; j<bs; j++) {
 	  for(m=0; m<bs; m++) {
-	    row[idx]   = i*bs + m + shift;
-	    col[idx]   = bs*(ajj[k]) + j + shift;
-	    val[idx++] = v1[ii++];
-	  }
-	}
-      }
-    } 
-    *r = row; *c = col; *v = val;
-  } else {
-    row = *r; col = *c; val = *v;
-    for(i=0; i<M; i++) {
-      ii = 0;
-      v1   = av + bs2*ai[i];
-      rnz  = ai[i+1] - ai[i];
-      for(k=0; k<rnz; k++){
-	for(j=0; j<bs; j++) {
-	  for(m=0; m<bs; m++) {
-	    val[idx++] = v1[ii++];
+	    row[idx]     = i*bs + m + shift;
+	    col[idx++]   = bs*(ajj[k]) + j + shift;
 	  }
 	}
       }
     }
-  } 
+    *r = row; *c = col;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -159,8 +139,7 @@ PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A,int shift,MatReuse re
   if (reuse == MAT_INITIAL_MATRIX){ 
     nz = aa->nz;ai=aa->i; aj=aa->j;*v=aa->a;
     *nnz = nz;
-    ierr = PetscMalloc(nz*sizeof(PetscInt), &row);CHKERRQ(ierr);
-    ierr = PetscMalloc(nz*sizeof(PetscInt), &col);CHKERRQ(ierr);
+    ierr = PetscMalloc2(nz,PetscInt, &row,nz,PetscInt,&col);CHKERRQ(ierr);
     nz = 0;
     for(i=0; i<M; i++) {
       rnz = ai[i+1] - ai[i];
@@ -192,13 +171,12 @@ PetscErrorCode MatConvertToTriples_seqaij_seqsbaij(Mat A,int shift,MatReuse reus
   if (reuse == MAT_INITIAL_MATRIX){
     nz = M + (aa->nz-M)/2;
     *nnz = nz;
-    ierr = PetscMalloc(nz*sizeof(PetscInt), &row);CHKERRQ(ierr);
-    ierr = PetscMalloc(nz*sizeof(PetscInt), &col);CHKERRQ(ierr);
-    ierr = PetscMalloc(nz*sizeof(PetscScalar), &val);CHKERRQ(ierr);
+    ierr = PetscMalloc3(nz,PetscInt, &row,nz,PetscInt,&col,nz,PetscScalar,&val);CHKERRQ(ierr);
     nz = 0;
     for(i=0; i<M; i++) {
       rnz = ai[i+1] - adiag[i];
       ajj  = aj + adiag[i];
+      v1   = av + adiag[i];
       for(j=0; j<rnz; j++) {
 	row[nz] = i+shift; col[nz] = ajj[j] + shift; val[nz++] = v1[j];
       }
@@ -240,9 +218,7 @@ PetscErrorCode MatConvertToTriples_mpisbaij_mpisbaij(Mat A,int shift,MatReuse re
   if (reuse == MAT_INITIAL_MATRIX){
     nz = aa->nz + bb->nz;
     *nnz = nz;
-    ierr = PetscMalloc(nz*sizeof(PetscInt) ,&row);CHKERRQ(ierr);
-    ierr = PetscMalloc(nz*sizeof(PetscInt),&col);CHKERRQ(ierr);
-    ierr = PetscMalloc(nz*sizeof(PetscScalar),&val);CHKERRQ(ierr);
+    ierr = PetscMalloc3(nz,PetscInt, &row,nz,PetscInt,&col,nz,PetscScalar,&val);CHKERRQ(ierr);
     *r = row; *c = col; *v = val;
   } else {
     row = *r; col = *c; val = *v; 
@@ -299,9 +275,7 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpiaij(Mat A,int shift,MatReuse reuse,
   if (reuse == MAT_INITIAL_MATRIX){
     nz = aa->nz + bb->nz;
     *nnz = nz;
-    ierr = PetscMalloc(nz*sizeof(PetscInt) ,&row);CHKERRQ(ierr);
-    ierr = PetscMalloc(nz*sizeof(PetscInt),&col);CHKERRQ(ierr);
-    ierr = PetscMalloc(nz*sizeof(PetscScalar),&val);CHKERRQ(ierr);
+    ierr = PetscMalloc3(nz,PetscInt, &row,nz,PetscInt,&col,nz,PetscScalar,&val);CHKERRQ(ierr);
     *r = row; *c = col; *v = val;
   } else {
     row = *r; col = *c; val = *v; 
@@ -357,9 +331,7 @@ PetscErrorCode MatConvertToTriples_mpibaij_mpiaij(Mat A,int shift,MatReuse reuse
   if (reuse == MAT_INITIAL_MATRIX) {
     nz = bs2*(aa->nz + bb->nz);
     *nnz = nz;
-    ierr = PetscMalloc(nz*sizeof(PetscInt) ,&row);CHKERRQ(ierr);
-    ierr = PetscMalloc(nz*sizeof(PetscInt),&col);CHKERRQ(ierr);
-    ierr = PetscMalloc(nz*sizeof(PetscScalar),&val);CHKERRQ(ierr);
+    ierr = PetscMalloc3(nz,PetscInt, &row,nz,PetscInt,&col,nz,PetscScalar,&val);CHKERRQ(ierr);
     *r = row; *c = col; *v = val;
   } else {
     row = *r; col = *c; val = *v; 
@@ -442,9 +414,7 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpisbaij(Mat A,int shift,MatReuse reus
     /* Total nz = nz for the upper triangular A part + nz for the 2nd B part */
     nz = nza + (bb->nz - nzb_low); 
     *nnz = nz;
-    ierr = PetscMalloc(nz*sizeof(PetscInt) ,&row);CHKERRQ(ierr);
-    ierr = PetscMalloc(nz*sizeof(PetscInt),&col);CHKERRQ(ierr);
-    ierr = PetscMalloc(nz*sizeof(PetscScalar),&val);CHKERRQ(ierr);
+    ierr = PetscMalloc3(nz,PetscInt, &row,nz,PetscInt,&col,nz,PetscScalar,&val);CHKERRQ(ierr);
     *r = row; *c = col; *v = val;
   } else {
     row = *r; col = *c; val = *v; 
@@ -488,11 +458,8 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   Mat_MUMPS      *lu=(Mat_MUMPS*)A->spptr; 
   PetscErrorCode ierr;
   PetscMPIInt    size=lu->size;
-  PetscTruth     isSeqBAIJ,isMPIBAIJ;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)A,MATSEQBAIJ,&isSeqBAIJ);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)A,MATMPIBAIJ,&isMPIBAIJ);CHKERRQ(ierr);
   if (lu->CleanUpMUMPS) {
     /* Terminate instance, deallocate memories */
     if (size > 1){
@@ -504,9 +471,6 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
       ierr = PetscFree(lu->val);CHKERRQ(ierr);
     } 
     if( size == 1 && A->factortype == MAT_FACTOR_CHOLESKY && lu->isAIJ) {
-      ierr = PetscFree(lu->val);CHKERRQ(ierr);
-    }
-    if(isSeqBAIJ || isMPIBAIJ) {
       ierr = PetscFree(lu->val);CHKERRQ(ierr);
     }
     lu->id.job=JOB_END; 
