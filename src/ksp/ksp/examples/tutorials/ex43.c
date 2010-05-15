@@ -394,7 +394,7 @@ static PetscErrorCode DAViewGnuplot2d(DA da,Vec fields,const char comment[],cons
   Vec            coords,local_fields;
   DACoor2d       **_coords;
   FILE           *fp;
-  char           fname[PETSC_MAX_PATH_LEN],*field_name;
+  char           fname[PETSC_MAX_PATH_LEN];
   PetscMPIInt    rank;
   PetscInt       si,sj,nx,ny,i,j;
   PetscInt       n_dofs,d;
@@ -411,6 +411,7 @@ static PetscErrorCode DAViewGnuplot2d(DA da,Vec fields,const char comment[],cons
   ierr = DAGetInfo(da,0,0,0,0,0,0,0,&n_dofs,0,0,0);CHKERRQ(ierr);
   ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"### x y ");CHKERRQ(ierr);
   for (d = 0; d < n_dofs; d++) {
+    const char *field_name;
     ierr = DAGetFieldName(da,d,&field_name);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%s ",field_name);CHKERRQ(ierr);
   }
@@ -462,7 +463,7 @@ static PetscErrorCode DAViewCoefficientsGnuplot2d(DA da,Vec fields,const char co
   DA                     cda;
   Vec                    local_fields;
   FILE                   *fp;
-  char                   fname[PETSC_MAX_PATH_LEN],*field_name;
+  char                   fname[PETSC_MAX_PATH_LEN];
   PetscMPIInt            rank;
   PetscInt               si,sj,nx,ny,i,j,p;
   PetscInt               n_dofs,d;
@@ -479,6 +480,7 @@ static PetscErrorCode DAViewCoefficientsGnuplot2d(DA da,Vec fields,const char co
   ierr = DAGetInfo(da,0,0,0,0,0,0,0,&n_dofs,0,0,0);CHKERRQ(ierr);
   ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"### x y ");CHKERRQ(ierr);
   for (d = 0; d < n_dofs; d++) {
+    const char *field_name;
     ierr = DAGetFieldName(da,d,&field_name);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%s ",field_name);CHKERRQ(ierr);
   }

@@ -167,7 +167,7 @@ PetscErrorCode PetscViewerBinaryMatlabOutputVecDA(PetscViewer viewer, const char
 {
   MPI_Comm       comm;
   FILE          *info;
-  char          *fieldname;
+  const char    *fieldname;
   PetscInt       dim,ni,nj,nk,pi,pj,pk,dof,n;
   PetscTruth     flg;
   PetscErrorCode ierr;
