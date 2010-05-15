@@ -694,7 +694,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFieldSplitSetFields_FieldSplit"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields_FieldSplit(PC pc,const char splitname[],PetscInt n,PetscInt *fields)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields_FieldSplit(PC pc,const char splitname[],PetscInt n,const PetscInt *fields)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
@@ -849,9 +849,9 @@ EXTERN_C_END
 .seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetBlockSize(), PCFieldSplitSetIS()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields(PC pc,const char splitname[],PetscInt n, PetscInt *fields)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields(PC pc,const char splitname[],PetscInt n,const PetscInt *fields)
 {
-  PetscErrorCode ierr,(*f)(PC,const char[],PetscInt,PetscInt *);
+  PetscErrorCode ierr,(*f)(PC,const char[],PetscInt,const PetscInt *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);

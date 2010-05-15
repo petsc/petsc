@@ -1465,6 +1465,13 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   ierr = KSPSetOptionsPrefix(ksp_S,"stokes_"); /* stokes */ CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp_S,A,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp_S);CHKERRQ(ierr);
+  {
+    PC pc;
+    const PetscInt ufields[] = {0,1},pfields[1] = {2};
+    ierr = KSPGetPC(ksp_S,&pc);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetFields(pc,"u",2,ufields);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetFields(pc,"p",1,pfields);CHKERRQ(ierr);
+  }
 
   ierr = KSPSolve(ksp_S,f,X);CHKERRQ(ierr);
   ierr = DAViewGnuplot2d(da_Stokes,X,"Velocity solution for Stokes eqn.","X");CHKERRQ(ierr);
