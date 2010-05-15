@@ -76,10 +76,19 @@ cdef class IS(Object):
         CHKERR( ISGetType(self.iset, &istype) )
         return istype
 
-    def duplicate(self):
+    def duplicate(self, copy=False):
         cdef IS iset = IS()
         CHKERR( ISDuplicate(self.iset, &iset.iset) )
+        if copy: CHKERR( ISCopy(self.iset, iset.iset) )
         return iset
+
+    def copy(self, IS result=None):
+        if result is None:
+            result = IS()
+        if result.iset == NULL:
+            CHKERR( ISDuplicate(self.iset, &result.iset) )
+        CHKERR( ISCopy(self.iset, result.iset) )
+        return result
 
     def allGather(self):
         cdef IS iset = IS()
@@ -217,6 +226,14 @@ cdef class IS(Object):
         cdef IS out = IS()
         CHKERR( ISDifference(self.iset, iset.iset, &out.iset) )
         return out
+
+    def complement(self, nmin, nmax):
+        cdef PetscInt ival1 = asInt(nmin)
+        cdef PetscInt ival2 = asInt(nmax)
+        cdef IS out = IS()
+        CHKERR( ISComplement(self.iset, ival1, ival2, &out.iset) )
+        return out
+
     #
 
     property sizes:
