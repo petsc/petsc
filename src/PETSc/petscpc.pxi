@@ -95,8 +95,8 @@ cdef extern from "petscpc.h" nogil:
 
     int PCASMSetType(PetscPC,PetscPCASMType)
     int PCASMSetOverlap(PetscPC,PetscInt)
-    #int PCASMSetLocalSubdomains(PetscPC,PetscInt,PetscIS[],PetscIS[]);
-    #int PCASMSetTotalSubdomains(PetscPC,PetscInt,PetscIS[],PetscIS[]);
+    int PCASMSetLocalSubdomains(PetscPC,PetscInt,PetscIS[],PetscIS[])
+    int PCASMSetTotalSubdomains(PetscPC,PetscInt,PetscIS[],PetscIS[])
 
     int PCFieldSplitSetType(PetscPC,PetscPCCompositeType)
     int PCFieldSplitSetBlockSize(PetscPC,PetscInt)

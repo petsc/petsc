@@ -193,13 +193,13 @@ cdef class PC(Object):
         cdef PetscInt ival = asInt(overlap)
         CHKERR( PCASMSetOverlap(self.pc, ival) )
 
-    ##def setASMLocalSubdomains(self, ):
-    ##    cdef PetscInt n = 0
-    ##    CHKERR( PCASMSetLocalSubdomains(self.pc, n) )
+    def setASMLocalSubdomains(self, nsd):
+        cdef PetscInt n = asInt(nsd)
+        CHKERR( PCASMSetLocalSubdomains(self.pc, n, NULL, NULL) )
 
-    ##def setASMTotalSubdomains(self, ):
-    ##    cdef PetscInt N = 0
-    ##    CHKERR( PCASMSetTotalSubdomains(self.pc, N, ) )
+    def setASMTotalSubdomains(self, nsd):
+        cdef PetscInt N = asInt(nsd)
+        CHKERR( PCASMSetTotalSubdomains(self.pc, N, NULL, NULL) )
 
     # FieldSplit
     # ----------
