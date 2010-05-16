@@ -270,7 +270,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetFieldName(DA da,PetscInt nf,const char nam
 
 .seealso: DASetFieldName()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetFieldName(DA da,PetscInt nf,char **name)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetFieldName(DA da,PetscInt nf,const char **name)
 {
   PetscFunctionBegin;
  

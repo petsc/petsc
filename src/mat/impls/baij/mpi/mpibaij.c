@@ -2905,7 +2905,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #if defined(PETSC_HAVE_MUMPS)
-extern PetscErrorCode MatGetFactor_mpibaij_mumps(Mat,MatFactorType,Mat*);
+extern PetscErrorCode MatGetFactor_baij_mumps(Mat,MatFactorType,Mat*);
 #endif
 EXTERN_C_END
 
@@ -2988,7 +2988,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIBAIJ(Mat B)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_MUMPS)
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mumps_C", "MatGetFactor_mpibaij_mumps",MatGetFactor_mpibaij_mumps);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mumps_C", "MatGetFactor_baij_mumps",MatGetFactor_baij_mumps);CHKERRQ(ierr);
 #endif
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpibaij_mpiadj_C",
                                      "MatConvert_MPIBAIJ_MPIAdj",

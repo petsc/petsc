@@ -19,6 +19,7 @@ struct _PC_FieldSplitLink {
 typedef struct {
   PCCompositeType   type;
   PetscTruth        defaultsplit; /* Flag for a system with a set of 'k' scalar fields with the same layout (and bs = k) */
+  PetscTruth        splitdefined; /* Flag is set after the splits have been defined, to prevent more splits from being added */
   PetscTruth        realdiagonal; /* Flag to use the diagonal blocks of mat preconditioned by pmat, instead of just pmat */
   PetscInt          bs;           /* Block size for IS and Mat structures */
   PetscInt          nsplits;      /* Number of field divisions defined */
@@ -157,15 +158,46 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PCFieldSplitSetRuntimeSplits_Private"
+/* Precondition: jac->bs is set to a meaningful value */
+static PetscErrorCode PCFieldSplitSetRuntimeSplits_Private(PC pc)
+{
+  PetscErrorCode ierr;
+  PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
+  PetscInt       i,nfields,*ifields;
+  PetscTruth     flg;
+  char           optionname[128],splitname[8];
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc(jac->bs*sizeof(PetscInt),&ifields);CHKERRQ(ierr);
+  for (i=0,flg=PETSC_TRUE; ; i++) {
+    ierr = PetscSNPrintf(splitname,sizeof splitname,"%D",i);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(optionname,sizeof optionname,"-pc_fieldsplit_%D_fields",i);CHKERRQ(ierr);
+    nfields = jac->bs;
+    ierr    = PetscOptionsGetIntArray(((PetscObject)pc)->prefix,optionname,ifields,&nfields,&flg);CHKERRQ(ierr);
+    if (!flg) break;
+    if (!nfields) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot list zero fields");
+    ierr = PCFieldSplitSetFields(pc,splitname,nfields,ifields);CHKERRQ(ierr);
+  }
+  if (i > 0) {
+    /* Makes command-line setting of splits take precedence over setting them in code.
+       Otherwise subsequent calls to PCFieldSplitSetIS() or PCFieldSplitSetFields() would
+       create new splits, which would probably not be what the user wanted. */
+    jac->splitdefined = PETSC_TRUE;
+  }
+  ierr = PetscFree(ifields);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCFieldSplitSetDefaults"
 static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
 {
   PC_FieldSplit     *jac  = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
   PC_FieldSplitLink ilink = jac->head;
-  PetscInt          i = 0,*ifields,nfields;
-  PetscTruth        flg = PETSC_FALSE,flg2;
-  char              optionname[128],splitname[8];
+  PetscTruth        flg = PETSC_FALSE;
+  PetscInt          i;
 
   PetscFunctionBegin;
   if (!ilink) { 
@@ -182,25 +214,14 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
     if (!flg) {
       /* Allow user to set fields from command line,  if bs was known at the time of PCSetFromOptions_FieldSplit()
          then it is set there. This is not ideal because we should only have options set in XXSetFromOptions(). */
-      flg = PETSC_TRUE; /* switched off automatically if user sets fields manually here */
-      ierr = PetscMalloc(jac->bs*sizeof(PetscInt),&ifields);CHKERRQ(ierr);
-      while (PETSC_TRUE) {
-        sprintf(splitname,"%d_",(int)i);
-        sprintf(optionname,"-pc_fieldsplit_%d_fields",(int)i++);
-        nfields = jac->bs;
-        ierr    = PetscOptionsGetIntArray(((PetscObject)pc)->prefix,optionname,ifields,&nfields,&flg2);CHKERRQ(ierr);
-        if (!flg2) break;
-        if (!nfields) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot list zero fields");
-        flg = PETSC_FALSE;
-        ierr = PCFieldSplitSetFields(pc,splitname,nfields,ifields);CHKERRQ(ierr);
-      }
-      ierr = PetscFree(ifields);CHKERRQ(ierr);
+      ierr = PCFieldSplitSetRuntimeSplits_Private(pc);CHKERRQ(ierr);
+      if (jac->splitdefined) {ierr = PetscInfo(pc,"Splits defined using the options database\n");CHKERRQ(ierr);}
     }
-    
-    if (flg) {
+    if (flg || !jac->splitdefined) {
       ierr = PetscInfo(pc,"Using default splitting of fields\n");CHKERRQ(ierr);
       for (i=0; i<jac->bs; i++) {
-        sprintf(splitname,"%d",(int)i);
+        char splitname[8];
+        ierr = PetscSNPrintf(splitname,sizeof splitname,"%D",i);CHKERRQ(ierr);
         ierr = PCFieldSplitSetFields(pc,splitname,1,&i);CHKERRQ(ierr);
       }
       jac->defaultsplit = PETSC_TRUE;
@@ -343,6 +364,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 
      } else {
       KSP ksp;
+      char schurprefix[256];
 
       /* extract the B and C matrices */
       ilink = jac->head;
@@ -368,8 +390,8 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
         /* Note: This is bad if there exist preconditioners for MATSCHURCOMPLEMENT */
       }
-      ierr  = KSPSetOptionsPrefix(jac->kspschur,((PetscObject)pc)->prefix);CHKERRQ(ierr);
-      ierr  = KSPAppendOptionsPrefix(jac->kspschur,"fieldsplit_1_");CHKERRQ(ierr);
+      ierr = PetscSNPrintf(schurprefix,sizeof schurprefix,"%sfieldsplit_%s_",((PetscObject)pc)->prefix?((PetscObject)pc)->prefix:"",ilink->splitname);CHKERRQ(ierr);
+      ierr  = KSPSetOptionsPrefix(jac->kspschur,schurprefix);CHKERRQ(ierr);
       /* really want setfromoptions called in PCSetFromOptions_FieldSplit(), but it is not ready yet */
       ierr = KSPSetFromOptions(jac->kspschur);CHKERRQ(ierr);
 
@@ -649,9 +671,8 @@ static PetscErrorCode PCDestroy_FieldSplit(PC pc)
 static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
 {
   PetscErrorCode  ierr;
-  PetscInt        i = 0,nfields,*fields,bs;
+  PetscInt        bs;
   PetscTruth      flg;
-  char            optionname[128],splitname[8];
   PC_FieldSplit   *jac = (PC_FieldSplit*)pc->data;
   PCCompositeType ctype;
 
@@ -672,17 +693,8 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
   if ((jac->bs > 0) && (jac->nsplits == 0)) {
     /* only allow user to set fields from command line if bs is already known.
        otherwise user can set them in PCFieldSplitSetDefaults() */
-    ierr = PetscMalloc(jac->bs*sizeof(PetscInt),&fields);CHKERRQ(ierr);
-    while (PETSC_TRUE) {
-      sprintf(splitname,"%d",(int)i);
-      sprintf(optionname,"-pc_fieldsplit_%d_fields",(int)i++);
-      nfields = jac->bs;
-      ierr    = PetscOptionsIntArray(optionname,"Fields in this split","PCFieldSplitSetFields",fields,&nfields,&flg);CHKERRQ(ierr);
-      if (!flg) break;
-      if (!nfields) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot list zero fields");
-      ierr = PCFieldSplitSetFields(pc,splitname,nfields,fields);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(fields);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetRuntimeSplits_Private(pc);CHKERRQ(ierr);
+    if (jac->splitdefined) {ierr = PetscInfo(pc,"Splits defined using the options database\n");CHKERRQ(ierr);}
   }
   ierr = PetscOptionsEnum("-pc_fieldsplit_schur_precondition","How to build preconditioner for Schur complement","PCFieldSplitSchurPrecondition",PCFieldSplitSchurPreTypes,(PetscEnum)jac->schurpre,(PetscEnum*)&jac->schurpre,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);  
@@ -694,7 +706,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFieldSplitSetFields_FieldSplit"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields_FieldSplit(PC pc,const char splitname[],PetscInt n,PetscInt *fields)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields_FieldSplit(PC pc,const char splitname[],PetscInt n,const PetscInt *fields)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
@@ -703,6 +715,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields_FieldSplit(PC pc,const c
   PetscInt          i;
 
   PetscFunctionBegin;
+  if (jac->splitdefined) {
+    ierr = PetscInfo1(pc,"Ignoring new split \"%s\" because the splits have already been defined\n",splitname);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   for (i=0; i<n; i++) {
     if (fields[i] >= jac->bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Field %D requested but only %D exist",fields[i],jac->bs);
     if (fields[i] < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative field %D requested",fields[i]);
@@ -717,11 +733,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields_FieldSplit(PC pc,const c
   ierr           = PetscObjectIncrementTabLevel((PetscObject)ilink->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
   ierr           = KSPSetType(ilink->ksp,KSPPREONLY);CHKERRQ(ierr);
 
-  if (((PetscObject)pc)->prefix) {
-    sprintf(prefix,"%sfieldsplit_%s_",((PetscObject)pc)->prefix,splitname);
-  } else {
-    sprintf(prefix,"fieldsplit_%s_",splitname);
-  }
+  ierr = PetscSNPrintf(prefix,sizeof prefix,"%sfieldsplit_%s_",((PetscObject)pc)->prefix?((PetscObject)pc)->prefix:"",splitname);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(ilink->ksp,prefix);CHKERRQ(ierr);
 
   if (!next) {
@@ -789,6 +801,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetIS_FieldSplit(PC pc,const char 
   char              prefix[128];
 
   PetscFunctionBegin;
+  if (jac->splitdefined) {
+    ierr = PetscInfo1(pc,"Ignoring new split \"%s\" because the splits have already been defined\n",splitname);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   ierr = PetscNew(struct _PC_FieldSplitLink,&ilink);CHKERRQ(ierr);
   ierr = PetscStrallocpy(splitname,&ilink->splitname);CHKERRQ(ierr);
   ilink->is      = is;
@@ -798,11 +814,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetIS_FieldSplit(PC pc,const char 
   ierr           = PetscObjectIncrementTabLevel((PetscObject)ilink->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
   ierr           = KSPSetType(ilink->ksp,KSPPREONLY);CHKERRQ(ierr);
 
-  if (((PetscObject)pc)->prefix) {
-    sprintf(prefix,"%sfieldsplit_%s_",((PetscObject)pc)->prefix,splitname);
-  } else {
-    sprintf(prefix,"fieldsplit_%s_",splitname);
-  }
+  ierr = PetscSNPrintf(prefix,sizeof prefix,"%sfieldsplit_%s_",((PetscObject)pc)->prefix?((PetscObject)pc)->prefix:"",splitname);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(ilink->ksp,prefix);CHKERRQ(ierr);
 
   if (!next) {
@@ -849,9 +861,9 @@ EXTERN_C_END
 .seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetBlockSize(), PCFieldSplitSetIS()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields(PC pc,const char splitname[],PetscInt n, PetscInt *fields)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields(PC pc,const char splitname[],PetscInt n,const PetscInt *fields)
 {
-  PetscErrorCode ierr,(*f)(PC,const char[],PetscInt,PetscInt *);
+  PetscErrorCode ierr,(*f)(PC,const char[],PetscInt,const PetscInt *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);

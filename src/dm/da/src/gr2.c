@@ -230,7 +230,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
     }
 
     if (!rank) {
-      char *title;
+      const char *title;
 
       ierr = DAGetFieldName(da,zctx.k,&title);CHKERRQ(ierr);
       if (title) {

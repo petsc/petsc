@@ -21,7 +21,7 @@ void PETSC_STDCALL dasetfieldname_(DA *da,PetscInt *nf,CHAR name PETSC_MIXED_LEN
 
 void PETSC_STDCALL dagetfieldname_(DA *da,PetscInt *nf,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
-  char *tname;
+  const char *tname;
 
   *ierr = DAGetFieldName(*da,*nf,&tname);
   *ierr = PetscStrncpy(name,tname,len);
