@@ -1,8 +1,8 @@
 // !$*UTF8*$!
 {
 	0867D690FE84028FC02AAC07 /* Project object */ = {
-		activeBuildConfigurationName = Debug;
-		activeSDKPreference = iphonesimulator3.2;
+		activeBuildConfigurationName = Release;
+		activeSDKPreference = iphoneos3.2;
 		activeTarget = D2AAC07D0554694100DB518D /* PETSc */;
 		addToTargets = (
 			D2AAC07D0554694100DB518D /* PETSc */,
@@ -91,11 +91,11 @@
 					PBXFileDataSource_Warnings_ColumnID,
 				);
 			};
-			PBXPerProjectTemplateStateSaveDate = 295639151;
-			PBXWorkspaceStateSaveDate = 295639151;
+			PBXPerProjectTemplateStateSaveDate = 295663817;
+			PBXWorkspaceStateSaveDate = 295663817;
 		};
 		perUserProjectItems = {
-			D8099639119E48E100C5B516 /* PBXTextBookmark */ = D8099639119E48E100C5B516 /* PBXTextBookmark */;
+			D8F1F525119F799200E77F2A /* PBXTextBookmark */ = D8F1F525119F799200E77F2A /* PBXTextBookmark */;
 			D8F2DE78119F1886004742F2 /* PBXTextBookmark */ = D8F2DE78119F1886004742F2 /* PBXTextBookmark */;
 		};
 		sourceControlManager = D8099263119E408100C5B516 /* Source Control */;
@@ -135,20 +135,20 @@
 	};
 	D8099277119E428A00C5B516 /* aijsbaij.c */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {922, 4134}}";
+			sepNavIntBoundsRect = "{{0, 0}, {796, 4134}}";
 			sepNavSelRange = "{847, 1}";
-			sepNavVisRange = "{462, 596}";
+			sepNavVisRange = "{439, 683}";
 		};
 	};
-	D8099639119E48E100C5B516 /* PBXTextBookmark */ = {
+	D8F1F525119F799200E77F2A /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
 		fRef = D8099277119E428A00C5B516 /* aijsbaij.c */;
-		name = "aijsbaij.c: 55";
-		rLen = 0;
-		rLoc = 1721;
+		name = "aijsbaij.c: 24";
+		rLen = 1;
+		rLoc = 847;
 		rType = 0;
-		vrLen = 632;
-		vrLoc = 1453;
+		vrLen = 683;
+		vrLoc = 439;
 	};
 	D8F2DE78119F1886004742F2 /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;

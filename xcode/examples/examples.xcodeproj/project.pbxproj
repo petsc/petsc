@@ -217,8 +217,8 @@
 				INFOPLIST_FILE = "examples-Info.plist";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/../../externalpackages/f2cblaslapack-3.1.1/BlasLapack/build/Debug-iphonesimulator\"",
-					"\"$(SRCROOT)/../PETSc/build/Debug-iphonesimulator\"",
+					"\"$(SRCROOT)/../../externalpackages/f2cblaslapack-3.1.1/BlasLapack/build/Release-iphoneos\"",
+					"\"$(SRCROOT)/../PETSc/build/Release-iphoneos\"",
 				);
 				PRODUCT_NAME = examples;
 				SDKROOT = iphoneos3.2;
