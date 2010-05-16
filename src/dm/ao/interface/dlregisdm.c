@@ -18,13 +18,16 @@ static PetscTruth DMPackageInitialized = PETSC_FALSE;
 .keywords: AO, DA, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMFinalizePackage(void) {
+PetscErrorCode PETSCDM_DLLEXPORT DMFinalizePackage(void)
+{
 #ifdef PETSC_HAVE_SIEVE
   PetscErrorCode ierr;
 #endif
 
   PetscFunctionBegin;
   DMPackageInitialized = PETSC_FALSE;
+  DAList               = PETSC_NULL;
+  DARegisterAllCalled  = PETSC_FALSE;
 #ifdef PETSC_HAVE_SIEVE
   ierr = MeshFinalize();CHKERRQ(ierr);
 #endif
