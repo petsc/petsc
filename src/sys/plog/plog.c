@@ -926,7 +926,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivateClass(PetscCookie cookie)
    PetscLogEventBegin - Logs the beginning of a user event. 
 
    Synopsis:
-   void PetscLogEventBegin(int e,PetscObject o1,PetscObject o2,PetscObject o3,
+   PetscErrorCode PetscLogEventBegin(int e,PetscObject o1,PetscObject o2,PetscObject o3,
                        PetscObject o4)
 
    Not Collective
@@ -941,7 +941,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivateClass(PetscCookie cookie)
 
    Usage:
 .vb
-     int USER_EVENT;
+     PetscLogEvent USER_EVENT;
      PetscLogDouble user_event_flops;
      PetscLogEventRegister("User event",0,&USER_EVENT);
      PetscLogEventBegin(USER_EVENT,0,0,0,0);
@@ -971,7 +971,7 @@ M*/
    PetscLogEventEnd - Log the end of a user event.
 
    Synopsis:
-   void PetscLogEventEnd(int e,PetscObject o1,PetscObject o2,PetscObject o3,
+   PetscErrorCode PetscLogEventEnd(int e,PetscObject o1,PetscObject o2,PetscObject o3,
                      PetscObject o4)
 
    Not Collective
@@ -986,7 +986,7 @@ M*/
 
    Usage:
 .vb
-     int USER_EVENT;
+     PetscLogEvent USER_EVENT;
      PetscLogDouble user_event_flops;
      PetscLogEventRegister("User event",0,&USER_EVENT,);
      PetscLogEventBegin(USER_EVENT,0,0,0,0);
@@ -1016,7 +1016,7 @@ M*/
    PetscLogEventBarrierBegin - Logs the time in a barrier before an event.
 
    Synopsis:
-   void PetscLogEventBarrierBegin(int e,PetscObject o1,PetscObject o2,PetscObject o3,
+   PetscErrorCode PetscLogEventBarrierBegin(int e,PetscObject o1,PetscObject o2,PetscObject o3,
                   PetscObject o4,MPI_Comm comm)
 
    Not Collective
@@ -1054,7 +1054,7 @@ M*/
    PetscLogEventBarrierEnd - Logs the time in a barrier before an event.
 
    Synopsis:
-   void PetscLogEventBarrierEnd(int e,PetscObject o1,PetscObject o2,PetscObject o3,
+   PetscErrorCode PetscLogEventBarrierEnd(int e,PetscObject o1,PetscObject o2,PetscObject o3,
                   PetscObject o4,MPI_Comm comm)
 
    Collective on MPI_Comm
@@ -1959,7 +1959,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogGetStageLog(StageLog *stageLog)
    PetscLogFlops - Adds floating point operations to the global counter.
 
    Synopsis:
-   void PetscLogFlops(PetscLogDouble f)
+   PetscErrorCode PetscLogFlops(PetscLogDouble f)
 
    Not Collective
 
@@ -1969,7 +1969,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogGetStageLog(StageLog *stageLog)
 
    Usage:
 .vb
-     int USER_EVENT;
+     PetscLogEvent USER_EVENT;
      PetscLogEventRegister("User event",0,&USER_EVENT);
      PetscLogEventBegin(USER_EVENT,0,0,0,0);
         [code segment to monitor]
