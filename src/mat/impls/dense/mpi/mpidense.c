@@ -2163,7 +2163,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKFinalizePackage(void)
   cannot overlap.
 
 .keywords: Petsc, initialize, package, PLAPACK
-.seealso: PetscInitializePackage(), PetscInitialize()
+.seealso: PetscSysInitializePackage(), PetscInitialize()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKInitializePackage(MPI_Comm comm) 
 {
