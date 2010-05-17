@@ -2,9 +2,7 @@
 #define _COMPAT_PETSC_FWK_H
 
 #if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0) || \
-     PETSC_VERSION_(2,3,3) || \
-     PETSC_VERSION_(2,3,2))
+     PETSC_VERSION_(3,0,0))
 
 static PetscClassId PETSC_FWK_COOKIE = 0;
 

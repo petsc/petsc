@@ -13,12 +13,6 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetContext(Mat,void*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPythonGetContext(Mat,void**);
 PETSC_EXTERN_CXX_END
 
-#if PETSC_VERSION_(2,3,3) || PETSC_VERSION_(2,3,2)
-PETSC_EXTERN_CXX_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetType(Mat,const char[]);
-PETSC_EXTERN_CXX_END
-#endif
-
 /* ---------------------------------------------------------------- */
 
 #ifndef KSPPYTHON
@@ -33,12 +27,6 @@ PETSC_EXTERN_CXX_BEGIN
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetContext(KSP,void*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonGetContext(KSP,void**);
 PETSC_EXTERN_CXX_END
-
-#if PETSC_VERSION_(2,3,3) || PETSC_VERSION_(2,3,2)
-PETSC_EXTERN_CXX_BEGIN
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetType(KSP,const char[]);
-PETSC_EXTERN_CXX_END
-#endif
 
 /* ---------------------------------------------------------------- */
 
@@ -55,12 +43,6 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetContext(PC,void*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPythonGetContext(PC,void**);
 PETSC_EXTERN_CXX_END
 
-#if PETSC_VERSION_(2,3,3) || PETSC_VERSION_(2,3,2)
-PETSC_EXTERN_CXX_BEGIN
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetType(PC,const char[]);
-PETSC_EXTERN_CXX_END
-#endif
-
 /* ---------------------------------------------------------------- */
 
 #ifndef SNESPYTHON
@@ -76,12 +58,6 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetContext(SNES,void*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonGetContext(SNES,void**);
 PETSC_EXTERN_CXX_END
 
-#if PETSC_VERSION_(2,3,3) || PETSC_VERSION_(2,3,2)
-PETSC_EXTERN_CXX_BEGIN
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetType(SNES,const char[]);
-PETSC_EXTERN_CXX_END
-#endif
-
 /* ---------------------------------------------------------------- */
 
 #ifndef TSPYTHON
@@ -96,12 +72,6 @@ PETSC_EXTERN_CXX_BEGIN
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetContext(TS,void*);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSPythonGetContext(TS,void**);
 PETSC_EXTERN_CXX_END
-
-#if PETSC_VERSION_(2,3,3) || PETSC_VERSION_(2,3,2)
-PETSC_EXTERN_CXX_BEGIN
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetType(TS,const char[]);
-PETSC_EXTERN_CXX_END
-#endif
 
 /* ---------------------------------------------------------------- */
 

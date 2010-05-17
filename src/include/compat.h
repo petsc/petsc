@@ -15,14 +15,6 @@
 # endif
 #endif
 
-#if !defined(PETSC_VERSION_)
-#define PETSC_VERSION_(MAJOR,MINOR,SUBMINOR) \
-  ((PETSC_VERSION_MAJOR == (MAJOR)) &&       \
-   (PETSC_VERSION_MINOR == (MINOR)) &&       \
-   (PETSC_VERSION_SUBMINOR == (SUBMINOR)) && \
-   (PETSC_VERSION_RELEASE  == 1))
-#endif
-
 #include "compat/mpi.h"
 #include "compat/petsc.h"
 #include "compat/petscsys.h"

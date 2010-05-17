@@ -89,9 +89,6 @@ class TestOptions(unittest.TestCase):
 
 # --------------------------------------------------------------------
 
-if PETSc.Sys.getVersion() < (3,0,0):
-    del TestOptions.testGetAllQuoted
-
 del TestOptions.testMonitor # XXX
 
 if __name__ == '__main__':

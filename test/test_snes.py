@@ -331,11 +331,6 @@ class BaseTestSNES(object):
         self.assertAlmostEqual(abs(x[0]), 1.0)
         self.assertAlmostEqual(abs(x[1]), 2.0)
 
-
-if PETSc.Sys.getVersion() < (2,3,3):
-    del BaseTestSNES.testFDColor
-
-
 # --------------------------------------------------------------------
 
 class TestSNESLS(BaseTestSNES, unittest.TestCase):

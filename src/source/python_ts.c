@@ -1,5 +1,3 @@
-#define PETSCTS_DLL
-
 /*
   Code for general, user-defined timestepping with implicit schemes.
 
@@ -13,18 +11,6 @@
 
 #include "python_core.h"
 #include "private/tsimpl.h"
-
-/* -------------------------------------------------------------------------- */
-
-/* backward compatibility hacks */
-
-#if PETSC_VERSION_(2,3,2)
-#define SNESGetLinearSolveIterations SNESGetNumberLinearIterations
-#endif
-
-#if PETSC_VERSION_(2,3,3) || PETSC_VERSION_(2,3,2)
-#define PetscObjectIncrementTabLevel(A,B,C) 0
-#endif
 
 /* -------------------------------------------------------------------------- */
 
@@ -356,13 +342,6 @@ static PetscErrorCode TSStep_Python(TS ts,PetscReal t,Vec u)
   PetscInt       its=0,lits=0;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-#if PETSC_VERSION_(2,3,3) || PETSC_VERSION_(2,3,2)
-  if (ts->problem_type == TS_NONLINEAR) {
-    if (!((PetscObject)ts->snes)->type_name) {
-      ierr = SNESSetType(ts->snes,SNESLS);CHKERRQ(ierr);
-    }
-  }
-#endif
   TS_PYTHON_CALL_MAYBE(ts, "step", ("O&dO&",
                                     PyPetscTS_New,  ts,
                                     (double)        t,
@@ -744,7 +723,11 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetContext(TS ts,void *ctx)
 
 /* -------------------------------------------------------------------------- */
 
-#if PETSC_VERSION_(2,3,3) || PETSC_VERSION_(2,3,2)
+#if 0
+
+PETSC_EXTERN_CXX_BEGIN
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT TSPythonSetType(TS,const char[]);
+PETSC_EXTERN_CXX_END
 
 PETSC_EXTERN_CXX_BEGIN
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetType(TS,const char[]);

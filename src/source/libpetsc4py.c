@@ -22,9 +22,7 @@
 /* ---------------------------------------------------------------- */
 
 #if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0) || \
-     PETSC_VERSION_(2,3,3) || \
-     PETSC_VERSION_(2,3,2))
+     PETSC_VERSION_(3,0,0))
 #define IS_CLASSID    IS_COOKIE
 #define VEC_CLASSID   VEC_COOKIE
 #define MAT_CLASSID   MAT_COOKIE

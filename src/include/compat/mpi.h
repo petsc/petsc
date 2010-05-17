@@ -121,7 +121,7 @@ static void OPENMPI_dlopen_libmpi(void)
 }
 
 static PetscErrorCode
-PyPetsc_PetscInitialize(int *argc,char ***args,
+PetscInitialize_OpenMPI(int *argc,char ***args,
                         const char file[],
                         const char help[])
 {
@@ -129,7 +129,7 @@ PyPetsc_PetscInitialize(int *argc,char ***args,
   return PetscInitialize(argc,args,file,help);
 }
 #undef  PetscInitialize
-#define PetscInitialize PyPetsc_PetscInitialize
+#define PetscInitialize PetscInitialize_OpenMPI
 
 #endif /* HAVE_DLOPEN */
 #endif /* OPENMPI_DLOPEN_LIBMPI */

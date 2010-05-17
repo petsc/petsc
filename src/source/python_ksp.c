@@ -362,7 +362,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetContext(KSP ksp,void *ctx)
 
 /* -------------------------------------------------------------------------- */
 
-#if PETSC_VERSION_(2,3,3) || PETSC_VERSION_(2,3,2)
+#if 0
 
 PETSC_EXTERN_CXX_BEGIN
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetType(KSP,const char[]);

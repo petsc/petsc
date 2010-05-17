@@ -185,47 +185,27 @@ static PetscErrorCode MatSetOption_Python(Mat mat,MatOption op,PetscTruth flag)
   PetscFunctionReturn(0);
 }
 
-#if PETSC_VERSION_(2,3,3) || PETSC_VERSION_(2,3,2)
-static PetscErrorCode MatSetOption_Python_old(Mat mat,MatOption op)
-{ return MatSetOption_Python(mat,op,PETSC_TRUE); }
-#define MatSetOption_Python MatSetOption_Python_old
-#endif
-
-#if PETSC_VERSION_(2,3,2)
+#if PETSC_VERSION_(3,0,0)
 typedef PetscMap* PetscLayout;
-#define PetscGetLayout(o, m) (&(o)->m)
-#define PetscSetUpLayout(o, m) PetscMapInitialize((o)->comm,&(o)->m)
-#elif PETSC_VERSION_(2,3,3)
-typedef PetscMap* PetscLayout;
-#define PetscGetLayout(o, m) (&(o)->m)
-#define PetscSetUpLayout(o, m) PetscMapSetUp(&(o)->m)
-#elif PETSC_VERSION_(3,0,0)
-typedef PetscMap* PetscLayout;
-#define PetscGetLayout(o, m) ((o)->m)
-#define PetscSetUpLayout(o, m) PetscMapSetUp((o)->m)
-#else
-#define PetscGetLayout(o, m) ((o)->m)
-#define PetscSetUpLayout(o, m) PetscLayoutSetUp((o)->m)
-#endif
-
-#if PETSC_VERSION_(2,3,2)
-#define PetscLayoutSetBlockSize(map,bs) ((map)->bs=(bs),0)
-#elif PETSC_VERSION_(2,3,3) || PETSC_VERSION_(3,0,0)
-#define PetscLayoutSetBlockSize(map,bs) PetscMapSetBlockSize(map,bs)
+#define PetscLayoutSetUp PetscMapSetUp
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT 
+PetscMapSetBlockSize(PetscMap*,PetscInt);
+#define PetscLayoutSetBlockSize PetscMapSetBlockSize
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT 
+PetscMapGetBlockSize(PetscMap*,PetscInt*);
+#define PetscLayoutGetBlockSize PetscMapGetBlockSize
 #endif
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetOption_Python"
 static PetscErrorCode MatSetBlockSize_Python(Mat mat, PetscInt bs)
 {
-  PetscLayout    rmap = PetscGetLayout(mat,rmap);
-  PetscLayout    cmap = PetscGetLayout(mat,cmap);
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscLayoutSetBlockSize(rmap,bs);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(cmap,bs);CHKERRQ(ierr);
-  ierr = PetscSetUpLayout(mat,rmap);CHKERRQ(ierr);
-  ierr = PetscSetUpLayout(mat,cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(mat->rmap,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(mat->cmap,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(mat->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(mat->cmap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -234,17 +214,19 @@ static PetscErrorCode MatSetBlockSize_Python(Mat mat, PetscInt bs)
 static PetscErrorCode MatSetUpPreallocation_Python(Mat mat)
 {
   Mat_Py         *py = (Mat_Py *) mat->data;
-  PetscLayout    rmap = PetscGetLayout(mat,rmap);
-  PetscLayout    cmap = PetscGetLayout(mat,cmap);
+  PetscInt       bs;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   /* MatDestroy() calls MatPreallocated() !!! */
   if (!Py_IsInitialized()) PetscFunctionReturn(0);
-  /* setup row and columns maps */
-  if (rmap->bs == -1) rmap->bs = 1;
-  if (cmap->bs == -1) cmap->bs = 1;
-  ierr = PetscSetUpLayout(mat,rmap);CHKERRQ(ierr);
-  ierr = PetscSetUpLayout(mat,cmap);CHKERRQ(ierr);
+  /* setup row layout */
+  ierr = PetscLayoutGetBlockSize(mat->rmap,&bs);CHKERRQ(ierr);
+  if (bs == -1) { ierr = PetscLayoutSetBlockSize(mat->rmap,1);CHKERRQ(ierr); }
+  ierr = PetscLayoutSetUp(mat->rmap);CHKERRQ(ierr);
+  /* setup column layout */
+  ierr = PetscLayoutGetBlockSize(mat->cmap,&bs);CHKERRQ(ierr);
+  if (bs == -1) { ierr = PetscLayoutSetBlockSize(mat->cmap,1);CHKERRQ(ierr); }
+  ierr = PetscLayoutSetUp(mat->cmap);CHKERRQ(ierr);
   /* try to load Python code if not yet done */
   if (py->self == NULL || py->self == Py_None) {
     char       pyname[2*PETSC_MAX_PATH_LEN+3];
@@ -660,10 +642,6 @@ static PetscErrorCode MatConjugate_Python(Mat mat)
 
 /* -------------------------------------------------------------------------- */
 
-#if PETSC_VERSION_(2,3,3) || PETSC_VERSION_(2,3,2)
-#define MAT_FACTOR_NONE 0
-#endif
-
 /*MC
    MATPYTHON - .
 
@@ -825,7 +803,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetContext(Mat mat,void *ctx)
 
 /* -------------------------------------------------------------------------- */
 
-#if PETSC_VERSION_(2,3,3) || PETSC_VERSION_(2,3,2)
+#if 0
 
 PETSC_EXTERN_CXX_BEGIN
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetType(Mat,const char[]);

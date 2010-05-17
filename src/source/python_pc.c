@@ -1,5 +1,3 @@
-#define PETSCKSP_DLL
-
 /* -------------------------------------------------------------------------- */
 
 #include "python_core.h"
@@ -445,15 +443,16 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetContext(PC pc,void *ctx)
   ierr = PetscPythonGetFullName(py->self,&py->pyname);CHKERRQ(ierr);
   PC_PYTHON_CALL_PCARG(pc, "create");
   if (pc->setupcalled) pc->setupcalled = 1;
-#if PETSC_VERSION_(2,3,2)
-  ierr = PCPythonFillOperations(pc);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 
 /* -------------------------------------------------------------------------- */
 
-#if PETSC_VERSION_(2,3,3) || PETSC_VERSION_(2,3,2)
+#if 0
+
+PETSC_EXTERN_CXX_BEGIN
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT PCPythonSetType(PC,const char[]);
+PETSC_EXTERN_CXX_END
 
 PETSC_EXTERN_CXX_BEGIN
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetType(PC,const char[]);

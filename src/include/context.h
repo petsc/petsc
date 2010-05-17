@@ -14,62 +14,6 @@ PetscErrorCode PetscPyObjDestroy(void* ptr)
   PetscFunctionReturn(0);
 }
 
-#if (PETSC_VERSION_MAJOR    == 2  && \
-     PETSC_VERSION_MINOR    == 3  && \
-     PETSC_VERSION_SUBMINOR == 3  && \
-     PETSC_VERSION_RELEASE  == 1) || \
-    (PETSC_VERSION_MAJOR    == 2  && \
-     PETSC_VERSION_MINOR    == 3  && \
-     PETSC_VERSION_SUBMINOR == 2  && \
-     PETSC_VERSION_RELEASE  == 1)
-
-/* Implementation for PETSc-2.3.3 and PETSc-2.3.2 */
-#ifdef __GNUC__
-#warning "using former implementation of Python context management"
-#endif
-
-#undef  __FUNCT__
-#define __FUNCT__ "PetscObjectGetPyDict"
-PETSC_STATIC_INLINE
-PetscErrorCode PetscObjectGetPyDict(PetscObject obj, PetscTruth create, void **dict)
-{
-  PyObject*      pydict = NULL;
-  PetscContainer container = PETSC_NULL;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeader(obj, 1);
-  if (dict) PetscValidPointer(dict, 2);
-  if (dict) *dict = NULL;
-  ierr = PetscOListFind(obj->olist,"__python__",(PetscObject*)&container);CHKERRQ(ierr);
-  if (container != PETSC_NULL) {
-    if (((PetscObject)container)->cookie != PETSC_CONTAINER_COOKIE)
-      SETERRQ(1, "composed object is not a PETSc container");
-    ierr = PetscContainerGetPointer(container,(void**)&pydict); CHKERRQ(ierr);
-    if (pydict == NULL)
-      SETERRQ(1, "object in container is NULL");
-    if (!PyDict_CheckExact(pydict))
-      SETERRQ(1, "object in container is not a Python dictionary");
-  } else if (create) {
-    pydict = PyDict_New();
-    if (pydict == NULL)
-      SETERRQ(1, "failed to create internal Python dictionary");
-    ierr = PetscContainerCreate(obj->comm,&container);CHKERRQ(ierr);
-    ierr = PetscContainerSetUserDestroy(container,PetscPyObjDestroy);CHKERRQ(ierr);
-    ierr = PetscContainerSetPointer(container,(void*)pydict);CHKERRQ(ierr);
-    ierr = PetscOListAdd(&obj->olist,"__python__",(PetscObject)container);CHKERRQ(ierr);
-    ierr = PetscObjectDestroy((PetscObject)container);CHKERRQ(ierr);
-  } else {
-    pydict = Py_None;
-  }
-  if (dict) *dict = pydict;
-  PetscFunctionReturn(0);
-}
-
-#else
-
-/* Implementation for PETSc-3.0.0 and later */
-
 #undef  __FUNCT__
 #define __FUNCT__ "PetscObjectGetPyDict"
 PETSC_STATIC_INLINE
@@ -102,8 +46,6 @@ PetscErrorCode PetscObjectGetPyDict(PetscObject obj, PetscTruth create, void **d
   if (dict) *dict = (void *) pydict;
   PetscFunctionReturn(0);
 }
-
-#endif
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscObjectSetPyObj"

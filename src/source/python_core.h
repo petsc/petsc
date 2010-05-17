@@ -18,9 +18,7 @@
   return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2,a3)
 
 #if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0) || \
-     PETSC_VERSION_(2,3,3) || \
-     PETSC_VERSION_(2,3,2))
+     PETSC_VERSION_(3,0,0))
 #undef SETERRQQ
 #define SETERRQQ(comm,n,s) \
   return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s)

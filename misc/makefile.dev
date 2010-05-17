@@ -1,30 +1,24 @@
 # -*- makefile -*-
 
-.PHONY: all test petsc-232 petsc-233 petsc-300 petsc-31 petsc-dev
+.PHONY: all test petsc-30 petsc-31 petsc-dev
 
 MPIEXEC  =
 VALGRIND =
 PYTHON   = python
 
-PETSC_232=/usr/local/petsc/2.3.2
-PETSC_233=/usr/local/petsc/2.3.3
-PETSC_300=/usr/local/petsc/3.0.0
-PETSC_31 =/usr/local/petsc/3.1
+PETSC_30=/usr/local/petsc/3.0.0
+PETSC_31=/usr/local/petsc/3.1
 PETSC_DEV=${HOME}/Devel/PETSc/petsc-dev
 
 PETSC_ARCH=linux-gnu
 
-all: petsc-232 petsc-233 petsc-300 petsc-31 petsc-dev
+all: petsc-30 petsc-31 petsc-dev
 
 MAKE_ARGS= -f misc/makefile.dev MPIEXEC='${MPIEXEC}' VALGRIND='${VALGRIND}' PYTHON='${PYTHON}'
-petsc-232: 
-	${MAKE} ${MAKE_ARGS} PETSC_DIR=${PETSC_232} PETSC_ARCH=${PETSC_ARCH} test
-petsc-233:
-	${MAKE} ${MAKE_ARGS} PETSC_DIR=${PETSC_233} PETSC_ARCH=${PETSC_ARCH} test
-petsc-300:
-	${MAKE} ${MAKE_ARGS} PETSC_DIR=${PETSC_300} PETSC_ARCH=${PETSC_ARCH} test
+petsc-30:
+	${MAKE} ${MAKE_ARGS} PETSC_DIR=${PETSC_30} PETSC_ARCH=${PETSC_ARCH} test
 petsc-31:
-	${MAKE} ${MAKE_ARGS} PETSC_DIR=${PETSC_31}  PETSC_ARCH=${PETSC_ARCH} test
+	${MAKE} ${MAKE_ARGS} PETSC_DIR=${PETSC_31} PETSC_ARCH=${PETSC_ARCH} test
 petsc-dev:
 	${MAKE} ${MAKE_ARGS} PETSC_DIR=${PETSC_DEV} PETSC_ARCH=${PETSC_ARCH} test
 

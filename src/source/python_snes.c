@@ -5,42 +5,6 @@
 
 /*  -------------------------------------------------------------------- */
 
-/* backward compatibility hacks */
-
-#if PETSC_VERSION_(2,3,2)
-#define vec_sol_update vec_sol_update_always
-#define vec_rhs        afine
-#define SNES_KSPSolve(snes,ksp,b,x) KSPSolve(ksp,b,x)
-#define SNES_CONVERGED_ITS   ((SNESConvergedReason)1)
-#define SNESDefaultConverged SNESConverged_LS
-#undef __FUNCT__
-#define __FUNCT__ "SNESSkipConverged"
-static PetscErrorCode SNESSkipConverged(SNES snes,PetscInt it,
-                                        PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,
-                                        SNESConvergedReason *reason,void *dummy)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidPointer(reason,6);
-  *reason = SNES_CONVERGED_ITERATING;
-  if (fnorm != fnorm) {
-    ierr = PetscInfo(snes,"Failed to converge, function norm is NaN\n");CHKERRQ(ierr);
-    *reason = SNES_DIVERGED_FNORM_NAN;
-  } else if(it == snes->max_its) {
-    *reason = SNES_CONVERGED_ITS;
-  }
-  PetscFunctionReturn(0);
-}
-#endif
-
-#if PETSC_VERSION_(2,3,3)
-#define vec_sol_update vec_sol_update_always
-#define vec_rhs        afine
-#endif
-
-/*  -------------------------------------------------------------------- */
-
 #define SNESPYTHON "python"
 
 PETSC_EXTERN_CXX_BEGIN
@@ -724,7 +688,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetContext(SNES snes,void *ctx)
 
 /* -------------------------------------------------------------------------- */
 
-#if PETSC_VERSION_(2,3,3) || PETSC_VERSION_(2,3,2)
+#if 0
 
 PETSC_EXTERN_CXX_BEGIN
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetType(SNES,const char[]);

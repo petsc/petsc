@@ -18,9 +18,7 @@
   return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2)
 
 #if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0) || \
-     PETSC_VERSION_(2,3,3) || \
-     PETSC_VERSION_(2,3,2))
+     PETSC_VERSION_(3,0,0))
 #undef SETERRQQ
 #define SETERRQQ(comm,n,s) \
   return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s)
@@ -35,9 +33,7 @@
 /* ---------------------------------------------------------------- */
 
 #if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0) || \
-     PETSC_VERSION_(2,3,3) || \
-     PETSC_VERSION_(2,3,2))
+     PETSC_VERSION_(3,0,0))
 #define PetscCLASSID(stageLog,index) \
         ((stageLog)->classLog->classInfo[(index)].cookie)
 #else
@@ -189,9 +185,7 @@ typedef PetscErrorCode (*PetscFwkPythonConfigureComponentFunction)
 (void *configure, PetscFwk fwk, PetscInt state, PetscObject *component);
 typedef PetscErrorCode (*PetscFwkPythonPrintErrorFunction)(void);
 #if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0) || \
-     PETSC_VERSION_(2,3,3) || \
-     PETSC_VERSION_(2,3,2))
+     PETSC_VERSION_(3,0,0))
 EXTERN_C_BEGIN
 static PetscFwkPythonImportConfigureFunction
        PetscFwkPythonImportConfigure = PETSC_NULL;
@@ -252,21 +246,15 @@ VecRestoreArrayC(Vec v, PetscScalar *a[])
 
 /* ---------------------------------------------------------------- */
 
-#if PETSC_VERSION_(2,3,2)
+#if PETSC_VERSION_(3,0,0)
 typedef PetscMap* PetscLayout;
-#define PetscGetLayout(o, m) (&(o)->m)
-#define PetscSetUpLayout(o, m) PetscMapInitialize((o)->comm,&(o)->m)
-#elif PETSC_VERSION_(2,3,3)
-typedef PetscMap* PetscLayout;
-#define PetscGetLayout(o, m) (&(o)->m)
-#define PetscSetUpLayout(o, m) PetscMapSetUp(&(o)->m)
-#elif PETSC_VERSION_(3,0,0)
-typedef PetscMap* PetscLayout;
-#define PetscGetLayout(o, m) ((o)->m)
-#define PetscSetUpLayout(o, m) PetscMapSetUp((o)->m)
-#else
-#define PetscGetLayout(o, m) ((o)->m)
-#define PetscSetUpLayout(o, m) PetscLayoutSetUp((o)->m)
+#define PetscLayoutSetUp PetscMapSetUp
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT 
+PetscMapSetBlockSize(PetscMap*,PetscInt);
+#define PetscLayoutSetBlockSize PetscMapSetBlockSize
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT 
+PetscMapGetBlockSize(PetscMap*,PetscInt*);
+#define PetscLayoutGetBlockSize PetscMapGetBlockSize
 #endif
 
 #undef __FUNCT__
@@ -274,31 +262,31 @@ typedef PetscMap* PetscLayout;
 PETSC_STATIC_INLINE PetscErrorCode
 MatBlockSize_Check(Mat mat,PetscInt bs)
 {
-  PetscLayout rmap = 0;
-  PetscLayout cmap = 0;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  rmap = PetscGetLayout(mat,rmap);
-  cmap = PetscGetLayout(mat,cmap);
   if (bs < 1) {
     SETERRQQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
               "Invalid block size specified, must be positive but it is %D",bs);
   }
-  if (rmap->n != -1 && rmap->n % bs) {
+  if (mat->rmap->n != -1 && mat->rmap->n % bs) {
     SETERRQQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
-              "Local row length %D not divisible by block size %D",rmap->n,bs);
+              "Local row length %D not divisible by block size %D",
+              mat->rmap->n,bs);
   }
-  if (rmap->N != -1 && rmap->N % bs) {
+  if (mat->rmap->N != -1 && mat->rmap->N % bs) {
     SETERRQQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
-              "Global row length %D not divisible by block size %D",rmap->N,bs);
+              "Global row length %D not divisible by block size %D",
+              mat->rmap->N,bs);
   }
-  if (cmap->n != -1 && cmap->n % bs) {
+  if (mat->cmap->n != -1 && mat->cmap->n % bs) {
     SETERRQQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
-              "Local column length %D not divisible by block size %D",cmap->n,bs);
+              "Local column length %D not divisible by block size %D",
+              mat->cmap->n,bs);
   }
-  if (cmap->N != -1 && cmap->N % bs) {
+  if (mat->cmap->N != -1 && mat->cmap->N % bs) {
     SETERRQQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
-              "Global column length %D not divisible by block size %D",cmap->N,bs);
+              "Global column length %D not divisible by block size %D",
+              mat->cmap->N,bs);
   }
   PetscFunctionReturn(0);
 }
@@ -311,21 +299,18 @@ MatBlockSize_SetUp(Mat mat,PetscInt bs)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscGetLayout(mat,rmap)->bs = bs;
-  PetscGetLayout(mat,cmap)->bs = bs;
-  ierr = PetscSetUpLayout(mat,rmap);CHKERRQ(ierr);
-  ierr = PetscSetUpLayout(mat,cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(mat->rmap,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(mat->cmap,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(mat->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(mat->cmap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetBlockSize_Patch"
 PETSC_STATIC_INLINE PetscErrorCode
 MatSetBlockSize_Patch(Mat mat,PetscInt bs)
 {
-  PetscLayout rmap = mat ? PetscGetLayout(mat,rmap): 0;
-  PetscLayout cmap = mat ? PetscGetLayout(mat,cmap): 0;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -338,10 +323,12 @@ MatSetBlockSize_Patch(Mat mat,PetscInt bs)
     ierr = MatBlockSize_Check(mat,bs);CHKERRQ(ierr);
     ierr = (*mat->ops->setblocksize)(mat,bs);CHKERRQ(ierr);
     ierr = MatBlockSize_SetUp(mat,bs);CHKERRQ(ierr);
-  } else if (rmap->bs == -1 && cmap->bs == -1) {
+  } else if (mat->rmap->bs == -1 &&
+             mat->cmap->bs == -1) {
     ierr = MatBlockSize_Check(mat,bs);CHKERRQ(ierr);
     ierr = MatBlockSize_SetUp(mat,bs);CHKERRQ(ierr);
-  } else if (rmap->bs != bs || cmap->bs != bs) {
+  } else if (mat->rmap->bs != bs ||
+             mat->cmap->bs != bs) {
     SETERRQQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,
               "Cannot set/change the block size for matrix type %s",
               ((PetscObject)mat)->type_name);
@@ -352,7 +339,7 @@ MatSetBlockSize_Patch(Mat mat,PetscInt bs)
 #define MatSetBlockSize MatSetBlockSize_Patch
 
 #undef __FUNCT__
-#define __FUNCT__ "MatAnyAIJSetPreallocation"
+#define __FUNCT__ "MatIsPreallocated"
 PETSC_STATIC_INLINE PetscErrorCode
 MatIsPreallocated(Mat A,PetscTruth *flag)
 {
@@ -576,15 +563,9 @@ MatFactorInfoDefaults(PetscTruth incomplete, MatFactorInfo *info)
   if (incomplete) {
     info->shiftnz        = 1.e-12;
     info->shiftpd        = 0.0;
-#if !PETSC_VERSION_(2,3,3) && !PETSC_VERSION_(2,3,2)
-    info->shiftinblocks  = 1.e-12;
-#endif
   } else {
     info->shiftnz        = 0.0;
     info->shiftpd        = 0.0;
-#if !PETSC_VERSION_(2,3,3) && !PETSC_VERSION_(2,3,2)
-    info->shiftinblocks  = 0.0;
-#endif
   }
 #endif
 
@@ -1178,9 +1159,7 @@ AOGetType(AO ao, AOType *aotype)
 
 /* ---------------------------------------------------------------- */
 
-#if (PETSC_VERSION_(3,0,0) || \
-     PETSC_VERSION_(2,3,3) || \
-     PETSC_VERSION_(2,3,2) )
+#if (PETSC_VERSION_(3,0,0))
 
 #undef __FUNCT__
 #define __FUNCT__ "DACreateND"

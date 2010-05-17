@@ -246,11 +246,5 @@ class TestMatMPIDense_B_G89_B5(TestMatMPIDense_B_G89):
 
 # -----
 
-if PETSc.Sys.getVersion() < (3,0,0):
-    del BaseTestMatAnyDense.testCreateTranspose
-
-# -----
-
-
 if __name__ == '__main__':
     unittest.main()

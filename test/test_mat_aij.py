@@ -237,12 +237,6 @@ class BaseTestMatAnyAIJ(object):
         if None not in (ai, aj):
             self.assertTrue(N.all(i==ai))
             self.assertTrue(N.all(j==aj))
-        return # XXX review
-        version, patch = PETSc.Sys.getVersion(patch=True)
-        #if version >= (2,3,3): #and patch >= 13:
-        ai, aj = A.getRowIJ(compressed=False)
-        print ai, aj
-
 
 # -- AIJ ---------------------
 
@@ -506,9 +500,6 @@ class TestMatMPIAIJ_B_G89_B5(TestMatMPIAIJ_B_G89):
     BSIZE = 5
 
 # -----
-
-if PETSc.Sys.getVersion() < (3,0,0):
-    del BaseTestMatAnyAIJ.testCreateTranspose
 
 if PETSc.Sys.getVersion() >= (3,1,0):
     # -- CRL ---------------------

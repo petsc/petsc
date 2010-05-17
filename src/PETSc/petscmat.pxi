@@ -304,8 +304,6 @@ cdef extern from "petscmat.h" nogil:
 
 cdef extern from *:
     enum: PETSC_300 "(PETSC_VERSION_(3,0,0))"
-    enum: PETSC_233 "(PETSC_VERSION_(2,3,3))"
-    enum: PETSC_232 "(PETSC_VERSION_(2,3,2))"
 
 cdef inline NullSpace ref_NullSpace(PetscNullSpace nsp):
     cdef NullSpace ob = <NullSpace> NullSpace()
@@ -320,7 +318,7 @@ cdef inline int NullSpace_setFunction(PetscNullSpace nsp,
                                       object function) except -1:
     if function is None:
         CHKERR( MatNullSpaceSetFunction(nsp, NULL, NULL) )
-    elif PETSC_300 or PETSC_233 or PETSC_232:
+    elif PETSC_300:
         CHKERR( MatNullSpaceSetFunction(
                 nsp, <MatNullSpaceFunction*>NullSpace_Function_OLD, nsp) )
     else:
