@@ -10,7 +10,7 @@
 PetscErrorCode PETSC_DLLEXPORT PetscFListGetPathAndFunction(const char name[],char *path[],char *function[])
 {
   PetscErrorCode ierr;
-  char work[PETSC_MAX_PATH_LEN],*lfunction;
+  char           work[PETSC_MAX_PATH_LEN],*lfunction;
 
   PetscFunctionBegin;
   ierr = PetscStrncpy(work,name,256);CHKERRQ(ierr);
@@ -30,7 +30,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListGetPathAndFunction(const char name[],ch
     This is the default list used by PETSc with the PetscDLLibrary register routines
 */
 PetscDLLibrary DLLibrariesLoaded = 0;
-
 
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 
@@ -74,8 +73,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize_DynamicLibraries(void)
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
   PetscTruth     found;
 #endif
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   nmax = 32;
   ierr = PetscOptionsGetStringArray(PETSC_NULL,"-dll_prepend",libname,&nmax,PETSC_NULL);CHKERRQ(ierr);
   for (i=0; i<nmax; i++) {
@@ -90,17 +89,22 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize_DynamicLibraries(void)
     The classes, from PetscDraw to PetscTS, are initialized the first
     time an XXCreate() is called.
   */
-  ierr = PetscInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSysInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #else
+#if defined(PETSC_USE_SINGLE_LIBRARY)
   ierr = PetscLoadDynamicLibrary("",&found);CHKERRQ(ierr);
   if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
-#if !defined(PETSC_USE_SINGLE_LIBRARY)
+#else 
+  ierr = PetscLoadDynamicLibrary("sys",&found);CHKERRQ(ierr);
+  if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
   ierr = PetscLoadDynamicLibrary("vec",&found);CHKERRQ(ierr);
   if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc Vec dynamic library \n You cannot move the dynamic libraries!");
   ierr = PetscLoadDynamicLibrary("mat",&found);CHKERRQ(ierr);
   if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc Mat dynamic library \n You cannot move the dynamic libraries!");
   ierr = PetscLoadDynamicLibrary("dm",&found);CHKERRQ(ierr);
   if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc DM dynamic library \n You cannot move the dynamic libraries!");
+  ierr = PetscLoadDynamicLibrary("characteristic",&found);CHKERRQ(ierr);
+  if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc Characteristic dynamic library \n You cannot move the dynamic libraries!");
   ierr = PetscLoadDynamicLibrary("ksp",&found);CHKERRQ(ierr);
   if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc KSP dynamic library \n You cannot move the dynamic libraries!");
   ierr = PetscLoadDynamicLibrary("snes",&found);CHKERRQ(ierr);
@@ -194,7 +198,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListAdd(PetscFList *fl,const char name[],co
   char           *fpath,*fname;
 
   PetscFunctionBegin;
-
   if (!*fl) {
     ierr           = PetscNew(struct _n_PetscFList,&entry);CHKERRQ(ierr);
     ierr           = PetscStrallocpy(name,&entry->name);CHKERRQ(ierr);
@@ -242,7 +245,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListAdd(PetscFList *fl,const char name[],co
     entry->next    = 0;
     ne->next       = entry;
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -264,12 +266,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListDestroy(PetscFList *fl)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  CHKMEMQ;
   if (!*fl) PetscFunctionReturn(0);
-
-  if (!dlallhead) {
-    PetscFunctionReturn(0);
-  }
+  if (!dlallhead) PetscFunctionReturn(0);
 
   /*
        Remove this entry from the master DL list (if it is in it)
@@ -344,10 +342,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListFind(PetscFList fl,MPI_Comm comm,const 
   PetscFList     entry = fl;
   PetscErrorCode ierr;
   char           *function,*path;
+  PetscTruth     flg,f1,f2,f3;
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
   char           *newpath;
 #endif
-  PetscTruth   flg,f1,f2,f3;
  
   PetscFunctionBegin;
   if (!name) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to find routine with null name");

@@ -248,12 +248,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscDLLibraryRegister_petscvec(const char pat
 {
   PetscErrorCode ierr;
 
-  ierr = PetscInitializeNoArguments(); if (ierr) return 1;
-
   PetscFunctionBegin;
-  /*
-      If we got here then PETSc was properly loaded
-  */
   ierr = ISInitializePackage(path);CHKERRQ(ierr);
   ierr = VecInitializePackage(path);CHKERRQ(ierr);
   ierr = PFInitializePackage(path);CHKERRQ(ierr);

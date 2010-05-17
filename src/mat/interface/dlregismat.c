@@ -21,7 +21,7 @@ static PetscTruth MatPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
 #define __FUNCT__ "MatFinalizePackage"
 /*@C
-  MatFinalizePackage - This function destroys everything in the Petsc interface to the charactoristics package. It is
+  MatFinalizePackage - This function destroys everything in the Petsc interface to the Mat package. It is
   called from PetscFinalize().
 
   Level: developer
@@ -196,12 +196,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT PetscDLLibraryRegister_petscmat(const char pat
 {
   PetscErrorCode ierr;
 
-  ierr = PetscInitializeNoArguments(); if (ierr) return 1;
-
   PetscFunctionBegin;
-  /*
-      If we got here then PETSc was properly loaded
-  */
   ierr = MatInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

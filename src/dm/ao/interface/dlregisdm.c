@@ -176,14 +176,12 @@ PetscErrorCode PETSCDM_DLLEXPORT PetscDLLibraryRegister_petscdm(const char path[
 {
   PetscErrorCode ierr;
 
-  ierr = PetscInitializeNoArguments();
-  if (ierr) return(1);
-
+  PetscFunctionBegin;
   /*
       If we got here then PETSc was properly loaded
   */
   ierr = DMInitializePackage(path);CHKERRQ(ierr);
-  return(0);
+  PetscFunctionReturn(0);
 }
 EXTERN_C_END
 

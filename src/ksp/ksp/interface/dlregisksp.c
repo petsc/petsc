@@ -12,7 +12,7 @@ static PetscTruth PCPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
 #define __FUNCT__ "PCFinalizePackage"
 /*@C
-  PCFinalizePackage - This function destroys everything in the Petsc interface to the charactoristics package. It is
+  PCFinalizePackage - This function destroys everything in the Petsc interface to the characteristics package. It is
   called from PetscFinalize().
 
   Level: developer
@@ -103,7 +103,7 @@ static PetscTruth KSPPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFinalizePackage"
 /*@C
-  KSPFinalizePackage - This function destroys everything in the Petsc interface to the charactoristics package. It is
+  KSPFinalizePackage - This function destroys everything in the Petsc interface to the KSP package. It is
   called from PetscFinalize().
 
   Level: developer
@@ -190,12 +190,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PetscDLLibraryRegister_petscksp(const char pat
 {
   PetscErrorCode ierr;
 
-  ierr = PetscInitializeNoArguments(); if (ierr) return 1;
-
   PetscFunctionBegin;
-  /*
-      If we got here then PETSc was properly loaded
-  */
   ierr = PCInitializePackage(path);CHKERRQ(ierr);
   ierr = KSPInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -1328,7 +1328,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetArguments(char ***);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFreeArguments(char **);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscEnd(void);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(const char[]); 
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSysInitializePackage(const char[]); 
 
 extern MPI_Comm PETSC_COMM_LOCAL_WORLD;
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPMerge(PetscMPIInt,PetscErrorCode (*)(void*),void*);

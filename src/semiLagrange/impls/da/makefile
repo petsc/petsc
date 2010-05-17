@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  = slda.h
 OBJSC    = slda.o
 OBJSF    =
-LIBBASE  = libpetsccontrib
+LIBBASE  = libpetsccharacteristic
 MANSEC   = SemiLagrange
 LOCDIR   = src/semiLagrange/impls/da/
 

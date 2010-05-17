@@ -6,7 +6,7 @@ static PetscTruth SNESPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
 #define __FUNCT__ "SNESFinalizePackage"
 /*@C
-  SNESFinalizePackage - This function destroys everything in the Petsc interface to the charactoristics package. It is
+  SNESFinalizePackage - This function destroys everything in the Petsc interface to the SNES package. It is
   called from PetscFinalize().
 
   Level: developer
@@ -94,11 +94,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT PetscDLLibraryRegister_petscsnes(const char p
 {
   PetscErrorCode ierr;
 
-  ierr = PetscInitializeNoArguments(); if (ierr) return 1;
   PetscFunctionBegin;
-  /*
-      If we got here then PETSc was properly loaded
-  */
   ierr = SNESInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
