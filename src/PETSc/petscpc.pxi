@@ -100,8 +100,8 @@ cdef extern from "petscpc.h" nogil:
 
     int PCFieldSplitSetType(PetscPC,PetscPCCompositeType)
     int PCFieldSplitSetBlockSize(PetscPC,PetscInt)
-    int PCFieldSplitSetFields(PetscPC,PetscInt,PetscInt*)
-    int PCFieldSplitSetIS(PetscPC,PetscIS)
+    int PCFieldSplitSetFields(PetscPC,char[],PetscInt,PetscInt*)
+    int PCFieldSplitSetIS(PetscPC,char[],PetscIS)
     int PCFieldSplitGetSubKSP(PetscPC,PetscInt*,PetscKSP*[])
     #int PCFieldSplitSchurPrecondition(PetscPC,PCFieldSplitSchurPreType,PetscMat)
     #int PCFieldSplitGetSchurBlocks(PetscPC,PetscMat*,PetscMat*,PetscMat*,PetscMat*)

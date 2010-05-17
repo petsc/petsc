@@ -209,18 +209,21 @@ cdef class PC(Object):
         CHKERR( PCFieldSplitSetType(self.pc, cval) )
 
     def setFieldSplitIS(self, *fields):
-        cdef IS iset = None
-        for iset in fields:
-            CHKERR( PCFieldSplitSetIS(self.pc, iset.iset) )
+        cdef object name = None
+        cdef IS field = None
+        for name, field in fields:
+            CHKERR( PCFieldSplitSetIS(self.pc, str2cp(name), field.iset) )
 
     def setFieldSplitFields(self, bsize, *fields):
         cdef PetscInt bs = asInt(bsize)
         CHKERR( PCFieldSplitSetBlockSize(self.pc, bs) )
+        cdef object name = None
         cdef object field = None
         cdef PetscInt nfields = 0, *ifields = NULL
-        for field in fields:
+        for name, field in fields:
             field = iarray_i(field, &nfields, &ifields)
-            CHKERR( PCFieldSplitSetFields(self.pc, nfields, ifields) )
+            CHKERR( PCFieldSplitSetFields(self.pc, str2cp(name), 
+                                          nfields, ifields) )
 
     def getFieldSplitSubKSP(self):
         cdef PetscInt i = 0, n = 0
