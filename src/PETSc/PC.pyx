@@ -201,6 +201,12 @@ cdef class PC(Object):
         cdef PetscInt N = asInt(nsd)
         CHKERR( PCASMSetTotalSubdomains(self.pc, N, NULL, NULL) )
 
+    def getASMSubKSP(self):
+        cdef PetscInt i = 0, n = 0
+        cdef PetscKSP *p = NULL
+        CHKERR( PCASMGetSubKSP(self.pc, &n, NULL, &p) )
+        return [ref_KSP(p[i]) for i from 0 <= i <n]
+
     # FieldSplit
     # ----------
 
@@ -231,7 +237,7 @@ cdef class PC(Object):
         cdef object subksp = None
         try:
             CHKERR( PCFieldSplitGetSubKSP(self.pc, &n, &p) )
-            subksp = [ref_KSP(p[i]) for i from 0<= i <n]
+            subksp = [ref_KSP(p[i]) for i from 0 <= i <n]
         finally:
             CHKERR( PetscFree(p) )
         return subksp
