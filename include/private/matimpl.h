@@ -391,7 +391,7 @@ struct _p_MatNullSpace {
 typedef struct {
   PetscInt       nshift,nshift_max;
   PetscReal      shift_amount,shift_lo,shift_hi,shift_top,shift_fraction;
-  PetscTruth     useshift;
+  PetscTruth     newshift;
   PetscReal      rs;  /* active row sum of abs(offdiagonals) */
   PetscScalar    pv;  /* pivot of the active row */
 } FactorShiftCtx;
@@ -400,7 +400,7 @@ EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPivotCheck_nz"
-PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_nz(const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row,PetscInt *newshift)
+PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_nz(const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
 {
   PetscReal _rs   = sctx->rs;
   PetscReal _zero = info->zeropivot*_rs;
@@ -410,22 +410,20 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_nz(const MatFactorInfo *info,Fa
     /* force |diag| > zeropivot*rs */
     if (!sctx->nshift) { 
       sctx->shift_amount = info->shiftamount;
-    }
-    else { 
+    } else { 
       sctx->shift_amount *= 2.0;
     }
-    sctx->useshift = PETSC_TRUE;
+    sctx->newshift = PETSC_TRUE;
     (sctx->nshift)++;
-    *newshift = 1;
-    return 0;
+  } else {
+    sctx->newshift = PETSC_FALSE;
   }
-  *newshift = 0;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPivotCheck_pd"
-PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_pd(const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row,PetscInt *newshift)
+PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_pd(const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
 {
   PetscReal _rs   = sctx->rs;
   PetscReal _zero = info->zeropivot*_rs;
@@ -435,18 +433,16 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_pd(const MatFactorInfo *info,Fa
     /* force matfactor to be diagonally dominant */
     if (sctx->nshift == sctx->nshift_max) {
       sctx->shift_fraction = sctx->shift_hi;
-      sctx->useshift        = PETSC_TRUE;
     } else {
       sctx->shift_lo = sctx->shift_fraction;
       sctx->shift_fraction = (sctx->shift_hi+sctx->shift_lo)/2.;
-      sctx->useshift = PETSC_TRUE;
     }
     sctx->shift_amount = sctx->shift_fraction * sctx->shift_top;
     sctx->nshift++;
-    *newshift=1;
-    return 0;
+    sctx->newshift = PETSC_TRUE;
+  } else {
+    sctx->newshift = PETSC_FALSE;
   }
-  *newshift = 0;
   PetscFunctionReturn(0);
 }
 
@@ -462,6 +458,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_inblocks(const MatFactorInfo *i
     sctx->shift_amount = 0.0;
     sctx->nshift++;
   }
+  sctx->newshift = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -472,28 +469,26 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(const MatFactorInfo *info,
   PetscReal _zero = info->zeropivot;
 
   PetscFunctionBegin;
+  sctx->newshift = PETSC_FALSE;
   if (PetscAbsScalar(sctx->pv) <= _zero) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G",row,PetscAbsScalar(sctx->pv),_zero);
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "MatPivotCheck"
-PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row,PetscInt *newshift_ptr)
+PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (info->shifttype == (PetscReal) MAT_SHIFT_NONZERO){
-    ierr = MatPivotCheck_nz(info,sctx,row,newshift_ptr);CHKERRQ(ierr);
+    ierr = MatPivotCheck_nz(info,sctx,row);CHKERRQ(ierr);
   } else if (info->shifttype == (PetscReal) MAT_SHIFT_POSITIVE_DEFINITE){
-    ierr = MatPivotCheck_pd(info,sctx,row,newshift_ptr);CHKERRQ(ierr);
+    ierr = MatPivotCheck_pd(info,sctx,row);CHKERRQ(ierr);
   } else if (info->shifttype == (PetscReal) MAT_SHIFT_INBLOCKS){
     ierr = MatPivotCheck_inblocks(info,sctx,row);CHKERRQ(ierr);
-    *newshift_ptr = 0;
   } else {
     ierr = MatPivotCheck_none(info,sctx,row);CHKERRQ(ierr);
-    *newshift_ptr = 0;
   }
   PetscFunctionReturn(0);
 }
