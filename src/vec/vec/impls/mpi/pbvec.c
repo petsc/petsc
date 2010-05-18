@@ -148,6 +148,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
             0,
             VecMaxPointwiseDivide_Seq,
             VecLoad_Binary,
+	    0, /* Set VecLoadnew function here */			
             VecPointwiseMax_Seq,
             VecPointwiseMaxAbs_Seq,
             VecPointwiseMin_Seq,

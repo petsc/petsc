@@ -100,6 +100,7 @@ struct _VecOps {
   PetscErrorCode (*setfromoptions)(Vec);
   PetscErrorCode (*maxpointwisedivide)(Vec,Vec,PetscReal*);      /* m = max abs(x ./ y) */
   PetscErrorCode (*load)(PetscViewer,const VecType,Vec*);
+  PetscErrorCode (*loadnew)(PetscViewer,Vec*);             /* New Vecload */
   PetscErrorCode (*pointwisemax)(Vec,Vec,Vec);
   PetscErrorCode (*pointwisemaxabs)(Vec,Vec,Vec);
   PetscErrorCode (*pointwisemin)(Vec,Vec,Vec);
