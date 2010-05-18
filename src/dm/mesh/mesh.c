@@ -58,7 +58,7 @@ PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<PETSC_MESH_TYPE>& mesh, Petsc
   PetscFunctionBegin;
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_VTK) {
-    ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);
+    ierr = VTKViewer::writeHeader(mesh, viewer);CHKERRQ(ierr);
     ierr = VTKViewer::writeVertices(mesh, viewer);CHKERRQ(ierr);
     ierr = VTKViewer::writeElements(mesh, viewer);CHKERRQ(ierr);
     const ALE::Obj<PETSC_MESH_TYPE::int_section_type>& p     = mesh->getIntSection("Partition");
@@ -1400,9 +1400,13 @@ PetscErrorCode preallocateMatrix(const ALE::Obj<PETSC_MESH_TYPE>& mesh, const in
 
 #undef __FUNCT__  
 #define __FUNCT__ "WriteVTKHeader"
-PetscErrorCode WriteVTKHeader(PetscViewer viewer)
+PetscErrorCode WriteVTKHeader(Mesh mesh, PetscViewer viewer)
 {
-  return VTKViewer::writeHeader(viewer);
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  PetscErrorCode ierr;
+
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  return VTKViewer::writeHeader(m, viewer);
 }
 
 #undef __FUNCT__  

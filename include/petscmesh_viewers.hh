@@ -14,7 +14,8 @@ class VTKViewer {
 
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteHeader"
-  static PetscErrorCode writeHeader(PetscViewer viewer) {
+  template<typename Mesh>
+  static PetscErrorCode writeHeader(const Obj<Mesh>& mesh, PetscViewer viewer) {
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
@@ -544,13 +545,50 @@ class VTKViewer {
 
 class VTKXMLViewer {
  public:
-  VTKViewer() {};
-  virtual ~VTKViewer() {};
+  VTKXMLViewer() {};
+  virtual ~VTKXMLViewer() {};
+
+  #undef __FUNCT__
+  #define __FUNCT__ "getVertexNumbering"
+  template<typename Mesh>
+  static Obj<typename Mesh::numbering_type> getVertexNumbering(const Obj<Mesh>& mesh) {
+    if (mesh->hasLabel("censored depth")) {
+      return mesh->getFactory()->getNumbering(mesh, "censored depth", 0);
+    }
+    return mesh->getFactory()->getNumbering(mesh, 0);
+  };
+
+  #undef __FUNCT__
+  #define __FUNCT__ "getCellNumbering"
+  template<typename Mesh>
+  static Obj<typename Mesh::numbering_type> getCellNumbering(const Obj<Mesh>& mesh) {
+    const int depth = mesh->depth();
+
+    if (mesh->hasLabel("censored depth")) {
+      return mesh->getFactory()->getNumbering(mesh, "censored depth", depth);
+    }
+    return mesh->getFactory()->getNumbering(mesh, depth);
+  };
+
+  #undef __FUNCT__
+  #define __FUNCT__ "getCells"
+  template<typename Mesh>
+  static Obj<typename Mesh::label_sequence> getCells(const Obj<Mesh>& mesh) {
+    const int depth = mesh->depth();
+
+    if (mesh->hasLabel("censored depth")) {
+      return mesh->getLabelStratum("censored depth", depth);
+    }
+    return mesh->heightStratum(0);
+  };
 
   #undef __FUNCT__
   #define __FUNCT__ "VTKWriteHeader"
-  static PetscErrorCode writeHeader(PetscViewer viewer) {
-    PetscErrorCode ierr;
+  template<typename Mesh>
+  static PetscErrorCode writeHeader(const Obj<Mesh>& mesh, PetscViewer viewer) {
+    Obj<typename Mesh::numbering_type> vNumbering = getVertexNumbering(mesh);
+    Obj<typename Mesh::numbering_type> cNumbering = getCellNumbering(mesh);
+    PetscErrorCode                     ierr;
 
     PetscFunctionBegin;
 #ifdef PETSC_WORDS_BIGENDIAN
@@ -559,7 +597,7 @@ class VTKXMLViewer {
     ierr = PetscViewerASCIIPrintf(viewer,"<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");CHKERRQ(ierr);
 #endif
     ierr = PetscViewerASCIIPrintf(viewer,"  <UnstructuredGrid>\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    <Piece NumberOfPoints=\"%d\" NumberOfCells=\"%d\">\n", vNumbering->getGlobalSize(), );CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    <Piece NumberOfPoints=\"%d\" NumberOfCells=\"%d\">\n", vNumbering->getGlobalSize(), cNumbering->getGlobalSize());CHKERRQ(ierr);
     PetscFunctionReturn(0);
   };
 
@@ -576,16 +614,11 @@ class VTKXMLViewer {
     } else {
       throw ALE::Exception("Missing coordinates in mesh");
     }
-    const int                                    embedDim    = coordinates->getFiberDimension(*mesh->depthStratum(0)->begin());
-    Obj<typename Mesh::numbering_type>           vNumbering;
+    const int                          embedDim   = coordinates->getFiberDimension(*mesh->depthStratum(0)->begin());
+    Obj<typename Mesh::numbering_type> vNumbering = getVertexNumbering(mesh);
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
-    if (mesh->hasLabel("censored depth")) {
-      vNumbering = mesh->getFactory()->getNumbering(mesh, "censored depth", 0);
-    } else {
-      vNumbering = mesh->getFactory()->getNumbering(mesh, 0);
-    }
     ierr = PetscViewerASCIIPrintf(viewer, "<Points>\n");CHKERRQ(ierr);
     ierr = writeSection(coordinates, embedDim, vNumbering, viewer, 3);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "</Points>\n");CHKERRQ(ierr);
@@ -658,20 +691,10 @@ class VTKXMLViewer {
   template<typename Mesh>
   static PetscErrorCode writeElements(const Obj<Mesh>& mesh, PetscViewer viewer)
   {
-    int                                depth = mesh->depth();
-    Obj<typename Mesh::label_sequence> elements;
-    Obj<typename Mesh::numbering_type> cNumbering;
-    Obj<typename Mesh::numbering_type> vNumbering;
+    Obj<typename Mesh::label_sequence> elements   = getCells(mesh);
+    Obj<typename Mesh::numbering_type> cNumbering = getCellNumbering(mesh);
+    Obj<typename Mesh::numbering_type> vNumbering = getVertexNumbering(mesh);
 
-    if (mesh->hasLabel("censored depth")) {
-      elements   = mesh->getLabelStratum("censored depth", depth);
-      cNumbering = mesh->getFactory()->getNumbering(mesh, "censored depth", depth);
-      vNumbering = mesh->getFactory()->getNumbering(mesh, "censored depth", 0);
-    } else {
-      elements   = mesh->heightStratum(0);
-      cNumbering = mesh->getFactory()->getNumbering(mesh, depth);
-      vNumbering = mesh->getFactory()->getNumbering(mesh, 0);
-    }
     return writeElements(mesh, elements, cNumbering, vNumbering, viewer);
   };
   #undef __FUNCT__  
@@ -883,7 +906,7 @@ PetscErrorCode MeshView_Sieve_Ascii(const Obj<Mesh>& mesh, const Obj<Section>& p
 
   PetscFunctionBegin;
   ALE::Partitioner<>::createPartitionMap(partition, partitionMap);
-  ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);
+  ierr = VTKViewer::writeHeader(mesh, viewer);CHKERRQ(ierr);
   ierr = VTKViewer::writeVertices(mesh, viewer);CHKERRQ(ierr);
   ierr = VTKViewer::writeElements(mesh, viewer);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
