@@ -23,6 +23,7 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
+    self.compilerFlags = framework.require('config.compilerFlags', self)
     return
 
   
@@ -33,10 +34,11 @@ class Configure(config.package.Package):
     import nargs
     help.addArgument('BLAS/LAPACK', '-with-blas-lapack-dir=<dir>',                nargs.ArgDir(None, None, 'Indicate the directory containing BLAS and LAPACK libraries'))
     help.addArgument('BLAS/LAPACK', '-with-blas-lapack-lib=<libraries: e.g. [/Users/..../liblapack.a,libblas.a,...]>',nargs.ArgLibrary(None, None, 'Indicate the library containing BLAS and LAPACK'))
-    help.addArgument('BLAS/LAPACK', '-with-blas-lib=<libraries: e.g. [/Users/..../libblas.a,...]>', nargs.ArgLibrary(None, None, 'Indicate the library(s) containing BLAS'))
+    help.addArgument('BLAS/LAPACK', '-with-blas-lib=<libraries: e.g. [/Users/..../libblas.a,...]>',    nargs.ArgLibrary(None, None, 'Indicate the library(s) containing BLAS'))
     help.addArgument('BLAS/LAPACK', '-with-lapack-lib=<libraries: e.g. [/Users/..../liblapack.a,...]>',nargs.ArgLibrary(None, None, 'Indicate the library(s) containing LAPACK'))
-    help.addArgument('BLAS/LAPACK', '-download-c-blas-lapack=<no,yes,ifneeded,filename>', nargs.ArgDownload(None, 0, 'Automatically install a C version of BLAS/LAPACK'))
-    help.addArgument('BLAS/LAPACK', '-download-f-blas-lapack=<no,yes,ifneeded,filename>', nargs.ArgDownload(None, 0, 'Automatically install a Fortran version of BLAS/LAPACK'))
+    help.addArgument('BLAS/LAPACK', '-download-c-blas-lapack=<no,yes,ifneeded,filename>',              nargs.ArgDownload(None, 0, 'Automatically install a C version of BLAS/LAPACK'))
+    help.addArgument('BLAS/LAPACK', '-download-f-blas-lapack=<no,yes,ifneeded,filename>',              nargs.ArgDownload(None, 0, 'Automatically install a Fortran version of BLAS/LAPACK'))
+    help.addArgument('BLAS/LAPACK', '-with-iphone=<no,yes>',                                           nargs.ArgDownload(None, 0, 'Build an iPhone version of C BLAS/LAPACK'))    
     return
 
   def getDefaultPrecision(self):
@@ -423,6 +425,24 @@ class Configure(config.package.Package):
       output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+';mv -f lib'+f2c+'blas.'+self.setCompilers.AR_LIB_SUFFIX+' lib'+f2c+'lapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+ libdir, timeout=30, log = self.framework.log)
     except RuntimeError, e:
       raise RuntimeError('Error moving '+self.downloaddirname+' libraries: '+str(e))
+
+    if self.framework.argDB['with-iphone']:
+      # Build version of C BLAS/LAPACK suitable for the iPhone
+      # Note: regular libraries are also built because iPhone libraries cannot be tested with ./configure
+      debug = 'Debug'
+      debugdir = 'Debug-iphonesimulator'
+      if not self.compilerFlags.debugging:
+        debug = 'Release'
+        debugdir = 'Release-iphoneos'
+      try:
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+os.path.join(blasDir,'BlasLapack')+';xcodebuild -configuration '+debug, timeout=3000, log = self.framework.log)
+      except RuntimeError, e:
+        raise RuntimeError('Error making iPhone version of BLAS/LAPACK on '+self.downloaddirname+': '+str(e))
+      try:
+        output,err,ret  = config.base.Configure.executeShellCommand('mv -f '+os.path.join(blasDir,'BlasLapack','build',debugdir,'libBlasLapack.a')+' '+libdir, timeout=30, log = self.framework.log)
+      except RuntimeError, e:
+        raise RuntimeError('Error copying iPhone version of BLAS/LAPACK libraries on '+self.downloaddirname+': '+str(e))
+      
     try:
       output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+';cp -f tmpmakefile '+os.path.join(confdir,self.package), timeout=30, log = self.framework.log)
     except RuntimeError, e:
