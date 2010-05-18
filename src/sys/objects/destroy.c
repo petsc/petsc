@@ -88,7 +88,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectCreate(MPI_Comm comm, PetscObject *obj
   PetscFunctionBegin;
   PetscValidPointer(obj,2);
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = PetscInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSysInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
   ierr = PetscHeaderCreate(o,_p_GenericObject,-1,PETSC_OBJECT_CLASSID,0,"PetscObject",comm,PetscObjectDestroy_GenericObject,0);CHKERRQ(ierr);
   /* records not yet defined in PetscObject 
@@ -132,7 +132,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectCreateGeneric(MPI_Comm comm, PetscClas
   PetscFunctionBegin;
   PetscValidPointer(obj,2);
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = PetscInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSysInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
   ierr = PetscHeaderCreate(o,_p_GenericObject,-1,classid,0,name,comm,PetscObjectDestroy_GenericObject,0);CHKERRQ(ierr);
   /* records not yet defined in PetscObject 

@@ -45,7 +45,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaFinalizePackage(void)
   Level: developer
 
 .keywords: Petsc, initialize, package, PLAPACK
-.seealso: PetscInitializePackage(), PetscInitialize()
+.seealso: PetscSysInitializePackage(), PetscInitialize()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaInitializePackage(const char path[])
 {

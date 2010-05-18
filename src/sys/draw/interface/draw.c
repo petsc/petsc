@@ -10,7 +10,7 @@ static PetscTruth PetscDrawPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawFinalizePackage"
 /*@C
-  PetscDrawFinalizePackage - This function destroys everything in the Petsc interface to the charactoristics package. It is
+  PetscDrawFinalizePackage - This function destroys everything in the Petsc interface to the Draw package. It is
   called from PetscFinalize().
 
   Level: developer

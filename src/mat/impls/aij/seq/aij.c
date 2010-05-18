@@ -3234,7 +3234,7 @@ extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_petsc(Mat,MatFactor
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_bas(Mat,MatFactorType,Mat*);
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactorAvailable_seqaij_petsc(Mat,MatFactorType,PetscTruth *);
 #if defined(PETSC_HAVE_MUMPS)
-extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_mumps(Mat,MatFactorType,Mat*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_aij_mumps(Mat,MatFactorType,Mat*);
 #endif
 #if defined(PETSC_HAVE_SUPERLU)
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_superlu(Mat,MatFactorType,Mat*);
@@ -3338,8 +3338,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
 #endif
 #if defined(PETSC_HAVE_MUMPS)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mumps_C",
-                                     "MatGetFactor_seqaij_mumps",
-                                     MatGetFactor_seqaij_mumps);CHKERRQ(ierr);
+                                     "MatGetFactor_aij_mumps",
+                                     MatGetFactor_aij_mumps);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_UMFPACK)
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_umfpack_C",

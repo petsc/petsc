@@ -96,11 +96,7 @@ PetscErrorCode PETSCTS_DLLEXPORT PetscDLLibraryRegister_petscts(const char path[
 {
   PetscErrorCode ierr;
 
-  ierr = PetscInitializeNoArguments(); if (ierr) return 1;
   PetscFunctionBegin;
-  /*
-      If we got here then PETSc was properly loaded
-  */
   ierr = TSInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

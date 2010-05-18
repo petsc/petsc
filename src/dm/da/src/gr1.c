@@ -182,7 +182,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
     ierr = PetscViewerDrawGetDrawAxis(v,j,&axis);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(draw,axis);CHKERRQ(ierr);
     if (!rank) {
-      char *title;
+      const char *title;
 
       ierr = PetscDrawAxisSetLimits(axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
       ierr = PetscDrawAxisDraw(axis);CHKERRQ(ierr);

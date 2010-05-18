@@ -4,7 +4,7 @@ static PetscTruth CharacteristicPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
 #define __FUNCT__ "CharacteristicFinalizePackage"
 /*@C
-  CharacteristicFinalizePackage - This function destroys everything in the Petsc interface to the charactoristics package. It is
+  CharacteristicFinalizePackage - This function destroys everything in the Petsc interface to the characteristics package. It is
   called from PetscFinalize().
 
   Level: developer
@@ -88,58 +88,17 @@ EXTERN_C_BEGIN
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 
-  This one registers all the KSP and PC methods that are in the basic PETSc libpetscksp
-  library.
+  This one registers the method of characteristics code
 
   Input Parameter:
   path - library path
  */
-PetscErrorCode PetscDLLibraryRegister_petsccontrib(const char path[])
+PetscErrorCode PetscDLLibraryRegister_petsccharacteristic(const char path[])
 {
   PetscErrorCode ierr;
 
-  ierr = PetscInitializeNoArguments(); if (ierr) return 1;
-
   PetscFunctionBegin;
-  /*
-      If we got here then PETSc was properly loaded
-  */
   ierr = CharacteristicInitializePackage(path);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-/* --------------------------------------------------------------------------*/
-static const char *contents = "PETSc Method of Characteristics library.\n";
-static const char *authors  = "Richard Katz and Matthew G. Knepley\n";
-
-/* $Id: dlregis.h,v 1.8 2001/03/23 23:20:45 balay Exp $ */
-/*
-   This file is included by all the dlregis.c files to provide common information
-   on the PETSC team.
-*/
-
-static const char *version = "???";
-
-EXTERN_C_BEGIN
-/* --------------------------------------------------------------------------*/
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDLLibraryInfo"
-int PetscDLLibraryInfo(const char *path,const char *type,const char **mess) 
-{
-  PetscTruth iscon,isaut,isver;
-  int        ierr;
-
-  PetscFunctionBegin; 
-
-  ierr = PetscStrcmp(type,"Contents",&iscon);CHKERRQ(ierr);
-  ierr = PetscStrcmp(type,"Authors",&isaut);CHKERRQ(ierr);
-  ierr = PetscStrcmp(type,"Version",&isver);CHKERRQ(ierr);
-  if (iscon)      *mess = contents;
-  else if (isaut) *mess = authors;
-  else if (isver) *mess = version;
-  else            *mess = 0;
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

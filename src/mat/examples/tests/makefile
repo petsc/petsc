@@ -697,32 +697,32 @@ runex22:
 	   else echo "Possible problem with ex22_1, diffs above"; fi; \
 	   ${RM} -f ex22_1.tmp
 runex30:
-	-@${MPIEXEC} -n 1 ./ex30 -display_matrices -nox > ex30_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex30 -mat_ordering -display_matrices -nox > ex30_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex30_1.out ex30_1.tmp) then true; \
 	   else echo "Possible problem with ex30_1, diffs above"; fi; \
 	   ${RM} -f ex30_1.tmp
 runex30_2:
-	-@${MPIEXEC} -n 1 ./ex30 -display_matrices -nox -lu > ex30_2.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex30 -mat_ordering -display_matrices -nox -lu > ex30_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex30_2.out ex30_2.tmp) then true; \
 	   else echo "Possible problem with ex30_2, diffs above"; fi; \
 	   ${RM} -f ex30_2.tmp
 runex30_3:
-	-@${MPIEXEC} -n 1 ./ex30 -lu -triangular_solve > ex30_3.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex30 -mat_ordering -lu -triangular_solve > ex30_3.tmp 2>&1;   \
 	   if (${DIFF} output/ex30_3.out ex30_3.tmp) then true; \
 	   else echo "Possible problem with ex30_3, diffs above"; fi; \
 	   ${RM} -f ex30_3.tmp
 runex30_4:
-	-@${MPIEXEC} -n 1 ./ex30 -no_rowperm -no_colperm > ex30_4.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex30 > ex30_4.tmp 2>&1;   \
 	   if (${DIFF} output/ex30_4.out ex30_4.tmp) then true; \
 	   else echo "Possible problem with ex30_4, diffs above"; fi; \
 	   ${RM} -f ex30_4.tmp
 runex30_5:
-	-@${MPIEXEC} -n 1 ./ex30 -lu -no_rowperm -no_colperm > ex30_5.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex30 -lu > ex30_5.tmp 2>&1;   \
 	   if (${DIFF} output/ex30_5.out ex30_5.tmp) then true; \
 	   else echo "Possible problem with ex30_5, diffs above"; fi; \
 	   ${RM} -f ex30_5.tmp
 runex30_6:
-	-@${MPIEXEC} -n 1 ./ex30 -lu -no_rowperm -no_colperm -triangular_solve > ex30_3.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex30 -lu -triangular_solve > ex30_3.tmp 2>&1;   \
 	   if (${DIFF} output/ex30_3.out ex30_3.tmp) then true; \
 	   else echo "Possible problem with ex30_6, diffs above"; fi; \
 	   ${RM} -f ex30_3.tmp

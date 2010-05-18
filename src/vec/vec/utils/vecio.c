@@ -20,6 +20,126 @@ EXTERN PetscErrorCode VecLoadIntoVector_Binary(PetscViewer, Vec);
 EXTERN PetscErrorCode VecLoadIntoVector_Netcdf(PetscViewer, Vec);
 
 #undef __FUNCT__  
+#define __FUNCT__ "VecLoadnew"
+/*@C 
+  VecLoadnew - Loads a vector that has been stored in binary format
+  with VecView().
+
+  Collective on PetscViewer 
+
+  Input Parameters:
++ viewer - binary file viewer, obtained from PetscViewerBinaryOpen() or
+           NetCDF file viewer, obtained from PetscViewerNetcdfOpen()
+
+  Output Parameter:
+. newvec - the newly loaded vector.
+
+   Level: intermediate
+
+  Notes:
+  The input file must contain the full global vector, as
+  written by the routine VecView().
+
+  If newvec is not created before a call to VecLoadnew , PETSc creates 
+  newvec, sets the type and the local and global sizes.If type and/or 
+  sizes are already set, then the same are used.
+
+  Notes for advanced users:
+  Most users should not need to know the details of the binary storage
+  format, since VecLoad() and VecView() completely hide these details.
+  But for anyone who's interested, the standard binary matrix storage
+  format is
+.vb
+     int    VEC_FILE_CLASSID
+     int    number of rows
+     PetscScalar *values of all entries
+.ve
+
+   In addition, PETSc automatically does the byte swapping for
+machines that store the bytes reversed, e.g.  DEC alpha, freebsd,
+linux, Windows and the paragon; thus if you write your own binary
+read/write routines you have to swap the bytes; see PetscBinaryRead()
+and PetscBinaryWrite() to see how this may be done.
+
+  Concepts: vector^loading from file
+
+.seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoadIntoVector() 
+@*/  
+PetscErrorCode PETSCVEC_DLLEXPORT VecLoadnew(PetscViewer viewer, Vec *newvec)
+{
+  PetscErrorCode ierr;
+  PetscTruth     isbinary,flg;
+  char           vtype[256];
+  const char    *prefix;
+#if defined(PETSC_HAVE_PNETCDF)
+  PetscTruth     isnetcdf;
+#endif
+#if defined(PETSC_HAVE_HDF5)
+  PetscTruth     ishdf5;
+#endif
+
+  PetscFunctionBegin;
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"VecLoadnew not implemented yet\n");
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  PetscValidPointer(newvec,3);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HDF5)
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_HDF5,&ishdf5);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_PNETCDF)
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&isnetcdf);CHKERRQ(ierr);
+#endif
+
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
+
+  ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_PNETCDF)
+  if (isnetcdf) {
+    ierr = VecLoad_Netcdf(viewer,newvec);CHKERRQ(ierr);
+  } else
+#endif
+#if defined(PETSC_HAVE_HDF5)
+  if (ishdf5) {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Since HDF5 format gives ASCII name for each object in file; must use VecLoadIntoVector() after setting name of Vec with PetscObjectSetName()");
+  } else 
+#endif
+  {
+    Vec            factory;
+    MPI_Comm       comm;
+    PetscErrorCode (*r)(PetscViewer, const VecType,Vec*);
+    PetscMPIInt    size;
+    const VecType  outtype;
+
+    ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,(const char**)&prefix);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(prefix,"-vec_type",vtype,256,&flg);CHKERRQ(ierr);
+    if (flg) {
+      outtype = vtype;
+    }
+    ierr = PetscOptionsGetString(prefix,"-vecload_type",vtype,256,&flg);CHKERRQ(ierr);
+    if (flg) {
+      outtype = vtype;
+    }
+    ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);  
+    if (!outtype) {
+      ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+      outtype = (size > 1) ? VECMPI : VECSEQ;
+    }
+
+    ierr = VecCreate(comm,&factory);CHKERRQ(ierr);
+    ierr = VecSetSizes(factory,1,PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = VecSetType(factory,outtype);CHKERRQ(ierr);
+    r = factory->ops->load;
+    ierr = VecDestroy(factory);
+    if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"VecLoad is not supported for type: %s",outtype);
+    ierr = (*r)(viewer,outtype,newvec);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "VecLoad"
 /*@C 
   VecLoad - Loads a vector that has been stored in binary format
@@ -108,7 +228,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, const VecType outt
     MPI_Comm       comm;
     PetscErrorCode (*r)(PetscViewer, const VecType,Vec*);
     PetscMPIInt    size;
+    PetscTruth     load_new;
 
+    ierr = PetscOptionsGetTruth(PETSC_NULL,"-load_new",&load_new,PETSC_NULL);CHKERRQ(ierr);
+    if(load_new) {
+      ierr = VecLoadnew(viewer,newvec);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
     ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,(const char**)&prefix);CHKERRQ(ierr);
     ierr = PetscOptionsGetString(prefix,"-vec_type",vtype,256,&flg);CHKERRQ(ierr);
     if (flg) {

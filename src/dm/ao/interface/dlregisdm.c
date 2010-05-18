@@ -18,13 +18,16 @@ static PetscTruth DMPackageInitialized = PETSC_FALSE;
 .keywords: AO, DA, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMFinalizePackage(void) {
+PetscErrorCode PETSCDM_DLLEXPORT DMFinalizePackage(void)
+{
 #ifdef PETSC_HAVE_SIEVE
   PetscErrorCode ierr;
 #endif
 
   PetscFunctionBegin;
   DMPackageInitialized = PETSC_FALSE;
+  DAList               = PETSC_NULL;
+  DARegisterAllCalled  = PETSC_FALSE;
 #ifdef PETSC_HAVE_SIEVE
   ierr = MeshFinalize();CHKERRQ(ierr);
 #endif
@@ -173,14 +176,12 @@ PetscErrorCode PETSCDM_DLLEXPORT PetscDLLibraryRegister_petscdm(const char path[
 {
   PetscErrorCode ierr;
 
-  ierr = PetscInitializeNoArguments();
-  if (ierr) return(1);
-
+  PetscFunctionBegin;
   /*
       If we got here then PETSc was properly loaded
   */
   ierr = DMInitializePackage(path);CHKERRQ(ierr);
-  return(0);
+  PetscFunctionReturn(0);
 }
 EXTERN_C_END
 

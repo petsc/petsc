@@ -43,8 +43,6 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutSetBlockSize(PetscLayout,Pet
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetBlockSize(PetscLayout,PetscInt*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetRange(PetscLayout,PetscInt *,PetscInt *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetRanges(PetscLayout,const PetscInt *[]);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutSetSizeBlockSize(PetscLayout,PetscInt);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetSizeBlockSize(PetscLayout,PetscInt *);
 
 /* ----------------------------------------------------------------------------*/
 
@@ -102,6 +100,7 @@ struct _VecOps {
   PetscErrorCode (*setfromoptions)(Vec);
   PetscErrorCode (*maxpointwisedivide)(Vec,Vec,PetscReal*);      /* m = max abs(x ./ y) */
   PetscErrorCode (*load)(PetscViewer,const VecType,Vec*);
+  PetscErrorCode (*loadnew)(PetscViewer,Vec*);             /* New Vecload */
   PetscErrorCode (*pointwisemax)(Vec,Vec,Vec);
   PetscErrorCode (*pointwisemaxabs)(Vec,Vec,Vec);
   PetscErrorCode (*pointwisemin)(Vec,Vec,Vec);

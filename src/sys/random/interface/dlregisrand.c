@@ -9,7 +9,7 @@ static PetscTruth PetscRandomPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomFinalizePackage"
 /*@C
-  PetscRandomFinalizePackage - This function destroys everything in the Petsc interface to the charactoristics package. It is
+  PetscRandomFinalizePackage - This function destroys everything in the Petsc interface to the Random package. It is
   called from PetscFinalize().
 
   Level: developer

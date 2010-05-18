@@ -394,7 +394,7 @@ static PetscErrorCode DAViewGnuplot2d(DA da,Vec fields,const char comment[],cons
   Vec            coords,local_fields;
   DACoor2d       **_coords;
   FILE           *fp;
-  char           fname[PETSC_MAX_PATH_LEN],*field_name;
+  char           fname[PETSC_MAX_PATH_LEN];
   PetscMPIInt    rank;
   PetscInt       si,sj,nx,ny,i,j;
   PetscInt       n_dofs,d;
@@ -411,6 +411,7 @@ static PetscErrorCode DAViewGnuplot2d(DA da,Vec fields,const char comment[],cons
   ierr = DAGetInfo(da,0,0,0,0,0,0,0,&n_dofs,0,0,0);CHKERRQ(ierr);
   ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"### x y ");CHKERRQ(ierr);
   for (d = 0; d < n_dofs; d++) {
+    const char *field_name;
     ierr = DAGetFieldName(da,d,&field_name);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%s ",field_name);CHKERRQ(ierr);
   }
@@ -462,7 +463,7 @@ static PetscErrorCode DAViewCoefficientsGnuplot2d(DA da,Vec fields,const char co
   DA                     cda;
   Vec                    local_fields;
   FILE                   *fp;
-  char                   fname[PETSC_MAX_PATH_LEN],*field_name;
+  char                   fname[PETSC_MAX_PATH_LEN];
   PetscMPIInt            rank;
   PetscInt               si,sj,nx,ny,i,j,p;
   PetscInt               n_dofs,d;
@@ -479,6 +480,7 @@ static PetscErrorCode DAViewCoefficientsGnuplot2d(DA da,Vec fields,const char co
   ierr = DAGetInfo(da,0,0,0,0,0,0,0,&n_dofs,0,0,0);CHKERRQ(ierr);
   ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"### x y ");CHKERRQ(ierr);
   for (d = 0; d < n_dofs; d++) {
+    const char *field_name;
     ierr = DAGetFieldName(da,d,&field_name);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%s ",field_name);CHKERRQ(ierr);
   }
@@ -1420,7 +1422,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
             element_props[j][i].fy[p]  = -1.0;
           }
         }
-      } SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Unknown coefficient_structure");
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Unknown coefficient_structure");
     }
   }
   ierr = DAVecRestoreArray(prop_cda,prop_coords,&_prop_coords);CHKERRQ(ierr);
@@ -1463,6 +1465,13 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   ierr = KSPSetOptionsPrefix(ksp_S,"stokes_"); /* stokes */ CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp_S,A,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp_S);CHKERRQ(ierr);
+  {
+    PC pc;
+    const PetscInt ufields[] = {0,1},pfields[1] = {2};
+    ierr = KSPGetPC(ksp_S,&pc);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetFields(pc,"u",2,ufields);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetFields(pc,"p",1,pfields);CHKERRQ(ierr);
+  }
 
   ierr = KSPSolve(ksp_S,f,X);CHKERRQ(ierr);
   ierr = DAViewGnuplot2d(da_Stokes,X,"Velocity solution for Stokes eqn.","X");CHKERRQ(ierr);

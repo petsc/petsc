@@ -1721,7 +1721,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #if defined(PETSC_HAVE_MUMPS)
-extern PetscErrorCode MatGetFactor_seqsbaij_mumps(Mat,MatFactorType,Mat*);
+extern PetscErrorCode MatGetFactor_sbaij_mumps(Mat,MatFactorType,Mat*);
 #endif
 #if defined(PETSC_HAVE_SPOOLES)
 extern PetscErrorCode MatGetFactor_seqsbaij_spooles(Mat,MatFactorType,Mat*);
@@ -1805,8 +1805,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
 #endif
 #if defined(PETSC_HAVE_MUMPS)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mumps_C",
-                                     "MatGetFactor_seqsbaij_mumps",
-                                     MatGetFactor_seqsbaij_mumps);CHKERRQ(ierr);
+                                     "MatGetFactor_sbaij_mumps",
+                                     MatGetFactor_sbaij_mumps);CHKERRQ(ierr);
 #endif
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactorAvailable_petsc_C",
                                      "MatGetFactorAvailable_seqsbaij_petsc",
