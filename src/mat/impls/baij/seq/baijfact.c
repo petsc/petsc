@@ -561,9 +561,9 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat B,Mat A,const MatFactorInfo *inf
   } else {
     C->ops->solve = MatSolve_SeqBAIJ_1; 
   }
-  C->ops->solveadd           = MatSolveAdd_SeqAIJ;
-  C->assembled    = PETSC_TRUE;
-  C->preallocated = PETSC_TRUE;
+  C->ops->solveadd = MatSolveAdd_SeqAIJ;
+  C->assembled     = PETSC_TRUE;
+  C->preallocated  = PETSC_TRUE;
   ierr = PetscLogFlops(C->cmap->n);CHKERRQ(ierr);
 
   /* MatShiftView(A,info,&sctx) */
