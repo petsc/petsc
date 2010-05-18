@@ -1,4 +1,8 @@
-#!/System/Library/Frameworks/Python.framework/Versions/2.5/Resources/Python.app/Contents/MacOS/Python
+#!/usr/bin/env python
+# See bin/maint/iphonebuilder.py for instructions
+# Note that this "cheats" and runs all the ./configure tests on the Mac NOT on the iPhone
+# but this is ok because the answers are the same.
+#
 if __name__ == '__main__':
   import sys
   import os
