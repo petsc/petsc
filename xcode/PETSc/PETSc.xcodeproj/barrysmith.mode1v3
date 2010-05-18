@@ -325,10 +325,10 @@
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>D8F1F525119F799200E77F2A</string>
+										<string>D8880C8F11A3241C006A776E</string>
 										<key>history</key>
 										<array>
-											<string>D8F2DE78119F1886004742F2</string>
+											<string>D8F1F525119F799200E77F2A</string>
 										</array>
 									</dict>
 									<key>SplitCount</key>
@@ -340,14 +340,14 @@
 							<key>GeometryConfiguration</key>
 							<dict>
 								<key>Frame</key>
-								<string>{{0, 0}, {580, 260}}</string>
+								<string>{{0, 0}, {580, 251}}</string>
 								<key>RubberWindowFrame</key>
 								<string>324 307 788 504 0 0 1440 878 </string>
 							</dict>
 							<key>Module</key>
 							<string>PBXNavigatorGroup</string>
 							<key>Proportion</key>
-							<string>260pt</string>
+							<string>251pt</string>
 						</dict>
 						<dict>
 							<key>ContentConfiguration</key>
@@ -360,14 +360,14 @@
 							<key>GeometryConfiguration</key>
 							<dict>
 								<key>Frame</key>
-								<string>{{0, 265}, {580, 198}}</string>
+								<string>{{0, 256}, {580, 207}}</string>
 								<key>RubberWindowFrame</key>
 								<string>324 307 788 504 0 0 1440 878 </string>
 							</dict>
 							<key>Module</key>
 							<string>XCDetailModule</string>
 							<key>Proportion</key>
-							<string>198pt</string>
+							<string>207pt</string>
 						</dict>
 					</array>
 					<key>Proportion</key>
@@ -386,9 +386,9 @@
 			</array>
 			<key>TableOfContents</key>
 			<array>
-				<string>D8F1F526119F799200E77F2A</string>
+				<string>D8880C8C11A3241C006A776E</string>
 				<string>1CE0B1FE06471DED0097A5F4</string>
-				<string>D8F1F527119F799200E77F2A</string>
+				<string>D8880C8D11A3241C006A776E</string>
 				<string>1CE0B20306471E060097A5F4</string>
 				<string>1CE0B20506471E060097A5F4</string>
 			</array>
@@ -526,8 +526,8 @@
 	<integer>5</integer>
 	<key>WindowOrderList</key>
 	<array>
-		<string>/Users/barrysmith/Src/petsc-dev/xcode/PETSc/PETSc.xcodeproj</string>
 		<string>D809926F119E41CF00C5B516</string>
+		<string>/Users/barrysmith/Src/petsc-dev/xcode/PETSc/PETSc.xcodeproj</string>
 	</array>
 	<key>WindowString</key>
 	<string>324 307 788 504 0 0 1440 878 </string>
@@ -568,8 +568,6 @@
 							<string>350pt</string>
 						</dict>
 						<dict>
-							<key>BecomeActive</key>
-							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXProjectModuleGUID</key>
@@ -609,7 +607,7 @@
 			<key>TableOfContents</key>
 			<array>
 				<string>D809926F119E41CF00C5B516</string>
-				<string>D8F1F528119F799200E77F2A</string>
+				<string>D8880C8E11A3241C006A776E</string>
 				<string>1CD0528F0623707200166675</string>
 				<string>XCMainBuildResultsModuleGUID</string>
 			</array>
@@ -622,7 +620,7 @@
 			<key>WindowToolGUID</key>
 			<string>D809926F119E41CF00C5B516</string>
 			<key>WindowToolIsVisible</key>
-			<true/>
+			<false/>
 		</dict>
 		<dict>
 			<key>Identifier</key>
