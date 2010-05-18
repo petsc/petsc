@@ -16,6 +16,9 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat fact,PetscTruth natural)
   PetscFunctionBegin;
   if(natural){
     switch (fact->rmap->bs){
+    case 1:
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1;
+      break;
     case 2:
       fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering;
       break;
@@ -44,6 +47,9 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat fact,PetscTruth natural)
   }
   else{
     switch (fact->rmap->bs){
+    case 1:
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1;
+      break;
     case 2:
       fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2;
       break;
