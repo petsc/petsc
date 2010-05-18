@@ -10,6 +10,7 @@ template<typename Section, typename Order>
 void constructFieldSplit(const Obj<Section>& section, const Obj<Order>& globalOrder, Vec v, PC fieldSplit) {
   const typename Section::chart_type& chart = section->getChart();
   PetscInt                            space = 0;
+  char                                spaceName[2] = {'0', '\0'};
   PetscErrorCode                      ierr;
 
   PetscInt total = 0;
@@ -66,7 +67,8 @@ void constructFieldSplit(const Obj<Section>& section, const Obj<Order>& globalOr
     }
     if (i != n-1) {throw PETSc::Exception("Invalid fibration numbering");}
     ierr = ISCreateGeneralNC(section->comm(), n, idx, &is);CHKERRXX(ierr);
-    ierr = PCFieldSplitSetIS(fieldSplit, is);CHKERRXX(ierr);
+    ierr = PCFieldSplitSetIS(fieldSplit, spaceName, is);CHKERRXX(ierr);
+    ++spaceName[0];
   }
 };
 
