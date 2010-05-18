@@ -5414,7 +5414,7 @@ PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatSolve_SeqBAIJ_1_NaturalOrdering"
 PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data;
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
   PetscErrorCode    ierr;
   const PetscInt    n = a->mbs,*ai = a->i,*aj = a->j,*adiag = a->diag,*vi;
   PetscScalar       *x,sum;
@@ -5773,6 +5773,11 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,con
 
   PetscFunctionBegin;
   if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
+  if (bs>1){  /* check shifttype */
+    if (info->shifttype == MAT_SHIFT_NONZERO || info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE) 
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only MAT_SHIFT_NONE and MAT_SHIFT_INBLOCKS are supported for BAIJ matrix");
+  }
+
   ierr = MatMissingDiagonal(A,&missing,&d);CHKERRQ(ierr);
   if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",d);
 

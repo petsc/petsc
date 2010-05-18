@@ -25,7 +25,7 @@ class Configure(config.base.Configure):
     help.addArgument('Windows','-with-windows-graphics=<bool>',   nargs.ArgBool(None, 1,'Enable check for Windows Graphics'))
     help.addArgument('PETSc', '-with-default-arch=<bool>',        nargs.ArgBool(None, 1, 'Allow using the last configured arch without setting PETSC_ARCH'))
     help.addArgument('PETSc','-with-single-library=<bool>',       nargs.ArgBool(None, 1,'Put all PETSc code into the single -lpetsc library'))
-
+    help.addArgument('PETSc', '-with-iphone=<no,yes>',            nargs.ArgDownload(None, 0, 'Build an iPhone version of PETSc'))    
     return
 
   def setupDependencies(self, framework):
@@ -323,7 +323,7 @@ class Configure(config.base.Configure):
 
   def configurePrefetch(self):
     '''Sees if there are any prefetch functions supported'''
-    if config.setCompilers.Configure.isSolaris():
+    if config.setCompilers.Configure.isSolaris() or self.framework.argDB['with-iphone']:
       self.addDefine('Prefetch(a,b,c)', ' ')
       return
     self.pushLanguage(self.languages.clanguage)      

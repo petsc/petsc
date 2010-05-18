@@ -1,24 +1,28 @@
 #!/usr/bin/env python
 #
-#   Generates a subdirectory containing all the .c files needed for a build by Apple's Xcode GUI
+#   Builds a iPhone static library of PETSc
 #
 #   Before using removed /usr/include/mpi.h and /Developer/SDKs/MacOSX10.5.sdk/usr/include/mpi.h or
 #      Xcode will use those instead of the MPIuni one we point to
 #
-#   Run ./configure with the options --with-valgrind=0 [--with-mpi=0 --with-x=0 --with-cc="gcc -m32" --download-c-blas-lapack ](when building for iPhone)
 #
-#   Remove mention of xmm*.h in $PETSC_ARCH/include/petscconf.h and change PETSc_Prefetch() to do nothing (when building for iPhone)
+#   Run ./config/examples/arch-iphone.py [use --with-debugging=0 to get iPhone/iPad version, otherwise creates simulator version]
+#      this sets up the appropriate configuration file and builds C BLAS/LAPACK for the iPhone/iPad
 #
-#   After running xcodebuilder.py
-#      In Project->Add to Project put in the directory $PETSC_DIR/PETSC_ARCH/xcode-links
-#      In Project->Edit Project Settings->Search Paths->Header Search Paths add
+#   Run ./bin/maint/iphonebuilder.py
+#      this creates the PETSc iPhone library
+#
+#   open xcode/examples/examples.xcodeproj
+#       Project -> Edit Project Setting  -> Configuration (make sure it is Release or Debug depending on if you used --with-debugging=0)
+#       Build -> Build and Debug
+#
+#   This you may need to edit
+#     In xcode/PETSc/Petsc.xcodeproj
+#       Project->Add to Project put in the directory $PETSC_DIR/PETSC_ARCH/xcode-links
+#     In xcode/PETSc/Petsc.xcodeproj and xcode/examples/examples.xcodeproj
 #         $PETSC_DIR/include $PETSC_DIR/include/mpiuni $PETSC_DIR/$PETSC_ARCH/include  replacing the variables with their values, for example
 #         /Users/barrysmith/Src/petsc-dev/include /Users/barrysmith/Src/petsc-dev/include/mpiuni /Users/barrysmith/Src/petsc-dev/arch-uni/include
-#      Press control mouse on Frameworks bullet->Add Existing Frameworks then select libblas and liblapack (when building for Mac)
 #
-#  Notes - if you skip the --with-mpi=0 and let it use the NATIVE Apple MPI that may work, I have not tried it (When building for Mac)
-#        - have not tried anything with Fortran or C++
-#        - if you link against the X11 libraries you can probably skip the --with-x=0 (When building for Mac)
 #
 import os, sys
 
@@ -57,6 +61,7 @@ class PETScMaker(script.Script):
    self.scalarType    = self.framework.require('PETSc.utilities.scalarTypes', None)
    self.memAlign      = self.framework.require('PETSc.utilities.memAlign',    None)
    self.libraryOptions= self.framework.require('PETSc.utilities.libraryOptions', None)      
+   self.compilerFlags = self.framework.require('config.compilerFlags', self)
    return
 
  def setupHelp(self, help):
@@ -129,8 +134,6 @@ class PETScMaker(script.Script):
      if self.verbose: print 'Linking C files',cnames
      for i in cnames:
        j = i[l+1:]
-       print os.path.join(dirname,i)
-       print os.path.join(basedir,i)
        if not os.path.islink(os.path.join(basedir,i)):
          os.symlink(os.path.join(dirname,i),os.path.join(basedir,i))
    # do not need to link these because xcode project points to original source code directory
@@ -243,14 +246,21 @@ class PETScMaker(script.Script):
      self.buildDir(root)
      for badDir in [d for d in dirs if not self.checkDir(os.path.join(root, d))]:
        dirs.remove(badDir)
-   #self.buildDir(os.path.join(os.environ['PETSC_DIR'],'externalpackages','f2cblaslapack-3.1.1','blas'))
-   #self.buildDir(os.path.join(os.environ['PETSC_DIR'],'externalpackages','f2cblaslapack-3.1.1','lapack'))
-   # manually link f2c include file
-   #if not os.path.islink(os.path.join(self.petscdir.dir, self.arch.arch, 'include','f2c.h')):   
-   #os.symlink(os.path.join(self.petscdir.dir, 'externalpackages', 'f2cblaslapack-3.1.1','blas','f2c.h'),os.path.join(self.petscdir.dir, self.arch.arch, 'include','f2c.h'))   
-   # do not need to link these because xcode project points to original source code directory
-   #os.symlink(os.path.join(self.petscdir.dir, self.arch.arch, 'petscconf.h'),os.path.join(self.petscdir.dir, self.arch.arch, 'xcode-links','include','petscconf.h'))
-   #os.symlink(os.path.join(self.petscdir.dir, self.arch.arch, 'petscfix.h'),os.path.join(self.petscdir.dir, self.arch.arch, 'xcode-links','include','petscfix.h'))     
+
+   debug = 'Debug'
+   debugdir = 'Debug-iphonesimulator'
+   if not self.compilerFlags.debugging:
+     debug = 'Release'
+     debugdir = 'Release-iphoneos'
+   try:
+     output,err,ret  = self.executeShellCommand('cd '+os.path.join(os.environ['PETSC_DIR'],'xcode','PETSc')+';xcodebuild -configuration '+debug, timeout=3000, log = self.log)
+   except RuntimeError, e:
+     raise RuntimeError('Error making iPhone version of PETSc libraries: '+str(e))
+   try:
+     output,err,ret  = self.executeShellCommand('mv -f '+os.path.join(os.environ['PETSC_DIR'],'xcode','PETSc','build',debugdir,'libPETSc.a')+' '+os.path.join(os.environ['PETSC_DIR'],os.environ['PETSC_ARCH'],'lib'), timeout=30, log = self.log)
+   except RuntimeError, e:
+     raise RuntimeError('Error copying iPhone version of PETSc libraries: '+str(e))
+
    return
 
 def noCheckCommand(command, status, output, error):

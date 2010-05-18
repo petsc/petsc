@@ -179,11 +179,17 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat B,Mat A,const MatFactorInfo *inf
   const PetscInt *ajtmp,*bjtmp,*bdiag=b->diag,*pj,bs2=a->bs2;
   MatScalar      *rtmp,*pc,*mwork,*v,*pv,*aa=a->a;
   PetscInt       flg;
-  PetscReal      shift = info->shiftamount;
+  PetscReal      shift;
 
   PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
+
+  if (info->shifttype == MAT_SHIFT_NONE){
+    shift = 0;
+  } else { /* info->shifttype == MAT_SHIFT_INBLOCKS */
+    shift = info->shiftamount;
+  }
 
   /* generate work space needed by the factorization */
   ierr = PetscMalloc2(bs2*n,MatScalar,&rtmp,bs2,MatScalar,&mwork);CHKERRQ(ierr);
@@ -253,7 +259,6 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat B,Mat A,const MatFactorInfo *inf
     pv   = b->a + bs2*bdiag[i];
     pj   = b->j + bdiag[i];
     ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);   
-    /* ierr = Kernel_A_gets_inverse_A(bs,pv,v_pivots,v_work);CHKERRQ(ierr); */
     ierr = Kernel_A_gets_inverse_A_4(pv,shift);CHKERRQ(ierr);
       
     /* U part */
@@ -434,12 +439,18 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat B,Mat A,const Ma
   const PetscInt *ajtmp,*bjtmp,*bdiag=b->diag,*pj,bs2=a->bs2;
   MatScalar      *rtmp,*pc,*mwork,*v,*pv,*aa=a->a;
   PetscInt       flg;
-  PetscReal      shift = info->shiftamount;
+  PetscReal      shift;
 
   PetscFunctionBegin;
   /* generate work space needed by the factorization */
   ierr = PetscMalloc2(bs2*n,MatScalar,&rtmp,bs2,MatScalar,&mwork);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,bs2*n*sizeof(MatScalar));CHKERRQ(ierr);
+
+  if (info->shifttype == MAT_SHIFT_NONE){
+    shift = 0;
+  } else { /* info->shifttype == MAT_SHIFT_INBLOCKS */
+    shift = info->shiftamount;
+  }
 
   for (i=0; i<n; i++){
     /* zero rtmp */
@@ -504,7 +515,6 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat B,Mat A,const Ma
     pv   = b->a + bs2*bdiag[i];
     pj   = b->j + bdiag[i];
     ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);   
-    /* ierr = Kernel_A_gets_inverse_A(bs,pv,v_pivots,v_work);CHKERRQ(ierr); */
     ierr = Kernel_A_gets_inverse_A_4(pv,shift);CHKERRQ(ierr);
       
     /* U part */

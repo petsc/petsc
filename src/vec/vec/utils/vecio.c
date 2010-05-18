@@ -228,7 +228,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, const VecType outt
     MPI_Comm       comm;
     PetscErrorCode (*r)(PetscViewer, const VecType,Vec*);
     PetscMPIInt    size;
-    PetscTruth     load_new;
+    PetscTruth     load_new=PETSC_FALSE;
 
     ierr = PetscOptionsGetTruth(PETSC_NULL,"-load_new",&load_new,PETSC_NULL);CHKERRQ(ierr);
     if(load_new) {
