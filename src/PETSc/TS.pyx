@@ -319,6 +319,9 @@ cdef class TS(Object):
 
     #
 
+    def setUp(self):
+        CHKERR( TSSetUp(self.ts) )
+        
     def solve(self, Vec u not None):
         CHKERR( TSSolve(self.ts, u.vec) )
 
