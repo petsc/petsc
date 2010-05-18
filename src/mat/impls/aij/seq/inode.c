@@ -1241,8 +1241,8 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
   /* also map the inode sizes according to the ordering */
   ierr = PetscMalloc((n+1)* sizeof(PetscInt),&tmp_vec1);CHKERRQ(ierr);
   for (i=0,j=0; i<node_max; ++i,++j){
-    if (ns[i]>3) {
-      tmp_vec1[j] = ns[i]/2;
+    if (ns[i] > 4) {
+      tmp_vec1[j] = 4;
       ++j; 
       tmp_vec1[j] = ns[i] - tmp_vec1[j-1];
     } else {

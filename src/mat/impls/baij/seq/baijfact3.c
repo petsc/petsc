@@ -16,6 +16,9 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat fact,PetscTruth natural)
   PetscFunctionBegin;
   if(natural){
     switch (fact->rmap->bs){
+    case 1:
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1;
+      break;
     case 2:
       fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering;
       break;
@@ -41,9 +44,11 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat fact,PetscTruth natural)
       fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N;
       break;
     }
-  }
-  else{
+  } else {
     switch (fact->rmap->bs){
+    case 1:
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1;
+      break;
     case 2:
       fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2;
       break;
@@ -194,6 +199,11 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
 
   PetscFunctionBegin;
   if (A->rmap->N != A->cmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"matrix must be square");
+  if (bs>1){  /* check shifttype */
+    if (info->shifttype == MAT_SHIFT_NONZERO || info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE) 
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only MAT_SHIFT_NONE and MAT_SHIFT_INBLOCKS are supported for BAIJ matrix");
+  }
+
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);

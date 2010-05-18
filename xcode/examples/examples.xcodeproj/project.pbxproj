@@ -235,9 +235,9 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					"/Users/barrysmith/Src/petsc-dev/include",
-					"/Users/barrysmith/Src/petsc-dev/include/mpiuni",
-					"/Users/barrysmith/Src/petsc-dev/arch-uni/include",
+					"$(SRCROOT)/../../include",
+					"$(SRCROOT)/../../include/mpiuni",
+					"$(SRCROOT)/../../arch-uni/include",
 				);
 				PREBINDING = NO;
 				"PROVISIONING_PROFILE[sdk=iphoneos3.2]" = "AFDA94A8-BF9D-4B65-999C-118FE0474B66";
@@ -254,9 +254,9 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					"/Users/barrysmith/Src/petsc-dev/include",
-					"/Users/barrysmith/Src/petsc-dev/include/mpiuni",
-					"/Users/barrysmith/Src/petsc-dev/arch-uni/include",
+					"$(SRCROOT)/../../include",
+					"$(SRCROOT)/../../include/mpiuni",
+					"$(SRCROOT)/../../arch-uni/include",
 				);
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
 				PREBINDING = NO;

@@ -416,6 +416,170 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_inplace(Mat C,Mat A,
      Version for when blocks are 1 by 1.
 */
 #undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_1"
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat B,Mat A,const MatFactorInfo *info)
+{
+  Mat              C=B;
+  Mat_SeqBAIJ      *a=(Mat_SeqBAIJ*)A->data,*b=(Mat_SeqBAIJ *)C->data;
+  IS               isrow = b->row,isicol = b->icol;
+  PetscErrorCode   ierr;
+  const PetscInt   *r,*ic,*ics;
+  const PetscInt   n=a->mbs,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bdiag=b->diag;
+  PetscInt         i,j,k,nz,nzL,row,*pj;
+  const PetscInt   *ajtmp,*bjtmp;
+  MatScalar        *rtmp,*pc,multiplier,*pv;
+  const  MatScalar *aa=a->a,*v;
+  PetscTruth       row_identity,col_identity;
+  FactorShiftCtx   sctx;
+  const PetscInt   *ddiag;
+  PetscReal        rs;
+  MatScalar        d;
+
+  PetscFunctionBegin;
+  /* MatPivotSetUp(): initialize shift context sctx */
+  ierr = PetscMemzero(&sctx,sizeof(FactorShiftCtx));CHKERRQ(ierr);
+
+  if (info->shifttype == (PetscReal) MAT_SHIFT_POSITIVE_DEFINITE) { /* set sctx.shift_top=max{rs} */
+    ddiag          = a->diag;
+    sctx.shift_top = info->zeropivot;
+    for (i=0; i<n; i++) {
+      /* calculate sum(|aij|)-RealPart(aii), amt of shift needed for this row */
+      d  = (aa)[ddiag[i]];
+      rs = -PetscAbsScalar(d) - PetscRealPart(d);
+      v  = aa+ai[i];
+      nz = ai[i+1] - ai[i];
+      for (j=0; j<nz; j++) 
+	rs += PetscAbsScalar(v[j]);
+      if (rs>sctx.shift_top) sctx.shift_top = rs;
+    }
+    sctx.shift_top   *= 1.1;
+    sctx.nshift_max   = 5;
+    sctx.shift_lo     = 0.;
+    sctx.shift_hi     = 1.;
+  } 
+
+  ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
+  ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
+  ierr = PetscMalloc((n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
+  ics  = ic;
+
+  do {
+    sctx.newshift = PETSC_FALSE;
+    for (i=0; i<n; i++){
+      /* zero rtmp */
+      /* L part */
+      nz    = bi[i+1] - bi[i];
+      bjtmp = bj + bi[i];
+      for  (j=0; j<nz; j++) rtmp[bjtmp[j]] = 0.0;
+
+      /* U part */
+      nz = bdiag[i]-bdiag[i+1];
+      bjtmp = bj + bdiag[i+1]+1;
+      for  (j=0; j<nz; j++) rtmp[bjtmp[j]] = 0.0; 
+   
+      /* load in initial (unfactored row) */
+      nz    = ai[r[i]+1] - ai[r[i]];
+      ajtmp = aj + ai[r[i]];
+      v     = aa + ai[r[i]];
+      for (j=0; j<nz; j++) {
+        rtmp[ics[ajtmp[j]]] = v[j];
+      }
+      /* ZeropivotApply() */
+      rtmp[i] += sctx.shift_amount;  /* shift the diagonal of the matrix */
+    
+      /* elimination */
+      bjtmp = bj + bi[i];
+      row   = *bjtmp++;
+      nzL   = bi[i+1] - bi[i];
+      for(k=0; k < nzL;k++) {
+        pc = rtmp + row;
+        if (*pc != 0.0) {
+          pv         = b->a + bdiag[row];
+          multiplier = *pc * (*pv); 
+          *pc        = multiplier;
+          pj = b->j + bdiag[row+1]+1; /* beginning of U(row,:) */
+	  pv = b->a + bdiag[row+1]+1;
+	  nz = bdiag[row]-bdiag[row+1]-1; /* num of entries in U(row,:) excluding diag */
+          for (j=0; j<nz; j++) rtmp[pj[j]] -= multiplier * pv[j];
+          ierr = PetscLogFlops(2.0*nz);CHKERRQ(ierr);
+        }
+        row = *bjtmp++;
+      }
+
+      /* finished row so stick it into b->a */
+      rs = 0.0;
+      /* L part */
+      pv   = b->a + bi[i] ;
+      pj   = b->j + bi[i] ;
+      nz   = bi[i+1] - bi[i];
+      for (j=0; j<nz; j++) {
+        pv[j] = rtmp[pj[j]]; rs += PetscAbsScalar(pv[j]);
+      }
+
+      /* U part */
+      pv = b->a + bdiag[i+1]+1;
+      pj = b->j + bdiag[i+1]+1;
+      nz = bdiag[i] - bdiag[i+1]-1;
+      for (j=0; j<nz; j++) {
+        pv[j] = rtmp[pj[j]]; rs += PetscAbsScalar(pv[j]);
+      }
+
+      sctx.rs  = rs;
+      sctx.pv  = rtmp[i];
+      ierr = MatPivotCheck(info,&sctx,i);CHKERRQ(ierr);
+      if(sctx.newshift) break; /* break for-loop */
+      rtmp[i] = sctx.pv; /* sctx.pv might be updated in the case of MAT_SHIFT_INBLOCKS */
+
+      /* Mark diagonal and invert diagonal for simplier triangular solves */
+      pv  = b->a + bdiag[i];
+      *pv = 1.0/rtmp[i];
+
+    } /* endof for (i=0; i<n; i++){ */
+
+    /* MatPivotRefine() */
+    if (info->shifttype == (PetscReal)MAT_SHIFT_POSITIVE_DEFINITE && !sctx.newshift && sctx.shift_fraction>0 && sctx.nshift<sctx.nshift_max){
+      /* 
+       * if no shift in this attempt & shifting & started shifting & can refine,
+       * then try lower shift
+       */
+      sctx.shift_hi       = sctx.shift_fraction;
+      sctx.shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;
+      sctx.shift_amount   = sctx.shift_fraction * sctx.shift_top;
+      sctx.newshift       = PETSC_TRUE;
+      sctx.nshift++;
+    }
+  } while (sctx.newshift);
+
+  ierr = PetscFree(rtmp);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
+  
+  ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
+  ierr = ISIdentity(isicol,&col_identity);CHKERRQ(ierr);
+  if (row_identity && col_identity) {
+    C->ops->solve = MatSolve_SeqBAIJ_1_NaturalOrdering;
+  } else {
+    C->ops->solve = MatSolve_SeqBAIJ_1; 
+  }
+  C->ops->solveadd = MatSolveAdd_SeqAIJ;
+  C->assembled     = PETSC_TRUE;
+  C->preallocated  = PETSC_TRUE;
+  ierr = PetscLogFlops(C->cmap->n);CHKERRQ(ierr);
+
+  /* MatShiftView(A,info,&sctx) */
+  if (sctx.nshift){
+    if (info->shifttype == (PetscReal)MAT_SHIFT_POSITIVE_DEFINITE) {
+      ierr = PetscInfo4(A,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,sctx.shift_fraction,sctx.shift_top);CHKERRQ(ierr);
+    } else if (info->shifttype == (PetscReal)MAT_SHIFT_NONZERO) {
+      ierr = PetscInfo2(A,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
+    } else if (info->shifttype == (PetscReal)MAT_SHIFT_INBLOCKS){
+      ierr = PetscInfo2(A,"number of shift_inblocks applied %D, each shift_amount %G\n",sctx.nshift,info->shiftamount);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_1_inplace"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1_inplace(Mat C,Mat A,const MatFactorInfo *info)
 {

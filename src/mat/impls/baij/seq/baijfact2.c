@@ -5295,6 +5295,60 @@ PetscErrorCode MatSolve_SeqBAIJ_1_inplace(Mat A,Vec bb,Vec xx)
   ierr = PetscLogFlops(2.0*1*(a->nz) - A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolve_SeqBAIJ_1"
+PetscErrorCode MatSolve_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
+{
+  Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data;
+  IS                iscol = a->col,isrow = a->row;
+  PetscErrorCode    ierr;
+  PetscInt          i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,*adiag = a->diag,nz;
+  const PetscInt    *rout,*cout,*r,*c;
+  PetscScalar       *x,*tmp,sum;
+  const PetscScalar *b;
+  const MatScalar   *aa = a->a,*v;
+
+  PetscFunctionBegin;
+  if (!n) PetscFunctionReturn(0);
+
+  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr); 
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  tmp  = a->solve_work;
+
+  ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
+  ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout; 
+
+  /* forward solve the lower triangular */
+  tmp[0] = b[r[0]];
+  v      = aa;
+  vi     = aj;
+  for (i=1; i<n; i++) {
+    nz  = ai[i+1] - ai[i];
+    sum = b[r[i]];
+    PetscSparseDenseMinusDot(sum,tmp,v,vi,nz); 
+    tmp[i] = sum;
+    v += nz; vi += nz;
+  }
+
+  /* backward solve the upper triangular */
+  for (i=n-1; i>=0; i--){
+    v   = aa + adiag[i+1]+1;
+    vi  = aj + adiag[i+1]+1;
+    nz  = adiag[i]-adiag[i+1]-1;
+    sum = tmp[i];
+    PetscSparseDenseMinusDot(sum,tmp,v,vi,nz); 
+    x[c[i]] = tmp[i] = sum*v[nz]; /* v[nz] = aa[adiag[i]] */
+  }
+
+  ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2*a->nz - A->cmap->n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*
       Special case where the matrix was ILU(0) factored in the natural
    ordering. This eliminates the need for the column and row permutation.
@@ -5352,6 +5406,54 @@ PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = PetscLogFlops(2.0*(a->nz) - A->cmap->n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSolve_SeqBAIJ_1_NaturalOrdering"
+PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
+{
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscErrorCode    ierr;
+  const PetscInt    n = a->mbs,*ai = a->i,*aj = a->j,*adiag = a->diag,*vi;
+  PetscScalar       *x,sum;
+  const PetscScalar *b;
+  const MatScalar   *aa = a->a,*v;
+  PetscInt          i,nz;
+
+  PetscFunctionBegin;
+  if (!n) PetscFunctionReturn(0);
+
+  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+
+  /* forward solve the lower triangular */
+  x[0] = b[0];
+  v    = aa;
+  vi   = aj;
+  for (i=1; i<n; i++) {
+    nz  = ai[i+1] - ai[i];
+    sum = b[i];
+    PetscSparseDenseMinusDot(sum,x,v,vi,nz);
+    v  += nz;
+    vi += nz;
+    x[i] = sum;
+  }
+  
+  /* backward solve the upper triangular */
+  for (i=n-1; i>=0; i--){
+    v   = aa + adiag[i+1] + 1;
+    vi  = aj + adiag[i+1] + 1;
+    nz = adiag[i] - adiag[i+1]-1;
+    sum = x[i];
+    PetscSparseDenseMinusDot(sum,x,v,vi,nz);
+    x[i] = sum*v[nz]; /* x[i]=aa[adiag[i]]*sum; v++; */
+  }
+   
+  ierr = PetscLogFlops(2.0*a->nz - A->cmap->n);CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5671,6 +5773,11 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,con
 
   PetscFunctionBegin;
   if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
+  if (bs>1){  /* check shifttype */
+    if (info->shifttype == MAT_SHIFT_NONZERO || info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE) 
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only MAT_SHIFT_NONE and MAT_SHIFT_INBLOCKS are supported for BAIJ matrix");
+  }
+
   ierr = MatMissingDiagonal(A,&missing,&d);CHKERRQ(ierr);
   if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",d);
 

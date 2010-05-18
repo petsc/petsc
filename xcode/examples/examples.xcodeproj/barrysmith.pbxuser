@@ -30,9 +30,9 @@
 	};
 	28D7ACF70DDB3853001CB0EB /* iphoneViewController.m */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {1160, 1456}}";
+			sepNavIntBoundsRect = "{{0, 0}, {1160, 1482}}";
 			sepNavSelRange = "{1907, 0}";
-			sepNavVisRange = "{2772, 410}";
+			sepNavVisRange = "{2772, 405}";
 			sepNavWindowFrame = "{{84, 85}, {1347, 725}}";
 		};
 	};
@@ -124,8 +124,8 @@
 					PBXFileDataSource_Warnings_ColumnID,
 				);
 			};
-			PBXPerProjectTemplateStateSaveDate = 295905841;
-			PBXWorkspaceStateSaveDate = 295905841;
+			PBXPerProjectTemplateStateSaveDate = 295906616;
+			PBXWorkspaceStateSaveDate = 295906616;
 		};
 		perUserProjectItems = {
 			D8085690119DD0280089F87B /* PBXTextBookmark */ = D8085690119DD0280089F87B /* PBXTextBookmark */;
@@ -136,7 +136,7 @@
 			D8696C16119F8AEC001E797D /* PBXTextBookmark */ = D8696C16119F8AEC001E797D /* PBXTextBookmark */;
 			D8696C18119F8AEC001E797D /* PBXTextBookmark */ = D8696C18119F8AEC001E797D /* PBXTextBookmark */;
 			D8696C1A119F8AEC001E797D /* PBXTextBookmark */ = D8696C1A119F8AEC001E797D /* PBXTextBookmark */;
-			D86E4BF311A329D70055BBC5 /* PBXTextBookmark */ = D86E4BF311A329D70055BBC5 /* PBXTextBookmark */;
+			D86C4F8211A32D82001DE553 /* PBXTextBookmark */ = D86C4F8211A32D82001DE553 /* PBXTextBookmark */;
 			D8744A0E119C98EA003C661D /* PBXTextBookmark */ = D8744A0E119C98EA003C661D /* PBXTextBookmark */;
 			D8744A36119C9C9E003C661D /* PBXTextBookmark */ = D8744A36119C9C9E003C661D /* PBXTextBookmark */;
 			D8744A49119CA159003C661D /* PBXTextBookmark */ = D8744A49119CA159003C661D /* PBXTextBookmark */;
@@ -308,15 +308,15 @@
 		path = "/Users/barrysmith/Src/petsc-dev/include/../src/snes/examples/tutorials/ex19.c";
 		sourceTree = "<absolute>";
 	};
-	D86E4BF311A329D70055BBC5 /* PBXTextBookmark */ = {
+	D86C4F8211A32D82001DE553 /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
 		fRef = 28D7ACF70DDB3853001CB0EB /* iphoneViewController.m */;
 		name = "iphoneViewController.m: 82";
 		rLen = 0;
 		rLoc = 1907;
 		rType = 0;
-		vrLen = 486;
-		vrLoc = 1830;
+		vrLen = 405;
+		vrLoc = 2772;
 	};
 	D8744A0E119C98EA003C661D /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
