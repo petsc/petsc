@@ -83,11 +83,17 @@ PetscErrorCode PetscVFPrintfiPhone(FILE *fd,const char *format,va_list Argp)
   return 0;
 }
 
-/*#define main ex19
+#define main ex19
+#define help help19
+#define Field Field19
 #include <../src/snes/examples/tutorials/ex19.c>
-#undef main */
+#undef main 
+#undef help
+#undef Field
 #define main ex48
-#include <../src/snes/examples/tutorials/ex19.c>
+#define help help48
+#define Field Field48
+#include <../src/snes/examples/tutorials/ex48.c>
 
 /*
     This is called each time one hits return in the TextField.
@@ -97,21 +103,26 @@ PetscErrorCode PetscVFPrintfiPhone(FILE *fd,const char *format,va_list Argp)
 - (BOOL) textFieldShouldReturn: (UITextField*) theTextField {
   [theTextField resignFirstResponder]; /* makes the keyboard disappear */
   textView.text = @"";   /* clears the UITextView */
-  globalTextView = textView;   /* we make this class member a global so in PetscVFPrintfiPhone() */
-  textView.font = [UIFont fontWithName:@"Courier" size:8.0]; /*[UIFont systemFontOfSize: 10.0f];*/ /* make the font size in the UITextView a more reasonable size */
+  globalTextView = textView;   /* we make this class member a global so can use in PetscVFPrintfiPhone() */
+  textView.font = [UIFont fontWithName:@"Courier" size:8.0]; /* make the font size in the UITextView a more reasonable size  and use fixed width*/
  
   const char *str = [textField.text UTF8String];
   char **args;
   int argc;
+  PetscTruth flg1,flg2;
+  
   PetscErrorCode ierr = PetscStrToArray(str,&argc,&args);
-
-  ex48(argc,args);
-  /*  ierr = PetscInitialize(&argc,&args,0,0); 
-  if (ierr) {
-    textView.text =@"Failed to initialize PETSc, likely command line mistake";
+  ierr = PetscStrncmp(str, "./ex19", 6, &flg1);
+  ierr = PetscStrncmp(str, "./ex48", 6, &flg2);
+  if (flg1) {
+    ex19(argc,args);
+  } else if (flg2) {
+    ex48(argc,args);
+  } else {
+    textView.text =@"Must start with ./ex19 or ./ex48";
+    ierr = PetscStrToArrayDestroy(argc,args);
     return YES;
   }
-  ierr = PetscFinalize(); */
   ierr = PetscStrToArrayDestroy(argc,args);
   return YES;
 }

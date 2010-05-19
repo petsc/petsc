@@ -239,12 +239,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetFieldName(DA da,PetscInt nf,const char nam
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
- 
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (nf < 0 || nf >= da->w) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
   if (da->fieldname[nf]) {ierr = PetscFree(da->fieldname[nf]);CHKERRQ(ierr);}
-  
-  ierr = PetscStrallocpy(name,&da->fieldname[nf]);CHKERRQ(ierr);
+   ierr = PetscStrallocpy(name,&da->fieldname[nf]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -399,8 +397,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalBoundingBox(DA da,PetscReal lmin[],Pe
 PetscErrorCode PETSCDM_DLLEXPORT DAGetBoundingBox(DA da,PetscReal gmin[],PetscReal gmax[])
 {
   PetscErrorCode ierr;
-  PetscMPIInt count;
-  PetscReal lmin[3],lmax[3];
+  PetscMPIInt    count;
+  PetscReal      lmin[3],lmax[3];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
