@@ -961,12 +961,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDM(KSP ksp,DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
   if (ksp->dm) {ierr = DMDestroy(ksp->dm);CHKERRQ(ierr);}
-  ksp->dm       = dm;
-  ksp->dmActive = PETSC_TRUE;
-  ierr = PetscObjectReference((PetscObject)ksp->dm);CHKERRQ(ierr);
+  ksp->dm = dm;
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetDM(pc,dm);CHKERRQ(ierr);
+  ksp->dmActive = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 

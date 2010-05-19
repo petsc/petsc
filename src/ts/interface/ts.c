@@ -2147,10 +2147,16 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetDM(TS ts,DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
   if (ts->dm) {ierr = DMDestroy(ts->dm);CHKERRQ(ierr);}
   ts->dm = dm;
-  ierr = PetscObjectReference((PetscObject)ts->dm);CHKERRQ(ierr);
-  if (ts->snes) {ierr = SNESSetDM(ts->snes,dm);CHKERRQ(ierr);}
+  if (ts->snes) {
+    ierr = SNESSetDM(ts->snes,dm);CHKERRQ(ierr);
+  }
+  if (ts->ksp) {
+    ierr = KSPSetDM(ts->ksp,dm);CHKERRQ(ierr);
+    ierr = KSPSetDMActive(ts->ksp,PETSC_FALSE);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
