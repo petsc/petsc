@@ -90,11 +90,16 @@ class VTKViewer {
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
-    if (opt2 || opt3) {ierr = PetscPrintf(PETSC_COMM_WORLD, "Using optimized VTK output\n"); CHKERRQ(ierr);}
     if (verify) enforceDim = 3;
     if (field->commRank() == 0) {
       const typename Section::chart_type::const_iterator cEnd = chart.end();
+      std::ostringstream formatString;
 
+      if (opt2) {
+        formatString << "%." << precision << "e %." << precision << "e 0.0\n";
+      } else if (opt3) {
+        formatString << "%." << precision << "e %." << precision << "e %." << precision << "e\n";
+      }
       for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != cEnd; ++p_iter) {
         if (!numbering->hasPoint(*p_iter)) continue;
         const value_type *array = field->restrictPoint(*p_iter);
@@ -103,9 +108,9 @@ class VTKViewer {
         // Perhaps there should be a flag for excluding boundary values
         if (dim != 0) {
           if (opt2) {
-            ierr = PetscViewerASCIIPrintf(viewer, "%.6g %.6g %.6g", array[0], array[1], 0.0);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer, formatString.str().c_str(), array[0], array[1], 0.0);CHKERRQ(ierr);
           } else if (opt3) {
-            ierr = PetscViewerASCIIPrintf(viewer, "%.6g %.6g %.6g", array[0], array[1], array[2]);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer, formatString.str().c_str(), array[0], array[1], array[2]);CHKERRQ(ierr);
           } else {
             ostringstream line;
 
@@ -139,9 +144,9 @@ class VTKViewer {
         ierr = MPI_Recv(remoteValues, size, mpiType, p, 1, field->comm(), &status);CHKERRQ(ierr);
         for(int e = 0; e < numLocalElementsAndFiberDim[0]; e++) {
           if (opt2) {
-            ierr = PetscViewerASCIIPrintf(viewer, "%.6g %.6g %.6g", remoteValues[e*numLocalElementsAndFiberDim[1]+0], remoteValues[e*numLocalElementsAndFiberDim[1]+1], 0.0);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer, formatString.str().c_str(), remoteValues[e*numLocalElementsAndFiberDim[1]+0], remoteValues[e*numLocalElementsAndFiberDim[1]+1], 0.0);CHKERRQ(ierr);
           } else if (opt3) {
-            ierr = PetscViewerASCIIPrintf(viewer, "%.6g %.6g %.6g", remoteValues[e*numLocalElementsAndFiberDim[1]+0], remoteValues[e*numLocalElementsAndFiberDim[1]+1], remoteValues[e*numLocalElementsAndFiberDim[1]+2]);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer, formatString.str().c_str(), remoteValues[e*numLocalElementsAndFiberDim[1]+0], remoteValues[e*numLocalElementsAndFiberDim[1]+1], remoteValues[e*numLocalElementsAndFiberDim[1]+2]);CHKERRQ(ierr);
           } else {
             ostringstream line;
 
