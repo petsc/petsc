@@ -19,6 +19,35 @@ EXTERN PetscErrorCode VecLoad_HDF5(PetscViewer, Vec*);
 EXTERN PetscErrorCode VecLoadIntoVector_Binary(PetscViewer, Vec);
 EXTERN PetscErrorCode VecLoadIntoVector_Netcdf(PetscViewer, Vec);
 
+#undef __FUNCT__
+#define __FUNCT__ "VecLoadGetType_private"
+PetscErrorCode VecLoadGetType_private(PetscViewer viewer, const VecType *type,MPI_Comm comm)
+{
+  PetscErrorCode ierr;
+  const char     *prefix;
+  PetscTruth     flg;
+  char           vtype[256];
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,(const char**)&prefix);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(prefix,"-vec_type",vtype,256,&flg);CHKERRQ(ierr);
+  if (flg) {
+     *type = vtype;
+  }
+  ierr = PetscOptionsGetString(prefix,"-vecload_type",vtype,256,&flg);CHKERRQ(ierr);
+  if (flg) {
+    *type = vtype;
+  }
+
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);  
+  if (!*type) {
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    *type = (size > 1) ? VECMPI : VECSEQ;
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoadnew"
 /*@C 
@@ -68,9 +97,7 @@ and PetscBinaryWrite() to see how this may be done.
 PetscErrorCode PETSCVEC_DLLEXPORT VecLoadnew(PetscViewer viewer, Vec *newvec)
 {
   PetscErrorCode ierr;
-  PetscTruth     isbinary,flg;
-  char           vtype[256];
-  const char    *prefix;
+  PetscTruth     isbinary;
 #if defined(PETSC_HAVE_PNETCDF)
   PetscTruth     isnetcdf;
 #endif
@@ -79,9 +106,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoadnew(PetscViewer viewer, Vec *newvec)
 #endif
 
   PetscFunctionBegin;
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"VecLoadnew not implemented yet\n");
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidPointer(newvec,3);
+  PetscValidPointer(newvec,2);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HDF5)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_HDF5,&ishdf5);CHKERRQ(ierr);
@@ -107,31 +133,20 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoadnew(PetscViewer viewer, Vec *newvec)
 #endif
   {
     Vec            factory;
-    MPI_Comm       comm;
     PetscErrorCode (*r)(PetscViewer, const VecType,Vec*);
-    PetscMPIInt    size;
     const VecType  outtype;
+    MPI_Comm       comm;
 
-    ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,(const char**)&prefix);CHKERRQ(ierr);
-    ierr = PetscOptionsGetString(prefix,"-vec_type",vtype,256,&flg);CHKERRQ(ierr);
-    if (flg) {
-      outtype = vtype;
-    }
-    ierr = PetscOptionsGetString(prefix,"-vecload_type",vtype,256,&flg);CHKERRQ(ierr);
-    if (flg) {
-      outtype = vtype;
-    }
-    ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);  
-    if (!outtype) {
-      ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-      outtype = (size > 1) ? VECMPI : VECSEQ;
-    }
-
-    ierr = VecCreate(comm,&factory);CHKERRQ(ierr);
-    ierr = VecSetSizes(factory,1,PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = VecSetType(factory,outtype);CHKERRQ(ierr);
-    r = factory->ops->load;
-    ierr = VecDestroy(factory);
+    ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+    if (((PetscObject)(*newvec))->classid != VEC_CLASSID) {
+      /* Bare vector: Create vector, set type and sizes */
+      ierr = VecCreate(comm,&factory);CHKERRQ(ierr); /* Create a new vector */
+      ierr = VecSetSizes(factory,1,PETSC_DETERMINE);CHKERRQ(ierr);
+      ierr = VecLoadGetType_private(viewer,&outtype,comm);CHKERRQ(ierr);
+      ierr = VecSetType(factory,outtype);CHKERRQ(ierr);
+      r = factory->ops->load;
+      ierr = VecDestroy(factory);
+    } 
     if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"VecLoad is not supported for type: %s",outtype);
     ierr = (*r)(viewer,outtype,newvec);CHKERRQ(ierr);
   }
