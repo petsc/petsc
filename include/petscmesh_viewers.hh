@@ -85,9 +85,12 @@ class VTKViewer {
     const typename Section::chart_type& chart   = field->getChart();
     const MPI_Datatype                  mpiType = ALE::New::ParallelFactory<value_type>::singleton(field->debug())->getMPIType();
     const bool                          verify  = enforceDim == -4;
+    const bool                          opt2    = enforceDim == 3 && fiberDim == 2;
+    const bool                          opt3    = std::max(fiberDim, enforceDim) == fiberDim && fiberDim == 3;
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
+    if (opt2 || opt3) {ierr = PetscPrintf(PETSC_COMM_WORLD, "Using optimized VTK output\n"); CHKERRQ(ierr);}
     if (verify) enforceDim = 3;
     if (field->commRank() == 0) {
       const typename Section::chart_type::const_iterator cEnd = chart.end();
@@ -96,25 +99,32 @@ class VTKViewer {
         if (!numbering->hasPoint(*p_iter)) continue;
         const value_type *array = field->restrictPoint(*p_iter);
         const int&        dim   = field->getFiberDimension(*p_iter);
-        ostringstream     line;
 
-        line << std::resetiosflags(std::ios::fixed)
-             << std::setiosflags(std::ios::scientific)
-             << std::setprecision(precision);
         // Perhaps there should be a flag for excluding boundary values
         if (dim != 0) {
-          if (verify) {line << *p_iter << " ";}
-          for(int d = 0; d < fiberDim; d++) {
-            if (d > 0) {
-              line << " ";
+          if (opt2) {
+            ierr = PetscViewerASCIIPrintf(viewer, "%.6g %.6g %.6g", array[0], array[1], 0.0);CHKERRQ(ierr);
+          } else if (opt3) {
+            ierr = PetscViewerASCIIPrintf(viewer, "%.6g %.6g %.6g", array[0], array[1], array[2]);CHKERRQ(ierr);
+          } else {
+            ostringstream line;
+
+            line << std::resetiosflags(std::ios::fixed)
+                 << std::setiosflags(std::ios::scientific)
+                 << std::setprecision(precision);
+            if (verify) {line << *p_iter << " ";}
+            for(int d = 0; d < fiberDim; d++) {
+              if (d > 0) {
+                line << " ";
+              }
+              line << array[d];
             }
-            line << array[d];
+            for(int d = fiberDim; d < enforceDim; d++) {
+              line << " 0.0";
+            }
+            line << std::endl;
+            ierr = PetscViewerASCIIPrintf(viewer, "%s", line.str().c_str());CHKERRQ(ierr);
           }
-          for(int d = fiberDim; d < enforceDim; d++) {
-            line << " 0.0";
-          }
-          line << std::endl;
-          ierr = PetscViewerASCIIPrintf(viewer, "%s", line.str().c_str());CHKERRQ(ierr);
         }
       }
       for(int p = 1; p < field->commSize(); p++) {
@@ -128,22 +138,28 @@ class VTKViewer {
         ierr = PetscMalloc(size * sizeof(value_type), &remoteValues);CHKERRQ(ierr);
         ierr = MPI_Recv(remoteValues, size, mpiType, p, 1, field->comm(), &status);CHKERRQ(ierr);
         for(int e = 0; e < numLocalElementsAndFiberDim[0]; e++) {
-          ostringstream line;
+          if (opt2) {
+            ierr = PetscViewerASCIIPrintf(viewer, "%.6g %.6g %.6g", remoteValues[e*numLocalElementsAndFiberDim[1]+0], remoteValues[e*numLocalElementsAndFiberDim[1]+1], 0.0);CHKERRQ(ierr);
+          } else if (opt3) {
+            ierr = PetscViewerASCIIPrintf(viewer, "%.6g %.6g %.6g", remoteValues[e*numLocalElementsAndFiberDim[1]+0], remoteValues[e*numLocalElementsAndFiberDim[1]+1], remoteValues[e*numLocalElementsAndFiberDim[1]+2]);CHKERRQ(ierr);
+          } else {
+            ostringstream line;
 
-          line << std::resetiosflags(std::ios::fixed)
-               << std::setiosflags(std::ios::scientific)
-               << std::setprecision(precision);
-          if (verify) {line << ((int) remoteValues[e*numLocalElementsAndFiberDim[1]+0]);}
-          for(int d = verify; d < numLocalElementsAndFiberDim[1]; d++) {
-            if (d > (int) verify) {              line << " ";
+            line << std::resetiosflags(std::ios::fixed)
+                 << std::setiosflags(std::ios::scientific)
+                 << std::setprecision(precision);
+            if (verify) {line << ((int) remoteValues[e*numLocalElementsAndFiberDim[1]+0]);}
+            for(int d = verify; d < numLocalElementsAndFiberDim[1]; d++) {
+              if (d > (int) verify) {              line << " ";
+              }
+              line << remoteValues[e*numLocalElementsAndFiberDim[1]+d];
             }
-            line << remoteValues[e*numLocalElementsAndFiberDim[1]+d];
+            for(int d = numLocalElementsAndFiberDim[1]; d < enforceDim; d++) {
+              line << " 0.0";
+            }
+            line << std::endl;
+            ierr = PetscViewerASCIIPrintf(viewer, "%s", line.str().c_str());CHKERRQ(ierr);
           }
-          for(int d = numLocalElementsAndFiberDim[1]; d < enforceDim; d++) {
-            line << " 0.0";
-          }
-          line << std::endl;
-          ierr = PetscViewerASCIIPrintf(viewer, "%s", line.str().c_str());CHKERRQ(ierr);
         }
         ierr = PetscFree(remoteValues);CHKERRQ(ierr);
       }
@@ -265,16 +281,24 @@ class VTKViewer {
     ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
     if (mesh->commRank() == 0) {
       const typename Mesh::label_sequence::iterator eEnd = elements->end();
+      const bool                                    opt3 = corners == 3;
+      const bool                                    opt4 = corners == 4;
 
       for(typename Mesh::label_sequence::iterator e_iter = elements->begin(); e_iter != eEnd; ++e_iter) {
         ALE::ISieveTraversal<sieve_type>::orientedClosure(*sieve, *e_iter, ncV);
         const typename visitor_type::oriented_point_type *cone = ncV.getOrientedPoints();
 
-        ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
-        for(int c = 0; c < ncV.getOrientedSize(); ++c) {
-          ierr = PetscViewerASCIIPrintf(viewer, " %d", vNumbering->getIndex(cone[c].first));CHKERRQ(ierr);
+        if (opt3) {
+          ierr = PetscViewerASCIIPrintf(viewer, "3 %d %d %d\n", vNumbering->getIndex(cone[0].first), vNumbering->getIndex(cone[1].first), vNumbering->getIndex(cone[2].first));CHKERRQ(ierr);
+        } else if (opt4) {
+          ierr = PetscViewerASCIIPrintf(viewer, "4 %d %d %d %d\n", vNumbering->getIndex(cone[0].first), vNumbering->getIndex(cone[1].first), vNumbering->getIndex(cone[2].first), vNumbering->getIndex(cone[3].first));CHKERRQ(ierr);
+        } else {
+          ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
+          for(int c = 0; c < ncV.getOrientedSize(); ++c) {
+            ierr = PetscViewerASCIIPrintf(viewer, " %d", vNumbering->getIndex(cone[c].first));CHKERRQ(ierr);
+          }
+          ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
         }
-        ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
         ncV.clear();
       }
       for(int p = 1; p < mesh->commSize(); p++) {
