@@ -211,9 +211,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetDM(PC pc,DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
   if (pc->dm) {ierr = DMDestroy(pc->dm);CHKERRQ(ierr);}
   pc->dm = dm;
-  ierr = PetscObjectReference((PetscObject)pc->dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

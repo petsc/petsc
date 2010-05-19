@@ -99,7 +99,7 @@ def processDir(tagfiles,dirname,names):
     if exname in names:
       names.remove(exname)
   #  Multi-level unique dirs - specify from toplevel
-  for exname in ['src/python/PETSc','client/c++','client/c','client/python']:
+  for exname in ['src/python/PETSc','client/c++','client/c','client/python','src/docs/website/documentation/changes']:
     for name in names:
       filename=os.path.join(dirname,name)
       if filename.find(exname) >=0:

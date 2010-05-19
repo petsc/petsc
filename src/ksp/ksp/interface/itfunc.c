@@ -1276,6 +1276,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetPC(KSP ksp,PC *pc)
   if (!ksp->pc) {
     ierr = PCCreate(((PetscObject)ksp)->comm,&ksp->pc);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)ksp->pc,(PetscObject)ksp,0);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(ksp,ksp->pc);CHKERRQ(ierr);
   }
   *pc = ksp->pc; 
   PetscFunctionReturn(0);

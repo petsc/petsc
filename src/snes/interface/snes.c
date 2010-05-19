@@ -2973,9 +2973,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetDM(SNES snes,DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
   if (snes->dm) {ierr = DMDestroy(snes->dm);CHKERRQ(ierr);}
   snes->dm = dm;
-  ierr = PetscObjectReference((PetscObject)snes->dm);CHKERRQ(ierr);
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,dm);CHKERRQ(ierr);
   ierr = KSPSetDMActive(ksp,PETSC_FALSE);CHKERRQ(ierr);

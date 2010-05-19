@@ -22,7 +22,7 @@ int main(int argc,char **argv)
   /* create two vectors */
   N = size*n; 
   ierr = VecCreate(PETSC_COMM_WORLD,&y);CHKERRQ(ierr);
-  ierr = VecSetSizes(y,n,PETSC_DECIDE);CHKERRQ(ierr)
+  ierr = VecSetSizes(y,n,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(y);CHKERRQ(ierr);
 
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);

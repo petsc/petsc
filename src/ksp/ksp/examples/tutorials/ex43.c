@@ -1107,7 +1107,7 @@ static PetscErrorCode DAIntegrateErrors(DA stokes_da,Vec X,Vec X_analytic)
   PetscScalar    gp_weight[GAUSS_POINTS];
   PetscInt       p,i;
   PetscScalar    J_p,fac;
-  PetscScalar    h,p_e_L2,u_e_L2,u_e_H1,p_L2,u_L2,u_H1;
+  PetscScalar    h,p_e_L2,u_e_L2,u_e_H1,p_L2,u_L2,u_H1,tp_L2,tu_L2,tu_H1;
   PetscInt       M;
   PetscReal      xymin[2],xymax[2];
   PetscErrorCode ierr;
@@ -1138,7 +1138,7 @@ static PetscErrorCode DAIntegrateErrors(DA stokes_da,Vec X,Vec X_analytic)
 
   h = (xymax[0]-xymin[0])/((double)M);
 
-  p_L2 = u_L2 = u_H1 = 0.0;
+  tp_L2 = tu_L2 = tu_H1 = 0.0;
 
   ierr = DAGetElementCorners(stokes_da,&sex,&sey,0,&mx,&my,0);CHKERRQ(ierr);
   for (ej = sey; ej < sey+my; ej++) {
@@ -1174,14 +1174,14 @@ static PetscErrorCode DAIntegrateErrors(DA stokes_da,Vec X,Vec X_analytic)
         }
       }
 
-      p_L2 = p_L2+p_e_L2;
-      u_L2 = u_L2+u_e_L2;
-      u_H1 = u_H1+u_e_H1;
+      tp_L2 = p_L2+p_e_L2;
+      tu_L2 = u_L2+u_e_L2;
+      tu_H1 = u_H1+u_e_H1;
     }
   }
-  ierr = PetscGlobalSum(&p_L2,&p_L2,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = PetscGlobalSum(&u_L2,&u_L2,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = PetscGlobalSum(&u_H1,&u_H1,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&tp_L2,&p_L2,1,MPIU_SCALAR,MPIU_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&tu_L2,&u_L2,1,MPIU_SCALAR,MPIU_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&tu_H1,&u_H1,1,MPIU_SCALAR,MPIU_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
   p_L2 = PetscSqrtScalar(p_L2);
   u_L2 = PetscSqrtScalar(u_L2);
   u_H1 = PetscSqrtScalar(u_H1);
