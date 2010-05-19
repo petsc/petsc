@@ -108,7 +108,7 @@ class VTKViewer {
         // Perhaps there should be a flag for excluding boundary values
         if (dim != 0) {
           if (opt2) {
-            ierr = PetscViewerASCIIPrintf(viewer, formatString.str().c_str(), array[0], array[1], 0.0);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer, formatString.str().c_str(), array[0], array[1]);CHKERRQ(ierr);
           } else if (opt3) {
             ierr = PetscViewerASCIIPrintf(viewer, formatString.str().c_str(), array[0], array[1], array[2]);CHKERRQ(ierr);
           } else {
@@ -144,7 +144,7 @@ class VTKViewer {
         ierr = MPI_Recv(remoteValues, size, mpiType, p, 1, field->comm(), &status);CHKERRQ(ierr);
         for(int e = 0; e < numLocalElementsAndFiberDim[0]; e++) {
           if (opt2) {
-            ierr = PetscViewerASCIIPrintf(viewer, formatString.str().c_str(), remoteValues[e*numLocalElementsAndFiberDim[1]+0], remoteValues[e*numLocalElementsAndFiberDim[1]+1], 0.0);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer, formatString.str().c_str(), remoteValues[e*numLocalElementsAndFiberDim[1]+0], remoteValues[e*numLocalElementsAndFiberDim[1]+1]);CHKERRQ(ierr);
           } else if (opt3) {
             ierr = PetscViewerASCIIPrintf(viewer, formatString.str().c_str(), remoteValues[e*numLocalElementsAndFiberDim[1]+0], remoteValues[e*numLocalElementsAndFiberDim[1]+1], remoteValues[e*numLocalElementsAndFiberDim[1]+2]);CHKERRQ(ierr);
           } else {
