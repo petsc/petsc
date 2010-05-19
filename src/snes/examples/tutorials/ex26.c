@@ -332,8 +332,12 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar *x,PetscScalar *f
     if (x[i] > max) max = x[i];
     if (x[i] < min) min = x[i];
   }
-  PetscGlobalMax(&max,&psi_a,PETSC_COMM_WORLD);
-  PetscGlobalMin(&min,&psi_0,PETSC_COMM_WORLD); 
+  /* 
+     Use PetscGlobalMax() and PetscGlobalMin() here because this code may be differentiated with AdiC. 
+     Otherwise should user MPI_Allreduce() 
+  */
+  ierr = PetscGlobalMax(PETSC_COMM_WORLD,&max,&psi_a);CHKERRQ(ierr);
+  ierr = PetscGlobalMin(PETSC_COMM_WORLD,&min,&psi_0);CHKERRQ(ierr); 
 
   hx     = 1.0/(PetscReal)(info->mx-1);  dhx    = 1.0/hx;
   

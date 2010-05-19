@@ -474,9 +474,9 @@ M*/
 #  define PETSC_SMALL                   1.e-10
 #endif
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGlobalMax(PetscReal*,PetscReal*,MPI_Comm);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGlobalMin(PetscReal*,PetscReal*,MPI_Comm);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGlobalSum(PetscScalar*,PetscScalar*,MPI_Comm);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGlobalMax(MPI_Comm, const PetscReal*,PetscReal*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGlobalMin(MPI_Comm, const PetscReal*,PetscReal*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGlobalSum(MPI_Comm, const PetscScalar*,PetscScalar*);
 
 /*MC
       PetscIsInfOrNan - Returns 1 if the input double has an infinity for Not-a-number (Nan) value, otherwise 0.

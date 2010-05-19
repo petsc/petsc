@@ -846,9 +846,9 @@ static PetscErrorCode THISurfaceStatistics(DA da,Vec X,PetscReal *min,PetscReal 
     }
   }
   ierr = DAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
-  ierr = PetscGlobalMin(&umin,min,((PetscObject)da)->comm);CHKERRQ(ierr);
-  ierr = PetscGlobalMax(&umax,max,((PetscObject)da)->comm);CHKERRQ(ierr);
-  ierr = PetscGlobalSum(&usum,&gusum,((PetscObject)da)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&umin,&min,1,MPIU_REAL,MPI_MIN,((PetscObject)da)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&umax,&max,1,MPIU_REAL,MPI_MAX,((PetscObject)da)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&usum,&gusum,1,MPIU_SCALAR,MPIU_SUM,((PetscObject)da)->comm);CHKERRQ(ierr);
   *mean = PetscRealPart(gusum) / (mx*my);
   PetscFunctionReturn(0);
 }
@@ -874,7 +874,7 @@ static PetscErrorCode THISolveStatistics(THI thi,DMMG *dmmg,PetscInt coarsened,c
     ierr = PetscPrintf(comm,"%s: Number of Newton iterations = %d, total linear iterations = %d\n",SNESConvergedReasons[reason],its,lits);CHKERRQ(ierr);
   }
   {
-    PetscReal nrm2,min[3]={1e100,1e100,1e100},max[3]={-1e100,-1e100,-1e100};
+    PetscReal nrm2,tmin[3]={1e100,1e100,1e100},tmax[3]={-1e100,-1e100,-1e100},min[3],max[3];
     PetscInt i,j,m;
     PetscScalar *x;
     ierr = VecNorm(X,NORM_2,&nrm2);CHKERRQ(ierr);
@@ -882,16 +882,16 @@ static PetscErrorCode THISolveStatistics(THI thi,DMMG *dmmg,PetscInt coarsened,c
     ierr = VecGetArray(X,&x);CHKERRQ(ierr);
     for (i=0; i<m; i+=2) {
       PetscReal u = PetscRealPart(x[i]),v = PetscRealPart(x[i+1]),c = sqrt(u*u+v*v);
-      min[0] = PetscMin(u,min[0]);
-      min[1] = PetscMin(v,min[1]);
-      min[2] = PetscMin(c,min[2]);
-      max[0] = PetscMax(u,max[0]);
-      max[1] = PetscMax(v,max[1]);
-      max[2] = PetscMax(c,max[2]);
+      tmin[0] = PetscMin(u,tmin[0]);
+      tmin[1] = PetscMin(v,tmin[1]);
+      tmin[2] = PetscMin(c,tmin[2]);
+      tmax[0] = PetscMax(u,tmax[0]);
+      tmax[1] = PetscMax(v,tmax[1]);
+      tmax[2] = PetscMax(c,tmax[2]);
     }
     ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(MPI_IN_PLACE,min,3,MPIU_REAL,MPI_MIN,((PetscObject)thi)->comm);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(MPI_IN_PLACE,max,3,MPIU_REAL,MPI_MAX,((PetscObject)thi)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(tmin,min,3,MPIU_REAL,MPI_MIN,((PetscObject)thi)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(tmax,max,3,MPIU_REAL,MPI_MAX,((PetscObject)thi)->comm);CHKERRQ(ierr);
     /* Dimensionalize to meters/year */
     nrm2 *= thi->units->year / thi->units->meter;
     for (j=0; j<3; j++) {
