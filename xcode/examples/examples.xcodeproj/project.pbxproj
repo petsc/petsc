@@ -237,7 +237,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/../../include",
 					"$(SRCROOT)/../../include/mpiuni",
-					"$(SRCROOT)/../../arch-uni/include",
+					"$(SRCROOT)/../../arch-iphone/include",
 				);
 				PREBINDING = NO;
 				"PROVISIONING_PROFILE[sdk=iphoneos3.2]" = "AFDA94A8-BF9D-4B65-999C-118FE0474B66";
@@ -256,7 +256,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/../../include",
 					"$(SRCROOT)/../../include/mpiuni",
-					"$(SRCROOT)/../../arch-uni/include",
+					"$(SRCROOT)/../../arch-iphone/include",
 				);
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
 				PREBINDING = NO;
