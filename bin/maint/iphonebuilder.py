@@ -16,14 +16,6 @@
 #       Project -> Edit Project Setting  -> Configuration (make sure it is Release or Debug depending on if you used --with-debugging=0)
 #       Build -> Build and Debug
 #
-#   This you may need to edit
-#     In xcode/PETSc/Petsc.xcodeproj
-#       Project->Add to Project put in the directory $PETSC_DIR/PETSC_ARCH/xcode-links
-#     In xcode/PETSc/Petsc.xcodeproj and xcode/examples/examples.xcodeproj
-#         $PETSC_DIR/include $PETSC_DIR/include/mpiuni $PETSC_DIR/$PETSC_ARCH/include  replacing the variables with their values, for example
-#         /Users/barrysmith/Src/petsc-dev/include /Users/barrysmith/Src/petsc-dev/include/mpiuni /Users/barrysmith/Src/petsc-dev/arch-uni/include
-#
-#
 import os, sys
 
 sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config'))

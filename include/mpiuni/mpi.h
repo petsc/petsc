@@ -597,7 +597,7 @@ extern int    MPI_Finalized(int*);
      (MPIUNI_Memcpy(recvbuf,sendbuf,(count)*(datatype)),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),MPI_SUCCESS)
 #define MPI_Allreduce(sendbuf, recvbuf,count,datatype,op,comm) \
-     (MPIUNI_Memcpy(recvbuf,sendbuf,(count)*(datatype)),\
+     ((sendbuf != MPI_IN_PLACE) ? MPIUNI_Memcpy(recvbuf,sendbuf,(count)*(datatype)) : 0, \
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),MPI_SUCCESS)
 #define MPI_Scan(sendbuf, recvbuf,count,datatype,op,comm) \
      (MPIUNI_Memcpy(recvbuf,sendbuf,(count)*(datatype)),\
