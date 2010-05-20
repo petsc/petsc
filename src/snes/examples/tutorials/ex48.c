@@ -846,8 +846,8 @@ static PetscErrorCode THISurfaceStatistics(DA da,Vec X,PetscReal *min,PetscReal 
     }
   }
   ierr = DAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&umin,&min,1,MPIU_REAL,MPI_MIN,((PetscObject)da)->comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&umax,&max,1,MPIU_REAL,MPI_MAX,((PetscObject)da)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&umin,min,1,MPIU_REAL,MPI_MIN,((PetscObject)da)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&umax,max,1,MPIU_REAL,MPI_MAX,((PetscObject)da)->comm);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&usum,&gusum,1,MPIU_SCALAR,MPIU_SUM,((PetscObject)da)->comm);CHKERRQ(ierr);
   *mean = PetscRealPart(gusum) / (mx*my);
   PetscFunctionReturn(0);
