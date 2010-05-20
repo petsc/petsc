@@ -128,7 +128,7 @@ int main(int argc,char **args)
     ierr = MatSolve(A,b,y);CHKERRQ(ierr);
     ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&norm2_inplace);CHKERRQ(ierr);
-    if (PetscAbs(norm2 - norm2_inplace) > 1.e-16) SETERRQ2(PETSC_COMM_SELF,1,"ILU(0) %G and in-place ILU(0) %G give different residuals",norm2,norm2_inplace);
+    if (PetscAbs(norm2 - norm2_inplace) > 1.e-14) SETERRQ2(PETSC_COMM_SELF,1,"ILU(0) %G and in-place ILU(0) %G give different residuals",norm2,norm2_inplace);
     ierr = MatDestroy(A);CHKERRQ(ierr);
   }
 
@@ -185,7 +185,7 @@ int main(int argc,char **args)
     ierr = MatSolve(A,b,y);CHKERRQ(ierr);
     ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&norm2_inplace);CHKERRQ(ierr);
-    if (PetscAbs(norm2 - norm2_inplace) > 1.e-16) SETERRQ2(PETSC_COMM_SELF,1,"ICC(0) %G and in-place ICC(0) %G give different residuals",norm2,norm2_inplace);
+    if (PetscAbs(norm2 - norm2_inplace) > 1.e-14) SETERRQ2(PETSC_COMM_SELF,1,"ICC(0) %G and in-place ICC(0) %G give different residuals",norm2,norm2_inplace);
     ierr = MatDestroy(A);CHKERRQ(ierr);
   }
 
