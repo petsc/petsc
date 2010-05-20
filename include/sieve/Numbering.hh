@@ -318,7 +318,7 @@ namespace ALE {
     // Order all local points
     //   points in the overlap are only ordered by the owner with the lowest rank
     template<typename Sequence_, typename Section_>
-    void constructLocalOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Sequence_& points, const Obj<Section_>& section) {
+    void constructLocalOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Sequence_& points, const Obj<Section_>& section, const int space = -1) {
       const int debug = sendOverlap->debug();
       int localSize = 0;
 
@@ -343,12 +343,12 @@ namespace ALE {
           } else {
             if (debug) {std::cout << "["<<order->commRank()<<"]     local point" << std::endl;}
             val.prefix = localSize;
-            val.index  = section->getConstrainedFiberDimension(*l_iter);
+            val.index  = space < 0 ? section->getConstrainedFiberDimension(*l_iter) : section->getConstrainedFiberDimension(*l_iter, space);
           }
         } else {
           if (debug) {std::cout << "["<<order->commRank()<<"]     local point" << std::endl;}
           val.prefix = localSize;
-          val.index  = section->getConstrainedFiberDimension(*l_iter);
+          val.index  = space < 0 ? section->getConstrainedFiberDimension(*l_iter) : section->getConstrainedFiberDimension(*l_iter, space);
         }
         if (debug) {std::cout << "["<<order->commRank()<<"]     has offset " << val.prefix << " and size " << val.index << std::endl;}
         localSize += val.index;
@@ -522,15 +522,15 @@ namespace ALE {
     };
     // Construct a full global order
     template<typename Sequence, typename Section>
-    void constructOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Sequence& points, const Obj<Section>& section) {
-      this->constructLocalOrder(order, sendOverlap, points, section);
+    void constructOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Sequence& points, const Obj<Section>& section, const int space = -1) {
+      this->constructLocalOrder(order, sendOverlap, points, section, space);
       this->calculateOffsets(order);
       this->updateOrder(order, points);
       this->completeOrder(order, sendOverlap, recvOverlap);
     };
     template<typename Sequence, typename Section>
-    void constructOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<Sequence>& points, const Obj<Section>& section) {
-      this->constructLocalOrder(order, sendOverlap, *points.ptr(), section);
+    void constructOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<Sequence>& points, const Obj<Section>& section, const int space = -1) {
+      this->constructLocalOrder(order, sendOverlap, *points.ptr(), section, space);
       this->calculateOffsets(order);
       this->updateOrder(order, *points.ptr());
       this->completeOrder(order, sendOverlap, recvOverlap);
@@ -600,7 +600,7 @@ namespace ALE {
       return this->_numberings[bundle.ptr()][labelname][value];
     };
     template<typename ABundle_, typename Section_>
-    const Obj<order_type>& getGlobalOrder(const Obj<ABundle_>& bundle, const std::string& name, const Obj<Section_>& section) {
+    const Obj<order_type>& getGlobalOrder(const Obj<ABundle_>& bundle, const std::string& name, const Obj<Section_>& section, const int space = -1) {
       if ((this->_orders.find(bundle.ptr()) == this->_orders.end()) ||
           (this->_orders[bundle.ptr()].find(name) == this->_orders[bundle.ptr()].end())) {
         bundle->constructOverlap();
@@ -609,7 +609,7 @@ namespace ALE {
         Obj<recv_overlap_type> recvOverlap = bundle->getRecvOverlap();
 
         if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Creating new global order: " << name << std::endl;}
-        this->constructOrder(order, sendOverlap, recvOverlap, section->getChart(), section);
+        this->constructOrder(order, sendOverlap, recvOverlap, section->getChart(), section, space);
         this->_orders[bundle.ptr()][name] = order;
       } else {
         if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Using old global order: " << name << std::endl;}
