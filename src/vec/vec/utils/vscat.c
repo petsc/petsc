@@ -1630,6 +1630,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterDestroy(VecScatter ctx)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ctx,VEC_SCATTER_CLASSID,1);
+  if (ctx->inuse) SETERRQ(((PetscObject)ctx)->comm,PETSC_ERR_ARG_WRONGSTATE,"Scatter context is in use");
   if (--((PetscObject)ctx)->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
