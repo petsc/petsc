@@ -419,27 +419,28 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   */
   ierr=PetscOptionsHasName(PETSC_NULL,"-zope", &flgz);CHKERRQ(ierr);
   ierr=PetscOptionsHasName(PETSC_NULL,"-nostdout", &flgzout);CHKERRQ(ierr);
-  if(flgz){
-    extern FILE* PETSC_ZOPEFD;
-    int sockfd; 
-    char hostname[256];
-    char username[256];
-    int remoteport = 9999;
-    ierr=PetscOptionsGetString(PETSC_NULL, "-zope", hostname, 256, &flgz);CHKERRQ(ierr);
-    if(!hostname[0]){
-      ierr=PetscGetHostName(hostname,256);CHKERRQ(ierr);}
-    ierr=PetscOpenSocket(hostname, remoteport, &sockfd);CHKERRQ(ierr);
-    ierr = PetscGetUserName(username, 256);
+  if (flgz){
+    int          sockfd; 
+    char         hostname[256];
+    char         username[256];
+    int          remoteport = 9999;
+
+    ierr = PetscOptionsGetString(PETSC_NULL, "-zope", hostname, 256, &flgz);CHKERRQ(ierr);
+    if (!hostname[0]){
+      ierr=PetscGetHostName(hostname,256);CHKERRQ(ierr);
+    }
+    ierr = PetscOpenSocket(hostname, remoteport, &sockfd);CHKERRQ(ierr);
+    ierr = PetscGetUserName(username, 256);CHKERRQ(ierr);
     PETSC_ZOPEFD = fdopen(sockfd, "w");
-    if(flgzout){
+    if (flgzout){
       PETSC_STDOUT = PETSC_ZOPEFD;
       fprintf(PETSC_STDOUT, "<<<user>>> %s\n",username);
       fprintf(PETSC_STDOUT, "<<<start>>>");
-    }
-    else{
+    } else {
       fprintf(PETSC_ZOPEFD, "<<<user>>> %s\n",username);
       fprintf(PETSC_ZOPEFD, "<<<start>>>");
-    }}
+    }
+  }
 #endif
 
   /*
