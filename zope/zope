@@ -2,17 +2,18 @@
 
 pushd ${PETSC_DIR}/zope >& /dev/null
 
-PYTHON=`which python2.4`
+PYTHON=`which python`
 INSTANCE_HOME="$PETSC_DIR/zope"
 CONFIG_FILE="$INSTANCE_HOME/zope.conf"
 SOFTWARE_HOME="$ZOPE_HOME/lib/python"
 PYTHONPATH="$SOFTWARE_HOME:$PYTHONPATH"
-ZOPE_RUN="$SOFTWARE_HOME/Zope2/Startup/run.py"
+ZOPE_RUN="$ZOPE_HOME/Zope2/Startup/run.py"
 export PYTHONPATH INSTANCE_HOME SOFTWARE_HOME
 
 # Start Zope server with a fresh database
 cp -f var/data.fs.hg var/Data.fs
-exec "$PYTHON" "$ZOPE_RUN" -C "$CONFIG_FILE" "$@" &
+echo "$PYTHON" "$ZOPE_RUN" --daemon -C "$CONFIG_FILE" "$@" 
+exec "$PYTHON" "$ZOPE_RUN" -C "$CONFIG_FILE" "$@" 
 
 # Try to automatically start the server using 'wget'.
 # In order to give time to Zope server to start,
