@@ -468,10 +468,11 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
       ierr = VecDestroy(lu->b_seq);CHKERRQ(ierr);
       if (lu->nSolve && lu->scat_sol){ierr = VecScatterDestroy(lu->scat_sol);CHKERRQ(ierr);}
       if (lu->nSolve && lu->x_seq){ierr = VecDestroy(lu->x_seq);CHKERRQ(ierr);}
-      ierr = PetscFree(lu->val);CHKERRQ(ierr);
-    } 
-    if( size == 1 && A->factortype == MAT_FACTOR_CHOLESKY && lu->isAIJ) {
-      ierr = PetscFree(lu->val);CHKERRQ(ierr);
+      ierr = PetscFree3(lu->irn,lu->jcn,lu->val);CHKERRQ(ierr);
+    } else if (A->factortype == MAT_FACTOR_CHOLESKY && lu->isAIJ) {
+      ierr = PetscFree3(lu->irn,lu->jcn,lu->val);CHKERRQ(ierr);
+    } else {
+      ierr = PetscFree2(lu->irn,lu->jcn);CHKERRQ(ierr);
     }
     lu->id.job=JOB_END; 
 #if defined(PETSC_USE_COMPLEX)
@@ -479,8 +480,6 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
 #else
     dmumps_c(&lu->id); 
 #endif
-    ierr = PetscFree(lu->irn);CHKERRQ(ierr);
-    ierr = PetscFree(lu->jcn);CHKERRQ(ierr);
     ierr = MPI_Comm_free(&(lu->comm_mumps));CHKERRQ(ierr);
   }
   /* clear composed functions */
