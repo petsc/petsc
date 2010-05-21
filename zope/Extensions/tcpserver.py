@@ -202,6 +202,7 @@ def gettime():
 def createpickle(i, n):
 	global users
 	global pdir
+	checkpickledir()
 	i = i.strip()
 	n = n.strip()
 	petscdir = os.environ["PETSC_DIR"]
@@ -215,12 +216,15 @@ def createpickle(i, n):
 
 #If a pickle directory does not exist, create one
 def checkpickledir():
-	e = os.environ["PETSC_DIR"]
+        global pdir
+        e = os.environ["PETSC_DIR"]
 	path = e+pdir
 	if not os.access(path, os.F_OK):
 		os.mkdir(path)
 
 def getpickles():
+        global pdir
+	checkpickledir()	
 	petscdir = os.environ["PETSC_DIR"]
 	files = os.listdir(petscdir + pdir)
 	return files
@@ -228,6 +232,8 @@ def getpickles():
 #Returns user information to previous state
 def unpickle(i):
 	global users
+        global pdir
+	checkpickledir()
 	i = i.strip()
 	petscdir = os.environ["PETSC_DIR"]
 	f = open(petscdir+pdir+i)

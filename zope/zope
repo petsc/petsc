@@ -3,17 +3,12 @@
 pushd ${PETSC_DIR}/zope >& /dev/null
 
 PYTHON=`which python`
-INSTANCE_HOME="$PETSC_DIR/zope"
 CONFIG_FILE="$INSTANCE_HOME/zope.conf"
-SOFTWARE_HOME="$ZOPE_HOME/lib/python"
-PYTHONPATH="$SOFTWARE_HOME:$PYTHONPATH"
 ZOPE_RUN="$ZOPE_HOME/Zope2/Startup/run.py"
-export PYTHONPATH INSTANCE_HOME SOFTWARE_HOME
 
 # Start Zope server with a fresh database
 cp -f var/data.fs.hg var/Data.fs
-echo "$PYTHON" "$ZOPE_RUN" --daemon -C "$CONFIG_FILE" "$@" 
-exec "$PYTHON" "$ZOPE_RUN" -C "$CONFIG_FILE" "$@" 
+exec "$PYTHON" "$ZOPE_RUN" -C "$CONFIG_FILE" "$@"  &
 
 # Try to automatically start the server using 'wget'.
 # In order to give time to Zope server to start,
@@ -25,7 +20,7 @@ if [ "$?" != 0 ]; then
   # As 'wget' failed, sleep ten seconds and try to use 'curl'.
   sleep 10; curl "http://localhost:9673/PETSc/startserver" >& /dev/null
   if [ "$?" != 0 ]; then
-    # As 'curl' also failed, asc the user to manually start the server.
+    # As 'curl' also failed, ask the user to manually start the server.
     echo "Point your browser to http://localhost:9673/PETSc/startserver to start the server"
   fi
 fi
