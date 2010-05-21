@@ -308,7 +308,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningDestroy(MatPartitioning part)
 
    Input Parameters:
 +  part - the partitioning context
--  weights - the weights
+-  weights - the weights, on each process this array must have the same size as the number of local rows
 
    Level: beginner
 
