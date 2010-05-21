@@ -589,8 +589,8 @@ PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_HDF5_DA(PetscViewer viewer,Ve
 
   /* Create the dataspace for the dataset */
   dim       = PetscHDF5IntCast(da->dim + ((da->w == 1) ? 0 : 1));
-  dims[cnt++]   = PetscHDF5IntCast(da->P);
-  dims[cnt++]   = PetscHDF5IntCast(da->N);
+  if (da->dim == 3) dims[cnt++]   = PetscHDF5IntCast(da->P);
+  if (da->dim > 1)  dims[cnt++]   = PetscHDF5IntCast(da->N);
   dims[cnt++]     = PetscHDF5IntCast(da->M);
   if (da->w > 1) PetscHDF5IntCast(dims[cnt++] = da->w);
 #if defined(PETSC_USE_COMPLEX)
@@ -610,16 +610,16 @@ PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_HDF5_DA(PetscViewer viewer,Ve
 
   /* Each process defines a dataset and reads it from the hyperslab in the file */
   cnt = 0; 
-  offset[cnt++] = PetscHDF5IntCast(da->zs);
-  offset[cnt++] = PetscHDF5IntCast(da->ys);
+  if (da->dim == 3) offset[cnt++] = PetscHDF5IntCast(da->zs);
+  if (da->dim > 1)  offset[cnt++] = PetscHDF5IntCast(da->ys);
   offset[cnt++] = PetscHDF5IntCast(da->xs/da->w);
   if (da->w > 1) offset[cnt++] = 0;
 #if defined(PETSC_USE_COMPLEX)
   offset[cnt++] = 0;
 #endif
   cnt = 0; 
-  count[cnt++] = PetscHDF5IntCast(da->ze - da->zs);
-  count[cnt++] = PetscHDF5IntCast(da->ye - da->ys);
+  if (da->dim == 3) count[cnt++] = PetscHDF5IntCast(da->ze - da->zs);
+  if (da->dim > 1)  count[cnt++] = PetscHDF5IntCast(da->ye - da->ys);
   count[cnt++] = PetscHDF5IntCast((da->xe - da->xs)/da->w);
   if (da->w > 1) count[cnt++] = PetscHDF5IntCast(da->w);
 #if defined(PETSC_USE_COMPLEX)
