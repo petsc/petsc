@@ -93,7 +93,9 @@ cdef class TS(Object):
     # --- xxx ---
 
     def setFunction(self, function, Vec f not None, *args, **kargs):
-        TS_setFunction(self.ts, f.vec, (function, args, kargs))
+        cdef PetscVec fvec = NULL
+        if f is not None: fvec = f.vec
+        TS_setFunction(self.ts, fvec, (function, args, kargs))
 
     def setJacobian(self, jacobian, Mat J, Mat P=None, *args, **kargs):
         cdef PetscMat Jmat=NULL
@@ -111,7 +113,7 @@ cdef class TS(Object):
         cdef PetscMat *jmat = &J.mat, *pmat = &J.mat
         if P is not None: pmat = &P.mat
         cdef PetscMatStructure flag = MAT_DIFFERENT_NONZERO_PATTERN
-        CHKERR( TSComputeRHSJacobian(self.ts, time, x.vec, 
+        CHKERR( TSComputeRHSJacobian(self.ts, time, x.vec,
                                      jmat, pmat, &flag) )
         return flag
 
@@ -132,8 +134,10 @@ cdef class TS(Object):
 
     #
 
-    def setIFunction(self, function, *args, **kargs):
-        TS_setIFunction(self.ts, (function, args, kargs))
+    def setIFunction(self, function, Vec f not None, *args, **kargs):
+        cdef PetscVec fvec=NULL
+        if f is not None: fvec = f.vec
+        TS_setIFunction(self.ts, f.vec, (function, args, kargs))
 
     def setIJacobian(self, jacobian, Mat J, Mat P=None, *args, **kargs):
         cdef PetscMat Jmat=NULL
@@ -142,14 +146,14 @@ cdef class TS(Object):
         if P is not None: Pmat = P.mat
         TS_setIJacobian(self.ts, Jmat, Pmat, (jacobian, args, kargs))
 
-    def computeIFunction(self, 
+    def computeIFunction(self,
                          t, Vec x not None, Vec xdot not None,
                          Vec f not None):
         cdef PetscReal time = asReal(t)
         CHKERR( TSComputeIFunction(self.ts, time, x.vec, xdot.vec, f.vec) )
 
-    def computeIJacobian(self, 
-                         t, Vec x not None, Vec xdot not None, a, 
+    def computeIJacobian(self,
+                         t, Vec x not None, Vec xdot not None, a,
                          Mat J not None, Mat P=None):
         cdef PetscReal time  = asReal(t)
         cdef PetscReal shift = asReal(a)
@@ -175,7 +179,7 @@ cdef class TS(Object):
     #
 
     def setSolution(self, Vec u not None):
-        CHKERR( TSSetSolution(self.ts,  u.vec) )
+        CHKERR( TSSetSolution(self.ts, u.vec) )
 
     def getSolution(self):
         cdef Vec u = Vec()
@@ -317,15 +321,14 @@ cdef class TS(Object):
     def getPostStep(self):
         return TS_getPostStep(self.ts)
 
-    #
-
     def setUp(self):
         CHKERR( TSSetUp(self.ts) )
-        
+
     def solve(self, Vec u not None):
         CHKERR( TSSolve(self.ts, u.vec) )
 
-    #
+    # Python
+    # ------
 
     def createPython(self, context=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)

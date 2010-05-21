@@ -968,14 +968,69 @@ SNESSetUseFDColoring(SNES snes,PetscTruth flag)
 /* ---------------------------------------------------------------- */
 
 #undef __FUNCT__
+#define __FUNCT__ "TSSetIFunction_Custom"
+static PetscErrorCode
+TSSetIFunction_Custom(TS ts,Vec r,TSIFunction fun,void *ctx)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,2);
+  ierr = TSSetIFunction(ts,fun,ctx);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)ts,
+                            "__ifunvec__",(PetscObject)r);CHKERRQ(ierr);
+  if (r) {
+    const TSType   ttype;
+    TSProblemType  ptype;
+    SNES           snes;
+    Vec            fvec;
+    PetscErrorCode (*ffun)(SNES,Vec,Vec,void*);
+    void           *fctx;
+    ierr = TSGetType(ts,&ttype);CHKERRQ(ierr);
+    ierr = TSGetProblemType(ts,&ptype);CHKERRQ(ierr);
+    if (ptype == TS_NONLINEAR && ttype) {
+      ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+      ierr = SNESGetFunction(snes,&fvec,&ffun,&fctx);CHKERRQ(ierr);
+      if (!fvec) { ierr = SNESSetFunction(snes,r,ffun,fctx);CHKERRQ(ierr); }
+    }
+  }
+  if (r) {
+    Vec svec;
+    ierr = TSGetSolution(ts,&svec);CHKERRQ(ierr);
+    if (!svec) {
+      ierr = VecDuplicate(r,&svec);CHKERRQ(ierr);
+      ierr = TSSetSolution(ts,svec);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject)ts,
+                                "__solvec__",(PetscObject)svec);CHKERRQ(ierr);
+      ierr = VecDestroy(svec);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+#define TSSetIFunction TSSetIFunction_Custom
+
+#undef __FUNCT__
 #define __FUNCT__ "TSSetRHSFunction_Ex"
 static PetscErrorCode
 TSSetRHSFunction_Ex(TS ts,Vec r,PetscErrorCode (*fun)(TS,PetscReal,Vec,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,2);
   ierr = TSSetRHSFunction(ts,fun,ctx);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)ts,"__rhs_funcvec__",(PetscObject)r);CHKERRQ(ierr);
+  if (r) {
+    Vec svec;
+    ierr = TSGetSolution(ts,&svec);CHKERRQ(ierr);
+    if (!svec) {
+      ierr = VecDuplicate(r,&svec);CHKERRQ(ierr);
+      ierr = TSSetSolution(ts,svec);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject)ts,
+                                "__solvec__",(PetscObject)svec);CHKERRQ(ierr);
+      ierr = VecDestroy(svec);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 #define TSSetRHSFunction TSSetRHSFunction_Ex

@@ -77,7 +77,7 @@ cdef extern from "petscts.h" nogil:
     int TSGetRHSJacobian(PetscTS,PetscMat*,PetscMat*,PetscTSJacobianFunction*,void**)
     int TSSetRHSFunction(PetscTS,PetscVec,PetscTSFunctionFunction,void*)
     int TSSetRHSJacobian(PetscTS,PetscMat,PetscMat,PetscTSJacobianFunction,void*)
-    int TSSetIFunction(PetscTS,PetscTSIFunctionFunction,void*)
+    int TSSetIFunction(PetscTS,PetscVec,PetscTSIFunctionFunction,void*)
     int TSSetIJacobian(PetscTS,PetscMat,PetscMat,PetscTSIJacobianFunction,void*)
     int TSGetIJacobian(PetscTS,PetscMat*,PetscMat*,PetscTSIJacobianFunction*,void**)
 
@@ -178,8 +178,10 @@ cdef int TS_Jacobian(PetscTS ts,
 cdef inline object TS_getIFunction(PetscTS ts):
     return Object_getAttr(<PetscObject>ts, '__ifunction__')
 
-cdef inline int TS_setIFunction(PetscTS ts, object function) except -1:
-    CHKERR( TSSetIFunction(ts, TS_IFunction, NULL) )
+cdef inline int TS_setIFunction(PetscTS ts, 
+                                PetscVec f,
+                                object function) except -1:
+    CHKERR( TSSetIFunction(ts, f, TS_IFunction, NULL) )
     Object_setAttr(<PetscObject>ts, '__ifunction__', function)
     return 0
 
