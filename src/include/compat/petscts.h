@@ -60,5 +60,34 @@ PetscErrorCode TSGetIJacobian(TS ts,Mat *A,Mat *B,
 {PetscTS_ERR_SUP}
 #endif
 
+#if (PETSC_VERSION_(3,0,0))
+#undef __FUNCT__
+#define __FUNCT__ "TSThetaSetTheta"
+static PETSC_UNUSED
+PetscErrorCode TSThetaSetTheta(TS ts,PetscReal theta)
+{
+  PetscErrorCode ierr,(*f)(TS,PetscReal);
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidPointer(theta,2);
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSThetaSetTheta_C",(void(**)(void))&f);CHKERRQ(ierr);
+  if (f) {ierr = (*f)(ts,theta);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "TSThetaGetTheta"
+static PETSC_UNUSED
+PetscErrorCode TSThetaGetTheta(TS ts,PetscReal *theta)
+{
+  PetscErrorCode ierr,(*f)(TS,PetscReal*);
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidPointer(theta,2);
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSThetaGetTheta_C",(void(**)(void))&f);CHKERRQ(ierr);
+  if (!f) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"TS type %s",((PetscObject)ts)->type_name);
+  ierr = (*f)(ts,theta);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif
 
 #endif /* _COMPAT_PETSC_TS_H */

@@ -351,6 +351,18 @@ cdef class TS(Object):
     def setPythonType(self, py_type):
         CHKERR( TSPythonSetType(self.ts, str2cp(py_type)) )
 
+    # Theta
+    # -----
+
+    def setTheta(self, theta):
+        cdef PetscReal rval = asReal(theta)
+        CHKERR( TSThetaSetTheta(self.ts, rval) )
+
+    def getTheta(self):
+        cdef PetscReal rval = 0
+        CHKERR( TSThetaGetTheta(self.ts, &rval) )
+        return toReal(rval)
+
     # --- xxx ---
 
     property appctx:

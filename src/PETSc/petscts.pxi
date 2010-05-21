@@ -109,6 +109,9 @@ cdef extern from "petscts.h" nogil:
     int TSStep(PetscTS,PetscInt*,PetscReal*)
     int TSSolve(PetscTS,PetscVec)
 
+    int TSThetaSetTheta(PetscTS,PetscReal)
+    int TSThetaGetTheta(PetscTS,PetscReal*)
+
 cdef extern from "custom.h" nogil:
     int TSSetUseFDColoring(PetscTS,PetscTruth)
     int TSGetUseFDColoring(PetscTS,PetscTruth*)
