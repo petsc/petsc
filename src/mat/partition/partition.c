@@ -341,7 +341,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetVertexWeights(MatPartitionin
 
    Input Parameters:
 +  part - the partitioning context
--  weights - the weights
+-  weights - An array of size nparts that is used to specify the fraction of
+             vertex weight that should be distributed to each sub-domain for
+             the balance constraint. If all of the sub-domains are to be of
+             the same size, then each of the nparts elements should be set
+             to a value of 1/nparts. Note that the sum of all of the weights
+             should be one.
 
    Level: beginner
 
