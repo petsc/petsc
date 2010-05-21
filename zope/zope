@@ -1,5 +1,7 @@
 #! /bin/sh
-
+#
+#   The username and password for the zope interface are by default petsc
+#
 pushd ${PETSC_DIR}/zope >& /dev/null
 
 PYTHON=`which python`
