@@ -543,6 +543,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   ierr = MatGetSize(Aloc,&m,&nlocal_allcols);CHKERRQ(ierr);
   ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
   ML_Create(&ml_object,pc_ml->MaxNlevels);
+  ML_Comm_Set_UsrComm(ml_object->comm,((PetscObject)A)->comm);
   pc_ml->ml_object = ml_object;
   ML_Init_Amatrix(ml_object,0,m,m,PetscMLdata);
   ML_Set_Amatrix_Getrow(ml_object,0,PetscML_getrow,PetscML_comm,nlocal_allcols); 

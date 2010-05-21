@@ -43,8 +43,6 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutSetBlockSize(PetscLayout,Pet
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetBlockSize(PetscLayout,PetscInt*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetRange(PetscLayout,PetscInt *,PetscInt *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetRanges(PetscLayout,const PetscInt *[]);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutSetSizeBlockSize(PetscLayout,PetscInt);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscLayoutGetSizeBlockSize(PetscLayout,PetscInt *);
 
 /* ----------------------------------------------------------------------------*/
 
