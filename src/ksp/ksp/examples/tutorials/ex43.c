@@ -1174,9 +1174,9 @@ static PetscErrorCode DAIntegrateErrors(DA stokes_da,Vec X,Vec X_analytic)
         }
       }
 
-      tp_L2 = p_L2+p_e_L2;
-      tu_L2 = u_L2+u_e_L2;
-      tu_H1 = u_H1+u_e_H1;
+      tp_L2 += p_e_L2;
+      tu_L2 += u_e_L2;
+      tu_H1 += u_e_H1;
     }
   }
   ierr = MPI_Allreduce(&tp_L2,&p_L2,1,MPIU_SCALAR,MPIU_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
