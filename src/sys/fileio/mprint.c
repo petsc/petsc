@@ -115,29 +115,28 @@ PetscErrorCode PETSC_DLLEXPORT PetscVSNPrintf(char *str,size_t len,const char *f
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscZopeLog"
-
-PetscErrorCode PETSC_DLLEXPORT PetscZopeLog(const char *format,va_list Argp){
+PetscErrorCode PETSC_DLLEXPORT PetscZopeLog(const char *format,va_list Argp)
+{
   /* no malloc since may be called by error handler */
-  char     newformat[8*1024];
-  char     log[8*1024];
-  
-  extern FILE * PETSC_ZOPEFD;
-  char logstart[] = " <<<log>>>";
-  size_t len;
-  size_t formatlen;
+  char        newformat[8*1024];
+  char        log[8*1024];
+  char        logstart[] = " <<<log>>>";
+  size_t      len;
+  size_t      formatlen;
+
   PetscFormatConvert(format,newformat,8*1024);
   PetscStrlen(logstart, &len);
   PetscMemcpy(log, logstart, len);
   PetscStrlen(newformat, &formatlen);
   PetscMemcpy(&(log[len]), newformat, formatlen);
-  if(PETSC_ZOPEFD != NULL){
+  if (PETSC_ZOPEFD){
 #if defined(PETSC_HAVE_VFPRINTF_CHAR)
-  vfprintf(PETSC_ZOPEFD,log,(char *)Argp);
+    vfprintf(PETSC_ZOPEFD,log,(char *)Argp);
 #else
-  vfprintf(PETSC_ZOPEFD,log,Argp);
+    vfprintf(PETSC_ZOPEFD,log,Argp);
 #endif
-  fflush(PETSC_ZOPEFD);
-}
+    fflush(PETSC_ZOPEFD);
+  }
   return 0;
 }
 
@@ -158,7 +157,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscVFPrintfDefault(FILE *fd,const char *format,
   char        *newformat;
   char         formatbuf[8*1024];
   size_t       oldLength;
-  extern FILE *PETSC_ZOPEFD;
 
   PetscStrlen(format, &oldLength);
   if (oldLength < 8*1024) {
@@ -167,7 +165,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscVFPrintfDefault(FILE *fd,const char *format,
     (void)PetscMalloc((oldLength+1) * sizeof(char), &newformat);
   }
   PetscFormatConvert(format,newformat,oldLength+1);
-  if(PETSC_ZOPEFD != NULL && PETSC_ZOPEFD != PETSC_STDOUT){
+  if (PETSC_ZOPEFD && PETSC_ZOPEFD != PETSC_STDOUT){
     va_list s;
 #if defined(PETSC_HAVE_VA_COPY)
     va_copy(s, Argp);

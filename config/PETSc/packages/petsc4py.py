@@ -57,5 +57,4 @@ class Configure(PETSc.package.NewPackage):
 
   def alternateConfigureLibrary(self):
     self.addMakeRule('petsc4py','')   
-    self.addMakeRule('petsc4py_noinstall','')
       
