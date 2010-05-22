@@ -43,7 +43,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLogStageFindId"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 PetscLogStageFindId(const char name[], PetscLogStage *stageid)
 {
   int            s;
@@ -65,7 +65,7 @@ PetscLogStageFindId(const char name[], PetscLogStage *stageid)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLogClassFindId"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 PetscLogClassFindId(const char name[], PetscClassId *classid)
 {
   int            c;
@@ -88,7 +88,7 @@ PetscLogClassFindId(const char name[], PetscClassId *classid)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLogEventFindId"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 PetscLogEventFindId(const char name[], PetscLogEvent *eventid)
 {
   int            e;
@@ -110,7 +110,7 @@ PetscLogEventFindId(const char name[], PetscLogEvent *eventid)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLogStageFindName"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 PetscLogStageFindName(PetscLogStage stageid,
                       const char *name[])
 {
@@ -127,7 +127,7 @@ PetscLogStageFindName(PetscLogStage stageid,
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLogClassFindName"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 PetscLogClassFindName(PetscClassId classid,
                       const char *name[])
 {
@@ -148,7 +148,7 @@ PetscLogClassFindName(PetscClassId classid,
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLogEventFindName"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 PetscLogEventFindName(PetscLogEvent eventid,
                       const char *name[])
 {
@@ -167,7 +167,7 @@ PetscLogEventFindName(PetscLogEvent eventid,
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectGetClassName"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 PetscObjectGetClassName(PetscObject obj, const char *class_name[])
 {
   PetscFunctionBegin;
@@ -206,7 +206,7 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "ISGetType"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 ISGetType(IS is, ISType *istype)
 {
   PetscFunctionBegin;
@@ -259,7 +259,7 @@ PetscMapGetBlockSize(PetscMap*,PetscInt*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatBlockSize_Check"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 MatBlockSize_Check(Mat mat,PetscInt bs)
 {
   PetscFunctionBegin;
@@ -293,7 +293,7 @@ MatBlockSize_Check(Mat mat,PetscInt bs)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatBlockSize_SetUp"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 MatBlockSize_SetUp(Mat mat,PetscInt bs)
 {
   PetscErrorCode ierr;
@@ -308,7 +308,7 @@ MatBlockSize_SetUp(Mat mat,PetscInt bs)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetBlockSize_Patch"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 MatSetBlockSize_Patch(Mat mat,PetscInt bs)
 {
   PetscErrorCode ierr;
@@ -340,7 +340,7 @@ MatSetBlockSize_Patch(Mat mat,PetscInt bs)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatIsPreallocated"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 MatIsPreallocated(Mat A,PetscTruth *flag)
 {
   PetscFunctionBegin;
@@ -352,7 +352,7 @@ MatIsPreallocated(Mat A,PetscTruth *flag)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateAnyAIJ"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 MatCreateAnyAIJ(MPI_Comm comm, PetscInt bs,
                 PetscInt m, PetscInt n,
                 PetscInt M, PetscInt N,
@@ -386,7 +386,7 @@ MatCreateAnyAIJ(MPI_Comm comm, PetscInt bs,
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateAnyCRL"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 MatCreateAnyCRL(MPI_Comm comm, PetscInt bs,
                 PetscInt m, PetscInt n,
                 PetscInt M, PetscInt N,
@@ -415,7 +415,7 @@ MatCreateAnyCRL(MPI_Comm comm, PetscInt bs,
 
 #undef __FUNCT__
 #define __FUNCT__ "MatAnyAIJSetPreallocation"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 MatAnyAIJSetPreallocation(Mat A,PetscInt bs,
                           PetscInt d_nz,const PetscInt d_nnz[],
                           PetscInt o_nz,const PetscInt o_nnz[])
@@ -447,7 +447,7 @@ MatAnyAIJSetPreallocation(Mat A,PetscInt bs,
 
 #undef __FUNCT__
 #define __FUNCT__ "MatAnyAIJSetPreallocationCSR"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 MatAnyAIJSetPreallocationCSR(Mat A,PetscInt bs, const PetscInt Ii[],
                              const PetscInt Jj[], const PetscScalar V[])
 {
@@ -480,7 +480,7 @@ MatAnyAIJSetPreallocationCSR(Mat A,PetscInt bs, const PetscInt Ii[],
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateAnyDense"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 MatCreateAnyDense(MPI_Comm comm, PetscInt bs,
                   PetscInt m, PetscInt n,
                   PetscInt M, PetscInt N,
@@ -509,7 +509,7 @@ MatCreateAnyDense(MPI_Comm comm, PetscInt bs,
 
 #undef __FUNCT__
 #define __FUNCT__ "MatAnyDenseSetPreallocation"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 MatAnyDenseSetPreallocation(Mat mat, PetscInt bs, PetscScalar *data)
 {
   PetscTruth     flag = PETSC_FALSE;
@@ -537,7 +537,7 @@ MatAnyDenseSetPreallocation(Mat mat, PetscInt bs, PetscScalar *data)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorInfoDefaults()"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 MatFactorInfoDefaults(PetscTruth incomplete, MatFactorInfo *info)
 {
   PetscErrorCode ierr;
@@ -576,7 +576,7 @@ MatFactorInfoDefaults(PetscTruth incomplete, MatFactorInfo *info)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetIterationNumber"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 KSPSetIterationNumber(KSP ksp, PetscInt its)
 {
   PetscFunctionBegin;
@@ -592,7 +592,7 @@ KSPSetIterationNumber(KSP ksp, PetscInt its)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetResidualNorm"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 KSPSetResidualNorm(KSP ksp, PetscReal rnorm)
 {
   PetscFunctionBegin;
@@ -608,7 +608,7 @@ KSPSetResidualNorm(KSP ksp, PetscReal rnorm)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPLogConvergenceHistory"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 KSPLogConvergenceHistory(KSP ksp, PetscInt its, PetscReal rnorm)
 {
   PetscFunctionBegin;
@@ -629,7 +629,7 @@ KSPLogConvergenceHistory(KSP ksp, PetscInt its, PetscReal rnorm)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPMonitorCall"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 KSPMonitorCall(KSP ksp, PetscInt its, PetscReal rnorm)
 {
   PetscFunctionBegin;
@@ -650,7 +650,7 @@ KSPMonitorCall(KSP ksp, PetscInt its, PetscReal rnorm)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPConvergenceTestCall"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 KSPConvergenceTestCall(KSP ksp, PetscInt its, PetscReal rnorm, KSPConvergedReason *reason)
 {
   PetscErrorCode ierr;
@@ -673,7 +673,7 @@ KSPConvergenceTestCall(KSP ksp, PetscInt its, PetscReal rnorm, KSPConvergedReaso
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetConvergedReason"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 KSPSetConvergedReason(KSP ksp, KSPConvergedReason reason)
 {
   PetscFunctionBegin;
@@ -686,7 +686,7 @@ KSPSetConvergedReason(KSP ksp, KSPConvergedReason reason)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetIterationNumber"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 SNESSetIterationNumber(SNES snes, PetscInt its)
 {
   PetscFunctionBegin;
@@ -702,7 +702,7 @@ SNESSetIterationNumber(SNES snes, PetscInt its)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFunctionNorm"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 SNESSetFunctionNorm(SNES snes, PetscReal fnorm)
 {
   PetscFunctionBegin;
@@ -718,7 +718,7 @@ SNESSetFunctionNorm(SNES snes, PetscReal fnorm)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESLogResidualHistoryCall"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 SNESLogConvergenceHistory(SNES snes, PetscInt its, PetscReal fnorm, PetscInt lits)
 {
   PetscFunctionBegin;
@@ -739,7 +739,7 @@ SNESLogConvergenceHistory(SNES snes, PetscInt its, PetscReal fnorm, PetscInt lit
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESMonitorCall"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 SNESMonitorCall(SNES snes, PetscInt its, PetscReal rnorm)
 {
   PetscFunctionBegin;
@@ -760,7 +760,7 @@ SNESMonitorCall(SNES snes, PetscInt its, PetscReal rnorm)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESConvergenceTestCall"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 SNESConvergenceTestCall(SNES snes, PetscInt its,
                         PetscReal xnorm, PetscReal ynorm, PetscReal fnorm,
                         SNESConvergedReason *reason)
@@ -794,7 +794,7 @@ SNESConvergenceTestCall(SNES snes, PetscInt its,
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetConvergedReason"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 SNESSetConvergedReason(SNES snes, SNESConvergedReason reason)
 {
   PetscFunctionBegin;
@@ -805,7 +805,7 @@ SNESSetConvergedReason(SNES snes, SNESConvergedReason reason)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFDColoringSetOptionsPrefix"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 MatFDColoringSetOptionsPrefix(MatFDColoring fdc, const char prefix[]) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -832,7 +832,7 @@ SNESGetUseMFFD(SNES snes,PetscTruth *flag)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetUseMFFD"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 SNESSetUseMFFD(SNES snes,PetscTruth flag)
 {
   const char*    prefix = PETSC_NULL;
@@ -888,7 +888,7 @@ SNESSetUseMFFD(SNES snes,PetscTruth flag)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESGetUseFDColoring"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 SNESGetUseFDColoring(SNES snes,PetscTruth *flag)
 {
   PetscErrorCode (*jac)(SNES,Vec,Mat*,Mat*,MatStructure*,void*) = PETSC_NULL;
@@ -905,7 +905,7 @@ SNESGetUseFDColoring(SNES snes,PetscTruth *flag)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetUseFDColoring"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 SNESSetUseFDColoring(SNES snes,PetscTruth flag)
 {
   const char*    prefix = PETSC_NULL;
@@ -968,6 +968,22 @@ SNESSetUseFDColoring(SNES snes,PetscTruth flag)
 /* ---------------------------------------------------------------- */
 
 #undef __FUNCT__
+#define __FUNCT__ "TSSetSolution_Custom"
+static PetscErrorCode
+TSSetSolution_Custom(TS ts, Vec u)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(u,VEC_CLASSID,2);
+  ierr = PetscObjectCompose((PetscObject)ts,"__solvec__",(PetscObject)u);CHKERRQ(ierr);
+  ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#undef  TSSetSolution
+#define TSSetSolution TSSetSolution_Custom
+
+#undef __FUNCT__
 #define __FUNCT__ "TSSetIFunction_Custom"
 static PetscErrorCode
 TSSetIFunction_Custom(TS ts,Vec r,TSIFunction fun,void *ctx)
@@ -1000,8 +1016,6 @@ TSSetIFunction_Custom(TS ts,Vec r,TSIFunction fun,void *ctx)
     if (!svec) {
       ierr = VecDuplicate(r,&svec);CHKERRQ(ierr);
       ierr = TSSetSolution(ts,svec);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject)ts,
-                                "__solvec__",(PetscObject)svec);CHKERRQ(ierr);
       ierr = VecDestroy(svec);CHKERRQ(ierr);
     }
   }
@@ -1026,8 +1040,6 @@ TSSetRHSFunction_Ex(TS ts,Vec r,PetscErrorCode (*fun)(TS,PetscReal,Vec,Vec,void*
     if (!svec) {
       ierr = VecDuplicate(r,&svec);CHKERRQ(ierr);
       ierr = TSSetSolution(ts,svec);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject)ts,
-                                "__solvec__",(PetscObject)svec);CHKERRQ(ierr);
       ierr = VecDestroy(svec);CHKERRQ(ierr);
     }
   }
@@ -1052,7 +1064,7 @@ TSGetRHSFunction_Ex(TS ts,Vec *f,PetscErrorCode (**fun)(TS,PetscReal,Vec,Vec,voi
 
 #undef __FUNCT__
 #define __FUNCT__ "TSGetRHSJacobian_Ex"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 TSGetRHSJacobian_Ex(TS ts,Mat *A,Mat *B,PetscErrorCode (**jac)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),void **ctx)
 {
   PetscErrorCode ierr;
@@ -1067,7 +1079,7 @@ TSGetRHSJacobian_Ex(TS ts,Mat *A,Mat *B,PetscErrorCode (**jac)(TS,PetscReal,Vec,
 
 #undef __FUNCT__
 #define __FUNCT__ "TSGetUseFDColoring"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 TSGetUseFDColoring(TS ts,PetscTruth *flag)
 {
   PetscErrorCode (*jac)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*) = PETSC_NULL;
@@ -1084,7 +1096,7 @@ TSGetUseFDColoring(TS ts,PetscTruth *flag)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetUseFDColoring"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 TSSetUseFDColoring(TS ts,PetscTruth flag)
 {
   const char*    prefix = PETSC_NULL;
@@ -1145,39 +1157,24 @@ TSSetUseFDColoring(TS ts,PetscTruth flag)
 /* ---------------------------------------------------------------- */
 
 #undef __FUNCT__
-#define __FUNCT__ "TSSetSolution_Patch"
-PETSC_STATIC_INLINE PetscErrorCode
-TSSetSolution_Patch(TS ts, Vec u)
+#define __FUNCT__ "TSSolve_Custom"
+static PetscErrorCode
+TSSolve_Custom(TS ts, Vec x)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(u,VEC_CLASSID,2);
-  ierr = PetscObjectCompose((PetscObject)ts,"__solnvec__",(PetscObject)u);CHKERRQ(ierr);
-  ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#undef  TSSetSolution
-#define TSSetSolution TSSetSolution_Patch
-
-#undef __FUNCT__
-#define __FUNCT__ "TSSolve_Patch"
-PETSC_STATIC_INLINE PetscErrorCode
-TSSolve_Patch(TS ts, Vec x)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (x) { ierr = TSSetSolution(ts, x); CHKERRQ(ierr); }
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  ierr = TSSetSolution(ts, x);CHKERRQ(ierr);
   ierr = TSSolve(ts,x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef  TSSolve
-#define TSSolve TSSolve_Patch
+#define TSSolve TSSolve_Custom
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetTimeStepNumber"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 TSSetTimeStepNumber(TS ts, PetscInt step)
 {
   PetscFunctionBegin;
@@ -1188,7 +1185,7 @@ TSSetTimeStepNumber(TS ts, PetscInt step)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSMonitorCall"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 TSMonitorCall(TS ts,PetscInt step,PetscReal ptime,Vec x)
 {
   PetscErrorCode ierr;
@@ -1202,7 +1199,7 @@ TSMonitorCall(TS ts,PetscInt step,PetscReal ptime,Vec x)
 
 #undef __FUNCT__
 #define __FUNCT__ "AOGetType"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 AOGetType(AO ao, AOType *aotype)
 {
   PetscFunctionBegin;
@@ -1218,7 +1215,7 @@ AOGetType(AO ao, AOType *aotype)
 
 #undef __FUNCT__
 #define __FUNCT__ "DACreateND"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 DACreateND(MPI_Comm comm,
            PetscInt dim,PetscInt dof,
            PetscInt M,PetscInt N,PetscInt P,
@@ -1239,7 +1236,7 @@ DACreateND(MPI_Comm comm,
 
 #undef __FUNCT__
 #define __FUNCT__ "DACreateND"
-PETSC_STATIC_INLINE PetscErrorCode
+static PetscErrorCode
 DACreateND(MPI_Comm comm,
            PetscInt dim,PetscInt dof,
            PetscInt M,PetscInt N,PetscInt P,
