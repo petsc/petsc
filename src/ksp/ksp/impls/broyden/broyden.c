@@ -6,8 +6,7 @@
 /*
      KSPSetUp_Broyden - Sets up the workspace needed by the Broyden method. 
 
-      This is called once, usually automatically by KSPSolve() or KSPSetUp()
-     but can be called directly by KSPSetUp()
+      This is called once, usually automatically by KSPSolve() or KSPSetUp().
 */
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_Broyden"
@@ -78,7 +77,7 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
     ierr = VecDuplicate(P,&y);CHKERRQ(ierr);
     ierr = VecDuplicate(P,&w);CHKERRQ(ierr);
     ierr = MatMult(Amat,Pold,y);CHKERRQ(ierr);
-    /*ierr = KSP_PCApplyBAorAB(ksp,Pold,y,w);CHKERRQ(ierr);  */    /* y = BAp */
+    ierr = KSP_PCApplyBAorAB(ksp,Pold,y,w);CHKERRQ(ierr);      /* y = BAp */
     ierr  = VecDotNorm2(Pold,y,&rdot,&abr);CHKERRQ(ierr);   /*   rdot = (p)^T(BAp); abr = (BAp)^T (BAp) */
     ierr = VecDestroy(y);CHKERRQ(ierr);
     ierr = VecDestroy(w);CHKERRQ(ierr);
@@ -104,7 +103,10 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
       ierr = (*ksp->converged)(ksp,1+k+i,gnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); 
       if (ksp->reason) PetscFunctionReturn(0);
 
-      ierr = VecScale(P,A0);CHKERRQ(ierr);
+      if (1) {
+        ierr = VecScale(P,A0);CHKERRQ(ierr);
+      }
+
       for (j=0; j<i; j++) {                                     /* p = product_{j<i} [I+v(j)w(j)^T]*p */
         ierr = VecDot(W[j],P,&gdot);CHKERRQ(ierr);
         ierr = VecAXPY(P,gdot,V[j]);CHKERRQ(ierr);
@@ -125,8 +127,8 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
         Vec         y,w;
         ierr = VecDuplicate(P,&y);CHKERRQ(ierr);
         ierr = VecDuplicate(P,&w);CHKERRQ(ierr);
-    ierr = MatMult(Amat,P,y);CHKERRQ(ierr);
-    /*ierr = KSP_PCApplyBAorAB(ksp,P,y,w);CHKERRQ(ierr); */     /* y = BAp */
+        ierr = MatMult(Amat,P,y);CHKERRQ(ierr);
+    ierr = KSP_PCApplyBAorAB(ksp,P,y,w);CHKERRQ(ierr);      /* y = BAp */
 	ierr  = VecDotNorm2(P,y,&rdot,&abr);CHKERRQ(ierr);   /*   rdot = (p)^T(BAp); abr = (BAp)^T (BAp) */
         ierr = VecDestroy(y);CHKERRQ(ierr);
         ierr = VecDestroy(w);CHKERRQ(ierr);
@@ -223,11 +225,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Broyden(KSP ksp)
   KSP_Broyden    *cg;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(ksp,KSP_Broyden,&cg);CHKERRQ(ierr);
-  cg->msize                      = 30;
-  cg->csize                      = 0;
+  ierr      = PetscNewLog(ksp,KSP_Broyden,&cg);CHKERRQ(ierr);
+  ksp->data = (void*)cg;
+  cg->msize = 30;
+  cg->csize = 0;
 
-  ksp->data                      = (void*)cg;
  if (ksp->pc_side != PC_LEFT) {
     ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for Broyden to left!\n");CHKERRQ(ierr);
   }

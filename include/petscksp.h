@@ -56,6 +56,7 @@ E*/
 #define KSPPYTHON     "python"
 #define KSPBROYDEN    "broyden"
 #define KSPGCR        "gcr"
+#define KSPNGMRES     "ngmres"
 
 /* Logging support */
 extern PetscClassId PETSCKSP_DLLEXPORT KSP_CLASSID;
