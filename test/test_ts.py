@@ -10,22 +10,22 @@ class MyODE:
     u0 = 1
     """
     def __init__(self):
-        self.function_calls = 0
-        self.jacobian_calls = 0
+        self.rhsfunction_calls = 0
+        self.rhsjacobian_calls = 0
         self.presolve_calls = 0
         self.update_calls = 0
         self.postsolve_calls = 0
         self.monitor_calls = 0
-    def function(self, ts,t,u,F):
+    def rhsfunction(self, ts,t,u,F):
         # print 'MyODE.function()'
-        self.function_calls += 1
+        self.rhsfunction_calls += 1
         dt = ts.getTimeStep()
         u0 = ts.getSolution()
         f = (u - u0)/dt + u * u
         f.copy(F)
-    def jacobian(self,ts,t,u,J,P):
+    def rhsjacobian(self,ts,t,u,J,P):
         # print 'MyODE.jacobian()'
-        self.jacobian_calls += 1
+        self.rhsjacobian_calls += 1
         u0 = ts.getSolution()
         dt = ts.getTimeStep()
         P.zeroEntries()
@@ -66,8 +66,8 @@ class TestTSNonlinear(unittest.TestCase):
         u, f = J.getVecs()
 
         ts.setAppCtx(ode)
-        ts.setFunction(ode.function, f)
-        ts.setJacobian(ode.jacobian, J, J)
+        ts.setRHSFunction(ode.rhsfunction, f)
+        ts.setRHSJacobian(ode.rhsjacobian, J, J)
         ts.setMonitor(ode.monitor)
 
         ts.snes.ksp.pc.setType('none')
@@ -81,13 +81,13 @@ class TestTSNonlinear(unittest.TestCase):
         u[0], u[1], u[2] = 1, 2, 3
         ts.solve(u)
 
-        self.assertTrue(ode.function_calls > 0)
-        self.assertTrue(ode.jacobian_calls > 0)
+        self.assertTrue(ode.rhsfunction_calls > 0)
+        self.assertTrue(ode.rhsjacobian_calls > 0)
 
         dct = self.ts.getDict()
         self.assertTrue('__appctx__' in dct)
-        self.assertTrue('__function__' in dct)
-        self.assertTrue('__jacobian__' in dct)
+        self.assertTrue('__rhsfunction__' in dct)
+        self.assertTrue('__rhsjacobian__' in dct)
         self.assertTrue('__monitor__' in dct)
 
         n = ode.monitor_calls
@@ -108,8 +108,8 @@ class TestTSNonlinear(unittest.TestCase):
         u, f = J.getVecs()
 
         ts.setAppCtx(ode)
-        ts.setFunction(ode.function, f)
-        ts.setJacobian(ode.jacobian, J, J)
+        ts.setRHSFunction(ode.rhsfunction, f)
+        ts.setRHSJacobian(ode.rhsjacobian, J, J)
         ts.setMonitor(ode.monitor)
 
         T0, dT, nT = 0.00, 0.1, 10
@@ -121,7 +121,7 @@ class TestTSNonlinear(unittest.TestCase):
         u[0], u[1], u[2] = 1, 2, 3
 
         ts.setSolution(u)
-        ode.jacobian(ts, 0,u,J,J)
+        ode.rhsjacobian(ts,0,u,J,J)
         ts.setUseFD(True)
         ts.solve(u)
 

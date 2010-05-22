@@ -54,13 +54,13 @@ class MyTS:
     def setUp(self, ts, *args):
         self._log('setUp', ts, *args)
 
-    def computeFunction(self, ts, *args):
-        self._log('computeFunction', ts, *args)
-        return ts.computeFunction(*args)
+    def computeRHSFunction(self, ts, *args):
+        self._log('computeRHSFunction', ts, *args)
+        return ts.computeRHSFunction(*args)
 
-    def computeJacobian(self, ts, *args):
-        self._log('computeJacobian', *args)
-        return ts.computeJacobian(*args)
+    def computeRHSJacobian(self, ts, *args):
+        self._log('computeRHSJacobian', *args)
+        return ts.computeRHSJacobian(*args)
 
     def preSolve(self, ts, *args):
         self._log('preSolve', ts, args)
@@ -116,8 +116,8 @@ class TestTSPython(unittest.TestCase):
         u, f = J.getVecs()
 
         ts.setAppCtx(ode)
-        ts.setFunction(ode.function, f)
-        ts.setJacobian(ode.jacobian, J, J)
+        ts.setRHSFunction(ode.function, f)
+        ts.setRHSJacobian(ode.jacobian, J, J)
         ts.snes.ksp.pc.setType('none')
 
         T0, dT, nT = 0.00, 0.1, 10
@@ -145,8 +145,8 @@ class TestTSPython(unittest.TestCase):
 
         dct = self.ts.getDict()
         self.assertTrue('__appctx__'   in dct)
-        self.assertTrue('__function__' in dct)
-        self.assertTrue('__jacobian__' in dct)
+        self.assertTrue('__rhsfunction__' in dct)
+        self.assertTrue('__rhsjacobian__' in dct)
 
     def testFDColor(self):
         ts = self.ts
@@ -158,8 +158,8 @@ class TestTSPython(unittest.TestCase):
         u, f = J.getVecs()
 
         ts.setAppCtx(ode)
-        ts.setFunction(ode.function, f)
-        ts.setJacobian(ode.jacobian, J, J)
+        ts.setRHSFunction(ode.function, f)
+        ts.setRHSJacobian(ode.jacobian, J, J)
 
         T0, dT, nT = 0.00, 0.1, 10
         T = T0 + nT*dT

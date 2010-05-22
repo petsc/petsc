@@ -127,48 +127,49 @@ cdef inline TS ref_TS(PetscTS ts):
 
 # -----------------------------------------------------------------------------
 
-cdef inline object TS_getFunction(PetscTS ts):
-    return Object_getAttr(<PetscObject>ts, '__function__')
+cdef inline object TS_getRHSFunction(PetscTS ts):
+    return Object_getAttr(<PetscObject>ts, '__rhsfunction__')
 
-cdef inline int TS_setFunction(PetscTS ts, PetscVec f, object fun) except -1:
-    CHKERR( TSSetRHSFunction(ts, f, TS_Function, NULL) )
-    Object_setAttr(<PetscObject>ts, '__function__', fun)
+cdef inline int TS_setRHSFunction(PetscTS ts, 
+                                  PetscVec f, object fun) except -1:
+    CHKERR( TSSetRHSFunction(ts, f, TS_RHSFunction, NULL) )
+    Object_setAttr(<PetscObject>ts, '__rhsfunction__', fun)
     return 0
 
-cdef int TS_Function(PetscTS ts,
-                     PetscReal t,
-                     PetscVec  x,
-                     PetscVec  f,
-                     void* ctx) except PETSC_ERR_PYTHON with gil:
+cdef int TS_RHSFunction(PetscTS ts,
+                        PetscReal t,
+                        PetscVec  x,
+                        PetscVec  f,
+                        void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef TS  Ts   = ref_TS(ts)
     cdef Vec Xvec = ref_Vec(x)
     cdef Vec Fvec = ref_Vec(f)
-    (function, args, kargs) = TS_getFunction(ts)
+    (function, args, kargs) = TS_getRHSFunction(ts)
     function(Ts, toReal(t), Xvec, Fvec, *args, **kargs)
     return 0
 
-cdef inline object TS_getJacobian(PetscTS ts):
-    return Object_getAttr(<PetscObject>ts, '__jacobian__')
+cdef inline object TS_getRHSJacobian(PetscTS ts):
+    return Object_getAttr(<PetscObject>ts, '__rhsjacobian__')
 
-cdef inline int TS_setJacobian(PetscTS ts,
-                               PetscMat J, PetscMat P,
-                               object jacobian) except -1:
-    CHKERR( TSSetRHSJacobian(ts, J, P, TS_Jacobian, NULL) )
-    Object_setAttr(<PetscObject>ts, '__jacobian__', jacobian)
+cdef inline int TS_setRHSJacobian(PetscTS ts,
+                                  PetscMat J, PetscMat P,
+                                  object jacobian) except -1:
+    CHKERR( TSSetRHSJacobian(ts, J, P, TS_RHSJacobian, NULL) )
+    Object_setAttr(<PetscObject>ts, '__rhsjacobian__', jacobian)
     return 0
 
-cdef int TS_Jacobian(PetscTS ts,
-                     PetscReal t,
-                     PetscVec  x,
-                     PetscMat  *J,
-                     PetscMat  *P,
-                     PetscMatStructure* s,
-                     void* ctx) except PETSC_ERR_PYTHON with gil:
+cdef int TS_RHSJacobian(PetscTS ts,
+                        PetscReal t,
+                        PetscVec  x,
+                        PetscMat  *J,
+                        PetscMat  *P,
+                        PetscMatStructure* s,
+                        void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef TS   Ts   = ref_TS(ts)
     cdef Vec  Xvec = ref_Vec(x)
     cdef Mat  Jmat = ref_Mat(J[0])
     cdef Mat  Pmat = ref_Mat(P[0])
-    (jacobian, args, kargs) = TS_getJacobian(ts)
+    (jacobian, args, kargs) = TS_getRHSJacobian(ts)
     retv = jacobian(Ts, toReal(t), Xvec, Jmat, Pmat, *args, **kargs)
     s[0] = matstructure(retv)
     cdef PetscMat Jtmp = NULL, Ptmp = NULL

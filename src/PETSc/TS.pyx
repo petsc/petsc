@@ -92,23 +92,23 @@ cdef class TS(Object):
 
     # --- xxx ---
 
-    def setFunction(self, function, Vec f not None, *args, **kargs):
+    def setRHSFunction(self, function, Vec f not None, *args, **kargs):
         cdef PetscVec fvec = NULL
         if f is not None: fvec = f.vec
-        TS_setFunction(self.ts, fvec, (function, args, kargs))
+        TS_setRHSFunction(self.ts, fvec, (function, args, kargs))
 
-    def setJacobian(self, jacobian, Mat J, Mat P=None, *args, **kargs):
+    def setRHSJacobian(self, jacobian, Mat J, Mat P=None, *args, **kargs):
         cdef PetscMat Jmat=NULL
         if J is not None: Jmat = J.mat
         cdef PetscMat Pmat = Jmat
         if P is not None: Pmat = P.mat
-        TS_setJacobian(self.ts, Jmat, Pmat, (jacobian, args, kargs))
+        TS_setRHSJacobian(self.ts, Jmat, Pmat, (jacobian, args, kargs))
 
-    def computeFunction(self, t, Vec x not None, Vec f not None):
+    def computeRHSFunction(self, t, Vec x not None, Vec f not None):
         cdef PetscReal time = asReal(t)
         CHKERR( TSComputeRHSFunction(self.ts, time, x.vec, f.vec) )
 
-    def computeJacobian(self, t, Vec x not None, Mat J not None, Mat P=None):
+    def computeRHSJacobian(self, t, Vec x not None, Mat J not None, Mat P=None):
         cdef PetscReal time = asReal(t)
         cdef PetscMat *jmat = &J.mat, *pmat = &J.mat
         if P is not None: pmat = &P.mat
@@ -117,20 +117,20 @@ cdef class TS(Object):
                                      jmat, pmat, &flag) )
         return flag
 
-    def getFunction(self):
+    def getRHSFunction(self):
         cdef Vec f = Vec()
         CHKERR( TSGetRHSFunction(self.ts, &f.vec, NULL, NULL) )
         PetscIncref(<PetscObject>f.vec)
-        cdef object fun = TS_getFunction(self.ts)
-        return (f, fun)
+        cdef object function = TS_getRHSFunction(self.ts)
+        return (f, function)
 
-    def getJacobian(self):
+    def getRHSJacobian(self):
         cdef Mat J = Mat(), P = Mat()
         CHKERR( TSGetRHSJacobian(self.ts, &J.mat, &P.mat, NULL, NULL) )
         PetscIncref(<PetscObject>J.mat)
         PetscIncref(<PetscObject>P.mat)
-        cdef object jac = TS_getJacobian(self.ts)
-        return (J, P, jac)
+        cdef object jacobian = TS_getRHSJacobian(self.ts)
+        return (J, P, jacobian)
 
     #
 
