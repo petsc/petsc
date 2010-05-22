@@ -279,7 +279,7 @@ int main(int argc,char **args)
   }
 
   /* Test MatCholeskyFactor(), MatICCFactor() with natural ordering */
-  ierr = MatGetOrdering(A,MATORDERING_NATURAL,&perm,&iscol);CHKERRQ(ierr); 
+  ierr = MatGetOrdering(A,MATORDERINGNATURAL,&perm,&iscol);CHKERRQ(ierr); 
   ierr = ISDestroy(iscol);CHKERRQ(ierr);
   norm1 = tol;  
   inc   = bs;
@@ -290,14 +290,14 @@ int main(int argc,char **args)
   for (lf=-1; lf<10; lf += inc){   
     if (lf==-1) {  /* Cholesky factor of sB (duplicate sA) */
       factinfo.fill = 5.0;   
-      ierr = MatGetFactor(sB,MAT_SOLVER_PETSC,MAT_FACTOR_CHOLESKY,&sC);CHKERRQ(ierr);
+      ierr = MatGetFactor(sB,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&sC);CHKERRQ(ierr);
       ierr = MatCholeskyFactorSymbolic(sC,sB,perm,&factinfo);CHKERRQ(ierr); 
     } else if (!doIcc){
       break;
     } else {       /* incomplete Cholesky factor */
       factinfo.fill   = 5.0;
       factinfo.levels = lf;
-      ierr = MatGetFactor(sB,MAT_SOLVER_PETSC,MAT_FACTOR_ICC,&sC);CHKERRQ(ierr);
+      ierr = MatGetFactor(sB,MATSOLVERPETSC,MAT_FACTOR_ICC,&sC);CHKERRQ(ierr);
       ierr = MatICCFactorSymbolic(sC,sB,perm,&factinfo);CHKERRQ(ierr);
     }
     ierr = MatCholeskyFactorNumeric(sC,sB,&factinfo);CHKERRQ(ierr);

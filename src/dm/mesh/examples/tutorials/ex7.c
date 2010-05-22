@@ -73,7 +73,7 @@ try {
     }
     if (debug) {
       ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-      ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
       ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
       ierr = PetscViewerFileSetName(viewer, "testBoundary.vtk");CHKERRQ(ierr);
       ierr = MeshView_Sieve_Newer(meshBoundary, viewer);CHKERRQ(ierr);

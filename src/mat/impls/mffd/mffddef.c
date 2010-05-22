@@ -133,7 +133,7 @@ static PetscErrorCode MatMFFDView_DS(MatMFFD ctx,PetscViewer viewer)
      could be added, but for this type of object other viewers
      make less sense
   */
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"    umin=%G (minimum iterate parameter)\n",hctx->umin);CHKERRQ(ierr); 
   } else {

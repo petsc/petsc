@@ -2619,14 +2619,14 @@ of equations with the command \findex{-pc_factor_mat_ordering_type} \sindex{orde
 \end{tabbing}
 The possible orderings are
 \begin{itemize}
-\item \trl{MATORDERING_NATURAL} - Natural
-\item \trl{MATORDERING_ND} - Nested Dissection
-\item \trl{MATORDERING_1WD} - One-way Dissection
-\item \trl{MATORDERING_RCM} - Reverse Cuthill-McKee
-\item \trl{MATORDERING_QMD} - Quotient Minimum Degree
+\item \trl{MATORDERINGNATURAL} - Natural
+\item \trl{MATORDERINGND} - Nested Dissection
+\item \trl{MATORDERING1WD} - One-way Dissection
+\item \trl{MATORDERINGRCM} - Reverse Cuthill-McKee
+\item \trl{MATORDERINGQMD} - Quotient Minimum Degree
 \end{itemize}
-\findex{MATORDERING_NATURAL} \findex{MATORDERING_ND} \findex{MATORDERING_1WD}
-\findex{MATORDERING_RCM} \findex{MATORDERING_QMD} \sindex{nested dissection}
+\findex{MATORDERINGNATURAL} \findex{MATORDERINGND} \findex{MATORDERING1WD}
+\findex{MATORDERINGRCM} \findex{MATORDERINGQMD} \sindex{nested dissection}
 \sindex{one-way dissection} \sindex{reverse Cuthill-McKee} 
 \sindex{quotient minimum degree} \findex{-pc_factor_mat_ordering_type}
 These orderings can also be set through the options database by specifying 
@@ -3086,19 +3086,19 @@ For eg: \trl{-ksp_type preonly} \trl{-pc_type lu} \trl{-pc_factor_mat_solver_pac
 {\bf MatType}  & {\bf PCType} & {\bf MatSolverPackage} & {\bf Package} \\
                &              &                        & (\trl{-pc_factor_mat_solver_package)}\\
 \hline
- baij         & cholesky     &  MAT_SOLVER_DSCPACK         & \trl{dscpack}\\
- seqaij       & lu           &  MAT_SOLVER_ESSL            & \trl{essl}\\
- seqaij       & lu           &  MAT_SOLVER_LUSOL           & \trl{lusol}\\
- seqaij       & lu           &  MAT_SOLVER_MATLAB          & \trl{matlab}\\
- aij          & lu           &  MAT_SOLVER_MUMPS           & \trl{mumps}\\
+ baij         & cholesky     &  MATSOLVERDSCPACK         & \trl{dscpack}\\
+ seqaij       & lu           &  MATSOLVERESSL            & \trl{essl}\\
+ seqaij       & lu           &  MATSOLVERLUSOL           & \trl{lusol}\\
+ seqaij       & lu           &  MATSOLVERMATLAB          & \trl{matlab}\\
+ aij          & lu           &  MATSOLVERMUMPS           & \trl{mumps}\\
  sbaij        & cholesky     &                                   & \\
- plapack      & lu           &  MAT_SOLVER_PLAPACK         & \trl{plapack}\\
+ plapack      & lu           &  MATSOLVERPLAPACK         & \trl{plapack}\\
  plapack      & cholesky     &                                   & \\
- aij          & lu           &  MAT_SOLVER_SPOOLES         & \trl{spooles}\\
+ aij          & lu           &  MATSOLVERSPOOLES         & \trl{spooles}\\
  sbaij        & cholesky     &                                   & \\
- seqaij       & lu           &  MAT_SOLVER_SUPERLU         & \trl{superlu} \\
- aij          & lu           &  MAT_SOLVER_SUPERLU_DIST    & \trl{superlu_dist}\\
- seqaij       & lu           &  MAT_SOLVER_UMFPACK         & \trl{umfpack}\\
+ seqaij       & lu           &  MATSOLVERSUPERLU         & \trl{superlu} \\
+ aij          & lu           &  MATSOLVERSUPERLU_DIST    & \trl{superlu_dist}\\
+ seqaij       & lu           &  MATSOLVERUMFPACK         & \trl{umfpack}\\
 
 
 \hline
@@ -3795,7 +3795,7 @@ A code fragment that demonstrates this process is given below.
        Color the matrix, i.e. determine groups of columns that share no common \\
       rows. These columns in the Jacobian can all be computed simulataneously.\\
    \trl{*/}\\
-   MatGetColoring(J,MATCOLORING\_SL,\&iscoloring);\\
+   MatGetColoring(J,MATCOLORINGSL,\&iscoloring);\\
 
    \trl{/*}\\
        Create the data structure that SNESDefaultComputeJacobianColor() uses\\
@@ -3837,10 +3837,10 @@ for which each column has its own unique color, may be accessed with the command
 \begin{tabbing}
    -mat\_coloring\_type \trl{<}sl,id,lf,natural\trl{>}
 \end{tabbing}
-Alternatively, one can set a coloring type of \trl{COLORING_SL}, \trl{
-COLORING_ID}, \trl{COLORING_LF}, or \trl{COLORING_NATURAL} 
-when calling MatGetColoring(). \findex{-mat_coloring} \findex{MATCOLORING_SL} \findex{MATCOLORING_ID}
-\findex{MATCOLORING_LF} \findex{MATCOLORING_NATURAL}
+Alternatively, one can set a coloring type of \trl{MATCOLORINGSL}, \trl{
+MATCOLORINGID}, \trl{MATCOLORINGLF}, or \trl{MATCOLORINGNATURAL} 
+when calling MatGetColoring(). \findex{-mat_coloring} \findex{MATCOLORINGSL} \findex{MATCOLORINGID}
+\findex{MATCOLORINGLF} \findex{MATCOLORINGNATURAL}
 
 As for the matrix-free computation of Jacobians (see Section
 \ref{sec_nlmatrixfree}), two parameters affect the accuracy of the
@@ -6982,11 +6982,11 @@ sense for a dense matrix.  \sindex{reorder}
 \end{tabbing}
 The currently available alternatives for the ordering \trl{type} are 
 \begin{itemize}
-\item \trl{MATORDERING_NATURAL} - Natural
-\item \trl{MATORDERING_ND} - Nested Dissection
-\item \trl{MATORDERING_1WD} - One-way Dissection
-\item \trl{MATORDERING_RCM} - Reverse Cuthill-McKee
-\item \trl{MATORDERING_QMD} - Quotient Minimum Degree
+\item \trl{MATORDERINGNATURAL} - Natural
+\item \trl{MATORDERINGND} - Nested Dissection
+\item \trl{MATORDERING1WD} - One-way Dissection
+\item \trl{MATORDERINGRCM} - Reverse Cuthill-McKee
+\item \trl{MATORDERINGQMD} - Quotient Minimum Degree
 \end{itemize}
 These orderings can also be set through the options database.
 

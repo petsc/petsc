@@ -144,11 +144,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatOrderingRegisterDestroy(void)
    Input Parameters:
 +  mat - the matrix
 -  type - type of reordering, one of the following:
-$      MATORDERING_NATURAL - Natural
-$      MATORDERING_ND - Nested Dissection
-$      MATORDERING_1WD - One-way Dissection
-$      MATORDERING_RCM - Reverse Cuthill-McKee
-$      MATORDERING_QMD - Quotient Minimum Degree
+$      MATORDERINGNATURAL - Natural
+$      MATORDERINGND - Nested Dissection
+$      MATORDERING1WD - One-way Dissection
+$      MATORDERINGRCM - Reverse Cuthill-McKee
+$      MATORDERINGQMD - Quotient Minimum Degree
 
    Output Parameters:
 +  rperm - row permutation indices

@@ -1193,7 +1193,7 @@ static PetscErrorCode SolutionStatsView(DA da,Vec X,PetscViewer viewer)
   PetscTruth iascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     /* PETSc lacks a function to compute total variation norm (difficult in multiple dimensions), we do it here */
     ierr = DAGetLocalVector(da,&Xloc);CHKERRQ(ierr);

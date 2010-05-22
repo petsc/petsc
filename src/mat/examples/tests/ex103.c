@@ -59,11 +59,11 @@ int main(int argc,char **args)
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Duplicate C1 != C");
 
   /* Test LU Factorization */
-  ierr = MatGetOrdering(C1,MATORDERING_NATURAL,&perm,&iperm);CHKERRQ(ierr);
+  ierr = MatGetOrdering(C1,MATORDERINGNATURAL,&perm,&iperm);CHKERRQ(ierr);
   if (nproc == 1){
-    ierr = MatGetFactor(C1,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+    ierr = MatGetFactor(C1,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
   } else {
-    ierr = MatGetFactor(C1,MAT_SOLVER_PLAPACK,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+    ierr = MatGetFactor(C1,MATSOLVERPLAPACK,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
   }
   ierr = MatLUFactorSymbolic(F,C1,perm,iperm,&info);CHKERRQ(ierr);
 
@@ -107,9 +107,9 @@ int main(int argc,char **args)
   ierr = MatSetOption(C,MAT_SYMMETRY_ETERNAL,PETSC_TRUE);CHKERRQ(ierr); 
   
   if (nproc == 1){
-    ierr = MatGetFactor(C,MAT_SOLVER_PETSC,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
+    ierr = MatGetFactor(C,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
   } else {
-    ierr = MatGetFactor(C,MAT_SOLVER_PLAPACK,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
+    ierr = MatGetFactor(C,MATSOLVERPLAPACK,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
   }
   ierr = MatCholeskyFactorSymbolic(F,C,perm,&info);CHKERRQ(ierr);
   for (nfact = 0; nfact < 2; nfact++){

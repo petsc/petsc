@@ -173,7 +173,7 @@ c      call flush(6)
       call KSPGetPC(ksp,pc,ierr)
 #ifdef PETSC_HAVE_MUMPS
       call PCSetType(pc,PCLU,ierr)
-      call PCFactorSetMatSolverPackage(pc,MAT_SOLVER_MUMPS,ierr)
+      call PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS,ierr)
 #endif
 
       snesmonitor%its = 0

@@ -40,10 +40,10 @@ PetscErrorCode MatColoringRegisterAll(const char path[])
 
   PetscFunctionBegin;
   MatColoringRegisterAllCalled = PETSC_TRUE;  
-  ierr = MatColoringRegisterDynamic(MATCOLORING_NATURAL,path,"MatGetColoring_Natural",   MatGetColoring_Natural);CHKERRQ(ierr);
-  ierr = MatColoringRegisterDynamic(MATCOLORING_SL,     path,"MatGetColoring_SL_Minpack",MatGetColoring_SL_Minpack);CHKERRQ(ierr);
-  ierr = MatColoringRegisterDynamic(MATCOLORING_LF,     path,"MatGetColoring_LF_Minpack",MatGetColoring_LF_Minpack);CHKERRQ(ierr);
-  ierr = MatColoringRegisterDynamic(MATCOLORING_ID,     path,"MatGetColoring_ID_Minpack",MatGetColoring_ID_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegisterDynamic(MATCOLORINGNATURAL,path,"MatGetColoring_Natural",   MatGetColoring_Natural);CHKERRQ(ierr);
+  ierr = MatColoringRegisterDynamic(MATCOLORINGSL,     path,"MatGetColoring_SL_Minpack",MatGetColoring_SL_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegisterDynamic(MATCOLORINGLF,     path,"MatGetColoring_LF_Minpack",MatGetColoring_LF_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegisterDynamic(MATCOLORINGID,     path,"MatGetColoring_ID_Minpack",MatGetColoring_ID_Minpack);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

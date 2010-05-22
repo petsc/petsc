@@ -705,7 +705,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
 
     for (i=0; i<nlevels; i++) {
       if (dmmg[0]->getcoloringfrommat) {
-        ierr = MatGetColoring(dmmg[i]->B,(MatColoringType)MATCOLORING_SL,&iscoloring);CHKERRQ(ierr);
+        ierr = MatGetColoring(dmmg[i]->B,(MatColoringType)MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
       } else {
         ierr = DMGetColoring(dmmg[i]->dm,dmmg[0]->isctype,dmmg[i]->mtype,&iscoloring);CHKERRQ(ierr);
       }

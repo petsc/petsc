@@ -411,8 +411,8 @@ PetscErrorCode KSPView_BCGSL(KSP ksp, PetscViewer viewer)
   PetscTruth      isascii, isstring;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer, PETSC_VIEWER_ASCII, &isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer, PETSC_VIEWER_STRING, &isstring);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring);CHKERRQ(ierr);
 
   if (isascii) {
     ierr = PetscViewerASCIIPrintf(viewer, "  BCGSL: Ell = %D\n", bcgsl->ell);CHKERRQ(ierr);

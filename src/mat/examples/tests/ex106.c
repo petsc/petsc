@@ -127,11 +127,11 @@ int main(int argc,char **args)
   /* Compute right-hand-side vector */
   ierr = MatMult(C,u,b);CHKERRQ(ierr);
 
-  ierr = MatGetOrdering(C,MATORDERING_NATURAL,&perm,&iperm);CHKERRQ(ierr);
+  ierr = MatGetOrdering(C,MATORDERINGNATURAL,&perm,&iperm);CHKERRQ(ierr);
   its_max = 2000;
   for (i=0; i<its_max; i++){
     /* printf(" it %d\n",i); */
-    ierr = MatGetFactor(C,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+    ierr = MatGetFactor(C,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     ierr = MatLUFactorSymbolic(F,C,perm,iperm,&factinfo);CHKERRQ(ierr);
     for (j=0; j<1; j++){
       ierr = MatLUFactorNumeric(F,C,&factinfo);CHKERRQ(ierr);

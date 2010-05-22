@@ -26,8 +26,8 @@ static PetscErrorCode PCView_Redistribute(PC pc,PetscViewer viewer)
   PetscInt        ncnt,N;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
     ierr = MPI_Allreduce(&red->dcnt,&ncnt,1,MPIU_INT,MPI_SUM,((PetscObject)pc)->comm);CHKERRQ(ierr);
     ierr = MatGetSize(pc->pmat,&N,PETSC_NULL);CHKERRQ(ierr);

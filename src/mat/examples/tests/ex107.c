@@ -87,7 +87,7 @@ int main(int argc,char **args)
   if (!rank) {printf("main, Cpetsc: \n");}
   ierr = MatView(Cpetsc,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
   */
-  ierr = MatGetOrdering(C,MATORDERING_NATURAL,&perm,&iperm);CHKERRQ(ierr);
+  ierr = MatGetOrdering(C,MATORDERINGNATURAL,&perm,&iperm);CHKERRQ(ierr);
 
   /* Test nonsymmetric MatMult() */
   ierr = VecGetArray(x,&array);CHKERRQ(ierr);
@@ -107,9 +107,9 @@ int main(int argc,char **args)
 
   /* Test LU Factorization */
   if (nproc == 1){
-    ierr = MatGetFactor(C,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+    ierr = MatGetFactor(C,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
   } else {
-    ierr = MatGetFactor(C,MAT_SOLVER_PLAPACK,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+    ierr = MatGetFactor(C,MATSOLVERPLAPACK,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
   }
   ierr = MatLUFactorSymbolic(F,C,perm,iperm,&info);CHKERRQ(ierr); 
   for (nfact = 0; nfact < 2; nfact++){
@@ -208,9 +208,9 @@ int main(int argc,char **args)
   /* Test Cholesky Factorization */
   ierr = MatShift(Csymm,M);CHKERRQ(ierr);  /* make Csymm positive definite */
   if (nproc == 1){
-    ierr = MatGetFactor(Csymm,MAT_SOLVER_PETSC,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
+    ierr = MatGetFactor(Csymm,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
   } else {
-    ierr = MatGetFactor(Csymm,MAT_SOLVER_PLAPACK,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
+    ierr = MatGetFactor(Csymm,MATSOLVERPLAPACK,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
   }
   ierr = MatCholeskyFactorSymbolic(F,Csymm,perm,&info);CHKERRQ(ierr);
   for (nfact = 0; nfact < 2; nfact++){

@@ -410,7 +410,7 @@ int main(int argc,char **argv)
      /* Get the data structure of Jac */
      ierr = FormJacobian(snes,x,&Jac,&Jac,&flag,&user);CHKERRQ(ierr);
      /* Create coloring context */
-     ierr = MatGetColoring(Jac,MATCOLORING_SL,&iscoloring);CHKERRQ(ierr);
+     ierr = MatGetColoring(Jac,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
      ierr = MatFDColoringCreate(Jac,iscoloring,&matfdcoloring);CHKERRQ(ierr);
      ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,&user);CHKERRQ(ierr);
      ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);

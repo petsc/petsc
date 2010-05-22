@@ -135,7 +135,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF5Open(MPI_Comm comm, const char nam
  
   PetscFunctionBegin;
   ierr = PetscViewerCreate(comm, hdf5v);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*hdf5v, PETSC_VIEWER_HDF5);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(*hdf5v, PETSCVIEWERHDF5);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(*hdf5v, type);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(*hdf5v, name);CHKERRQ(ierr);
   PetscFunctionReturn(0);

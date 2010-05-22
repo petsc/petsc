@@ -107,8 +107,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringView(MatFDColoring c,PetscViewer 
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2); 
   PetscCheckSameComm(c,1,viewer,2);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (isdraw) { 
     ierr = MatFDColoringView_Draw(c,viewer);CHKERRQ(ierr);
   } else if (iascii) {

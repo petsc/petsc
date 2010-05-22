@@ -249,7 +249,7 @@ PetscErrorCode MatView_SuperLU(Mat A,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = MatView_SeqAIJ(A,viewer);CHKERRQ(ierr);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO) {
@@ -400,14 +400,14 @@ EXTERN_C_BEGIN
 PetscErrorCode MatFactorGetSolverPackage_seqaij_superlu(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
-  *type = MAT_SOLVER_SUPERLU;
+  *type = MATSOLVERSUPERLU;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
   
 
 /*MC
-  MAT_SOLVER_SUPERLU = "superlu" - A solver package roviding direct solvers (LU) for sequential matrices 
+  MATSOLVERSUPERLU = "superlu" - A solver package roviding direct solvers (LU) for sequential matrices 
   via the external package SuperLU.
 
   Use ./configure --download-superlu to have PETSc installed with SuperLU
@@ -421,11 +421,11 @@ EXTERN_C_END
                           choices: NOREFINE, SINGLE, DOUBLE, EXTRA; default is NOREFINE
 - -mat_superlu_printstat - print SuperLU statistics about the factorization
 
-   Notes: Do not confuse this with MAT_SOLVER_SUPERLU_DIST which is for parallel sparse solves
+   Notes: Do not confuse this with MATSOLVERSUPERLU_DIST which is for parallel sparse solves
 
    Level: beginner
 
-.seealso: PCLU, MAT_SOLVER_SUPERLU_DIST, MAT_SOLVER_MUMPS, MAT_SOLVER_SPOOLES, PCFactorSetMatSolverPackage(), MatSolverPackage
+.seealso: PCLU, MATSOLVERSUPERLU_DIST, MATSOLVERMUMPS, MATSOLVERSPOOLES, PCFactorSetMatSolverPackage(), MatSolverPackage
 M*/
 
 EXTERN_C_BEGIN

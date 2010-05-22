@@ -967,6 +967,7 @@ instead use {\em if (!rank)} or {\em if (!v)} or {\em if (flg)} or {\em if (!flg
 #endif
 \end{verbatim}
 \item There shall be no PETSc routines introduced that provide essentially the same functionality as an available MPI routine. For example, one should not write a routine PetscGlobalSum() that takes a scalar value and performs an MPI_Allreduce() on it. One should use MPI_Allreduce() directly in the code. (Note: PetscGlobalSum() does exist but is ONLY to be used in code that is to be run through ADIC (since ADIC cannot handle MPI calls)).
+\item XXXTypes (for example KSPType) do not have an underscore in them, unless they refer to another package that uses an underscore, for example MATSOLVERSUPERLU\_DIST.
 \end{itemize}
 
 \section{Option Names}

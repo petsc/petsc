@@ -131,12 +131,12 @@ EXTERN_C_BEGIN
 PetscErrorCode MatFactorGetSolverPackage_essl(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
-  *type = MAT_SOLVER_ESSL;
+  *type = MATSOLVERESSL;
   PetscFunctionReturn(0);
 }
 
 /*MC
-  MAT_SOLVER_ESSL - "essl" - Provides direct solvers (LU) for sequential matrices 
+  MATSOLVERESSL - "essl" - Provides direct solvers (LU) for sequential matrices 
                               via the external package ESSL.
 
   If ESSL is installed (see the manual for

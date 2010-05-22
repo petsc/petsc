@@ -687,7 +687,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatView(Mat mat,PetscViewer viewer)
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(MAT_View,mat,viewer,0,0);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
@@ -3570,7 +3570,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFactorGetSolverPackage(Mat mat, const MatSo
   if (!mat->factortype) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix"); 
   ierr = PetscObjectQueryFunction((PetscObject)mat,"MatFactorGetSolverPackage_C",(void (**)(void))&conv);CHKERRQ(ierr);
   if (!conv) {
-    *type = MAT_SOLVER_PETSC;
+    *type = MATSOLVERPETSC;
   } else {
     ierr = (*conv)(mat,type);CHKERRQ(ierr);
   }
@@ -3623,7 +3623,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat mat, const MatSolverPackage t
     MPI_Comm   comm;
 
     ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-    ierr = PetscStrcasecmp(MAT_SOLVER_PETSC,type,&flag);CHKERRQ(ierr);
+    ierr = PetscStrcasecmp(MATSOLVERPETSC,type,&flag);CHKERRQ(ierr);
     if (flag) {
       SETERRQ2(comm,PETSC_ERR_SUP,"Matrix format %s does not have a built-in PETSc %s",((PetscObject)mat)->type_name,MatFactorTypes[ftype]);
     } else {

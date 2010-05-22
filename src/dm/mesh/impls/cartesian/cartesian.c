@@ -99,9 +99,9 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshView_Cartesian(Mesh mesh, PetscViewer viewe
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &iascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_BINARY, &isbinary);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_DRAW, &isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERBINARY, &isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW, &isdraw);CHKERRQ(ierr);
 
   if (iascii){
     ierr = MeshView_Cartesian_Ascii(*((ALE::Obj<ALE::CartesianMesh> *) mesh->data), viewer);CHKERRQ(ierr);

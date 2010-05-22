@@ -31,25 +31,25 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerRegisterAll(const char *path)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_ASCII,      path,"PetscViewerCreate_ASCII",      PetscViewerCreate_ASCII);CHKERRQ(ierr);
-  ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_BINARY,     path,"PetscViewerCreate_Binary",     PetscViewerCreate_Binary);CHKERRQ(ierr);
-  ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_STRING,     path,"PetscViewerCreate_String",     PetscViewerCreate_String);CHKERRQ(ierr);
-  ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_DRAW,       path,"PetscViewerCreate_Draw",       PetscViewerCreate_Draw);CHKERRQ(ierr);
+  ierr = PetscViewerRegisterDynamic(PETSCVIEWERASCII,      path,"PetscViewerCreate_ASCII",      PetscViewerCreate_ASCII);CHKERRQ(ierr);
+  ierr = PetscViewerRegisterDynamic(PETSCVIEWERBINARY,     path,"PetscViewerCreate_Binary",     PetscViewerCreate_Binary);CHKERRQ(ierr);
+  ierr = PetscViewerRegisterDynamic(PETSCVIEWERSTRING,     path,"PetscViewerCreate_String",     PetscViewerCreate_String);CHKERRQ(ierr);
+  ierr = PetscViewerRegisterDynamic(PETSCVIEWERDRAW,       path,"PetscViewerCreate_Draw",       PetscViewerCreate_Draw);CHKERRQ(ierr);
 #if defined(PETSC_USE_SOCKET_VIEWER)
-  ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_SOCKET,     path,"PetscViewerCreate_Socket",     PetscViewerCreate_Socket);CHKERRQ(ierr);
+  ierr = PetscViewerRegisterDynamic(PETSCVIEWERSOCKET,     path,"PetscViewerCreate_Socket",     PetscViewerCreate_Socket);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_MATHEMATICA)
-  ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_MATHEMATICA,path,"PetscViewerCreate_Mathematica",PetscViewerCreate_Mathematica);CHKERRQ(ierr); 
+  ierr = PetscViewerRegisterDynamic(PETSCVIEWERMATHEMATICA,path,"PetscViewerCreate_Mathematica",PetscViewerCreate_Mathematica);CHKERRQ(ierr); 
 #endif
-  ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_VU,         path,"PetscViewerCreate_VU",         PetscViewerCreate_VU);CHKERRQ(ierr); 
+  ierr = PetscViewerRegisterDynamic(PETSCVIEWERVU,         path,"PetscViewerCreate_VU",         PetscViewerCreate_VU);CHKERRQ(ierr); 
 #if defined(PETSC_HAVE_PNETCDF)
-  ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_NETCDF,     path,"PetscViewerCreate_Netcdf",     PetscViewerCreate_Netcdf);CHKERRQ(ierr); 
+  ierr = PetscViewerRegisterDynamic(PETSCVIEWERNETCDF,     path,"PetscViewerCreate_Netcdf",     PetscViewerCreate_Netcdf);CHKERRQ(ierr); 
 #endif
 #if defined(PETSC_HAVE_HDF5)
-  ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_HDF5,       path,"PetscViewerCreate_HDF5",       PetscViewerCreate_HDF5);CHKERRQ(ierr);
+  ierr = PetscViewerRegisterDynamic(PETSCVIEWERHDF5,       path,"PetscViewerCreate_HDF5",       PetscViewerCreate_HDF5);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_MATLAB,     path,"PetscViewerCreate_Matlab",     PetscViewerCreate_Matlab);CHKERRQ(ierr); 
+  ierr = PetscViewerRegisterDynamic(PETSCVIEWERMATLAB,     path,"PetscViewerCreate_Matlab",     PetscViewerCreate_Matlab);CHKERRQ(ierr); 
 #endif
   PetscFunctionReturn(0);
 }

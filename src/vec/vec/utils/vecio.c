@@ -2,7 +2,7 @@
 /* 
    This file contains simple binary input routines for vectors.  The
    analogous output routines are within each vector implementation's 
-   VecView (with viewer types PETSC_VIEWER_BINARY)
+   VecView (with viewer types PETSCVIEWERBINARY)
  */
 
 #include "petscsys.h"
@@ -108,12 +108,12 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoadnew(PetscViewer viewer, Vec *newvec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(newvec,2);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HDF5)
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_HDF5,&ishdf5);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PNETCDF)
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&isnetcdf);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERNETCDF,&isnetcdf);CHKERRQ(ierr);
 #endif
 
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
@@ -215,12 +215,12 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, const VecType outt
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(newvec,3);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HDF5)
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_HDF5,&ishdf5);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PNETCDF)
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&isnetcdf);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERNETCDF,&isnetcdf);CHKERRQ(ierr);
 #endif
 
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
@@ -642,12 +642,12 @@ PetscErrorCode VecLoadIntoVector_Default(PetscViewer viewer,Vec vec)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PNETCDF)
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&isnetcdf);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERNETCDF,&isnetcdf);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_HDF5)
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_HDF5,&ishdf5);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
 #endif
 
   if (isbinary) {

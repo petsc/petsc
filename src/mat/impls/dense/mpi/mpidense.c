@@ -674,8 +674,8 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
 #endif
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetType(viewer,&vtype);CHKERRQ(ierr);
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
@@ -763,10 +763,10 @@ PetscErrorCode MatView_MPIDense(Mat mat,PetscViewer viewer)
  
   PetscFunctionBegin;
   
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_SOCKET,&issocket);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERSOCKET,&issocket);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
 
   if (iascii || issocket || isdraw) {
     ierr = MatView_MPIDense_ASCIIorDraworSocket(mat,viewer);CHKERRQ(ierr);
@@ -1342,7 +1342,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatFactorGetSolverPackage_mpidense_plapack(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
-  *type = MAT_SOLVER_PLAPACK;
+  *type = MATSOLVERPLAPACK;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -1611,7 +1611,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIDenseSetPreallocation_MPIDense(Mat mat,P
 EXTERN_C_END
 
 /*MC
-   MAT_SOLVER_PLAPACK = "mpidense" - Parallel LU and Cholesky factorization for MATMPIDENSE matrices
+   MATSOLVERPLAPACK = "mpidense" - Parallel LU and Cholesky factorization for MATMPIDENSE matrices
 
   run ./configure with the option --download-plapack
 

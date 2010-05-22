@@ -43,8 +43,8 @@ static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
 
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
     if (osm->n > 0) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Additive Schwarz: total subdomain blocks = %D, amount of overlap = %D\n",osm->n,osm->overlap);CHKERRQ(ierr);
@@ -1093,9 +1093,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMCreateSubdomains(Mat A, PetscInt n, IS* o
     ierr = MatPartitioningCreate(PETSC_COMM_SELF,&mpart);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject)mpart,prefix);CHKERRQ(ierr);
     ierr = MatPartitioningSetFromOptions(mpart);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject)mpart,MAT_PARTITIONING_CURRENT,&match);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)mpart,MATPARTITIONINGCURRENT,&match);CHKERRQ(ierr);
     if (!match) {
-      ierr = PetscTypeCompare((PetscObject)mpart,MAT_PARTITIONING_SQUARE,&match);CHKERRQ(ierr);
+      ierr = PetscTypeCompare((PetscObject)mpart,MATPARTITIONINGSQUARE,&match);CHKERRQ(ierr);
     }
     if (!match) { /* assume a "good" partitioner is available */
       PetscInt na,*ia,*ja;

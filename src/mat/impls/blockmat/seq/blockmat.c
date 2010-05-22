@@ -47,7 +47,7 @@ PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,MatSORType
     ierr = PetscMalloc(mbs*sizeof(Mat),&a->diags);CHKERRQ(ierr);
     ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
     for (i=0; i<mbs; i++) {
-      ierr = MatGetOrdering(a->a[a->diag[i]], MATORDERING_ND,&row,&col);CHKERRQ(ierr);
+      ierr = MatGetOrdering(a->a[a->diag[i]], MATORDERINGND,&row,&col);CHKERRQ(ierr);
       ierr = MatCholeskyFactorSymbolic(a->diags[i],a->a[a->diag[i]],row,&info);CHKERRQ(ierr);
       ierr = MatCholeskyFactorNumeric(a->diags[i],a->a[a->diag[i]],&info);CHKERRQ(ierr);
       ierr = ISDestroy(row);CHKERRQ(ierr);
@@ -152,7 +152,7 @@ PetscErrorCode MatSOR_BlockMat(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
     ierr = PetscMalloc(mbs*sizeof(Mat),&a->diags);CHKERRQ(ierr);
     ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
     for (i=0; i<mbs; i++) {
-      ierr = MatGetOrdering(a->a[a->diag[i]], MATORDERING_ND,&row,&col);CHKERRQ(ierr);
+      ierr = MatGetOrdering(a->a[a->diag[i]], MATORDERINGND,&row,&col);CHKERRQ(ierr);
       ierr = MatLUFactorSymbolic(a->diags[i],a->a[a->diag[i]],row,col,&info);CHKERRQ(ierr);
       ierr = MatLUFactorNumeric(a->diags[i],a->a[a->diag[i]],&info);CHKERRQ(ierr);
       ierr = ISDestroy(row);CHKERRQ(ierr);

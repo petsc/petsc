@@ -123,11 +123,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDestroy(PetscViewer viewer)
 .  type - PetscViewer type (see below)
 
    Available Types Include:
-.  PETSC_VIEWER_SOCKET - Socket PetscViewer
-.  PETSC_VIEWER_ASCII - ASCII PetscViewer
-.  PETSC_VIEWER_BINARY - binary file PetscViewer
-.  PETSC_VIEWER_STRING - string PetscViewer
-.  PETSC_VIEWER_DRAW - drawing PetscViewer
+.  PETSCVIEWERSOCKET - Socket PetscViewer
+.  PETSCVIEWERASCII - ASCII PetscViewer
+.  PETSCVIEWERBINARY - binary file PetscViewer
+.  PETSCVIEWERSTRING - string PetscViewer
+.  PETSCVIEWERDRAW - drawing PetscViewer
 
    Level: intermediate
 
@@ -313,7 +313,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscViewerView(PetscViewer v,PetscViewer view
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(v,1,viewer,2);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {

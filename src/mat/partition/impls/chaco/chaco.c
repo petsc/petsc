@@ -472,7 +472,7 @@ PetscErrorCode MatPartitioningDestroy_Chaco(MatPartitioning part)
 }
 
 /*MC
-   MAT_PARTITIONING_CHACO - Creates a partitioning context via the external package Chaco.
+   MATPARTITIONINGCHACO - Creates a partitioning context via the external package Chaco.
 
    Collective on MPI_Comm
 

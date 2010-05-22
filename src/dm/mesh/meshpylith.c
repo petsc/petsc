@@ -25,7 +25,7 @@ namespace ALE {
       ierr = MPI_Comm_rank(comm, &commRank);
       if (commRank != 0) return;
       ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
-      ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
+      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);
       ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
       ierr = PetscViewerFileSetName(viewer, filename.c_str());
       ierr = PetscViewerASCIIGetPointer(viewer, &f);
@@ -97,7 +97,7 @@ namespace ALE {
       ierr = MPI_Comm_rank(comm, &commRank);
       if (commRank == 0) {
         ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
-        ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
+        ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);
         ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
         ierr = PetscViewerFileSetName(viewer, filename.c_str());
         ierr = PetscViewerASCIIGetPointer(viewer, &f);
@@ -166,7 +166,7 @@ namespace ALE {
       }
       if (commRank != 0) return;
       ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
-      ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
+      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);
       ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
       ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, filename.c_str()), PETSC_ERR_FILE_OPEN);
       if (PetscExceptionValue(ierr)) {
@@ -317,7 +317,7 @@ namespace ALE {
       }
       if (commRank != 0) return;
       ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
-      ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
+      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);
       ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
       ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, filename.c_str()), PETSC_ERR_FILE_OPEN);
       if (PetscExceptionValue(ierr)) {

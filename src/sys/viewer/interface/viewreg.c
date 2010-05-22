@@ -160,13 +160,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFromOptions(PetscViewer viewer)
     ierr = PetscViewerRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsBegin(((PetscObject)viewer)->comm,((PetscObject)viewer)->prefix,"PetscViewer options","PetscViewer");CHKERRQ(ierr);
-    ierr = PetscOptionsList("-viewer_type","Type of PetscViewer","None",PetscViewerList,(char *)(((PetscObject)viewer)->type_name?((PetscObject)viewer)->type_name:PETSC_VIEWER_ASCII),vtype,256,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-viewer_type","Type of PetscViewer","None",PetscViewerList,(char *)(((PetscObject)viewer)->type_name?((PetscObject)viewer)->type_name:PETSCVIEWERASCII),vtype,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerSetType(viewer,vtype);CHKERRQ(ierr);
     }
     /* type has not been set? */
     if (!((PetscObject)viewer)->type_name) {
-      ierr = PetscViewerSetType(viewer,PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+      ierr = PetscViewerSetType(viewer,PETSCVIEWERASCII);CHKERRQ(ierr);
     }
     if (viewer->ops->setfromoptions) {
       ierr = (*viewer->ops->setfromoptions)(viewer);CHKERRQ(ierr);

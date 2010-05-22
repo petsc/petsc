@@ -19,7 +19,7 @@ static PetscErrorCode PCSetup_ICC(PC pc)
     ierr = MatICCFactorSymbolic(((PC_Factor*)icc)->fact,pc->pmat,perm,&((PC_Factor*)icc)->info);CHKERRQ(ierr);
   } else if (pc->flag != SAME_NONZERO_PATTERN) {
     ierr = MatDestroy(((PC_Factor*)icc)->fact);CHKERRQ(ierr);
-    ierr = MatGetFactor(pc->pmat,MAT_SOLVER_PETSC,MAT_FACTOR_ICC,&((PC_Factor*)icc)->fact);CHKERRQ(ierr);
+    ierr = MatGetFactor(pc->pmat,MATSOLVERPETSC,MAT_FACTOR_ICC,&((PC_Factor*)icc)->fact);CHKERRQ(ierr);
     ierr = MatICCFactorSymbolic(((PC_Factor*)icc)->fact,pc->pmat,perm,&((PC_Factor*)icc)->info);CHKERRQ(ierr);
   }
   ierr = MatGetInfo(((PC_Factor*)icc)->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
@@ -174,8 +174,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC pc)
   ierr = PetscNewLog(pc,PC_ICC,&icc);CHKERRQ(ierr);
 
   ((PC_Factor*)icc)->fact	          = 0;
-  ierr = PetscStrallocpy(MATORDERING_NATURAL,&((PC_Factor*)icc)->ordering);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(MAT_SOLVER_PETSC,&((PC_Factor*)icc)->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATORDERINGNATURAL,&((PC_Factor*)icc)->ordering);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERPETSC,&((PC_Factor*)icc)->solvertype);CHKERRQ(ierr);
   ierr = MatFactorInfoInitialize(&((PC_Factor*)icc)->info);CHKERRQ(ierr);
   ((PC_Factor*)icc)->factortype         = MAT_FACTOR_ICC;
   ((PC_Factor*)icc)->info.levels	= 0.;

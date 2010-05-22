@@ -62,7 +62,7 @@ namespace ALE {
       ierr = MPI_Comm_rank(comm, &commRank);
       if (commRank != 0) return;
       ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
-      ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
+      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);
       ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
       ierr = PetscViewerFileSetName(viewer, filename.c_str());
       ierr = PetscViewerASCIIGetPointer(viewer, &f);
@@ -142,7 +142,7 @@ namespace ALE {
 
       if (mesh->commRank() != 0) return;
       ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
-      ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
+      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);
       ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
       ierr = PetscViewerFileSetName(viewer, filename.c_str());
       ierr = PetscViewerASCIIGetPointer(viewer, &f);

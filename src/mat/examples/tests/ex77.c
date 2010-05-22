@@ -229,7 +229,7 @@ int main(int argc,char **args)
   }
 
   /* Test MatReordering() */
-  ierr = MatGetOrdering(A,MATORDERING_NATURAL,&isrow,&iscol);CHKERRQ(ierr); 
+  ierr = MatGetOrdering(A,MATORDERINGNATURAL,&isrow,&iscol);CHKERRQ(ierr); 
   ip = isrow;
 
   if (reorder){

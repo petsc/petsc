@@ -1166,7 +1166,7 @@ static PetscErrorCode SNESView_LS(SNES snes,PetscViewer viewer)
   PetscTruth     iascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     if (ls->LineSearch == SNESLineSearchNo)             cstr = "SNESLineSearchNo";
     else if (ls->LineSearch == SNESLineSearchQuadratic) cstr = "SNESLineSearchQuadratic";

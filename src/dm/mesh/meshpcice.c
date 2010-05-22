@@ -221,7 +221,7 @@ namespace ALE {
 
       if (commRank != 0) return;
       ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
-      ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
+      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);
       ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
       ierr = PetscViewerFileSetName(viewer, filename.c_str());
       if (ierr) {
@@ -273,7 +273,7 @@ namespace ALE {
 
       if (commRank != 0) return;
       ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
-      ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
+      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);
       ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
       ierr = PetscViewerFileSetName(viewer, filename.c_str());
       if (ierr) {
@@ -465,7 +465,7 @@ namespace ALE {
         return;
       }
       ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
-      ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
+      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);
       ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
       ierr = PetscViewerFileSetName(viewer, bcFilename.c_str());
       ierr = PetscViewerASCIIGetPointer(viewer, &f);

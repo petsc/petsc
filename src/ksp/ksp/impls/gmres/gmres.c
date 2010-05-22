@@ -488,8 +488,8 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
   PetscTruth     iascii,isstring;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (gmres->orthog == KSPGMRESClassicalGramSchmidtOrthogonalization) {
     switch (gmres->cgstype) {
       case (KSP_GMRES_CGS_REFINE_NEVER):
@@ -550,7 +550,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESMonitorKrylov(KSP ksp,PetscInt its,Pet
 
   PetscFunctionBegin;
   ierr = PetscViewersGetViewer(viewers,gmres->it+1,&viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(viewer,PETSC_VIEWER_DRAW);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(viewer,PETSCVIEWERDRAW);CHKERRQ(ierr);
 
   x      = VEC_VV(gmres->it+1);
   ierr   = VecView(x,viewer);CHKERRQ(ierr);

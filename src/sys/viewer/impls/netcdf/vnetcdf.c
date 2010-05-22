@@ -62,7 +62,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerNetcdfOpen(MPI_Comm comm,const char na
 
   PetscFunctionBegin;
   ierr = PetscViewerCreate(comm,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*viewer,PETSC_VIEWER_NETCDF);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(*viewer,PETSCVIEWERNETCDF);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(*viewer,type);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(*viewer,name);CHKERRQ(ierr);
   PetscFunctionReturn(0);

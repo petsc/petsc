@@ -197,7 +197,7 @@ int main(int argc,char **args)
     PC pc;
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
-    ierr = PCFactorSetMatSolverPackage(pc,MAT_SOLVER_MUMPS);CHKERRQ(ierr);
+    ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);CHKERRQ(ierr);
   }
 #endif
 

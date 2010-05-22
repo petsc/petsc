@@ -1146,7 +1146,7 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
   /* check if matrix is mumps type */
   if (A->ops->solve != MatSolve_MUMPS) PetscFunctionReturn(0);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO || mumps->mumpsview){
@@ -1182,7 +1182,7 @@ PetscErrorCode MatGetInfo_MUMPS(Mat A,MatInfoType flag,MatInfo *info)
 }
 
 /*MC
-  MAT_SOLVER_MUMPS -  A matrix type providing direct solvers (LU and Cholesky) for
+  MATSOLVERMUMPS -  A matrix type providing direct solvers (LU and Cholesky) for
   distributed and sequential matrices via the external package MUMPS. 
 
   Works with MATAIJ and MATSBAIJ matrices
@@ -1215,7 +1215,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatFactorGetSolverPackage_mumps(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
-  *type = MAT_SOLVER_MUMPS;
+  *type = MATSOLVERMUMPS;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

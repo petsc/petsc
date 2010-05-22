@@ -435,7 +435,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatFactorGetSolverPackage_seqaij_lusol(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
-  *type = MAT_SOLVER_LUSOL;
+  *type = MATSOLVERLUSOL;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -467,7 +467,7 @@ PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,Mat *F)
 }
 
 /*MC
-  MAT_SOLVER_LUSOL - "lusol" - Provides direct solvers (LU) for sequential matrices 
+  MATSOLVERLUSOL - "lusol" - Provides direct solvers (LU) for sequential matrices 
                          via the external package LUSOL.
 
   If LUSOL is installed (see the manual for

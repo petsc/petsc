@@ -164,7 +164,7 @@ PetscErrorCode MatPartitioningView_Jostle(MatPartitioning part, PetscViewer view
   PetscTruth             iascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
     if (jostle_struct->mesg_log) {
       ierr = PetscViewerASCIIPrintf(viewer, "%s\n", jostle_struct->mesg_log);CHKERRQ(ierr);
@@ -260,7 +260,7 @@ PetscErrorCode MatPartitioningDestroy_Jostle(MatPartitioning part)
 }
 
 /*MC
-   MAT_PARTITIONING_JOSTLE - Creates a partitioning context via the external package Jostle.
+   MATPARTITIONINGJOSTLE - Creates a partitioning context via the external package Jostle.
 
    Collective on MPI_Comm
 

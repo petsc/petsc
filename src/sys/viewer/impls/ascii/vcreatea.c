@@ -254,7 +254,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIOpen(MPI_Comm comm,const char nam
     }
   }
   ierr = PetscViewerCreate(comm,lab);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*lab,PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(*lab,PETSCVIEWERASCII);CHKERRQ(ierr);
   if (name) {
     ierr = PetscViewerFileSetName(*lab,name);CHKERRQ(ierr);
   }

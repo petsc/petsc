@@ -74,7 +74,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatFactorGetSolverPackage_seqsbaij_spooles(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
-  *type = MAT_SOLVER_SPOOLES;
+  *type = MATSOLVERSPOOLES;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

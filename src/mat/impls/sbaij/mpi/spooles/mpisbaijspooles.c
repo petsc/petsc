@@ -80,7 +80,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatFactorGetSolverPackage_mpisbaij_spooles(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
-  *type = MAT_SOLVER_SPOOLES;
+  *type = MATSOLVERSPOOLES;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -124,7 +124,7 @@ PetscErrorCode MatGetFactor_mpisbaij_spooles(Mat A,MatFactorType ftype,Mat *F)
 EXTERN_C_END
 
 /*MC
-  MAT_SOLVER_SPOOLES - "spooles" - a matrix type providing direct solvers (LU and Cholesky) for distributed symmetric
+  MATSOLVERSPOOLES - "spooles" - a matrix type providing direct solvers (LU and Cholesky) for distributed symmetric
   and non-symmetric  matrices via the external package Spooles.
 
   If Spooles is installed (run ./configure with the option --download-spooles)
@@ -147,6 +147,6 @@ EXTERN_C_END
 
    Level: beginner
 
-.seealso: MAT_SOLVER_SUPERLU, MAT_SOLVER_MUMPS, MAT_SOLVER_SUPERLU_DIST, PCFactorSetMatSolverPackage(), MatSolverPackage 
+.seealso: MATSOLVERSUPERLU, MATSOLVERMUMPS, MATSOLVERSUPERLU_DIST, PCFactorSetMatSolverPackage(), MatSolverPackage 
 M*/
 

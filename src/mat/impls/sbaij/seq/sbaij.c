@@ -533,8 +533,8 @@ PetscErrorCode MatView_SeqSBAIJ(Mat A,PetscViewer viewer)
   FILE           *file = 0;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
   if (iascii){
     ierr = MatView_SeqSBAIJ_ASCII(A,viewer);CHKERRQ(ierr);
   } else if (isdraw) {

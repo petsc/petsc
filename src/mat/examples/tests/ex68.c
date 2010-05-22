@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
   ierr = MatView(mat,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
-  ierr = MatGetOrdering(mat,MATORDERING_NATURAL,&isrow,&iscol);CHKERRQ(ierr);
+  ierr = MatGetOrdering(mat,MATORDERINGNATURAL,&isrow,&iscol);CHKERRQ(ierr);
 
   ierr = MatPermute(mat,isrow,iscol,&B);CHKERRQ(ierr);
   printf("Original matrix permuted by identity\n"); 
@@ -61,7 +61,7 @@ int main(int argc,char **argv)
   ierr = ISDestroy(isrow);CHKERRQ(ierr);
   ierr = ISDestroy(iscol);CHKERRQ(ierr);
 
-  ierr = MatGetOrdering(mat,MATORDERING_ND,&isrow,&iscol);CHKERRQ(ierr);
+  ierr = MatGetOrdering(mat,MATORDERINGND,&isrow,&iscol);CHKERRQ(ierr);
   ierr = MatPermute(mat,isrow,iscol,&B);CHKERRQ(ierr);
   printf("Original matrix permuted by ND\n"); 
   ierr = MatView(B,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
@@ -84,7 +84,7 @@ int main(int argc,char **argv)
   ierr = ISDestroy(isrow);CHKERRQ(ierr);
   ierr = ISDestroy(iscol);CHKERRQ(ierr);
 
-  ierr = MatGetOrdering(mat,MATORDERING_RCM,&isrow,&iscol);CHKERRQ(ierr);
+  ierr = MatGetOrdering(mat,MATORDERINGRCM,&isrow,&iscol);CHKERRQ(ierr);
   ierr = MatPermute(mat,isrow,iscol,&B);CHKERRQ(ierr);
   printf("Original matrix permuted by RCM\n"); 
   ierr = MatView(B,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);

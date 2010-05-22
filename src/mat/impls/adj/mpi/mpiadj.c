@@ -45,7 +45,7 @@ PetscErrorCode MatView_MPIAdj(Mat A,PetscViewer viewer)
   PetscTruth     iascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = MatView_MPIAdj_ASCII(A,viewer);CHKERRQ(ierr);
   } else {

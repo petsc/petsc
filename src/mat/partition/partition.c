@@ -456,7 +456,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningView(MatPartitioning part,Petsc
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(part,1,viewer,2);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = MatPartitioningGetType(part,&name);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"MatPartitioning Object: %s\n",name);CHKERRQ(ierr);
@@ -561,9 +561,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetFromOptions(MatPartitioning 
   ierr = PetscOptionsBegin(((PetscObject)part)->comm,((PetscObject)part)->prefix,"Partitioning options","MatOrderings");CHKERRQ(ierr);
     if (!((PetscObject)part)->type_name) {
 #if defined(PETSC_HAVE_PARMETIS)
-      def = MAT_PARTITIONING_PARMETIS;
+      def = MATPARTITIONINGPARMETIS;
 #else
-      def = MAT_PARTITIONING_CURRENT;
+      def = MATPARTITIONINGCURRENT;
 #endif
     } else {
       def = ((PetscObject)part)->type_name;

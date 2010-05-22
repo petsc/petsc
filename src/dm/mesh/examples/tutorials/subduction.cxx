@@ -406,7 +406,7 @@ PetscErrorCode ViewMesh(Mesh mesh, const char filename[], Options *options)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
   ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
   ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
   ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
@@ -434,7 +434,7 @@ PetscErrorCode ViewSection(Mesh mesh, SectionReal section, const char filename[]
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
   ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
   ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
   ierr = MeshView(mesh, viewer);CHKERRQ(ierr);

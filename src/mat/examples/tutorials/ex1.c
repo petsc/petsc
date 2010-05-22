@@ -29,7 +29,7 @@ int main(int argc,char **args)
   char                  file[2][PETSC_MAX_PATH_LEN];     /* input file name */
   IS                    isrow,iscol;      /* row and column permutations */
   PetscErrorCode        ierr;
-  const MatOrderingType rtype = MATORDERING_RCM;
+  const MatOrderingType rtype = MATORDERINGRCM;
   PetscTruth            flg,PreLoad = PETSC_FALSE;
 
   PetscInitialize(&argc,&args,(char *)0,help);

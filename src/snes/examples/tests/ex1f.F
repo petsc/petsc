@@ -190,7 +190,7 @@
 !       Color the matrix, i.e. determine groups of columns that share no common 
 !      rows. These columns in the Jacobian can all be computed simulataneously.
 !
-        call MatGetColoring(J,MATCOLORING_NATURAL,iscoloring,ierr)
+        call MatGetColoring(J,MATCOLORINGNATURAL,iscoloring,ierr)
     
 !
 !       Create the data structure that SNESDefaultComputeJacobianColor() uses

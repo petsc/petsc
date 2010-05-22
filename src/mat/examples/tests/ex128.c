@@ -64,7 +64,7 @@ int main(int argc,char **args)
   ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
   ierr = MatMult(C,x,b);CHKERRQ(ierr);
 
-  ierr = MatGetOrdering(C,MATORDERING_NATURAL,&row,&col);CHKERRQ(ierr);
+  ierr = MatGetOrdering(C,MATORDERINGNATURAL,&row,&col);CHKERRQ(ierr);
 
   /* Compute CHOLESKY or ICC factor sA */
   ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
@@ -74,12 +74,12 @@ int main(int argc,char **args)
   ierr = PetscOptionsHasName(PETSC_NULL,"-cholesky",&CHOLESKY);CHKERRQ(ierr);
   if (CHOLESKY){ 
     printf("Test CHOLESKY...\n");
-    ierr = MatGetFactor(sC,MAT_SOLVER_PETSC,MAT_FACTOR_CHOLESKY,&sA);CHKERRQ(ierr);
+    ierr = MatGetFactor(sC,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&sA);CHKERRQ(ierr);
     ierr = MatCholeskyFactorSymbolic(sA,sC,row,&info);CHKERRQ(ierr);
   } else {
     printf("Test ICC...\n");
     info.levels = lf;
-    ierr = MatGetFactor(sC,MAT_SOLVER_PETSC,MAT_FACTOR_ICC,&sA);CHKERRQ(ierr);
+    ierr = MatGetFactor(sC,MATSOLVERPETSC,MAT_FACTOR_ICC,&sA);CHKERRQ(ierr);
     ierr = MatICCFactorSymbolic(sA,sC,row,&info);CHKERRQ(ierr);
   }
   ierr = MatCholeskyFactorNumeric(sA,sC,&info);CHKERRQ(ierr);

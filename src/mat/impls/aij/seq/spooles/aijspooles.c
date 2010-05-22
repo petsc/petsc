@@ -18,7 +18,7 @@ PetscErrorCode MatView_Spooles(Mat A,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = MatView_SeqAIJ(A,viewer);CHKERRQ(ierr);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO) {
@@ -62,7 +62,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatFactorGetSolverPackage_seqaij_spooles(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
-  *type = MAT_SOLVER_SPOOLES;
+  *type = MATSOLVERSPOOLES;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

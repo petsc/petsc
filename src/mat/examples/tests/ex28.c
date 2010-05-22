@@ -35,12 +35,12 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
-  ierr = MatGetOrdering(A,MATORDERING_NATURAL,&rowperm,&colperm);CHKERRQ(ierr);
+  ierr = MatGetOrdering(A,MATORDERINGNATURAL,&rowperm,&colperm);CHKERRQ(ierr);
   ierr = MatReorderForNonzeroDiagonal(A,1.e-12,rowperm,colperm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"column and row perms\n");CHKERRQ(ierr);
   ierr = ISView(rowperm,0);CHKERRQ(ierr);
   ierr = ISView(colperm,0);CHKERRQ(ierr);
-  ierr = MatGetFactor(A,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&LU);CHKERRQ(ierr);
+  ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&LU);CHKERRQ(ierr);
   ierr = MatLUFactorSymbolic(LU,A,rowperm,colperm,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(LU,A,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatView(LU,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);

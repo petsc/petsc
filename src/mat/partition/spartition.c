@@ -42,22 +42,22 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningRegisterAll(const char path[])
 
   PetscFunctionBegin;
   MatPartitioningRegisterAllCalled = PETSC_TRUE;
-  ierr = MatPartitioningRegisterDynamic(MAT_PARTITIONING_CURRENT,path,"MatPartitioningCreate_Current",MatPartitioningCreate_Current);CHKERRQ(ierr);
+  ierr = MatPartitioningRegisterDynamic(MATPARTITIONINGCURRENT,path,"MatPartitioningCreate_Current",MatPartitioningCreate_Current);CHKERRQ(ierr);
   ierr = MatPartitioningRegisterDynamic("square",path,"MatPartitioningCreate_Square",MatPartitioningCreate_Square);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PARMETIS)
-  ierr = MatPartitioningRegisterDynamic(MAT_PARTITIONING_PARMETIS,path,"MatPartitioningCreate_Parmetis",MatPartitioningCreate_Parmetis);CHKERRQ(ierr);
+  ierr = MatPartitioningRegisterDynamic(MATPARTITIONINGPARMETIS,path,"MatPartitioningCreate_Parmetis",MatPartitioningCreate_Parmetis);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_CHACO)
-  ierr = MatPartitioningRegisterDynamic(MAT_PARTITIONING_CHACO,path,"MatPartitioningCreate_Chaco",MatPartitioningCreate_Chaco);CHKERRQ(ierr);
+  ierr = MatPartitioningRegisterDynamic(MATPARTITIONINGCHACO,path,"MatPartitioningCreate_Chaco",MatPartitioningCreate_Chaco);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_JOSTLE)
-  ierr = MatPartitioningRegisterDynamic(MAT_PARTITIONING_JOSTLE,path,"MatPartitioningCreate_Jostle",MatPartitioningCreate_Jostle);CHKERRQ(ierr);
+  ierr = MatPartitioningRegisterDynamic(MATPARTITIONINGJOSTLE,path,"MatPartitioningCreate_Jostle",MatPartitioningCreate_Jostle);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PARTY)
-  ierr = MatPartitioningRegisterDynamic(MAT_PARTITIONING_PARTY,path,"MatPartitioningCreate_Party",MatPartitioningCreate_Party);CHKERRQ(ierr);
+  ierr = MatPartitioningRegisterDynamic(MATPARTITIONINGPARTY,path,"MatPartitioningCreate_Party",MatPartitioningCreate_Party);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SCOTCH)
-  ierr = MatPartitioningRegisterDynamic(MAT_PARTITIONING_SCOTCH,path,"MatPartitioningCreate_Scotch",MatPartitioningCreate_Scotch);CHKERRQ(ierr);
+  ierr = MatPartitioningRegisterDynamic(MATPARTITIONINGSCOTCH,path,"MatPartitioningCreate_Scotch",MatPartitioningCreate_Scotch);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

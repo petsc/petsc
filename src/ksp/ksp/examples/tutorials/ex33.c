@@ -219,7 +219,7 @@ int main(int argc,char **argv)
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(comm, "Creating VTK mesh file\n");CHKERRQ(ierr);
     ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, "poisson.vtk");CHKERRQ(ierr);
     ierr = MeshView_Sieve_Newer(mesh, viewer);CHKERRQ(ierr);

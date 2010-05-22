@@ -31,17 +31,17 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = MatGetOrdering(C,MATORDERING_ND,&perm,&iperm);CHKERRQ(ierr);
+  ierr = MatGetOrdering(C,MATORDERINGND,&perm,&iperm);CHKERRQ(ierr);
   ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = ISDestroy(perm);CHKERRQ(ierr);
   ierr = ISDestroy(iperm);CHKERRQ(ierr);
 
-  ierr = MatGetOrdering(C,MATORDERING_RCM,&perm,&iperm);CHKERRQ(ierr);
+  ierr = MatGetOrdering(C,MATORDERINGRCM,&perm,&iperm);CHKERRQ(ierr);
   ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = ISDestroy(perm);CHKERRQ(ierr);
   ierr = ISDestroy(iperm);CHKERRQ(ierr);
 
-  ierr = MatGetOrdering(C,MATORDERING_QMD,&perm,&iperm);CHKERRQ(ierr);
+  ierr = MatGetOrdering(C,MATORDERINGQMD,&perm,&iperm);CHKERRQ(ierr);
   ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = ISDestroy(perm);CHKERRQ(ierr);
   ierr = ISDestroy(iperm);CHKERRQ(ierr);

@@ -51,17 +51,17 @@ PETSC_EXTERN_CXX_BEGIN
 .seealso: PetscViewerSetType(), PetscViewer
 E*/
 #define PetscViewerType char*
-#define PETSC_VIEWER_SOCKET       "socket"
-#define PETSC_VIEWER_ASCII        "ascii"
-#define PETSC_VIEWER_BINARY       "binary"
-#define PETSC_VIEWER_STRING       "string"
-#define PETSC_VIEWER_DRAW         "draw"
-#define PETSC_VIEWER_VU           "vu"
-#define PETSC_VIEWER_MATHEMATICA  "mathematica"
-#define PETSC_VIEWER_SILO         "silo"
-#define PETSC_VIEWER_NETCDF       "netcdf"
-#define PETSC_VIEWER_HDF5         "hdf5"
-#define PETSC_VIEWER_MATLAB       "matlab"
+#define PETSCVIEWERSOCKET       "socket"
+#define PETSCVIEWERASCII        "ascii"
+#define PETSCVIEWERBINARY       "binary"
+#define PETSCVIEWERSTRING       "string"
+#define PETSCVIEWERDRAW         "draw"
+#define PETSCVIEWERVU           "vu"
+#define PETSCVIEWERMATHEMATICA  "mathematica"
+#define PETSCVIEWERSILO         "silo"
+#define PETSCVIEWERNETCDF       "netcdf"
+#define PETSCVIEWERHDF5         "hdf5"
+#define PETSCVIEWERMATLAB       "matlab"
 
 extern PetscFList PetscViewerList;
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerRegisterAll(const char *);

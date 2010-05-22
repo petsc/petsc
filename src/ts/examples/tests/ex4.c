@@ -118,7 +118,7 @@ int main(int argc,char **argv)
       }
       
       /* create coloring context */
-      ierr = MatGetColoring(J,MATCOLORING_SL,&iscoloring);CHKERRQ(ierr);
+      ierr = MatGetColoring(J,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
       ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
       ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))RHSFunction,&data);CHKERRQ(ierr);
       ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);

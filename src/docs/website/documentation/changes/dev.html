@@ -114,6 +114,10 @@ in the PETSc Development Version</font></p>
       </ul>
       <p><u><b>Mat:</b></u></p>
       <ul>
+        <li> MAT_SOLVER_XXX is now MATSOLVERXXX</li>
+        <li> MAT_PARTIONING_XXX is now MATPARTITIONINGXXX</li>
+        <li> MATCOLORING_XXX is now MATCOLORINGXXX</li>
+        <li> MATORDERING_XXX is now MATORDERINGXXX</li>
         <li>It is an error to call MatSetOption() before the
 implementation has been created (after MatSetSizes() and MatSetType()).
 Formerly, options were silently ignored in this circumstance.</li>
@@ -165,6 +169,9 @@ but the cast is no longer necessary).</li>
       <ul>
       </ul>
       <u><b>PetscViewer:<br>
+      <ul>
+        <li>PETSC_VIEWER_XXXX is now PETSCVIEWERXXX</li>
+      </ul>
       </b></u>
       <ul>
       </ul>

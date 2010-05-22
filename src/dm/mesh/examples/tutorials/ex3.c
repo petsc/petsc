@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
     }
     if (debug) {
       ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-      ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
       ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
       ierr = PetscViewerFileSetName(viewer, "testBoundary.vtk");CHKERRQ(ierr);
       ierr = MeshView_Sieve_Newer(meshBoundary, viewer);CHKERRQ(ierr);
@@ -161,7 +161,7 @@ int main(int argc, char *argv[])
     ierr = CreatePartitionVector(mesh, &partition);CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "Creating VTK mesh file\n");CHKERRQ(ierr);
     ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, "testMesh.vtk");CHKERRQ(ierr);
     ierr = MeshView_Sieve_Newer(mesh, viewer);CHKERRQ(ierr);

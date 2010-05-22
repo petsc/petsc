@@ -378,7 +378,7 @@ PetscErrorCode MatPartitioningView_Scotch(MatPartitioning part, PetscViewer view
   
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)part)->comm, &rank);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
     if (!rank && scotch->mesg_log) {
       ierr = PetscViewerASCIIPrintf(viewer, "%s\n", scotch->mesg_log);CHKERRQ(ierr);
@@ -704,7 +704,7 @@ PetscErrorCode MatPartitioningDestroy_Scotch(MatPartitioning part)
 
 
 /*MC
-   MAT_PARTITIONING_SCOTCH - Creates a partitioning context via the external package SCOTCH.
+   MATPARTITIONINGSCOTCH - Creates a partitioning context via the external package SCOTCH.
 
    Collective on MPI_Comm
 

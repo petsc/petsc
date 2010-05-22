@@ -54,7 +54,7 @@ PetscErrorCode SNESMatrixFreeView2_Private(Mat J,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(J,(void **)&ctx);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
      ierr = PetscViewerASCIIPrintf(viewer,"  SNES matrix-free approximation:\n");CHKERRQ(ierr);
      if (ctx->jorge) {

@@ -238,7 +238,7 @@ PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
   PetscTruth     iascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
      ierr = PetscViewerASCIIPrintf(viewer,"  matrix-free approximation:\n");CHKERRQ(ierr);
      ierr = PetscViewerASCIIPrintf(viewer,"    err=%G (relative error in function evaluation)\n",ctx->error_rel);CHKERRQ(ierr);

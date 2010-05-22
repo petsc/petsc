@@ -36,7 +36,7 @@ PetscErrorCode PetscViewerGetSingleton_Binary(PetscViewer viewer,PetscViewer *ou
   ierr = MPI_Comm_rank(((PetscObject)viewer)->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr    = PetscViewerCreate(PETSC_COMM_SELF,outviewer);CHKERRQ(ierr);
-    ierr    = PetscViewerSetType(*outviewer,PETSC_VIEWER_BINARY);CHKERRQ(ierr);
+    ierr    = PetscViewerSetType(*outviewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
     obinary = (PetscViewer_Binary*)(*outviewer)->data;
     ierr    = PetscMemcpy(obinary,vbinary,sizeof(PetscViewer_Binary));CHKERRQ(ierr);
   } else {
@@ -479,7 +479,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryCreate(MPI_Comm comm,PetscViewer
   
   PetscFunctionBegin;
   ierr = PetscViewerCreate(comm,binv);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*binv,PETSC_VIEWER_BINARY);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(*binv,PETSCVIEWERBINARY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -537,7 +537,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryOpen(MPI_Comm comm,const char na
   
   PetscFunctionBegin;
   ierr = PetscViewerCreate(comm,binv);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*binv,PETSC_VIEWER_BINARY);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(*binv,PETSCVIEWERBINARY);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(*binv,type);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(*binv,name);CHKERRQ(ierr);
   PetscFunctionReturn(0);

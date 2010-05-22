@@ -433,10 +433,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatColoringRegisterDestroy(void)
    Input Parameters:
 .  mat - the matrix
 .  type - type of coloring, one of the following:
-$      MATCOLORING_NATURAL - natural (one color for each column, very slow)
-$      MATCOLORING_SL - smallest-last
-$      MATCOLORING_LF - largest-first
-$      MATCOLORING_ID - incidence-degree
+$      MATCOLORINGNATURAL - natural (one color for each column, very slow)
+$      MATCOLORINGSL - smallest-last
+$      MATCOLORINGLF - largest-first
+$      MATCOLORINGID - incidence-degree
 
    Output Parameters:
 .   iscoloring - the coloring

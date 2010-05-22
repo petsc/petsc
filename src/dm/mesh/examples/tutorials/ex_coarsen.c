@@ -221,7 +221,7 @@ PetscErrorCode OutputVTK(ALE::Obj<ALE::Mesh> mesh, Options *options, std::string
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(mesh->comm(), "Creating VTK mesh files\n");CHKERRQ(ierr);
     ierr = PetscViewerCreate(mesh->comm(), &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, outname.c_str());CHKERRQ(ierr);
     ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);

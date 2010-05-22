@@ -53,7 +53,7 @@ static PetscErrorCode PCView_OpenMP(PC pc,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(red->comm,&size);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Size of solver nodes %d\n",size);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Parallel sub-solver given next\n",size);CHKERRQ(ierr);

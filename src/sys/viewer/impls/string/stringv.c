@@ -56,7 +56,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerStringSPrintf(PetscViewer viewer,const
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidCharPointer(format,2);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (!isstring) PetscFunctionReturn(0);
   if (!vstr->string) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerStringSetString() before using");
 
@@ -104,7 +104,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerStringOpen(MPI_Comm comm,char string[]
   
   PetscFunctionBegin;
   ierr = PetscViewerCreate(comm,lab);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*lab,PETSC_VIEWER_STRING);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(*lab,PETSCVIEWERSTRING);CHKERRQ(ierr);
   ierr = PetscViewerStringSetString(*lab,string,len);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -183,7 +183,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerStringSetString(PetscViewer viewer,cha
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidCharPointer(string,2);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (!isstring)  PetscFunctionReturn(0);
   if (len <= 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"String must have length at least 2");
 

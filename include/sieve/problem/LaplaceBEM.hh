@@ -173,7 +173,7 @@ namespace ALE {
           PetscViewer viewer;
 
           ierr = PetscViewerCreate(this->comm(), &viewer);CHKERRQ(ierr);
-          ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+          ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
           ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
           ierr = PetscViewerFileSetName(viewer, "bratu.vtk");CHKERRQ(ierr);
           ierr = MeshView((::Mesh) this->_dm, viewer);CHKERRQ(ierr);
@@ -403,7 +403,7 @@ namespace ALE {
             PetscViewer viewer;
 
             ierr = PetscViewerCreate(this->comm(), &viewer);CHKERRQ(ierr);
-            ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+            ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
             ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
             ierr = PetscViewerFileSetName(viewer, "exact_sol.vtk");CHKERRQ(ierr);
             ierr = MeshView((::Mesh) this->_dm, viewer);CHKERRQ(ierr);
@@ -516,7 +516,7 @@ namespace ALE {
             PetscViewer viewer;
 
             ierr = PetscViewerCreate(comm(), &viewer);CHKERRQ(ierr);
-            ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+            ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
             ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
             ierr = PetscViewerFileSetName(viewer, "sol.vtk");CHKERRQ(ierr);
             ierr = MeshView((::Mesh) this->_dm, viewer);CHKERRQ(ierr);
@@ -524,7 +524,7 @@ namespace ALE {
             ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
 
             ierr = PetscViewerCreate(comm(), &viewer);CHKERRQ(ierr);
-            ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+            ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
             ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
             ierr = PetscViewerFileSetName(viewer, "error.vtk");CHKERRQ(ierr);
             ierr = MeshView((::Mesh) this->_dm, viewer);CHKERRQ(ierr);
@@ -540,7 +540,7 @@ namespace ALE {
             PetscViewer viewer;
 
             ierr = PetscViewerCreate(comm(), &viewer);CHKERRQ(ierr);
-            ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+            ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
             ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
             ierr = PetscViewerFileSetName(viewer, "mesh_hierarchy.vtk");CHKERRQ(ierr);
             ierr = PetscOptionsReal("-hierarchy_vtk", PETSC_NULL, "bratu.cxx", *offset, offset, PETSC_NULL);CHKERRQ(ierr);

@@ -499,7 +499,7 @@ PetscErrorCode MatView_PaStiX(Mat A,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO){
@@ -517,7 +517,7 @@ PetscErrorCode MatView_PaStiX(Mat A,PetscViewer viewer)
 
 
 /*MC
-     MAT_SOLVER_PASTIX  - A solver package providing direct solvers (LU) for distributed
+     MATSOLVERPASTIX  - A solver package providing direct solvers (LU) for distributed
   and sequential matrices via the external package PaStiX.
 
   Use ./configure --download-pastix to have PETSc installed with PaStiX
@@ -559,7 +559,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatFactorGetSolverPackage_pastix(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
-  *type = MAT_SOLVER_PASTIX;
+  *type = MATSOLVERPASTIX;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

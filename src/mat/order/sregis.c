@@ -48,15 +48,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatOrderingRegisterAll(const char path[])
   PetscFunctionBegin;
   MatOrderingRegisterAllCalled = PETSC_TRUE;
 
-  ierr = MatOrderingRegisterDynamic(MATORDERING_NATURAL,  path,"MatOrdering_Natural"  ,MatOrdering_Natural);CHKERRQ(ierr);
-  ierr = MatOrderingRegisterDynamic(MATORDERING_ND,       path,"MatOrdering_ND"       ,MatOrdering_ND);CHKERRQ(ierr);
-  ierr = MatOrderingRegisterDynamic(MATORDERING_1WD,      path,"MatOrdering_1WD"      ,MatOrdering_1WD);CHKERRQ(ierr);
-  ierr = MatOrderingRegisterDynamic(MATORDERING_RCM,      path,"MatOrdering_RCM"      ,MatOrdering_RCM);CHKERRQ(ierr);
-  ierr = MatOrderingRegisterDynamic(MATORDERING_QMD,      path,"MatOrdering_QMD"      ,MatOrdering_QMD);CHKERRQ(ierr);
-  ierr = MatOrderingRegisterDynamic(MATORDERING_ROWLENGTH,path,"MatOrdering_RowLength",MatOrdering_RowLength);CHKERRQ(ierr);
-  ierr = MatOrderingRegisterDynamic(MATORDERING_FLOW,     path,"MatOrdering_Flow_SeqAIJ",MatOrdering_Flow_SeqAIJ);CHKERRQ(ierr);
+  ierr = MatOrderingRegisterDynamic(MATORDERINGNATURAL,  path,"MatOrdering_Natural"  ,MatOrdering_Natural);CHKERRQ(ierr);
+  ierr = MatOrderingRegisterDynamic(MATORDERINGND,       path,"MatOrdering_ND"       ,MatOrdering_ND);CHKERRQ(ierr);
+  ierr = MatOrderingRegisterDynamic(MATORDERING1WD,      path,"MatOrdering_1WD"      ,MatOrdering_1WD);CHKERRQ(ierr);
+  ierr = MatOrderingRegisterDynamic(MATORDERINGRCM,      path,"MatOrdering_RCM"      ,MatOrdering_RCM);CHKERRQ(ierr);
+  ierr = MatOrderingRegisterDynamic(MATORDERINGQMD,      path,"MatOrdering_QMD"      ,MatOrdering_QMD);CHKERRQ(ierr);
+  ierr = MatOrderingRegisterDynamic(MATORDERINGROWLENGTH,path,"MatOrdering_RowLength",MatOrdering_RowLength);CHKERRQ(ierr);
+  ierr = MatOrderingRegisterDynamic(MATORDERINGFLOW,     path,"MatOrdering_Flow_SeqAIJ",MatOrdering_Flow_SeqAIJ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_UMFPACK)
-  ierr = MatOrderingRegisterDynamic(MATORDERING_AMD,      path,"MatOrdering_AMD",MatOrdering_AMD);CHKERRQ(ierr);
+  ierr = MatOrderingRegisterDynamic(MATORDERINGAMD,      path,"MatOrdering_AMD",MatOrdering_AMD);CHKERRQ(ierr);
 #endif
 
   PetscFunctionReturn(0);

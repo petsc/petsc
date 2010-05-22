@@ -42,20 +42,20 @@ int main(int argc,char **args)
   ierr = VecDuplicate(x,&u);CHKERRQ(ierr); /* save the true solution */
 
   /* Test LU Factorization */
-  ierr = MatGetOrdering(A,MATORDERING_NATURAL,&perm,&iperm);CHKERRQ(ierr);
+  ierr = MatGetOrdering(A,MATORDERINGNATURAL,&perm,&iperm);CHKERRQ(ierr);
   
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_solver_package",&ipack,PETSC_NULL);CHKERRQ(ierr);
   switch (ipack){
   case 1:
 #ifdef PETSC_HAVE_SUPERLU
     if (!rank) printf(" SUPERLU LU:\n");
-    ierr = MatGetFactor(A,MAT_SOLVER_SUPERLU,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+    ierr = MatGetFactor(A,MATSOLVERSUPERLU,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     break;
 #endif
   case 2:
 #ifdef PETSC_HAVE_MUMPS 
     if (!rank) printf(" MUMPS LU:\n");
-    ierr = MatGetFactor(A,MAT_SOLVER_MUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+    ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     {
     /* test mumps options */
     PetscInt icntl_7 = 5;
@@ -65,7 +65,7 @@ int main(int argc,char **args)
 #endif
   default:
     if (!rank) printf(" PETSC LU:\n");
-    ierr = MatGetFactor(A,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+    ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
   }
 
   info.fill = 5.0; 

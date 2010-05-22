@@ -83,7 +83,7 @@ PetscErrorCode OutputVTK(const Obj<ALE::Mesh>& mesh, std::string filename, std::
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(mesh->comm(), "Creating VTK mesh file\n");CHKERRQ(ierr);
     ierr = PetscViewerCreate(mesh->comm(), &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, filename.c_str());CHKERRQ(ierr);
     ierr = MeshView_Sieve(mesh, viewer);CHKERRQ(ierr);
@@ -108,7 +108,7 @@ PetscErrorCode OutputMesh(const Obj<ALE::Mesh>& mesh)
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(mesh->comm(), "Creating original format mesh file\n");CHKERRQ(ierr);
     ierr = PetscViewerCreate(mesh->comm(), &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PCICE);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, "testMesh.lcon");CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);

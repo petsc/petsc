@@ -15,7 +15,7 @@ PetscErrorCode PFView_String(void *value,PetscViewer viewer)
   PetscTruth iascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"String = %s\n",(char*)value);CHKERRQ(ierr);
   }

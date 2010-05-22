@@ -188,7 +188,7 @@ PetscErrorCode ViewSection(Mesh mesh, SectionReal section, const char filename[]
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
   ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
   ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
   ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
@@ -215,7 +215,7 @@ PetscErrorCode ViewMesh(Mesh mesh, const char filename[])
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
   ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
   ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
   ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
@@ -1658,7 +1658,7 @@ PetscErrorCode Solve(DMMG *dmmg, Options *options)
     if (flag) {
       PetscViewer    viewer;
       ierr = PetscViewerCreate(sol->comm(), &viewer);CHKERRQ(ierr);
-      ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
       ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
       ierr = PetscViewerFileSetName(viewer, "mesh_hierarchy.vtk");CHKERRQ(ierr);
       double offset[3] = {0.7, 0.0, 0.25};

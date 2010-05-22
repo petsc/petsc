@@ -78,7 +78,7 @@ PetscErrorCode OutputVTK(Mesh mesh, Options *options)
     ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "Creating VTK mesh file\n");CHKERRQ(ierr);
     ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, "testMesh.vtk");CHKERRQ(ierr);
     ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
@@ -122,7 +122,7 @@ PetscErrorCode OutputMesh(Mesh mesh, Options *options)
     ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "Creating original format mesh file\n");CHKERRQ(ierr);
     ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
     if (options->outputFileType == PCICE) {
       ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PCICE);CHKERRQ(ierr);
       ierr = PetscViewerFileSetName(viewer, "testMesh.lcon");CHKERRQ(ierr);

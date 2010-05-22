@@ -130,7 +130,7 @@ PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part,PetscViewer vie
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)part)->comm,&rank);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     if (parmetis->parallel == 2) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Using parallel coarse grid partitioner\n");CHKERRQ(ierr);
@@ -226,7 +226,7 @@ PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part)
 
 
 /*MC
-   MAT_PARTITIONING_PARMETIS - Creates a partitioning context via the external package PARMETIS.
+   MATPARTITIONINGPARMETIS - Creates a partitioning context via the external package PARMETIS.
 
    Collective on MPI_Comm
 

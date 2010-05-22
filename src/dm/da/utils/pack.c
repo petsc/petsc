@@ -256,7 +256,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeView(DMComposite packer,PetscViewer 
   PetscTruth     iascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)v,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)v,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     struct DMCompositeLink *lnk = packer->next;
     PetscInt i;
@@ -850,7 +850,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecView_DMComposite(Vec gvec,PetscViewer viewer
   if (!packer) SETERRQ(((PetscObject)gvec)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMComposite");
   next = packer->next;
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
   if (!isdraw) {
     /* do I really want to call this? */
     ierr = VecView_MPI(gvec,viewer);CHKERRQ(ierr);

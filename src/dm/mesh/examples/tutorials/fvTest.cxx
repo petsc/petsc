@@ -128,7 +128,7 @@ PetscErrorCode ReadMesh(MPI_Comm comm, PFLOTRANMesh *data, Options *options)
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_HDF5)
   ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(viewer, PETSC_VIEWER_HDF5);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(viewer, PETSCVIEWERHDF5);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(viewer, "sieve.h5");CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);

@@ -159,9 +159,9 @@ PetscErrorCode DAGetWireBasketInterpolation(DA da,PC_Exotic *exotic,Mat Aglobal,
   ierr = MatMatMult(Ais,Xsurf,MAT_REUSE_MATRIX,PETSC_DETERMINE,&Xint_tmp);CHKERRQ(ierr);
   ierr = MatScale(Xint_tmp,-1.0);CHKERRQ(ierr);
   if (exotic->directSolve) {
-    ierr = MatGetFactor(Aii,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&iAii);CHKERRQ(ierr);
+    ierr = MatGetFactor(Aii,MATSOLVERPETSC,MAT_FACTOR_LU,&iAii);CHKERRQ(ierr);
     ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
-    ierr = MatGetOrdering(Aii,MATORDERING_ND,&row,&col);CHKERRQ(ierr);
+    ierr = MatGetOrdering(Aii,MATORDERINGND,&row,&col);CHKERRQ(ierr);
     ierr = MatLUFactorSymbolic(iAii,Aii,row,col,&info);CHKERRQ(ierr);
     ierr = ISDestroy(row);CHKERRQ(ierr);
     ierr = ISDestroy(col);CHKERRQ(ierr);
@@ -433,9 +433,9 @@ PetscErrorCode DAGetFaceInterpolation(DA da,PC_Exotic *exotic,Mat Aglobal,MatReu
   ierr = MatScale(Xint_tmp,-1.0);CHKERRQ(ierr);
 
   if (exotic->directSolve) {
-    ierr = MatGetFactor(Aii,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&iAii);CHKERRQ(ierr);
+    ierr = MatGetFactor(Aii,MATSOLVERPETSC,MAT_FACTOR_LU,&iAii);CHKERRQ(ierr);
     ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
-    ierr = MatGetOrdering(Aii,MATORDERING_ND,&row,&col);CHKERRQ(ierr);
+    ierr = MatGetOrdering(Aii,MATORDERINGND,&row,&col);CHKERRQ(ierr);
     ierr = MatLUFactorSymbolic(iAii,Aii,row,col,&info);CHKERRQ(ierr);
     ierr = ISDestroy(row);CHKERRQ(ierr);
     ierr = ISDestroy(col);CHKERRQ(ierr);
@@ -669,7 +669,7 @@ PetscErrorCode PCView_Exotic(PC pc,PetscViewer viewer)
   PC_Exotic      *ctx = (PC_Exotic*) mg->innerctx;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"    Exotic type = %s\n",PCExoticTypes[ctx->type]);CHKERRQ(ierr);
     if (ctx->directSolve) {

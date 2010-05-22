@@ -84,7 +84,7 @@ static PetscErrorCode PCView_LU(PC pc,PetscViewer viewer)
   PetscTruth     iascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     if (lu->inplace) {
       ierr = PetscViewerASCIIPrintf(viewer,"  LU: in-place factorization\n");CHKERRQ(ierr);
@@ -283,12 +283,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_LU(PC pc)
   dir->col                 = 0;
   dir->row                 = 0;
 
-  ierr = PetscStrallocpy(MAT_SOLVER_PETSC,&((PC_Factor*)dir)->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERPETSC,&((PC_Factor*)dir)->solvertype);CHKERRQ(ierr);
   ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = PetscStrallocpy(MATORDERING_ND,&((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(MATORDERINGND,&((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
   } else {
-    ierr = PetscStrallocpy(MATORDERING_NATURAL,&((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(MATORDERINGNATURAL,&((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
   }
   dir->reusefill        = PETSC_FALSE;
   dir->reuseordering    = PETSC_FALSE;

@@ -87,7 +87,7 @@ PetscErrorCode SerialTetrahedronTest(const Options *options)
       PetscViewer viewer;
 
       ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer);CHKERRQ(ierr);
-      ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
       ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
       ierr = PetscViewerFileSetName(viewer, "refineTest1.vtk");CHKERRQ(ierr);
       ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);
@@ -178,7 +178,7 @@ PetscErrorCode ParallelTetrahedronTest(const Options *options)
       PetscViewer viewer;
 
       ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer);CHKERRQ(ierr);
-      ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
       ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
       ierr = PetscViewerFileSetName(viewer, "refineTest1.vtk");CHKERRQ(ierr);
       ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);

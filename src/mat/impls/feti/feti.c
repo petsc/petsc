@@ -724,7 +724,7 @@ int MatFetiSolveLocal(Mat A)
 	KSPSetType(ksp,KSPPREONLY); 
 	PCSetType(pc,PCLU);              
 	PCFactorSetUseInPlace(pc);           
-	PCFactorSetMatOrderingType(pc,MATORDERING_NATURAL); /* MATORDERING_RCM, MATORDERING_QMD, MATORDERING_ND */
+	PCFactorSetMatOrderingType(pc,MATORDERINGNATURAL); /* MATORDERINGRCM, MATORDERINGQMD, MATORDERINGND */
 
 	KSPSetTolerances(ksp,1e-7,1e-50,1e+5,10000); 
 	SLESAppendOptionsPrefix(*sles,"local_");    /* uses options with prefix -local_ */

@@ -324,7 +324,7 @@ static PetscErrorCode MatView_UMFPACK(Mat A,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = MatView_SeqAIJ(A,viewer);CHKERRQ(ierr);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO) {
@@ -340,14 +340,14 @@ EXTERN_C_BEGIN
 PetscErrorCode MatFactorGetSolverPackage_seqaij_umfpack(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
-  *type = MAT_SOLVER_UMFPACK;
+  *type = MATSOLVERUMFPACK;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
   
 
 /*MC
-  MAT_SOLVER_UMFPACK = "umfpack" - A matrix type providing direct solvers (LU) for sequential matrices 
+  MATSOLVERUMFPACK = "umfpack" - A matrix type providing direct solvers (LU) for sequential matrices 
   via the external package UMFPACK.
 
   ./configure --download-umfpack to install PETSc to use UMFPACK
@@ -374,7 +374,7 @@ EXTERN_C_END
 
    Level: beginner
 
-.seealso: PCLU, MAT_SOLVER_SUPERLU, MAT_SOLVER_MUMPS, MAT_SOLVER_SPOOLES, PCFactorSetMatSolverPackage(), MatSolverPackage
+.seealso: PCLU, MATSOLVERSUPERLU, MATSOLVERMUMPS, MATSOLVERSPOOLES, PCFactorSetMatSolverPackage(), MatSolverPackage
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  

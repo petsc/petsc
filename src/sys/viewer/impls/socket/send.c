@@ -294,7 +294,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketOpen(MPI_Comm comm,const char ma
 
   PetscFunctionBegin;
   ierr = PetscViewerCreate(comm,lab);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*lab,PETSC_VIEWER_SOCKET);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(*lab,PETSCVIEWERSOCKET);CHKERRQ(ierr);
   ierr = PetscViewerSocketSetConnection(*lab,machine,port);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -348,7 +348,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Socket(PetscViewer v)
   v->ops->setfromoptions = PetscViewerSetFromOptions_Socket;
 
   /* lie and say this is a binary viewer; then all the XXXView_Binary() methods will work correctly on it */
-  ierr                   = PetscObjectChangeTypeName((PetscObject)v,PETSC_VIEWER_BINARY);CHKERRQ(ierr);
+  ierr                   = PetscObjectChangeTypeName((PetscObject)v,PETSCVIEWERBINARY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

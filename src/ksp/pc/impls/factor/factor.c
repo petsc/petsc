@@ -407,7 +407,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseInPlace(PC pc)
 
     Input Parameters:
 +   pc - the preconditioner context
--   ordering - the matrix ordering name, for example, MATORDERING_ND or MATORDERING_RCM
+-   ordering - the matrix ordering name, for example, MATORDERINGND or MATORDERINGRCM
 
     Options Database Key:
 .   -pc_factor_mat_ordering_type <nd,rcm,...> - Sets ordering routine

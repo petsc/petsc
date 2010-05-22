@@ -69,9 +69,9 @@ int main(int argc,char **args)
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_ordering",&matordering);CHKERRQ(ierr);
   if (matordering){
-    ierr = MatGetOrdering(C,MATORDERING_RCM,&row,&col);CHKERRQ(ierr);
+    ierr = MatGetOrdering(C,MATORDERINGRCM,&row,&col);CHKERRQ(ierr);
   } else {
-    ierr = MatGetOrdering(C,MATORDERING_NATURAL,&row,&col);CHKERRQ(ierr);
+    ierr = MatGetOrdering(C,MATORDERINGNATURAL,&row,&col);CHKERRQ(ierr);
   }
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-display_matrices",&MATDSPL);CHKERRQ(ierr);
@@ -92,12 +92,12 @@ int main(int argc,char **args)
   ierr = PetscOptionsHasName(PETSC_NULL,"-lu",&LU);CHKERRQ(ierr);
   if (LU){ 
     printf("Test LU...\n");
-    ierr = MatGetFactor(C,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&A);CHKERRQ(ierr);
+    ierr = MatGetFactor(C,MATSOLVERPETSC,MAT_FACTOR_LU,&A);CHKERRQ(ierr);
     ierr = MatLUFactorSymbolic(A,C,row,col,&info);CHKERRQ(ierr);
   } else {
     printf("Test ILU...\n");
     info.levels = lf;
-    ierr = MatGetFactor(C,MAT_SOLVER_PETSC,MAT_FACTOR_ILU,&A);CHKERRQ(ierr);
+    ierr = MatGetFactor(C,MATSOLVERPETSC,MAT_FACTOR_ILU,&A);CHKERRQ(ierr);
     ierr = MatILUFactorSymbolic(A,C,row,col,&info);CHKERRQ(ierr);
   }
   ierr = MatLUFactorNumeric(A,C,&info);CHKERRQ(ierr);
@@ -137,7 +137,7 @@ int main(int argc,char **args)
   if (CHOLESKY){ 
     printf("Test Cholesky...\n");
     lf = -1;
-    ierr = MatGetFactor(C,MAT_SOLVER_PETSC,MAT_FACTOR_CHOLESKY,&A);CHKERRQ(ierr);
+    ierr = MatGetFactor(C,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&A);CHKERRQ(ierr);
     ierr = MatCholeskyFactorSymbolic(A,C,row,&info);CHKERRQ(ierr);
   } else {
     printf("Test ICC...\n");
@@ -145,7 +145,7 @@ int main(int argc,char **args)
     info.fill          = 1.0;
     info.diagonal_fill = 0;
     info.zeropivot     = 0.0;
-    ierr = MatGetFactor(C,MAT_SOLVER_PETSC,MAT_FACTOR_ICC,&A);CHKERRQ(ierr);
+    ierr = MatGetFactor(C,MATSOLVERPETSC,MAT_FACTOR_ICC,&A);CHKERRQ(ierr);
     ierr = MatICCFactorSymbolic(A,C,row,&info);CHKERRQ(ierr);
   }
   ierr = MatCholeskyFactorNumeric(A,C,&info);CHKERRQ(ierr);  

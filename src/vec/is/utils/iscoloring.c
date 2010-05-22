@@ -68,7 +68,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringView(ISColoring iscoloring,PetscView
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     MPI_Comm    comm;
     PetscMPIInt rank;

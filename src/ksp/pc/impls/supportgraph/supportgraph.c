@@ -71,7 +71,7 @@ static PetscErrorCode PCView_SupportGraph(PC pc,PetscViewer viewer)
   PetscTruth      iascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  SupportGraph: maxCong = %f\n",sg->maxCong);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  SupportGraph: tol = %f\n",sg->tol);CHKERRQ(ierr);

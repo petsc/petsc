@@ -48,10 +48,10 @@ int main(int argc,char **args)
 
   /* Set default ordering to be Quotient Minimum Degree; also read
      orderings from the options database */
-  ierr = MatGetOrdering(C,MATORDERING_QMD,&row,&col);CHKERRQ(ierr);
+  ierr = MatGetOrdering(C,MATORDERINGQMD,&row,&col);CHKERRQ(ierr);
 
   ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
-  ierr = MatGetFactor(C,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&A);CHKERRQ(ierr);
+  ierr = MatGetFactor(C,MATSOLVERPETSC,MAT_FACTOR_LU,&A);CHKERRQ(ierr);
   ierr = MatLUFactorSymbolic(A,C,row,col,&info);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(A,C,&info);CHKERRQ(ierr);
   ierr = MatSolveTranspose(A,b,x);CHKERRQ(ierr);

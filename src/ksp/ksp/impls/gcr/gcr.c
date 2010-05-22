@@ -135,7 +135,7 @@ PetscErrorCode KSPView_GCR( KSP ksp, PetscViewer viewer )
   PetscTruth     iascii;
 
   PetscFunctionBegin;
-  PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);
+  PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  GCR: restart = %D \n", ctx->restart );CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  GCR: restarts performed = %D \n", ctx->n_restarts );CHKERRQ(ierr);

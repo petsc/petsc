@@ -139,7 +139,7 @@ int main (int argc, char * argv[]) {
     PetscPrintf(m->comm(), "Writing VTK\n");
     PetscViewer viewer;
     PetscViewerCreate(m->comm(), &viewer);
-    PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
+    PetscViewerSetType(viewer, PETSCVIEWERASCII);
     PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);
     PetscViewerFileSetName(viewer, "surgery_mesh.vtk");
     VTKViewer::writeHeader(viewer);

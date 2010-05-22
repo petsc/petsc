@@ -79,7 +79,7 @@ PetscErrorCode OutputVTK(const Obj<ALE::Mesh>& mesh, Options *options)
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(mesh->comm(), "Creating VTK mesh files\n");CHKERRQ(ierr);
     ierr = PetscViewerCreate(mesh->comm(), &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, "testMesh.vtk");CHKERRQ(ierr);
     ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);
@@ -93,7 +93,7 @@ PetscErrorCode OutputVTK(const Obj<ALE::Mesh>& mesh, Options *options)
 
       filename << "coarseMesh." << *p_iter << ".vtk";
       ierr = PetscViewerCreate(mesh->comm(), &viewer);CHKERRQ(ierr);
-      ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
       ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
       ierr = PetscViewerFileSetName(viewer, filename.str().c_str());CHKERRQ(ierr);
       ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);

@@ -294,7 +294,7 @@ public:
     PetscErrorCode ierr;
 
     ierr = PetscViewerCreate(mesh->comm(), &viewer);CHKERRXX(ierr);
-    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRXX(ierr);
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRXX(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRXX(ierr);
     ierr = PetscViewerFileSetName(viewer, "sphere.vtk");CHKERRXX(ierr);
     ierr = VTKViewer::writeHeader(viewer); CHKERRXX(ierr);

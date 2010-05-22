@@ -98,12 +98,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloOpen(MPI_Comm comm, const char nam
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscHeaderCreate(v, _p_PetscViewer, struct _PetscViewerOps, PETSC_VIEWER_CLASSID, -1, PETSC_VIEWER_SILO, comm, PetscViewerDestroy, 0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(v, _p_PetscViewer, struct _PetscViewerOps, PETSC_VIEWER_CLASSID, -1, PETSCVIEWERSILO, comm, PetscViewerDestroy, 0);CHKERRQ(ierr);
   ierr            = PetscNewLog(v,Viewer_Silo,&silo); CHKPTRQ(silo);
   v->data         = (void*)silo;
   v->ops->destroy = PetscViewerDestroy_Silo;
   v->ops->flush   = PetscViewerFlush_Silo;
-  ierr            = PetscStrallocpy(PETSC_VIEWER_SILO, &((PetscObject)v)->type_name);CHKERRQ(ierr);
+  ierr            = PetscStrallocpy(PETSCVIEWERSILO, &((PetscObject)v)->type_name);CHKERRQ(ierr);
 
   ierr = PetscStrncpy(filetemp, name, 251);CHKERRQ(ierr);
   ierr = PetscStrcat(filetemp, ".pdb");CHKERRQ(ierr);

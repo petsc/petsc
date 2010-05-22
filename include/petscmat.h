@@ -85,19 +85,19 @@ E*/
 .seealso: MatGetFactor(), Mat, MatSetType(), MatType
 E*/
 #define MatSolverPackage char*
-#define MAT_SOLVER_SPOOLES      "spooles"
-#define MAT_SOLVER_SUPERLU      "superlu"
-#define MAT_SOLVER_SUPERLU_DIST "superlu_dist"
-#define MAT_SOLVER_UMFPACK      "umfpack"
-#define MAT_SOLVER_ESSL         "essl"
-#define MAT_SOLVER_LUSOL        "lusol"
-#define MAT_SOLVER_MUMPS        "mumps"
-#define MAT_SOLVER_PASTIX       "pastix"
-#define MAT_SOLVER_DSCPACK      "dscpack"
-#define MAT_SOLVER_MATLAB       "matlab"
-#define MAT_SOLVER_PETSC        "petsc"
-#define MAT_SOLVER_PLAPACK      "plapack"
-#define MAT_SOLVER_BAS          "bas"
+#define MATSOLVERSPOOLES      "spooles"
+#define MATSOLVERSUPERLU      "superlu"
+#define MATSOLVERSUPERLU_DIST "superlu_dist"
+#define MATSOLVERUMFPACK      "umfpack"
+#define MATSOLVERESSL         "essl"
+#define MATSOLVERLUSOL        "lusol"
+#define MATSOLVERMUMPS        "mumps"
+#define MATSOLVERPASTIX       "pastix"
+#define MATSOLVERDSCPACK      "dscpack"
+#define MATSOLVERMATLAB       "matlab"
+#define MATSOLVERPETSC        "petsc"
+#define MATSOLVERPLAPACK      "plapack"
+#define MATSOLVERBAS          "bas"
 
 /*E
     MatFactorType - indicates what type of factorization is requested
@@ -1043,20 +1043,20 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetCtx(Mat,void*);
 .seealso: MatGetOrdering()
 E*/
 #define MatOrderingType char*
-#define MATORDERING_NATURAL     "natural"
-#define MATORDERING_ND          "nd"
-#define MATORDERING_1WD         "1wd"
-#define MATORDERING_RCM         "rcm"
-#define MATORDERING_QMD         "qmd"
-#define MATORDERING_ROWLENGTH   "rowlength"
-#define MATORDERING_DSC_ND      "dsc_nd"         /* these three are only for DSCPACK, see its documentation for details */
-#define MATORDERING_DSC_MMD     "dsc_mmd"
-#define MATORDERING_DSC_MDF     "dsc_mdf"
-#define MATORDERING_CONSTRAINED "constrained"
-#define MATORDERING_IDENTITY    "identity"
-#define MATORDERING_REVERSE     "reverse"
-#define MATORDERING_FLOW        "flow"
-#define MATORDERING_AMD         "amd"
+#define MATORDERINGNATURAL     "natural"
+#define MATORDERINGND          "nd"
+#define MATORDERING1WD         "1wd"
+#define MATORDERINGRCM         "rcm"
+#define MATORDERINGQMD         "qmd"
+#define MATORDERINGROWLENGTH   "rowlength"
+#define MATORDERINGDSC_ND      "dsc_nd"         /* these three are only for DSCPACK, see its documentation for details */
+#define MATORDERINGDSC_MMD     "dsc_mmd"
+#define MATORDERINGDSC_MDF     "dsc_mdf"
+#define MATORDERINGCONSTRAINED "constrained"
+#define MATORDERINGIDENTITY    "identity"
+#define MATORDERINGREVERSE     "reverse"
+#define MATORDERINGFLOW        "flow"
+#define MATORDERINGAMD         "amd"
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat,const MatOrderingType,IS*,IS*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrderingList(PetscFList *list);
@@ -1071,7 +1071,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrderingRegister(const char[],const 
    Not Collective
 
    Input Parameters:
-+  sname - name of ordering (for example MATORDERING_ND)
++  sname - name of ordering (for example MATORDERINGND)
 .  path - location of library where creation routine is 
 .  name - name of function that creates the ordering type,a string
 -  function - function pointer that creates the ordering
@@ -1206,10 +1206,10 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSOR(Mat,Vec,PetscReal,MatSORType,Pet
 .seealso: MatGetColoring()
 E*/
 #define MatColoringType char*
-#define MATCOLORING_NATURAL "natural"
-#define MATCOLORING_SL      "sl"
-#define MATCOLORING_LF      "lf"
-#define MATCOLORING_ID      "id"
+#define MATCOLORINGNATURAL "natural"
+#define MATCOLORINGSL      "sl"
+#define MATCOLORINGLF      "lf"
+#define MATCOLORINGID      "id"
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring(Mat,const MatColoringType,ISColoring*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatColoringRegister(const char[],const char[],const char[],PetscErrorCode(*)(Mat,MatColoringType,ISColoring *));
@@ -1224,7 +1224,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatColoringRegister(const char[],const 
    Not Collective
 
    Input Parameters:
-+  sname - name of Coloring (for example MATCOLORING_SL)
++  sname - name of Coloring (for example MATCOLORINGSL)
 .  path - location of library where creation routine is 
 .  name - name of function that creates the Coloring type, a string
 -  function - function pointer that creates the coloring
@@ -1312,13 +1312,13 @@ typedef struct _p_MatPartitioning* MatPartitioning;
 .seealso: MatPartitioningCreate(), MatPartitioning
 E*/
 #define MatPartitioningType char*
-#define MAT_PARTITIONING_CURRENT  "current"
-#define MAT_PARTITIONING_SQUARE   "square"
-#define MAT_PARTITIONING_PARMETIS "parmetis"
-#define MAT_PARTITIONING_CHACO    "chaco"
-#define MAT_PARTITIONING_JOSTLE   "jostle"
-#define MAT_PARTITIONING_PARTY    "party"
-#define MAT_PARTITIONING_SCOTCH   "scotch"
+#define MATPARTITIONINGCURRENT  "current"
+#define MATPARTITIONINGSQUARE   "square"
+#define MATPARTITIONINGPARMETIS "parmetis"
+#define MATPARTITIONINGCHACO    "chaco"
+#define MATPARTITIONINGJOSTLE   "jostle"
+#define MATPARTITIONINGPARTY    "party"
+#define MATPARTITIONINGSCOTCH   "scotch"
 
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate(MPI_Comm,MatPartitioning*);
@@ -1342,7 +1342,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningRegister(const char[],co
    Not Collective
 
    Input Parameters:
-+  sname - name of partitioning (for example MAT_PARTITIONING_CURRENT) or parmetis
++  sname - name of partitioning (for example MATPARTITIONINGCURRENT) or parmetis
 .  path - location of library where creation routine is 
 .  name - name of function that creates the partitioning type, a string
 -  function - function pointer that creates the partitioning type

@@ -10,8 +10,8 @@ PetscErrorCode CharacteristicView_DA(Characteristic c, PetscViewer viewer)
 
   PetscFunctionBegin;
   /* Pull out field names from DA */
-  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &iascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_STRING, &isstring);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERSTRING, &isstring);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  DA: dummy=%D\n", da->dummy);CHKERRQ(ierr);
   } else if (isstring) {

@@ -2010,7 +2010,7 @@ static PetscErrorCode PCView_ASA(PC pc,PetscViewer viewer)
   PC_ASA_level   *asa_lev = asa->levellist;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  ASA:\n");CHKERRQ(ierr);
     asa_lev = asa->levellist;

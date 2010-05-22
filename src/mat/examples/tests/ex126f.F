@@ -79,14 +79,14 @@
 
       if (wmumps) then
           write(*,*) 'use MUMPS LU...'
-          call MatGetFactor(A, MAT_SOLVER_MUMPS, MAT_FACTOR_LU,
+          call MatGetFactor(A, MATSOLVERMUMPS, MAT_FACTOR_LU,
      >         fact, ierr)
           call MatLUFactorSymbolic(fact, A, PETSC_NULL, PETSC_NULL,
      >         PETSC_NULL, ierr)
       else
          write(*,*) 'use PETSc LU...'
-         call MatGetOrdering(A,MATORDERING_NATURAL,perm,iperm,ierr)
-         call MatGetFactor(A, MAT_SOLVER_PETSC, MAT_FACTOR_LU,
+         call MatGetOrdering(A,MATORDERINGNATURAL,perm,iperm,ierr)
+         call MatGetFactor(A, MATSOLVERPETSC, MAT_FACTOR_LU,
      >         fact, ierr)
      
          call MatLUFactorSymbolic(fact, A, perm, iperm,

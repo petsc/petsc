@@ -114,7 +114,7 @@ int main(int argc, char *args[])
 
   /* Open Glenn's file */
   ierr = PetscViewerCreate(PETSC_COMM_SELF, &hdf5viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(hdf5viewer, PETSC_VIEWER_HDF5);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(hdf5viewer, PETSCVIEWERHDF5);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(hdf5viewer, FILE_MODE_READ);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(hdf5viewer, "mesh.h5");CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetFileId(hdf5viewer, &file_id);CHKERRQ(ierr);

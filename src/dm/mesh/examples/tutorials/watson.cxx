@@ -406,7 +406,7 @@ PetscErrorCode WriteVTK(ALE::Obj<Mesh_>& mesh) {
     PetscErrorCode ierr;
 
     ierr = PetscViewerCreate(mesh->comm(), &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, filename.c_str());CHKERRQ(ierr);
 

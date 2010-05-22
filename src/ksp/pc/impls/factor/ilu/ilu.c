@@ -147,7 +147,7 @@ static PetscErrorCode PCView_ILU(PC pc,PetscViewer viewer)
   PetscTruth     iascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     if (ilu->inplace) {
       ierr = PetscViewerASCIIPrintf(viewer,"  ILU: in-place factorization\n");CHKERRQ(ierr);
@@ -219,7 +219,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
         }
       }
       ierr = MatDestroy(((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
-      ierr = MatGetFactor(pc->pmat,MAT_SOLVER_PETSC,MAT_FACTOR_ILU,&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
+      ierr = MatGetFactor(pc->pmat,MATSOLVERPETSC,MAT_FACTOR_ILU,&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
       ierr = MatILUFactorSymbolic(((PC_Factor*)ilu)->fact,pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info);CHKERRQ(ierr);
       ierr = MatGetInfo(((PC_Factor*)ilu)->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       ilu->actualfill = info.fill_ratio_needed;
@@ -335,8 +335,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC pc)
   ilu->col                     = 0;
   ilu->row                     = 0;
   ilu->inplace                 = PETSC_FALSE;
-  ierr = PetscStrallocpy(MAT_SOLVER_PETSC,&((PC_Factor*)ilu)->solvertype);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(MATORDERING_NATURAL,&((PC_Factor*)ilu)->ordering);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERPETSC,&((PC_Factor*)ilu)->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATORDERINGNATURAL,&((PC_Factor*)ilu)->ordering);CHKERRQ(ierr);
   ilu->reuseordering           = PETSC_FALSE;
   ((PC_Factor*)ilu)->info.dt                 = PETSC_DEFAULT;
   ((PC_Factor*)ilu)->info.dtcount            = PETSC_DEFAULT;

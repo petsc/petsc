@@ -13,14 +13,14 @@
 #define PetscViewerType character*(80)
 #define PetscViewerFormat PetscEnum
 
-#define PETSC_VIEWER_SOCKET 'socket'
-#define PETSC_VIEWER_ASCII 'ascii'
-#define PETSC_VIEWER_BINARY 'binary'
-#define PETSC_VIEWER_STRING 'string'
-#define PETSC_VIEWER_DRAW 'draw'
-#define PETSC_VIEWER_AMS 'ams'
-#define PETSC_VIEWER_HDF5 'hdf5'
-#define PETSC_VIEWER_NETCDF 'netcdf'
-#define PETSC_VIEWER_MATLAB 'matlab'
+#define PETSCVIEWERSOCKET 'socket'
+#define PETSCVIEWERASCII 'ascii'
+#define PETSCVIEWERBINARY 'binary'
+#define PETSCVIEWERSTRING 'string'
+#define PETSCVIEWERDRAW 'draw'
+#define PETSCVIEWERAMS 'ams'
+#define PETSCVIEWERHDF5 'hdf5'
+#define PETSCVIEWERNETCDF 'netcdf'
+#define PETSCVIEWERMATLAB 'matlab'
 
 #endif

@@ -226,8 +226,8 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
   PetscViewer    sviewer;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
     if (jac->use_true_local) {
       ierr = PetscViewerASCIIPrintf(viewer,"  block Jacobi: using true local matrix, number of blocks = %D\n",jac->n);CHKERRQ(ierr);

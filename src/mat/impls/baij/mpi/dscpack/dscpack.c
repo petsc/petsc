@@ -413,7 +413,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatFactorGetSolverPackage_seqaij_dscpack(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
-  *type = MAT_SOLVER_DSCPACK;
+  *type = MATSOLVERDSCPACK;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -607,7 +607,7 @@ PetscErrorCode MatView_DSCPACK(Mat A,PetscViewer viewer)
     ierr = MatView_MPIBAIJ(A,viewer);CHKERRQ(ierr);
   }    
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO) {
@@ -619,7 +619,7 @@ PetscErrorCode MatView_DSCPACK(Mat A,PetscViewer viewer)
 
 
 /*MC
-  MAT_SOLVER_DSCPACK -  "dscpack" - Provides direct solvers (Cholesky) for sequential 
+  MATSOLVERDSCPACK -  "dscpack" - Provides direct solvers (Cholesky) for sequential 
   or distributed matrices via the external package DSCPACK.
 
 

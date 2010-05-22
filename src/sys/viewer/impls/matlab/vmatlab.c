@@ -4,12 +4,12 @@
 #include "mat.h"
 
 /*MC
-   PETSC_VIEWER_MATLAB - A viewer that saves the variables into a Matlab .mat file that may be read into Matlab
+   PETSCVIEWERMATLAB - A viewer that saves the variables into a Matlab .mat file that may be read into Matlab
        with load('filename').
 
    Level: intermediate
 
-       Note: Currently can only save PETSc vectors to .mat files, not matrices (use the PETSC_VIEWER_BINARY and 
+       Note: Currently can only save PETSc vectors to .mat files, not matrices (use the PETSCVIEWERBINARY and 
              ${PETSC_DIR}/bin/matlab/PetscBinaryRead.m to read matrices into matlab).
 
              For parallel vectors obtained with DACreateGlobalVector() or DAGetGlobalVector() the vectors are saved to
@@ -33,7 +33,7 @@ $                xnew(:) = x;    % reshape one dimensional vector back to two di
               Use PetscViewerMatlabPutArray() to just put an array of doubles into the .mat file
 
 .seealso:  PETSC_VIEWER_MATLAB_(),PETSC_VIEWER_MATLAB_SELF(), PETSC_VIEWER_MATLAB_WORLD(),PetscViewerCreate(),
-           PetscViewerMatlabOpen(), VecView(), DAView(), PetscViewerMatlabPutArray(), PETSC_VIEWER_BINARY,
+           PetscViewerMatlabOpen(), VecView(), DAView(), PetscViewerMatlabPutArray(), PETSCVIEWERBINARY,
            PETSC_ASCII_VIEWER, DAView(), PetscViewerFileSetName(), PetscViewerFileSetMode()
 
 M*/
@@ -246,7 +246,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabOpen(MPI_Comm comm,const char na
   
   PetscFunctionBegin;
   ierr = PetscViewerCreate(comm,binv);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*binv,PETSC_VIEWER_MATLAB);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(*binv,PETSCVIEWERMATLAB);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(*binv,type);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(*binv,name);CHKERRQ(ierr);
   PetscFunctionReturn(0);

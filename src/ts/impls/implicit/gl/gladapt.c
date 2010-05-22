@@ -170,7 +170,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLAdaptView(TSGLAdapt adapt,PetscViewer viewe
   PetscTruth iascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     if (((PetscObject)adapt)->prefix) {
       ierr = PetscViewerASCIIPrintf(viewer,"TSGLAdapt object: (%s)\n",((PetscObject)adapt)->prefix);CHKERRQ(ierr);

@@ -2,7 +2,7 @@
 #include "../src/mat/impls/aij/seq/bas/spbas.h"
 
 /*MC
-  MAT_SOLVER_BAS -  Provides ICC(k) with drop tolerance
+  MATSOLVERBAS -  Provides ICC(k) with drop tolerance
 
   Works with MATAIJ  matrices
 

@@ -59,7 +59,7 @@ PetscErrorCode ViewMesh(const Obj<ALE::Mesh>& m, const char filename[])
 
   PetscFunctionBegin;
   ierr = PetscViewerCreate(m->comm(), &viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
   ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
   ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);

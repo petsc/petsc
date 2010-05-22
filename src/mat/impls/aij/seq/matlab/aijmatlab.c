@@ -152,7 +152,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatFactorGetSolverPackage_seqaij_matlab(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
-  *type = MAT_SOLVER_MATLAB;
+  *type = MATSOLVERMATLAB;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -201,7 +201,7 @@ PetscErrorCode MatView_Matlab(Mat A,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = MatView_SeqAIJ(A,viewer);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
@@ -213,7 +213,7 @@ PetscErrorCode MatView_Matlab(Mat A,PetscViewer viewer)
 
 
 /*MC
-  MAT_SOLVER_MATLAB - "matlab" - Providing direct solvers (LU and QR) and drop tolerance
+  MATSOLVERMATLAB - "matlab" - Providing direct solvers (LU and QR) and drop tolerance
   based ILU factorization (ILUDT) for sequential matrices via the external package Matlab.
 
 

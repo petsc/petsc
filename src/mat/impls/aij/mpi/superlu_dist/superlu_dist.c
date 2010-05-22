@@ -483,7 +483,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatFactorGetSolverPackage_aij_superlu_dist(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
-  *type = MAT_SOLVER_SUPERLU_DIST;
+  *type = MATSOLVERSUPERLU_DIST;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -719,7 +719,7 @@ PetscErrorCode MatView_SuperLU_DIST(Mat A,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO) {
@@ -731,7 +731,7 @@ PetscErrorCode MatView_SuperLU_DIST(Mat A,PetscViewer viewer)
 
 
 /*MC
-  MAT_SOLVER_SUPERLU_DIST - Parallel direct solver package for LU factorization
+  MATSOLVERSUPERLU_DIST - Parallel direct solver package for LU factorization
 
    Works with AIJ matrices  
 

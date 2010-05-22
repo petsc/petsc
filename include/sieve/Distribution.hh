@@ -206,7 +206,7 @@ namespace ALE {
 
         cellPartition->view("Cell Partition");
         ierr = PetscViewerCreate(mesh->comm(), &viewer);CHKERRXX(ierr);
-        ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRXX(ierr);
+        ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRXX(ierr);
         ierr = PetscViewerFileSetName(viewer, "mesh.vtk");CHKERRXX(ierr);
         ///TODO ierr = MeshView_Sieve_Ascii(mesh, cellPartition, viewer);CHKERRXX(ierr);
         ierr = PetscViewerDestroy(viewer);CHKERRXX(ierr);
@@ -278,7 +278,7 @@ namespace ALE {
 
         cellPartition->view("Cell Partition");
         ierr = PetscViewerCreate(mesh->comm(), &viewer);CHKERRXX(ierr);
-        ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRXX(ierr);
+        ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRXX(ierr);
         ierr = PetscViewerFileSetName(viewer, "mesh.vtk");CHKERRXX(ierr);
         ///TODO ierr = MeshView_Sieve_Ascii(mesh, cellPartition, viewer);CHKERRXX(ierr);
         ierr = PetscViewerDestroy(viewer);CHKERRXX(ierr);
