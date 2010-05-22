@@ -154,8 +154,8 @@ system with Dirichlet boundary conditions I can use MatZeroRows() to
 eliminate the Dirichlet rows but this results in a non-symmetric
 system. How come there is no MatZeroColumns() to keep the matrix
 symmetric?</a></li>
-        <li><br>
-        </li>
+        <li><a href="faq.html#matlab">How can I get PETSc Vecs and Mats
+to Matlab or vice versa?</a></li>
       </ul>
       <h4><a href="faq.html#Execution">Execution</a></h4>
       <menu>
@@ -170,6 +170,7 @@ can I understand what is really happening within my program? </a></li>
 large sparse matrices takes a long time. What can I do make this
 process faster? or MatSetValues() is <span style="font-weight: bold;">so
 slow,
+
 
 
         </span>what can I do to make it
@@ -565,7 +566,8 @@ do you recommend for the Apple Mac OS X?</a></font></p>
 We recommend, as of 5/5/2010, installing gfortran-4.3.2 from <a
  href="http://r.research.att.com/tools/">http://r.research.att.com/tools/</a>.
 This
-seems to work with both Mac OS 10.5 and 10.6. It defaults to using
+seems
+to work with both Mac OS 10.5 and 10.6. It defaults to using
 32 bit pointers so for Mac OS X 10.6 and later you should use
 --with-fc="gfortran -m64"<br>
       <br>
@@ -880,7 +882,8 @@ the
 inverse
 of
 a
-matrix in PETSc?<br>
+matrix
+in PETSc?<br>
             <br>
             </span>It is very expensive to compute the inverse of a
 matrix and very rarely needed in practice. We highly recommend avoiding
@@ -945,7 +948,8 @@ decomposes
 the
 domain
 differently
-than the
+than
+the
 MPI_Cart_create() command. How can one use them together?<br>
             <br>
             </span>The MPI_Cart_create() first divides the mesh along
@@ -990,7 +994,8 @@ system
 with
 Dirichlet
 boundary
-conditions I can use
+conditions
+I can use
 MatZeroRows() to eliminate the Dirichlet rows but this results in a
 non-symmetric system. How come there is no MatZeroColumns() to keep the
 matrix symmetric?<br>
@@ -1008,7 +1013,37 @@ include locations for the Dirichlet grid points in the vector and
 matrix, instead take them into account as you put the other values into
 the load. This approach has the advantage of less memory usage since
 (1) and (2) will require essentially twice as much memory.
-symmetric methods. See its manual page.
+symmetric methods. See its manual page.<br>
+            <br>
+            <span style="color: rgb(255, 0, 0);"><a name="matlab"></a>How
+can I get PETSc Vecs and Mats to Matlab or vice versa?<br>
+            </span><br>
+            <span style="color: rgb(255, 0, 0);"><br>
+            </span>There are four was to work with PETSc and Matlab<br>
+            <br>
+            <ol>
+              <li>Using the Matlab Engine, this allows PETSc to
+automatically call Matlab to perform some specific computations. It
+does not allow Matlab to be used interactively by the user. See the <a
+ href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manualpages/Sys/PetscMatlabEngine.html">PetscMatlabEngine</a>.</li>
+              <li>To save PETSc Mat and Vecs to files that can be read
+from Matlab use&nbsp; <a
+ href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manualpages/Viewer/PetscViewerBinaryOpen.html">PetscViewerBinaryOpen()</a>
+viewer and VecView() or MatView() to save objects for Matlab and
+VecLoad() and MatLoad() to get the objects that Matlab has saved. See
+PetscBinaryRead.m and PetscBinaryWrite.m in bin/matlab for loading and
+saving the objects in Matlab.</li>
+              <li>You can open a socket connection between Matlab and
+PETSc to allow sending objects back and forth between an interactive
+Matlab session and a running PETSc program. See <a
+ href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manualpages/Viewer/PetscViewerSocketOpen.html">PetscViewerSocketOpen</a>()
+for access from the PETSc side and PetscOpenSocket in bin/matlab for
+access from the Matlab side.</li>
+              <li>Finally you can save PETSc Vecs (not Mats) with the <a
+ href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manualpages/Viewer/PetscViewerMatlabOpen.html">PetscViewerMatlabOpen</a>()
+viewer that saves .mat files can then be loaded into Matlab.<br>
+              </li>
+            </ol>
             <hr> </td>
           </tr>
         </tbody>
@@ -1158,6 +1193,7 @@ time
 is
 in
 
+
           <a href="faq.html#slow">generating the
 matrix</a> or some other operation.</li>
         <li>There must be enough work for each process to
@@ -1184,7 +1220,8 @@ a
 bit
 better
 for
-more processes. You may also
+more
+processes. You may also
 consider multigrid preconditioners like <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCMG.html">PCMG</a>
 or BoomerAMG in <a
@@ -1265,7 +1302,8 @@ used to distinguish between totalview arguments and yours. </p>
       <p><a name="start_in_debugger-doesnotwork"><font color="#ff0000">How
 do
 I
-debug if -start_in_debugger does
+debug
+if -start_in_debugger does
 not work on my machine?</font> </a></p>
       <p>For a uniprocessor job, just try&nbsp;the debugger
 directly, for example: gdb ex1 </p>
@@ -1302,7 +1340,8 @@ loading
 shared
 libraries:
 libimf.so:
-cannot open shared object
+cannot
+open shared object
 file: No such file or directory.</span></p>
       <p>The Intel compilers use shared libraries (like libimf)
 that
@@ -1330,7 +1369,8 @@ does
 Object
 Type
 not
-set: Argument # n mean?</a></span></p>
+set:
+Argument # n mean?</a></span></p>
 Many
 operations on PETSc objects require that the specific type of the
 object be set before the operations is performed. You must call
@@ -1349,7 +1389,8 @@ PetscSplitOwnership() about "sum of local lengths ...": mean?<br>
 a
 previous
 call
-to VecSetSizes(), MatSetSizes(), VecCreateXXX() or
+to
+VecSetSizes(), MatSetSizes(), VecCreateXXX() or
 MatCreateXXX() you passed in local and global sizes that do not make
 sense for the correct number of processors. For example if you pass in
 a local size of 2 and a global size of 100 and run on two processors,
@@ -1379,6 +1420,7 @@ problem.<br>
 &nbsp; <br>
 If -malloc_debug does not help: on GNU/Linux and Apple Mac OS X
 machines - you can try using&nbsp;<a href="http://valgrind.org/">http://valgrind.org
+
 
 
 
@@ -1426,6 +1468,7 @@ that the matrix is singular. You can use -pc_factor_shift_nonzero or
 -pc_factor_shift_positive_definite,
 -[level]_pc_factor_shift_nonzero,&nbsp; </span></font><font
  style="color: rgb(0, 0, 0);" color="#ff0000">-[level]_pc_factor_shift_postive_definite
+
 
 
 
@@ -1574,7 +1617,8 @@ methods
 seem
 to
 print
-two residual norms per iteration?<br>
+two
+residual norms per iteration?<br>
       </span></font></font></p>
       <p style="color: rgb(0, 0, 0);"><font face="Terminal"><font
  face="Terminal"><font face="Terminal">&gt; 1198 KSP Residual norm

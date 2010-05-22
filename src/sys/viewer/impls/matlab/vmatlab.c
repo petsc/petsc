@@ -209,7 +209,7 @@ EXTERN_C_END
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerMatlabOpen" 
 /*@C
-   PetscViewerMatlabOpen - Opens a Matlab .mat file for input or output.
+   PetscViewerMatlabOpen - Opens a Matlab .mat file for output
 
    Collective on MPI_Comm
 
@@ -222,22 +222,21 @@ $    FILE_MODE_READ - open existing file for Matlab input
 $    FILE_MODE_WRITE - open existing file for Matlab output
 
    Output Parameter:
-.  binv - PetscViewer for Matlab input/output to use with the specified file
+.  binv - PetscViewer for Matlab output to use with the specified file
 
    Level: beginner
 
-   Note:
-   This PetscViewer should be destroyed with PetscViewerDestroy().
+   Note: This PetscViewer should be destroyed with PetscViewerDestroy().
 
     For writing files it only opens the file on processor 0 in the communicator.
-    For readable files it opens the file on all nodes that have the file. If 
-    node 0 does not have the file it generates an error even if other nodes
-    do have the file.
+
+     This only saves Vecs it cannot be used to save Mats. We recommend using the PETSCVIEWERBINARY to save objects to be loaded into Matlab 
+     instead of this routine.
 
    Concepts: Matlab .mat files
    Concepts: PetscViewerMatlab^creating
 
-.seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(),
+.seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(), PETSCVIEWERBINARY, PetscViewerBinaryOpen()
           VecView(), MatView(), VecLoad(), MatLoad()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabOpen(MPI_Comm comm,const char name[],PetscFileMode type,PetscViewer *binv)
