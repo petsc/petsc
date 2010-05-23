@@ -314,7 +314,7 @@ PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *prefact,PetscTruth a
     ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);
   */
   IS rperm, cperm;
-  ierr = MatGetOrdering(*pre,MATORDERING_QMD,&rperm,&cperm);CHKERRQ(ierr);
+  ierr = MatGetOrdering(*pre,MATORDERINGQMD,&rperm,&cperm);CHKERRQ(ierr);
 
   ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
   /*
