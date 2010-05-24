@@ -34,7 +34,7 @@ runex3_pd:
 	-@${MPIEXEC} -n 1 ./ex3 -ksp_monitor_short -pc_factor_shift_type POSITIVE_DEFINITE > ex3_inode.out 2>&1;
 	-@${MPIEXEC} -n 1 ./ex3 -ksp_monitor_short -pc_factor_shift_type POSITIVE_DEFINITE -mat_no_inode > ex3.tmp 2>&1; \
 	if (${DIFF} ex3_inode.out ex3.tmp) then true; \
-	   else echo "Possible problem with ex3, diffs above"; fi; \
+	   else echo "Possible problem with ex3_pd, diffs above"; fi; \
 	   ${RM} -f ex3_inode.out; ${RM} -f ex3.tmp
 
 TESTEXAMPLES_C	   = ex3.PETSc runex3 runex3_pd ex3.rm 
