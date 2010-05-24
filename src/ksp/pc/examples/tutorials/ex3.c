@@ -100,7 +100,7 @@ int main(int argc,char **argv)
   ierr = PCFactorGetMatrix(prec,&M);CHKERRQ(ierr);
   ierr = VecDuplicate(B,&D);CHKERRQ(ierr);
   ierr = MatGetDiagonal(M,D);CHKERRQ(ierr);
-  //printf("\nPivots:\n\n"); VecView(D,0);
+  printf("\nPivots:\n\n"); VecView(D,0);
 
   /*
    * Solve the system;
