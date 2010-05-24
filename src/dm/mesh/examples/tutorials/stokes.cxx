@@ -133,13 +133,13 @@ PetscErrorCode CreatePartition(Mesh mesh, SectionInt *partition)
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  ierr = MeshGetCellSectionInt(mesh, 1, partition);CHKERRQ(ierr);
+  ierr = MeshGetCellSectionInt(mesh, "partition", 1, partition);CHKERRQ(ierr);
   const Obj<ALE::Mesh::label_sequence>&     cells = m->heightStratum(0);
   const ALE::Mesh::label_sequence::iterator end   = cells->end();
   const int                                 rank  = m->commRank();
 
   for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
-    ierr = SectionIntUpdate(*partition, *c_iter, &rank);
+    ierr = SectionIntUpdate(*partition, *c_iter, &rank, INSERT_VALUES);
   }
   PetscFunctionReturn(0);
 }
@@ -215,14 +215,14 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
       double upper[2] = {1.0, 1.0};
       int    edges[2] = {2, 2};
 
-      Obj<ALE::Mesh> mB = ALE::MeshBuilder::createSquareBoundary(comm, lower, upper, edges, options->debug);
+      Obj<ALE::Mesh> mB = ALE::MeshBuilder<ALE::Mesh>::createSquareBoundary(comm, lower, upper, edges, options->debug);
       ierr = MeshSetMesh(boundary, mB);CHKERRQ(ierr);
     } else if (options->dim == 3) {
       double lower[3] = {0.0, 0.0, 0.0};
       double upper[3] = {1.0, 1.0, 1.0};
       int    faces[3] = {1, 1, 1};
 
-      Obj<ALE::Mesh> mB = ALE::MeshBuilder::createCubeBoundary(comm, lower, upper, faces, options->debug);
+      Obj<ALE::Mesh> mB = ALE::MeshBuilder<ALE::Mesh>::createCubeBoundary(comm, lower, upper, faces, options->debug);
       ierr = MeshSetMesh(boundary, mB);CHKERRQ(ierr);
     } else {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);

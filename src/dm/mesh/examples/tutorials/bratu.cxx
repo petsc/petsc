@@ -3,7 +3,7 @@ static char help[] = "This example solves the Bratu problem.\n\n";
 
 #define ALE_HAVE_CXX_ABI
 
-#include <problem/Bratu.hh>
+#include <sieve/problem/Bratu.hh>
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
@@ -72,7 +72,7 @@ PetscErrorCode Laplacian_2D_MF(Mat A, Vec x, Vec y)
         elemVec[f] += elemMat[f*numBasisFuncs+g]*ev[g];
       }
     }
-    ierr = SectionRealUpdateAdd(Y, *c_iter, elemVec);CHKERRQ(ierr);
+    ierr = SectionRealUpdate(Y, *c_iter, elemVec, ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree2(elemVec,elemMat);CHKERRQ(ierr);
   ierr = PetscFree5(t_der,b_der,v0,J,invJ);CHKERRQ(ierr);
@@ -155,7 +155,7 @@ PetscErrorCode Laplacian_2D_MF2(Mat A, Vec x, Vec y)
         elemVec[f] += elemMat[f*numBasisFuncs+g]*ev[g];
       }
     }
-    ierr = SectionRealUpdateAdd(Y, *c_iter, elemVec);CHKERRQ(ierr);
+    ierr = SectionRealUpdate(Y, *c_iter, elemVec, ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree(elemVec);CHKERRQ(ierr);
   ierr = SectionRealComplete(Y);CHKERRQ(ierr);
@@ -189,7 +189,7 @@ PetscErrorCode Jac_Unstructured_Stored(Mesh mesh, SectionReal section, Mat A, vo
   double      *t_der, *b_der, *v0, *J, *invJ, detJ;
   PetscScalar *elemMat;
 
-  ierr = MeshGetCellSectionReal(mesh, numBasisFuncs*numBasisFuncs, &op);CHKERRQ(ierr);
+  ierr = MeshGetCellSectionReal(mesh, "operator", numBasisFuncs*numBasisFuncs, &op);CHKERRQ(ierr);
   ierr = MatShellSetContext(A, (void *) op);CHKERRQ(ierr);
   ierr = PetscMalloc(numBasisFuncs*numBasisFuncs * sizeof(PetscScalar), &elemMat);CHKERRQ(ierr);
   ierr = PetscMalloc5(dim,double,&t_der,dim,double,&b_der,dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
@@ -217,7 +217,7 @@ PetscErrorCode Jac_Unstructured_Stored(Mesh mesh, SectionReal section, Mat A, vo
         }
       }
     }
-    ierr = SectionRealUpdate(op, *c_iter, elemMat);CHKERRQ(ierr);
+    ierr = SectionRealUpdate(op, *c_iter, elemMat, INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree(elemMat);CHKERRQ(ierr);
   ierr = PetscFree5(t_der,b_der,v0,J,invJ);CHKERRQ(ierr);

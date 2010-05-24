@@ -1,9 +1,10 @@
 #ifndef included_ALE_Problem_Bratu_hh
 #define included_ALE_Problem_Bratu_hh
 
-// TODO: Add a guard that looks for the generated quadrature header
+#include <sieve/problem/Functions.hh>
 
-#include <sieve/problem/Base.hh>
+// TODO: Add a guard that looks for the generated quadrature header
+#include <bratu_quadrature.h>
 
 namespace ALE {
   namespace Problem {
@@ -500,7 +501,7 @@ namespace ALE {
             ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
             ierr = PetscViewerFileSetName(viewer, "mesh_hierarchy.vtk");CHKERRQ(ierr);
             ierr = PetscOptionsReal("-hierarchy_vtk", PETSC_NULL, "bratu.cxx", *offset, offset, PETSC_NULL);CHKERRQ(ierr);
-            ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);
+            ierr = VTKViewer::writeHeader(this->_mesh, viewer);CHKERRQ(ierr);
             ierr = VTKViewer::writeHierarchyVertices(this->_dmmg, viewer, offset);CHKERRQ(ierr);
             ierr = VTKViewer::writeHierarchyElements(this->_dmmg, viewer);CHKERRQ(ierr);
             ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
