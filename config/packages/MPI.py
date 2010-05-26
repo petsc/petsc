@@ -185,7 +185,7 @@ class Configure(config.package.Package):
     if self.checkLink('#include <mpi.h>\n', 'int flag;if (MPI_Finalized(&flag));\n'):
       self.haveFinalized = 1
       self.addDefine('HAVE_MPI_FINALIZED', 1)
-    if self.checkLink('#include <mpi.h>\n', 'if (MPI_Allreduce(0, MPI_IN_PLACE, 1, MPI_INT, MPI_SUM, MPI_COMM_SELF));\n'):
+    if self.checkLink('#include <mpi.h>\n', 'if (MPI_Allreduce(MPI_IN_PLACE,0, 1, MPI_INT, MPI_SUM, MPI_COMM_SELF));\n'):
       self.haveInPlace = 1
       self.addDefine('HAVE_MPI_IN_PLACE', 1)
     self.compilers.CPPFLAGS = oldFlags
