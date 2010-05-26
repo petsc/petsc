@@ -289,6 +289,81 @@ PetscErrorCode PetscOptionsGetFromTextInput()
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_AMS)
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsGetFromAMSInput"
+/*
+    PetscOptionsGetFromAMSInput - Presents all the PETSc Options processed by the program so the user may change them at runtime using the AMS
+
+    Bugs: 
++    All processes must traverse through the exact same set of option queries do to the call to PetscScanString()
+.    Internal strings have arbitrary length and string copies are not checked that they fit into string space 
+-    Only works for PetscInt == int, PetscReal == double etc   
+
+
+*/
+PetscErrorCode PetscOptionsGetFromAMSInput()
+{
+  PetscErrorCode ierr;
+  PetscOptions   next = PetscOptionsObject.next;
+  char           str[512];
+  PetscInt       id;
+  PetscReal      ir,*valr;
+  PetscInt       *vald;
+  size_t         i;
+  static int     count = 0;
+  char           options[16];
+  AMS_Comm       acomm = -1;
+  AMS_Memory     amem = -1;
+  PetscTruth     changedmethod = PETSC_FALSE;
+
+  /* the next line is a bug, this will only work if all processors are here, the comm passed in is ignored!!! */
+  ierr = PetscViewerAMSGetAMSComm(PETSC_VIEWER_AMS_(PETSC_COMM_WORLD),&acomm);CHKERRQ(ierr);
+  sprintf(options,"Options_%d",count++);
+  ierr = AMS_Memory_create(acomm,options,&amem);CHKERRQ(ierr);
+  ierr = AMS_Memory_take_access(amem);CHKERRQ(ierr); 
+  ierr = AMS_Memory_add_field(amem,PetscOptionsObject.title,&PetscOptionsObject.prefix,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field(amem,"mansec",&PetscOptionsObject.prefix,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field(amem,"ChangedMethod",&changedmethod,1,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+
+  while (next) {
+    switch (next->type) {
+      case OPTION_HEAD:
+        break;
+      case OPTION_INT_ARRAY: 
+        break;
+      case OPTION_REAL_ARRAY: 
+        break;
+      case OPTION_INT: 
+        break;
+      case OPTION_REAL: 
+        break;
+      case OPTION_LOGICAL: 
+      case OPTION_STRING: 
+        break;
+      case OPTION_LIST: 
+        break;
+    default:
+      break;
+    }
+    next = next->next;
+  }    
+
+  ierr = AMS_Memory_publish(amem);CHKERRQ(ierr);
+  ierr = AMS_Memory_grant_access(amem);CHKERRQ(ierr);
+  /* wait until accessor has unlocked the memory */
+  ierr = AMS_Memory_lock(amem,0);CHKERRQ(ierr);
+  ierr = AMS_Memory_take_access(amem);CHKERRQ(ierr);
+  
+  /* reset counter to -2; this updates the screen with the new options for the selected method */
+  if (changedmethod) PetscOptionsPublishCount = -2; 
+
+  ierr = AMS_Memory_grant_access(amem);CHKERRQ(ierr);
+  ierr = AMS_Memory_destroy(amem);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsEnd_Private"
 PetscErrorCode PetscOptionsEnd_Private(void)
@@ -301,8 +376,12 @@ PetscErrorCode PetscOptionsEnd_Private(void)
   PetscFunctionBegin;
 
   if (PetscOptionsObject.next) { 
-    if (PetscOptionsPublishCount == 0) {
+    if (!PetscOptionsPublishCount) {
+#if defined(PETSC_HAVE_AMS)
+      ierr = PetscOptionsGetFromAMSInput();
+#else
       ierr = PetscOptionsGetFromTextInput();
+#endif
     }
   }
 
@@ -465,7 +544,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInt(const char opt[],const char text[
   PetscOptions   amsopt;
 
   PetscFunctionBegin;
-  if (PetscOptionsPublishCount == 0) {
+  if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_INT,&amsopt);CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(PetscInt),&amsopt->data);CHKERRQ(ierr);
     *(PetscInt*)amsopt->data = defaultv;
@@ -514,7 +593,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsString(const char opt[],const char te
   PetscOptions   amsopt;
 
   PetscFunctionBegin;
-  if (PetscOptionsPublishCount == 0) {
+  if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_STRING,&amsopt);CHKERRQ(ierr);
     ierr = PetscMalloc(len*sizeof(char),&amsopt->data);CHKERRQ(ierr);
     ierr = PetscStrcpy((char*)amsopt->data,defaultv);CHKERRQ(ierr);
@@ -563,7 +642,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsReal(const char opt[],const char text
   PetscOptions   amsopt;
 
   PetscFunctionBegin;
-  if (PetscOptionsPublishCount == 0) {
+  if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_REAL,&amsopt);CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(PetscReal),&amsopt->data);CHKERRQ(ierr);
     *(PetscReal*)amsopt->data = defaultv;
@@ -704,7 +783,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsList(const char opt[],const char ltex
   PetscOptions   amsopt;
 
   PetscFunctionBegin;
-  if (PetscOptionsPublishCount == 0) {
+  if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,ltext,man,OPTION_LIST,&amsopt);CHKERRQ(ierr);
     ierr = PetscMalloc(1024*sizeof(char),&amsopt->data);CHKERRQ(ierr);
     ierr = PetscStrcpy((char*)amsopt->data,defaultv);CHKERRQ(ierr);
@@ -938,7 +1017,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsTruth(const char opt[],const char tex
   PetscOptions   amsopt;
 
   PetscFunctionBegin;
-  if (PetscOptionsPublishCount == 0) {
+  if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_LOGICAL,&amsopt);CHKERRQ(ierr);
     ierr = PetscMalloc(16*sizeof(char),&amsopt->data);CHKERRQ(ierr);
     ierr = PetscStrcpy((char*)amsopt->data,deflt ? "true" : "false");CHKERRQ(ierr);
@@ -998,7 +1077,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsRealArray(const char opt[],const char
   PetscOptions   amsopt;
 
   PetscFunctionBegin;
-  if (PetscOptionsPublishCount == 0) {
+  if (!PetscOptionsPublishCount) {
     PetscReal *vals;
 
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_REAL_ARRAY,&amsopt);CHKERRQ(ierr);
@@ -1062,7 +1141,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsIntArray(const char opt[],const char 
   PetscOptions   amsopt;
 
   PetscFunctionBegin;
-  if (PetscOptionsPublishCount == 0) {
+  if (!PetscOptionsPublishCount) {
     PetscInt *vals;
 
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_INT_ARRAY,&amsopt);CHKERRQ(ierr);

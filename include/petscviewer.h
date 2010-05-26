@@ -62,6 +62,7 @@ E*/
 #define PETSCVIEWERNETCDF       "netcdf"
 #define PETSCVIEWERHDF5         "hdf5"
 #define PETSCVIEWERMATLAB       "matlab"
+#define PETSCVIEWERAMS          "ams"
 
 extern PetscFList PetscViewerList;
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerRegisterAll(const char *);
@@ -393,6 +394,18 @@ typedef struct _n_PetscViewers* PetscViewers;
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewersCreate(MPI_Comm,PetscViewers*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewersDestroy(PetscViewers);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewersGetViewer(PetscViewers,PetscInt,PetscViewer*);
+
+#if defined(PETSC_HAVE_AMS)
+#include <ams.h>
+EXTERN PetscErrorCode PetscViewerAMSSetCommName(PetscViewer,const char[]);
+EXTERN PetscErrorCode PetscViewerAMSGetAMSComm(PetscViewer,AMS_Comm *);
+EXTERN PetscErrorCode PetscViewerAMSOpen(MPI_Comm,const char[],PetscViewer*);
+EXTERN PetscErrorCode PetscViewerAMSLock(PetscViewer);
+EXTERN PetscViewer    PETSC_VIEWER_AMS_(MPI_Comm);
+EXTERN PetscErrorCode PETSC_VIEWER_AMS_Destroy(MPI_Comm);
+#define PETSC_VIEWER_AMS_WORLD PETSC_VIEWER_AMS_(PETSC_COMM_WORLD)
+#endif
+
 
 PETSC_EXTERN_CXX_END
 #endif
