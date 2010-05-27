@@ -901,50 +901,15 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScatterAll(Vec s[],Vec v,InsertMode a
 PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGather(Vec v,PetscInt start,Vec s,InsertMode addv)
 {
   PetscErrorCode ierr;
-  PetscInt       i,n,bs,ns;
-  PetscScalar    *x,*y;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidHeaderSpecific(s,VEC_CLASSID,3);
-  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(s,&ns);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(s,&y);CHKERRQ(ierr);
-
-  bs   = v->map->bs;
-  if (start < 0) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
-  } else if (start >= bs) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n\
-            Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
-  }
-  if (n != ns*bs) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Subvector length * blocksize %D not correct for gather from original vector %D",ns*bs,n);
-  }
-  x += start;
-  n =  n/bs;
-
-  if (addv == INSERT_VALUES) {
-    for (i=0; i<n; i++) {
-      y[i] = x[bs*i];
-    }
-  } else if (addv == ADD_VALUES) {
-    for (i=0; i<n; i++) {
-      y[i] += x[bs*i];
-    }
-#if !defined(PETSC_USE_COMPLEX)
-  } else if (addv == MAX_VALUES) {
-    for (i=0; i<n; i++) {
-      y[i] = PetscMax(y[i],x[bs*i]);
-    }
-#endif
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
-  }
-
-  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(s,&y);CHKERRQ(ierr);
+  if (start < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
+  if (start >= v->map->bs)  SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n\
+            Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,v->map->bs);
+  if (!v->ops->stridegather) SETERRQ(((PetscObject)s)->comm,PETSC_ERR_SUP,"Not implemented for this Vec class");
+  ierr = (*v->ops->stridegather)(v,start,s,addv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -982,30 +947,78 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGather(Vec v,PetscInt start,Vec s,Ins
 PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScatter(Vec s,PetscInt start,Vec v,InsertMode addv)
 {
   PetscErrorCode ierr;
-  PetscInt       i,n,bs,ns;
-  PetscScalar    *x,*y;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidHeaderSpecific(s,VEC_CLASSID,3);
+  if (start < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
+  if (start >= v->map->bs)  SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n\
+            Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,v->map->bs);
+  if (!v->ops->stridescatter) SETERRQ(((PetscObject)s)->comm,PETSC_ERR_SUP,"Not implemented for this Vec class");
+  ierr = (*v->ops->stridescatter)(v,start,s,addv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecStrideGather_Default"
+PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGather_Default(Vec v,PetscInt start,Vec s,InsertMode addv)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,n,bs,ns;
+  PetscScalar    *x,*y;
+
+  PetscFunctionBegin;
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(s,&ns);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetArray(s,&y);CHKERRQ(ierr);
 
   bs   = v->map->bs;
-  if (start < 0) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
-  } else if (start >= bs) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n\
-            Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
-  }
-  if (n != ns*bs) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Subvector length * blocksize %D not correct for scatter to multicomponent vector %D",ns*bs,n);
-  }
+  if (n != ns*bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Subvector length * blocksize %D not correct for gather from original vector %D",ns*bs,n);
   x += start;
   n =  n/bs;
 
+  if (addv == INSERT_VALUES) {
+    for (i=0; i<n; i++) {
+      y[i] = x[bs*i];
+    }
+  } else if (addv == ADD_VALUES) {
+    for (i=0; i<n; i++) {
+      y[i] += x[bs*i];
+    }
+#if !defined(PETSC_USE_COMPLEX)
+  } else if (addv == MAX_VALUES) {
+    for (i=0; i<n; i++) {
+      y[i] = PetscMax(y[i],x[bs*i]);
+    }
+#endif
+  } else {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
+  }
+
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(s,&y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecStrideScatter_Default"
+PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScatter_Default(Vec s,PetscInt start,Vec v,InsertMode addv)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,n,bs,ns;
+  PetscScalar    *x,*y;
+
+  PetscFunctionBegin;
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(s,&ns);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(s,&y);CHKERRQ(ierr);
+
+  bs   = v->map->bs;
+  if (n != ns*bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Subvector length * blocksize %D not correct for scatter to multicomponent vector %D",ns*bs,n);
+  x += start;
+  n =  n/bs;
 
   if (addv == INSERT_VALUES) {
     for (i=0; i<n; i++) {
@@ -1024,7 +1037,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScatter(Vec s,PetscInt start,Vec v,In
   } else {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
   }
-
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(s,&y);CHKERRQ(ierr);

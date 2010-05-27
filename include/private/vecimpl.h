@@ -111,6 +111,8 @@ struct _VecOps {
   PetscErrorCode (*log)(Vec);
   PetscErrorCode (*shift)(Vec);
   PetscErrorCode (*create)(Vec);
+  PetscErrorCode (*stridegather)(Vec,PetscInt,Vec,InsertMode);
+  PetscErrorCode (*stridescatter)(Vec,PetscInt,Vec,InsertMode);
 };
 
 /* 
@@ -326,6 +328,8 @@ PETSC_STATIC_INLINE PetscErrorCode VecStashValuesBlocked_Private(VecStash *stash
   return 0;
 }
 
+EXTERN PetscErrorCode VecStrideGather_Default(Vec,PetscInt,Vec,InsertMode);
+EXTERN PetscErrorCode VecStrideScatter_Default(Vec,PetscInt,Vec,InsertMode);
 EXTERN PetscErrorCode VecReciprocal_Default(Vec);
 
 extern PetscLogEvent VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MDotBarrier, VEC_MDot, VEC_TDot, VEC_MTDot;
