@@ -311,11 +311,12 @@ PetscErrorCode PetscOptionsGetFromAMSInput()
   PetscReal      ir,*valr;
   PetscInt       *vald;
   size_t         i;
-  static int     count = 0;
+  static int     count = 0,mancount = 0;
   char           options[16];
   AMS_Comm       acomm = -1;
   AMS_Memory     amem = -1;
   PetscTruth     changedmethod = PETSC_FALSE;
+  char           manname[16];
 
   /* the next line is a bug, this will only work if all processors are here, the comm passed in is ignored!!! */
   ierr = PetscViewerAMSGetAMSComm(PETSC_VIEWER_AMS_(PETSC_COMM_WORLD),&acomm);CHKERRQ(ierr);
@@ -327,6 +328,10 @@ PetscErrorCode PetscOptionsGetFromAMSInput()
   ierr = AMS_Memory_add_field(amem,"ChangedMethod",&changedmethod,1,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
 
   while (next) {
+    ierr = AMS_Memory_add_field(amem,next->option,&next->set,1,AMS_INT,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+    sprintf(manname,"man_%d",mancount++);
+    ierr = AMS_Memory_add_field(amem,manname,next->man,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+
     switch (next->type) {
       case OPTION_HEAD:
         break;
@@ -335,6 +340,7 @@ PetscErrorCode PetscOptionsGetFromAMSInput()
       case OPTION_REAL_ARRAY: 
         break;
       case OPTION_INT: 
+        ierr = AMS_Memory_add_field(amem,next->text,next->data,1,AMS_INT,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
         break;
       case OPTION_REAL: 
         break;
