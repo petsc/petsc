@@ -129,8 +129,8 @@ static PetscErrorCode KSPView_Python(KSP ksp,PetscViewer viewer)
   PetscTruth     isascii,isstring;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (isascii) {
     const char* pyname  = py->pyname ? py->pyname  : "no yet set";
     ierr = PetscViewerASCIIPrintf(viewer,"  Python: %s\n",pyname);CHKERRQ(ierr);

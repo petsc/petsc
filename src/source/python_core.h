@@ -7,6 +7,11 @@
 
 /* -------------------------------------------------------------------------- */
 
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+#define PETSCVIEWERASCII  PETSC_VIEWER_ASCII
+#define PETSCVIEWERSTRING PETSC_VIEWER_STRING
+#endif
 
 #define SETERRQQ(comm,n,s) \
   return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s)

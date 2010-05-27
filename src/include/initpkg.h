@@ -2,6 +2,11 @@
 
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
+#define PetscSysInitializePackage PetscInitializePackage
+#endif
+
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkInitializePackage"
 static PetscErrorCode PetscFwkInitializePackage(const char path[])
@@ -27,7 +32,7 @@ static PetscErrorCode PetscInitializeAllPackages(const char path[])
   if (initialized) return ierr=0;
   initialized = PETSC_TRUE;
   PetscFunctionBegin;
-  ierr = PetscInitializePackage(path);CHKERRQ(ierr);
+  ierr = PetscSysInitializePackage(path);CHKERRQ(ierr);
   ierr = PetscFwkInitializePackage(path);CHKERRQ(ierr);
   ierr = PetscDrawInitializePackage(path);CHKERRQ(ierr);
   ierr = PetscViewerInitializePackage(path);CHKERRQ(ierr);

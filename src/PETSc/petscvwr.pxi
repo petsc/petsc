@@ -1,17 +1,17 @@
 cdef extern from "petscsys.h":
 
     ctypedef char* PetscViewerType "const char*"
-    PetscViewerType PETSC_VIEWER_SOCKET
-    PetscViewerType PETSC_VIEWER_ASCII
-    PetscViewerType PETSC_VIEWER_BINARY
-    PetscViewerType PETSC_VIEWER_STRING
-    PetscViewerType PETSC_VIEWER_DRAW
-    PetscViewerType PETSC_VIEWER_VU
-    PetscViewerType PETSC_VIEWER_MATHEMATICA
-    PetscViewerType PETSC_VIEWER_SILO
-    PetscViewerType PETSC_VIEWER_NETCDF
-    PetscViewerType PETSC_VIEWER_HDF5
-    PetscViewerType PETSC_VIEWER_MATLAB
+    PetscViewerType PETSCVIEWERSOCKET
+    PetscViewerType PETSCVIEWERASCII
+    PetscViewerType PETSCVIEWERBINARY
+    PetscViewerType PETSCVIEWERSTRING
+    PetscViewerType PETSCVIEWERDRAW
+    PetscViewerType PETSCVIEWERVU
+    PetscViewerType PETSCVIEWERMATHEMATICA
+    PetscViewerType PETSCVIEWERSILO
+    PetscViewerType PETSCVIEWERNETCDF
+    PetscViewerType PETSCVIEWERHDF5
+    PetscViewerType PETSCVIEWERMATLAB
 
 
     ctypedef enum PetscViewerFormat:

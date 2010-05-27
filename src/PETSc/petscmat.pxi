@@ -44,20 +44,20 @@ cdef extern from "petscmat.h" nogil:
     PetscMatType MATSUBMATRIX
 
     ctypedef char* PetscMatOrderingType "const char*"
-    PetscMatOrderingType MAT_ORDERING_NATURAL     "MATORDERING_NATURAL"
-    PetscMatOrderingType MAT_ORDERING_ND          "MATORDERING_ND"
-    PetscMatOrderingType MAT_ORDERING_1WD         "MATORDERING_1WD"
-    PetscMatOrderingType MAT_ORDERING_RCM         "MATORDERING_RCM"
-    PetscMatOrderingType MAT_ORDERING_QMD         "MATORDERING_QMD"
-    PetscMatOrderingType MAT_ORDERING_ROWLENGTH   "MATORDERING_ROWLENGTH"
-    PetscMatOrderingType MAT_ORDERING_DSC_ND      "MATORDERING_DSC_ND"
-    PetscMatOrderingType MAT_ORDERING_DSC_MMD     "MATORDERING_DSC_MMD"
-    PetscMatOrderingType MAT_ORDERING_DSC_MDF     "MATORDERING_DSC_MDF"
-    PetscMatOrderingType MAT_ORDERING_CONSTRAINED "MATORDERING_CONSTRAINED "
-    PetscMatOrderingType MAT_ORDERING_IDENTITY    "MATORDERING_IDENTITY"
-    PetscMatOrderingType MAT_ORDERING_REVERSE     "MATORDERING_REVERSE"
-    PetscMatOrderingType MAT_ORDERING_FLOW        "MATORDERING_FLOW"
-    PetscMatOrderingType MAT_ORDERING_AMD         "MATORDERING_AMD"
+    PetscMatOrderingType MATORDERINGNATURAL
+    PetscMatOrderingType MATORDERINGND
+    PetscMatOrderingType MATORDERING1WD
+    PetscMatOrderingType MATORDERINGRCM
+    PetscMatOrderingType MATORDERINGQMD
+    PetscMatOrderingType MATORDERINGROWLENGTH
+    PetscMatOrderingType MATORDERINGDSC_ND
+    PetscMatOrderingType MATORDERINGDSC_MMD
+    PetscMatOrderingType MATORDERINGDSC_MDF
+    PetscMatOrderingType MATORDERINGCONSTRAINED
+    PetscMatOrderingType MATORDERINGIDENTITY
+    PetscMatOrderingType MATORDERINGREVERSE
+    PetscMatOrderingType MATORDERINGFLOW
+    PetscMatOrderingType MATORDERINGAMD
 
     ctypedef enum PetscMatReuse "MatReuse":
         MAT_INITIAL_MATRIX

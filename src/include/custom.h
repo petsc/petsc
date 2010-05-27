@@ -949,7 +949,7 @@ SNESSetUseFDColoring(SNES snes,PetscTruth flag)
 
   J = (B != PETSC_NULL) ? B : A;
 
-  ierr = MatGetColoring(J,MATCOLORING_SL,&iscoloring);CHKERRQ(ierr);
+  ierr = MatGetColoring(J,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
   ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring);CHKERRQ(ierr);
   ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
 
@@ -1138,7 +1138,7 @@ TSSetUseFDColoring(TS ts,PetscTruth flag)
   }
 
   J = (B != PETSC_NULL) ? B : A;
-  ierr = MatGetColoring(J,MATCOLORING_SL,&iscoloring);CHKERRQ(ierr);
+  ierr = MatGetColoring(J,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
   ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
   ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
 
