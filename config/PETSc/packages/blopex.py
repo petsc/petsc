@@ -3,11 +3,12 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/blopex_abstract_Aug_2006.tar.gz']
+    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/blopex-1.1.tar.gz']
     self.functions  = ['lobpcg_solve']
     self.includes   = ['interpreter.h']
     self.liblist    = [['libBLOPEX.a']]
-    self.complex    = 0
+    self.complex    = 1
+    self.requires32bitint = 0
     return
 
   def setupDependencies(self, framework):

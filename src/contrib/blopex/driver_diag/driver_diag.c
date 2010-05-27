@@ -2,14 +2,13 @@
 /* @@@ BLOPEX (version 1.1) LGPL Version 2.1 or above.See www.gnu.org. */
 /* @@@ Copyright 2010 BLOPEX team http://code.google.com/p/blopex/     */
 /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ */
-/* This code was developed by Merico Argentati, Andrew Knyazev, Ilya Lashuk and Evgueni Ovtchinnikov */
 
-static char help[] = "'Fiedler' test driver for 'abstract lobpcg' in PETSC\n\
+/* This is an example of creation of a matrix within Petsc and solution via lobpcg 
+ * use to generate very large sparse diagonal matrix of size NxN via parameter -N xxxx */
+
+static char help[] = "'Diagonal' test driver for 'abstract lobpcg' in PETSC\n\
 Usage: mpirun -np <procs> driver_fiedler [-help] [all PETSc options]\n\
 Special options:\n\
--matrix <filename>      (mandatory) specify file with 'stiffness' matrix \
-(in petsc format)\n\
--mass_matrix <filename> (optional) 'mass' matrix for generalized eigenproblem\n\
 -n_eigs <integer>      Number of eigenvalues to calculate\n\
 -tol <real number>     absolute tolerance for residuals\n\
 -full_out              Produce more output\n\
@@ -17,8 +16,9 @@ Special options:\n\
 -itr <integer>         Maximal number of iterations\n\
 -output_file <string>  Filename to write calculated eigenvectors.\n\
 -shift <real number>   Apply shift to 'stiffness' matrix\n\
+-N <integer>           Size of Matrix to create\n\
 Example:\n\
-mpirun -np 2 ./driver_fiedler -matrix my_matrix.bin -n_eigs 3 -tol 1e-6 -itr 20\n";
+mpirun -np 2 ./driver_diag -N 10000 -n_eigs 3 -tol 1e-6 -itr 20\n";
 
 #include "petscksp.h"
 #include <assert.h>
@@ -93,6 +93,9 @@ int main(int argc,char **args)
    Mat            A;
    Mat            B;
 
+   PetscInt       N = 100;
+   PetscScalar    value;
+
    PetscErrorCode ierr;
 
    mv_MultiVectorPtr          eigenvectors;
@@ -108,7 +111,8 @@ int main(int argc,char **args)
    PetscMPIInt                rank;
    int                        n_eigs = 1;
    int                        seed = 1;
-   int                        i,j;
+   PetscInt                   i;
+   int                        j;
    PetscLogDouble             t1,t2,elapsed_time;
    double                     tol=1e-08;
    PetscTruth                 full_output=PETSC_FALSE;
@@ -118,18 +122,15 @@ int main(int argc,char **args)
    mv_InterfaceInterpreter    ii;
    lobpcg_BLASLAPACKFunctions blap_fn;
    aux_data_struct            aux_data;
-   PetscViewer                fd;               /* viewer */
-   PetscTruth                 matrix_present;
-   char                       filename[PETSC_MAX_PATH_LEN];
-   char                       mass_filename[PETSC_MAX_PATH_LEN];
-   PetscTruth                 mass_matrix_present;
+   PetscViewer                fd;    /* viewer */
+
+   PetscTruth                 option_present;
    PetscReal                  shift;
    PetscTruth                 shift_present;
    char                       output_filename[PETSC_MAX_PATH_LEN];
    PetscTruth                 output_filename_present;
    char                       tmp_str[PETSC_MAX_PATH_LEN];
    PetscInt                   tmp_int;
-   PetscTruth                 option_present;
 
    PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -138,58 +139,40 @@ int main(int argc,char **args)
    if (option_present)
       n_eigs = tmp_int;
    ierr = PetscOptionsGetReal(PETSC_NULL,"-tol", &tol,PETSC_NULL); CHKERRQ(ierr);
-   ierr = PetscOptionsGetString(PETSC_NULL,"-matrix",filename,PETSC_MAX_PATH_LEN-1,
-           &matrix_present);
-   CHKERRQ(ierr);
-   if (!matrix_present)
-   SETERRQ(1,"Must indicate binary file to read matrix from with the "
-            "'-matrix' option");
-   ierr = PetscOptionsGetString(PETSC_NULL,"-mass_matrix",mass_filename,
-           PETSC_MAX_PATH_LEN-1,&mass_matrix_present);
-   CHKERRQ(ierr);
    ierr = PetscOptionsHasName(PETSC_NULL,"-full_out",&full_output); CHKERRQ(ierr);
    ierr = PetscOptionsGetInt(PETSC_NULL,"-seed",&tmp_int,&option_present);CHKERRQ(ierr);
    if (option_present)
-      seed = tmp_int;
+     seed = tmp_int;
    if (seed<1)
-    seed=1;
-   ierr = PetscOptionsGetInt(PETSC_NULL,"-itr",&tmp_int,&option_present);CHKERRQ(ierr);
-   if (option_present)
-      maxIt = tmp_int;
+     seed=1;
+   ierr = PetscOptionsGetInt(PETSC_NULL,"-itr",&tmp_int,PETSC_NULL);CHKERRQ(ierr);
+   maxIt = tmp_int;
    ierr = PetscOptionsGetReal(PETSC_NULL,"-shift",&shift,&shift_present);
    ierr = PetscOptionsGetString(PETSC_NULL,"-output_file",output_filename,
             PETSC_MAX_PATH_LEN-1, &output_filename_present);
+   ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&tmp_int,&option_present);CHKERRQ(ierr);
+   if (option_present)
+     N = tmp_int;
 
 
-   /* load matrices */
-   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&fd);
+   /* Create matrix */
+   ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,1,PETSC_NULL,0,PETSC_NULL,&A);
    CHKERRQ(ierr);
-   ierr = MatLoad(fd,MATMPIAIJ,&A);CHKERRQ(ierr);
-   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+   for (i=0; i<N; i++) {
+      value = i+1;
+      ierr = MatSetValues(A,1,&i,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
+      }
+   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
-   if (mass_matrix_present)
-   {
-       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,mass_filename,FILE_MODE_READ,&fd);
-       CHKERRQ(ierr);
-       ierr = MatLoad(fd,MATMPIAIJ,&B);CHKERRQ(ierr);
-       ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
-   }
+   /* printf("\nMatrix A:\n\n"); MatView(A,0); */
+
 
    /* apply shift to stiffness matrix if asked to do so */
-   if (shift_present)
-   {
-      if (mass_matrix_present)
-      {
-        ierr = MatAXPY(A,shift,B,SUBSET_NONZERO_PATTERN);
-        CHKERRQ(ierr);
+   if (shift_present) {
+      ierr = MatShift(A,shift);
+      CHKERRQ(ierr);
       }
-      else
-      {
-        ierr = MatShift(A,shift);
-        CHKERRQ(ierr);
-      }
-   }
-
 
    /*
     Create parallel vectors.
@@ -287,8 +270,8 @@ int main(int argc,char **args)
       eigenvectors,
       &aux_data,
       OperatorAMultiVector,
-      mass_matrix_present?&aux_data:NULL,
-      mass_matrix_present?OperatorBMultiVector:NULL,
+      NULL,
+      NULL,
       &aux_data,
       Precond_FnMultiVector,
       constraints,
@@ -310,8 +293,8 @@ int main(int argc,char **args)
       eigenvectors,
       &aux_data,
       OperatorAMultiVector,
-      mass_matrix_present?&aux_data:NULL,
-      mass_matrix_present?OperatorBMultiVector:NULL,
+      NULL,
+      NULL,
       &aux_data,
       Precond_FnMultiVector,
       constraints,
@@ -377,12 +360,12 @@ int main(int argc,char **args)
    {
       raw_eigenvectors = (mv_TempMultiVector*)mv_MultiVectorGetData (eigenvectors);
       tmp_vec = (Vec)(raw_constraints->vector)[0];
-      for ( i = 0; i < n_eigs; i++ )
+      for ( j = 0; j < n_eigs; j++ )
       {
-        sprintf( tmp_str, "%s_%d.petsc", output_filename, i );
+        sprintf( tmp_str, "%s_%d.petsc", output_filename, j );
         PetscViewerBinaryOpen(PETSC_COMM_WORLD, tmp_str, FILE_MODE_WRITE, &fd);
         /* PetscViewerSetFormat(fd,PETSC_VIEWER_ASCII_MATLAB); */
-        ierr = VecView((Vec)(raw_eigenvectors->vector)[i],fd); CHKERRQ(ierr);
+        ierr = VecView((Vec)(raw_eigenvectors->vector)[j],fd); CHKERRQ(ierr);
         ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
       }
 
@@ -394,8 +377,6 @@ int main(int argc,char **args)
    */
    ierr = VecDestroy(u);CHKERRQ(ierr);
    ierr = MatDestroy(A);CHKERRQ(ierr);
-   if (mass_matrix_present)
-     ierr = MatDestroy(B);CHKERRQ(ierr);
    ierr = KSPDestroy(ksp);CHKERRQ(ierr);
 
    LOBPCG_DestroyRandomContext();
