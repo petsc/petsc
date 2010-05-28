@@ -968,6 +968,69 @@ SNESSetUseFDColoring(SNES snes,PetscTruth flag)
 /* ---------------------------------------------------------------- */
 
 #undef __FUNCT__
+#define __FUNCT__ "TSSetMatrices_Custom"
+static PetscErrorCode
+TSSetMatrices_Custom(TS ts,Mat Arhs,PetscErrorCode (*frhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),Mat Alhs,PetscErrorCode (*flhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),MatStructure flag,void *ctx)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = TSSetMatrices(ts,Arhs,frhs,Alhs,flhs,flag,ctx);CHKERRQ(ierr);
+  if (Arhs) {
+    ierr = PetscObjectCompose((PetscObject)ts,"__rhsmat__",(PetscObject)Arhs);CHKERRQ(ierr);
+  }
+  if (Alhs) {
+    ierr = PetscObjectCompose((PetscObject)ts,"__lhsmat__",(PetscObject)Alhs);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+#define TSSetMatrices TSSetMatrices_Custom
+
+#if 0
+#undef __FUNCT__
+#define __FUNCT__ "TSComputeLHSMatrix_Custom"
+static PetscErrorCode
+TSComputeLHSMatrix_Custom(TS ts,PetscReal t,Mat *Alhs,Mat *Plhs,MatStructure *str)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidPointer(Alhs,2);
+  if (*Alhs) {
+    PetscValidHeaderSpecific(*Alhs,MAT_CLASSID,2);
+    if (ts->ops->lhsmatrix) {
+      PetscStackPush("TS user left-hand-side matrix function");
+      ierr = (*ts->ops->lhsmatrix)(ts,t,Alhs,Plhs,str,ts->jacP);CHKERRQ(ierr);
+      PetscStackPop;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+#define TSComputeLHSMatrix TSComputeLHSMatrix_Custom
+
+#undef __FUNCT__
+#define __FUNCT__ "TSComputeRHSMatrix_Custom"
+static PetscErrorCode
+TSComputeRHSMatrix_Custom(TS ts,PetscReal t,Mat *Arhs,Mat *Prhs,MatStructure *str)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidPointer(Arhs,2);
+  if (*Arhs) {
+    PetscValidHeaderSpecific(*Arhs,MAT_CLASSID,2);
+    if (ts->ops->rhsmatrix) {
+      PetscStackPush("TS user right-hand-side matrix function");
+      ierr = (*ts->ops->rhsmatrix)(ts,t,Arhs,Prhs,str,ts->jacP);CHKERRQ(ierr);
+      PetscStackPop;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+#define TSComputeRHSMatrix TSComputeRHSMatrix_Custom
+#endif
+
+#undef __FUNCT__
 #define __FUNCT__ "TSSetSolution_Custom"
 static PetscErrorCode
 TSSetSolution_Custom(TS ts, Vec u)

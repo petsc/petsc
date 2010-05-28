@@ -17,6 +17,13 @@ cdef extern from "petscts.h" nogil:
 
     ctypedef int PetscTSCtxDel(void*)
 
+    ctypedef int (*PetscTSMatrixFunction)(PetscTS,
+                                          PetscReal,
+                                          PetscMat*,
+                                          PetscMat*,
+                                          PetscMatStructure*,
+                                          void*) except PETSC_ERR_PYTHON
+
     ctypedef int (*PetscTSFunctionFunction)(PetscTS,
                                             PetscReal,
                                             PetscVec,
@@ -73,6 +80,8 @@ cdef extern from "petscts.h" nogil:
     int TSSetSolution(PetscTS,PetscVec)
     int TSGetSolution(PetscTS,PetscVec*)
 
+    int TSSetMatrices(PetscTS,PetscMat,PetscTSMatrixFunction,PetscMat,PetscTSMatrixFunction,PetscMatStructure,void*)
+
     int TSGetRHSFunction(PetscTS,PetscVec*,PetscTSFunctionFunction*,void*)
     int TSGetRHSJacobian(PetscTS,PetscMat*,PetscMat*,PetscTSJacobianFunction*,void**)
     int TSSetRHSFunction(PetscTS,PetscVec,PetscTSFunctionFunction,void*)
@@ -124,6 +133,66 @@ cdef inline TS ref_TS(PetscTS ts):
     PetscIncref(<PetscObject>ts)
     ob.ts = ts
     return ob
+
+# -----------------------------------------------------------------------------
+
+cdef inline object TS_getLHSMatrix(PetscTS ts):
+    return Object_getAttr(<PetscObject>ts, '__lhsmatrix__')
+
+cdef inline object TS_getRHSMatrix(PetscTS ts):
+    return Object_getAttr(<PetscObject>ts, '__rhsmatrix__')
+
+cdef inline int TS_setLHSMatrix(PetscTS ts, PetscMat A,
+                                object fun, object args, object kargs) except -1:
+    cdef PetscMatStructure matstr = MAT_DIFFERENT_NONZERO_PATTERN
+    if fun is None:
+        CHKERR( TSSetMatrices(ts, NULL, NULL, A, NULL, matstr, NULL) )
+        Object_setAttr(<PetscObject>ts, '__lhsmatrix__', None)
+    else:
+        CHKERR( TSSetMatrices(ts, NULL, NULL, A, TS_LHSMatrix, matstr, NULL) )
+        Object_setAttr(<PetscObject>ts, '__lhsmatrix__', (fun, args, kargs))
+    return 0
+
+cdef inline int TS_setRHSMatrix(PetscTS ts, PetscMat A,
+                                object fun, object args, object kargs) except -1:
+    cdef PetscMatStructure matstr = MAT_DIFFERENT_NONZERO_PATTERN
+    if fun is None:
+        CHKERR( TSSetMatrices(ts, A, NULL, NULL, NULL, matstr, NULL) )
+        Object_setAttr(<PetscObject>ts, '__rhsmatrix__', None)
+    else:
+        CHKERR( TSSetMatrices(ts, A, TS_RHSMatrix, NULL, NULL, matstr,NULL) )
+        Object_setAttr(<PetscObject>ts, '__rhsmatrix__', (fun, args, kargs))
+    return 0
+
+cdef int TS_LHSMatrix(PetscTS ts,
+                      PetscReal t,
+                      PetscMat *A,
+                      PetscMat *B,
+                      PetscMatStructure* s,
+                      void* ctx) except PETSC_ERR_PYTHON with gil:
+    cdef TS   Ts   = ref_TS(ts)
+    cdef Mat  Amat = ref_Mat(A[0])
+    (lhsmatrix, args, kargs) = TS_getLHSMatrix(ts)
+    retv = lhsmatrix(Ts, toReal(t), Amat, *args, **kargs)
+    s[0] = matstructure(retv)
+    cdef PetscMat Atmp = NULL
+    Atmp = A[0]; A[0] = Amat.mat; Amat.mat = Atmp
+    return 0
+
+cdef int TS_RHSMatrix(PetscTS ts,
+                      PetscReal t,
+                      PetscMat *A,
+                      PetscMat *B,
+                      PetscMatStructure* s,
+                      void* ctx) except PETSC_ERR_PYTHON with gil:
+    cdef TS   Ts   = ref_TS(ts)
+    cdef Mat  Amat = ref_Mat(A[0])
+    (rhsmatrix, args, kargs) = TS_getRHSMatrix(ts)
+    retv = rhsmatrix(Ts, toReal(t), Amat, *args, **kargs)
+    s[0] = matstructure(retv)
+    cdef PetscMat Atmp = NULL
+    Atmp = A[0]; A[0] = Amat.mat; Amat.mat = Atmp
+    return 0
 
 # -----------------------------------------------------------------------------
 

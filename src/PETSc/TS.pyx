@@ -92,6 +92,14 @@ cdef class TS(Object):
 
     # --- xxx ---
 
+    def setLHSMatrix(self, Mat Alhs not None, lhsmatrix=None, *args, **kargs):
+        TS_setLHSMatrix(self.ts, Alhs.mat, lhsmatrix, args, kargs)
+
+    def setRHSMatrix(self, Mat Arhs not None, rhsmatrix=None, *args, **kargs):
+        TS_setRHSMatrix(self.ts, Arhs.mat, rhsmatrix, args, kargs)
+
+    # --- xxx ---
+
     def setRHSFunction(self, function, Vec f not None, *args, **kargs):
         cdef PetscVec fvec = NULL
         if f is not None: fvec = f.vec
@@ -296,9 +304,7 @@ cdef class TS(Object):
         cdef PetscVec  uvec = NULL
         if u is not None: uvec = u.vec
         if uvec == NULL:
-            ## CHKERR( TSGetSolutionUpdate(self.ts, &uvec) )
-            if uvec == NULL:
-                CHKERR( TSGetSolution(self.ts, &uvec) )
+            CHKERR( TSGetSolution(self.ts, &uvec) )
         CHKERR( TSMonitorCall(self.ts, ival, rval, uvec) )
 
     def cancelMonitor(self):
