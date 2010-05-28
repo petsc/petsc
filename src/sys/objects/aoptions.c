@@ -330,7 +330,7 @@ PetscErrorCode PetscOptionsGetFromAMSInput()
   while (next) {
     ierr = AMS_Memory_add_field(amem,next->option,&next->set,1,AMS_INT,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
     sprintf(manname,"man_%d",mancount++);
-    ierr = AMS_Memory_add_field(amem,manname,next->man,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+    ierr = AMS_Memory_add_field(amem,manname,&next->man,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
 
     switch (next->type) {
       case OPTION_HEAD:
