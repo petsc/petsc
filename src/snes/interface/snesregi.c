@@ -7,6 +7,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_LS(SNES);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_TR(SNES);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Test(SNES);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Picard(SNES);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_KSPONLY(SNES);
 EXTERN_C_END
 
 const char *SNESConvergedReasons_Shifted[]  = {" "," ","DIVERGED_LOCAL_MIN"," ","DIVERGED_LS_FAILURE","DIVERGED_MAX_IT",
@@ -42,10 +43,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESRegisterAll(const char path[])
   PetscFunctionBegin;
   SNESRegisterAllCalled = PETSC_TRUE;
 
-  ierr = SNESRegisterDynamic("ls",   path,"SNESCreate_LS",SNESCreate_LS);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic("tr",   path,"SNESCreate_TR",SNESCreate_TR);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic("test", path,"SNESCreate_Test", SNESCreate_Test);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic("picard", path,"SNESCreate_Picard",SNESCreate_Picard);CHKERRQ(ierr);
+  ierr = SNESRegisterDynamic(SNESLS,     path,"SNESCreate_LS",     SNESCreate_LS);CHKERRQ(ierr);
+  ierr = SNESRegisterDynamic(SNESTR,     path,"SNESCreate_TR",     SNESCreate_TR);CHKERRQ(ierr);
+  ierr = SNESRegisterDynamic(SNESTEST,   path,"SNESCreate_Test",   SNESCreate_Test);CHKERRQ(ierr);
+  ierr = SNESRegisterDynamic(SNESPICARD, path,"SNESCreate_Picard", SNESCreate_Picard);CHKERRQ(ierr);
+  ierr = SNESRegisterDynamic(SNESKSPONLY,path,"SNESCreate_KSPONLY",SNESCreate_KSPONLY);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
