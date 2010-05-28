@@ -84,7 +84,7 @@ PetscErrorCode TSThetaGetTheta(TS ts,PetscReal *theta)
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   PetscValidPointer(theta,2);
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSThetaGetTheta_C",(void(**)(void))&f);CHKERRQ(ierr);
-  if (!f) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"TS type %s",((PetscObject)ts)->type_name);
+  if (!f) SETERRQ1(PETSC_ERR_SUP,"TS type %s",((PetscObject)ts)->type_name);
   ierr = (*f)(ts,theta);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
