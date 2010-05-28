@@ -99,6 +99,8 @@ in the PETSc Development Version</font></p>
       </b></u> <u><b>config/configure.py:<br>
       </b></u> <u></u>
       <ul>
+        <li> -with-64-bit-pointers option removed. It doesn't work properly anway. The user should specify the correct 32bit or 64bit compilers to configure.
+        For eg: <pre>configure --with-cc='gcc -m64' --with-fc='gcc -m64'</pre></li>
       </ul>
       <p><u><b>IS:</b></u></p>
       <p><u><b>Vec: <br>
