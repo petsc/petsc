@@ -44,7 +44,7 @@ typedef enum { DA_STENCIL_STAR,DA_STENCIL_BOX } DAStencilType;
 M*/
 
 /*MC
-     DA_STENCIL_Box - "Box"-type stencil. In logical grid coordinates, any of (i,j,k), (i+s,j+r,k+t) may 
+     DA_STENCIL_BOX - "Box"-type stencil. In logical grid coordinates, any of (i,j,k), (i+s,j+r,k+t) may 
                       be in the stencil.
 
      Level: beginner
