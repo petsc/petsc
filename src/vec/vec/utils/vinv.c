@@ -955,7 +955,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScatter(Vec s,PetscInt start,Vec v,In
   if (start >= v->map->bs)  SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n\
             Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,v->map->bs);
   if (!v->ops->stridescatter) SETERRQ(((PetscObject)s)->comm,PETSC_ERR_SUP,"Not implemented for this Vec class");
-  ierr = (*v->ops->stridescatter)(v,start,s,addv);CHKERRQ(ierr);
+  ierr = (*v->ops->stridescatter)(s,start,v,addv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

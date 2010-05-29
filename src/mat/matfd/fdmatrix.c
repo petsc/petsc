@@ -297,7 +297,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetFromOptions(MatFDColoring matf
   ierr = PetscOptionsBegin(((PetscObject)matfd)->comm,((PetscObject)matfd)->prefix,"Jacobian computation via finite differences option","MatFD");CHKERRQ(ierr);
     ierr = PetscOptionsReal("-mat_fd_coloring_err","Square root of relative error in function","MatFDColoringSetParameters",matfd->error_rel,&matfd->error_rel,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-mat_fd_coloring_umin","Minimum allowable u magnitude","MatFDColoringSetParameters",matfd->umin,&matfd->umin,0);CHKERRQ(ierr);
-    ierr = PetscOptionsString("-mat_fd_type","Algorithm to compute h, wp or ds","MatFDColoringCreate",matfd->htype,value,2,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-mat_fd_type","Algorithm to compute h, wp or ds","MatFDColoringCreate",matfd->htype,value,3,&flg);CHKERRQ(ierr);
     if (flg) {
       if (value[0] == 'w' && value[1] == 'p') matfd->htype = "wp";
       else if (value[0] == 'd' && value[1] == 's') matfd->htype = "ds";

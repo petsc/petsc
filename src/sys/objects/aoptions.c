@@ -323,14 +323,18 @@ PetscErrorCode PetscOptionsGetFromAMSInput()
   sprintf(options,"Options_%d",count++);
   ierr = AMS_Memory_create(acomm,options,&amem);CHKERRQ(ierr);
   ierr = AMS_Memory_take_access(amem);CHKERRQ(ierr); 
-  ierr = AMS_Memory_add_field(amem,PetscOptionsObject.title,&PetscOptionsObject.prefix,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field(amem,"mansec",&PetscOptionsObject.prefix,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  PetscOptionsObject.pprefix = PetscOptionsObject.prefix; /* AMS will change this, so cannot pass prefix directly */
+
+  ierr = AMS_Memory_add_field(amem,PetscOptionsObject.title,&PetscOptionsObject.pprefix,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field(amem,"mansec",&PetscOptionsObject.pprefix,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field(amem,"ChangedMethod",&changedmethod,1,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
 
   while (next) {
     ierr = AMS_Memory_add_field(amem,next->option,&next->set,1,AMS_INT,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+    ierr =  PetscMalloc(sizeof(char*),&next->pman);CHKERRQ(ierr);
+    *(char **)next->pman = next->man;
     sprintf(manname,"man_%d",mancount++);
-    ierr = AMS_Memory_add_field(amem,manname,&next->man,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+    ierr = AMS_Memory_add_field(amem,manname,next->pman,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
 
     switch (next->type) {
       case OPTION_HEAD:
@@ -340,7 +344,7 @@ PetscErrorCode PetscOptionsGetFromAMSInput()
       case OPTION_REAL_ARRAY: 
         break;
       case OPTION_INT: 
-        ierr = AMS_Memory_add_field(amem,next->text,next->data,1,AMS_INT,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+	ierr = AMS_Memory_add_field(amem,next->text,next->data,1,AMS_INT,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
         break;
       case OPTION_REAL: 
         break;
@@ -381,6 +385,7 @@ PetscErrorCode PetscOptionsEnd_Private(void)
 
   PetscFunctionBegin;
 
+  CHKMEMQ;
   if (PetscOptionsObject.next) { 
     if (!PetscOptionsPublishCount) {
 #if defined(PETSC_HAVE_AMS)
@@ -453,7 +458,9 @@ PetscErrorCode PetscOptionsEnd_Private(void)
     last                    = PetscOptionsObject.next;
     PetscOptionsObject.next = PetscOptionsObject.next->next;
     ierr                    = PetscFree(last);CHKERRQ(ierr);
+    CHKMEMQ;
   }
+  CHKMEMQ;
   PetscOptionsObject.next = 0;
   PetscFunctionReturn(0);
 }
@@ -602,7 +609,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsString(const char opt[],const char te
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_STRING,&amsopt);CHKERRQ(ierr);
     ierr = PetscMalloc(len*sizeof(char),&amsopt->data);CHKERRQ(ierr);
-    ierr = PetscStrcpy((char*)amsopt->data,defaultv);CHKERRQ(ierr);
+    ierr = PetscStrncpy((char*)amsopt->data,defaultv,len);CHKERRQ(ierr);
   } 
   ierr = PetscOptionsGetString(PetscOptionsObject.prefix,opt,value,len,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {

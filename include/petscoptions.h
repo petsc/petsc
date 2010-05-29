@@ -198,11 +198,12 @@ struct _p_PetscOptions {
   PetscTruth      set;           /* the user has changed this value in the GUI */
   PetscOptionType type;
   PetscOptions    next;
+  char            *pman;
 };
 
 typedef struct {
   PetscOptions     next;
-  char             *prefix,*mprefix;  
+  char             *prefix,*pprefix;  
   char             *title;
   MPI_Comm         comm;
   PetscTruth       printhelp,changedmethod,alreadyprinted;
