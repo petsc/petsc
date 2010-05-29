@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = ls tr test picard python
+DIRS     = ksponly ls tr test picard python
 LOCDIR   = src/snes/impls/
 
 include ${PETSC_DIR}/conf/variables
