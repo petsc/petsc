@@ -321,6 +321,94 @@ class Configure(config.base.Configure):
     fd.close()
     return
 
+  def dumpCMakeConfig(self):
+    '''
+    Writes configuration-specific values to PETSC_ARCH/conf/PETScConfig.cmake.
+    This file is private to PETSc and should not be included by third parties
+    (a suitable file can be produced later by CMake, but this is not it).
+    '''
+    def cmakeset(fd,key,val=True):
+      if val == True: val = 'YES'
+      if val == False: val = 'NO'
+      fd.write('set (' + key + ' ' + val + ')\n')
+    def ensurelist(a):
+      return a if isinstance(a,list) else [a]
+    def libpath(lib):
+      'Returns a search path if that is what this item provides, else "" which will be cleaned out later'
+      if lib.startswith('-L'): return lib[2:]
+      if lib.startswith('-R'): return lib[2:]
+      if lib.startswith('-Wl,-rpath,'):
+        # This case occurs when an external package needs a specific system library that is normally provided by the compiler.
+        # In other words, the -L path is builtin to the wrapper or compiler, here we provide it so that CMake can locate the
+        # corresponding library.
+        return lib[len('-Wl,-rpath,'):]
+      if lib.startswith('-'): return ''
+      return os.path.dirname(lib)
+    def cleanlib(lib):
+      'Returns a library name if that is what this item provides, else "" which will be cleaned out later'
+      if lib.startswith('-l'):  return lib[2:]
+      if lib.startswith('-Wl') or lib.startswith('-L'): return ''
+      lib = os.path.splitext(os.path.basename(lib))[0]
+      if lib.startswith('lib'): return lib[3:]
+      return lib
+    def nub(lst):
+      unique = []
+      for elem in lst:
+        if elem not in unique and elem != '':
+          unique.append(elem)
+      return unique
+    def cmakeexpand(varname):
+      return r'"${' + varname + r'}"'
+    def uniqextend(list,new):
+      for x in ensurelist(new):
+        if x not in list:
+          list.append(x)
+    def notstandardinclude(path):
+      return path not in '/usr/include /usr/local/include'.split()
+    def writeMacroDefinitions(fd):
+      if self.mpi.usingMPIUni:
+        cmakeset(fd,'PETSC_HAVE_MPIUNI')
+      for pkg in self.framework.packages:
+        if pkg.useddirectly:
+          cmakeset(fd,'PETSC_HAVE_' + pkg.PACKAGE)
+      for name,val in self.functions.defines.items():
+        cmakeset(fd,'PETSC_'+name,val)
+      for dct in [self.defines, self.libraryoptions.defines]:
+        for k,v in dct.items():
+          if k.startswith('USE_'):
+            cmakeset(fd,'PETSC_' + k, v)
+      cmakeset(fd,'PETSC_USE_COMPLEX', self.scalartypes.scalartype == 'complex')
+      cmakeset(fd,'PETSC_USE_SCALAR_' + self.scalartypes.precision.upper())
+      cmakeset(fd,'PETSC_CLANGUAGE_'+self.languages.clanguage)
+      if hasattr(self.compilers, 'FC'):
+        cmakeset(fd,'PETSC_HAVE_FORTRAN')
+      if self.compilers.fortranIsF90:
+        cmakeset(fd,'PETSC_USING_F90')
+      if self.sharedlibraries.useShared:
+        cmakeset(fd,'BUILD_SHARED_LIBS')
+    def writeBuildFlags(fd):
+      lib_paths = []
+      lib_libs  = []
+      includes  = []
+      libvars   = []
+      for pkg in self.framework.packages:
+        libs = ensurelist(pkg.lib)
+        lib_paths.extend(map(libpath,libs))
+        lib_libs.extend(map(cleanlib,libs))
+        uniqextend(includes,pkg.include)
+      for libname in nub(lib_libs):
+        libvar = 'PETSC_' + libname.upper() + '_LIB'
+        fd.write('find_library (' + libvar + ' ' + libname + ' HINTS ' + ' '.join('"' + path + '"' for path in nub(lib_paths)) + ')\n')
+        libvars.append(libvar)
+      fd.write('mark_as_advanced (' + ' '.join(libvars) + ')\n')
+      fd.write('set (PETSC_PACKAGE_LIBS ' + ' '.join(map(cmakeexpand,libvars)) + ')\n')
+      fd.write('set (PETSC_PACKAGE_INCLUDES ' + ' '.join(map(lambda i: '"'+i+'"',filter(notstandardinclude,includes))) + ')\n')
+    fd = open(os.path.join(self.arch.arch,'conf','PETScConfig.cmake'), 'w')
+    writeMacroDefinitions(fd)
+    writeBuildFlags(fd)
+    fd.close()
+    return
+
   def configurePrefetch(self):
     '''Sees if there are any prefetch functions supported'''
     if config.setCompilers.Configure.isSolaris() or self.framework.argDB['with-iphone']:
@@ -570,6 +658,7 @@ class Configure(config.base.Configure):
     self.Dump()
     self.dumpConfigInfo()
     self.dumpMachineInfo()
+    self.dumpCMakeConfig()
     self.framework.log.write('================================================================================\n')
     self.logClear()
     return
