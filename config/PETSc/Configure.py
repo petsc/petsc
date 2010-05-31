@@ -332,7 +332,10 @@ class Configure(config.base.Configure):
       if val == False: val = 'NO'
       fd.write('set (' + key + ' ' + val + ')\n')
     def ensurelist(a):
-      return a if isinstance(a,list) else [a]
+      if isinstance(a,list):
+        return a
+      else:
+        return [a]
     def libpath(lib):
       'Returns a search path if that is what this item provides, else "" which will be cleaned out later'
       if lib.startswith('-L'): return lib[2:]
