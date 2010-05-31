@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
-import os
-from collections import namedtuple, defaultdict, deque
+from __future__ import with_statement  # For python-2.5
 
-Sources = namedtuple('Sources', 'always single complex fortran')
-def emptysources(): return Sources([],[],[],[])
+import os
+from collections import defaultdict, deque
 
 def cmakeconditional(key,val):
   def unexpected():
@@ -46,9 +45,9 @@ def pkgsources(pkg):
       def stripsplit(line):
         return filter(lambda c: c!="'", line[len('#requires'):]).split()
       conditions.update(set(tuple(stripsplit(line)) for line in lines if line.startswith('#requires')))
-    def relpath(file):
-      return os.path.relpath(os.path.join(root,file),os.curdir)
-    sources[repr(sorted(conditions))] += [relpath(f) for f in files if os.path.splitext(f)[1] in ['.c', '.cxx', '.F'] ]
+    def relpath(filename):
+      return os.path.join(root,filename)
+    sources[repr(sorted(conditions))].extend(relpath(f) for f in files if os.path.splitext(f)[1] in ['.c', '.cxx', '.F'])
     allconditions[root] = conditions
   return sources
 

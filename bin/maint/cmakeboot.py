@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os,sys,subprocess
+import os,sys,subprocess,string
 from collections import deque
 sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config'))
 sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config', 'BuildSystem'))
@@ -73,7 +73,14 @@ class PETScMaker(script.Script):
      print >>sys.stderr, "CMake process failed with status", retcode
      sys.exit(retcode)
    print('CMake configuration completed successfully.')
-   print('Build the library with: make -C "%s"' % os.path.join(petscdir,petscarch))
+   def quoteIfNeeded(path):
+     "Don't need quotes unless the path has bits that would confuse the shell"
+     safe = string.letters + string.digits + os.path.sep + os.path.pardir + '-_'
+     if set(path).issubset(safe):
+       return path
+     else:
+       return '"' + path + '"'
+   print('Build the library with: make -C %s' % quoteIfNeeded(os.path.join(petscdir,petscarch)))
 
 if __name__ == "__main__":
   PETScMaker().cmakeboot()
