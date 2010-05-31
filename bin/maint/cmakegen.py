@@ -53,7 +53,7 @@ def pkgsources(pkg):
   return sources
 
 def writeRoot(f):
-  f.write(r'''cmake_minimum_required (VERSION 2.8)
+  f.write(r'''cmake_minimum_required (VERSION 2.6)
 project (PETSc C)
 
 include (${PETSc_BINARY_DIR}/conf/PETScConfig.cmake)
@@ -103,7 +103,7 @@ def main():
   with open('CMakeLists.txt', 'w') as f:
     writeRoot(f)
     f.write('include_directories (${PETSC_PACKAGE_INCLUDES})\n')
-    pkglist = 'sys vec mat dm ksp snes ts'.split()
+    pkglist = 'sys vec mat dm ksp snes ts characteristic'.split()
     for pkg in pkglist:
       writePackage(f,pkg)
     f.write ('''

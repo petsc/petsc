@@ -12,7 +12,7 @@ OBJSF    =
 LIBBASE  = libpetsccharacteristic
 MANSEC   = SemiLagrange
 DIRS     = 
-LOCDIR   = src/semiLagrange/interface/
+LOCDIR   = src/characteristic/interface/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

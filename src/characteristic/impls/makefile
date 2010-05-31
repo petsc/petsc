@@ -1,8 +1,8 @@
 
-ALL:
+ALL: lib
 
-LOCDIR	 = src/semiLagrange/examples/
-DIRS	 = tutorials
+DIRS     = da
+LOCDIR   = src/characteristic/impls/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

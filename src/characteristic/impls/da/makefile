@@ -10,7 +10,7 @@ OBJSC    = slda.o
 OBJSF    =
 LIBBASE  = libpetsccharacteristic
 MANSEC   = SemiLagrange
-LOCDIR   = src/semiLagrange/impls/da/
+LOCDIR   = src/characteristic/impls/da/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
