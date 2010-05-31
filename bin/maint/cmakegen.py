@@ -63,9 +63,6 @@ endif ()
 if (PETSC_CLANGUAGE_CXX)
   enable_language (CXX)
 endif ()
-if (PETSC_USE_DEBUG)
-  set (CMAKE_BUILD_TYPE "Debug")
-endif ()
 
 include_directories ("${PETSc_SOURCE_DIR}/include" "${PETSc_BINARY_DIR}/include")
 
