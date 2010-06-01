@@ -152,7 +152,16 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
             VecPointwiseMax_Seq,
             VecPointwiseMaxAbs_Seq,
             VecPointwiseMin_Seq,
-            VecGetValues_MPI};
+  	    VecGetValues_MPI,
+    	    0,
+    	    0,
+    	    0,
+    	    0,
+    	    0,
+    	    0,
+   	    VecStrideGather_Default,
+   	    VecStrideScatter_Default
+};
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_MPI_Private"

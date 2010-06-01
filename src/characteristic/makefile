@@ -5,7 +5,7 @@ ALL: lib
 
 SOURCEH  = characteristicimpl.h ../../include/characteristic.h
 DIRS     = interface impls
-LOCDIR   = src/semiLagrange/
+LOCDIR   = src/characteristic/
 MANSEC   = SemiLagrange
 
 include ${PETSC_DIR}/conf/variables

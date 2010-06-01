@@ -3,15 +3,16 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = slda.c
+SOURCEC  = ksponly.c
 SOURCEF  =
-SOURCEH  = slda.h
-OBJSC    = slda.o
+SOURCEH  =
+OBJSC    = $(SOURCEC:.c=.o)
 OBJSF    =
-LIBBASE  = libpetsccharacteristic
-MANSEC   = SemiLagrange
-LOCDIR   = src/semiLagrange/impls/da/
+LIBBASE  = libpetscsnes
+MANSEC   = SNES
+LOCDIR   = src/snes/impls/ksponly/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
+

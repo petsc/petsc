@@ -24,7 +24,13 @@ Contains C routines for the interface with BLOPEX compiled with PETSc.
 #include "petscksp.h"
 #include "petscda.h"
 #include "lobpcg.h"
+
+#ifdef BLOPEX_DIR
+#include "petsc-interface.h"
+#else
 #include "../src/contrib/blopex/petsc-interface/petsc-interface.h"
+#endif
+
 #include "interpreter.h"
 #include "multivector.h"
 
@@ -196,7 +202,7 @@ void petsc_lobpcg_solve_c_(
 
 /* call the lobpcg solver from BLOPEX */
 
-   ierr = lobpcg_solve( eigenvectors,
+   ierr = lobpcg_solve_double( eigenvectors,
                         &aux_data,
                         OperatorAMultiVector,
                         &aux_data,

@@ -13,6 +13,7 @@ EXTERN PetscErrorCode PetscViewerCreate_Mathematica(PetscViewer);
 EXTERN PetscErrorCode PetscViewerCreate_Netcdf(PetscViewer);
 EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer);
 EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer);
+EXTERN PetscErrorCode PetscViewerCreate_AMS(PetscViewer);
 EXTERN_C_END
   
 #undef __FUNCT__  
@@ -50,6 +51,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerRegisterAll(const char *path)
 #endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = PetscViewerRegisterDynamic(PETSCVIEWERMATLAB,     path,"PetscViewerCreate_Matlab",     PetscViewerCreate_Matlab);CHKERRQ(ierr); 
+#endif
+#if defined(PETSC_HAVE_AMS)
+  ierr = PetscViewerRegisterDynamic(PETSCVIEWERAMS,        path,"PetscViewerCreate_AMS",        PetscViewerCreate_AMS);CHKERRQ(ierr); 
 #endif
   PetscFunctionReturn(0);
 }

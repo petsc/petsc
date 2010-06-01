@@ -12,6 +12,7 @@ static char help[] = "Model nonlinear multi-physics solver. Modified from mp.c \
   ----------------------------------------------------------------------------------------- */
 #include "petsctime.h"
 #include "mp1.h"
+#include "../src/sys/plog/logimpl.h"
 
 extern PetscErrorCode FormInitialGuessComp(DMMG,Vec);
 extern PetscErrorCode FormFunctionComp(SNES,Vec,Vec,void*);
@@ -488,7 +489,7 @@ PetscErrorCode PetscLogPrintSummaryToPy(MPI_Comm comm, PetscViewer viewer)
   PetscLogDouble fracTime, fracFlops, fracMessages, fracLength;
   PetscLogDouble fracReductions;
   PetscLogDouble tot,avg,x,y,*mydata;
-  PetscMPIInt    minCt, maxCt;
+  PetscMPIInt    maxCt;
   PetscMPIInt    size, rank, *mycount;
   PetscTruth    *localStageUsed,    *stageUsed;
   PetscTruth    *localStageVisible, *stageVisible;

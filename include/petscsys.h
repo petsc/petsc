@@ -147,6 +147,7 @@ M*/
 #define MPIAPI
 #endif
 
+
 /*MC
     PetscErrorCode - datatype used for return error code from all PETSc functions
 
@@ -1569,13 +1570,20 @@ $     PetscTruth flag = PetscNot(a)
 #include "petsclog.h"
 
 /*
-          For locking, unlocking and destroying AMS memories associated with 
-    PETSc objects. Not currently used.
+          For locking, unlocking and destroying AMS memories associated with  PETSc objects. ams.h is included in petscviewer.h
 */
+#if defined(PETSC_HAVE_AMS)
+extern PetscTruth PetscAMSPublishAll;
+#define PetscPublishAll(v) (PetscAMSPublishAll ? PetscObjectPublish((PetscObject)v) : 0)
+#define PetscObjectTakeAccess(obj)  ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_take_access(((PetscObject)(obj))->amem))
+#define PetscObjectGrantAccess(obj) ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_grant_access(((PetscObject)(obj))->amem))
+#define PetscObjectDepublish(obj)   ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_destroy(((PetscObject)(obj))->amem));((PetscObject)(obj))->amem = -1;
+#else
 #define PetscPublishAll(v)           0
 #define PetscObjectTakeAccess(obj)   0
 #define PetscObjectGrantAccess(obj)  0
-#define PetscObjectDepublish(obj)    0
+#define PetscObjectDepublish(obj)      0
+#endif
 
 /*
       Simple PETSc parallel IO for ASCII printing

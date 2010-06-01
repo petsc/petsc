@@ -1,5 +1,5 @@
 
-DIRS     = inline sys vec mat ksp snes ts dm contrib benchmarks docs tops semiLagrange
+DIRS     = inline sys vec mat ksp snes ts dm contrib benchmarks docs tops characteristic
 LOCDIR   = src/
 MANSEC   = Sys
 

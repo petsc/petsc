@@ -1,46 +1,55 @@
-/* This code was developed by Merico Argentati, Andrew Knyazev, Ilya Lashuk and Evgueni Ovtchinnikov */
+/* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ */
+/* @@@ BLOPEX (version 1.1) LGPL Version 2.1 or above.See www.gnu.org. */
+/* @@@ Copyright 2010 BLOPEX team http://code.google.com/p/blopex/     */
+/* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ */
 
 #ifndef PETSC_INTERFACE_HEADER
 #define PETSC_INTERFACE_HEADER
 
 #include "interpreter.h"
 
-int PETSC_dpotrf_interface (char *uplo, int *n, double *a, int * lda, int *info);
+BlopexInt PETSC_dpotrf_interface (char *uplo, BlopexInt *n, double *a, BlopexInt * lda, BlopexInt *info);
 
-int PETSC_dsygv_interface (int *itype, char *jobz, char *uplo, int *
-                    n, double *a, int *lda, double *b, int *ldb,
-                    double *w, double *work, int *lwork, int *info);
+BlopexInt PETSC_dsygv_interface (BlopexInt *itype, char *jobz, char *uplo, BlopexInt *
+                    n, double *a, BlopexInt *lda, double *b, BlopexInt *ldb,
+                    double *w, double *work, BlopexInt *lwork, BlopexInt *info);
+
+BlopexInt PETSC_zpotrf_interface (char *uplo, BlopexInt *n, komplex *a, BlopexInt * lda, BlopexInt *info);
+
+BlopexInt PETSC_zsygv_interface (BlopexInt *itype, char *jobz, char *uplo, BlopexInt *
+                    n, komplex *a, BlopexInt *lda, komplex *b, BlopexInt *ldb,
+                    double *w, komplex *work, BlopexInt *lwork, double *rwork, BlopexInt *info);
 
 void *
 PETSC_MimicVector( void *vvector );
 
-int
+BlopexInt
 PETSC_DestroyVector( void *vvector );
 
-double
-PETSC_InnerProd( void *x, void *y );
+BlopexInt
+PETSC_InnerProd( void *x, void *y, void *result );
 
-int
+BlopexInt
 PETSC_CopyVector( void *x, void *y );
 
-int
+BlopexInt
 PETSC_ClearVector( void *x );
 
-int
-PETSC_SetRandomValues( void* v, int seed );
+BlopexInt
+PETSC_SetRandomValues( void* v, BlopexInt seed );
 
-int
-PETSC_ScaleVector( double  alpha, void   *x);
+BlopexInt
+PETSC_ScaleVector( void *alpha, void   *x);
 
-int
-PETSC_Axpy( double alpha,
+BlopexInt
+PETSC_Axpy( void *alpha,
                 void   *x,
                 void   *y );
 
 int
 LOBPCG_InitRandomContext(void);
 
-int 
+int
 LOBPCG_DestroyRandomContext(void);
 
 int

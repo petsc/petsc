@@ -23,7 +23,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscHeaderCreate_Private(PetscObject h,PetscClas
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  h->classid                 = classid;
+  h->classid                = classid;
   h->type                   = type;
   h->class_name             = (char*)class_name;
   h->prefix                 = 0;
