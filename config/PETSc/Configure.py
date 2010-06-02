@@ -385,10 +385,11 @@ class Configure(config.base.Configure):
       cmakeset(fd,'PETSC_CLANGUAGE_'+self.languages.clanguage)
       if hasattr(self.compilers, 'FC'):
         cmakeset(fd,'PETSC_HAVE_FORTRAN')
-      if self.compilers.fortranIsF90:
-        cmakeset(fd,'PETSC_USING_F90')
+        if self.compilers.fortranIsF90:
+          cmakeset(fd,'PETSC_USING_F90')
       if self.sharedlibraries.useShared:
         cmakeset(fd,'BUILD_SHARED_LIBS')
+
     def writeBuildFlags(fd):
       lib_paths = []
       lib_libs  = []
