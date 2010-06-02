@@ -8,11 +8,12 @@
 #endif
 
 EXTERN_C_BEGIN
-void PETSC_STDCALL sneslinesearchgetparams_(SNES *snes,PetscReal *alpha,PetscReal *maxstep,PetscErrorCode *ierr)
+void PETSC_STDCALL sneslinesearchgetparams_(SNES *snes,PetscReal *alpha,PetscReal *maxstep,PetscReal *minlambda,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLREAL(alpha);
   CHKFORTRANNULLREAL(maxstep);
-  *ierr = SNESLineSearchGetParams(*snes,alpha,maxstep);
+  CHKFORTRANNULLREAL(minlambda);
+  *ierr = SNESLineSearchGetParams(*snes,alpha,maxstep,minlambda);
 }
 
 

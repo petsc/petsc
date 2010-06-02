@@ -13,7 +13,8 @@
    Input Parameters:
 +  snes    - The nonlinear context obtained from SNESCreate()
 .  alpha   - The scalar such that .5*f_{n+1} . f_{n+1} <= .5*f_n . f_n - alpha |p_n . J . f_n|
--  maxstep - The maximum norm of the update vector
+.  maxstep - The maximum norm of the update vector
+-  minlambda - lambda is not allowed to be smaller than minlambda/( max_i y[i]/x[i]) 
 
    Level: intermediate
 
@@ -28,16 +29,15 @@
 
 .seealso: SNESLineSearchGetParams(), SNESLineSearchSet()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetParams(SNES snes,PetscReal alpha,PetscReal maxstep)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetParams(SNES snes,PetscReal alpha,PetscReal maxstep,PetscReal minlambda)
 {
-  SNES_LS *ls;
+  SNES_LS *ls = (SNES_LS*)snes->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-
-  ls = (SNES_LS*)snes->data;
-  if (alpha   >= 0.0) ls->alpha   = alpha;
-  if (maxstep >= 0.0) ls->maxstep = maxstep;
+  if (alpha   >= 0.0) ls->alpha       = alpha;
+  if (maxstep >= 0.0) ls->maxstep     = maxstep;
+  if (minlambda >= 0.0) ls->minlambda = minlambda;
   PetscFunctionReturn(0);
 }
 
@@ -54,8 +54,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetParams(SNES snes,PetscReal a
 
    Output Parameters:
 +  alpha   - The scalar such that .5*f_{n+1} . f_{n+1} <= .5*f_n . f_n - alpha |p_n . J . f_n|
--  maxstep - The maximum norm of the update vector
-
+.  maxstep - The maximum norm of the update vector
+-  minlambda - lambda is not allowed to be smaller than minlambda/( max_i y[i]/x[i]) 
 
    Level: intermediate
 
@@ -69,14 +69,12 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetParams(SNES snes,PetscReal a
 
 .seealso: SNESLineSearchSetParams(), SNESLineSearchSet()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchGetParams(SNES snes,PetscReal *alpha,PetscReal *maxstep)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchGetParams(SNES snes,PetscReal *alpha,PetscReal *maxstep,PetscReal *minlambda)
 {
-  SNES_LS *ls;
+  SNES_LS *ls = (SNES_LS*)snes->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-
-  ls = (SNES_LS*)snes->data;
   if (alpha) {
     PetscValidDoublePointer(alpha,2);
     *alpha   = ls->alpha;
@@ -84,6 +82,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchGetParams(SNES snes,PetscReal *
   if (maxstep) {
     PetscValidDoublePointer(maxstep,3);
     *maxstep = ls->maxstep;
+  }
+  if (minlambda) {
+    PetscValidDoublePointer(minlambda,3);
+    *minlambda = ls->minlambda;
   }
   PetscFunctionReturn(0);
 }

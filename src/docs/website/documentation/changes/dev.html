@@ -86,8 +86,9 @@ Software</strong></a></li>
 in the PETSc Development Version</font></p>
       <p><u><b>General:</b></u></p>
       <ul>
-        <li>PetscError() and SETERRQX() now take a MPI_Comm as the first argument to indicate where the error is known. If you don't know what communicator use then pass in PETSC_COMM_SELF
-        </li>
+        <li>PetscError() and SETERRQX() now take a MPI_Comm as the
+first argument to indicate where the error is known. If you don't know
+what communicator use then pass in PETSC_COMM_SELF </li>
       </ul>
       <u><b>Logging:<br>
       </b></u>
@@ -99,8 +100,11 @@ in the PETSc Development Version</font></p>
       </b></u> <u><b>config/configure.py:<br>
       </b></u> <u></u>
       <ul>
-        <li> -with-64-bit-pointers option removed. It doesn't work properly anway. The user should specify the correct 32bit or 64bit compilers to configure.
-        For eg: <pre>configure --with-cc='gcc -m64' --with-fc='gcc -m64'</pre></li>
+        <li> -with-64-bit-pointers option removed. It doesn't work
+properly anway. The user should specify the correct 32bit or 64bit
+compilers to configure. For eg:
+          <pre>configure --with-cc='gcc -m64' --with-fc='gcc -m64'</pre>
+        </li>
       </ul>
       <p><u><b>IS:</b></u></p>
       <p><u><b>Vec: <br>
@@ -127,13 +131,13 @@ Formerly, options were silently ignored in this circumstance.</li>
       <u><b>PC:</b></u>
       <ul>
         <li>PCFieldSplitSetIS() and PCFieldSplitSetFields() now take a
-        split-name parameter which is used to define the options
-        database keys.</li>
+split-name parameter which is used to define the options database keys.</li>
       </ul>
       <p><u><b>KSP:<br>
       </b></u></p>
       <ul>
-        <li>KSPSetPreconditionerSide() changed to KSPSetPCSide() to match name of second argument<br>
+        <li>KSPSetPreconditionerSide() changed to KSPSetPCSide() to
+match name of second argument<br>
         </li>
         <li>-ksp_right_pc -ksp_left_pc changed to
 -ksp_pc_side left,right,symmetric to match
@@ -150,6 +154,9 @@ KSPSetPCSide()<br>
       <ul>
         <li>Added SNESLineSearchSetMonitor() and -snes_ls_monitor.</li>
         <li>Add SNESKSPONLY, for solving linear problems with SNES.</li>
+        <li>Added the minlambda argument to SNESLineSearchGetParams()
+and SNESLineSearchSetParams().<br>
+        </li>
       </ul>
       <p><u><b>TS:</b></u></p>
       <ul>

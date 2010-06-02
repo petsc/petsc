@@ -1244,7 +1244,7 @@ static PetscErrorCode SNESSetFromOptions_LS(SNES snes)
 
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESTR, SNESLineSearchSet(), 
            SNESLineSearchSetPostCheck(), SNESLineSearchNo(), SNESLineSearchCubic(), SNESLineSearchQuadratic(), 
-          SNESLineSearchSet(), SNESLineSearchNoNorms(), SNESLineSearchSetPreCheck()
+          SNESLineSearchSet(), SNESLineSearchNoNorms(), SNESLineSearchSetPreCheck(), SNESLineSearchSetParams(), SNESLineSearchGetParams()
 
 M*/
 EXTERN_C_BEGIN
