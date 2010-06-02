@@ -533,7 +533,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetOptionsPrefix(Mat mat,const char pre
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFromOptions(Mat mat)
 {
-  MatMFFD        mfctx = mat ? (MatMFFD)mat->data : PETSC_NULL;
+  MatMFFD        mfctx = (MatMFFD)mat->data;
   PetscErrorCode ierr;
   PetscTruth     flg;
   char           ftype[256];

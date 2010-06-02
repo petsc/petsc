@@ -1889,7 +1889,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetFromOptions(void)
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Options database options","PetscOptions");CHKERRQ(ierr);
     ierr = PetscOptionsString("-options_monitor","Monitor options database","PetscOptionsMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flgm);CHKERRQ(ierr);
-    ierr = PetscOptionsName("-options_monitor_cancel","Cancel all options database monitors","PetscOptionsMonitorCancel",&flgc);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-options_monitor_cancel","Cancel all options database monitors","PetscOptionsMonitorCancel",PETSC_FALSE,&flgc,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (flgm) {
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,monfilename,&monviewer);CHKERRQ(ierr);

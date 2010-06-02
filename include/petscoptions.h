@@ -199,6 +199,7 @@ struct _p_PetscOptions {
   PetscOptionType type;
   PetscOptions    next;
   char            *pman;
+  void            *edata;
 };
 
 typedef struct {

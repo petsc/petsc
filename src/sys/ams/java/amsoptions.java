@@ -235,7 +235,7 @@ public class amsoptions {
         String value[] = fld.getStringData();
        
         /* handle OptionsSelectList() */
-        if ((flist[i+2].substring(0,8)).equals("DEFAULT:")) {
+        if (flist[i+2].length() > 8 && (flist[i+2].substring(0,8)).equals("DEFAULT:")) {
           int       j;
           AMS_Field lfld    = mem.get_field(flist[i+3]);
           String    llist[] = lfld.getStringData();
