@@ -294,8 +294,10 @@ PetscErrorCode KSPDestroy_GMRES(KSP ksp)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetRestart_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESGetRestart_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetHapTol_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESGetCGSRefinementType_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*
@@ -614,6 +616,19 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
+#define __FUNCT__ "KSPGMRESGetRestart_GMRES" 
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetRestart_GMRES(KSP ksp,PetscInt *max_k)
+{
+  KSP_GMRES      *gmres = (KSP_GMRES *)ksp->data;
+
+  PetscFunctionBegin;
+  *max_k = gmres->max_k;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
 #define __FUNCT__ "KSPGMRESSetRestart_GMRES" 
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart_GMRES(KSP ksp,PetscInt max_k)
 {
@@ -674,12 +689,24 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetCGSRefinementType_GMRES(KSP ksp,KSP
 }
 EXTERN_C_END
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGMRESGetCGSRefinementType_GMRES"
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetCGSRefinementType_GMRES(KSP ksp,KSPGMRESCGSRefinementType *type)
+{
+  KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
+
+  PetscFunctionBegin;
+  *type = gmres->cgstype;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGMRESSetCGSRefinementType"
 /*@
    KSPGMRESSetCGSRefinementType - Sets the type of iterative refinement to use
          in the classical Gram Schmidt orthogonalization.
-   of the preconditioned problem.
 
    Collective on KSP
 
@@ -694,7 +721,7 @@ EXTERN_C_END
 
 .keywords: KSP, GMRES, iterative refinement
 
-.seealso: KSPGMRESSetOrthogonalization(), KSPGMRESCGSRefinementType, KSPGMRESClassicalGramSchmidtOrthogonalization()
+.seealso: KSPGMRESSetOrthogonalization(), KSPGMRESCGSRefinementType, KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESGetCGSRefinementType()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType type)
 {
@@ -708,6 +735,43 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESC
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGMRESGetCGSRefinementType"
+/*@
+   KSPGMRESGetCGSRefinementType - Gets the type of iterative refinement to use
+         in the classical Gram Schmidt orthogonalization.
+
+   Collective on KSP
+
+   Input Parameter:
+.  ksp - the Krylov space context
+
+   Output Parameter:
+.  type - the type of refinement
+
+  Options Database:
+.  -ksp_gmres_cgs_refinement_type <never,ifneeded,always>
+
+   Level: intermediate
+
+.keywords: KSP, GMRES, iterative refinement
+
+.seealso: KSPGMRESSetOrthogonalization(), KSPGMRESCGSRefinementType, KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetCGSRefinementType()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType *type)
+{
+  PetscErrorCode ierr,(*f)(KSP,KSPGMRESCGSRefinementType*);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESGetCGSRefinementType_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ksp,type);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPGMRESSetRestart"
@@ -729,7 +793,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESC
 
 .keywords: KSP, GMRES, restart, iterations
 
-.seealso: KSPSetTolerances(), KSPGMRESSetOrthogonalization(), KSPGMRESSetPreAllocateVectors()
+.seealso: KSPSetTolerances(), KSPGMRESSetOrthogonalization(), KSPGMRESSetPreAllocateVectors(), KSPGMRESGetRestart()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart(KSP ksp, PetscInt restart) 
 {
@@ -737,6 +801,36 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart(KSP ksp, PetscInt restart)
 
   PetscFunctionBegin;
   ierr = PetscTryMethod(ksp,"KSPGMRESSetRestart_C",(KSP,PetscInt),(ksp,restart));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPGMRESGetRestart"
+/*@
+   KSPGMRESGetRestart - Gets number of iterations at which GMRES, FGMRES and LGMRES restarts.
+
+   Collective on KSP
+
+   Input Parameter:
+.  ksp - the Krylov space context
+
+   Output Parameter:
+.   restart - integer restart value
+
+    Note: The default value is 30.
+
+   Level: intermediate
+
+.keywords: KSP, GMRES, restart, iterations
+
+.seealso: KSPSetTolerances(), KSPGMRESSetOrthogonalization(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetRestart()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetRestart(KSP ksp, PetscInt *restart) 
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscTryMethod(ksp,"KSPGMRESGetRestart_C",(KSP,PetscInt*),(ksp,restart));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -800,7 +894,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetHapTol(KSP ksp,PetscReal tol)
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPFGMRES, KSPLGMRES,
            KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetOrthogonalization()
            KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESModifiedGramSchmidtOrthogonalization(),
-           KSPGMRESCGSRefinementType, KSPGMRESSetCGSRefinementType(), KSPGMRESMonitorKrylov(), KSPSetPCSide()
+           KSPGMRESCGSRefinementType, KSPGMRESSetCGSRefinementType(), KSPGMRESGetCGSRefinementType(), KSPGMRESMonitorKrylov(), KSPSetPCSide()
 
 M*/
 
@@ -836,12 +930,18 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_GMRES(KSP ksp)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetRestart_C",
                                     "KSPGMRESSetRestart_GMRES",
                                      KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESGetRestart_C",
+                                    "KSPGMRESGetRestart_GMRES",
+                                     KSPGMRESGetRestart_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetHapTol_C",
                                     "KSPGMRESSetHapTol_GMRES",
                                      KSPGMRESSetHapTol_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C",
                                     "KSPGMRESSetCGSRefinementType_GMRES",
                                      KSPGMRESSetCGSRefinementType_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESGetCGSRefinementType_C",
+                                    "KSPGMRESGetCGSRefinementType_GMRES",
+                                     KSPGMRESGetCGSRefinementType_GMRES);CHKERRQ(ierr);
 
   gmres->haptol              = 1.0e-30;
   gmres->q_preallocate       = 0;

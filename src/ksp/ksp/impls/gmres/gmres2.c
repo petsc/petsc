@@ -37,7 +37,7 @@ $    i.e. the size of Krylov space minus one
 .keywords: KSP, GMRES, set, orthogonalization, Gram-Schmidt, iterative refinement
 
 .seealso: KSPGMRESSetRestart(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetCGSRefinementType(),
-          KSPGMRESModifiedGramSchmidtOrthogonalization(), KSPGMRESClassicalGramSchmidtOrthogonalization()
+          KSPGMRESModifiedGramSchmidtOrthogonalization(), KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESGetCGSRefinementType()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetOrthogonalization(KSP ksp,PetscErrorCode (*fcn)(KSP,PetscInt))
 {

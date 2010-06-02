@@ -173,6 +173,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeEigenvalues(KSP,PetscInt,Pets
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeEigenvaluesExplicitly(KSP,PetscInt,PetscReal*,PetscReal*);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart(KSP, PetscInt);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetRestart(KSP, PetscInt*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetHapTol(KSP,PetscReal);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetPreAllocateVectors(KSP);
@@ -184,6 +185,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMRESSetAugDim(KSP,PetscInt);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMRESSetConstant(KSP);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGCRSetRestart(KSP,PetscInt);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGCRGetRestart(KSP,PetscInt*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGCRSetModifyPC(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*),void*,PetscErrorCode(*)(void*));
 
 /*E
@@ -192,7 +194,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGCRSetModifyPC(KSP,PetscErrorCode (*
    Level: advanced
 
 .seealso: KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetOrthogonalization(),
-          KSPGMRESSetCGSRefinementType(), KSPGMRESModifiedGramSchmidtOrthogonalization()
+          KSPGMRESSetCGSRefinementType(), KSPGMRESGetCGSRefinementType(), KSPGMRESModifiedGramSchmidtOrthogonalization()
 
 E*/
 typedef enum {KSP_GMRES_CGS_REFINE_NEVER, KSP_GMRES_CGS_REFINE_IFNEEDED, KSP_GMRES_CGS_REFINE_ALWAYS} KSPGMRESCGSRefinementType;
@@ -205,7 +207,7 @@ extern const char *KSPGMRESCGSRefinementTypes[];
    Note: Possible unstable, but the fastest to compute
 
 .seealso: KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetOrthogonalization(),
-          KSPGMRESSetCGSRefinementType(), KSP_GMRES_CGS_REFINE_IFNEEDED, KSP_GMRES_CGS_REFINE_ALWAYS,
+          KSPGMRESSetCGSRefinementType(), KSPGMRESGetCGSRefinementType(), KSP_GMRES_CGS_REFINE_IFNEEDED, KSP_GMRES_CGS_REFINE_ALWAYS,
           KSPGMRESModifiedGramSchmidtOrthogonalization()
 M*/
 
@@ -220,7 +222,7 @@ M*/
      estimate the orthogonality but is more stable.
 
 .seealso: KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetOrthogonalization(),
-          KSPGMRESSetCGSRefinementType(), KSP_GMRES_CGS_REFINE_NEVER, KSP_GMRES_CGS_REFINE_ALWAYS,
+          KSPGMRESSetCGSRefinementType(), KSPGMRESGetCGSRefinementType(), KSP_GMRES_CGS_REFINE_NEVER, KSP_GMRES_CGS_REFINE_ALWAYS,
           KSPGMRESModifiedGramSchmidtOrthogonalization()
 M*/
 
@@ -235,11 +237,12 @@ M*/
         You should only use this if you absolutely know that the iterative refinement is needed.
 
 .seealso: KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetOrthogonalization(),
-          KSPGMRESSetCGSRefinementType(), KSP_GMRES_CGS_REFINE_IFNEEDED, KSP_GMRES_CGS_REFINE_ALWAYS,
+          KSPGMRESSetCGSRefinementType(), KSPGMRESGetCGSRefinementType(), KSP_GMRES_CGS_REFINE_IFNEEDED, KSP_GMRES_CGS_REFINE_ALWAYS,
           KSPGMRESModifiedGramSchmidtOrthogonalization()
 M*/
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetCGSRefinementType(KSP,KSPGMRESCGSRefinementType);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetCGSRefinementType(KSP,KSPGMRESCGSRefinementType*);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPFGMRESModifyPCNoChange(KSP,PetscInt,PetscInt,PetscReal,void*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPFGMRESModifyPCKSP(KSP,PetscInt,PetscInt,PetscReal,void*);

@@ -28,7 +28,7 @@
 
    Level: intermediate
 
-.seelaso:  KSPGMRESSetOrthogonalization(), KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetCGSRefinementType()
+.seelaso:  KSPGMRESSetOrthogonalization(), KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetCGSRefinementType(), KSPGMRESGetCGSRefinementType()
 
 @*/
 #undef __FUNCT__  

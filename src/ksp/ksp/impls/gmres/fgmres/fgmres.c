@@ -635,6 +635,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetPreAllocateVectors_GMRES(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart_GMRES(KSP,PetscInt);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetRestart_GMRES(KSP,PetscInt*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetOrthogonalization_GMRES(KSP,PetscErrorCode (*)(KSP,PetscInt));
 EXTERN_C_END
 
@@ -680,7 +681,21 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart_FGMRES(KSP ksp,PetscInt max
 EXTERN_C_END
 
 EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGMRESGetRestart_FGMRES" 
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetRestart_FGMRES(KSP ksp,PetscInt *max_k)
+{
+  KSP_FGMRES     *gmres = (KSP_FGMRES *)ksp->data;
+
+  PetscFunctionBegin;
+  *max_k = gmres->max_k;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType*);
 EXTERN_C_END
 
 /*MC
@@ -711,7 +726,7 @@ EXTERN_C_END
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPGMRES, KSPLGMRES,
            KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetOrthogonalization()
            KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESModifiedGramSchmidtOrthogonalization(),
-           KSPGMRESCGSRefinementType, KSPGMRESSetCGSRefinementType(), KSPGMRESMonitorKrylov(), KSPFGMRESSetModifyPC(),
+           KSPGMRESCGSRefinementType, KSPGMRESSetCGSRefinementType(),  KSPGMRESGetCGSRefinementType(), KSPGMRESMonitorKrylov(), KSPFGMRESSetModifyPC(),
            KSPFGMRESModifyPCKSP()
 
 M*/
@@ -745,12 +760,18 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_FGMRES(KSP ksp)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetRestart_C",
                                     "KSPGMRESSetRestart_FGMRES",
                                      KSPGMRESSetRestart_FGMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESGetRestart_C",
+                                    "KSPGMRESGetRestart_FGMRES",
+                                     KSPGMRESGetRestart_FGMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPFGMRESSetModifyPC_C",
                                     "KSPFGMRESSetModifyPC_FGMRES",
                                      KSPFGMRESSetModifyPC_FGMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C",
                                     "KSPGMRESSetCGSRefinementType_GMRES",
                                      KSPGMRESSetCGSRefinementType_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESGetCGSRefinementType_C",
+                                    "KSPGMRESGetCGSRefinementType_GMRES",
+                                     KSPGMRESGetCGSRefinementType_GMRES);CHKERRQ(ierr);
 
 
   fgmres->haptol              = 1.0e-30;
