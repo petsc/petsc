@@ -738,6 +738,7 @@ PetscErrorCode MatAssemblyEnd_BlockMat(Mat A,MatAssemblyType mode)
   ierr = PetscInfo4(A,"Matrix size: %D X %D; storage space: %D unneeded,%D used\n",m,A->cmap->n/A->cmap->bs,fshift,a->nz);CHKERRQ(ierr);
   ierr = PetscInfo1(A,"Number of mallocs during MatSetValues() is %D\n",a->reallocs);CHKERRQ(ierr);
   ierr = PetscInfo1(A,"Maximum nonzeros in any row is %D\n",rmax);CHKERRQ(ierr);
+  A->info.mallocs     += a->reallocs;
   a->reallocs          = 0;
   A->info.nz_unneeded  = (double)fshift;
   a->rmax              = rmax;

@@ -723,7 +723,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   ierr = PetscInfo4(A,"Matrix size: %D X %D; storage space: %D unneeded,%D used\n",m,A->cmap->n,fshift,a->nz);CHKERRQ(ierr);
   ierr = PetscInfo1(A,"Number of mallocs during MatSetValues() is %D\n",a->reallocs);CHKERRQ(ierr);
   ierr = PetscInfo1(A,"Maximum nonzeros in any row is %D\n",rmax);CHKERRQ(ierr);
-
+  A->info.mallocs     += a->reallocs;
   a->reallocs          = 0;
   A->info.nz_unneeded  = (double)fshift;
   a->rmax              = rmax;
@@ -1371,7 +1371,7 @@ PetscErrorCode MatGetInfo_SeqAIJ(Mat A,MatInfoType flag,MatInfo *info)
   info->nz_used        = (double)a->nz;
   info->nz_unneeded    = (double)(a->maxnz - a->nz);
   info->assemblies     = (double)A->num_ass;
-  info->mallocs        = (double)a->reallocs;
+  info->mallocs        = (double)A->info.mallocs;
   info->memory         = ((PetscObject)A)->mem;
   if (A->factortype) {
     info->fill_ratio_given  = A->info.fill_ratio_given;
