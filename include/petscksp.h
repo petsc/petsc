@@ -178,6 +178,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetHapTol(KSP,PetscReal);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetPreAllocateVectors(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetOrthogonalization(KSP,PetscErrorCode (*)(KSP,PetscInt));
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetOrthogonalization(KSP,PetscErrorCode (**)(KSP,PetscInt));
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESModifiedGramSchmidtOrthogonalization(KSP,PetscInt);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESClassicalGramSchmidtOrthogonalization(KSP,PetscInt);
 
@@ -193,7 +194,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGCRSetModifyPC(KSP,PetscErrorCode (*
 
    Level: advanced
 
-.seealso: KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetOrthogonalization(),
+.seealso: KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetOrthogonalization(), KSPGMRESGetOrthogonalization(), 
           KSPGMRESSetCGSRefinementType(), KSPGMRESGetCGSRefinementType(), KSPGMRESModifiedGramSchmidtOrthogonalization()
 
 E*/
@@ -206,7 +207,7 @@ extern const char *KSPGMRESCGSRefinementTypes[];
 
    Note: Possible unstable, but the fastest to compute
 
-.seealso: KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetOrthogonalization(),
+.seealso: KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetOrthogonalization(), KSPGMRESGetOrthogonalization(),
           KSPGMRESSetCGSRefinementType(), KSPGMRESGetCGSRefinementType(), KSP_GMRES_CGS_REFINE_IFNEEDED, KSP_GMRES_CGS_REFINE_ALWAYS,
           KSPGMRESModifiedGramSchmidtOrthogonalization()
 M*/
@@ -221,7 +222,7 @@ M*/
    Note: This is slower than KSP_GMRES_CGS_REFINE_NEVER because it requires an extra norm computation to 
      estimate the orthogonality but is more stable.
 
-.seealso: KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetOrthogonalization(),
+.seealso: KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetOrthogonalization(), KSPGMRESGetOrthogonalization(),
           KSPGMRESSetCGSRefinementType(), KSPGMRESGetCGSRefinementType(), KSP_GMRES_CGS_REFINE_NEVER, KSP_GMRES_CGS_REFINE_ALWAYS,
           KSPGMRESModifiedGramSchmidtOrthogonalization()
 M*/
@@ -236,7 +237,7 @@ M*/
 
         You should only use this if you absolutely know that the iterative refinement is needed.
 
-.seealso: KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetOrthogonalization(),
+.seealso: KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetOrthogonalization(), KSPGMRESGetOrthogonalization(),
           KSPGMRESSetCGSRefinementType(), KSPGMRESGetCGSRefinementType(), KSP_GMRES_CGS_REFINE_IFNEEDED, KSP_GMRES_CGS_REFINE_ALWAYS,
           KSPGMRESModifiedGramSchmidtOrthogonalization()
 M*/

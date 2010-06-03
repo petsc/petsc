@@ -21,7 +21,7 @@
 
 .keywords: GMRES, preallocate, vectors
 
-.seealso: KSPGMRESSetRestart(), KSPGMRESSetOrthogonalization()
+.seealso: KSPGMRESSetRestart(), KSPGMRESSetOrthogonalization(), KSPGMRESGetOrthogonalization()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetPreAllocateVectors(KSP ksp)
 {
