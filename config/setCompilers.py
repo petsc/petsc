@@ -12,7 +12,6 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.use64BitPointers = 0
     self.usedMPICompilers = 0
     self.mainLanguage = 'C'
     return
@@ -53,7 +52,6 @@ class Configure(config.base.Configure):
 
     help.addArgument('Compilers', '-with-gnu-compilers=<bool>',      nargs.ArgBool(None, 1, 'Try to use GNU compilers'))
     help.addArgument('Compilers', '-with-vendor-compilers=<vendor>', nargs.Arg(None, '', 'Try to use vendor compilers (no argument all vendors, 0 no vendors)'))
-    help.addArgument('Compilers', '-with-64-bit-pointers=<bool>',    nargs.ArgBool(None, 0, 'Use 64 bit compilers and libraries'))
 
     help.addArgument('Compilers', '-with-large-file-io=<bool>', nargs.ArgBool(None, 0, 'Allow IO with files greater then 2 GB'))
     help.addArgument('Compilers', '-CPP=<prog>',            nargs.Arg(None, None, 'Specify the C preprocessor'))
@@ -442,31 +440,6 @@ class Configure(config.base.Configure):
       try:
         if self.getExecutable(compiler, resultName = 'CC'):
           self.checkCompiler('C')
-          if self.framework.argDB['with-64-bit-pointers']:
-            if Configure.isGNU(self.CC):
-              self.pushLanguage('C')
-              try:
-                self.addCompilerFlag('-m64')
-                self.use64BitPointers = 1
-              except RuntimeError, e:
-                self.logPrint('GNU 64-bit C compilation not working: '+str(e))
-              self.popLanguage()
-            elif self.vendor == 'solaris' or Configure.isSun(self.CC):
-              self.pushLanguage('C')
-              try:
-                self.addCompilerFlag('-xarch=v9')
-                self.use64BitPointers = 1
-              except RuntimeError, e:
-                self.logPrint('Solaris 64-bit C compilation not working: '+str(e))
-              self.popLanguage()
-            elif self.vendor == 'ibm' or Configure.isIBM(self.CC):
-              self.pushLanguage('C')
-              try:
-                self.addCompilerFlag('-q64')
-                self.use64BitPointers = 1
-              except RuntimeError, e:
-                self.logPrint('IBM 64-bit C compilation not working: '+str(e))
-              self.popLanguage()
           break
       except RuntimeError, e:
         import os
@@ -610,28 +583,6 @@ class Configure(config.base.Configure):
         try:
           if self.getExecutable(compiler, resultName = 'CXX'):
             self.checkCompiler('Cxx')
-            if self.framework.argDB['with-64-bit-pointers']:
-              if Configure.isGNU(self.CXX):
-                self.pushLanguage('C++')
-                try:
-                  self.addCompilerFlag('-m64')
-                except RuntimeError, e:
-                  self.logPrint('GNU 64-bit C++ compilation not working: '+str(e))
-                self.popLanguage()
-              elif self.vendor == 'solaris' or Configure.isSun(self.CXX):
-                self.pushLanguage('C++')
-                try:
-                  self.addCompilerFlag('-xarch=v9')
-                except RuntimeError, e:
-                  self.logPrint('Solaris 64-bit C++ compilation not working: '+str(e))
-                self.popLanguage()
-              elif self.vendor == 'ibm' or Configure.isIBM(self.CXX):
-                self.pushLanguage('C++')
-                try:
-                  self.addCompilerFlag('-q64')
-                except RuntimeError, e:
-                  self.logPrint('IBM 64-bit C++ compilation not working: '+str(e))
-                self.popLanguage()
             break
         except RuntimeError, e:
           import os
@@ -776,28 +727,6 @@ class Configure(config.base.Configure):
       try:
         if self.getExecutable(compiler, resultName = 'FC'):
           self.checkCompiler('FC')
-          if self.framework.argDB['with-64-bit-pointers']:
-            if Configure.isGNU(self.CC):
-              self.pushLanguage('FC')
-              try:
-                self.addCompilerFlag('-m64')
-              except RuntimeError, e:
-                self.logPrint('GNU 64-bit Fortran compilation not working: '+str(e))
-              self.popLanguage()
-            elif self.vendor == 'solaris' or Configure.isSun(self.FC):
-              self.pushLanguage('FC')
-              try:
-                self.addCompilerFlag('-xarch=v9')
-              except RuntimeError, e:
-                self.logPrint('Solaris 64-bit Fortran compilation not working: '+str(e))
-              self.popLanguage()
-            elif self.vendor == 'ibm'  or Configure.isIBM(self.FC):
-              self.pushLanguage('FC')
-              try:
-                self.addCompilerFlag('-q64')
-              except RuntimeError, e:
-                self.logPrint('IBM 64-bit Fortran compilation not working: '+str(e))
-              self.popLanguage()
           break
       except RuntimeError, e:
         import os
