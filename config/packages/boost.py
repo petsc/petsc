@@ -1,3 +1,4 @@
+from __future__ import generators
 import config.package
 
 class Configure(config.package.Package):
@@ -24,5 +25,5 @@ class Configure(config.package.Package):
     return self.installDir
 
   def getSearchDirectories(self):
-    yield '';
+    yield ''
     return
