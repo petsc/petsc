@@ -12,7 +12,8 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.4/downloads/openmpi-1.4.1.tar.gz']
-    self.download_mpich     = ['http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.3a2/mpich2-1.3a2.tar.gz']
+    #self.download_mpich     = ['http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.3a2/mpich2-1.3a2.tar.gz']
+    self.download_mpich     = ['http://ftp.mcs.anl.gov/pub/petsc/tmp/mpich2-trunk-r6644.tar.gz']
     self.download           = ['redefine']
     self.functions          = ['MPI_Init', 'MPI_Comm_create']
     self.includes           = ['mpi.h']
@@ -184,7 +185,7 @@ class Configure(config.package.Package):
     if self.checkLink('#include <mpi.h>\n', 'int flag;if (MPI_Finalized(&flag));\n'):
       self.haveFinalized = 1
       self.addDefine('HAVE_MPI_FINALIZED', 1)
-    if self.checkLink('#include <mpi.h>\n', 'if (MPI_Allreduce(0, MPI_IN_PLACE, 1, MPI_INT, MPI_SUM, MPI_COMM_SELF));\n'):
+    if self.checkLink('#include <mpi.h>\n', 'if (MPI_Allreduce(MPI_IN_PLACE,0, 1, MPI_INT, MPI_SUM, MPI_COMM_SELF));\n'):
       self.haveInPlace = 1
       self.addDefine('HAVE_MPI_IN_PLACE', 1)
     self.compilers.CPPFLAGS = oldFlags
