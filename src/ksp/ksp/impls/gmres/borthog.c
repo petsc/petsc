@@ -24,7 +24,7 @@
 
    Level: intermediate
 
-.seealso:  KSPGMRESSetOrthogonalization(), KSPGMRESClassicalGramSchmidtOrthogonalization()
+.seealso:  KSPGMRESSetOrthogonalization(), KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESGetOrthogonalization()
 
 @*/
 #undef __FUNCT__  

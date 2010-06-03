@@ -323,7 +323,7 @@ class Configure(config.base.Configure):
 
   def dumpCMakeConfig(self):
     '''
-    Writes configuration-specific values to PETSC_ARCH/conf/PETScConfig.cmake.
+    Writes configuration-specific values to ${PETSC_ARCH}/conf/PETScConfig.cmake.
     This file is private to PETSc and should not be included by third parties
     (a suitable file can be produced later by CMake, but this is not it).
     '''
@@ -389,7 +389,6 @@ class Configure(config.base.Configure):
           cmakeset(fd,'PETSC_USING_F90')
       if self.sharedlibraries.useShared:
         cmakeset(fd,'BUILD_SHARED_LIBS')
-
     def writeBuildFlags(fd):
       lib_paths = []
       lib_libs  = []

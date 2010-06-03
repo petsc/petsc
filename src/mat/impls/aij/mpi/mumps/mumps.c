@@ -1047,13 +1047,13 @@ PetscErrorCode MatFactorInfo_MUMPS(Mat A,PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(9) (A/A^T x=b is solved):     %d \n",lu->id.ICNTL(9));CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(10) (max num of refinements): %d \n",lu->id.ICNTL(10));CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(11) (error analysis):         %d \n",lu->id.ICNTL(11));CHKERRQ(ierr);  
-  if (!lu->myid && lu->id.ICNTL(11)>0) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"        RINFOG(4) (inf norm of input mat):        %g\n",lu->id.RINFOG(4));CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"        RINFOG(5) (inf norm of solution):         %g\n",lu->id.RINFOG(5));CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"        RINFOG(6) (inf norm of residual):         %g\n",lu->id.RINFOG(6));CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"        RINFOG(7),RINFOG(8) (backward error est): %g, %g\n",lu->id.RINFOG(7),lu->id.RINFOG(8));CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"        RINFOG(9) (error estimate):               %g \n",lu->id.RINFOG(9));CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"        RINFOG(10),RINFOG(11)(condition numbers): %g, %g\n",lu->id.RINFOG(10),lu->id.RINFOG(11));CHKERRQ(ierr);
+  if (lu->id.ICNTL(11)>0) {
+    ierr = PetscViewerASCIIPrintf(viewer,"        RINFOG(4) (inf norm of input mat):        %g\n",lu->id.RINFOG(4));CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"        RINFOG(5) (inf norm of solution):         %g\n",lu->id.RINFOG(5));CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"        RINFOG(6) (inf norm of residual):         %g\n",lu->id.RINFOG(6));CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"        RINFOG(7),RINFOG(8) (backward error est): %g, %g\n",lu->id.RINFOG(7),lu->id.RINFOG(8));CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"        RINFOG(9) (error estimate):               %g \n",lu->id.RINFOG(9));CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"        RINFOG(10),RINFOG(11)(condition numbers): %g, %g\n",lu->id.RINFOG(10),lu->id.RINFOG(11));CHKERRQ(ierr);
   
   }
   ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(12) (efficiency control):                         %d \n",lu->id.ICNTL(12));CHKERRQ(ierr);
@@ -1079,27 +1079,27 @@ PetscErrorCode MatFactorInfo_MUMPS(Mat A,PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(5) (fixation for null pivots):         %g \n",lu->id.CNTL(5));CHKERRQ(ierr);
 
   /* infomation local to each processor */
-  if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "              RINFO(1) (local estimated flops for the elimination after analysis): \n");CHKERRQ(ierr);}
-  ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"              [%d] %g \n",lu->myid,lu->id.RINFO(1));CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(((PetscObject)A)->comm);
-  if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "              RINFO(2) (local estimated flops for the assembly after factorization): \n");CHKERRQ(ierr);}
-  ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"              [%d]  %g \n",lu->myid,lu->id.RINFO(2));CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(((PetscObject)A)->comm);
-  if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "              RINFO(3) (local estimated flops for the elimination after factorization): \n");CHKERRQ(ierr);}
-  ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"              [%d]  %g \n",lu->myid,lu->id.RINFO(3));CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(((PetscObject)A)->comm);
+  ierr = PetscViewerASCIIPrintf(viewer, "              RINFO(1) (local estimated flops for the elimination after analysis): \n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"              [%d] %g \n",lu->myid,lu->id.RINFO(1));CHKERRQ(ierr);
+  ierr = PetscViewerFlush(viewer);
+  ierr = PetscViewerASCIIPrintf(viewer, "              RINFO(2) (local estimated flops for the assembly after factorization): \n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"              [%d]  %g \n",lu->myid,lu->id.RINFO(2));CHKERRQ(ierr);
+  ierr = PetscViewerFlush(viewer);
+  ierr = PetscViewerASCIIPrintf(viewer, "              RINFO(3) (local estimated flops for the elimination after factorization): \n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"              [%d]  %g \n",lu->myid,lu->id.RINFO(3));CHKERRQ(ierr);
+  ierr = PetscViewerFlush(viewer);
 
-  if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "              INFO(15) (estimated size of (in MB) MUMPS internal data for running numerical factorization): \n");CHKERRQ(ierr);}
-  ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"              [%d] %d \n",lu->myid,lu->id.INFO(15));CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(((PetscObject)A)->comm);
+  ierr = PetscViewerASCIIPrintf(viewer, "              INFO(15) (estimated size of (in MB) MUMPS internal data for running numerical factorization): \n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"              [%d] %d \n",lu->myid,lu->id.INFO(15));CHKERRQ(ierr);
+  ierr = PetscViewerFlush(viewer);
 
-  if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "              INFO(16) (size of (in MB) MUMPS internal data used during numerical factorization): \n");CHKERRQ(ierr);}
-  ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"              [%d] %d \n",lu->myid,lu->id.INFO(16));CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(((PetscObject)A)->comm);
+  ierr = PetscViewerASCIIPrintf(viewer, "              INFO(16) (size of (in MB) MUMPS internal data used during numerical factorization): \n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"              [%d] %d \n",lu->myid,lu->id.INFO(16));CHKERRQ(ierr);
+  ierr = PetscViewerFlush(viewer);
 
-  if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "              INFO(23) (num of pivots eliminated on this processor after factorization): \n");CHKERRQ(ierr);}
-  ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"              [%d] %d \n",lu->myid,lu->id.INFO(23));CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(((PetscObject)A)->comm);
+  ierr = PetscViewerASCIIPrintf(viewer, "              INFO(23) (num of pivots eliminated on this processor after factorization): \n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"              [%d] %d \n",lu->myid,lu->id.INFO(23));CHKERRQ(ierr);
+  ierr = PetscViewerFlush(viewer);
 
   if (!lu->myid){ /* information from the host */
     ierr = PetscViewerASCIIPrintf(viewer,"  RINFOG(1) (global estimated flops for the elimination after analysis): %g \n",lu->id.RINFOG(1));CHKERRQ(ierr);
