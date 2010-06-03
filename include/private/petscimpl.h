@@ -694,6 +694,10 @@ typedef struct {
   PetscInt    namecount;        /* used to generate the next name, as in Vec_0, Mat_1, ... */
 } PetscCommCounter;
 
+#if defined(PETSC_USE_CUDA)
+#include <cublas.h>
+#endif
+
 PETSC_EXTERN_CXX_END
 
 #endif /* _PETSCHEAD_H */

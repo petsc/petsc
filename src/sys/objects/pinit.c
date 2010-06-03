@@ -684,6 +684,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-python",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {ierr = PetscPythonInitialize(PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);}
 
+#if defined(PETSC_USE_CUDA)
+  cublasInit();
+#endif
   /*
       Once we are completedly initialized then we can set this variables
   */
