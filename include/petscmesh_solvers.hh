@@ -10,23 +10,34 @@ template<typename Section, typename Order>
 void constructFieldSplit(const Obj<Section>& section, const Obj<Order>& globalOrder, Vec v, PC fieldSplit) {
   const typename Section::chart_type& chart = section->getChart();
   PetscInt                            space = 0;
+  PetscInt                            *spaceSize;
   char                                spaceName[2] = {'0', '\0'};
   PetscErrorCode                      ierr;
 
   PetscInt total = 0;
+  ierr = PetscMalloc(section->getNumSpaces() * sizeof(PetscInt));CHKERRXX(ierr);
   for(typename std::vector<Obj<typename Section::atlas_type> >::const_iterator s_iter = section->getSpaces().begin(); s_iter != section->getSpaces().end(); ++s_iter, ++space) {
-    PetscInt n = section->size(space);
+    PetscInt n = 0;
 
+    for(typename Section::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+      const int dim  = section->getFiberDimension(*c_iter, space);
+      const int cDim = section->getConstraintDimension(*c_iter, space);
+
+      if ((dim > cDim) && (globalOrder->getIndex(*c_iter) >= 0)) {
+        n += dim - cDim;
+      }
+    }
     //std::cout << "Space " << space << ": size " << n << std::endl;
+    spaceSize[space] = n;
     total += n;
   }
   PetscInt localSize;
-  VecGetLocalSize(v, &localSize);
+  ierr = VecGetLocalSize(v, &localSize);CHKERRXX(ierr);
   //std::cout << "Vector local size " << localSize << std::endl;
   assert(localSize == total);
   space = 0;
   for(typename std::vector<Obj<typename Section::atlas_type> >::const_iterator s_iter = section->getSpaces().begin(); s_iter != section->getSpaces().end(); ++s_iter, ++space) {
-    PetscInt  n = section->size(space);
+    PetscInt  n = spaceSize[space];
     PetscInt  i = -1;
     PetscInt *idx;
     IS        is;
@@ -39,6 +50,7 @@ void constructFieldSplit(const Obj<Section>& section, const Obj<Order>& globalOr
       if (dim > cDim) {
         int off = globalOrder->getIndex(*c_iter);
 
+        if (off < 0) continue;
         for(int s = 0; s < space; ++s) {
           off += section->getConstrainedFiberDimension(*c_iter, s);
         }
@@ -65,11 +77,12 @@ void constructFieldSplit(const Obj<Section>& section, const Obj<Order>& globalOr
         }
       }
     }
-    if (i != n-1) {throw PETSc::Exception("Invalid fibration numbering");}
+    if (i = n-1) {throw PETSc::Exception("Invalid fibration numbering");}
     ierr = ISCreateGeneralNC(section->comm(), n, idx, &is);CHKERRXX(ierr);
     ierr = PCFieldSplitSetIS(fieldSplit, spaceName, is);CHKERRXX(ierr);
     ++spaceName[0];
   }
+  ierr = PetscFree(spaceSize);CHKERRXX(ierr);
 };
 
 #endif // __PETSCMESH_SOLVERS_HH
