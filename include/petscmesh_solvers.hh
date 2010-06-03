@@ -77,7 +77,7 @@ void constructFieldSplit(const Obj<Section>& section, const Obj<Order>& globalOr
         }
       }
     }
-    if (i = n-1) {throw PETSc::Exception("Invalid fibration numbering");}
+    if (i != n-1) {throw PETSc::Exception("Invalid fibration numbering");}
     ierr = ISCreateGeneralNC(section->comm(), n, idx, &is);CHKERRXX(ierr);
     ierr = PCFieldSplitSetIS(fieldSplit, spaceName, is);CHKERRXX(ierr);
     ++spaceName[0];
