@@ -10,12 +10,12 @@ template<typename Section, typename Order>
 void constructFieldSplit(const Obj<Section>& section, const Obj<Order>& globalOrder, Vec v, PC fieldSplit) {
   const typename Section::chart_type& chart = section->getChart();
   PetscInt                            space = 0;
-  PetscInt                            *spaceSize;
+  PetscInt                            *spaceSize = PETSC_NULL;
   char                                spaceName[2] = {'0', '\0'};
   PetscErrorCode                      ierr;
 
   PetscInt total = 0;
-  ierr = PetscMalloc(section->getNumSpaces() * sizeof(PetscInt));CHKERRXX(ierr);
+  ierr = PetscMalloc(section->getNumSpaces() * sizeof(PetscInt), &spaceSize);CHKERRXX(ierr);
   for(typename std::vector<Obj<typename Section::atlas_type> >::const_iterator s_iter = section->getSpaces().begin(); s_iter != section->getSpaces().end(); ++s_iter, ++space) {
     PetscInt n = 0;
 
@@ -23,7 +23,7 @@ void constructFieldSplit(const Obj<Section>& section, const Obj<Order>& globalOr
       const int dim  = section->getFiberDimension(*c_iter, space);
       const int cDim = section->getConstraintDimension(*c_iter, space);
 
-      if ((dim > cDim) && (globalOrder->getIndex(*c_iter) >= 0)) {
+      if ((dim > cDim) && globalOrder->isLocal(*c_iter)) {
         n += dim - cDim;
       }
     }
@@ -48,9 +48,9 @@ void constructFieldSplit(const Obj<Section>& section, const Obj<Order>& globalOr
       const int cDim = section->getConstraintDimension(*c_iter, space);
 
       if (dim > cDim) {
+        if (!globalOrder->isLocal(*c_iter)) continue;
         int off = globalOrder->getIndex(*c_iter);
 
-        if (off < 0) continue;
         for(int s = 0; s < space; ++s) {
           off += section->getConstrainedFiberDimension(*c_iter, s);
         }

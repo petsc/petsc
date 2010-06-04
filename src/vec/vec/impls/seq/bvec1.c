@@ -90,10 +90,17 @@ PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
 
   PetscFunctionBegin;
   if (alpha == 0.0) {
+    
     ierr = VecSet_Seq(xin,alpha);CHKERRQ(ierr);
   } else if (alpha != 1.0) {
     PetscScalar a = alpha;
+#if defined(PETSC_USE_CUDA)
+    //ERASE THIS TEST PRINT
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Hello from CUDAVecScale");CHKERRQ(ierr);
+    cublasDscal(&bn,&a,x->GPUarray,&one);
+#else
     BLASscal_(&bn,&a,x->array,&one);
+#endif
     ierr = PetscLogFlops(xin->map->n);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

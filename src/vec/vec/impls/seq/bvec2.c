@@ -645,6 +645,7 @@ static PetscErrorCode VecPublish_Seq(PetscObject obj)
 #endif
 
 EXTERN PetscErrorCode VecLoad_Binary(PetscViewer, const VecType, Vec*);
+EXTERN PetscErrorCode VecLoadnew_Binary(PetscViewer,Vec);
 
 static struct _VecOps DvOps = {VecDuplicate_Seq, /* 1 */
             VecDuplicateVecs_Default,
@@ -697,7 +698,7 @@ static struct _VecOps DvOps = {VecDuplicate_Seq, /* 1 */
             0,
             VecMaxPointwiseDivide_Seq,
             VecLoad_Binary, /* 50 */
-	    0,              /* Set VecLoadnew function here */		       
+	    VecLoadnew_Binary,		       
             VecPointwiseMax_Seq,
             VecPointwiseMaxAbs_Seq,
             VecPointwiseMin_Seq,
@@ -870,19 +871,15 @@ PetscErrorCode VecSetOption_Seq(Vec v,VecOption op,PetscTruth flag)
 PetscErrorCode VecCUDACopyToGPU(Vec v)
 {
   Vec_Seq       *vs = (Vec_Seq*)v->data;
-  PetscInt one = 1, cn = vin->map->n;
+  PetscInt one = 1, cn = v->map->n;
   cublasStatus stat;
 
   PetscFunctionBegin;
   if(vs->valid_array == UNALLOCATED){
     /*if this is the first time we're copying to the GPU then we allocate memory first */
-    stat = cublasAlloc(&cn,sizeof(PetscScalar),vs->GPUarray);CHKERRCUDA(stat);
+    stat = cublasAlloc(cn,sizeof(PetscScalar),(void **)vs->GPUarray);CHKERRCUDA(stat);
   }
-
-  stat = cublasSetVector(&cn,sizeof(PetscScalar),vs->array,&one,vs->GPUarray,&one);
-  if(stat != CUBLAS_STATUS_SUCCESS){
-    /* if we had a CUDA error we should return a PETSc error */
-  }
+  stat = cublasSetVector(cn,sizeof(PetscScalar),vs->array,one,vs->GPUarray,one);CHKERRCUDA(stat);
   PetscFunctionReturn(0);
 }
 
@@ -891,14 +888,11 @@ PetscErrorCode VecCUDACopyToGPU(Vec v)
 PetscErrorCode VecCUDACopyFromGPU(Vec v)
 {
   Vec_Seq     *vs = (Vec_Seq*)v->data;
-  PetscInt one = 1, cn = vin->map->n;
+  PetscInt one = 1, cn = v->map->n;
   cublasStatus stat;
 
   PetscFunctionBegin;
-  stat = cublasGetVector(&cn,sizeof(PetscScalar),vs->GPUarray,&one,vs->array,&one);
-  if(stat != CUBLAS_STATUS_SUCCESS){
-    /* throw error */
-  }
+  stat = cublasGetVector(cn,sizeof(PetscScalar),vs->GPUarray,one,vs->array,one);CHKERRCUDA(stat);
   PetscFunctionReturn(0);
 }
 #endif

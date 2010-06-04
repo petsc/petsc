@@ -739,6 +739,19 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryReadStringArray(PetscViewer view
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerFileGetName_Binary" 
+PetscErrorCode PETSC_DLLEXPORT PetscViewerFileGetName_Binary(PetscViewer viewer,char **name)
+{
+  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
+
+  PetscFunctionBegin;
+  *name = vbinary->filename;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerFileGetMode" 
 /*@C
@@ -1121,6 +1134,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Binary(PetscViewer v)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerFileGetMode_C",
                                     "PetscViewerFileGetMode_Binary",
                                      PetscViewerFileGetMode_Binary);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerFileGetName_C",
+				    "PetscViewerFileGetName_Binary",
+				     PetscViewerFileGetName_Binary);CHKERRQ(ierr);	   
 #if defined(PETSC_HAVE_MPIIO)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerBinarySetMPIIO_C",
                                     "PetscViewerBinarySetMPIIO_Binary",

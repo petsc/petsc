@@ -223,7 +223,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
       if (value == 0.0 && ignorezeroentries) goto noinsert;
       if (nonew == 1) goto noinsert;
       if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at (%D,%D) in the matrix",row,col);
-      MatSeqXAIJReallocateAIJ(A,A->rmap->n,1,nrow,row,col,rmax,aa,ai,aj,rp,ap,imax,nonew,MatScalar);
+      ierr = MatSeqXAIJReallocateAIJ(A,A->rmap->n,1,nrow,row,col,rmax,aa,ai,aj,rp,ap,imax,nonew);CHKERRQ(ierr);
       N = nrow++ - 1; a->nz++; high++;
       /* shift up all the later entries in this row */
       for (ii=N; ii>=i; ii--) {
@@ -723,7 +723,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   ierr = PetscInfo4(A,"Matrix size: %D X %D; storage space: %D unneeded,%D used\n",m,A->cmap->n,fshift,a->nz);CHKERRQ(ierr);
   ierr = PetscInfo1(A,"Number of mallocs during MatSetValues() is %D\n",a->reallocs);CHKERRQ(ierr);
   ierr = PetscInfo1(A,"Maximum nonzeros in any row is %D\n",rmax);CHKERRQ(ierr);
-
+  A->info.mallocs     += a->reallocs;
   a->reallocs          = 0;
   A->info.nz_unneeded  = (double)fshift;
   a->rmax              = rmax;
@@ -1371,7 +1371,7 @@ PetscErrorCode MatGetInfo_SeqAIJ(Mat A,MatInfoType flag,MatInfo *info)
   info->nz_used        = (double)a->nz;
   info->nz_unneeded    = (double)(a->maxnz - a->nz);
   info->assemblies     = (double)A->num_ass;
-  info->mallocs        = (double)a->reallocs;
+  info->mallocs        = (double)A->info.mallocs;
   info->memory         = ((PetscObject)A)->mem;
   if (A->factortype) {
     info->fill_ratio_given  = A->info.fill_ratio_given;
@@ -3882,7 +3882,7 @@ void PETSC_STDCALL matsetvaluesseqaij_(Mat *AA,PetscInt *mm,const PetscInt im[],
       if (value == 0.0 && ignorezeroentries) goto noinsert;
       if (nonew == 1) goto noinsert;
       if (nonew == -1) SETERRABORT(((PetscObject)A)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero in the matrix");
-      MatSeqXAIJReallocateAIJ(A,A->rmap->n,1,nrow,row,col,rmax,aa,ai,aj,rp,ap,imax,nonew,MatScalar);
+      ierr = MatSeqXAIJReallocateAIJ(A,A->rmap->n,1,nrow,row,col,rmax,aa,ai,aj,rp,ap,imax,nonew);CHKERRQ(ierr);
       N = nrow++ - 1; a->nz++; high++;
       /* shift up all the later entries in this row */
       for (ii=N; ii>=i; ii--) {

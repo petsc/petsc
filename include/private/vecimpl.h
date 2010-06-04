@@ -100,7 +100,7 @@ struct _VecOps {
   PetscErrorCode (*setfromoptions)(Vec);
   PetscErrorCode (*maxpointwisedivide)(Vec,Vec,PetscReal*);      /* m = max abs(x ./ y) */
   PetscErrorCode (*load)(PetscViewer,const VecType,Vec*);
-  PetscErrorCode (*loadnew)(PetscViewer,Vec*);             /* New Vecload */
+  PetscErrorCode (*loadnew)(PetscViewer,Vec);             /* New Vecload */
   PetscErrorCode (*pointwisemax)(Vec,Vec,Vec);
   PetscErrorCode (*pointwisemaxabs)(Vec,Vec,Vec);
   PetscErrorCode (*pointwisemin)(Vec,Vec,Vec);
@@ -173,13 +173,13 @@ typedef enum {UNALLOCATED,GPU,CPU,SAME} VecFlag;
 #define VECHEADER                          \
   PetscScalar *array;                      \
   PetscScalar *array_allocated;                        /* if the array was allocated by PETSc this is its pointer */  \
-  PetscScalar *unplacedarray;                           /* if one called VecPlaceArray(), this is where it stashed the original */
-  PetscScalar *GPUarray;                              /* if we're using CUDA, then this is the pointer to the array on the GPU */
+  PetscScalar *unplacedarray;                           /* if one called VecPlaceArray(), this is where it stashed the original */\
+  PetscScalar *GPUarray;                              /* if we're using CUDA, then this is the pointer to the array on the GPU */\
   VecFlag valid_array;                              /* this flag indicates where the most recently modified vector data is (GPU or CPU) */
 #else
-#define VECHEADER
-  PetscScalar *array;
-  PetscScalar *array_allocated;
+#define VECHEADER                          \
+  PetscScalar *array;                      \
+  PetscScalar *array_allocated;            \
   PetscScalar *unplacedarray;
 #endif
 /* Default obtain and release vectors; can be used by any implementation */

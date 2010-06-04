@@ -2072,7 +2072,7 @@ PetscErrorCode MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,MatInfo *info)
   info->nz_used        = a->bs2*a->nz;
   info->nz_unneeded    = (double)(info->nz_allocated - info->nz_used);
   info->assemblies   = A->num_ass;
-  info->mallocs      = a->reallocs;
+  info->mallocs      = A->info.mallocs;
   info->memory       = ((PetscObject)A)->mem;
   if (A->factortype) {
     info->fill_ratio_given  = A->info.fill_ratio_given;
