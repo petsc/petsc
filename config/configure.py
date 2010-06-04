@@ -332,8 +332,6 @@ def petsc_configure(configure_options):
     print se
     import traceback
     traceback.print_tb(sys.exc_info()[2])
-  framework.log.close()
-  move_configure_log(framework)
 
 if __name__ == '__main__':
   petsc_configure([])

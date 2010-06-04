@@ -979,6 +979,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     else fprintf(PETSC_STDOUT, "<<<end>>>");
   }
 
+#if defined(PETSC_USE_CUDA)
+  cublasShutdown();
+#endif
 /*
 
      Note: In certain cases PETSC_COMM_WORLD is never MPI_Comm_free()ed because 

@@ -609,7 +609,6 @@ PetscErrorCode VecSetValuesBlocked_Seq(Vec xin,PetscInt ni,const PetscInt ix[],c
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__  
 #define __FUNCT__ "VecDestroy_Seq"
 PetscErrorCode VecDestroy_Seq(Vec v)
@@ -627,6 +626,10 @@ PetscErrorCode VecDestroy_Seq(Vec v)
 #endif
   ierr = PetscFree(vs->array_allocated);CHKERRQ(ierr);
   ierr = PetscFree(vs);CHKERRQ(ierr);
+
+#if defined(PETSC_USE_CUDA)
+  cublasFree(vs->GPUarray);
+#endif
 
   PetscFunctionReturn(0);
 }
@@ -857,3 +860,45 @@ PetscErrorCode VecSetOption_Seq(Vec v,VecOption op,PetscTruth flag)
   } 
   PetscFunctionReturn(0);
 }
+
+#if defined(PETSC_USE_CUDA)
+
+#define CHKERRCUDA(err) if (err != CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error %d",err)
+
+#undef __FUNCT__
+#define __FUNCT__ "VecCUDACopyToGPU"
+PetscErrorCode VecCUDACopyToGPU(Vec v)
+{
+  Vec_Seq       *vs = (Vec_Seq*)v->data;
+  PetscInt one = 1, cn = vin->map->n;
+  cublasStatus stat;
+
+  PetscFunctionBegin;
+  if(vs->valid_array == UNALLOCATED){
+    /*if this is the first time we're copying to the GPU then we allocate memory first */
+    stat = cublasAlloc(&cn,sizeof(PetscScalar),vs->GPUarray);CHKERRCUDA(stat);
+  }
+
+  stat = cublasSetVector(&cn,sizeof(PetscScalar),vs->array,&one,vs->GPUarray,&one);
+  if(stat != CUBLAS_STATUS_SUCCESS){
+    /* if we had a CUDA error we should return a PETSc error */
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecCUDACopyFromGPU"
+PetscErrorCode VecCUDACopyFromGPU(Vec v)
+{
+  Vec_Seq     *vs = (Vec_Seq*)v->data;
+  PetscInt one = 1, cn = vin->map->n;
+  cublasStatus stat;
+
+  PetscFunctionBegin;
+  stat = cublasGetVector(&cn,sizeof(PetscScalar),vs->GPUarray,&one,vs->array,&one);
+  if(stat != CUBLAS_STATUS_SUCCESS){
+    /* throw error */
+  }
+  PetscFunctionReturn(0);
+}
+#endif

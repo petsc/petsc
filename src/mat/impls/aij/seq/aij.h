@@ -132,7 +132,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscI
  \
         RP          = AJ + AI[ROW]; AP = AA + BS2*AI[ROW]; \
         RMAX        = AIMAX[ROW] = AIMAX[ROW] + CHUNKSIZE; \
-        Ain->maxnz += CHUNKSIZE; \
+        Ain->maxnz += BS2*CHUNKSIZE; \
         Ain->reallocs++; \
       } \
 
