@@ -59,7 +59,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSleep(PetscReal s)
 #elif defined (PETSC_HAVE__SLEEP)
   else       _sleep((int)s);
 #else
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"No support for sleep() on this machine")
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"No support for sleep() on this machine");
 #endif
   PetscFunctionReturn(0);
 }

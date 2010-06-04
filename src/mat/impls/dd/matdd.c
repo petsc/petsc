@@ -510,7 +510,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDLocateBlock_AIJ(Mat M, PetscInt row, Pets
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatDDAddBlock"
-PetscErrorCode PETSCMAT_DLLEXPORT MatDDAddBlock(Mat A, PetscInt rowblock, PetscInt colblock, const MatType blockmattype, MatDDBlockCommType blockcommtype, Mat *_B) {
+PetscErrorCode PETSCMAT_DLLEXPORT MatDDAddBlock(Mat A, PetscInt rowblock, PetscInt colblock, const MatType blockmattype, MatDDBlockCommType blockcommtype, Mat *_BBB) {
   PetscErrorCode        ierr;
   Mat_DD*              dd = (Mat_DD*)A->data;
   Mat_DDBlock          *_block;
@@ -525,9 +525,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDAddBlock(Mat A, PetscInt rowblock, PetscI
   }
   ierr = MatDDLocateBlock_AIJ(A,rowblock, colblock, PETSC_TRUE, &_block); CHKERRQ(ierr);
   ierr = Mat_DDBlockInit(A,rowblock,colblock,blockmattype, blockcommtype, _block); CHKERRQ(ierr);
-  if(_B) {
-    ierr = Mat_DDBlockGetMat(A, rowblock, colblock, _block, _B); CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject)(*_B)); CHKERRQ(ierr);
+  if(_BBB) {
+    ierr = Mat_DDBlockGetMat(A, rowblock, colblock, _block, _BBB); CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)(*_BBB)); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }/* MatDDAddBlock() */
@@ -558,7 +558,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDSetBlock(Mat A, PetscInt rowblock, PetscI
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatDDGetBlock"
-PetscErrorCode PETSCMAT_DLLEXPORT MatDDGetBlock(Mat A, PetscInt rowblock, PetscInt colblock, Mat *_B) {
+PetscErrorCode PETSCMAT_DLLEXPORT MatDDGetBlock(Mat A, PetscInt rowblock, PetscInt colblock, Mat *_BBB) {
   PetscErrorCode     ierr;
   Mat_DD*           dd = (Mat_DD*)A->data;
   Mat_DDBlock       *_block;
@@ -574,8 +574,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDDGetBlock(Mat A, PetscInt rowblock, PetscI
   if(_block == PETSC_NULL) {
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER, "Block not found: row %d col %d", rowblock, colblock);
   }
-  ierr = Mat_DDBlockGetMat(A,rowblock,colblock,_block, _B); CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)(*_B)); CHKERRQ(ierr);
+  ierr = Mat_DDBlockGetMat(A,rowblock,colblock,_block, _BBB); CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)(*_BBB)); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }/* MatDDGetBlock() */
 

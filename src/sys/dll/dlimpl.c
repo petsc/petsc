@@ -72,7 +72,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLOpen(const char name[],int flags,PetscDLHa
     erc = GetLastError();
     FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
 		  NULL,erc,MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),(LPSTR)&buff,0,NULL);
-    ierr = PetscError(PETSC_COMM_SELF,__LINE__,__FUNCT__,__FILE__,__SDIR__,PETSC_ERR_FILE_OPEN,1,
+    ierr = PetscError(PETSC_COMM_SELF,__LINE__,__FUNCT__,__FILE__,__SDIR__,PETSC_ERR_FILE_OPEN,PETSC_ERROR_REPEAT,
 		      "Unable to open dynamic library:\n  %s\n  Error message from LoadLibrary() %s\n",name,buff);
     LocalFree(buff);
     PetscFunctionReturn(ierr);

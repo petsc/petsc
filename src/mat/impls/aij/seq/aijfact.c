@@ -1843,7 +1843,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
 
 #if defined(PETSC_USE_INFO)
   {
-    PetscReal af = ((PetscReal)bi[n])/((PetscReal)ai[n]);
+    PetscReal af = ((PetscReal)(bdiag[0]+1))/((PetscReal)ai[n]);
     ierr = PetscInfo3(A,"Reallocs %D Fill ratio:given %G needed %G\n",reallocs,f,af);CHKERRQ(ierr);
     ierr = PetscInfo1(A,"Run with -[sub_]pc_factor_fill %G or use \n",af);CHKERRQ(ierr);
     ierr = PetscInfo1(A,"PCFactorSetFill([sub]pc,%G);\n",af);CHKERRQ(ierr);
