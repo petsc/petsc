@@ -23,7 +23,7 @@ void constructFieldSplit(const Obj<Section>& section, const Obj<Order>& globalOr
       const int dim  = section->getFiberDimension(*c_iter, space);
       const int cDim = section->getConstraintDimension(*c_iter, space);
 
-      if ((dim > cDim) && (globalOrder->getIndex(*c_iter) >= 0)) {
+      if ((dim > cDim) && globalOrder->isLocal(*c_iter)) {
         n += dim - cDim;
       }
     }
@@ -48,9 +48,9 @@ void constructFieldSplit(const Obj<Section>& section, const Obj<Order>& globalOr
       const int cDim = section->getConstraintDimension(*c_iter, space);
 
       if (dim > cDim) {
+        if (!globalOrder->isLocal(*c_iter)) continue;
         int off = globalOrder->getIndex(*c_iter);
 
-        if (off < 0) continue;
         for(int s = 0; s < space; ++s) {
           off += section->getConstrainedFiberDimension(*c_iter, s);
         }
