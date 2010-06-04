@@ -81,7 +81,7 @@ ex9f: ex9f.o  chkopts
 
 ex10: ex10.o  chkopts
 	-${CLINKER} -o ex10 ex10.o  ${PETSC_VEC_LIB}
-#	${RM} -f ex10.o
+	${RM} -f ex10.o
 
 ex11: ex11.o  chkopts
 	-${CLINKER} -o ex11 ex11.o  ${PETSC_VEC_LIB}

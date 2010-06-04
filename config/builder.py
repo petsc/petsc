@@ -15,7 +15,8 @@ class PETScMaker(script.Script):
    argDB.saveFilename = os.path.join(os.environ['PETSC_DIR'], os.environ['PETSC_ARCH'], 'conf', 'RDict.db')
    argDB.load()
    script.Script.__init__(self, argDB = argDB)
-   self.log = sys.stdout
+   self.logName = 'make.log'
+   #self.log = sys.stdout
    return
 
  def setupModules(self):
@@ -44,7 +45,7 @@ class PETScMaker(script.Script):
    help = script.Script.setupHelp(self, help)
    help.addArgument('RepManager', '-rootDir', nargs.ArgDir(None, os.environ['PETSC_DIR'], 'The root directory for this build', isTemporary = 1))
    help.addArgument('RepManager', '-dryRun',  nargs.ArgBool(None, False, 'Only output what would be run', isTemporary = 1))
-   help.addArgument('RepManager', '-verbose', nargs.ArgInt(None, 1, 'The verbosity level', min = 0, isTemporary = 1))
+   help.addArgument('RepManager', '-verbose', nargs.ArgInt(None, 0, 'The verbosity level', min = 0, isTemporary = 1))
    return help
 
  def setup(self):
@@ -100,12 +101,16 @@ class PETScMaker(script.Script):
    flags.append('-D__INSDIR__='+os.getcwd().replace(self.petscdir.dir, ''))
    packageIncludes, packageLibs = self.getPackageInfo()
    cmd = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
-   if self.dryRun or self.verbose: print cmd
+   if self.dryRun or self.verbose:
+     section = 'screen'
+   else:
+     section = None
+   self.logWrite(cmd+'\n', debugSection = section, forceScroll = True)
    if not self.dryRun:
      (output, error, status) = self.executeShellCommand(cmd,checkCommand = noCheckCommand,log=self.log)
      if status:
-       print "ERROR IN COMPILE ******************************"
-       print output+error
+       self.logPrint("ERROR IN COMPILE ******************************", deubgSection='screen')
+       self.logPrint(output+error, deubgSection='screen')
    self.setCompilers.popLanguage()
    return
 
@@ -126,12 +131,16 @@ class PETScMaker(script.Script):
    flags.append(self.setCompilers.getCompilerFlags())             # PCC_FLAGS
    flags.extend([self.setCompilers.CPPFLAGS, self.CHUD.CPPFLAGS]) # CPP_FLAGS
    cmd = ' '.join([compiler]+['-c']+includes+flags+source)
-   if self.dryRun or self.verbose: print cmd
+   if self.dryRun or self.verbose:
+     section = 'screen'
+   else:
+     section = None
+   self.logWrite(cmd+'\n', debugSection = section, forceScroll = True)
    if not self.dryRun:
      (output, error, status) = self.executeShellCommand(cmd,checkCommand = noCheckCommand,log=self.log)
      if status:
-       print "ERROR IN COMPILE ******************************"
-       print output+error
+       self.logPrint("ERROR IN COMPILE ******************************", deubgSection='screen')
+       self.logPrint(output+error, deubgSection='screen')
    self.setCompilers.popLanguage()
    return
 
@@ -139,12 +148,16 @@ class PETScMaker(script.Script):
    '''${AR} ${AR_FLAGS} ${LIBNAME} $*.o'''
    lib = os.path.splitext(library)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX
    cmd = ' '.join([self.setCompilers.AR, self.setCompilers.FAST_AR_FLAGS, lib]+objects)
-   if self.dryRun or self.verbose: print cmd
+   if self.dryRun or self.verbose:
+     section = 'screen'
+   else:
+     section = None
+   self.logWrite(cmd+'\n', debugSection = section, forceScroll = True)
    if not self.dryRun:
      (output, error, status) = self.executeShellCommand(cmd,checkCommand = noCheckCommand,log=self.log)
      if status:
-       print "ERROR IN ARCHIVE ******************************"
-       print output+error
+       self.logPrint("ERROR IN ARCHIVE ******************************", deubgSection='screen')
+       self.logPrint(output+error, deubgSection='screen')
    return
 
  def ranlib(self, library):
@@ -152,17 +165,21 @@ class PETScMaker(script.Script):
    library = os.path.join(self.petscdir.dir, self.arch.arch, 'lib', library)   
    lib = os.path.splitext(library)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX
    cmd = ' '.join([self.setCompilers.RANLIB, lib])
-   if self.dryRun or self.verbose: print cmd
+   if self.dryRun or self.verbose:
+     section = 'screen'
+   else:
+     section = None
+   self.logWrite(cmd+'\n', debugSection = section, forceScroll = True)
    if not self.dryRun:
      (output, error, status) = self.executeShellCommand(cmd,checkCommand = noCheckCommand,log=self.log)
      if status:
-       print "ERROR IN RANLIB ******************************"
-       print output+error
+       self.logPrint("ERROR IN RANLIB ******************************", deubgSection='screen')
+       self.logPrint(output+error, deubgSection='screen')
    return
  
  def buildDir(self, libname, dirname, fnames):
    ''' This is run in a PETSc source directory'''
-   if self.verbose: print 'Entering '+dirname
+   self.logWrite('Entering '+dirname+'\n', debugSection = 'screen', forceScroll = True)
    os.chdir(dirname)
 
    # Get list of source files in the directory 
@@ -183,13 +200,13 @@ class PETScMaker(script.Script):
            fnames.append(f)
            onames.append(f.replace('.F90', '.o'))
    if cnames:
-     if self.verbose: print 'Compiling C files',cnames
+     self.logPrint('Compiling C files '+str(cnames))
      self.compileC(cnames)
    if fnames:
-     if self.verbose: print 'Compiling Fortran files',fnames
+     self.logPrint('Compiling Fortran files '+str(fnames))
      self.compileF(fnames)
    if onames:
-     if self.verbose: print 'Archiving files',onames,'into',libname
+     self.logPrint('Archiving files '+str(onames)+' into '+libname)
      self.archive(os.path.join(self.petscdir.dir, self.arch.arch, 'lib', libname), onames)
    return
 
@@ -214,7 +231,7 @@ class PETScMaker(script.Script):
    reg   = re.compile(' [ ]*')
    fname = os.path.join(dirname, 'makefile')
    if not os.path.isfile(fname):
-     if os.path.isfile(os.path.join(dirname, 'Makefile')): print 'ERROR: Change Makefile to makefile in',dirname
+     if os.path.isfile(os.path.join(dirname, 'Makefile')): self.logPrint('ERROR: Change Makefile to makefile in '+dirname, debugSection = 'screen')
      return False
    fd = open(fname)
    text = fd.readline()
@@ -225,28 +242,28 @@ class PETScMaker(script.Script):
        rtype = text.split(' ')[0]
        rvalue = text.split(' ')[1]
        if rtype == 'scalar' and not self.scalarType.scalartype == rvalue:
-         if self.verbose: print 'Rejecting',dirname,'because scalar type '+self.scalarType.scalartype+' is not '+rvalue
+         self.logPrint('Rejecting '+dirname+' because scalar type '+self.scalarType.scalartype+' is not '+rvalue)
          return 0
        if rtype == 'language':
          if rvalue == 'CXXONLY' and self.languages.clanguage == 'C':
-           if self.verbose: print 'Rejecting',dirname,'because language is '+self.languages.clanguage+' is not C++'
+           self.logPrint('Rejecting '+dirname+' because language is '+self.languages.clanguage+' is not C++')
            return 0
        if rtype == 'precision' and not rvalue == self.scalarType.precision:
-         if self.verbose: print 'Rejecting',dirname,'because precision '+self.scalarType.precision+' is not '+rvalue
+         self.logPrint('Rejecting '+dirname+' because precision '+self.scalarType.precision+' is not '+rvalue)
          return 0
        # handles both missing packages and other random stuff that is treated as a package, that should be changed
        if rtype == 'package':
          if rvalue == "'"+'PETSC_HAVE_FORTRAN'+"'" or rvalue == "'"+'PETSC_USING_F90'+"'":
            if not hasattr(self.compilers, 'FC'):
-             if self.verbose: print 'Rejecting',dirname,'because fortran is not being used'
+             self.logPrint('Rejecting '+dirname+' because fortran is not being used')
              return 0
          elif rvalue == "'"+'PETSC_USE_LOG'+"'":
            if not self.libraryOptions.useLog:
-             if self.verbose: print 'Rejecting',dirname,'because logging is turned off'
+             self.logPrint('Rejecting '+dirname+' because logging is turned off')
              return 0
          elif rvalue == "'"+'PETSC_USE_FORTRAN_KERNELS'+"'":
            if not self.libraryOptions.useFortranKernels:
-             if self.verbose: print 'Rejecting',dirname,'because fortran kernels are turned off'
+             self.logPrint('Rejecting '+dirname+' because fortran kernels are turned off')
              return 0
          else:    
            found = 0
@@ -267,7 +284,7 @@ class PETScMaker(script.Script):
              pname = "'"+pname+"'"
              if pname == rvalue: found = 1
            if not found:
-             if self.verbose: print 'Rejecting',dirname,'because package '+rvalue+' is not installed or function does not exist'
+             self.logPrint('Rejecting '+dirname+' because package '+rvalue+' is not installed or function does not exist')
              return 0
          
      text = fd.readline()
@@ -279,15 +296,15 @@ class PETScMaker(script.Script):
    if rootDir is None:
      rootDir = self.argDB['rootDir']
    if not self.checkDir(rootDir):
-     print 'Nothing to be done'
+     self.logPrint('Nothing to be done')
    if rootDir == os.environ['PETSC_DIR']:
      library = os.path.join(self.petscdir.dir, self.arch.arch, 'lib', 'libpetsc')   
      lib = os.path.splitext(library)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX
      if os.path.isfile(lib):
-       if self.verbose: print 'Removing '+lib
+       self.logPrint('Removing '+lib)
        os.unlink(lib)
    for root, dirs, files in os.walk(rootDir):
-     print 'Processing',root
+     self.logPrint('Processing '+root)
      self.buildDir('libpetsc', root, files)
      for badDir in [d for d in dirs if not self.checkDir(os.path.join(root, d))]:
        dirs.remove(badDir)

@@ -223,7 +223,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
       if (value == 0.0 && ignorezeroentries) goto noinsert;
       if (nonew == 1) goto noinsert;
       if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at (%D,%D) in the matrix",row,col);
-      MatSeqXAIJReallocateAIJ(A,A->rmap->n,1,nrow,row,col,rmax,aa,ai,aj,rp,ap,imax,nonew,MatScalar);
+      ierr = MatSeqXAIJReallocateAIJ(A,A->rmap->n,1,nrow,row,col,rmax,aa,ai,aj,rp,ap,imax,nonew);CHKERRQ(ierr);
       N = nrow++ - 1; a->nz++; high++;
       /* shift up all the later entries in this row */
       for (ii=N; ii>=i; ii--) {
@@ -3882,7 +3882,7 @@ void PETSC_STDCALL matsetvaluesseqaij_(Mat *AA,PetscInt *mm,const PetscInt im[],
       if (value == 0.0 && ignorezeroentries) goto noinsert;
       if (nonew == 1) goto noinsert;
       if (nonew == -1) SETERRABORT(((PetscObject)A)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero in the matrix");
-      MatSeqXAIJReallocateAIJ(A,A->rmap->n,1,nrow,row,col,rmax,aa,ai,aj,rp,ap,imax,nonew,MatScalar);
+      ierr = MatSeqXAIJReallocateAIJ(A,A->rmap->n,1,nrow,row,col,rmax,aa,ai,aj,rp,ap,imax,nonew);CHKERRQ(ierr);
       N = nrow++ - 1; a->nz++; high++;
       /* shift up all the later entries in this row */
       for (ii=N; ii>=i; ii--) {

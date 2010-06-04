@@ -3760,23 +3760,27 @@ PetscErrorCode Mat_CheckInode(Mat A,PetscTruth samestructure)
   PetscFunctionReturn(0);
 }
 
-#define MatGetRow_FactoredLU(cols,nzl,nzu,nz,ai,aj,adiag,row) {	\
-PetscInt __k, *__vi; \
-__vi = aj + ai[row];				\
-for(__k=0;__k<nzl;__k++) cols[__k] = __vi[__k]; \
-__vi = aj + adiag[row];				\
-cols[nzl] = __vi[0];\
-__vi = aj + adiag[row+1]+1;\
-for(__k=0;__k<nzu;__k++) cols[nzl+1+__k] = __vi[__k];}
-
-
+#undef __FUNCT__
+#define __FUNCT__ "MatGetRow_FactoredLU"
+PETSC_STATIC_INLINE PetscErrorCode MatGetRow_FactoredLU(PetscInt *cols,PetscInt nzl,PetscInt nzu,PetscInt nz,PetscInt *ai,PetscInt *aj,PetscInt *adiag,PetscInt row)
+{
+  PetscInt k, *vi;
+  PetscFunctionBegin;
+  vi = aj + ai[row];
+  for(k=0;k<nzl;k++) cols[k] = vi[k];
+  vi = aj + adiag[row];
+  cols[nzl] = vi[0];
+  vi = aj + adiag[row+1]+1;
+  for(k=0;k<nzu;k++) cols[nzl+1+k] = vi[k];
+  PetscFunctionReturn(0);
+}
 /*
    Mat_CheckInode_FactorLU - Check Inode for factored seqaij matrix.
    Modified from Mat_CheckInode().
 
    Input Parameters:
 +  Mat A - ILU or LU matrix factor
--  samestructure - TURE indicates that the matrix has not changed its nonzero structure so we 
+-  samestructure - TRUE indicates that the matrix has not changed its nonzero structure so we 
     do not need to recompute the inodes 
 */
 #undef __FUNCT__  
@@ -3813,7 +3817,7 @@ PetscErrorCode Mat_CheckInode_FactorLU(Mat A,PetscTruth samestructure)
       nzy     = nzl2 + nzu2 + 1;
       if( nzy != nzx) break;
       ierr    = PetscMalloc((nzy+1)*sizeof(PetscInt),&cols2);CHKERRQ(ierr);
-      MatGetRow_FactoredLU(cols2,nzl2,nzu2,nzy,ai,aj,adiag,j);
+      ierr = MatGetRow_FactoredLU(cols2,nzl2,nzu2,nzy,ai,aj,adiag,j);CHKERRQ(ierr);
       ierr = PetscMemcmp(cols1,cols2,nzx*sizeof(PetscInt),&flag);CHKERRQ(ierr);
       if (!flag) {ierr = PetscFree(cols2);CHKERRQ(ierr);break;}
       ierr = PetscFree(cols2);CHKERRQ(ierr);
