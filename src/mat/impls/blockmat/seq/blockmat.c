@@ -8,7 +8,7 @@
 #include "../src/mat/impls/baij/seq/baij.h"    /* use the common AIJ data-structure */
 #include "petscksp.h"
 
-#define CHUNKSIZE   15
+//#define CHUNKSIZE   15
 
 typedef struct {
   SEQAIJHEADER(Mat);
@@ -222,6 +222,47 @@ PetscErrorCode MatSOR_BlockMat(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
   PetscFunctionReturn(0);
 } 
 
+/*
+  Same as MatSeqXAIJReallocateAIJ but uses Mat datatype instead of MatScalar
+*/
+#undef __FUNCT__
+#define __FUNCT__ "MatSeqBlockMatReallocateAIJ"
+PETSC_STATIC_INLINE PetscErrorCode MatSeqBlockMatReallocateAIJ(Mat Amat,PetscInt AM,PetscInt BS2,PetscInt NROW,PetscInt ROW,PetscInt COL,PetscInt RMAX,Mat *AA,PetscInt *AI,PetscInt *AJ,PetscInt *RP,Mat *AP,PetscInt *AIMAX,PetscInt NONEW)
+{  
+  PetscErrorCode ierr;
+  if (NROW >= RMAX) {
+    Mat_SeqAIJ *Ain = (Mat_SeqAIJ*)Amat->data;
+    PetscInt CHUNKSIZE=15;
+    /* there is no extra room in row, therefore enlarge */
+    PetscInt   new_nz = AI[AM] + CHUNKSIZE,len,*new_i=0,*new_j=0,ii;
+    Mat      *new_a;
+
+    if (NONEW == -2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%D,%D) caused a malloc",ROW,COL);
+    /* malloc new storage space */
+    ierr = PetscMalloc3(BS2*new_nz,Mat, &new_a,new_nz,PetscInt,&new_j,AM+1,PetscInt,&new_i);CHKERRQ(ierr);
+    /* copy over old data into new slots */
+    for (ii=0; ii<ROW+1; ii++) {new_i[ii] = AI[ii];}
+    for (ii=ROW+1; ii<AM+1; ii++) {new_i[ii] = AI[ii]+CHUNKSIZE;}
+    ierr = PetscMemcpy(new_j,AJ,(AI[ROW]+NROW)*sizeof(PetscInt));CHKERRQ(ierr);
+    len = (new_nz - CHUNKSIZE - AI[ROW] - NROW);
+    ierr = PetscMemcpy(new_j+AI[ROW]+NROW+CHUNKSIZE,AJ+AI[ROW]+NROW,len*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(new_a,AA,BS2*(AI[ROW]+NROW)*sizeof(Mat));CHKERRQ(ierr);
+    ierr = PetscMemzero(new_a+BS2*(AI[ROW]+NROW),BS2*CHUNKSIZE*sizeof(Mat));CHKERRQ(ierr);
+    ierr = PetscMemcpy(new_a+BS2*(AI[ROW]+NROW+CHUNKSIZE),AA+BS2*(AI[ROW]+NROW),BS2*len*sizeof(Mat));CHKERRQ(ierr);
+        /* free up old matrix storage */
+    ierr = MatSeqXAIJFreeAIJ(Amat,&Ain->a,&Ain->j,&Ain->i);CHKERRQ(ierr);
+    AA = new_a;
+    Ain->a = (MatScalar*) new_a;
+    AI = Ain->i = new_i; AJ = Ain->j = new_j;
+    Ain->singlemalloc = PETSC_TRUE;
+    RP          = AJ + AI[ROW]; AP = AA + BS2*AI[ROW];
+    RMAX        = AIMAX[ROW] = AIMAX[ROW] + CHUNKSIZE;
+    Ain->maxnz += BS2*CHUNKSIZE;
+    Ain->reallocs++;
+  }
+  return(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_BlockMat"
 PetscErrorCode MatSetValues_BlockMat(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
@@ -279,7 +320,7 @@ PetscErrorCode MatSetValues_BlockMat(Mat A,PetscInt m,const PetscInt im[],PetscI
       } 
       if (nonew == 1) goto noinsert1;
       if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col);
-      MatSeqXAIJReallocateAIJ(A,a->mbs,1,nrow,brow,bcol,rmax,aa,ai,aj,rp,ap,imax,nonew,Mat);
+      ierr = MatSeqBlockMatReallocateAIJ(A,a->mbs,1,nrow,brow,bcol,rmax,aa,ai,aj,rp,ap,imax,nonew);CHKERRQ(ierr);
       N = nrow++ - 1; high++;
       /* shift up all the later entries in this row */
       for (ii=N; ii>=i; ii--) {
