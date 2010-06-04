@@ -32,7 +32,7 @@ PetscInt    PETSCMAT_DLLEXPORT MatSetValue_Row = 0;
 PetscInt    PETSCMAT_DLLEXPORT MatSetValue_Column = 0;
 PetscScalar PETSCMAT_DLLEXPORT MatSetValue_Value = 0.0;
 
-const char *MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT","MatFactorType","MAT_FACTOR_",0};
+const char *const MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT","MatFactorType","MAT_FACTOR_",0};
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetDiagonalBlock"

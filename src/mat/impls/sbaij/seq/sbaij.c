@@ -1730,6 +1730,9 @@ extern PetscErrorCode MatGetFactor_seqsbaij_spooles(Mat,MatFactorType,Mat*);
 #if defined(PETSC_HAVE_PASTIX)
 extern PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat,MatFactorType,Mat*);
 #endif
+#if defined(PETSC_HAVE_CHOLMOD)
+extern PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat,MatFactorType,Mat*);
+#endif
 EXTERN_C_END 
 
 /*MC
@@ -1808,6 +1811,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mumps_C",
                                      "MatGetFactor_sbaij_mumps",
                                      MatGetFactor_sbaij_mumps);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_CHOLMOD)
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_cholmod_C",
+                                     "MatGetFactor_seqsbaij_cholmod",
+                                     MatGetFactor_seqsbaij_cholmod);CHKERRQ(ierr);
 #endif
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactorAvailable_petsc_C",
                                      "MatGetFactorAvailable_seqsbaij_petsc",
