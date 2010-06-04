@@ -32,9 +32,8 @@ EXTERN PetscErrorCode VecLoadIntoVector_Netcdf(PetscViewer, Vec);
   Input Parameters:
 + viewer - binary file viewer, obtained from PetscViewerBinaryOpen() or
            NetCDF file viewer, obtained from PetscViewerNetcdfOpen()
-
-  Output Parameter:
-. newvec - the newly loaded vector.
+- newvec - the newly loaded vector, this needs to have been created with VecCreate() or
+           some related function before the VecLoad(). 
 
    Level: intermediate
 
@@ -42,8 +41,8 @@ EXTERN PetscErrorCode VecLoadIntoVector_Netcdf(PetscViewer, Vec);
   The input file must contain the full global vector, as
   written by the routine VecView().
 
-  If newvec is not created before a call to VecLoadnew , PETSc creates 
-  newvec, sets the type and the local and global sizes.If type and/or 
+  If the type or size of newvec is not set before a call to VecLoadnew, PETSc 
+  sets the type and the local and global sizes.If type and/or 
   sizes are already set, then the same are used.
 
   Notes for advanced users:
@@ -67,7 +66,7 @@ and PetscBinaryWrite() to see how this may be done.
 
 .seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoadIntoVector() 
 @*/  
-PetscErrorCode PETSCVEC_DLLEXPORT VecLoadnew(PetscViewer viewer, Vec *newvec)
+PetscErrorCode PETSCVEC_DLLEXPORT VecLoadnew(PetscViewer viewer, Vec newvec)
 {
   PetscErrorCode ierr;
   PetscTruth     isbinary;
@@ -101,7 +100,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoadnew(PetscViewer viewer, Vec *newvec)
 #endif
 #if defined(PETSC_HAVE_HDF5)
   if (ishdf5) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Since HDF5 format gives ASCII name for each object in file; must use VecLoadIntoVector() after setting name of Vec with PetscObjectSetName()");
+    if (!((PetscObject)newvec)->name) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Since HDF5 format gives ASCII name for each object in file; must use VecLoad() after setting name of Vec with PetscObjectSetName()");
   } else 
 #endif
   {
@@ -122,26 +121,22 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoadnew(PetscViewer viewer, Vec *newvec)
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a vector next in file");
       }
     }
-    if (!*newvec || ((PetscObject)(*newvec))->classid != VEC_CLASSID) {
-      /* Create vector */
-      ierr = VecCreate(comm,newvec);CHKERRQ(ierr);
-     }
     
-    if ((*newvec)->map->n < 0 && (*newvec)->map->N < 0) {
+    if ((newvec)->map->n < 0 && (newvec)->map->N < 0) {
       /* Set global size and let PETSc decide the local sizes */
-      ierr = VecSetSizes(*newvec,PETSC_DECIDE,rows);CHKERRQ(ierr);
+      ierr = VecSetSizes(newvec,PETSC_DECIDE,rows);CHKERRQ(ierr);
       ierr = PetscOptionsGetInt(PETSC_NULL,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
       if (flag) {
-	ierr = VecSetBlockSize(*newvec,bs);CHKERRQ(ierr);
+	ierr = VecSetBlockSize(newvec,bs);CHKERRQ(ierr);
       }
     }
       
-    if (!((PetscObject)(*newvec))->type_name) {
+    if (!((PetscObject)(newvec))->type_name) {
 	/* Set Type */
-	ierr = VecSetFromOptions(*newvec);CHKERRQ(ierr);
+	ierr = VecSetFromOptions(newvec);CHKERRQ(ierr);
     }
-    r = (*newvec)->ops->loadnew;
-    ierr = (*r)(viewer,*newvec);CHKERRQ(ierr);
+    r = (newvec)->ops->loadnew;
+    ierr = (*r)(viewer,newvec);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);

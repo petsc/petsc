@@ -89,6 +89,7 @@ E*/
 #define MATSOLVERSUPERLU      "superlu"
 #define MATSOLVERSUPERLU_DIST "superlu_dist"
 #define MATSOLVERUMFPACK      "umfpack"
+#define MATSOLVERCHOLMOD      "cholmod"
 #define MATSOLVERESSL         "essl"
 #define MATSOLVERLUSOL        "lusol"
 #define MATSOLVERMUMPS        "mumps"
@@ -109,7 +110,7 @@ E*/
 .seealso: MatSolverPackage, MatGetFactor()
 E*/
 typedef enum {MAT_FACTOR_NONE, MAT_FACTOR_LU, MAT_FACTOR_CHOLESKY, MAT_FACTOR_ILU, MAT_FACTOR_ICC,MAT_FACTOR_ILUDT} MatFactorType;
-extern const char *MatFactorTypes[];
+extern const char *const MatFactorTypes[];
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat,const MatSolverPackage,MatFactorType,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactorAvailable(Mat,const MatSolverPackage,MatFactorType,PetscTruth*);

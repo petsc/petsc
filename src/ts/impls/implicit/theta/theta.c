@@ -205,6 +205,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSThetaSetTheta_Theta(TS ts,PetscReal theta)
   TS_Theta *th = (TS_Theta*)ts->data;
 
   PetscFunctionBegin;
+  if (theta <= 0 || 1 < theta) SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Theta %G not in range (0,1]",theta);
   th->Theta = theta;
   PetscFunctionReturn(0);
 }
@@ -243,7 +244,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Theta(TS ts)
   ierr = PetscNewLog(ts,TS_Theta,&th);CHKERRQ(ierr);
   ts->data = (void*)th;
 
-  th->extrapolate = PETSC_TRUE;
+  th->extrapolate = PETSC_FALSE;
   th->Theta       = 0.5;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSThetaGetTheta_C","TSThetaGetTheta_Theta",TSThetaGetTheta_Theta);CHKERRQ(ierr);
@@ -309,7 +310,6 @@ PetscErrorCode PETSCTS_DLLEXPORT TSThetaSetTheta(TS ts,PetscReal theta)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidPointer(theta,2);
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSThetaSetTheta_C",(void(**)(void))&f);CHKERRQ(ierr);
   if (f) {ierr = (*f)(ts,theta);CHKERRQ(ierr);}
   PetscFunctionReturn(0);

@@ -73,6 +73,10 @@ class Configure(config.base.Configure):
     self.umfpack.archProvider         = self.arch
     self.umfpack.languageProvider     = self.languages
     self.umfpack.installDirProvider   = self.petscdir
+    self.cholmod       = framework.require('config.packages.CHOLMOD',    self)
+    self.cholmod.archProvider         = self.arch
+    self.cholmod.languageProvider     = self.languages
+    self.cholmod.installDirProvider   = self.petscdir
     self.boost         = framework.require('config.packages.boost',      self)
     self.boost.archProvider           = self.arch
     self.boost.languageProvider       = self.languages

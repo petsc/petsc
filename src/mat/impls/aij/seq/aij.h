@@ -102,6 +102,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscI
 
 /*
     Allocates larger a, i, and j arrays for the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types
+    This is a macro because it takes the datatype as an argument which can be either a Mat or a MatScalar
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqXAIJReallocateAIJ"
