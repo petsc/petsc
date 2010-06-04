@@ -10,12 +10,12 @@ template<typename Section, typename Order>
 void constructFieldSplit(const Obj<Section>& section, const Obj<Order>& globalOrder, Vec v, PC fieldSplit) {
   const typename Section::chart_type& chart = section->getChart();
   PetscInt                            space = 0;
-  PetscInt                            *spaceSize;
+  PetscInt                            *spaceSize = PETSC_NULL;
   char                                spaceName[2] = {'0', '\0'};
   PetscErrorCode                      ierr;
 
   PetscInt total = 0;
-  ierr = PetscMalloc(section->getNumSpaces() * sizeof(PetscInt));CHKERRXX(ierr);
+  ierr = PetscMalloc(section->getNumSpaces() * sizeof(PetscInt), &spaceSize);CHKERRXX(ierr);
   for(typename std::vector<Obj<typename Section::atlas_type> >::const_iterator s_iter = section->getSpaces().begin(); s_iter != section->getSpaces().end(); ++s_iter, ++space) {
     PetscInt n = 0;
 
