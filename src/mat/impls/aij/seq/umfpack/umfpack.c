@@ -141,8 +141,8 @@ static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"umfpack_UMF_wsolve failed");
   }
 
-  ierr = VecRestoreArray(b,&ba);
-  ierr = VecRestoreArray(x,&xa);
+  ierr = VecRestoreArray(b,&ba);CHKERRQ(ierr);
+  ierr = VecRestoreArray(x,&xa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
