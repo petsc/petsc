@@ -17,7 +17,7 @@ int main(int argc,char **args)
   PetscScalar    v;
   Vec            u;
   PetscViewer    viewer;
-  PetscTruth     vstage1,vstage2,vstage3,mpiio_use;
+  PetscTruth     vstage2,vstage3,mpiio_use;
 #if defined(PETSC_USE_LOG)
   PetscLogEvent  VECTOR_GENERATE,VECTOR_READ;
 #endif
@@ -52,7 +52,7 @@ int main(int argc,char **args)
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = VecDestroy(u);CHKERRQ(ierr);
   /*  ierr = PetscOptionsClear();CHKERRQ(ierr); */
-  mpiio_use = vstage1 = vstage2 = vstage3 = PETSC_FALSE;
+  mpiio_use = vstage2 = vstage3 = PETSC_FALSE;
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-mpiio",&mpiio_use,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VECTOR_GENERATE,0,0,0,0);CHKERRQ(ierr);
 
@@ -67,14 +67,10 @@ int main(int argc,char **args)
     ierr = PetscOptionsSetValue("-viewer_binary_mpiio","");CHKERRQ(ierr); 
   }
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-vec_created",&vstage1,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-sizes_set",&vstage2,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-type_set",&vstage3,PETSC_NULL);CHKERRQ(ierr);
-
-  if (vstage1) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Creating vector...\n");CHKERRQ(ierr);
-    ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
-  }
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Creating vector...\n");CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
 
   if (vstage2) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Setting vector sizes...\n");CHKERRQ(ierr);
@@ -100,7 +96,7 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Setting vector type...\n");CHKERRQ(ierr);
     ierr = VecSetType(u, VECMPI);CHKERRQ(ierr);
   }
-  ierr = VecLoadnew(viewer,&u);CHKERRQ(ierr);
+  ierr = VecLoadnew(viewer,u);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VECTOR_READ,0,0,0,0);CHKERRQ(ierr);
   ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

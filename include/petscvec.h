@@ -410,7 +410,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec, const char *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecEqual(Vec,Vec,PetscTruth*);
 PetscPolymorphicFunction(VecEqual,(Vec x,Vec y),(x,y,&s),PetscTruth,s)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer,const VecType,Vec*);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecLoadnew(PetscViewer,Vec*);           /* new Vecload */
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecLoadnew(PetscViewer,Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecLoadIntoVector(PetscViewer,Vec);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetSize(Vec,PetscInt*);
