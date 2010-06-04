@@ -11,8 +11,8 @@ petsc_arch = ''
 if 'LC_LOCAL' in os.environ and os.environ['LC_LOCAL'] != '' and os.environ['LC_LOCAL'] != 'en_US' and os.environ['LC_LOCAL']!= 'en_US.UTF-8': os.environ['LC_LOCAL'] = 'en_US.UTF-8'
 if 'LANG' in os.environ and os.environ['LANG'] != '' and os.environ['LANG'] != 'en_US' and os.environ['LANG'] != 'en_US.UTF-8': os.environ['LANG'] = 'en_US.UTF-8'
 
-if not hasattr(sys, 'version_info') or not sys.version_info[1] >= 2 or not sys.version_info[0] >= 2:
-  print '*** You must have Python version 2.2 or higher to run ./configure *****'
+if not hasattr(sys, 'version_info') or not sys.version_info[0] == 2 or not sys.version_info[1] >= 3:
+  print '*** You must have Python2 version 2.3 or higher to run ./configure        *****'
   print '*          Python is easy to install for end users or sys-admin.              *'
   print '*                  http://www.python.org/download/                            *'
   print '*                                                                             *'
