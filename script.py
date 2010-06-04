@@ -86,8 +86,8 @@ class Script(logger.Logger):
     return
 
   def checkPython(self):
-    if not hasattr(sys, 'version_info') or float(sys.version_info[0]) < 2 or float(sys.version_info[1]) < 2:
-      raise RuntimeError('BuildSystem requires Python version 2.2 or higher. Get Python at http://www.python.org')
+    if not hasattr(sys, 'version_info') or float(sys.version_info[0]) != 2 or float(sys.version_info[1]) < 3:
+      raise RuntimeError('BuildSystem requires Python2 version 2.3 or higher. Get Python at http://www.python.org')
     return
 
   def getModule(root, name):
