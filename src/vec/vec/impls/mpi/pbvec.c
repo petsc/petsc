@@ -94,6 +94,7 @@ PetscErrorCode VecResetArray_MPI(Vec vin)
 }
 
 EXTERN PetscErrorCode VecLoad_Binary(PetscViewer, const VecType, Vec*);
+EXTERN PetscErrorCode VecLoadnew_Binary(PetscViewer,Vec);
 EXTERN PetscErrorCode VecGetValues_MPI(Vec,PetscInt,const PetscInt [],PetscScalar []);
 
 static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
@@ -148,7 +149,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
             0,
             VecMaxPointwiseDivide_Seq,
             VecLoad_Binary,
-	    0, /* Set VecLoadnew function here */			
+	    VecLoadnew_Binary,			
             VecPointwiseMax_Seq,
             VecPointwiseMaxAbs_Seq,
             VecPointwiseMin_Seq,
