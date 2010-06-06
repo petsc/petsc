@@ -16,6 +16,7 @@ LOCDIR   = src/sys/viewer/impls/ams/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/conf/test
 
 
 

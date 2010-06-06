@@ -3733,11 +3733,20 @@ PetscErrorCode Mat_CheckInode(Mat A,PetscTruth samestructure)
     i    = j;
   }
   /* If not enough inodes found,, do not use inode version of the routines */
-  if (!a->inode.size && m && node_count > .9*m) {
+  if (!m || node_count > .9*m) {
     ierr = PetscFree(ns);CHKERRQ(ierr);
-    a->inode.node_count     = 0;
-    a->inode.size           = PETSC_NULL;
-    a->inode.use            = PETSC_FALSE;
+    a->inode.node_count       = 0;
+    a->inode.size             = PETSC_NULL;
+    a->inode.use              = PETSC_FALSE;
+    A->ops->mult              = MatMult_SeqAIJ;
+    A->ops->sor               = MatSOR_SeqAIJ;
+    A->ops->multadd           = MatMultAdd_SeqAIJ;
+    A->ops->getrowij          = MatGetRowIJ_SeqAIJ;
+    A->ops->restorerowij      = MatRestoreRowIJ_SeqAIJ;
+    A->ops->getcolumnij       = MatGetColumnIJ_SeqAIJ;
+    A->ops->restorecolumnij   = MatRestoreColumnIJ_SeqAIJ;
+    A->ops->coloringpatch     = 0;
+    A->ops->multdiagonalblock = 0;
     ierr = PetscInfo2(A,"Found %D nodes out of %D rows. Not using Inode routines\n",node_count,m);CHKERRQ(ierr);
   } else {
     if (!A->factortype) {
@@ -3827,7 +3836,7 @@ PetscErrorCode Mat_CheckInode_FactorLU(Mat A,PetscTruth samestructure)
     i    = j;
   }
   /* If not enough inodes found,, do not use inode version of the routines */
-  if (!a->inode.size && m && node_count > .9*m) {
+  if (!m || node_count > .9*m) {
     ierr = PetscFree(ns);CHKERRQ(ierr);
     a->inode.node_count     = 0;
     a->inode.size           = PETSC_NULL;
