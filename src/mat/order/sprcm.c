@@ -5,11 +5,11 @@
 
 EXTERN_C_BEGIN
 /*
-    MatOrdering_RCM - Find the Reverse Cuthill-McKee ordering of a given matrix.
+    MatGetOrdering_RCM - Find the Reverse Cuthill-McKee ordering of a given matrix.
 */    
 #undef __FUNCT__  
-#define __FUNCT__ "MatOrdering_RCM"
-PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_RCM(Mat mat,const MatOrderingType type,IS *row,IS *col)
+#define __FUNCT__ "MatGetOrdering_RCM"
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_RCM(Mat mat,const MatOrderingType type,IS *row,IS *col)
 {
   PetscErrorCode ierr;
   PetscInt       i,*mask,*xls,nrow,*ia,*ja,*perm;

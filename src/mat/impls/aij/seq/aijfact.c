@@ -8,11 +8,11 @@
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatOrdering_Flow_SeqAIJ"
+#define __FUNCT__ "MatGetOrdering_Flow_SeqAIJ"
 /*
       Computes an ordering to get most of the large numerical values in the lower triangular part of the matrix
 */
-PetscErrorCode MatOrdering_Flow_SeqAIJ(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
+PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)mat->data;
   PetscErrorCode    ierr;
