@@ -187,7 +187,10 @@ PetscViewer PETSC_VIEWER_AMS_(MPI_Comm comm)
   ierr = MPI_Attr_get(comm,Petsc_Viewer_Ams_keyval,(void **)&viewer,&flag);
   if (ierr) {PetscError(comm,__LINE__,"PETSC_VIEWER_AMS_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
   if (!flag) { /* PetscViewer not yet created */
-    if (comm == PETSC_COMM_WORLD) {
+    MPI_Comm comm2;
+    ierr = PetscCommDuplicate(PETSC_COMM_WORLD,&comm2,PETSC_NULL); 
+    if (ierr) {PetscError(comm,__LINE__,"PETSC_VIEWER_AMS_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
+    if (comm == PETSC_COMM_WORLD || comm == comm2) {
       ierr = PetscStrcpy(name,"PETSc");
       if (ierr) {PetscError(comm,__LINE__,"PETSC_VIEWER_AMS_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
     } else {
