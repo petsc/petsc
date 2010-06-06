@@ -366,7 +366,7 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
   for (i=0; i<n_local; i++) {
     ierr = VecScatterBegin(osm->restriction[i],x,osm->x[i],INSERT_VALUES,forward);CHKERRQ(ierr);
   }
-  ierr = VecSet(y,0.0);CHKERRQ(ierr);
+  ierr = VecZeroEntries(y);CHKERRQ(ierr);
   /* do the local solves */
   for (i=0; i<n_local_true; i++) {
     ierr = VecScatterEnd(osm->restriction[i],x,osm->x[i],INSERT_VALUES,forward);CHKERRQ(ierr);
@@ -409,7 +409,7 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
     forward = SCATTER_FORWARD_LOCAL;
     /* have to zero the work RHS since scatter may leave some slots empty */
     for (i=0; i<n_local_true; i++) {
-      ierr = VecSet(osm->x[i],0.0);CHKERRQ(ierr);
+      ierr = VecZeroEntries(osm->x[i]);CHKERRQ(ierr);
     }
   }
   if (!(osm->type & PC_ASM_RESTRICT)) {
@@ -419,7 +419,7 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
   for (i=0; i<n_local; i++) {
     ierr = VecScatterBegin(osm->restriction[i],x,osm->x[i],INSERT_VALUES,forward);CHKERRQ(ierr);
   }
-  ierr = VecSet(y,0.0);CHKERRQ(ierr);
+  ierr = VecZeroEntries(y);CHKERRQ(ierr);
   /* do the local solves */
   for (i=0; i<n_local_true; i++) {
     ierr = VecScatterEnd(osm->restriction[i],x,osm->x[i],INSERT_VALUES,forward);CHKERRQ(ierr);
