@@ -11,6 +11,8 @@ class Configure(PETSc.package.NewPackage):
     self.needsMath        = 1
     self.complex          = 1
     self.requires32bitint = 0 # see note in configureLibrary() method below
+    self.worksonWindows    = 1
+    self.downloadonWindows = 1
     return
 
   def setupDependencies(self, framework):
