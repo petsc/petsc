@@ -4,7 +4,8 @@
 */
 
 #include "private/vecimpl.h"          /*I "petscvec.h" I*/
-#include "../src/vec/vec/impls/dvecimpl.h" 
+#include "../src/vec/vec/impls/dvecimpl.h"
+#include "../src/vec/vec/impls/mpi/pvecimpl.h" /* For VecView_MPI_HDF5 */
 #include "petscblaslapack.h"
 #if defined(PETSC_HAVE_PNETCDF)
 EXTERN_C_BEGIN
@@ -478,6 +479,9 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   PetscTruth     ismatlab;
 #endif
+#if defined(PETSC_HAVE_HDF5)
+  PetscTruth ishdf5;
+#endif
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
@@ -489,6 +493,9 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 #endif
 #if defined(PETSC_HAVE_PNETCDF)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERNETCDF,&isnetcdf);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_HDF5)
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERMATLAB,&ismatlab);CHKERRQ(ierr);
@@ -507,6 +514,10 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_PNETCDF)
   } else if (isnetcdf) {
     ierr = VecView_Seq_Netcdf(xin,viewer);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_HDF5)
+  } else if (ishdf5) {
+    ierr = VecView_MPI_HDF5(xin,viewer);CHKERRQ(ierr); /* Reusing VecView_MPI_HDF5 ... don't want code duplication*/
 #endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   } else if (ismatlab) {

@@ -5,11 +5,11 @@
 
 EXTERN_C_BEGIN
 /*
-    MatOrdering_1WD - Find the 1-way dissection ordering of a given matrix.
+    MatGetOrdering_1WD - Find the 1-way dissection ordering of a given matrix.
 */    
 #undef __FUNCT__  
-#define __FUNCT__ "MatOrdering_1WD"
-PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_1WD(Mat mat,const MatOrderingType type,IS *row,IS *col)
+#define __FUNCT__ "MatGetOrdering_1WD"
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_1WD(Mat mat,const MatOrderingType type,IS *row,IS *col)
 {
   PetscErrorCode ierr;
   PetscInt       i,*mask,*xls,nblks,*xblk,*ls,nrow,*perm,*ia,*ja;

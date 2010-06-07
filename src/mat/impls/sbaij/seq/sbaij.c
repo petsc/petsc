@@ -13,8 +13,6 @@
 #include "../src/mat/impls/sbaij/seq/relax.h"
 
 extern PetscErrorCode MatSeqSBAIJSetNumericFactorization_inplace(Mat,PetscTruth);
-#define CHUNKSIZE  10
-
 
 /*
      Checks for missing diagonals
@@ -693,7 +691,7 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[]
       } 
       if (nonew == 1) goto noinsert2;
       if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col);
-      ierr = MatSeqXAIJReallocateAIJ(A,a->mbs,bs2,nrow,row,col,rmax,aa,ai,aj,rp,ap,imax,nonew);CHKERRQ(ierr);
+      MatSeqXAIJReallocateAIJ(A,a->mbs,bs2,nrow,row,col,rmax,aa,ai,aj,rp,ap,imax,nonew,MatScalar);
       N = nrow++ - 1; high++;
       /* shift up all the later entries in this row */
       for (ii=N; ii>=i; ii--) {
@@ -1000,7 +998,7 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
         
         if (nonew == 1) goto noinsert1;
         if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col);
-        ierr = MatSeqXAIJReallocateAIJ(A,a->mbs,bs2,nrow,brow,bcol,rmax,aa,ai,aj,rp,ap,imax,nonew);CHKERRQ(ierr);
+        MatSeqXAIJReallocateAIJ(A,a->mbs,bs2,nrow,brow,bcol,rmax,aa,ai,aj,rp,ap,imax,nonew,MatScalar);
         
         N = nrow++ - 1; high++;
         /* shift up all the later entries in this row */

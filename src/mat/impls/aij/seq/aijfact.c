@@ -8,11 +8,11 @@
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatOrdering_Flow_SeqAIJ"
+#define __FUNCT__ "MatGetOrdering_Flow_SeqAIJ"
 /*
       Computes an ordering to get most of the large numerical values in the lower triangular part of the matrix
 */
-PetscErrorCode MatOrdering_Flow_SeqAIJ(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
+PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)mat->data;
   PetscErrorCode    ierr;
@@ -1843,7 +1843,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
 
 #if defined(PETSC_USE_INFO)
   {
-    PetscReal af = ((PetscReal)bi[n])/((PetscReal)ai[n]);
+    PetscReal af = ((PetscReal)(bdiag[0]+1))/((PetscReal)ai[n]);
     ierr = PetscInfo3(A,"Reallocs %D Fill ratio:given %G needed %G\n",reallocs,f,af);CHKERRQ(ierr);
     ierr = PetscInfo1(A,"Run with -[sub_]pc_factor_fill %G or use \n",af);CHKERRQ(ierr);
     ierr = PetscInfo1(A,"PCFactorSetFill([sub]pc,%G);\n",af);CHKERRQ(ierr);

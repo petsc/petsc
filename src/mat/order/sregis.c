@@ -3,16 +3,16 @@
 #include "private/matimpl.h"     /*I       "petscmat.h"   I*/
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_Natural(Mat,const MatOrderingType,IS*,IS*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_ND(Mat,const MatOrderingType,IS*,IS*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_1WD(Mat,const MatOrderingType,IS*,IS*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_QMD(Mat,const MatOrderingType,IS*,IS*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_RCM(Mat,const MatOrderingType,IS*,IS*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_RowLength(Mat,const MatOrderingType,IS*,IS*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_DSC(Mat,const MatOrderingType,IS*,IS*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_Flow_SeqAIJ(Mat,const MatOrderingType,IS*,IS*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_Natural(Mat,const MatOrderingType,IS*,IS*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_ND(Mat,const MatOrderingType,IS*,IS*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_1WD(Mat,const MatOrderingType,IS*,IS*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_QMD(Mat,const MatOrderingType,IS*,IS*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_RCM(Mat,const MatOrderingType,IS*,IS*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_RowLength(Mat,const MatOrderingType,IS*,IS*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_DSC(Mat,const MatOrderingType,IS*,IS*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_Flow_SeqAIJ(Mat,const MatOrderingType,IS*,IS*);
 #if defined(PETSC_HAVE_UMFPACK)
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_AMD(Mat,const MatOrderingType,IS*,IS*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_AMD(Mat,const MatOrderingType,IS*,IS*);
 #endif
 
 EXTERN_C_END
@@ -48,15 +48,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatOrderingRegisterAll(const char path[])
   PetscFunctionBegin;
   MatOrderingRegisterAllCalled = PETSC_TRUE;
 
-  ierr = MatOrderingRegisterDynamic(MATORDERINGNATURAL,  path,"MatOrdering_Natural"  ,MatOrdering_Natural);CHKERRQ(ierr);
-  ierr = MatOrderingRegisterDynamic(MATORDERINGND,       path,"MatOrdering_ND"       ,MatOrdering_ND);CHKERRQ(ierr);
-  ierr = MatOrderingRegisterDynamic(MATORDERING1WD,      path,"MatOrdering_1WD"      ,MatOrdering_1WD);CHKERRQ(ierr);
-  ierr = MatOrderingRegisterDynamic(MATORDERINGRCM,      path,"MatOrdering_RCM"      ,MatOrdering_RCM);CHKERRQ(ierr);
-  ierr = MatOrderingRegisterDynamic(MATORDERINGQMD,      path,"MatOrdering_QMD"      ,MatOrdering_QMD);CHKERRQ(ierr);
-  ierr = MatOrderingRegisterDynamic(MATORDERINGROWLENGTH,path,"MatOrdering_RowLength",MatOrdering_RowLength);CHKERRQ(ierr);
-  ierr = MatOrderingRegisterDynamic(MATORDERINGFLOW,     path,"MatOrdering_Flow_SeqAIJ",MatOrdering_Flow_SeqAIJ);CHKERRQ(ierr);
+  ierr = MatOrderingRegisterDynamic(MATORDERINGNATURAL,  path,"MatGetOrdering_Natural"  ,MatGetOrdering_Natural);CHKERRQ(ierr);
+  ierr = MatOrderingRegisterDynamic(MATORDERINGND,       path,"MatGetOrdering_ND"       ,MatGetOrdering_ND);CHKERRQ(ierr);
+  ierr = MatOrderingRegisterDynamic(MATORDERING1WD,      path,"MatGetOrdering_1WD"      ,MatGetOrdering_1WD);CHKERRQ(ierr);
+  ierr = MatOrderingRegisterDynamic(MATORDERINGRCM,      path,"MatGetOrdering_RCM"      ,MatGetOrdering_RCM);CHKERRQ(ierr);
+  ierr = MatOrderingRegisterDynamic(MATORDERINGQMD,      path,"MatGetOrdering_QMD"      ,MatGetOrdering_QMD);CHKERRQ(ierr);
+  ierr = MatOrderingRegisterDynamic(MATORDERINGROWLENGTH,path,"MatGetOrdering_RowLength",MatGetOrdering_RowLength);CHKERRQ(ierr);
+  ierr = MatOrderingRegisterDynamic(MATORDERINGFLOW,     path,"MatGetOrdering_Flow_SeqAIJ",MatGetOrdering_Flow_SeqAIJ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_UMFPACK)
-  ierr = MatOrderingRegisterDynamic(MATORDERINGAMD,      path,"MatOrdering_AMD",MatOrdering_AMD);CHKERRQ(ierr);
+  ierr = MatOrderingRegisterDynamic(MATORDERINGAMD,      path,"MatGetOrdering_AMD",MatGetOrdering_AMD);CHKERRQ(ierr);
 #endif
 
   PetscFunctionReturn(0);
