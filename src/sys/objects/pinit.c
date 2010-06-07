@@ -684,7 +684,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-python",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {ierr = PetscPythonInitialize(PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);}
 
-#if defined(PETSC_USE_CUDA)
+#if defined(PETSC_HAVE_CUDA)
   cublasInit();
 #endif
   /*
@@ -979,7 +979,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     else fprintf(PETSC_STDOUT, "<<<end>>>");
   }
 
-#if defined(PETSC_USE_CUDA)
+#if defined(PETSC_HAVE_CUDA)
   cublasShutdown();
 #endif
 /*

@@ -80,29 +80,39 @@ PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__ 
 #define __FUNCT__ "VecScale_Seq"
 PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
 {
   Vec_Seq        *x = (Vec_Seq*)xin->data;
   PetscErrorCode ierr;
   PetscBLASInt   one = 1,bn = PetscBLASIntCast(xin->map->n);
-
+ 
   PetscFunctionBegin;
+#if defined(PETSC_HAVE_CUDA)
   if (alpha == 0.0) {
-    
     ierr = VecSet_Seq(xin,alpha);CHKERRQ(ierr);
-  } else if (alpha != 1.0) {
-    PetscScalar a = alpha;
-#if defined(PETSC_USE_CUDA)
-    //ERASE THIS TEST PRINT
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Hello from CUDAVecScale");CHKERRQ(ierr);
-    cublasDscal(&bn,&a,x->GPUarray,&one);
-#else
-    BLASscal_(&bn,&a,x->array,&one);
-#endif
-    ierr = PetscLogFlops(xin->map->n);CHKERRQ(ierr);
   }
+  else if (alpha != 1.0) {
+  PetscScalar a = alpha;
+  if (x->valid_GPU_array == CPU || x->valid_GPU_array == UNALLOCATED){
+    ierr = VecCUDACopyToGPU(xin);CHKERRCUDA(ierr);
+  } 
+  cublasSscal(bn,a,x->GPUarray,one);
+  ierr = cublasGetError();CHKERRCUDA(ierr);
+  x->valid_GPU_array == GPU;
+  //for now, we always copy back from GPU
+  ierr = VecCUDACopyFromGPU(xin);CHKERRCUDA(ierr);
+  }
+#else
+  if (alpha == 0.0) {
+    ierr = VecSet_Seq(xin,alpha);CHKERRQ(ierr);
+  }
+  else if (alpha != 1.0) {
+  BLASscal_(&bn,&a,x->array,&one);
+  }
+#endif
+  ierr = PetscLogFlops(xin->map->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

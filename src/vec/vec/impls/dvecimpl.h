@@ -49,4 +49,41 @@ EXTERN PetscErrorCode VecDuplicate_Seq(Vec,Vec *);
 EXTERN PetscErrorCode VecSetOption_Seq(Vec,VecOption,PetscTruth);
 EXTERN PetscErrorCode VecConjugate_Seq(Vec);
 EXTERN PetscErrorCode VecNorm_Seq(Vec,NormType,PetscReal*);
-#endif
+
+#if defined(PETSC_HAVE_CUDA)
+  #define CHKERRCUDA(err) if (err != CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error %d",err)
+
+  #undef __FUNCT__
+  #define __FUNCT__ "VecCUDACopyToGPU"
+  PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyToGPU(Vec v)
+  {
+    Vec_Seq        *vs = (Vec_Seq*)v->data;
+    PetscInt       one = 1, cn = v->map->n;
+    PetscErrorCode ierr;
+
+    PetscFunctionBegin;
+    if (vs->valid_GPU_array == UNALLOCATED){
+      /*if this is the first time we're copying to the GPU then we allocate memory first */
+      ierr = cublasAlloc(cn,sizeof(PetscScalar),(void **)&vs->GPUarray);CHKERRCUDA(ierr);
+    }
+    ierr = cublasSetVector(cn,sizeof(PetscScalar),vs->array,one,vs->GPUarray,one);CHKERRCUDA(ierr);
+    vs->valid_GPU_array = SAME;
+    PetscFunctionReturn(0);
+  }
+
+  #undef __FUNCT__
+  #define __FUNCT__ "VecCUDACopyFromGPU"
+PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyFromGPU(Vec v)
+  {
+    Vec_Seq        *vs = (Vec_Seq*)v->data;
+    PetscInt       one = 1, cn = v->map->n;
+    PetscErrorCode ierr;
+
+    PetscFunctionBegin;
+    ierr = cublasGetVector(cn,sizeof(PetscScalar),vs->GPUarray,one,vs->array,one);CHKERRCUDA(ierr);
+    vs->valid_GPU_array = SAME;
+    PetscFunctionReturn(0);
+  }
+  #endif
+  
+  #endif
