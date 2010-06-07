@@ -186,20 +186,22 @@ PETSC_EXTERN_CXX_END
 /* 
     See manual page for PetscOptionsBegin() 
 */
-typedef enum {OPTION_INT,OPTION_LOGICAL,OPTION_REAL,OPTION_LIST,OPTION_STRING,OPTION_REAL_ARRAY,OPTION_HEAD,OPTION_INT_ARRAY} PetscOptionType;
+typedef enum {OPTION_INT,OPTION_LOGICAL,OPTION_REAL,OPTION_LIST,OPTION_STRING,OPTION_REAL_ARRAY,OPTION_HEAD,OPTION_INT_ARRAY,OPTION_ELIST,OPTION_LOGICAL_ARRAY,OPTION_STRING_ARRAY} PetscOptionType;
 typedef struct _p_PetscOptions* PetscOptions;
 struct _p_PetscOptions {
-  char            *option;
-  char            *text;
-  void            *data;         /* used to hold the default value and then any value it is changed to by GUI */
-  PetscFList      flist;         /* used for available values for PetscOptionsList() */
-  char            *man;
-  size_t          arraylength;   /* number of entries in data in the case that it is an array (of PetscInt etc) */
-  PetscTruth      set;           /* the user has changed this value in the GUI */
-  PetscOptionType type;
-  PetscOptions    next;
-  char            *pman;
-  void            *edata;
+  char              *option;
+  char              *text;
+  void              *data;         /* used to hold the default value and then any value it is changed to by GUI */
+  PetscFList        flist;         /* used for available values for PetscOptionsList() */
+  const char *const *list;        /* used for available values for PetscOptionsEList() */
+  char              nlist;         /* number of entries in list */
+  char              *man;
+  size_t            arraylength;   /* number of entries in data in the case that it is an array (of PetscInt etc) */
+  PetscTruth        set;           /* the user has changed this value in the GUI */
+  PetscOptionType   type;
+  PetscOptions      next;
+  char              *pman;
+  void              *edata;
 };
 
 typedef struct {

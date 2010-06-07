@@ -101,7 +101,7 @@ public class amsoptions {
 
     /* Process -ams_server and -ams_port command line options */
     int    i, port = -1;
-    String host = "";
+    String host = "localhost";
 
     for (i=0; i<args.length; i++) {
       if (args[i].equals("-ams_server")) {
