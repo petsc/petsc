@@ -30,6 +30,7 @@ EXTERN PetscErrorCode VecView_MPI_Binary(Vec,PetscViewer);
 EXTERN PetscErrorCode VecView_MPI_Netcdf(Vec,PetscViewer);
 EXTERN PetscErrorCode VecView_MPI_Draw_LG(Vec,PetscViewer);
 EXTERN PetscErrorCode VecView_MPI_Socket(Vec,PetscViewer);
+EXTERN PetscErrorCode VecView_MPI_HDF5(Vec,PetscViewer);
 EXTERN PetscErrorCode VecView_MPI(Vec,PetscViewer);
 EXTERN PetscErrorCode VecGetSize_MPI(Vec,PetscInt *);
 EXTERN PetscErrorCode VecSetValues_MPI(Vec,PetscInt,const PetscInt [],const PetscScalar[],InsertMode);

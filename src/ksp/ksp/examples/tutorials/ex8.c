@@ -45,7 +45,7 @@ int main(int argc,char **args)
   Mat            A;                       /* linear system matrix */
   KSP            ksp;                    /* linear solver context */
   PC             pc;                      /* PC context */
-  IS             *is;                     /* array of index sets that define the subdomains */
+  IS             *is,*is_local;           /* array of index sets that define the subdomains */
   PetscInt       overlap = 1;             /* width of subdomain overlap */
   PetscInt       Nsub;                    /* number of subdomains */
   PetscInt       m = 15,n = 17;          /* mesh dimensions in x- and y- directions */
@@ -61,8 +61,8 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Mdomains",&M,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Ndomains",&N,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-overlap",&overlap,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-user_set_subdomains",&user_subdomains,PETSC_NULL);CHKERRQ(ierr);
 
@@ -152,8 +152,8 @@ int main(int argc,char **args)
     ierr = PCASMSetOverlap(pc,overlap);CHKERRQ(ierr);
   } else { /* advanced version */
     if (size != 1) SETERRQ(PETSC_COMM_WORLD,1,"PCASMCreateSubdomains() is currently a uniprocessor routine only!");
-    ierr = PCASMCreateSubdomains2D(m,n,M,N,1,overlap,&Nsub,&is);CHKERRQ(ierr);
-    ierr = PCASMSetLocalSubdomains(pc,Nsub,is,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PCASMCreateSubdomains2D(m,n,M,N,1,overlap,&Nsub,&is,&is_local);CHKERRQ(ierr);
+    ierr = PCASMSetLocalSubdomains(pc,Nsub,is,is_local);CHKERRQ(ierr);
   }
 
   /* -------------------------------------------------------------------
@@ -203,7 +203,7 @@ int main(int argc,char **args)
        Flag an error if PCTYPE is changed from the runtime options
      */
     ierr = PetscTypeCompare((PetscObject)pc,PCASM,&isasm);CHKERRQ(ierr);
-    if (isasm)  SETERRQ(PETSC_COMM_WORLD,1,"Cannot Change the PCTYPE when manually changing the subdomain solver settings");
+    if (!isasm) SETERRQ(PETSC_COMM_WORLD,1,"Cannot Change the PCTYPE when manually changing the subdomain solver settings");
 
     /* 
        Call KSPSetUp() to set the block Jacobi data structures (including
@@ -249,8 +249,10 @@ int main(int argc,char **args)
   if (user_subdomains) {
     for (i=0; i<Nsub; i++) {
       ierr = ISDestroy(is[i]);CHKERRQ(ierr);
+      ierr = ISDestroy(is_local[i]);CHKERRQ(ierr);
     }
     ierr = PetscFree(is);CHKERRQ(ierr);
+    ierr = PetscFree(is_local);CHKERRQ(ierr);
   }
   ierr = KSPDestroy(ksp);CHKERRQ(ierr);
   ierr = VecDestroy(u);CHKERRQ(ierr);

@@ -10,11 +10,11 @@
 PetscFList      MatOrderingList = 0;
 PetscTruth MatOrderingRegisterAllCalled = PETSC_FALSE;
 
-EXTERN PetscErrorCode MatOrdering_Flow_SeqAIJ(Mat,const MatOrderingType,IS *,IS *);
+EXTERN PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat,const MatOrderingType,IS *,IS *);
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatOrdering_Flow"
-PetscErrorCode MatOrdering_Flow(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
+#define __FUNCT__ "MatGetOrdering_Flow"
+PetscErrorCode MatGetOrdering_Flow(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
 {
   PetscFunctionBegin;
   SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Cannot do default flow ordering for matrix type");
@@ -25,8 +25,8 @@ PetscErrorCode MatOrdering_Flow(Mat mat,const MatOrderingType type,IS *irow,IS *
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatOrdering_Natural"
-PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_Natural(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
+#define __FUNCT__ "MatGetOrdering_Natural"
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_Natural(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
 {
   PetscErrorCode ierr;
   PetscInt       n,i,*ii;
@@ -69,8 +69,8 @@ EXTERN_C_BEGIN
    matrix with symmetric non-zero structure.
 */
 #undef __FUNCT__  
-#define __FUNCT__ "MatOrdering_RowLength"
-PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_RowLength(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
+#define __FUNCT__ "MatGetOrdering_RowLength"
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_RowLength(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
 {
   PetscErrorCode ierr;
   PetscInt       n,*ia,*ja,*permr,*lens,i;

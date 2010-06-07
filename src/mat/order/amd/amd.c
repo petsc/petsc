@@ -17,13 +17,13 @@
 
 EXTERN_C_BEGIN
 /*
-    MatOrdering_AMD - Find the Approximate Minimum Degree ordering
+    MatGetOrdering_AMD - Find the Approximate Minimum Degree ordering
 
     This provides an interface to Tim Davis' AMD package (used by UMFPACK, CHOLMOD, Matlab, etc).
 */
 #undef __FUNCT__  
-#define __FUNCT__ "MatOrdering_AMD"
-PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_AMD(Mat mat,const MatOrderingType type,IS *row,IS *col)
+#define __FUNCT__ "MatGetOrdering_AMD"
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering_AMD(Mat mat,const MatOrderingType type,IS *row,IS *col)
 {
   PetscErrorCode ierr;
   PetscInt       nrow,*ia,*ja,*perm;

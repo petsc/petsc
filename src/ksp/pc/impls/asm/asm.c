@@ -46,11 +46,10 @@ static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
-    if (osm->n > 0) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Additive Schwarz: total subdomain blocks = %D, amount of overlap = %D\n",osm->n,osm->overlap);CHKERRQ(ierr);
-    } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Additive Schwarz: total subdomain blocks not yet set, amount of overlap = %D\n",osm->overlap);CHKERRQ(ierr);
-    }
+    char overlaps[256] = "user-defined overlap",blocks[256] = "total subdomain blocks not yet set";
+    if (osm->overlap >= 0) {ierr = PetscSNPrintf(overlaps,sizeof overlaps,"amount of overlap = %D",osm->overlap);CHKERRQ(ierr);}
+    if (osm->n > 0) {ierr = PetscSNPrintf(blocks,sizeof blocks,"total subdomain blocks = %D",osm->n);CHKERRQ(ierr);}
+    ierr = PetscViewerASCIIPrintf(viewer,"  Additive Schwarz: %s, %s\n",blocks,overlaps);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Additive Schwarz: restriction/interpolation type - %s\n",PCASMTypes[osm->type]);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(((PetscObject)pc)->comm,&rank);CHKERRQ(ierr);
     if (osm->same_local_solves) {
@@ -192,8 +191,10 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     ierr = PetscOptionsGetTruth(prefix,"-pc_asm_print_subdomains",&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) { ierr = PCASMPrintSubdomains(pc);CHKERRQ(ierr); }
 
-    /*  Extend the "overlapping" regions by a number of steps  */
-    ierr = MatIncreaseOverlap(pc->pmat,osm->n_local_true,osm->is,osm->overlap);CHKERRQ(ierr);
+    if (osm->overlap > 0) {
+      /* Extend the "overlapping" regions by a number of steps */
+      ierr = MatIncreaseOverlap(pc->pmat,osm->n_local_true,osm->is,osm->overlap);CHKERRQ(ierr);
+    }
     if (osm->sort_indices) {
       for (i=0; i<osm->n_local_true; i++) {
         ierr = ISSort(osm->is[i]);CHKERRQ(ierr);
@@ -355,7 +356,7 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
     forward = SCATTER_FORWARD_LOCAL;
     /* have to zero the work RHS since scatter may leave some slots empty */
     for (i=0; i<n_local_true; i++) {
-      ierr = VecSet(osm->x[i],0.0);CHKERRQ(ierr);
+      ierr = VecZeroEntries(osm->x[i]);CHKERRQ(ierr);
     }
   }
   if (!(osm->type & PC_ASM_INTERPOLATE)) {
@@ -365,7 +366,7 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
   for (i=0; i<n_local; i++) {
     ierr = VecScatterBegin(osm->restriction[i],x,osm->x[i],INSERT_VALUES,forward);CHKERRQ(ierr);
   }
-  ierr = VecSet(y,0.0);CHKERRQ(ierr);
+  ierr = VecZeroEntries(y);CHKERRQ(ierr);
   /* do the local solves */
   for (i=0; i<n_local_true; i++) {
     ierr = VecScatterEnd(osm->restriction[i],x,osm->x[i],INSERT_VALUES,forward);CHKERRQ(ierr);
@@ -408,7 +409,7 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
     forward = SCATTER_FORWARD_LOCAL;
     /* have to zero the work RHS since scatter may leave some slots empty */
     for (i=0; i<n_local_true; i++) {
-      ierr = VecSet(osm->x[i],0.0);CHKERRQ(ierr);
+      ierr = VecZeroEntries(osm->x[i]);CHKERRQ(ierr);
     }
   }
   if (!(osm->type & PC_ASM_RESTRICT)) {
@@ -418,7 +419,7 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
   for (i=0; i<n_local; i++) {
     ierr = VecScatterBegin(osm->restriction[i],x,osm->x[i],INSERT_VALUES,forward);CHKERRQ(ierr);
   }
-  ierr = VecSet(y,0.0);CHKERRQ(ierr);
+  ierr = VecZeroEntries(y);CHKERRQ(ierr);
   /* do the local solves */
   for (i=0; i<n_local_true; i++) {
     ierr = VecScatterEnd(osm->restriction[i],x,osm->x[i],INSERT_VALUES,forward);CHKERRQ(ierr);
@@ -542,6 +543,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetLocalSubdomains_ASM(PC pc,PetscInt n,I
     if (is) {
       ierr = PetscMalloc(n*sizeof(IS *),&osm->is);CHKERRQ(ierr);
       for (i=0; i<n; i++) { osm->is[i] = is[i]; }
+      /* Flag indicating that the user has set overlapping subdomains so PCASM should not increase their size. */
+      osm->overlap = -1;
     }
     if (is_local) {
       ierr = PetscMalloc(n*sizeof(IS *),&osm->is_local);CHKERRQ(ierr);
@@ -555,7 +558,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCASMSetTotalSubdomains_ASM"
-PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetTotalSubdomains_ASM(PC pc,PetscInt N,IS *is)
+PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetTotalSubdomains_ASM(PC pc,PetscInt N,IS *is,IS *is_local)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
   PetscErrorCode ierr;
@@ -564,7 +567,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetTotalSubdomains_ASM(PC pc,PetscInt N,I
 
   PetscFunctionBegin;
   if (N < 1) SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Number of total blocks must be > 0, N = %D",N);
-  if (is) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Use PCASMSetLocalSubdomains() to set specific index sets\n\they cannot be set globally yet.");
+  if (is || is_local) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Use PCASMSetLocalSubdomains() to set specific index sets\n\they cannot be set globally yet.");
 
   /*
      Split the subdomains equally among all processors
@@ -1264,7 +1267,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMDestroySubdomains(PetscInt n, IS is[], IS
 
    Output Parameters:
 +  Nsub - the number of subdomains created
--  is - the array of index sets defining the subdomains
+.  is - array of index sets defining overlapping (if overlap > 0) subdomains
+-  is_local - array of index sets defining non-overlapping subdomains
 
    Note:
    Presently PCAMSCreateSubdomains2d() is valid only for sequential
@@ -1278,9 +1282,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMDestroySubdomains(PetscInt n, IS is[], IS
 .seealso: PCASMSetTotalSubdomains(), PCASMSetLocalSubdomains(), PCASMGetSubKSP(),
           PCASMSetOverlap()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCASMCreateSubdomains2D(PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt dof,PetscInt overlap,PetscInt *Nsub,IS **is)
+PetscErrorCode PETSCKSP_DLLEXPORT PCASMCreateSubdomains2D(PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt dof,PetscInt overlap,PetscInt *Nsub,IS **is,IS **is_local)
 {
-  PetscInt       i,j,height,width,ystart,xstart,yleft,yright,xleft,xright,loc_outter;
+  PetscInt       i,j,height,width,ystart,xstart,yleft,yright,xleft,xright,loc_outer;
   PetscErrorCode ierr;
   PetscInt       nidx,*idx,loc,ii,jj,count;
 
@@ -1288,9 +1292,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMCreateSubdomains2D(PetscInt m,PetscInt n,
   if (dof != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP," ");
 
   *Nsub = N*M;
-  ierr = PetscMalloc((*Nsub)*sizeof(IS *),is);CHKERRQ(ierr);
+  ierr = PetscMalloc((*Nsub)*sizeof(IS*),is);CHKERRQ(ierr);
+  ierr = PetscMalloc((*Nsub)*sizeof(IS*),is_local);CHKERRQ(ierr);
   ystart = 0;
-  loc_outter = 0;
+  loc_outer = 0;
   for (i=0; i<N; i++) {
     height = n/N + ((n % N) > i); /* height of subdomain */
     if (height < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many N subdomains for mesh dimension n");
@@ -1311,9 +1316,21 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMCreateSubdomains2D(PetscInt m,PetscInt n,
           idx[loc++] = count++;
         }
       }
-      ierr = ISCreateGeneral(PETSC_COMM_SELF,nidx,idx,(*is)+loc_outter++);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PETSC_COMM_SELF,nidx,idx,(*is)+loc_outer);CHKERRQ(ierr);
+      if (overlap == 0) {
+        ierr = PetscObjectReference((PetscObject)(*is)[loc_outer]);CHKERRQ(ierr);
+        (*is_local)[loc_outer] = (*is)[loc_outer];
+      } else {
+        for (loc=0,ii=ystart; ii<ystart+height; ii++) {
+          for (jj=xstart; jj<xstart+width; jj++) {
+            idx[loc++] = m*ii + jj;
+          }
+        }
+        ierr = ISCreateGeneral(PETSC_COMM_SELF,loc,idx,*is_local+loc_outer);CHKERRQ(ierr);
+      }
       ierr = PetscFree(idx);CHKERRQ(ierr);
       xstart += width;
+      loc_outer++;
     }
     ystart += height;
   }

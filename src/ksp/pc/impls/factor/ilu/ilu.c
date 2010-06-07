@@ -169,8 +169,21 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
   PetscErrorCode ierr;
   PC_ILU         *ilu = (PC_ILU*)pc->data;
   MatInfo        info;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
+  /* ugly hack to change default, since it is not support by some matrix types */
+  if (((PC_Factor*)ilu)->info.shifttype == (PetscReal)MAT_SHIFT_NONZERO) {
+    ierr = PetscTypeCompare((PetscObject)pc->pmat,MATSEQAIJ,&flg);
+    if (!flg) {
+      ierr = PetscTypeCompare((PetscObject)pc->pmat,MATMPIAIJ,&flg);
+      if (!flg) {
+        ((PC_Factor*)ilu)->info.shifttype = (PetscReal)MAT_SHIFT_INBLOCKS;
+        PetscInfo(pc,"Changing shift type from NONZERO to INBLOCKS because block matrices do not support NONZERO");
+      }
+    }
+  }
+
   if (ilu->inplace) {
     CHKMEMQ;
     if (!pc->setupcalled) {

@@ -52,8 +52,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRetrieveValues_MPISBAIJ(Mat mat)
 EXTERN_C_END
 
 
-#define CHUNKSIZE  10
-
 #define  MatSetValues_SeqSBAIJ_A_Private(row,col,value,addv) \
 { \
  \
@@ -79,7 +77,7 @@ EXTERN_C_END
       } \
       if (a->nonew == 1) goto a_noinsert; \
       if (a->nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", row, col); \
-      ierr = MatSeqXAIJReallocateAIJ(A,a->mbs,bs2,nrow,brow,bcol,rmax,aa,ai,aj,rp,ap,aimax,a->nonew);CHKERRQ(ierr); \
+      MatSeqXAIJReallocateAIJ(A,a->mbs,bs2,nrow,brow,bcol,rmax,aa,ai,aj,rp,ap,aimax,a->nonew,MatScalar); \
       N = nrow++ - 1;  \
       /* shift up all the later entries in this row */ \
       for (ii=N; ii>=_i; ii--) { \
@@ -117,7 +115,7 @@ EXTERN_C_END
       } \
       if (b->nonew == 1) goto b_noinsert; \
       if (b->nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", row, col); \
-      ierr = MatSeqXAIJReallocateAIJ(B,b->mbs,bs2,nrow,brow,bcol,rmax,ba,bi,bj,rp,ap,bimax,b->nonew);CHKERRQ(ierr); \
+      MatSeqXAIJReallocateAIJ(B,b->mbs,bs2,nrow,brow,bcol,rmax,ba,bi,bj,rp,ap,bimax,b->nonew,MatScalar); \
       N = nrow++ - 1;  \
       /* shift up all the later entries in this row */ \
       for (ii=N; ii>=_i; ii--) { \

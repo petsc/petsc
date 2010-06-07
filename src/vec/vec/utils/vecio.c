@@ -22,6 +22,31 @@ EXTERN PetscErrorCode VecLoadIntoVector_Binary(PetscViewer, Vec);
 EXTERN PetscErrorCode VecLoadIntoVector_Netcdf(PetscViewer, Vec);
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscViewerBinaryReadVecHeader_Private"
+static PetscErrorCode PetscViewerBinaryReadVecHeader_Private(PetscViewer viewer,PetscInt *rows)
+{
+  PetscErrorCode ierr;
+  MPI_Comm       comm;
+  PetscInt       tr[2],type;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  /* Read vector header */
+  ierr = PetscViewerBinaryRead(viewer,tr,2,PETSC_INT);CHKERRQ(ierr);
+  type = tr[0];
+  if (type != VEC_FILE_CLASSID) {
+    ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
+    if (type == MAT_FILE_CLASSID) {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix is next in file, not a vector as you requested");
+    } else {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a vector next in file");
+    }
+  }
+  *rows = tr[1];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "VecLoadnew"
 /*@C 
   VecLoadnew - Loads a vector that has been stored in binary format
@@ -104,23 +129,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoadnew(PetscViewer viewer, Vec newvec)
   } else 
 #endif
   {
-    MPI_Comm       comm;
     PetscErrorCode (*r)(PetscViewer,Vec);
-    PetscInt       tr[2],bs,rows,type;
+    PetscInt       bs,rows;
     PetscTruth     flag;
 
-    ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-    /* Read vector header */
-    ierr = PetscViewerBinaryRead(viewer,tr,2,PETSC_INT);CHKERRQ(ierr);
-    type = tr[0]; rows = tr[1];
-    if (type != VEC_FILE_CLASSID) {
-      ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
-      if (type == MAT_FILE_CLASSID) {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix is next in file, not a vector as you requested");
-      } else {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a vector next in file");
-      }
-    }
+    ierr = PetscViewerBinaryReadVecHeader_Private(viewer,&rows);CHKERRQ(ierr);
     
     if ((newvec)->map->n < 0 && (newvec)->map->N < 0) {
       /* Set global size and let PETSc decide the local sizes */
@@ -629,7 +642,7 @@ PetscErrorCode VecLoadIntoVector_Binary(PetscViewer viewer,Vec vec)
 {
   PetscMPIInt    size,rank,tag;
   int            fd;
-  PetscInt       i,rows,n,*range;
+  PetscInt       i,rows,n,N,*range;
   PetscErrorCode ierr;
   PetscScalar    *avec,*avecwork;
   MPI_Comm       comm;
@@ -646,8 +659,11 @@ PetscErrorCode VecLoadIntoVector_Binary(PetscViewer viewer,Vec vec)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
+  ierr = PetscViewerBinaryReadVecHeader_Private(viewer,&rows);CHKERRQ(ierr);
+  ierr = VecGetSize(vec,&N);CHKERRQ(ierr);
+  if (N != rows) {ierr = VecSetSizes(vec,PETSC_DETERMINE,rows);CHKERRQ(ierr);}
+  ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
 
-  ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr); 
   ierr = PetscObjectGetNewTag((PetscObject)viewer,&tag);CHKERRQ(ierr);
   ierr = VecGetArray(vec,&avec);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPIIO)
@@ -685,7 +701,6 @@ PetscErrorCode VecLoadIntoVector_Binary(PetscViewer viewer,Vec vec)
     MPI_Aint     ub,ul;
     MPI_Offset   off;
 
-    rows = vec->map->N;
     gsizes[0]  = PetscMPIIntCast(rows);
     lsizes[0]  = PetscMPIIntCast(n);
     lstarts[0] = PetscMPIIntCast(vec->map->rstart);CHKERRQ(ierr);
