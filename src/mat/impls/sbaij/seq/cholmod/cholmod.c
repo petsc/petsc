@@ -26,6 +26,7 @@
 #  define cholmod_X_finish          cholmod_l_finish
 #  define cholmod_X_free_factor     cholmod_l_free_factor
 #  define cholmod_X_free_dense      cholmod_l_free_dense
+#  define cholmod_X_resymbol        cholmod_l_resymbol
 #  define cholmod_X_solve           cholmod_l_solve
 #else
 #  define CHOLMOD_INT_TYPE          CHOLMOD_INT
@@ -36,6 +37,7 @@
 #  define cholmod_X_finish          cholmod_finish
 #  define cholmod_X_free_factor     cholmod_free_factor
 #  define cholmod_X_free_dense      cholmod_free_dense
+#  define cholmod_X_resymbol        cholmod_resymbol
 #  define cholmod_X_solve           cholmod_solve
 #endif
 
@@ -52,7 +54,31 @@ typedef struct {
   cholmod_sparse *matrix;
   cholmod_factor *factor;
   cholmod_common *common;
+  PetscTruth     pack;
 } Mat_CHOLMOD;
+
+/*
+   This is a terrible hack, but it allows the error handler to retain a context.
+   Note that this hack really cannot be made both reentrant and concurrent.
+*/
+static Mat static_F;
+
+#undef __FUNCT__
+#define __FUNCT__ "CholmodErrorHandler"
+static void CholmodErrorHandler(int status,const char *file,int line,const char *message)
+{
+
+  PetscFunctionBegin;
+  if (status > CHOLMOD_OK) {
+    PetscInfo4(static_F,"CHOLMOD warning %d at %s:%d: %s",status,file,line,message);
+  } else if (status == CHOLMOD_OK) { /* Documentation says this can happen, but why? */
+    PetscInfo3(static_F,"CHOLMOD OK at %s:%d: %s",file,line,message);
+  } else {
+    PetscErrorPrintf("CHOLMOD error %d at %s:%d: %s\n",status,file,line,message);
+  }
+  PetscFunctionReturnVoid();
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "CholmodStart"
@@ -68,6 +94,8 @@ static PetscErrorCode CholmodStart(Mat F)
   ierr = PetscMalloc(sizeof(*chol->common),&chol->common);CHKERRQ(ierr);
   ierr = !cholmod_X_start(chol->common);CHKERRQ(ierr);
   c = chol->common;
+  c->error_handler = CholmodErrorHandler;
+
 #define CHOLMOD_OPTION_DOUBLE(name,help) do {                            \
     PetscReal tmp = (PetscReal)c->name;                                  \
     ierr = PetscOptionsReal("-mat_cholmod_" #name,help,"None",tmp,&tmp,0);CHKERRQ(ierr); \
@@ -91,6 +119,11 @@ static PetscErrorCode CholmodStart(Mat F)
   } while (0)
 
   ierr = PetscOptionsBegin(((PetscObject)F)->comm,((PetscObject)F)->prefix,"CHOLMOD Options","Mat");CHKERRQ(ierr);
+  /* CHOLMOD handles first-time packing and refactor-packing separately, but we usually want them to be the same. */
+  chol->pack = (PetscTruth)c->final_pack;
+  ierr = PetscOptionsTruth("-mat_cholmod_pack","Pack factors after factorization [disable for frequent repeat factorization]","None",chol->pack,&chol->pack,0);CHKERRQ(ierr);
+  c->final_pack = (int)chol->pack;
+
   CHOLMOD_OPTION_DOUBLE(dbound,"Minimum absolute value of diagonal entries of D");
   CHOLMOD_OPTION_DOUBLE(grow0,"Global growth ratio when factors are modified");
   CHOLMOD_OPTION_DOUBLE(grow1,"Column growth ratio when factors are modified");
@@ -124,7 +157,8 @@ static PetscErrorCode CholmodStart(Mat F)
     if (flg && n != 3) SETERRQ(((PetscObject)F)->comm,PETSC_ERR_ARG_OUTOFRANGE,"must provide exactly 3 parameters to -mat_cholmod_nrelax");
     if (flg) while (n--) c->nrelax[n] = (size_t)tmp[n];
   }
-  CHOLMOD_OPTION_TRUTH(prefer_upper,"Work with upper triangular form (faster when using fill-reducing ordering, slower in natural ordering)");
+  CHOLMOD_OPTION_TRUTH(prefer_upper,"Work with upper triangular form [faster when using fill-reducing ordering, slower in natural ordering]");
+  CHOLMOD_OPTION_TRUTH(default_nesdis,"Use NESDIS instead of METIS for nested dissection");
   CHOLMOD_OPTION_INT(print,"Verbosity level");
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -211,6 +245,7 @@ static PetscErrorCode MatFactorInfo_CHOLMOD(Mat F,PetscViewer viewer)
   if (F->ops->solve != MatSolve_CHOLMOD) PetscFunctionReturn(0);
   ierr = PetscViewerASCIIPrintf(viewer,"CHOLMOD run parameters:\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Pack factors after symbolic factorization: %s\n",chol->pack?"TRUE":"FALSE");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Common.dbound            %g  (Smallest absolute value of diagonal entries of D)\n",c->dbound);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Common.grow0             %g\n",c->grow0);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Common.grow1             %g\n",c->grow1);CHKERRQ(ierr);
@@ -233,7 +268,21 @@ static PetscErrorCode MatFactorInfo_CHOLMOD(Mat F,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  lnz %g, fl %g, prune_dense %g, prune_dense2 %g\n",
         c->method[i].lnz,c->method[i].fl,c->method[i].prune_dense,c->method[i].prune_dense2);CHKERRQ(ierr);
   }
-  ierr = PetscViewerASCIIPrintf(viewer,"Common.postorder         %d\n",chol->common->postorder);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Common.postorder         %d\n",c->postorder);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Common.default_nesdis    %d (use NESDIS instead of METIS for nested dissection)\n",c->default_nesdis);CHKERRQ(ierr);
+  /* Statistics */
+  ierr = PetscViewerASCIIPrintf(viewer,"Common.fl                %g (flop count from most recent analysis)\n",c->fl);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Common.lnz               %g (fundamental nz in L)\n",c->lnz);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Common.anz               %g\n",c->anz);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Common.modfl             %g (flop count from most recent update)\n",c->modfl);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Common.malloc_count      %g (number of live objects)\n",(double)c->malloc_count);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Common.memory_usage      %g (peak memory usage in bytes)\n",(double)c->memory_usage);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Common.memory_inuse      %g (current memory usage in bytes)\n",(double)c->memory_inuse);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Common.nrealloc_col      %g (number of column reallocations)\n",c->nrealloc_col);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Common.nrealloc_factor   %g (number of factor reallocations due to column reallocations)\n",c->nrealloc_factor);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Common.ndbounds_hit      %g (number of times diagonal was modified by dbound)\n",c->ndbounds_hit);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Common.rowfacfl          %g (number of flops in last call to cholmod_rowfac)\n",c->rowfacfl);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Common.aatfl             %g (number of flops to compute A(:,f)*A(:,f)')\n",c->aatfl);CHKERRQ(ierr);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -269,6 +318,7 @@ static PetscErrorCode MatSolve_CHOLMOD(Mat F,Vec B,Vec X)
 
   PetscFunctionBegin;
   ierr = VecWrapCholmod(B,&cholB);CHKERRQ(ierr);
+  static_F = F;
   cholX = cholmod_X_solve(CHOLMOD_A,chol->factor,&cholB,chol->common);
   if (!cholX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CHOLMOD failed");
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
@@ -288,7 +338,12 @@ static PetscErrorCode MatCholeskyFactorNumeric_CHOLMOD(Mat F,Mat A,const MatFact
 
   PetscFunctionBegin;
   ierr = MatWrapCholmod_seqsbaij(A,&cholA);CHKERRQ(ierr);
-  ierr = !cholmod_X_factorize(&cholA,chol->factor,chol->common);CHKERRQ(ierr);
+  static_F = F;
+  ierr = !cholmod_X_factorize(&cholA,chol->factor,chol->common);
+  if (ierr) SETERRQ1(((PetscObject)F)->comm,PETSC_ERR_LIB,"CHOLMOD factorization failed with status %d",chol->common->status);
+  if (chol->common->status == CHOLMOD_NOT_POSDEF)
+    SETERRQ1(((PetscObject)F)->comm,PETSC_ERR_MAT_CH_ZRPVT,"CHOLMOD detected that the matrix is not positive definite, failure at column %u",(unsigned)chol->factor->minor);
+
   F->ops->solve          = MatSolve_CHOLMOD;
   F->ops->solvetranspose = MatSolve_CHOLMOD;
   PetscFunctionReturn(0);
@@ -301,18 +356,25 @@ static PetscErrorCode MatCholeskyFactorSymbolic_CHOLMOD(Mat F,Mat A,IS perm,cons
   Mat_CHOLMOD    *chol = (Mat_CHOLMOD*)F->spptr;
   PetscErrorCode ierr;
   cholmod_sparse cholA;
+  PetscInt       *fset = 0;
+  size_t         fsize = 0;
 
   PetscFunctionBegin;
   ierr = MatWrapCholmod_seqsbaij(A,&cholA);CHKERRQ(ierr);
-  if (perm) {
+  static_F = F;
+  if (chol->factor) {
+    ierr = !cholmod_X_resymbol(&cholA,fset,fsize,(int)chol->pack,chol->factor,chol->common);
+    if (ierr) SETERRQ1(((PetscObject)F)->comm,PETSC_ERR_LIB,"CHOLMOD analysis failed with status %d",chol->common->status);
+  } else if (perm) {
     const PetscInt *ip;
     ierr = ISGetIndices(perm,&ip);CHKERRQ(ierr);
-    chol->factor = cholmod_X_analyze_p(&cholA,(PetscInt*)ip,0,0,chol->common);
+    chol->factor = cholmod_X_analyze_p(&cholA,(PetscInt*)ip,fset,fsize,chol->common);
+    if (!chol->factor) SETERRQ1(((PetscObject)F)->comm,PETSC_ERR_LIB,"CHOLMOD analysis failed with status %d",chol->common->status);
     ierr = ISRestoreIndices(perm,&ip);CHKERRQ(ierr);
   } else {
     chol->factor = cholmod_X_analyze(&cholA,chol->common);
+    if (!chol->factor) SETERRQ1(((PetscObject)F)->comm,PETSC_ERR_LIB,"CHOLMOD analysis failed with status %d",chol->common->status);
   }
-  if (!chol->factor) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CHOLMOD factorization failed");
   F->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_CHOLMOD;
   PetscFunctionReturn(0);
 }
