@@ -865,6 +865,7 @@ PetscErrorCode VecGetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],PetscSca
   Vec_MPI     *x = (Vec_MPI *)xin->data;
   PetscScalar *xx;
   PetscInt    i,tmp,start = xin->map->range[xin->stash.rank];
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);

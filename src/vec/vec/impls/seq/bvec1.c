@@ -109,6 +109,7 @@ PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
     ierr = VecSet_Seq(xin,alpha);CHKERRQ(ierr);
   }
   else if (alpha != 1.0) {
+  PetscScalar a = alpha;
   BLASscal_(&bn,&a,x->array,&one);
   }
 #endif
