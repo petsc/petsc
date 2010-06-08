@@ -9,53 +9,9 @@
    that UMFPACK UL_Long version MUST be built with 64 bit integers when used.
 
 */
+
 #include "../src/mat/impls/sbaij/seq/sbaij.h"
-
-#if defined(PETSC_USE_COMPLEX)
-#  define CHOLMOD_SCALAR_TYPE       CHOLMOD_COMPLEX
-#else
-#  define CHOLMOD_SCALAR_TYPE       CHOLMOD_REAL
-#endif
-
-#if defined(PETSC_USE_64BIT_INDICES)
-#  define CHOLMOD_INT_TYPE          CHOLMOD_LONG
-#  define cholmod_X_start           cholmod_l_start
-#  define cholmod_X_analyze         cholmod_l_analyze
-#  define cholmod_X_analyze_p       cholmod_l_analyze_p
-#  define cholmod_X_factorize       cholmod_l_factorize
-#  define cholmod_X_finish          cholmod_l_finish
-#  define cholmod_X_free_factor     cholmod_l_free_factor
-#  define cholmod_X_free_dense      cholmod_l_free_dense
-#  define cholmod_X_resymbol        cholmod_l_resymbol
-#  define cholmod_X_solve           cholmod_l_solve
-#else
-#  define CHOLMOD_INT_TYPE          CHOLMOD_INT
-#  define cholmod_X_start           cholmod_start
-#  define cholmod_X_analyze         cholmod_analyze
-#  define cholmod_X_analyze_p       cholmod_analyze_p
-#  define cholmod_X_factorize       cholmod_factorize
-#  define cholmod_X_finish          cholmod_finish
-#  define cholmod_X_free_factor     cholmod_free_factor
-#  define cholmod_X_free_dense      cholmod_free_dense
-#  define cholmod_X_resymbol        cholmod_resymbol
-#  define cholmod_X_solve           cholmod_solve
-#endif
-
-#define UF_long long long
-#define UF_long_max LONG_LONG_MAX
-#define UF_long_id "%lld"
-#undef I  /* complex.h defines I=_Complex_I, but cholmod_core.h uses I as a field member */
-
-EXTERN_C_BEGIN
-#include <cholmod.h>
-EXTERN_C_END
-
-typedef struct {
-  cholmod_sparse *matrix;
-  cholmod_factor *factor;
-  cholmod_common *common;
-  PetscTruth     pack;
-} Mat_CHOLMOD;
+#include "../src/mat/impls/sbaij/seq/cholmod/cholmodimpl.h"
 
 /*
    This is a terrible hack, but it allows the error handler to retain a context.
@@ -79,10 +35,9 @@ static void CholmodErrorHandler(int status,const char *file,int line,const char 
   PetscFunctionReturnVoid();
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "CholmodStart"
-static PetscErrorCode CholmodStart(Mat F)
+PetscErrorCode PETSCMAT_DLLEXPORT CholmodStart(Mat F)
 {
   PetscErrorCode ierr;
   Mat_CHOLMOD    *chol=(Mat_CHOLMOD*)F->spptr;
@@ -166,26 +121,27 @@ static PetscErrorCode CholmodStart(Mat F)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatWrapCholmod_seqsbaij"
-static PetscErrorCode MatWrapCholmod_seqsbaij(Mat A,cholmod_sparse *B)
+static PetscErrorCode MatWrapCholmod_seqsbaij(Mat A,PetscTruth values,cholmod_sparse *C,PetscTruth *aijalloc)
 {
   Mat_SeqSBAIJ *sbaij = (Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMemzero(B,sizeof(*B));CHKERRQ(ierr);
+  ierr = PetscMemzero(C,sizeof(*C));CHKERRQ(ierr);
   /* CHOLMOD uses column alignment, SBAIJ stores the upper factor, so we pass it on as a lower factor, swapping the meaning of row and column */
-  B->nrow  = (size_t)A->cmap->n;
-  B->ncol  = (size_t)A->rmap->n;
-  B->nzmax = (size_t)sbaij->maxnz;
-  B->p     = sbaij->i;
-  B->i     = sbaij->j;
-  B->x     = sbaij->a;
-  B->stype = -1;
-  B->itype = CHOLMOD_INT_TYPE;
-  B->xtype = CHOLMOD_SCALAR_TYPE;
-  B->dtype = CHOLMOD_DOUBLE;
-  B->sorted = 1;
-  B->packed = 1;
+  C->nrow  = (size_t)A->cmap->n;
+  C->ncol  = (size_t)A->rmap->n;
+  C->nzmax = (size_t)sbaij->maxnz;
+  C->p     = sbaij->i;
+  C->i     = sbaij->j;
+  C->x     = sbaij->a;
+  C->stype = -1;
+  C->itype = CHOLMOD_INT_TYPE;
+  C->xtype = CHOLMOD_SCALAR_TYPE;
+  C->dtype = CHOLMOD_DOUBLE;
+  C->sorted = 1;
+  C->packed = 1;
+  *aijalloc = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -214,7 +170,7 @@ static PetscErrorCode VecWrapCholmod(Vec X,cholmod_dense *Y)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_CHOLMOD"
-static PetscErrorCode MatDestroy_CHOLMOD(Mat F)
+PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_CHOLMOD(Mat F)
 {
   PetscErrorCode ierr;
   Mat_CHOLMOD    *chol=(Mat_CHOLMOD*)F->spptr;
@@ -224,7 +180,7 @@ static PetscErrorCode MatDestroy_CHOLMOD(Mat F)
   ierr = !cholmod_X_finish(chol->common);CHKERRQ(ierr);
   ierr = PetscFree(chol->common);CHKERRQ(ierr);
   ierr = PetscFree(chol->matrix);CHKERRQ(ierr);
-  ierr = MatDestroy_SeqSBAIJ(F);CHKERRQ(ierr);
+  ierr = (*chol->Destroy)(F);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -289,7 +245,7 @@ static PetscErrorCode MatFactorInfo_CHOLMOD(Mat F,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatView_CHOLMOD"
-static PetscErrorCode MatView_CHOLMOD(Mat F,PetscViewer viewer)
+PetscErrorCode PETSCMAT_DLLEXPORT MatView_CHOLMOD(Mat F,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
   PetscTruth        iascii;
@@ -334,15 +290,18 @@ static PetscErrorCode MatCholeskyFactorNumeric_CHOLMOD(Mat F,Mat A,const MatFact
 {
   Mat_CHOLMOD    *chol = (Mat_CHOLMOD*)F->spptr;
   cholmod_sparse cholA;
+  PetscTruth     aijalloc;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatWrapCholmod_seqsbaij(A,&cholA);CHKERRQ(ierr);
+  ierr = (*chol->Wrap)(A,PETSC_TRUE,&cholA,&aijalloc);CHKERRQ(ierr);
   static_F = F;
   ierr = !cholmod_X_factorize(&cholA,chol->factor,chol->common);
   if (ierr) SETERRQ1(((PetscObject)F)->comm,PETSC_ERR_LIB,"CHOLMOD factorization failed with status %d",chol->common->status);
   if (chol->common->status == CHOLMOD_NOT_POSDEF)
     SETERRQ1(((PetscObject)F)->comm,PETSC_ERR_MAT_CH_ZRPVT,"CHOLMOD detected that the matrix is not positive definite, failure at column %u",(unsigned)chol->factor->minor);
+
+  if (aijalloc) {ierr = PetscFree3(cholA.p,cholA.i,cholA.x);CHKERRQ(ierr);}
 
   F->ops->solve          = MatSolve_CHOLMOD;
   F->ops->solvetranspose = MatSolve_CHOLMOD;
@@ -351,16 +310,17 @@ static PetscErrorCode MatCholeskyFactorNumeric_CHOLMOD(Mat F,Mat A,const MatFact
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorSymbolic_CHOLMOD"
-static PetscErrorCode MatCholeskyFactorSymbolic_CHOLMOD(Mat F,Mat A,IS perm,const MatFactorInfo *info)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCholeskyFactorSymbolic_CHOLMOD(Mat F,Mat A,IS perm,const MatFactorInfo *info)
 {
   Mat_CHOLMOD    *chol = (Mat_CHOLMOD*)F->spptr;
   PetscErrorCode ierr;
   cholmod_sparse cholA;
+  PetscTruth     aijalloc;
   PetscInt       *fset = 0;
   size_t         fsize = 0;
 
   PetscFunctionBegin;
-  ierr = MatWrapCholmod_seqsbaij(A,&cholA);CHKERRQ(ierr);
+  ierr = (*chol->Wrap)(A,PETSC_FALSE,&cholA,&aijalloc);CHKERRQ(ierr);
   static_F = F;
   if (chol->factor) {
     ierr = !cholmod_X_resymbol(&cholA,fset,fsize,(int)chol->pack,chol->factor,chol->common);
@@ -375,6 +335,9 @@ static PetscErrorCode MatCholeskyFactorSymbolic_CHOLMOD(Mat F,Mat A,IS perm,cons
     chol->factor = cholmod_X_analyze(&cholA,chol->common);
     if (!chol->factor) SETERRQ1(((PetscObject)F)->comm,PETSC_ERR_LIB,"CHOLMOD analysis failed with status %d",chol->common->status);
   }
+
+  if (aijalloc) {ierr = PetscFree3(cholA.p,cholA.i,cholA.x);CHKERRQ(ierr);}
+
   F->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_CHOLMOD;
   PetscFunctionReturn(0);
 }
@@ -439,7 +402,10 @@ PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A,MatFactorType ftype,Mat *F)
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(B,1,0,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscNewLog(B,Mat_CHOLMOD,&chol);CHKERRQ(ierr);
+  chol->Wrap               = MatWrapCholmod_seqsbaij;
+  chol->Destroy            = MatDestroy_SeqSBAIJ;
   B->spptr                 = chol;
+
   B->ops->view             = MatView_CHOLMOD;
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_CHOLMOD;
   B->ops->destroy          = MatDestroy_CHOLMOD;
@@ -449,7 +415,6 @@ PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A,MatFactorType ftype,Mat *F)
   B->preallocated          = PETSC_TRUE;
 
   ierr = CholmodStart(B);CHKERRQ(ierr);
-
   *F = B;
   PetscFunctionReturn(0);
 }
