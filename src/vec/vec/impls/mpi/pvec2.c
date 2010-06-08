@@ -50,11 +50,12 @@ PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
 {
   Vec_MPI        *x = (Vec_MPI*)xin->data;
   PetscReal      sum,work = 0.0;
-  PetscScalar    *xx = x->array;
+  PetscScalar    *xx;
   PetscErrorCode ierr;
   PetscInt       n = xin->map->n;
 
   PetscFunctionBegin;
+  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
   if (type == NORM_2 || type == NORM_FROBENIUS) {
 
 #if defined(PETSC_HAVE_SLOW_BLAS_NORM2)
@@ -101,6 +102,7 @@ PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
     ierr = MPI_Allreduce(temp,z,2,MPIU_REAL,MPI_SUM,((PetscObject)xin)->comm);CHKERRQ(ierr);
     z[1] = sqrt(z[1]);
   }
+  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

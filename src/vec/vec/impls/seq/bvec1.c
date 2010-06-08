@@ -89,6 +89,7 @@ PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
   PetscBLASInt   one = 1,bn = PetscBLASIntCast(xin->map->n);
  
   PetscFunctionBegin;
+
 #if defined(PETSC_HAVE_CUDA)
   if (alpha == 0.0) {
     ierr = VecSet_Seq(xin,alpha);CHKERRQ(ierr);
@@ -120,15 +121,16 @@ PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
 #define __FUNCT__ "VecCopy_Seq"
 PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
 {
-  Vec_Seq        *x = (Vec_Seq *)xin->data;
-  PetscScalar    *ya;
+  PetscScalar    *ya, *xa;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (xin != yin) {
+    ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
     ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
-    ierr = PetscMemcpy(ya,x->array,xin->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscMemcpy(ya,xa,xin->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
+    ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -137,16 +139,17 @@ PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
 #define __FUNCT__ "VecSwap_Seq"
 PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
 {
-  Vec_Seq        *x = (Vec_Seq *)xin->data;
-  PetscScalar    *ya;
+  PetscScalar    *ya, *xa;
   PetscErrorCode ierr;
   PetscBLASInt   one = 1,bn = PetscBLASIntCast(xin->map->n);
 
   PetscFunctionBegin;
   if (xin != yin) {
+    ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
     ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
-    BLASswap_(&bn,x->array,&one,ya,&one);
+    BLASswap_(&bn,xa,&one,ya,&one);
     ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
+    ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -155,17 +158,18 @@ PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
 #define __FUNCT__ "VecAXPY_Seq"
 PetscErrorCode VecAXPY_Seq(Vec yin,PetscScalar alpha,Vec xin)
 {
-  Vec_Seq        *y = (Vec_Seq *)yin->data;
   PetscErrorCode ierr;
-  PetscScalar    *xarray;
+  PetscScalar    *xarray,*yarray;
   PetscBLASInt   one = 1,bn = PetscBLASIntCast(yin->map->n);
 
   PetscFunctionBegin;
   /* assume that the BLAS handles alpha == 1.0 efficiently since we have no fast code for it */
   if (alpha != 0.0) {
+    ierr = VecGetArray(yin,&yarray);CHKERRQ(ierr);
     ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
-    BLASaxpy_(&bn,&alpha,xarray,&one,y->array,&one);
+    BLASaxpy_(&bn,&alpha,xarray,&one,yarray,&one);
     ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yin,&yarray);CHKERRQ(ierr);
     ierr = PetscLogFlops(2.0*yin->map->n);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -175,13 +179,13 @@ PetscErrorCode VecAXPY_Seq(Vec yin,PetscScalar alpha,Vec xin)
 #define __FUNCT__ "VecAXPBY_Seq"
 PetscErrorCode VecAXPBY_Seq(Vec yin,PetscScalar alpha,PetscScalar beta,Vec xin)
 {
-  Vec_Seq           *y = (Vec_Seq *)yin->data;
   PetscErrorCode    ierr;
   PetscInt          n = yin->map->n,i;
-  PetscScalar       *yy = y->array,a = alpha,b = beta;
+  PetscScalar       *yy,a = alpha,b = beta;
   const PetscScalar *xx;
 
   PetscFunctionBegin;
+  ierr = VecGetArray(yin,&yy);CHKERRQ(ierr);
   if (a == 0.0) {
     ierr = VecScale_Seq(yin,beta);CHKERRQ(ierr);
   } else if (b == 1.0) {
@@ -203,6 +207,7 @@ PetscErrorCode VecAXPBY_Seq(Vec yin,PetscScalar alpha,PetscScalar beta,Vec xin)
     ierr = VecRestoreArray(xin,(PetscScalar**)&xx);CHKERRQ(ierr);
     ierr = PetscLogFlops(3.0*xin->map->n);CHKERRQ(ierr);
   }
+  ierr = VecRestoreArray(yin,&yy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
