@@ -87,6 +87,7 @@ PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
   Vec_Seq        *x = (Vec_Seq*)xin->data;
   PetscErrorCode ierr;
   PetscBLASInt   one = 1,bn = PetscBLASIntCast(xin->map->n);
+  PetscScalar    *xx;
  
   PetscFunctionBegin;
 
@@ -96,12 +97,10 @@ PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
   }
   else if (alpha != 1.0) {
   PetscScalar a = alpha;
-  if (x->valid_GPU_array == CPU || x->valid_GPU_array == UNALLOCATED){
-    ierr = VecCUDACopyToGPU(xin);CHKERRCUDA(ierr);
-  } 
+  ierr = VecCUDACopyToGPU(xin);CHKERRCUDA(ierr);
   cublasSscal(bn,a,x->GPUarray,one);
   ierr = cublasGetError();CHKERRCUDA(ierr);
-  x->valid_GPU_array == GPU;
+  x->valid_GPU_array = GPU;
   //for now, we always copy back from GPU
   ierr = VecCUDACopyFromGPU(xin);CHKERRCUDA(ierr);
   }
@@ -110,8 +109,10 @@ PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
     ierr = VecSet_Seq(xin,alpha);CHKERRQ(ierr);
   }
   else if (alpha != 1.0) {
-  PetscScalar a = alpha;
-  BLASscal_(&bn,&a,x->array,&one);
+    ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+    PetscScalar a = alpha;
+    BLASscal_(&bn,&a,xx,&one);
+    ierr = VecReleaseAray(x,&xx);CHKERRQ(ierr);
   }
 #endif
   ierr = PetscLogFlops(xin->map->n);CHKERRQ(ierr);
@@ -122,16 +123,37 @@ PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
 #define __FUNCT__ "VecCopy_Seq"
 PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
 {
+  Vec_Seq        *x = (Vec_Seq *)xin->data;
+  Vec_Seq        *y = (Vec_Seq *)yin->data;
   PetscScalar    *ya, *xa;
   PetscErrorCode ierr;
+  PetscInt       one = 1;
 
   PetscFunctionBegin;
   if (xin != yin) {
-    ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
-    ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+    if (x->valid_GPU_array != GPU){
+     ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+     ierr = PetscMemcpy(ya,xa,xin->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
+     ierr = VecRestoreArray2(xin,&xa,yin,&ya);
+     if (y->valid_GPU_array != UNALLOCATED){
+       //if the vector we copy to had not allocated GPU space, it still hasn't.
+       y->valid_GPU_array = CPU;
+     }
+   }
+   else{
+     ierr = VecCUDACopyToGPU(yin);CHKERRQ(ierr);
+     cublasScopy(xin->map->n,x->GPUarray,one,y->GPUarray,one);
+     ierr = cublasGetError();CHKERRCUDA(ierr);
+     y->valid_GPU_array = GPU;
+    //for now, we always copy back from GPU
+     ierr = VecCUDACopyFromGPU(yin);CHKERRQ(ierr);
+    }
+#else
+    ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
     ierr = PetscMemcpy(ya,xa,xin->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
-    ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
+    ierr = VecRestoreArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+#endif
   }
   PetscFunctionReturn(0);
 }
@@ -149,8 +171,8 @@ PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
     ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
     ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
     BLASswap_(&bn,xa,&one,ya,&one);
-    ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
     ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

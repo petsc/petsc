@@ -533,11 +533,12 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 #define __FUNCT__ "VecGetValues_Seq"
 PetscErrorCode VecGetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],PetscScalar y[])
 {
-  Vec_Seq     *x = (Vec_Seq *)xin->data;
-  PetscScalar *xx = x->array;
-  PetscInt    i;
+  PetscScalar    *xx;
+  PetscInt       i;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
   for (i=0; i<ni; i++) {
     if (xin->stash.ignorenegidx && ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
@@ -546,6 +547,7 @@ PetscErrorCode VecGetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],PetscSca
 #endif
     y[i] = xx[ix[i]];
   }
+  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -553,11 +555,12 @@ PetscErrorCode VecGetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],PetscSca
 #define __FUNCT__ "VecSetValues_Seq"
 PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode m)
 {
-  Vec_Seq     *x = (Vec_Seq *)xin->data;
-  PetscScalar *xx = x->array;
-  PetscInt    i;
+  PetscScalar    *xx;
+  PetscInt       i;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
   if (m == INSERT_VALUES) {
     for (i=0; i<ni; i++) {
       if (xin->stash.ignorenegidx && ix[i] < 0) continue;
@@ -577,6 +580,7 @@ PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
       xx[ix[i]] += y[i];
     }  
   }  
+  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -584,14 +588,15 @@ PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
 #define __FUNCT__ "VecSetValuesBlocked_Seq"
 PetscErrorCode VecSetValuesBlocked_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const PetscScalar yin[],InsertMode m)
 {
-  Vec_Seq     *x = (Vec_Seq *)xin->data;
-  PetscScalar *xx = x->array,*y = (PetscScalar*)yin;
-  PetscInt    i,bs = xin->map->bs,start,j;
+  PetscScalar    *xx,*y = (PetscScalar*)yin;
+  PetscInt       i,bs = xin->map->bs,start,j;
+  PetscErrorCode ierr;
 
   /*
        For optimization could treat bs = 2, 3, 4, 5 as special cases with loop unrolling
   */
   PetscFunctionBegin;
+  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
   if (m == INSERT_VALUES) {
     for (i=0; i<ni; i++) {
       start = bs*ix[i];
@@ -616,7 +621,8 @@ PetscErrorCode VecSetValuesBlocked_Seq(Vec xin,PetscInt ni,const PetscInt ix[],c
       }
       y += bs;
     }  
-  }  
+  }
+  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
