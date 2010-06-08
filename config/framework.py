@@ -43,6 +43,7 @@ MPI libraries in order to link a test object, the module can use self.mpi.lib.
 import user
 import script
 import config.base
+import time
 
 import os
 import re
@@ -189,6 +190,13 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   def setHostOS(self, os):
     self._host_os = os
   host_os = property(getHostOS, setHostOS, doc = 'Machine OS')
+  def getFileCreatePause(self):
+    if not hasattr(self, '_file_create_pause'):
+      return self.argDB['with-file-create-pause']
+    return self._file_create_pause
+  def setFileCreatePause(self, file_create_pause):
+    self.file_create_pause = file_create_pause
+  file_create_pause = property(getFileCreatePause, setFileCreatePause, doc = 'Add 1 sec pause between config temp file delete/recreate')
 
   def setupHelp(self, help):
     import nargs
@@ -224,6 +232,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     help.addArgument('Framework', '-with-host-cpu',       nargs.Arg(None, host_cpu,    'Machine CPU'))
     help.addArgument('Framework', '-with-host-vendor',    nargs.Arg(None, host_vendor, 'Machine vendor'))
     help.addArgument('Framework', '-with-host-os',        nargs.Arg(None, host_os,     'Machine OS'))
+    help.addArgument('Framework', '-with-file-create-pause', nargs.ArgBool(None, 0, 'Add 1 sec pause between config temp file delete/recreate'))
     return help
 
   def getCleanup(self):
@@ -557,6 +566,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     if os.path.dirname(outName):
       if not os.path.exists(os.path.dirname(outName)):
         os.makedirs(os.path.dirname(outName))
+    if self.file_create_pause: time.sleep(1)
     outFile = file(outName, 'w')
     for line in inFile.xreadlines():
       outFile.write(self.substRE.sub(self.substituteName, line))
@@ -711,6 +721,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       dir = os.path.dirname(name)
       if dir and not os.path.exists(dir):
         os.makedirs(dir)
+      if self.file_create_pause: time.sleep(1)
       f = file(name, 'w')
       filename = os.path.basename(name)
     self.outputMakeMacros(f, self)
@@ -729,6 +740,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       dir = os.path.dirname(name)
       if dir and not os.path.exists(dir):
         os.makedirs(dir)
+      if self.file_create_pause: time.sleep(1)
       f = file(name, 'w')
       filename = os.path.basename(name)
     self.outputMakeRules(f, self)
@@ -747,6 +759,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       dir = os.path.dirname(name)
       if dir and not os.path.exists(dir):
         os.makedirs(dir)
+      if self.file_create_pause: time.sleep(1)
       f = file(name, 'w')
       filename = os.path.basename(name)
     guard = 'INCLUDED_'+filename.upper().replace('.', '_')
@@ -773,6 +786,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       dir = os.path.dirname(name)
       if dir and not os.path.exists(dir):
         os.makedirs(dir)
+      if self.file_create_pause: time.sleep(1)
       f = file(name, 'w')
       filename = os.path.basename(name)
     guard = 'INCLUDED_'+filename.upper().replace('.', '_')
