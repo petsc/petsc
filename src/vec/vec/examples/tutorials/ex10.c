@@ -1,5 +1,5 @@
 
-static char help[] = "Tests binary I/O of vectors and illustrates the use of user-defined event logging.This example is used for testing the vecload interface where in the input vector can be bare(Not created) or fully set(Created,sizes and type set\n\n";
+static char help[] = "Tests I/O of vectors for different data formats (binary,HDF5,NetCDF) and illustrates the use of user-defined event logging\n\n";
 
 #include "petscvec.h"
 
@@ -17,22 +17,32 @@ int main(int argc,char **args)
   PetscScalar    v;
   Vec            u;
   PetscViewer    viewer;
-  PetscTruth     vstage2,vstage3,mpiio_use;
+  PetscTruth     vstage2,vstage3,mpiio_use,isbinary,ishdf5,isnetcdf;
 #if defined(PETSC_USE_LOG)
   PetscLogEvent  VECTOR_GENERATE,VECTOR_READ;
 #endif
 
   PetscInitialize(&argc,&args,(char *)0,help);
+  isbinary = ishdf5 = isnetcdf = PETSC_FALSE;
+  mpiio_use = vstage2 = vstage3 = PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-binary",&isbinary,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-hdf5",&ishdf5,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-netcdf",&isnetcdf,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-mpiio",&mpiio_use,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-sizes_set",&vstage2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-type_set",&vstage3,PETSC_NULL);CHKERRQ(ierr);
+
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
 
-  /* PART 1:  Generate vector, then write it in binary format */
+  /* PART 1:  Generate vector, then write it in the given data format */
 
   ierr = PetscLogEventRegister("Generate Vector",VEC_CLASSID,&VECTOR_GENERATE);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(VECTOR_GENERATE,0,0,0,0);CHKERRQ(ierr);
   /* Generate vector */
   ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)u, "Test_Vec");CHKERRQ(ierr);
   ierr = VecSetSizes(u,PETSC_DECIDE,m);CHKERRQ(ierr);
   ierr = VecSetFromOptions(u);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(u,&low,&high);CHKERRQ(ierr);
@@ -46,14 +56,21 @@ int main(int argc,char **args)
   ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
   ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"writing vector in binary to vector.dat ...\n");CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+  if (isbinary) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"writing vector in binary to vector.dat ...\n");CHKERRQ(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+  } else if (ishdf5) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"writing vector in hdf5 to vector.dat ...\n");CHKERRQ(ierr);
+    ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+  } else {
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No data format specified, run with either -binary or -hdf5 option\n");
+  }
   ierr = VecView(u,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = VecDestroy(u);CHKERRQ(ierr);
   /*  ierr = PetscOptionsClear();CHKERRQ(ierr); */
-  mpiio_use = vstage2 = vstage3 = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-mpiio",&mpiio_use,PETSC_NULL);CHKERRQ(ierr);
+
+
   ierr = PetscLogEventEnd(VECTOR_GENERATE,0,0,0,0);CHKERRQ(ierr);
 
   /* PART 2:  Read in vector in binary format */
@@ -61,16 +78,20 @@ int main(int argc,char **args)
   /* Read new vector in binary format */
   ierr = PetscLogEventRegister("Read Vector",VEC_CLASSID,&VECTOR_READ);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(VECTOR_READ,0,0,0,0);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from vector.dat ...\n");CHKERRQ(ierr);
   if (mpiio_use) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Using MPI IO for reading the vector\n");CHKERRQ(ierr);
     ierr = PetscOptionsSetValue("-viewer_binary_mpiio","");CHKERRQ(ierr); 
   }
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-sizes_set",&vstage2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-type_set",&vstage3,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Creating vector...\n");CHKERRQ(ierr);
+  if (isbinary) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from vector.dat ...\n");CHKERRQ(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+  } else if (ishdf5) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"reading vector in hdf5 from vector.dat ...\n");CHKERRQ(ierr);
+    ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+  }
+
   ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) u,"Test_Vec");
 
   if (vstage2) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Setting vector sizes...\n");CHKERRQ(ierr);
