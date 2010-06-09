@@ -888,7 +888,6 @@ PetscErrorCode VecPointwiseMult_Seq(Vec win,Vec xin,Vec yin)
 #define __FUNCT__ "VecPointwiseDivide_Seq"
 PetscErrorCode VecPointwiseDivide_Seq(Vec win,Vec xin,Vec yin)
 {
-  Vec_Seq        *w = (Vec_Seq *)win->data;
   PetscErrorCode ierr;
   PetscInt       n = win->map->n,i;
   PetscScalar    *ww,*xx,*yy;

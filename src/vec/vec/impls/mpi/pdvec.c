@@ -862,7 +862,6 @@ PetscErrorCode VecGetSize_MPI(Vec xin,PetscInt *N)
 #define __FUNCT__ "VecGetValues_MPI"
 PetscErrorCode VecGetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],PetscScalar y[])
 {
-  Vec_MPI     *x = (Vec_MPI *)xin->data;
   PetscScalar *xx;
   PetscInt    i,tmp,start = xin->map->range[xin->stash.rank];
   PetscErrorCode ierr;
