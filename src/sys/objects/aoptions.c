@@ -989,6 +989,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsTruthGroupBegin(const char opt[],cons
     ierr = PetscMalloc(sizeof(PetscTruth),&amsopt->data);CHKERRQ(ierr);
     *(PetscTruth*)amsopt->data = PETSC_FALSE;
   } 
+  *flg = PETSC_FALSE;
   ierr = PetscOptionsGetTruth(PetscOptionsObject.prefix,opt,flg,PETSC_NULL);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
     ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  Pick at most one of -------------\n");CHKERRQ(ierr);
