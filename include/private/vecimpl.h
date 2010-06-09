@@ -159,7 +159,6 @@ struct _p_Vec {
   VecStash               stash,bstash; /* used for storing off-proc values during assembly */
   PetscTruth             petscnative;  /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
 };
-
 #define VecGetArray(x,a)     ((x)->petscnative ? (*(a) = *((PetscScalar **)(x)->data),0) : VecGetArray_Private((x),(a)))
 #define VecRestoreArray(x,a) ((x)->petscnative ? PetscObjectStateIncrease((PetscObject)x) : VecRestoreArray_Private((x),(a)))
 
@@ -186,6 +185,7 @@ typedef enum {UNALLOCATED,GPU,CPU,SAME} VecGPUFlag;
 EXTERN PetscErrorCode VecDuplicateVecs_Default(Vec,PetscInt,Vec *[]);
 EXTERN PetscErrorCode VecDestroyVecs_Default(Vec [],PetscInt);
 EXTERN PetscErrorCode VecLoadIntoVector_Default(PetscViewer,Vec);
+EXTERN PetscErrorCode VecLoadnew_Binary(PetscViewer,Vec);
 
 extern PetscInt NormIds[7];  /* map from NormType to IDs used to cache/retreive values of norms */
 
