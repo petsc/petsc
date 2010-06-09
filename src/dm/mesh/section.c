@@ -419,6 +419,43 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdate(SectionReal section, PetscInt
   Input Parameters:
 + section - The section
 . mesh    - The Mesh object
+- point   - The sieve point
+
+  Output Parameter:
+. array - The array full of values in the closure
+
+  Level: intermediate
+
+.keywords: mesh, elements
+.seealso: MeshCreate()
+@*/
+PetscErrorCode SectionRealRestrictClosure(SectionReal section, Mesh mesh, PetscInt point, const PetscScalar *values[])
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
+  PetscErrorCode            ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+#ifdef PETSC_USE_COMPLEX
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "SectionReal does not support complex restriction");
+#else
+  *values = m->restrictClosure(s, point);
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SectionRealRestrictClosure"
+/*@C
+  SectionRealRestrictClosure - Returns an array with the values in a given closure
+
+  Not Collective
+
+  Input Parameters:
++ section - The section
+. mesh    - The Mesh object
 . point   - The sieve point
 . n       - The array size
 - array   - The array to fill up

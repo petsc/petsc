@@ -191,6 +191,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealAllocate(SectionReal);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealClear(SectionReal);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealRestrictClosure(SectionReal, Mesh, PetscInt, PetscInt, PetscScalar []);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealRestrictClosure(SectionReal, Mesh, PetscInt, const PetscScalar *[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdateClosure(SectionReal, Mesh, PetscInt, PetscScalar [], InsertMode);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexSectionReal(Mesh, const char[], PetscInt, SectionReal *);
