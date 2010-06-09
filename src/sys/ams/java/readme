@@ -1,4 +1,3 @@
-java -d32 -classpath .:/Users/barrysmith/Src/ams-dev/java -Djava.library.path=/Users/barrysmith/Src/ams-dev/lib amsoptions -ams_port 61260 -ams_server anlextwls002-207.wl.anl-external.org
+java -d32 -classpath .:${AMS_DIR}/java -Djava.library.path=${AMS_DIR}/lib amsoptions
 
-javac amsoptions
-javac -classpath .:/Users/barrysmith/Src/ams-dev/java amsoptions.java 
+javac -classpath .:${AMS_DIR}/java amsoptions.java 

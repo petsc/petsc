@@ -292,10 +292,40 @@ PetscErrorCode PetscOptionsGetFromTextInput()
 #if defined(PETSC_HAVE_AMS)
 #define CHKERRAMS(err)  if (err) {char *msg; AMS_Explain_error((err), &(msg)); SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"AMS Error: %s",msg);}
 #define CHKERRAMSFieldName(err,fn)  if (err) {char *msg; AMS_Explain_error((err), &(msg)); SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Fieldname %s, AMS Error: %s",fn,msg);}
+
+static int  count = 0;
+
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsGetFromAMSInput"
+#define __FUNCT__ "PetscOptionsAMSDestroy"
+PetscErrorCode PetscOptionsAMSDestroy(void)
+{
+  PetscErrorCode ierr;
+  AMS_Comm       acomm = -1;
+  AMS_Memory     amem = -1;
+  char           options[16];
+  const char     *string = "Exit";
+
+  /* the next line is a bug, this will only work if all processors are here, the comm passed in is ignored!!! */
+  ierr = PetscViewerAMSGetAMSComm(PETSC_VIEWER_AMS_(PETSC_COMM_WORLD),&acomm);CHKERRQ(ierr);
+  sprintf(options,"Options_%d",count++);
+  ierr = AMS_Memory_create(acomm,options,&amem);CHKERRAMS(ierr);
+  ierr = AMS_Memory_add_field(amem,"Exit",&string,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,"Exit");
+
+  ierr = AMS_Memory_take_access(amem);CHKERRAMS(ierr); 
+  ierr = AMS_Memory_publish(amem);CHKERRAMS(ierr);
+  ierr = AMS_Memory_grant_access(amem);CHKERRAMS(ierr);
+  /* wait until accessor has unlocked the memory */
+  ierr = AMS_Memory_lock(amem,0);CHKERRAMS(ierr);
+  ierr = AMS_Memory_take_access(amem);CHKERRAMS(ierr);
+  ierr = AMS_Memory_grant_access(amem);CHKERRAMS(ierr);
+  ierr = AMS_Memory_destroy(amem);CHKERRAMS(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsAMSInput"
 /*
-    PetscOptionsGetFromAMSInput - Presents all the PETSc Options processed by the program so the user may change them at runtime using the AMS
+    PetscOptionsAMSInput - Presents all the PETSc Options processed by the program so the user may change them at runtime using the AMS
 
     Bugs: 
 +    All processes must traverse through the exact same set of option queries do to the call to PetscScanString()
@@ -304,11 +334,11 @@ PetscErrorCode PetscOptionsGetFromTextInput()
 
 
 */
-PetscErrorCode PetscOptionsGetFromAMSInput()
+PetscErrorCode PetscOptionsAMSInput()
 {
   PetscErrorCode ierr;
   PetscOptions   next = PetscOptionsObject.next;
-  static int     count = 0,mancount = 0;
+  static int     mancount = 0;
   char           options[16];
   AMS_Comm       acomm = -1;
   AMS_Memory     amem = -1;
@@ -367,10 +397,10 @@ PetscErrorCode PetscOptionsGetFromAMSInput()
 	ierr = PetscStrcat(ldefault,next->text);CHKERRQ(ierr);
 	ierr = AMS_Memory_add_field(amem,ldefault,next->data,1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,ldefault);
 	ierr = PetscFListGet(next->flist,(char***)&next->edata,&ntext);CHKERRQ(ierr);
-	ierr = AMS_Memory_add_field(amem,next->text,next->edata,ntext,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
+	ierr = AMS_Memory_add_field(amem,next->text,next->edata,ntext-1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
         break;}
       case OPTION_ELIST: 
-        {PetscInt  ntext;
+        {PetscInt  ntext = next->nlist;
         char       ldefault[128];
 	ierr = PetscStrcpy(ldefault,"DEFAULT:");CHKERRQ(ierr);
 	ierr = PetscStrcat(ldefault,next->text);CHKERRQ(ierr);
@@ -415,7 +445,7 @@ PetscErrorCode PetscOptionsEnd_Private(void)
   if (PetscOptionsObject.next) { 
     if (!PetscOptionsPublishCount) {
 #if defined(PETSC_HAVE_AMS)
-      ierr = PetscOptionsGetFromAMSInput();CHKERRQ(ierr);
+      ierr = PetscOptionsAMSInput();CHKERRQ(ierr);
 #else
       ierr = PetscOptionsGetFromTextInput();CHKERRQ(ierr);
 #endif
@@ -900,7 +930,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsEList(const char opt[],const char lte
 
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
-    ierr = PetscOptionsCreate_Private(opt,ltext,man,OPTION_LIST,&amsopt);CHKERRQ(ierr);
+    ierr = PetscOptionsCreate_Private(opt,ltext,man,OPTION_ELIST,&amsopt);CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(char*),&amsopt->data);CHKERRQ(ierr);
     *(const char**)amsopt->data = defaultv;
     amsopt->list  = list;
@@ -921,7 +951,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsEList(const char opt[],const char lte
 #define __FUNCT__ "PetscOptionsTruthGroupBegin"
 /*@C
      PetscOptionsTruthGroupBegin - First in a series of logical queries on the options database for
-       which only a single value can be true.
+       which at most a single value can be true.
 
    Collective on the communicator passed in PetscOptionsBegin()
 
@@ -957,7 +987,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsTruthGroupBegin(const char opt[],cons
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_LOGICAL,&amsopt);CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(PetscTruth),&amsopt->data);CHKERRQ(ierr);
-    *(PetscTruth*)amsopt->data = PETSC_TRUE;
+    *(PetscTruth*)amsopt->data = PETSC_FALSE;
   } 
   ierr = PetscOptionsGetTruth(PetscOptionsObject.prefix,opt,flg,PETSC_NULL);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
@@ -971,7 +1001,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsTruthGroupBegin(const char opt[],cons
 #define __FUNCT__ "PetscOptionsTruthGroup"
 /*@C
      PetscOptionsTruthGroup - One in a series of logical queries on the options database for
-       which only a single value can be true.
+       which at most a single value can be true.
 
    Collective on the communicator passed in PetscOptionsBegin()
 
@@ -1021,7 +1051,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsTruthGroup(const char opt[],const cha
 #define __FUNCT__ "PetscOptionsTruthGroupEnd"
 /*@C
      PetscOptionsTruthGroupEnd - Last in a series of logical queries on the options database for
-       which only a single value can be true.
+       which at most a single value can be true.
 
    Collective on the communicator passed in PetscOptionsBegin()
 

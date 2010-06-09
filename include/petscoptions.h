@@ -181,6 +181,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsStringArray(const char[],const
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsTruthArray(const char[],const char[],const char[],PetscTruth[],PetscInt*,PetscTruth*);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetFromOptions(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsAMSDestroy(void);
 PETSC_EXTERN_CXX_END
 
 /* 
