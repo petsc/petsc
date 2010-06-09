@@ -31,13 +31,9 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
 
   switch (nv_rem) {
   case 3:
-    ierr = VecGetArray(yy[0],(PetscScalar**)&yy0);CHKERRQ(ierr);
-    ierr = VecGetArray(yy[1],(PetscScalar**)&yy1);CHKERRQ(ierr);
-    ierr = VecGetArray(yy[2],(PetscScalar**)&yy2);CHKERRQ(ierr);
+    ierr = VecGetArray3(yy[0],(PetscScalar**)&yy0,yy[1],(PetscScalar**)&yy1,yy[2],(PetscScalar**)&yy2);CHKERRQ(ierr);
     fortranmdot3_(x,yy0,yy1,yy2,&n,&sum0,&sum1,&sum2);
-    ierr = VecRestoreArray(yy[0],(PetscScalar**)&yy0);CHKERRQ(ierr);
-    ierr = VecRestoreArray(yy[1],(PetscScalar**)&yy1);CHKERRQ(ierr);
-    ierr = VecRestoreArray(yy[2],(PetscScalar**)&yy2);CHKERRQ(ierr);
+    ierr = VecRestoreArray3(yy[0],(PetscScalar**)&yy0,yy[1],(PetscScalar**)&yy1,yy[2],(PetscScalar**)&yy3);CHKERRQ(ierr);
     z[0] = sum0;
     z[1] = sum1;
     z[2] = sum2;
