@@ -78,7 +78,7 @@ set (CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
   
 ''')
 
-def writePackage(f,pkg):
+def writePackage(f,pkg,pkgdeps):
   for conds, srcs in pkgsources(pkg).items():
     conds = eval(conds)
     def body(indentlevel):
@@ -92,9 +92,9 @@ def writePackage(f,pkg):
   f.write('''
 if (NOT PETSC_USE_SINGLE_LIBRARY)
   add_library (petsc%(pkg)s ${PETSC%(PKG)s_SRCS})
-  target_link_libraries (petsc%(pkg)s ${PETSC_PACKAGE_LIBS})
+  target_link_libraries (petsc%(pkg)s %(pkgdeps)s ${PETSC_PACKAGE_LIBS})
 endif ()
-''' % dict(pkg=pkg, PKG=pkg.upper()))
+''' % dict(pkg=pkg, PKG=pkg.upper(), pkgdeps=' '.join('petsc%s'%p for p in pkgdeps)))
 
 def main():
   os.chdir(os.environ['PETSC_DIR'])
@@ -102,8 +102,8 @@ def main():
     writeRoot(f)
     f.write('include_directories (${PETSC_PACKAGE_INCLUDES})\n')
     pkglist = 'sys vec mat dm ksp snes ts characteristic'.split()
-    for pkg in pkglist:
-      writePackage(f,pkg)
+    for i,pkg in enumerate(pkglist):
+      writePackage(f,pkg,pkglist[:i])
     f.write ('''
 if (PETSC_USE_SINGLE_LIBRARY)
   add_library (petsc %s)

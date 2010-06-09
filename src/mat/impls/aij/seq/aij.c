@@ -3246,6 +3246,9 @@ extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_spooles(Mat,MatFact
 #if defined(PETSC_HAVE_UMFPACK)
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_umfpack(Mat,MatFactorType,Mat*);
 #endif
+#if defined(PETSC_HAVE_CHOLMOD)
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_cholmod(Mat,MatFactorType,Mat*);
+#endif
 #if defined(PETSC_HAVE_LUSOL)
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_lusol(Mat,MatFactorType,Mat*);
 #endif
@@ -3343,6 +3346,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_umfpack_C",
                                      "MatGetFactor_seqaij_umfpack",
                                      MatGetFactor_seqaij_umfpack);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_CHOLMOD)
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_cholmod_C",
+                                     "MatGetFactor_seqaij_cholmod",
+                                     MatGetFactor_seqaij_cholmod);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_LUSOL)
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_lusol_C",

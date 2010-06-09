@@ -7,6 +7,7 @@ class Configure(PETSc.package.NewPackage):
     self.functions = ['cublasInit']
     self.includes  = ['cublas.h']
     self.liblist   = [['libcublas.a']]
+    self.double           = 0   # 1 means requires double precision 
     return
 
   def getSearchDirectories(self):

@@ -167,11 +167,21 @@ struct _p_Vec {
      Common header shared by array based vectors, 
    currently Vec_Seq and Vec_MPI
 */
+#if defined(PETSC_HAVE_CUDA)
+/* Defines the flag structure that the CUDA arch uses. */
+typedef enum {UNALLOCATED,GPU,CPU,SAME} VecGPUFlag;
 #define VECHEADER                          \
   PetscScalar *array;                      \
   PetscScalar *array_allocated;                        /* if the array was allocated by PETSc this is its pointer */  \
-  PetscScalar *unplacedarray;                           /* if one called VecPlaceArray(), this is where it stashed the original */
-
+  PetscScalar *unplacedarray;                           /* if one called VecPlaceArray(), this is where it stashed the original */\
+  PetscScalar *GPUarray;                              /* if we're using CUDA, then this is the pointer to the array on the GPU */\
+  VecGPUFlag valid_GPU_array;                              /* this flag indicates where the most recently modified vector data is (GPU or CPU) */
+#else
+#define VECHEADER                          \
+  PetscScalar *array;                      \
+  PetscScalar *array_allocated;            \
+  PetscScalar *unplacedarray;
+#endif
 /* Default obtain and release vectors; can be used by any implementation */
 EXTERN PetscErrorCode VecDuplicateVecs_Default(Vec,PetscInt,Vec *[]);
 EXTERN PetscErrorCode VecDestroyVecs_Default(Vec [],PetscInt);
@@ -344,6 +354,7 @@ EXTERN PetscErrorCode VecMatlabEnginePut_Default(PetscObject,void*);
 EXTERN PetscErrorCode VecMatlabEngineGet_Default(PetscObject,void*);
 EXTERN_C_END
 #endif
+
 
 PETSC_EXTERN_CXX_END
 #endif

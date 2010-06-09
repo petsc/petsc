@@ -114,7 +114,8 @@ PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)viewer)->comm,&rank);CHKERRQ(ierr);
-  if (!rank) {
+  /* fflush() fails on OSX for read-only descriptors */
+  if (!rank && (vascii->mode != FILE_MODE_READ)) {
     err = fflush(vascii->fd);
     if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() call failed");
   }

@@ -19,9 +19,7 @@ PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 #endif
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
-  if (xin != yin) {ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);}
-  else ya = xa;
+  ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   /* cannot use BLAS dot for complex because compiler/linker is 
      not happy about returning a double complex */
@@ -36,8 +34,7 @@ PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 #else
   *z = BLASdot_(&bn,xa,&one,ya,&one);
 #endif
-  ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
-  if (xin != yin) {ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);}
+  ierr = VecRestoreArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
   if (xin->map->n > 0) {
     ierr = PetscLogFlops(2.0*xin->map->n-1);CHKERRQ(ierr);
   }
@@ -55,9 +52,7 @@ PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 #endif
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
-  if (xin != yin) {ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);}
-  else ya = xa;
+  ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   /* cannot use BLAS dot for complex because compiler/linker is 
      not happy about returning a double complex */
@@ -72,30 +67,49 @@ PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 #else
   *z = BLASdot_(&bn,xa,&one,ya,&one);
 #endif
-  ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
-  if (xin != yin) {ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);}
+  ierr = VecRestoreArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
   if (xin->map->n > 0) {
     ierr = PetscLogFlops(2.0*xin->map->n-1);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__ 
 #define __FUNCT__ "VecScale_Seq"
 PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
 {
   Vec_Seq        *x = (Vec_Seq*)xin->data;
   PetscErrorCode ierr;
   PetscBLASInt   one = 1,bn = PetscBLASIntCast(xin->map->n);
-
+  PetscScalar    *xx;
+ 
   PetscFunctionBegin;
+
+#if defined(PETSC_HAVE_CUDA)
   if (alpha == 0.0) {
     ierr = VecSet_Seq(xin,alpha);CHKERRQ(ierr);
-  } else if (alpha != 1.0) {
-    PetscScalar a = alpha;
-    BLASscal_(&bn,&a,x->array,&one);
-    ierr = PetscLogFlops(xin->map->n);CHKERRQ(ierr);
   }
+  else if (alpha != 1.0) {
+  PetscScalar a = alpha;
+  ierr = VecCUDACopyToGPU(xin);CHKERRCUDA(ierr);
+  cublasSscal(bn,a,x->GPUarray,one);
+  ierr = cublasGetError();CHKERRCUDA(ierr);
+  x->valid_GPU_array = GPU;
+  //for now, we always copy back from GPU
+  ierr = VecCUDACopyFromGPU(xin);CHKERRCUDA(ierr);
+  }
+#else
+  if (alpha == 0.0) {
+    ierr = VecSet_Seq(xin,alpha);CHKERRQ(ierr);
+  }
+  else if (alpha != 1.0) {
+    ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
+    PetscScalar a = alpha;
+    BLASscal_(&bn,&a,xx,&one);
+    ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
+  }
+#endif
+  ierr = PetscLogFlops(xin->map->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -103,15 +117,38 @@ PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
 #define __FUNCT__ "VecCopy_Seq"
 PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
 {
-  Vec_Seq        *x = (Vec_Seq *)xin->data;
-  PetscScalar    *ya;
+  PetscScalar    *ya, *xa;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (xin != yin) {
-    ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
-    ierr = PetscMemcpy(ya,x->array,xin->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+    Vec_Seq        *x = (Vec_Seq *)xin->data;
+    Vec_Seq        *y = (Vec_Seq *)yin->data;
+
+    if (x->valid_GPU_array != GPU){
+      ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+      ierr = PetscMemcpy(ya,xa,xin->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = VecRestoreArray2(xin,&xa,yin,&ya);
+      if (y->valid_GPU_array != UNALLOCATED){
+        //if the vector we copy to had not allocated GPU space, it still hasn't.
+        y->valid_GPU_array = CPU;
+      }
+    } else {
+      PetscInt one = 1;
+
+      ierr = VecCUDACopyToGPU(yin);CHKERRQ(ierr);
+      cublasScopy(xin->map->n,x->GPUarray,one,y->GPUarray,one);
+      ierr = cublasGetError();CHKERRCUDA(ierr);
+      y->valid_GPU_array = GPU;
+      //for now, we always copy back from GPU
+      ierr = VecCUDACopyFromGPU(yin);CHKERRQ(ierr);
+    }
+#else
+    ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+    ierr = PetscMemcpy(ya,xa,xin->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = VecRestoreArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+#endif
   }
   PetscFunctionReturn(0);
 }
@@ -120,16 +157,15 @@ PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
 #define __FUNCT__ "VecSwap_Seq"
 PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
 {
-  Vec_Seq        *x = (Vec_Seq *)xin->data;
-  PetscScalar    *ya;
+  PetscScalar    *ya, *xa;
   PetscErrorCode ierr;
   PetscBLASInt   one = 1,bn = PetscBLASIntCast(xin->map->n);
 
   PetscFunctionBegin;
   if (xin != yin) {
-    ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
-    BLASswap_(&bn,x->array,&one,ya,&one);
-    ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
+    ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+    BLASswap_(&bn,xa,&one,ya,&one);
+    ierr = VecRestoreArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -138,17 +174,16 @@ PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
 #define __FUNCT__ "VecAXPY_Seq"
 PetscErrorCode VecAXPY_Seq(Vec yin,PetscScalar alpha,Vec xin)
 {
-  Vec_Seq        *y = (Vec_Seq *)yin->data;
   PetscErrorCode ierr;
-  PetscScalar    *xarray;
+  PetscScalar    *xarray,*yarray;
   PetscBLASInt   one = 1,bn = PetscBLASIntCast(yin->map->n);
 
   PetscFunctionBegin;
   /* assume that the BLAS handles alpha == 1.0 efficiently since we have no fast code for it */
   if (alpha != 0.0) {
-    ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
-    BLASaxpy_(&bn,&alpha,xarray,&one,y->array,&one);
-    ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);
+    ierr = VecGetArray2(yin,&yarray,xin,&xarray);CHKERRQ(ierr);
+    BLASaxpy_(&bn,&alpha,xarray,&one,yarray,&one);
+    ierr = VecRestoreArray2(xin,&xarray,yin,&yarray);CHKERRQ(ierr);
     ierr = PetscLogFlops(2.0*yin->map->n);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -158,11 +193,9 @@ PetscErrorCode VecAXPY_Seq(Vec yin,PetscScalar alpha,Vec xin)
 #define __FUNCT__ "VecAXPBY_Seq"
 PetscErrorCode VecAXPBY_Seq(Vec yin,PetscScalar alpha,PetscScalar beta,Vec xin)
 {
-  Vec_Seq           *y = (Vec_Seq *)yin->data;
   PetscErrorCode    ierr;
   PetscInt          n = yin->map->n,i;
-  PetscScalar       *yy = y->array,a = alpha,b = beta;
-  const PetscScalar *xx;
+  PetscScalar       *xx,*yy,a = alpha,b = beta;
 
   PetscFunctionBegin;
   if (a == 0.0) {
@@ -172,18 +205,18 @@ PetscErrorCode VecAXPBY_Seq(Vec yin,PetscScalar alpha,PetscScalar beta,Vec xin)
   } else if (a == 1.0) {
     ierr = VecAYPX_Seq(yin,beta,xin);CHKERRQ(ierr);
   } else if (b == 0.0) {
-    ierr = VecGetArray(xin,(PetscScalar**)&xx);CHKERRQ(ierr);
+    ierr = VecGetArray2(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       yy[i] = a*xx[i];
     }
-    ierr = VecRestoreArray(xin,(PetscScalar**)&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray2(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy);CHKERRQ(ierr);
     ierr = PetscLogFlops(xin->map->n);CHKERRQ(ierr);
   } else {
-    ierr = VecGetArray(xin,(PetscScalar**)&xx);CHKERRQ(ierr);
+    ierr = VecGetArray2(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       yy[i] = a*xx[i] + b*yy[i];
     }
-    ierr = VecRestoreArray(xin,(PetscScalar**)&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray2(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy);CHKERRQ(ierr);
     ierr = PetscLogFlops(3.0*xin->map->n);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -195,13 +228,10 @@ PetscErrorCode VecAXPBYPCZ_Seq(Vec zin,PetscScalar alpha,PetscScalar beta,PetscS
 {
   PetscErrorCode     ierr;
   PetscInt           n = zin->map->n,i;
-  const PetscScalar  *yy,*xx;
-  PetscScalar        *zz;
+  PetscScalar  *yy,*xx,*zz;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xin,(PetscScalar**)&xx);CHKERRQ(ierr);
-  ierr = VecGetArray(yin,(PetscScalar**)&yy);CHKERRQ(ierr);
-  ierr = VecGetArray(zin,&zz);CHKERRQ(ierr);
+  ierr = VecGetArray3(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy,zin,(PetscScalar**)&zz);CHKERRQ(ierr);
   if (alpha == 1.0) {
    for (i=0; i<n; i++) {
       zz[i] = xx[i] + beta*yy[i] + gamma*zz[i];
@@ -218,8 +248,6 @@ PetscErrorCode VecAXPBYPCZ_Seq(Vec zin,PetscScalar alpha,PetscScalar beta,PetscS
     }
     ierr = PetscLogFlops(5.0*n);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(xin,(PetscScalar**)&xx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yin,(PetscScalar**)&yy);CHKERRQ(ierr);
-  ierr = VecRestoreArray(zin,&zz);CHKERRQ(ierr);
+  ierr = VecRestoreArray3(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy,zin,(PetscScalar**)&zz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -49,4 +49,132 @@ EXTERN PetscErrorCode VecDuplicate_Seq(Vec,Vec *);
 EXTERN PetscErrorCode VecSetOption_Seq(Vec,VecOption,PetscTruth);
 EXTERN PetscErrorCode VecConjugate_Seq(Vec);
 EXTERN PetscErrorCode VecNorm_Seq(Vec,NormType,PetscReal*);
-#endif
+
+
+ 
+  #undef __FUNCT__
+  #define __FUNCT__ "VecGetArray2"
+PETSC_STATIC_INLINE PetscErrorCode VecGetArray2(Vec x, PetscScalar *xx[], Vec y, PetscScalar *yy[])
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = VecGetArray(x,xx);CHKERRQ(ierr);
+  if (x == y){
+    yy = xx;
+  }
+  else{
+    ierr = VecGetArray(y,yy);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+  #undef __FUNCT__
+  #define __FUNCT__ "VecRestoreArray2"
+PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray2(Vec x,  PetscScalar *xx[], Vec y, PetscScalar *yy[])
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = VecRestoreArray(x,xx);CHKERRQ(ierr);
+  if (x != y)
+    {
+      ierr = VecRestoreArray(y,yy);CHKERRQ(ierr);
+    }
+  PetscFunctionReturn(0);
+}
+
+  #undef __FUNCT__
+  #define __FUNCT__ "VecGetArray3"
+PETSC_STATIC_INLINE PetscErrorCode VecGetArray3(Vec x, PetscScalar *xx[], Vec y, PetscScalar *yy[], Vec w, PetscScalar *ww[])
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = VecGetArray(x,xx);CHKERRQ(ierr);
+  if (x == y){
+    yy = xx;
+  }
+  else{
+    ierr = VecGetArray(y,yy);CHKERRQ(ierr);
+  }
+  if (w == x){
+    ww = xx;
+  }
+  else if (w == y){
+    ww = yy;
+  }
+  else{
+    ierr = VecGetArray(w,ww);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+  #undef __FUNCT__
+  #define __FUNCT__ "VecRestoreArray3"
+PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray3(Vec x, PetscScalar *xx[], Vec y, PetscScalar *yy[], Vec w, PetscScalar *ww[])
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = VecRestoreArray(x,xx);CHKERRQ(ierr);
+  if (x != y){
+    ierr = VecRestoreArray(y,yy);CHKERRQ(ierr);
+  }
+  if (w != x && w != y){
+    ierr = VecRestoreArray(w,ww);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+
+#if defined(PETSC_HAVE_CUDA)
+  #define CHKERRCUDA(err) if (err != CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error %d",err)
+
+  #undef __FUNCT__
+  #define __FUNCT__ "VecCUDACopyToGPU"
+/*This function copies a vector from the CPU to the GPU unless we already have an up-to-date copy on the GPU */
+  PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyToGPU(Vec v)
+  {
+    Vec_Seq        *vs = (Vec_Seq*)v->data;
+    PetscInt       one = 1, cn = v->map->n;
+    PetscErrorCode ierr;
+    PetscScalar    *varray;
+
+    PetscFunctionBegin;
+    if (vs->valid_GPU_array == CPU || vs->valid_GPU_array == UNALLOCATED){
+      ierr = VecGetArray(v,&varray);CHKERRQ(ierr);
+      if (vs->valid_GPU_array == UNALLOCATED){
+      /*if this is the first time we're copying to the GPU then we allocate memory first */
+        ierr = cublasAlloc(cn,sizeof(PetscScalar),(void **)&vs->GPUarray);CHKERRCUDA(ierr);
+      }
+      ierr = cublasSetVector(cn,sizeof(PetscScalar),varray,one,vs->GPUarray,one);CHKERRCUDA(ierr);
+      vs->valid_GPU_array = SAME;
+      ierr = VecRestoreArray(v,&varray);CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
+  }
+
+  #undef __FUNCT__
+  #define __FUNCT__ "VecCUDACopyFromGPU"
+/*This function copies a vector from the GPU to the CPU unless we already have an up-to-date copy on the CPU */
+PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyFromGPU(Vec v)
+  {
+    Vec_Seq        *vs = (Vec_Seq*)v->data;
+    PetscInt       one = 1, cn = v->map->n;
+    PetscErrorCode ierr;
+    PetscScalar    *varray;
+
+    PetscFunctionBegin;
+    if (vs->valid_GPU_array == GPU){
+      ierr = VecGetArray(v,&varray);CHKERRQ(ierr);
+      ierr = cublasGetVector(cn,sizeof(PetscScalar),vs->GPUarray,one,varray,one);CHKERRCUDA(ierr);
+      vs->valid_GPU_array = SAME;
+      ierr = VecRestoreArray(v,&varray);CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
+  }
+  #endif
+  
+  #endif

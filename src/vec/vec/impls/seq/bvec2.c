@@ -4,7 +4,8 @@
 */
 
 #include "private/vecimpl.h"          /*I "petscvec.h" I*/
-#include "../src/vec/vec/impls/dvecimpl.h" 
+#include "../src/vec/vec/impls/dvecimpl.h"
+#include "../src/vec/vec/impls/mpi/pvecimpl.h" /* For VecView_MPI_HDF5 */
 #include "petscblaslapack.h"
 #if defined(PETSC_HAVE_PNETCDF)
 EXTERN_C_BEGIN
@@ -478,6 +479,9 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   PetscTruth     ismatlab;
 #endif
+#if defined(PETSC_HAVE_HDF5)
+  PetscTruth ishdf5;
+#endif
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
@@ -489,6 +493,9 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 #endif
 #if defined(PETSC_HAVE_PNETCDF)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERNETCDF,&isnetcdf);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_HDF5)
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERMATLAB,&ismatlab);CHKERRQ(ierr);
@@ -508,6 +515,10 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
   } else if (isnetcdf) {
     ierr = VecView_Seq_Netcdf(xin,viewer);CHKERRQ(ierr);
 #endif
+#if defined(PETSC_HAVE_HDF5)
+  } else if (ishdf5) {
+    ierr = VecView_MPI_HDF5(xin,viewer);CHKERRQ(ierr); /* Reusing VecView_MPI_HDF5 ... don't want code duplication*/
+#endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   } else if (ismatlab) {
     ierr = VecView_Seq_Matlab(xin,viewer);CHKERRQ(ierr);
@@ -522,11 +533,12 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 #define __FUNCT__ "VecGetValues_Seq"
 PetscErrorCode VecGetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],PetscScalar y[])
 {
-  Vec_Seq     *x = (Vec_Seq *)xin->data;
-  PetscScalar *xx = x->array;
-  PetscInt    i;
+  PetscScalar    *xx;
+  PetscInt       i;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
   for (i=0; i<ni; i++) {
     if (xin->stash.ignorenegidx && ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
@@ -535,6 +547,7 @@ PetscErrorCode VecGetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],PetscSca
 #endif
     y[i] = xx[ix[i]];
   }
+  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -542,11 +555,12 @@ PetscErrorCode VecGetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],PetscSca
 #define __FUNCT__ "VecSetValues_Seq"
 PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode m)
 {
-  Vec_Seq     *x = (Vec_Seq *)xin->data;
-  PetscScalar *xx = x->array;
-  PetscInt    i;
+  PetscScalar    *xx;
+  PetscInt       i;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
   if (m == INSERT_VALUES) {
     for (i=0; i<ni; i++) {
       if (xin->stash.ignorenegidx && ix[i] < 0) continue;
@@ -566,6 +580,7 @@ PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
       xx[ix[i]] += y[i];
     }  
   }  
+  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -573,14 +588,15 @@ PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
 #define __FUNCT__ "VecSetValuesBlocked_Seq"
 PetscErrorCode VecSetValuesBlocked_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const PetscScalar yin[],InsertMode m)
 {
-  Vec_Seq     *x = (Vec_Seq *)xin->data;
-  PetscScalar *xx = x->array,*y = (PetscScalar*)yin;
-  PetscInt    i,bs = xin->map->bs,start,j;
+  PetscScalar    *xx,*y = (PetscScalar*)yin;
+  PetscInt       i,bs = xin->map->bs,start,j;
+  PetscErrorCode ierr;
 
   /*
        For optimization could treat bs = 2, 3, 4, 5 as special cases with loop unrolling
   */
   PetscFunctionBegin;
+  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
   if (m == INSERT_VALUES) {
     for (i=0; i<ni; i++) {
       start = bs*ix[i];
@@ -605,10 +621,10 @@ PetscErrorCode VecSetValuesBlocked_Seq(Vec xin,PetscInt ni,const PetscInt ix[],c
       }
       y += bs;
     }  
-  }  
+  }
+  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDestroy_Seq"
@@ -625,6 +641,13 @@ PetscErrorCode VecDestroy_Seq(Vec v)
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)v,"Length=%D",v->map->n);
 #endif
+
+#if defined(PETSC_HAVE_CUDA)
+  if (vs->valid_GPU_array != UNALLOCATED){
+    ierr = cublasFree(vs->GPUarray);CHKERRCUDA(ierr);
+  }
+#endif
+
   ierr = PetscFree(vs->array_allocated);CHKERRQ(ierr);
   ierr = PetscFree(vs);CHKERRQ(ierr);
 
@@ -858,3 +881,4 @@ PetscErrorCode VecSetOption_Seq(Vec v,VecOption op,PetscTruth flag)
   } 
   PetscFunctionReturn(0);
 }
+
