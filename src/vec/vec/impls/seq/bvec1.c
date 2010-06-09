@@ -106,7 +106,7 @@ PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
     ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
     PetscScalar a = alpha;
     BLASscal_(&bn,&a,xx,&one);
-    ierr = VecReleaseArray(xin,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   }
 #endif
   ierr = PetscLogFlops(xin->map->n);CHKERRQ(ierr);
