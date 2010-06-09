@@ -99,7 +99,7 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
   PetscErrorCode    ierr;
   PetscInt          n = xin->map->n,i,j,nv_rem,j_rem;
   PetscScalar       sum0,sum1,sum2,sum3,x0,x1,x2,x3;
-  const PetscScalar * PETSC_RESTRICT yy0,* PETSC_RESTRICT yy1,* PETSC_RESTRICT yy2,*PETSC_RESTRICT yy3,* PETSC_RESTRICT x;
+  const PetscScalar * PETSC_RESTRICT yy0,* PETSC_RESTRICT yy1,* PETSC_RESTRICT yy2,*PETSC_RESTRICT yy3,* PETSC_RESTRICT x,*xbase;
   Vec               *yy;
 
   PetscFunctionBegin;
@@ -111,7 +111,8 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
   nv_rem = nv&0x3;
   yy     = (Vec *)yin;
   j      = n;
-  ierr   = VecGetArray(xin,(PetscScalar **)&x);CHKERRQ(ierr);
+  ierr   = VecGetArray(xin,(PetscScalar **)&xbase);CHKERRQ(ierr);
+  x      = xbase;
 
   switch (nv_rem) {
   case 3:
@@ -238,7 +239,7 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
     ierr = VecGetArray(yy[3],(PetscScalar **)&yy3);CHKERRQ(ierr);
 
     j = n;
-    //x = xv->array;
+    x = xbase;
     switch (j_rem=j&0x3) {
     case 3: 
       x2 = x[2]; 

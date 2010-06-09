@@ -6,7 +6,7 @@ ALL: lib
 
 CFLAGS   = ${CHOLMOD_INCLUDE}
 FFLAGS   =
-SOURCEC  = umfpack.c
+SOURCEC  = aijcholmod.c
 SOURCEF  = 
 SOURCEH  = 
 OBJSC    = ${SOURCEC:.c=.o}
