@@ -45,7 +45,7 @@ static PetscErrorCode DASetTypeFromOptions_Private(DA da)
 {
   const DAType   defaultType = DA1D;
   char           typeName[256];
-  PetscTruth     opt;
+  PetscTruth     opt = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -58,7 +58,9 @@ static PetscErrorCode DASetTypeFromOptions_Private(DA da)
     defaultType = ((PetscObject)da)->type_name;
   }
   if (!DARegisterAllCalled) {ierr = DARegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = PetscOptionsList("-da_type","DA type","DASetType",DAList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
+  if (da->dim == PETSC_DECIDE) {
+    ierr = PetscOptionsList("-da_type","DA type","DASetType",DAList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
+  }
   if (opt) {
     ierr = DASetType(da, typeName);CHKERRQ(ierr);
   } else {
@@ -121,9 +123,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetFromOptions(DA da)
     if (da->dim > 1) {ierr = PetscOptionsInt("-da_refine_y","Refinement ratio in y direction","DASetRefinementFactor",da->refine_y,&da->refine_y,PETSC_NULL);CHKERRQ(ierr);}
     if (da->dim > 2) {ierr = PetscOptionsInt("-da_refine_z","Refinement ratio in z direction","DASetRefinementFactor",da->refine_z,&da->refine_z,PETSC_NULL);CHKERRQ(ierr);}
     /* Handle DA type options; only makes sense to call if dimension has not yet been set  */
-    if (da->dim == PETSC_DECIDE) {
-      ierr = DASetTypeFromOptions_Private(da);CHKERRQ(ierr);
-    }
+    ierr = DASetTypeFromOptions_Private(da);CHKERRQ(ierr);
+    
     /* Handle specific DA options */
     if (da->ops->setfromoptions) {
       ierr = (*da->ops->setfromoptions)(da);CHKERRQ(ierr);
