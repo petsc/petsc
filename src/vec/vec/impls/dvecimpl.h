@@ -112,9 +112,11 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyFromGPU(Vec v)
     if (vs->valid_GPU_array == GPU){
       ierr = VecGetArray(v,&varray);CHKERRQ(ierr);
       ierr = cublasGetVector(cn,sizeof(PetscScalar),vs->GPUarray,one,varray,one);CHKERRCUDA(ierr);
-      vs->valid_GPU_array = SAME;
       ierr = VecRestoreArray(v,&varray);CHKERRQ(ierr);
+      vs->valid_GPU_array = SAME;
     }
+   /*Because not all vec_seq functions are modified to use CUBLAS yet, the valid_GPU_array flag needs to be set to CPU instead of same, so that we force the copy from CPU to GPU on each function.   */
+    vs->valid_GPU_array = CPU;
     PetscFunctionReturn(0);
   }
   #endif
