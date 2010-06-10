@@ -52,9 +52,11 @@ EXTERN PetscErrorCode VecNorm_Seq(Vec,NormType,PetscReal*);
 
 
  
+/* Previous macro versions of functions below
 #define VecGetArray2(x,xx,y,yy)  		\
   VecGetArray(x,xx);CHKERRQ(ierr);	        \
   if (x == y) *yy = *xx; else ierr = VecGetArray(y,yy)
+
 
 #define VecRestoreArray2(x,xx,y,yy)             \
   VecRestoreArray(x,xx);CHKERRQ(ierr);           \
@@ -69,6 +71,82 @@ EXTERN PetscErrorCode VecNorm_Seq(Vec,NormType,PetscReal*);
   VecRestoreArray(x,xx);CHKERRQ(ierr);                       \
   if (x !=y) {ierr = VecRestoreArray(y,yy);CHKERRQ(ierr);}   \
   if (w !=x && w!=y) ierr = VecRestoreArray(w,ww)        
+
+*/
+
+#undef __FUNCT__
+#define __FUNCT__ "VecGetArray2"
+PETSC_STATIC_INLINE PetscErrorCode VecGetArray2(Vec x, PetscScalar *xx[], Vec y, PetscScalar *yy[])
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = VecGetArray(x,xx);CHKERRQ(ierr);
+  if (x == y){
+    *yy = *xx;
+  }
+  else{
+    ierr = VecGetArray(y,yy);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecRestoreArray2"
+PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray2(Vec x, PetscScalar *xx[], Vec y, PetscScalar *yy[])
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = VecRestoreArray(x,xx);CHKERRQ(ierr);
+  if (x != y){
+    ierr = VecRestoreArray(y,yy);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecGetArray3"
+PETSC_STATIC_INLINE PetscErrorCode VecGetArray3(Vec x, PetscScalar *xx[], Vec y, PetscScalar *yy[], Vec w, PetscScalar *ww[])
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = VecGetArray(x,xx);CHKERRQ(ierr);
+  if (x == y){
+    *yy = *xx;
+  }
+  else{
+    ierr = VecGetArray(y,yy);CHKERRQ(ierr);
+  }
+  if (w == x){
+    *ww = *xx;
+  }
+  else if(w == y){
+    *ww = *yy;
+  }
+  else{
+    ierr = VecGetArray(w,ww);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecRestoreArray3"
+PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray3(Vec x, PetscScalar *xx[], Vec y, PetscScalar *yy[], Vec w, PetscScalar *ww[])
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = VecRestoreArray(x,xx);CHKERRQ(ierr);
+  if (x != y){
+    ierr = VecRestoreArray(y,yy);CHKERRQ(ierr);
+  }
+  if (w != x && w != y){
+    ierr = VecRestoreArray(w,ww);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 
 #if defined(PETSC_HAVE_CUDA)
