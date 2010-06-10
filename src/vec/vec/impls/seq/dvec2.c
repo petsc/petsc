@@ -678,13 +678,25 @@ PetscErrorCode VecAYPX_Seq(Vec yin,PetscScalar alpha,Vec xin)
     ierr = VecAXPY_Seq(yin,alpha,xin);CHKERRQ(ierr);
   } else if (alpha == -1.0) {
     PetscInt i;
+#if defined(PETSC_HAVE_CUDA)
+    ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
+    ierr = VecCUDACopyFromGPU(yin);CHKERRQ(ierr);
+#endif
     ierr = VecGetArray2(yin,(PetscScalar**)&yy,xin,(PetscScalar**)&xx);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       yy[i] = xx[i] - yy[i];
     }
     ierr = VecRestoreArray2(yin,(PetscScalar**)&yy,xin,(PetscScalar**)&xx);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+    Vec_Seq  *y=(Vec_Seq *)yin->data;    
+    y->valid_GPU_array = CPU;
+#endif
     ierr = PetscLogFlops(1.0*n);CHKERRQ(ierr);
   } else {
+#if defined(PETSC_HAVE_CUDA)
+    ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
+    ierr = VecCUDACopyFromGPU(yin);CHKERRQ(ierr);
+#endif
     ierr = VecGetArray2(yin,(PetscScalar**)&yy,xin,(PetscScalar**)&xx);CHKERRQ(ierr);
 #if defined(PETSC_USE_FORTRAN_KERNEL_AYPX)
     {
@@ -700,6 +712,10 @@ PetscErrorCode VecAYPX_Seq(Vec yin,PetscScalar alpha,Vec xin)
     }
 #endif
     ierr = VecRestoreArray2(yin,(PetscScalar**)&yy,xin,(PetscScalar**)&xx);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+    Vec_Seq *y=(Vec_Seq *)yin->data;
+    y->valid_GPU_array = CPU;
+#endif
     ierr = PetscLogFlops(2.0*n);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -723,6 +739,10 @@ PetscErrorCode VecWAXPY_Seq(Vec win, PetscScalar alpha,Vec xin,Vec yin)
 
   PetscFunctionBegin;
   ierr = VecGetArray3(win,(PetscScalar**)&ww,yin,(PetscScalar**)&yy,xin,(PetscScalar**)&xx);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
+  ierr = VecCUDACopyFromGPU(yin);CHKERRQ(ierr);
+#endif
   if (alpha == 1.0) {
     ierr = PetscLogFlops(n);CHKERRQ(ierr);
     /* could call BLAS axpy after call to memcopy, but may be slower */
@@ -742,6 +762,10 @@ PetscErrorCode VecWAXPY_Seq(Vec win, PetscScalar alpha,Vec xin,Vec yin)
     ierr = PetscLogFlops(2.0*n);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray3(win,(PetscScalar**)&ww,yin,(PetscScalar**)&yy,xin,(PetscScalar**)&xx);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  Vec_Seq *w = (Vec_Seq *)win->data;
+  w->valid_GPU_array = CPU;
+#endif
   PetscFunctionReturn(0);
 }
 
