@@ -45,7 +45,7 @@ static PetscErrorCode DASetTypeFromOptions_Private(DA da)
 {
   const DAType   defaultType = DA1D;
   char           typeName[256];
-  PetscTruth     opt;
+  PetscTruth     opt = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -58,7 +58,9 @@ static PetscErrorCode DASetTypeFromOptions_Private(DA da)
     defaultType = ((PetscObject)da)->type_name;
   }
   if (!DARegisterAllCalled) {ierr = DARegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = PetscOptionsList("-da_type","DA type","DASetType",DAList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
+  if (da->dim == PETSC_DECIDE) {
+    ierr = PetscOptionsList("-da_type","DA type","DASetType",DAList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
+  }
   if (opt) {
     ierr = DASetType(da, typeName);CHKERRQ(ierr);
   } else {
@@ -91,44 +93,38 @@ static PetscErrorCode DASetTypeFromOptions_Private(DA da)
 PetscErrorCode PETSCDM_DLLEXPORT DASetFromOptions(DA da)
 {
   PetscErrorCode ierr;
-  PetscInt       dim;
-  PetscTruth     flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
 
   ierr = PetscOptionsBegin(((PetscObject)da)->comm,((PetscObject)da)->prefix,"DA Options","DA");CHKERRQ(ierr);
-    /* Handle DA dimensions */
-    ierr = PetscOptionsInt("-da_dim","Number of dimensions","DASetDim",da->dim,&dim,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = DASetDim(da,dim);CHKERRQ(ierr);
-    }
     /* Handle DA grid sizes */
     if (da->M < 0) {
       PetscInt newM = -da->M;
       ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DASetSizes",newM,&newM,PETSC_NULL);CHKERRQ(ierr);
       da->M = newM;
     }
-    if (da->N < 0) {
+    if (da->dim > 1 && da->N < 0) {
       PetscInt newN = -da->N;
       ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DASetSizes",newN,&newN,PETSC_NULL);CHKERRQ(ierr);
       da->N = newN;
     }
-    if (da->P < 0) {
+    if (da->dim > 2 && da->P < 0) {
       PetscInt newP = -da->P;
       ierr = PetscOptionsInt("-da_grid_z","Number of grid points in z direction","DASetSizes",newP,&newP,PETSC_NULL);CHKERRQ(ierr);
       da->P = newP;
     }
     /* Handle DA parallel distibution */
     ierr = PetscOptionsInt("-da_processors_x","Number of processors in x direction","DASetNumProcs",da->m,&da->m,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-da_processors_y","Number of processors in y direction","DASetNumProcs",da->n,&da->n,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-da_processors_z","Number of processors in z direction","DASetNumProcs",da->p,&da->p,PETSC_NULL);CHKERRQ(ierr);
+    if (da->dim > 1) {ierr = PetscOptionsInt("-da_processors_y","Number of processors in y direction","DASetNumProcs",da->n,&da->n,PETSC_NULL);CHKERRQ(ierr);}
+    if (da->dim > 2) {ierr = PetscOptionsInt("-da_processors_z","Number of processors in z direction","DASetNumProcs",da->p,&da->p,PETSC_NULL);CHKERRQ(ierr);}
     /* Handle DA refinement */
     ierr = PetscOptionsInt("-da_refine_x","Refinement ratio in x direction","DASetRefinementFactor",da->refine_x,&da->refine_x,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-da_refine_y","Refinement ratio in y direction","DASetRefinementFactor",da->refine_y,&da->refine_y,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-da_refine_z","Refinement ratio in z direction","DASetRefinementFactor",da->refine_z,&da->refine_z,PETSC_NULL);CHKERRQ(ierr);
-    /* Handle DA type options */
+    if (da->dim > 1) {ierr = PetscOptionsInt("-da_refine_y","Refinement ratio in y direction","DASetRefinementFactor",da->refine_y,&da->refine_y,PETSC_NULL);CHKERRQ(ierr);}
+    if (da->dim > 2) {ierr = PetscOptionsInt("-da_refine_z","Refinement ratio in z direction","DASetRefinementFactor",da->refine_z,&da->refine_z,PETSC_NULL);CHKERRQ(ierr);}
+    /* Handle DA type options; only makes sense to call if dimension has not yet been set  */
     ierr = DASetTypeFromOptions_Private(da);CHKERRQ(ierr);
+    
     /* Handle specific DA options */
     if (da->ops->setfromoptions) {
       ierr = (*da->ops->setfromoptions)(da);CHKERRQ(ierr);

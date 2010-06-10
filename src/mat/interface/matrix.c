@@ -1523,6 +1523,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetValues(Mat mat,PetscInt m,const PetscInt
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
+  if (!m || !n) PetscFunctionReturn(0);
   PetscValidIntPointer(idxm,3);
   PetscValidIntPointer(idxn,5);
   PetscValidScalarPointer(v,6);

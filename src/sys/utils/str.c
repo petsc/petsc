@@ -737,7 +737,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetPetscDir(const char *dir[])
 
    Notes:
       Replaces   ${PETSC_ARCH},${PETSC_DIR},${PETSC_LIB_DIR},${DISPLAY},
-      ${HOMEDIRECTORY},${WORKINGDIRECTORY},${USERNAME} with appropriate values
+      ${HOMEDIRECTORY},${WORKINGDIRECTORY},${USERNAME}, ${HOSTNAME} with appropriate values
       as well as any environmental variables.
 
       Note: PETSC_LIB_DIR uses the environmental variable if it exists. PETSC_ARCH and PETSC_DIR use what
@@ -752,8 +752,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrreplace(MPI_Comm comm,const char aa[],cha
   int            i = 0;
   size_t         l,l1,l2,l3;
   char           *work,*par,*epar,env[1024],*tfree,*a = (char*)aa;
-  const char     *s[] = {"${PETSC_ARCH}","${PETSC_DIR}","${PETSC_LIB_DIR}","${DISPLAY}","${HOMEDIRECTORY}","${WORKINGDIRECTORY}","${USERNAME}",0};
-  const char     *r[] = {0,0,0,0,0,0,0,0};
+  const char     *s[] = {"${PETSC_ARCH}","${PETSC_DIR}","${PETSC_LIB_DIR}","${DISPLAY}","${HOMEDIRECTORY}","${WORKINGDIRECTORY}","${USERNAME}","${HOSTNAME}",0};
+  const char     *r[] = {0,0,0,0,0,0,0,0,0};
   PetscTruth     flag;
 
   PetscFunctionBegin;
@@ -771,10 +771,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrreplace(MPI_Comm comm,const char aa[],cha
   ierr = PetscMalloc(PETSC_MAX_PATH_LEN*sizeof(char),&r[4]);CHKERRQ(ierr);
   ierr = PetscMalloc(PETSC_MAX_PATH_LEN*sizeof(char),&r[5]);CHKERRQ(ierr);
   ierr = PetscMalloc(256*sizeof(char),&r[6]);CHKERRQ(ierr);
+  ierr = PetscMalloc(256*sizeof(char),&r[7]);CHKERRQ(ierr);
   ierr = PetscGetDisplay((char*)r[3],256);CHKERRQ(ierr);
   ierr = PetscGetHomeDirectory((char*)r[4],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   ierr = PetscGetWorkingDirectory((char*)r[5],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   ierr = PetscGetUserName((char*)r[6],256);CHKERRQ(ierr);
+  ierr = PetscGetHostName((char*)r[7],256);CHKERRQ(ierr);
 
   /* replace that are in environment */
   ierr = PetscOptionsGetenv(comm,"PETSC_LIB_DIR",env,1024,&flag);CHKERRQ(ierr);

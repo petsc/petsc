@@ -101,7 +101,7 @@ public class amsoptions {
 
     /* Process -ams_server and -ams_port command line options */
     int    i, port = -1;
-    String host = "";
+    String host = "localhost";
 
     for (i=0; i<args.length; i++) {
       if (args[i].equals("-ams_server")) {
@@ -178,6 +178,12 @@ public class amsoptions {
     String OptionsCategory = flist[0];
     String Prefix = mem.get_field(flist[0]).getStringData()[0];
     if (Prefix != null) {
+      if (Prefix.equals("Exit")) {
+	  /* Tell PETSc program we have received exit message */
+	  System.out.println("Received exit from program");
+	  mem.unlock();
+	  System.exit(0);
+      }
       OptionsCategory = Prefix+":"+OptionsCategory;
     }
     Label  label = new Label(OptionsCategory);
@@ -242,7 +248,7 @@ public class amsoptions {
           MyChoice  choice = new MyChoice(flist[i],flist[i+2]);
 
           choice.addItem(value[0]);
-          for (j=0; j<llist.length-1; j++) {
+          for (j=0; j<llist.length; j++) {
             if (!llist[j].equals(value[0])) {
               choice.addItem(llist[j]);
             }

@@ -186,7 +186,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPOpen(MPI_Comm comm,const char machine[],con
   if (machine && machine[0]) {
     ierr = PetscStrcpy(command,"ssh ");CHKERRQ(ierr);
     ierr = PetscStrcat(command,machine);CHKERRQ(ierr);
-    ierr = PetscStrcat(command," \" setenv DISPLAY ${DISPLAY}; ");CHKERRQ(ierr);
+    ierr = PetscStrcat(command," \" export DISPLAY=${DISPLAY}; ");CHKERRQ(ierr);
     /*
         Copy program into command but protect the " with a \ in front of it 
     */

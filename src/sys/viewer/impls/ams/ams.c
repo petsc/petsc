@@ -20,8 +20,7 @@ PetscErrorCode PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
   PetscErrorCode  ierr;
   int             port = -1;
   PetscTruth      flg,flg2;
-  char            m[16];
-  const char      *pdir;
+  char            m[64];
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-ams_port",&port,PETSC_NULL);CHKERRQ(ierr);
@@ -41,15 +40,18 @@ PetscErrorCode PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
     ierr = PetscStartMatlab(((PetscObject)v)->comm,m,"petscview",&fp);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-ams_java",m,16,&flg);CHKERRQ(ierr);
+  ierr = PetscGetHostName(m,64);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-ams_java",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscOptionsHasName(PETSC_NULL,"-ams_publish_options",&flg2);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(PETSC_NULL,"-ams_java",m,64,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-options_gui",&flg2);CHKERRQ(ierr);
     if (flg2) {
       char cmd[PETSC_MAX_PATH_LEN];
-      ierr = PetscStrcpy(cmd,"cd ");CHKERRQ(ierr);
-      ierr = PetscGetPetscDir(&pdir);CHKERRQ(ierr);
-      ierr = PetscStrcat(cmd,pdir);CHKERRQ(ierr);
-      ierr = PetscStrcat(cmd,"/src/sys/src/objects/ams/java;make runamsoptions AMS_OPTIONS=\"-ams_server ${HOSTNAME}\"");CHKERRQ(ierr);
+      ierr = PetscStrcpy(cmd,"cd ${PETSC_DIR}/src/sys/ams/java;java -d32 -classpath .:");CHKERRQ(ierr);
+      ierr = PetscStrcat(cmd,PETSC_AMS_DIR);CHKERRQ(ierr);
+      ierr = PetscStrcat(cmd,"/java -Djava.library.path=");CHKERRQ(ierr);
+      ierr = PetscStrcat(cmd,PETSC_AMS_DIR);CHKERRQ(ierr);
+      ierr = PetscStrcat(cmd,"/lib amsoptions -ams_server ${HOSTNAME}");CHKERRQ(ierr);
       ierr = PetscPOpen(((PetscObject)v)->comm,m,cmd,"r",PETSC_NULL);CHKERRQ(ierr);
     }
 

@@ -233,7 +233,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions_Factor(PC pc)
   }
   ierr = PetscOptionsReal("-pc_factor_fill","Expected non-zeros in factored matrix","PCFactorSetFill",((PC_Factor*)factor)->info.fill,&((PC_Factor*)factor)->info.fill,0);CHKERRQ(ierr);
 
-  ierr = PetscOptionsEnum("-pc_factor_shift_type","Shift added to diagonal","PCFactorSetShiftType",
+  ierr = PetscOptionsEnum("-pc_factor_shift_type","Type of shift to add to diagonal","PCFactorSetShiftType",
                           MatFactorShiftTypes,(PetscEnum)(int)((PC_Factor*)factor)->info.shifttype,&etmp,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCFactorSetShiftType(pc,(MatFactorShiftType)etmp);CHKERRQ(ierr);

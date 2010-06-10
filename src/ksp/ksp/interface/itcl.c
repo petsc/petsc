@@ -309,7 +309,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
   char                    type[256], monfilename[PETSC_MAX_PATH_LEN];
   PetscViewerASCIIMonitor monviewer;
   PetscTruth              flg,flag;
-  PetscInt                i,model[2],nmax = 2;
+  PetscInt                i,model[2],nmax;
   void                    *ctx;
 
   PetscFunctionBegin;
@@ -348,7 +348,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     }
 
     ierr = PetscOptionsTruth("-ksp_knoll","Use preconditioner applied to b for initial guess","KSPSetInitialGuessKnoll",ksp->guess_knoll,&ksp->guess_knoll,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsIntArray("-ksp_fischer_guess","Use Paul Fischer's algorihtm for initial guess","KSPSetUseFischerGuess",model,&nmax,&flag);CHKERRQ(ierr);
+    nmax = 2;
+    ierr = PetscOptionsIntArray("-ksp_fischer_guess","Use Paul Fischer's algorithm for initial guess","KSPSetUseFischerGuess",model,&nmax,&flag);CHKERRQ(ierr);
     if (flag) {
       if (nmax != 2) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Must pass in model,size as arguments");
       ierr = KSPSetUseFischerGuess(ksp,model[0],model[1]);CHKERRQ(ierr);
@@ -489,7 +490,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
       Graphically plots preconditioned residual norm and range of residual element values
     */
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-ksp_monitor_range_draw","Monitor graphically preconditioned residual norm","KSPMonitorSet",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-ksp_monitor_range_draw","Monitor graphically range of preconditioned residual norm","KSPMonitorSet",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       ierr = KSPMonitorSet(ksp,KSPMonitorLGRange,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
