@@ -55,7 +55,7 @@ int main(int argc,char **args)
   */
   ierr = MatLoad(fd,mtype,&A);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&xin);CHKERRQ(ierr);
-  ierr = VecLoadnew(fd,xin);CHKERRQ(ierr);
+  ierr = VecLoad(fd,xin);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
   //    ierr = MatView(A,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);

@@ -55,7 +55,7 @@ int main(int argc,char **args)
   ierr = MatLoad(fd,MATSEQBAIJ,&A);CHKERRQ(ierr);
   ierr = MatConvert(A,MATSAME,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-  ierr = VecLoadnew(fd,b);CHKERRQ(ierr);
+  ierr = VecLoad(fd,b);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
   /* 

@@ -14,7 +14,7 @@ void PETSC_STDCALL vecload_(PetscViewer *viewer,CHAR outtype PETSC_MIXED_LEN(len
   PetscViewer v;
   FIXCHAR(outtype,len,t);
   PetscPatchDefaultViewers_Fortran(viewer,v);
-  *ierr = VecLoadnew(v,*newvec);
+  *ierr = VecLoad(v,*newvec);
 }
 
 EXTERN_C_END

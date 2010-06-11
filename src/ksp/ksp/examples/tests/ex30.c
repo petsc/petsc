@@ -387,7 +387,7 @@ int main(int argc,char **args)
 
         ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[3],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
 	ierr = VecCreate(PETSC_COMM_WORLD,&xstar);CHKERRQ(ierr);
-        ierr = VecLoadnew(viewer, xstar);CHKERRQ(ierr);
+        ierr = VecLoad(viewer, xstar);CHKERRQ(ierr);
         ierr = VecAXPY(xstar, -1.0, x);CHKERRQ(ierr);
         ierr = VecNorm(xstar, NORM_2, &norm);CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD, "Error norm %A\n", norm);CHKERRQ(ierr);

@@ -98,7 +98,6 @@ struct _VecOps {
   PetscErrorCode (*resetarray)(Vec);      /* vector points to its original array, i.e. undoes any VecPlaceArray() */
   PetscErrorCode (*setfromoptions)(Vec);
   PetscErrorCode (*maxpointwisedivide)(Vec,Vec,PetscReal*);      /* m = max abs(x ./ y) */
-  PetscErrorCode (*loadnew)(PetscViewer,Vec);             /* New Vecload */
   PetscErrorCode (*pointwisemax)(Vec,Vec,Vec);
   PetscErrorCode (*pointwisemaxabs)(Vec,Vec,Vec);
   PetscErrorCode (*pointwisemin)(Vec,Vec,Vec);
@@ -215,7 +214,7 @@ typedef enum {UNALLOCATED,GPU,CPU,SAME} VecGPUFlag;
 /* Default obtain and release vectors; can be used by any implementation */
 EXTERN PetscErrorCode VecDuplicateVecs_Default(Vec,PetscInt,Vec *[]);
 EXTERN PetscErrorCode VecDestroyVecs_Default(Vec [],PetscInt);
-EXTERN PetscErrorCode VecLoadnew_Binary(PetscViewer,Vec);
+EXTERN PetscErrorCode VecLoad_Binary(PetscViewer,Vec);
 
 extern PetscInt NormIds[7];  /* map from NormType to IDs used to cache/retreive values of norms */
 

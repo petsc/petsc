@@ -298,7 +298,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
     if (flg) {
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&view_in);CHKERRQ(ierr);
       ierr = VecCreate(PETSC_COMM_WORLD,&Y);CHKERRQ(ierr);
-      ierr = VecLoadnew(view_in,Y);CHKERRQ(ierr);
+      ierr = VecLoad(view_in,Y);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(view_in);CHKERRQ(ierr);
       ierr = VecMax(Y,PETSC_NULL,&user->psi_bdy);CHKERRQ(ierr);
       ierr = SNESDAFormFunction(PETSC_NULL,Y,user->r,(void*)user);CHKERRQ(ierr);

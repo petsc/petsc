@@ -52,7 +52,7 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(global,&global2);CHKERRQ(ierr);
   ierr = VecCopy(global,global2);CHKERRQ(ierr);
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"hdf5output",FILE_MODE_READ,&viewer); CHKERRQ(ierr);
-  ierr = VecLoadnew(viewer,global);CHKERRQ(ierr);
+  ierr = VecLoad(viewer,global);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = VecEqual(global,global2,&flg);CHKERRQ(ierr);
   if (flg) {

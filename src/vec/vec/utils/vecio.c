@@ -37,8 +37,8 @@ static PetscErrorCode PetscViewerBinaryReadVecHeader_Private(PetscViewer viewer,
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecLoadnew_Binary"
-PetscErrorCode VecLoadnew_Binary(PetscViewer viewer, Vec vec)
+#define __FUNCT__ "VecLoad_Binary"
+PetscErrorCode VecLoad_Binary(PetscViewer viewer, Vec vec)
 {
   PetscMPIInt    size,rank,tag;
   int            fd;
@@ -137,8 +137,8 @@ PetscErrorCode VecLoadnew_Binary(PetscViewer viewer, Vec vec)
 
 #if defined(PETSC_HAVE_HDF5)
 #undef __FUNCT__  
-#define __FUNCT__ "VecLoadnew_HDF5"
-PetscErrorCode VecLoadnew_HDF5(PetscViewer viewer, Vec xin)
+#define __FUNCT__ "VecLoad_HDF5"
+PetscErrorCode VecLoad_HDF5(PetscViewer viewer, Vec xin)
 {
   hsize_t        rdim,dim = 1; /* Could have dim 2 for blocked vectors */
   PetscInt       n, N, bs, low;
@@ -230,16 +230,16 @@ PetscErrorCode VecLoadnew_HDF5(PetscViewer viewer, Vec xin)
 #endif
 
 #undef __FUNCT__
-#define __FUNCT__ "VecLoadnew"
+#define __FUNCT__ "VecLoad"
 /*@C 
-  VecLoadnew - Loads a vector that has been stored in binary format
+  VecLoad - Loads a vector that has been stored in binary or HDF5 format
   with VecView().
 
   Collective on PetscViewer 
 
   Input Parameters:
 + viewer - binary file viewer, obtained from PetscViewerBinaryOpen() or
-           NetCDF file viewer, obtained from PetscViewerNetcdfOpen()
+           HDF5 file viewer, obtained from PetscViewerHDF5Open()
 - newvec - the newly loaded vector, this needs to have been created with VecCreate() or
            some related function before the VecLoad(). 
 
@@ -249,7 +249,7 @@ PetscErrorCode VecLoadnew_HDF5(PetscViewer viewer, Vec xin)
   The input file must contain the full global vector, as
   written by the routine VecView().
 
-  If the type or size of newvec is not set before a call to VecLoadnew, PETSc 
+  If the type or size of newvec is not set before a call to VecLoad, PETSc 
   sets the type and the local and global sizes.If type and/or 
   sizes are already set, then the same are used.
 
@@ -274,7 +274,7 @@ and PetscBinaryWrite() to see how this may be done.
 
 .seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoadIntoVector() 
 @*/  
-PetscErrorCode PETSCVEC_DLLEXPORT VecLoadnew(PetscViewer viewer, Vec newvec)
+PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, Vec newvec)
 {
   PetscErrorCode ierr;
   DA             da;
@@ -287,7 +287,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoadnew(PetscViewer viewer, Vec newvec)
   ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)newvec,"DA",(PetscObject*)&da);CHKERRQ(ierr);
   if (da) {
-    ierr = VecLoadnew_DA(viewer,newvec);CHKERRQ(ierr);
+    ierr = VecLoad_DA(viewer,newvec);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -308,11 +308,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoadnew(PetscViewer viewer, Vec newvec)
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Since HDF5 format gives ASCII name for each object in file; must use VecLoad() after setting name of Vec with PetscObjectSetName()");
      ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
     }
-    ierr = VecLoadnew_HDF5(viewer,newvec);CHKERRQ(ierr);
+    ierr = VecLoad_HDF5(viewer,newvec);CHKERRQ(ierr);
   } else
 #endif
   {
-    ierr = VecLoadnew_Binary(viewer,newvec);CHKERRQ(ierr);
+    ierr = VecLoad_Binary(viewer,newvec);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);

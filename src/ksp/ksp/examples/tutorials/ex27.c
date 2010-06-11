@@ -69,7 +69,7 @@ int main(int argc,char **args)
     ierr  = MatLoad(fd,MATMPIAIJ,&A);CHKERRQ(ierr);
     ierr  = PetscPushErrorHandler(PetscIgnoreErrorHandler,PETSC_NULL);CHKERRQ(ierr);
     ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-    ierr = VecLoadnew(fd,b);CHKERRQ(ierr);
+    ierr = VecLoad(fd,b);CHKERRQ(ierr);
     ierr  = PetscPopErrorHandler();CHKERRQ(ierr);
     ierr  = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
     if (ierrp) { /* if file contains no RHS, then use a vector of all ones */

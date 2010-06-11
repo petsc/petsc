@@ -100,7 +100,7 @@ int main(int argc,char **argv)
 
   ierr = DACreateGlobalVector(da2,&global2);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)global2,"Test_Vec");CHKERRQ(ierr);
-  ierr = VecLoadnew(viewer,global2);CHKERRQ(ierr);
+  ierr = VecLoad(viewer,global2);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Global vector read from temp file is \n");CHKERRQ(ierr);

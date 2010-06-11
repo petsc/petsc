@@ -49,7 +49,7 @@ int main(int argc,char **args)
   */
   ierr = MatLoad(fd,MATSEQBAIJ,&A);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecLoadnew(fd,x);CHKERRQ(ierr);
+  ierr = VecLoad(fd,x);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&w);CHKERRQ(ierr);

@@ -656,8 +656,6 @@ static PetscErrorCode VecPublish_Seq(PetscObject obj)
 }
 #endif
 
-EXTERN PetscErrorCode VecLoadnew_Binary(PetscViewer,Vec);
-
 static struct _VecOps DvOps = {VecDuplicate_Seq, /* 1 */
             VecDuplicateVecs_Default,
             VecDestroyVecs_Default,
@@ -707,7 +705,6 @@ static struct _VecOps DvOps = {VecDuplicate_Seq, /* 1 */
             VecResetArray_Seq,
             0,
             VecMaxPointwiseDivide_Seq,
-	    VecLoadnew_Binary,		       
             VecPointwiseMax_Seq,
             VecPointwiseMaxAbs_Seq,
             VecPointwiseMin_Seq,
