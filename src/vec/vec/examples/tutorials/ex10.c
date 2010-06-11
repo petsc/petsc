@@ -17,17 +17,16 @@ int main(int argc,char **args)
   PetscScalar    v;
   Vec            u;
   PetscViewer    viewer;
-  PetscTruth     vstage2,vstage3,mpiio_use,isbinary,ishdf5,isnetcdf;
+  PetscTruth     vstage2,vstage3,mpiio_use,isbinary,ishdf5;
 #if defined(PETSC_USE_LOG)
   PetscLogEvent  VECTOR_GENERATE,VECTOR_READ;
 #endif
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  isbinary = ishdf5 = isnetcdf = PETSC_FALSE;
+  isbinary = ishdf5 = PETSC_FALSE;
   mpiio_use = vstage2 = vstage3 = PETSC_FALSE;
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-binary",&isbinary,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-hdf5",&ishdf5,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-netcdf",&isnetcdf,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-mpiio",&mpiio_use,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-sizes_set",&vstage2,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-type_set",&vstage3,PETSC_NULL);CHKERRQ(ierr);

@@ -694,9 +694,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoadnew(PetscViewer viewer, Vec newvec)
   PetscErrorCode ierr;
   DA             da;
   PetscTruth     isbinary;
-#if defined(PETSC_HAVE_PNETCDF)
-  PetscTruth     isnetcdf;
-#endif
 #if defined(PETSC_HAVE_HDF5)
   PetscTruth     ishdf5;
 #endif
@@ -715,19 +712,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoadnew(PetscViewer viewer, Vec newvec)
 #if defined(PETSC_HAVE_HDF5)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_PNETCDF)
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERNETCDF,&isnetcdf);CHKERRQ(ierr);
-#endif
 
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-#if defined(PETSC_HAVE_PNETCDF)
-  if (isnetcdf) {
-    ierr = VecLoad_Netcdf(viewer,newvec);CHKERRQ(ierr);
-  } else
-#endif
 #if defined(PETSC_HAVE_HDF5)
   if (ishdf5) {
     if (!((PetscObject)newvec)->name) { 
