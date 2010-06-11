@@ -20,3 +20,4 @@ class Configure(PETSc.package.NewPackage):
   def configureLibrary(self):
     PETSc.package.NewPackage.configureLibrary(self)
     self.addDefine('AMS_DIR', '"'+os.path.dirname(self.include[0])+'"')
+    self.addMakeMacro('AMS_DIR', '"'+os.path.dirname(self.include[0])+'"')    

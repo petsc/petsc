@@ -1,3 +1,0 @@
-java -d32 -classpath .:${AMS_DIR}/java -Djava.library.path=${AMS_DIR}/lib amsoptions
-
-javac -classpath .:${AMS_DIR}/java amsoptions.java 
