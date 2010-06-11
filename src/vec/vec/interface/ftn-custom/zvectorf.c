@@ -45,7 +45,7 @@ void PETSC_STDCALL vecloadintovector_(PetscViewer *viewer,Vec *vec,PetscErrorCod
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
-  *ierr = VecLoadIntoVector(v,*vec);
+  *ierr = VecLoadnew(v,*vec);
 }
 
 void PETSC_STDCALL vecview_(Vec *x,PetscViewer *vin,PetscErrorCode *ierr)

@@ -59,8 +59,8 @@ int main(int argc,char **argv)
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = VecLoadIntoVector(viewer,global2);CHKERRQ(ierr);
-  ierr = VecLoadIntoVector(viewer,global4);CHKERRQ(ierr);
+  ierr = VecLoadnew(viewer,global2);CHKERRQ(ierr);
+  ierr = VecLoadnew(viewer,global4);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
 
   ierr = VecAXPY(global2,mone,global1);CHKERRQ(ierr);

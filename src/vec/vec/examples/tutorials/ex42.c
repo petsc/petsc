@@ -16,7 +16,8 @@ int main(int argc,char **args)
   fd = PETSC_VIEWER_SOCKET_WORLD;
 
   for (i=0;i<1000;i++){
-    ierr = VecLoad(fd,VECMPI,&b);CHKERRQ(ierr);
+    ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
+    ierr = VecLoadnew(fd,b);CHKERRQ(ierr);
     ierr = VecView(b,fd);CHKERRQ(ierr);
     ierr = VecDestroy(b);CHKERRQ(ierr);
   }

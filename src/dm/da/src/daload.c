@@ -84,7 +84,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DALoad(PetscViewer viewer,PetscInt M,PetscInt N
     /* We should change the handling of coordinates so there is always a coordinate DA when there is a coordinate vector */
     ierr = DACreateGlobalVector(dac,&tmpglobal);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject)tmpglobal,"coor_");CHKERRQ(ierr);
-    ierr = VecLoadIntoVector(viewer,tmpglobal);CHKERRQ(ierr);
+    ierr = VecLoadnew(viewer,tmpglobal);CHKERRQ(ierr);
     ierr = VecGetLocalSize(tmpglobal,&mlocal);CHKERRQ(ierr);
     ierr = VecCreateMPI(comm,mlocal,PETSC_DETERMINE,&global);CHKERRQ(ierr);
     ierr = VecCopy(tmpglobal,global);CHKERRQ(ierr);

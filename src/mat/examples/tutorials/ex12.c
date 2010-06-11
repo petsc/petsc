@@ -86,7 +86,8 @@ int main(int argc,char **args)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
 
   ierr = MatLoad(fd,MATSEQAIJ,&A);CHKERRQ(ierr);
-  ierr = VecLoad(fd,VECSEQ,&v);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&v);CHKERRQ(ierr);
+  ierr = VecLoadnew(fd,v);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = PadMatrix(A,v,3.0,&B);CHKERRQ(ierr);
   ierr = MatView(B,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);

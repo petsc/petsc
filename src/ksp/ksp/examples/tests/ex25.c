@@ -31,8 +31,10 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetString(PETSC_NULL,"-fload",filein,127,PETSC_NULL);CHKERRQ(ierr); 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filein,FILE_MODE_READ,&view);CHKERRQ(ierr); 
   ierr = MatLoad(view,MATMPISBAIJ,&C);CHKERRQ(ierr);
-  ierr = VecLoad(view,VECMPI,&b);CHKERRQ(ierr);
-  ierr = VecLoad(view,VECMPI,&u);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
+  ierr = VecLoadnew(view,b);CHKERRQ(ierr);
+  ierr = VecLoadnew(view,u);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(view);CHKERRQ(ierr);
   /* ierr = VecView(b,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
   /* ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */

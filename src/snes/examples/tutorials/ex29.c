@@ -366,7 +366,7 @@ PetscErrorCode Initialize(DMMG *dmmg)
   if (flg) {
     PetscViewer viewer;
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"binaryoutput",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-    ierr = VecLoadIntoVector(viewer,dmmg[param->mglevels-1]->x);CHKERRQ(ierr);
+    ierr = VecLoadnew(viewer,dmmg[param->mglevels-1]->x);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }

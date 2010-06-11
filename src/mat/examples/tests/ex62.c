@@ -41,7 +41,8 @@ int main(int argc,char **args)
      Load the matrix and vector; then destroy the viewer.
   */
   ierr = MatLoad(fd,type,&C);CHKERRQ(ierr);
-  ierr = VecLoad(fd,PETSC_NULL,&u);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
+  ierr = VecLoadnew(fd,u);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
   ierr = VecDuplicate(u,&x);CHKERRQ(ierr);

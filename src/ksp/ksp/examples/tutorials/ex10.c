@@ -109,23 +109,23 @@ int main(int argc,char **args)
     if (!preload){
       flg = PETSC_FALSE;
       ierr = PetscOptionsGetString(PETSC_NULL,"-rhs",file[2],PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+      ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
       if (flg){ /* rhs is stored in a separate file */
         if (file[2][0] == '0') {
 	  PetscInt    m;
 	  PetscScalar one = 1.0;
 	  ierr = PetscInfo(0,"Using vector of ones for RHS\n");CHKERRQ(ierr);
 	  ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
-	  ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
 	  ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);
 	  ierr = VecSetFromOptions(b);CHKERRQ(ierr);
 	  ierr = VecSet(b,one);CHKERRQ(ierr);
         } else {
           ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
           ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],FILE_MODE_READ,&fd);CHKERRQ(ierr);
-          ierr = VecLoad(fd,PETSC_NULL,&b);CHKERRQ(ierr);
+          ierr = VecLoadnew(fd,b);CHKERRQ(ierr);
         }
       } else {
-        ierr = VecLoad(fd,PETSC_NULL,&b);CHKERRQ(ierr);
+        ierr = VecLoadnew(fd,b);CHKERRQ(ierr);
       }
     }
     ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
@@ -204,7 +204,7 @@ int main(int argc,char **args)
     if (initialguessfile) {
       PetscViewer viewer2;
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,initialguessfilename,FILE_MODE_READ,&viewer2);CHKERRQ(ierr);
-      ierr = VecLoadIntoVector(viewer2,x);CHKERRQ(ierr);
+      ierr = VecLoadnew(viewer2,x);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(viewer2);CHKERRQ(ierr);
       initialguess = PETSC_TRUE;
     } else {
@@ -383,7 +383,8 @@ int main(int argc,char **args)
         PetscReal   norm;
 
         ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[3],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-        ierr = VecLoad(viewer, VECMPI, &xstar);CHKERRQ(ierr);
+	ierr = VecCreate(PETSC_COMM_WORLD,&xstar);CHKERRQ(ierr);
+        ierr = VecLoadnew(viewer, xstar);CHKERRQ(ierr);
         ierr = VecAXPY(xstar, -1.0, x);CHKERRQ(ierr);
         ierr = VecNorm(xstar, NORM_2, &norm);CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD, "Error norm %A\n", norm);CHKERRQ(ierr);

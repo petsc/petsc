@@ -48,7 +48,7 @@ int main(int argc,char **argv)
   ierr = PetscObjectSetName((PetscObject) y, "TestVec");CHKERRQ(ierr);
   ierr = VecSetSizes(y, PETSC_DECIDE, n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(y);CHKERRQ(ierr);
-  ierr = VecLoadIntoVector(viewer, y);CHKERRQ(ierr);
+  ierr = VecLoadnew(viewer, y);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
 
   ierr = VecEqual(x, y, &equal);CHKERRQ(ierr);

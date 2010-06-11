@@ -20,7 +20,8 @@ int main(int argc,char **args)
   for (i=0;i<1000;i++){
     ierr = VecView(b,fd);CHKERRQ(ierr);
     ierr = VecDestroy(b);CHKERRQ(ierr);
-    ierr = VecLoad(fd,VECMPI,&b);CHKERRQ(ierr);
+    ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
+    ierr = VecLoadnew(fd,b);CHKERRQ(ierr);
   }
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
