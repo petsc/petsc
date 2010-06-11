@@ -7,11 +7,6 @@
 #include "../src/vec/vec/impls/dvecimpl.h"
 #include "../src/vec/vec/impls/mpi/pvecimpl.h" /* For VecView_MPI_HDF5 */
 #include "petscblaslapack.h"
-#if defined(PETSC_HAVE_PNETCDF)
-EXTERN_C_BEGIN
-#include "pnetcdf.h"
-EXTERN_C_END
-#endif
 
 #include "../src/vec/vec/impls/seq/ftn-kernels/fnorm.h"
 #undef __FUNCT__  
@@ -449,36 +444,6 @@ static PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_PNETCDF)
-#undef __FUNCT__  
-#define __FUNCT__ "VecView_Seq_Netcdf"
-PetscErrorCode VecView_Seq_Netcdf(Vec xin,PetscViewer v)
-{
-  PetscErrorCode ierr;
-  int            n = xin->map->n,ncid,xdim,xdim_num=1,xin_id,xstart=0;
-  PetscScalar    *xarray;
-
-  PetscFunctionBegin;
-#if !defined(PETSC_USE_COMPLEX)
-  ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
-  ierr = PetscViewerNetcdfGetID(v,&ncid);CHKERRQ(ierr);
-  if (ncid < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"First call PetscViewerNetcdfOpen to create NetCDF dataset");
-  /* define dimensions */
-  ierr = ncmpi_def_dim(ncid,"PETSc_Vector_Global_Size",n,&xdim);CHKERRQ(ierr);
-  /* define variables */
-  ierr = ncmpi_def_var(ncid,"PETSc_Vector_Seq",NC_DOUBLE,xdim_num,&xdim,&xin_id);CHKERRQ(ierr);
-  /* leave define mode */
-  ierr = ncmpi_enddef(ncid);CHKERRQ(ierr);
-  /* store the vector */
-  ierr = VecGetOwnershipRange(xin,&xstart,PETSC_NULL);CHKERRQ(ierr);
-  ierr = ncmpi_put_vara_double_all(ncid,xin_id,(const MPI_Offset*)&xstart,(const MPI_Offset*)&n,xarray);CHKERRQ(ierr);
-#else 
-    PetscPrintf(PETSC_COMM_WORLD,"NetCDF viewer not supported for complex numbers\n");
-#endif
-  PetscFunctionReturn(0);
-}
-#endif
-
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 #include "mat.h"   /* Matlab include file */
 EXTERN_C_BEGIN
@@ -510,9 +475,6 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_MATHEMATICA)
   PetscTruth     ismathematica;
 #endif
-#if defined(PETSC_HAVE_PNETCDF)
-  PetscTruth     isnetcdf;
-#endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   PetscTruth     ismatlab;
 #endif
@@ -527,9 +489,6 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATHEMATICA)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERMATHEMATICA,&ismathematica);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_PNETCDF)
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERNETCDF,&isnetcdf);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_HDF5)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
@@ -547,10 +506,6 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_MATHEMATICA)
   } else if (ismathematica) {
     ierr = PetscViewerMathematicaPutVector(viewer,xin);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_PNETCDF)
-  } else if (isnetcdf) {
-    ierr = VecView_Seq_Netcdf(xin,viewer);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_HDF5)
   } else if (ishdf5) {
@@ -701,7 +656,6 @@ static PetscErrorCode VecPublish_Seq(PetscObject obj)
 }
 #endif
 
-EXTERN PetscErrorCode VecLoad_Binary(PetscViewer, const VecType, Vec*);
 EXTERN PetscErrorCode VecLoadnew_Binary(PetscViewer,Vec);
 
 static struct _VecOps DvOps = {VecDuplicate_Seq, /* 1 */
@@ -744,7 +698,6 @@ static struct _VecOps DvOps = {VecDuplicate_Seq, /* 1 */
             VecNorm_Seq,
             VecMDot_Seq,
             VecMTDot_Seq, /* 40 */
-            VecLoadIntoVector_Default,
             0, /* VecLoadIntoVectorNative */
             VecReciprocal_Default,
             0, /* VecViewNative */
@@ -754,7 +707,6 @@ static struct _VecOps DvOps = {VecDuplicate_Seq, /* 1 */
             VecResetArray_Seq,
             0,
             VecMaxPointwiseDivide_Seq,
-            VecLoad_Binary, /* 50 */
 	    VecLoadnew_Binary,		       
             VecPointwiseMax_Seq,
             VecPointwiseMaxAbs_Seq,

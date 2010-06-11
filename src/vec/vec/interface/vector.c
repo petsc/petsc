@@ -957,78 +957,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecResetArray(Vec vec)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "VecLoadIntoVector"
-/*@C
-  VecLoadIntoVector - Loads a vector that has been stored in binary (or HDF5) format
-  with VecView().
-
-  Collective on PetscViewer
-
-  Input Parameters:
-+ viewer - binary file viewer, obtained from PetscViewerBinaryOpen()
-- vec - vector to contain files values (must be of correct length)
-
-  Level: intermediate
-
-  Notes:
-  The input file must contain the full global vector, as
-  written by the routine VecView().
-
-  Use VecLoad() to create the vector as the values are read in
-
-  If using HDF5, you must assign the Vec the same name as was used in the Vec that was stored
-  in the file using PetscObjectSetName(). Otherwise you will get the error message
-$     Cannot H5Dopen2() with Vec named NAMEOFOBJECT
-
-  Notes for advanced users:
-  Most users should not need to know the details of the binary storage
-  format, since VecLoad() and VecView() completely hide these details.
-  But for anyone who's interested, the standard binary matrix storage
-  format is
-.vb
-     int    VEC_FILE_CLASSID
-     int    number of rows
-     PetscScalar *values of all nonzeros
-.ve
-
-   In addition, PETSc automatically does the byte swapping for
-machines that store the bytes reversed, e.g.  DEC alpha, freebsd,
-linux, Windows and the paragon; thus if you write your own binary
-read/write routines you have to swap the bytes; see PetscBinaryRead()
-and PetscBinaryWrite() to see how this may be done.
-
-   Concepts: vector^loading from file
-
-.seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoad()
-@*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecLoadIntoVector(PetscViewer viewer,Vec vec)
-{
-  PetscErrorCode    ierr;
-  PetscViewerFormat format;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
-  PetscValidType(vec,2);
-  if (!vec->ops->loadintovector) SETERRQ(((PetscObject)vec)->comm,PETSC_ERR_SUP,"Vector does not support load");
-  ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
-  /*
-     Check if default loader has been overridden, but user request it anyways
-  */
-  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (vec->ops->loadintovectornative && format == PETSC_VIEWER_NATIVE) {
-    ierr   = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = (*vec->ops->loadintovectornative)(viewer,vec);CHKERRQ(ierr);
-    ierr   = PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
-  } else {
-    ierr = (*vec->ops->loadintovector)(viewer,vec);CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)vec);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "VecReciprocal"
 /*@
    VecReciprocal - Replaces each component of a vector by its reciprocal.
@@ -1071,9 +999,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetOperation(Vec vec,VecOperation op, void 
   /* save the native version of the viewer */
   if (op == VECOP_VIEW && !vec->ops->viewnative) {
     vec->ops->viewnative = vec->ops->view;
-  } else if (op == VECOP_LOADINTOVECTOR && !vec->ops->loadintovectornative) {
-    vec->ops->loadintovectornative = vec->ops->loadintovector;
-  }
+  } 
   (((void(**)(void))vec->ops)[(int)op]) = f;
   PetscFunctionReturn(0);
 }

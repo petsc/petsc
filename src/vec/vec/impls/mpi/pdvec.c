@@ -3,11 +3,6 @@
      Code for some of the parallel vector primatives.
 */
 #include "../src/vec/vec/impls/mpi/pvecimpl.h"   /*I  "petscvec.h"   I*/
-#if defined(PETSC_HAVE_PNETCDF)
-EXTERN_C_BEGIN
-#include "pnetcdf.h"
-EXTERN_C_END
-#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDestroy_MPI"
@@ -670,33 +665,6 @@ PetscErrorCode VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
 }
 #endif
 
-#if defined(PETSC_HAVE_PNETCDF)
-#undef __FUNCT__  
-#define __FUNCT__ "VecView_MPI_Netcdf"
-PetscErrorCode VecView_MPI_Netcdf(Vec xin,PetscViewer v)
-{
-  PetscErrorCode ierr;
-  int         n = xin->map->n,ncid,xdim,xdim_num=1,xin_id,xstart;
-  PetscScalar *xarray;
-
-  PetscFunctionBegin;
-  ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
-  ierr = PetscViewerNetcdfGetID(v,&ncid);CHKERRQ(ierr);
-  if (ncid < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"First call PetscViewerNetcdfOpen to create NetCDF dataset");
-  /* define dimensions */
-  ierr = ncmpi_def_dim(ncid,"PETSc_Vector_Global_Size",xin->map->N,&xdim);CHKERRQ(ierr);
-  /* define variables */
-  ierr = ncmpi_def_var(ncid,"PETSc_Vector_MPI",NC_DOUBLE,xdim_num,&xdim,&xin_id);CHKERRQ(ierr);
-  /* leave define mode */
-  ierr = ncmpi_enddef(ncid);CHKERRQ(ierr);
-  /* store the vector */
-  ierr = VecGetOwnershipRange(xin,&xstart,PETSC_NULL);CHKERRQ(ierr);
-  ierr = ncmpi_put_vara_double_all(ncid,xin_id,(const MPI_Offset*)&xstart,(const MPI_Offset*)&n,xarray);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#endif
-
 #if defined(PETSC_HAVE_HDF5)
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI_HDF5"
@@ -788,9 +756,6 @@ PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_MATHEMATICA)
   PetscTruth     ismathematica;
 #endif
-#if defined(PETSC_HAVE_NETCDF)
-  PetscTruth     isnetcdf;
-#endif
 #if defined(PETSC_HAVE_HDF5)
   PetscTruth     ishdf5;
 #endif
@@ -804,9 +769,6 @@ PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATHEMATICA)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERMATHEMATICA,&ismathematica);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_NETCDF)
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERNETCDF,&isnetcdf);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_HDF5)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
@@ -830,10 +792,6 @@ PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_MATHEMATICA)
   } else if (ismathematica) {
     ierr = PetscViewerMathematicaPutVector(viewer,xin);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_PNETCDF)
-  } else if (isnetcdf) {
-    ierr = VecView_MPI_Netcdf(xin,viewer);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_HDF5)
   } else if (ishdf5) {
