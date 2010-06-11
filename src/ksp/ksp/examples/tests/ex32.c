@@ -1,4 +1,3 @@
-
 /*
   Laplacian in 3D. Use for testing BAIJ matrix. 
   Modeled by the partial differential equation

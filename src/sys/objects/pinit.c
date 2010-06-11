@@ -741,6 +741,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   PetscMPIInt    rank;
   int            nopt;
   PetscTruth     flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE;
+#if defined(PETSC_HAVE_AMS)
+  PetscTruth     flg = PETSC_FALSE;
+#endif
   
   PetscFunctionBegin;
 
@@ -749,6 +752,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     PetscFunctionReturn(0);
   }
   ierr = PetscInfo(PETSC_NULL,"PetscFinalize() called\n");
+
+#if defined(PETSC_HAVE_AMS)
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-options_gui",&flg,PETSC_NULL);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscOptionsAMSDestroy();CHKERRQ(ierr);
+  }  
+#endif
 
   ierr = PetscOpenMPFinalize();CHKERRQ(ierr); 
 

@@ -17,17 +17,16 @@ int main(int argc,char **args)
   PetscScalar    v;
   Vec            u;
   PetscViewer    viewer;
-  PetscTruth     vstage2,vstage3,mpiio_use,isbinary,ishdf5,isnetcdf;
+  PetscTruth     vstage2,vstage3,mpiio_use,isbinary,ishdf5;
 #if defined(PETSC_USE_LOG)
   PetscLogEvent  VECTOR_GENERATE,VECTOR_READ;
 #endif
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  isbinary = ishdf5 = isnetcdf = PETSC_FALSE;
+  isbinary = ishdf5 = PETSC_FALSE;
   mpiio_use = vstage2 = vstage3 = PETSC_FALSE;
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-binary",&isbinary,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-hdf5",&ishdf5,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-netcdf",&isnetcdf,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-mpiio",&mpiio_use,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-sizes_set",&vstage2,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-type_set",&vstage3,PETSC_NULL);CHKERRQ(ierr);
@@ -59,9 +58,11 @@ int main(int argc,char **args)
   if (isbinary) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"writing vector in binary to vector.dat ...\n");CHKERRQ(ierr);
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HDF5)
   } else if (ishdf5) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"writing vector in hdf5 to vector.dat ...\n");CHKERRQ(ierr);
     ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+#endif
   } else {
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No data format specified, run with either -binary or -hdf5 option\n");
   }
@@ -85,11 +86,12 @@ int main(int argc,char **args)
   if (isbinary) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from vector.dat ...\n");CHKERRQ(ierr);
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HDF5)
   } else if (ishdf5) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"reading vector in hdf5 from vector.dat ...\n");CHKERRQ(ierr);
     ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   }
-
+#endif
   ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) u,"Test_Vec");
 

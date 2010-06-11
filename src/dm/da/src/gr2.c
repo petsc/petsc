@@ -652,6 +652,93 @@ PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_HDF5_DA(PetscViewer viewer,Ve
 EXTERN_C_END
 #endif
 
+#if defined(PETSC_HAVE_HDF5)
+#undef __FUNCT__  
+#define __FUNCT__ "VecLoadnew_HDF5_DA"
+PetscErrorCode VecLoadnew_HDF5_DA(PetscViewer viewer,Vec xin)
+{
+  DA             da;
+  PetscErrorCode ierr;
+  hsize_t        dim,dims[5];
+  hsize_t        count[5];
+  hsize_t        offset[5];
+  PetscInt       cnt = 0;
+  PetscScalar    *x;
+  const char     *vecname;
+  hid_t          filespace; /* file dataspace identifier */
+  hid_t	         plist_id;  /* property list identifier */
+  hid_t          dset_id;   /* dataset identifier */
+  hid_t          memspace;  /* memory dataspace identifier */
+  hid_t          file_id;
+  herr_t         status;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
+
+  /* Create the dataspace for the dataset */
+  dim       = PetscHDF5IntCast(da->dim + ((da->w == 1) ? 0 : 1));
+  if (da->dim == 3) dims[cnt++]   = PetscHDF5IntCast(da->P);
+  if (da->dim > 1)  dims[cnt++]   = PetscHDF5IntCast(da->N);
+  dims[cnt++]     = PetscHDF5IntCast(da->M);
+  if (da->w > 1) PetscHDF5IntCast(dims[cnt++] = da->w);
+#if defined(PETSC_USE_COMPLEX)
+  dim++;
+  dims[cnt++] = 2;
+#endif
+
+  /* Create the dataset with default properties and close filespace */
+  ierr = PetscObjectGetName((PetscObject)xin,&vecname);CHKERRQ(ierr);
+#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
+  dset_id = H5Dopen2(file_id, vecname, H5P_DEFAULT);
+#else
+  dset_id = H5Dopen(file_id, vecname);
+#endif
+  if (dset_id == -1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Dopen2() with Vec named %s",vecname);
+  filespace = H5Dget_space(dset_id);
+
+  /* Each process defines a dataset and reads it from the hyperslab in the file */
+  cnt = 0; 
+  if (da->dim == 3) offset[cnt++] = PetscHDF5IntCast(da->zs);
+  if (da->dim > 1)  offset[cnt++] = PetscHDF5IntCast(da->ys);
+  offset[cnt++] = PetscHDF5IntCast(da->xs/da->w);
+  if (da->w > 1) offset[cnt++] = 0;
+#if defined(PETSC_USE_COMPLEX)
+  offset[cnt++] = 0;
+#endif
+  cnt = 0; 
+  if (da->dim == 3) count[cnt++] = PetscHDF5IntCast(da->ze - da->zs);
+  if (da->dim > 1)  count[cnt++] = PetscHDF5IntCast(da->ye - da->ys);
+  count[cnt++] = PetscHDF5IntCast((da->xe - da->xs)/da->w);
+  if (da->w > 1) count[cnt++] = PetscHDF5IntCast(da->w);
+#if defined(PETSC_USE_COMPLEX)
+  count[cnt++] = 2;
+#endif
+  memspace = H5Screate_simple(dim, count, NULL);
+  if (memspace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Screate_simple()");
+
+  status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offset, NULL, count, NULL);CHKERRQ(status);
+
+  /* Create property list for collective dataset write */
+  plist_id = H5Pcreate(H5P_DATASET_XFER);
+  if (plist_id == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Pcreate()");
+#if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
+  status = H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_COLLECTIVE);CHKERRQ(status);
+#endif
+  /* To write dataset independently use H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_INDEPENDENT) */
+
+  ierr = VecGetArray(xin, &x);CHKERRQ(ierr);
+  status = H5Dread(dset_id, H5T_NATIVE_DOUBLE, memspace, filespace, plist_id, x);CHKERRQ(status);
+  ierr = VecRestoreArray(xin, &x);CHKERRQ(ierr);
+
+  /* Close/release resources */
+  status = H5Pclose(plist_id);CHKERRQ(status);
+  status = H5Sclose(filespace);CHKERRQ(status);
+  status = H5Sclose(memspace);CHKERRQ(status);
+  status = H5Dclose(dset_id);CHKERRQ(status);
+  PetscFunctionReturn(0);
+}
+#endif
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -703,6 +790,80 @@ PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_Binary_DA(PetscViewer viewer,
   ierr = PetscOptionsGetInt(((PetscObject)xin)->prefix,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
   if (flag && bs != da->w) {
     ierr = PetscInfo2(xin,"Block size in file %D not equal to DA's dof %D\n",bs,da->w);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecLoadnew_Binary_DA"
+PetscErrorCode VecLoadnew_Binary_DA(PetscViewer viewer,Vec xin)
+{
+  DA             da;
+  PetscErrorCode ierr;
+  Vec            natural;
+  const char     *prefix;
+  PetscInt       bs;
+  PetscTruth     flag;
+#if defined(PETSC_HAVE_MPIIO)
+  PetscTruth     isMPIIO;
+#endif
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPIIO)
+  ierr = PetscViewerBinaryGetMPIIO(viewer,&isMPIIO);CHKERRQ(ierr);
+  if (isMPIIO) {
+    ierr = DAArrayMPIIO(da,viewer,xin,PETSC_FALSE);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+#endif
+
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)xin,&prefix);CHKERRQ(ierr);
+  ierr = DACreateNaturalVector(da,&natural);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)natural,((PetscObject)xin)->name);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,prefix);CHKERRQ(ierr);
+  ierr = VecLoadnew_Binary(viewer,natural);CHKERRQ(ierr);
+  ierr = DANaturalToGlobalBegin(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
+  ierr = DANaturalToGlobalEnd(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
+  ierr = VecDestroy(natural);CHKERRQ(ierr);
+  ierr = PetscInfo(xin,"Loading vector from natural ordering into DA\n");CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(((PetscObject)xin)->prefix,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
+  if (flag && bs != da->w) {
+    ierr = PetscInfo2(xin,"Block size in file %D not equal to DA's dof %D\n",bs,da->w);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "VecLoadnew_DA"
+PetscErrorCode PETSCDM_DLLEXPORT VecLoadnew_DA(PetscViewer viewer, Vec xin)
+{
+  PetscErrorCode ierr;
+  DA             da;
+  PetscTruth     isbinary;
+#if defined(PETSC_HAVE_HDF5)
+  PetscTruth     ishdf5;
+#endif
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
+  if (!da) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
+
+#if defined(PETSC_HAVE_HDF5)
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
+#endif
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+
+  if (isbinary) {
+    ierr = VecLoadnew_Binary_DA(viewer,xin);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HDF5)
+  } else if (ishdf5) {
+    ierr = VecLoadnew_HDF5_DA(viewer,xin);CHKERRQ(ierr);
+#endif
+  } else {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for vector loading", ((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

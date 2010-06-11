@@ -31,6 +31,8 @@
 
    Notes: this may be called before PetscInitialize() or after PetscFinalize()
 
+   Not for use in Fortran
+
    Developer Notes: Using raw malloc() since this may be used before PETSc is initialized
 
 .seealso: PetscStrToArrayDestroy()
@@ -96,6 +98,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrToArray(const char s[],int *argc,char ***
    
    Notes: This may be called before PetscInitialize() or after PetscFinalize()
 
+   Not for use in Fortran
+
 .seealso: PetscStrToArray()
 
 @*/
@@ -130,6 +134,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrToArrayDestroy(int argc,char **args)
 
    Null string returns a length of zero
 
+   Not for use in Fortran
+
   Concepts: string length
   
 @*/
@@ -161,6 +167,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrlen(const char s[],size_t *len)
 
    Note:
       Null string returns a new null string
+
+      Not for use in Fortran
 
   Concepts: string copy
   
@@ -196,8 +204,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrallocpy(const char s[],char *t[])
 
    Level: intermediate
 
-   Note:
+   Notes:
      Null string returns a string starting with zero
+
+     Not for use in Fortran
 
   Concepts: string copy
   
@@ -260,6 +270,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrncpy(char s[],const char t[],size_t n)
 
    Level: intermediate
 
+   Notes: Not for use in Fortran
+
   Concepts: string copy
 
 .seealso: PetscStrcpy(), PetscStrncpy(), PetscStrncat()
@@ -286,6 +298,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrcat(char s[],const char t[])
 .  n - maximum length to copy 
 
    Level: intermediate
+
+  Notes:    Not for use in Fortran
 
   Concepts: string copy
 
@@ -314,6 +328,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrncat(char s[],const char t[],size_t n)
 .  flg - if the two strings are equal
 
    Level: intermediate
+
+   Notes:    Not for use in Fortran
 
 .seealso: PetscStrgrt(), PetscStrncmp(), PetscStrcasecmp()
 
@@ -352,6 +368,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrcmp(const char a[],const char b[],PetscTr
    Notes:
     Null arguments are ok, a null string is considered smaller than 
     all others
+
+   Not for use in Fortran
 
    Level: intermediate
 
@@ -394,6 +412,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrgrt(const char a[],const char b[],PetscTr
 
    Notes:
     Null arguments are ok
+
+   Not for use in Fortran
 
    Level: intermediate
 
@@ -449,6 +469,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrcasecmp(const char a[],const char b[],Pet
 
    Level: intermediate
 
+   Notes:    Not for use in Fortran
+
 .seealso: PetscStrgrt(), PetscStrcmp(), PetscStrcasecmp()
 
 @*/
@@ -479,6 +501,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrncmp(const char a[],const char b[],size_t
 
    Level: intermediate
 
+   Notes:    Not for use in Fortran
+
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscStrchr(const char a[],char b,char *c[])
 {
@@ -504,6 +528,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrchr(const char a[],char b,char *c[])
 
    Level: intermediate
 
+   Notes:    Not for use in Fortran
+
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscStrrchr(const char a[],char b,char *tmp[])
 {
@@ -524,6 +550,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrrchr(const char a[],char b,char *tmp[])
 .  a - pointer to string
 
    Level: intermediate
+
+   Notes:    Not for use in Fortran
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscStrtolower(char a[])
@@ -560,7 +588,10 @@ struct _p_PetscToken {char token;char *array;char *current;};
      This version also treats all characters etc. inside a double quote "
    as a single token.
 
+    Not for use in Fortran
+
    Level: intermediate
+
 
 .seealso: PetscTokenCreate(), PetscTokenDestroy()
 @*/
@@ -608,6 +639,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscTokenFind(PetscToken a,char *result[])
      This version is different from the system version in that
   it allows you to pass a read-only string into the function.
 
+    Not for use in Fortran
+
    Level: intermediate
 
 .seealso: PetscTokenFind(), PetscTokenDestroy()
@@ -636,6 +669,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscTokenCreate(const char a[],const char b,Pets
 
    Level: intermediate
 
+   Notes:     Not for use in Fortran
+
 .seealso: PetscTokenCreate(), PetscTokenFind()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscTokenDestroy(PetscToken a)
@@ -661,6 +696,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscTokenDestroy(PetscToken a)
 
    Output Parameter:
 .  tmp - location of occurance
+
+   Notes:     Not for use in Fortran
 
    Level: intermediate
 
@@ -692,6 +729,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrrstr(const char a[],const char b[],char *
    Output Parameter:
 .  tmp - location of occurance
 
+   Notes: Not for use in Fortran
+
    Level: intermediate
 
 @*/
@@ -713,6 +752,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrstr(const char a[],const char b[],char *t
 .  dir - the directory
 
    Level: developer
+
+   Notes: Not for use in Fortran
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscGetPetscDir(const char *dir[])
@@ -737,11 +778,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetPetscDir(const char *dir[])
 
    Notes:
       Replaces   ${PETSC_ARCH},${PETSC_DIR},${PETSC_LIB_DIR},${DISPLAY},
-      ${HOMEDIRECTORY},${WORKINGDIRECTORY},${USERNAME} with appropriate values
+      ${HOMEDIRECTORY},${WORKINGDIRECTORY},${USERNAME}, ${HOSTNAME} with appropriate values
       as well as any environmental variables.
 
-      Note: PETSC_LIB_DIR uses the environmental variable if it exists. PETSC_ARCH and PETSC_DIR use what
+      PETSC_LIB_DIR uses the environmental variable if it exists. PETSC_ARCH and PETSC_DIR use what
       PETSc was built with and do not use environmental variables.
+   
+      Not for use in Fortran
    
    Level: intermediate
 
@@ -752,8 +795,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrreplace(MPI_Comm comm,const char aa[],cha
   int            i = 0;
   size_t         l,l1,l2,l3;
   char           *work,*par,*epar,env[1024],*tfree,*a = (char*)aa;
-  const char     *s[] = {"${PETSC_ARCH}","${PETSC_DIR}","${PETSC_LIB_DIR}","${DISPLAY}","${HOMEDIRECTORY}","${WORKINGDIRECTORY}","${USERNAME}",0};
-  const char     *r[] = {0,0,0,0,0,0,0,0};
+  const char     *s[] = {"${PETSC_ARCH}","${PETSC_DIR}","${PETSC_LIB_DIR}","${DISPLAY}","${HOMEDIRECTORY}","${WORKINGDIRECTORY}","${USERNAME}","${HOSTNAME}",0};
+  const char     *r[] = {0,0,0,0,0,0,0,0,0};
   PetscTruth     flag;
 
   PetscFunctionBegin;
@@ -771,10 +814,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrreplace(MPI_Comm comm,const char aa[],cha
   ierr = PetscMalloc(PETSC_MAX_PATH_LEN*sizeof(char),&r[4]);CHKERRQ(ierr);
   ierr = PetscMalloc(PETSC_MAX_PATH_LEN*sizeof(char),&r[5]);CHKERRQ(ierr);
   ierr = PetscMalloc(256*sizeof(char),&r[6]);CHKERRQ(ierr);
+  ierr = PetscMalloc(256*sizeof(char),&r[7]);CHKERRQ(ierr);
   ierr = PetscGetDisplay((char*)r[3],256);CHKERRQ(ierr);
   ierr = PetscGetHomeDirectory((char*)r[4],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   ierr = PetscGetWorkingDirectory((char*)r[5],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   ierr = PetscGetUserName((char*)r[6],256);CHKERRQ(ierr);
+  ierr = PetscGetHostName((char*)r[7],256);CHKERRQ(ierr);
 
   /* replace that are in environment */
   ierr = PetscOptionsGetenv(comm,"PETSC_LIB_DIR",env,1024,&flag);CHKERRQ(ierr);
