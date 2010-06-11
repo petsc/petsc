@@ -19,22 +19,38 @@ PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 #endif
 
   PetscFunctionBegin;
-  ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   /* cannot use BLAS dot for complex because compiler/linker is 
      not happy about returning a double complex */
   {
+#if defined(PETSC_HAVE_CUDA)
+    ierr = VecCUDACopyFromGPU(xin);
+    ierr = VecCUDACopyFromGPU(yin);
+#endif
+    ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+
     PetscInt    i;
     PetscScalar sum = 0.0;
     for (i=0; i<xin->map->n; i++) {
       sum += xa[i]*PetscConj(ya[i]);
     }
     *z = sum;
+    ierr = VecRestoreArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
   }
 #else
+#if defined(PETSC_HAVE_CUDA)
+  Vec_Seq *x = (Vec_Seq *)xin->data, *y = (Vec_Seq *)yin->data;
+
+  ierr = VecCUDACopyToGPU(xin);
+  ierr = VecCUDACopyToGPU(yin);
+  *z = cublasSdot(bn,x->GPUarray,one,y->GPUarray,one);
+  ierr = cublasGetError();CHKERRCUDA(ierr);
+#else
+  ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
   *z = BLASdot_(&bn,xa,&one,ya,&one);
-#endif
   ierr = VecRestoreArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+#endif
+#endif
   if (xin->map->n > 0) {
     ierr = PetscLogFlops(2.0*xin->map->n-1);CHKERRQ(ierr);
   }
@@ -52,10 +68,14 @@ PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 #endif
 
   PetscFunctionBegin;
-  ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   /* cannot use BLAS dot for complex because compiler/linker is 
      not happy about returning a double complex */
+#if defined(PETSC_HAVE_CUDA)
+  ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
+  ierr = VecCUDACopyFromGPU(yin);CHKERRQ(ierr);
+#endif
+ ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
  {
    PetscInt    i;
    PetscScalar sum = 0.0;
@@ -63,11 +83,20 @@ PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
      sum += xa[i]*ya[i];
    }
    *z = sum;
+   ierr = VecRestoreArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
  }
 #else
+#if defined(PETSC_HAVE_CUDA)
+ ierr = VecCUDACopyToGPU(xin);
+ ierr = VecCUDACopyToGPU(yin);
+ *z = cublasSdot(bn,xa,one,ya,one);
+ ierr = cublasGetError();CHKERRCUDA(ierr);
+#else
+  ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
   *z = BLASdot_(&bn,xa,&one,ya,&one);
-#endif
   ierr = VecRestoreArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+#endif
+#endif
   if (xin->map->n > 0) {
     ierr = PetscLogFlops(2.0*xin->map->n-1);CHKERRQ(ierr);
   }
@@ -240,18 +269,34 @@ PetscErrorCode VecAXPBY_Seq(Vec yin,PetscScalar alpha,PetscScalar beta,Vec xin)
   } else if (a == 1.0) {
     ierr = VecAYPX_Seq(yin,beta,xin);CHKERRQ(ierr);
   } else if (b == 0.0) {
+#if defined(PETSC_HAVE_CUDA)
+    ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
+#endif
     ierr = VecGetArray2(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       yy[i] = a*xx[i];
     }
     ierr = VecRestoreArray2(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+    Vec_Seq *y = (Vec_Seq *)yin->data;
+
+    y->valid_GPU_array = CPU;
+#endif
     ierr = PetscLogFlops(xin->map->n);CHKERRQ(ierr);
   } else {
+#if defined(PETSC_HAVE_CUDA)
+    ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
+#endif
     ierr = VecGetArray2(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       yy[i] = a*xx[i] + b*yy[i];
     }
     ierr = VecRestoreArray2(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+    Vec_Seq *y = (Vec_Seq *)yin->data;
+
+    y->valid_GPU_array = CPU;
+#endif
     ierr = PetscLogFlops(3.0*xin->map->n);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -266,6 +311,11 @@ PetscErrorCode VecAXPBYPCZ_Seq(Vec zin,PetscScalar alpha,PetscScalar beta,PetscS
   PetscScalar  *yy,*xx,*zz;
 
   PetscFunctionBegin;
+#if defined(VEC_HAVE_CUDA)
+  ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
+  ierr = VecCUDACopyFromGPU(yin);CHKERRQ(ierr);
+  ierr = VecCUDACopyFromGPU(zin)CHKERRQ(ierr);
+#endif
   ierr = VecGetArray3(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy,zin,(PetscScalar**)&zz);CHKERRQ(ierr);
   if (alpha == 1.0) {
    for (i=0; i<n; i++) {
@@ -284,5 +334,10 @@ PetscErrorCode VecAXPBYPCZ_Seq(Vec zin,PetscScalar alpha,PetscScalar beta,PetscS
     ierr = PetscLogFlops(5.0*n);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray3(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy,zin,(PetscScalar**)&zz);CHKERRQ(ierr);
+#if defined(VEC_HAVE_CUDA)
+  Vec_Seq *z = (Veq_Seq *)zin->data;
+
+  z->valid_GPU_array = CPU;
+#endif
   PetscFunctionReturn(0);
 }

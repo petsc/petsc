@@ -834,6 +834,10 @@ PetscErrorCode VecPointwiseMult_Seq(Vec win,Vec xin,Vec yin)
   PetscScalar    *ww,*xx,*yy;
 
   PetscFunctionBegin;
+#if defined(PETSC_HAVE_CUDA)
+  ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
+  ierr = VecCUDACopyFromGPU(yin);CHKERRQ(ierr);
+#endif
   ierr = VecGetArray3(win,&ww,xin,&xx,yin,&yy);CHKERRQ(ierr);
   if (ww == xx) {
     for (i=0; i<n; i++) ww[i] *= yy[i];
@@ -854,6 +858,11 @@ PetscErrorCode VecPointwiseMult_Seq(Vec win,Vec xin,Vec yin)
   }
   ierr = PetscLogFlops(n);CHKERRQ(ierr);
   ierr = VecRestoreArray3(win,&ww,xin,&xx,yin,&yy);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUDA)
+  Vec_Seq *w = (Vec_Seq *)win->data;
+
+  w->valid_GPU_array = CPU;
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -866,12 +875,21 @@ PetscErrorCode VecPointwiseDivide_Seq(Vec win,Vec xin,Vec yin)
   PetscScalar    *ww,*xx,*yy;
 
   PetscFunctionBegin;
+#if defined(PETSC_HAVE_CUDA)
+  ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
+  ierr = VecCUDACopyFromGPU(yin);CHKERRQ(ierr);
+#endif
   ierr = VecGetArray3(win,&ww,xin,&xx,yin,&yy);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ww[i] = xx[i] / yy[i];
   }
   ierr = PetscLogFlops(n);CHKERRQ(ierr);
   ierr = VecRestoreArray3(win,&ww,xin,&xx,yin,&yy);CHKERRQ(ierr);
+  #if defined(PETSC_HAVE_CUDA)
+  Vec_Seq *w = (Vec_Seq *)win->data;
+
+  w->valid_GPU_array = CPU;
+#endif
   PetscFunctionReturn(0);
 }
 
