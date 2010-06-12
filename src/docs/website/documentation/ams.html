@@ -16,7 +16,8 @@
       </ul>
       </td>
       <td width="75%"><!--##begin-->
-      <h1>Documentation:&nbsp; Zope</h1>
+      <h1>Documentation:&nbsp; AMS - ALICE Memory Snooper<br>
+      </h1>
 <!--##end--> </td>
     </tr>
     <tr>
@@ -37,8 +38,8 @@ PETSc</strong></a></li>
             <a href="referencing.html"> </a>
             <li><a href="tutorials/index.html"><strong>Tutorials</strong></a></li>
             <li><strong><a href="installation.html">Installation</a> </strong></li>
-            <li><font color="#ff0000"><strong>Zope</strong></font></li>
-            <li><strong><a href="ams.html">AMS</a></strong></li>
+            <li style="color: rgb(102, 51, 255);"><a href="zope.html"><strong>Zope</strong></a></li>
+            <li style="color: rgb(255, 0, 0);"><strong>AMS</strong></li>
             <li><strong></strong><strong><a href="changes/index.html">Changes</a></strong></li>
             <li><strong><a href="bugreporting.html">Bug Reporting</a></strong></li>
             <li><strong><a href="codemanagement.html">Code Management</a></strong></li>
@@ -54,36 +55,39 @@ Software</strong></a></li>
       </ul>
       </td>
       <td valign="top" width="75%"><!--##begin-->
-      <p align="left"> Zope can be used to generate a webpage
-containing all output of a PETSc program. This output is organized on
-the webpage, and can be saved for later review.<br>
+      <p align="left"> AMS is a software library that uses threads,
+sockets and locks to allow a running program (called the accessor) to
+read (and change when desired) variables in another running code
+(called the publisher application).<br>
       </p>
-      <h3> Requirements and installation </h3>
+      <h3> Requirements and installation of the AMS<br>
+      </h3>
       <ul>
-        <li>A current version of Zope, download information can be
-found at <a href="www.zope2.org">www.zope2.org</a></li>
-        <li>The ZOPE_HOME environmental variable must be set to the
-Zope home directory. For example <br>
+        <li style="color: rgb(255, 0, 0);">This is currently only
+support with petsc-dev</li>
+        <li>A current version of AMS available from
+http://petsc.cs.iit.edu/petsc/ams-dev or
+ssh://petsc@petsc.cs.iit.edu//hg/petsc/ams-dev</li>
+        <li>Edit the file makeinc and set the compiler, linker etc. <br>
         </li>
-        <ul>
-          <li><span style="font-weight: bold;">/usr/lib/zope2.9 or</span></li>
-          <li><span style="font-weight: bold;">&nbsp;/Library/Python/2.6/site-packages/Zope2-2.12.6-py2.6-macosx-10.6-universal.egg<br>
-            </span></li>
-        </ul>
+        <li>Run make all in the c and examples subdirectories.</li>
+        <li>If you plan to use the accessor from Java then run make all
+in the java/jni subdirectory<br>
+        </li>
       </ul>
-      <h3>Usage</h3>
+      <h3>Usage from PETSc<br>
+      </h3>
       <ul>
-        <li>To start the Zope server run <font color="#ff0000">./zope/zope</font></li>
-        <li>View the webpage at <font color="#ff0000">http://localhost:9673/PETSc/</font></li>
-        <menu>
-        <li>On your first visit to the site, you will be prompted for
-your username that you will be running your PETSc code under. </li>
-        </menu>
-        <li>Run your PETSc program with the -zope option to have output
-sent to stdout and Zope.</li>
-        <li>An argument to the -zope option can be given to specify a
-machine Zope is currently running on, otherwise it defaults to localhost</li>
-        <li>Add the -nostdout option to have PETSc print only to Zope</li>
+        <li style="color: rgb(255, 0, 0);">Currently only accessing and
+changing variables in the options database is available</li>
+        <li>./configure PETSc with the option
+--with-ams-dir=/directorywhereamsisinstalled --with-java
+[--java=/usr/bin/java -d32 --javac=/usr/bin/javac]<br>
+        </li>
+        <li>Run PETSc applications with the additional options
+-options_gui and -ams_java and you will see something like depicted <a
+ href="ftp://ftp.mcs.anl.gov/pub/petsc/AMSOptions.mov">in this movie</a><br>
+        </li>
       </ul>
       <p></p>
       <p align="left"><!--##end--> </p>
@@ -91,8 +95,7 @@ machine Zope is currently running on, otherwise it defaults to localhost</li>
     </tr>
     <tr>
       <td colspan="2" width="100%">
-      <hr size="4" color="#ff5b5b"><img
- style="width: 100%; height: 100%;" alt="Image of zope" src="zope.png">
+      <hr size="4" color="#ff5b5b"><br>
       </td>
     </tr>
   </tbody>

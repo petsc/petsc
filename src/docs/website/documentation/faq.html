@@ -10,7 +10,7 @@
   <tbody>
     <tr>
       <td valign="top" width="25%">
-      <h1><font color="#ff0000" size="7">PETSc</font></h1>
+      <h1><font size="7" color="#ff0000">PETSc</font></h1>
       <ul>
         <li><a href="../index.html"><strong>Home</strong></a></li>
       </ul>
@@ -21,7 +21,7 @@
     </tr>
     <tr>
       <td colspan="2" width="100%">
-      <hr color="#ff5b5b" size="4"> </td>
+      <hr size="4" color="#ff5b5b"> </td>
     </tr>
     <tr>
       <td valign="top" width="25%">
@@ -36,7 +36,8 @@ pages and Users Manual</strong></a></li>
 PETSc</strong></a></li>
             <li><a href="tutorials/index.html"><strong>Tutorials</strong></a></li>
             <li><strong><a href="installation.html">Installation</a> </strong></li>
-            <li><strong><a href="zope.html">Zope</a> </strong></li>
+            <li><strong><a href="zope.html">Zope</a></strong></li>
+            <li><strong></strong><strong><a href="ams.html">AMS</a></strong></li>
             <li><strong><a href="changes/index.html">Changes</a></strong></li>
             <li><strong><a href="bugreporting.html">Bug
 Reporting</a></strong></li>
@@ -170,6 +171,7 @@ can I understand what is really happening within my program? </a></li>
 large sparse matrices takes a long time. What can I do make this
 process faster? or MatSetValues() is <span style="font-weight: bold;">so
 slow,
+
 
 
 
@@ -567,7 +569,8 @@ We recommend, as of 5/5/2010, installing gfortran-4.2.3 from <a
  href="http://r.research.att.com/tools/">http://r.research.att.com/tools/</a>.
 This
 seems
-to work with both Mac OS 10.5 and 10.6. It defaults to using
+to
+work with both Mac OS 10.5 and 10.6. It defaults to using
 32 bit pointers so for Mac OS X 10.6 and later you should use
 --with-fc="gfortran -m64"<br>
       <br>
@@ -883,7 +886,8 @@ inverse
 of
 a
 matrix
-in PETSc?<br>
+in
+PETSc?<br>
             <br>
             </span>It is very expensive to compute the inverse of a
 matrix and very rarely needed in practice. We highly recommend avoiding
@@ -950,7 +954,8 @@ domain
 differently
 than
 the
-MPI_Cart_create() command. How can one use them together?<br>
+MPI_Cart_create()
+command. How can one use them together?<br>
             <br>
             </span>The MPI_Cart_create() first divides the mesh along
 the z direction, then the y, then the x. DA divides along the x, then
@@ -995,7 +1000,8 @@ with
 Dirichlet
 boundary
 conditions
-I can use
+I
+can use
 MatZeroRows() to eliminate the Dirichlet rows but this results in a
 non-symmetric system. How come there is no MatZeroColumns() to keep the
 matrix symmetric?<br>
@@ -1016,7 +1022,8 @@ the load. This approach has the advantage of less memory usage since
 symmetric methods. See its manual page.<br>
             <br>
             <span style="color: rgb(255, 0, 0);"><a name="matlab"></a>How
-can I get PETSc Vecs and Mats to Matlab or vice versa?<br>
+can
+I get PETSc Vecs and Mats to Matlab or vice versa?<br>
             </span><br>
             <span style="color: rgb(255, 0, 0);"><br>
             </span>There are four was to work with PETSc and Matlab<br>
@@ -1037,11 +1044,13 @@ saving the objects in Matlab.</li>
 PETSc to allow sending objects back and forth between an interactive
 Matlab session and a running PETSc program. See <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manualpages/Viewer/PetscViewerSocketOpen.html">PetscViewerSocketOpen</a>()
-for access from the PETSc side and PetscOpenSocket in bin/matlab for
+for
+access from the PETSc side and PetscOpenSocket in bin/matlab for
 access from the Matlab side.</li>
               <li>Finally you can save PETSc Vecs (not Mats) with the <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manualpages/Viewer/PetscViewerMatlabOpen.html">PetscViewerMatlabOpen</a>()
-viewer that saves .mat files can then be loaded into Matlab.<br>
+viewer
+that saves .mat files can then be loaded into Matlab.<br>
               </li>
             </ol>
             <hr> </td>
@@ -1194,6 +1203,7 @@ is
 in
 
 
+
           <a href="faq.html#slow">generating the
 matrix</a> or some other operation.</li>
         <li>There must be enough work for each process to
@@ -1221,7 +1231,8 @@ bit
 better
 for
 more
-processes. You may also
+processes.
+You may also
 consider multigrid preconditioners like <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCMG.html">PCMG</a>
 or BoomerAMG in <a
@@ -1303,7 +1314,8 @@ used to distinguish between totalview arguments and yours. </p>
 do
 I
 debug
-if -start_in_debugger does
+if
+-start_in_debugger does
 not work on my machine?</font> </a></p>
       <p>For a uniprocessor job, just try&nbsp;the debugger
 directly, for example: gdb ex1 </p>
@@ -1341,7 +1353,8 @@ shared
 libraries:
 libimf.so:
 cannot
-open shared object
+open
+shared object
 file: No such file or directory.</span></p>
       <p>The Intel compilers use shared libraries (like libimf)
 that
@@ -1370,7 +1383,8 @@ Object
 Type
 not
 set:
-Argument # n mean?</a></span></p>
+Argument
+# n mean?</a></span></p>
 Many
 operations on PETSc objects require that the specific type of the
 object be set before the operations is performed. You must call
@@ -1390,7 +1404,8 @@ a
 previous
 call
 to
-VecSetSizes(), MatSetSizes(), VecCreateXXX() or
+VecSetSizes(),
+MatSetSizes(), VecCreateXXX() or
 MatCreateXXX() you passed in local and global sizes that do not make
 sense for the correct number of processors. For example if you pass in
 a local size of 2 and a global size of 100 and run on two processors,
@@ -1420,6 +1435,7 @@ problem.<br>
 &nbsp; <br>
 If -malloc_debug does not help: on GNU/Linux and Apple Mac OS X
 machines - you can try using&nbsp;<a href="http://valgrind.org/">http://valgrind.org
+
 
 
 
@@ -1468,6 +1484,7 @@ that the matrix is singular. You can use -pc_factor_shift_nonzero or
 -pc_factor_shift_positive_definite,
 -[level]_pc_factor_shift_nonzero,&nbsp; </span></font><font
  style="color: rgb(0, 0, 0);" color="#ff0000">-[level]_pc_factor_shift_postive_definite
+
 
 
 
@@ -1618,7 +1635,8 @@ seem
 to
 print
 two
-residual norms per iteration?<br>
+residual
+norms per iteration?<br>
       </span></font></font></p>
       <p style="color: rgb(0, 0, 0);"><font face="Terminal"><font
  face="Terminal"><font face="Terminal">&gt; 1198 KSP Residual norm
@@ -1724,7 +1742,7 @@ moved to a different location after they are built. </p>
     </tr>
     <tr>
       <td colspan="2" width="100%">
-      <hr color="#ff5b5b" size="4"> </td>
+      <hr size="4" color="#ff5b5b"> </td>
     </tr>
   </tbody>
 </table>
