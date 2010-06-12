@@ -914,7 +914,9 @@ PetscErrorCode VecResetArray_Seq(Vec vin)
   PetscFunctionBegin;
   v->array         = v->unplacedarray;
   v->unplacedarray = 0;
+#if defined(PETSC_HAVE_CUDA)
   vin->valid_GPU_array = CPU;
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -928,7 +930,9 @@ PetscErrorCode VecPlaceArray_Seq(Vec vin,const PetscScalar *a)
   if (v->unplacedarray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"VecPlaceArray() was already called on this vector, without a call to VecResetArray()");
   v->unplacedarray = v->array;  /* save previous array so reset can bring it back */
   v->array = (PetscScalar *)a;
+#if defined(PETSC_HAVE_CUDA)
   vin->valid_GPU_array = CPU;
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -942,7 +946,9 @@ PetscErrorCode VecReplaceArray_Seq(Vec vin,const PetscScalar *a)
   PetscFunctionBegin;
   ierr = PetscFree(v->array_allocated);CHKERRQ(ierr);
   v->array_allocated = v->array = (PetscScalar *)a;
+#if defined(PETSC_HAVE_CUDA)
   vin->valid_GPU_array = CPU;
+#endif
   PetscFunctionReturn(0);
 }
 
