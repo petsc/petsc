@@ -23,10 +23,6 @@ PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
   /* cannot use BLAS dot for complex because compiler/linker is 
      not happy about returning a double complex */
   {
-#if defined(PETSC_HAVE_CUDA)
-    ierr = VecCUDACopyFromGPU(xin);
-    ierr = VecCUDACopyFromGPU(yin);
-#endif
     ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
 
     PetscInt    i;
@@ -39,11 +35,9 @@ PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
   }
 #else
 #if defined(PETSC_HAVE_CUDA)
-  Vec_Seq *x = (Vec_Seq *)xin->data, *y = (Vec_Seq *)yin->data;
-
   ierr = VecCUDACopyToGPU(xin);
   ierr = VecCUDACopyToGPU(yin);
-  *z = cublasSdot(bn,x->GPUarray,one,y->GPUarray,one);
+  *z = cublasSdot(bn,xin->GPUarray,one,yin->GPUarray,one);
   ierr = cublasGetError();CHKERRCUDA(ierr);
 #else
   ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
@@ -71,10 +65,6 @@ PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 #if defined(PETSC_USE_COMPLEX)
   /* cannot use BLAS dot for complex because compiler/linker is 
      not happy about returning a double complex */
-#if defined(PETSC_HAVE_CUDA)
-  ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
-  ierr = VecCUDACopyFromGPU(yin);CHKERRQ(ierr);
-#endif
  ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
  {
    PetscInt    i;
@@ -121,11 +111,9 @@ PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
   else if (alpha != 1.0) {
   PetscScalar a = alpha;
   ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
-  cublasSscal(bn,a,x->GPUarray,one);
+  cublasSscal(bn,a,xin->GPUarray,one);
   ierr = cublasGetError();CHKERRCUDA(ierr);
-  x->valid_GPU_array = GPU;
-  //for now, we always copy back from GPU
-  ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
+  xin->valid_GPU_array = GPU;
   }
 #else
   if (alpha == 0.0) {
@@ -152,26 +140,17 @@ PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
   PetscFunctionBegin;
   if (xin != yin) {
 #if defined(PETSC_HAVE_CUDA)
-    Vec_Seq        *x = (Vec_Seq *)xin->data;
-    Vec_Seq        *y = (Vec_Seq *)yin->data;
-
-    if (x->valid_GPU_array != GPU){
+    if (xin->valid_GPU_array != GPU){
       ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
       ierr = PetscMemcpy(ya,xa,xin->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
       ierr = VecRestoreArray2(xin,&xa,yin,&ya);
-      if (y->valid_GPU_array != UNALLOCATED){
-        //if the vector we copy to had not allocated GPU space, it still hasn't.
-        y->valid_GPU_array = CPU;
-      }
     } else {
       PetscInt one = 1;
 
       ierr = VecCUDACopyToGPU(yin);CHKERRQ(ierr);
-      cublasScopy(xin->map->n,x->GPUarray,one,y->GPUarray,one);
+      cublasScopy(xin->map->n,xin->GPUarray,one,yin->GPUarray,one);
       ierr = cublasGetError();CHKERRCUDA(ierr);
-      y->valid_GPU_array = GPU;
-      //for now, we always copy back from GPU
-      ierr = VecCUDACopyFromGPU(yin);CHKERRQ(ierr);
+      yin->valid_GPU_array = GPU;
     }
 #else
     ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
@@ -193,10 +172,8 @@ PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
   PetscFunctionBegin;
   if (xin != yin) {
 #if defined(PETSC_HAVE_CUDA)
-    Vec_Seq      *x=(Vec_Seq *)xin->data,*y=(Vec_Seq *)yin->data;
-    
     //We perform the swap on the GPU unless both vectors are already on the CPU
-    if ((x->valid_GPU_array == CPU || x->valid_GPU_array == SAME) && (y->valid_GPU_array == CPU || y->valid_GPU_array == SAME)){
+    if ((xin->valid_GPU_array == CPU || xin->valid_GPU_array == SAME) && (yin->valid_GPU_array == CPU || yin->valid_GPU_array == SAME)){
       ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
       BLASswap_(&bn,xa,&one,ya,&one);
       ierr = VecRestoreArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
@@ -204,13 +181,10 @@ PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
     else{
       ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
       ierr = VecCUDACopyToGPU(yin);CHKERRQ(ierr);
-      cublasSswap(bn,x->GPUarray,one,y->GPUarray,one);
+      cublasSswap(bn,xin->GPUarray,one,yin->GPUarray,one);
       ierr = cublasGetError();CHKERRCUDA(ierr);
-      x->valid_GPU_array = GPU;
-      y->valid_GPU_array = GPU;
-      //for now, we always copy back from GPU
-      ierr = VecCUDACopyFromGPU(yin);CHKERRQ(ierr);
-      ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
+      xin->valid_GPU_array = GPU;
+      yin->valid_GPU_array = GPU;
     }
 #else
     ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
@@ -233,16 +207,11 @@ PetscErrorCode VecAXPY_Seq(Vec yin,PetscScalar alpha,Vec xin)
   /* assume that the BLAS handles alpha == 1.0 efficiently since we have no fast code for it */
   if (alpha != 0.0) {
 #if defined(PETSC_HAVE_CUDA)
-    Vec_Seq         *x = (Vec_Seq *)xin->data,*y = (Vec_Seq *)yin->data;
-
     ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
     ierr = VecCUDACopyToGPU(yin);CHKERRQ(ierr);
-    cublasSaxpy(bn,alpha,x->GPUarray,one,y->GPUarray,one);
+    cublasSaxpy(bn,alpha,xin->GPUarray,one,yin->GPUarray,one);
     ierr = cublasGetError();CHKERRCUDA(ierr);
-    y->valid_GPU_array = GPU;
-    //For now we always copy back from GPU
-    ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
-    ierr = VecCUDACopyFromGPU(yin);CHKERRQ(ierr);
+    yin->valid_GPU_array = GPU;
 #else
     ierr = VecGetArray2(yin,&yarray,xin,&xarray);CHKERRQ(ierr);
     BLASaxpy_(&bn,&alpha,xarray,&one,yarray,&one);
@@ -269,34 +238,18 @@ PetscErrorCode VecAXPBY_Seq(Vec yin,PetscScalar alpha,PetscScalar beta,Vec xin)
   } else if (a == 1.0) {
     ierr = VecAYPX_Seq(yin,beta,xin);CHKERRQ(ierr);
   } else if (b == 0.0) {
-#if defined(PETSC_HAVE_CUDA)
-    ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
-#endif
     ierr = VecGetArray2(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       yy[i] = a*xx[i];
     }
     ierr = VecRestoreArray2(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUDA)
-    Vec_Seq *y = (Vec_Seq *)yin->data;
-
-    y->valid_GPU_array = CPU;
-#endif
     ierr = PetscLogFlops(xin->map->n);CHKERRQ(ierr);
   } else {
-#if defined(PETSC_HAVE_CUDA)
-    ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
-#endif
     ierr = VecGetArray2(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       yy[i] = a*xx[i] + b*yy[i];
     }
     ierr = VecRestoreArray2(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUDA)
-    Vec_Seq *y = (Vec_Seq *)yin->data;
-
-    y->valid_GPU_array = CPU;
-#endif
     ierr = PetscLogFlops(3.0*xin->map->n);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -311,11 +264,6 @@ PetscErrorCode VecAXPBYPCZ_Seq(Vec zin,PetscScalar alpha,PetscScalar beta,PetscS
   PetscScalar  *yy,*xx,*zz;
 
   PetscFunctionBegin;
-#if defined(VEC_HAVE_CUDA)
-  ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
-  ierr = VecCUDACopyFromGPU(yin);CHKERRQ(ierr);
-  ierr = VecCUDACopyFromGPU(zin)CHKERRQ(ierr);
-#endif
   ierr = VecGetArray3(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy,zin,(PetscScalar**)&zz);CHKERRQ(ierr);
   if (alpha == 1.0) {
    for (i=0; i<n; i++) {
@@ -334,10 +282,5 @@ PetscErrorCode VecAXPBYPCZ_Seq(Vec zin,PetscScalar alpha,PetscScalar beta,PetscS
     ierr = PetscLogFlops(5.0*n);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray3(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy,zin,(PetscScalar**)&zz);CHKERRQ(ierr);
-#if defined(VEC_HAVE_CUDA)
-  Vec_Seq *z = (Veq_Seq *)zin->data;
-
-  z->valid_GPU_array = CPU;
-#endif
   PetscFunctionReturn(0);
 }
