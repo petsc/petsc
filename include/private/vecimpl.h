@@ -164,8 +164,8 @@ struct _p_Vec {
   VecStash               stash,bstash; /* used for storing off-proc values during assembly */
   PetscTruth             petscnative;  /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
 #if defined(PETSC_HAVE_CUDA)
-  VecGPUFlag valid_GPU_array;          /* this flag indicates where the most recently modified vector data is (GPU or CPU) */
-  PetscScalar *GPUarray;                              /* if we're using CUDA, then this is the pointer to the array on the GPU */
+  VecGPUFlag             valid_GPU_array;    /* indicates where the most recently modified vector data is (GPU or CPU) */
+  PetscScalar            *GPUarray;          /* if we're using CUDA, then this is the pointer to the array on the GPU */
 #endif
 };
 
