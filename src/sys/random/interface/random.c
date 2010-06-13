@@ -47,7 +47,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomDestroy(PetscRandom r)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomGetInterval"
-/*@C
+/*@
    PetscRandomGetInterval - Gets the interval over which the random numbers
    will be randomly distributed.  By default, this interval is [0,1).
 
@@ -121,7 +121,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSetInterval(PetscRandom r,PetscScalar 
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomGetSeed"
-/*@C
+/*@
    PetscRandomGetSeed - Gets the random seed.
 
    Not collective
@@ -151,7 +151,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetSeed(PetscRandom r,unsigned long *s
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomSetSeed"
-/*@C
+/*@
    PetscRandomSetSeed - Sets the random seed.
 
    Not collective
@@ -442,7 +442,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomSeed"
-/*@C
+/*@
    PetscRandomSeed - Seed the generator.
 
    Not collective
