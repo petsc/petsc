@@ -68,9 +68,7 @@ PetscErrorCode VecLoad_Binary(PetscViewer viewer, Vec vec)
   if (flag) {
     ierr = VecSetBlockSize(vec, bs);CHKERRQ(ierr);
   }
-  if (!((PetscObject)(vec))->type_name) {
-    ierr = VecSetFromOptions(vec);CHKERRQ(ierr);
-  }
+
   /* If sizes and type already set,check if the vector global size is correct */
   ierr = VecGetSize(vec, &N);CHKERRQ(ierr);
   if (N != rows) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length (%d) then input vector (%d)", rows, N);
@@ -180,9 +178,7 @@ PetscErrorCode VecLoad_HDF5(PetscViewer viewer, Vec xin)
   if (flag) {
     ierr = VecSetBlockSize(xin, bs);CHKERRQ(ierr);
   }
-  if (!((PetscObject)(xin))->type_name) {
-    ierr = VecSetFromOptions(xin);CHKERRQ(ierr);
-  }
+
   /* If sizes and type already set,check if the vector global size is correct */
   ierr = VecGetSize(xin, &N);CHKERRQ(ierr);
   if (N != (int) dims[0]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length (%d) then input vector (%d)", (int) dims[0], N);
@@ -230,51 +226,9 @@ PetscErrorCode VecLoad_HDF5(PetscViewer viewer, Vec xin)
 #endif
 
 #undef __FUNCT__
-#define __FUNCT__ "VecLoad"
-/*@C 
-  VecLoad - Loads a vector that has been stored in binary or HDF5 format
-  with VecView().
+#define __FUNCT__ "VecLoad_Default"
 
-  Collective on PetscViewer 
-
-  Input Parameters:
-+ viewer - binary file viewer, obtained from PetscViewerBinaryOpen() or
-           HDF5 file viewer, obtained from PetscViewerHDF5Open()
-- newvec - the newly loaded vector, this needs to have been created with VecCreate() or
-           some related function before the VecLoad(). 
-
-   Level: intermediate
-
-  Notes:
-  The input file must contain the full global vector, as
-  written by the routine VecView().
-
-  If the type or size of newvec is not set before a call to VecLoad, PETSc 
-  sets the type and the local and global sizes.If type and/or 
-  sizes are already set, then the same are used.
-
-  Notes for advanced users:
-  Most users should not need to know the details of the binary storage
-  format, since VecLoad() and VecView() completely hide these details.
-  But for anyone who's interested, the standard binary matrix storage
-  format is
-.vb
-     int    VEC_FILE_CLASSID
-     int    number of rows
-     PetscScalar *values of all entries
-.ve
-
-   In addition, PETSc automatically does the byte swapping for
-machines that store the bytes reversed, e.g.  DEC alpha, freebsd,
-linux, Windows and the paragon; thus if you write your own binary
-read/write routines you have to swap the bytes; see PetscBinaryRead()
-and PetscBinaryWrite() to see how this may be done.
-
-  Concepts: vector^loading from file
-
-.seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoadIntoVector() 
-@*/  
-PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, Vec newvec)
+PetscErrorCode PETSCVEC_DLLEXPORT VecLoad_Default(PetscViewer viewer, Vec newvec)
 {
   PetscErrorCode ierr;
   DA             da;

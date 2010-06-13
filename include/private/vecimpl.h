@@ -215,6 +215,7 @@ typedef enum {UNALLOCATED,GPU,CPU,SAME} VecGPUFlag;
 EXTERN PetscErrorCode VecDuplicateVecs_Default(Vec,PetscInt,Vec *[]);
 EXTERN PetscErrorCode VecDestroyVecs_Default(Vec [],PetscInt);
 EXTERN PetscErrorCode VecLoad_Binary(PetscViewer,Vec);
+EXTERN PetscErrorCode VecLoad_Default(PetscViewer,Vec);
 
 extern PetscInt NormIds[7];  /* map from NormType to IDs used to cache/retreive values of norms */
 

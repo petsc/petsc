@@ -957,6 +957,96 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecResetArray(Vec vec)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "VecLoad"
+/*@C 
+  VecLoad - Loads a vector that has been stored in binary or HDF5 format
+  with VecView().
+
+  Collective on PetscViewer 
+
+  Input Parameters:
++ viewer - binary file viewer, obtained from PetscViewerBinaryOpen() or
+           HDF5 file viewer, obtained from PetscViewerHDF5Open()
+- newvec - the newly loaded vector, this needs to have been created with VecCreate() or
+           some related function before the VecLoad(). 
+
+   Level: intermediate
+
+  Notes:
+  The input file must contain the full global vector, as
+  written by the routine VecView().
+
+  If the type or size of newvec is not set before a call to VecLoad, PETSc 
+  sets the type and the local and global sizes.If type and/or 
+  sizes are already set, then the same are used.
+
+  IF using HDF5, you must assign the Vec the same name as was used in the Vec
+  that was stored in the file using PetscObjectSetName(). Otherwise you will
+  get the error message: "Cannot H5DOpen2() with Vec name NAMEOFOBJECT"
+
+  Notes for advanced users:
+  Most users should not need to know the details of the binary storage
+  format, since VecLoad() and VecView() completely hide these details.
+  But for anyone who's interested, the standard binary matrix storage
+  format is
+.vb
+     int    VEC_FILE_CLASSID
+     int    number of rows
+     PetscScalar *values of all entries
+.ve
+
+   In addition, PETSc automatically does the byte swapping for
+machines that store the bytes reversed, e.g.  DEC alpha, freebsd,
+linux, Windows and the paragon; thus if you write your own binary
+read/write routines you have to swap the bytes; see PetscBinaryRead()
+and PetscBinaryWrite() to see how this may be done.
+
+  Concepts: vector^loading from file
+
+.seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoadIntoVector() 
+@*/  
+PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, Vec newvec)
+{
+  PetscErrorCode ierr;
+  MPI_Comm       comm;
+  PetscMPIInt    size;
+  const char     *prefix;
+  PetscTruth     flg;
+  char           vtype[256];
+  const VecType  outtype;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  PetscValidHeaderSpecific(newvec,VEC_CLASSID,2);
+
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
+
+  /* Check if type if set  */
+  if (!((PetscObject)newvec)->type_name) {
+    ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,(const char**)&prefix);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(prefix,"-vec_type",vtype,256,&flg);CHKERRQ(ierr);
+    if (flg) {
+      outtype = vtype;
+    }
+    ierr = PetscOptionsGetString(prefix,"-vecload_type",vtype,256,&flg);CHKERRQ(ierr);
+    if (flg) {
+      outtype = vtype;
+    }
+    ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+    if (!outtype) {
+      ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+      outtype = (size > 1) ? VECMPI : VECSEQ;
+    }
+    ierr = VecSetType(newvec, outtype);CHKERRQ(ierr);
+  }
+
+  ierr = VecLoad_Default(viewer,newvec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "VecReciprocal"
 /*@
    VecReciprocal - Replaces each component of a vector by its reciprocal.
