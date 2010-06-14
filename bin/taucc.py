@@ -39,6 +39,7 @@ tauflags:
 	-@echo TAU_DEFS:${TAU_DEFS}
 	-@echo TAU_INCLUDE:${TAU_INCLUDE}
 	-@echo TAU_LIBS:${TAU_LIBS}
+	-@echo TAU_MPI_INC:${TAU_MPI_INC}
 	-@echo TAU_MPI_LIBS:${TAU_MPI_LIBS}
 	-@echo TAU_CXXLIBS:${TAU_CXXLIBS}
 '''
@@ -60,9 +61,10 @@ tauflags:
     elif line.find('TAU_DEFS:') >= 0:  tau_defs = line.replace('TAU_DEFS:',' ')    
     elif line.find('TAU_INCLUDE:') >= 0: tau_include = line.replace('TAU_INCLUDE:',' ')
     elif line.find('TAU_LIBS:') >= 0: tau_libs = line.replace('TAU_LIBS:',' ')
+    elif line.find('TAU_MPI_INC:') >= 0: tau_mpi_inc = line.replace('TAU_MPI_INC:',' ')
     elif line.find('TAU_MPI_LIBS:') >= 0: tau_mpi_libs = line.replace('TAU_MPI_LIBS:',' ')
     elif line.find('TAU_CXXLIBS:') >= 0: tau_cxxlibs = line.replace('TAU_CXXLIBS:',' ')
-  return tau_instr,tau_defs,tau_include,tau_libs,tau_mpi_libs,tau_cxxlibs
+  return tau_instr,tau_defs,tau_include,tau_libs,tau_mpi_inc,tau_mpi_libs,tau_cxxlibs
   
 def main():
 
@@ -116,7 +118,7 @@ def main():
   if sourcefiles == [] and compileonly:
     sys.exit('Error: no sourcefiles specified with -c')
   # obtain TAU info from TAU makefile
-  tau_instr,tau_defs,tau_include,tau_libs,tau_mpi_libs,tau_cxxlibs = getTauFlags(tau_lib_dir)
+  tau_instr,tau_defs,tau_include,tau_libs,tau_mpi_inc,tau_mpi_libs,tau_cxxlibs = getTauFlags(tau_lib_dir)
   if sourcefiles != []:
     # Now Compile the sourcefiles
     for sourcefile in sourcefiles:
@@ -130,11 +132,11 @@ def main():
         if ext == '.cc' or ext == '.cpp' or ext == '.cxx' or ext == '.C' : pdt_file = root+ '.pdb'
         else: pdt_file = sourcefile+ '.pdb'
       tau_file = root +'.inst' + ext
-      cmd1  = pdt_parse + ' ' + sourcefile + arglist + tau_defs + tau_include
+      cmd1  = pdt_parse + ' ' + sourcefile + arglist + tau_defs + tau_include + tau_mpi_inc
 
       cmd2  = tau_instr + ' ' + pdt_file + ' ' + sourcefile +' -o '+ tau_file
       cmd2 += ' -c -rn PetscFunctionReturn -rv PetscFunctionReturnVoid\\(\\)'
-      cmd3  = cc + ' -c ' + tau_file + ' -o ' + obj_file + arglist + tau_defs + tau_include
+      cmd3  = cc + ' -c ' + tau_file + ' -o ' + obj_file + arglist + tau_defs + tau_include +tau_mpi_inc
 
 
       runcmd(cmd1,verbose)
