@@ -958,7 +958,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecResetArray(Vec vec)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecLoad"
-/*@C 
+/*@ 
   VecLoad - Loads a vector that has been stored in binary or HDF5 format
   with VecView().
 
