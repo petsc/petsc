@@ -25,7 +25,7 @@ typedef struct _p_AO* AO;
 /* Logging support */
 extern PetscClassId PETSCDM_DLLEXPORT AO_CLASSID;
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT AOInitializePackage(const char[]);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT AOCreateBasic(MPI_Comm,PetscInt,const PetscInt[],const PetscInt[],AO*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT AOCreateBasicIS(IS,IS,AO*);
