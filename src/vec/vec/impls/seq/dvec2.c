@@ -487,7 +487,6 @@ PetscErrorCode VecMTDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
 #define __FUNCT__ "VecMax_Seq"
 PetscErrorCode VecMax_Seq(Vec xin,PetscInt* idx,PetscReal * z)
 { 
-  PetscErrorCode ierr;
   PetscInt       i,j=0,n = xin->map->n;
   PetscReal      max,tmp;
   PetscScalar    *xx;
@@ -553,6 +552,7 @@ PetscErrorCode VecSet_Seq(Vec xin,PetscScalar alpha)
 {
   PetscInt       i,n = xin->map->n;
   PetscScalar    *xx = *(PetscScalar**)xin->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (alpha == 0.0) {
