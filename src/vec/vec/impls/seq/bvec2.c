@@ -64,7 +64,6 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
     ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
     *z = cublasSnrm2(bn,xin->GPUarray,one);
     ierr = cublasGetError();CHKERRCUDA(ierr);
-    xin->valid_GPU_array = GPU;
 #else
     ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
     *z = BLASnrm2_(&bn,xx,&one);
@@ -92,7 +91,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
     ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
     *z = cublasSasum(bn,xin->GPUarray,one);
     ierr = cublasGetError();CHKERRCUDA(ierr);
-    xin->valid_GPU_array = GPU;
+    xin->valid_GPU_array = PETSC_CUDA_GPU;
 #else
     ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
     *z = BLASasum_(&bn,xx,&one);
@@ -665,7 +664,7 @@ PetscErrorCode VecDestroy_Seq(Vec v)
 #endif
 
 #if defined(PETSC_HAVE_CUDA)
-  if (v->valid_GPU_array != UNALLOCATED){
+  if (v->valid_GPU_array != PETSC_CUDA_UNALLOCATED){
     ierr = cublasFree(v->GPUarray);CHKERRCUDA(ierr);
   }
 #endif

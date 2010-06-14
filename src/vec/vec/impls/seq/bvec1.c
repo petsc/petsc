@@ -113,7 +113,7 @@ PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
   ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
   cublasSscal(bn,a,xin->GPUarray,one);
   ierr = cublasGetError();CHKERRCUDA(ierr);
-  xin->valid_GPU_array = GPU;
+  xin->valid_GPU_array = PETSC_CUDA_GPU;
   }
 #else
   if (alpha == 0.0) {
@@ -140,7 +140,7 @@ PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
   PetscFunctionBegin;
   if (xin != yin) {
 #if defined(PETSC_HAVE_CUDA)
-    if (xin->valid_GPU_array != GPU){
+    if (xin->valid_GPU_array != PETSC_CUDA_GPU){
       ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
       ierr = PetscMemcpy(ya,xa,xin->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
       ierr = VecRestoreArray2(xin,&xa,yin,&ya);
@@ -150,7 +150,7 @@ PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
       ierr = VecCUDACopyToGPU(yin);CHKERRQ(ierr);
       cublasScopy(xin->map->n,xin->GPUarray,one,yin->GPUarray,one);
       ierr = cublasGetError();CHKERRCUDA(ierr);
-      yin->valid_GPU_array = GPU;
+      yin->valid_GPU_array = PETSC_CUDA_GPU;
     }
 #else
     ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
@@ -173,18 +173,17 @@ PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
   if (xin != yin) {
 #if defined(PETSC_HAVE_CUDA)
     //We perform the swap on the GPU unless both vectors are already on the CPU
-    if ((xin->valid_GPU_array == CPU || xin->valid_GPU_array == SAME) && (yin->valid_GPU_array == CPU || yin->valid_GPU_array == SAME)){
+    if ((xin->valid_GPU_array == PETSC_CUDA_CPU || xin->valid_GPU_array == PETSC_CUDA_SAME) && (yin->valid_GPU_array == PETSC_CUDA_CPU || yin->valid_GPU_array == PETSC_CUDA_SAME)){
       ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
       BLASswap_(&bn,xa,&one,ya,&one);
       ierr = VecRestoreArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
-    }
-    else{
+    } else {
       ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
       ierr = VecCUDACopyToGPU(yin);CHKERRQ(ierr);
       cublasSswap(bn,xin->GPUarray,one,yin->GPUarray,one);
       ierr = cublasGetError();CHKERRCUDA(ierr);
-      xin->valid_GPU_array = GPU;
-      yin->valid_GPU_array = GPU;
+      xin->valid_GPU_array = PETSC_CUDA_GPU;
+      yin->valid_GPU_array = PETSC_CUDA_GPU;
     }
 #else
     ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
@@ -211,7 +210,7 @@ PetscErrorCode VecAXPY_Seq(Vec yin,PetscScalar alpha,Vec xin)
     ierr = VecCUDACopyToGPU(yin);CHKERRQ(ierr);
     cublasSaxpy(bn,alpha,xin->GPUarray,one,yin->GPUarray,one);
     ierr = cublasGetError();CHKERRCUDA(ierr);
-    yin->valid_GPU_array = GPU;
+    yin->valid_GPU_array = PETSC_CUDA_GPU;
 #else
     ierr = VecGetArray2(yin,&yarray,xin,&xarray);CHKERRQ(ierr);
     BLASaxpy_(&bn,&alpha,xarray,&one,yarray,&one);

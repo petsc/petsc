@@ -58,10 +58,9 @@ PETSC_STATIC_INLINE PetscErrorCode VecGetArray2(Vec x, PetscScalar *xx[], Vec y,
   
   PetscFunctionBegin;
   ierr = VecGetArray(x,xx);CHKERRQ(ierr);
-  if (x == y){
+  if (x == y) {
     *yy = *xx;
-  }
-  else{
+  } else {
     ierr = VecGetArray(y,yy);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -75,7 +74,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray2(Vec x, PetscScalar *xx[], Ve
   
   PetscFunctionBegin;
   ierr = VecRestoreArray(x,xx);CHKERRQ(ierr);
-  if (x != y){
+  if (x != y) {
     ierr = VecRestoreArray(y,yy);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -89,19 +88,16 @@ PETSC_STATIC_INLINE PetscErrorCode VecGetArray3(Vec x, PetscScalar *xx[], Vec y,
   
   PetscFunctionBegin;
   ierr = VecGetArray(x,xx);CHKERRQ(ierr);
-  if (x == y){
+  if (x == y) {
     *yy = *xx;
-  }
-  else{
+  } else {
     ierr = VecGetArray(y,yy);CHKERRQ(ierr);
   }
-  if (w == x){
+  if (w == x) {
     *ww = *xx;
-  }
-  else if(w == y){
+  } else if(w == y) {
     *ww = *yy;
-  }
-  else{
+  } else {
     ierr = VecGetArray(w,ww);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
