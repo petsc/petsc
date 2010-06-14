@@ -50,7 +50,6 @@ int main(int argc,char **argv)
      -vec_type shared causes the particular type of vector to be formed.
 
   */
-
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
@@ -59,7 +58,6 @@ int main(int argc,char **argv)
   ierr = PetscObjectPublishBaseEnd((PetscObject)x);CHKERRQ(ierr);
   ierr = PetscSleep(2.0);CHKERRQ(ierr);
 #endif
-
   /*
      Duplicate some work vectors (of the same format and
      partitioning as the initial vector).
@@ -67,7 +65,6 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&w);CHKERRQ(ierr);
   ierr = VecNorm(w,NORM_2,&norm);CHKERRQ(ierr);
-
   /*
      Duplicate more work vectors (of the same format and
      partitioning as the initial vector).  Here we duplicate
@@ -75,7 +72,6 @@ int main(int argc,char **argv)
      duplicating individual ones.
   */
   ierr = VecDuplicateVecs(x,3,&z);CHKERRQ(ierr); 
-
   /*
      Set the vectors to entries to a constant value.
   */

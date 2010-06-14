@@ -1,14 +1,16 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
+
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
   <title>PETSc: Documentation</title>
 </head>
 <body bgcolor="#d5eaff">
-<table border="0" width="100%">
+<table width="100%" border="0">
   <tbody>
     <tr>
       <td valign="top" width="25%">
-      <h1><font color="#ff0000" size="7">PETSc</font></h1>
+      <h1><font size="7" color="#ff0000">PETSc</font></h1>
       <ul>
         <li><a href="../index.html"><strong>Home</strong></a></li>
       </ul>
@@ -19,7 +21,7 @@
     </tr>
     <tr>
       <td colspan="2" width="100%">
-      <hr color="#ff5b5b" size="4"> </td>
+      <hr size="4" color="#ff5b5b"> </td>
     </tr>
     <tr>
       <td valign="top" width="25%">
@@ -34,7 +36,8 @@ Manual</font></strong></li>
 PETSc</strong></a></li>
             <li><a href="tutorials/index.html"><strong>Tutorials</strong></a></li>
             <li><strong><a href="installation.html">Installation</a> </strong></li>
-            <li><strong><a href="zope.html">Zope</a> </strong></li>
+            <li><strong><a href="zope.html">Zope</a></strong></li>
+            <li><strong></strong><strong><a href="ams.html">AMS</a></strong></li>
             <li><strong><a href="changes/index.html">Changes</a></strong></li>
             <li><strong><a href="bugreporting.html">Bug Reporting</a></strong></li>
             <li><strong><a href="codemanagement.html">Code Management</a></strong></li>
@@ -58,82 +61,105 @@ manual before attempting to do any serious coding with <b>PETSc</b>!
       <ul>
         <li><strong>PETSc users manual</strong> - <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manual.pdf">pdf
-(fully searchable with hyperlinks)</a> </li>
+(fully
+searchable with hyperlinks)</a> </li>
         <li> <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/help.html">Index</a>
 of all help topics</li>
         <li><a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/singleindex.html">Index</a>
 of all manual pages</li>
-        <li><a href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/Sys/UsingFortran.html">Strategies</a> for using PETSc with Fortran</li>
+        <li><a
+ href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/Sys/UsingFortran.html">Strategies</a>
+for using PETSc with Fortran</li>
       </ul>
       <p><strong>PETSc Manual Pages and Examples &nbsp;&nbsp;&nbsp;</strong>
       <a href="http://www.mcs.anl.gov/mpi/www">MPI</a>&nbsp;&nbsp;&nbsp;
+
       <a href="http://www.mcs.anl.gov/tao/documentation/index.html">TAO</a>
       </p>
       <ul>
         <li><a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/Vec/index.html">Vector
-Operations (Vec)</a> <span style="color: rgb(255, 102, 102);">in libvec</span></li>
+Operations
+(Vec)</a> <span style="color: rgb(255, 102, 102);">in libvec</span></li>
         <ul>
           <li><a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PF/index.html">Defining
-your own mathematical functions (PF)</a></li>
+your
+own mathematical functions (PF)</a></li>
         </ul>
         <li><a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/Mat/index.html">Matrix
-Operations (Mat)</a> <span style="color: rgb(255, 102, 102);">in libmat</span></li>
+Operations
+(Mat)</a> <span style="color: rgb(255, 102, 102);">in libmat</span></li>
         <ul>
           <li> <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/MatOrderings/index.html">Matrix
-colorings (MatColoring), orderings (MatOrdering), and partitionings
+colorings
+(MatColoring), orderings (MatOrdering), and partitionings
 (MatPartitioning)</a></li>
           <li><a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/MatFD/index.html">Finite
-difference computation of Jacobians (MatFD)</a>
+difference
+computation of Jacobians (MatFD)</a>
             <menu> </menu>
           </li>
         </ul>
         <li>Data and grid management</li>
-        <menu> <li><a
+        <menu>
+        <li><a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/IS/index.html">Index
-sets (IS)&nbsp;</a><span style="color: rgb(255, 102, 102);">in libvec</span></li>
+sets
+(IS)&nbsp;</a><span style="color: rgb(255, 102, 102);">in libvec</span></li>
         <li><a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/DA/index.html">Distributed
-Arrays (DA)</a> <span style="color: rgb(255, 102, 102);">in libdm</span></li>
+Arrays
+(DA)</a> <span style="color: rgb(255, 102, 102);">in libdm</span></li>
         <li><a
- href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/Mesh/index.html">Meshes (Mesh)</a> <span style="color: rgb(255, 102, 102);">in libdm</span></li>
+ href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/Mesh/index.html">Meshes
+(Mesh)</a> <span style="color: rgb(255, 102, 102);">in libdm</span></li>
         <li><a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/AO/index.html">Application
-Orderings (AO)</a><span style="color: rgb(255, 102, 102);"> in libdm</span></li>
+Orderings
+(AO)</a><span style="color: rgb(255, 102, 102);"> in libdm</span></li>
         </menu>
         <li><a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/KSP/index.html">Linear
-Solvers (KSP)</a> <span style="color: rgb(255, 102, 102);">in libksp</span>
-          <menu><li><a href="linearsolvertable.html">Summary table of
+Solvers
+(KSP)</a> <span style="color: rgb(255, 102, 102);">in libksp</span>
+          <menu>
+          <li><a href="linearsolvertable.html">Summary table of
 all linear solvers</a> </li>
           <li><a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/index.html">Preconditioners
 (PC)</a> </li>
           <li><a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/KSP/index.html">Krylov
-Subspace Methods (KSP)</a> </li>
+Subspace
+Methods (KSP)</a> </li>
           </menu>
         </li>
         <li><a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/SNES/index.html">Nonlinear
-Solvers (SNES)</a> <span style="color: rgb(255, 102, 102);">in libsnes</span>
-          <menu><li><a href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/SNES/MatCreateSNESMF.html">Matrix-free
-nonlinear solvers (MATMFFD)</a></li>
+Solvers
+(SNES)</a> <span style="color: rgb(255, 102, 102);">in libsnes</span>
+          <menu>
+          <li><a
+ href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/SNES/MatCreateSNESMF.html">Matrix-free
+nonlinear
+solvers (MATMFFD)</a></li>
           </menu>
         </li>
         <li><a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/TS/index.html">Time
-Stepping (TS) ODE solvers</a> <span style="color: rgb(255, 102, 102);">in
+Stepping
+(TS) ODE solvers</a> <span style="color: rgb(255, 102, 102);">in
 libts</span></li>
         <li>Utilities<span style="color: rgb(255, 102, 102);"> in
 libpetsc</span>
-          <menu> <li><a
+          <menu>
+          <li><a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/Viewer/index.html">Viewing
 Objects</a> </li>
           <li><a
@@ -141,17 +167,20 @@ Objects</a> </li>
 (Draw)</a> </li>
           <li><a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/Sys/index.html">System
-Routines (Options, IO, utilities)</a> </li>
+Routines
+(Options, IO, utilities)</a> </li>
           <li><a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/Profiling/index.html">Profiling
-and Logging</a> </li>
+and
+Logging</a> </li>
           </menu>
         </li>
       </ul>
       <p>The manual pages are split into four categories; we recommend
 that you begin with basic functionality and then gradually explore
 more sophisticated library features. </p>
-      <menu> <li><i>Beginner </i>- Basic usage </li>
+      <menu>
+      <li><i>Beginner </i>- Basic usage </li>
       <li><i>Intermediate </i>- Setting options for algorithms and
 data structures </li>
       <li><i>Advanced </i>- Setting more advanced options and
@@ -180,7 +209,7 @@ PETSc copyright<!--##end--></li>
     </tr>
     <tr>
       <td colspan="2" width="100%">
-      <hr color="#ff5b5b" size="4"> </td>
+      <hr size="4" color="#ff5b5b"> </td>
     </tr>
   </tbody>
 </table>
