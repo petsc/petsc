@@ -599,8 +599,8 @@ PetscErrorCode VecLoad_Binary_DA(PetscViewer viewer,Vec xin)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "VecLoad_DA"
-PetscErrorCode PETSCDM_DLLEXPORT VecLoad_DA(PetscViewer viewer, Vec xin)
+#define __FUNCT__ "VecLoad_Default_DA"
+PetscErrorCode PETSCDM_DLLEXPORT VecLoad_Default_DA(PetscViewer viewer, Vec xin)
 {
   PetscErrorCode ierr;
   DA             da;

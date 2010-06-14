@@ -1018,11 +1018,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, Vec newvec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidHeaderSpecific(newvec,VEC_CLASSID,2);
+  PetscValidPointer(newvec,2);
 
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
-#endif
-
+  ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   /* Check if type if set  */
   if (!((PetscObject)newvec)->type_name) {
     ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,(const char**)&prefix);CHKERRQ(ierr);
@@ -1041,8 +1039,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, Vec newvec)
     }
     ierr = VecSetType(newvec, outtype);CHKERRQ(ierr);
   }
-
-  ierr = VecLoad_Default(viewer,newvec);CHKERRQ(ierr);
+  ierr = (*newvec->ops->load)(viewer,newvec);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1089,7 +1087,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetOperation(Vec vec,VecOperation op, void 
   /* save the native version of the viewer */
   if (op == VECOP_VIEW && !vec->ops->viewnative) {
     vec->ops->viewnative = vec->ops->view;
-  } 
+  } else if (op == VECOP_LOAD && !vec->ops->loadintovectornative) {
+    vec->ops->loadintovectornative = vec->ops->load;
+  }
   (((void(**)(void))vec->ops)[(int)op]) = f;
   PetscFunctionReturn(0);
 }

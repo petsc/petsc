@@ -45,6 +45,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreateGlobalVector(DA da,Vec* g)
   ierr = VecSetLocalToGlobalMappingBlock(*g,da->ltogmapb);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*g,da->w);CHKERRQ(ierr);
   ierr = VecSetOperation(*g,VECOP_VIEW,(void(*)(void))VecView_MPI_DA);CHKERRQ(ierr);
+  ierr = VecSetOperation(*g,VECOP_LOAD,(void(*)(void))VecLoad_Default_DA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -50,6 +50,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetType(Vec vec, const VecType method)
   }
   if (vec->map->n < 0 && vec->map->N < 0) { 
     vec->ops->create = r;
+    vec->ops->load   = VecLoad_Default;
   } else {
     ierr = (*r)(vec);CHKERRQ(ierr);
   }

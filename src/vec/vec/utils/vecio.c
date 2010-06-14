@@ -9,7 +9,6 @@
 #include "petscvec.h"         /*I  "petscvec.h"  I*/
 #include "private/vecimpl.h"
 #include "petscmat.h" /* so that MAT_FILE_CLASSID is defined */
-#include "private/daimpl.h" /* so that DA is defined */
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerBinaryReadVecHeader_Private"
@@ -231,29 +230,15 @@ PetscErrorCode VecLoad_HDF5(PetscViewer viewer, Vec xin)
 PetscErrorCode PETSCVEC_DLLEXPORT VecLoad_Default(PetscViewer viewer, Vec newvec)
 {
   PetscErrorCode ierr;
-  DA             da;
   PetscTruth     isbinary;
 #if defined(PETSC_HAVE_HDF5)
   PetscTruth     ishdf5;
 #endif
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject)newvec,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (da) {
-    ierr = VecLoad_DA(viewer,newvec);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidPointer(newvec,2);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HDF5)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
-#endif
-
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
 #if defined(PETSC_HAVE_HDF5)
@@ -268,7 +253,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad_Default(PetscViewer viewer, Vec newvec
   {
     ierr = VecLoad_Binary(viewer,newvec);CHKERRQ(ierr);
   }
-  ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
