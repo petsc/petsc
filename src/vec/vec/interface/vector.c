@@ -663,7 +663,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec vec, const char *title)
    Notes for HDF5 Viewer: the name of the Vec (given with PetscObjectSetName() is the name that is used
    for the object in the HDF5 file. If you wish to store the same vector to the HDF5 viewer (with different values,
    obviously) several times, you must change its name each time before calling the VecView(). The name you use
-   here should equal the name that you use in the Vec object that you use with VecLoadIntoVector().
+   here should equal the name that you use in the Vec object that you use with VecLoad().
 
    See the manual page for VecLoad() on the exact format the binary viewer stores
    the values in the file.
@@ -1003,7 +1003,7 @@ and PetscBinaryWrite() to see how this may be done.
 
   Concepts: vector^loading from file
 
-.seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoadIntoVector() 
+.seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoad() 
 @*/  
 PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, Vec newvec)
 {
@@ -1013,7 +1013,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, Vec newvec)
   const char     *prefix;
   PetscTruth     flg;
   char           vtype[256];
-  const VecType  outtype;
+  const VecType  outtype=0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
