@@ -29,7 +29,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
       This is because the Fortran BLAS 1 Norm is very slow! 
     */
 #if defined(PETSC_HAVE_SLOW_BLAS_NORM2)
-    ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
+    xx = *(PetscScalar**)xin->data;
 #if defined(PETSC_USE_FORTRAN_KERNEL_NORM)
     fortrannormsqr_(xx,&n,z);
     *z = sqrt(*z);
@@ -57,7 +57,6 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
       *z = sqrt(PetscRealPart(sum));
     }
 #endif
-    ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
 #else
     //note that using CUBLAS for the norm seems to be less accurate by about a factor of ten, perhaps a result of the GPU being more focused on speed than accuracy
 #if defined(PETSC_HAVE_CUDA)
@@ -73,17 +72,16 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
     
     ierr = PetscLogFlops(PetscMax(2.0*n-1,0.0));CHKERRQ(ierr);
   } else if (type == NORM_INFINITY) {
-    PetscInt          i;
+    PetscInt     i;
     PetscReal    max = 0.0,tmp;
 
-    ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
+    xx = *(PetscScalar**)xin->data;
     for (i=0; i<n; i++) {
       if ((tmp = PetscAbsScalar(*xx)) > max) max = tmp;
       /* check special case of tmp == NaN */
       if (tmp != tmp) {max = tmp; break;}
       xx++;
     }
-    ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
     *z   = max;
     
   } else if (type == NORM_1) {
@@ -93,9 +91,8 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
     ierr = cublasGetError();CHKERRCUDA(ierr);
     xin->valid_GPU_array = PETSC_CUDA_GPU;
 #else
-    ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
+    xx = *(PetscScalar**)xin->data;
     *z = BLASasum_(&bn,xx,&one);
-    ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
 #endif
     ierr = PetscLogFlops(PetscMax(n-1.0,0.0));CHKERRQ(ierr);
   } else if (type == NORM_1_AND_2) {
@@ -441,7 +438,7 @@ PetscErrorCode VecView_Seq_Netcdf(Vec xin,PetscViewer v)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_COMPLEX)
-  ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
+  xarray = *(PetscScalar**)xin->data;
   ierr = PetscViewerNetcdfGetID(v,&ncid);CHKERRQ(ierr);
   if (ncid < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"First call PetscViewerNetcdfOpen to create NetCDF dataset");
   /* define dimensions */
@@ -556,10 +553,9 @@ PetscErrorCode VecGetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],PetscSca
 {
   PetscScalar    *xx;
   PetscInt       i;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
+  xx = *(PetscScalar**)xin->data;
   for (i=0; i<ni; i++) {
     if (xin->stash.ignorenegidx && ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
@@ -568,7 +564,6 @@ PetscErrorCode VecGetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],PetscSca
 #endif
     y[i] = xx[ix[i]];
   }
-  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -576,12 +571,10 @@ PetscErrorCode VecGetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],PetscSca
 #define __FUNCT__ "VecSetValues_Seq"
 PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode m)
 {
-  PetscScalar    *xx;
+  PetscScalar    *xx = *(PetscScalar**)xin->data;
   PetscInt       i;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
   if (m == INSERT_VALUES) {
     for (i=0; i<ni; i++) {
       if (xin->stash.ignorenegidx && ix[i] < 0) continue;
@@ -601,7 +594,6 @@ PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
       xx[ix[i]] += y[i];
     }  
   }  
-  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -609,15 +601,14 @@ PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
 #define __FUNCT__ "VecSetValuesBlocked_Seq"
 PetscErrorCode VecSetValuesBlocked_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const PetscScalar yin[],InsertMode m)
 {
-  PetscScalar    *xx,*y = (PetscScalar*)yin;
+  PetscScalar    *y = (PetscScalar*)yin;
   PetscInt       i,bs = xin->map->bs,start,j;
-  PetscErrorCode ierr;
+  PetscScalar    *xx = *(PetscScalar**)xin->data;
 
   /*
        For optimization could treat bs = 2, 3, 4, 5 as special cases with loop unrolling
   */
   PetscFunctionBegin;
-  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
   if (m == INSERT_VALUES) {
     for (i=0; i<ni; i++) {
       start = bs*ix[i];
@@ -643,7 +634,6 @@ PetscErrorCode VecSetValuesBlocked_Seq(Vec xin,PetscInt ni,const PetscInt ix[],c
       y += bs;
     }  
   }
-  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

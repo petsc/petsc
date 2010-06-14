@@ -100,7 +100,6 @@ PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
   Vec_Seq        *x = (Vec_Seq*)xin->data;
   PetscErrorCode ierr;
   PetscBLASInt   one = 1,bn = PetscBLASIntCast(xin->map->n);
-  PetscScalar    *xx;
  
   PetscFunctionBegin;
 
@@ -118,10 +117,8 @@ PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
   if (alpha == 0.0) {
     ierr = VecSet_Seq(xin,alpha);CHKERRQ(ierr);
   } else if (alpha != 1.0) {
-    ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
     PetscScalar a = alpha;
-    BLASscal_(&bn,&a,xx,&one);
-    ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
+    BLASscal_(&bn,&a,*(PetscScalar**)xin->data,&one);
   }
 #endif
   ierr = PetscLogFlops(xin->map->n);CHKERRQ(ierr);

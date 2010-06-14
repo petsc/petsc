@@ -249,6 +249,28 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray(Vec x, PetscScalar *a[])
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "VecRestoreArrayRead"
+/*
+    Does not increase the state of the vectors
+*/
+PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayRead(Vec x, PetscScalar *a[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (x->petscnative){
+#if defined(PETSC_HAVE_CUDA)
+    if (x->valid_GPU_array != PETSC_CUDA_UNALLOCATED) {
+      x->valid_GPU_array = PETSC_CUDA_CPU;
+    }
+#endif
+  } else {
+    ierr = VecRestoreArray_Private(x,a);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 
 /*
      Common header shared by array based vectors, 

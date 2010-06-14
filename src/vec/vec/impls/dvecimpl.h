@@ -68,14 +68,17 @@ PETSC_STATIC_INLINE PetscErrorCode VecGetArray2(Vec x, PetscScalar *xx[], Vec y,
 
 #undef __FUNCT__
 #define __FUNCT__ "VecRestoreArray2"
+/*
+    Does not increase the state of either vector
+*/
 PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray2(Vec x, PetscScalar *xx[], Vec y, PetscScalar *yy[])
 {
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
-  ierr = VecRestoreArray(x,xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,xx);CHKERRQ(ierr);
   if (x != y) {
-    ierr = VecRestoreArray(y,yy);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(y,yy);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -105,17 +108,20 @@ PETSC_STATIC_INLINE PetscErrorCode VecGetArray3(Vec x, PetscScalar *xx[], Vec y,
 
 #undef __FUNCT__
 #define __FUNCT__ "VecRestoreArray3"
+/*
+    Does not increase the state of the vectors
+*/
 PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray3(Vec x, PetscScalar *xx[], Vec y, PetscScalar *yy[], Vec w, PetscScalar *ww[])
 {
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
-  ierr = VecRestoreArray(x,xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,xx);CHKERRQ(ierr);
   if (x != y){
-    ierr = VecRestoreArray(y,yy);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(y,yy);CHKERRQ(ierr);
   }
   if (w != x && w != y){
-    ierr = VecRestoreArray(w,ww);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(w,ww);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
