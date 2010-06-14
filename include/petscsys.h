@@ -2103,23 +2103,23 @@ extern PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Datatype
     UsingFortran - Fortran can be used with PETSc in four distinct approaches
 
 $    1) classic Fortran 77 style
-$#include "petscXXX.h" to work with material from the XXX component of PETSc
+$#include "finclude/petscXXX.h" to work with material from the XXX component of PETSc
 $       XXX variablename
 $      You cannot use this approach if you wish to use the Fortran 90 specific PETSc routines
 $      which end in F90; such as VecGetArrayF90()
 $
 $    2) classic Fortran 90 style
-$#include "petscXXX.h" 
-$#include "petscXXX.h90" to work with material from the XXX component of PETSc
+$#include "finclude/petscXXX.h" 
+$#include "finclude/petscXXX.h90" to work with material from the XXX component of PETSc
 $       XXX variablename
 $
 $    3) Using Fortran modules
-$#include "petscXXXdef.h" 
+$#include "finclude/petscXXXdef.h" 
 $         use petscXXXX
 $       XXX variablename
 $
 $    4) Use Fortran modules and Fortran data types for PETSc types
-$#include "petscXXXdef.h" 
+$#include "finclude/petscXXXdef.h" 
 $         use petscXXXX
 $       type(XXX) variablename
 $      To use this approach you must config/configure.py PETSc with the additional
