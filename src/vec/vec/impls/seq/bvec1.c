@@ -107,19 +107,17 @@ PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
 #if defined(PETSC_HAVE_CUDA)
   if (alpha == 0.0) {
     ierr = VecSet_Seq(xin,alpha);CHKERRQ(ierr);
-  }
-  else if (alpha != 1.0) {
-  PetscScalar a = alpha;
-  ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
-  cublasSscal(bn,a,xin->GPUarray,one);
-  ierr = cublasGetError();CHKERRCUDA(ierr);
-  xin->valid_GPU_array = PETSC_CUDA_GPU;
+  } else if (alpha != 1.0) {
+    PetscScalar a = alpha;
+    ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
+    cublasSscal(bn,a,xin->GPUarray,one);
+    ierr = cublasGetError();CHKERRCUDA(ierr);
+    xin->valid_GPU_array = PETSC_CUDA_GPU;
   }
 #else
   if (alpha == 0.0) {
     ierr = VecSet_Seq(xin,alpha);CHKERRQ(ierr);
-  }
-  else if (alpha != 1.0) {
+  } else if (alpha != 1.0) {
     ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
     PetscScalar a = alpha;
     BLASscal_(&bn,&a,xx,&one);
@@ -172,19 +170,12 @@ PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
   PetscFunctionBegin;
   if (xin != yin) {
 #if defined(PETSC_HAVE_CUDA)
-    //We perform the swap on the GPU unless both vectors are already on the CPU
-    if ((xin->valid_GPU_array == PETSC_CUDA_CPU || xin->valid_GPU_array == PETSC_CUDA_SAME) && (yin->valid_GPU_array == PETSC_CUDA_CPU || yin->valid_GPU_array == PETSC_CUDA_SAME)){
-      ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
-      BLASswap_(&bn,xa,&one,ya,&one);
-      ierr = VecRestoreArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
-    } else {
-      ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
-      ierr = VecCUDACopyToGPU(yin);CHKERRQ(ierr);
-      cublasSswap(bn,xin->GPUarray,one,yin->GPUarray,one);
-      ierr = cublasGetError();CHKERRCUDA(ierr);
-      xin->valid_GPU_array = PETSC_CUDA_GPU;
-      yin->valid_GPU_array = PETSC_CUDA_GPU;
-    }
+    ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
+    ierr = VecCUDACopyToGPU(yin);CHKERRQ(ierr);
+    cublasSswap(bn,xin->GPUarray,one,yin->GPUarray,one);
+    ierr = cublasGetError();CHKERRCUDA(ierr);
+    xin->valid_GPU_array = PETSC_CUDA_GPU;
+    yin->valid_GPU_array = PETSC_CUDA_GPU;
 #else
     ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
     BLASswap_(&bn,xa,&one,ya,&one);
