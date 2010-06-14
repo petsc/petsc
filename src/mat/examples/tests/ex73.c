@@ -54,7 +54,8 @@ int main(int argc,char **args)
       Load the matrix and vector; then destroy the viewer.
   */
   ierr = MatLoad(fd,mtype,&A);CHKERRQ(ierr);
-  ierr = VecLoad(fd,VECMPI,&xin);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&xin);CHKERRQ(ierr);
+  ierr = VecLoad(fd,xin);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
   //    ierr = MatView(A,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);

@@ -43,9 +43,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerRegisterAll(const char *path)
   ierr = PetscViewerRegisterDynamic(PETSCVIEWERMATHEMATICA,path,"PetscViewerCreate_Mathematica",PetscViewerCreate_Mathematica);CHKERRQ(ierr); 
 #endif
   ierr = PetscViewerRegisterDynamic(PETSCVIEWERVU,         path,"PetscViewerCreate_VU",         PetscViewerCreate_VU);CHKERRQ(ierr); 
-#if defined(PETSC_HAVE_PNETCDF)
-  ierr = PetscViewerRegisterDynamic(PETSCVIEWERNETCDF,     path,"PetscViewerCreate_Netcdf",     PetscViewerCreate_Netcdf);CHKERRQ(ierr); 
-#endif
 #if defined(PETSC_HAVE_HDF5)
   ierr = PetscViewerRegisterDynamic(PETSCVIEWERHDF5,       path,"PetscViewerCreate_HDF5",       PetscViewerCreate_HDF5);CHKERRQ(ierr);
 #endif

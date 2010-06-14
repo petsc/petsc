@@ -5,12 +5,6 @@
 */
 
 #include "private/daimpl.h"    /*I   "petscda.h"   I*/
-#if defined(PETSC_HAVE_PNETCDF)
-EXTERN_C_BEGIN
-#include "pnetcdf.h"
-EXTERN_C_END
-#endif
-
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 #include "mat.h"   /* Matlab include file */

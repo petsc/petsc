@@ -663,7 +663,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec vec, const char *title)
    Notes for HDF5 Viewer: the name of the Vec (given with PetscObjectSetName() is the name that is used
    for the object in the HDF5 file. If you wish to store the same vector to the HDF5 viewer (with different values,
    obviously) several times, you must change its name each time before calling the VecView(). The name you use
-   here should equal the name that you use in the Vec object that you use with VecLoadIntoVector().
+   here should equal the name that you use in the Vec object that you use with VecLoad().
 
    See the manual page for VecLoad() on the exact format the binary viewer stores
    the values in the file.
@@ -957,28 +957,32 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecResetArray(Vec vec)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "VecLoadIntoVector"
-/*@C
-  VecLoadIntoVector - Loads a vector that has been stored in binary (or HDF5) format
+#define __FUNCT__ "VecLoad"
+/*@ 
+  VecLoad - Loads a vector that has been stored in binary or HDF5 format
   with VecView().
 
-  Collective on PetscViewer
+  Collective on PetscViewer 
 
   Input Parameters:
-+ viewer - binary file viewer, obtained from PetscViewerBinaryOpen()
-- vec - vector to contain files values (must be of correct length)
++ viewer - binary file viewer, obtained from PetscViewerBinaryOpen() or
+           HDF5 file viewer, obtained from PetscViewerHDF5Open()
+- newvec - the newly loaded vector, this needs to have been created with VecCreate() or
+           some related function before the VecLoad(). 
 
-  Level: intermediate
+   Level: intermediate
 
   Notes:
   The input file must contain the full global vector, as
   written by the routine VecView().
 
-  Use VecLoad() to create the vector as the values are read in
+  If the type or size of newvec is not set before a call to VecLoad, PETSc 
+  sets the type and the local and global sizes.If type and/or 
+  sizes are already set, then the same are used.
 
-  If using HDF5, you must assign the Vec the same name as was used in the Vec that was stored
-  in the file using PetscObjectSetName(). Otherwise you will get the error message
-$     Cannot H5Dopen2() with Vec named NAMEOFOBJECT
+  IF using HDF5, you must assign the Vec the same name as was used in the Vec
+  that was stored in the file using PetscObjectSetName(). Otherwise you will
+  get the error message: "Cannot H5DOpen2() with Vec name NAMEOFOBJECT"
 
   Notes for advanced users:
   Most users should not need to know the details of the binary storage
@@ -988,7 +992,7 @@ $     Cannot H5Dopen2() with Vec named NAMEOFOBJECT
 .vb
      int    VEC_FILE_CLASSID
      int    number of rows
-     PetscScalar *values of all nonzeros
+     PetscScalar *values of all entries
 .ve
 
    In addition, PETSc automatically does the byte swapping for
@@ -997,34 +1001,46 @@ linux, Windows and the paragon; thus if you write your own binary
 read/write routines you have to swap the bytes; see PetscBinaryRead()
 and PetscBinaryWrite() to see how this may be done.
 
-   Concepts: vector^loading from file
+  Concepts: vector^loading from file
 
-.seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoad()
-@*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecLoadIntoVector(PetscViewer viewer,Vec vec)
+.seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoad() 
+@*/  
+PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, Vec newvec)
 {
-  PetscErrorCode    ierr;
-  PetscViewerFormat format;
+  PetscErrorCode ierr;
+  MPI_Comm       comm;
+  PetscMPIInt    size;
+  const char     *prefix;
+  PetscTruth     flg;
+  char           vtype[256];
+  const VecType  outtype=0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
-  PetscValidType(vec,2);
-  if (!vec->ops->loadintovector) SETERRQ(((PetscObject)vec)->comm,PETSC_ERR_SUP,"Vector does not support load");
+  PetscValidHeaderSpecific(newvec,VEC_CLASSID,2);
+  PetscValidPointer(newvec,2);
+
   ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
-  /*
-     Check if default loader has been overridden, but user request it anyways
-  */
-  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (vec->ops->loadintovectornative && format == PETSC_VIEWER_NATIVE) {
-    ierr   = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = (*vec->ops->loadintovectornative)(viewer,vec);CHKERRQ(ierr);
-    ierr   = PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
-  } else {
-    ierr = (*vec->ops->loadintovector)(viewer,vec);CHKERRQ(ierr);
+  /* Check if type if set  */
+  if (!((PetscObject)newvec)->type_name) {
+    ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,(const char**)&prefix);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(prefix,"-vec_type",vtype,256,&flg);CHKERRQ(ierr);
+    if (flg) {
+      outtype = vtype;
+    }
+    ierr = PetscOptionsGetString(prefix,"-vecload_type",vtype,256,&flg);CHKERRQ(ierr);
+    if (flg) {
+      outtype = vtype;
+    }
+    ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+    if (!outtype) {
+      ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+      outtype = (size > 1) ? VECMPI : VECSEQ;
+    }
+    ierr = VecSetType(newvec, outtype);CHKERRQ(ierr);
   }
+  ierr = (*newvec->ops->load)(viewer,newvec);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1071,8 +1087,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetOperation(Vec vec,VecOperation op, void 
   /* save the native version of the viewer */
   if (op == VECOP_VIEW && !vec->ops->viewnative) {
     vec->ops->viewnative = vec->ops->view;
-  } else if (op == VECOP_LOADINTOVECTOR && !vec->ops->loadintovectornative) {
-    vec->ops->loadintovectornative = vec->ops->loadintovector;
+  } else if (op == VECOP_LOAD && !vec->ops->loadintovectornative) {
+    vec->ops->loadintovectornative = vec->ops->load;
   }
   (((void(**)(void))vec->ops)[(int)op]) = f;
   PetscFunctionReturn(0);

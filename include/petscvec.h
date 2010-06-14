@@ -409,9 +409,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecView(Vec,PetscViewer);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec, const char *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecEqual(Vec,Vec,PetscTruth*);
 PetscPolymorphicFunction(VecEqual,(Vec x,Vec y),(x,y,&s),PetscTruth,s)
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer,const VecType,Vec*);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecLoadnew(PetscViewer,Vec);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecLoadIntoVector(PetscViewer,Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer,Vec);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetSize(Vec,PetscInt*);
 PetscPolymorphicFunction(VecGetSize,(Vec x),(x,&s),PetscInt,s)
@@ -492,7 +490,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecContourScale(Vec,PetscReal,PetscReal
     These numbers need to match the entries in 
   the function table in vecimpl.h
 */
-typedef enum { VECOP_VIEW = 33, VECOP_LOADINTOVECTOR = 41} VecOperation;
+typedef enum { VECOP_VIEW = 33, VECOP_LOAD = 41} VecOperation;
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetOperation(Vec,VecOperation,void(*)(void));
 
 /*

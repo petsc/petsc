@@ -96,7 +96,7 @@
       call VecCreateMPI(PETSC_COMM_WORLD,nlocal/bs,PETSC_DETERMINE,       &
      &                  volumes_orig,ierr)
       call PetscObjectSetName(volumes_orig,'/Cells/Volumes',ierr)
-      call VecLoadIntoVector(hdf5viewer,volumes_orig,ierr)
+      call VecLoad(hdf5viewer,volumes_orig,ierr)
       call VecCreateMPI(PETSC_COMM_WORLD,nlocalnew/bs,PETSC_DETERMINE,       &
      &                  volumes,ierr)
       call MatGetSize(Adjnew,ntotal,ntotal,ierr)

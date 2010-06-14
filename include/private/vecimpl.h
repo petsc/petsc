@@ -89,7 +89,7 @@ struct _VecOps {
   PetscErrorCode (*norm_local)(Vec,NormType,PetscReal*);
   PetscErrorCode (*mdot_local)(Vec,PetscInt,const Vec[],PetscScalar*);
   PetscErrorCode (*mtdot_local)(Vec,PetscInt,const Vec[],PetscScalar*);
-  PetscErrorCode (*loadintovector)(PetscViewer,Vec);
+  PetscErrorCode (*load)(PetscViewer,Vec);
   PetscErrorCode (*loadintovectornative)(PetscViewer,Vec);
   PetscErrorCode (*reciprocal)(Vec);
   PetscErrorCode (*viewnative)(Vec,PetscViewer);
@@ -99,8 +99,6 @@ struct _VecOps {
   PetscErrorCode (*resetarray)(Vec);      /* vector points to its original array, i.e. undoes any VecPlaceArray() */
   PetscErrorCode (*setfromoptions)(Vec);
   PetscErrorCode (*maxpointwisedivide)(Vec,Vec,PetscReal*);      /* m = max abs(x ./ y) */
-  PetscErrorCode (*load)(PetscViewer,const VecType,Vec*);
-  PetscErrorCode (*loadnew)(PetscViewer,Vec);             /* New Vecload */
   PetscErrorCode (*pointwisemax)(Vec,Vec,Vec);
   PetscErrorCode (*pointwisemaxabs)(Vec,Vec,Vec);
   PetscErrorCode (*pointwisemin)(Vec,Vec,Vec);
@@ -284,8 +282,8 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayRead(Vec x, PetscScalar *a[])
 /* Default obtain and release vectors; can be used by any implementation */
 EXTERN PetscErrorCode VecDuplicateVecs_Default(Vec,PetscInt,Vec *[]);
 EXTERN PetscErrorCode VecDestroyVecs_Default(Vec [],PetscInt);
-EXTERN PetscErrorCode VecLoadIntoVector_Default(PetscViewer,Vec);
-EXTERN PetscErrorCode VecLoadnew_Binary(PetscViewer,Vec);
+EXTERN PetscErrorCode VecLoad_Binary(PetscViewer,Vec);
+EXTERN PetscErrorCode VecLoad_Default(PetscViewer,Vec);
 
 extern PetscInt NormIds[7];  /* map from NormType to IDs used to cache/retreive values of norms */
 
