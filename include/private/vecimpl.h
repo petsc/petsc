@@ -248,6 +248,41 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray(Vec x, PetscScalar *a[])
 }
 
 /*
+   These do not increase the vector state because we know the vector cannot be changed
+*/
+#undef __FUNCT__
+#define __FUNCT__ "VecGetArrayRead"
+PETSC_STATIC_INLINE PetscErrorCode VecGetArrayRead(Vec x, const PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (x->petscnative){
+#if defined(PETSC_HAVE_CUDA)
+    ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
+#endif
+    *a = *((PetscScalar **)x->data);
+  } else {
+    ierr = VecGetArray_Private(x,(PetscScalar**)a);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecRestoreArrayRead"
+PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayRead(Vec x, const PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* do not mark the vector as owned by the CPU since it may be shared between the CPU and GPU */
+  if (!x->petscnative){
+    ierr = VecRestoreArray_Private(x,(PetscScalar**)a);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
     These are for use only in the Vec implementations. They DO NOT increase any vectors state. The increase of the vector state
    is always handled by the outter vector operation, for example VecAXPY()
 */
