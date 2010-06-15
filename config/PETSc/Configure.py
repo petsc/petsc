@@ -281,17 +281,16 @@ class Configure(config.base.Configure):
     return
 
   def dumpMachineInfo(self):
-    import platform
     import time
     import script
     fd = file(os.path.join(self.arch.arch,'include','petscmachineinfo.h'),'w')
     fd.write('static const char *petscmachineinfo = \"\\n\"\n')
     fd.write('\"-----------------------------------------\\n\"\n')
     if os.path.isfile(os.path.join('/usr', 'bin', 'cygcheck.exe')):
-      fd.write('\"Libraries compiled on %s on %s \\n\"\n' % (time.ctime(time.time()), script.Script.executeShellCommand('hostname|/usr/bin/dos2unix')))
+      fd.write('\"Libraries compiled on %s on %s \\n\"\n' % (time.ctime(time.time()), script.Script.executeShellCommand('hostname|/usr/bin/dos2unix')[0].strip()))
     else:
-      fd.write('\"Libraries compiled on %s on %s \\n\"\n' % (time.ctime(time.time()), platform.node()))
-    fd.write('\"Machine characteristics: %s\\n\"' % (platform.platform()))
+      fd.write('\"Libraries compiled on %s on %s \\n\"\n' % (time.ctime(time.time()), script.Script.executeShellCommand('hostname')[0].strip()))
+    fd.write('\"Machine characteristics: %s\\n\"\n' % (script.Script.executeShellCommand('uname -a')[0].strip()))
     fd.write('\"Using PETSc directory: %s\\n\"' % (self.petscdir.dir))
     fd.write('\"Using PETSc arch: %s\\n\"' % (self.arch.arch))
     fd.write('\"-----------------------------------------\\n\"\n')
