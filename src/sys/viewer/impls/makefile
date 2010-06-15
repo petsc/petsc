@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = socket ascii binary string draw vu mathematica silo netcdf hdf5 matlab ams
+DIRS     = socket ascii binary string draw vu mathematica silo hdf5 matlab ams
 LOCDIR   = src/sys/viewer/impls/
 MANSEC   = Viewer
 

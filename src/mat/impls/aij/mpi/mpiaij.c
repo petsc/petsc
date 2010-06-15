@@ -4903,9 +4903,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetCommunicationStructs(Mat A, Vec *lvec, P
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(lvec, 2)
-  PetscValidPointer(colmap, 3)
-  PetscValidPointer(multScatter, 4)
+  PetscValidPointer(lvec, 2);
+  PetscValidPointer(colmap, 3);
+  PetscValidPointer(multScatter, 4);
   a = (Mat_MPIAIJ *) A->data;
   if (lvec) *lvec = a->lvec;
   if (colmap) *colmap = a->colmap;

@@ -89,7 +89,7 @@ struct _VecOps {
   PetscErrorCode (*norm_local)(Vec,NormType,PetscReal*);
   PetscErrorCode (*mdot_local)(Vec,PetscInt,const Vec[],PetscScalar*);
   PetscErrorCode (*mtdot_local)(Vec,PetscInt,const Vec[],PetscScalar*);
-  PetscErrorCode (*loadintovector)(PetscViewer,Vec);
+  PetscErrorCode (*load)(PetscViewer,Vec);
   PetscErrorCode (*loadintovectornative)(PetscViewer,Vec);
   PetscErrorCode (*reciprocal)(Vec);
   PetscErrorCode (*viewnative)(Vec,PetscViewer);
@@ -99,8 +99,6 @@ struct _VecOps {
   PetscErrorCode (*resetarray)(Vec);      /* vector points to its original array, i.e. undoes any VecPlaceArray() */
   PetscErrorCode (*setfromoptions)(Vec);
   PetscErrorCode (*maxpointwisedivide)(Vec,Vec,PetscReal*);      /* m = max abs(x ./ y) */
-  PetscErrorCode (*load)(PetscViewer,const VecType,Vec*);
-  PetscErrorCode (*loadnew)(PetscViewer,Vec);             /* New Vecload */
   PetscErrorCode (*pointwisemax)(Vec,Vec,Vec);
   PetscErrorCode (*pointwisemaxabs)(Vec,Vec,Vec);
   PetscErrorCode (*pointwisemin)(Vec,Vec,Vec);
@@ -151,7 +149,7 @@ typedef struct {
 
 #if defined(PETSC_HAVE_CUDA)
 /* Defines the flag structure that the CUDA arch uses. */
-typedef enum {UNALLOCATED,GPU,CPU,SAME} VecGPUFlag;
+typedef enum {PETSC_CUDA_UNALLOCATED,PETSC_CUDA_GPU,PETSC_CUDA_CPU,PETSC_CUDA_BOTH} PetscCUDAFlag;
 #endif
 
 struct _p_Vec {
@@ -164,64 +162,52 @@ struct _p_Vec {
   VecStash               stash,bstash; /* used for storing off-proc values during assembly */
   PetscTruth             petscnative;  /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
 #if defined(PETSC_HAVE_CUDA)
-  VecGPUFlag valid_GPU_array;          /* this flag indicates where the most recently modified vector data is (GPU or CPU) */
-  PetscScalar *GPUarray;                              /* if we're using CUDA, then this is the pointer to the array on the GPU */
+  PetscCUDAFlag          valid_GPU_array;    /* indicates where the most recently modified vector data is (GPU or CPU) */
+  PetscScalar            *GPUarray;          /* if we're using CUDA, then this is the pointer to the array on the GPU */
 #endif
 };
 
 
 
 #if defined(PETSC_HAVE_CUDA)
-  #define CHKERRCUDA(err) if (err != CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error %d",err)
+#define CHKERRCUDA(err) if (err != CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error %d",err)
 
-PETSC_STATIC_INLINE PetscErrorCode VecGetArray(Vec x, PetscScalar *a[]);
-PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray(Vec x, PetscScalar *a[]);
-  #undef __FUNCT__
-  #define __FUNCT__ "VecCUDACopyToGPU"
-/*This function copies a vector from the CPU to the GPU unless we already have an up-to-date copy on the GPU */
-  PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyToGPU(Vec v)
-  {
-    PetscInt       one = 1, cn = v->map->n;
-    PetscErrorCode ierr;
-    PetscScalar    *varray;
+#undef __FUNCT__
+#define __FUNCT__ "VecCUDACopyToGPU"
+/* Copies a vector from the CPU to the GPU unless we already have an up-to-date copy on the GPU */
+PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyToGPU(Vec v)
+{
+  PetscBLASInt   one = 1, cn = v->map->n;
+  PetscErrorCode ierr;
 
-    PetscFunctionBegin;
-    if (v->valid_GPU_array == CPU || v->valid_GPU_array == UNALLOCATED){
-      ierr = VecGetArray(v,&varray);CHKERRQ(ierr);
-      if (v->valid_GPU_array == UNALLOCATED){
+  PetscFunctionBegin;
+  if (v->valid_GPU_array == PETSC_CUDA_CPU || v->valid_GPU_array == PETSC_CUDA_UNALLOCATED){
+    if (v->valid_GPU_array == PETSC_CUDA_UNALLOCATED){
       /*if this is the first time we're copying to the GPU then we allocate memory first */
-        ierr = cublasAlloc(cn,sizeof(PetscScalar),(void **)&v->GPUarray);CHKERRCUDA(ierr);
-      }
-      ierr = cublasSetVector(cn,sizeof(PetscScalar),varray,one,v->GPUarray,one);CHKERRCUDA(ierr);
-      v->valid_GPU_array = SAME;
+      ierr = cublasAlloc(cn,sizeof(PetscScalar),(void **)&v->GPUarray);CHKERRCUDA(ierr);
     }
-    PetscFunctionReturn(0);
+    ierr = cublasSetVector(cn,sizeof(PetscScalar),*(PetscScalar **)v->data,one,v->GPUarray,one);CHKERRCUDA(ierr);
+    v->valid_GPU_array = PETSC_CUDA_BOTH;
   }
+  PetscFunctionReturn(0);
+}
 
-  #undef __FUNCT__
-  #define __FUNCT__ "VecCUDACopyFromGPU"
-/*This function copies a vector from the GPU to the CPU unless we already have an up-to-date copy on the CPU */
+#undef __FUNCT__
+#define __FUNCT__ "VecCUDACopyFromGPU"
+/* Copies a vector from the GPU to the CPU unless we already have an up-to-date copy on the CPU */
 PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyFromGPU(Vec v)
-  {
-    PetscInt       one = 1, cn = v->map->n;
-    PetscErrorCode ierr;
-    PetscScalar    *varray;
+{
+  PetscBLASInt   one = 1, cn = v->map->n;
+  PetscErrorCode ierr;
 
-    PetscFunctionBegin;
-    if (v->valid_GPU_array == GPU){
-      //calling vecgetarray doesn't work because we get an infinite loop.  Note that the way it's written now, this function only works with petscnative vectors
-      //ierr = VecGetArray(v,&varray);CHKERRQ(ierr);
-      varray = *((PetscScalar **)v->data);
-      ierr = cublasGetVector(cn,sizeof(PetscScalar),v->GPUarray,one,varray,one);CHKERRCUDA(ierr);
-      //ierr = VecRestoreArray(v,&varray);CHKERRQ(ierr);
-      ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
-      v->valid_GPU_array = SAME;
-    }
-
-    PetscFunctionReturn(0);
+  PetscFunctionBegin;
+  if (v->valid_GPU_array == PETSC_CUDA_GPU){
+    ierr = cublasGetVector(cn,sizeof(PetscScalar),v->GPUarray,one,*(PetscScalar **)v->data,one);CHKERRCUDA(ierr);
+    v->valid_GPU_array = PETSC_CUDA_BOTH;
   }
-  #endif
-
+  PetscFunctionReturn(0);
+}
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "VecGetArray"
@@ -235,8 +221,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecGetArray(Vec x, PetscScalar *a[])
     ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
 #endif
     *a = *((PetscScalar **)x->data);
-  }
-  else{
+  } else {
     ierr = VecGetArray_Private(x,a);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -251,19 +236,165 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray(Vec x, PetscScalar *a[])
   PetscFunctionBegin;
   if (x->petscnative){
 #if defined(PETSC_HAVE_CUDA)
-    if(x->valid_GPU_array != UNALLOCATED)
-      {
-	x->valid_GPU_array = CPU;
-      }
+    if (x->valid_GPU_array != PETSC_CUDA_UNALLOCATED) {
+      x->valid_GPU_array = PETSC_CUDA_CPU;
+    }
 #endif
     ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
-  }
-  else{
+  } else {
     ierr = VecRestoreArray_Private(x,a);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
+/*
+   These do not increase the vector state because we know the vector cannot be changed
+*/
+#undef __FUNCT__
+#define __FUNCT__ "VecGetArrayRead"
+PETSC_STATIC_INLINE PetscErrorCode VecGetArrayRead(Vec x, const PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (x->petscnative){
+#if defined(PETSC_HAVE_CUDA)
+    ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
+#endif
+    *a = *((PetscScalar **)x->data);
+  } else {
+    ierr = VecGetArray_Private(x,(PetscScalar**)a);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecRestoreArrayRead"
+PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayRead(Vec x, const PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* do not mark the vector as owned by the CPU since it may be shared between the CPU and GPU */
+  if (!x->petscnative){
+    ierr = VecRestoreArray_Private(x,(PetscScalar**)a);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+    These are for use only in the Vec implementations. They DO NOT increase any vectors state. The increase of the vector state
+   is always handled by the outter vector operation, for example VecAXPY()
+*/
+#undef __FUNCT__
+#define __FUNCT__ "VecGetArrayPrivate"
+PETSC_STATIC_INLINE PetscErrorCode VecGetArrayPrivate(Vec x, PetscScalar *a[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (x->petscnative){
+#if defined(PETSC_HAVE_CUDA)
+    ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
+#endif
+    *a = *((PetscScalar **)x->data);
+  } else {
+    ierr = VecGetArray_Private(x,a);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecRestoreArrayPrivate"
+PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayPrivate(Vec x, PetscScalar *a[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (x->petscnative){
+#if defined(PETSC_HAVE_CUDA)
+    if (x->valid_GPU_array != PETSC_CUDA_UNALLOCATED) {
+      x->valid_GPU_array = PETSC_CUDA_CPU;
+    }
+#endif
+  } else {
+    ierr = VecRestoreArray_Private(x,a);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecGetArrayPrivate2"
+PETSC_STATIC_INLINE PetscErrorCode VecGetArrayPrivate2(Vec x, PetscScalar *xx[], Vec y, PetscScalar *yy[])
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = VecGetArrayPrivate(x,xx);CHKERRQ(ierr);
+  if (x == y) {
+    *yy = *xx;
+  } else {
+    ierr = VecGetArrayPrivate(y,yy);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecRestoreArrayPrivate2"
+PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayPrivate2(Vec x, PetscScalar *xx[], Vec y, PetscScalar *yy[])
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = VecRestoreArrayPrivate(x,xx);CHKERRQ(ierr);
+  if (x != y) {
+    ierr = VecRestoreArrayPrivate(y,yy);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecGetArrayPrivate3"
+PETSC_STATIC_INLINE PetscErrorCode VecGetArrayPrivate3(Vec x, PetscScalar *xx[], Vec y, PetscScalar *yy[], Vec w, PetscScalar *ww[])
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = VecGetArrayPrivate(x,xx);CHKERRQ(ierr);
+  if (x == y) {
+    *yy = *xx;
+  } else {
+    ierr = VecGetArrayPrivate(y,yy);CHKERRQ(ierr);
+  }
+  if (w == x) {
+    *ww = *xx;
+  } else if(w == y) {
+    *ww = *yy;
+  } else {
+    ierr = VecGetArrayPrivate(w,ww);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecRestoreArrayPrivate3"
+/*
+    Does not increase the state of the vectors
+*/
+PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayPrivate3(Vec x, PetscScalar *xx[], Vec y, PetscScalar *yy[], Vec w, PetscScalar *ww[])
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = VecRestoreArrayPrivate(x,xx);CHKERRQ(ierr);
+  if (x != y){
+    ierr = VecRestoreArrayPrivate(y,yy);CHKERRQ(ierr);
+  }
+  if (w != x && w != y){
+    ierr = VecRestoreArrayPrivate(w,ww);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 /*
      Common header shared by array based vectors, 
@@ -277,8 +408,8 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray(Vec x, PetscScalar *a[])
 /* Default obtain and release vectors; can be used by any implementation */
 EXTERN PetscErrorCode VecDuplicateVecs_Default(Vec,PetscInt,Vec *[]);
 EXTERN PetscErrorCode VecDestroyVecs_Default(Vec [],PetscInt);
-EXTERN PetscErrorCode VecLoadIntoVector_Default(PetscViewer,Vec);
-EXTERN PetscErrorCode VecLoadnew_Binary(PetscViewer,Vec);
+EXTERN PetscErrorCode VecLoad_Binary(PetscViewer,Vec);
+EXTERN PetscErrorCode VecLoad_Default(PetscViewer,Vec);
 
 extern PetscInt NormIds[7];  /* map from NormType to IDs used to cache/retreive values of norms */
 

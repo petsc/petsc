@@ -8,6 +8,8 @@
 #include "petscao.h"
 PETSC_EXTERN_CXX_BEGIN
 
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char[]);
+
 /*S
      DA - Abstract PETSc object that manages distributed field data for a single structured grid
 

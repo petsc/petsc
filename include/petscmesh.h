@@ -4,6 +4,9 @@
 #if !defined(__PETSCMESH_H)
 #define __PETSCMESH_H
 #include "petscsys.h"
+
+#if defined(PETSC_HAVE_SIEVE) && defined(__cplusplus)
+
 #include <Mesh.hh>
 #include <CartesianSieve.hh>
 #include <Distribution.hh>
@@ -322,4 +325,5 @@ typedef struct {
 
 PETSC_EXTERN_CXX_END
 
+#endif
 #endif

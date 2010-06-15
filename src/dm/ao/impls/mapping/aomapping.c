@@ -289,7 +289,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateMapping(MPI_Comm comm,PetscInt napp,con
   PetscValidPointer(aoout,5);
   *aoout = 0;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = AOInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_CLASSID, AO_MAPPING, "AO", comm, AODestroy, AOView);CHKERRQ(ierr);

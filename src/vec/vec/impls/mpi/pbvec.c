@@ -93,8 +93,6 @@ PetscErrorCode VecResetArray_MPI(Vec vin)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode VecLoad_Binary(PetscViewer, const VecType, Vec*);
-EXTERN PetscErrorCode VecLoadnew_Binary(PetscViewer,Vec);
 EXTERN PetscErrorCode VecGetValues_MPI(Vec,PetscInt,const PetscInt [],PetscScalar []);
 
 static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
@@ -138,7 +136,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
             VecNorm_Seq,
             VecMDot_Seq,
             VecMTDot_Seq,
-            VecLoadIntoVector_Default,
+	    VecLoad_Default,			
             0, /* VecLoadIntoVectorNative */
             VecReciprocal_Default,
             0, /* VecViewNative... */
@@ -148,8 +146,6 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
             VecResetArray_MPI,
             0,
             VecMaxPointwiseDivide_Seq,
-            VecLoad_Binary,
-	    VecLoadnew_Binary,			
             VecPointwiseMax_Seq,
             VecPointwiseMaxAbs_Seq,
             VecPointwiseMin_Seq,
@@ -589,10 +585,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostWithArray(MPI_Comm comm,PetscInt
   ierr = VecCreate_MPI_Private(*vv,PETSC_TRUE,nghost,array);CHKERRQ(ierr);
   w    = (Vec_MPI *)(*vv)->data;
   /* Create local representation */
-  ierr = VecGetArray(*vv,&larray);CHKERRQ(ierr);
+  ierr = VecGetArrayPrivate(*vv,&larray);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,n+nghost,larray,&w->localrep);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(*vv,w->localrep);CHKERRQ(ierr);
-  ierr = VecRestoreArray(*vv,&larray);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPrivate(*vv,&larray);CHKERRQ(ierr);
 
   /*
        Create scatter context for scattering (updating) ghost values 
@@ -685,10 +681,10 @@ PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
 
   /* save local representation of the parallel vector (and scatter) if it exists */
   if (w->localrep) {
-    ierr = VecGetArray(*v,&array);CHKERRQ(ierr);
+    ierr = VecGetArrayPrivate(*v,&array);CHKERRQ(ierr);
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,win->map->n+w->nghost,array,&vw->localrep);CHKERRQ(ierr);
     ierr = PetscMemcpy(vw->localrep->ops,w->localrep->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
-    ierr = VecRestoreArray(*v,&array);CHKERRQ(ierr);
+    ierr = VecRestoreArrayPrivate(*v,&array);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(*v,vw->localrep);CHKERRQ(ierr);
     vw->localupdate = w->localupdate;
     if (vw->localupdate) {
@@ -779,11 +775,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostBlockWithArray(MPI_Comm comm,Pet
   ierr = VecSetBlockSize(*vv,bs);CHKERRQ(ierr);
   w    = (Vec_MPI *)(*vv)->data;
   /* Create local representation */
-  ierr = VecGetArray(*vv,&larray);CHKERRQ(ierr);
+  ierr = VecGetArrayPrivate(*vv,&larray);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,n+bs*nghost,larray,&w->localrep);CHKERRQ(ierr);
   ierr = VecSetBlockSize(w->localrep,bs);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(*vv,w->localrep);CHKERRQ(ierr);
-  ierr = VecRestoreArray(*vv,&larray);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPrivate(*vv,&larray);CHKERRQ(ierr);
 
   /*
        Create scatter context for scattering (updating) ghost values 

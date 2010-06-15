@@ -1046,7 +1046,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetComputeSingularValues(KSP ksp,PetscTruth
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidPointer(flg,2)
+  PetscValidPointer(flg,2);
   *flg = ksp->calc_sings;
   PetscFunctionReturn(0);
 }

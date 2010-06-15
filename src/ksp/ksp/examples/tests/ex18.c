@@ -30,7 +30,8 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatLoad(fd,MATSEQAIJ,&A);CHKERRQ(ierr);
-  ierr = VecLoad(fd,PETSC_NULL,&b);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
+  ierr = VecLoad(fd,b);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
   /* 

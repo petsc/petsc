@@ -119,7 +119,7 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Setting vector type...\n");CHKERRQ(ierr);
     ierr = VecSetType(u, VECMPI);CHKERRQ(ierr);
   }
-  ierr = VecLoadnew(viewer,u);CHKERRQ(ierr);
+  ierr = VecLoad(viewer,u);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VECTOR_READ,0,0,0,0);CHKERRQ(ierr);
   ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
