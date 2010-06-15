@@ -16,13 +16,14 @@ namespace ALE {
   public:
     template<typename Mesh>
     static void calculateMeshReordering(const Obj<Mesh>& mesh, Obj<perm_type>& permutation, Obj<perm_type>& invPermutation) {
+      Partitioner<>::MeshManager<Mesh> manager(mesh);
       Obj<perm_type> pointPermutation = new perm_type(permutation->comm(), permutation->debug());
       int *start     = NULL;
       int *adjacency = NULL;
       int *perm      = NULL;
       int  numVertices;
 
-      Partitioner<>::buildDualCSRV(mesh, &numVertices, &start, &adjacency, true);
+      Partitioner<>::buildDualCSRV(mesh, manager, &numVertices, &start, &adjacency, true);
       pointPermutation->setChart(perm_type::chart_type(0, numVertices));
       for(int i = 0; i < numVertices; ++i) pointPermutation->setFiberDimension(i, 1);
       pointPermutation->allocatePoint();
