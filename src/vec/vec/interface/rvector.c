@@ -560,7 +560,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAXPY(Vec y,PetscScalar alpha,Vec x)
   PetscValidType(y,1);
   PetscCheckSameTypeAndComm(x,3,y,1);
   PetscCheckSameSizeVec(x,y);
-  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y cannot be the same vector");
+  if (x == y) SETERRQ(((PetscObject)x)->comm,PETSC_ERR_ARG_IDN,"x and y cannot be the same vector");
 
   ierr = PetscLogEventBegin(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
   ierr = (*y->ops->axpy)(y,alpha,x);CHKERRQ(ierr);
@@ -603,7 +603,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAXPBY(Vec y,PetscScalar alpha,PetscScalar b
   PetscValidType(y,1);
   PetscCheckSameTypeAndComm(x,4,y,1);
   PetscCheckSameSizeVec(x,y);
-  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y cannot be the same vector");
+  if (x == y) SETERRQ(((PetscObject)x)->comm,PETSC_ERR_ARG_IDN,"x and y cannot be the same vector");
 
   ierr = PetscLogEventBegin(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
   ierr = (*y->ops->axpby)(y,alpha,beta,x);CHKERRQ(ierr);
@@ -652,7 +652,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAXPBYPCZ(Vec z,PetscScalar alpha,PetscScala
   PetscCheckSameTypeAndComm(x,5,z,1);
   PetscCheckSameSizeVec(x,y);
   PetscCheckSameSizeVec(x,z);
-  if (x == y || x == z || y == z) SETERRQ(PETSC_ERR_ARG_IDN,"x, y, and z must be different vectors");
+  if (x == y || x == z) SETERRQ(((PetscObject)x)->comm,PETSC_ERR_ARG_IDN,"x, y, and z must be different vectors");
+  if (y == z) SETERRQ(((PetscObject)y)->comm,PETSC_ERR_ARG_IDN,"x, y, and z must be different vectors");
 
   ierr = PetscLogEventBegin(VEC_AXPBYPCZ,x,y,z,0);CHKERRQ(ierr);
   ierr = (*y->ops->axpbypcz)(z,alpha,beta,gamma,x,y);CHKERRQ(ierr);
@@ -693,7 +694,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAYPX(Vec y,PetscScalar alpha,Vec x)
   PetscValidHeaderSpecific(y,VEC_CLASSID,1);
   PetscValidType(x,3);
   PetscValidType(y,1);
-  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y must be different vectors");
+  if (x == y) SETERRQ(((PetscObject)x)->comm,PETSC_ERR_ARG_IDN,"x and y must be different vectors");
 
   ierr = PetscLogEventBegin(VEC_AYPX,x,y,0,0);CHKERRQ(ierr);
   ierr =  (*y->ops->aypx)(y,alpha,x);CHKERRQ(ierr);
