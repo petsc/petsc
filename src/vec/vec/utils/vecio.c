@@ -35,6 +35,7 @@ static PetscErrorCode PetscViewerBinaryReadVecHeader_Private(PetscViewer viewer,
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_MPIIO)
 #undef __FUNCT__
 #define __FUNCT__ "VecLoad_Binary_MPIIO"
 static PetscErrorCode VecLoad_Binary_MPIIO(PetscViewer viewer,Vec vec)
@@ -66,9 +67,9 @@ static PetscErrorCode VecLoad_Binary_MPIIO(PetscViewer viewer,Vec vec)
   ierr = VecRestoreArray(vec,&avec);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(vec);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(vec);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
+#endif
     
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoad_Binary"

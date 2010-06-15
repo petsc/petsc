@@ -97,7 +97,6 @@ PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 #define __FUNCT__ "VecScale_Seq"
 PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
 {
-  Vec_Seq        *x = (Vec_Seq*)xin->data;
   PetscErrorCode ierr;
   PetscBLASInt   one = 1,bn = PetscBLASIntCast(xin->map->n);
  

@@ -20,71 +20,20 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
 
   PetscFunctionBegin;
   if (type == NORM_2 || type == NORM_FROBENIUS) {
-    /*
-      This is because the Fortran BLAS 1 Norm is very slow! 
-    */
-#if defined(PETSC_HAVE_SLOW_BLAS_NORM2)
 #if defined(PETSC_HAVE_CUDA)
-    ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
-#endif
-    ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
-#if defined(PETSC_USE_FORTRAN_KERNEL_NORM)
-    fortrannormsqr_(xx,&n,z);
-    *z = sqrt(*z);
-#elif defined(PETSC_USE_UNROLLED_NORM)
-    {
-    PetscReal work = 0.0;
-    switch (n & 0x3) {
-      case 3: work += PetscRealPart(xx[0]*PetscConj(xx[0])); xx++;
-      case 2: work += PetscRealPart(xx[0]*PetscConj(xx[0])); xx++;
-      case 1: work += PetscRealPart(xx[0]*PetscConj(xx[0])); xx++; n -= 4;
-    }
-    while (n>0) {
-      work += PetscRealPart(xx[0]*PetscConj(xx[0])+xx[1]*PetscConj(xx[1])+
-                        xx[2]*PetscConj(xx[2])+xx[3]*PetscConj(xx[3]));
-      xx += 4; n -= 4;
-    } 
-    *z = sqrt(work);}
-#else
-    {
-      PetscInt         i;
-      PetscScalar sum=0.0;
-      for (i=0; i<n; i++) {
-        sum += (xx[i])*(PetscConj(xx[i]));
-      }
-      *z = sqrt(PetscRealPart(sum));
-    }
-#endif
-#else
-    //note that using CUBLAS for the norm seems to be less accurate by about a factor of ten, perhaps a result of the GPU being more focused on speed than accuracy
-#if defined(PETSC_HAVE_CUDA)
-    Vec_Seq *x = (Vec_Seq *)xin->data;
-
     ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
-    *z = cublasSnrm2(bn,x->GPUarray,one);
+    *z = cublasSnrm2(bn,xin->GPUarray,one);
     ierr = cublasGetError();CHKERRCUDA(ierr);
-    x->valid_GPU_array = GPU;
-    //for now we always copy up
-    ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
 #else
     ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
     *z = BLASnrm2_(&bn,xx,&one);
     ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
 #endif
-#endif
-#if (defined(PETSC_HAVE_CUDA) && defined (PETSC_HAVE_SLOW_BLAS_NORM2))
-    ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
-    Vec_Seq *x = (Vec_Seq *)xin->data;
-    x->valid_GPU_array = CPU;
-#endif
     ierr = PetscLogFlops(PetscMax(2.0*n-1,0.0));CHKERRQ(ierr);
   } else if (type == NORM_INFINITY) {
-    PetscInt          i;
+    PetscInt     i;
     PetscReal    max = 0.0,tmp;
 
-#if defined(PETSC_HAVE_CUDA)
-    ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
-#endif
     ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       if ((tmp = PetscAbsScalar(*xx)) > max) max = tmp;
@@ -94,18 +43,11 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
     }
     ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
     *z   = max;
-#if defined(PETSC_HAVE_CUDA)
-    Vec_Seq *x = (Vec_Seq *)xin->data;
-    
-    x->valid_GPU_array = CPU;
-#endif
   } else if (type == NORM_1) {
 #if defined(PETSC_HAVE_CUDA)
-    Vec_Seq * x =(Vec_Seq *)xin->data;
     ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
-    *z = cublasSasum(bn,x->GPUarray,one);
+    *z = cublasSasum(bn,xin->GPUarray,one);
     ierr = cublasGetError();CHKERRCUDA(ierr);
-    x->valid_GPU_array = GPU;
 #else
     ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
     *z = BLASasum_(&bn,xx,&one);
@@ -626,8 +568,6 @@ PetscErrorCode VecDestroy_Seq(Vec v)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
-  /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(v);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_LOG)
@@ -635,14 +575,13 @@ PetscErrorCode VecDestroy_Seq(Vec v)
 #endif
 
 #if defined(PETSC_HAVE_CUDA)
-  if (vs->valid_GPU_array != UNALLOCATED){
-    ierr = cublasFree(vs->GPUarray);CHKERRCUDA(ierr);
+  if (v->valid_GPU_array != PETSC_CUDA_UNALLOCATED){
+    ierr = cublasFree(v->GPUarray);CHKERRCUDA(ierr);
   }
 #endif
 
   ierr = PetscFree(vs->array_allocated);CHKERRQ(ierr);
   ierr = PetscFree(vs);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
