@@ -26,7 +26,7 @@
 
    Level: advanced
 
-   Notes: any subset of the x and may be the same vector.
+   Notes: x and y may be the same vector
           if a particular y_i is zero, it is treated as 1 in the above formula
 
 .seealso: VecPointwiseDivide(), VecPointwiseMult(), VecPointwiseMax(), VecPointwiseMin(), VecPointwiseMaxAbs()
@@ -542,7 +542,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSet(Vec x,PetscScalar alpha)
 
    Level: intermediate
 
-   Notes: x and y must be different vectors
+   Notes: x and y MUST be different vectors
 
    Concepts: vector^BLAS
    Concepts: BLAS
@@ -560,6 +560,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAXPY(Vec y,PetscScalar alpha,Vec x)
   PetscValidType(y,1);
   PetscCheckSameTypeAndComm(x,3,y,1);
   PetscCheckSameSizeVec(x,y);
+  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y cannot be the same vector");
 
   ierr = PetscLogEventBegin(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
   ierr = (*y->ops->axpy)(y,alpha,x);CHKERRQ(ierr);
@@ -584,7 +585,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAXPY(Vec y,PetscScalar alpha,Vec x)
 
    Level: intermediate
 
-   Notes: x and y must be different vectors 
+   Notes: x and y MUST be different vectors 
 
    Concepts: BLAS
    Concepts: vector^BLAS
@@ -602,6 +603,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAXPBY(Vec y,PetscScalar alpha,PetscScalar b
   PetscValidType(y,1);
   PetscCheckSameTypeAndComm(x,4,y,1);
   PetscCheckSameSizeVec(x,y);
+  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y cannot be the same vector");
 
   ierr = PetscLogEventBegin(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
   ierr = (*y->ops->axpby)(y,alpha,beta,x);CHKERRQ(ierr);
@@ -650,6 +652,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAXPBYPCZ(Vec z,PetscScalar alpha,PetscScala
   PetscCheckSameTypeAndComm(x,5,z,1);
   PetscCheckSameSizeVec(x,y);
   PetscCheckSameSizeVec(x,z);
+  if (x == y || x == z || y == z) SETERRQ(PETSC_ERR_ARG_IDN,"x, y, and z must be different vectors");
 
   ierr = PetscLogEventBegin(VEC_AXPBYPCZ,x,y,z,0);CHKERRQ(ierr);
   ierr = (*y->ops->axpbypcz)(z,alpha,beta,gamma,x,y);CHKERRQ(ierr);
@@ -674,7 +677,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAXPBYPCZ(Vec z,PetscScalar alpha,PetscScala
 
    Level: intermediate
 
-   Notes: x and y must be different vectors
+   Notes: x and y MUST be different vectors
 
    Concepts: vector^BLAS
    Concepts: BLAS
@@ -690,6 +693,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAYPX(Vec y,PetscScalar alpha,Vec x)
   PetscValidHeaderSpecific(y,VEC_CLASSID,1);
   PetscValidType(x,3);
   PetscValidType(y,1);
+  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y must be different vectors");
 
   ierr = PetscLogEventBegin(VEC_AYPX,x,y,0,0);CHKERRQ(ierr);
   ierr =  (*y->ops->aypx)(y,alpha,x);CHKERRQ(ierr);
@@ -715,7 +719,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAYPX(Vec y,PetscScalar alpha,Vec x)
 
    Level: intermediate
 
-   Notes: Neither the vector x or y can be the same as vector w
+   Notes: w cannot be either x or y
 
    Concepts: vector^BLAS
    Concepts: BLAS
@@ -1163,6 +1167,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMDot(Vec x,PetscInt nv,const Vec y[],PetscS
 -  x - array of vectors
 
    Level: intermediate
+
+   Notes: y cannot be any of the x vectors
 
    Concepts: BLAS
 

@@ -23,7 +23,7 @@ PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
   /* cannot use BLAS dot for complex because compiler/linker is 
      not happy about returning a double complex */
   {
-    ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+    ierr = VecGetArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
 
     PetscInt    i;
     PetscScalar sum = 0.0;
@@ -31,7 +31,7 @@ PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
       sum += xa[i]*PetscConj(ya[i]);
     }
     *z = sum;
-    ierr = VecRestoreArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+    ierr = VecRestoreArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
   }
 #else
 #if defined(PETSC_HAVE_CUDA)
@@ -40,9 +40,9 @@ PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
   *z = cublasSdot(bn,xin->GPUarray,one,yin->GPUarray,one);
   ierr = cublasGetError();CHKERRCUDA(ierr);
 #else
-  ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+  ierr = VecGetArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
   *z = BLASdot_(&bn,xa,&one,ya,&one);
-  ierr = VecRestoreArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
 #endif
 #endif
   if (xin->map->n > 0) {
@@ -65,7 +65,7 @@ PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 #if defined(PETSC_USE_COMPLEX)
   /* cannot use BLAS dot for complex because compiler/linker is 
      not happy about returning a double complex */
- ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+ ierr = VecGetArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
  {
    PetscInt    i;
    PetscScalar sum = 0.0;
@@ -73,7 +73,7 @@ PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
      sum += xa[i]*ya[i];
    }
    *z = sum;
-   ierr = VecRestoreArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+   ierr = VecRestoreArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
  }
 #else
 #if defined(PETSC_HAVE_CUDA)
@@ -82,9 +82,9 @@ PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
  *z = cublasSdot(bn,xa,one,ya,one);
  ierr = cublasGetError();CHKERRCUDA(ierr);
 #else
-  ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+  ierr = VecGetArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
   *z = BLASdot_(&bn,xa,&one,ya,&one);
-  ierr = VecRestoreArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
 #endif
 #endif
   if (xin->map->n > 0) {
@@ -135,9 +135,9 @@ PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
   if (xin != yin) {
 #if defined(PETSC_HAVE_CUDA)
     if (xin->valid_GPU_array != PETSC_CUDA_GPU){
-      ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+      ierr = VecGetArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
       ierr = PetscMemcpy(ya,xa,xin->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
-      ierr = VecRestoreArray2(xin,&xa,yin,&ya);
+      ierr = VecRestoreArrayPrivate2(xin,&xa,yin,&ya);
     } else {
       PetscInt one = 1;
 
@@ -147,9 +147,9 @@ PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
       yin->valid_GPU_array = PETSC_CUDA_GPU;
     }
 #else
-    ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+    ierr = VecGetArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
     ierr = PetscMemcpy(ya,xa,xin->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = VecRestoreArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+    ierr = VecRestoreArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
 #endif
   }
   PetscFunctionReturn(0);
@@ -173,9 +173,9 @@ PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
     xin->valid_GPU_array = PETSC_CUDA_GPU;
     yin->valid_GPU_array = PETSC_CUDA_GPU;
 #else
-    ierr = VecGetArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+    ierr = VecGetArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
     BLASswap_(&bn,xa,&one,ya,&one);
-    ierr = VecRestoreArray2(xin,&xa,yin,&ya);CHKERRQ(ierr);
+    ierr = VecRestoreArrayPrivate2(xin,&xa,yin,&ya);CHKERRQ(ierr);
 #endif
   }
   PetscFunctionReturn(0);
@@ -199,9 +199,9 @@ PetscErrorCode VecAXPY_Seq(Vec yin,PetscScalar alpha,Vec xin)
     ierr = cublasGetError();CHKERRCUDA(ierr);
     yin->valid_GPU_array = PETSC_CUDA_GPU;
 #else
-    ierr = VecGetArray2(yin,&yarray,xin,&xarray);CHKERRQ(ierr);
+    ierr = VecGetArrayPrivate2(yin,&yarray,xin,&xarray);CHKERRQ(ierr);
     BLASaxpy_(&bn,&alpha,xarray,&one,yarray,&one);
-    ierr = VecRestoreArray2(xin,&xarray,yin,&yarray);CHKERRQ(ierr);
+    ierr = VecRestoreArrayPrivate2(xin,&xarray,yin,&yarray);CHKERRQ(ierr);
 #endif
     ierr = PetscLogFlops(2.0*yin->map->n);CHKERRQ(ierr);
   }
@@ -224,18 +224,18 @@ PetscErrorCode VecAXPBY_Seq(Vec yin,PetscScalar alpha,PetscScalar beta,Vec xin)
   } else if (a == 1.0) {
     ierr = VecAYPX_Seq(yin,beta,xin);CHKERRQ(ierr);
   } else if (b == 0.0) {
-    ierr = VecGetArray2(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy);CHKERRQ(ierr);
+    ierr = VecGetArrayPrivate2(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       yy[i] = a*xx[i];
     }
-    ierr = VecRestoreArray2(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy);CHKERRQ(ierr);
+    ierr = VecRestoreArrayPrivate2(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy);CHKERRQ(ierr);
     ierr = PetscLogFlops(xin->map->n);CHKERRQ(ierr);
   } else {
-    ierr = VecGetArray2(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy);CHKERRQ(ierr);
+    ierr = VecGetArrayPrivate2(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       yy[i] = a*xx[i] + b*yy[i];
     }
-    ierr = VecRestoreArray2(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy);CHKERRQ(ierr);
+    ierr = VecRestoreArrayPrivate2(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy);CHKERRQ(ierr);
     ierr = PetscLogFlops(3.0*xin->map->n);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -250,7 +250,7 @@ PetscErrorCode VecAXPBYPCZ_Seq(Vec zin,PetscScalar alpha,PetscScalar beta,PetscS
   PetscScalar  *yy,*xx,*zz;
 
   PetscFunctionBegin;
-  ierr = VecGetArray3(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy,zin,(PetscScalar**)&zz);CHKERRQ(ierr);
+  ierr = VecGetArrayPrivate3(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy,zin,(PetscScalar**)&zz);CHKERRQ(ierr);
   if (alpha == 1.0) {
    for (i=0; i<n; i++) {
       zz[i] = xx[i] + beta*yy[i] + gamma*zz[i];
@@ -267,6 +267,6 @@ PetscErrorCode VecAXPBYPCZ_Seq(Vec zin,PetscScalar alpha,PetscScalar beta,PetscS
     }
     ierr = PetscLogFlops(5.0*n);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray3(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy,zin,(PetscScalar**)&zz);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPrivate3(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy,zin,(PetscScalar**)&zz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

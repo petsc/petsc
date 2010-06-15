@@ -25,23 +25,23 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
     *z = cublasSnrm2(bn,xin->GPUarray,one);
     ierr = cublasGetError();CHKERRCUDA(ierr);
 #else
-    ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
+    ierr = VecGetArrayPrivate(xin,&xx);CHKERRQ(ierr);
     *z = BLASnrm2_(&bn,xx,&one);
-    ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArrayPrivate(xin,&xx);CHKERRQ(ierr);
 #endif
     ierr = PetscLogFlops(PetscMax(2.0*n-1,0.0));CHKERRQ(ierr);
   } else if (type == NORM_INFINITY) {
     PetscInt     i;
     PetscReal    max = 0.0,tmp;
 
-    ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
+    ierr = VecGetArrayPrivate(xin,&xx);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       if ((tmp = PetscAbsScalar(*xx)) > max) max = tmp;
       /* check special case of tmp == NaN */
       if (tmp != tmp) {max = tmp; break;}
       xx++;
     }
-    ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArrayPrivate(xin,&xx);CHKERRQ(ierr);
     *z   = max;
   } else if (type == NORM_1) {
 #if defined(PETSC_HAVE_CUDA)
@@ -49,9 +49,9 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
     *z = cublasSasum(bn,xin->GPUarray,one);
     ierr = cublasGetError();CHKERRCUDA(ierr);
 #else
-    ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
+    ierr = VecGetArrayPrivate(xin,&xx);CHKERRQ(ierr);
     *z = BLASasum_(&bn,xx,&one);
-    ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArrayPrivate(xin,&xx);CHKERRQ(ierr);
 #endif
     ierr = PetscLogFlops(PetscMax(n-1.0,0.0));CHKERRQ(ierr);
   } else if (type == NORM_1_AND_2) {
@@ -400,9 +400,9 @@ PetscErrorCode VecView_Seq_Matlab(Vec vec,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
   ierr = PetscObjectName((PetscObject)vec);CHKERRQ(ierr);
-  ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
+  ierr = VecGetArrayPrivate(vec,&array);CHKERRQ(ierr);
   ierr = PetscViewerMatlabPutArray(viewer,n,1,array,((PetscObject)vec)->name);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPrivate(vec,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -472,7 +472,7 @@ PetscErrorCode VecGetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],PetscSca
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayPrivate(xin,&xx);CHKERRQ(ierr);
   for (i=0; i<ni; i++) {
     if (xin->stash.ignorenegidx && ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
@@ -481,7 +481,7 @@ PetscErrorCode VecGetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],PetscSca
 #endif
     y[i] = xx[ix[i]];
   }
-  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPrivate(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -494,7 +494,7 @@ PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayPrivate(xin,&xx);CHKERRQ(ierr);
   if (m == INSERT_VALUES) {
     for (i=0; i<ni; i++) {
       if (xin->stash.ignorenegidx && ix[i] < 0) continue;
@@ -514,7 +514,7 @@ PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
       xx[ix[i]] += y[i];
     }  
   }  
-  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPrivate(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -530,7 +530,7 @@ PetscErrorCode VecSetValuesBlocked_Seq(Vec xin,PetscInt ni,const PetscInt ix[],c
        For optimization could treat bs = 2, 3, 4, 5 as special cases with loop unrolling
   */
   PetscFunctionBegin;
-  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayPrivate(xin,&xx);CHKERRQ(ierr);
   if (m == INSERT_VALUES) {
     for (i=0; i<ni; i++) {
       start = bs*ix[i];
@@ -556,7 +556,7 @@ PetscErrorCode VecSetValuesBlocked_Seq(Vec xin,PetscInt ni,const PetscInt ix[],c
       y += bs;
     }  
   }
-  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPrivate(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

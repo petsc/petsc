@@ -585,10 +585,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostWithArray(MPI_Comm comm,PetscInt
   ierr = VecCreate_MPI_Private(*vv,PETSC_TRUE,nghost,array);CHKERRQ(ierr);
   w    = (Vec_MPI *)(*vv)->data;
   /* Create local representation */
-  ierr = VecGetArray(*vv,&larray);CHKERRQ(ierr);
+  ierr = VecGetArrayPrivate(*vv,&larray);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,n+nghost,larray,&w->localrep);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(*vv,w->localrep);CHKERRQ(ierr);
-  ierr = VecRestoreArray(*vv,&larray);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPrivate(*vv,&larray);CHKERRQ(ierr);
 
   /*
        Create scatter context for scattering (updating) ghost values 
@@ -681,10 +681,10 @@ PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
 
   /* save local representation of the parallel vector (and scatter) if it exists */
   if (w->localrep) {
-    ierr = VecGetArray(*v,&array);CHKERRQ(ierr);
+    ierr = VecGetArrayPrivate(*v,&array);CHKERRQ(ierr);
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,win->map->n+w->nghost,array,&vw->localrep);CHKERRQ(ierr);
     ierr = PetscMemcpy(vw->localrep->ops,w->localrep->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
-    ierr = VecRestoreArray(*v,&array);CHKERRQ(ierr);
+    ierr = VecRestoreArrayPrivate(*v,&array);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(*v,vw->localrep);CHKERRQ(ierr);
     vw->localupdate = w->localupdate;
     if (vw->localupdate) {
@@ -775,11 +775,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostBlockWithArray(MPI_Comm comm,Pet
   ierr = VecSetBlockSize(*vv,bs);CHKERRQ(ierr);
   w    = (Vec_MPI *)(*vv)->data;
   /* Create local representation */
-  ierr = VecGetArray(*vv,&larray);CHKERRQ(ierr);
+  ierr = VecGetArrayPrivate(*vv,&larray);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,n+bs*nghost,larray,&w->localrep);CHKERRQ(ierr);
   ierr = VecSetBlockSize(w->localrep,bs);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(*vv,w->localrep);CHKERRQ(ierr);
-  ierr = VecRestoreArray(*vv,&larray);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPrivate(*vv,&larray);CHKERRQ(ierr);
 
   /*
        Create scatter context for scattering (updating) ghost values 
