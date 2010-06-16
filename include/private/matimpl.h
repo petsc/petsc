@@ -163,6 +163,7 @@ struct _MatOps {
   PetscErrorCode (*hermitiantranspose)(Mat,MatReuse,Mat*);
   PetscErrorCode (*multhermitiantranspose)(Mat,Vec,Vec);
   PetscErrorCode (*multhermitiantransposeadd)(Mat,Vec,Vec,Vec);
+  PetscErrorCode (*loadnew)(PetscViewer,Mat);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
