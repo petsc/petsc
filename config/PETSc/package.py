@@ -17,7 +17,7 @@ class NewPackage(config.package.Package):
     # These are specified for the package
     self.double           = 1   # 1 means requires double precision 
     self.complex          = 0   # 0 means cannot use complex
-    self.requires32bitint = 1;  # 1 means that the package will not work in 64 bit mode
+    self.requires32bitint = 1;  # 1 means that the package will not work with 64 bit integers
     return
 
   def setupDependencies(self, framework):
