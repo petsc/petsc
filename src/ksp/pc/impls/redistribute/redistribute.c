@@ -215,13 +215,12 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
   ierr = PetscMalloc(red->dcnt*sizeof(PetscScalar),&red->diag);CHKERRQ(ierr);
   ierr = MatGetVecs(pc->pmat,&diag,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatGetDiagonal(pc->pmat,diag);CHKERRQ(ierr);
-  ierr = VecGetArray(diag,(PetscScalar**)&d);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(diag,&d);CHKERRQ(ierr);
   for (i=0; i<red->dcnt; i++) {
     red->diag[i] = 1.0/d[red->drows[i]];
   }
-  ierr = VecRestoreArray(diag,(PetscScalar**)&d);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(diag,&d);CHKERRQ(ierr);
   ierr = VecDestroy(diag);CHKERRQ(ierr);
-
   ierr = KSPSetUp(red->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -244,13 +243,13 @@ static PetscErrorCode PCApply_Redistribute(PC pc,Vec b,Vec x)
   /* compute the rows of solution that have diagonal entries only */
   ierr = VecSet(x,0.0);CHKERRQ(ierr);         /* x = diag(A)^{-1} b */
   ierr = VecGetArray(x,&xwork);CHKERRQ(ierr);
-  ierr = VecGetArray(b,(PetscScalar**)&bwork);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(b,&bwork);CHKERRQ(ierr);
   for (i=0; i<dcnt; i++) {
     xwork[drows[i]] = diag[i]*bwork[drows[i]];
   }
   ierr = PetscLogFlops(dcnt);CHKERRQ(ierr);
   ierr = VecRestoreArray(red->work,&xwork);CHKERRQ(ierr);
-  ierr = VecRestoreArray(b,(PetscScalar**)&bwork);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(b,&bwork);CHKERRQ(ierr);
   /* update the right hand side for the reduced system with diagonal rows (and corresponding columns) removed */
   ierr = MatMult(pc->pmat,x,red->work);CHKERRQ(ierr);
   ierr = VecAYPX(red->work,-1.0,b);CHKERRQ(ierr);   /* red->work = b - A x */

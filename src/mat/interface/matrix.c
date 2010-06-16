@@ -3273,6 +3273,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x
    instead of working directly with matrix algebra routines such as this.
    See, e.g., KSPCreate().
 
+   Vectors x and b CANNOT be the same
 
    Level: developer
 
@@ -3300,6 +3301,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSOR(Mat mat,Vec b,PetscReal omega,MatSORTyp
   if (mat->rmap->n != b->map->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: local dim %D %D",mat->rmap->n,b->map->n);
   if (its <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D positive",its);
   if (lits <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Relaxation requires local its %D positive",lits);
+  if (b == x) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"b and x vector cannot be the same");
 
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(MAT_SOR,mat,b,x,0);CHKERRQ(ierr);

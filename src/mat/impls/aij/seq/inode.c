@@ -412,7 +412,7 @@ static PetscErrorCode MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
   if (!a->inode.size) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
   node_max = a->inode.node_count;                
   ns       = a->inode.size;     /* Node Size array */
-  ierr = VecGetArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   idx  = a->j;
   v1   = a->a;
@@ -576,7 +576,7 @@ static PetscErrorCode MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Node size not yet supported");
     }
   }
-  ierr = VecRestoreArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*a->nz - nonzerorow);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -796,7 +796,7 @@ PetscErrorCode MatSolve_SeqAIJ_Inode_inplace(Mat A,Vec bb,Vec xx)
   node_max = a->inode.node_count;   
   ns       = a->inode.size;     /* Node Size array */
 
-  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   tmp  = a->solve_work;
   
@@ -1172,7 +1172,7 @@ PetscErrorCode MatSolve_SeqAIJ_Inode_inplace(Mat A,Vec bb,Vec xx)
   }
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*a->nz - A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2347,7 +2347,7 @@ PetscErrorCode MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
   node_max = a->inode.node_count;   
   ns       = a->inode.size;     /* Node Size array */
 
-  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   tmp  = a->solve_work;
   
@@ -2705,7 +2705,7 @@ PetscErrorCode MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
   }
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*a->nz - A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2764,8 +2764,9 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
   PetscScalar        sum1,sum2,sum3,sum4,sum5,tmp0,tmp1,tmp2,tmp3;
   MatScalar          *ibdiag,*bdiag,work[25];
-  PetscScalar        *x,*xb,tmp4,tmp5,x1,x2,x3,x4,x5;
+  PetscScalar        *x,tmp4,tmp5,x1,x2,x3,x4,x5;
   const MatScalar    *v = a->a,*v1,*v2,*v3,*v4,*v5;
+  const PetscScalar  *xb;
   PetscReal          zeropivot = 1.0e-15, shift = 0.0;
   PetscErrorCode     ierr;
   PetscInt           n,m = a->inode.node_count,*sizes = a->inode.size,cnt = 0,i,j,row,i1,i2;
@@ -2834,13 +2835,9 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
 
   /* We count flops by assuming the upper triangular and lower triangular parts have the same number of nonzeros */
   if (flag & SOR_ZERO_INITIAL_GUESS) {
-    PetscScalar *b;
+    const PetscScalar *b;
     ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-    if (xx != bb) {
-      ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
-    } else {
-      b = x;
-    }
+    ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
 
       for (i=0, row=0; i<m; i++) {
@@ -3219,14 +3216,14 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
     }
     its--;
     ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-    if (bb != xx) {ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);}
+    ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   }
   if (flag & SOR_EISENSTAT) {
     const PetscScalar *b;
     MatScalar         *t = a->inode.ssor_work;
 
     ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-    ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
     /*
           Apply  (U + D)^-1  where D is now the block diagonal 
     */
@@ -3612,7 +3609,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
     }
     ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
     ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-    ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 } 
@@ -3631,7 +3628,7 @@ PetscErrorCode MatMultDiagonalBlock_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   cnt = 0;
   for (i=0, row=0; i<m; i++) {
     switch (sizes[i]){              
@@ -3688,7 +3685,7 @@ PetscErrorCode MatMultDiagonalBlock_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
   }
   ierr = PetscLogFlops(2*cnt);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 

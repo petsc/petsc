@@ -881,7 +881,7 @@ PetscErrorCode DAGetDiagonal_MFFD(DA da,Vec U,Vec a)
 #endif
     h     *= epsilon;
     
-    ww[gI += h;
+    ww[gI] += h;
     ierr          = (*ctx->funci)(i,w,&v,ctx->funcctx);CHKERRQ(ierr);
     aa[nI]  = (v - aa[nI])/h;
     ww[gI] -= h;
