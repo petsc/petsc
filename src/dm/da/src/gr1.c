@@ -101,19 +101,19 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetUniformCoordinates(DA da,PetscReal xmin,Pe
 #define __FUNCT__ "VecView_MPI_Draw_DA1d"
 PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
 {
-  DA             da;
-  PetscErrorCode ierr;
-  PetscMPIInt    rank,size,tag1,tag2;
-  PetscInt       i,n,N,step,istart,isize,j;
-  MPI_Status     status;
-  PetscReal      coors[4],ymin,ymax,min,max,xmin,xmax,tmp,xgtmp;
-  PetscScalar    *array,*xg;
-  PetscDraw      draw;
-  PetscTruth     isnull,showpoints = PETSC_FALSE;
-  MPI_Comm       comm;
-  PetscDrawAxis  axis;
-  Vec            xcoor;
-  DAPeriodicType periodic;
+  DA                da;
+  PetscErrorCode    ierr;
+  PetscMPIInt       rank,size,tag1,tag2;
+  PetscInt          i,n,N,step,istart,isize,j;
+  MPI_Status        status;
+  PetscReal         coors[4],ymin,ymax,min,max,xmin,xmax,tmp,xgtmp;
+  const PetscScalar *array,*xg;
+  PetscDraw         draw;
+  PetscTruth        isnull,showpoints = PETSC_FALSE;
+  MPI_Comm          comm;
+  PetscDrawAxis     axis;
+  Vec               xcoor;
+  DAPeriodicType    periodic;
 
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);
@@ -126,7 +126,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
 
   ierr = DAGetInfo(da,0,&N,0,0,0,0,0,&step,0,&periodic,0);CHKERRQ(ierr);
   ierr = DAGetCorners(da,&istart,0,0,&isize,0,0);CHKERRQ(ierr);
-  ierr = VecGetArray(xin,&array);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xin,&array);CHKERRQ(ierr);
   ierr = VecGetLocalSize(xin,&n);CHKERRQ(ierr);
   n    = n/step;
 
@@ -136,7 +136,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
     ierr = DASetUniformCoordinates(da,0.0,1.0,0.0,0.0,0.0,0.0);CHKERRQ(ierr);
     ierr = DAGetCoordinates(da,&xcoor);CHKERRQ(ierr);
   }
-  ierr = VecGetArray(xcoor,&xg);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xcoor,&xg);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
@@ -199,20 +199,18 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
     PetscObjectGetNewTag((PetscObject)xin,&tag1);CHKERRQ(ierr);
     PetscObjectGetNewTag((PetscObject)xin,&tag2);CHKERRQ(ierr);
     if (rank < size-1) { /*send value to right */
-      ierr = MPI_Send(&array[j+(n-1)*step],1,MPIU_REAL,rank+1,tag1,comm);CHKERRQ(ierr);
-      ierr = MPI_Send(&xg[n-1],1,MPIU_REAL,rank+1,tag1,comm);CHKERRQ(ierr);
+      ierr = MPI_Send((void*)&array[j+(n-1)*step],1,MPIU_REAL,rank+1,tag1,comm);CHKERRQ(ierr);
+      ierr = MPI_Send((void*)&xg[n-1],1,MPIU_REAL,rank+1,tag1,comm);CHKERRQ(ierr);
     }
     if (!rank && periodic && size > 1) { /* first processor sends first value to last */
-      ierr = MPI_Send(&array[j],1,MPIU_REAL,size-1,tag2,comm);CHKERRQ(ierr);
+      ierr = MPI_Send((void*)&array[j],1,MPIU_REAL,size-1,tag2,comm);CHKERRQ(ierr);
     }
 
     for (i=1; i<n; i++) {
 #if !defined(PETSC_USE_COMPLEX)
-      ierr = PetscDrawLine(draw,xg[i-1],array[j+step*(i-1)],xg[i],array[j+step*i],
-                      PETSC_DRAW_RED);CHKERRQ(ierr);
+      ierr = PetscDrawLine(draw,xg[i-1],array[j+step*(i-1)],xg[i],array[j+step*i],PETSC_DRAW_RED);CHKERRQ(ierr);
 #else
-      ierr = PetscDrawLine(draw,PetscRealPart(xg[i-1]),PetscRealPart(array[j+step*(i-1)]),
-                      PetscRealPart(xg[i]),PetscRealPart(array[j+step*i]),PETSC_DRAW_RED);CHKERRQ(ierr);
+      ierr = PetscDrawLine(draw,PetscRealPart(xg[i-1]),PetscRealPart(array[j+step*(i-1)]),PetscRealPart(xg[i]),PetscRealPart(array[j+step*i]),PETSC_DRAW_RED);CHKERRQ(ierr);
 #endif
       if (showpoints) {
         ierr = PetscDrawPoint(draw,PetscRealPart(xg[i-1]),PetscRealPart(array[j+step*(i-1)]),PETSC_DRAW_BLACK);CHKERRQ(ierr);
@@ -224,8 +222,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
 #if !defined(PETSC_USE_COMPLEX)
       ierr = PetscDrawLine(draw,xgtmp,tmp,xg[0],array[j],PETSC_DRAW_RED);CHKERRQ(ierr);
 #else
-      ierr = PetscDrawLine(draw,xgtmp,tmp,PetscRealPart(xg[0]),PetscRealPart(array[j]),
-                      PETSC_DRAW_RED);CHKERRQ(ierr);
+      ierr = PetscDrawLine(draw,xgtmp,tmp,PetscRealPart(xg[0]),PetscRealPart(array[j]),PETSC_DRAW_RED);CHKERRQ(ierr);
 #endif
       if (showpoints) {
         ierr = PetscDrawPoint(draw,xgtmp,tmp,PETSC_DRAW_BLACK);CHKERRQ(ierr);
@@ -246,8 +243,8 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
     ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(xcoor,&xg);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xin,&array);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xcoor,&xg);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xin,&array);CHKERRQ(ierr);
   ierr = VecDestroy(xcoor);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

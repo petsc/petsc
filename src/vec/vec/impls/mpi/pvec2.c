@@ -49,37 +49,15 @@ PetscErrorCode VecMTDot_MPI(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
 {
   PetscReal      sum,work = 0.0;
-  PetscScalar    *xx;
+  PetscScalar    *xx = *(PetscScalar**)xin->data;
   PetscErrorCode ierr;
   PetscInt       n = xin->map->n;
+  PetscBLASInt   one = 1,bn = PetscBLASIntCast(n);
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
   if (type == NORM_2 || type == NORM_FROBENIUS) {
-
-#if defined(PETSC_HAVE_SLOW_BLAS_NORM2)
-#if defined(PETSC_USE_FORTRAN_KERNEL_NORM)
-    fortrannormsqr_(xx,&n,&work);
-#elif defined(PETSC_USE_UNROLLED_NORM)
-    switch (n & 0x3) {
-      case 3: work += PetscRealPart(xx[0]*PetscConj(xx[0])); xx++;
-      case 2: work += PetscRealPart(xx[0]*PetscConj(xx[0])); xx++;
-      case 1: work += PetscRealPart(xx[0]*PetscConj(xx[0])); xx++; n -= 4;
-    }
-    while (n>0) {
-      work += PetscRealPart(xx[0]*PetscConj(xx[0])+xx[1]*PetscConj(xx[1])+
-                        xx[2]*PetscConj(xx[2])+xx[3]*PetscConj(xx[3]));
-      xx += 4; n -= 4;
-    } 
-#else
-    {PetscInt i; for (i=0; i<n; i++) work += PetscRealPart((xx[i])*(PetscConj(xx[i])));}
-#endif
-#else
-    {PetscBLASInt one = 1,bn = PetscBLASIntCast(n);
-      work  = BLASnrm2_(&bn,xx,&one);
-      work *= work;
-    }
-#endif
+    work  = BLASnrm2_(&bn,xx,&one);
+    work *= work;
     ierr = MPI_Allreduce(&work,&sum,1,MPIU_REAL,MPI_SUM,((PetscObject)xin)->comm);CHKERRQ(ierr);
     *z = sqrt(sum);
     ierr = PetscLogFlops(2.0*xin->map->n);CHKERRQ(ierr);
@@ -101,7 +79,6 @@ PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
     ierr = MPI_Allreduce(temp,z,2,MPIU_REAL,MPI_SUM,((PetscObject)xin)->comm);CHKERRQ(ierr);
     z[1] = sqrt(z[1]);
   }
-  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

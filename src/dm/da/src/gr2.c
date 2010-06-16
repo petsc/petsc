@@ -354,14 +354,14 @@ EXTERN PetscErrorCode VecView_MPI_Draw_DA1d(Vec,PetscViewer);
 #define __FUNCT__ "DAArrayMPIIO"
 static PetscErrorCode DAArrayMPIIO(DA da,PetscViewer viewer,Vec xin,PetscTruth write)
 {
-  PetscErrorCode ierr;
-  MPI_File       mfdes;
-  PetscMPIInt    gsizes[4],lsizes[4],lstarts[4],asiz,dof;
-  MPI_Datatype   view;
-  PetscScalar    *array;
-  MPI_Offset     off;
-  MPI_Aint       ub,ul;
-  PetscInt       type,rows,vecrows,tr[2];
+  PetscErrorCode    ierr;
+  MPI_File          mfdes;
+  PetscMPIInt       gsizes[4],lsizes[4],lstarts[4],asiz,dof;
+  MPI_Datatype      view;
+  const PetscScalar *array;
+  MPI_Offset        off;
+  MPI_Aint          ub,ul;
+  PetscInt          type,rows,vecrows,tr[2];
 
   PetscFunctionBegin;
   ierr = VecGetSize(xin,&vecrows);CHKERRQ(ierr);
@@ -370,9 +370,7 @@ static PetscErrorCode DAArrayMPIIO(DA da,PetscViewer viewer,Vec xin,PetscTruth w
     ierr = PetscViewerBinaryRead(viewer,tr,2,PETSC_INT);CHKERRQ(ierr);
     type = tr[0];
     rows = tr[1];
-    if (type != VEC_FILE_CLASSID) {
-      SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONG,"Not vector next in file");
-    }
+    if (type != VEC_FILE_CLASSID) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONG,"Not vector next in file");
     if (rows != vecrows) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_SIZ,"Vector in file not same size as DA vector");
   } else {
     tr[0] = VEC_FILE_CLASSID;
@@ -390,16 +388,16 @@ static PetscErrorCode DAArrayMPIIO(DA da,PetscViewer viewer,Vec xin,PetscTruth w
   ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetMPIIOOffset(viewer,&off);CHKERRQ(ierr);
   ierr = MPI_File_set_view(mfdes,off,MPIU_SCALAR,view,(char *)"native",MPI_INFO_NULL);CHKERRQ(ierr);
-  ierr = VecGetArray(xin,&array);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xin,&array);CHKERRQ(ierr);
   asiz = lsizes[1]*(lsizes[2] > 0 ? lsizes[2] : 1)*(lsizes[3] > 0 ? lsizes[3] : 1)*dof;
   if (write) {
-    ierr = MPIU_File_write_all(mfdes,array,asiz,MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    ierr = MPIU_File_write_all(mfdes,(PetscScalar*)array,asiz,MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
   } else {
-    ierr = MPIU_File_read_all(mfdes,array,asiz,MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    ierr = MPIU_File_read_all(mfdes,(PetscScalar*)array,asiz,MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
   }
   ierr = MPI_Type_get_extent(view,&ul,&ub);CHKERRQ(ierr);
   ierr = PetscViewerBinaryAddMPIIOOffset(viewer,ub);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xin,&array);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xin,&array);CHKERRQ(ierr);
   ierr = MPI_Type_free(&view);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

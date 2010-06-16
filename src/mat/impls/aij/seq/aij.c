@@ -993,7 +993,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 #endif
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   aj  = a->j;
   aa  = a->a;
@@ -1028,7 +1028,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 #endif
   }
   ierr = PetscLogFlops(2.0*a->nz - nonzerorow);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1226,11 +1226,7 @@ PetscErrorCode MatSOR_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscR
   mdiag = a->mdiag;
 
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  if (xx != bb) {
-    ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
-  } else {
-    b = x;
-  }
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
   CHKMEMQ;
   /* We count flops by assuming the upper triangular and lower triangular parts have the same number of nonzeros */
   if (flag == SOR_APPLY_UPPER) {
@@ -1246,7 +1242,7 @@ PetscErrorCode MatSOR_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscR
         x[i] = sum;
     }
     ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-    if (bb != xx) {ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);}
+    ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
     ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -1293,7 +1289,7 @@ PetscErrorCode MatSOR_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscR
 
     ierr = PetscLogFlops(6.0*m-1 + 2.0*a->nz);CHKERRQ(ierr);
     ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-    if (bb != xx) {ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);}
+    ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   if (flag & SOR_ZERO_INITIAL_GUESS) {
@@ -1352,7 +1348,7 @@ PetscErrorCode MatSOR_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscR
     }
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  if (bb != xx) {ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);}
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   CHKMEMQ;  PetscFunctionReturn(0);
 } 
 
