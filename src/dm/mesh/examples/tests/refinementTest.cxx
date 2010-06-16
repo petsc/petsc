@@ -156,7 +156,7 @@ PetscErrorCode SerialSplitDoubletTetrahedronTest(const Options *options)
   mesh->setSieve(sieve);
   mesh->stratify();
   ALE::SieveBuilder<mesh_type>::buildCoordinates(mesh, mesh->getDimension(), coords);
-for(int e = 0; e < 2; ++e) {
+  for(int e = 0; e < 2; ++e) {
     mesh->computeElementGeometry(mesh->getRealSection("coordinates"), e, v0, J, invJ, detJ);
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB, "Inverted element %d, detJ %g", e, detJ);
   }
