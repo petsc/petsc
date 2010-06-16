@@ -1601,7 +1601,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
   PetscInt          nz,k,j;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr); 
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
   t    = a->solve_work;
   ierr = ISGetIndices(isrow,&rp);CHKERRQ(ierr); 

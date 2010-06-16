@@ -2529,7 +2529,7 @@ PetscErrorCode MatSOR_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
 
       ierr = VecScatterBegin(mat->sMvctx,mat->slvec0,mat->slvec1,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);  
       ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-      ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
+      ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr); 
       ierr = VecScatterEnd(mat->sMvctx,mat->slvec0,mat->slvec1,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr); 
 
       /* upper triangular part: bb1 = bb1 - B*x */ 

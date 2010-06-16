@@ -2764,8 +2764,9 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
   PetscScalar        sum1,sum2,sum3,sum4,sum5,tmp0,tmp1,tmp2,tmp3;
   MatScalar          *ibdiag,*bdiag,work[25];
-  PetscScalar        *x,*xb,tmp4,tmp5,x1,x2,x3,x4,x5;
+  PetscScalar        *x,tmp4,tmp5,x1,x2,x3,x4,x5;
   const MatScalar    *v = a->a,*v1,*v2,*v3,*v4,*v5;
+  const PetscScalar  *xb;
   PetscReal          zeropivot = 1.0e-15, shift = 0.0;
   PetscErrorCode     ierr;
   PetscInt           n,m = a->inode.node_count,*sizes = a->inode.size,cnt = 0,i,j,row,i1,i2;
