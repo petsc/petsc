@@ -328,7 +328,7 @@ static PetscErrorCode TSGLAdaptChoose_Size(TSGLAdapt adapt,PetscInt n,const Pets
 
   PetscFunctionBegin;
   *next_sc = cur;
-  optimal = pow(errors[cur],-1./(safe*orders[cur]));
+  optimal = pow((PetscReal)errors[cur],(PetscReal)-1./(safe*orders[cur]));
   /* Step sizes oscillate when there is no smoothing.  Here we use a geometric mean of the the current step size and the
   * one that would have been taken (without smoothing) on the last step. */
   last_desired_h = sz->desired_h;
@@ -383,7 +383,7 @@ static PetscErrorCode TSGLAdaptChoose_Both(TSGLAdapt adapt,PetscInt n,const Pets
   for (i=0; i<n; i++) {
     PetscReal optimal;
     trial.id = i;
-    optimal = pow(errors[i],-1./(safe*orders[i]));
+    optimal = pow((PetscReal)errors[i],(PetscReal)-1./(safe*orders[i]));
     trial.h = h*optimal;
     trial.eff = trial.h/cost[i];
     if (trial.eff > best.eff) {ierr = PetscMemcpy(&best,&trial,sizeof(trial));CHKERRQ(ierr);}

@@ -245,7 +245,7 @@ getmpiexec:
 #
 #
 
-.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .cxx .r .rm .so .html .ad .m .tex .mtex .make .sidl .fig .svg .eps .pdf .jpg .png .dvi .ps .F95 .f95 .fiat
+.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .cxx .r .rm .so .html .ad .m .tex .mtex .make .sidl .fig .svg .eps .pdf .jpg .png .dvi .ps .F95 .f95 .fiat .cu
 
 #
 #
@@ -295,7 +295,7 @@ getmpiexec:
 	  fi; \
 	fi
 
-.c.o .cpp.o .cxx.o .cc.o .C.o .ad.o: 
+.cu.o .c.o .cpp.o .cxx.o .cc.o .C.o .ad.o: 
 	@if [ "${PETSCPORTABLE}" != "" ]; then \
           ${PETSC_DIR}/bin/portabilitycheck.py $< ${SOURCEH};\
         fi
@@ -389,8 +389,7 @@ getmpiexec:
 .cpp.rm .cc.rm .C.rm .F.rm .F90.rm .f.rm .c.rm:
 	-@${RM} $* *.o $*.mon.* gmon.out mon.out
 	-@${RM} *.exe *.ilk *.pdb *.tds
-
-.c.PETSc:
+.cu.PETSc .c.PETSc:
 	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
 	-@grep -v clog trashz | grep -v "information sections" | \
           grep -v "WARNING: TOC" | \
