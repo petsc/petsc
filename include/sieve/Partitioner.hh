@@ -334,6 +334,7 @@ namespace ALE {
       const Obj<Mesh>& mesh;
       bool             simpleCellNumbering;
       point_type      *cells;
+      std::map<point_type, point_type> numbers;
     protected:
       void createCells(const int height) {
         const Obj<typename Mesh::label_sequence>&     mcells   = mesh->heightStratum(height);
@@ -353,7 +354,9 @@ namespace ALE {
           this->cells = new point_type[numCells];
           c           = 0;
           for(typename Mesh::label_sequence::iterator c_iter = mcells->begin(); c_iter != cEnd; ++c_iter, ++c) {
+            // OPT: Could use map only for exceptional points
             this->cells[c] = *c_iter;
+            this->numbers[*c_iter] = c;
           }
         }
       };
@@ -408,11 +411,17 @@ namespace ALE {
         for(int i = 0; i < numVertices*3; ++i) {float_alloc_type().destroy(x+i);}
         float_alloc_type().deallocate(x, numVertices*3);
       };
-      point_type getCell(const int cellNumber) const {
+      point_type getCell(const point_type cellNumber) const {
         if (this->simpleCellNumbering) {
           return cellNumber;
         }
         return this->cells[cellNumber];
+      };
+      point_type getNumber(const point_type cell) {
+        if (this->simpleCellNumbering) {
+          return cell;
+        }
+        return this->numbers[cell];
       };
     };
     template<typename Sieve>
@@ -458,21 +467,84 @@ namespace ALE {
       void setCell(const typename Sieve::point_type cell) {this->cell = cell;};
       int  getOffset() {return this->offset;}
     };
-    template<typename Sieve>
+    template<typename Mesh, int maxSize = 10>
+    class FaceRecognizer {
+    public:
+      typedef typename Mesh::point_type point_type;
+    protected:
+      int numCases;
+      int numFaceVertices[maxSize];
+    public:
+      FaceRecognizer(Mesh& mesh, const int debug = 0) : numCases(0) {
+        if (mesh.depth() != 1) {throw ALE::Exception("Only works for depth 1 meshes");}
+        const int                                 dim   = mesh.getDimension();
+        const Obj<typename Mesh::sieve_type>&     sieve = mesh.getSieve();
+        const Obj<typename Mesh::label_sequence>& cells = mesh.heightStratum(0);
+        std::set<int>                             cornersSeen;
+
+        if (debug) {std::cout << "Building Recognizer" << std::endl;}
+        for(typename Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+          const int corners = sieve->getConeSize(*c_iter);
+
+          if (cornersSeen.find(corners) == cornersSeen.end()) {
+            if (numCases >= maxSize) {throw ALE::Exception("Exceeded maximum number of cases");}
+            cornersSeen.insert(corners);
+
+            if (corners == dim+1) {
+              numFaceVertices[numCases] = dim;
+              if (debug) {std::cout << "  Recognizing simplices" << std::endl;}
+            } else if ((dim == 2) && (corners == 4)) {
+              numFaceVertices[numCases] = 2;
+              if (debug) {std::cout << "  Recognizing quads" << std::endl;}
+            } else if ((dim == 2) && (corners == 6)) {
+              numFaceVertices[numCases] = 3;
+              if (debug) {std::cout << "  Recognizing tri and quad cohesive Lagrange cells" << std::endl;}
+            } else if ((dim == 3) && (corners == 6)) {
+              numFaceVertices[numCases] = 4;
+              if (debug) {std::cout << "  Recognizing tet cohesive cells" << std::endl;}
+            } else if ((dim == 3) && (corners == 8)) {
+              numFaceVertices[numCases] = 4;
+              if (debug) {std::cout << "  Recognizing hexes" << std::endl;}
+            } else if ((dim == 3) && (corners == 9)) {
+              numFaceVertices[numCases] = 6;
+              if (debug) {std::cout << "  Recognizing tet cohesive Lagrange cells" << std::endl;}
+            } else if ((dim == 3) && (corners == 12)) {
+              numFaceVertices[numCases] = 6;
+              if (debug) {std::cout << "  Recognizing hex cohesive Lagrange cells" << std::endl;}
+            } else {
+              throw ALE::Exception("Could not determine number of face vertices");
+            }
+            ++numCases;
+          }
+        }
+      };
+      ~FaceRecognizer() {};
+    public:
+      bool operator()(point_type cellA, point_type cellB, int meetSize) {
+        // Could concievably make this depend on the cells, but it seems slow
+        for(int i = 0; i < numCases; ++i) {
+          if (meetSize == numFaceVertices[i]) {
+            //std::cout << "  Recognized case " << i <<"("<<numFaceVertices[i]<<") for <" << cellA <<","<< cellB << ">" << std::endl;
+            return true;
+          }
+        }
+        return false;
+      };
+    };
+    template<typename Sieve, typename Manager, typename Recognizer>
     class MeetVisitor {
     public:
       typedef std::set<typename Sieve::point_type> neighbors_type;
     protected:
       const Sieve& sieve;
+      Manager& manager;
+      Recognizer& faceRecognizer;
       const int numCells;
-      const int faceVertices;
-      typename Sieve::point_type newCell;
       neighbors_type *neighborCells;
       typename ISieveVisitor::PointRetriever<Sieve> *pR;
       typename Sieve::point_type cell;
-      std::map<typename Sieve::point_type, typename Sieve::point_type> newCells;
     public:
-      MeetVisitor(const Sieve& s, const int n, const int fV) : sieve(s), numCells(n), faceVertices(fV), newCell(n) {
+      MeetVisitor(const Sieve& s, Manager& manager, Recognizer& faceRecognizer, const int n) : sieve(s), manager(manager), faceRecognizer(faceRecognizer), numCells(n) {
         this->neighborCells = new std::set<typename Sieve::point_type>[numCells];
         this->pR            = new typename ISieveVisitor::PointRetriever<Sieve>(this->sieve.getMaxConeSize());
       };
@@ -484,22 +556,8 @@ namespace ALE {
         if (this->cell == neighbor) return;
         this->pR->clear();
         this->sieve.meet(this->cell, neighbor, *this->pR);
-        if (this->pR->getSize() == (size_t) this->faceVertices) {
-          if ((this->cell < numCells) && (neighbor < numCells)) {
-            this->neighborCells[this->cell].insert(neighbor);
-          } else {
-            typename Sieve::point_type e = this->cell, n = neighbor;
-
-            if (this->cell >= numCells) {
-              if (this->newCells.find(cell) == this->newCells.end()) this->newCells[cell] = --newCell;
-              e = this->newCells[cell];
-            }
-            if (neighbor >= numCells) {
-              if (this->newCells.find(neighbor) == this->newCells.end()) this->newCells[neighbor] = --newCell;
-              n = this->newCells[neighbor];
-            }
-            this->neighborCells[e].insert(n);
-          }
+        if (faceRecognizer(this->cell, neighbor, this->pR->getSize())) {
+          this->neighborCells[this->manager.getNumber(this->cell)].insert(this->manager.getNumber(neighbor));
         }
       };
     public:
@@ -749,7 +807,7 @@ namespace ALE {
       *adjacency   = adj;
     };
     template<typename Mesh>
-    static void buildDualCSRV(const Obj<Mesh>& mesh, int *numVertices, int **offsets, int **adjacency, const bool zeroBase = true) {
+    static void buildDualCSRV(const Obj<Mesh>& mesh, MeshManager<Mesh>& manager, int *numVertices, int **offsets, int **adjacency, const bool zeroBase = true) {
       const Obj<typename Mesh::sieve_type>&         sieve        = mesh->getSieve();
       const Obj<typename Mesh::label_sequence>&     cells        = mesh->heightStratum(0);
       const typename Mesh::label_sequence::iterator cEnd         = cells->end();
@@ -795,21 +853,11 @@ namespace ALE {
         }
         offset = aV.getOffset();
       } else if (mesh->depth() == 1) {
-        typedef MeetVisitor<typename Mesh::sieve_type>    mv_type;
-        typedef typename ISieveVisitor::SupportVisitor<typename Mesh::sieve_type, mv_type> sv_type;
-        const int corners = sieve->getConeSize(*cells->begin());
-        int       faceVertices;
+        typedef MeetVisitor<typename Mesh::sieve_type, MeshManager<Mesh>, FaceRecognizer<Mesh> > mv_type;
+        typedef typename ISieveVisitor::SupportVisitor<typename Mesh::sieve_type, mv_type>       sv_type;
+        FaceRecognizer<Mesh> faceRecognizer(*mesh);
 
-        if (corners == dim+1) {
-          faceVertices = dim;
-        } else if ((dim == 2) && (corners == 4)) {
-          faceVertices = 2;
-        } else if ((dim == 3) && (corners == 8)) {
-          faceVertices = 4;
-        } else {
-          throw ALE::Exception("Could not determine number of face vertices");
-        }
-        mv_type mV(*sieve, numCells, faceVertices);
+        mv_type mV(*sieve, manager, faceRecognizer, numCells);
         sv_type sV(*sieve, mV);
 
         for(typename Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
@@ -1131,7 +1179,7 @@ namespace ALE {
       if (height == 0) {
         int numVertices;
 
-        buildDualCSRV(mesh, &numVertices, &start, &adjacency, GraphPartitioner::zeroBase());
+        buildDualCSRV(mesh, manager, &numVertices, &start, &adjacency, GraphPartitioner::zeroBase());
         GraphPartitioner().partition(numVertices, start, adjacency, partition, manager);
         destroyCSR(numVertices, start, adjacency);
       } else if (height == 1) {

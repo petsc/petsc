@@ -111,6 +111,7 @@ distributionTests: distributionTests.o chkopts
 
 refinementTest: refinementTest.o chkopts
 	-${CLINKER} -o refinementTest refinementTest.o ${PETSC_DM_LIB}
+	${DSYMUTIL} refinementTest
 	${RM} -f refinementTest.o
 
 sieveTests: sieveTests.o chkopts
