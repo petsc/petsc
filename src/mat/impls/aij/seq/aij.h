@@ -78,6 +78,11 @@ typedef struct {
   PetscScalar      fshift,omega;                   /* last used omega and fshift */
 
   ISColoring       coloring;                  /* set with MatADSetColoring() used by MatADSetValues() */
+  //#if defined(PETSC_HAVE_CUDA)
+  //cusp::csr_matrix<PetscInt,PetscScalar,cusp::device_memory>* GPUmatrix; /* pointer to the csr matrix on the GPU */
+  //PetscCudaFlag    valid_GPU_matrix; /* this flag type is defined in vecimpl.h */
+  //#endif
+
 } Mat_SeqAIJ;
 
 /*
