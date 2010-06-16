@@ -217,7 +217,8 @@ PetscErrorCode VecAXPBY_Seq(Vec yin,PetscScalar alpha,PetscScalar beta,Vec xin)
 {
   PetscErrorCode    ierr;
   PetscInt          n = yin->map->n,i;
-  PetscScalar       *xx,*yy,a = alpha,b = beta;
+  const PetscScalar *xx;
+  PetscScalar       *yy,a = alpha,b = beta;
 
   PetscFunctionBegin;
   if (a == 0.0) {
@@ -227,18 +228,18 @@ PetscErrorCode VecAXPBY_Seq(Vec yin,PetscScalar alpha,PetscScalar beta,Vec xin)
   } else if (a == 1.0) {
     ierr = VecAYPX_Seq(yin,beta,xin);CHKERRQ(ierr);
   } else if (b == 0.0) {
-    ierr = VecGetArrayPrivate2(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy);CHKERRQ(ierr);
+    ierr = VecGetArrayPrivate2(xin,(PetscScalar**)&xx,yin,&yy);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       yy[i] = a*xx[i];
     }
-    ierr = VecRestoreArrayPrivate2(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy);CHKERRQ(ierr);
+    ierr = VecRestoreArrayPrivate2(xin,(PetscScalar**)&xx,yin,&yy);CHKERRQ(ierr);
     ierr = PetscLogFlops(xin->map->n);CHKERRQ(ierr);
   } else {
-    ierr = VecGetArrayPrivate2(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy);CHKERRQ(ierr);
+    ierr = VecGetArrayPrivate2(xin,(PetscScalar**)&xx,yin,&yy);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       yy[i] = a*xx[i] + b*yy[i];
     }
-    ierr = VecRestoreArrayPrivate2(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy);CHKERRQ(ierr);
+    ierr = VecRestoreArrayPrivate2(xin,(PetscScalar**)&xx,yin,&yy);CHKERRQ(ierr);
     ierr = PetscLogFlops(3.0*xin->map->n);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -250,10 +251,11 @@ PetscErrorCode VecAXPBYPCZ_Seq(Vec zin,PetscScalar alpha,PetscScalar beta,PetscS
 {
   PetscErrorCode     ierr;
   PetscInt           n = zin->map->n,i;
-  PetscScalar  *yy,*xx,*zz;
+  const PetscScalar  *yy,*xx;
+  PetscScalar        *zz;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayPrivate3(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy,zin,(PetscScalar**)&zz);CHKERRQ(ierr);
+  ierr = VecGetArrayPrivate3(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy,zin,&zz);CHKERRQ(ierr);
   if (alpha == 1.0) {
    for (i=0; i<n; i++) {
       zz[i] = xx[i] + beta*yy[i] + gamma*zz[i];
@@ -270,6 +272,6 @@ PetscErrorCode VecAXPBYPCZ_Seq(Vec zin,PetscScalar alpha,PetscScalar beta,PetscS
     }
     ierr = PetscLogFlops(5.0*n);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArrayPrivate3(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy,zin,(PetscScalar**)&zz);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPrivate3(xin,(PetscScalar**)&xx,yin,(PetscScalar**)&yy,zin,&zz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -28,7 +28,7 @@ PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian(Mat A,Vec xx,Vec zz)
 
   PetscFunctionBegin;
   ierr = VecSet(zz,0.0);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
   v  = a->a; 
@@ -47,7 +47,7 @@ PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian(Mat A,Vec xx,Vec zz)
     ib   += nz;
   }
 
-  ierr = VecRestoreArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*(2.0*a->nz - mbs) - mbs);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
@@ -79,7 +79,7 @@ PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
 
   PetscFunctionBegin;
   ierr = VecSet(zz,0.0);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
   v  = a->a; 
@@ -98,7 +98,7 @@ PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
     ib   += nz;
   }
 
-  ierr = VecRestoreArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*(2.0*a->nz - mbs) - mbs);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
@@ -136,11 +136,7 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
   if (bs > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"SSOR for block size > 1 is not yet implemented");
 
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  if (xx != bb) { 
-    ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
-  } else { 
-    b = x;
-  } 
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
 
   if (!a->idiagvalid) {
     if (!a->idiag) {
@@ -293,8 +289,6 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
   } 
 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  if (bb != xx) { 
-    ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
-  } 
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 

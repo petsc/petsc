@@ -347,18 +347,18 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCorners(DA da,PetscInt *x,PetscInt *y,Pets
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalBoundingBox(DA da,PetscReal lmin[],PetscReal lmax[])
 {
-  PetscErrorCode ierr;
-  Vec            coords  = PETSC_NULL;
-  PetscInt       dim,i,j;
-  PetscScalar    *local_coords;
-  PetscReal      min[3]={PETSC_MAX,PETSC_MAX,PETSC_MAX},max[3]={PETSC_MIN,PETSC_MIN,PETSC_MIN};
-  PetscInt       N,Ni;
+  PetscErrorCode    ierr;
+  Vec               coords  = PETSC_NULL;
+  PetscInt          dim,i,j;
+  const PetscScalar *local_coords;
+  PetscReal         min[3]={PETSC_MAX,PETSC_MAX,PETSC_MAX},max[3]={PETSC_MIN,PETSC_MIN,PETSC_MIN};
+  PetscInt          N,Ni;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   dim = da->dim;
   ierr = DAGetCoordinates(da,&coords);CHKERRQ(ierr);
-  ierr = VecGetArray(coords,&local_coords);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(coords,&local_coords);CHKERRQ(ierr);
   ierr = VecGetLocalSize(coords,&N);CHKERRQ(ierr);
   Ni = N/dim;
   for (i=0; i<Ni; i++) {
@@ -367,7 +367,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalBoundingBox(DA da,PetscReal lmin[],Pe
       max[j] = PetscMax(min[j],PetscRealPart(local_coords[i*dim+j]));CHKERRQ(ierr);
     }
   }
-  ierr = VecRestoreArray(coords,&local_coords);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(coords,&local_coords);CHKERRQ(ierr);
   ierr = VecDestroy(coords);CHKERRQ(ierr);
   if (lmin) {ierr = PetscMemcpy(lmin,min,dim*sizeof(PetscReal));CHKERRQ(ierr);}
   if (lmax) {ierr = PetscMemcpy(lmax,max,dim*sizeof(PetscReal));CHKERRQ(ierr);}

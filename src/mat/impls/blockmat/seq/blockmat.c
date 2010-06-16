@@ -59,7 +59,7 @@ PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,MatSORType
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   /* copy right hand side because it must be modified during iteration */
   ierr = VecCopy(bb,a->workb);CHKERRQ(ierr);
-  ierr = VecGetArray(a->workb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(a->workb,&b);CHKERRQ(ierr);
 
   /* need to add code for when initial guess is zero, see MatSOR_SeqAIJ */
   while (its--) {
@@ -119,7 +119,7 @@ PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,MatSORType
     }
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(a->workb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(a->workb,&b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
@@ -161,7 +161,7 @@ PetscErrorCode MatSOR_BlockMat(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
 
   ierr = VecSet(xx,0.0);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
 
   /* need to add code for when initial guess is zero, see MatSOR_SeqAIJ */
   while (its--) {
@@ -216,7 +216,7 @@ PetscErrorCode MatSOR_BlockMat(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
     }
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 

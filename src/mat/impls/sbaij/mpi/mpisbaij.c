@@ -2482,11 +2482,12 @@ PetscErrorCode MatGetRowMaxAbs_MPISBAIJ(Mat A,Vec v,PetscInt idx[])
 #define __FUNCT__ "MatSOR_MPISBAIJ"
 PetscErrorCode MatSOR_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
-  Mat_MPISBAIJ   *mat = (Mat_MPISBAIJ*)matin->data;
-  PetscErrorCode ierr;
-  PetscInt       mbs=mat->mbs,bs=matin->rmap->bs;
-  PetscScalar    *x,*b,*ptr,*from;
-  Vec            bb1;
+  Mat_MPISBAIJ      *mat = (Mat_MPISBAIJ*)matin->data;
+  PetscErrorCode    ierr;
+  PetscInt          mbs=mat->mbs,bs=matin->rmap->bs;
+  PetscScalar       *x,*ptr,*from;
+  Vec               bb1;
+  const PetscScalar *b;
  
   PetscFunctionBegin;
   if (its <= 0 || lits <= 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D and local its %D both positive",its,lits);
@@ -2519,7 +2520,7 @@ PetscErrorCode MatSOR_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
 
       /* copy bb into slvec1a */
       ierr = VecGetArray(mat->slvec1,&ptr);CHKERRQ(ierr);
-      ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
       ierr = PetscMemcpy(ptr,b,bs*mbs*sizeof(MatScalar));CHKERRQ(ierr);
       ierr = VecRestoreArray(mat->slvec1,&ptr);CHKERRQ(ierr);  
 
@@ -2575,8 +2576,8 @@ PetscErrorCode MatSOR_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
       ierr = VecAYPX(mat->slvec1a,scale,bb);CHKERRQ(ierr);
       */
       ierr = VecGetArray(mat->slvec1a,&sl);CHKERRQ(ierr);
-      ierr = VecGetArray(mat->diag,(PetscScalar**)&diag);CHKERRQ(ierr);
-      ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(mat->diag,&diag);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
       ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
       ierr = VecGetLocalSize(xx,&n);CHKERRQ(ierr);
       if (omega == 1.0) {
@@ -2591,8 +2592,8 @@ PetscErrorCode MatSOR_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
         ierr = PetscLogFlops(3.0*n);CHKERRQ(ierr);
       }
       ierr = VecRestoreArray(mat->slvec1a,&sl);CHKERRQ(ierr);
-      ierr = VecRestoreArray(mat->diag,(PetscScalar**)&diag);CHKERRQ(ierr);
-      ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(mat->diag,&diag);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
       ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
     }
 
