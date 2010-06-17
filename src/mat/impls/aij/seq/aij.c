@@ -3618,7 +3618,7 @@ PetscErrorCode MatLoadnew_SeqAIJ(PetscViewer viewer,Mat newMat)
   if (sum != nz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Inconsistant matrix data in file. no-nonzeros = %d, sum-row-lengths = %d\n",nz,sum);
 
   /* set global size if not set already*/
-  if (newMat->rmap-> n < 0 && newMat->rmap->n < 0 && newMat->cmap->n < 0 && newMat->cmap->N < 0) {
+  if (newMat->rmap->N < 0 && newMat->cmap->N < 0) {
   ierr = MatSetSizes(newMat,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
   }
 
