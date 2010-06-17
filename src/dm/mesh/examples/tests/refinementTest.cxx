@@ -113,6 +113,7 @@ PetscErrorCode SerialSplitDoubletTetrahedronTest(const Options *options)
   typedef mesh_type::sieve_type sieve_type;
   typedef mesh_type::point_type point_type;
   typedef Edge<point_type>      edge_type;
+  typedef CellRefiner<mesh_type, edge_type> refiner_type;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -133,7 +134,6 @@ PetscErrorCode SerialSplitDoubletTetrahedronTest(const Options *options)
                        0.0, 1.0, 0.0,
                        1.0, 0.0, 0.0};
   double v0[3], J[9], invJ[9], detJ;
-  std::map<edge_type, point_type> edge2vertex;
 
   if (mesh->commSize() > 1) {PetscFunctionReturn(0);}
   sieve->setChart(sieve_type::chart_type(0, 14));
@@ -160,13 +160,14 @@ PetscErrorCode SerialSplitDoubletTetrahedronTest(const Options *options)
     mesh->computeElementGeometry(mesh->getRealSection("coordinates"), e, v0, J, invJ, detJ);
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB, "Inverted element %d, detJ %g", e, detJ);
   }
+  refiner_type refiner(mesh);
 
-  for(int l = 0; l < 0 /*options->numLevels*/; ++l) {
+  for(int l = 0; l < options->numLevels; ++l) {
     Obj<mesh_type>  newMesh  = new mesh_type(mesh->comm(), 3, options->debug);
     Obj<sieve_type> newSieve = new sieve_type(newMesh->comm(), options->debug);
 
     newMesh->setSieve(newSieve);
-    ALE::MeshBuilder<mesh_type>::refineTetrahedra(*mesh, *newMesh, edge2vertex);
+    ALE::MeshBuilder<mesh_type>::refineTetrahedra(*mesh, *newMesh, refiner);
     edge2vertex.clear();
     if (options->debug) {
       PetscViewer viewer;
