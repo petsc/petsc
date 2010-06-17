@@ -39,7 +39,7 @@ typedef struct {
 typedef struct {
   Mat          A;       /* PETSc shell matrix associated with mlmat */
   ML_Operator  *mlmat;  /* ML matrix assorciated with A */
-  Vec          y;
+  Vec          y, work;
 } Mat_MLShell;
 
 /* Private context for the ML preconditioner */
@@ -160,23 +160,40 @@ static PetscErrorCode MatMult_ML(Mat A,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultAdd_ML"
+/* Computes y = w + A * x
+   It is possible that w == y, but not x == y
+*/
 static PetscErrorCode MatMultAdd_ML(Mat A,Vec x,Vec w,Vec y)
 {
-  PetscErrorCode    ierr;
-  Mat_MLShell       *shell;
-  PetscScalar       *xarray,*yarray;
-  PetscInt          x_length,y_length;
+  Mat_MLShell   *shell;
+  PetscScalar   *xarray,*yarray;
+  PetscInt       x_length,y_length;
+  PetscErrorCode ierr;
   
   PetscFunctionBegin;
-  ierr = MatShellGetContext(A,(void **)&shell);CHKERRQ(ierr);
-  ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
-  ierr = VecGetArray(y,&yarray);CHKERRQ(ierr);
-  x_length = shell->mlmat->invec_leng;
-  y_length = shell->mlmat->outvec_leng;
-  ML_Operator_Apply(shell->mlmat,x_length,xarray,y_length,yarray); 
-  ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr); 
-  ierr = VecRestoreArray(y,&yarray);CHKERRQ(ierr); 
-  ierr = VecAXPY(y,1.0,w);CHKERRQ(ierr); 
+  ierr = MatShellGetContext(A, (void **) &shell);CHKERRQ(ierr);
+  if (y == w) {
+    if (!shell->work) {
+      ierr = VecDuplicate(y, &shell->work);CHKERRQ(ierr);
+    }
+    ierr = VecGetArray(x,           &xarray);CHKERRQ(ierr);
+    ierr = VecGetArray(shell->work, &yarray);CHKERRQ(ierr);
+    x_length = shell->mlmat->invec_leng;
+    y_length = shell->mlmat->outvec_leng;
+    ML_Operator_Apply(shell->mlmat, x_length, xarray, y_length, yarray); 
+    ierr = VecRestoreArray(x,           &xarray);CHKERRQ(ierr); 
+    ierr = VecRestoreArray(shell->work, &yarray);CHKERRQ(ierr); 
+    ierr = VecWAXPY(y, 1.0, w, shell->work);CHKERRQ(ierr); 
+  } else {
+    ierr = VecGetArray(x, &xarray);CHKERRQ(ierr);
+    ierr = VecGetArray(y, &yarray);CHKERRQ(ierr);
+    x_length = shell->mlmat->invec_leng;
+    y_length = shell->mlmat->outvec_leng;
+    ML_Operator_Apply(shell->mlmat, x_length, xarray, y_length, yarray); 
+    ierr = VecRestoreArray(x, &xarray);CHKERRQ(ierr); 
+    ierr = VecRestoreArray(y, &yarray);CHKERRQ(ierr); 
+    ierr = VecAXPY(y, 1.0, w);CHKERRQ(ierr); 
+  }
   PetscFunctionReturn(0);
 }
 
@@ -261,6 +278,7 @@ static PetscErrorCode MatDestroy_ML(Mat A)
   PetscFunctionBegin;
   ierr = MatShellGetContext(A,(void **)&shell);CHKERRQ(ierr);
   ierr = VecDestroy(shell->y);CHKERRQ(ierr);
+  if (shell->work) {ierr = VecDestroy(shell->work);CHKERRQ(ierr);}
   ierr = PetscFree(shell);CHKERRQ(ierr); 
   ierr = MatDestroy_Shell(A);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
@@ -366,6 +384,7 @@ static PetscErrorCode MatWrapML_SHELL(ML_Operator *mlmat,MatReuse reuse,Mat *new
   ierr = MatShellSetOperation(*newmat,MATOP_MULT_ADD,(void(*)(void))MatMultAdd_ML);CHKERRQ(ierr); 
   shellctx->A         = *newmat;
   shellctx->mlmat     = mlmat;
+  shellctx->work      = PETSC_NULL;
   ierr = VecCreate(PETSC_COMM_WORLD,&shellctx->y);CHKERRQ(ierr);
   ierr = VecSetSizes(shellctx->y,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(shellctx->y);CHKERRQ(ierr);
