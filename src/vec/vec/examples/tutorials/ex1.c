@@ -1,4 +1,3 @@
-
 /* Program usage:  mpiexec ex1 [-help] [all PETSc options] */
 
 static char help[] = "Basic vector routines.\n\n";
@@ -80,7 +79,6 @@ int main(int argc,char **argv)
   ierr = VecSet(z[0],one);CHKERRQ(ierr);
   ierr = VecSet(z[1],two);CHKERRQ(ierr);
   ierr = VecSet(z[2],three);CHKERRQ(ierr);
-
   /*
      Demonstrate various basic vector routines.
   */

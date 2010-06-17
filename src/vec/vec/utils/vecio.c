@@ -152,6 +152,10 @@ PetscErrorCode VecLoad_Binary(PetscViewer viewer, Vec vec)
 #if defined(PETSC_HAVE_HDF5)
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoad_HDF5"
+/*
+     This should handle properly the cases where PetscInt is 32 or 64 and hsize_t is 32 or 64. These means properly casting with
+   checks back and forth between the two types of variables.
+*/
 PetscErrorCode VecLoad_HDF5(PetscViewer viewer, Vec xin)
 {
   hsize_t        rdim,dim = 1; /* Could have dim 2 for blocked vectors */
@@ -197,7 +201,7 @@ PetscErrorCode VecLoad_HDF5(PetscViewer viewer, Vec xin)
 
   /* If sizes and type already set,check if the vector global size is correct */
   ierr = VecGetSize(xin, &N);CHKERRQ(ierr);
-  if (N != (int) dims[0]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length (%d) then input vector (%d)", (int) dims[0], N);
+  if (N != (PetscInt) dims[0]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length (%d) then input vector (%d)", (int) dims[0], N);
 
   /* Each process defines a dataset and reads it from the hyperslab in the file */
   ierr = VecGetLocalSize(xin, &n);CHKERRQ(ierr);

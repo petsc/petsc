@@ -576,7 +576,9 @@ PetscErrorCode VecSet_Seq(Vec xin,PetscScalar alpha)
     for (i=0; i<n; i++) xx[i] = alpha;
   }
 #if defined(PETSC_HAVE_CUDA)
-  xin->valid_GPU_array = PETSC_CUDA_CPU;  
+  if (xin->valid_GPU_array != PETSC_CUDA_UNALLOCATED){
+    xin->valid_GPU_array = PETSC_CUDA_CPU;
+  }
 #endif
   PetscFunctionReturn(0);
 }
@@ -592,7 +594,9 @@ PetscErrorCode VecSetRandom_Seq(Vec xin,PetscRandom r)
   PetscFunctionBegin;
   for (i=0; i<n; i++) {ierr = PetscRandomGetValue(r,&xx[i]);CHKERRQ(ierr);}
 #if defined(PETSC_HAVE_CUDA)
-  xin->valid_GPU_array = PETSC_CUDA_CPU;  
+  if (xin->valid_GPU_array != PETSC_CUDA_UNALLOCATED){
+    xin->valid_GPU_array = PETSC_CUDA_CPU;
+  }
 #endif
   PetscFunctionReturn(0);
 }
@@ -922,7 +926,9 @@ PetscErrorCode VecResetArray_Seq(Vec vin)
   v->array         = v->unplacedarray;
   v->unplacedarray = 0;
 #if defined(PETSC_HAVE_CUDA)
-  vin->valid_GPU_array = PETSC_CUDA_CPU;
+  if (vin->valid_GPU_array != PETSC_CUDA_UNALLOCATED){
+    vin->valid_GPU_array = PETSC_CUDA_CPU;
+  }
 #endif
   PetscFunctionReturn(0);
 }
@@ -938,7 +944,9 @@ PetscErrorCode VecPlaceArray_Seq(Vec vin,const PetscScalar *a)
   v->unplacedarray = v->array;  /* save previous array so reset can bring it back */
   v->array = (PetscScalar *)a;
 #if defined(PETSC_HAVE_CUDA)
-  vin->valid_GPU_array = PETSC_CUDA_CPU;
+  if (vin->valid_GPU_array != PETSC_CUDA_UNALLOCATED){
+    vin->valid_GPU_array = PETSC_CUDA_CPU;
+  }
 #endif
   PetscFunctionReturn(0);
 }
@@ -954,7 +962,9 @@ PetscErrorCode VecReplaceArray_Seq(Vec vin,const PetscScalar *a)
   ierr = PetscFree(v->array_allocated);CHKERRQ(ierr);
   v->array_allocated = v->array = (PetscScalar *)a;
 #if defined(PETSC_HAVE_CUDA)
-  vin->valid_GPU_array = PETSC_CUDA_CPU;
+  if (vin->valid_GPU_array != PETSC_CUDA_UNALLOCATED){
+    vin->valid_GPU_array = PETSC_CUDA_CPU;
+  }
 #endif
   PetscFunctionReturn(0);
 }
