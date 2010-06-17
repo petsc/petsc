@@ -830,8 +830,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLoadnew(PetscViewer viewer, Mat newmat)
 	    );
   }
 
-  /* Check if the type is set by checking the mat create function pointer */
-  if (!newmat->ops->create) {
+  /* MatSetSizes and MatSetType have been called */
+  if (((PetscObject)newmat)->type_name) outtype = ((PetscObject)newmat)->type_name;
+  
+  /* Check if the type is set by checking the mat create function pointer. This check is only for MatSetType() not called after MatSetSizes(). */
+  if (!outtype && !newmat->ops->create) {
     ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,(const char **)&prefix);CHKERRQ(ierr);
     ierr = PetscOptionsGetString(prefix,"-mat_type",mtype,256,&flg);CHKERRQ(ierr);
     if (flg) {

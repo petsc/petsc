@@ -1021,8 +1021,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, Vec newvec)
   PetscValidPointer(newvec,2);
 
   ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
+
+  if (((PetscObject)newvec)->type_name) outtype = ((PetscObject)newvec)->type_name;
   /* Check if type if set  by checking the vec create function pointer*/
-  if (!newvec->ops->create) {
+  if (!outtype && !newvec->ops->create) {
     ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,(const char**)&prefix);CHKERRQ(ierr);
     ierr = PetscOptionsGetString(prefix,"-vec_type",vtype,256,&flg);CHKERRQ(ierr);
     if (flg) {

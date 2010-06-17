@@ -4569,21 +4569,224 @@ namespace ALE {
       ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, mesh->getDimension()+1, coords);
       return mesh;
     };
-    // This method takes a tetrahedral mesh and performs a 1 --> 8 refinement of each cell
-    //   It does this by adding a new vertex at the midpoint of each edge
-    template<typename MeshType, typename MapType>
-    static void refineTetrahedra(MeshType& mesh, MeshType& newMesh, MapType& edge2vertex) {
+    template<typename MeshType, typename EdgeType>
+    class CellRefiner {
+    public:
+      typedef typename MeshType::point_type point_type;
+      typedef EdgeType                      edge_type;
+      typedef typename std::map<edge_type, point_type> edge_map_type;
+      enum {LINE, TIRANGLE, QUADRILATERAL, TETRAHEDRON, HEXHEDRON, TRIANGULAR_PRISM, TRIANGULAR_PRISM_LAGRANGE, HEXAHEDRON_LAGRANGE} CellType;
+    protected:
+      MeshType&     mesh;
+      const int     dim;
+      point_type    vertexOffset;
+      edge_map_type edge2vertex;
+    public:
+      CellRefiner(MeshType& mesh) : mesh(mesh) {
+        this->dim = mesh.getDimension();
+      };
+      ~CellRefiner() {};
+    protected:
+      CellType getCellType(const point_type cell) {
+        const int corners = mesh.getSieve()->getConeSize(cell);
+        if (dim == 1) {
+            return LINE;
+        } else if (dim == 2) {
+          if (corners == 3) {
+            return TRIANGLE;
+          } else if (corners == 4) {
+            return QUADRILATERAL;
+          }
+        } else if (dim == 3) {
+          if (corners == 4) {
+            return TETRAHEDRON;
+          } else if (corners == 6) {
+            return TRIANGULAR_PRISM;
+          } else if (corners == 8) {
+            return HEXAHEDRON;
+          } else if (corners == 9) {
+            return TRIANGULAR_PRISM_LAGRANGE;
+          } else if (corners == 12) {
+            return HEXAHEDRON_LAGRANGE;
+          }
+        }
+        throw ALE::Exception("Could not determine cell type");
+      };
+      void getEdges_TETRAHEDRON(const int coneSize, const point_type cone[],  int *numEdges, const edge_type **edges) {
+        static edge_type tetEdges[6];
+
+        assert(coneSize == 4);
+        // As per Brad's diagram
+        tetEdges[0] = edge_type(std::min(cone[0], cone[1]), std::max(cone[0], cone[1]));
+        tetEdges[1] = edge_type(std::min(cone[1], cone[2]), std::max(cone[1], cone[2]));
+        tetEdges[2] = edge_type(std::min(cone[2], cone[0]), std::max(cone[2], cone[0]));
+        tetEdges[3] = edge_type(std::min(cone[0], cone[3]), std::max(cone[0], cone[3]));
+        tetEdges[4] = edge_type(std::min(cone[1], cone[3]), std::max(cone[1], cone[3]));
+        tetEdges[5] = edge_type(std::min(cone[2], cone[3]), std::max(cone[2], cone[3]));
+        *numEdges = 6;
+        *edges    = tetEdges;
+      };
+      void getEdges_TRIANGULAR_PRISM(const int coneSize, const point_type cone[],  int *numEdges, const edge_type **edges) {
+        static edge_type triPrismEdges[6];
+
+        assert(coneSize == 6);
+        triPrismEdges[0] = edge_type(std::min(cone[0], cone[1]), std::max(cone[0], cone[1]));
+        triPrismEdges[1] = edge_type(std::min(cone[1], cone[2]), std::max(cone[1], cone[2]));
+        triPrismEdges[2] = edge_type(std::min(cone[2], cone[0]), std::max(cone[2], cone[0]));
+        triPrismEdges[3] = edge_type(std::min(cone[3], cone[4]), std::max(cone[3], cone[4]));
+        triPrismEdges[4] = edge_type(std::min(cone[4], cone[5]), std::max(cone[4], cone[5]));
+        triPrismEdges[5] = edge_type(std::min(cone[5], cone[3]), std::max(cone[5], cone[3]));
+        *numEdges = 6;
+        *edges    = triPrismEdges;
+      };
+      void getEdges_TRIANGULAR_PRISM_LAGRANGE(const int coneSize, const point_type cone[],  int *numEdges, const edge_type **edges) {
+        static edge_type triPrismLEdges[9];
+
+        assert(coneSize == 9);
+        triPrismEdges[0] = edge_type(std::min(cone[0], cone[1]), std::max(cone[0], cone[1]));
+        triPrismEdges[1] = edge_type(std::min(cone[1], cone[2]), std::max(cone[1], cone[2]));
+        triPrismEdges[2] = edge_type(std::min(cone[2], cone[0]), std::max(cone[2], cone[0]));
+        triPrismEdges[3] = edge_type(std::min(cone[3], cone[4]), std::max(cone[3], cone[4]));
+        triPrismEdges[4] = edge_type(std::min(cone[4], cone[5]), std::max(cone[4], cone[5]));
+        triPrismEdges[5] = edge_type(std::min(cone[5], cone[3]), std::max(cone[5], cone[3]));
+        triPrismEdges[6] = edge_type(cone[6], cone[6]);
+        triPrismEdges[7] = edge_type(cone[7], cone[7]);
+        triPrismEdges[8] = edge_type(cone[8], cone[8]);
+        *numEdges = 9;
+        *edges    = triPrismLEdges;
+      };
+      void getNewCells_TETRAHEDRON(const int coneSize, const point_type cone[],  int *numCells, const point_type **cells) {
+        int               numEdges;
+        const edge_type  *edges;
+        static point_type tetCells[8*4];
+        point_type        newVertices[6]
+
+        getEdges_TETRAHEDRON(coneSize, cone, &numEdges, &edges);
+        assert(numEdges == 6);
+        for(int e = 0; e < numEdges; ++e) {
+          if (edge2vertex.find(edges[e]) == edge2vertex.end()) {
+            throw ALE::Exception("Missing edge in refined mesh");
+          }
+          newVertices[e] = edge2vertex[edges[e]];
+        }
+        cells[0*4+0] = cone[0]+vertexOffset; cells[0*4+1] = newVertices[3]; cells[0*4+2] = newVertices[0]; cells[0*4+3] = newVertices[2];
+        cells[1*4+0] = cone[1]+vertexOffset; cells[1*4+0] = newVertices[4]; cells[1*4+0] = newVertices[1]; cells[1*4+0] = newVertices[0];
+        cells[2*4+0] = cone[2]+vertexOffset; cells[2*4+0] = newVertices[5]; cells[2*4+0] = newVertices[2]; cells[2*4+0] = newVertices[1];
+        cells[3*4+0] = cone[3]+vertexOffset; cells[3*4+0] = newVertices[3]; cells[3*4+0] = newVertices[5]; cells[3*4+0] = newVertices[4];
+        cells[4*4+0] = newVertices[0]; cells[4*4+0] = newVertices[3]; cells[4*4+0] = newVertices[4]; cells[4*4+0] = newVertices[2];
+        cells[5*4+0] = newVertices[1]; cells[5*4+0] = newVertices[4]; cells[5*4+0] = newVertices[5]; cells[5*4+0] = newVertices[3];
+        cells[6*4+0] = newVertices[2]; cells[6*4+0] = newVertices[5]; cells[6*4+0] = newVertices[3]; cells[6*4+0] = newVertices[1];
+        cells[7*4+0] = newVertices[0]; cells[7*4+0] = newVertices[1]; cells[7*4+0] = newVertices[2]; cells[7*4+0] = newVertices[3];
+        *numCells = 8;
+        *cells    = tetCells;
+      };
+      void getNewCells_TRIANGULAR_PRISM_LAGRANGE(const int coneSize, const point_type cone[],  int *numCells, const point_type **cells) {
+        int               numEdges;
+        const edge_type  *edges;
+        static point_type triPrismLCells[4*9];
+        point_type        newVertices[9]
+
+        getEdges_TRIANGULAR_PRISM_LAGRANGE(coneSize, cone, &numEdges, &edges);
+        assert(numEdges == 9);
+        for(int e = 0; e < numEdges; ++e) {
+          if (edge2vertex.find(edges[e]) == edge2vertex.end()) {
+            throw ALE::Exception("Missing edge in refined mesh");
+          }
+          newVertices[e] = edge2vertex[edges[e]];
+        }
+        cells[0*4+0] = cone[0]+vertexOffset; cells[0*4+1] = newVertices[3]; cells[0*4+2] = newVertices[0]; cells[0*4+3] = newVertices[2];
+        cells[1*4+0] = cone[1]+vertexOffset; cells[1*4+0] = newVertices[4]; cells[1*4+0] = newVertices[1]; cells[1*4+0] = newVertices[0];
+        cells[2*4+0] = cone[2]+vertexOffset; cells[2*4+0] = newVertices[5]; cells[2*4+0] = newVertices[2]; cells[2*4+0] = newVertices[1];
+        cells[3*4+0] = cone[3]+vertexOffset; cells[3*4+0] = newVertices[3]; cells[3*4+0] = newVertices[5]; cells[3*4+0] = newVertices[4];
+        cells[4*4+0] = newVertices[0]; cells[4*4+0] = newVertices[3]; cells[4*4+0] = newVertices[4]; cells[4*4+0] = newVertices[2];
+        cells[5*4+0] = newVertices[1]; cells[5*4+0] = newVertices[4]; cells[5*4+0] = newVertices[5]; cells[5*4+0] = newVertices[3];
+        cells[6*4+0] = newVertices[2]; cells[6*4+0] = newVertices[5]; cells[6*4+0] = newVertices[3]; cells[6*4+0] = newVertices[1];
+        cells[7*4+0] = newVertices[0]; cells[7*4+0] = newVertices[1]; cells[7*4+0] = newVertices[2]; cells[7*4+0] = newVertices[3];
+        *numCells = 8;
+        *cells    = tetCells;
+      };
+    public:
+      point_type getVertexOffset()                        {return vertexOffset;};
+      void       setVertexOffset(const point_type offset) {vertexOffset = offset;};
+      int numNewCells(const point_type cell) {
+        switch(this->getCellType(cell)) {
+        case TETRAHEDRON:
+          return 8;
+        case TRIANGULAR_PRISM:
+        case TRIANGULAR_PRISM_LAGRANGE:
+          return 4;
+        }
+        throw ALE::Exception("Could not determine number of new cells for this cell type");
+      };
+      void splitEdge(const point_type cell, const int coneSize, const point_type cone[], point_type& curNewVertex) {
+        const CellType   t = this->getCellType(cell);
+        int              numEdges;
+        const edge_type *edges;
+
+        switch(t) {
+        case TETRAHEDRON:
+          getEdges_TETRAHEDRON(coneSize, cone, &numEdges, &edges);
+          break;
+        case TRIANGULAR_PRISM:
+          getEdges_TRIANGULAR_PRISM(coneSize, cone, &numEdges, &edges);
+          break;
+        case TRIANGULAR_PRISM_LAGRANGE:
+          getEdges_TRIANGULAR_PRISM_LAGRANGE(coneSize, cone, &numEdges, &edges);
+          break;
+        default:
+          throw ALE::Exception("Could not determine number of new cells for this cell type");
+        }
+        // Check that vertex does not yet exist
+        for(int v = 0; v < numEdges; ++v) {
+          if (edge2vertex.find(edges[v]) == edge2vertex.end()) {
+            edge2vertex[edges[v]] = curNewVertex++;
+          }
+        }
+      };
+      void getNewCell(const point_type cell, const int coneSize, const point_type cone[], int newCellNumber, int *newConeSize, point_type **newCone) {
+        const CellType    t = this->getCellType(cell);
+        int               numCells;
+        const point_type *cells;
+
+        switch(t) {
+        case TETRAHEDRON:
+          getNewCells_TETRAHEDRON(coneSize, cone,  &numCells, &cells);
+          *newConeSize = 4;
+          *newCone     = &cells[newCellNumber*4];
+          break;
+        case TRIANGULAR_PRISM_LAGRANGE:
+          getNewCells_TRIANGULAR_PRISM_LAGRANGE(coneSize, cone,  &numCells, &cells);
+          *newConeSize = 9;
+          *newCone     = &cells[newCellNumber*9];
+          break;
+        default:
+          throw ALE::Exception("Could not create new cell for this cell type");
+        }
+      };
+    };
+    // This method takes a mesh and performs a refinement of each cell
+    //   tetrahedra:        1 --> 8 refinement,  adding a new vertex at the midpoint of each edge
+    //   tetrahedral prism: 1 --> 4 refinement,  adding a new vertex at the midpoint of each edge, but only split end edges
+    template<typename MeshType, typename Refiner>
+    static void refineGeneral(MeshType& mesh, MeshType& newMesh, Refiner& refiner) {
       typedef typename MeshType::sieve_type sieve_type;
       typedef typename MeshType::point_type point_type;
       typedef typename MapType::key_type    edge_type;
 
-      const int numCells       = mesh.heightStratum(0)->size();
-      const int numVertices    = mesh.depthStratum(0)->size();
       // Calculate number of new cells
-      const int numNewCells    = numCells * 8;
+      const Obj<label_sequence>&              cells       = mesh.heightStratum(0);
+      const int                               numCells    = cells->size();
+      const typename label_sequence::iterator cEnd        = cells->end();
+      const int                               numNewCells = 0;
+      point_type                              curNewCell  = 0;
+
+      for(typename label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter) {
+        numNewCells += refiner.numNewCells(*c_iter);
+      }
       // Bound number of new vertices
       //const int maxNewVertices = numCells * 6;
-      int       curNewVertex   = numNewCells + numVertices;
+      const int  numVertices  = mesh.depthStratum(0)->size();
+      point_type curNewVertex = numNewCells + numVertices;
 
       // Loop over cells
       const Obj<sieve_type>&                         sieve    = mesh.getSieve();
@@ -4591,67 +4794,32 @@ namespace ALE {
       ALE::ISieveVisitor::PointRetriever<sieve_type> cV(std::max(1, sieve->getMaxConeSize()));
 
       // First compute map from edges to new vertices
-      for(int c = 0; c < numCells; ++c) {
-        sieve->cone(c, cV);
-        assert(cV.getSize() == 4);
-        const point_type *cone = cV.getPoints();
-
-        //   As per Brad's diagram
-        edge_type edges[6] = {edge_type(std::min(cone[0], cone[1]), std::max(cone[0], cone[1])),
-                              edge_type(std::min(cone[1], cone[2]), std::max(cone[1], cone[2])),
-                              edge_type(std::min(cone[2], cone[0]), std::max(cone[2], cone[0])),
-                              edge_type(std::min(cone[0], cone[3]), std::max(cone[0], cone[3])),
-                              edge_type(std::min(cone[1], cone[3]), std::max(cone[1], cone[3])),
-                              edge_type(std::min(cone[2], cone[3]), std::max(cone[2], cone[3]))};
-        //   Check that vertex does not yet exist
-        for(int v = 0; v < 6; ++v) {
-          if (edge2vertex.find(edges[v]) == edge2vertex.end()) {
-            edge2vertex[edges[v]] = curNewVertex++;
-          }
-        }
+      for(typename label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter) {
+        sieve->cone(*c_iter, cV);
+        refiner.splitEdge(*c_iter, cV.numPoints(), cV.getPoints(), curNewVertex);
         cV.clear();
       }
       // Reallocate the sieve chart
       newSieve->setChart(typename sieve_type::chart_type(0, curNewVertex));
+      refiner.setVertexOffset(numNewCells - numCells);
       // Create new sieve with correct sizes for refined cells
-      for(int c = 0; c < numCells; ++c) {
-        sieve->cone(c, cV);
-        assert(cV.getSize() == 4);
-        const point_type *cone = cV.getPoints();
+      for(typename label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter) {
+        // Set new cone and support sizes
+        sieve->cone(*c_iter, cV);
+        const point_type *cone     = cV.getPoints();
+        const int         coneSize = cV.numPoints();
+        const int         newCells = refiner.numNewCells(*c_iter);
 
-        // As per Brad's diagram
-        edge_type edges[6] = {edge_type(std::min(cone[0], cone[1]), std::max(cone[0], cone[1])),
-                              edge_type(std::min(cone[1], cone[2]), std::max(cone[1], cone[2])),
-                              edge_type(std::min(cone[2], cone[0]), std::max(cone[2], cone[0])),
-                              edge_type(std::min(cone[0], cone[3]), std::max(cone[0], cone[3])),
-                              edge_type(std::min(cone[1], cone[3]), std::max(cone[1], cone[3])),
-                              edge_type(std::min(cone[2], cone[3]), std::max(cone[2], cone[3]))};
-        //   Check that vertex does not yet exist
-        point_type newVertices[6];
+        for(int nc = 0; nc < newCells; ++nc, ++curNewCell) {
+          const point_type *newCone;
+          int               newConeSize;
 
-        for(int v = 0; v < 6; ++v) {
-          newVertices[v] = edge2vertex[edges[v]];
+          newSieve->setConeSize(curNewCell, sieve->getConeSize(*c_iter));
+          refiner.getNewCell(*c_iter, coneSize, cone, nc, &newConeSize, &newCone);
+          for(int v = 0; v < newConeSize; ++v) {
+            newSieve->addSupportSize(newCone[v], 1);
+          }
         }
-        // Set new sizes
-        for(int nc = 0; nc < 8; ++nc) {newSieve->setConeSize(c*8+nc, 4);}
-        const point_type offset = numNewCells - numCells;
-
-        point_type cell0[4] = {cone[0]+offset, newVertices[3], newVertices[0], newVertices[2]};
-        for(int v = 0; v < 4; ++v) {newSieve->addSupportSize(cell0[v], 1);}
-        point_type cell1[4] = {cone[1]+offset, newVertices[4], newVertices[1], newVertices[0]};
-        for(int v = 0; v < 4; ++v) {newSieve->addSupportSize(cell1[v], 1);}
-        point_type cell2[4] = {cone[2]+offset, newVertices[5], newVertices[2], newVertices[1]};
-        for(int v = 0; v < 4; ++v) {newSieve->addSupportSize(cell2[v], 1);}
-        point_type cell3[4] = {cone[3]+offset, newVertices[3], newVertices[5], newVertices[4]};
-        for(int v = 0; v < 4; ++v) {newSieve->addSupportSize(cell3[v], 1);}
-        point_type cell4[4] = {newVertices[0], newVertices[3], newVertices[4], newVertices[2]};
-        for(int v = 0; v < 4; ++v) {newSieve->addSupportSize(cell4[v], 1);}
-        point_type cell5[4] = {newVertices[1], newVertices[4], newVertices[5], newVertices[3]};
-        for(int v = 0; v < 4; ++v) {newSieve->addSupportSize(cell5[v], 1);}
-        point_type cell6[4] = {newVertices[2], newVertices[5], newVertices[3], newVertices[1]};
-        for(int v = 0; v < 4; ++v) {newSieve->addSupportSize(cell6[v], 1);}
-        point_type cell7[4] = {newVertices[0], newVertices[1], newVertices[2], newVertices[3]};
-        for(int v = 0; v < 4; ++v) {newSieve->addSupportSize(cell7[v], 1);}
         cV.clear();
       }
       newSieve->allocate();
@@ -4659,49 +4827,31 @@ namespace ALE {
       point_type *vertex2edge    = new point_type[numNewVertices*2];
 
       // Create refined cells in new sieve
-      for(int c = 0; c < numCells; ++c) {
-        sieve->cone(c, cV);
-        assert(cV.getSize() == 4);
-        const point_type *cone = cV.getPoints();
+      curNewCell = 0;
+      for(typename label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter) {
+        // Set new cone and support sizes
+        sieve->cone(*c_iter, cV);
+        const point_type *cone     = cV.getPoints();
+        const int         coneSize = cV.numPoints();
+        const int         newCells = refiner.numNewCells(*c_iter);
 
-        // As per Brad's diagram
-        edge_type edges[6] = {edge_type(std::min(cone[0], cone[1]), std::max(cone[0], cone[1])),
-                              edge_type(std::min(cone[1], cone[2]), std::max(cone[1], cone[2])),
-                              edge_type(std::min(cone[2], cone[0]), std::max(cone[2], cone[0])),
-                              edge_type(std::min(cone[0], cone[3]), std::max(cone[0], cone[3])),
-                              edge_type(std::min(cone[1], cone[3]), std::max(cone[1], cone[3])),
-                              edge_type(std::min(cone[2], cone[3]), std::max(cone[2], cone[3]))};
+        for(int nc = 0; nc < newCells; ++nc, ++curNewCell) {
+          const point_type *newCone;
+          int               newConeSize;
+
+          refiner.getNewCell(*c_iter, coneSize, cone, nc, &newConeSize, &newCone);
+          newSieve->setCone(newCone, curNewCell);
+        }
+        cV.clear();
+
         //   Check that vertex does not yet exist
         point_type newVertices[6];
 
         for(int v = 0; v < 6; ++v) {
-          if (edge2vertex.find(edges[v]) == edge2vertex.end()) {
-            throw ALE::Exception("Missing edge in refined mesh");
-          }
           newVertices[v] = edge2vertex[edges[v]];
           vertex2edge[(newVertices[v]-numNewCells-numVertices)*2+0] = edges[v].first;
           vertex2edge[(newVertices[v]-numNewCells-numVertices)*2+1] = edges[v].second;
         }
-        // Create new cells
-        const point_type offset = numNewCells - numCells;
-
-        point_type cell0[4] = {cone[0]+offset, newVertices[3], newVertices[0], newVertices[2]};
-        newSieve->setCone(cell0, c*8+0);
-        point_type cell1[4] = {cone[1]+offset, newVertices[4], newVertices[1], newVertices[0]};
-        newSieve->setCone(cell1, c*8+1);
-        point_type cell2[4] = {cone[2]+offset, newVertices[5], newVertices[2], newVertices[1]};
-        newSieve->setCone(cell2, c*8+2);
-        point_type cell3[4] = {cone[3]+offset, newVertices[3], newVertices[5], newVertices[4]};
-        newSieve->setCone(cell3, c*8+3);
-        point_type cell4[4] = {newVertices[0], newVertices[3], newVertices[4], newVertices[2]};
-        newSieve->setCone(cell4, c*8+4);
-        point_type cell5[4] = {newVertices[1], newVertices[4], newVertices[5], newVertices[3]};
-        newSieve->setCone(cell5, c*8+5);
-        point_type cell6[4] = {newVertices[2], newVertices[5], newVertices[3], newVertices[1]};
-        newSieve->setCone(cell6, c*8+6);
-        point_type cell7[4] = {newVertices[0], newVertices[1], newVertices[2], newVertices[3]};
-        newSieve->setCone(cell7, c*8+7);
-        cV.clear();
       }
       newSieve->symmetrize();
       // Create new coordinates
