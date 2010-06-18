@@ -22,7 +22,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
   if (type == NORM_2 || type == NORM_FROBENIUS) {
 #if defined(PETSC_HAVE_CUDA)
     ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
-    *z = cublasSnrm2(bn,xin->GPUarray,one);
+    *z = cublasSnrm2(bn,VecCUDACastToRawPtr(xin->GPUarray),one);
     ierr = cublasGetError();CHKERRCUDA(ierr);
 #else
     ierr = VecGetArrayPrivate(xin,&xx);CHKERRQ(ierr);
@@ -46,7 +46,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
   } else if (type == NORM_1) {
 #if defined(PETSC_HAVE_CUDA)
     ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
-    *z = cublasSasum(bn,xin->GPUarray,one);
+    *z = cublasSasum(bn,VecCUDACastToRawPtr(xin->GPUarray),one);
     ierr = cublasGetError();CHKERRCUDA(ierr);
 #else
     ierr = VecGetArrayPrivate(xin,&xx);CHKERRQ(ierr);
@@ -575,9 +575,10 @@ PetscErrorCode VecDestroy_Seq(Vec v)
 #endif
 
 #if defined(PETSC_HAVE_CUDA)
-  if (v->valid_GPU_array != PETSC_CUDA_UNALLOCATED){
+  /*if (v->valid_GPU_array != PETSC_CUDA_UNALLOCATED){
     ierr = cublasFree(v->GPUarray);CHKERRCUDA(ierr);
-  }
+    }*/
+  /*Theoretically, thrust vectors should free themselves automatically */
 #endif
 
   ierr = PetscFree(vs->array_allocated);CHKERRQ(ierr);

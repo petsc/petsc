@@ -163,7 +163,8 @@ struct _p_Vec {
   PetscTruth             petscnative;  /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
 #if defined(PETSC_HAVE_CUDA)
   PetscCUDAFlag          valid_GPU_array;    /* indicates where the most recently modified vector data is (GPU or CPU) */
-  PetscScalar            *GPUarray;          /* if we're using CUDA, then this is the pointer to the array on the GPU */
+  /*PetscScalar            *GPUarray;      */
+  cusp::array1d<PetscScalar,cusp::device_memory> GPUarray; /* if we're using CUDA, then this is the pointer to the array on the GPU */
 #endif
 };
 
@@ -171,7 +172,7 @@ struct _p_Vec {
 
 #if defined(PETSC_HAVE_CUDA)
 #define CHKERRCUDA(err) if (err != CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error %d",err)
-
+#define VecCUDACastToRawPtr(x) thrust::raw_pointer_cast(&(x)[0])
 #undef __FUNCT__
 #define __FUNCT__ "VecCUDACopyToGPU"
 /* Copies a vector from the CPU to the GPU unless we already have an up-to-date copy on the GPU */
@@ -183,10 +184,9 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyToGPU(Vec v)
   PetscFunctionBegin;
   if (v->valid_GPU_array == PETSC_CUDA_CPU || v->valid_GPU_array == PETSC_CUDA_UNALLOCATED){
     if (v->valid_GPU_array == PETSC_CUDA_UNALLOCATED){
-      /*if this is the first time we're copying to the GPU then we allocate memory first */
-      ierr = cublasAlloc(cn,sizeof(PetscScalar),(void **)&v->GPUarray);CHKERRCUDA(ierr);
+      v->GPUarray.resize(cn);
     }
-    ierr = cublasSetVector(cn,sizeof(PetscScalar),*(PetscScalar **)v->data,one,v->GPUarray,one);CHKERRCUDA(ierr);
+    v->GPUarray.assign(*(PetscScalar**)v->data,*(PetscScalar**)v->data + cn);
     v->valid_GPU_array = PETSC_CUDA_BOTH;
   }
   PetscFunctionReturn(0);
@@ -202,7 +202,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyFromGPU(Vec v)
 
   PetscFunctionBegin;
   if (v->valid_GPU_array == PETSC_CUDA_GPU){
-    ierr = cublasGetVector(cn,sizeof(PetscScalar),v->GPUarray,one,*(PetscScalar **)v->data,one);CHKERRCUDA(ierr);
+    thrust::copy(v->GPUarray.begin(),v->GPUarray.end(),*(PetscScalar**)v->data);
     v->valid_GPU_array = PETSC_CUDA_BOTH;
   }
   PetscFunctionReturn(0);
