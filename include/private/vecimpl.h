@@ -178,8 +178,7 @@ struct _p_Vec {
 /* Copies a vector from the CPU to the GPU unless we already have an up-to-date copy on the GPU */
 PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyToGPU(Vec v)
 {
-  PetscBLASInt   one = 1, cn = v->map->n;
-  PetscErrorCode ierr;
+  PetscBLASInt   cn = v->map->n;
 
   PetscFunctionBegin;
   if (v->valid_GPU_array == PETSC_CUDA_CPU || v->valid_GPU_array == PETSC_CUDA_UNALLOCATED){
@@ -197,8 +196,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyToGPU(Vec v)
 /* Copies a vector from the GPU to the CPU unless we already have an up-to-date copy on the CPU */
 PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyFromGPU(Vec v)
 {
-  PetscBLASInt   one = 1, cn = v->map->n;
-  PetscErrorCode ierr;
+  PetscBLASInt   cn = v->map->n;
 
   PetscFunctionBegin;
   if (v->valid_GPU_array == PETSC_CUDA_GPU){

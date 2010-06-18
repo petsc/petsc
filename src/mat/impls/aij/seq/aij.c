@@ -733,6 +733,13 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   ierr = MatAssemblyEnd_SeqAIJ_Inode(A,mode);CHKERRQ(ierr);
 
   a->idiagvalid = PETSC_FALSE;
+
+#if defined(PETSC_HAVE_CUDA)
+  a->GPUmatrix.resize(m,A->cmap->n,a->nz);
+  a->GPUmatrix.row_offsets.assign(a->i,a->i+m);
+  a->GPUmatrix.column_indices.assign(a->j,a->j+A->cmap->n);
+  a->GPUmatrix.values.assign(a->a,a->a+a->nz);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -993,6 +1000,11 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 #endif
 
   PetscFunctionBegin;
+  /*#if defined(PETSC_HAVE_CUDA)
+  ierr = VecCUDACopyToGPU(xx);CHKERRQ(ierr);
+  cusp::multiply(a->GPUmatrix,xx->GPUarray,yy->GPUarray);
+  yy->valid_GPU_array = PETSC_CUDA_GPU;
+#else*/
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   aj  = a->j;
@@ -1030,6 +1042,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   ierr = PetscLogFlops(2.0*a->nz - nonzerorow);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+  /*#endif*/
   PetscFunctionReturn(0);
 }
 

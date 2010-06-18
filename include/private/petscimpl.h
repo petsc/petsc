@@ -712,6 +712,7 @@ typedef struct {
 #if defined(PETSC_HAVE_CUDA)
 #include <cublas.h>
 #include <cusp/csr_matrix.h>
+#include <cusp/multiply.h>
 #endif
 
 PETSC_EXTERN_CXX_END
