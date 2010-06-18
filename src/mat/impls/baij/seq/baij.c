@@ -3493,7 +3493,7 @@ PetscErrorCode MatLoadnew_SeqBAIJ(PetscViewer viewer,Mat newmat)
     for (j=0; j<nmask; j++) mask[masked[j]] = 0;
   }
 
-  /* create our matrix */
+  /* Do preallocation  */
   ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(newmat,bs,0,browlengths);CHKERRQ(ierr);
   a = (Mat_SeqBAIJ*)newmat->data;
 
