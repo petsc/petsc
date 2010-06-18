@@ -806,6 +806,83 @@ PetscErrorCode MatLoad_SeqDense(PetscViewer viewer, const MatType type,Mat *A)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatLoadnew_SeqDense"
+PetscErrorCode MatLoadnew_SeqDense(PetscViewer viewer, Mat newmat)
+{
+  Mat_SeqDense   *a;
+  PetscErrorCode ierr;
+  PetscInt       *scols,i,j,nz,header[4];
+  int            fd;
+  PetscMPIInt    size;
+  PetscInt       *rowlengths = 0,M,N,*cols,grows,gcols;
+  PetscScalar    *vals,*svals,*v,*w;
+  MPI_Comm       comm = ((PetscObject)viewer)->comm;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"view must have one processor");
+  ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,header,4,PETSC_INT);CHKERRQ(ierr);
+  if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Not matrix object");
+  M = header[1]; N = header[2]; nz = header[3];
+
+  /* set global size if not set already*/
+  if (newmat->rmap->n < 0 && newmat->rmap->N < 0 && newmat->cmap->n < 0 && newmat->cmap->N < 0) {
+    ierr = MatSetSizes(newmat,M,N,M,N);CHKERRQ(ierr);
+  } else {
+    /* if sizes and type are already set, check if the vector global sizes are correct */
+    ierr = MatGetSize(newmat,&grows,&gcols);CHKERRQ(ierr);
+    if (M != grows ||  N != gcols) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Matrix in file of different length (%d, %d) than the input matrix (%d, %d)",M,N,grows,gcols);
+  }
+  ierr = MatSeqDenseSetPreallocation(newmat,PETSC_NULL);CHKERRQ(ierr);
+  
+  if (nz == MATRIX_BINARY_FORMAT_DENSE) { /* matrix in file is dense */
+    a    = (Mat_SeqDense*)newmat->data;
+    v    = a->v;
+    /* Allocate some temp space to read in the values and then flip them
+       from row major to column major */
+    ierr = PetscMalloc((M*N > 0 ? M*N : 1)*sizeof(PetscScalar),&w);CHKERRQ(ierr);
+    /* read in nonzero values */
+    ierr = PetscBinaryRead(fd,w,M*N,PETSC_SCALAR);CHKERRQ(ierr);
+    /* now flip the values and store them in the matrix*/
+    for (j=0; j<N; j++) {
+      for (i=0; i<M; i++) {
+        *v++ =w[i*N+j];
+      }
+    }
+    ierr = PetscFree(w);CHKERRQ(ierr);
+  } else {
+    /* read row lengths */
+    ierr = PetscMalloc((M+1)*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT);CHKERRQ(ierr);
+
+    a = (Mat_SeqDense*)newmat->data;
+    v = a->v;
+
+    /* read column indices and nonzeros */
+    ierr = PetscMalloc((nz+1)*sizeof(PetscInt),&scols);CHKERRQ(ierr);
+    cols = scols;
+    ierr = PetscBinaryRead(fd,cols,nz,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscMalloc((nz+1)*sizeof(PetscScalar),&svals);CHKERRQ(ierr);
+    vals = svals;
+    ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR);CHKERRQ(ierr);
+
+    /* insert into matrix */  
+    for (i=0; i<M; i++) {
+      for (j=0; j<rowlengths[i]; j++) v[i+M*scols[j]] = svals[j];
+      svals += rowlengths[i]; scols += rowlengths[i];
+    }
+    ierr = PetscFree(vals);CHKERRQ(ierr);
+    ierr = PetscFree(cols);CHKERRQ(ierr);
+    ierr = PetscFree(rowlengths);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatView_SeqDense_ASCII"
 static PetscErrorCode MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
 {
@@ -1882,7 +1959,18 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
 /*109*/0,
        0,
        MatGetRowMin_SeqDense,
-       MatGetColumnVector_SeqDense
+       MatGetColumnVector_SeqDense,
+       0,
+/*114*/0,
+       0,
+       0,
+       0,
+       0,
+/*119*/0,
+       0,
+       0,
+       0,
+       MatLoadnew_SeqDense
 };
 
 #undef __FUNCT__  

@@ -3632,13 +3632,12 @@ PetscErrorCode MatLoadnew_SeqAIJ(PetscViewer viewer,Mat newMat)
 
   /* set global size if not set already*/
   if (newMat->rmap->n < 0 && newMat->rmap->N < 0 && newMat->cmap->n < 0 && newMat->cmap->N < 0) {
-  ierr = MatSetSizes(newMat,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
+    ierr = MatSetSizes(newMat,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
+  } else {
+    /* if sizes and type are already set, check if the vector global sizes are correct */
+    ierr = MatGetSize(newMat,&rows,&cols);CHKERRQ(ierr);
+    if (M != rows ||  N != cols) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Matrix in file of different length (%d, %d) than the input matrix (%d, %d)",M,N,rows,cols);
   }
-
-  /* if sizes and type are already set, check if the vector global sizes are correct */
-  ierr = MatGetSize(newMat,&rows,&cols);CHKERRQ(ierr);
-  if (M != rows ||  N != cols) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Matrix in file of different length (%d, %d) than the input matrix (%d, %d)",M,N,rows,cols);
-
   ierr = MatSeqAIJSetPreallocation_SeqAIJ(newMat,0,rowlengths);CHKERRQ(ierr);
   a = (Mat_SeqAIJ*)newMat->data;
 
