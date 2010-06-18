@@ -183,7 +183,7 @@ static PetscErrorCode MatMultAdd_ML(Mat A,Vec x,Vec w,Vec y)
     ML_Operator_Apply(shell->mlmat, x_length, xarray, y_length, yarray); 
     ierr = VecRestoreArray(x,           &xarray);CHKERRQ(ierr); 
     ierr = VecRestoreArray(shell->work, &yarray);CHKERRQ(ierr); 
-    ierr = VecWAXPY(y, 1.0, w, shell->work);CHKERRQ(ierr); 
+    ierr = VecAXPY(y, 1.0, shell->work);CHKERRQ(ierr); 
   } else {
     ierr = VecGetArray(x, &xarray);CHKERRQ(ierr);
     ierr = VecGetArray(y, &yarray);CHKERRQ(ierr);
