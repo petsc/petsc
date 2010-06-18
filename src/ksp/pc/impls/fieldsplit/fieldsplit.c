@@ -647,6 +647,7 @@ static PetscErrorCode PCDestroy_FieldSplit(PC pc)
     if (ilink->sctx) {ierr = VecScatterDestroy(ilink->sctx);CHKERRQ(ierr);}
     if (ilink->is) {ierr = ISDestroy(ilink->is);CHKERRQ(ierr);}
     next = ilink->next;
+    ierr = PetscFree(ilink->splitname);CHKERRQ(ierr);
     ierr = PetscFree(ilink->fields);CHKERRQ(ierr);
     ierr = PetscFree(ilink);CHKERRQ(ierr);
     ilink = next;
