@@ -3103,7 +3103,7 @@ PetscErrorCode MatLoadnew_MPIAIJ(PetscViewer viewer, Mat newMat)
 
   /* determine ownership of all rows */
   if (newMat->rmap->n < 0 ) m    = M/size + ((M % size) > rank); /* PETSC_DECIDE */
-  else m = newMat->rmap->n;
+  else m = newMat->rmap->n; /* Set by user */
  
   ierr = PetscMalloc((size+1)*sizeof(PetscInt),&rowners);CHKERRQ(ierr);
   ierr = MPI_Allgather(&m,1,MPIU_INT,rowners+1,1,MPIU_INT,comm);CHKERRQ(ierr);
@@ -3208,7 +3208,6 @@ PetscErrorCode MatLoadnew_MPIAIJ(PetscViewer viewer, Mat newMat)
     }
   }
 
-  /* create our matrix */
   for (i=0; i<m; i++) {
     ourlens[i] -= offlens[i];
   }
