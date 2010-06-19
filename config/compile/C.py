@@ -15,12 +15,13 @@ class Preprocessor(config.compile.processor.Processor):
 
 class Compiler(config.compile.processor.Processor):
   '''The C compiler'''
-  def __init__(self, argDB):
+  def __init__(self, argDB, usePreprocessorFlags = True):
     config.compile.processor.Processor.__init__(self, argDB, 'CC', 'CFLAGS', '.c', '.o')
     self.requiredFlags[-1]  = '-c'
     self.outputFlag         = '-o'
     self.includeDirectories = sets.Set()
-    self.flagsName.extend(Preprocessor(argDB).flagsName)
+    if usePreprocessorFlags:
+      self.flagsName.extend(Preprocessor(argDB).flagsName)
     return
 
   def getTarget(self, source):
@@ -41,7 +42,7 @@ class Compiler(config.compile.processor.Processor):
 class Linker(config.compile.processor.Processor):
   '''The C linker'''
   def __init__(self, argDB):
-    self.compiler        = Compiler(argDB)
+    self.compiler        = Compiler(argDB, usePreprocessorFlags = False)
     self.configLibraries = config.libraries.Configure(config.framework.Framework(clArgs = '', argDB = argDB))
     config.compile.processor.Processor.__init__(self, argDB, ['CC_LD', 'LD', self.compiler.name], ['LDFLAGS', 'CC_LINKER_FLAGS'], '.o', '.a')
     self.outputFlag = '-o'
@@ -94,7 +95,7 @@ class Linker(config.compile.processor.Processor):
 class SharedLinker(config.compile.processor.Processor):
   '''The C linker'''
   def __init__(self, argDB):
-    self.compiler = Compiler(argDB)
+    self.compiler = Compiler(argDB, usePreprocessorFlags = False)
     self.configLibraries = config.libraries.Configure(config.framework.Framework(clArgs = '', argDB = argDB))
     config.compile.processor.Processor.__init__(self, argDB, ['LD_SHARED', self.compiler.name], ['LDFLAGS', 'sharedLibraryFlags'], '.o', None)
     self.outputFlag = '-o'
@@ -190,7 +191,7 @@ class StaticLinker(SharedLinker):
 class DynamicLinker(config.compile.processor.Processor):
   '''The C linker'''
   def __init__(self, argDB):
-    self.compiler = Compiler(argDB)
+    self.compiler = Compiler(argDB, usePreprocessorFlags = False)
     self.configLibraries = config.libraries.Configure(config.framework.Framework(clArgs = '', argDB = argDB))
     config.compile.processor.Processor.__init__(self, argDB, ['dynamicLinker', self.compiler.name], ['LDFLAGS', 'dynamicLibraryFlags'], '.o', None)
     self.outputFlag = '-o'
