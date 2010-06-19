@@ -196,8 +196,6 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyToGPU(Vec v)
 /* Copies a vector from the GPU to the CPU unless we already have an up-to-date copy on the CPU */
 PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyFromGPU(Vec v)
 {
-  PetscBLASInt   cn = v->map->n;
-
   PetscFunctionBegin;
   if (v->valid_GPU_array == PETSC_CUDA_GPU){
     thrust::copy(v->GPUarray.begin(),v->GPUarray.end(),*(PetscScalar**)v->data);
