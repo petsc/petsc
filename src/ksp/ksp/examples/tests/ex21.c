@@ -99,6 +99,11 @@ int main(int argc,char *argv[])
   ierr = MatGetSchurComplement(A,is0,is0,is1,is1,MAT_IGNORE_MATRIX,PETSC_NULL,MAT_INITIAL_MATRIX,&S);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\nPreconditioning Schur complement of (0,0) in (1,1)\n");CHKERRQ(ierr);
   ierr = MatView(S,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /* Modify and refresh */
+  ierr = MatShift(A,1.);CHKERRQ(ierr);
+  ierr = MatGetSchurComplement(A,is0,is0,is1,is1,MAT_IGNORE_MATRIX,PETSC_NULL,MAT_REUSE_MATRIX,&S);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\nAfter update\n");CHKERRQ(ierr);
+  ierr = MatView(S,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = Destroy(A,is0,is1);CHKERRQ(ierr);
   ierr = MatDestroy(S);CHKERRQ(ierr);
 
