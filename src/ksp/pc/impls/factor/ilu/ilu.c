@@ -103,7 +103,7 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
   PetscErrorCode ierr;
   PetscInt       itmp;
   PetscTruth     flg;
-  PetscReal      dt[3];
+  /* PetscReal      dt[3]; */
   PC_ILU         *ilu = (PC_ILU*)pc->data;
   PetscReal      tol;
 
@@ -116,11 +116,11 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
     flg  = PETSC_FALSE;
     ierr = PetscOptionsTruth("-pc_factor_diagonal_fill","Allow fill into empty diagonal entry","PCFactorSetAllowDiagonalFill",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     ((PC_Factor*)ilu)->info.diagonal_fill = (double) flg;
-    
+    /*
     dt[0] = ((PC_Factor*)ilu)->info.dt;
     dt[1] = ((PC_Factor*)ilu)->info.dtcol;
     dt[2] = ((PC_Factor*)ilu)->info.dtcount;
-    /*
+    
     PetscInt       dtmax = 3;
     ierr = PetscOptionsRealArray("-pc_factor_drop_tolerance,","<dt,dtcol,maxrowcount>","PCFactorSetDropTolerance",dt,&dtmax,&flg);CHKERRQ(ierr);
     if (flg) {

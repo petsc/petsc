@@ -240,7 +240,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6(Mat B,Mat A,const MatFactorInfo *inf
   Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)A->data,*b=(Mat_SeqBAIJ *)C->data;
   IS             isrow = b->row,isicol = b->icol;
   PetscErrorCode ierr;
-  const PetscInt *r,*ic,*ics;
+  const PetscInt *r,*ic;
   PetscInt       i,j,k,nz,nzL,row;
   const PetscInt n=a->mbs,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
   const PetscInt *ajtmp,*bjtmp,*bdiag=b->diag,*pj,bs2=a->bs2;
@@ -255,7 +255,6 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6(Mat B,Mat A,const MatFactorInfo *inf
   /* generate work space needed by the factorization */
   ierr = PetscMalloc2(bs2*n,MatScalar,&rtmp,bs2,MatScalar,&mwork);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,bs2*n*sizeof(MatScalar));CHKERRQ(ierr);
-  ics  = ic;
 
   for (i=0; i<n; i++){
     /* zero rtmp */

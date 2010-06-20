@@ -24,12 +24,10 @@ static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
   PetscErrorCode ierr;
-  PetscMPIInt    rank;
   PetscTruth     iascii,isstring;
   PetscViewer    subviewer;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(((PetscObject)pc)->comm,&rank);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (iascii) {

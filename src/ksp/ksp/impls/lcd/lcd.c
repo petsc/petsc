@@ -40,7 +40,7 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       it,j,max_k;
-  PetscScalar    alfa, beta, num, den, mone, pone;
+  PetscScalar    alfa, beta, num, den, mone;
   PetscReal      rnorm;
   Vec            X,B,R,Z;
   KSP_LCD        *lcd;
@@ -59,7 +59,6 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
   Z              = ksp->work[1];
   max_k          = lcd->restart;
   mone = -1;
-  pone = 1;
 
   ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
 

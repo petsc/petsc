@@ -633,7 +633,12 @@ extern int    MPI_Finalized(int*);
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm2),\
      *(result)=MPI_IDENT,\
      MPI_SUCCESS)
-#define MPI_Comm_split(comm,color,key,newcomm) MPI_SUCCESS
+#define MPI_Comm_split(comm,color,key,newcomm) \
+     (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
+     MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (color),\
+     MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (key),\
+     *(newcomm)=MPI_IDENT,\
+     MPI_SUCCESS)
 #define MPI_Comm_test_inter(comm,flag) (*(flag)=1,MPI_SUCCESS)
 #define MPI_Comm_remote_size(comm,size) (*(size)=1,MPI_SUCCESS)
 #define MPI_Comm_remote_group(comm,group) MPI_SUCCESS

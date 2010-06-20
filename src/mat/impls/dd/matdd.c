@@ -112,8 +112,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT Mat_DDBlockInit(Mat A, PetscInt rowblock, Pets
   PetscMPIInt           subcommcolor;
   
   PetscFunctionBegin;
-  
-    /**/
   m = dd->lrowblockoffset[rowblock+1]-dd->lrowblockoffset[rowblock];
   n = dd->lcolblockoffset[colblock+1]-dd->lcolblockoffset[colblock];
   M = dd->growblockoffset[rowblock+1]-dd->growblockoffset[rowblock];
@@ -723,13 +721,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTranspose_DD(Mat A, Vec x, Vec y) {
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatAssemblyBegin_DDAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyBegin_DDAIJ(Mat A, MatAssemblyType type) {
-  Mat_DD     *dd = (Mat_DD*)A->data;
-  Mat_DDAIJ  *aij = (Mat_DDAIJ*)dd->data;
-  PetscInt i,j,k;
-  Mat B;
-  Mat_DDBlock *ap;
+PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyBegin_DDAIJ(Mat A, MatAssemblyType type) 
+{
+  Mat_DD         *dd = (Mat_DD*)A->data;
+  Mat_DDAIJ      *aij = (Mat_DDAIJ*)dd->data;
+  PetscInt       i,j,k;
+  Mat            B;
+  Mat_DDBlock    *ap;
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   for(i = 0; i < dd->rowblockcount; ++i) {
     ap = aij->a + aij->i[i];
@@ -744,13 +744,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyBegin_DDAIJ(Mat A, MatAssemblyType 
 
 #undef  __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_DDAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd_DDAIJ(Mat A, MatAssemblyType type) {
-  Mat_DD     *dd = (Mat_DD*)A->data;
-  Mat_DDAIJ  *aij = (Mat_DDAIJ*)dd->data;
-  PetscInt i,j,k;
-  Mat B;
-  Mat_DDBlock *ap;
+PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd_DDAIJ(Mat A, MatAssemblyType type) 
+{
+  Mat_DD         *dd = (Mat_DD*)A->data;
+  Mat_DDAIJ      *aij = (Mat_DDAIJ*)dd->data;
+  PetscInt       i,j,k;
+  Mat            B;
+  Mat_DDBlock    *ap;
   PetscErrorCode ierr; 
+
   PetscFunctionBegin;
   for(i = 0; i < dd->rowblockcount; ++i) {
     ap = aij->a + aij->i[i];

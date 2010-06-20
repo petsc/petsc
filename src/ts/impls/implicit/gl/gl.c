@@ -844,14 +844,13 @@ static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
     PetscInt j,r,s,next_scheme = 0,rejections;
     PetscReal h,hmnorm[4],enorm[3],next_h;
     PetscTruth accept;
-    const PetscScalar *c,*a,*b,*u,*v;
+    const PetscScalar *c,*a,*u;
     Vec *X,*Ydot,Y;
     TSGLScheme scheme = gl->schemes[gl->current_scheme];
 
     r = scheme->r; s = scheme->s;
     c = scheme->c;
     a = scheme->a; u = scheme->u;
-    b = scheme->b; v = scheme->v;
     h = ts->time_step;
     X = gl->X; Ydot = gl->Ydot; Y = gl->Y;
 
@@ -1224,6 +1223,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLRegisterAll(const char path[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (TSGLRegisterAllCalled) PetscFunctionReturn(0);
   TSGLRegisterAllCalled = PETSC_TRUE;
 
   ierr = TSGLRegisterDynamic(TSGL_IRKS,path,"TSGLCreate_IRKS",TSGLCreate_IRKS);CHKERRQ(ierr);

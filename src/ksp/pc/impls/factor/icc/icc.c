@@ -88,7 +88,7 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc)
 {
   PC_ICC         *icc = (PC_ICC*)pc->data;
   PetscTruth     flg;
-  PetscReal      dt[3];
+  /* PetscReal      dt[3];*/
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -96,10 +96,9 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc)
     ierr = PCSetFromOptions_Factor(pc);CHKERRQ(ierr);
 
     ierr = PetscOptionsReal("-pc_factor_levels","levels of fill","PCFactorSetLevels",((PC_Factor*)icc)->info.levels,&((PC_Factor*)icc)->info.levels,&flg);CHKERRQ(ierr);
-    dt[0] = ((PC_Factor*)icc)->info.dt;
+    /*dt[0] = ((PC_Factor*)icc)->info.dt;
     dt[1] = ((PC_Factor*)icc)->info.dtcol;
     dt[2] = ((PC_Factor*)icc)->info.dtcount;
-    /*
     PetscInt       dtmax = 3;
     ierr = PetscOptionsRealArray("-pc_factor_drop_tolerance","<dt,dtcol,maxrowcount>","PCFactorSetDropTolerance",dt,&dtmax,&flg);CHKERRQ(ierr);
     if (flg) {

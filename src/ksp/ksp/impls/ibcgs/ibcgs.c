@@ -56,7 +56,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
   PetscScalar    insums[7],outsums[7];
 #endif
   PetscScalar    sigman_2, sigman_1, sigman, pin_1, pin, phin_1, phin,tmp1,tmp2;
-  PetscScalar    taun_1, taun, rhon_1, rhon, alphan_1, alphan, omegan_1, omegan;
+  PetscScalar    taun_1, taun, rhon, alphan_1, alphan, omegan_1, omegan;
   PetscScalar    *PETSC_RESTRICT r0, *PETSC_RESTRICT rn, *PETSC_RESTRICT xn, *PETSC_RESTRICT f0, *PETSC_RESTRICT vn, *PETSC_RESTRICT zn, *PETSC_RESTRICT qn;
   PetscScalar    *PETSC_RESTRICT b, *PETSC_RESTRICT un;
   /* the rest do not have to keep n_1 values */
@@ -121,7 +121,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
   /* sigman_1 = rn_1'un_1  */
   ierr = VecDot(R0,Un_1,&sigman_1);CHKERRQ(ierr); 
 
-  rhon_1 = alphan_1 = omegan_1 = 1.0;
+  alphan_1 = omegan_1 = 1.0;
 
   for (ksp->its = 1; ksp->its<ksp->max_it+1; ksp->its++) {
     rhon   = phin_1 - omegan_1*sigman_2 + omegan_1*alphan_1*pin_1;
@@ -254,7 +254,6 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     phin_1   = phin;
     alphan_1 = alphan;
     taun_1   = taun;
-    rhon_1   = rhon;
     omegan_1 = omegan;
   }
   if (ksp->its >= ksp->max_it) {

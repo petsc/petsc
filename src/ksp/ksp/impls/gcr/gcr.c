@@ -26,7 +26,7 @@ PetscErrorCode KSPSolve_GCR_cycle( KSP ksp )
   Vec            s,v,r;
   PetscReal      norm_r;
   PetscInt       k, i, restart;
-  Vec            b,x;        
+  Vec            x;        
   PetscReal      res;
                 
   PetscFunctionBegin;
@@ -35,7 +35,6 @@ PetscErrorCode KSPSolve_GCR_cycle( KSP ksp )
   ierr = KSPGetOperators( ksp, &A, &B, 0 );CHKERRQ(ierr);
         
   x = ksp->vec_sol;
-  b = ksp->vec_rhs;
   r = ctx->R;
 
   for ( k=0; k<restart; k++ ) {
@@ -286,12 +285,10 @@ PetscErrorCode  KSPGCRSetRestart(KSP ksp, PetscInt restart)
 PetscErrorCode  KSPBuildSolution_GCR(KSP ksp, Vec v, Vec *V)
 {       
   PetscErrorCode ierr;
-  KSP_GCR         *ctx;
   Vec             x;
         
   PetscFunctionBegin;
   x = ksp->vec_sol;
-  ctx = (KSP_GCR *)ksp->data;
   if (v) {
     ierr = VecCopy( x, v );CHKERRQ(ierr);
     if (V) *V = v;

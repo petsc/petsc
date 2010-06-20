@@ -368,7 +368,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringCreate(Mat mat,ISColoring iscolor
   MPI_Comm       comm;
   PetscErrorCode ierr;
   PetscInt       M,N;
-  PetscMPIInt    size;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(MAT_FDColoringCreate,mat,0,0,0);CHKERRQ(ierr);
@@ -378,7 +377,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringCreate(Mat mat,ISColoring iscolor
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = PetscHeaderCreate(c,_p_MatFDColoring,int,MAT_FDCOLORING_CLASSID,0,"MatFDColoring",comm,MatFDColoringDestroy,MatFDColoringView);CHKERRQ(ierr);
 
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   c->ctype = iscoloring->ctype;
 
   if (mat->ops->fdcoloringcreate) {

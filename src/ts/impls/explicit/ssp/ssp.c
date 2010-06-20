@@ -137,14 +137,12 @@ static PetscErrorCode SSPStep_RK_3(TS ts,PetscReal t0,PetscReal dt,Vec sol)
 /* SSPRK(10,4), Pseudocode 3 of Ketcheson 2008 */
 static PetscErrorCode SSPStep_RK_10_4(TS ts,PetscReal t0,PetscReal dt,Vec sol)
 {
-  TS_SSP *ssp = (TS_SSP*)ts->data;
   const PetscReal c[10] = {0, 1./6, 2./6, 3./6, 4./6, 2./6, 3./6, 4./6, 5./6, 1};
   Vec *work,F;
-  PetscInt i,s;
+  PetscInt i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  s = ssp->nstages;
   ierr = SSPGetWorkVectors(ts,3,&work);CHKERRQ(ierr);
   F = work[2];
   ierr = VecCopy(sol,work[0]);CHKERRQ(ierr);

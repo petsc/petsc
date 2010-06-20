@@ -1166,7 +1166,7 @@ static PetscErrorCode MatGetRowIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscTruth symme
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i,j,n = a->mbs,nz = a->i[n],bs = A->rmap->bs,nbs = 1,k,l,cnt;
+  PetscInt       i,j,n = a->mbs,nz = a->i[n],bs = A->rmap->bs,k,l,cnt;
   PetscInt       *tia, *tja;
 
   PetscFunctionBegin;
@@ -1181,7 +1181,6 @@ static PetscErrorCode MatGetRowIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscTruth symme
     
   if (!blockcompressed && bs > 1) {
     (*nn) *= bs;
-    nbs    = bs;
     /* malloc & create the natural set of indices */
     ierr = PetscMalloc((n+1)*bs*sizeof(PetscInt),ia);CHKERRQ(ierr);
     if (n) {

@@ -14,7 +14,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat B,Mat A,const MatFactorInfo *inf
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ*)A->data,*b=(Mat_SeqBAIJ *)C->data;
   IS              isrow = b->row,isicol = b->icol;
   PetscErrorCode  ierr;
-  const PetscInt  *r,*ic,*ics;
+  const PetscInt  *r,*ic;
   PetscInt        i,j,k,nz,nzL,row,*pj;
   const PetscInt  n=a->mbs,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,bs2=a->bs2;
   const PetscInt  *ajtmp,*bjtmp,*bdiag=b->diag;
@@ -30,7 +30,6 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat B,Mat A,const MatFactorInfo *inf
   /* generate work space needed by the factorization */
   ierr = PetscMalloc2(bs2*n,MatScalar,&rtmp,bs2,MatScalar,&mwork);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,bs2*n*sizeof(MatScalar));CHKERRQ(ierr);
-  ics  = ic;
 
   for (i=0; i<n; i++){
     /* zero rtmp */
@@ -1492,9 +1491,8 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   PetscInt           row,nzi,nzi_bl,nzi_bu,*im,dtcount,nzi_al,nzi_au;
   PetscInt           nlnk,*lnk;
   PetscBT            lnkbt;
-  PetscTruth         row_identity,icol_identity,both_identity;
+  PetscTruth         row_identity,icol_identity;
   MatScalar          *aatmp,*pv,*batmp,*ba,*rtmp,*pc,*multiplier,*vtmp;
-  const PetscInt     *ics;
   PetscInt           j,nz,*pj,*bjtmp,k,ncut,*jtmp;
   
   PetscReal          dt=info->dt; /* shift=info->shiftamount; */
@@ -1557,7 +1555,6 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   /* ------- end of symbolic factorization ---------*/
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
-  ics  = ic;
 
   /* linked list for storing column indices of the active row */
   nlnk = mbs + 1;
@@ -1734,7 +1731,6 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
 
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(isicol,&icol_identity);CHKERRQ(ierr);
-  both_identity = (PetscTruth) (row_identity && icol_identity);
   if (row_identity && icol_identity) {
     B->ops->solve = MatSolve_SeqBAIJ_N_NaturalOrdering; 
   } else {

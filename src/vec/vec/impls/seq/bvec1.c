@@ -12,7 +12,9 @@
 #define __FUNCT__ "VecDot_Seq"
 PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 {
+#if !defined(PETSC_HAVE_CUDA) || defined(PETSC_USE_COMPLEX)
   PetscScalar    *ya,*xa;
+#endif
   PetscErrorCode ierr;
 #if !defined(PETSC_USE_COMPLEX)
   PetscBLASInt   one = 1,bn = PetscBLASIntCast(xin->map->n);
@@ -55,7 +57,9 @@ PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 #define __FUNCT__ "VecTDot_Seq"
 PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 {
+#if !defined(PETSC_HAVE_CUDA) || defined(PETSC_USE_COMPLEX)
   PetscScalar    *ya,*xa;
+#endif
   PetscErrorCode ierr;
 #if !defined(PETSC_USE_COMPLEX)
   PetscBLASInt    one = 1, bn = PetscBLASIntCast(xin->map->n);
@@ -99,7 +103,6 @@ PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
 {
   PetscErrorCode ierr;
   PetscBLASInt   one = 1,bn = PetscBLASIntCast(xin->map->n);
- 
   PetscFunctionBegin;
 
 #if defined(PETSC_HAVE_CUDA)
@@ -162,7 +165,9 @@ PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
 #define __FUNCT__ "VecSwap_Seq"
 PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
 {
+#if !defined(PETSC_HAVE_CUDA)
   PetscScalar    *ya, *xa;
+#endif
   PetscErrorCode ierr;
   PetscBLASInt   one = 1,bn = PetscBLASIntCast(xin->map->n);
 
@@ -189,7 +194,9 @@ PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
 PetscErrorCode VecAXPY_Seq(Vec yin,PetscScalar alpha,Vec xin)
 {
   PetscErrorCode ierr;
+#if !defined(PETSC_HAVE_CUDA)
   PetscScalar    *xarray,*yarray;
+#endif
   PetscBLASInt   one = 1,bn = PetscBLASIntCast(yin->map->n);
 
   PetscFunctionBegin;

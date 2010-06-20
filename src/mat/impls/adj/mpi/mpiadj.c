@@ -452,12 +452,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAdj(Mat B)
 {
   Mat_MPIAdj     *b;
   PetscErrorCode ierr;
-  PetscMPIInt    size,rank;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)B)->comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(((PetscObject)B)->comm,&rank);CHKERRQ(ierr);
-
   ierr                = PetscNewLog(B,Mat_MPIAdj,&b);CHKERRQ(ierr);
   B->data             = (void*)b;
   ierr                = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);

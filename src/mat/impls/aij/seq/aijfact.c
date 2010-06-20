@@ -3241,7 +3241,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   PetscInt           row,nzi,nzi_bl,nzi_bu,*im,nzi_al,nzi_au;
   PetscInt           nlnk,*lnk;
   PetscBT            lnkbt;
-  PetscTruth         row_identity,icol_identity,both_identity;
+  PetscTruth         row_identity,icol_identity;
   MatScalar          *aatmp,*pv,*batmp,*ba,*rtmp,*pc,multiplier,*vtmp,diag_tmp;
   const PetscInt     *ics;
   PetscInt           j,nz,*pj,*bjtmp,k,ncut,*jtmp;
@@ -3458,7 +3458,6 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
 
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(isicol,&icol_identity);CHKERRQ(ierr);
-  both_identity = (PetscTruth) (row_identity && icol_identity);
   if (row_identity && icol_identity) {
     B->ops->solve = MatSolve_SeqAIJ_NaturalOrdering;
   } else {

@@ -52,7 +52,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
   MPI_Comm          comm;
   PetscInt          rstart,rend,i,nz,cnt,*rows,ncnt,dcnt,*drows;
   PetscLayout       map,nmap;
-  PetscMPIInt       size,rank,imdex,tag,n;
+  PetscMPIInt       size,imdex,tag,n;
   PetscInt          *source = PETSC_NULL;
   PetscMPIInt       *nprocs = PETSC_NULL,nrecvs;
   PetscInt          j,nsends;
@@ -75,7 +75,6 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
 
     ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     ierr = PetscObjectGetNewTag((PetscObject)pc,&tag);CHKERRQ(ierr);
 
     /* count non-diagonal rows on process */

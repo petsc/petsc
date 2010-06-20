@@ -442,10 +442,8 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,PetscInt nrqr,Pet
   PetscInt       val,max1,max2,Mbs,no_malloc =0,*tmp,new_estimate,ctr;
   PetscInt       *rbuf_i,kmax,rbuf_0;
   PetscBT        xtable;
-  PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  rank   = c->rank;
   Mbs    = c->Mbs;
   rstart = c->rstartbs;
   cstart = c->cstartbs;
