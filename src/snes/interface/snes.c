@@ -10,6 +10,66 @@ PetscClassId PETSCSNES_DLLEXPORT SNES_CLASSID;
 PetscLogEvent  SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval;
 
 #undef __FUNCT__  
+#define __FUNCT__ "SNESSetErrorIfNotConverged"
+/*@
+   SNESSetErrorIfNotConverged - Causes SNESSolve() to generate an error if the solver has not converged.
+
+   Collective on SNES
+
+   Input Parameters:
++  snes - iterative context obtained from SNESCreate()
+-  flg - PETSC_TRUE indicates you want the error generated
+
+   Options database keys:
+.  -snes_error_if_not_converged : this takes an optional truth value (0/1/no/yes/true/false)
+
+   Level: intermediate
+
+   Notes:
+    Normally PETSc continues if a linear solver fails to converge, you can call SNESGetConvergedReason() after a SNESSolve() 
+    to determine if it has converged.
+
+.keywords: SNES, set, initial guess, nonzero
+
+.seealso: SNESGetErrorIfNotConverged(), KSPGetErrorIfNotConverged(), KSPSetErrorIFNotConverged()
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESSetErrorIfNotConverged(SNES snes,PetscTruth flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  snes->errorifnotconverged = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESGetErrorIfNotConverged"
+/*@
+   SNESGetErrorIfNotConverged - Will SNESSolve() generate an error if the solver does not converge?
+
+   Not Collective
+
+   Input Parameter:
+.  snes - iterative context obtained from SNESCreate()
+
+   Output Parameter:
+.  flag - PETSC_TRUE if it will generate an error, else PETSC_FALSE
+
+   Level: intermediate
+
+.keywords: SNES, set, initial guess, nonzero
+
+.seealso:  SNESSetErrorIfNotConverged(), KSPGetErrorIfNotConverged(), KSPSetErrorIFNotConverged()
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESGetErrorIfNotConverged(SNES snes,PetscTruth *flag)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidPointer(flag,2);
+  *flag = snes->errorifnotconverged;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "SNESSetFunctionDomainError"
 /*@
    SNESSetFunctionDomainError - tells SNES that the input vector to your FormFunction is not
@@ -316,6 +376,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
     ierr = PetscOptionsInt("-snes_max_funcs","Maximum function evaluations","SNESSetTolerances",snes->max_funcs,&snes->max_funcs,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-snes_max_fail","Maximum failures","SNESSetTolerances",snes->maxFailures,&snes->maxFailures,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-snes_max_linear_solve_fail","Maximum failures in linear solves allowed","SNESSetMaxLinearSolveFailures",snes->maxLinearSolveFailures,&snes->maxLinearSolveFailures,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-snes_error_if_not_converged","Generate error if solver does not converge","SNESSetErrorIfNotConverged",snes->errorifnotconverged,&snes->errorifnotconverged,PETSC_NULL);CHKERRQ(ierr);
 
     ierr = PetscOptionsInt("-snes_lag_preconditioner","How often to rebuild preconditioner","SNESSetLagPreconditioner",snes->lagpreconditioner,&lag,&flg);CHKERRQ(ierr);
     if (flg) {
@@ -2285,6 +2346,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES snes,Vec b,Vec x)
     }
   }
 
+  if (snes->errorifnotconverged && snes->reason < 0) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged");
   PetscFunctionReturn(0);
 }
 
