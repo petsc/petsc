@@ -2066,7 +2066,7 @@ PetscErrorCode MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,MatInfo *info)
 
   PetscFunctionBegin;
   info->block_size     = a->bs2;
-  info->nz_allocated   = a->maxnz;
+  info->nz_allocated   = a->bs2*a->maxnz;
   info->nz_used        = a->bs2*a->nz;
   info->nz_unneeded    = (double)(info->nz_allocated - info->nz_used);
   info->assemblies   = A->num_ass;
