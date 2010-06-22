@@ -74,7 +74,8 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_ERR_MAT_CH_ZRPVT     81   /* detected a zero pivot during Cholesky factorization */
 
 #define PETSC_ERR_FLOP_COUNT       90
-#define PETSC_ERR_MAX_VALUE        91  /* this is always the one more than the largest error code */
+#define PETSC_ERR_NOT_CONVERGED    91  /* solver did not converge */
+#define PETSC_ERR_MAX_VALUE        92  /* this is always the one more than the largest error code */
 
 #define PetscStringizeArg(a) #a
 #define PetscStringize(a) PetscStringizeArg(a)

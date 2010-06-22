@@ -53,6 +53,7 @@ struct _p_KSP {
   PetscReal       rnorm;                    /* current residual norm */
   KSPConvergedReason reason;     
   PetscTruth         printreason;     /* prints converged reason after solve */
+  PetscTruth         errorifnotconverged;    /* create an error if the KSPSolve() does not converge */
 
   Vec vec_sol,vec_rhs;            /* pointer to where user has stashed 
                                       the solution and rhs, these are 

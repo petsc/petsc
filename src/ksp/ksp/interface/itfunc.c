@@ -619,6 +619,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = VecCopy(x,b);CHKERRQ(ierr);
     ierr = VecDestroy(x);CHKERRQ(ierr);
   }
+  if (ksp->errorifnotconverged && ksp->reason < 0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged");
   PetscFunctionReturn(0);
 }
 
@@ -681,6 +682,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolveTranspose(KSP ksp,Vec b,Vec x)
     ierr = VecCopy(x,b);CHKERRQ(ierr);
     ierr = VecDestroy(x);CHKERRQ(ierr);
   }
+  if (ksp->errorifnotconverged && ksp->reason < 0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged");
   PetscFunctionReturn(0);
 }
 
@@ -953,6 +955,66 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetInitialGuessNonzero(KSP ksp,PetscTruth *
   PetscValidPointer(flag,2);
   if (ksp->guess_zero) *flag = PETSC_FALSE;
   else                 *flag = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetErrorIfNotConverged"
+/*@
+   KSPSetErrorIfNotConverged - Causes KSPSolve() to generate an error if the solver has not converged.
+
+   Collective on KSP
+
+   Input Parameters:
++  ksp - iterative context obtained from KSPCreate()
+-  flg - PETSC_TRUE indicates you want the error generated
+
+   Options database keys:
+.  -ksp_error_if_not_converged : this takes an optional truth value (0/1/no/yes/true/false)
+
+   Level: intermediate
+
+   Notes:
+    Normally PETSc continues if a linear solver fails to converge, you can call KSPGetConvergedReason() after a KSPSolve() 
+    to determine if it has converged.
+
+.keywords: KSP, set, initial guess, nonzero
+
+.seealso: KSPGetInitialGuessNonzero(), KSPSetInitialGuessKnoll(), KSPGetInitialGuessKnoll(), KSPGetErrorIfNotConverged()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPSetErrorIfNotConverged(KSP ksp,PetscTruth flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  ksp->errorifnotconverged = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGetErrorIfNotConverged"
+/*@
+   KSPGetErrorIfNotConverged - Will KSPSolve() generate an error if the solver does not converge?
+
+   Not Collective
+
+   Input Parameter:
+.  ksp - iterative context obtained from KSPCreate()
+
+   Output Parameter:
+.  flag - PETSC_TRUE if it will generate an error, else PETSC_FALSE
+
+   Level: intermediate
+
+.keywords: KSP, set, initial guess, nonzero
+
+.seealso: KSPSetInitialGuessNonzero(), KSPSetInitialGuessKnoll(), KSPGetInitialGuessKnoll(), KSPSetErrorIfNotConverged()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGetErrorIfNotConverged(KSP ksp,PetscTruth *flag)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidPointer(flag,2);
+  *flag = ksp->errorifnotconverged;
   PetscFunctionReturn(0);
 }
 

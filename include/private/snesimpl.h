@@ -58,6 +58,7 @@ struct _p_SNES {
   PetscInt            numbermonitors;                                     /* number of monitors */
   void                *cnvP;	                                            /* convergence context */
   SNESConvergedReason reason;
+  PetscTruth          errorifnotconverged;
 
   /* --- Routines and data that are unique to each particular solver --- */
 
