@@ -83,52 +83,6 @@ class PETScMaker(script.Script):
    packageIncludes = self.headers.toStringNoDupes(packageIncludes)
    return packageIncludes, packageLibs
 
- def compileC(self, source):
-   '''PETSC_INCLUDE         = -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include
-                               ${PACKAGES_INCLUDES} ${TAU_DEFS} ${TAU_INCLUDE}
-      PETSC_CC_INCLUDES     = ${PETSC_INCLUDE}
-      PETSC_CCPPFLAGS	    = ${PETSC_CC_INCLUDES} ${PETSCFLAGS} ${CPP_FLAGS} ${CPPFLAGS}  -D__SDIR__='"${LOCDIR}"'
-      CCPPFLAGS	            = ${PETSC_CCPPFLAGS}
-      PETSC_COMPILE         = ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}  ${SOURCEC} ${SSOURCE}
-      PETSC_COMPILE_SINGLE  = ${PCC} -o $*.o -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}'''
-   # PETSCFLAGS, CFLAGS and CPPFLAGS are taken from user input (or empty)
-   includes = ['-I'+inc for inc in [os.path.join(self.petscdir.dir, self.arch.arch, 'include'), os.path.join(self.petscdir.dir, 'include')]]
-   self.setCompilers.pushLanguage(self.languages.clanguage)
-   compiler = self.setCompilers.getCompiler()
-   flags = []
-   flags.append(self.setCompilers.getCompilerFlags())             # PCC_FLAGS
-   flags.extend([self.setCompilers.CPPFLAGS, self.CHUD.CPPFLAGS]) # CPP_FLAGS
-   flags.append('-D__INSDIR__='+os.getcwd().replace(self.petscdir.dir, ''))
-   packageIncludes, packageLibs = self.getPackageInfo()
-   cmd = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
-   if self.dryRun or self.verbose:
-     section = 'screen'
-   else:
-     section = None
-   self.logWrite(cmd+'\n', debugSection = section, forceScroll = True)
-   if not self.dryRun:
-     (output, error, status) = self.executeShellCommand(cmd,checkCommand = noCheckCommand,log=self.log)
-     if status:
-       self.logPrint("ERROR IN COMPILE ******************************", deubgSection='screen')
-       self.logPrint(output+error, deubgSection='screen')
-   self.setCompilers.popLanguage()
-   return
-
- def archive(self, library, objects):
-   '''${AR} ${AR_FLAGS} ${LIBNAME} $*.o'''
-   lib = os.path.splitext(library)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX
-   cmd = ' '.join([self.setCompilers.AR, self.setCompilers.FAST_AR_FLAGS, lib]+objects)
-   if self.dryRun or self.verbose:
-     section = 'screen'
-   else:
-     section = None
-   self.logWrite(cmd+'\n', debugSection = section, forceScroll = True)
-   if not self.dryRun:
-     (output, error, status) = self.executeShellCommand(cmd,checkCommand = noCheckCommand,log=self.log)
-     if status:
-       self.logPrint("ERROR IN ARCHIVE ******************************", deubgSection='screen')
-       self.logPrint(output+error, deubgSection='screen')
-   return
 
  
  def buildDir(self, libname, dirname, fnames):
@@ -237,9 +191,6 @@ class PETScMaker(script.Script):
    if rootDir == os.environ['PETSC_DIR']:
      library = os.path.join(self.petscdir.dir, self.arch.arch, 'lib', 'libpetsc')   
      lib = os.path.splitext(library)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX
-     if os.path.isfile(lib):
-       self.logPrint('Removing '+lib)
-       os.unlink(lib)
    for root, dirs, files in os.walk(rootDir):
      self.logPrint('Processing '+root)
      self.buildDir('libpetsc', root, files)
