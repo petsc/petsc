@@ -1000,12 +1000,6 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_CUDA)
-  ierr = VecCUDACopyToGPU(xx);CHKERRQ(ierr);
-  cusp::multiply(a->GPUmatrix,xx->GPUarray,yy->GPUarray);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"MULTIPLIED WITH CUSP");CHKERRQ(ierr);
-  yy->valid_GPU_array = PETSC_CUDA_GPU;
-#else
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   aj  = a->j;
@@ -1029,6 +1023,12 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
     fortranmultaij_(&m,x,ii,aj,aa,y);
 #else
+#if defined(PETSC_HAVE_CUDA)
+  ierr = VecCUDACopyToGPU(xx);CHKERRQ(ierr);
+  cusp::multiply(a->GPUmatrix,xx->GPUarray,yy->GPUarray);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"MULTIPLIED WITH CUSP");CHKERRQ(ierr);
+  yy->valid_GPU_array = PETSC_CUDA_GPU;
+#else
     for (i=0; i<m; i++) {
       n   = ii[i+1] - ii[i]; 
       aj  = a->j + ii[i];
@@ -1039,11 +1039,11 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
       y[i] = sum;
     }
 #endif
+#endif
   }
   ierr = PetscLogFlops(2.0*a->nz - nonzerorow);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 
