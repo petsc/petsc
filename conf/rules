@@ -61,12 +61,12 @@ chkopts: remote
 foo:
 
 # Builds library
-lib:  ${SOURCE}
+lib:  ${SOURCECU}
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} chkpetsc_dir
 	@-if [ "${SPECIALLIB}" = "yes" ] ; then \
 	   ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  speciallib;  \
 	  else \
-            if [ "${SOURCEC}" != "" ] ; then \
+            if [ "${SOURCECU}" != "" ] ; then \
               ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libc; fi ; \
             if [ "${SOURCEF}" != "" ] ; then \
 		${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libf; fi ; \
@@ -80,7 +80,7 @@ lib:  ${SOURCE}
 #
 # Builds library - fast versiong
 
-libfast:  ${SOURCEC} ${SOURCEF}
+libfast:  ${SOURCECU} ${SOURCEF}
 	-@if [ "${SPECIALFASTLIB}" = "yes" ] ; then \
 	    ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  specialfastlib;  \
 	else \
@@ -88,7 +88,7 @@ libfast:  ${SOURCEC} ${SOURCEF}
 	fi
 
 libfastcompile:
-	-@if [ "${SOURCEC}" != "" ]; then \
+	-@if [ "${SOURCECU}" != "" ]; then \
                     ${PETSC_COMPILE}; \
 	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS} > tmpf 2>&1 ; ${GREP} -v "has no symbols" tmpf; ${RM} tmpf; \
 		    ${RM} ${OBJSC} ${SOBJS} ${OBJSC:.o=.lo} ${SOBJS:.o=.lo}; \

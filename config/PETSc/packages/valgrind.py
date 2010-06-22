@@ -13,6 +13,7 @@ class Configure(PETSc.package.NewPackage):
     self.required  = 1
     self.double    = 0
     self.requires32bitint = 0
+    self.worksonWindows   = 1
     return
 
   def setupDependencies(self, framework):
