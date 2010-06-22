@@ -149,9 +149,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAO(DA da,AO *ao)
      Build the natural ordering to PETSc ordering mappings.
   */
   if (!da->ao) {
-    IS  ispetsc,isnatural;
+    IS             ispetsc,isnatural;
     PetscErrorCode ierr;
-    PetscInt  Nlocal;
+    PetscInt       Nlocal;
 
     ierr = DAGetNatural_Private(da,&Nlocal,&isnatural);CHKERRQ(ierr);
     ierr = ISCreateStride(((PetscObject)da)->comm,Nlocal,da->base,1,&ispetsc);CHKERRQ(ierr);

@@ -25,7 +25,7 @@
 
     If vec is a local vector (obtained with DACreateLocalVector() etc) then they ghost point locations are accessable. If it is 
     a global vector then the ghost points are not accessable. Of course with the local vector you will have had to do the 
-    appropriate DALocalToGlobalBegin() and DALocalToGlobalEnd() to have correct avlues in the ghost locations.
+    appropriate DALocalToGlobalBegin() and DALocalToGlobalEnd() to have correct values in the ghost locations.
 
   Level: intermediate
 
