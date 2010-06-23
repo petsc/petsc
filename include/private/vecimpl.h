@@ -174,17 +174,27 @@ struct _p_Vec {
 #define CHKERRCUDA(err) if (err != CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error %d",err)
 #define VecCUDACastToRawPtr(x) thrust::raw_pointer_cast(&(x)[0])
 #undef __FUNCT__
+#define __FUNCT__ "VecCUDAAllocateCheck"
+PETSC_STATIC_INLINE PetscErrorCode VecCUDAAllocateCheck(Vec v)
+{
+  PetscFunctionBegin;
+  if (v->valid_GPU_array == PETSC_CUDA_UNALLOCATED){
+    v->GPUarray.resize((PetscBLASInt)v->map->n);
+    v->valid_GPU_array = PETSC_CUDA_CPU;
+  }
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__
 #define __FUNCT__ "VecCUDACopyToGPU"
 /* Copies a vector from the CPU to the GPU unless we already have an up-to-date copy on the GPU */
 PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyToGPU(Vec v)
 {
   PetscBLASInt   cn = v->map->n;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (v->valid_GPU_array == PETSC_CUDA_CPU || v->valid_GPU_array == PETSC_CUDA_UNALLOCATED){
-    if (v->valid_GPU_array == PETSC_CUDA_UNALLOCATED){
-      v->GPUarray.resize(cn);
-    }
+  ierr = VecCUDAAllocateCheck(v);CHKERRQ(ierr);
+  if (v->valid_GPU_array == PETSC_CUDA_CPU){
     v->GPUarray.assign(*(PetscScalar**)v->data,*(PetscScalar**)v->data + cn);
     v->valid_GPU_array = PETSC_CUDA_BOTH;
   }

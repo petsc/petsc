@@ -1027,11 +1027,9 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 #else
 #if defined(PETSC_HAVE_CUDA)
   ierr = VecCUDACopyToGPU(xx);CHKERRQ(ierr);
-  ierr = VecCUDACopyToGPU(yy);CHKERRQ(ierr);
+  ierr = VecCUDAAllocateCheck(yy);CHKERRQ(ierr);
   cusp::multiply(a->GPUmatrix,xx->GPUarray,yy->GPUarray);
   yy->valid_GPU_array = PETSC_CUDA_GPU;
-  /* ierr = VecCUDACopyFromGPU(yy);CHKERRQ(ierr);
-     ierr = PetscPrintf(PETSC_COMM_WORLD, "b's flag is %i\n\n",yy->valid_GPU_array);CHKERRQ(ierr); */
 #else
     for (i=0; i<m; i++) {
       n   = ii[i+1] - ii[i]; 

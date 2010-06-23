@@ -616,7 +616,7 @@ PetscErrorCode VecMAXPY_Seq(Vec xin, PetscInt nv,const PetscScalar *alpha,Vec *y
 
   PetscFunctionBegin;
   ierr = PetscLogFlops(nv*2.0*n);CHKERRQ(ierr);
-  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayPrivate(xin,&xx);CHKERRQ(ierr);
 
   switch (j_rem=nv&0x3) {
   case 3: 
@@ -670,7 +670,7 @@ PetscErrorCode VecMAXPY_Seq(Vec xin, PetscInt nv,const PetscScalar *alpha,Vec *y
     ierr = VecRestoreArrayRead(y[3],&yy3);CHKERRQ(ierr);
     y      += 4;
   }
-  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPrivate(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 

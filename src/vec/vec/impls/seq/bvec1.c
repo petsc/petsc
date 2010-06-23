@@ -143,11 +143,11 @@ PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
       ierr = VecRestoreArrayPrivate2(xin,&xa,yin,&ya);
     } else {
       PetscInt one = 1;
-
+      /*
       if (yin->valid_GPU_array == PETSC_CUDA_UNALLOCATED){
-        /*if this is the first time we're copying to the GPU then we allocate memory first */
         ierr = cublasAlloc(yin->map->n,sizeof(PetscScalar),(void **)&yin->GPUarray);CHKERRCUDA(ierr);
-      }
+	} */
+      ierr = VecCUDAAllocateCheck(yin);CHKERRQ(ierr);
       cublasScopy(xin->map->n,VecCUDACastToRawPtr(xin->GPUarray),one,VecCUDACastToRawPtr(yin->GPUarray),one);
       ierr = cublasGetError();CHKERRCUDA(ierr);
       yin->valid_GPU_array = PETSC_CUDA_GPU;
