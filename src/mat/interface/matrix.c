@@ -7742,6 +7742,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMult(Mat A,Mat B,MatReuse scall,PetscRea
 
    Level: intermediate
 
+   Developers Note: There are ways to estimate the number of nonzeros in the resulting product, see for example, http://arxiv.org/abs/1006.4173
+     We should incorporate them into PETSc.
+
 .seealso: MatMatMult(), MatMatMultNumeric()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,Mat *C) 
