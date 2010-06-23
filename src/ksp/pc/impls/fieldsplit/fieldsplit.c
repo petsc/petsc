@@ -2,7 +2,15 @@
 
 #include "private/pcimpl.h"     /*I "petscpc.h" I*/
 
-const char *PCFieldSplitSchurPreTypes[] = {"self","diag","user","PCFieldSplitSchurPreType","PC_FIELDSPLIT_SCHUR_PRE_",0};
+const char *PCFieldSplitSchurPreTypes[] = {"SELF","DIAG","USER","PCFieldSplitSchurPreType","PC_FIELDSPLIT_SCHUR_PRE_",0};
+const char *PCFieldSplitSchurFactorizationTypes[] = {"DIAG","LOWER","UPPER","FULL","PCFieldSplitSchurFactorizationType","PC_FIELDSPLIT_SCHUR_FACTORIZATION_",0};
+
+typedef enum {
+  PC_FIELDSPLIT_SCHUR_FACTORIZATION_DIAG,
+  PC_FIELDSPLIT_SCHUR_FACTORIZATION_LOWER,
+  PC_FIELDSPLIT_SCHUR_FACTORIZATION_UPPER,
+  PC_FIELDSPLIT_SCHUR_FACTORIZATION_FULL
+} PCFieldSplitSchurFactorizationType;
 
 typedef struct _PC_FieldSplitLink *PC_FieldSplitLink;
 struct _PC_FieldSplitLink {
@@ -34,6 +42,7 @@ typedef struct {
   Mat               schur;        /* The Schur complement S = D - C A^{-1} B */
   Mat               schur_user;   /* User-provided preconditioning matrix for the Schur complement */
   PCFieldSplitSchurPreType schurpre; /* Determines which preconditioning matrix is used for the Schur complement */
+  PCFieldSplitSchurFactorizationType schurfactorization;
   KSP               kspschur;     /* The solver for S */
   PC_FieldSplitLink head;
 } PC_FieldSplit;
@@ -113,7 +122,7 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  FieldSplit with Schur preconditioner, blocksize = %D\n",jac->bs);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  FieldSplit with Schur preconditioner, blocksize = %D, factorization %s\n",jac->bs,PCFieldSplitSchurFactorizationTypes[jac->schurfactorization]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Split info:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     for (i=0; i<jac->nsplits; i++) {
@@ -471,24 +480,71 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc,Vec x,Vec y)
   PetscFunctionBegin;
   ierr = MatSchurComplementGetKSP(jac->schur,&ksp);CHKERRQ(ierr);
 
-  ierr = VecScatterBegin(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
-  ierr = MatMult(jac->C,ilinkA->y,ilinkD->x);CHKERRQ(ierr);
-  ierr = VecScale(ilinkD->x,-1.0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(ilinkD->sctx,x,ilinkD->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ilinkD->sctx,x,ilinkD->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  switch (jac->schurfactorization) {
+    case PC_FIELDSPLIT_SCHUR_FACTORIZATION_DIAG:
+      /* [A 0; 0 -S], positive definite, suitable for MINRES */
+      ierr = VecScatterBegin(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterBegin(ilinkD->sctx,x,ilinkD->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = KSPSolve(ksp,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
+      ierr = VecScatterBegin(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(ilinkD->sctx,x,ilinkD->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = KSPSolve(jac->kspschur,ilinkD->x,ilinkD->y);CHKERRQ(ierr);
+      ierr = VecScale(ilinkD->y,-1.);CHKERRQ(ierr);
+      ierr = VecScatterBegin(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      break;
+    case PC_FIELDSPLIT_SCHUR_FACTORIZATION_LOWER:
+      /* [A 0; C S], suitable for left preconditioning */
+      ierr = VecScatterBegin(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = KSPSolve(ksp,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
+      ierr = MatMult(jac->C,ilinkA->y,ilinkD->x);CHKERRQ(ierr);
+      ierr = VecScale(ilinkD->x,-1.);CHKERRQ(ierr);
+      ierr = VecScatterBegin(ilinkD->sctx,x,ilinkD->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterBegin(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(ilinkD->sctx,x,ilinkD->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = KSPSolve(jac->kspschur,ilinkD->x,ilinkD->y);CHKERRQ(ierr);
+      ierr = VecScatterBegin(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      break;
+    case PC_FIELDSPLIT_SCHUR_FACTORIZATION_UPPER:
+      /* [A B; 0 S], suitable for right preconditioning */
+      ierr = VecScatterBegin(ilinkD->sctx,x,ilinkD->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(ilinkD->sctx,x,ilinkD->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = KSPSolve(jac->kspschur,ilinkD->x,ilinkD->y);CHKERRQ(ierr);
+      ierr = MatMult(jac->B,ilinkD->y,ilinkA->x);CHKERRQ(ierr);
+      ierr = VecScale(ilinkA->x,-1.);CHKERRQ(ierr);
+      ierr = VecScatterBegin(ilinkA->sctx,x,ilinkA->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterBegin(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(ilinkA->sctx,x,ilinkA->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = KSPSolve(ksp,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
+      ierr = VecScatterBegin(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      break;
+    case PC_FIELDSPLIT_SCHUR_FACTORIZATION_FULL:
+      /* [1 0; CA^{-1} 1] [A 0; 0 S] [1 A^{-1}B; 0 1], an exact solve if applied exactly, needs one extra solve with A */
+      ierr = VecScatterBegin(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = KSPSolve(ksp,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
+      ierr = MatMult(jac->C,ilinkA->y,ilinkD->x);CHKERRQ(ierr);
+      ierr = VecScale(ilinkD->x,-1.0);CHKERRQ(ierr);
+      ierr = VecScatterBegin(ilinkD->sctx,x,ilinkD->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(ilinkD->sctx,x,ilinkD->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
-  ierr = KSPSolve(jac->kspschur,ilinkD->x,ilinkD->y);CHKERRQ(ierr);  
-  ierr = VecScatterBegin(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = KSPSolve(jac->kspschur,ilinkD->x,ilinkD->y);CHKERRQ(ierr);
+      ierr = VecScatterBegin(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
 
-  ierr = MatMult(jac->B,ilinkD->y,ilinkA->y);CHKERRQ(ierr);
-  ierr = VecAXPY(ilinkA->x,-1.0,ilinkA->y);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
-  ierr = VecScatterBegin(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-
+      ierr = MatMult(jac->B,ilinkD->y,ilinkA->y);CHKERRQ(ierr);
+      ierr = VecAXPY(ilinkA->x,-1.0,ilinkA->y);CHKERRQ(ierr);
+      ierr = KSPSolve(ksp,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
+      ierr = VecScatterBegin(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -697,7 +753,10 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
     ierr = PCFieldSplitSetRuntimeSplits_Private(pc);CHKERRQ(ierr);
     if (jac->splitdefined) {ierr = PetscInfo(pc,"Splits defined using the options database\n");CHKERRQ(ierr);}
   }
-  ierr = PetscOptionsEnum("-pc_fieldsplit_schur_precondition","How to build preconditioner for Schur complement","PCFieldSplitSchurPrecondition",PCFieldSplitSchurPreTypes,(PetscEnum)jac->schurpre,(PetscEnum*)&jac->schurpre,PETSC_NULL);CHKERRQ(ierr);
+  if (jac->type == PC_COMPOSITE_SCHUR) {
+    ierr = PetscOptionsEnum("-pc_fieldsplit_schur_factorization_type","Factorization to use","None",PCFieldSplitSchurFactorizationTypes,(PetscEnum)jac->schurfactorization,(PetscEnum*)&jac->schurfactorization,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-pc_fieldsplit_schur_precondition","How to build preconditioner for Schur complement","PCFieldSplitSchurPrecondition",PCFieldSplitSchurPreTypes,(PetscEnum)jac->schurpre,(PetscEnum*)&jac->schurpre,PETSC_NULL);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsTail();CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
@@ -1226,6 +1285,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_FieldSplit(PC pc)
   jac->nsplits   = 0;
   jac->type      = PC_COMPOSITE_MULTIPLICATIVE;
   jac->schurpre  = PC_FIELDSPLIT_SCHUR_PRE_USER; /* Try user preconditioner first, fall back on diagonal */
+  jac->schurfactorization = PC_FIELDSPLIT_SCHUR_FACTORIZATION_FULL;
 
   pc->data     = (void*)jac;
 
