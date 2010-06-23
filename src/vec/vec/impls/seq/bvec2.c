@@ -72,6 +72,9 @@ PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
+#if defined(PETSC_HAVE_CUDA)
+  ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
+#endif
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_MATLAB) {
     ierr = PetscObjectGetName((PetscObject)xin,&name);CHKERRQ(ierr);

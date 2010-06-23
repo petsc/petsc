@@ -92,15 +92,21 @@ class PETScMaker(script.Script):
 
    # Get list of source files in the directory 
    cnames = []
+   cunames = []
    for f in os.listdir(dirname):
      ext = os.path.splitext(f)[1]
      if ext == '.c':
        cnames.append(f)
+     elif ext == '.cu':
+       cunames.append(f)
    if cnames:
      self.logPrint('Copying .c files to .cu files'+str(cnames))
      for f in cnames:
        os.rename(f,f.replace('.c','.cu'))
-
+   if cunames:
+     self.logPrint('Copying .cu files to .c files'+str(cunames))
+     for f in cunames:
+       os.rename(f,f.replace('.cu','.c'))
  def checkDir(self, dirname):
    '''Checks whether we should recurse into this directory
    - Excludes examples directory

@@ -23,12 +23,29 @@ int main(int argc,char **args)
   /* Load matrix A */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatLoad(fd,MATAIJ,&A);CHKERRQ(ierr);
+  flg = PETSC_FALSE;
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecLoad(fd,x);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetString(PETSC_NULL,"-vec",file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+  if (flg){
+    if (file[0] == '0'){
+      PetscInt    m;
+      PetscScalar one = 1.0;
+      ierr = PetscInfo(0,"Using vector of ones for RHS\n");CHKERRQ(ierr);
+      ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
+      ierr = VecSetSizes(x,m,PETSC_DECIDE);CHKERRQ(ierr);
+      ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+      ierr = VecSet(x,one);CHKERRQ(ierr);
+      } 
+  } else {
+      ierr = VecLoad(fd,x);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
+  }
   ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
   ierr = MatMult(A,x,b);CHKERRQ(ierr);
-  
+
+  /*Print (for testing only) */
+  ierr = MatView(A,0);CHKERRQ(ierr);
+  ierr = VecView(b,0);CHKERRQ(ierr);
   /* Free data structures */
   ierr = MatDestroy(A);CHKERRQ(ierr); 
   ierr = VecDestroy(x);CHKERRQ(ierr); 
