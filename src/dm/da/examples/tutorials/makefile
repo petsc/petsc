@@ -5,7 +5,7 @@ CPPFLAGS        =
 FPPFLAGS        = 
 LOCDIR          = src/dm/da/examples/tutorials/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c
-EXAMPLESF       = ex6f90.F
+EXAMPLESF       = ex6f90.F ex11f90.F
 MANSEC          = DA
 
 include ${PETSC_DIR}/conf/variables
@@ -54,6 +54,11 @@ ex9: ex9.o   chkopts
 ex10: ex10.o   chkopts
 	-${CLINKER} -o ex10 ex10.o  ${PETSC_DM_LIB}
 	${RM} -f ex10.o
+
+ex11f90: ex11f90.o   chkopts
+	-${FLINKER} -o ex11f90 ex11f90.o  ${PETSC_DM_LIB}
+	${RM} -f ex11f90.o
+
 #-----------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 2 ./ex1 -nox
@@ -80,7 +85,7 @@ runex10:
 TESTEXAMPLES_C		  = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex4.PETSc ex4.rm
 TESTEXAMPLES_C_X11	  = ex1.PETSc runex1 ex1.rm ex5.PETSc ex5.rm  
 TESTEXAMPLES_FORTRAN	  = 
-TESTEXAMPLES_F90_NOCOMPLEX= ex6f90.PETSc ex6f90.rm
+TESTEXAMPLES_F90_NOCOMPLEX= ex6f90.PETSc ex6f90.rm ex11f90.PETSc ex11f90.rm
 TESTEXAMPLES_C_X11_MPIUNI = 
 TESTEXAMPLES_C_COMPLEX	  = 
 TESTEXAMPLES_C_NOCOMPLEX  = ex2.PETSc runex2 ex2.rm ex6.PETSc ex6.rm
