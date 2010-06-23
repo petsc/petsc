@@ -355,9 +355,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
   ierr = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_view_binary",&flg,PETSC_NULL);CHKERRQ(ierr); 
   if (flg) {
     Mat mat;
+    PetscViewer viewer = PETSC_VIEWER_BINARY_(((PetscObject)ksp)->comm);
     ierr = PCGetOperators(ksp->pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatView(mat,PETSC_VIEWER_BINARY_(((PetscObject)ksp)->comm));CHKERRQ(ierr);
-    ierr = VecView(ksp->vec_rhs,PETSC_VIEWER_BINARY_(((PetscObject)ksp)->comm));CHKERRQ(ierr);
+    ierr = MatView(mat,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
+    ierr = VecView(ksp->vec_rhs,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBegin(KSP_Solve,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
 

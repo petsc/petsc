@@ -16,7 +16,15 @@
       DA  da
       PetscScalar,pointer :: x1(:),x2(:,:)
       PetscErrorCode ierr
-      PetscInt m,n,dof,s,i,j
+      PetscInt m,n,dof,s,i,j,xs,xe,xl,ys,yl
+
+      double precision, target ::     array(10:20)
+      double precision, pointer :: ptr(:)
+
+      ptr => array
+
+      array(10) = 22
+      print*,ptr(1),ptr(10)
 
       m = 5
       n = 6
@@ -26,8 +34,10 @@
       call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,m,dof,1,             &
      &                PETSC_NULL_INTEGER,da,ierr)
       call DAGetGlobalVector(da,g,ierr)
+      call DAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,       &
+     &                  xl,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
       call DAVecGetArrayF90(da,g,x1,ierr)
-      do i=1,m
+      do i=xs+1,xs+xl
          CHKMEMQ
          x1(i) = i
          CHKMEMQ
@@ -41,9 +51,11 @@
      &                m,n,PETSC_DECIDE,PETSC_DECIDE,dof,s,                 &
      &                PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
       call DAGetGlobalVector(da,g,ierr)
+      call DAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,                       &
+     &                  xl,yl,PETSC_NULL_INTEGER,ierr)
       call DAVecGetArrayF90(da,g,x2,ierr)
-      do i=1,m
-        do j=1,n
+      do i=xs+1,xs+xl
+        do j=ys+1,ys+yl
            CHKMEMQ
            x2(i,j) = i + j
            CHKMEMQ

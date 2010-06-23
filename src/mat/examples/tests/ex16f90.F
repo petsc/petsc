@@ -70,8 +70,8 @@
       call MatGetArrayF90(A,array,ierr) 
       call MatGetOwnershipRange(A,rstart,rend,ierr)
       call PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1,ierr)
-      do 30 i=1,rend-rstart
-         write(6,100) (PetscRealPart(array(i,j)),j=1,n)
+      do 30 i=1+5,rend-rstart+5
+         write(6,100) (PetscRealPart(array(i,j)),j=1+10,n+10)
  30   continue
  100  format(2F6.2)
 
