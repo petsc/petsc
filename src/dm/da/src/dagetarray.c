@@ -25,7 +25,12 @@
 
     If vec is a local vector (obtained with DACreateLocalVector() etc) then they ghost point locations are accessable. If it is 
     a global vector then the ghost points are not accessable. Of course with the local vector you will have had to do the 
+
     appropriate DALocalToGlobalBegin() and DALocalToGlobalEnd() to have correct values in the ghost locations.
+
+  Fortran Notes: From Fortran use DAVecGetArrayF90() and pass for the array type PetscScalar,pointer :: array(:,:,:) of the appropriate number of dimensions. For a DA with a dof of 1 use the dimension of the DA, for a dof greater than 1 use one more than the dimension of the DA. The order of the indices is array(1:dof,xs+1:xs+xm,ys+1:ys+ym,zs+1:zs+zm) where the values are obtained from DAGetCorners() for a global array or DAGetGhostCorners() for a local array. 
+
+  Due to bugs in the compiler DAVecGetArrayF90() does not work with gfortran versions before 2.5
 
   Level: intermediate
 
@@ -84,6 +89,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DAVecGetArray(DA da,Vec vec,void *array)
 -  array - the array
 
   Level: intermediate
+
+  Fortran Notes: From Fortran use DAVecRestoreArrayF90()
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
 
