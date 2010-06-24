@@ -210,7 +210,7 @@ extern "C" {
     self.math = None
     funcs = ['sin', 'floor', 'log10', 'pow']
     prototypes = ['double sin(double);', 'double floor(double);', 'double log10(double);', 'double pow(double, double);']
-    calls = ['double x = 0; sin(x);\n', 'double x = 0; floor(x);\n', 'double x = 0; log10(x);\n', 'double x = 0,y ; y = pow(x, x);\n']
+    calls = ['double x = 0,y; y = sin(x);\n', 'double x = 0,y; y = floor(x);\n', 'double x = 0,y; y = log10(x);\n', 'double x = 0,y ; y = pow(x, x);\n']
     if self.check('', funcs, prototype = prototypes, call = calls):
       self.logPrint('Math functions are linked in by default')
       self.math = []
@@ -223,7 +223,7 @@ extern "C" {
 
   def checkMathErf(self):
     '''Check for erf() in libm, the math library'''
-    if not self.math is None and self.check(self.math, ['erf'], prototype = ['double erf(double);'], call = ['double x; erf(x);\n']):
+    if not self.math is None and self.check(self.math, ['erf'], prototype = ['double erf(double);'], call = ['double x = 0,y; y = erf(x);\n']):
       self.logPrint('erf() found')
       self.addDefine('HAVE_ERF', 1)
     else:
