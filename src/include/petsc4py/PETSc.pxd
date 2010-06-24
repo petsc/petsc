@@ -12,10 +12,6 @@ cdef extern from "petsc.h":
     ctypedef _p_PetscObject* PetscObject
 
 cdef extern from "petscsys.h":
-      struct _p_PetscFwk
-      ctypedef _p_PetscFwk *PetscFwk
-
-cdef extern from "petscsys.h":
     struct _p_PetscViewer
     ctypedef _p_PetscViewer* PetscViewer
 
@@ -87,12 +83,6 @@ ctypedef public api class Object [
     cdef object get_attr(self, char name[])
     cdef object set_attr(self, char name[], object attr)
     cdef object get_dict(self)
-
-ctypedef public api class Fwk(Object) [
-    type   PyPetscFwk_Type, 
-    object PyPetscFwkObject,
-    ]:
-    cdef PetscFwk fwk
 
 ctypedef public api class Viewer(Object) [
     type   PyPetscViewer_Type, 

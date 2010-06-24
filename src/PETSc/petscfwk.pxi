@@ -2,6 +2,8 @@
 
 cdef extern from "petscsys.h" nogil:
 
+    struct _p_PetscFwk
+    ctypedef _p_PetscFwk *PetscFwk
     int PetscFwkCreate(MPI_Comm,PetscFwk*)
     int PetscFwkDestroy(PetscFwk)
     int PetscFwkRegisterComponent(PetscFwk,char[])
@@ -10,14 +12,6 @@ cdef extern from "petscsys.h" nogil:
     int PetscFwkConfigure(PetscFwk,PetscInt)
     int PetscFwkViewConfigurationOrder(PetscFwk,PetscViewer)
     PetscFwk PETSC_FWK_DEFAULT_(MPI_Comm)
-
-# -----------------------------------------------------------------------------
-
-cdef inline Fwk ref_Fwk(PetscFwk fwk):
-    cdef Fwk ob = <Fwk> Fwk()
-    PetscIncref(<PetscObject>fwk)
-    ob.fwk = fwk
-    return ob
 
 # -----------------------------------------------------------------------------
 
@@ -80,8 +74,10 @@ cdef int Fwk_ComponentConfigure(
     assert pfwk != NULL
     #
     cdef configure = <object> pconfigure
-    cdef Fwk fwk = ref_Fwk(pfwk)
     cdef PetscInt state = asInt(pstate)
+    cdef Fwk fwk = <Fwk> Fwk()
+    PetscIncref(<PetscObject>pfwk)
+    fwk.fwk = pfwk
     #
     cdef PetscClassId classid = 0
     cdef Object component = None

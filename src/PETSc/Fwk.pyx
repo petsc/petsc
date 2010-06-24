@@ -2,6 +2,8 @@
 
 cdef class Fwk(Object):
 
+    cdef PetscFwk fwk
+
     def __cinit__(self):
         self.obj = <PetscObject*> &self.fwk
         self.fwk = NULL
