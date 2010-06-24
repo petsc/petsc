@@ -9,7 +9,7 @@
 #define __FUNCT__ "VecLoad"
 static PetscErrorCode VecLoad_Compat(PetscViewer viewer, Vec vec)
 {
-  const Type     type;
+  const VecType  type;
   PetscInt       n,N;
   PetscErrorCode ierr;
   PetscFunctionBegin;
