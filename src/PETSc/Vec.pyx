@@ -326,11 +326,8 @@ cdef class Vec(Object):
         CHKERR( VecEqual(self.vec, vec.vec, &flag) )
         return <bint> flag
 
-    def load(self, Viewer viewer not None, vec_type=None):
-        if self.vec !=  NULL:
-            CHKERR( VecLoadIntoVector(viewer.vwr, self.vec) )
-        else:
-            CHKERR( VecLoad(viewer.vwr, str2cp(vec_type), &self.vec) )
+    def load(self, Viewer viewer not None):
+        CHKERR( VecLoad(viewer.vwr, self.vec) )
         return self
 
     def dot(self, Vec vec not None):
