@@ -230,6 +230,22 @@ extern "C" {
       self.logPrint('Warning: erf() not found')
     return
 
+  def checkRealtime(self):
+    '''Check for presence of clock_gettime() in realtime library (POSIX Realtime extensions)'''
+    self.rt = None
+    funcs = ['clock_gettime']
+    prototypes = ['#include <time.h>']
+    calls = ['struct timespec tp; clock_gettime(CLOCK_REALTIME,&tp);']
+    if self.check('', funcs, prototype=prototypes, call=calls):
+      self.logPrint('realtime functions are linked in by default')
+      self.rt = []
+    elif self.check('rt', funcs, prototype=prototypes, call=calls):
+      self.logPrint('Using librt for the realtime library')
+      self.rt = ['librt.a']
+    else:
+      self.logPrint('Warning: No realtime library found')
+    return
+
   def checkDynamic(self):
     '''Check for the header and libraries necessary for dynamic library manipulation'''
     if 'with-dynamic' in self.framework.argDB and not self.framework.argDB['with-dynamic']: return
@@ -375,5 +391,6 @@ int checkInit(void) {
     map(lambda args: self.executeTest(self.check, list(args)), self.libraries)
     self.executeTest(self.checkMath)
     self.executeTest(self.checkMathErf)
+    self.executeTest(self.checkRealtime)
     self.executeTest(self.checkDynamic)
     return
