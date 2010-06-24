@@ -3,7 +3,7 @@
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define vecsetvalue_              VECSETVALUE
 #define vecsetvaluelocal_         VECSETVALUELOCAL
-#define vecloadintovector_        VECLOADINTOVECTOR  
+#define vecload_                  VECLOAD
 #define vecview_                  VECVIEW
 #define vecgetarray_              VECGETARRAY
 #define vecgetarrayaligned_       VECGETARRAYALIGNED
@@ -17,7 +17,7 @@
 #define vecgetarrayaligned_       vecgetarrayaligned
 #define vecsetvalue_              vecsetvalue
 #define vecsetvaluelocal_         vecsetvaluelocal
-#define vecloadintovector_        vecloadintovector
+#define vecload_                  vecload
 #define vecview_                  vecview
 #define vecgetarray_              vecgetarray
 #define vecrestorearray_          vecrestorearray
@@ -41,7 +41,7 @@ void PETSC_STDCALL vecsetvaluelocal_(Vec *v,PetscInt *i,PetscScalar *va,InsertMo
   *ierr = VecSetValuesLocal(*v,1,i,va,*mode);
 }
 
-void PETSC_STDCALL vecloadintovector_(PetscViewer *viewer,Vec *vec,PetscErrorCode *ierr)
+void PETSC_STDCALL vecload_(PetscViewer *viewer,Vec *vec,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);

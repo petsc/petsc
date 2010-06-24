@@ -261,3 +261,180 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      subroutine F90Array3dCreateScalar(array,start1,len1,                        &
+     &     start2,len2,start3,len3,ptr)
+      implicit none
+#include "finclude/petscsys.h"
+      PetscInt start1,len1
+      PetscInt start2,len2
+      PetscInt start3,len3
+      PetscScalar, target ::                                                      &
+     &     array(start1:start1+len1-1,start2:start2+len2-1,                       &
+     &           start3:start3+len3-1)
+      PetscScalar, pointer :: ptr(:,:,:)
+
+      ptr => array
+      end subroutine
+
+      subroutine F90Array3dCreateReal(array,start1,len1,                          &
+     &     start2,len2,start3,len3,ptr)
+      implicit none
+#include "finclude/petscsys.h"
+      PetscInt start1,len1
+      PetscInt start2,len2
+      PetscInt start3,len3
+      PetscReal, target ::                                                        &
+     &     array(start1:start1+len1-1,start2:start2+len2-1,                       &
+     &           start3:start3+len3-1)
+      PetscReal, pointer :: ptr(:,:,:)
+
+      ptr => array
+      end subroutine
+
+      subroutine F90Array3dCreateInt(array,start1,len1,                           &
+     &     start2,len2,start3,len3,ptr)
+      implicit none
+#include "finclude/petscsys.h"
+      PetscInt start1,len1
+      PetscInt start2,len2
+      PetscInt start3,len3
+      PetscInt, target ::                                                         &
+     &     array(start1:start1+len1-1,start2:start2+len2-1,                       &
+     &           start3:start3+len3-1)
+      PetscInt, pointer :: ptr(:,:,:)
+
+      ptr => array
+      end subroutine
+
+      subroutine F90Array3dCreateFortranAddr(array,start1,len1,                   &
+     &     start2,len2,start3,len3,ptr)
+      implicit none
+#include "finclude/petscsys.h"
+      PetscInt start1,len1
+      PetscInt start2,len2
+      PetscInt start3,len3
+      PetscFortranAddr, target ::                                                 &
+     &     array(start1:start1+len1-1,start2:start2+len2-1,                       &
+     &           start3:start3+len3-1)
+      PetscFortranAddr, pointer :: ptr(:,:,:)
+
+      ptr => array
+      end subroutine
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      subroutine F90Array4dCreateScalar(array,start1,len1,                        &
+     &     start2,len2,start3,len3,start4,len4,ptr)
+      implicit none
+#include "finclude/petscsys.h"
+      PetscInt start1,len1
+      PetscInt start2,len2
+      PetscInt start3,len3
+      PetscInt start4,len4
+      PetscScalar, target ::                                                      &
+     &     array(start1:start1+len1-1,start2:start2+len2-1,                       &
+     &           start3:start3+len3-1,start4:start4+len4-1)
+      PetscScalar, pointer :: ptr(:,:,:,:)
+
+      ptr => array
+      end subroutine
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      subroutine F90Array3dAccessScalar(ptr,address)
+      implicit none
+#include "finclude/petscsys.h"
+      PetscScalar, pointer :: ptr(:,:,:)
+      PetscFortranAddr address
+      PetscInt start1,start2,start3
+
+      start1 = lbound(ptr,1)
+      start2 = lbound(ptr,2)
+      start3 = lbound(ptr,3)
+      call F90Array3dGetAddrScalar(ptr(start1,start2,start3),address)
+      end subroutine
+
+      subroutine F90Array3dAccessReal(ptr,address)
+      implicit none
+#include "finclude/petscsys.h"
+      PetscReal, pointer :: ptr(:,:,:)
+      PetscFortranAddr address
+      PetscInt start1,start2,start3
+
+      start1 = lbound(ptr,1)
+      start2 = lbound(ptr,2)
+      start3 = lbound(ptr,3)
+      call F90Array3dGetAddrReal(ptr(start1,start2,start3),address)
+      end subroutine
+
+      subroutine F90Array3dAccessInt(ptr,address)
+      implicit none
+#include "finclude/petscsys.h"
+      PetscInt, pointer :: ptr(:,:,:)
+      PetscFortranAddr address
+      PetscInt start1,start2,start3
+
+      start1 = lbound(ptr,1)
+      start2 = lbound(ptr,2)
+      start3 = lbound(ptr,3)
+      call F90Array3dGetAddrInt(ptr(start1,start2,start3),address)
+      end subroutine
+
+      subroutine F90Array3dAccessFortranAddr(ptr,address)
+      implicit none
+#include "finclude/petscsys.h"
+      PetscFortranAddr, pointer :: ptr(:,:,:)
+      PetscFortranAddr address
+      PetscInt start1,start2,start3
+
+      start1 = lbound(ptr,1)
+      start2 = lbound(ptr,2)
+      start3 = lbound(ptr,3)
+      call F90Array3dGetAddrFortranAddr(ptr(start1,start2,start3),        &
+     &                                  address)
+      end subroutine
+      
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      subroutine F90Array3dDestroyScalar(ptr)
+      implicit none
+#include "finclude/petscsys.h"
+      PetscScalar, pointer :: ptr(:,:,:)
+
+      nullify(ptr)
+      end subroutine
+
+      subroutine F90Array3dDestroyReal(ptr)
+      implicit none
+#include "finclude/petscsys.h"
+      PetscReal, pointer :: ptr(:,:,:)
+
+      nullify(ptr)
+      end subroutine
+
+      subroutine F90Array3dDestroyInt(ptr)
+      implicit none
+#include "finclude/petscsys.h"
+      PetscInt, pointer :: ptr(:,:,:)
+
+      nullify(ptr)
+      end subroutine
+
+      subroutine F90Array3dDestroyFortranAddr(ptr)
+      implicit none
+#include "finclude/petscsys.h"
+      PetscFortranAddr, pointer :: ptr(:,:,:)
+
+      nullify(ptr)
+      end subroutine
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      subroutine F90Array4dDestroyScalar(ptr)
+      implicit none
+#include "finclude/petscsys.h"
+      PetscScalar, pointer :: ptr(:,:,:)
+
+      nullify(ptr)
+      end subroutine
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
