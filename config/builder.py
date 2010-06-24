@@ -46,6 +46,7 @@ class PETScMaker(script.Script):
    help.addArgument('RepManager', '-rootDir', nargs.ArgDir(None, os.environ['PETSC_DIR'], 'The root directory for this build', isTemporary = 1))
    help.addArgument('RepManager', '-dryRun',  nargs.ArgBool(None, False, 'Only output what would be run', isTemporary = 1))
    help.addArgument('RepManager', '-verbose', nargs.ArgInt(None, 0, 'The verbosity level', min = 0, isTemporary = 1))
+   help.addArgument('RepManager', '-cudaFix', nargs.ArgBool(None, False, 'Fix C compiles for nvcc version < 3.1', isTemporary = 1))
    return help
 
  def setup(self):
@@ -91,6 +92,7 @@ class PETScMaker(script.Script):
       CCPPFLAGS	            = ${PETSC_CCPPFLAGS}
       PETSC_COMPILE         = ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}  ${SOURCEC} ${SSOURCE}
       PETSC_COMPILE_SINGLE  = ${PCC} -o $*.o -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}'''
+   import shutil
    # PETSCFLAGS, CFLAGS and CPPFLAGS are taken from user input (or empty)
    includes = ['-I'+inc for inc in [os.path.join(self.petscdir.dir, self.arch.arch, 'include'), os.path.join(self.petscdir.dir, 'include')]]
    self.setCompilers.pushLanguage(self.languages.clanguage)
@@ -100,7 +102,16 @@ class PETScMaker(script.Script):
    flags.extend([self.setCompilers.CPPFLAGS, self.CHUD.CPPFLAGS]) # CPP_FLAGS
    flags.append('-D__INSDIR__='+os.getcwd().replace(self.petscdir.dir, ''))
    packageIncludes, packageLibs = self.getPackageInfo()
-   cmd = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
+   if self.argDB['cudaFix']:
+     sources = []
+     for s in source:
+       newS = os.path.splitext(s)[0]+'.cu'
+       self.logPrint('Copying '+str(s)+' to '+newS)
+       shutil.copy2(s, newS)
+       sources.append(newS)
+   else:
+     sources = source
+   cmd = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+sources)
    if self.dryRun or self.verbose:
      section = 'screen'
    else:
@@ -109,8 +120,12 @@ class PETScMaker(script.Script):
    if not self.dryRun:
      (output, error, status) = self.executeShellCommand(cmd,checkCommand = noCheckCommand,log=self.log)
      if status:
-       self.logPrint("ERROR IN COMPILE ******************************", deubgSection='screen')
-       self.logPrint(output+error, deubgSection='screen')
+       self.logPrint("ERROR IN COMPILE ******************************", debugSection='screen')
+       self.logPrint(output+error, debugSection='screen')
+   if self.argDB['cudaFix']:
+     for s in sources:
+       self.logPrint('Removing '+str(s))
+       os.remove(s)
    self.setCompilers.popLanguage()
    return
 
@@ -139,8 +154,8 @@ class PETScMaker(script.Script):
    if not self.dryRun:
      (output, error, status) = self.executeShellCommand(cmd,checkCommand = noCheckCommand,log=self.log)
      if status:
-       self.logPrint("ERROR IN COMPILE ******************************", deubgSection='screen')
-       self.logPrint(output+error, deubgSection='screen')
+       self.logPrint("ERROR IN COMPILE ******************************", debugSection='screen')
+       self.logPrint(output+error, debugSection='screen')
    self.setCompilers.popLanguage()
    return
 
@@ -156,8 +171,8 @@ class PETScMaker(script.Script):
    if not self.dryRun:
      (output, error, status) = self.executeShellCommand(cmd,checkCommand = noCheckCommand,log=self.log)
      if status:
-       self.logPrint("ERROR IN ARCHIVE ******************************", deubgSection='screen')
-       self.logPrint(output+error, deubgSection='screen')
+       self.logPrint("ERROR IN ARCHIVE ******************************", debugSection='screen')
+       self.logPrint(output+error, debugSection='screen')
    return
 
  def ranlib(self, library):
@@ -173,8 +188,8 @@ class PETScMaker(script.Script):
    if not self.dryRun:
      (output, error, status) = self.executeShellCommand(cmd,checkCommand = noCheckCommand,log=self.log)
      if status:
-       self.logPrint("ERROR IN RANLIB ******************************", deubgSection='screen')
-       self.logPrint(output+error, deubgSection='screen')
+       self.logPrint("ERROR IN RANLIB ******************************", debugSection='screen')
+       self.logPrint(output+error, debugSection='screen')
    return
  
  def buildDir(self, libname, dirname, fnames):
