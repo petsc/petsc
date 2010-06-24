@@ -95,6 +95,13 @@
           PetscScalar,pointer :: d1(:,:)
           PetscErrorCode ierr
         End Subroutine
+        Subroutine DAVecGetArrayF903(da1, v,d1,ierr)
+          USE_DA_HIDE
+          DA_HIDE da1
+          VEC_HIDE v
+          PetscScalar,pointer :: d1(:,:,:)
+          PetscErrorCode ierr
+        End Subroutine
       End Interface DAVecGetArrayF90
 
       Interface DAVecRestoreArrayF90
@@ -110,6 +117,13 @@
           DA_HIDE da1
           VEC_HIDE v
           PetscScalar,pointer :: d1(:,:)
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine DAVecRestoreArrayF903(da1, v,d1,ierr)
+          USE_DA_HIDE
+          DA_HIDE da1
+          VEC_HIDE v
+          PetscScalar,pointer :: d1(:,:,:)
           PetscErrorCode ierr
         End Subroutine
       End Interface DAVecRestoreArrayF90
