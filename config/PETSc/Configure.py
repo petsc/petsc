@@ -89,6 +89,14 @@ class Configure(config.base.Configure):
     self.ExodusII.archProvider        = self.arch
     self.ExodusII.languageProvider    = self.languages
     self.ExodusII.installDirProvider  = self.petscdir
+    self.thrust        = framework.require('config.packages.thrust',     self)
+    self.thrust.archProvider          = self.arch
+    self.thrust.languageProvider      = self.languages
+    self.thrust.installDirProvider    = self.petscdir
+    self.cusp          = framework.require('config.packages.cusp',       self)
+    self.cusp.archProvider            = self.arch
+    self.cusp.languageProvider        = self.languages
+    self.cusp.installDirProvider      = self.petscdir
 
     self.compilers.headerPrefix = self.headerPrefix
     self.types.headerPrefix     = self.headerPrefix
