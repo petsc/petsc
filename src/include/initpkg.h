@@ -21,11 +21,16 @@ static PetscErrorCode PetscFwkInitializePackage(const char path[])
 }
 #endif
 
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+#define AOInitializePackage(p) (0)
+#endif
+
 /* ------------------------------------------------------------------------- */
 
 #undef  __FUNCT__
-#define __FUNCT__ "PetscInitializeAllPackages"
-static PetscErrorCode PetscInitializeAllPackages(const char path[])
+#define __FUNCT__ "PetscInitializePackageAll"
+static PetscErrorCode PetscInitializePackageAll(const char path[])
 {
   PetscErrorCode ierr;
   static PetscTruth initialized = PETSC_FALSE;
@@ -45,6 +50,7 @@ static PetscErrorCode PetscInitializeAllPackages(const char path[])
   ierr = KSPInitializePackage(path);CHKERRQ(ierr);
   ierr = SNESInitializePackage(path);CHKERRQ(ierr);
   ierr = TSInitializePackage(path);CHKERRQ(ierr);
+  ierr = AOInitializePackage(path);CHKERRQ(ierr);
   ierr = DMInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

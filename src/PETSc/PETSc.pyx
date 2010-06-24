@@ -220,7 +220,7 @@ cdef extern from "stdio.h" nogil:
     int fprintf(FILE *, char *, ...)
 
 cdef extern from "initpkg.h":
-    int PetscInitializeAllPackages(char[])
+    int PetscInitializePackageAll(char[])
 
 cdef extern from "libpetsc4py.h":
     int PetscPythonRegisterAll(char[])
@@ -314,7 +314,7 @@ cdef extern from *:
 
 cdef int register(char path[]) except -1:
     # make sure all PETSc packages are initialized
-    CHKERR( PetscInitializeAllPackages(NULL) )
+    CHKERR( PetscInitializePackageAll(NULL) )
     # register custom implementations
     CHKERR( PetscPythonRegisterAll(path) )
     # register Python types
