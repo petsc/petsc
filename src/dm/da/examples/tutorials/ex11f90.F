@@ -15,7 +15,7 @@
       Vec  g,l
       DA  da
       PetscScalar,pointer :: x1(:),x2(:,:)
-      PetscScalar,pointer :: x3(:,:,:)
+      PetscScalar,pointer :: x3(:,:,:),x4(:,:,:,:)
       PetscErrorCode ierr
       PetscInt m,n,p,dof,s,i,j,k,xs,xe,xl,ys,yl
       PetscInt zs,zl
@@ -23,8 +23,8 @@
       m = 5
       n = 6
       p = 4;
-      dof = 1
       s = 1
+      dof = 1
       CALL PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,m,dof,1,             &
      &                PETSC_NULL_INTEGER,da,ierr)
@@ -80,6 +80,75 @@
         enddo
       enddo
       call DAVecRestoreArrayF90(da,g,x3,ierr)
+      call VecView(g,PETSC_VIEWER_STDOUT_WORLD,ierr)
+      call DARestoreGlobalVector(da,g,ierr)
+      call DADestroy(da,ierr)
+
+!
+!  Same tests but now with DOF > 1, so dimensions of array are one higher
+!
+      dof = 2
+      CALL PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,m,dof,1,             &
+     &                PETSC_NULL_INTEGER,da,ierr)
+      call DAGetGlobalVector(da,g,ierr)
+      call DAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,       &
+     &                  xl,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
+      call DAVecGetArrayF90(da,g,x2,ierr)
+      do i=xs+1,xs+xl
+         CHKMEMQ
+         x2(1,i) = i
+         x2(2,i) = -i
+         CHKMEMQ
+      enddo
+      call DAVecRestoreArrayF90(da,g,x1,ierr)
+      call VecView(g,PETSC_VIEWER_STDOUT_WORLD,ierr)
+      call DARestoreGlobalVector(da,g,ierr)
+      call DADestroy(da,ierr)
+
+      dof = 2
+      call DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,      &
+     &                m,n,PETSC_DECIDE,PETSC_DECIDE,dof,s,                 &
+     &                PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
+      call DAGetGlobalVector(da,g,ierr)
+      call DAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,                       &
+     &                  xl,yl,PETSC_NULL_INTEGER,ierr)
+      call DAVecGetArrayF90(da,g,x3,ierr)
+      do i=xs+1,xs+xl
+        do j=ys+1,ys+yl
+           CHKMEMQ
+           x3(1,i,j) = i + j
+           x3(2,i,j) = -(i + j)
+           CHKMEMQ
+        enddo
+      enddo
+      call DAVecRestoreArrayF90(da,g,x3,ierr)
+      call VecView(g,PETSC_VIEWER_STDOUT_WORLD,ierr)
+      call DARestoreGlobalVector(da,g,ierr)
+      call DADestroy(da,ierr)
+
+      dof = 3
+      call DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,      &
+     &                m,n,p,PETSC_DECIDE,PETSC_DECIDE,                     &
+     &                PETSC_DECIDE,dof,s,                                  &
+     &                PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,               &
+     &                PETSC_NULL_INTEGER,da,ierr)
+      call DAGetGlobalVector(da,g,ierr)
+      call DAGetCorners(da,xs,ys,zs,                                       &
+     &                  xl,yl,zl,ierr)
+      call DAVecGetArrayF90(da,g,x4,ierr)
+      do i=xs+1,xs+xl
+        do j=ys+1,ys+yl
+          do k=zs+1,zs+zl
+            CHKMEMQ
+            x4(1,i,j,k) = i + j + k
+            x4(2,i,j,k) = -(i + j + k)
+            x4(3,i,j,k) = i + j + k
+            CHKMEMQ
+          enddo
+        enddo
+      enddo
+      call DAVecRestoreArrayF90(da,g,x4,ierr)
       call VecView(g,PETSC_VIEWER_STDOUT_WORLD,ierr)
       call DARestoreGlobalVector(da,g,ierr)
       call DADestroy(da,ierr)

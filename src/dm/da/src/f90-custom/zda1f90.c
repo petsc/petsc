@@ -86,6 +86,12 @@ void PETSC_STDCALL davecgetarrayf902_(DA *da,Vec *v,F90Array2d *a,PetscErrorCode
   } else if (N != gxm*gym*gzm*dof) {
     *ierr = PETSC_ERR_ARG_INCOMP;
   }
+  if (dim == 1) {
+    gys = gxs;
+    gym = gxm;
+    gxs = 0;
+    gxm = dof;
+  }
   gxs++; /* in Fortran array indices will start at 1 */
   gys++;
   *ierr = VecGetArray(*v,&aa);if (*ierr) return;
@@ -120,6 +126,14 @@ void PETSC_STDCALL davecgetarrayf903_(DA *da,Vec *v,F90Array3d *a,PetscErrorCode
   } else if (N != gxm*gym*gzm*dof) {
     *ierr = PETSC_ERR_ARG_INCOMP;
   }
+  if (dim == 2) {
+    gzs = gys;
+    gzm = gym;
+    gys = gxs;
+    gym = gxm;
+    gxs = 0;
+    gxm = dof;
+  }
   gxs++; /* in Fortran array indices will start at 1 */
   gys++;
   gzs++;
@@ -131,6 +145,41 @@ void PETSC_STDCALL davecrestorearrayf903_(DA *da,Vec *v,F90Array3d *a,PetscError
 {
   *ierr = VecRestoreArray(*v,0);if (*ierr) return;
   *ierr = F90Array3dDestroy(a,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+}
+
+void PETSC_STDCALL davecgetarrayf904_(DA *da,Vec *v,F90Array4d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  PetscInt    xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof,one = 1;
+  PetscScalar *aa;
+  
+  PetscFunctionBegin;
+  *ierr = DAGetCorners(*da,&xs,&ys,&zs,&xm,&ym,&zm);if (*ierr) return;
+  *ierr = DAGetGhostCorners(*da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);if (*ierr) return;
+  *ierr = DAGetInfo(*da,&dim,0,0,0,0,0,0,&dof,0,0,0);if (*ierr) return;
+
+  /* Handle case where user passes in global vector as opposed to local */
+  *ierr = VecGetLocalSize(*v,&N);if (*ierr) return;
+  if (N == xm*ym*zm*dof) {
+    gxm = xm;
+    gym = ym;
+    gzm = zm;
+    gxs = xs;
+    gys = ys;
+    gzs = zs;
+  } else if (N != gxm*gym*gzm*dof) {
+    *ierr = PETSC_ERR_ARG_INCOMP;
+  }
+  gxs++; /* in Fortran array indices will start at 1 */
+  gys++;
+  gzs++;
+  *ierr = VecGetArray(*v,&aa);if (*ierr) return;
+  *ierr = F90Array4dCreate(aa,PETSC_SCALAR,one,dof,gxs,gxm,gys,gym,gzs,gzm,a PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+}
+
+void PETSC_STDCALL davecrestorearrayf904_(DA *da,Vec *v,F90Array4d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  *ierr = VecRestoreArray(*v,0);if (*ierr) return;
+  *ierr = F90Array4dDestroy(a,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }
 
 void PETSC_STDCALL davecgetarrayf90user1_(DA *da,Vec *v,F90Array1d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))

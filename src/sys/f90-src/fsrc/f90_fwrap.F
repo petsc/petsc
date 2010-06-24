@@ -322,6 +322,23 @@
       end subroutine
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      subroutine F90Array4dCreateScalar(array,start1,len1,                        &
+     &     start2,len2,start3,len3,start4,len4,ptr)
+      implicit none
+#include "finclude/petscsys.h"
+      PetscInt start1,len1
+      PetscInt start2,len2
+      PetscInt start3,len3
+      PetscInt start4,len4
+      PetscScalar, target ::                                                      &
+     &     array(start1:start1+len1-1,start2:start2+len2-1,                       &
+     &           start3:start3+len3-1,start4:start4+len4-1)
+      PetscScalar, pointer :: ptr(:,:,:,:)
+
+      ptr => array
+      end subroutine
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       subroutine F90Array3dAccessScalar(ptr,address)
       implicit none
 #include "finclude/petscsys.h"
@@ -379,7 +396,7 @@
       subroutine F90Array3dDestroyScalar(ptr)
       implicit none
 #include "finclude/petscsys.h"
-      PetscScalar, pointer :: ptr(:,:)
+      PetscScalar, pointer :: ptr(:,:,:)
 
       nullify(ptr)
       end subroutine
@@ -387,7 +404,7 @@
       subroutine F90Array3dDestroyReal(ptr)
       implicit none
 #include "finclude/petscsys.h"
-      PetscReal, pointer :: ptr(:,:)
+      PetscReal, pointer :: ptr(:,:,:)
 
       nullify(ptr)
       end subroutine
@@ -395,7 +412,7 @@
       subroutine F90Array3dDestroyInt(ptr)
       implicit none
 #include "finclude/petscsys.h"
-      PetscInt, pointer :: ptr(:,:)
+      PetscInt, pointer :: ptr(:,:,:)
 
       nullify(ptr)
       end subroutine
@@ -403,10 +420,20 @@
       subroutine F90Array3dDestroyFortranAddr(ptr)
       implicit none
 #include "finclude/petscsys.h"
-      PetscFortranAddr, pointer :: ptr(:,:)
+      PetscFortranAddr, pointer :: ptr(:,:,:)
 
       nullify(ptr)
       end subroutine
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      subroutine F90Array4dDestroyScalar(ptr)
+      implicit none
+#include "finclude/petscsys.h"
+      PetscScalar, pointer :: ptr(:,:,:)
+
+      nullify(ptr)
+      end subroutine
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

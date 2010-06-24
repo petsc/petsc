@@ -307,6 +307,47 @@ PetscErrorCode PETSC_DLLEXPORT F90Array3dDestroy(F90Array3d *ptr,PetscDataType t
 }
 
 /*************************************************************************/
+
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define f90array4dcreatescalar_           F90ARRAY4DCREATESCALAR
+#define f90array4ddestroyscalar_          F90ARRAY4DDESTROYSCALAR
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define f90array4dcreatescalar_           f90array4dcreatescalar
+#define f90array4daccessscalar_           f90array4daccessscalar
+#endif
+
+EXTERN_C_BEGIN
+extern void PETSC_STDCALL f90array4dcreatescalar_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt*,PetscInt*,F90Array4d * PETSC_F90_2PTR_PROTO_NOVAR);
+extern void PETSC_STDCALL f90array4ddestroyscalar_(F90Array4d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
+EXTERN_C_END
+
+#undef __FUNCT__
+#define __FUNCT__ "F90Array4dCreate"
+PetscErrorCode F90Array4dCreate(void *array,PetscDataType type,PetscInt start1,PetscInt len1,PetscInt start2,PetscInt len2,PetscInt start3,PetscInt len3,PetscInt start4,PetscInt len4,F90Array4d *ptr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  PetscFunctionBegin;
+  if (type == PETSC_SCALAR) {
+    f90array4dcreatescalar_(array,&start1,&len1,&start2,&len2,&start3,&len3,&start4,&len4,ptr PETSC_F90_2PTR_PARAM(ptrd));
+  } else {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unsupported PetscDataType: %d",(PetscInt)type);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "F90Array4dDestroy"
+PetscErrorCode PETSC_DLLEXPORT F90Array4dDestroy(F90Array4d *ptr,PetscDataType type PETSC_F90_2PTR_PROTO(ptrd))
+{
+  PetscFunctionBegin;
+  if (type == PETSC_SCALAR) {
+    f90array4ddestroyscalar_(ptr PETSC_F90_2PTR_PARAM(ptrd));
+  } else {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unsupported PetscDataType: %d",(PetscInt)type);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*************************************************************************/
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define f90array1dgetaddrscalar_            F90ARRAY1DGETADDRSCALAR
 #define f90array1dgetaddrreal_              F90ARRAY1DGETADDRREAL
