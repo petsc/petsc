@@ -44,10 +44,10 @@ cdef int Fwk_ImportConfigure(
         module.__package__ = None
         fwk_cache[path] = module
         try:
-            execfile(path, module.__dict__)
-            #Py3:# source = open(path, 'rU').read()
-            #Py3:# code = compile(source, path, 'exec')
-            #Py3:# exec(code, module.__dict__)
+            source = open(path, 'rU').read()
+            code = compile(source, path, 'exec')
+            namespace = module.__dict__
+            exec code in namespace
         except:
             del fwk_cache[path]
             raise
