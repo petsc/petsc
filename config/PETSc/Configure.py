@@ -408,6 +408,8 @@ class Configure(config.base.Configure):
         lib_paths.extend(map(libpath,libs))
         lib_libs.extend(map(cleanlib,libs))
         uniqextend(includes,pkg.include)
+      lib_libs.extend(map(cleanlib,self.libraries.math))
+      lib_libs.extend(map(cleanlib,self.libraries.rt))
       for libname in nub(lib_libs):
         libvar = 'PETSC_' + libname.upper() + '_LIB'
         addpath = ''

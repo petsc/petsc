@@ -43,7 +43,8 @@ class PETScMaker(script.Script):
    import nargs
 
    help = script.Script.setupHelp(self, help)
-   help.addArgument('RepManager', '-rootDir', nargs.ArgDir(None, os.environ['PETSC_DIR'], 'The root directory for this build', isTemporary = 1))
+   #help.addArgument('RepManager', '-rootDir', nargs.ArgDir(None, os.environ['PETSC_DIR'], 'The root directory for this build', isTemporary = 1))
+   help.addArgument('RepManager', '-rootDir', nargs.ArgDir(None, os.getcwd(), 'The root directory for this build', isTemporary = 1))
    help.addArgument('RepManager', '-dryRun',  nargs.ArgBool(None, False, 'Only output what would be run', isTemporary = 1))
    help.addArgument('RepManager', '-verbose', nargs.ArgInt(None, 0, 'The verbosity level', min = 0, isTemporary = 1))
    help.addArgument('RepManager', '-cudaFix', nargs.ArgBool(None, False, 'Fix C compiles for nvcc version < 3.1', isTemporary = 1))
@@ -162,7 +163,10 @@ class PETScMaker(script.Script):
  def archive(self, library, objects):
    '''${AR} ${AR_FLAGS} ${LIBNAME} $*.o'''
    lib = os.path.splitext(library)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX
-   cmd = ' '.join([self.setCompilers.AR, self.setCompilers.FAST_AR_FLAGS, lib]+objects)
+   if self.argDB['rootDir'] == os.environ['PETSC_DIR']:
+     cmd = ' '.join([self.setCompilers.AR, self.setCompilers.FAST_AR_FLAGS, lib]+objects)
+   else:
+     cmd = ' '.join([self.setCompilers.AR, self.setCompilers.AR_FLAGS, lib]+objects)
    if self.dryRun or self.verbose:
      section = 'screen'
    else:

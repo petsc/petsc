@@ -1,4 +1,4 @@
-#include "f90impl.h"
+#include "..//src/sys/f90-src/f90impl.h"
 
 /*************************************************************************/
 
@@ -409,6 +409,7 @@ void PETSC_STDCALL f90array2dgetaddrfortranaddr_(void *array, PetscFortranAddr *
 {
   *address = (PetscFortranAddr)array;
 }
+EXTERN_C_END
 
 /*************************************************************************/
 #if defined(PETSC_HAVE_FORTRAN_CAPS)

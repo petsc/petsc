@@ -735,9 +735,9 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   a->idiagvalid = PETSC_FALSE;
 
 #if defined(PETSC_HAVE_CUDA)
-  a->GPUmatrix.resize(m+1,A->cmap->n,a->nz);
+  a->GPUmatrix.resize(m,A->cmap->n,a->nz);
   a->GPUmatrix.row_offsets.assign(a->i,a->i+m+1);
-  a->GPUmatrix.column_indices.assign(a->j,a->j+A->cmap->n);
+  a->GPUmatrix.column_indices.assign(a->j,a->j+a->nz);
   a->GPUmatrix.values.assign(a->a,a->a+a->nz);
 #endif
   PetscFunctionReturn(0);
@@ -1026,6 +1026,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
     fortranmultaij_(&m,x,ii,aj,aa,y);
 #else
 #if defined(PETSC_HAVE_CUDA)
+
   ierr = VecCUDACopyToGPU(xx);CHKERRQ(ierr);
   ierr = VecCUDAAllocateCheck(yy);CHKERRQ(ierr);
   cusp::multiply(a->GPUmatrix,xx->GPUarray,yy->GPUarray);
