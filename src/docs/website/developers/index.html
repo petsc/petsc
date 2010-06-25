@@ -251,6 +251,46 @@ install
 PETSc</a>, (trouble, please contact us
 petsc-maint@mcs.anl.gov). And subscribe to <a
  href="../miscellaneous/mailing-lists.html">petsc mailing lists</a>.
+      <h4>Experimental build systems</h4>
+      <ul>
+        <li>CMake
+          <p>
+            The main reasons for using CMake are parallel builds,
+            dependency analysis, and IDE integration.  The following
+            instructions assume that you have CMake version 2.6 or later
+            installed.
+          </p>
+          <ol>
+            <li>Configure as usual with ./configure and run make
+              allfortranstubs if necessary.</li>
+            <li>Run bin/maint/cmakegen.py to create
+              $PETSC_DIR/CMakeLists.txt, a generic build description
+              (same for all values of PETSC_ARCH).
+            </li>
+            <li>Run bin/maint/cmakeboot.py to initialize a CMake build
+              in $PETSC_DIR/$PETSC_ARCH, this script forwards it's
+              arguments on to the cmake executable, useful to select a
+              different generator (-G'Generator Name').
+            </li>
+            <li>Now the values of the PETSC_DIR and PETSC_ARCH
+              environment variables no longer relevant, just run make
+              from the build directory.
+            </li>
+          </ol>
+          <p>
+            All of these steps should be idempotent.  Step 2 needs to be
+            repeated after new files are added to the build and step 3
+            should never need to be repeated.  The CMake build creates
+            the same libraries as PETSc's standard build, the object
+            files are stored privately in the build directory so
+            multiple PETSC_ARCHs can be built simultaneously.
+          </p>
+        </li>
+        <li>builder.py</li>
+        <p>
+          Run config/builder.py
+        </p>
+      </ul>
       <p style="font-weight: bold;" align="left"><br>
       <big><a name="Building_documentation:"></a>Building documentation:</big></p>
       <p align="left">The documentation tools listed below (except for
