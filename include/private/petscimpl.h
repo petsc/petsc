@@ -713,6 +713,7 @@ typedef struct {
 #include <cublas.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/multiply.h>
+#include <cusp/blas.h>
 #endif
 
 PETSC_EXTERN_CXX_END
