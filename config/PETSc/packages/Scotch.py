@@ -94,5 +94,6 @@ class Configure(PETSc.package.NewPackage):
 
   def consistencyChecks(self):
     PETSc.package.NewPackage.consistencyChecks(self)
-    if self.libraries.rt is None:
-      raise RuntimeError('Scotch requires a realtime library (librt) with clock_gettime()')
+    if self.framework.argDB['with-'+self.package]:
+      if self.libraries.rt is None:
+        raise RuntimeError('Scotch requires a realtime library (librt) with clock_gettime()')
