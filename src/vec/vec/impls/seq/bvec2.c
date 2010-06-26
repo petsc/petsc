@@ -22,8 +22,11 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
   if (type == NORM_2 || type == NORM_FROBENIUS) {
 #if defined(PETSC_HAVE_CUDA)
     ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
+    /*
     *z = cublasSnrm2(bn,VecCUDACastToRawPtr(xin->GPUarray),one);
     ierr = cublasGetError();CHKERRCUDA(ierr);
+    */
+    *z = cusp::blas::nrm2(xin->GPUarray);
 #else
     ierr = VecGetArrayPrivate(xin,&xx);CHKERRQ(ierr);
     *z = BLASnrm2_(&bn,xx,&one);

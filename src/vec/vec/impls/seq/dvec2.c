@@ -572,14 +572,20 @@ PetscErrorCode VecSet_Seq(Vec xin,PetscScalar alpha)
   PetscFunctionBegin;
   if (alpha == 0.0) {
     ierr = PetscMemzero(xx,n*sizeof(PetscScalar));CHKERRQ(ierr);
-  } else {
-    for (i=0; i<n; i++) xx[i] = alpha;
-  }
 #if defined(PETSC_HAVE_CUDA)
-  if (xin->valid_GPU_array != PETSC_CUDA_UNALLOCATED){
-    xin->valid_GPU_array = PETSC_CUDA_CPU;
-  }
+    if (xin->valid_GPU_array != PETSC_CUDA_UNALLOCATED){
+      xin->valid_GPU_array = PETSC_CUDA_CPU;
+    }
 #endif
+  } else {
+#if defined(PETSC_HAVE_CUDA)
+    ierr = VecCUDAAllocateCheck(xin);
+    cusp::blas::fill(xin->GPUarray,alpha);
+    xin->valid_GPU_array = PETSC_CUDA_GPU;
+#else
+    for (i=0; i<n; i++) xx[i] = alpha;
+#endif
+    }
   PetscFunctionReturn(0);
 }
 
@@ -822,6 +828,13 @@ PetscErrorCode VecPointwiseMult_Seq(Vec win,Vec xin,Vec yin)
   PetscScalar    *ww,*xx,*yy;
 
   PetscFunctionBegin;
+#if defined(PETSC_HAVE_CUDA)
+  ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
+  ierr = VecCUDACopyToGPU(yin);CHKERRQ(ierr);
+  ierr = VecCUDAAllocateCheck(win);CHKERRQ(ierr);
+  cusp::blas::xmy(xin->GPUarray,yin->GPUarray,win->GPUarray);
+  win->valid_GPU_array = PETSC_CUDA_GPU;
+#else
   ierr = VecGetArrayPrivate3(win,&ww,xin,&xx,yin,&yy);CHKERRQ(ierr);
   if (ww == xx) {
     for (i=0; i<n; i++) ww[i] *= yy[i];
@@ -840,8 +853,9 @@ PetscErrorCode VecPointwiseMult_Seq(Vec win,Vec xin,Vec yin)
     for (i=0; i<n; i++) ww[i] = xx[i] * yy[i];
 #endif
   }
-  ierr = PetscLogFlops(n);CHKERRQ(ierr);
   ierr = VecRestoreArrayPrivate3(win,&ww,xin,&xx,yin,&yy);CHKERRQ(ierr);
+#endif
+  ierr = PetscLogFlops(n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
