@@ -9,6 +9,7 @@ class Configure(config.package.Package):
     self.cxx             = 1
     self.archIndependent = 1
     self.worksonWindows  = 1
+    self.downloadonWindows = 1
     return
 
   def Install(self):
