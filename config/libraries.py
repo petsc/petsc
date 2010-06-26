@@ -210,7 +210,7 @@ extern "C" {
     self.math = None
     funcs = ['sin', 'floor', 'log10', 'pow']
     prototypes = ['double sin(double);', 'double floor(double);', 'double log10(double);', 'double pow(double, double);']
-    calls = ['double x = 0; sin(x);\n', 'double x = 0; floor(x);\n', 'double x = 0; log10(x);\n', 'double x = 0,y ; y = pow(x, x);\n']
+    calls = ['double x = 0,y; y = sin(x);\n', 'double x = 0,y; y = floor(x);\n', 'double x = 0,y; y = log10(x);\n', 'double x = 0,y ; y = pow(x, x);\n']
     if self.check('', funcs, prototype = prototypes, call = calls):
       self.logPrint('Math functions are linked in by default')
       self.math = []
@@ -223,11 +223,27 @@ extern "C" {
 
   def checkMathErf(self):
     '''Check for erf() in libm, the math library'''
-    if not self.math is None and self.check(self.math, ['erf'], prototype = ['double erf(double);'], call = ['double x; erf(x);\n']):
+    if not self.math is None and self.check(self.math, ['erf'], prototype = ['double erf(double);'], call = ['double x = 0,y; y = erf(x);\n']):
       self.logPrint('erf() found')
       self.addDefine('HAVE_ERF', 1)
     else:
       self.logPrint('Warning: erf() not found')
+    return
+
+  def checkRealtime(self):
+    '''Check for presence of clock_gettime() in realtime library (POSIX Realtime extensions)'''
+    self.rt = None
+    funcs = ['clock_gettime']
+    prototypes = ['#include <time.h>']
+    calls = ['struct timespec tp; clock_gettime(CLOCK_REALTIME,&tp);']
+    if self.check('', funcs, prototype=prototypes, call=calls):
+      self.logPrint('realtime functions are linked in by default')
+      self.rt = []
+    elif self.check('rt', funcs, prototype=prototypes, call=calls):
+      self.logPrint('Using librt for the realtime library')
+      self.rt = ['librt.a']
+    else:
+      self.logPrint('Warning: No realtime library found')
     return
 
   def checkDynamic(self):
@@ -375,5 +391,6 @@ int checkInit(void) {
     map(lambda args: self.executeTest(self.check, list(args)), self.libraries)
     self.executeTest(self.checkMath)
     self.executeTest(self.checkMathErf)
+    self.executeTest(self.checkRealtime)
     self.executeTest(self.checkDynamic)
     return
