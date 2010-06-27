@@ -1091,6 +1091,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAggregates(DA dac,DA daf,Mat *rest)
 
   if (Pc < 0) Pc = 1;
   if (Pf < 0) Pf = 1;
+  if (Nc < 0) Nc = 1;
+  if (Nf < 0) Nf = 1;
 
   ierr = DAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost);CHKERRQ(ierr);
