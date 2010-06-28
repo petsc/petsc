@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-class AOType:
+class AOType(object):
     BASIC   = AO_BASIC
     MAPPING = AO_MAPPING
 
