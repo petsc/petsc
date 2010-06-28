@@ -8,18 +8,26 @@
 
 #include "petscvec.h"
 
+#if PY_VERSION_HEX >= 0x02070000
+static void Petsc_array_struct_del(PyObject* capsule)
+{
+  PyObject *self;
+  PyArrayInterface *inter;
+  self = (PyObject *)PyCapsule_GetContext(capsule);
+  inter = (PyArrayInterface *)PyCapsule_GetPointer(capsule, NULL);
+#else
 static void Petsc_array_struct_del(void* cptr, void* descr)
 {
-  PyArrayInterface *inter = (PyArrayInterface *) cptr;
   PyObject *self = (PyObject *)descr;
+  PyArrayInterface *inter = (PyArrayInterface *) cptr;
+#endif
   Py_DecRef(self);
   if (inter != NULL) {
-    PyMem_Del(inter->shape);
     Py_DecRef(inter->descr);
+    PyMem_Del(inter->shape);
     PyMem_Del(inter);
   }
 }
-
 
 static PyObject* Petsc_array_struct_new(PyObject* self,
                                         void* array, PetscInt size,
@@ -50,16 +58,19 @@ static PyObject* Petsc_array_struct_new(PyObject* self,
   inter->flags |= NPY_ALIGNED | NPY_NOTSWAPPED;
   inter->flags |= NPY_ARR_HAS_DESCR;
   inter->flags |= flags;
+#if PY_VERSION_HEX >= 0x02070000
+  cobj = PyCapsule_New(inter, NULL, Petsc_array_struct_del);
+  if (cobj) PyCapsule_SetContext(cobj, self);
+#else
   /* create C Object holding array interface struct and data owner */
-  cobj = PyCObject_FromVoidPtrAndDesc(inter, self,
-                                      Petsc_array_struct_del);
-  if (cobj == NULL) {
-    Petsc_array_struct_del((void *)inter, (void *)self);
-  }
+  cobj = PyCObject_FromVoidPtrAndDesc(inter, self, Petsc_array_struct_del);
+#endif
+  if (!cobj) goto fail;
   return cobj;
 
  fail:
   PyMem_Del(inter);
+  Py_DecRef((PyObject*)descr);
   PyMem_Del(shape);
   Py_DecRef(self);
   return NULL;
