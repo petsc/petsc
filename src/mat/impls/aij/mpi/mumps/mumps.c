@@ -1374,6 +1374,8 @@ PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Mat *F)
 EXTERN_C_END
 
 /* -------------------------------------------------------------------------------------------*/
+#undef __FUNCT__   
+#define __FUNCT__ "MatSeetMumpsIcntl"
 /*@
   MatSetMumpsIcntl - Set MUMPS parameter ICNTL()
 
@@ -1393,8 +1395,6 @@ EXTERN_C_END
 
 .seealso: MatGetFactor()
 @*/
-#undef __FUNCT__   
-#define __FUNCT__ "MatSeetMumpsIcntl"
 PetscErrorCode MatSetMumpsIcntl(Mat F,PetscInt icntl,PetscInt ival)
 {
   Mat_MUMPS      *lu =(Mat_MUMPS*)(F)->spptr; 
