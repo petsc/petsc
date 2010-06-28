@@ -1712,7 +1712,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT PetscViewerMathematicaPutCSRMatrix(Pets
    PETSc interface to MUMPS 
 */
 #ifdef PETSC_HAVE_MUMPS
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMumpsSetIcntl(Mat,PetscInt,PetscInt);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetMumpsIcntl(Mat,PetscInt,PetscInt);
 #endif
 
 PETSC_EXTERN_CXX_END

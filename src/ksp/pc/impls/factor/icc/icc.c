@@ -15,7 +15,10 @@ static PetscErrorCode PCSetup_ICC(PC pc)
   ierr = MatGetOrdering(pc->pmat, ((PC_Factor*)icc)->ordering,&perm,&cperm);CHKERRQ(ierr);
 
   if (!pc->setupcalled) {
-    ierr = MatGetFactor(pc->pmat,((PC_Factor*)icc)->solvertype,MAT_FACTOR_ICC,& ((PC_Factor*)icc)->fact);CHKERRQ(ierr);
+    Mat fact=((PC_Factor*)icc)->fact;
+    if (!fact){
+      ierr = MatGetFactor(pc->pmat,((PC_Factor*)icc)->solvertype,MAT_FACTOR_ICC,& ((PC_Factor*)icc)->fact);CHKERRQ(ierr);
+    }
     ierr = MatICCFactorSymbolic(((PC_Factor*)icc)->fact,pc->pmat,perm,&((PC_Factor*)icc)->info);CHKERRQ(ierr);
   } else if (pc->flag != SAME_NONZERO_PATTERN) {
     ierr = MatDestroy(((PC_Factor*)icc)->fact);CHKERRQ(ierr);

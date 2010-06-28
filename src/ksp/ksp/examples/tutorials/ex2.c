@@ -190,14 +190,24 @@ int main(int argc,char **args)
           are equivalent to these procedual calls 
   */
 #ifdef PETSC_HAVE_MUMPS 
-  flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-use_mumps",&flg,PETSC_NULL);CHKERRQ(ierr);
-  if (flg){
+  PetscTruth flg_lu=PETSC_FALSE,flg_ch=PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-use_mumps_lu",&flg_lu,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-use_mumps_ch",&flg_ch,PETSC_NULL);CHKERRQ(ierr);
+  if (flg_lu || flg_ch){
     ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
-    PC pc;
+    PC       pc;
+    Mat      F;
+    PetscInt ival,icntl;
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-    ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
+    if (flg_lu){
+      ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
+    } else if (flg_ch) {
+      ierr = PCSetType(pc,PCCHOLESKY);CHKERRQ(ierr);
+    }
     ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);CHKERRQ(ierr);
+    ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
+    icntl=7; ival = 2;
+    ierr = MatSetMumpsIcntl(F,icntl,ival);CHKERRQ(ierr);
   }
 #endif
 
