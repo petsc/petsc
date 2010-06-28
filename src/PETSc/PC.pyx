@@ -116,7 +116,7 @@ cdef class PC(Object):
         CHKERR( PCSetOptionsPrefix(self.pc, str2cp(prefix)) )
 
     def getOptionsPrefix(self):
-        cdef const_char_p prefix = NULL
+        cdef const_char *prefix = NULL
         CHKERR( PCGetOptionsPrefix(self.pc, &prefix) )
         return cp2str(prefix)
 

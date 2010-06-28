@@ -75,7 +75,7 @@ cdef class TS(Object):
         CHKERR( TSSetOptionsPrefix(self.ts, str2cp(prefix)) )
 
     def getOptionsPrefix(self):
-        cdef const_char_p prefix = NULL
+        cdef const_char *prefix = NULL
         CHKERR( TSGetOptionsPrefix(self.ts, &prefix) )
         return cp2str(prefix)
 

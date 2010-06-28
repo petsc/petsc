@@ -101,7 +101,7 @@ cdef class LogStage:
     #
 
     def getName(self):
-        cdef const_char_p name = NULL
+        cdef const_char *name = NULL
         CHKERR( PetscLogStageFindName(self.id, &name) )
         return cp2str(name)
 
@@ -180,7 +180,7 @@ cdef class LogClass:
     #
 
     def getName(self):
-        cdef const_char_p name = NULL
+        cdef const_char *name = NULL
         CHKERR( PetscLogClassFindName(self.id, &name) )
         return cp2str(name)
 
@@ -271,7 +271,7 @@ cdef class LogEvent:
     #
 
     def getName(self):
-        cdef const_char_p name = NULL
+        cdef const_char *name = NULL
         CHKERR( PetscLogEventFindName(self.id, &name) )
         return cp2str(name)
 

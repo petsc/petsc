@@ -69,7 +69,7 @@ cdef class Object:
         return self
 
     def getType(self):
-        cdef const_char_p tname = NULL
+        cdef const_char *tname = NULL
         CHKERR( PetscObjectGetType(self.obj[0], &tname) )
         return cp2str(tname)
 
@@ -79,7 +79,7 @@ cdef class Object:
         CHKERR( PetscObjectSetOptionsPrefix(self.obj[0], str2cp(prefix)) )
 
     def getOptionsPrefix(self):
-        cdef const_char_p prefix = NULL
+        cdef const_char *prefix = NULL
         CHKERR( PetscObjectGetOptionsPrefix(self.obj[0], &prefix) )
         return cp2str(prefix)
 
@@ -94,7 +94,7 @@ cdef class Object:
         return comm
 
     def getName(self):
-        cdef const_char_p name = NULL
+        cdef const_char *name = NULL
         CHKERR( PetscObjectGetName(self.obj[0], &name) )
         return cp2str(name)
 
@@ -107,7 +107,7 @@ cdef class Object:
         return classid
 
     def getClassName(self):
-        cdef const_char_p cname = NULL
+        cdef const_char *cname = NULL
         CHKERR( PetscObjectGetClassName(self.obj[0], &cname) )
         return cp2str(cname)
 

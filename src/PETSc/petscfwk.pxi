@@ -22,9 +22,9 @@ cdef extern from "Python.h":
     object PyModule_New(char *)
 
 cdef int Fwk_ImportConfigure(
-    const_char_p url_p,
-    const_char_p path_p, 
-    const_char_p name_p,
+    const_char *url_p,
+    const_char *path_p, 
+    const_char *name_p,
     void         **configure_p,
     ) except PETSC_ERR_PYTHON with gil:
     #
@@ -127,7 +127,7 @@ cdef int Fwk_PrintError() with gil:
 cdef extern from *:
 
     ctypedef int (*PetscFwkPythonImportConfigureFunction)(
-        const_char_p, const_char_p, const_char_p, void **,
+        char[], char[], char[], void **,
         ) nogil except PETSC_ERR_PYTHON
 
     ctypedef int (*PetscFwkPythonConfigureComponentFunction)(

@@ -217,7 +217,7 @@ cdef class Vec(Object):
         CHKERR( VecSetOptionsPrefix(self.vec, str2cp(prefix)) )
 
     def getOptionsPrefix(self):
-        cdef const_char_p prefix = NULL
+        cdef const_char *prefix = NULL
         CHKERR( VecGetOptionsPrefix(self.vec, &prefix) )
         return cp2str(prefix)
 

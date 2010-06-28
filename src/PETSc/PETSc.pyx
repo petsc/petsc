@@ -1,16 +1,15 @@
 # --------------------------------------------------------------------
 
 cdef extern from *:
-    ctypedef char* char_p       "char*"
-    ctypedef char* const_char_p "const char*"
+    ctypedef char const_char "const char"
 
-cdef inline object cp2str(const_char_p p):
+cdef inline object cp2str(const_char *p):
     if p == NULL: return None
-    else:         return p
+    else:         return <char*>p
 
-cdef inline char_p str2cp(object s) except ? NULL:
+cdef inline char* str2cp(object s) except ? NULL:
     if s is None: return NULL
-    else:         return s
+    else:         return <char*>s
 
 include "allocate.pxi"
 
@@ -161,16 +160,16 @@ cdef object tracebacklist = []
 
 cdef int traceback(MPI_Comm       comm,
                    int            line,
-                   const_char_p   cfun,
-                   const_char_p   cfile,
-                   const_char_p   cdir,
+                   const_char    *cfun,
+                   const_char    *cfile,
+                   const_char    *cdir,
                    int            n,
                    PetscErrorType p,
-                   const_char_p   mess,
-                   void           *ctx) with gil:
+                   const_char    *mess,
+                   void          *ctx) with gil:
     cdef PetscLogDouble mem=0
     cdef PetscLogDouble rss=0
-    cdef const_char_p text=NULL
+    cdef const_char    *text=NULL
     cdef object tbl = tracebacklist
     fun = cp2str(cfun)
     fnm = cp2str(cfile)
@@ -196,13 +195,13 @@ cdef int traceback(MPI_Comm       comm,
 
 cdef int tracebackfunc(MPI_Comm       comm,
                        int            line,
-                       const_char_p   cfun,
-                       const_char_p   cfile,
-                       const_char_p   cdir,
+                       const_char    *cfun,
+                       const_char    *cfile,
+                       const_char    *cdir,
                        int            n, 
                        PetscErrorType p,
-                       const_char_p   mess,
-                       void           *ctx) nogil:
+                       const_char    *mess,
+                       void          *ctx) nogil:
     if Py_IsInitialized() and (<void*>tracebacklist) != NULL:
         return traceback(comm, line, cfun, cfile, cdir, n, p, mess, ctx)
     else:

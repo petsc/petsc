@@ -9,9 +9,9 @@ cdef class Sys:
         cdef int cmicro = PETSC_VERSION_SUBMINOR
         cdef int cpatch = PETSC_VERSION_PATCH
         cdef int crelease = PETSC_VERSION_RELEASE ## XXX unused
-        cdef const_char_p cdate       = PETSC_VERSION_DATE
-        cdef const_char_p cpatchdate  = PETSC_VERSION_PATCH_DATE
-        cdef const_char_p cauthorinfo = PETSC_AUTHOR_INFO
+        cdef const_char *cdate       = PETSC_VERSION_DATE
+        cdef const_char *cpatchdate  = PETSC_VERSION_PATCH_DATE
+        cdef const_char *cauthorinfo = PETSC_AUTHOR_INFO
         version = (cmajor, cminor, cmicro)
         out = version
         if patch or date or author:
@@ -35,9 +35,9 @@ cdef class Sys:
         cdef int cmicro = PETSC_VERSION_SUBMINOR
         cdef int cpatch = PETSC_VERSION_PATCH
         cdef int crelease = PETSC_VERSION_RELEASE
-        cdef const_char_p cdate       = PETSC_VERSION_DATE
-        cdef const_char_p cpatchdate  = PETSC_VERSION_PATCH_DATE
-        cdef const_char_p cauthorinfo = PETSC_AUTHOR_INFO
+        cdef const_char *cdate       = PETSC_VERSION_DATE
+        cdef const_char *cpatchdate  = PETSC_VERSION_PATCH_DATE
+        cdef const_char *cauthorinfo = PETSC_AUTHOR_INFO
         author = str(cp2str(cauthorinfo)).split('\n')
         author = [s.strip() for s in author if s]
         return dict(major      = cmajor,

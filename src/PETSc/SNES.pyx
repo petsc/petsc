@@ -69,7 +69,7 @@ cdef class SNES(Object):
         CHKERR( SNESSetOptionsPrefix(self.snes, str2cp(prefix)) )
 
     def getOptionsPrefix(self):
-        cdef const_char_p prefix = NULL
+        cdef const_char *prefix = NULL
         CHKERR( SNESGetOptionsPrefix(self.snes, &prefix) )
         return cp2str(prefix)
 
