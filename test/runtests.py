@@ -94,7 +94,11 @@ def runtestsleak(repeats, *args, **kargs):
 if __name__ == '__main__':
     runtests()
     if hasattr(sys, 'gettotalrefcount'):
-        def dummy_write(self,*args): pass
-        unittest._WritelnDecorator.write   = dummy_write
-        unittest._WritelnDecorator.writeln = dummy_write
-        runtestsleak(5)
+        try:
+            from unittest.runner import _WritelnDecorator
+        except ImportError:
+            from unittest import _WritelnDecorator
+        def dummy_write(self, *args): pass
+        _WritelnDecorator.write   = dummy_write
+        _WritelnDecorator.writeln = dummy_write
+        runtestsleak(3)
