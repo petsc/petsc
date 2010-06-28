@@ -14,13 +14,17 @@
 #endif
 
 #define SETERRQQ(comm,n,s) \
-  return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s)
+  return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,\
+                    n,PETSC_ERROR_INITIAL,s)
 #define SETERRQQ1(comm,n,s,a1) \
-  return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1)
+  return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,\
+                    n,PETSC_ERROR_INITIAL,s,a1)
 #define SETERRQQ2(comm,n,s,a1,a2) \
-  return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2)
+  return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,\
+                    n,PETSC_ERROR_INITIAL,s,a1,a2)
 #define SETERRQQ3(comm,n,s,a1,a2,a3) \
-  return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2,a3)
+  return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,\
+                    n,PETSC_ERROR_INITIAL,s,a1,a2,a3)
 
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
