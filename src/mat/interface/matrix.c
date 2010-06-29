@@ -730,6 +730,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatView(Mat mat,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#include "../src/sys/totalview/tv_data_display.h"
+static int TV_display_type(const struct _p_Mat *mat)
+{
+  TV_add_row("Local rows", "int", &mat->rmap->n);
+  return TV_format_OK ;
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoadnew"
 /*@C
