@@ -11,6 +11,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommDestroy(PetscSubcomm psubcomm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_free(&psubcomm->dupparent);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&psubcomm->comm);CHKERRQ(ierr);
   ierr = PetscFree(psubcomm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
