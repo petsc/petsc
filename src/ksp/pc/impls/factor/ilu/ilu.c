@@ -211,12 +211,9 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
       if (ilu->nonzerosalongdiagonal) {
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,ilu->nonzerosalongdiagonaltol,ilu->row,ilu->col);CHKERRQ(ierr);
       }
-      CHKMEMQ;
-      Mat fact=((PC_Factor*)ilu)->fact;
-      if (!fact){
+      if (((PC_Factor*)ilu)->fact){
         ierr = MatGetFactor(pc->pmat,((PC_Factor*)ilu)->solvertype,MAT_FACTOR_ILU,&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
       }
-      CHKMEMQ;
       ierr = MatILUFactorSymbolic(((PC_Factor*)ilu)->fact,pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info);CHKERRQ(ierr);
       ierr = MatGetInfo(((PC_Factor*)ilu)->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       ilu->actualfill = info.fill_ratio_needed;

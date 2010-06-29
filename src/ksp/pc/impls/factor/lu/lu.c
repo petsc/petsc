@@ -130,8 +130,7 @@ static PetscErrorCode PCSetUp_LU(PC pc)
         ierr = PetscLogObjectParent(pc,dir->row);CHKERRQ(ierr); 
         ierr = PetscLogObjectParent(pc,dir->col);CHKERRQ(ierr);
       }
-      Mat fact=((PC_Factor*)dir)->fact;
-      if (!fact){
+      if (!((PC_Factor*)dir)->fact){
         ierr = MatGetFactor(pc->pmat,((PC_Factor*)dir)->solvertype,MAT_FACTOR_LU,&((PC_Factor*)dir)->fact);CHKERRQ(ierr);
       }
       ierr = MatLUFactorSymbolic(((PC_Factor*)dir)->fact,pc->pmat,dir->row,dir->col,&((PC_Factor*)dir)->info);CHKERRQ(ierr);

@@ -186,7 +186,8 @@ int main(int argc,char **args)
 
   /*
     Example of how to use external package MUMPS 
-    Note: runtime options '-ksp_type preonly -pc_type lu -pc_factor_mat_solver_package mumps' 
+    Note: runtime options 
+          '-ksp_type preonly -pc_type lu -pc_factor_mat_solver_package mumps -mat_mumps_icntl_7 2' 
           are equivalent to these procedual calls 
   */
 #ifdef PETSC_HAVE_MUMPS 
