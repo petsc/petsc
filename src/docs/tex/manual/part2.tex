@@ -3112,9 +3112,22 @@ The default and available input options for each external software can be found
 by specifying -help (or -h) at runtime.
 
 As an alternative to using runtime flags to employ these external
-packages, one can also create matrices with the appropriate
+packages, 
+procedural calls are provided for some packages. For example, following procedural calls
+are equivalent to runtime options
+\trl{-ksp_type preonly} \findex{-pc_type lu} \findex{-pc_factor_mat_solver_package mumps} \findex{-mat_mumps_icntl_7 2}:
+
+KSPSetType(ksp,KSPPREONLY);
+KSPGetPC(ksp,&pc);
+PCSetType(pc,PCLU);
+PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);
+PCFactorGetMatrix(pc,&F);
+icntl=7; ival = 2;
+MatSetMumpsIcntl(F,icntl,ival);
+
+One can also create matrices with the appropriate
 capabilities by calling MatCreate() followed by MatSetType()
-specifying the desired matrix type from \ref{tab_externaloptions}.
+specifying the desired matrix type from Table \ref{tab_externaloptions}.
 These matrix types inherit capabilities from their PETSc matrix
 parents: seqaij, mpiaij, etc.  As a result, the preallocation routines
 MatSeqAIJSetPreallocation(), MatMPIAIJSetPreallocation(), etc. and any other type
@@ -3123,7 +3136,7 @@ call MatConvert() inplace to convert the matrix to and from its base
 class without performing an expensive data copy.  MatConvert() cannot be
 called on matrices that have already been factored.
 
-In \ref{tab_externaloptions}, the base class aij refers to the fact
+In Table \ref{tab_externaloptions}, the base class aij refers to the fact
 that inheritance is based on MATSEQAIJ when constructed with a single
 process communicator, and from MATMPIAIJ otherwise.  The same holds
 for baij and sbaij.  For codes that are intended to be run as both a
