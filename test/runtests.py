@@ -101,4 +101,4 @@ if __name__ == '__main__':
         def dummy_write(self, *args): pass
         _WritelnDecorator.write   = dummy_write
         _WritelnDecorator.writeln = dummy_write
-        runtestsleak(3)
+        runtestsleak(4)

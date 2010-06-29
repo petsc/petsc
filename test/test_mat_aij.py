@@ -158,8 +158,8 @@ class BaseTestMatAnyAIJ(object):
         rank = self.A.getComm().getRank()
         rs, re = self.A.getOwnershipRange()
         cs, ce = self.A.getOwnershipRangeColumn()
-        rows = N.arange(rs, re, dtype=PETSc.IntType)
-        cols = N.arange(cs, ce, dtype=PETSc.IntType)
+        rows = N.array(range(rs, re), dtype=PETSc.IntType)
+        cols = N.array(range(cs, ce), dtype=PETSc.IntType)
         rows = PETSc.IS().createGeneral(rows, comm=self.A.getComm())
         cols = PETSc.IS().createGeneral(cols, comm=self.A.getComm())
         #
