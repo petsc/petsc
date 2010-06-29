@@ -730,20 +730,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatView(Mat mat,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_USE_DEBUGGING)
+#if defined(PETSC_USE_DEBUG)
 #include "../src/sys/totalview/tv_data_display.h"
 static int TV_display_type(const struct _p_Mat *mat)
 {
-  PetscErrorCode ierr;
-  size_t         len;
-
   TV_add_row("Local rows", "int", &mat->rmap->n);
   TV_add_row("Local columns", "int", &mat->cmap->n);
   TV_add_row("Global rows", "int", &mat->rmap->N);
   TV_add_row("Global columns", "int", &mat->cmap->N);
-  ierr = PetscStrlen(((PetscObject)mat)->type_name,&len);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(type,32,"char[%d]",(int)len);CHKERRQ(ierr);
-  TV_add_row("Typename", type, ((PetscObject)mat)->type_name);
+  TV_add_row("Typename", TV_ascii_string_type, ((PetscObject)mat)->type_name);
   return TV_format_OK;
 }
 #endif

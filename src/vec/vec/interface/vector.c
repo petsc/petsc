@@ -708,20 +708,18 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecView(Vec vec,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_USE_DEBUGGING)
+#if defined(PETSC_USE_DEBUG)
 #include "../src/sys/totalview/tv_data_display.h"
 static int TV_display_type(const struct _p_Vec *v)
 {
   const PetscScalar *values;
   char              type[32];
   PetscErrorCode    ierr;
-  size_t            len;
+
 
   TV_add_row("Local rows", "int", &v->map->n);
   TV_add_row("Global rows", "int", &v->map->N);
-  ierr = PetscStrlen(((PetscObject)v)->type_name,&len);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(type,32,"char[%d]",(int)len);CHKERRQ(ierr);
-  TV_add_row("Typename", type, ((PetscObject)v)->type_name);
+  TV_add_row("Typename", TV_ascii_string_type , ((PetscObject)v)->type_name);
   ierr = VecGetArrayRead((Vec)v,&values);CHKERRQ(ierr);
   ierr = PetscSNPrintf(type,32,"double[%d]",v->map->n);CHKERRQ(ierr);
   TV_add_row("values",type, values);
