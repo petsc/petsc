@@ -101,6 +101,7 @@ E*/
 #define VECFETI        "feti"
 #define VECSHARED      "shared"
 #define VECSIEVE       "sieve"
+#define VECSEQCUDA     "seqcuda"
 
 /* Logging support */
 #define    VEC_FILE_CLASSID 1211214
