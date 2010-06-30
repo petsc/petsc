@@ -836,6 +836,9 @@ class Configure(config.base.Configure):
             if lib1 in ['-L/usr/lib','-L/lib','-L/usr/lib64','-L/lib64']: continue
             flibs.append(lib1)
           continue
+        if arg.startswith('COMPILER_PATH=') or arg.startswith('LIBRARY_PATH='):
+          self.logPrint('Skipping arg '+arg, 4, 'compilers')
+          continue
         # HPUX lists a bunch of library directories seperated by :
         if arg.find(':') >=0:
           founddir = 0
