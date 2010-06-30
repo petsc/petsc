@@ -158,43 +158,43 @@ class PetscConfig:
         extension.extra_link_args.extend(ldflags)
 
     def configure_compiler(self, compiler):
-        if compiler.compiler_type == 'unix':
-            (cc, cxx, cflags, ccshared, ldshared, so_ext) = \
-            get_config_vars('CC', 'CXX', 'CFLAGS',
-                            'CCSHARED', 'LDSHARED', 'SO')
-            #
-            if self.language == 'c++':
-                CXX = self['PCC']
-            else:
-                try:
-                    CXX = self['CXX']
-                except KeyError:
-                    CXX = cxx
-            #
-            def extra_flags(cmd):
-                bits  = split_quoted(cmd)
-                try: return ' '.join(bits[1:])
-                except: return ''
-            if self.language == 'c':
-                cc_cmd = cc
-                ld_cmd = ldshared
-            elif self.language == 'c++':
-                cflags = cflags.replace('-Wstrict-prototypes','')
-                cc_cmd = cxx
-                ld_cmd = ldshared
-            ccflags = '%s %s %s' % (extra_flags(cc_cmd), cflags, ccshared,)
-            ldflags = '%s'       % (extra_flags(ld_cmd),)
-            CC_SHARED  = self['PCC']        + ' ' + ccflags
-            LD_SHARED  = self['PCC_LINKER'] + ' ' + ldflags
-            #
-            compiler.set_executables(
-                compiler     = self['PCC'],
-                compiler_cxx = CXX,
-                compiler_so  = CC_SHARED,
-                linker_so    = LD_SHARED,
-                linker_exe   = self['PCC_LINKER'],
-                )
-            compiler.shared_lib_extension = so_ext
+        if compiler.compiler_type != 'unix': return
+        (cc, cxx, basecflags, opt,
+         cflags, ccshared,
+         ldflags, ldshared, so_ext) = \
+            get_config_vars('CC', 'CXX', 'BASECFLAGS', 'OPT',
+                            'CFLAGS',  'CCSHARED', 
+                            'LDFLAGS', 'LDSHARED', 'SO')
+        cflags = cflags.replace('-Wstrict-prototypes', '')
+        ld = cc
+        ldshared = ldshared.replace(ld, '').strip()
+        ldshared = ldshared.replace(ldflags, '').strip()
+        def get_flags(cmd):
+            try: return ' '.join(split_quoted(cmd)[1:])
+            except: return ''
+        ccflags = get_flags(cc)
+        ldflags = get_flags(ld) # + ' ' + ldflags
+        #
+        PCC = self['PCC']
+        PLD = self['PCC_LINKER']
+        #
+        PCC = os.environ.get('PCC', PCC)
+        PLD = os.environ.get('PLD', PLD)
+        cflags   = os.environ.get('CFLAGS',   cflags)
+        ccflags  = os.environ.get('CCFLAGS',  ccflags)
+        ldflags  = os.environ.get('LDFLAGS',  ldflags)
+        ccshared = os.environ.get('CCSHARED', ccshared)
+        ldshared = os.environ.get('LDSHARED', ldshared)
+        #
+        PCC_SHARED = str.join(" ", (PCC, ccflags, ccshared, cflags))
+        PLD_SHARED = str.join(" ", (PLD, ldflags, ldshared, cflags))
+        #
+        compiler.set_executables(
+            compiler     = PCC,
+            compiler_so  = PCC_SHARED,
+            linker_so    = PLD_SHARED,
+            )
+        compiler.shared_lib_extension = so_ext
 
     def log_info(self):
         log.info('PETSC_DIR:   %s' % self['PETSC_DIR']  )
