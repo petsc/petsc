@@ -48,7 +48,7 @@ Warning: Using from command-line: %s, ignoring environment: %s''' % (str(self.fr
           raise RuntimeError('PETSC_ARCH is the empty string in your environment. It must either be a valid string, or not be defined in the environment at all.')
         self.arch = os.environ['PETSC_ARCH']
       else:
-        self.arch = self.framework.host_os
+        self.arch = 'arch-' + self.framework.host_os
         # use opt/debug, c/c++ tags.
         self.arch+= '-'+self.languages.clanguage.lower()
         if self.compilerFlags.debugging:
