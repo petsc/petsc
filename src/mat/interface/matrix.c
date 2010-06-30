@@ -6521,7 +6521,7 @@ M*/
            30  0  0  | 31 32 33  |  0 34
 .ve
 
-    Suppose isrow = [0 1 | 4 | 5 6] and iscol = [1 2 | 3 4 5 | 6].  The resulting submatrix is
+    Suppose isrow = [0 1 | 4 | 6 7] and iscol = [1 2 | 3 4 5 | 6].  The resulting submatrix is
 
 .vb
             2  0  |  0  3  0  |  0
