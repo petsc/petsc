@@ -2060,7 +2060,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqDenseSetPreallocation_SeqDense(Mat B,Pet
 
   PetscFunctionBegin;
   B->preallocated = PETSC_TRUE;
+  ierr = PetscLayoutSetBlockSize(B->rmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(B->cmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
+
   b               = (Mat_SeqDense*)B->data;
+  b->Mmax         = B->rmap->n;
+  b->Nmax         = B->cmap->n;
   if (b->lda <= 0) b->lda = B->rmap->n;
   if (!data) { /* petsc-allocated storage */
     if (!b->user_alloc) { ierr = PetscFree(b->v);CHKERRQ(ierr); }
@@ -2136,24 +2143,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqDense(Mat B)
   ierr = MPI_Comm_size(((PetscObject)B)->comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Comm must be of size 1");
 
-  ierr = PetscLayoutSetBlockSize(B->rmap,1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(B->cmap,1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
-
   ierr            = PetscNewLog(B,Mat_SeqDense,&b);CHKERRQ(ierr);
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->mapping      = 0;
   B->data         = (void*)b;
 
-
   b->pivots       = 0;
   b->roworiented  = PETSC_TRUE;
   b->v            = 0;
-  b->lda          = B->rmap->n;
   b->changelda    = PETSC_FALSE;
-  b->Mmax         = B->rmap->n;
-  b->Nmax         = B->cmap->n;
 
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_petsc_C",
@@ -2174,6 +2172,4 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqDense(Mat B)
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQDENSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
 EXTERN_C_END
