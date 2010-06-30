@@ -136,6 +136,9 @@ cdef class Mat(Object):
     def __idiv__(self, other):
         return mat_idiv(self, other)
 
+    def __itruediv__(self, other):
+        return mat_idiv(self, other)
+
     # binary operations
 
     def __add__(self, other):
@@ -160,6 +163,12 @@ cdef class Mat(Object):
             return mat_rmul(other, self)
 
     def __div__(self, other):
+        if isinstance(self, Mat):
+            return mat_div(self, other)
+        else:
+            return mat_rdiv(other, self)
+
+    def __truediv__(self, other):
         if isinstance(self, Mat):
             return mat_div(self, other)
         else:

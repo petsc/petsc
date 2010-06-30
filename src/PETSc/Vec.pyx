@@ -49,6 +49,9 @@ cdef class Vec(Object):
     def __idiv__(self, other):
         return vec_idiv(self, other)
 
+    def __itruediv__(self, other):
+        return vec_idiv(self, other)
+
     # binary operations
 
     def __add__(self, other):
@@ -70,6 +73,12 @@ cdef class Vec(Object):
             return vec_rmul(other, self)
 
     def __div__(self, other):
+        if isinstance(self, Vec):
+            return vec_div(self, other)
+        else:
+            return vec_rdiv(other, self)
+
+    def __truediv__(self, other):
         if isinstance(self, Vec):
             return vec_div(self, other)
         else:
