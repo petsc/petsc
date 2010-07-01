@@ -49,5 +49,9 @@ EXTERN PetscErrorCode VecDuplicate_Seq(Vec,Vec *);
 EXTERN PetscErrorCode VecSetOption_Seq(Vec,VecOption,PetscTruth);
 EXTERN PetscErrorCode VecConjugate_Seq(Vec);
 EXTERN PetscErrorCode VecNorm_Seq(Vec,NormType,PetscReal*);
+EXTERN_C_BEGIN
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Seq(Vec);
+EXTERN_C_END
+EXTERN PetscErrorCode VecView_Seq(Vec,PetscViewer);
 
 #endif
