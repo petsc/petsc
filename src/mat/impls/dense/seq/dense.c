@@ -1588,16 +1588,22 @@ PetscErrorCode MatSetUpPreallocation_SeqDense(Mat A)
 #define __FUNCT__ "MatSetSizes_SeqDense"
 PetscErrorCode MatSetSizes_SeqDense(Mat A,PetscInt m,PetscInt n,PetscInt M,PetscInt N)
 {
-  Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
+  Mat_SeqDense    *a = (Mat_SeqDense*)A->data;
   PetscFunctionBegin;
   /* this will not be called before lda, Mmax,  and Nmax have been set */
   m = PetscMax(m,M);
   n = PetscMax(n,N);
-  if (m > a->Mmax) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot yet resize number rows of dense matrix larger then its initial size %d, requested %d",a->lda,(int)m);
-  if (n > a->Nmax) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot yet resize number columns of dense matrix larger then its initial size %d, requested %d",a->Nmax,(int)n);
+
+  a               = (Mat_SeqDense*)A->data;
+  a->Mmax         = m;
+  a->Nmax         = n;
+  if (a->lda <= 0) a->lda = m;
+
+  //  if (m > a->Mmax) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot yet resize number rows of dense matrix larger then its initial size %d, requested %d",a->lda,(int)m);
+  //  if (n > a->Nmax) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot yet resize number columns of dense matrix larger then its initial size %d, requested %d",a->Nmax,(int)n);
   A->rmap->n = A->rmap->N = m;
   A->cmap->n = A->cmap->N = n;
-  if (a->changelda) a->lda = m;
+  //  if (a->changelda) a->lda = m;
   PetscFunctionReturn(0);
 }
 
@@ -2060,15 +2066,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqDenseSetPreallocation_SeqDense(Mat B,Pet
 
   PetscFunctionBegin;
   B->preallocated = PETSC_TRUE;
+
   ierr = PetscLayoutSetBlockSize(B->rmap,1);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(B->cmap,1);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
 
-  b               = (Mat_SeqDense*)B->data;
-  b->Mmax         = B->rmap->n;
-  b->Nmax         = B->cmap->n;
-  if (b->lda <= 0) b->lda = B->rmap->n;
+  b = (Mat_SeqDense*)B->data;
   if (!data) { /* petsc-allocated storage */
     if (!b->user_alloc) { ierr = PetscFree(b->v);CHKERRQ(ierr); }
     ierr = PetscMalloc(b->lda*b->Nmax*sizeof(PetscScalar),&b->v);CHKERRQ(ierr);

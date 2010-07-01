@@ -824,11 +824,8 @@ and PetscBinaryWrite() to see how this may be done.
  @*/  
 PetscErrorCode PETSCMAT_DLLEXPORT MatLoadnew(PetscViewer viewer, Mat newmat)
 {
-  Mat            factory;
   PetscErrorCode ierr;
   PetscTruth     isbinary,flg;
-  MPI_Comm       comm;
-  PetscErrorCode (*r)(PetscViewer, Mat);
   char           mtype[256];
   const char     *prefix;
   const MatType  outtype=0;
@@ -843,11 +840,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLoadnew(PetscViewer viewer, Mat newmat)
 	    );
   }
 
-  /* MatSetSizes and MatSetType have been called */
   if (((PetscObject)newmat)->type_name) outtype = ((PetscObject)newmat)->type_name;
   
-  /* Check if the type is set by checking the mat create function pointer. This check is only for MatSetType() not called after MatSetSizes(). */
-  if (!outtype && !newmat->ops->create) {
+  if (!outtype) {
     ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,(const char **)&prefix);CHKERRQ(ierr);
     ierr = PetscOptionsGetString(prefix,"-mat_type",mtype,256,&flg);CHKERRQ(ierr);
     if (flg) {
@@ -861,17 +856,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLoadnew(PetscViewer viewer, Mat newmat)
     ierr = MatSetType(newmat,outtype);CHKERRQ(ierr);
   }
 
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  /* Hack to get the appropriate load function pointer for the given type */
-  ierr = MatCreate(comm,&factory);CHKERRQ(ierr);
-  ierr = MatSetSizes(factory,0,0,0,0);CHKERRQ(ierr);
-  ierr = MatSetType(factory,outtype);CHKERRQ(ierr);
-  r = factory->ops->loadnew;
-  ierr = MatDestroy(factory);
-  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatLoad is not supported for type: %s",outtype);
+  if (!newmat->ops->loadnew) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatLoad is not supported for type: %s",outtype);
 
   ierr = PetscLogEventBegin(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
-  ierr = (*r)(viewer,newmat);CHKERRQ(ierr);
+  ierr = (*newmat->ops->loadnew)(viewer,newmat);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
