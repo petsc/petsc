@@ -20,18 +20,9 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
 
   PetscFunctionBegin;
   if (type == NORM_2 || type == NORM_FROBENIUS) {
-#if defined(PETSC_HAVE_CUDA)
-    ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
-    /*
-    *z = cublasSnrm2(bn,VecCUDACastToRawPtr(xin->GPUarray),one);
-    ierr = cublasGetError();CHKERRCUDA(ierr);
-    */
-    *z = cusp::blas::nrm2(xin->GPUarray);
-#else
     ierr = VecGetArrayPrivate(xin,&xx);CHKERRQ(ierr);
     *z = BLASnrm2_(&bn,xx,&one);
     ierr = VecRestoreArrayPrivate(xin,&xx);CHKERRQ(ierr);
-#endif
     ierr = PetscLogFlops(PetscMax(2.0*n-1,0.0));CHKERRQ(ierr);
   } else if (type == NORM_INFINITY) {
     PetscInt     i;
@@ -47,15 +38,9 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
     ierr = VecRestoreArrayPrivate(xin,&xx);CHKERRQ(ierr);
     *z   = max;
   } else if (type == NORM_1) {
-#if defined(PETSC_HAVE_CUDA)
-    ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
-    *z = cublasSasum(bn,VecCUDACastToRawPtr(xin->GPUarray),one);
-    ierr = cublasGetError();CHKERRCUDA(ierr);
-#else
     ierr = VecGetArrayPrivate(xin,&xx);CHKERRQ(ierr);
     *z = BLASasum_(&bn,xx,&one);
     ierr = VecRestoreArrayPrivate(xin,&xx);CHKERRQ(ierr);
-#endif
     ierr = PetscLogFlops(PetscMax(n-1.0,0.0));CHKERRQ(ierr);
   } else if (type == NORM_1_AND_2) {
     ierr = VecNorm_Seq(xin,NORM_1,z);CHKERRQ(ierr);
@@ -428,9 +413,6 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_CUDA)
-  ierr = VecCUDACopyFromGPU(xin);CHKERRQ(ierr);
-#endif
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERSOCKET,&issocket);CHKERRQ(ierr);

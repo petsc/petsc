@@ -163,7 +163,6 @@ struct _p_Vec {
   PetscTruth             petscnative;  /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
 #if defined(PETSC_HAVE_CUDA)
   PetscCUDAFlag          valid_GPU_array;    /* indicates where the most recently modified vector data is (GPU or CPU) */
-  /*PetscScalar            *GPUarray;      */
   cusp::array1d<PetscScalar,cusp::device_memory> GPUarray; /* if we're using CUDA, then this is the pointer to the array on the GPU */
 #endif
 };
