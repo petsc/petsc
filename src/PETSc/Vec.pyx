@@ -294,7 +294,7 @@ cdef class Vec(Object):
         return out
 
     def setArray(self, array):
-        asarray(self)[:] = asarray(array).ravel('a')
+        vec_setarray(self, array)
 
     def placeArray(self, array):
         cdef PetscInt nv=0
@@ -677,7 +677,7 @@ cdef class Vec(Object):
         def __get__(self):
             return asarray(self)
         def __set__(self, value):
-            asarray(self)[:] = asarray(value).ravel('a')
+            vec_setarray(self, value)
 
 # --------------------------------------------------------------------
 

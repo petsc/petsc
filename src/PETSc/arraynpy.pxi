@@ -20,22 +20,36 @@ cdef extern from "numpy/arrayobject.h":
     npy_intp* PyArray_DIMS(ndarray)
     npy_intp  PyArray_DIM(ndarray, int)
 
-    enum: NPY_IN_ARRAY
-    enum: NPY_OUT_ARRAY
-    enum: NPY_INOUT_ARRAY
+    enum: NPY_C_CONTIGUOUS
+    enum: NPY_F_CONTIGUOUS
+    enum: NPY_ALIGNED
+    enum: NPY_NOTSWAPPED
+    enum: NPY_WRITEABLE
 
-    enum: NPY_IN_FARRAY
-    enum: NPY_OUT_FARRAY
-    enum: NPY_INOUT_FARRAY
+    enum: NPY_CARRAY
+    enum: NPY_CARRAY_RO
+    enum: NPY_FARRAY
+    enum: NPY_FARRAY_RO
 
-    ndarray  PyArray_FROM_O(object)
-    ndarray  PyArray_FROM_OTF(object,int,int)
+    ndarray PyArray_FROM_O(object)
+    ndarray PyArray_FROM_OT(object,int)
+    ndarray PyArray_FROM_OTF(object,int,int)
 
-    dtype    PyArray_DescrFromType(int)
-    object   PyArray_TypeObjectFromType(int)
+    dtype   PyArray_DescrFromType(int)
+    object  PyArray_TypeObjectFromType(int)
 
-    ndarray  PyArray_ArangeObj(object,object,object,dtype)
-    ndarray  PyArray_EMPTY(int,npy_intp[],int,int)
+    ndarray PyArray_Copy(ndarray)
+    ndarray PyArray_ArangeObj(object,object,object,dtype)
+    ndarray PyArray_EMPTY(int,npy_intp[],int,int)
+    ndarray PyArray_ZEROS(int,npy_intp[],int,int)
+
+    bint PyArray_ISCONTIGUOUS(ndarray)
+    bint PyArray_ISFORTRAN(ndarray)
+    ctypedef enum NPY_ORDER:
+        NPY_ANYORDER
+        NPY_CORDER
+        NPY_FORTRANORDER
+    ndarray PyArray_NewCopy(ndarray,NPY_ORDER)
 
 
 cdef extern from "arraynpy.h":
@@ -94,54 +108,74 @@ cdef inline ndarray array_s(PetscInt size, const_PetscScalar* data):
 
 # --------------------------------------------------------------------
 
+cdef inline ndarray iarray(object ob, int typenum):
+    cdef ndarray ary = PyArray_FROM_OTF(ob, typenum, NPY_ALIGNED)
+    if PyArray_ISCONTIGUOUS(ary): return ary
+    if PyArray_ISFORTRAN(ary):    return ary
+    return PyArray_Copy(ary)
+
 cdef inline ndarray iarray_i(object ob, PetscInt* size, PetscInt** data):
-    ob = PyArray_FROM_OTF(ob, NPY_PETSC_INT, NPY_IN_ARRAY)
-    cdef ndarray ary = <ndarray> ob
-    if size!=NULL: size[0] = <PetscInt>  PyArray_SIZE(ary)
-    if data!=NULL: data[0] = <PetscInt*> PyArray_DATA(ary)
+    cdef ndarray ary = iarray(ob, NPY_PETSC_INT)
+    if size != NULL: size[0] = <PetscInt>  PyArray_SIZE(ary)
+    if data != NULL: data[0] = <PetscInt*> PyArray_DATA(ary)
+    return ary
+
+cdef inline ndarray iarray_r(object ob, PetscInt* size, PetscReal** data):
+    cdef ndarray ary = iarray(ob, NPY_PETSC_REAL)
+    if size != NULL: size[0] = <PetscInt>     PyArray_SIZE(ary)
+    if data != NULL: data[0] = <PetscScalar*> PyArray_DATA(ary)
     return ary
 
 cdef inline ndarray iarray_s(object ob, PetscInt* size, PetscScalar** data):
-    ob = PyArray_FROM_OTF(ob, NPY_PETSC_SCALAR, NPY_IN_ARRAY)
-    cdef ndarray ary = <ndarray> ob
-    if size!=NULL: size[0] = <PetscInt>     PyArray_SIZE(ary)
-    if data!=NULL: data[0] = <PetscScalar*> PyArray_DATA(ary)
+    cdef ndarray ary = iarray(ob, NPY_PETSC_SCALAR)
+    if size != NULL: size[0] = <PetscInt>     PyArray_SIZE(ary)
+    if data != NULL: data[0] = <PetscScalar*> PyArray_DATA(ary)
     return ary
 
 # --------------------------------------------------------------------
 
+cdef inline ndarray oarray(object ob, int typenum):
+    cdef ndarray ary = PyArray_FROM_OTF(ob, typenum, NPY_ALIGNED|NPY_WRITEABLE)
+    if PyArray_ISCONTIGUOUS(ary): return ary
+    if PyArray_ISFORTRAN(ary):    return ary
+    return PyArray_Copy(ary)
+
 cdef inline ndarray oarray_i(object ob, PetscInt* size, PetscInt** data):
-    ob = PyArray_FROM_OTF(ob, NPY_PETSC_INT, NPY_OUT_ARRAY)
-    cdef ndarray ary = <ndarray> ob
-    if size!=NULL: size[0] = <PetscInt>  PyArray_SIZE(ary)
-    if data!=NULL: data[0] = <PetscInt*> PyArray_DATA(ary)
+    cdef ndarray ary = oarray(ob, NPY_PETSC_INT)
+    if size != NULL: size[0] = <PetscInt>  PyArray_SIZE(ary)
+    if data != NULL: data[0] = <PetscInt*> PyArray_DATA(ary)
     return ary
 
 cdef inline ndarray oarray_r(object ob, PetscInt* size, PetscReal** data):
-    ob = PyArray_FROM_OTF(ob, NPY_PETSC_REAL, NPY_OUT_ARRAY)
-    cdef ndarray ary = <ndarray> ob
-    if size!=NULL: size[0] = <PetscInt>   PyArray_SIZE(ary)
-    if data!=NULL: data[0] = <PetscReal*> PyArray_DATA(ary)
+    cdef ndarray ary = oarray(ob, NPY_PETSC_REAL)
+    if size != NULL: size[0] = <PetscInt>   PyArray_SIZE(ary)
+    if data != NULL: data[0] = <PetscReal*> PyArray_DATA(ary)
     return ary
 
 cdef inline ndarray oarray_s(object ob, PetscInt* size, PetscScalar** data):
-    ob = PyArray_FROM_OTF(ob, NPY_PETSC_SCALAR, NPY_OUT_ARRAY)
-    cdef ndarray ary = <ndarray> ob
-    if size!=NULL: size[0] = <PetscInt>     PyArray_SIZE(ary)
-    if data!=NULL: data[0] = <PetscScalar*> PyArray_DATA(ary)
+    cdef ndarray ary = oarray(ob, NPY_PETSC_SCALAR)
+    if size != NULL: size[0] = <PetscInt>     PyArray_SIZE(ary)
+    if data != NULL: data[0] = <PetscScalar*> PyArray_DATA(ary)
+    return ary
+
+# --------------------------------------------------------------------
+
+cdef inline ndarray ocarray_s(object ob, PetscInt* size, PetscScalar** data):
+    cdef ndarray ary = PyArray_FROM_OTF(ob, NPY_PETSC_SCALAR, NPY_CARRAY)
+    if size != NULL: size[0] = <PetscInt>     PyArray_SIZE(ary)
+    if data != NULL: data[0] = <PetscScalar*> PyArray_DATA(ary)
     return ary
 
 cdef inline ndarray ofarray_s(object ob, PetscInt* size, PetscScalar** data):
-    ob = PyArray_FROM_OTF(ob, NPY_PETSC_SCALAR, NPY_OUT_FARRAY)
-    cdef ndarray ary = <ndarray> ob
-    if size!=NULL: size[0] = <PetscInt>     PyArray_SIZE(ary)
-    if data!=NULL: data[0] = <PetscScalar*> PyArray_DATA(ary)
+    cdef ndarray ary = PyArray_FROM_OTF(ob, NPY_PETSC_SCALAR, NPY_FARRAY)
+    if size != NULL: size[0] = <PetscInt>     PyArray_SIZE(ary)
+    if data != NULL: data[0] = <PetscScalar*> PyArray_DATA(ary)
     return ary
 
 # --------------------------------------------------------------------
 
 cdef extern from "arraynpy.h":
-    object PetscIS_array_struct(object,PetscIS)
+    object PetscIS_array_struct (object,PetscIS)
     object PetscVec_array_struct(object,PetscVec)
 
 # --------------------------------------------------------------------

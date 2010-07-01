@@ -184,8 +184,8 @@ cdef class SNES(Object):
         elif length is not None: size = asInt(length)
         if size < 0: size = 1000
         if reset: flag = PETSC_TRUE
-        cdef ndarray rhist = oarray_r(empty_r(size), NULL, &rdata)
-        cdef ndarray ihist = oarray_i(empty_i(size), NULL, &idata)
+        cdef object rhist = oarray_r(empty_r(size), NULL, &rdata)
+        cdef object ihist = oarray_i(empty_i(size), NULL, &idata)
         Object_setAttr(<PetscObject>self.snes, '__history__', (rhist, ihist))
         CHKERR( SNESSetConvergenceHistory(self.snes, rdata, idata, size, flag) )
 
@@ -194,8 +194,8 @@ cdef class SNES(Object):
         cdef PetscInt  *idata = NULL
         cdef PetscInt   size = 0
         CHKERR( SNESGetConvergenceHistory(self.snes, &rdata, &idata, &size) )
-        cdef ndarray rhist = array_r(size, rdata)
-        cdef ndarray ihist = array_i(size, idata)
+        cdef object rhist = array_r(size, rdata)
+        cdef object ihist = array_i(size, idata)
         return (rhist, ihist)
 
     def logConvergenceHistory(self, its, norm, linear_its=0):

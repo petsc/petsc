@@ -471,8 +471,8 @@ cdef inline PetscMatAssemblyType assemblytype(object assembly) \
 cdef inline int Mat_BlockSize(object bsize, PetscInt *_bs) except -1:
     cdef PetscInt bs = PETSC_DECIDE
     if bsize is not None: bs = asInt(bsize)
-    if bs != PETSC_DECIDE and bs < 1:
-        raise ValueError("block size %d must be positive" % toInt(bs))
+    if bs != PETSC_DECIDE and bs < 1: raise ValueError(
+        "block size %d must be positive" % toInt(bs) )
     _bs[0] = bs
     return 0
 
@@ -531,12 +531,12 @@ cdef inline int Mat_AllocAIJ_NNZ(PetscMat A, PetscInt bs, object NNZ) \
     CHKERR( MatGetLocalSize(A, &m, NULL) )
     if bs == PETSC_DECIDE: b = 1
     if m != PETSC_DECIDE and (d_n > 1 or o_n > 1):
-        if d_n > 1 and d_n*b != m:
-            raise ValueError("size(d_nnz) is %d, expected %d" %
-                             (toInt(d_n), toInt(m)) )
-        if o_n > 1 and o_n*b != m:
-            raise ValueError("size(o_nnz) is %d, expected %d" %
-                             (toInt(o_n), toInt(m)) )
+        if d_n > 1 and d_n*b != m: raise ValueError(
+            "size(d_nnz) is %d, expected %d" %
+            (toInt(d_n), toInt(m)) )
+        if o_n > 1 and o_n*b != m: raise ValueError(
+            "size(o_nnz) is %d, expected %d" %
+            (toInt(o_n), toInt(m)) )
     # preallocate
     CHKERR( MatAnyAIJSetPreallocation(A, bs, d_nz, d_nnz, o_nz, o_nnz) )
 
@@ -656,14 +656,20 @@ cdef inline int matsetvalues_rcv(PetscMat A,
     cdef ndarray av = iarray_s(ov, &nv, &v)
     # check various dimensions
     if PyArray_NDIM(ai) != 2: raise ValueError(
-        "row indices must have two dimensions: " \
-        "rows.ndim=%d" % (PyArray_NDIM(ai)) )
+        ("row indices must have two dimensions: "
+         "rows.ndim=%d") % (PyArray_NDIM(ai)) )
+    elif not PyArray_ISCONTIGUOUS(ai): raise ValueError(
+        "expecting a C-contiguous array")
     if PyArray_NDIM(aj) != 2: raise ValueError(
-        "column indices must have two dimensions: " \
-        "cols.ndim=%d" % (PyArray_NDIM(aj)) )
+        ("column indices must have two dimensions: "
+         "cols.ndim=%d") % (PyArray_NDIM(aj)) )
+    elif not PyArray_ISCONTIGUOUS(aj): raise ValueError(
+        "expecting a C-contiguous array")
     if PyArray_NDIM(av) < 2: raise ValueError(
-        "values must have two or more dimensions: " \
-        "vals.ndim=%d" % (PyArray_NDIM(av)) )
+        ("values must have two or more dimensions: "
+         "vals.ndim=%d") % (PyArray_NDIM(av)) )
+    elif not PyArray_ISCONTIGUOUS(av): raise ValueError(
+        "expecting a C-contiguous array")
     # check various shapes
     cdef PetscInt nm = PyArray_DIM(ai, 0)
     cdef PetscInt si = PyArray_DIM(ai, 1)
@@ -672,8 +678,8 @@ cdef inline int matsetvalues_rcv(PetscMat A,
     if ((nm != <PetscInt> PyArray_DIM(aj, 0)) or
         (nm != <PetscInt> PyArray_DIM(av, 0)) or
         (si*bs * sj*bs != sv)): raise ValueError(
-        "input arrays have incompatible shapes: " \
-        "rows.shape=%s, cols.shape=%s, vals.shape=%s" % \
+        ("input arrays have incompatible shapes: "
+         "rows.shape=%s, cols.shape=%s, vals.shape=%s") %
         (ai.shape, aj.shape, av.shape))
     # MatSetValuesXXX function and insert mode
     cdef MatSetValuesFcn *setvalues = \
@@ -715,18 +721,18 @@ cdef inline int matsetvalues_ijv(PetscMat A,
             rs //= bs; re //= bs
         nm = re - rs
     # check various sizes
-    if (ni-1 != nm):
-        raise ValueError("size(I) is %d, expected %d" %
-                         (toInt(ni), toInt(nm+1)) )
-    if (i[0] != 0):
-        raise ValueError("I[0] is %d, expected %d" %
-                         (toInt(i[0]), 0))
-    if (i[ni-1] != nj):
-        raise ValueError("size(J) is %d, expected %d" %
-                         (toInt(nj), toInt(i[ni-1])) )
-    if (nj*bs2  != nv):
-        raise ValueError("size(V) is %d, expected %d" %
-                         (toInt(nv), toInt(nj*bs2)) )
+    if (ni-1 != nm): raise ValueError(
+        "size(I) is %d, expected %d" %
+        (toInt(ni), toInt(nm+1)) )
+    if (i[0] != 0):raise ValueError(
+        "I[0] is %d, expected %d" %
+        (toInt(i[0]), 0) )
+    if (i[ni-1] != nj): raise ValueError(
+        "size(J) is %d, expected %d" %
+        (toInt(nj), toInt(i[ni-1])) )
+    if (nj*bs2  != nv): raise ValueError(
+        "size(V) is %d, expected %d" %
+        (toInt(nv), toInt(nj*bs2)) )
     # MatSetValuesXXX function and insert mode
     cdef MatSetValuesFcn *setvalues = \
          matsetvalues_fcn(blocked, local)
@@ -768,8 +774,8 @@ cdef inline matgetvalues(PetscMat mat,
         values.shape = rows.shape + cols.shape
     values = oarray_s(values, &nv, &v)
     if (ni*nj != nv): raise ValueError(
-                "incompatible array sizes: ni=%d, nj=%d, nv=%d" %
-                (toInt(ni), toInt(nj), toInt(nv)))
+        "incompatible array sizes: ni=%d, nj=%d, nv=%d" % 
+        (toInt(ni), toInt(nj), toInt(nv)))
     CHKERR( MatGetValues(mat, ni, i, nj, j, v) )
     return values
 

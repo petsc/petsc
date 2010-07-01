@@ -271,22 +271,6 @@ cdef inline int Vec_SplitSizes(MPI_Comm comm,
 
 # --------------------------------------------------------------------
 
-cdef inline int vecset(PetscVec v, object o) except -1:
-    cdef PetscInt na=0, nv=0
-    cdef PetscScalar *va=NULL, *vv=NULL
-    cdef ndarray a = iarray_s(o, &na, &va)
-    if PyArray_NDIM(a) == 0:
-        CHKERR( VecSet(v, va[0]) )
-        return 0
-    CHKERR( VecGetLocalSize(v, &nv) )
-    if na != nv: raise ValueError(
-        "array size %d incompatible " \
-        "with vector local size %d" % (toInt(na), toInt(nv)) )
-    CHKERR( VecGetArray(v, &vv) )
-    CHKERR( PetscMemcpy(vv, va, nv*sizeof(PetscScalar)) )
-    CHKERR( VecRestoreArray(v, &vv) )
-    return 0
-
 ctypedef int VecSetValuesFcn(PetscVec,PetscInt,const_PetscInt[],
                              const_PetscScalar[],PetscInsertMode)
 
@@ -295,18 +279,18 @@ cdef inline int vecsetvalues(PetscVec V,
                              int blocked, int local) except -1:
     # block size
     cdef PetscInt bs=1
-    if blocked: CHKERR( VecGetBlockSize(V, &bs) )
-    if bs < 1: bs = 1
+    if blocked:
+        CHKERR( VecGetBlockSize(V, &bs) )
+        if bs < 1: bs = 1
     # indices and values
-    cdef PetscInt ni=0
-    cdef PetscInt *i=NULL
-    cdef PetscInt nv=0
+    cdef PetscInt ni=0, nv=0
+    cdef PetscInt    *i=NULL
     cdef PetscScalar *v=NULL
     cdef object ai = iarray_i(oi, &ni, &i)
     cdef object av = iarray_s(ov, &nv, &v)
     if ni*bs != nv: raise ValueError(
-        "incompatible array sizes: " \
-        "ni=%d, nv=%d, bs=%d" % (toInt(ni), toInt(nv), toInt(bs)) )
+        "incompatible array sizes: ni=%d, nv=%d, bs=%d" %
+        (toInt(ni), toInt(nv), toInt(bs)) )
     # insert mode
     cdef PetscInsertMode addv = insertmode(oim)
     # VecSetValuesXXX function
@@ -321,20 +305,39 @@ cdef inline int vecsetvalues(PetscVec V,
 
 cdef object vecgetvalues(PetscVec vec, object oindices, object values):
     cdef PetscInt ni=0, nv=0
-    cdef PetscInt *i=NULL
+    cdef PetscInt    *i=NULL
     cdef PetscScalar *v=NULL
-    cdef ndarray indices = iarray_i(oindices, &ni, &i)
+    cdef object indices = iarray_i(oindices, &ni, &i)
     if values is None:
         values = empty_s(ni)
         values.shape = indices.shape
     values = oarray_s(values, &nv, &v)
     if (ni != nv): raise ValueError(
-        "incompatible array sizes: " \
-        "ni=%d, nv=%d" % (toInt(ni), toInt(nv)))
+        ("incompatible array sizes: "
+         "ni=%d, nv=%d") % (toInt(ni), toInt(nv)))
     CHKERR( VecGetValues(vec, ni, i, v) )
     return values
 
 # --------------------------------------------------------------------
+
+cdef inline int vec_setarray(Vec self, object o) except -1:
+    cdef PetscInt na=0, nv=0, i=0
+    cdef PetscScalar *va=NULL, *vv=NULL
+    cdef ndarray ary = iarray_s(o, &na, &va)
+    CHKERR( VecGetLocalSize(self.vec, &nv) )
+    if (na != nv) and PyArray_NDIM(ary) > 0: raise ValueError(
+        "array size %d incompatible with vector local size %d" %
+        (toInt(na), toInt(nv)) )
+    CHKERR( VecGetArray(self.vec, &vv) )
+    try:
+        if PyArray_NDIM(ary) == 0:
+            for i from 0 <= i < nv:
+                vv[i] = va[0]
+        else:
+            CHKERR( PetscMemcpy(vv, va, nv*sizeof(PetscScalar)) )
+    finally:
+        CHKERR( VecRestoreArray(self.vec, &vv) )
+    return 0
 
 cdef object vec_getitem(Vec self, object i):
     cdef PetscInt N=0
@@ -349,11 +352,7 @@ cdef object vec_getitem(Vec self, object i):
 cdef int vec_setitem(Vec self, object i, object v) except -1:
     cdef PetscInt N=0
     if i is Ellipsis:
-        if isinstance(v, Vec):
-            CHKERR( VecCopy((<Vec>v).vec, self.vec) )
-        else:
-            vecset(self.vec, v)
-        return 0
+        return vec_setarray(self, v)
     if isinstance(i, slice):
         CHKERR( VecGetSize(self.vec, &N) )
         start, stop, stride = i.indices(toInt(N))

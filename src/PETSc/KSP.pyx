@@ -260,7 +260,7 @@ cdef class KSP(Object):
         elif length is not None: size = asInt(length)
         if size < 0: size = 10000
         if reset: flag = PETSC_TRUE
-        cdef ndarray hist = oarray_r(empty_r(size), NULL, &data)
+        cdef object hist = oarray_r(empty_r(size), NULL, &data)
         Object_setAttr(<PetscObject>self.ksp, '__history__', hist)
         CHKERR( KSPSetResidualHistory(self.ksp, data, size, flag) )
 
