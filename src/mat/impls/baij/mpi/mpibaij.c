@@ -3397,8 +3397,8 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer, Mat newmat)
   if (sizesset) {
     ierr = MatGetSize(newmat,&grows,&gcols);CHKERRQ(ierr);
   } 
-  if (sizesset && newmat->rmap->N != grows) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Incostintent # of rows:Matrix in file has (%d) and input matrix has (%d)",M,grows);
-  if (sizesset && newmat->cmap->N != gcols) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Incostintent # of cols:Matrix in file has (%d) and input matrix has (%d)",N,gcols);
+  if (sizesset && newmat->rmap->N != grows) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of rows:Matrix in file has (%d) and input matrix has (%d)",M,grows);
+  if (sizesset && newmat->cmap->N != gcols) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of cols:Matrix in file has (%d) and input matrix has (%d)",N,gcols);
 
   if (M != N) SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Can only do square matrices");
 

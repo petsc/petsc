@@ -2893,8 +2893,8 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer, Mat newMat)
   if (sizesset) {
     ierr = MatGetSize(newMat,&grows,&gcols);CHKERRQ(ierr);
   } 
-  if (sizesset && newMat->rmap->N != grows) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Incostintent # of rows:Matrix in file has (%d) and input matrix has (%d)",M,grows);
-  if (sizesset && newMat->cmap->N != gcols) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Incostintent # of cols:Matrix in file has (%d) and input matrix has (%d)",N,gcols);
+  if (sizesset && newMat->rmap->N != grows) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of rows:Matrix in file has (%d) and input matrix has (%d)",M,grows);
+  if (sizesset && newMat->cmap->N != gcols) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of cols:Matrix in file has (%d) and input matrix has (%d)",N,gcols);
 
   /* determine ownership of all rows */
   if (newMat->rmap->n < 0 ) m    = M/size + ((M % size) > rank); /* PETSC_DECIDE */
