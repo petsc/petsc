@@ -65,7 +65,6 @@ typedef struct {
   MPIBAIJHEADER;
 } Mat_MPIBAIJ;
 
-EXTERN PetscErrorCode MatLoad_MPIBAIJ(PetscViewer, const MatType,Mat*);
 EXTERN PetscErrorCode MatLoadnew_MPIBAIJ(PetscViewer,Mat);
 EXTERN PetscErrorCode CreateColmap_MPIBAIJ_Private(Mat);
 EXTERN PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*[]);

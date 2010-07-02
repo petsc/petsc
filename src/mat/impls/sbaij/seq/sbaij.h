@@ -157,7 +157,6 @@ EXTERN PetscErrorCode MatMultAdd_SeqSBAIJ_7(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat,Vec,Vec,Vec);
 
 EXTERN PetscErrorCode MatSOR_SeqSBAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
-EXTERN PetscErrorCode MatLoad_SeqSBAIJ(PetscViewer, const MatType,Mat*);
 EXTERN PetscErrorCode MatLoadnew_SeqSBAIJ(PetscViewer, Mat);
 EXTERN PetscErrorCode MatSeqSBAIJSetNumericFactorization_inplace(Mat,PetscTruth);
 
