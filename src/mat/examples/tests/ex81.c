@@ -41,7 +41,9 @@ int main(int argc,char **args)
 
   /* Read matrix and RHS */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,bfile,FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr = MatLoad(fd,MATSEQAIJ,&A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatLoad(fd,A);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecLoad(fd,x);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
@@ -49,8 +51,8 @@ int main(int argc,char **args)
   /* Format is in column storage so we print transpose matrix */
   ierr = MatTranspose(A,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
 
-  m = A->m;
-  n = A->n;
+  m = A->rmap->n;
+  n = A->cmap->n;
   if (n != m) SETERRQ(PETSC_COMM_SELF,1,"Only for square matrices");
 
   /* charrage returns \n may not belong below

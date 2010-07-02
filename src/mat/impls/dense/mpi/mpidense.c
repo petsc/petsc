@@ -1599,8 +1599,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
 /*119*/0,
        0,
        0,
-       0,
-       MatLoadnew_MPIDense
+       0
 };
 
 EXTERN_C_BEGIN
@@ -1875,259 +1874,7 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Ma
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIDense_DenseInFile"
-PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M,PetscInt N, const MatType type,Mat *newmat)
-{
-  PetscErrorCode ierr;
-  PetscMPIInt    rank,size;
-  PetscInt       *rowners,i,m,nz,j;
-  PetscScalar    *array,*vals,*vals_ptr;
-  MPI_Status     status;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-
-  /* determine ownership of all rows */
-  m          = M/size + ((M % size) > rank);
-  ierr       = PetscMalloc((size+2)*sizeof(PetscInt),&rowners);CHKERRQ(ierr);
-  ierr       = MPI_Allgather(&m,1,MPIU_INT,rowners+1,1,MPIU_INT,comm);CHKERRQ(ierr);
-  rowners[0] = 0;
-  for (i=2; i<=size; i++) {
-    rowners[i] += rowners[i-1];
-  }
-
-  ierr = MatCreate(comm,newmat);CHKERRQ(ierr);
-  ierr = MatSetSizes(*newmat,m,PETSC_DECIDE,M,N);CHKERRQ(ierr);
-  ierr = MatSetType(*newmat,type);CHKERRQ(ierr);
-  ierr = MatMPIDenseSetPreallocation(*newmat,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatGetArray(*newmat,&array);CHKERRQ(ierr);
-
-  if (!rank) {
-    ierr = PetscMalloc(m*N*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
-
-    /* read in my part of the matrix numerical values  */
-    ierr = PetscBinaryRead(fd,vals,m*N,PETSC_SCALAR);CHKERRQ(ierr);
-    
-    /* insert into matrix-by row (this is why cannot directly read into array */
-    vals_ptr = vals;
-    for (i=0; i<m; i++) {
-      for (j=0; j<N; j++) {
-        array[i + j*m] = *vals_ptr++;
-      }
-    }
-
-    /* read in other processors and ship out */
-    for (i=1; i<size; i++) {
-      nz   = (rowners[i+1] - rowners[i])*N;
-      ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR);CHKERRQ(ierr);
-      ierr = MPI_Send(vals,nz,MPIU_SCALAR,i,((PetscObject)(*newmat))->tag,comm);CHKERRQ(ierr);
-    }
-  } else {
-    /* receive numeric values */
-    ierr = PetscMalloc(m*N*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
-
-    /* receive message of values*/
-    ierr = MPI_Recv(vals,m*N,MPIU_SCALAR,0,((PetscObject)(*newmat))->tag,comm,&status);CHKERRQ(ierr);
-
-    /* insert into matrix-by row (this is why cannot directly read into array */
-    vals_ptr = vals;
-    for (i=0; i<m; i++) {
-      for (j=0; j<N; j++) {
-        array[i + j*m] = *vals_ptr++;
-      }
-    }
-  }
-  ierr = PetscFree(rowners);CHKERRQ(ierr);
-  ierr = PetscFree(vals);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatLoad_MPIDense"
-PetscErrorCode MatLoad_MPIDense(PetscViewer viewer,const MatType type,Mat *newmat)
-{
-  Mat            A;
-  PetscScalar    *vals,*svals;
-  MPI_Comm       comm = ((PetscObject)viewer)->comm;
-  MPI_Status     status;
-  PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag,*rowners,*sndcounts,m,maxnz;
-  PetscInt       header[4],*rowlengths = 0,M,N,*cols;
-  PetscInt       *ourlens,*procsnz = 0,*offlens,jj,*mycols,*smycols;
-  PetscInt       i,nz,j,rstart,rend;
-  int            fd;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  if (!rank) {
-    ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fd,(char *)header,4,PETSC_INT);CHKERRQ(ierr);
-    if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"not matrix object");
-  }
-
-  ierr = MPI_Bcast(header+1,3,MPIU_INT,0,comm);CHKERRQ(ierr);
-  M = header[1]; N = header[2]; nz = header[3];
-
-  /*
-       Handle case where matrix is stored on disk as a dense matrix 
-  */
-  if (nz == MATRIX_BINARY_FORMAT_DENSE) {
-    ierr = MatLoad_MPIDense_DenseInFile(comm,fd,M,N,type,newmat);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-
-  /* determine ownership of all rows */
-  m          = PetscMPIIntCast(M/size + ((M % size) > rank));
-  ierr       = PetscMalloc((size+2)*sizeof(PetscMPIInt),&rowners);CHKERRQ(ierr);
-  ierr       = MPI_Allgather(&m,1,MPI_INT,rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
-  rowners[0] = 0;
-  for (i=2; i<=size; i++) {
-    rowners[i] += rowners[i-1];
-  }
-  rstart = rowners[rank]; 
-  rend   = rowners[rank+1]; 
-
-  /* distribute row lengths to all processors */
-  ierr    = PetscMalloc2(rend-rstart,PetscInt,&ourlens,rend-rstart,PetscInt,&offlens);CHKERRQ(ierr);
-  if (!rank) {
-    ierr = PetscMalloc(M*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT);CHKERRQ(ierr);
-    ierr = PetscMalloc(size*sizeof(PetscMPIInt),&sndcounts);CHKERRQ(ierr);
-    for (i=0; i<size; i++) sndcounts[i] = rowners[i+1] - rowners[i];
-    ierr = MPI_Scatterv(rowlengths,sndcounts,rowners,MPIU_INT,ourlens,rend-rstart,MPIU_INT,0,comm);CHKERRQ(ierr);
-    ierr = PetscFree(sndcounts);CHKERRQ(ierr);
-  } else {
-    ierr = MPI_Scatterv(0,0,0,MPIU_INT,ourlens,rend-rstart,MPIU_INT,0,comm);CHKERRQ(ierr);
-  }
-
-  if (!rank) {
-    /* calculate the number of nonzeros on each processor */
-    ierr = PetscMalloc(size*sizeof(PetscInt),&procsnz);CHKERRQ(ierr);
-    ierr = PetscMemzero(procsnz,size*sizeof(PetscInt));CHKERRQ(ierr);
-    for (i=0; i<size; i++) {
-      for (j=rowners[i]; j< rowners[i+1]; j++) {
-        procsnz[i] += rowlengths[j];
-      }
-    }
-    ierr = PetscFree(rowlengths);CHKERRQ(ierr);
-
-    /* determine max buffer needed and allocate it */
-    maxnz = 0;
-    for (i=0; i<size; i++) {
-      maxnz = PetscMax(maxnz,procsnz[i]);
-    }
-    ierr = PetscMalloc(maxnz*sizeof(PetscInt),&cols);CHKERRQ(ierr);
-
-    /* read in my part of the matrix column indices  */
-    nz = procsnz[0];
-    ierr = PetscMalloc(nz*sizeof(PetscInt),&mycols);CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fd,mycols,nz,PETSC_INT);CHKERRQ(ierr);
-
-    /* read in every one elses and ship off */
-    for (i=1; i<size; i++) {
-      nz   = procsnz[i];
-      ierr = PetscBinaryRead(fd,cols,nz,PETSC_INT);CHKERRQ(ierr);
-      ierr = MPI_Send(cols,nz,MPIU_INT,i,tag,comm);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(cols);CHKERRQ(ierr);
-  } else {
-    /* determine buffer space needed for message */
-    nz = 0;
-    for (i=0; i<m; i++) {
-      nz += ourlens[i];
-    }
-    ierr = PetscMalloc((nz+1)*sizeof(PetscInt),&mycols);CHKERRQ(ierr);
-
-    /* receive message of column indices*/
-    ierr = MPI_Recv(mycols,nz,MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
-    ierr = MPI_Get_count(&status,MPIU_INT,&maxnz);CHKERRQ(ierr);
-    if (maxnz != nz) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"something is wrong with file");
-  }
-
-  /* loop over local rows, determining number of off diagonal entries */
-  ierr = PetscMemzero(offlens,m*sizeof(PetscInt));CHKERRQ(ierr);
-  jj = 0;
-  for (i=0; i<m; i++) {
-    for (j=0; j<ourlens[i]; j++) {
-      if (mycols[jj] < rstart || mycols[jj] >= rend) offlens[i]++;
-      jj++;
-    }
-  }
-
-  /* create our matrix */
-  for (i=0; i<m; i++) {
-    ourlens[i] -= offlens[i];
-  }
-  ierr = MatCreate(comm,newmat);CHKERRQ(ierr);
-  ierr = MatSetSizes(*newmat,m,PETSC_DECIDE,M,N);CHKERRQ(ierr);
-  ierr = MatSetType(*newmat,type);CHKERRQ(ierr);
-  ierr = MatMPIDenseSetPreallocation(*newmat,PETSC_NULL);CHKERRQ(ierr);
-  A = *newmat;
-  for (i=0; i<m; i++) {
-    ourlens[i] += offlens[i];
-  }
-
-  if (!rank) {
-    ierr = PetscMalloc(maxnz*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
-
-    /* read in my part of the matrix numerical values  */
-    nz = procsnz[0];
-    ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR);CHKERRQ(ierr);
-    
-    /* insert into matrix */
-    jj      = rstart;
-    smycols = mycols;
-    svals   = vals;
-    for (i=0; i<m; i++) {
-      ierr = MatSetValues(A,1,&jj,ourlens[i],smycols,svals,INSERT_VALUES);CHKERRQ(ierr);
-      smycols += ourlens[i];
-      svals   += ourlens[i];
-      jj++;
-    }
-
-    /* read in other processors and ship out */
-    for (i=1; i<size; i++) {
-      nz   = procsnz[i];
-      ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR);CHKERRQ(ierr);
-      ierr = MPI_Send(vals,nz,MPIU_SCALAR,i,((PetscObject)A)->tag,comm);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(procsnz);CHKERRQ(ierr);
-  } else {
-    /* receive numeric values */
-    ierr = PetscMalloc((nz+1)*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
-
-    /* receive message of values*/
-    ierr = MPI_Recv(vals,nz,MPIU_SCALAR,0,((PetscObject)A)->tag,comm,&status);CHKERRQ(ierr);
-    ierr = MPI_Get_count(&status,MPIU_SCALAR,&maxnz);CHKERRQ(ierr);
-    if (maxnz != nz) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"something is wrong with file");
-
-    /* insert into matrix */
-    jj      = rstart;
-    smycols = mycols;
-    svals   = vals;
-    for (i=0; i<m; i++) {
-      ierr = MatSetValues(A,1,&jj,ourlens[i],smycols,svals,INSERT_VALUES);CHKERRQ(ierr);
-      smycols += ourlens[i];
-      svals   += ourlens[i];
-      jj++;
-    }
-  }
-  ierr = PetscFree2(ourlens,offlens);CHKERRQ(ierr);
-  ierr = PetscFree(vals);CHKERRQ(ierr);
-  ierr = PetscFree(mycols);CHKERRQ(ierr);
-  ierr = PetscFree(rowners);CHKERRQ(ierr);
-
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatLoadnew_MPIDense_DenseInFile"
-PetscErrorCode MatLoadnew_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M,PetscInt N,Mat newmat,PetscInt sizesset)
+PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M,PetscInt N,Mat newmat,PetscInt sizesset)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
@@ -2198,8 +1945,8 @@ PetscErrorCode MatLoadnew_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscIn
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatLoadnew_MPIDense"
-PetscErrorCode MatLoadnew_MPIDense(PetscViewer viewer,Mat newmat)
+#define __FUNCT__ "MatLoad_MPIDense"
+PetscErrorCode MatLoad_MPIDense(PetscViewer viewer,Mat newmat)
 {
   PetscScalar    *vals,*svals;
   MPI_Comm       comm = ((PetscObject)viewer)->comm;
@@ -2219,7 +1966,6 @@ PetscErrorCode MatLoadnew_MPIDense(PetscViewer viewer,Mat newmat)
     ierr = PetscBinaryRead(fd,(char *)header,4,PETSC_INT);CHKERRQ(ierr);
     if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"not matrix object");
   }
-
   if (newmat->rmap->n < 0 && newmat->rmap->N < 0 && newmat->cmap->n < 0 && newmat->cmap->N < 0) sizesset = 0;
 
   ierr = MPI_Bcast(header+1,3,MPIU_INT,0,comm);CHKERRQ(ierr);
@@ -2233,14 +1979,14 @@ PetscErrorCode MatLoadnew_MPIDense(PetscViewer viewer,Mat newmat)
   if (sizesset) {
     ierr = MatGetSize(newmat,&grows,&gcols);CHKERRQ(ierr);
   } 
-  if (sizesset && newmat->rmap->N != grows) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Incostintent # of rows:Matrix in file has (%d) and input matrix has (%d)",M,grows);
-  if (sizesset && newmat->cmap->N != gcols) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Incostintent # of cols:Matrix in file has (%d) and input matrix has (%d)",N,gcols);
+  if (sizesset && newmat->rmap->N != grows) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of rows:Matrix in file has (%d) and input matrix has (%d)",M,grows);
+  if (sizesset && newmat->cmap->N != gcols) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of cols:Matrix in file has (%d) and input matrix has (%d)",N,gcols);
 
   /*
        Handle case where matrix is stored on disk as a dense matrix 
   */
   if (nz == MATRIX_BINARY_FORMAT_DENSE) {
-    ierr = MatLoadnew_MPIDense_DenseInFile(comm,fd,M,N,newmat,sizesset);CHKERRQ(ierr);
+    ierr = MatLoad_MPIDense_DenseInFile(comm,fd,M,N,newmat,sizesset);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 

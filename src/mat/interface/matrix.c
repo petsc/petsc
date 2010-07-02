@@ -732,7 +732,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatView(Mat mat,PetscViewer viewer)
 
 #if defined(PETSC_USE_DEBUG)
 #include "../src/sys/totalview/tv_data_display.h"
-static int TV_display_type(const struct _p_Mat *mat)
+PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
 {
   TV_add_row("Local rows", "int", &mat->rmap->n);
   TV_add_row("Local columns", "int", &mat->cmap->n);
@@ -744,7 +744,7 @@ static int TV_display_type(const struct _p_Mat *mat)
 #endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatLoadnew"
+#define __FUNCT__ "MatLoad"
 /*@C
    MatLoad - Loads a matrix that has been stored in binary format
    with MatView().  The matrix format is determined from the options database.
@@ -822,7 +822,7 @@ and PetscBinaryWrite() to see how this may be done.
 .seealso: PetscViewerBinaryOpen(), MatView(), VecLoad()
 
  @*/  
-PetscErrorCode PETSCMAT_DLLEXPORT MatLoadnew(PetscViewer viewer, Mat newmat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer viewer, Mat newmat)
 {
   PetscErrorCode ierr;
   PetscTruth     isbinary,flg;
@@ -833,15 +833,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLoadnew(PetscViewer viewer, Mat newmat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(newmat,3);
-
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
-  if (!isbinary) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()"\
-	    );
-  }
+  if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
+
 
   if (((PetscObject)newmat)->type_name) outtype = ((PetscObject)newmat)->type_name;
-  
   if (!outtype) {
     ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,(const char **)&prefix);CHKERRQ(ierr);
     ierr = PetscOptionsGetString(prefix,"-mat_type",mtype,256,&flg);CHKERRQ(ierr);
@@ -856,10 +852,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLoadnew(PetscViewer viewer, Mat newmat)
     ierr = MatSetType(newmat,outtype);CHKERRQ(ierr);
   }
 
-  if (!newmat->ops->loadnew) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatLoad is not supported for type: %s",outtype);
+  if (!newmat->ops->load) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatLoad is not supported for type: %s",outtype);
 
   ierr = PetscLogEventBegin(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
-  ierr = (*newmat->ops->loadnew)(viewer,newmat);CHKERRQ(ierr);
+  ierr = (*newmat->ops->load)(viewer,newmat);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;

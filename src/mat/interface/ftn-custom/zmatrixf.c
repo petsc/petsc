@@ -9,6 +9,7 @@
 #define matrestorerowij_                 MATRESTOREROWIJ
 #define matgetrow_                       MATGETROW
 #define matrestorerow_                   MATRESTOREROW
+#define matload_                         MATLOAD
 #define matview_                         MATVIEW
 #define matgetarray_                     MATGETARRAY
 #define matrestorearray_                 MATRESTOREARRAY
@@ -44,6 +45,7 @@
 #define matgetrow_                       matgetrow
 #define matrestorerow_                   matrestorerow
 #define matview_                         matview
+#define matload_                         matload
 #define matgetarray_                     matgetarray
 #define matrestorearray_                 matrestorearray
 #define matconvert_                      matconvert
@@ -165,6 +167,13 @@ void PETSC_STDCALL matview_(Mat *mat,PetscViewer *vin,PetscErrorCode *ierr)
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
   *ierr = MatView(*mat,v);
+}
+
+void PETSC_STDCALL matload_(PetscViewer *vin,Mat *mat,PetscErrorCode *ierr)
+{
+  PetscViewer v;
+  PetscPatchDefaultViewers_Fortran(vin,v);
+  *ierr = MatLoad(v,*mat);
 }
 
 void PETSC_STDCALL matgetarray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)

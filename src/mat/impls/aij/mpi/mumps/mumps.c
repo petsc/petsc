@@ -1357,7 +1357,7 @@ EXTERN_C_END
 
 /* -------------------------------------------------------------------------------------------*/
 #undef __FUNCT__   
-#define __FUNCT__ "MatSeetMumpsIcntl"
+#define __FUNCT__ "MatSetMumpsIcntl"
 /*@
   MatSetMumpsIcntl - Set MUMPS parameter ICNTL()
 

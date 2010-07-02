@@ -304,127 +304,7 @@ PetscErrorCode MatSetValues_BlockMat(Mat A,PetscInt m,const PetscInt im[],PetscI
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_BlockMat"
-PetscErrorCode MatLoad_BlockMat(PetscViewer viewer, const MatType type,Mat *A)
-{
-  PetscErrorCode    ierr;
-  Mat               tmpA;
-  PetscInt          i,j,m,n,bs = 1,ncols,*lens,currentcol,mbs,**ii,*ilens,nextcol,*llens,cnt = 0;
-  const PetscInt    *cols;
-  const PetscScalar *values;
-  PetscTruth        flg = PETSC_FALSE,notdone;
-  Mat_SeqAIJ        *a;
-  Mat_BlockMat      *amat;
-
-  PetscFunctionBegin;
-  ierr = MatLoad_SeqAIJ(viewer,MATSEQAIJ,&tmpA);CHKERRQ(ierr);
-
-  ierr = MatGetLocalSize(tmpA,&m,&n);CHKERRQ(ierr);
-  ierr = PetscOptionsBegin(PETSC_COMM_SELF,PETSC_NULL,"Options for loading BlockMat matrix 1","Mat");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-matload_block_size","Set the blocksize used to store the matrix","MatLoad",bs,&bs,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-matload_symmetric","Store the matrix as symmetric","MatLoad",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-
-  /* Determine number of nonzero blocks for each block row */
-  a    = (Mat_SeqAIJ*) tmpA->data;
-  mbs  = m/bs;
-  ierr = PetscMalloc3(mbs,PetscInt,&lens,bs,PetscInt*,&ii,bs,PetscInt,&ilens);CHKERRQ(ierr);
-  ierr = PetscMemzero(lens,mbs*sizeof(PetscInt));CHKERRQ(ierr);
-
-  for (i=0; i<mbs; i++) {
-    for (j=0; j<bs; j++) {
-      ii[j]         = a->j + a->i[i*bs + j];
-      ilens[j]      = a->i[i*bs + j + 1] - a->i[i*bs + j];
-    } 
-
-    currentcol = -1;
-    notdone = PETSC_TRUE;
-    while (PETSC_TRUE) {
-      notdone = PETSC_FALSE;
-      nextcol = 1000000000;
-      for (j=0; j<bs; j++) {
-        while ((ilens[j] > 0 && ii[j][0]/bs <= currentcol)) {
-          ii[j]++; 
-          ilens[j]--; 
-        }
-        if (ilens[j] > 0) {
-          notdone = PETSC_TRUE;
-          nextcol = PetscMin(nextcol,ii[j][0]/bs);
-        }
-      }
-      if (!notdone) break;
-      if (!flg || (nextcol >= i)) lens[i]++;
-      currentcol = nextcol;
-    }
-  }
-
-  ierr = MatCreateBlockMat(PETSC_COMM_SELF,m,n,bs,0,lens,A);CHKERRQ(ierr);
-  if (flg) {
-    ierr = MatSetOption(*A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-  }
-  amat = (Mat_BlockMat*)(*A)->data;
-
-  /* preallocate the submatrices */
-  ierr = PetscMalloc(bs*sizeof(PetscInt),&llens);CHKERRQ(ierr);
-  for (i=0; i<mbs; i++) { /* loops for block rows */
-    for (j=0; j<bs; j++) {
-      ii[j]         = a->j + a->i[i*bs + j];
-      ilens[j]      = a->i[i*bs + j + 1] - a->i[i*bs + j];
-    } 
-
-    currentcol = 1000000000;
-    for (j=0; j<bs; j++) { /* loop over rows in block finding first nonzero block */
-      if (ilens[j] > 0) {
-	currentcol = PetscMin(currentcol,ii[j][0]/bs);
-      }
-    }
-
-    notdone = PETSC_TRUE;
-    while (PETSC_TRUE) {  /* loops over blocks in block row */
-
-      notdone = PETSC_FALSE;
-      nextcol = 1000000000;
-      ierr = PetscMemzero(llens,bs*sizeof(PetscInt));CHKERRQ(ierr);
-      for (j=0; j<bs; j++) { /* loop over rows in block */
-        while ((ilens[j] > 0 && ii[j][0]/bs <= currentcol)) { /* loop over columns in row */
-          ii[j]++; 
-          ilens[j]--; 
-          llens[j]++;
-        }
-        if (ilens[j] > 0) {
-          notdone = PETSC_TRUE;
-          nextcol = PetscMin(nextcol,ii[j][0]/bs);
-        }
-      }
-      if (cnt >= amat->maxnz) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of blocks found greater than expected %D",cnt);
-      if (!flg || currentcol >= i) {
-        amat->j[cnt] = currentcol;
-        ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,bs,bs,0,llens,amat->a+cnt++);CHKERRQ(ierr);
-      }
-
-      if (!notdone) break;
-      currentcol = nextcol;
-    }
-    amat->ilen[i] = lens[i];
-  }
-  CHKMEMQ;
-
-  ierr = PetscFree3(lens,ii,ilens);CHKERRQ(ierr);
-  ierr = PetscFree(llens);CHKERRQ(ierr);
-
-  /* copy over the matrix, one row at a time */
-  for (i=0; i<m; i++) {
-    ierr = MatGetRow(tmpA,i,&ncols,&cols,&values);CHKERRQ(ierr);
-    ierr = MatSetValues(*A,1,&i,ncols,cols,values,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatRestoreRow(tmpA,i,&ncols,&cols,&values);CHKERRQ(ierr);
-  }
-  ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatLoadnew_BlockMat"
-PetscErrorCode MatLoadnew_BlockMat(PetscViewer viewer, Mat newmat)
+PetscErrorCode MatLoad_BlockMat(PetscViewer viewer, Mat newmat)
 {
   PetscErrorCode    ierr;
   Mat               tmpA;
@@ -438,7 +318,7 @@ PetscErrorCode MatLoadnew_BlockMat(PetscViewer viewer, Mat newmat)
   PetscFunctionBegin;
   ierr = MatCreate(PETSC_COMM_SELF,&tmpA);CHKERRQ(ierr);
   ierr = MatSetType(tmpA,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatLoadnew_SeqAIJ(viewer,tmpA);CHKERRQ(ierr);
+  ierr = MatLoad_SeqAIJ(viewer,tmpA);CHKERRQ(ierr);
 
   ierr = MatGetLocalSize(tmpA,&m,&n);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(PETSC_COMM_SELF,PETSC_NULL,"Options for loading BlockMat matrix 1","Mat");CHKERRQ(ierr);
@@ -1010,8 +890,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
 /*119*/0,
        0,
        0,
-       0,
-       MatLoadnew_BlockMat
+       0
 };
 
 #undef __FUNCT__  

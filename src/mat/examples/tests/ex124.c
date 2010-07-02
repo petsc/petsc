@@ -30,16 +30,19 @@ PetscInt main(PetscInt argc,char **args)
    
   /* Load matrices */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr  = MatLoad(fd,MATAIJ,&A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
+  ierr = MatLoad(fd,A);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
   printf("\n A:\n");
   printf("----------------------\n");
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatGetSize(A,&ma,&na);CHKERRQ(ierr);
   
-    
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[1],FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr = MatLoad(fd,MATAIJ,&B);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATAIJ);CHKERRQ(ierr);
+  ierr = MatLoad(fd,B);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
   printf("\n B:\n");
   printf("----------------------\n");

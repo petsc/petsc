@@ -2613,8 +2613,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
 /*119*/0,
        0,
        0,
-       0,
-       MatLoadnew_SeqAIJ
+       0
 };
 
 EXTERN_C_BEGIN
@@ -3528,66 +3527,7 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_SeqAIJ"
-PetscErrorCode MatLoad_SeqAIJ(PetscViewer viewer, const MatType type,Mat *A)
-{
-  Mat_SeqAIJ     *a;
-  Mat            B;
-  PetscErrorCode ierr;
-  PetscInt       i,sum,nz,header[4],*rowlengths = 0,M,N;
-  int            fd;
-  PetscMPIInt    size;
-  MPI_Comm       comm;
-  
-  PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"view must have one processor");
-  ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
-  ierr = PetscBinaryRead(fd,header,4,PETSC_INT);CHKERRQ(ierr);
-  if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"not matrix object in file");
-  M = header[1]; N = header[2]; nz = header[3];
-
-  if (nz < 0) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Matrix stored in special format on disk,cannot load as SeqAIJ");
-  }
-
-  /* read in row lengths */
-  ierr = PetscMalloc(M*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
-  ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT);CHKERRQ(ierr);
-
-  /* check if sum of rowlengths is same as nz */
-  for (i=0,sum=0; i< M; i++) sum +=rowlengths[i];
-  if (sum != nz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Inconsistant matrix data in file. no-nonzeros = %d, sum-row-lengths = %d\n",nz,sum);
-
-  /* create our matrix */
-  ierr = MatCreate(comm,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
-  ierr = MatSetType(B,type);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation_SeqAIJ(B,0,rowlengths);CHKERRQ(ierr);
-  a = (Mat_SeqAIJ*)B->data;
-
-  ierr = PetscBinaryRead(fd,a->j,nz,PETSC_INT);CHKERRQ(ierr);
-
-  /* read in nonzero values */
-  ierr = PetscBinaryRead(fd,a->a,nz,PETSC_SCALAR);CHKERRQ(ierr);
-
-  /* set matrix "i" values */
-  a->i[0] = 0;
-  for (i=1; i<= M; i++) {
-    a->i[i]      = a->i[i-1] + rowlengths[i-1];
-    a->ilen[i-1] = rowlengths[i-1];
-  }
-  ierr = PetscFree(rowlengths);CHKERRQ(ierr);
-
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  *A = B;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatLoadnew_SeqAIJ"
-PetscErrorCode MatLoadnew_SeqAIJ(PetscViewer viewer,Mat newMat)
+PetscErrorCode MatLoad_SeqAIJ(PetscViewer viewer,Mat newMat)
 {
   Mat_SeqAIJ     *a;
   PetscErrorCode ierr;

@@ -13,7 +13,9 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,0,help);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = MatLoad(viewer,MATMPIDENSE,&C);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
+  ierr = MatSetType(C,MATMPIDENSE);CHKERRQ(ierr);
+  ierr = MatLoad(viewer,C);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatDestroy(C);CHKERRQ(ierr);

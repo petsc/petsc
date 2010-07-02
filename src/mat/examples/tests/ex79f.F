@@ -24,7 +24,9 @@
 
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'../matbinary.ex',         &
      &                          FILE_MODE_READ,v,ierr)
-      call MatLoad(v,MATMPIAIJ,A,ierr)
+      call MatCreate(PETSC_COMM_WORLD,A,ierr)
+      call MatSetType(A, MATMPIAIJ,ierr)
+      call MatLoad(v,A,ierr)
       CHKERRQ(ierr)
       call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr)
 

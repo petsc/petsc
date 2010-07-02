@@ -71,7 +71,9 @@
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename//'.petsc',                &
      &                           FILE_MODE_READ,petscviewer,ierr)
 
-      call MatLoad(petscviewer,MATMPIBAIJ,Adj,ierr)
+      call MatCreate(PETSC_COMM_WORLD,Adj,ierr)
+      call MatSetType(Adj, MATMPIBAIJ,ierr)
+      call MatLoad(petscviewer,Adj,ierr)
       call MatGetLocalSize(Adj,nlocal,nlocal,ierr)
       call PetscViewerDestroy(petscviewer,ierr)
 

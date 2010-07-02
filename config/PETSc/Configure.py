@@ -444,6 +444,18 @@ class Configure(config.base.Configure):
       self.addDefine('Prefetch(a,b,c)', ' ')
     self.popLanguage()
 
+  def configureUnused(self):
+    '''Sees if __attribute((unused)) is supported'''
+    if self.framework.argDB['with-iphone'] or self.framework.argDB['with-cuda']:
+      self.addDefine('UNUSED', ' ')
+      return
+    self.pushLanguage(self.languages.clanguage)      
+    if self.checkLink('__attribute((unused)) static int myfunc(void){ return 1;}', 'int i = myfunc();\n'):
+      self.addDefine('UNUSED', '__attribute((unused))')
+    else:
+      self.addDefine('UNUSED', ' ')
+    self.popLanguage()
+
   def configureExpect(self):
     '''Sees if the __builtin_expect directive is supported'''
     self.pushLanguage(self.languages.clanguage)
@@ -658,6 +670,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('Cannot set C language to C++ without a functional C++ compiler.')
     self.executeTest(self.configureInline)
     self.executeTest(self.configurePrefetch)
+    self.executeTest(self.configureUnused)
     self.executeTest(self.configureExpect);
     self.executeTest(self.configureIntptrt);
     self.executeTest(self.configureSolaris)

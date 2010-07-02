@@ -710,7 +710,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecView(Vec vec,PetscViewer viewer)
 
 #if defined(PETSC_USE_DEBUG)
 #include "../src/sys/totalview/tv_data_display.h"
-static int TV_display_type(const struct _p_Vec *v)
+PETSC_UNUSED static int TV_display_type(const struct _p_Vec *v)
 {
   const PetscScalar *values;
   char              type[32];

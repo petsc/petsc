@@ -46,8 +46,12 @@ int main(int argc,char **args)
     Load the matrix; then destroy the viewer.
     Note both U and V are stored as tall skinny matrices 
   */
-  ierr = MatLoad(fd,MATMPIDENSE,&U);CHKERRQ(ierr);
-  ierr = MatLoad(fd,MATMPIDENSE,&V);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&U);CHKERRQ(ierr);
+  ierr = MatSetType(U,MATMPIDENSE);CHKERRQ(ierr);
+  ierr = MatLoad(fd,U);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&V);CHKERRQ(ierr);
+  ierr = MatSetType(V,MATMPIDENSE);CHKERRQ(ierr);
+  ierr = MatLoad(fd,V);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
   ierr = MatGetLocalSize(U,&N,&n);CHKERRQ(ierr);

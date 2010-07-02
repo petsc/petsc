@@ -3,8 +3,8 @@
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zmatiof.c
-OBJSC    = ${SOURCEC:.c=.o}
+SOURCEC  = 
+OBJSC    = 
 SOURCEF  =
 SOURCEH  =
 DIRS     =
