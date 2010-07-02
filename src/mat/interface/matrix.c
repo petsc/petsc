@@ -732,7 +732,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatView(Mat mat,PetscViewer viewer)
 
 #if defined(PETSC_USE_DEBUG)
 #include "../src/sys/totalview/tv_data_display.h"
-static int TV_display_type(const struct _p_Mat *mat)
+PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
 {
   TV_add_row("Local rows", "int", &mat->rmap->n);
   TV_add_row("Local columns", "int", &mat->cmap->n);
