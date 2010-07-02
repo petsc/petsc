@@ -14,6 +14,7 @@
 #ifndef CUSPARRAY
 #define CUSPARRAY cusp::array1d<PetscScalar,cusp::device_memory>
 #endif
+#define CUSPMATRIX cusp::csr_matrix<PetscInt,PetscScalar,cusp::device_memory>
 
 EXTERN PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode);
 EXTERN_C_BEGIN
@@ -32,11 +33,11 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUDA(Mat A,MatAssemblyType mode)
 
   PetscFunctionBegin;  
   ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
-  a->GPUmatrix = new cusp::csr_matrix<PetscInt,PetscScalar,cusp::device_memory>;
-  a->GPUmatrix->resize(m,A->cmap->n,a->nz);
-  a->GPUmatrix->row_offsets.assign(a->i,a->i+m+1);
-  a->GPUmatrix->column_indices.assign(a->j,a->j+a->nz);
-  a->GPUmatrix->values.assign(a->a,a->a+a->nz);
+  A->spptr = new CUSPMATRIX;
+  ((CUSPMATRIX *)(A->spptr))->resize(m,A->cmap->n,a->nz);
+  ((CUSPMATRIX *)(A->spptr))->row_offsets.assign(a->i,a->i+m+1);
+  ((CUSPMATRIX *)(A->spptr))->column_indices.assign(a->j,a->j+a->nz);
+  ((CUSPMATRIX *)(A->spptr))->values.assign(a->a,a->a+a->nz);
   PetscFunctionReturn(0);
 }
 
@@ -84,7 +85,7 @@ PetscErrorCode MatMult_SeqAIJCUDA(Mat A,Vec xx,Vec yy)
 #else
   ierr = VecCUDACopyToGPU_Public(xx);CHKERRQ(ierr);
   ierr = VecCUDAAllocateCheck_Public(yy);CHKERRQ(ierr);
-  cusp::multiply(*(a->GPUmatrix),*(CUSPARRAY *)(xx->spptr),*(CUSPARRAY *)(yy->spptr));
+  cusp::multiply(*(CUSPMATRIX *)(A->spptr),*(CUSPARRAY *)(xx->spptr),*(CUSPARRAY *)(yy->spptr));
   yy->valid_GPU_array = PETSC_CUDA_GPU;
 #endif
   }
@@ -168,9 +169,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJCUDA(MPI_Comm comm,PetscInt m,P
 PetscErrorCode MatDestroy_SeqAIJCUDA(Mat A)
 {
   PetscErrorCode    ierr;
-  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+
   PetscFunctionBegin;
-  delete a->GPUmatrix;
+  delete (CUSPMATRIX *)(A->spptr);
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
