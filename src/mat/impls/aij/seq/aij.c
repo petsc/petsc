@@ -2593,7 +2593,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        0,
        0,
        0,
-       0,
+       MatLoad_SeqAIJ,
 /*84*/ MatIsSymmetric_SeqAIJ,
        MatIsHermitian_SeqAIJ,
        0,
@@ -2632,8 +2632,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
 /*119*/0,
        0,
        0,
-       0,
-       MatLoadnew_SeqAIJ
+       0
 };
 
 EXTERN_C_BEGIN
@@ -3546,8 +3545,8 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatLoadnew_SeqAIJ"
-PetscErrorCode MatLoadnew_SeqAIJ(PetscViewer viewer,Mat newMat)
+#define __FUNCT__ "MatLoad_SeqAIJ"
+PetscErrorCode MatLoad_SeqAIJ(PetscViewer viewer,Mat newMat)
 {
   Mat_SeqAIJ     *a;
   PetscErrorCode ierr;

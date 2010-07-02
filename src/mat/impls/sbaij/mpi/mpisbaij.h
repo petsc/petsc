@@ -19,6 +19,6 @@ typedef struct {
   MatScalar     *v_loc;
 } Mat_MPISBAIJ;
 
-EXTERN PetscErrorCode MatLoadnew_MPISBAIJ(PetscViewer,Mat);
+EXTERN PetscErrorCode MatLoad_MPISBAIJ(PetscViewer,Mat);
 EXTERN PetscErrorCode MatMult_MPISBAIJ_Hermitian(Mat,Vec,Vec);
 #endif

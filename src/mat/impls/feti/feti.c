@@ -2145,7 +2145,7 @@ int FetiLoadMatSeq(char const * const prefix, char const * const name, char cons
          /* needs comm */
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
     ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-    ierr = MatLoadnew(viewer,A);CHKERRQ(ierr);
+    ierr = MatLoad(viewer,A);CHKERRQ(ierr);
     /* MATSEQAIJ must get a communicator with one processor only; so PETSC_COMM_SELF */
     PetscViewerDestroy(viewer);
 
@@ -2164,7 +2164,7 @@ int FetiLoadMatMPI(char const * const prefix, char const * const name, char cons
     PetscViewerBinaryOpen(PETSC_COMM_WORLD, fname,PETSC_BINARY_RDONLY,&viewer); /* needs comm */
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
     ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
-    ierr = MatLoadnew(fd,A);CHKERRQ(ierr);
+    ierr = MatLoad(fd,A);CHKERRQ(ierr);
     PetscViewerDestroy(viewer);
     PetscFunctionReturn(0);
 }  

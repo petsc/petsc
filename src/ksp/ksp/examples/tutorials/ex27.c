@@ -68,7 +68,7 @@ int main(int argc,char **args)
     */
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
     ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
-    ierr = MatLoadnew(fd,A);CHKERRQ(ierr);
+    ierr = MatLoad(fd,A);CHKERRQ(ierr);
     ierr = PetscPushErrorHandler(PetscIgnoreErrorHandler,PETSC_NULL);CHKERRQ(ierr);
     ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
     ierr = VecLoad(fd,b);CHKERRQ(ierr);

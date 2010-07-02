@@ -94,7 +94,7 @@ int main(int argc,char **args)
     */
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
     ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
-    ierr = MatLoadnew(fd,A);CHKERRQ(ierr);
+    ierr = MatLoad(fd,A);CHKERRQ(ierr);
     
     if (!preload){
       flg = PETSC_FALSE;
@@ -135,7 +135,7 @@ int main(int argc,char **args)
         ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],FILE_MODE_READ,&fd);CHKERRQ(ierr);
 	ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
 	ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
-	ierr = MatLoadnew(fd,B);CHKERRQ(ierr);
+	ierr = MatLoad(fd,B);CHKERRQ(ierr);
         ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
         ierr = MatAXPY(A,sigma,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* A <- sigma*B + A */  
       } else {

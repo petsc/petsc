@@ -32,7 +32,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
-  ierr = MatLoadnew(fd,A);CHKERRQ(ierr);
+  ierr = MatLoad(fd,A);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
   printf("\n A:\n");
   printf("----------------------\n");
@@ -42,7 +42,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[1],FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
   ierr = MatSetType(B,MATAIJ);CHKERRQ(ierr);
-  ierr = MatLoadnew(fd,B);CHKERRQ(ierr);
+  ierr = MatLoad(fd,B);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
   printf("\n B:\n");
   printf("----------------------\n");

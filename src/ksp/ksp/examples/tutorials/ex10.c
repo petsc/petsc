@@ -106,7 +106,7 @@ int main(int argc,char **args)
     */
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
     ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
-    ierr = MatLoadnew(fd,A);CHKERRQ(ierr);
+    ierr = MatLoad(fd,A);CHKERRQ(ierr);
     
     if (!preload){
       flg = PETSC_FALSE;

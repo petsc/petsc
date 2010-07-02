@@ -2669,7 +2669,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
 /*80*/ 0,
        0,
        0,
-/*83*/ 0,				       
+/*83*/ MatLoad_MPIAIJ,				       
        0,
        0,
        0,
@@ -2708,8 +2708,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
 /*119*/0,
        0,
        0,
-       0,
-       MatLoadnew_MPIAIJ
+       0
 };
 
 /* ----------------------------------------------------------------------------------------*/
@@ -2859,8 +2858,8 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *ne
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatLoadnew_MPIAIJ"
-PetscErrorCode MatLoadnew_MPIAIJ(PetscViewer viewer, Mat newMat)
+#define __FUNCT__ "MatLoad_MPIAIJ"
+PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer, Mat newMat)
 {
   PetscScalar    *vals,*svals;
   MPI_Comm       comm = ((PetscObject)viewer)->comm;

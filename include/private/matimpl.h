@@ -115,7 +115,7 @@ struct _MatOps {
   PetscErrorCode (*mults)(Mat, Vecs, Vecs);
   PetscErrorCode (*solves)(Mat, Vecs, Vecs);
   PetscErrorCode (*getinertia)(Mat,PetscInt*,PetscInt*,PetscInt*);
-  PetscErrorCode (*load)(PetscViewer, const MatType,Mat*);
+  PetscErrorCode (*load)(PetscViewer, Mat);
   /*84*/
   PetscErrorCode (*issymmetric)(Mat,PetscReal,PetscTruth*);
   PetscErrorCode (*ishermitian)(Mat,PetscReal,PetscTruth*);
@@ -163,7 +163,6 @@ struct _MatOps {
   PetscErrorCode (*hermitiantranspose)(Mat,MatReuse,Mat*);
   PetscErrorCode (*multhermitiantranspose)(Mat,Vec,Vec);
   PetscErrorCode (*multhermitiantransposeadd)(Mat,Vec,Vec,Vec);
-  PetscErrorCode (*loadnew)(PetscViewer,Mat);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum

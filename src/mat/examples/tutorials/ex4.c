@@ -48,10 +48,10 @@ int main(int argc,char **args)
   */
   ierr = MatCreate(PETSC_COMM_WORLD,&U);CHKERRQ(ierr);
   ierr = MatSetType(U,MATMPIDENSE);CHKERRQ(ierr);
-  ierr = MatLoadnew(fd,U);CHKERRQ(ierr);
+  ierr = MatLoad(fd,U);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&V);CHKERRQ(ierr);
   ierr = MatSetType(V,MATMPIDENSE);CHKERRQ(ierr);
-  ierr = MatLoadnew(fd,V);CHKERRQ(ierr);
+  ierr = MatLoad(fd,V);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
   ierr = MatGetLocalSize(U,&N,&n);CHKERRQ(ierr);

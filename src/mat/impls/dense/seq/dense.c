@@ -725,8 +725,8 @@ PetscErrorCode MatGetValues_SeqDense(Mat A,PetscInt m,const PetscInt indexm[],Pe
 /* -----------------------------------------------------------------*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatLoadnew_SeqDense"
-PetscErrorCode MatLoadnew_SeqDense(PetscViewer viewer, Mat newmat)
+#define __FUNCT__ "MatLoad_SeqDense"
+PetscErrorCode MatLoad_SeqDense(PetscViewer viewer, Mat newmat)
 {
   Mat_SeqDense   *a;
   PetscErrorCode ierr;
@@ -1849,7 +1849,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        0,
        0,
        0,
-/*83*/ 0,
+/*83*/ MatLoad_SeqDense,
        0,
        MatIsHermitian_SeqDense,
        0,
@@ -1888,8 +1888,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
 /*119*/0,
        0,
        0,
-       0,
-       MatLoadnew_SeqDense
+       0
 };
 
 #undef __FUNCT__  

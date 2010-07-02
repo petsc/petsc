@@ -1511,7 +1511,7 @@ static struct _MatOps MatOps_Values = {
        0,
        0,
        0,
-       0,
+       MatLoad_MPISBAIJ,
 /*84*/ 0,
        0,
        0,
@@ -1550,8 +1550,7 @@ static struct _MatOps MatOps_Values = {
 /*119*/0,
        0,
        0,
-       0,
-       MatLoadnew_MPISBAIJ
+       0
 };
 
 
@@ -2150,8 +2149,8 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalue
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatLoadnew_MPISBAIJ"
-PetscErrorCode MatLoadnew_MPISBAIJ(PetscViewer viewer, Mat newmat)
+#define __FUNCT__ "MatLoad_MPISBAIJ"
+PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer, Mat newmat)
 {
   PetscErrorCode ierr;
   PetscInt       i,nz,j,rstart,rend;

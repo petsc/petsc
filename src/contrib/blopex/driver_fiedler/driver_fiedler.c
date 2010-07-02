@@ -166,7 +166,7 @@ int main(int argc,char **args)
    CHKERRQ(ierr);
    ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
    ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
-   ierr = MatLoadnew(fd,A);CHKERRQ(ierr);
+   ierr = MatLoad(fd,A);CHKERRQ(ierr);
    ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
    if (mass_matrix_present)
@@ -175,7 +175,7 @@ int main(int argc,char **args)
        CHKERRQ(ierr);
        ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
        ierr = MatSetType(B,MATAIJ);CHKERRQ(ierr);
-       ierr = MatLoadnew(fd,B);CHKERRQ(ierr);
+       ierr = MatLoad(fd,B);CHKERRQ(ierr);
        ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
    }
 

@@ -1553,7 +1553,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        0,
        0,
        0,
-/*83*/ 0,
+/*83*/ MatLoad_MPIDense,
        0,
        0,
        0,
@@ -1599,8 +1599,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
 /*119*/0,
        0,
        0,
-       0,
-       MatLoadnew_MPIDense
+       0
 };
 
 EXTERN_C_BEGIN
@@ -1874,8 +1873,8 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Ma
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatLoadnew_MPIDense_DenseInFile"
-PetscErrorCode MatLoadnew_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M,PetscInt N,Mat newmat,PetscInt sizesset)
+#define __FUNCT__ "MatLoad_MPIDense_DenseInFile"
+PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M,PetscInt N,Mat newmat,PetscInt sizesset)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
@@ -1946,8 +1945,8 @@ PetscErrorCode MatLoadnew_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscIn
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatLoadnew_MPIDense"
-PetscErrorCode MatLoadnew_MPIDense(PetscViewer viewer,Mat newmat)
+#define __FUNCT__ "MatLoad_MPIDense"
+PetscErrorCode MatLoad_MPIDense(PetscViewer viewer,Mat newmat)
 {
   PetscScalar    *vals,*svals;
   MPI_Comm       comm = ((PetscObject)viewer)->comm;
@@ -1988,7 +1987,7 @@ PetscErrorCode MatLoadnew_MPIDense(PetscViewer viewer,Mat newmat)
        Handle case where matrix is stored on disk as a dense matrix 
   */
   if (nz == MATRIX_BINARY_FORMAT_DENSE) {
-    ierr = MatLoadnew_MPIDense_DenseInFile(comm,fd,M,N,newmat,sizesset);CHKERRQ(ierr);
+    ierr = MatLoad_MPIDense_DenseInFile(comm,fd,M,N,newmat,sizesset);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 

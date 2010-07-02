@@ -195,7 +195,7 @@ EXTERN PetscErrorCode MatMatSolve_SeqAIJ_inplace(Mat,Mat,Mat);
 EXTERN PetscErrorCode MatMatSolve_SeqAIJ(Mat,Mat,Mat);
 EXTERN PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg);
 EXTERN PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat,ISColoring,MatFDColoring);
-EXTERN PetscErrorCode MatLoadnew_SeqAIJ(PetscViewer,Mat);
+EXTERN PetscErrorCode MatLoad_SeqAIJ(PetscViewer,Mat);
 EXTERN PetscErrorCode RegisterApplyPtAPRoutines_Private(Mat);
 EXTERN PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
 EXTERN PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);

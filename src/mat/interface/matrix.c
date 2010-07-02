@@ -744,7 +744,7 @@ static int TV_display_type(const struct _p_Mat *mat)
 #endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatLoadnew"
+#define __FUNCT__ "MatLoad"
 /*@C
    MatLoad - Loads a matrix that has been stored in binary format
    with MatView().  The matrix format is determined from the options database.
@@ -822,7 +822,7 @@ and PetscBinaryWrite() to see how this may be done.
 .seealso: PetscViewerBinaryOpen(), MatView(), VecLoad()
 
  @*/  
-PetscErrorCode PETSCMAT_DLLEXPORT MatLoadnew(PetscViewer viewer, Mat newmat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer viewer, Mat newmat)
 {
   PetscErrorCode ierr;
   PetscTruth     isbinary,flg;

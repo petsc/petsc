@@ -37,7 +37,7 @@ int main(int argc,char **args)
 
   ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
   ierr = MatSetType(A,mtype);CHKERRQ(ierr);
-  ierr = MatLoadnew(fdin,A);CHKERRQ(ierr);
+  ierr = MatLoad(fdin,A);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fdin);CHKERRQ(ierr);
   
   ierr = MatGetSize(A,&size,&size);CHKERRQ(ierr);
