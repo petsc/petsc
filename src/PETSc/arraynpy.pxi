@@ -173,9 +173,3 @@ cdef inline ndarray ofarray_s(object ob, PetscInt* size, PetscScalar** data):
     return ary
 
 # --------------------------------------------------------------------
-
-cdef extern from "arraynpy.h":
-    object PetscIS_array_struct (object,PetscIS)
-    object PetscVec_array_struct(object,PetscVec)
-
-# --------------------------------------------------------------------

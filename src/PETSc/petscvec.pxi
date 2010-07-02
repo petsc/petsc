@@ -361,3 +361,13 @@ cdef int vec_setitem(Vec self, object i, object v) except -1:
     return 0
 
 # --------------------------------------------------------------------
+
+cdef extern from "arraynpy.h":
+    object PetscIS_array_struct(object,PetscIS)
+    object PetscVec_array_struct(object,PetscVec)
+
+cdef extern from "pep3118.h":
+    int  PyPetscBuffer_FillInfo(Py_buffer*,object,char,int) except -1
+    void PyPetscBuffer_Release(Py_buffer*)
+
+# --------------------------------------------------------------------
