@@ -6,7 +6,7 @@
 #define davecgetarrayf901_           DAVECGETARRAYF901
 #define davecrestorearrayf901_       DAVECRESTOREARRAYF901
 #define davecgetarrayf902_           DAVECGETARRAYF902
-#define davecrestorearrayf902_       DAVECRESTOREARRAYF903
+#define davecrestorearrayf902_       DAVECRESTOREARRAYF902
 #define davecgetarrayf903_           DAVECGETARRAYF903
 #define davecrestorearrayf903_       DAVECRESTOREARRAYF903
 #define davecrestorearrayf90user1_   DAVECRESTOREARRAYF90USER1
