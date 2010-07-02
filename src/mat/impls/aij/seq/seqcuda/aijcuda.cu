@@ -11,12 +11,17 @@
 #include "petscblaslapack.h"
 #include "petscbt.h"
 
+#ifndef CUSPARRAY
+#define CUSPARRAY cusp::array1d<PetscScalar,cusp::device_memory>
+#endif
+
 EXTERN PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode);
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat);
 EXTERN_C_END
 EXTERN PetscErrorCode MatDestroy_SeqAIJ(Mat);
-
+EXTERN PetscErrorCode VecCUDACopyToGPU_Public(Vec);
+EXTERN PetscErrorCode VecCUDAAllocateCheck_Public(Vec);
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_SeqAIJCUDA"
 PetscErrorCode MatAssemblyEnd_SeqAIJCUDA(Mat A,MatAssemblyType mode)
@@ -34,7 +39,6 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUDA(Mat A,MatAssemblyType mode)
   a->GPUmatrix->values.assign(a->a,a->a+a->nz);
   PetscFunctionReturn(0);
 }
-
 
 #include "../src/mat/impls/aij/seq/ftn-kernels/fmult.h"
 #undef __FUNCT__  
@@ -78,9 +82,9 @@ PetscErrorCode MatMult_SeqAIJCUDA(Mat A,Vec xx,Vec yy)
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
     fortranmultaij_(&m,x,ii,aj,aa,y);
 #else
-  ierr = VecCUDACopyToGPU(xx);CHKERRQ(ierr);
-  ierr = VecCUDAAllocateCheck(yy);CHKERRQ(ierr);
-  cusp::multiply(*(a->GPUmatrix),*(xx->GPUarray),*(yy->GPUarray));
+  ierr = VecCUDACopyToGPU_Public(xx);CHKERRQ(ierr);
+  ierr = VecCUDAAllocateCheck_Public(yy);CHKERRQ(ierr);
+  cusp::multiply(*(a->GPUmatrix),*(CUSPARRAY *)(xx->spptr),*(CUSPARRAY *)(yy->spptr));
   yy->valid_GPU_array = PETSC_CUDA_GPU;
 #endif
   }

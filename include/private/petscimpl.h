@@ -715,7 +715,6 @@ typedef struct {
 #include <cusp/multiply.h>
 #include <cusp/blas.h>
 #endif
-
 PETSC_EXTERN_CXX_END
 
 #endif /* _PETSCHEAD_H */

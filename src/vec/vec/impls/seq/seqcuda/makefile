@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCECU  = veccuda.cu
+SOURCECU = veccuda.cu
 SOURCEF  =
 SOURCEH  = 
 OBJSC    = veccuda.o
