@@ -37,17 +37,18 @@ cdef inline int PetscCommDEALLOC(MPI_Comm* comm):
     if (<int>PetscFinalizeCalled): return 0
     return PetscCommDestroy(&tmp)
 
-cdef extern from "Python.h":
-    void* PyCObject_AsVoidPtr(object) except ? NULL
+cdef extern from "cython.h":
+    void *Cython_ImportFunction(object, char[], char[]) except? NULL
 
 ctypedef MPI_Comm* PyMPICommGet(object) except NULL
 
 cdef inline MPI_Comm mpi4py_Comm(object comm) except *:
-    from mpi4py.MPI import __pyx_capi__ as capi
-    cdef object cobj = capi['PyMPIComm_Get']
-    cdef PyMPICommGet *get = <PyMPICommGet*>PyCObject_AsVoidPtr(cobj)
-    if get == NULL: return MPI_COMM_NULL
-    cdef MPI_Comm *ptr = get(comm)
+    from mpi4py import MPI
+    cdef PyMPICommGet *commget = \
+        <PyMPICommGet*> Cython_ImportFunction(
+        MPI, b"PyMPIComm_Get", b"MPI_Comm *(PyObject *)")
+    if commget == NULL: return MPI_COMM_NULL
+    cdef MPI_Comm *ptr = commget(comm)
     if ptr == NULL: return MPI_COMM_NULL
     return ptr[0]
 
