@@ -280,6 +280,9 @@ $                    unpreconditioned - see KSPSetNormType()
 $                    natural - see KSPSetNormType()
 .   -ksp_check_norm_iteration it - do not compute residual norm until iteration number it (does compute at 0th iteration)
 $       works only for PCBCGS, PCIBCGS and and PCCG
+    -ksp_lag_norm - compute the norm of the residual for the ith iteration on the i+1 iteration; this means that one can use
+$       the norm of the residual for convergence test WITHOUT an extra MPI_Allreduce() limiting global synchronizations.
+$       This will require 1 more iteration of the solver than usual.
 .   -ksp_fischer_guess <model,size> - uses the Fischer initial guess generator for repeated linear solves
 .   -ksp_constant_null_space - assume the operator (matrix) has the constant vector in its null space
 .   -ksp_test_null_space - tests the null space set with KSPSetNullSpace() to see if it truly is a null space
