@@ -745,7 +745,7 @@ static int TV_display_type(const struct _p_Mat *mat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad"
-/*@C
+/*@
    MatLoad - Loads a matrix that has been stored in binary format
    with MatView().  The matrix format is determined from the options database.
    Generates a parallel MPI matrix if the communicator has more than one
