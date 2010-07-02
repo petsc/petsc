@@ -377,6 +377,17 @@ getmpiexec:
           ${PETSC_DIR}/bin/portabilitycheck.py $*.o ; \
         fi
 
+#
+#   Compiles CUDA code
+.cu.o:
+	nvcc -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} ${SOURCECU}
+
+.cu.a: 
+	nvcc -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} ${SOURCECU}
+	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
+	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
+	-${RM} $*.o $*.lo
+
 .c.a .cpp.a .cc.a .C.a: 
 	-${PETSC_COMPILE_SINGLE} $<
 	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
