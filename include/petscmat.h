@@ -497,7 +497,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsSymmetricKnown(Mat,PetscTruth*,Pet
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitianKnown(Mat,PetscTruth*,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMissingDiagonal(Mat,PetscTruth *,PetscInt *);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer,Mat);
-PetscPolymorphicFunction(MatLoad,(PetscViewer v),(v,t,&a),Mat,a)
+PetscPolymorphicFunction(MatLoad,(PetscViewer v),(v,a),Mat,a)
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreRowIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *);

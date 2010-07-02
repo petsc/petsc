@@ -856,10 +856,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer viewer, Mat newmat)
     ierr = MatSetType(newmat,outtype);CHKERRQ(ierr);
   }
 
-  if (!newmat->ops->loadnew) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatLoad is not supported for type: %s",outtype);
+  if (!newmat->ops->load) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatLoad is not supported for type: %s",outtype);
 
   ierr = PetscLogEventBegin(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
-  ierr = (*newmat->ops->loadnew)(viewer,newmat);CHKERRQ(ierr);
+  ierr = (*newmat->ops->load)(viewer,newmat);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
