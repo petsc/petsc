@@ -39,10 +39,14 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Scatter(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BlockMat(Mat);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_DD(Mat);
+
+#if defined PETSC_HAVE_CUDA
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJCUDA(Mat);
+#endif
+
 #if defined PETSC_HAVE_MATIM
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_IM(Mat);
 #endif
-
 EXTERN_C_END
   
 /*
@@ -112,6 +116,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char path[])
   ierr = MatRegisterDynamic(MATDD,             path,"MatCreate_DD",   MatCreate_DD);CHKERRQ(ierr);
 #if defined PETSC_HAVE_MATIM
   ierr = MatRegisterDynamic(MATIM,            path,"MatCreate_IM",   MatCreate_IM);CHKERRQ(ierr);
+#endif
+#if defined PETSC_HAVE_CUDA
+  ierr = MatRegisterDynamic(MATSEQAIJCUDA,     path,"MatCreate_SeqAIJCUDA",      MatCreate_SeqAIJCUDA);CHKERRQ(ierr);
+
 #endif
   PetscFunctionReturn(0);
 }

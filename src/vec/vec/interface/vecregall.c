@@ -2,7 +2,9 @@
 
 #include "private/vecimpl.h"     /*I  "vec.h"  I*/
 EXTERN_C_BEGIN
+#if defined PETSC_HAVE_CUDA
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_SeqCUDA(Vec);
+#endif
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Seq(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_MPI(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Shared(Vec);
@@ -40,7 +42,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecRegisterAll(const char path[])
   ierr = VecRegisterDynamic(VECMPI,      path, "VecCreate_MPI",      VecCreate_MPI);CHKERRQ(ierr);
   ierr = VecRegisterDynamic(VECSHARED,   path, "VecCreate_Shared",   VecCreate_Shared);CHKERRQ(ierr);
   ierr = VecRegisterDynamic(VECFETI,     path, "VecCreate_FETI",     VecCreate_FETI);CHKERRQ(ierr);
+#if defined PETSC_HAVE_CUDA
   ierr = VecRegisterDynamic(VECSEQCUDA,  path, "VecCreate_SeqCUDA",  VecCreate_SeqCUDA);CHKERRQ(ierr);
+#endif
 #if 0
 #if defined(PETSC_HAVE_SIEVE)
   ierr = VecRegisterDynamic(VECSIEVE,    path, "VecCreate_Sieve",    VecCreate_Sieve);CHKERRQ(ierr);
