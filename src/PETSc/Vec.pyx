@@ -513,15 +513,15 @@ cdef class Vec(Object):
         CHKERR( VecWAXPY(self.vec, sval, x.vec, y.vec) )
 
     def maxpy(self, alphas, vecs):
-        cdef PetscInt i = 0, n = 0
+        cdef PetscInt n = 0
         cdef PetscScalar *a = NULL
         cdef PetscVec *v = NULL
-        n = len(alphas); assert n == len(vecs)
-        cdef object tmp1 = allocate(n*sizeof(PetscScalar),<void**>&a)
-        cdef object tmp2 = allocate(n*sizeof(PetscVec),<void**>&v)
+        cdef object tmp1 = iarray_s(alphas, &n, &a)
+        cdef object tmp2 = oarray_p(empty_p(n),NULL, <void**>&v)
+        assert n == len(vecs)
+        cdef Py_ssize_t i=0
         for i from 0 <= i < n:
-            a[i] = asScalar(alphas[<Py_ssize_t>i])
-            v[i] = (<Vec?>(vecs[<Py_ssize_t>i])).vec
+            v[i] = (<Vec?>(vecs[i])).vec
         CHKERR( VecMAXPY(self.vec, n, a, v) )
 
     def pointwiseMult(self, Vec x not None, Vec y not None):

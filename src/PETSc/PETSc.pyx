@@ -11,8 +11,6 @@ cdef inline char* str2cp(object s) except ? NULL:
     if s is None: return NULL
     else:         return <char*>s
 
-include "allocate.pxi"
-
 # --------------------------------------------------------------------
 
 # Vile hack for raising a exception and not contaminating traceback
@@ -208,6 +206,16 @@ cdef int tracebackfunc(MPI_Comm       comm,
         return PetscTBEH(comm, line, cfun, cfile, cdir, n, p, mess, ctx)
 
 # --------------------------------------------------------------------
+
+cdef extern from "stdlib.h" nogil:
+    void* malloc(size_t)
+    void* realloc (void*,size_t)
+    void free(void*)
+
+cdef extern from "string.h"  nogil:
+    void* memset(void*,int,size_t)
+    void* memcpy(void*,void*,size_t)
+    char* strdup(char*)
 
 cdef extern from "Python.h":
     int Py_AtExit(void (*)())

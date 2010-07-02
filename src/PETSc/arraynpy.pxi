@@ -20,6 +20,10 @@ cdef extern from "numpy/arrayobject.h":
     npy_intp* PyArray_DIMS(ndarray)
     npy_intp  PyArray_DIM(ndarray, int)
 
+    enum: NPY_INTP
+    dtype   PyArray_DescrFromType(int)
+    object  PyArray_TypeObjectFromType(int)
+
     enum: NPY_C_CONTIGUOUS
     enum: NPY_F_CONTIGUOUS
     enum: NPY_ALIGNED
@@ -34,9 +38,6 @@ cdef extern from "numpy/arrayobject.h":
     ndarray PyArray_FROM_O(object)
     ndarray PyArray_FROM_OT(object,int)
     ndarray PyArray_FROM_OTF(object,int,int)
-
-    dtype   PyArray_DescrFromType(int)
-    object  PyArray_TypeObjectFromType(int)
 
     ndarray PyArray_Copy(ndarray)
     ndarray PyArray_ArangeObj(object,object,object,dtype)
@@ -82,6 +83,10 @@ cdef inline ndarray empty_r(PetscInt size):
 cdef inline ndarray empty_s(PetscInt size):
     cdef npy_intp s = <npy_intp> size
     return PyArray_EMPTY(1, &s, NPY_PETSC_SCALAR, 0)
+
+cdef inline ndarray empty_p(PetscInt size):
+    cdef npy_intp s = <npy_intp> size
+    return PyArray_EMPTY(1, &s, NPY_INTP, 0)
 
 # --------------------------------------------------------------------
 
@@ -156,6 +161,12 @@ cdef inline ndarray oarray_s(object ob, PetscInt* size, PetscScalar** data):
     cdef ndarray ary = oarray(ob, NPY_PETSC_SCALAR)
     if size != NULL: size[0] = <PetscInt>     PyArray_SIZE(ary)
     if data != NULL: data[0] = <PetscScalar*> PyArray_DATA(ary)
+    return ary
+
+cdef inline ndarray oarray_p(object ob, PetscInt* size, void** data):
+    cdef ndarray ary = oarray(ob, NPY_INTP)
+    if size != NULL: size[0] = <PetscInt> PyArray_SIZE(ary)
+    if data != NULL: data[0] = <void*>    PyArray_DATA(ary)
     return ary
 
 # --------------------------------------------------------------------

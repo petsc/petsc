@@ -189,6 +189,16 @@ class BaseTestVec(object):
         self.assertEqual(w1, v1)
         self.assertEqual(w2, v2)
 
+    def testMAXPY(self):
+        y = self.vec
+        y.set(1)
+        x = [y.copy() for _ in range(3)]
+        a = [1]*len(x)
+        y.maxpy(a, x)
+        z = y.duplicate()
+        z.set(len(x)+1)
+        assert (y.equal(z))
+
 
 # --------------------------------------------------------------------
 

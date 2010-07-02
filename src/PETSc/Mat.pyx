@@ -1037,16 +1037,15 @@ cdef class NullSpace(Object):
 
     def create(self, constant=False, vectors=(),  comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef PetscInt i = 0
-        cdef PetscInt nv = 0
-        cdef PetscVec *v = NULL
-        cdef PetscNullSpace newnsp = NULL
         cdef PetscTruth has_const = PETSC_FALSE
         if constant: has_const = PETSC_TRUE
-        nv = len(vectors)
-        cdef object tmp = allocate(nv*sizeof(PetscVec),<void**>&v)
+        cdef PetscInt nv = len(vectors)
+        cdef PetscVec *v = NULL
+        cdef object tmp2 = oarray_p(empty_p(nv),NULL, <void**>&v)
+        cdef Py_ssize_t i=0
         for i from 0 <= i < nv:
-            v[i] = (<Vec?>(vectors[<Py_ssize_t>i])).vec
+            v[i] = (<Vec?>(vectors[i])).vec
+        cdef PetscNullSpace newnsp = NULL
         CHKERR( MatNullSpaceCreate(ccomm, has_const, nv, v, &newnsp) )
         PetscCLEAR(self.obj); self.nsp = newnsp
         return self
