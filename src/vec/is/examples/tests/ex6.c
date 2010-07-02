@@ -11,7 +11,7 @@ static char help[] = "Tests ISComplement.\n\n";
 int main(int argc,char **argv)
 {
   PetscMPIInt    rank,size;
-  PetscInt       i,j,n,cnt,rstart,rend,*indices;
+  PetscInt       i,j,n,cnt=0,rstart,rend,*indices;
   IS             is,isc;
   PetscErrorCode ierr;
 
