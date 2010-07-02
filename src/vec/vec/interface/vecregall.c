@@ -2,13 +2,13 @@
 
 #include "private/vecimpl.h"     /*I  "vec.h"  I*/
 EXTERN_C_BEGIN
-#if defined PETSC_HAVE_CUDA
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_SeqCUDA(Vec);
-#endif
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Seq(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_MPI(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Shared(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_FETI(Vec);
+#if defined(PETSC_HAVE_CUDA)
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_SeqCUDA(Vec);
+#endif
 #if 0
 #if defined(PETSC_HAVE_SIEVE)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Sieve(Vec);
