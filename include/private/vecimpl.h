@@ -163,7 +163,7 @@ struct _p_Vec {
   PetscTruth             petscnative;  /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
 #if defined(PETSC_HAVE_CUDA)
   PetscCUDAFlag          valid_GPU_array;    /* indicates where the most recently modified vector data is (GPU or CPU) */
-  cusp::array1d<PetscScalar,cusp::device_memory> GPUarray; /* if we're using CUDA, then this is the pointer to the array on the GPU */
+  cusp::array1d<PetscScalar,cusp::device_memory>* GPUarray; /* if we're using CUDA, then this is the pointer to the array on the GPU */
 #endif
 };
 
@@ -183,7 +183,8 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDAAllocateCheck(Vec v)
 {
   PetscFunctionBegin;
   if (v->valid_GPU_array == PETSC_CUDA_UNALLOCATED){
-    v->GPUarray.resize((PetscBLASInt)v->map->n);
+    v->GPUarray = new cusp::array1d<PetscScalar,cusp::device_memory>;
+    v->GPUarray->resize((PetscBLASInt)v->map->n);
     v->valid_GPU_array = PETSC_CUDA_CPU;
   }
   PetscFunctionReturn(0);
@@ -200,7 +201,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyToGPU(Vec v)
   ierr = VecCUDAAllocateCheck(v);CHKERRQ(ierr);
   if (v->valid_GPU_array == PETSC_CUDA_CPU){
     ierr = PetscLogEventBegin(VEC_CUDACopyToGPU,v,0,0,0);CHKERRQ(ierr);
-    v->GPUarray.assign(*(PetscScalar**)v->data,*(PetscScalar**)v->data + cn);
+    v->GPUarray->assign(*(PetscScalar**)v->data,*(PetscScalar**)v->data + cn);
     ierr = PetscLogEventEnd(VEC_CUDACopyToGPU,v,0,0,0);CHKERRQ(ierr);
     v->valid_GPU_array = PETSC_CUDA_BOTH;
   }
@@ -217,7 +218,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyFromGPU(Vec v)
   PetscFunctionBegin;
   if (v->valid_GPU_array == PETSC_CUDA_GPU){
     ierr = PetscLogEventBegin(VEC_CUDACopyFromGPU,v,0,0,0);CHKERRQ(ierr);
-    thrust::copy(v->GPUarray.begin(),v->GPUarray.end(),*(PetscScalar**)v->data);
+    thrust::copy(v->GPUarray->begin(),v->GPUarray->end(),*(PetscScalar**)v->data);
     ierr = PetscLogEventEnd(VEC_CUDACopyFromGPU,v,0,0,0);CHKERRQ(ierr);
     v->valid_GPU_array = PETSC_CUDA_BOTH;
   }

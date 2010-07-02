@@ -15,6 +15,7 @@ EXTERN PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode);
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat);
 EXTERN_C_END
+EXTERN PetscErrorCode MatDestroy_SeqAIJ(Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_SeqAIJCUDA"
@@ -26,10 +27,11 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUDA(Mat A,MatAssemblyType mode)
 
   PetscFunctionBegin;  
   ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
-  a->GPUmatrix.resize(m,A->cmap->n,a->nz);
-  a->GPUmatrix.row_offsets.assign(a->i,a->i+m+1);
-  a->GPUmatrix.column_indices.assign(a->j,a->j+a->nz);
-  a->GPUmatrix.values.assign(a->a,a->a+a->nz);
+  a->GPUmatrix = new cusp::csr_matrix<PetscInt,PetscScalar,cusp::device_memory>;
+  a->GPUmatrix->resize(m,A->cmap->n,a->nz);
+  a->GPUmatrix->row_offsets.assign(a->i,a->i+m+1);
+  a->GPUmatrix->column_indices.assign(a->j,a->j+a->nz);
+  a->GPUmatrix->values.assign(a->a,a->a+a->nz);
   PetscFunctionReturn(0);
 }
 
@@ -78,7 +80,7 @@ PetscErrorCode MatMult_SeqAIJCUDA(Mat A,Vec xx,Vec yy)
 #else
   ierr = VecCUDACopyToGPU(xx);CHKERRQ(ierr);
   ierr = VecCUDAAllocateCheck(yy);CHKERRQ(ierr);
-  cusp::multiply(a->GPUmatrix,xx->GPUarray,yy->GPUarray);
+  cusp::multiply(*(a->GPUmatrix),*(xx->GPUarray),*(yy->GPUarray));
   yy->valid_GPU_array = PETSC_CUDA_GPU;
 #endif
   }
@@ -157,6 +159,18 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJCUDA(MPI_Comm comm,PetscInt m,P
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatDestroy_SeqAIJCUDA"
+PetscErrorCode MatDestroy_SeqAIJCUDA(Mat A)
+{
+  PetscErrorCode    ierr;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  PetscFunctionBegin;
+  delete a->GPUmatrix;
+  ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_SeqAIJCUDA"
@@ -169,6 +183,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJCUDA(Mat B)
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJCUDA);CHKERRQ(ierr);
   B->ops->mult = MatMult_SeqAIJCUDA;
   B->ops->assemblyend = MatAssemblyEnd_SeqAIJCUDA;
+  B->ops->destroy = MatDestroy_SeqAIJCUDA;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

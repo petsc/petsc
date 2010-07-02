@@ -53,5 +53,6 @@ EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Seq(Vec);
 EXTERN_C_END
 EXTERN PetscErrorCode VecView_Seq(Vec,PetscViewer);
+EXTERN PetscErrorCode VecDestroy_Seq(Vec);
 
 #endif
