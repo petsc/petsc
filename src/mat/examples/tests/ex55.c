@@ -51,10 +51,13 @@ int main(int argc,char **args)
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
 
     /* Load a baij matrix, then destroy the viewer. */
+    ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
     if (size == 1){
-      ierr = MatLoad(fd,MATSEQBAIJ,&C);CHKERRQ(ierr);
+      ierr = MatSetType(C,MATSEQBAIJ);CHKERRQ(ierr);
+      ierr = MatLoadnew(fd,C);CHKERRQ(ierr);
     } else {
-      ierr = MatLoad(fd,MATMPIBAIJ,&C);CHKERRQ(ierr);
+      ierr = MatSetType(C,MATMPIBAIJ);CHKERRQ(ierr);
+      ierr = MatLoadnew(fd,C);CHKERRQ(ierr);
     }
     ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
   } else { /* Create a baij mat with bs>1  */

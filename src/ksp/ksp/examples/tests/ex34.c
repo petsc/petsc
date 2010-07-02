@@ -79,7 +79,9 @@ int main(int argc,char **args)
   /* Read matrix */
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr = MatLoad(fd,MATMPIAIJ,&ctx.A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&ctx.A);CHKERRQ(ierr);
+  ierr = MatSetType(ctx.A,MATMPIAIJ);CHKERRQ(ierr);
+  ierr = MatLoadnew(fd,ctx.A);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
   /* Create work vectors for matrix-vector product */

@@ -30,7 +30,9 @@ int main(int argc,char **args)
 
   /* Load matrix A */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr = MatLoad(fd,MATAIJ,&A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
+  ierr = MatLoadnew(fd,A);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
   ierr = VecLoad(fd,b);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 

@@ -66,8 +66,10 @@ int main(int argc,char **args)
     /*
        Load the matrix and vector; then destroy the viewer.
     */
-    ierr  = MatLoad(fd,MATMPIAIJ,&A);CHKERRQ(ierr);
-    ierr  = PetscPushErrorHandler(PetscIgnoreErrorHandler,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+    ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
+    ierr = MatLoadnew(fd,A);CHKERRQ(ierr);
+    ierr = PetscPushErrorHandler(PetscIgnoreErrorHandler,PETSC_NULL);CHKERRQ(ierr);
     ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
     ierr = VecLoad(fd,b);CHKERRQ(ierr);
     ierr  = PetscPopErrorHandler();CHKERRQ(ierr);

@@ -71,7 +71,9 @@ int main(int argc,char **args)
     /*
        Load the matrix; then destroy the viewer.
     */
-    ierr = MatLoad(fd,MATSEQAIJ,&A);CHKERRQ(ierr);
+    ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+    ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
+    ierr = MatLoadnew(fd,A);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
 

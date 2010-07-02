@@ -1,5 +1,5 @@
 
-static char help[] = "Test MatFwkAIJ: a block matrix with an AIJ-like datastructure keeping track of nonzero blocks.  
+static char help[] = "Test MatFwkAIJ: a block matrix with an AIJ-like datastructure keeping track of nonzero blocks.\n\
 Each block is a matrix of (generally) any type.\n\n";
 
 /* 
@@ -47,7 +47,9 @@ int main(int argc,char **args)
   /*
     Load the matrix; then destroy the viewer.
   */
-  ierr = MatLoad(fd,MATSEQBAIJ,&A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATSEQBAIJ);CHKERRQ(ierr);
+  ierr = MatLoadnew(fd,A);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecLoad(fd,x);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);

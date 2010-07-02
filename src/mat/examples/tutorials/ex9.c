@@ -46,7 +46,9 @@ int main(int argc,char **args)
     /*
        Load the matrix; then destroy the viewer.
     */
-    ierr = MatLoad(fd,MATAIJ,&A[0]);CHKERRQ(ierr);
+    ierr = MatCreate(PETSC_COMM_WORLD,&A[0]);CHKERRQ(ierr);
+    ierr = MatSetType(A[0],MATAIJ);CHKERRQ(ierr);
+    ierr = MatLoadnew(fd,A[0]);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
     ierr = MatDuplicate(A[0],MAT_COPY_VALUES,&A[1]);CHKERRQ(ierr);

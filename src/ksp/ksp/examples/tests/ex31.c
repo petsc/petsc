@@ -44,7 +44,9 @@ int main(int argc,char **args)
                            Load system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr = MatLoad(fd,MATAIJ,&A);CHKERRQ(ierr);  
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
+  ierr = MatLoadnew(fd,A);CHKERRQ(ierr);  
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);

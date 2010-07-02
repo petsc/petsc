@@ -62,12 +62,16 @@ PetscInt main(PetscInt argc,char **args)
   PreLoadBegin(preload,"Load system");
     /* Load matrices */
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[PreLoadIt],FILE_MODE_READ,&fd);CHKERRQ(ierr);
-    ierr  = MatLoad(fd,MATSBAIJ,&A);CHKERRQ(ierr);
+    ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+    ierr = MatSetType(A,MATSBAIJ);CHKERRQ(ierr);
+    ierr = MatLoadnew(fd,A);CHKERRQ(ierr); 
     ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
     ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
     if ((flgB && PreLoadIt) || (flgB && !preload)){
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[PreLoadIt+1],FILE_MODE_READ,&fd);CHKERRQ(ierr);
-      ierr  = MatLoad(fd,MATSBAIJ,&B);CHKERRQ(ierr);
+      ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
+      ierr = MatSetType(B,MATSBAIJ);CHKERRQ(ierr);
+      ierr = MatLoadnew(fd,B);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
     } else { /* create B=I */
       ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);

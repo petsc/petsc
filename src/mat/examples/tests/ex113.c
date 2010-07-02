@@ -24,7 +24,9 @@ int main(int argc,char **args)
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate a file name for matrix A with the -f option.");
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = MatLoad(viewer,MATAIJ,&A);CHKERRQ(ierr); 
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
+  ierr = MatLoadnew(viewer,A);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);             
 
   ierr = MatDuplicate(A,MAT_COPY_VALUES,&A1);CHKERRQ(ierr);

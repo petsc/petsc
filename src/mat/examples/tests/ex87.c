@@ -19,10 +19,14 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = MatLoad(viewer,MATMPIBAIJ,&BAIJ);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&BAIJ);CHKERRQ(ierr);
+  ierr = MatSetType(BAIJ,MATMPIBAIJ);CHKERRQ(ierr);
+  ierr = MatLoadnew(viewer,BAIJ);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = MatLoad(viewer,MATMPISBAIJ,&SBAIJ);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&SBAIJ);CHKERRQ(ierr);
+  ierr = MatSetType(SBAIJ,MATMPISBAIJ);CHKERRQ(ierr);
+  ierr = MatLoadnew(viewer,SBAIJ);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
 
   ierr = MatGetSize(BAIJ,&issize,0);CHKERRQ(ierr);

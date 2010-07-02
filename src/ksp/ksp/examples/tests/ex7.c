@@ -52,7 +52,9 @@ int main(int argc,char **args)
   /*
        Load the matrix and vector; then destroy the viewer.
   */
-  ierr = MatLoad(fd,MATSEQBAIJ,&A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATSEQBAIJ);CHKERRQ(ierr);
+  ierr = MatLoadnew(fd,A);CHKERRQ(ierr);
   ierr = MatConvert(A,MATSAME,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
   ierr = VecLoad(fd,b);CHKERRQ(ierr);
