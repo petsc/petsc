@@ -151,7 +151,7 @@ notimplemented:
 
 static PyObject * SNESPyObjToMatStructure(PyObject *value, MatStructure *outflag)
 {
-  MatStructure flag = DIFFERENT_NONZERO_PATTERN;
+  long flag = DIFFERENT_NONZERO_PATTERN;
   if (value == NULL)
     return NULL;
   if (value == Py_None) {
@@ -161,7 +161,7 @@ static PyObject * SNESPyObjToMatStructure(PyObject *value, MatStructure *outflag
   } else if (value == Py_True) {
     flag = DIFFERENT_NONZERO_PATTERN;
   } else if (PyInt_Check(value)) {
-    flag = (MatStructure) PyInt_AsLong(value);
+    flag = PyInt_AsLong(value);
     if (flag < SAME_NONZERO_PATTERN ||
         flag > SUBSET_NONZERO_PATTERN) {
       PyErr_SetString(PyExc_ValueError,
@@ -175,7 +175,7 @@ static PyObject * SNESPyObjToMatStructure(PyObject *value, MatStructure *outflag
                     "or a valid integer value for MatStructure");
     goto fail;
   }
-  *outflag = flag;
+  *outflag = (MatStructure)flag;
   return value;
  fail:
   Py_DecRef(value);
