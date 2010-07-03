@@ -311,7 +311,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
     if ((delta<=0 && bcgsl->delta>0) || (delta>0 && bcgsl->delta<=0)) {
       ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
       ierr = PetscFree5(AY0c,AYlc,AYtc,MZa,MZb);CHKERRQ(ierr);
-      ksp->setupcalled = 0;
+      ksp->setupcalled = KSP_SETUP_NEW;
     }
   }
   bcgsl->delta = delta;
@@ -356,7 +356,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetPol(KSP ksp, PetscTruth uMROR)
     ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
     ierr = PetscFree5(AY0c,AYlc,AYtc,MZa,MZb);CHKERRQ(ierr);
     bcgsl->bConvex = uMROR;
-    ksp->setupcalled = 0;
+    ksp->setupcalled = KSP_SETUP_NEW;
   }
   PetscFunctionReturn(0);
 }
@@ -397,7 +397,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetEll(KSP ksp, int ell)
     ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
     ierr = PetscFree5(AY0c,AYlc,AYtc,MZa,MZb);CHKERRQ(ierr);
     bcgsl->ell = ell;
-    ksp->setupcalled = 0;
+    ksp->setupcalled = KSP_SETUP_NEW;
   }
   PetscFunctionReturn(0);
 }

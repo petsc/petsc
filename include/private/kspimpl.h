@@ -29,6 +29,7 @@ typedef struct {PetscInt model,curl,maxl;Mat mat; KSP ksp;}* KSPGuessFischer;
      Maximum number of monitors you can run with a single KSP
 */
 #define MAXKSPMONITORS 5 
+typedef enum {KSP_SETUP_NEW, KSP_SETUP_NEWMATRIX, KSP_SETUP_NEWRHS} KSPSetUpValues;
 
 /*
    Defines the KSP data structure.
@@ -84,16 +85,16 @@ struct _p_KSP {
                                    with a particular iterative solver */
 
   /* ----------------Default work-area management -------------------- */
-  PetscInt    nwork;
-  Vec         *work;
+  PetscInt       nwork;
+  Vec            *work;
 
-  PetscInt    setupcalled;
+  KSPSetUpValues setupcalled;
 
-  PetscInt    its;       /* number of iterations so far computed */
+  PetscInt       its;       /* number of iterations so far computed */
 
-  PetscTruth  transpose_solve;    /* solve transpose system instead */
+  PetscTruth     transpose_solve;    /* solve transpose system instead */
 
-  KSPNormType normtype;          /* type of norm used for convergence tests */
+  KSPNormType    normtype;          /* type of norm used for convergence tests */
 
   /*   Allow diagonally scaling the matrix before computing the preconditioner or using 
        the Krylov method. Note this is NOT just Jacobi preconditioning */
