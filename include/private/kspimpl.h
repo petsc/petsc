@@ -29,7 +29,7 @@ typedef struct {PetscInt model,curl,maxl;Mat mat; KSP ksp;}* KSPGuessFischer;
      Maximum number of monitors you can run with a single KSP
 */
 #define MAXKSPMONITORS 5 
-typedef enum {KSP_SETUP_NEW, KSP_SETUP_NEWMATRIX, KSP_SETUP_NEWRHS} KSPSetUpValues;
+typedef enum {KSP_SETUP_NEW, KSP_SETUP_NEWMATRIX, KSP_SETUP_NEWRHS} KSPSetUpStage;
 
 /*
    Defines the KSP data structure.
@@ -88,7 +88,7 @@ struct _p_KSP {
   PetscInt       nwork;
   Vec            *work;
 
-  KSPSetUpValues setupcalled;
+  KSPSetUpStage  setupstage;
 
   PetscInt       its;       /* number of iterations so far computed */
 

@@ -193,42 +193,42 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
     Mat          A;
     MatStructure stflg;
 
-    if (!ksp->setupcalled) {
+    if (!ksp->setupstage) {
       /* first time in so build matrix and vector data structures using DM */
       if (!ksp->vec_rhs) {ierr = DMCreateGlobalVector(ksp->dm,&ksp->vec_rhs);CHKERRQ(ierr);}
       if (!ksp->vec_sol) {ierr = DMCreateGlobalVector(ksp->dm,&ksp->vec_sol);CHKERRQ(ierr);}
     }
     ierr = DMHasInitialGuess(ksp->dm,&ig);CHKERRQ(ierr);
-    if (ig && ksp->setupcalled != KSP_SETUP_NEWRHS) {
+    if (ig && ksp->setupstage != KSP_SETUP_NEWRHS) {
       ierr = DMComputeInitialGuess(ksp->dm,ksp->vec_sol);CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
     }
     ierr = DMHasFunction(ksp->dm,&ir);CHKERRQ(ierr);
-    if (ir && ksp->setupcalled != KSP_SETUP_NEWRHS) {
+    if (ir && ksp->setupstage != KSP_SETUP_NEWRHS) {
       ierr = DMComputeFunction(ksp->dm,PETSC_NULL,ksp->vec_rhs);CHKERRQ(ierr);
     }
 
     /* how do we know when to compute new matrix? Now it always does */
     /*    ierr = DMHasJacobian(ksp->dm,&im);CHKERRQ(ierr);
 	  if (im) { */
-      if (!ksp->setupcalled) {
+      if (!ksp->setupstage) {
         /* How to set the matrix type ? */
         /* How to handle different A and B matrix ? */
         ierr = DMGetMatrix(ksp->dm,MATAIJ,&A);CHKERRQ(ierr);
       } else {
         ierr = KSPGetOperators(ksp,&A,&A,PETSC_NULL);CHKERRQ(ierr);
       }     
-      if (ksp->setupcalled != KSP_SETUP_NEWRHS) {
+      if (ksp->setupstage != KSP_SETUP_NEWRHS) {
         ierr = DMComputeJacobian(ksp->dm,PETSC_NULL,A,A,&stflg);CHKERRQ(ierr);
         ierr = KSPSetOperators(ksp,A,A,stflg);CHKERRQ(ierr);  
       }
       /*    }*/
   }
 
-  if (ksp->setupcalled == KSP_SETUP_NEWRHS) PetscFunctionReturn(0);
+  if (ksp->setupstage == KSP_SETUP_NEWRHS) PetscFunctionReturn(0);
   ierr = PetscLogEventBegin(KSP_SetUp,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
 
-  if (!ksp->setupcalled) {
+  if (!ksp->setupstage) {
     ierr = (*ksp->ops->setup)(ksp);CHKERRQ(ierr);
   }
 
@@ -275,7 +275,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
       ierr = MatNullSpaceTest(ksp->nullsp,mat,PETSC_NULL);CHKERRQ(ierr);
     }
   }
-  ksp->setupcalled = KSP_SETUP_NEWRHS;
+  ksp->setupstage = KSP_SETUP_NEWRHS;
   PetscFunctionReturn(0);
 }
 

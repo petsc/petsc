@@ -363,7 +363,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatS
   if (Pmat) PetscCheckSameComm(ksp,1,Pmat,3);
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCSetOperators(ksp->pc,Amat,Pmat,flag);CHKERRQ(ierr);
-  if (ksp->setupcalled == KSP_SETUP_NEWRHS) ksp->setupcalled = KSP_SETUP_NEWMATRIX;  /* so that next solve call will call PCSetUp() on new matrix */
+  if (ksp->setupstage == KSP_SETUP_NEWRHS) ksp->setupstage = KSP_SETUP_NEWMATRIX;  /* so that next solve call will call PCSetUp() on new matrix */
   if (ksp->guess) {
     ierr = KSPFischerGuessReset(ksp->guess);CHKERRQ(ierr);
   }
@@ -508,7 +508,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->nwork           = 0;
   ksp->work            = 0;
   ksp->reason          = KSP_CONVERGED_ITERATING;
-  ksp->setupcalled     = KSP_SETUP_NEW;
+  ksp->setupstage      = KSP_SETUP_NEW;
 
   ierr = PetscPublishAll(ksp);CHKERRQ(ierr);
   *inksp = ksp;
@@ -574,7 +574,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetType(KSP ksp, const KSPType type)
   ksp->ops->buildsolution = KSPDefaultBuildSolution;
   ksp->ops->buildresidual = KSPDefaultBuildResidual;
   /* Call the KSPCreate_XXX routine for this particular Krylov solver */
-  ksp->setupcalled = KSP_SETUP_NEW;
+  ksp->setupstage = KSP_SETUP_NEW;
   ierr = (*r)(ksp);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)ksp,type);CHKERRQ(ierr);
   PetscFunctionReturn(0);
