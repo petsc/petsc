@@ -383,14 +383,15 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatS
 
    Output Parameters:
 +  Amat - the matrix associated with the linear system
-.  Pmat - the matrix to be used in constructing the preconditioner, usually the
-          same as Amat. 
+.  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat. 
 -  flag - flag indicating information about the preconditioner matrix structure
    during successive linear solves.  This flag is ignored the first time a
    linear system is solved, and thus is irrelevant when solving just one linear
    system.
 
     Level: intermediate
+
+   Notes: DOES NOT increase the reference counts of the matrix, so you should NOT destroy them.
 
 .keywords: KSP, set, get, operators, matrix, preconditioner, linear system
 
