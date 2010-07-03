@@ -15,7 +15,6 @@ if __name__ == '__main__':
     '--download-c-blas-lapack',
     '--with-x=0',
     'PETSC_ARCH=arch-iphone',
-    '--with-valgrind=0',
     '--with-fc=0',
   ]
   configure.petsc_configure(configure_options)

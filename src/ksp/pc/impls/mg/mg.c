@@ -395,6 +395,8 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
     }
     if (mg->galerkin) {
       ierr = PetscViewerASCIIPrintf(viewer,"    Using Galerkin computed coarse grid matrices\n");CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"    Not using Galerkin computed coarse grid matrices\n");CHKERRQ(ierr);
     }
     for (i=0; i<levels; i++) {
       if (!i) {
@@ -495,7 +497,6 @@ PetscErrorCode PCSetUp_MG(PC pc)
 	if (i != n-2) {ierr = PetscObjectDereference((PetscObject)dB);CHKERRQ(ierr);} 
         dB   = B;
       }
-      ierr = PetscObjectDereference((PetscObject)dB);CHKERRQ(ierr);
     } else {
       for (i=n-2; i>-1; i--) {
         ierr = KSPGetOperators(mglevels[i]->smoothd,PETSC_NULL,&B,PETSC_NULL);CHKERRQ(ierr);
