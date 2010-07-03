@@ -199,12 +199,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
       if (!ksp->vec_sol) {ierr = DMCreateGlobalVector(ksp->dm,&ksp->vec_sol);CHKERRQ(ierr);}
     }
     ierr = DMHasInitialGuess(ksp->dm,&ig);CHKERRQ(ierr);
-    if (ig) {
+    if (ig && ksp->setupcalled < 2) {
       ierr = DMComputeInitialGuess(ksp->dm,ksp->vec_sol);CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
     }
     ierr = DMHasFunction(ksp->dm,&ir);CHKERRQ(ierr);
-    if (ir) {
+    if (ir && ksp->setupcalled < 2) {
       ierr = DMComputeFunction(ksp->dm,PETSC_NULL,ksp->vec_rhs);CHKERRQ(ierr);
     }
 
