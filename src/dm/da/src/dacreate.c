@@ -129,6 +129,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetFromOptions(DA da)
     if (da->ops->setfromoptions) {
       ierr = (*da->ops->setfromoptions)(da);CHKERRQ(ierr);
     }
+
+    /* process any options handlers added with PetscObjectAddOptionsHandler() */
+    ierr = PetscObjectProcessOptionsHandlers((PetscObject)da);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = DAViewFromOptions(da, ((PetscObject)da)->name);CHKERRQ(ierr);

@@ -192,6 +192,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetFromOptions(Mat B)
       ierr = (*B->ops->setfromoptions)(B);CHKERRQ(ierr);
     }
 
+    /* process any options handlers added with PetscObjectAddOptionsHandler() */
+    ierr = PetscObjectProcessOptionsHandlers((PetscObject)B);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

@@ -447,6 +447,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagSetFromOptions(PetscBag bag)
       }
       nitem = nitem->next;
     }
+
+    /* process any options handlers added with PetscObjectAddOptionsHandler() */
+    ierr = PetscObjectProcessOptionsHandlers((PetscObject)bag);CHKERRQ(ierr);
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
