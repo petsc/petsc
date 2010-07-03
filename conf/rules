@@ -295,7 +295,7 @@ getmpiexec:
 	  fi; \
 	fi
 
-.cu.o .c.o .cpp.o .cxx.o .cc.o .C.o .ad.o: 
+.c.o .cpp.o .cxx.o .cc.o .C.o .ad.o: 
 	@if [ "${PETSCPORTABLE}" != "" ]; then \
           ${PETSC_DIR}/bin/portabilitycheck.py $< ${SOURCEH};\
         fi
