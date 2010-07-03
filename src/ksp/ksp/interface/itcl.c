@@ -6,39 +6,8 @@
 
 #include "private/kspimpl.h"  /*I "petscksp.h" I*/
 
-/*
-       We retain a list of functions that also take KSP command 
-    line options. These are called at the end KSPSetFromOptions()
-*/
-#define MAXSETFROMOPTIONS 5
-PetscInt numberofsetfromoptions = 0;
-PetscErrorCode (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP) = {0};
-
 extern PetscTruth KSPRegisterAllCalled;
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPAddOptionsChecker"
-/*@C
-    KSPAddOptionsChecker - Adds an additional function to check for KSP options.
-
-    Not Collective
-
-    Input Parameter:
-.   kspcheck - function that checks for options
-
-    Level: developer
-
-.keywords: KSP, add, options, checker
-
-.seealso: KSPSetFromOptions()
-@*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPAddOptionsChecker(PetscErrorCode (*kspcheck)(KSP))
-{
-  PetscFunctionBegin;
-  if (numberofsetfromoptions >= MAXSETFROMOPTIONS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many options checkers, only 5 allowed");
-  othersetfromoptions[numberofsetfromoptions++] = kspcheck;
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetOptionsPrefix"
@@ -312,7 +281,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
   char                    type[256], monfilename[PETSC_MAX_PATH_LEN];
   PetscViewerASCIIMonitor monviewer;
   PetscTruth              flg,flag;
-  PetscInt                i,model[2],nmax;
+  PetscInt                model[2],nmax;
   void                    *ctx;
 
   PetscFunctionBegin;
@@ -513,9 +482,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     ierr = PetscOptionsTruth("-ksp_plot_eigenvalues","Scatter plot extreme eigenvalues","KSPSetComputeSingularValues",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) { ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr); }
 
-    for(i = 0; i < numberofsetfromoptions; i++) {
-      ierr = (*othersetfromoptions[i])(ksp);CHKERRQ(ierr);
-    }
+    /* process any options handlers added with PetscObjectAddOptionsHandler() */
+    ierr = PetscObjectProcessOptionsHandlers((PetscObject)ksp);CHKERRQ(ierr);
 
     if (ksp->ops->setfromoptions) {
       ierr = (*ksp->ops->setfromoptions)(ksp);CHKERRQ(ierr);

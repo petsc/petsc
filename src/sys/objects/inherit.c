@@ -91,6 +91,93 @@ PetscErrorCode PETSC_DLLEXPORT PetscHeaderDestroy_Private(PetscObject h)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscObjectAddOptionsHandler"
+/*@C
+    PetscObjectAddOptionsHandler - Adds an additional function to check for options when XXXSetFromOptions() is called.
+
+    Not Collective
+
+    Input Parameter:
++   obj - the PETSc object
+.   handle - function that checks for options
+.   destroy - function to destroy context if provided
+-   ctx - optional context for check function
+
+    Level: developer
+
+
+.seealso: KSPSetFromOptions(), PCSetFromOptions(), SNESSetFromOptions(), PetscObjectProcessOptionsHandlers(), PetscObjectDestroyOptionsHandlers()
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscObjectAddOptionsHandler(PetscObject obj,PetscErrorCode (*handle)(PetscObject,void*),PetscErrorCode (*destroy)(PetscObject,void*),void *ctx)
+{
+  PetscFunctionBegin;
+  if (obj->noptionhandler >= PETSC_MAX_OPTIONS_HANDLER) SETERRQ(obj->comm,PETSC_ERR_ARG_OUTOFRANGE,"To many options handlers added");
+  obj->optionhandler[obj->noptionhandler]   = handle;
+  obj->optiondestroy[obj->noptionhandler]   = destroy;
+  obj->optionctx[obj->noptionhandler++]     = ctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectProcessOptionsHandlers"
+/*@C
+    PetscObjectProcessOptionsHandlers - Calls all the options handler attached to an object
+
+    Not Collective
+
+    Input Parameter:
+.   obj - the PETSc object
+
+    Level: developer
+
+
+.seealso: KSPSetFromOptions(), PCSetFromOptions(), SNESSetFromOptions(), PetscObjectAddOptionsHandler(), PetscObjectDestroyOptionsHandlers()
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscObjectProcessOptionsHandlers(PetscObject obj)
+{
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  for (i=0; i<obj->noptionhandler; i++) {
+    ierr = (*obj->optionhandler[i])(obj,obj->optionctx[i]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectDestroyOptionsHandlers"
+/*@C
+    PetscObjectDestroyOptionsHandlers - Destroys all the option handlers attached to an objeft
+
+    Not Collective
+
+    Input Parameter:
+.   obj - the PETSc object
+
+    Level: developer
+
+
+.seealso: KSPSetFromOptions(), PCSetFromOptions(), SNESSetFromOptions(), PetscObjectAddOptionsHandler(), PetscObjectProcessOptionsHandlers()
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscObjectDestroyOptionsHandlers(PetscObject obj)
+{
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  for (i=0; i<obj->noptionhandler; i++) {
+    ierr = (*obj->optiondestroy[i])(obj,obj->optionctx[i]);CHKERRQ(ierr);
+  }
+  obj->noptionhandler = 0;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscObjectReference"
 /*@C
    PetscObjectReference - Indicates to any PetscObject that it is being
