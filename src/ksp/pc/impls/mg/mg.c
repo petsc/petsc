@@ -505,6 +505,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
 	if (i != n-2) {ierr = PetscObjectDereference((PetscObject)dB);CHKERRQ(ierr);} 
         dB   = B;
       }
+      if (n > 1) {ierr = PetscObjectDereference((PetscObject)dB);CHKERRQ(ierr);}
     } else {
       for (i=n-2; i>-1; i--) {
         ierr = KSPGetOperators(mglevels[i]->smoothd,PETSC_NULL,&B,PETSC_NULL);CHKERRQ(ierr);
