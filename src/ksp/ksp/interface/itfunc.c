@@ -218,8 +218,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
       } else {
         ierr = KSPGetOperators(ksp,&A,&A,PETSC_NULL);CHKERRQ(ierr);
       }     
-      ierr = DMComputeJacobian(ksp->dm,PETSC_NULL,A,A,&stflg);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,A,A,stflg);CHKERRQ(ierr);
+      if (ksp->setupcalled < 2) {
+        ierr = DMComputeJacobian(ksp->dm,PETSC_NULL,A,A,&stflg);CHKERRQ(ierr);
+        ierr = KSPSetOperators(ksp,A,A,stflg);CHKERRQ(ierr);  
+      }
       /*    }*/
   }
 

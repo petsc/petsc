@@ -280,6 +280,14 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
   PetscInt       levels = mglevels[0]->levels,i;
 
   PetscFunctionBegin;
+
+  /* When the DM is supplying the matrix then it will not exist until here */
+  for (i=0; i<levels-1; i++) {
+    if (!mglevels[i]->A) {
+      ierr = KSPGetOperators(mglevels[i]->smoothu,&mglevels[i]->A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    }
+  }
+
   mglevels[levels-1]->b = b; 
   mglevels[levels-1]->x = x;
   if (mg->am == PC_MG_MULTIPLICATIVE) {
