@@ -1377,6 +1377,78 @@ namespace ALE {
         }
       };
     };
+    class InterpolateMultipleFusion {
+    public:
+      // Interpolate the overlapSection values into section along recvOverlap
+      template<typename OverlapSection, typename RecvOverlap, typename Section>
+      static void fuse(const Obj<OverlapSection>& overlapSection, const Obj<RecvOverlap>& recvOverlap, const Obj<Section>& section) {
+        typedef typename Section::point_type        point_type;
+        typedef typename Section::value_type        value_type;
+        typedef typename OverlapSection::point_type overlap_point_type;
+        const Obj<typename RecvOverlap::traits::baseSequence>      rPoints     = recvOverlap->base();
+        const typename RecvOverlap::traits::baseSequence::iterator rEnd        = rPoints->end();
+        int                                                        maxFiberDim = -1;
+
+        for(typename RecvOverlap::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
+          const Obj<typename RecvOverlap::coneSequence>&     points     = recvOverlap->cone(*p_iter)
+          const typename RecvOverlap::coneSequence::iterator rpEnd      = points->end();
+          const point_type&                                  localPoint = *p_iter;
+          bool                                               inOverlap  = false;
+          int                                                fiberDim   = -1;
+
+          for(typename RecvOverlap::coneSequence::iterator rp_iter = points->begin(); rp_iter != rpEnd; ++rp_iter) {
+            const int         rank        = *rp_iter;
+            const point_type& remotePoint = rp_iter.color();
+
+            if (overlapSection->hasPoint(overlap_point_type(rank, remotePoint))) {
+              inOverlap = true;
+              fiberDim  = overlapSection->getFiberDimension(overlap_point_type(rank, remotePoint));
+              break;
+            }
+          }
+          if (inOverlap) {
+            if (!section->hasPoint(localPoint)) {
+              std::cout <<"["<<section->commRank()<<"]: Destination section does not have local point " << localPoint << " remote point " << (points->begin().color()) << " fiber dim " << fiberDim << std::endl;
+            }
+            section->setFiberDimension(localPoint, fiberDim);
+            maxFiberDim = std::max(fiberDim, maxFiberDim);
+          }
+        }
+        if (rPoints->size()) {section->allocatePoint();}
+        value_type *interpolant = new value_type[maxFiberDim];
+
+        for(typename RecvOverlap::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
+          const Obj<typename RecvOverlap::coneSequence>& points     = recvOverlap->cone(*p_iter);
+          const point_type&                              localPoint = *p_iter;
+          bool                                           inOverlap  = false;
+          int                                            numArgs    = 0;
+
+          for(int d = 0; d < maxFiberDim; ++d) {interpolant[d] = 0.0;}
+          for(typename RecvOverlap::coneSequence::iterator rp_iter = points->begin(); rp_iter != rpEnd; ++rp_iter) {
+            const int         rank        = *rp_iter;
+            const point_type& remotePoint = rp_iter.color();
+            const overlap_point_type opoint(rank, remotePoint)
+
+            if (overlapSection->hasPoint(opoint)) {
+              const int         fiberDim = overlapSection->getFiberDimension(opoint);
+              const value_type *values   = overlapSection->restrictPoint(opoint);
+
+              // TODO: Include interpolation weights (stored in overlap)
+              for(int d = 0; d < fiberDim; ++d) {
+                interpolant[d] += values[d];
+              }
+              inOverlap = true;
+              ++numArgs;
+            }
+          }
+          if (inOverlap) {
+            for(int d = 0; d < maxFiberDim; ++d) {interpolant[d] /= numArgs;}
+            section->updatePoint(localPoint, interpolant);
+          }
+        }
+        delete [] interpolant;
+      };
+    };
   }
 }
 
