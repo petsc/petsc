@@ -1390,7 +1390,7 @@ namespace ALE {
         int                                                        maxFiberDim = -1;
 
         for(typename RecvOverlap::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
-          const Obj<typename RecvOverlap::coneSequence>&     points     = recvOverlap->cone(*p_iter)
+          const Obj<typename RecvOverlap::coneSequence>&     points     = recvOverlap->cone(*p_iter);
           const typename RecvOverlap::coneSequence::iterator rpEnd      = points->end();
           const point_type&                                  localPoint = *p_iter;
           bool                                               inOverlap  = false;
@@ -1418,16 +1418,17 @@ namespace ALE {
         value_type *interpolant = new value_type[maxFiberDim];
 
         for(typename RecvOverlap::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
-          const Obj<typename RecvOverlap::coneSequence>& points     = recvOverlap->cone(*p_iter);
-          const point_type&                              localPoint = *p_iter;
-          bool                                           inOverlap  = false;
-          int                                            numArgs    = 0;
+          const Obj<typename RecvOverlap::coneSequence>&     points     = recvOverlap->cone(*p_iter);
+          const typename RecvOverlap::coneSequence::iterator rpEnd      = points->end();
+          const point_type&                                  localPoint = *p_iter;
+          bool                                               inOverlap  = false;
+          int                                                numArgs    = 0;
 
           for(int d = 0; d < maxFiberDim; ++d) {interpolant[d] = 0.0;}
           for(typename RecvOverlap::coneSequence::iterator rp_iter = points->begin(); rp_iter != rpEnd; ++rp_iter) {
             const int         rank        = *rp_iter;
             const point_type& remotePoint = rp_iter.color();
-            const overlap_point_type opoint(rank, remotePoint)
+            const overlap_point_type opoint(rank, remotePoint);
 
             if (overlapSection->hasPoint(opoint)) {
               const int         fiberDim = overlapSection->getFiberDimension(opoint);
