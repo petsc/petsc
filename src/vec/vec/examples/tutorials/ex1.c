@@ -159,7 +159,7 @@ int main(int argc,char **argv)
   ierr = VecNorm(z[2],NORM_2,&norm);CHKERRQ(ierr);
   v2 = norm-3.0*sqrt((double)n); if (v2 > -PETSC_SMALL && v2 < PETSC_SMALL) v2 = 0.0; 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"VecMAXPY %G %G %G \n",v,v1,v2);CHKERRQ(ierr);
-
+  
   /* 
      Test whether vector has been corrupted (just to demonstrate this
      routine) not needed in most application codes.

@@ -10,8 +10,8 @@
 <table width="100%">
   <tbody>
     <tr>
-      <td valign="top" width="25%">
-      <h1><font size="7" color="#ff0000">PETSc</font></h1>
+      <td width="25%" valign="top">
+      <h1><font color="#ff0000" size="7">PETSc</font></h1>
       <ul>
         <li><a href="../../index.html"><strong>Home</strong></a></li>
       </ul>
@@ -22,10 +22,10 @@
     </tr>
     <tr>
       <td colspan="2" width="100%">
-      <hr size="4" color="#ff5b5b"> </td>
+      <hr color="#ff5b5b" size="4"> </td>
     </tr>
     <tr>
-      <td valign="top" width="25%">
+      <td width="25%" valign="top">
       <ul>
         <li><a href="../../download/index.html"><strong>Download</strong></a></li>
         <li><a href="../../features/index.html"><strong>Features</strong></a></li>
@@ -81,14 +81,18 @@ Software</strong></a></li>
         <li><a href="../developers/index.html"><strong>Developers Site</strong></a></li>
       </ul>
       </td>
-      <td valign="top" width="75%"><!--##begin-->
-      <p align="center"><font size="5" color="#ff0000"><a name="CHANGES">CHANGES</a>
+      <td width="75%" valign="top"><!--##begin-->
+      <p align="center"><font color="#ff0000" size="5"><a name="CHANGES">CHANGES</a>
 in the PETSc Development Version</font></p>
       <p><u><b>General:</b></u></p>
       <ul>
         <li>PetscError() and SETERRQX() now take a MPI_Comm as the
 first argument to indicate where the error is known. If you don't know
 what communicator use then pass in PETSC_COMM_SELF </li>
+        <li>Added PetscObjectAddOptionsHandler() that allows adding new
+routines to any object that are called to process options when
+XXXSetFromOptions() is called.<br>
+        </li>
       </ul>
       <u><b>Logging:<br>
       </b></u>
@@ -103,7 +107,7 @@ what communicator use then pass in PETSC_COMM_SELF </li>
         <li> -with-64-bit-pointers option removed. It doesn't work
 properly anway. The user should specify the correct 32bit or 64bit
 compilers to configure. For eg:
-          <pre>configure --with-cc='gcc -m64' --with-fc='gcc -m64'</pre>
+          <pre>configure --with-cc='gcc -m64' --with-fc='gfortran -m64'</pre>
         </li>
         <li>Python requirement is changed from 2.2 to 2.3</li>
       </ul>
@@ -132,6 +136,11 @@ into the Vec.<br>
         <li>It is an error to call MatSetOption() before the
 implementation has been created (after MatSetSizes() and MatSetType()).
 Formerly, options were silently ignored in this circumstance.</li>
+        <li> Added MatSetMumpsIcntl()</li>
+        <li>MatLoad() now takes a created Mat as input (and no longer a
+Mat type), if you provide the size and type in the Mat then that is
+used other defaults are used.<br>
+        </li>
       </ul>
       <u><b>PC:</b></u>
       <ul>
@@ -149,7 +158,9 @@ match name of second argument<br>
 KSPSetPCSide()</li>
         <li>Added KSPGMRESGetRestart() and
 KSPGMRESGetCGSRefinementType()</li>
-        <li>Added KSPGMRESGetOrthogonalization()<br>
+        <li>Added KSPGMRESGetOrthogonalization()</li>
+        <li>KSPAddOptionsChecker() is replaced with
+PetscObjectAddOptionsHandler()<br>
         </li>
       </ul>
       <ul>
@@ -214,7 +225,7 @@ but the cast is no longer necessary).</li>
     </tr>
     <tr>
       <td colspan="2" width="100%">
-      <hr size="4" color="#ff5b5b"> </td>
+      <hr color="#ff5b5b" size="4"> </td>
     </tr>
   </tbody>
 </table>

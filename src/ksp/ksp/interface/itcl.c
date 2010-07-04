@@ -6,39 +6,8 @@
 
 #include "private/kspimpl.h"  /*I "petscksp.h" I*/
 
-/*
-       We retain a list of functions that also take KSP command 
-    line options. These are called at the end KSPSetFromOptions()
-*/
-#define MAXSETFROMOPTIONS 5
-PetscInt numberofsetfromoptions = 0;
-PetscErrorCode (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP) = {0};
-
 extern PetscTruth KSPRegisterAllCalled;
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPAddOptionsChecker"
-/*@C
-    KSPAddOptionsChecker - Adds an additional function to check for KSP options.
-
-    Not Collective
-
-    Input Parameter:
-.   kspcheck - function that checks for options
-
-    Level: developer
-
-.keywords: KSP, add, options, checker
-
-.seealso: KSPSetFromOptions()
-@*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPAddOptionsChecker(PetscErrorCode (*kspcheck)(KSP))
-{
-  PetscFunctionBegin;
-  if (numberofsetfromoptions >= MAXSETFROMOPTIONS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many options checkers, only 5 allowed");
-  othersetfromoptions[numberofsetfromoptions++] = kspcheck;
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetOptionsPrefix"
@@ -280,6 +249,9 @@ $                    unpreconditioned - see KSPSetNormType()
 $                    natural - see KSPSetNormType()
 .   -ksp_check_norm_iteration it - do not compute residual norm until iteration number it (does compute at 0th iteration)
 $       works only for PCBCGS, PCIBCGS and and PCCG
+    -ksp_lag_norm - compute the norm of the residual for the ith iteration on the i+1 iteration; this means that one can use
+$       the norm of the residual for convergence test WITHOUT an extra MPI_Allreduce() limiting global synchronizations.
+$       This will require 1 more iteration of the solver than usual.
 .   -ksp_fischer_guess <model,size> - uses the Fischer initial guess generator for repeated linear solves
 .   -ksp_constant_null_space - assume the operator (matrix) has the constant vector in its null space
 .   -ksp_test_null_space - tests the null space set with KSPSetNullSpace() to see if it truly is a null space
@@ -309,7 +281,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
   char                    type[256], monfilename[PETSC_MAX_PATH_LEN];
   PetscViewerASCIIMonitor monviewer;
   PetscTruth              flg,flag;
-  PetscInt                i,model[2],nmax;
+  PetscInt                model[2],nmax;
   void                    *ctx;
 
   PetscFunctionBegin;
@@ -510,15 +482,15 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     ierr = PetscOptionsTruth("-ksp_plot_eigenvalues","Scatter plot extreme eigenvalues","KSPSetComputeSingularValues",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) { ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr); }
 
-    for(i = 0; i < numberofsetfromoptions; i++) {
-      ierr = (*othersetfromoptions[i])(ksp);CHKERRQ(ierr);
-    }
 
     if (ksp->ops->setfromoptions) {
       ierr = (*ksp->ops->setfromoptions)(ksp);CHKERRQ(ierr);
     }
     /* actually check in setup this is just here so goes into help message */
     ierr = PetscOptionsName("-ksp_view","View linear solver parameters","KSPView",&flg);CHKERRQ(ierr);
+
+    /* process any options handlers added with PetscObjectAddOptionsHandler() */
+    ierr = PetscObjectProcessOptionsHandlers((PetscObject)ksp);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

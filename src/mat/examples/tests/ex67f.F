@@ -19,7 +19,9 @@
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'../matbinary.ex',         &
      &                          FILE_MODE_READ,v,ierr)
 
-      call MatLoad(v,MATSEQAIJ,A,ierr)
+      call MatCreate(PETSC_COMM_WORLD,A,ierr)
+      call MatSetType(A, MATSEQAIJ,ierr)
+      call MatLoad(v,A,ierr)
 
       one  = 1
       zero = 0

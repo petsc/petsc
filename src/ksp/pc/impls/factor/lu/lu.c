@@ -130,7 +130,9 @@ static PetscErrorCode PCSetUp_LU(PC pc)
         ierr = PetscLogObjectParent(pc,dir->row);CHKERRQ(ierr); 
         ierr = PetscLogObjectParent(pc,dir->col);CHKERRQ(ierr);
       }
-      ierr = MatGetFactor(pc->pmat,((PC_Factor*)dir)->solvertype,MAT_FACTOR_LU,&((PC_Factor*)dir)->fact);CHKERRQ(ierr);
+      if (!((PC_Factor*)dir)->fact){
+        ierr = MatGetFactor(pc->pmat,((PC_Factor*)dir)->solvertype,MAT_FACTOR_LU,&((PC_Factor*)dir)->fact);CHKERRQ(ierr);
+      }
       ierr = MatLUFactorSymbolic(((PC_Factor*)dir)->fact,pc->pmat,dir->row,dir->col,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
       ierr = MatGetInfo(((PC_Factor*)dir)->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
@@ -283,7 +285,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_LU(PC pc)
   dir->col                 = 0;
   dir->row                 = 0;
 
-  ierr = PetscStrallocpy(MATSOLVERPETSC,&((PC_Factor*)dir)->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATSOLVERPETSC,&((PC_Factor*)dir)->solvertype);CHKERRQ(ierr); /* default SolverPackage */
   ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscStrallocpy(MATORDERINGND,&((PC_Factor*)dir)->ordering);CHKERRQ(ierr);

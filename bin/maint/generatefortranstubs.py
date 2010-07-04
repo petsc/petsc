@@ -140,9 +140,10 @@ def processDir(arg,dirname,names):
                '-mpi', '-mpi2', '-ferr', '-ptrprefix Petsc', '-ptr64 PETSC_USE_POINTER_CONVERSION',
                '-fcaps PETSC_HAVE_FORTRAN_CAPS', '-fuscore PETSC_HAVE_FORTRAN_UNDERSCORE',
                '-f90mod_skip_header','-f90modfile','f90module.f90']
-    (status,output) = commands.getstatusoutput('cd '+dirname+';'+bfort+' '+' '.join(options+newls))
+    cmd = 'cd '+dirname+';'+bfort+' '+' '.join(options+newls)
+    (status,output) = commands.getstatusoutput(cmd)
     if status:
-      raise RuntimeError('Error running bfort '+output)
+      raise RuntimeError('Error running bfort\n'+cmd+'\n'+output)
     FixDir(petscdir,outdir)
   for name in ['.hg','SCCS', 'output', 'BitKeeper', 'examples', 'externalpackages', 'bilinear', 'ftn-auto','fortran','bin','maint','ftn-custom','config','f90-custom']:
     if name in names:

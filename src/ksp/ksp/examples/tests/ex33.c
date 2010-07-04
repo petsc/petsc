@@ -30,14 +30,18 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetString(PETSC_NULL,"-fA",file[0],PETSC_MAX_PATH_LEN-1,&loadA);CHKERRQ(ierr);
   if (loadA) {
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-    ierr = MatLoad(viewer,MATSBAIJ,&A);CHKERRQ(ierr);
+    ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+    ierr = MatSetType(A,MATSBAIJ);CHKERRQ(ierr);
+    ierr = MatLoad(viewer,A);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);  
 
     ierr = PetscOptionsGetString(PETSC_NULL,"-fB",file[1],PETSC_MAX_PATH_LEN-1,&loadB);CHKERRQ(ierr);
     if (loadB){
       /* load B to get A = A + sigma*B */
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[1],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-      ierr  = MatLoad(viewer,MATSBAIJ,&B);CHKERRQ(ierr);
+      ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
+      ierr = MatSetType(B,MATSBAIJ);CHKERRQ(ierr);
+      ierr  = MatLoad(viewer,B);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);  
     }
   } 

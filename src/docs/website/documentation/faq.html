@@ -9,8 +9,8 @@
 <table width="100%">
   <tbody>
     <tr>
-      <td valign="top" width="25%">
-      <h1><font size="7" color="#ff0000">PETSc</font></h1>
+      <td width="25%" valign="top">
+      <h1><font color="#ff0000" size="7">PETSc</font></h1>
       <ul>
         <li><a href="../index.html"><strong>Home</strong></a></li>
       </ul>
@@ -21,10 +21,10 @@
     </tr>
     <tr>
       <td colspan="2" width="100%">
-      <hr size="4" color="#ff5b5b"> </td>
+      <hr color="#ff5b5b" size="4"> </td>
     </tr>
     <tr>
-      <td valign="top" width="25%">
+      <td width="25%" valign="top">
       <ul>
         <li><a href="../download/index.html"><strong>Download</strong></a></li>
         <li><a href="../features/index.html"><strong>Features</strong></a></li>
@@ -55,7 +55,7 @@ Software</strong></a></li>
 Site</strong></a></li>
       </ul>
       </td>
-      <td valign="top" width="75%"><!--##begin-->
+      <td width="75%" valign="top"><!--##begin-->
       <h4><a href="faq.html#General">General</a></h4>
       <menu>
       <li><a href="faq.html#petsc-mailing-list">How
@@ -175,6 +175,7 @@ slow,
 
 
 
+
         </span>what can I do to make it
 faster?</a></li>
       <li><a href="faq.html#log-summary">How can I
@@ -203,8 +204,6 @@ converging?</a></li>
       <menu>
       <li><a href="faq.html#debug-ibmfortran">How
 do I turn off PETSc signal handling so I can use the -C option on xlF?</a></li>
-      <li><a href="faq.html#debug-cray">How do I
-debug on the Cray T3D/T3E?</a></li>
       <li><a href="faq.html#start_in_debugger-doesnotwork">How
 do I debug if -start_in_debugger does not work on my machine?</a></li>
       <li><a href="faq.html#debug-hang">How can I
@@ -570,7 +569,8 @@ We recommend, as of 5/5/2010, installing gfortran-4.2.3 from <a
 This
 seems
 to
-work with both Mac OS 10.5 and 10.6. It defaults to using
+work
+with both Mac OS 10.5 and 10.6. It defaults to using
 32 bit pointers so for Mac OS X 10.6 and later you should use
 --with-fc="gfortran -m64"<br>
       <br>
@@ -732,7 +732,7 @@ communication </li>
       <table width="100%">
         <tbody>
           <tr>
-            <td valign="top" width="75%">
+            <td width="75%" valign="top">
             <li> Actually do the
 communication; this can be done
 repeatedly as needed</li>
@@ -955,7 +955,8 @@ differently
 than
 the
 MPI_Cart_create()
-command. How can one use them together?<br>
+command.
+How can one use them together?<br>
             <br>
             </span>The MPI_Cart_create() first divides the mesh along
 the z direction, then the y, then the x. DA divides along the x, then
@@ -1001,7 +1002,8 @@ Dirichlet
 boundary
 conditions
 I
-can use
+can
+use
 MatZeroRows() to eliminate the Dirichlet rows but this results in a
 non-symmetric system. How come there is no MatZeroColumns() to keep the
 matrix symmetric?<br>
@@ -1023,7 +1025,8 @@ symmetric methods. See its manual page.<br>
             <br>
             <span style="color: rgb(255, 0, 0);"><a name="matlab"></a>How
 can
-I get PETSc Vecs and Mats to Matlab or vice versa?<br>
+I
+get PETSc Vecs and Mats to Matlab or vice versa?<br>
             </span><br>
             <span style="color: rgb(255, 0, 0);"><br>
             </span>There are four was to work with PETSc and Matlab<br>
@@ -1045,12 +1048,14 @@ PETSc to allow sending objects back and forth between an interactive
 Matlab session and a running PETSc program. See <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manualpages/Viewer/PetscViewerSocketOpen.html">PetscViewerSocketOpen</a>()
 for
-access from the PETSc side and PetscOpenSocket in bin/matlab for
+access
+from the PETSc side and PetscOpenSocket in bin/matlab for
 access from the Matlab side.</li>
               <li>Finally you can save PETSc Vecs (not Mats) with the <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manualpages/Viewer/PetscViewerMatlabOpen.html">PetscViewerMatlabOpen</a>()
 viewer
-that saves .mat files can then be loaded into Matlab.<br>
+that
+saves .mat files can then be loaded into Matlab.<br>
               </li>
             </ol>
             <hr> </td>
@@ -1204,6 +1209,7 @@ in
 
 
 
+
           <a href="faq.html#slow">generating the
 matrix</a> or some other operation.</li>
         <li>There must be enough work for each process to
@@ -1232,7 +1238,8 @@ better
 for
 more
 processes.
-You may also
+You
+may also
 consider multigrid preconditioners like <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCMG.html">PCMG</a>
 or BoomerAMG in <a
@@ -1302,29 +1309,25 @@ compilers have a compile option (-C for IBM's) that causes all array
 access in Fortran to be checked that they are in-bounds. This is a
 great feature but does require that the array dimensions be set
 explicitly, not with a *.</p>
-      <p><a name="debug-cray"><font color="#ff0000">How
-do I
-debug on the Cray
-T3D/T3E? </font></a></p>
-      <p>Use TotalView. First, link your program with the
-additional option -Xn where n is the number of processors to use when
-debugging. Then run totalview programname -a your arguments The -a is
-used to distinguish between totalview arguments and yours. </p>
       <p><a name="start_in_debugger-doesnotwork"><font color="#ff0000">How
 do
 I
 debug
 if
--start_in_debugger does
+-start_in_debugger
+does
 not work on my machine?</font> </a></p>
       <p>For a uniprocessor job, just try&nbsp;the debugger
-directly, for example: gdb ex1 </p>
+directly, for example: gdb ex1. You can also use Totalview which is a
+good graphical parallel debugger.<br>
+      </p>
       <p><a name="debug-hang"><font color="#ff0000">How
 do I
 see where my code is
 hanging? </font></a></p>
       <p>You can use the -start_in_debugger option to start all
-processes in the debugger (each will come up in its own xterm). Then
+processes in the debugger (each will come up in its own xterm) or run
+in Totalview. Then
 use cont (for continue) in each xterm. Once you are sure that the
 program is hanging, hit control-c in each xterm and then use 'where' to
 print a stack trace for each process.</p>
@@ -1345,7 +1348,16 @@ the object. For a Vec v and a Mat m, this would be</p>
       <p>(gdb) call MatView(m, 0)</p>
       <p>or with a communicator other than MPI_COMM_WORLD,</p>
       <p>(gdb) call MatView(m,
-PETSC_VIEWER_STDOUT_(m-&gt;comm))</p>
+PETSC_VIEWER_STDOUT_(m-&gt;comm))<br>
+      </p>
+      <p>Totalview 8.8.0 has a new feature that allows libraries to
+provide their own code to display objects in the debugger. Thus in
+theory each PETSc object, Vec, Mat etc could have custom code to print
+values in the object. We have only done this for the most elementary
+display of Vec and Mat. See the routine TV_display_type() in
+src/vec/vec/interface/vector.c for an example of how these may be
+written. Contact us if you would like to add more.<br>
+      </p>
       <p>&nbsp;<span style="color: rgb(255, 0, 0);"><a name="libimf"></a>Error
 while
 loading
@@ -1354,7 +1366,8 @@ libraries:
 libimf.so:
 cannot
 open
-shared object
+shared
+object
 file: No such file or directory.</span></p>
       <p>The Intel compilers use shared libraries (like libimf)
 that
@@ -1384,7 +1397,8 @@ Type
 not
 set:
 Argument
-# n mean?</a></span></p>
+#
+n mean?</a></span></p>
 Many
 operations on PETSc objects require that the specific type of the
 object be set before the operations is performed. You must call
@@ -1405,7 +1419,8 @@ previous
 call
 to
 VecSetSizes(),
-MatSetSizes(), VecCreateXXX() or
+MatSetSizes(),
+VecCreateXXX() or
 MatCreateXXX() you passed in local and global sizes that do not make
 sense for the correct number of processors. For example if you pass in
 a local size of 2 and a global size of 100 and run on two processors,
@@ -1435,6 +1450,7 @@ problem.<br>
 &nbsp; <br>
 If -malloc_debug does not help: on GNU/Linux and Apple Mac OS X
 machines - you can try using&nbsp;<a href="http://valgrind.org/">http://valgrind.org
+
 
 
 
@@ -1484,6 +1500,7 @@ that the matrix is singular. You can use -pc_factor_shift_nonzero or
 -pc_factor_shift_positive_definite,
 -[level]_pc_factor_shift_nonzero,&nbsp; </span></font><font
  style="color: rgb(0, 0, 0);" color="#ff0000">-[level]_pc_factor_shift_postive_definite
+
 
 
 
@@ -1636,7 +1653,8 @@ to
 print
 two
 residual
-norms per iteration?<br>
+norms
+per iteration?<br>
       </span></font></font></p>
       <p style="color: rgb(0, 0, 0);"><font face="Terminal"><font
  face="Terminal"><font face="Terminal">&gt; 1198 KSP Residual norm
@@ -1742,7 +1760,7 @@ moved to a different location after they are built. </p>
     </tr>
     <tr>
       <td colspan="2" width="100%">
-      <hr size="4" color="#ff5b5b"> </td>
+      <hr color="#ff5b5b" size="4"> </td>
     </tr>
   </tbody>
 </table>

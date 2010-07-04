@@ -163,12 +163,16 @@ struct _p_Vec {
   PetscTruth             petscnative;  /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
 #if defined(PETSC_HAVE_CUDA)
   PetscCUDAFlag          valid_GPU_array;    /* indicates where the most recently modified vector data is (GPU or CPU) */
-  /*PetscScalar            *GPUarray;      */
   cusp::array1d<PetscScalar,cusp::device_memory> GPUarray; /* if we're using CUDA, then this is the pointer to the array on the GPU */
 #endif
 };
 
-
+extern PetscLogEvent VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MDotBarrier, VEC_MDot, VEC_TDot, VEC_MTDot;
+extern PetscLogEvent VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY, VEC_MAXPY;
+extern PetscLogEvent VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier, VEC_ScatterBegin, VEC_ScatterEnd;
+extern PetscLogEvent VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication;
+extern PetscLogEvent VEC_Swap, VEC_AssemblyBegin, VEC_NormBarrier, VEC_DotNormBarrier, VEC_DotNorm, VEC_AXPBYPCZ, VEC_Ops;
+extern PetscLogEvent VEC_CUDACopyToGPU, VEC_CUDACopyFromGPU;
 
 #if defined(PETSC_HAVE_CUDA)
 #define CHKERRCUDA(err) if (err != CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error %d",err)
@@ -195,7 +199,9 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyToGPU(Vec v)
   PetscFunctionBegin;
   ierr = VecCUDAAllocateCheck(v);CHKERRQ(ierr);
   if (v->valid_GPU_array == PETSC_CUDA_CPU){
+    ierr = PetscLogEventBegin(VEC_CUDACopyToGPU,v,0,0,0);CHKERRQ(ierr);
     v->GPUarray.assign(*(PetscScalar**)v->data,*(PetscScalar**)v->data + cn);
+    ierr = PetscLogEventEnd(VEC_CUDACopyToGPU,v,0,0,0);CHKERRQ(ierr);
     v->valid_GPU_array = PETSC_CUDA_BOTH;
   }
   PetscFunctionReturn(0);
@@ -206,9 +212,13 @@ PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyToGPU(Vec v)
 /* Copies a vector from the GPU to the CPU unless we already have an up-to-date copy on the CPU */
 PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyFromGPU(Vec v)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   if (v->valid_GPU_array == PETSC_CUDA_GPU){
+    ierr = PetscLogEventBegin(VEC_CUDACopyFromGPU,v,0,0,0);CHKERRQ(ierr);
     thrust::copy(v->GPUarray.begin(),v->GPUarray.end(),*(PetscScalar**)v->data);
+    ierr = PetscLogEventEnd(VEC_CUDACopyFromGPU,v,0,0,0);CHKERRQ(ierr);
     v->valid_GPU_array = PETSC_CUDA_BOTH;
   }
   PetscFunctionReturn(0);
@@ -571,12 +581,6 @@ PETSC_STATIC_INLINE PetscErrorCode VecStashValuesBlocked_Private(VecStash *stash
 EXTERN PetscErrorCode VecStrideGather_Default(Vec,PetscInt,Vec,InsertMode);
 EXTERN PetscErrorCode VecStrideScatter_Default(Vec,PetscInt,Vec,InsertMode);
 EXTERN PetscErrorCode VecReciprocal_Default(Vec);
-
-extern PetscLogEvent VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MDotBarrier, VEC_MDot, VEC_TDot, VEC_MTDot;
-extern PetscLogEvent VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY, VEC_MAXPY;
-extern PetscLogEvent VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier, VEC_ScatterBegin, VEC_ScatterEnd;
-extern PetscLogEvent VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication;
-extern PetscLogEvent VEC_Swap, VEC_AssemblyBegin, VEC_NormBarrier, VEC_DotNormBarrier, VEC_DotNorm, VEC_AXPBYPCZ, VEC_Ops;
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 EXTERN_C_BEGIN

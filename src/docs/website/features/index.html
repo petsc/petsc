@@ -2,176 +2,104 @@
 <html>
 <head>
 
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
   <title>PETSc:&nbsp; Features</title>
 </head>
-
-
 <body bgcolor="#d5eaff">
-
-
 <table border="0" width="100%">
-
   <tbody>
     <tr>
-
-    <td valign="top" width="25%">
+      <td valign="top" width="25%">
       <h1><font color="#ff0000" size="7">PETSc</font></h1>
-
-    
       <ul>
-
-      <li><a href="../index.html"><strong>Home</strong></a></li>
-
-    
+        <li><a href="../index.html"><strong>Home</strong></a></li>
       </ul>
-
-    </td>
-
-    <td width="75%">
+      </td>
+      <td width="75%">
       <h1>Features</h1>
-
-    </td>
-
-  </tr>
-
-  <tr>
-
-    <td colspan="2" width="100%">
-      <hr color="#ff5b5b" size="4">
-    </td>
-
-  </tr>
-
-  <tr>
-
-    <td valign="top" width="25%">
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" width="100%">
+      <hr color="#ff5b5b" size="4"> </td>
+    </tr>
+    <tr>
+      <td valign="top" width="25%">
       <ul>
-
-      <li><a href="../download/index.html"><strong>Download</strong></a></li>
-
-      <li><font color="#ff0000"><strong>Features</strong></font>
+        <li><a href="../download/index.html"><strong>Download</strong></a></li>
+        <li><font color="#ff0000"><strong>Features</strong></font>
           <ul>
-
-          <li><a href="details.html"><strong>Component Details</strong></a></li>
-
-          <li><a href="diagram.html"><strong>Diagram</strong></a></li>
-
-        
+            <li><a href="details.html"><strong>Component Details</strong></a></li>
+            <li><a href="diagram.html"><strong>Diagram</strong></a></li>
           </ul>
-
-      </li>
-
-      <li><a href="../documentation/index.html"><strong>Documentation</strong></a></li>
-
-      <li><strong><a href="../publications/index.html">Applications/Publications</a></strong></li>
-
-      <li><a href="../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
-
-        <li><a href="../miscellaneous/external.html"><strong>External Software</strong></a></li>
-
+        </li>
+        <li><a href="../documentation/index.html"><strong>Documentation</strong></a></li>
+        <li><strong><a href="../publications/index.html">Applications/Publications</a></strong></li>
+        <li><a href="../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
+        <li><a href="../miscellaneous/external.html"><strong>External
+Software</strong></a></li>
         <li><a href="../developers/index.html"><strong>Developers Site</strong></a></li>
-
-    
       </ul>
-
-    </td>
-
-    <td valign="top" width="75%">PETSc is intended for use in large-scale application
-    projects, many ongoing <a href="../publications/index.html">computational science projects</a>
-    are built around the PETSc libraries. PETSc is easy
-    to use for beginners. Moreover, its careful design allows advanced users to have detailed
-    control over the solution process. PETSc includes a large suite of parallel linear
-    and nonlinear equation solvers that are easily used in application codes written in C,
-    C++, Fortran and now Python. PETSc provides many of the mechanisms needed within parallel application
-    codes, such as simple parallel matrix and vector assembly routines that allow the overlap
-    of communication and computation. In addition, PETSc includes support for
-    parallel distributed arrays useful for finite difference methods.&nbsp; Features include:
+      </td>
+      <td valign="top" width="75%">PETSc is intended for use in
+large-scale application projects, many ongoing <a
+ href="../publications/index.html">computational science projects</a>
+are built around the PETSc libraries. PETSc is easy to use for
+beginners. Moreover, its careful design allows advanced users to have
+detailed control over the solution process. PETSc includes a large
+suite of parallel linear and nonlinear equation solvers that are easily
+used in application codes written in C, C++, Fortran and now Python.
+PETSc provides many of the mechanisms needed within parallel
+application codes, such as simple parallel matrix and vector assembly
+routines that allow the overlap of communication and computation. In
+addition, PETSc includes support for parallel distributed arrays useful
+for finite difference methods.&nbsp; Features include:
       <p></p>
-
-    
       <table border="0" width="100%">
-
-      <tbody>
+        <tbody>
           <tr>
-
-        <td valign="top" width="50%">
+            <td valign="top" width="50%">
             <ul>
-
-          <li>Parallel vectors
+              <li>Parallel vectors
                 <ul>
-
-              <li>includes code for communicating ghost points&nbsp;</li>
+                  <li>includes code for communicating ghost points&nbsp;</li>
                 </ul>
-
-          </li>
-
-          <li>Parallel matrices
+              </li>
+              <li>Parallel matrices
                 <ul>
-
-              <li>several sparse storage formats</li>
-
-              <li>easy, efficient assembly. </li>
-
-            
+                  <li>several sparse storage formats</li>
+                  <li>easy, efficient assembly. </li>
                 </ul>
-
-          </li>
-
-          <li>Scalable parallel preconditioners</li>
-
-          <li>Krylov subspace methods</li>
-
-          <li>Parallel Newton-based nonlinear solvers</li>
-
-          <li>Parallel timestepping (ODE) solvers</li>
-
-        
+              </li>
+              <li>Scalable parallel preconditioners</li>
+              <li>Krylov subspace methods</li>
+              <li>Parallel Newton-based nonlinear solvers</li>
+              <li>Parallel timestepping (ODE) solvers</li>
             </ul>
-
-        </td>
-
-        <td valign="top" width="50%">
+            </td>
+            <td valign="top" width="50%">
             <ul>
-
-          <li>Complete documentation</li>
-
-          <li>Automatic profiling of floating point and memory usage</li>
-
-          <li>Consistent user interface</li>
-
-          <li>Intensive error checking</li>
-
-          <li>Portable to UNIX and Windows</li>
-
-          <li>Over one hundred examples</li>
-
-          <li>PETSc is supported and will be actively enhanced for many years. </li>
-
-        
+              <li>Support for Nvidia GPU cards</li>
+              <li>Complete documentation</li>
+              <li>Automatic profiling of floating point and memory usage</li>
+              <li>Consistent user interface</li>
+              <li>Intensive error checking</li>
+              <li>Portable to UNIX and Windows</li>
+              <li>Over one hundred examples</li>
+              <li>PETSc is supported and will be actively enhanced for
+many years. </li>
             </ul>
-
-        </td>
-
-      </tr>
-
-    
+            </td>
+          </tr>
         </tbody>
       </table>
-
-    </td>
-
-  </tr>
-
-  <tr>
-
-    <td colspan="2" width="100%">
-      <hr color="#ff5b5b" size="4">
-    </td>
-
-  </tr>
-
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" width="100%">
+      <hr color="#ff5b5b" size="4"> </td>
+    </tr>
   </tbody>
 </table>
-
 </body>
 </html>

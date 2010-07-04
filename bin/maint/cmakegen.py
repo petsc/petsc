@@ -101,15 +101,22 @@ def main():
   with open('CMakeLists.txt', 'w') as f:
     writeRoot(f)
     f.write('include_directories (${PETSC_PACKAGE_INCLUDES})\n')
-    pkglist = 'sys vec mat dm ksp snes ts characteristic'.split()
-    for i,pkg in enumerate(pkglist):
-      writePackage(f,pkg,pkglist[:i])
+    pkglist = [('sys'            , ''),
+               ('vec'            , 'sys'),
+               ('mat'            , 'vec sys'),
+               ('dm'             , 'mat vec sys'),
+               ('characteristic' , 'dm vec sys'),
+               ('ksp'            , 'dm mat vec sys'),
+               ('snes'           , 'ksp dm mat vec sys'),
+               ('ts'             , 'snes ksp dm mat vec sys')]
+    for pkg,deps in pkglist:
+      writePackage(f,pkg,deps.split())
     f.write ('''
 if (PETSC_USE_SINGLE_LIBRARY)
   add_library (petsc %s)
   target_link_libraries (petsc ${PETSC_PACKAGE_LIBS})
 endif ()
-''' % (' '.join([r'${PETSC' + pkg.upper() + r'_SRCS}' for pkg in pkglist]),))
+''' % (' '.join([r'${PETSC' + pkg.upper() + r'_SRCS}' for pkg,deps in pkglist]),))
 
 if __name__ == "__main__":
   main()

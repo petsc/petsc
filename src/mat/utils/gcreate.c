@@ -130,10 +130,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetSizes(Mat A, PetscInt m, PetscInt n, Pet
   A->cmap->n = n;
   A->rmap->N = M;
   A->cmap->N = N;
-  if (A->ops->create) {
-    ierr = (*A->ops->create)(A);CHKERRQ(ierr);
-    A->ops->create = 0;
-  }
 
   PetscFunctionReturn(0);
 }
@@ -196,6 +192,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetFromOptions(Mat B)
       ierr = (*B->ops->setfromoptions)(B);CHKERRQ(ierr);
     }
 
+    /* process any options handlers added with PetscObjectAddOptionsHandler() */
+    ierr = PetscObjectProcessOptionsHandlers((PetscObject)B);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

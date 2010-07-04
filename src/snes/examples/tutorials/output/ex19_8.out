@@ -44,11 +44,13 @@ SNES Object:
                 type=seqaij, rows=196, cols=196
                 package used to perform factorization: petsc
                 total: nonzeros=8880, allocated nonzeros=8880
+                total number of mallocs used during MatSetValues calls =0
                   using I-node routines: found 49 nodes, limit used is 5
         linear system matrix = precond matrix:
         Matrix Object:
           type=seqaij, rows=196, cols=196
           total: nonzeros=3472, allocated nonzeros=3472
+          total number of mallocs used during MatSetValues calls =0
             using I-node routines: found 49 nodes, limit used is 5
       Split number 1 Fields  0, 1
       KSP Object:(fieldsplit_1_)
@@ -68,15 +70,18 @@ SNES Object:
                 type=seqaij, rows=196, cols=196
                 package used to perform factorization: petsc
                 total: nonzeros=8880, allocated nonzeros=8880
+                total number of mallocs used during MatSetValues calls =0
                   using I-node routines: found 49 nodes, limit used is 5
         linear system matrix = precond matrix:
         Matrix Object:
           type=seqaij, rows=196, cols=196
           total: nonzeros=3472, allocated nonzeros=3472
+          total number of mallocs used during MatSetValues calls =0
             using I-node routines: found 49 nodes, limit used is 5
     linear system matrix = precond matrix:
     Matrix Object:
       type=seqaij, rows=196, cols=196
       total: nonzeros=3472, allocated nonzeros=3472
+      total number of mallocs used during MatSetValues calls =0
         using I-node routines: found 49 nodes, limit used is 5
 Number of Newton iterations = 2

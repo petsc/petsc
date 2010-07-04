@@ -35,7 +35,9 @@ int main(int argc,char **args)
   if (!flg) {ierr = PetscPrintf(PETSC_COMM_WORLD,"Writing submatrix to file : %s\n",fout);CHKERRQ(ierr);}
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,fout,FILE_MODE_WRITE,&fdout);CHKERRQ(ierr);
 
-  ierr = MatLoad(fdin,mtype,&A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
+  ierr = MatSetType(A,mtype);CHKERRQ(ierr);
+  ierr = MatLoad(fdin,A);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fdin);CHKERRQ(ierr);
   
   ierr = MatGetSize(A,&size,&size);CHKERRQ(ierr);

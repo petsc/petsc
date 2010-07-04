@@ -171,6 +171,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFromOptions(PetscViewer viewer)
     if (viewer->ops->setfromoptions) {
       ierr = (*viewer->ops->setfromoptions)(viewer);CHKERRQ(ierr);
     }
+
+    /* process any options handlers added with PetscObjectAddOptionsHandler() */
+    ierr = PetscObjectProcessOptionsHandlers((PetscObject)viewer);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

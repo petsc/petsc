@@ -13,7 +13,7 @@ PetscLogEvent  VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, 
 PetscLogEvent  VEC_MTDot, VEC_NormBarrier, VEC_MAXPY, VEC_Swap, VEC_AssemblyBegin, VEC_ScatterBegin, VEC_ScatterEnd;
 PetscLogEvent  VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier;
 PetscLogEvent  VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication,VEC_Ops;
-PetscLogEvent  VEC_DotNormBarrier, VEC_DotNorm, VEC_AXPBYPCZ;
+PetscLogEvent  VEC_DotNormBarrier, VEC_DotNorm, VEC_AXPBYPCZ, VEC_CUDACopyFromGPU, VEC_CUDACopyToGPU;
 
 EXTERN PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt*);
 #undef __FUNCT__
@@ -708,6 +708,26 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecView(Vec vec,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_USE_DEBUG)
+#include "../src/sys/totalview/tv_data_display.h"
+PETSC_UNUSED static int TV_display_type(const struct _p_Vec *v)
+{
+  const PetscScalar *values;
+  char              type[32];
+  PetscErrorCode    ierr;
+
+
+  TV_add_row("Local rows", "int", &v->map->n);
+  TV_add_row("Global rows", "int", &v->map->N);
+  TV_add_row("Typename", TV_ascii_string_type , ((PetscObject)v)->type_name);
+  ierr = VecGetArrayRead((Vec)v,&values);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(type,32,"double[%d]",v->map->n);CHKERRQ(ierr);
+  TV_add_row("values",type, values);
+  ierr = VecRestoreArrayRead((Vec)v,&values);CHKERRQ(ierr);
+  return TV_format_OK;
+}
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "VecGetSize"
 /*@
@@ -1384,6 +1404,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetFromOptions(Vec vec)
     if (vec->ops->setfromoptions) {
       ierr = (*vec->ops->setfromoptions)(vec);CHKERRQ(ierr);
     }
+
+    /* process any options handlers added with PetscObjectAddOptionsHandler() */
+    ierr = PetscObjectProcessOptionsHandlers((PetscObject)vec);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = VecViewFromOptions(vec, ((PetscObject)vec)->name);CHKERRQ(ierr);

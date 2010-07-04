@@ -13,6 +13,6 @@ if __name__ == '__main__':
     '--with-precision=single',
     '--with-fc=0',
     '--with-clanguage=c++',
-    '-CXX_CXXFLAGS=-x cu'
+    '--CXX_CXXFLAGS=-x cu'
   ]
   configure.petsc_configure(configure_options)

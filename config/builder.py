@@ -47,7 +47,6 @@ class PETScMaker(script.Script):
    help.addArgument('RepManager', '-rootDir', nargs.ArgDir(None, os.getcwd(), 'The root directory for this build', isTemporary = 1))
    help.addArgument('RepManager', '-dryRun',  nargs.ArgBool(None, False, 'Only output what would be run', isTemporary = 1))
    help.addArgument('RepManager', '-verbose', nargs.ArgInt(None, 0, 'The verbosity level', min = 0, isTemporary = 1))
-   help.addArgument('RepManager', '-cudaFix', nargs.ArgBool(None, False, 'Fix C compiles for nvcc version < 3.1', isTemporary = 1))
    return help
 
  def setup(self):
@@ -103,15 +102,7 @@ class PETScMaker(script.Script):
    flags.extend([self.setCompilers.CPPFLAGS, self.CHUD.CPPFLAGS]) # CPP_FLAGS
    flags.append('-D__INSDIR__='+os.getcwd().replace(self.petscdir.dir, ''))
    packageIncludes, packageLibs = self.getPackageInfo()
-   if self.argDB['cudaFix']:
-     sources = []
-     for s in source:
-       newS = os.path.splitext(s)[0]+'.cu'
-       self.logPrint('Copying '+str(s)+' to '+newS)
-       shutil.copy2(s, newS)
-       sources.append(newS)
-   else:
-     sources = source
+   sources = source
    cmd = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+sources)
    if self.dryRun or self.verbose:
      section = 'screen'
@@ -123,10 +114,6 @@ class PETScMaker(script.Script):
      if status:
        self.logPrint("ERROR IN COMPILE ******************************", debugSection='screen')
        self.logPrint(output+error, debugSection='screen')
-   if self.argDB['cudaFix']:
-     for s in sources:
-       self.logPrint('Removing '+str(s))
-       os.remove(s)
    self.setCompilers.popLanguage()
    return
 
@@ -163,7 +150,10 @@ class PETScMaker(script.Script):
  def archive(self, library, objects):
    '''${AR} ${AR_FLAGS} ${LIBNAME} $*.o'''
    lib = os.path.splitext(library)[0]+'.'+self.setCompilers.AR_LIB_SUFFIX
-   cmd = ' '.join([self.setCompilers.AR, self.setCompilers.FAST_AR_FLAGS, lib]+objects)
+   if self.argDB['rootDir'] == os.environ['PETSC_DIR']:
+     cmd = ' '.join([self.setCompilers.AR, self.setCompilers.FAST_AR_FLAGS, lib]+objects)
+   else:
+     cmd = ' '.join([self.setCompilers.AR, self.setCompilers.AR_FLAGS, lib]+objects)
    if self.dryRun or self.verbose:
      section = 'screen'
    else:

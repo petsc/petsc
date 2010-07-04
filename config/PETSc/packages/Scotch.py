@@ -9,8 +9,7 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.__init__(self, framework)
     self.download     = ['http://gforge.inria.fr/frs/download.php/10715/scotch_5.1.2.tar.gz']
     self.downloadname = self.name.lower()
-    self.liblist      = [['libscotch.a','libscotcherr.a'],
-                         ['libscotch.a','libscotcherr.a','librt.a']]
+    self.liblist      = [['libscotch.a','libscotcherr.a']]
     self.functions    = ['SCOTCH_archBuild']
     self.includes     = ['scotch.h']
     self.complex      = 0
@@ -92,3 +91,9 @@ class Configure(PETSc.package.NewPackage):
       output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'; cp -f lib/*.a '+libDir+'/.; cp -f include/*.h '+includeDir+'/.;', timeout=2500, log = self.framework.log)
       self.postInstall(output+err,os.path.join('src','Makefile.inc'))
     return self.installDir
+
+  def consistencyChecks(self):
+    PETSc.package.NewPackage.consistencyChecks(self)
+    if self.framework.argDB['with-'+self.package]:
+      if self.libraries.rt is None:
+        raise RuntimeError('Scotch requires a realtime library (librt) with clock_gettime()')

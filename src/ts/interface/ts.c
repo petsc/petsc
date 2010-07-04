@@ -114,6 +114,9 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetFromOptions(TS ts)
     if (ts->ops->setfromoptions) {
       ierr = (*ts->ops->setfromoptions)(ts);CHKERRQ(ierr);
     }
+
+    /* process any options handlers added with PetscObjectAddOptionsHandler() */
+    ierr = PetscObjectProcessOptionsHandlers((PetscObject)ts);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* Handle subobject options */

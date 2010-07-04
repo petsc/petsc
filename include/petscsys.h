@@ -1407,6 +1407,9 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectComposeFunction(PetscObject,con
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectSetFromOptions(PetscObject);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectSetUp(PetscObject);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscCommGetNewTag(MPI_Comm,PetscMPIInt *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectAddOptionsHandler(PetscObject,PetscErrorCode (*)(PetscObject,void*),PetscErrorCode (*)(PetscObject,void*),void*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectProcessOptionsHandlers(PetscObject);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectDestroyOptionsHandlers(PetscObject);
 
 /*MC
    PetscObjectComposeFunctionDynamic - Associates a function with a given PETSc object. 

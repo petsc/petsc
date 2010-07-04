@@ -476,6 +476,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
     if (snes->ops->setfromoptions) {
       ierr = (*snes->ops->setfromoptions)(snes);CHKERRQ(ierr);
     }
+
+    /* process any options handlers added with PetscObjectAddOptionsHandler() */
+    ierr = PetscObjectProcessOptionsHandlers((PetscObject)snes);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (mf) { ierr = SNESSetUpMatrixFree_Private(snes, mf_operator, mf_version);CHKERRQ(ierr); }

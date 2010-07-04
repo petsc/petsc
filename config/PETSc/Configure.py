@@ -408,6 +408,8 @@ class Configure(config.base.Configure):
         lib_paths.extend(map(libpath,libs))
         lib_libs.extend(map(cleanlib,libs))
         uniqextend(includes,pkg.include)
+      if self.libraries.math: lib_libs.extend(map(cleanlib,self.libraries.math))
+      if self.libraries.rt: lib_libs.extend(map(cleanlib,self.libraries.rt))
       for libname in nub(lib_libs):
         libvar = 'PETSC_' + libname.upper() + '_LIB'
         addpath = ''
@@ -440,6 +442,18 @@ class Configure(config.base.Configure):
       self.addDefine('Prefetch(a,b,c)', '__builtin_prefetch((a),(b),(c))')
     else:
       self.addDefine('Prefetch(a,b,c)', ' ')
+    self.popLanguage()
+
+  def configureUnused(self):
+    '''Sees if __attribute((unused)) is supported'''
+    if self.framework.argDB['with-iphone'] or self.framework.argDB['with-cuda']:
+      self.addDefine('UNUSED', ' ')
+      return
+    self.pushLanguage(self.languages.clanguage)      
+    if self.checkLink('__attribute((unused)) static int myfunc(void){ return 1;}', 'int i = myfunc();\n'):
+      self.addDefine('UNUSED', '__attribute((unused))')
+    else:
+      self.addDefine('UNUSED', ' ')
     self.popLanguage()
 
   def configureExpect(self):
@@ -656,6 +670,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('Cannot set C language to C++ without a functional C++ compiler.')
     self.executeTest(self.configureInline)
     self.executeTest(self.configurePrefetch)
+    self.executeTest(self.configureUnused)
     self.executeTest(self.configureExpect);
     self.executeTest(self.configureIntptrt);
     self.executeTest(self.configureSolaris)

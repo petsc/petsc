@@ -574,12 +574,7 @@ PetscErrorCode VecSet_Seq(Vec xin,PetscScalar alpha)
     ierr = PetscMemzero(xx,n*sizeof(PetscScalar));CHKERRQ(ierr);
   } else {
     for (i=0; i<n; i++) xx[i] = alpha;
-  }
-#if defined(PETSC_HAVE_CUDA)
-  if (xin->valid_GPU_array != PETSC_CUDA_UNALLOCATED){
-    xin->valid_GPU_array = PETSC_CUDA_CPU;
-  }
-#endif
+    }
   PetscFunctionReturn(0);
 }
 
@@ -593,11 +588,6 @@ PetscErrorCode VecSetRandom_Seq(Vec xin,PetscRandom r)
 
   PetscFunctionBegin;
   for (i=0; i<n; i++) {ierr = PetscRandomGetValue(r,&xx[i]);CHKERRQ(ierr);}
-#if defined(PETSC_HAVE_CUDA)
-  if (xin->valid_GPU_array != PETSC_CUDA_UNALLOCATED){
-    xin->valid_GPU_array = PETSC_CUDA_CPU;
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -726,7 +716,7 @@ PetscErrorCode VecAYPX_Seq(Vec yin,PetscScalar alpha,Vec xin)
 */
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecWAXPY_Seq"
+#define __FUNCT__ "VecWAXPY_Seq" 
 PetscErrorCode VecWAXPY_Seq(Vec win, PetscScalar alpha,Vec xin,Vec yin)
 {
   PetscErrorCode     ierr;
@@ -840,8 +830,8 @@ PetscErrorCode VecPointwiseMult_Seq(Vec win,Vec xin,Vec yin)
     for (i=0; i<n; i++) ww[i] = xx[i] * yy[i];
 #endif
   }
-  ierr = PetscLogFlops(n);CHKERRQ(ierr);
   ierr = VecRestoreArrayPrivate3(win,&ww,xin,&xx,yin,&yy);CHKERRQ(ierr);
+  ierr = PetscLogFlops(n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -925,11 +915,6 @@ PetscErrorCode VecResetArray_Seq(Vec vin)
   PetscFunctionBegin;
   v->array         = v->unplacedarray;
   v->unplacedarray = 0;
-#if defined(PETSC_HAVE_CUDA)
-  if (vin->valid_GPU_array != PETSC_CUDA_UNALLOCATED){
-    vin->valid_GPU_array = PETSC_CUDA_CPU;
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -943,11 +928,6 @@ PetscErrorCode VecPlaceArray_Seq(Vec vin,const PetscScalar *a)
   if (v->unplacedarray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"VecPlaceArray() was already called on this vector, without a call to VecResetArray()");
   v->unplacedarray = v->array;  /* save previous array so reset can bring it back */
   v->array = (PetscScalar *)a;
-#if defined(PETSC_HAVE_CUDA)
-  if (vin->valid_GPU_array != PETSC_CUDA_UNALLOCATED){
-    vin->valid_GPU_array = PETSC_CUDA_CPU;
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -961,11 +941,6 @@ PetscErrorCode VecReplaceArray_Seq(Vec vin,const PetscScalar *a)
   PetscFunctionBegin;
   ierr = PetscFree(v->array_allocated);CHKERRQ(ierr);
   v->array_allocated = v->array = (PetscScalar *)a;
-#if defined(PETSC_HAVE_CUDA)
-  if (vin->valid_GPU_array != PETSC_CUDA_UNALLOCATED){
-    vin->valid_GPU_array = PETSC_CUDA_CPU;
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -982,14 +957,17 @@ PetscErrorCode VecGetSize_Seq(Vec vin,PetscInt *size)
 #define __FUNCT__ "VecConjugate_Seq"
 PetscErrorCode VecConjugate_Seq(Vec xin)
 {
-  PetscScalar *x = ((Vec_Seq *)xin->data)->array;
-  PetscInt    n = xin->map->n;
+  PetscScalar    *x;
+  PetscInt       n = xin->map->n;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = VecGetArrayPrivate(xin,&x);CHKERRQ(ierr);
   while (n-->0) {
     *x = PetscConj(*x);
     x++;
   }
+  ierr = VecRestoreArrayPrivate(xin,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
  

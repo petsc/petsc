@@ -11,7 +11,7 @@
   <tbody>
     <tr>
       <td valign="top" width="25%">
-      <h1><font size="7" color="#ff0000">PETSc</font></h1>
+      <h1><font color="#ff0000" size="7">PETSc</font></h1>
       <ul>
         <li><a href="../index.html"><strong>Home</strong></a></li>
       </ul>
@@ -22,7 +22,7 @@
     </tr>
     <tr>
       <td colspan="2" width="100%">
-      <hr size="4" color="#ff5b5b"> </td>
+      <hr color="#ff5b5b" size="4"> </td>
     </tr>
     <tr>
       <td valign="top" width="25%">
@@ -218,14 +218,8 @@ input/output parameters, we find that many errors encountered
 within PETSc Fortran77 programs result from accidentally using
 incorrect calling sequences. Thus, if your Fortran program is crashing,
 one of the first things to check is that all subroutines are being
-called with the correct arguments. Such mistakes are immediately
-detected during compilation when using C/C++. Thus, using a mixture
-of C/C++ and Fortran often works well for programmers who wish to
-employ Fortran for the core numerical routines within their
-applications. In particular, one can effectively write PETSc driver
-routines in C/C++, thereby preserving flexibility within the
-program, and still use Fortran when desired for underlying numerical
-computations. </p>
+called with the correct arguments. <br>
+      </p>
       <p>When passing floating point numbers into Fortran subroutines
 always make sure you have them marked as double precision (e.g.,
 pass in 10.d0 instead of 10.0). Otherwise, the compiler interprets
@@ -236,8 +230,9 @@ recommend using the <strong>implicit none</strong> option at the
 begining of each Fortran subroutine you write.<br>
       </p>
       <p>Fortran 90 provides the ability to do some type checking of
-subroutine calls by using Fortran 90 modules. PETSc now provides
-modules for Fortran 90, see the <a
+subroutine calls by using Fortran 90 interfaces or modules. PETSc now
+provides
+interfaces and modules for Fortran 90, see the <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/Sys/UsingFortran.html">manual
 page</a> for how to use them.<br>
 <!--##end--> </p>
@@ -245,7 +240,7 @@ page</a> for how to use them.<br>
     </tr>
     <tr>
       <td colspan="2" width="100%">
-      <hr size="4" color="#ff5b5b"> </td>
+      <hr color="#ff5b5b" size="4"> </td>
     </tr>
   </tbody>
 </table>

@@ -1536,7 +1536,21 @@ static struct _MatOps MatOps_Values = {
        MatRealPart_MPISBAIJ,
        MatImaginaryPart_MPISBAIJ,
        MatGetRowUpperTriangular_MPISBAIJ,
-       MatRestoreRowUpperTriangular_MPISBAIJ
+       MatRestoreRowUpperTriangular_MPISBAIJ,
+/*109*/0,
+       0,
+       0,
+       0,
+       0,
+/*114*/0,
+       0,
+       0,
+       0,
+       0,
+/*119*/0,
+       0,
+       0,
+       0
 };
 
 
@@ -2136,9 +2150,8 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalue
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPISBAIJ"
-PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer, const MatType type,Mat *newmat)
+PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer, Mat newmat)
 {
-  Mat            A;
   PetscErrorCode ierr;
   PetscInt       i,nz,j,rstart,rend;
   PetscScalar    *vals,*buf;
@@ -2149,7 +2162,7 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer, const MatType type,Mat *newm
   PetscInt       *procsnz = 0,jj,*mycols,*ibuf;
   PetscInt       bs=1,Mbs,mbs,extra_rows;
   PetscInt       *dlens,*odlens,*mask,*masked1,*masked2,rowcount,odcount;
-  PetscInt       dcount,kmax,k,nzcount,tmp;
+  PetscInt       dcount,kmax,k,nzcount,tmp,sizesset=1,grows,gcols;
   int            fd;
  
   PetscFunctionBegin;
@@ -2166,8 +2179,21 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer, const MatType type,Mat *newm
     if (header[3] < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Matrix stored in special format, cannot load as MPISBAIJ");
   }
 
+  if (newmat->rmap->n < 0 && newmat->rmap->N < 0 && newmat->cmap->n < 0 && newmat->cmap->N < 0) sizesset = 0;
+
   ierr = MPI_Bcast(header+1,3,MPIU_INT,0,comm);CHKERRQ(ierr);
   M = header[1]; N = header[2];
+
+  /* If global rows/cols are set to PETSC_DECIDE, set it to the sizes given in the file */
+  if (sizesset && newmat->rmap->N < 0) newmat->rmap->N = M;
+  if (sizesset && newmat->cmap->N < 0) newmat->cmap->N = N;
+  
+  /* If global sizes are set, check if they are consistent with that given in the file */
+  if (sizesset) {
+    ierr = MatGetSize(newmat,&grows,&gcols);CHKERRQ(ierr);
+  } 
+  if (sizesset && newmat->rmap->N != grows) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of rows:Matrix in file has (%d) and input matrix has (%d)",M,grows);
+  if (sizesset && newmat->cmap->N != gcols) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of cols:Matrix in file has (%d) and input matrix has (%d)",N,gcols);
 
   if (M != N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can only do square matrices");
 
@@ -2184,8 +2210,13 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer, const MatType type,Mat *newm
   }
 
   /* determine ownership of all rows */
-  mbs        = Mbs/size + ((Mbs % size) > rank);
-  m          = mbs*bs;
+  if (newmat->rmap->n < 0) { /* PETSC_DECIDE */
+    mbs        = Mbs/size + ((Mbs % size) > rank);
+    m          = mbs*bs;
+  } else { /* User Set */
+    m          = newmat->rmap->n;
+    mbs        = m/bs;
+  }    
   ierr       = PetscMalloc2(size+1,PetscMPIInt,&rowners,size+1,PetscMPIInt,&browners);CHKERRQ(ierr);
   mmbs       = PetscMPIIntCast(mbs);
   ierr       = MPI_Allgather(&mmbs,1,MPI_INT,rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
@@ -2294,13 +2325,11 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer, const MatType type,Mat *newm
     for (j=0; j<dcount; j++) mask[masked1[j]] = 0;
     for (j=0; j<odcount; j++) mask[masked2[j]] = 0; 
   }
-  
-  /* create our matrix */
-  ierr = MatCreate(comm,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,m,m,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetType(A,type);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatMPISBAIJSetPreallocation(A,bs,0,dlens,0,odlens);CHKERRQ(ierr);
+    if (!sizesset) {
+    ierr = MatSetSizes(newmat,m,m,M+extra_rows,N+extra_rows);CHKERRQ(ierr);
+  }
+  ierr = MatSetOption(newmat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatMPISBAIJSetPreallocation(newmat,bs,0,dlens,0,odlens);CHKERRQ(ierr);
   
   if (!rank) {
     ierr = PetscMalloc(maxnz*sizeof(PetscScalar),&buf);CHKERRQ(ierr);
@@ -2315,7 +2344,7 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer, const MatType type,Mat *newm
     /* insert into matrix */
     jj      = rstart*bs;
     for (i=0; i<m; i++) {
-      ierr = MatSetValues(A,1,&jj,locrowlens[i],mycols,vals,INSERT_VALUES);CHKERRQ(ierr); 
+      ierr = MatSetValues(newmat,1,&jj,locrowlens[i],mycols,vals,INSERT_VALUES);CHKERRQ(ierr); 
       mycols += locrowlens[i];
       vals   += locrowlens[i];
       jj++;
@@ -2326,7 +2355,7 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer, const MatType type,Mat *newm
       nz   = procsnz[i];
       vals = buf;
       ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR);CHKERRQ(ierr);
-      ierr = MPI_Send(vals,nz,MPIU_SCALAR,i,((PetscObject)A)->tag,comm);CHKERRQ(ierr);
+      ierr = MPI_Send(vals,nz,MPIU_SCALAR,i,((PetscObject)newmat)->tag,comm);CHKERRQ(ierr);
     }
     /* the last proc */
     if (size != 1){
@@ -2334,7 +2363,7 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer, const MatType type,Mat *newm
       vals = buf;
       ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR);CHKERRQ(ierr);
       for (i=0; i<extra_rows; i++) vals[nz+i] = 1.0;
-      ierr = MPI_Send(vals,nz+extra_rows,MPIU_SCALAR,size-1,((PetscObject)A)->tag,comm);CHKERRQ(ierr);
+      ierr = MPI_Send(vals,nz+extra_rows,MPIU_SCALAR,size-1,((PetscObject)newmat)->tag,comm);CHKERRQ(ierr);
     }
     ierr = PetscFree(procsnz);CHKERRQ(ierr);
 
@@ -2345,14 +2374,14 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer, const MatType type,Mat *newm
     /* receive message of values*/
     vals   = buf;
     mycols = ibuf;
-    ierr   = MPI_Recv(vals,nz,MPIU_SCALAR,0,((PetscObject)A)->tag,comm,&status);CHKERRQ(ierr);
+    ierr   = MPI_Recv(vals,nz,MPIU_SCALAR,0,((PetscObject)newmat)->tag,comm,&status);CHKERRQ(ierr);
     ierr   = MPI_Get_count(&status,MPIU_SCALAR,&maxnz);CHKERRQ(ierr);
     if (maxnz != nz) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"something is wrong with file");
 
     /* insert into matrix */
     jj      = rstart*bs;
     for (i=0; i<m; i++) {
-      ierr    = MatSetValues_MPISBAIJ(A,1,&jj,locrowlens[i],mycols,vals,INSERT_VALUES);CHKERRQ(ierr);
+      ierr    = MatSetValues_MPISBAIJ(newmat,1,&jj,locrowlens[i],mycols,vals,INSERT_VALUES);CHKERRQ(ierr);
       mycols += locrowlens[i];
       vals   += locrowlens[i];
       jj++;
@@ -2365,9 +2394,8 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer, const MatType type,Mat *newm
   ierr = PetscFree2(rowners,browners);CHKERRQ(ierr);
   ierr = PetscFree2(dlens,odlens);CHKERRQ(ierr);
   ierr = PetscFree3(mask,masked1,masked2);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  *newmat = A;
+  ierr = MatAssemblyBegin(newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

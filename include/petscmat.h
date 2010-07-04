@@ -496,9 +496,7 @@ PetscPolymorphicFunction(MatIsHermitian,(Mat A),(A,0,&t),PetscTruth,t)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsSymmetricKnown(Mat,PetscTruth*,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitianKnown(Mat,PetscTruth*,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMissingDiagonal(Mat,PetscTruth *,PetscInt *);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer,const MatType,Mat*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatLoadnew(PetscViewer,Mat);
-PetscPolymorphicFunction(MatLoad,(PetscViewer v,const MatType t),(v,t,&a),Mat,a)
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer,Mat);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreRowIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *);
@@ -1712,7 +1710,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT PetscViewerMathematicaPutCSRMatrix(Pets
    PETSc interface to MUMPS 
 */
 #ifdef PETSC_HAVE_MUMPS
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMumpsSetIcntl(Mat,PetscInt,PetscInt);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetMumpsIcntl(Mat,PetscInt,PetscInt);
 #endif
 
 PETSC_EXTERN_CXX_END

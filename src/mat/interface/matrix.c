@@ -730,8 +730,21 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatView(Mat mat,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_USE_DEBUG)
+#include "../src/sys/totalview/tv_data_display.h"
+PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
+{
+  TV_add_row("Local rows", "int", &mat->rmap->n);
+  TV_add_row("Local columns", "int", &mat->cmap->n);
+  TV_add_row("Global rows", "int", &mat->rmap->N);
+  TV_add_row("Global columns", "int", &mat->cmap->N);
+  TV_add_row("Typename", TV_ascii_string_type, ((PetscObject)mat)->type_name);
+  return TV_format_OK;
+}
+#endif
+
 #undef __FUNCT__  
-#define __FUNCT__ "MatLoadnew"
+#define __FUNCT__ "MatLoad"
 /*@C
    MatLoad - Loads a matrix that has been stored in binary format
    with MatView().  The matrix format is determined from the options database.
@@ -809,13 +822,10 @@ and PetscBinaryWrite() to see how this may be done.
 .seealso: PetscViewerBinaryOpen(), MatView(), VecLoad()
 
  @*/  
-PetscErrorCode PETSCMAT_DLLEXPORT MatLoadnew(PetscViewer viewer, Mat newmat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer viewer, Mat newmat)
 {
-  Mat            factory;
   PetscErrorCode ierr;
   PetscTruth     isbinary,flg;
-  MPI_Comm       comm;
-  PetscErrorCode (*r)(PetscViewer, Mat);
   char           mtype[256];
   const char     *prefix;
   const MatType  outtype=0;
@@ -823,18 +833,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLoadnew(PetscViewer viewer, Mat newmat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(newmat,3);
-
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
-  if (!isbinary) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()"\
-	    );
-  }
+  if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
-  /* MatSetSizes and MatSetType have been called */
+
   if (((PetscObject)newmat)->type_name) outtype = ((PetscObject)newmat)->type_name;
-  
-  /* Check if the type is set by checking the mat create function pointer. This check is only for MatSetType() not called after MatSetSizes(). */
-  if (!outtype && !newmat->ops->create) {
+  if (!outtype) {
     ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,(const char **)&prefix);CHKERRQ(ierr);
     ierr = PetscOptionsGetString(prefix,"-mat_type",mtype,256,&flg);CHKERRQ(ierr);
     if (flg) {
@@ -848,17 +852,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLoadnew(PetscViewer viewer, Mat newmat)
     ierr = MatSetType(newmat,outtype);CHKERRQ(ierr);
   }
 
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  /* Hack to get the appropriate load function pointer for the given type */
-  ierr = MatCreate(comm,&factory);CHKERRQ(ierr);
-  ierr = MatSetSizes(factory,0,0,0,0);CHKERRQ(ierr);
-  ierr = MatSetType(factory,outtype);CHKERRQ(ierr);
-  r = factory->ops->loadnew;
-  ierr = MatDestroy(factory);
-  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatLoad is not supported for type: %s",outtype);
+  if (!newmat->ops->load) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatLoad is not supported for type: %s",outtype);
 
   ierr = PetscLogEventBegin(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
-  ierr = (*r)(viewer,newmat);CHKERRQ(ierr);
+  ierr = (*newmat->ops->load)(viewer,newmat);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
@@ -6508,7 +6505,7 @@ M*/
            30  0  0  | 31 32 33  |  0 34
 .ve
 
-    Suppose isrow = [0 1 | 4 | 5 6] and iscol = [1 2 | 3 4 5 | 6].  The resulting submatrix is
+    Suppose isrow = [0 1 | 4 | 6 7] and iscol = [1 2 | 3 4 5 | 6].  The resulting submatrix is
 
 .vb
             2  0  |  0  3  0  |  0

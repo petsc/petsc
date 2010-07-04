@@ -35,7 +35,9 @@
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,f,FILE_MODE_READ,     &
      &     fd,ierr)
 
-      call MatLoad(fd,MATSEQAIJ,A,ierr)
+      call MatCreate(PETSC_COMM_WORLD,A,ierr)
+      call MatSetType(A, MATSEQAIJ,ierr)
+      call MatLoad(fd,A,ierr)
 
 ! Get information about matrix
       call MatGetSize(A,m,n,ierr)
