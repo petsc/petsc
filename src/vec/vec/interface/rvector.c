@@ -401,7 +401,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecTDot(Vec x,Vec y,PetscScalar *val)
 /*@
    VecScale - Scales a vector. 
 
-   Collective on Vec
+   Not collective on Vec
 
    Input Parameters:
 +  x - the vector

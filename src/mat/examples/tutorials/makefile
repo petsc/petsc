@@ -53,6 +53,10 @@ ex13: ex13.o  chkopts
 ex14: ex14.o  chkopts
 	-${CLINKER}  -o ex14 ex14.o ${PETSC_MAT_LIB}
 	${RM} ex14.o
+
+ex15: ex15.o  chkopts
+	-${CLINKER}  -o ex15 ex15.o ${PETSC_MAT_LIB}
+	${RM} ex15.o
 # See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex1: 
 	-@${MPIEXEC} -n 1 ./ex1 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
