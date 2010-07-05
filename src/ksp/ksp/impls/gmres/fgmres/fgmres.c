@@ -669,11 +669,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart_FGMRES(KSP ksp,PetscInt max
 
   PetscFunctionBegin;
   if (max_k < 1) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Restart must be positive");
-  if (!ksp->setupcalled) {
+  if (!ksp->setupstage) {
     gmres->max_k = max_k;
   } else if (gmres->max_k != max_k) {
      gmres->max_k = max_k;
-     ksp->setupcalled = 0;
+     ksp->setupstage = KSP_SETUP_NEW;
      /* free the data structures, then create them again */
      ierr = KSPDestroy_FGMRES_Internal(ksp);CHKERRQ(ierr);
   }

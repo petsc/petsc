@@ -363,7 +363,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatS
   if (Pmat) PetscCheckSameComm(ksp,1,Pmat,3);
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCSetOperators(ksp->pc,Amat,Pmat,flag);CHKERRQ(ierr);
-  if (ksp->setupcalled > 1) ksp->setupcalled = 1;  /* so that next solve call will call setup */
+  if (ksp->setupstage == KSP_SETUP_NEWRHS) ksp->setupstage = KSP_SETUP_NEWMATRIX;  /* so that next solve call will call PCSetUp() on new matrix */
   if (ksp->guess) {
     ierr = KSPFischerGuessReset(ksp->guess);CHKERRQ(ierr);
   }
@@ -383,14 +383,15 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatS
 
    Output Parameters:
 +  Amat - the matrix associated with the linear system
-.  Pmat - the matrix to be used in constructing the preconditioner, usually the
-          same as Amat. 
+.  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat. 
 -  flag - flag indicating information about the preconditioner matrix structure
    during successive linear solves.  This flag is ignored the first time a
    linear system is solved, and thus is irrelevant when solving just one linear
    system.
 
     Level: intermediate
+
+   Notes: DOES NOT increase the reference counts of the matrix, so you should NOT destroy them.
 
 .keywords: KSP, set, get, operators, matrix, preconditioner, linear system
 
@@ -508,7 +509,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->nwork           = 0;
   ksp->work            = 0;
   ksp->reason          = KSP_CONVERGED_ITERATING;
-  ksp->setupcalled     = 0;
+  ksp->setupstage      = KSP_SETUP_NEW;
 
   ierr = PetscPublishAll(ksp);CHKERRQ(ierr);
   *inksp = ksp;
@@ -574,7 +575,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetType(KSP ksp, const KSPType type)
   ksp->ops->buildsolution = KSPDefaultBuildSolution;
   ksp->ops->buildresidual = KSPDefaultBuildResidual;
   /* Call the KSPCreate_XXX routine for this particular Krylov solver */
-  ksp->setupcalled = 0;
+  ksp->setupstage = KSP_SETUP_NEW;
   ierr = (*r)(ksp);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)ksp,type);CHKERRQ(ierr);
   PetscFunctionReturn(0);

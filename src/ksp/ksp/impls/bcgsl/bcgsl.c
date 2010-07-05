@@ -307,11 +307,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ksp->setupcalled) {
+  if (ksp->setupstage) {
     if ((delta<=0 && bcgsl->delta>0) || (delta>0 && bcgsl->delta<=0)) {
       ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
       ierr = PetscFree5(AY0c,AYlc,AYtc,MZa,MZb);CHKERRQ(ierr);
-      ksp->setupcalled = 0;
+      ksp->setupstage = KSP_SETUP_NEW;
     }
   }
   bcgsl->delta = delta;
@@ -347,7 +347,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetPol(KSP ksp, PetscTruth uMROR)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!ksp->setupcalled) {
+  if (!ksp->setupstage) {
     bcgsl->bConvex = uMROR;
   } else if (bcgsl->bConvex != uMROR) {
     /* free the data structures,
@@ -356,7 +356,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetPol(KSP ksp, PetscTruth uMROR)
     ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
     ierr = PetscFree5(AY0c,AYlc,AYtc,MZa,MZb);CHKERRQ(ierr);
     bcgsl->bConvex = uMROR;
-    ksp->setupcalled = 0;
+    ksp->setupstage = KSP_SETUP_NEW;
   }
   PetscFunctionReturn(0);
 }
@@ -390,14 +390,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetEll(KSP ksp, int ell)
   PetscFunctionBegin;
   if (ell < 1) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE, "KSPBCGSLSetEll: second argument must be positive");
 
-  if (!ksp->setupcalled) {
+  if (!ksp->setupstage) {
     bcgsl->ell = ell;
   } else if (bcgsl->ell != ell) {
     /* free the data structures, then create them again */
     ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
     ierr = PetscFree5(AY0c,AYlc,AYtc,MZa,MZb);CHKERRQ(ierr);
     bcgsl->ell = ell;
-    ksp->setupcalled = 0;
+    ksp->setupstage = KSP_SETUP_NEW;
   }
   PetscFunctionReturn(0);
 }
