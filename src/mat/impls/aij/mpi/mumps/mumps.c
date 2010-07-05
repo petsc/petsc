@@ -751,8 +751,6 @@ PetscErrorCode PetscSetMUMPSOptions(Mat F, Mat A)
 PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS* mumps)
 {
   PetscErrorCode  ierr;
-  PetscInt        icntl;
-  PetscTruth      flg;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)A)->comm, &mumps->myid);
@@ -763,10 +761,6 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS* mumps)
   mumps->id.job = JOB_INIT;
   mumps->id.par = 1;  /* host participates factorizaton and solve */
   mumps->id.sym = mumps->sym; 
-  if (mumps->sym == 2){
-    ierr = PetscOptionsInt("-mat_mumps_sym","SYM: (1,2)","None",mumps->id.sym,&icntl,&flg);CHKERRQ(ierr); 
-    if (flg && icntl == 1) mumps->id.sym=icntl;  /* matrix is spd */
-  }
 #if defined(PETSC_USE_COMPLEX)
   zmumps_c(&mumps->id); 
 #else
@@ -1246,7 +1240,8 @@ PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
     B->factortype = MAT_FACTOR_CHOLESKY;
     if (isSeqAIJ) mumps->ConvertToTriples = MatConvertToTriples_seqaij_seqsbaij;
     else mumps->ConvertToTriples = MatConvertToTriples_mpiaij_mpisbaij;
-    mumps->sym = 2;
+    if (A->spd_set && A->spd) mumps->sym = 1;
+    else                      mumps->sym = 2;
   }
 
   mumps->isAIJ        = PETSC_TRUE;
@@ -1294,8 +1289,9 @@ PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mumps",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSetMumpsIcntl_C","MatSetMumpsIcntl",MatSetMumpsIcntl);CHKERRQ(ierr);
   B->factortype                  = MAT_FACTOR_CHOLESKY;
-  mumps->sym = 2;
-  
+  if (A->spd_set && A->spd) mumps->sym = 1;
+  else                      mumps->sym = 2;
+
   mumps->isAIJ        = PETSC_FALSE;
   mumps->MatDestroy   = B->ops->destroy;
   B->ops->destroy     = MatDestroy_MUMPS;
