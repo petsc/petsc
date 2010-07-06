@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCECU  = aijcuda.cu
+SOURCEC  = aijcuda.c
 SOURCEF  = 
 SOURCEH  =
 OBJSC    = aijcuda.o 

@@ -10,6 +10,8 @@
 #include "../src/mat/impls/aij/seq/aij.h"          /*I "petscmat.h" I*/
 #include "petscblaslapack.h"
 #include "petscbt.h"
+#include <cusp/csr_matrix.h>
+#include <cusp/multiply.h>
 
 #ifndef CUSPARRAY
 #define CUSPARRAY cusp::array1d<PetscScalar,cusp::device_memory>

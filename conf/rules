@@ -89,7 +89,7 @@ libfast:  ${SOURCECU} ${SOURCEC} ${SOURCEF}
 
 libfastcompile:
 	-@if [ "${SOURCECU}" != "" ]; then \
-	echo nvcc -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} ${SOURCECU}; \
+	echo nvcc -c --compiler-options=${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} ${SOURCECU}; \
 	nvcc -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} ${SOURCECU}; \
 	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS} > tmpf 2>&1 ; ${GREP} -v "has no symbols" tmpf; ${RM} tmpf; \
 		    ${RM} ${OBJSC} ${SOBJS} ${OBJSC:.o=.lo} ${SOBJS:.o=.lo}; \

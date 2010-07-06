@@ -6,6 +6,8 @@
 #include "private/vecimpl.h"          /*I "petscvec.h" I*/
 #include "../src/vec/vec/impls/dvecimpl.h"
 #include "petscblaslapack.h"
+#include <cublas.h>
+#include <cusp/blas.h>
 
 /*MC
    VECSEQCUDA - VECSEQCUDA = "seqcuda" - The basic sequential vector, modified to use CUDA
@@ -22,6 +24,20 @@ M*/
 
 #define VecCUDACastToRawPtr(x) thrust::raw_pointer_cast(&(x)[0])
 #define CUSPARRAY cusp::array1d<PetscScalar,cusp::device_memory>
+
+#undef __FUNCT__
+#define __FUNCT__ "cublasInit_Public"
+void cublasInit_Public(void)
+{
+  cublasInit();
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "cublasShutdown_Public"
+void cublasShutdown_Public(void)
+{
+  cublasShutdown();
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCUDAAllocateCheck"
