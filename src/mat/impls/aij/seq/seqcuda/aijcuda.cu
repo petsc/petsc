@@ -172,6 +172,8 @@ PetscErrorCode MatDestroy_SeqAIJCUDA(Mat A)
 
   PetscFunctionBegin;
   delete (CUSPMATRIX *)(A->spptr);
+  /*this next line is because MatDestroy tries to PetscFree spptr if it is not zero, and PetscFree only works if the memory was allocated with PetscNew or PetscMalloc, which don't call the constructor */
+  A->spptr = 0;
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
