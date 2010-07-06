@@ -203,6 +203,7 @@ int main(int argc,char **args)
     if (flg_lu){
       ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
     } else if (flg_ch) {
+      ierr = MatSetOption(A,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr); /* set MUMPS id%SYM=1 */
       ierr = PCSetType(pc,PCCHOLESKY);CHKERRQ(ierr);
     }
     ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);CHKERRQ(ierr);

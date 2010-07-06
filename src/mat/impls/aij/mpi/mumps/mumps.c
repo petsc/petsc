@@ -18,7 +18,12 @@ EXTERN_C_BEGIN
 #endif
 EXTERN_C_END 
 #define JOB_INIT -1
+#define JOB_FACTSYMBOLIC 1
+#define JOB_FACTNUMERIC 2
+#define JOB_SOLVE 3
 #define JOB_END -2
+
+
 /* macros s.t. indices match MUMPS documentation */
 #define ICNTL(I) icntl[(I)-1] 
 #define CNTL(I) cntl[(I)-1] 
@@ -540,7 +545,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
 
   /* solve phase */
   /*-------------*/
-  lu->id.job = 3;
+  lu->id.job = JOB_SOLVE;
 #if defined(PETSC_USE_COMPLEX)
   zmumps_c(&lu->id); 
 #else
@@ -616,7 +621,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
 
   /* numerical factorization phase */
   /*-------------------------------*/
-  lu->id.job = 2;
+  lu->id.job = JOB_FACTNUMERIC;
   if(!lu->id.ICNTL(18)) { 
     if (!lu->myid) {
 #if defined(PETSC_USE_COMPLEX)
@@ -797,7 +802,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
 
   /* analysis phase */
   /*----------------*/  
-  lu->id.job = 1; 
+  lu->id.job = JOB_FACTSYMBOLIC; 
   lu->id.n = M;
   switch (lu->id.ICNTL(18)){
   case 0:  /* centralized assembled matrix input */
@@ -875,7 +880,7 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFact
 
   /* analysis phase */
   /*----------------*/  
-  lu->id.job = 1; 
+  lu->id.job = JOB_FACTSYMBOLIC; 
   lu->id.n = M;
   switch (lu->id.ICNTL(18)){
   case 0:  /* centralized assembled matrix input */
@@ -952,7 +957,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorI
 
   /* analysis phase */
   /*----------------*/  
-  lu->id.job = 1; 
+  lu->id.job = JOB_FACTSYMBOLIC; 
   lu->id.n = M;
   switch (lu->id.ICNTL(18)){
   case 0:  /* centralized assembled matrix input */
