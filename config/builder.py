@@ -297,6 +297,37 @@ class PETScMaker(script.Script):
    fd.close()
    return True
 
+  def cleanupLog(self, framework):
+    '''Move configure.log to PROJECT_ARCH/conf - and update configure.log.bkp in both locations appropriately'''
+    arch    = self.arch.arch
+    logFile = 'make.log'
+    if hasattr(framework, 'logName'): logFile = framework.logName
+
+    if arch:
+      import shutil
+      import os
+
+      confDir = os.path.join(arch, 'conf')
+      if not os.path.isdir(arch):    os.mkdir(arch)
+      if not os.path.isdir(confDir): os.mkdir(confDir)
+
+      logFileBkp        = logFile + '.bkp'
+      logFileArchive    = os.path.join(confDir, logFile)
+      logFileArchiveBkp = logFileArchive + '.bkp'
+
+      # Keep backup in $PROJECT_ARCH/conf location
+      if os.path.isfile(logFileArchiveBkp): os.remove(logFileArchiveBkp)
+      if os.path.isfile(logFileArchive):    os.rename(logFileArchive, logFileArchiveBkp)
+      if os.path.isfile(logFile):
+        shutil.copyfile(logFile, logFileArchive)
+        os.remove(logFile)
+      if os.path.isfile(logFileArchive):    os.symlink(logFileArchive, logFile)
+      # If the old bkp is using the same $PROJECT_ARCH/conf, then update bkp link
+      if os.path.realpath(logFileBkp) == os.path.realpath(logFileArchive):
+        if os.path.isfile(logFileBkp):        os.remove(logFileBkp)
+        if os.path.isfile(logFileArchiveBkp): os.symlink(logFileArchiveBkp, logFileBkp)
+    return
+
  def buildAll(self, rootDir = None):
    self.setup()
    if rootDir is None:
@@ -315,7 +346,7 @@ class PETScMaker(script.Script):
      for badDir in [d for d in dirs if not self.checkDir(os.path.join(root, d))]:
        dirs.remove(badDir)
    self.ranlib('libpetsc')
-     
+   self.cleanupLog()
    return
 
 def noCheckCommand(command, status, output, error):

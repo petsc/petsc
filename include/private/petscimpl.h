@@ -49,6 +49,7 @@ typedef struct {
    the specific object. In C++ this could be a base abstract class
    from which all objects are derived.
 */
+#define PETSC_MAX_OPTIONS_HANDLER 5
 typedef struct _p_PetscObject {
   PetscClassId   classid;                                        
   PetscOps       *bops;                                         
@@ -82,6 +83,11 @@ typedef struct _p_PetscObject {
   void           (**fortran_func_pointers)(void);                  /* used by Fortran interface functions to stash user provided Fortran functions */
   void           *python_context;                               
   PetscErrorCode (*python_destroy)(void*);
+
+  PetscInt       noptionhandler;
+  PetscErrorCode (*optionhandler[PETSC_MAX_OPTIONS_HANDLER])(PetscObject,void*);
+  PetscErrorCode (*optiondestroy[PETSC_MAX_OPTIONS_HANDLER])(PetscObject,void*);
+  void           *optionctx[PETSC_MAX_OPTIONS_HANDLER];
 } _p_PetscObject;
 
 #define PETSCHEADER(ObjectOps) \

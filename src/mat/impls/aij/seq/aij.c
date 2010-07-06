@@ -854,6 +854,16 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op,PetscTruth flg)
     case MAT_USE_COMPRESSEDROW:
       a->compressedrow.use = flg;
       break;
+    case MAT_SPD:
+      A->spd_set                         = PETSC_TRUE;
+      A->spd                             = flg;
+      if (flg) {
+        A->symmetric                     = PETSC_TRUE;
+        A->structurally_symmetric        = PETSC_TRUE;
+        A->symmetric_set                 = PETSC_TRUE;
+        A->structurally_symmetric_set    = PETSC_TRUE;
+      }
+      break;
     case MAT_SYMMETRIC:
     case MAT_STRUCTURALLY_SYMMETRIC:
     case MAT_HERMITIAN:

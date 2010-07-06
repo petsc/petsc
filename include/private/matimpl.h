@@ -273,8 +273,8 @@ struct _p_Mat {
   MatNullSpace           nullsp;
   PetscTruth             preallocated;
   MatStencilInfo         stencil;          /* information for structured grid */
-  PetscTruth             symmetric,hermitian,structurally_symmetric;
-  PetscTruth             symmetric_set,hermitian_set,structurally_symmetric_set; /* if true, then corresponding flag is correct*/
+  PetscTruth             symmetric,hermitian,structurally_symmetric,spd;
+  PetscTruth             symmetric_set,hermitian_set,structurally_symmetric_set,spd_set; /* if true, then corresponding flag is correct*/
   PetscTruth             symmetric_eternal;
   void                   *spptr;          /* pointer for special library like SuperLU */
   MatSolverPackage       solvertype;

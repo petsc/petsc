@@ -184,6 +184,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions(PC pc)
     if (pc->ops->setfromoptions) {
       ierr = (*pc->ops->setfromoptions)(pc);CHKERRQ(ierr);
     }
+
+    /* process any options handlers added with PetscObjectAddOptionsHandler() */
+    ierr = PetscObjectProcessOptionsHandlers((PetscObject)pc);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   pc->setfromoptionscalled++;
   PetscFunctionReturn(0);

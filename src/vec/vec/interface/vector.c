@@ -1404,6 +1404,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetFromOptions(Vec vec)
     if (vec->ops->setfromoptions) {
       ierr = (*vec->ops->setfromoptions)(vec);CHKERRQ(ierr);
     }
+
+    /* process any options handlers added with PetscObjectAddOptionsHandler() */
+    ierr = PetscObjectProcessOptionsHandlers((PetscObject)vec);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = VecViewFromOptions(vec, ((PetscObject)vec)->name);CHKERRQ(ierr);

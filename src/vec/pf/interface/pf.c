@@ -492,6 +492,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFSetFromOptions(PF pf)
     if (pf->ops->setfromoptions) {
       ierr = (*pf->ops->setfromoptions)(pf);CHKERRQ(ierr);
     }
+
+    /* process any options handlers added with PetscObjectAddOptionsHandler() */
+    ierr = PetscObjectProcessOptionsHandlers((PetscObject)pf);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

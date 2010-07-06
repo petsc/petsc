@@ -280,6 +280,14 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
   PetscInt       levels = mglevels[0]->levels,i;
 
   PetscFunctionBegin;
+
+  /* When the DM is supplying the matrix then it will not exist until here */
+  for (i=0; i<levels-1; i++) {
+    if (!mglevels[i]->A) {
+      ierr = KSPGetOperators(mglevels[i]->smoothu,&mglevels[i]->A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    }
+  }
+
   mglevels[levels-1]->b = b; 
   mglevels[levels-1]->x = x;
   if (mg->am == PC_MG_MULTIPLICATIVE) {
@@ -395,6 +403,8 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
     }
     if (mg->galerkin) {
       ierr = PetscViewerASCIIPrintf(viewer,"    Using Galerkin computed coarse grid matrices\n");CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"    Not using Galerkin computed coarse grid matrices\n");CHKERRQ(ierr);
     }
     for (i=0; i<levels; i++) {
       if (!i) {
@@ -495,7 +505,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
 	if (i != n-2) {ierr = PetscObjectDereference((PetscObject)dB);CHKERRQ(ierr);} 
         dB   = B;
       }
-      ierr = PetscObjectDereference((PetscObject)dB);CHKERRQ(ierr);
+      if (n > 1) {ierr = PetscObjectDereference((PetscObject)dB);CHKERRQ(ierr);}
     } else {
       for (i=n-2; i>-1; i--) {
         ierr = KSPGetOperators(mglevels[i]->smoothd,PETSC_NULL,&B,PETSC_NULL);CHKERRQ(ierr);

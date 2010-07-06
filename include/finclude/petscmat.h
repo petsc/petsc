@@ -51,6 +51,7 @@
       PetscEnum MAT_ERROR_LOWER_TRIANGULAR
       PetscEnum MAT_GETROW_UPPERTRIANGULAR
       PetscEnum MAT_UNUSED_NONZERO_LOCATION_ERR
+      PetscEnum MAT_SPD
       PetscEnum NUM_MAT_OPTIONS
 
       parameter (MAT_ROW_ORIENTED=0)
@@ -71,7 +72,8 @@
       parameter (MAT_ERROR_LOWER_TRIANGULAR=16)
       parameter (MAT_GETROW_UPPERTRIANGULAR=17)
       parameter (MAT_UNUSED_NONZERO_LOCATION_ERR=18)
-      parameter (NUM_MAT_OPTIONS=19)
+      parameter (MAT_SPD=19)
+      parameter (NUM_MAT_OPTIONS=20)
  
 !
 !  MatDuplicateOption

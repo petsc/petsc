@@ -4916,7 +4916,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd(Mat mat,MatAssemblyType type)
 -  flg - turn the option on (PETSC_TRUE) or off (PETSC_FALSE)
 
   Options Describing Matrix Structure:
-+    MAT_SYMMETRIC - symmetric in terms of both structure and value
++    MAT_SPD - symmetric positive definite
+-    MAT_SYMMETRIC - symmetric in terms of both structure and value
 .    MAT_HERMITIAN - transpose is the complex conjugation
 .    MAT_STRUCTURALLY_SYMMETRIC - symmetric nonzero structure
 -    MAT_SYMMETRY_ETERNAL - if you would like the symmetry/Hermitian flag
@@ -5010,24 +5011,34 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetOption(Mat mat,MatOption op,PetscTruth f
   if (!((PetscObject)mat)->type_name) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_TYPENOTSET,"Cannot set options until type and size have been set, see MatSetType() and MatSetSizes()");
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   switch (op) {
+  case MAT_SPD:
+    mat->spd_set                         = PETSC_TRUE;
+    mat->spd                             = flg;
+    if (flg) {
+      mat->symmetric                     = PETSC_TRUE;
+      mat->structurally_symmetric        = PETSC_TRUE;
+      mat->symmetric_set                 = PETSC_TRUE;
+      mat->structurally_symmetric_set    = PETSC_TRUE;
+    }
+    break;
   case MAT_SYMMETRIC:
-    mat->symmetric                  = flg;
+    mat->symmetric                       = flg;
     if (flg) mat->structurally_symmetric = PETSC_TRUE;
-    mat->symmetric_set              = PETSC_TRUE;
-    mat->structurally_symmetric_set = flg;
+    mat->symmetric_set                   = PETSC_TRUE;
+    mat->structurally_symmetric_set      = flg;
     break;
   case MAT_HERMITIAN:
-    mat->hermitian                  = flg;
+    mat->hermitian                       = flg;
     if (flg) mat->structurally_symmetric = PETSC_TRUE;
-    mat->hermitian_set              = PETSC_TRUE;
-    mat->structurally_symmetric_set = flg;
+    mat->hermitian_set                   = PETSC_TRUE;
+    mat->structurally_symmetric_set      = flg;
     break;
   case MAT_STRUCTURALLY_SYMMETRIC:
-    mat->structurally_symmetric     = flg;
-    mat->structurally_symmetric_set = PETSC_TRUE;
+    mat->structurally_symmetric          = flg;
+    mat->structurally_symmetric_set      = PETSC_TRUE;
     break;
   case MAT_SYMMETRY_ETERNAL:
-    mat->symmetric_eternal          = flg;
+    mat->symmetric_eternal               = flg;
     break;
   default:
     break;

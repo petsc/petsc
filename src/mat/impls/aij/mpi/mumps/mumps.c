@@ -18,7 +18,12 @@ EXTERN_C_BEGIN
 #endif
 EXTERN_C_END 
 #define JOB_INIT -1
+#define JOB_FACTSYMBOLIC 1
+#define JOB_FACTNUMERIC 2
+#define JOB_SOLVE 3
 #define JOB_END -2
+
+
 /* macros s.t. indices match MUMPS documentation */
 #define ICNTL(I) icntl[(I)-1] 
 #define CNTL(I) cntl[(I)-1] 
@@ -540,7 +545,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
 
   /* solve phase */
   /*-------------*/
-  lu->id.job = 3;
+  lu->id.job = JOB_SOLVE;
 #if defined(PETSC_USE_COMPLEX)
   zmumps_c(&lu->id); 
 #else
@@ -616,7 +621,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
 
   /* numerical factorization phase */
   /*-------------------------------*/
-  lu->id.job = 2;
+  lu->id.job = JOB_FACTNUMERIC;
   if(!lu->id.ICNTL(18)) { 
     if (!lu->myid) {
 #if defined(PETSC_USE_COMPLEX)
@@ -751,8 +756,6 @@ PetscErrorCode PetscSetMUMPSOptions(Mat F, Mat A)
 PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS* mumps)
 {
   PetscErrorCode  ierr;
-  PetscInt        icntl;
-  PetscTruth      flg;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)A)->comm, &mumps->myid);
@@ -763,10 +766,6 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS* mumps)
   mumps->id.job = JOB_INIT;
   mumps->id.par = 1;  /* host participates factorizaton and solve */
   mumps->id.sym = mumps->sym; 
-  if (mumps->sym == 2){
-    ierr = PetscOptionsInt("-mat_mumps_sym","SYM: (1,2)","None",mumps->id.sym,&icntl,&flg);CHKERRQ(ierr); 
-    if (flg && icntl == 1) mumps->id.sym=icntl;  /* matrix is spd */
-  }
 #if defined(PETSC_USE_COMPLEX)
   zmumps_c(&mumps->id); 
 #else
@@ -803,7 +802,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
 
   /* analysis phase */
   /*----------------*/  
-  lu->id.job = 1; 
+  lu->id.job = JOB_FACTSYMBOLIC; 
   lu->id.n = M;
   switch (lu->id.ICNTL(18)){
   case 0:  /* centralized assembled matrix input */
@@ -881,7 +880,7 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFact
 
   /* analysis phase */
   /*----------------*/  
-  lu->id.job = 1; 
+  lu->id.job = JOB_FACTSYMBOLIC; 
   lu->id.n = M;
   switch (lu->id.ICNTL(18)){
   case 0:  /* centralized assembled matrix input */
@@ -958,7 +957,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorI
 
   /* analysis phase */
   /*----------------*/  
-  lu->id.job = 1; 
+  lu->id.job = JOB_FACTSYMBOLIC; 
   lu->id.n = M;
   switch (lu->id.ICNTL(18)){
   case 0:  /* centralized assembled matrix input */
@@ -1246,7 +1245,8 @@ PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
     B->factortype = MAT_FACTOR_CHOLESKY;
     if (isSeqAIJ) mumps->ConvertToTriples = MatConvertToTriples_seqaij_seqsbaij;
     else mumps->ConvertToTriples = MatConvertToTriples_mpiaij_mpisbaij;
-    mumps->sym = 2;
+    if (A->spd_set && A->spd) mumps->sym = 1;
+    else                      mumps->sym = 2;
   }
 
   mumps->isAIJ        = PETSC_TRUE;
@@ -1294,8 +1294,9 @@ PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mumps",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSetMumpsIcntl_C","MatSetMumpsIcntl",MatSetMumpsIcntl);CHKERRQ(ierr);
   B->factortype                  = MAT_FACTOR_CHOLESKY;
-  mumps->sym = 2;
-  
+  if (A->spd_set && A->spd) mumps->sym = 1;
+  else                      mumps->sym = 2;
+
   mumps->isAIJ        = PETSC_FALSE;
   mumps->MatDestroy   = B->ops->destroy;
   B->ops->destroy     = MatDestroy_MUMPS;

@@ -297,7 +297,6 @@ PetscErrorCode Kernel_A_gets_inverse_A_9(MatScalar *a,PetscReal shift)
     dgefa() and dgedi() specialized for a size of 15.
 
 */
-#include "petsc.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "Kernel_A_gets_inverse_A_15"
