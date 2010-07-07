@@ -762,14 +762,15 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
 .  newmat - new matrix
 
    Basic Options Database Keys:
-+    -matload_type seqaij   - AIJ type
-.    -matload_type mpiaij   - parallel AIJ type
-.    -matload_type seqbaij  - block AIJ type
-.    -matload_type mpibaij  - parallel block AIJ type
-.    -matload_type seqsbaij - block symmetric AIJ type
-.    -matload_type mpisbaij - parallel block symmetric AIJ type
-.    -matload_type seqdense - dense type
-.    -matload_type mpidense - parallel dense type
++    -mat_type seqaij   - AIJ type
+.    -mat_type mpiaij   - parallel AIJ type
+.    -mat_type seqbaij  - block AIJ type
+.    -mat_type mpibaij  - parallel block AIJ type
+.    -mat_type seqsbaij - block symmetric AIJ type
+.    -mat_type mpisbaij - parallel block symmetric AIJ type
+.    -mat_type seqdense - dense type
+.    -mat_type mpidense - parallel dense type
+.    -mat_type blockmat - sequential blockmat type
 -    -matload_symmetric - matrix in file is symmetric
 
    More Options Database Keys:
@@ -791,7 +792,7 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
 
    In parallel, each processor can load a subset of rows (or the
    entire matrix).  This routine is especially useful when a large
-   matrix is stored on disk and only part of it existsis desired on each
+   matrix is stored on disk and only part of it is desired on each
    processor.  For example, a parallel solver may access only some of
    the rows from each processor.  The algorithm used here reads
    relatively small blocks of data rather than reading the entire
@@ -826,9 +827,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer viewer, Mat newmat)
 {
   PetscErrorCode ierr;
   PetscTruth     isbinary,flg;
-  char           mtype[256];
-  const char     *prefix;
   const MatType  outtype=0;
+  const char     *prefix;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
@@ -839,17 +839,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer viewer, Mat newmat)
 
   if (((PetscObject)newmat)->type_name) outtype = ((PetscObject)newmat)->type_name;
   if (!outtype) {
-    ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,(const char **)&prefix);CHKERRQ(ierr);
-    ierr = PetscOptionsGetString(prefix,"-mat_type",mtype,256,&flg);CHKERRQ(ierr);
-    if (flg) {
-      outtype = mtype;
-    }
-    ierr = PetscOptionsGetString(prefix,"-matload_type",mtype,256,&flg);CHKERRQ(ierr);
-    if (flg) {
-      outtype = mtype;
-    }
-    if (!outtype) outtype = MATAIJ;
-    ierr = MatSetType(newmat,outtype);CHKERRQ(ierr);
+    ierr = MatSetFromOptions(newmat);CHKERRQ(ierr);
   }
 
   if (!newmat->ops->load) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatLoad is not supported for type: %s",outtype);
