@@ -8,6 +8,9 @@
 #include "petscblaslapack.h"
 #include <cublas.h>
 #include <cusp/blas.h>
+#include <thrust/device_vector.h>
+#include <thrust/iterator/constant_iterator.h>
+#include <thrust/transform.h>
 
 /*MC
    VECSEQCUDA - VECSEQCUDA = "seqcuda" - The basic sequential vector, modified to use CUDA
@@ -112,38 +115,182 @@ PetscErrorCode VecCUDACopyFromGPU(Vec v)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__  
-#define __FUNCT__ "VecSet_SeqCUDA"
-PetscErrorCode VecSet_SeqCUDA(Vec xin,PetscScalar alpha)
+#define __FUNCT__ "VecAXPY_SeqCUDA"
+PetscErrorCode VecAXPY_SeqCUDA(Vec yin,PetscScalar alpha,Vec xin)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* if there's a faster way to do the case alpha=0.0 on the GPU we should do that*/
-  ierr = VecCUDAAllocateCheck(xin);CHKERRQ(ierr);
-  cusp::blas::fill(*(CUSPARRAY *)(xin->spptr),alpha);
+  /* assume that the BLAS handles alpha == 1.0 efficiently since we have no fast code for it */
+  if (alpha != 0.0) {
+    ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
+    ierr = VecCUDACopyToGPU(yin);CHKERRQ(ierr);
+    cusp::blas::axpy(*(CUSPARRAY *)(xin->spptr),*(CUSPARRAY *)(yin->spptr),alpha);
+    yin->valid_GPU_array = PETSC_CUDA_GPU;
+    ierr = PetscLogFlops(2.0*yin->map->n);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+/* These functions are for the CUDA implementation of MAXPY with the loop unrolled on the CPU */
+struct VecCUDAMAXPY4
+{
+  template <typename Tuple>
+  __host__ __device__
+  void operator()(Tuple t)
+  {
+    /*y += a1*x1 +a2*x2 + 13*x3 +a4*x4 */
+    thrust::get<0>(t) += thrust::get<1>(t)*thrust::get<2>(t)+thrust::get<3>(t)*thrust::get<4>(t)+thrust::get<5>(t)*thrust::get<6>(t)+thrust::get<7>(t)*thrust::get<8>(t);
+  }
+};
+
+
+struct VecCUDAMAXPY3
+{
+  template <typename Tuple>
+  __host__ __device__
+  void operator()(Tuple t)
+  {
+    /*y += a1*x1 +a2*x2 + 13*x3 */
+    thrust::get<0>(t) += thrust::get<1>(t)*thrust::get<2>(t)+thrust::get<3>(t)*thrust::get<4>(t)+thrust::get<5>(t)*thrust::get<6>(t);
+  }
+};
+
+struct VecCUDAMAXPY2
+{
+  template <typename Tuple>
+  __host__ __device__
+  void operator()(Tuple t)
+  {
+    /*y += a1*x1 +a2*x2*/
+    thrust::get<0>(t) += thrust::get<1>(t)*thrust::get<2>(t)+thrust::get<3>(t)*thrust::get<4>(t);
+  }
+};
+#undef __FUNCT__  
+#define __FUNCT__ "VecMAXPY_SeqCUDA"
+PetscErrorCode VecMAXPY_SeqCUDA(Vec xin, PetscInt nv,const PetscScalar *alpha,Vec *y)
+{
+  PetscErrorCode    ierr;
+  PetscInt          n = xin->map->n,j,j_rem;
+  Vec               yy0,yy1,yy2,yy3;
+  PetscScalar       alpha0,alpha1,alpha2,alpha3;
+
+  PetscFunctionBegin;
+  ierr = PetscLogFlops(nv*2.0*n);CHKERRQ(ierr);
+  ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
+  switch (j_rem=nv&0x3) {
+  case 3: 
+    alpha0 = alpha[0]; 
+    alpha1 = alpha[1]; 
+    alpha2 = alpha[2]; 
+    alpha += 3;
+    yy0    = y[0];
+    yy1    = y[1];
+    yy2    = y[2];
+    ierr   = VecCUDACopyToGPU(yy0);CHKERRQ(ierr);
+    ierr   = VecCUDACopyToGPU(yy1);CHKERRQ(ierr);
+    ierr   = VecCUDACopyToGPU(yy2);CHKERRQ(ierr);
+    thrust::for_each(
+	thrust::make_zip_iterator(
+	    thrust::make_tuple(
+		((CUSPARRAY*)xin->spptr)->begin(),
+		thrust::make_constant_iterator(alpha0,0),
+		((CUSPARRAY*)yy0->spptr)->begin(),
+		thrust::make_constant_iterator(alpha1,0),
+		((CUSPARRAY*)yy1->spptr)->begin(),
+		thrust::make_constant_iterator(alpha2,0),
+		((CUSPARRAY*)yy2->spptr)->begin())),
+	thrust::make_zip_iterator(
+	    thrust::make_tuple(
+		((CUSPARRAY*)xin->spptr)->end(),  
+		thrust::make_constant_iterator(alpha0,n),
+		((CUSPARRAY*)yy0->spptr)->end(),
+		thrust::make_constant_iterator(alpha1,n),
+		((CUSPARRAY*)yy1->spptr)->end(),
+		thrust::make_constant_iterator(alpha2,n),
+		((CUSPARRAY*)yy2->spptr)->end())),
+	VecCUDAMAXPY3());
+    y     += 3;
+    break;
+  case 2: 
+    alpha0 = alpha[0]; 
+    alpha1 = alpha[1]; 
+    alpha +=2;
+    yy0    = y[0];
+    yy1    = y[1];
+    ierr   = VecCUDACopyToGPU(yy0);CHKERRQ(ierr);
+    ierr   = VecCUDACopyToGPU(yy1);CHKERRQ(ierr);
+    thrust::for_each(
+	thrust::make_zip_iterator(
+	    thrust::make_tuple(
+		((CUSPARRAY*)xin->spptr)->begin(),
+		thrust::make_constant_iterator(alpha0,0),
+		((CUSPARRAY*)yy0->spptr)->begin(),
+		thrust::make_constant_iterator(alpha1,0),
+		((CUSPARRAY*)yy1->spptr)->begin())),
+	thrust::make_zip_iterator(
+	    thrust::make_tuple(
+		((CUSPARRAY*)xin->spptr)->end(),  
+		thrust::make_constant_iterator(alpha0,n),
+		((CUSPARRAY*)yy0->spptr)->end(),
+		thrust::make_constant_iterator(alpha1,n),
+		((CUSPARRAY*)yy1->spptr)->end())),
+	VecCUDAMAXPY2());
+    y     +=2;
+    break;
+  case 1: 
+    alpha0 = *alpha++; 
+    yy0 = y[0];
+    ierr =  VecAXPY_SeqCUDA(xin,alpha0,yy0);
+    y     +=1;
+    break;
+  }
+  for (j=j_rem; j<nv; j+=4) {
+    alpha0 = alpha[0];
+    alpha1 = alpha[1];
+    alpha2 = alpha[2];
+    alpha3 = alpha[3];
+    alpha  += 4;
+    yy0    = y[0];
+    yy1    = y[1];
+    yy2    = y[2];
+    yy3    = y[3];
+    ierr   = VecCUDACopyToGPU(yy0);CHKERRQ(ierr);
+    ierr   = VecCUDACopyToGPU(yy1);CHKERRQ(ierr);
+    ierr   = VecCUDACopyToGPU(yy2);CHKERRQ(ierr);
+    ierr   = VecCUDACopyToGPU(yy3);CHKERRQ(ierr);
+    thrust::for_each(
+	thrust::make_zip_iterator(
+	    thrust::make_tuple(
+		((CUSPARRAY*)xin->spptr)->begin(),
+		thrust::make_constant_iterator(alpha0,0),
+		((CUSPARRAY*)yy0->spptr)->begin(),
+		thrust::make_constant_iterator(alpha1,0),
+		((CUSPARRAY*)yy1->spptr)->begin(),
+		thrust::make_constant_iterator(alpha2,0),
+		((CUSPARRAY*)yy2->spptr)->begin(),
+		thrust::make_constant_iterator(alpha3,0),
+		((CUSPARRAY*)yy3->spptr)->begin())),
+	thrust::make_zip_iterator(
+	    thrust::make_tuple(
+		((CUSPARRAY*)xin->spptr)->end(),  
+		thrust::make_constant_iterator(alpha0,n),
+		((CUSPARRAY*)yy0->spptr)->end(),
+		thrust::make_constant_iterator(alpha1,n),
+		((CUSPARRAY*)yy1->spptr)->end(),
+		thrust::make_constant_iterator(alpha2,n),
+		((CUSPARRAY*)yy2->spptr)->end(),
+		thrust::make_constant_iterator(alpha3,n),
+		((CUSPARRAY*)yy3->spptr)->end())),
+	VecCUDAMAXPY4());
+    y      += 4;
+  }
   xin->valid_GPU_array = PETSC_CUDA_GPU;
   PetscFunctionReturn(0);
-}
+} 
 
-#undef __FUNCT__ 
-#define __FUNCT__ "VecScale_SeqCUDA"
-PetscErrorCode VecScale_SeqCUDA(Vec xin, PetscScalar alpha)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (alpha == 0.0) {
-    ierr = VecSet_SeqCUDA(xin,alpha);CHKERRQ(ierr);
-  } else if (alpha != 1.0) {
-    ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
-    cusp::blas::scal(*(CUSPARRAY *)(xin->spptr),alpha);
-    xin->valid_GPU_array = PETSC_CUDA_GPU;
-  }
-  ierr = PetscLogFlops(xin->map->n);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 #undef __FUNCT__
 #define __FUNCT__ "VecDot_SeqCUDA"
 PetscErrorCode VecDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
@@ -178,6 +325,103 @@ PetscErrorCode VecDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
   if (xin->map->n >0) {
     ierr = PetscLogFlops(2.0*xin->map->n-1);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+/* Maybe we can come up with a better way to perform a dot product on the GPU? */
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecMDot_SeqCUDA"
+PetscErrorCode VecMDot_SeqCUDA(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
+{
+  PetscErrorCode    ierr;
+  PetscInt          n = xin->map->n,j,j_rem;
+  Vec               yy0,yy1,yy2,yy3;
+
+  PetscFunctionBegin;
+  ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
+  switch(j_rem=nv&0x3) {
+  case 3: 
+    yy0  =  yin[0];
+    yy1  =  yin[1];
+    yy2  =  yin[2];
+    ierr =  VecCUDACopyToGPU(yy0);CHKERRQ(ierr);
+    ierr =  VecCUDACopyToGPU(yy1);CHKERRQ(ierr);
+    ierr =  VecCUDACopyToGPU(yy2);CHKERRQ(ierr);
+    ierr =  VecDot_SeqCUDA(xin,yy0,&z[0]);CHKERRQ(ierr);
+    ierr =  VecDot_SeqCUDA(xin,yy1,&z[1]);CHKERRQ(ierr);
+    ierr =  VecDot_SeqCUDA(xin,yy2,&z[2]);CHKERRQ(ierr);
+    z    += 3;
+    yin  += 3;
+    break;
+  case 2: 
+    yy0  =  yin[0];
+    yy1  =  yin[1];
+    ierr =  VecCUDACopyToGPU(yy0);CHKERRQ(ierr);
+    ierr =  VecCUDACopyToGPU(yy1);CHKERRQ(ierr);
+    ierr =  VecDot_SeqCUDA(xin,yy0,&z[0]);CHKERRQ(ierr);
+    ierr =  VecDot_SeqCUDA(xin,yy1,&z[1]);CHKERRQ(ierr);
+    z    += 2;
+    yin  += 2;
+    break;
+  case 1: 
+    yy0  =  yin[0];
+    ierr =  VecCUDACopyToGPU(yy0);CHKERRQ(ierr);
+    ierr =  VecDot_SeqCUDA(xin,yy0,&z[0]);CHKERRQ(ierr);
+    z    += 1;
+    yin  += 1;
+    break;
+  }
+  for (j=j_rem; j<nv; j+=4) {
+    yy0  =  yin[0];
+    yy1  =  yin[1];
+    yy2  =  yin[2];
+    yy3  =  yin[3];
+    ierr =  VecCUDACopyToGPU(yy0);CHKERRQ(ierr);
+    ierr =  VecCUDACopyToGPU(yy1);CHKERRQ(ierr);
+    ierr =  VecCUDACopyToGPU(yy2);CHKERRQ(ierr);
+    ierr =  VecCUDACopyToGPU(yy3);CHKERRQ(ierr);
+    ierr =  VecDot_SeqCUDA(xin,yy0,&z[0]);CHKERRQ(ierr);
+    ierr =  VecDot_SeqCUDA(xin,yy1,&z[1]);CHKERRQ(ierr);
+    ierr =  VecDot_SeqCUDA(xin,yy2,&z[2]);CHKERRQ(ierr);
+    ierr =  VecDot_SeqCUDA(xin,yy3,&z[3]);CHKERRQ(ierr);
+    z    += 4;
+    yin  += 4;
+  }  
+  ierr = PetscLogFlops(PetscMax(nv*(2.0*n-1),0.0));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecSet_SeqCUDA"
+PetscErrorCode VecSet_SeqCUDA(Vec xin,PetscScalar alpha)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* if there's a faster way to do the case alpha=0.0 on the GPU we should do that*/
+  ierr = VecCUDAAllocateCheck(xin);CHKERRQ(ierr);
+  cusp::blas::fill(*(CUSPARRAY *)(xin->spptr),alpha);
+  xin->valid_GPU_array = PETSC_CUDA_GPU;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__ 
+#define __FUNCT__ "VecScale_SeqCUDA"
+PetscErrorCode VecScale_SeqCUDA(Vec xin, PetscScalar alpha)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (alpha == 0.0) {
+    ierr = VecSet_SeqCUDA(xin,alpha);CHKERRQ(ierr);
+  } else if (alpha != 1.0) {
+    ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
+    cusp::blas::scal(*(CUSPARRAY *)(xin->spptr),alpha);
+    xin->valid_GPU_array = PETSC_CUDA_GPU;
+  }
+  ierr = PetscLogFlops(xin->map->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -251,23 +495,6 @@ PetscErrorCode VecSwap_SeqCUDA(Vec xin,Vec yin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "VecAXPY_SeqCUDA"
-PetscErrorCode VecAXPY_SeqCUDA(Vec yin,PetscScalar alpha,Vec xin)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  /* assume that the BLAS handles alpha == 1.0 efficiently since we have no fast code for it */
-  if (alpha != 0.0) {
-    ierr = VecCUDACopyToGPU(xin);CHKERRQ(ierr);
-    ierr = VecCUDACopyToGPU(yin);CHKERRQ(ierr);
-    cusp::blas::axpy(*(CUSPARRAY *)(xin->spptr),*(CUSPARRAY *)(yin->spptr),alpha);
-    yin->valid_GPU_array = PETSC_CUDA_GPU;
-    ierr = PetscLogFlops(2.0*yin->map->n);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecAXPBY_SeqCUDA"
@@ -567,6 +794,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_SeqCUDA(Vec V)
   V->ops->norm_local    = VecNorm_SeqCUDA;
   V->ops->resetarray    = VecResetArray_SeqCUDA;
   V->ops->destroy       = VecDestroy_SeqCUDA;
+  V->ops->maxpy         = VecMAXPY_SeqCUDA;
+#if !defined(PETSC_USE_FORTRAN_KERNEL_MDOT)
+  /* as opposed to writing out the fortran way again, we'll just not change the function pointer */
+  V->ops->mdot          = VecMDot_SeqCUDA;
+#endif
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

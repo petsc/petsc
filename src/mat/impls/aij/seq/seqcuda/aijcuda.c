@@ -33,7 +33,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUDA(Mat A,MatAssemblyType mode)
   PetscErrorCode ierr;
   PetscInt       m = A->rmap->n;
 
-  PetscFunctionBegin;  
+  PetscFunctionBegin;
   ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
   A->spptr = new CUSPMATRIX;
   ((CUSPMATRIX *)(A->spptr))->resize(m,A->cmap->n,a->nz);
@@ -43,7 +43,6 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUDA(Mat A,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-#include "../src/mat/impls/aij/seq/ftn-kernels/fmult.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqAIJCUDA"
 PetscErrorCode MatMult_SeqAIJCUDA(Mat A,Vec xx,Vec yy)
@@ -64,6 +63,7 @@ PetscErrorCode MatMult_SeqAIJCUDA(Mat A,Vec xx,Vec yy)
 #endif
 
   PetscFunctionBegin;
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "In funct %s\n",__FUNCT__);CHKERRQ(ierr);
   aj  = a->j;
   aa  = a->a;
   ii  = a->i;
@@ -82,14 +82,10 @@ PetscErrorCode MatMult_SeqAIJCUDA(Mat A,Vec xx,Vec yy)
       y[*ridx++] = sum;
     }
   } else { /* do not use compressed row format */
-#if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
-    fortranmultaij_(&m,x,ii,aj,aa,y);
-#else
   ierr = VecCUDACopyToGPU_Public(xx);CHKERRQ(ierr);
   ierr = VecCUDAAllocateCheck_Public(yy);CHKERRQ(ierr);
   cusp::multiply(*(CUSPMATRIX *)(A->spptr),*(CUSPARRAY *)(xx->spptr),*(CUSPARRAY *)(yy->spptr));
   yy->valid_GPU_array = PETSC_CUDA_GPU;
-#endif
   }
   ierr = PetscLogFlops(2.0*a->nz - nonzerorow);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -189,10 +185,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJCUDA(Mat B)
 
   PetscFunctionBegin;
   ierr = MatCreate_SeqAIJ(B);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJCUDA);CHKERRQ(ierr);
+#if !defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
   B->ops->mult = MatMult_SeqAIJCUDA;
+#endif
+  B->ops->mult = 0;
   B->ops->assemblyend = MatAssemblyEnd_SeqAIJCUDA;
   B->ops->destroy = MatDestroy_SeqAIJCUDA;
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJCUDA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
