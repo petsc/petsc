@@ -23,7 +23,6 @@ int main(int argc,char **args)
   /* Load matrix A */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
   ierr = MatLoad(fd,A);CHKERRQ(ierr);
   flg = PETSC_FALSE;
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);

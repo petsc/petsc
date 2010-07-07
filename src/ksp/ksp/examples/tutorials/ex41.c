@@ -32,7 +32,6 @@ int main(int argc,char **args)
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
   ierr = VecLoad(fd,b);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
   ierr = MatLoad(fd,A);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
 
