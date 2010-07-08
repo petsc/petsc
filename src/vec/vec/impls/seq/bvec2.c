@@ -670,6 +670,17 @@ static PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "VecCreate_Seq_Private_CUDA"
+PetscErrorCode VecCreate_Seq_Private_CUDA(Vec v, const PetscScalar array[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecCreate_Seq_Private(v,array);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreateSeqWithArray"
 /*@C

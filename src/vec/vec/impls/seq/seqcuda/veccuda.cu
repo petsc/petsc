@@ -46,11 +46,18 @@ void cublasShutdown_Public(void)
 #define __FUNCT__ "VecCUDAAllocateCheck"
 PETSC_STATIC_INLINE PetscErrorCode VecCUDAAllocateCheck(Vec v)
 {
+  Vec_Seq   *s;
   PetscFunctionBegin;
   if (v->valid_GPU_array == PETSC_CUDA_UNALLOCATED){
     v->spptr= new CUSPARRAY;
     ((CUSPARRAY *)(v->spptr))->resize((PetscBLASInt)v->map->n);
-    v->valid_GPU_array = PETSC_CUDA_CPU;
+    s = (Vec_Seq*)v->data;
+    /* if the GPU and CPU are both unallocated, there is no data and we can set the newly allocated GPU data as valid */
+    if (s->array == 0){
+      v->valid_GPU_array = PETSC_CUDA_GPU;
+    } else{
+      v->valid_GPU_array = PETSC_CUDA_CPU;
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -104,8 +111,18 @@ PetscErrorCode VecCUDACopyFromGPU(Vec v)
 {
   PetscErrorCode ierr;
   CUSPARRAY      *GPUvector = (CUSPARRAY *)(v->spptr);
+  PetscScalar    *array;
+  Vec_Seq        *s;
+  PetscInt       n = v->map->n;
 
   PetscFunctionBegin;
+  s = (Vec_Seq*)v->data;
+  if (s->array == 0){
+    ierr               = PetscMalloc(n*sizeof(PetscScalar),&array);CHKERRQ(ierr);
+    ierr               = PetscLogObjectMemory(v,n*sizeof(PetscScalar));CHKERRQ(ierr);
+    s->array           = array;
+    s->array_allocated = array;
+  }
   if (v->valid_GPU_array == PETSC_CUDA_GPU){
     ierr = PetscLogEventBegin(VEC_CUDACopyFromGPU,v,0,0,0);CHKERRQ(ierr);
     thrust::copy(GPUvector->begin(),GPUvector->end(),*(PetscScalar**)v->data);
@@ -746,7 +763,6 @@ PetscErrorCode VecDuplicate_SeqCUDA(Vec win,Vec *V)
   ierr = PetscFListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*V))->qlist);CHKERRQ(ierr);
 
   (*V)->stash.ignorenegidx = win->stash.ignorenegidx;
-
   PetscFunctionReturn(0);
 }
 
@@ -761,7 +777,7 @@ PetscErrorCode VecDestroy_SeqCUDA(Vec v)
   ierr = VecDestroy_Seq(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
+EXTERN PetscErrorCode VecCreate_Seq_Private_CUDA(Vec v,const PetscScalar array[]);
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -769,9 +785,12 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_SeqCUDA(Vec V)
 {
   PetscErrorCode ierr;
+  PetscMPIInt    size;
  
   PetscFunctionBegin;
-  ierr = VecCreate_Seq(V);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)V)->comm,&size);CHKERRQ(ierr);
+  if  (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQCUDA on more than one process");
+  ierr = VecCreate_Seq_Private_CUDA(V,0);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)V,VECSEQCUDA);CHKERRQ(ierr);
   V->ops->duplicate     = VecDuplicate_SeqCUDA;
   V->ops->dot           = VecDot_SeqCUDA;
@@ -799,6 +818,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_SeqCUDA(Vec V)
   /* as opposed to writing out the fortran way again, we'll just not change the function pointer */
   V->ops->mdot          = VecMDot_SeqCUDA;
 #endif
+  V->valid_GPU_array = PETSC_CUDA_UNALLOCATED;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
