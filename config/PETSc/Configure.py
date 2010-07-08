@@ -57,52 +57,23 @@ class Configure(config.base.Configure):
     self.qd.archProvider      = self.arch
     self.qd.precisionProvider = self.scalartypes
     self.qd.installDirProvider= self.petscdir
-    
-    #force blaslapack to depend on scalarType so precision is set before BlasLapack is built
-    self.blaslapack    = framework.require('config.packages.BlasLapack', self)
+
+    for package in config.packages.all:
+      if not package == 'PETSc':
+        packageObj                    = framework.require('config.packages.'+package, self)
+        packageObj.archProvider       = self.arch
+        packageObj.languageProvider   = self.languages
+        packageObj.installDirProvider = self.petscdir
+        setattr(self, package.lower(), packageObj)
+    # Force blaslapack to depend on scalarType so precision is set before BlasLapack is built
     framework.require('PETSc.utilities.scalarTypes', self.blaslapack)
-    self.blaslapack.archProvider      = self.arch
     self.blaslapack.precisionProvider = self.scalartypes
-    self.blaslapack.installDirProvider= self.petscdir
 
-    self.mpi           = framework.require('config.packages.MPI',        self)
-    self.mpi.archProvider             = self.arch
-    self.mpi.languageProvider         = self.languages
-    self.mpi.installDirProvider       = self.petscdir
-    self.umfpack       = framework.require('config.packages.UMFPACK',    self)
-    self.umfpack.archProvider         = self.arch
-    self.umfpack.languageProvider     = self.languages
-    self.umfpack.installDirProvider   = self.petscdir
-    self.cholmod       = framework.require('config.packages.CHOLMOD',    self)
-    self.cholmod.archProvider         = self.arch
-    self.cholmod.languageProvider     = self.languages
-    self.cholmod.installDirProvider   = self.petscdir
-    self.boost         = framework.require('config.packages.boost',      self)
-    self.boost.archProvider           = self.arch
-    self.boost.languageProvider       = self.languages
-    self.boost.installDirProvider     = self.petscdir
-    self.Fiat          = framework.require('config.packages.Fiat',       self)
-    self.Fiat.archProvider            = self.arch
-    self.Fiat.languageProvider        = self.languages
-    self.Fiat.installDirProvider      = self.petscdir
-    self.ExodusII      = framework.require('config.packages.ExodusII',   self)
-    self.ExodusII.archProvider        = self.arch
-    self.ExodusII.languageProvider    = self.languages
-    self.ExodusII.installDirProvider  = self.petscdir
-    self.thrust        = framework.require('config.packages.thrust',     self)
-    self.thrust.archProvider          = self.arch
-    self.thrust.languageProvider      = self.languages
-    self.thrust.installDirProvider    = self.petscdir
-    self.cusp          = framework.require('config.packages.cusp',       self)
-    self.cusp.archProvider            = self.arch
-    self.cusp.languageProvider        = self.languages
-    self.cusp.installDirProvider      = self.petscdir
-
-    self.compilers.headerPrefix = self.headerPrefix
-    self.types.headerPrefix     = self.headerPrefix
-    self.headers.headerPrefix   = self.headerPrefix
-    self.functions.headerPrefix = self.headerPrefix
-    self.libraries.headerPrefix = self.headerPrefix
+    self.compilers.headerPrefix  = self.headerPrefix
+    self.types.headerPrefix      = self.headerPrefix
+    self.headers.headerPrefix    = self.headerPrefix
+    self.functions.headerPrefix  = self.headerPrefix
+    self.libraries.headerPrefix  = self.headerPrefix
     self.blaslapack.headerPrefix = self.headerPrefix
     self.mpi.headerPrefix        = self.headerPrefix
     headersC = map(lambda name: name+'.h', ['dos', 'endian', 'fcntl', 'float', 'io', 'limits', 'malloc', 'pwd', 'search', 'strings',
