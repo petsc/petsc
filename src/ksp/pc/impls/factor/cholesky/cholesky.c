@@ -239,7 +239,7 @@ EXTERN_C_END
    causes the ordering computed in the first factor to be used for all
    following factors.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context

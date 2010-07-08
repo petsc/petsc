@@ -5,7 +5,7 @@
 /*@C
    KSPPythonSetType - Initalize a KSP object implemented in Python.
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameter:
 +  ksp - the linear solver (KSP) context.

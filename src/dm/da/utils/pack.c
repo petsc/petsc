@@ -49,7 +49,7 @@ struct _p_DMComposite {
       seperate components (DA's and arrays) in a DMComposite to build the correct matrix nonzero structure.
 
 
-    Collective on MPI_Comm
+    Logically Collective on MPI_Comm
 
     Input Parameter:
 +   dmcomposite - the composite object
@@ -469,7 +469,7 @@ PetscErrorCode DMCompositeGather_DM(DMComposite packer,struct DMCompositeLink *m
     DMCompositeGetNumberDM - Get's the number of DM objects in the DMComposite
        representation.
 
-    Collective on DMComposite
+    Not Collective
 
     Input Parameter:
 .    packer - the packer object
@@ -931,7 +931,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeCreateGlobalVector(DMComposite packe
     DMCompositeCreateLocalVector - Creates a vector of the correct size to contain all ghost points
         and redundant arrays.
 
-    Collective on DMComposite
+    Not Collective
 
     Input Parameter:
 .    packer - the packer object
@@ -1184,7 +1184,7 @@ PetscErrorCode DMCompositeRestoreLocalVectors_DM(DMComposite packer,struct DMCom
     DMCompositeGetLocalVectors - Gets local vectors and arrays for each part of a DMComposite.'
        Use DMCompositeRestoreLocalVectors() to return them.
 
-    Collective on DMComposite
+    Not Collective
 
     Input Parameter:
 .    packer - the packer object
@@ -1234,7 +1234,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetLocalVectors(DMComposite packer,.
     DMCompositeRestoreLocalVectors - Restores local vectors and arrays for each part of a DMComposite.'
        Use VecPakcRestoreLocalVectors() to return them.
 
-    Collective on DMComposite
+    Not Collective
 
     Input Parameter:
 .    packer - the packer object
@@ -1302,7 +1302,7 @@ PetscErrorCode DMCompositeGetEntries_DM(DMComposite packer,struct DMCompositeLin
 /*@C
     DMCompositeGetEntries - Gets the DA, redundant size, etc for each entry in a DMComposite.
 
-    Collective on DMComposite
+    Not Collective
 
     Input Parameter:
 .    packer - the packer object
@@ -1924,7 +1924,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetColoring(DMComposite dmcomposite,
 /*@C
     DMCompositeGlobalToLocalBegin - begin update of single local vector from global vector
 
-    Collective on DMComposite
+    Neighbor-wise Collective on DMComposite
 
     Input Parameter:
 +    packer - the packer object
@@ -2000,7 +2000,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGlobalToLocalBegin(DMComposite packe
 /*@C
     DMCompositeGlobalToLocalEnd - All communication is handled in the Begin phase
 
-    Collective on DMComposite
+    Neighbor-wise Collective on DMComposite
 
     Input Parameter:
 +    packer - the packer object

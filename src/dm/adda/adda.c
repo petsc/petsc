@@ -734,7 +734,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDASetRefinement(ADDA adda, PetscInt *refine, 
 /*@
    ADDAGetCorners - Gets the corners of the local area
 
-   Collective on ADDA
+   Not Collective
 
    Input Parameter:
 .  adda - the ADDA object
@@ -768,7 +768,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetCorners(ADDA adda, PetscInt **lcorner, P
 /*@
    ADDAGetGhostCorners - Gets the ghost corners of the local area
 
-   Collective on ADDA
+   Note Collective
 
    Input Parameter:
 .  adda - the ADDA object

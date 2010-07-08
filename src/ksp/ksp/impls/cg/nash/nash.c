@@ -14,7 +14,7 @@ static const char *DType_Table[64] = {  "preconditioned", "unpreconditioned"};
 /*@
     KSPNASHSetRadius - Sets the radius of the trust region.
 
-    Collective on KSP
+    Logically Collective on KSP
 
     Input Parameters:
 +   ksp    - the iterative context

@@ -395,7 +395,7 @@ EXTERN_C_END
    on the block from the matrix using the block from the preconditioner
    as the preconditioner for the local block.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -516,7 +516,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiSetTotalBlocks(PC pc,PetscInt blocks,
    PCBJacobiGetTotalBlocks - Gets the global number of blocks for the block
    Jacobi preconditioner.
 
-   Collective on PC
+   Not Collective
 
    Input Parameter:
 .  pc - the preconditioner context

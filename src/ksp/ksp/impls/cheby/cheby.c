@@ -38,7 +38,7 @@ EXTERN_C_END
    KSPChebychevSetEigenvalues - Sets estimates for the extreme eigenvalues
    of the preconditioned problem.
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - the Krylov space context

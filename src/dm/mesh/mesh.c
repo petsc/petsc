@@ -763,7 +763,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateVector(Mesh mesh, SectionReal section
 /*@C
     MeshCreateLocalVector - Creates a vector of the correct size for local computation.
 
-    Collective on Mesh
+    Not Collective
 
     Input Parameter:
 .    mesh - the mesh object
@@ -1302,7 +1302,7 @@ PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& row
 /*@
   MeshSetMaxDof - Sets the maximum number of degrees of freedom on any sieve point
 
-  Collective on A
+  Logically Collective on A
 
   Input Parameters:
 + A - the matrix

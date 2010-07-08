@@ -133,7 +133,7 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
 /*@C
    CharacteristicSetType - Builds Characteristic for a particular solver. 
 
-   Collective on Characteristic
+   Logically Collective on Characteristic
 
    Input Parameters:
 +  c    - the method of characteristics context

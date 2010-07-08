@@ -9,7 +9,7 @@
     needed work vectors at initial setup rather than the default, which 
     is to allocate them in chunks when needed.
 
-    Collective on KSP
+    Logically Collective on KSP
 
     Input Parameter:
 .   ksp   - iterative context obtained from KSPCreate

@@ -69,7 +69,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetCoarseSolve(PC pc,KSP *ksp)
    PCMGSetResidual - Sets the function to be used to calculate the residual 
    on the lth level. 
 
-   Collective on PC and Mat
+   Logically Collective on PC and Mat
 
    Input Parameters:
 +  pc       - the multigrid context
@@ -101,7 +101,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetResidual(PC pc,PetscInt l,PetscErrorCod
    PCMGSetInterpolation - Sets the function to be used to calculate the 
    interpolation from l-1 to the lth level
 
-   Collective on PC and Mat
+   Logically Collective on PC and Mat
 
    Input Parameters:
 +  pc  - the multigrid context
@@ -142,7 +142,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetInterpolation(PC pc,PetscInt l,Mat mat)
    PCMGSetRestriction - Sets the function to be used to restrict vector
    from level l to l-1. 
 
-   Collective on PC and Mat
+   Logically Collective on PC and Mat
 
    Input Parameters:
 +  pc - the multigrid context 
@@ -303,7 +303,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetSmootherDown(PC pc,PetscInt l,KSP *ksp)
 /*@
    PCMGSetCyclesOnLevel - Sets the number of cycles to run on this level. 
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the multigrid context 
@@ -333,7 +333,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetCyclesOnLevel(PC pc,PetscInt l,PetscInt
    PCMGSetRhs - Sets the vector space to be used to store the right-hand side
    on a particular level. 
 
-   Collective on PC and Vec
+   Logically Collective on PC and Vec
 
    Input Parameters:
 +  pc - the multigrid context 
@@ -372,7 +372,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetRhs(PC pc,PetscInt l,Vec c)
    PCMGSetX - Sets the vector space to be used to store the solution on a 
    particular level.
 
-   Collective on PC and Vec
+   Logically Collective on PC and Vec
 
    Input Parameters:
 +  pc - the multigrid context 
@@ -411,7 +411,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetX(PC pc,PetscInt l,Vec c)
    PCMGSetR - Sets the vector space to be used to store the residual on a
    particular level. 
 
-   Collective on PC and Vec
+   Logically Collective on PC and Vec
 
    Input Parameters:
 +  pc - the multigrid context 

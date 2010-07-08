@@ -285,7 +285,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
    KSPBCGSLSetXRes - Sets the parameter governing when
    exact residuals will be used instead of computed residuals.
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate
@@ -324,7 +324,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
    KSPBCGSLSetPol - Sets the type of polynomial part will
    be used in the BiCGSTab(L) solver.
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate
@@ -366,7 +366,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetPol(KSP ksp, PetscTruth uMROR)
 /*@
    KSPBCGSLSetEll - Sets the number of search directions in BiCGStab(L).
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate

@@ -190,7 +190,7 @@ PetscErrorCode DAGetElements_2d_P1(DA da,PetscInt *n,const PetscInt *e[])
 /*@C
        DASetLocalFunction - Caches in a DA a local function. 
 
-   Collective on DA
+   Logically Collective on DA
 
    Input Parameter:
 +  da - initial distributed array
@@ -217,7 +217,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetLocalFunction(DA da,DALocalFunction1 lf)
 /*@C
        DASetLocalFunctioni - Caches in a DA a local function that evaluates a single component
 
-   Collective on DA
+   Logically Collective on DA
 
    Input Parameter:
 +  da - initial distributed array
@@ -242,7 +242,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetLocalFunctioni(DA da,PetscErrorCode (*lfi)
 /*@C
        DASetLocalFunctionib - Caches in a DA a block local function that evaluates a single component
 
-   Collective on DA
+   Logically Collective on DA
 
    Input Parameter:
 +  da - initial distributed array
@@ -278,7 +278,7 @@ PetscErrorCode DASetLocalAdicFunction_Private(DA da,DALocalFunction1 ad_lf)
    Synopsis:
    PetscErrorCode DASetLocalAdicFunctioni(DA da,PetscInt (ad_lf*)(DALocalInfo*,MatStencil*,void*,void*,void*)
    
-   Collective on DA
+   Logically Collective on DA
 
    Input Parameter:
 +  da - initial distributed array
@@ -308,7 +308,7 @@ PetscErrorCode DASetLocalAdicFunctioni_Private(DA da,PetscErrorCode (*ad_lfi)(DA
    Synopsis:
    PetscErrorCode  DASetLocalAdicFunctioni(DA da,int (ad_lf*)(DALocalInfo*,MatStencil*,void*,void*,void*)
    
-   Collective on DA
+   Logically Collective on DA
 
    Input Parameter:
 +  da - initial distributed array
@@ -338,7 +338,7 @@ PetscErrorCode DASetLocalAdicMFFunctioni_Private(DA da,PetscErrorCode (*admf_lfi
    Synopsis:
    PetscErrorCode DASetLocalAdicFunctionib(DA da,PetscInt (ad_lf*)(DALocalInfo*,MatStencil*,void*,void*,void*)
    
-   Collective on DA
+   Logically Collective on DA
 
    Input Parameter:
 +  da - initial distributed array
@@ -368,7 +368,7 @@ PetscErrorCode DASetLocalAdicFunctionib_Private(DA da,PetscErrorCode (*ad_lfi)(D
    Synopsis:
    PetscErrorCode  DASetLocalAdicFunctionib(DA da,int (ad_lf*)(DALocalInfo*,MatStencil*,void*,void*,void*)
 
-   Collective on DA
+   Logically Collective on DA
 
    Input Parameter:
 +  da - initial distributed array
@@ -398,7 +398,7 @@ PetscErrorCode DASetLocalAdicMFFunctionib_Private(DA da,PetscErrorCode (*admf_lf
    Synopsis:
    PetscErrorCode DASetLocalAdicMFFunction(DA da,DALocalFunction1 ad_lf)
 
-   Collective on DA
+   Logically Collective on DA
 
    Input Parameter:
 +  da - initial distributed array
@@ -423,9 +423,9 @@ PetscErrorCode DASetLocalAdicMFFunction_Private(DA da,DALocalFunction1 ad_lf)
 }
 
 /*@C
-       DASetLocalJacobian - Caches in a DA a local Jacobian
+       DASetLocalJacobian - Caches in a DA a local Jacobian computation function
 
-   Collective on DA
+   Logically Collective on DA
 
    
    Input Parameter:
@@ -455,7 +455,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetLocalJacobian(DA da,DALocalFunction1 lj)
 /*@C
        DAGetLocalFunction - Gets from a DA a local function and its ADIC/ADIFOR Jacobian
 
-   Collective on DA
+   Note Collective
 
    Input Parameter:
 .  da - initial distributed array
@@ -482,7 +482,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalFunction(DA da,DALocalFunction1 *lf)
 /*@C
        DAGetLocalJacobian - Gets from a DA a local jacobian
 
-   Collective on DA
+   Not Collective
 
    Input Parameter:
 .  da - initial distributed array

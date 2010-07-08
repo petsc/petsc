@@ -179,7 +179,7 @@ EXTERN_C_END
    the matrix used to define the preconditioner) is used to compute the
    residual inside the inner solve.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 .  pc - the preconditioner context

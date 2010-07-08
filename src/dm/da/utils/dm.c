@@ -94,7 +94,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector(DM dm,Vec *vec)
 /*@
     DMCreateLocalVector - Creates a local vector from a DA or DMComposite object
 
-    Collective on DM
+    Not Collective
 
     Input Parameter:
 .   dm - the DM object
@@ -265,7 +265,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRefine(DM dm,MPI_Comm comm,DM *dmf)
 /*@
     DMGlobalToLocalBegin - Begins updating local vectors from local vectors
 
-    Collective on DM
+    Neighbor-wise Collective on DM
 
     Input Parameters:
 +   dm - the DM object
@@ -293,7 +293,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mod
 /*@
     DMGlobalToLocalEnd - Ends updating local vectors from local vectors
 
-    Collective on DM
+    Neighbor-wise Collective on DM
 
     Input Parameters:
 +   dm - the DM object
@@ -321,7 +321,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,
 /*@
     DMLocalToGlobal - updates global vectors from local vectors
 
-    Collective on DM
+    Neighbor-wise Collective on DM
 
     Input Parameters:
 +   dm - the DM object
@@ -576,7 +576,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetContext(DM dm,void **ctx)
 /*@
     DMSetInitialGuess - sets a function to compute an initial guess vector entries for the solvers
 
-    Collective on DM
+    Logically Collective on DM
 
     Input Parameter:
 +   dm - the DM object to destroy
@@ -599,7 +599,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetInitialGuess(DM dm,PetscErrorCode (*f)(DM,
 /*@
     DMSetFunction - sets a function to compute the right hand side vector entries for the KSP solver or nonlinear function for SNES
 
-    Collective on DM
+    Logically Collective on DM
 
     Input Parameter:
 +   dm - the DM object 
@@ -629,7 +629,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMSetFunction(DM dm,PetscErrorCode (*f)(DM,Vec,
 /*@
     DMSetJacobian - sets a function to compute the matrix entries for the KSP solver or Jacobian for SNES
 
-    Collective on DM
+    Logically Collective on DM
 
     Input Parameter:
 +   dm - the DM object to destroy
@@ -678,7 +678,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMComputeInitialGuess(DM dm,Vec x)
 /*@
     DMHasInitialGuess - does the DM object have an initial guess function
 
-    Collective on DM
+    Not Collective
 
     Input Parameter:
 .   dm - the DM object to destroy
@@ -703,7 +703,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMHasInitialGuess(DM dm,PetscTruth *flg)
 /*@
     DMHasFunction - does the DM object have a function
 
-    Collective on DM
+    Not Collective
 
     Input Parameter:
 .   dm - the DM object to destroy
@@ -728,7 +728,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMHasFunction(DM dm,PetscTruth *flg)
 /*@
     DMHasJacobian - does the DM object have a matrix function
 
-    Collective on DM
+    Not Collective
 
     Input Parameter:
 .   dm - the DM object to destroy

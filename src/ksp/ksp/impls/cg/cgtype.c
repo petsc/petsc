@@ -9,7 +9,7 @@
     use for solving a linear system with a complex coefficient matrix.
     This option is irrelevant when solving a real system.
 
-    Collective on KSP
+    Logically Collective on KSP
 
     Input Parameters:
 +   ksp - the iterative context
@@ -46,10 +46,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCGSetType(KSP ksp,KSPCGType type)
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCGUseSingleReduction" 
 /*@
-    KSPCGUseSingleReduction - Merge the two inner products needed in CG into a single 
-     MPI_Allreduce() call.
+    KSPCGUseSingleReduction - Merge the two inner products needed in CG into a single MPI_Allreduce() call.
 
-    Collective on KSP
+    Logically Collective on KSP
 
     Input Parameters:
 +   ksp - the iterative context

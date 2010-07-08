@@ -116,7 +116,7 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rto
    PCMGSetLevels - Sets the number of levels to use with MG.
    Must be called before any other MG routine.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -709,7 +709,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetLevels(PC pc,PetscInt *levels)
    PCMGSetType - Determines the form of multigrid to use:
    multiplicative, additive, full, or the Kaskade algorithm.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -744,7 +744,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetType(PC pc,PCMGType form)
    PCMGSetCycleType - Sets the type cycles to use.  Use PCMGSetCycleTypeOnLevel() for more 
    complicated cycling.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the multigrid context 
@@ -782,7 +782,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetCycleType(PC pc,PCMGCycleType n)
    PCMGMultiplicativeSetCycles - Sets the number of cycles to use for each preconditioner step 
          of multigrid when PCMGType of PC_MG_MULTIPLICATIVE is used
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the multigrid context 
@@ -822,7 +822,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGMultiplicativeSetCycles(PC pc,PetscInt n)
    PCMGSetGalerkin - Causes the coarser grid matrices to be computed from the
       finest grid via the Galerkin process: A_i-1 = r_i * A_i * r_i^t
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 .  pc - the multigrid context 
@@ -888,7 +888,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetGalerkin(PC pc,PetscTruth *galerkin)
    use on all levels. Use PCMGGetSmootherDown() to set different 
    pre-smoothing steps on different levels.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  mg - the multigrid context 
@@ -931,7 +931,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetNumberSmoothDown(PC pc,PetscInt n)
    on all levels. Use PCMGGetSmootherUp() to set different numbers of 
    post-smoothing steps on different levels.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  mg - the multigrid context 

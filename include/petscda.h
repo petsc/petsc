@@ -429,7 +429,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatSetDA(Mat,DA);
    Synopsis:
    PetscErrorCode DASetLocalAdicFunction(DA da,DALocalFunction1 ad_lf)
    
-   Collective on DA
+   Logically Collective on DA
 
    Input Parameter:
 +  da - initial distributed array

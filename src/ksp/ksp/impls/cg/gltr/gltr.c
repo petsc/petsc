@@ -15,7 +15,7 @@ static const char *DType_Table[64] = {"preconditioned", "unpreconditioned"};
 /*@
     KSPGLTRSetRadius - Sets the radius of the trust region.
 
-    Collective on KSP
+    Logically Collective on KSP
 
     Input Parameters:
 +   ksp    - the iterative context
@@ -47,7 +47,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRSetRadius(KSP ksp, PetscReal radius)
 /*@
     KSPGLTRGetNormD - Get norm of the direction.
 
-    Collective on KSP
+    Logically Collective on KSP
 
     Input Parameters:
 +   ksp    - the iterative context
@@ -75,7 +75,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetNormD(KSP ksp, PetscReal *norm_d)
 /*@
     KSPGLTRGetObjFcn - Get objective function value.
 
-    Collective on KSP
+    Note Collective
 
     Input Parameters:
 +   ksp   - the iterative context
@@ -131,7 +131,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min)
 /*@
     KSPGLTRGetLambda - Get multiplier on trust-region constraint.
 
-    Collective on KSP
+    Not Collective
 
     Input Parameters:
 +   ksp    - the iterative context

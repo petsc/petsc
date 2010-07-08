@@ -221,7 +221,7 @@ EXTERN_C_END
 /*@C
  KSPGCRSetModifyPC - Sets the routine used by GCR to modify the preconditioner.
  
- Collective on KSP
+ Logically Collective on KSP
  
  Input Parameters:
  +  ksp      - iterative context obtained from KSPCreate()

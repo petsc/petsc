@@ -7,7 +7,7 @@
    DASetOptionsPrefix - Sets the prefix used for searching for all 
    DA options in the database.
 
-   Collective on DA
+   Logically Collective on DA
 
    Input Parameter:
 +  da - the DA context
@@ -62,7 +62,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetDim(DA da, PetscInt dim)
 /*@
   DASetSizes - Sets the global sizes
 
-  Collective on DA
+  Logically Collective on DA
 
   Input Parameters:
 + da - the DA
@@ -89,7 +89,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetSizes(DA da, PetscInt M, PetscInt N, Petsc
 /*@
   DASetNumProcs - Sets the number of processes in each dimension
 
-  Collective on DA
+  Logically Collective on DA
 
   Input Parameters:
 + da - the DA
@@ -261,7 +261,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetVertexDivision(DA da, const PetscInt lx[],
        DASetInterpolationType - Sets the type of interpolation that will be 
           returned by DAGetInterpolation()
 
-   Collective on DA
+   Logically Collective on DA
 
    Input Parameter:
 +  da - initial distributed array
@@ -411,7 +411,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetOwnershipRanges(DA da,const PetscInt *lx[]
 /*@
      DASetRefinementFactor - Set the ratios that the DA grid is refined
 
-    Collective on DA
+    Logically Collective on DA
 
   Input Parameters:
 +    da - the DA object
@@ -470,7 +470,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetRefinementFactor(DA da, PetscInt *refine_x
 /*@C
      DASetGetMatrix - Sets the routine used by the DA to allocate a matrix.
 
-    Collective on DA
+    Logically Collective on DA
 
   Input Parameters:
 +    da - the DA object

@@ -719,7 +719,7 @@ EXTERN_C_END
    KSPGMRESSetCGSRefinementType - Sets the type of iterative refinement to use
          in the classical Gram Schmidt orthogonalization.
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - the Krylov space context
@@ -754,7 +754,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESC
    KSPGMRESGetCGSRefinementType - Gets the type of iterative refinement to use
          in the classical Gram Schmidt orthogonalization.
 
-   Collective on KSP
+   Not Collective
 
    Input Parameter:
 .  ksp - the Krylov space context
@@ -791,7 +791,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetCGSRefinementType(KSP ksp,KSPGMRESC
 /*@
    KSPGMRESSetRestart - Sets number of iterations at which GMRES, FGMRES and LGMRES restarts.
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - the Krylov space context
@@ -822,7 +822,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart(KSP ksp, PetscInt restart)
 /*@
    KSPGMRESGetRestart - Gets number of iterations at which GMRES, FGMRES and LGMRES restarts.
 
-   Collective on KSP
+   Not Collective
 
    Input Parameter:
 .  ksp - the Krylov space context
@@ -852,7 +852,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
 /*@
    KSPGMRESSetHapTol - Sets tolerance for determining happy breakdown in GMRES, FGMRES and LGMRES.
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - the Krylov space context

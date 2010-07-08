@@ -764,7 +764,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetTotalSubdomains(PC pc,PetscInt N,IS is
     additive Schwarz preconditioner.  Either all or no processors in the
     PC communicator must call this routine. 
 
-    Collective on PC
+    Logically Collective on PC
 
     Input Parameters:
 +   pc  - the preconditioner context
@@ -817,7 +817,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetOverlap(PC pc,PetscInt ovl)
     PCASMSetType - Sets the type of restriction and interpolation used
     for local problems in the additive Schwarz method.
 
-    Collective on PC
+    Logically Collective on PC
 
     Input Parameters:
 +   pc  - the preconditioner context
@@ -857,7 +857,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetType(PC pc,PCASMType type)
 /*@
     PCASMSetSortIndices - Determines whether subdomain indices are sorted.
 
-    Collective on PC
+    Logically Collective on PC
 
     Input Parameters:
 +   pc  - the preconditioner context
@@ -1344,7 +1344,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMCreateSubdomains2D(PetscInt m,PetscInt n,
     PCASMGetLocalSubdomains - Gets the local subdomains (for this processor
     only) for the additive Schwarz preconditioner. 
 
-    Collective on PC 
+    Not Collective
 
     Input Parameter:
 .   pc - the preconditioner context
@@ -1394,7 +1394,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMGetLocalSubdomains(PC pc,PetscInt *n,IS *
     PCASMGetLocalSubmatrices - Gets the local submatrices (for this processor
     only) for the additive Schwarz preconditioner. 
 
-    Collective on PC 
+    Not Collective
 
     Input Parameter:
 .   pc - the preconditioner context

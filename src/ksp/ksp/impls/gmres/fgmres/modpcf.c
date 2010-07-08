@@ -6,7 +6,7 @@
 /*@C
    KSPFGMRESSetModifyPC - Sets the routine used by FGMRES to modify the preconditioner.
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate
