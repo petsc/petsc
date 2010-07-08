@@ -98,7 +98,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCDestroy(PC pc)
    PCDiagonalScale - Indicates if the preconditioner applies an additional left and right
       scaling as needed by certain time-stepping codes.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -131,7 +131,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCDiagonalScale(PC pc,PetscTruth *flag)
    PCDiagonalScaleSet - Indicates the left scaling to use to apply an additional left and right
       scaling as needed by certain time-stepping codes.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -176,7 +176,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCDiagonalScaleSet(PC pc,Vec s)
    PCDiagonalScaleLeft - Indicates the left scaling to use to apply an additional left and right
       scaling as needed by certain time-stepping codes.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -218,7 +218,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCDiagonalScaleLeft(PC pc,Vec in,Vec out)
 /*@
    PCDiagonalScaleRight - Scales a vector by the right scaling as needed by certain time-stepping codes.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -831,7 +831,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetUpOnBlocks(PC pc)
    usual; the user can then alter these (for example, to set different boundary
    conditions for each submatrix) before they are used for the local solves.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -930,7 +930,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCModifySubMatrices(PC pc,PetscInt nsub,const 
    PCSetOperators - Sets the matrix associated with the linear system and 
    a (possibly) different one associated with the preconditioner.
 
-   Collective on PC and Mat
+   Logically Collective on PC and Mat
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1188,7 +1188,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatrix(PC pc,Mat *mat)
    PCSetOptionsPrefix - Sets the prefix used for searching for all 
    PC options in the database.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1221,7 +1221,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetOptionsPrefix(PC pc,const char prefix[])
    PCAppendOptionsPrefix - Appends to the prefix used for searching for all 
    PC options in the database.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1498,7 +1498,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCView(PC pc,PetscViewer viewer)
    initial guess is nonzero; otherwise PC assumes the initial guess
    is to be zero (and thus zeros it out before solving).
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - iterative context obtained from PCCreate()

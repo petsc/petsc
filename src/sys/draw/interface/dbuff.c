@@ -9,7 +9,7 @@
 /*@
    PetscDrawSetDoubleBuffer - Sets a window to be double buffered. 
 
-   Collective on PetscDraw
+   Logically Collective on PetscDraw
 
    Input Parameter:
 .  draw - the drawing context

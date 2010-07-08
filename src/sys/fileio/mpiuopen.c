@@ -14,7 +14,7 @@
     PetscFOpen - Has the first process in the communicator open a file;
     all others do nothing.
 
-    Collective on MPI_Comm
+    Logically Collective on MPI_Comm
 
     Input Parameters:
 +   comm - the communicator
@@ -73,7 +73,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFOpen(MPI_Comm comm,const char name[],const 
     PetscFClose - Has the first processor in the communicator close a 
     file; all others do nothing.
 
-    Collective on MPI_Comm
+    Logically Collective on MPI_Comm
 
     Input Parameters:
 +   comm - the communicator
@@ -149,7 +149,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPClose(MPI_Comm comm,FILE *fd)
       PetscPOpen - Runs a program on processor zero and sends either its input or output to 
           a file.
 
-     Collective on MPI_Comm, but only process 0 runs the command
+     Logically Collective on MPI_Comm, but only process 0 runs the command
 
    Input Parameters:
 +   comm - MPI communicator, only processor zero runs the program

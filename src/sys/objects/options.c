@@ -599,7 +599,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const c
    PetscOptionsPrint - Prints the options that have been loaded. This is
    useful for debugging purposes.
 
-   Collective on PETSC_COMM_WORLD
+   Logically Collective on PETSC_COMM_WORLD
 
    Input Parameter:
 .  FILE fd - location to print options (usually stdout or stderr)
@@ -1905,7 +1905,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetFromOptions(void)
 /*@C
    PetscOptionsMonitorDefault - Print all options set value events.
 
-   Collective on PETSC_COMM_WORLD
+   Logically Collective on PETSC_COMM_WORLD
 
    Input Parameters:
 +  name  - option name string

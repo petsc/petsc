@@ -8,7 +8,7 @@
    SNESLineSearchSetParams - Sets the parameters associated with the line search
    routine in the Newton-based method SNESLS.
 
-   Collective on SNES
+   Logically Collective on SNES
 
    Input Parameters:
 +  snes    - The nonlinear context obtained from SNESCreate()

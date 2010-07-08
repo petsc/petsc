@@ -111,7 +111,7 @@ PetscErrorCode  MatGetTrace(Mat mat,PetscScalar *trace)
 /*@
    MatRealPart - Zeros out the imaginary part of the matrix
 
-   Collective on Mat
+   Logically Collective on Mat
 
    Input Parameters:
 .  mat - the matrix
@@ -179,7 +179,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetGhosts(Mat mat,PetscInt *nghosts,const P
 /*@
    MatImaginaryPart - Moves the imaginary part of the matrix to the real part and zeros the imaginary part
 
-   Collective on Mat
+   Logically Collective on Mat
 
    Input Parameters:
 .  mat - the matrix
@@ -324,7 +324,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRow(Mat mat,PetscInt row,PetscInt *ncols
 /*@
    MatConjugate - replaces the matrix values with their complex conjugates
 
-   Collective on Mat
+   Logically Collective on Mat
 
    Input Parameters:
 .  mat - the matrix
@@ -464,7 +464,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreRowUpperTriangular(Mat mat)
    MatSetOptionsPrefix - Sets the prefix used for searching for all 
    Mat options in the database.
 
-   Collective on Mat
+   Logically Collective on Mat
 
    Input Parameter:
 +  A - the Mat context
@@ -496,7 +496,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetOptionsPrefix(Mat A,const char prefix[])
    MatAppendOptionsPrefix - Appends to the prefix used for searching for all 
    Mat options in the database.
 
-   Collective on Mat
+   Logically Collective on Mat
 
    Input Parameters:
 +  A - the Mat context
@@ -955,7 +955,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatUnScaleSystem(Mat mat,Vec b,Vec x)
    matrix indicates matrix operations (MatMult() etc) are 
    applied using the scaled matrix.
   
-   Collective on Mat
+   Logically Collective on Mat
 
    Input Parameter:
 +  mat - the matrix
@@ -1020,34 +1020,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy(Mat A)
   ierr = PetscLayoutDestroy(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(A->cmap);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(A);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatValid"
-/*@
-   MatValid - Checks whether a matrix object is valid.
-
-   Collective on Mat
-
-   Input Parameter:
-.  m - the matrix to check 
-
-   Output Parameter:
-   flg - flag indicating matrix status, either
-   PETSC_TRUE if matrix is valid, or PETSC_FALSE otherwise.
-
-   Level: developer
-
-   Concepts: matrices^validity
-@*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatValid(Mat m,PetscTruth *flg)
-{
-  PetscFunctionBegin;
-  PetscValidIntPointer(flg,1);
-  if (!m)                                          *flg = PETSC_FALSE;
-  else if (((PetscObject)m)->classid != MAT_CLASSID) *flg = PETSC_FALSE;
-  else                                             *flg = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -1968,7 +1940,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultDiagonalBlock(Mat mat,Vec x,Vec y)
 /*@
    MatMult - Computes the matrix-vector product, y = Ax.
 
-   Collective on Mat and Vec
+   Neighbor-wise Collective on Mat and Vec
 
    Input Parameters:
 +  mat - the matrix
@@ -2028,7 +2000,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMult(Mat mat,Vec x,Vec y)
 /*@
    MatMultTranspose - Computes matrix transpose times a vector.
 
-   Collective on Mat and Vec
+   Neighbor-wise Collective on Mat and Vec
 
    Input Parameters:
 +  mat - the matrix
@@ -2079,7 +2051,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTranspose(Mat mat,Vec x,Vec y)
 /*@
    MatMultHermitianTranspose - Computes matrix Hermitian transpose times a vector.
 
-   Collective on Mat and Vec
+   Neighbor-wise Collective on Mat and Vec
 
    Input Parameters:
 +  mat - the matrix
@@ -2130,7 +2102,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultHermitianTranspose(Mat mat,Vec x,Vec y)
 /*@
     MatMultAdd -  Computes v3 = v2 + A * v1.
 
-    Collective on Mat and Vec
+    Neighbor-wise Collective on Mat and Vec
 
     Input Parameters:
 +   mat - the matrix
@@ -2182,7 +2154,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 /*@
    MatMultTransposeAdd - Computes v3 = v2 + A' * v1.
 
-   Collective on Mat and Vec
+   Neighbor-wise Collective on Mat and Vec
 
    Input Parameters:
 +  mat - the matrix
@@ -2233,7 +2205,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeAdd(Mat mat,Vec v1,Vec v2,Vec 
 /*@
    MatMultHermitianTransposeAdd - Computes v3 = v2 + A^H * v1.
 
-   Collective on Mat and Vec
+   Neighbor-wise Collective on Mat and Vec
 
    Input Parameters:
 +  mat - the matrix
@@ -2285,7 +2257,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultHermitianTransposeAdd(Mat mat,Vec v1,Ve
    MatMultConstrained - The inner multiplication routine for a
    constrained matrix P^T A P.
 
-   Collective on Mat and Vec
+   Neighbor-wise Collective on Mat and Vec
 
    Input Parameters:
 +  mat - the matrix
@@ -2332,7 +2304,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultConstrained(Mat mat,Vec x,Vec y)
    MatMultTransposeConstrained - The inner multiplication routine for a
    constrained matrix P^T A^T P.
 
-   Collective on Mat and Vec
+   Neighbor-wise Collective on Mat and Vec
 
    Input Parameters:
 +  mat - the matrix
@@ -2406,8 +2378,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactorType(Mat mat,MatFactorType *t)
    MatGetInfo - Returns information about matrix storage (number of
    nonzeros, memory, etc.).
 
-   Collective on Mat if MAT_GLOBAL_MAX or MAT_GLOBAL_SUM is used
-   as the flag
+   Collective on Mat if MAT_GLOBAL_MAX or MAT_GLOBAL_SUM is used as the flag
 
    Input Parameters:
 .  mat - the matrix
@@ -2884,7 +2855,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCholeskyFactorNumeric(Mat fact,Mat mat,cons
 /*@
    MatSolve - Solves A x = b, given a factored matrix.
 
-   Collective on Mat and Vec
+   Neighbor-wise Collective on Mat and Vec
 
    Input Parameters:
 +  mat - the factored matrix
@@ -2969,7 +2940,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatSolve_Basic(Mat A,Mat B,Mat X)
 /*@
    MatMatSolve - Solves A X = B, given a factored matrix.
 
-   Collective on Mat 
+   Neighbor-wise Collective on Mat 
 
    Input Parameters:
 +  mat - the factored matrix
@@ -3032,7 +3003,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatSolve(Mat A,Mat B,Mat X)
    MatForwardSolve - Solves L x = b, given a factored matrix, A = LU, or
                             U^T*D^(1/2) x = b, given a factored symmetric matrix, A = U^T*D*U,
 
-   Collective on Mat and Vec
+   Neighbor-wise Collective on Mat and Vec
 
    Input Parameters:
 +  mat - the factored matrix
@@ -3095,7 +3066,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatForwardSolve(Mat mat,Vec b,Vec x)
    MatBackwardSolve - Solves U x = b, given a factored matrix, A = LU.
                              D^(1/2) U x = b, given a factored symmetric matrix, A = U^T*D*U,
 
-   Collective on Mat and Vec
+   Neighbor-wise Collective on Mat and Vec
 
    Input Parameters:
 +  mat - the factored matrix
@@ -3158,7 +3129,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatBackwardSolve(Mat mat,Vec b,Vec x)
 /*@
    MatSolveAdd - Computes x = y + inv(A)*b, given a factored matrix.
 
-   Collective on Mat and Vec
+   Neighbor-wise Collective on Mat and Vec
 
    Input Parameters:
 +  mat - the factored matrix
@@ -3233,7 +3204,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
 /*@
    MatSolveTranspose - Solves A' x = b, given a factored matrix.
 
-   Collective on Mat and Vec
+   Neighbor-wise Collective on Mat and Vec
 
    Input Parameters:
 +  mat - the factored matrix
@@ -3286,7 +3257,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSolveTranspose(Mat mat,Vec b,Vec x)
    MatSolveTransposeAdd - Computes x = y + inv(Transpose(A)) b, given a 
                       factored matrix. 
 
-   Collective on Mat and Vec
+   Neighbor-wise Collective on Mat and Vec
 
    Input Parameters:
 +  mat - the factored matrix
@@ -3361,7 +3332,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x
 /*@
    MatSOR - Computes relaxation (SOR, Gauss-Seidel) sweeps.
 
-   Collective on Mat and Vec
+   Neighbor-wise Collective on Mat and Vec
 
    Input Parameters:
 +  mat - the matrix
@@ -3776,7 +3747,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat mat, const MatSolverPackage t
 /*@C  
    MatGetFactorAvailable - Returns a a flag if matrix supports particular package and factor type
 
-   Collective on Mat
+   Not Collective
 
    Input Parameters:
 +  mat - the matrix
@@ -3890,7 +3861,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDuplicate(Mat mat,MatDuplicateOption op,Mat
 /*@ 
    MatGetDiagonal - Gets the diagonal of a matrix.
 
-   Collective on Mat and Vec
+   Logically Collective on Mat and Vec
 
    Input Parameters:
 +  mat - the matrix
@@ -3928,7 +3899,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonal(Mat mat,Vec v)
    MatGetRowMin - Gets the minimum value (of the real part) of each
         row of the matrix
 
-   Collective on Mat and Vec
+   Logically Collective on Mat and Vec
 
    Input Parameters:
 .  mat - the matrix
@@ -3972,7 +3943,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMin(Mat mat,Vec v,PetscInt idx[])
    MatGetRowMinAbs - Gets the minimum value (in absolute value) of each
         row of the matrix
 
-   Collective on Mat and Vec
+   Logically Collective on Mat and Vec
 
    Input Parameters:
 .  mat - the matrix
@@ -4016,7 +3987,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMinAbs(Mat mat,Vec v,PetscInt idx[])
    MatGetRowMax - Gets the maximum value (of the real part) of each
         row of the matrix
 
-   Collective on Mat and Vec
+   Logically Collective on Mat and Vec
 
    Input Parameters:
 .  mat - the matrix
@@ -4059,7 +4030,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMax(Mat mat,Vec v,PetscInt idx[])
    MatGetRowMaxAbs - Gets the maximum value (in absolute value) of each
         row of the matrix
 
-   Collective on Mat and Vec
+   Logically Collective on Mat and Vec
 
    Input Parameters:
 .  mat - the matrix
@@ -4102,7 +4073,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMaxAbs(Mat mat,Vec v,PetscInt idx[])
 /*@ 
    MatGetRowSum - Gets the sum of each row of the matrix
 
-   Collective on Mat and Vec
+   Logically Collective on Mat and Vec
 
    Input Parameters:
 .  mat - the matrix
@@ -4563,7 +4534,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalScale(Mat mat,Vec l,Vec r)
 /*@
     MatScale - Scales all elements of a matrix by a given number.
 
-    Collective on Mat
+    Logically Collective on Mat
 
     Input Parameters:
 +   mat - the matrix to be scaled
@@ -4695,7 +4666,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyBegin(Mat mat,MatAssemblyType type)
    MatAssembled - Indicates if a matrix has been assembled and is ready for
      use; for example, in matrix-vector product.
 
-   Collective on Mat
+   Not Collective
 
    Input Parameter:
 .  mat - the matrix 
@@ -4904,7 +4875,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd(Mat mat,MatAssemblyType type)
    row-oriented input will generally assemble the fastest. The default
    is row-oriented, nonsorted input. 
 
-   Collective on Mat
+   Logically Collective on Mat
 
    Input Parameters:
 +  mat - the matrix 
@@ -5051,7 +5022,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetOption(Mat mat,MatOption op,PetscTruth f
    MatZeroEntries - Zeros all entries of a matrix.  For sparse matrices
    this routine retains the old nonzero structure.
 
-   Collective on Mat
+   Logically Collective on Mat
 
    Input Parameters:
 .  mat - the matrix 
@@ -5203,7 +5174,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsIS(Mat mat,IS is,PetscScalar diag)
    MatZeroRowsLocal - Zeros all entries (except possibly the main diagonal)
    of a set of rows of a matrix; using local numbering of rows.
 
-   Collective on Mat
+   Logically Collective on Mat
 
    Input Parameters:
 +  mat - the matrix
@@ -5270,7 +5241,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal(Mat mat,PetscInt numRows,cons
    MatZeroRowsLocalIS - Zeros all entries (except possibly the main diagonal)
    of a set of rows of a matrix; using local numbering of rows.
 
-   Collective on Mat
+   Logically Collective on Mat
 
    Input Parameters:
 +  mat - the matrix
@@ -6050,7 +6021,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBlockSize(Mat mat,PetscInt *bs)
    MatSetBlockSize - Sets the matrix block size; for many matrix types you 
      cannot use this and MUST set the blocksize when you preallocate the matrix
    
-   Collective on Mat
+   Logically Collective on Mat
 
    Input Parameters:
 +  mat - the matrix
@@ -6338,7 +6309,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatColoringPatch(Mat mat,PetscInt ncolors,Pets
 /*@
    MatSetUnfactored - Resets a factored matrix to be treated as unfactored.
 
-   Collective on Mat
+   Logically Collective on Mat
 
    Input Parameter:
 .  mat - the factored matrix to be reset
@@ -6640,7 +6611,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatStashSetInitialSize(Mat mat,PetscInt size, 
    MatInterpolateAdd - w = y + A*x or A'*x depending on the shape of 
      the matrix
 
-   Collective on Mat
+   Neighbor-wise Collective on Mat
 
    Input Parameters:
 +  mat   - the matrix
@@ -6687,7 +6658,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInterpolateAdd(Mat A,Vec x,Vec y,Vec w)
    MatInterpolate - y = A*x or A'*x depending on the shape of 
      the matrix
 
-   Collective on Mat
+   Neighbor-wise Collective on Mat
 
    Input Parameters:
 +  mat   - the matrix
@@ -6729,7 +6700,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInterpolate(Mat A,Vec x,Vec y)
 /*@
    MatRestrict - y = A*x or A'*x
 
-   Collective on Mat
+   Neighbor-wise Collective on Mat
 
    Input Parameters:
 +  mat   - the matrix
@@ -6774,7 +6745,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRestrict(Mat A,Vec x,Vec y)
         This null space will be removed from the resulting vector whenever
         MatMult() is called
 
-   Collective on Mat
+   Logically Collective on Mat and MatNullSpace
 
    Input Parameters:
 +  mat - the matrix
@@ -7062,7 +7033,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetInertia(Mat mat,PetscInt *nneg,PetscInt 
 /*@C
    MatSolves - Solves A x = b, given a factored matrix, for a collection of vectors
 
-   Collective on Mat and Vecs
+   Neighbor-wise Collective on Mat and Vecs
 
    Input Parameters:
 +  mat - the factored matrix
@@ -7226,7 +7197,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitian(Mat A,PetscReal tol,PetscTruth 
 /*@
    MatIsSymmetricKnown - Checks the flag on the matrix to see if it is symmetric.
 
-   Collective on Mat
+   Not Collective
 
    Input Parameter:
 .  A - the matrix to check
@@ -7264,7 +7235,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIsSymmetricKnown(Mat A,PetscTruth *set,Pets
 /*@
    MatIsHermitianKnown - Checks the flag on the matrix to see if it is hermitian.
 
-   Collective on Mat
+   Not Collective
 
    Input Parameter:
 .  A - the matrix to check
@@ -7470,9 +7441,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFactorInfoInitialize(MatFactorInfo *info)
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAP"
 /*@
-   MatPtAP - Creates the matrix projection C = P^T * A * P
+   MatPtAP - Creates the matrix product C = P^T * A * P
 
-   Collective on Mat
+   Neighbor-wise Collective on Mat
 
    Input Parameters:
 +  A - the matrix
@@ -7527,9 +7498,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal f
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAPNumeric"
 /*@
-   MatPtAPNumeric - Computes the matrix projection C = P^T * A * P
+   MatPtAPNumeric - Computes the matrix product C = P^T * A * P
 
-   Collective on Mat
+   Neighbor-wise Collective on Mat
 
    Input Parameters:
 +  A - the matrix
@@ -7582,9 +7553,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPtAPNumeric(Mat A,Mat P,Mat C)
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAPSymbolic"
 /*@
-   MatPtAPSymbolic - Creates the (i,j) structure of the matrix projection C = P^T * A * P
+   MatPtAPSymbolic - Creates the (i,j) structure of the matrix product C = P^T * A * P
 
-   Collective on Mat
+   Neighbor-wise Collective on Mat
 
    Input Parameters:
 +  A - the matrix
@@ -7638,7 +7609,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat
 /*@
    MatMatMult - Performs Matrix-Matrix Multiplication C=A*B.
 
-   Collective on Mat
+   Neighbor-wise Collective on Mat
 
    Input Parameters:
 +  A - the left matrix
@@ -7722,7 +7693,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMult(Mat A,Mat B,MatReuse scall,PetscRea
    MatMatMultSymbolic - Performs construction, preallocation, and computes the ij structure
    of the matrix-matrix product C=A*B.  Call this routine before calling MatMatMultNumeric().
 
-   Collective on Mat
+   Neighbor-wise Collective on Mat
 
    Input Parameters:
 +  A - the left matrix
@@ -7803,7 +7774,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,
    MatMatMultNumeric - Performs the numeric matrix-matrix product.
    Call this routine after first calling MatMatMultSymbolic().
 
-   Collective on Mat
+   Neighbor-wise Collective on Mat
 
    Input Parameters:
 +  A - the left matrix
@@ -7881,7 +7852,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMultNumeric(Mat A,Mat B,Mat C)
 /*@
    MatMatMultTranspose - Performs Matrix-Matrix Multiplication C=A^T*B.
 
-   Collective on Mat
+   Neighbor-wise Collective on Mat
 
    Input Parameters:
 +  A - the left matrix

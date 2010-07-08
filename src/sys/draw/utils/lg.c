@@ -85,7 +85,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGCreate(PetscDraw draw,int dim,PetscDra
 /*@
    PetscDrawLGSetDimension - Change the number of lines that are to be drawn.
 
-   Collective over PetscDrawLG
+   Logically Collective over PetscDrawLG
 
    Input Parameter:
 +  lg - the line graph context.
@@ -118,7 +118,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGSetDimension(PetscDrawLG lg,int dim)
 /*@
    PetscDrawLGReset - Clears line graph to allow for reuse with new data.
 
-   Collective over PetscDrawLG
+   Logically Collective over PetscDrawLG
 
    Input Parameter:
 .  lg - the line graph context.

@@ -571,7 +571,7 @@ PetscErrorCode DAGetFaceInterpolation(DA da,PC_Exotic *exotic,Mat Aglobal,MatReu
 /*@
    PCExoticSetType - Sets the type of coarse grid interpolation to use
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context

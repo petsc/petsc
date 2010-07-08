@@ -8,7 +8,7 @@
     MatHasOperation - Determines whether the given matrix supports the particular
     operation.
 
-   Collective on Mat
+   Not Collective
 
    Input Parameters:
 +  mat - the matrix

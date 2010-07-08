@@ -14,7 +14,7 @@ PetscClassId PETSCMAT_DLLEXPORT MAT_NULLSPACE_CLASSID;
    MatNullSpaceSetFunction - set a function that removes a null space from a vector
    out of null spaces.
 
-   Collective on MatNullSpace
+   Logically Collective on MatNullSpace
 
    Input Parameters:
 +  sp - the null space object

@@ -267,7 +267,7 @@ EXTERN_C_END
 /*@
    PCRedundantSetNumber - Sets the number of redundant preconditioner contexts.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -318,7 +318,7 @@ EXTERN_C_END
      redundant local solve and the scatter to move them back into the global
      vector.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context

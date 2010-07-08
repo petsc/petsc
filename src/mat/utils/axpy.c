@@ -7,7 +7,7 @@
 /*@
    MatAXPY - Computes Y = a*X + Y.
 
-   Collective on Mat
+   Logically  Collective on Mat
 
    Input Parameters:
 +  a - the scalar multiplier
@@ -90,7 +90,7 @@ PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
 /*@
    MatShift - Computes Y =  Y + a I, where a is a PetscScalar and I is the identity matrix.
 
-   Collective on Mat
+   Neighbor-wise Collective on Mat
 
    Input Parameters:
 +  Y - the matrices
@@ -163,7 +163,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalSet_Default(Mat Y,Vec D,InsertMode 
 .  D - the diagonal matrix, represented as a vector
 -  i - INSERT_VALUES or ADD_VALUES
 
-   Collective on Mat and Vec
+   Neighbor-wise Collective on Mat and Vec
 
    Level: intermediate
 
@@ -191,7 +191,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 /*@
    MatAYPX - Computes Y = a*Y + X.
 
-   Collective on Mat
+   Logically on Mat
 
    Input Parameters:
 +  a - the PetscScalar multiplier

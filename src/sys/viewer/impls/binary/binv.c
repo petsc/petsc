@@ -757,7 +757,7 @@ EXTERN_C_END
 /*@C
      PetscViewerFileGetMode - Gets the type of file to be open
 
-    Collective on PetscViewer
+    Not Collective
 
   Input Parameter:
 .  viewer - the PetscViewer; must be a binary, Matlab, hdf, or netcdf PetscViewer
@@ -793,7 +793,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileGetMode(PetscViewer viewer,PetscFi
      PetscViewerBinarySetMPIIO - Sets a binary viewer to use MPI IO for reading/writing. Must be called
         before PetscViewerFileSetName()
 
-    Collective on PetscViewer
+    Logically Collective on PetscViewer
 
   Input Parameters:
 .  viewer - the PetscViewer; must be a binary
@@ -825,7 +825,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinarySetMPIIO(PetscViewer viewer)
 /*@C
      PetscViewerFileSetMode - Sets the type of file to be open
 
-    Collective on PetscViewer
+    Logically Collective on PetscViewer
 
   Input Parameters:
 +  viewer - the PetscViewer; must be a binary, Matlab, hdf, or netcdf PetscViewer

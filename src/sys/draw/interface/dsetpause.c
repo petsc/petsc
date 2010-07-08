@@ -10,7 +10,7 @@
    PetscDrawSetPause - Sets the amount of time that program pauses after 
    a PetscDrawPause() is called. 
 
-   Collective on PetscDraw
+   Logically Collective on PetscDraw
 
    Input Parameters:
 +  draw   - the drawing object

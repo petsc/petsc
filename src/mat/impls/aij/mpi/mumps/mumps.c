@@ -1362,7 +1362,7 @@ EXTERN_C_END
 /*@
   MatSetMumpsIcntl - Set MUMPS parameter ICNTL()
 
-   Collective on Mat
+   Logically Collective on Mat
 
    Input Parameters:
 +  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface

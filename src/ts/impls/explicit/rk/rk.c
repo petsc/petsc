@@ -44,7 +44,7 @@ EXTERN_C_END
    TSRKSetTolerance - Sets the total error the RK explicit time integrators 
                       will allow over the given time interval.
 
-   Collective on TS
+   Logically Collective on TS
 
    Input parameters:
 +    ts  - the time-step context

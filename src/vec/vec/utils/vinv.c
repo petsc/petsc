@@ -14,7 +14,7 @@ extern MPI_Op VecMin_Local_Op;
    VecStrideScale - Scales a subvector of a vector defined 
    by a starting point and a stride.
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameter:
 +  v - the vector 
@@ -352,7 +352,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMin(Vec v,PetscInt start,PetscInt *id
    VecStrideScaleAll - Scales the subvectors of a vector defined 
    by a starting point and a stride.
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameter:
 +  v - the vector 
@@ -1280,7 +1280,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSum(Vec v,PetscScalar *sum)
    VecShift - Shifts all of the components of a vector by computing
    x[i] = x[i] + shift.
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameters:
 +  v - the vector 
@@ -1320,7 +1320,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecShift(Vec v,PetscScalar shift)
 /*@
    VecAbs - Replaces every element in a vector with its absolute value.
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameters:
 .  v - the vector 

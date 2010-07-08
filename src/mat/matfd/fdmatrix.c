@@ -144,7 +144,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringView(MatFDColoring c,PetscViewer 
    MatFDColoringSetParameters - Sets the parameters for the sparse approximation of
    a Jacobian matrix using finite differences.
 
-   Collective on MatFDColoring
+   Logically Collective on MatFDColoring
 
    The Jacobian is estimated with the differencing approximation
 .vb
@@ -183,7 +183,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetParameters(MatFDColoring matfd
 /*@C
    MatFDColoringGetFunction - Gets the function to use for computing the Jacobian.
 
-   Collective on MatFDColoring
+   Not Collective
 
    Input Parameters:
 .  coloring - the coloring context
@@ -213,7 +213,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringGetFunction(MatFDColoring matfd,P
 /*@C
    MatFDColoringSetFunction - Sets the function to use for computing the Jacobian.
 
-   Collective on MatFDColoring
+   Logically Collective on MatFDColoring
 
    Input Parameters:
 +  coloring - the coloring context

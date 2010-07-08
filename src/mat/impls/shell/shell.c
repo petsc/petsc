@@ -436,7 +436,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateShell(MPI_Comm comm,PetscInt m,PetscI
 /*@
     MatShellSetContext - sets the context for a shell matrix
 
-   Collective on Mat
+   Logically Collective on Mat
 
     Input Parameters:
 +   mat - the shell matrix
@@ -470,7 +470,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetContext(Mat mat,void *ctx)
     MatShellSetOperation - Allows user to set a matrix operation for
                            a shell matrix.
 
-   Collective on Mat
+   Logically Collective on Mat
 
     Input Parameters:
 +   mat - the shell matrix

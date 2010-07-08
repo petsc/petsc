@@ -561,7 +561,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsGetIterations(TS ts,int *nonlin,int *
 /*@
    TSSundialsSetType - Sets the method that Sundials will use for integration.
 
-   Collective on TS
+   Logically Collective on TS
 
    Input parameters:
 +    ts     - the time-step context
@@ -596,7 +596,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetType(TS ts,TSSundialsLmmType type)
        GMRES in the linear solver in SUNDIALS. SUNDIALS DOES NOT use restarted GMRES so
        this is ALSO the maximum number of GMRES steps that will be used.
 
-   Collective on TS
+   Logically Collective on TS
 
    Input parameters:
 +    ts      - the time-step context
@@ -631,7 +631,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetGMRESRestart(TS ts,int restart)
    TSSundialsSetLinearTolerance - Sets the tolerance used to solve the linear
        system by SUNDIALS.
 
-   Collective on TS
+   Logically Collective on TS
 
    Input parameters:
 +    ts     - the time-step context
@@ -667,7 +667,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetLinearTolerance(TS ts,double tol)
    TSSundialsSetGramSchmidtType - Sets type of orthogonalization used
         in GMRES method by SUNDIALS linear solver.
 
-   Collective on TS
+   Logically Collective on TS
 
    Input parameters:
 +    ts  - the time-step context
@@ -702,7 +702,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetGramSchmidtType(TS ts,TSSundialsGr
    TSSundialsSetTolerance - Sets the absolute and relative tolerance used by 
                          Sundials for error control.
 
-   Collective on TS
+   Logically Collective on TS
 
    Input parameters:
 +    ts  - the time-step context

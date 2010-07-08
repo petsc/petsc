@@ -16,7 +16,7 @@
 /*@
    VecMaxPointwiseDivide - Computes the maximum of the componentwise division max = max_i abs(x_i/y_i).
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameters:
 .  x, y  - the vectors
@@ -174,7 +174,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecNorm(Vec x,NormType type,PetscReal *val)
 /*@
    VecNormAvailable  - Returns the vector norm if it is already known.
 
-   Collective on Vec
+   Not Collective
 
    Input Parameters:
 +  x - the vector
@@ -461,7 +461,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScale (Vec x, PetscScalar alpha)
 /*@
    VecSet - Sets all components of a vector to a single scalar value. 
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameters:
 +  x  - the vector
@@ -531,7 +531,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSet(Vec x,PetscScalar alpha)
 /*@
    VecAXPY - Computes y = alpha x + y. 
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameters:
 +  alpha - the scalar
@@ -574,7 +574,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAXPY(Vec y,PetscScalar alpha,Vec x)
 /*@
    VecAXPBY - Computes y = alpha x + beta y. 
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameters:
 +  alpha,beta - the scalars
@@ -617,7 +617,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAXPBY(Vec y,PetscScalar alpha,PetscScalar b
 /*@
    VecAXPBYPCZ - Computes z = alpha x + beta y + gamma z
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameters:
 +  alpha,beta, gamma - the scalars
@@ -667,7 +667,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAXPBYPCZ(Vec z,PetscScalar alpha,PetscScala
 /*@
    VecAYPX - Computes y = x + alpha y.
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameters:
 +  alpha - the scalar
@@ -709,7 +709,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAYPX(Vec y,PetscScalar alpha,Vec x)
 /*@
    VecWAXPY - Computes w = alpha x + y.
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameters:
 +  alpha - the scalar
@@ -816,7 +816,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetValues(Vec x,PetscInt ni,const PetscInt 
    VecGetValues - Gets values from certain locations of a vector. Currently 
           can only get values on the same processor
 
-    Collective on Vec
+    Not Collective
  
    Input Parameters:
 +  x - vector to get values from
@@ -1159,7 +1159,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMDot(Vec x,PetscInt nv,const Vec y[],PetscS
 /*@
    VecMAXPY - Computes y = y + sum alpha[j] x[j]
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameters:
 +  nv - number of scalars and x-vectors

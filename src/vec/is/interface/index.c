@@ -48,7 +48,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISIdentity(IS is,PetscTruth *ident)
 /*@
    ISSetIdentity - Informs the index set that it is an identity.
 
-   Collective on IS
+   Logically Collective on IS
 
    Input Parmeters:
 .  is - the index set
@@ -74,7 +74,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSetIdentity(IS is)
    ISPermutation - PETSC_TRUE or PETSC_FALSE depending on whether the 
    index set has been declared to be a permutation.
 
-   Collective on IS
+   Logically Collective on IS
 
    Input Parmeters:
 .  is - the index set
@@ -103,7 +103,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISPermutation(IS is,PetscTruth *perm)
 /*@
    ISSetPermutation - Informs the index set that it is a permutation.
 
-   Collective on IS
+   Logically Collective on IS
 
    Input Parmeters:
 .  is - the index set

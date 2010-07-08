@@ -2418,7 +2418,7 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer, Mat newmat)
 .  mat  - the matrix
 .  fact - factor
 
-   Collective on Mat
+   Logically Collective on Mat
 
    Level: advanced
 

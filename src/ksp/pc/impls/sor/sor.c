@@ -174,7 +174,7 @@ EXTERN_C_END
    backward, or forward relaxation.  The local variants perform SOR on
    each processor.  By default forward relaxation is used.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -225,7 +225,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSORSetSymmetric(PC pc,MatSORType flag)
    PCSORSetOmega - Sets the SOR relaxation coefficient, omega
    (where omega = 1.0 by default).
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -258,7 +258,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSORSetOmega(PC pc,PetscReal omega)
    PCSORSetIterations - Sets the number of inner iterations to 
    be used by the SOR preconditioner. The default is 1.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context

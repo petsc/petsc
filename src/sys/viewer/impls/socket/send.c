@@ -359,7 +359,7 @@ EXTERN_C_END
       PetscViewerSocketSetConnection - Sets the machine and port that a PETSc socket 
              viewer is to use
 
-  Collective on PetscViewer
+  Logically Collective on PetscViewer
 
   Input Parameters:
 +   v - viewer to connect

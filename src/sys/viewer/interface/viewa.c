@@ -7,7 +7,7 @@
 /*@C
    PetscViewerSetFormat - Sets the format for PetscViewers.
 
-   Collective on PetscViewer
+   Logically Collective on PetscViewer
 
    Input Parameters:
 +  viewer - the PetscViewer
@@ -66,7 +66,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFormat(PetscViewer viewer,PetscView
 /*@C
    PetscViewerPushFormat - Sets the format for file PetscViewers.
 
-   Collective on PetscViewer
+   Logically Collective on PetscViewer
 
    Input Parameters:
 +  viewer - the PetscViewer
@@ -119,7 +119,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerPushFormat(PetscViewer viewer,PetscVie
 /*@C
    PetscViewerPopFormat - Resets the format for file PetscViewers.
 
-   Collective on PetscViewer
+   Logically Collective on PetscViewer
 
    Input Parameters:
 .  viewer - the PetscViewer

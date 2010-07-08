@@ -411,7 +411,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGhostRestoreLocalForm(Vec g,Vec *l)
    VecGhostUpdateBegin - Begins the vector scatter to update the vector from
    local representation to global or global representation to local.
 
-   Collective on Vec
+   Neighbor-wise Collective on Vec
 
    Input Parameters:
 +  g - the vector (obtained with VecCreateGhost() or VecDuplicate())
@@ -472,7 +472,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGhostUpdateBegin(Vec g,InsertMode insertmod
    VecGhostUpdateEnd - End the vector scatter to update the vector from
    local representation to global or global representation to local.
 
-   Collective on Vec
+   Neighbor-wise Collective on Vec
 
    Input Parameters:
 +  g - the vector (obtained with VecCreateGhost() or VecDuplicate())
