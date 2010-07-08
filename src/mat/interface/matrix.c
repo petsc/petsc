@@ -771,7 +771,8 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
 .    -mat_type seqdense - dense type
 .    -mat_type mpidense - parallel dense type
 .    -mat_type blockmat - sequential blockmat type
--    -matload_symmetric - matrix in file is symmetric
+.    -matload_symmetric - matrix in file is symmetric
+-    -matload_spd       - matrix in file is symmetric positive definite
 
    More Options Database Keys:
    Used with block matrix formats (MATSEQBAIJ,  ...) to specify
@@ -853,6 +854,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer viewer, Mat newmat)
   if (flg) {
     ierr = MatSetOption(newmat,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatSetOption(newmat,MAT_SYMMETRY_ETERNAL,PETSC_TRUE);CHKERRQ(ierr);
+  }
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(prefix,"-matload_spd",&flg,PETSC_NULL);CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatSetOption(newmat,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
