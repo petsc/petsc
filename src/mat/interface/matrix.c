@@ -829,11 +829,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer viewer, Mat newmat)
   PetscErrorCode ierr;
   PetscTruth     isbinary,flg;
   const MatType  outtype=0;
-  const char     *prefix;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidPointer(newmat,3);
+  PetscValidHeaderSpecific(newmat,MAT_CLASSID,2);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
@@ -850,13 +849,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer viewer, Mat newmat)
   ierr = PetscLogEventEnd(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(prefix,"-matload_symmetric",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(((PetscObject)newmat)->prefix,"-matload_symmetric",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = MatSetOption(newmat,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatSetOption(newmat,MAT_SYMMETRY_ETERNAL,PETSC_TRUE);CHKERRQ(ierr);
   }
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(prefix,"-matload_spd",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(((PetscObject)newmat)->prefix,"-matload_spd",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = MatSetOption(newmat,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
   }
