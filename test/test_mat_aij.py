@@ -8,7 +8,7 @@ def mkgraph(comm, m, n):
     end   = start + m*n
     idt = PETSc.IntType
     rows = []
-    for I in xrange(start, end) :
+    for I in range(start, end) :
         rows.append([])
         adj = rows[-1]
         i = I//n; j = I - i*n

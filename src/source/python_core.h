@@ -7,6 +7,18 @@
 
 /* -------------------------------------------------------------------------- */
 
+#if PY_MAJOR_VERSION >= 3
+#define PyInt_Check  PyLong_Check
+#define PyInt_AsLong PyLong_AsLong
+#endif
+
+#if PY_MAJOR_VERSION < 3
+#define PyBytes_Check    PyString_Check
+#define PyBytes_AsString PyString_AsString
+#endif
+
+/* -------------------------------------------------------------------------- */
+
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
 #define PETSCVIEWERASCII  PETSC_VIEWER_ASCII
@@ -240,6 +252,18 @@ static PetscErrorCode PetscCreatePythonObject(const char fullname[],
   PetscFunctionReturn(0);
 }
 
+static PyObject *PetscPythonAsString(PyObject *ob, const char* buf[])
+{
+  if (ob && PyUnicode_Check(ob)) {
+    PyObject *tmp = PyUnicode_AsASCIIString(ob);
+    Py_DecRef(ob);
+    ob = tmp;
+  }
+  if (ob && PyBytes_Check(ob))
+    *buf = PyBytes_AsString(ob);
+  return ob;
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscPythonGetFullName"
 static PetscErrorCode PetscPythonGetFullName(PyObject *self, char *pyname[])
@@ -256,21 +280,18 @@ static PetscErrorCode PetscPythonGetFullName(PyObject *self, char *pyname[])
   /* --- */
   if (PyModule_Check(self)) {
     omodname = PetscPyObjectGetAttrStr(self,"__name__");
+    omodname = PetscPythonAsString(omodname, &ModName);
     if (!omodname) PyErr_Clear();
-    else if (PyString_Check(omodname))
-      ModName = PyString_AsString(omodname);
   } else {
     cls = PetscPyObjectGetAttrStr(self,"__class__");
     if (!cls) PyErr_Clear();
     else {
       omodname = PetscPyObjectGetAttrStr(cls,"__module__");
+      omodname = PetscPythonAsString(omodname, &ModName);
       if (!omodname) PyErr_Clear();
-      else if (PyString_Check(omodname))
-        ModName = PyString_AsString(omodname);
       oclsname = PetscPyObjectGetAttrStr(cls,"__name__");
+      oclsname = PetscPythonAsString(oclsname, &ClsName);
       if (!oclsname) PyErr_Clear();
-      else if (PyString_Check(oclsname))
-        ClsName = PyString_AsString(oclsname);
     }
   }
   /* --- */

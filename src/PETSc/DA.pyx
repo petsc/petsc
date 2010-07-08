@@ -100,7 +100,9 @@ cdef class DA(Object):
         return self
 
     def setOptionsPrefix(self, prefix):
-        CHKERR( DASetOptionsPrefix(self.da, str2cp(prefix)) )
+        cdef const_char *cval = NULL
+        prefix = str2bytes(prefix, &cval)
+        CHKERR( DASetOptionsPrefix(self.da, cval) )
 
     def setFromOptions(self):
         CHKERR( DASetFromOptions(self.da) )
@@ -242,7 +244,8 @@ cdef class DA(Object):
 
     def createMatrix(self, mat_type=None):
         cdef PetscMatType mtype = MATAIJ
-        if mat_type is not None: mtype = str2cp(mat_type)
+        mat_type = str2bytes(mat_type, &mtype)
+        if mtype == NULL: mtype = MATAIJ
         cdef Mat mat = Mat()
         CHKERR( DAGetMatrix(self.da, mtype, &mat.mat) )
         return mat

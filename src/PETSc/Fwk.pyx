@@ -21,12 +21,15 @@ cdef class Fwk(Object):
         return self
 
     def registerComponent(self, url):
-        cdef char *_url = str2cp(url)
+        cdef const_char *_url = NULL
+        url = str2bytes(url, &_url)
         CHKERR( PetscFwkRegisterComponent(self.fwk, _url) )
 
     def registerDependence(self, clienturl, serverurl):
-        cdef char *_clienturl = str2cp(clienturl)
-        cdef char *_serverurl = str2cp(serverurl)
+        cdef const_char *_clienturl = NULL, 
+        cdef const_char *_serverurl = NULL
+        clienturl = str2bytes(clienturl, &_clienturl)
+        serverurl = str2bytes(serverurl, &_serverurl)
         CHKERR( PetscFwkRegisterDependence(self.fwk, _clienturl, _serverurl) )
         return self
 
@@ -45,9 +48,10 @@ cdef class Fwk(Object):
         return self
 
     def getComponent(self, url):
-        cdef char *_url = str2cp(url)
+        cdef const_char *_url = NULL
         cdef PetscObject cobj = NULL
         cdef PetscTruth found = PETSC_FALSE
+        url = str2bytes(url, &_url)
         CHKERR( PetscFwkGetComponent(self.fwk, _url, &cobj, &found) )
         if found == PETSC_FALSE or cobj == NULL: return None
         cdef PetscClassId classid = 0

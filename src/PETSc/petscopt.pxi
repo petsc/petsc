@@ -47,12 +47,12 @@ cdef getprefix(prefix, deft=None):
 
 #
 
-cdef opt2str(char *pre, char *name):
-    p = cp2str(pre)  if pre!=NULL else None
-    n = cp2str(name) if name[0]!=c'-' else cp2str(&name[1])
+cdef opt2str(const_char *pre, const_char *name):
+    p = bytes2str(pre)  if pre!=NULL else None
+    n = bytes2str(name) if name[0]!=c'-' else bytes2str(&name[1])
     return '(prefix:%s, name:%s)' % (p, n)
 
-cdef getopt_Truth(char *pre, char *name, object deft):
+cdef getopt_Truth(const_char *pre, const_char *name, object deft):
     cdef PetscTruth value = PETSC_FALSE
     cdef PetscTruth flag = PETSC_FALSE
     CHKERR( PetscOptionsGetTruth(pre, name, &value, &flag) )
@@ -60,7 +60,7 @@ cdef getopt_Truth(char *pre, char *name, object deft):
     if deft is not None: return deft
     raise KeyError(opt2str(pre, name))
 
-cdef getopt_Int(char *pre, char *name, object deft):
+cdef getopt_Int(const_char *pre, const_char *name, object deft):
     cdef PetscInt value = 0
     cdef PetscTruth flag = PETSC_FALSE
     CHKERR( PetscOptionsGetInt(pre, name, &value, &flag) )
@@ -68,7 +68,7 @@ cdef getopt_Int(char *pre, char *name, object deft):
     if deft is not None: return deft
     raise KeyError(opt2str(pre, name))
 
-cdef getopt_Real(char *pre, char *name, object deft):
+cdef getopt_Real(const_char *pre, const_char *name, object deft):
     cdef PetscReal value = 0
     cdef PetscTruth flag = PETSC_FALSE
     CHKERR( PetscOptionsGetReal(pre, name, &value, &flag) )
@@ -76,7 +76,7 @@ cdef getopt_Real(char *pre, char *name, object deft):
     if deft is not None: return deft
     raise KeyError(opt2str(pre, name))
 
-cdef getopt_Scalar(char *pre, char *name, object deft):
+cdef getopt_Scalar(const_char *pre, const_char *name, object deft):
     cdef PetscScalar value = 0
     cdef PetscTruth flag = PETSC_FALSE
     CHKERR( PetscOptionsGetScalar(pre, name, &value, &flag) )
@@ -84,11 +84,11 @@ cdef getopt_Scalar(char *pre, char *name, object deft):
     if deft is not None: return deft
     raise KeyError(opt2str(pre, name))
 
-cdef getopt_String(char *pre, char *name, object deft):
+cdef getopt_String(const_char *pre, const_char *name, object deft):
     cdef char value[1024+1]
     cdef PetscTruth flag = PETSC_FALSE
     CHKERR( PetscOptionsGetString(pre, name, value, 1024, &flag) )
-    if flag==PETSC_TRUE: return cp2str(value)
+    if flag==PETSC_TRUE: return bytes2str(value)
     if deft is not None: return deft
     raise KeyError(opt2str(pre, name))
 
@@ -100,44 +100,48 @@ cdef enum PetscOptType:
     OPT_SCALAR
     OPT_STRING
 
-cdef getpair(prefix, name, char **pr, char **nm):
+cdef getpair(prefix, name, const_char **pr, const_char **nm):
     # --
-    cdef char *p = str2cp(prefix)
+    cdef const_char *p = NULL
+    prefix = str2bytes(prefix, &p)
     if p and p[0] == c'-':
         p = &p[1]
     # --
-    cdef char *n = str2cp(name)
+    cdef const_char *n = NULL
+    name = str2bytes(name, &n)
     if n and n[0] != c'-':
-        name = '-' + name
-        n = str2cp(name)
+        name = b'-' + name
+        name = str2bytes(name, &n)
     # --
     pr[0] = p
     nm[0] = n
     return (prefix, name)
 
 cdef getopt(PetscOptType otype, prefix, name, deft):
-    cdef char *pre = NULL, *nm = NULL
-    tmp = getpair(prefix, name, &pre, &nm)
-    if otype == OPT_TRUTH  : return getopt_Truth  (pre, nm, deft)
-    if otype == OPT_INT    : return getopt_Int    (pre, nm, deft)
-    if otype == OPT_REAL   : return getopt_Real   (pre, nm, deft)
-    if otype == OPT_SCALAR : return getopt_Scalar (pre, nm, deft)
-    if otype == OPT_STRING : return getopt_String (pre, nm, deft)
+    cdef const_char *pr = NULL
+    cdef const_char *nm = NULL
+    tmp = getpair(prefix, name, &pr, &nm)
+    if otype == OPT_TRUTH  : return getopt_Truth  (pr, nm, deft)
+    if otype == OPT_INT    : return getopt_Int    (pr, nm, deft)
+    if otype == OPT_REAL   : return getopt_Real   (pr, nm, deft)
+    if otype == OPT_SCALAR : return getopt_Scalar (pr, nm, deft)
+    if otype == OPT_STRING : return getopt_String (pr, nm, deft)
 
 
 # simple minded options parser
 
 cdef tokenize(options):
   cdef PetscToken t
-  cdef char *s = str2cp(options)
-  cdef char *p = NULL
+  cdef const_char *s = NULL
+  cdef const_char *p = NULL
+  options = str2bytes(options, &s)
   cdef list tokens = []
   CHKERR( PetscTokenCreate(s, c' ', &t) )
   try:
-      CHKERR( PetscTokenFind(t, &p) )
+      CHKERR( PetscTokenFind(t, <char**>&p) )
       while p != NULL:
-          tokens.append(cp2str(p))
-          CHKERR( PetscTokenFind(t, &p) )
+          tokens.append(bytes2str(p))
+          CHKERR( PetscTokenFind(t, <char**>&p) )
   finally:
       CHKERR( PetscTokenDestroy(t) )
   return tokens

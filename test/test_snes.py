@@ -375,7 +375,7 @@ class MySNES(object):
             if isinstance(a, PETSc.Object):
                 pargs[-1] = type(a).__name__
         pargs = tuple(pargs)
-        print '%-20s' % ('%s.%s%s'% (clsname, method, pargs))
+        print ('%-20s' % ('%s.%s%s'% (clsname, method, pargs)))
 
     def create(self,*args):
         self._log('create', *args)
@@ -384,7 +384,7 @@ class MySNES(object):
         self._log('destroy', *args)
         if not self.trace: return
         for k, v in self.call_log.items():
-            print '%-20s %2d' % (k, v)
+            print ('%-20s %2d' % (k, v))
 
     def view(self, snes, viewer):
         self._log('view', snes, viewer)

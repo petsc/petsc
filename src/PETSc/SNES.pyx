@@ -1,11 +1,11 @@
 # --------------------------------------------------------------------
 
 class SNESType(object):
-    LS     = SNESLS
-    TR     = SNESTR
-    PICARD = SNESPICARD
+    LS     = S_(SNESLS)
+    TR     = S_(SNESTR)
+    PICARD = S_(SNESPICARD)
     #
-    PYTHON = SNESPYTHON
+    PYTHON = S_(SNESPYTHON)
 
 class SNESConvergedReason(object):
     # iterating
@@ -58,20 +58,24 @@ cdef class SNES(Object):
         return self
 
     def setType(self, snes_type):
-        CHKERR( SNESSetType(self.snes, str2cp(snes_type)) )
+        cdef PetscSNESType cval = NULL
+        snes_type = str2bytes(snes_type, &cval)
+        CHKERR( SNESSetType(self.snes, cval) )
 
     def getType(self):
-        cdef PetscSNESType snes_type = NULL
-        CHKERR( SNESGetType(self.snes, &snes_type) )
-        return cp2str(snes_type)
+        cdef PetscSNESType cval = NULL
+        CHKERR( SNESGetType(self.snes, &cval) )
+        return bytes2str(cval)
 
     def setOptionsPrefix(self, prefix):
-        CHKERR( SNESSetOptionsPrefix(self.snes, str2cp(prefix)) )
+        cdef const_char *cval = NULL
+        prefix = str2bytes(prefix, &cval)
+        CHKERR( SNESSetOptionsPrefix(self.snes, cval) )
 
     def getOptionsPrefix(self):
-        cdef const_char *prefix = NULL
-        CHKERR( SNESGetOptionsPrefix(self.snes, &prefix) )
-        return cp2str(prefix)
+        cdef const_char *cval = NULL
+        CHKERR( SNESGetOptionsPrefix(self.snes, &cval) )
+        return bytes2str(cval)
 
     def setFromOptions(self):
         CHKERR( SNESSetFromOptions(self.snes) )
@@ -418,7 +422,9 @@ cdef class SNES(Object):
         else: return <object> context
 
     def setPythonType(self, py_type):
-        CHKERR( SNESPythonSetType(self.snes, str2cp(py_type)) )
+        cdef const_char *cval = NULL
+        py_type = str2bytes(py_type, &cval)
+        CHKERR( SNESPythonSetType(self.snes, cval) )
 
     # --- xxx ---
 

@@ -139,12 +139,12 @@ def makefile(fileobj, dct=None):
 
     # do variable interpolation here
     while notdone:
-        for name in notdone.keys():
+        for name in list(notdone.keys()):
             value = notdone[name]
             m = _findvar1_rx.search(value) or _findvar2_rx.search(value)
             if m:
                 n = m.group(1)
-                if done.has_key(n):
+                if n in done:
                     after = value[m.end():]
                     value = value[:m.start()] + str(done[n]) + after
                     if "$" in after:
@@ -156,7 +156,7 @@ def makefile(fileobj, dct=None):
                         else:
                             done[name] = value
                         del notdone[name]
-                elif notdone.has_key(n):
+                elif n in notdone:
                     # get it on a subsequent round
                     pass
                 else:

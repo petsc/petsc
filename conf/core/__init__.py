@@ -1,1 +1,1 @@
-from confcore import *
+from conf.core.confcore import *

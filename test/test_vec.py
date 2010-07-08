@@ -99,25 +99,25 @@ class BaseTestVec(object):
         self.assertEqual(self.vec[end-1], -7)
         for i in range(start, end): self.vec[i] = i
         values = [self.vec[i] for i in range(start, end)]
-        self.assertEqual(values, range(start, end))
+        self.assertEqual(values, list(range(start, end)))
         sz = self.vec.getSize()
         self.assertEqual(self.vec.sum(), (sz-1)/2.0*sz)
 
     def testGetSetValsBlocked(self):
         lsize, gsize = self.vec.getSizes()
         start, end = self.vec.getOwnershipRange()
-        bsizes  = range(1, lsize+1)
-        nblocks = range(1, lsize+1)
+        bsizes  = list(range(1, lsize+1))
+        nblocks = list(range(1, lsize+1))
         compat = [(bs, nb)
                   for bs in bsizes  if not (gsize%bs or lsize % bs)
                   for nb in nblocks if bs*nb <= lsize]
         for bsize, nblock in compat:
             self.vec.setBlockSize(bsize)
-            bindex = [start//bsize+i  for i in xrange(nblock)]
-            bvalue = [float(i) for i in xrange(nblock*bsize)]
+            bindex = [start//bsize+i  for i in range(nblock)]
+            bvalue = [float(i) for i in range(nblock*bsize)]
             self.vec.setValuesBlocked(bindex, bvalue)
             self.vec.assemble()
-            index = [start+i for i in xrange(nblock*bsize)]
+            index = [start+i for i in range(nblock*bsize)]
             value = self.vec.getValues(index)
             self.assertEqual(bvalue, list(value))
 

@@ -2,43 +2,43 @@
 
 class PCType(object):
     # native
-    NONE         = PCNONE
-    JACOBI       = PCJACOBI
-    SOR          = PCSOR
-    LU           = PCLU
-    SHELL        = PCSHELL
-    BJACOBI      = PCBJACOBI
-    MG           = PCMG
-    EISENSTAT    = PCEISENSTAT
-    ILU          = PCILU
-    ICC          = PCICC
-    ASM          = PCASM
-    KSP          = PCKSP
-    COMPOSITE    = PCCOMPOSITE
-    REDUNDANT    = PCREDUNDANT
-    SPAI         = PCSPAI
-    NN           = PCNN
-    CHOLESKY     = PCCHOLESKY
-    PBJACOBI     = PCPBJACOBI
-    MAT          = PCMAT
-    HYPRE        = PCHYPRE
-    FIELDSPLIT   = PCFIELDSPLIT
-    TFS          = PCTFS
-    ML           = PCML
-    PROMETHEUS   = PCPROMETHEUS
-    GALERKIN     = PCGALERKIN
-    EXOTIC       = PCEXOTIC
-    OPENMP       = PCOPENMP
-    SUPPORTGRAPH = PCSUPPORTGRAPH
-    ASA          = PCASA
-    CP           = PCCP
-    BFBT         = PCBFBT
-    LSC          = PCLSC
-    PFMG         = PCPFMG
-    SYSPFMG      = PCSYSPFMG
-    REDISTRIBUTE = PCREDISTRIBUTE
+    NONE         = S_(PCNONE)
+    JACOBI       = S_(PCJACOBI)
+    SOR          = S_(PCSOR)
+    LU           = S_(PCLU)
+    SHELL        = S_(PCSHELL)
+    BJACOBI      = S_(PCBJACOBI)
+    MG           = S_(PCMG)
+    EISENSTAT    = S_(PCEISENSTAT)
+    ILU          = S_(PCILU)
+    ICC          = S_(PCICC)
+    ASM          = S_(PCASM)
+    KSP          = S_(PCKSP)
+    COMPOSITE    = S_(PCCOMPOSITE)
+    REDUNDANT    = S_(PCREDUNDANT)
+    SPAI         = S_(PCSPAI)
+    NN           = S_(PCNN)
+    CHOLESKY     = S_(PCCHOLESKY)
+    PBJACOBI     = S_(PCPBJACOBI)
+    MAT          = S_(PCMAT)
+    HYPRE        = S_(PCHYPRE)
+    FIELDSPLIT   = S_(PCFIELDSPLIT)
+    TFS          = S_(PCTFS)
+    ML           = S_(PCML)
+    PROMETHEUS   = S_(PCPROMETHEUS)
+    GALERKIN     = S_(PCGALERKIN)
+    EXOTIC       = S_(PCEXOTIC)
+    OPENMP       = S_(PCOPENMP)
+    SUPPORTGRAPH = S_(PCSUPPORTGRAPH)
+    ASA          = S_(PCASA)
+    CP           = S_(PCCP)
+    BFBT         = S_(PCBFBT)
+    LSC          = S_(PCLSC)
+    PFMG         = S_(PCPFMG)
+    SYSPFMG      = S_(PCSYSPFMG)
+    REDISTRIBUTE = S_(PCREDISTRIBUTE)
     #
-    PYTHON = PCPYTHON
+    PYTHON = S_(PCPYTHON)
 
 class PCSide(object):
     # native
@@ -105,20 +105,24 @@ cdef class PC(Object):
         return self
 
     def setType(self, pc_type):
-        CHKERR( PCSetType(self.pc, str2cp(pc_type)) )
+        cdef PetscPCType cval = NULL
+        pc_type = str2bytes(pc_type, &cval)
+        CHKERR( PCSetType(self.pc, cval) )
 
     def getType(self):
-        cdef PetscPCType pc_type = NULL
-        CHKERR( PCGetType(self.pc, &pc_type) )
-        return cp2str(pc_type)
+        cdef PetscPCType cval = NULL
+        CHKERR( PCGetType(self.pc, &cval) )
+        return bytes2str(cval)
 
     def setOptionsPrefix(self, prefix):
-        CHKERR( PCSetOptionsPrefix(self.pc, str2cp(prefix)) )
+        cdef const_char *cval = NULL
+        prefix = str2bytes(prefix, &cval)
+        CHKERR( PCSetOptionsPrefix(self.pc, cval) )
 
     def getOptionsPrefix(self):
-        cdef const_char *prefix = NULL
-        CHKERR( PCGetOptionsPrefix(self.pc, &prefix) )
-        return cp2str(prefix)
+        cdef const_char *cval = NULL
+        CHKERR( PCGetOptionsPrefix(self.pc, &cval) )
+        return bytes2str(cval)
 
     def setFromOptions(self):
         CHKERR( PCSetFromOptions(self.pc) )
@@ -180,7 +184,9 @@ cdef class PC(Object):
         else: return <object> context
 
     def setPythonType(self, py_type):
-        CHKERR( PCPythonSetType(self.pc, str2cp(py_type)) )
+        cdef const_char *cval = NULL
+        py_type = str2bytes(py_type, &cval)
+        CHKERR( PCPythonSetType(self.pc, cval) )
 
     # ASM
     # ---
@@ -217,18 +223,22 @@ cdef class PC(Object):
     def setFieldSplitIS(self, *fields):
         cdef object name = None
         cdef IS field = None
+        cdef const_char *cname = NULL
         for name, field in fields:
-            CHKERR( PCFieldSplitSetIS(self.pc, str2cp(name), field.iset) )
+            name = str2bytes(name, &cname)
+            CHKERR( PCFieldSplitSetIS(self.pc, cname, field.iset) )
 
     def setFieldSplitFields(self, bsize, *fields):
         cdef PetscInt bs = asInt(bsize)
         CHKERR( PCFieldSplitSetBlockSize(self.pc, bs) )
         cdef object name = None
         cdef object field = None
+        cdef const_char *cname = NULL
         cdef PetscInt nfields = 0, *ifields = NULL
         for name, field in fields:
+            name = str2bytes(name, &cname)
             field = iarray_i(field, &nfields, &ifields)
-            CHKERR( PCFieldSplitSetFields(self.pc, str2cp(name), 
+            CHKERR( PCFieldSplitSetFields(self.pc, cname,
                                           nfields, ifields) )
 
     def getFieldSplitSubKSP(self):

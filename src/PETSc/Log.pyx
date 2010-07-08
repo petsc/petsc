@@ -4,9 +4,10 @@ cdef class Log:
 
     @classmethod
     def Stage(cls, name):
-        cdef char *cname = str2cp(name)
-        cdef PetscLogStage stageid = -1
         if not name: raise ValueError("empty name")
+        cdef const_char *cname = NULL
+        name = str2bytes(name, &cname)
+        cdef PetscLogStage stageid = -1
         cdef LogStage stage = get_LogStage(name)
         if stage is not None: return stage
         CHKERR( PetscLogStageFindId(cname, &stageid) )
@@ -17,9 +18,10 @@ cdef class Log:
 
     @classmethod
     def Class(cls, name):
-        cdef char *cname = str2cp(name)
-        cdef PetscLogClass classid = -1
         if not name: raise ValueError("empty name")
+        cdef const_char *cname = NULL
+        name = str2bytes(name, &cname)
+        cdef PetscLogClass classid = -1
         cdef LogClass klass = get_LogClass(name)
         if klass is not None: return klass
         CHKERR( PetscLogClassFindId(cname, &classid) )
@@ -30,10 +32,11 @@ cdef class Log:
 
     @classmethod
     def Event(cls, name, klass=None):
-        cdef char *cname = str2cp(name)
+        if not name: raise ValueError("empty name")
+        cdef const_char *cname = NULL
+        name = str2bytes(name, &cname)
         cdef PetscLogClass classid = PETSC_OBJECT_CLASSID
         cdef PetscLogEvent eventid = -1
-        if not name: raise ValueError("empty name")
         if klass is not None: classid = klass
         cdef LogEvent event = get_LogEvent(name)
         if event is not None: return event
@@ -101,9 +104,9 @@ cdef class LogStage:
     #
 
     def getName(self):
-        cdef const_char *name = NULL
-        CHKERR( PetscLogStageFindName(self.id, &name) )
-        return cp2str(name)
+        cdef const_char *cval = NULL
+        CHKERR( PetscLogStageFindName(self.id, &cval) )
+        return bytes2str(cval)
 
     property name:
         def __get__(self):
@@ -180,9 +183,9 @@ cdef class LogClass:
     #
 
     def getName(self):
-        cdef const_char *name = NULL
-        CHKERR( PetscLogClassFindName(self.id, &name) )
-        return cp2str(name)
+        cdef const_char *cval = NULL
+        CHKERR( PetscLogClassFindName(self.id, &cval) )
+        return bytes2str(cval)
 
     property name:
         def __get__(self):
@@ -271,9 +274,9 @@ cdef class LogEvent:
     #
 
     def getName(self):
-        cdef const_char *name = NULL
-        CHKERR( PetscLogEventFindName(self.id, &name) )
-        return cp2str(name)
+        cdef const_char *cval = NULL
+        CHKERR( PetscLogEventFindName(self.id, &cval) )
+        return bytes2str(cval)
 
     property name:
         def __get__(self):

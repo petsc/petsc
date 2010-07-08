@@ -1,9 +1,9 @@
 # --------------------------------------------------------------------
 
 class RandomType(object):
-    RAND   = PETSCRAND
-    RAND48 = PETSCRAND48
-    SPRNG  = PETSCSPRNG
+    RAND   = S_(PETSCRAND)
+    RAND48 = S_(PETSCRAND48)
+    SPRNG  = S_(PETSCSPRNG)
 
 # --------------------------------------------------------------------
 
@@ -35,12 +35,14 @@ cdef class Random(Object):
         return self
 
     def setType(self, rnd_type):
-        CHKERR( PetscRandomSetType(self.rnd, str2cp(rnd_type)) )
+        cdef const_char *cval = NULL
+        rnd_type = str2bytes(rnd_type, &cval)
+        CHKERR( PetscRandomSetType(self.rnd, cval) )
 
     def getType(self):
-        cdef PetscRandomType rnd_type = NULL
-        CHKERR( PetscRandomGetType(self.rnd, &rnd_type) )
-        return cp2str(rnd_type)
+        cdef PetscRandomType cval = NULL
+        CHKERR( PetscRandomGetType(self.rnd, &cval) )
+        return bytes2str(cval)
 
     def setFromOptions(self):
         CHKERR( PetscRandomSetFromOptions(self.rnd) )

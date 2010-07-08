@@ -1,46 +1,46 @@
 # --------------------------------------------------------------------
 
 class MatType(object):
-    SAME            = MATSAME
-    SEQMAIJ         = MATSEQMAIJ
-    MPIMAIJ         = MATMPIMAIJ
-    MAIJ            = MATMAIJ
-    IS              = MATIS
-    SEQAIJ          = MATSEQAIJ
-    MPIAIJ          = MATMPIAIJ
-    AIJ             = MATAIJ
-    SHELL           = MATSHELL
-    SEQDENSE        = MATSEQDENSE
-    MPIDENSE        = MATMPIDENSE
-    DENSE           = MATDENSE
-    SEQBAIJ         = MATSEQBAIJ
-    MPIBAIJ         = MATMPIBAIJ
-    BAIJ            = MATBAIJ
-    MPIADJ          = MATMPIADJ
-    SEQSBAIJ        = MATSEQSBAIJ
-    MPISBAIJ        = MATMPISBAIJ
-    SBAIJ           = MATSBAIJ
-    DAAD            = MATDAAD
-    MFFD            = MATMFFD
-    NORMAL          = MATNORMAL
-    LRC             = MATLRC
-    SEQCSRPERM      = MATSEQCSRPERM
-    MPICSRPERM      = MATMPICSRPERM
-    CSRPERM         = MATCSRPERM
-    SEQCRL          = MATSEQCRL
-    MPICRL          = MATMPICRL
-    CRL             = MATCRL
-    SCATTER         = MATSCATTER
-    BLOCKMAT        = MATBLOCKMAT
-    COMPOSITE       = MATCOMPOSITE
-    SEQFFTW         = MATSEQFFTW
-    TRANSPOSE       = MATTRANSPOSEMAT
-    SCHURCOMPLEMENT = MATSCHURCOMPLEMENT
-    HYPRESTRUCT     = MATHYPRESTRUCT
-    HYPRESSTRUCT    = MATHYPRESSTRUCT
-    SUBMATRIX       = MATSUBMATRIX
+    SAME            = S_(MATSAME)
+    SEQMAIJ         = S_(MATSEQMAIJ)
+    MPIMAIJ         = S_(MATMPIMAIJ)
+    MAIJ            = S_(MATMAIJ)
+    IS              = S_(MATIS)
+    SEQAIJ          = S_(MATSEQAIJ)
+    MPIAIJ          = S_(MATMPIAIJ)
+    AIJ             = S_(MATAIJ)
+    SHELL           = S_(MATSHELL)
+    SEQDENSE        = S_(MATSEQDENSE)
+    MPIDENSE        = S_(MATMPIDENSE)
+    DENSE           = S_(MATDENSE)
+    SEQBAIJ         = S_(MATSEQBAIJ)
+    MPIBAIJ         = S_(MATMPIBAIJ)
+    BAIJ            = S_(MATBAIJ)
+    MPIADJ          = S_(MATMPIADJ)
+    SEQSBAIJ        = S_(MATSEQSBAIJ)
+    MPISBAIJ        = S_(MATMPISBAIJ)
+    SBAIJ           = S_(MATSBAIJ)
+    DAAD            = S_(MATDAAD)
+    MFFD            = S_(MATMFFD)
+    NORMAL          = S_(MATNORMAL)
+    LRC             = S_(MATLRC)
+    SEQCSRPERM      = S_(MATSEQCSRPERM)
+    MPICSRPERM      = S_(MATMPICSRPERM)
+    CSRPERM         = S_(MATCSRPERM)
+    SEQCRL          = S_(MATSEQCRL)
+    MPICRL          = S_(MATMPICRL)
+    CRL             = S_(MATCRL)
+    SCATTER         = S_(MATSCATTER)
+    BLOCKMAT        = S_(MATBLOCKMAT)
+    COMPOSITE       = S_(MATCOMPOSITE)
+    SEQFFTW         = S_(MATSEQFFTW)
+    TRANSPOSE       = S_(MATTRANSPOSEMAT)
+    SCHURCOMPLEMENT = S_(MATSCHURCOMPLEMENT)
+    HYPRESTRUCT     = S_(MATHYPRESTRUCT)
+    HYPRESSTRUCT    = S_(MATHYPRESSTRUCT)
+    SUBMATRIX       = S_(MATSUBMATRIX)
     #
-    PYTHON = MATPYTHON
+    PYTHON = S_(MATPYTHON)
 
 class MatOption(object):
     ROW_ORIENTED               = MAT_ROW_ORIENTED
@@ -83,20 +83,20 @@ class MatStructure(object):
     SAMEPC    = SAME_PC      = SAME_PRECONDITIONER
 
 class MatOrderingType(object):
-    NATURAL     = MATORDERINGNATURAL
-    ND          = MATORDERINGND
-    OWD         = MATORDERING1WD
-    RCM         = MATORDERINGRCM
-    QMD         = MATORDERINGQMD
-    ROWLENGTH   = MATORDERINGROWLENGTH
-    DSC_ND      = MATORDERINGDSC_ND
-    DSC_MMD     = MATORDERINGDSC_MMD
-    DSC_MDF     = MATORDERINGDSC_MDF
-    CONSTRAINED = MATORDERINGCONSTRAINED
-    IDENTITY    = MATORDERINGIDENTITY
-    REVERSE     = MATORDERINGREVERSE
-    FLOW        = MATORDERINGFLOW
-    AMD         = MATORDERINGAMD
+    NATURAL     = S_(MATORDERINGNATURAL)
+    ND          = S_(MATORDERINGND)
+    OWD         = S_(MATORDERING1WD)
+    RCM         = S_(MATORDERINGRCM)
+    QMD         = S_(MATORDERINGQMD)
+    ROWLENGTH   = S_(MATORDERINGROWLENGTH)
+    DSC_ND      = S_(MATORDERINGDSC_ND)
+    DSC_MMD     = S_(MATORDERINGDSC_MMD)
+    DSC_MDF     = S_(MATORDERINGDSC_MDF)
+    CONSTRAINED = S_(MATORDERINGCONSTRAINED)
+    IDENTITY    = S_(MATORDERINGIDENTITY)
+    REVERSE     = S_(MATORDERINGREVERSE)
+    FLOW        = S_(MATORDERINGFLOW)
+    AMD         = S_(MATORDERINGAMD)
 
 # --------------------------------------------------------------------
 
@@ -214,7 +214,9 @@ cdef class Mat(Object):
         CHKERR( MatSetSizes(self.mat, m, n, M, N) )
 
     def setType(self, mat_type):
-        CHKERR( MatSetType(self.mat, str2cp(mat_type)) )
+        cdef PetscMatType cval = NULL
+        mat_type = str2bytes(mat_type, &cval)
+        CHKERR( MatSetType(self.mat, cval) )
 
     #
 
@@ -373,17 +375,21 @@ cdef class Mat(Object):
         else: return <object> context
 
     def setPythonType(self, py_type):
-        CHKERR( MatPythonSetType(self.mat, str2cp(py_type)) )
+        cdef const_char *cval = NULL
+        py_type = str2bytes(py_type, &cval)
+        CHKERR( MatPythonSetType(self.mat, cval) )
 
     #
 
     def setOptionsPrefix(self, prefix):
-        CHKERR( MatSetOptionsPrefix(self.mat, str2cp(prefix)) )
+        cdef const_char *cval = NULL
+        prefix = str2bytes(prefix, &cval)
+        CHKERR( MatSetOptionsPrefix(self.mat, cval) )
 
     def getOptionsPrefix(self):
-        cdef const_char *prefix = NULL
-        CHKERR( MatGetOptionsPrefix(self.mat, &prefix) )
-        return cp2str(prefix)
+        cdef const_char *cval = NULL
+        CHKERR( MatGetOptionsPrefix(self.mat, &cval) )
+        return bytes2str(cval)
 
     def setFromOptions(self):
         CHKERR( MatSetFromOptions(self.mat) )
@@ -396,9 +402,9 @@ cdef class Mat(Object):
         CHKERR( MatSetOption(self.mat, option, flag) )
 
     def getType(self):
-        cdef PetscMatType mat_type = NULL
-        CHKERR( MatGetType(self.mat, &mat_type) )
-        return cp2str(mat_type)
+        cdef PetscMatType cval = NULL
+        CHKERR( MatGetType(self.mat, &cval) )
+        return bytes2str(cval)
 
     def getSize(self):
         cdef PetscInt M = 0, N = 0
@@ -478,7 +484,8 @@ cdef class Mat(Object):
     def convert(self, mat_type=None, Mat out=None):
         cdef PetscMatType mtype = MATSAME
         cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
-        if mat_type is not None: mtype = str2cp(mat_type)
+        mat_type = str2bytes(mat_type, &mtype)
+        if mtype == NULL: mtype = MATSAME
         if out is None: out = self
         if out.mat != NULL: reuse = MAT_REUSE_MATRIX
         CHKERR( MatConvert(self.mat, mtype, reuse, &out.mat) )
@@ -884,9 +891,10 @@ cdef class Mat(Object):
     # XXX factorization
 
     def getOrdering(self, ord_type):
-        cdef PetscMatOrderingType otype = str2cp(ord_type)
+        cdef PetscMatOrderingType cval = NULL
+        ord_type = str2bytes(ord_type, &cval)
         cdef IS rp = IS(), cp = IS()
-        CHKERR( MatGetOrdering(self.mat, otype, &rp.iset, &cp.iset) )
+        CHKERR( MatGetOrdering(self.mat, cval, &rp.iset, &cp.iset) )
         return (rp, cp)
 
     def reorderForNonzeroDiagonal(self, IS isrow not None, IS iscol not None, atol=0):

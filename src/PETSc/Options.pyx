@@ -33,29 +33,41 @@ cdef class Options:
     #
 
     def hasName(self, name):
-        cdef char *pr = NULL, *nm = NULL
+        cdef const_char *pr = NULL
+        cdef const_char *nm = NULL
         tmp = getpair(self.prefix, name, &pr, &nm)
         cdef PetscTruth flag = PETSC_FALSE
         CHKERR( PetscOptionsHasName(pr, nm, &flag) )
         return <bint> flag
 
     def setValue(self, name, value):
-        cdef char *pre = NULL, *nm = NULL
-        tmp = getpair(self.prefix, name, &pre, &nm)
-        if pre == NULL: option = cp2str(nm)
-        else: option = '-%s%s' % (cp2str(pre), cp2str(&nm[1]))
-        if type(value) is bool: value = str(value).lower()
-        elif value is not None : value = str(value)
-        cdef char *opt = str2cp(option)
-        cdef char *val = str2cp(value)
+        cdef const_char *pr = NULL
+        cdef const_char *nm = NULL
+        tmp = getpair(self.prefix, name, &pr, &nm)
+        if pr == NULL: 
+            option = bytes2str(nm)
+        else: 
+            option = '-%s%s' % (bytes2str(pr), bytes2str(&nm[1]))
+        if type(value) is bool: 
+            value = str(value).lower()
+        elif value is not None : 
+            value = str(value)
+        cdef const_char *opt = NULL
+        cdef const_char *val = NULL
+        option = str2bytes(option, &opt)
+        value  = str2bytes(value,  &val)
         CHKERR( PetscOptionsSetValue(opt, val) )
 
     def delValue(self, name):
-        cdef char *pre = NULL, *nm = NULL, *val = NULL
-        tmp = getpair(self.prefix, name, &pre, &nm)
-        if pre == NULL: option = cp2str(nm)
-        else: option = '-%s%s' % (cp2str(pre), cp2str(&nm[1]))
-        cdef char *opt = str2cp(option)
+        cdef const_char *pr = NULL
+        cdef const_char *nm = NULL
+        tmp = getpair(self.prefix, name, &pr, &nm)
+        if pr == NULL: 
+            option = bytes2str(nm)
+        else: 
+            option = '-%s%s' % (bytes2str(pr), bytes2str(&nm[1]))
+        cdef const_char *opt = NULL
+        option = str2bytes(option, &opt)
         CHKERR( PetscOptionsClearValue(opt) )
 
     #
@@ -82,7 +94,7 @@ cdef class Options:
     def getAll(self):
         cdef char *allopts = NULL
         CHKERR( PetscOptionsGetAll(&allopts) )
-        options = cp2str(allopts)
+        options = bytes2str(allopts)
         CHKERR( PetscFree(allopts) )
         return parseopt(options, self.prefix)
 

@@ -1,12 +1,12 @@
 # --------------------------------------------------------------------
 
 class ViewerType(object):
-    ASCII  = PETSCVIEWERASCII
-    BINARY = PETSCVIEWERBINARY
-    STRING = PETSCVIEWERSTRING
-    DRAW   = PETSCVIEWERDRAW
-    HDF5   = PETSCVIEWERHDF5
-    NETCDF = PETSCVIEWERNETCDF
+    ASCII  = S_(PETSCVIEWERASCII)
+    BINARY = S_(PETSCVIEWERBINARY)
+    STRING = S_(PETSCVIEWERSTRING)
+    DRAW   = S_(PETSCVIEWERDRAW)
+    HDF5   = S_(PETSCVIEWERHDF5)
+    NETCDF = S_(PETSCVIEWERNETCDF)
     ## SOCKET      = PETSC_VIEWER_SOCKET
     ## VU          = PETSC_VIEWER_VU
     ## MATHEMATICA = PETSC_VIEWER_MATHEMATICA
@@ -100,7 +100,8 @@ cdef class Viewer(Object):
     def createASCII(self, name, mode=None,
                     format=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef char *cname = str2cp(name)
+        cdef const_char *cname = NULL
+        name = str2bytes(name, &cname)
         cdef PetscFileMode cmode = PETSC_FILE_MODE_WRITE
         if mode is not None: cmode = mode
         cdef PetscViewerFormat cvfmt = PETSC_VIEWER_DEFAULT
@@ -115,7 +116,8 @@ cdef class Viewer(Object):
     def createBinary(self, name, mode=None,
                      format=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef char *cname = str2cp(name)
+        cdef const_char *cname = NULL
+        name = str2bytes(name, &cname)
         cdef PetscFileMode cmode = PETSC_FILE_MODE_WRITE
         if mode is not None: cmode = mode
         cdef PetscViewerFormat cvfmt = PETSC_VIEWER_DEFAULT
@@ -129,6 +131,10 @@ cdef class Viewer(Object):
     def createDraw(self, display=None, title=None,
                    position=None, size=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef const_char *cdisplay = NULL
+        cdef const_char *ctitle = NULL
+        display = str2bytes(display, &cdisplay)
+        title = str2bytes(title, &ctitle)
         cdef int x, y, h, w
         x = y = h = w = PETSC_DECIDE
         if position not in (None, PETSC_DECIDE):
@@ -139,15 +145,15 @@ cdef class Viewer(Object):
             except TypeError:
                 w = h = size
         cdef PetscViewer newvwr = NULL
-        CHKERR( PetscViewerDrawOpen(ccomm,
-                                    str2cp(display), str2cp(title),
+        CHKERR( PetscViewerDrawOpen(ccomm, cdisplay, ctitle,
                                     x, y, w, h, &newvwr) )
         PetscCLEAR(self.obj); self.vwr = newvwr
         return self
 
     def createHDF5(self, name, mode=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef char *cname = str2cp(name)
+        cdef const_char *cname = NULL
+        name = str2bytes(name, &cname)
         cdef PetscFileMode cmode = PETSC_FILE_MODE_WRITE
         if mode is not None: cmode = mode
         cdef PetscViewer newvwr = NULL
@@ -160,7 +166,8 @@ cdef class Viewer(Object):
 
     def createNetCDF(self, name, mode=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef char *cname = str2cp(name)
+        cdef const_char *cname = NULL
+        name = str2bytes(name, &cname)
         cdef PetscFileMode cmode = PETSC_FILE_MODE_WRITE
         if mode is not None: cmode = mode
         cdef PetscViewer newvwr = NULL
@@ -172,12 +179,14 @@ cdef class Viewer(Object):
         return self
 
     def setType(self, vwr_type):
-        CHKERR( PetscViewerSetType(self.vwr, str2cp(vwr_type)) )
+        cdef PetscViewerType cval = NULL
+        vwr_type = str2bytes(vwr_type, &cval)
+        CHKERR( PetscViewerSetType(self.vwr, cval) )
 
     def getType(self):
-        cdef PetscViewerType vwr_type = NULL
-        CHKERR( PetscViewerGetType(self.vwr, &vwr_type) )
-        return cp2str(vwr_type)
+        cdef PetscViewerType cval = NULL
+        CHKERR( PetscViewerGetType(self.vwr, &cval) )
+        return bytes2str(cval)
 
     def setFormat(self, format):
         CHKERR( PetscViewerSetFormat(self.vwr, format) )
@@ -239,16 +248,22 @@ cdef class Viewer(Object):
         return mode
 
     def setFileName(self, name):
-        CHKERR( PetscViewerFileSetName(self.vwr, str2cp(name)) )
+        cdef const_char *cval = NULL
+        name = str2bytes(name, &cval)
+        CHKERR( PetscViewerFileSetName(self.vwr, cval) )
 
     def getFileName(self):
-        cdef char *name = NULL
-        CHKERR( PetscViewerFileGetName(self.vwr, &name) )
-        return cp2str(name)
+        cdef const_char *cval = NULL
+        CHKERR( PetscViewerFileGetName(self.vwr, <char**>&cval) )
+        return bytes2str(cval)
 
     # --- methods specific to draw viewers ---
 
     def setInfo(self,  display=None, title=None, position=None, size=None):
+        cdef const_char *cdisplay = NULL
+        cdef const_char *ctitle = NULL
+        display = str2bytes(display, &cdisplay)
+        title = str2bytes(title, &ctitle)
         cdef int x, y, h, w
         x = y = h = w = PETSC_DECIDE
         if position not in (None, PETSC_DECIDE):
@@ -258,8 +273,8 @@ cdef class Viewer(Object):
                 w, h = size
             except TypeError:
                 w = h = size
-        CHKERR( PetscViewerDrawSetInfo(self.vwr,
-                                       str2cp(display), str2cp(title),
+        CHKERR( PetscViewerDrawSetInfo(self.vwr, 
+                                       cdisplay, ctitle,
                                        x, y, w, h) )
 
     def clear(self):

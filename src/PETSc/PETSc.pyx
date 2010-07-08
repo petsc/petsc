@@ -3,13 +3,29 @@
 cdef extern from *:
     ctypedef char const_char "const char"
 
-cdef inline object cp2str(const_char *p):
-    if p == NULL: return None
-    else:         return <char*>p
+cdef inline object bytes2str(const_char p[]):
+     if p == NULL: 
+         return None
+     cdef bytes s = <char*>p
+     if isinstance(s, str):
+         return s
+     else:
+         return s.decode()
 
-cdef inline char* str2cp(object s) except ? NULL:
-    if s is None: return NULL
-    else:         return <char*>s
+cdef inline object str2bytes(object s, const_char *p[]):
+    if s is None:
+        p[0] = NULL
+        return None
+    if not isinstance(s, bytes):
+        s = s.encode()
+    p[0] = <const_char*>(<char*>s)
+    return s
+
+cdef inline str S_(const_char p[]):
+     if p == NULL: return None
+     cdef bytes s = <char*>p
+     return s if isinstance(s, str) else s.decode()
+
 
 # --------------------------------------------------------------------
 
@@ -169,9 +185,9 @@ cdef int traceback(MPI_Comm       comm,
     cdef PetscLogDouble rss=0
     cdef const_char    *text=NULL
     cdef object tbl = tracebacklist
-    fun = cp2str(cfun)
-    fnm = cp2str(cfile)
-    dnm = cp2str(cdir)
+    fun = bytes2str(cfun)
+    fnm = bytes2str(cfile)
+    dnm = bytes2str(cdir)
     m = "%s() line %d in %s%s" % (fun, line, dnm, fnm)
     tbl.insert(0, m)
     if p != PETSC_ERROR_INITIAL: 
@@ -187,8 +203,8 @@ cdef int traceback(MPI_Comm       comm,
         tbl.append(m)
     else:
         PetscErrorMessage(n, &text, NULL)
-    if text != NULL: tbl.append(cp2str(text))
-    if mess != NULL: tbl.append(cp2str(mess))
+    if text != NULL: tbl.append(bytes2str(text))
+    if mess != NULL: tbl.append(bytes2str(mess))
     return n
 
 cdef int tracebackfunc(MPI_Comm       comm,
@@ -240,16 +256,17 @@ cdef int getinitargs(object args, int *argc, char **argv[]) except -1:
     cdef int i, c = 0
     cdef char **v = NULL
     if args is None: args = []
-    args = [str(a) for a in args]
+    args = [str(a).encode() for a in args]
     args = [a for a in args if a]
     c = <int>    len(args)
     v = <char**> malloc((c+1)*sizeof(char*))
     if v == NULL: raise MemoryError
-    else: memset(v, 0, (c+1)*sizeof(char*))
+    memset(v, 0, (c+1)*sizeof(char*))
     try:
         for 0 <= i < c:
-            v[i] = strdup(str2cp(args[i]))
-            if v[i] == NULL: raise MemoryError
+            v[i] = strdup(args[i])
+            if v[i] == NULL: 
+                raise MemoryError
     except:
         delinitargs(&c, &v); raise
     argc[0] = c; argv[0] = v
@@ -352,7 +369,8 @@ def _initialize(args=None):
     PetscError = Error
     #
     global __file__
-    cdef char* path = str2cp(__file__)
+    cdef bytes filename = __file__.encode()
+    cdef char* path = filename
     cdef int ready = initialize(args)
     if ready: register(path)
     #

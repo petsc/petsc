@@ -1,11 +1,11 @@
 # --------------------------------------------------------------------
 
 class VecType(object):
-    SEQ    = VECSEQ
-    MPI    = VECMPI
-    FETI   = VECFETI
-    SHARED = VECSHARED
-    SIEVE  = VECSIEVE
+    SEQ    = S_(VECSEQ)
+    MPI    = S_(VECMPI)
+    FETI   = S_(VECFETI)
+    SHARED = S_(VECSHARED)
+    SIEVE  = S_(VECSIEVE)
 
 class VecOption(object):
     IGNORE_OFF_PROC_ENTRIES = VEC_IGNORE_OFF_PROC_ENTRIES
@@ -139,7 +139,9 @@ cdef class Vec(Object):
             CHKERR( VecSetBlockSize(self.vec, bs) )
 
     def setType(self, vec_type):
-        CHKERR( VecSetType(self.vec, str2cp(vec_type)) )
+        cdef PetscVecType cval = NULL
+        vec_type = str2bytes(vec_type, &cval)
+        CHKERR( VecSetType(self.vec, cval) )
 
     def createSeq(self, size, bsize=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_SELF)
@@ -241,12 +243,14 @@ cdef class Vec(Object):
         return self
 
     def setOptionsPrefix(self, prefix):
-        CHKERR( VecSetOptionsPrefix(self.vec, str2cp(prefix)) )
+        cdef const_char *cval = NULL
+        prefix = str2bytes(prefix, &cval)
+        CHKERR( VecSetOptionsPrefix(self.vec, cval) )
 
     def getOptionsPrefix(self):
-        cdef const_char *prefix = NULL
-        CHKERR( VecGetOptionsPrefix(self.vec, &prefix) )
-        return cp2str(prefix)
+        cdef const_char *cval = NULL
+        CHKERR( VecGetOptionsPrefix(self.vec, &cval) )
+        return bytes2str(cval)
 
     def setFromOptions(self):
         CHKERR( VecSetFromOptions(self.vec) )
@@ -259,9 +263,9 @@ cdef class Vec(Object):
         CHKERR( VecSetOption(self.vec, option, flag) )
 
     def getType(self):
-        cdef PetscVecType vec_type = NULL
-        CHKERR( VecGetType(self.vec, &vec_type) )
-        return cp2str(vec_type)
+        cdef PetscVecType cval = NULL
+        CHKERR( VecGetType(self.vec, &cval) )
+        return bytes2str(cval)
 
     def getSize(self):
         cdef PetscInt N = 0

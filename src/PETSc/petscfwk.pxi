@@ -33,9 +33,9 @@ cdef int Fwk_ImportConfigure(
     assert name_p != NULL
     assert configure_p != NULL
     #
-    cdef str url  = cp2str(url_p)
-    cdef str path = cp2str(path_p) + '.py'
-    cdef str name = 'PetscFwkConfigure'+cp2str(name_p)
+    cdef str url  = bytes2str(url_p)
+    cdef str path = bytes2str(path_p) + '.py'
+    cdef str name = 'PetscFwkConfigure'+bytes2str(name_p)
     #
     cdef module = fwk_cache.get(path)
     if module is None:

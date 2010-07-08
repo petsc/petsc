@@ -2,17 +2,17 @@
 
 class TSType(object):
     # native
-    EULER           = TSEULER
-    BEULER          = TSBEULER
-    CN              = TSCN
-    RK              = TSRK
-    PSEUDO          = TSPSEUDO
-    SUNDIALS        = TSSUNDIALS
-    THETA           = TSTHETA
-    GL              = TSGL
-    SSP             = TSSSP
+    EULER           = S_(TSEULER)
+    BEULER          = S_(TSBEULER)
+    CN              = S_(TSCN)
+    RK              = S_(TSRK)
+    PSEUDO          = S_(TSPSEUDO)
+    SUNDIALS        = S_(TSSUNDIALS)
+    THETA           = S_(TSTHETA)
+    GL              = S_(TSGL)
+    SSP             = S_(TSSSP)
     #
-    PYTHON = TSPYTHON
+    PYTHON = S_(TSPYTHON)
     # aliases
     FE = EULER
     BE = BEULER
@@ -56,12 +56,14 @@ cdef class TS(Object):
         return self
 
     def setType(self, ts_type):
-        CHKERR( TSSetType(self.ts, str2cp(ts_type)) )
+        cdef const_char *cval = NULL
+        ts_type = str2bytes(ts_type, &cval)
+        CHKERR( TSSetType(self.ts, cval) )
 
     def getType(self):
-        cdef PetscTSType ts_type = NULL
-        CHKERR( TSGetType(self.ts, &ts_type) )
-        return cp2str(ts_type)
+        cdef PetscTSType cval = NULL
+        CHKERR( TSGetType(self.ts, &cval) )
+        return bytes2str(cval)
 
     def setProblemType(self, ptype):
         CHKERR( TSSetProblemType(self.ts, ptype) )
@@ -72,12 +74,14 @@ cdef class TS(Object):
         return ptype
 
     def setOptionsPrefix(self, prefix):
-        CHKERR( TSSetOptionsPrefix(self.ts, str2cp(prefix)) )
+        cdef const_char *cval = NULL
+        prefix = str2bytes(prefix, &cval)
+        CHKERR( TSSetOptionsPrefix(self.ts, cval) )
 
     def getOptionsPrefix(self):
-        cdef const_char *prefix = NULL
-        CHKERR( TSGetOptionsPrefix(self.ts, &prefix) )
-        return cp2str(prefix)
+        cdef const_char *cval = NULL
+        CHKERR( TSGetOptionsPrefix(self.ts, &cval) )
+        return bytes2str(cval)
 
     def setFromOptions(self):
         CHKERR( TSSetFromOptions(self.ts) )
@@ -355,7 +359,9 @@ cdef class TS(Object):
         else: return <object> context
 
     def setPythonType(self, py_type):
-        CHKERR( TSPythonSetType(self.ts, str2cp(py_type)) )
+        cdef const_char *cval = NULL
+        py_type = str2bytes(py_type, &cval)
+        CHKERR( TSPythonSetType(self.ts, cval) )
 
     # Theta
     # -----

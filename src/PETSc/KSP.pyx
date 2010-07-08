@@ -1,34 +1,34 @@
 # --------------------------------------------------------------------
 
 class KSPType(object):
-    RICHARDSON = KSPRICHARDSON
-    CHEBYCHEV  = KSPCHEBYCHEV
-    CG         = KSPCG
-    CGNE       = KSPCGNE
-    NASH       = KSPNASH
-    STCG       = KSPSTCG
-    GLTR       = KSPGLTR
-    GMRES      = KSPGMRES
-    FGMRES     = KSPFGMRES
-    LGMRES     = KSPLGMRES
-    TCQMR      = KSPTCQMR
-    BCGS       = KSPBCGS
-    IBCGS      = KSPIBCGS
-    BCGSL      = KSPBCGSL
-    CGS        = KSPCGS
-    TFQMR      = KSPTFQMR
-    CR         = KSPCR
-    LSQR       = KSPLSQR
-    PREONLY    = KSPPREONLY
-    QCG        = KSPQCG
-    BICG       = KSPBICG
-    MINRES     = KSPMINRES
-    SYMMLQ     = KSPSYMMLQ
-    LCD        = KSPLCD
-    BROYDEN    = KSPBROYDEN
-    GCR        = KSPGCR
+    RICHARDSON = S_(KSPRICHARDSON)
+    CHEBYCHEV  = S_(KSPCHEBYCHEV)
+    CG         = S_(KSPCG)
+    CGNE       = S_(KSPCGNE)
+    NASH       = S_(KSPNASH)
+    STCG       = S_(KSPSTCG)
+    GLTR       = S_(KSPGLTR)
+    GMRES      = S_(KSPGMRES)
+    FGMRES     = S_(KSPFGMRES)
+    LGMRES     = S_(KSPLGMRES)
+    TCQMR      = S_(KSPTCQMR)
+    BCGS       = S_(KSPBCGS)
+    IBCGS      = S_(KSPIBCGS)
+    BCGSL      = S_(KSPBCGSL)
+    CGS        = S_(KSPCGS)
+    TFQMR      = S_(KSPTFQMR)
+    CR         = S_(KSPCR)
+    LSQR       = S_(KSPLSQR)
+    PREONLY    = S_(KSPPREONLY)
+    QCG        = S_(KSPQCG)
+    BICG       = S_(KSPBICG)
+    MINRES     = S_(KSPMINRES)
+    SYMMLQ     = S_(KSPSYMMLQ)
+    LCD        = S_(KSPLCD)
+    BROYDEN    = S_(KSPBROYDEN)
+    GCR        = S_(KSPGCR)
     #
-    PYTHON = KSPPYTHON
+    PYTHON = S_(KSPPYTHON)
 
 class KSPNormType(object):
     # native
@@ -104,20 +104,24 @@ cdef class KSP(Object):
         return self
 
     def setType(self, ksp_type):
-        CHKERR( KSPSetType(self.ksp, str2cp(ksp_type)) )
+        cdef const_char *cval = NULL
+        ksp_type = str2bytes(ksp_type, &cval)
+        CHKERR( KSPSetType(self.ksp, cval) )
 
     def getType(self):
-        cdef PetscKSPType ksp_type = NULL
-        CHKERR( KSPGetType(self.ksp, &ksp_type) )
-        return cp2str(ksp_type)
+        cdef const_char *cval = NULL
+        CHKERR( KSPGetType(self.ksp, &cval) )
+        return bytes2str(cval)
 
     def setOptionsPrefix(self, prefix):
-        CHKERR( KSPSetOptionsPrefix(self.ksp, str2cp(prefix)) )
+        cdef const_char *cval = NULL
+        prefix = str2bytes(prefix, &cval)
+        CHKERR( KSPSetOptionsPrefix(self.ksp, cval) )
 
     def getOptionsPrefix(self):
-        cdef const_char *prefix = NULL
-        CHKERR( KSPGetOptionsPrefix(self.ksp, &prefix) )
-        return cp2str(prefix)
+        cdef const_char *cval = NULL
+        CHKERR( KSPGetOptionsPrefix(self.ksp, &cval) )
+        return bytes2str(cval)
 
     def setFromOptions(self):
         CHKERR( KSPSetFromOptions(self.ksp) )
@@ -388,7 +392,9 @@ cdef class KSP(Object):
         else: return <object> context
 
     def setPythonType(self, py_type):
-        CHKERR( KSPPythonSetType(self.ksp, str2cp(py_type)) )
+        cdef const_char *cval = NULL
+        py_type = str2bytes(py_type, &cval)
+        CHKERR( KSPPythonSetType(self.ksp, cval) )
 
     # --- application context ---
 

@@ -19,11 +19,11 @@ cdef class Sys:
             if patch:
                 out.append(cpatch)
             if date:
-                if patch: date = [cp2str(cdate), cp2str(cpatchdate)]
-                else:     date = cp2str(cdate)
+                if patch: date = [bytes2str(cdate), bytes2str(cpatchdate)]
+                else:     date = bytes2str(cdate)
                 out.append(date)
             if author:
-                author = cp2str(cauthorinfo).split('\n')
+                author = bytes2str(cauthorinfo).split('\n')
                 author = [s.strip() for s in author if s]
                 out.append(author)
         return tuple(out)
@@ -38,15 +38,15 @@ cdef class Sys:
         cdef const_char *cdate       = PETSC_VERSION_DATE
         cdef const_char *cpatchdate  = PETSC_VERSION_PATCH_DATE
         cdef const_char *cauthorinfo = PETSC_AUTHOR_INFO
-        author = str(cp2str(cauthorinfo)).split('\n')
+        author = bytes2str(cauthorinfo).split('\n')
         author = [s.strip() for s in author if s]
         return dict(major      = cmajor,
                     minor      = cminor,
                     subminor   = cmicro,
                     patch      = cpatch,
                     release    = <bint>crelease,
-                    date       = cp2str(cdate),
-                    patchdate  = cp2str(cpatchdate),
+                    date       = bytes2str(cdate),
+                    patchdate  = bytes2str(cpatchdate),
                     authorinfo = author)
 
     # --- xxx ---
@@ -90,7 +90,8 @@ cdef class Sys:
             message = ''.join(format) % args
         else:
             message = ''
-        cdef char *m = str2cp(message)
+        cdef const_char *m = NULL
+        message = str2bytes(message, &m)
         CHKERR( PetscPrintf(ccomm, m) )
 
     @classmethod
@@ -104,7 +105,8 @@ cdef class Sys:
         format = ['%s', sep] * len(args)
         format[-1] = end
         message = ''.join(format) % args
-        cdef char *m = str2cp(message)
+        cdef const_char *m = NULL
+        message = str2bytes(message, &m)
         CHKERR( PetscSynchronizedPrintf(ccomm, m) )
         if flush: CHKERR( PetscSynchronizedFlush(ccomm) )
 
