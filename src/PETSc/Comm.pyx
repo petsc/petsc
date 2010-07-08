@@ -31,8 +31,8 @@ cdef class Comm:
         cdef int flag = 0
         if comm1 != MPI_COMM_NULL and comm2 != MPI_COMM_NULL:
             CHKERR( MPI_Comm_compare(comm1, comm2, &flag) )
-            if eq: return (flag==MPI_IDENT or  flag==MPI_CONGRUENT)
-            else:  return (flag!=MPI_IDENT and flag!=MPI_CONGRUENT)
+            if eq: return (flag==<int>MPI_IDENT or  flag==<int>MPI_CONGRUENT)
+            else:  return (flag!=<int>MPI_IDENT and flag!=<int>MPI_CONGRUENT)
         else:
             if eq: return (comm1 == comm2)
             else:  return (comm1 != comm2)
