@@ -25,23 +25,6 @@ EXTERN_C_END
 EXTERN PetscErrorCode MatDestroy_SeqAIJ(Mat);
 EXTERN PetscErrorCode VecCUDACopyToGPU_Public(Vec);
 EXTERN PetscErrorCode VecCUDAAllocateCheck_Public(Vec);
-#undef __FUNCT__  
-#define __FUNCT__ "MatAssemblyEnd_SeqAIJCUDA"
-PetscErrorCode MatAssemblyEnd_SeqAIJCUDA(Mat A,MatAssemblyType mode)
-{
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       m = A->rmap->n;
-
-  PetscFunctionBegin;
-  ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
-  A->spptr = new CUSPMATRIX;
-  ((CUSPMATRIX *)(A->spptr))->resize(m,A->cmap->n,a->nz);
-  ((CUSPMATRIX *)(A->spptr))->row_offsets.assign(a->i,a->i+m+1);
-  ((CUSPMATRIX *)(A->spptr))->column_indices.assign(a->j,a->j+a->nz);
-  ((CUSPMATRIX *)(A->spptr))->values.assign(a->a,a->a+a->nz);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqAIJCUDA"
@@ -63,7 +46,6 @@ PetscErrorCode MatMult_SeqAIJCUDA(Mat A,Vec xx,Vec yy)
 #endif
 
   PetscFunctionBegin;
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "In funct %s\n",__FUNCT__);CHKERRQ(ierr);
   aj  = a->j;
   aa  = a->a;
   ii  = a->i;
@@ -90,6 +72,29 @@ PetscErrorCode MatMult_SeqAIJCUDA(Mat A,Vec xx,Vec yy)
   ierr = PetscLogFlops(2.0*a->nz - nonzerorow);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatAssemblyEnd_SeqAIJCUDA"
+PetscErrorCode MatAssemblyEnd_SeqAIJCUDA(Mat A,MatAssemblyType mode)
+{
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode ierr;
+  PetscInt       m = A->rmap->n;
+
+  PetscFunctionBegin;
+  ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
+  A->spptr = new CUSPMATRIX;
+  ((CUSPMATRIX *)(A->spptr))->resize(m,A->cmap->n,a->nz);
+  ((CUSPMATRIX *)(A->spptr))->row_offsets.assign(a->i,a->i+m+1);
+  ((CUSPMATRIX *)(A->spptr))->column_indices.assign(a->j,a->j+a->nz);
+  ((CUSPMATRIX *)(A->spptr))->values.assign(a->a,a->a+a->nz);
+
+  /* this shouldn't have to be here, but for some reason MatAssemblyEnd overwrites A->ops->mult to be MatMult_SeqAIJ again */
+  A->ops->mult = MatMult_SeqAIJCUDA;
+  PetscFunctionReturn(0);
+}
+
 
 
 
