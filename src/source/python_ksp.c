@@ -356,7 +356,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetContext(KSP ksp,void *ctx)
   ierr = PetscFree(py->pyname);CHKERRQ(ierr);
   ierr = PetscPythonGetFullName(py->self,&py->pyname);CHKERRQ(ierr);
   KSP_PYTHON_CALL_KSPARG(ksp, "create");
-  if (ksp->setupcalled) ksp->setupcalled = 0;
+
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+  ksp->setupcalled = 0;
+#else
+  ksp->setupstage = KSP_SETUP_NEW;
+#endif
   PetscFunctionReturn(0);
 }
 
