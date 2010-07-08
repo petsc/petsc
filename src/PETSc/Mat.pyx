@@ -472,12 +472,8 @@ cdef class Mat(Object):
         CHKERR( MatEqual(self.mat, mat.mat, &flag) )
         return <bint> mat
 
-    def load(self, Viewer viewer not None, mat_type=None):
-        cdef PetscMat newmat = NULL
-        cdef PetscMatType mtype = NULL
-        if mat_type is not None: mtype = str2cp(mat_type)
-        CHKERR( MatLoad(viewer.vwr, mtype, &newmat) )
-        PetscCLEAR(self.obj); self.mat = newmat
+    def load(self, Viewer viewer not None):
+        CHKERR( MatLoad(viewer.vwr, self.mat) )
 
     def convert(self, mat_type=None, Mat out=None):
         cdef PetscMatType mtype = MATSAME

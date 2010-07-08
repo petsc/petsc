@@ -5,6 +5,39 @@
 
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
+#undef __FUNCT__
+#define __FUNCT__ "MatLoad"
+static PetscErrorCode MatLoad_Compat(PetscViewer viewer, Mat mat)
+{
+  const MatType  type=0;
+  PetscInt       m=-1,n=-1,M=-1,N=-1;
+  Mat            newmat;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,2);
+  ierr = MatGetType(mat,&type);CHKERRQ(ierr);
+  ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(mat,&m,&n);CHKERRQ(ierr);
+  if (!type || (m<0 && n<0 && M<0 && N<0)) {
+    if (m<0 && n<0 && M<0 && N<0) {
+      ierr = MatSetSizes(mat,0,0,0,0);CHKERRQ(ierr);
+      ierr = MatGetType(mat,&type);CHKERRQ(ierr);
+    }
+    if (!type) {
+      ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
+      ierr = MatGetType(mat,&type);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatLoad(viewer,type,&newmat);CHKERRQ(ierr);
+  ierr = MatHeaderReplace(mat,newmat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define MatLoad MatLoad_Compat
+#endif
+
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
 #define MATORDERINGNATURAL      MATORDERING_NATURAL
 #define MATORDERINGND           MATORDERING_ND
 #define MATORDERING1WD          MATORDERING_1WD
