@@ -78,9 +78,6 @@ typedef struct {
   PetscScalar      fshift,omega;                   /* last used omega and fshift */
 
   ISColoring       coloring;                  /* set with MatADSetColoring() used by MatADSetValues() */
-  #if defined(PETSC_HAVE_CUDA)
-  cusp::csr_matrix<PetscInt,PetscScalar,cusp::device_memory> GPUmatrix; /* csr matrix on the GPU */
-  #endif
 } Mat_SeqAIJ;
 
 /*

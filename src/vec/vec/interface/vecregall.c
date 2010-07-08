@@ -42,7 +42,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecRegisterAll(const char path[])
   ierr = VecRegisterDynamic(VECMPI,      path, "VecCreate_MPI",      VecCreate_MPI);CHKERRQ(ierr);
   ierr = VecRegisterDynamic(VECSHARED,   path, "VecCreate_Shared",   VecCreate_Shared);CHKERRQ(ierr);
   ierr = VecRegisterDynamic(VECFETI,     path, "VecCreate_FETI",     VecCreate_FETI);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUDA)
+#if defined PETSC_HAVE_CUDA
   ierr = VecRegisterDynamic(VECSEQCUDA,  path, "VecCreate_SeqCUDA",  VecCreate_SeqCUDA);CHKERRQ(ierr);
 #endif
 #if 0

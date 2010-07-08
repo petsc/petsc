@@ -124,8 +124,8 @@ extern void *MPIUNI_TMP;
 #define MPI_COMM_NULL        0
 #define MPI_SUCCESS          0
 #define MPI_IDENT            0
-#define MPI_CONGRUENT        0
-#define MPI_SIMILAR          0
+#define MPI_CONGRUENT        1
+#define MPI_SIMILAR          2
 #define MPI_UNEQUAL          3
 #define MPI_ANY_SOURCE     (-2)
 #define MPI_KEYVAL_INVALID   0

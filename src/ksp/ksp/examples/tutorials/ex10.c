@@ -105,7 +105,7 @@ int main(int argc,char **args)
        Load the matrix and vector; then destroy the viewer.
     */
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-    ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
+    ierr = MatSetFromOptions(A);CHKERRQ(ierr);
     ierr = MatLoad(fd,A);CHKERRQ(ierr);
     
     if (!preload){

@@ -163,7 +163,7 @@ struct _p_Vec {
   PetscTruth             petscnative;  /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
 #if defined(PETSC_HAVE_CUDA)
   PetscCUDAFlag          valid_GPU_array;    /* indicates where the most recently modified vector data is (GPU or CPU) */
-  cusp::array1d<PetscScalar,cusp::device_memory> GPUarray; /* if we're using CUDA, then this is the pointer to the array on the GPU */
+  void                   *spptr; /* if we're using CUDA, then this is the special pointer to the array on the GPU */
 #endif
 };
 
@@ -175,128 +175,8 @@ extern PetscLogEvent VEC_Swap, VEC_AssemblyBegin, VEC_NormBarrier, VEC_DotNormBa
 extern PetscLogEvent VEC_CUDACopyToGPU, VEC_CUDACopyFromGPU;
 
 #if defined(PETSC_HAVE_CUDA)
-#define CHKERRCUDA(err) if (err != CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error %d",err)
-#define VecCUDACastToRawPtr(x) thrust::raw_pointer_cast(&(x)[0])
-#undef __FUNCT__
-#define __FUNCT__ "VecCUDAAllocateCheck"
-PETSC_STATIC_INLINE PetscErrorCode VecCUDAAllocateCheck(Vec v)
-{
-  PetscFunctionBegin;
-  if (v->valid_GPU_array == PETSC_CUDA_UNALLOCATED){
-    v->GPUarray.resize((PetscBLASInt)v->map->n);
-    v->valid_GPU_array = PETSC_CUDA_CPU;
-  }
-  PetscFunctionReturn(0);
-}
-#undef __FUNCT__
-#define __FUNCT__ "VecCUDACopyToGPU"
-/* Copies a vector from the CPU to the GPU unless we already have an up-to-date copy on the GPU */
-PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyToGPU(Vec v)
-{
-  PetscBLASInt   cn = v->map->n;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCUDAAllocateCheck(v);CHKERRQ(ierr);
-  if (v->valid_GPU_array == PETSC_CUDA_CPU){
-    ierr = PetscLogEventBegin(VEC_CUDACopyToGPU,v,0,0,0);CHKERRQ(ierr);
-    v->GPUarray.assign(*(PetscScalar**)v->data,*(PetscScalar**)v->data + cn);
-    ierr = PetscLogEventEnd(VEC_CUDACopyToGPU,v,0,0,0);CHKERRQ(ierr);
-    v->valid_GPU_array = PETSC_CUDA_BOTH;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecCUDACopyFromGPU"
-/* Copies a vector from the GPU to the CPU unless we already have an up-to-date copy on the CPU */
-PETSC_STATIC_INLINE PetscErrorCode VecCUDACopyFromGPU(Vec v)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (v->valid_GPU_array == PETSC_CUDA_GPU){
-    ierr = PetscLogEventBegin(VEC_CUDACopyFromGPU,v,0,0,0);CHKERRQ(ierr);
-    thrust::copy(v->GPUarray.begin(),v->GPUarray.end(),*(PetscScalar**)v->data);
-    ierr = PetscLogEventEnd(VEC_CUDACopyFromGPU,v,0,0,0);CHKERRQ(ierr);
-    v->valid_GPU_array = PETSC_CUDA_BOTH;
-  }
-  PetscFunctionReturn(0);
-}
+EXTERN PetscErrorCode VecCUDACopyFromGPU(Vec v);
 #endif
-
-#undef __FUNCT__
-#define __FUNCT__ "VecGetArray"
-PETSC_STATIC_INLINE PetscErrorCode VecGetArray(Vec x, PetscScalar *a[])
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (x->petscnative){
-#if defined(PETSC_HAVE_CUDA)
-    ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
-#endif
-    *a = *((PetscScalar **)x->data);
-  } else {
-    ierr = VecGetArray_Private(x,a);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecRestoreArray"
-PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray(Vec x, PetscScalar *a[])
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (x->petscnative){
-#if defined(PETSC_HAVE_CUDA)
-    if (x->valid_GPU_array != PETSC_CUDA_UNALLOCATED) {
-      x->valid_GPU_array = PETSC_CUDA_CPU;
-    }
-#endif
-    ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
-  } else {
-    ierr = VecRestoreArray_Private(x,a);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-/*
-   These do not increase the vector state because we know the vector cannot be changed
-*/
-#undef __FUNCT__
-#define __FUNCT__ "VecGetArrayRead"
-PETSC_STATIC_INLINE PetscErrorCode VecGetArrayRead(Vec x, const PetscScalar **a)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (x->petscnative){
-#if defined(PETSC_HAVE_CUDA)
-    ierr = VecCUDACopyFromGPU(x);CHKERRQ(ierr);
-#endif
-    *a = *((PetscScalar **)x->data);
-  } else {
-    ierr = VecGetArray_Private(x,(PetscScalar**)a);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecRestoreArrayRead"
-PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayRead(Vec x, const PetscScalar **a)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  /* do not mark the vector as owned by the CPU since it may be shared between the CPU and GPU */
-  if (!x->petscnative){
-    ierr = VecRestoreArray_Private(x,(PetscScalar**)a);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
 
 /*
     These are for use only in the Vec implementations. They DO NOT increase any vectors state. The increase of the vector state
@@ -338,6 +218,59 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayPrivate(Vec x, PetscScalar *a[
   }
   PetscFunctionReturn(0);
 }
+
+/*
+   These do not increase the vector state because we know the vector cannot be changed
+*/
+#undef __FUNCT__
+#define __FUNCT__ "VecGetArrayRead"
+PETSC_STATIC_INLINE PetscErrorCode VecGetArrayRead(Vec x, const PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayPrivate(x,(PetscScalar**)a);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecRestoreArrayRead"
+PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayRead(Vec x, const PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* do not mark the vector as owned by the CPU since it may be shared between the CPU and GPU */
+  if (!x->petscnative){
+    ierr = VecRestoreArray_Private(x,(PetscScalar**)a);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "VecGetArray"
+PETSC_STATIC_INLINE PetscErrorCode VecGetArray(Vec x, PetscScalar *a[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayPrivate(x,a);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecRestoreArray"
+PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray(Vec x, PetscScalar *a[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecRestoreArrayPrivate(x,a);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "VecGetArrayPrivate2"

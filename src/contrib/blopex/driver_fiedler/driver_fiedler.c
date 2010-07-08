@@ -165,7 +165,6 @@ int main(int argc,char **args)
    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&fd);
    CHKERRQ(ierr);
    ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-   ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
    ierr = MatLoad(fd,A);CHKERRQ(ierr);
    ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
@@ -174,7 +173,6 @@ int main(int argc,char **args)
        ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,mass_filename,FILE_MODE_READ,&fd);
        CHKERRQ(ierr);
        ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
-       ierr = MatSetType(B,MATAIJ);CHKERRQ(ierr);
        ierr = MatLoad(fd,B);CHKERRQ(ierr);
        ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
    }

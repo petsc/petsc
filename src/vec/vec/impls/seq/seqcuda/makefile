@@ -1,10 +1,9 @@
-#requirespackage PETSC_HAVE_CUDA
-
+#requirespackage 'PETSC_HAVE_CUDA'
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = veccuda.c
+SOURCECU = veccuda.cu
 SOURCEF  =
 SOURCEH  = 
 OBJSC    = veccuda.o

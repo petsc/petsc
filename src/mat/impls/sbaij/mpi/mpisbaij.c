@@ -1220,6 +1220,16 @@ PetscErrorCode MatSetOption_MPISBAIJ(Mat A,MatOption op,PetscTruth flg)
     ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
     A->ops->mult = MatMult_MPISBAIJ_Hermitian;
     break;
+  case MAT_SPD:
+    A->spd_set                         = PETSC_TRUE;
+    A->spd                             = flg;
+    if (flg) {
+      A->symmetric                     = PETSC_TRUE;
+      A->structurally_symmetric        = PETSC_TRUE;
+      A->symmetric_set                 = PETSC_TRUE;
+      A->structurally_symmetric_set    = PETSC_TRUE;
+    }
+    break;
   case MAT_SYMMETRIC:
     ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
     break;

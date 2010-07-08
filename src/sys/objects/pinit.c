@@ -5,6 +5,12 @@
 
 #include "petscsys.h"        /*I  "petscsys.h"   I*/
 
+#if defined(PETSC_HAVE_CUDA)
+
+EXTERN void cublasInit_Public(void);
+EXTERN void cublasShutdown_Public(void);
+#endif
+
 #if defined(PETSC_USE_LOG)
 EXTERN PetscErrorCode PetscLogBegin_Private(void);
 #endif
@@ -685,7 +691,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   if (flg) {ierr = PetscPythonInitialize(PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);}
 
 #if defined(PETSC_HAVE_CUDA)
-  cublasInit();
+  cublasInit_Public();
 #endif
   /*
       Once we are completedly initialized then we can set this variables
@@ -990,7 +996,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   }
 
 #if defined(PETSC_HAVE_CUDA)
-  cublasShutdown();
+  cublasShutdown_Public();
 #endif
 /*
 

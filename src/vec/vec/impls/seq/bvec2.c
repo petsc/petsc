@@ -561,14 +561,6 @@ PetscErrorCode VecDestroy_Seq(Vec v)
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)v,"Length=%D",v->map->n);
 #endif
-
-#if defined(PETSC_HAVE_CUDA)
-  /*if (v->valid_GPU_array != PETSC_CUDA_UNALLOCATED){
-    ierr = cublasFree(v->GPUarray);CHKERRCUDA(ierr);
-    }*/
-  /*Theoretically, thrust vectors should free themselves automatically */
-#endif
-
   ierr = PetscFree(vs->array_allocated);CHKERRQ(ierr);
   ierr = PetscFree(vs);CHKERRQ(ierr);
   PetscFunctionReturn(0);

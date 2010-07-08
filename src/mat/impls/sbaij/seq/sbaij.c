@@ -195,6 +195,16 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op,PetscTruth flg)
       A->ops->mult = MatMult_SeqSBAIJ_1_Hermitian;
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for Hermitian with block size greater than 1");
     break;
+  case MAT_SPD:
+    A->spd_set                         = PETSC_TRUE;
+    A->spd                             = flg;
+    if (flg) {
+      A->symmetric                     = PETSC_TRUE;
+      A->structurally_symmetric        = PETSC_TRUE;
+      A->symmetric_set                 = PETSC_TRUE;
+      A->structurally_symmetric_set    = PETSC_TRUE;
+    }
+    break;
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
   case MAT_SYMMETRY_ETERNAL:

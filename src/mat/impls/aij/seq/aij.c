@@ -733,13 +733,6 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   ierr = MatAssemblyEnd_SeqAIJ_Inode(A,mode);CHKERRQ(ierr);
 
   a->idiagvalid = PETSC_FALSE;
-
-#if defined(PETSC_HAVE_CUDA)
-  a->GPUmatrix.resize(m,A->cmap->n,a->nz);
-  a->GPUmatrix.row_offsets.assign(a->i,a->i+m+1);
-  a->GPUmatrix.column_indices.assign(a->j,a->j+a->nz);
-  a->GPUmatrix.values.assign(a->a,a->a+a->nz);
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -860,6 +853,16 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op,PetscTruth flg)
       break;
     case MAT_USE_COMPRESSEDROW:
       a->compressedrow.use = flg;
+      break;
+    case MAT_SPD:
+      A->spd_set                         = PETSC_TRUE;
+      A->spd                             = flg;
+      if (flg) {
+        A->symmetric                     = PETSC_TRUE;
+        A->structurally_symmetric        = PETSC_TRUE;
+        A->symmetric_set                 = PETSC_TRUE;
+        A->structurally_symmetric_set    = PETSC_TRUE;
+      }
       break;
     case MAT_SYMMETRIC:
     case MAT_STRUCTURALLY_SYMMETRIC:
@@ -1000,10 +1003,8 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 #endif
 
   PetscFunctionBegin;
-#if !defined(PETSC_HAVE_CUDA)
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-#endif
   aj  = a->j;
   aa  = a->a;
   ii  = a->i;
@@ -1025,13 +1026,6 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
     fortranmultaij_(&m,x,ii,aj,aa,y);
 #else
-#if defined(PETSC_HAVE_CUDA)
-
-  ierr = VecCUDACopyToGPU(xx);CHKERRQ(ierr);
-  ierr = VecCUDAAllocateCheck(yy);CHKERRQ(ierr);
-  cusp::multiply(a->GPUmatrix,xx->GPUarray,yy->GPUarray);
-  yy->valid_GPU_array = PETSC_CUDA_GPU;
-#else
     for (i=0; i<m; i++) {
       n   = ii[i+1] - ii[i]; 
       aj  = a->j + ii[i];
@@ -1042,13 +1036,10 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
       y[i] = sum;
     }
 #endif
-#endif
   }
   ierr = PetscLogFlops(2.0*a->nz - nonzerorow);CHKERRQ(ierr);
-#if !defined(PETSC_HAVE_CUDA)
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 
