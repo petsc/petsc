@@ -80,7 +80,9 @@ class Configure(config.base.Configure):
           raise MissingProcessor(self.dispatchNames[name])
         return getattr(self.setCompilers, name)
       if name in ['CC_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'sharedLibraryFlags', 'dynamicLibraryFlags']:
-        return ' '.join(getattr(self.setCompilers, name))
+        flags = getattr(self.setCompilers, name)
+        if not isinstance(flags, list): flags = [flags]
+        return ' '.join(flags)
     raise AttributeError('Configure attribute not found: '+name)
 
   def __setattr__(self, name, value):
