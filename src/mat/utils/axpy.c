@@ -33,7 +33,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,MAT_CLASSID,3); 
   PetscValidHeaderSpecific(Y,MAT_CLASSID,1);
-
+  PetscValidLogicalCollectiveScalar(Y,a);
   ierr = MatGetSize(X,&m1,&n1);CHKERRQ(ierr);
   ierr = MatGetSize(Y,&m2,&n2);CHKERRQ(ierr);
   if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Non conforming matrix add: %D %D %D %D",m1,m2,n1,n2);
@@ -217,7 +217,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAYPX(Mat Y,PetscScalar a,Mat X,MatStructure
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,MAT_CLASSID,2);
   PetscValidHeaderSpecific(Y,MAT_CLASSID,1);
-
+  PetscValidLogicalCollectiveScalar(Y,a);
   ierr = MatGetSize(X,&mX,&nX);CHKERRQ(ierr);
   ierr = MatGetSize(X,&mY,&nY);CHKERRQ(ierr);
   if (mX != mY || nX != nY) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Non conforming matrices: %D %D first %D %D second",mX,mY,nX,nY);

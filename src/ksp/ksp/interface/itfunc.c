@@ -887,6 +887,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetTolerances(KSP ksp,PetscReal rtol,PetscR
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveInt(ksp,maxits);
+  PetscValidLogicalCollectiveReal(ksp,rtol);
+  PetscValidLogicalCollectiveReal(ksp,abstol);
+  PetscValidLogicalCollectiveReal(ksp,dtol);
+
+
   if (abstol != PETSC_DEFAULT)   ksp->abstol   = abstol;
   if (rtol != PETSC_DEFAULT)   ksp->rtol   = rtol;
   if (dtol != PETSC_DEFAULT)   ksp->divtol = dtol;

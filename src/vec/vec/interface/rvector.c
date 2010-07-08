@@ -496,14 +496,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSet(Vec x,PetscScalar alpha)
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
   if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You cannot call this after you have called VecSetValues() but\n before you have called VecAssemblyBegin/End()");
-#if defined (PETSC_USE_DEBUG)
- {
-   PetscReal alpha_local,alpha_max;
-   alpha_local = PetscAbsScalar(alpha);
-   ierr = MPI_Allreduce(&alpha_local,&alpha_max,1,MPIU_REAL,MPI_MAX,((PetscObject)x)->comm);CHKERRQ(ierr);
-   if (alpha_local != alpha_max) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Same value should be used across all processors");
- }
-#endif
+  PetscValidLogicalCollectiveScalar(x,alpha);
 
   ierr = PetscLogEventBegin(VEC_Set,x,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->set)(x,alpha);CHKERRQ(ierr);
@@ -561,6 +554,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAXPY(Vec y,PetscScalar alpha,Vec x)
   PetscCheckSameTypeAndComm(x,3,y,1);
   PetscCheckSameSizeVec(x,y);
   if (x == y) SETERRQ(((PetscObject)x)->comm,PETSC_ERR_ARG_IDN,"x and y cannot be the same vector");
+  PetscValidLogicalCollectiveScalar(y,alpha);
 
   ierr = PetscLogEventBegin(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
   ierr = (*y->ops->axpy)(y,alpha,x);CHKERRQ(ierr);
@@ -604,6 +598,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAXPBY(Vec y,PetscScalar alpha,PetscScalar b
   PetscCheckSameTypeAndComm(x,4,y,1);
   PetscCheckSameSizeVec(x,y);
   if (x == y) SETERRQ(((PetscObject)x)->comm,PETSC_ERR_ARG_IDN,"x and y cannot be the same vector");
+  PetscValidLogicalCollectiveScalar(y,alpha);
+  PetscValidLogicalCollectiveScalar(y,beta);
 
   ierr = PetscLogEventBegin(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
   ierr = (*y->ops->axpby)(y,alpha,beta,x);CHKERRQ(ierr);
@@ -654,6 +650,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAXPBYPCZ(Vec z,PetscScalar alpha,PetscScala
   PetscCheckSameSizeVec(x,z);
   if (x == y || x == z) SETERRQ(((PetscObject)x)->comm,PETSC_ERR_ARG_IDN,"x, y, and z must be different vectors");
   if (y == z) SETERRQ(((PetscObject)y)->comm,PETSC_ERR_ARG_IDN,"x, y, and z must be different vectors");
+  PetscValidLogicalCollectiveScalar(z,alpha);
+  PetscValidLogicalCollectiveScalar(z,beta);
+  PetscValidLogicalCollectiveScalar(z,gamma);
 
   ierr = PetscLogEventBegin(VEC_AXPBYPCZ,x,y,z,0);CHKERRQ(ierr);
   ierr = (*y->ops->axpbypcz)(z,alpha,beta,gamma,x,y);CHKERRQ(ierr);
@@ -695,6 +694,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAYPX(Vec y,PetscScalar alpha,Vec x)
   PetscValidType(x,3);
   PetscValidType(y,1);
   if (x == y) SETERRQ(((PetscObject)x)->comm,PETSC_ERR_ARG_IDN,"x and y must be different vectors");
+  PetscValidLogicalCollectiveScalar(y,alpha);
 
   ierr = PetscLogEventBegin(VEC_AYPX,x,y,0,0);CHKERRQ(ierr);
   ierr =  (*y->ops->aypx)(y,alpha,x);CHKERRQ(ierr);
@@ -744,6 +744,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecWAXPY(Vec w,PetscScalar alpha,Vec x,Vec y)
   PetscCheckSameSizeVec(x,w);
   if (w == y) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Result vector w cannot be same as input vector y, suggest VecAXPY()");
   if (w == x) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Result vector w cannot be same as input vector x, suggest VecAYPX()");
+  PetscValidLogicalCollectiveScalar(y,alpha);
 
   ierr = PetscLogEventBegin(VEC_WAXPY,x,y,w,0);CHKERRQ(ierr);
   ierr =  (*w->ops->waxpy)(w,alpha,x,y);CHKERRQ(ierr);
@@ -1178,6 +1179,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMDot(Vec x,PetscInt nv,const Vec y[],PetscS
 PetscErrorCode PETSCVEC_DLLEXPORT VecMAXPY(Vec y,PetscInt nv,const PetscScalar alpha[],Vec x[])
 {
   PetscErrorCode ierr;
+  PetscInt       i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(y,VEC_CLASSID,1);
@@ -1190,6 +1192,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMAXPY(Vec y,PetscInt nv,const PetscScalar a
   PetscValidType(*x,4);
   PetscCheckSameTypeAndComm(y,1,*x,4);
   PetscCheckSameSizeVec(y,*x);
+  for (i=0; i<nv; i++) {
+    PetscValidLogicalCollectiveScalar(y,alpha[i]);
+  }
 
   ierr = PetscLogEventBegin(VEC_MAXPY,*x,y,0,0);CHKERRQ(ierr);
   ierr = (*y->ops->maxpy)(y,nv,alpha,x);CHKERRQ(ierr);
