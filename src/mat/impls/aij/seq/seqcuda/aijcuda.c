@@ -193,7 +193,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJCUDA(Mat B)
 #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
   B->ops->mult = MatMult_SeqAIJCUDA;
 #endif
-  B->ops->mult = 0;
   B->ops->assemblyend = MatAssemblyEnd_SeqAIJCUDA;
   B->ops->destroy = MatDestroy_SeqAIJCUDA;
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJCUDA);CHKERRQ(ierr);
