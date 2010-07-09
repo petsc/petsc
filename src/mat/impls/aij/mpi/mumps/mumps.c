@@ -1174,8 +1174,7 @@ PetscErrorCode MatGetInfo_MUMPS(Mat A,MatInfoType flag,MatInfo *info)
   Works with MATAIJ and MATSBAIJ matrices
 
   Options Database Keys:
-+ -mat_mumps_sym <0,1,2> - 0 the matrix is unsymmetric, 1 symmetric positive definite, 2 symmetric
-. -mat_mumps_icntl_4 <0,...,4> - print level
++ -mat_mumps_icntl_4 <0,...,4> - print level
 . -mat_mumps_icntl_6 <0,...,7> - matrix prescaling options (see MUMPS User's Guide)
 . -mat_mumps_icntl_7 <0,...,7> - matrix orderings (see MUMPS User's Guide)
 . -mat_mumps_icntl_9 <1,2> - A or A^T x=b to be solved: 1 denotes A, 2 denotes A^T
@@ -1383,8 +1382,8 @@ PetscErrorCode MatSetMumpsIcntl(Mat F,PetscInt icntl,PetscInt ival)
   Mat_MUMPS      *lu =(Mat_MUMPS*)(F)->spptr; 
 
   PetscFunctionBegin; 
-  PetscValidLogicalCollectiveInt(mat,icntl,2);
-  PetscValidLogicalCollectiveInt(mat,ival,3);
+  PetscValidLogicalCollectiveInt(F,icntl,2);
+  PetscValidLogicalCollectiveInt(F,ival,3);
   lu->id.ICNTL(icntl) = ival;
   PetscFunctionReturn(0);
 }

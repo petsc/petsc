@@ -623,6 +623,16 @@ runex10_mumps_cholesky_4:
 	   if (${DIFF} output/ex10_mumps.out ex10_mumps_cholesky_4.tmp) then true; \
 	   else echo "Possible problem with ex10_mumps_cholesky_4, diffs above"; fi; \
 	   ${RM} -f ex10_mumps_cholesky_4.tmp
+runex10_mumps_cholesky_spd_1:
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type cholesky -mat_type aij -matload_spd -pc_factor_mat_solver_package mumps -num_numfac 2 -num_rhs 2 > ex10_mumps_cholesky_spd_1.tmp 2>&1; \
+	   if (${DIFF} output/ex10_mumps.out ex10_mumps_cholesky_spd_1.tmp) then true; \
+	   else echo "Possible problem with ex10_mumps_cholesky_spd_1, diffs above"; fi; \
+	   ${RM} -f ex10_mumps_cholesky_spd_1.tmp
+runex10_mumps_cholesky_spd_2:
+	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type cholesky -mat_type aij -matload_spd -pc_factor_mat_solver_package mumps -num_numfac 2 -num_rhs 2 > ex10_mumps_cholesky_spd_2.tmp 2>&1; \
+	   if (${DIFF} output/ex10_mumps.out ex10_mumps_cholesky_spd_2.tmp) then true; \
+	   else echo "Possible problem with ex10_mumps_cholesky_spd_2, diffs above"; fi; \
+	   ${RM} -f ex10_mumps_cholesky_spd_2.tmp
 runex10_plapack_lu:
 	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package plapack -mat_type dense -num_numfac 2 -num_rhs 2 > ex10_plapack_lu_2.tmp 2>&1; \
 	   if (${DIFF} output/ex10_mumps.out ex10_plapack_lu_2.tmp) then true; \
@@ -892,7 +902,8 @@ TESTEXAMPLES_SPAI	       = ex10.PETSc runex10_14 ex10.rm
 TESTEXAMPLES_HYPRE	       = ex10.PETSc runex10_15 runex10_16 runex10_17 runex10_18 ex10.rm
 TESTEXAMPLES_LUSOL	       = ex10.PETSc runex10_13 ex10.rm
 TESTEXAMPLES_MUMPS             = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_2 runex10_mumps_lu_3 runex10_mumps_lu_4 \
-				 runex10_mumps_cholesky_1 runex10_mumps_cholesky_2 runex10_mumps_cholesky_3 runex10_mumps_cholesky_4 runex10_mumps_redundant ex10.rm 
+				 runex10_mumps_cholesky_1 runex10_mumps_cholesky_2 runex10_mumps_cholesky_3 runex10_mumps_cholesky_4 runex10_mumps_redundant \
+                                 runex10_mumps_cholesky_spd_1 runex10_mumps_cholesky_spd_2 ex10.rm 
 TESTEXAMPLES_SUPERLU           = ex10.PETSc runex10_superlu_lu_1 ex10.rm 
 TESTEXAMPLES_SUPERLU_DIST      = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm 
 TESTEXAMPLES_SPOOLES           = ex10.PETSc runex10_spooles_lu_1  runex10_spooles_lu_2 runex10_spooles_cholesky_1 runex10_spooles_cholesky_1sbaij  runex10_spooles_cholesky_2 ex10.rm 
