@@ -1383,8 +1383,8 @@ PetscErrorCode MatSetMumpsIcntl(Mat F,PetscInt icntl,PetscInt ival)
   Mat_MUMPS      *lu =(Mat_MUMPS*)(F)->spptr; 
 
   PetscFunctionBegin; 
-  PetscValidLogicalCollectiveInt(mat,icntl,2);
-  PetscValidLogicalCollectiveInt(mat,ival,3);
+  PetscValidLogicalCollectiveInt(F,icntl,2);
+  PetscValidLogicalCollectiveInt(F,ival,3);
   lu->id.ICNTL(icntl) = ival;
   PetscFunctionReturn(0);
 }
