@@ -62,6 +62,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSRKSetTolerance(TS ts,PetscReal aabs)
   PetscErrorCode ierr,(*f)(TS,PetscReal);  
   
   PetscFunctionBegin;
+  PetscValidLogicalCollectiveReal(ts,aabs,2);
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSRKSetTolerance_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,aabs);CHKERRQ(ierr);

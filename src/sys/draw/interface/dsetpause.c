@@ -30,6 +30,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSetPause(PetscDraw draw,PetscReal lpause
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
+  PetscValidLogicalCollectiveReal(draw,lpause,2);
   draw->pause = lpause;
   PetscFunctionReturn(0);
 }

@@ -285,9 +285,11 @@ valid
 #define PetscValidType(a,arg)
 #define PetscCheckSameComm(a,arga,b,argb)
 #define PetscCheckSameTypeAndComm(a,arga,b,argb)
-#define PetscValidLogicalCollectiveScalar(a,b)
-#define PetscValidLogicalCollectiveReal(a,b)
-#define PetscValidLogicalCollectiveInt(a,b)
+#define PetscValidLogicalCollectiveScalar(a,b,c)
+#define PetscValidLogicalCollectiveReal(a,b,c)
+#define PetscValidLogicalCollectiveInt(a,b,c)
+#define PetscValidLogicalCollectiveTruth(a,b,c)
+#define PetscValidLogicalCollectiveEnum(a,b,c)
 
 #else
 
@@ -320,28 +322,44 @@ valid
     PetscCheckSameComm(a,arga,b,argb);                  \
   } while (0)
 
-#define PetscValidLogicalCollectiveScalar(a,b)          \
+#define PetscValidLogicalCollectiveScalar(a,b,c)		\
   do {                                                  \
     PetscErrorCode _7_ierr;				\
     PetscReal b1 = PetscAbsScalar(b),b2;		\
     _7_ierr = MPI_Allreduce(&b1,&b2,1,MPIU_REAL,MPI_MAX,((PetscObject)a)->comm);CHKERRQ(_7_ierr); \
-    if (b1 != b2) SETERRQ(((PetscObject)a)->comm,PETSC_ERR_ARG_WRONG,"Scalar value must be same on all processes");\
+    if (b1 != b2) SETERRQ1(((PetscObject)a)->comm,PETSC_ERR_ARG_WRONG,"Scalar value must be same on all processes, argument # %d",c);\
   } while (0)
 
-#define PetscValidLogicalCollectiveReal(a,b)          \
+#define PetscValidLogicalCollectiveReal(a,b,c)		\
   do {                                                  \
     PetscErrorCode _7_ierr;				\
     PetscReal b1 = b,b2;                		\
     _7_ierr = MPI_Allreduce(&b1,&b2,1,MPIU_REAL,MPI_MAX,((PetscObject)a)->comm);CHKERRQ(_7_ierr); \
-    if (b1 != b2) SETERRQ(((PetscObject)a)->comm,PETSC_ERR_ARG_WRONG,"Real value must be same on all processes");\
+    if (b1 != b2) SETERRQ1(((PetscObject)a)->comm,PETSC_ERR_ARG_WRONG,"Real value must be same on all processes, argument # %d",c);\
   } while (0)
 
-#define PetscValidLogicalCollectiveInt(a,b)             \
+#define PetscValidLogicalCollectiveInt(a,b,c)		\
   do {                                                  \
     PetscErrorCode _7_ierr;				\
     PetscInt b1 = b,b2;    		                \
     _7_ierr = MPI_Allreduce(&b1,&b2,1,MPIU_INT,MPI_MAX,((PetscObject)a)->comm);CHKERRQ(_7_ierr); \
-    if (b1 != b2) SETERRQ(((PetscObject)a)->comm,PETSC_ERR_ARG_WRONG,"Int value must be same on all processes");\
+    if (b1 != b2) SETERRQ1(((PetscObject)a)->comm,PETSC_ERR_ARG_WRONG,"Int value must be same on all processes, argument # %d",c);\
+  } while (0)
+
+#define PetscValidLogicalCollectiveTruth(a,b,c)		\
+  do {                                                  \
+    PetscErrorCode _7_ierr;				\
+    PetscMPIInt b1 = (PetscMPIInt) b,b2;					\
+    _7_ierr = MPI_Allreduce(&b1,&b2,1,MPI_INT,MPI_MAX,((PetscObject)a)->comm);CHKERRQ(_7_ierr); \
+    if (b1 != b2) SETERRQ1(((PetscObject)a)->comm,PETSC_ERR_ARG_WRONG,"Truth value must be same on all processes, argument # %d",c);\
+  } while (0)
+
+#define PetscValidLogicalCollectiveEnum(a,b,c)		\
+  do {                                                  \
+    PetscErrorCode _7_ierr;				\
+    PetscMPIInt b1 = (PetscMPIInt) b,b2;					\
+    _7_ierr = MPI_Allreduce(&b1,&b2,1,MPI_INT,MPI_MAX,((PetscObject)a)->comm);CHKERRQ(_7_ierr); \
+    if (b1 != b2) SETERRQ1(((PetscObject)a)->comm,PETSC_ERR_ARG_WRONG,"Enum value must be same on all processes, argument # %d",c);\
   } while (0)
 
 #endif

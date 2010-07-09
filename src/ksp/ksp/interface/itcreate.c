@@ -139,6 +139,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNormType(KSP ksp,KSPNormType normtype)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveEnum(ksp,normtype,2);
   ksp->normtype = normtype;
   if (normtype == KSP_NORM_NO) {
     ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,0,0);CHKERRQ(ierr);
@@ -177,6 +178,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetCheckNormIteration(KSP ksp,PetscInt it)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveInt(ksp,it,2);
   ksp->chknorm = it;
   PetscFunctionReturn(0);
 }
@@ -214,6 +216,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetLagNorm(KSP ksp,PetscTruth flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveTruth(ksp,flg,2);
   ksp->lagnorm = flg;
   PetscFunctionReturn(0);
 }

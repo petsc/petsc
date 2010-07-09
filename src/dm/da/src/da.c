@@ -78,6 +78,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetSizes(DA da, PetscInt M, PetscInt N, Petsc
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da, DM_CLASSID, 1);
+  PetscValidLogicalCollectiveInt(da,M,2);
+  PetscValidLogicalCollectiveInt(da,N,3);
+  PetscValidLogicalCollectiveInt(da,P,4);
+
   da->M = M;
   da->N = N;
   da->P = P;
@@ -105,6 +109,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetNumProcs(DA da, PetscInt m, PetscInt n, Pe
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da, DM_CLASSID, 1);
+  PetscValidLogicalCollectiveInt(da,m,2);
+  PetscValidLogicalCollectiveInt(da,n,3);
+  PetscValidLogicalCollectiveInt(da,p,4);
+
   da->m = m;
   da->n = n;
   da->p = p;
@@ -164,7 +172,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetDof(DA da, int dof)
 /*@
   DASetStencilType - Sets the type of the communication stencil
 
-  Not collective
+  Logically Collective on DA
 
   Input Parameter:
 + da    - The DA
@@ -179,6 +187,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetStencilType(DA da, DAStencilType stype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidLogicalCollectiveEnum(da,stype,2);
   da->stencil_type = stype;
   PetscFunctionReturn(0);
 }
@@ -188,7 +197,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetStencilType(DA da, DAStencilType stype)
 /*@
   DASetStencilWidth - Sets the width of the communication stencil
 
-  Not collective
+  Logically Collective on DA
 
   Input Parameter:
 + da    - The DA
@@ -199,10 +208,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetStencilType(DA da, DAStencilType stype)
 .keywords:  distributed array, stencil
 .seealso: DACreate(), DADestroy(), DA
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DASetStencilWidth(DA da, int width)
+PetscErrorCode PETSCDM_DLLEXPORT DASetStencilWidth(DA da, PetscInt width)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidLogicalCollectiveInt(da,width,2);
+
   da->s = width;
   PetscFunctionReturn(0);
 }
@@ -212,7 +223,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetStencilWidth(DA da, int width)
 /*@
   DASetVertexDivision - Sets the number of nodes in each direction on each process
 
-  Not collective
+  Logically Collective on DA
 
   Input Parameter:
 + da - The DA
@@ -279,6 +290,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetInterpolationType(DA da,DAInterpolationTyp
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidLogicalCollectiveEnum(da,ctype,2);
   da->interptype = ctype;
   PetscFunctionReturn(0);
 }
@@ -433,6 +445,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetOwnershipRanges(DA da,const PetscInt *lx[]
 PetscErrorCode PETSCDM_DLLEXPORT DASetRefinementFactor(DA da, PetscInt refine_x, PetscInt refine_y,PetscInt refine_z)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidLogicalCollectiveInt(da,refine_x,2);
+  PetscValidLogicalCollectiveInt(da,refine_y,3);
+  PetscValidLogicalCollectiveInt(da,refine_z,4);
+
   if (refine_x > 0) da->refine_x = refine_x;
   if (refine_y > 0) da->refine_y = refine_y;
   if (refine_z > 0) da->refine_z = refine_z;
@@ -461,6 +478,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetRefinementFactor(DA da, PetscInt refine_x,
 PetscErrorCode PETSCDM_DLLEXPORT DAGetRefinementFactor(DA da, PetscInt *refine_x, PetscInt *refine_y,PetscInt *refine_z)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (refine_x) *refine_x = da->refine_x;
   if (refine_y) *refine_y = da->refine_y;
   if (refine_z) *refine_z = da->refine_z;
@@ -486,6 +504,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetRefinementFactor(DA da, PetscInt *refine_x
 PetscErrorCode PETSCDM_DLLEXPORT DASetGetMatrix(DA da,PetscErrorCode (*f)(DA, const MatType,Mat*))
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
   da->ops->getmatrix = f;
   PetscFunctionReturn(0);
 }

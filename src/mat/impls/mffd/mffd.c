@@ -876,6 +876,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetPeriod(Mat mat,PetscInt period)
   MatMFFD ctx = (MatMFFD)mat->data;
 
   PetscFunctionBegin;
+  PetscValidLogicalCollectiveInt(mat,period,2);
   ctx->recomputeperiod = period;
   PetscFunctionReturn(0);
 }
@@ -916,6 +917,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctionError(Mat mat,PetscReal erro
   MatMFFD ctx = (MatMFFD)mat->data;
 
   PetscFunctionBegin;
+  PetscValidLogicalCollectiveReal(mat,error,2);
   if (error != PETSC_DEFAULT) ctx->error_rel = error;
   PetscFunctionReturn(0);
 }

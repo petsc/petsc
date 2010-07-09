@@ -34,6 +34,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGSetRadius(KSP ksp, PetscReal radius)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (radius < 0.0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE, "Radius negative");
+  PetscValidLogicalCollectiveReal(ksp,radius,2);
+
   ierr = PetscObjectQueryFunction((PetscObject)ksp, "KSPSTCGSetRadius_C", (void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp, radius);CHKERRQ(ierr);
@@ -125,7 +127,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   /* Check the arguments and parameters.                                     */
   /***************************************************************************/
 
-  ierr = PCDiagonalScale(ksp->pc, &diagonalscale);CHKERRQ(ierr);
+  ierr = PCGetDiagonalScale(ksp->pc, &diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
   if (cg->radius < 0.0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE, "Input error: radius < 0");
 

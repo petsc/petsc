@@ -96,13 +96,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGCreate(PetscDraw draw,int dim,PetscDra
    Concepts: line graph^setting number of lines
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawLGSetDimension(PetscDrawLG lg,int dim)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawLGSetDimension(PetscDrawLG lg,PetscInt dim)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,DRAWLG_CLASSID,1);
+  PetscValidLogicalCollectiveInt(lg,dim,2);
   if (lg->dim == dim) PetscFunctionReturn(0);
 
   ierr    = PetscFree2(lg->x,lg->y);CHKERRQ(ierr);

@@ -307,6 +307,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidLogicalCollectiveReal(ksp,delta,2);
   if (ksp->setupstage) {
     if ((delta<=0 && bcgsl->delta>0) || (delta>0 && bcgsl->delta<=0)) {
       ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
@@ -347,6 +348,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetPol(KSP ksp, PetscTruth uMROR)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidLogicalCollectiveTruth(ksp,uMROR,2);
+
   if (!ksp->setupstage) {
     bcgsl->bConvex = uMROR;
   } else if (bcgsl->bConvex != uMROR) {
@@ -382,13 +385,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetPol(KSP ksp, PetscTruth uMROR)
 
 .seealso: @()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetEll(KSP ksp, int ell)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetEll(KSP ksp, PetscInt ell)
 {
   KSP_BCGSL      *bcgsl = (KSP_BCGSL *)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (ell < 1) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE, "KSPBCGSLSetEll: second argument must be positive");
+  PetscValidLogicalCollectiveInt(ksp,ell,2);
 
   if (!ksp->setupstage) {
     bcgsl->ell = ell;

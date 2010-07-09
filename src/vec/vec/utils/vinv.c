@@ -42,9 +42,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScale(Vec v,PetscInt start,PetscScala
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  PetscValidLogicalCollectiveInt(v,start,2);  
+  PetscValidLogicalCollectiveScalar(v,scale,3);  
+
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
-
   bs   = v->map->bs;
   if (start < 0) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
@@ -1302,6 +1304,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecShift(Vec v,PetscScalar shift)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  PetscValidLogicalCollectiveScalar(v,shift,2);  
   if (v->ops->shift) {
     ierr = (*v->ops->shift)(v);CHKERRQ(ierr);
   } else {

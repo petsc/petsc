@@ -149,6 +149,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (mg->nlevels > -1) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ORDER,"Number levels already set for MG\n  make sure that you call PCMGSetLevels() before KSPSetFromOptions()");
   if (mg->levels) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error in PETSc, this array should not yet exist");
+  PetscValidLogicalCollectiveInt(pc,levels,2);
 
   mg->nlevels      = levels;
   mg->galerkin     = PETSC_FALSE;
@@ -732,6 +733,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetType(PC pc,PCMGType form)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveEnum(pc,form,2);
   mg->am = form;
   if (form == PC_MG_MULTIPLICATIVE) pc->ops->applyrichardson = PCApplyRichardson_MG;
   else pc->ops->applyrichardson = 0;
@@ -768,6 +770,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetCycleType(PC pc,PCMGCycleType n)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (!mglevels) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  PetscValidLogicalCollectiveInt(pc,n,2);
   levels = mglevels[0]->levels;
 
   for (i=0; i<levels; i++) {  
@@ -808,6 +811,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGMultiplicativeSetCycles(PC pc,PetscInt n)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (!mglevels) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  PetscValidLogicalCollectiveInt(pc,n,2);
   levels = mglevels[0]->levels;
 
   for (i=0; i<levels; i++) {  
@@ -913,6 +917,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetNumberSmoothDown(PC pc,PetscInt n)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (!mglevels) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  PetscValidLogicalCollectiveInt(pc,n,2);
   levels = mglevels[0]->levels;
 
   for (i=1; i<levels; i++) {  
@@ -959,6 +964,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetNumberSmoothUp(PC pc,PetscInt n)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (!mglevels) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  PetscValidLogicalCollectiveInt(pc,n,2);
   levels = mglevels[0]->levels;
 
   for (i=1; i<levels; i++) {  

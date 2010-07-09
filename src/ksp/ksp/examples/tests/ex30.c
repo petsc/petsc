@@ -299,7 +299,7 @@ int main(int argc,char **args)
         }
         ierr = VecAssemblyBegin(scale);CHKERRQ(ierr);
         ierr = VecAssemblyEnd(scale);CHKERRQ(ierr);
-        ierr = PCDiagonalScaleSet(pc,scale);CHKERRQ(ierr);
+        ierr = PCSetDiagonalScale(pc,scale);CHKERRQ(ierr);
         ierr = VecDestroy(scale);CHKERRQ(ierr);
       }
 

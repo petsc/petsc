@@ -73,6 +73,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCGUseSingleReduction(KSP ksp,PetscTruth flg
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveTruth(ksp,flg,2);
   ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPCGUseSingleReduction_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,flg);CHKERRQ(ierr);

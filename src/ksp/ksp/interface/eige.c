@@ -8,7 +8,7 @@
 /*@
     KSPComputeExplicitOperator - Computes the explicit preconditioned operator.  
 
-    Logically Collective on KSP
+    Collective on KSP
 
     Input Parameter:
 .   ksp - the Krylov subspace context
@@ -97,7 +97,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExplicitOperator(KSP ksp,Mat *mat)
    KSPComputeEigenvaluesExplicitly - Computes all of the eigenvalues of the 
    preconditioned operator using LAPACK.  
 
-   Logically Collective on KSP
+   Collective on KSP
 
    Input Parameter:
 +  ksp - iterative context obtained from KSPCreate()

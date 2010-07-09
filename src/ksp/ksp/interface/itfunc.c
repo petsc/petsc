@@ -769,6 +769,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPCSide(KSP ksp,PCSide side)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveEnum(ksp,side,2);
   ksp->pc_side = side;
   PetscFunctionReturn(0);
 }
@@ -887,11 +888,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetTolerances(KSP ksp,PetscReal rtol,PetscR
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidLogicalCollectiveInt(ksp,maxits);
-  PetscValidLogicalCollectiveReal(ksp,rtol);
-  PetscValidLogicalCollectiveReal(ksp,abstol);
-  PetscValidLogicalCollectiveReal(ksp,dtol);
-
+  PetscValidLogicalCollectiveReal(ksp,rtol,2);
+  PetscValidLogicalCollectiveReal(ksp,abstol,3);
+  PetscValidLogicalCollectiveReal(ksp,dtol,4);
+  PetscValidLogicalCollectiveInt(ksp,maxits,5);
 
   if (abstol != PETSC_DEFAULT)   ksp->abstol   = abstol;
   if (rtol != PETSC_DEFAULT)   ksp->rtol   = rtol;
@@ -929,6 +929,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetInitialGuessNonzero(KSP ksp,PetscTruth f
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveTruth(ksp,flg,2);
   ksp->guess_zero   = (PetscTruth)!(int)flg;
   PetscFunctionReturn(0);
 }
@@ -991,6 +992,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetErrorIfNotConverged(KSP ksp,PetscTruth f
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveTruth(ksp,flg,2);
   ksp->errorifnotconverged = flg;
   PetscFunctionReturn(0);
 }
@@ -1045,6 +1047,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetInitialGuessKnoll(KSP ksp,PetscTruth flg
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveTruth(ksp,flg,2);
   ksp->guess_knoll   = flg;
   PetscFunctionReturn(0);
 }
@@ -1151,6 +1154,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetComputeSingularValues(KSP ksp,PetscTruth
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveTruth(ksp,flg,2);
   ksp->calc_sings  = flg;
   PetscFunctionReturn(0);
 }
@@ -1214,6 +1218,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetComputeEigenvalues(KSP ksp,PetscTruth fl
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveTruth(ksp,flg,2);
   ksp->calc_sings  = flg;
   PetscFunctionReturn(0);
 }
@@ -1820,6 +1825,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDiagonalScale(KSP ksp,PetscTruth scale)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveTruth(ksp,scale,2);
   ksp->dscale = scale;
   PetscFunctionReturn(0);
 }
@@ -1895,6 +1901,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDiagonalScaleFix(KSP ksp,PetscTruth fix)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveTruth(ksp,fix,2);
   ksp->dscalefix = fix;
   PetscFunctionReturn(0);
 }

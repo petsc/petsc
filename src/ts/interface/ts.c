@@ -1012,6 +1012,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetTimeStep(TS ts,PetscReal time_step)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidLogicalCollectiveReal(ts,time_step,2);
   ts->time_step = time_step;
   PetscFunctionReturn(0);
 }
@@ -1350,6 +1351,8 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetDuration(TS ts,PetscInt maxsteps,PetscReal
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidLogicalCollectiveInt(ts,maxsteps,2);
+  PetscValidLogicalCollectiveReal(ts,maxtime,2);
   ts->max_steps = maxsteps;
   ts->max_time  = maxtime;
   PetscFunctionReturn(0);
@@ -1897,6 +1900,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetTime(TS ts, PetscReal t)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidLogicalCollectiveReal(ts,t,2);
   ts->ptime = t;
   PetscFunctionReturn(0);
 }

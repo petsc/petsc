@@ -1124,7 +1124,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetOperation(Vec vec,VecOperation op, void 
    used during the assembly process to store values that belong to
    other processors.
 
-   Logically Collective on Vec
+   Not Collective, different processes can have different size stashes
 
    Input Parameters:
 +  vec   - the vector
@@ -1480,6 +1480,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetBlockSize(Vec v,PetscInt bs)
   if (v->map->N != -1 && v->map->N % bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Vector length not divisible by blocksize %D %D",v->map->N,bs);
   if (v->map->n != -1 && v->map->n % bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local vector length not divisible by blocksize %D %D\n\
    Try setting blocksize before setting the vector type",v->map->n,bs);
+  PetscValidLogicalCollectiveInt(v,bs,2);  
 
   v->map->bs   = bs;
   v->bstash.bs = bs; /* use the same blocksize for the vec's block-stash */

@@ -37,6 +37,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetErrorIfNotConverged(SNES snes,PetscTru
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidLogicalCollectiveTruth(snes,flg,2);
   snes->errorifnotconverged = flg;
   PetscFunctionReturn(0);
 }
@@ -794,6 +795,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMaxLinearSolveFailures(SNES snes, Pets
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidLogicalCollectiveInt(snes,maxFails,2);
   snes->maxLinearSolveFailures = maxFails;
   PetscFunctionReturn(0);
 }
@@ -1527,6 +1529,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetLagPreconditioner(SNES snes,PetscInt l
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   if (lag < -2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Lag must be -2, -1, 1 or greater");
   if (!lag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Lag cannot be 0");
+  PetscValidLogicalCollectiveInt(snes,lag,2);
   snes->lagpreconditioner = lag;
   PetscFunctionReturn(0);
 }
@@ -1602,6 +1605,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetLagJacobian(SNES snes,PetscInt lag)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   if (lag < -2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Lag must be -2, -1, 1 or greater");
   if (!lag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Lag cannot be 0");
+  PetscValidLogicalCollectiveInt(snes,lag,2);
   snes->lagjacobian = lag;
   PetscFunctionReturn(0);
 }
@@ -1679,6 +1683,12 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetTolerances(SNES snes,PetscReal abstol,
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidLogicalCollectiveReal(snes,abstol,2);
+  PetscValidLogicalCollectiveReal(snes,rtol,3);
+  PetscValidLogicalCollectiveReal(snes,stol,4);
+  PetscValidLogicalCollectiveInt(snes,maxit,5);
+  PetscValidLogicalCollectiveInt(snes,maxf,6);
+
   if (abstol != PETSC_DEFAULT)  snes->abstol      = abstol;
   if (rtol != PETSC_DEFAULT)  snes->rtol      = rtol;
   if (stol != PETSC_DEFAULT)  snes->xtol      = stol;
@@ -1748,6 +1758,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetTrustRegionTolerance(SNES snes,PetscRe
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidLogicalCollectiveReal(snes,tol,2);
   snes->deltatol = tol;
   PetscFunctionReturn(0);
 }
@@ -2765,6 +2776,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESKSPSetUseEW(SNES snes,PetscTruth flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidLogicalCollectiveTruth(snes,flag,2);
   snes->ksp_ewconv = flag;
   PetscFunctionReturn(0);
 }
@@ -2854,6 +2866,13 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESKSPSetParametersEW(SNES snes,PetscInt ver
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   kctx = (SNESKSPEW*)snes->kspconvctx;
   if (!kctx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"No Eisenstat-Walker context existing");
+  PetscValidLogicalCollectiveInt(snes,version,2);
+  PetscValidLogicalCollectiveReal(snes,rtol_0,3);
+  PetscValidLogicalCollectiveReal(snes,rtol_max,4);
+  PetscValidLogicalCollectiveReal(snes,gamma,5);
+  PetscValidLogicalCollectiveReal(snes,alpha,6);
+  PetscValidLogicalCollectiveReal(snes,alpha2,7);
+  PetscValidLogicalCollectiveReal(snes,threshold,8);
 
   if (version != PETSC_DEFAULT)   kctx->version   = version;
   if (rtol_0 != PETSC_DEFAULT)    kctx->rtol_0    = rtol_0;

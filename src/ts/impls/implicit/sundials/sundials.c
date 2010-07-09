@@ -618,6 +618,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetGMRESRestart(TS ts,int restart)
   PetscErrorCode ierr,(*f)(TS,int);  
 
   PetscFunctionBegin;
+  PetscValidLogicalCollectiveInt(ts,restart,2);
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSSundialsSetGMRESRestart_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,restart);CHKERRQ(ierr);
@@ -654,6 +655,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetLinearTolerance(TS ts,double tol)
   PetscErrorCode ierr,(*f)(TS,double);  
   
   PetscFunctionBegin;
+  PetscValidLogicalCollectiveReal(ts,tol,2);
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSSundialsSetLinearTolerance_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,tol);CHKERRQ(ierr);

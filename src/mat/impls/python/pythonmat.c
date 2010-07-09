@@ -5,7 +5,7 @@
 /*@C
    MatPythonSetType - Initalize a Mat object implemented in Python.
 
-   Logically Collective on Mat
+   Collective on Mat
 
    Input Parameter:
 +  mat - the matrix (Mat) object.

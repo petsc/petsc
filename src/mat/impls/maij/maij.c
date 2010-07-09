@@ -86,6 +86,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMAIJRedimension(Mat A,PetscInt dof,Mat *B)
   Mat            Aij = PETSC_NULL;
 
   PetscFunctionBegin;
+  PetscValidLogicalCollectiveInt(A,dof,2);
   ierr = MatMAIJGetAIJ(A,&Aij);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(Aij,dof,B);CHKERRQ(ierr);
   PetscFunctionReturn(0);

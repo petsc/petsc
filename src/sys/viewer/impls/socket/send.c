@@ -380,6 +380,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketSetConnection(PetscViewer v,cons
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket *)v->data;
 
   PetscFunctionBegin;
+  PetscValidLogicalCollectiveInt(v,port,3);
   if (port <= 0) {
     char portn[16];
     ierr = PetscOptionsGetenv(((PetscObject)v)->comm,"PETSC_VIEWER_SOCKET_PORT",portn,16,&tflg);CHKERRQ(ierr);

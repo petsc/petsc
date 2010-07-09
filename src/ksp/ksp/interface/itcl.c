@@ -115,6 +115,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUseFischerGuess(KSP ksp,PetscInt model,P
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveInt(ksp,model,2);
+  PetscValidLogicalCollectiveInt(ksp,model,3);
   if (ksp->guess) {
     ierr = KSPFischerGuessDestroy(ksp->guess);CHKERRQ(ierr);
     ksp->guess = PETSC_NULL;

@@ -55,9 +55,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFormat(PetscViewer viewer,PetscView
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  CHKMEMQ;
+  PetscValidLogicalCollectiveEnum(viewer,format,2);
   viewer->format     = format;
-  CHKMEMQ;
   PetscFunctionReturn(0);
 }
 
@@ -106,6 +105,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerPushFormat(PetscViewer viewer,PetscVie
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  PetscValidLogicalCollectiveEnum(viewer,format,2);
   if (viewer->iformat > 9) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many pushes");
 
   viewer->formats[viewer->iformat++]  = viewer->format;

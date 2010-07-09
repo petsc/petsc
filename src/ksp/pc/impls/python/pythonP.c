@@ -5,7 +5,7 @@
 /*@C
    PCPythonSetType - Initalize a PC object implemented in Python.
 
-   Logically Collective on PC
+   Collective on PC
 
    Input Parameter:
 +  pc - the preconditioner (PC) context.
