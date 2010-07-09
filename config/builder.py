@@ -6,6 +6,64 @@ sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config', 'BuildSystem'
 
 import script
 
+def noCheckCommand(command, status, output, error):
+  ''' Do no check result'''
+  return 
+
+class NullSourceDatabase(object):
+  def __init__(self, verbose = 0):
+    return
+
+  def setNode(self, vertex, deps):
+    return
+
+  def updateNode(self, vertex):
+    return
+
+  def rebuild(self, vertex):
+    return True
+
+class SourceDatabase(object):
+  '''This can be replaced by Jed's favorite software'''
+  def __init__(self, verbose = 0):
+    # Vertices are filenames
+    #   Arcs indicate a dependence and are decorated with consistency markers
+    self.dependencyGraph = {}
+    self.verbose         = verbose
+    return
+
+  def __str__(self):
+    return str(self.dependencyGraph)
+
+  @staticmethod
+  def marker(dep):
+    import hashlib
+    with file(dep) as f:
+      mark = hashlib.sha1(f.read()).digest()
+    return mark
+
+  def setNode(self, vertex, deps):
+    self.dependencyGraph[vertex] = [(dep, SourceDatabase.marker(dep)) for dep in deps]
+    return
+
+  def updateNode(self, vertex):
+    self.dependencyGraph[vertex] = [(dep, SourceDatabase.marker(dep)) for dep,mark in self.dependencyGraph[vertex]]
+    return
+
+  def rebuildArc(self, vertex, dep, mark):
+    import hashlib
+    with file(dep) as f:
+      newMark = hashlib.sha1(f.read()).digest()
+    return not mark == newMark
+
+  def rebuild(self, vertex):
+    if self.verbose: print 'Checking for rebuild of',vertex
+    for dep,mark in self.dependencyGraph[vertex]:
+      if self.rebuildArc(vertex, dep, mark):
+        if self.verbose: print '    dep',dep,'is changed'
+        return True
+    return False
+
 class PETScMaker(script.Script):
  def __init__(self):
    import RDict
@@ -43,10 +101,12 @@ class PETScMaker(script.Script):
    import nargs
 
    help = script.Script.setupHelp(self, help)
-   #help.addArgument('RepManager', '-rootDir', nargs.ArgDir(None, os.environ['PETSC_DIR'], 'The root directory for this build', isTemporary = 1))
-   help.addArgument('RepManager', '-rootDir', nargs.ArgDir(None, os.getcwd(), 'The root directory for this build', isTemporary = 1))
-   help.addArgument('RepManager', '-dryRun',  nargs.ArgBool(None, False, 'Only output what would be run', isTemporary = 1))
-   help.addArgument('RepManager', '-verbose', nargs.ArgInt(None, 0, 'The verbosity level', min = 0, isTemporary = 1))
+   #help.addArgument('PETScMaker', '-rootDir', nargs.ArgDir(None, os.environ['PETSC_DIR'], 'The root directory for this build', isTemporary = 1))
+   help.addArgument('PETScMaker', '-rootDir', nargs.ArgDir(None, os.getcwd(), 'The root directory for this build', isTemporary = 1))
+   help.addArgument('PETScMaker', '-dryRun',  nargs.ArgBool(None, False, 'Only output what would be run', isTemporary = 1))
+   help.addArgument('PETScMaker', '-dependencies',  nargs.ArgBool(None, True, 'Use dependencies to control build', isTemporary = 1))
+   help.addArgument('PETScMaker', '-rebuildDependencies', nargs.ArgBool(None, False, 'Only check dependencies', isTemporary = 1))
+   help.addArgument('PETScMaker', '-verbose', nargs.ArgInt(None, 0, 'The verbosity level', min = 0, isTemporary = 1))
    return help
 
  def setup(self):
@@ -54,6 +114,59 @@ class PETScMaker(script.Script):
    self.argDB['rootDir'] = os.path.abspath(self.argDB['rootDir'])
    self.framework = self.loadConfigure()
    self.setupModules()
+   if self.argDB['dependencies']:
+     confDir = os.path.join(self.petscdir.dir, self.arch.arch, 'conf')
+     if not self.argDB['rebuildDependencies'] and os.path.isfile(os.path.join(confDir, 'source.db')):
+       import cPickle
+
+       with file(os.path.join(confDir, 'source.db'), 'rb') as f:
+         self.sourceDatabase = cPickle.load(f)
+     else:
+       self.sourceDatabase = SourceDatabase(self.verbose)
+   else:
+     self.sourceDatabase = NullSourceDatabase(self.verbose)
+   return
+
+ def cleanupLog(self, framework, confDir):
+   '''Move configure.log to PROJECT_ARCH/conf - and update configure.log.bkp in both locations appropriately'''
+   import shutil
+   import os
+
+   if hasattr(framework, 'logName'):
+     logName         = framework.logName
+   else:
+     logName         = 'make.log'
+   logFile           = os.path.join(self.petscdir.dir, logName)
+   logFileBkp        = logFile + '.bkp'
+   logFileArchive    = os.path.join(confDir, logName)
+   logFileArchiveBkp = logFileArchive + '.bkp'
+
+   # Keep backup in $PROJECT_ARCH/conf location
+   if os.path.isfile(logFileArchiveBkp): os.remove(logFileArchiveBkp)
+   if os.path.isfile(logFileArchive):    os.rename(logFileArchive, logFileArchiveBkp)
+   if os.path.isfile(logFile):
+     shutil.copyfile(logFile, logFileArchive)
+     os.remove(logFile)
+   if os.path.isfile(logFileArchive):    os.symlink(logFileArchive, logFile)
+   # If the old bkp is using the same $PROJECT_ARCH/conf, then update bkp link
+   if os.path.realpath(logFileBkp) == os.path.realpath(logFileArchive):
+     if os.path.isfile(logFileBkp):        os.remove(logFileBkp)
+     if os.path.isfile(logFileArchiveBkp): os.symlink(logFileArchiveBkp, logFileBkp)
+   return
+
+ def cleanup(self):
+   root    = self.petscdir.dir
+   arch    = self.arch.arch
+   archDir = os.path.join(root, arch)
+   confDir = os.path.join(archDir, 'conf')
+   if not os.path.isdir(archDir): os.mkdir(archDir)
+   if not os.path.isdir(confDir): os.mkdir(confDir)
+
+   self.cleanupLog(self, confDir)
+   if self.argDB['dependencies']:
+     import cPickle
+     with file(os.path.join(confDir, 'source.db'), 'wb') as f:
+       cPickle.dump(self.sourceDatabase, f)
    return
 
  @property
@@ -65,6 +178,12 @@ class PETScMaker(script.Script):
  def dryRun(self):
    '''Flag for only output of what would be run'''
    return self.argDB['dryRun']
+
+ def readDependencyFile(self, depFile):
+   with file(depFile) as f:
+     target,deps = f.read().split(':')
+   self.sourceDatabase.setNode(target, deps.replace('\\','').split())
+   return
 
  def getPackageInfo(self):
    packageIncludes = []
@@ -85,6 +204,28 @@ class PETScMaker(script.Script):
    packageIncludes = self.headers.toStringNoDupes(packageIncludes)
    return packageIncludes, packageLibs
 
+ def sortSourceFiles(self, dirname):
+   '''Sorts source files by language
+  - returns lists of 
+   '''
+   cnames = []
+   fnames = []
+   onames = []
+   for f in os.listdir(dirname):
+     ext = os.path.splitext(f)[1]
+     if ext == '.c':
+       cnames.append(f)
+       onames.append(f.replace('.c', '.o'))
+     if hasattr(self.compilers, 'FC'):
+       if ext == '.F':
+         fnames.append(f)
+         onames.append(f.replace('.F', '.o'))
+       if self.compilers.fortranIsF90:
+         if ext == '.F90':
+           fnames.append(f)
+           onames.append(f.replace('.F90', '.o'))
+   return cnames, fnames, onames
+
  def compileC(self, source):
    '''PETSC_INCLUDE         = -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include
                                ${PACKAGES_INCLUDES} ${TAU_DEFS} ${TAU_INCLUDE}
@@ -102,19 +243,25 @@ class PETScMaker(script.Script):
    flags.append(self.setCompilers.getCompilerFlags())             # PCC_FLAGS
    flags.extend([self.setCompilers.CPPFLAGS, self.CHUD.CPPFLAGS]) # CPP_FLAGS
    flags.append('-D__INSDIR__='+os.getcwd().replace(self.petscdir.dir, ''))
+   flags.append('-MMD')
+   sources = [s for s in source if self.sourceDatabase.rebuild(os.path.splitext(s)[0]+'.o')]
    packageIncludes, packageLibs = self.getPackageInfo()
-   sources = source
    cmd = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+sources)
    if self.dryRun or self.verbose:
      section = 'screen'
    else:
      section = None
-   self.logWrite(cmd+'\n', debugSection = section, forceScroll = True)
-   if not self.dryRun:
-     (output, error, status) = self.executeShellCommand(cmd,checkCommand = noCheckCommand,log=self.log)
-     if status:
-       self.logPrint("ERROR IN COMPILE ******************************", debugSection='screen')
-       self.logPrint(output+error, debugSection='screen')
+   if len(sources):
+     self.logWrite(cmd+'\n', debugSection = section, forceScroll = True)
+     if not self.dryRun:
+       (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
+       if status:
+         self.logPrint("ERROR IN COMPILE ******************************", debugSection='screen')
+         self.logPrint(output+error, debugSection='screen')
+       else:
+         self.buildDependenciesFiles(sources)
+   else:
+     self.logPrint('Nothing to build', debugSection = section)
    self.setCompilers.popLanguage()
    return
 
@@ -141,7 +288,7 @@ class PETScMaker(script.Script):
      section = None
    self.logWrite(cmd+'\n', debugSection = section, forceScroll = True)
    if not self.dryRun:
-     (output, error, status) = self.executeShellCommand(cmd,checkCommand = noCheckCommand,log=self.log)
+     (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
      if status:
        self.logPrint("ERROR IN COMPILE ******************************", debugSection='screen')
        self.logPrint(output+error, debugSection='screen')
@@ -161,7 +308,7 @@ class PETScMaker(script.Script):
      section = None
    self.logWrite(cmd+'\n', debugSection = section, forceScroll = True)
    if not self.dryRun:
-     (output, error, status) = self.executeShellCommand(cmd,checkCommand = noCheckCommand,log=self.log)
+     (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
      if status:
        self.logPrint("ERROR IN ARCHIVE ******************************", debugSection='screen')
        self.logPrint(output+error, debugSection='screen')
@@ -178,43 +325,10 @@ class PETScMaker(script.Script):
      section = None
    self.logWrite(cmd+'\n', debugSection = section, forceScroll = True)
    if not self.dryRun:
-     (output, error, status) = self.executeShellCommand(cmd,checkCommand = noCheckCommand,log=self.log)
+     (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
      if status:
        self.logPrint("ERROR IN RANLIB ******************************", debugSection='screen')
        self.logPrint(output+error, debugSection='screen')
-   return
- 
- def buildDir(self, libname, dirname, fnames):
-   ''' This is run in a PETSc source directory'''
-   self.logWrite('Entering '+dirname+'\n', debugSection = 'screen', forceScroll = True)
-   os.chdir(dirname)
-
-   # Get list of source files in the directory 
-   cnames = []
-   onames = []
-   fnames = []
-   for f in os.listdir(dirname):
-     ext = os.path.splitext(f)[1]
-     if ext == '.c':
-       cnames.append(f)
-       onames.append(f.replace('.c', '.o'))
-     if hasattr(self.compilers, 'FC'):
-       if ext == '.F':
-         fnames.append(f)
-         onames.append(f.replace('.F', '.o'))
-       if self.compilers.fortranIsF90:
-         if ext == '.F90':
-           fnames.append(f)
-           onames.append(f.replace('.F90', '.o'))
-   if cnames:
-     self.logPrint('Compiling C files '+str(cnames))
-     self.compileC(cnames)
-   if fnames:
-     self.logPrint('Compiling Fortran files '+str(fnames))
-     self.compileF(fnames)
-   if onames:
-     self.logPrint('Archiving files '+str(onames)+' into '+libname)
-     self.archive(os.path.join(self.petscdir.dir, self.arch.arch, 'lib', libname), onames)
    return
 
  def checkDir(self, dirname):
@@ -297,42 +411,23 @@ class PETScMaker(script.Script):
      text = fd.readline()
    fd.close()
    return True
-
- def cleanupLog(self, framework):
-    '''Move configure.log to PROJECT_ARCH/conf - and update configure.log.bkp in both locations appropriately'''
-    root    = self.petscdir.dir
-    arch    = self.arch.arch
-    logName = 'make.log'
-    if hasattr(framework, 'logName'): logName = framework.logName
-
-    if arch:
-      import shutil
-      import os
-
-      logFile = os.path.join(root, logName)
-      print 'Moving log',logFile
-      archDir = os.path.join(root, arch)
-      confDir = os.path.join(archDir, 'conf')
-      if not os.path.isdir(archDir): os.mkdir(archDir)
-      if not os.path.isdir(confDir): os.mkdir(confDir)
-
-      logFileBkp        = logFile + '.bkp'
-      logFileArchive    = os.path.join(confDir, logName)
-      logFileArchiveBkp = logFileArchive + '.bkp'
-      print logFileBkp,logFileArchive,logFileArchiveBkp
-
-      # Keep backup in $PROJECT_ARCH/conf location
-      if os.path.isfile(logFileArchiveBkp): os.remove(logFileArchiveBkp)
-      if os.path.isfile(logFileArchive):    os.rename(logFileArchive, logFileArchiveBkp)
-      if os.path.isfile(logFile):
-        shutil.copyfile(logFile, logFileArchive)
-        os.remove(logFile)
-      if os.path.isfile(logFileArchive):    os.symlink(logFileArchive, logFile)
-      # If the old bkp is using the same $PROJECT_ARCH/conf, then update bkp link
-      if os.path.realpath(logFileBkp) == os.path.realpath(logFileArchive):
-        if os.path.isfile(logFileBkp):        os.remove(logFileBkp)
-        if os.path.isfile(logFileArchiveBkp): os.symlink(logFileArchiveBkp, logFileBkp)
-    return
+ 
+ def buildDir(self, libname, dirname, dummy):
+   ''' This is run in a PETSc source directory'''
+   self.logWrite('Entering '+dirname+'\n', debugSection = 'screen', forceScroll = True)
+   os.chdir(dirname)
+   cnames, fnames, onames = self.sortSourceFiles(dirname)
+   if cnames:
+     self.logPrint('Compiling C files '+str(cnames))
+     self.compileC(cnames)
+   if fnames:
+     self.logPrint('Compiling Fortran files '+str(fnames))
+     self.compileF(fnames)
+   # We could feed back names that need to be archived here (necessary?)
+   if onames:
+     self.logPrint('Archiving files '+str(onames)+' into '+libname)
+     self.archive(os.path.join(self.petscdir.dir, self.arch.arch, 'lib', libname), onames)
+   return
 
  def buildAll(self, rootDir = None):
    self.setup()
@@ -352,13 +447,51 @@ class PETScMaker(script.Script):
      for badDir in [d for d in dirs if not self.checkDir(os.path.join(root, d))]:
        dirs.remove(badDir)
    self.ranlib('libpetsc')
-   self.cleanupLog(self)
    return
 
-def noCheckCommand(command, status, output, error):
-  ''' Do no check result'''
-  return 
-  noCheckCommand = staticmethod(noCheckCommand)
-  
+ def buildDependenciesFiles(self, names):
+   if self.dryRun or self.verbose:
+     section = 'screen'
+   else:
+     section = None
+   if names:
+     self.logPrint('Rebuilding dependency info for files '+str(names))
+     for source in names:
+       depFile = os.path.splitext(source)[0]+'.d'
+       if os.path.isfile(depFile):
+         self.logWrite('FOUND DEPENDENCY FILE '+depFile+'\n', debugSection = section, forceScroll = True)
+         if not self.dryRun:
+           self.readDependencyFile(depFile)
+   return
+ 
+ def buildDependenciesDir(self, dirname, fnames):
+   ''' This is run in a PETSc source directory'''
+   self.logWrite('Entering '+dirname+'\n', debugSection = 'screen', forceScroll = True)
+   os.chdir(dirname)
+   cnames, fnames, onames = self.sortSourceFiles(dirname)
+   self.buildDependenciesFiles(onames)
+   return
+
+ def rebuildDependencies(self, rootDir = None):
+   if rootDir is None:
+     rootDir = self.argDB['rootDir']
+   if not self.checkDir(rootDir):
+     self.logPrint('Nothing to be done')
+   for root, dirs, files in os.walk(rootDir):
+     self.logPrint('Processing '+root)
+     self.buildDependenciesDir(root, files)
+     for badDir in [d for d in dirs if not self.checkDir(os.path.join(root, d))]:
+       dirs.remove(badDir)
+   return
+
+ def run(self):
+   self.setup()
+   if self.argDB['rebuildDependencies']:
+     self.rebuildDependencies()
+   else:
+     self.buildAll()
+   self.cleanup()
+   return
+
 if __name__ == '__main__':
-  PETScMaker().buildAll()
+  PETScMaker().run()
