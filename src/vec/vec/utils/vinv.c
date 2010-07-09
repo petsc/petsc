@@ -1215,25 +1215,36 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecDotNorm2(Vec s,Vec t,PetscScalar *dp, Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, VEC_CLASSID,1);
   PetscValidHeaderSpecific(t, VEC_CLASSID,2);
+  PetscValidScalarPointer(dp,3);
+  PetscValidScalarPointer(nm,4);
+  PetscValidType(s,1);
+  PetscValidType(t,2);
+  PetscCheckSameTypeAndComm(s,1,t,2);
+  if (s->map->N != t->map->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (s->map->n != t->map->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PetscLogEventBarrierBegin(VEC_DotNormBarrier,s,t,0,0,((PetscObject)s)->comm);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(s, &n);CHKERRQ(ierr);
-  ierr = VecGetArray(s, &sx);CHKERRQ(ierr);
-  ierr = VecGetArray(t, &tx);CHKERRQ(ierr);
+  if (s->ops->dotnorm2) {
+    ierr = (*s->ops->dotnorm2)(s,t,dp,nm);CHKERRQ(ierr);
+  } else {
+    ierr = VecGetLocalSize(s, &n);CHKERRQ(ierr);
+    ierr = VecGetArray(s, &sx);CHKERRQ(ierr);
+    ierr = VecGetArray(t, &tx);CHKERRQ(ierr);
 
-  for (i = 0; i<n; i++) {
-    dpx += sx[i]*PetscConj(tx[i]);
-    nmx += tx[i]*PetscConj(tx[i]);
+    for (i = 0; i<n; i++) {
+      dpx += sx[i]*PetscConj(tx[i]);
+      nmx += tx[i]*PetscConj(tx[i]);
+    }
+    work[0] = dpx;
+    work[1] = nmx;
+    ierr = MPI_Allreduce(&work,&sum,2,MPIU_SCALAR,MPIU_SUM,((PetscObject)s)->comm);CHKERRQ(ierr);
+    *dp  = sum[0];
+    *nm  = sum[1];
+
+    ierr = VecRestoreArray(t, &tx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(s, &sx);CHKERRQ(ierr);
+    ierr = PetscLogFlops(4.0*n);CHKERRQ(ierr);
   }
-  work[0] = dpx;
-  work[1] = nmx;
-  ierr = MPI_Allreduce(&work,&sum,2,MPIU_SCALAR,MPIU_SUM,((PetscObject)s)->comm);CHKERRQ(ierr);
-  *dp  = sum[0];
-  *nm  = sum[1];
-  
-  ierr = VecRestoreArray(t, &tx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(s, &sx);CHKERRQ(ierr);
-  ierr = PetscLogFlops(4.0*n);CHKERRQ(ierr);  
   ierr = PetscLogEventBarrierEnd(VEC_DotNormBarrier,s,t,0,0,((PetscObject)s)->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
