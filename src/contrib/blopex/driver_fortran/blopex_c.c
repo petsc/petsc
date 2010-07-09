@@ -1,3 +1,9 @@
+/* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ */
+/* @@@ BLOPEX (version 1.1) LGPL Version 2.1 or above.See www.gnu.org. */
+/* @@@ Copyright 2010 BLOPEX team http://code.google.com/p/blopex/     */
+/* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ */
+
+
 /*****************************************************************************
 
 Example of using BLOPEX with PETSc from Fortran.
@@ -12,6 +18,14 @@ Author: William F. Mitchell
 This software was produced as part of work done by the U.S. Government, and is
 not subject to copyright in the United States.
 
+Changes for Version 1.1:
+
+1. Add checks for PETSC_USE_COMPLEX to call correct function for lobpcg_solve
+2. Add type casting when moving void parameter points
+3. Surround petsc_lobpcg_solve_c_ with  extern "C" { .... }.
+   This is to enforce compatibility of object names between fortran and C++. 
+
+These changes are tagged in the code with the commentis ".... for Ver 1.1"
 *****************************************************************************/
 
 /*
@@ -22,6 +36,9 @@ Contains C routines for the interface with BLOPEX compiled with PETSc.
 
 #include "petscvec.h"
 #include "petscksp.h"
+#include <assert.h>
+#include "fortran_matrix.h"
+#include "fortran_interpreter.h"
 #include "petscda.h"
 #include "lobpcg.h"
 
@@ -126,6 +143,10 @@ void petsc_lobpcg_return_evec_MultiVector(void * data, void * x, void * y)
 
 /* the main routine called from Fortran to solve the eigenvalue problem */
 
+#ifdef PETSC_CLANGUAGE_CXX  /* Language check added For Ver 1.1 */
+extern "C"
+{
+#endif
 void petsc_lobpcg_solve_c_(
    Vec* u,                           /* prototype of a vector, not used   */
    int* num_eval,                    /* number of eigenvalues to compute  */
@@ -134,23 +155,23 @@ void petsc_lobpcg_solve_c_(
    double* atol,                     /* absolute error tolerance          */
    double* rtol,                     /* relative error tolerance          */
    double* eigenvalues,              /* computed eigenvalues              */
-   void *matmult_opA,                /* Fortran routine for operator A    */
+   void *matmult_opA,                /* Fortran Routine for operator A    */
    void *matmult_opB,                /* Fortran routine for operator B    */
    void *matmult_opT,                /* Fortran routine for operator T    */
-   void *petsc_lobpcg_return_evec,   /* Fortran routine gets eigenvectors */
+   void *petsc_lobpcg_return_evec,  /* Fortran routine gets eigenvectors */
    void *petsc_lobpcg_initial_guess, /* Fortran routine for initial guess */
    int* info)                        /* error code                        */
 {
 
    PetscErrorCode             ierr;         /* for PETSc return code        */
    mv_MultiVectorPtr          eigenvectors; /* the eigenvectors             */
-   double *                   eigs;         /* the eigenvalues              */
-   double *                   eigs_hist;    /* history of eigenvalues       */
+   PetscScalar *              eigs;         /* the eigenvalues              */
+   PetscScalar *              eigs_hist;    /* history of eigenvalues       */
    double *                   resid;        /* the residuals                */
    double *                   resid_hist;   /* history of residuals         */
    int                        iterations;   /* number of iterations         */
    int                        n_eigs;       /* number of eigenvalues        */
-   int                        i,j;
+   int                        i;
    PetscTruth                 outpt=PETSC_FALSE; /* print evals and resids  */
    lobpcg_Tolerance           lobpcg_tol;   /* residual tolerance           */
    mv_InterfaceInterpreter    ii;           /* Interface Interpreter        */
@@ -162,17 +183,17 @@ void petsc_lobpcg_solve_c_(
    n_eigs = *num_eval;
 
 /* set pointers to the Fortran callback functions */
-
-   hold_matmult_opA = matmult_opA;
-   hold_matmult_opB = matmult_opB;
-   hold_matmult_opT = matmult_opT;
-   hold_petsc_lobpcg_initial_guess = petsc_lobpcg_initial_guess;
-   hold_petsc_lobpcg_return_evec = petsc_lobpcg_return_evec;
+/* type casting added  For Ver 1.1 */
+   hold_matmult_opA =(void (*)(void *,void *,void *))  matmult_opA;
+   hold_matmult_opB =(void (*)(void *,void *,void *))  matmult_opB;
+   hold_matmult_opT =(void (*)(void *,void *,void *))  matmult_opT;
+   hold_petsc_lobpcg_initial_guess =(void (*)(void *)) petsc_lobpcg_initial_guess;
+   hold_petsc_lobpcg_return_evec = (void (*)(void *)) petsc_lobpcg_return_evec;
 
 /* allocate memory for the eigenvalues, residuals and histories */
 
-   ierr = PetscMalloc(sizeof(double)*n_eigs,&eigs);
-   ierr = PetscMalloc(sizeof(double)*n_eigs*(*maxit+1),&eigs_hist);
+   ierr = PetscMalloc(sizeof(PetscScalar)*n_eigs,&eigs);
+   ierr = PetscMalloc(sizeof(PetscScalar)*n_eigs*(*maxit+1),&eigs_hist);
    ierr = PetscMalloc(sizeof(double)*n_eigs,&resid);
    ierr = PetscMalloc(sizeof(double)*n_eigs*(*maxit+1),&resid_hist);
 
@@ -186,9 +207,13 @@ void petsc_lobpcg_solve_c_(
    lobpcg_tol.absolute = *atol;
    lobpcg_tol.relative = *rtol;
 
-   blap_fn.dpotrf = PETSC_dpotrf_interface;
-   blap_fn.dsygv = PETSC_dsygv_interface;
-
+   #ifdef PETSC_USE_COMPLEX  /* complex check added for Ver 1.1 */
+      blap_fn.zpotrf = PETSC_zpotrf_interface;
+      blap_fn.zhegv = PETSC_zsygv_interface;
+   #else
+      blap_fn.dpotrf = PETSC_dpotrf_interface;
+      blap_fn.dsygv = PETSC_dsygv_interface;
+   #endif
 /* create the multivector for eigenvectors */
 
    eigenvectors = mv_MultiVectorCreateFromSampleVector(&ii, n_eigs,*u);
@@ -201,7 +226,28 @@ void petsc_lobpcg_solve_c_(
                                           mv_MultiVectorGetData(eigenvectors));
 
 /* call the lobpcg solver from BLOPEX */
-
+   #ifdef PETSC_USE_COMPLEX   /* complex check added for Ver 1.1 */
+   ierr = lobpcg_solve_complex( eigenvectors,
+                        &aux_data,
+                        OperatorAMultiVector,
+                        &aux_data,
+                        OperatorBMultiVector,
+                        &aux_data,
+                        OperatorTMultiVector,
+                        NULL,
+                        blap_fn,
+                        lobpcg_tol,
+                        *maxit,
+                        0, /* verbosity, use 2 for debugging */
+                        &iterations,
+                        (komplex *) eigs,
+                        (komplex *) eigs_hist,
+                        n_eigs,
+                        resid,
+                        resid_hist,
+                        n_eigs
+   );
+   #else
    ierr = lobpcg_solve_double( eigenvectors,
                         &aux_data,
                         OperatorAMultiVector,
@@ -222,6 +268,7 @@ void petsc_lobpcg_solve_c_(
                         resid_hist,
                         n_eigs
    );
+   #endif
 
 /* set the return error code to lobpcg's error code */
 
@@ -233,7 +280,11 @@ void petsc_lobpcg_solve_c_(
 
 /* copy the eigenvalues to the return variable */
 
-   for (i=0;i<n_eigs;i++) eigenvalues[i] = eigs[i];
+   #ifdef PETSC_USE_COMPLEX  /* complex check added for Ver 1.1 */
+      for (i=0;i<n_eigs;i++) eigenvalues[i] = PetscRealPart(eigs[i]);
+   #else
+      for (i=0;i<n_eigs;i++) eigenvalues[i] = eigs[i];
+   #endif
 
 /* return the eigenvectors.  The second instance of eigenvectors isn't used
    here either */
@@ -251,7 +302,7 @@ void petsc_lobpcg_solve_c_(
       PetscPrintf(PETSC_COMM_WORLD,"   eigenvalues and residuals:\n");
       for (i=0;i<n_eigs;i++)
         {
-                ierr = PetscPrintf(PETSC_COMM_WORLD,"%e %e\n",eigs[i],resid[i]);
+                ierr = PetscPrintf(PETSC_COMM_WORLD,"%e %e\n",PetscRealPart(eigs[i]),resid[i]);
         }
 
 /*
@@ -285,3 +336,7 @@ void petsc_lobpcg_solve_c_(
    ierr = PetscFree(resid);
    ierr = PetscFree(resid_hist);
 }
+#ifdef PETSC_CLANGUAGE_CXX
+}
+#endif
+
