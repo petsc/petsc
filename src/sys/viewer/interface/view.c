@@ -154,7 +154,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerGetType(PetscViewer viewer,const Petsc
    PetscViewerSetOptionsPrefix - Sets the prefix used for searching for all 
    PetscViewer options in the database.
 
-   Collective on PetscViewer
+   Logically Collective on PetscViewer
 
    Input Parameter:
 +  viewer - the PetscViewer context
@@ -186,7 +186,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetOptionsPrefix(PetscViewer viewer,co
    PetscViewerAppendOptionsPrefix - Appends to the prefix used for searching for all 
    PetscViewer options in the database.
 
-   Collective on PetscViewer
+   Logically Collective on PetscViewer
 
    Input Parameters:
 +  viewer - the PetscViewer context

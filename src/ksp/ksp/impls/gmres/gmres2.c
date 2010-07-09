@@ -7,7 +7,7 @@
 /*@C
    KSPGMRESSetOrthogonalization - Sets the orthogonalization routine used by GMRES and FGMRES.
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate
@@ -57,7 +57,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetOrthogonalization(KSP ksp,PetscErro
 /*@C
    KSPGMRESGetOrthogonalization - Gets the orthogonalization routine used by GMRES and FGMRES.
 
-   Collective on KSP
+   Not Collective
 
    Input Parameter:
 .  ksp - iterative context obtained from KSPCreate

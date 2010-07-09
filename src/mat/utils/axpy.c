@@ -7,7 +7,7 @@
 /*@
    MatAXPY - Computes Y = a*X + Y.
 
-   Collective on Mat
+   Logically  Collective on Mat
 
    Input Parameters:
 +  a - the scalar multiplier
@@ -33,7 +33,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,MAT_CLASSID,3); 
   PetscValidHeaderSpecific(Y,MAT_CLASSID,1);
-
+  PetscValidLogicalCollectiveScalar(Y,a,2);
   ierr = MatGetSize(X,&m1,&n1);CHKERRQ(ierr);
   ierr = MatGetSize(Y,&m2,&n2);CHKERRQ(ierr);
   if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Non conforming matrix add: %D %D %D %D",m1,m2,n1,n2);
@@ -90,7 +90,7 @@ PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
 /*@
    MatShift - Computes Y =  Y + a I, where a is a PetscScalar and I is the identity matrix.
 
-   Collective on Mat
+   Neighbor-wise Collective on Mat
 
    Input Parameters:
 +  Y - the matrices
@@ -163,7 +163,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalSet_Default(Mat Y,Vec D,InsertMode 
 .  D - the diagonal matrix, represented as a vector
 -  i - INSERT_VALUES or ADD_VALUES
 
-   Collective on Mat and Vec
+   Neighbor-wise Collective on Mat and Vec
 
    Level: intermediate
 
@@ -191,7 +191,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 /*@
    MatAYPX - Computes Y = a*Y + X.
 
-   Collective on Mat
+   Logically on Mat
 
    Input Parameters:
 +  a - the PetscScalar multiplier
@@ -215,9 +215,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAYPX(Mat Y,PetscScalar a,Mat X,MatStructure
   PetscInt       mX,mY,nX,nY;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(X,MAT_CLASSID,2);
+  PetscValidHeaderSpecific(X,MAT_CLASSID,3);
   PetscValidHeaderSpecific(Y,MAT_CLASSID,1);
-
+  PetscValidLogicalCollectiveScalar(Y,a,2);
   ierr = MatGetSize(X,&mX,&nX);CHKERRQ(ierr);
   ierr = MatGetSize(X,&mY,&nY);CHKERRQ(ierr);
   if (mX != mY || nX != nY) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Non conforming matrices: %D %D first %D %D second",mX,mY,nX,nY);

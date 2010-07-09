@@ -436,7 +436,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultConverged(SNES snes,PetscInt it,Pe
    SNESSkipConverged - Convergence test for SNES that NEVER returns as
    converged, UNLESS the maximum number of iteration have been reached.
 
-   Collective on SNES
+   Logically Collective on SNES
 
    Input Parameters:
 +  snes - the SNES context

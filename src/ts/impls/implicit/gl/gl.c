@@ -584,7 +584,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGLSetType(TS ts,const TSGLType type)
    Time integrators that need to control error must have the option to reject a time step based on local error
    estimates.  This function allows different schemes to be set.
 
-   Collective on TS
+   Logically Collective on TS
 
    Input Parameters:
 +  ts - the TS context

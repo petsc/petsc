@@ -110,7 +110,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
   PetscTruth     diagonalscale;
 
   PetscFunctionBegin;
-  ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
+  ierr    = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   cg            = (KSP_CG*)ksp->data;

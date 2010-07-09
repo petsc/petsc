@@ -10,7 +10,7 @@
     KSPRichardsonSetScale - Set the damping factor; if this routine is not called, the factor 
     defaults to 1.0.
 
-    Collective on KSP
+    Logically Collective on KSP
 
     Input Parameters:
 +   ksp - the iterative context
@@ -26,6 +26,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetScale(KSP ksp,PetscReal scale)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveReal(ksp,scale,2);
   ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPRichardsonSetScale_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,scale);CHKERRQ(ierr);
@@ -39,7 +40,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetScale(KSP ksp,PetscReal scale)
     KSPRichardsonSetSelfScale - Sets Richardson to automatically determine optimal scaling at each iteration to minimize the 2-norm of the 
        preconditioned residual
 
-    Collective on KSP
+    Logically Collective on KSP
 
     Input Parameters:
 +   ksp - the iterative context
@@ -60,6 +61,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetSelfScale(KSP ksp,PetscTruth s
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveTruth(ksp,scale,2);
   ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPRichardsonSetSelfScale_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,scale);CHKERRQ(ierr);

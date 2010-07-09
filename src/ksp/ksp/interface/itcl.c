@@ -15,7 +15,7 @@ extern PetscTruth KSPRegisterAllCalled;
    KSPSetOptionsPrefix - Sets the prefix used for searching for all 
    KSP options in the database.
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - the Krylov context
@@ -62,7 +62,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetOptionsPrefix(KSP ksp,const char prefix[
    KSPAppendOptionsPrefix - Appends to the prefix used for searching for all 
    KSP options in the database.
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - the Krylov context
@@ -94,7 +94,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPAppendOptionsPrefix(KSP ksp,const char pref
 /*@C
    KSPSetUseFischerGuess - Use the Paul Fischer algorithm, see KSPFischerGuessCreate()
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - the Krylov context
@@ -115,6 +115,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUseFischerGuess(KSP ksp,PetscInt model,P
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidLogicalCollectiveInt(ksp,model,2);
+  PetscValidLogicalCollectiveInt(ksp,model,3);
   if (ksp->guess) {
     ierr = KSPFischerGuessDestroy(ksp->guess);CHKERRQ(ierr);
     ksp->guess = PETSC_NULL;
@@ -131,7 +133,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUseFischerGuess(KSP ksp,PetscInt model,P
 /*@C
    KSPSetFischerGuess - Use the Paul Fischer algorithm created by KSPFischerGuessCreate()
 
-   Collective on KSP
+   Logically Collective on KSP
 
    Input Parameters:
 +  ksp - the Krylov context
@@ -167,7 +169,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFischerGuess(KSP ksp,KSPFischerGuess gue
 /*@C
    KSPGetFischerGuess - Gets the initial guess generator set with either KSPSetFischerGuess() or KSPCreateFischerGuess()/KSPSetFischerGuess()
 
-   Collective on KSP
+   Not Collective
 
    Input Parameters:
 .  ksp - the Krylov context

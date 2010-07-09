@@ -239,7 +239,7 @@ EXTERN_C_END
    causes the ordering computed in the first factor to be used for all
    following factors.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -260,6 +260,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseOrdering(PC pc,PetscTruth flag
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveTruth(pc,flag,2);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorSetReuseOrdering_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,flag);CHKERRQ(ierr);

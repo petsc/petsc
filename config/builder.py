@@ -51,6 +51,7 @@ class PETScMaker(script.Script):
 
  def setup(self):
    script.Script.setup(self)
+   self.argDB['rootDir'] = os.path.abspath(self.argDB['rootDir'])
    self.framework = self.loadConfigure()
    self.setupModules()
    return
@@ -297,23 +298,28 @@ class PETScMaker(script.Script):
    fd.close()
    return True
 
-  def cleanupLog(self, framework):
+ def cleanupLog(self, framework):
     '''Move configure.log to PROJECT_ARCH/conf - and update configure.log.bkp in both locations appropriately'''
+    root    = self.petscdir.dir
     arch    = self.arch.arch
-    logFile = 'make.log'
-    if hasattr(framework, 'logName'): logFile = framework.logName
+    logName = 'make.log'
+    if hasattr(framework, 'logName'): logName = framework.logName
 
     if arch:
       import shutil
       import os
 
-      confDir = os.path.join(arch, 'conf')
-      if not os.path.isdir(arch):    os.mkdir(arch)
+      logFile = os.path.join(root, logName)
+      print 'Moving log',logFile
+      archDir = os.path.join(root, arch)
+      confDir = os.path.join(archDir, 'conf')
+      if not os.path.isdir(archDir): os.mkdir(archDir)
       if not os.path.isdir(confDir): os.mkdir(confDir)
 
       logFileBkp        = logFile + '.bkp'
-      logFileArchive    = os.path.join(confDir, logFile)
+      logFileArchive    = os.path.join(confDir, logName)
       logFileArchiveBkp = logFileArchive + '.bkp'
+      print logFileBkp,logFileArchive,logFileArchiveBkp
 
       # Keep backup in $PROJECT_ARCH/conf location
       if os.path.isfile(logFileArchiveBkp): os.remove(logFileArchiveBkp)
@@ -346,7 +352,7 @@ class PETScMaker(script.Script):
      for badDir in [d for d in dirs if not self.checkDir(os.path.join(root, d))]:
        dirs.remove(badDir)
    self.ranlib('libpetsc')
-   self.cleanupLog()
+   self.cleanupLog(self)
    return
 
 def noCheckCommand(command, status, output, error):

@@ -323,7 +323,7 @@ EXTERN_C_END
 /*@
    PCCompositeSetType - Sets the type of composite preconditioner.
    
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameter:
 +  pc - the preconditioner context
@@ -342,6 +342,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeSetType(PC pc,PCCompositeType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveEnum(pc,type,2);
+
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCompositeSetType_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,type);CHKERRQ(ierr);
@@ -355,7 +357,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeSetType(PC pc,PCCompositeType type)
    PCCompositeSpecialSetAlpha - Sets alpha for the special composite preconditioner
      for alphaI + R + S
    
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameter:
 +  pc - the preconditioner context
@@ -371,6 +373,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeSpecialSetAlpha(PC pc,PetscScalar a
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveScalar(pc,alpha,2);
+
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCompositeSpecialSetAlpha_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,alpha);CHKERRQ(ierr);
@@ -447,7 +451,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
                       the matrix used to define the preconditioner) is used to compute
                       the residual when the multiplicative scheme is used.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 .  pc - the preconditioner context

@@ -8,7 +8,7 @@
    SNESLineSearchSetParams - Sets the parameters associated with the line search
    routine in the Newton-based method SNESLS.
 
-   Collective on SNES
+   Logically Collective on SNES
 
    Input Parameters:
 +  snes    - The nonlinear context obtained from SNESCreate()
@@ -35,6 +35,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetParams(SNES snes,PetscReal a
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidLogicalCollectiveReal(snes,alpha,2);
+  PetscValidLogicalCollectiveReal(snes,maxstep,3);
+  PetscValidLogicalCollectiveReal(snes,minlambda,4);
+
   if (alpha   >= 0.0) ls->alpha       = alpha;
   if (maxstep >= 0.0) ls->maxstep     = maxstep;
   if (minlambda >= 0.0) ls->minlambda = minlambda;

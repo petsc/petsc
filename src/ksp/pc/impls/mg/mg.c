@@ -116,7 +116,7 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rto
    PCMGSetLevels - Sets the number of levels to use with MG.
    Must be called before any other MG routine.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -149,6 +149,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (mg->nlevels > -1) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ORDER,"Number levels already set for MG\n  make sure that you call PCMGSetLevels() before KSPSetFromOptions()");
   if (mg->levels) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error in PETSc, this array should not yet exist");
+  PetscValidLogicalCollectiveInt(pc,levels,2);
 
   mg->nlevels      = levels;
   mg->galerkin     = PETSC_FALSE;
@@ -709,7 +710,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetLevels(PC pc,PetscInt *levels)
    PCMGSetType - Determines the form of multigrid to use:
    multiplicative, additive, full, or the Kaskade algorithm.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -732,6 +733,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetType(PC pc,PCMGType form)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveEnum(pc,form,2);
   mg->am = form;
   if (form == PC_MG_MULTIPLICATIVE) pc->ops->applyrichardson = PCApplyRichardson_MG;
   else pc->ops->applyrichardson = 0;
@@ -744,7 +746,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetType(PC pc,PCMGType form)
    PCMGSetCycleType - Sets the type cycles to use.  Use PCMGSetCycleTypeOnLevel() for more 
    complicated cycling.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the multigrid context 
@@ -768,6 +770,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetCycleType(PC pc,PCMGCycleType n)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (!mglevels) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  PetscValidLogicalCollectiveInt(pc,n,2);
   levels = mglevels[0]->levels;
 
   for (i=0; i<levels; i++) {  
@@ -782,7 +785,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetCycleType(PC pc,PCMGCycleType n)
    PCMGMultiplicativeSetCycles - Sets the number of cycles to use for each preconditioner step 
          of multigrid when PCMGType of PC_MG_MULTIPLICATIVE is used
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  pc - the multigrid context 
@@ -808,6 +811,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGMultiplicativeSetCycles(PC pc,PetscInt n)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (!mglevels) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  PetscValidLogicalCollectiveInt(pc,n,2);
   levels = mglevels[0]->levels;
 
   for (i=0; i<levels; i++) {  
@@ -822,7 +826,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGMultiplicativeSetCycles(PC pc,PetscInt n)
    PCMGSetGalerkin - Causes the coarser grid matrices to be computed from the
       finest grid via the Galerkin process: A_i-1 = r_i * A_i * r_i^t
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 .  pc - the multigrid context 
@@ -888,7 +892,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetGalerkin(PC pc,PetscTruth *galerkin)
    use on all levels. Use PCMGGetSmootherDown() to set different 
    pre-smoothing steps on different levels.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  mg - the multigrid context 
@@ -913,6 +917,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetNumberSmoothDown(PC pc,PetscInt n)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (!mglevels) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  PetscValidLogicalCollectiveInt(pc,n,2);
   levels = mglevels[0]->levels;
 
   for (i=1; i<levels; i++) {  
@@ -931,7 +936,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetNumberSmoothDown(PC pc,PetscInt n)
    on all levels. Use PCMGGetSmootherUp() to set different numbers of 
    post-smoothing steps on different levels.
 
-   Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
 +  mg - the multigrid context 
@@ -959,6 +964,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetNumberSmoothUp(PC pc,PetscInt n)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (!mglevels) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  PetscValidLogicalCollectiveInt(pc,n,2);
   levels = mglevels[0]->levels;
 
   for (i=1; i<levels; i++) {  

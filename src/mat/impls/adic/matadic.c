@@ -447,7 +447,7 @@ EXTERN_C_END
 /*@C
    MatDAADSetDA - Tells the matrix what DA it is using for layout and Jacobian.
 
-   Collective on Mat and DA
+   Logically Collective on Mat and DA
 
    Input Parameters:
 +  mat - the matrix
@@ -477,7 +477,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetDA(Mat A,DA da)
 /*@C
    MatDAADSetSNES - Tells the matrix what SNES it is using for the base U.
 
-   Collective on Mat and SNES
+   Logically Collective on Mat and SNES
 
    Input Parameters:
 +  mat - the matrix
@@ -509,7 +509,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetSNES(Mat A,SNES snes)
 /*@C
    MatDAADSetCtx - Sets the user context for a DAAD (ADIC matrix-free) matrix.
 
-   Collective on Mat
+   Logically Collective on Mat
 
    Input Parameters:
 +  mat - the matrix

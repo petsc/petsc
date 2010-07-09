@@ -369,7 +369,7 @@ static PetscErrorCode TSView_Pseudo(TS ts,PetscViewer viewer)
    TSPseudoSetVerifyTimeStep - Sets a user-defined routine to verify the quality of the 
    last timestep.
 
-   Collective on TS
+   Logically Collective on TS
 
    Input Parameters:
 +  ts - timestep context
@@ -415,7 +415,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPseudoSetVerifyTimeStep(TS ts,PetscErrorCode 
     TSPseudoSetTimeStepIncrement - Sets the scaling increment applied to 
     dt when using the TSPseudoDefaultTimeStep() routine.
 
-   Collective on TS
+   Logically Collective on TS
 
     Input Parameters:
 +   ts - the timestep context
@@ -436,6 +436,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPseudoSetTimeStepIncrement(TS ts,PetscReal in
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidLogicalCollectiveReal(ts,inc,2);
 
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPseudoSetTimeStepIncrement_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -453,7 +454,7 @@ $         dt = initial_dt*initial_fnorm/current_fnorm
       rather than the default update,
 $         dt = current_dt*previous_fnorm/current_fnorm.
 
-   Collective on TS
+   Logically Collective on TS
 
     Input Parameter:
 .   ts - the timestep context
@@ -488,7 +489,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPseudoIncrementDtFromInitialDt(TS ts)
    TSPseudoSetTimeStep - Sets the user-defined routine to be
    called at each pseudo-timestep to update the timestep.
 
-   Collective on TS
+   Logically Collective on TS
 
    Input Parameters:
 +  ts - timestep context

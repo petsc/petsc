@@ -538,7 +538,6 @@ typedef struct {
 E*/
 typedef enum {MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3} MatInfoType;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetInfo(Mat,MatInfoType,MatInfo*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatValid(Mat,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonal(Mat,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMax(Mat,Vec,PetscInt[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMin(Mat,Vec,PetscInt[]);

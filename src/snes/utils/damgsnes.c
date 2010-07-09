@@ -826,7 +826,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetFromOptions(DMMG *dmmg)
     DMMGSetSNESLocalFD - Sets the local user function that is used to approximately compute the Jacobian
         via finite differences.
 
-    Collective on DMMG
+    Logically Collective on DMMG
 
     Input Parameter:
 +   dmmg - the context
@@ -854,7 +854,7 @@ PetscErrorCode DMMGSetSNESLocalFD(DMMG *dmmg,DALocalFunction1 function)
 /*@C
   DMMGGetSNESLocal - Returns the local functions for residual and Jacobian evaluation.
 
-  Collective on DMMG
+  Not Collective
 
   Input Parameter:
 . dmmg - the context
@@ -896,7 +896,7 @@ PetscErrorCode DMMGGetSNESLocal(DMMG *dmmg,DALocalFunction1 *function, DALocalFu
    PetscErrorCode DMMGSetSNESLocal(DMMG *dmmg,DALocalFunction1 function, DALocalFunction1 jacobian,
                         DALocalFunction1 ad_function, DALocalFunction1 admf_function);
 
-    Collective on DMMG
+    Logically Collective on DMMG
 
     Input Parameter:
 +   dmmg - the context
@@ -1101,7 +1101,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGInitialGuess_Local(DMMG dmmg,Vec x)
 /*@C
     DMMGSetInitialGuessLocal - sets code to compute the initial guess for each level
 
-    Collective on DMMG
+    Logically Collective on DMMG
 
     Input Parameter:
 +   dmmg - the context
@@ -1128,7 +1128,7 @@ PetscErrorCode DMMGSetInitialGuessLocal(DMMG *dmmg,PetscErrorCode (*localguess)(
 /*@C
     DMMGSetISColoringType - type of coloring used to compute Jacobian via finite differencing
 
-    Collective on DMMG
+    Logically Collective on DMMG
 
     Input Parameter:
 +   dmmg - the context

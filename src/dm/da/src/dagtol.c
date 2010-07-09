@@ -13,7 +13,7 @@
    patch; the ghost points are included. Must be followed by 
    DAGlobalToLocalEnd() to complete the exchange.
 
-   Collective on DA
+   Neighbor-wise Collective on DA
 
    Input Parameters:
 +  da - the distributed array context
@@ -57,7 +57,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToLocalBegin(DA da,Vec g,InsertMode mod
    DALocalToGlobalBegin - Adds values from the local (ghosted) vector
    into the global (nonghosted) vector.
 
-   Collective on DA
+   Neighbor-wise Collective on DA
 
    Input Parameters:
 +  da - the distributed array context
@@ -100,7 +100,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DALocalToGlobalBegin(DA da,Vec l,Vec g)
    DALocalToGlobalEnd - Adds values from the local (ghosted) vector
    into the global (nonghosted) vector.
 
-   Collective on DA
+   Neighbor-wise Collective on DA
 
    Input Parameters:
 +  da - the distributed array context
@@ -144,7 +144,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DALocalToGlobalEnd(DA da,Vec l,Vec g)
    patch; the ghost points are included. Must be preceeded by 
    DAGlobalToLocalBegin().
 
-   Collective on DA
+   Neighbor-wise Collective on DA
 
    Input Parameters:
 +  da - the distributed array context
@@ -203,9 +203,9 @@ EXTERN PetscErrorCode DAGetNatural_Private(DA,PetscInt*,IS*);
 PetscErrorCode DAGlobalToNatural_Create(DA da)
 {
   PetscErrorCode ierr;
-  PetscInt  m,start,Nlocal;
-  IS  from,to;
-  Vec global;
+  PetscInt       m,start,Nlocal;
+  IS             from,to;
+  Vec            global;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
@@ -236,7 +236,7 @@ PetscErrorCode DAGlobalToNatural_Create(DA da)
    in the "natural" grid ordering. Must be followed by 
    DAGlobalToNaturalEnd() to complete the exchange.
 
-   Collective on DA
+   Neighbor-wise Collective on DA
 
    Input Parameters:
 +  da - the distributed array context
@@ -284,7 +284,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalBegin(DA da,Vec g,InsertMode m
    DAGlobalToNaturalEnd - Maps values from the global vector to a global vector
    in the natural ordering. Must be preceeded by DAGlobalToNaturalBegin().
 
-   Collective on DA
+   Neighbor-wise Collective on DA
 
    Input Parameters:
 +  da - the distributed array context
@@ -327,7 +327,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalEnd(DA da,Vec g,InsertMode mod
    to a global vector in the PETSc DA grid ordering. Must be followed by 
    DANaturalToGlobalEnd() to complete the exchange.
 
-   Collective on DA
+   Neighbor-wise Collective on DA
 
    Input Parameters:
 +  da - the distributed array context
@@ -374,7 +374,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DANaturalToGlobalBegin(DA da,Vec g,InsertMode m
    DANaturalToGlobalEnd - Maps values from the natural ordering global vector 
    to a global vector in the PETSc DA ordering. Must be preceeded by DANaturalToGlobalBegin().
 
-   Collective on DA
+   Neighbor-wise Collective on DA
 
    Input Parameters:
 +  da - the distributed array context

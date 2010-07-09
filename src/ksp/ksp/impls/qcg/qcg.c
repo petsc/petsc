@@ -10,7 +10,7 @@ static PetscErrorCode QuadraticRoots_Private(Vec,Vec,PetscReal*,PetscReal*,Petsc
 /*@
     KSPQCGSetTrustRegionRadius - Sets the radius of the trust region.
 
-    Collective on KSP
+    Logically Collective on KSP
 
     Input Parameters:
 +   ksp   - the iterative context
@@ -44,7 +44,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGSetTrustRegionRadius(KSP ksp,PetscReal d
     KSPQCGGetTrialStepNorm - Gets the norm of a trial step vector.  The WCG step may be
     constrained, so this is not necessarily the length of the ultimate step taken in QCG.
 
-    Collective on KSP
+    Not Collective
 
     Input Parameter:
 .   ksp - the iterative context
@@ -137,7 +137,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   PetscTruth     diagonalscale;
 
   PetscFunctionBegin;
-  ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
+  ierr    = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
   if (ksp->transpose_solve) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Currently does not support transpose solve");
 

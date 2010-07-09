@@ -1362,7 +1362,7 @@ EXTERN_C_END
 /*@
   MatSetMumpsIcntl - Set MUMPS parameter ICNTL()
 
-   Collective on Mat
+   Logically Collective on Mat
 
    Input Parameters:
 +  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
@@ -1383,6 +1383,8 @@ PetscErrorCode MatSetMumpsIcntl(Mat F,PetscInt icntl,PetscInt ival)
   Mat_MUMPS      *lu =(Mat_MUMPS*)(F)->spptr; 
 
   PetscFunctionBegin; 
+  PetscValidLogicalCollectiveInt(mat,icntl,2);
+  PetscValidLogicalCollectiveInt(mat,ival,3);
   lu->id.ICNTL(icntl) = ival;
   PetscFunctionReturn(0);
 }

@@ -288,7 +288,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsDestroy(PetscDrawViewPorts *por
 /*@C
    PetscDrawViewPortsSet - sets a draw object to use a particular subport
 
-   Collective on PetscDraw inside PetscDrawViewPorts
+   Logically Collective on PetscDraw inside PetscDrawViewPorts
 
    Input Parameter:
 +  ports - the PetscDrawViewPorts object
@@ -301,7 +301,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsDestroy(PetscDrawViewPorts *por
 .seealso: PetscDrawSplitViewPort(), PetscDrawSetViewPort(), PetscDrawViewPortsDestroy(), PetscDrawViewPortsCreate()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsSet(PetscDrawViewPorts *ports,int port)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsSet(PetscDrawViewPorts *ports,PetscInt port)
 {
   PetscErrorCode ierr;
 

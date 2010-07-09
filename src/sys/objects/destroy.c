@@ -266,7 +266,7 @@ static PetscObject PetscObjectRegisterDestroy_Objects[MAXREGDESOBJS];
    PetscObjectRegisterDestroy - Registers a PETSc object to be destroyed when
      PetscFinalize() is called.
 
-   Collective on PetscObject
+   Logically Collective on PetscObject
 
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
@@ -300,7 +300,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectRegisterDestroy(PetscObject obj)
    PetscObjectRegisterDestroyAll - Frees all the PETSc objects that have been registered
      with PetscObjectRegisterDestroy(). Called by PetscFinalize()
 
-   Collective on individual PetscObjects
+   Logically Collective on individual PetscObjects
 
    Level: developer
 

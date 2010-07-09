@@ -37,7 +37,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawClear(PetscDraw draw)
 /*@
    PetscDrawBOP - Begins a new page or frame on the selected graphical device.
 
-   Collective on PetscDraw
+   Logically Collective on PetscDraw
 
    Input Parameter:
 .  draw - the drawing context
@@ -62,7 +62,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawBOP(PetscDraw draw)
 /*@
    PetscDrawEOP - Ends a page or frame on the selected graphical device.
 
-   Collective on PetscDraw
+   Logically Collective on PetscDraw
 
    Input Parameter:
 .  draw - the drawing context

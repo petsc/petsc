@@ -10,7 +10,7 @@
    PetscDrawSetPause - Sets the amount of time that program pauses after 
    a PetscDrawPause() is called. 
 
-   Collective on PetscDraw
+   Logically Collective on PetscDraw
 
    Input Parameters:
 +  draw   - the drawing object
@@ -30,6 +30,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSetPause(PetscDraw draw,PetscReal lpause
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
+  PetscValidLogicalCollectiveReal(draw,lpause,2);
   draw->pause = lpause;
   PetscFunctionReturn(0);
 }

@@ -157,7 +157,7 @@ static PetscMPIInt Petsc_Viewer_Ams_keyval = MPI_KEYVAL_INVALID;
 #undef __FUNCT__  
 #define __FUNCT__ "PETSC_VIEWER_AMS_" 
 /*@C
-     PetscViewer_AMS_ - Creates an AMS memory snooper PetscViewer shared by all processors 
+     PETSC_VIEWER_AMS_ - Creates an AMS memory snooper PetscViewer shared by all processors 
                    in a communicator.
 
      Collective on MPI_Comm

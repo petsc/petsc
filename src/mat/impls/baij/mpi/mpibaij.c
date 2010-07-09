@@ -3625,7 +3625,7 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer, Mat newmat)
 .  mat  - the matrix
 .  fact - factor
 
-   Collective on Mat
+   Not Collective, each process can use a different factor
 
    Level: advanced
 

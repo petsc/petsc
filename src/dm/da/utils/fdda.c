@@ -56,7 +56,7 @@ static PetscErrorCode DASetBlockFills_Private(PetscInt *dfill,PetscInt w,PetscIn
     DASetMatPreallocateOnly - When DAGetMatrix() is called the matrix will be properly
        preallocated but the nonzero structure and zero values will not be set.
 
-    Collective on DA
+    Logically Collective on DA
 
     Input Parameter:
 +   da - the distributed array
@@ -81,7 +81,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetMatPreallocateOnly(DA da,PetscTruth only)
     DASetBlockFills - Sets the fill pattern in each block for a multi-component problem
     of the matrix returned by DAGetMatrix().
 
-    Collective on DA
+    Logically Collective on DA
 
     Input Parameter:
 +   da - the distributed array
@@ -541,7 +541,7 @@ EXTERN PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA,Mat);
 /*@
    MatSetDA - Sets the DA that is to be used by the HYPRE_StructMatrix PETSc matrix
 
-   Collective on Mat
+   Logically Collective on Mat
 
    Input Parameters:
 +  mat - the matrix

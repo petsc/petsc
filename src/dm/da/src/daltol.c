@@ -76,7 +76,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DALocalToLocalCreate(DA da)
    that contain irrelevant values) to another local vector where the ghost
    points in the second are set correctly. Must be followed by DALocalToLocalEnd().
 
-   Collective on DA and Vec
+   Neighbor-wise Collective on DA and Vec
 
    Input Parameters:
 +  da - the distributed array context
@@ -119,7 +119,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DALocalToLocalBegin(DA da,Vec g,InsertMode mode
    points in the second are set correctly.  Must be preceeded by 
    DALocalToLocalBegin().
 
-   Collective on DA and Vec
+   Neighbor-wise Collective on DA and Vec
 
    Input Parameters:
 +  da - the distributed array context

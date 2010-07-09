@@ -336,7 +336,7 @@ PetscErrorCode SNESDestroy_LS(SNES snes)
    it simply uses the full Newton step.  Thus, this routine is intended 
    to serve as a template and is not recommended for general use.  
 
-   Collective on SNES and Vec
+   Logically Collective on SNES and Vec
 
    Input Parameters:
 +  snes - nonlinear context
@@ -401,7 +401,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchNo(SNES snes,void *lsctx,Vec x,
    not checking for convergence of the nonlinear iteration (for
    example, you are running always for a fixed number of Newton steps).
 
-   Collective on SNES and Vec
+   Logically Collective on SNES and Vec
 
    Input Parameters:
 +  snes - nonlinear context
@@ -886,7 +886,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchQuadratic(SNES snes,void *lsctx
 .  lsctx - optional user-defined context for use by line search 
 -  func - pointer to int function
 
-   Collective on SNES
+   Logically Collective on SNES
 
    Available Routines:
 +  SNESLineSearchCubic() - default line search
@@ -964,7 +964,7 @@ EXTERN_C_END
 .  func - pointer to function
 -  checkctx - optional user-defined context for use by step checking routine 
 
-   Collective on SNES
+   Logically Collective on SNES
 
    Calling sequence of func:
 .vb
@@ -1032,7 +1032,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPostCheck(SNES snes,PetscErr
 .  func - pointer to function
 -  checkctx - optional user-defined context for use by step checking routine 
 
-   Collective on SNES
+   Logically Collective on SNES
 
    Calling sequence of func:
 .vb
@@ -1080,7 +1080,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPreCheck(SNES snes,PetscErro
 +  snes - nonlinear context obtained from SNESCreate()
 -  flg - PETSC_TRUE to monitor the line search
 
-   Collective on SNES
+   Logically Collective on SNES
 
    Options Database:
 .   -snes_ls_monitor

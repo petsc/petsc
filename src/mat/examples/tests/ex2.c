@@ -1,5 +1,5 @@
 
-static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), MatAXPY() and MatAYPX().\n\n";
+static char help[] = "Tests MatTranspose(), MatNorm(), MatAXPY() and MatAYPX().\n\n";
 
 #include "petscmat.h"
 
@@ -39,11 +39,6 @@ int main(int argc,char **argv)
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-  /* Test whether matrix has been corrupted (just to demonstrate this
-     routine) not needed in most application codes. */
-  ierr = MatValid(mat,(PetscTruth*)&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,1,"Corrupted matrix.");
 
   /* ----------------- Test MatNorm()  ----------------- */
   ierr = MatNorm(mat,NORM_FROBENIUS,&normf);CHKERRQ(ierr);

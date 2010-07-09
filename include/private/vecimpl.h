@@ -111,6 +111,7 @@ struct _VecOps {
   PetscErrorCode (*create)(Vec);
   PetscErrorCode (*stridegather)(Vec,PetscInt,Vec,InsertMode);
   PetscErrorCode (*stridescatter)(Vec,PetscInt,Vec,InsertMode);
+  PetscErrorCode (*dotnorm2)(Vec,Vec,PetscScalar*,PetscScalar*);
 };
 
 /* 

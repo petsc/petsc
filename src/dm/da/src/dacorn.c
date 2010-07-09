@@ -50,7 +50,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetCoordinates(DA da,Vec c)
 /*@
    DAGetCoordinates - Gets the node coordinates associated with a DA.
 
-   Collective on DA
+   Not Collective
 
    Input Parameter:
 .  da - the distributed array
